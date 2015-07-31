@@ -325,6 +325,13 @@ def comp_attached_svc_ruleset_id(svcname, slave):
     return [r.ruleset_id for r in rows]
 
 
+def lib_fset_id(fset_name):
+    q = db.gen_filtersets.fset_name == fset_name
+    rows = db(q).select(db.gen_filtersets.id, cacheable=True)
+    if len(rows) == 0:
+        return None
+    return rows[0].id
+
 #
 @auth.requires_membership('CompManager')
 def attach_moduleset_to_moduleset(child_modset_id, parent_modset_id):
@@ -1570,5 +1577,62 @@ def attach_group_to_moduleset(group_id, modset_id, gtype="publication"):
          dict(modset_name=v.modset_name,
               gtype=gtype,
               role=w.role))
+
+@auth.requires_membership('CompManager')
+def attach_filterset_to_ruleset(fset_id, rset_id):
+    q = db.comp_rulesets.id == rset_id
+    q1 = db.comp_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
+    if 'Manager' not in user_groups():
+        q1 &= db.comp_ruleset_team_responsible.group_id.belongs(user_group_ids())
+    rows = db(q&q1).select(cacheable=True)
+    v = rows.first()
+    if v is None:
+        raise CompError("ruleset not found or not owned by you")
+
+    q = db.gen_filtersets.id == fset_id
+    rows = db(q).select(cacheable=True)
+    w = rows.first()
+    if w is None:
+        raise CompError("filterset not found")
+
+    q = db.comp_rulesets_filtersets.ruleset_id == rset_id
+    q &= db.comp_rulesets_filtersets.fset_id == fset_id
+    if db(q).count() > 0:
+        return "0"
+
+    db.comp_rulesets_filtersets.update_or_insert(db.comp_rulesets_filtersets.ruleset_id==rset_id,
+                                                 ruleset_id=rset_id,
+                                                 fset_id=fset_id)
+    table_modified("comp_rulesets_filtersets")
+    _log('compliance.ruleset.change',
+         'attach filterset %(fset_name)s to ruleset %(rset_name)s',
+         dict(rset_name=v.comp_rulesets.ruleset_name,
+              fset_name=w.fset_name))
+
+@auth.requires_membership('CompManager')
+def detach_filterset_from_ruleset(rset_id):
+    q = db.comp_rulesets.id == rset_id
+    q1 = db.comp_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
+    if 'Manager' not in user_groups():
+        q1 &= db.comp_ruleset_team_responsible.group_id.belongs(user_group_ids())
+    rows = db(q&q1).select(cacheable=True)
+    v = rows.first()
+    if v is None:
+        raise CompError("ruleset not found or not owned by you")
+
+    q = db.comp_rulesets_filtersets.ruleset_id == rset_id
+    q &= db.gen_filtersets.id == db.comp_rulesets_filtersets.fset_id
+    rows = db(q).select(cacheable=True)
+    w = rows.first()
+    if w is None:
+        raise CompError("filterset not found")
+
+    q = db.comp_rulesets_filtersets.ruleset_id == rset_id
+    db(q).delete()
+    table_modified("comp_rulesets_filtersets")
+    _log('compliance.filterset.detach',
+         'detach filterset %(fset_name)s from ruleset %(rset_name)s',
+         dict(rset_name=v.comp_rulesets.ruleset_name,
+              fset_name=w.gen_filtersets.fset_name))
 
 

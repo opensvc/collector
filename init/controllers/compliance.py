@@ -11684,37 +11684,14 @@ def json_tree_action_copy_fset_to_fset(fset_id, dst_fset_id):
               fset_name=w.fset_name))
     return 0
 
-@auth.requires_membership('CompManager')
 def json_tree_action_move_fset_to_rset(fset_id, rset_id):
-    q = db.comp_rulesets.id == rset_id
-    q1 = db.comp_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
-    if 'Manager' not in user_groups():
-        q1 &= db.comp_ruleset_team_responsible.group_id.belongs(user_group_ids())
-    rows = db(q&q1).select(cacheable=True)
-    v = rows.first()
-    if v is None:
-        return {"err": "ruleset not found or not owned by you"}
-
-    q = db.gen_filtersets.id == fset_id
-    rows = db(q).select(cacheable=True)
-    w = rows.first()
-    if w is None:
-        return {"err": "filterset not found"}
-
-    q = db.comp_rulesets_filtersets.ruleset_id == rset_id
-    q &= db.comp_rulesets_filtersets.fset_id == fset_id
-    if db(q).count() > 0:
-        return "0"
-
-    db.comp_rulesets_filtersets.update_or_insert(db.comp_rulesets_filtersets.ruleset_id==rset_id,
-                                                 ruleset_id=rset_id,
-                                                 fset_id=fset_id)
-    table_modified("comp_rulesets_filtersets")
-    _log('compliance.ruleset.change',
-         'attach filterset %(fset_name)s to ruleset %(rset_name)s',
-         dict(rset_name=v.comp_rulesets.ruleset_name,
-              fset_name=w.fset_name))
-    return 0
+    try:
+        attach_filterset_to_ruleset(fset_id, rset_id)
+    except CompError as e:
+        return {"err": str(e)}
+    except CompInfo as e:
+        return {"info": str(e)}
+    return "0"
 
 @auth.requires_membership('CompManager')
 def json_tree_action_detach_filter(f_id, fset_id):
@@ -11770,32 +11747,14 @@ def json_tree_action_detach_filterset_from_filterset(fset_id, parent_fset_id):
               parent_fset_name=v.fset_name))
     return 0
 
-@auth.requires_membership('CompManager')
 def json_tree_action_detach_filterset_from_rset(rset_id):
-    q = db.comp_rulesets.id == rset_id
-    q1 = db.comp_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
-    if 'Manager' not in user_groups():
-        q1 &= db.comp_ruleset_team_responsible.group_id.belongs(user_group_ids())
-    rows = db(q&q1).select(cacheable=True)
-    v = rows.first()
-    if v is None:
-        return {"err": "ruleset not found or not owned by you"}
-
-    q = db.comp_rulesets_filtersets.ruleset_id == rset_id
-    q &= db.gen_filtersets.id == db.comp_rulesets_filtersets.fset_id
-    rows = db(q).select(cacheable=True)
-    w = rows.first()
-    if w is None:
-        return {"err": "filterset not found"}
-
-    q = db.comp_rulesets_filtersets.ruleset_id == rset_id
-    db(q).delete()
-    table_modified("comp_rulesets_filtersets")
-    _log('compliance.filterset.detach',
-         'detach filterset %(fset_name)s from ruleset %(rset_name)s',
-         dict(rset_name=v.comp_rulesets.ruleset_name,
-              fset_name=w.gen_filtersets.fset_name))
-    return 0
+    try:
+        detach_filterset_from_ruleset(rset_id)
+    except CompError as e:
+        return {"err": str(e)}
+    except CompInfo as e:
+        return {"info": str(e)}
+    return "0"
 
 def json_tree_action_move_group_to_modset(group_id, modset_id, gtype="publication"):
     try:
