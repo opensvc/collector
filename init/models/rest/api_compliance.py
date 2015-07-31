@@ -660,3 +660,440 @@ class rest_post_compliance_ruleset(rest_post_handler):
         return rest_get_compliance_ruleset().handler(id, props=','.join(["ruleset_name"]+vars.keys()))
 
 
+#
+# rulesets/<id>/variables
+#
+class rest_get_compliance_ruleset_variables(rest_get_table_handler):
+    def __init__(self):
+        desc = [
+          "Display a ruleset variables.",
+          "The user must be member of one of the ruleset publication groups.",
+        ]
+        examples = [
+          """# curl -u %(email)s -o- https://%(collector)s/init/rest/api/compliance/rulesets/10/variables""",
+        ]
+        rest_get_table_handler.__init__(
+          self,
+          path="/compliance/rulesets/<id>/variables",
+          tables=["comp_rulesets_variables"],
+          desc=desc,
+          examples=examples
+        )
+
+    def handler(self, ruleset_id, **vars):
+        try:
+            ruleset_id = int(ruleset_id)
+        except:
+            ruleset_id = comp_ruleset_id(ruleset_id)
+        if ruleset_id is None:
+            return dict(error="ruleset not found")
+        if not ruleset_publication(ruleset_id):
+            return dict(error="you are not member of one of the ruleset publication groups")
+        q = db.comp_rulesets_variables.ruleset_id == ruleset_id
+        self.set_q(q)
+        return self.prepare_data(**vars)
+
+#
+class rest_get_compliance_ruleset_variable(rest_get_line_handler):
+    def __init__(self):
+        desc = [
+          "Display a ruleset variable properties.",
+          "The user must be member of one of the ruleset publication groups.",
+        ]
+        examples = [
+          """# curl -u %(email)s -o- https://%(collector)s/init/rest/api/compliance/rulesets/10/variables/40""",
+        ]
+        rest_get_line_handler.__init__(
+          self,
+          path="/compliance/rulesets/<id>/variables/<id>",
+          tables=["comp_rulesets_variables"],
+          desc=desc,
+          examples=examples
+        )
+
+    def handler(self, ruleset_id, var_id, **vars):
+        try:
+            ruleset_id = int(ruleset_id)
+        except:
+            ruleset_id = comp_ruleset_id(ruleset_id)
+        if ruleset_id is None:
+            return dict(error="ruleset not found")
+        if not ruleset_publication(ruleset_id):
+            return dict(error="you are not member of one of the ruleset publication groups")
+        try:
+            var_id = int(var_id)
+        except:
+            var_id = comp_ruleset_variable_id(ruleset_id, var_id)
+        if var_id is None:
+            return dict(error="variable not found")
+        q = db.comp_rulesets_variables.ruleset_id == ruleset_id
+        q &= db.comp_rulesets_variables.id == var_id
+        self.set_q(q)
+        return self.prepare_data(**vars)
+
+#
+class rest_delete_compliance_ruleset_variable(rest_delete_handler):
+    def __init__(self):
+        desc = [
+          "Delete a ruleset variable.",
+          "The user must be responsible for the ruleset.",
+          "The user must be in the CompManager privilege group.",
+          "The action is logged in the collector's log.",
+        ]
+        examples = [
+          """# curl -u %(email)s -o- -X DELETE https://%(collector)s/init/rest/api/compliance/rulesets/10/variables/40""",
+        ]
+        rest_delete_handler.__init__(
+          self,
+          path="/compliance/rulesets/<id>/variables/<id>",
+          desc=desc,
+          examples=examples
+        )
+
+    def handler(self, ruleset_id, var_id, **vars):
+        try:
+            ruleset_id = int(ruleset_id)
+        except:
+            ruleset_id = comp_ruleset_id(ruleset_id)
+        if ruleset_id is None:
+            return dict(error="ruleset not found")
+        if not ruleset_publication(ruleset_id):
+            return dict(error="you are not member of one of the ruleset publication groups")
+        try:
+            var_id = int(var_id)
+        except:
+            var_id = comp_ruleset_variable_id(ruleset_id, var_id)
+        if var_id is None:
+            return dict(error="variable not found")
+        q = db.comp_rulesets_variables.ruleset_id == ruleset_id
+        q &= db.comp_rulesets_variables.id == var_id
+        db(q).delete()
+        return dict(info="variable deleted")
+
+#
+class rest_post_compliance_ruleset_variable(rest_post_handler):
+    def __init__(self):
+        desc = [
+          "Modify a ruleset variable properties.",
+          "The user must be responsible for the ruleset.",
+          "The user must be in the CompManager privilege group.",
+          "The updated timestamp is automatically updated.",
+          "The action is logged in the collector's log.",
+        ]
+        examples = [
+          """# curl -u %(email)s -o- -d var_class=raw-d var_value=bar https://%(collector)s/init/rest/api/compliance/rulesets/10/variables/40""",
+        ]
+        rest_post_handler.__init__(
+          self,
+          path="/compliance/rulesets/<id>/variables/<id>",
+          tables=["comp_rulesets_variables"],
+          desc=desc,
+          examples=examples
+        )
+
+    def handler(self, ruleset_id, var_id, **vars):
+        check_privilege("CompManager")
+        try:
+            ruleset_id = int(ruleset_id)
+        except:
+            ruleset_id = comp_ruleset_id(ruleset_id)
+        if ruleset_id is None:
+            return dict(error="ruleset not found")
+        if not ruleset_responsible(ruleset_id):
+            return dict(error="you are not responsible for this ruleset")
+        try:
+            var_id = int(var_id)
+        except:
+            var_id = comp_ruleset_variable_id(ruleset_id, var_id)
+        if var_id is None:
+            return dict(error="variable not found")
+        q = db.comp_rulesets_variables.ruleset_id == ruleset_id
+        q &= db.comp_rulesets_variables.id == var_id
+        if db(q).count() == 0:
+            return dict(error="this variable name already exists")
+        vars["var_updated"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        vars["var_author"] = user_name()
+        vars["ruleset_id"] = ruleset_id
+        db(q).update(**vars)
+        _log('compliance.ruleset.variable.change',
+             'changed properties %(data)s',
+             dict(data=str(vars)),
+        )
+        l = {
+          'event': 'comp_rulesets_variables_change',
+          'data': {'foo': 'bar'},
+        }
+        _websocket_send(event_msg(l))
+        return rest_get_compliance_ruleset_variable().handler(ruleset_id, var_id)
+
+#
+class rest_post_compliance_ruleset_variables(rest_post_handler):
+    def __init__(self):
+        desc = [
+          "Create a variable in a ruleset",
+          "The user must be responsible for the ruleset.",
+          "The user must be in the CompManager privilege group.",
+          "The updated timestamp is automatically updated.",
+          "The action is logged in the collector's log.",
+        ]
+        examples = [
+          """# curl -u %(email)s -o- -d public=true https://%(collector)s/init/rest/api/compliance/rulesets/10/variables""",
+        ]
+        rest_post_handler.__init__(
+          self,
+          path="/compliance/rulesets/<id>/variables",
+          tables=["comp_rulesets_variables"],
+          desc=desc,
+          examples=examples
+        )
+
+    def handler(self, ruleset_id, **vars):
+        check_privilege("CompManager")
+        try:
+            ruleset_id = int(ruleset_id)
+        except:
+            ruleset_id = comp_ruleset_id(ruleset_id)
+        if ruleset_id is None:
+            return dict(error="ruleset not found")
+        if not ruleset_responsible(ruleset_id):
+            return dict(error="you are not responsible for this ruleset")
+        if "var_name" not in vars:
+            return dict(error="var_name is mandatory in the posted data")
+        q = db.comp_rulesets_variables.ruleset_id == ruleset_id
+        q &= db.comp_rulesets_variables.var_name == vars["var_name"]
+        if db(q).count() > 0:
+            return dict(error="this variable name already exists")
+        vars["var_updated"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        vars["var_author"] = user_name()
+        vars["ruleset_id"] = ruleset_id
+        obj_id = db.comp_rulesets_variables.insert(**vars)
+        _log('compliance.ruleset.variable.create',
+             'properties %(data)s',
+             dict(data=str(vars)),
+        )
+        l = {
+          'event': 'comp_rulesets_variables_change',
+          'data': {'foo': 'bar'},
+        }
+        _websocket_send(event_msg(l))
+        return rest_get_compliance_ruleset_variable().handler(ruleset_id, obj_id)
+
+#
+# modulesets/<id>/modules
+#
+class rest_get_compliance_moduleset_modules(rest_get_table_handler):
+    def __init__(self):
+        desc = [
+          "Display a moduleset modules.",
+          "The user must be member of one of the moduleset publication groups.",
+        ]
+        examples = [
+          """# curl -u %(email)s -o- https://%(collector)s/init/rest/api/compliance/modulesets/10/modules""",
+        ]
+        rest_get_table_handler.__init__(
+          self,
+          path="/compliance/modulesets/<id>/modules",
+          tables=["comp_moduleset_modules"],
+          desc=desc,
+          examples=examples
+        )
+
+    def handler(self, modset_id, **vars):
+        try:
+            modset_id = int(modset_id)
+        except:
+            modset_id = comp_moduleset_id(modset_id)
+        if modset_id is None:
+            return dict(error="moduleset not found")
+        if not moduleset_publication(modset_id):
+            return dict(error="you are not member of one of the moduleset publication groups")
+        q = db.comp_moduleset_modules.modset_id == modset_id
+        self.set_q(q)
+        return self.prepare_data(**vars)
+
+#
+class rest_get_compliance_moduleset_module(rest_get_line_handler):
+    def __init__(self):
+        desc = [
+          "Display a moduleset module properties.",
+          "The user must be member of one of the moduleset publication groups.",
+        ]
+        examples = [
+          """# curl -u %(email)s -o- https://%(collector)s/init/rest/api/compliance/modulesets/10/modules/40""",
+        ]
+        rest_get_line_handler.__init__(
+          self,
+          path="/compliance/modulesets/<id>/modules/<id>",
+          tables=["comp_moduleset_modules"],
+          desc=desc,
+          examples=examples
+        )
+
+    def handler(self, modset_id, mod_id, **vars):
+        try:
+            modset_id = int(modset_id)
+        except:
+            modset_id = comp_moduleset_id(modset_id)
+        if modset_id is None:
+            return dict(error="moduleset not found")
+        if not moduleset_publication(modset_id):
+            return dict(error="you are not member of one of the moduleset publication groups")
+        try:
+            mod_id = int(mod_id)
+        except:
+            mod_id = comp_moduleset_module_id(modset_id, mod_id)
+        if mod_id is None:
+            return dict(error="module not found")
+        q = db.comp_moduleset_modules.modset_id == modset_id
+        q &= db.comp_moduleset_modules.id == mod_id
+        self.set_q(q)
+        return self.prepare_data(**vars)
+
+#
+class rest_delete_compliance_moduleset_module(rest_delete_handler):
+    def __init__(self):
+        desc = [
+          "Delete a moduleset module.",
+          "The user must be responsible for the moduleset.",
+          "The user must be in the CompManager privilege group.",
+          "The action is logged in the collector's log.",
+        ]
+        examples = [
+          """# curl -u %(email)s -o- -X DELETE https://%(collector)s/init/rest/api/compliance/modulesets/10/modules/40""",
+        ]
+        rest_delete_handler.__init__(
+          self,
+          path="/compliance/modulesets/<id>/modules/<id>",
+          desc=desc,
+          examples=examples
+        )
+
+    def handler(self, modset_id, mod_id, **vars):
+        try:
+            modset_id = int(modset_id)
+        except:
+            modset_id = comp_moduleset_id(modset_id)
+        if modset_id is None:
+            return dict(error="moduleset not found")
+        if not moduleset_publication(modset_id):
+            return dict(error="you are not member of one of the moduleset publication groups")
+        try:
+            mod_id = int(mod_id)
+        except:
+            mod_id = comp_moduleset_module_id(modset_id, mod_id)
+        if mod_id is None:
+            return dict(error="module not found")
+        q = db.comp_moduleset_modules.modset_id == modset_id
+        q &= db.comp_moduleset_modules.id == mod_id
+        db(q).delete()
+        return dict(info="module deleted")
+
+#
+class rest_post_compliance_moduleset_module(rest_post_handler):
+    def __init__(self):
+        desc = [
+          "Modify a moduleset module properties.",
+          "The user must be responsible for the moduleset.",
+          "The user must be in the CompManager privilege group.",
+          "The updated timestamp is automatically updated.",
+          "The action is logged in the collector's log.",
+        ]
+        examples = [
+          """# curl -u %(email)s -o- -d var_class=raw-d var_value=bar https://%(collector)s/init/rest/api/compliance/modulesets/10/modules/40""",
+        ]
+        rest_post_handler.__init__(
+          self,
+          path="/compliance/modulesets/<id>/modules/<id>",
+          tables=["comp_moduleset_modules"],
+          desc=desc,
+          examples=examples
+        )
+
+    def handler(self, modset_id, mod_id, **vars):
+        check_privilege("CompManager")
+        try:
+            modset_id = int(modset_id)
+        except:
+            modset_id = comp_moduleset_id(modset_id)
+        if modset_id is None:
+            return dict(error="moduleset not found")
+        if not moduleset_responsible(modset_id):
+            return dict(error="you are not responsible for this moduleset")
+        try:
+            mod_id = int(mod_id)
+        except:
+            mod_id = comp_moduleset_module_id(modset_id, mod_id)
+        if mod_id is None:
+            return dict(error="module not found")
+        q = db.comp_moduleset_modules.modset_id == modset_id
+        q &= db.comp_moduleset_modules.id == mod_id
+        if db(q).count() == 0:
+            return dict(error="this module name already exists")
+        vars["modset_mod_updated"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        vars["modset_mod_author"] = user_name()
+        vars["modset_id"] = modset_id
+        db(q).update(**vars)
+        _log('compliance.moduleset.module.change',
+             'changed properties %(data)s',
+             dict(data=str(vars)),
+        )
+        l = {
+          'event': 'comp_moduleset_modules_change',
+          'data': {'foo': 'bar'},
+        }
+        _websocket_send(event_msg(l))
+        return rest_get_compliance_moduleset_module().handler(modset_id, mod_id)
+
+#
+class rest_post_compliance_moduleset_modules(rest_post_handler):
+    def __init__(self):
+        desc = [
+          "Create a module in a moduleset",
+          "The user must be responsible for the moduleset.",
+          "The user must be in the CompManager privilege group.",
+          "The updated timestamp is automatically updated.",
+          "The action is logged in the collector's log.",
+        ]
+        examples = [
+          """# curl -u %(email)s -o- -d public=true https://%(collector)s/init/rest/api/compliance/modulesets/10/modules""",
+        ]
+        rest_post_handler.__init__(
+          self,
+          path="/compliance/modulesets/<id>/modules",
+          tables=["comp_moduleset_modules"],
+          desc=desc,
+          examples=examples
+        )
+
+    def handler(self, modset_id, **vars):
+        check_privilege("CompManager")
+        try:
+            modset_id = int(modset_id)
+        except:
+            modset_id = comp_moduleset_id(modset_id)
+        if modset_id is None:
+            return dict(error="moduleset not found")
+        if not moduleset_responsible(modset_id):
+            return dict(error="you are not responsible for this moduleset")
+        if "modset_mod_name" not in vars:
+            return dict(error="modset_mod_name is mandatory in the posted data")
+        q = db.comp_moduleset_modules.modset_id == modset_id
+        q &= db.comp_moduleset_modules.modset_mod_name == vars["modset_mod_name"]
+        if db(q).count() > 0:
+            return dict(error="this module name already exists")
+        vars["modset_mod_updated"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        vars["modset_mod_author"] = user_name()
+        vars["modset_id"] = modset_id
+        obj_id = db.comp_moduleset_modules.insert(**vars)
+        _log('compliance.moduleset.module.create',
+             'properties %(data)s',
+             dict(data=str(vars)),
+        )
+        l = {
+          'event': 'comp_moduleset_modules_change',
+          'data': {'foo': 'bar'},
+        }
+        _websocket_send(event_msg(l))
+        return rest_get_compliance_moduleset_module().handler(modset_id, obj_id)
+
+

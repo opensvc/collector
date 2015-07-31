@@ -11223,9 +11223,10 @@ def json_tree_action_create_moduleset(modset_name):
         obj_id = create_moduleset(modset_name)
     except CompError as e:
         return {"err": str(e)}
+    except CompInfo as e:
+        return {"info": str(e)}
     return {"obj_id": obj_id}
 
-@auth.requires_membership('CompManager')
 def json_tree_action_create_ruleset(rset_name):
     rset_name = rset_name.strip()
     try:
@@ -11236,97 +11237,56 @@ def json_tree_action_create_ruleset(rset_name):
         obj_id = create_ruleset(rset_name)
     except CompError as e:
         return {"err": str(e)}
+    except CompInfo as e:
+        return {"info": str(e)}
     return {"obj_id": obj_id}
 
-@auth.requires_membership('CompManager')
 def json_tree_action_create_module(modset_id, modset_mod_name):
-    q = db.comp_moduleset.id == modset_id
-    if 'Manager' not in user_groups():
-        q &= db.comp_moduleset.id == db.comp_moduleset_team_responsible.modset_id
-        q &= db.comp_moduleset_team_responsible.group_id.belongs(user_group_ids())
-    rows = db(q).select(db.comp_moduleset.ALL, cacheable=True)
-    v = rows.first()
-    if v is None:
-        return {"err": "moduleset does not exist or not owned by you"}
-
     modset_mod_name = modset_mod_name.strip()
     try:
         modset_mod_name = modset_mod_name[4:]
     except:
         pass
-    obj_id = db.comp_moduleset_modules.insert(
-      modset_id=modset_id,
-      modset_mod_name=modset_mod_name,
-      modset_mod_author=user_name(),
-      modset_mod_updated=datetime.datetime.now(),
-    )
-    table_modified("comp_moduleset_modules")
-    _log('compliance.moduleset.module.add',
-         'added module %(modset_mod_name)s in moduleset %(modset_name)s',
-         dict(modset_mod_name=modset_mod_name,
-              modset_name=v.modset_name))
+    try:
+        obj_id = create_module(rset_name)
+    except CompError as e:
+        return {"err": str(e)}
+    except CompInfo as e:
+        return {"info": str(e)}
     return {"obj_id": obj_id}
 
-@auth.requires_membership('CompManager')
 @service.json
 def json_tree_action_create_variable(rset_id, var_name):
-    q = db.comp_rulesets.id == rset_id
-    if 'Manager' not in user_groups():
-        q &= db.comp_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
-        q &= db.comp_ruleset_team_responsible.group_id.belongs(user_group_ids())
-    rows = db(q).select(db.comp_rulesets.ALL, cacheable=True)
-    v = rows.first()
-    if v is None:
-        return {"err": "ruleset does not exist or not owned by you"}
-
     var_name = var_name.strip()
     try:
         var_name = var_name[4:]
     except:
         pass
-    obj_id = db.comp_rulesets_variables.insert(
-      ruleset_id=rset_id,
-      var_name=var_name,
-      var_author=user_name(),
-      var_updated=datetime.datetime.now(),
-      var_class="raw",
-      var_value="",
-    )
-    table_modified("comp_rulesets_variables")
-    _log('compliance.variable.add',
-         'added variable %(var_name)s in ruleset %(rset_name)s',
-         dict(var_name=var_name,
-              rset_name=v.ruleset_name))
+    try:
+        obj_id = create_variable(var_name)
+    except CompError as e:
+        return {"err": str(e)}
+    except CompInfo as e:
+        return {"info": str(e)}
     return {"obj_id": obj_id}
 
-@auth.requires_membership('CompManager')
 def json_tree_action_delete_module(mod_id):
-    q = db.comp_moduleset_modules.id == mod_id
-    q1 = db.comp_moduleset.id == db.comp_moduleset_modules.modset_id
-    v = db(q & q1).select(cacheable=True).first()
-    if v is None:
-        return "0"
-    db(q).delete()
-    table_modified("comp_moduleset_modules")
-    _log('compliance.moduleset.module.delete',
-         'deleted module %(modset_mod_name)s from moduleset %(modset_name)s',
-         dict(modset_mod_name=v.comp_moduleset_modules.modset_mod_name,
-              modset_name=v.comp_moduleset.modset_name))
+    try:
+        delete_module(mod_id)
+    except CompError as e:
+        return {"err": str(e)}
+    except CompInfo as e:
+        return {"info": str(e)}
     return "0"
 
 @auth.requires_membership('CompManager')
 def json_tree_action_delete_variable(var_id):
-    q = db.comp_rulesets_variables.id == var_id
-    q1 = db.comp_rulesets.id == db.comp_rulesets_variables.ruleset_id
-    v = db(q & q1).select(cacheable=True).first()
-    if v is None:
-        return "0"
-    db(q).delete()
-    table_modified("comp_rulesets_variables")
-    _log('compliance.variable.delete',
-         'deleted variable %(var_name)s from ruleset %(rset_name)s',
-         dict(var_name=v.comp_rulesets_variables.var_name,
-              rset_name=v.comp_rulesets.ruleset_name))
+    try:
+        delete_variable(var_id)
+    except CompError as e:
+        return {"err": str(e)}
+    except CompInfo as e:
+        return {"info": str(e)}
     return "0"
 
 @auth.requires_membership('CompManager')
@@ -11584,12 +11544,16 @@ def json_tree_action_copy_or_move_rset_to_rset(rset_id, parent_rset_id, dst_rset
         attach_ruleset_to_ruleset(rset_id, dst_rset_id)
     except CompError as e:
         return {"err": str(e)}
+    except CompInfo as e:
+        return {"info": str(e)}
     if not move or parent_rset_id is None or parent_rset_id == dst_rset_id:
         return "0"
     try:
         detach_ruleset_from_ruleset(rset_id, parent_rset_id)
     except CompError as e:
         return {"err": str(e)}
+    except CompInfo as e:
+        return {"info": str(e)}
     return "0"
 
 @auth.requires_membership('CompManager')
@@ -11615,6 +11579,8 @@ def json_tree_action_detach_group_from_modset(group_id, modset_id, gtype="respon
         detach_group_from_moduleset(group_id, modset_id, gtype=gtype)
     except CompError as e:
         return {"err": str(e)}
+    except CompInfo as e:
+        return {"info": str(e)}
     return "0"
 
 def json_tree_action_detach_group_from_rset(group_id, rset_id, gtype="responsible"):
@@ -11622,6 +11588,8 @@ def json_tree_action_detach_group_from_rset(group_id, rset_id, gtype="responsibl
         detach_group_from_ruleset(group_id, rset_id, gtype=gtype)
     except CompError as e:
         return {"err": str(e)}
+    except CompInfo as e:
+        return {"info": str(e)}
     return "0"
 
 def json_tree_action_detach_moduleset_from_moduleset(child_modset_id, parent_modset_id):
@@ -11629,6 +11597,8 @@ def json_tree_action_detach_moduleset_from_moduleset(child_modset_id, parent_mod
         detach_moduleset_from_moduleset(child_modset_id, parent_modset_id)
     except CompError as e:
         return {"err": str(e)}
+    except CompInfo as e:
+        return {"info": str(e)}
     return "0"
 
 def json_tree_action_detach_ruleset_from_moduleset(rset_id, modset_id):
@@ -11636,6 +11606,8 @@ def json_tree_action_detach_ruleset_from_moduleset(rset_id, modset_id):
         detach_ruleset_from_moduleset(rset_id, modset_id)
     except CompError as e:
         return {"err": str(e)}
+    except CompInfo as e:
+        return {"info": str(e)}
     return "0"
 
 def json_tree_action_detach_ruleset(rset_id, parent_rset_id):
@@ -11643,6 +11615,8 @@ def json_tree_action_detach_ruleset(rset_id, parent_rset_id):
         detach_ruleset_from_ruleset(rset_id, parent_rset_id)
     except CompError as e:
         return {"err": str(e)}
+    except CompInfo as e:
+        return {"info": str(e)}
     return "0"
 
 @auth.requires_membership('CompManager')
@@ -11873,6 +11847,8 @@ def json_tree_action_copy_rset_to_modset(rset_id, modset_id):
         attach_ruleset_to_moduleset(rset_id, modset_id)
     except CompError as e:
         return {"err": str(e)}
+    except CompInfo as e:
+        return {"info": str(e)}
     return "0"
 
 @auth.requires_membership('CompManager')
@@ -12205,6 +12181,8 @@ def json_tree_action_delete_ruleset(rset_id):
         delete_ruleset(rset_id)
     except CompError as e:
         return {"err": str(e)}
+    except CompInfo as e:
+        return {"info": str(e)}
     return "0"
 
 @auth.requires_membership('CompManager')
@@ -12213,6 +12191,8 @@ def json_tree_action_delete_moduleset(modset_id):
         delete_moduleset(modset_id)
     except CompError as e:
         return {"err": str(e)}
+    except CompInfo as e:
+        return {"info": str(e)}
     return "0"
 
 

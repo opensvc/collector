@@ -12,12 +12,36 @@ def ruleset_responsible(id):
         return False
     return True
 
+def ruleset_publication(id):
+    ug = user_groups()
+    q = db.comp_rulesets.id == id
+    if 'Manager' not in ug:
+        q &= db.comp_rulesets.id == db.comp_ruleset_team_publication.ruleset_id
+        q &= db.comp_ruleset_team_publication.group_id.belongs(user_group_ids())
+    rows = db(q).select(db.comp_rulesets.id, cacheable=True)
+    v = rows.first()
+    if v is None:
+        return False
+    return True
+
 def moduleset_responsible(id):
     ug = user_groups()
     q = db.comp_moduleset.id == id
     if 'Manager' not in ug:
         q &= db.comp_moduleset.id == db.comp_moduleset_team_responsible.modset_id
         q &= db.comp_moduleset_team_responsible.group_id.belongs(user_group_ids())
+    rows = db(q).select(db.comp_moduleset.id, cacheable=True)
+    v = rows.first()
+    if v is None:
+        return False
+    return True
+
+def moduleset_publication(id):
+    ug = user_groups()
+    q = db.comp_moduleset.id == id
+    if 'Manager' not in ug:
+        q &= db.comp_moduleset.id == db.comp_moduleset_team_publication.modset_id
+        q &= db.comp_moduleset_team_publication.group_id.belongs(user_group_ids())
     rows = db(q).select(db.comp_moduleset.id, cacheable=True)
     v = rows.first()
     if v is None:
@@ -242,6 +266,22 @@ def comp_attached_moduleset_id(nodename):
     q = db.comp_node_moduleset.modset_node == nodename
     rows = db(q).select(db.comp_node_moduleset.modset_id, cacheable=True)
     return [r.modset_id for r in rows]
+
+def comp_ruleset_variable_id(ruleset_id, var_name):
+    q = db.comp_rulesets_variables.ruleset_id == ruleset_id
+    q &= db.comp_rulesets_variables.var_name == var_name
+    rows = db(q).select(db.comp_rulesets_variables.id, cacheable=True)
+    if len(rows) == 0:
+        return None
+    return rows[0].id
+
+def comp_moduleset_module_id(modset_id, mod_name):
+    q = db.comp_moduleset_modules.modset_id == modset_id
+    q &= db.comp_moduleset_modules.modset_mod_name == mod_name
+    rows = db(q).select(db.comp_moduleset_modules.id, cacheable=True)
+    if len(rows) == 0:
+        return None
+    return rows[0].id
 
 def comp_ruleset_id(ruleset):
     q = db.comp_rulesets.ruleset_name == ruleset
@@ -1382,5 +1422,83 @@ def attach_ruleset_to_moduleset(rset_id, modset_id):
          'attach ruleset %(rset_name)s to moduleset %(modset_name)s',
          dict(modset_name=v.modset_name,
               rset_name=w.ruleset_name))
+
+@auth.requires_membership('CompManager')
+def create_module(modset_id, modset_mod_name):
+    q = db.comp_moduleset.id == modset_id
+    if 'Manager' not in user_groups():
+        q &= db.comp_moduleset.id == db.comp_moduleset_team_responsible.modset_id
+        q &= db.comp_moduleset_team_responsible.group_id.belongs(user_group_ids())
+    rows = db(q).select(db.comp_moduleset.ALL, cacheable=True)
+    v = rows.first()
+    if v is None:
+        raise CompError("moduleset does not exist or not owned by you")
+
+    obj_id = db.comp_moduleset_modules.insert(
+      modset_id=modset_id,
+      modset_mod_name=modset_mod_name,
+      modset_mod_author=user_name(),
+      modset_mod_updated=datetime.datetime.now(),
+    )
+    table_modified("comp_moduleset_modules")
+    _log('compliance.moduleset.module.add',
+         'added module %(modset_mod_name)s in moduleset %(modset_name)s',
+         dict(modset_mod_name=modset_mod_name,
+              modset_name=v.modset_name))
+    return obj_id
+
+@auth.requires_membership('CompManager')
+def create_variable(rset_id, var_name):
+    q = db.comp_rulesets.id == rset_id
+    if 'Manager' not in user_groups():
+        q &= db.comp_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
+        q &= db.comp_ruleset_team_responsible.group_id.belongs(user_group_ids())
+    rows = db(q).select(db.comp_rulesets.ALL, cacheable=True)
+    v = rows.first()
+    if v is None:
+        raise CompError("ruleset does not exist or not owned by you")
+
+    obj_id = db.comp_rulesets_variables.insert(
+      ruleset_id=rset_id,
+      var_name=var_name,
+      var_author=user_name(),
+      var_updated=datetime.datetime.now(),
+      var_class="raw",
+      var_value="",
+    )
+    table_modified("comp_rulesets_variables")
+    _log('compliance.variable.add',
+         'added variable %(var_name)s in ruleset %(rset_name)s',
+         dict(var_name=var_name,
+              rset_name=v.ruleset_name))
+    return obj_id
+
+@auth.requires_membership('CompManager')
+def json_tree_action_delete_module(mod_id):
+    q = db.comp_moduleset_modules.id == mod_id
+    q1 = db.comp_moduleset.id == db.comp_moduleset_modules.modset_id
+    v = db(q & q1).select(cacheable=True).first()
+    if v is None:
+        raise CompInfo("module does not exist")
+    db(q).delete()
+    table_modified("comp_moduleset_modules")
+    _log('compliance.moduleset.module.delete',
+         'deleted module %(modset_mod_name)s from moduleset %(modset_name)s',
+         dict(modset_mod_name=v.comp_moduleset_modules.modset_mod_name,
+              modset_name=v.comp_moduleset.modset_name))
+
+@auth.requires_membership('CompManager')
+def json_tree_action_delete_variable(var_id):
+    q = db.comp_rulesets_variables.id == var_id
+    q1 = db.comp_rulesets.id == db.comp_rulesets_variables.ruleset_id
+    v = db(q & q1).select(cacheable=True).first()
+    if v is None:
+        raise CompInfo("variable does not exist")
+    db(q).delete()
+    table_modified("comp_rulesets_variables")
+    _log('compliance.variable.delete',
+         'deleted variable %(var_name)s from ruleset %(rset_name)s',
+         dict(var_name=v.comp_rulesets_variables.var_name,
+              rset_name=v.comp_rulesets.ruleset_name))
 
 
