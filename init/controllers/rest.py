@@ -209,6 +209,8 @@ handlers = {
      rest_post_tag_service(),
   ],
   'PUT': [
+     rest_put_compliance_moduleset(),
+     rest_put_compliance_ruleset(),
      rest_put_compliance_ruleset_variable(),
      rest_put_form(),
   ],

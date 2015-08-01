@@ -11858,105 +11858,21 @@ def json_tree_action_move_group_to_rset(group_id, rset_id, gtype="publication"):
 
 @auth.requires_membership('CompManager')
 def json_tree_action_clone_moduleset(modset_id):
-    q = db.comp_moduleset.id == modset_id
-    rows = db(q).select(cacheable=True)
-    v = rows.first()
-    if v is None:
-        return {"err": "source moduleset not found"}
-
-    modset_name = v.modset_name
-    clone_modset_name = modset_name+"_clone"
-    q = db.comp_moduleset.modset_name == clone_modset_name
-    rows = db(q).select(cacheable=True)
-    w = rows.first()
-    if w is not None:
-        return {"err": "a moduleset named %s already exists" % clone_modset_name}
-
-    newid = db.comp_moduleset.insert(modset_name=clone_modset_name,
-                                     modset_author=user_name(),
-                                     modset_updated=datetime.datetime.now())
-    table_modified("comp_moduleset")
-
-    # clone moduleset modules
-    q = db.comp_moduleset_modules.modset_id == modset_id
-    rows = db(q).select(cacheable=True)
-    for row in rows:
-        db.comp_moduleset_modules.insert(modset_id=newid,
-                                         modset_mod_name=row.modset_mod_name,
-                                         modset_mod_author=row.modset_mod_author,
-                                         modset_mod_updated=datetime.datetime.now())
-    table_modified("comp_moduleset_modules")
-    add_default_teams_to_modset(clone_modset_name)
-
-    # clone moduleset-ruleset attachments
-    q = db.comp_moduleset_ruleset.modset_id == modset_id
-    rows = db(q).select(cacheable=True)
-    for row in rows:
-        db.comp_moduleset_ruleset.insert(modset_id=newid,
-                                         ruleset_id=row.ruleset_id)
-    table_modified("comp_moduleset_ruleset")
-
-    _log('compliance.moduleset.clone',
-         'cloned moduleset %(o)s from %(n)s',
-         dict(n=modset_name, o=clone_modset_name))
+    try:
+        clone_moduleset(modset_id)
+    except CompError as e:
+        return {"err": str(e)}
+    except CompInfo as e:
+        return {"info": str(e)}
     return "0"
 
-@auth.requires_membership('CompManager')
 def json_tree_action_clone_ruleset(rset_id):
-    q = db.comp_rulesets.id == rset_id
-    rows = db(q).select(cacheable=True)
-    v = rows.first()
-    if v is None:
-        return {"err": "source ruleset not found"}
-
-    rset_name = v.ruleset_name
-    clone_rset_name = rset_name+"_clone"
-    q = db.comp_rulesets.ruleset_name == clone_rset_name
-    rows = db(q).select(cacheable=True)
-    w = rows.first()
-    if w is not None:
-        return {"err": "a ruleset named %s already exists" % clone_rset_name}
-
-    newid = db.comp_rulesets.insert(ruleset_name=clone_rset_name,
-                                    ruleset_type=v.ruleset_type,
-                                    ruleset_public=v.ruleset_public)
-    table_modified("comp_rulesets")
-
-    # clone filterset for contextual rulesets
-    if v.ruleset_type == 'contextual':
-        q = db.comp_rulesets.id == rset_id
-        q &= db.comp_rulesets.id == db.comp_rulesets_filtersets.ruleset_id
-        rows = db(q).select(cacheable=True)
-        if len(rows) > 0 and  rows[0].comp_rulesets_filtersets.fset_id is not None:
-            db.comp_rulesets_filtersets.insert(ruleset_id=newid,
-                                               fset_id=rows[0].comp_rulesets_filtersets.fset_id)
-            table_modified("comp_rulesets_filtersets")
-
-    # clone ruleset variables
-    q = db.comp_rulesets_variables.ruleset_id == rset_id
-    rows = db(q).select(cacheable=True)
-    for row in rows:
-        db.comp_rulesets_variables.insert(ruleset_id=newid,
-                                          var_name=row.var_name,
-                                          var_class=row.var_class,
-                                          var_value=row.var_value,
-                                          var_author=user_name())
-    table_modified("comp_rulesets_variables")
-    add_default_teams(clone_rset_name)
-
-    # clone parent to children relations
-    q = db.comp_rulesets_rulesets.parent_rset_id==rset_id
-    rows = db(q).select(cacheable=True)
-    for child_rset_id in [r.child_rset_id for r in rows]:
-        db.comp_rulesets_rulesets.insert(parent_rset_id=newid,
-                                         child_rset_id=child_rset_id)
-    table_modified("comp_rulesets_rulesets")
-
-    comp_rulesets_chains()
-
-    _log('compliance.ruleset.clone',
-         'cloned ruleset %(o)s from %(n)s',
-         dict(n=rset_name, o=clone_rset_name))
+    try:
+        clone_ruleset(rset_id)
+    except CompError as e:
+        return {"err": str(e)}
+    except CompInfo as e:
+        return {"info": str(e)}
     return "0"
 
 @auth.requires_membership('CompManager')

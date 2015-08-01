@@ -1456,7 +1456,7 @@ class rest_put_compliance_ruleset_variable(rest_put_handler):
           "Special actions on a ruleset variable: copy, move.",
         ]
         examples = [
-          "# curl -u %(email)s -o- -X PUT -d action=copy -d dst_ruleset_id=152 https://%(collector)s/init/rest/api/compliance/modulesets/10/variables/151",
+          "# curl -u %(email)s -o- -X PUT -d action=copy -d dst_ruleset_id=152 https://%(collector)s/init/rest/api/compliance/rulesets/10/variables/151",
         ]
         data = """
 ----
@@ -1505,5 +1505,83 @@ class rest_put_compliance_ruleset_variable(rest_put_handler):
         except CompError as e:
             return dict(error=str(e))
         return dict(info="variable %s done"%action)
+
+class rest_put_compliance_ruleset(rest_put_handler):
+    def __init__(self):
+        desc = [
+          "Special actions on a ruleset: clone.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- -X PUT -d action=clone https://%(collector)s/init/rest/api/compliance/rulesets/10",
+        ]
+        data = """
+----
+| **action**      | clone |
+----
+"""
+        rest_put_handler.__init__(
+          self,
+          path="/compliance/rulesets/<id>",
+          desc=desc,
+          data=data,
+          examples=examples
+        )
+
+    def handler(self, ruleset_id, **vars):
+        try:
+            ruleset_id = int(ruleset_id)
+        except:
+            ruleset_id = comp_ruleset_id(ruleset_id)
+        if ruleset_id is None:
+            return dict(error="ruleset not found")
+        action = vars.get("action")
+        try:
+            if action == "clone":
+                d = clone_ruleset(ruleset_id)
+                info = "clone done. new ruleset name %s" % d.get("name", "?")
+            else:
+                raise CompError("unsupported action")
+        except CompError as e:
+            return dict(error=str(e))
+        return dict(info=info)
+
+class rest_put_compliance_moduleset(rest_put_handler):
+    def __init__(self):
+        desc = [
+          "Special actions on a moduleset: clone.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- -X PUT -d action=clone https://%(collector)s/init/rest/api/compliance/modulesets/10",
+        ]
+        data = """
+----
+| **action**      | clone |
+----
+"""
+        rest_put_handler.__init__(
+          self,
+          path="/compliance/modulesets/<id>",
+          desc=desc,
+          data=data,
+          examples=examples
+        )
+
+    def handler(self, modset_id, **vars):
+        try:
+            modset_id = int(modset_id)
+        except:
+            modset_id = comp_moduleset_id(modset_id)
+        if modset_id is None:
+            return dict(error="moduleset not found")
+        action = vars.get("action")
+        try:
+            if action == "clone":
+                d = clone_moduleset(modset_id)
+                info = "clone done. new moduleset name %s" % d.get("name", "?")
+            else:
+                raise CompError("unsupported action")
+        except CompError as e:
+            return dict(error=str(e))
+        return dict(info=info)
 
 
