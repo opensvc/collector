@@ -1408,10 +1408,14 @@ class rest_post_compliance_ruleset_filterset(rest_post_handler):
             ruleset_id = int(ruleset_id)
         except:
             ruleset_id = comp_ruleset_id(ruleset_id)
+        if ruleset_id is None:
+            return dict(error="ruleset not found")
         try:
             fset_id = int(fset_id)
         except:
             fset_id = lib_fset_id(fset_id)
+        if fset_id is None:
+            return dict(error="filterset not found")
         try:
             attach_filterset_to_ruleset(fset_id, ruleset_id)
         except CompError as e:
@@ -1438,14 +1442,68 @@ class rest_delete_compliance_ruleset_filterset(rest_delete_handler):
             ruleset_id = int(ruleset_id)
         except:
             ruleset_id = comp_ruleset_id(ruleset_id)
-        #try:
-        #    fset_id = int(fset_id)
-        #except:
-        #    fset_id = lib_fset_id(fset_id)
+        if ruleset_id is None:
+            return dict(error="ruleset not found")
         try:
             detach_filterset_from_ruleset(ruleset_id)
         except CompError as e:
             return dict(error=str(e))
         return dict(info="filterset detached")
+
+class rest_put_compliance_ruleset_variable(rest_put_handler):
+    def __init__(self):
+        desc = [
+          "Special actions on a ruleset variable: copy, move.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- -X PUT -d action=copy -d dst_ruleset_id=152 https://%(collector)s/init/rest/api/compliance/modulesets/10/variables/151",
+        ]
+        data = """
+----
+| **action**      | move or copy                                                  |
+| **dst_ruleset** | The name or id of the ruleset to move or copy the variable to |
+----
+"""
+        rest_put_handler.__init__(
+          self,
+          path="/compliance/rulesets/<id>/variables/<id>",
+          desc=desc,
+          data=data,
+          examples=examples
+        )
+
+    def handler(self, ruleset_id, var_id, **vars):
+        try:
+            ruleset_id = int(ruleset_id)
+        except:
+            ruleset_id = comp_ruleset_id(ruleset_id)
+        if ruleset_id is None:
+            return dict(error="ruleset not found")
+        try:
+            var_id = int(var_id)
+        except:
+            var_id = comp_ruleset_variable_id(ruleset_id, var_id)
+        if var_id is None:
+            return dict(error="variable not found")
+        dst_ruleset =  vars.get("dst_ruleset")
+        if dst_ruleset is None:
+            return dict(error="dst_ruleset not found in data")
+        try:
+            dst_ruleset = int(dst_ruleset)
+        except:
+            dst_ruleset = comp_ruleset_id(dst_ruleset)
+        if dst_ruleset is None:
+            return dict(error="dst_ruleset not found")
+        action = vars.get("action")
+        try:
+            if action == "copy":
+                copy_variable_to_ruleset(var_id, dst_ruleset)
+            elif action == "move":
+                move_variable_to_ruleset(var_id, dst_ruleset)
+            else:
+                raise CompError("unsupported action")
+        except CompError as e:
+            return dict(error=str(e))
+        return dict(info="variable %s done"%action)
 
 

@@ -1635,4 +1635,93 @@ def detach_filterset_from_ruleset(rset_id):
          dict(rset_name=v.comp_rulesets.ruleset_name,
               fset_name=w.gen_filtersets.fset_name))
 
+@auth.requires_membership('CompManager')
+def move_variable_to_ruleset(var_id, rset_id):
+    q = db.comp_rulesets_variables.id == var_id
+    q1 = db.comp_rulesets_variables.ruleset_id == db.comp_ruleset_team_responsible.ruleset_id
+    q1 &= db.comp_rulesets_variables.ruleset_id == db.comp_rulesets.id
+    if 'Manager' not in user_groups():
+        q1 &= db.comp_ruleset_team_responsible.group_id.belongs(user_group_ids())
+    rows = db(q&q1).select(cacheable=True)
+    v = rows.first()
+    if v is None:
+        raise CompError("variable not found or originating ruleset not owned by you")
+
+    q2 = db.comp_rulesets.id == rset_id
+    q3 = db.comp_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
+    if 'Manager' not in user_groups():
+        q3 &= db.comp_ruleset_team_responsible.group_id.belongs(user_group_ids())
+    rows = db(q2&q3).select(cacheable=True)
+    w = rows.first()
+    if w is None:
+        raise CompError("destination ruleset not found or not owned by you")
+
+    db(q).update(ruleset_id=rset_id)
+    _log('compliance.variable.change',
+         'move variable %(var_name)s from ruleset %(rset_name)s to %(dst_rset_name)s',
+         dict(rset_name=v.comp_rulesets.ruleset_name,
+              dst_rset_name=w.comp_rulesets.ruleset_name,
+              var_name=v.comp_rulesets_variables.var_name))
+
+@auth.requires_membership('CompManager')
+def copy_variable_to_ruleset(var_id, rset_id):
+    q = db.comp_rulesets_variables.id == var_id
+    q1 = db.comp_rulesets_variables.ruleset_id == db.comp_ruleset_team_publication.ruleset_id
+    q1 &= db.comp_rulesets_variables.ruleset_id == db.comp_rulesets.id
+    if 'Manager' not in user_groups():
+        q1 &= db.comp_ruleset_team_publication.group_id.belongs(user_group_ids())
+    rows = db(q&q1).select(cacheable=True)
+    v = rows.first()
+    if v is None:
+        raise CompError("variable not found or originating ruleset not published to you")
+
+    q2 = db.comp_rulesets.id == rset_id
+    q3 = db.comp_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
+    if 'Manager' not in user_groups():
+        q3 &= db.comp_ruleset_team_responsible.group_id.belongs(user_group_ids())
+    rows = db(q2&q3).select(cacheable=True)
+    w = rows.first()
+    if w is None:
+        raise CompError("destination ruleset not found or not owned by you")
+
+    _v = v.comp_rulesets_variables
+    obj_id = db.comp_rulesets_variables.insert(
+      ruleset_id=rset_id,
+      var_name=_v.var_name,
+      var_class=_v.var_class,
+      var_value=_v.var_value,
+      var_author=user_name(),
+      var_updated=datetime.datetime.now(),
+    )
+    table_modified("comp_rulesets_variables")
+    _log('compliance.variable.copy',
+         'copy variable %(var_name)s from ruleset %(rset_name)s to %(dst_rset_name)s',
+         dict(rset_name=v.comp_rulesets.ruleset_name,
+              dst_rset_name=w.comp_rulesets.ruleset_name,
+              var_name=v.comp_rulesets_variables.var_name))
+    return obj_id
+
+#
+# filtersets
+#
+@auth.requires_membership('CompManager')
+def create_filterset(name):
+    q = db.gen_filtersets.fset_name == name
+    rows = db(q).select(cacheable=True)
+    v = rows.first()
+    if v is not None:
+        CompError("a filterset named '%(name)s' already exists"%dict(name=name))
+
+    obj_id = db.gen_filtersets.insert(
+      fset_name=name,
+      fset_stats='F',
+      fset_author=user_name(),
+      fset_updated=datetime.datetime.now(),
+    )
+    table_modified("gen_filtersets")
+    _log('compliance.filterset.add',
+         'added filterset %(name)s',
+         dict(name=name))
+    return obj_id
+
 
