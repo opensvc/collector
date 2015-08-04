@@ -1817,24 +1817,219 @@ def clone_moduleset(modset_id):
 #
 # filtersets
 #
+def lib_fset_id(fset_id):
+    try:
+        fset_id = int(fset_id)
+        return fset_id
+    except:
+        q = db.gen_filtersets.fset_name == fset_id
+        fset = db(q).select().first()
+        if fset:
+            return fset.id
+        return
+
 @auth.requires_membership('CompManager')
-def create_filterset(name):
-    q = db.gen_filtersets.fset_name == name
+def create_filterset(fset_name=None, fset_stats="F"):
+    q = db.gen_filtersets.fset_name == fset_name
     rows = db(q).select(cacheable=True)
     v = rows.first()
     if v is not None:
-        CompError("a filterset named '%(name)s' already exists"%dict(name=name))
+        CompError("a filterset named '%(name)s' already exists"%dict(name=fset_name))
 
     obj_id = db.gen_filtersets.insert(
-      fset_name=name,
-      fset_stats='F',
+      fset_name=fset_name,
+      fset_stats=fset_stats,
       fset_author=user_name(),
       fset_updated=datetime.datetime.now(),
     )
     table_modified("gen_filtersets")
-    _log('compliance.filterset.add',
+    _log('filterset.create',
          'added filterset %(name)s',
-         dict(name=name))
+         dict(name=fset_name))
     return obj_id
+
+@auth.requires_membership('CompManager')
+def delete_filterset(fset_id):
+    q = db.gen_filtersets.id == fset_id
+    rows = db(q).select(cacheable=True)
+    v = rows.first()
+    if v is None:
+        raise CompError("filterset not found")
+
+    q = db.gen_filtersets_filters.fset_id == fset_id
+    db(q).delete()
+    table_modified("gen_filtersets_filters")
+
+    q = db.gen_filtersets_filters.encap_fset_id == fset_id
+    db(q).delete()
+    table_modified("gen_filtersets_filters")
+
+    q = db.comp_rulesets_filtersets.fset_id == fset_id
+    db(q).delete()
+    table_modified("comp_rulesets_filtersets")
+
+    q = db.gen_filterset_team_responsible.fset_id == fset_id
+    db(q).delete()
+    table_modified("gen_filterset_team_responsible")
+
+    q = db.gen_filterset_check_threshold.fset_id == fset_id
+    db(q).delete()
+    table_modified("gen_filterset_check_threshold")
+
+    q = db.gen_filterset_user.fset_id == fset_id
+    db(q).delete()
+    table_modified("gen_filterset_user")
+
+    q = db.stats_compare_fset.fset_id == fset_id
+    db(q).delete()
+    table_modified("stats_compare_fset")
+
+    q = db.stat_day_billing.fset_id == fset_id
+    db(q).delete()
+    table_modified("stat_day_billing")
+
+    q = db.stat_day.fset_id == fset_id
+    db(q).delete()
+    table_modified("stat_day")
+
+    q = db.metrics_log.fset_id == fset_id
+    db(q).delete()
+    table_modified("metrics_log")
+
+    q = db.lifecycle_os.fset_id == fset_id
+    db(q).delete()
+    table_modified("lifecycle_os")
+
+    q = db.gen_filtersets.id == fset_id
+    db(q).delete()
+    table_modified("gen_filtersets")
+
+    _log('filterset.delete',
+         'deleted filterset %(fset_name)s',
+         dict(fset_name=v.fset_name))
+    raise CompInfo("filterset deleted")
+
+@auth.requires_membership('CompManager')
+def detach_filterset_from_filterset(fset_id, parent_fset_id):
+    q = db.gen_filtersets.id == parent_fset_id
+    rows = db(q).select(cacheable=True)
+    v = rows.first()
+    if v is None:
+        raise CompError("filterset not found")
+
+    q = db.gen_filtersets.id == fset_id
+    rows = db(q).select(cacheable=True)
+    w = rows.first()
+    if w is None:
+        raise CompError("filterset not found")
+
+    q = db.gen_filtersets_filters.encap_fset_id == fset_id
+    q &= db.gen_filtersets_filters.fset_id == parent_fset_id
+    if len(db(q).select()) == 0:
+        raise CompInfo("filterset already detached")
+
+    db(q).delete()
+    table_modified("gen_filtersets_filters")
+    _log('filterset.detach',
+         'detach filterset %(fset_name)s from filterset %(parent_fset_name)s',
+         dict(fset_name=w.fset_name,
+              parent_fset_name=v.fset_name))
+    raise CompInfo("filterset detached")
+
+@auth.requires_membership('CompManager')
+def detach_filter_from_filterset(f_id, fset_id):
+    q = db.gen_filtersets.id == fset_id
+    rows = db(q).select(cacheable=True)
+    v = rows.first()
+    if v is None:
+        raise CompError("filterset not found")
+
+    q = db.gen_filters.id == f_id
+    rows = db(q).select(cacheable=True)
+    w = rows.first()
+    if w is None:
+        raise CompError("filter not found")
+
+    q = db.gen_filtersets_filters.f_id == f_id
+    q &= db.gen_filtersets_filters.fset_id == fset_id
+    if len(db(q).select()) == 0:
+        raise CompInfo("filter already detached")
+
+    db(q).delete()
+    table_modified("gen_filtersets_filters")
+    _log('filter.detach',
+         'detach filter %(f_name)s from filterset %(fset_name)s',
+         dict(fset_name=v.fset_name,
+              f_name=w.f_table+'.'+w.f_field+' '+w.f_op+' '+w.f_value))
+    raise CompInfo("filter detached")
+
+@auth.requires_membership('CompManager')
+def attach_filterset_to_filterset(fset_id, dst_fset_id):
+    q = db.gen_filtersets.id == dst_fset_id
+    rows = db(q).select(cacheable=True)
+    v = rows.first()
+    if v is None:
+        raise CompError("filterset not found")
+
+    q = db.gen_filtersets.id == fset_id
+    rows = db(q).select(cacheable=True)
+    w = rows.first()
+    if w is None:
+        raise CompError("filterset not found")
+
+    q = db.gen_filtersets_filters.encap_fset_id == fset_id
+    q &= db.gen_filtersets_filters.fset_id == dst_fset_id
+    if db(q).count() > 0:
+        raise CompInfo("filterset already detached")
+
+    if fset_loop(fset_id, dst_fset_id):
+        raise CompError("the parent filterset is already a child of the encapsulated filterset. abort encapsulation not to cause infinite recursion")
+
+    db.gen_filtersets_filters.insert(encap_fset_id=fset_id,
+                                     fset_id=dst_fset_id,
+                                     f_order=0,
+                                     f_log_op="AND")
+    table_modified("gen_filtersets_filters")
+
+    _log('filterset.attach',
+         'attach filterset %(fset_name)s to filterset %(dst_fset_name)s',
+         dict(dst_fset_name=v.fset_name,
+              fset_name=w.fset_name))
+    raise CompInfo("filterset attached")
+
+@auth.requires_membership('CompManager')
+def attach_filter_to_filterset(f_id, fset_id, **vars):
+    q = db.gen_filters.id == f_id
+    rows = db(q).select(cacheable=True)
+    v = rows.first()
+    if v is None:
+        raise CompError("filter not found")
+
+    q = db.gen_filtersets.id == fset_id
+    rows = db(q).select(cacheable=True)
+    w = rows.first()
+    if w is None:
+        raise CompError("filterset not found")
+
+    q = db.gen_filtersets_filters.f_id == f_id
+    q &= db.gen_filtersets_filters.fset_id == fset_id
+    if db(q).count() > 0:
+        raise CompInfo("filter already attached")
+
+    vars["f_id"] = f_id
+    vars["fset_id"] = fset_id
+    vars["encap_fset_id"] = None
+    if "f_order" not in vars:
+        vars["f_order"] = 0
+    if "f_log_op" not in vars:
+        vars["f_log_op"] = "AND"
+    db.gen_filtersets_filters.insert(**vars)
+    table_modified("gen_filtersets_filters")
+
+    _log('filter.attach',
+         'attach filter %(f_name)s to filterset %(fset_name)s',
+         dict(fset_name=w.fset_name,
+              f_name=v.f_table+'.'+v.f_field+' '+v.f_op+' '+v.f_value))
+    raise CompInfo("filter attached")
 
 

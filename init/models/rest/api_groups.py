@@ -341,7 +341,7 @@ class rest_post_group(rest_post_handler):
             q = db.auth_group.role == id
         row = db(q).select().first()
         if row is None:
-            return dict(error="Group %s does not exist" % id)
+            return dict(error="Group %s does not exist" % str(id))
         if "id" in vars.keys():
             del(vars["id"])
         db(q).update(**vars)

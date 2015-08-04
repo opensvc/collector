@@ -11561,68 +11561,24 @@ def json_tree_action_detach_ruleset(rset_id, parent_rset_id):
 
 @auth.requires_membership('CompManager')
 def json_tree_action_copy_filter_to_fset(f_id, fset_id):
-    q = db.gen_filters.id == f_id
-    rows = db(q).select(cacheable=True)
-    v = rows.first()
-    if v is None:
-        return {"err": "filter not found"}
-
-    q = db.gen_filtersets.id == fset_id
-    rows = db(q).select(cacheable=True)
-    w = rows.first()
-    if w is None:
-        return {"err": "filterset not found"}
-
-    q = db.gen_filtersets_filters.f_id == f_id
-    q &= db.gen_filtersets_filters.fset_id == fset_id
-    if db(q).count() > 0:
-        return "0"
-
-    db.gen_filtersets_filters.insert(f_id=f_id,
-                                     fset_id=fset_id,
-                                     f_order=0,
-                                     f_log_op="AND")
-    table_modified("gen_filtersets_filters")
-
-    _log('compliance.filter.attach',
-         'attach filter %(f_name)s to filterset %(fset_name)s',
-         dict(fset_name=w.fset_name,
-              f_name=v.f_table+'.'+v.f_field+' '+v.f_op+' '+v.f_value))
-    return 0
+    try:
+        attach_filter_to_filterset(f_id, fset_id)
+    except CompError as e:
+        return {"err": str(e)}
+    except CompInfo as e:
+        return {"info": str(e)}
+    return "0"
 
 @auth.requires_membership('CompManager')
 def json_tree_action_copy_fset_to_fset(fset_id, dst_fset_id):
-    q = db.gen_filtersets.id == dst_fset_id
-    rows = db(q).select(cacheable=True)
-    v = rows.first()
-    if v is None:
-        return {"err": "filterset not found"}
+    try:
+        attach_filterset_to_filterset(fset_id, dst_fset_id)
+    except CompError as e:
+        return {"err": str(e)}
+    except CompInfo as e:
+        return {"info": str(e)}
+    return "0"
 
-    q = db.gen_filtersets.id == fset_id
-    rows = db(q).select(cacheable=True)
-    w = rows.first()
-    if w is None:
-        return {"err": "filterset not found"}
-
-    q = db.gen_filtersets_filters.encap_fset_id == fset_id
-    q &= db.gen_filtersets_filters.fset_id == dst_fset_id
-    if db(q).count() > 0:
-        return "0"
-
-    if fset_loop(fset_id, dst_fset_id):
-        return {"err": "the parent filterset is already a child of the encapsulated filterset. abort encapsulation not to cause infinite recursion"}
-
-    db.gen_filtersets_filters.insert(encap_fset_id=fset_id,
-                                     fset_id=dst_fset_id,
-                                     f_order=0,
-                                     f_log_op="AND")
-    table_modified("gen_filtersets_filters")
-
-    _log('compliance.filterset.attach',
-         'attach filterset %(fset_name)s to filterset %(dst_fset_name)s',
-         dict(dst_fset_name=v.fset_name,
-              fset_name=w.fset_name))
-    return 0
 
 def json_tree_action_move_fset_to_rset(fset_id, rset_id):
     try:
@@ -11633,59 +11589,24 @@ def json_tree_action_move_fset_to_rset(fset_id, rset_id):
         return {"info": str(e)}
     return "0"
 
-@auth.requires_membership('CompManager')
 def json_tree_action_detach_filter(f_id, fset_id):
-    q = db.gen_filtersets.id == fset_id
-    rows = db(q).select(cacheable=True)
-    v = rows.first()
-    if v is None:
-        return {"err": "filterset not found"}
+    try:
+        detach_filter_from_filterset(fset_id, rset_id)
+    except CompError as e:
+        return {"err": str(e)}
+    except CompInfo as e:
+        return {"info": str(e)}
+    return "0"
 
-    q = db.gen_filters.id == f_id
-    rows = db(q).select(cacheable=True)
-    w = rows.first()
-    if w is None:
-        return {"err": "filter not found"}
 
-    q = db.gen_filtersets_filters.f_id == f_id
-    q &= db.gen_filtersets_filters.fset_id == fset_id
-    if len(db(q).select()) == 0:
-        return 0
-
-    db(q).delete()
-    table_modified("gen_filtersets_filters")
-    _log('compliance.filter.detach',
-         'detach filter %(f_name)s from filterset %(fset_name)s',
-         dict(fset_name=v.fset_name,
-              f_name=w.f_table+'.'+w.f_field+' '+w.f_op+' '+w.f_value))
-    return 0
-
-@auth.requires_membership('CompManager')
 def json_tree_action_detach_filterset_from_filterset(fset_id, parent_fset_id):
-    q = db.gen_filtersets.id == parent_fset_id
-    rows = db(q).select(cacheable=True)
-    v = rows.first()
-    if v is None:
-        return {"err": "filterset not found"}
-
-    q = db.gen_filtersets.id == fset_id
-    rows = db(q).select(cacheable=True)
-    w = rows.first()
-    if w is None:
-        return {"err": "filterset not found"}
-
-    q = db.gen_filtersets_filters.encap_fset_id == fset_id
-    q &= db.gen_filtersets_filters.fset_id == parent_fset_id
-    if len(db(q).select()) == 0:
-        return 0
-
-    db(q).delete()
-    table_modified("gen_filtersets_filters")
-    _log('compliance.filterset.detach',
-         'detach filterset %(fset_name)s from filterset %(parent_fset_name)s',
-         dict(fset_name=w.fset_name,
-              parent_fset_name=v.fset_name))
-    return 0
+    try:
+        detach_filterset_from_filterset(fset_id, parent_fset_id)
+    except CompError as e:
+        return {"err": str(e)}
+    except CompInfo as e:
+        return {"info": str(e)}
+    return "0"
 
 def json_tree_action_detach_filterset_from_rset(rset_id):
     try:
@@ -11875,65 +11796,13 @@ def json_tree_action_clone_ruleset(rset_id):
         return {"info": str(e)}
     return "0"
 
-@auth.requires_membership('CompManager')
 def json_tree_action_delete_filterset(fset_id):
-    q = db.gen_filtersets.id == fset_id
-    rows = db(q).select(cacheable=True)
-    v = rows.first()
-    if v is None:
-        return {"err": "filterset not found"}
-
-    q = db.gen_filtersets_filters.fset_id == fset_id
-    db(q).delete()
-    table_modified("gen_filtersets_filters")
-
-    q = db.gen_filtersets_filters.encap_fset_id == fset_id
-    db(q).delete()
-    table_modified("gen_filtersets_filters")
-
-    q = db.comp_rulesets_filtersets.fset_id == fset_id
-    db(q).delete()
-    table_modified("comp_rulesets_filtersets")
-
-    q = db.gen_filterset_team_responsible.fset_id == fset_id
-    db(q).delete()
-    table_modified("gen_filterset_team_responsible")
-
-    q = db.gen_filterset_check_threshold.fset_id == fset_id
-    db(q).delete()
-    table_modified("gen_filterset_check_threshold")
-
-    q = db.gen_filterset_user.fset_id == fset_id
-    db(q).delete()
-    table_modified("gen_filterset_user")
-
-    q = db.stats_compare_fset.fset_id == fset_id
-    db(q).delete()
-    table_modified("stats_compare_fset")
-
-    q = db.stat_day_billing.fset_id == fset_id
-    db(q).delete()
-    table_modified("stat_day_billing")
-
-    q = db.stat_day.fset_id == fset_id
-    db(q).delete()
-    table_modified("stat_day")
-
-    q = db.metrics_log.fset_id == fset_id
-    db(q).delete()
-    table_modified("metrics_log")
-
-    q = db.lifecycle_os.fset_id == fset_id
-    db(q).delete()
-    table_modified("lifecycle_os")
-
-    q = db.gen_filtersets.id == fset_id
-    db(q).delete()
-    table_modified("gen_filtersets")
-
-    _log('compliance.filterset.delete',
-         'deleted filterset %(fset_name)s',
-         dict(fset_name=v.fset_name))
+    try:
+        delete_filterset(fset_id)
+    except CompError as e:
+        return {"err": str(e)}
+    except CompInfo as e:
+        return {"info": str(e)}
     return "0"
 
 @auth.requires_membership('CompManager')
