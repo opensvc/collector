@@ -999,7 +999,9 @@ def _export_filtersets(fset_ids):
     filtersets = []
     for row in rows:
         d = {
+          'id': row.id,
           'fset_name': row.fset_name,
+          'fset_stats': row.fset_stats,
           'filters': filterset_filters[row.fset_name] if row.fset_name in filterset_filters else [],
         }
         filtersets.append(d)

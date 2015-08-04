@@ -358,4 +358,28 @@ class rest_delete_filterset_filter(rest_delete_handler):
         except CompInfo as e:
             return dict(info=str(e))
 
+#
+class rest_get_filterset_export(rest_get_handler):
+    def __init__(self):
+        desc = [
+          "Export the filterset in a JSON format compatible with the import handler.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/filtersets/2/export"
+        ]
+
+        rest_get_handler.__init__(
+          self,
+          path="/filtersets/<id>/export",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, id, **vars):
+        id = lib_fset_id(id)
+        if id is None:
+            return dict(error="filterset not found")
+        return _export_filtersets([id])
+
+
 
