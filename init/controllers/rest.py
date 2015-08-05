@@ -156,6 +156,7 @@ handlers = {
      rest_delete_compliance_status_run(),
      rest_delete_dns_domain(),
      rest_delete_dns_record(),
+     rest_delete_filter(),
      rest_delete_filterset(),
      rest_delete_filterset_filterset(),
      rest_delete_filterset_filter(),
@@ -199,6 +200,8 @@ handlers = {
      rest_post_dns_domain(),
      rest_post_dns_records(),
      rest_post_dns_record(),
+     rest_post_filters(),
+     rest_post_filter(),
      rest_post_filtersets(),
      rest_post_filterset(),
      rest_post_filterset_filterset(),
@@ -232,6 +235,7 @@ handlers = {
 def rest_router(action, args, vars):
     # the default restful wrapper suppress the trailing .xxx
     # we need it for fqdn nodenames and svcname though.
+    request.raw_args = request.raw_args.replace("(percent)", "%")
     args = request.raw_args.split('/')
     try:
         for handler in handlers[action]:

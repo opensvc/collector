@@ -36,7 +36,7 @@ class rest_get_filter(rest_get_line_handler):
         )
 
     def handler(self, id, **vars):
-        q = db.gen_filtersets.id == id
+        q = db.gen_filters.id == id
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -101,7 +101,7 @@ class rest_get_filterset_filtersets(rest_get_table_handler):
         )
 
     def handler(self, id, **vars):
-        id = lib_fset_id(id)
+        id = lib_filterset_id(id)
         if id is None:
             return dict(error="filterset not found")
         q = db.gen_filtersets_filters.fset_id == id
@@ -126,7 +126,7 @@ class rest_get_filterset_filters(rest_get_table_handler):
         )
 
     def handler(self, id, **vars):
-        id = lib_fset_id(id)
+        id = lib_filterset_id(id)
         if id is None:
             return dict(error="filterset not found")
         q = db.gen_filtersets_filters.fset_id == id
@@ -230,6 +230,9 @@ class rest_delete_filterset(rest_delete_handler):
         )
 
     def handler(self, fset_id, **vars):
+        fset_id = lib_filterset_id(fset_id)
+        if fset_id is None:
+            return dict(error="filterset not found")
         try:
             delete_filterset(fset_id, **vars)
         except CompInfo as e:
@@ -252,8 +255,8 @@ class rest_delete_filterset_filterset(rest_delete_handler):
         )
 
     def handler(self, parent_fset_id, child_fset_id, **vars):
-        parent_fset_id = lib_fset_id(parent_fset_id)
-        child_fset_id = lib_fset_id(child_fset_id)
+        parent_fset_id = lib_filterset_id(parent_fset_id)
+        child_fset_id = lib_filterset_id(child_fset_id)
         if parent_fset_id is None:
             return dict(error="parent filterset not found")
         if child_fset_id is None:
@@ -282,8 +285,8 @@ class rest_post_filterset_filterset(rest_post_handler):
         )
 
     def handler(self, parent_fset_id, child_fset_id, **vars):
-        parent_fset_id = lib_fset_id(parent_fset_id)
-        child_fset_id = lib_fset_id(child_fset_id)
+        parent_fset_id = lib_filterset_id(parent_fset_id)
+        child_fset_id = lib_filterset_id(child_fset_id)
         if parent_fset_id is None:
             return dict(error="parent filterset not found")
         if child_fset_id is None:
@@ -319,10 +322,12 @@ class rest_post_filterset_filter(rest_post_handler):
         )
 
     def handler(self, fset_id, f_id, **vars):
-        fset_id = lib_fset_id(fset_id)
-        f_id = int(f_id)
+        fset_id = lib_filterset_id(fset_id)
+        f_id = lib_filter_id(f_id)
         if fset_id is None:
             return dict(error="filterset not found")
+        if f_id is None:
+            return dict(error="filter not found")
         try:
             attach_filter_to_filterset(f_id, fset_id, **vars)
         except CompError as e:
@@ -347,10 +352,12 @@ class rest_delete_filterset_filter(rest_delete_handler):
         )
 
     def handler(self, fset_id, f_id):
-        fset_id = lib_fset_id(fset_id)
-        f_id = int(f_id)
+        fset_id = lib_filterset_id(fset_id)
+        f_id = lib_filter_id(f_id)
         if fset_id is None:
             return dict(error="filterset not found")
+        if f_id is None:
+            return dict(error="filter not found")
         try:
             detach_filter_from_filterset(f_id, fset_id)
         except CompError as e:
@@ -376,10 +383,113 @@ class rest_get_filterset_export(rest_get_handler):
         )
 
     def handler(self, id, **vars):
-        id = lib_fset_id(id)
+        id = lib_filterset_id(id)
         if id is None:
             return dict(error="filterset not found")
         return _export_filtersets([id])
 
+#
+class rest_post_filters(rest_post_handler):
+    def __init__(self):
+        desc = [
+          "Create a filter.",
+          "The user must be in the CompManager privilege group.",
+          "The action is logged in the collector's log.",
+          "A websocket event is sent to announce the change in the filtersets table.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- -d f_table=nodes -d f_field=nodename -d f_op=like -d f_value=\"clem%\"  https://%(collector)s/init/rest/api/filters",
+        ]
+        rest_post_handler.__init__(
+          self,
+          path="/filters",
+          tables=["gen_filters"],
+          props_blacklist=["f_author", "f_updated", "f_cksum", "id"],
+          desc=desc,
+          examples=examples
+        )
+
+    def handler(self, **vars):
+        try:
+            obj_id = create_filter(**vars)
+        except CompInfo as e:
+            return dict(info=str(e))
+        return rest_get_filter().handler(obj_id)
+
+
+#
+class rest_delete_filter(rest_delete_handler):
+    def __init__(self):
+        desc = [
+          "Delete a filter.",
+          "Also delete all filter attachments to filtersets (warning: verify which filtersets embed this filter before deletion).",
+          "The user must be in the CompManager privilege group.",
+          "The action is logged in the collector's log.",
+          "A websocket event is sent to announce the change in the filtersets table.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- -X DELETE https://%(collector)s/init/rest/api/filtersets/10",
+        ]
+        rest_delete_handler.__init__(
+          self,
+          path="/filters/<id>",
+          desc=desc,
+          examples=examples
+        )
+
+    def handler(self, id, **vars):
+        id = lib_filter_id(id)
+        if id is None:
+            return dict(error="filter not found")
+        try:
+            delete_filter(id, **vars)
+        except CompInfo as e:
+            return dict(info=str(e))
+
+#
+class rest_post_filter(rest_post_handler):
+    def __init__(self):
+        desc = [
+          "Modify a filter properties.",
+          "The user must be in the CompManager privilege group.",
+          "The action is logged in the collector's log.",
+          "A websocket event is sent to announce the change in the groups table.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- -d f_value=\"clem%\" https://%(collector)s/init/rest/api/filters/10",
+        ]
+        rest_post_handler.__init__(
+          self,
+          path="/filters/<id>",
+          tables=["gen_filters"],
+          desc=desc,
+          examples=examples
+        )
+
+    def handler(self, id, **vars):
+        check_privilege("CompManager")
+        id = lib_filter_id(id)
+        q = db.gen_filters.id == id
+        row = db(q).select().first()
+        if row is None:
+            return dict(error="filter %s not found" % str(id))
+        if "id" in vars.keys():
+            del(vars["id"])
+        vars["f_updated"] = datetime.datetime.now()
+        vars["f_author"] = user_name()
+        db(q).update(**vars)
+        l = []
+        for key in vars:
+            l.append("%s: %s => %s" % (str(key), str(row[key]), str(vars[key])))
+        _log('filter.change',
+             'change filter %(data)s',
+             dict(data=', '.join(l)),
+            )
+        l = {
+          'event': 'gen_filters',
+          'data': {'foo': 'bar'},
+        }
+        _websocket_send(event_msg(l))
+        return rest_get_filter().handler(row.id)
 
 

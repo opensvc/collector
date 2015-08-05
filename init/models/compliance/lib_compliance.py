@@ -325,13 +325,6 @@ def comp_attached_svc_ruleset_id(svcname, slave):
     return [r.ruleset_id for r in rows]
 
 
-def lib_fset_id(fset_name):
-    q = db.gen_filtersets.fset_name == fset_name
-    rows = db(q).select(db.gen_filtersets.id, cacheable=True)
-    if len(rows) == 0:
-        return None
-    return rows[0].id
-
 #
 @auth.requires_membership('CompManager')
 def attach_moduleset_to_moduleset(child_modset_id, parent_modset_id):
@@ -1819,7 +1812,7 @@ def clone_moduleset(modset_id):
 #
 # filtersets
 #
-def lib_fset_id(fset_id):
+def lib_filterset_id(fset_id):
     try:
         fset_id = int(fset_id)
         return fset_id
@@ -1828,6 +1821,17 @@ def lib_fset_id(fset_id):
         fset = db(q).select().first()
         if fset:
             return fset.id
+        return
+
+def lib_filter_id(f_id):
+    try:
+        f_id = int(f_id)
+        return f_id
+    except:
+        q = db.gen_filters.f_label == f_id
+        f = db(q).select().first()
+        if f:
+            return f.id
         return
 
 @auth.requires_membership('CompManager')
@@ -2015,9 +2019,16 @@ def attach_filter_to_filterset(f_id, fset_id, **vars):
 
     q = db.gen_filtersets_filters.f_id == f_id
     q &= db.gen_filtersets_filters.fset_id == fset_id
-    if db(q).count() > 0:
+    rows = db(q).select(cacheable=True)
+    x = rows.first()
+    f_order = vars.get("f_order")
+    f_log_op = vars.get("f_log_op")
+    try:
+        f_order = int(f_order)
+    except:
+        pass
+    if x is not None and (f_order is None or x.f_order == f_order) and (f_log_op is None or x.f_log_op == f_log_op):
         raise CompInfo("filter already attached")
-
     vars["f_id"] = f_id
     vars["fset_id"] = fset_id
     vars["encap_fset_id"] = None
@@ -2025,7 +2036,10 @@ def attach_filter_to_filterset(f_id, fset_id, **vars):
         vars["f_order"] = 0
     if "f_log_op" not in vars:
         vars["f_log_op"] = "AND"
-    db.gen_filtersets_filters.insert(**vars)
+    if x is not None:
+        db(q).update(**vars)
+    else:
+        db.gen_filtersets_filters.insert(**vars)
     table_modified("gen_filtersets_filters")
 
     _log('filter.attach',
@@ -2034,4 +2048,83 @@ def attach_filter_to_filterset(f_id, fset_id, **vars):
               f_name=v.f_table+'.'+v.f_field+' '+v.f_op+' '+v.f_value))
     raise CompInfo("filter attached")
 
+@auth.requires_membership('CompManager')
+def delete_filter(f_id):
+    q = db.gen_filters.id == f_id
+    rows = db(q).select(cacheable=True)
+    v = rows.first()
+    if v is None:
+        raise CompError("filter not found")
+
+    q = db.gen_filtersets_filters.f_id == f_id
+    db(q).delete()
+    table_modified("gen_filtersets_filters")
+
+    q = db.gen_filters.id == f_id
+    db(q).delete()
+    table_modified("gen_filters")
+
+    _log('filter.delete',
+         'deleted filter %(t)s.%(f)s %(o)s %(val)s',
+         dict(t=v.f_table, f=v.f_field, o=v.f_op, val=v.f_value))
+    raise CompInfo("filterset deleted")
+
+@auth.requires_membership('CompManager')
+def create_filter(f_table=None, f_field=None, f_op=None, f_value=None):
+    tables = [
+        'nodes',
+        'services',
+        'svcmon',
+        'resmon',
+        'apps',
+        'node_hba',
+        'b_disk_app',
+        'v_comp_moduleset_attachments',
+        'v_tags',
+    ]
+    operators = ['=', 'LIKE', '>', '>=', '<', '<=', 'IN']
+
+    q = db.gen_filters.f_table == f_table
+    q &= db.gen_filters.f_field == f_field
+    q &= db.gen_filters.f_op == f_op
+    q &= db.gen_filters.f_value == f_value
+    rows = db(q).select(cacheable=True)
+    v = rows.first()
+    if v is not None:
+        raise CompError("a filter with the same definition already exists: %d" % v.id)
+
+    if f_table is None:
+        raise CompError("f_table is mandatory")
+    if f_field is None:
+        raise CompError("f_field is mandatory")
+    if f_op is None:
+        raise CompError("f_op is mandatory")
+    if f_value is None:
+        raise CompError("f_value is mandatory")
+
+    f_op = f_op.upper()
+    if f_table not in tables:
+        raise CompError("f_table must be one of %s" % ', '.join(tables))
+    if f_op not in operators:
+        raise CompError("f_op must be one of %s" % ', '.join(operators))
+
+    if f_table not in db:
+        raise CompError("table not found in model")
+    if f_field not in db[f_table]:
+        raise CompError("field not found in model's table")
+
+    data = {
+      "f_table": f_table,
+      "f_field": f_field,
+      "f_op": f_op,
+      "f_value": f_value,
+      "f_author": user_name(),
+      "f_updated": datetime.datetime.now(),
+    }
+    obj_id = db.gen_filters.insert(**data)
+    table_modified("gen_filters")
+    _log('filter.create',
+         'added filter %(t)s.%(f)s %(o)s %(val)s',
+         dict(t=f_table, f=f_field, o=f_op, val=f_value))
+    return obj_id
 

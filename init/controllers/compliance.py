@@ -3047,25 +3047,15 @@ def comp_add_filter():
     f_field = request.vars.f_field
     f_op = request.vars.f_op
     f_value = request.vars.f_value
-
-    if f_table not in db:
-        raise ToolError("add filter failed: table not found")
-    if f_field not in db[f_table]:
-        raise ToolError("add filter failed: field not found")
-
     try:
-        db.gen_filters.insert(f_table=f_table,
-                              f_field=f_field,
-                              f_op=f_op,
-                              f_value=f_value,
-                              f_author=user_name())
-        table_modified("gen_filters")
-    except:
-        raise ToolError("add filter failed: already exist ?")
-
-    f_name = ' '.join([f_table+'.'+f_field, f_op, f_value])
-    _log('compliance.filter.add', 'added filter %(f_name)s',
-         dict(f_name=f_name))
+        create_filter(f_table=f_table,
+                      f_field=f_field,
+                      f_op=f_op,
+                      f_value=f_value)
+    except CompError as e:
+        raise ToolError(str(e))
+    except CompInfo as e:
+        pass
 
 @auth.requires_membership('CompManager')
 def comp_delete_filtersets_filters(ids, f_names):

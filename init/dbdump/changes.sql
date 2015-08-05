@@ -4706,3 +4706,5 @@ drop view v_tags_full ; create view v_tags_full as select 0 as id, concat(nodes.
 
 ALTER TABLE dashboard MODIFY COLUMN dash_env enum('PRD','PPRD','REC','INT','DEV','TST','TMP','DRP','FOR','PRA','PRJ','');
 
+alter table gen_filters add column f_label varchar(512) as (concat(f_table,".",f_field," ", f_op," ",f_value)) persistent;
+

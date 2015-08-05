@@ -27,7 +27,7 @@ class rest_handler(object):
         else:
             self.db = db
 
-        self.pattern = "^"+re.sub("\<[-\w]+\>", "[ @\.\-\w]+", path)+"$"
+        self.pattern = "^"+re.sub("\<[-\w]+\>", "[=% ><@\.\-\w]+", path)+"$"
         self.regexp = re.compile(self.pattern)
 
     def set_q(self, q):

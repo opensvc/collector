@@ -1132,6 +1132,7 @@ db.define_table('gen_filters',
     Field('f_value','string', requires=IS_NOT_EMPTY()),
     Field('f_author','string', readable=False, writable=False),
     Field('f_updated','datetime', readable=False, writable=False),
+    Field('f_label','string', readable=False, writable=False),
     migrate=False)
 
 db.define_table('v_gen_filtersets',
