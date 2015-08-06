@@ -371,7 +371,7 @@ class rest_delete_group(rest_delete_handler):
           "A websocket event is sent to announce the change in the changed tables.",
         ]
         examples = [
-          "# curl -u %(email)s -o- -d role=NodeManager -d privilege=T https://%(collector)s/init/rest/api/groups",
+          "# curl -u %(email)s -o- -X DELETE https://%(collector)s/init/rest/api/groups/10",
         ]
 
         rest_delete_handler.__init__(
@@ -403,6 +403,10 @@ class rest_delete_group(rest_delete_handler):
           'data': {'foo': 'bar'},
         }
         _websocket_send(event_msg(l))
+
+        # group membership
+        q = db.auth_membership.group_id == row.id
+        db(q).delete()
 
         # apps responsibles
         q = db.apps_responsibles.group_id == row.id

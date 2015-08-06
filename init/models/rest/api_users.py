@@ -15,7 +15,7 @@ def allowed_user_ids_q():
     return q
 
 def user_id_q(id):
-    if "@" in id:
+    if type(id) in (unicode, str) and "@" in id:
         q = db.auth_user.email == id
     else:
         q = db.auth_user.id == id
@@ -223,4 +223,136 @@ class rest_get_user_primary_group(rest_get_line_handler):
         self.set_q(q)
         return self.prepare_data(**vars)
 
+#
+class rest_post_users(rest_post_handler):
+    def __init__(self):
+        desc = [
+          "Create a user.",
+          "The user must be in the UserManager privilege group.",
+          "The action is logged in the collector's log.",
+          "A websocket event is sent to announce the change in the users table.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- -d first_name=John -d last_name=Smith https://%(collector)s/init/rest/api/users",
+        ]
+        rest_post_handler.__init__(
+          self,
+          path="/users",
+          tables=["auth_user"],
+          desc=desc,
+          examples=examples
+        )
+
+    def handler(self, **vars):
+        check_privilege("UserManager")
+        obj_id = db.auth_user.insert(**vars)
+        _log('user.create',
+             'add user %(data)s',
+             dict(data=str(vars)),
+            )
+        l = {
+          'event': 'auth_user',
+          'data': {'foo': 'bar'},
+        }
+        _websocket_send(event_msg(l))
+        return rest_get_user().handler(obj_id)
+
+
+#
+class rest_post_user(rest_post_handler):
+    def __init__(self):
+        desc = [
+          "Modify a user properties.",
+          "The user must be in the UserManager privilege group.",
+          "The action is logged in the collector's log.",
+          "A websocket event is sent to announce the change in the users table.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- -d perpage=20 https://%(collector)s/init/rest/api/users/10",
+        ]
+        rest_post_handler.__init__(
+          self,
+          path="/users/<id>",
+          tables=["auth_user"],
+          desc=desc,
+          examples=examples
+        )
+
+    def handler(self, id, **vars):
+        check_privilege("UserManager")
+        try:
+            id = int(id)
+            q = db.auth_user.id == id
+        except:
+            q = db.auth_user.email == id
+        row = db(q).select().first()
+        if row is None:
+            return dict(error="User %s does not exist" % str(id))
+        if "id" in vars.keys():
+            del(vars["id"])
+        db(q).update(**vars)
+        l = []
+        for key in vars:
+            l.append("%s: %s => %s" % (str(key), str(row[key]), str(vars[key])))
+        _log('user.change',
+             'change user %(data)s',
+             dict(data=', '.join(l)),
+            )
+        l = {
+          'event': 'auth_user',
+          'data': {'foo': 'bar'},
+        }
+        _websocket_send(event_msg(l))
+        return rest_get_user().handler(row.id)
+
+
+#
+class rest_delete_user(rest_delete_handler):
+    def __init__(self):
+        desc = [
+          "Delete a user.",
+          "Delete all group membership.",
+          "The user must be in the UserManager privilege group.",
+          "The action is logged in the collector's log.",
+          "A websocket event is sent to announce the change in the changed tables.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- -X DELETE https://%(collector)s/init/rest/api/users/10",
+        ]
+
+        rest_delete_handler.__init__(
+          self,
+          path="/users/<id>",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, id, **vars):
+        check_privilege("UserManager")
+        try:
+            id = int(id)
+            q = db.auth_user.id == id
+        except:
+            q = db.auth_user.email == id
+
+        row = db(q).select().first()
+        if row is None:
+            return dict(info="User %s does not exists" % str(id))
+
+        # group
+        db(q).delete()
+        _log('user.delete',
+             'deleted user %(email)s',
+             dict(email=row.email))
+        l = {
+          'event': 'auth_user',
+          'data': {'foo': 'bar'},
+        }
+        _websocket_send(event_msg(l))
+
+        # group membership
+        q = db.auth_membership.user_id == row.id
+        db(q).delete()
+
+        return dict(info="User %s deleted" % row.email)
 
