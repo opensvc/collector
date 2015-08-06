@@ -1343,7 +1343,7 @@ function table_refresh(t) {
     data[t.id+"_page"] = $("#"+t.id+"_page").val()
     for (c in t.colprops) {
       var current = $("#"+t.id+"_f_"+c).val()
-      if (current != "") {
+      if ((current != "") && (typeof current !== 'undefined')) {
         data[t.id+"_f_"+c] = current
       } else if (t.colprops[c].force_filter != "") {
         data[t.id+"_f_"+c] = t.colprops[c].force_filter
