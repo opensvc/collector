@@ -234,47 +234,14 @@ def group_attach(ids=[]):
         raise ToolError("attach group failed: no app selected")
     gid = request.vars.group_attach_s
 
-    done = []
-    for id in ids:
-        q = db.apps_responsibles.app_id == id
-        q &= db.apps_responsibles.group_id==gid
-        if db(q).count() != 0:
-            continue
-        done.append(id)
-        db.apps_responsibles.insert(app_id=id, group_id=gid)
-    table_modified("apps_responsibles")
-
-
-    rows = db(db.apps.id.belongs(done)).select()
-    u = ', '.join([r.app for r in rows])
-    g = db(db.auth_group.id==gid).select(db.auth_group.role)[0].role
-    _log('apps.group.attach',
-         'attached group %(g)s to apps %(u)s',
-         dict(g=g, u=u))
-
-    # remove dashboard alerts
-    for r in rows:
-        q = db.dashboard.dash_type == "application code without responsible"
-        q &= db.dashboard.dash_dict.like('%%:"%s"%%'%r.app)
-        db(q).delete()
-    table_modified("dashboard")
+    attach_group_to_app(gid, ids)
 
 @auth.requires_membership('Manager')
 def group_detach(ids=[]):
     if len(ids) == 0:
         raise ToolError("detach group failed: no app selected")
     gid = request.vars.group_detach_s
-    rows = db(db.v_apps.id.belongs(ids)).select(db.v_apps.app)
-    u = ', '.join([r.app for r in rows])
-    g = db(db.auth_group.id==gid).select(db.auth_group.role)[0].role
-
-    q = db.apps_responsibles.app_id.belongs(ids)
-    q &= db.apps_responsibles.group_id==gid
-    db(q).delete()
-    table_modified("apps_responsibles")
-    _log('apps.group.detach',
-         'detached group %(g)s from app %(u)s',
-         dict(g=g, u=u))
+    detach_group_from_app(gid, ids)
 
 @auth.requires_membership('Manager')
 def app_add():

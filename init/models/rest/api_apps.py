@@ -40,12 +40,8 @@ class rest_get_app(rest_get_line_handler):
         )
 
     def handler(self, id, **vars):
-        q = db.apps.app == id
-        n = db(q).count()
-        if n == 0:
-            try: int(id)
-            except: return dict(data=[])
-            q = db.apps.id == id
+        id = lib_app_id(id)
+        q = db.apps.id == id
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -116,15 +112,10 @@ class rest_post_app(rest_post_handler):
         )
 
     def handler(self, id, **vars):
-        q = db.apps.app == id
-        n = db(q).count()
-        if n == 0:
-            try: int(id)
-            except: return dict(data=[])
-            q = db.apps.id == id
-        row = db(q).select().first()
-        if row is None:
-            return dict(error="App does not exists")
+        id = lib_app_id(id)
+        if id is None:
+            return Exception("app code not found")
+        q = db.apps.id == id
         response = db(q).validate_and_update(**vars)
         raise_on_error(response)
         _log('rest.apps.change',
@@ -160,15 +151,10 @@ class rest_delete_app(rest_delete_handler):
         )
 
     def handler(self, id, **vars):
-        q = db.apps.app == id
-        n = db(q).count()
-        if n == 0:
-            try: int(id)
-            except: return dict(data=[])
-            q = db.apps.id == id
-        row = db(q).select().first()
-        if row is None:
-            return dict(info="app %(app)s does not exist" % dict(app=id))
+        id = lib_app_id(id)
+        if id is None:
+            return dict(info="app code does not exist")
+        q = db.apps.id == id
         db(q).delete()
         q = db.apps_responsibles.app_id == row.id
         db(q).delete()
@@ -203,12 +189,8 @@ class rest_get_app_nodes(rest_get_table_handler):
         )
 
     def handler(self, id, **vars):
-        q = db.apps.app == id
-        n = db(q).count()
-        if n == 0:
-            try: id = int(id)
-            except: return dict(data=[])
-            q = db.apps.id == id
+        id = lib_app_id(id)
+        q = db.apps.id == id
         q &= db.nodes.project == db.apps.app
         self.set_q(q)
         return self.prepare_data(**vars)
@@ -233,12 +215,8 @@ class rest_get_app_quotas(rest_get_table_handler):
         )
 
     def handler(self, id, **vars):
-        q = db.apps.app == id
-        n = db(q).count()
-        if n == 0:
-            try: int(id)
-            except: return dict(data=[])
-            q = db.apps.id == id
+        id = lib_app_id(id)
+        q = db.apps.id == id
         q &= db.v_disk_quota.app == db.apps.app
         self.set_q(q)
         return self.prepare_data(**vars)
@@ -263,14 +241,100 @@ class rest_get_app_services(rest_get_table_handler):
         )
 
     def handler(self, id, **vars):
-        q = db.apps.app == id
-        n = db(q).count()
-        if n == 0:
-            try: int(id)
-            except: return dict(data=[])
-            q = db.apps.id == id
+        id = lib_app_id(id)
+        q = db.apps.id == id
         q &= db.services.svc_app == db.apps.app
         self.set_q(q)
         return self.prepare_data(**vars)
+
+class rest_post_app_responsible(rest_post_handler):
+    def __init__(self):
+        desc = [
+          "Attach a responsible group to an application code.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- -X POST https://%(collector)s/init/rest/api/apps/10/responsibles/151",
+        ]
+        rest_post_handler.__init__(
+          self,
+          path="/apps/<id>/responsibles/<id>",
+          desc=desc,
+          examples=examples
+        )
+
+    def handler(self, app_id, group_id, **vars):
+        check_privilege("AppManager")
+        app_id = lib_app_id(app_id)
+        if app_id is None:
+            raise Exception("app code not found")
+        try:
+            group_id = int(group_id)
+        except:
+            group_id = lib_group_id(group_id)
+        if group_id is None:
+            raise Exception("group not found")
+        try:
+            attach_group_to_app(group_id, app_id)
+        except CompError as e:
+            return dict(error=str(e))
+        return dict(info="group attached")
+
+class rest_delete_app_responsible(rest_delete_handler):
+    def __init__(self):
+        desc = [
+          "Detach a responsible group from a application code.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- -X DELETE https://%(collector)s/init/rest/api/apps/10/responsibles/151",
+        ]
+        rest_delete_handler.__init__(
+          self,
+          path="/apps/<id>/responsibles/<id>",
+          desc=desc,
+          examples=examples
+        )
+
+    def handler(self, app_id, group_id, **vars):
+        check_privilege("AppManager")
+        app_id = lib_app_id(app_id)
+        if app_id is None:
+            raise Exception("app code not found")
+        try:
+            group_id = int(group_id)
+        except:
+            group_id = lib_group_id(group_id)
+        if group_id is None:
+            raise Exception("group not found")
+        try:
+            detach_group_from_app(group_id, app_id)
+        except CompError as e:
+            return dict(error=str(e))
+        return dict(info="group detached")
+
+#
+class rest_get_app_responsibles(rest_get_table_handler):
+    def __init__(self):
+        desc = [
+          "List an application code responsible groups."
+          "<id> can be either the proper id or the application code."
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/apps/MYAPP/responsibles"
+        ]
+        rest_get_table_handler.__init__(
+          self,
+          path="/apps/<id>/responsibles",
+          tables=["auth_group"],
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, id, **vars):
+        id = lib_app_id(id)
+        q = db.apps_responsibles.app_id == id
+        q &= db.auth_group.id == db.apps_responsibles.group_id
+        self.set_q(q)
+        return self.prepare_data(**vars)
+
 
 

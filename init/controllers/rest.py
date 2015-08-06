@@ -44,6 +44,7 @@ handlers = {
      rest_get_app(),
      rest_get_app_nodes(),
      rest_get_app_quotas(),
+     rest_get_app_responsibles(),
      rest_get_app_services(),
      rest_get_arrays(),
      rest_get_array(),
@@ -141,6 +142,7 @@ handlers = {
   'DELETE': [
      rest_delete_action_queue_one(),
      rest_delete_app(),
+     rest_delete_app_responsible(),
      rest_delete_compliance_moduleset_moduleset(),
      rest_delete_compliance_moduleset_module(),
      rest_delete_compliance_moduleset_publication(),
@@ -180,6 +182,7 @@ handlers = {
      rest_post_action_queue_one(),
      rest_post_apps(),
      rest_post_app(),
+     rest_post_app_responsible(),
      rest_post_compliance_moduleset_moduleset(),
      rest_post_compliance_moduleset_module(),
      rest_post_compliance_moduleset_modules(),
