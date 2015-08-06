@@ -8,7 +8,7 @@ class rest_get_action_queue(rest_get_table_handler):
           "List service and node actions posted in the action_queue.",
         ]
         examples = [
-          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/action_queue?query=status=R",
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/actions?query=status=R",
         ]
 
         q = db.action_queue.id > 0
@@ -16,7 +16,7 @@ class rest_get_action_queue(rest_get_table_handler):
 
         rest_get_table_handler.__init__(
           self,
-          path="/action_queue",
+          path="/actions",
           tables=["action_queue"],
           q=q,
           desc=desc,
@@ -84,12 +84,12 @@ Each action has specific property requirements:
 - **wol**: requires **nodename**
 """
         examples = [
-          "# curl -u %(email)s -o- -X POST -d nodename=clementine -d action=pushasset https://%(collector)s/init/rest/api/action_queue",
+          "# curl -u %(email)s -o- -X POST -d nodename=clementine -d action=pushasset https://%(collector)s/init/rest/api/actions",
         ]
 
         rest_post_handler.__init__(
           self,
-          path="/action_queue",
+          path="/actions",
           desc=desc,
           data=data,
           examples=examples
@@ -108,12 +108,12 @@ class rest_get_action_queue_stats(rest_get_handler):
           "Display action queue statistics",
         ]
         examples = [
-          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/action_queue/stats",
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/actions/stats",
         ]
 
         rest_get_handler.__init__(
           self,
-          path="/action_queue/stats",
+          path="/actions/stats",
           desc=desc,
           examples=examples,
         )
@@ -129,12 +129,12 @@ class rest_get_action_queue_one(rest_get_line_handler):
           "Display properties of a specific action posted in the action queue.",
         ]
         examples = [
-          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/action_queue/10",
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/actions/10",
         ]
 
         rest_get_line_handler.__init__(
           self,
-          path="/action_queue/<id>",
+          path="/actions/<id>",
           tables=["action_queue"],
           desc=desc,
           examples=examples,
@@ -154,12 +154,12 @@ class rest_delete_action_queue_one(rest_delete_handler):
           "Delete an action posted in the action queue.",
         ]
         examples = [
-          "# curl -u %(email)s -o- -X DELETE https://%(collector)s/init/rest/api/action_queue/10",
+          "# curl -u %(email)s -o- -X DELETE https://%(collector)s/init/rest/api/actions/10",
         ]
 
         rest_delete_handler.__init__(
           self,
-          path="/action_queue/<id>",
+          path="/actions/<id>",
           tables=["action_queue"],
           desc=desc,
           examples=examples,
@@ -202,12 +202,12 @@ class rest_post_action_queue_one(rest_post_handler):
 - Available properties are: ``%(props)s``:green.
 """ % dict(props="status")
         examples = [
-          '# curl -u %(email)s -o- -X POST -d status="C" https://%(collector)s/init/rest/api/action_queue/10',
+          '# curl -u %(email)s -o- -X POST -d status="C" https://%(collector)s/init/rest/api/actions/10',
         ]
 
         rest_post_handler.__init__(
           self,
-          path="/action_queue/<id>",
+          path="/actions/<id>",
           desc=desc,
           data=data,
           examples=examples,

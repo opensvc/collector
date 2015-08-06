@@ -398,7 +398,7 @@ class rest_post_filters(rest_post_handler):
           "A websocket event is sent to announce the change in the filtersets table.",
         ]
         examples = [
-          "# curl -u %(email)s -o- -d f_table=nodes -d f_field=nodename -d f_op=like -d f_value=\"clem%\"  https://%(collector)s/init/rest/api/filters",
+          "# curl -u %(email)s -o- -d f_table=nodes -d f_field=nodename -d f_op=like -d f_value=\"clem%%\"  https://%(collector)s/init/rest/api/filters",
         ]
         rest_post_handler.__init__(
           self,
@@ -456,7 +456,7 @@ class rest_post_filter(rest_post_handler):
           "A websocket event is sent to announce the change in the groups table.",
         ]
         examples = [
-          "# curl -u %(email)s -o- -d f_value=\"clem%\" https://%(collector)s/init/rest/api/filters/10",
+          "# curl -u %(email)s -o- -d f_value=\"clem%%\" https://%(collector)s/init/rest/api/filters/10",
         ]
         rest_post_handler.__init__(
           self,
