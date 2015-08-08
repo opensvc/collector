@@ -41,6 +41,15 @@ def get_reachable_name(nodename):
         return nodename
     return row.addr
 
+def get_action_type(node):
+    if node.action_type is not None:
+        return node.action_type
+    if node.os_name == "Windows":
+        action_type = "pull"
+    else:
+        action_type = "push"
+    return action_type
+
 def start_actiond():
     from subprocess import Popen
     import sys
@@ -49,44 +58,32 @@ def start_actiond():
     process = Popen([sys.executable, actiond])
     process.communicate()
 
-def enqueue_node_action(node, action, os):
-    if os == "Windows":
-        action_type = "pull"
-    else:
-        action_type = "push"
-    command = fmt_node_action(node, action, action_type)
+def enqueue_node_action(node, action):
+    action_type = get_action_type(node)
+    command = fmt_node_action(node.nodename, action, action_type)
     vars = ['nodename', 'svcname', 'action_type', 'command', 'user_id']
-    vals = [node, "", action_type, command, str(auth.user_id)]
+    vals = [node.nodename, "", action_type, command, str(auth.user_id)]
     generic_insert('action_queue', vars, vals)
 
-def enqueue_node_comp_action(node, action, mode, mod, os):
-    if os == "Windows":
-        action_type = "pull"
-    else:
-        action_type = "push"
-    command = fmt_node_comp_action(node, action, mode, mod, action_type)
+def enqueue_node_comp_action(node, action, mode, mod):
+    action_type = get_action_type(node)
+    command = fmt_node_comp_action(node.nodename, action, mode, mod, action_type)
     vars = ['nodename', 'svcname', 'action_type', 'command', 'user_id']
-    vals = [node, "", action_type, command, str(auth.user_id)]
+    vals = [node.nodename, "", action_type, command, str(auth.user_id)]
     generic_insert('action_queue', vars, vals)
 
-def enqueue_svc_action(node, svc, action, os, rid=None):
-    if os == "Windows":
-        action_type = "pull"
-    else:
-        action_type = "push"
-    command = fmt_svc_action(node, svc, action, action_type, rid=rid)
+def enqueue_svc_action(node, svc, action, rid=None):
+    action_type = get_action_type(node)
+    command = fmt_svc_action(node.nodename, svc, action, action_type, rid=rid)
     vars = ['nodename', 'svcname', 'action_type', 'command', 'user_id']
-    vals = [node, svc, action_type, command, str(auth.user_id)]
+    vals = [node.nodename, svc, action_type, command, str(auth.user_id)]
     generic_insert('action_queue', vars, vals)
 
-def enqueue_svc_comp_action(node, svc, action, mode, mod, os):
-    if os == "Windows":
-        action_type = "pull"
-    else:
-        action_type = "push"
-    command = fmt_svc_comp_action(node, svc, action, mode, mod, action_type)
+def enqueue_svc_comp_action(node, svc, action, mode, mod):
+    action_type = get_action_type(node)
+    command = fmt_svc_comp_action(node.nodename, svc, action, mode, mod, action_type)
     vars = ['nodename', 'svcname', 'action_type', 'command', 'user_id']
-    vals = [node, svc, action_type, command, str(auth.user_id)]
+    vals = [node.nodename, svc, action_type, command, str(auth.user_id)]
     generic_insert('action_queue', vars, vals)
 
 def fmt_svc_action(node, svc, action, action_type, rid=None):
@@ -96,7 +93,8 @@ def fmt_svc_action(node, svc, action, action_type, rid=None):
         cmd = []
     else:
         cmd = get_ssh_cmd(node) + ['opensvc@'+node, '--'] + remote_cmd_prepend
-    cmd += ['sudo', '/opt/opensvc/bin/svcmgr', '--service', svc, action]
+        cmd += ['sudo', '/opt/opensvc/bin/svcmgr', '--service', svc]
+    cmd += [action]
     if rid is not None:
         cmd += ["--rid", rid]
     return ' '.join(cmd)
@@ -107,8 +105,8 @@ def fmt_node_comp_action(node, action, mode, mod, action_type):
         cmd = []
     else:
         cmd = get_ssh_cmd(node) + ['opensvc@'+node, '--'] + remote_cmd_prepend
-    cmd += ['sudo', '/opt/opensvc/bin/nodemgr', 'compliance', action,
-            '--'+mode, mod]
+        cmd += ['sudo', '/opt/opensvc/bin/nodemgr']
+    cmd += ['compliance', action, '--'+mode, mod]
     return ' '.join(cmd)
 
 def fmt_node_action(node, action, action_type):
@@ -117,7 +115,8 @@ def fmt_node_action(node, action, action_type):
         cmd = []
     else:
         cmd = get_ssh_cmd(node) + ['opensvc@'+node, '--'] + remote_cmd_prepend
-    cmd += ['sudo', '/opt/opensvc/bin/nodemgr', action]
+        cmd += ['sudo', '/opt/opensvc/bin/nodemgr']
+    cmd += [action]
     return ' '.join(cmd)
 
 def fmt_svc_comp_action(node, service, action, mode, mod, action_type):
@@ -126,8 +125,8 @@ def fmt_svc_comp_action(node, service, action, mode, mod, action_type):
         cmd = []
     else:
         cmd = get_ssh_cmd(node) + ['opensvc@'+node, '--'] + remote_cmd_prepend
-    cmd += ['sudo', '/opt/opensvc/bin/svcmgr', '-s', service, 'compliance', action,
-            '--'+mode, mod]
+        cmd += ['sudo', '/opt/opensvc/bin/svcmgr', '-s', service]
+    cmd += ['compliance', action, '--'+mode, mod]
     return ' '.join(cmd)
 
 @auth.requires_membership('CompExec')
@@ -141,12 +140,12 @@ def do_node_comp_action(nodename, action, mode, obj):
 
     q = db.nodes.nodename == nodename
     q &= db.nodes.team_responsible.belongs(user_groups())
-    node = db(q).select(db.nodes.nodename, db.nodes.os_name, cacheable=True).first()
+    node = db(q).select(db.nodes.nodename, db.nodes.os_name, db.nodes.action_type, cacheable=True).first()
 
     if node is None:
         return 0
 
-    enqueue_node_comp_action(node.nodename, action, mode, obj, node.os_name)
+    enqueue_node_comp_action(node, action, mode, obj)
     _log('node.action', 'run %(a)s of %(mode)s %(m)s',
          dict(a=action, mode=mode, m=obj),
          nodename=node.nodename
@@ -159,7 +158,7 @@ def do_node_action(nodename, action=None):
 
     q = db.nodes.nodename == nodename
     q &= db.nodes.team_responsible.belongs(user_groups())
-    node = db(q).select(db.nodes.nodename, db.nodes.os_name, cacheable=True).first()
+    node = db(q).select(db.nodes.nodename, db.nodes.os_name, db.nodes.action_type, cacheable=True).first()
 
     if node is None:
         return 0
@@ -167,7 +166,7 @@ def do_node_action(nodename, action=None):
     if action == "wol":
         return do_node_wol_action(nodename)
 
-    enqueue_node_action(nodename, action, node.os_name)
+    enqueue_node_action(node, action)
     _log('node.action', 'run %(a)s',
          dict(a=action),
          nodename=node.nodename
@@ -179,7 +178,10 @@ def do_node_wol_action(nodename):
     n = 0
     for candidate in candidates:
         action = "wol --mac %s --broadcast %s"%(candidate["mac"], candidate["broadcast"])
-        n += do_node_action(candidate['proxy_nodename'], action)
+        node = db(db.nodes.nodename==candidate['proxy_nodename']).select().first()
+        if node is None:
+            continue
+        n += do_node_action(node, action)
     return n
 
 @auth.requires_membership('CompExec')
@@ -209,7 +211,10 @@ def do_svc_comp_action(nodename, svcname, action, mode, obj):
         return 0
 
     row = rows[0]
-    enqueue_svc_comp_action(nodename, svcname, action, mode, obj, row['os_name'])
+    node = db(db.nodes.nodename==nodename).select().first()
+    if node is None:
+        return 0
+    enqueue_svc_comp_action(node, svcname, action, mode, obj)
     _log('service.action',
          'run %(a)s of %(mode)s %(m)s',
          dict(a=action, mode=mode, m=obj),
@@ -223,7 +228,7 @@ def do_svc_action(nodename, svcname, action, rid=None):
         raise ToolError("no action specified")
 
     # filter out services we are not responsible for
-    sql = """select m.mon_nodname, m.mon_svcname, m.os_name
+    sql = """select m.mon_nodname, m.mon_svcname
              from v_svcmon m
              join apps a on m.svc_app=a.app
              join apps_responsibles ar on a.id=ar.app_id
@@ -240,7 +245,10 @@ def do_svc_action(nodename, svcname, action, rid=None):
         return 0
 
     row = rows[0]
-    enqueue_svc_action(row[0], row[1], action, row[2], rid=rid)
+    node = db(db.nodes.nodename==nodename).select().first()
+    if node is None:
+        return 0
+    enqueue_svc_action(node, svcname, action, rid=rid)
     if rid is None:
         _log('service.action',
              'run %(a)s',

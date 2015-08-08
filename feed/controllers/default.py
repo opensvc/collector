@@ -1283,6 +1283,8 @@ def rpc_collector_update_action_queue(data, auth):
         q = db.action_queue.id == id
         q &= db.action_queue.nodename == nodename
         db(q).update(stdout=out, stderr=err, ret=ret, status="T", date_dequeued=datetime.datetime.now())
+    action_q_event()
+    table_modified("action_queue")
 
 @service.xmlrpc
 def collector_get_action_queue(nodename, auth):

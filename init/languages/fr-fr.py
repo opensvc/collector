@@ -117,6 +117,7 @@
 'action pid': "pid d'action",
 'action status': "état d'action",
 'Action type': "Type d'action",
+'action type': 'action type',
 'actions': 'actions',
 'Actions': 'Actions',
 'Active columns': 'Colonnes actives',

@@ -30,6 +30,7 @@ v_nodes_cols = [
     'mem_bytes',
     'listener_port',
     'version',
+    'action_type',
     'team_responsible',
     'team_integ',
     'team_support',
@@ -269,6 +270,13 @@ v_nodes_colprops = {
     'version': HtmlTableColumn(
              title = 'Agent version',
              field='version',
+             display = False,
+             img = 'svc',
+             table = 'v_nodes',
+            ),
+    'action_type': HtmlTableColumn(
+             title = 'Action type',
+             field='action_type',
              display = False,
              img = 'svc',
              table = 'v_nodes',

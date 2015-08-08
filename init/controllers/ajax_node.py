@@ -558,6 +558,7 @@ def ajax_node():
       TR(TH(T('agent version')), TD(node['version'] if node['version'] is not None else '')),
       TR(TH(T('agent listener port')), TD(node['listener_port'])),
       TR(TH(T('host mode')), TD(node['host_mode'])),
+      TR(TH(T('action type')), TD(node['action_type'] if node['action_type'] is not None else '')),
       TR(TH(T('uuid')), TD(node_uuid)),
     )
     cpu = TABLE(
