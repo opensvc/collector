@@ -77,6 +77,8 @@ handlers = {
      rest_get_filterset_export(),
      rest_get_filterset_filtersets(),
      rest_get_filterset_filters(),
+     rest_get_filterset_nodes(),
+     rest_get_filterset_services(),
      rest_get_forms(),
      rest_get_form(),
      rest_get_groups(),

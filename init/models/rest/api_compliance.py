@@ -1413,7 +1413,7 @@ class rest_post_compliance_ruleset_filterset(rest_post_handler):
         try:
             fset_id = int(fset_id)
         except:
-            fset_id = lib_fset_id(fset_id)
+            fset_id = lib_filterset_id(fset_id)
         if fset_id is None:
             return dict(error="filterset not found")
         try:

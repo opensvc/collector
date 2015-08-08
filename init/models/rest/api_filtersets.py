@@ -492,4 +492,58 @@ class rest_post_filter(rest_post_handler):
         _websocket_send(event_msg(l))
         return rest_get_filter().handler(row.id)
 
+#
+class rest_get_filterset_nodes(rest_get_table_handler):
+    def __init__(self):
+        desc = [
+          "List nodes matching a filterset.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/filtersets/10/nodes"
+        ]
+        rest_get_table_handler.__init__(
+          self,
+          path="/filtersets/<id>/nodes",
+          tables=["nodes"],
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, id, **vars):
+        id = lib_filterset_id(id)
+        if id is None:
+            return dict(error="filterset not found")
+        q = db.nodes.id > 0
+        q &= _where(None, 'nodes', domain_perms(), 'nodename')
+        q = apply_filters(q, node_field=db.nodes.nodename, fset_id=id)
+        self.set_q(q)
+        return self.prepare_data(**vars)
+
+#
+class rest_get_filterset_services(rest_get_table_handler):
+    def __init__(self):
+        desc = [
+          "List services matching a filterset.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/filtersets/10/services"
+        ]
+        rest_get_table_handler.__init__(
+          self,
+          path="/filtersets/<id>/services",
+          tables=["services"],
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, id, **vars):
+        id = lib_filterset_id(id)
+        if id is None:
+            return dict(error="filterset not found")
+        q = db.services.id > 0
+        q &= _where(None, 'services', domain_perms(), 'svc_name')
+        q = apply_filters(q, service_field=db.services.svc_name, fset_id=id)
+        self.set_q(q)
+        return self.prepare_data(**vars)
+
 
