@@ -114,7 +114,7 @@ def get_queued():
     if conn is None:
         return []
     cursor = conn.cursor()
-    cursor.execute("SELECT a.id, a.command, a.action_type, a.nodename, n.fqdn, n.listener_port, a.form_id FROM action_queue a join nodes n on a.nodename=n.nodename where a.status='W'")
+    cursor.execute("SELECT a.id, a.command, a.action_type, a.connect_to, n.fqdn, n.listener_port, a.form_id FROM action_queue a join nodes n on a.nodename=n.nodename where a.status='W'")
     cmds = []
     ids = []
     invalid_ids = []
@@ -124,11 +124,7 @@ def get_queued():
         if row is None:
             break
 
-        if row[4] is not None:
-            # prefer fqdn
-            nodename = row[4]
-        else:
-            nodename = row[3]
+        nodename = row[3]
 
         if 'opensvc@localhost' in row[1] or \
            'opensvc@localhost.localdomain' in row[1]:

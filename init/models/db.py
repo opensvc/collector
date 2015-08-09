@@ -1326,6 +1326,7 @@ db.define_table('v_action_queue',
     Field('svcname', 'string'),
     Field('username', 'string'),
     Field('action_type', 'string'),
+    Field('connect_to', 'string'),
     migrate=False)
 
 db.define_table('action_queue',
@@ -1341,6 +1342,7 @@ db.define_table('action_queue',
     Field('svcname', 'string'),
     Field('action_type', 'string'),
     Field('form_id', 'integer'),
+    Field('connect_to', 'string'),
     migrate=False)
 
 db.define_table('v_flex_status',

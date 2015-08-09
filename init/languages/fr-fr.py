@@ -477,6 +477,7 @@
 'Compute stats': 'Calcul des stats',
 'Computing ressource usage': 'Utilisation des ressources informatiques',
 'Configure columns': 'Colonnage',
+'Connect to': 'Connect to',
 'Connexion': 'Connexion',
 'consult alerts sent and pending emission': "consulter les alertes envoyées et en attente d'envoi",
 'consult asset information': 'consulter les information sur les biens',

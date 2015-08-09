@@ -21,6 +21,7 @@ class table_actions(HtmlTable):
                      'status',
                      'nodename',
                      'svcname',
+                     'connect_to',
                      'username',
                      'form_id',
                      'action_type',
@@ -95,6 +96,12 @@ class table_actions(HtmlTable):
                      title='Action type',
                      field='action_type',
                      img='action16',
+                     display=True,
+                    ),
+            'connect_to': HtmlTableColumn(
+                     title='Connect to',
+                     field='connect_to',
+                     img='net16',
                      display=True,
                     ),
             'command': HtmlTableColumn(

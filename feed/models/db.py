@@ -733,6 +733,7 @@ db.define_table('action_queue',
     Field('nodename', 'string'),
     Field('svcname', 'string'),
     Field('action_type', 'string'),
+    Field('connect_to', 'string'),
     migrate=False)
 
 db.define_table('stor_array_tgtid',

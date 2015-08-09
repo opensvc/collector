@@ -11,12 +11,9 @@ ssh_cmd = ['ssh', '-o', 'StrictHostKeyChecking=no',
                   '-o', 'PasswordAuthentication=no']
 #                  '-tt']
 
-def get_ssh_cmd(nodename):
-    row = db(db.nodes.nodename==nodename).select(db.nodes.os_name).first()
-    if row is None:
-        return ssh_cmd
+def get_ssh_cmd(node):
     try:
-        return config.remote_cmd_ssh.get(row.os_name, ssh_cmd)
+        return config.remote_cmd_ssh.get(node.os_name, ssh_cmd)
     except:
         return ssh_cmd
 
@@ -28,8 +25,8 @@ def known_ip(nodename, addr):
         return False
     return True
 
-def get_reachable_name(nodename):
-    q = db.v_nodenetworks.nodename == nodename
+def get_reachable_name(node):
+    q = db.v_nodenetworks.nodename == node.nodename
     q &= db.v_nodenetworks.mask != None
     q &= db.v_nodenetworks.mask != ""
     q &= db.v_nodenetworks.net_gateway != None
@@ -38,7 +35,7 @@ def get_reachable_name(nodename):
     o = ~db.v_nodenetworks.prio | db.v_nodenetworks.type
     row = db(q).select(db.v_nodenetworks.addr, orderby=o, limitby=(0,1)).first()
     if row is None:
-        return nodename
+        return node.nodename
     return row.addr
 
 def get_action_type(node):
@@ -60,71 +57,79 @@ def start_actiond():
 
 def enqueue_node_action(node, action):
     action_type = get_action_type(node)
-    command = fmt_node_action(node.nodename, action, action_type)
-    vars = ['nodename', 'svcname', 'action_type', 'command', 'user_id']
-    vals = [node.nodename, "", action_type, command, str(auth.user_id)]
+    connect_to = get_reachable_name(node)
+    command = fmt_node_action(node, action, action_type, connect_to=connect_to)
+    vars = ['nodename', 'svcname', 'action_type', 'command', 'user_id', 'connect_to']
+    vals = [node.nodename, "", action_type, command, str(auth.user_id), connect_to]
     generic_insert('action_queue', vars, vals)
 
 def enqueue_node_comp_action(node, action, mode, mod):
     action_type = get_action_type(node)
-    command = fmt_node_comp_action(node.nodename, action, mode, mod, action_type)
-    vars = ['nodename', 'svcname', 'action_type', 'command', 'user_id']
-    vals = [node.nodename, "", action_type, command, str(auth.user_id)]
+    connect_to = get_reachable_name(node)
+    command = fmt_node_comp_action(node, action, mode, mod, action_type, connect_to=connect_to)
+    vars = ['nodename', 'svcname', 'action_type', 'command', 'user_id', 'connect_to']
+    vals = [node.nodename, "", action_type, command, str(auth.user_id), connect_to]
     generic_insert('action_queue', vars, vals)
 
 def enqueue_svc_action(node, svc, action, rid=None):
     action_type = get_action_type(node)
-    command = fmt_svc_action(node.nodename, svc, action, action_type, rid=rid)
-    vars = ['nodename', 'svcname', 'action_type', 'command', 'user_id']
-    vals = [node.nodename, svc, action_type, command, str(auth.user_id)]
+    connect_to = get_reachable_name(node)
+    command = fmt_svc_action(node, svc, action, action_type, rid=rid, connect_to=connect_to)
+    vars = ['nodename', 'svcname', 'action_type', 'command', 'user_id', 'connect_to']
+    vals = [node.nodename, svc, action_type, command, str(auth.user_id), connect_to]
     generic_insert('action_queue', vars, vals)
 
 def enqueue_svc_comp_action(node, svc, action, mode, mod):
     action_type = get_action_type(node)
-    command = fmt_svc_comp_action(node.nodename, svc, action, mode, mod, action_type)
-    vars = ['nodename', 'svcname', 'action_type', 'command', 'user_id']
-    vals = [node.nodename, svc, action_type, command, str(auth.user_id)]
+    connect_to = get_reachable_name(node)
+    command = fmt_svc_comp_action(node, svc, action, mode, mod, action_type, connect_to=connect_to)
+    vars = ['nodename', 'svcname', 'action_type', 'command', 'user_id', 'connect_to']
+    vals = [node.nodename, svc, action_type, command, str(auth.user_id), connect_to]
     generic_insert('action_queue', vars, vals)
 
-def fmt_svc_action(node, svc, action, action_type, rid=None):
+def fmt_svc_action(node, svc, action, action_type, rid=None, connect_to=None):
     action = action.replace('"', '\"').replace("'", "\'")
-    node = get_reachable_name(node)
+    if connect_to is None:
+        connect_to = get_reachable_name(node)
     if action_type == "pull":
         cmd = []
     else:
-        cmd = get_ssh_cmd(node) + ['opensvc@'+node, '--'] + remote_cmd_prepend
+        cmd = get_ssh_cmd(node) + ['opensvc@'+connect_to, '--'] + remote_cmd_prepend
         cmd += ['sudo', '/opt/opensvc/bin/svcmgr', '--service', svc]
     cmd += [action]
     if rid is not None:
         cmd += ["--rid", rid]
     return ' '.join(cmd)
 
-def fmt_node_comp_action(node, action, mode, mod, action_type):
-    node = get_reachable_name(node)
+def fmt_node_comp_action(node, action, mode, mod, action_type, connect_to=None):
+    if connect_to is None:
+        connect_to = get_reachable_name(node)
     if action_type == "pull":
         cmd = []
     else:
-        cmd = get_ssh_cmd(node) + ['opensvc@'+node, '--'] + remote_cmd_prepend
+        cmd = get_ssh_cmd(node) + ['opensvc@'+connect_to, '--'] + remote_cmd_prepend
         cmd += ['sudo', '/opt/opensvc/bin/nodemgr']
     cmd += ['compliance', action, '--'+mode, mod]
     return ' '.join(cmd)
 
-def fmt_node_action(node, action, action_type):
-    node = get_reachable_name(node)
+def fmt_node_action(node, action, action_type, connect_to=None):
+    if connect_to is None:
+        connect_to = get_reachable_name(node)
     if action_type == "pull":
         cmd = []
     else:
-        cmd = get_ssh_cmd(node) + ['opensvc@'+node, '--'] + remote_cmd_prepend
+        cmd = get_ssh_cmd(node) + ['opensvc@'+connect_to, '--'] + remote_cmd_prepend
         cmd += ['sudo', '/opt/opensvc/bin/nodemgr']
     cmd += [action]
     return ' '.join(cmd)
 
-def fmt_svc_comp_action(node, service, action, mode, mod, action_type):
-    node = get_reachable_name(node)
+def fmt_svc_comp_action(node, service, action, mode, mod, action_type, connect_to=None):
+    if connect_to is None:
+        connect_to = get_reachable_name(node)
     if action_type == "pull":
         cmd = []
     else:
-        cmd = get_ssh_cmd(node) + ['opensvc@'+node, '--'] + remote_cmd_prepend
+        cmd = get_ssh_cmd(node) + ['opensvc@'+connect_to, '--'] + remote_cmd_prepend
         cmd += ['sudo', '/opt/opensvc/bin/svcmgr', '-s', service]
     cmd += ['compliance', action, '--'+mode, mod]
     return ' '.join(cmd)
