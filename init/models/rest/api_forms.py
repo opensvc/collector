@@ -7,7 +7,7 @@ from hashlib import md5
 def mangle_form_data(data):
     for i, row in enumerate(data):
         try:
-            data[i]["form_definiton"] = yaml.load(data[i]["form_yaml"])
+            data[i]["form_definition"] = yaml.load(data[i]["form_yaml"])
             del(data[i]["form_yaml"])
         except:
             pass
