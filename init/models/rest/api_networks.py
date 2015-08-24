@@ -358,8 +358,12 @@ class rest_delete_network_segment(rest_delete_handler):
 #
 class rest_post_network_segments(rest_post_handler):
     def __init__(self):
+        self.get_handler = rest_get_network_segments()
+        self.update_one_handler = rest_post_network_segment()
+        self.update_one_param = "id"
         desc = [
           "Create a new network segment",
+          "Update network segments matching the specified query.",
           "A segment is an ip range suppporting management delegation and ip provisioning properties.",
           "The default segment type is 'static'.",
           "The NetworkManager privilege is required.",
@@ -419,10 +423,53 @@ class rest_post_network_segments(rest_post_handler):
                 raise Exception("Range end conflicts with an existing segment")
 
 #
-class rest_post_networks(rest_post_handler):
+class rest_post_network_segment(rest_post_handler):
     def __init__(self):
         desc = [
+          "Update a set of network segment properties.",
+          "The user must be responsible for the network segment.",
+          "The user must be in the NetworkManager privilege group.",
+          "The action is logged in the collector's log.",
+          "A websocket event is sent to announce the change in the networks table.",
+        ]
+        examples = [
+          """# curl -u %(email)s -o- -d seg_type=static https://%(collector)s/init/rest/api/network_segments/10""",
+        ]
+        rest_post_handler.__init__(
+          self,
+          path="/networks/<id>/segments/<id>",
+          desc=desc,
+          tables=["network_segments"],
+          props_blacklist=["net_id", "id"],
+          examples=examples
+        )
+
+    def handler(self, net_id, seg_id, **vars):
+        check_privilege("NetworkManager")
+        network_segment_responsible(seg_id)
+        q = db.network_segments.id == seg_id
+        db(q).update(**vars)
+        _log('rest.networks.update',
+             'update properties %(data)s of segment %(seg_id)s',
+             dict(data=str(vars), seg_id=seg_id),
+            )
+        l = {
+          'event': 'network_segments_change',
+          'data': {'foo': 'bar'},
+        }
+        _websocket_send(event_msg(l))
+        return rest_get_network().handler(id, props=','.join(["id"]+vars.keys()))
+
+
+#
+class rest_post_networks(rest_post_handler):
+    def __init__(self):
+        self.get_handler = rest_get_networks()
+        self.update_one_handler = rest_post_network()
+        self.update_one_param = "id"
+        desc = [
           "Create a new network",
+          "Update network matching the specified query.",
           "If ``team_responsible``:green is not specified, default to user's primary group",
         ]
         examples = [

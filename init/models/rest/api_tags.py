@@ -25,10 +25,54 @@ class rest_get_tags(rest_get_table_handler):
 
 
 #
-class rest_post_tags(rest_post_handler):
+class rest_post_tag(rest_post_handler):
     def __init__(self):
         desc = [
+          "Update a tag properties.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- -X POST -d tag_name=foo https://%(collector)s/init/rest/api/tags/10",
+        ]
+        rest_post_handler.__init__(
+          self,
+          path="/tags/<id>",
+          tables=["tags"],
+          desc=desc,
+          examples=examples
+        )
+
+    def handler(self, tag_id, **vars):
+        check_privilege("TagManager")
+        try:
+            tag_id = int(tag_id)
+            q = db.tags.id == tag_id
+        except:
+            q = db.tags.tag_name == tag_id
+        row = db(q).select().first()
+        if row is None:
+            raise Exception({"error": "tag %s not found" % tag_id})
+        db(q).update(**vars)
+        _log('tag.change',
+             'change tag %(tag_name)s: %(data)s',
+             dict(tag_name=row.tag_name, data=str(vars)),
+            )
+        l = {
+          'event': 'tags',
+          'data': {'foo': 'bar'},
+        }
+        _websocket_send(event_msg(l))
+        return rest_get_tag().handler(row.id)
+
+
+#
+class rest_post_tags(rest_post_handler):
+    def __init__(self):
+        self.get_handler = rest_get_tags()
+        self.update_one_handler = rest_post_tag()
+        self.update_one_param = "id"
+        desc = [
           "Create a tag.",
+          "Update tags matching the specified query.",
         ]
         examples = [
           "# curl -u %(email)s -o- -X POST -d tag_name=foo https://%(collector)s/init/rest/api/tags",

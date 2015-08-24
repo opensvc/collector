@@ -42,6 +42,8 @@ class rest_handler(object):
         return self.regexp.match(args)
 
     def handle(self, *args, **vars):
+        # extract args from the path
+        # /a/<b>/c/<d> => [b, d]
         nargs = []
         for i, a in enumerate(self.path.split("/")):
             if a.startswith("<") and a.endswith(">"):
@@ -170,6 +172,26 @@ class rest_handler(object):
 
 class rest_post_handler(rest_handler):
     action = "POST"
+
+    def handle(self, *args, **vars):
+        if "query" in vars and hasattr(self, "get_handler"):
+            return self.handle_multi_update(*args, **vars)
+        return rest_handler.handle(self, *args, **vars)
+
+    def handle_multi_update(self, *args, **vars):
+        l = self.get_handler.handler(query=vars["query"], props=self.update_one_param)["data"]
+        del(vars["query"])
+        result = {"data": []}
+        for e in l:
+            try:
+                r = self.update_one_handler.handler(e.get(self.update_one_param), **vars)
+                result["data"] += r["data"] if "data" in r else r
+            except Exception as ex:
+                d = {"error": str(ex)}
+                d[self.update_one_param] = e[self.update_one_param]
+                result["data"] += [d]
+        return result
+
 
 class rest_put_handler(rest_handler):
     action = "PUT"

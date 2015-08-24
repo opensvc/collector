@@ -226,8 +226,13 @@ class rest_get_user_primary_group(rest_get_line_handler):
 #
 class rest_post_users(rest_post_handler):
     def __init__(self):
+        self.get_handler = rest_get_users()
+        self.update_one_handler = rest_post_user()
+        self.update_one_param = "email"
+
         desc = [
           "Create a user.",
+          "Update users matching the specified query."
           "The user must be in the UserManager privilege group.",
           "The action is logged in the collector's log.",
           "A websocket event is sent to announce the change in the users table.",

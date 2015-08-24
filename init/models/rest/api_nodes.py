@@ -446,8 +446,12 @@ class rest_post_node(rest_post_handler):
 #
 class rest_post_nodes(rest_post_handler):
     def __init__(self):
+        self.get_handler = rest_get_nodes()
+        self.update_one_handler = rest_post_node()
+        self.update_one_param = "nodename"
         desc = [
           "Create a new node",
+          "Update nodes matching the specified query.",
           "If ``team_responsible``:green is not specified, default to user's primary group",
         ]
         examples = [
