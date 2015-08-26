@@ -596,6 +596,9 @@ def update_array_xml(arrayid, vars, vals, auth, subdir, fn):
 
     for a,b in zip(vars, vals):
         a = os.path.join(dir, a)
+        if hasattr(b, "data"):
+            import zlib
+            b = zlib.decompress(b.data)
         try:
             f = codecs.open(a, "w", "utf-8")
             f.write(b)
