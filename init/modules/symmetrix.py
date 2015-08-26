@@ -2,6 +2,30 @@ import pickle
 import os
 from xml.etree.ElementTree import ElementTree, SubElement
 
+class SymTDev(object):
+    def __init__(self, xml):
+        self.dev_name = xml.find("dev_name").text
+        self.total_tracks_mb = int(xml.find("total_tracks_mb").text)
+        self.alloc_tracks_mb = int(xml.find("alloc_tracks_mb").text)
+        self.pools = []
+        for e in xml.findall("pool"):
+            self.pools.append(e.find("pool_name").text)
+
+    def prefix(self, text=""):
+        if len(text) == 0:
+            return ""
+        lines = text.split('\n')
+        for i, line in enumerate(lines):
+            lines[i] = "tdev[%s].%s"%(self.dev_name, line)
+        return lines
+
+    def __str__(self):
+        l = []
+        l += self.prefix("total_tracks_mb: "+str(self.total_tracks_mb))
+        l += self.prefix("alloc_tracks_mb: "+str(self.alloc_tracks_mb))
+        l += self.prefix("pools: "+','.join(self.pools))
+        return '\n'.join(l)
+
 class SymMask(object):
     def __init__(self, director, port, xml):
         self.director = director
@@ -248,6 +272,9 @@ class SymDev(object):
                 self.backend_alloc = int(1. * self.megabytes * 16 / 14)
             elif self.info['configuration'] == "2-Way Mir":
                 self.backend_alloc = 2 * self.megabytes
+            elif 'TDEV' in self.info['configuration']:
+                # backend_alloc is brought through SymTDev
+                pass
             else:
                 self.backend_alloc = 0
                 print "could not determine backend allocation for ", self.info['dev_name'], self.tracks_per_stripe, self.info['configuration']
@@ -258,6 +285,11 @@ class SymDev(object):
             self.wwn = o.wwn
         elif isinstance(o, SymDevRdf):
             self.rdf = o
+        elif isinstance(o, SymTDev):
+            self.megabytes = o.total_tracks_mb
+            self.alloc = o.alloc_tracks_mb
+            self.backend_alloc = 0
+            self.diskgroup_name = ', '.join(o.pools)
         return self
 
     def set_membership(self, devname):
@@ -393,7 +425,8 @@ class Sym(object):
                         'sym_devrdfa',
                         'sym_ficondev',
                         'sym_meta',
-                        'sym_director']
+                        'sym_director',
+                        'sym_tdev']
         self.dumps = ['info',
                       'dev',
                       'disk',
@@ -496,7 +529,12 @@ class Sym(object):
             self.add_sym_dev_wwn(o)
         elif isinstance(o, SymMeta):
             self.add_sym_meta(o)
+        elif isinstance(o, SymTDev):
+            self.add_sym_tdev(o)
         return self
+
+    def add_sym_tdev(self, o):
+        self.dev[o.dev_name] += o
 
     def add_sym_dev_wwn(self, o):
         self.dev[o.dev_name] += o
@@ -568,6 +606,12 @@ class Sym(object):
         tree = self.xmltree('sym_dev_info')
         for e in tree.getiterator('Device'):
             self += SymDev(e)
+        del tree
+
+    def sym_tdev(self):
+        tree = self.xmltree('sym_tdev_info')
+        for e in tree.getiterator('Device'):
+            self += SymTDev(e)
         del tree
 
     def sym_dev_wwn(self):
