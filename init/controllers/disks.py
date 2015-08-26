@@ -1446,9 +1446,10 @@ wsh["%(divid)s"] = ws_action_switch_%(divid)s
 
 @auth.requires_login()
 def ajax_disk_charts():
-    session.forget(response)
     nt = table_disk_charts('charts', 'ajax_disk_charts')
     t = table_disks('disks', 'ajax_disks')
+    volatile_filters = request.vars.volatile_filters
+    request.vars.volatile_filters = None
 
     o = db.b_disk_app.disk_id
     q = db.b_disk_app.id>0
@@ -1456,6 +1457,8 @@ def ajax_disk_charts():
     q = apply_filters(q, db.b_disk_app.disk_nodename, None)
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
+
+    request.vars.volatile_filters = volatile_filters
 
     nt.setup_pager(-1)
     nt.dbfilterable = False
