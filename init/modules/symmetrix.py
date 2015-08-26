@@ -452,7 +452,10 @@ class Sym(object):
 
     def load_xml(self):
         for parser in self.parsers:
-            getattr(self, parser)()
+            try:
+                getattr(self, parser)()
+            except Exception as e:
+                print "parser", parser, ":", e
 
         # restore mtime changed by the parser
         os.utime(os.path.join(self.xml_dir, 'sym_info'),
