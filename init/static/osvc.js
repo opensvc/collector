@@ -1337,8 +1337,10 @@ function table_refresh(t) {
     }
     var data = {
       "table_id": t.id,
-      "volatile_filters": true,
       "visible_columns": t.visible_columns.join(',')
+    }
+    if (t.volatile_filters != "") {
+      data["volatile_filters"] = true
     }
     data[t.id+"_page"] = $("#"+t.id+"_page").val()
     for (c in t.colprops) {
@@ -1459,7 +1461,7 @@ function table_refresh(t) {
 }
 
 function table_insert(t, data) {
-    var query="volatile_filters=true"
+    var query="volatile_filters="+t.volatile_filters
     for (i=0; i<data.length; i++) {
         try {
             key=data[i]["key"]
@@ -1796,7 +1798,9 @@ function table_bind_filter_input_events(t) {
       timer = setTimeout(function validate(){
         var dest_id = input.siblings("[id^="+t.id+"_fc_]").attr("id")
         _url = url + col + "?" + input.attr('id') + "=" + encodeURIComponent(input.val())
-        _url += "&volatile_filters=true"
+        if (t.volatile_filters != "") {
+          _url += "&volatile_filters=true"
+        }
         sync_ajax(_url, [], dest_id, function(){})
       }, 1000)
     }

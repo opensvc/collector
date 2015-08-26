@@ -211,14 +211,11 @@ def ajax_actions():
         t.csv_q = q
         t.csv_orderby = o
         return t.csv()
+
     if len(request.args) == 1 and request.args[0] == 'data':
-        if request.vars.volatile_filters is None:
-            n = db(q).count()
-            t.setup_pager(n)
-            limitby = (t.pager_start,t.pager_end)
-        else:
-            n = 0
-            limitby = (0, 500)
+        n = db(q).count()
+        t.setup_pager(n)
+        limitby = (t.pager_start,t.pager_end)
         t.object_list = db(q).select(limitby=limitby, orderby=o, cacheable=False)
         return t.table_lines_data(n, html=False)
 

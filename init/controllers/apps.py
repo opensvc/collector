@@ -298,12 +298,8 @@ def ajax_apps():
         q = _where(q, 'v_apps', t.filter_parse(f), f)
 
     if len(request.args) == 1 and request.args[0] == 'line':
-        if request.vars.volatile_filters is None:
-            n = db(q).count()
-            limitby = (t.pager_start,t.pager_end)
-        else:
-            n = 0
-            limitby = (0, 500)
+        n = db(q).count()
+        limitby = (t.pager_start,t.pager_end)
         t.object_list = db(q).select(orderby=o, groupby=o, limitby=limitby)
         return t.table_lines_data(n)
 

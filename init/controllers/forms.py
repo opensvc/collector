@@ -164,13 +164,8 @@ def ajax_workflows():
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
 
     if len(request.args) == 1 and request.args[0] == 'line':
-        if request.vars.volatile_filters is None:
-            n = db(q).count()
-            t.setup_pager(n)
-            limitby = (t.pager_start,t.pager_end)
-        else:
-            n = 0
-            limitby = (0, 500)
+        n = db(q).count()
+        limitby = (t.pager_start,t.pager_end)
         t.object_list = db(q).select(orderby=o, limitby=limitby)
         return t.table_lines_data(n)
 
@@ -674,13 +669,8 @@ def ajax_forms_admin():
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
 
     if len(request.args) == 1 and request.args[0] == 'line':
-        if request.vars.volatile_filters is None:
-            n = db(q).count()
-            t.setup_pager(n)
-            limitby = (t.pager_start,t.pager_end)
-        else:
-            n = 0
-            limitby = (0, 500)
+        n = db(q).count()
+        limitby = (t.pager_start,t.pager_end)
         t.object_list = db(q).select(orderby=o, limitby=limitby)
         return t.table_lines_data(n)
 

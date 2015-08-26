@@ -483,12 +483,8 @@ def ajax_drplan():
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
 
     if len(request.args) == 1 and request.args[0] == 'line':
-        if request.vars.volatile_filters is None:
-            n = db(q).count()
-            limitby = (t.pager_start,t.pager_end)
-        else:
-            n = 0
-            limitby = (0, 500)
+        n = db(q).count()
+        limitby = (t.pager_start,t.pager_end)
         t.object_list = db(q).select(db.v_svcmon.ALL,
                                  db.drpservices.drp_wave,
                                  db.drpservices.drp_project_id,

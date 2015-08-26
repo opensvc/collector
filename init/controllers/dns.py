@@ -248,12 +248,8 @@ def ajax_dns_domains():
         q = _where(q, 'domains', t.filter_parse(f), f, db=dbdns)
 
     if len(request.args) == 1 and request.args[0] == 'line':
-        if request.vars.volatile_filters is None:
-            n = dbdns(q).count()
-            limitby = (t.pager_start,t.pager_end)
-        else:
-            n = 0
-            limitby = (0, 500)
+        n = dbdns(q).count()
+        limitby = (t.pager_start,t.pager_end)
         t.object_list = dbdns(q).select(orderby=o, limitby=limitby, cacheable=False)
         return t.table_lines_data(n)
 
@@ -550,12 +546,8 @@ def ajax_dns_records():
         q = _where(q, 'records', t.filter_parse(f), f, db=dbdns)
 
     if len(request.args) == 1 and request.args[0] == 'line':
-        if request.vars.volatile_filters is None:
-            n = dbdns(q).count()
-            limitby = (t.pager_start,t.pager_end)
-        else:
-            n = 0
-            limitby = (0, 500)
+        n = dbdns(q).count()
+        limitby = (t.pager_start,t.pager_end)
         t.object_list = dbdns(q).select(orderby=o, limitby=limitby, cacheable=False)
         return t.table_lines_data(n)
 

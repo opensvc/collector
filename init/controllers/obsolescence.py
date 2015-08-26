@@ -390,12 +390,8 @@ def ajax_obs():
     q = apply_gen_filters(q, ['v_nodes', 'obsolescence'])
 
     if len(request.args) == 1 and request.args[0] == 'line':
-        if request.vars.volatile_filters is None:
-            n = len(db(q).select(db.obsolescence.id, groupby=g))
-            limitby = (t.pager_start,t.pager_end)
-        else:
-            n = 0
-            limitby = (0, 500)
+        n = len(db(q).select(db.obsolescence.id, groupby=g))
+        limitby = (t.pager_start,t.pager_end)
         t.object_list = db(q).select(db.obsolescence.ALL,
                                      db.v_nodes.id.count(),
                                      orderby=o,

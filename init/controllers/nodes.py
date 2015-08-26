@@ -372,13 +372,8 @@ def ajax_nodes():
         t.csv_left = l
         return t.do_commonality()
     if len(request.args) == 1 and request.args[0] == 'data':
-        if request.vars.volatile_filters is None:
-            n = db(q).select(db.v_nodes.id.count(), left=l).first()(db.v_nodes.id.count())
-            t.setup_pager(n)
-            limitby = (t.pager_start,t.pager_end)
-        else:
-            n = 0
-            limitby = (0, 500)
+        n = db(q).select(db.v_nodes.id.count(), left=l).first()(db.v_nodes.id.count())
+        limitby = (t.pager_start,t.pager_end)
         cols = t.get_visible_columns()
         t.object_list = db(q).select(*cols, orderby=o, limitby=limitby, cacheable=True, left=l)
         return t.table_lines_data(n, html=False)
