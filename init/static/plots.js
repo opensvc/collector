@@ -4018,6 +4018,12 @@ function diskdonut(o) {
 function plot_diskdonuts() {
   $("[id^=chart_svc]").each(function(){
     diskdonut($(this))
+    $(this).bind('jqplotDataClick', function(ev, seriesIndex, pointIndex, data) {
+      d = data[seriesIndex]
+      i = d.lastIndexOf(" (")
+      d = d.substring(0, i)
+      filter_submit("disks", "disks_f_disk_svcname", d)
+    })
   })
   $("[id^=chart_ap]").each(function(){
     diskdonut($(this))
@@ -4030,6 +4036,13 @@ function plot_diskdonuts() {
   })
   $("[id^=chart_dg]").each(function(){
     diskdonut($(this))
+    $(this).bind('jqplotDataClick', function(ev, seriesIndex, pointIndex, data) {
+      d = data[seriesIndex]
+      d = d.replace(/\w+ /, "")
+      d = d.replace(/ \(.*\)/, "")
+      alert(d)
+      filter_submit("disks", "disks_f_disk_group", d)
+    })
   })
   $("[id^=chart_ar]").each(function(){
     diskdonut($(this))
