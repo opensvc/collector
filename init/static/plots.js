@@ -4040,7 +4040,6 @@ function plot_diskdonuts() {
       d = data[seriesIndex]
       d = d.replace(/\w+ /, "")
       d = d.replace(/ \(.*\)/, "")
-      alert(d)
       filter_submit("disks", "disks_f_disk_group", d)
     })
   })
