@@ -552,12 +552,12 @@ def rpc_update_vioserver(name, vars, vals, auth):
     update_array_xml(name, vars, vals, auth, "vioserver", insert_vioserver)
 
 @service.xmlrpc
-def update_vnx(name, vars, vals, auth):
-    return rpc_update_vnx(name, vars, vals, auth)
+def update_emcvnx(name, vars, vals, auth):
+    return rpc_update_emcvnx(name, vars, vals, auth)
 
 @auth_uuid
-def rpc_update_vnx(name, vars, vals, auth):
-    update_array_xml(name, vars, vals, auth, "vnx", insert_vnx)
+def rpc_update_emcvnx(name, vars, vals, auth):
+    update_array_xml(name, vars, vals, auth, "emcvnx", insert_emcvnx)
 
 @service.xmlrpc
 def update_necism(name, vars, vals, auth):

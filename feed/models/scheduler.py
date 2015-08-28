@@ -1139,14 +1139,14 @@ def insert_hds(name=None, nodename=None):
             db.executesql(sql)
     queue_refresh_b_disk_app()
 
-def insert_vnx(name=None, nodename=None):
+def insert_emcvnx(name=None, nodename=None):
     import glob
     import os
-    from applications.init.modules import vnx
+    from applications.init.modules import emcvnx
     now = datetime.datetime.now()
     now -= datetime.timedelta(microseconds=now.microsecond)
 
-    dir = 'applications'+str(URL(r=request,a='init',c='uploads',f='vnx'))
+    dir = 'applications'+str(URL(r=request,a='init',c='uploads',f='emcvnx'))
     if name is None:
         pattern = "*"
     else:
@@ -1154,7 +1154,7 @@ def insert_vnx(name=None, nodename=None):
     dirs = glob.glob(os.path.join(dir, pattern))
 
     for d in dirs:
-        s = vnx.get_vnx(d)
+        s = emcvnx.get_vnx(d)
         if s is not None:
             # stor_array
             vars = ['array_name', 'array_model', 'array_cache', 'array_firmware', 'array_updated']
