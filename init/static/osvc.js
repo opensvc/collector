@@ -1796,12 +1796,30 @@ function table_bind_filter_input_events(t) {
       input.parents('tr.sym_headers').siblings("tr.theader_slim").find("[name='"+t.id+"_c_"+col+"']").removeClass("bgred").addClass("bgorange")
       clearTimeout(timer)
       timer = setTimeout(function validate(){
-        var dest_id = input.siblings("[id^="+t.id+"_fc_]").attr("id")
-        _url = url + col + "?" + input.attr('id') + "=" + encodeURIComponent(input.val())
-        if (t.volatile_filters != "") {
-          _url += "&volatile_filters=true"
+        var data = {}
+        for (c in t.colprops) {
+          var current = $("#"+t.id+"_f_"+c).val()
+          if ((current != "") && (typeof current !== 'undefined')) {
+            data[t.id+"_f_"+c] = current
+          } else if (t.colprops[c].force_filter != "") {
+            data[t.id+"_f_"+c] = t.colprops[c].force_filter
+          }
         }
-        sync_ajax(_url, [], dest_id, function(){})
+        if (t.volatile_filters != "") {
+          data["volatile_filters"] = true
+        }
+        data[input.attr('id')] = input.val()
+        var dest = input.siblings("[id^="+t.id+"_fc_]")
+        _url = url + col
+        $.ajax({
+         type: "POST",
+         url: _url,
+         data: data,
+         context: document.body,
+         success: function(msg){
+           dest.html(msg)
+         }
+        })
       }, 1000)
     }
   })
