@@ -238,7 +238,7 @@ class rest_post_users(rest_post_handler):
           "A websocket event is sent to announce the change in the users table.",
         ]
         examples = [
-          "# curl -u %(email)s -o- -d first_name=John -d last_name=Smith https://%(collector)s/init/rest/api/users",
+          "# curl -u %(email)s -X POST -o- -d first_name=John -d last_name=Smith https://%(collector)s/init/rest/api/users",
         ]
         rest_post_handler.__init__(
           self,
@@ -273,7 +273,7 @@ class rest_post_user(rest_post_handler):
           "A websocket event is sent to announce the change in the users table.",
         ]
         examples = [
-          "# curl -u %(email)s -o- -d perpage=20 https://%(collector)s/init/rest/api/users/10",
+          "# curl -u %(email)s -o- -X POST -d perpage=20 https://%(collector)s/init/rest/api/users/10",
         ]
         rest_post_handler.__init__(
           self,
@@ -402,11 +402,12 @@ class rest_post_user_group(rest_post_handler):
 
         q = db.auth_membership.user_id == user_id
         q &= db.auth_membership.group_id == group_id
+        q &= db.auth_membership.primary_group == 'F'
         row = db(q).select().first()
         if row is not None:
             return dict(error="User %s is already attached to group %s" % (str(user_id), str(group_id)))
 
-        db.auth_membership.insert(user_id=user_id, group_id=group_id)
+        db.auth_membership.insert(user_id=user_id, group_id=group_id, primary_group='F')
         _log('user.group.attach',
              'user %(u)s attached to group %(g)s',
              dict(u=user.email, g=group.role),
@@ -460,6 +461,7 @@ class rest_delete_user_group(rest_delete_handler):
 
         q = db.auth_membership.user_id == user_id
         q &= db.auth_membership.group_id == group_id
+        q &= db.auth_membership.primary_group == 'F'
         row = db(q).select().first()
         if row is None:
             return dict(error="User %s is already detached from group %s" % (str(user_id), str(group_id)))
@@ -475,6 +477,117 @@ class rest_delete_user_group(rest_delete_handler):
         }
         _websocket_send(event_msg(l))
         return dict(info="User %s detached from group %s" % (str(user_id), str(group_id)))
+
+
+#
+class rest_post_user_primary_group(rest_post_handler):
+    def __init__(self):
+        desc = [
+          "Set a user's primary group.",
+          "The api user must be in the UserManager privilege group.",
+          "The action is logged in the collector's log.",
+          "A websocket event is sent to announce the change in the users table.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- -X POST https://%(collector)s/init/rest/api/users/10/primary_group/10",
+        ]
+        rest_post_handler.__init__(
+          self,
+          path="/users/<id>/primary_group/<id>",
+          desc=desc,
+          examples=examples
+        )
+
+    def handler(self, user_id, group_id, **vars):
+        check_privilege("UserManager")
+        try:
+            id = int(user_id)
+            q = db.auth_user.id == user_id
+        except:
+            q = db.auth_user.email == user_id
+        user = db(q).select().first()
+        if user is None:
+            return dict(error="User %s does not exist" % str(user_id))
+
+        try:
+            id = int(id)
+            q = db.auth_group.id == group_id
+        except:
+            q = db.auth_group.role == group_id
+        group = db(q).select().first()
+        if group is None:
+            return dict(error="Group %s does not exist" % str(group_id))
+
+        q = db.auth_membership.user_id == user_id
+        q &= db.auth_membership.group_id == group_id
+        q &= db.auth_membership.primary_group == 'T'
+        row = db(q).select().first()
+        if row is not None:
+            return dict(error="User %s primary group is already %s" % (str(user_id), str(group_id)))
+
+        q = db.auth_membership.user_id == user_id
+        q &= db.auth_membership.primary_group == 'T'
+        db(q).delete()
+        db.auth_membership.insert(user_id=user_id, group_id=group_id, primary_group='T')
+        _log('user.primary_group.attach',
+             'user %(u)s primary group set to %(g)s',
+             dict(u=user.email, g=group.role),
+            )
+        l = {
+          'event': 'auth_user',
+          'data': {'foo': 'bar'},
+        }
+        _websocket_send(event_msg(l))
+        return dict(info="User %s primary group set to %s" % (str(user_id), str(group_id)))
+
+
+#
+class rest_delete_user_primary_group(rest_delete_handler):
+    def __init__(self):
+        desc = [
+          "Unset a user's primary group.",
+          "The api user must be in the UserManager privilege group.",
+          "The action is logged in the collector's log.",
+          "A websocket event is sent to announce the change in the users table.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- -X DELETE https://%(collector)s/init/rest/api/users/10/primary_group/10",
+        ]
+        rest_delete_handler.__init__(
+          self,
+          path="/users/<id>/primary_group",
+          desc=desc,
+          examples=examples
+        )
+
+    def handler(self, user_id, **vars):
+        check_privilege("UserManager")
+        try:
+            id = int(user_id)
+            q = db.auth_user.id == user_id
+        except:
+            q = db.auth_user.email == user_id
+        user = db(q).select().first()
+        if user is None:
+            return dict(error="User %s does not exist" % str(user_id))
+
+        q = db.auth_membership.user_id == user_id
+        q &= db.auth_membership.primary_group == 'T'
+        row = db(q).select().first()
+        if row is None:
+            return dict(error="User %s has already no primary group" % str(user_id))
+
+        db(q).delete()
+        _log('user.primary_group.detach',
+             'user %(u)s primary group unset',
+             dict(u=user.email),
+            )
+        l = {
+          'event': 'auth_user',
+          'data': {'foo': 'bar'},
+        }
+        _websocket_send(event_msg(l))
+        return dict(info="User %s primary group unset" % str(user_id))
 
 
 
