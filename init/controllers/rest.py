@@ -179,6 +179,7 @@ handlers = {
      rest_delete_tag_node(),
      rest_delete_tag_service(),
      rest_delete_user(),
+     rest_delete_user_group(),
   ],
   'POST': [
      rest_post_action_queue(),
@@ -233,6 +234,7 @@ handlers = {
      rest_post_tag_service(),
      rest_post_users(),
      rest_post_user(),
+     rest_post_user_group(),
   ],
   'PUT': [
      rest_put_compliance_moduleset(),
