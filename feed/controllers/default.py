@@ -657,8 +657,8 @@ def insert_dcss():
 def insert_hdss():
     return insert_hds()
 
-def insert_vnxs():
-    return insert_vnx()
+def insert_emcvnxs():
+    return insert_emcvnx()
 
 def insert_necisms():
     return insert_necism()
