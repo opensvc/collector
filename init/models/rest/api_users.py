@@ -1,6 +1,8 @@
 from gluon.dal import smart_query
 
 def allowed_user_ids():
+    """ Return ids of the users member of the same groups than the requester.
+    """
     q = db.auth_membership.group_id.belongs(user_group_ids())
     rows = db(q).select(db.auth_membership.user_id)
     return [r.user_id for r in rows]
@@ -15,6 +17,8 @@ def allowed_user_ids_q():
     return q
 
 def user_id_q(id):
+    """ Return a DAL expression limiting the query to the users member of the same groups than the requester.
+    """
     if type(id) in (unicode, str) and "@" in id:
         q = db.auth_user.email == id
     else:
@@ -58,7 +62,7 @@ class rest_get_user(rest_get_line_handler):
           "Others can only see users in their organisational groups.",
         ]
         examples = [
-          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/users/%(email)s?props=primary_group",
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/users/%(email)s?props=lock_filter",
         ]
         rest_get_line_handler.__init__(
           self,
@@ -400,12 +404,12 @@ class rest_post_user_group(rest_post_handler):
         if group is None:
             return dict(error="Group %s does not exist" % str(group_id))
 
-        q = db.auth_membership.user_id == user_id
-        q &= db.auth_membership.group_id == group_id
+        q = db.auth_membership.user_id == user.id
+        q &= db.auth_membership.group_id == group.id
         q &= db.auth_membership.primary_group == 'F'
         row = db(q).select().first()
         if row is not None:
-            return dict(error="User %s is already attached to group %s" % (str(user_id), str(group_id)))
+            return dict(info="User %s is already attached to group %s" % (str(user.email), str(group.role)))
 
         db.auth_membership.insert(user_id=user_id, group_id=group_id, primary_group='F')
         _log('user.group.attach',
@@ -417,7 +421,7 @@ class rest_post_user_group(rest_post_handler):
           'data': {'foo': 'bar'},
         }
         _websocket_send(event_msg(l))
-        return dict(info="User %s attached to group %s" % (str(user_id), str(group_id)))
+        return dict(info="User %s attached to group %s" % (str(user.email), str(group.role)))
 
 
 #
@@ -459,12 +463,12 @@ class rest_delete_user_group(rest_delete_handler):
         if group is None:
             return dict(error="Group %s does not exist" % str(group_id))
 
-        q = db.auth_membership.user_id == user_id
-        q &= db.auth_membership.group_id == group_id
+        q = db.auth_membership.user_id == user.id
+        q &= db.auth_membership.group_id == group.id
         q &= db.auth_membership.primary_group == 'F'
         row = db(q).select().first()
         if row is None:
-            return dict(error="User %s is already detached from group %s" % (str(user_id), str(group_id)))
+            return dict(info="User %s is already detached from group %s" % (str(user.email), str(group.role)))
 
         db(q).delete()
         _log('user.group.detach',
@@ -476,7 +480,7 @@ class rest_delete_user_group(rest_delete_handler):
           'data': {'foo': 'bar'},
         }
         _websocket_send(event_msg(l))
-        return dict(info="User %s detached from group %s" % (str(user_id), str(group_id)))
+        return dict(info="User %s detached from group %s" % (str(user.email), str(group.role)))
 
 
 #
@@ -518,17 +522,17 @@ class rest_post_user_primary_group(rest_post_handler):
         if group is None:
             return dict(error="Group %s does not exist" % str(group_id))
 
-        q = db.auth_membership.user_id == user_id
-        q &= db.auth_membership.group_id == group_id
+        q = db.auth_membership.user_id == user.id
+        q &= db.auth_membership.group_id == group.id
         q &= db.auth_membership.primary_group == 'T'
         row = db(q).select().first()
         if row is not None:
-            return dict(error="User %s primary group is already %s" % (str(user_id), str(group_id)))
+            return dict(info="User %s primary group is already %s" % (str(user.id), str(group.id)))
 
         q = db.auth_membership.user_id == user_id
         q &= db.auth_membership.primary_group == 'T'
         db(q).delete()
-        db.auth_membership.insert(user_id=user_id, group_id=group_id, primary_group='T')
+        db.auth_membership.insert(user_id=user.id, group_id=group.id, primary_group='T')
         _log('user.primary_group.attach',
              'user %(u)s primary group set to %(g)s',
              dict(u=user.email, g=group.role),
@@ -538,7 +542,7 @@ class rest_post_user_primary_group(rest_post_handler):
           'data': {'foo': 'bar'},
         }
         _websocket_send(event_msg(l))
-        return dict(info="User %s primary group set to %s" % (str(user_id), str(group_id)))
+        return dict(info="User %s primary group set to %s" % (str(user.email), str(group.role)))
 
 
 #
@@ -569,13 +573,13 @@ class rest_delete_user_primary_group(rest_delete_handler):
             q = db.auth_user.email == user_id
         user = db(q).select().first()
         if user is None:
-            return dict(error="User %s does not exist" % str(user_id))
+            return dict(error="User %s does not exist" % str(user.email))
 
-        q = db.auth_membership.user_id == user_id
+        q = db.auth_membership.user_id == user.id
         q &= db.auth_membership.primary_group == 'T'
         row = db(q).select().first()
         if row is None:
-            return dict(error="User %s has already no primary group" % str(user_id))
+            return dict(info="User %s has already no primary group" % str(user.email))
 
         db(q).delete()
         _log('user.primary_group.detach',
@@ -587,8 +591,148 @@ class rest_delete_user_primary_group(rest_delete_handler):
           'data': {'foo': 'bar'},
         }
         _websocket_send(event_msg(l))
-        return dict(info="User %s primary group unset" % str(user_id))
+        return dict(info="User %s primary group unset" % str(user.email))
 
 
+#
+class rest_get_user_filterset(rest_get_line_handler):
+    def __init__(self):
+        desc = [
+          "Display the user's current filterset.",
+          "Managers and UserManager are allowed to see all users' current filterset.",
+          "Others can only see the current filterset of users in their organisational groups.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/users/%(email)s/filterset",
+        ]
+        rest_get_line_handler.__init__(
+          self,
+          path="/users/<id>/filterset",
+          tables=["gen_filtersets"],
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, id, **vars):
+        q = allowed_user_ids_q()
+        q &= user_id_q(id)
+        q &= db.gen_filterset_user.user_id == db.auth_user.id
+        q &= db.gen_filtersets.id == db.gen_filterset_user.fset_id
+        self.set_q(q)
+        return self.prepare_data(**vars)
+
+
+#
+class rest_post_user_filterset(rest_post_handler):
+    def __init__(self):
+        desc = [
+          "Set a user's current filterset.",
+          "The api user must be in the UserManager privilege group or the specified user himself.",
+          "The action is logged in the collector's log.",
+          "A websocket event is sent to announce the change in the users table.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- -X POST https://%(collector)s/init/rest/api/users/10/filterset/10",
+        ]
+        rest_post_handler.__init__(
+          self,
+          path="/users/<id>/filterset/<id>",
+          desc=desc,
+          examples=examples
+        )
+
+    def handler(self, user_id, fset_id, **vars):
+        q = user_id_q(user_id)
+        q &= db.auth_user.id == auth.user_id
+        row = db(q).select().first()
+        if row is None:
+            check_privilege("UserManager")
+        try:
+            id = int(user_id)
+            q = db.auth_user.id == user_id
+        except:
+            q = db.auth_user.email == user_id
+        user = db(q).select().first()
+        if user is None:
+            return dict(error="User %s does not exist" % str(user_id))
+
+        try:
+            id = int(id)
+            q = db.gen_filtersets.id == fset_id
+        except:
+            q = db.gen_filtersets.fset_name == fset_id
+        fset = db(q).select().first()
+        if fset is None:
+            return dict(error="Filterset %s does not exist" % str(fset_id))
+
+        q = db.gen_filterset_user.user_id == user.id
+        q &= db.gen_filterset_user.fset_id == fset.id
+        row = db(q).select().first()
+        if row is not None:
+            return dict(info="User %s filterset is already %s" % (str(user.email), str(fset.fset_name)))
+
+        q = db.gen_filterset_user.user_id == user.id
+        db(q).delete()
+        db.gen_filterset_user.insert(user_id=user.id, fset_id=fset.id)
+        _log('user.filterset.attach',
+             'user %(u)s filterset set to %(g)s',
+             dict(u=user.email, g=fset.fset_name),
+            )
+        l = {
+          'event': 'auth_user',
+          'data': {'foo': 'bar'},
+        }
+        _websocket_send(event_msg(l))
+        return dict(info="User %s filterset set to %s" % (str(user.email), str(fset.fset_name)))
+
+#
+class rest_delete_user_filterset(rest_delete_handler):
+    def __init__(self):
+        desc = [
+          "Unset a user's current filterset.",
+          "The api user must be in the UserManager privilege group or the specified user himself.",
+          "The action is logged in the collector's log.",
+          "A websocket event is sent to announce the change in the users table.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- -X DELETE https://%(collector)s/init/rest/api/users/10/filterset",
+        ]
+        rest_delete_handler.__init__(
+          self,
+          path="/users/<id>/filterset",
+          desc=desc,
+          examples=examples
+        )
+
+    def handler(self, user_id, **vars):
+        q = user_id_q(user_id)
+        q &= db.auth_user.id == auth.user_id
+        row = db(q).select().first()
+        if row is None:
+            check_privilege("UserManager")
+        try:
+            id = int(user_id)
+            q = db.auth_user.id == user_id
+        except:
+            q = db.auth_user.email == user_id
+        user = db(q).select().first()
+        if user is None:
+            return dict(error="User %s does not exist" % str(user_id))
+
+        q = db.gen_filterset_user.user_id == user.id
+        row = db(q).select().first()
+        if row is None:
+            return dict(info="User %s has already no filterset" % str(user.email))
+        db(q).delete()
+        _log('user.filterset.detach',
+             'user %(u)s filterset unset',
+             dict(u=user.email),
+            )
+        l = {
+          'event': 'auth_user',
+          'data': {'foo': 'bar'},
+        }
+        _websocket_send(event_msg(l))
+        return dict(info="User %s filterset unset" % str(user.email))
 
 

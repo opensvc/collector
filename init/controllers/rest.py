@@ -140,6 +140,7 @@ handlers = {
      rest_get_user_services(),
      rest_get_user_groups(),
      rest_get_user_primary_group(),
+     rest_get_user_filterset(),
   ],
   'DELETE': [
      rest_delete_action_queue_one(),
@@ -181,6 +182,7 @@ handlers = {
      rest_delete_user(),
      rest_delete_user_group(),
      rest_delete_user_primary_group(),
+     rest_delete_user_filterset(),
   ],
   'POST': [
      rest_post_action_queue(),
@@ -237,6 +239,7 @@ handlers = {
      rest_post_user(),
      rest_post_user_group(),
      rest_post_user_primary_group(),
+     rest_post_user_filterset(),
   ],
   'PUT': [
      rest_put_compliance_moduleset(),
