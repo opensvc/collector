@@ -37,12 +37,46 @@ class Vnx(object):
                 self.load_lu_detail(i+2)
             #elif line.startswith("--- Pool Detail Information"):
             #    self.load_pool_detail(i+1)
+        self.load_thin()
+
+    def load_thin(self):
+        try:
+            buff = self.readfile("thinlunlistall")
+        except:
+            return
+        vdisk = {}
+        for line in buff.split("\n"):
+            if line.startswith("Tier Distribution:"):
+                if 'raid' not in vdisk:
+                    vdisk['raid'] = ''
+                self.vdisk.append(vdisk)
+            if line.startswith("LOGICAL UNIT NUMBER"):
+                vdisk = {}
+                vdisk["lunid"] = line.split()[-1].strip()
+            if line.startswith("UID:"):
+                vdisk["wwid"] = line.replace("UID:","").strip().replace(":","").lower()
+            if line.startswith("Name:"):
+                vdisk["name"] = line.split(':')[-1].strip()
+            if line.startswith("User Capacity (Blocks):"):
+                vdisk["size"] = int(line.split(':')[-1].strip())/2048
+            if line.startswith("Consumed Capacity (Blocks):"):
+                vdisk["alloc"] = int(line.split(':')[-1].strip())/2048
+            if line.startswith("Pool Name"):
+                vdisk["disk_group"] = line.split(':')[-1].strip()
+            if line.startswith("Raid Type:"):
+                vdisk["raid"] = line.split(':')[-1].strip().lower()
+
 
     def load_lu_detail(self, i):
         vdisk = {}
+        skip = False
         for line in self.lines[i:]:
             if line.startswith("Device Map:"):
-                self.vdisk.append(vdisk)
+                if 'raid' not in vdisk:
+                    vdisk['raid'] = ''
+                if not skip and 'disk_group' in vdisk:
+                    self.vdisk.append(vdisk)
+                skip = False
             if line.startswith("---"):
                 return
             if line.startswith("LOGICAL UNIT NUMBER"):
@@ -54,10 +88,15 @@ class Vnx(object):
                 vdisk["name"] = line[4:].strip()
             if line.startswith("LUN Capacity(Megabytes):"):
                 vdisk["size"] = int(line.split(':')[-1].strip())
+                vdisk["alloc"] = vdisk["size"]
             if line.startswith("Pool Name"):
                 vdisk["disk_group"] = line.split(':')[-1].strip()
             if line.startswith("RAID Type:"):
                 vdisk["raid"] = line.split(':')[-1].strip().lower()
+            if line.startswith("Is Pool LUN:") and line.endswith("YES"):
+                vdisk["disk_group"] = "pool lun"
+            if line.startswith("Is Thin LUN:") and line.endswith("YES"):
+                skip = True
 
     def load_pool_detail(self, i):
         pool = {}
@@ -90,7 +129,7 @@ class Vnx(object):
         for d in self.pool:
             s += "pool %s: size %d MB, used %d MB, free %d MB\n"%(d['name'], d['size'], d['used'], d['free'])
         for d in sorted(self.vdisk, lambda x, y: cmp(x["name"], y["name"])):
-            s += "vdisk %s (%s): size %s MB\n"%(d['name'], d['wwid'], str(d['size']))
+            s += "vdisk %s (%s): size %s/%s MB dg %s raid %s\n"%(d['name'], d['wwid'], str(d['size']), str(d['alloc']), d['disk_group'], d['raid'])
         return s
 
 

@@ -1154,9 +1154,11 @@ def insert_emcvnx(name=None, nodename=None):
     dirs = glob.glob(os.path.join(dir, pattern))
 
     for d in dirs:
+        print d
         s = emcvnx.get_vnx(d)
         if s is not None:
             # stor_array
+            print s.name, "insert array info"
             vars = ['array_name', 'array_model', 'array_cache', 'array_firmware', 'array_updated']
             vals = []
             vals.append([s.name,
@@ -1170,6 +1172,7 @@ def insert_emcvnx(name=None, nodename=None):
             array_id = str(db.executesql(sql)[0][0])
 
             # stor_array_dg
+            print s.name, "insert dg info"
             vars = ['array_id', 'dg_name', 'dg_free', 'dg_used', 'dg_size', 'dg_updated']
             vals = []
             for dg in s.pool:
@@ -1184,6 +1187,7 @@ def insert_emcvnx(name=None, nodename=None):
             db.executesql(sql)
 
             # stor_array_tgtid
+            print s.name, "insert port info"
             vars = ['array_id', 'array_tgtid']
             vals = []
             for wwn in s.ports:
@@ -1191,10 +1195,12 @@ def insert_emcvnx(name=None, nodename=None):
             generic_insert('stor_array_tgtid', vars, vals)
 
             # diskinfo
+            print s.name, "insert disk info"
             vars = ['disk_id',
                     'disk_arrayid',
                     'disk_devid',
                     'disk_size',
+                    'disk_alloc',
                     'disk_raid',
                     'disk_group',
                     'disk_updated']
@@ -1204,6 +1210,7 @@ def insert_emcvnx(name=None, nodename=None):
                              s.name,
                              d['name'],
                              str(d['size']),
+                             str(d['alloc']),
                              d['raid'],
                              d['disk_group'],
                              now])
