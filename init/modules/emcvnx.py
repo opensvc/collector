@@ -97,6 +97,8 @@ class Vnx(object):
                 vdisk["raid"] = line.split(':')[-1].strip().lower()
             if line.startswith("Is Pool LUN:") and line.endswith("YES"):
                 vdisk["disk_group"] = "pool lun"
+            if line.startswith("Is Meta LUN:") and line.endswith("YES"):
+                vdisk["disk_group"] = "meta lun"
             if line.startswith("Is Thin LUN:") and line.endswith("YES"):
                 skip = True
 
