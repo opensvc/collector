@@ -5,7 +5,7 @@ class Vnx(object):
         if dir is None:
             return
         self.dir = dir
-        self.name = os.path.basename(dir)
+        self.name = os.path.basename(os.path.realpath(dir))
         self.lines = self.readfile("getall").split('\n')
         self.load()
 
@@ -74,7 +74,9 @@ class Vnx(object):
             if line.startswith("Device Map:"):
                 if 'raid' not in vdisk:
                     vdisk['raid'] = ''
-                if not skip and 'disk_group' in vdisk:
+                if 'disk_group' not in vdisk:
+                    vdisk['disk_group'] = ''
+                if not skip:
                     self.vdisk.append(vdisk)
                 skip = False
             if line.startswith("---"):
