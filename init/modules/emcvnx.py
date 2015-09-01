@@ -20,7 +20,9 @@ class Vnx(object):
         self.cache = 0
         self.ports = []
         self.vdisk = []
+        self.meta = {}
         self.pool = []
+        self.load_meta()
         for i, line in enumerate(self.lines):
             if line.startswith("Model:"):
                 self.model = line.split(':')[1].strip()
@@ -38,6 +40,30 @@ class Vnx(object):
             #elif line.startswith("--- Pool Detail Information"):
             #    self.load_pool_detail(i+1)
         self.load_thin()
+
+    def load_meta(self):
+        try:
+            buff = self.readfile("metalunlist")
+        except:
+            return
+        meta = {}
+        raid = set([])
+        for line in buff.split("\n"):
+            if len(line) == 0 and meta != {}:
+                meta['raid'] += ",".join(sorted(list(raid)))
+                self.meta[meta["id"]] = meta
+                meta = {}
+                raid = set([])
+            if line.startswith("MetaLUN Number"):
+                meta["id"] = line.split()[-1].strip()
+            if line.startswith("MetaLUN WWN:"):
+                meta["wwid"] = line.replace("MetaLUN WWN:","").strip().replace(":","").lower()
+            if line.startswith("MetaLUN Name:"):
+                meta["name"] = line.split(':')[-1].strip()
+            if line.startswith("Number of LUNs"):
+                meta["raid"] = "meta-%s " % line.split(':')[-1].strip()
+            if line.startswith("RAID Type:"):
+                raid.add(line.split(':')[-1].strip().lower())
 
     def load_thin(self):
         try:
@@ -96,9 +122,13 @@ class Vnx(object):
             if line.startswith("RAID Type:"):
                 vdisk["raid"] = line.split(':')[-1].strip().lower()
             if line.startswith("Is Pool LUN:") and line.endswith("YES"):
-                vdisk["disk_group"] = "pool lun"
+                skip = True
             if line.startswith("Is Meta LUN:") and line.endswith("YES"):
-                vdisk["disk_group"] = "meta lun"
+                if vdisk["lunid"] in self.meta:
+                    meta = self.meta[vdisk["lunid"]]
+                    vdisk["raid"] = meta["raid"]
+                else:
+                    vdisk["disk_group"] = "meta lun"
             if line.startswith("Is Thin LUN:") and line.endswith("YES"):
                 skip = True
 
