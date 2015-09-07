@@ -509,14 +509,15 @@ class HtmlTable(object):
                   _class='link16',
                   _id='link_'+self.id,
                 ),
-              DIV(
-                TEXTAREA(
+                DIV(
+                  TEXTAREA(
+                    _class="link_ta",
+                  ),
+                  _class='white_float hidden',
+                  _id='link_val_'+self.id,
                 ),
-                _class='white_float hidden',
-                _id='link_val_'+self.id,
               ),
-                _class='floatw',
-              ),
+              _class='floatw',
             )
         return d
 
@@ -531,8 +532,8 @@ class HtmlTable(object):
                   _class='refresh16',
                   _id='refresh_'+self.id,
                 ),
-                _class='floatw',
               ),
+              _class='floatw',
             )
         return d
 
@@ -721,7 +722,7 @@ class HtmlTable(object):
         if not self.pageable:
             return SPAN()
 
-        nav = DIV(_class='pager floatw')
+        nav = SPAN(_class='pager floatw')
 
         return nav
 
@@ -1153,14 +1154,14 @@ class HtmlTable(object):
                      table=self.upc_table,
                      id=self.id,
                     )
-        d = DIV(
+        d = SPAN(
           INPUT(
             _type="checkbox",
             _id="wsswitch_"+self.id,
             _onclick=js,
             value=wsenabled,
           ),
-          T("Live"),
+          SPAN(T("Live")),
           _class='floatw'
         )
         return d

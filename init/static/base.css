@@ -1283,10 +1283,36 @@ div.sym_detail_visible {
     -webkit-border-radius: 4px;
 }
 
+.link_ta:focus {
+    background: none;
+}
+textarea.link_ta {
+    background: none;
+    border: 0px;
+}
+
 .floatw {
     float: right;
-    margin-left:0.5em;
-    margin-right:0.5em;
+    margin-left:0.4em;
+    margin-right:0.4em;
+    padding: 3px;
+}
+
+.floatw a {
+    text-decoration: none;
+}
+
+.floatw input {
+    vertical-align: middle;
+}
+
+div.floatw:hover {
+  background-color: rgba(0,0,0,0.02);
+  box-shadow: inset 0px -1px 1px rgba(0,0,0,0.3), inset 0px 1px 1px rgba(0,0,0,0.5);
+  border-radius: 3px;
+}
+div.floatw:active {
+  background-color: rgba(0,0,0,0.1);
 }
 
 .login_menu {
@@ -2200,7 +2226,7 @@ ul.login_menu ul {
 .theader {
     background-color: #e0e1cd;
     color: black;
-    padding: 0;
+    padding: 1px 0px 0px 0px;
     margin-top: 0;
     margin-bottom: 0;
 }
