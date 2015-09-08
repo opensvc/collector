@@ -123,6 +123,8 @@ priv_groups = [
   "ProvisioningManager",
   "StorageExec",
   "StorageManager",
+  "TagManager",
+  "UserManager",
 ]
 
 blist_groups = [
