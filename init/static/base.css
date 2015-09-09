@@ -717,8 +717,8 @@ div.error {
   max-height: 90%;
   background: #2d2d2d;
   box-shadow: black -0px 10px 20px;
-  padding-right: 10px;
-  overflow-y: hidden;
+  padding-right: 16px;
+  overflow-y: scroll;
 }
 .menu_section {
   padding: 1em;
