@@ -1356,7 +1356,11 @@ ul.login_menu ul {
     margin: 0 0 1em 0;
 }
 .login input {
-    color: black;
+  color: black;
+  -moz-border-radius: 4px;
+  -webkit-border-radius: 4px;
+  border-radius: 4px;
+  outline: 0;
 }
 .login table {
     border-collapse: initial;
