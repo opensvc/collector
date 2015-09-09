@@ -718,7 +718,7 @@ div.error {
   background: #2d2d2d;
   box-shadow: black -0px 10px 20px;
   padding-right: 10px;
-  overflow-y: scroll;
+  overflow-y: hidden;
 }
 .menu_section {
   padding: 1em;
@@ -774,6 +774,7 @@ div.error {
 .header {
     background: #2d2d2d;
     color: white;
+    width: 100%;
 }
 
 .statusbar {
@@ -1343,29 +1344,12 @@ ul.login_menu ul {
 
 .login {
     z-index: 501;
-    background: rgba(0, 0, 0, 0.2);
     position: absolute;
     top: 50%;
     left: 50%;
-    padding: 2em;
     vertical-align: middle;
     text-align: center;
     color: white;
-    border-radius:8px;
-   -moz-border-radius:8px;
-   -webkit-border-radius:8px;
-    border-bottom-color: #DDD;
-    border-bottom-style: solid;
-    border-bottom-width: 2px;
-    border-left-color: #AAA;
-    border-left-style: solid;
-    border-left-width: 2px;
-    border-right-color: #DDD;
-    border-right-style: solid;
-    border-right-width: 2px;
-    border-top-color: #AAA;
-    border-top-style: solid;
-    border-top-width: 2px;
 }
 .login h2 {
     width: 100%;
@@ -1373,6 +1357,10 @@ ul.login_menu ul {
 }
 .login input {
     color: black;
+}
+.login table {
+    border-collapse: initial;
+    border-spacing: 5px;
 }
 
 .extraline_marker {

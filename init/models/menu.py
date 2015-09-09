@@ -16,9 +16,9 @@ _f = request.function
 if 'auth' in globals():
     if not auth.is_logged_in():
        response.menu_auth = [
-           [DIV(T('Login'),_class='guy16'), False, auth.settings.login_url,
+           [DIV(T('Help'),_class='menu16'), False, auth.settings.login_url,
             [
-              [T('Login actions'), False, '',
+              ['', False, '',
                [
                    [DIV(T('Register'), DIV(T("Create a new user")), _class="guy48"), True,
                     URL(request.application,'default','user/register')],
