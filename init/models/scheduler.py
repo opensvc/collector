@@ -50,6 +50,7 @@ def task_purge_feed():
         last_run_time < date_sub(now(), interval 10 minute)
     """
     db.executesql(sql)
+    db.commit()
     sql = """
       delete from scheduler_run
       where
@@ -57,6 +58,7 @@ def task_purge_feed():
         stop_time < date_sub(now(), interval 10 minute)
     """
     db.executesql(sql)
+    db.commit()
     sql = """
       delete from scheduler_run
       where
