@@ -1572,7 +1572,7 @@ def ajax_disk_charts():
                     size = int(row[1])
                 except:
                     continue
-                _data_svc += [[str(label) +' (%s)'%beautify_size_mb(size), size]]
+                _data_svc += [[label +' (%s)'%beautify_size_mb(size), size]]
 
             _data_svc.sort(lambda x, y: cmp(y[1], x[1]))
             if len(_data_svc) == 0:
@@ -1666,7 +1666,7 @@ def ajax_disk_charts():
                     size = int(row[1])
                 except:
                     continue
-                _data_app += [[str(label) +' (%s)'%beautify_size_mb(size), size]]
+                _data_app += [[label +' (%s)'%beautify_size_mb(size), size]]
 
             _data_app.sort(lambda x, y: cmp(y[1], x[1]))
             if len(_data_app) == 0:
@@ -1752,7 +1752,7 @@ def ajax_disk_charts():
                 size = int(row[1])
             except:
                 continue
-            data_dg += [[str(label) +' (%s)'%beautify_size_mb(size), size]]
+            data_dg += [[label +' (%s)'%beautify_size_mb(size), size]]
         total, backend_total = data_total(rows)
         data_dg.sort(lambda x, y: cmp(y[1], x[1]))
         data_dg = [data_dg]
@@ -1812,7 +1812,7 @@ def ajax_disk_charts():
                     size = int(row[1])
                 except:
                     continue
-                _data_array += [[str(label) +' (%s)'%beautify_size_mb(size), size]]
+                _data_array += [[label +' (%s)'%beautify_size_mb(size), size]]
             _data_array.sort(lambda x, y: cmp(y[1], x[1]))
             if len(_data_array) == 0:
                 _data_array = [["", 0]]
