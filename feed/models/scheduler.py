@@ -1175,7 +1175,7 @@ def insert_emcvnx(name=None, nodename=None):
             print s.name, "insert dg info"
             vars = ['array_id', 'dg_name', 'dg_free', 'dg_used', 'dg_size', 'dg_updated']
             vals = []
-            for dg in s.pool:
+            for dg in s.pool.values():
                 vals.append([array_id,
                              dg['name'],
                              str(dg['free']),

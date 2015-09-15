@@ -21,7 +21,9 @@ class Vnx(object):
         self.ports = []
         self.vdisk = []
         self.meta = {}
-        self.pool = []
+        self.pool = {}
+        self.lun_pool = {}
+        self.load_pool()
         self.load_meta()
         for i, line in enumerate(self.lines):
             if line.startswith("Model:"):
@@ -37,9 +39,34 @@ class Vnx(object):
                     continue
             elif line.startswith("All logical Units Information"):
                 self.load_lu_detail(i+2)
-            #elif line.startswith("--- Pool Detail Information"):
-            #    self.load_pool_detail(i+1)
         self.load_thin()
+
+    def load_pool(self):
+        try:
+            buff = self.readfile("storagepool")
+        except:
+            return
+        pool = {}
+        for line in buff.split("\n"):
+            if line.startswith("Pool Name"):
+                if pool != {}:
+                    self.pool[pool["name"]] = pool
+                    pool = {}
+                pool["name"] = line.split(": ")[-1].strip()
+            if line.startswith("User Capacity (Blocks)"):
+                pool["size"] = int(line.split(": ")[-1].strip())/2048
+            if line.startswith("Consumed Capacity (Blocks)"):
+                pool["used"] = int(line.split(": ")[-1].strip())/2048
+            if line.startswith("Available Capacity (Blocks)"):
+                pool["free"] = int(line.split(": ")[-1].strip())/2048
+            if line.startswith("Raid Type"):
+                pool["raid"] = line.split(": ")[-1].strip()
+            if line.startswith("LUNs:"):
+                pool["luns"] = line.split(": ")[-1].strip().split(", ")
+                for lun in pool["luns"]:
+                    self.lun_pool[lun] = pool["name"]
+        if pool != {}:
+            self.pool[pool["name"]] = pool
 
     def load_meta(self):
         try:
@@ -98,6 +125,9 @@ class Vnx(object):
         skip = False
         for line in self.lines[i:]:
             if line.startswith("Device Map:"):
+                if vdisk["lunid"] in self.lun_pool:
+                    vdisk['disk_group'] = self.lun_pool[vdisk["lunid"]]
+                    vdisk['raid'] = self.pool[self.lun_pool[vdisk["lunid"]]]["raid"]
                 if 'raid' not in vdisk:
                     vdisk['raid'] = ''
                 if 'disk_group' not in vdisk:
@@ -121,8 +151,6 @@ class Vnx(object):
                 vdisk["disk_group"] = line.split(':')[-1].strip()
             if line.startswith("RAID Type:"):
                 vdisk["raid"] = line.split(':')[-1].strip().lower()
-            if line.startswith("Is Pool LUN:") and line.endswith("YES"):
-                skip = True
             if line.startswith("Is Meta LUN:") and line.endswith("YES"):
                 if vdisk["lunid"] in self.meta:
                     meta = self.meta[vdisk["lunid"]]
@@ -160,7 +188,7 @@ class Vnx(object):
         s += "firmware: %s\n" % self.firmware
         for port in self.ports:
             s += "port: %s\n" % port
-        for d in self.pool:
+        for d in self.pool.values():
             s += "pool %s: size %d MB, used %d MB, free %d MB\n"%(d['name'], d['size'], d['used'], d['free'])
         for d in sorted(self.vdisk, lambda x, y: cmp(x["name"], y["name"])):
             s += "vdisk %s (%s): size %s/%s MB dg %s raid %s\n"%(d['name'], d['wwid'], str(d['size']), str(d['alloc']), d['disk_group'], d['raid'])
