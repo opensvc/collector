@@ -11388,6 +11388,7 @@ def json_tree_action_set_autofix(modset_mod_id, autofix):
     if v is None:
         return "-1"
     db(q).update(autofix=autofix)
+    table_modified("comp_moduleset_modules")
     _log('compliance.module.change',
          'set module %(modset_mod_name)s autofix from %(old)s to %(new)s in moduleset %(modset_name)s',
          dict(modset_mod_name=v.comp_moduleset_modules.modset_mod_name,
