@@ -419,28 +419,28 @@ class rest_post_node(rest_post_handler):
         ]
         rest_post_handler.__init__(
           self,
-          path="/nodes/<nodename>",
+          path="/nodes/<id>",
           tables=["nodes"],
           desc=desc,
           examples=examples
         )
 
-    def handler(self, nodename, **vars):
+    def handler(self, id, **vars):
         check_privilege("NodeManager")
-        node_responsible(nodename)
-        q = db.nodes.nodename == nodename
+        node_responsible(id)
+        q = db.nodes.nodename == id
         vars["updated"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         db(q).update(**vars)
         _log('rest.nodes.update',
              'update properties %(data)s',
              dict(data=str(vars)),
-             nodename=nodename)
+             nodename=id)
         l = {
           'event': 'nodes_change',
           'data': {'foo': 'bar'},
         }
         _websocket_send(event_msg(l))
-        return rest_get_node().handler(nodename, props=','.join(["nodename","updated"]+vars.keys()))
+        return rest_get_node().handler(id, props=','.join(["nodename","updated"]+vars.keys()))
 
 
 #

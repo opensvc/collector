@@ -6,6 +6,8 @@ def node_responsible(nodename):
     n = db(q).count()
     if n == 0:
         raise Exception("Node %s does not exist" % nodename)
+    if "Manager" in user_groups():
+        return
     q &= db.nodes.team_responsible == db.auth_group.role
     q &= db.auth_group.id.belongs(user_group_ids())
     n = db(q).count()
@@ -17,6 +19,8 @@ def svc_responsible(svcname):
     n = db(q).count()
     if n == 0:
         raise Exception("Service %s does not exist" % svcname)
+    if "Manager" in user_groups():
+        return
     q &= db.services.svc_app == db.apps.app
     q &= db.apps.id == db.apps_responsibles.app_id
     db.apps_responsibles.group_id.belongs(user_group_ids())
