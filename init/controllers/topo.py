@@ -576,7 +576,7 @@ class viz(object):
 
     def add_node(self, nodename):
         d = self.rs["nodes"].get(nodename, {})
-        label = nodename+"\n"+', '.join((d.get("os_name", ""), d.get("model", "")))
+        label = nodename if nodename else "" +"\n"+', '.join((d.get("os_name", ""), d.get("model", "")))
         nodename_id = self.add_visnode("node", nodename)
         self.add_visnode_node(nodename_id, "node", label=label, mass=3)
 
