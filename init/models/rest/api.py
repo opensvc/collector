@@ -179,7 +179,7 @@ class rest_post_handler(rest_handler):
         return rest_handler.handle(self, *args, **vars)
 
     def handle_multi_update(self, *args, **vars):
-        l = self.get_handler.handler(query=vars["query"], props=self.update_one_param)["data"]
+        l = self.get_handler.handler(query=vars["query"], limit=0, props=self.update_one_param)["data"]
         del(vars["query"])
         result = {"data": []}
         for e in l:
