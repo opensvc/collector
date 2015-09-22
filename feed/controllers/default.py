@@ -552,12 +552,12 @@ def rpc_update_vioserver(name, vars, vals, auth):
     update_array_xml(name, vars, vals, auth, "vioserver", insert_vioserver)
 
 @service.xmlrpc
-def update_centerra(name, vars, vals, auth):
-    return rpc_update_centerra(name, vars, vals, auth)
+def update_centera(name, vars, vals, auth):
+    return rpc_update_centera(name, vars, vals, auth)
 
 @auth_uuid
-def rpc_update_centerra(name, vars, vals, auth):
-    update_array_xml(name, vars, vals, auth, "centerra", insert_centerra)
+def rpc_update_centera(name, vars, vals, auth):
+    update_array_xml(name, vars, vals, auth, "centera", insert_centera)
 
 @service.xmlrpc
 def update_emcvnx(name, vars, vals, auth):
@@ -665,8 +665,8 @@ def insert_dcss():
 def insert_hdss():
     return insert_hds()
 
-def insert_centerras():
-    return insert_centerra()
+def insert_centeras():
+    return insert_centera()
 
 def insert_emcvnxs():
     return insert_emcvnx()

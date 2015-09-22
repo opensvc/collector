@@ -1,12 +1,12 @@
 import os
 from xml.etree.ElementTree import ElementTree, SubElement
 
-class Centerra(object):
+class Centera(object):
     def __init__(self, dir=None):
         if dir is None:
             return
         self.dir = dir
-        self.model = "Centerra"
+        self.model = "Centera"
         self.cache = 0
         self.firmware = ""
         self.name = os.path.basename(os.path.realpath(dir))
@@ -76,15 +76,15 @@ class Centerra(object):
         return s
 
 
-def get_centerra(dir=None):
+def get_centera(dir=None):
     try:
-        return Centerra(dir)
+        return Centera(dir)
     except:
         return None
 
 def main():
     import sys
-    s = Centerra(sys.argv[1])
+    s = Centera(sys.argv[1])
     print s
 
 if __name__ == "__main__":
