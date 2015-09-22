@@ -1170,6 +1170,7 @@ def insert_centerra(name=None, nodename=None):
 
             sql = """select id from stor_array where array_name="%s" """%s.name
             array_id = str(db.executesql(sql)[0][0])
+            print array_id, vals
 
             # stor_array_dg
             print s.name, "insert dg info"
@@ -1183,6 +1184,7 @@ def insert_centerra(name=None, nodename=None):
                              str(dg['size']),
                              now])
             generic_insert('stor_array_dg', vars, vals)
+            print vals
             sql = """delete from stor_array_dg where array_id=%s and dg_updated < "%s" """%(array_id, str(now))
             db.executesql(sql)
 
@@ -1198,7 +1200,7 @@ def insert_centerra(name=None, nodename=None):
                     'disk_updated']
             vals = []
             for d in s.pool:
-                vals.append([d['name'],
+                vals.append(['.'.join((s.name, d['name'])),
                              s.name,
                              d['id'],
                              str(d['used']),
@@ -1207,6 +1209,7 @@ def insert_centerra(name=None, nodename=None):
                              d['name'],
                              now])
             generic_insert('diskinfo', vars, vals)
+            print vals
             sql = """delete from diskinfo where disk_arrayid="%s" and disk_updated < "%s" """%(s.name, str(now))
             db.executesql(sql)
 
@@ -1226,7 +1229,7 @@ def insert_centerra(name=None, nodename=None):
             vals = []
             for d in s.pool:
                 for h in d["hostnames"]:
-                    vals.append([d['name'],
+                    vals.append(['.'.join((s.name, d['name'])),
                                  "",
                                  h,
                                  str(d['used']),
@@ -1238,6 +1241,7 @@ def insert_centerra(name=None, nodename=None):
                                  str(d['used']),
                                  "0"])
             generic_insert('svcdisks', vars, vals)
+            print vals
             sql = """delete from svcdisks where disk_model="Centerra" and disk_dg="%s" and disk_updated < "%s" """%(s.name, str(now))
             db.executesql(sql)
     queue_refresh_b_disk_app()
