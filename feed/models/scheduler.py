@@ -1139,6 +1139,109 @@ def insert_hds(name=None, nodename=None):
             db.executesql(sql)
     queue_refresh_b_disk_app()
 
+def insert_centerra(name=None, nodename=None):
+    import glob
+    import os
+    from applications.init.modules import centerra
+    now = datetime.datetime.now()
+    now -= datetime.timedelta(microseconds=now.microsecond)
+
+    dir = 'applications'+str(URL(r=request,a='init',c='uploads',f='centerra'))
+    if name is None:
+        pattern = "*"
+    else:
+        pattern = name
+    dirs = glob.glob(os.path.join(dir, pattern))
+
+    for d in dirs:
+        print d
+        s = centerra.get_centerra(d)
+        if s is not None:
+            # stor_array
+            print s.name, "insert array info"
+            vars = ['array_name', 'array_model', 'array_cache', 'array_firmware', 'array_updated']
+            vals = []
+            vals.append([s.name,
+                         s.model,
+                         str(s.cache),
+                         s.firmware,
+                         now])
+            generic_insert('stor_array', vars, vals)
+
+            sql = """select id from stor_array where array_name="%s" """%s.name
+            array_id = str(db.executesql(sql)[0][0])
+
+            # stor_array_dg
+            print s.name, "insert dg info"
+            vars = ['array_id', 'dg_name', 'dg_free', 'dg_used', 'dg_size', 'dg_updated']
+            vals = []
+            for dg in s.pool:
+                vals.append([array_id,
+                             dg['name'],
+                             str(dg['free']),
+                             str(dg['used']),
+                             str(dg['size']),
+                             now])
+            generic_insert('stor_array_dg', vars, vals)
+            sql = """delete from stor_array_dg where array_id=%s and dg_updated < "%s" """%(array_id, str(now))
+            db.executesql(sql)
+
+            # diskinfo
+            print s.name, "insert disk info"
+            vars = ['disk_id',
+                    'disk_arrayid',
+                    'disk_devid',
+                    'disk_size',
+                    'disk_alloc',
+                    'disk_raid',
+                    'disk_group',
+                    'disk_updated']
+            vals = []
+            for d in s.pool:
+                vals.append([d['name'],
+                             s.name,
+                             d['id'],
+                             str(d['used']),
+                             str(d['used']),
+                             "",
+                             d['name'],
+                             now])
+            generic_insert('diskinfo', vars, vals)
+            sql = """delete from diskinfo where disk_arrayid="%s" and disk_updated < "%s" """%(s.name, str(now))
+            db.executesql(sql)
+
+            # svcdisks
+            print s.name, "insert svcdisk info"
+            vars = ['disk_id',
+                    'disk_svcname',
+                    'disk_nodename',
+                    'disk_size',
+                    'disk_vendor',
+                    'disk_model',
+                    'disk_dg',
+                    'disk_updated',
+                    'disk_local',
+                    'disk_used',
+                    'disk_region']
+            vals = []
+            for d in s.pool:
+                for h in d["hostnames"]:
+                    vals.append([d['name'],
+                                 "",
+                                 h,
+                                 str(d['used']),
+                                 "EMC",
+                                 "Centerra",
+                                 s.name,
+                                 now,
+                                 'F',
+                                 str(d['used']),
+                                 "0"])
+            generic_insert('svcdisks', vars, vals)
+            sql = """delete from svcdisks where disk_model="Centerra" and disk_dg="%s" and disk_updated < "%s" """%(s.name, str(now))
+            db.executesql(sql)
+    queue_refresh_b_disk_app()
+
 def insert_emcvnx(name=None, nodename=None):
     import glob
     import os
