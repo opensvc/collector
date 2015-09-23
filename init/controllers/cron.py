@@ -187,7 +187,8 @@ def cron_stats():
         pass
     try:
         cron_stat_day_disk()
-    except:
+    except Exception as e:
+        print(e)
         pass
 
 def cron_stat_day_disk():
@@ -208,6 +209,7 @@ def cron_stat_day_disk_app():
              group by app
           """
     rows = db.executesql(sql)
+    db.commit()
     print "cron_stat_day_disk_app", str(rows)
 
 def cron_stat_day_disk_app_dg():
@@ -226,6 +228,7 @@ def cron_stat_day_disk_app_dg():
              left join stor_array_dg_quota dgq on ap.id=dgq.app_id and dg.id=dgq.dg_id
           """
     rows = db.executesql(sql)
+    db.commit()
     print "cron_stat_day_disk_app_dg", str(rows)
 
 def cron_stat_day_disk_array():
@@ -254,6 +257,7 @@ def cron_stat_day_disk_array():
                t.array_name
           """
     rows = db.executesql(sql)
+    db.commit()
     print "cron_stat_day_disk_array", str(rows)
 
 def cron_stat_day_disk_array_dg():
@@ -273,6 +277,7 @@ def cron_stat_day_disk_array_dg():
                array_name, dg_name
            """
     rows = db.executesql(sql)
+    db.commit()
     print "cron_stat_day_disk_array_dg", str(rows)
 
 def cron_stat_day():
