@@ -32,8 +32,8 @@ data = {
        'comment': "Insert HP 3par arrays data from uploads",
      },
      {
-       'url': URL(r=request, a='feed',  c='default', f='insert_centerras'),
-       'comment': "Insert Centerra arrays data from uploads",
+       'url': URL(r=request, a='feed',  c='default', f='insert_centeras'),
+       'comment': "Insert Centera arrays data from uploads",
      },
      {
        'url': URL(r=request, a='feed',  c='default', f='insert_emcvnxs'),
