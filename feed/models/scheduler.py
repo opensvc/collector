@@ -1153,6 +1153,8 @@ def insert_centera(name=None, nodename=None):
         pattern = name
     dirs = glob.glob(os.path.join(dir, pattern))
 
+    nodenames = set([r.nodename for r in db(db.nodes.id>0).select(db.nodes.nodename)])
+
     for d in dirs:
         print d
         s = centera.get_centera(d)
@@ -1176,6 +1178,8 @@ def insert_centera(name=None, nodename=None):
             vars = ['array_id', 'dg_name', 'dg_free', 'dg_used', 'dg_size', 'dg_updated']
             vals = []
             for dg in s.pool:
+                if dg['name'] == "cluster":
+                    continue
                 vals.append([array_id,
                              dg['name'],
                              str(dg['free']),
@@ -1198,10 +1202,12 @@ def insert_centera(name=None, nodename=None):
                     'disk_updated']
             vals = []
             for d in s.pool:
+                if d['name'] == "cluster":
+                    continue
                 vals.append(['.'.join((s.name, d['name'])),
                              s.name,
                              d['id'],
-                             str(d['used']),
+                             str(d['size']),
                              str(d['used']),
                              "",
                              d['name'],
@@ -1225,17 +1231,17 @@ def insert_centera(name=None, nodename=None):
                     'disk_region']
             vals = []
             for d in s.pool:
-                for h in d["hostnames"]:
+                for h in set(d["hostnames"]) & nodenames:
                     vals.append(['.'.join((s.name, d['name'])),
                                  "",
                                  h,
-                                 str(d['used']),
+                                 str(d['size']),
                                  "EMC",
                                  "Centera",
                                  s.name,
                                  now,
                                  'F',
-                                 str(d['used']),
+                                 str(d['size']),
                                  "0"])
             generic_insert('svcdisks', vars, vals)
             sql = """delete from svcdisks where disk_model="Centera" and disk_dg="%s" and disk_updated < "%s" """%(s.name, str(now))

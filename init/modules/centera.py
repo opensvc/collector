@@ -50,7 +50,7 @@ class Centera(object):
             pool["name"] = identification.get("name")
             pool["id"] = identification.get("id")
             pool["used"] = int(pc.get("usedCapacity")) / 1024 / 1024
-            pool["free"] = int(pc.get("freeCapacity")) / 1024 / 1024
+            pool["free"] = int(pc.get("hardStopFreeCapacity")) / 1024 / 1024
             pool["size"] = pool["used"] + pool["free"]
             for p_ref in e.findall("profileRefList"):
                 _p_ref = p_ref.find("profileRef")

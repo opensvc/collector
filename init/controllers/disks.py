@@ -1499,7 +1499,7 @@ def ajax_disk_charts():
                  select
                    v.obj obj,
                    sum(if(v.disk_used is not NULL and v.disk_used>0, v.disk_used, v.disk_size)) size,
-                   max(if(v.disk_alloc is not NULL and v.disk_alloc>0, v.disk_alloc, v.disk_size)) alloc
+                   max(if(v.disk_alloc is not NULL, v.disk_alloc, v.disk_size)) alloc
                  from
                    (
                    select
@@ -1601,7 +1601,7 @@ def ajax_disk_charts():
                  select
                    v.app app,
                    sum(if(v.disk_used is not NULL and v.disk_used>0, v.disk_used, v.disk_size)) size,
-                   max(if(v.disk_alloc is not NULL and v.disk_alloc>0, v.disk_alloc, v.disk_size)) alloc
+                   max(if(v.disk_alloc is not NULL, v.disk_alloc, v.disk_size)) alloc
                  from
                    (
                    select
@@ -1709,7 +1709,7 @@ def ajax_disk_charts():
         sql = """select
                    t.disk_arrayid,
                    sum(if(t.disk_used is not NULL and t.disk_used>0, t.disk_used, t.disk_size)) size,
-                   sum(if(t.disk_alloc is not NULL and t.disk_alloc>0, t.disk_alloc, t.disk_size)) alloc,
+                   sum(if(t.disk_alloc is not NULL, t.disk_alloc, t.disk_size)) alloc,
                    t.disk_group
                  from (
                    select
@@ -1767,7 +1767,7 @@ def ajax_disk_charts():
         sql = """select
                    t.disk_arrayid,
                    sum(if(t.disk_used is not NULL and t.disk_used>0, t.disk_used, t.disk_size)) size,
-                   sum(if(t.disk_alloc is not NULL and t.disk_alloc>0, t.disk_alloc, t.disk_size)) alloc
+                   sum(if(t.disk_alloc is not NULL, t.disk_alloc, t.disk_size)) alloc
                  from (
                    select
                      sum(u.disk_used) as disk_used,
