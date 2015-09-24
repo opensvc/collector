@@ -4,11 +4,16 @@ class Netapp(object):
     def __init__(self, dir=None):
         if dir is None:
             return
+        self.model = None
         self.dir = dir
-        self.name = os.path.basename(dir)
-        self.controller()
-        self.disk_group()
-        self.vdisk()
+        self.ports = []
+        self.dgs = []
+        self.luns = []
+        self.vol_aggr = {}
+        self.get_controller()
+        self.get_ports()
+        self.get_dgs()
+        self.get_luns()
 
     def readfile(self, fname):
         fpath = os.path.join(self.dir, fname)
@@ -16,97 +21,112 @@ class Netapp(object):
             buff = f.read()
         return buff
 
-    def readlines(self, fname, sep=':'):
-        lines = self.readfile(fname).split('\n')
-        if len(lines) < 2:
-            return
-        _l = []
-        titles = lines[0].split(sep)
-        for line in lines[1:]:
-            h = {}
-            l = line.split(sep)
-            if len(l) != len(titles):
-                continue
-            for i, t in enumerate(titles):
-                h[t] = l[i]
-            _l.append(h)
-        del lines
-        return _l
-
-    def controller(self):
-        l = self.readlines('lscluster')
+    def get_controller(self):
+        l = self.readfile('sysconfig_a').split("\n")
         if len(l) < 1:
             return
-        clu1 = l[0]
-        self.array_name = clu1['name']
-        modelnumber = self.readfile('svc_product_id')
-        self.modelnumber = modelnumber.strip()
-        self.controllermainmemory = 0
-        self.firmwareversion = ""
-
-        l = self.readlines('lsfabric')
-        ports = set([])
         for line in l:
-            ports.add(line['local_wwpn'])
-        self.ports = list(ports)
+            if "NetApp Release" in line:
+                v = line.split()
+                self.firmwareversion = v[2]
+                self.mode = v[3].strip(":")
+            elif "Memory Size:" in line:
+                self.cache = line.split()[-2]
+            elif "System Serial Number:" in line:
+                v = line.replace("System Serial Number:", "").split()
+                self.serial = v[0]
+                self.name = v[1].strip("()")
+            elif "Model Name:" in line and self.model is None:
+                self.model = "NetApp " + line.replace("Model Name:", "").strip()
+            elif "System ID:" in line:
+                v = line.split("(")
+                node1 = v[1].split(")")[0]
+                node2 = v[2].split(")")[0]
+                v = [node1, node2]
+                v.sort()
+                self.array_name = "-".join(v)
 
-    def to_mb(self, size):
-        if "TB" in size:
-            size = float(size.replace("TB", "")) * 1024 * 1024
-        elif "GB" in size:
-            size = float(size.replace("GB", "")) * 1024
-        elif "MB" in size:
-            size = float(size.replace("MB", ""))
-        else:
-            size = 0
-        return size
+    def get_ports(self):
+        l = self.readfile('fcp_show_adapter').split("\n")
+        for line in l:
+            if "FC Portname:" not in line:
+                continue
+            v = line.split()
+            wwn = v[-1].strip("()")
+            self.ports.append(wwn)
 
-    def to_gb(self, size):
-        if "TB" in size:
-            size = float(size.replace("TB", "")) * 1024
-        elif "GB" in size:
-            size = float(size.replace("GB", ""))
-        elif "MB" in size:
-            size = float(size.replace("MB", "")) // 1024
-        else:
-            size = 0
-        return size
+    def get_dgs(self):
+        l = self.readfile('aggr_show_space').split("\n")
+        for i, line in enumerate(l):
+            if line.startswith("Aggregate") and line.count("'") == 2:
+                d = {}
+                d["name"] = self.name + "." + line.split("'")[1]
+            elif line.startswith("    Total space"):
+                v = l[i+1].split()
+                d["size"] = int(v[0].replace("MB",""))
+            elif line.startswith("Total space"):
+                v = line.split()
+                d["free"] = int(v[-1].replace("MB",""))
+                d["used"] = d["size"] - d["free"]
+                self.dgs.append(d)
+            elif line.count("MB") == 2:
+                v = line.split()
+                if len(v) == 4:
+                    self.vol_aggr[v[0]] = d["name"]
 
-    def disk_group(self):
-        """
-id:name:status:mdisk_count:vdisk_count:capacity:extent_size:free_capacity:virtual_capacity:used_capacity:real_capacity:overallocation:warning:easy_tier:easy_tier_status
-0:STP_V7KDev_A60R5_01:online:7:219:22.90TB:256:3.24TB:26.71TB:19.17TB:19.62TB:116:0:auto:inactive
-1:STP_IMAGE_MIG:online:0:0:0:256:0:0.00MB:0.00MB:0.00MB:0:80:auto:inactive
-2:STP_CX4240_R5_01:online:14:26:19.26TB:256:11.83TB:10.81TB:7.22TB:7.43TB:56:80:auto:inactive
-        """
-        self.dg = self.readlines('lsmdiskgrp')
-        for dg in self.dg:
-            dg["capacity"] = self.to_mb(dg["capacity"])
-            dg["free_capacity"] = self.to_mb(dg["free_capacity"])
+    def to_hex(self, s):
+        lst = []
+        for ch in s:
+            hv = hex(ord(ch)).replace('0x', '')
+            if len(hv) == 1:
+                hv = '0'+hv
+            lst.append(hv)
+        return reduce(lambda x,y:x+y, lst)
 
-    def vdisk(self):
-        """
-id:name:IO_group_id:IO_group_name:status:mdisk_grp_id:mdisk_grp_name:capacity:type:FC_id:FC_name:RC_id:RC_name:vdisk_UID:fc_map_count:copy_count:fast_write_state:se_copy_count
-0:VD_CLU_ESXEIFF_lun12:0:io_grp0:online:0:STP_V7KDev_A60R5_01:512.00GB:striped:::::600507680280809AB0000000000000DF:0:1:empty:1
-1:VD_vin0002_lun3:0:io_grp0:online:0:STP_V7KDev_A60R5_01:32.00GB:striped:::::600507680280809AB000000000000001:0:1:empty:1
-2:VD_vin0002_lun1:0:io_grp0:online:0:STP_V7KDev_A60R5_01:1.00GB:striped:::::600507680280809AB000000000000002:0:1:empty:1
-3:VD_vin0002_lun2:0:io_grp0:online:0:STP_V7KDev_A60R5_01:1.00GB:striped:::::600507680280809AB000000000000003:0:1:not_empty:1
-        """
-        self.vdisk = self.readlines('lsvdisk')
-        for vdisk in self.vdisk:
-            vdisk["capacity"] = self.to_mb(vdisk["capacity"])
+    def get_luns(self):
+        l = self.readfile('lun_show_v').split("\n")
+        for line in l:
+            line = line.strip()
+            if line.startswith("/vol/"):
+                d = {}
+                v = line.split()
+                d["id"] = v[0]
+                d["size"] = int(v[2].strip("()"))/1024/1024
+                volume = v[0].split("/")[2]
+                if volume in self.vol_aggr:
+                    d["aggr"] = self.vol_aggr[volume]
+                else:
+                    d["aggr"] = ""
+            elif line.startswith("Occupied Size:"):
+                d["alloc"] = int(line.split()[-1].strip("()"))/1024/1024
+            elif line.startswith("Serial#:"):
+                serial = line.split()[-1]
+                d["serial"] = serial
+                d["wwid"] = self.to_hex(serial)
+                if self.mode == "7-Mode":
+                    d["wwid"] = "60a98000" + d["wwid"]
+                elif self.mode == "C-Dot":
+                    d["wwid"] = "600a0980" + d["wwid"]
+            elif line.startswith("Comment:") and line.count('"') == 2:
+                d["name"] = line.split('"')[1]
+            elif line.startswith("Creation Time:"):
+                self.luns.append(d)
+
 
     def __str__(self):
         s = "name: %s\n" % self.name
-        s += "modelnumber: %s\n" % self.modelnumber
-        s += "controllermainmemory: %d\n" % self.controllermainmemory
+        s += "array_name: %s\n" % self.array_name
+        s += "model: %s\n" % self.model
+        s += "serial: %s\n" % self.serial
+        s += "cache: %s\n" % self.cache
         s += "firmwareversion: %s\n" % self.firmwareversion
-        s += "ports: %s\n"%','.join(self.ports)
-        for dg in self.dg:
-            s += "dg %s: free %s MB\n"%(dg['name'], str(dg['free_capacity']))
-            s += "dg %s: total %s MB\n"%(dg['name'], str(dg['capacity']))
-        for d in self.vdisk:
-            s += "vdisk %s: size %s MB\n"%(d['vdisk_UID'], str(d['capacity']))
+        s += "ports:\n"
+        for port in self.ports:
+            s += "  %s\n" % port
+        for dg in self.dgs:
+            s += "dg %s: free %d MB used %d MB size %d MB\n"%(dg['name'], dg['free'], dg['used'], dg['size'])
+        for d in self.luns:
+            s += "lun %s: size %d MB alloc %d MB id %s comment %s aggr %s\n"%(d['wwid'], d['size'], d["alloc"], d["id"], d.get("name", "(none)"), d['aggr'])
         return s
 
 
