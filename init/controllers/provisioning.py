@@ -261,10 +261,6 @@ def prov_enqueue(node, command):
     _log('service.provision', 'provision service on node %(node)s with command %(command)s', dict(
           node=node,
           command=command))
-    l = {
-      'event': 'action_q_change',
-      'data': action_queue_ws_data(),
-    }
-    _websocket_send(event_msg(l))
+    action_q_event()
 
 
