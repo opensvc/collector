@@ -44,6 +44,10 @@ data = {
        'comment': "Insert NEC ISM arrays data from uploads",
      },
      {
+       'url': URL(r=request, a='feed',  c='default', f='insert_netapps'),
+       'comment': "Insert NetApp arrays data from uploads",
+     },
+     {
        'url': URL(r=request, a='feed',  c='default', f='insert_brocades'),
        'comment': "Insert Brocade switches data from uploads",
      },

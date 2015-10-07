@@ -1888,8 +1888,8 @@ def insert_netapp(name=None, nodename=None):
             vars = ['array_name', 'array_model', 'array_cache', 'array_firmware', 'array_updated']
             vals = []
             vals.append([s.array_name,
-                         s.modelnumber,
-                         str(s.controllermainmemory),
+                         s.model,
+                         str(s.cache),
                          s.firmwareversion,
                          now])
             generic_insert('stor_array', vars, vals)
@@ -1900,12 +1900,12 @@ def insert_netapp(name=None, nodename=None):
             # stor_array_dg
             vars = ['array_id', 'dg_name', 'dg_free', 'dg_used', 'dg_size', 'dg_updated']
             vals = []
-            for dg in s.dg:
+            for dg in s.dgs:
                 vals.append([array_id,
                              dg['name'],
-                             str(dg['free_capacity']),
-                             str(dg['capacity']-dg['free_capacity']),
-                             str(dg['capacity']),
+                             str(dg['free']),
+                             str(dg['used']),
+                             str(dg['size']),
                              now])
             generic_insert('stor_array_dg', vars, vals)
             sql = """delete from stor_array_dg where array_id=%s and dg_updated < "%s" """%(array_id, str(now))
@@ -1922,18 +1922,22 @@ def insert_netapp(name=None, nodename=None):
             vars = ['disk_id',
                     'disk_arrayid',
                     'disk_devid',
+                    'disk_name',
                     'disk_size',
+                    'disk_alloc',
                     'disk_raid',
                     'disk_group',
                     'disk_updated']
             vals = []
-            for d in s.vdisk:
-                vals.append([d['vdisk_UID'],
+            for d in s.luns:
+                vals.append([d['wwid'],
                              s.array_name,
-                             d['name'],
-                             str(d['capacity']),
-                             d['type'],
-                             d['mdisk_grp_name'],
+                             d["id"],
+                             d.get('name', ''),
+                             str(d['size']),
+                             str(d['alloc']),
+                             "",
+                             d['aggr'],
                              now])
             generic_insert('diskinfo', vars, vals)
             sql = """delete from diskinfo where disk_arrayid="%s" and disk_updated < "%s" """%(s.array_name, str(now))

@@ -4008,7 +4008,7 @@ function cell_decorator_disk_array_dg(e) {
     if (get_selected() != "") {return}
     var line = $(e).parent(".tl")
     table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
-    array = line.find("[name$=_disk_arrayid][name$=_array_name]").attr("v")
+    array = line.find("[name$=_disk_arrayid],[name$=_array_name]").attr("v")
     span_id = line.attr("spansum")
     id = table_id + "_x_" + span_id
     url = $(location).attr("origin") + "/init/disks/ajax_array_dg?array="+array+"&dg="+v+"&rowid="+id
