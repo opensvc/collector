@@ -778,6 +778,7 @@ def form_submit(form, data,
 
             purge_action_queue()
             generic_insert('action_queue', vars, vals)
+            action_q_event()
             log.append((0, "form.submit", "Compliance fix commands queued for asynchronous execution on %(nodes)s", dict(nodes=', '.join(nodes))))
 
             from subprocess import Popen
