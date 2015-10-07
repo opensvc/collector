@@ -26,23 +26,23 @@ function action_queue_stats(data) {
       _action_queue_stats(data)
       return
     }
-    url = $(location).attr("origin") + "/init/action_queue/call/json/json_action_queue_stats"
+    url = $(location).attr("origin") + "/init/rest/api/actions/stats"
     $.getJSON(url, function(data){_action_queue_stats(data)})
 }
 
 function _action_queue_stats(data) {
     var s = ''
-    if (!("queued" in data)) {
+    if (data === null || data === undefined || !("queued" in data.data)) {
       return
     }
-    if (data["queued"] > 0) {
-      s += "<span class='boxed_small bgorange'>"+data["queued"]+'</span>'
+    if (data.data["queued"] > 0) {
+      s += "<span class='boxed_small bgorange'>"+data.data["queued"]+'</span>'
     }
-    if (data["ok"] > 0) {
-      s += "<span class='boxed_small bggreen'>"+data['ok']+'</span>'
+    if (data.data["ok"] > 0) {
+      s += "<span class='boxed_small bggreen'>"+data.data['ok']+'</span>'
     }
-    if (data["ko"] > 0) {
-      s += "<span class='boxed_small bgred'>"+data['ko']+'</span>'
+    if (data.data["ko"] > 0) {
+      s += "<span class='boxed_small bgred'>"+data.data['ko']+'</span>'
     }
     $(".header").find("[href$=action_queue]").html(s)
 }
