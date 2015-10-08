@@ -331,24 +331,9 @@ def _sysreport(nodes, path=None, begin=None, end=None):
           _name="end",
           _class="date",
           _onkeyup="""
-              url = $(location).attr("origin") + "/init/ajax_sysreport/ajax_sysrep"
-              dest = $(this).parents("[name=sysrep_top]")
-              if(is_enter(event)){
-                $.ajax({
-                  type: "POST",
-                  url: url,
-                  data: {
-                    nodes: "%(nodes)s",
-                    end: $(this).val(),
-                    begin: dest.find("[name=begin]").val(),
-                    path: dest.find("[name=filter]").val()
-                  },
-                  success: function(msg){
-                    dest.html(msg)
-                  }
-                })
-          }""" % dict(nodes=','.join(nodes)),
-        ),
+sysreport_onchangeBeginEndDate(event,"%(nodes)s")
+""" % dict(nodes=','.join(nodes)),
+),
         _class="end "+r_cl1,
         _style="float:right",
       ),
@@ -356,34 +341,22 @@ def _sysreport(nodes, path=None, begin=None, end=None):
         INPUT(
           _value=begin,
           _name="begin",
-          _class="date",
+          _class="date", 
           _onkeyup="""
-              url = $(location).attr("origin") + "/init/ajax_sysreport/ajax_sysrep"
-              dest = $(this).parents("[name=sysrep_top]")
-              if(is_enter(event)){
-                $.ajax({
-                  type: "POST",
-                  url: url,
-                  data: {
-                    nodes: "%(nodes)s",
-                    begin: $(this).val(),
-                    end: dest.find("[name=end]").val(),
-                    path: dest.find("[name=filter]").val()
-                  },
-                  success: function(msg){
-                    dest.html(msg)
-                  }
-                })
-          }""" % dict(nodes=','.join(nodes)),
-        ),
+sysreport_onchangeBeginEndDate(event,"%(nodes)s")
+""" % dict(nodes=','.join(nodes)),
+),
         _class="begin "+r_cl1,
         _style="float:right",
       ),
       DIV(
         _class="time16 clickable " + r_cl2,
-        _onclick="""$(this).toggle();$(this).siblings().toggle().children("input").focus();
-                    $("input.date").datetimepicker({dateFormat: "yy-mm-dd"})""",
-      ),
+        _onclick="""
+$(this).toggle()
+$(this).siblings().toggle().children("input").focus()
+$("input.date").datetimepicker({dateFormat:"yy-mm-dd"})
+""",      
+),
       _style="float:right",
     )
 
@@ -401,26 +374,10 @@ def _sysreport(nodes, path=None, begin=None, end=None):
           _name="filter",
           _onclick="""$(this).focus()""",
           _onkeyup="""
-              url = $(location).attr("origin") + "/init/ajax_sysreport/ajax_sysrep"
-              dest = $(this).parents("[name=sysrep_top]")
-              if(is_enter(event)){
-                $.ajax({
-                  async: true,
-                  type: "POST",
-                  url: url,
-                  data: {
-                    nodes: "%(nodes)s",
-                    path: $(this).val(),
-                    begin: dest.find("[name=begin]").val(),
-                    end: dest.find("[name=end]").val()
-                  },
-                  success: function(msg){
-                    dest.html(msg)
-                  }
-                })
-          }""" % dict(nodes=','.join(nodes)),
-        ),
-        _class="filter " + _cl1,
+sysreport_onchangeBeginEndDate(event,"%(nodes)s")
+""" % dict(nodes=','.join(nodes)),
+),
+          _class="filter " + _cl1,
       ),
       DIV(
         _class="filter16 clickable " + _cl2,
