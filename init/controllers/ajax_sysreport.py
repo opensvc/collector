@@ -331,7 +331,7 @@ def _sysreport(nodes, path=None, begin=None, end=None):
           _name="end",
           _class="date",
           _onkeyup="""
-sysreport_onchangeBeginEndDate(event,"%(nodes)s")
+sysreport_onchangebeginenddate(event,"%(nodes)s")
 """ % dict(nodes=','.join(nodes)),
 ),
         _class="end "+r_cl1,
@@ -343,7 +343,7 @@ sysreport_onchangeBeginEndDate(event,"%(nodes)s")
           _name="begin",
           _class="date", 
           _onkeyup="""
-sysreport_onchangeBeginEndDate(event,"%(nodes)s")
+sysreport_onchangebeginenddate(event,"%(nodes)s")
 """ % dict(nodes=','.join(nodes)),
 ),
         _class="begin "+r_cl1,
@@ -374,7 +374,7 @@ $("input.date").datetimepicker({dateFormat:"yy-mm-dd"})
           _name="filter",
           _onclick="""$(this).focus()""",
           _onkeyup="""
-sysreport_onchangeBeginEndDate(event,"%(nodes)s")
+sysreport_onchangebeginenddate(event,"%(nodes)s")
 """ % dict(nodes=','.join(nodes)),
 ),
           _class="filter " + _cl1,
@@ -391,32 +391,8 @@ sysreport_onchangeBeginEndDate(event,"%(nodes)s")
         _class="hidden",
       ),
       _onclick="""
-        url = $(location).attr("origin")
-        url += "/init/ajax_sysreport/sysrep?nodes="
-        url += $(this).parent().parent().find("[name=nodes]").text()
-        fval = $(this).parent().parent().find("input[name=filter]").val()
-        if (fval!="") {
-          url += "&path="+fval
-        }
-        fval = $(this).parent().parent().find("input[name=begin]").val()
-        if (fval!="") {
-          url += "&begin="+fval
-        }
-        fval = $(this).parent().parent().find("input[name=end]").val()
-        if (fval!="") {
-          url += "&end="+fval
-        }
-
-        cid = $(this).parent().parent().find("[name=cid]").text()
-        nodename = $(this).parent().parent().find("[name=nodename]").text()
-        if (cid != "") {
-          url += "&cid="+cid
-          url += "&nodename="+nodename
-        }
-
-        $(this).children().html(url)
-        $(this).children().show()
-      """,
+sysreport_createlink(this)
+""",
       _style="float:right",
       _class="link16 clickable",
     )
@@ -460,7 +436,6 @@ sysreport_onchangeBeginEndDate(event,"%(nodes)s")
         show_data,
         _id=tid+"_show",
       ),
-      SCRIPT(_src=URL(c="static", f="sysreport.js")),
       SPAN(scr),
       _name="sysrep_top",
     )
@@ -515,21 +490,8 @@ def ajax_sysrepdiff():
         _name="ignore_blanks",
         _style="position:relative;top:0.3em",
         _onclick="""
-              url = $(location).attr("origin") + "/init/ajax_sysreport/ajax_sysrepdiff"
-              dest = $(this).parents("[name=sysrepdiff_top]")
-              $.ajax({
-                type: "POST",
-                url: url,
-                data: {
-                  nodes: "%(nodes)s",
-                  path: $(this).parent().parent().find("[name=filter]").val(),
-                  ignore_blanks: $(this).is(":checked")
-                },
-                success: function(msg){
-                  dest.html(msg)
-                }
-              })
-          """ % dict(nodes=','.join(nodes)),
+sysreport_onsubmitsysrepdiff("%(nodes)s")
+""" % dict(nodes=','.join(nodes)),
       ),
       DIV(
         T("Ignore blanks"),
@@ -544,22 +506,8 @@ def ajax_sysrepdiff():
           _name="filter",
           _onclick="""$(this).focus()""",
           _onkeyup="""
-              url = $(location).attr("origin") + "/init/ajax_sysreport/ajax_sysrepdiff"
-              dest = $(this).parents("[name=sysrepdiff_top]")
-              if(is_enter(event)){
-                $.ajax({
-                  type: "POST",
-                  url: url,
-                  data: {
-                    nodes: "%(nodes)s",
-                    path: $(this).val(),
-                    ignore_blanks: $(this).parent().parent().parent().find("input[name=ignore_blanks]").is(":checked")
-                  },
-                  success: function(msg){
-                    dest.html(msg)
-                  }
-                })
-          }""" % dict(nodes=','.join(nodes)),
+sysreport_onsubmitsysrepdiff("%(nodes)s")
+""" % dict(nodes=','.join(nodes)),
         ),
         _class="filter " + _cl1,
       ),
@@ -652,18 +600,18 @@ def sysrepdiff():
 @auth.requires_login()
 def ajax_sysreport_admin_del_secure():
     if "Manager" not in user_groups():
-        raise HTTP(404)
+        raise HTTP(401) # Unauthorized exception
     q = db.sysrep_secure.id == request.vars.sec_id
     db(q).delete()
 
 @auth.requires_login()
 def ajax_sysreport_admin_add_secure():
     if "Manager" not in user_groups():
-        raise HTTP(404)
+        raise HTTP(401) # Unauthorized exception
     pattern = request.vars.get("pattern")
     q = db.sysrep_secure.pattern == pattern
     if db(q).count() > 0:
-        raise HTTP(404)
+        raise HTTP(400) # Bad Request
     db.sysrep_secure.insert(pattern=pattern)
 
 @auth.requires_login()
@@ -733,14 +681,14 @@ def ajax_sysreport_admin_secure():
 @auth.requires_login()
 def ajax_sysreport_admin_del_allow():
     if "Manager" not in user_groups():
-        raise HTTP(404)
+        raise HTTP(401) # Unauthorized Exception
     q = db.sysrep_allow.id == request.vars.allow_id
     db(q).delete()
 
 @auth.requires_login()
 def ajax_sysreport_admin_add_allow():
     if "Manager" not in user_groups():
-        raise HTTP(404)
+        raise HTTP(401) # Unauthorized exception
     pattern = request.vars.get("pattern")
     role = request.vars.get("role")
     fset_name = request.vars.get("fset_name")
@@ -749,17 +697,17 @@ def ajax_sysreport_admin_add_allow():
     try:
         group_id = db(q).select(db.auth_group.id).first().id
     except:
-        raise HTTP(404)
+        raise HTTP(400) # Bad Request
     q = db.gen_filtersets.fset_name == fset_name
     try:
         fset_id = db(q).select(db.gen_filtersets.id).first().id
     except:
-        raise HTTP(404)
+        raise HTTP(400) # Bad Request
     q = db.sysrep_allow.pattern == pattern
     q &= db.sysrep_allow.fset_id == fset_id
     q &= db.sysrep_allow.group_id == group_id
     if db(q).count() > 0:
-        raise HTTP(404)
+        raise HTTP(400) # Bad Request
     db.sysrep_allow.insert(pattern=pattern, group_id=group_id, fset_id=fset_id)
 
 
