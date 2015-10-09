@@ -15,3 +15,7 @@ function is_enter(e) {
     return false
   }
 }
+
+function is_blank(str) {
+    return (!str || /^\s*$/.test(str));
+}
