@@ -1104,7 +1104,7 @@ def update_dash_node_without_maintenance_end(nodename):
                    select nodename
                    from nodes
                    where
-                     nodename="%(nodename)s" and 
+                     nodename="%(nodename)s" and
                      maintenance_end != "0000-00-00 00:00:00" and
                      maintenance_end is not NULL
                  ) and

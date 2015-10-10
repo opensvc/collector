@@ -44,7 +44,7 @@ def convert_val(val, t):
          elif unit == "Gib":
              val = val * 1000 * 1000 * 1000
          elif unit in ("P", "p", "PB"):
-             val = val * 1024 * 1024 * 1024 * 1024 
+             val = val * 1024 * 1024 * 1024 * 1024
          elif unit == "Pib":
              val = val * 1000 * 1000 * 1000 * 1000
          else:

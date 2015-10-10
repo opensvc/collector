@@ -33,7 +33,7 @@ def table_modified(name):
     db.commit()
 
 #########################################################################
-## Here is sample code if you need for 
+## Here is sample code if you need for
 ## - email capabilities
 ## - authentication (registration, login, logout, ... )
 ## - authorization (role based authorization)

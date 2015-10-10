@@ -483,7 +483,7 @@ def ajax_node():
                      T("insert"),
                      _href=URL(r=request, c='nodes', f='node_insert'),
                    ),
-                   _class="edit16", 
+                   _class="edit16",
                  ),
                  _style="padding:1em",
                 ),
@@ -1100,7 +1100,7 @@ def ajax_node_stor():
     q &= (db.stor_array.array_model != "vdisk provider")|(db.stor_array.array_model==None)
     l1 = db.diskinfo.on(db.svcdisks.disk_id==db.diskinfo.disk_id)
     l2 = db.stor_array.on(db.diskinfo.disk_arrayid==db.stor_array.array_name)
-    disks = db(q).select(db.svcdisks.ALL, db.diskinfo.ALL, db.stor_array.ALL, 
+    disks = db(q).select(db.svcdisks.ALL, db.diskinfo.ALL, db.stor_array.ALL,
                          cacheable=True, left=(l1,l2),
                          orderby=db.svcdisks.disk_id)
     _disks = [TR(

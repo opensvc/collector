@@ -1,4 +1,4 @@
-$(document).on('click', function(event){ 
+$(document).on('click', function(event){
   if(event.which == 2){
     event.preventDefault()
   }
@@ -406,7 +406,7 @@ function bind_search_tool() {
           $(this).addClass("menu_selected")
           found = false
           return
-        } 
+        }
       })
     }
     else if (is_enter(event)) {
@@ -1256,7 +1256,7 @@ function table_cell_fmt(t, k, v) {
   if (classes.length > 0) {
     var cs = classes.join(' ').replace(/\s+$/, '')
     cl = " class='"+cs+"'"
-  } 
+  }
   if (v == 'empty') {
     var text = ""
   } else {
@@ -1740,7 +1740,7 @@ function table_bind_bookmark(t) {
            }
            for (var i=0; i<l.length; i++) {
              var data = l[i]
-             var k = t.id + "_f_" + data['col_name'].split('.')[1] 
+             var k = t.id + "_f_" + data['col_name'].split('.')[1]
              var v = data['col_filter']
              $("#"+k).val(v)
            }
@@ -2166,7 +2166,7 @@ function table_action_menu(t, e){
     table_action_menu_post_data(t, data)
   })
 
-  // display actions only for the clicked section 
+  // display actions only for the clicked section
   var sections = $("#am_"+t.id).children("ul").children("li")
   sections.addClass("right")
   sections.children("ul").hide()
@@ -4482,16 +4482,16 @@ function _table_pager(id, p_page, p_perpage, p_start, p_end, p_total) {
     $(this).addClass('current_page clickable')
   })
   pager.children("[name=pager_right]").click(function(){
-    filter_submit(id, id+"_page", p_page+1)   
+    filter_submit(id, id+"_page", p_page+1)
   })
   pager.children("[name=pager_left]").click(function(){
-    filter_submit(id, id+"_page", p_page-1)   
+    filter_submit(id, id+"_page", p_page-1)
   })
   pager.children("[name=pager_center]").click(function(){
     $(this).parent().children("[name=pager_perpage]").toggle()
   })
   pager.find("[name=perpage_val]").click(function(){
-    filter_submit(id, id+"_perpage", parseInt($(this).text()))   
+    filter_submit(id, id+"_perpage", parseInt($(this).text()))
   })
 }
 
@@ -4599,15 +4599,15 @@ function table_bind_filter_reformat(t) {
    if ( typeof(attr) == 'undefined' || attr == false ) {
      return
    }
-   if ( ! attr.match(/nodename/gi) && 
-        ! attr.match(/svcname/gi) && 
-        ! attr.match(/svc_name/gi) && 
-        ! attr.match(/assetname/gi) && 
-        ! attr.match(/mon_nodname/gi) && 
-        ! attr.match(/disk_nodename/gi) && 
-        ! attr.match(/disk_id/gi) && 
-        ! attr.match(/disk_svcname/gi) && 
-        ! attr.match(/save_nodename/gi) && 
+   if ( ! attr.match(/nodename/gi) &&
+        ! attr.match(/svcname/gi) &&
+        ! attr.match(/svc_name/gi) &&
+        ! attr.match(/assetname/gi) &&
+        ! attr.match(/mon_nodname/gi) &&
+        ! attr.match(/disk_nodename/gi) &&
+        ! attr.match(/disk_id/gi) &&
+        ! attr.match(/disk_svcname/gi) &&
+        ! attr.match(/save_nodename/gi) &&
         ! attr.match(/save_svcname/gi)
       ) {return}
    $(this).bind("change keyup input", function(){

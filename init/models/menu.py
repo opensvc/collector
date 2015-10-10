@@ -34,9 +34,9 @@ if 'auth' in globals():
              [
               [T('User actions'), False, '',
                [
-                    [DIV(T('Logout'), DIV(T("Reconnect as another user")), _class="logout48"), True, 
+                    [DIV(T('Logout'), DIV(T("Reconnect as another user")), _class="logout48"), True,
                      URL(request.application,'default','user/logout')],
-                    [DIV(T('Edit Profile'), DIV(T("User name, alerting levels, ...")), _class="guy48"), True, 
+                    [DIV(T('Edit Profile'), DIV(T("User name, alerting levels, ...")), _class="guy48"), True,
                      URL(request.application,'default','user/profile')],
                     [DIV(T('Change Password'), DIV(T("You need to know your current password")), _class="key48"), True,
                      URL(request.application,'default','user/change_password')],

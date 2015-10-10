@@ -14,7 +14,7 @@ def get_current_top_ten(fset_id, os_name):
                fset_id=%(fset_id)d and
                lc_os_name="%(os_name)s"
              group by lc_os_concat
-             order by 
+             order by
                sum(lc_count/(to_days(now())-to_days(lc_date)))
              desc
              limit 10
@@ -46,7 +46,7 @@ def json_stat_os_release():
     e = now
     b = now - datetime.timedelta(days=1000)
     sql = """select * from (
-             select 
+             select
                lc_os_concat,
                lc_date,
                lc_count,
@@ -58,7 +58,7 @@ def json_stat_os_release():
                %(top)s
              group by d, lc_os_concat
              union all
-             select 
+             select
                "other",
                lc_date,
                sum(lc_count) as lc_count,

@@ -1,4 +1,4 @@
-def str_to_date(s, fmt="%Y-%m-%d %H:%M:%S"): 
+def str_to_date(s, fmt="%Y-%m-%d %H:%M:%S"):
     if s is None or s == "" or len(fmt) == 0:
         return None
     s = s.strip()

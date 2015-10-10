@@ -7821,7 +7821,7 @@ def show_services_moddiff_svc(svcnames, encap=False):
                comp_moduleset m
              where
                ms.modset_svcname in (%(svcnames)s) and
-               ms.slave="%(slave)s" and 
+               ms.slave="%(slave)s" and
                ms.modset_id=m.id
              group by
                modset_name

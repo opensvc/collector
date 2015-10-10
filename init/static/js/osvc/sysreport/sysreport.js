@@ -6,7 +6,7 @@ function sysreport_onchangebeginenddate(event,nodes)
     if (is_enter(event))
     {
         dest = $("[name=sysrep_top]")
-        postdata= 
+        postdata=
             {
                 nodes: nodes,
                 end: dest.find("[name=end]").val(),
@@ -32,11 +32,11 @@ function sysreport_onsubmitsysrepdiff(event,nodes)
 function sysreport_onsubmitsysrepdiff(nodes)
 {
     dest = $("[name=sysrepdiff_top]")
-    postdata= 
+    postdata=
         {
            nodes: nodes,
-           path: $(dest).find("[name=filter]").val(), 
-           ignore_blanks: $(dest).find("input[name=ignore_blanks]").is(":checked")    
+           path: $(dest).find("[name=filter]").val(),
+           ignore_blanks: $(dest).find("input[name=ignore_blanks]").is(":checked")
         }
     services_osvcpost("S_SYSREPDIFF",postdata,function (msg)
         {
@@ -53,7 +53,7 @@ function show_dateTimePicker(item)
 
 function sysreport_createlink(item)
 {
-    url = $(location).attr("origin") 
+    url = $(location).attr("origin")
     url += services_getaccessurl("S_SYSREP")
     url += "?nodes="
     url += $(item).parent().parent().find("[name=nodes]").text()

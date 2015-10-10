@@ -15,8 +15,8 @@ function services_getaccessurl(service)
     service_uri = services_access_uri[service]
     if (is_blank(service_uri))
     {
-        return 
-    } 
+        return
+    }
     base_path +=service_uri
     return base_path
 }
@@ -27,13 +27,13 @@ function services_osvcpost(service,data,callback)
     if (is_blank(service_uri))
     {
         console.log(service + " uri undefined")
-        return 
-    } 
+        return
+    }
     var req = $.ajax(
     {
         type: "POST",
         url: url,
         data: data,
         success: callback
-    }) 
+    })
 }

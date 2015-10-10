@@ -196,7 +196,7 @@ def resmon_svc():
     svcname = request.args[1]
     t.colprops['svcname'].force_filter = svcname
     return t.html()
- 
+
 @auth.requires_login()
 def ajax_resmon_svc():
     tid = request.vars.table_id

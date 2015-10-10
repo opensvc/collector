@@ -341,7 +341,7 @@ sysreport_onchangebeginenddate(event,"%(nodes)s")
         INPUT(
           _value=begin,
           _name="begin",
-          _class="date", 
+          _class="date",
           _onkeyup="""
 sysreport_onchangebeginenddate(event,"%(nodes)s")
 """ % dict(nodes=','.join(nodes)),
@@ -355,7 +355,7 @@ sysreport_onchangebeginenddate(event,"%(nodes)s")
 $(this).toggle()
 $(this).siblings().toggle().children("input").focus()
 $("input.date").datetimepicker({dateFormat:"yy-mm-dd"})
-""",      
+""",
 ),
       _style="float:right",
     )
