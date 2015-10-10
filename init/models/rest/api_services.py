@@ -427,4 +427,28 @@ class rest_post_service_compliance_moduleset(rest_post_handler):
         slave = get_slave(vars)
         return lib_comp_moduleset_attach_service(svcname, modset_id, slave)
 
+class rest_get_service_compliance_logs(rest_get_table_handler):
+    def __init__(self):
+        desc = [
+          "List compliance modules' check, fixable and fix logs for the service."
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/services/mysvc/compliance/logs"
+        ]
+        q = db.comp_log.id > 0
+        q &= _where(q, 'comp_log', domain_perms(), 'run_nodename')
+        rest_get_table_handler.__init__(
+          self,
+          path="/services/<svcname>/compliance/logs",
+          tables=["comp_log"],
+          q=q,
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, svcname, **vars):
+        q = db.comp_log.run_svcname == svcname
+        q &= _where(q, 'comp_log', domain_perms(), 'run_nodename')
+        self.set_q(q)
+        return self.prepare_data(**vars)
 

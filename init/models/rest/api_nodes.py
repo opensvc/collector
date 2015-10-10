@@ -546,4 +546,28 @@ class rest_get_node_compliance_status(rest_get_table_handler):
         self.set_q(q)
         return self.prepare_data(**vars)
 
+class rest_get_node_compliance_logs(rest_get_table_handler):
+    def __init__(self):
+        desc = [
+          "List compliance modules' check, fixable and fix logs for the node."
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/nodes/clementine/compliance/logs"
+        ]
+        q = db.comp_log.id > 0
+        q &= _where(q, 'comp_log', domain_perms(), 'run_nodename')
+        rest_get_table_handler.__init__(
+          self,
+          path="/nodes/<nodename>/compliance/logs",
+          tables=["comp_log"],
+          q=q,
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, nodename, **vars):
+        q = db.comp_log.run_nodename == nodename
+        q &= _where(q, 'comp_log', domain_perms(), 'run_nodename')
+        self.set_q(q)
+        return self.prepare_data(**vars)
 

@@ -18,6 +18,50 @@ def ruleset_id_q(id):
     return q
 
 #
+class rest_get_compliance_logs(rest_get_table_handler):
+    def __init__(self):
+        desc = [
+          "List compliance modules' check, fixable and fix logs."
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/compliance/logs?query=run_module=mymod"
+        ]
+        q = db.comp_log.id > 0
+        q &= _where(q, 'comp_log', domain_perms(), 'run_nodename')
+        rest_get_table_handler.__init__(
+          self,
+          path="/compliance/logs",
+          tables=["comp_log"],
+          q=q,
+          desc=desc,
+          examples=examples,
+        )
+
+#
+class rest_get_compliance_log(rest_get_line_handler):
+    def __init__(self):
+        desc = [
+          "Display properties of a module run."
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/compliance/log/10"
+        ]
+        rest_get_line_handler.__init__(
+          self,
+          path="/compliance/logs/<id>",
+          tables=["comp_log"],
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, id, **vars):
+        q = db.comp_log.id == int(id)
+        q &= _where(q, 'comp_log', domain_perms(), 'run_nodename')
+        self.set_q(q)
+        return self.prepare_data(**vars)
+
+
+#
 class rest_get_compliance_status(rest_get_table_handler):
     def __init__(self):
         desc = [
