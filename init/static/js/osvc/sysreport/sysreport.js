@@ -154,7 +154,7 @@ function sysreport_show_file(e) {
    'oid': e.attr("oid"),
    'cid': e.attr("cid")
   }
-  service_osvcpost("S_SYSREPSHOWFILE",data,function(msg){
+  services_osvcpost("S_SYSREPSHOWFILE",data,function(msg){
          s = "<pre style='padding:1em'>"+msg+"</pre>"
          $(s).insertAfter(e)
          hljs.highlightBlock(e.next("pre"));
