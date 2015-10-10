@@ -91,6 +91,8 @@ handlers = {
      rest_get_group_users(),
      rest_get_ips(),
      rest_get_ip(),
+     rest_get_log(),
+     rest_get_logs(),
      rest_get_networks(),
      rest_get_network(),
      rest_get_network_segments(),

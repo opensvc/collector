@@ -8,7 +8,6 @@ def mangle_form_data(data):
     for i, row in enumerate(data):
         try:
             data[i]["form_definition"] = yaml.load(data[i]["form_yaml"])
-            del(data[i]["form_yaml"])
         except:
             pass
     return data
@@ -27,6 +26,8 @@ class rest_get_forms(rest_get_table_handler):
           self,
           path="/forms",
           tables=["forms"],
+          vprops={"form_definition": ["form_yaml"]},
+          vprops_fn=mangle_form_data,
           desc=desc,
           examples=examples,
         )
@@ -37,7 +38,6 @@ class rest_get_forms(rest_get_table_handler):
         q &= db.forms_team_publication.group_id.belongs(user_group_ids())
         self.set_q(q)
         data = self.prepare_data(**vars)
-        data["data"] = mangle_form_data(data["data"])
         return data
 
 
@@ -55,6 +55,8 @@ class rest_get_form(rest_get_line_handler):
           self,
           path="/forms/<id>",
           tables=["forms"],
+          vprops={"form_definition": ["form_yaml"]},
+          vprops_fn=mangle_form_data,
           desc=desc,
           examples=examples,
         )
@@ -64,7 +66,6 @@ class rest_get_form(rest_get_line_handler):
         q &= db.forms.id == db.forms_team_publication.form_id
         q &= db.forms_team_publication.group_id.belongs(user_group_ids())
         data = self.prepare_data(**vars)
-        data["data"] = mangle_form_data(data["data"])
         return data
 
 

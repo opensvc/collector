@@ -330,6 +330,8 @@ class rest_get_node_alerts(rest_get_table_handler):
           self,
           path="/nodes/<nodename>/alerts",
           tables=["dashboard"],
+          vprops={"alert": ["dash_fmt", "dash_dict"]},
+          vprops_fn=mangle_alerts,
           desc=desc,
           examples=examples,
         )
@@ -339,7 +341,6 @@ class rest_get_node_alerts(rest_get_table_handler):
         q &= _where(None, 'dashboard', domain_perms(), 'dash_nodename')
         self.set_q(q)
         data = self.prepare_data(**vars)
-        data["data"] = mangle_alerts(data["data"])
         return data
 
 

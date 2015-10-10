@@ -21,11 +21,15 @@ class rest_get_alerts(rest_get_table_handler):
         ]
 
         q = db.dashboard.id > 0
+        o = ~db.dashboard.id
 
         rest_get_table_handler.__init__(
           self,
           path="/alerts",
           tables=["dashboard"],
+          vprops={"alert": ["dash_fmt", "dash_dict"]},
+          vprops_fn=mangle_alerts,
+          orderby=o,
           q=q,
           desc=desc,
           examples=examples,
@@ -33,7 +37,6 @@ class rest_get_alerts(rest_get_table_handler):
 
     def handler(self, **vars):
         data = self.prepare_data(**vars)
-        data["data"] = mangle_alerts(data["data"])
         return data
 
 #
@@ -50,6 +53,8 @@ class rest_get_alert(rest_get_line_handler):
           self,
           path="/alerts/<id>",
           tables=["dashboard"],
+          vprops={"alert": ["dash_fmt", "dash_dict"]},
+          vprops_fn=mangle_alerts,
           desc=desc,
           examples=examples,
         )

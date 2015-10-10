@@ -6,10 +6,13 @@ class rest_handler(object):
                  tables=[],
                  dbo=None,
                  props_blacklist=[],
+                 vprops={},
+                 vprops_fn=None,
                  count_prop="id",
                  q=None,
                  left=None,
                  groupby=None,
+                 orderby=None,
                  desc=[], params={}, examples=[], data={}):
         self.path = path.rstrip("/")
         self.tables = tables
@@ -19,9 +22,12 @@ class rest_handler(object):
         self.params = params
         self.data = data
         self.count_prop = count_prop
+        self.vprops = vprops
+        self.vprops_fn = vprops_fn
         self.q = q
         self.left = left
         self.groupby = groupby
+        self.orderby = orderby
         if dbo:
             self.db = dbo
         else:
@@ -133,7 +139,7 @@ class rest_handler(object):
         return "``" + s + "``\n"
 
     def prepare_data(self, **vars):
-        for v in ["q", "groupby", "left", "count_prop", "props_blacklist", "tables", "db"]:
+        for v in ["q", "orderby", "groupby", "left", "vprops", "vprops_fn", "count_prop", "props_blacklist", "tables", "db"]:
             if hasattr(self, v) and vars.get(v) is None:
                 vars[v] = getattr(self, v)
         return prepare_data(**vars)
@@ -144,7 +150,7 @@ class rest_handler(object):
     def update_data(self):
         if len(self.tables) == 0 or self.action != "POST":
             return
-        for prop in all_props(tables=self.tables, blacklist=self.props_blacklist, db=self.db):
+        for prop in all_props(tables=self.tables, vprops=self.vprops, blacklist=self.props_blacklist, db=self.db):
             if prop in self.data:
                 # suppose the caller knows better
                 continue
@@ -223,18 +229,21 @@ def prepare_data(
      count_prop=None,
      query=None,
      props=None,
+     vprops={},
+     vprops_fn=None,
      props_blacklist=[],
      tables=[],
      data=None,
      q=None,
      db=db,
      groupby=None,
+     orderby=None,
      left=None,
      cols=[],
      offset=0,
      limit=20,
      total=None):
-    cols = props_to_cols(props, tables=tables, blacklist=props_blacklist, db=db)
+    cols = props_to_cols(props, tables=tables, vprops=vprops, blacklist=props_blacklist, db=db)
     all_cols = props_to_cols(None, tables=tables, blacklist=props_blacklist, db=db)
     if meta in ("0", "f", "F", "False", "false", False):
         meta = False
@@ -272,14 +281,29 @@ def prepare_data(
                        cacheable=True,
                        left=left,
                        groupby=groupby,
+                       orderby=orderby,
                        limitby=limitby
                      ).as_list()
     else:
         return dict(error="failed to prepare data: missing parameter")
 
+    data = mangle_data(data, props=props, vprops=vprops, vprops_fn=vprops_fn)
+
     if meta:
         _cols = [".".join((c.table._tablename, c.name)) for c in cols]
-        _all_cols = [".".join((c.table._tablename, c.name)) for c in all_cols]
+        if props is None:
+            _cols += vprops.keys()
+        else:
+            _cols += list(set(props.split(",")) & set(vprops.keys()))
+            for _vprops in vprops.values():
+                for prop in _vprops:
+                    if prop in _cols and prop not in props.split(","):
+                        _cols.remove(prop)
+                    if len(tables) == 1:
+                        prop = tables[0] + "." + prop
+                        if prop in _cols and prop not in props.split(","):
+                            _cols.remove(prop)
+        _all_cols = [".".join((c.table._tablename, c.name)) for c in all_cols] + vprops.keys()
         meta = dict(
                  included_props=_cols,
                  available_props=_all_cols,
@@ -294,6 +318,25 @@ def prepare_data(
 
     return d
 
+def mangle_data(data, props=None, vprops={}, vprops_fn=None):
+    if vprops_fn is None:
+        return data
+    if props and len(set(vprops) & set(props.split(","))) == 0:
+        return data
+    data = vprops_fn(data)
+
+    # purge props used to produce vprops
+    props_to_purge = set([])
+    for _vprops in vprops.values():
+        props_to_purge |= set(_vprops)
+    if props is not None:
+        # unless the user expressly requested them
+        props_to_purge -= set(props.split(","))
+    for i, d in enumerate(data):
+        for prop in props_to_purge:
+            del(data[i][prop])
+    return data
+
 def check_privilege(priv):
     ug = user_groups()
     if 'Manager' in ug:
@@ -301,11 +344,11 @@ def check_privilege(priv):
     if priv not in ug:
         raise Exception("Not authorized: user has no %s privilege" % priv)
 
-def all_props(tables=[], blacklist=[], db=db):
+def all_props(tables=[], blacklist=[], vprops={}, db=db):
     cols = props_to_cols(None, tables=tables, blacklist=blacklist, db=db)
-    return cols_to_props(cols, tables=tables)
+    return cols_to_props(cols, tables=tables) + vprops.values()
 
-def props_to_cols(props, tables=[], blacklist=[], db=db):
+def props_to_cols(props, tables=[], vprops={}, blacklist=[], db=db):
     if props is None:
         cols = []
         for table in tables:
@@ -314,7 +357,10 @@ def props_to_cols(props, tables=[], blacklist=[], db=db):
                 cols.append(db[table][p])
         return cols
     cols = []
-    for p in props.split(","):
+    props = set(props.split(",")) - set(vprops.keys())
+    for _vprops in vprops.values():
+        props |= set(_vprops)
+    for p in props:
         v = p.split(".")
         if len(v) == 1 and len(tables) == 1:
             v = [tables[0], p]
