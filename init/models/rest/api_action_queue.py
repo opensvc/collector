@@ -51,37 +51,37 @@ class rest_post_action_queue(rest_post_handler):
 
 Each action has specific property requirements:
 
-- **compliance_check**: requires **nodename**, **module** or **moduleset**, optionally
+- ``compliance_check``:green requires **nodename**, **module** or **moduleset**, optionally
   **svcname**
-- **compliance_fix**: requires **nodename**, **module** or **moduleset**, optionally
+- ``compliance_fix``:green requires **nodename**, **module** or **moduleset**, optionally
   **svcname**
-- **start**: requires **nodename**, **svcname**, optionally **rid**
-- **stop**: requires **nodename**, **svcname**, optionally **rid**
-- **restart**: requires **nodename**, **svcname**, optionally **rid**
-- **syncall**: requires **nodename**, **svcname**, optionally **rid**
-- **syncnodes**: requires **nodename**, **svcname**, optionally **rid**
-- **syncdrp**: requires **nodename**, **svcname**, optionally **rid**
-- **enable**: requires **nodename**, **svcname**, optionally **rid**
-- **disable**: requires **nodename**, **svcname**, optionally **rid**
-- **freeze**: requires **nodename**, **svcname**, optionally **rid**
-- **thaw**: requires **nodename**, **svcname**, optionally **rid**
-- **pushasset**: requires **nodename**
-- **pushdisks**: requires **nodename**
-- **push**: requires **nodename**
-- **pushpkg**: requires **nodename**
-- **pushpatch**: requires **nodename**
-- **pushstats**: requires **nodename**
-- **checks**: requires **nodename**
-- **sysreport**: requires **nodename**
-- **updatecomp**: requires **nodename**
-- **updatepkg**: requires **nodename**
-- **rotate_root_pw**: requires **nodename**
-- **scanscsi**: requires **nodename**
-- **reboot**: requires **nodename**
-- **schedule_reboot**: requires **nodename**
-- **unschedule_reboot**: requires **nodename**
-- **shutdown**: requires **nodename**
-- **wol**: requires **nodename**
+- ``start``:green requires **nodename**, **svcname**, optionally **rid**
+- ``stop``:green requires **nodename**, **svcname**, optionally **rid**
+- ``restart``:green requires **nodename**, **svcname**, optionally **rid**
+- ``syncall``:green requires **nodename**, **svcname**, optionally **rid**
+- ``syncnodes``:green requires **nodename**, **svcname**, optionally **rid**
+- ``syncdrp``:green requires **nodename**, **svcname**, optionally **rid**
+- ``enable``:green requires **nodename**, **svcname**, optionally **rid**
+- ``disable``:green requires **nodename**, **svcname**, optionally **rid**
+- ``freeze``:green requires **nodename**, **svcname**, optionally **rid**
+- ``thaw``:green requires **nodename**, **svcname**, optionally **rid**
+- ``pushasset``:green requires **nodename**
+- ``pushdisks``:green requires **nodename**
+- ``push``:green requires **nodename**
+- ``pushpkg``:green requires **nodename**
+- ``pushpatch``:green requires **nodename**
+- ``pushstats``:green requires **nodename**
+- ``checks``:green requires **nodename**
+- ``sysreport``:green requires **nodename**
+- ``updatecomp``:green requires **nodename**
+- ``updatepkg``:green requires **nodename**
+- ``rotate_root_pw``:green requires **nodename**
+- ``scanscsi``:green requires **nodename**
+- ``reboot``:green requires **nodename**
+- ``schedule_reboot``:green requires **nodename**
+- ``unschedule_reboot``:green requires **nodename**
+- ``shutdown``:green requires **nodename**
+- ``wol``:green requires **nodename**
 """
         examples = [
           "# curl -u %(email)s -o- -X POST -d nodename=clementine -d action=pushasset https://%(collector)s/init/rest/api/actions",
