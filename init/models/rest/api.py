@@ -2,6 +2,7 @@ import re
 
 class rest_handler(object):
     def __init__(self,
+                 action="GET",
                  path=None,
                  tables=[],
                  dbo=None,
@@ -14,13 +15,14 @@ class rest_handler(object):
                  groupby=None,
                  orderby=None,
                  desc=[], params={}, examples=[], data={}):
+        self.action = action
         self.path = path.rstrip("/")
         self.tables = tables
         self.props_blacklist = props_blacklist
         self.desc = desc
         self.examples = examples
-        self.params = params
-        self.data = data
+        self.init_params = params
+        self.init_data = data
         self.count_prop = count_prop
         self.vprops = vprops
         self.vprops_fn = vprops_fn
@@ -35,6 +37,9 @@ class rest_handler(object):
 
         self.pattern = "^"+re.sub("\<[-\w]+\>", "[=% ><@\.\-\w]+", path)+"$"
         self.regexp = re.compile(self.pattern)
+
+    def update_parameters(self):
+        self.params = copy.copy(self.init_params)
 
     def set_q(self, q):
         self.q = q
@@ -78,18 +83,17 @@ class rest_handler(object):
         return s
 
     def fmt_parameters(self):
+        self.update_parameters()
         s = ""
         if len(self.params) > 0:
            s += "\n".join(map(lambda x: "- **%s**\n. %s"%(x[0], x[1].get("desc", "")), self.params.items()))
-        if hasattr(self, "fmt_standard_parameters"):
-           s += self.fmt_standard_parameters()
         if len(s) > 0:
            s = "### Parameters\n"+s+"\n"
         return s
 
     def fmt_data(self):
-        if type(self.data) in (str, unicode):
-            return "### Data\n"+self.data
+        if type(self.init_data) in (str, unicode):
+            return "### Data\n"+self.init_data
         self.update_data()
         if self.data is None:
             return ""
@@ -148,11 +152,15 @@ class rest_handler(object):
         return self.prepare_data(**vars)
 
     def update_data(self):
-        if len(self.tables) == 0 or self.action != "POST":
+        self.data = {}
+        if type(self.init_data) in (str, unicode):
+            for i in re.findall("\*\*(\w+)\*\*", self.init_data):
+                self.data[i] = {"desc": ""}
+        if len(self.tables) == 0 or self.action not in ("POST", "PUT"):
             return
         for prop in all_props(tables=self.tables, vprops=self.vprops, blacklist=self.props_blacklist, db=self.db):
             if prop in self.data:
-                # suppose the caller knows better
+                # init data takes precedence
                 continue
 
             v = prop.split(".")
@@ -175,9 +183,22 @@ class rest_handler(object):
               "writable": self.db[_table][_prop].writable,
             }
 
+    def fmt_props_props_desc(self):
+        cols = props_to_cols(None, tables=self.tables, blacklist=self.props_blacklist, db=self.db)
+        props = cols_to_props(cols, self.tables)
+        s = """
+. A list of properties to include in each data dictionnary.
+. If omitted, all properties are included.
+. The separator is ','.
+. Available properties are: ``%(props)s``:green.
+
+""" % dict(props=", ".join(sorted(props)))
+        return s
 
 class rest_post_handler(rest_handler):
-    action = "POST"
+    def __init__(self, **vars):
+        vars["action"] = "POST"
+        rest_handler.__init__(self, **vars)
 
     def handle(self, *args, **vars):
         if "query" in vars and hasattr(self, "get_handler"):
@@ -198,31 +219,111 @@ class rest_post_handler(rest_handler):
                 result["data"] += [d]
         return result
 
+    def update_data(self):
+        self.data = copy.copy(self.init_data)
+        self.params.update({
+          "query": {
+            "desc": """
+. A web2py smart query
+
+""",
+          },
+        })
+
 
 class rest_put_handler(rest_handler):
-    action = "PUT"
+    def __init__(self, **vars):
+        vars["action"] = "PUT"
+        rest_handler.__init__(self, **vars)
+
+    def update_data(self):
+        self.data = copy.copy(self.init_data)
 
 class rest_delete_handler(rest_handler):
-    action = "DELETE"
+    def __init__(self, **vars):
+        vars["action"] = "DELETE"
+        rest_handler.__init__(self, **vars)
+
+    def update_parameters(self):
+        self.params = copy.copy(self.init_params)
+
+    def update_data(self):
+        self.data = copy.copy(self.init_data)
 
 class rest_get_handler(rest_handler):
-    action = "GET"
+    def __init__(self, **vars):
+        vars["action"] = "GET"
+        rest_handler.__init__(self, **vars)
+
+    def update_data(self):
+        self.data = copy.copy(self.init_data)
 
 class rest_get_table_handler(rest_handler):
-    action = "GET"
-    def fmt_standard_parameters(self):
-        return doc_fmt_props_get(tables=self.tables, blacklist=self.props_blacklist, db=self.db)
+    def __init__(self, **vars):
+        vars["action"] = "GET"
+        rest_handler.__init__(self, **vars)
+
+    def update_parameters(self):
+        self.params = copy.copy(self.init_params)
+        self.params.update({
+          "meta": {
+            "desc": """
+. Controls the inclusion in the returned dictionnary of a "meta" key, whose parameter is a dictionnary containing the following properties: displayed entry count, total entry count, displayed properties, available properties, offset and limit.
+. true: include data cursor metadata.
+. false: do no include data cursor metadata.
+
+""",
+          },
+          "limit": {
+            "desc": """
+. The maximum number of entries to return.
+. 0 means no limit.
+
+""",
+          },
+          "offset": {
+            "desc": """
+. Skip the first <offset> entries of the data cursor.
+
+""",
+          },
+          "query": {
+            "desc": """
+. A web2py smart query
+
+""",
+          },
+          "props": {
+            "desc": self.fmt_props_props_desc(),
+          },
+        })
+
+    def update_data(self):
+        self.data = copy.copy(self.init_data)
+
 
 class rest_get_line_handler(rest_handler):
-    action = "GET"
-    def fmt_standard_parameters(self):
-        return doc_fmt_props_get_one(tables=self.tables, blacklist=self.props_blacklist, db=self.db)
+    def __init__(self, **vars):
+        vars["action"] = "GET"
+        rest_handler.__init__(self, **vars)
+
+    def update_parameters(self):
+        self.params = copy.copy(self.init_params)
+        self.params.update({
+          "props": {
+            "desc": self.fmt_props_props_desc(),
+          },
+        })
+
+    def update_data(self):
+        self.data = copy.copy(self.init_data)
 
     def prepare_data(self, **vars):
         vars["meta"] = False
         if "query" in vars:
             del(vars["query"])
         return rest_handler.prepare_data(self, **vars)
+
 
 def prepare_data(
      meta=True,
@@ -375,63 +476,5 @@ def cols_to_props(cols, tables):
     props = [".".join((c.table._tablename, c.name)) if multi else c.name for c in cols]
     return props
 
-def doc_fmt_props_get_one(props=None, tables=[], blacklist=[], db=db):
-    s = doc_fmt_props_props(props=props, tables=tables, blacklist=blacklist, db=db)
-    return s
 
-def doc_fmt_props_get(props=None, tables=[], blacklist=[], db=db):
-    s = doc_fmt_props_meta()
-    s += doc_fmt_props_limit()
-    s += doc_fmt_props_offset()
-    s += doc_fmt_props_props(props=props, tables=tables, blacklist=blacklist, db=db)
-    s += doc_fmt_props_query()
-    return s
-
-def doc_fmt_props_meta():
-    s = """
-- **meta**
-. Controls the inclusion in the returned dictionnary of a "meta" key, whose parameter is a dictionnary containing the following properties: displayed entry count, total entry count, displayed properties, available properties, offset and limit.
-. true: include data cursor metadata.
-. false: do no include data cursor metadata.
-
-"""
-    return s
-
-def doc_fmt_props_limit():
-    s = """
-- **limit**
-. The maximum number of entries to return.
-. 0 means no limit.
-
-"""
-    return s
-
-def doc_fmt_props_offset():
-    s = """
-- **offset**
-. Skip the first <offset> entries of the data cursor.
-
-"""
-    return s
-
-def doc_fmt_props_query():
-    s = """
-- **query**
-. A web2py smart query
-
-"""
-    return s
-
-def doc_fmt_props_props(props=None, tables=[], blacklist=[], db=db):
-    cols = props_to_cols(props, tables=tables, blacklist=blacklist, db=db)
-    props = cols_to_props(cols, tables)
-    s = """
-- **props**
-. A list of properties to include in each data dictionnary.
-. If omitted, all properties are included.
-. The separator is ','.
-. Available properties are: ``%(props)s``:green.
-
-""" % dict(props=", ".join(sorted(props)))
-    return s
 
