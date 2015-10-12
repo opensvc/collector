@@ -135,6 +135,8 @@ handlers = {
      rest_get_node_sysreport(),
      rest_get_node_sysreport_timediff(), # keep before sysreport_commit
      rest_get_node_sysreport_commit(),
+     rest_get_node_sysreport_commit_tree(),
+     rest_get_node_sysreport_commit_tree_file(),
      rest_get_resources(),
      rest_get_scheduler_tasks(),
      rest_get_scheduler_task(),

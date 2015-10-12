@@ -210,6 +210,13 @@ class sysreport(object):
         s = self.lstree(cid, nodename, path=path)
         return self.parse_lstree(cid, s)
 
+    def show_file_unvalidated(self, cid, _uuid, nodename):
+        git_d = os.path.join(self.collect_d, nodename, ".git")
+        cmd = ["git", "--git-dir="+git_d, "show", _uuid]
+        p = Popen(cmd, stdout=PIPE, stderr=PIPE)
+        out, err = p.communicate()
+        return {'oid': _uuid, 'content': out}
+
     def show_file(self, fpath, cid, _uuid, nodename):
         git_d = os.path.join(self.collect_d, nodename, ".git")
         cmd = ["git", "--git-dir="+git_d, "ls-tree", cid, fpath]
