@@ -135,8 +135,7 @@ def lib_get_sysreport_timediff(nodename, path=None, begin=None, end=None):
 
 def lib_get_sysreport_commit(nodename, cid, path=None):
     sysresponsible = is_sysresponsible(nodename)
-    data = sysreport.sysreport().show_data(cid, nodename,
-                                           path=encode_fpath(path),
+    data = sysreport.sysreport().show_data(cid, nodename, path=encode_fpath(path),
                                           )
     sec_pattern = get_pattern_secure()
     for k in data['blocks'].keys():
@@ -152,5 +151,33 @@ def lib_get_sysreport_commit(nodename, cid, path=None):
           "diff": diff,
         }
 
+    return data
+
+def lib_get_sysreport_commit_tree(nodename, cid, path=None):
+    sysresponsible = is_sysresponsible(nodename)
+    data = sysreport.sysreport().lstree_data(cid, nodename, path=encode_fpath(path))
+    sec_pattern = get_pattern_secure()
+    for i, d in enumerate(data):
+        if sec_pattern.match(d["fpath"]):
+            data[i]["secure"] = True
+        else:
+            data[i]["secure"] = False
+    return data
+
+def lib_get_sysreport_commit_tree_file(nodename, cid, oid):
+    sysresponsible = is_sysresponsible(nodename)
+    data = sysreport.sysreport().lstree_data(cid, nodename)
+    sec_pattern = get_pattern_secure()
+    for d in data:
+        if d["oid"] != oid:
+            continue
+        if not sec_pattern.match(d["fpath"]):
+            break
+        if not sysresponsible and not sysrep_allow([nodename], k):
+            return {
+              "oid": oid,
+              "content": T("You are not allowed to view this file content"),
+            }
+    data = sysreport.sysreport().show_file_unvalidated(cid, oid, nodename)
     return data
 
