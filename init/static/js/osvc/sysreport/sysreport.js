@@ -54,7 +54,7 @@ function show_dateTimePicker(item)
 function sysreport_createlink(item)
 {
     url = $(location).attr("origin")
-    url += services_getaccessurl("S_SYSREP")
+    url += services_getaccessurl("S_SYSREPVIEW")
     url += "?nodes="
     url += $(item).parent().parent().find("[name=nodes]").text()
     fval = $(item).parent().parent().find("input[name=filter]").val()

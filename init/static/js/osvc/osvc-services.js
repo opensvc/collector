@@ -3,6 +3,7 @@
 
 var services_access_uri = {
     "S_SYSREP" : "ajax_sysreport/ajax_sysrep",
+    "S_SYSREPVIEW" : "ajax_sysreport/sysrep",
     "S_SYSREPDIFF" : "ajax_sysreport/ajax_sysrepdiff",
     "S_SYSREPCOMMIT" : "ajax_sysreport/ajax_sysreport_commit",
     "S_SYSREPADMIN" : "ajax_sysreport/ajax_sysreport_admin",
