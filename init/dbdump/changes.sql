@@ -4729,3 +4729,6 @@ drop view v_nodenetworks; CREATE VIEW `v_nodenetworks` AS select `n`.`fqdn` AS `
 alter table action_queue add column connect_to varchar(128);
 
 drop view v_action_queue ; create view v_action_queue as select a.*, concat(u.first_name, " ", u.last_name) as username from action_queue a left join auth_user u on a.user_id=u.id;
+
+drop view v_sysrep_allow ; create view v_sysrep_allow as (select s.id as id, s.group_id as group_id, g.role as group_name, s.fset_id as fset_id, fs.fset_name as fset_name, s.pattern as pattern from sysrep_allow s left join auth_group g on s.group_id=g.id left join gen_filtersets fs on s.fset_id=fs.id);
+

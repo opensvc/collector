@@ -2063,6 +2063,14 @@ db.define_table('sysrep_secure',
     Field('pattern','string'),
     migrate=False)
 
+db.define_table('v_sysrep_allow',
+    Field('pattern','string'),
+    Field('fset_id','integer'),
+    Field('group_id','integer'),
+    Field('fset_name','string'),
+    Field('group_name','string'),
+    migrate=False)
+
 db.define_table('sysrep_allow',
     Field('pattern','string'),
     Field('fset_id','integer'),
