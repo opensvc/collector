@@ -181,3 +181,63 @@ def lib_get_sysreport_commit_tree_file(nodename, cid, oid):
     data = sysreport.sysreport().show_file_unvalidated(cid, oid, nodename)
     return data
 
+def lib_get_sysreport_nodediff(nodes, path=None, ignore_blanks=False):
+    import os
+    import subprocess
+    import fnmatch
+
+    here_d = os.path.dirname(__file__)
+    sysrep_d = os.path.join(here_d, '..', 'uploads', 'sysreport')
+    cwd = os.getcwd()
+    try:
+        os.chdir(sysrep_d)
+    except:
+        raise Exception("path %s does not exist on the collector" % sysrep_d)
+    if not os.path.exists(nodes[0]):
+        os.chdir(cwd)
+        raise Exception("node %s has no sysreport"%nodes[0])
+    if not os.path.exists(nodes[1]):
+        os.chdir(cwd)
+        return Exception("node %s has no sysreport"%nodes[1])
+
+    cmd = ["diff", "-urN", "--exclude=.git"]
+    if ignore_blanks:
+        cmd += ["-Bb"]
+    cmd += [nodes[0], nodes[1]]
+    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=None)
+    out, err = p.communicate()
+
+    sysresponsible = is_sysresponsible(nodes[0]) & is_sysresponsible(nodes[1])
+
+    # load secure patterns
+    sec_pattern = get_pattern_secure()
+
+    diff_data = sysreport.sysreport().parse_show(out)
+    os.chdir(cwd)
+
+    data = []
+    for key in sorted(diff_data["blocks"].keys()):
+        if "\t" in key:
+            fpath = key.split("\t")[0]
+        else:
+            fpath = key
+        fpath = beautify_fpath(fpath)
+        if not fnmatch.fnmatch(fpath, path):
+            continue
+        if sec_pattern.match(fpath):
+            secure = True
+            if sysresponsible:
+                diff = diff_data["blocks"][key]
+            else:
+                diff = T("You are not allowed to view this change")
+        else:
+            diff = diff_data["blocks"][key]
+            secure = False
+        d = {
+          "path": fpath,
+          "secure": secure,
+          "diff": diff,
+        }
+        data.append(d)
+    return data
+
