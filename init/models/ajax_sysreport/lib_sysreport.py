@@ -120,6 +120,9 @@ def lib_get_sysreport_timediff(nodename, path=None, begin=None, end=None):
                                            begin=begin,
                                            end=end
                                           )
+    for k, d in data['stat'].items():
+        del(data['stat'][k])
+        data['stat'][beautify_fpath(k)] = d
     sec_pattern = get_pattern_secure()
     for k in data['blocks'].keys():
         diff = data['blocks'][k]
@@ -129,7 +132,8 @@ def lib_get_sysreport_timediff(nodename, path=None, begin=None, end=None):
                 diff = T("You are not allowed to view this change")
         else:
             secure = False
-        data['blocks'][k] = {
+        del(data['blocks'][k])
+        data['blocks'][beautify_fpath(k)] = {
           "secure": secure,
           "diff": diff,
         }
@@ -140,6 +144,9 @@ def lib_get_sysreport_commit(nodename, cid, path=None):
     sysresponsible = is_sysresponsible(nodename)
     data = sysreport.sysreport().show_data(cid, nodename, path=encode_fpath(path),
                                           )
+    for k, d in data['stat'].items():
+        del(data['stat'][k])
+        data['stat'][beautify_fpath(k)] = d
     sec_pattern = get_pattern_secure()
     for k in data['blocks'].keys():
         diff = data['blocks'][k]
@@ -149,7 +156,8 @@ def lib_get_sysreport_commit(nodename, cid, path=None):
                 diff = T("You are not allowed to view this change")
         else:
             secure = False
-        data['blocks'][k] = {
+        del(data['blocks'][k])
+        data['blocks'][beautify_fpath(k)] = {
           "secure": secure,
           "diff": diff,
         }
