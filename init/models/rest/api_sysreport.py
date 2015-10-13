@@ -139,6 +139,49 @@ class rest_get_node_sysreport_timediff(rest_get_handler):
 
 
 #
+class rest_get_sysreport_nodediff(rest_get_handler):
+    def __init__(self):
+        desc = [
+          "Display differences in files tracked by sysreport at the same path on multiple nodes.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/nodes/clementine/sysreport/nodediff?path=.*resolv.*",
+        ]
+        params = {
+          "nodes": {
+            "desc": "The comma-separated list of node names to compare.",
+          },
+          "path": {
+            "desc": "A path glob to limit the sysreport extract to.",
+          },
+          "ignore_blanks": {
+            "desc": "A true/false value indicating the user wants the report to include differences in lines caused only by whitespacing differences.",
+          },
+        }
+
+        rest_get_handler.__init__(
+          self,
+          path="/sysreport/nodediff",
+          desc=desc,
+          params=params,
+          examples=examples,
+        )
+
+    def handler(self, **vars):
+        if "nodes" not in vars:
+            raise Exception("The nodes parameter is mandatory")
+        nodes = vars["nodes"].split(",")
+        del(vars["nodes"])
+
+        if "ignore_blanks" in vars and vars["ignore_blanks"] in ("True", "true", True, "y", "Y", "yes", "Yes", "1"):
+            vars["ignore_blanks"] = True
+        else:
+            vars["ignore_blanks"] = False
+
+        return dict(data=lib_get_sysreport_nodediff(nodes, **vars))
+
+
+#
 # Secure pattern handlers
 #
 

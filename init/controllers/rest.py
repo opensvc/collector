@@ -169,6 +169,7 @@ handlers = {
      rest_get_user_groups(),
      rest_get_user_primary_group(),
      rest_get_user_filterset(),
+     rest_get_sysreport_nodediff(),
      rest_get_sysreport_secure_patterns(),
      rest_get_sysreport_secure_pattern(),
      rest_get_sysreport_authorizations(),
