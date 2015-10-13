@@ -92,12 +92,12 @@ class rest_handler(object):
         return s
 
     def fmt_data(self):
-        title = "## Data\n\n"
+        title = "### Data\n\n"
         text = ""
         if type(self.init_data) in (str, unicode):
             text += self.init_data
         self.update_data()
-        if self.data is None:
+        if self.data is None or type(self.init_data) in (str, unicode):
             return title + text
         s = ""
         for key in sorted(set(self.data.keys())-set(["_extra"])):
@@ -224,9 +224,6 @@ class rest_post_handler(rest_handler):
                 result["data"] += [d]
         return result
 
-    #def update_data(self):
-    #    self.data = copy.copy(self.init_data)
-
     def update_parameters(self):
         self.params = copy.copy(self.init_params)
         if len(self.tables) == 0:
@@ -245,9 +242,6 @@ class rest_put_handler(rest_handler):
     def __init__(self, **vars):
         vars["action"] = "PUT"
         rest_handler.__init__(self, **vars)
-
-    def update_data(self):
-        self.data = copy.copy(self.init_data)
 
 class rest_delete_handler(rest_handler):
     def __init__(self, **vars):

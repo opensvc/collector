@@ -431,13 +431,32 @@ class rest_post_sysreport_authorizations(rest_post_handler):
           "The action is logged in the collector's log.",
           "A websocket event is sent to announce the change in the table.",
         ]
+        data = """
+- **group_name**
+. The name of the organizational group to authorize.
+. Exclusive with **group_id**.
+
+- **group_id**::
+. The id of the organizational group to authorize.
+. Exclusive with **group_name**.
+
+- **fset_name**::
+. The name of the filterset to use to determine on which nodes the authorization applies.
+. Exclusive with **fset_id**.
+
+- **fset_id**::
+. The id of the filterset to use to determine on which nodes the authorization applies.
+. Exclusive with **fset_name**.
+"""
+
         examples = [
-          """# curl -u %(email)s -o- -X POST -d group="mygroup" -d filterset="myfset" -d pattern=".*" https://%(collector)s/init/rest/api/sysreport/authorizations""",
+          """# curl -u %(email)s -o- -X POST -d group_name="mygroup" -d fset_name="myfset" -d pattern=".*" https://%(collector)s/init/rest/api/sysreport/authorizations""",
         ]
         rest_post_handler.__init__(
           self,
           path="/sysreport/authorizations",
           tables=["sysrep_allow"],
+          data=data,
           desc=desc,
           examples=examples,
         )
