@@ -129,7 +129,7 @@ def ajax_dash_history():
     id_chart = 'dh_chart'
     d = DIV(
           DIV(
-            #IMG(_src=URL(r=request,c='static',f='spinner.gif')),
+            #IMG(_src=URL(r=request,c='static',f='images/spinner.gif')),
             _id=id_chart,
             _style="height:300px",
           ),

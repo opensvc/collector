@@ -100,7 +100,7 @@ def format_sym(sym):
                  sync_ajax("%(url)s",['arrayid'],"sym_detail_%(symid)s", function(){});
                };
             """%dict(url=URL(r=request,f='sym_overview'),
-                     spinner=IMG(_src=URL(r=request,c='static',f='spinner.gif')),
+                     spinner=IMG(_src=URL(r=request,c='static',f='images/spinner.gif')),
                      symid=sym['symid']),
         )
     return d

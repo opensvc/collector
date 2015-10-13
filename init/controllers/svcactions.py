@@ -144,7 +144,7 @@ def ajax_action_status():
         )
         return SPAN(
                  IMG(
-                   _src=URL(r=request,c='static',f='action16.png'),
+                   _src=URL(r=request,c='static',f='images/action16.png'),
                    _border=0,
                    _onload="""
                      document.getElementById('spin_span_pid_%(id)s').innerHTML='%(pid)s';
@@ -161,7 +161,7 @@ def ajax_action_status():
                )
     else:
         return IMG(
-                _src=URL(r=request,c='static',f='spinner.gif'),
+                _src=URL(r=request,c='static',f='images/spinner.gif'),
                 _border=0,
                 _title=T("unfinished"),
                 _onload="""refresh_action('%(url)s', '%(id)s')"""%dict(

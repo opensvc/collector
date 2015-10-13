@@ -90,12 +90,12 @@ def _ajax_pkgdiff(nodes):
         for node in nodes:
             if node in l:
                 h.append(TD(
-                  IMG(_src=URL(r=request,c='static',f='check16.png')),
+                  IMG(_src=URL(r=request,c='static',f='images/check16.png')),
                   _style="text-align:center",
                 ))
             else:
                 h.append(TD(""))
-                #h.append(TD(IMG( _src=URL(r=request,c='static',f='na.png'))))
+                #h.append(TD(IMG( _src=URL(r=request,c='static',f='images/na.png'))))
         return TR(h, _class=bg)
 
     def fmt_table(rows):

@@ -9,14 +9,14 @@ class sysreport(object):
         self.collect_d = os.path.join(here_d, '..', 'uploads', 'sysreport')
         self.cwd = os.getcwd()
 
-    def timeline(self, nodes=[], path=None):
+    def timeline(self, nodes=[], path=None, begin=None, end=None):
         data = []
         for node in nodes:
-            data += self._timeline(node, path=path)
+            data += self._timeline(node, path=path, begin=begin, end=end)
         return data
 
-    def _timeline(self, nodename, path=None):
-        s = self.log(nodename, path=path)
+    def _timeline(self, nodename, path=None, begin=None, end=None):
+        s = self.log(nodename, path=path, begin=begin, end=end)
         data = self.parse_log(s, nodename)
         if len(data) > 1:
             # do not to display the node sysreport initial commit
@@ -64,10 +64,14 @@ class sysreport(object):
             data[i]['group'] = nodename
         return data
 
-    def log(self, nodename=None, path=None):
+    def log(self, nodename=None, path=None, begin=None, end=None):
         git_d = os.path.join(self.collect_d, nodename, ".git")
         cmd = ["git", "--git-dir="+git_d, "log", "-n", "300",
                "--stat=510,500", "--date=iso"]
+        if begin:
+            cmd += ['--since='+begin]
+        if end:
+            cmd += ['--until='+end]
         if path:
             cmd += ['--', path]
         p = Popen(cmd, stdout=PIPE, stderr=PIPE)

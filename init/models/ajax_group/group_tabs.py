@@ -97,7 +97,7 @@ def group_tabs(gid=None, role=None):
             _class='cloud',
           ),
           DIV(
-            IMG(_src=URL(r=request,c='static',f='spinner.gif')),
+            IMG(_src=URL(r=request,c='static',f='images/spinner.gif')),
             _id='tab2_'+str(rowid),
             _class='cloud',
           ),

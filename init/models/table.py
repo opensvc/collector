@@ -467,7 +467,7 @@ class HtmlTable(object):
                               background-repeat:no-repeat;
                               padding-left:18px;
                               margin-left:0.2em;
-                           """%URL(r=request,c='static',f=self.colprops[a].img+'.png'),
+                           """%URL(r=request,c='static',f='images/'+self.colprops[a].img+'.png'),
                   ),
                   BR(),
                   _style='white-space:nowrap',

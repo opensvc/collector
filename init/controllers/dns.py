@@ -93,7 +93,7 @@ class table_dns_domains(HtmlTable):
         d = DIV(
               A(
                 IMG(
-                  _src=URL(r=request, c='static', f='edit.png'),
+                  _src=URL(r=request, c='static', f='images/edit.png'),
                   _style='vertical-align:middle',
                 ),
                 _href=URL(r=request, c='dns', f='domain_edit',
@@ -103,7 +103,7 @@ class table_dns_domains(HtmlTable):
               ),
               A(
                 IMG(
-                  _src=URL(r=request, c='static', f='action_sync_16.png'),
+                  _src=URL(r=request, c='static', f='images/action_sync_16.png'),
                   _style='vertical-align:middle',
                 ),
                 _href=URL(r=request, c='dns', f='domain_sync',
@@ -325,7 +325,7 @@ def _record_form(record=None):
                      'prio': 'Priority',
                  },
                  col3={
-                     'content': IMG(_src=URL(r=request, c='static', f='wizard16.png'), _onclick=js)
+                     'content': IMG(_src=URL(r=request, c='static', f='images/wizard16.png'), _onclick=js)
                  })
 
 class table_dns_records(HtmlTable):
@@ -407,7 +407,7 @@ class table_dns_records(HtmlTable):
         d = DIV(
               A(
                 IMG(
-                  _src=URL(r=request, c='static', f='edit.png'),
+                  _src=URL(r=request, c='static', f='images/edit.png'),
                   _style='vertical-align:middle',
                 ),
                 _href=URL(r=request, c='dns', f='record_edit',

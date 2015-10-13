@@ -220,7 +220,7 @@ def ajax_service():
               SPAN(
                 IMG(
                   _title=T('Start'),
-                  _src=URL(r=request, c='static', f='begin16.png'),
+                  _src=URL(r=request, c='static', f='images/begin16.png'),
                   _style="vertical-align:middle",
                 ),
                 INPUT(
@@ -237,13 +237,13 @@ def ajax_service():
                 ),
                 IMG(
                   _title=T('End'),
-                  _src=URL(r=request, c='static', f='end16.png'),
+                  _src=URL(r=request, c='static', f='images/end16.png'),
                   _style="vertical-align:middle",
                 ),
                 SPAN(
                   A(
                     IMG(
-                      _src=URL(r=request, c='static', f='refresh16.png'),
+                      _src=URL(r=request, c='static', f='images/refresh16.png'),
                       _style="vertical-align:middle",
                     ),
                     _title=T('Refresh'),
@@ -374,7 +374,7 @@ def ajax_service():
               SPAN(
                 IMG(
                   _title=T('Start'),
-                  _src=URL(r=request, c='static', f='begin16.png'),
+                  _src=URL(r=request, c='static', f='images/begin16.png'),
                   _style="vertical-align:middle",
                 ),
                 INPUT(
@@ -391,13 +391,13 @@ def ajax_service():
                 ),
                 IMG(
                   _title=T('End'),
-                  _src=URL(r=request, c='static', f='end16.png'),
+                  _src=URL(r=request, c='static', f='images/end16.png'),
                   _style="vertical-align:middle",
                 ),
                 SPAN(
                   A(
                     IMG(
-                      _src=URL(r=request, c='static', f='refresh16.png'),
+                      _src=URL(r=request, c='static', f='images/refresh16.png'),
                       _style="vertical-align:middle",
                     ),
                     _title=T('Refresh'),
@@ -547,27 +547,27 @@ def ajax_service():
             _class='cloud_shown',
           ),
           DIV(
-            IMG(_src=URL(r=request,c='static',f='spinner.gif')),
+            IMG(_src=URL(r=request,c='static',f='images/spinner.gif')),
             _id='tab13_'+str(rowid),
             _class='cloud',
           ),
           DIV(
-            IMG(_src=URL(r=request,c='static',f='spinner.gif')),
+            IMG(_src=URL(r=request,c='static',f='images/spinner.gif')),
             _id='tab14_'+str(rowid),
             _class='cloud',
           ),
           DIV(
-            IMG(_src=URL(r=request,c='static',f='spinner.gif')),
+            IMG(_src=URL(r=request,c='static',f='images/spinner.gif')),
             _id='tab15_'+str(rowid),
             _class='cloud',
           ),
           DIV(
-            IMG(_src=URL(r=request,c='static',f='spinner.gif')),
+            IMG(_src=URL(r=request,c='static',f='images/spinner.gif')),
             _id='tab2_'+str(rowid),
             _class='cloud',
           ),
           DIV(
-            IMG(_src=URL(r=request,c='static',f='spinner.gif')),
+            IMG(_src=URL(r=request,c='static',f='images/spinner.gif')),
             _id='tab3_'+str(rowid),
             _class='cloud',
           ),
@@ -577,17 +577,17 @@ def ajax_service():
             _class='cloud',
           ),
           DIV(
-            IMG(_src=URL(r=request,c='static',f='spinner.gif')),
+            IMG(_src=URL(r=request,c='static',f='images/spinner.gif')),
             _id='tab5_'+str(rowid),
             _class='cloud',
           ),
           DIV(
-            IMG(_src=URL(r=request,c='static',f='spinner.gif')),
+            IMG(_src=URL(r=request,c='static',f='images/spinner.gif')),
             _id='tab16_'+str(rowid),
             _class='cloud',
           ),
           DIV(
-            IMG(_src=URL(r=request,c='static',f='spinner.gif')),
+            IMG(_src=URL(r=request,c='static',f='images/spinner.gif')),
             _id='tab6_'+str(rowid),
             _class='cloud',
           ),
@@ -606,17 +606,17 @@ def ajax_service():
             _class='cloud',
           ),
           DIV(
-            IMG(_src=URL(r=request,c='static',f='spinner.gif')),
+            IMG(_src=URL(r=request,c='static',f='images/spinner.gif')),
             _id='tab9_'+str(rowid),
             _class='cloud',
           ),
           DIV(
-            IMG(_src=URL(r=request,c='static',f='spinner.gif')),
+            IMG(_src=URL(r=request,c='static',f='images/spinner.gif')),
             _id='tab10_'+str(rowid),
             _class='cloud',
           ),
           DIV(
-            IMG(_src=URL(r=request,c='static',f='spinner.gif')),
+            IMG(_src=URL(r=request,c='static',f='images/spinner.gif')),
             _id='tab11_'+str(rowid),
             _class='cloud',
             _style='max-width:80em',

@@ -10,7 +10,7 @@ def perf_stats(node, rowid):
                """%dict(url=URL(r=request,c='ajax_perf',f=f),
                                id=rowid,
                                e=e,
-                               spinner=IMG(_src=URL(r=request,c='static',f='spinner.gif')),
+                               spinner=IMG(_src=URL(r=request,c='static',f='images/spinner.gif')),
                        )
     def perf_group(title='', group=''):
         group_img_h = {
@@ -33,12 +33,12 @@ def perf_stats(node, rowid):
                             toggle_plot('%(url)s', '%(rowid)s','%(div)s')"""%dict(
                              url=URL(r=request,c='ajax_perf',f='ajax_perf_%s_plot'%group,
                                      args=[node, rowid]),
-                             spinner=IMG(_src=URL(r=request,c='static',f='spinner.gif')),
+                             spinner=IMG(_src=URL(r=request,c='static',f='images/spinner.gif')),
                              rowid=rowid,
                              div=divid),
               ),
               A(
-                IMG(_src=URL(r=request,c='static',f='nok.png')),
+                IMG(_src=URL(r=request,c='static',f='images/nok.png')),
                 _onClick="""toggle_plot('%(url)s', '%(rowid)s','%(div)s')"""%dict(
                              url=URL(r=request,c='ajax_perf',f='ajax_perf_%s_plot'%group,
                                      args=[node, rowid]),
@@ -48,12 +48,12 @@ def perf_stats(node, rowid):
                 _style='float:right;display:none',
               ),
               A(
-                IMG(_src=URL(r=request,c='static',f='refresh16.png')),
+                IMG(_src=URL(r=request,c='static',f='images/refresh16.png')),
                 _onClick="""$('#%(div)s').html('%(spinner)s');
                             refresh_plot('%(url)s', '%(rowid)s','%(div)s')"""%dict(
                              url=URL(r=request,c='ajax_perf',f='ajax_perf_%s_plot'%group,
                                      args=[node, rowid]),
-                             spinner=IMG(_src=URL(r=request,c='static',f='spinner.gif')),
+                             spinner=IMG(_src=URL(r=request,c='static',f='images/spinner.gif')),
                              rowid=rowid,
                              div=divid),
                 _id='refresh_'+divid,
@@ -78,7 +78,7 @@ def perf_stats(node, rowid):
           SPAN(
             IMG(
               _title=T('Start'),
-              _src=URL(r=request, c='static', f='begin16.png'),
+              _src=URL(r=request, c='static', f='images/begin16.png'),
               _style="vertical-align:middle",
             ),
             INPUT(
@@ -95,7 +95,7 @@ def perf_stats(node, rowid):
             ),
             IMG(
               _title=T('End'),
-              _src=URL(r=request, c='static', f='end16.png'),
+              _src=URL(r=request, c='static', f='images/end16.png'),
               _style="vertical-align:middle",
             ),
             STYLE(XML('input {margin-left:2px}')),
@@ -781,37 +781,37 @@ def ajax_node():
             _class='cloud',
           ),
           DIV(
-            IMG(_src=URL(r=request,c='static',f='spinner.gif')),
+            IMG(_src=URL(r=request,c='static',f='images/spinner.gif')),
             _id='tab16_'+str(rowid),
             _class='cloud',
           ),
           DIV(
-            IMG(_src=URL(r=request,c='static',f='spinner.gif')),
+            IMG(_src=URL(r=request,c='static',f='images/spinner.gif')),
             _id='tab2_'+str(rowid),
             _class='cloud',
           ),
           DIV(
-            IMG(_src=URL(r=request,c='static',f='spinner.gif')),
+            IMG(_src=URL(r=request,c='static',f='images/spinner.gif')),
             _id='tab17_'+str(rowid),
             _class='cloud',
           ),
           DIV(
-            IMG(_src=URL(r=request,c='static',f='spinner.gif')),
+            IMG(_src=URL(r=request,c='static',f='images/spinner.gif')),
             _id='tab15_'+str(rowid),
             _class='cloud',
           ),
           DIV(
-            IMG(_src=URL(r=request,c='static',f='spinner.gif')),
+            IMG(_src=URL(r=request,c='static',f='images/spinner.gif')),
             _id='tab14_'+str(rowid),
             _class='cloud',
           ),
           DIV(
-            IMG(_src=URL(r=request,c='static',f='spinner.gif')),
+            IMG(_src=URL(r=request,c='static',f='images/spinner.gif')),
             _id='tab5_'+str(rowid),
             _class='cloud',
           ),
           DIV(
-            IMG(_src=URL(r=request,c='static',f='spinner.gif')),
+            IMG(_src=URL(r=request,c='static',f='images/spinner.gif')),
             _id='tab6_'+str(rowid),
             _class='cloud',
           ),
@@ -840,12 +840,12 @@ def ajax_node():
             _class='cloud',
           ),
           DIV(
-            IMG(_src=URL(r=request,c='static',f='spinner.gif')),
+            IMG(_src=URL(r=request,c='static',f='images/spinner.gif')),
             _id='tab12_'+str(rowid),
             _class='cloud',
           ),
           DIV(
-            IMG(_src=URL(r=request,c='static',f='spinner.gif')),
+            IMG(_src=URL(r=request,c='static',f='images/spinner.gif')),
             _id='tab13_'+str(rowid),
             _class='cloud',
           ),
@@ -1134,7 +1134,7 @@ def ajax_node_stor():
       H3("SAN"),
       DIV(
         IMG(
-          _src=URL(r=request,c='static',f='spinner.gif'),
+          _src=URL(r=request,c='static',f='images/spinner.gif'),
           _style="vertical-align:top;padding-right:0.5em",
         ),
         SPAN(T("Generating SAN topology diagram")),
@@ -1425,7 +1425,7 @@ def ajax_svc_stor():
       H3("SAN"),
       DIV(
         IMG(
-          _src=URL(r=request,c='static',f='spinner.gif'),
+          _src=URL(r=request,c='static',f='images/spinner.gif'),
           _style="vertical-align:top;padding-right:0.5em",
         ),
         SPAN(T("Generating SAN topology diagram")),

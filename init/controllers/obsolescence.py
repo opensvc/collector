@@ -194,7 +194,7 @@ class col_obs_type(HtmlTableColumn):
     def html(self, o):
         t = self.get(o)
         return IMG(
-                 _src=URL(r=request,c='static',f=self.img_h[t]+'.png'),
+                 _src=URL(r=request,c='static',f='images/'+self.img_h[t]+'.png'),
                )
 
 class table_obs(HtmlTable):

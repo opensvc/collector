@@ -49,7 +49,7 @@ def compare(nodes, rows, cols, colprops, objtype):
         return DIV(
                  IMG(
                    _src=URL(r=request, c='static',
-                            f=colprops[key].img+'.png'),
+                            f='images/'+colprops[key].img+'.png'),
                    _style='vertical-align:top;margin-right:10px',
                  ),
                  colprops[key].title,
@@ -116,7 +116,7 @@ def ajax_services_compdiff():
     divid = "svcdiff_compdiff"
     d = DIV(
           DIV(
-            IMG(_src=URL(r=request,c='static',f='spinner.gif')),
+            IMG(_src=URL(r=request,c='static',f='images/spinner.gif')),
             _id=divid
           ),
           SCRIPT("""sync_ajax('%(url)s?node=%(nodes)s', [], '%(div)s', function(){});"""%dict(
@@ -132,7 +132,7 @@ def ajax_compdiff():
     divid = "nodediff_compdiff"
     d = DIV(
           DIV(
-            IMG(_src=URL(r=request,c='static',f='spinner.gif')),
+            IMG(_src=URL(r=request,c='static',f='images/spinner.gif')),
             _id=divid
           ),
           SCRIPT("""sync_ajax('%(url)s?node=%(nodes)s', [], '%(div)s', function(){});"""%dict(
@@ -148,7 +148,7 @@ def ajax_pkgdiff():
     divid = "nodediff_pkgdiff"
     d = DIV(
           DIV(
-            IMG(_src=URL(r=request,c='static',f='spinner.gif')),
+            IMG(_src=URL(r=request,c='static',f='images/spinner.gif')),
             _id=divid
           ),
           SCRIPT("""sync_ajax('%(url)s?node=%(nodes)s', [], '%(div)s', function(){});"""%dict(
@@ -214,12 +214,12 @@ def _ajax_pkgdiff(nodes):
         for node in nodes:
             if node in l:
                 h.append(TD(
-                  IMG(_src=URL(r=request,c='static',f='check16.png')),
+                  IMG(_src=URL(r=request,c='static',f='images/check16.png')),
                   _style="text-align:center",
                 ))
             else:
                 h.append(TD(""))
-                #h.append(TD(IMG( _src=URL(r=request,c='static',f='na.png'))))
+                #h.append(TD(IMG( _src=URL(r=request,c='static',f='images/na.png'))))
         return TR(h, _class=bg)
 
     def fmt_table(rows):

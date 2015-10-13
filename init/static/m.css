@@ -67,172 +67,172 @@
     color: #777700;
 }
 .ui-icon-svc {
-    background: transparent url("svc.png") no-repeat;
+    background: transparent url("images/svc.png") no-repeat;
 }
 .ui-icon-node {
-    background: transparent url("cpu16.png") no-repeat;
+    background: transparent url("images/cpu16.png") no-repeat;
 }
 .ui-icon-checks {
-    background: transparent url("check16.png") no-repeat;
+    background: transparent url("images/check16.png") no-repeat;
 }
 .ui-icon-pushservices {
-    background: transparent url("svc.png") no-repeat;
+    background: transparent url("images/svc.png") no-repeat;
 }
 .ui-icon-pushpkg {
-    background: transparent url("pkg16.png") no-repeat;
+    background: transparent url("images/pkg16.png") no-repeat;
 }
 .ui-icon-reboot {
-    background: transparent url("action_restart_16.png") no-repeat;
+    background: transparent url("images/action_restart_16.png") no-repeat;
 }
 .ui-icon-shutdown {
-    background: transparent url("action_stop_16.png") no-repeat;
+    background: transparent url("images/action_stop_16.png") no-repeat;
 }
 .ui-icon-syncservices {
-    background: transparent url("action_sync_16.png") no-repeat;
+    background: transparent url("images/action_sync_16.png") no-repeat;
 }
 .ui-icon-updateservices {
-    background: transparent url('action16.png') no-repeat;
+    background: transparent url('images/action16.png') no-repeat;
 }
 .ui-icon-stop {
-    background: transparent url('action_stop_16.png') no-repeat;
+    background: transparent url('images/action_stop_16.png') no-repeat;
 }
 .ui-icon-stopapp {
-    background: transparent url('action_stop_16.png') no-repeat;
+    background: transparent url('images/action_stop_16.png') no-repeat;
 }
 .ui-icon-stopdisk {
-    background: transparent url('action_stop_16.png') no-repeat;
+    background: transparent url('images/action_stop_16.png') no-repeat;
 }
 .ui-icon-stopvg {
-    background: transparent url('action_stop_16.png') no-repeat;
+    background: transparent url('images/action_stop_16.png') no-repeat;
 }
 .ui-icon-stoploop {
-    background: transparent url('action_stop_16.png') no-repeat;
+    background: transparent url('images/action_stop_16.png') no-repeat;
 }
 .ui-icon-stopip {
-    background: transparent url('action_stop_16.png') no-repeat;
+    background: transparent url('images/action_stop_16.png') no-repeat;
 }
 .ui-icon-umount {
-    background: transparent url('action_stop_16.png') no-repeat;
+    background: transparent url('images/action_stop_16.png') no-repeat;
 }
 .ui-icon-shutdown {
-    background: transparent url('action_stop_16.png') no-repeat;
+    background: transparent url('images/action_stop_16.png') no-repeat;
 }
 .ui-icon-boot {
-    background: transparent url('action_start_16.png') no-repeat;
+    background: transparent url('images/action_start_16.png') no-repeat;
 }
 .ui-icon-start {
-    background: transparent url('action_start_16.png') no-repeat;
+    background: transparent url('images/action_start_16.png') no-repeat;
 }
 .ui-icon-startstandby {
-    background: transparent url('action_start_16.png') no-repeat;
+    background: transparent url('images/action_start_16.png') no-repeat;
 }
 .ui-icon-startapp {
-    background: transparent url('action_start_16.png') no-repeat;
+    background: transparent url('images/action_start_16.png') no-repeat;
 }
 .ui-icon-startvg {
-    background: transparent url('action_start_16.png') no-repeat;
+    background: transparent url('images/action_start_16.png') no-repeat;
 }
 .ui-icon-startdisk {
-    background: transparent url('action_start_16.png') no-repeat;
+    background: transparent url('images/action_start_16.png') no-repeat;
 }
 .ui-icon-startloop {
-    background: transparent url('action_start_16.png') no-repeat;
+    background: transparent url('images/action_start_16.png') no-repeat;
 }
 .ui-icon-startip {
-    background: transparent url('action_start_16.png') no-repeat;
+    background: transparent url('images/action_start_16.png') no-repeat;
 }
 .ui-icon-mount {
-    background: transparent url('action_start_16.png') no-repeat;
+    background: transparent url('images/action_start_16.png') no-repeat;
 }
 .ui-icon-restart {
-    background: transparent url('action_restart_16.png') no-repeat;
+    background: transparent url('images/action_restart_16.png') no-repeat;
 }
 .ui-icon-provision {
-    background: transparent url('prov.png') no-repeat;
+    background: transparent url('images/prov.png') no-repeat;
 }
 .ui-icon-switch {
-    background: transparent url('action_restart_16.png') no-repeat;
+    background: transparent url('images/action_restart_16.png') no-repeat;
 }
 .ui-icon-freeze {
-    background: transparent url('frozen16.png') no-repeat;
+    background: transparent url('images/frozen16.png') no-repeat;
 }
 .ui-icon-thaw {
-    background: transparent url('frozen16.png') no-repeat;
+    background: transparent url('images/frozen16.png') no-repeat;
 }
 .ui-icon-syncall {
-    background: transparent url('action_sync_16.png') no-repeat;
+    background: transparent url('images/action_sync_16.png') no-repeat;
 }
 .ui-icon-syncnodes {
-    background: transparent url('action_sync_16.png') no-repeat;
+    background: transparent url('images/action_sync_16.png') no-repeat;
 }
 .ui-icon-syncdrp {
-    background: transparent url('action_sync_16.png') no-repeat;
+    background: transparent url('images/action_sync_16.png') no-repeat;
 }
 .ui-icon-syncfullsync {
-    background: transparent url('action_sync_16.png') no-repeat;
+    background: transparent url('images/action_sync_16.png') no-repeat;
 }
 .ui-icon-postsync {
-    background: transparent url('action_sync_16.png') no-repeat;
+    background: transparent url('images/action_sync_16.png') no-repeat;
 }
 .ui-icon-push {
-    background: transparent url('log16.png') no-repeat;
+    background: transparent url('images/log16.png') no-repeat;
 }
 .ui-icon-check {
-    background: transparent url('check16.png') no-repeat;
+    background: transparent url('images/check16.png') no-repeat;
 }
 .ui-icon-fixable {
-    background: transparent url('fixable16.png') no-repeat;
+    background: transparent url('images/fixable16.png') no-repeat;
 }
 .ui-icon-fix {
-    background: transparent url('comp16.png') no-repeat;
+    background: transparent url('images/comp16.png') no-repeat;
 }
 .ui-icon-pushstats {
-    background: transparent url('spark16.png') no-repeat;
+    background: transparent url('images/spark16.png') no-repeat;
 }
 .ui-icon-pushasset {
-    background: transparent url('node16.png') no-repeat;
+    background: transparent url('images/node16.png') no-repeat;
 }
 .ui-icon-stopcontainer {
-    background: transparent url('action_stop_16.png') no-repeat;
+    background: transparent url('images/action_stop_16.png') no-repeat;
 }
 .ui-icon-startcontainer {
-    background: transparent url('action_start_16.png') no-repeat;
+    background: transparent url('images/action_start_16.png') no-repeat;
 }
 .ui-icon-stopapp {
-    background: transparent url('action_stop_16.png') no-repeat;
+    background: transparent url('images/action_stop_16.png') no-repeat;
 }
 .ui-icon-startapp {
-    background: transparent url('action_start_16.png') no-repeat;
+    background: transparent url('images/action_start_16.png') no-repeat;
 }
 .ui-icon-prstop {
-    background: transparent url('action_stop_16.png') no-repeat;
+    background: transparent url('images/action_stop_16.png') no-repeat;
 }
 .ui-icon-prstart {
-    background: transparent url('action_start_16.png') no-repeat;
+    background: transparent url('images/action_start_16.png') no-repeat;
 }
 .ui-icon-push {
-    background: transparent url('svc.png') no-repeat;
+    background: transparent url('images/svc.png') no-repeat;
 }
 .ui-icon-syncquiesce {
-    background: transparent url('action_sync_16.png') no-repeat;
+    background: transparent url('images/action_sync_16.png') no-repeat;
 }
 .ui-icon-syncresync {
-    background: transparent url('action_sync_16.png') no-repeat;
+    background: transparent url('images/action_sync_16.png') no-repeat;
 }
 .ui-icon-syncupdate {
-    background: transparent url('action_sync_16.png') no-repeat;
+    background: transparent url('images/action_sync_16.png') no-repeat;
 }
 .ui-icon-syncverify {
-    background: transparent url('action_sync_16.png') no-repeat;
+    background: transparent url('images/action_sync_16.png') no-repeat;
 }
 .ui-icon-toc {
-    background: transparent url('action_toc_16.png') no-repeat;
+    background: transparent url('images/action_toc_16.png') no-repeat;
 }
 .ui-icon-stonith {
-    background: transparent url('action_stonith_16.png') no-repeat;
+    background: transparent url('images/action_stonith_16.png') no-repeat;
 }
 .ui-icon-switch {
-    background: transparent url('action_switch_16.png') no-repeat;
+    background: transparent url('images/action_switch_16.png') no-repeat;
 }
 .elist {
     padding-top: 15px;

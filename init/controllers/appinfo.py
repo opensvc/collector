@@ -19,7 +19,7 @@ class col_app_value(HtmlTableColumn):
     def chart(self, o):
         id = self.t.extra_line_key(o)
         return SPAN(
-          IMG(_src=URL(c='static', f='spark16.png')),
+          IMG(_src=URL(c='static', f='images/spark16.png')),
           _class="clickable",
           _onclick="""toggle_extra('%(url)s', '%(id)s', this, 0);
           """%dict(

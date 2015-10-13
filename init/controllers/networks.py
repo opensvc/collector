@@ -93,7 +93,7 @@ class table_networks(HtmlTable):
         d = DIV(
               A(
                 IMG(
-                  _src=URL(r=request, c='static', f='edit.png'),
+                  _src=URL(r=request, c='static', f='images/edit.png'),
                   _style='vertical-align:middle',
                 ),
                 _href=URL(r=request, c='networks', f='network_edit',
@@ -199,7 +199,7 @@ def segments():
                 tool_del = DIV(
                    r,
                    A(
-                     IMG(_src=URL(r=request, c='static', f='del16.png')),
+                     IMG(_src=URL(r=request, c='static', f='images/del16.png')),
                      _onclick="""
 function f() {
   ajax("%(url1)s", [], "networks_x_%(net_id)s")
@@ -231,7 +231,7 @@ if (confirm("%(msg)s")) {
             resp_div = DIV(
                        SPAN(resp),
                        A(
-                         IMG(_src=URL(r=request, c='static', f='add16.png')),
+                         IMG(_src=URL(r=request, c='static', f='images/add16.png')),
                          _onclick="""$('#add_group_%(net_id)s').show();
     ajax("%(url)s", [], "add_group_%(net_id)s");"""%dict(
                            net_id=net_id,
@@ -248,7 +248,7 @@ if (confirm("%(msg)s")) {
         l.append(DIV(
                  DIV(
                    A(
-                     IMG(_src=URL(r=request, c='static', f='edit.png')),
+                     IMG(_src=URL(r=request, c='static', f='images/edit.png')),
                      _href=URL(r=request, f='segment_edit', args=[row.id]),
                    ),
                  ),
@@ -278,7 +278,7 @@ if (confirm("%(msg)s")) {
         tools = DIV(
                  A(
                    IMG(
-                     _src=URL(r=request, c='static', f='add16.png'),
+                     _src=URL(r=request, c='static', f='images/add16.png'),
                      _style="padding:0 0.5em 0 0;vertical-align:top",
                    ),
                    T("Add segment"),

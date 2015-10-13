@@ -40,9 +40,9 @@ class col_users_manager(HtmlTableColumn):
     def html(self, o):
         role = self.get(o)
         if role == 0:
-            img = 'oneguy.png'
+            img = 'images/oneguy.png'
         else:
-            img = 'admin.png'
+            img = 'images/admin.png'
         return IMG(_src=URL(r=request,c='static',f=img))
 
 class table_users(HtmlTable):

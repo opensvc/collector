@@ -61,7 +61,7 @@
   overflow-y: scroll;
 }
 .corner:hover {
-  background-image: url("corner8.png");
+  background-image: url('images/corner8.png');
   background-position: 0 100%;
   background-repeat: no-repeat;
 }
@@ -257,7 +257,7 @@ img {
 }
 
 .tag_del {
-    background-image:url('whitex.png');
+    background-image:url('images/whitex.png');
     background-repeat:no-repeat;
     cursor: pointer;
 }
@@ -315,7 +315,7 @@ img {
 
 .boxtlc, .boxtrc, .boxblc, .boxbrc {
     background-color:transparent;
-    background-image:url('corners.gif');
+    background-image:url('images/corners.gif');
     background-repeat:no-repeat;
     height:10px;
     width:10px;
@@ -617,7 +617,7 @@ textarea {
 }
 
 button {
-    background: url('menu.jpg');
+    background: url('images/menu.jpg');
 }
 
 input:focus,
@@ -642,7 +642,7 @@ html {
     //font-family: Arial, Sans, Georgia, Times new Roman;
     font-family: "opensans", 'Ubuntu', Arial, Sans, Georgia, Times new Roman;
     color: #333333;
-    background: url('background.gif') repeat-x #3A3A3A;
+    background: url('images/background.gif') repeat-x #3A3A3A;
 }
 
 .flash {
@@ -778,7 +778,7 @@ div.error {
 }
 
 .statusbar {
-    background: url('menu.gif');
+    background: url('images/menu.gif');
     border-bottom: 1px #ddf solid;
 }
 
@@ -1368,476 +1368,476 @@ ul.login_menu ul {
 }
 
 .extraline_marker {
-  background-image: url('/init/static/markerup16.png');
+  background-image: url('images/markerup16.png');
   background-repeat: no-repeat;
   background-position-x: 10%;
   background-position-y: 100%;
 }
 
 .common16 {
-    background: transparent url('common16.png') no-repeat;
+    background: transparent url('images/common16.png') no-repeat;
     background-size: 16px 16px;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
 .os_vmware {
-    background: transparent url('vmware16.png') no-repeat;
+    background: transparent url('images/vmware16.png') no-repeat;
     background-size: 16px 16px;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
 .os_win {
-    background: transparent url('win24.png') no-repeat;
+    background: transparent url('images/win24.png') no-repeat;
     background-size: 16px 16px;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
 .os_aix {
-    background: transparent url('aix24.png') no-repeat;
+    background: transparent url('images/aix24.png') no-repeat;
     background-size: 16px 16px;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
 .os_opensolaris {
-    background: transparent url('opensolaris.png') no-repeat;
+    background: transparent url('images/opensolaris.png') no-repeat;
     background-size: 16px 16px;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
 .os_tru64 {
-    background: transparent url('tru64.png') no-repeat;
+    background: transparent url('images/tru64.png') no-repeat;
     background-size: 16px 16px;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
 .os_hpux {
-    background: transparent url('hpux.png') no-repeat;
+    background: transparent url('images/hpux.png') no-repeat;
     background-size: 16px 16px;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
 .os_darwin {
-    background: transparent url('darwin.png') no-repeat;
+    background: transparent url('images/darwin.png') no-repeat;
     background-size: 16px 16px;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
 .os_solaris {
-    background: transparent url('solaris.png') no-repeat;
+    background: transparent url('images/solaris.png') no-repeat;
     background-size: 16px 16px;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
 .os_freebsd {
-    background: transparent url('freebsd.png') no-repeat;
+    background: transparent url('images/freebsd.png') no-repeat;
     background-size: 16px 16px;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
 .os_linux {
-    background: transparent url('linux.png') no-repeat;
+    background: transparent url('images/linux.png') no-repeat;
     background-size: 16px 16px;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
 .menu16 {
-    background: transparent url('menu16.png') no-repeat;
+    background: transparent url('images/menu16.png') no-repeat;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
 .dia16 {
-    background: transparent url('dia16.png') no-repeat;
+    background: transparent url('images/dia16.png') no-repeat;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
 .detach16 {
-    background: transparent url('detach16.png') no-repeat;
+    background: transparent url('images/detach16.png') no-repeat;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
 .attach16 {
-    background: transparent url('attach16.png') no-repeat;
+    background: transparent url('images/attach16.png') no-repeat;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
 .prov {
-    background: transparent url('prov.png') no-repeat;
+    background: transparent url('images/prov.png') no-repeat;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
 .lock {
-    background: transparent url('lock.png') no-repeat;
+    background: transparent url('images/lock.png') no-repeat;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
 .bookmark_add16 {
-    background: transparent url('bookmark_add16.png') no-repeat;
+    background: transparent url('images/bookmark_add16.png') no-repeat;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
 .bookmark16 {
-    background: transparent url('bookmark16.png') no-repeat;
+    background: transparent url('images/bookmark16.png') no-repeat;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
 .add16 {
-    background: transparent url('add16.png') no-repeat;
+    background: transparent url('images/add16.png') no-repeat;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
 .fw16 {
-    background: transparent url('fw16.png') no-repeat;
+    background: transparent url('images/fw16.png') no-repeat;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
 .del16 {
-    background: transparent url('del16.png') no-repeat;
+    background: transparent url('images/del16.png') no-repeat;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
 .edit16 {
-    background: transparent url('edit.png') no-repeat;
+    background: transparent url('images/edit.png') no-repeat;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
 .alert16 {
-    background: transparent url('alert16.png') no-repeat;
+    background: transparent url('images/alert16.png') no-repeat;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
 .avail16 {
-    background: transparent url('avail16.png') no-repeat;
+    background: transparent url('images/avail16.png') no-repeat;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
 .wspark16 {
-    background: transparent url('wspark16.png') no-repeat;
+    background: transparent url('images/wspark16.png') no-repeat;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
 .spark16 {
-    background: transparent url('spark16.png') no-repeat;
+    background: transparent url('images/spark16.png') no-repeat;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
 .values_to_filter {
-    background: transparent url('values_to_filter.png') no-repeat;
+    background: transparent url('images/values_to_filter.png') no-repeat;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
 .clear16 {
-    background: transparent url('clear16.png') no-repeat;
+    background: transparent url('images/clear16.png') no-repeat;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
 .invert16 {
-    background: transparent url('invert16.png') no-repeat;
+    background: transparent url('images/invert16.png') no-repeat;
     padding: 0 0 0 16px;
     min-height: 16px;
 }
 .filter16 {
-    background: transparent url('filter16.png') no-repeat;
+    background: transparent url('images/filter16.png') no-repeat;
     padding: 0 0 0 16px;
     min-height: 16px;
 }
 .filters {
-    background: transparent url('filter16.png') no-repeat;
+    background: transparent url('images/filter16.png') no-repeat;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
 .columns {
-    background: transparent url('columns.png') no-repeat;
+    background: transparent url('images/columns.png') no-repeat;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
 .csv {
-    background: transparent url('csv.png') no-repeat;
+    background: transparent url('images/csv.png') no-repeat;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
 .csv_disabled {
-    background: transparent url('csv.png') no-repeat;
+    background: transparent url('images/csv.png') no-repeat;
     padding: 0 0 0 20px;
     min-height: 16px;
     color: rgba(0, 0, 0, 0.5);
 }
 .link16 {
-    background: transparent url('link16.png') no-repeat;
+    background: transparent url('images/link16.png') no-repeat;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
 .refresh16 {
-    background: transparent url('refresh16.png') no-repeat;
+    background: transparent url('images/refresh16.png') no-repeat;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
 .spinner {
-    background: transparent url('spinner.gif') no-repeat;
+    background: transparent url('images/spinner.gif') no-repeat;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
 
 .dns16 {
-    background: transparent url('dns16.png') no-repeat;
+    background: transparent url('images/dns16.png') no-repeat;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
 .cd16 {
-    background: transparent url('cd16.png') no-repeat;
+    background: transparent url('images/cd16.png') no-repeat;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
 .net16 {
-    background: transparent url('net16.png') no-repeat;
+    background: transparent url('images/net16.png') no-repeat;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
 .down {
-  background: transparent url('down16.png') no-repeat;
+  background: transparent url('images/down16.png') no-repeat;
   padding: 0 0 0 15px;
   background-size: 12px 12px;
   background-position-y: 2px;
   min-height: 16px;
 }
 .right {
-  background: transparent url('right16.png') no-repeat;
+  background: transparent url('images/right16.png') no-repeat;
   padding: 0 0 0 15px;
   background-size: 12px 12px;
   background-position-y: 2px;
   min-height: 16px;
 }
 .down16 {
-    background: transparent url('down16.png') no-repeat;
+    background: transparent url('images/down16.png') no-repeat;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
 .right16 {
-    background: transparent url('right16.png') no-repeat;
+    background: transparent url('images/right16.png') no-repeat;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
 .save16 {
-    background: transparent url('save16.png') no-repeat;
+    background: transparent url('images/save16.png') no-repeat;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
 .expert16 {
-    background: transparent url('expert16.png') no-repeat;
+    background: transparent url('images/expert16.png') no-repeat;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
 .db16 {
-    background: transparent url('db16.png') no-repeat;
+    background: transparent url('images/db16.png') no-repeat;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
 .wf16 {
-    background: transparent url('wf16.png') no-repeat;
+    background: transparent url('images/wf16.png') no-repeat;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
 .modset16 {
-    background: transparent url('modset16.png') no-repeat;
+    background: transparent url('images/modset16.png') no-repeat;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
 .hv16 {
-    background: transparent url('hv16.png') no-repeat;
+    background: transparent url('images/hv16.png') no-repeat;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
 .hd16 {
-    background: transparent url('hd16.png') no-repeat;
+    background: transparent url('images/hd16.png') no-repeat;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
 .pkg16 {
-    background: transparent url('pkg16.png') no-repeat;
+    background: transparent url('images/pkg16.png') no-repeat;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
 .log16 {
-    background: transparent url('log16.png') no-repeat;
+    background: transparent url('images/log16.png') no-repeat;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
 .bill16 {
-    background: transparent url('bill16.png') no-repeat;
+    background: transparent url('images/bill16.png') no-repeat;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
 .tag16 {
-    background: transparent url('tag16.png') no-repeat;
+    background: transparent url('images/tag16.png') no-repeat;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
 .hw16 {
-    background: transparent url('hw16.png') no-repeat;
+    background: transparent url('images/hw16.png') no-repeat;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
 .os16 {
-    background: transparent url('os16.png') no-repeat;
+    background: transparent url('images/os16.png') no-repeat;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
 .obs16 {
-    background: transparent url('obs16.png') no-repeat;
+    background: transparent url('images/obs16.png') no-repeat;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
 .fixable16 {
-    background: transparent url('fixable16.png') no-repeat;
+    background: transparent url('images/fixable16.png') no-repeat;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
 .comp16 {
-    background: transparent url('comp16.png') no-repeat;
+    background: transparent url('images/comp16.png') no-repeat;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
 .check16 {
-    background: transparent url('check16.png') no-repeat;
+    background: transparent url('images/check16.png') no-repeat;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
 .admins16 {
-    background: transparent url('admins16.png') no-repeat;
+    background: transparent url('images/admins16.png') no-repeat;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
 .guys16 {
-    background: transparent url('guys16.png') no-repeat;
+    background: transparent url('images/guys16.png') no-repeat;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
 .guy16 {
-    background: transparent url('guy16.png') no-repeat;
+    background: transparent url('images/guy16.png') no-repeat;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
 .svc {
-    background: transparent url('svc.png') no-repeat;
+    background: transparent url('images/svc.png') no-repeat;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
 .na {
-    background: transparent url('na.png') no-repeat;
+    background: transparent url('images/na.png') no-repeat;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
 .nok {
-    background: transparent url('nok.png') no-repeat;
+    background: transparent url('images/nok.png') no-repeat;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
 .node16 {
-    background: transparent url('node16.png') no-repeat;
+    background: transparent url('images/node16.png') no-repeat;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
 .drp16 {
-    background: transparent url('drp16.png') no-repeat;
+    background: transparent url('images/drp16.png') no-repeat;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
 .key16 {
-    background: transparent url('key16.png') no-repeat;
+    background: transparent url('images/key16.png') no-repeat;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
 .frozen16 {
-    background: transparent url('frozen16.png') no-repeat;
+    background: transparent url('images/frozen16.png') no-repeat;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
 .frozen16 {
-    background: transparent url('frozen16.png') no-repeat;
+    background: transparent url('images/frozen16.png') no-repeat;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
 .action_toc_16 {
-    background: transparent url('action_toc_16.png') no-repeat;
+    background: transparent url('images/action_toc_16.png') no-repeat;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
 .action_sync_16 {
-    background: transparent url('action_sync_16.png') no-repeat;
+    background: transparent url('images/action_sync_16.png') no-repeat;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
 .action_switch_16 {
-    background: transparent url('action_switch_16.png') no-repeat;
+    background: transparent url('images/action_switch_16.png') no-repeat;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
 .action_stop_16 {
-    background: transparent url('action_stop_16.png') no-repeat;
+    background: transparent url('images/action_stop_16.png') no-repeat;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
 .action_stonith_16 {
-    background: transparent url('action_stonith_16.png') no-repeat;
+    background: transparent url('images/action_stonith_16.png') no-repeat;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
 .action_start_16 {
-    background: transparent url('action_start_16.png') no-repeat;
+    background: transparent url('images/action_start_16.png') no-repeat;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
 .action_restart_16 {
-    background: transparent url('action_restart_16.png') no-repeat;
+    background: transparent url('images/action_restart_16.png') no-repeat;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
 .www16 {
-    background: transparent url('www16.png') no-repeat;
+    background: transparent url('images/www16.png') no-repeat;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
 .gear16 {
-    background: transparent url('gear16.png') no-repeat;
+    background: transparent url('images/gear16.png') no-repeat;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
 .action16 {
-    background: transparent url('action16.png') no-repeat;
+    background: transparent url('images/action16.png') no-repeat;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
 .cpu16 {
-    background: transparent url('cpu16.png') no-repeat;
+    background: transparent url('images/cpu16.png') no-repeat;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
 .edit {
-    background: transparent url('edit.png') no-repeat;
+    background: transparent url('images/edit.png') no-repeat;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
 .pwr {
-    background: transparent url('pwr.png') no-repeat;
+    background: transparent url('images/pwr.png') no-repeat;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
 .mem16 {
-    background: transparent url('mem16.png') no-repeat;
+    background: transparent url('images/mem16.png') no-repeat;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
 .time16 {
-    background: transparent url('time16.png') no-repeat;
+    background: transparent url('images/time16.png') no-repeat;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
 .loc {
-    background: transparent url('loc.png') no-repeat;
+    background: transparent url('images/loc.png') no-repeat;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
 .search16 {
-    background: transparent url('search.png') no-repeat;
+    background: transparent url('images/search.png') no-repeat;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
@@ -1848,219 +1848,219 @@ ul.login_menu ul {
     padding: 0 0 0 52px;
 }
 .api48 {
-    background: transparent url('api48.png') no-repeat left center;
+    background: transparent url('images/api48.png') no-repeat left center;
     padding: 0 0 0 52px;
 }
 .tag48 {
-    background: transparent url('tag48.png') no-repeat left center;
+    background: transparent url('images/tag48.png') no-repeat left center;
     padding: 0 0 0 52px;
 }
 .alert48 {
-    background: transparent url('alert48.png') no-repeat left center;
+    background: transparent url('images/alert48.png') no-repeat left center;
     padding: 0 0 0 52px;
 }
 .obs48 {
-    background: transparent url('obs48.png') no-repeat left center;
+    background: transparent url('images/obs48.png') no-repeat left center;
     padding: 0 0 0 52px;
 }
 .filter48 {
-    background: transparent url('filter48.png') no-repeat left center;
+    background: transparent url('images/filter48.png') no-repeat left center;
     padding: 0 0 0 52px;
 }
 .drp48 {
-    background: transparent url('drp48.png') no-repeat left center;
+    background: transparent url('images/drp48.png') no-repeat left center;
     padding: 0 0 0 52px;
 }
 .prov48 {
-    background: transparent url('prov48.png') no-repeat left center;
+    background: transparent url('images/prov48.png') no-repeat left center;
     padding: 0 0 0 52px;
 }
 .avail48 {
-    background: transparent url('avail48.png') no-repeat left center;
+    background: transparent url('images/avail48.png') no-repeat left center;
     padding: 0 0 0 52px;
 }
 .guys48 {
-    background: transparent url('guys48.png') no-repeat left center;
+    background: transparent url('images/guys48.png') no-repeat left center;
     padding: 0 0 0 52px;
 }
 .stats48 {
-    background: transparent url('stats48.png') no-repeat left center;
+    background: transparent url('images/stats48.png') no-repeat left center;
     padding: 0 0 0 52px;
 }
 .billing48 {
-    background: transparent url('billing48.png') no-repeat left center;
+    background: transparent url('images/billing48.png') no-repeat left center;
     padding: 0 0 0 52px;
 }
 .rsetattach48 {
-    background: transparent url('rsetattach48.png') no-repeat left center;
+    background: transparent url('images/rsetattach48.png') no-repeat left center;
     padding: 0 0 0 52px;
 }
 .modsetattach48 {
-    background: transparent url('modsetattach48.png') no-repeat left center;
+    background: transparent url('images/modsetattach48.png') no-repeat left center;
     padding: 0 0 0 52px;
 }
 .log48 {
-    background: transparent url('log48.png') no-repeat left center;
+    background: transparent url('images/log48.png') no-repeat left center;
     padding: 0 0 0 52px;
 }
 .wf48 {
-    background: transparent url('wf48.png') no-repeat left center;
+    background: transparent url('images/wf48.png') no-repeat left center;
     padding: 0 0 0 52px;
 }
 .key48 {
-    background: transparent url('key48.png') no-repeat left center;
+    background: transparent url('images/key48.png') no-repeat left center;
     padding: 0 0 0 52px;
 }
 .logout48 {
-    background: transparent url('logout48.png') no-repeat left center;
+    background: transparent url('images/logout48.png') no-repeat left center;
     padding: 0 0 0 52px;
 }
 .svc48 {
-    background: transparent url('svc48.png') no-repeat left center;
+    background: transparent url('images/svc48.png') no-repeat left center;
     padding: 0 0 0 52px;
 }
 .cd48 {
-    background: transparent url('cd48.png') no-repeat left center;
+    background: transparent url('images/cd48.png') no-repeat left center;
     padding: 0 0 0 52px;
 }
 .edit48 {
-    background: transparent url('edit48.png') no-repeat left center;
+    background: transparent url('images/edit48.png') no-repeat left center;
     padding: 0 0 0 52px;
 }
 .question48 {
-    background: transparent url('question48.png') no-repeat left center;
+    background: transparent url('images/question48.png') no-repeat left center;
     padding: 0 0 0 52px;
 }
 .action48 {
-    background: transparent url('action48.png') no-repeat left center;
+    background: transparent url('images/action48.png') no-repeat left center;
     padding: 0 0 0 52px;
 }
 .comp48 {
-    background: transparent url('comp48.png') no-repeat left center;
+    background: transparent url('images/comp48.png') no-repeat left center;
     padding: 0 0 0 52px;
 }
 .parent48 {
-    background: transparent url('folder48.png') no-repeat left center;
+    background: transparent url('images/folder48.png') no-repeat left center;
     padding: 0 0 0 52px;
 }
 .dns48 {
-    background: transparent url('dns48.png') no-repeat left center;
+    background: transparent url('images/dns48.png') no-repeat left center;
     padding: 0 0 0 52px;
 }
 .folderoracle48 {
-    background-image: url('oracle48.png'),url('folder48.png');
+    background-image: url('images/oracle48.png'),url('images/folder48.png');
     background-repeat: no-repeat;
     background-position: left center;
     padding: 0 0 0 52px;
 }
 .folderapache48 {
-    background-image: url('apache48.png'),url('folder48.png');
+    background-image: url('images/apache48.png'),url('images/folder48.png');
     background-repeat: no-repeat;
     background-position: left center;
     padding: 0 0 0 52px;
 }
 .s_net48 {
-    background: transparent url('net48.png') no-repeat left center;
+    background: transparent url('images/net48.png') no-repeat left center;
     width: 48px;
 }
 .s_filter48 {
-    background: transparent url('filter48.png') no-repeat left center;
+    background: transparent url('images/filter48.png') no-repeat left center;
     width: 48px;
 }
 .s_svc48 {
-    background: transparent url('svc48.png') no-repeat left center;
+    background: transparent url('images/svc48.png') no-repeat left center;
     width: 48px;
 }
 .s_node48 {
-    background: transparent url('node48.png') no-repeat left center;
+    background: transparent url('images/node48.png') no-repeat left center;
     width: 48px;
 }
 .s_disk48 {
-    background: transparent url('disk48.png') no-repeat left center;
+    background: transparent url('images/disk48.png') no-repeat left center;
     width: 48px;
 }
 .s_guy48 {
-    background: transparent url('guy48.png') no-repeat left center;
+    background: transparent url('images/guy48.png') no-repeat left center;
     width: 48px;
 }
 .s_guys48 {
-    background: transparent url('guys48.png') no-repeat left center;
+    background: transparent url('images/guys48.png') no-repeat left center;
     background-size: 40px 40px;
     width: 48px;
 }
 .folder48 {
-    background: transparent url('folder48.png') no-repeat left center;
+    background: transparent url('images/folder48.png') no-repeat left center;
     padding: 0 0 0 52px;
 }
 .net48 {
-    background: transparent url('net48.png') no-repeat left center;
+    background: transparent url('images/net48.png') no-repeat left center;
     padding: 0 0 0 52px;
 }
 .pkg48 {
-    background: transparent url('pkg48.png') no-repeat left center;
+    background: transparent url('images/pkg48.png') no-repeat left center;
     padding: 0 0 0 52px;
 }
 .svc48 {
-    background: transparent url('svc48.png') no-repeat left center;
+    background: transparent url('images/svc48.png') no-repeat left center;
     padding: 0 0 0 52px;
 }
 .node48 {
-    background: transparent url('node48.png') no-repeat left center;
+    background: transparent url('images/node48.png') no-repeat left center;
     padding: 0 0 0 52px;
 }
 .disk48 {
-    background: transparent url('disk48.png') no-repeat left center;
+    background: transparent url('images/disk48.png') no-repeat left center;
     padding: 0 0 0 52px;
 }
 .guy48 {
-    background: transparent url('guy48.png') no-repeat left center;
+    background: transparent url('images/guy48.png') no-repeat left center;
     padding: 0 0 0 52px;
 }
 .completed48 {
-    background: transparent url('completed48.png') no-repeat left center;
+    background: transparent url('images/completed48.png') no-repeat left center;
     padding: 0 0 0 52px;
 }
 .reject48 {
-    background: transparent url('reject48.png') no-repeat left center;
+    background: transparent url('images/reject48.png') no-repeat left center;
     padding: 0 0 0 52px;
 }
 .disk48 {
-    background: transparent url('disk48.png') no-repeat left center;
+    background: transparent url('images/disk48.png') no-repeat left center;
     padding: 0 0 0 52px;
 }
 .backup48 {
-    background: transparent url('backup48.png') no-repeat left center;
+    background: transparent url('images/backup48.png') no-repeat left center;
     padding: 0 0 0 52px;
 }
 .addnode48 {
-    background: transparent url('addnode48.png') no-repeat left center;
+    background: transparent url('images/addnode48.png') no-repeat left center;
     padding: 0 0 0 52px;
 }
 .axway48 {
-    background: transparent url('axway48.png') no-repeat left center;
+    background: transparent url('images/axway48.png') no-repeat left center;
     padding: 0 0 0 52px;
 }
 .apache48 {
-    background: transparent url('apache48.png') no-repeat left center;
+    background: transparent url('images/apache48.png') no-repeat left center;
     padding: 0 0 0 52px;
 }
 .tomcat48 {
-    background: transparent url('tomcat48.png') no-repeat left center;
+    background: transparent url('images/tomcat48.png') no-repeat left center;
     padding: 0 0 0 52px;
 }
 .oracle48 {
-    background: transparent url('oracle48.png') no-repeat left center;
+    background: transparent url('images/oracle48.png') no-repeat left center;
     padding: 0 0 0 52px;
 }
 
 .wfsearch {
     color: black;
     padding-left: 18px;
-    background: white url('search.png') no-repeat;
+    background: white url('images/search.png') no-repeat;
     width: 6em;
 }
 .wfsearch:focus {
-    background: rgb(255, 248, 239) url('search.png') no-repeat;
+    background: rgb(255, 248, 239) url('images/search.png') no-repeat;
 }
 .action_q_widget {
     float: right;
@@ -2071,16 +2071,16 @@ ul.login_menu ul {
     padding:0.2em;
 }
 .searchidle > input {
-  background: white url('search.png') no-repeat;
+  background: white url('images/search.png') no-repeat;
 }
 .searchidle > input:focus {
-  background: rgb(255, 248, 239) url('search.png') no-repeat;
+  background: rgb(255, 248, 239) url('images/search.png') no-repeat;
 }
 .searching > input {
-  background: white url('spinner.gif') no-repeat;
+  background: white url('images/spinner.gif') no-repeat;
 }
 .searching > input:focus {
-  background: rgb(255, 248, 239) url('spinner.gif') no-repeat;
+  background: rgb(255, 248, 239) url('images/spinner.gif') no-repeat;
 }
 .search > input {
   color: black;
@@ -2118,7 +2118,7 @@ ul.login_menu ul {
   padding-left: 0.2em;
 }
 .end > input {
-  background: white url('end16.png') no-repeat;
+  background: white url('images/end16.png') no-repeat;
   color: black;
   width: 10em;
   padding-left: 18px;
@@ -2136,7 +2136,7 @@ ul.login_menu ul {
   padding-left: 0.2em;
 }
 .begin > input {
-  background: white url('begin16.png') no-repeat;
+  background: white url('images/begin16.png') no-repeat;
   color: black;
   width: 10em;
   padding-left: 18px;
@@ -2154,7 +2154,7 @@ ul.login_menu ul {
   padding-left: 0.2em;
 }
 .filter > input {
-  background: white url('filter16.png') no-repeat;
+  background: white url('images/filter16.png') no-repeat;
   color: black;
   width: 20em;
   padding-left: 18px;
