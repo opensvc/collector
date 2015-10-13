@@ -9,10 +9,10 @@ sevendays = str(now-datetime.timedelta(days=7,
                                        seconds=now.second,
                                        microseconds=now.microsecond))
 
-img_h = {0: 'check16.png',
-         1: 'nok.png',
-         2: 'na.png',
-       -15: 'kill16.png'}
+img_h = {0: 'images/check16.png',
+         1: 'images/nok.png',
+         2: 'images/na.png',
+       -15: 'images/kill16.png'}
 
 tables = {
     'nodes':dict(name='nodes', title='nodes', cl='node16', hide=False),
@@ -136,7 +136,7 @@ class col_comp_svc_status(HtmlTableColumn):
         id = self.t.extra_line_key(o)
         return A(
                  IMG(
-                   _src=URL(r=request, c="static", f="spark16.png"),
+                   _src=URL(r=request, c="static", f="images/spark16.png"),
                  ),
                  _onclick="toggle_extra('%(url)s', '%(id)s', this, 0);"%dict(
                           url=URL(
@@ -154,7 +154,7 @@ class col_comp_node_status(HtmlTableColumn):
         id = self.t.extra_line_key(o)
         return A(
                  IMG(
-                   _src=URL(r=request, c="static", f="spark16.png"),
+                   _src=URL(r=request, c="static", f="images/spark16.png"),
                  ),
                  _onclick="toggle_extra('%(url)s', '%(id)s', this, 0);"%dict(
                           url=URL(
@@ -172,7 +172,7 @@ class col_comp_mod_status(HtmlTableColumn):
         id = self.t.extra_line_key(o)
         return A(
                  IMG(
-                   _src=URL(r=request, c="static", f="spark16.png"),
+                   _src=URL(r=request, c="static", f="images/spark16.png"),
                  ),
                  _onclick="toggle_extra('%(url)s', '%(id)s', this, 0);"%dict(
                           url=URL(
@@ -350,7 +350,7 @@ class col_var_value(HtmlTableColumn):
             edit = ""
         else:
             edit = A(
-                 IMG(_src=URL(r=request, c='static', f='edit.png')),
+                 IMG(_src=URL(r=request, c='static', f='images/edit.png')),
                  _id=eid,
                  _onclick="""hide_eid('%(eid)s');show_eid('%(cid)s');show_eid('%(formid)s');sync_ajax('%(url)s', [], '%(formid)s', function(){})"""%dict(
                    formid=hid,
@@ -372,7 +372,7 @@ class col_var_value(HtmlTableColumn):
                )
 
         cancel = A(
-                 IMG(_src=URL(r=request, c='static', f='cancel.png')),
+                 IMG(_src=URL(r=request, c='static', f='images/cancel.png')),
                  _id=cid,
                  _onclick="""hide_eid('%(cid)s');show_eid('%(eid)s');show_eid('%(formid)s');ajax('%(url)s', [], '%(formid)s')"""%dict(
                    formid=hid,
@@ -7939,7 +7939,7 @@ def _show_moddiff(nodes, n, _rows, objtype="Nodes"):
         for node in nodes:
             if node in l:
                 h.append(TD(
-                  IMG(_src=URL(r=request,c='static',f='attach16.png')),
+                  IMG(_src=URL(r=request,c='static',f='images/attach16.png')),
                   _style="text-align:center",
                 ))
             else:
@@ -8149,7 +8149,7 @@ def _show_rsetdiff(nodes, n, _rows, objtype="Nodes"):
         for node in nodes:
             if node in l:
                 h.append(TD(
-                  IMG(_src=URL(r=request,c='static',f='attach16.png')),
+                  IMG(_src=URL(r=request,c='static',f='images/attach16.png')),
                   _style="text-align:center",
                 ))
             else:
@@ -8178,9 +8178,9 @@ def ajax_info(msg, to_session=False):
         for e in msg:
             rets[e[0]] += 1
             if e[0] == 0:
-                img = 'check16.png'
+                img = 'images/check16.png'
             else:
-                img = 'nok.png'
+                img = 'images/nok.png'
             status = IMG(
                        _src=URL(c='static', f=img),
                        _style="padding-right:0.5em;vertical-align:bottom",
@@ -8198,11 +8198,11 @@ def ajax_info(msg, to_session=False):
                 )
             l.append(d)
         if rets[1] == 0:
-            img = 'check16.png'
+            img = 'images/check16.png'
             s = 'Success'
             cl = 'foldme hidden'
         else:
-            img = 'nok.png'
+            img = 'images/nok.png'
             s = 'Errors'
             cl = 'foldme'
         status = DIV(
@@ -8341,7 +8341,7 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False, display_detaile
 
         if 'Help' in input and input['Help'] is not None and len(input['Help']) > 0:
             _help = IMG(
-              _src=URL(r=request, c='static', f='help.png'),
+              _src=URL(r=request, c='static', f='images/help.png'),
               _title=input['Help']
             )
         else:

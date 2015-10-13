@@ -25,7 +25,7 @@ def array_icon(array_model):
         return ''
     if array_model in array_img_h:
         img = IMG(
-                _src=URL(r=request,c='static',f=array_img_h[array_model]+'.png'),
+                _src=URL(r=request,c='static',f='images/'+array_img_h[array_model]+'.png'),
                 _class='logo'
               )
     else:
@@ -844,7 +844,7 @@ def ajax_node_list():
                                    f='ajax_dg_list_by_node',
                                   ),
                               div="stage2",
-                              spinner=IMG(_src=URL(r=request,c='static',f='spinner.gif')).xml(),
+                              spinner=IMG(_src=URL(r=request,c='static',f='images/spinner.gif')).xml(),
                              ),
              ),
            )
@@ -883,7 +883,7 @@ def ajax_service_list():
                                    f='ajax_dg_list_by_svc',
                                   ),
                               div="stage2",
-                              spinner=IMG(_src=URL(r=request,c='static',f='spinner.gif')).xml(),
+                              spinner=IMG(_src=URL(r=request,c='static',f='images/spinner.gif')).xml(),
                              ),
              ),
            )
@@ -1117,7 +1117,7 @@ if(is_enter(event)){
     })
   })
 }"""%dict(
-                              spinner=IMG(_src=URL(r=request,c='static',f='spinner.gif')).xml(),
+                              spinner=IMG(_src=URL(r=request,c='static',f='images/spinner.gif')).xml(),
                               obj=obj,
                               dg_id=dg_id,
                               ids=["lusize", "paths", "target"]+extra_id,
@@ -1312,7 +1312,7 @@ def ajax_disk_provision():
     return DIV(
              HR(),
              DIV(
-              IMG(_src=URL(r=request,c='static',f='spinner.gif')),
+              IMG(_src=URL(r=request,c='static',f='images/spinner.gif')),
               _id=action_id,
               _name="res",
               _style="width:5%;display:table-cell",
@@ -1339,9 +1339,9 @@ def ajax_disk_provision_wait():
             continue
         break
     if action.ret == 0:
-        img = 'check16.png'
+        img = 'images/check16.png'
     else:
-        img = 'nok.png'
+        img = 'images/nok.png'
     title = ', '.join((str(action.stdout), str(action.stderr)))
     return IMG(_src=URL(r=request,c='static',f=img), _title=title)
 

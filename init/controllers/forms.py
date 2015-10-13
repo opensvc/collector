@@ -888,7 +888,7 @@ if ($("#%(id)s").is(":visible")) {
   sync_ajax('%(url)s', [], '%(id)s', function(){});
 }
 """%dict(
-                spinner=IMG(_src=URL(r=request,c='static',f='spinner.gif')).xml(),
+                spinner=IMG(_src=URL(r=request,c='static',f='images/spinner.gif')).xml(),
                 id="forms_inputs",
                 id2=id_target,
                 rid=id,
@@ -1252,7 +1252,7 @@ ajax('%(url)s/%(objtype)s/'+this.options[this.selectedIndex].value+'%(form_id)s'
       objtype='rset',
       div="stage2",
       form_id='?form_id='+str(request.vars.form_id) if request.vars.form_id is not None else '',
-      spinner=IMG(_src=URL(r=request,c='static',f='spinner.gif')).xml(),
+      spinner=IMG(_src=URL(r=request,c='static',f='images/spinner.gif')).xml(),
     ),
              ),
              SCRIPT("""
@@ -1305,7 +1305,7 @@ ajax('%(url)s/%(objtype)s/'+this.options[this.selectedIndex].value+'%(form_id)s'
       objtype='nodename',
       div="stage2",
       form_id='?form_id='+str(request.vars.form_id) if request.vars.form_id is not None else '',
-      spinner=IMG(_src=URL(r=request,c='static',f='spinner.gif')).xml(),
+      spinner=IMG(_src=URL(r=request,c='static',f='images/spinner.gif')).xml(),
     ),
              ),
              SCRIPT("""
@@ -1353,7 +1353,7 @@ ajax('%(url)s/%(objtype)s/'+this.options[this.selectedIndex].value+'%(form_id)s'
       objtype='svcname',
       div="stage2",
       form_id='?form_id='+str(request.vars.form_id) if request.vars.form_id is not None else '',
-      spinner=IMG(_src=URL(r=request,c='static',f='spinner.gif')).xml(),
+      spinner=IMG(_src=URL(r=request,c='static',f='images/spinner.gif')).xml(),
     ),
 
              ),

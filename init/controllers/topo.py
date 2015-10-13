@@ -21,49 +21,49 @@ class viz(object):
 
     def get_img(self, t, v=""):
         if t == "node":
-            return str(URL(r=request,c='static',f='node48.png'))
+            return str(URL(r=request,c='static',f='images/node48.png'))
         elif t == "pool":
-            return str(URL(r=request,c='static',f='disk48.png'))
+            return str(URL(r=request,c='static',f='images/disk48.png'))
         elif t == "disk":
-            return str(URL(r=request,c='static',f='disk48.png'))
+            return str(URL(r=request,c='static',f='images/disk48.png'))
         elif t == "svc":
-            return str(URL(r=request,c='static',f='svc48o.png'))
+            return str(URL(r=request,c='static',f='images/svc48o.png'))
         elif t == "resource":
-            return str(URL(r=request,c='static',f='action48.png'))
+            return str(URL(r=request,c='static',f='images/action48.png'))
         elif t == "array":
-            return str(URL(r=request,c='static',f='array.png'))
+            return str(URL(r=request,c='static',f='images/array.png'))
         elif t == "app":
-            return str(URL(r=request,c='static',f='pkg48.png'))
+            return str(URL(r=request,c='static',f='images/pkg48.png'))
         elif t == "env":
-            return str(URL(r=request,c='static',f='array.png'))
+            return str(URL(r=request,c='static',f='images/array.png'))
         elif t == "countries":
             v = v.lower()
             if v == "france":
-                return str(URL(r=request,c='static',f='flags/fr.png'))
+                return str(URL(r=request,c='static',f='images/flags/fr.png'))
             elif v == "united kingdom":
-                return str(URL(r=request,c='static',f='flags/uk.png'))
+                return str(URL(r=request,c='static',f='images/flags/uk.png'))
             else:
-                return str(URL(r=request,c='static',f='flag16.png'))
+                return str(URL(r=request,c='static',f='images/flag16.png'))
         elif t == "cities":
-            return str(URL(r=request,c='static',f='city48.png'))
+            return str(URL(r=request,c='static',f='images/city48.png'))
         elif t == "buildings":
-            return str(URL(r=request,c='static',f='building48.png'))
+            return str(URL(r=request,c='static',f='images/building48.png'))
         elif t == "rooms":
-            return str(URL(r=request,c='static',f='room48.png'))
+            return str(URL(r=request,c='static',f='images/room48.png'))
         elif t == "racks":
-            return str(URL(r=request,c='static',f='rack48.png'))
+            return str(URL(r=request,c='static',f='images/rack48.png'))
         elif t == "enclosures":
-            return str(URL(r=request,c='static',f='enclosure48.jpg'))
+            return str(URL(r=request,c='static',f='images/enclosure48.jpg'))
         elif t == "sansw":
-            return str(URL(r=request,c='static',f='net48.png'))
+            return str(URL(r=request,c='static',f='images/net48.png'))
         elif t == "hvvdcs":
-            return str(URL(r=request,c='static',f='hv48.png'))
+            return str(URL(r=request,c='static',f='images/hv48.png'))
         elif t == "hvpools":
-            return str(URL(r=request,c='static',f='hv48.png'))
+            return str(URL(r=request,c='static',f='images/hv48.png'))
         elif t == "hvs":
-            return str(URL(r=request,c='static',f='hv48.png'))
+            return str(URL(r=request,c='static',f='images/hv48.png'))
         else:
-            return str(URL(r=request,c='static',f='action48.png'))
+            return str(URL(r=request,c='static',f='images/action48.png'))
 
     def add_visnode(self, node_type, name):
         n = "_".join((node_type, name))
@@ -996,11 +996,11 @@ def json_startup_data():
     node_tail = 0
 
     imgs = {
-      (None, None): URL(r=request,c='static',f='action48.png'),
-      ("ip", None): URL(r=request,c='static',f='net48.png'),
-      ("fs", None): URL(r=request,c='static',f='fs.png'),
-      ("disk", None): URL(r=request,c='static',f='disk48.png'),
-      ("container", "docker"): URL(r=request,c='static',f='docker48.png'),
+      (None, None): URL(r=request,c='static',f='images/action48.png'),
+      ("ip", None): URL(r=request,c='static',f='images/net48.png'),
+      ("fs", None): URL(r=request,c='static',f='images/fs.png'),
+      ("disk", None): URL(r=request,c='static',f='images/disk48.png'),
+      ("container", "docker"): URL(r=request,c='static',f='images/docker48.png'),
     }
     def get_img(family, t):
         i = imgs.get((family, t))
@@ -1215,7 +1215,7 @@ def json_startup_data():
       "mass": 3,
       "id": node_tail,
       "label": svcname,
-      "image": URL(r=request,c='static',f='svc48o.png'),
+      "image": URL(r=request,c='static',f='images/svc48o.png'),
       "shape": "image"
     }
     node_tail += 1
@@ -1277,7 +1277,7 @@ def json_startup_data():
               "mass": 3,
               "id": node_tail,
               "label": nodename,
-              "image": URL(r=request,c='static',f='node48.png'),
+              "image": URL(r=request,c='static',f='images/node48.png'),
               "shape": "image"
             }
             node_tail += 1
@@ -1336,7 +1336,7 @@ def json_startup_data():
                   "family": family,
                   "name": family,
                 }
-                img = URL(r=request, c="static", f="pkg48.png")
+                img = URL(r=request, c="static", f="images/pkg48.png")
                 d = {
                   "mass": 3,
                   "id": node_tail,
@@ -1363,7 +1363,7 @@ def json_startup_data():
 
             disabled = get_disabled(s, nodename)
             if disabled:
-                img = URL(r=request, c="static", f="reject48.png")
+                img = URL(r=request, c="static", f="images/reject48.png")
             else:
                 img = get_img(family, t)
             try:

@@ -92,11 +92,13 @@ class rest_handler(object):
         return s
 
     def fmt_data(self):
+        title = "## Data\n\n"
+        text = ""
         if type(self.init_data) in (str, unicode):
-            return "### Data\n"+self.init_data
+            text += self.init_data
         self.update_data()
         if self.data is None:
-            return ""
+            return title + text
         s = ""
         for key in sorted(set(self.data.keys())-set(["_extra"])):
             d = self.data[key]
@@ -106,7 +108,7 @@ class rest_handler(object):
             l = []
             img = d.get("img", "")
             if len(img) > 0:
-                l.append("[[ https://%s/init/static/%s.png left 16px]]" % (request.env.http_host, img))
+                l.append("[[ https://%s/init/static/images/%s.png left 16px]]" % (request.env.http_host, img))
             else:
                 l.append("")
             l.append("**%s**"%key)
@@ -127,8 +129,11 @@ class rest_handler(object):
                 l.append("")
             s += " | ".join(l)+"\n"
         if len(s) > 0:
-           s = "### Data\n-----\n"+s+"-----\n"
-        return s
+           s = "\n-----\n"+s+"-----\n"
+        text += s
+        if len(text) > 0:
+            return title+text
+        return ""
 
     def fmt_examples(self):
         if len(self.examples) == 0:
@@ -219,8 +224,13 @@ class rest_post_handler(rest_handler):
                 result["data"] += [d]
         return result
 
-    def update_data(self):
-        self.data = copy.copy(self.init_data)
+    #def update_data(self):
+    #    self.data = copy.copy(self.init_data)
+
+    def update_parameters(self):
+        self.params = copy.copy(self.init_params)
+        if len(self.tables) == 0:
+            return
         self.params.update({
           "query": {
             "desc": """

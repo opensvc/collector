@@ -87,7 +87,7 @@ def ajax_user():
             _class='cloud_shown',
           ),
           DIV(
-            IMG(_src=URL(r=request,c='static',f='spinner.gif')),
+            IMG(_src=URL(r=request,c='static',f='images/spinner.gif')),
             _id='tab2_'+str(rowid),
             _class='cloud',
           ),

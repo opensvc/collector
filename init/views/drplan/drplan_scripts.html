@@ -22,7 +22,7 @@
     Suggested name <i>'{{=suggested_shname}}'.</i><br><br>
     <textarea cols="70" rows="15">{{=sh}}</textarea>
 {{return}}
-{{=A(IMG(_src=URL(r=request,c='static',f='tar.png'),_border=0, _title="download a tar archive of these scripts"),_href=URL(r=request,f='drplan_scripts_archive'))}}
+{{=A(IMG(_src=URL(r=request,c='static',f='images/tar.png'),_border=0, _title="download a tar archive of these scripts"),_href=URL(r=request,f='drplan_scripts_archive'))}}
 {{for i in ['stopdev', 'stopprd', 'startdr0', 'startdr1', 'startdr2', 'startdr3',
             'stopdr', 'startprd0', 'startprd1', 'startprd2', 'startprd3', 'startdev']:}}
 {{_script_fmt(p[i]['action'], p[i]['phase'], p[i]['node_nb'], p[i]['shname'], p[i]['sh'])}}

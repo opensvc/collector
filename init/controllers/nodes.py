@@ -2,7 +2,7 @@ def _label(key):
     return DIV(
              IMG(
                _src=URL(r=request, c='static',
-                        f=v_nodes_colprops[key].img+'.png'),
+                        f='images/'+v_nodes_colprops[key].img+'.png'),
                _style='vertical-align:top;margin-right:10px',
              ),
              v_nodes_colprops[key].title,
@@ -224,7 +224,7 @@ class table_nodes(HtmlTable):
         d = DIV(
               A(
                 IMG(
-                  _src=URL(r=request, c='static', f='edit.png'),
+                  _src=URL(r=request, c='static', f='images/edit.png'),
                   _style='vertical-align:middle',
                 ),
                 _href=URL(r=request, c='nodes', f='node_edit',
@@ -442,7 +442,7 @@ def nodes():
              ),
              DIV(
                gt.html(),
-               IMG(_src=URL(r=request,c='static',f='spinner.gif')),
+               IMG(_src=URL(r=request,c='static',f='images/spinner.gif')),
                 _style="display:none",
                _id="gids",
              ),

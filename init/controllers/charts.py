@@ -224,7 +224,7 @@ def format_metric(metric_id):
 
     link = DIV(
              A(
-               IMG(_src=URL(r=request, c='static', f='link16.png')),
+               IMG(_src=URL(r=request, c='static', f='images/link16.png')),
                _onclick="""$(this).siblings().toggle()""",
              ),
              DIV(
@@ -512,7 +512,7 @@ def ajax_chart_plot(chart_id):
 
     link = DIV(
              A(
-               IMG(_src=URL(r=request, c='static', f='link16.png')),
+               IMG(_src=URL(r=request, c='static', f='images/link16.png')),
                _onclick="""$(this).siblings().toggle()""",
              ),
              DIV(
@@ -777,7 +777,7 @@ def ajax_report(report_id):
 def do_report(report_id, report_yaml):
     link = DIV(
              A(
-               IMG(_src=URL(r=request, c='static', f='link16.png')),
+               IMG(_src=URL(r=request, c='static', f='images/link16.png')),
                _onclick="""$(this).siblings().toggle()""",
              ),
              DIV(

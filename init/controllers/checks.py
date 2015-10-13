@@ -283,7 +283,7 @@ def ajax_chk_type_defaults():
         l.append(DIV(
                  DIV(
                    A(
-                     IMG(_src=URL(r=request, c='static', f='edit.png')),
+                     IMG(_src=URL(r=request, c='static', f='images/edit.png')),
                      _href=URL(r=request, f='checks_defaults_insert', vars={'chk_type': row.chk_type, 'chk_id': row.id}),
                    ),
                  ),
@@ -307,7 +307,7 @@ def ajax_chk_type_defaults():
     l.append(DIV(
              DIV(
                A(
-                 IMG(_src=URL(r=request, c='static', f='add16.png')),
+                 IMG(_src=URL(r=request, c='static', f='images/add16.png')),
                  _href=URL(r=request, f='checks_defaults_insert', vars={'chk_type': chk_type}),
                ),
              ),
