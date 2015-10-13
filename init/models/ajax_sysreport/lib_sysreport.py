@@ -107,6 +107,9 @@ def sysrep_allow(nodenames, fpath):
 
 def lib_get_sysreport(nodename, path=None, begin=None, end=None):
     data = sysreport.sysreport().timeline([nodename], path=encode_fpath(path))
+    for i, d in enumerate(data):
+        for j, fpath in enumerate(d["stat"]):
+            data[i]["stat"][j] = beautify_fpath(fpath)
     return data
 
 def lib_get_sysreport_timediff(nodename, path=None, begin=None, end=None):
