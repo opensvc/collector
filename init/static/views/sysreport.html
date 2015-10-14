@@ -1,0 +1,88 @@
+<div id="sysreport">
+<div style="padding:1em;text-align:left" display="block">
+	<!-- Sysreport administration !-->
+	<font size="5"><a onclick="toggle('sysreport_administration')" class="divselector clickable">Administration des sysreports</a></font>
+	<div id="sysreport_administration" style="display:none;overflow:hidden;padding-bottom: 5px;border-bottom: thin solid gray;">
+		<div id="sysreport_secure_list" style="margin-left:1em;float:left;width:500px;">
+			<font size="3">Protections</font>
+			<table id="sysreport_secure_list_item">
+			</table>
+			<div class="meta_add">
+				<button id="sysrep_secure_pattern_button" class="add16 clickable" onclick="mul_toggle('sysrep_secure_pattern_button','sysrep_secure_pattern_add');">Ajouter une protection</button>
+				<div id="sysrep_secure_pattern_add" class="hidden" style="margin-left:1em;">
+					<input id="sysreport_secure_patern_new" type="text"/>
+					<span class="add16 clickable" onclick="sysrep_admin_secure_handle('','add')">Soumettre</span>
+					<span id="sysrep_secure_pattern_error" style="color:#FF0000"></span>
+				</div>
+			</div>
+		</div>
+		<div id="sysreport_authorizations_list" style="margin-left:1em;">
+			<font size="3">Habilitations</font>
+			<table id="sysreport_authorizations_list_item">
+			</table>
+			<div class="meta_add">
+				<button class="add16 clickable" onclick="mul_toggle('sysrep_authorizations_button','sysrep_authorizations_input');" id="sysrep_authorizations_button">Ajouter une habilitation</button>
+				<div class="hidden" id="sysrep_authorizations_input" style="margin-left:1em">
+					<div style="display:table-row">
+						<div class="b" style="display:table-cell">pattern</div>
+						<div class="b" style="display:table-cell">groupe</div>
+						<div class="b" style="display:table-cell">jeu de filtres</div>
+					</div>
+					<div style="display:table-row">
+						<div style="display:table-cell">
+							<input class="meta_pattern" type="text" />
+						</div>
+						<div style="display:table-cell">
+							<input class="meta_role" type="text" />
+						</div>
+						<div style="display:table-cell">
+							<input class="meta_fset_name" type="text" />
+						</div>
+					</div>
+					<span class="add16 clickable" onclick="sysrep_admin_allow_handle('','add')">Soumettre</span>
+					<span id="sysrep_admin_allow_error" style="color:#FF0000"></span>
+				</div>
+			</div>
+		</div>
+		<br><br>
+	</div>
+</div>
+<script>sysreport_admin_allow()</script>
+<script>sysreport_admin_secure()</script>
+<!-- Filter -->
+<div style="padding:1em;text-align:left;display:block;clear:both;">
+	<font size="5"><a onclick="toggle('sysrep_filter')" class="divselector clickable">Filtering</a></font>
+	<div id="sysrep_filter" style="display:none;margin-left:1em;overflow:hidden;padding-bottom: 5px;border-bottom: thin solid gray;">
+		<span class="time16">
+			<input id="sysrep_filter_begindate" type="text">
+		</span>
+		<span class="time16">
+			<input id="sysrep_filter_enddate" type="text">
+		</span>
+		<span class="filter16">
+			<input id="sysrep_filter_value" type="text">
+		</span>
+		<button onclick="sysreport_onchangebeginenddate(nodes)">Submit</button>
+		<br><br>
+		<div>
+			<button class="link16 clickable" onclick="$('#sysrep_link').toggle();">Create link</button>
+			<span id="sysrep_link" style="padding:1em;display:none"></span>
+		</div>
+	</div>
+</div>
+<script type="text/javascript">
+    	sysrep_binding();
+</script>
+
+<span class="hidden" name="nodes" id="node_name"></span>
+
+<div style="clear:both;margin-left:1em;">
+	<font size="5" id='sysreport_timeline_title' style="padding-bottom: 10px;"></font>
+	<div id="sysreport_timeline"></div>
+</div>
+<script type="text/javascript">
+    sysrep_timeline(nodes,"");
+    $("nodes").append(nodes);
+    //console.log(nodes);
+</script>
+</div>
