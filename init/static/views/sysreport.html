@@ -75,14 +75,21 @@
 </script>
 
 <span class="hidden" name="nodes" id="node_name"></span>
-
+<!-- Timeline -->
 <div style="clear:both;margin-left:1em;">
 	<font size="5" id='sysreport_timeline_title' style="padding-bottom: 10px;"></font>
 	<div id="sysreport_timeline"></div>
 </div>
+
+<!-- Tree -->
+<div id="sysreport_tree" class="hidden" style="clear:both;margin-left:1em;">
+	<font size="5" id='sysreport_tree_title' style="padding-bottom: 10px;padding-top: 30px"></font>
+	<div id="sysreport_tree_file"></div>
+</div>
+
 <script type="text/javascript">
     sysrep_timeline(nodes,"");
-    $("nodes").append(nodes);
+    $("node_name").append(nodes);
     //console.log(nodes);
 </script>
 </div>

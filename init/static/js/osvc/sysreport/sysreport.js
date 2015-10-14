@@ -75,7 +75,7 @@ function sysreport_createlink(nodes)
 
 function sysrep_timeline(nodes,param)
 {
-    $("#sysreport_timeline_title").html(nodes+" timeline");
+    $("#sysreport_timeline_title").html("Node "+nodes+" changes timeline");
     sysreport_createlink(nodes);
     services_osvcgetrest("R_GETNODESSYS",[nodes],param, function(jd) 
     {
@@ -130,37 +130,39 @@ function sysrep_timeline(nodes,param)
         groups = null
         }
     var timeline = new vis.Timeline(container, data, groups, options);
-    timeline.on('select', function (properties) {
-    var item_id = properties.items[0]
-    var item = null;
-    for (i=0; i<data.length; i++) {
-      if (data[i]['id'] == item_id) {
-        item = data[i]
-        break
-      }
-    }
+    timeline.on('select', function (properties) 
+    {
+      var item_id = properties.items[0]
+      var item = null;
+      for (i=0; i<data.length; i++) 
+      {
+        if (data[i]['id'] == item_id) {
+          item = data[i]
+          break
+        }
+      }/*
     _data = {
      'cid': item.cid,
      'nodename': item.group,
      'path': $("#"+id).parents("[name=sysrep_top]").find("input[name=filter]").val()
-    }
-    services_osvcpost("S_SYSREPCOMMIT",_data,function(msg){
-           $("#"+id+"_show").html(msg)
-           $("#"+id+"_show").find(".diff").each(function(i, block){
-             hljs.highlightBlock(block);
-           })
-           $("#"+id+"_show").find("[name=tree]").children("h2").bind('click', function(){
-             next = $(this).next()
-             if (next.is("pre")) {
-               next.remove()
-             } else {
-               sysreport_show_file($(this))
-             }
-           })
-         }
+    }*/
+      services_osvcgetrest("R_GETNODESSYSCID",[item.group,item.cid],"",function(jd){
+           // Link to tree file
+           var result = jd.data;
+           $("#sysreport_tree_file").empty();
+           $("#sysreport_tree_title").html("Changement du noeud " + nodes);
+           for(i=0;i<result.length;i++)
+           {
+            var value="<h2 class='highlight clickable'>"+result[i].fpath+
+                "</h2><div id='"+result[i].oid+"'' class='hidden'></div>";
+            $("#sysreport_tree_file").append(value);
+           }
+           $("#sysreport_tree").show();
+          })
+      }
     )
   });
-  // bind admin tool
+  /* bind admin tool
   $("#"+id).siblings(".lock").bind("click", function(){
     var e = $(this).siblings("#"+id+"_admin")
     if (e.is(":visible")) {
@@ -171,7 +173,7 @@ function sysrep_timeline(nodes,param)
       sync_ajax(url, [], id+"_admin", function(){})
     }
   })
-})
+})*/
 }
 
 function sysreport_admin_secure()
