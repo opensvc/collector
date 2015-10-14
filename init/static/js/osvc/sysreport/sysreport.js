@@ -1,32 +1,18 @@
 // SysReport JS Script
 // MD 08062015
 
-function sysreport_onchangebeginenddate(event,nodes)
+function sysreport_onchangebeginenddate(nodes)
 {
-    if (is_enter(event))
-    {
-        dest = $("[name=sysrep_top]")
-        postdata=
-            {
-                nodes: nodes,
-                end: dest.find("[name=end]").val(),
-                begin: dest.find("[name=begin]").val(),
-                path: dest.find("[name=filter]").val()
-            }
-        services_osvcpost("S_SYSREP",postdata,
-            function (msg)
-            {
-                dest.html(msg)
-            })
-    }
+  sysrep_timeline(nodes,sysreport_getparam());
+  sysreport_createlink(nodes);
 }
 
 function sysreport_onsubmitsysrepdiff(event,nodes)
 {
-    if (is_enter(event))
-    {
-        sysreport_onsubmitsysrepdiff(nodes)
-    }
+  if (is_enter(event))
+  {
+    sysreport_onsubmitsysrepdiff(nodes)
+  }
 }
 
 function sysreport_onsubmitsysrepdiff(nodes)
@@ -44,67 +30,107 @@ function sysreport_onsubmitsysrepdiff(nodes)
         })
 }
 
-function show_dateTimePicker(item)
+function sysrep_binding()
 {
-    $(item).toggle();
-    $(item).siblings().toggle().children("input").focus();
-    $(item).datetimepicker({dateFormat: "yy-mm-dd"});
+  $("#sysrep_filter_begindate").datetimepicker({dateFormat:'yy-mm-dd'});
+  $("#sysrep_filter_enddate").datetimepicker({dateFormat:'yy-mm-dd'});
 }
 
-function sysreport_createlink(item)
+function sysreport_getparam()
 {
-    url = $(location).attr("origin")
-    url += services_getaccessurl("S_SYSREPVIEW")
-    url += "?nodes="
-    url += $(item).parent().parent().find("[name=nodes]").text()
-    fval = $(item).parent().parent().find("input[name=filter]").val()
-    if (fval!="") {
-      url += "&path="+fval
-    }
-    fval = $(item).parent().parent().find("input[name=begin]").val()
-    if (fval!="") {
-      url += "&begin="+fval
-    }
-    fval = $(item).parent().parent().find("input[name=end]").val()
-    if (fval!="") {
-      url += "&end="+fval
-    }
+  var url ="";
+  fval = $("#sysrep_filter_value").val();
+  if (fval!="") {
+    url += "&path="+fval;
+  }
+  fval = $("#sysrep_filter_begindate").val();
+  if (fval!="") {
+    url += "&begin="+fval;
+  }
+  fval = $("#sysrep_filter_enddate").val();
+  if (fval!="") {
+    url += "&end="+fval;
+  }
+  return url.substring(1,url.length);  
+}
 
-    cid = $(item).parent().parent().find("[name=cid]").text()
-    nodename = $(item).parent().parent().find("[name=nodename]").text()
+function sysreport_createlink(nodes)
+{
+    url = $(location).attr("origin");
+    url += services_getaccessurl("S_SYSREPVIEW");
+    url += "?nodes=";
+    url += nodes;
+    url += "&" + sysreport_getparam();
+    /*
+    cid = $(item).parent().parent().find("[name=cid]").text();
+    nodename = $(item).parent().parent().find("[name=nodename]").text();
     if (cid != "") {
-      url += "&cid="+cid
-      url += "&nodename="+nodename
+      url += "&cid="+cid;
+      url += "&nodename="+nodename;
     }
-
-    $(item).children().html(url)
-    $(item).children().show()
+    */
+    var vurl = "<a href='"+url+"' target='_blank'>"+url+"</a>";
+    $("#sysrep_link").empty().html(vurl)
 }
 
-function sysreport_timeline(id, data){
-  var options = {
-    template: function (item) {
-      return '<pre style="text-align:left">' + item.stat + '</pre>';
-    },
-    clickToUse: false
-  };
-  var container = document.getElementById(id);
-  var groups = []
-  var groupids = []
-  for (i=0; i<data.length; i++) {
-    if (groupids.indexOf(data[i]['group']) >= 0) {
-       continue
+function sysrep_timeline(nodes,param)
+{
+    $("#sysreport_timeline_title").html(nodes+" timeline");
+    sysreport_createlink(nodes);
+    services_osvcgetrest("R_GETNODESSYS",[nodes],param, function(jd) 
+    {
+    
+    $("sysreport_timeline").empty();
+
+    // DOM element where the Timeline will be attached
+    var container = document.getElementById('sysreport_timeline');
+    while (container.hasChildNodes()) {
+      container.removeChild(container.firstChild);
     }
+    var data = jd.data;
+    // Handle max lines
+    var max_fpath = 5;
+    for (i=0;i<jd.data.length;i++)
+    {
+      if (jd.data[i].stat.length > max_fpath)
+      {
+        var lastline = (data[i].stat.length-max_fpath);
+        data[i].stat = data[i].stat.slice(0,max_fpath);
+        data[i].stat.push("... " + lastline + " more.");
+      }
+      data[i].stat[0] += '\n';
+      for(j=1;j<data[i].stat.length;j++)
+      {
+        data[i].stat[0] += data[i].stat[j] + "\n";
+      }
+      data[i].stat = data[i].stat.slice(0,1);
+    }
+
+    // Configuration for the Timeline
+    var options = {
+            template: function (item) {
+            return '<pre style="text-align:left">' + item.stat + '</pre>';
+        },
+        clickToUse: false
+    };
+
+    // Create a Timeline
+    var groups = []
+    var groupids = []
+    for (i=0; i<data.length; i++) {
+        if (groupids.indexOf(data[i]['group']) >= 0) {
+           continue
+        }
     groupids.push(data[i]['group'])
     groups.push({
-      'id': data[i]['group']
-    })
-  }
-  if (groupids.length == 1) {
-     groups = null
-  }
-  var timeline = new vis.Timeline(container, data, groups, options);
-  timeline.on('select', function (properties) {
+        'id': data[i]['group']
+        })
+    }
+    if (groupids.length == 1) {
+        groups = null
+        }
+    var timeline = new vis.Timeline(container, data, groups, options);
+    timeline.on('select', function (properties) {
     var item_id = properties.items[0]
     var item = null;
     for (i=0; i<data.length; i++) {
@@ -145,6 +171,106 @@ function sysreport_timeline(id, data){
       sync_ajax(url, [], id+"_admin", function(){})
     }
   })
+})
+}
+
+function sysreport_admin_secure()
+{
+  services_osvcgetrest("R_GETSYSREPSECPAT","","",function(jd)
+    {
+      $("#sysreport_secure_list_item").empty();
+      var data = jd.data;
+      for (i=0;i<data.length;i++)
+      {
+        var value = "<tr id='%1' onclick=\"sysrep_admin_secure_handle('%1','del')\"><td>%2</td></tr>";
+        value = value.split("%1").join(data[i].id);
+        value = value.split("%2").join(data[i].pattern);
+        $("#sysreport_secure_list_item").append(value);
+      }
+    }
+  )  
+}
+
+function sysrep_admin_secure_handle(tid,func)
+{
+  if (func=="add")
+  {
+    var value = $("#sysreport_secure_patern_new").val();
+    services_osvcpostrest("R_POSTSYSREPSECPAT","pattern="+value,function(jd) {
+      if (jd.data === undefined)
+      {
+        $("#sysrep_secure_pattern_error").html(jd.info);
+        return
+      }
+      $("#sysrep_secure_pattern_error").empty();
+      sysreport_admin_secure();
+      mul_toggle('sysrep_secure_pattern_add','sysrep_secure_pattern_button');
+    }
+    )
+  }
+  else if (func=="del")
+  {
+    var param = [];
+    param.push(tid);
+    services_osvcdeleterest("R_DELSYSREPSECPAT",param,function(jd)
+        {
+          var result = jd;
+          sysreport_admin_secure();
+        }
+  )  
+  }
+}
+
+function sysreport_admin_allow()
+{
+  services_osvcgetrest("R_GETSYSREPADMINALLOW","","",function(jd)
+    {
+      $("#sysreport_authorizations_list_item").empty();
+      var data = jd.data;
+      for (i=0;i<data.length;i++)
+      {
+        var value = "<tr id='%1' onclick=\"sysrep_admin_allow_handle('%1','del')\"><td>Le groupe '%2' peut lire les fichiers protégés '%3' des noeuds du jeu de filtres '%4'</td></tr>";
+        value = value.split("%1").join(data[i].id);
+        value = value.split("%2").join(data[i].group_name);
+        value = value.split("%3").join(data[i].pattern);
+        value = value.split("%4").join(data[i].fset_name);
+        $("#sysreport_authorizations_list_item").append(value);
+      }
+    }
+  )  
+}
+
+function sysrep_admin_allow_handle(tid,func)
+{
+  if (func=="add")
+  {
+    var meta_pattern = $("#sysreport_authorizations_list").find(".meta_add").find("input.meta_pattern").val();
+    var meta_role = $("#sysreport_authorizations_list").find(".meta_add").find("input.meta_role").val();
+    var meta_fset_name = $("#sysreport_authorizations_list").find(".meta_add").find("input.meta_fset_name").val();
+    var param = "pattern="+meta_pattern+"&group_name="+meta_role+"&fset_name="+meta_fset_name;
+    services_osvcpostrest("R_POSTSYSREPADMINALLOW",param,function(jd) {
+      if (jd.data === undefined)
+      {
+        $("#sysrep_admin_allow_error").html(jd.error);
+        return
+      }
+      $("#sysrep_admin_allow_error").empty();
+      sysreport_admin_allow();
+      mul_toggle('sysrep_authorizations_input','sysrep_authorizations_button');
+    }
+    )
+  }
+  else if (func=="del")
+  {
+    var param = [];
+    param.push(tid);
+    services_osvcdeleterest("R_DELSYSREPADMINALLOW",param,function(jd)
+        {
+          var result = jd;
+          sysreport_admin_allow();
+        }
+  )  
+  }
 }
 
 function sysreport_show_file(e) {
@@ -161,54 +287,3 @@ function sysreport_show_file(e) {
        }
   )
 }
-
-function sysreport_admin_secure(tid) {
-  $("#"+tid).find("[sec_id]").bind("mouseover", function(){
-    $(this).find(".nologo16").addClass("del16").addClass("clickable")
-  }).bind("mouseout", function(){
-    $(this).find(".nologo16").removeClass("del16").removeClass("clickable")
-  })
-  $("#"+tid).find(".meta_del").bind("click", function(){
-    var sec_id = $(this).parent().attr("sec_id")
-    var url = $(location).attr("origin") + "/init/ajax_sysreport/ajax_sysreport_admin_del_secure"
-    url += "?sec_id="+sec_id
-    sync_ajax(url, [], "", function(){$("[sec_id="+sec_id+"]").remove()})
-  })
-  $("#"+tid).find(".meta_add").find("input").bind("keyup", function(){
-    if (!is_enter(event)) {
-      return
-    }
-    var pattern = $(this).val()
-    var url = $(location).attr("origin") + "/init/ajax_sysreport/ajax_sysreport_admin_add_secure"
-    url += "?pattern="+encodeURIComponent(pattern)
-    sync_ajax(url, [], "", function(){$(".lock").click().click()})
-  })
-}
-
-function sysreport_admin_allow(tid) {
-  $("#"+tid).find("[allow_id]").bind("mouseover", function(){
-    $(this).find(".nologo16").addClass("del16").addClass("clickable")
-  }).bind("mouseout", function(){
-    $(this).find(".nologo16").removeClass("del16").removeClass("clickable")
-  })
-  $("#"+tid).find(".meta_del").bind("click", function(){
-    var allow_id = $(this).parent().attr("allow_id")
-    var url = $(location).attr("origin") + "/init/ajax_sysreport/ajax_sysreport_admin_del_allow"
-    url += "?allow_id="+allow_id
-    sync_ajax(url, [], "", function(){$("[allow_id="+allow_id+"]").remove()})
-  })
-  $("#"+tid).find(".meta_add").find("input").bind("keyup", function(){
-    if (!is_enter(event)) {
-      return
-    }
-    var pattern = $(this).parents(".meta_add").find("input.meta_pattern").val()
-    var role = $(this).parents(".meta_add").find("input.meta_role").val()
-    var fset_name = $(this).parents(".meta_add").find("input.meta_fset_name").val()
-    var url = $(location).attr("origin") + "/init/ajax_sysreport/ajax_sysreport_admin_add_allow"
-    url += "?pattern="+encodeURIComponent(pattern)
-    url += "&role="+encodeURIComponent(role)
-    url += "&fset_name="+encodeURIComponent(fset_name)
-    sync_ajax(url, [], "", function(){$(".lock").click().click()})
-  })
-}
-
