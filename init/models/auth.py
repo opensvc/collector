@@ -41,6 +41,14 @@ def group_role(id):
         return None
     return rows[0].role
 
+def lib_get_group(id):
+    try:
+        id = int(id)
+        return db.auth_group[id]
+    except:
+        q = db.auth_group.role == id
+        return db(q).select().first()
+
 def lib_group_id(role):
     rows = db(db.auth_group.role==role).select()
     if len(rows) != 1:

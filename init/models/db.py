@@ -6,6 +6,7 @@
 #from gluon.contrib.redis_cache import RedisCache
 
 import datetime
+import os
 from applications.init.modules import config
 
 if hasattr(config, 'dbopensvc'):
@@ -2114,5 +2115,26 @@ db.define_table('v_tags',
 
 db.define_table('v_tags_full',
     db.v_tags,
+    migrate=False)
+
+db.define_table('safe_team_publication',
+    Field('file_id','integer', IS_IN_DB(db, 'safe.id')),
+    Field('group_id','integer', IS_IN_DB(db, 'auth_group.id')),
+    migrate=False)
+
+db.define_table('safe_team_responsible',
+    Field('file_id','integer', IS_IN_DB(db, 'safe.id')),
+    Field('group_id','integer', IS_IN_DB(db, 'auth_group.id')),
+    migrate=False)
+
+db.define_table('safe',
+    Field('uploader','integer'),
+    Field('uploaded_from','string'),
+    Field('uploaded_date','datetime'),
+    Field('name','string'),
+    Field('size','integer'),
+    Field('uuid','upload',
+           uploadfolder=os.path.join(request.folder,"uploads/safe"),
+           uploadseparate=True),
     migrate=False)
 

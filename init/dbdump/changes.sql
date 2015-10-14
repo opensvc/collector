@@ -4732,3 +4732,32 @@ drop view v_action_queue ; create view v_action_queue as select a.*, concat(u.fi
 
 drop view v_sysrep_allow ; create view v_sysrep_allow as (select s.id as id, s.group_id as group_id, g.role as group_name, s.fset_id as fset_id, fs.fset_name as fset_name, s.pattern as pattern from sysrep_allow s left join auth_group g on s.group_id=g.id left join gen_filtersets fs on s.fset_id=fs.id);
 
+CREATE TABLE `safe` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `uploader` int(11) DEFAULT NULL,
+  `uploaded_from` varchar(512) DEFAULT NULL,
+  `uploaded_date` datetime NOT NULL,
+  `name` varchar(512) DEFAULT NULL,
+  `size` int(11) DEFAULT NULL,
+  `uuid` varchar(512) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `safe_team_publication` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `file_id` int(11) NOT NULL,
+  `group_id` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx1` (`file_id`),
+  KEY `idx2` (`group_id`)
+);
+
+CREATE TABLE `safe_team_responsible` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `file_id` int(11) NOT NULL,
+  `group_id` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx1` (`file_id`),
+  KEY `idx2` (`group_id`)
+);
+
