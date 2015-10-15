@@ -1569,7 +1569,7 @@ ul.login_menu ul {
 .refresh16 {
     background: transparent url('images/refresh16.png') no-repeat;
     padding: 0 0 0 20px;
-    min-height: 16px;
+    min-height:tile1 16px;
 }
 .spinner {
     background: transparent url('images/spinner.gif') no-repeat;
@@ -1828,6 +1828,11 @@ ul.login_menu ul {
 }
 .time16 {
     background: transparent url('images/time16.png') no-repeat;
+    padding: 0 0 0 20px;
+    min-height: 16px;
+}
+.filter16 {
+    background: transparent url('images/filter16.png') no-repeat;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
@@ -2801,3 +2806,17 @@ textarea, table, td, th, code, pre, samp {
     user-select: none;
 }
 
+.divselector {
+  background: transparent url('images/fs32.png') no-repeat;
+  padding: 0 0 0 20px;
+  min-height: 16px;  
+}
+
+.scrolldowndiv {
+  display:none;
+  overflow:hidden;
+  padding-bottom: 5px;
+  border-bottom: thin solid gray;
+  margin-left:1em;
+  clear:both;
+}

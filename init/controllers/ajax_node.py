@@ -791,7 +791,6 @@ def ajax_node():
             _class='cloud',
           ),
           DIV(
-            IMG(_src=URL(r=request,c='static',f='images/spinner.gif')),
             _id='tab17_'+str(rowid),
             _class='cloud',
           ),
@@ -850,9 +849,10 @@ def ajax_node():
             _class='cloud',
           ),
           SCRIPT(
-            "function n%(rid)s_load_sysreport(){sync_ajax('%(url)s', [], '%(id)s', function(){})}"%dict(
+            "var nodes='%(node)s';function n%(rid)s_load_sysreport(){$('#%(id)s').load('/init/static/views/sysreport.html')}"%dict(
                id='tab17_'+str(rowid),
                rid=str(rowid),
+               node=request.vars.node,
                url=URL(r=request, c='ajax_sysreport', f='ajax_sysreport',
                        args=[request.vars.node])
             ),

@@ -19,3 +19,15 @@ function is_enter(e) {
 function is_blank(str) {
     return (!str || /^\s*$/.test(str));
 }
+
+function toggle(divid)
+{
+  $('#'+divid).slideToggle();
+}
+
+function mul_toggle(divid,divid2)
+{
+  $('#'+divid).slideToggle(200, function() {
+    $('#'+divid2).slideToggle(200);
+  });
+}
