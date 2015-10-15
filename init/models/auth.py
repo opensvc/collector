@@ -189,3 +189,14 @@ class MyAuth(Auth):
     def update_groups(self):
         return
 
+    def login_bare(self, username, password):
+        r = Auth.login_bare(self, username, password)
+        if type(self.user) == str and self.user == username:
+            from gluon.storage import Storage
+            self.user = Storage()
+            self.user.id = -1
+            self.user.email = "root@"+username
+            self.user.nodename = username
+            self.user.first_name = username
+            self.user.last_name = username
+        return r
