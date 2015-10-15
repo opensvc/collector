@@ -126,6 +126,10 @@ def lib_get_sysreport_timediff(nodename, path=None, begin=None, end=None):
     sec_pattern = get_pattern_secure()
     for k in data['blocks'].keys():
         diff = data['blocks'][k]
+        if k.startswith("cmd/"):
+            content_type = "command"
+        else:
+            content_type = "file"
         if sec_pattern.match(k):
             secure = True
             if not sysresponsible and not sysrep_allow([nodename], k):
@@ -135,6 +139,7 @@ def lib_get_sysreport_timediff(nodename, path=None, begin=None, end=None):
         del(data['blocks'][k])
         data['blocks'][beautify_fpath(k)] = {
           "secure": secure,
+          "content_type": content_type,
           "diff": diff,
         }
 
@@ -150,6 +155,10 @@ def lib_get_sysreport_commit(nodename, cid, path=None):
     sec_pattern = get_pattern_secure()
     for k in data['blocks'].keys():
         diff = data['blocks'][k]
+        if k.startswith("cmd/"):
+            content_type = "command"
+        else:
+            content_type = "file"
         if sec_pattern.match(k):
             secure = True
             if not sysresponsible and not sysrep_allow([nodename], k):
@@ -159,6 +168,7 @@ def lib_get_sysreport_commit(nodename, cid, path=None):
         del(data['blocks'][k])
         data['blocks'][beautify_fpath(k)] = {
           "secure": secure,
+          "content_type": content_type,
           "diff": diff,
         }
 
@@ -169,6 +179,10 @@ def lib_get_sysreport_commit_tree(nodename, cid, path=None):
     data = sysreport.sysreport().lstree_data(cid, nodename, path=encode_fpath(path))
     sec_pattern = get_pattern_secure()
     for i, d in enumerate(data):
+        if d["fpath"].startswith("cmd/"):
+            data[i]["content_type"] = "command"
+        else:
+            data[i]["content_type"] = "file"
         if sec_pattern.match(d["fpath"]):
             data[i]["secure"] = True
         else:
@@ -235,6 +249,10 @@ def lib_get_sysreport_nodediff(nodes, path=None, ignore_blanks=False):
         fpath = beautify_fpath(fpath)
         if not fnmatch.fnmatch(fpath, path):
             continue
+        if fpath.startswith("cmd/"):
+            content_type = "command"
+        else:
+            content_type = "file"
         if sec_pattern.match(fpath):
             secure = True
             if sysresponsible:
@@ -247,6 +265,7 @@ def lib_get_sysreport_nodediff(nodes, path=None, ignore_blanks=False):
         d = {
           "path": fpath,
           "secure": secure,
+          "content_type": content_type,
           "diff": diff,
         }
         data.append(d)
