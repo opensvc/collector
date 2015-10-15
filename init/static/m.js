@@ -97,7 +97,7 @@ function format_action(d) {
         s +=    "<div data-type='vertical' data-role='controlgroup'>"
         s +=     "<a data-icon='"+d['action']+"' data-role='button' rel='external' data-rel='dialog' href={{=URL(r=request, f='show_action')}}/"+d['id']+">"
         if (d['cron'] == 1) {
-		s += "<img width='12px' style='padding-left:6px' src='{{=URL(r=request, c='static', f='time16.png')}}'>"
+		s += "<img width='12px' style='padding-left:6px' src='{{=URL(r=request, c='static', f='images/time16.png')}}'>"
 	}
         s +=      "<span style='padding-left:6px'>"+d['action']+"</span>"
 	s +=     "</a>"

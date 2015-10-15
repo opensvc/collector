@@ -1,5 +1,5 @@
 var designer = {
-  "url_static": $(location).attr("origin") + "/init/static",
+  "url_images": $(location).attr("origin") + "/init/static/images",
   "url_action": $(location).attr("origin") + "/init/compliance/call/json/json_tree_action",
   "url": $(location).attr("origin") + "/init/compliance/call/json/json_tree",
   "init": d_init
@@ -101,72 +101,72 @@ jstree_data = {
   "types": {
    "module": {
     "icon": {
-     "image": designer.url_static+"/action16.png",
+     "image": designer.url_images+"/action16.png",
     },
    },
    "module_autofix": {
     "icon": {
-     "image": designer.url_static+"/actionred16.png",
+     "image": designer.url_images+"/actionred16.png",
     },
    },
    "modset": {
     "icon": {
-     "image": designer.url_static+"/modset16.png",
+     "image": designer.url_images+"/modset16.png",
     },
    },
    "group": {
     "icon": {
-     "image": designer.url_static+"/guys16.png",
+     "image": designer.url_images+"/guys16.png",
     },
    },
    "group_pub": {
     "icon": {
-     "image": designer.url_static+"/guys16.png",
+     "image": designer.url_images+"/guys16.png",
     },
    },
    "group_resp": {
     "icon": {
-     "image": designer.url_static+"/admins16.png",
+     "image": designer.url_images+"/admins16.png",
     },
    },
    "filter": {
     "icon": {
-     "image": designer.url_static+"/filter16.png",
+     "image": designer.url_images+"/filter16.png",
     },
    },
    "filterset": {
     "icon": {
-     "image": designer.url_static+"/filter16.png",
+     "image": designer.url_images+"/filter16.png",
     },
    },
    "ruleset": {
     "icon": {
-     "image": designer.url_static+"/pkg16.png",
+     "image": designer.url_images+"/pkg16.png",
     },
    },
    "ruleset_hidden": {
     "icon": {
-     "image": designer.url_static+"/pkglight16.png",
+     "image": designer.url_images+"/pkglight16.png",
     },
    },
    "ruleset_cxt": {
     "icon": {
-     "image": designer.url_static+"/rsetcxt16.png",
+     "image": designer.url_images+"/rsetcxt16.png",
     },
    },
    "ruleset_cxt_hidden": {
     "icon": {
-     "image": designer.url_static+"/rsetcxtlight16.png",
+     "image": designer.url_images+"/rsetcxtlight16.png",
     },
    },
    "variable": {
     "icon": {
-     "image": designer.url_static+"/comp16.png",
+     "image": designer.url_images+"/comp16.png",
     },
    },
    "table": {
     "icon": {
-     "image": designer.url_static+"/db16.png",
+     "image": designer.url_images+"/db16.png",
     },
    },
   },
