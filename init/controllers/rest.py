@@ -21,6 +21,7 @@ class rest_get_api(rest_get_handler):
     def handler(self, **vars):
         data = {}
         for a in handlers:
+            data[a] = []
             for handler in handlers[a]:
                 handler.update_parameters()
                 handler.update_data()
@@ -28,26 +29,13 @@ class rest_get_api(rest_get_handler):
                     hdata = list(set(handler.data.keys()) - set(["_extra"]))
                 else:
                     hdata = []
-                if handler.path not in data:
-                    data[handler.path] = {
-                      "path": handler.path,
-                      "pattern": handler.pattern,
-                      "actions": [a],
-                      a: {
-                        "data": hdata,
-                        "params": handler.params,
-                      },
-                    }
-                else:
-                    data[handler.path]["actions"].append(a)
-                    data[handler.path][a] = {
-                      "data": hdata,
-                      "params": handler.params,
-                    }
-        values = []
-        for i in sorted(data):
-            values.append(data[i])
-        return dict(data=values)
+                data[a].append({
+                  "path": handler.path,
+                  "pattern": handler.pattern,
+                  "data": hdata,
+                  "params": handler.params,
+                })
+        return dict(data=data)
 
 handlers = {
   'GET': [
