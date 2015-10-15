@@ -49,6 +49,14 @@ def lib_safe_check_file_publication(uuid):
 
     raise Exception("you are not authorized to access this file")
 
+def lib_safe_md5(f):
+    import hashlib
+    f.seek(0, os.SEEK_SET)
+    hash = hashlib.md5()
+    for chunk in iter(lambda: f.read(4096), b""):
+        hash.update(chunk)
+    f.seek(0, os.SEEK_SET)
+    return hash.hexdigest()
 
 def lib_safe_upload(name=None, file=None):
     if not auth_is_node():
@@ -62,6 +70,8 @@ def lib_safe_upload(name=None, file=None):
     size = file.file.tell()
     file.file.seek(0, os.SEEK_SET)
 
+    md5 = lib_safe_md5(file.file)
+
     id = db.safe.insert(
       uploader=uploader,
       uploaded_from=uploaded_from,
@@ -69,6 +79,7 @@ def lib_safe_upload(name=None, file=None):
       name=name,
       size=size,
       uuid=file,
+      md5=md5,
     )
 
     if auth_is_node():
@@ -89,6 +100,12 @@ def lib_safe_download(uuid):
     s = cStringIO.StringIO()
 
     filename, file = db.safe.uuid.retrieve(uuid)
+
+    md5 = lib_safe_md5(file)
+    meta_md5 = db(db.safe.uuid==uuid).select().first().md5
+    if md5 != meta_md5:
+        raise Exception("the file is compromised: current md5 = %s, expected md5 = %s" % (md5, meta_md5))
+
     s.write(file.read())
     response.headers['Content-Type'] = c.contenttype(filename)
     response.headers['Content-Disposition'] = "attachment; filename=%s" % filename

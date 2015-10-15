@@ -4765,3 +4765,5 @@ alter table safe_team_responsible add unique key idx3 (file_id, group_id);
 
 alter table safe_team_publication add unique key idx3 (file_id, group_id);
 
+alter table safe add column md5 char(32);
+
