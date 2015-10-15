@@ -10,11 +10,13 @@ def log_events(i):
 def _log(action, fmt, d, user=None, svcname=None, nodename=None, level="info"):
     if user is None:
         user = user_name()
-    if user == "Unknown":
+    if user in ("Unknown", "agent"):
         if nodename is not None:
             user = nodename
         elif svcname is not None:
             user = svcname
+    if user == "agent" and nodename is None:
+        nodename = auth.user.nodename
     db.log.insert(
       log_action=action,
       log_fmt=fmt,

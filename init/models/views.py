@@ -4,6 +4,8 @@ import datetime
 def user_name():
     if not hasattr(session.auth, 'user'):
         return 'Unknown'
+    if auth_is_node():
+        return 'agent'
     return ' '.join([session.auth.user.first_name,
                      session.auth.user.last_name])
 
