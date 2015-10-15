@@ -9,8 +9,8 @@ def lib_safe_check_file_responsible(uuid):
     if ok:
         return
 
-    q1 = db.safe.id == db.safe_responsible.file_id
-    q1 &= db.safe_responsible.group_id == db.auth_membership.group_id
+    q1 = db.safe.id == db.safe_team_responsible.file_id
+    q1 &= db.safe_team_responsible.group_id == db.auth_membership.group_id
     q1 &= db.auth_membership.user_id == auth.user_id
     ok = db(q&q1).select().first()
     if ok:
@@ -19,18 +19,29 @@ def lib_safe_check_file_responsible(uuid):
     raise Exception("you are not authorized to manage this file")
 
 def lib_safe_check_file_publication(uuid):
+    q = db.safe.uuid == uuid
+
+    if auth_is_node():
+        q1 = db.safe.id == db.safe_team_publication.file_id
+        q1 &= db.safe_team_publication.group_id == db.auth_group.id
+        q1 &= db.auth_group.role == db.nodes.team_responsible
+        q1 &= db.nodes.nodename == auth.user.nodename
+        ok = db(q&q1).select().first()
+        if ok:
+            return
+        else:
+            raise Exception("this node is not authorized to access this file")
+
     if "Manager" in user_groups():
         return
-
-    q = db.safe.uuid == uuid
 
     q1 = db.safe.uploader == auth.user_id
     ok = db(q&q1).select().first()
     if ok:
         return
 
-    q1 = db.safe.id == db.safe_publication.file_id
-    q1 &= db.safe_publication.group_id == db.auth_membership.group_id
+    q1 = db.safe.id == db.safe_team_publication.file_id
+    q1 &= db.safe_team_publication.group_id == db.auth_membership.group_id
     q1 &= db.auth_membership.user_id == auth.user_id
     ok = db(q&q1).select().first()
     if ok:
@@ -40,7 +51,9 @@ def lib_safe_check_file_publication(uuid):
 
 
 def lib_safe_upload(name=None, file=None):
-    check_privilege("SafeUploader")
+    if not auth_is_node():
+        check_privilege("SafeUploader")
+
     uploader = auth.user_id
     uploaded_from = request.env.REMOTE_ADDR
     uploaded_date = datetime.datetime.now()
@@ -57,7 +70,16 @@ def lib_safe_upload(name=None, file=None):
       size=size,
       uuid=file,
     )
-    return db(db.safe.id==id).select().as_dict()[id]
+
+    if auth_is_node():
+        # give and display the file to the node's team_responsible
+        gid = auth_node_group_id()
+        if gid is not None:
+            db.safe_team_responsible.update_or_insert(file_id=id, group_id=gid)
+            db.safe_team_publication.update_or_insert(file_id=id, group_id=gid)
+
+    d = db(db.safe.id==id).select().as_dict()
+    return d[id]
 
 def lib_safe_download(uuid):
     lib_safe_check_file_publication(uuid)

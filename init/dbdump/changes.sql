@@ -4761,3 +4761,7 @@ CREATE TABLE `safe_team_responsible` (
   KEY `idx2` (`group_id`)
 );
 
+alter table safe_team_responsible add unique key idx3 (file_id, group_id);
+
+alter table safe_team_publication add unique key idx3 (file_id, group_id);
+
