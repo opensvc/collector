@@ -2807,8 +2807,16 @@ textarea, table, td, th, code, pre, samp {
 }
 
 .divselector {
-  background: transparent url('images/fs.png') no-repeat;
+  background: transparent url('images/fs32.png') no-repeat;
   padding: 0 0 0 20px;
   min-height: 16px;  
 }
 
+.scrolldowndiv {
+  display:none;
+  overflow:hidden;
+  padding-bottom: 5px;
+  border-bottom: thin solid gray;
+  margin-left:1em;
+  clear:both;
+}

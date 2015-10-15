@@ -77,11 +77,12 @@ function sysrep_timeline(nodes,param)
 {
     $("#sysreport_timeline_title").html("Node "+nodes+" changes timeline");
     sysreport_createlink(nodes);
-    services_osvcgetrest("R_GETNODESSYS",[nodes],param, function(jd) 
-    {
-    
-    $("sysreport_timeline").empty();
 
+    $("#spinner").show();
+    
+    services_osvcgetrest("R_GETNODESSYS",[nodes],param, function(jd) 
+      {
+    $("#sysreport_timeline").empty();
     // DOM element where the Timeline will be attached
     var container = document.getElementById('sysreport_timeline');
     while (container.hasChildNodes()) {
@@ -147,16 +148,29 @@ function sysrep_timeline(nodes,param)
      'path': $("#"+id).parents("[name=sysrep_top]").find("input[name=filter]").val()
     }*/
       services_osvcgetrest("R_GETNODESSYSCID",[item.group,item.cid],"",function(jd){
-           // Link to tree file
-           var result = jd.data;
-           $("#sysreport_tree_file").empty();
-           $("#sysreport_tree_title").html("Changement du noeud " + nodes);
-           for(i=0;i<result.length;i++)
-           {
-            var value="<h2 class='highlight clickable'>"+result[i].fpath+
-                "</h2><div id='"+result[i].oid+"'' class='hidden'></div>";
+          // Link to tree file
+          var result = jd.data;
+          $("#sysreport_tree_file").empty();
+          $("#sysreport_tree_title").html("Changement du noeud " + nodes);
+          $("#sysreport_tree_date").html(result.date);
+          var ii =0;
+          for (var d in result.stat)
+          {
+            var value="<h2 class='highlight clickable' onclick=\"$('#idc"+i+"').toggle();\">"+
+            d+
+            "<pre>"+result.stat[d]+"</pre>"+
+            "</h2>"+
+            "<pre id='idc"+i+"' class='diff hidden hljs'>"+
+            result.blocks[d].diff+
+            "</div>";
+            
             $("#sysreport_tree_file").append(value);
-           }
+
+            $("#idc"+i).each(function(i, block){
+             hljs.highlightBlock(block);
+           });
+            i=i+1;
+          }
            $("#sysreport_tree").show();
           })
       }
@@ -174,6 +188,17 @@ function sysrep_timeline(nodes,param)
     }
   })
 })*/
+ $("#spinner").hide();
+}
+
+function sysreport_tree_file_detail(node,cid,oid)
+{
+  services_osvcgetrest("R_GETNODESSYSCIDOID",[node,cid,oid],"",function(jd) {
+    // Link to tree file
+    var result = jd.data;
+    $("#"+oid).append(result.content);
+    $("#"+oid).toggle();
+    });
 }
 
 function sysreport_admin_secure()
