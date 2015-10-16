@@ -615,6 +615,8 @@ def _update_asset(vars, vals, auth):
         del(h['environment'])
     if 'enclosure' in h and h['enclosure'] == 'Unknown':
         del(h['enclosure'])
+    if 'team_responsible' in h:
+        del(h['team_responsible'])
 
     # add obsolescence info
     os_obs_warn_date, os_obs_alert_date = get_os_obs_dates(' '.join((h['os_name'], h['os_vendor'], h['os_release'])))

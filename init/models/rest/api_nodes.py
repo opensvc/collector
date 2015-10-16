@@ -431,6 +431,12 @@ class rest_post_node(rest_post_handler):
         node_responsible(id)
         q = db.nodes.nodename == id
         vars["updated"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+        # a node can not set its team responsible, for it not to gain access to
+        # rulesets and safe files it should not see
+        if "team_responsible" in vars and auth_is_node():
+            del(vars["team_responsible"])
+
         db(q).update(**vars)
         _log('rest.nodes.update',
              'update properties %(data)s',
@@ -474,6 +480,12 @@ class rest_post_nodes(rest_post_handler):
         vars["updated"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         if "team_responsible" not in vars:
             vars["team_responsible"] = user_primary_group()
+
+        # a node can not set its team responsible, for it not to gain access to
+        # rulesets and safe files it should not see
+        if "team_responsible" in vars and auth_is_node():
+            del(vars["team_responsible"])
+
         db.nodes.insert(**vars)
         _log('rest.nodes.create',
              'create properties %(data)s',
