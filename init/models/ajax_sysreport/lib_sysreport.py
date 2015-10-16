@@ -187,6 +187,7 @@ def lib_get_sysreport_commit_tree(nodename, cid, path=None):
             data[i]["secure"] = True
         else:
             data[i]["secure"] = False
+        data[i]["fpath"] = beautify_fpath(d["fpath"])
     return data
 
 def lib_get_sysreport_commit_tree_file(nodename, cid, oid):
