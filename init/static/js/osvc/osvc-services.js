@@ -10,6 +10,7 @@ var services_access_uri = {
     "S_SYSREPSHOWFILE" : "ajax_sysreport/ajax_sysreport_show_file",
     "R_GETNODESSYS" : "rest/api/nodes/%1/sysreport",
     "R_GETNODESSYSCID" : "rest/api/nodes/%1/sysreport/%2",
+    "R_GETNODESSYSCIDTREE" : "rest/api/nodes/%1/sysreport/%2/tree",
     "R_GETNODESSYSCIDOID" : "rest/api/nodes/%1/sysreport/%2/tree/%3",
     "R_GETSYSREPSECPAT" : "rest/api/sysreport/secure_patterns",
     "R_POSTSYSREPSECPAT" : "rest/api/sysreport/secure_patterns",
@@ -72,7 +73,11 @@ function services_osvcpostrest(service,param,callback)
         console.log(service + " uri undefined")
         return
     }
-    var req = $.post(url,param,callback)
+    var req = $.post(url,param)
+    .done( callback )
+    .fail( function(xhr, textStatus, errorThrown) {
+        callback(xhr.responseText);
+    });
 }
 
 function services_osvcdeleterest(service,param,callback)

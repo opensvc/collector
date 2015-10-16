@@ -2807,7 +2807,7 @@ textarea, table, td, th, code, pre, samp {
 }
 
 .divselector {
-  background: transparent url('images/fs32.png') no-repeat;
+  /*background: transparent url('images/fs32.png') no-repeat;*/
   padding: 0 0 0 20px;
   min-height: 16px;  
 }
@@ -2816,7 +2816,31 @@ textarea, table, td, th, code, pre, samp {
   display:none;
   overflow:hidden;
   padding-bottom: 5px;
-  border-bottom: thin solid gray;
+  /*border-bottom: thin solid gray;*/
   margin-left:1em;
   clear:both;
+}
+
+.link_white {
+    border-bottom-color: black;
+    border-bottom-style: solid;
+    border-left-color: #AAA;
+    border-left-style: solid;
+    border-right-color: black;
+    border-right-style: solid;
+    border-top-color: #AAA;
+    border-top-style: solid;
+    border-width: 0px;
+    color: black;
+    cursor: default;
+    margin: 0px;
+    padding: 8px;
+    vertical-align: baseline;
+    text-align: left;
+    z-index: 500;
+    background-color: white;
+    box-shadow: 0px 0px 20px 2px;
+    border-radius: 4px;
+    -moz-border-radius: 4px;
+    -webkit-border-radius: 4px;
 }

@@ -18,7 +18,6 @@
 </script>
 {{
 response.files.insert(0,URL(r=request,c='static',f='jquery.js'))
-response.files.insert(1,URL(r=request,c='static',f='i18n/dictionary.js'))
 response.files.insert(2,URL(r=request,c='static',f='js/reconnecting-websocket.js'))
 response.files.insert(3,URL(r=request,c='static',f='jquery.sparkline.min.js'))
 response.files.insert(4,URL(r=request,c='static',f='jqplot/jquery.jqplot.min.css'))
@@ -47,6 +46,9 @@ response.files.insert(25,URL(r=request,c='static',f='vis/dist/vis.min.css'))
 response.files.insert(26,URL(r=request,c='static',f='vis/dist/vis.min.js'))
 response.files.insert(27,URL(r=request,c='static',f='highlight/styles/github.css'))
 response.files.insert(27,URL(r=request,c='static',f='highlight/highlight.pack.js'))
+response.files.insert(28,URL(r=request,c='static',f='js/i18next.min.js'))
+response.files.insert(29,URL(r=request,c='static',f='i18n/dictionary.js'))
+response.files.insert(1,URL(r=request,c='static',f='js/jquery.ns-autogrow.coffee.js'))
 response.files.insert(99,URL(r=request,c='static',f='custom.css'))
 response.files.insert(100,URL(r=request,c='static',f='js/osvc/osvc-common.js'))
 response.files.insert(101,URL(r=request,c='static',f='js/osvc/osvc-services.js'))

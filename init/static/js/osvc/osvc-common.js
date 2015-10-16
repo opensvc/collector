@@ -31,3 +31,4 @@ function mul_toggle(divid,divid2)
     $('#'+divid2).slideToggle(200);
   });
 }
+
