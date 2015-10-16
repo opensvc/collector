@@ -259,7 +259,7 @@ class rest_delete_sysreport_secure_pattern(rest_delete_handler):
         q = db.sysrep_secure.id == id
         row = db(q).select().first()
         if row is None:
-            return dict(info="secure pattern does not exist")
+            return dict(info=T("secure pattern does not exist"))
         db(q).delete()
         _log('rest.sysreport.secure_pattern.delete',
              'secure pattern %(s)s deleted',
@@ -270,7 +270,7 @@ class rest_delete_sysreport_secure_pattern(rest_delete_handler):
           'data': {'foo': 'bar'},
         }
         _websocket_send(event_msg(l))
-        return dict(info="secure pattern %(s)s deleted" % dict(s=row.pattern))
+        return dict(info=T("secure pattern %(s)s deleted" % dict(s=row.pattern)))
 
 #
 class rest_post_sysreport_secure_patterns(rest_post_handler):
@@ -303,7 +303,7 @@ class rest_post_sysreport_secure_patterns(rest_post_handler):
             q &= db.sysrep_secure[v] == vars[v]
         row = db(q).select().first()
         if row is not None:
-            return dict(info="Secure pattern already exists")
+            return dict(info=T("Secure pattern already exists"))
         response = db.sysrep_secure.validate_and_insert(**vars)
         raise_on_error(response)
         row = db(q).select().first()
@@ -396,7 +396,7 @@ class rest_delete_sysreport_authorization(rest_delete_handler):
         q = db.sysrep_allow.id == id
         row = db(q).select().first()
         if row is None:
-            return dict(info="Authorization does not exist")
+            return dict(info=T("Authorization does not exist"))
 
         group_name = group_role(row.id)
         if group_name is None:
@@ -418,7 +418,7 @@ class rest_delete_sysreport_authorization(rest_delete_handler):
           'data': {'foo': 'bar'},
         }
         _websocket_send(event_msg(l))
-        return dict(info="authorization %(s)s deleted" % dict(s=s))
+        return dict(info=T("authorization %(s)s deleted" % dict(s=s)))
 
 #
 class rest_post_sysreport_authorizations(rest_post_handler):
@@ -502,7 +502,7 @@ class rest_post_sysreport_authorizations(rest_post_handler):
         q &= db.sysrep_allow.fset_id == _fset_id
         row = db(q).select().first()
         if row is not None:
-            return dict(info="Authorization already exists")
+            return dict(info=T("Authorization already exists"))
         response = db.sysrep_allow.validate_and_insert(
           group_id=_group_id,
           fset_id=_fset_id,
