@@ -32,3 +32,6 @@ function mul_toggle(divid,divid2)
   });
 }
 
+function float2int (value) {
+    return value | 0;
+}

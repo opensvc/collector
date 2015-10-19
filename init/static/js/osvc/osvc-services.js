@@ -1,6 +1,11 @@
 // OpenSvc Services JS Script
 // MD 09062015
 
+// Global JS Static self
+var _self;
+
+var _groups = {};
+
 var services_access_uri = {
     "S_SYSREP" : "ajax_sysreport/ajax_sysrep",
     "S_SYSREPVIEW" : "ajax_sysreport/sysrep",
@@ -18,6 +23,9 @@ var services_access_uri = {
     "R_GETSYSREPADMINALLOW" : "rest/api/sysreport/authorizations",
     "R_POSTSYSREPADMINALLOW" : "rest/api/sysreport/authorizations",
     "R_DELSYSREPADMINALLOW" : "rest/api/sysreport/authorizations/%1",
+    "G_GETFILTERSET" : "rest/api/filtersets",
+    "G_GETUSERSELF" : "/rest/api/users/self",
+    "G_GETUSERSGROUPS" : "/rest/api/users/%1/groups",
 }
 
 function services_getaccessurl(service)
@@ -32,7 +40,7 @@ function services_getaccessurl(service)
     return base_path
 }
 
-function services_osvcpost(service,data,callback)
+function services_osvcpost(service, data, callback)
 {
     url = services_getaccessurl(service)
     if (is_blank(url))
@@ -49,7 +57,7 @@ function services_osvcpost(service,data,callback)
     })
 }
 
-function services_osvcgetrest(service,uri,param,callback)
+function services_osvcgetrest(service, uri, param, callback)
 {
     url = services_getaccessurl(service)
     if (is_blank(url))
@@ -65,7 +73,7 @@ function services_osvcgetrest(service,uri,param,callback)
     var req = $.getJSON(url,callback)
 }
 
-function services_osvcpostrest(service,param,callback)
+function services_osvcpostrest(service, param, callback)
 {
     url = services_getaccessurl(service)
     if (is_blank(url))
@@ -80,7 +88,7 @@ function services_osvcpostrest(service,param,callback)
     });
 }
 
-function services_osvcdeleterest(service,param,callback)
+function services_osvcdeleterest(service, param, callback)
 {
     url = services_getaccessurl(service)
     if (is_blank(url))
@@ -96,4 +104,26 @@ function services_osvcdeleterest(service,param,callback)
         url: url,
         success: callback
     });
+}
+
+function services_feed_self_and_group()
+{
+    services_osvcgetrest("G_GETUSERSELF","","",function(dataself)
+    {
+        _self = dataself.data[0];
+        services_osvcgetrest("G_GETUSERSGROUPS",[_self.id],"",function(datagroup)
+        {
+            _groups = datagroup.data;
+        });
+    });
+}
+
+function services_ismemberof(group)
+{
+    var result = $.grep(_groups,function(g)
+    {
+        return g.role === group;
+    });
+    if (result.length >0) return true;
+    else return false;
 }

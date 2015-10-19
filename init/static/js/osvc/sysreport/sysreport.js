@@ -1,24 +1,77 @@
 // SysReport JS Script
 // MD 08062015
 
-function sysreport_trad()
-{  
-  $('#sysreport').i18n();
-}
-
-function sysreport_onchangebeginenddate(nodes)
+function sysrep_onchangebeginenddate(nodes)
 {
-  sysrep_timeline(nodes,sysreport_getparam());
-  sysreport_createlink(nodes);
+  sysrep_timeline(nodes,sysrep_getparam());
+  sysrep_createlink(nodes);
 }
 
-function sysrep_binding()
+function sysrep_init()
 {
   $("#sysrep_filter_begindate").datetimepicker({dateFormat:'yy-mm-dd'});
   $("#sysrep_filter_enddate").datetimepicker({dateFormat:'yy-mm-dd'});
+
+  $("#sysrep_ql_link").on("click", function() { 
+    toggle('sysrep_link_div');$('#sysrep_link').select(); });
+
+  $("#sysrep_ql_filter").on("click", function() { toggle('sysrep_filter'); });
+
+  $("#sysrep_form_filter").on("submit",function (event) {
+    event.preventDefault();
+    sysrep_onchangebeginenddate(nodes); });
+
+  if (services_ismemberof("Manager")) // Authorization process
+  {
+    $("#sysrep_ql_admin").on("click", function() { toggle('sysrep_administration'); });
+    $("#sysrep_ql_admin").show();
+
+    $("#sysrep_secure_pattern_button").on("click",function () {
+      mul_toggle('sysrep_secure_pattern_button','sysrep_secure_pattern_add'); });
+
+    $("#sysrep_allow_button").on("click",function () {
+      mul_toggle('sysrep_allow_button','sysrep_allow_input'); });
+
+    $("#sysrep_form_allow").on("submit", function (event) {
+      event.preventDefault();
+      sysrep_admin_allow_handle('','add') });
+
+    $("#sysrep_form_secure").on("submit", function (event) {
+      event.preventDefault();
+      sysrep_admin_secure_handle('','add') });
+
+    services_osvcgetrest("G_GETFILTERSET","","",function(jd)
+      {
+        var data = jd.data;
+        for (var i=0;i<data.length;i++)
+        {
+          var option = $('<option />');
+          option.attr('value', data[i].fset_name).text(data[i].fset_name);
+          $('#sysreport_allow_filterset').append(option);
+        }
+      });
+
+    services_osvcgetrest("G_GETUSERSGROUPS",[_self.id],"",function(jd)
+      {
+        var data = jd.data;
+        for (var i=0;i<data.length;i++)
+        {
+          if (!data[i].role.startsWith("user"))
+          {
+            var option = $('<option />');
+            option.attr('value', data[i].role).text(data[i].role);
+            $('#sysreport_allow_groups').append(option);
+          }
+        }
+      });
+
+    
+    sysrep_admin_allow();
+    sysrep_admin_secure();
+  }
 }
 
-function sysreport_getparam()
+function sysrep_getparam()
 {
   var url ="";
   fval = $("#sysrep_filter_value").val();
@@ -41,13 +94,13 @@ function send_link(url)
   window.open(url,'newtab')
 }
 
-function sysreport_createlink(nodes)
+function sysrep_createlink(nodes)
 {
     url = $(location).attr("origin");
     url += services_getaccessurl("S_SYSREPVIEW");
     url += "?nodes=";
     url += nodes;
-    var sparam = sysreport_getparam();
+    var sparam = sysrep_getparam();
     if (sparam != "") url += "&" + sparam;
     /*
     cid = $(item).parent().parent().find("[name=cid]").text();
@@ -59,22 +112,34 @@ function sysreport_createlink(nodes)
     */
     //var vurl = "<a href='"+url+"' target='_blank'>"+url+"</a>";
     $("#sysrep_link").empty().html(url);
-
     $("#sysrep_link").autogrow({vertical: true, horizontal: true});
+    $("#sysrep_link_div").autogrow({vertical: true, horizontal: true});
 }
 
-function sysrep_timeline(nodes,param)
+function sysrep_define_maxchanges(res)
 {
-    $("#sysreport_timeline_title").html("Node "+nodes+" changes timeline");
-    sysreport_createlink(nodes);
+  var max = 0;
+  for (var d in res.stat)
+  {
+    var z=res.stat[d];
+    var tot = z[0] + z[1];
+    if (tot > max) max=tot;
+  }
+  return max;
+}
+
+function sysrep_timeline(nodes, param)
+{
+    $("#sysrep_timeline_title").html(i18n.t("sysrep.timeline_title", {"node":nodes}));
+    sysrep_createlink(nodes);
 
     $("#spinner").show();
     
     services_osvcgetrest("R_GETNODESSYS",[nodes],param, function(jd) 
     {
-    $("#sysreport_timeline").empty();
+    $("#sysrep_timeline_graph").empty();
     // DOM element where the Timeline will be attached
-    var container = document.getElementById('sysreport_timeline');
+    var container = document.getElementById('sysrep_timeline_graph');
     while (container.hasChildNodes()) {
       container.removeChild(container.firstChild);
     }
@@ -141,64 +206,73 @@ function sysrep_timeline(nodes,param)
      'path': $("#"+id).parents("[name=sysrep_top]").find("input[name=filter]").val()
     }*/
       // List tree Diff
-      services_osvcgetrest("R_GETNODESSYSCID",[item.group,item.cid],"",function(jd){
-          // Link to tree file
-          var result = jd.data;
-          $("#sysreport_tree_diff_detail").empty();
-          $("#sysreport_tree_diff_title").html("Changement du noeud " + nodes);
-          $("#sysreport_tree_diff_date").html(result.date);
-          i=0;
-            for (var d in result.stat)
-            {
-              var z = d;
-
-            var value="<h2 class='highlight clickable'"+
-            " onclick=\"toggle('idc"+i+"');\">"+d+
-            "</h2>"+
-            "<pre id='idc" + i + "' class='diff hljs' style='display:none'>"+result.blocks[d].diff+"</pre>";
-            $("#sysreport_tree_diff_detail").append(value);
-            $("#idc" + i).each(function(i, block){
-               hljs.highlightBlock(block);
-             });
-            i=i+1;
-          }
-           $("#sysreport_tree_diff").show();
-          });
+      services_osvcgetrest("R_GETNODESSYSCID",[item.group,item.cid],"",function(jd) {
+        // Link to tree file
+        var result = jd.data;
+        $("#sysrep_tree_diff_detail").empty();
+        $("#sysrep_tree_diff_title").html(i18n.t("sysrep.timeline_tree_diff_title", {"node":nodes}));
+        $("#sysrep_tree_diff_date").html(result.date);
+        $("#sysrep_tree_date").html(result.date);
+        i=0;
+        var maximum = sysrep_define_maxchanges(result);
+        var stat_width = 30;
+        for (var d in result.stat)
+        {
+          var diff ="";
+          var total = result.stat[d][0] + result.stat[d][1];
+          var quota = Math.round((stat_width*total)/maximum);
+          if (quota == 0)
+            quota = 1;
+          else if (quota > total)
+            quota = total;
+            _inse = Math.round((result.stat[d][0]*quota)/total);
+            _dele = quota-_inse;
+            var stat = "<pre>"+total + " ";
+            for (j=0;j<_inse;j++) stat += "+";
+            for (j=0;j<_dele;j++) stat += "-";
+          var value="<h2 class='highlight'"+
+          " onclick=\"toggle('idc"+i+"');\">"+d+stat+
+          "</h2>"+
+          "<pre id='idc" + i + "' class='diff hljs' style='display:none'>"+result.blocks[d].diff+"</pre>";
+          $("#sysrep_tree_diff_detail").append(value);
+          $("#idc" + i).each(function(i, block){
+             hljs.highlightBlock(block);
+           });
+          i = i+1;
+        }
+        if (!$("#sysrep_tree_diff").is(':visible')) toggle("sysrep_tree_diff");
+      });
       
-  
       // List Tree File/Cmd
-      services_osvcgetrest("R_GETNODESSYSCIDTREE",[item.group,item.cid],"",function(jd){
-          // Link to tree file
-          var result = jd.data;
-          $("#sysreport_tree_file").empty();
-          $("#sysreport_tree_title").html("Fichiers");
-          $("#sysreport_tree_date").html(result.date);
-          for (i=0;i<result.length;i++)
-          {
-            var cl="";
-            if (result[i].content_type == "file")
-              cl = "highlight";
-            else if (result[i].content_type == "command")
-              cl = "action16";
-            else 
-              cl = "log16";
-            var value="<h2 class='"+cl+" clickable'"+
-            " _oid='"+ result[i].oid +"' " +
-            " _cid='"+ result[i].cid +"' " +
-            " onclick=\"sysreport_tree_file_detail(this,'" + nodes + "')\">"+
-            "<pre>"+result[i].fpath+"</pre>"+
-            "</h2>"+
-            "<pre id='" + result[i].oid + "' class='diff hljs' style='display:none'></pre>";
-            $("#sysreport_tree_file").append(value);
-          }
-           $("#sysreport_tree").show();
-          });
+      services_osvcgetrest("R_GETNODESSYSCIDTREE",[item.group,item.cid],"",function(jd) {
+        // Link to tree file
+        var result = jd.data;
+        $("#sysrep_tree_file").empty();
+        $("#sysrep_tree_title").html(i18n.t("sysrep.timeline_tree_file_title"));
+        for (i=0;i<result.length;i++)
+        {
+          var cl = "highlight";
+          if (result[i].content_type == "command")
+            cl += " action16";
+          else 
+            cl += " log16";
+          var value="<h2 class='"+cl+ "'" +
+          " _oid='"+ result[i].oid +"' " +
+          " _cid='"+ result[i].cid +"' " +
+          " onclick=\"sysrep_tree_file_detail(this,'" + nodes + "')\">"+
+          result[i].fpath+
+          "</h2>"+
+          "<pre id='" + result[i].oid + "' class='diff hljs' style='display:none'></pre>";
+          $("#sysrep_tree_file").append(value);
+        }
+        if (!$("#sysrep_tree").is(':visible')) toggle("sysrep_tree");
+      });
       }
     )
   });
 }
 
-function sysreport_tree_file_detail(item,node)
+function sysrep_tree_file_detail(item, node)
 {
   var oid = item.getAttribute("_oid");
   var cid = item.getAttribute("_cid");
@@ -223,28 +297,28 @@ function sysreport_tree_file_detail(item,node)
   }
 }
 
-function sysreport_admin_secure()
+function sysrep_admin_secure()
 {
   services_osvcgetrest("R_GETSYSREPSECPAT","","",function(jd)
     {
-      $("#sysreport_secure_list_item").empty();
+      $("#sysrep_secure_list_item").empty();
       var data = jd.data;
       for (i=0;i<data.length;i++)
       {
         var value = "<tr id='%1' onclick=\"sysrep_admin_secure_handle('%1','del')\"><td>%2</td></tr>";
         value = value.split("%1").join(data[i].id);
         value = value.split("%2").join(data[i].pattern);
-        $("#sysreport_secure_list_item").append(value);
+        $("#sysrep_secure_list_item").append(value);
       }
     }
   )  
 }
 
-function sysrep_admin_secure_handle(tid,func)
+function sysrep_admin_secure_handle(tid, func)
 {
   if (func=="add")
   {
-    var value = $("#sysreport_secure_patern_new").val();
+    var value = $("#sysrep_secure_patern_new").val();
     services_osvcpostrest("R_POSTSYSREPSECPAT","pattern="+value,function(jd) {
       if (jd.data === undefined)
       {
@@ -252,7 +326,7 @@ function sysrep_admin_secure_handle(tid,func)
         return
       }
       $("#sysrep_secure_pattern_error").empty();
-      sysreport_admin_secure();
+      sysrep_admin_secure();
       mul_toggle('sysrep_secure_pattern_add','sysrep_secure_pattern_button');
     }
     )
@@ -264,52 +338,57 @@ function sysrep_admin_secure_handle(tid,func)
     services_osvcdeleterest("R_DELSYSREPSECPAT",param,function(jd)
         {
           var result = jd;
-          sysreport_admin_secure();
+          sysrep_admin_secure();
         }
   )  
   }
 }
 
-function sysreport_admin_allow()
+function sysrep_admin_allow()
 {
   services_osvcgetrest("R_GETSYSREPADMINALLOW","","",function(jd)
     {
-      $("#sysreport_authorizations_list_item").empty();
+      $("#sysrep_authorizations_list_item").empty();
       var data = jd.data;
       for (var i=0;i<data.length;i++)
       {
         var filter = {
           "pattern" : data[i].pattern,
           "group" : data[i].group_name,
-          "filterset" : data[i].fset_name};
+          "filterset" : data[i].fset_name };
 
         var value = "<tr id='%1' onclick=\"sysrep_admin_allow_handle('%1','del')\"><td>"+
         i18n.t("sysrep.allow_read_sentence", filter) +
         "</td></tr>";
         value = value.split("%1").join(data[i].id);
-        $("#sysreport_authorizations_list_item").append(value);
+        $("#sysrep_authorizations_list_item").append(value);
       }
-    }
-  )  
+    });
 }
 
-function sysrep_admin_allow_handle(tid,func)
+function sysrep_admin_allow_handle(tid, func)
 {
   if (func=="add")
   {
-    var meta_pattern = $("#sysreport_authorizations_list").find(".meta_add").find("input.meta_pattern").val();
-    var meta_role = $("#sysreport_authorizations_list").find(".meta_add").find("input.meta_role").val();
-    var meta_fset_name = $("#sysreport_authorizations_list").find(".meta_add").find("input.meta_fset_name").val();
+    var meta_pattern = $("#sysreport_allow_pattern").val();
+    var meta_role = $("#sysreport_allow_groups").val();
+    var meta_fset_name = $("#sysreport_allow_filterset").val();
     var param = "pattern="+meta_pattern+"&group_name="+meta_role+"&fset_name="+meta_fset_name;
     services_osvcpostrest("R_POSTSYSREPADMINALLOW",param,function(jd) {
       if (jd.data === undefined)
       {
-        jd = JSON.parse(jd);
-        $("#sysrep_admin_allow_error").html(jd.error);
-        return
+        // if info
+        if (jd.info !== undefined)
+          $("#sysrep_admin_allow_error").html(jd.info);
+        else // if error
+        {
+          jd = JSON.parse(jd);
+          $("#sysrep_admin_allow_error").html(jd.error);
+        }
+        return;
       }
       $("#sysrep_admin_allow_error").empty();
-      sysreport_admin_allow();
+      sysrep_admin_allow();
       mul_toggle('sysrep_authorizations_input','sysrep_authorizations_button');
     }
     )
@@ -321,7 +400,7 @@ function sysrep_admin_allow_handle(tid,func)
     services_osvcdeleterest("R_DELSYSREPADMINALLOW",param,function(jd)
         {
           var result = jd;
-          sysreport_admin_allow();
+          sysrep_admin_allow();
         }
   )  
   }

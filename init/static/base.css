@@ -2806,19 +2806,25 @@ textarea, table, td, th, code, pre, samp {
     user-select: none;
 }
 
-.divselector {
-  /*background: transparent url('images/fs32.png') no-repeat;*/
-  padding: 0 0 0 20px;
-  min-height: 16px;  
+.sectiontitle {
+  font-size:26px;
 }
 
-.scrolldowndiv {
-  display:none;
+.section {
   overflow:hidden;
   padding-bottom: 5px;
+  padding-top : 0.5em;
   /*border-bottom: thin solid gray;*/
   margin-left:1em;
   clear:both;
+}
+
+.link_ta_sub:focus {
+    background: none;
+}
+textarea.link_ta_sub {
+    background: none;
+    /*border: 0px;*/
 }
 
 .link_white {
@@ -2843,4 +2849,6 @@ textarea, table, td, th, code, pre, samp {
     border-radius: 4px;
     -moz-border-radius: 4px;
     -webkit-border-radius: 4px;
+    width:auto;
+    height:auto;
 }
