@@ -26,7 +26,7 @@ def perf_stats(node, rowid):
                       }
         divid = 'prf_cont_%s_%s'%(group,rowid)
         d = DIV(
-              IMG(_src=URL(r=request,c='static',f=group_img_h[group])),
+              IMG(_src=URL(r=request,c='static',f="images/"+group_img_h[group])),
               A(
                 T(title),
                 _onClick="""$('#%(div)s').html('%(spinner)s');
