@@ -25,7 +25,7 @@ var services_access_uri = {
     "R_DELSYSREPADMINALLOW" : "rest/api/sysreport/authorizations/%1",
     "G_GETFILTERSET" : "rest/api/filtersets",
     "G_GETUSERSELF" : "/rest/api/users/self",
-    "G_GETUSERSGROUPS" : "/rest/api/users/%1/groups",
+    "G_GETUSERSGROUPS" : "/rest/api/groups",
 }
 
 function services_getaccessurl(service)
@@ -111,7 +111,7 @@ function services_feed_self_and_group()
     services_osvcgetrest("G_GETUSERSELF","","",function(dataself)
     {
         _self = dataself.data[0];
-        services_osvcgetrest("G_GETUSERSGROUPS",[_self.id],"",function(datagroup)
+        services_osvcgetrest("G_GETUSERSGROUPS","","",function(datagroup)
         {
             _groups = datagroup.data;
         });

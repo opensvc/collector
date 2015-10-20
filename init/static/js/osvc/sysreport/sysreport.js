@@ -111,7 +111,6 @@ function sysrep_createlink(nodes)
       url += "&nodename="+nodename;
     }
     */
-    //var vurl = "<a href='"+url+"' target='_blank'>"+url+"</a>";
     $("#sysrep_link").empty().html(url);
     $("#sysrep_link").autogrow({vertical: true, horizontal: true});
 }
@@ -308,7 +307,7 @@ function sysrep_admin_secure()
       for (i=0;i<data.length;i++)
       {
         var value = "<tr id='%1' onclick=\"sysrep_admin_secure_handle('%1','del')\"><td style='vertical-align: middle;'>"+
-        "<span class='delete16'></span>" +
+        "<span class='del16'></span>" +
         "<span> %2</span>" +
         "</td></tr>";
         value = value.split("%1").join(data[i].id);
@@ -363,7 +362,7 @@ function sysrep_admin_allow()
           "filterset" : data[i].fset_name };
 
         var value = "<tr id='%1' onclick=\"sysrep_admin_allow_handle('%1','del')\"><td style='vertical-align: middle;'>"+
-        " <span class='delete16'></span>" +
+        " <span class='del16'></span>" +
         "<span> " + i18n.t("sysrep.allow_read_sentence", filter) + "</span>" +
         "</td></tr>";
         value = value.split("%1").join(data[i].id);
@@ -395,7 +394,7 @@ function sysrep_admin_allow_handle(tid, func)
       }
       $("#sysrep_admin_allow_error").empty();
       sysrep_admin_allow();
-      mul_toggle('sysrep_authorizations_input','sysrep_authorizations_button');
+      mul_toggle('sysrep_allow_input','sysrep_allow_button');
     }
     )
   }

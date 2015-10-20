@@ -1,0 +1,27 @@
+{
+  "app": {
+    "name": "collector"
+  },
+  "sysrep": {
+    "admin_title"  : "Administrations des SysReports",
+    "secure_title" : "Protections",
+    "allow_title"  : "Habilitations",
+    "secure_add_button" : "Ajouter une protection",
+    "submit_button" : "Soumettre",
+    "allow_add_button" : "Ajouter une habilitations",
+    "allow_input_pattern" : "pattern",
+    "allow_input_group" : "groupe",
+    "allow_input_filterset" : "Jeu de filtres",
+    "allow_read_sentence" : "Le groupe __group__ peut lire les fichiers protégés __pattern__ du jeu de filtre de filtres __filterset__",
+    "filter" : {
+    	"begin_date" : "Date de début",
+    	"end_date" : "Date de fin",
+    	"filter" : "Filtre (glob)",
+    	"title" : "Filtres",
+    	"submit_button" : "Soumettre"
+    },
+    "timeline_title" : "Histogramme des changements du noeud __node__",
+    "timeline_tree_diff_title" : "Changement du noeud __node__",
+    "timeline_tree_file_title" : "Fichiers"
+  }
+}
