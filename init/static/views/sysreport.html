@@ -5,6 +5,7 @@
 	<span id="sysrep_ql_filter" class="clickable filter16"></span>
 	<span id="sysrep_ql_admin" class="clickable lock hidden"></span>
 </div>
+
 <!-- Link relative division-->
 <div id="sysrep_link_div" class=" hidden" style="direction:rtl;float:right">
 	<textarea id="sysrep_link" class="link_ta_sub link_white" style="position:absolute;" readonly="readonly" onclick="send_link($(this).val())"></textarea>
@@ -44,13 +45,13 @@
 						</div>
 						<div style="display:table-row">
 							<div style="display:table-cell">
-								<input id="sysreport_allow_pattern" class="meta_pattern" data-i18n="[placeholder]sysrep.filter.filter" type="text" />
+								<input id="sysreport_allow_pattern" data-i18n="[placeholder]sysrep.filter.filter" type="text" />
 							</div>
 							<div style="display:table-cell">
-								<select id="sysreport_allow_groups" class="meta_role" type="text" />
+								<select id="sysreport_allow_groups" type="text" />
 							</div>
 							<div style="display:table-cell">
-								<select id="sysreport_allow_filterset" class="meta_fset_name" type="text" />
+								<select id="sysreport_allow_filterset" type="text" />
 							</div>
 						</div>
 					<button class="button_add16" type="submit" data-i18n="sysrep.submit_button"></button>

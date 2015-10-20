@@ -307,7 +307,10 @@ function sysrep_admin_secure()
       var data = jd.data;
       for (i=0;i<data.length;i++)
       {
-        var value = "<tr id='%1' onclick=\"sysrep_admin_secure_handle('%1','del')\"><td>%2</td></tr>";
+        var value = "<tr id='%1' onclick=\"sysrep_admin_secure_handle('%1','del')\"><td style='vertical-align: middle;'>"+
+        "<span class='delete16'></span>" +
+        "<span> %2</span>" +
+        "</td></tr>";
         value = value.split("%1").join(data[i].id);
         value = value.split("%2").join(data[i].pattern);
         $("#sysrep_secure_list_item").append(value);
@@ -359,8 +362,9 @@ function sysrep_admin_allow()
           "group" : data[i].group_name,
           "filterset" : data[i].fset_name };
 
-        var value = "<tr id='%1' onclick=\"sysrep_admin_allow_handle('%1','del')\"><td>"+
-        i18n.t("sysrep.allow_read_sentence", filter) +
+        var value = "<tr id='%1' onclick=\"sysrep_admin_allow_handle('%1','del')\"><td style='vertical-align: middle;'>"+
+        " <span class='delete16'></span>" +
+        "<span> " + i18n.t("sysrep.allow_read_sentence", filter) + "</span>" +
         "</td></tr>";
         value = value.split("%1").join(data[i].id);
         $("#sysrep_authorizations_list_item").append(value);
