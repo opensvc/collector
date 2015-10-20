@@ -15,26 +15,26 @@
 	<div class="sectiontitle" data-i18n='sysrep.admin_title'></div>
 	<div>
 		<div id="sysrep_secure_list" style="float:left;width:500px;">
-			<font size="3" data-i18n='sysrep.secure_title'></font>
+			<div class="sub_sectiontitle" data-i18n='sysrep.secure_title'></div>
 			<table id="sysrep_secure_list_item">
 			</table>
 			<div class="meta_add">
-				<button id="sysrep_secure_pattern_button" class="add16 clickable" data-i18n="sysrep.secure_add_button" ></button>
+				<button id="sysrep_secure_pattern_button" class="button_add16" data-i18n="sysrep.secure_add_button" ></button>
 				<form id="sysrep_form_secure">
 					<div id="sysrep_secure_pattern_add" class="hidden">
 						<input id="sysrep_secure_patern_new" data-i18n="[placeholder]sysrep.filter.filter" type="text"/>
-						<button class="add16" data-i18n="sysrep.submit_button" type="submit"></button>
+						<button class="button_add16" data-i18n="sysrep.submit_button" type="submit"></button>
 					</div>
 				</form>
 				<span id="sysrep_secure_pattern_error" style="color:#FF0000"></span>
 			</div>
 		</div>
 		<div id="sysrep_authorizations_list" style="float:left">
-			<font size="3" data-i18n='sysrep.allow_title'></font>
+			<div class="sub_sectiontitle" data-i18n='sysrep.allow_title'></div>
 			<table id="sysrep_authorizations_list_item">
 			</table>
 			<div class="meta_add">
-				<button class="add16 clickable" id="sysrep_allow_button" data-i18n="sysrep.allow_add_button"></button>
+				<button class="button_add16" id="sysrep_allow_button" data-i18n="sysrep.allow_add_button"></button>
 				<div class="hidden" id="sysrep_allow_input" style="margin-left:1em">
 					<form id="sysrep_form_allow">
 						<div style="display:table-row">
@@ -53,7 +53,7 @@
 								<select id="sysreport_allow_filterset" class="meta_fset_name" type="text" />
 							</div>
 						</div>
-					<button class="add16" type="submit" data-i18n="sysrep.submit_button"></button>
+					<button class="button_add16" type="submit" data-i18n="sysrep.submit_button"></button>
 					</form>
 					<span id="sysrep_admin_allow_error" style="color:#FF0000"></span>
 				</div>
@@ -76,7 +76,7 @@
 			<span class="filter16">
 				<input id="sysrep_filter_value" data-i18n="[placeholder]sysrep.filter.filter"  type="text">
 			</span>
-			<button id="sysrep_filter_submit" class="add16" data-i18n="sysrep.filter.submit_button" type="submit"></button>
+			<button id="sysrep_filter_submit" class="button_add16" data-i18n="sysrep.filter.submit_button" type="submit"></button>
 		</div>
 	</form>
 </div>
@@ -85,22 +85,22 @@
 
 <!-- Timeline -->
 <div id="sysrep_timeline" class="section">
-	<span id='sysrep_timeline_title' class="sectiontitle"></span>
+	<span id="sysrep_timeline_title" class="sectiontitle"></span>
 	<img id="spinner" src='/init/static/images/spinner.gif'></img>
-	<div id="sysrep_timeline_graph"></div>
+	<div id="sysrep_timeline_graph" class="hidden"></div>
 </div>
 
 <!-- Tree Diff-->
 <div id="sysrep_tree_diff" class="section hidden">
-	<div id='sysrep_tree_diff_title' class="sectiontitle"></div>
-	<h3 id='sysrep_tree_diff_date'></h3>
+	<div id="sysrep_tree_diff_title" class="sectiontitle"></div>
+	<h3 id="sysrep_tree_diff_date"></h3>
 	<div id="sysrep_tree_diff_detail"></div>
 </div>
 
 <!-- Tree File-->
 <div id="sysrep_tree" class="section hidden">
-	<div id='sysrep_tree_title' class="sectiontitle"></div>
-	<h3 id='sysrep_tree_date'></h3>
+	<div id="sysrep_tree_title" class="sectiontitle"></div>
+	<h3 id="sysrep_tree_date"></h3>
 	<div id="sysrep_tree_file"></div>
 </div>
 

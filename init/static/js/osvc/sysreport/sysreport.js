@@ -40,6 +40,7 @@ function sysrep_init()
       event.preventDefault();
       sysrep_admin_secure_handle('','add') });
 
+    // Feed FilterSet
     services_osvcgetrest("G_GETFILTERSET","","",function(jd)
       {
         var data = jd.data;
@@ -50,7 +51,7 @@ function sysrep_init()
           $('#sysreport_allow_filterset').append(option);
         }
       });
-
+    // Feed Groups
     services_osvcgetrest("G_GETUSERSGROUPS",[_self.id],"",function(jd)
       {
         var data = jd.data;
@@ -65,7 +66,7 @@ function sysrep_init()
         }
       });
 
-    
+    // Show section
     sysrep_admin_allow();
     sysrep_admin_secure();
   }
@@ -113,7 +114,6 @@ function sysrep_createlink(nodes)
     //var vurl = "<a href='"+url+"' target='_blank'>"+url+"</a>";
     $("#sysrep_link").empty().html(url);
     $("#sysrep_link").autogrow({vertical: true, horizontal: true});
-    $("#sysrep_link_div").autogrow({vertical: true, horizontal: true});
 }
 
 function sysrep_define_maxchanges(res)
@@ -189,6 +189,8 @@ function sysrep_timeline(nodes, param)
 
     $("#spinner").hide();
 
+    if (!$("#sysrep_timeline_graph").is(':visible')) toggle("sysrep_timeline_graph");
+
     timeline.on('select', function (properties) 
     {
       var item_id = properties.items[0]
@@ -199,14 +201,14 @@ function sysrep_timeline(nodes, param)
           item = data[i]
           break
         }
-      }/*
-    _data = {
-     'cid': item.cid,
-     'nodename': item.group,
-     'path': $("#"+id).parents("[name=sysrep_top]").find("input[name=filter]").val()
-    }*/
+      }
+
+      path = "";
+      var filter_value = $("#sysrep_filter_value").val();
+      if (filter_value != "" && filter_value != undefined)
+        path = "path=" + filter_value;
       // List tree Diff
-      services_osvcgetrest("R_GETNODESSYSCID",[item.group,item.cid],"",function(jd) {
+      services_osvcgetrest("R_GETNODESSYSCID",[item.group,item.cid],path,function(jd) {
         // Link to tree file
         var result = jd.data;
         $("#sysrep_tree_diff_detail").empty();

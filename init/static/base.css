@@ -2810,6 +2810,10 @@ textarea, table, td, th, code, pre, samp {
   font-size:26px;
 }
 
+.sub_sectiontitle {
+  font-size:20px;
+}
+
 .section {
   overflow:hidden;
   padding-bottom: 5px;
@@ -2825,6 +2829,16 @@ textarea, table, td, th, code, pre, samp {
 textarea.link_ta_sub {
     background: none;
     /*border: 0px;*/
+}
+
+.button_add16 {
+    background: transparent url('images/add16.png') no-repeat;
+    padding: 0px 0 0 20px;
+    min-height: 16px;
+}
+.button_add16:hover {
+    background: transparent url('images/add16.png') no-repeat;
+    background-color: rgb(200,200,200);
 }
 
 .link_white {
