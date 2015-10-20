@@ -1,0 +1,27 @@
+{
+  "app": {
+    "name": "collector"
+  },
+  "sysrep": {
+    "admin_title"  : "SysReports administration",
+    "secure_title" : "Secure Patterns",
+    "allow_title"  : "Authorizations",
+    "secure_add_button" : "Add secure pattern",
+    "submit_button" : "Submit",
+    "allow_add_button" : "Add authorization",
+    "allow_input_pattern" : "pattern",
+    "allow_input_group" : "group",
+    "allow_input_filterset" : "filterset",
+    "allow_read_sentence" : "Group __group__ can read secured files matching __pattern__ from nodes matching the filterset __filterset__",
+    "filter" : {
+      "begin_date" : "Begin date",
+      "end_date" : "End date",
+      "filter" : "Filter (glob)",
+      "title" : "Filters",
+      "submit_button" : "Submit"
+    },
+    "timeline_title" : "Node __node__ changes timeline",
+    "timeline_tree_diff_title" : "Node __node__ changes",
+    "timeline_tree_file_title" : "Files"
+  }
+}
