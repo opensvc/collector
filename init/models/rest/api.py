@@ -356,7 +356,10 @@ def prepare_data(
         meta = True
     if not data and q:
         if query:
-            q &= smart_query(all_cols, query)
+            try:
+                q &= smart_query(all_cols, query)
+            except Exception as e:
+                raise Exception(T("smart query error for '%(s)s': %(err)s", dict(s=str(query), err=str(e))))
         if meta:
             if count_prop:
                 try:
