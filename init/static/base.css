@@ -2806,19 +2806,39 @@ textarea, table, td, th, code, pre, samp {
     user-select: none;
 }
 
-.divselector {
-  /*background: transparent url('images/fs32.png') no-repeat;*/
-  padding: 0 0 0 20px;
-  min-height: 16px;  
+.sectiontitle {
+  font-size:26px;
 }
 
-.scrolldowndiv {
-  display:none;
+.sub_sectiontitle {
+  font-size:20px;
+}
+
+.section {
   overflow:hidden;
   padding-bottom: 5px;
+  padding-top : 0.5em;
   /*border-bottom: thin solid gray;*/
   margin-left:1em;
   clear:both;
+}
+
+.link_ta_sub:focus {
+    background: none;
+}
+textarea.link_ta_sub {
+    background: none;
+    /*border: 0px;*/
+}
+
+.button_add16 {
+    background: transparent url('images/add16.png') no-repeat;
+    padding: 0px 0 0 20px;
+    min-height: 16px;
+}
+.button_add16:hover {
+    background: transparent url('images/add16.png') no-repeat;
+    background-color: rgb(200,200,200);
 }
 
 .link_white {
@@ -2843,4 +2863,16 @@ textarea, table, td, th, code, pre, samp {
     border-radius: 4px;
     -moz-border-radius: 4px;
     -webkit-border-radius: 4px;
+    width:auto;
+    height:auto;
 }
+
+.delete16 {
+    display: inline;
+    background: url('images/delete16.png') no-repeat;
+    width: 12px; 
+    height: 12px; 
+    padding-left: 12px;
+    padding-right : 4px;
+    vertical-align: middle;
+  }

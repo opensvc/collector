@@ -1,112 +1,114 @@
-<div id="sysreport">
-	<!-- Filter menu -->
+<div id="sysrep">
+<!-- Filter menu -->
 <div id="sysrep_ql" style="float:right">
-	<span id="sysrep_ql_link" class="clickable link16" onclick="toggle('sysrep_link');"></span>
-	<span id="sysrep_ql_filter" class="clickable filter16" onclick="toggle('sysrep_filter')"></span>
-	<span id="sysrep_ql_admin" class="clickable lock" onclick="toggle('sysreport_administration')"></span>
-</div>
-<div style="direction:rtl;float:right">
-	<textarea id="sysrep_link" class="white_float hidden" style="position:absolute;" readonly="readonly" onclick="send_link($(this).val())"></textarea>
+	<span id="sysrep_ql_link" class="clickable link16"></span>
+	<span id="sysrep_ql_filter" class="clickable filter16"></span>
+	<span id="sysrep_ql_admin" class="clickable lock hidden"></span>
 </div>
 
-<div id="sysreport_administration" class="scrolldowndiv" display="block">
+<!-- Link relative division-->
+<div id="sysrep_link_div" class=" hidden" style="direction:rtl;float:right">
+	<textarea id="sysrep_link" class="link_ta_sub link_white" style="position:absolute;" readonly="readonly" onclick="send_link($(this).val())"></textarea>
+</div>
+
+<div id="sysrep_administration" class="section hidden" display="block">
 	<!-- Sysreport administration !-->
-	<font size="5"><a onclick="toggle('sysreport_administration')" data-i18n='sysrep.admin_title'></a></font>
+	<div class="sectiontitle" data-i18n='sysrep.admin_title'></div>
 	<div>
-		<div id="sysreport_secure_list" style="float:left;width:500px;">
-			<font size="3" data-i18n='sysrep.secure_title'></font>
-			<table id="sysreport_secure_list_item">
+		<div id="sysrep_secure_list" style="float:left;width:500px;">
+			<div class="sub_sectiontitle" data-i18n='sysrep.secure_title'></div>
+			<table id="sysrep_secure_list_item">
 			</table>
 			<div class="meta_add">
-				<button id="sysrep_secure_pattern_button" class="add16 clickable" data-i18n="sysrep.secure_add_button" onclick="mul_toggle('sysrep_secure_pattern_button','sysrep_secure_pattern_add');"></button>
-				<div id="sysrep_secure_pattern_add" class="hidden" style="margin-left:1em;">
-					<input id="sysreport_secure_patern_new" onkeypress="if (is_enter(event)) sysrep_admin_secure_handle('','add');" type="text"/>
-					<span class="add16 clickable" data-i18n="sysrep.submit_button" onclick="sysrep_admin_secure_handle('','add')"></span>
-					<span id="sysrep_secure_pattern_error" style="color:#FF0000"></span>
-				</div>
+				<button id="sysrep_secure_pattern_button" class="button_add16" data-i18n="sysrep.secure_add_button" ></button>
+				<form id="sysrep_form_secure">
+					<div id="sysrep_secure_pattern_add" class="hidden">
+						<input id="sysrep_secure_patern_new" data-i18n="[placeholder]sysrep.filter.filter" type="text"/>
+						<button class="button_add16" data-i18n="sysrep.submit_button" type="submit"></button>
+					</div>
+				</form>
+				<span id="sysrep_secure_pattern_error" style="color:#FF0000"></span>
 			</div>
 		</div>
-		<div id="sysreport_authorizations_list">
-			<font size="3" data-i18n='sysrep.allow_title'></font>
-			<table id="sysreport_authorizations_list_item">
+		<div id="sysrep_authorizations_list" style="float:left">
+			<div class="sub_sectiontitle" data-i18n='sysrep.allow_title'></div>
+			<table id="sysrep_authorizations_list_item">
 			</table>
 			<div class="meta_add">
-				<button class="add16 clickable" onclick="mul_toggle('sysrep_authorizations_button','sysrep_authorizations_input');" id="sysrep_authorizations_button">Ajouter une habilitation</button>
-				<div class="hidden" id="sysrep_authorizations_input" style="margin-left:1em">
-					<div style="display:table-row">
-						<div class="b" style="display:table-cell" data-i18n="sysrep.allow_input_pattern"></div>
-						<div class="b" style="display:table-cell" data-i18n="sysrep.allow_input_group"></div>
-						<div class="b" style="display:table-cell" data-i18n="sysrep.allow_input_filterset"></div>
-					</div>
-					<div style="display:table-row">
-						<div style="display:table-cell">
-							<input class="meta_pattern" type="text" />
+				<button class="button_add16" id="sysrep_allow_button" data-i18n="sysrep.allow_add_button"></button>
+				<div class="hidden" id="sysrep_allow_input" style="margin-left:1em">
+					<form id="sysrep_form_allow">
+						<div style="display:table-row">
+							<div class="b" style="display:table-cell" data-i18n="sysrep.allow_input_pattern"></div>
+							<div class="b" style="display:table-cell" data-i18n="sysrep.allow_input_group"></div>
+							<div class="b" style="display:table-cell" data-i18n="sysrep.allow_input_filterset"></div>
 						</div>
-						<div style="display:table-cell">
-							<input class="meta_role" type="text" />
+						<div style="display:table-row">
+							<div style="display:table-cell">
+								<input id="sysreport_allow_pattern" data-i18n="[placeholder]sysrep.filter.filter" type="text" />
+							</div>
+							<div style="display:table-cell">
+								<select id="sysreport_allow_groups" type="text" />
+							</div>
+							<div style="display:table-cell">
+								<select id="sysreport_allow_filterset" type="text" />
+							</div>
 						</div>
-						<div style="display:table-cell">
-							<input class="meta_fset_name" type="text" />
-						</div>
-					</div>
-					<span class="add16 clickable" onclick="sysrep_admin_allow_handle('','add')" data-i18n="sysrep.submit_button"></span>
+					<button class="button_add16" type="submit" data-i18n="sysrep.submit_button"></button>
+					</form>
 					<span id="sysrep_admin_allow_error" style="color:#FF0000"></span>
 				</div>
 			</div>
 		</div>
-		<br><br>
 	</div>
 </div>
-<script>sysreport_admin_allow()</script>
-<script>sysreport_admin_secure()</script>
-<!-- Filter -->
-<div id="sysrep_filter" class="scrolldowndiv">
-	<font size="5"><a onclick="toggle('sysrep_filter')">Filtre</a></font>
-	<div >
-		<span class="time16">
-			<input id="sysrep_filter_begindate" placeholder="date de début" type="text">
-		</span>
-		<span class="time16">
-			<input id="sysrep_filter_enddate" placeholder="date de fin"  type="text">
-		</span>
-		<span class="filter16">
-			<input id="sysrep_filter_value" placeholder="filte (regexp)"  type="text">
-		</span>
-		<button onclick="sysreport_onchangebeginenddate(nodes)">Submit</button>
-		<br><br>
-	</div>
+
+<!-- Filter Div -->
+<div id="sysrep_filter" class="section hidden">
+	<div class="sectiontitle" data-i18n='sysrep.filter.title'></div>
+	<form id="sysrep_form_filter">
+		<div >
+			<span class="time16">
+				<input id="sysrep_filter_begindate" data-i18n="[placeholder]sysrep.filter.begin_date" type="text">
+			</span>
+			<span class="time16">
+				<input id="sysrep_filter_enddate" data-i18n="[placeholder]sysrep.filter.end_date"  type="text">
+			</span>
+			<span class="filter16">
+				<input id="sysrep_filter_value" data-i18n="[placeholder]sysrep.filter.filter"  type="text">
+			</span>
+			<button id="sysrep_filter_submit" class="button_add16" data-i18n="sysrep.filter.submit_button" type="submit"></button>
+		</div>
+	</form>
 </div>
-<script type="text/javascript">
-    	sysrep_binding();
-</script>
 
 <span class="hidden" name="nodes" id="node_name"></span>
+
 <!-- Timeline -->
-<div style="clear:both;margin-left:1em;">
-	<font size="5" id='sysreport_timeline_title' style="padding-bottom: 10px;"></font>
+<div id="sysrep_timeline" class="section">
+	<span id="sysrep_timeline_title" class="sectiontitle"></span>
 	<img id="spinner" src='/init/static/images/spinner.gif'></img>
-	<div id="sysreport_timeline"></div>
+	<div id="sysrep_timeline_graph" class="hidden"></div>
 </div>
 
 <!-- Tree Diff-->
-<div id="sysreport_tree_diff" class="hidden" style="clear:both;margin-left:1em;">
-	<font size="5" id='sysreport_tree_diff_title' style="padding-bottom: 10px;padding-top: 30px"></font>
-	<h3 id='sysreport_tree_diff_date' style="padding-bottom: 10px;"></h3>
-	<div id="sysreport_tree_diff_detail"></div>
+<div id="sysrep_tree_diff" class="section hidden">
+	<div id="sysrep_tree_diff_title" class="sectiontitle"></div>
+	<h3 id="sysrep_tree_diff_date"></h3>
+	<div id="sysrep_tree_diff_detail"></div>
 </div>
 
-<br><br>
-
 <!-- Tree File-->
-<div id="sysreport_tree" class="hidden" style="clear:both;margin-left:1em;">
-	<font size="5" id='sysreport_tree_title' style="padding-bottom: 10px;padding-top: 30px"></font>
-	<h3 id='sysreport_tree_date' style="padding-bottom: 10px;"></h3>
-	<div id="sysreport_tree_file"></div>
+<div id="sysrep_tree" class="section hidden">
+	<div id="sysrep_tree_title" class="sectiontitle"></div>
+	<h3 id="sysrep_tree_date"></h3>
+	<div id="sysrep_tree_file"></div>
 </div>
 
 <script type="text/javascript">
-    sysrep_timeline(nodes,"");
     $("node_name").append(nodes);
-    sysreport_trad();
+    $('#sysrep').i18n();
+    sysrep_init();
+    sysrep_timeline(nodes,"");
 </script>
 </div>
