@@ -70,6 +70,13 @@ def auth_is_node():
         return True
     return False
 
+def auth_node_group():
+    q = db.nodes.nodename == auth.user.nodename
+    try:
+        return db(q).select(db.nodes.team_responsible).first().team_responsible
+    except:
+        return
+
 def auth_node_group_id():
     q = db.nodes.nodename == auth.user.nodename
     q &= db.nodes.team_responsible == db.auth_group.role
