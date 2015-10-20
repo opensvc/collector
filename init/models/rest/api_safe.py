@@ -24,7 +24,11 @@ class rest_post_safe_file(rest_post_handler):
 
     def handler(self, id, **vars):
         lib_safe_check_file_responsible(id)
-        q = (db.safe.id == id) | (db.safe.uuid == id)
+        try:
+            id = int(id)
+            q = db.safe.id == id
+        except:
+            q = db.safe.uuid == id
         current = db(q).select().first()
 
         if current is None:
@@ -115,7 +119,8 @@ class rest_get_safe(rest_get_table_handler):
         ug = user_groups()
         q = db.safe.id > 0
         if "Manager" not in ug:
-            q &= db.safe_team_publication.group_id.belongs(user_group_ids()) | db.safe.uploader == auth.user_id
+            q &= db.safe_team_publication.group_id.belongs(user_group_ids()) | \
+                 (db.safe.uploader == auth.user_id)
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -138,10 +143,18 @@ class rest_get_safe_file(rest_get_line_handler):
         )
 
     def handler(self, id, **vars):
-        ug = user_groups()
-        q = (db.safe.id == id) | (db.safe.uuid == id)
-        if "Manager" not in ug:
-            q &= db.safe_team_publication.group_id.belongs(user_group_ids()) | db.safe.uploader == auth.user_id
+        try:
+            id = int(id)
+            q = db.safe.id == id
+        except:
+            q = db.safe.uuid == id
+        if auth_is_node():
+            q &= db.safe_team_publication.group_id == auth_node_group_id()
+        else:
+            ug = user_groups()
+            if "Manager" not in ug:
+                q &= db.safe_team_publication.group_id.belongs(user_group_ids()) | \
+                     (db.safe.uploader == auth.user_id)
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -212,7 +225,11 @@ class rest_post_safe_file_publication(rest_post_handler):
 
         g = lib_get_group(gid)
 
-        q = (db.safe.id == id) | (db.safe.uuid == id)
+        try:
+            id = int(id)
+            q = db.safe.id == id
+        except:
+            q = db.safe.uuid == id
         f = db(q).select().first()
         if f is None:
             raise Exception("File %s not found" % id)
@@ -278,7 +295,11 @@ class rest_post_safe_file_responsible(rest_post_handler):
 
         g = lib_get_group(gid)
 
-        q = (db.safe.id == id) | (db.safe.uuid == id)
+        try:
+            id = int(id)
+            q = db.safe.id == id
+        except:
+            q = db.safe.uuid == id
         f = db(q).select().first()
         if f is None:
             raise Exception("File %s not found" % id)
@@ -327,7 +348,11 @@ class rest_delete_safe_file_publication(rest_delete_handler):
     def handler(self, id, gid, **vars):
         lib_safe_check_file_responsible(id)
 
-        q = (db.safe.id == id) | (db.safe.uuid == id)
+        try:
+            id = int(id)
+            q = db.safe.id == id
+        except:
+            q = db.safe.uuid == id
         f = db(q).select().first()
         if f is None:
             raise Exception("File %s not found" % id)
@@ -373,7 +398,11 @@ class rest_delete_safe_file_responsible(rest_delete_handler):
     def handler(self, id, gid, **vars):
         lib_safe_check_file_responsible(id)
 
-        q = (db.safe.id == id) | (db.safe.uuid == id)
+        try:
+            id = int(id)
+            q = db.safe.id == id
+        except:
+            q = db.safe.uuid == id
         f = db(q).select().first()
         if f is None:
             raise Exception("File %s not found" % id)
@@ -417,7 +446,11 @@ class rest_get_safe_file_publications(rest_get_table_handler):
 
     def handler(self, id, **vars):
         lib_safe_check_file_publication(id)
-        q = (db.safe.id == id) | (db.safe.uuid == id)
+        try:
+            id = int(id)
+            q = db.safe.id == id
+        except:
+            q = db.safe.uuid == id
         q &= db.safe.id == db.safe_team_publication.file_id
         q &= db.safe_team_publication.group_id == db.auth_group.id
         self.set_q(q)
@@ -442,7 +475,11 @@ class rest_get_safe_file_responsibles(rest_get_table_handler):
 
     def handler(self, id, **vars):
         lib_safe_check_file_publication(id)
-        q = (db.safe.id == id) | (db.safe.uuid == id)
+        try:
+            id = int(id)
+            q = db.safe.id == id
+        except:
+            q = db.safe.uuid == id
         q &= db.safe.id == db.safe_team_responsible.file_id
         q &= db.safe_team_responsible.group_id == db.auth_group.id
         self.set_q(q)
