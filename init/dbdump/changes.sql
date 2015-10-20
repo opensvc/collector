@@ -4767,3 +4767,14 @@ alter table safe_team_publication add unique key idx3 (file_id, group_id);
 
 alter table safe add column md5 char(32);
 
+alter table node_ip add key idx1 (nodename);
+
+alter table node_ip add key idx2 (addr);
+
+alter table safe add key idx1 (uuid);
+
+alter table auth_group add key idx1 (privilege);
+
+alter table auth_group add key idx2 (role);
+
+
