@@ -41,7 +41,7 @@ function sysrep_init()
       sysrep_admin_secure_handle('','add') });
 
     // Feed FilterSet
-    services_osvcgetrest("G_GETFILTERSET", "", "", function(jd)
+    services_osvcgetrest("G_GETFILTERSET", "", {"meta": "false", "limit": "0"}, function(jd)
       {
         var data = jd.data;
         for (var i=0;i<data.length;i++)
