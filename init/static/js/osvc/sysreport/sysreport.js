@@ -166,7 +166,7 @@ function sysrep_timeline(nodes, param)
             template: function (item) {
             return '<pre style="text-align:left">' + item.stat + '</pre>';
         },
-        clickToUse: false
+        clickToUse: true
     };
 
     // Create a Timeline
@@ -220,6 +220,11 @@ function sysrep_timeline(nodes, param)
         for (var d in result.stat)
         {
           var diff ="";
+          if (result.blocks[d].secure) {
+            var highlight_cl = "highlight";
+          } else {
+            var highlight_cl = "";
+          }
           var total = result.stat[d][0] + result.stat[d][1];
           var quota = Math.round((stat_width*total)/maximum);
           if (quota == 0)
@@ -231,7 +236,7 @@ function sysrep_timeline(nodes, param)
             var stat = "<pre>"+total + " ";
             for (j=0;j<_inse;j++) stat += "+";
             for (j=0;j<_dele;j++) stat += "-";
-          var value="<h2 class='highlight'"+
+          var value="<h2 class='"+highlight_cl+"'" +
           " onclick=\"toggle('idc"+i+"');\">"+d+stat+
           "</h2>"+
           "<pre id='idc" + i + "' class='diff hljs' style='display:none'>"+result.blocks[d].diff+"</pre>";
@@ -252,7 +257,11 @@ function sysrep_timeline(nodes, param)
         $("#sysrep_tree_title").html(i18n.t("sysrep.timeline_tree_file_title"));
         for (i=0;i<result.length;i++)
         {
-          var cl = "highlight";
+          if (result[i].secure) {
+            var cl = "highlight";
+          } else {
+            var cl = "";
+          }
           if (result[i].content_type == "command")
             cl += " action16";
           else 
@@ -306,9 +315,8 @@ function sysrep_admin_secure()
       var data = jd.data;
       for (i=0;i<data.length;i++)
       {
-        var value = "<tr id='%1' onclick=\"sysrep_admin_secure_handle('%1','del')\"><td style='vertical-align: middle;'>"+
-        "<span class='del16'></span>" +
-        "<span> %2</span>" +
+        var value = "<tr id='%1' onclick=\"sysrep_admin_secure_handle('%1','del')\"><td class='button_div'>"+
+        "<span class='del16'>%2</span>" +
         "</td></tr>";
         value = value.split("%1").join(data[i].id);
         value = value.split("%2").join(data[i].pattern);
@@ -361,9 +369,8 @@ function sysrep_admin_allow()
           "group" : data[i].group_name,
           "filterset" : data[i].fset_name };
 
-        var value = "<tr id='%1' onclick=\"sysrep_admin_allow_handle('%1','del')\"><td style='vertical-align: middle;'>"+
-        " <span class='del16'></span>" +
-        "<span> " + i18n.t("sysrep.allow_read_sentence", filter) + "</span>" +
+        var value = "<tr id='%1' onclick=\"sysrep_admin_allow_handle('%1','del')\"><td class='button_div'>"+
+        "<span class='del16'> " + i18n.t("sysrep.allow_read_sentence", filter) + "</span>" +
         "</td></tr>";
         value = value.split("%1").join(data[i].id);
         $("#sysrep_authorizations_list_item").append(value);

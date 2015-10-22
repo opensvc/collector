@@ -2832,15 +2832,21 @@ textarea.link_ta_sub {
 }
 
 .button_div {
+    cursor: pointer;
     display:table-cell; 
     vertical-align:middle; 
-    text-align:center
-    min-height: 16px;
-    background-color: rgb(255,255,255);
+    height: 24px;
+    background-color: rgba(0,0,0,0);
+    border: 0px;
 }
 
 .button_div:hover {
-    background-color: rgb(200,200,200);
+  background-color: rgba(0,0,0,0.02);
+  box-shadow: inset 0px -1px 1px rgba(0,0,0,0.3), inset 0px 1px 1px rgba(0,0,0,0.5);
+  border-radius: 3px;
+}
+.button_div:active {
+  background-color: rgba(0,0,0,0.1);
 }
 
 .link_white {
