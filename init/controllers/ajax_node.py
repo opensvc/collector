@@ -849,12 +849,10 @@ def ajax_node():
             _class='cloud',
           ),
           SCRIPT(
-            "var nodes='%(node)s';function n%(rid)s_load_sysreport(){$('#%(id)s').load('/init/static/views/sysreport.html')}"%dict(
+            "var nodes='%(node)s';function n%(rid)s_load_sysreport(){sysrep('%(id)s', '%(node)s')}"%dict(
                id='tab17_'+str(rowid),
                rid=str(rowid),
                node=request.vars.node,
-               url=URL(r=request, c='ajax_sysreport', f='ajax_sysreport',
-                       args=[request.vars.node])
             ),
             "function n%(rid)s_load_node_log(){sync_ajax('%(url)s', [], '%(id)s', function(){})}"%dict(
                id='tab16_'+str(rowid),

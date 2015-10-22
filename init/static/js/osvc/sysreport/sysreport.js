@@ -1,44 +1,97 @@
 // SysReport JS Script
 // MD 08062015
 
-function sysrep_onchangebeginenddate(nodes)
+function sysrep_onchangebeginenddate(o)
 {
-  sysrep_timeline(nodes, sysrep_getparam());
-  sysrep_createlink(nodes);
+  o.sysrep_timeline();
+  o.sysrep_createlink();
 }
 
-function sysrep_init()
+function sysrep(divid, nodes)
 {
-  $("#sysrep_filter_begindate").datetimepicker({dateFormat:'yy-mm-dd'});
-  $("#sysrep_filter_enddate").datetimepicker({dateFormat:'yy-mm-dd'});
+    o = {}
+    o.divid = divid
+    o.div = $("#"+divid)
+    o.nodes = nodes
+    o.sysrep_init = function(){
+      return sysrep_init(this)
+    }
+    o.sysrep_timeline = function(){
+      return sysrep_timeline(this)
+    }
+    o.sysrep_getparams = function(){
+      return sysrep_getparams(this)
+    }
+    o.sysrep_createlink = function(){
+      return sysrep_createlink(this)
+    }
+    o.sysrep_onchangebeginenddate = function(){
+      return sysrep_onchangebeginenddate(this)
+    }
+    o.sysrep_admin_secure = function(){
+      return sysrep_admin_secure(this)
+    }
+    o.sysrep_admin_allow = function(){
+      return sysrep_admin_allow(this)
+    }
+    o.sysrep_admin_secure_handle = function(tid, func){
+      return sysrep_admin_secure_handle(this, tid, func)
+    }
+    o.sysrep_admin_allow_handle = function(tid, func){
+      return sysrep_admin_allow_handle(this, tid, func)
+    }
+    o.sysrep_tree_file_detail = function(item){
+      return sysrep_tree_file_detail(this, item)
+    }
+    o.div.load('/init/static/views/sysreport.html', "", function() {o.sysrep_init()})
+    return o
+}
 
-  $("#sysrep_ql_link").on("click", function() { 
-    toggle('sysrep_link_div');$('#sysrep_link').select(); });
+function sysrep_init(o)
+{
+  o.div.i18n();
+  o.sysrep_timeline();
+  o.div.find("#sysrep_filter_begindate").datetimepicker({dateFormat:'yy-mm-dd'});
+  o.div.find("#sysrep_filter_enddate").datetimepicker({dateFormat:'yy-mm-dd'});
 
-  $("#sysrep_ql_filter").on("click", function() { toggle('sysrep_filter'); });
+  o.div.find("#sysrep_ql_link").bind("click", function() { 
+    toggle('sysrep_link_div', o.divid);
+    o.div.find('#sysrep_link').select();
+  });
 
-  $("#sysrep_form_filter").on("submit",function (event) {
+  o.div.find("#sysrep_ql_filter").on("click", function() {
+    toggle('sysrep_filter', o.divid);
+  });
+
+  o.div.find("#sysrep_form_filter").on("submit", function (event) {
     event.preventDefault();
-    sysrep_onchangebeginenddate(nodes); });
+    o.sysrep_onchangebeginenddate();
+  });
 
   if (services_ismemberof("Manager")) // Authorization process
   {
-    $("#sysrep_ql_admin").on("click", function() { toggle('sysrep_administration'); });
-    $("#sysrep_ql_admin").show();
+    o.div.find("#sysrep_ql_admin").on("click", function() {
+      toggle('sysrep_administration', o.divid);
+    });
+    o.div.find("#sysrep_ql_admin").show();
 
-    $("#sysrep_secure_pattern_button").on("click",function () {
-      mul_toggle('sysrep_secure_pattern_button','sysrep_secure_pattern_add'); });
+    o.div.find("#sysrep_secure_pattern_button").on("click", function () {
+      mul_toggle('sysrep_secure_pattern_button','sysrep_secure_pattern_add', o.divid);
+    });
 
-    $("#sysrep_allow_button").on("click",function () {
-      mul_toggle('sysrep_allow_button','sysrep_allow_input'); });
+    o.div.find("#sysrep_allow_button").on("click", function () {
+      mul_toggle('sysrep_allow_button','sysrep_allow_input', o.divid);
+    });
 
-    $("#sysrep_form_allow").on("submit", function (event) {
+    o.div.find("#sysrep_form_allow").on("submit", function (event) {
       event.preventDefault();
-      sysrep_admin_allow_handle('','add') });
+      o.sysrep_admin_allow_handle('','add')
+    });
 
-    $("#sysrep_form_secure").on("submit", function (event) {
+    o.div.find("#sysrep_form_secure").on("submit", function (event) {
       event.preventDefault();
-      sysrep_admin_secure_handle('','add') });
+      o.sysrep_admin_secure_handle('','add')
+    });
 
     // Feed FilterSet
     services_osvcgetrest("G_GETFILTERSET", "", {"meta": "false", "limit": "0"}, function(jd)
@@ -48,7 +101,7 @@ function sysrep_init()
         {
           var option = $('<option />');
           option.attr('value', data[i].fset_name).text(data[i].fset_name);
-          $('#sysreport_allow_filterset').append(option);
+          o.div.find('#sysreport_allow_filterset').append(option);
         }
       });
     // Feed Groups
@@ -61,29 +114,29 @@ function sysrep_init()
           {
             var option = $('<option />');
             option.attr('value', data[i].role).text(data[i].role);
-            $('#sysreport_allow_groups').append(option);
+            o.div.find('#sysreport_allow_groups').append(option);
           }
         }
       });
 
     // Show section
-    sysrep_admin_allow();
-    sysrep_admin_secure();
+    o.sysrep_admin_allow();
+    o.sysrep_admin_secure();
   }
 }
 
-function sysrep_getparam()
+function sysrep_getparams(o)
 {
   var data = {};
-  fval = $("#sysrep_filter_value").val();
+  fval = o.div.find("#sysrep_filter_value").val();
   if (fval != "") {
     data["path"] = fval;
   }
-  fval = $("#sysrep_filter_begindate").val();
+  fval = o.div.find("#sysrep_filter_begindate").val();
   if (fval!="") {
     data["begin"] = fval;
   }
-  fval = $("#sysrep_filter_enddate").val();
+  fval = o.div.find("#sysrep_filter_enddate").val();
   if (fval!="") {
     data["end"] = fval;
   }
@@ -95,21 +148,21 @@ function send_link(url)
   window.open(url,'newtab')
 }
 
-function sysrep_createlink(nodes)
+function sysrep_createlink(o)
 {
     url = $(location).attr("origin");
     url += services_getaccessurl("S_SYSREPVIEW");
     url += "?nodes=";
-    url += nodes;
-    var sparam = sysrep_getparam();
+    url += o.nodes;
+    var sparam = o.sysrep_getparams();
     if (Object.keys(sparam).length > 0) {
         for (key in sparam) {
             url += "&" + encodeURIComponent(key) + "=" + encodeURIComponent(sparam[key]);
         }
     }
 
-    $("#sysrep_link").empty().html(url);
-    $("#sysrep_link").autogrow({vertical: true, horizontal: true});
+    o.div.find("#sysrep_link").empty().html(url);
+    o.div.find("#sysrep_link").autogrow({vertical: true, horizontal: true});
 }
 
 function sysrep_define_maxchanges(res)
@@ -124,44 +177,43 @@ function sysrep_define_maxchanges(res)
   return max;
 }
 
-function sysrep_timeline(nodes, param)
+function sysrep_timeline(o)
 {
-    $("#sysrep_timeline_title").html(i18n.t("sysrep.timeline_title", {"node":nodes}));
-    sysrep_createlink(nodes);
+    o.div.find("#sysrep_timeline_title").html(i18n.t("sysrep.timeline_title", {"node": o.nodes}));
+    o.sysrep_createlink();
 
-    $("#spinner").show();
+    o.div.find("#spinner").show();
     
-    services_osvcgetrest("R_GETNODESSYS", [nodes], param, function(jd) 
+    services_osvcgetrest("R_GETNODESSYS", [o.nodes], o.sysrep_getparams(), function(jd) 
     {
-    $("#sysrep_timeline_graph").empty();
     // DOM element where the Timeline will be attached
-    var container = document.getElementById('sysrep_timeline_graph');
-    while (container.hasChildNodes()) {
-      container.removeChild(container.firstChild);
-    }
+    var container = o.div.find("#sysrep_timeline_graph");
+    container.empty();
+    container = container[0]
+
     var data = jd.data;
     // Handle max lines
     var max_fpath = 5;
-    for (i=0;i<jd.data.length;i++)
+    for (i=0; i<jd.data.length; i++)
     {
       if (jd.data[i].stat.length > max_fpath)
       {
-        var lastline = (data[i].stat.length-max_fpath);
-        data[i].stat = data[i].stat.slice(0,max_fpath);
+        var lastline = data[i].stat.length - max_fpath;
+        data[i].stat = data[i].stat.slice(0, max_fpath);
         data[i].stat.push("... " + lastline + " more.");
       }
       data[i].stat[0] += '\n';
-      for(j=1;j<data[i].stat.length;j++)
+      for(j=1; j<data[i].stat.length; j++)
       {
         data[i].stat[0] += data[i].stat[j] + "\n";
       }
-      data[i].stat = data[i].stat.slice(0,1);
+      data[i].stat = data[i].stat.slice(0, 1);
     }
 
     // Configuration for the Timeline
     var options = {
-            template: function (item) {
-            return '<pre style="text-align:left">' + item.stat + '</pre>';
+        template: function (item) {
+          return '<pre style="text-align:left">' + item.stat + '</pre>';
         },
         //zoomKey: "metaKey",
         zoomable: false,
@@ -183,13 +235,15 @@ function sysrep_timeline(nodes, param)
     if (groupids.length == 1) {
         groups = null
         }
-    var timeline = new vis.Timeline(container, data, groups, options);
+    o.timeline = new vis.Timeline(container, data, groups, options);
 
-    $("#spinner").hide();
+    o.div.find("#spinner").hide();
 
-    if (!$("#sysrep_timeline_graph").is(':visible')) toggle("sysrep_timeline_graph");
+    if (!o.div.find("#sysrep_timeline_graph").is(':visible')) {
+       toggle("sysrep_timeline_graph", o.divid);
+    }
 
-    timeline.on('select', function (properties) 
+    o.timeline.on('select', function (properties) 
     {
       var item_id = properties.items[0]
       var item = null;
@@ -202,17 +256,17 @@ function sysrep_timeline(nodes, param)
       }
 
       params = {};
-      var filter_value = $("#sysrep_filter_value").val();
+      var filter_value = o.div.find("#sysrep_filter_value").val();
       if (filter_value != "" && filter_value != undefined)
         params["path"] = filter_value;
       // List tree Diff
       services_osvcgetrest("R_GETNODESSYSCID", [item.group,item.cid], params, function(jd) {
         // Link to tree file
         var result = jd.data;
-        $("#sysrep_tree_diff_detail").empty();
-        $("#sysrep_tree_diff_title").html(i18n.t("sysrep.timeline_tree_diff_title", {"node":nodes}));
-        $("#sysrep_tree_diff_date").html(result.date);
-        $("#sysrep_tree_date").html(result.date);
+        o.div.find("#sysrep_tree_diff_detail").empty();
+        o.div.find("#sysrep_tree_diff_title").html(i18n.t("sysrep.timeline_tree_diff_title", {"node": o.nodes}));
+        o.div.find("#sysrep_tree_diff_date").html(result.date);
+        o.div.find("#sysrep_tree_date").html(result.date);
         i=0;
         var maximum = sysrep_define_maxchanges(result);
         var stat_width = 30;
@@ -235,172 +289,172 @@ function sysrep_timeline(nodes, param)
             var stat = "<pre>"+total + " ";
             for (j=0;j<_inse;j++) stat += "+";
             for (j=0;j<_dele;j++) stat += "-";
-          var value="<h2 class='"+highlight_cl+"'" +
+          var value="<h2 class='clickable "+highlight_cl+"'" +
           " onclick=\"toggle('idc"+i+"');\">"+d+stat+
           "</h2>"+
           "<pre id='idc" + i + "' class='diff hljs' style='display:none'>"+result.blocks[d].diff+"</pre>";
-          $("#sysrep_tree_diff_detail").append(value);
-          $("#idc" + i).each(function(i, block){
+          o.div.find("#sysrep_tree_diff_detail").append(value);
+          o.div.find("#idc" + i).each(function(i, block){
              hljs.highlightBlock(block);
            });
           i = i+1;
         }
-        if (!$("#sysrep_tree_diff").is(':visible')) toggle("sysrep_tree_diff");
+        if (!o.div.find("#sysrep_tree_diff").is(':visible')) toggle("sysrep_tree_diff");
       });
       
       // List Tree File/Cmd
       services_osvcgetrest("R_GETNODESSYSCIDTREE", [item.group,item.cid], params, function(jd) {
         // Link to tree file
         var result = jd.data;
-        $("#sysrep_tree_file").empty();
-        $("#sysrep_tree_title").html(i18n.t("sysrep.timeline_tree_file_title"));
+        o.div.find("#sysrep_tree_file").empty();
+        o.div.find("#sysrep_tree_title").html(i18n.t("sysrep.timeline_tree_file_title"));
         for (i=0;i<result.length;i++)
         {
-          if (result[i].secure) {
-            var cl = "highlight";
-          } else {
-            var cl = "";
-          }
           if (result[i].content_type == "command")
-            cl += " action16";
+            cl = "action16";
           else 
-            cl += " log16";
-          var value="<h2 class='"+cl+ "'" +
-          " _oid='"+ result[i].oid +"' " +
-          " _cid='"+ result[i].cid +"' " +
-          " onclick=\"sysrep_tree_file_detail(this,'" + nodes + "')\">"+
-          result[i].fpath+
-          "</h2>"+
-          "<pre id='" + result[i].oid + "' class='diff hljs' style='display:none'></pre>";
-          $("#sysrep_tree_file").append(value);
+            cl = "log16";
+
+          var e = $("<h2>" + result[i].fpath + "</h2>");
+          e.addClass("clickable");
+          if (result[i].secure) {
+            e.addClass("highlight");
+          }
+          e.addClass(cl);
+          e.attr("_oid", result[i].oid);
+          e.attr("_cid", result[i].cid);
+          e.bind("click", function () {
+            o.sysrep_tree_file_detail($(this));
+          });
+          o.div.find("#sysrep_tree_file").append(e);
+
+          var e = $("<pre></pre>");
+          e.addClass('diff hljs')
+          e.css({"display": "none"})
+          e.attr("id", result[i].oid);
+          o.div.find("#sysrep_tree_file").append(e);
         }
-        if (!$("#sysrep_tree").is(':visible')) toggle("sysrep_tree");
+        if (!o.div.find("#sysrep_tree").is(':visible')) toggle("sysrep_tree");
       });
       }
     )
   });
 }
 
-function sysrep_tree_file_detail(item, node)
+function sysrep_tree_file_detail(o, item)
 {
-  var oid = item.getAttribute("_oid");
-  var cid = item.getAttribute("_cid");
+  var oid = item.attr("_oid");
+  var cid = item.attr("_cid");
 
-  if ($("#"+oid).is(':visible'))
-  {
-    toggle(oid);
-  }
-  else
-  { 
-      services_osvcgetrest("R_GETNODESSYSCIDOID", [node,cid,oid], "", function(jd) {
+  if (o.div.find("#"+oid).is(':visible')) {
+    toggle(oid, o.divid);
+  } else { 
+    services_osvcgetrest("R_GETNODESSYSCIDOID", [o.nodes, cid, oid], "", function(jd) {
       // Link to tree file
       var result = jd.data;
-      $("#"+oid).html(result.content);
-      
-      $("#"+oid).each(function(i, block){
+      o.div.find("#"+oid).html(result.content);
+      o.div.find("#"+oid).each(function(i, block){
                hljs.highlightBlock(block);
              });
-      $("#"+oid).hide();
+      o.div.find("#"+oid).hide();
       toggle(oid);
-      });
+    });
   }
 }
 
-function sysrep_admin_secure()
+function sysrep_admin_secure(o)
 {
-  services_osvcgetrest("R_GETSYSREPSECPAT", "", "", function(jd)
-    {
-      $("#sysrep_secure_list_item").empty();
+  services_osvcgetrest("R_GETSYSREPSECPAT", "", "", function(jd) {
+      o.div.find("#sysrep_secure_list_item").empty();
       var data = jd.data;
-      for (i=0;i<data.length;i++)
+      for (i=0; i<data.length; i++)
       {
-        var value = "<tr id='%1' onclick=\"sysrep_admin_secure_handle('%1','del')\"><td class='button_div'>"+
-        "<span class='del16'>%2</span>" +
-        "</td></tr>";
-        value = value.split("%1").join(data[i].id);
-        value = value.split("%2").join(data[i].pattern);
-        $("#sysrep_secure_list_item").append(value);
+        var e = $("<tr><td class='button_div'><span class='del16'>" +
+                  data[i].pattern +
+                  "</span></td></tr>");
+        var tid = data[i].id
+        e.attr("id", tid)
+        e.bind("click", function() {
+          o.sysrep_admin_secure_handle($(this).attr("id"), 'del')
+        })
+        o.div.find("#sysrep_secure_list_item").append(e);
       }
-    }
-  )  
+  })  
 }
 
-function sysrep_admin_secure_handle(tid, func)
-{
-  if (func=="add")
-  {
-    var value = $("#sysrep_secure_pattern_new").val();
-    services_osvcpostrest("R_POSTSYSREPSECPAT", {"pattern": value}, function(jd) {
-      if (jd.data === undefined)
-      {
-        $("#sysrep_secure_pattern_error").html(jd.info);
-        return
-      }
-      $("#sysrep_secure_pattern_error").empty();
-      sysrep_admin_secure();
-      mul_toggle('sysrep_secure_pattern_add','sysrep_secure_pattern_button');
-    }
-    )
-  }
-  else if (func=="del")
-  {
-    var param = [];
-    param.push(tid);
-    services_osvcdeleterest("R_DELSYSREPSECPAT", param, function(jd)
-        {
-          var result = jd;
-          sysrep_admin_secure();
-        }
-  )  
-  }
-}
-
-function sysrep_admin_allow()
+function sysrep_admin_allow(o)
 {
   services_osvcgetrest("R_GETSYSREPADMINALLOW", "", "", function(jd)
     {
-      $("#sysrep_authorizations_list_item").empty();
+      o.div.find("#sysrep_authorizations_list_item").empty();
       var data = jd.data;
-      for (var i=0;i<data.length;i++)
+      for (var i=0; i<data.length; i++)
       {
         var filter = {
           "pattern" : data[i].pattern,
           "group" : data[i].group_name,
-          "filterset" : data[i].fset_name };
-
-        var value = "<tr id='%1' onclick=\"sysrep_admin_allow_handle('%1','del')\"><td class='button_div'>"+
-        "<span class='del16'> " + i18n.t("sysrep.allow_read_sentence", filter) + "</span>" +
-        "</td></tr>";
-        value = value.split("%1").join(data[i].id);
-        $("#sysrep_authorizations_list_item").append(value);
+          "filterset" : data[i].fset_name
+        };
+        var e = $("<tr><td class='button_div'><span class='del16'>" +
+                  i18n.t("sysrep.allow_read_sentence", filter) +
+                  "</span></td></tr>");
+        var tid = data[i].id
+        e.attr("id", tid)
+        e.bind("click", function() {
+          o.sysrep_admin_allow_handle($(this).attr("id"), 'del')
+        })
+        o.div.find("#sysrep_authorizations_list_item").append(e);
       }
     });
 }
 
-function sysrep_admin_allow_handle(tid, func)
+function sysrep_admin_secure_handle(o, tid, func)
+{
+  if (func=="add") {
+    var value = o.div.find("#sysrep_secure_pattern_new").val();
+    services_osvcpostrest("R_POSTSYSREPSECPAT", {"pattern": value}, function(jd) {
+      if (jd.data === undefined) {
+        o.div.find("#sysrep_secure_pattern_error").html(jd.info);
+        return
+      }
+      o.div.find("#sysrep_secure_pattern_error").empty();
+      o.sysrep_admin_secure();
+      mul_toggle('sysrep_secure_pattern_add','sysrep_secure_pattern_button', o.divid);
+    })
+  } else if (func=="del") {
+    var param = [];
+    param.push(tid);
+    services_osvcdeleterest("R_DELSYSREPSECPAT", param, function(jd) {
+          var result = jd;
+          o.sysrep_admin_secure();
+    })  
+  }
+}
+
+function sysrep_admin_allow_handle(o, tid, func)
 {
   if (func=="add")
   {
-    var meta_pattern = $("#sysreport_allow_pattern").val();
-    var meta_role = $("#sysreport_allow_groups").val();
-    var meta_fset_name = $("#sysreport_allow_filterset").val();
+    var meta_pattern = o.div.find("#sysreport_allow_pattern").val();
+    var meta_role = o.div.find("#sysreport_allow_groups").val();
+    var meta_fset_name = o.div.find("#sysreport_allow_filterset").val();
     var param = "pattern="+meta_pattern+"&group_name="+meta_role+"&fset_name="+meta_fset_name;
     services_osvcpostrest("R_POSTSYSREPADMINALLOW", param, function(jd) {
       if (jd.data === undefined)
       {
         // if info
         if (jd.info !== undefined)
-          $("#sysrep_admin_allow_error").html(jd.info);
+          o.div.find("#sysrep_admin_allow_error").html(jd.info);
         else // if error
         {
           jd = JSON.parse(jd);
-          $("#sysrep_admin_allow_error").html(jd.error);
+          o.div.find("#sysrep_admin_allow_error").html(jd.error);
         }
         return;
       }
-      $("#sysrep_admin_allow_error").empty();
-      sysrep_admin_allow();
-      mul_toggle('sysrep_allow_input','sysrep_allow_button');
+      o.div.find("#sysrep_admin_allow_error").empty();
+      o.sysrep_admin_allow();
+      mul_toggle('sysrep_allow_input','sysrep_allow_button', o.divid);
     }
     )
   }
@@ -411,7 +465,7 @@ function sysrep_admin_allow_handle(tid, func)
     services_osvcdeleterest("R_DELSYSREPADMINALLOW", param, function(jd)
         {
           var result = jd;
-          sysrep_admin_allow();
+         o.sysrep_admin_allow();
         }
   )  
   }
