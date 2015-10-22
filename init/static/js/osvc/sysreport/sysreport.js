@@ -102,15 +102,12 @@ function sysrep_createlink(nodes)
     url += "?nodes=";
     url += nodes;
     var sparam = sysrep_getparam();
-    if (sparam != "") url += "&" + sparam;
-    /*
-    cid = $(item).parent().parent().find("[name=cid]").text();
-    nodename = $(item).parent().parent().find("[name=nodename]").text();
-    if (cid != "") {
-      url += "&cid="+cid;
-      url += "&nodename="+nodename;
+    if (Object.keys(sparam).length > 0) {
+        for (key in sparam) {
+            url += "&" + encodeURIComponent(key) + "=" + encodeURIComponent(sparam[key]);
+        }
     }
-    */
+
     $("#sysrep_link").empty().html(url);
     $("#sysrep_link").autogrow({vertical: true, horizontal: true});
 }
