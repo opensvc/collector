@@ -57,20 +57,24 @@ function services_osvcpost(service, data, callback)
     })
 }
 
-function services_osvcgetrest(service, uri, param, callback)
+function services_osvcgetrest(service, uri, params, callback)
 {
     url = services_getaccessurl(service)
-    if (is_blank(url))
-    {
+    if (is_blank(url)) {
         console.log(service + " uri undefined")
         return
     }
-    for(i=0;i<uri.length;i++)
-        url = url.replace("%"+(i+1),uri[i])
-    
-    if (param!="") url +="?"+param;
-
-    var req = $.getJSON(url,callback)
+    for(i=0;i<uri.length;i++) {
+        url = url.replace("%"+(i+1), uri[i])
+    }
+    if (Object.keys(params).length > 0) {
+        url += "?"
+        for (key in params) {
+            url += encodeURIComponent(key) + "=" + encodeURIComponent(params[key]) + "&";
+        }
+        url = url.replace(/&$/, "");
+    }
+    var req = $.getJSON(url, callback)
 }
 
 function services_osvcpostrest(service, param, callback)

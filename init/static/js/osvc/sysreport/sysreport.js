@@ -3,7 +3,7 @@
 
 function sysrep_onchangebeginenddate(nodes)
 {
-  sysrep_timeline(nodes,sysrep_getparam());
+  sysrep_timeline(nodes, sysrep_getparam());
   sysrep_createlink(nodes);
 }
 
@@ -41,7 +41,7 @@ function sysrep_init()
       sysrep_admin_secure_handle('','add') });
 
     // Feed FilterSet
-    services_osvcgetrest("G_GETFILTERSET","","",function(jd)
+    services_osvcgetrest("G_GETFILTERSET", "", "", function(jd)
       {
         var data = jd.data;
         for (var i=0;i<data.length;i++)
@@ -52,7 +52,7 @@ function sysrep_init()
         }
       });
     // Feed Groups
-    services_osvcgetrest("G_GETUSERSGROUPS",[_self.id],"",function(jd)
+    services_osvcgetrest("G_GETUSERSGROUPS", [], {"meta": "false", "limit": "0", "query": "not role starts with user_ and privilege=F"}, function(jd)
       {
         var data = jd.data;
         for (var i=0;i<data.length;i++)
@@ -74,20 +74,20 @@ function sysrep_init()
 
 function sysrep_getparam()
 {
-  var url ="";
+  var data = {};
   fval = $("#sysrep_filter_value").val();
-  if (fval!="") {
-    url += "&path="+fval;
+  if (fval != "") {
+    data["path"] = fval;
   }
   fval = $("#sysrep_filter_begindate").val();
   if (fval!="") {
-    url += "&begin="+fval;
+    data["begin"] = fval;
   }
   fval = $("#sysrep_filter_enddate").val();
   if (fval!="") {
-    url += "&end="+fval;
+    data["end"] = fval;
   }
-  return url.substring(1,url.length);  
+  return data;
 }
 
 function send_link(url)
@@ -134,7 +134,7 @@ function sysrep_timeline(nodes, param)
 
     $("#spinner").show();
     
-    services_osvcgetrest("R_GETNODESSYS",[nodes],param, function(jd) 
+    services_osvcgetrest("R_GETNODESSYS", [nodes], param, function(jd) 
     {
     $("#sysrep_timeline_graph").empty();
     // DOM element where the Timeline will be attached
@@ -204,12 +204,12 @@ function sysrep_timeline(nodes, param)
         }
       }
 
-      path = "";
+      params = {};
       var filter_value = $("#sysrep_filter_value").val();
       if (filter_value != "" && filter_value != undefined)
-        path = "path=" + filter_value;
+        params["path"] = filter_value;
       // List tree Diff
-      services_osvcgetrest("R_GETNODESSYSCID",[item.group,item.cid],path,function(jd) {
+      services_osvcgetrest("R_GETNODESSYSCID", [item.group,item.cid], params, function(jd) {
         // Link to tree file
         var result = jd.data;
         $("#sysrep_tree_diff_detail").empty();
@@ -252,7 +252,7 @@ function sysrep_timeline(nodes, param)
       });
       
       // List Tree File/Cmd
-      services_osvcgetrest("R_GETNODESSYSCIDTREE",[item.group,item.cid],"",function(jd) {
+      services_osvcgetrest("R_GETNODESSYSCIDTREE", [item.group,item.cid], params, function(jd) {
         // Link to tree file
         var result = jd.data;
         $("#sysrep_tree_file").empty();
@@ -295,7 +295,7 @@ function sysrep_tree_file_detail(item, node)
   }
   else
   { 
-      services_osvcgetrest("R_GETNODESSYSCIDOID",[node,cid,oid],"",function(jd) {
+      services_osvcgetrest("R_GETNODESSYSCIDOID", [node,cid,oid], "", function(jd) {
       // Link to tree file
       var result = jd.data;
       $("#"+oid).html(result.content);
@@ -311,7 +311,7 @@ function sysrep_tree_file_detail(item, node)
 
 function sysrep_admin_secure()
 {
-  services_osvcgetrest("R_GETSYSREPSECPAT","","",function(jd)
+  services_osvcgetrest("R_GETSYSREPSECPAT", "", "", function(jd)
     {
       $("#sysrep_secure_list_item").empty();
       var data = jd.data;
@@ -333,7 +333,7 @@ function sysrep_admin_secure_handle(tid, func)
   if (func=="add")
   {
     var value = $("#sysrep_secure_pattern_new").val();
-    services_osvcpostrest("R_POSTSYSREPSECPAT","pattern="+value,function(jd) {
+    services_osvcpostrest("R_POSTSYSREPSECPAT", {"pattern": value}, function(jd) {
       if (jd.data === undefined)
       {
         $("#sysrep_secure_pattern_error").html(jd.info);
@@ -349,7 +349,7 @@ function sysrep_admin_secure_handle(tid, func)
   {
     var param = [];
     param.push(tid);
-    services_osvcdeleterest("R_DELSYSREPSECPAT",param,function(jd)
+    services_osvcdeleterest("R_DELSYSREPSECPAT", param, function(jd)
         {
           var result = jd;
           sysrep_admin_secure();
@@ -360,7 +360,7 @@ function sysrep_admin_secure_handle(tid, func)
 
 function sysrep_admin_allow()
 {
-  services_osvcgetrest("R_GETSYSREPADMINALLOW","","",function(jd)
+  services_osvcgetrest("R_GETSYSREPADMINALLOW", "", "", function(jd)
     {
       $("#sysrep_authorizations_list_item").empty();
       var data = jd.data;
@@ -388,7 +388,7 @@ function sysrep_admin_allow_handle(tid, func)
     var meta_role = $("#sysreport_allow_groups").val();
     var meta_fset_name = $("#sysreport_allow_filterset").val();
     var param = "pattern="+meta_pattern+"&group_name="+meta_role+"&fset_name="+meta_fset_name;
-    services_osvcpostrest("R_POSTSYSREPADMINALLOW",param,function(jd) {
+    services_osvcpostrest("R_POSTSYSREPADMINALLOW", param, function(jd) {
       if (jd.data === undefined)
       {
         // if info
@@ -411,7 +411,7 @@ function sysrep_admin_allow_handle(tid, func)
   {
     var param = [];
     param.push(tid);
-    services_osvcdeleterest("R_DELSYSREPADMINALLOW",param,function(jd)
+    services_osvcdeleterest("R_DELSYSREPADMINALLOW", param, function(jd)
         {
           var result = jd;
           sysrep_admin_allow();
