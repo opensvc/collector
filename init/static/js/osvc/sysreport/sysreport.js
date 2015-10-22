@@ -166,7 +166,9 @@ function sysrep_timeline(nodes, param)
             template: function (item) {
             return '<pre style="text-align:left">' + item.stat + '</pre>';
         },
-        clickToUse: true
+        //zoomKey: "metaKey",
+        zoomable: false,
+        clickToUse: false
     };
 
     // Create a Timeline
@@ -330,7 +332,7 @@ function sysrep_admin_secure_handle(tid, func)
 {
   if (func=="add")
   {
-    var value = $("#sysrep_secure_patern_new").val();
+    var value = $("#sysrep_secure_pattern_new").val();
     services_osvcpostrest("R_POSTSYSREPSECPAT","pattern="+value,function(jd) {
       if (jd.data === undefined)
       {

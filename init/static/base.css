@@ -1,5 +1,9 @@
 @charset "UTF-8";
 
+form *:focus {
+  border: 1px dotted;
+}
+
 .asset_tab {
   display: inline-table;
 }
@@ -2844,6 +2848,7 @@ textarea.link_ta_sub {
   background-color: rgba(0,0,0,0.02);
   box-shadow: inset 0px -1px 1px rgba(0,0,0,0.3), inset 0px 1px 1px rgba(0,0,0,0.5);
   border-radius: 3px;
+  border-color: rgba(0,0,0,0);
 }
 .button_div:active {
   background-color: rgba(0,0,0,0.1);
