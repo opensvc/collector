@@ -369,7 +369,6 @@ function sysreport_timeline_on_select(o, item)
       services_osvcgetrest("R_GETNODESSYSCID", [item.group, item.cid], params, function(jd) {
         // Link to tree file
         var result = jd.data;
-        o.tree_diff_title.html(i18n.t("sysrep.timeline_tree_diff_title", {"node": o.nodes}));
         o.tree_diff_date.html(result.date);
         o.tree_date.html(result.date);
         i=0;

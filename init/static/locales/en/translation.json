@@ -21,7 +21,7 @@
       "submit_button" : "Submit"
     },
     "timeline_title" : "Node __node__ changes timeline",
-    "timeline_tree_diff_title" : "Node __node__ changes",
+    "timeline_tree_diff_title" : "Changes",
     "timeline_tree_file_title" : "Files"
   }
 }
