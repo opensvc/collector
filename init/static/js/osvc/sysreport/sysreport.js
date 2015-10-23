@@ -443,6 +443,8 @@ function sysrep_timeline_data(o, jd)
       o.sysreport_timeline_on_select(item)
     });
 
+    // if a cid is selected, simulate a click on the cid box to
+    // display diff and file tree for the commit
     if (o.cid) {
       for (i=0; i<data.length; i++) {
         if (data[i]['cid'] == o.cid) {
@@ -459,8 +461,11 @@ function sysreport_timeline_on_select(o, item)
       o.tree_diff_detail.empty();
       o.tree_file.empty();
       o.time_diff.hide();
+      o.tree_diff.hide();
+      o.tree.hide();
 
       if (!item) {
+        o.sysrep_timediff();
         return;
       }
 
