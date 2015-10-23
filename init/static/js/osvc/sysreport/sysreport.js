@@ -27,8 +27,14 @@ function sysrep(divid, nodes, path, begin, end, cid)
     o.sysrep_timeline = function(){
       return sysrep_timeline(this)
     }
+    o.sysrep_timediff = function(){
+      return sysrep_timediff(this)
+    }
     o.sysrep_timeline_data = function(jd){
       return sysrep_timeline_data(this, jd)
+    }
+    o.sysrep_timediff_data = function(jd){
+      return sysrep_timediff_data(this, jd)
     }
     o.sysrep_getparams = function(){
       return sysrep_getparams(this)
@@ -101,6 +107,9 @@ function sysrep_init(o)
     o.tree_file = o.div.find("#sysrep_tree_file")
     o.tree_title = o.div.find("#sysrep_tree_title")
     o.tree = o.div.find("#sysrep_tree")
+    o.time_diff = o.div.find("#sysrep_time_diff")
+    o.time_diff_title = o.div.find("#sysrep_time_diff_title")
+    o.time_diff_detail = o.div.find("#sysrep_time_diff_detail")
 
   o.div.i18n();
   o.filter_begin.datetimepicker({dateFormat:'yy-mm-dd'});
@@ -138,6 +147,7 @@ function sysrep_init(o)
   }
 
   o.sysrep_timeline();
+  o.sysrep_timediff();
 
   services_ismemberof("Manager", function() {
     // Authorization process
@@ -243,12 +253,58 @@ function sysrep_define_maxchanges(res)
   var max = 0;
   for (var d in res.stat)
   {
-    var z=res.stat[d];
+    var z = res.stat[d];
     var tot = z[0] + z[1];
-    if (tot > max) max=tot;
+    if (tot > max) {
+      max = tot;
+    }
   }
   return max;
 }
+
+function sysrep_timediff(o)
+{
+  var params = o.sysrep_getparams()
+  if (("cid" in params) || (!("begin" in params) && !("end" in params))) {
+    o.time_diff.hide();
+    return;
+  }
+  o.time_diff_detail.empty();
+  o.time_diff_title.html(i18n.t("sysrep.timeline_time_diff_title", params));
+  services_osvcgetrest("R_GETNODESSYSREPTIMEDIFF", [o.nodes], params, function(jd) {
+    o.sysrep_timediff_data(jd);
+  });
+}
+
+function sysrep_timediff_data(o, jd)
+{
+    var result = jd.data;
+
+        i=0;
+        var stat_width = 30;
+        for (var d in result.blocks)
+        {
+          var diff ="";
+          if (result.blocks[d].secure) {
+            var highlight_cl = "highlight";
+          } else {
+            var highlight_cl = "";
+          }
+          var value="<h2 class='clickable "+highlight_cl+"'" +
+          " onclick=\"toggle('idc"+i+"');\">"+d+
+          "</h2>"+
+          "<pre id='idc" + i + "' class='diff hljs' style='display:none'>"+result.blocks[d].diff+"</pre>";
+          o.time_diff_detail.append(value);
+          o.time_diff_detail.find("#idc" + i).each(function(i, block){
+             hljs.highlightBlock(block);
+           });
+          i = i+1;
+        }
+        if (!o.time_diff.is(':visible')) {
+          o.time_diff.slideToggle();
+        }
+ }
+
 
 function sysrep_timeline(o)
 {
@@ -359,6 +415,7 @@ function sysreport_timeline_on_select(o, item)
 {
       o.tree_diff_detail.empty();
       o.tree_file.empty();
+      o.time_diff.hide();
 
       params = {};
       var filter_value = o.filter_path.val();
