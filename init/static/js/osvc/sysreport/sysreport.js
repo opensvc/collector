@@ -7,12 +7,16 @@ function sysrep_onchangebeginenddate(o)
   o.sysrep_createlink();
 }
 
-function sysrep(divid, nodes)
+function sysrep(divid, nodes, path, begin, end, cid)
 {
     o = {}
     o.divid = divid
     o.div = $("#"+divid)
     o.nodes = nodes
+    o.begin = begin
+    o.end = end
+    o.path = path
+    o.cid = cid
     o.sysrep_init = function(){
       return sysrep_init(this)
     }
@@ -43,6 +47,9 @@ function sysrep(divid, nodes)
     o.sysrep_tree_file_detail = function(item){
       return sysrep_tree_file_detail(this, item)
     }
+    o.sysreport_timeline_on_select = function(item){
+      return sysreport_timeline_on_select(this, item)
+    }
     o.div.load('/init/static/views/sysreport.html', "", function() {o.sysrep_init()})
     return o
 }
@@ -50,7 +57,6 @@ function sysrep(divid, nodes)
 function sysrep_init(o)
 {
   o.div.i18n();
-  o.sysrep_timeline();
   o.div.find("#sysrep_filter_begindate").datetimepicker({dateFormat:'yy-mm-dd'});
   o.div.find("#sysrep_filter_enddate").datetimepicker({dateFormat:'yy-mm-dd'});
 
@@ -67,6 +73,22 @@ function sysrep_init(o)
     event.preventDefault();
     o.sysrep_onchangebeginenddate();
   });
+
+  // apply initial filters as default values
+  if (o.begin) {
+    o.div.find("#sysrep_filter_begindate").val(o.begin)
+  }
+  if (o.end) {
+    o.div.find("#sysrep_filter_enddate").val(o.end)
+  }
+  if (o.path) {
+    o.div.find("#sysrep_filter_value").val(o.path)
+  }
+  if ((o.begin) || (o.end) || (o.path)) {
+    toggle("sysrep_filter", o.divid)
+  }
+
+  o.sysrep_timeline();
 
   if (services_ismemberof("Manager")) // Authorization process
   {
@@ -140,6 +162,9 @@ function sysrep_getparams(o)
   if (fval!="") {
     data["end"] = fval;
   }
+  if (o.cid) {
+    data["cid"] = o.cid;
+  }
   return data;
 }
 
@@ -179,13 +204,16 @@ function sysrep_define_maxchanges(res)
 
 function sysrep_timeline(o)
 {
-    o.div.find("#sysrep_timeline_title").html(i18n.t("sysrep.timeline_title", {"node": o.nodes}));
-    o.sysrep_createlink();
+  o.div.find("#sysrep_timeline_title").html(i18n.t("sysrep.timeline_title", {"node": o.nodes}));
+  o.sysrep_createlink();
 
-    o.div.find("#spinner").show();
-    
-    services_osvcgetrest("R_GETNODESSYS", [o.nodes], o.sysrep_getparams(), function(jd) 
-    {
+  o.div.find("#spinner").show();
+
+  var params = o.sysrep_getparams()
+  if ("cid" in params) {
+    delete params.cid
+  }
+  services_osvcgetrest("R_GETNODESSYS", [o.nodes], params, function(jd) {
     // DOM element where the Timeline will be attached
     var container = o.div.find("#sysrep_timeline_graph");
     container.empty();
@@ -243,8 +271,7 @@ function sysrep_timeline(o)
        toggle("sysrep_timeline_graph", o.divid);
     }
 
-    o.timeline.on('select', function (properties) 
-    {
+    o.timeline.on('select', function (properties) {
       var item_id = properties.items[0]
       var item = null;
       for (i=0; i<data.length; i++) 
@@ -255,12 +282,33 @@ function sysrep_timeline(o)
         }
       }
 
+      // remember the click for link generation
+      o.cid = item.cid
+      o.sysrep_createlink();
+
+      o.sysreport_timeline_on_select(item)
+    });
+
+    if (o.cid) {
+      for (i=0; i<data.length; i++) {
+        if (data[i]['cid'] == o.cid) {
+          o.timeline.setSelection(data[i]['id'])
+          o.sysreport_timeline_on_select(data[i])
+          break
+        }
+      }
+    }
+  })
+}
+
+function sysreport_timeline_on_select(o, item)
+{
       params = {};
       var filter_value = o.div.find("#sysrep_filter_value").val();
       if (filter_value != "" && filter_value != undefined)
         params["path"] = filter_value;
       // List tree Diff
-      services_osvcgetrest("R_GETNODESSYSCID", [item.group,item.cid], params, function(jd) {
+      services_osvcgetrest("R_GETNODESSYSCID", [item.group, item.cid], params, function(jd) {
         // Link to tree file
         var result = jd.data;
         o.div.find("#sysrep_tree_diff_detail").empty();
@@ -336,9 +384,6 @@ function sysrep_timeline(o)
         }
         if (!o.div.find("#sysrep_tree").is(':visible')) toggle("sysrep_tree");
       });
-      }
-    )
-  });
 }
 
 function sysrep_tree_file_detail(o, item)

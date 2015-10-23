@@ -167,13 +167,15 @@ def sysrep():
 
 @auth.requires_login()
 def ajax_sysrep():
-    nodes = request.vars.nodes.split(",")
-    path = request.vars.path
-    begin = request.vars.begin
-    end = request.vars.end
+    nodes = request.vars.nodes
+    path = request.vars.path if request.vars.path else ""
+    begin = request.vars.begin if request.vars.begin else ""
+    end = request.vars.end if request.vars.end else ""
+    cid = request.vars.cid if request.vars.cid else ""
     d = DIV(
-      _sysreport(nodes, path=path, begin=begin, end=end),
-      SCRIPT("""$(".diff").each(function(i, block){hljs.highlightBlock(block);})"""),
+      SCRIPT("""sysrep("sysreport_simple", "%(nodes)s", "%(path)s", "%(begin)s", "%(end)s", "%(cid)s") """ %
+                dict(nodes=nodes, path=path, begin=begin, end=end, cid=cid)),
+      _id="sysreport_simple",
     )
     return d
 
