@@ -116,6 +116,10 @@ function sysrep_init(o)
     o.sysrep_onchangebeginenddate();
   });
 
+  o.link.bind("click", function() {
+    send_link($(this).val())
+  })
+
   // apply initial filters as default values
   if (o.begin) {
     o.filter_begin.val(o.begin)
@@ -211,7 +215,7 @@ function sysrep_getparams(o)
 
 function send_link(url)
 {
-  window.open(url,'newtab')
+  window.open(url,'_blank')
 }
 
 function sysrep_createlink(o)
