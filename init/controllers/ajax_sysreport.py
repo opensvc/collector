@@ -47,41 +47,6 @@ def show_diff_data(nodenames, diff_data, sysresponsible, sec_pattern):
         l.append(block)
     return l
 
-def _sysreport_range_diff(nodenames, path=None, begin=None, end=None):
-    d = []
-    for nodename in nodenames:
-        d += __sysreport_range_diff(nodename, path=path, begin=begin, end=end)
-    return DIV(d)
-
-def __sysreport_range_diff(nodename, path=None, begin=None, end=None):
-    sysresponsible = is_sysresponsible(nodename)
-    l = []
-
-    # load secure patterns
-    sec_pattern = get_pattern_secure()
-
-    # diff data
-    try:
-        diff_data = sysreport.sysreport().show_data(None, nodename,
-                                                path=encode_fpath(path),
-                                                begin=begin,
-                                                end=end
-                                               )
-    except Exception as e:
-        return str(e)
-
-    dd = show_diff_data([nodename], diff_data, sysresponsible, sec_pattern)
-    if len(dd):
-        l += dd
-    else:
-        l += SPAN(T("No changes"))
-
-    return DIV(
-      #SPAN(request.vars.nodename, _name="nodename", _class="hidden"),
-      H2(T("Node %(nodename)s changes between %(begin)s and %(end)s", dict(nodename=nodename, begin=begin, end=end))),
-      DIV(l, _name="diff"),
-    )
-
 def sysrep():
     d = DIV(
       _sysrep(),
