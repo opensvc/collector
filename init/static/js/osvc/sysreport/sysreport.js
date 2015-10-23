@@ -348,15 +348,18 @@ function sysrep_timeline(o)
 
 function sysreport_timeline_on_select(o, item)
 {
+      o.tree_diff_detail.empty();
+      o.tree_file.empty();
+
       params = {};
       var filter_value = o.filter_path.val();
-      if (filter_value != "" && filter_value != undefined)
+      if (filter_value != "" && filter_value != undefined) {
         params["path"] = filter_value;
+      }
       // List tree Diff
       services_osvcgetrest("R_GETNODESSYSCID", [item.group, item.cid], params, function(jd) {
         // Link to tree file
         var result = jd.data;
-        o.tree_diff_detail.empty();
         o.tree_diff_title.html(i18n.t("sysrep.timeline_tree_diff_title", {"node": o.nodes}));
         o.tree_diff_date.html(result.date);
         o.tree_date.html(result.date);
@@ -401,7 +404,6 @@ function sysreport_timeline_on_select(o, item)
       services_osvcgetrest("R_GETNODESSYSCIDTREE", [item.group,item.cid], params, function(jd) {
         // Link to tree file
         var result = jd.data;
-        o.tree_file.empty();
         o.tree_title.html(i18n.t("sysrep.timeline_tree_file_title"));
         for (i=0;i<result.length;i++)
         {
