@@ -3,20 +3,24 @@
 
 function sysrep_onchangebeginenddate(o)
 {
-  o.sysrep_timeline();
-  o.sysrep_createlink();
+    o.sysrep_timeline();
+    o.sysrep_createlink();
 }
 
 function sysrep(divid, nodes, path, begin, end, cid)
 {
     o = {}
+
+    // store parameters
     o.divid = divid
-    o.div = $("#"+divid)
     o.nodes = nodes
     o.begin = begin
     o.end = end
     o.path = path
     o.cid = cid
+
+    o.div = $("#"+divid)
+
     o.sysrep_init = function(){
       return sysrep_init(this)
     }
@@ -56,33 +60,66 @@ function sysrep(divid, nodes, path, begin, end, cid)
 
 function sysrep_init(o)
 {
-  o.div.i18n();
-  o.div.find("#sysrep_filter_begindate").datetimepicker({dateFormat:'yy-mm-dd'});
-  o.div.find("#sysrep_filter_enddate").datetimepicker({dateFormat:'yy-mm-dd'});
+    // initialize useful object refs to avoid DOM lookups
+    o.spinner = $("#spinner")
+    o.filter_begin = o.div.find("#sysrep_filter_begindate")
+    o.filter_end = o.div.find("#sysrep_filter_enddate")
+    o.filter_path = o.div.find("#sysrep_filter_value")
+    o.link = o.div.find("#sysrep_link")
+    o.ql_link = o.div.find("#sysrep_ql_link")
+    o.ql_filter = o.div.find("#sysrep_ql_filter")
+    o.ql_admin = o.div.find("#sysrep_ql_admin")
+    o.form_filter = o.div.find("#sysrep_form_filter")
+    o.form_allow = o.div.find("#sysrep_form_allow")
+    o.form_secure = o.div.find("#sysrep_form_secure")
+    o.secure_list_item = o.div.find("#sysrep_secure_list_item")
+    o.authorizations_list_item = o.div.find("#sysrep_authorizations_list_item")
+    o.secure_pattern_button = o.div.find("#sysrep_secure_pattern_button")
+    o.secure_pattern_new = o.div.find("#sysrep_secure_pattern_new")
+    o.secure_pattern_error = o.div.find("#sysrep_secure_pattern_error")
+    o.admin_allow_error = o.div.find("#sysrep_admin_allow_error")
+    o.allow_button = o.div.find("#sysrep_allow_button")
+    o.allow_filterset = o.div.find('#sysreport_allow_filterset')
+    o.allow_groups = o.div.find('#sysreport_allow_groups')
+    o.allow_pattern = o.div.find("#sysreport_allow_pattern")
+    o.timeline_title = o.div.find("#sysrep_timeline_title")
+    o.timeline_graph = o.div.find("#sysrep_timeline_graph")
+    o.tree_diff_detail = o.div.find("#sysrep_tree_diff_detail")
+    o.tree_diff_title = o.div.find("#sysrep_tree_diff_title")
+    o.tree_diff_date = o.div.find("#sysrep_tree_diff_date")
+    o.tree_diff = o.div.find("#sysrep_tree_diff")
+    o.tree_date = o.div.find("#sysrep_tree_date")
+    o.tree_file = o.div.find("#sysrep_tree_file")
+    o.tree_title = o.div.find("#sysrep_tree_title")
+    o.tree = o.div.find("#sysrep_tree")
 
-  o.div.find("#sysrep_ql_link").bind("click", function() { 
+  o.div.i18n();
+  o.filter_begin.datetimepicker({dateFormat:'yy-mm-dd'});
+  o.filter_end.datetimepicker({dateFormat:'yy-mm-dd'});
+
+  o.ql_link.bind("click", function() { 
     toggle('sysrep_link_div', o.divid);
-    o.div.find('#sysrep_link').select();
+    o.link.select();
   });
 
-  o.div.find("#sysrep_ql_filter").on("click", function() {
+  o.ql_filter.on("click", function() {
     toggle('sysrep_filter', o.divid);
   });
 
-  o.div.find("#sysrep_form_filter").on("submit", function (event) {
+  o.form_filter.on("submit", function (event) {
     event.preventDefault();
     o.sysrep_onchangebeginenddate();
   });
 
   // apply initial filters as default values
   if (o.begin) {
-    o.div.find("#sysrep_filter_begindate").val(o.begin)
+    o.filter_begin.val(o.begin)
   }
   if (o.end) {
-    o.div.find("#sysrep_filter_enddate").val(o.end)
+    o.filter_end.val(o.end)
   }
   if (o.path) {
-    o.div.find("#sysrep_filter_value").val(o.path)
+    o.filter_path.val(o.path)
   }
   if ((o.begin) || (o.end) || (o.path)) {
     toggle("sysrep_filter", o.divid)
@@ -92,43 +129,42 @@ function sysrep_init(o)
 
   if (services_ismemberof("Manager")) // Authorization process
   {
-    o.div.find("#sysrep_ql_admin").on("click", function() {
+    o.ql_admin.on("click", function() {
       toggle('sysrep_administration', o.divid);
     });
-    o.div.find("#sysrep_ql_admin").show();
+    o.ql_admin.show();
 
-    o.div.find("#sysrep_secure_pattern_button").on("click", function () {
+    o.secure_pattern_button.on("click", function () {
       mul_toggle('sysrep_secure_pattern_button','sysrep_secure_pattern_add', o.divid);
     });
 
-    o.div.find("#sysrep_allow_button").on("click", function () {
+    o.allow_button.on("click", function () {
       mul_toggle('sysrep_allow_button','sysrep_allow_input', o.divid);
     });
 
-    o.div.find("#sysrep_form_allow").on("submit", function (event) {
+    o.form_allow.on("submit", function (event) {
       event.preventDefault();
       o.sysrep_admin_allow_handle('','add')
     });
 
-    o.div.find("#sysrep_form_secure").on("submit", function (event) {
+    o.form_secure.on("submit", function (event) {
       event.preventDefault();
       o.sysrep_admin_secure_handle('','add')
     });
 
     // Feed FilterSet
-    services_osvcgetrest("G_GETFILTERSET", "", {"meta": "false", "limit": "0"}, function(jd)
-      {
+    services_osvcgetrest("G_GETFILTERSET", "", {"meta": "false", "limit": "0"}, function(jd) {
         var data = jd.data;
         for (var i=0;i<data.length;i++)
         {
           var option = $('<option />');
           option.attr('value', data[i].fset_name).text(data[i].fset_name);
-          o.div.find('#sysreport_allow_filterset').append(option);
+          o.allow_filterset.append(option);
         }
-      });
+    });
+
     // Feed Groups
-    services_osvcgetrest("G_GETUSERSGROUPS", [], {"meta": "false", "limit": "0", "query": "not role starts with user_ and privilege=F"}, function(jd)
-      {
+    services_osvcgetrest("G_GETUSERSGROUPS", [], {"meta": "false", "limit": "0", "query": "not role starts with user_ and privilege=F"}, function(jd) {
         var data = jd.data;
         for (var i=0;i<data.length;i++)
         {
@@ -136,10 +172,10 @@ function sysrep_init(o)
           {
             var option = $('<option />');
             option.attr('value', data[i].role).text(data[i].role);
-            o.div.find('#sysreport_allow_groups').append(option);
+            o.allow_groups.append(option);
           }
         }
-      });
+    });
 
     // Show section
     o.sysrep_admin_allow();
@@ -150,15 +186,15 @@ function sysrep_init(o)
 function sysrep_getparams(o)
 {
   var data = {};
-  fval = o.div.find("#sysrep_filter_value").val();
+  fval = o.filter_path.val();
   if (fval != "") {
     data["path"] = fval;
   }
-  fval = o.div.find("#sysrep_filter_begindate").val();
+  fval = o.filter_begin.val();
   if (fval!="") {
     data["begin"] = fval;
   }
-  fval = o.div.find("#sysrep_filter_enddate").val();
+  fval = o.filter_end.val();
   if (fval!="") {
     data["end"] = fval;
   }
@@ -186,8 +222,8 @@ function sysrep_createlink(o)
         }
     }
 
-    o.div.find("#sysrep_link").empty().html(url);
-    o.div.find("#sysrep_link").autogrow({vertical: true, horizontal: true});
+    o.link.empty().html(url);
+    o.link.autogrow({vertical: true, horizontal: true});
 }
 
 function sysrep_define_maxchanges(res)
@@ -204,20 +240,20 @@ function sysrep_define_maxchanges(res)
 
 function sysrep_timeline(o)
 {
-  o.div.find("#sysrep_timeline_title").html(i18n.t("sysrep.timeline_title", {"node": o.nodes}));
+  o.timeline_title.html(i18n.t("sysrep.timeline_title", {"node": o.nodes}));
   o.sysrep_createlink();
 
-  o.div.find("#spinner").show();
+  o.spinner.show();
 
   var params = o.sysrep_getparams()
   if ("cid" in params) {
     delete params.cid
   }
   services_osvcgetrest("R_GETNODESSYS", [o.nodes], params, function(jd) {
+    o.timeline_graph.empty()
+
     // DOM element where the Timeline will be attached
-    var container = o.div.find("#sysrep_timeline_graph");
-    container.empty();
-    container = container[0]
+    var container = o.timeline_graph[0];
 
     var data = jd.data;
     // Handle max lines
@@ -265,9 +301,9 @@ function sysrep_timeline(o)
         }
     o.timeline = new vis.Timeline(container, data, groups, options);
 
-    o.div.find("#spinner").hide();
+    o.spinner.hide();
 
-    if (!o.div.find("#sysrep_timeline_graph").is(':visible')) {
+    if (!o.timeline_graph.is(':visible')) {
        toggle("sysrep_timeline_graph", o.divid);
     }
 
@@ -304,17 +340,17 @@ function sysrep_timeline(o)
 function sysreport_timeline_on_select(o, item)
 {
       params = {};
-      var filter_value = o.div.find("#sysrep_filter_value").val();
+      var filter_value = o.filter_path.val();
       if (filter_value != "" && filter_value != undefined)
         params["path"] = filter_value;
       // List tree Diff
       services_osvcgetrest("R_GETNODESSYSCID", [item.group, item.cid], params, function(jd) {
         // Link to tree file
         var result = jd.data;
-        o.div.find("#sysrep_tree_diff_detail").empty();
-        o.div.find("#sysrep_tree_diff_title").html(i18n.t("sysrep.timeline_tree_diff_title", {"node": o.nodes}));
-        o.div.find("#sysrep_tree_diff_date").html(result.date);
-        o.div.find("#sysrep_tree_date").html(result.date);
+        o.tree_diff_detail.empty();
+        o.tree_diff_title.html(i18n.t("sysrep.timeline_tree_diff_title", {"node": o.nodes}));
+        o.tree_diff_date.html(result.date);
+        o.tree_date.html(result.date);
         i=0;
         var maximum = sysrep_define_maxchanges(result);
         var stat_width = 30;
@@ -341,21 +377,21 @@ function sysreport_timeline_on_select(o, item)
           " onclick=\"toggle('idc"+i+"');\">"+d+stat+
           "</h2>"+
           "<pre id='idc" + i + "' class='diff hljs' style='display:none'>"+result.blocks[d].diff+"</pre>";
-          o.div.find("#sysrep_tree_diff_detail").append(value);
-          o.div.find("#idc" + i).each(function(i, block){
+          o.tree_diff_detail.append(value);
+          o.tree_diff_detail.find("#idc" + i).each(function(i, block){
              hljs.highlightBlock(block);
            });
           i = i+1;
         }
-        if (!o.div.find("#sysrep_tree_diff").is(':visible')) toggle("sysrep_tree_diff");
+        if (!o.tree_diff.is(':visible')) toggle("sysrep_tree_diff");
       });
       
       // List Tree File/Cmd
       services_osvcgetrest("R_GETNODESSYSCIDTREE", [item.group,item.cid], params, function(jd) {
         // Link to tree file
         var result = jd.data;
-        o.div.find("#sysrep_tree_file").empty();
-        o.div.find("#sysrep_tree_title").html(i18n.t("sysrep.timeline_tree_file_title"));
+        o.tree_file.empty();
+        o.tree_title.html(i18n.t("sysrep.timeline_tree_file_title"));
         for (i=0;i<result.length;i++)
         {
           if (result[i].content_type == "command")
@@ -374,15 +410,15 @@ function sysreport_timeline_on_select(o, item)
           e.bind("click", function () {
             o.sysrep_tree_file_detail($(this));
           });
-          o.div.find("#sysrep_tree_file").append(e);
+          o.tree_file.append(e);
 
           var e = $("<pre></pre>");
           e.addClass('diff hljs')
           e.css({"display": "none"})
           e.attr("id", result[i].oid);
-          o.div.find("#sysrep_tree_file").append(e);
+          o.tree_file.append(e);
         }
-        if (!o.div.find("#sysrep_tree").is(':visible')) toggle("sysrep_tree");
+        if (!o.tree.is(':visible')) toggle("sysrep_tree");
       });
 }
 
@@ -391,17 +427,17 @@ function sysrep_tree_file_detail(o, item)
   var oid = item.attr("_oid");
   var cid = item.attr("_cid");
 
-  if (o.div.find("#"+oid).is(':visible')) {
+  if (o.tree.find("#"+oid).is(':visible')) {
     toggle(oid, o.divid);
   } else { 
     services_osvcgetrest("R_GETNODESSYSCIDOID", [o.nodes, cid, oid], "", function(jd) {
       // Link to tree file
       var result = jd.data;
-      o.div.find("#"+oid).html(result.content);
-      o.div.find("#"+oid).each(function(i, block){
+      o.tree.find("#"+oid).html(result.content);
+      o.tree.find("#"+oid).each(function(i, block){
                hljs.highlightBlock(block);
              });
-      o.div.find("#"+oid).hide();
+      o.tree.find("#"+oid).hide();
       toggle(oid);
     });
   }
@@ -410,7 +446,7 @@ function sysrep_tree_file_detail(o, item)
 function sysrep_admin_secure(o)
 {
   services_osvcgetrest("R_GETSYSREPSECPAT", "", "", function(jd) {
-      o.div.find("#sysrep_secure_list_item").empty();
+      o.secure_list_item.empty();
       var data = jd.data;
       for (i=0; i<data.length; i++)
       {
@@ -422,7 +458,7 @@ function sysrep_admin_secure(o)
         e.bind("click", function() {
           o.sysrep_admin_secure_handle($(this).attr("id"), 'del')
         })
-        o.div.find("#sysrep_secure_list_item").append(e);
+        o.secure_list_item.append(e);
       }
   })  
 }
@@ -431,7 +467,7 @@ function sysrep_admin_allow(o)
 {
   services_osvcgetrest("R_GETSYSREPADMINALLOW", "", "", function(jd)
     {
-      o.div.find("#sysrep_authorizations_list_item").empty();
+      o.authorizations_list_item.empty();
       var data = jd.data;
       for (var i=0; i<data.length; i++)
       {
@@ -448,7 +484,7 @@ function sysrep_admin_allow(o)
         e.bind("click", function() {
           o.sysrep_admin_allow_handle($(this).attr("id"), 'del')
         })
-        o.div.find("#sysrep_authorizations_list_item").append(e);
+        o.authorizations_list_item.append(e);
       }
     });
 }
@@ -456,13 +492,13 @@ function sysrep_admin_allow(o)
 function sysrep_admin_secure_handle(o, tid, func)
 {
   if (func=="add") {
-    var value = o.div.find("#sysrep_secure_pattern_new").val();
+    var value = o.secure_pattern_new.val();
     services_osvcpostrest("R_POSTSYSREPSECPAT", {"pattern": value}, function(jd) {
       if (jd.data === undefined) {
-        o.div.find("#sysrep_secure_pattern_error").html(jd.info);
+        o.secure_pattern_error.html(jd.info);
         return
       }
-      o.div.find("#sysrep_secure_pattern_error").empty();
+      o.secure_pattern_error.empty();
       o.sysrep_admin_secure();
       mul_toggle('sysrep_secure_pattern_add','sysrep_secure_pattern_button', o.divid);
     })
@@ -480,24 +516,24 @@ function sysrep_admin_allow_handle(o, tid, func)
 {
   if (func=="add")
   {
-    var meta_pattern = o.div.find("#sysreport_allow_pattern").val();
-    var meta_role = o.div.find("#sysreport_allow_groups").val();
-    var meta_fset_name = o.div.find("#sysreport_allow_filterset").val();
+    var meta_pattern = o.allow_pattern.val();
+    var meta_role = o.allow_groups.val();
+    var meta_fset_name = o.allow_filterset.val();
     var param = "pattern="+meta_pattern+"&group_name="+meta_role+"&fset_name="+meta_fset_name;
     services_osvcpostrest("R_POSTSYSREPADMINALLOW", param, function(jd) {
       if (jd.data === undefined)
       {
         // if info
         if (jd.info !== undefined)
-          o.div.find("#sysrep_admin_allow_error").html(jd.info);
+          o.admin_allow_error.html(jd.info);
         else // if error
         {
           jd = JSON.parse(jd);
-          o.div.find("#sysrep_admin_allow_error").html(jd.error);
+          o.admin_allow_error.html(jd.error);
         }
         return;
       }
-      o.div.find("#sysrep_admin_allow_error").empty();
+      o.admin_allow_error.empty();
       o.sysrep_admin_allow();
       mul_toggle('sysrep_allow_input','sysrep_allow_button', o.divid);
     }
