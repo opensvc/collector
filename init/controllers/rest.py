@@ -164,6 +164,7 @@ handlers = {
      rest_get_safe_file_download(),
      rest_get_safe_file_publications(),
      rest_get_safe_file_responsibles(),
+     rest_get_sysreport_timeline(),
      rest_get_sysreport_nodediff(),
      rest_get_sysreport_secure_patterns(),
      rest_get_sysreport_secure_pattern(),

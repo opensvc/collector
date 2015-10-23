@@ -27,6 +27,9 @@ function sysrep(divid, nodes, path, begin, end, cid)
     o.sysrep_timeline = function(){
       return sysrep_timeline(this)
     }
+    o.sysrep_timeline_data = function(jd){
+      return sysrep_timeline_data(this, jd)
+    }
     o.sysrep_getparams = function(){
       return sysrep_getparams(this)
     }
@@ -258,7 +261,14 @@ function sysrep_timeline(o)
   if ("cid" in params) {
     delete params.cid
   }
-  services_osvcgetrest("R_GETNODESSYS", [o.nodes], params, function(jd) {
+  params["nodes"] = o.nodes
+  services_osvcgetrest("R_GETSYSREP", "", params, function(jd) {
+    o.sysrep_timeline_data(jd);
+  });
+}
+
+function sysrep_timeline_data(o, jd)
+{
     o.timeline_graph.empty()
 
     // DOM element where the Timeline will be attached
@@ -343,7 +353,6 @@ function sysrep_timeline(o)
         }
       }
     }
-  })
 }
 
 function sysreport_timeline_on_select(o, item)

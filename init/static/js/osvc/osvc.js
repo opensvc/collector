@@ -2745,9 +2745,8 @@ function trigger_tool_nodesysrep(tid) {
   for (i=0;i<data.length;i++) {
     nodes.push(data[i]['nodename'])
   }
-  sync_ajax('/init/ajax_sysreport/ajax_sysrep?nodes='+nodes.join(","), [], 'overlay', function(){
-    $("#overlay").width($("#overlay").css("max-width"))
-  })
+  sysrep("overlay", nodes.join(","))
+  $("#overlay").width($("#overlay").css("max-width"))
 }
 
 function trigger_tool_svcdiff(tid) {

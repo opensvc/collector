@@ -13,6 +13,7 @@ var services_access_uri = {
     "S_SYSREPCOMMIT" : "ajax_sysreport/ajax_sysreport_commit",
     "S_SYSREPADMIN" : "ajax_sysreport/ajax_sysreport_admin",
     "S_SYSREPSHOWFILE" : "ajax_sysreport/ajax_sysreport_show_file",
+    "R_GETSYSREP" : "rest/api/sysreport/timeline",
     "R_GETNODESSYS" : "rest/api/nodes/%1/sysreport",
     "R_GETNODESSYSCID" : "rest/api/nodes/%1/sysreport/%2",
     "R_GETNODESSYSCIDTREE" : "rest/api/nodes/%1/sysreport/%2/tree",
