@@ -4,6 +4,7 @@
 function sysrep_onchangebeginenddate(o)
 {
     o.sysrep_timeline();
+    o.sysrep_timediff();
     o.sysrep_createlink();
 }
 
@@ -326,6 +327,8 @@ function sysrep_timeline(o)
 function sysrep_timeline_data(o, jd)
 {
     o.timeline_graph.empty()
+    o.tree_diff.hide();
+    o.tree.hide();
 
     // DOM element where the Timeline will be attached
     var container = o.timeline_graph[0];
@@ -394,7 +397,11 @@ function sysrep_timeline_data(o, jd)
       }
 
       // remember the click for link generation
-      o.cid = item.cid
+      if (item) {
+        o.cid = item.cid;
+      } else {
+        delete o.cid;
+      }
       o.sysrep_createlink();
 
       o.sysreport_timeline_on_select(item)
@@ -416,6 +423,10 @@ function sysreport_timeline_on_select(o, item)
       o.tree_diff_detail.empty();
       o.tree_file.empty();
       o.time_diff.hide();
+
+      if (!item) {
+        return;
+      }
 
       params = {};
       var filter_value = o.filter_path.val();
