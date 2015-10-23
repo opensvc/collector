@@ -132,8 +132,8 @@ function sysrep_init(o)
 
   o.sysrep_timeline();
 
-  if (services_ismemberof("Manager")) // Authorization process
-  {
+  services_ismemberof("Manager", function() {
+    // Authorization process
     o.ql_admin.on("click", function() {
       o.administration.slideToggle();
     });
@@ -185,7 +185,7 @@ function sysrep_init(o)
     // Show section
     o.sysrep_admin_allow();
     o.sysrep_admin_secure();
-  }
+  })
 }
 
 function sysrep_getparams(o)

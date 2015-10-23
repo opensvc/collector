@@ -4,7 +4,7 @@
 // Global JS Static self
 var _self;
 
-var _groups = {};
+var _groups = [];
 
 var services_access_uri = {
     "S_SYSREP" : "ajax_sysreport/ajax_sysrep",
@@ -112,22 +112,35 @@ function services_osvcdeleterest(service, param, callback)
 
 function services_feed_self_and_group()
 {
-    services_osvcgetrest("G_GETUSERSELF","","",function(dataself)
+    services_osvcgetrest("G_GETUSERSELF", "", "", function(dataself)
     {
         _self = dataself.data[0];
-        services_osvcgetrest("G_GETUSERSGROUPS","","",function(datagroup)
+        services_osvcgetrest("G_GETUSERSGROUPS", "", {"meta": "false", "limit": "0"}, function(datagroup)
         {
             _groups = datagroup.data;
         });
     });
 }
 
-function services_ismemberof(group)
+function waitfor(test, expectedValue, msec, count, callback) {
+    while (test() !== expectedValue) {
+        count++;
+        setTimeout(function() {
+            return waitfor(test, expectedValue, msec, count, callback);
+        }, msec);
+        return;
+    }
+    callback();
+}
+
+function services_ismemberof(group, callback)
 {
-    var result = $.grep(_groups,function(g)
-    {
-        return g.role === group;
+    return waitfor(function(){return (_groups.length > 0)}, true, 500, 20, function() {
+        var result = $.grep(_groups, function(g) {
+            return g.role === group;
+        });
+        if (result.length > 0) {
+            callback();
+        }
     });
-    if (result.length >0) return true;
-    else return false;
 }
