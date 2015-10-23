@@ -21,7 +21,7 @@
       "submit_button" : "Submit"
     },
     "timeline_title" : "Node __node__ changes timeline",
-    "timeline_time_diff_title" : "Aggregated changes between __begin__ and __end__",
+    "timeline_time_diff_title" : "Aggregated changes on __nodename__ between __begin__ and __end__",
     "timeline_tree_diff_title" : "Changes",
     "timeline_tree_file_title" : "Files"
   }

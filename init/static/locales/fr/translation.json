@@ -21,7 +21,7 @@
     	"submit_button" : "Soumettre"
     },
     "timeline_title" : "Histogramme des changements du noeud __node__",
-    "timeline_time_diff_title" : "Changements aggrégés entre __begin__ et __end__",
+    "timeline_time_diff_title" : "Changements aggrégés sur __nodename__ entre __begin__ et __end__",
     "timeline_tree_diff_title" : "Changements",
     "timeline_tree_file_title" : "Fichiers"
   }

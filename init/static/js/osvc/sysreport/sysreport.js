@@ -31,11 +31,14 @@ function sysrep(divid, nodes, path, begin, end, cid)
     o.sysrep_timediff = function(){
       return sysrep_timediff(this)
     }
+    o._sysrep_timediff = function(nodename){
+      return _sysrep_timediff(this, nodename)
+    }
     o.sysrep_timeline_data = function(jd){
       return sysrep_timeline_data(this, jd)
     }
-    o.sysrep_timediff_data = function(jd){
-      return sysrep_timediff_data(this, jd)
+    o.sysrep_timediff_data = function(jd, nodename){
+      return sysrep_timediff_data(this, jd, nodename)
     }
     o.sysrep_getparams = function(){
       return sysrep_getparams(this)
@@ -109,8 +112,6 @@ function sysrep_init(o)
     o.tree_title = o.div.find("#sysrep_tree_title")
     o.tree = o.div.find("#sysrep_tree")
     o.time_diff = o.div.find("#sysrep_time_diff")
-    o.time_diff_title = o.div.find("#sysrep_time_diff_title")
-    o.time_diff_detail = o.div.find("#sysrep_time_diff_detail")
 
   o.div.i18n();
   o.filter_begin.datetimepicker({dateFormat:'yy-mm-dd'});
@@ -270,40 +271,75 @@ function sysrep_timediff(o)
     o.time_diff.hide();
     return;
   }
-  o.time_diff_detail.empty();
-  o.time_diff_title.html(i18n.t("sysrep.timeline_time_diff_title", params));
-  services_osvcgetrest("R_GETNODESSYSREPTIMEDIFF", [o.nodes], params, function(jd) {
-    o.sysrep_timediff_data(jd);
+  o.time_diff.empty();
+  nodes = o.nodes.split(",");
+  for (var i=0; i<nodes.length; i++) {
+    o._sysrep_timediff(nodes[i])
+  }
+}
+
+function _sysrep_timediff(o, nodename)
+{
+  var params = o.sysrep_getparams()
+  _params = {
+    "nodename": nodename,
+    "begin": params.begin ? params.begin : "begining",
+    "end": params.end ? params.end : "now",
+  };
+  var title = $("<div id='sysrep_time_diff_title' class='sectiontitle'></div>")
+  title.html(i18n.t("sysrep.timeline_time_diff_title", _params));
+  var detail = $("<div></div>")
+  detail.attr("id", 'sysrep_time_diff_detail');
+  detail.attr("_nodename", nodename);
+  o.time_diff.append(title);
+  o.time_diff.append(detail);
+  services_osvcgetrest("R_GETNODESSYSREPTIMEDIFF", [nodename], params, function(jd) {
+    o.sysrep_timediff_data(jd, nodename);
   });
 }
 
-function sysrep_timediff_data(o, jd)
+function sysrep_timediff_data(o, jd, nodename)
 {
+    var detail = o.time_diff.find("[_nodename="+nodename+"]")
+    if (jd.error) {
+      detail.html(jd.error);
+      return;
+    }
     var result = jd.data;
 
-        i=0;
-        var stat_width = 30;
-        for (var d in result.blocks)
-        {
-          var diff ="";
-          if (result.blocks[d].secure) {
-            var highlight_cl = "highlight";
-          } else {
-            var highlight_cl = "";
-          }
-          var value="<h2 class='clickable "+highlight_cl+"'" +
-          " onclick=\"toggle('idc"+i+"');\">"+d+
-          "</h2>"+
-          "<pre id='idc" + i + "' class='diff hljs' style='display:none'>"+result.blocks[d].diff+"</pre>";
-          o.time_diff_detail.append(value);
-          o.time_diff_detail.find("#idc" + i).each(function(i, block){
-             hljs.highlightBlock(block);
-           });
-          i = i+1;
-        }
-        if (!o.time_diff.is(':visible')) {
-          o.time_diff.slideToggle();
-        }
+    for (var d in result.blocks)
+    {
+      var diff ="";
+      if (result.blocks[d].secure) {
+        var highlight_cl = "highlight";
+      } else {
+        var highlight_cl = "";
+      }
+
+      // item title
+      var e = $("<h2></h2>");
+      e.addClass("clickable");
+      e.addClass(highlight_cl);
+      e.bind("click", function() {
+        $(this).next().slideToggle();
+      })
+      e.text(d);
+      
+      // item folded content
+      var p = $("<pre></pre>");
+      p.addClass("diff hljs");
+      p.css({"display": "none"});
+      p.text(result.blocks[d].diff);
+
+      detail.append(e);
+      detail.append(p);
+      detail.find("pre").each(function(i, block) {
+         hljs.highlightBlock(block);
+      });
+    }
+    if (!o.time_diff.is(':visible')) {
+      o.time_diff.slideToggle();
+    }
  }
 
 
