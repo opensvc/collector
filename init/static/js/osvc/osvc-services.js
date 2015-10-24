@@ -14,22 +14,21 @@ var services_access_uri = {
     "S_SYSREPCOMMIT" : "ajax_sysreport/ajax_sysreport_commit",
     "S_SYSREPADMIN" : "ajax_sysreport/ajax_sysreport_admin",
     "S_SYSREPSHOWFILE" : "ajax_sysreport/ajax_sysreport_show_file",
-    "R_GETSYSREP" : "rest/api/sysreport/timeline",
-    "R_GETSYSREPNODEDIFF" : "rest/api/sysreport/nodediff",
-    "R_GETNODESSYS" : "rest/api/nodes/%1/sysreport",
-    "R_GETNODESSYSREPTIMEDIFF" : "rest/api/nodes/%1/sysreport/timediff",
-    "R_GETNODESSYSCID" : "rest/api/nodes/%1/sysreport/%2",
-    "R_GETNODESSYSCIDTREE" : "rest/api/nodes/%1/sysreport/%2/tree",
-    "R_GETNODESSYSCIDOID" : "rest/api/nodes/%1/sysreport/%2/tree/%3",
-    "R_GETSYSREPSECPAT" : "rest/api/sysreport/secure_patterns",
-    "R_POSTSYSREPSECPAT" : "rest/api/sysreport/secure_patterns",
-    "R_DELSYSREPSECPAT" : "rest/api/sysreport/secure_patterns/%1",
-    "R_GETSYSREPADMINALLOW" : "rest/api/sysreport/authorizations",
-    "R_POSTSYSREPADMINALLOW" : "rest/api/sysreport/authorizations",
-    "R_DELSYSREPADMINALLOW" : "rest/api/sysreport/authorizations/%1",
-    "G_GETFILTERSET" : "rest/api/filtersets",
-    "G_GETUSERSELF" : "/rest/api/users/self",
-    "G_GETUSERSGROUPS" : "/rest/api/groups",
+    "R_SYSREPORT_TIMELINE" : "rest/api/sysreport/timeline",
+    "R_SYSREPORT_NODEDIFF" : "rest/api/sysreport/nodediff",
+    "R_NODE_SYSREPORT" : "rest/api/nodes/%1/sysreport",
+    "R_NODE_SYSREPORT_TIMEDIFF" : "rest/api/nodes/%1/sysreport/timediff",
+    "R_NODE_SYSREPORT_CID" : "rest/api/nodes/%1/sysreport/%2",
+    "R_NODE_SYSREPORT_CID_TREE" : "rest/api/nodes/%1/sysreport/%2/tree",
+    "R_NODE_SYSREPORT_CID_TREE_OID" : "rest/api/nodes/%1/sysreport/%2/tree/%3",
+    "R_SYSREPORT_SECURE_PATTERNS" : "rest/api/sysreport/secure_patterns",
+    "R_SYSREPORT_SECURE_PATTERN" : "rest/api/sysreport/secure_patterns/%1",
+    "R_SYSREPORT_AUTHORIZATIONS" : "rest/api/sysreport/authorizations",
+    "R_SYSREPORT_AUTHORIZATION" : "rest/api/sysreport/authorizations/%1",
+    "R_FILTERSETS" : "rest/api/filtersets",
+    "R_USERS_SELF" : "/rest/api/users/self",
+    "R_USER_GROUPS" : "/rest/api/users/%1/groups",
+    "R_GROUPS" : "/rest/api/groups",
 }
 
 function services_getaccessurl(service)
@@ -116,10 +115,10 @@ function services_osvcdeleterest(service, param, callback)
 
 function services_feed_self_and_group()
 {
-    services_osvcgetrest("G_GETUSERSELF", "", "", function(dataself)
+    services_osvcgetrest("R_USERS_SELF", "", "", function(dataself)
     {
         _self = dataself.data[0];
-        services_osvcgetrest("G_GETUSERSGROUPS", "", {"meta": "false", "limit": "0"}, function(datagroup)
+        services_osvcgetrest("R_USER_GROUPS", [_self.id], {"meta": "false", "limit": "0"}, function(datagroup)
         {
             _groups = datagroup.data;
         });
