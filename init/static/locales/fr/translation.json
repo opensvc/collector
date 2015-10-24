@@ -3,7 +3,7 @@
     "name": "collector"
   },
   "sysrep": {
-    "admin_title"  : "Administrations des sysreports",
+    "admin_title"  : "Administration des sysreports",
     "secure_title" : "Protections",
     "allow_title"  : "Habilitations",
     "secure_add_button" : "Ajouter une protection",
@@ -12,7 +12,7 @@
     "allow_input_pattern" : "pattern",
     "allow_input_group" : "groupe",
     "allow_input_filterset" : "Jeu de filtres",
-    "allow_read_sentence" : "Le groupe __group__ peut lire les fichiers protégés __pattern__ du jeu de filtre de filtres __filterset__",
+    "allow_read_sentence" : "Le groupe __group__ peut lire les fichiers protégés __pattern__ du jeu de filtres __filterset__",
     "filter" : {
     	"begin_date" : "Date de début",
     	"end_date" : "Date de fin",
