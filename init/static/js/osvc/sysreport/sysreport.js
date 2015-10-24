@@ -38,8 +38,8 @@ function sysrep(divid, nodes, path, begin, end, cid)
     o.sysrep_timeline_data = function(jd){
       return sysrep_timeline_data(this, jd)
     }
-    o.sysrep_timediff_data = function(jd, nodename){
-      return sysrep_timediff_data(this, jd, nodename)
+    o.sysrep_timediff_data = function(jd, nodename, detail){
+      return sysrep_timediff_data(this, jd, nodename, detail)
     }
     o.sysrep_getparams = function(){
       return sysrep_getparams(this)
@@ -304,18 +304,15 @@ function _sysrep_timediff(o, nodename)
   var title = $("<div id='sysrep_time_diff_title' class='sectiontitle'></div>")
   title.html(i18n.t("sysrep.timeline_time_diff_title", _params));
   var detail = $("<div></div>")
-  detail.attr("id", 'sysrep_time_diff_detail');
-  detail.attr("_nodename", nodename);
   o.time_diff.append(title);
   o.time_diff.append(detail);
   services_osvcgetrest("R_NODE_SYSREPORT_TIMEDIFF", [nodename], params, function(jd) {
-    o.sysrep_timediff_data(jd, nodename);
+    o.sysrep_timediff_data(jd, nodename, detail);
   });
 }
 
-function sysrep_timediff_data(o, jd, nodename)
+function sysrep_timediff_data(o, jd, nodename, detail)
 {
-    var detail = o.time_diff.find("[_nodename="+nodename+"]")
     if (jd.error) {
       detail.html(jd.error);
       return;
@@ -720,8 +717,8 @@ function sysrepdiff(divid, nodes, path, ignore_blanks)
     o._sysrep_diff = function(node1, node2){
       return _sysrep_diff(this, node1, node2)
     }
-    o.sysrep_diff_data = function(jd, node1, node2){
-      return sysrep_diff_data(this, jd, node1, node2)
+    o.sysrep_diff_data = function(jd, node1, node2, detail){
+      return sysrep_diff_data(this, jd, node1, node2, detail)
     }
     o.sysrep_getparams = function(){
       return sysrep_getparams(this)
@@ -792,21 +789,17 @@ function _sysrep_diff(o, node1, node2)
   var title = $("<div class='sectiontitle'></div>")
   title.html(i18n.t("sysrep.sysrepdiff.section_title", _params));
   var detail = $("<div></div>")
-  detail.attr("id", 'sysrepdiff_detail');
-  detail.attr("_node1", node1);
-  detail.attr("_node2", node2);
   o.diff.append(title);
   o.diff.append(detail);
   params = o.sysrep_getparams()
   params["nodes"] = o.nodes;
   services_osvcgetrest("R_SYSREPORT_NODEDIFF", "", params, function(jd) {
-    o.sysrep_diff_data(jd, node1, node2);
+    o.sysrep_diff_data(jd, node1, node2, detail);
   });
 }
 
-function sysrep_diff_data(o, jd, node1, node2)
+function sysrep_diff_data(o, jd, node1, node2, detail)
 {
-    var detail = o.diff.find("[_node1="+node1+"][_node2="+node2+"]")
     if (jd.error) {
       detail.html(jd.error);
       return;
