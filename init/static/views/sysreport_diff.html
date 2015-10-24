@@ -1,0 +1,95 @@
+<div id="sysrep">
+<!-- Filter menu -->
+<div id="sysrep_ql" style="float:right">
+	<span id="sysrep_ql_link" class="clickable link16"></span>
+	<span id="sysrep_ql_filter" class="clickable filter16"></span>
+	<span id="sysrep_ql_admin" class="clickable lock hidden"></span>
+</div>
+
+<!-- Link relative division-->
+<div id="sysrep_link_div" class=" hidden" style="direction:rtl;float:right">
+	<textarea id="sysrep_link" class="link_ta_sub link_white" style="position:absolute;" readonly="readonly"></textarea>
+</div>
+
+<div id="sysrep_administration" class="section hidden" display="block">
+	<!-- Sysreport administration !-->
+	<div class="sectiontitle" data-i18n='sysrep.admin_title'></div>
+	<div>
+		<div id="sysrep_secure_list" style="float:left;width:500px;">
+			<div class="sub_sectiontitle" data-i18n='sysrep.secure_title'></div>
+			<table id="sysrep_secure_list_item">
+			</table>
+			<div class="meta_add">
+				<button class="button_div" id="sysrep_secure_pattern_button">
+					<span class="add16" data-i18n="sysrep.secure_add_button"></span>
+				</button>
+				<form id="sysrep_form_secure">
+					<div id="sysrep_secure_pattern_add" class="hidden">
+						<input id="sysrep_secure_pattern_new" data-i18n="[placeholder]sysrep.filter.filter" type="text"/>
+						<button type="submit" class="button_div">
+							<span class="add16" data-i18n="sysrep.submit_button" type="submit"></span>
+						</button>
+					</div>
+				</form>
+				<span id="sysrep_secure_pattern_error" style="color:#FF0000"></span>
+			</div>
+		</div>
+		<div id="sysrep_authorizations_list" style="float:left">
+			<div class="sub_sectiontitle" data-i18n='sysrep.allow_title'></div>
+			<table id="sysrep_authorizations_list_item">
+			</table>
+			<div class="meta_add">
+				<button class="button_div" id="sysrep_allow_button">
+					<span class="add16" data-i18n="sysrep.allow_add_button"></span>
+				</button>
+				<div class="hidden" id="sysrep_allow_input" style="margin-left:1em">
+					<form id="sysrep_form_allow">
+						<div style="display:table-row">
+							<div class="b" style="display:table-cell" data-i18n="sysrep.allow_input_pattern"></div>
+							<div class="b" style="display:table-cell" data-i18n="sysrep.allow_input_group"></div>
+							<div class="b" style="display:table-cell" data-i18n="sysrep.allow_input_filterset"></div>
+						</div>
+						<div style="display:table-row">
+							<div style="display:table-cell">
+								<input id="sysreport_allow_pattern" data-i18n="[placeholder]sysrep.filter.filter" type="text" />
+							</div>
+							<div style="display:table-cell">
+								<select id="sysreport_allow_groups" type="text" />
+							</div>
+							<div style="display:table-cell">
+								<select id="sysreport_allow_filterset" type="text" />
+							</div>
+						</div>
+						<button  type="submit" class="button_div">
+							<span class="add16" data-i18n="sysrep.submit_button"></span>
+						</button>
+					</form>
+					<span id="sysrep_admin_allow_error" style="color:#FF0000"></span>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- Filter Div -->
+<div id="sysrep_filter" class="section hidden">
+	<div class="sectiontitle" data-i18n='sysrep.filter.title'></div>
+	<form id="sysrep_form_filter">
+		<div >
+			<span>
+				<input type="checkbox" id="sysrep_filter_ignore_blanks">
+				<span data-i18n="sysrep.filter.ignore_blanks">
+			</span>
+			<span class="filter16">
+				<input id="sysrep_filter_value" data-i18n="[placeholder]sysrep.filter.filter"  type="text">
+			</span>
+			<button id="sysrep_filter_submit" class="button_add16" data-i18n="sysrep.filter.submit_button" type="submit"></button>
+		</div>
+	</form>
+</div>
+
+<!-- Diff-->
+<div id="sysrep_diff" class="section">
+</div>
+
+</div>

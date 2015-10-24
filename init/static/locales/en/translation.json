@@ -3,7 +3,7 @@
     "name": "collector"
   },
   "sysrep": {
-    "admin_title"  : "SysReports administration",
+    "admin_title"  : "Sysreports administration",
     "secure_title" : "Secure Patterns",
     "allow_title"  : "Authorizations",
     "secure_add_button" : "Add secure pattern",
@@ -16,6 +16,7 @@
     "filter" : {
       "begin_date" : "Begin date",
       "end_date" : "End date",
+      "ignore_blanks" : "Ignore blanks",
       "filter" : "Filter (glob)",
       "title" : "Filters",
       "submit_button" : "Submit"
@@ -23,6 +24,12 @@
     "timeline_title" : "Node __node__ changes timeline",
     "timeline_time_diff_title" : "Aggregated changes on __nodename__ between __begin__ and __end__",
     "timeline_tree_diff_title" : "Changes",
-    "timeline_tree_file_title" : "Files"
+    "timeline_tree_file_title" : "Files",
+    "sysrepdiff" : {
+      "section_title": "__node1__ to __node2__",
+      "error": {
+        "not_enough_nodes": "Not enough nodes to compare."
+      }
+    }
   }
 }

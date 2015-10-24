@@ -218,9 +218,21 @@ def _sysrepdiff(nodes, path=None, ignore_blanks=None):
     os.chdir(cwd)
     return DIV(l, name="diff")
 
+
+def _sysrepdiff():
+    nodes = request.vars.nodes
+    path = request.vars.path if request.vars.path else ""
+    ignore_blanks = request.vars.ignore_blanks if request.vars.ignore_blanks else ""
+    d = DIV(
+      SCRIPT("""sysrepdiff("sysreport_simple", "%(nodes)s", "%(path)s", "%(ignore_blanks)s") """ %
+                dict(nodes=nodes, path=path, ignore_blanks=ignore_blanks)),
+      _id="sysreport_simple",
+    )
+    return d
+
 def sysrepdiff():
     d = DIV(
-      ajax_sysrepdiff(),
+      _sysrepdiff(),
       _style="padding:1em;text-align:left",
     )
     return dict(table=d)

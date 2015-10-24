@@ -3,7 +3,7 @@
     "name": "collector"
   },
   "sysrep": {
-    "admin_title"  : "Administrations des SysReports",
+    "admin_title"  : "Administrations des sysreports",
     "secure_title" : "Protections",
     "allow_title"  : "Habilitations",
     "secure_add_button" : "Ajouter une protection",
@@ -16,6 +16,7 @@
     "filter" : {
     	"begin_date" : "Date de début",
     	"end_date" : "Date de fin",
+        "ignore_blanks" : "Ignorer les blancs",
     	"filter" : "Filtre (glob)",
     	"title" : "Filtres",
     	"submit_button" : "Soumettre"
@@ -23,6 +24,12 @@
     "timeline_title" : "Histogramme des changements du noeud __node__",
     "timeline_time_diff_title" : "Changements aggrégés sur __nodename__ entre __begin__ et __end__",
     "timeline_tree_diff_title" : "Changements",
-    "timeline_tree_file_title" : "Fichiers"
+    "timeline_tree_file_title" : "Fichiers",
+    "sysrepdiff" : {
+      "section_title": "__node1__ vers __node2__",
+      "error": {
+        "not_enough_nodes": "Trop peu de noeuds à comparer."
+      }
+    }
   }
 }

@@ -9,11 +9,13 @@ var _groups = [];
 var services_access_uri = {
     "S_SYSREP" : "ajax_sysreport/ajax_sysrep",
     "S_SYSREPVIEW" : "ajax_sysreport/sysrep",
+    "S_SYSREPDIFFVIEW" : "ajax_sysreport/sysrepdiff",
     "S_SYSREPDIFF" : "ajax_sysreport/ajax_sysrepdiff",
     "S_SYSREPCOMMIT" : "ajax_sysreport/ajax_sysreport_commit",
     "S_SYSREPADMIN" : "ajax_sysreport/ajax_sysreport_admin",
     "S_SYSREPSHOWFILE" : "ajax_sysreport/ajax_sysreport_show_file",
     "R_GETSYSREP" : "rest/api/sysreport/timeline",
+    "R_GETSYSREPNODEDIFF" : "rest/api/sysreport/nodediff",
     "R_GETNODESSYS" : "rest/api/nodes/%1/sysreport",
     "R_GETNODESSYSREPTIMEDIFF" : "rest/api/nodes/%1/sysreport/timediff",
     "R_GETNODESSYSCID" : "rest/api/nodes/%1/sysreport/%2",

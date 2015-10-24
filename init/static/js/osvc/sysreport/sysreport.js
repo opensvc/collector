@@ -1,7 +1,7 @@
 // SysReport JS Script
 // MD 08062015
 
-function sysrep_onchangebeginenddate(o)
+function sysrep_on_change_filters(o)
 {
     o.sysrep_timeline();
     o.sysrep_timediff();
@@ -20,6 +20,7 @@ function sysrep(divid, nodes, path, begin, end, cid)
     o.path = path
     o.cid = cid
 
+    o.direct_access_url = "S_SYSREPVIEW"
     o.div = $("#"+divid)
 
     o.sysrep_init = function(){
@@ -46,8 +47,8 @@ function sysrep(divid, nodes, path, begin, end, cid)
     o.sysrep_createlink = function(){
       return sysrep_createlink(this)
     }
-    o.sysrep_onchangebeginenddate = function(){
-      return sysrep_onchangebeginenddate(this)
+    o.sysrep_on_change_filters = function(){
+      return sysrep_on_change_filters(this)
     }
     o.sysrep_admin_secure = function(){
       return sysrep_admin_secure(this)
@@ -67,7 +68,11 @@ function sysrep(divid, nodes, path, begin, end, cid)
     o.sysreport_timeline_on_select = function(item){
       return sysreport_timeline_on_select(this, item)
     }
-    o.div.load('/init/static/views/sysreport.html', "", function() {o.sysrep_init()})
+    o.div.load('/init/static/views/sysreport.html', "", function() {
+      o.sysrep_init()
+      o.sysrep_timeline();
+      o.sysrep_timediff();
+    })
     return o
 }
 
@@ -85,6 +90,7 @@ function sysrep_init(o)
     o.filter_begin = o.filter.find("#sysrep_filter_begindate")
     o.filter_end = o.filter.find("#sysrep_filter_enddate")
     o.filter_path = o.filter.find("#sysrep_filter_value")
+    o.filter_ignore_blanks = o.filter.find("#sysrep_filter_ignore_blanks")
     o.form_filter = o.filter.find("#sysrep_form_filter")
 
     o.administration = o.div.find("#sysrep_administration")
@@ -112,12 +118,14 @@ function sysrep_init(o)
     o.tree_title = o.div.find("#sysrep_tree_title")
     o.tree = o.div.find("#sysrep_tree")
     o.time_diff = o.div.find("#sysrep_time_diff")
+    o.diff = o.div.find("#sysrep_diff")
 
   o.div.i18n();
   o.filter_begin.datetimepicker({dateFormat:'yy-mm-dd'});
   o.filter_end.datetimepicker({dateFormat:'yy-mm-dd'});
 
   o.ql_link.bind("click", function() { 
+    o.sysrep_createlink();
     o.link_div.toggle(0, function(){o.link.select()})
   });
 
@@ -127,12 +135,16 @@ function sysrep_init(o)
 
   o.form_filter.on("submit", function (event) {
     event.preventDefault();
-    o.sysrep_onchangebeginenddate();
+    o.sysrep_on_change_filters();
   });
 
   o.link.bind("click", function() {
     send_link($(this).val())
   })
+
+  o.filter.find("input").bind("change", function(){
+    o.sysrep_createlink();
+  });
 
   // apply initial filters as default values
   if (o.begin) {
@@ -144,12 +156,12 @@ function sysrep_init(o)
   if (o.path) {
     o.filter_path.val(o.path)
   }
-  if ((o.begin) || (o.end) || (o.path)) {
+  if (o.ignore_blanks) {
+    o.filter_ignore_blanks.attr("checked", true);
+  }
+  if ((o.begin) || (o.end) || (o.path) || (o.ignore_blanks)) {
     o.filter.slideToggle();
   }
-
-  o.sysrep_timeline();
-  o.sysrep_timediff();
 
   services_ismemberof("Manager", function() {
     // Authorization process
@@ -211,16 +223,19 @@ function sysrep_getparams(o)
 {
   var data = {};
   fval = o.filter_path.val();
-  if (fval != "") {
+  if (fval && (fval != "")) {
     data["path"] = fval;
   }
   fval = o.filter_begin.val();
-  if (fval!="") {
+  if (fval && (fval != "")) {
     data["begin"] = fval;
   }
   fval = o.filter_end.val();
-  if (fval!="") {
+  if (fval && (fval != "")) {
     data["end"] = fval;
+  }
+  if (o.filter_ignore_blanks.is(":checked")) {
+    data["ignore_blanks"] = true;
   }
   if (o.cid) {
     data["cid"] = o.cid;
@@ -236,7 +251,7 @@ function send_link(url)
 function sysrep_createlink(o)
 {
     url = $(location).attr("origin");
-    url += services_getaccessurl("S_SYSREPVIEW");
+    url += services_getaccessurl(o.direct_access_url);
     url += "?nodes=";
     url += o.nodes;
     var sparam = o.sysrep_getparams();
@@ -683,3 +698,166 @@ function sysrep_admin_allow_handle(o, tid, func)
   )  
   }
 }
+
+
+//
+// Sysreport diff
+//
+function sysrepdiff(divid, nodes, path, ignore_blanks)
+{
+    o = {}
+
+    // store parameters
+    o.divid = divid
+    o.nodes = nodes
+    o.path = path
+    o.ignore_blanks = ignore_blanks
+    o.done = []
+
+    o.direct_access_url = "S_SYSREPDIFFVIEW"
+    o.div = $("#"+divid)
+
+    o.sysrep_init = function(){
+      return sysrep_init(this)
+    }
+    o.sysrep_diff = function(){
+      return sysrep_diff(this)
+    }
+    o._sysrep_diff = function(node1, node2){
+      return _sysrep_diff(this, node1, node2)
+    }
+    o.sysrep_diff_data = function(jd, node1, node2){
+      return sysrep_diff_data(this, jd, node1, node2)
+    }
+    o.sysrep_getparams = function(){
+      return sysrep_getparams(this)
+    }
+    o.sysrep_on_change_filters = function(){
+      return sysrepdiff_on_change_filters(this)
+    }
+    o.sysrep_createlink = function(){
+      return sysrep_createlink(this)
+    }
+    o.sysrep_admin_secure = function(){
+      return sysrep_admin_secure(this)
+    }
+    o.sysrep_admin_allow = function(){
+      return sysrep_admin_allow(this)
+    }
+    o.sysrep_admin_secure_handle = function(tid, func){
+      return sysrep_admin_secure_handle(this, tid, func)
+    }
+    o.sysrep_admin_allow_handle = function(tid, func){
+      return sysrep_admin_allow_handle(this, tid, func)
+    }
+    o.div.load('/init/static/views/sysreport_diff.html', "", function() {
+      o.sysrep_init();
+      o.sysrep_diff();
+    })
+    return o
+}
+
+function sysrep_diff(o)
+{
+  var params = o.sysrep_getparams()
+  o.diff.empty();
+  nodes = o.nodes.split(",");
+  if (nodes.length < 2) {
+    e = $("<div></div");
+    e.addClass("alert16");
+    e.text(i18n.t("sysrep.sysrepdiff.error.not_enough_nodes"));
+    o.diff.append(e);
+    return;
+  }
+  for (var i=0; i<nodes.length; i++) {
+    ref_node = nodes.shift()
+    for (var j=0; j<nodes.length; j++) {
+      o._sysrep_diff(ref_node, nodes[j])
+    }
+  }
+}
+
+function _sysrep_diff(o, node1, node2)
+{
+  if (node1 == node2) {
+    return;
+  }
+  var key = [node1, node2]
+  key = key.sort().join(",")
+  if (o.done.indexOf(key) >= 0) {
+    return;
+  }
+  o.done.push(key);
+
+  var params = o.sysrep_getparams()
+  _params = {
+    "node1": node1,
+    "node2": node2,
+  };
+  var title = $("<div class='sectiontitle'></div>")
+  title.html(i18n.t("sysrep.sysrepdiff.section_title", _params));
+  var detail = $("<div></div>")
+  detail.attr("id", 'sysrepdiff_detail');
+  detail.attr("_node1", node1);
+  detail.attr("_node2", node2);
+  o.diff.append(title);
+  o.diff.append(detail);
+  params = o.sysrep_getparams()
+  params["nodes"] = o.nodes;
+  services_osvcgetrest("R_GETSYSREPNODEDIFF", "", params, function(jd) {
+    o.sysrep_diff_data(jd, node1, node2);
+  });
+}
+
+function sysrep_diff_data(o, jd, node1, node2)
+{
+    var detail = o.diff.find("[_node1="+node1+"][_node2="+node2+"]")
+    if (jd.error) {
+      detail.html(jd.error);
+      return;
+    }
+    var result = jd.data;
+
+    for (var i=0; i<result.length; i++)
+    {
+      var d = result[i];
+      var diff ="";
+      if (d.secure) {
+        var highlight_cl = "highlight";
+      } else {
+        var highlight_cl = "";
+      }
+
+      // item title
+      var e = $("<h2></h2>");
+      e.addClass("clickable");
+      e.addClass(highlight_cl);
+      e.bind("click", function() {
+        $(this).next().slideToggle();
+      })
+      e.text(d.path);
+      
+      // item folded content
+      var p = $("<pre></pre>");
+      p.addClass("diff hljs");
+      p.css({"display": "none"});
+      p.text(d.diff);
+
+      detail.append(e);
+      detail.append(p);
+      detail.find("pre").each(function(i, block) {
+         hljs.highlightBlock(block);
+      });
+    }
+    if (!o.diff.is(':visible')) {
+      o.diff.slideToggle();
+    }
+}
+
+function sysrepdiff_on_change_filters(o)
+{
+    o.sysrep_diff();
+    o.sysrep_createlink();
+}
+
+
