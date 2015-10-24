@@ -2728,11 +2728,8 @@ function trigger_tool_nodesysrepdiff(tid) {
   for (i=0;i<data.length;i++) {
     nodes.push(data[i]['nodename'])
   }
-  sync_ajax('/init/ajax_sysreport/ajax_sysrepdiff?nodes='+nodes.join(","), [], 'overlay', function(){
-    $("#overlay").find(".diff").each(function(i, block){
-      hljs.highlightBlock(block);
-    })
-  })
+  sysrepdiff("overlay", nodes.join(","))
+  $("#overlay").width($("#overlay").css("max-width"))
 }
 
 function trigger_tool_nodesysrep(tid) {

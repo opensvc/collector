@@ -337,6 +337,7 @@ function sysrep_timediff_data(o, jd, nodename)
       e.addClass(highlight_cl);
       e.bind("click", function() {
         $(this).next().slideToggle();
+        hljs.highlightBlock($(this).next()[0]);
       })
       e.text(d);
       
@@ -348,9 +349,6 @@ function sysrep_timediff_data(o, jd, nodename)
 
       detail.append(e);
       detail.append(p);
-      detail.find("pre").each(function(i, block) {
-         hljs.highlightBlock(block);
-      });
     }
     if (!o.time_diff.is(':visible')) {
       o.time_diff.slideToggle();
@@ -834,6 +832,7 @@ function sysrep_diff_data(o, jd, node1, node2)
       e.addClass(highlight_cl);
       e.bind("click", function() {
         $(this).next().slideToggle();
+        hljs.highlightBlock($(this).next()[0]);
       })
       e.text(d.path);
       
@@ -845,9 +844,6 @@ function sysrep_diff_data(o, jd, node1, node2)
 
       detail.append(e);
       detail.append(p);
-      detail.find("pre").each(function(i, block) {
-         hljs.highlightBlock(block);
-      });
     }
     if (!o.diff.is(':visible')) {
       o.diff.slideToggle();
