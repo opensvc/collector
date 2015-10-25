@@ -484,23 +484,17 @@ function sysreport_timeline_on_select(o, item)
       if (filter_value != "" && filter_value != undefined) {
         params["path"] = filter_value;
       }
-      // List tree Diff
+      // list commit diffs
       services_osvcgetrest("R_NODE_SYSREPORT_CID", [item.group, item.cid], params, function(jd) {
-        // Link to tree file
         var result = jd.data;
         o.tree_diff_date.html(result.date);
         o.tree_date.html(result.date);
-        i=0;
         var maximum = sysrep_define_maxchanges(result);
         var stat_width = 30;
         for (var d in result.stat)
         {
+          // diff stats in title
           var diff ="";
-          if (result.blocks[d].secure) {
-            var highlight_cl = "highlight";
-          } else {
-            var highlight_cl = "";
-          }
           var total = result.stat[d][0] + result.stat[d][1];
           var quota = Math.round((stat_width*total)/maximum);
           if (quota == 0)
@@ -509,18 +503,31 @@ function sysreport_timeline_on_select(o, item)
             quota = total;
             _inse = Math.round((result.stat[d][0]*quota)/total);
             _dele = quota-_inse;
-            var stat = "<pre>"+total + " ";
+            var stat = total + " ";
             for (j=0;j<_inse;j++) stat += "+";
             for (j=0;j<_dele;j++) stat += "-";
-          var value="<h2 class='clickable "+highlight_cl+"'" +
-          " onclick=\"toggle('idc"+i+"');\">"+d+stat+
-          "</h2>"+
-          "<pre id='idc" + i + "' class='diff hljs' style='display:none'>"+result.blocks[d].diff+"</pre>";
-          o.tree_diff_detail.append(value);
-          o.tree_diff_detail.find("#idc" + i).each(function(i, block){
-             hljs.highlightBlock(block);
-           });
-          i = i+1;
+
+          // diff title
+          var e = $("<h2></h2>")
+          e.addClass("clickable")
+          if (result.blocks[d].secure) {
+            e.addClass("highlight")
+          }
+          e.bind("click", function(){
+            $(this).next().slideToggle()
+            hljs.highlightBlock($(this).next()[0]);
+          })
+          e.html(d+"<pre>"+stat+"</pre>")
+
+          // diff text
+          var p = $("<pre></pre>")
+          p.addClass("diff hljs")
+          p.css({"display": "none"})
+          p.text(result.blocks[d].diff)
+
+          o.tree_diff_detail.append(e);
+          o.tree_diff_detail.append(p);
+
         }
         if (!o.tree_diff.is(':visible')) {
           o.tree_diff.slideToggle();
