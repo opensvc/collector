@@ -453,7 +453,7 @@ def get_node_tags(nodename):
     tid = uuid.uuid1().hex
 
     d = DIV(
-      SCRIPT(""" init_tags({"tid": "%s", "responsible": %s, "nodename": "%s"}) """ % (tid, str(responsible).lower(), nodename)),
+      SCRIPT(""" tags({"tid": "%s", "responsible": %s, "nodename": "%s"}) """ % (tid, str(responsible).lower(), nodename)),
       _class="tags",
       _id=tid,
     )
