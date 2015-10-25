@@ -61,8 +61,8 @@ function sysrep(divid, options)
     o.sysrep_admin_allow_handle = function(tid, func){
       return sysrep_admin_allow_handle(this, tid, func)
     }
-    o.sysrep_tree_file_detail = function(item){
-      return sysrep_tree_file_detail(this, item)
+    o.sysrep_tree_file_detail = function(detail, nodename, cid){
+      return sysrep_tree_file_detail(this, detail, nodename, cid)
     }
     o.sysreport_timeline_on_select = function(item){
       return sysreport_timeline_on_select(this, item)
@@ -549,10 +549,10 @@ function sysreport_timeline_on_select(o, item)
       // List Tree File/Cmd
       o.tree_title.html(i18n.t("sysrep.timeline_tree_file_title"));
       spinner_add(o.tree)
-      services_osvcgetrest("R_NODE_SYSREPORT_CID_TREE", [item.group,item.cid], params, function(jd) {
+      services_osvcgetrest("R_NODE_SYSREPORT_CID_TREE", [item.group, item.cid], params, function(jd) {
         spinner_del(o.tree)
         var result = jd.data;
-        for (i=0;i<result.length;i++)
+        for (var i=0; i<result.length; i++)
         {
           if (result[i].content_type == "command")
             cl = "action16";
@@ -565,18 +565,18 @@ function sysreport_timeline_on_select(o, item)
             e.addClass("highlight");
           }
           e.addClass(cl);
-          e.attr("_oid", result[i].oid);
-          e.attr("_cid", result[i].cid);
           e.bind("click", function () {
-            o.sysrep_tree_file_detail($(this));
+            o.sysrep_tree_file_detail($(this).next(), item.group, item.cid);
           });
           o.tree_file.append(e);
 
           var e = $("<pre></pre>");
           e.addClass('diff hljs')
+          e.attr("oid", result[i].oid)
           e.css({"display": "none"})
-          e.attr("id", result[i].oid);
+
           o.tree_file.append(e);
+
         }
         if (!o.tree.is(':visible')) {
           o.tree.slideToggle();
@@ -584,23 +584,19 @@ function sysreport_timeline_on_select(o, item)
       });
 }
 
-function sysrep_tree_file_detail(o, item)
+function sysrep_tree_file_detail(o, detail, nodename, cid)
 {
-  var oid = item.attr("_oid");
-  var cid = item.attr("_cid");
-
-  if (o.tree.find("#"+oid).is(':visible')) {
-    toggle(oid, o.divid);
+  if (detail.is(':visible')) {
+    detail.slideToggle()
   } else { 
-    services_osvcgetrest("R_NODE_SYSREPORT_CID_TREE_OID", [o.nodes, cid, oid], "", function(jd) {
-      // Link to tree file
+    oid = detail.attr("oid")
+    spinner_add(detail)
+    services_osvcgetrest("R_NODE_SYSREPORT_CID_TREE_OID", [nodename, cid, oid], "", function(jd) {
+      spinner_del(detail)
       var result = jd.data;
-      o.tree.find("#"+oid).html(result.content);
-      o.tree.find("#"+oid).each(function(i, block){
-               hljs.highlightBlock(block);
-             });
-      o.tree.find("#"+oid).hide();
-      toggle(oid, o.divid);
+      detail.text(result.content);
+      //hljs.highlightBlock(detail[0]);
+      detail.show("vertical-slide")
     });
   }
 }
