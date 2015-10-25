@@ -36,6 +36,7 @@ class rest_get_node_tags(rest_get_table_handler):
           self,
           path="/nodes/<nodename>/tags",
           tables=["tags"],
+          orderby=db.tags.tag_name,
           desc=desc,
           examples=examples,
         )
@@ -43,6 +44,39 @@ class rest_get_node_tags(rest_get_table_handler):
     def handler(self, nodename, **vars):
         q = db.node_tags.nodename == nodename
         q &= db.node_tags.tag_id == db.tags.id
+        self.set_q(q)
+        return self.prepare_data(**vars)
+
+#
+class rest_get_node_candidate_tags(rest_get_table_handler):
+    def __init__(self):
+        desc = [
+          "List attachable tags for node.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/nodes/node1/candidate_tags",
+        ]
+        rest_get_table_handler.__init__(
+          self,
+          path="/nodes/<nodename>/candidate_tags",
+          tables=["tags"],
+          desc=desc,
+          orderby=db.tags.tag_name,
+          examples=examples,
+        )
+
+    def handler(self, nodename, **vars):
+        q = db.node_tags.nodename == nodename
+        q &= db.node_tags.tag_id == db.tags.id
+        rows = db(q).select(db.tags.ALL)
+
+        ids = set([r.id for r in rows])
+        pattern = '|'.join([r.tag_exclude for r in rows if r.tag_exclude is not None and r.tag_exclude != ""])
+        q = db.tags.id > 0
+        q &= ~db.tags.id.belongs(ids)
+        if len(pattern) > 0:
+            qx = _where(None, "tags", pattern, "tag_name")
+            q &= ~qx
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -59,13 +93,47 @@ class rest_get_service_tags(rest_get_table_handler):
           self,
           path="/services/<svcname>/tags",
           tables=["tags"],
+          orderby=db.tags.tag_name,
           desc=desc,
           examples=examples,
         )
 
-    def handler(self, nodename, **vars):
-        q = db.service_tags.svcname == svcname
-        q &= db.service_tags.tag_id == db.tags.id
+    def handler(self, svcname, **vars):
+        q = db.svc_tags.svcname == svcname
+        q &= db.svc_tags.tag_id == db.tags.id
+        self.set_q(q)
+        return self.prepare_data(**vars)
+
+#
+class rest_get_service_candidate_tags(rest_get_table_handler):
+    def __init__(self):
+        desc = [
+          "List attachable tags for service.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/services/svc1/candidate_tags",
+        ]
+        rest_get_table_handler.__init__(
+          self,
+          path="/services/<svcname>/candidate_tags",
+          tables=["tags"],
+          orderby=db.tags.tag_name,
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, svcname, **vars):
+        q = db.svc_tags.svcname == svcname
+        q &= db.svc_tags.tag_id == db.tags.id
+        rows = db(q).select(db.tags.ALL)
+
+        ids = set([r.id for r in rows])
+        pattern = '|'.join([r.tag_exclude for r in rows if r.tag_exclude is not None and r.tag_exclude != ""])
+        q = db.tags.id > 0
+        q &= ~db.tags.id.belongs(ids)
+        if len(pattern) > 0:
+            qx = _where(None, "tags", pattern, "tag_name")
+            q &= ~qx
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -141,6 +209,10 @@ class rest_post_tags(rest_post_handler):
             raise Exception({"error": "tag already exist"})
         db.tags.insert(**vars)
         data = db(q).select().first()
+        _log('tag.create',
+             "tag '%(tag_name)s' created",
+             dict(tag_name=data.tag_name),
+            )
         return dict(info="tag created", data=data)
 
 
@@ -189,6 +261,11 @@ class rest_delete_tag(rest_delete_handler):
 
         info = []
 
+        q = db.tags.id == tagid
+        tag = db(q).select().first()
+        if tag is None:
+            return dict(info="tag not found")
+
         q = db.node_tags.tag_id == tagid
         q &= _where(None, 'node_tags', domain_perms(), 'nodename')
         n = db(q).delete()
@@ -211,6 +288,10 @@ class rest_delete_tag(rest_delete_handler):
         n = db(q).delete()
         info += ["%d tag deleted"%n]
 
+        _log('tag.delete',
+             "tag '%(tag_name)s' deleted",
+             dict(tag_name=tag.tag_name),
+            )
         return dict(info=', '.join(info))
 
 
