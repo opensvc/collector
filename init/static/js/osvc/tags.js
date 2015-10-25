@@ -78,7 +78,7 @@ function tags_add_tag(o, tag_data) {
 }
 
 function tags_detach_tag(o, tag, tag_data) {
-    o.div.html(T("Detaching tag ..."))
+    o.div.html(i18n.t("tags.detaching"))
     _data = {
       "tag_id": tag_data.tag_id
     }
@@ -103,8 +103,8 @@ function tags_detach_tag(o, tag, tag_data) {
 }
 
 function tags_add_add_tag(o) {
-  s = "<span class='tag_add'>"+T("Add tag")+" </span>"
-  e = $(s)
+  e = $("<span class='tag_add'></span>")
+  e.text(i18n.t("tags.add"))
   e.bind("click", function(){
     old_html = $(this).html()
     e = $(this).find(".tag_input")
@@ -170,7 +170,7 @@ function tags_add_candidates(o, tag, tag_name) {
     data.svcname = o.data.svcname
   }
   $("#"+ctid).parent().remove()
-  e = $("<span><h3>"+T("Candidate tags")+"</h3><div id='"+ctid+"' class='tags'></div></span>")
+  e = $("<span><h3>"+i18n.t("tags.candidates")+"</h3><div id='"+ctid+"' class='tags'></div></span>")
   o.div.append(e)
   tags(data)
 }
@@ -186,8 +186,6 @@ function tag_input_keyup(event, o, tag, tag_name) {
 }
 
 function tags_attach_tag(o, tag_name) {
-  // ajax
-  //$("#"+init_data.tid).html(T("Attaching tag ..."))
   _data = {
     "tag_name": tag_name
   }
@@ -201,7 +199,7 @@ function tags_attach_tag(o, tag_name) {
   } else {
     var url = $(location).attr("origin") + "/init/tags/call/json/add_tag"
   }
-  o.div.html(T("Attaching tag"))
+  o.div.html(i18n.t("tags.attaching"))
   $.ajax({
      type: "POST",
      url: url,

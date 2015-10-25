@@ -39,5 +39,11 @@
         "no_diff": "No difference found."
       }
     }
+  },
+  "tags": {
+    "detaching": "Detaching tag ...",
+    "attaching": "Attaching tag ...",
+    "add": "Add tag",
+    "candidates": "Candidate tags"
   }
 }

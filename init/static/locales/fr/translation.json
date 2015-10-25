@@ -39,5 +39,11 @@
         "no_diff": "Aucune différence trouvées."
       }
     }
+  },
+  "tags": {
+    "detaching": "Attachement du tag en cours ...",
+    "attaching": "Detachement du tag en cours ...",
+    "add": "Ajouter un tag",
+    "candidates": "Tags candidats"
   }
 }
