@@ -20,7 +20,8 @@
     	"begin_date" : "Date de début",
     	"end_date" : "Date de fin",
         "ignore_blanks" : "Ignorer les blancs",
-    	"filter" : "Filtre (glob)",
+    	"filter" : "Chemin (glob)",
+    	"regexp" : "Chemin (regexp)",
     	"title" : "Filtres",
     	"submit_button" : "Soumettre"
     },
