@@ -29,6 +29,9 @@ var services_access_uri = {
     "R_USERS_SELF" : "/rest/api/users/self",
     "R_USER_GROUPS" : "/rest/api/users/%1/groups",
     "R_GROUPS" : "/rest/api/groups",
+    "R_NODE_TAGS" : "/rest/api/nodes/%1/tags",
+    "R_SERVICE_TAGS" : "/rest/api/services/%1/tags",
+    "R_TAGS" : "/rest/api/tags",
 }
 
 function services_getaccessurl(service)
@@ -43,13 +46,22 @@ function services_getaccessurl(service)
     return base_path
 }
 
-function services_osvcpost(service, data, callback)
+function services_osvcpostrest(service, uri, params, data, callback)
 {
     url = services_getaccessurl(service)
-    if (is_blank(url))
-    {
+    if (is_blank(url)) {
         console.log(service + " uri undefined")
         return
+    }
+    for(var i=0; i<uri.length; i++) {
+        url = url.replace("%"+(i+1), uri[i])
+    }
+    if (Object.keys(params).length > 0) {
+        url += "?"
+        for (key in params) {
+            url += encodeURIComponent(key) + "=" + encodeURIComponent(params[key]) + "&";
+        }
+        url = url.replace(/&$/, "");
     }
     var req = $.ajax(
     {
@@ -67,7 +79,7 @@ function services_osvcgetrest(service, uri, params, callback)
         console.log(service + " uri undefined")
         return
     }
-    for(i=0;i<uri.length;i++) {
+    for(i=0; i<uri.length; i++) {
         url = url.replace("%"+(i+1), uri[i])
     }
     if (Object.keys(params).length > 0) {
@@ -80,13 +92,17 @@ function services_osvcgetrest(service, uri, params, callback)
     var req = $.getJSON(url, callback)
 }
 
-function services_osvcpostrest(service, param, callback)
+/*
+function services_osvcpostrest(service, uri, param, data, callback)
 {
     url = services_getaccessurl(service)
     if (is_blank(url))
     {
         console.log(service + " uri undefined")
         return
+    }
+    for(var i=0; i<uri.length; i++) {
+        url = url.replace("%"+(i+1), uri[i])
     }
     var req = $.post(url,param)
     .done( callback )
@@ -94,8 +110,9 @@ function services_osvcpostrest(service, param, callback)
         callback(xhr.responseText);
     });
 }
+*/
 
-function services_osvcdeleterest(service, param, callback)
+function services_osvcdeleterest(service, uri, callback)
 {
     url = services_getaccessurl(service)
     if (is_blank(url))
@@ -103,8 +120,9 @@ function services_osvcdeleterest(service, param, callback)
         console.log(service + " uri undefined")
         return
     }
-    for(i=0;i<param.length;i++)
-        url = url.replace("%"+(i+1),param[i])
+    for(i=0; i<uri.length; i++) {
+        url = url.replace("%"+(i+1), uri[i])
+    }
     var req = $.ajax(
     {
         type: "DELETE",

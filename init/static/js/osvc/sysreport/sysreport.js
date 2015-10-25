@@ -651,7 +651,7 @@ function sysrep_admin_secure_handle(o, tid, func)
 {
   if (func=="add") {
     var value = o.secure_pattern_new.val();
-    services_osvcpostrest("R_SYSREPORT_SECURE_PATTERNS", {"pattern": value}, function(jd) {
+    services_osvcpostrest("R_SYSREPORT_SECURE_PATTERNS", "", "", {"pattern": value}, function(jd) {
       if (jd.data === undefined) {
         o.secure_pattern_error.html(jd.info);
         return
@@ -661,9 +661,7 @@ function sysrep_admin_secure_handle(o, tid, func)
       mul_toggle('sysrep_secure_pattern_add','sysrep_secure_pattern_button', o.divid);
     })
   } else if (func=="del") {
-    var param = [];
-    param.push(tid);
-    services_osvcdeleterest("R_SYSREPORT_SECURE_PATTERN", param, function(jd) {
+    services_osvcdeleterest("R_SYSREPORT_SECURE_PATTERN", [tid], function(jd) {
           var result = jd;
           o.sysrep_admin_secure();
     })  
@@ -677,10 +675,13 @@ function sysrep_admin_allow_handle(o, tid, func)
     var meta_pattern = o.allow_pattern.val();
     var meta_role = o.allow_groups.val();
     var meta_fset_name = o.allow_filterset.val();
-    var param = "pattern="+meta_pattern+"&group_name="+meta_role+"&fset_name="+meta_fset_name;
-    services_osvcpostrest("R_SYSREPORT_AUTHORIZATIONS", param, function(jd) {
-      if (jd.data === undefined)
-      {
+    var data = {
+      "pattern": meta_pattern,
+      "group_name": meta_role,
+      "fset_name": meta_fset_name,
+    }
+    services_osvcpostrest("R_SYSREPORT_AUTHORIZATIONS", "", "", data, function(jd) {
+      if (jd.data === undefined) {
         // if info
         if (jd.info !== undefined)
           o.admin_allow_error.html(jd.info);
@@ -698,9 +699,7 @@ function sysrep_admin_allow_handle(o, tid, func)
   }
   else if (func=="del")
   {
-    var param = [];
-    param.push(tid);
-    services_osvcdeleterest("R_SYSREPORT_AUTHORIZATION", param, function(jd) {
+    services_osvcdeleterest("R_SYSREPORT_AUTHORIZATION", [tid], function(jd) {
       var result = jd;
       o.sysrep_admin_allow();
     })  
