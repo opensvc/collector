@@ -4,7 +4,6 @@
 function sysrep_on_change_filters(o)
 {
     o.sysrep_timeline();
-    o.sysrep_timediff();
     o.sysrep_createlink();
 }
 
@@ -71,7 +70,6 @@ function sysrep(divid, options)
     o.div.load('/init/static/views/sysreport.html', "", function() {
       o.sysrep_init()
       o.sysrep_timeline();
-      o.sysrep_timediff();
     })
     return o
 }
@@ -320,7 +318,7 @@ function _sysrep_timediff(o, nodename)
 function sysrep_timediff_data(o, jd, nodename, detail)
 {
     if (jd.error) {
-      detail.html(jd.error);
+      detail.append(services_error_fmt(jd));
       return;
     }
     var result = jd.data;
@@ -353,6 +351,11 @@ function sysrep_timediff_data(o, jd, nodename, detail)
       detail.append(e);
       detail.append(p);
     }
+    if (detail.children().length == 0) {
+      e = $("<span class='alert16'></span>")
+      e.text(i18n.t("sysrep.error.no_change"))
+      detail.append(e)
+    }
  }
 
 
@@ -379,23 +382,28 @@ function sysrep_timeline_data(o, jd)
     o.tree_diff.hide();
     o.tree.hide();
 
+    var data = jd.data;
+    if (data.length == 0) {
+      e = $("<span class='alert16'></span>")
+      e.text(i18n.t("sysrep.error.no_change"))
+      o.timeline_graph.append(e)
+      return
+    }
+
     // DOM element where the Timeline will be attached
     var container = o.timeline_graph[0];
 
-    var data = jd.data;
     // Handle max lines
     var max_fpath = 5;
-    for (i=0; i<jd.data.length; i++)
+    for (i=0; i<data.length; i++)
     {
-      if (jd.data[i].stat.length > max_fpath)
-      {
+      if (data[i].stat.length > max_fpath) {
         var lastline = data[i].stat.length - max_fpath;
         data[i].stat = data[i].stat.slice(0, max_fpath);
         data[i].stat.push("... " + lastline + " more.");
       }
       data[i].stat[0] += '\n';
-      for(j=1; j<data[i].stat.length; j++)
-      {
+      for(j=1; j<data[i].stat.length; j++) {
         data[i].stat[0] += data[i].stat[j] + "\n";
       }
       data[i].stat = data[i].stat.slice(0, 1);
@@ -465,6 +473,7 @@ function sysrep_timeline_data(o, jd)
         }
       }
     }
+    o.sysrep_timediff();
 }
 
 function sysreport_timeline_on_select(o, item)
@@ -814,10 +823,15 @@ function _sysrep_diff(o, node1, node2)
 function sysrep_diff_data(o, jd, node1, node2, detail)
 {
     if (jd.error) {
-      detail.html(jd.error);
+      detail.append(services_error_fmt(jd));
       return;
     }
     var result = jd.data;
+    if (result.length == 0) {
+      e = $("<span class='alert16'></span>")
+      e.text(i18n.t("sysrep.sysrepdiff.error.no_diff"))
+      detail.append(e)
+    }
 
     for (var i=0; i<result.length; i++)
     {

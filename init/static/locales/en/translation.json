@@ -1,4 +1,7 @@
 {
+  "api": {
+    "error": "The collector request returned an error."
+  },
   "app": {
     "name": "collector"
   },
@@ -21,6 +24,9 @@
       "title" : "Filters",
       "submit_button" : "Submit"
     },
+    "error": {
+      "no_change": "No change found."
+    },
     "timeline_title" : "Node __node__ changes timeline",
     "timeline_time_diff_title" : "Aggregated changes on __nodename__ between __begin__ and __end__",
     "timeline_tree_diff_title" : "Changes",
@@ -28,7 +34,8 @@
     "sysrepdiff" : {
       "section_title": "__node1__ to __node2__",
       "error": {
-        "not_enough_nodes": "Not enough nodes to compare."
+        "not_enough_nodes": "Not enough nodes to compare.",
+        "no_diff": "No difference found."
       }
     }
   }

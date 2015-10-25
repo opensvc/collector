@@ -1,4 +1,7 @@
 {
+  "api": {
+    "error": "La requête au collecteur a renvoyé une erreur."
+  },
   "app": {
     "name": "collector"
   },
@@ -21,6 +24,9 @@
     	"title" : "Filtres",
     	"submit_button" : "Soumettre"
     },
+    "error": {
+      "no_change": "Aucun changement trouvé."
+    },
     "timeline_title" : "Histogramme des changements du noeud __node__",
     "timeline_time_diff_title" : "Changements aggrégés sur __nodename__ entre __begin__ et __end__",
     "timeline_tree_diff_title" : "Changements",
@@ -28,7 +34,8 @@
     "sysrepdiff" : {
       "section_title": "__node1__ vers __node2__",
       "error": {
-        "not_enough_nodes": "Trop peu de noeuds à comparer."
+        "not_enough_nodes": "Trop peu de noeuds à comparer.",
+        "no_diff": "Aucune différence trouvées."
       }
     }
   }

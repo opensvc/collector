@@ -147,3 +147,17 @@ function services_ismemberof(group, callback)
         }
     });
 }
+
+function services_error_fmt(data) {
+    e = $("<span class='alert16'></span>")
+    e.text(i18n.t("api.error"))
+    p = $("<pre></pre>")
+    p.text(data.error)
+    p.css({
+      "padding": "5px",
+      "padding-left": "20px",
+    })
+    e.append(p)
+    return e
+}
+
