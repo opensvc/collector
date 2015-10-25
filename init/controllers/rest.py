@@ -298,8 +298,8 @@ def rest_router(action, args, vars):
             if handler.match("/"+request.raw_args):
                 return handler.handle(*args, **vars)
     except Exception as e:
-        response.status = 404
         return dict(error=str(e))
+    response.status = 404
     return dict(error="Unsupported api url")
 
 
