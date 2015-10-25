@@ -55,6 +55,9 @@ function spinner_del(e, text)
 
 function spinner_add(e, text)
 {
+    if (e.children(".spinner").length > 0) {
+        return
+    }
     if (!text) {
         text = ""
     }
