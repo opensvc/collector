@@ -18,16 +18,25 @@ function tags(data) {
   o.detach_tag = function(tag, tag_data) {
     return tags_detach_tag(this, tag, tag_data)
   }
-  o.attach_tag = function(tag_name) {
-    return tags_attach_tag(this, tag_name)
+  o.attach_tag = function(tag_data) {
+    return tags_attach_tag(this, tag_data)
+  }
+  o._attach_tag = function(tag_data) {
+    return _tags_attach_tag(this, tag_data)
   }
 
-  if ("url" in data) {
-    o.url = data.url
+  if (("candidates" in data) && ("nodename" in data)) {
+    o.url = "R_NODE_CANDIDATE_TAGS"
+    o.url_params = [data.nodename]
+  } else if (("candidates" in data) && ("svcname" in data)) {
+    o.url = "R_SERVICE_CANDIDATE_TAGS"
+    o.url_params = [data.svcname]
   } else if ("nodename" in data) {
-    o.url = $(location).attr("origin") + "/init/tags/call/json/json_node_tags/"+data.nodename
+    o.url = "R_NODE_TAGS"
+    o.url_params = [data.nodename]
   } else if ("svcname" in data) {
-    o.url = $(location).attr("origin") + "/init/tags/call/json/json_svc_tags/"+data.svcname
+    o.url = "R_SERVICE_TAGS"
+    o.url_params = [data.svcname]
   } else {
     return
   }
@@ -41,7 +50,7 @@ function tags_add_tag(o, tag_data) {
   } else {
     cl = "tag tag_attached"
   }
-  s = "<span tag_id='"+tag_data.tag_id+"' class='"+cl+"'>"+tag_data.tag_name+" </span>"
+  s = "<span tag_id='"+tag_data.id+"' class='"+cl+"'>"+tag_data.tag_name+" </span>"
   e = $(s)
   e.bind("mouseover", function(){
     if (o.data.responsible && o.data.candidates != true) {
@@ -59,7 +68,7 @@ function tags_add_tag(o, tag_data) {
       return
     }
     if ($(this).hasClass("tag_candidate")) {
-      o.attach_tag(tag_data.tag_name)
+      o.attach_tag(tag_data)
       return
     }
     if ($(this).hasClass("tag_detach1")) {
@@ -75,31 +84,6 @@ function tags_add_tag(o, tag_data) {
     }
   })
   return e
-}
-
-function tags_detach_tag(o, tag, tag_data) {
-    o.div.html(i18n.t("tags.detaching"))
-    _data = {
-      "tag_id": tag_data.tag_id
-    }
-    if ("nodename" in o.data) {
-      _data.nodename = o.data.nodename
-    } else if ("svcname" in o.data) {
-      _data.svcname = o.data.svcname
-    }
-    var url = $(location).attr("origin") + "/init/tags/call/json/del_tag"
-    $.ajax({
-     type: "POST",
-     url: url,
-     data: _data,
-     success: function(msg){
-        if (msg.ret != 0) {
-          $(".flash").html(msg.msg).slideDown().effect("fade", 15000)
-          return
-        }
-        o.load()
-     }
-    })
 }
 
 function tags_add_add_tag(o) {
@@ -126,8 +110,21 @@ function tags_add_add_tag(o) {
 
 function tags_load(o) {
   spinner_add(o.div)
-  $.getJSON(o.url, function(_data){
+  options = {
+    "meta": "false",
+    "limit": "0",
+    "props": "id,tag_name"
+  }
+  if ("prefix" in o.data) {
+    options["query"] = "tag_name starts with " + o.data.prefix
+  }
+  services_osvcgetrest(o.url, o.url_params, options, function(_data) {
     spinner_del(o.div)
+    if (_data.error) {
+      o.div.html(services_error_fmt(_data))
+      return
+    }
+    _data = _data.data
     d = $("<div></div>")
     for (i=0; i<_data.length; i++) {
       d.append(o.add_tag(_data[i]))
@@ -149,19 +146,14 @@ function tags_add_candidates(o, tag, tag_name) {
   }
   prefix = prefix.replace(/\//, "_")
   prefix = encodeURIComponent(prefix)
-  if ("nodename" in o.data) {
-    var url = $(location).attr("origin") + "/init/tags/call/json/list_node_avail_tags/"+o.data.nodename+"/"+prefix
-  } else if ("svcname" in o.data) {
-    var url = $(location).attr("origin") + "/init/tags/call/json/list_svc_avail_tags/"+o.data.svcname+"/"+prefix
-  } else {
-    return
-  }
+
+  // 1st candidates exec: init a new tag object
   ctid = o.data.tid+"c"
   data = {
    "tid": ctid,
    "responsible": o.data.responsible,
-   "url": url,
    "parent_object": o,
+   "prefix": prefix,
    "candidates": true
   }
   if ("nodename" in o.data) {
@@ -182,47 +174,69 @@ function tag_input_keyup(event, o, tag, tag_name) {
     o.add_candidates(tag, tag_name)
     return
   }
-  o.attach_tag(tag_name)
+  o.attach_tag({"tag_name": tag_name})
 }
 
-function tags_attach_tag(o, tag_name) {
-  _data = {
-    "tag_name": tag_name
-  }
-  if ("nodename" in o.data) {
-    _data.nodename = o.data.nodename
-  } else if ("svcname" in o.data) {
-    _data.svcname = o.data.svcname
-  }
-  if (tag.hasClass("tag_create") || tag.hasClass("tag_candidate")) {
-    var url = $(location).attr("origin") + "/init/tags/call/json/create_and_add_tag"
+function tags_attach_tag(o, tag_data) {
+  if (!tag_data.id) {
+    o.div.html(i18n.t("tags.creating"))
+    services_osvcpostrest("R_TAGS", "", "", tag_data, function(jd) {
+      if (jd.error) {
+        o.div.html(services_error_fmt(_data))
+        return
+      }
+      o._attach_tag(jd.data)
+      return
+    })
   } else {
-    var url = $(location).attr("origin") + "/init/tags/call/json/add_tag"
+    o._attach_tag(tag_data)
+  }
+}
+
+function _tags_attach_tag(o, tag_data) {
+  if ("nodename" in o.data) {
+    url = "R_TAG_NODE"
+    url_params = [tag_data.id, o.data.nodename]
+  } else if ("svcname" in o.data) {
+    url = "R_TAG_SERVICE"
+    url_params = [tag_data.id, o.data.svcname]
+  } else {
+    return
   }
   o.div.html(i18n.t("tags.attaching"))
-  $.ajax({
-     type: "POST",
-     url: url,
-     data: _data,
-     success: function(msg){
-        if (msg.ret == 2) {
-          //$("#"+init_data.tid).html(bkp)
-          $(".flash").html(msg.msg).slideDown().effect("fade", 5000)
-          tag.addClass("tag_create")
-          tag.find("input").addClass("tag_create")
-          return
-        } else if (msg.ret == 3) {
-          //$("#"+init_data.tid).html(bkp)
-          $(".flash").html(msg.msg).slideDown().effect("fade", 5000)
-          return
-        } else if (msg.ret == 1) {
-          //$("#"+init_data.tid).html(bkp)
-          $(".flash").html(msg.msg).slideDown().effect("fade", 5000)
-          return
-        }
-        // refresh tags
-        o.data.parent_object.load()
-     }
+  services_osvcpostrest(url, url_params, "", "", function(jd) {
+    if (jd.error) {
+      o.div.html(services_error_fmt(jd))
+      return
+    }
+    // refresh tags
+    if (o.data.parent_object) {
+      o.div.remove()
+      o.data.parent_object.load()
+    } else {
+      o.load()
+    }
+  })
+}
+
+function tags_detach_tag(o, tag, tag_data) {
+  o.div.html(i18n.t("tags.detaching"))
+  if ("nodename" in o.data) {
+    url = "R_TAG_NODE"
+    url_params = [tag_data.id, o.data.nodename]
+  } else if ("svcname" in o.data) {
+    url = "R_TAG_SERVICE"
+    url_params = [tag_data.id, o.data.svcname]
+  } else {
+    return
+  }
+  services_osvcdeleterest(url, url_params, function(jd) {
+    if (jd.error) {
+      o.div.html(services_error_fmt(jd))
+      return
+    }
+    // refresh tags
+    o.load()
   })
 }
 

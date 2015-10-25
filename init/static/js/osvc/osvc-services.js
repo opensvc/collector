@@ -30,8 +30,12 @@ var services_access_uri = {
     "R_USER_GROUPS" : "/rest/api/users/%1/groups",
     "R_GROUPS" : "/rest/api/groups",
     "R_NODE_TAGS" : "/rest/api/nodes/%1/tags",
+    "R_NODE_CANDIDATE_TAGS" : "/rest/api/nodes/%1/candidate_tags",
     "R_SERVICE_TAGS" : "/rest/api/services/%1/tags",
+    "R_SERVICE_CANDIDATE_TAGS" : "/rest/api/services/%1/candidate_tags",
     "R_TAGS" : "/rest/api/tags",
+    "R_TAG_NODE" : "/rest/api/tags/%1/nodes/%2",
+    "R_TAG_SERVICE" : "/rest/api/tags/%1/services/%2"
 }
 
 function services_getaccessurl(service)

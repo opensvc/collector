@@ -43,6 +43,7 @@
   "tags": {
     "detaching": "Detaching tag ...",
     "attaching": "Attaching tag ...",
+    "creating": "Creating tag ...",
     "add": "Add tag",
     "candidates": "Candidate tags"
   }

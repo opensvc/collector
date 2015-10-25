@@ -43,6 +43,7 @@
   "tags": {
     "detaching": "Attachement du tag en cours ...",
     "attaching": "Detachement du tag en cours ...",
+    "creating": "Création du tag en cours ...",
     "add": "Ajouter un tag",
     "candidates": "Tags candidats"
   }
