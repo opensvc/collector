@@ -79,7 +79,6 @@ function sysrep(divid, options)
 function sysrep_init(o)
 {
     // initialize useful object refs to avoid DOM lookups
-    o.spinner = $("#spinner")
     o.link = o.div.find("#sysrep_link")
     o.link_div = o.div.find("#sysrep_link_div")
     o.ql_link = o.div.find("#sysrep_ql_link")
@@ -286,8 +285,13 @@ function sysrep_timediff(o)
     o.time_diff.hide();
     return;
   }
-  o.time_diff.empty();
   nodes = o.nodes.split(",");
+  if (nodes.length == 0) {
+    o.time_diff.hide();
+    return;
+  }
+  o.time_diff.empty();
+  o.time_diff.show("vertical-slide");
   for (var i=0; i<nodes.length; i++) {
     o._sysrep_timediff(nodes[i])
   }
@@ -306,7 +310,9 @@ function _sysrep_timediff(o, nodename)
   var detail = $("<div></div>")
   o.time_diff.append(title);
   o.time_diff.append(detail);
+  spinner_add(detail)
   services_osvcgetrest("R_NODE_SYSREPORT_TIMEDIFF", [nodename], params, function(jd) {
+    spinner_del(detail)
     o.sysrep_timediff_data(jd, nodename, detail);
   });
 }
@@ -347,9 +353,6 @@ function sysrep_timediff_data(o, jd, nodename, detail)
       detail.append(e);
       detail.append(p);
     }
-    if (!o.time_diff.is(':visible')) {
-      o.time_diff.slideToggle();
-    }
  }
 
 
@@ -358,14 +361,14 @@ function sysrep_timeline(o)
   o.timeline_title.html(i18n.t("sysrep.timeline_title", {"node": o.nodes}));
   o.sysrep_createlink();
 
-  o.spinner.show();
-
   var params = o.sysrep_getparams()
   if ("cid" in params) {
     delete params.cid
   }
   params["nodes"] = o.nodes
+  spinner_add(o.timeline_graph)
   services_osvcgetrest("R_SYSREPORT_TIMELINE", "", params, function(jd) {
+    spinner_del(o.timeline_graph)
     o.sysrep_timeline_data(jd);
   });
 }
@@ -425,8 +428,6 @@ function sysrep_timeline_data(o, jd)
         }
     o.timeline = new vis.Timeline(container, data, groups, options);
 
-    o.spinner.hide();
-
     if (!o.timeline_graph.is(':visible')) {
        o.timeline_graph.slideToggle();
     }
@@ -485,7 +486,9 @@ function sysreport_timeline_on_select(o, item)
         params["path"] = filter_value;
       }
       // list commit diffs
+      spinner_add(o.tree_diff)
       services_osvcgetrest("R_NODE_SYSREPORT_CID", [item.group, item.cid], params, function(jd) {
+        spinner_del(o.tree_diff)
         var result = jd.data;
         o.tree_diff_date.html(result.date);
         o.tree_date.html(result.date);
@@ -535,10 +538,11 @@ function sysreport_timeline_on_select(o, item)
       });
       
       // List Tree File/Cmd
+      o.tree_title.html(i18n.t("sysrep.timeline_tree_file_title"));
+      spinner_add(o.tree)
       services_osvcgetrest("R_NODE_SYSREPORT_CID_TREE", [item.group,item.cid], params, function(jd) {
-        // Link to tree file
+        spinner_del(o.tree)
         var result = jd.data;
-        o.tree_title.html(i18n.t("sysrep.timeline_tree_file_title"));
         for (i=0;i<result.length;i++)
         {
           if (result[i].content_type == "command")
@@ -800,7 +804,9 @@ function _sysrep_diff(o, node1, node2)
   o.diff.append(detail);
   params = o.sysrep_getparams()
   params["nodes"] = o.nodes;
+  spinner_add(detail)
   services_osvcgetrest("R_SYSREPORT_NODEDIFF", "", params, function(jd) {
+    spinner_del(detail)
     o.sysrep_diff_data(jd, node1, node2, detail);
   });
 }

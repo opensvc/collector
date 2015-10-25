@@ -47,3 +47,22 @@ function mul_toggle(divid,divid2, head)
 function float2int (value) {
     return value | 0;
 }
+
+function spinner_del(e, text)
+{
+    e.children(".spinner").remove()
+}
+
+function spinner_add(e, text)
+{
+    if (!text) {
+        text = ""
+    }
+    s = $("<span class='spinner'><span>")
+    s.text(text)
+    e.append(s)
+    if (!e.is(":visible")) {
+        e.slideToggle()
+    }
+}
+
