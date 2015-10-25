@@ -1,5 +1,5 @@
-function e_tag(tag_data, init_data) {
-  if (init_data.candidates == true) {
+function tags_add_tag(o, tag_data) {
+  if (o.data.candidates == true) {
     cl = "tag tag_candidate"
   } else {
     cl = "tag tag_attached"
@@ -7,22 +7,22 @@ function e_tag(tag_data, init_data) {
   s = "<span tag_id='"+tag_data.tag_id+"' class='"+cl+"'>"+tag_data.tag_name+" </span>"
   e = $(s)
   e.bind("mouseover", function(){
-    if (init_data.responsible && init_data.candidates != true) {
+    if (o.data.responsible && o.data.candidates != true) {
       $(this).addClass("tag_del")
     }
   })
   e.bind("mouseout", function(){
-    if (init_data.responsible && init_data.candidates != true) {
+    if (o.data.responsible && o.data.candidates != true) {
       $(this).removeClass("tag_del")
     }
   })
   e.bind("click", function(event){
     event.stopPropagation()
-    if (!init_data.responsible) {
+    if (!o.data.responsible) {
       return
     }
     if ($(this).hasClass("tag_candidate")) {
-      tag_attach(init_data, tag_data.tag_name)
+      o.attach_tag(tag_data.tag_name)
       return
     }
     if ($(this).hasClass("tag_detach1")) {
@@ -34,21 +34,21 @@ function e_tag(tag_data, init_data) {
       $(this).addClass("tag_detach1")
     }
     if ($(this).hasClass("tag_detach3")) {
-      tag_detach($(this), tag_data, init_data)
+      o.detach_tag($(this), tag_data)
     }
   })
   return e
 }
 
-function tag_detach(tag, tag_data, init_data) {
-    $("#"+init_data.tid).html(T("Detaching tag ..."))
+function tags_detach_tag(o, tag, tag_data) {
+    o.div.html(T("Detaching tag ..."))
     _data = {
       "tag_id": tag_data.tag_id
     }
-    if ("nodename" in init_data) {
-      _data.nodename = init_data.nodename
-    } else if ("svcname" in init_data) {
-      _data.svcname = init_data.svcname
+    if ("nodename" in o.data) {
+      _data.nodename = o.data.nodename
+    } else if ("svcname" in o.data) {
+      _data.svcname = o.data.svcname
     }
     var url = $(location).attr("origin") + "/init/tags/call/json/del_tag"
     $.ajax({
@@ -60,12 +60,12 @@ function tag_detach(tag, tag_data, init_data) {
           $(".flash").html(msg.msg).slideDown().effect("fade", 15000)
           return
         }
-        init_tags(init_data)
+        o.load()
      }
     })
 }
 
-function e_add_tag(init_data) {
+function tags_add_add_tag(o) {
   s = "<span class='tag_add'>"+T("Add tag")+" </span>"
   e = $(s)
   e.bind("click", function(){
@@ -80,7 +80,7 @@ function e_add_tag(init_data) {
     e.bind("keyup", function(event){
       tag = $(this).parent()
       tag_name = $(this).val()
-      tag_input_keyup(event, init_data, tag, tag_name)
+      tag_input_keyup(event, o, tag, tag_name)
     })
     e.focus()
   })
@@ -88,89 +88,120 @@ function e_add_tag(init_data) {
 }
 
 function tags(data) {
+  o = {}
+  o.div = $("#"+data.tid)
+  o.data = data
+
+  o.load = function() {
+    return tags_load(this)
+  }
+  o.add_tag = function(data) {
+    return tags_add_tag(this, data)
+  }
+  o.add_add_tag = function() {
+    return tags_add_add_tag(this)
+  }
+  o.add_candidates = function(tag, tag_name) {
+    return tags_add_candidates(this, tag, tag_name)
+  }
+  o.detach_tag = function(tag, tag_data) {
+    return tags_detach_tag(this, tag, tag_data)
+  }
+  o.attach_tag = function(tag_name) {
+    return tags_attach_tag(this, tag_name)
+  }
+
   if ("url" in data) {
-    url = data.url
+    o.url = data.url
   } else if ("nodename" in data) {
-    url = $(location).attr("origin") + "/init/tags/call/json/json_node_tags/"+data.nodename
+    o.url = $(location).attr("origin") + "/init/tags/call/json/json_node_tags/"+data.nodename
   } else if ("svcname" in data) {
-    url = $(location).attr("origin") + "/init/tags/call/json/json_svc_tags/"+data.svcname
+    o.url = $(location).attr("origin") + "/init/tags/call/json/json_svc_tags/"+data.svcname
   } else {
     return
   }
-  $.getJSON(url, function(_data){
+  o.load()
+  return o
+}
+
+function tags_load(o) {
+  spinner_add(o.div)
+  $.getJSON(o.url, function(_data){
+    spinner_del(o.div)
     d = $("<div></div>")
     for (i=0; i<_data.length; i++) {
-      d.append(e_tag(_data[i], data))
+      d.append(o.add_tag(_data[i]))
     }
-    if (data.responsible && data.candidates != true) {
-      d.append(e_add_tag(data))
+    if (o.data.responsible && o.data.candidates != true) {
+      d.append(o.add_add_tag())
     }
     $(document).bind("click", function(){
       $(this).find(".tag").removeClass("tag_detach1").removeClass("tag_detach2").removeClass("tag_detach3")
     })
-    $("#"+data.tid).html(d)
+    o.div.html(d)
   })
 }
 
-function tag_input_candidates(init_data, tag, tag_name) {
-  tid = init_data.tid
-  prefix = $("#"+tid).find(".tag_input").val()
+function tags_add_candidates(o, tag, tag_name) {
+  prefix = o.div.find(".tag_input").val()
   if (prefix.length == 0) {
     prefix = "%"
   }
   prefix = prefix.replace(/\//, "_")
   prefix = encodeURIComponent(prefix)
-  if ("nodename" in init_data) {
-    var url = $(location).attr("origin") + "/init/tags/call/json/list_node_avail_tags/"+init_data.nodename+"/"+prefix
-  } else if ("svcname" in init_data) {
-    var url = $(location).attr("origin") + "/init/tags/call/json/list_svc_avail_tags/"+init_data.svcname+"/"+prefix
+  if ("nodename" in o.data) {
+    var url = $(location).attr("origin") + "/init/tags/call/json/list_node_avail_tags/"+o.data.nodename+"/"+prefix
+  } else if ("svcname" in o.data) {
+    var url = $(location).attr("origin") + "/init/tags/call/json/list_svc_avail_tags/"+o.data.svcname+"/"+prefix
   } else {
     return
   }
-  ctid = tid+"c"
+  ctid = o.data.tid+"c"
   data = {
    "tid": ctid,
-   "responsible": init_data.responsible,
+   "responsible": o.data.responsible,
    "url": url,
+   "parent_object": o,
    "candidates": true
   }
-  if ("nodename" in init_data) {
-    data.nodename = init_data.nodename
-  } else if ("svcname" in init_data) {
-    data.svcname = init_data.svcname
+  if ("nodename" in o.data) {
+    data.nodename = o.data.nodename
+  } else if ("svcname" in o.data) {
+    data.svcname = o.data.svcname
   }
   $("#"+ctid).parent().remove()
   e = $("<span><h3>"+T("Candidate tags")+"</h3><div id='"+ctid+"' class='tags'></div></span>")
-  $("#"+tid).append(e)
-  init_tags(data)
+  o.div.append(e)
+  tags(data)
 }
 
-function tag_input_keyup(event, init_data, tag, tag_name) {
+function tag_input_keyup(event, o, tag, tag_name) {
   if (!is_enter(event)) {
     tag.removeClass("tag_create")
     tag.find("input").removeClass("tag_create")
-    tag_input_candidates(init_data, tag, tag_name)
+    o.add_candidates(tag, tag_name)
     return
   }
-  tag_attach(init_data, tag_name)
+  o.attach_tag(tag_name)
 }
 
-function tag_attach(init_data, tag_name) {
+function tags_attach_tag(o, tag_name) {
   // ajax
   //$("#"+init_data.tid).html(T("Attaching tag ..."))
   _data = {
     "tag_name": tag_name
   }
-  if ("nodename" in init_data) {
-    _data.nodename = init_data.nodename
-  } else if ("svcname" in init_data) {
-    _data.svcname = init_data.svcname
+  if ("nodename" in o.data) {
+    _data.nodename = o.data.nodename
+  } else if ("svcname" in o.data) {
+    _data.svcname = o.data.svcname
   }
   if (tag.hasClass("tag_create") || tag.hasClass("tag_candidate")) {
     var url = $(location).attr("origin") + "/init/tags/call/json/create_and_add_tag"
   } else {
     var url = $(location).attr("origin") + "/init/tags/call/json/add_tag"
   }
+  o.div.html(T("Attaching tag"))
   $.ajax({
      type: "POST",
      url: url,
@@ -192,16 +223,7 @@ function tag_attach(init_data, tag_name) {
           return
         }
         // refresh tags
-        data = {
-          "tid": init_data.tid.substr(0, 32),
-          "responsible": init_data.responsible
-        }
-        if ("nodename" in init_data) {
-          data.nodename = init_data.nodename
-        } else if ("svcname" in init_data) {
-          data.svcname = init_data.svcname
-        }
-        init_tags(data)
+        o.data.parent_object.load()
      }
   })
 }
