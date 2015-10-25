@@ -849,7 +849,7 @@ def ajax_node():
             _class='cloud',
           ),
           SCRIPT(
-            "var nodes='%(node)s';function n%(rid)s_load_sysreport(){sysrep('%(id)s', '%(node)s')}"%dict(
+            """function n%(rid)s_load_sysreport(){sysrep("%(id)s", {"nodes": "%(node)s"})}"""%dict(
                id='tab17_'+str(rowid),
                rid=str(rowid),
                node=request.vars.node,

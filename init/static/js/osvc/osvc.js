@@ -2728,7 +2728,7 @@ function trigger_tool_nodesysrepdiff(tid) {
   for (i=0;i<data.length;i++) {
     nodes.push(data[i]['nodename'])
   }
-  sysrepdiff("overlay", nodes.join(","))
+  sysrepdiff("overlay", {"nodes": nodes.join(",")})
   $("#overlay").width($("#overlay").css("max-width"))
 }
 
@@ -2742,7 +2742,7 @@ function trigger_tool_nodesysrep(tid) {
   for (i=0;i<data.length;i++) {
     nodes.push(data[i]['nodename'])
   }
-  sysrep("overlay", nodes.join(","))
+  sysrep("overlay", {"nodes": nodes.join(",")})
   $("#overlay").width($("#overlay").css("max-width"))
 }
 

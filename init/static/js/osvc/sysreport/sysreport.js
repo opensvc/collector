@@ -8,17 +8,17 @@ function sysrep_on_change_filters(o)
     o.sysrep_createlink();
 }
 
-function sysrep(divid, nodes, path, begin, end, cid)
+function sysrep(divid, options)
 {
     o = {}
 
     // store parameters
     o.divid = divid
-    o.nodes = nodes
-    o.begin = begin
-    o.end = end
-    o.path = path
-    o.cid = cid
+    o.nodes = options.nodes
+    o.begin = options.begin
+    o.end = options.end
+    o.path = options.path
+    o.cid = options.cid
 
     o.direct_access_url = "S_SYSREPVIEW"
     o.div = $("#"+divid)
@@ -702,15 +702,15 @@ function sysrep_admin_allow_handle(o, tid, func)
 //
 // Sysreport diff
 //
-function sysrepdiff(divid, nodes, path, ignore_blanks)
+function sysrepdiff(divid, options)
 {
     o = {}
 
     // store parameters
     o.divid = divid
-    o.nodes = nodes
-    o.path = path
-    o.ignore_blanks = ignore_blanks
+    o.nodes = options.nodes
+    o.path = options.path
+    o.ignore_blanks = options.ignore_blanks
 
     o.direct_access_url = "S_SYSREPDIFFVIEW"
     o.div = $("#"+divid)
