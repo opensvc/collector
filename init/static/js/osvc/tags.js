@@ -1,3 +1,40 @@
+function tags(data) {
+  o = {}
+  o.div = $("#"+data.tid)
+  o.data = data
+
+  o.load = function() {
+    return tags_load(this)
+  }
+  o.add_tag = function(data) {
+    return tags_add_tag(this, data)
+  }
+  o.add_add_tag = function() {
+    return tags_add_add_tag(this)
+  }
+  o.add_candidates = function(tag, tag_name) {
+    return tags_add_candidates(this, tag, tag_name)
+  }
+  o.detach_tag = function(tag, tag_data) {
+    return tags_detach_tag(this, tag, tag_data)
+  }
+  o.attach_tag = function(tag_name) {
+    return tags_attach_tag(this, tag_name)
+  }
+
+  if ("url" in data) {
+    o.url = data.url
+  } else if ("nodename" in data) {
+    o.url = $(location).attr("origin") + "/init/tags/call/json/json_node_tags/"+data.nodename
+  } else if ("svcname" in data) {
+    o.url = $(location).attr("origin") + "/init/tags/call/json/json_svc_tags/"+data.svcname
+  } else {
+    return
+  }
+  o.load()
+  return o
+}
+
 function tags_add_tag(o, tag_data) {
   if (o.data.candidates == true) {
     cl = "tag tag_candidate"
@@ -85,43 +122,6 @@ function tags_add_add_tag(o) {
     e.focus()
   })
   return e
-}
-
-function tags(data) {
-  o = {}
-  o.div = $("#"+data.tid)
-  o.data = data
-
-  o.load = function() {
-    return tags_load(this)
-  }
-  o.add_tag = function(data) {
-    return tags_add_tag(this, data)
-  }
-  o.add_add_tag = function() {
-    return tags_add_add_tag(this)
-  }
-  o.add_candidates = function(tag, tag_name) {
-    return tags_add_candidates(this, tag, tag_name)
-  }
-  o.detach_tag = function(tag, tag_data) {
-    return tags_detach_tag(this, tag, tag_data)
-  }
-  o.attach_tag = function(tag_name) {
-    return tags_attach_tag(this, tag_name)
-  }
-
-  if ("url" in data) {
-    o.url = data.url
-  } else if ("nodename" in data) {
-    o.url = $(location).attr("origin") + "/init/tags/call/json/json_node_tags/"+data.nodename
-  } else if ("svcname" in data) {
-    o.url = $(location).attr("origin") + "/init/tags/call/json/json_svc_tags/"+data.svcname
-  } else {
-    return
-  }
-  o.load()
-  return o
 }
 
 function tags_load(o) {
