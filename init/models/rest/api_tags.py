@@ -8,7 +8,7 @@ class rest_get_tags(rest_get_table_handler):
           "List existing tags.",
         ]
         examples = [
-          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/tags?like=%%aix%%",
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/tags",
         ]
         rest_get_table_handler.__init__(
           self,
@@ -20,6 +20,52 @@ class rest_get_tags(rest_get_table_handler):
 
     def handler(self, **vars):
         q = db.tags.id > 0
+        self.set_q(q)
+        return self.prepare_data(**vars)
+
+#
+class rest_get_node_tags(rest_get_table_handler):
+    def __init__(self):
+        desc = [
+          "List tags attached to a node.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/nodes/node1/tags",
+        ]
+        rest_get_table_handler.__init__(
+          self,
+          path="/nodes/<nodename>/tags",
+          tables=["tags"],
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, nodename, **vars):
+        q = db.node_tags.nodename == nodename
+        q &= db.node_tags.tag_id == db.tags.id
+        self.set_q(q)
+        return self.prepare_data(**vars)
+
+#
+class rest_get_service_tags(rest_get_table_handler):
+    def __init__(self):
+        desc = [
+          "List tags attached to a service.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/services/svc1/tags",
+        ]
+        rest_get_table_handler.__init__(
+          self,
+          path="/services/<svcname>/tags",
+          tables=["tags"],
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, nodename, **vars):
+        q = db.service_tags.svcname == svcname
+        q &= db.service_tags.tag_id == db.tags.id
         self.set_q(q)
         return self.prepare_data(**vars)
 
