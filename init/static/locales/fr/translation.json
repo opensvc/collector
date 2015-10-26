@@ -41,8 +41,8 @@
     }
   },
   "tags": {
-    "detaching": "Attachement du tag en cours ...",
-    "attaching": "Detachement du tag en cours ...",
+    "attaching": "Attachement du tag en cours ...",
+    "detaching": "Detachement du tag en cours ...",
     "creating": "Création du tag en cours ...",
     "add": "Ajouter un tag",
     "del": "Déposer ici pour enlever un tag",
