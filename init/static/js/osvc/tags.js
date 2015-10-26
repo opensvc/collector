@@ -224,7 +224,7 @@ function tags_add_candidates(o, tag, tag_name) {
   o.div.find("#"+ctid).parent().remove()
   e = $("<span><h3>"+i18n.t("tags.candidates")+"</h3><div id='"+ctid+"' class='tags'></div></span>")
   o.div.append(e)
-  tags(data)
+  o.candidates = tags(data)
 }
 
 function tag_input_keyup(event, o, tag, tag_name) {
@@ -241,6 +241,7 @@ function tags_attach_tag(o, tag_data) {
   if (!tag_data.id) {
     // from <enter> in add tag
     o.div.info.empty()
+    o.candidates.div.parent().remove()
     services_osvcgetrest("R_TAGS", "", {"meta": "false", "query": "tag_name="+tag_data.tag_name}, function(jd) {
       if (!jd.data || (jd.data.length == 0)) {
         // tag does not exist yet ... create
