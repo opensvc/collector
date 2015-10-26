@@ -45,6 +45,8 @@
     "attaching": "Attaching tag ...",
     "creating": "Creating tag ...",
     "add": "Add tag",
-    "candidates": "Candidate tags"
+    "del": "Drop here to remove tag",
+    "candidates": "Candidate tags",
+    "no_candidates": "No candidates found. Press <enter> to create and attach the new tag."
   }
 }

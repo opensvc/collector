@@ -12,17 +12,26 @@ function tags(data) {
   o.add_add_tag = function() {
     return tags_add_add_tag(this)
   }
+  o.add_del_tag = function() {
+    return tags_add_del_tag(this)
+  }
   o.add_candidates = function(tag, tag_name) {
     return tags_add_candidates(this, tag, tag_name)
   }
-  o.detach_tag = function(tag, tag_data) {
-    return tags_detach_tag(this, tag, tag_data)
+  o.detach_tag = function(tag) {
+    return tags_detach_tag(this, tag)
   }
   o.attach_tag = function(tag_data) {
     return tags_attach_tag(this, tag_data)
   }
   o._attach_tag = function(tag_data) {
     return _tags_attach_tag(this, tag_data)
+  }
+  o.bind_admin_tools = function() {
+    return tags_bind_admin_tools(this)
+  }
+  o._bind_admin_tools = function() {
+    return _tags_bind_admin_tools(this)
   }
 
   if (("candidates" in data) && ("nodename" in data)) {
@@ -54,12 +63,12 @@ function tags_add_tag(o, tag_data) {
   e = $(s)
   e.bind("mouseover", function(){
     if (o.data.responsible && o.data.candidates != true) {
-      $(this).addClass("tag_del")
+      $(this).addClass("tag_drag")
     }
   })
   e.bind("mouseout", function(){
     if (o.data.responsible && o.data.candidates != true) {
-      $(this).removeClass("tag_del")
+      $(this).removeClass("tag_drag")
     }
   })
   e.bind("click", function(event){
@@ -71,23 +80,35 @@ function tags_add_tag(o, tag_data) {
       o.attach_tag(tag_data)
       return
     }
-    if ($(this).hasClass("tag_detach1")) {
-      $(this).removeClass("tag_detach1").addClass("tag_detach2")
-    } else
-    if ($(this).hasClass("tag_detach2")) {
-      $(this).removeClass("tag_detach2").addClass("tag_detach3")
-    } else {
-      $(this).addClass("tag_detach1")
-    }
-    if ($(this).hasClass("tag_detach3")) {
-      o.detach_tag($(this), tag_data)
-    }
   })
   return e
 }
 
+function tags_add_del_tag(o) {
+  if (o.data.candidates) {
+    return
+  }
+  e = $("<span class='tag_del'></span>")
+  e.css({"display": "none"})
+  e.text(i18n.t("tags.del"))
+  e.droppable({
+    accept: ".tag",
+    activeClass: "tag_del_active",
+    hoverClass: "tag_del_hover",
+    drop: function(event, ui) {
+      ui.draggable.hide()
+      o.detach_tag(ui.draggable)
+    }
+  });
+  return e
+}
+
 function tags_add_add_tag(o) {
+  if (o.data.candidates) {
+    return
+  }
   e = $("<span class='tag_add'></span>")
+  e.css({"display": "none"})
   e.text(i18n.t("tags.add"))
   e.bind("click", function(){
     old_html = $(this).html()
@@ -109,7 +130,14 @@ function tags_add_add_tag(o) {
 }
 
 function tags_load(o) {
-  spinner_add(o.div)
+  // init error display zone
+  if (!o.div.info) {
+    info = $("<div></div>")
+    o.div.append(info)
+    o.div.info = info
+  }
+  o.div.info.empty()
+  spinner_add(o.div.info)
   options = {
     "meta": "false",
     "limit": "0",
@@ -119,24 +147,56 @@ function tags_load(o) {
     options["query"] = "tag_name starts with " + o.data.prefix
   }
   services_osvcgetrest(o.url, o.url_params, options, function(_data) {
-    spinner_del(o.div)
+    spinner_del(o.div.info)
     if (_data.error) {
-      o.div.html(services_error_fmt(_data))
+      o.div.info.html(services_error_fmt(_data))
       return
     }
     _data = _data.data
+    if ((_data.length == 0) && o.data.candidates) {
+      o.div.info.text(i18n.t("tags.no_candidates"))
+    }
     d = $("<div></div>")
     for (i=0; i<_data.length; i++) {
       d.append(o.add_tag(_data[i]))
     }
     if (o.data.responsible && o.data.candidates != true) {
       d.append(o.add_add_tag())
+      d.append(o.add_del_tag())
     }
-    $(document).bind("click", function(){
-      $(this).find(".tag").removeClass("tag_detach1").removeClass("tag_detach2").removeClass("tag_detach3")
+    o.div.find(".tag").parent().remove()
+    o.div.prepend(d)
+    $(".tag").draggable({
+     "containment": $(".tags"),
+     "opacity": 0.9,
+     "revert": true,
+     "stack": ".tag",
     })
-    o.div.html(d)
+
+    o.bind_admin_tools()
   })
+}
+
+function tags_bind_admin_tools(o) {
+  // show tag admin tools to responsibles and managers
+  if (o.data.responsible) {
+    o._bind_admin_tools()
+    return
+  }
+  services_ismemberof("Manager", function() {
+    o._bind_admin_tools()
+  })
+}
+
+function _tags_bind_admin_tools(o) {
+  o.div.hover(
+    function(){
+      o.div.find(".tag_add,.tag_del").fadeIn()
+    },
+    function(){
+      o.div.find(".tag_add,.tag_del").fadeOut()
+    }
+  )
 }
 
 function tags_add_candidates(o, tag, tag_name) {
@@ -161,7 +221,7 @@ function tags_add_candidates(o, tag, tag_name) {
   } else if ("svcname" in o.data) {
     data.svcname = o.data.svcname
   }
-  $("#"+ctid).parent().remove()
+  o.div.find("#"+ctid).parent().remove()
   e = $("<span><h3>"+i18n.t("tags.candidates")+"</h3><div id='"+ctid+"' class='tags'></div></span>")
   o.div.append(e)
   tags(data)
@@ -179,16 +239,27 @@ function tag_input_keyup(event, o, tag, tag_name) {
 
 function tags_attach_tag(o, tag_data) {
   if (!tag_data.id) {
-    o.div.html(i18n.t("tags.creating"))
-    services_osvcpostrest("R_TAGS", "", "", tag_data, function(jd) {
-      if (jd.error) {
-        o.div.html(services_error_fmt(_data))
-        return
+    // from <enter> in add tag
+    o.div.info.empty()
+    services_osvcgetrest("R_TAGS", "", {"meta": "false", "query": "tag_name="+tag_data.tag_name}, function(jd) {
+      if (!jd.data || (jd.data.length == 0)) {
+        // tag does not exist yet ... create
+        spinner_add(o.div.info, i18n.t("tags.creating"))
+        services_osvcpostrest("R_TAGS", "", "", tag_data, function(jd) {
+          spinner_del(o.div.info)
+          if (jd.error) {
+            o.div.info.html(services_error_fmt(jd))
+            return
+          }
+          o._attach_tag(jd.data)
+        })
+      } else {
+        // tag elready exists
+        o._attach_tag(jd.data[0])
       }
-      o._attach_tag(jd.data)
-      return
     })
   } else {
+    // from click on a candidate
     o._attach_tag(tag_data)
   }
 }
@@ -203,15 +274,17 @@ function _tags_attach_tag(o, tag_data) {
   } else {
     return
   }
-  o.div.html(i18n.t("tags.attaching"))
+  o.div.info.empty()
+  spinner_add(o.div.info, i18n.t("tags.attaching"))
   services_osvcpostrest(url, url_params, "", "", function(jd) {
+    spinner_del(o.div.info)
     if (jd.error) {
-      o.div.html(services_error_fmt(jd))
+      o.div.info.html(services_error_fmt(jd))
       return
     }
     // refresh tags
     if (o.data.parent_object) {
-      o.div.remove()
+      o.div.parent().remove()
       o.data.parent_object.load()
     } else {
       o.load()
@@ -219,20 +292,22 @@ function _tags_attach_tag(o, tag_data) {
   })
 }
 
-function tags_detach_tag(o, tag, tag_data) {
-  o.div.html(i18n.t("tags.detaching"))
+function tags_detach_tag(o, tag) {
+  o.div.info.empty()
+  spinner_add(o.div.info, i18n.t("tags.detaching"))
   if ("nodename" in o.data) {
     url = "R_TAG_NODE"
-    url_params = [tag_data.id, o.data.nodename]
+    url_params = [tag.attr("tag_id"), o.data.nodename]
   } else if ("svcname" in o.data) {
     url = "R_TAG_SERVICE"
-    url_params = [tag_data.id, o.data.svcname]
+    url_params = [tag.attr("tag_id"), o.data.svcname]
   } else {
     return
   }
   services_osvcdeleterest(url, url_params, function(jd) {
+    spinner_del(o.div.info)
     if (jd.error) {
-      o.div.html(services_error_fmt(jd))
+      o.div.info.html(services_error_fmt(jd))
       return
     }
     // refresh tags

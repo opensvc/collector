@@ -221,7 +221,40 @@ img {
     background-color:#cdcdcd;
 }
 
+.tag_del {
+    background-image:url('images/whitex.png');
+    background-repeat:no-repeat;
+    padding: 0 0 0 20px;
+    min-height: 16px;
+    line-height: 1.7em;
+    margin: 0.1em;
+    font-weight: bold;
+    font-size: 85%;
+    text-align: center;
+    color: white;
+    border-radius:4px;
+   -moz-border-radius:4px;
+   -webkit-border-radius:4px;
+    background-color:#cdcdcd;
+    padding-left:20px;
+    padding-right:20px;
+    padding-top:0.1em;
+    padding-bottom:0.1em;
+    overflow:hidden;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.tag_del_active {
+    background-color:darkgrey;
+}
+
+.tag_del_hover {
+    background-color:darkred;
+}
+
 .tag_add {
+    white-space: nowrap;
     line-height: 1.7em;
     margin: 0.1em;
     font-weight: bold;
@@ -250,18 +283,10 @@ img {
 .tag_create, .tag_create:focus {
     background-color:darkred;
 }
-.tag_detach1, .tag_detach1:focus {
-    background-color:#00a0b9;
-}
-.tag_detach2, .tag_detach2:focus {
-    background-color:#60c0d9;
-}
-.tag_detach3, .tag_detach3:focus {
-    background-color:#a0e0f9;
-}
 
-.tag_del {
-    background-image:url('images/whitex.png');
+.tag_drag {
+    background-image:url('images/drag10.png');
+    background-position: 5px 4px;
     background-repeat:no-repeat;
     cursor: pointer;
 }
@@ -281,6 +306,10 @@ img {
     padding-top:0.1em;
     padding-bottom:0.1em;
     overflow:hidden;
+}
+
+.tag:hover {
+    cursor: pointer;
 }
 
 .boxed_small {

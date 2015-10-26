@@ -45,6 +45,8 @@
     "attaching": "Detachement du tag en cours ...",
     "creating": "Création du tag en cours ...",
     "add": "Ajouter un tag",
-    "candidates": "Tags candidats"
+    "del": "Déposer ici pour enlever un tag",
+    "candidates": "Tags candidats",
+    "no_candidates": "Aucun candidat trouvé. Tapez <enter> pour créer et attacher ce nouveau tag."
   }
 }
