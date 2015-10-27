@@ -13,7 +13,9 @@
     {{=redirect(URL(r=request, c='unsupported', f='index'))}}
     {{pass}}
     <div class=header>
-      {{=tool_search()}}
+      <!-- search tool-->
+      <span id="layout_search_tool"></span>
+      <script type="text/javascript">$('#layout_search_tool').load("/init/static/views/search.html");</script>
       {{=DIV(A("", _href=URL(r=request,c='action_queue',f='action_queue'), _class="gear16"), _class='action_q_widget')}}
       <div class='header_logo'>
         {{=A((response.title or request.application), _href="http://www.opensvc.com", _class="www16", _target="_blank")}}
