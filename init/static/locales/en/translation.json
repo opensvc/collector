@@ -23,5 +23,50 @@
     "timeline_title" : "Node __node__ changes timeline",
     "timeline_tree_diff_title" : "Node __node__ changes",
     "timeline_tree_file_title" : "Files"
+  },
+  "search": {
+    "nothing_found" : "No menu entry found matching filter",
+    "users" : {
+        "title" : "Users",
+        "user" : "User",
+        "logs" : "Logs",
+        "apps" : "Apps"
+      },
+    "menu_header" : {
+      "title_services" : "Services",
+      "title_nodes" : "Nodes",
+      "title_users" : "Users",
+      "title_apps" : "Applications",
+      "title_filtersets" : "Filterset",
+      "title_ips" : "IP adresses",
+      "title_groups" : "Groups",
+      "title_vms" : "Virtuals machines"
+    },
+    "menu_link" : {
+      "dashboard" : "Dashboard",
+      "status" : "Status",
+      "resources" : "Resources",
+      "appinfo" : "Appinfo",
+      "action" : "Action",
+      "checks" : "Checks",
+      "disks" : "Disks",
+      "disk_info" : "Disk Info",
+      "saves" : "Saves",
+      "compliance_status" : "Compliance status",
+      "compliance_log" : "Compliance log",
+      "availability" : "Availability",
+      "logs" : "Logs",
+      "nodes" : "Nodes",
+      "services" : "Services",
+      "network" : "Network",
+      "packages" : "Packages",
+      "san" : "San",
+      "apps" : "Applications",
+      "app" : "Application",
+      "user" : "User",
+      "filterset" : "Filterset",
+      "designer" : "Designer",
+      "nodes_net" : "Nodes net"
+    }
   }
 }

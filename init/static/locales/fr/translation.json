@@ -23,5 +23,44 @@
     "timeline_title" : "Histogramme des changements du noeud __node__",
     "timeline_tree_diff_title" : "Changement du noeud __node__",
     "timeline_tree_file_title" : "Fichiers"
+  },
+  "search": {
+    "nothing_found" : "No menu entry found matching filter",
+    "menu_header" : {
+      "title_services" : "Services",
+      "title_nodes" : "Noeuds",
+      "title_users" : "Utilisateurs",
+      "title_apps" : "Applications",
+      "title_filtersets" : "Jeux de filtres",
+      "title_ips" : "Adresses IP",
+      "title_groups" : "Groupes",
+      "title_vms" : "Machines virtuelles"
+    },
+    "services" : {
+      "title" : "Services",
+      "dashboard" : "Pilotage",
+      "status" : "Etat",
+      "resources" : "Resources",
+      "appinfo" : "Appinfo",
+      "action" : "Action",
+      "checks" : "Sondes",
+      "disks" : "Disques",
+      "saves" : "Sauvegardes",
+      "compliance_status" : "Etat de conformité",
+      "compliance_log" : "Journal de conformité",
+      "availability" : "Disponibilité",
+      "log" : "Journal",
+      "nodes" : "Noeuds",
+      "services" : "Services",
+      "network" : "Réseau",
+      "packages" : "Packages",
+      "san" : "San",
+      "apps" : "Applications",
+      "app" : "Application",
+      "user" : "Utilisateurs",
+      "filterset" : "Filterset",
+      "designer" : "Designer",
+      "nodes_net" : "Réseau de noeuds"
+    }
   }
 }

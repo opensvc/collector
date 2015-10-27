@@ -2099,7 +2099,7 @@ ul.login_menu ul {
   -moz-border-radius: 4px;
   -webkit-border-radius: 4px;
   border-radius: 4px;
-  outline: 0;
+  outline: none;
   -webkit-appearance: none;
   position: relative;
   top: 1px;
@@ -2850,8 +2850,15 @@ textarea.link_ta_sub {
   border-radius: 3px;
   border-color: rgba(0,0,0,0);
 }
+
 .button_div:active {
   background-color: rgba(0,0,0,0.1);
+}
+
+.del16_allow:hover {
+  background: transparent url('images/del16.png') no-repeat;
+  padding: 0 0 0 20px;
+  min-height: 16px;
 }
 
 .link_white {

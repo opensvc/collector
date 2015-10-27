@@ -26,6 +26,7 @@ var services_access_uri = {
     "G_GETFILTERSET" : "rest/api/filtersets",
     "G_GETUSERSELF" : "/rest/api/users/self",
     "G_GETUSERSGROUPS" : "/rest/api/groups",
+    "S_SEARCH" : "/rest/api/search"
 }
 
 function services_getaccessurl(service)
@@ -57,6 +58,28 @@ function services_osvcpost(service, data, callback)
     })
 }
 
+function services_encodes_json_param(params)
+{
+    var url="";
+    if (params.length >0)
+    {
+        for (i=0;i<params.length;i++)
+        {
+            for (key in params[i]) {
+                        url += encodeURIComponent(key) + "=" + encodeURIComponent(params[i][key]) + "&";
+                    }
+        }
+        url = url.replace(/&$/, "");
+    }
+    else if (Object.keys(params).length > 0) {
+        for (key in params) {
+            url += encodeURIComponent(key) + "=" + encodeURIComponent(params[key]) + "&";
+        }
+        url = url.replace(/&$/, "");
+    }
+    return url;
+}
+
 function services_osvcgetrest(service, uri, params, callback)
 {
     url = services_getaccessurl(service)
@@ -67,17 +90,15 @@ function services_osvcgetrest(service, uri, params, callback)
     for(i=0;i<uri.length;i++) {
         url = url.replace("%"+(i+1), uri[i])
     }
-    if (Object.keys(params).length > 0) {
-        url += "?"
-        for (key in params) {
-            url += encodeURIComponent(key) + "=" + encodeURIComponent(params[key]) + "&";
-        }
-        url = url.replace(/&$/, "");
-    }
+    
+    var parameters = services_encodes_json_param(params);
+    if (parameters != "")
+        url += "?" + parameters;
+
     var req = $.getJSON(url, callback)
 }
 
-function services_osvcpostrest(service, param, callback)
+function services_osvcpostrest(service, params, callback)
 {
     url = services_getaccessurl(service)
     if (is_blank(url))
@@ -85,7 +106,10 @@ function services_osvcpostrest(service, param, callback)
         console.log(service + " uri undefined")
         return
     }
-    var req = $.post(url,param)
+    
+    var parameters = services_encodes_json_param(params);
+
+    var req = $.post(url,parameters)
     .done( callback )
     .fail( function(xhr, textStatus, errorThrown) {
         callback(xhr.responseText);

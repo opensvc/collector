@@ -414,7 +414,7 @@ function sysrep_admin_secure(o)
       var data = jd.data;
       for (i=0; i<data.length; i++)
       {
-        var e = $("<tr><td class='button_div'><span class='del16'>" +
+        var e = $("<tr><td class='button_div'><span class='del16_allow'>" +
                   data[i].pattern +
                   "</span></td></tr>");
         var tid = data[i].id
@@ -440,7 +440,7 @@ function sysrep_admin_allow(o)
           "group" : data[i].group_name,
           "filterset" : data[i].fset_name
         };
-        var e = $("<tr><td class='button_div'><span class='del16'>" +
+        var e = $("<tr><td class='button_div'><span class='del16_allow'>" +
                   i18n.t("sysrep.allow_read_sentence", filter) +
                   "</span></td></tr>");
         var tid = data[i].id
@@ -484,6 +484,9 @@ function sysrep_admin_allow_handle(o, tid, func)
     var meta_role = o.div.find("#sysreport_allow_groups").val();
     var meta_fset_name = o.div.find("#sysreport_allow_filterset").val();
     var param = "pattern="+meta_pattern+"&group_name="+meta_role+"&fset_name="+meta_fset_name;
+
+    param = [{"pattern":meta_pattern},{"group_name":meta_role},{"fset_name":meta_fset_name}];
+
     services_osvcpostrest("R_POSTSYSREPADMINALLOW", param, function(jd) {
       if (jd.data === undefined)
       {
