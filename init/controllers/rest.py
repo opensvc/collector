@@ -111,6 +111,7 @@ handlers = {
      rest_get_node_alerts(),
      rest_get_node_disks(),
      rest_get_node_checks(),
+     rest_get_node_candidate_tags(),
      rest_get_node_compliance_modulesets(),
      rest_get_node_compliance_rulesets(),
      rest_get_node_compliance_status(),
@@ -125,6 +126,7 @@ handlers = {
      rest_get_node_sysreport_commit(),
      rest_get_node_sysreport_commit_tree(),
      rest_get_node_sysreport_commit_tree_file(),
+     rest_get_node_tags(),
      rest_get_resources(),
      rest_get_scheduler_tasks(),
      rest_get_scheduler_task(),
@@ -136,6 +138,7 @@ handlers = {
      rest_get_services(),
      rest_get_service(),
      rest_get_service_alerts(),
+     rest_get_service_candidate_tags(),
      rest_get_service_checks(),
      rest_get_service_compliance_modulesets(),
      rest_get_service_compliance_rulesets(),
@@ -146,6 +149,7 @@ handlers = {
      rest_get_service_node(),
      rest_get_service_node_resources(),
      rest_get_service_resources(),
+     rest_get_service_tags(),
      rest_get_tags(),
      rest_get_tag(),
      rest_get_tag_nodes(),
@@ -164,6 +168,7 @@ handlers = {
      rest_get_safe_file_download(),
      rest_get_safe_file_publications(),
      rest_get_safe_file_responsibles(),
+     rest_get_sysreport_timeline(),
      rest_get_sysreport_nodediff(),
      rest_get_sysreport_secure_patterns(),
      rest_get_sysreport_secure_pattern(),
@@ -297,8 +302,8 @@ def rest_router(action, args, vars):
             if handler.match("/"+request.raw_args):
                 return handler.handle(*args, **vars)
     except Exception as e:
-        response.status = 404
         return dict(error=str(e))
+    response.status = 404
     return dict(error="Unsupported api url")
 
 

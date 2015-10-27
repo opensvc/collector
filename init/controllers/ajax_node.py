@@ -453,7 +453,7 @@ def get_node_tags(nodename):
     tid = uuid.uuid1().hex
 
     d = DIV(
-      SCRIPT(""" init_tags({"tid": "%s", "responsible": %s, "nodename": "%s"}) """ % (tid, str(responsible).lower(), nodename)),
+      SCRIPT(""" tags({"tid": "%s", "responsible": %s, "nodename": "%s"}) """ % (tid, str(responsible).lower(), nodename)),
       _class="tags",
       _id=tid,
     )
@@ -849,7 +849,7 @@ def ajax_node():
             _class='cloud',
           ),
           SCRIPT(
-            "var nodes='%(node)s';function n%(rid)s_load_sysreport(){sysrep('%(id)s', '%(node)s')}"%dict(
+            """function n%(rid)s_load_sysreport(){sysrep("%(id)s", {"nodes": "%(node)s"})}"""%dict(
                id='tab17_'+str(rowid),
                rid=str(rowid),
                node=request.vars.node,

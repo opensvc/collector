@@ -34,6 +34,43 @@ class rest_get_node_sysreport(rest_get_handler):
         return dict(data=lib_get_sysreport(nodename, **vars))
 
 #
+class rest_get_sysreport_timeline(rest_get_handler):
+    def __init__(self):
+        desc = [
+          "Display multiple nodes file changes timeline for files tracked by sysreport.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/sysreport?nodes=node1,node2",
+        ]
+        params = {
+          "path": {
+            "desc": "A path glob to limit the sysreport extract to",
+          },
+          "begin": {
+            "desc": "A date, like 2010-01-01 00:00, limiting the sysreport extract to more recent changes.",
+          },
+          "end": {
+            "desc": "A date, like 2010-01-01 00:00, limiting the sysreport extract to older changes.",
+          },
+        }
+
+        rest_get_handler.__init__(
+          self,
+          path="/sysreport/timeline",
+          desc=desc,
+          params=params,
+          examples=examples,
+        )
+
+    def handler(self, **vars):
+        nodes = vars.get("nodes")
+        if nodes is None:
+            raise Exception("The nodes parameter is mandatory")
+        else:
+            del(vars["nodes"])
+        return dict(data=lib_get_sysreport(nodes, **vars))
+
+#
 class rest_get_node_sysreport_commit(rest_get_handler):
     def __init__(self):
         desc = [

@@ -76,11 +76,9 @@
 	<div class="sectiontitle" data-i18n='sysrep.filter.title'></div>
 	<form id="sysrep_form_filter">
 		<div >
-			<span class="time16">
-				<input id="sysrep_filter_begindate" data-i18n="[placeholder]sysrep.filter.begin_date" type="text">
-			</span>
-			<span class="time16">
-				<input id="sysrep_filter_enddate" data-i18n="[placeholder]sysrep.filter.end_date"  type="text">
+			<span>
+				<input type="checkbox" id="sysrep_filter_ignore_blanks">
+				<span data-i18n="sysrep.filter.ignore_blanks">
 			</span>
 			<span class="filter16">
 				<input id="sysrep_filter_value" data-i18n="[placeholder]sysrep.filter.filter"  type="text">
@@ -90,28 +88,8 @@
 	</form>
 </div>
 
-<!-- Timeline -->
-<div id="sysrep_timeline" class="section">
-	<span id="sysrep_timeline_title" class="sectiontitle"></span>
-	<div id="sysrep_timeline_graph" class="hidden"></div>
-</div>
-
-<!-- Time Diff-->
-<div id="sysrep_time_diff" class="section hidden">
-</div>
-
-<!-- Tree Diff-->
-<div id="sysrep_tree_diff" class="section hidden">
-	<div id="sysrep_tree_diff_title" class="sectiontitle" data-i18n="sysrep.timeline_tree_diff_title"></div>
-	<h3 id="sysrep_tree_diff_date"></h3>
-	<div id="sysrep_tree_diff_detail"></div>
-</div>
-
-<!-- Tree File-->
-<div id="sysrep_tree" class="section hidden">
-	<div id="sysrep_tree_title" class="sectiontitle"></div>
-	<h3 id="sysrep_tree_date"></h3>
-	<div id="sysrep_tree_file"></div>
+<!-- Diff-->
+<div id="sysrep_diff" class="section">
 </div>
 
 </div>

@@ -84,7 +84,7 @@ def get_svc_tags(svcname):
     tid = uuid.uuid1().hex
 
     d = DIV(
-      SCRIPT(""" init_tags({"tid": "%s", "responsible": %s, "svcname": "%s"}) """ % (tid, str(responsible).lower(), svcname)),
+      SCRIPT(""" tags({"tid": "%s", "responsible": %s, "svcname": "%s"}) """ % (tid, str(responsible).lower(), svcname)),
       _class="tags",
       _id=tid,
     )

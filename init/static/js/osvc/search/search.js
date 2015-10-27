@@ -67,7 +67,7 @@ function search_get_menu(fk)
           { "logs" : [ {"class" : "log16"},{"link" : "/init/log/log?clear_filters=true&log_f_log_nodename="} ] },
         ],
         "special_header_link" : [
-          { "nodes_net" : [ {"class" : "hw16"},{"link" : "/init/nodenetworks/nodenetworks?clear_filters=true&nodenetworks_f_addr"} ] },
+          { "nodes_net" : [ {"class" : "hw16"},{"link" : "/init/nodenetworks/nodenetworks?clear_filters=true&nodenetworks_f_addr="} ] },
         ],
         "key_separator" : "@",
         "link_value" : "nodename",
@@ -173,13 +173,13 @@ function search_build_result_row(label, first, res)
           link_value = res[search_get_menu(label).keys[ki].key];
       }
 
-      if (link_value=="") link_value=title;
-
       row += "<td><p class='" + search_get_menu(label).subclass + "' ";
       if (search_get_menu(label).tab == "1") 
         row += "id='search_title_click' onclick=\"search_show_tab(this,'" + label + "', '"+ link_value +"')\""; 
       row += ">" + title + "</p>";
     }
+
+  if (link_value=="") link_value=title;  
 
   // Link construction : special condition for first element if present
   if (first==1  && search_get_menu(label).special_header_link != undefined)
@@ -228,7 +228,7 @@ function search_search()
   $("#search_result").empty();
 
   //var param = "substring="+search_query;
-  services_osvcgetrest("S_SEARCH","",{"substring" : search_query}, function(jd) {
+  services_osvcgetrest("R_SEARCH","",{"substring" : search_query}, function(jd) {
       var result = jd.data;
       for (d in result)
       {
@@ -267,22 +267,16 @@ function search_init()
     { // escape key maps to keycode `27`
       if ($("#search_result").is(':visible')) toggle('search_result');
     }
+    else if (event.keyCode == 13) 
+      search_search();
   });
 
   $("#search_input").on("keyup",function (event) {
-    if (event.keyCode == 27) 
-    { // escape key maps to keycode `27`
-      if ($("#search_result").is(':visible')) toggle('search_result');
-    }
-    else
+    
+    if (event.keyCode !=27)
     {
-      if (event.keyCode == 13) 
-        search_search();
-      else
-      {
-        clearTimeout(timer);
-        timer = setTimeout(search_search,2000);
-      }
+      clearTimeout(timer);
+      timer = setTimeout(search_search,1500);
     }
   });
 }
@@ -306,200 +300,3 @@ function search_show_tab(item, tab, param)
   sync_ajax(_url, [], _id, function() {});
   $("#" + _id).show();
 }
-/*
-//
-// search tool
-//
-function bind_search_tool() {
-  $(".search").find("input").bind("focus", function(){
-    var menu = $(".header").find(".menu16").parents("ul").first().siblings(".menu")
-    menu.find(".menu_entry").removeClass("menu_selected")
-  })
-  $(".search").find("input").bind("blur", function(){
-    var menu = $(".header").find(".menu16").parents("ul").first().siblings(".menu")
-    menu.find(".menu_entry").removeClass("menu_selected")
-    menu.find(".menu_entry:visible").first().addClass("menu_selected")
-  })
-
-  $(document).keydown(function(event) {
-    if ( event.which == 27 ) {
-      $("input:focus").blur()
-      $("textarea:focus").blur()
-      $("#overlay").empty()
-      $(".white_float").hide()
-      $(".white_float_input").hide()
-      $(".right_click_menu").hide()
-      $(".extraline").remove()
-      $(".menu").hide("fold")
-      $(".menu").find("[id^=sextra]").remove()
-      return
-    }
-    if ($('input').is(":focus")) {
-      return
-    }
-    if ($('textarea').is(":focus")) {
-      return
-    }
-    searchbox = $(".search").find("input")
-    if ( event.which == 83 ) {
-      event.preventDefault();
-      searchbox.focus()
-    }
-    else if ( event.which == 78 ) {
-      event.preventDefault();
-      $(".header").find(".menu16").parents("ul").first().siblings(".menu").show("fold")
-      searchbox.focus()
-    }
-    else if ((event.which == 37)||(event.which == 38)) {
-      event.preventDefault()
-      var menu = $(".header").find(".menu16").parents("ul").first().siblings(".menu")
-      var entries = menu.find(".menu_entry:visible")
-      var i = 0
-      var prev
-      entries.each(function(){
-        i += 1
-        if ($(this).hasClass("menu_selected")) {
-          if (i==1) { return }
-          menu.find(".menu_entry").removeClass("menu_selected")
-          $(prev).addClass("menu_selected")
-          return
-        }
-        prev = this
-      })
-    }
-    else if ((event.which == 39)||(event.which == 40)) {
-      event.preventDefault()
-      var menu = $(".header").find(".menu16").parents("ul").first().siblings(".menu")
-      var entries = menu.find(".menu_entry:visible")
-      var i = 0
-      var found = false
-      entries.each(function(){
-        i += 1
-        if ($(this).hasClass("menu_selected")) {
-          if (i==entries.length) { return }
-          found = true
-          return
-        }
-        if (found) {
-          menu.find(".menu_entry").removeClass("menu_selected")
-          $(this).addClass("menu_selected")
-          found = false
-          return
-        }
-      })
-    }
-    else if (is_enter(event)) {
-      var menu = $(".header").find(".menu16").parents("ul").first().siblings(".menu")
-      menu.find(".menu_selected:visible").each(function(){
-        event.preventDefault()
-        $(this).effect("highlight")
-        window.location = $(this).children("a").attr("href")
-      })
-    }
-  })
-}
-function show_result(e, url, id){
-  var menu = $(".header").find(".menu16").parents("ul").first().siblings(".menu")
-  if (menu.is(":visible")) {
-    filter_menu()
-  } else {
-    _show_result(e, url, id)
-  }
-}
-function _show_result(e, url, id){
-    clearTimeout(timer)
-    timer=setTimeout(function validate(){
-        $('#search').parent().removeClass("searchidle").addClass("searching")
-        sync_ajax(url, ['search'], id, function(){
-            $('#search').parent().addClass("searchidle").removeClass("searching")
-            if ($('#'+id).html().length == 0){
-                $('#'+id).hide()
-            } else {
-                $('#'+id).show()
-                $('#'+id).find(".meta_nodename").click(function() {
-                  var nodename = $(this).text()
-                  if (nodename.indexOf("@") > 0) {
-                    nodename = nodename.substr(nodename.indexOf("@")+2, nodename.length)
-                  }
-                  var _id = "sextra_"+nodename.replace(/[\.-]/g, '_')
-                  var d = "<div id='"+_id+"' class='searchtab hidden'></div>"
-                  $(this).parents('table').first().find("[name=extra]").html(d)
-                  var _url = $(location).attr("origin") + "/init/ajax_node/ajax_node?node="+nodename+"&rowid="+_id
-                  $("#"+_id).show()
-                  sync_ajax(_url, [], _id, function(){})
-                })
-                $('#'+id).find(".meta_svcname").click(function() {
-                  var nodename = $(this).text()
-                  var _id = "sextra_"+nodename.replace(/[\.-]/g, '_')
-                  var d = "<div id='"+_id+"' class='searchtab hidden'></div>"
-                  $(this).parents('table').first().find("[name=extra]").html(d)
-                  var _url = $(location).attr("origin") + "/init/default/ajax_service?node="+nodename+"&rowid="+_id
-                  $("#"+_id).show()
-                  sync_ajax(_url, [], _id, function(){})
-                })
-                $('#'+id).find(".meta_username").click(function() {
-                  var username = $(this).text()
-                  var _id = "sextra_"+username.replace(/[ \.-]/g, '_')
-                  var d = "<div id='"+_id+"' class='searchtab hidden'></div>"
-                  $(this).parents('table').first().find("[name=extra]").html(d)
-                  var _url = $(location).attr("origin") + "/init/ajax_user/ajax_user?username="+username+"&rowid="+_id
-                  $("#"+_id).show()
-                  sync_ajax(_url, [], _id, function(){})
-                })
-                $('#'+id).find(".meta_groupname").click(function() {
-                  var groupname = $(this).text()
-                  var _id = "sextra_"+groupname.replace(/[ \.\-\/]/g, '_')
-                  var d = "<div id='"+_id+"' class='searchtab hidden'></div>"
-                  $(this).parents('table').first().find("[name=extra]").html(d)
-                  var _url = $(location).attr("origin") + "/init/ajax_group/ajax_group?groupname="+groupname+"&rowid="+_id
-                  $("#"+_id).show()
-                  sync_ajax(_url, [], _id, function(){})
-                })
-                $('#'+id).find(".meta_fset").click(function() {
-                  var fset_id = $(this).next().text()
-                  var _id = "sextra_"+fset_id
-                  var d = "<div id='"+_id+"' class='searchtab hidden'></div>"
-                  $(this).parents('table').first().find("[name=extra]").html(d)
-                  var _url = $(location).attr("origin") + "/init/compliance/json_tree_action?operation=show&obj_type=filterset&obj_id="+fset_id
-                  $("#"+_id).show()
-                  sync_ajax(_url, [], _id, function(){})
-                })
-                if ($('#'+id).find(".meta_nodename,.meta_svcname,.meta_username,.meta_groupname,.meta_fset").length == 1) {
-                  $('#'+id).find(".meta_nodename,.meta_svcname,.meta_username,.meta_groupname,.meta_fset").trigger("click")
-                }
-            }
-        })
-    }, 800)
-}
-function filter_menu() {
-  var menu = $(".header").find(".menu16").parents("ul").first().siblings(".menu")
-  var text = searchbox = $(".search").find("input").val()
-  var reg = new RegExp(text, "i");
-  menu.find(".menu_entry").each(function(){
-    if (($(this).parents(".menu_section").children("a").text().match(reg)) || ($(this).text().match(reg))) {
-      $(this).show()
-      $(this).parents(".menu_section").first().show()
-    } else {
-      $(this).hide()
-    }
-  })
-  menu.find(".menu_section").each(function(){
-    n = $(this).find(".menu_entry:visible").length
-    if (n == 0) {
-      $(this).hide()
-    }
-  })
-  var entries = menu.find(".menu_entry:visible")
-  if (is_enter(event)) {
-    if (menu.is(":visible") && (entries.length == 1)) {
-      entries.effect("highlight")
-      window.location = entries.children("a").attr("href")
-    }
-  }
-  if (entries.length==0) {
-    menu.append("<div class='menu_entry meta_not_found'><a><div class='question48'>"+T("No menu entry found matching filter")+"</div></a></div>")
-  } else {
-    menu.find(".meta_not_found").remove()
-  }
-}
-*/

@@ -1,9 +1,12 @@
 {
+  "api": {
+    "error": "The collector request returned an error."
+  },
   "app": {
     "name": "collector"
   },
   "sysrep": {
-    "admin_title"  : "SysReports administration",
+    "admin_title"  : "Sysreports administration",
     "secure_title" : "Secure Patterns",
     "allow_title"  : "Authorizations",
     "secure_add_button" : "Add secure pattern",
@@ -16,13 +19,35 @@
     "filter" : {
       "begin_date" : "Begin date",
       "end_date" : "End date",
-      "filter" : "Filter (glob)",
+      "ignore_blanks" : "Ignore blanks",
+      "filter" : "Path (glob)",
+      "regexp" : "Path (regexp)",
       "title" : "Filters",
       "submit_button" : "Submit"
     },
+    "error": {
+      "no_change": "No change found."
+    },
     "timeline_title" : "Node __node__ changes timeline",
-    "timeline_tree_diff_title" : "Node __node__ changes",
-    "timeline_tree_file_title" : "Files"
+    "timeline_time_diff_title" : "Aggregated changes on __nodename__ between __begin__ and __end__",
+    "timeline_tree_diff_title" : "Changes",
+    "timeline_tree_file_title" : "Files",
+    "sysrepdiff" : {
+      "section_title": "__node1__ to __node2__",
+      "error": {
+        "not_enough_nodes": "Not enough nodes to compare.",
+        "no_diff": "No difference found."
+      }
+    }
+  },
+  "tags": {
+    "detaching": "Detaching tag ...",
+    "attaching": "Attaching tag ...",
+    "creating": "Creating tag ...",
+    "add": "Add tag",
+    "del": "Drop here to remove tag",
+    "candidates": "Candidate tags",
+    "no_candidates": "No candidates found. Press <enter> to create and attach the new tag."
   },
   "search": {
     "nothing_found" : "No menu entry found matching filter",
