@@ -166,7 +166,7 @@ function tags_load(o) {
     o.div.find(".tag").parent().remove()
     o.div.prepend(d)
     $(".tag").draggable({
-     "containment": $(".tags"),
+     "containment": o.div,
      "opacity": 0.9,
      "revert": true,
      "stack": ".tag",
