@@ -258,25 +258,32 @@ function search_search()
   });
 }
 
+function search_routing()
+{
+  var menu = $(".header").find(".menu16").parents("ul").first().siblings(".menu");
+  if (menu.is(":visible")) 
+  {
+    filter_menu();
+  } 
+  else {
+    search_search();
+  }
+}
+
 function search_init()
 {
   var timer;
 
   $('#search_div').on("keyup",function (event) {
-    //if (event.keyCode == 27) 
-    //{ // escape key maps to keycode `27`
-    //  if ($("#search_result").is(':visible')) toggle('search_result');
-    //}
     if (event.keyCode == 13) 
-      search_search();
+      search_routing();
   });
 
   $("#search_input").on("keyup",function (event) {
-    
     if (event.keyCode !=27)
     {
       clearTimeout(timer);
-      timer = setTimeout(search_search,1500);
+      timer = setTimeout(search_routing,1500);
     }
   });
 }
@@ -299,4 +306,36 @@ function search_show_tab(item, tab, param)
     var _url = $(location).attr("origin") + "/init/compliance/json_tree_action?operation=show&obj_type=filterset&obj_id="+value;
   sync_ajax(_url, [], _id, function() {});
   $("#" + _id).show();
+}
+
+function filter_menu() {
+  var menu = $(".header").find(".menu16").parents("ul").first().siblings(".menu")
+  var text = searchbox = $(".search").find("input").val()
+  var reg = new RegExp(text, "i");
+  menu.find(".menu_entry").each(function(){
+    if (($(this).parents(".menu_section").children("a").text().match(reg)) || ($(this).text().match(reg))) {
+      $(this).show()
+      $(this).parents(".menu_section").first().show()
+    } else {
+      $(this).hide()
+    }
+  })
+  menu.find(".menu_section").each(function(){
+    n = $(this).find(".menu_entry:visible").length
+    if (n == 0) {
+      $(this).hide()
+    }
+  })
+  var entries = menu.find(".menu_entry:visible")
+  if (is_enter(event)) {
+    if (menu.is(":visible") && (entries.length == 1)) {
+      entries.effect("highlight")
+      window.location = entries.children("a").attr("href")
+    }
+  }
+  if (entries.length==0) {
+    menu.append("<div class='menu_entry meta_not_found'><a><div class='question48'>"+T("No menu entry found matching filter")+"</div></a></div>")
+  } else {
+    menu.find(".meta_not_found").remove()
+  }
 }

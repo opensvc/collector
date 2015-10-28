@@ -31,6 +31,19 @@ $(document).keydown(function(event) {
       $(".menu").find("[id^=sextra]").remove()
       return
     }
+   else if (event.which == 83) // s for search
+   {
+      if (!$('#search_input').is(":focus")) event.preventDefault();
+      $('#search_input').focus();
+   }
+   else if ( event.which == 78 ) { // n for menu, siwth the search functionnality to filter only menu
+      if (!$('#search_input').is(":focus")) 
+        {
+          event.preventDefault();
+          $(".header").find(".menu16").parents("ul").first().siblings(".menu").show("fold");
+          $('#search_input').focus();
+        }
+      }
   });
 
 //
