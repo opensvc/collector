@@ -35,11 +35,8 @@ function ws_switch_one(data) {
     if (!("event" in data)) {
         return
     }
-    if (data["event"] == "action_q_change") {
-        action_queue_stats(data['data'])
-    }
     for (key in wsh) {
-        if (!$("#wsswitch_"+key).prop('checked')) {
+        if (osvc && osvc.tables && (key in osvc.tables) && !$("#wsswitch_"+key).prop('checked')) {
             // websocket disabled for this table.
             // just remember we have queued change.
             osvc.tables[key].need_refresh = true
