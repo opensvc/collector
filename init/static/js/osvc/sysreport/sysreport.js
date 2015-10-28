@@ -608,7 +608,7 @@ function sysrep_admin_secure(o)
       var data = jd.data;
       for (i=0; i<data.length; i++)
       {
-        var e = $("<tr><td class='button_div'><span class='del16_allow'>" +
+        var e = $("<tr><td class='button_div del16_allow'><span>" +
                   data[i].pattern +
                   "</span></td></tr>");
         var tid = data[i].id
@@ -695,17 +695,16 @@ function sysrep_admin_allow_handle(o, tid, func)
       o.admin_allow_error.empty();
       o.sysrep_admin_allow();
       mul_toggle('sysrep_allow_input','sysrep_allow_button', o.divid);
-    })
+    });
   }
   else if (func=="del")
   {
     services_osvcdeleterest("R_SYSREPORT_AUTHORIZATION", [tid], function(jd) {
       var result = jd;
       o.sysrep_admin_allow();
-    })  
+    });  
   }
 }
-
 
 //
 // Sysreport diff

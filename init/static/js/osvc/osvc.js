@@ -17,6 +17,21 @@ if (!Array.prototype.indexOf) {
     return -1;
   }
 }
+// Handle pop up exit
+$(document).keydown(function(event) {
+    if ( event.which == 27 ) {
+      $("input:focus").blur()
+      $("textarea:focus").blur()
+      $("#overlay").empty()
+      $(".white_float").hide()
+      $(".white_float_input").hide()
+      $(".right_click_menu").hide()
+      $(".extraline").remove()
+      $(".menu").hide("fold")
+      $(".menu").find("[id^=sextra]").remove()
+      return
+    }
+  });
 
 //
 // Action queue stats
