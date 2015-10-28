@@ -2,18 +2,17 @@
 // MD 08062015
 
 function is_enter(e) {
-  var characterCode
-  if(e && e.which) {
+  var characterCode = -1;
+  if (e && e.which) {
     e = e
     characterCode = e.which
-  }else{
+  } else if (e && e.keyCode) {
     characterCode = e.keyCode
   }
-  if(characterCode == 13) {
+  if (characterCode == 13) {
     return true
-  }else{
-    return false
   }
+  return false
 }
 
 function is_blank(str) {
