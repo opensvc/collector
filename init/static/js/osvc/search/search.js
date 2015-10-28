@@ -263,11 +263,11 @@ function search_init()
   var timer;
 
   $('#search_div').on("keyup",function (event) {
-    if (event.keyCode == 27) 
-    { // escape key maps to keycode `27`
-      if ($("#search_result").is(':visible')) toggle('search_result');
-    }
-    else if (event.keyCode == 13) 
+    //if (event.keyCode == 27) 
+    //{ // escape key maps to keycode `27`
+    //  if ($("#search_result").is(':visible')) toggle('search_result');
+    //}
+    if (event.keyCode == 13) 
       search_search();
   });
 

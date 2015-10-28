@@ -2884,6 +2884,10 @@ textarea.link_ta_sub {
   background-color: rgba(0,0,0,0.1);
 }
 
+.del16_allow {
+  padding: 0 0 0 20px;
+  min-height: 16px; 
+}
 .del16_allow:hover {
   background: transparent url('images/del16.png') no-repeat;
   padding: 0 0 0 20px;
