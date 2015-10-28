@@ -33,7 +33,11 @@ $(document).keydown(function(event) {
     }
    else if (event.which == 83) // s for search
    {
-      if (!$('#search_input').is(":focus")) event.preventDefault();
+      if (!$('#search_input').is(":focus")) 
+        {
+          event.preventDefault();
+          $('#search_input').val('');
+        }
       $('#search_input').focus();
    }
    else if ( event.which == 78 ) { // n for menu, siwth the search functionnality to filter only menu
@@ -41,6 +45,7 @@ $(document).keydown(function(event) {
         {
           event.preventDefault();
           $(".header").find(".menu16").parents("ul").first().siblings(".menu").show("fold");
+          $('#search_input').val('');
           $('#search_input').focus();
         }
       }
