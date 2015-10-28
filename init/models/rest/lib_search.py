@@ -180,12 +180,13 @@ def lib_search_safe_file(pattern):
     t = datetime.datetime.now()
     o = db.safe.uuid
     q = db.safe.uuid.like(pattern) | db.safe.name.like(pattern)
-    q &= db.safe.id == db.safe_team_publication.file_id
+    l = db.safe_team_publication.on(db.safe.id == db.safe_team_publication.file_id)
     q &= db.safe_team_publication.group_id.belongs(user_group_ids()) | \
          (db.safe.uploader == auth.user_id)
     n = db(q).count()
     data = db(q).select(o,
                         db.safe.name,
+                        left=l,
                         orderby=o,
                         limitby=(0,max_search_result),
     ).as_list()
