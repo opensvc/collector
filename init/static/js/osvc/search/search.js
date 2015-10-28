@@ -258,7 +258,7 @@ function search_search()
   });
 }
 
-function search_routing()
+function search_routing(delay)
 {
   var menu = $(".header").find(".menu16").parents("ul").first().siblings(".menu");
   if (menu.is(":visible")) 
@@ -267,7 +267,7 @@ function search_routing()
   } 
   else {
     clearTimeout(timer);
-    timer = setTimeout(search_search,1500);
+    timer = setTimeout(search_search,delay);
   }
 }
 
@@ -277,13 +277,13 @@ function search_init()
 
   $('#search_div').on("keyup",function (event) {
     if (event.keyCode == 13) 
-      search_routing();
+      search_routing(0);
   });
 
   $("#search_input").on("keyup",function (event) {
     if (event.keyCode !=27)
     {
-      search_routing();
+      search_routing(1500);
     }
   });
 }
