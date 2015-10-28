@@ -258,7 +258,7 @@ function search_search()
   });
 }
 
-function search_routing()
+function search_routing(delay)
 {
   var menu = $(".header").find(".menu16").parents("ul").first().siblings(".menu");
   if (menu.is(":visible")) 
@@ -266,7 +266,8 @@ function search_routing()
     filter_menu();
   } 
   else {
-    search_search();
+    clearTimeout(timer);
+    timer = setTimeout(search_search,delay);
   }
 }
 
@@ -276,14 +277,13 @@ function search_init()
 
   $('#search_div').on("keyup",function (event) {
     if (event.keyCode == 13) 
-      search_routing();
+      search_routing(0);
   });
 
   $("#search_input").on("keyup",function (event) {
     if (event.keyCode !=27)
     {
-      clearTimeout(timer);
-      timer = setTimeout(search_routing,1500);
+      search_routing(1000);
     }
   });
 }
