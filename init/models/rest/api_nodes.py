@@ -368,6 +368,75 @@ class rest_get_node(rest_get_line_handler):
         self.set_q(q)
         return self.prepare_data(**vars)
 
+#
+class rest_get_node_uuid(rest_get_line_handler):
+    def __init__(self):
+        desc = [
+          "- Display node uuid.",
+          "- Only node responsibles and managers are allowed to see this information.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/nodes/mynode/uuid",
+        ]
+        rest_get_line_handler.__init__(
+          self,
+          path="/nodes/<nodename>/uuid",
+          tables=["auth_node"],
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, nodename, **vars):
+        node_responsible(nodename)
+        q = db.auth_node.nodename == nodename
+        self.set_q(q)
+        return self.prepare_data(**vars)
+
+#
+class rest_get_node_root_password(rest_get_handler):
+    def __init__(self):
+        desc = [
+          "- Display node root password set by the 'rotate root password' opensvc agent action.",
+          "- Only node responsibles and managers are allowed to see this information.",
+          "- The password retrieval is logged for audit.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/nodes/mynode/root_password",
+        ]
+        rest_get_handler.__init__(
+          self,
+          path="/nodes/<nodename>/root_password",
+          tables=["auth_node"],
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, nodename, **vars):
+        node_responsible(nodename)
+
+        config = local_import('config', reload=True)
+        try:
+            salt = config.aes_salt
+        except Exception as e:
+            salt = "tlas"
+
+        node = db(db.auth_node.nodename==nodename).select().first()
+        if node is None:
+            raise Exception(T("node not found"))
+        node_uuid = node.uuid
+        sql = """select aes_decrypt(pw, "%(sec)s") from node_pw where
+                 nodename="%(nodename)s"
+              """ % dict(nodename=nodename, sec=node_uuid+salt)
+        pwl = db.executesql(sql)
+        if len(pwl) == 0:
+            raise Exception(T("This node has not reported its root password (opensvc agent feature not activated or agent too old)"))
+
+        _log('password.retrieve',
+             'retrieved root password of node %(nodename)s',
+             dict(nodename=nodename),
+             nodename=nodename)
+
+        return dict(data=pwl[0][0])
 
 #
 #
