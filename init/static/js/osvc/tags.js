@@ -96,7 +96,6 @@ function tags_add_del_tag(o) {
     activeClass: "tag_del_active",
     hoverClass: "tag_del_hover",
     drop: function(event, ui) {
-      ui.draggable.hide()
       o.detach_tag(ui.draggable)
     }
   });
@@ -174,6 +173,9 @@ function tags_load(o) {
     })
 
     o.bind_admin_tools()
+  },
+  function(xhr, stat, error) {
+    o.div.info.html(services_ajax_error_fmt(xhr, stat, error))
   })
 }
 
@@ -253,11 +255,17 @@ function tags_attach_tag(o, tag_data) {
             return
           }
           o._attach_tag(jd.data)
+        },
+        function(xhr, stat, error) {
+          o.div.info.html(services_ajax_error_fmt(xhr, stat, error))
         })
       } else {
         // tag elready exists
         o._attach_tag(jd.data[0])
       }
+    },
+    function(xhr, stat, error) {
+      o.div.info.html(services_ajax_error_fmt(xhr, stat, error))
     })
   } else {
     // from click on a candidate
@@ -290,11 +298,15 @@ function _tags_attach_tag(o, tag_data) {
     } else {
       o.load()
     }
+  },
+  function(xhr, stat, error) {
+    o.div.info.html(services_ajax_error_fmt(xhr, stat, error))
   })
 }
 
 function tags_detach_tag(o, tag) {
   o.div.info.empty()
+  tag.hide()
   spinner_add(o.div.info, i18n.t("tags.detaching"))
   if ("nodename" in o.data) {
     url = "R_TAG_NODE"
@@ -313,6 +325,10 @@ function tags_detach_tag(o, tag) {
     }
     // refresh tags
     o.load()
+  },
+  function(xhr, stat, error) {
+    tag.show()
+    o.div.info.html(services_ajax_error_fmt(xhr, stat, error))
   })
 }
 

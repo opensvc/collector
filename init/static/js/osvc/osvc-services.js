@@ -51,7 +51,7 @@ function services_getaccessurl(service)
     return base_path
 }
 
-function services_osvcpostrest(service, uri, params, data, callback)
+function services_osvcpostrest(service, uri, params, data, callback, error_callback)
 {
     url = services_getaccessurl(service)
     if (is_blank(url)) {
@@ -73,6 +73,7 @@ function services_osvcpostrest(service, uri, params, data, callback)
         type: "POST",
         url: url,
         data: data,
+        error: error_callback,
         success: callback
     })
 }
@@ -99,7 +100,7 @@ function services_encodes_json_param(params)
     return url;
 }
 
-function services_osvcgetrest(service, uri, params, callback)
+function services_osvcgetrest(service, uri, params, callback, error_callback)
 {
     url = services_getaccessurl(service)
     if (is_blank(url)) {
@@ -114,10 +115,18 @@ function services_osvcgetrest(service, uri, params, callback)
     if (parameters != "")
         url += "?" + parameters;
 
-    var req = $.getJSON(url, callback)
+    var req = $.ajax(
+    {
+        type: "GET",
+        url: url,
+        dataType: "json",
+        error: error_callback,
+        success: callback,
+    });
+
 }
 
-function services_osvcdeleterest(service, uri, callback)
+function services_osvcdeleterest(service, uri, callback, error_callback)
 {
     url = services_getaccessurl(service)
     if (is_blank(url))
@@ -132,7 +141,8 @@ function services_osvcdeleterest(service, uri, callback)
     {
         type: "DELETE",
         url: url,
-        success: callback
+        error: error_callback,
+        success: callback,
     });
 }
 
@@ -175,6 +185,19 @@ function services_ismemberof(groups, callback)
             callback();
         }
     });
+}
+
+function services_ajax_error_fmt(xhr, stat, error) {
+    e = $("<span class='alert16'></span>")
+    e.text(i18n.t("ajax.error"))
+    p = $("<pre></pre>")
+    p.text("status: " + stat + "\nerror: " + error)
+    p.css({
+      "padding": "5px",
+      "padding-left": "20px",
+    })
+    e.append(p)
+    return e
 }
 
 function services_error_fmt(data) {
