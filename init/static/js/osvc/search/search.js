@@ -283,7 +283,7 @@ function search_init()
   $("#search_input").on("keyup",function (event) {
     if (event.keyCode !=27)
     {
-      search_routing(1500);
+      search_routing(1000);
     }
   });
 }
