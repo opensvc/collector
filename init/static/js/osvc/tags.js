@@ -1,5 +1,5 @@
 function tags(data) {
-  o = {}
+  var o = {}
   o.div = $("#"+data.tid)
   o.data = data
 
@@ -8,6 +8,9 @@ function tags(data) {
   }
   o.add_tag = function(data) {
     return tags_add_tag(this, data)
+  }
+  o.del_tag = function(data) {
+    return tags_del_tag(this, data)
   }
   o.add_add_tag = function() {
     return tags_add_add_tag(this)
@@ -49,8 +52,54 @@ function tags(data) {
   } else {
     return
   }
+
+  wsh["tags_"+o.data.tid] = function(data) {
+    tags_event_handler(o, data)
+  }
+
   o.load()
   return o
+}
+
+function tags_event_handler(o, data) {
+  if (o.data.candidates == true) {
+    return
+  }
+  if (!("data" in data)) {
+    return
+  } 
+  data = data.data
+  if (o.data.nodename) {
+    if (!data.nodename || (md5(o.data.nodename) != data.nodename)) {
+      return
+    }
+  } else if (o.data.nodename) {
+    if (!data.svcname || (md5(o.data.svcname) != data.svcname)) {
+      return
+    }
+  }
+  if (!("action" in data)) {
+    return
+  }
+  if (data["action"] == "attach") {
+    if (o.div.find("[tag_id="+data.tag_id+"]").length > 0) {
+      return
+    }
+    o.div.children("div").first().prepend(o.add_tag({
+      "id": data.tag_id,
+      "tag_name": data.tag_name
+    }))
+  } else if (data["action"] == "detach") {
+    o.del_tag({
+      "tag_id": data.tag_id,
+    })
+  }
+}
+
+function tags_del_tag(o, tag_data) {
+  o.div.find("[tag_id="+tag_data.tag_id+"].tag").hide("fade", function(){
+    $(this).remove()
+  })
 }
 
 function tags_add_tag(o, tag_data) {
@@ -80,6 +129,12 @@ function tags_add_tag(o, tag_data) {
       o.attach_tag(tag_data)
       return
     }
+  })
+  e.draggable({
+   "containment": o.div,
+   "opacity": 0.9,
+   "revert": true,
+   "stack": ".tag",
   })
   return e
 }
@@ -165,12 +220,6 @@ function tags_load(o) {
     }
     o.div.find(".tag").parent().remove()
     o.div.prepend(d)
-    $(".tag").draggable({
-     "containment": o.div,
-     "opacity": 0.9,
-     "revert": true,
-     "stack": ".tag",
-    })
 
     o.bind_admin_tools()
   },

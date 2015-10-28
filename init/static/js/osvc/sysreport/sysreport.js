@@ -9,7 +9,7 @@ function sysrep_on_change_filters(o)
 
 function sysrep(divid, options)
 {
-    o = {}
+    var o = {}
 
     // store parameters
     o.divid = divid
@@ -711,7 +711,7 @@ function sysrep_admin_allow_handle(o, tid, func)
 //
 function sysrepdiff(divid, options)
 {
-    o = {}
+    var o = {}
 
     // store parameters
     o.divid = divid
