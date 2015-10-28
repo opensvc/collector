@@ -31,15 +31,67 @@ $(document).keydown(function(event) {
       $('#search_input').focus();
    }
    else if ( event.which == 78 ) { // n for menu, siwth the search functionnality to filter only menu
-      if (!$('#search_input').is(":focus")) 
-        {
-          event.preventDefault();
-          $(".header").find(".menu16").parents("ul").first().siblings(".menu").show("fold");
-          $('#search_input').val('');
-          $('#search_input').focus();
-        }
+    if (!$('#search_input').is(":focus")) 
+      {
+        event.preventDefault();
+        $(".header").find(".menu16").parents("ul").first().siblings(".menu").show("fold");
+        $('#search_input').val('');
+        $('#search_input').focus();
       }
-  });
+    }
+  else if ( event.which == 9 ) // init menu key navigation
+  {
+    var menu = $(".header").find(".menu16").parents("ul").first().siblings(".menu");
+    var entries = menu.find(".menu_entry:visible");
+    $(entries[0]).addClass("menu_selected");
+  }
+  else if ((event.which == 37)||(event.which == 38)) { // Left/Up key function
+    event.preventDefault();
+    var menu = $(".header").find(".menu16").parents("ul").first().siblings(".menu");
+    var entries = menu.find(".menu_entry:visible");
+    var i = 0;
+    var prev;
+    entries.each(function(){
+      i += 1;
+      if ($(this).hasClass("menu_selected")) {
+        if (i==1) { return; }
+        menu.find(".menu_entry").removeClass("menu_selected");
+        $(prev).addClass("menu_selected");
+        return;
+      }
+      prev = this;
+    });
+  }
+  else if ((event.which == 39)||(event.which == 40)) { // Right/down function
+    event.preventDefault();
+    var menu = $(".header").find(".menu16").parents("ul").first().siblings(".menu");
+    var entries = menu.find(".menu_entry:visible");
+    var i = 0;
+    var found = false;
+    entries.each(function(){
+      i += 1;
+      if ($(this).hasClass("menu_selected")) {
+        if (i==entries.length) { return; }
+        found = true;
+        return;
+      }
+      if (found) {
+        menu.find(".menu_entry").removeClass("menu_selected");
+        $(this).addClass("menu_selected");
+        found = false;
+        return;
+      }
+    });
+  }
+  else if (is_enter(event)) { // validation in menu function
+    var menu = $(".header").find(".menu16").parents("ul").first().siblings(".menu");
+    menu.find(".menu_selected:visible").each(function(){
+      event.preventDefault();;
+      $(this).effect("highlight");
+      window.location = $(this).children("a").attr("href");
+    })
+  }
+});
 
 //
 // user group tool
