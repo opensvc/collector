@@ -20,6 +20,14 @@ def lib_tag_detach_node(tagid, nodename):
          "tag '%(tag_name)s' detached",
          dict(tag_name=tag_name),
          nodename=nodename)
+    import hashlib
+    hash = hashlib.md5()
+    hash.update(nodename)
+    l = {
+      'event': 'tags',
+      'data': {'action': 'detach', 'tag_id': tagid, 'nodename': hash.hexdigest()},
+    }
+    _websocket_send(event_msg(l))
     return dict(info="tag detached")
 
 def lib_tag_detach_service(tagid, svcname):
@@ -36,6 +44,14 @@ def lib_tag_detach_service(tagid, svcname):
          "tag '%(tag_name)s' detached",
          dict(tag_name=tag_name),
          svcname=svcname)
+    import hashlib
+    hash = hashlib.md5()
+    hash.update(svcname)
+    l = {
+      'event': 'tags',
+      'data': {'action': 'detach', 'tag_id': tagid, 'svcname': hash.hexdigest()},
+    }
+    _websocket_send(event_msg(l))
     return dict(info="tag detached")
 
 
@@ -53,6 +69,19 @@ def lib_tag_attach_node(tagid, nodename):
          "tag '%(tag_name)s' attached",
          dict(tag_name=tag_name),
          nodename=nodename)
+    import hashlib
+    hash = hashlib.md5()
+    hash.update(nodename)
+    l = {
+      'event': 'tags',
+      'data': {
+         'action': 'attach',
+         'tag_id': tagid,
+         'tag_name': tag_name,
+         'nodename': hash.hexdigest()
+      },
+    }
+    _websocket_send(event_msg(l))
     return dict(info="tag attached")
 
 
@@ -70,6 +99,19 @@ def lib_tag_attach_service(tagid, svcname):
          "tag '%(tag_name)s' attached",
          dict(tag_name=tag_name),
          svcname=svcname)
+    import hashlib
+    hash = hashlib.md5()
+    hash.update(svcname)
+    l = {
+      'event': 'tags',
+      'data': {
+        'action': 'attach',
+        'tag_id': tagid,
+        'tag_name': tag_name,
+        'svcname': hash.hexdigest()
+      },
+    }
+    _websocket_send(event_msg(l))
     return dict(info="tag attached")
 
 
