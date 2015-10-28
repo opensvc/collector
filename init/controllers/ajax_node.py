@@ -386,86 +386,18 @@ class sandata(object):
         return self.d
 
 @auth.requires_login()
-def fetch_node_pw():
-    nodename = request.vars.nodename
-    q = db.auth_node.nodename == nodename
-    rows = db(q).select(db.auth_node.uuid, cacheable=True)
-
-    if len(rows) == 0:
-        return T("not registered")
-
-    q &= db.auth_node.nodename == db.nodes.nodename
-    ug = user_groups()
-    if "Manager" not in ug:
-        q &= db.nodes.team_responsible.belongs(ug)
-    rows = db(q).select(db.auth_node.uuid, cacheable=True)
-
-    if len(rows) == 0:
-        return T("hidden (you are not responsible of this node)")
-
-    node_uuid = rows[0].uuid
-    config = local_import('config', reload=True)
-    try:
-        salt = config.aes_salt
-    except Exception as e:
-        salt = "tlas"
-
-    sql = """select aes_decrypt(pw, "%(sec)s") from node_pw where
-             nodename="%(nodename)s"
-          """ % dict(nodename=nodename, sec=node_uuid+salt)
-    pwl = db.executesql(sql)
-    if len(pwl) == 0:
-        return T("This node has not reported its root password (opensvc agent feature not activated or agent too old)")
-
-    _log('password.retrieve',
-         'retrieved root password of node %(nodename)s',
-         dict(nodename=nodename),
-         nodename=nodename)
-
-    return pwl[0][0]
-
-def node_pw_tool(nodename, id):
-    ug = user_groups()
-    if "Manager" not in ug and "RootPasswordExec" not in ug:
-        return "-"
-
-    return A(
-      SPAN(T("Retrieve root password"), _class='lock'),
-      _id='pw_'+str(id),
-      _onclick="""sync_ajax('%(url)s', [], '%(id)s', function(){})""" % dict(
-        url=URL(r=request, f='fetch_node_pw', vars={'nodename': nodename}),
-        id='pw_'+str(id),
-      ),
-    )
-
-def get_node_tags(nodename):
-    q = db.nodes.nodename == nodename
-    ug = user_groups()
-    if "Manager" not in ug:
-        q &= db.nodes.team_responsible.belongs(ug)
-    rows = db(q).select(db.nodes.id)
-    if len(rows) == 0:
-        responsible = False
-    else:
-        responsible = True
-
-    import uuid
-    tid = uuid.uuid1().hex
-
-    d = DIV(
-      SCRIPT(""" tags({"tid": "%s", "responsible": %s, "nodename": "%s"}) """ % (tid, str(responsible).lower(), nodename)),
-      _class="tags",
-      _id=tid,
-    )
-    return d
-
-@auth.requires_login()
 def ajax_node():
     session.forget(response)
     rowid = request.vars.rowid
     tab = request.vars.tab
     if tab is None:
         tab = "tab1"
+
+    try:
+        node_responsible(request.vars.node)
+        responsible = True
+    except:
+        responsible = False
 
     nodes = db(db.v_nodes.nodename==request.vars.node).select(cacheable=True)
     if len(nodes) == 0:
@@ -492,143 +424,7 @@ def ajax_node():
     q = db.auth_node.nodename == request.vars.node
     rows = db(q).select(db.auth_node.uuid, cacheable=True)
 
-    if len(rows) == 0:
-        node_uuid = T("not registered")
-        node_pw = ""
-    else:
-        q &= db.auth_node.nodename == db.nodes.nodename
-        ug = user_groups()
-        if "Manager" not in ug:
-            q &= db.nodes.team_responsible.belongs(ug)
-        rows = db(q).select(db.auth_node.id, db.auth_node.uuid, cacheable=True)
-        if len(rows) == 0:
-            node_uuid = T("hidden (you are not responsible of this node)")
-            node_pw = ""
-        else:
-            node_uuid = rows[0].uuid
-            node_pw = node_pw_tool(request.vars.node, rows.first().id)
-
     node = nodes[0]
-    loc = TABLE(
-      TR(TH(T('country')), TD(node['loc_country'] if node['loc_country'] is not None else '')),
-      TR(TH(T('city')), TD(node['loc_city'] if node['loc_city'] is not None else '')),
-      TR(TH(T('zip')), TD(node['loc_zip'] if node['loc_zip'] is not None else '')),
-      TR(TH(T('address')), TD(node['loc_addr'] if node['loc_addr'] is not None else '')),
-      TR(TH(T('building')), TD(node['loc_building'] if node['loc_building'] is not None else '')),
-      TR(TH(T('floor')), TD(node['loc_floor'] if node['loc_floor'] is not None else '')),
-      TR(TH(T('room')), TD(node['loc_room'] if node['loc_room'] is not None else '')),
-      TR(TH(T('rack')), TD(node['loc_rack'] if node['loc_rack'] is not None else '')),
-      TR(TH(T('enclosure')), TD(node['enclosure'] if node['enclosure'] is not None else '')),
-      TR(TH(T('enclosure slot')), TD(node['enclosureslot'] if node['enclosureslot'] is not None else '')),
-    )
-    power = TABLE(
-      TR(TH(T('nb power supply')), TD(node['power_supply_nb'] if node['power_supply_nb'] is not None else '')),
-      TR(TH(T('power cabinet #1')), TD(node['power_cabinet1'] if node['power_cabinet1'] is not None else '')),
-      TR(TH(T('power cabinet #2')), TD(node['power_cabinet2'] if node['power_cabinet2'] is not None else '')),
-      TR(TH(T('power protector')), TD(node['power_protect'] if node['power_protect'] is not None else '')),
-      TR(TH(T('power protector breaker')), TD(node['power_protect_breaker'] if node['power_protect_breaker'] is not None else '')),
-      TR(TH(T('power breaker #1')), TD(node['power_breaker1'] if node['power_breaker1'] is not None else '')),
-      TR(TH(T('power breaker #2')), TD(node['power_breaker1'] if node['power_breaker1'] is not None else '')),
-    )
-    server = TABLE(
-      TR(TH(T('fqdn')), TD(node['fqdn'] if node['fqdn'] is not None else '')),
-      TR(TH(T('asset name')), TD(node['assetname'] if node['assetname'] is not None else '')),
-      TR(TH(T('model')), TD(node['model'] if node['model'] is not None else '')),
-      TR(TH(T('type')), TD(node['type'] if node['type'] is not None else '')),
-      TR(TH(T('serial')), TD(node['serial'] if node['serial'] is not None else '')),
-      TR(TH(T('security zone')), TD(node['sec_zone'] if node['sec_zone'] is not None else '')),
-      TR(TH(T('status')), TD(node['status'] if node['status'] is not None else '')),
-      TR(TH(T('role')), TD(node['role'] if node['role'] is not None else '')),
-      TR(TH(T('env')), TD(node['environnement'] if node['environnement'] is not None else '')),
-      TR(TH(T('root pwd')), TD(node_pw)),
-    )
-    dates = TABLE(
-      TR(TH(T('updated')), TD(node['updated'] if node['updated'] is not None else '')),
-      TR(TH(T('last boot')), TD(node['last_boot'] if node['last_boot'] is not None else '')),
-      TR(TH(T('warranty end')), TD(node['warranty_end'] if node['warranty_end'] is not None else '')),
-      TR(TH(T('maintenance end')), TD(node['maintenance_end'] if node['maintenance_end'] is not None else '')),
-    )
-    org = TABLE(
-      TR(TH(T('team responsible')), TD(node['team_responsible'] if node['team_responsible'] is not None else '')),
-      TR(TH(T('integration')), TD(node['team_integ'] if node['team_integ'] is not None else '')),
-      TR(TH(T('support')), TD(node['team_support'] if node['team_support'] is not None else '')),
-      TR(TH(T('project')), TD(node['project'] if node['project'] is not None else '')),
-    )
-    agent = TABLE(
-      TR(TH(T('agent version')), TD(node['version'] if node['version'] is not None else '')),
-      TR(TH(T('agent listener port')), TD(node['listener_port'])),
-      TR(TH(T('host mode')), TD(node['host_mode'])),
-      TR(TH(T('action type')), TD(node['action_type'] if node['action_type'] is not None else '')),
-      TR(TH(T('uuid')), TD(node_uuid)),
-    )
-    cpu = TABLE(
-      TR(TH(T('cpu frequency')), TD(node['cpu_freq'])),
-      TR(TH(T('cpu threads')), TD(node['cpu_threads'] if node['cpu_threads'] is not None else '')),
-      TR(TH(T('cpu cores')), TD(node['cpu_cores'])),
-      TR(TH(T('cpu dies')), TD(node['cpu_dies'])),
-      #TR(TH(T('cpu vendor')), TD(node['cpu_vendor'])),
-      TR(TH(T('cpu model')), TD(node['cpu_model'])),
-    )
-    mem = TABLE(
-      TR(TH(T('memory banks')), TD(node['mem_banks'])),
-      TR(TH(T('memory slots')), TD(node['mem_slots'])),
-      TR(TH(T('memory total')), TD(node['mem_bytes'])),
-    )
-    ops = TABLE(
-      TR(TH(T('os name')), TD(node['os_name'])),
-      TR(TH(T('os vendor')), TD(node['os_vendor'])),
-      TR(TH(T('os release')), TD(node['os_release'])),
-      TR(TH(T('os kernel')), TD(node['os_kernel'])),
-      TR(TH(T('os arch')), TD(node['os_arch'])),
-    )
-    tags = TABLE(
-      get_node_tags(request.vars.node),
-      _style="width:100%",
-    )
-
-    asset = DIV(
-      DIV(
-        H3(SPAN(SPAN(T("server"), _class="node16")), _class="line"),
-        server,
-      ),
-      DIV(
-        H3(SPAN(SPAN(T("tags"), _class="tag16")), _class="line"),
-        tags,
-      ),
-      DIV(
-        H3(SPAN(SPAN(T("organization"), _class="guys16")), _class="line"),
-        org,
-      ),
-      DIV(
-        H3(SPAN(SPAN(T("location"), _class="loc")), _class="line"),
-        loc,
-      ),
-      DIV(
-        H3(SPAN(SPAN(T("opensvc agent"), _class="svc")), _class="line"),
-        agent,
-      ),
-      DIV(
-        H3(SPAN(SPAN(T("os"), _class="os16")), _class="line"),
-        ops,
-      ),
-      DIV(
-        H3(SPAN(SPAN(T("mem"), _class="hw16")), _class="line"),
-        mem,
-      ),
-      DIV(
-        H3(SPAN(SPAN(T("cpu"), _class="cpu16")), _class="line"),
-        cpu,
-      ),
-      DIV(
-        H3(SPAN(SPAN(T("power"), _class="pwr")), _class="line"),
-        power,
-      ),
-      DIV(
-        H3(SPAN(SPAN(T("dates"), _class="time16")), _class="line"),
-        dates,
-      ),
-      _class="asset_tab",
-    )
 
     # net
     sql = """select
@@ -761,24 +557,9 @@ def ajax_node():
       TR(
         TD(
           DIV(
-            asset,
+            IMG(_src=URL(r=request,c='static',f='images/spinner.gif')),
             _id='tab1_'+str(rowid),
             _class='cloud_shown',
-          ),
-          DIV(
-            ops,
-            _id='tab2_'+str(rowid),
-            _class='cloud',
-          ),
-          DIV(
-            mem,
-            _id='tab3_'+str(rowid),
-            _class='cloud',
-          ),
-          DIV(
-            cpu,
-            _id='tab4_'+str(rowid),
-            _class='cloud',
           ),
           DIV(
             IMG(_src=URL(r=request,c='static',f='images/spinner.gif')),
@@ -820,16 +601,6 @@ def ajax_node():
             _class='cloud',
           ),
           DIV(
-            loc,
-            _id='tab8_'+str(rowid),
-            _class='cloud',
-          ),
-          DIV(
-            power,
-            _id='tab9_'+str(rowid),
-            _class='cloud',
-          ),
-          DIV(
             perf_stats(request.vars.node, rowid),
             _id='tab10_'+str(rowid),
             _class='cloud',
@@ -849,6 +620,13 @@ def ajax_node():
             _class='cloud',
           ),
           SCRIPT(
+            """function
+n%(rid)s_load_node_properties(){node_properties("%(id)s", {"nodename": "%(node)s", "responsible": %(responsible)s})}"""%dict(
+               id='tab1_'+str(rowid),
+               rid=str(rowid),
+               node=request.vars.node,
+               responsible=str(responsible).lower(),
+            ),
             """function n%(rid)s_load_sysreport(){sysrep("%(id)s", {"nodes": "%(node)s"})}"""%dict(
                id='tab17_'+str(rowid),
                rid=str(rowid),
@@ -909,6 +687,7 @@ def ajax_node():
                        args=[request.vars.node])
             ),
             """bind_tabs("%(id)s", {
+                "litab1_%(id)s": n%(id)s_load_node_properties,
                 "litab6_%(id)s": n%(id)s_load_node_stor,
                 "litab2_%(id)s": n%(id)s_load_topo,
                 "litab11_%(id)s": n%(id)s_load_wiki,
