@@ -608,7 +608,7 @@ function sysrep_admin_secure(o)
       var data = jd.data;
       for (i=0; i<data.length; i++)
       {
-        var e = $("<tr><td class='button_div del16_allow'><span>" +
+        var e = $("<tr><td class='button_div'><span class='del16_allow'>" +
                   data[i].pattern +
                   "</span></td></tr>");
         var tid = data[i].id
