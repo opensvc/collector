@@ -11,15 +11,14 @@ class rest_get_wiki(rest_get_line_handler):
         rest_get_line_handler.__init__(
           self,
           path="/wiki/<id>",
-          tables=["wiki_pages"],
+          tables=["v_wiki_events"],
           desc=desc,
+          orderby=~db.v_wiki_events.saved_on,
           examples=examples,
         )
 
     def handler(self, id, **vars):
-        qset=db(db.wiki_pages.name==id)
-        q = db.wiki_pages.name==id
-        q &= db.auth_user== db.wiki_pages.id
+        q = db.v_wiki_events.name == id
         self.set_q(q)
         return self.prepare_data(**vars)
 
