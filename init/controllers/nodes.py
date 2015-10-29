@@ -123,41 +123,6 @@ def node_insert():
         response.flash = T("Integrity Error")
     return dict(form=form)
 
-@auth.requires_login()
-def node_edit():
-    query = (db.v_nodes.id>0)
-    query &= _where(None, 'v_nodes', request.vars.node, 'nodename')
-    query &= _where(None, 'v_nodes', domain_perms(), 'nodename')
-    groups = user_groups()
-    if 'Manager' not in groups:
-        # Manager+NodeManager can edit any node
-        # NodeManager can edit the nodes they are responsible of
-        query &= db.v_nodes.team_responsible.belongs(groups)
-    rows = db(query).select()
-    if len(rows) != 1:
-        response.flash = "node %s not found or insufficient privileges"%request.vars.node
-        return dict(form=None)
-    record = rows[0]
-    id = record.id
-    record = db(db.v_nodes.id==id).select()[0]
-    form = _node_form(record)
-    if form.accepts(request.vars):
-        # update dashboard
-        table_modified("nodes")
-        update_dash_node_without_maintenance_end(request.vars.node)
-        update_dash_node_beyond_maintenance_end(request.vars.node)
-        update_dash_node_near_maintenance_end(request.vars.node)
-        delete_dash_node_not_updated(request.vars.node)
-        delete_dash_node_without_asset(request.vars.node)
-        table_modified("dashboard")
-
-        response.flash = T("edition recorded")
-        redirect(URL(r=request, f='nodes'))
-    elif form.errors:
-        response.flash = T("errors in form")
-
-    return dict(form=form)
-
 class table_nodes(HtmlTable):
     def __init__(self, id=None, func=None, innerhtml=None):
         if id is None and 'tableid' in request.vars:
@@ -207,7 +172,6 @@ class table_nodes(HtmlTable):
         self.wsable = True
         self.dataable = True
         self.extraline = True
-        self.extrarow = True
         self.checkboxes = True
         self.checkbox_id_col = 'nodename'
         self.checkbox_id_table = 'v_nodes'
@@ -217,23 +181,6 @@ class table_nodes(HtmlTable):
         if 'NodeManager' in user_groups():
             self.additional_tools.append('node_add')
             self.additional_tools.append('node_del')
-
-    def format_extrarow(self, o):
-        id = self.extra_line_key(o)
-        s = self.colprops['nodename'].get(o)
-        d = DIV(
-              A(
-                IMG(
-                  _src=URL(r=request, c='static', f='images/edit.png'),
-                  _style='vertical-align:middle',
-                ),
-                _href=URL(r=request, c='nodes', f='node_edit',
-                          vars={'node':s,
-                                '_next': URL(r=request)}
-                      ),
-              ),
-            )
-        return d.xml()
 
     def node_del(self):
         d = DIV(
