@@ -28,8 +28,6 @@ function node_props_init(o)
   o.e_tags = o.div.find(".tags")
   o.e_tags.uniqueId()
 
-  //o.filter_begin.datetimepicker({dateFormat:'yy-mm-dd'});
-  //o.filter_end.datetimepicker({dateFormat:'yy-mm-dd'});
 
   services_osvcgetrest("R_NODE", [o.options.nodename], {"meta": "false"}, function(jd) {
     if (!jd.data) {
@@ -128,13 +126,15 @@ function node_props_responsible_init(o)
         return
       }
       var updater = $(this).attr("upd")
-      if (updater == "string") {
+      if ((updater == "string") || (updater == "integer") || (updater == "date") || (updater == "datetime")) {
         e = $("<td><form class='editable'><input type='text'></input></form></td>")
         e.css({"padding-left": "0px"})
-        e.find("input").attr("id", $(this).attr("id"))
-        e.find("input").attr("value", $(this).text())
-        e.find("input").bind("blur", function(){
-          $(this).parents("td").first().siblings().show()
+        var input = e.find("input")
+        input.uniqueId() // for date picker
+        input.attr("pid", $(this).attr("id"))
+        input.attr("value", $(this).text())
+        input.bind("blur", function(){
+          $(this).parents("td").first().siblings("td").show()
           $(this).parents("td").first().hide()
         })
         $(this).parent().append(e)
@@ -143,13 +143,29 @@ function node_props_responsible_init(o)
       } else {
         return
       }
+      if (updater == "date") {
+        input.datepicker({
+          dateFormat:'yy-mm-dd',
+          onSelect: function() {
+            $(this).parents("td").first().siblings("td").click()
+          }
+        }).datepicker("show");
+      } else if (updater == "datetime") {
+        input.datetimepicker({
+          dateFormat:'yy-mm-dd',
+          onSelect: function() {
+            $(this).parents("td").first().siblings("td").click()
+          }
+        }).datepicker("show");
+      }
+
       e.find("form").submit(function() {
         event.preventDefault()
         var input = $(this).find("input")
         input.blur()
         data = {}
         data["nodename"] = o.options.nodename
-        data[input.attr("id")] = input.val()
+        data[input.attr("pid")] = input.val()
         services_osvcpostrest("R_NODE", [o.options.nodename], "", data, function(jd) {
           o.init()
         })
