@@ -65,9 +65,9 @@
   },
   "node_properties": {
     "organization": "organisation",
-    "team_responsible": "équipe responsable",
-    "integration": "intégration",
-    "support": "support",
+    "team_responsible": "responsable",
+    "team_integration": "intégration",
+    "team_support": "support",
     "project": "projet",
     "location": "emplacement",
     "country": "pays",

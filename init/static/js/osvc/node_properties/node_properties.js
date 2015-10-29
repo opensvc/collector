@@ -170,6 +170,75 @@ function node_props_responsible_init(o)
         $(this).parent().append(e)
         $(this).hide()
         e.find("select").focus()
+      } else if (updater == "group") {
+        e = $("<td><form class='editable'><select type='text'></select><input type='submit'></input></form></td>")
+        e.css({"padding-left": "0px"})
+        var select = e.find("select")
+        var opt
+        for (var i=0; i<_groups.length; i++) {
+          var group = _groups[i]
+          if (group.privilege) {
+            continue
+          }
+          var role = group.role
+          if (role.match(/^user_/)) {
+            continue
+          }
+          opt = $("<option></option>")
+          opt.attr("id", role)
+          opt.text(role)
+          if ($(this).text() == role) {
+            opt.attr("selected", "")
+          }
+          select.append(opt)
+        }
+        select.attr("pid", $(this).attr("id"))
+        e.find("select,input").bind("blur", function(){
+          var _this = $(this)
+          setTimeout(function(){
+            if ($(document.activeElement).parent().children("[pid="+select.attr("pid")+"]").length > 0) {
+              return
+            }
+            _this.parents("td").first().siblings("td").show()
+            _this.parents("td").first().hide()
+          }, 1)
+        })
+        $(this).parent().append(e)
+        $(this).hide()
+        e.find("select").focus()
+      } else if (updater == "app") {
+        var _td = $(this)
+        e = $("<td><form class='editable'><select type='text'></select><input type='submit'></input></form></td>")
+        e.css({"padding-left": "0px"})
+        var select = e.find("select")
+        select.attr("pid", _td.attr("id"))
+        services_osvcgetrest("R_USER_APPS", [_self.id], {"props": "app", "meta": "false", "limit": "0"}, function(jd) {
+          var opt
+          for (var i=0; i<jd.data.length; i++) {
+            var app = jd.data[i].app
+            opt = $("<option></option>")
+            opt.attr("id", app)
+            opt.text(app)
+            if ($(this).text() == app) {
+              opt.attr("selected", "")
+            }
+            select.append(opt)
+          }
+          e.find("select,input").bind("blur", function(){
+            var _this = $(this)
+            setTimeout(function(){
+              console.log(select.attr("pid"))
+              if ($(document.activeElement).parent().children("[pid="+select.attr("pid")+"]").length > 0) {
+                return
+              }
+              _this.parents("td").first().siblings("td").show()
+              _this.parents("td").first().hide()
+            }, 1)
+          })
+          _td.parent().append(e)
+          _td.hide()
+          e.find("select").focus()
+        })
       } else {
         return
       }
