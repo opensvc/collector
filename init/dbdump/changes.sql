@@ -4777,4 +4777,5 @@ alter table auth_group add key idx1 (privilege);
 
 alter table auth_group add key idx2 (role);
 
+CREATE ALGORITHM=UNDEFINED DEFINER=`opensvc`@`%` SQL SECURITY DEFINER VIEW `v_wiki_events` AS (select `s`.`id` AS `id`,`s`.`name` AS `name`,`s`.`title` AS `title`,`s`.`saved_on` AS `saved_on`,`s`.`change_note` AS `change_note`, `s`.`body` AS `body` ,`a`.`email` AS `email` from (`wiki_pages` `s` left join `auth_user` `a` on(`s`.`author` = `a`.`id`)));
 
