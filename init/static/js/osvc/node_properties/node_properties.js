@@ -121,7 +121,7 @@ function node_props_responsible_init(o)
       //$(this).unbind("mouseenter mouseleave click")
       if ($(this).siblings().find("form").length > 0) {
         $(this).siblings().show()
-        $(this).siblings().find("input").focus()
+        $(this).siblings().find("input[type=text],select").focus()
         $(this).hide()
         return
       }
@@ -140,6 +140,36 @@ function node_props_responsible_init(o)
         $(this).parent().append(e)
         $(this).hide()
         e.find("input").focus()
+      } else if (updater == "action_type") {
+        e = $("<td><form class='editable'><select type='text'></select><input type='submit'></input></form></td>")
+        e.css({"padding-left": "0px"})
+        var select = e.find("select")
+        var opt
+        opt = $("<option id='push'>push</option>")
+        if ($(this).text() == "push") {
+          opt.attr("selected", "")
+        }
+        select.append(opt)
+        opt = $("<option id='pull'>pull</option>")
+        if ($(this).text() == "pull") {
+          opt.attr("selected", "")
+        }
+        select.append(opt)
+        select.attr("pid", $(this).attr("id"))
+        e.find("select,input").bind("blur", function(){
+          var _this = $(this)
+          setTimeout(function(){
+            if ($(document.activeElement).parent().children("[pid=action_type]").length > 0) {
+              return
+            }
+            console.log(_this)
+            _this.parents("td").first().siblings("td").show()
+            _this.parents("td").first().hide()
+          }, 1)
+        })
+        $(this).parent().append(e)
+        $(this).hide()
+        e.find("select").focus()
       } else {
         return
       }
@@ -161,7 +191,7 @@ function node_props_responsible_init(o)
 
       e.find("form").submit(function() {
         event.preventDefault()
-        var input = $(this).find("input")
+        var input = $(this).find("input[type=text],select")
         input.blur()
         data = {}
         data["nodename"] = o.options.nodename

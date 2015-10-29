@@ -2109,7 +2109,10 @@ ul.login_menu ul {
     padding: 0 0 0 20px;
     min-height: 16px;
 }
-.editable input {
+.editable input:focus,select:focus {
+    color: red;
+}
+.editable input,select,select:focus {
     border: 0px;
     border-bottom: 1px dotted;
 }
