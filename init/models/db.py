@@ -2140,3 +2140,12 @@ db.define_table('safe',
            uploadseparate=True),
     migrate=False)
 
+db.define_table('v_wiki_events',
+    Field('id','integer'),
+    Field('name','string'),
+    Field('title','string'),
+    Field('body','string'),
+    Field('change_note','string'),
+    Field('saved_on','datetime'),
+    Field('email','string'),
+    migrate=False)

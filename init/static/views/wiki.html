@@ -1,17 +1,23 @@
 <div id='wiki'>
-  <div id="wiki_tab_insert" style="float:left">
-    <textarea cols="100" id="wiki_tab" rows="10" type="text"></textarea>
+  <div id="wiki_tab_show" style="float:left">
+    
   </div>
-  <div id="wiki_tab_last_updated" style="float:left;">
-    <table id="wiki_table_last_changes">
-    <th>Last 5 changes</th>
+  <div id="wiki_tab_insert" style="float:left;display:None">
+    <textarea cols="100" id="wiki_tab_ins" rows="10" type="text"></textarea>
+  </div>
+  <div id="wiki_tab_last_updated" style="float:left">
+    <table id="wiki_table_last_changes" style="padding-top:10px">
+    <th id="wiki_tab_title"></th>
     </table>
   </div>
   <br>
-  <div style="clear:both">
-    <a onclick="wiki_save()">Save</a>
-    <a onclick="wiki_help()">Help</a>
-    <a onclick="wiki_insert_sign()">Insert signature and timestamp</a>
+  <div id="wiki_edit" style="clear:both;padding-top:10px">
+    <button id="wiki_edit_button" class="button_div">Edit</button>
+  </div>
+  <div id="wiki_editor" style="clear:both;display:None;padding-top:10px">
+    <button id="wiki_save_button" class="button_div">Save</button>
+    <button id="wiki_help_button" class="button_div">Help</button>
+    <button id="wiki_insert_button" class="button_div">Insert signature and timestamp</button>
     <span id="wiki_messages" style="color:#FF0000"></span>
     <div id="wiki_syntax" class="hidden">
       <h2>Headers:</h2>
