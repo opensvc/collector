@@ -3,7 +3,6 @@ function node_properties(divid, options)
     var o = {}
 
     // store parameters
-    o.divid = divid
     o.options = options
 
     o.div = $("#"+divid)
@@ -16,6 +15,8 @@ function node_properties(divid, options)
     }
 
     o.div.load('/init/static/views/node_properties.html', "", function() {
+      o.div = o.div.children()
+      o.div.uniqueId()
       o.init()
     })
     return o
@@ -42,19 +43,20 @@ function node_props_init(o)
       }
       o.div.find("#"+key).text(data[key])
     }
+
+    // init sys responsible tools
+    if (o.options.responsible) {
+      o.responsible_init()
+    } else {
+      services_ismemberof("Manager", function() {
+        alert("responsible")
+        o.responsible_init()
+      })
+    }
   },
   function() {
     o.div.html(services_ajax_error_fmt(xhr, stat, error))
   });
-
-  if (o.options.responsible) {
-    o.responsible_init()
-  } else {
-    services_ismemberof("Manager", function() {
-      alert("responsible")
-      o.responsible_init()
-    })
-  }
 
   // init tags
   tags({
@@ -62,8 +64,6 @@ function node_props_init(o)
     "nodename": o.options.nodename,
     "responsible": o.options.responsible
   })
-
-
 }
 
 function node_props_responsible_init(o)
@@ -98,4 +98,62 @@ function node_props_responsible_init(o)
     })
   })
   o.div.find("#root_pwd").html(e)
+
+  // init updaters
+  if (o.div.find("#version").text() != "") {
+    o.has_agent = true
+  } else {
+    o.has_agent = false
+  }
+  o.div.find("[upd]").each(function(){
+    var agent = $(this).attr("agent")
+    if ((agent == "1") && o.has_agent) {
+      return
+    }
+    $(this).addClass("clickable")
+    $(this).hover(
+        function() {
+          $(this).addClass("editable")
+        },
+        function() {
+          $(this).removeClass("editable")
+        }
+    )
+    $(this).bind("click", function() {
+      //$(this).unbind("mouseenter mouseleave click")
+      if ($(this).siblings().find("form").length > 0) {
+        $(this).siblings().show()
+        $(this).siblings().find("input").focus()
+        $(this).hide()
+        return
+      }
+      var updater = $(this).attr("upd")
+      if (updater == "string") {
+        e = $("<td><form class='editable'><input type='text'></input></form></td>")
+        e.css({"padding-left": "0px"})
+        e.find("input").attr("id", $(this).attr("id"))
+        e.find("input").attr("value", $(this).text())
+        e.find("input").bind("blur", function(){
+          $(this).parents("td").first().siblings().show()
+          $(this).parents("td").first().hide()
+        })
+        $(this).parent().append(e)
+        $(this).hide()
+        e.find("input").focus()
+      } else {
+        return
+      }
+      e.find("form").submit(function() {
+        event.preventDefault()
+        var input = $(this).find("input")
+        input.blur()
+        data = {}
+        data["nodename"] = o.options.nodename
+        data[input.attr("id")] = input.val()
+        services_osvcpostrest("R_NODE", [o.options.nodename], "", data, function(jd) {
+          o.init()
+        })
+      })
+    })
+  })
 }

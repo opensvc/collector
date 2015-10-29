@@ -2104,6 +2104,18 @@ ul.login_menu ul {
     float: right;
     padding:0.3em;
 }
+.editable {
+    background: transparent url('images/edit.png') no-repeat;
+    padding: 0 0 0 20px;
+    min-height: 16px;
+}
+.editable input {
+    border: 0px;
+    border-bottom: 1px dotted;
+}
+.editable input:focus {
+    background: none;
+}
 .search {
     float: right;
     padding:0.2em;
