@@ -40,7 +40,8 @@ var services_access_uri = {
     "R_SERVICE_CANDIDATE_TAGS" : "/rest/api/services/%1/candidate_tags",
     "R_TAGS" : "/rest/api/tags",
     "R_TAG_NODE" : "/rest/api/tags/%1/nodes/%2",
-    "R_TAG_SERVICE" : "/rest/api/tags/%1/services/%2"
+    "R_TAG_SERVICE" : "/rest/api/tags/%1/services/%2",
+    "R_WIKI" : "rest/api/wiki/%1",
 }
 
 function services_getaccessurl(service)

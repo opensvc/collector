@@ -21,7 +21,15 @@ $(document).keydown(function(event) {
       $(".menu").find("[id^=sextra]").remove()
       return
     }
-   else if (event.which == 83) // s for search
+
+    if ($('input').is(":focus")) {
+      return
+    }
+    if ($('textarea').is(":focus")) {
+      return
+    }
+
+   if (event.which == 83) // s for search
    {
       if (!$('#search_input').is(":focus")) 
         {
@@ -46,6 +54,7 @@ $(document).keydown(function(event) {
     $(entries[0]).addClass("menu_selected");
   }
   else if ((event.which == 37)||(event.which == 38)) { // Left/Up key function
+    var menu = $(".header").find(".menu16").parents("ul").first().siblings(".menu");
     event.preventDefault();
     var menu = $(".header").find(".menu16").parents("ul").first().siblings(".menu");
     var entries = menu.find(".menu_entry:visible");
@@ -63,8 +72,8 @@ $(document).keydown(function(event) {
     });
   }
   else if ((event.which == 39)||(event.which == 40)) { // Right/down function
-    event.preventDefault();
     var menu = $(".header").find(".menu16").parents("ul").first().siblings(".menu");
+    event.preventDefault();
     var entries = menu.find(".menu_entry:visible");
     var i = 0;
     var found = false;

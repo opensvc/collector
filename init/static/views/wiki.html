@@ -1,0 +1,54 @@
+<div id='wiki'>
+  <div id="wiki_tab_insert" style="float:left">
+    <textarea cols="100" id="wiki_tab" rows="10" type="text"></textarea>
+  </div>
+  <div id="wiki_tab_last_updated" style="float:left;">
+    <table id="wiki_table_last_changes">
+    <th>Last 5 changes</th>
+    </table>
+  </div>
+  <br>
+  <div style="clear:both">
+    <a onclick="wiki_save()">Save</a>
+    <a onclick="wiki_help()">Help</a>
+    <a onclick="wiki_insert_sign()">Insert signature and timestamp</a>
+    <span id="wiki_messages" style="color:#FF0000"></span>
+    <div id="wiki_syntax" class="hidden">
+      <h2>Headers:</h2>
+      <pre>Section Header
+  ==============
+
+  Subsection Header
+  -----------------</pre>
+      <h2>Lists:</h2>
+      <pre>- A bullet list item
+    - Second item
+
+      - A sub item
+
+    - Third item
+    1) An enumerated list item
+
+    2) Second item
+
+       a) Sub item
+
+          i) Sub-sub item
+
+    3) Third item
+    #) Another enumerated list item
+
+    #) Second item</pre>
+      <h2>Named links:</h2>
+      <pre>A sentence with links to Wikipedia_ and the `Linux kernel archive`_.
+
+    .. _Wikipedia: http://www.wikipedia.org/
+    .. _Linux kernel archive: http://www.kernel.org/</pre>
+      <h2>Anonymous links:</h2>
+      <pre>Another sentence with an `anonymous link to the Python website`__.
+
+    __ http://www.python.org/
+      </pre>
+    </div>
+  </div>
+</div>

@@ -176,6 +176,7 @@ handlers = {
      rest_get_sysreport_secure_pattern(),
      rest_get_sysreport_authorizations(),
      rest_get_sysreport_authorization(),
+     rest_get_wiki(),
   ],
   'DELETE': [
      rest_delete_action_queue_one(),
@@ -285,6 +286,7 @@ handlers = {
      rest_post_user_group(),
      rest_post_user_primary_group(),
      rest_post_user_filterset(),
+     rest_post_wiki(),
   ],
   'PUT': [
      rest_put_compliance_moduleset(),

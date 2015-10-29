@@ -662,11 +662,10 @@ n%(rid)s_load_node_properties(){node_properties("%(id)s", {"nodename": "%(node)s
                url=URL(r=request, c='ajax_node', f='ajax_node_stor',
                        args=['tab6_'+str(rowid), request.vars.node])
             ),
-            "function n%(rid)s_load_wiki(){sync_ajax('%(url)s', [], '%(id)s', function(){})}"%dict(
+            """function n%(rid)s_load_wiki(){wiki("%(id)s", {"nodes": "%(node)s"})}"""%dict(
                id='tab11_'+str(rowid),
                rid=str(rowid),
-               url=URL(r=request, c='wiki', f='ajax_wiki',
-                       args=['tab10_'+str(rowid), request.vars.node])
+               node=request.vars.node,
             ),
             "function n%(rid)s_load_checks(){sync_ajax('%(url)s', [], '%(id)s', function(){})}"%dict(
                id='tab12_'+str(rowid),

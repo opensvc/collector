@@ -15,13 +15,15 @@ function search_get_menu(fk)
           { "apps" : [ {"class" : "guy16"},{"link" : "/init/apps/apps?clear_filters=true&apps_f_responsibles="} ] },
            ],
     }, 
+    /*
     "safe_files": {
         "tab" : "0",
-        "keys": [ {"key" : "files_id"} ], 
+        "keys": [ {"key" : "uuid"}, {"key" : "name"} ], 
         "class": "s_guys48",
         "subclass" : "meta_username",
         "link" : [],
     },  
+    */
     "disks": {
         "tab" : "0",
         "keys": [ {"key" : "disk_id"} ], 
@@ -154,6 +156,10 @@ function search_build_result_row(label, first, res)
 {
   var title ="";
   var link_value ="";
+  var separator = search_get_menu(label).key_separator;
+
+  if (separator == undefined) separator = "";
+
   var row = "<tr><td " + "class='" + search_get_menu(label).class + "' ></td>";
   // Title construction
   if (first==1) // first header with %___%
@@ -165,7 +171,7 @@ function search_build_result_row(label, first, res)
     {
       for (ki=0;ki<search_get_menu(label).keys.length;ki++)
       {
-        if (ki>=1) title += " " + search_get_menu(label).key_separator + " ";
+        if (ki>=1) title += " " + separator + " ";
         title += res[search_get_menu(label).keys[ki].key];
         // Handle special link variable
         if (search_get_menu(label).link_value != undefined && 
@@ -232,7 +238,7 @@ function search_search()
       var result = jd.data;
       for (d in result)
       {
-        if (result[d].data.length>0)
+        if (result[d].data.length>0 && search_get_menu(d) !== undefined) // check if definition exists in format JSON
         {
           response = search_build_result_view(d,result[d]);
           $("#search_result").append(response);
