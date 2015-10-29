@@ -2873,10 +2873,10 @@ textarea, table, td, th, code, pre, samp {
 }
 
 .link_ta_sub:focus {
-    background: none;
+    background: white;
 }
 textarea.link_ta_sub {
-    background: none;
+    background: white;
     /*border: 0px;*/
 }
 

@@ -169,149 +169,6 @@ function bind_tabs(id, callbacks, active_id) {
 
 
 //
-// topo
-//
-function draw_topo(id, data, display) {
-  var i=0
-  url = $(location).attr("origin") + "/init/topo/call/json/json_topo_data"
-  if ("svcnames" in data) {
-    if (i==0) {url += '?'}
-    else if (i==1) {url += '&'}
-    i += 1
-    url += "svcnames="+encodeURIComponent(data["svcnames"])
-  }
-  if ("nodenames" in data) {
-    if (i==0) {url += '?'}
-    else if (i>0) {url += '&'}
-    i += 1
-    url += "nodenames="+encodeURIComponent(data["nodenames"])
-  }
-  if (typeof display !== 'undefined') {
-    if (i==0) {url += '?'}
-    else if (i>0) {url += '&'}
-    i += 1
-    url += "display="+encodeURIComponent(display.join(","))
-  }
-  if ($("#"+id).parents(".overlay").length == 0) {
-      _height = $(window).height()-$(".header").outerHeight()-16
-      $("#"+id).height(_height)
-  }
-  $.getJSON(url, function(_data){
-    var eid = document.getElementById(id)
-    var options = {
-      physics: {
-        barnesHut: {
-          //enabled: true,
-          gravitationalConstant: -2500,
-          centralGravity: 1,
-          springLength: 95,
-          springConstant: 0.1,
-          damping: 0.5
-        }
-      },
-      clickToUse: false,
-      height: _height+'px',
-      nodes: {
-        size: 32,
-        font: {
-          face: "arial",
-          size: 12
-        }
-      },
-      edges: {
-        font: {
-          face: "arial",
-          size: 12
-        }
-      }
-    }
-    var network = new vis.Network(eid, _data, options)
-  })
-}
-
-function init_topo(id, data, display) {
-  $("#"+id).parent().find("input:submit").bind("click", function(){
-    var display = []
-    $(this).parent().find("input:checked").each(function () {
-      display.push($(this).attr("name"))
-    })
-    draw_topo(id, data, display)
-  })
-  draw_topo(id, data, display)
-}
-
-//
-// startup sequence diagram
-//
-function draw_startup(id, data) {
-  var i=0
-  url = $(location).attr("origin") + "/init/topo/call/json/json_startup_data"
-  if ("svcnames" in data) {
-    if (i==0) {url += '?'}
-    else if (i==1) {url += '&'}
-    i += 1
-    url += "svcnames="+encodeURIComponent(data["svcnames"])
-  }
-  if ("nodenames" in data) {
-    if (i==0) {url += '?'}
-    else if (i==1) {url += '&'}
-    i += 1
-    url += "nodenames="+encodeURIComponent(data["nodenames"])
-  }
-  if ($("#"+id).parents(".overlay").length == 0) {
-      _height = $(window).height()-$(".header").outerHeight()-16
-      $("#"+id).height(_height)
-  }
-  $.getJSON(url, function(_data){
-    var eid = document.getElementById(id)
-    var options = {
-      interaction: {
-        hover: true
-      },
-      physics: {
-        barnesHut: {
-          enabled: true,
-          gravitationalConstant: -2500,
-          centralGravity: 1,
-          springLength: 95,
-          springConstant: 0.1,
-          damping: 0.5
-        }
-      },
-      clickToUse: false,
-      height: _height+'px',
-      nodes: {
-        size: 32,
-        font: {
-          face: "arial",
-          size: 12
-        }
-      },
-      edges: {
-        font: {
-          face: "arial",
-          size: 12
-        }
-      }
-    }
-    var network = new vis.Network(eid, _data, options)
-  })
-}
-
-function init_startup(id, data) {
-  $("#"+id).parent().find("input:submit").bind("click", function(){
-    var nodenames = []
-    $(this).parent().find("input:checked").each(function () {
-      nodenames.push($(this).attr("name"))
-    })
-    data["nodenames"] = nodenames
-    draw_startup(id, data)
-  })
-  draw_startup(id, data)
-}
-
-
-//
 //
 //
 function print_date(d) {
@@ -2308,10 +2165,11 @@ function trigger_tool_topo(tid) {
   for (i=0;i<datasvc.length;i++) {
     svcnames.push(datasvc[i]['svcname'])
   }
-  url = '/init/topo/ajax_topo?display=nodes,services,countries,cities,buildings,rooms,racks,enclosures,hvs,hvpools,hvvdcs'
-  url += '&svcnames=('+svcnames.join(",")+")"
-  url += '&nodenames=('+nodenames.join(",")+")"
-  sync_ajax(url, [], 'overlay', function(){})
+  topology("overlay", {
+    "nodenames": nodenames,
+    "svcnames": svcnames,
+    "display": ["nodes", "services", "countries", "cities", "buildings", "rooms", "racks", "enclosures", "hvs", "hvpools", "hvvdcs"]
+  })
 }
 
 function trigger_tool_nodesantopo(tid) {

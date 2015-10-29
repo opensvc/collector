@@ -644,11 +644,27 @@ n%(rid)s_load_node_properties(){node_properties("%(id)s", {"nodename": "%(node)s
                url=URL(r=request, c='svcactions', f='actions_node',
                        args=[request.vars.node])
             ),
-            "function n%(rid)s_load_topo(){sync_ajax('%(url)s', [], '%(id)s', function(){})}"%dict(
+            "function n%(rid)s_load_topo(){topology('%(id)s', %(options)s)}"%dict(
                id='tab2_'+str(rowid),
                rid=str(rowid),
-               url=URL(r=request, c='topo', f='ajax_topo',
-                       vars={"nodenames": request.vars.node, "display": "nodes,services,countries,cities,buildings,rooms,racks,enclosures,hvs,hvpools,hvvdcs,disks"})
+               options=str({
+                "nodenames": [
+                  request.vars.node
+                ],
+                "display": [
+                  "nodes",
+                  "services",
+                  "countries",
+                  "cities",
+                  "buildings",
+                  "rooms",
+                  "racks",
+                  "enclosures",
+                  "hvs",
+                  "hvpools",
+                  "hvvdcs",
+                  "disks"]
+               })
             ),
             "function n%(rid)s_load_node_alerts(){sync_ajax('%(url)s', [], '%(id)s', function(){})}"%dict(
                id='tab14_'+str(rowid),

@@ -657,11 +657,28 @@ def ajax_service():
                url=URL(r=request, c='compliance', f='ajax_compliance_svc',
                        args=[request.vars.node])
             ),
-            "function s%(rid)s_load_topo(){sync_ajax('%(url)s', [], '%(id)s', function(){})}"%dict(
+            "function s%(rid)s_load_topo(){topology('%(id)s', %(options)s)}"%dict(
                id='tab5_'+str(rowid),
                rid=str(rowid),
-               url=URL(r=request, c='topo', f='ajax_topo',
-                       vars={"svcnames": request.vars.node, "display": "nodes,services,countries,cities,buildings,rooms,racks,enclosures,hvs,hvpools,hvvdcs,disks"})
+               options=str({
+                 "svcnames": [
+                   request.vars.node
+                 ],
+                 "display": [
+                   "nodes",
+                   "services",
+                   "countries",
+                   "cities",
+                   "buildings",
+                   "rooms",
+                   "racks",
+                   "enclosures",
+                   "hvs",
+                   "hvpools",
+                   "hvvdcs",
+                   "disks"
+                 ]
+               })
             ),
             "function s%(rid)s_load_startup(){sync_ajax('%(url)s', [], '%(id)s', function(){})}"%dict(
                id='tab16_'+str(rowid),

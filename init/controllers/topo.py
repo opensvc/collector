@@ -746,119 +746,38 @@ class viz(object):
 @auth.requires_login()
 @service.json
 def json_topo_data():
-    f = request.vars.get("svcnames")
-    if f is not None and f != "":
-        q = _where(None, 'services', f, 'svc_name')
-        svcnames = [r.svc_name for r in db(q).select(db.services.svc_name, cacheable=True)]
-    else:
-        svcnames = []
+    svcnames = request.vars.get("svcnames[]", [])
+    if type(svcnames) != list:
+        svcnames = [svcnames]
+    if len(svcnames) > 0:
+        svcnames = [r.svc_name for r in db(db.services.svc_name.belongs(svcnames)).select(db.services.svc_name)]
 
-    f = request.vars.get("nodenames")
-    if f is not None and f != "":
-        q = _where(None, 'nodes', f, 'nodename')
-        nodenames = [r.nodename for r in db(q).select(db.nodes.nodename, cacheable=True)]
-    else:
-        nodenames = []
+    nodenames = request.vars.get("nodenames[]", [])
+    if type(nodenames) != list:
+        nodenames = [nodenames]
+    if len(nodenames) > 0:
+        nodenames = [r.nodename for r in db(db.nodes.nodename.belongs(nodenames)).select(db.nodes.nodename)]
 
-    display = request.vars.get("display", "").split(",")
+    display = request._vars.get("display[]", [])
     return viz(svcnames, nodenames, display).get_data()
 
 @auth.requires_login()
-def ajax_topo():
-    import uuid
-    rowid = uuid.uuid1().hex
-    return topo_script(rowid)
-
-@auth.requires_login()
 def topo():
-    d = topo_script("topo")
-    return dict(table=d)
-
-def topo_script(eid):
-    svcnames = request.vars.get("svcnames", "")
-    nodenames = request.vars.get("nodenames", "")
+    svcnames = request.vars.get("svcnames", "").split(",")
+    nodenames = request.vars.get("nodenames", "").split(",")
     display = request.vars.get("display", "").split(",")
-    s = SCRIPT("""init_topo("%(eid)s", {
-        svcnames: "%(svcnames)s",
-        nodenames: "%(nodenames)s"
-       }, %(display)s)"""%dict(
-         eid=eid,
-         svcnames=svcnames,
-         nodenames=nodenames,
-         display=str(display),
-       ),
+    s = """topology("topo", %(options)s)""" % dict(
+         options=str({
+           "svcnames": svcnames,
+           "nodenames": nodenames,
+           "display": display,
+         })
     )
-
-    def check(label="set me", name="set me", cl="action16"):
-        return DIV(
-          INPUT(
-            _type="checkbox",
-            _name=name,
-            _style="vertical-align:text-bottom",
-            _value="true" if name in display else "false",
-            value=True if name in display else False,
-          ),
-          SPAN(
-            T(label),
-            _class=cl,
-            _style="padding-left:18px;margin-left:0.2em",
-          ),
-        )
-
-    link = DIV(
-      DIV(
-        _style="word-break:break-all",
-        _class="white_float hidden",
-      ),
-      DIV(
-        _onclick="""
-          url = $(location).attr("origin")
-          url += "/init/topo/topo?svcnames=%(svcnames)s&nodenames=%(nodenames)s&display=%(display)s"
-          $(this).siblings("div").html(url)
-          $(this).siblings("div").toggle()
-        """ % dict(
-          svcnames=request.vars.get("svcnames", ""),
-          nodenames=request.vars.get("nodenames", ""),
-          display=request.vars.get("display", ""),
-        ),
-        _class="link16 clickable",
-      ),
-    )
-
     d = DIV(
-      DIV(
-        link,
-        check("Services", "services", "svc"),
-        check("Apps", "apps", "svc"),
-        check("Environment", "envs", "svc"),
-        check("Resources", "resources", "svc"),
-        check("Nodes", "nodes", "hw16"),
-        check("Countries", "countries", "loc"),
-        check("Cities", "cities", "loc"),
-        check("Buildings", "buildings", "loc"),
-        check("Rooms", "rooms", "loc"),
-        check("Racks", "racks", "loc"),
-        check("Enclosures", "enclosures", "loc"),
-        check("Hypervisors", "hvs", "hv16"),
-        check("Hypervisor pools", "hvpools", "hv16"),
-        check("Hypervisor VDC", "hvvdcs", "hv16"),
-        check("Disks", "disks", "hd16"),
-        check("Arrays", "arrays", "hd16"),
-        check("San", "san", "net16"),
-        INPUT(
-          _type="submit",
-        ),
-        _style="display:table-cell;vertical-align:top;text-align:left;padding:0.3em;min-width:12em",
-      ),
-      DIV(
-        _id=eid,
-        _style="display:table-cell;width:100%",
-      ),
-      s,
-      _style="display:table-row",
+      SCRIPT(s),
+      _id="topo",
     )
-    return d
-
+    return dict(table=d)
 
 @auth.requires_login()
 def ajax_startup():
