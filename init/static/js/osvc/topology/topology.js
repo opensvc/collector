@@ -18,6 +18,7 @@ function topology(divid, options) {
   }
 
   o.div.load('/init/static/views/topology.html', "", function() {
+    o.div.i18n();
     o.viz = o.div.find("#viz")
     o.link = o.div.find(".link16")
     o.link_text = o.link.children()

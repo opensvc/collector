@@ -129,5 +129,24 @@
     "root_pwd": "mdp root",
     "retrieve_root_password": "récupérer le mot de passe root",
     "protected": "<contenu protégé>"
+  },
+  "topology": {
+    "services": "Services",
+    "apps": "Apps",
+    "environment": "Environnements",
+    "resources": "Ressources",
+    "nodes": "Noeuds",
+    "countries": "Pays",
+    "cities": "Villes",
+    "buildings": "Bâtiments",
+    "rooms": "Salles",
+    "racks": "Armoires",
+    "enclosures": "Châssis",
+    "hypervisors": "Hyperviseurs",
+    "hypervisor_pools": "Pools d'hyperviseurs",
+    "hypervisor_vdc": "Datacentres virtuels",
+    "disks": "Disques",
+    "arrays": "Baies",
+    "san": "SAN"
   }
 }

@@ -160,5 +160,24 @@
     "root_pwd": "root pwd",
     "retrieve_root_password": "retrieve root password",
     "protected": "<protected content>"
+  },
+  "topology": {
+    "services": "Services",
+    "apps": "Apps",
+    "environment": "Environments",
+    "resources": "Resources",
+    "nodes": "Nodes",
+    "countries": "Countries",
+    "cities": "Cities",
+    "buildings": "Buildings",
+    "rooms": "Rooms",
+    "racks": "Racks",
+    "enclosures": "Enclosures",
+    "hypervisors": "Hypervisors",
+    "hypervisor_pools": "Hypervisors pools",
+    "hypervisor_vdc": "Hypervisors VDC",
+    "disks": "Disks",
+    "arrays": "Arrays",
+    "san": "SAN"
   }
 }
