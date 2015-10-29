@@ -192,7 +192,7 @@ function draw_topo(id, data, display) {
     var options = {
       physics: {
         barnesHut: {
-          enabled: true,
+          //enabled: true,
           gravitationalConstant: -2500,
           centralGravity: 1,
           springLength: 95,
@@ -203,13 +203,17 @@ function draw_topo(id, data, display) {
       clickToUse: false,
       height: _height+'px',
       nodes: {
-        widthMax: "48px",
-        fontFace: "arial",
-        fontSize: 12
+        size: 32,
+        font: {
+          face: "arial",
+          size: 12
+        }
       },
       edges: {
-        fontFace: "arial",
-        fontSize: 12
+        font: {
+          face: "arial",
+          size: 12
+        }
       }
     }
     var network = new vis.Network(eid, _data, options)
@@ -268,13 +272,17 @@ function draw_startup(id, data) {
       clickToUse: false,
       height: _height+'px',
       nodes: {
-        widthMax: "48px",
-        fontFace: "arial",
-        fontSize: 12
+        size: 32,
+        font: {
+          face: "arial",
+          size: 12
+        }
       },
       edges: {
-        fontFace: "arial",
-        fontSize: 12
+        font: {
+          face: "arial",
+          size: 12
+        }
       }
     }
     var network = new vis.Network(eid, _data, options)
@@ -901,6 +909,13 @@ function table_refresh(t) {
     } else {
         t.set_refresh_spin()
     }
+
+    // move open tabs to overlay to preserve what was in use
+    p = $("#"+t.id).find(".extraline").children("td").children("table").detach()
+    if (p.length > 0) {
+      $("#overlay").empty().html(p).hide().show("scale")
+    }
+
     var data = {
       "table_id": t.id,
       "visible_columns": t.visible_columns.join(',')
