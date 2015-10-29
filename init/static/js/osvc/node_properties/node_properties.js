@@ -83,7 +83,7 @@ function node_props_responsible_init(o)
   o.div.find("#root_pwd").parent().show()
   e = $("<span></span>")
   e.text(i18n.t("node_properties.retrieve_root_password"))
-  e.addClass("lock clickable")
+  e.addClass("clickable")
   e.bind("click", function(){
     o.div.find("#root_pwd").empty()
     spinner_add(o.div.find("#root_pwd"))
@@ -93,9 +93,10 @@ function node_props_responsible_init(o)
         o.div.find("#root_pwd").html(services_error_fmt(jd))
       }
       o.div.find("#root_pwd").text(jd.data)
+      o.div.find("#root_pwd").removeClass("lock")
     })
   })
-  o.div.find("#root_pwd").html(e)
+  o.div.find("#root_pwd").html(e).addClass("lock")
 
   // init updaters
   if (o.div.find("#version").text() != "") {

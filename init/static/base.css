@@ -15,6 +15,7 @@ form *:focus {
 }
 
 .asset_tab > div > table > tbody > tr > td {
+  padding-left: 20px;
   font-weight: bold;
 }
 
