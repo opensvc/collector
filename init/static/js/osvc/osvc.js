@@ -911,9 +911,15 @@ function table_refresh(t) {
     }
 
     // move open tabs to overlay to preserve what was in use
-    p = $("#"+t.id).find(".extraline").children("td").children("table").detach()
-    if (p.length > 0) {
-      $("#overlay").empty().html(p).hide().show("scale")
+    if ($("#"+t.id).find(".extraline").children("td").children("table").length > 0) {
+      $("#overlay").empty().hide()
+      $("#"+t.id).find(".extraline").children("td").children("table").parent().each(function() {
+        var e = $("<div></div>")
+        e.attr("id", $(this).attr("id"))
+        e.append($(this).children())
+        $("#overlay").append(e)
+      })
+      $("#overlay").hide().show("scale")
     }
 
     var data = {
