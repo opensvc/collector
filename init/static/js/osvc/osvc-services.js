@@ -38,6 +38,7 @@ var services_access_uri = {
     "R_TAG_NODE" : "/rest/api/tags/%1/nodes/%2",
     "R_TAG_SERVICE" : "/rest/api/tags/%1/services/%2",
     "R_WIKI" : "rest/api/wiki/%1",
+    "R_IPS" : "rest/api/nodes/%1/ips",
 }
 
 function services_getaccessurl(service)

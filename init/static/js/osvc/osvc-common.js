@@ -19,6 +19,13 @@ function is_blank(str) {
     return (!str || /^\s*$/.test(str));
 }
 
+function is_empty_or_null(str) {
+  if (str=='' || str=="null" || str==null)
+    return false;
+  else
+    return true;
+}
+
 function toggle(divid, head)
 {
   if (head) {
