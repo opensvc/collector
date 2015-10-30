@@ -680,10 +680,10 @@ def ajax_service():
                  ]
                })
             ),
-            "function s%(rid)s_load_startup(){sync_ajax('%(url)s', [], '%(id)s', function(){})}"%dict(
+            "function s%(rid)s_load_startup(){startup('%(id)s', %(options)s)}"%dict(
                id='tab16_'+str(rowid),
                rid=str(rowid),
-               url=URL(r=request, c='topo', f='ajax_startup', vars={"svcnames": request.vars.node})
+               options=str({"svcnames": [request.vars.node]})
             ),
             "function s%(rid)s_load_stor(){sync_ajax('%(url)s', [], '%(id)s', function(){})}"%dict(
                id='tab6_'+str(rowid),

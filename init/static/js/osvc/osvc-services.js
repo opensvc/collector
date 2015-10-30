@@ -36,6 +36,8 @@ var services_access_uri = {
     "R_GROUPS" : "/rest/api/groups",
     "R_NODE_TAGS" : "/rest/api/nodes/%1/tags",
     "R_NODE_CANDIDATE_TAGS" : "/rest/api/nodes/%1/candidate_tags",
+    "R_SERVICE_INSTANCES" : "/rest/api/service_instances",
+    "R_SERVICE_NODES" : "/rest/api/services/%1/nodes",
     "R_SERVICE_TAGS" : "/rest/api/services/%1/tags",
     "R_SERVICE_CANDIDATE_TAGS" : "/rest/api/services/%1/candidate_tags",
     "R_TAGS" : "/rest/api/tags",

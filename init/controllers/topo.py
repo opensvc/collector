@@ -780,105 +780,50 @@ def topo():
     return dict(table=d)
 
 @auth.requires_login()
-def ajax_startup():
-    import uuid
-    rowid = uuid.uuid1().hex
-    return startup_script(rowid)
-
 def startup():
-    d = startup_script("startup")
-    return dict(table=d)
+    svcnames = request.vars.get("svcnames", "").split(",")
+    display = request.vars.get("display", "").split(",")
 
-def startup_script(eid):
-    svcnames = request.vars.get("svcnames", "")
-    nodenames = request.vars.get("nodenames", "")
-
-    q = db.svcmon.mon_svcname.belongs(svcnames.split(","))
-    rows = db(q).select(db.svcmon.mon_nodname)
-    all_nodenames = ",".join([r.mon_nodname for r in rows])
-
-    if nodenames == "":
-        nodenames = all_nodenames.split(",")[0]
-
-    s = SCRIPT("""init_startup("%(eid)s", {
-        svcnames: "%(svcnames)s",
-        nodenames: "%(nodenames)s",
-       })"""%dict(
-         eid=eid,
-         svcnames=svcnames,
-         nodenames=nodenames,
-       ),
-    )
-
-    link = DIV(
-      DIV(
-        _style="word-break:break-all",
-        _class="white_float hidden",
-      ),
-      DIV(
-        _onclick="""
-          url = $(location).attr("origin")
-          url += "/init/topo/startup?svcnames=%(svcnames)s&nodenames=%(nodenames)s"
-          $(this).siblings("div").html(url)
-          $(this).siblings("div").toggle()
-        """ % dict(
-          svcnames=svcnames,
-          nodenames=nodenames,
-        ),
-        _class="link16 clickable",
-      ),
-    )
-
-    def check(label="set me", name="set me", cl="action16"):
-        return DIV(
-          INPUT(
-            _type="checkbox",
-            _name=name,
-            _style="vertical-align:text-bottom",
-            _value="true" if name in nodenames.split(",") else "false",
-            value=True if name in nodenames.split(",") else False,
-          ),
-          SPAN(
-            T(label),
-            _class=cl,
-            _style="padding-left:18px;margin-left:0.2em",
-          ),
-        )
-
-    checks = []
-    for nodename in all_nodenames.split(","):
-        checks.append(check(nodename, nodename, "hw16"))
-
+    s = """startup("startup", %(options)s)"""%dict(
+         options=str({
+          "svcnames": svcnames,
+          "display": display,
+         })
+       )
     d = DIV(
-      DIV(
-        link,
-        SPAN(checks),
-        INPUT(
-          _type="submit",
-        ),
-        _style="display:table-cell;vertical-align:top;text-align:left;padding:0.3em;min-width:12em",
-      ),
-      DIV(
-        _id=eid,
-        _style="display:table-cell;width:100%",
-      ),
-      s,
-      _style="display:table-row",
+      SCRIPT(s),
+      _id="startup",
     )
-    return d
+    return dict(table=d)
 
 @auth.requires_login()
 @service.json
 def json_startup_data():
-    f = request.vars.get("svcnames")
-    if f is not None and f != "":
-        q = _where(None, 'services', f, 'svc_name')
-        svcnames = [r.svc_name for r in db(q).select(db.services.svc_name, cacheable=True)]
-    else:
-        svcnames = []
+    svcnames = request.vars.get("svcnames[]", [])
+    if type(svcnames) != list:
+        svcnames = [svcnames]
+    if len(svcnames) > 0:
+        svcnames = [r.svc_name for r in db(db.services.svc_name.belongs(svcnames)).select(db.services.svc_name)]
 
-    f = request.vars.get("nodenames")
-    nodenames = f.split(",")
+    nodenames = request.vars.get("nodenames[]", [])
+    if type(nodenames) != list:
+        nodenames = [nodenames]
+    if len(nodenames) > 0:
+        nodenames = [r.nodename for r in db(db.nodes.nodename.belongs(nodenames)).select(db.nodes.nodename)]
+
+    if len(nodenames) == 0:
+        q = db.svcmon.mon_svcname.belongs(svcnames)
+        row = db(q).select(db.svcmon.mon_nodname).first()
+        if row is not None:
+            nodenames = [row.mon_nodname]
+
+    data = {
+      "nodes": [],
+      "edges": [],
+    }
+
+    if len(svcnames) == 0:
+        return data
 
     svcname = svcnames[0]
     q = db.services.svc_name.belongs(svcnames)
@@ -904,11 +849,6 @@ def json_startup_data():
     buf = StringIO.StringIO(env)
     config = ConfigParser.RawConfigParser()
     config.readfp(buf)
-
-    data = {
-      "nodes": [],
-      "edges": [],
-    }
 
     node_ids = []
     edge_ids = []
