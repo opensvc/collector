@@ -703,6 +703,12 @@ def ajax_alert_events():
                        args=['wiki_%s'%request.vars.rowid, wikipage_name]),
          )
 
+    #t = """wiki("%(id)s", {"nodes": "%(node)s"});"""%dict(
+    #           id='wiki_%s'%request.vars.rowid,
+    #           rid=str(request.vars.rowid),
+    #           node=wikipage_name)
+
+    s+=t;
     return TABLE(DIV(
              H2(T("Alert timeline")),
              DIV(
