@@ -30,6 +30,11 @@ function wiki(divid, options)
     	return wiki_switch_edit(this);
     }
 
+    o.wiki_load = function()
+    {
+    	return wiki_load(o);
+    }
+
     o.div.load('/init/static/views/wiki.html', "", function() {
       wiki_init(o);
     });
@@ -57,6 +62,8 @@ function wiki_init(o)
     o.wiki_messages = o.div.find("#wiki_messages");
     o.wiki_tab_titles = o.div.find("#wiki_tab_title");
 
+    o.wiki_show_result = o.div.find("#wiki_show_result");
+
     o.wiki_save_button.on("click", function () {
     	o.wiki_save();
     });
@@ -73,14 +80,26 @@ function wiki_init(o)
     	o.wiki_switch_edit();
     });
 
+ 	o.wiki_load();
+}
+
+function wiki_load(o)
+{
 	services_osvcgetrest("R_WIKI", [o.nodes],"", function(jd) {
       if (jd.data === undefined) {
-      	o.wiki_messages.html("No response...");
         return;
       }
       o.wiki_messages.html('');
       var result=jd.data;
      
+      if (result.length ==0) 
+      	{
+      		wiki_switch_edit(o);
+      		return;
+      	}
+
+      	o.wiki_table_last_changes.empty();
+
       for (i=0;i<result.length;i++)
       {
       	if (i < 5) {
@@ -93,20 +112,26 @@ function wiki_init(o)
       o.wiki_tab_titles.html("Last " + i + " result(s)");
 
       var converter = new Markdown.Converter();
-      for(i=result.length-1;i>=0;i--)
-      {
-      	o.wiki_tab_show.append(converter.makeHtml(result[i].body));
-      }
+
+      o.wiki_show_result.html(converter.makeHtml(result[0].body));
+      o.wiki_tab_ins.html(result[0].body);
 
     });
 }
 
 function wiki_switch_edit(o)
 {
-	o.wiki_tab_show.hide();
-	o.wiki_tab_insert.show();
-	o.wiki_edit.hide();
-	o.wiki_editor.show();
+	if (o.wiki_tab_show.is(':visible'))
+	{
+		o.wiki_tab_show.hide();
+		o.wiki_tab_insert.show();
+	}
+	else
+	{
+		o.wiki_load();
+		o.wiki_tab_show.show();
+		o.wiki_tab_insert.hide();
+	}
 }
 
 function wiki_help(o)
@@ -117,13 +142,12 @@ function wiki_help(o)
 function wiki_save(o)
 {
 	var value = o.wiki_tab_ins.val();
+
 	services_osvcpostrest("R_WIKI", [o.nodes], "", {"body": value}, function(jd) {
       if (jd.data === undefined) {
-      	$('#wiki_messages').html("No response...");
         return
       }
-      $('#wiki_messages').html(jd.info);
-      
+      wiki_switch_edit(o);
     },function() {});
 }
 
@@ -167,5 +191,5 @@ function wiki_insert_sign(o)
   if (hours<10) { hours = "0"+hours }
   if (minutes<10) { minutes = "0"+minutes }
   var ds = day+"-"+month+"-"+year+" "+hours+":"+minutes
-  o.wiki_tab_ins.insertAtCaret("*" + ds + " " +  _self.first_name + " " + _self.last_name);
+  o.wiki_tab_ins.insertAtCaret("*" + ds + " " +  _self.first_name + " " + _self.last_name + "*");
 }

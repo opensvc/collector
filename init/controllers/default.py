@@ -629,11 +629,10 @@ def ajax_service():
                url=URL(r=request, c='svcmon_log', f='ajax_svcmon_log_1',
                        vars={'svcname':request.vars.node, 'rowid':'avail_'+rowid})
             ),
-            "function s%(rid)s_load_wiki(){sync_ajax('%(url)s', [], '%(id)s', function(){})}"%dict(
+            """function s%(rid)s_load_wiki(){wiki("%(id)s", {"nodes": "%(node)s"})}"""%dict(
                id='tab8_'+str(rowid),
                rid=str(rowid),
-               url=URL(r=request, c='wiki', f='ajax_wiki',
-                       args=['tab8_'+str(rowid), request.vars.node])
+               node=request.vars.node,
             ),
             "function s%(rid)s_load_containerprf() {sync_ajax('%(url)s', ['containerprf_begin_%(id)s', 'containerprf_end_%(id)s'], 'containerprf_%(id)s', function(){})};"%dict(
                id=str(rowid),

@@ -426,112 +426,6 @@ def ajax_node():
 
     node = nodes[0]
 
-    # net
-    sql = """select
-               node_ip.addr,
-               node_ip.mask,
-               node_ip.mac,
-               node_ip.intf,
-               node_ip.type,
-               networks.name,
-               networks.comment,
-               networks.pvid,
-               networks.network,
-               networks.broadcast,
-               networks.netmask,
-               networks.gateway,
-               networks.begin,
-               networks.end,
-               networks.prio
-             from node_ip
-             left join networks
-             on
-               inet_aton(node_ip.addr) >= inet_aton(begin) and
-               inet_aton(node_ip.addr) <= inet_aton(end)
-             where
-               node_ip.nodename = "%(nodename)s"
-             order by node_ip.mac, node_ip.intf
-          """ % dict(nodename=request.vars.node)
-    rows = db.executesql(sql, as_dict=True)
-    nets_header = TR(
-               TH("mac"),
-               TH("interface", _style="width:7em"),
-               TH("type"),
-               TH("addr", _style="width:20em"),
-               TH("mask", _style="width:7em"),
-               TH("net name", _style="width:10em"),
-               TH("net comment", _style="width:10em"),
-               TH("net pvid", _style="width:4em"),
-               TH("net base"),
-               TH("net gateway", _style="width:7em"),
-               TH("net prio", _style="width:5em"),
-               TH("net begin", _style="width:7em"),
-               TH("net end", _style="width:7em"),
-             )
-    nets_v4_unicast = [nets_header]
-    nets_v6_unicast = [nets_header]
-    nets_v4_mcast = [nets_header]
-    nets_v6_mcast = [nets_header]
-    for row in rows:
-        netline = TR(
-                       TD(row['mac']),
-                       TD(row['intf']),
-                       TD(row['type']),
-                       TD(row['addr']),
-                       TD(row['mask']),
-                       TD(row['name'] if row['name'] else '-', _class="bluer"),
-                       TD(row['comment'] if row['comment'] else '-', _class="bluer"),
-                       TD(row['pvid'] if row['pvid'] else '-', _class="bluer"),
-                       TD(row['network'] if row['network'] else '-', _class="bluer"),
-                       TD(row['gateway'] if row['gateway'] else '-', _class="bluer"),
-                       TD(row['prio'] if row['prio'] is not None else '-', _class="bluer"),
-                       TD(row['begin'] if row['begin'] else '-', _class="bluer"),
-                       TD(row['end'] if row['end'] else '-', _class="bluer"),
-                     )
-        if row['type'] == "ipv4":
-            if row['mask'] != "":
-                nets_v4_unicast.append(netline)
-            else:
-                nets_v4_mcast.append(netline)
-        elif row['type'] == "ipv6":
-            if row['mask'] != "":
-                nets_v6_unicast.append(netline)
-            else:
-                nets_v6_mcast.append(netline)
-    empty_netline = TR(
-                       TD('-'),
-                       TD('-'),
-                       TD('-'),
-                       TD('-'),
-                       TD('-'),
-                       TD('-'),
-                       TD('-'),
-                       TD('-'),
-                       TD('-'),
-                       TD('-'),
-                       TD('-'),
-                       TD('-'),
-                     )
-    if len(nets_v4_mcast) == 1:
-        nets_v4_mcast.append(empty_netline)
-    if len(nets_v4_unicast) == 1:
-        nets_v4_unicast.append(empty_netline)
-    if len(nets_v6_mcast) == 1:
-        nets_v6_mcast.append(empty_netline)
-    if len(nets_v6_unicast) == 1:
-        nets_v6_unicast.append(empty_netline)
-
-    nets = DIV(
-      H3(SPAN(T("ipv4 unicast")), _class="line"),
-      TABLE(nets_v4_unicast),
-      H3(SPAN(T("ipv6 unicast")), _class="line"),
-      TABLE(nets_v6_unicast),
-      H3(SPAN(T("ipv4 multicast")), _class="line"),
-      TABLE(nets_v4_mcast),
-      H3(SPAN(T("ipv6 multicast")), _class="line"),
-      TABLE(nets_v6_mcast),
-    )
-
     t = TABLE(
       TR(
         TD(
@@ -596,7 +490,8 @@ def ajax_node():
             _class='cloud',
           ),
           DIV(
-            nets,
+            #nets,
+            IMG(_src=URL(r=request,c='static',f='images/spinner.gif')),
             _id='tab7_'+str(rowid),
             _class='cloud',
           ),
@@ -701,9 +596,15 @@ n%(rid)s_load_node_properties(){node_properties("%(id)s", {"nodename": "%(node)s
                url=URL(r=request, c='default', f='svcmon_node',
                        args=[request.vars.node])
             ),
+            """function n%(rid)s_load_ips(){ips("%(id)s", {"nodes": "%(node)s"})}"""%dict(
+               id='tab7_'+str(rowid),
+               rid=str(rowid),
+               node=request.vars.node,
+            ),
             """bind_tabs("%(id)s", {
                 "litab1_%(id)s": n%(id)s_load_node_properties,
                 "litab6_%(id)s": n%(id)s_load_node_stor,
+                "litab7_%(id)s": n%(id)s_load_ips,
                 "litab2_%(id)s": n%(id)s_load_topo,
                 "litab11_%(id)s": n%(id)s_load_wiki,
                 "litab12_%(id)s": n%(id)s_load_checks,
