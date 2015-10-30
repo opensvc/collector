@@ -33,11 +33,6 @@ class rest_get_service(rest_get_line_handler):
 #
 class rest_get_services(rest_get_table_handler):
     def __init__(self):
-        params = {
-          "fset_id": {
-             "desc": "Filter the list using the filterset identified by fset_id."
-          }
-        }
         desc = [
           "List OpenSVC services.",
         ]
@@ -55,9 +50,30 @@ class rest_get_services(rest_get_table_handler):
     def handler(self, **vars):
         q = db.services.id > 0
         q = _where(q, 'services', domain_perms(), 'svc_name')
-        fset_id = vars.get("fset_id")
-        if fset_id:
-            q = apply_filters(q, service_field=db.services.svc_name, fset_id=fset_id)
+        self.set_q(q)
+        return self.prepare_data(**vars)
+
+
+#
+class rest_get_service_instances(rest_get_table_handler):
+    def __init__(self):
+        desc = [
+          "List OpenSVC service instances.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/service_instances",
+        ]
+        rest_get_table_handler.__init__(
+          self,
+          path="/service_instances",
+          tables=["svcmon"],
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, **vars):
+        q = db.svcmon.id > 0
+        q = _where(q, 'svcmon', domain_perms(), 'mon_nodname')
         self.set_q(q)
         return self.prepare_data(**vars)
 
