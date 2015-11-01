@@ -1,215 +1,3 @@
-@auth.requires_login()
-def perf_stats(node, rowid):
-    def format_ajax(id, f, e):
-        return """getElementById('%(e)s').innerHTML='%(spinner)s';
-                  ajax("%(url)s",
-                       ['node_%(id)s',
-                        'begin_%(id)s',
-                        'end_%(id)s'
-                       ],"%(e)s");
-               """%dict(url=URL(r=request,c='ajax_perf',f=f),
-                               id=rowid,
-                               e=e,
-                               spinner=IMG(_src=URL(r=request,c='static',f='images/spinner.gif')),
-                       )
-    def perf_group(title='', group=''):
-        group_img_h = {
-                        'memswap': 'mem16.png',
-                        'cpu': 'cpu16.png',
-                        'proc': 'action16.png',
-                        'block': 'hd16.png',
-                        'blockdev': 'hd16.png',
-                        'netdev': 'action_sync_16.png',
-                        'netdev_err': 'action_sync_16.png',
-                        'fs': 'hd16.png',
-                        'svc': 'svc.png',
-                      }
-        divid = 'prf_cont_%s_%s'%(group,rowid)
-        d = DIV(
-              IMG(_src=URL(r=request,c='static',f="images/"+group_img_h[group])),
-              A(
-                T(title),
-                _onClick="""$('#%(div)s').html('%(spinner)s');
-                            toggle_plot('%(url)s', '%(rowid)s','%(div)s')"""%dict(
-                             url=URL(r=request,c='ajax_perf',f='ajax_perf_%s_plot'%group,
-                                     args=[node, rowid]),
-                             spinner=IMG(_src=URL(r=request,c='static',f='images/spinner.gif')),
-                             rowid=rowid,
-                             div=divid),
-              ),
-              A(
-                IMG(_src=URL(r=request,c='static',f='images/nok.png')),
-                _onClick="""toggle_plot('%(url)s', '%(rowid)s','%(div)s')"""%dict(
-                             url=URL(r=request,c='ajax_perf',f='ajax_perf_%s_plot'%group,
-                                     args=[node, rowid]),
-                             rowid=rowid,
-                             div=divid),
-                _id='close_'+divid,
-                _style='float:right;display:none',
-              ),
-              A(
-                IMG(_src=URL(r=request,c='static',f='images/refresh16.png')),
-                _onClick="""$('#%(div)s').html('%(spinner)s');
-                            refresh_plot('%(url)s', '%(rowid)s','%(div)s')"""%dict(
-                             url=URL(r=request,c='ajax_perf',f='ajax_perf_%s_plot'%group,
-                                     args=[node, rowid]),
-                             spinner=IMG(_src=URL(r=request,c='static',f='images/spinner.gif')),
-                             rowid=rowid,
-                             div=divid),
-                _id='refresh_'+divid,
-                _style='float:right;display:none',
-              ),
-              DIV(
-               _id=divid,
-               _style='display:none',
-              ),
-              _class='container',
-            ),
-        return d
-
-    now = datetime.datetime.now()
-    s = now - datetime.timedelta(days=1,
-                                 hours=now.hour,
-                                 minutes=now.minute,
-                                 microseconds=now.microsecond)
-    e = now
-
-    t = DIV(
-          SPAN(
-            IMG(
-              _title=T('Start'),
-              _src=URL(r=request, c='static', f='images/begin16.png'),
-              _style="vertical-align:middle",
-            ),
-            INPUT(
-              _value=s.strftime("%Y-%m-%d %H:%M"),
-              _id='begin_'+rowid,
-              _name="begin",
-              _class='datetime',
-            ),
-            INPUT(
-              _value=e.strftime("%Y-%m-%d %H:%M"),
-              _id='end_'+rowid,
-              _name="end",
-              _class='datetime',
-            ),
-            IMG(
-              _title=T('End'),
-              _src=URL(r=request, c='static', f='images/end16.png'),
-              _style="vertical-align:middle",
-            ),
-            STYLE(XML('input {margin-left:2px}')),
-            INPUT(
-              _value=T("Now"),
-              _type="button",
-              _onclick="""
-                var d = new Date()
-                $(this).siblings("input[name='end']").each(function(){
-                  $(this).val(print_date(d))
-                  $(this).effect("highlight")
-                })
-                d.setDate(d.getDate() - 1);
-                d.setHours(0);
-                d.setMinutes(0);
-                $(this).siblings("input[name='begin']").each(function(){
-                  $(this).val(print_date(d))
-                  $(this).effect("highlight")
-                })
-                $(this).siblings().find("a:visible[id^='refresh']").trigger('click')
-              """,
-            ),
-            INPUT(
-              _value=T("Last day"),
-              _type="button",
-              _onclick="""
-                var d = new Date()
-                d.setHours(0);
-                d.setMinutes(0);
-                $(this).siblings("input[name='end']").each(function(){
-                  $(this).val(print_date(d))
-                  $(this).effect("highlight")
-                })
-                d.setDate(d.getDate() - 1);
-                $(this).siblings("input[name='begin']").each(function(){
-                  $(this).val(print_date(d))
-                  $(this).effect("highlight")
-                })
-                $(this).siblings().find("a:visible[id^='refresh']").trigger('click')
-              """,
-            ),
-            INPUT(
-              _value=T("Last week"),
-              _type="button",
-              _onclick="""
-                var d = new Date()
-                d.setHours(0);
-                d.setMinutes(0);
-                $(this).siblings("input[name='end']").each(function(){
-                  $(this).val(print_date(d))
-                  $(this).effect("highlight")
-                })
-                d.setDate(d.getDate() - 7);
-                $(this).siblings("input[name='begin']").each(function(){
-                  $(this).val(print_date(d))
-                  $(this).effect("highlight")
-                })
-                $(this).siblings().find("a:visible[id^='refresh']").trigger('click')
-              """,
-            ),
-            INPUT(
-              _value=T("Last month"),
-              _type="button",
-              _onclick="""
-                var d = new Date()
-                d.setHours(0);
-                d.setMinutes(0);
-                $(this).siblings("input[name='end']").each(function(){
-                  $(this).val(print_date(d))
-                  $(this).effect("highlight")
-                })
-                d.setDate(d.getDate() - 31);
-                $(this).siblings("input[name='begin']").each(function(){
-                  $(this).val(print_date(d))
-                  $(this).effect("highlight")
-                })
-                $(this).siblings().find("a:visible[id^='refresh']").trigger('click')
-              """,
-            ),
-            INPUT(
-              _value=T("Last year"),
-              _type="button",
-              _onclick="""
-                var d = new Date()
-                d.setHours(0);
-                d.setMinutes(0);
-                $(this).siblings("input[name='end']").each(function(){
-                  $(this).val(print_date(d))
-                  $(this).effect("highlight")
-                })
-                d.setDate(d.getDate() - 365);
-                $(this).siblings("input[name='begin']").each(function(){
-                  $(this).val(print_date(d))
-                  $(this).effect("highlight")
-                })
-                $(this).siblings().find("a:visible[id^='refresh']").trigger('click')
-              """,
-            ),
-            SPAN(perf_group('Plot container resource usage', 'svc')),
-            SPAN(perf_group('Plot cpu usage', 'cpu')),
-            SPAN(perf_group('Plot mem/swap usage', 'memswap')),
-            SPAN(perf_group('Plot process activity', 'proc')),
-            SPAN(perf_group('Plot filesystem usage', 'fs')),
-            SPAN(perf_group('Plot aggregated block device usage', 'block')),
-            SPAN(perf_group('Plot per block device usage', 'blockdev')),
-            SPAN(perf_group('Plot per net device usage', 'netdev')),
-            SPAN(perf_group('Plot per net device errors', 'netdev_err')),
-            SCRIPT(
-              """$(".datetime").datetimepicker({dateFormat: "yy-mm-dd"})"""
-            )
-          ),
-        )
-    return t
-
 def test_sandata():
     d = sandata(["foo"]).main()
     print json.dumps(d, indent=4, separators=(',', ': '))
@@ -466,6 +254,7 @@ def ajax_node():
             _class='cloud',
           ),
           DIV(
+            IMG(_src=URL(r=request,c='static',f='images/spinner.gif')),
             _id='tab17_'+str(rowid),
             _class='cloud',
           ),
@@ -490,17 +279,17 @@ def ajax_node():
             _class='cloud',
           ),
           DIV(
-            #nets,
             IMG(_src=URL(r=request,c='static',f='images/spinner.gif')),
             _id='tab7_'+str(rowid),
             _class='cloud',
           ),
           DIV(
-            perf_stats(request.vars.node, rowid),
+            IMG(_src=URL(r=request,c='static',f='images/spinner.gif')),
             _id='tab10_'+str(rowid),
             _class='cloud',
           ),
           DIV(
+            IMG(_src=URL(r=request,c='static',f='images/spinner.gif')),
             _id='tab11_'+str(rowid),
             _class='cloud',
           ),
@@ -515,31 +304,35 @@ def ajax_node():
             _class='cloud',
           ),
           SCRIPT(
-            """function
-n%(rid)s_load_node_properties(){node_properties("%(id)s", {"nodename": "%(node)s", "responsible": %(responsible)s})}"""%dict(
+            """function n%(rid)s_load_node_properties(){node_properties("%(id)s", {"nodename": "%(node)s", "responsible": %(responsible)s})}"""%dict(
                id='tab1_'+str(rowid),
                rid=str(rowid),
                node=request.vars.node,
                responsible=str(responsible).lower(),
+            ),
+            """function n%(rid)s_load_node_stats(){node_stats("%(id)s", %(options)s)}"""%dict(
+               id='tab10_'+str(rowid),
+               rid=str(rowid),
+               options=str({"nodename": request.vars.node}),
             ),
             """function n%(rid)s_load_sysreport(){sysrep("%(id)s", {"nodes": "%(node)s"})}"""%dict(
                id='tab17_'+str(rowid),
                rid=str(rowid),
                node=request.vars.node,
             ),
-            "function n%(rid)s_load_node_log(){sync_ajax('%(url)s', [], '%(id)s', function(){})}"%dict(
+            """function n%(rid)s_load_node_log(){sync_ajax('%(url)s', [], '%(id)s', function(){})}"""%dict(
                id='tab16_'+str(rowid),
                rid=str(rowid),
                url=URL(r=request, c='log', f='log_node',
                        args=[request.vars.node])
             ),
-            "function n%(rid)s_load_node_actions(){sync_ajax('%(url)s', [], '%(id)s', function(){})}"%dict(
+            """function n%(rid)s_load_node_actions(){sync_ajax('%(url)s', [], '%(id)s', function(){})}"""%dict(
                id='tab15_'+str(rowid),
                rid=str(rowid),
                url=URL(r=request, c='svcactions', f='actions_node',
                        args=[request.vars.node])
             ),
-            "function n%(rid)s_load_topo(){topology('%(id)s', %(options)s)}"%dict(
+            """function n%(rid)s_load_topo(){topology('%(id)s', %(options)s)}"""%dict(
                id='tab2_'+str(rowid),
                rid=str(rowid),
                options=str({
@@ -603,17 +396,18 @@ n%(rid)s_load_node_properties(){node_properties("%(id)s", {"nodename": "%(node)s
             ),
             """bind_tabs("%(id)s", {
                 "litab1_%(id)s": n%(id)s_load_node_properties,
+                "litab2_%(id)s": n%(id)s_load_topo,
+                "litab5_%(id)s": n%(id)s_load_svcmon_node,
                 "litab6_%(id)s": n%(id)s_load_node_stor,
                 "litab7_%(id)s": n%(id)s_load_ips,
-                "litab2_%(id)s": n%(id)s_load_topo,
+                "litab10_%(id)s": n%(id)s_load_node_stats,
                 "litab11_%(id)s": n%(id)s_load_wiki,
                 "litab12_%(id)s": n%(id)s_load_checks,
                 "litab13_%(id)s": n%(id)s_load_comp,
                 "litab14_%(id)s": n%(id)s_load_node_alerts,
                 "litab15_%(id)s": n%(id)s_load_node_actions,
                 "litab16_%(id)s": n%(id)s_load_node_log,
-                "litab17_%(id)s": n%(id)s_load_sysreport,
-                "litab5_%(id)s": n%(id)s_load_svcmon_node
+                "litab17_%(id)s": n%(id)s_load_sysreport
                }, "%(tab)s")
             """%dict(id=str(rowid), tab="li"+tab+"_"+str(rowid)),
           ),

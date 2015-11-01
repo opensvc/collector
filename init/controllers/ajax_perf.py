@@ -237,34 +237,6 @@ def perf_stats_svc_data(node, s, e, col):
 
     return h.keys(), map(lambda x: x.items(), h.values()), min, max
 
-@auth.requires_login()
-def ajax_perf_netdev_err_plot():
-    return _ajax_perf_plot('netdev_err', sub=['_errps', '_collps', '_dropps'], last=True)
-
-@auth.requires_login()
-def ajax_perf_netdev_plot():
-    return _ajax_perf_plot('netdev', sub=['_kBps', '_pckps'], last=True)
-
-@auth.requires_login()
-def ajax_perf_blockdev_plot():
-    sub = ['_pct_util', '_pct_util_time', '_tps', '_tps_time', '_secps', '_secps_time', '_await', '_await_time', '_svctm', '_svctm_time', '_avgrq_sz', '_avgrq_sz_time', '_tm']
-    return _ajax_perf_plot('blockdev', sub=sub, last=True)
-
-def ajax_perf_block_plot():
-    return _ajax_perf_plot('block', sub=['_tps', '_bps'], last=True)
-
-def ajax_perf_fs_plot():
-    return _ajax_perf_plot('fs', sub=['_u'], last=True)
-
-def ajax_perf_proc_plot():
-    return _ajax_perf_plot('proc', sub=['_runq_sz', '_plist_sz', '_loadavg'], last=True)
-
-def ajax_perf_memswap_plot():
-    return SPAN(
-             _ajax_perf_plot('mem', sub=['_u', '_pct'], base='memswap'),
-             _ajax_perf_plot('swap', sub=['_u', '_pct'], last=True, base='memswap')
-           )
-
 def ajax_perf_svc_plot_short():
     return SPAN(
              _ajax_perf_plot('svc_cpu', base='svc'),
@@ -275,25 +247,6 @@ def ajax_perf_svc_plot_short():
              _ajax_perf_plot('svc_rss', base='svc'),
              _ajax_perf_plot('svc_nproc', base='svc', last=True),
            )
-
-def ajax_perf_svc_plot():
-    return SPAN(
-             _ajax_perf_plot('svc_cpu', base='svc'),
-             _ajax_perf_plot('svc_cap_cpu', base='svc'),
-             _ajax_perf_plot('svc_mem', base='svc'),
-             _ajax_perf_plot('svc_cap', base='svc'),
-             _ajax_perf_plot('svc_swap', base='svc'),
-             _ajax_perf_plot('svc_rss', base='svc'),
-             _ajax_perf_plot('svc_nproc', base='svc'),
-             _ajax_perf_plot('svc_pg', base='svc'),
-             _ajax_perf_plot('svc_avgpg', base='svc'),
-             _ajax_perf_plot('svc_at', base='svc'),
-             _ajax_perf_plot('svc_avgat', base='svc', last=True),
-           )
-
-@auth.requires_login()
-def ajax_perf_cpu_plot():
-    return _ajax_perf_plot('cpu', last=True)
 
 @auth.requires_login()
 def _ajax_perf_plot(group, sub=[''], last=False, base=None, container=None):

@@ -148,5 +148,23 @@
     "disks": "Disques",
     "arrays": "Baies",
     "san": "SAN"
+  },
+  "node_stats": {
+    "now": "Maintenant",
+    "last_day": "Dernier jour",
+    "last_week": "Dernière semaine",
+    "last_month": "Dernier mois",
+    "last_year": "Dernière année",
+    "begin": "Date de fin des graphs",
+    "end": "Date de début des graphs",
+    "containers": "Utilisation des ressources par container",
+    "cpu": "Utilisation cpu",
+    "mem": "Utilisation de la mémoire et du swap",
+    "proc": "Utilisation des process",
+    "fs": "Utilisation des systèmes de fichiers",
+    "bdev": "Utilisation des disques",
+    "agg_bdev": "Utilisation aggrégée des disques",
+    "netdev": "Utilisations des interfaces réseau",
+    "netdev_err": "Erreurs des interfaces réseau"
   }
 }

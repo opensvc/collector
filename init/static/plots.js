@@ -1455,7 +1455,8 @@ function stat_compare_day(url, id) {
 function stats_cpu(url, id) {
     $.jqplot.config.enablePlugins = true;
     $.getJSON(url, function(data) {
-	p = $.jqplot(id, data, {
+        $("#"+id+"_u").width("600px")
+	p = $.jqplot(id+"_u", data, {
             cursor:{zoom:true, showTooltip:true},
 	    stackSeries: true,
             title: {
@@ -1505,7 +1506,7 @@ function stats_cpu(url, id) {
 		}
 	    }
 	});
-        _jqplot_extra($('#'+id), p)
+        _jqplot_extra($('#'+id+'_u'), p)
     });
 }
 function stats_proc(url, id) {
@@ -3827,9 +3828,9 @@ function _jqplot_resize(e, p){
 }
 
 function _jqplot_img(e){
-            var outerDiv = $(document.createElement('div'));
-            var header = $(document.createElement('div'));
-            var div = $(document.createElement('div'));
+            var outerDiv = $('<div></div>');
+            var header = $('<div></div>');
+            var div = $('<div></div>');
 
             outerDiv.append(header);
             outerDiv.append(div);
@@ -3840,11 +3841,11 @@ function _jqplot_img(e){
 
             header.html('Right Click to Save Image As...');
 
-            var close = $(document.createElement('a'));
+            var close = $('<a>');
             close.addClass('jqplot-image-container-close');
             close.html('Close');
             close.click(function() {
-                $(this).parents('div.jqplot-image-container').hide(500);
+                $(this).parents('div.jqplot-image-container').hide();
             })
             header.append(close);
 
@@ -3862,12 +3863,12 @@ function _jqplot_img(e){
                     var div = $(e).nextAll('div.jqplot-image-container').first();
                     div.children('div.jqplot-image-container-content').empty();
                     div.children('div.jqplot-image-container-content').append(imgelem);
-                    div.show(500);
+                    div.show();
                     div = null;
                 });
 
-                $(e).after(btn);
-                btn.after('<br />');
+                $(e).append(btn);
+                //btn.after('<br />');
                 btn = null;
             }
 }

@@ -179,5 +179,23 @@
     "disks": "Disks",
     "arrays": "Arrays",
     "san": "SAN"
+  },
+  "node_stats": {
+    "now": "Now",
+    "last_day": "Last day",
+    "last_week": "Last week",
+    "last_month": "Last month",
+    "last_year": "Last year",
+    "begin": "Plots begin date",
+    "end": "Plots end date",
+    "containers": "Per container resource usage",
+    "cpu": "Cpu usage",
+    "mem": "Memory and swap usage",
+    "proc": "Process usage",
+    "fs": "Filesystems usage",
+    "bdev": "Block devices usage",
+    "agg_bdev": "Aggregated block devices usage",
+    "netdev": "Network devices usage",
+    "netdev_err": "Network devices errors"
   }
 }

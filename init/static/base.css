@@ -1152,7 +1152,7 @@ div.container {
 }
 
 div.container > * {
-    padding:0.2em;
+    //padding:0.2em;
     vertical-align: middle;
 }
 
@@ -1603,7 +1603,7 @@ ul.login_menu ul {
 .refresh16 {
     background: transparent url('images/refresh16.png') no-repeat;
     padding: 0 0 0 20px;
-    min-height:tile1 16px;
+    min-height: 16px;
 }
 .spinner {
     background: transparent url('images/spinner.gif') no-repeat;
@@ -2656,8 +2656,8 @@ button, input[type=button], input[type=submit] {
 }
 
 .jqplot-image-button {
-    margin-bottom: 15px;
-    margin-top: 15px;
+    float: right;
+    position: relative;
 }
 
 div.jqplot-image-container {
