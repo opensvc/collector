@@ -47,7 +47,6 @@ function node_props_init(o)
       o.responsible_init()
     } else {
       services_ismemberof("Manager", function() {
-        alert("responsible")
         o.responsible_init()
       })
     }

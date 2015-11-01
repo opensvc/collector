@@ -296,6 +296,7 @@ function search_init()
 
 function search_show_tab(item, tab, param)
 {
+  var _url = null;
   var value = $(item).text();
   var _id = "sextra_" + value.replace(/[ \.-]/g, '_');
   var d = "<div id='" + _id + "' class='searchtab hidden'></div>";
@@ -304,13 +305,14 @@ function search_show_tab(item, tab, param)
     var _url = $(location).attr("origin") + "/init/ajax_user/ajax_user?username=" + value + "&rowid=" + _id;
   else if (tab=="services")
     var _url = $(location).attr("origin") + "/init/default/ajax_service?node="+value+"&rowid="+_id;
-  else if (tab=="nodes")
-    var _url = $(location).attr("origin") + "/init/ajax_node/ajax_node?node="+value+"&rowid="+_id;
   else if (tab=="groups")
     var _url = $(location).attr("origin") + "/init/ajax_group/ajax_group?groupname="+value+"&rowid="+_id;
   else if (tab=="filtersets")
     var _url = $(location).attr("origin") + "/init/compliance/json_tree_action?operation=show&obj_type=filterset&obj_id="+value;
-  sync_ajax(_url, [], _id, function() {});
+  if (_url)
+    sync_ajax(_url, [], _id, function() {});
+  if (tab=="nodes")
+    node_tabs(_id, {"nodename": value});
   $("#" + _id).show();
 }
 

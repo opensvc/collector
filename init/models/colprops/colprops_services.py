@@ -402,14 +402,14 @@ svcmon_colprops = {
              img = 'svc',
              table = 'svcmon',
             ),
-    'mon_vcpus': col_vcpus(
+    'mon_vcpus': HtmlTableColumn(
              title = 'Vcpus',
              field='mon_vcpus',
              display = False,
              img = 'svc',
              table = 'svcmon',
             ),
-    'mon_vmem': col_vmem(
+    'mon_vmem': HtmlTableColumn(
              title = 'Vmem',
              field='mon_vmem',
              display = False,

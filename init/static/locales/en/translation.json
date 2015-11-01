@@ -197,5 +197,20 @@
     "agg_bdev": "Aggregated block devices usage",
     "netdev": "Network devices usage",
     "netdev_err": "Network devices errors"
+  },
+  "node_tabs": {
+    "properties": "properties",
+    "alerts": "alerts",
+    "services": "services",
+    "actions": "actions",
+    "log": "log",
+    "topology": "topology",
+    "storage": "storage",
+    "network": "network",
+    "stats": "stats",
+    "wiki": "wiki",
+    "checks": "checks",
+    "compliance": "compliance",
+    "sysreport": "sysreport"
   }
 }

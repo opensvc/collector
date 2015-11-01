@@ -1063,11 +1063,12 @@ function toggle_extra(url, id, e, ncols) {
         line.next().remove()
     }
     line.after("<tr class='extraline'>"+toolbar+"<td id="+id+" colspan="+ncols+"></td></tr>")
-    $("#"+id).toggleClass("spinner")
-    sync_ajax(url, [], id, function(){
-      $("#"+id).removeClass("spinner")
-      $("#"+id).children().each(function(){$(this).width($(window).width()-$(this).children().position().left-20)})
-    })
+    if (url) {
+      sync_ajax(url, [], id, function(){
+        $("#"+id).removeClass("spinner")
+        $("#"+id).children().each(function(){$(this).width($(window).width()-$(this).children().position().left-20)})
+      })
+    }
 }
 function checked_services() {
     d = new Array()
@@ -3039,8 +3040,8 @@ function _cell_decorator_nodename(e, os_icon) {
     table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
     span_id = $(e).parent(".tl").attr("spansum")
     id = table_id + "_x_" + span_id
-    url = $(location).attr("origin") + "/init/ajax_node/ajax_node?node="+v+"&rowid="+id
-    toggle_extra(url, id, e, 0)
+    toggle_extra(null, id, e, 0)
+    node_tabs(id, {"nodename": v})
   })
 }
 
@@ -3175,8 +3176,8 @@ function cell_decorator_dash_link_comp_tab(e) {
       table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
       span_id = $(e).parent(".tl").attr("spansum")
       id = table_id + "_x_" + span_id
-      url = $(location).attr("origin") + "/init/ajax_node/ajax_node?node="+nodename+"&tab=tab13&rowid="+id
-      toggle_extra(url, id, e, 0)
+      toggle_extra(null, id, e, 0)
+      node_tabs(id, {"nodename": nodename, "tab": "node_tabs.compliance"})
     })
   }
 }

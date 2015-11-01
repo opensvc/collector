@@ -166,5 +166,20 @@
     "agg_bdev": "Utilisation aggrégée des disques",
     "netdev": "Utilisations des interfaces réseau",
     "netdev_err": "Erreurs des interfaces réseau"
+  },
+  "node_tabs": {
+    "properties": "propriétés",
+    "alerts": "alertes",
+    "services": "services",
+    "actions": "actions",
+    "log": "journal",
+    "topology": "topologie",
+    "storage": "stockage",
+    "network": "réseau",
+    "stats": "stats",
+    "wiki": "wiki",
+    "checks": "sondes",
+    "compliance": "compliance",
+    "sysreport": "sysreport"
   }
 }
