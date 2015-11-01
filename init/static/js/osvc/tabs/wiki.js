@@ -181,15 +181,6 @@ function wiki_insert_sign(o)
   }
   });
   var currentTime = new Date()
-  var day = currentTime.getDate()
-  var month = currentTime.getMonth()+1
-  var year = currentTime.getFullYear()
-  var hours = currentTime.getHours()
-  var minutes = currentTime.getMinutes()
-  if (month<10) { month = "0"+month }
-  if (day<10) { day = "0"+day }
-  if (hours<10) { hours = "0"+hours }
-  if (minutes<10) { minutes = "0"+minutes }
-  var ds = day+"-"+month+"-"+year+" "+hours+":"+minutes
+  var ds = print_date(currentTime)
   o.wiki_tab_ins.insertAtCaret("*" + ds + " " +  _self.first_name + " " + _self.last_name + "*");
 }

@@ -149,20 +149,6 @@ function bind_group_hidden_menu_entries() {
 //
 //
 //
-function print_date(d) {
-  var day = d.getDate()
-  var month = d.getMonth()+1
-  var year = d.getFullYear()
-  var hours = d.getHours()
-  var minutes = d.getMinutes()
-  if (month<10) { month = "0"+month }
-  if (day<10) { day = "0"+day }
-  if (hours<10) { hours = "0"+hours }
-  if (minutes<10) { minutes = "0"+minutes }
-  var ds = year+"-"+month+"-"+day+" "+hours+":"+minutes
-  return ds
-}
-
 function values_to_filter(iid, did){
 	l = []
 	var reg = new RegExp("[ ]+$", "g");
