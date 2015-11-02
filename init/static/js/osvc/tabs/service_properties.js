@@ -75,9 +75,9 @@ function service_props_init(o)
 
     // HA formatter
     if (data.svc_ha) {
-      o.div.find("#svc_ha").text(i18n.t("yes"))
+      o.div.find("#svc_ha").text(i18n.t("service_properties.yes"))
     } else {
-      o.div.find("#svc_ha").text(i18n.t("no"))
+      o.div.find("#svc_ha").text(i18n.t("service_properties.no"))
     }
 
     // status
