@@ -125,87 +125,6 @@ def ajax_service():
 
     s = rows[0]
 
-    svcinfo = TABLE(
-      TR(
-        TH(T('unacknowledged errors')), TD(s['err'])
-      ),
-      TR(
-        TH(T('type')), TD(s['svc_type'])
-      ),
-      TR(
-        TH(T('HA')), TD(T('yes') if s['svc_ha'] == 1 else T('no'))
-      ),
-      TR(
-        TH(T('comment')), TD(s['svc_comment'])
-      ),
-      TR(
-        TH(T('primary node')), TD(s['svc_autostart'])
-      ),
-      TR(
-        TH(T('nodes')), TD(s['svc_nodes'])
-      ),
-      TR(
-        TH(T('drp node')), TD(s['svc_drpnode'])
-      ),
-      TR(
-        TH(T('drp nodes')), TD(s['svc_drpnodes'])
-      ),
-    )
-    tags = TABLE(
-      get_svc_tags(s["svc_name"])
-    )
-    org = TABLE(
-      TR(
-        TH(T('application')), TD(s['svc_app'])
-      ),
-      TR(
-        TH(T('responsibles')), TD(s['responsibles'])
-      ),
-      TR(
-        TH(T('responsibles mail')), TD(s['mailto'])
-      ),
-    )
-    dates = TABLE(
-      TR(
-        TH(T('created')), TD(s['svc_created'])
-      ),
-      TR(
-        TH(T('last update')), TD(s['svc_updated'])
-      ),
-    )
-    res = TABLE(
-      TR(
-        TH(T('vcpus')), TD(s['mon_vcpus'])
-      ),
-      TR(
-        TH(T('vmem')), TD(s['mon_vmem'])
-      ),
-    )
-
-    t_misc = DIV(
-      DIV(
-        H3(SPAN(SPAN(T("service"), _class="svc")), _class="line"),
-        svcinfo,
-      ),
-      DIV(
-        H3(SPAN(SPAN(T("tags"), _class="tag16")), _class="line"),
-        tags,
-      ),
-      DIV(
-        H3(SPAN(SPAN(T("organization"), _class="guys16")), _class="line"),
-        org,
-      ),
-      DIV(
-        H3(SPAN(SPAN(T("dates"), _class="time16")), _class="line"),
-        dates,
-      ),
-      DIV(
-        H3(SPAN(SPAN(T("resources"), _class="action16")), _class="line"),
-        res,
-      ),
-      _class="asset_tab",
-    )
-
     def containerprf(rowid, containers):
         if len(containers) == 0:
             return SPAN()
@@ -542,7 +461,7 @@ def ajax_service():
       TR(
         TD(
           DIV(
-            t_misc,
+            IMG(_src=URL(r=request,c='static',f='images/spinner.gif')),
             _id='tab1_'+str(rowid),
             _class='cloud_shown',
           ),
@@ -622,6 +541,11 @@ def ajax_service():
             _style='max-width:80em',
           ),
           SCRIPT(
+            """function s%(rid)s_load_service_properties(){service_properties("%(id)s", %(options)s)}"""%dict(
+               id='tab1_'+str(rowid),
+               rid=str(rowid),
+               options=str({"svcname": request.vars.node}),
+            ),
             """function s%(rid)s_load_svcmon_log(){sync_ajax('%(url)s', [], '%(id)s', function(){});}"""%dict(
                id='tab9_'+str(rowid),
                rid=str(rowid),
@@ -721,6 +645,7 @@ def ajax_service():
                        args=['tab3_'+str(rowid), request.vars.node])
             ),
             """bind_tabs("%(id)s", {
+                 "litab1_%(id)s": s%(id)s_load_service_properties,
                  "litab2_%(id)s": s%(id)s_load_svcmon,
                  "litab3_%(id)s": s%(id)s_load_resmon,
                  "litab5_%(id)s": s%(id)s_load_topo,

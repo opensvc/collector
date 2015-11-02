@@ -2796,6 +2796,10 @@ div.searchtab {
    padding-left: 0.4em;
 }
 
+.group_list_small li {
+   list-style: none;
+}
+
 /* css for timepicker */
 .ui-timepicker-div .ui-widget-header { margin-bottom: 8px; }
 .ui-timepicker-div dl { text-align: left; }

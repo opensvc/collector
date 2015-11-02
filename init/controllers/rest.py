@@ -139,6 +139,8 @@ handlers = {
      rest_get_search(),
      rest_get_services(),
      rest_get_service(),
+     rest_get_service_actions(),
+     rest_get_service_actions_unacknowledged_errors(),
      rest_get_service_alerts(),
      rest_get_service_candidate_tags(),
      rest_get_service_checks(),
