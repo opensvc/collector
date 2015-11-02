@@ -36,6 +36,9 @@ var services_access_uri = {
     "R_GROUPS" : "/rest/api/groups",
     "R_NODE_TAGS" : "/rest/api/nodes/%1/tags",
     "R_NODE_CANDIDATE_TAGS" : "/rest/api/nodes/%1/candidate_tags",
+    "R_SERVICE" : "/rest/api/services/%1",
+    "R_SERVICES" : "/rest/api/services",
+    "R_SERVICE_ACTIONS" : "/rest/api/services/%1/actions",
     "R_SERVICE_INSTANCES" : "/rest/api/service_instances",
     "R_SERVICE_NODES" : "/rest/api/services/%1/nodes",
     "R_SERVICE_TAGS" : "/rest/api/services/%1/tags",
@@ -44,6 +47,7 @@ var services_access_uri = {
     "R_TAG_NODE" : "/rest/api/tags/%1/nodes/%2",
     "R_TAG_SERVICE" : "/rest/api/tags/%1/services/%2",
     "R_WIKI" : "rest/api/wiki/%1",
+    "R_WIKIS" : "rest/api/wiki",
     "R_IPS" : "rest/api/nodes/%1/ips",
 }
 
