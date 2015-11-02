@@ -164,7 +164,7 @@ class rest_post_tag(rest_post_handler):
             q = db.tags.tag_name == tag_id
         row = db(q).select().first()
         if row is None:
-            raise Exception({"error": "tag %s not found" % tag_id})
+            raise Exception("tag %s not found" % tag_id)
         db(q).update(**vars)
         _log('tag.change',
              'change tag %(tag_name)s: %(data)s',
@@ -202,11 +202,11 @@ class rest_post_tags(rest_post_handler):
     def handler(self, **vars):
         check_privilege("TagManager")
         if 'tag_name' not in vars:
-            raise Exception({"error": "the tag_name property is mandatory"})
+            raise Exception("the tag_name property is mandatory")
         tag_name = vars['tag_name']
         q = db.tags.tag_name == tag_name
         if db(q).count() == 1:
-            raise Exception({"error": "tag already exist"})
+            raise Exception("tag already exist")
         db.tags.insert(**vars)
         data = db(q).select().first()
         _log('tag.create',
