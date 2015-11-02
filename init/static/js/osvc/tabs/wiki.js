@@ -36,6 +36,7 @@ function wiki(divid, options)
 
     o.div.load('/init/static/views/wiki.html', "", function() {
       wiki_init(o);
+      o.div.i18n();
     });
     
 }
@@ -91,7 +92,7 @@ function wiki_load(o)
       o.wiki_messages.html('');
       var result=jd.data;
      
-      if (result.length ==0) 
+      if (result == undefined || result.length ==0) 
       	{
       		wiki_switch_edit(o);
       		return;
@@ -104,7 +105,7 @@ function wiki_load(o)
           var line = "<tr><td>" + result[i].saved_on + "</td><td>"+ result[i].email +"</td></tr>";
           o.wiki_table_last_changes.append(line);
       }
-      o.wiki_tab_titles.html("Last " + i + " result(s)");
+      o.wiki_tab_titles.html(i18n.t("wiki.last_table_title",{"number" : i}));
 
       var converter = new Markdown.Converter();
 
@@ -117,12 +118,10 @@ function wiki_load(o)
 function wiki_switch_edit(o)
 {
     if (o.wiki_tab_show.is(':visible')) {
-        console.log("visible")
         o.wiki_tab_show.hide();
         o.wiki_tab_insert.show();
     } else {
-        console.log(" not visible")
-        o.wiki_load();
+        wiki_load(o);
         o.wiki_tab_show.show();
         o.wiki_tab_insert.hide();
     }
@@ -139,6 +138,7 @@ function wiki_save(o)
 
     services_osvcpostrest("R_WIKIS", "", "", {"body": value, "name": o.nodes}, function(jd) {
       if (jd.error) {
+        o.wiki_messages.html(jd.error);
         return
       }
       wiki_switch_edit(o);

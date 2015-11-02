@@ -57,7 +57,7 @@ function tabs_init(o) {
 
   // empty tabs on click closetab
   o.closetab.bind("click", function() {
-    o.div.empty()
+    o.div.remove();
   })
 }
 

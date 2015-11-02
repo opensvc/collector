@@ -211,5 +211,19 @@
     "checks": "sondes",
     "compliance": "compliance",
     "sysreport": "sysreport"
+  },
+  "network" : {
+    "ipv4_u" : "ipv4 unicast",
+    "ipv4_m" : "ipv4 multicast",
+    "ipv6_u" : "ipv6 unicast",
+    "ipv6_m" : "ipv6 multicast"
+  },
+  "wiki" : {
+    "tab_show_title" : "Wiki",
+    "tab_show_edit" : "Modifier",
+    "tab_edit_save" : "Sauvegarder",
+    "tab_edit_insert_sig" : "Insérer signature et date",
+    "tab_edit_help" : "Aide",
+    "last_table_title" : "__number__ dernier(s) enregistrement(s)"
   }
 }

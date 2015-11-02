@@ -26,6 +26,8 @@ function ips_init(o)
     o.ips_ipv4_m = o.div.find("#ips_ipv4_m");
     o.ips_ipv6_m = o.div.find("#ips_ipv6_m");
 
+    o.div.i18n();
+
  	o.ips_load();
 }
 

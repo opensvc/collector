@@ -152,7 +152,7 @@ function search_get_menu(fk)
   return menu[fk];
 }
 
-function search_build_result_row(label, first, res)
+function search_build_result_row(label, first, res, count)
 {
   var title ="";
   var link_value ="";
@@ -181,7 +181,7 @@ function search_build_result_row(label, first, res)
 
       row += "<td><p class='" + search_get_menu(label).subclass + "' ";
       if (search_get_menu(label).tab == "1") 
-        row += "id='search_title_click' onclick=\"search_show_tab(this,'" + label + "', '"+ link_value +"')\""; 
+        row += "id='search_title_click"+ count +"' onclick=\"search_show_tab(this,'" + label + "', '"+ link_value +"' , '"+ count + "')\""; 
       row += ">" + title + "</p>";
     }
 
@@ -213,8 +213,8 @@ function search_build_result_view(label, resultset)
 
   for (i=0;i<resultset.data.length;i++)
   {
-    table += search_build_result_row(label,0,resultset.data[i]);
-    table += "<tr><td name='extra' colspan='2'></td></tr>";
+    table += search_build_result_row(label,0,resultset.data[i],i);
+    table += "<tr><td id='extra_" + label + i +"' colspan='2'></td></tr>";
   }
 
   section_div += table;
@@ -294,13 +294,16 @@ function search_init()
   });
 }
 
-function search_show_tab(item, tab, param)
+function search_show_tab(item, tab, param, index)
 {
   var _url = null;
   var value = $(item).text();
   var _id = "sextra_" + value.replace(/[ \.-]/g, '_');
   var d = "<div id='" + _id + "' class='searchtab hidden'></div>";
-  $(item).parents('table').first().find("[name=extra]").html(d);
+
+  //$(item).parents('table').find("[name=extra]").html(d);
+  $("#extra_"+tab+index).html(d);
+  
   if (tab=="users")
     var _url = $(location).attr("origin") + "/init/ajax_user/ajax_user?username=" + value + "&rowid=" + _id;
   else if (tab=="services")
