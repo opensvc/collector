@@ -225,5 +225,8 @@
     "tab_edit_insert_sig" : "Insérer signature et date",
     "tab_edit_help" : "Aide",
     "last_table_title" : "__number__ dernier(s) enregistrement(s)"
+  },
+  "service_env": {
+    "header": "Dernière mise à jour le __updated__"
   }
 }

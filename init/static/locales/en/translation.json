@@ -250,5 +250,8 @@
     "tab_edit_insert_sig" : "Insert signature and timestamp",
     "tab_edit_help" : "Help",
     "last_table_title" : "Last __number__ result(s)"
+  },
+  "service_env": {
+    "header": "Last updated on __updated__"
   }
 }

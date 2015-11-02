@@ -39,58 +39,6 @@ def index():
     redirect(URL(r=request, c='dashboard'))
 
 @auth.requires_login()
-def envfile(svcname):
-    query = _where(None, 'services', svcname, 'svc_name')
-    query &= _where(None, 'services', domain_perms(), 'svc_name')
-    rows = db(query).select(cacheable=True)
-    if len(rows) == 0:
-        return "None"
-    #return dict(svc=rows[0])
-    envfile = rows[0]['svc_envfile']
-    if envfile is None:
-        return "None"
-
-    envfile = envfile.replace('\\n', '\n')
-    envfile = re.sub(r'([@\w]+)\s*\=\s*', r'<span class=syntax_green>\1</span> = ', envfile)
-    envfile = re.sub(r'(\[[#:\w]+\])', r'<br><span class=syntax_red>\1</span>', envfile)
-    envfile = re.sub(r'(@\w+)', r'<span class=syntax_blue>\1</span>', envfile)
-    envfile = re.sub(r'\n', r'<br>', envfile)
-
-    return DIV(
-             P(T("updated: %(upd)s",dict(
-                     upd=rows[0]['updated']
-                   ),
-                ),
-                _style='text-align:center',
-             ),
-             #envfile,
-             TT(XML(envfile), _style="text-align:left"),
-           )
-
-def get_svc_tags(svcname):
-    q = db.services.svc_name == svcname
-    q &= db.services.svc_app == db.apps.app
-    q &= db.apps.id == db.apps_responsibles.app_id
-    ug = user_group_ids()
-    if "Manager" not in ug:
-        q &= db.apps_responsibles.group_id.belongs(ug)
-    rows = db(q).select(db.nodes.id, groupby=db.services.svc_name)
-    if len(rows) == 0:
-        responsible = False
-    else:
-        responsible = True
-
-    import uuid
-    tid = uuid.uuid1().hex
-
-    d = DIV(
-      SCRIPT(""" tags({"tid": "%s", "responsible": %s, "svcname": "%s"}) """ % (tid, str(responsible).lower(), svcname)),
-      _class="tags",
-      _id=tid,
-    )
-    return d
-
-@auth.requires_login()
 def ajax_service():
     session.forget(response)
     rowid = request.vars.rowid
@@ -491,7 +439,7 @@ def ajax_service():
             _class='cloud',
           ),
           DIV(
-            envfile(request.vars.node),
+            IMG(_src=URL(r=request,c='static',f='images/spinner.gif')),
             _id='tab4_'+str(rowid),
             _class='cloud',
           ),
@@ -543,6 +491,11 @@ def ajax_service():
           SCRIPT(
             """function s%(rid)s_load_service_properties(){service_properties("%(id)s", %(options)s)}"""%dict(
                id='tab1_'+str(rowid),
+               rid=str(rowid),
+               options=str({"svcname": request.vars.node}),
+            ),
+            """function s%(rid)s_load_service_env(){service_env("%(id)s", %(options)s)}"""%dict(
+               id='tab4_'+str(rowid),
                rid=str(rowid),
                options=str({"svcname": request.vars.node}),
             ),
@@ -648,6 +601,7 @@ def ajax_service():
                  "litab1_%(id)s": s%(id)s_load_service_properties,
                  "litab2_%(id)s": s%(id)s_load_svcmon,
                  "litab3_%(id)s": s%(id)s_load_resmon,
+                 "litab4_%(id)s": s%(id)s_load_service_env,
                  "litab5_%(id)s": s%(id)s_load_topo,
                  "litab6_%(id)s": s%(id)s_load_stor,
                  "litab7_%(id)s": s%(id)s_load_grpprf,
