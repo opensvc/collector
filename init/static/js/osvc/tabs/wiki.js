@@ -8,7 +8,6 @@ function wiki(divid, options)
     // store parameters
     o.divid = divid
 
-    o.direct_access_url = "R_WIKI";
     o.div = $("#"+divid);
     o.nodes = options.nodes;
 
@@ -85,7 +84,7 @@ function wiki_init(o)
 
 function wiki_load(o)
 {
-	services_osvcgetrest("R_WIKI", [o.nodes],"", function(jd) {
+    services_osvcgetrest("R_WIKIS", "", {"meta": "0", "limit": "5", "query": "name="+o.nodes}, function(jd) {
       if (jd.data === undefined) {
         return;
       }
@@ -100,14 +99,10 @@ function wiki_load(o)
 
       	o.wiki_table_last_changes.empty();
 
-      for (i=0;i<result.length;i++)
+      for (i=0; i<result.length; i++)
       {
-      	if (i < 5) {
-      		var line = "<tr><td>" + result[i].saved_on + "</td><td>"+ result[i].email +"</td></tr>";
-      		o.wiki_table_last_changes.append(line);
-      	}
-      	else
-      		break;
+          var line = "<tr><td>" + result[i].saved_on + "</td><td>"+ result[i].email +"</td></tr>";
+          o.wiki_table_last_changes.append(line);
       }
       o.wiki_tab_titles.html("Last " + i + " result(s)");
 
@@ -121,17 +116,16 @@ function wiki_load(o)
 
 function wiki_switch_edit(o)
 {
-	if (o.wiki_tab_show.is(':visible'))
-	{
-		o.wiki_tab_show.hide();
-		o.wiki_tab_insert.show();
-	}
-	else
-	{
-		o.wiki_load();
-		o.wiki_tab_show.show();
-		o.wiki_tab_insert.hide();
-	}
+    if (o.wiki_tab_show.is(':visible')) {
+        console.log("visible")
+        o.wiki_tab_show.hide();
+        o.wiki_tab_insert.show();
+    } else {
+        console.log(" not visible")
+        o.wiki_load();
+        o.wiki_tab_show.show();
+        o.wiki_tab_insert.hide();
+    }
 }
 
 function wiki_help(o)
@@ -141,10 +135,10 @@ function wiki_help(o)
 
 function wiki_save(o)
 {
-	var value = o.wiki_tab_ins.val();
+    var value = o.wiki_tab_ins.val();
 
-	services_osvcpostrest("R_WIKI", [o.nodes], "", {"body": value}, function(jd) {
-      if (jd.data === undefined) {
+    services_osvcpostrest("R_WIKIS", "", "", {"body": value, "name": o.nodes}, function(jd) {
+      if (jd.error) {
         return
       }
       wiki_switch_edit(o);
