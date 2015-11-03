@@ -26,6 +26,15 @@ function alert_event_init(o)
  	o.alert_event_load();
 }
 
+function alert_event_diff_date(d1,d2)
+{
+  var date1 = new Date(d1);
+  var date2 = new Date(d2);
+  var timeDiff = Math.abs(date2.getTime() - date1.getTime());
+  var diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24)); 
+  return diffDays;
+}
+
 function alert_event_build_timeline(o, result)
 {
    var items = new vis.DataSet({
@@ -36,7 +45,7 @@ function alert_event_build_timeline(o, result)
    if (result.length == 0)
    {
       first =
-      {
+      [{
         id : 100,
         start : o.begin_date,
         end: new Date(),
@@ -44,7 +53,8 @@ function alert_event_build_timeline(o, result)
         group : 'Alert',
         title : o.begin_date + ' to now',
         type : "range",
-      }
+      },]
+      items.add(first);
    }
 
    for (i=0;i<result.length;i++)
@@ -72,10 +82,12 @@ function alert_event_build_timeline(o, result)
     }
     var classe = 'red';
 
+    var days = (alert_event_diff_date(begin_date,end_date)).toString() + " days";
+
     items.add([
       {
         id : i,
-        //value : i.toString(),
+        content : days,
         start : begin_date,
         end : end_date,
         className : classe,
@@ -85,8 +97,6 @@ function alert_event_build_timeline(o, result)
       },
     ]);
    }
-
-   items.add(first);
 
    var groups = [];
    groups.push(
@@ -98,6 +108,9 @@ function alert_event_build_timeline(o, result)
 
   var container = $("#"+o.divid)[0];
   var options = {
+    template: function (item) {
+      return '<pre style="text-align:left">' + item.content + '</pre>';
+    },
     editable: false,
     showCurrentTime: true,
     zoomable: false,
