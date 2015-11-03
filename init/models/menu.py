@@ -350,7 +350,7 @@ class OSVCMENU(MENU):
                      UL(LI(A(data[0][0])), _class="web2py-menu"),
                      ul,
                      _class="menu_top",
-                     _onclick="""$(this).children("div").toggle("fold");$("#search").focus()"""
+                     _onclick="""$(this).children("div").toggle("fold");$("#search_input").focus()"""
                    )
         return ul
 
