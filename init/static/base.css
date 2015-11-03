@@ -3024,3 +3024,15 @@ div.containertrans {
    -moz-border-radius:8px;
    -webkit-border-radius:8px;
 }
+
+.vis-item.red {
+  color: white;
+  background-color: #FF8080;
+  border-color: darkred;
+}
+
+.vis-item.redlight {
+  color: white;
+  background-color: #FF6666;
+  border-color: darkred;
+}
