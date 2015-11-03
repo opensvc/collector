@@ -684,11 +684,12 @@ def ajax_alert_events():
             data_on += [[str(row.dash_end), 'null']]
 
     data = str([str(data_on).replace("'null'","null"), [[str(now), 1]]]).replace('"','')
-    s = """data_%(rowid)s=%(data)s;$('#%(id)s').empty();avail_plot('%(id)s', data_%(rowid)s);"""%dict(
-           data=data,
-           id='plot_%s'%request.vars.rowid,
-           rowid=request.vars.rowid,
-         )
+    #s = """data_%(rowid)s=%(data)s;$('#%(id)s').empty();avail_plot('%(id)s', data_%(rowid)s);"""%dict(
+    #       data=data,
+    #       id='plot_%s'%request.vars.rowid,
+    #       rowid=request.vars.rowid,
+    #     )
+
     wikipage_name = "alert"
     if request.vars.dash_nodename is not None:
         wikipage_name += "_"+request.vars.dash_nodename
@@ -697,24 +698,23 @@ def ajax_alert_events():
     if request.vars.dash_md5 is not None:
         wikipage_name += "_"+request.vars.dash_md5
 
-    s += "ajax('%(url)s', [], '%(id)s');"%dict(
+    s = """alert_event("%(id)s", {"nodes": "%(node)s","begin_date":"%(bdate)s"});"""%dict(
+               id='plot_%s'%request.vars.rowid,
+               rowid=request.vars.rowid,
+               node=wikipage_name,
+               bdate=request.vars.dash_created)
+
+    s += """wiki("%(id)s", {"nodes": "%(node)s"});"""%dict(
                id='wiki_%s'%request.vars.rowid,
-               url=URL(r=request, c='wiki', f='ajax_wiki',
-                       args=['wiki_%s'%request.vars.rowid, wikipage_name]),
-         )
-
-    #t = """wiki("%(id)s", {"nodes": "%(node)s"});"""%dict(
-    #           id='wiki_%s'%request.vars.rowid,
-    #           rid=str(request.vars.rowid),
-    #           node=wikipage_name)
-
+               rid=str(request.vars.rowid),
+               node=wikipage_name)
     
     return TABLE(DIV(
              H2(T("Alert timeline")),
              DIV(
-               data,
+               #data,
                _id='plot_%s'%request.vars.rowid,
-               _style='width:300px;height:50px',
+               #_style='width:300px;',#height:50px',
              ),
              BR(),
              DIV(

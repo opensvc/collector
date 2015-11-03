@@ -45,6 +45,7 @@ handlers = {
      rest_get_action_queue_one(),
      rest_get_alerts(),
      rest_get_alert(),
+     rest_get_alert_event(),
      rest_get_apps(),
      rest_get_app(),
      rest_get_app_nodes(),
