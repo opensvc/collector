@@ -478,7 +478,6 @@ def ajax_service():
             _class='cloud',
           ),
           DIV(
-            IMG(_src=URL(r=request,c='static',f='images/spinner.gif')),
             _id='tab10_'+str(rowid),
             _class='cloud',
           ),
@@ -521,11 +520,10 @@ def ajax_service():
                rid=str(rowid),
                url=URL(r=request, c='stats', f='ajax_perfcmp_plot?node=%s'%','.join(str(s['svc_nodes']).split()+str(s['svc_drpnodes']).split())),
             ),
-            "function s%(rid)s_load_pkgdiff(){sync_ajax('%(url)s', [], '%(id)s', function(){})}"%dict(
+            "function s%(rid)s_load_pkgdiff(){svc_pkgdiff('%(id)s', %(options)s)}"%dict(
                id='tab10_'+str(rowid),
                rid=str(rowid),
-               url=URL(r=request, c='pkgdiff', f='svc_pkgdiff',
-                       args=[request.vars.node])
+               options=str({"svcnames": request.vars.node})
             ),
             "function s%(rid)s_load_comp(){sync_ajax('%(url)s', [], '%(id)s', function(){})}"%dict(
                id='tab11_'+str(rowid),

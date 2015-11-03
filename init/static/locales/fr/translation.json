@@ -1,4 +1,9 @@
 {
+  "api": {
+    "loading": "Loading",
+    "formatting": "Formating",
+    "error": "La requête au collecteur a renvoyé une erreur."
+  },
   "app": {
     "name": "collector"
   },
@@ -228,5 +233,15 @@
   },
   "service_env": {
     "header": "Dernière mise à jour le __updated__"
+  },
+  "pkgdiff": {
+    "title_encap": "Différences de paquets installés entre les noeuds encapsulés du cluster",
+    "title_cluster": "Différences de paquets installés entre les noeuds du cluster",
+    "no_diff": "Auncune difference trouvée",
+    "nodes": "Noeuds",
+    "package": "Paquet",
+    "version": "Version",
+    "type": "Type",
+    "arch": "Arch"
   }
 }

@@ -1,5 +1,7 @@
 {
   "api": {
+    "loading": "Loading",
+    "formatting": "Formating",
     "error": "The collector request returned an error."
   },
   "app": {
@@ -253,5 +255,15 @@
   },
   "service_env": {
     "header": "Last updated on __updated__"
+  },
+  "pkgdiff": {
+    "title_encap": "Installed package differences in encapsulated cluster",
+    "title_cluster": "Installed package differences in cluster",
+    "no_diff": "No difference found",
+    "nodes": "Nodes",
+    "package": "Package",
+    "version": "Version",
+    "type": "Type",
+    "arch": "Arch"
   }
 }

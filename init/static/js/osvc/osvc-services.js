@@ -26,6 +26,7 @@ var services_access_uri = {
     "R_NODE_SYSREPORT_CID" : "rest/api/nodes/%1/sysreport/%2",
     "R_NODE_SYSREPORT_CID_TREE" : "rest/api/nodes/%1/sysreport/%2/tree",
     "R_NODE_SYSREPORT_CID_TREE_OID" : "rest/api/nodes/%1/sysreport/%2/tree/%3",
+    "R_PACKAGES_DIFF" : "rest/api/packages/diff",
     "R_SYSREPORT_SECURE_PATTERNS" : "rest/api/sysreport/secure_patterns",
     "R_SYSREPORT_SECURE_PATTERN" : "rest/api/sysreport/secure_patterns/%1",
     "R_SYSREPORT_AUTHORIZATIONS" : "rest/api/sysreport/authorizations",

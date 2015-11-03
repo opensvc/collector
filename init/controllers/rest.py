@@ -129,6 +129,7 @@ handlers = {
      rest_get_node_sysreport_commit_tree_file(),
      rest_get_node_tags(),
      rest_get_node_uuid(),
+     rest_get_packages_diff(),
      rest_get_resources(),
      rest_get_scheduler_tasks(),
      rest_get_scheduler_task(),
