@@ -258,7 +258,7 @@ function node_props_responsible_init(o)
         }).datepicker("show");
       }
 
-      e.find("form").submit(function() {
+      e.find("form").submit(function(event) {
         event.preventDefault()
         var input = $(this).find("input[type=text],select")
         input.blur()

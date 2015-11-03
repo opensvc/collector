@@ -665,10 +665,17 @@ textarea[readonly] {
 }
 
 @font-face {
-font-family:"opensans";
-src:url(OpenSans-Regular.woff);
-font-style:normal;
-font-weight:300;
+  font-family:"opensans";
+  src:url(OpenSans-Regular.woff);
+  font-style:normal;
+  font-weight:300;
+}
+
+@font-face {
+  font-family:"awesome";
+  src:url(fontawesome-webfont.woff);
+  font-style:normal;
+  font-weight:normal;
 }
 
 html {
@@ -2798,6 +2805,73 @@ div.searchtab {
 
 .group_list_small li {
    list-style: none;
+}
+
+/* styled checkbox */
+.ocb {
+	width: 14px;	
+	margin: 14px auto;
+	position: relative;
+}
+input.ocb {
+  width: 0px;
+  visibility: hidden;
+  position: fixed;
+}
+
+
+.ocb + label {
+	cursor: pointer;
+	width: 14px;
+	height: 14px;
+	top: 0;
+	border-radius: 4px;
+	-webkit-box-shadow: inset 0px 1px 1px rgba(0,0,0,0.5), 0px 1px 0px rgba(255,255,255,.4);
+	-moz-box-shadow: inset 0px 1px 1px rgba(0,0,0,0.5), 0px 1px 0px rgba(255,255,255,.4);
+	box-shadow: inset 0px 1px 1px rgba(0,0,0,0.5), 0px 1px 0px rgba(255,255,255,.4);
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#222', endColorstr='#45484d',GradientType=0 );
+}
+
+.ocb + label:after {
+	-ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=0)";
+        font-family: awesome;
+	filter: alpha(opacity=0);
+	opacity: 0;
+	content: '\f00c';
+	min-width: 14px;
+	height: 14px;
+	background: transparent;
+	top: 4px;
+	left: 4px;
+	border: none;
+        color: black;
+        padding: 1px;
+}
+
+.ocb + label:hover::after {
+	-ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=30)";
+        font-family: awesome;
+	content: '\f00c';
+	min-width: 14px;
+	height: 14px;
+        color: black;
+	filter: alpha(opacity=30);
+	border: none;
+	opacity: 0.3;
+        padding: 1px;
+}
+
+input[type=checkbox].ocb:checked + label:after {
+	-ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=100)";
+	filter: alpha(opacity=100);
+        font-family: awesome;
+	content: '\f00c';
+	width: 14px;
+	height: 14px;
+        color: black;
+	border: none;
+	opacity: 1;
+        padding: 1px;
 }
 
 /* css for timepicker */

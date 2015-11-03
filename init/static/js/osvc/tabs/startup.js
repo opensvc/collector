@@ -29,7 +29,7 @@ function startup(divid, options) {
 function startup_create_link(o) {
   var display = []
   o.div.find("input[type=checkbox]:checked").each(function() {
-    display.push($(this).siblings().text())
+    display.push($(this).siblings("span").text())
   })
   o.options.display = display
   url = $(location).attr("origin");
@@ -74,7 +74,8 @@ function startup_init(o) {
       nodenames.push(nodename)
 
       //input
-      var input = $("<input type='checkbox'></input>")
+      var input = $("<input type='checkbox' class='ocb'></input>")
+      input.uniqueId()
       input.css({"vertical-align": "text-bottom"})
       if (o.options.display && (o.options.display.indexOf(nodename) >= 0)) {
         input.prop("checked", true)
@@ -85,32 +86,37 @@ function startup_init(o) {
         o.create_link()
       })
 
-      // label
-      var label = $("<span></span>")
-      label.addClass("hw16")
-      label.css({"padding-left": "18px", "margin-left": "0.2em"})
-      label.text(nodename)
+      // ocb label
+      var label = $("<label></label>")
+      label.attr("for", input.attr("id"))
+
+      // title
+      var title = $("<span></span>")
+      title.addClass("hw16")
+      title.css({"padding-left": "18px", "margin-left": "0.2em"})
+      title.text(nodename)
 
       // container div
       var d = $("<div></div>")
       d.append(input)
       d.append(label)
+      d.append(title)
 
       d.insertBefore(o.div.find("input[type=submit]"))
     }
     if (o.div.find("input[type=checkbox]:checked").length == 0) {
       o.div.find("input[type=checkbox]").first().each(function(){
         $(this).prop("checked", true)
-        o.options.display = [$(this).siblings().text()]
+        o.options.display = [$(this).siblings("span").text()]
       })
     }
 
     // form submit
-    o.div.find("form").bind("submit", function() {
+    o.div.find("form").bind("submit", function(event) {
       event.preventDefault()
       o.options.display = []
       $(this).find("input:checked").each(function () {
-        o.options.display.push($(this).siblings().text())
+        o.options.display.push($(this).siblings("span").text())
       })
       o.draw()
     })

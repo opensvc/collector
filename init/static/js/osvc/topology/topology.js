@@ -64,6 +64,9 @@ function topo_init(o) {
   // set checkboxes
   o.div.find("input[type=checkbox]").each(function() {
     var name = $(this).attr("name")
+    $(this).uniqueId()
+    $(this).next().attr("for", $(this).attr("id"))
+    $(this).addClass("ocb")
     if (o.options.display.indexOf(name) >= 0) {
       $(this).prop("checked", true)
     } else {
@@ -75,7 +78,7 @@ function topo_init(o) {
   })
 
   // form submit
-  o.div.find("form").bind("submit", function() {
+  o.div.find("form").bind("submit", function(event) {
     event.preventDefault()
     o.options.display = []
     $(this).find("input:checked").each(function () {

@@ -451,6 +451,8 @@ class HtmlTable(object):
             s = SPAN(
                   INPUT(
                     _type='checkbox',
+                    _class='ocb',
+                    _id=id_col,
                     _name=id_col,
                     _onclick="""table_toggle_column("%(id)s","%(column)s", "%(table)s")
                              """%dict(url=URL(r=request,c='ajax',f='ajax_set_user_prefs_column'),
@@ -460,6 +462,9 @@ class HtmlTable(object):
                                  ),
                     value=val,
                     _style='vertical-align:text-bottom',
+                  ),
+                  LABEL(
+                    _for=id_col,
                   ),
                   SPAN(
                     T(self.colprops[a].title),
@@ -930,7 +935,12 @@ class HtmlTable(object):
                 cells.append(TD(
                                INPUT(
                                  _type='checkbox',
+                                 _class='ocb',
                                  _disabled='disabled',
+                                 _id=checkbox_id,
+                               ),
+                               LABEL(
+                                 _for=checkbox_id,
                                ),
                              ))
             else:
@@ -945,10 +955,14 @@ class HtmlTable(object):
                 cells.append(TD(
                                INPUT(
                                  _type='checkbox',
+                                 _class='ocb',
                                  _id=checkbox_id,
                                  _name=self.checkbox_name_key(),
                                  _value=value,
                                  value=checked,
+                               ),
+                               LABEL(
+                                 _for=checkbox_id,
                                ),
                                _name=self.id+"_tools",
                                _class="tools",
@@ -1075,9 +1089,13 @@ class HtmlTable(object):
             inputs.append(TD(
                             INPUT(
                               _type='checkbox',
+                              _class='ocb',
                               _id=self.master_checkbox_key(),
                               _onclick="check_all('%(name)s', this.checked);"%dict(name=self.checkbox_name_key())
-                            )
+                            ),
+                            LABEL(
+                              _for=self.master_checkbox_key(),
+                            ),
                           ))
         if self.extrarow:
             inputs.append(TD(''))
@@ -1157,9 +1175,13 @@ class HtmlTable(object):
         d = SPAN(
           INPUT(
             _type="checkbox",
+            _class='ocb',
             _id="wsswitch_"+self.id,
             _onclick=js,
             value=wsenabled,
+          ),
+          LABEL(
+            _for="wsswitch_"+self.id,
           ),
           SPAN(T("Live")),
           _class='floatw'

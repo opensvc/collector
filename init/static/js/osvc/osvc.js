@@ -711,8 +711,9 @@ function table_data_to_lines(t, data) {
   var lines = ""
   for (var i=0; i<data.length; i++) {
     var line = ""
+    var ckid = t.id + "_ckid_" + data[i]['id']
     if (t.checkboxes) {
-      line += "<td name='"+t.id+"_tools' class='tools'><input value='"+data[i]['checked']+"' type='checkbox' id='"+t.id+"_ckid_"+data[i]['id']+"' name='"+t.id+"_ck'></td>"
+      line += "<td name='"+t.id+"_tools' class='tools'><input class='ocb' value='"+data[i]['checked']+"' type='checkbox' id='"+ckid+"' name='"+t.id+"_ck'><label for='"+ckid+"'></label></td>"
     }
     if (t.extrarow) {
       var cols = ["extra"].concat(t.columns)
