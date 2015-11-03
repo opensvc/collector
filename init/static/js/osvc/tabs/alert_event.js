@@ -11,6 +11,8 @@ function alert_event(divid, options)
     o.div.html("<span class='spinner'><span>");
     o.nodes = options.nodes;
     o.begin_date = options.begin_date;
+    o.svcname =  options.svcname;
+    o.md5name = options.md5name;
 
     o.alert_event_load = function()
     {
@@ -115,7 +117,7 @@ function alert_event_build_timeline(o, result)
 
 function alert_event_load(o)
 {
-    services_osvcgetrest("R_ALERT_EVENT", "", {"md5name": "663b921e4b14691d4a481c55ccc3f794"}, function(jd) {
+    services_osvcgetrest("R_ALERT_EVENT", "", {"md5name": o.md5name,"svcname" : o.svcname,"nodename" : o.nodes}, function(jd) {
       if (jd.data === undefined) {
         return;
       }

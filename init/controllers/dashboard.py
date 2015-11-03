@@ -698,11 +698,19 @@ def ajax_alert_events():
     if request.vars.dash_md5 is not None:
         wikipage_name += "_"+request.vars.dash_md5
 
-    s = """alert_event("%(id)s", {"nodes": "%(node)s","begin_date":"%(bdate)s"});"""%dict(
+    s = """alert_event("%(id)s", 
+        {
+        "md5name" : "%(md5name)s",
+        "nodes": "%(node)s",
+        "begin_date":"%(bdate)s",
+        "svcname" : "%(svcname)s",
+        });"""%dict(
                id='plot_%s'%request.vars.rowid,
                rowid=request.vars.rowid,
-               node=wikipage_name,
-               bdate=request.vars.dash_created)
+               node=request.vars.dash_nodename,
+               bdate=request.vars.dash_created,
+               md5name=request.vars.dash_md5,
+               svcname=request.vars.dash_svcname)
 
     s += """wiki("%(id)s", {"nodes": "%(node)s"});"""%dict(
                id='wiki_%s'%request.vars.rowid,
