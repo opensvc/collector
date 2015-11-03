@@ -254,7 +254,7 @@ function search_search()
       else if (count==1)
       {
         $('#search_result_table tr:first').remove();
-        var td = $('#search_title_click');
+        var td = $('#search_title_click0');
         td.trigger("click");
       }
 
@@ -269,7 +269,7 @@ function search_routing(delay)
   var menu = $(".header").find(".menu16").parents("ul").first().siblings(".menu");
   if (menu.is(":visible")) 
   {
-    filter_menu();
+    filter_menu(null);
   } 
   else {
     clearTimeout(timer);
@@ -319,7 +319,7 @@ function search_show_tab(item, tab, param, index)
   $("#" + _id).show();
 }
 
-function filter_menu() {
+function filter_menu(event) {
   var menu = $(".header").find(".menu16").parents("ul").first().siblings(".menu")
   var text = searchbox = $(".search").find("input").val()
   var reg = new RegExp(text, "i");
