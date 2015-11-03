@@ -44,9 +44,11 @@ function alert_event_build_timeline(o, result)
    var first ={};
    if (result.length == 0)
    {
+    var days = (alert_event_diff_date(o.begin_date,new Date())).toString() + " days";
       first =
       [{
         id : 100,
+        content : days,
         start : o.begin_date,
         end: new Date(),
         className : 'red',
