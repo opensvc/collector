@@ -5,6 +5,7 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />     
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=yes" />
     {{response.files.append(URL(request.application,'static','base.css'))}}
+    {{response.files.append(URL(request.application,'static','css/awesome.css'))}}
     {{include 'web2py_ajax.html'}}
     <link rel="SHORTCUT ICON" href="{{=URL(r=request,c='static',f='favicon.ico')}}">
   </head>

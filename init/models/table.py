@@ -432,7 +432,7 @@ class HtmlTable(object):
               T('Filter'),
               ' ',
               content,
-              _class='floatw',
+              _class='floatw filter16',
             )
         return s
 
@@ -533,10 +533,11 @@ class HtmlTable(object):
         d = DIV(
               A(
                 SPAN(
-                  T('Refresh'),
                   _class='refresh16',
                   _id='refresh_'+self.id,
                 ),
+                "  ",
+                T('Refresh'),
               ),
               _class='floatw',
             )

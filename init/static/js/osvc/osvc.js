@@ -3127,7 +3127,7 @@ function cell_decorator_svcmon_links(e) {
   query += "&actions_f_status_log=empty"
   query += "&actions_f_begin="+encodeURIComponent(">-1d")
   url = $(location).attr("origin") + "/init/svcactions/svcactions?"+query
-  var d = "<a class='clickable action16' target='_blank' href="+url+">&nbsp</a>"
+  var d = "<a class='clickable action16' target='_blank' href="+url+"></a>"
 
   var mon_frozen = line.children("[name$=mon_frozen]").attr("v")
   if (mon_frozen == "1") {
@@ -4009,7 +4009,7 @@ function table_bind_link(t) {
 }
 
 function table_bind_refresh(t) {
-  $("#refresh_"+t.id).bind("click", function(){
+  $("#refresh_"+t.id).parent().bind("click", function(){
     t.refresh()
   })
   $(this).bind("keypress", function(event) {
@@ -4100,11 +4100,11 @@ function table_relocate_extra_rows(t) {
 }
 
 function table_unset_refresh_spin(t) {
-  $("#refresh_"+t.id).removeClass("spinner")
+  $("#refresh_"+t.id).removeClass("fa-spin")
 }
 
 function table_set_refresh_spin(t) {
-  $("#refresh_"+t.id).addClass("spinner")
+  $("#refresh_"+t.id).addClass("fa-spin")
 }
 
 

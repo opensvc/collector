@@ -15,7 +15,6 @@ form *:focus {
 }
 
 .asset_tab > div > table > tbody > tr > td {
-  padding-left: 20px;
   font-weight: bold;
 }
 
@@ -182,7 +181,7 @@ form *:focus {
   padding-right: 1em;
 }
 .header_logo a {
-  color: #aaaaaa;
+  color: lightgray;
 }
 .header_logo a:hover {
   text-decoration: none;
@@ -636,14 +635,6 @@ a {
     text-decoration: none;
 }
 
-.a:hover {
-    //text-decoration: underline;
-}
-
-a:hover {
-    text-decoration: underline;
-}
-
 input,
 textarea {
     border: 1px solid #dddddd;
@@ -856,7 +847,7 @@ ul.web2py-menu ul,
 ul.web2py-menu li,
 ul.web2py-menu a
 {
-    color: #aaaaaa;
+    color: lightgray;
     display: block;
     margin: 0;
     padding: 0.1em;
@@ -1099,7 +1090,7 @@ a.xinfo_shown span {
     padding-left: 0.5em;
     padding-right: 0.5em;
     padding-top: 0.3em;
-    padding-bottom: 0.2em;
+    padding-bottom: 0.5em;
     cursor: pointer;
     color: black;
     list-style: none;
@@ -1114,10 +1105,10 @@ a.xinfo_shown span {
 }
 
 .tab .tab_active {
-    box-shadow: 0px -2px darkred inset;
+    background: white;
 }
 .tab .closetab {
-    background-color:black;
+    background-color: #2D2D2D;
     color:white;
     border: none;
 }
@@ -1415,11 +1406,12 @@ ul.login_menu ul {
   background-position-y: 100%;
 }
 
-.common16 {
-    background: transparent url('images/common16.png') no-repeat;
-    background-size: 16px 16px;
-    padding: 0 0 0 20px;
-    min-height: 16px;
+.common16:before {
+  content: '\f05b  ';
+  font-family: awesome;
+}
+.common16:hover:before {
+  color: darkred;
 }
 .os_vmware {
     background: transparent url('images/vmware16.png') no-repeat;
@@ -1481,70 +1473,99 @@ ul.login_menu ul {
     padding: 0 0 0 20px;
     min-height: 16px;
 }
-.menu16 {
-    background: transparent url('images/menu16.png') no-repeat;
-    padding: 0 0 0 20px;
-    min-height: 16px;
+.menu16:before {
+  content: '\f00a  ';
+  font-family: awesome;
 }
-.dia16 {
-    background: transparent url('images/dia16.png') no-repeat;
-    padding: 0 0 0 20px;
-    min-height: 16px;
+.menu16:hover:before {
+  color: darkred;
+}
+.dia16:before {
+  content: '\f0e8  ';
+  font-family: awesome;
+}
+.dia16:hover:before {
+  color: darkred;
+}
+.detach16:before {
+  content: '\f013  ';
+  font-family: awesome;
+}
+.detach16:hover:before {
+  color: darkred;
 }
 .detach16 {
     background: transparent url('images/detach16.png') no-repeat;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
-.attach16 {
-    background: transparent url('images/attach16.png') no-repeat;
-    padding: 0 0 0 20px;
-    min-height: 16px;
+.detach16:before {
+  content: '\f127  ';
+  font-family: awesome;
 }
-.prov {
-    background: transparent url('images/prov.png') no-repeat;
-    padding: 0 0 0 20px;
-    min-height: 16px;
+.detach16:hover:before {
+  color: darkred;
 }
-.lock {
-    background: transparent url('images/lock.png') no-repeat;
-    padding: 0 0 0 20px;
-    min-height: 16px;
+.attach16:before {
+  content: '\f0c1  ';
+  font-family: awesome;
 }
-.bookmark_add16 {
-    background: transparent url('images/bookmark_add16.png') no-repeat;
-    padding: 0 0 0 20px;
-    min-height: 16px;
+.attach16:hover:before {
+  color: darkred;
 }
-.bookmark16 {
-    background: transparent url('images/bookmark16.png') no-repeat;
-    padding: 0 0 0 20px;
-    min-height: 16px;
+.prov:before {
+  content: '\f0d0  ';
+  font-family: awesome;
 }
-.add16 {
-    background: transparent url('images/add16.png') no-repeat;
-    padding: 0 0 0 20px;
-    min-height: 16px;
+.prov:hover:before {
+  color: darkred;
+}
+.lock:before {
+  content: '\f023  ';
+  font-family: awesome;
+}
+.lock:hover:before {
+  color: darkred;
+}
+.bookmark16:before {
+  content: '\f02e  ';
+  font-family: awesome;
+}
+.bookmark16:hover:before {
+  color: darkred;
+}
+.bookmark_add16:before {
+  content: '\f02e  \f0fe  ';
+  font-family: awesome;
+}
+.bookmark_add16:hover:before {
+  color: darkred;
+}
+.del16:before {
+  content: '\f146  ';
+  font-family: awesome;
+}
+.del16:hover:before {
+  color: darkred;
+}
+.add16:before {
+  content: '\f0fe  ';
+  font-family: awesome;
+}
+.add16:hover:before {
+  color: darkred;
 }
 .fw16 {
     background: transparent url('images/fw16.png') no-repeat;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
-.del16 {
-    background: transparent url('images/del16.png') no-repeat;
-    padding: 0 0 0 20px;
-    min-height: 16px;
+.alert16:before {
+  content: '\f071  ';
+  font-family: awesome;
 }
-.edit16 {
-    background: transparent url('images/edit.png') no-repeat;
-    padding: 0 0 0 20px;
-    min-height: 16px;
-}
-.alert16 {
-    background: transparent url('images/alert16.png') no-repeat;
-    padding: 0 0 0 20px;
-    min-height: 16px;
+.alert16:hover:before {
+  color: darkred;
 }
 .avail16 {
     background: transparent url('images/avail16.png') no-repeat;
@@ -1556,68 +1577,74 @@ ul.login_menu ul {
     padding: 0 0 0 20px;
     min-height: 16px;
 }
-.spark16 {
-    background: transparent url('images/spark16.png') no-repeat;
-    padding: 0 0 0 20px;
-    min-height: 16px;
+.spark16:before {
+  content: '\f201  ';
+  font-family: awesome;
+}
+.spark16:hover:before {
+  color: darkred;
 }
 .values_to_filter {
     background: transparent url('images/values_to_filter.png') no-repeat;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
-.clear16 {
-    background: transparent url('images/clear16.png') no-repeat;
-    padding: 0 0 0 20px;
-    min-height: 16px;
+.clear16:before {
+  content: '\f1f8  ';
+  font-family: awesome;
 }
-.invert16 {
-    background: transparent url('images/invert16.png') no-repeat;
-    padding: 0 0 0 16px;
-    min-height: 16px;
+.clear16:hover:before {
+  color: darkred;
 }
-.filter16 {
-    background: transparent url('images/filter16.png') no-repeat;
-    padding: 0 0 0 16px;
-    min-height: 16px;
+.invert16:before {
+  content: '\f042  ';
+  font-family: awesome;
+}
+.invert16:hover:before {
+  color: darkred;
 }
 .filters {
     background: transparent url('images/filter16.png') no-repeat;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
-.columns {
-    background: transparent url('images/columns.png') no-repeat;
-    padding: 0 0 0 20px;
-    min-height: 16px;
+.columns:before {
+  content: '\f0db  ';
+  font-family: awesome;
 }
-.csv {
-    background: transparent url('images/csv.png') no-repeat;
-    padding: 0 0 0 20px;
-    min-height: 16px;
+.columns:hover:before {
+  color: darkred;
 }
-.csv_disabled {
-    background: transparent url('images/csv.png') no-repeat;
-    padding: 0 0 0 20px;
-    min-height: 16px;
-    color: rgba(0, 0, 0, 0.5);
+.csv:before {
+  content: '\f019  ';
+  font-family: awesome;
 }
-.link16 {
-    background: transparent url('images/link16.png') no-repeat;
-    padding: 0 0 0 20px;
-    min-height: 16px;
+.csv:hover:before {
+  color: darkred;
 }
-.refresh16 {
-    background: transparent url('images/refresh16.png') no-repeat;
-    padding: 0 0 0 20px;
-    min-height: 16px;
+.csv_disabled:before {
+  content: '\f019  ';
+  font-family: awesome;
+  color: rgba(0, 0, 0, 0.5);
 }
-.spinner {
-    background: transparent url('images/spinner.gif') no-repeat;
-    padding: 0 0 0 20px;
-    min-height: 16px;
+.link16:before {
+  content: '\f0c1  ';
+  font-family: awesome;
 }
-
+.link16:hover:before {
+  color: darkred;
+}
+.refresh16:before {
+  content: '\f021';
+  font-family: awesome;
+}
+.refresh16:hover:before {
+  color: darkred;
+}
+.spinner:before {
+  content: '\f110';
+  font-family: awesome;
+}
 .dns16 {
     background: transparent url('images/dns16.png') no-repeat;
     padding: 0 0 0 20px;
@@ -1628,10 +1655,12 @@ ul.login_menu ul {
     padding: 0 0 0 20px;
     min-height: 16px;
 }
-.net16 {
-    background: transparent url('images/net16.png') no-repeat;
-    padding: 0 0 0 20px;
-    min-height: 16px;
+.net16:before {
+  content: '\f0ec  ';
+  font-family: awesome;
+}
+.net16:hover:before {
+  color: darkred;
 }
 .down {
   background: transparent url('images/down16.png') no-repeat;
@@ -1647,15 +1676,13 @@ ul.login_menu ul {
   background-position-y: 2px;
   min-height: 16px;
 }
-.down16 {
-    background: transparent url('images/down16.png') no-repeat;
-    padding: 0 0 0 20px;
-    min-height: 16px;
+.right16:before {
+  content: '\f0da  ';
+  font-family: awesome;
 }
-.right16 {
-    background: transparent url('images/right16.png') no-repeat;
-    padding: 0 0 0 20px;
-    min-height: 16px;
+.down16:before {
+  content: '\f0d7  ';
+  font-family: awesome;
 }
 .save16 {
     background: transparent url('images/save16.png') no-repeat;
@@ -1682,45 +1709,73 @@ ul.login_menu ul {
     padding: 0 0 0 20px;
     min-height: 16px;
 }
-.hv16 {
-    background: transparent url('images/hv16.png') no-repeat;
-    padding: 0 0 0 20px;
-    min-height: 16px;
+.hv16:before {
+  content: '\f0c2  ';
+  font-family: awesome;
 }
-.hd16 {
-    background: transparent url('images/hd16.png') no-repeat;
-    padding: 0 0 0 20px;
-    min-height: 16px;
+.hv16:hover:before {
+  color: darkred;
 }
-.pkg16 {
-    background: transparent url('images/pkg16.png') no-repeat;
-    padding: 0 0 0 20px;
-    min-height: 16px;
+.hd16:before {
+  content: '\f1c0  ';
+  font-family: awesome;
 }
-.log16 {
-    background: transparent url('images/log16.png') no-repeat;
-    padding: 0 0 0 20px;
-    min-height: 16px;
+.hd16:hover:before {
+  color: darkred;
 }
-.bill16 {
-    background: transparent url('images/bill16.png') no-repeat;
-    padding: 0 0 0 20px;
-    min-height: 16px;
+.pkg16:before {
+  content: '\f1b3  ';
+  font-family: awesome;
 }
-.tag16 {
-    background: transparent url('images/tag16.png') no-repeat;
-    padding: 0 0 0 20px;
-    min-height: 16px;
+.pkg16:hover:before {
+  color: darkred;
 }
-.hw16 {
-    background: transparent url('images/hw16.png') no-repeat;
-    padding: 0 0 0 20px;
-    min-height: 16px;
+.log16:before {
+  content: '\f1da  ';
+  font-family: awesome;
+}
+.log16:hover:before {
+  color: darkred;
+}
+.bill16:before {
+  content: '\f0d6  ';
+  font-family: awesome;
+}
+.bill16:hover:before {
+  color: darkred;
+}
+.tag16:before {
+  content: '\f02b  ';
+  font-family: awesome;
+}
+.tag16:hover:before {
+  color: darkred;
+}
+.cpu16:before {
+  content: '\f02b  ';
+  font-family: awesome;
+}
+.cpu16:hover:before {
+  color: darkred;
+}
+.hw16:before {
+  content: '\f02b  ';
+  font-family: awesome;
+}
+.hw16:hover:before {
+  color: darkred;
+}
+.mem16:before {
+  content: '\f02b  ';
+  font-family: awesome;
+}
+.mem16:hover:before {
+  color: darkred;
 }
 .os16 {
     background: transparent url('images/os16.png') no-repeat;
     padding: 0 0 0 20px;
-    min-height: 16px;
+    min-height: 1em;
 }
 .obs16 {
     background: transparent url('images/obs16.png') no-repeat;
@@ -1732,55 +1787,81 @@ ul.login_menu ul {
     padding: 0 0 0 20px;
     min-height: 16px;
 }
-.comp16 {
-    background: transparent url('images/comp16.png') no-repeat;
-    padding: 0 0 0 20px;
-    min-height: 16px;
+.comp16:before {
+  content: '\f140  ';
+  font-family: awesome;
 }
-.check16 {
-    background: transparent url('images/check16.png') no-repeat;
-    padding: 0 0 0 20px;
-    min-height: 16px;
+.comp16:hover:before {
+  color: darkred;
+}
+.check16:before {
+  content: '\f00c  ';
+  font-family: awesome;
+  color: darkgreen;
+}
+.check16:hover:before {
+  color: darkred;
 }
 .admins16 {
     background: transparent url('images/admins16.png') no-repeat;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
-.guys16 {
-    background: transparent url('images/guys16.png') no-repeat;
-    padding: 0 0 0 20px;
-    min-height: 16px;
+.admin:before {
+  content: '\f007  ';
+  font-family: awesome;
+  color: gold;
 }
-.guy16 {
-    background: transparent url('images/guy16.png') no-repeat;
-    padding: 0 0 0 20px;
-    min-height: 16px;
+.admin:hover:before {
+  color: darkred;
 }
-.svc {
-    background: transparent url('images/svc.png') no-repeat;
-    padding: 0 0 0 20px;
-    min-height: 16px;
+.guy16:before {
+  content: '\f007  ';
+  font-family: awesome;
+}
+.guy16:hover:before {
+  color: darkred;
+}
+.guys16:before {
+  content: '\f0c0  ';
+  font-family: awesome;
+}
+.guys16:hover:before {
+  color: darkred;
+}
+.svc:before {
+  content: '\f111  ';
+  font-family: awesome;
+}
+.svc:hover:before {
+  color: darkred;
 }
 .na {
     background: transparent url('images/na.png') no-repeat;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
-.nok {
-    background: transparent url('images/nok.png') no-repeat;
-    padding: 0 0 0 20px;
-    min-height: 16px;
+.nok:before {
+  content: '\f00d  ';
+  font-family: awesome;
+  color: red;
 }
-.node16 {
-    background: transparent url('images/node16.png') no-repeat;
-    padding: 0 0 0 20px;
-    min-height: 16px;
+.nok:hover:before {
+  color: darkred;
 }
-.drp16 {
-    background: transparent url('images/drp16.png') no-repeat;
-    padding: 0 0 0 20px;
-    min-height: 16px;
+.node16:before {
+  content: '\f233  ';
+  font-family: awesome;
+}
+.node16:hover:before {
+  color: darkred;
+}
+.drp16:before {
+  content: '\f1e2  ';
+  font-family: awesome;
+}
+.drp16:hover:before {
+  color: darkred;
 }
 .key16 {
     background: transparent url('images/key16.png') no-repeat;
@@ -1822,70 +1903,90 @@ ul.login_menu ul {
     padding: 0 0 0 20px;
     min-height: 16px;
 }
-.action_start_16 {
-    background: transparent url('images/action_start_16.png') no-repeat;
-    padding: 0 0 0 20px;
-    min-height: 16px;
+.action_start_16:before {
+  content: '\f062  ';
+  font-family: awesome;
+  color: darkgreen;
+}
+.action_start_16:hover:before {
+  color: darkred;
 }
 .action_restart_16 {
     background: transparent url('images/action_restart_16.png') no-repeat;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
-.www16 {
-    background: transparent url('images/www16.png') no-repeat;
-    padding: 0 0 0 20px;
-    min-height: 16px;
+.www16:before {
+  content: '\f0ac  ';
+  font-family: awesome;
 }
-.gear16 {
-    background: transparent url('images/gear16.png') no-repeat;
-    padding: 0 0 0 20px;
-    min-height: 16px;
+.www16:hover:before {
+  color: darkred;
 }
-.action16 {
-    background: transparent url('images/action16.png') no-repeat;
-    padding: 0 0 0 20px;
-    min-height: 16px;
+.gear16:before {
+  content: '\f013  ';
+  font-family: awesome;
+  color: lightgray;
 }
-.cpu16 {
-    background: transparent url('images/cpu16.png') no-repeat;
-    padding: 0 0 0 20px;
-    min-height: 16px;
+.action16:before {
+  content: '\f013  ';
+  font-family: awesome;
 }
-.edit {
-    background: transparent url('images/edit.png') no-repeat;
-    padding: 0 0 0 20px;
-    min-height: 16px;
+.action16:hover:before {
+  color: darkred;
 }
-.pwr {
-    background: transparent url('images/pwr.png') no-repeat;
-    padding: 0 0 0 20px;
-    min-height: 16px;
+.file16:before {
+  content: '\f15b  ';
+  font-family: awesome;
 }
-.mem16 {
-    background: transparent url('images/mem16.png') no-repeat;
-    padding: 0 0 0 20px;
-    min-height: 16px;
+.file16:hover:before {
+  color: darkred;
 }
-.time16 {
-    background: transparent url('images/time16.png') no-repeat;
-    padding: 0 0 0 20px;
-    min-height: 16px;
+.edit16:before {
+  content: '\f040  ';
+  font-family: awesome;
 }
-.filter16 {
-    background: transparent url('images/filter16.png') no-repeat;
-    padding: 0 0 0 20px;
-    min-height: 16px;
+.edit16:hover:before {
+  color: darkred;
 }
-.loc {
-    background: transparent url('images/loc.png') no-repeat;
-    padding: 0 0 0 20px;
-    min-height: 16px;
+.edit:before {
+  content: '\f040  ';
+  font-family: awesome;
 }
-.search16 {
-    background: transparent url('images/search.png') no-repeat;
-    padding: 0 0 0 20px;
-    min-height: 16px;
+.edit:hover:before {
+  color: darkred;
+}
+.pwr:before {
+  content: '\f0e7  ';
+  font-family: awesome;
+}
+.pwr:hover:before {
+  color: darkred;
+}
+.time16:before {
+  content: '\f017  ';
+  font-family: awesome;
+}
+.time16:hover:before {
+  color: darkred;
+}
+.filter16:before {
+  content: '\f0b0  ';
+  font-family: awesome;
+}
+.filter16:hover:before {
+  color: darkred;
+}
+.loc:before {
+  content: '\f041  ';
+  font-family: awesome;
+}
+.loc:hover:before {
+  color: darkred;
+}
+.search16:before {
+  content: '\f002  ';
+  font-family: awesome;
 }
 .nologo16 {
     padding: 0 0 0 20px;
@@ -2112,10 +2213,9 @@ ul.login_menu ul {
     float: right;
     padding:0.3em;
 }
-.editable {
-    background: transparent url('images/edit.png') no-repeat;
-    padding: 0 0 0 20px;
-    min-height: 16px;
+.editable:after {
+  content: '  \f040';
+  font-family: awesome;
 }
 .editable input:focus,select:focus {
     color: red;
@@ -2958,13 +3058,20 @@ textarea.link_ta_sub {
     /*border: 0px;*/
 }
 
+.ql {
+  float: right;
+  font-size: 18px;
+  padding: 0.3em;
+}
+
 .button_div {
-    cursor: pointer;
-    display:table-cell; 
-    vertical-align:middle; 
-    height: 24px;
-    background-color: rgba(0,0,0,0);
-    border: 0px;
+  cursor: pointer;
+  display:table-cell; 
+  vertical-align:middle; 
+  height: 24px;
+  background-color: rgba(0,0,0,0);
+  border: 0px;
+  padding: 0 0.3em;
 }
 
 .button_div:hover {
@@ -2978,14 +3085,12 @@ textarea.link_ta_sub {
   background-color: rgba(0,0,0,0.1);
 }
 
-.del16_allow {
-  padding: 0 0 0 20px;
-  min-height: 16px; 
+.del16_allow:hover:before {
+  color: darkred;
 }
-.del16_allow:hover {
-  background: transparent url('images/del16.png') no-repeat;
-  padding: 0 0 0 20px;
-  min-height: 16px;
+.del16_allow:before {
+  content: '\f146  ';
+  font-family: awesome;
 }
 
 .link_white {
