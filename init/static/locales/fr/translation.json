@@ -246,5 +246,12 @@
   },
   "fset_selector": {
     "none": "aucun"
+  },
+  "alert_event" : {
+    "days" : "jours",
+    "label": "Alerte du",
+    "to" : "au",
+    "tonow" : "à maintenant",
+    "help" : "Survoler un élément pour obtenir les détails"
   }
 }

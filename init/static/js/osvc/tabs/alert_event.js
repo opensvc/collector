@@ -26,187 +26,77 @@ function alert_event_init(o)
  	o.alert_event_load();
 }
 
-function d3_test(o,result)
+function alert_event_d3_timeline(o,result)
 { 
-var data = [{label : "", times : []}];
+  var data = [{label : "", times : []}];
 
-var first ={};
-   if (result.length == 0)
-   {
-      var sdate = new Date(o.begin_date);
-      var edate = new Date();
-      var d = (sdate+'').split(' ');
-      desc = [d[3], d[1], d[2], d[4]].join(' ') + " to now";
-      first = {"color":"red", "desc": desc,"label" : alert_event_diff_date(sdate,edate),"starting_time": sdate, "ending_time": edate};
-      data[0].times.push(first);
-   }
+  var first ={};
+  if (result.length == 0)
+  {
+    var sdate = new Date(o.begin_date);
+    var edate = new Date();
+    desc = str_from_datetime(sdate) + " " + i18n.t("alert_event.tonow");
+    first = {"color":"red", "desc": desc,"label" : diff_date(sdate,edate)+ " " + i18n.t("alert_event.days"),"starting_time": sdate, "ending_time": edate};
+    data[0].times.push(first);
+  }
 
-   for (i=0;i<result.length;i++)
-   {
-    var begin_date = result[i].dash_begin.replace(" ","T")+"Z";
+  for (i=0;i<result.length;i++) // Build timeline from Rest Result
+  {
+    var begin_date = js_utc_date_from_str(result[i].dash_begin);
     var end_date;
     var end_date_title ="";
     if (result[i].dash_end != null)
     {
-      end_date = new Date(result[i].dash_end.replace(" ","T")+"Z");
-      var d = (end_date+'').split(' ');
-      end_date_title = [d[3], d[1], d[2], d[4]].join(' ') ;
+      end_date = js_utc_date_from_str(result[i].dash_end);
+      end_date_title = str_from_datetime(end_date);
     }
     else
     {
       if (i < result.length-1)
       {
-        end_date = new Date(result[(i)+1].dash_begin.replace(" ","T")+"Z");
-        var d = (end_date+'').split(' ');
-        end_date_title= [d[3], d[1], d[2], d[4]].join(' ') ;
+        end_date = js_utc_date_from_str(result[(i)+1].dash_begin);
+        end_date_title= str_from_datetime(end_date);
       }
       else
       {
         end_date = new Date();
-        end_date_title = "now";
+        end_date_title = i18n.t("alert_event.now");
       }
     }
     var color = "#FF2020";
     if (i%2==0) color = "#FF6060";
     begin_date = new Date(begin_date);
 
-    var d = (begin_date+'').split(' ');
-    desc = [d[3], d[1], d[2], d[4]].join(' ') + " to " + end_date_title;
+    desc = str_from_datetime(begin_date) + " " + i18n.t("alert_event.to") + " " + end_date_title;
 
-    data[0].times.push({"color": color,"label" : alert_event_diff_date(begin_date,end_date), "desc": desc,"starting_time": begin_date, "ending_time": end_date});
+    data[0].times.push({"color": color,"label" : diff_date(begin_date,end_date) + " " + i18n.t("alert_event.days"), "desc": desc,"starting_time": begin_date, "ending_time": end_date});
   }
 
 
   o.div.empty();
-   o.div.append("<div id='detail_label' class='hidden'> Alert from <span id='details' style='color:#FF0000'></span></div>")
+  o.div.append("<div id='detail_label'> <span id='details' style='color:#FF0000'><i>"+ i18n.t("alert_event.help")+"</i></span></div>")
 
+  var chart = d3.timeline();
 
-var chart = d3.timeline();
+  var tf = {
+    format: d3.time.format("%m-%y"),
+    tickTime: d3.time.months,
+    tickInterval: 1,
+    tickSize: 3,
+  }
 
-var tf = {
-  format: d3.time.format("%m-%y"),
-  tickTime: d3.time.months,
-  tickInterval: 1,
-  tickSize: 3,
-}
+  chart.tickFormat(tf);
 
-chart.tickFormat(tf);
+  chart.mouseover(function (d, i, datum) {
+      $("#details").html(i18n.t("alert_event.label") + " " + datum.times[i].desc);
+      $("#detail_label").show();
+    });
 
-chart.mouseover(function (d, i, datum) {
-    $("#details").html(datum.times[i].desc);
-    $("#detail_label").show();
-  });
-
-chart.rotateTicks(45);
-var container = $("#"+o.divid)[0];
-var svg = d3.select("#"+o.divid).append("svg").attr("width", "800")
-  .datum(data).call(chart);
-}
-
-function alert_event_diff_date(d1,d2)
-{
-  var date1 = new Date(d1);
-  var date2 = new Date(d2);
-  var timeDiff = Math.abs(date2.getTime() - date1.getTime());
-  var diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24)); 
-  return diffDays + " days";
-}
-
-function alert_event_build_timeline(o, result)
-{
-   var items = new vis.DataSet({
-    type: { start: 'ISODate', end: 'ISODate' }
-  });
-
-   var first ={};
-   if (result.length == 0)
-   {
-    var days = (alert_event_diff_date(o.begin_date,new Date())).toString() + " days";
-      first =
-      [{
-        id : 100,
-        content : days,
-        start : o.begin_date,
-        end: new Date(),
-        className : 'red',
-        group : 'Alert',
-        title : o.begin_date + ' to now',
-        type : "range",
-      },]
-      items.add(first);
-   }
-
-   for (i=0;i<result.length;i++)
-   {
-    var begin_date = result[i].dash_begin.replace(" ","T")+"Z";
-    var end_date;
-    var end_date_title ="";
-    if (result[i].dash_end != null)
-    {
-      end_date = result[i].dash_end.replace(" ","T")+"Z";;
-      end_date_title = end_date;
-    }
-    else
-    {
-      if (i < result.length-1)
-      {
-        end_date = result[(i)+1].dash_begin;
-        end_date_title=end_date;
-      }
-      else
-      {
-        end_date = new Date();
-        end_date_title = "now";
-      }
-    }
-
-    var classe = 'red';
-
-    var days = (alert_event_diff_date(begin_date,end_date)).toString() + " days";
-
-    items.add([
-      {
-        id : i,
-        content : days,
-        start : begin_date,
-        end : end_date,
-        className : classe,
-        group : 'Alert',
-        title : begin_date + ' to ' + end_date_title,
-        type : "range",
-      },
-    ]);
-   }
-
-   var groups = [];
-   groups.push(
-   {
-    'id' : 'Alert',
-   });
-
-  o.div.empty();
-
+  chart.rotateTicks(45);
   var container = $("#"+o.divid)[0];
-  var options = {
-    template: function (item) {
-      return '<pre style="text-align:left">' + item.content + '</pre>';
-    },
-    editable: false,
-    showCurrentTime: true,
-    zoomable: false,
-  };
-
-  var timeline = new vis.Timeline(container, items, groups, options);
-
-  o.div.append("<div id='detail_label' class='hidden'> Alert from <span id='details' style='color:#FF0000'></span></div>")
-
-  timeline.on('select', function (properties) {
-      var item_id = properties.items[0]
-      $('#details').html(items._data[item_id].title);
-      $('#detail_label').show();
-  });
-
-}
+  var svg = d3.select("#"+o.divid).append("svg").attr("width", "800")
+    .datum(data).call(chart);
+  }
 
 function alert_event_load(o)
 {
@@ -215,7 +105,6 @@ function alert_event_load(o)
         return;
       }
       var result=jd.data;
-      //alert_event_build_timeline(o,result);
-      d3_test(o,result);
+      alert_event_d3_timeline(o,result);
     });
 }
