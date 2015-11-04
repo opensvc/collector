@@ -34,6 +34,8 @@ var services_access_uri = {
     "R_SYSREPORT_AUTHORIZATION" : "rest/api/sysreport/authorizations/%1",
     "R_FILTERSETS" : "rest/api/filtersets",
     "R_USERS_SELF" : "/rest/api/users/self",
+    "R_USERS_SELF_FILTERSET" : "/rest/api/users/self/filterset",
+    "R_USERS_SELF_FILTERSET_ONE" : "/rest/api/users/self/filterset/%1",
     "R_USER_APPS" : "/rest/api/users/%1/apps",
     "R_USER_GROUPS" : "/rest/api/users/%1/groups",
     "R_GROUPS" : "/rest/api/groups",
