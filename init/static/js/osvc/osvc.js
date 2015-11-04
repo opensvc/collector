@@ -3930,7 +3930,15 @@ function table_pager(t, options) {
     $(this).parent().children("[name=pager_perpage]").toggle()
   })
   t.e_pager.find("[name=perpage_val]").click(function(){
-    filter_submit(t.id, t.id+"_perpage", parseInt($(this).text()))
+    var data = {
+      "perpage": parseInt($(this).text())
+    }
+    services_osvcpostrest("R_USERS_SELF", "", "", data, function(jd) {
+      t.refresh()
+    },
+    function(xhr, stat, error) {
+      $(".flash").show("slide").html(services_ajax_error_fmt(xhr, stat, error))
+    })
   })
 }
 

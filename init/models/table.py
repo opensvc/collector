@@ -200,19 +200,12 @@ class HtmlTable(object):
         else:
             self.overlimit = ""
         if self.pageable:
-            if self.id_perpage in request.vars:
-                q = db.auth_user.id==auth.user.id
-                self.perpage = int(request.vars[self.id_perpage])
-                try:
-                    db(q).update(perpage=self.perpage)
-                except:
-                    pass
-            else:
-                q = db.auth_user.id==auth.user.id
-                try:
-                    self.perpage = db(q).select(cacheable=True).first().perpage
-                except:
-                    self.perpage = 20
+            q = db.auth_user.id==auth.user.id
+            try:
+                self.perpage = db(q).select(cacheable=True).first().perpage
+            except:
+                self.perpage = 20
+
             if self.perpage > max_perpage:
                 self.perpage = max_perpage
 
