@@ -29,6 +29,10 @@ form *:focus {
   padding-bottom: 0.2em;
   border-bottom: none;
 }
+.line *:before {
+  font-style: normal;
+}
+
 .line:before {
   border-top: 1px solid grey;
   content: "";
@@ -1099,6 +1103,13 @@ a.xinfo_shown span {
     float:left;
     border-right: 1px solid #ddd;
 }
+.tab > ul > li:hover {
+  color: darkred;
+}
+.tab > ul > li:first-child:hover {
+  color: #d99;
+}
+
 .tab > ul > li:first-child {
   border-top-left-radius: 4px;
 }
@@ -1657,15 +1668,15 @@ ul.login_menu ul {
   font-family: awesome;
 }
 .cpu16:before {
-  content: '\f02b  ';
+  content: '\f0c8  ';
   font-family: awesome;
 }
 .hw16:before {
-  content: '\f02b  ';
+  content: '\f0c8  ';
   font-family: awesome;
 }
 .mem16:before {
-  content: '\f02b  ';
+  content: '\f0c8  ';
   font-family: awesome;
 }
 .os16 {
