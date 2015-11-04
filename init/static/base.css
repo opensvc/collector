@@ -1545,7 +1545,7 @@ ul.login_menu ul {
   content: '\f201  ';
   font-family: awesome;
 }
-.values_to_filter {
+.values_to_filter:before {
   content: '\f112  ';
   font-family: awesome;
 }
