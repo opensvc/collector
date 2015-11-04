@@ -708,11 +708,8 @@ class rest_delete_user_filterset(rest_delete_handler):
         row = db(q).select().first()
         if row is None:
             check_privilege("UserManager")
-        try:
-            id = int(user_id)
-            q = db.auth_user.id == user_id
-        except:
-            q = db.auth_user.email == user_id
+
+        q = user_id_q(user_id)
         user = db(q).select().first()
         if user is None:
             return dict(error="User %s does not exist" % str(user_id))
