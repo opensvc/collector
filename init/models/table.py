@@ -498,12 +498,12 @@ class HtmlTable(object):
               A(
                 SPAN(
                   _class='refresh16',
-                  _id='refresh_'+self.id,
                 ),
                 "  ",
                 T('Refresh'),
               ),
               _class='floatw',
+              _name='tool_refresh',
             )
         return d
 

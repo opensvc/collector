@@ -734,7 +734,7 @@ function table_refresh(t) {
     if (t.div.length > 0 && !t.div.is(":visible")) {
         return
     }
-    if ($("#refresh_"+t.id).length > 0 && $("#refresh_"+t.id).hasClass("spinner")) {
+    if (t.e_tool_refresh.length > 0 && t.e_tool_refresh_spin.hasClass("fa-spin")) {
         t.need_refresh = true
         return
     } else {
@@ -872,7 +872,7 @@ function table_refresh(t) {
              t.on_change()
 
              if (t.need_refresh) {
-               $("#refresh_"+t.id).trigger("click")
+               t.e_tool_refresh.trigger("click")
              }
          }
     })
@@ -4015,7 +4015,7 @@ function table_bind_link(t) {
 }
 
 function table_bind_refresh(t) {
-  $("#refresh_"+t.id).parent().bind("click", function(){
+  t.e_tool_refresh.bind("click", function(){
     t.refresh()
   })
   $(this).bind("keypress", function(event) {
@@ -4106,11 +4106,11 @@ function table_relocate_extra_rows(t) {
 }
 
 function table_unset_refresh_spin(t) {
-  $("#refresh_"+t.id).removeClass("fa-spin")
+  t.e_tool_refresh_spin.removeClass("fa-spin")
 }
 
 function table_set_refresh_spin(t) {
-  $("#refresh_"+t.id).addClass("fa-spin")
+  t.e_tool_refresh_spin.addClass("fa-spin")
 }
 
 
@@ -4247,6 +4247,8 @@ function table_init(opts) {
     }
   }
   t.div = $("#"+t.id)
+  t.e_tool_refresh = t.div.find("[name=tool_refresh]").first()
+  t.e_tool_refresh_spin = t.e_tool_refresh.find(".refresh16")
   osvc.tables[t.id] = t
   t.div.find("select").parent().css("white-space", "nowrap")
   t.div.find("select:visible").combobox()
