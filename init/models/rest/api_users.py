@@ -21,6 +21,8 @@ def user_id_q(id):
     """
     if type(id) in (unicode, str) and "@" in id:
         q = db.auth_user.email == id
+    elif id == "self":
+        q = db.auth_user.id == auth.user_id
     else:
         q = db.auth_user.id == id
     return q
@@ -78,30 +80,6 @@ class rest_get_user(rest_get_line_handler):
         q &= user_id_q(id)
         self.set_q(q)
         return self.prepare_data(**vars)
-
-#
-class rest_get_users_self(rest_get_line_handler):
-    def __init__(self):
-        desc = [
-          "Display the logged-in user properties.",
-        ]
-        examples = [
-          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/users/self",
-        ]
-        rest_get_line_handler.__init__(
-          self,
-          path="/users/self",
-          tables=["auth_user"],
-          props_blacklist=["password", "registration_key"],
-          desc=desc,
-          examples=examples,
-        )
-
-    def handler(self, **vars):
-        q = db.auth_user.id == auth.user_id
-        self.set_q(q)
-        return self.prepare_data(**vars)
-
 
 #
 class rest_get_user_apps(rest_get_table_handler):
