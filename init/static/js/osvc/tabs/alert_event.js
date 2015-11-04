@@ -27,15 +27,7 @@ function alert_event_init(o)
 }
 
 function d3_test(o,result)
-{
-  var endTime = Date.now();
-var month = 30 * 24 * 60 * 60 * 1000;
-var d = 24 * 60 * 60 * 1000;
-var startTime = endTime - 8 * d;
-
-var e2 = endTime - 10*d;
-var s2 = e2 - 10 *d;
-  
+{ 
 var data = [{label : "", times : []}];
 
 var first ={};
@@ -45,7 +37,7 @@ var first ={};
       var edate = new Date();
       var d = (sdate+'').split(' ');
       desc = [d[3], d[1], d[2], d[4]].join(' ') + " to now";
-      first = {"color":"red", "desc": desc,"starting_time": sdate, "ending_time": edate};
+      first = {"color":"red", "desc": desc,"label" : alert_event_diff_date(sdate,edate),"starting_time": sdate, "ending_time": edate};
       data[0].times.push(first);
    }
 
@@ -81,7 +73,7 @@ var first ={};
     var d = (begin_date+'').split(' ');
     desc = [d[3], d[1], d[2], d[4]].join(' ') + " to " + end_date_title;
 
-    data[0].times.push({"color": color, "desc": desc,"starting_time": begin_date, "ending_time": end_date});
+    data[0].times.push({"color": color,"label" : alert_event_diff_date(begin_date,end_date), "desc": desc,"starting_time": begin_date, "ending_time": end_date});
   }
 
 
@@ -92,10 +84,10 @@ var first ={};
 var chart = d3.timeline();
 
 var tf = {
-  format: d3.time.format("%m/%y"),
-  tickTime: d3.time.month,
+  format: d3.time.format("%m - %y"),
+  tickTime: d3.time.months,
   tickInterval: 1,
-  tickSize: 3
+  tickSize: 6,
 }
 
 chart.tickFormat(tf);
@@ -117,7 +109,7 @@ function alert_event_diff_date(d1,d2)
   var date2 = new Date(d2);
   var timeDiff = Math.abs(date2.getTime() - date1.getTime());
   var diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24)); 
-  return diffDays;
+  return diffDays + " days";
 }
 
 function alert_event_build_timeline(o, result)
