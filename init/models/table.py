@@ -688,14 +688,6 @@ class HtmlTable(object):
         }
         return json.dumps(d)
 
-    def pager(self):
-        if not self.pageable:
-            return SPAN()
-
-        nav = SPAN(_class='pager floatw')
-
-        return nav
-
     def col_checkbox_key(self, f):
         return '_'.join((self.id, 'cc', f))
 
@@ -1233,19 +1225,20 @@ class HtmlTable(object):
         if len(lines) > 0:
             table_lines += lines
 
+        pager_attrs = dict(
+          perpage=int(self.perpage),
+          page=int(self.page),
+          start=int(self.pager_start),
+          end=int(self.pager_end),
+          total=int(self.totalrecs),
+        )
         table_attrs = dict(
           _id="table_"+self.id,
           _order=",".join(self.order),
-          _pager_perpage=self.perpage,
-          _pager_page=self.page,
-          _pager_start=self.pager_start,
-          _pager_end=self.pager_end,
-          _pager_total=self.totalrecs,
         )
         d = DIV(
               self.show_flash(),
               DIV(
-                self.pager(),
                 self.wsswitch(),
                 self.refresh(),
                 self.link(),
@@ -1256,6 +1249,7 @@ class HtmlTable(object):
                 self.persistent_filters(),
                 additional_tools,
                 DIV('', _class='spacer'),
+                _name='toolbar',
                 _class='theader',
               ),
               additional_filters,
@@ -1282,6 +1276,7 @@ class HtmlTable(object):
                 """
 table_init({
  'id': '%(id)s',
+ 'pager': %(pager)s,
  'extrarow': %(extrarow)s,
  'extrarow_class': "%(extrarow_class)s",
  'checkboxes': %(checkboxes)s,
@@ -1293,12 +1288,14 @@ table_init({
  'visible_columns': %(visible_columns)s,
  'child_tables': %(child_tables)s,
  'action_menu': %(action_menu)s,
- 'dataable': %(dataable)s
+ 'dataable': %(dataable)s,
+ 'pageable': %(pageable)s
 })
 function ajax_submit_%(id)s(){%(ajax_submit)s};
 function ajax_enter_submit_%(id)s(event){%(ajax_enter_submit)s};
 """%dict(
                    id=self.id,
+                   pager=str(pager_attrs),
                    extrarow=str(self.extrarow).lower(),
                    extrarow_class=self.extrarow_class if self.extrarow_class else "",
                    checkboxes=str(self.checkboxes).lower(),
@@ -1313,6 +1310,7 @@ function ajax_enter_submit_%(id)s(event){%(ajax_enter_submit)s};
                    ajax_submit=self.ajax_submit(),
                    ajax_enter_submit=self.ajax_enter_submit(),
                    dataable=str(self.dataable).lower(),
+                   pageable=str(self.pageable).lower(),
                    action_menu=str(self.action_menu),
                 ),
               ),
