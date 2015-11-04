@@ -265,5 +265,12 @@
     "version": "Version",
     "type": "Type",
     "arch": "Arch"
+  },
+  "alert_event" : {
+    "days" : "days",
+    "label": "Alert from",
+    "to" : "to",
+    "tonow" : "to now",
+    "help" : "hover on a range to display details"
   }
 }
