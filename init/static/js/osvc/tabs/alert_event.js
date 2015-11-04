@@ -84,10 +84,10 @@ var first ={};
 var chart = d3.timeline();
 
 var tf = {
-  format: d3.time.format("%m - %y"),
+  format: d3.time.format("%m-%y"),
   tickTime: d3.time.months,
   tickInterval: 1,
-  tickSize: 6,
+  tickSize: 3,
 }
 
 chart.tickFormat(tf);
