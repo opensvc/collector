@@ -7,40 +7,6 @@ def print_duration(begin, s):
     print s, duration
     return end
 
-def select_filter(fset_id):
-    # refuse to change filter for locked-filter users
-    q = db.auth_user.id == auth.user_id
-    rows = db(q).select(db.auth_user.lock_filter, cacheable=True)
-    if len(rows) != 1:
-        return
-    if rows.first().lock_filter:
-        return
-
-    try:
-        cast_fset_id = int(fset_id)
-    except:
-        return
-
-    # ok, let's do it
-    q = db.gen_filterset_user.user_id == auth.user_id
-    if fset_id == "0":
-        db(q).delete()
-    else:
-        n = db(q).count()
-        if n > 1:
-            db(q).delete()
-            n = 0
-        if n == 1:
-            try:
-                db(q).update(fset_id=fset_id)
-            except:
-                pass
-        elif n == 0:
-            try:
-                db.gen_filterset_user.insert(user_id=auth.user_id, fset_id=fset_id)
-            except:
-                pass
-
 class ToolError(Exception):
     def __init__(self, value):
         self.value = value
@@ -766,8 +732,6 @@ class HtmlTable(object):
         return '.'.join((cp.table, cp.field))
 
     def drop_filters(self, bookmark="current"):
-        if request.vars.dbfilter is not None:
-            select_filter(request.vars.dbfilter)
         if request.vars.clear_filters != 'true':
             return
         q = db.column_filters.col_tableid==self.id

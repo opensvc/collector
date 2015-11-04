@@ -654,6 +654,10 @@ class rest_post_user_filterset(rest_post_handler):
         if user is None:
             return dict(error="User %s does not exist" % str(user_id))
 
+        if user.lock_filter:
+            if "UserManager" not in user_groups():
+                return dict(error="User %s filterset is locked" % str(user_id))
+
         try:
             id = int(fset_id)
             q = db.gen_filtersets.id == fset_id
@@ -713,6 +717,10 @@ class rest_delete_user_filterset(rest_delete_handler):
         user = db(q).select().first()
         if user is None:
             return dict(error="User %s does not exist" % str(user_id))
+
+        if user.lock_filter:
+            if "UserManager" not in user_groups():
+                return dict(error="User %s filterset is locked" % str(user_id))
 
         q = db.gen_filterset_user.user_id == user.id
         row = db(q).select().first()
