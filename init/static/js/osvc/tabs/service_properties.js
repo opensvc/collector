@@ -10,9 +10,6 @@ function service_properties(divid, options)
     o.init = function(){
       return service_props_init(this)
     }
-    o.responsible_init = function(){
-      return service_props_responsible_init(this)
-    }
     o.decorator_status = function(e){
       return service_props_decorator_status(this, e)
     }
@@ -110,7 +107,6 @@ function service_props_init(o)
   tags({
     "tid": o.e_tags.attr("id"),
     "svcname": o.options.svcname,
-    "responsible": o.options.responsible
   })
 }
 

@@ -57,7 +57,17 @@ function tags(data) {
     tags_event_handler(o, data)
   }
 
-  o.load()
+  if (o.data.nodename) {
+    services_osvcgetrest("R_NODE_AM_I_RESPONSIBLE", [o.data.nodename], "", function(jd) {
+      o.data.responsible = jd.data
+      o.load()
+    })
+  } else if (o.data.svcname) {
+    services_osvcgetrest("R_SERVICE_AM_I_RESPONSIBLE", [o.data.svcname], "", function(jd) {
+      o.data.responsible = jd.data
+      o.load()
+    })
+  }
   return o
 }
 

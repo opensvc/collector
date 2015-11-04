@@ -7,6 +7,26 @@ def get_slave(vars):
     return False
 
 #
+class rest_get_service_am_i_responsible(rest_get_handler):
+    def __init__(self):
+        desc = [
+          "- return true if the requester is responsible for this service.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/services/mysvc/am_i_responsible",
+        ]
+        rest_get_handler.__init__(
+          self,
+          path="/services/<svcname>/am_i_responsible",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, svcname, **vars):
+        svc_responsible(svcname)
+        return dict(data=True)
+
+#
 class rest_get_service(rest_get_line_handler):
     def __init__(self):
         desc = [

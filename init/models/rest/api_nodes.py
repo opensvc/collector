@@ -393,6 +393,26 @@ class rest_get_node_uuid(rest_get_line_handler):
         return self.prepare_data(**vars)
 
 #
+class rest_get_node_am_i_responsible(rest_get_handler):
+    def __init__(self):
+        desc = [
+          "- return true if the requester is responsible for this node.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/nodes/mynode/am_i_responsible",
+        ]
+        rest_get_handler.__init__(
+          self,
+          path="/nodes/<nodename>/am_i_responsible",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, nodename, **vars):
+        node_responsible(nodename)
+        return dict(data=True)
+
+ #
 class rest_get_node_root_password(rest_get_handler):
     def __init__(self):
         desc = [

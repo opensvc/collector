@@ -221,9 +221,11 @@ img {
     background-color:#cdcdcd;
 }
 
+.tag_del:before {
+  content: '\f146  ';
+  font-family: awesome;
+}
 .tag_del {
-    background-image:url('images/whitex.png');
-    background-repeat:no-repeat;
     padding: 0 0 0 20px;
     min-height: 16px;
     line-height: 1.7em;

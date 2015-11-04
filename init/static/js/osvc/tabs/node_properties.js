@@ -43,10 +43,9 @@ function node_props_init(o)
     }
 
     // init sys responsible tools
-    if (o.options.responsible) {
-      o.responsible_init()
-    } else {
-      services_ismemberof("Manager", function() {
+    if (o.options.nodename) {
+      services_osvcgetrest("R_NODE_AM_I_RESPONSIBLE", [o.options.nodename], "", function(jd) {
+        o.options.responsible = jd.data
         o.responsible_init()
       })
     }
