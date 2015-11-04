@@ -171,6 +171,7 @@ handlers = {
      rest_get_user_groups(),
      rest_get_user_primary_group(),
      rest_get_user_filterset(),
+     rest_get_user_table_settings(),
      rest_get_safe(),
      rest_get_safe_file(),
      rest_get_safe_file_download(),
@@ -293,6 +294,7 @@ handlers = {
      rest_post_user_group(),
      rest_post_user_primary_group(),
      rest_post_user_filterset(),
+     rest_post_user_table_settings(),
      rest_post_wikis(),
   ],
   'PUT': [
