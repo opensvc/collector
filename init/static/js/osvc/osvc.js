@@ -2685,6 +2685,12 @@ function table_add_scrollers(t) {
   $("#table_"+t.id).after(s)
 }
 
+function table_add_fset_selector(t) {
+  t.e_fset_selector = $("#"+t.id).find("[name=fset_selector]").first()
+  t.e_fset_selector.uniqueId()
+  fset_selector(t.e_fset_selector.attr("id"))
+}
+
 function table_add_filterbox(t) {
   var s = "<span id='fsr"+t.id+"' class='right_click_menu'>"
   s += "<table>"
@@ -4197,6 +4203,9 @@ function table_init(opts) {
     'add_scrollers': function(){
       table_add_scrollers(this)
     },
+    'add_fset_selector': function(){
+      table_add_fset_selector(this)
+    },
     'add_filterbox': function(){
       table_add_filterbox(this)
     },
@@ -4246,6 +4255,7 @@ function table_init(opts) {
   t.hide_cells()
   t.format_header()
   t.add_filterbox()
+  t.add_fset_selector()
   t.add_scrollers()
   t.bind_refresh()
   t.bind_link()

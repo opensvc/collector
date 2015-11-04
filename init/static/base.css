@@ -505,7 +505,7 @@ body, table, tr, td, th, thead, tfoot, label, h1, h2, h3, h4, h5, h6, p, ul, li,
 
 select {
     border: 1px solid #dddddd;
-    background: white;
+    background: rgba(0,0,0,0);
     overflow: hidden;
     color: black;
 }

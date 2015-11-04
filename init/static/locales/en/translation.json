@@ -265,5 +265,8 @@
     "version": "Version",
     "type": "Type",
     "arch": "Arch"
+  },
+  "fset_selector": {
+    "none": "none"
   }
 }
