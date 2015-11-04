@@ -67,7 +67,7 @@ function spinner_add(e, text)
     if (!text) {
         text = ""
     }
-    s = $("<span class='spinner'><span>")
+    s = $("<span class='spinner fa-spin'><span>")
     s.text(text)
     e.append(s)
     if (!e.is(":visible")) {
