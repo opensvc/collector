@@ -1410,9 +1410,6 @@ ul.login_menu ul {
   content: '\f05b  ';
   font-family: awesome;
 }
-.common16:hover:before {
-  color: darkred;
-}
 .os_vmware {
     background: transparent url('images/vmware16.png') no-repeat;
     background-size: 16px 16px;
@@ -1477,83 +1474,41 @@ ul.login_menu ul {
   content: '\f00a  ';
   font-family: awesome;
 }
-.menu16:hover:before {
-  color: darkred;
-}
 .dia16:before {
   content: '\f0e8  ';
   font-family: awesome;
-}
-.dia16:hover:before {
-  color: darkred;
-}
-.detach16:before {
-  content: '\f013  ';
-  font-family: awesome;
-}
-.detach16:hover:before {
-  color: darkred;
-}
-.detach16 {
-    background: transparent url('images/detach16.png') no-repeat;
-    padding: 0 0 0 20px;
-    min-height: 16px;
 }
 .detach16:before {
   content: '\f127  ';
   font-family: awesome;
 }
-.detach16:hover:before {
-  color: darkred;
-}
 .attach16:before {
   content: '\f0c1  ';
   font-family: awesome;
-}
-.attach16:hover:before {
-  color: darkred;
 }
 .prov:before {
   content: '\f0d0  ';
   font-family: awesome;
 }
-.prov:hover:before {
-  color: darkred;
-}
 .lock:before {
   content: '\f023  ';
   font-family: awesome;
-}
-.lock:hover:before {
-  color: darkred;
 }
 .bookmark16:before {
   content: '\f02e  ';
   font-family: awesome;
 }
-.bookmark16:hover:before {
-  color: darkred;
-}
 .bookmark_add16:before {
   content: '\f02e  \f0fe  ';
   font-family: awesome;
-}
-.bookmark_add16:hover:before {
-  color: darkred;
 }
 .del16:before {
   content: '\f146  ';
   font-family: awesome;
 }
-.del16:hover:before {
-  color: darkred;
-}
 .add16:before {
   content: '\f0fe  ';
   font-family: awesome;
-}
-.add16:hover:before {
-  color: darkred;
 }
 .fw16 {
     background: transparent url('images/fw16.png') no-repeat;
@@ -1564,63 +1519,38 @@ ul.login_menu ul {
   content: '\f071  ';
   font-family: awesome;
 }
-.alert16:hover:before {
-  color: darkred;
-}
 .avail16 {
     background: transparent url('images/avail16.png') no-repeat;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
-.wspark16 {
-    background: transparent url('images/wspark16.png') no-repeat;
-    padding: 0 0 0 20px;
-    min-height: 16px;
+.wspark16:before {
+  content: '\f201  ';
+  font-family: awesome;
 }
 .spark16:before {
   content: '\f201  ';
   font-family: awesome;
 }
-.spark16:hover:before {
-  color: darkred;
-}
 .values_to_filter {
-    background: transparent url('images/values_to_filter.png') no-repeat;
-    padding: 0 0 0 20px;
-    min-height: 16px;
+  content: '\f112  ';
+  font-family: awesome;
 }
 .clear16:before {
   content: '\f1f8  ';
   font-family: awesome;
 }
-.clear16:hover:before {
-  color: darkred;
-}
 .invert16:before {
   content: '\f042  ';
   font-family: awesome;
-}
-.invert16:hover:before {
-  color: darkred;
-}
-.filters {
-    background: transparent url('images/filter16.png') no-repeat;
-    padding: 0 0 0 20px;
-    min-height: 16px;
 }
 .columns:before {
   content: '\f0db  ';
   font-family: awesome;
 }
-.columns:hover:before {
-  color: darkred;
-}
 .csv:before {
   content: '\f019  ';
   font-family: awesome;
-}
-.csv:hover:before {
-  color: darkred;
 }
 .csv_disabled:before {
   content: '\f019  ';
@@ -1631,15 +1561,9 @@ ul.login_menu ul {
   content: '\f0c1  ';
   font-family: awesome;
 }
-.link16:hover:before {
-  color: darkred;
-}
 .refresh16:before {
   content: '\f021';
   font-family: awesome;
-}
-.refresh16:hover:before {
-  color: darkred;
 }
 .spinner:before {
   content: '\f110';
@@ -1658,9 +1582,6 @@ ul.login_menu ul {
 .net16:before {
   content: '\f0ec  ';
   font-family: awesome;
-}
-.net16:hover:before {
-  color: darkred;
 }
 .down {
   background: transparent url('images/down16.png') no-repeat;
@@ -1713,64 +1634,37 @@ ul.login_menu ul {
   content: '\f0c2  ';
   font-family: awesome;
 }
-.hv16:hover:before {
-  color: darkred;
-}
 .hd16:before {
   content: '\f1c0  ';
   font-family: awesome;
-}
-.hd16:hover:before {
-  color: darkred;
 }
 .pkg16:before {
   content: '\f1b3  ';
   font-family: awesome;
 }
-.pkg16:hover:before {
-  color: darkred;
-}
 .log16:before {
   content: '\f1da  ';
   font-family: awesome;
-}
-.log16:hover:before {
-  color: darkred;
 }
 .bill16:before {
   content: '\f0d6  ';
   font-family: awesome;
 }
-.bill16:hover:before {
-  color: darkred;
-}
 .tag16:before {
   content: '\f02b  ';
   font-family: awesome;
-}
-.tag16:hover:before {
-  color: darkred;
 }
 .cpu16:before {
   content: '\f02b  ';
   font-family: awesome;
 }
-.cpu16:hover:before {
-  color: darkred;
-}
 .hw16:before {
   content: '\f02b  ';
   font-family: awesome;
 }
-.hw16:hover:before {
-  color: darkred;
-}
 .mem16:before {
   content: '\f02b  ';
   font-family: awesome;
-}
-.mem16:hover:before {
-  color: darkred;
 }
 .os16 {
     background: transparent url('images/os16.png') no-repeat;
@@ -1791,16 +1685,10 @@ ul.login_menu ul {
   content: '\f140  ';
   font-family: awesome;
 }
-.comp16:hover:before {
-  color: darkred;
-}
 .check16:before {
   content: '\f00c  ';
   font-family: awesome;
   color: darkgreen;
-}
-.check16:hover:before {
-  color: darkred;
 }
 .admins16 {
     background: transparent url('images/admins16.png') no-repeat;
@@ -1812,29 +1700,17 @@ ul.login_menu ul {
   font-family: awesome;
   color: gold;
 }
-.admin:hover:before {
-  color: darkred;
-}
 .guy16:before {
   content: '\f007  ';
   font-family: awesome;
-}
-.guy16:hover:before {
-  color: darkred;
 }
 .guys16:before {
   content: '\f0c0  ';
   font-family: awesome;
 }
-.guys16:hover:before {
-  color: darkred;
-}
 .svc:before {
   content: '\f111  ';
   font-family: awesome;
-}
-.svc:hover:before {
-  color: darkred;
 }
 .na {
     background: transparent url('images/na.png') no-repeat;
@@ -1846,22 +1722,13 @@ ul.login_menu ul {
   font-family: awesome;
   color: red;
 }
-.nok:hover:before {
-  color: darkred;
-}
 .node16:before {
   content: '\f233  ';
   font-family: awesome;
 }
-.node16:hover:before {
-  color: darkred;
-}
 .drp16:before {
   content: '\f1e2  ';
   font-family: awesome;
-}
-.drp16:hover:before {
-  color: darkred;
 }
 .key16 {
     background: transparent url('images/key16.png') no-repeat;
@@ -1908,9 +1775,6 @@ ul.login_menu ul {
   font-family: awesome;
   color: darkgreen;
 }
-.action_start_16:hover:before {
-  color: darkred;
-}
 .action_restart_16 {
     background: transparent url('images/action_restart_16.png') no-repeat;
     padding: 0 0 0 20px;
@@ -1919,9 +1783,6 @@ ul.login_menu ul {
 .www16:before {
   content: '\f0ac  ';
   font-family: awesome;
-}
-.www16:hover:before {
-  color: darkred;
 }
 .gear16:before {
   content: '\f013  ';
@@ -1932,57 +1793,34 @@ ul.login_menu ul {
   content: '\f013  ';
   font-family: awesome;
 }
-.action16:hover:before {
-  color: darkred;
-}
 .file16:before {
   content: '\f15b  ';
   font-family: awesome;
-}
-.file16:hover:before {
-  color: darkred;
 }
 .edit16:before {
   content: '\f040  ';
   font-family: awesome;
 }
-.edit16:hover:before {
-  color: darkred;
-}
 .edit:before {
   content: '\f040  ';
   font-family: awesome;
-}
-.edit:hover:before {
-  color: darkred;
 }
 .pwr:before {
   content: '\f0e7  ';
   font-family: awesome;
 }
-.pwr:hover:before {
-  color: darkred;
-}
 .time16:before {
   content: '\f017  ';
   font-family: awesome;
 }
-.time16:hover:before {
-  color: darkred;
-}
+.filters:before,
 .filter16:before {
   content: '\f0b0  ';
   font-family: awesome;
 }
-.filter16:hover:before {
-  color: darkred;
-}
 .loc:before {
   content: '\f041  ';
   font-family: awesome;
-}
-.loc:hover:before {
-  color: darkred;
 }
 .search16:before {
   content: '\f002  ';
@@ -3085,9 +2923,6 @@ textarea.link_ta_sub {
   background-color: rgba(0,0,0,0.1);
 }
 
-.del16_allow:hover:before {
-  color: darkred;
-}
 .del16_allow:before {
   content: '\f146  ';
   font-family: awesome;
