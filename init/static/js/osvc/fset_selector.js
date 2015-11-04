@@ -1,8 +1,9 @@
-function fset_selector(divid) {
+function fset_selector(divid, callback) {
   var o = {}
   o.divid = divid
   o.div = $("#"+divid)
   o.div.empty()
+  o.callback = callback
 
   o.load_span = function() {
     return fset_selector_load_span(this)
@@ -12,6 +13,12 @@ function fset_selector(divid) {
   }
   o.load_bindings = function() {
     return fset_selector_load_bindings(this)
+  }
+  o.set_fset = function(new_fset) {
+    return fset_selector_set_fset(this, new_fset)
+  }
+  o.unset_fset = function() {
+    return fset_selector_unset_fset(this)
   }
 
   o.span = $("<span class='clickable'></span>")
@@ -23,23 +30,46 @@ function fset_selector(divid) {
   return o
 }
 
+function fset_selector_unset_fset(o) {
+  services_osvcdeleterest("R_USERS_SELF_FILTERSET", [], function(jd) {
+      o.span.empty()
+      o.span.text(o.input.val())
+      o.span.show()
+      o.input.hide()
+      o.callback()
+  },
+  function(xhr, stat, error) {
+      o.span.html(services_ajax_error_fmt(xhr, stat, error))
+      o.span.show()
+  })
+}
+
+function fset_selector_set_fset(o, new_fset) {
+  services_osvcpostrest("R_USERS_SELF_FILTERSET_ONE", [new_fset], "", "", function(jd) {
+      o.span.empty()
+      o.span.text(o.input.val())
+      o.span.show()
+      o.input.hide()
+      o.callback()
+  },
+  function(xhr, stat, error) {
+      o.span.html(services_ajax_error_fmt(xhr, stat, error))
+      o.span.show()
+  })
+}
+
 function fset_selector_load_bindings(o) {
   o.span.bind("click", function() {
     o.span.hide()
     o.input.show().focus()
   })
   o.input.bind("change", function() {
-    services_osvcpostrest("R_USERS_SELF_FILTERSET_ONE", [o.input.find(":selected").attr("id")], "", "", function(jd) {
-      o.span.empty()
-      o.span.text(o.input.val())
-      o.span.show()
-      o.input.hide()
-    },
-    function(xhr, stat, error) {
-      o.span.html(services_ajax_error_fmt(xhr, stat, error))
-      o.span.show()
+    var new_fset = o.input.find(":selected").attr("id")
+    if (new_fset < 0) {
+      o.unset_fset()
+    } else {
+      o.set_fset(new_fset)
     }
-  )
   })
 }
 

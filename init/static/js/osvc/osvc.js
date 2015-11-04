@@ -2688,7 +2688,7 @@ function table_add_scrollers(t) {
 function table_add_fset_selector(t) {
   t.e_fset_selector = $("#"+t.id).find("[name=fset_selector]").first()
   t.e_fset_selector.uniqueId()
-  fset_selector(t.e_fset_selector.attr("id"))
+  fset_selector(t.e_fset_selector.attr("id"), function(){t.refresh()})
 }
 
 function table_add_filterbox(t) {
