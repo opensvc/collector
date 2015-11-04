@@ -632,10 +632,10 @@ function table_add_filtered_to_visible_columns(t) {
     var ckcc = t.id+"_cc_"+col
     var val = $(this).val()
     if (val === "") {
-      $("#"+t.id).find("[name="+ckcc+"]").removeAttr("disabled")
+      t.div.find("[name="+ckcc+"]").removeAttr("disabled")
       return
     }
-    $("#"+t.id).find("[name="+ckcc+"]").attr("disabled", "true")
+    t.div.find("[name="+ckcc+"]").attr("disabled", "true")
     if (t.visible_columns.indexOf(col) >= 0) {
       return
     }
@@ -731,7 +731,7 @@ function table_data_to_lines(t, data) {
 }
 
 function table_refresh(t) {
-    if ($("#"+t.id).length > 0 && !$("#"+t.id).is(":visible")) {
+    if (t.div.length > 0 && !t.div.is(":visible")) {
         return
     }
     if ($("#refresh_"+t.id).length > 0 && $("#refresh_"+t.id).hasClass("spinner")) {
@@ -742,9 +742,9 @@ function table_refresh(t) {
     }
 
     // move open tabs to overlay to preserve what was in use
-    if ($("#"+t.id).find(".extraline").children("td").children("table").length > 0) {
+    if (t.div.find(".extraline").children("td").children("table").length > 0) {
       $("#overlay").empty().hide()
-      $("#"+t.id).find(".extraline").children("td").children("table").parent().each(function() {
+      t.div.find(".extraline").children("td").children("table").parent().each(function() {
         var e = $("<div></div>")
         e.attr("id", $(this).attr("id"))
         e.append($(this).children())
@@ -780,7 +780,7 @@ function table_refresh(t) {
          data: data,
          context: document.body,
          beforeSend: function(req){
-             $("#"+t.id).find(".nodataline>td").text(T("Loading data"))
+             t.div.find(".nodataline>td").text(T("Loading data"))
          },
          success: function(msg){
              // disable DOM insert event trigger for perf
@@ -794,7 +794,7 @@ function table_refresh(t) {
                  var pager = data['pager']
                  var lines = data['table_lines']
              } catch(e) {
-                 $("#"+t.id).html(msg)
+                 t.div.html(msg)
                  return
              }
 
@@ -1009,13 +1009,13 @@ function table_ajax_submit(url, id, additional_inputs, input_name, additional_in
     var t = osvc.tables[id]
 
     // close dialogs
-    $("#"+t.id).find(".white_float").hide()
-    $("#"+t.id).find(".white_float_input").hide()
+    t.div.find(".white_float").hide()
+    t.div.find(".white_float_input").hide()
 
     var inputs = ['tableid', id+"_page", id+"_perpage"]
     var s = inputs.concat(additional_inputs).concat(getIdsByName(input_name))
-    $("#"+t.id).find("[name="+additional_input_name+"]").each(function(){s.push(this.id)})
-    $("#"+t.id).find("input[id^="+t.id+"_f_]").each(function(){s.push(this.id)})
+    t.div.find("[name="+additional_input_name+"]").each(function(){s.push(this.id)})
+    t.div.find("input[id^="+t.id+"_f_]").each(function(){s.push(this.id)})
     var query="table_id="+t.id
     for (i=0; i<s.length; i++) {
         if (i > 0) {query=query+"&"}
@@ -1204,7 +1204,7 @@ function table_bind_bookmark(t) {
 }
 
 function table_bind_filter_input_events(t) {
-  var inputs = $("#"+t.id).find("input[name=fi]")
+  var inputs = t.div.find("input[name=fi]")
   var url = t.ajax_url + "_col_values/"
 
   // refresh column filter cloud on keyup
@@ -1497,7 +1497,7 @@ function table_action_menu(t, e){
 
   // position the popup at the mouse click
   var pos = get_pos(e)
-  $("#"+t.id).append(s)
+  t.div.append(s)
   $("#am_"+t.id).css({"left": pos[0] + "px", "top": pos[1] + "px"})
 
   // bind action click triggers
@@ -2665,7 +2665,7 @@ function table_link(t){
   var re = /#$/;
   url = url.replace(re, "")+"?";
   args = "clear_filters=true&discard_filters=true&dbfilter="+$("#avs"+t.id).val()
-  $("#"+t.id).find("[name=fi]").each(function(){
+  t.div.find("[name=fi]").each(function(){
     if ($(this).val().length==0) {
       return
     }
@@ -2686,7 +2686,7 @@ function table_add_scrollers(t) {
 }
 
 function table_add_fset_selector(t) {
-  t.e_fset_selector = $("#"+t.id).find("[name=fset_selector]").first()
+  t.e_fset_selector = t.div.find("[name=fset_selector]").first()
   t.e_fset_selector.uniqueId()
   fset_selector(t.e_fset_selector.attr("id"), function(){t.refresh()})
 }
@@ -2729,7 +2729,7 @@ function table_add_filterbox(t) {
   s +=  "</tr>"
   s += "</table>"
   s += "</span>"
-  $("#"+t.id).append(s)
+  t.div.append(s)
 }
 
 function cell_span(id, e) {
@@ -4246,9 +4246,10 @@ function table_init(opts) {
       table_refresh(this)
     }
   }
+  t.div = $("#"+t.id)
   osvc.tables[t.id] = t
-  $("#"+t.id).find("select").parent().css("white-space", "nowrap")
-  $("#"+t.id).find("select:visible").combobox()
+  t.div.find("select").parent().css("white-space", "nowrap")
+  t.div.find("select:visible").combobox()
 
   create_overlay()
   t.add_filtered_to_visible_columns()
