@@ -108,3 +108,18 @@ function diff_date(d1,d2)
   var diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24)); 
   return diffDays;
 }
+
+function link(divid, options)
+{
+    var o = {}
+
+    // store parameters
+    o.divid = divid
+
+    o.div = $("#"+divid);
+    o.link_id = options.link_id;
+
+    o.div.load("/init/" + o.link_id, options, function() {
+    });
+    
+}
