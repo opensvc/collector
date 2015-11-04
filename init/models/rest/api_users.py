@@ -1,4 +1,4 @@
-from gluon.dal import smart_query
+user_max_perpage = 500
 
 def allowed_user_ids():
     """ Return ids of the users member of the same groups than the requester.
@@ -255,6 +255,10 @@ class rest_post_users(rest_post_handler):
 
     def handler(self, **vars):
         check_privilege("UserManager")
+
+        if "perpage" in vars and int(vars["perpage"]) > user_max_perpage:
+            raise Exception(T("perpage can not be more than %(n)d", dict(n=user_max_perpage)))
+
         obj_id = db.auth_user.insert(**vars)
         _log('user.create',
              'add user %(data)s',
@@ -290,16 +294,16 @@ class rest_post_user(rest_post_handler):
 
     def handler(self, id, **vars):
         check_privilege("UserManager")
-        try:
-            id = int(id)
-            q = db.auth_user.id == id
-        except:
-            q = db.auth_user.email == id
+        q = user_id_q(id)
         row = db(q).select().first()
         if row is None:
             return dict(error="User %s does not exist" % str(id))
         if "id" in vars.keys():
             del(vars["id"])
+
+        if "perpage" in vars and int(vars["perpage"]) > user_max_perpage:
+            raise Exception(T("perpage can not be more than %(n)d", dict(n=user_max_perpage)))
+
         db(q).update(**vars)
         l = []
         for key in vars:
