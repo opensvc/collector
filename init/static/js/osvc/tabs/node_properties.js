@@ -50,7 +50,7 @@ function node_props_init(o)
       })
     }
   },
-  function() {
+  function(xhr, stat, error) {
     o.div.html(services_ajax_error_fmt(xhr, stat, error))
   });
 
@@ -73,7 +73,7 @@ function node_props_responsible_init(o)
     var data = jd.data[0];
     o.div.find("#uuid").text(data.uuid)
   },
-  function() {
+  function(xhr, stat, error) {
     o.div.find("#uuid").html(services_ajax_error_fmt(xhr, stat, error))
   })
 
