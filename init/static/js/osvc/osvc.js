@@ -3864,6 +3864,35 @@ function table_cell_decorator(id) {
 
 
 //
+// table tool: refresh
+//
+function table_add_refresh(t) {
+  if (!t.options.refreshable) {
+    return
+  }
+
+  var e = $("<div class='floatw' name='tool_refresh'><span class='refresh16'></span><span data-i18n='table.refresh'></span></div>")
+  e.i18n()
+
+  // bindings
+  e.bind("click", function(){
+    t.refresh()
+  })
+
+  $(this).bind("keypress", function(event) {
+    if ($('input').is(":focus")) { return }
+    if ($('textarea').is(":focus")) { return }
+    if ( event.which == 114 ) {
+      t.refresh()
+    }
+  })
+
+  t.e_tool_refresh = e
+  t.e_tool_refresh_spin = e.find(".refresh16")
+  t.e_toolbar.prepend(e)
+}
+
+//
 // table tool: websocket toggle
 //
 function table_add_wsswitch(t) {
@@ -4099,20 +4128,6 @@ function table_bind_link(t) {
   })
 }
 
-function table_bind_refresh(t) {
-  t.e_tool_refresh.bind("click", function(){
-    t.refresh()
-  })
-  $(this).bind("keypress", function(event) {
-    if ($('input').is(":focus")) { return }
-    if ($('textarea').is(":focus")) { return }
-    if ( event.which == 114 ) {
-      //event.preventDefault()
-      t.refresh()
-    }
-  })
-}
-
 function table_bind_filter_reformat(t) {
   $("#table_"+t.id).find("input").each(function(){
    attr = $(this).attr('id')
@@ -4250,9 +4265,6 @@ function table_init(opts) {
     'insert_bookmark': function(bookmark){
       table_insert_bookmark(this, bookmark)
     },
-    'bind_refresh': function(){
-      table_bind_refresh(this)
-    },
     'bind_checkboxes': function(){
       table_bind_checkboxes(this)
     },
@@ -4336,13 +4348,14 @@ function table_init(opts) {
     },
     'add_wsswitch': function(){
       table_add_wsswitch(this)
+    },
+    'add_refresh': function(){
+      table_add_refresh(this)
     }
   }
 
   // selectors cache
   t.div = $("#"+t.id)
-  t.e_tool_refresh = t.div.find("[name=tool_refresh]").first()
-  t.e_tool_refresh_spin = t.e_tool_refresh.find(".refresh16")
   t.e_toolbar = t.div.find("[name=toolbar]").first()
 
   osvc.tables[t.id] = t
@@ -4350,6 +4363,7 @@ function table_init(opts) {
   t.div.find("select:visible").combobox()
 
   create_overlay()
+  t.add_refresh()
   t.add_wsswitch()
   t.add_pager()
   t.add_filtered_to_visible_columns()
@@ -4358,7 +4372,6 @@ function table_init(opts) {
   t.add_filterbox()
   t.add_fset_selector()
   t.add_scrollers()
-  t.bind_refresh()
   t.bind_link()
   t.bind_bookmark()
   t.bind_persistent_filter()

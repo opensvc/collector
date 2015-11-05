@@ -5,7 +5,8 @@
     "error": "The collector request returned an error."
   },
   "table": {
-    "live": "Live"
+    "live": "Live",
+    "refresh": "  Refresh"
   },
   "app": {
     "name": "collector"

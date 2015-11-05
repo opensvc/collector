@@ -5,7 +5,8 @@
     "error": "La requête au collecteur a renvoyé une erreur."
   },
   "table": {
-    "live": "Live"
+    "live": "Live",
+    "refresh": "  Recharger"
   },
   "app": {
     "name": "collector"

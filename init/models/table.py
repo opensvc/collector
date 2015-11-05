@@ -439,23 +439,6 @@ class HtmlTable(object):
             )
         return d
 
-    def refresh(self):
-        if not self.refreshable:
-            return SPAN()
-        url = URL(r=request,f=self.func)
-        d = DIV(
-              A(
-                SPAN(
-                  _class='refresh16',
-                ),
-                "  ",
-                T('Refresh'),
-              ),
-              _class='floatw',
-              _name='tool_refresh',
-            )
-        return d
-
     def commonality(self):
         if not self.commonalityable:
             return SPAN()
@@ -1160,7 +1143,6 @@ class HtmlTable(object):
         d = DIV(
               self.show_flash(),
               DIV(
-                self.refresh(),
                 self.link(),
                 self.bookmark(),
                 export,
@@ -1210,6 +1192,7 @@ table_init({
  'action_menu': %(action_menu)s,
  'dataable': %(dataable)s,
  'dbfilterable': %(dbfilterable)s,
+ 'refreshable': %(refreshable)s,
  'wsable': %(wsable)s,
  'pageable': %(pageable)s
 })
@@ -1233,6 +1216,7 @@ function ajax_enter_submit_%(id)s(event){%(ajax_enter_submit)s};
                    ajax_enter_submit=self.ajax_enter_submit(),
                    dataable=str(self.dataable).lower(),
                    dbfilterable=str(self.dbfilterable).lower(),
+                   refreshable=str(self.refreshable).lower(),
                    pageable=str(self.pageable).lower(),
                    wsable=str(self.wsable).lower(),
                    action_menu=str(self.action_menu),
