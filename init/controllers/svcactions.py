@@ -381,7 +381,7 @@ class table_actions(HtmlTable):
         d = DIV(
               A(
                 T("Acknowledge error"),
-                _class='check16',
+                _class='ok',
                 _onclick="""
                   click_toggle_vis(event, '%(div)s', 'block');
                 """%dict(div='ackcomment_d'),

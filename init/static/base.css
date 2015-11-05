@@ -1525,11 +1525,6 @@ ul.login_menu ul {
   content: '\f071  ';
   font-family: awesome;
 }
-.avail16 {
-    background: transparent url('images/avail16.png') no-repeat;
-    padding: 0 0 0 20px;
-    min-height: 16px;
-}
 .wspark16:before {
   content: '\f201  ';
   font-family: awesome;
@@ -1611,23 +1606,16 @@ ul.login_menu ul {
   content: '\f0d7  ';
   font-family: awesome;
 }
-.save16 {
-    background: transparent url('images/save16.png') no-repeat;
-    padding: 0 0 0 20px;
-    min-height: 16px;
+.save16:before {
+  content: '\f0c7  ';
+  font-family: awesome;
+}
+.wf16:before {
+  content: '\f12e  ';
+  font-family: awesome;
 }
 .expert16 {
     background: transparent url('images/expert16.png') no-repeat;
-    padding: 0 0 0 20px;
-    min-height: 16px;
-}
-.db16 {
-    background: transparent url('images/db16.png') no-repeat;
-    padding: 0 0 0 20px;
-    min-height: 16px;
-}
-.wf16 {
-    background: transparent url('images/wf16.png') no-repeat;
     padding: 0 0 0 20px;
     min-height: 16px;
 }
@@ -1638,6 +1626,10 @@ ul.login_menu ul {
 }
 .hv16:before {
   content: '\f0c2  ';
+  font-family: awesome;
+}
+.db16:before {
+  content: '\f1c0  ';
   font-family: awesome;
 }
 .hd16:before {
@@ -1691,10 +1683,14 @@ ul.login_menu ul {
   content: '\f140  ';
   font-family: awesome;
 }
-.check16:before {
+.ok:before {
   content: '\f00c  ';
   font-family: awesome;
   color: darkgreen;
+}
+.check16:before {
+  content: '\f00c  ';
+  font-family: awesome;
 }
 .admins16 {
     background: transparent url('images/admins16.png') no-repeat;
@@ -1832,6 +1828,10 @@ ul.login_menu ul {
   content: '\f002  ';
   font-family: awesome;
 }
+.avail16:before {
+  content: '\f21e  ';
+  font-family: awesome;
+}
 .nologo16 {
     padding: 0 0 0 20px;
 }
@@ -1864,10 +1864,6 @@ ul.login_menu ul {
 }
 .prov48 {
     background: transparent url('images/prov48.png') no-repeat left center;
-    padding: 0 0 0 52px;
-}
-.avail48 {
-    background: transparent url('images/avail48.png') no-repeat left center;
     padding: 0 0 0 52px;
 }
 .guys48 {
