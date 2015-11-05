@@ -231,13 +231,12 @@ function services_ajax_error_fmt(xhr, stat, error) {
 }
 
 function services_error_fmt(data) {
-    e = $("<span class='alert16'></span>")
-    e.text(i18n.t("api.error"))
+    e = $("<span><span class='alert16 err fa-2x'></span><span data-i18n='api.error'></span></span>")
+    e.i18n()
     p = $("<pre></pre>")
     p.text(data.error)
     p.css({
-      "padding": "5px",
-      "padding-left": "20px",
+      "padding": "2em 0 0 0",
     })
     e.append(p)
     return e

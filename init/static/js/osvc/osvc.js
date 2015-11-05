@@ -1896,7 +1896,7 @@ function menu_action_status(msg){
   if (msg.factorized>0) {
     s = "factorized: "+msg.factorized+", "+s
   }
-  $(".flash").html(s).slideDown().effect("fade", 5000)
+  $(".flash").html(s).show("fold")
 }
 
 function table_action_menu_modules_all(t, e){
@@ -3862,7 +3862,7 @@ function table_add_bookmarks(t) {
   },
   function(xhr, stat, error) {
     spinner_del(listarea)
-    $(".flash").show("slide").html(services_ajax_error_fmt(xhr, stat, error))
+    $(".flash").show("fold").html(services_ajax_error_fmt(xhr, stat, error))
   })
 
   e.i18n()
@@ -3878,7 +3878,7 @@ function table_add_bookmarks(t) {
   })
 
   save.bind("click", function() {
-    save_name.toggle(500)
+    save_name.toggle("fold")
     save_name_input.focus()
   })
 
@@ -3923,13 +3923,13 @@ function table_insert_bookmark(t, name) {
     }
     services_osvcdeleterest("R_USERS_SELF_TABLE_FILTERS", "", "", data, function(jd) {
       if (jd.error) {
-        $(".flash").show("slide").html(services_error_fmt(jd))
+        $(".flash").show("fold").html(services_error_fmt(jd))
         return
       }
-      line.hide(500, function(){line.remove()})
+      line.hide("fold", function(){line.remove()})
     },
     function(xhr, stat, error) {
-      $(".flash").show("slide").html(services_ajax_error_fmt(xhr, stat, error))
+      $(".flash").show("fold").html(services_ajax_error_fmt(xhr, stat, error))
     })
   })
   bookmark.find(".bookmark16").bind("click", function() {
@@ -4061,7 +4061,7 @@ function table_add_wsswitch(t) {
       }
     },
     function(xhr, stat, error) {
-      $(".flash").show("slide").html(services_ajax_error_fmt(xhr, stat, error))
+      $(".flash").show("fold").html(services_ajax_error_fmt(xhr, stat, error))
     })
   })
 
@@ -4096,7 +4096,7 @@ function table_add_wsswitch(t) {
     }
   },
   function(xhr, stat, error) {
-    $(".flash").show("slide").html(services_ajax_error_fmt(xhr, stat, error))
+    $(".flash").show("fold").html(services_ajax_error_fmt(xhr, stat, error))
   })
 
   t.e_toolbar.prepend(e)
@@ -4180,7 +4180,7 @@ function table_pager(t, options) {
       t.refresh()
     },
     function(xhr, stat, error) {
-      $(".flash").show("slide").html(services_ajax_error_fmt(xhr, stat, error))
+      $(".flash").show("fold").html(services_ajax_error_fmt(xhr, stat, error))
     })
   })
 }

@@ -684,22 +684,7 @@ html {
 }
 
 .flash {
-    z-index: 2;
-    position: absolute;
-    bottom: 0px;
-    opacity: 1.00;
-    margin: 0 auto;
-    width: 100%;
-    text-align: center;
-    clear: both;
-    color: white;
-    font-size: 11pt;
-    cursor: pointer;
-    background: cadetblue;
-}
-
-html>body .flash {
-    position: fixed;
+  padding: 2em
 }
 
 div.error {
@@ -2852,44 +2837,6 @@ input[disabled].ocb + label {
 .ui-timepicker-rtl dl { text-align: right; }
 .ui-timepicker-rtl dl dd { margin: 0 65px 10px 10px; }
 
-
-@media screen and (max-width:960px) and (orientation: landscape) {
-  body {
-   -webkit-text-size-adjust: 70%;
-  }
-}
-
-@media all and (max-width:640px) {
-html {
-    font-size: 14pt;
-    -webkit-text-size-adjust: none;
-}
-textarea, table, td, th, code, pre, samp {
-    word-wrap: break-word; /* césure forcée */
-}
-.theader {
-    background-color: #e0e1cd;
-    color: black;
-    padding: 0;
-    margin-top: 0;
-    margin-bottom: 0;
-    max-height: 1.2em;
-}
-.theader:hover {
-    max-height: none;
-}
-.floatw {
-    float: right;
-    width: 100%;
-    text-align: center;
-    margin-left:0.5em;
-    margin-right:0.5em;
-}
-.sym_headers {
-    display: none;
-}
-} /* end small screen */
-
 .noselect {
     -webkit-touch-callout: none;
     -webkit-user-select: none;
@@ -3030,3 +2977,43 @@ div.containertrans {
 .coloredDiv {
   height:20px; width:20px; float:left;
 }
+@media screen and (max-width:960px) and (orientation: landscape) {
+	body {
+		-webkit-text-size-adjust: 70%;
+	}
+}
+
+/* begin small screen */
+@media all and (max-width:640px) {
+	html {
+		font-size: 14pt;
+		-webkit-text-size-adjust: none;
+	}
+	textarea, table, td, th, code, pre, samp {
+		word-wrap: break-word; /* césure forcée */
+	}
+	.theader {
+		background-color: #e0e1cd;
+		color: black;
+		padding: 0;
+		margin-top: 0;
+		margin-bottom: 0;
+		max-height: 1.2em;
+	}
+	.theader:hover {
+		max-height: none;
+	}
+	.floatw {
+		float: right;
+		width: 100%;
+		text-align: center;
+		margin-left:0.5em;
+		margin-right:0.5em;
+	}
+	.sym_headers {
+		display: none;
+	}
+}
+/* end small screen */
+
+

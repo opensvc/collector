@@ -28,11 +28,11 @@
       {{=OSVCMENU(response.menu, _class='menu')}}
       {{pass}}
       <div class=spacer>&nbsp;</div>
+      <div class="menu flash">{{=response.flash or ''}}</div>
     </div>
     <div class=spacer>&nbsp;</div>
     <div class=layout>
       <div class=spacer>&nbsp;</div>
-      <div class="flash">{{=response.flash or ''}}</div>
       <div align=center>{{include}}</div>
     </div>
     <div class=spacer>&nbsp;</div>
