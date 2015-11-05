@@ -2,7 +2,9 @@
   "api": {
     "loading": "Loading",
     "formatting": "Formating",
-    "error": "The collector request returned an error."
+    "error": "The collector request returned an error.",
+    "link": "Link",
+    "link_text": "This link target is stored in the collector database. You can share it with collaborators so they can see the same information, granted they have equivalent privileges."
   },
   "table": {
     "live": "Live",

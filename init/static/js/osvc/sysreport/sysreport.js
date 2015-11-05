@@ -4,7 +4,6 @@
 function sysrep_on_change_filters(o)
 {
     o.sysrep_timeline();
-    o.sysrep_createlink_off(o);
 }
 
 function sysrep(divid, options)
@@ -81,8 +80,6 @@ function sysrep(divid, options)
 function sysrep_init(o)
 {
     // initialize useful object refs to avoid DOM lookups
-    o.link = o.div.find("#sysrep_link")
-    o.link_div = o.div.find("#sysrep_link_div")
     o.ql_link = o.div.find("#sysrep_ql_link")
     o.ql_filter = o.div.find("#sysrep_ql_filter")
     o.ql_admin = o.div.find("#sysrep_ql_admin")
@@ -127,8 +124,6 @@ function sysrep_init(o)
 
   o.ql_link.bind("click", function() { 
     o.sysrep_createlink();
-    o.link.show();
-    o.link_div.show(function(){o.link.select()});
   });
 
   o.ql_filter.on("click", function() {
@@ -139,10 +134,6 @@ function sysrep_init(o)
     event.preventDefault();
     o.sysrep_on_change_filters();
   });
-
-  o.link.bind("click", function() {
-    send_link($(this).val())
-  })
 
   o.filter.find("input").bind("change", function(){
     o.sysrep_createlink_off();
@@ -251,12 +242,6 @@ function send_link(url)
   window.open(url,'_blank')
 }
 
-function sysrep_createlink_off(o)
-{
-  if (o.link.is(":visible"))
-    o.link.hide();
-}
-
 function sysrep_createlink(o)
 {
     var sparam = o.sysrep_getparams();
@@ -266,7 +251,7 @@ function sysrep_createlink(o)
         }
     }
 
-  var url = osvc_create_link("sysrep",sparam,o.link);
+  var url = osvc_create_link("sysrep", sparam)
 }
 
 function sysrep_define_maxchanges(res)
@@ -369,7 +354,6 @@ function sysrep_timediff_data(o, jd, nodename, detail)
 function sysrep_timeline(o)
 {
   o.timeline_title.html(i18n.t("sysrep.timeline_title", {"node": o.nodes}));
-  o.sysrep_createlink_off();
 
   var params = o.sysrep_getparams()
   if ("cid" in params) {
@@ -464,7 +448,6 @@ function sysrep_timeline_data(o, jd)
       } else {
         delete o.cid;
       }
-      o.sysrep_createlink_off();
 
       o.sysreport_timeline_on_select(item)
     });
@@ -870,7 +853,6 @@ function sysrep_diff_data(o, jd, node1, node2, detail)
 
 function sysrepdiff_on_change_filters(o)
 {
-    o.sysrep_createlink_off(o);
     o.sysrep_diff();
 }
 

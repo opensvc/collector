@@ -125,18 +125,54 @@ function link(divid, options)
 
 function osvc_create_link(fn, parameters, target)
 {
-  target.html("loading...");
-  if (parameters == null)
-    parameters = {};
+  if (!target) {
+    target = $(".flash")
+  }
+  target.html($("<span class='spinner' data-i18n='api.loading'></span>").i18n()).show("fold")
+  if (!parameters) {
+    parameters = {}
+  }
   var link_id =  services_osvcpostrest("R_POST_LINK", "", "", {"fn": fn, "param": JSON.stringify(parameters)}, function(jd) {
-      if (jd.error) 
-        return;
+      if (jd.error) {
+        target.html(services_error_fmt(jd))
+        return
+      }
       var link_id = jd.link_id;
       var url = $(location).attr("origin");
       url += "/init/link/link?link_id="+link_id+"&js=true";
-      target.empty().html(url);
-      target.autogrow({vertical: true, horizontal: true});
-    },function() {});
+
+      // header
+      var e = $("<div></div>")
+
+      var title = $("<div class='attach16 fa-2x' data-i18n='api.link'></div>")
+      e.append(title)
+
+      var subtitle = $("<div style='color:lightgray' data-i18n='api.link_text'></div>")
+      e.append(subtitle)
+
+      // link display area
+      p = $("<textarea style='width:100%' class='clickable'></textarea>")
+      p.val(url)
+      p.css({
+        "width": "100%",
+        "background": "rgba(0,0,0,0)",
+        "border": "rgba(0,0,0,0)",
+        "padding": "2em 0 0 0",
+      })
+      p.select()
+      p.bind("click", function() {
+        send_link($(this).val())
+      })
+
+      e.i18n()
+      e.append(p)
+
+      target.empty().append(e);
+      p.autogrow();
+    },
+    function(xhr, stat, error) {
+      $(".flash").show("fold").html(services_ajax_error_fmt(xhr, stat, error))
+    })
 }
 
 function osvc_get_link(divid,link_id)
