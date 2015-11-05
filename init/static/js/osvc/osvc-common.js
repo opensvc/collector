@@ -159,7 +159,6 @@ function osvc_create_link(fn, parameters, target)
         "border": "rgba(0,0,0,0)",
         "padding": "2em 0 0 0",
       })
-      p.select()
       p.bind("click", function() {
         send_link($(this).val())
       })
@@ -169,6 +168,7 @@ function osvc_create_link(fn, parameters, target)
 
       target.empty().append(e);
       p.autogrow();
+      p.select()
     },
     function(xhr, stat, error) {
       $(".flash").show("fold").html(services_ajax_error_fmt(xhr, stat, error))
