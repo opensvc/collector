@@ -2583,10 +2583,6 @@ function get_view_url() {
 }
 
 function table_link(t){
-  if (t.e_tool_link_area.is(":visible")) {
-    t.e_tool_link_area.hide()
-    return
-  }
   var url = get_view_url()
   url = url.replace(/#$/, "")+"?";
   var args = "clear_filters=true&discard_filters=true"
@@ -2601,11 +2597,7 @@ function table_link(t){
     }
     args += '&'+$(this).attr('id')+"="+encodeURIComponent($(this).val())
   })
-  t.e_tool_link_textarea.val(url+args).attr("readonly", "on").select()
-  t.e_tool_link_area.show()
-  t.e_tool_link_textarea.autogrow()
-  t.e_tool_link_textarea.select()
-  keep_inside(t.e_tool_link_area.get())
+  osvc_show_link(url+args)
 }
 
 function table_add_scrollers(t) {
@@ -3989,16 +3981,9 @@ function table_add_link(t) {
   span.text(i18n.t("table.link"))
   e.append(span)
 
-  var area = $("<div class='white_float hidden'><textarea class='link_ta' /></div>")
-  e.append(area)
-
   // bindings
   e.bind("click", function() {
     t.link()
-  })
-
-  area.children("textarea").bind("click", function(){
-    window.open($(this).val(), '_blank')
   })
 
   $(this).bind("keypress", function(event) {
@@ -4010,8 +3995,6 @@ function table_add_link(t) {
   })
 
   t.e_tool_link = e
-  t.e_tool_link_area = area
-  t.e_tool_link_textarea = area.children("textarea")
   t.e_toolbar.prepend(e)
 }
 

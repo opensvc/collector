@@ -128,7 +128,6 @@ function osvc_create_link(fn, parameters, target)
   if (!target) {
     target = $(".flash")
   }
-  target.html($("<span class='spinner' data-i18n='api.loading'></span>").i18n()).show("fold")
   if (!parameters) {
     parameters = {}
   }
@@ -140,39 +139,45 @@ function osvc_create_link(fn, parameters, target)
       var link_id = jd.link_id;
       var url = $(location).attr("origin");
       url += "/init/link/link?link_id="+link_id+"&js=true";
-
-      // header
-      var e = $("<div></div>")
-
-      var title = $("<div class='attach16 fa-2x' data-i18n='api.link'></div>")
-      e.append(title)
-
-      var subtitle = $("<div style='color:lightgray' data-i18n='api.link_text'></div>")
-      e.append(subtitle)
-
-      // link display area
-      p = $("<textarea style='width:100%' class='clickable'></textarea>")
-      p.val(url)
-      p.css({
-        "width": "100%",
-        "background": "rgba(0,0,0,0)",
-        "border": "rgba(0,0,0,0)",
-        "padding": "2em 0 0 0",
-      })
-      p.bind("click", function() {
-        send_link($(this).val())
-      })
-
-      e.i18n()
-      e.append(p)
-
-      target.empty().append(e);
-      p.autogrow();
-      p.select()
+      osvc_show_link(url, target)
     },
     function(xhr, stat, error) {
       $(".flash").show("fold").html(services_ajax_error_fmt(xhr, stat, error))
     })
+}
+
+function osvc_show_link(url, target) {
+  if (!target) {
+    target = $(".flash")
+  }
+  // header
+  var e = $("<div></div>")
+
+  var title = $("<div class='attach16 fa-2x' data-i18n='api.link'></div>")
+  e.append(title)
+
+  var subtitle = $("<div style='color:lightgray' data-i18n='api.link_text'></div>")
+  e.append(subtitle)
+
+  // link display area
+  p = $("<textarea style='width:100%' class='clickable'></textarea>")
+  p.val(url)
+  p.css({
+    "width": "100%",
+    "background": "rgba(0,0,0,0)",
+    "border": "rgba(0,0,0,0)",
+    "padding": "2em 0 0 0",
+  })
+  p.bind("click", function() {
+    send_link($(this).val())
+  })
+
+  e.i18n()
+  e.append(p)
+
+  target.empty().append(e).show("fold")
+  p.autogrow();
+  p.select()
 }
 
 function osvc_get_link(divid,link_id)
