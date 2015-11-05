@@ -875,7 +875,7 @@ class HtmlTable(object):
         return TR(
           inputs,
           _class='theader_slim',
-          _onclick="""$(".sym_headers").toggle()"""
+          _onclick="""$("[name=filters]").toggle()"""
         )
 
     def table_inputs(self):
@@ -907,7 +907,7 @@ class HtmlTable(object):
                             _name=self.col_key(c),
                             _class=self.colprops[c]._class,
                           ))
-        return TR(inputs, _class='sym_headers')
+        return TR(inputs, _name="filters", _class='sym_headers')
 
     def table_additional_inputs(self):
         inputs = []

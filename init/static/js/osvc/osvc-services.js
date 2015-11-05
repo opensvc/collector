@@ -38,6 +38,7 @@ var services_access_uri = {
     "R_USERS_SELF_FILTERSET_ONE" : "/rest/api/users/self/filterset/%1",
     "R_USERS_SELF_TABLE_SETTINGS" : "/rest/api/users/self/table_settings",
     "R_USERS_SELF_TABLE_FILTERS" : "/rest/api/users/self/table_filters",
+    "R_USERS_SELF_TABLE_FILTERS_LOAD_BOOKMARK" : "/rest/api/users/self/table_filters/load_bookmark",
     "R_USER_APPS" : "/rest/api/users/%1/apps",
     "R_USER_GROUPS" : "/rest/api/users/%1/groups",
     "R_GROUPS" : "/rest/api/groups",

@@ -298,6 +298,7 @@ handlers = {
      rest_post_user_filterset(),
      rest_post_user_table_settings(),
      rest_post_user_table_filters(),
+     rest_post_user_table_filters_load_bookmark(),
      rest_post_wikis(),
   ],
   'PUT': [

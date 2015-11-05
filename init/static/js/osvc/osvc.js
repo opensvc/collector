@@ -3905,19 +3905,22 @@ function table_add_bookmarks(t) {
 }
 
 function table_insert_bookmark(t, name) {
+  // remove the "no_bookmarks" msg
   if (t.e_tool_bookmarks_listarea.find("p").length == 0) {
-    // remove the "no_bookmarks" msg
     t.e_tool_bookmarks_listarea.text("")
   }
+ 
+  // append the bookmark to the list area
   var bookmark = $("<p></p>")
   bookmark.append($("<a class='bookmark16'>"+name+"</a>"))
   bookmark.append($("<a style='float:right' class='del16'>&nbsp;</a>"))
   t.e_tool_bookmarks_listarea.append(bookmark)
 
+  // "del" binding
   bookmark.find(".del16").bind("click", function() {
     var name = $(this).prev().text()
     var line = $(this).parents("p").first()
-    data = {
+    var data = {
       "col_tableid": t.id,
       "bookmark": name,
     }
@@ -3932,31 +3935,36 @@ function table_insert_bookmark(t, name) {
       $(".flash").show("fold").html(services_ajax_error_fmt(xhr, stat, error))
     })
   })
+
+  // "load" binding
   bookmark.find(".bookmark16").bind("click", function() {
-    var bookmark = $(this).text()
-    var url = $(location).attr("origin") + "/init/ajax/load_bookmark"
-    var query = "table_id="+t.id+"&bookmark="+encodeURIComponent(bookmark)
-    $.ajax({
-         type: "POST",
-         url: url,
-         data: query,
-         success: function(msg){
-           var l = $.parseJSON(msg)
-           for (var i=0; i<t.columns.length; i++) {
-             var k = t.id + "_f_" + t.columns[i]
-             $("#"+k).val("")
-           }
-           for (var i=0; i<l.length; i++) {
-             var data = l[i]
-             var k = t.id + "_f_" + data['col_name'].split('.')[1]
-             var v = data['col_filter']
-             $("#"+k).val(v)
-           }
-           $(".white_float").hide()
-           $(".white_float_input").hide()
-           t.format_header()
-           t.refresh()
-         }
+    var name = $(this).text()
+    var data = {
+      "col_tableid": t.id,
+      "bookmark": name,
+    }
+    services_osvcpostrest("R_USERS_SELF_TABLE_FILTERS_LOAD_BOOKMARK", "", "", data, function(jd) {
+      if (jd.error) {
+        $(".flash").show("fold").html(services_error_fmt(jd))
+        return
+      }
+
+      // flush the column filters
+      t.e_header_filters.find("[name=fi]").val("")
+
+      // update the column filters
+      for (var i=0; i<jd.data.length; i++) {
+        var data = jd.data[i]
+        var k = t.id + "_f_" + data.col_name.split('.')[1]
+        var v = data.col_filter
+        t.e_header_filters.find("#"+k).val(v)
+      }
+      t.format_header()
+
+      t.refresh()
+    },
+    function(xhr, stat, error) {
+      $(".flash").show("fold").html(services_ajax_error_fmt(xhr, stat, error))
     })
   })
 }
@@ -4478,6 +4486,7 @@ function table_init(opts) {
   // selectors cache
   t.div = $("#"+t.id)
   t.e_toolbar = t.div.find("[name=toolbar]").first()
+  t.e_header_filters = t.div.find("[name=filters]").first()
 
   osvc.tables[t.id] = t
   t.div.find("select").parent().css("white-space", "nowrap")
