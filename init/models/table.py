@@ -416,29 +416,6 @@ class HtmlTable(object):
             )
         return d
 
-    def link(self):
-        if not self.linkable:
-            return SPAN()
-        d = DIV(
-              A(
-                SPAN(
-                  T('Link'),
-                  _title=T("Share your view using this hyperlink"),
-                  _class='link16',
-                  _id='link_'+self.id,
-                ),
-                DIV(
-                  TEXTAREA(
-                    _class="link_ta",
-                  ),
-                  _class='white_float hidden',
-                  _id='link_val_'+self.id,
-                ),
-              ),
-              _class='floatw',
-            )
-        return d
-
     def commonality(self):
         if not self.commonalityable:
             return SPAN()
@@ -1143,7 +1120,6 @@ class HtmlTable(object):
         d = DIV(
               self.show_flash(),
               DIV(
-                self.link(),
                 self.bookmark(),
                 export,
                 self.columns_selector(),
@@ -1191,6 +1167,7 @@ table_init({
  'child_tables': %(child_tables)s,
  'action_menu': %(action_menu)s,
  'dataable': %(dataable)s,
+ 'linkable': %(linkable)s,
  'dbfilterable': %(dbfilterable)s,
  'refreshable': %(refreshable)s,
  'wsable': %(wsable)s,
@@ -1215,6 +1192,7 @@ function ajax_enter_submit_%(id)s(event){%(ajax_enter_submit)s};
                    ajax_submit=self.ajax_submit(),
                    ajax_enter_submit=self.ajax_enter_submit(),
                    dataable=str(self.dataable).lower(),
+                   linkable=str(self.linkable).lower(),
                    dbfilterable=str(self.dbfilterable).lower(),
                    refreshable=str(self.refreshable).lower(),
                    pageable=str(self.pageable).lower(),

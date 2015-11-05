@@ -6,6 +6,8 @@
   },
   "table": {
     "live": "Live",
+    "link": "Link",
+    "link_title": "Share your view using this hyperlink",
     "refresh": "  Refresh"
   },
   "app": {

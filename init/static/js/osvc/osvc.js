@@ -2653,24 +2653,29 @@ function get_view_url() {
 }
 
 function table_link(t){
-  if ($("#link_val_"+t.id).is(":visible")) {
-    $("#link_val_"+t.id).hide()
+  if (t.e_tool_link_area.is(":visible")) {
+    t.e_tool_link_area.hide()
     return
   }
   var url = get_view_url()
-  var re = /#$/;
-  url = url.replace(re, "")+"?";
-  args = "clear_filters=true&discard_filters=true&dbfilter="+$("#avs"+t.id).val()
+  url = url.replace(/#$/, "")+"?";
+  var args = "clear_filters=true&discard_filters=true"
+
+  // fset
+  var current_fset = t.e_fset_selector.find(":selected").attr("id")
+  args += "&dbfilter="+current_fset
+
   t.div.find("[name=fi]").each(function(){
     if ($(this).val().length==0) {
       return
     }
-    args=args+'&'+$(this).attr('id')+"="+encodeURIComponent($(this).val())
+    args += '&'+$(this).attr('id')+"="+encodeURIComponent($(this).val())
   })
-  $("#link_val_"+t.id).children("textarea").val(url+args).attr("readonly", "on").select()
-  $("#link_val_"+t.id).show()
-  $("#link_val_"+t.id).children("textarea").select()
-  keep_inside($("#link_val_"+t.id))
+  t.e_tool_link_textarea.val(url+args).attr("readonly", "on").select()
+  t.e_tool_link_area.show()
+  t.e_tool_link_textarea.autogrow()
+  t.e_tool_link_textarea.select()
+  keep_inside(t.e_tool_link_area.get())
 }
 
 function table_add_scrollers(t) {
@@ -3864,6 +3869,47 @@ function table_cell_decorator(id) {
 
 
 //
+// table tool: link
+//
+function table_add_link(t) {
+  if (!t.options.linkable) {
+    return
+  }
+
+  var e = $("<div class='floatw' name='tool_link'></div>")
+
+  var span = $("<span class='link16'></span>")
+  span.attr("title", i18n.t("table.link_title"))
+  span.text(i18n.t("table.link"))
+  e.append(span)
+
+  var area = $("<div class='white_float hidden'><textarea class='link_ta' /></div>")
+  e.append(area)
+
+  // bindings
+  e.bind("click", function() {
+    t.link()
+  })
+
+  area.children("textarea").bind("click", function(){
+    window.open($(this).val(), '_blank')
+  })
+
+  $(this).bind("keypress", function(event) {
+    if ($('input').is(":focus")) { return }
+    if ($('textarea').is(":focus")) { return }
+    if ( event.which == 108 ) {
+      t.link()
+    }
+  })
+
+  t.e_tool_link = e
+  t.e_tool_link_area = area
+  t.e_tool_link_textarea = area.children("textarea")
+  t.e_toolbar.prepend(e)
+}
+
+//
 // table tool: refresh
 //
 function table_add_refresh(t) {
@@ -4109,25 +4155,6 @@ function table_scroll_disable_dom(t) {
   $(window).unbind("DOMNodeInserted", table_scroll(t))
 }
 
-function table_bind_link(t) {
-  l = $("#link_"+t.id)
-  if (l.length != 1) {
-    // linkable = false
-    return
-  }
-  $("#link_"+t.id).bind("click", function(){
-    t.link()
-  })
-  $(this).bind("keypress", function(event) {
-    if ($('input').is(":focus")) { return }
-    if ($('textarea').is(":focus")) { return }
-    if ( event.which == 108 ) {
-      //event.preventDefault()
-      t.link()
-    }
-  })
-}
-
 function table_bind_filter_reformat(t) {
   $("#table_"+t.id).find("input").each(function(){
    attr = $(this).attr('id')
@@ -4268,9 +4295,6 @@ function table_init(opts) {
     'bind_checkboxes': function(){
       table_bind_checkboxes(this)
     },
-    'bind_link': function(){
-      table_bind_link(this)
-    },
     'pager': function(options){
       table_pager(this, options)
     },
@@ -4351,6 +4375,9 @@ function table_init(opts) {
     },
     'add_refresh': function(){
       table_add_refresh(this)
+    },
+    'add_link': function(){
+      table_add_link(this)
     }
   }
 
@@ -4363,6 +4390,7 @@ function table_init(opts) {
   t.div.find("select:visible").combobox()
 
   create_overlay()
+  t.add_link()
   t.add_refresh()
   t.add_wsswitch()
   t.add_pager()
@@ -4372,7 +4400,6 @@ function table_init(opts) {
   t.add_filterbox()
   t.add_fset_selector()
   t.add_scrollers()
-  t.bind_link()
   t.bind_bookmark()
   t.bind_persistent_filter()
   t.scroll_enable()
