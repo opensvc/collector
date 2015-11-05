@@ -188,14 +188,12 @@ class col_obs_count(HtmlTableColumn):
 
 class col_obs_type(HtmlTableColumn):
     img_h = {
-        'os': 'os',
-        'hw': 'hw',
+        'os': 'os16',
+        'hw': 'hw16',
     }
     def html(self, o):
         t = self.get(o)
-        return IMG(
-                 _src=URL(r=request,c='static',f='images/'+self.img_h[t]+'.png'),
-               )
+        return SPAN(_class=self.img_h[t])
 
 class table_obs(HtmlTable):
     def __init__(self, id=None, func=None, innerhtml=None):
@@ -261,8 +259,9 @@ class table_obs(HtmlTable):
     def item_refresh(self):
         d = DIV(
               A(
-                T("Refresh items"),
-                _onclick=self.ajax_submit(args=['item_refresh'])
+                "  ", T("Refresh items"),
+                _onclick=self.ajax_submit(args=['item_refresh']),
+                _class="refresh16",
               ),
               _class='floatw',
             )
@@ -276,6 +275,7 @@ class table_obs(HtmlTable):
                          """%dict(s=self.ajax_submit(args=['item_del']),
                                   text=T("Deleting an obsolescence configuration item also deletes the warning and alert dates. Please confirm deletion"),
                                  ),
+                _class="del16",
               ),
               _class='floatw',
             )

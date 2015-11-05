@@ -1660,15 +1660,13 @@ ul.login_menu ul {
   content: '\f0c8  ';
   font-family: awesome;
 }
-.os16 {
-    background: transparent url('images/os16.png') no-repeat;
-    padding: 0 0 0 20px;
-    min-height: 1em;
+.obs16:before {
+  content: '\f1b8  ';
+  font-family: awesome;
 }
-.obs16 {
-    background: transparent url('images/obs16.png') no-repeat;
-    padding: 0 0 0 20px;
-    min-height: 16px;
+.os16:before {
+  content: '\f268  ';
+  font-family: awesome;
 }
 .fixable16 {
     background: transparent url('images/fixable16.png') no-repeat;
@@ -1688,11 +1686,6 @@ ul.login_menu ul {
   content: '\f00c  ';
   font-family: awesome;
 }
-.admins16 {
-    background: transparent url('images/admins16.png') no-repeat;
-    padding: 0 0 0 20px;
-    min-height: 16px;
-}
 .admin:before {
   content: '\f007  ';
   font-family: awesome;
@@ -1701,6 +1694,11 @@ ul.login_menu ul {
 .guy16:before {
   content: '\f007  ';
   font-family: awesome;
+}
+.admins16:before {
+  content: '\f0c0  ';
+  font-family: awesome;
+  color: gold;
 }
 .guys16:before {
   content: '\f0c0  ';
