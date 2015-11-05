@@ -4,6 +4,16 @@
     "formatting": "Formating",
     "error": "La requête au collecteur a renvoyé une erreur."
   },
+  "table": {
+    "live": "Live",
+    "link": "Lien",
+    "link_title": "Partagez votre vue par cet hyperlien",
+    "bookmarks": "Marque-pages",
+    "bookmarks_save": "Enregistrer les filtres actuels en marque-page",
+    "bookmarks_save_name": "Entrez le nom du nouveau marque-page",
+    "bookmarks_no_bookmarks": "Aucun marque-page",
+    "refresh": "  Recharger"
+  },
   "app": {
     "name": "collector"
   },

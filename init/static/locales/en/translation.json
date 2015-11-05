@@ -4,6 +4,16 @@
     "formatting": "Formating",
     "error": "The collector request returned an error."
   },
+  "table": {
+    "live": "Live",
+    "link": "Link",
+    "link_title": "Share your view using this hyperlink",
+    "bookmarks": "Bookmarks",
+    "bookmarks_save": "Save current filters as bookmark",
+    "bookmarks_save_name": "Enter new bookmark name",
+    "bookmarks_no_bookmarks": "No saved bookmarks",
+    "refresh": "  Refresh"
+  },
   "app": {
     "name": "collector"
   },

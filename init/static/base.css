@@ -684,22 +684,7 @@ html {
 }
 
 .flash {
-    z-index: 2;
-    position: absolute;
-    bottom: 0px;
-    opacity: 1.00;
-    margin: 0 auto;
-    width: 100%;
-    text-align: center;
-    clear: both;
-    color: white;
-    font-size: 11pt;
-    cursor: pointer;
-    background: cadetblue;
-}
-
-html>body .flash {
-    position: fixed;
+  padding: 2em
 }
 
 div.error {
@@ -1483,6 +1468,14 @@ ul.login_menu ul {
     padding: 0 0 0 20px;
     min-height: 16px;
 }
+.status:before {
+  content: '\f0f1  ';
+  font-family: awesome;
+}
+.settings:before {
+  content: '\f1de  ';
+  font-family: awesome;
+}
 .menu16:before {
   content: '\f00a  ';
   font-family: awesome;
@@ -2125,7 +2118,10 @@ ul.login_menu ul {
     padding-right: 1.5em;
     white-space: nowrap;
 }
- 
+.iconlist {
+    font-spacing: 0.2em;
+    white-space: nowrap;
+}
 .end {
   padding-left: 0.2em;
 }
@@ -2825,6 +2821,10 @@ input[type=checkbox].ocb:checked + label:after {
         padding: 1px;
 }
 
+input[disabled].ocb + label {
+	background: rgba(0,0,0,0.25);
+}
+
 /* css for timepicker */
 .ui-timepicker-div .ui-widget-header { margin-bottom: 8px; }
 .ui-timepicker-div dl { text-align: left; }
@@ -2836,44 +2836,6 @@ input[type=checkbox].ocb:checked + label:after {
 .ui-timepicker-rtl{ direction: rtl; }
 .ui-timepicker-rtl dl { text-align: right; }
 .ui-timepicker-rtl dl dd { margin: 0 65px 10px 10px; }
-
-
-@media screen and (max-width:960px) and (orientation: landscape) {
-  body {
-   -webkit-text-size-adjust: 70%;
-  }
-}
-
-@media all and (max-width:640px) {
-html {
-    font-size: 14pt;
-    -webkit-text-size-adjust: none;
-}
-textarea, table, td, th, code, pre, samp {
-    word-wrap: break-word; /* césure forcée */
-}
-.theader {
-    background-color: #e0e1cd;
-    color: black;
-    padding: 0;
-    margin-top: 0;
-    margin-bottom: 0;
-    max-height: 1.2em;
-}
-.theader:hover {
-    max-height: none;
-}
-.floatw {
-    float: right;
-    width: 100%;
-    text-align: center;
-    margin-left:0.5em;
-    margin-right:0.5em;
-}
-.sym_headers {
-    display: none;
-}
-} /* end small screen */
 
 .noselect {
     -webkit-touch-callout: none;
@@ -3015,3 +2977,43 @@ div.containertrans {
 .coloredDiv {
   height:20px; width:20px; float:left;
 }
+@media screen and (max-width:960px) and (orientation: landscape) {
+	body {
+		-webkit-text-size-adjust: 70%;
+	}
+}
+
+/* begin small screen */
+@media all and (max-width:640px) {
+	html {
+		font-size: 14pt;
+		-webkit-text-size-adjust: none;
+	}
+	textarea, table, td, th, code, pre, samp {
+		word-wrap: break-word; /* césure forcée */
+	}
+	.theader {
+		background-color: #e0e1cd;
+		color: black;
+		padding: 0;
+		margin-top: 0;
+		margin-bottom: 0;
+		max-height: 1.2em;
+	}
+	.theader:hover {
+		max-height: none;
+	}
+	.floatw {
+		float: right;
+		width: 100%;
+		text-align: center;
+		margin-left:0.5em;
+		margin-right:0.5em;
+	}
+	.sym_headers {
+		display: none;
+	}
+}
+/* end small screen */
+
+

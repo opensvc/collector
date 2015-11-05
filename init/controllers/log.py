@@ -1,27 +1,32 @@
 img_h = {
-  'checks': 'images/check16.png',
-  'networks': 'images/net16.png',
-  'dns': 'images/dns16.png',
-  'service': 'images/svc.png',
-  'apps': 'images/svc.png',
-  'auth': 'images/guys16.png',
-  'users': 'images/guys16.png',
-  'group': 'images/guys16.png',
-  'user': 'images/guy16.png',
-  'ack': 'images/check16.png',
-  'compliance': 'images/comp16.png',
-  'moduleset': 'images/action16.png',
-  'module': 'images/action16.png',
-  'action': 'images/action16.png',
-  'filterset': 'images/filter16.png',
-  'filter': 'images/filter16.png',
-  'add': 'images/add16.png',
-  'delete': 'images/del16.png',
-  'change': 'images/rename16.png',
-  'rename': 'images/rename16.png',
-  'attach': 'images/attach16.png',
-  'detach': 'images/detach16.png',
-  'password': 'images/lock.png',
+  'ack': 'check16',
+  'action': 'action16',
+  'add': 'add16',
+  'apps': 'svc',
+  'attach': 'attach16',
+  'auth': 'lock',
+  'change': 'edit16',
+  'checks': 'check16',
+  'compliance': 'comp16',
+  'delete': 'del16',
+  'detach': 'detach16',
+  'dns': 'dns16',
+  'filterset': 'filter16',
+  'filter': 'filter16',
+  'group': 'guys16',
+  'moduleset': 'action16',
+  'module': 'action16',
+  'networks': 'net16',
+  'node': 'node16',
+  'password': 'lock',
+  'rename': 'edit16',
+  'service': 'svc',
+  'status': 'status',
+  'status': 'status',
+  'table_settings': 'settings',
+  'table_filters': 'filter16',
+  'user': 'guy16',
+  'users': 'guys16',
 }
 
 class col_log_evt(HtmlTableColumn):
@@ -61,7 +66,7 @@ class col_log_icons(HtmlTableColumn):
             if w not in img_h or img_h[w] in d:
                 continue
             d.append(img_h[w])
-            i.append(IMG( _src=URL(r=request,c='static',f=img_h[w])))
+            i.append(SPAN(_class="iconlist "+img_h[w]))
         return SPAN(i)
 
 class col_log_level(HtmlTableColumn):

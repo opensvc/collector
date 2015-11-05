@@ -31,7 +31,7 @@ function fset_selector(divid, callback) {
 }
 
 function fset_selector_unset_fset(o) {
-  services_osvcdeleterest("R_USERS_SELF_FILTERSET", [], function(jd) {
+  services_osvcdeleterest("R_USERS_SELF_FILTERSET", [], "", "", function(jd) {
       o.span.empty()
       o.span.text(o.input.val())
       o.span.show()

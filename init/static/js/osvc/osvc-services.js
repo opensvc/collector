@@ -36,6 +36,8 @@ var services_access_uri = {
     "R_USERS_SELF" : "/rest/api/users/self",
     "R_USERS_SELF_FILTERSET" : "/rest/api/users/self/filterset",
     "R_USERS_SELF_FILTERSET_ONE" : "/rest/api/users/self/filterset/%1",
+    "R_USERS_SELF_TABLE_SETTINGS" : "/rest/api/users/self/table_settings",
+    "R_USERS_SELF_TABLE_FILTERS" : "/rest/api/users/self/table_filters",
     "R_USER_APPS" : "/rest/api/users/%1/apps",
     "R_USER_GROUPS" : "/rest/api/users/%1/groups",
     "R_GROUPS" : "/rest/api/groups",
@@ -148,7 +150,7 @@ function services_osvcgetrest(service, uri, params, callback, error_callback)
 
 }
 
-function services_osvcdeleterest(service, uri, callback, error_callback)
+function services_osvcdeleterest(service, uri, params, data, callback, error_callback)
 {
     url = services_getaccessurl(service)
     if (is_blank(url))
@@ -159,10 +161,18 @@ function services_osvcdeleterest(service, uri, callback, error_callback)
     for(i=0; i<uri.length; i++) {
         url = url.replace("%"+(i+1), uri[i])
     }
+    if (Object.keys(params).length > 0) {
+        url += "?"
+        for (key in params) {
+            url += encodeURIComponent(key) + "=" + encodeURIComponent(params[key]) + "&";
+        }
+        url = url.replace(/&$/, "");
+    }
     var req = $.ajax(
     {
         type: "DELETE",
         url: url,
+        data: data,
         error: error_callback,
         success: callback,
     });
@@ -223,13 +233,12 @@ function services_ajax_error_fmt(xhr, stat, error) {
 }
 
 function services_error_fmt(data) {
-    e = $("<span class='alert16'></span>")
-    e.text(i18n.t("api.error"))
+    e = $("<span><span class='alert16 err fa-2x'></span><span data-i18n='api.error'></span></span>")
+    e.i18n()
     p = $("<pre></pre>")
     p.text(data.error)
     p.css({
-      "padding": "5px",
-      "padding-left": "20px",
+      "padding": "2em 0 0 0",
     })
     e.append(p)
     return e

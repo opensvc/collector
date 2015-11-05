@@ -632,10 +632,10 @@ function table_add_filtered_to_visible_columns(t) {
     var ckcc = t.id+"_cc_"+col
     var val = $(this).val()
     if (val === "") {
-      $("#"+t.id).find("[name="+ckcc+"]").removeAttr("disabled")
+      t.div.find("[name="+ckcc+"]").removeAttr("disabled")
       return
     }
-    $("#"+t.id).find("[name="+ckcc+"]").attr("disabled", "true")
+    t.div.find("[name="+ckcc+"]").attr("disabled", "true")
     if (t.visible_columns.indexOf(col) >= 0) {
       return
     }
@@ -731,10 +731,10 @@ function table_data_to_lines(t, data) {
 }
 
 function table_refresh(t) {
-    if ($("#"+t.id).length > 0 && !$("#"+t.id).is(":visible")) {
+    if (t.div.length > 0 && !t.div.is(":visible")) {
         return
     }
-    if ($("#refresh_"+t.id).length > 0 && $("#refresh_"+t.id).hasClass("spinner")) {
+    if (t.e_tool_refresh.length > 0 && t.e_tool_refresh_spin.hasClass("fa-spin")) {
         t.need_refresh = true
         return
     } else {
@@ -742,9 +742,9 @@ function table_refresh(t) {
     }
 
     // move open tabs to overlay to preserve what was in use
-    if ($("#"+t.id).find(".extraline").children("td").children("table").length > 0) {
+    if (t.div.find(".extraline").children("td").children("table").length > 0) {
       $("#overlay").empty().hide()
-      $("#"+t.id).find(".extraline").children("td").children("table").parent().each(function() {
+      t.div.find(".extraline").children("td").children("table").parent().each(function() {
         var e = $("<div></div>")
         e.attr("id", $(this).attr("id"))
         e.append($(this).children())
@@ -780,7 +780,7 @@ function table_refresh(t) {
          data: data,
          context: document.body,
          beforeSend: function(req){
-             $("#"+t.id).find(".nodataline>td").text(T("Loading data"))
+             t.div.find(".nodataline>td").text(T("Loading data"))
          },
          success: function(msg){
              // disable DOM insert event trigger for perf
@@ -794,7 +794,7 @@ function table_refresh(t) {
                  var pager = data['pager']
                  var lines = data['table_lines']
              } catch(e) {
-                 $("#"+t.id).html(msg)
+                 t.div.html(msg)
                  return
              }
 
@@ -851,9 +851,7 @@ function table_refresh(t) {
              old_line = null
              old_lines = null
 
-             try {
-               _table_pager(t.id, pager["page"], pager["perpage"], pager["start"], pager["end"], pager["total"])
-             } catch(e) {}
+             t.pager(pager)
              t.add_filtered_to_visible_columns()
              t.bind_checkboxes()
              t.bind_filter_selector()
@@ -872,7 +870,7 @@ function table_refresh(t) {
              t.on_change()
 
              if (t.need_refresh) {
-               $("#refresh_"+t.id).trigger("click")
+               t.e_tool_refresh.trigger("click")
              }
          }
     })
@@ -969,9 +967,7 @@ function table_insert(t, data) {
                  new_line = new_line.prev(".tl")
              }
              n_new_lines -= modified.length
-             pager_total = $("#table_"+t.id).attr("pager_total")
-             pager_total = parseInt(pager_total) + n_new_lines
-             $("#table_"+t.id).attr("pager_total", pager_total)
+             t.options.pager.total += n_new_lines
 
              t.pager()
              t.trim_lines()
@@ -1009,13 +1005,13 @@ function table_ajax_submit(url, id, additional_inputs, input_name, additional_in
     var t = osvc.tables[id]
 
     // close dialogs
-    $("#"+t.id).find(".white_float").hide()
-    $("#"+t.id).find(".white_float_input").hide()
+    t.div.find(".white_float").hide()
+    t.div.find(".white_float_input").hide()
 
     var inputs = ['tableid', id+"_page", id+"_perpage"]
     var s = inputs.concat(additional_inputs).concat(getIdsByName(input_name))
-    $("#"+t.id).find("[name="+additional_input_name+"]").each(function(){s.push(this.id)})
-    $("#"+t.id).find("input[id^="+t.id+"_f_]").each(function(){s.push(this.id)})
+    t.div.find("[name="+additional_input_name+"]").each(function(){s.push(this.id)})
+    t.div.find("input[id^="+t.id+"_f_]").each(function(){s.push(this.id)})
     var query="table_id="+t.id
     for (i=0; i<s.length; i++) {
         if (i > 0) {query=query+"&"}
@@ -1133,78 +1129,8 @@ function filter_submit(id,k,v){
   osvc.tables[id].refresh_column_filters()
 };
 
-function table_insert_bookmark(t, bookmark) {
-  s = "<p><a name='bookmark' class='bookmark16'>"+bookmark+"</a><a style='float:right' class='del16'></a></p>"
-  $('#'+t.id).find("[name^=bookmark].white_float").children("span").append(s)
-  t.bind_bookmark()
-}
-
-function table_bind_bookmark(t) {
-  $('[name=bookmarks'+t.id+']').find(".del16").bind("click", function() {
-    var bookmark = $(this).siblings("[name=bookmark]").text()
-    var url = $(location).attr("origin") + "/init/ajax/del_bookmark"
-    var query = "table_id="+t.id+"&bookmark="+encodeURIComponent(bookmark)
-    var line = $(this).parents("p").first()
-    $.ajax({
-         type: "POST",
-         url: url,
-         data: query,
-         success: function(msg){
-           line.remove()
-           $(".white_float").hide()
-           $(".white_float_input").hide()
-         }
-    })
-  })
-  $('[name=bookmarks'+t.id+']').find("[name=bookmark]").bind("click", function() {
-    var bookmark = $(this).text()
-    var url = $(location).attr("origin") + "/init/ajax/load_bookmark"
-    var query = "table_id="+t.id+"&bookmark="+encodeURIComponent(bookmark)
-    $.ajax({
-         type: "POST",
-         url: url,
-         data: query,
-         success: function(msg){
-           var l = $.parseJSON(msg)
-           for (var i=0; i<t.columns.length; i++) {
-             var k = t.id + "_f_" + t.columns[i]
-             $("#"+k).val("")
-           }
-           for (var i=0; i<l.length; i++) {
-             var data = l[i]
-             var k = t.id + "_f_" + data['col_name'].split('.')[1]
-             var v = data['col_filter']
-             $("#"+k).val(v)
-           }
-           $(".white_float").hide()
-           $(".white_float_input").hide()
-           t.format_header()
-           t.refresh()
-         }
-    })
-  })
-  $('[name=bookmarks'+t.id+']').find("[id^=bookmark_name_input]").bind("keyup", function(event) {
-    if (!is_enter(event)) {
-      return
-    }
-    var url = $(location).attr("origin") + "/init/ajax/save_bookmark"
-    var bookmark = $(this).val()
-    var query = "table_id="+t.id+"&bookmark="+encodeURIComponent(bookmark)
-    $.ajax({
-         type: "POST",
-         url: url,
-         data: query,
-         success: function(msg){
-           t.insert_bookmark(bookmark)
-           $(".white_float").hide()
-           $(".white_float_input").hide()
-         }
-    })
-  })
-}
-
 function table_bind_filter_input_events(t) {
-  var inputs = $("#"+t.id).find("input[name=fi]")
+  var inputs = t.div.find("input[name=fi]")
   var url = t.ajax_url + "_col_values/"
 
   // refresh column filter cloud on keyup
@@ -1497,7 +1423,7 @@ function table_action_menu(t, e){
 
   // position the popup at the mouse click
   var pos = get_pos(e)
-  $("#"+t.id).append(s)
+  t.div.append(s)
   $("#am_"+t.id).css({"left": pos[0] + "px", "top": pos[1] + "px"})
 
   // bind action click triggers
@@ -1970,7 +1896,7 @@ function menu_action_status(msg){
   if (msg.factorized>0) {
     s = "factorized: "+msg.factorized+", "+s
   }
-  $(".flash").html(s).slideDown().effect("fade", 5000)
+  $(".flash").html(s).show("fold")
 }
 
 function table_action_menu_modules_all(t, e){
@@ -2657,24 +2583,29 @@ function get_view_url() {
 }
 
 function table_link(t){
-  if ($("#link_val_"+t.id).is(":visible")) {
-    $("#link_val_"+t.id).hide()
+  if (t.e_tool_link_area.is(":visible")) {
+    t.e_tool_link_area.hide()
     return
   }
   var url = get_view_url()
-  var re = /#$/;
-  url = url.replace(re, "")+"?";
-  args = "clear_filters=true&discard_filters=true&dbfilter="+$("#avs"+t.id).val()
-  $("#"+t.id).find("[name=fi]").each(function(){
+  url = url.replace(/#$/, "")+"?";
+  var args = "clear_filters=true&discard_filters=true"
+
+  // fset
+  var current_fset = t.e_fset_selector.find(":selected").attr("id")
+  args += "&dbfilter="+current_fset
+
+  t.div.find("[name=fi]").each(function(){
     if ($(this).val().length==0) {
       return
     }
-    args=args+'&'+$(this).attr('id')+"="+encodeURIComponent($(this).val())
+    args += '&'+$(this).attr('id')+"="+encodeURIComponent($(this).val())
   })
-  $("#link_val_"+t.id).children("textarea").val(url+args).attr("readonly", "on").select()
-  $("#link_val_"+t.id).show()
-  $("#link_val_"+t.id).children("textarea").select()
-  keep_inside($("#link_val_"+t.id))
+  t.e_tool_link_textarea.val(url+args).attr("readonly", "on").select()
+  t.e_tool_link_area.show()
+  t.e_tool_link_textarea.autogrow()
+  t.e_tool_link_textarea.select()
+  keep_inside(t.e_tool_link_area.get())
 }
 
 function table_add_scrollers(t) {
@@ -2686,7 +2617,10 @@ function table_add_scrollers(t) {
 }
 
 function table_add_fset_selector(t) {
-  t.e_fset_selector = $("#"+t.id).find("[name=fset_selector]").first()
+  if (!t.options.dbfilterable) {
+    return
+  }
+  t.e_fset_selector = t.div.find("[name=fset_selector]").first()
   t.e_fset_selector.uniqueId()
   fset_selector(t.e_fset_selector.attr("id"), function(){t.refresh()})
 }
@@ -2729,7 +2663,7 @@ function table_add_filterbox(t) {
   s +=  "</tr>"
   s += "</table>"
   s += "</span>"
-  $("#"+t.id).append(s)
+  t.div.append(s)
 }
 
 function cell_span(id, e) {
@@ -3865,14 +3799,327 @@ function table_cell_decorator(id) {
 
 
 //
-// table pager
+// table tool: bookmarks
 //
-function _table_pager(id, p_page, p_perpage, p_start, p_end, p_total) {
-  var pager = $("#"+id).find(".pager")
-  var p_page = parseInt(p_page)
-  var p_start = parseInt(p_start)
-  var p_end = parseInt(p_end)
-  var p_total = parseInt(p_total)
+function table_add_bookmarks(t) {
+  if (!t.options.bookmarkable) {
+    return
+  }
+
+  var e = $("<div class='floatw' name='tool_bookmark'></div>")
+
+  var span = $("<span class='bookmark16' data-i18n='table.bookmarks'></span>")
+  e.append(span)
+
+  var area = $("<div class='white_float hidden'></div>")
+  e.append(area)
+
+  var save = $("<a class='add16' data-i18n='table.bookmarks_save'></a>")
+  area.append(save)
+
+  var save_name = $("<div class='hidden'><hr><div class='edit16' data-i18n='table.bookmarks_save_name'></div><div>")
+  area.append(save_name)
+
+  var save_name_input = $("<input class='editable' />")
+  var now = new Date()
+  save_name_input.val(print_date(now))
+  save_name.append(save_name_input)
+
+  area.append("<hr>")
+
+  var listarea = $("<span></span>")
+  area.append(listarea)
+  t.e_tool_bookmarks_listarea = listarea
+
+  var params = {
+    "query": "col_tableid="+t.id,
+    "limit": "0",
+    "props": "bookmark"
+  }
+  spinner_add(listarea)
+  services_osvcgetrest("R_USERS_SELF_TABLE_FILTERS", "", params, function(jd) {
+    spinner_del(listarea)
+    if (!jd.data) {
+      return
+    }
+    if (!jd.data.length) {
+      listarea.text(i18n.t("table.bookmarks_no_bookmarks"))
+      return
+    }
+
+    var done = []
+    for (var i=0; i<jd.data.length; i++) {
+      var name = jd.data[i].bookmark
+      if (name == "current") {
+        continue
+      }
+      if (done.indexOf(name) >= 0) {
+        continue
+      }
+      done.push(name)
+      t.insert_bookmark(name)
+    }
+  },
+  function(xhr, stat, error) {
+    spinner_del(listarea)
+    $(".flash").show("fold").html(services_ajax_error_fmt(xhr, stat, error))
+  })
+
+  e.i18n()
+  t.e_tool_bookmarks = e
+  t.e_tool_bookmarks_area = area
+  t.e_tool_bookmarks_save = save
+  t.e_tool_bookmarks_save_name = save_name
+  t.e_tool_bookmarks_save_name_input = save_name_input
+
+  // bindings
+  span.bind("click", function() {
+    area.toggle()
+  })
+
+  save.bind("click", function() {
+    save_name.toggle("fold")
+    save_name_input.focus()
+  })
+
+  save_name_input.bind("keyup", function(event) {
+    if (!is_enter(event)) {
+      return
+    }
+    var url = $(location).attr("origin") + "/init/ajax/save_bookmark"
+    var bookmark = $(this).val()
+    var query = "table_id="+t.id+"&bookmark="+encodeURIComponent(bookmark)
+    $.ajax({
+         type: "POST",
+         url: url,
+         data: query,
+         success: function(msg){
+           t.insert_bookmark(bookmark)
+           t.e_tool_bookmarks_save_name.hide()
+           t.e_tool_bookmarks_save.show()
+         }
+    })
+  })
+
+  t.e_toolbar.prepend(e)
+}
+
+function table_insert_bookmark(t, name) {
+  if (t.e_tool_bookmarks_listarea.find("p").length == 0) {
+    // remove the "no_bookmarks" msg
+    t.e_tool_bookmarks_listarea.text("")
+  }
+  var bookmark = $("<p></p>")
+  bookmark.append($("<a class='bookmark16'>"+name+"</a>"))
+  bookmark.append($("<a style='float:right' class='del16'>&nbsp;</a>"))
+  t.e_tool_bookmarks_listarea.append(bookmark)
+
+  bookmark.find(".del16").bind("click", function() {
+    var name = $(this).prev().text()
+    var line = $(this).parents("p").first()
+    data = {
+      "col_tableid": t.id,
+      "bookmark": name,
+    }
+    services_osvcdeleterest("R_USERS_SELF_TABLE_FILTERS", "", "", data, function(jd) {
+      if (jd.error) {
+        $(".flash").show("fold").html(services_error_fmt(jd))
+        return
+      }
+      line.hide("fold", function(){line.remove()})
+    },
+    function(xhr, stat, error) {
+      $(".flash").show("fold").html(services_ajax_error_fmt(xhr, stat, error))
+    })
+  })
+  bookmark.find(".bookmark16").bind("click", function() {
+    var bookmark = $(this).text()
+    var url = $(location).attr("origin") + "/init/ajax/load_bookmark"
+    var query = "table_id="+t.id+"&bookmark="+encodeURIComponent(bookmark)
+    $.ajax({
+         type: "POST",
+         url: url,
+         data: query,
+         success: function(msg){
+           var l = $.parseJSON(msg)
+           for (var i=0; i<t.columns.length; i++) {
+             var k = t.id + "_f_" + t.columns[i]
+             $("#"+k).val("")
+           }
+           for (var i=0; i<l.length; i++) {
+             var data = l[i]
+             var k = t.id + "_f_" + data['col_name'].split('.')[1]
+             var v = data['col_filter']
+             $("#"+k).val(v)
+           }
+           $(".white_float").hide()
+           $(".white_float_input").hide()
+           t.format_header()
+           t.refresh()
+         }
+    })
+  })
+}
+
+
+//
+// table tool: link
+//
+function table_add_link(t) {
+  if (!t.options.linkable) {
+    return
+  }
+
+  var e = $("<div class='floatw' name='tool_link'></div>")
+
+  var span = $("<span class='link16'></span>")
+  span.attr("title", i18n.t("table.link_title"))
+  span.text(i18n.t("table.link"))
+  e.append(span)
+
+  var area = $("<div class='white_float hidden'><textarea class='link_ta' /></div>")
+  e.append(area)
+
+  // bindings
+  e.bind("click", function() {
+    t.link()
+  })
+
+  area.children("textarea").bind("click", function(){
+    window.open($(this).val(), '_blank')
+  })
+
+  $(this).bind("keypress", function(event) {
+    if ($('input').is(":focus")) { return }
+    if ($('textarea').is(":focus")) { return }
+    if ( event.which == 108 ) {
+      t.link()
+    }
+  })
+
+  t.e_tool_link = e
+  t.e_tool_link_area = area
+  t.e_tool_link_textarea = area.children("textarea")
+  t.e_toolbar.prepend(e)
+}
+
+//
+// table tool: refresh
+//
+function table_add_refresh(t) {
+  if (!t.options.refreshable) {
+    return
+  }
+
+  var e = $("<div class='floatw' name='tool_refresh'><span class='refresh16'></span><span data-i18n='table.refresh'></span></div>")
+  e.i18n()
+
+  // bindings
+  e.bind("click", function(){
+    t.refresh()
+  })
+
+  $(this).bind("keypress", function(event) {
+    if ($('input').is(":focus")) { return }
+    if ($('textarea').is(":focus")) { return }
+    if ( event.which == 114 ) {
+      t.refresh()
+    }
+  })
+
+  t.e_tool_refresh = e
+  t.e_tool_refresh_spin = e.find(".refresh16")
+  t.e_toolbar.prepend(e)
+}
+
+//
+// table tool: websocket toggle
+//
+function table_add_wsswitch(t) {
+  if (!t.options.wsable) {
+    return
+  }
+
+  // checkbox
+  var input = $("<input type='checkbox' class='ocb' />")
+  input.uniqueId()
+  input.bind("click", function() {
+    var current_state
+    if ($(this).is(":checked")) {
+      current_state = 1
+    } else {
+      current_state = 0
+    }
+    var data = {
+      "upc_table": t.id,
+      "upc_field": "wsenabled",
+      "upc_visible": current_state,
+    }
+    services_osvcpostrest("R_USERS_SELF_TABLE_SETTINGS", "", "", data, function(jd) {
+      if (t.need_refresh) {
+        t.refresh()
+      }
+    },
+    function(xhr, stat, error) {
+      $(".flash").show("fold").html(services_ajax_error_fmt(xhr, stat, error))
+    })
+  })
+
+  // label
+  var label = $("<label></label>")
+  label.attr("for", input.attr("id"))
+
+  // title
+  var title = $("<span style='padding-left:0.3em;'></span>")
+  title.text(i18n.t("table.live"))
+
+  // container
+  var e = $("<span class='floatw'><span data-i18n='table.live'></span></span>")
+  e.append(input)
+  e.append(label)
+  e.append(title)
+
+  var data = {
+    "query": "upc_table="+t.id+" and upc_field=wsenabled",
+    "meta": "0"
+  }
+  input.prop("disabled", true)
+  services_osvcgetrest("R_USERS_SELF_TABLE_SETTINGS", "", data, function(jd) {
+    input.prop("disabled", false)
+    if (!jd.data) {
+      return
+    }
+    if (jd.data[0].upc_visible) {
+      input.prop("checked", true)
+    } else {
+      input.prop("checked", false)
+    }
+  },
+  function(xhr, stat, error) {
+    $(".flash").show("fold").html(services_ajax_error_fmt(xhr, stat, error))
+  })
+
+  t.e_toolbar.prepend(e)
+  t.e_wsswitch = e
+}
+
+
+//
+// table tool: pager
+//
+function table_pager(t, options) {
+  if (!t.e_pager) {
+    return
+  }
+  if (options) {
+    t.options.pager = options
+  }
+
+  var p_page = parseInt(t.options.pager.page)
+  var p_start = parseInt(t.options.pager.start)
+  var p_end = parseInt(t.options.pager.end)
+  var p_total = parseInt(t.options.pager.total)
+  var p_perpage = parseInt(t.options.pager.perpage)
 
   if ((p_total > 0) && (p_end > p_total)) {
     p_end = p_total
@@ -3911,33 +4158,40 @@ function _table_pager(id, p_page, p_perpage, p_start, p_end, p_total) {
   }
   d += selector
 
-  pager.empty()
-  pager.append(d)
-  pager.children("span").each(function () {
+  t.e_pager.empty()
+  t.e_pager.append(d)
+  t.e_pager.children("span").each(function () {
     $(this).addClass('current_page clickable')
   })
-  pager.children("[name=pager_right]").click(function(){
-    filter_submit(id, id+"_page", p_page+1)
+  t.e_pager.children("[name=pager_right]").click(function(){
+    filter_submit(t.id, t.id+"_page", p_page+1)
   })
-  pager.children("[name=pager_left]").click(function(){
-    filter_submit(id, id+"_page", p_page-1)
+  t.e_pager.children("[name=pager_left]").click(function(){
+    filter_submit(t.id, t.id+"_page", p_page-1)
   })
-  pager.children("[name=pager_center]").click(function(){
+  t.e_pager.children("[name=pager_center]").click(function(){
     $(this).parent().children("[name=pager_perpage]").toggle()
   })
-  pager.find("[name=perpage_val]").click(function(){
-    filter_submit(id, id+"_perpage", parseInt($(this).text()))
+  t.e_pager.find("[name=perpage_val]").click(function(){
+    var data = {
+      "perpage": parseInt($(this).text())
+    }
+    services_osvcpostrest("R_USERS_SELF", "", "", data, function(jd) {
+      t.refresh()
+    },
+    function(xhr, stat, error) {
+      $(".flash").show("fold").html(services_ajax_error_fmt(xhr, stat, error))
+    })
   })
 }
 
-function table_pager(t) {
-  var te = $("#table_"+t.id)
-  p_page = te.attr("pager_page")
-  p_perpage = te.attr("pager_perpage")
-  p_start = te.attr("pager_start")
-  p_end = te.attr("pager_end")
-  p_total = te.attr("pager_total")
-  _table_pager(t.id, p_page, p_perpage, p_start, p_end, p_total)
+function table_add_pager(t) {
+  if (!t.options.pageable) {
+    return
+  }
+  var e = $("<span class='pager floatw'></span>")
+  t.e_toolbar.prepend(e)
+  t.e_pager = e
 }
 
 //
@@ -3993,39 +4247,6 @@ function table_scroll_enable_dom(t) {
 }
 function table_scroll_disable_dom(t) {
   $(window).unbind("DOMNodeInserted", table_scroll(t))
-}
-
-function table_bind_link(t) {
-  l = $("#link_"+t.id)
-  if (l.length != 1) {
-    // linkable = false
-    return
-  }
-  $("#link_"+t.id).bind("click", function(){
-    t.link()
-  })
-  $(this).bind("keypress", function(event) {
-    if ($('input').is(":focus")) { return }
-    if ($('textarea').is(":focus")) { return }
-    if ( event.which == 108 ) {
-      //event.preventDefault()
-      t.link()
-    }
-  })
-}
-
-function table_bind_refresh(t) {
-  $("#refresh_"+t.id).parent().bind("click", function(){
-    t.refresh()
-  })
-  $(this).bind("keypress", function(event) {
-    if ($('input').is(":focus")) { return }
-    if ($('textarea').is(":focus")) { return }
-    if ( event.which == 114 ) {
-      //event.preventDefault()
-      t.refresh()
-    }
-  })
 }
 
 function table_bind_filter_reformat(t) {
@@ -4106,11 +4327,11 @@ function table_relocate_extra_rows(t) {
 }
 
 function table_unset_refresh_spin(t) {
-  $("#refresh_"+t.id).removeClass("fa-spin")
+  t.e_tool_refresh_spin.removeClass("fa-spin")
 }
 
 function table_set_refresh_spin(t) {
-  $("#refresh_"+t.id).addClass("fa-spin")
+  t.e_tool_refresh_spin.addClass("fa-spin")
 }
 
 
@@ -4120,6 +4341,7 @@ var osvc = {
 
 function table_init(opts) {
   var t = {
+    'options': opts,
     'need_refresh': false,
     'id': opts['id'],
     'extrarow': opts['extrarow'],
@@ -4158,23 +4380,14 @@ function table_init(opts) {
     'bind_persistent_filter': function(){
       table_bind_persistent_filter(this)
     },
-    'bind_bookmark': function(){
-      table_bind_bookmark(this)
-    },
-    'insert_bookmark': function(bookmark){
-      table_insert_bookmark(this, bookmark)
-    },
-    'bind_refresh': function(){
-      table_bind_refresh(this)
+    'insert_bookmark': function(name){
+      table_insert_bookmark(this, name)
     },
     'bind_checkboxes': function(){
       table_bind_checkboxes(this)
     },
-    'bind_link': function(){
-      table_bind_link(this)
-    },
-    'pager': function(){
-      table_pager(this)
+    'pager': function(options){
+      table_pager(this, options)
     },
     'trim_lines': function(){
       table_trim_lines(this)
@@ -4244,34 +4457,56 @@ function table_init(opts) {
     },
     'refresh': function(){
       table_refresh(this)
+    },
+    'add_pager': function(){
+      table_add_pager(this)
+    },
+    'add_wsswitch': function(){
+      table_add_wsswitch(this)
+    },
+    'add_refresh': function(){
+      table_add_refresh(this)
+    },
+    'add_link': function(){
+      table_add_link(this)
+    },
+    'add_bookmarks': function(){
+      table_add_bookmarks(this)
     }
   }
+
+  // selectors cache
+  t.div = $("#"+t.id)
+  t.e_toolbar = t.div.find("[name=toolbar]").first()
+
   osvc.tables[t.id] = t
-  $("#"+t.id).find("select").parent().css("white-space", "nowrap")
-  $("#"+t.id).find("select:visible").combobox()
+  t.div.find("select").parent().css("white-space", "nowrap")
+  t.div.find("select:visible").combobox()
 
   create_overlay()
+  t.add_bookmarks()
+  t.add_link()
+  t.add_refresh()
+  t.add_wsswitch()
+  t.add_pager()
   t.add_filtered_to_visible_columns()
   t.hide_cells()
   t.format_header()
   t.add_filterbox()
   t.add_fset_selector()
   t.add_scrollers()
-  t.bind_refresh()
-  t.bind_link()
-  t.bind_bookmark()
   t.bind_persistent_filter()
   t.scroll_enable()
 
   if (t.dataable) {
     t.refresh()
   } else {
+    t.pager()
     t.bind_checkboxes()
     t.hide_cells()
     t.decorate_cells()
     t.bind_filter_selector()
     t.bind_action_menu()
-    t.pager()
     t.restripe_lines()
   }
 }

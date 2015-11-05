@@ -7,40 +7,6 @@ def print_duration(begin, s):
     print s, duration
     return end
 
-def select_filter(fset_id):
-    # refuse to change filter for locked-filter users
-    q = db.auth_user.id == auth.user_id
-    rows = db(q).select(db.auth_user.lock_filter, cacheable=True)
-    if len(rows) != 1:
-        return
-    if rows.first().lock_filter:
-        return
-
-    try:
-        cast_fset_id = int(fset_id)
-    except:
-        return
-
-    # ok, let's do it
-    q = db.gen_filterset_user.user_id == auth.user_id
-    if fset_id == "0":
-        db(q).delete()
-    else:
-        n = db(q).count()
-        if n > 1:
-            db(q).delete()
-            n = 0
-        if n == 1:
-            try:
-                db(q).update(fset_id=fset_id)
-            except:
-                pass
-        elif n == 0:
-            try:
-                db.gen_filterset_user.insert(user_id=auth.user_id, fset_id=fset_id)
-            except:
-                pass
-
 class ToolError(Exception):
     def __init__(self, value):
         self.value = value
@@ -234,19 +200,12 @@ class HtmlTable(object):
         else:
             self.overlimit = ""
         if self.pageable:
-            if self.id_perpage in request.vars:
-                q = db.auth_user.id==auth.user.id
-                self.perpage = int(request.vars[self.id_perpage])
-                try:
-                    db(q).update(perpage=self.perpage)
-                except:
-                    pass
-            else:
-                q = db.auth_user.id==auth.user.id
-                try:
-                    self.perpage = db(q).select(cacheable=True).first().perpage
-                except:
-                    self.perpage = 20
+            q = db.auth_user.id==auth.user.id
+            try:
+                self.perpage = db(q).select(cacheable=True).first().perpage
+            except:
+                self.perpage = 20
+
             if self.perpage > max_perpage:
                 self.perpage = max_perpage
 
@@ -377,19 +336,9 @@ class HtmlTable(object):
                 continue
             self.colprops[field].display = True
 
-    def format_av_filter(self, f):
-        if f is None:
-            name = T("None")
-            fset_id = 0
-        else:
-            name = f.fset_name
-            fset_id = f.id
-        return OPTION(
-                 name,
-                 _value=fset_id,
-               )
-
     def persistent_filters(self):
+        if not self.dbfilterable:
+            return SPAN()
         s = SPAN(
               T('Filter'),
               ': ',
@@ -467,46 +416,6 @@ class HtmlTable(object):
             )
         return d
 
-    def link(self):
-        if not self.linkable:
-            return SPAN()
-        d = DIV(
-              A(
-                SPAN(
-                  T('Link'),
-                  _title=T("Share your view using this hyperlink"),
-                  _class='link16',
-                  _id='link_'+self.id,
-                ),
-                DIV(
-                  TEXTAREA(
-                    _class="link_ta",
-                  ),
-                  _class='white_float hidden',
-                  _id='link_val_'+self.id,
-                ),
-              ),
-              _class='floatw',
-            )
-        return d
-
-    def refresh(self):
-        if not self.refreshable:
-            return SPAN()
-        url = URL(r=request,f=self.func)
-        d = DIV(
-              A(
-                SPAN(
-                  _class='refresh16',
-                  _id='refresh_'+self.id,
-                ),
-                "  ",
-                T('Refresh'),
-              ),
-              _class='floatw',
-            )
-        return d
-
     def commonality(self):
         if not self.commonalityable:
             return SPAN()
@@ -530,74 +439,6 @@ class HtmlTable(object):
               ),
               _class='floatw',
            )
-        return d
-
-    def bookmark(self):
-        if not self.bookmarkable:
-            return SPAN()
-        q = db.column_filters.user_id == auth.user_id
-        q &= db.column_filters.col_tableid == self.id
-        q &= db.column_filters.bookmark != "current"
-        rows = db(q).select(cacheable=True,
-                            groupby=db.column_filters.bookmark,
-                            orderby=db.column_filters.bookmark)
-        d = DIV(
-              A(
-                T("Save current filters as bookmark"),
-                _class="bookmark_add16",
-                _onclick="""click_toggle_vis(event, '%(div)s','block');"""%dict(
-                  div="bookmark_name"+self.id,
-                ),
-              ),
-              DIV(
-                DIV(
-                  T("Enter new bookmark name"),
-                  _style='white-space: nowrap;',
-                ),
-                INPUT(
-                  _value=str(datetime.datetime.now()),
-                  _id='bookmark_name_input'+self.id,
-                ),
-                _name='bookmark_name'+self.id,
-                _class='white_float',
-                _style='display:none;',
-              ),
-            )
-        l = [d, HR()]
-        if len(rows) == 0:
-            l.append(T("No saved bookmarks"))
-        else:
-            for row in rows:
-                d = P(
-                      A(
-                        row.bookmark,
-                        _class="bookmark16",
-                        _name="bookmark",
-                      ),
-                      A(
-                        _class="del16",
-                        _style="float:right;",
-                      ),
-                    )
-                l.append(d)
-
-
-        d = DIV(
-              A(
-                T("Bookmarks"),
-                _class="bookmark16",
-                _onclick="""click_toggle_vis(event, '%(div)s','block');"""%dict(
-                  div="bookmarks"+self.id,
-                ),
-              ),
-              DIV(
-                SPAN(l),
-                _name='bookmarks'+self.id,
-                _class='white_float',
-                _style='max-width:50%;display:none;',
-              ),
-              _class='floatw',
-            )
         return d
 
     def pager_info(self):
@@ -682,19 +523,10 @@ class HtmlTable(object):
             formatter = self._table_lines_data
         d = {
           'format': fmt,
-          'wsenabled': wsenabled,
           'pager': self.pager_info(),
           'table_lines': formatter(),
         }
         return json.dumps(d)
-
-    def pager(self):
-        if not self.pageable:
-            return SPAN()
-
-        nav = SPAN(_class='pager floatw')
-
-        return nav
 
     def col_checkbox_key(self, f):
         return '_'.join((self.id, 'cc', f))
@@ -774,8 +606,6 @@ class HtmlTable(object):
         return '.'.join((cp.table, cp.field))
 
     def drop_filters(self, bookmark="current"):
-        if request.vars.dbfilter is not None:
-            select_filter(request.vars.dbfilter)
         if request.vars.clear_filters != 'true':
             return
         q = db.column_filters.col_tableid==self.id
@@ -1128,31 +958,6 @@ class HtmlTable(object):
             self.wsenabled = ''
         return self.wsenabled
 
-    def wsswitch(self):
-        if not self.wsable:
-            return SPAN()
-        wsenabled = self.get_wsenabled()
-        js ="""ajax("%(url)s/%(table)s/wsenabled/"+this.checked, [], "set_col_dummy"); if (osvc.tables["%(id)s"].need_refresh) {osvc.tables["%(id)s"].refresh()};
-            """%dict(url=URL(r=request,c='ajax',f='ajax_set_user_prefs_column2'),
-                     table=self.upc_table,
-                     id=self.id,
-                    )
-        d = SPAN(
-          INPUT(
-            _type="checkbox",
-            _class='ocb',
-            _id="wsswitch_"+self.id,
-            _onclick=js,
-            value=wsenabled,
-          ),
-          LABEL(
-            _for="wsswitch_"+self.id,
-          ),
-          SPAN(T("Live")),
-          _class='floatw'
-        )
-        return d
-
     def html(self):
         if len(request.args) == 1 and request.args[0] == 'commonality':
             return self.do_commonality()
@@ -1233,29 +1038,27 @@ class HtmlTable(object):
         if len(lines) > 0:
             table_lines += lines
 
+        pager_attrs = dict(
+          perpage=int(self.perpage),
+          page=int(self.page),
+          start=int(self.pager_start),
+          end=int(self.pager_end),
+          total=int(self.totalrecs),
+        )
         table_attrs = dict(
           _id="table_"+self.id,
           _order=",".join(self.order),
-          _pager_perpage=self.perpage,
-          _pager_page=self.page,
-          _pager_start=self.pager_start,
-          _pager_end=self.pager_end,
-          _pager_total=self.totalrecs,
         )
         d = DIV(
               self.show_flash(),
               DIV(
-                self.pager(),
-                self.wsswitch(),
-                self.refresh(),
-                self.link(),
-                self.bookmark(),
                 export,
                 self.columns_selector(),
                 self.commonality(),
                 self.persistent_filters(),
                 additional_tools,
                 DIV('', _class='spacer'),
+                _name='toolbar',
                 _class='theader',
               ),
               additional_filters,
@@ -1282,6 +1085,7 @@ class HtmlTable(object):
                 """
 table_init({
  'id': '%(id)s',
+ 'pager': %(pager)s,
  'extrarow': %(extrarow)s,
  'extrarow_class': "%(extrarow_class)s",
  'checkboxes': %(checkboxes)s,
@@ -1293,12 +1097,19 @@ table_init({
  'visible_columns': %(visible_columns)s,
  'child_tables': %(child_tables)s,
  'action_menu': %(action_menu)s,
- 'dataable': %(dataable)s
+ 'dataable': %(dataable)s,
+ 'linkable': %(linkable)s,
+ 'dbfilterable': %(dbfilterable)s,
+ 'refreshable': %(refreshable)s,
+ 'bookmarkable': %(bookmarkable)s,
+ 'wsable': %(wsable)s,
+ 'pageable': %(pageable)s
 })
 function ajax_submit_%(id)s(){%(ajax_submit)s};
 function ajax_enter_submit_%(id)s(event){%(ajax_enter_submit)s};
 """%dict(
                    id=self.id,
+                   pager=str(pager_attrs),
                    extrarow=str(self.extrarow).lower(),
                    extrarow_class=self.extrarow_class if self.extrarow_class else "",
                    checkboxes=str(self.checkboxes).lower(),
@@ -1313,6 +1124,12 @@ function ajax_enter_submit_%(id)s(event){%(ajax_enter_submit)s};
                    ajax_submit=self.ajax_submit(),
                    ajax_enter_submit=self.ajax_enter_submit(),
                    dataable=str(self.dataable).lower(),
+                   linkable=str(self.linkable).lower(),
+                   dbfilterable=str(self.dbfilterable).lower(),
+                   refreshable=str(self.refreshable).lower(),
+                   bookmarkable=str(self.bookmarkable).lower(),
+                   pageable=str(self.pageable).lower(),
+                   wsable=str(self.wsable).lower(),
                    action_menu=str(self.action_menu),
                 ),
               ),

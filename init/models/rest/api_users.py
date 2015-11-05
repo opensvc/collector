@@ -1,4 +1,4 @@
-from gluon.dal import smart_query
+user_max_perpage = 500
 
 def allowed_user_ids():
     """ Return ids of the users member of the same groups than the requester.
@@ -201,34 +201,6 @@ class rest_get_user_groups(rest_get_table_handler):
         return self.prepare_data(**vars)
 
 #
-class rest_get_user_primary_group(rest_get_line_handler):
-    def __init__(self):
-        desc = [
-          "Display the user's primary group properties.",
-          "Managers and UserManager are allowed to see all users' information.",
-          "Others can only see information for users in their organisational groups.",
-        ]
-        examples = [
-          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/users/%(email)s/primary_group",
-        ]
-        rest_get_line_handler.__init__(
-          self,
-          path="/users/<id>/primary_group",
-          tables=["auth_group"],
-          desc=desc,
-          examples=examples,
-        )
-
-    def handler(self, id, **vars):
-        q = allowed_user_ids_q()
-        q &= user_id_q(id)
-        q &= db.auth_membership.user_id == db.auth_user.id
-        q &= db.auth_membership.primary_group == True
-        q &= db.auth_group.id == db.auth_membership.group_id
-        self.set_q(q)
-        return self.prepare_data(**vars)
-
-#
 class rest_post_users(rest_post_handler):
     def __init__(self):
         self.get_handler = rest_get_users()
@@ -255,6 +227,10 @@ class rest_post_users(rest_post_handler):
 
     def handler(self, **vars):
         check_privilege("UserManager")
+
+        if "perpage" in vars and int(vars["perpage"]) > user_max_perpage:
+            raise Exception(T("perpage can not be more than %(n)d", dict(n=user_max_perpage)))
+
         obj_id = db.auth_user.insert(**vars)
         _log('user.create',
              'add user %(data)s',
@@ -290,16 +266,16 @@ class rest_post_user(rest_post_handler):
 
     def handler(self, id, **vars):
         check_privilege("UserManager")
-        try:
-            id = int(id)
-            q = db.auth_user.id == id
-        except:
-            q = db.auth_user.email == id
+        q = user_id_q(id)
         row = db(q).select().first()
         if row is None:
             return dict(error="User %s does not exist" % str(id))
         if "id" in vars.keys():
             del(vars["id"])
+
+        if "perpage" in vars and int(vars["perpage"]) > user_max_perpage:
+            raise Exception(T("perpage can not be more than %(n)d", dict(n=user_max_perpage)))
+
         db(q).update(**vars)
         l = []
         for key in vars:
@@ -366,6 +342,8 @@ class rest_delete_user(rest_delete_handler):
 
         return dict(info="User %s deleted" % row.email)
 
+#
+# /users/<id>/group...
 #
 class rest_post_user_group(rest_post_handler):
     def __init__(self):
@@ -485,6 +463,37 @@ class rest_delete_user_group(rest_delete_handler):
 
 
 #
+# /users/<id>/primary_group
+#
+class rest_get_user_primary_group(rest_get_line_handler):
+    def __init__(self):
+        desc = [
+          "Display the user's primary group properties.",
+          "Managers and UserManager are allowed to see all users' information.",
+          "Others can only see information for users in their organisational groups.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/users/%(email)s/primary_group",
+        ]
+        rest_get_line_handler.__init__(
+          self,
+          path="/users/<id>/primary_group",
+          tables=["auth_group"],
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, id, **vars):
+        q = allowed_user_ids_q()
+        q &= user_id_q(id)
+        q &= db.auth_membership.user_id == db.auth_user.id
+        q &= db.auth_membership.primary_group == True
+        q &= db.auth_group.id == db.auth_membership.group_id
+        self.set_q(q)
+        return self.prepare_data(**vars)
+
+
+#
 class rest_post_user_primary_group(rest_post_handler):
     def __init__(self):
         desc = [
@@ -596,6 +605,8 @@ class rest_delete_user_primary_group(rest_delete_handler):
 
 
 #
+# /users/<id>/filterset...
+#
 class rest_get_user_filterset(rest_get_line_handler):
     def __init__(self):
         desc = [
@@ -653,6 +664,10 @@ class rest_post_user_filterset(rest_post_handler):
         user = db(q).select().first()
         if user is None:
             return dict(error="User %s does not exist" % str(user_id))
+
+        if user.lock_filter:
+            if "UserManager" not in user_groups():
+                return dict(error="User %s filterset is locked" % str(user_id))
 
         try:
             id = int(fset_id)
@@ -714,6 +729,10 @@ class rest_delete_user_filterset(rest_delete_handler):
         if user is None:
             return dict(error="User %s does not exist" % str(user_id))
 
+        if user.lock_filter:
+            if "UserManager" not in user_groups():
+                return dict(error="User %s filterset is locked" % str(user_id))
+
         q = db.gen_filterset_user.user_id == user.id
         row = db(q).select().first()
         if row is None:
@@ -729,5 +748,244 @@ class rest_delete_user_filterset(rest_delete_handler):
         }
         _websocket_send(event_msg(l))
         return dict(info="User %s filterset unset" % str(user.email))
+
+#
+# /users/<id>/table_settings
+#
+class rest_get_user_table_settings(rest_get_table_handler):
+    def __init__(self):
+        desc = [
+          "List user's table settings: columns display and live-update enable.",
+          "Managers and UserManager are allowed to see all settings.",
+          "Others can only see their own settings.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/users/self/table_settings",
+        ]
+
+        rest_get_table_handler.__init__(
+          self,
+          path="/users/<id>/table_settings",
+          tables=["user_prefs_columns"],
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, id, **vars):
+        q = user_id_q(id)
+        user = db(q).select().first()
+        if user is None:
+            raise Exception("User %s does not exist" % str(id))
+
+        if user.id != auth.user_id:
+            ug = user_groups()
+            if "UserManager" not in ug and "Manager" not in ug:
+                raise Exception("You are not allowed to see another user table settings")
+
+        q = db.user_prefs_columns.upc_user_id == user.id
+        self.set_q(q)
+        return self.prepare_data(**vars)
+
+#
+class rest_post_user_table_settings(rest_post_handler):
+    def __init__(self):
+        desc = [
+          "Change user's table settings: columns display and live-update enable.",
+          "Managers and UserManager are allowed to change all settings.",
+          "Others can only change their own settings.",
+          "The action is logged in the collector's log.",
+        ]
+        examples = [
+          "# curl -u %(email)s -X POST -o- -d upc_field=wsenabled -d upc_visible=1 https://%(collector)s/init/rest/api/users/self/table_settings",
+        ]
+        rest_post_handler.__init__(
+          self,
+          path="/users/<id>/table_settings",
+          tables=["user_prefs_columns"],
+          desc=desc,
+          examples=examples
+        )
+
+    def handler(self, id, **vars):
+        if "upc_table" not in vars:
+            raise Exception("upc_table is mandatory in POST data")
+        if "upc_field" not in vars:
+            raise Exception("upc_field is mandatory in POST data")
+        if "upc_visible" not in vars:
+            raise Exception("upc_visible is mandatory in POST data")
+
+        q = user_id_q(id)
+        user = db(q).select().first()
+        if user is None:
+            raise Exception("User %s does not exist" % str(id))
+
+        if user.id != auth.user_id:
+            ug = user_groups()
+            if "UserManager" not in ug and "Manager" not in ug:
+                raise Exception("You are not allowed to change another user table settings")
+
+        vars["upc_user_id"] = user.id
+
+        k = dict(
+          upc_user_id=user.id,
+          upc_table=vars["upc_table"],
+          upc_field=vars["upc_field"],
+        )
+        obj_id = db.user_prefs_columns.update_or_insert(k, **vars)
+        _log('user.table_settings.change',
+             'change user table settings %(data)s',
+             dict(data=str(vars)),
+            )
+        qvars = dict(
+          meta="0",
+          query="upc_table=%s and upc_field=%s" % (vars["upc_table"], vars["upc_field"])
+        )
+        return rest_get_user_table_settings().handler(id, **qvars)
+
+#
+# /users/<id>/table_filters
+#
+class rest_get_user_table_filters(rest_get_table_handler):
+    def __init__(self):
+        desc = [
+          "List user's table column filters.",
+          "Managers and UserManager are allowed to see all settings.",
+          "Others can only see their own settings.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/users/self/table_filters",
+        ]
+
+        rest_get_table_handler.__init__(
+          self,
+          path="/users/<id>/table_filters",
+          tables=["column_filters"],
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, id, **vars):
+        q = user_id_q(id)
+        user = db(q).select().first()
+        if user is None:
+            raise Exception("User %s does not exist" % str(id))
+
+        if user.id != auth.user_id:
+            ug = user_groups()
+            if "UserManager" not in ug and "Manager" not in ug:
+                raise Exception("You are not allowed to see another user table settings")
+
+        q = db.column_filters.user_id == user.id
+        self.set_q(q)
+        return self.prepare_data(**vars)
+#
+class rest_post_user_table_filters(rest_post_handler):
+    def __init__(self):
+        desc = [
+          "Change user's table filters.",
+          "Managers and UserManager are allowed to change all settings.",
+          "Others can only change their own settings.",
+          "The action is logged in the collector's log.",
+        ]
+        examples = [
+          "# curl -u %(email)s -X POST -o- -d -d col_tableid=nodes -d col_name=v_nodes.sec_zone -d col_filter=a https://%(collector)s/init/rest/api/users/self/table_filters",
+        ]
+        rest_post_handler.__init__(
+          self,
+          path="/users/<id>/table_filters",
+          tables=["column_filters"],
+          desc=desc,
+          examples=examples
+        )
+
+    def handler(self, id, **vars):
+        if "col_tableid" not in vars:
+            raise Exception("col_tableid is mandatory in POST data")
+        if "col_name" not in vars:
+            raise Exception("col_name is mandatory in POST data")
+        if "col_filter" not in vars:
+            raise Exception("col_filter is mandatory in POST data")
+
+        q = user_id_q(id)
+        user = db(q).select().first()
+        if user is None:
+            raise Exception("User %s does not exist" % str(id))
+
+        if user.id != auth.user_id:
+            ug = user_groups()
+            if "UserManager" not in ug and "Manager" not in ug:
+                raise Exception("You are not allowed to change another user table settings")
+
+        vars["user_id"] = user.id
+
+        if "bookmark" not in vars:
+            vars["bookmark"] = "current"
+
+        k = dict(
+          user_id=user.id,
+          col_tableid=vars["col_tableid"],
+          col_name=vars["col_name"],
+          bookmark=vars["bookmark"],
+        )
+        obj_id = db.column_filters.update_or_insert(k, **vars)
+        _log('user.table_filters.change',
+             'change user table filters %(data)s',
+             dict(data=str(vars)),
+            )
+        qvars = dict(
+          meta="0",
+          query="col_tableid=%s and col_name=%s and bookmark=%s" % (vars["col_tableid"], vars["col_name"], vars["bookmark"])
+        )
+        return rest_get_user_table_filters().handler(id, **qvars)
+
+#
+class rest_delete_user_table_filters(rest_delete_handler):
+    def __init__(self):
+        desc = [
+          "Delete user's table filters matching criteria.",
+          "Managers and UserManager are allowed to change all settings.",
+          "Others can only change their own settings.",
+          "The action is logged in the collector's log.",
+        ]
+        examples = [
+          "# curl -u %(email)s -X DELETE -o- -d https://%(collector)s/init/rest/api/users/self/table_filters",
+        ]
+        rest_delete_handler.__init__(
+          self,
+          path="/users/<id>/table_filters",
+          desc=desc,
+          examples=examples
+        )
+
+    def handler(self, id, **vars):
+        q = user_id_q(id)
+        user = db(q).select().first()
+        if user is None:
+            raise Exception("User %s does not exist" % str(id))
+
+        if user.id != auth.user_id:
+            ug = user_groups()
+            if "UserManager" not in ug and "Manager" not in ug:
+                raise Exception("You are not allowed to change another user table settings")
+
+        vars["user_id"] = user.id
+
+        q = db.column_filters.user_id == user.id
+        if "col_tableid" in vars:
+            q &= db.column_filters.col_tableid == vars["col_tableid"]
+        if "col_name" in vars:
+            q &= db.column_filters.col_name == vars["col_name"]
+        if "col_filter" in vars:
+            q &= db.column_filters.col_filter == vars["col_filter"]
+        if "bookmark" in vars:
+            q &= db.column_filters.bookmark == vars["bookmark"]
+
+        db(q).delete()
+        _log('user.table_filters.delete',
+             'delete user table filters %(data)s',
+             dict(data=str(vars)),
+            )
+        return dict(info=T("column filters deleted"))
+
 
 
