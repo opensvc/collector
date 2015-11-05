@@ -21,7 +21,8 @@ class rest_get_link(rest_get_line_handler):
 
         # Update consultation timestamp
         if q is not None:
-          db(db.links.link_md5 == id).update(link_last_consultation=request.now)
+          db(db.links.link_md5 == id).update(link_last_consultation_date=request.now)
+          db(db.links.link_md5 == id).update(link_access_counter=db.links.link_access_counter+1)
 
         self.set_q(q)
         return self.prepare_data(**vars)
