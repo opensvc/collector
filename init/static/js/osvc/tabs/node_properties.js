@@ -126,7 +126,7 @@ function node_props_responsible_init(o)
       }
       var updater = $(this).attr("upd")
       if ((updater == "string") || (updater == "integer") || (updater == "date") || (updater == "datetime")) {
-        e = $("<td><form class='editable'><input type='text'></input></form></td>")
+        e = $("<td><form><input class='oi' type='text'></input></form></td>")
         e.css({"padding-left": "0px"})
         var input = e.find("input")
         input.uniqueId() // for date picker
@@ -140,7 +140,7 @@ function node_props_responsible_init(o)
         $(this).hide()
         e.find("input").focus()
       } else if (updater == "action_type") {
-        e = $("<td><form class='editable'><select type='text'></select><input type='submit'></input></form></td>")
+        e = $("<td><form><select class='oi' type='text'></select><input type='submit'></input></form></td>")
         e.css({"padding-left": "0px"})
         var select = e.find("select")
         var opt
@@ -161,7 +161,6 @@ function node_props_responsible_init(o)
             if ($(document.activeElement).parent().children("[pid=action_type]").length > 0) {
               return
             }
-            console.log(_this)
             _this.parents("td").first().siblings("td").show()
             _this.parents("td").first().hide()
           }, 1)
@@ -170,7 +169,7 @@ function node_props_responsible_init(o)
         $(this).hide()
         e.find("select").focus()
       } else if (updater == "group") {
-        e = $("<td><form class='editable'><select type='text'></select><input type='submit'></input></form></td>")
+        e = $("<td><form><select class='oi' type='text'></select><input type='submit'></input></form></td>")
         e.css({"padding-left": "0px"})
         var select = e.find("select")
         var opt
@@ -207,7 +206,7 @@ function node_props_responsible_init(o)
         e.find("select").focus()
       } else if (updater == "app") {
         var _td = $(this)
-        e = $("<td><form class='editable'><select type='text'></select><input type='submit'></input></form></td>")
+        e = $("<td><form><select class='oi' type='text'></select><input type='submit'></input></form></td>")
         e.css({"padding-left": "0px"})
         var select = e.find("select")
         select.attr("pid", _td.attr("id"))
@@ -226,7 +225,6 @@ function node_props_responsible_init(o)
           e.find("select,input").bind("blur", function(){
             var _this = $(this)
             setTimeout(function(){
-              console.log(select.attr("pid"))
               if ($(document.activeElement).parent().children("[pid="+select.attr("pid")+"]").length > 0) {
                 return
               }
@@ -234,6 +232,7 @@ function node_props_responsible_init(o)
               _this.parents("td").first().hide()
             }, 1)
           })
+          console.log(_td, e)
           _td.parent().append(e)
           _td.hide()
           e.find("select").focus()

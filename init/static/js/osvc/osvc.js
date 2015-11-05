@@ -3820,7 +3820,7 @@ function table_add_bookmarks(t) {
   var save_name = $("<div class='hidden'><hr><div class='edit16' data-i18n='table.bookmarks_save_name'></div><div>")
   area.append(save_name)
 
-  var save_name_input = $("<input class='editable' />")
+  var save_name_input = $("<input style='margin-left:1em' class='oi' />")
   var now = new Date()
   save_name_input.val(print_date(now))
   save_name.append(save_name_input)
