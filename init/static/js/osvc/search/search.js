@@ -7,7 +7,7 @@ function search_get_menu(fk)
     "users": {
         "tab" : "1",
         "keys": [ {"key" : "fullname"} ], 
-        "class": "s_guys48",
+        "class": "guy16 fa-2x search-section-icon",
         "subclass" : "meta_username clickable",
         "link" : [
           { "user" : [ {"class" : "guy16"},{"link" : "/init/users/users?clear_filters=true&users_f_fullname="} ] },
@@ -19,7 +19,7 @@ function search_get_menu(fk)
     "safe_files": {
         "tab" : "0",
         "keys": [ {"key" : "uuid"}, {"key" : "name"} ], 
-        "class": "s_guys48",
+        "class": "pkg16 fa-2x search-section-icon",
         "subclass" : "meta_username",
         "link" : [],
     },  
@@ -27,7 +27,7 @@ function search_get_menu(fk)
     "disks": {
         "tab" : "0",
         "keys": [ {"key" : "disk_id"} ], 
-        "class": "s_disk48",
+        "class": "hd16 fa-2x search-section-icon",
         "subclass" : "meta_app",
         "link" : [
           { "disk info" : [ {"class" : "hd16"},{"link" : "/init/disks/disks?clear_filters=true&disks_f_disk_id="} ] },
@@ -36,7 +36,7 @@ function search_get_menu(fk)
     "apps": {
         "tab" : "0",
         "keys": [ {"key" : "app"} ], 
-        "class": "s_svc48",
+        "class": "svc fa-2x search-section-icon",
         "subclass" : "",
         "link" : [
          { "nodes" : [ {"class" : "hw16"},{"link" : "/init/nodes/nodes?clear_filters=true&nodes_f_project="} ] },
@@ -49,7 +49,7 @@ function search_get_menu(fk)
     "ips": {
         "tab" : "0",
         "keys": [ {"key" : "addr"},{"key" : "nodename"} ], 
-        "class": "s_net48",
+        "class": "net16 fa-2x search-section-icon",
         "subclass" : "meta_username",
         "link" : [
           { "nodes" : [ {"class" : "hw16"},{"link" : "/init/nodes/nodes?clear_filters=true&nodes_f_nodename="} ] },
@@ -77,7 +77,7 @@ function search_get_menu(fk)
     "groups": {
         "tab" : "1",
         "keys": [ {"key" : "role"} ], 
-        "class": "s_guys48",
+        "class": "guys16 fa-2x search-section-icon",
         "subclass" : "meta_username clickable",
         "link" : [
           { "nodes" : [ {"class" : "hw16"},{"link" : "/init/nodes/nodes?clear_filters=true&nodes_f_team_responsible="} ] },
@@ -89,7 +89,7 @@ function search_get_menu(fk)
     "services": {
         "tab" : "1",
         "keys": [ {"key" : "svc_name"} ], 
-        "class": "s_svc48",
+        "class": "svc fa-2x search-section-icon",
         "subclass" : "meta_svcname clickable",
         "link" : [
           { "dashboard" : [ {"class" : "alert16"},{"link" : "/init/dashboard/index?clear_filters=true&dashboard_f_dash_svcname="} ] },
@@ -109,7 +109,7 @@ function search_get_menu(fk)
     "nodes": {
         "tab" : "1",
         "keys": [ {"key" : "nodename"} ], 
-        "class": "s_node48",
+        "class": "node16 fa-2x search-section-icon",
         "subclass" : "meta_nodename clickable",
         "link" : [          
           { "nodes" : [ {"class" : "hw16"},{"link" : "/init/nodes/nodes?clear_filters=true&nodes_f_nodename="} ] },
@@ -131,7 +131,7 @@ function search_get_menu(fk)
     "filtersets": {
         "tab" : "1",
         "keys": [ {"key" : "fset_name"} ], 
-        "class": "s_filter48",
+        "class": "filter16 fa-2x search-section-icon",
         "subclass" : "meta_username clickable",
         "link" : [
           { "designer" : [ {"class" : "wf16"},{"link" : "/init/compliance/comp_admin?obj_filter="} ] },
@@ -141,7 +141,7 @@ function search_get_menu(fk)
     "vms": {
         "tab" : "0",
         "keys": [ {"key" : "mon_vmname"} ], 
-        "class": "s_disk48",
+        "class": "hv16 fa-2x search-section-icon",
         "subclass" : "meta_nodename",
         "link" : [
           { "status" : [ {"class" : "svc"},{"link" : "/init/default/svcmon?clear_filters=true&svcmon_f_mon_vmname="} ] },
@@ -196,7 +196,7 @@ function search_build_result_row(label, first, res, count)
   for(j=0;j<link.length;j++)
   {
     for (l in link[j])
-      row += "<a class='" + link[j][l][0].class + "' href='"+ link[j][l][1].link + link_value + "'>"+ i18n.t("search.menu_link."+ l) +"</a>";
+      row += "<a class='search-link " + link[j][l][0].class + "' href='"+ link[j][l][1].link + link_value + "'>"+ i18n.t("search.menu_link."+ l) +"</a>";
   }
   row +="</td></tr>";
   return row;

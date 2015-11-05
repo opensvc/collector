@@ -1575,11 +1575,6 @@ ul.login_menu ul {
     padding: 0 0 0 20px;
     min-height: 16px;
 }
-.cd16 {
-    background: transparent url('images/cd16.png') no-repeat;
-    padding: 0 0 0 20px;
-    min-height: 16px;
-}
 .net16:before {
   content: '\f0ec  ';
   font-family: awesome;
@@ -1606,6 +1601,7 @@ ul.login_menu ul {
   content: '\f0d7  ';
   font-family: awesome;
 }
+.cd16:before,
 .save16:before {
   content: '\f0c7  ';
   font-family: awesome;
@@ -2052,6 +2048,16 @@ ul.login_menu ul {
 .action_q_widget {
     float: right;
     padding:0.3em;
+}
+a.search-link {
+	color: gray;
+}
+a.search-link:hover {
+	color: inherit;
+}
+.search-section-icon {
+	width: 1.7em;
+	color: gray;
 }
 .search {
     float: right;
@@ -2976,6 +2982,8 @@ div.containertrans {
 .coloredDiv {
   height:20px; width:20px; float:left;
 }
+
+
 @media screen and (max-width:960px) and (orientation: landscape) {
 	body {
 		-webkit-text-size-adjust: 70%;
