@@ -4,7 +4,7 @@
 function sysrep_on_change_filters(o)
 {
     o.sysrep_timeline();
-    o.sysrep_createlink();
+    o.sysrep_createlink_off(o);
 }
 
 function sysrep(divid, options)
@@ -67,6 +67,10 @@ function sysrep(divid, options)
     o.sysreport_timeline_on_select = function(item){
       return sysreport_timeline_on_select(this, item)
     }
+    o.sysrep_createlink_off = function()
+    {
+      return sysrep_createlink_off(this);
+    }
     o.div.load('/init/static/views/sysreport.html', "", function() {
       o.sysrep_init()
       o.sysrep_timeline();
@@ -123,7 +127,8 @@ function sysrep_init(o)
 
   o.ql_link.bind("click", function() { 
     o.sysrep_createlink();
-    o.link_div.toggle(0, function(){o.link.select()})
+    o.link.show();
+    o.link_div.show(function(){o.link.select()});
   });
 
   o.ql_filter.on("click", function() {
@@ -140,7 +145,7 @@ function sysrep_init(o)
   })
 
   o.filter.find("input").bind("change", function(){
-    o.sysrep_createlink();
+    o.sysrep_createlink_off();
   });
 
   // apply initial filters as default values
@@ -237,6 +242,7 @@ function sysrep_getparams(o)
   if (o.cid) {
     data["cid"] = o.cid;
   }
+  data["nodes"] = o.nodes;
   return data;
 }
 
@@ -245,12 +251,14 @@ function send_link(url)
   window.open(url,'_blank')
 }
 
+function sysrep_createlink_off(o)
+{
+  if (o.link.is(":visible"))
+    o.link.hide();
+}
+
 function sysrep_createlink(o)
 {
-    url = $(location).attr("origin");
-    url += services_getaccessurl(o.direct_access_url);
-    url += "?nodes=";
-    url += o.nodes;
     var sparam = o.sysrep_getparams();
     if (Object.keys(sparam).length > 0) {
         for (key in sparam) {
@@ -258,8 +266,7 @@ function sysrep_createlink(o)
         }
     }
 
-    o.link.empty().html(url);
-    o.link.autogrow({vertical: true, horizontal: true});
+  var url = osvc_create_link("sysrep",sparam,o.link);
 }
 
 function sysrep_define_maxchanges(res)
@@ -362,7 +369,7 @@ function sysrep_timediff_data(o, jd, nodename, detail)
 function sysrep_timeline(o)
 {
   o.timeline_title.html(i18n.t("sysrep.timeline_title", {"node": o.nodes}));
-  o.sysrep_createlink();
+  o.sysrep_createlink_off();
 
   var params = o.sysrep_getparams()
   if ("cid" in params) {
@@ -457,7 +464,7 @@ function sysrep_timeline_data(o, jd)
       } else {
         delete o.cid;
       }
-      o.sysrep_createlink();
+      o.sysrep_createlink_off();
 
       o.sysreport_timeline_on_select(item)
     });
@@ -863,7 +870,7 @@ function sysrep_diff_data(o, jd, node1, node2, detail)
 
 function sysrepdiff_on_change_filters(o)
 {
-    o.sysrep_createlink();
+    o.sysrep_createlink_off(o);
     o.sysrep_diff();
 }
 

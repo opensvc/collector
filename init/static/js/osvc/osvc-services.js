@@ -57,6 +57,8 @@ var services_access_uri = {
     "R_WIKIS" : "rest/api/wiki",
     "R_IPS" : "rest/api/nodes/%1/ips",
     "R_ALERT_EVENT" : "rest/api/alert_event",
+    "R_POST_LINK" : "rest/api/link",
+    "R_GET_LINK" : "rest/api/link/%1"
 }
 
 function services_getaccessurl(service)

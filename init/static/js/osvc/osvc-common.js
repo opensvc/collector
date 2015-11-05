@@ -120,6 +120,35 @@ function link(divid, options)
     o.link_id = options.link_id;
 
     o.div.load("/init/" + o.link_id, options, function() {
-    });
-    
+    });   
+}
+
+function osvc_create_link(fn, parameters, target)
+{
+  target.html("loading...");
+  if (parameters == null)
+    parameters = {};
+  var link_id =  services_osvcpostrest("R_POST_LINK", "", "", {"fn": fn, "param": JSON.stringify(parameters)}, function(jd) {
+      if (jd.error) 
+        return;
+      var link_id = jd.link_id;
+      var url = $(location).attr("origin");
+      url += "/init/link/link?link_id="+link_id+"&js=true";
+      target.empty().html(url);
+      target.autogrow({vertical: true, horizontal: true});
+    },function() {});
+}
+
+function osvc_get_link(divid,link_id)
+{
+  services_osvcgetrest("R_GET_LINK",[link_id] , "", function(jd) {
+      if (jd.data === undefined) {
+        return;
+      }
+      var result = jd.data;
+
+      var param = JSON.parse(result[0].link_parameters);
+      var fn = window[result[0].link_function];
+      fn(divid,param);
+  });
 }
