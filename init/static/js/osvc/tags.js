@@ -376,7 +376,7 @@ function tags_detach_tag(o, tag) {
   } else {
     return
   }
-  services_osvcdeleterest(url, url_params, function(jd) {
+  services_osvcdeleterest(url, url_params, "", "", function(jd) {
     spinner_del(o.div.info)
     if (jd.error) {
       o.div.info.html(services_error_fmt(jd))

@@ -661,7 +661,7 @@ function sysrep_admin_secure_handle(o, tid, func)
       mul_toggle('sysrep_secure_pattern_add','sysrep_secure_pattern_button', o.divid);
     })
   } else if (func=="del") {
-    services_osvcdeleterest("R_SYSREPORT_SECURE_PATTERN", [tid], function(jd) {
+    services_osvcdeleterest("R_SYSREPORT_SECURE_PATTERN", [tid], "", "", function(jd) {
           var result = jd;
           o.sysrep_admin_secure();
     })  
@@ -699,7 +699,7 @@ function sysrep_admin_allow_handle(o, tid, func)
   }
   else if (func=="del")
   {
-    services_osvcdeleterest("R_SYSREPORT_AUTHORIZATION", [tid], function(jd) {
+    services_osvcdeleterest("R_SYSREPORT_AUTHORIZATION", [tid], "", "", function(jd) {
       var result = jd;
       o.sysrep_admin_allow();
     });  

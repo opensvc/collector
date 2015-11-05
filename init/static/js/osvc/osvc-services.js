@@ -148,7 +148,7 @@ function services_osvcgetrest(service, uri, params, callback, error_callback)
 
 }
 
-function services_osvcdeleterest(service, uri, callback, error_callback)
+function services_osvcdeleterest(service, uri, params, data, callback, error_callback)
 {
     url = services_getaccessurl(service)
     if (is_blank(url))
@@ -159,10 +159,18 @@ function services_osvcdeleterest(service, uri, callback, error_callback)
     for(i=0; i<uri.length; i++) {
         url = url.replace("%"+(i+1), uri[i])
     }
+    if (Object.keys(params).length > 0) {
+        url += "?"
+        for (key in params) {
+            url += encodeURIComponent(key) + "=" + encodeURIComponent(params[key]) + "&";
+        }
+        url = url.replace(/&$/, "");
+    }
     var req = $.ajax(
     {
         type: "DELETE",
         url: url,
+        data: data,
         error: error_callback,
         success: callback,
     });
