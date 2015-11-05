@@ -527,7 +527,7 @@ class rest_post_node(rest_post_handler):
             del(vars["team_responsible"])
 
         db(q).update(**vars)
-        _log('rest.nodes.update',
+        _log('node.change',
              'update properties %(data)s',
              dict(data=str(vars)),
              nodename=id)
@@ -576,7 +576,7 @@ class rest_post_nodes(rest_post_handler):
             del(vars["team_responsible"])
 
         db.nodes.insert(**vars)
-        _log('rest.nodes.create',
+        _log('node.add',
              'create properties %(data)s',
              dict(data=str(vars)),
              nodename=nodename)
@@ -613,7 +613,7 @@ class rest_delete_node(rest_delete_handler):
         check_privilege("NodeManager")
         q = db.nodes.nodename == nodename
         db(q).delete()
-        _log('rest.nodes.delete',
+        _log('node.delete',
              '',
              dict(),
              nodename=nodename)

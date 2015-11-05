@@ -1483,6 +1483,14 @@ ul.login_menu ul {
     padding: 0 0 0 20px;
     min-height: 16px;
 }
+.status:before {
+  content: '\f0f1  ';
+  font-family: awesome;
+}
+.settings:before {
+  content: '\f1de  ';
+  font-family: awesome;
+}
 .menu16:before {
   content: '\f00a  ';
   font-family: awesome;
@@ -2125,7 +2133,10 @@ ul.login_menu ul {
     padding-right: 1.5em;
     white-space: nowrap;
 }
- 
+.iconlist {
+    font-spacing: 0.2em;
+    white-space: nowrap;
+}
 .end {
   padding-left: 0.2em;
 }
