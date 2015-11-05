@@ -7,16 +7,17 @@ def link():
     link_id = request.vars.link_id;
 
     if request.vars['js'] == 'true':
-        function = request.vars.fn;
         link_div = DIV(
-            SCRIPT("""%(fn)s("link", %(opt)s) """ % dict(fn=link_id,opt=str(options))),
+            SCRIPT("""osvc_get_link("link", "%(link_id)s");""" % dict(link_id=link_id)),
           _id="link",
           _style="text-align:left",
             )
         return dict(table=link_div)
     else:
         link_div = DIV(
+            SCRIPT(_src="/init/static/js/jquery.min.js"),
+            SCRIPT(_src="/init/static/js/osvc/osvc-common.js"),
             SCRIPT("""link("link", %s) """ % str(options)),
           _id="link",
             )
-        return dict(table=link_div)
+        return link_div

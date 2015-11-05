@@ -2149,3 +2149,16 @@ db.define_table('v_wiki_events',
     Field('saved_on','datetime'),
     Field('email','string'),
     migrate=False)
+
+db.define_table('links',
+    Field('id','integer'),
+    Field('link_function','string'),
+    Field('link_parameters','string'),
+    Field('link_uri','string'),
+    Field('link_creation_user_id','string'),
+    Field('link_creation_date','datetime'),
+    Field('link_last_consultation_date','datetime'),
+    Field('link_md5','string'),
+    Field('link_access_counter','integer'),
+    migrate=False)
+
