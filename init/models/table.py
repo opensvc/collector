@@ -1170,6 +1170,7 @@ table_init({
  'linkable': %(linkable)s,
  'dbfilterable': %(dbfilterable)s,
  'refreshable': %(refreshable)s,
+ 'bookmarkable': %(bookmarkable)s,
  'wsable': %(wsable)s,
  'pageable': %(pageable)s
 })
@@ -1195,6 +1196,7 @@ function ajax_enter_submit_%(id)s(event){%(ajax_enter_submit)s};
                    linkable=str(self.linkable).lower(),
                    dbfilterable=str(self.dbfilterable).lower(),
                    refreshable=str(self.refreshable).lower(),
+                   bookmarkable=str(self.bookmarkable).lower(),
                    pageable=str(self.pageable).lower(),
                    wsable=str(self.wsable).lower(),
                    action_menu=str(self.action_menu),
