@@ -4,6 +4,9 @@
     "formatting": "Formating",
     "error": "La requête au collecteur a renvoyé une erreur."
   },
+  "table": {
+    "live": "Live"
+  },
   "app": {
     "name": "collector"
   },

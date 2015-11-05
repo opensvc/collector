@@ -4,6 +4,9 @@
     "formatting": "Formating",
     "error": "The collector request returned an error."
   },
+  "table": {
+    "live": "Live"
+  },
   "app": {
     "name": "collector"
   },

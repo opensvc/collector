@@ -2825,6 +2825,10 @@ input[type=checkbox].ocb:checked + label:after {
         padding: 1px;
 }
 
+input[disabled].ocb + label {
+	background: rgba(0,0,0,0.25);
+}
+
 /* css for timepicker */
 .ui-timepicker-div .ui-widget-header { margin-bottom: 8px; }
 .ui-timepicker-div dl { text-align: left; }

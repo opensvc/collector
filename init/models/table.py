@@ -641,7 +641,6 @@ class HtmlTable(object):
             formatter = self._table_lines_data
         d = {
           'format': fmt,
-          'wsenabled': wsenabled,
           'pager': self.pager_info(),
           'table_lines': formatter(),
         }
@@ -1077,31 +1076,6 @@ class HtmlTable(object):
             self.wsenabled = ''
         return self.wsenabled
 
-    def wsswitch(self):
-        if not self.wsable:
-            return SPAN()
-        wsenabled = self.get_wsenabled()
-        js ="""ajax("%(url)s/%(table)s/wsenabled/"+this.checked, [], "set_col_dummy"); if (osvc.tables["%(id)s"].need_refresh) {osvc.tables["%(id)s"].refresh()};
-            """%dict(url=URL(r=request,c='ajax',f='ajax_set_user_prefs_column2'),
-                     table=self.upc_table,
-                     id=self.id,
-                    )
-        d = SPAN(
-          INPUT(
-            _type="checkbox",
-            _class='ocb',
-            _id="wsswitch_"+self.id,
-            _onclick=js,
-            value=wsenabled,
-          ),
-          LABEL(
-            _for="wsswitch_"+self.id,
-          ),
-          SPAN(T("Live")),
-          _class='floatw'
-        )
-        return d
-
     def html(self):
         if len(request.args) == 1 and request.args[0] == 'commonality':
             return self.do_commonality()
@@ -1196,7 +1170,6 @@ class HtmlTable(object):
         d = DIV(
               self.show_flash(),
               DIV(
-                self.wsswitch(),
                 self.refresh(),
                 self.link(),
                 self.bookmark(),
@@ -1246,6 +1219,8 @@ table_init({
  'child_tables': %(child_tables)s,
  'action_menu': %(action_menu)s,
  'dataable': %(dataable)s,
+ 'dbfilterable': %(dbfilterable)s,
+ 'wsable': %(wsable)s,
  'pageable': %(pageable)s
 })
 function ajax_submit_%(id)s(){%(ajax_submit)s};
@@ -1267,7 +1242,9 @@ function ajax_enter_submit_%(id)s(event){%(ajax_enter_submit)s};
                    ajax_submit=self.ajax_submit(),
                    ajax_enter_submit=self.ajax_enter_submit(),
                    dataable=str(self.dataable).lower(),
+                   dbfilterable=str(self.dbfilterable).lower(),
                    pageable=str(self.pageable).lower(),
+                   wsable=str(self.wsable).lower(),
                    action_menu=str(self.action_menu),
                 ),
               ),

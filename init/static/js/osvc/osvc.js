@@ -2682,6 +2682,9 @@ function table_add_scrollers(t) {
 }
 
 function table_add_fset_selector(t) {
+  if (!t.options.dbfilterable) {
+    return
+  }
   t.e_fset_selector = t.div.find("[name=fset_selector]").first()
   t.e_fset_selector.uniqueId()
   fset_selector(t.e_fset_selector.attr("id"), function(){t.refresh()})
@@ -3861,7 +3864,79 @@ function table_cell_decorator(id) {
 
 
 //
-// table pager
+// table tool: websocket toggle
+//
+function table_add_wsswitch(t) {
+  if (!t.options.wsable) {
+    return
+  }
+
+  // checkbox
+  var input = $("<input type='checkbox' class='ocb' />")
+  input.uniqueId()
+  input.bind("click", function() {
+    var current_state
+    if ($(this).is(":checked")) {
+      current_state = 1
+    } else {
+      current_state = 0
+    }
+    var data = {
+      "upc_table": t.id,
+      "upc_field": "wsenabled",
+      "upc_visible": current_state,
+    }
+    services_osvcpostrest("R_USERS_SELF_TABLE_SETTINGS", "", "", data, function(jd) {
+      if (t.need_refresh) {
+        t.refresh()
+      }
+    },
+    function(xhr, stat, error) {
+      $(".flash").show("slide").html(services_ajax_error_fmt(xhr, stat, error))
+    })
+  })
+
+  // label
+  var label = $("<label></label>")
+  label.attr("for", input.attr("id"))
+
+  // title
+  var title = $("<span style='padding-left:0.3em;'></span>")
+  title.text(i18n.t("table.live"))
+
+  // container
+  var e = $("<span class='floatw'><span data-i18n='table.live'></span></span>")
+  e.append(input)
+  e.append(label)
+  e.append(title)
+
+  var data = {
+    "query": "upc_table="+t.id+" and upc_field=wsenabled",
+    "meta": "0"
+  }
+  input.prop("disabled", true)
+  services_osvcgetrest("R_USERS_SELF_TABLE_SETTINGS", "", data, function(jd) {
+    input.prop("disabled", false)
+    if (!jd.data) {
+      return
+    }
+    if (jd.data[0].upc_visible) {
+      input.prop("checked", true)
+    } else {
+      input.prop("checked", false)
+    }
+  },
+  function(xhr, stat, error) {
+    $(".flash").show("slide").html(services_ajax_error_fmt(xhr, stat, error))
+  })
+
+  t.e_toolbar.prepend(e)
+  t.e_wsswitch = e
+}
+
+
+//
+// table tool: pager
 //
 function table_pager(t, options) {
   if (!t.e_pager) {
@@ -3871,7 +3946,6 @@ function table_pager(t, options) {
     t.options.pager = options
   }
 
-  console.log(t.options.pager)
   var p_page = parseInt(t.options.pager.page)
   var p_start = parseInt(t.options.pager.start)
   var p_end = parseInt(t.options.pager.end)
@@ -3943,7 +4017,7 @@ function table_pager(t, options) {
 }
 
 function table_add_pager(t) {
-  if (!t.pageable) {
+  if (!t.options.pageable) {
     return
   }
   var e = $("<span class='pager floatw'></span>")
@@ -4145,7 +4219,6 @@ function table_init(opts) {
     'volatile_filters': opts['volatile_filters'],
     'child_tables': opts['child_tables'],
     'dataable': opts['dataable'],
-    'pageable': opts.pageable,
     'action_menu': opts['action_menu'],
     'decorate_cells': function(){
       table_cell_decorator(opts['id'])
@@ -4260,6 +4333,9 @@ function table_init(opts) {
     },
     'add_pager': function(){
       table_add_pager(this)
+    },
+    'add_wsswitch': function(){
+      table_add_wsswitch(this)
     }
   }
 
@@ -4274,6 +4350,7 @@ function table_init(opts) {
   t.div.find("select:visible").combobox()
 
   create_overlay()
+  t.add_wsswitch()
   t.add_pager()
   t.add_filtered_to_visible_columns()
   t.hide_cells()
