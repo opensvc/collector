@@ -3915,19 +3915,21 @@ function table_insert_bookmark(t, name) {
   t.e_tool_bookmarks_listarea.append(bookmark)
 
   bookmark.find(".del16").bind("click", function() {
-    var bookmark = $(this).prev().text()
-    var url = $(location).attr("origin") + "/init/ajax/del_bookmark"
-    var query = "table_id="+t.id+"&bookmark="+encodeURIComponent(bookmark)
+    var name = $(this).prev().text()
     var line = $(this).parents("p").first()
-    $.ajax({
-         type: "POST",
-         url: url,
-         data: query,
-         success: function(msg){
-           line.remove()
-           $(".white_float").hide()
-           $(".white_float_input").hide()
-         }
+    data = {
+      "col_tableid": t.id,
+      "bookmark": name,
+    }
+    services_osvcdeleterest("R_USERS_SELF_TABLE_FILTERS", "", "", data, function(jd) {
+      if (jd.error) {
+        $(".flash").show("slide").html(services_error_fmt(jd))
+        return
+      }
+      line.hide(500, function(){line.remove()})
+    },
+    function(xhr, stat, error) {
+      $(".flash").show("slide").html(services_ajax_error_fmt(xhr, stat, error))
     })
   })
   bookmark.find(".bookmark16").bind("click", function() {

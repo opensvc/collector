@@ -978,7 +978,7 @@ class rest_delete_user_table_filters(rest_delete_handler):
         if "col_filter" in vars:
             q &= db.column_filters.col_filter == vars["col_filter"]
         if "bookmark" in vars:
-            q &= db.column_filters.col_filter == vars["bookmark"]
+            q &= db.column_filters.bookmark == vars["bookmark"]
 
         db(q).delete()
         _log('user.table_filters.delete',
