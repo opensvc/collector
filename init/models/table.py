@@ -441,74 +441,6 @@ class HtmlTable(object):
            )
         return d
 
-    def bookmark(self):
-        if not self.bookmarkable:
-            return SPAN()
-        q = db.column_filters.user_id == auth.user_id
-        q &= db.column_filters.col_tableid == self.id
-        q &= db.column_filters.bookmark != "current"
-        rows = db(q).select(cacheable=True,
-                            groupby=db.column_filters.bookmark,
-                            orderby=db.column_filters.bookmark)
-        d = DIV(
-              A(
-                T("Save current filters as bookmark"),
-                _class="bookmark_add16",
-                _onclick="""click_toggle_vis(event, '%(div)s','block');"""%dict(
-                  div="bookmark_name"+self.id,
-                ),
-              ),
-              DIV(
-                DIV(
-                  T("Enter new bookmark name"),
-                  _style='white-space: nowrap;',
-                ),
-                INPUT(
-                  _value=str(datetime.datetime.now()),
-                  _id='bookmark_name_input'+self.id,
-                ),
-                _name='bookmark_name'+self.id,
-                _class='white_float',
-                _style='display:none;',
-              ),
-            )
-        l = [d, HR()]
-        if len(rows) == 0:
-            l.append(T("No saved bookmarks"))
-        else:
-            for row in rows:
-                d = P(
-                      A(
-                        row.bookmark,
-                        _class="bookmark16",
-                        _name="bookmark",
-                      ),
-                      A(
-                        _class="del16",
-                        _style="float:right;",
-                      ),
-                    )
-                l.append(d)
-
-
-        d = DIV(
-              A(
-                T("Bookmarks"),
-                _class="bookmark16",
-                _onclick="""click_toggle_vis(event, '%(div)s','block');"""%dict(
-                  div="bookmarks"+self.id,
-                ),
-              ),
-              DIV(
-                SPAN(l),
-                _name='bookmarks'+self.id,
-                _class='white_float',
-                _style='max-width:50%;display:none;',
-              ),
-              _class='floatw',
-            )
-        return d
-
     def pager_info(self):
         d = {
           'perpage': self.perpage,
@@ -1120,7 +1052,6 @@ class HtmlTable(object):
         d = DIV(
               self.show_flash(),
               DIV(
-                self.bookmark(),
                 export,
                 self.columns_selector(),
                 self.commonality(),

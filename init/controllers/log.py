@@ -24,6 +24,7 @@ img_h = {
   'status': 'status',
   'status': 'status',
   'table_settings': 'settings',
+  'table_filters': 'filter16',
   'user': 'guy16',
   'users': 'guys16',
 }

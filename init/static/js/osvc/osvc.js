@@ -1129,76 +1129,6 @@ function filter_submit(id,k,v){
   osvc.tables[id].refresh_column_filters()
 };
 
-function table_insert_bookmark(t, bookmark) {
-  s = "<p><a name='bookmark' class='bookmark16'>"+bookmark+"</a><a style='float:right' class='del16'></a></p>"
-  $('#'+t.id).find("[name^=bookmark].white_float").children("span").append(s)
-  t.bind_bookmark()
-}
-
-function table_bind_bookmark(t) {
-  $('[name=bookmarks'+t.id+']').find(".del16").bind("click", function() {
-    var bookmark = $(this).siblings("[name=bookmark]").text()
-    var url = $(location).attr("origin") + "/init/ajax/del_bookmark"
-    var query = "table_id="+t.id+"&bookmark="+encodeURIComponent(bookmark)
-    var line = $(this).parents("p").first()
-    $.ajax({
-         type: "POST",
-         url: url,
-         data: query,
-         success: function(msg){
-           line.remove()
-           $(".white_float").hide()
-           $(".white_float_input").hide()
-         }
-    })
-  })
-  $('[name=bookmarks'+t.id+']').find("[name=bookmark]").bind("click", function() {
-    var bookmark = $(this).text()
-    var url = $(location).attr("origin") + "/init/ajax/load_bookmark"
-    var query = "table_id="+t.id+"&bookmark="+encodeURIComponent(bookmark)
-    $.ajax({
-         type: "POST",
-         url: url,
-         data: query,
-         success: function(msg){
-           var l = $.parseJSON(msg)
-           for (var i=0; i<t.columns.length; i++) {
-             var k = t.id + "_f_" + t.columns[i]
-             $("#"+k).val("")
-           }
-           for (var i=0; i<l.length; i++) {
-             var data = l[i]
-             var k = t.id + "_f_" + data['col_name'].split('.')[1]
-             var v = data['col_filter']
-             $("#"+k).val(v)
-           }
-           $(".white_float").hide()
-           $(".white_float_input").hide()
-           t.format_header()
-           t.refresh()
-         }
-    })
-  })
-  $('[name=bookmarks'+t.id+']').find("[id^=bookmark_name_input]").bind("keyup", function(event) {
-    if (!is_enter(event)) {
-      return
-    }
-    var url = $(location).attr("origin") + "/init/ajax/save_bookmark"
-    var bookmark = $(this).val()
-    var query = "table_id="+t.id+"&bookmark="+encodeURIComponent(bookmark)
-    $.ajax({
-         type: "POST",
-         url: url,
-         data: query,
-         success: function(msg){
-           t.insert_bookmark(bookmark)
-           $(".white_float").hide()
-           $(".white_float_input").hide()
-         }
-    })
-  })
-}
-
 function table_bind_filter_input_events(t) {
   var inputs = t.div.find("input[name=fi]")
   var url = t.ajax_url + "_col_values/"
@@ -3869,6 +3799,168 @@ function table_cell_decorator(id) {
 
 
 //
+// table tool: bookmarks
+//
+function table_add_bookmarks(t) {
+  if (!t.options.bookmarkable) {
+    return
+  }
+
+  var e = $("<div class='floatw' name='tool_bookmark'></div>")
+
+  var span = $("<span class='bookmark16' data-i18n='table.bookmarks'></span>")
+  e.append(span)
+
+  var area = $("<div class='white_float hidden'></div>")
+  e.append(area)
+
+  var save = $("<a class='add16' data-i18n='table.bookmarks_save'></a>")
+  area.append(save)
+
+  var save_name = $("<div class='hidden'><hr><div class='edit16' data-i18n='table.bookmarks_save_name'></div><div>")
+  area.append(save_name)
+
+  var save_name_input = $("<input class='editable' />")
+  var now = new Date()
+  save_name_input.val(print_date(now))
+  save_name.append(save_name_input)
+
+  area.append("<hr>")
+
+  var listarea = $("<span></span>")
+  area.append(listarea)
+  t.e_tool_bookmarks_listarea = listarea
+
+  var params = {
+    "query": "col_tableid="+t.id,
+    "limit": "0",
+    "props": "bookmark"
+  }
+  spinner_add(listarea)
+  services_osvcgetrest("R_USERS_SELF_TABLE_FILTERS", "", params, function(jd) {
+    spinner_del(listarea)
+    if (!jd.data) {
+      return
+    }
+    if (!jd.data.length) {
+      listarea.text(i18n.t("table.bookmarks_no_bookmarks"))
+      return
+    }
+
+    var done = []
+    for (var i=0; i<jd.data.length; i++) {
+      var name = jd.data[i].bookmark
+      if (name == "current") {
+        continue
+      }
+      if (done.indexOf(name) >= 0) {
+        continue
+      }
+      done.push(name)
+      t.insert_bookmark(name)
+    }
+  },
+  function(xhr, stat, error) {
+    spinner_del(listarea)
+    $(".flash").show("slide").html(services_ajax_error_fmt(xhr, stat, error))
+  })
+
+  e.i18n()
+  t.e_tool_bookmarks = e
+  t.e_tool_bookmarks_area = area
+  t.e_tool_bookmarks_save = save
+  t.e_tool_bookmarks_save_name = save_name
+  t.e_tool_bookmarks_save_name_input = save_name_input
+
+  // bindings
+  span.bind("click", function() {
+    area.toggle()
+  })
+
+  save.bind("click", function() {
+    save_name.toggle(500)
+    save_name_input.focus()
+  })
+
+  save_name_input.bind("keyup", function(event) {
+    if (!is_enter(event)) {
+      return
+    }
+    var url = $(location).attr("origin") + "/init/ajax/save_bookmark"
+    var bookmark = $(this).val()
+    var query = "table_id="+t.id+"&bookmark="+encodeURIComponent(bookmark)
+    $.ajax({
+         type: "POST",
+         url: url,
+         data: query,
+         success: function(msg){
+           t.insert_bookmark(bookmark)
+           t.e_tool_bookmarks_save_name.hide()
+           t.e_tool_bookmarks_save.show()
+         }
+    })
+  })
+
+  t.e_toolbar.prepend(e)
+}
+
+function table_insert_bookmark(t, name) {
+  if (t.e_tool_bookmarks_listarea.find("p").length == 0) {
+    // remove the "no_bookmarks" msg
+    t.e_tool_bookmarks_listarea.text("")
+  }
+  var bookmark = $("<p></p>")
+  bookmark.append($("<a class='bookmark16'>"+name+"</a>"))
+  bookmark.append($("<a style='float:right' class='del16'>&nbsp;</a>"))
+  t.e_tool_bookmarks_listarea.append(bookmark)
+
+  bookmark.find(".del16").bind("click", function() {
+    var bookmark = $(this).prev().text()
+    var url = $(location).attr("origin") + "/init/ajax/del_bookmark"
+    var query = "table_id="+t.id+"&bookmark="+encodeURIComponent(bookmark)
+    var line = $(this).parents("p").first()
+    $.ajax({
+         type: "POST",
+         url: url,
+         data: query,
+         success: function(msg){
+           line.remove()
+           $(".white_float").hide()
+           $(".white_float_input").hide()
+         }
+    })
+  })
+  bookmark.find(".bookmark16").bind("click", function() {
+    var bookmark = $(this).text()
+    var url = $(location).attr("origin") + "/init/ajax/load_bookmark"
+    var query = "table_id="+t.id+"&bookmark="+encodeURIComponent(bookmark)
+    $.ajax({
+         type: "POST",
+         url: url,
+         data: query,
+         success: function(msg){
+           var l = $.parseJSON(msg)
+           for (var i=0; i<t.columns.length; i++) {
+             var k = t.id + "_f_" + t.columns[i]
+             $("#"+k).val("")
+           }
+           for (var i=0; i<l.length; i++) {
+             var data = l[i]
+             var k = t.id + "_f_" + data['col_name'].split('.')[1]
+             var v = data['col_filter']
+             $("#"+k).val(v)
+           }
+           $(".white_float").hide()
+           $(".white_float_input").hide()
+           t.format_header()
+           t.refresh()
+         }
+    })
+  })
+}
+
+
+//
 // table tool: link
 //
 function table_add_link(t) {
@@ -4286,11 +4378,8 @@ function table_init(opts) {
     'bind_persistent_filter': function(){
       table_bind_persistent_filter(this)
     },
-    'bind_bookmark': function(){
-      table_bind_bookmark(this)
-    },
-    'insert_bookmark': function(bookmark){
-      table_insert_bookmark(this, bookmark)
+    'insert_bookmark': function(name){
+      table_insert_bookmark(this, name)
     },
     'bind_checkboxes': function(){
       table_bind_checkboxes(this)
@@ -4378,6 +4467,9 @@ function table_init(opts) {
     },
     'add_link': function(){
       table_add_link(this)
+    },
+    'add_bookmarks': function(){
+      table_add_bookmarks(this)
     }
   }
 
@@ -4390,6 +4482,7 @@ function table_init(opts) {
   t.div.find("select:visible").combobox()
 
   create_overlay()
+  t.add_bookmarks()
   t.add_link()
   t.add_refresh()
   t.add_wsswitch()
@@ -4400,7 +4493,6 @@ function table_init(opts) {
   t.add_filterbox()
   t.add_fset_selector()
   t.add_scrollers()
-  t.bind_bookmark()
   t.bind_persistent_filter()
   t.scroll_enable()
 
