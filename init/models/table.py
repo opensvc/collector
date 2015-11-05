@@ -336,19 +336,9 @@ class HtmlTable(object):
                 continue
             self.colprops[field].display = True
 
-    def format_av_filter(self, f):
-        if f is None:
-            name = T("None")
-            fset_id = 0
-        else:
-            name = f.fset_name
-            fset_id = f.id
-        return OPTION(
-                 name,
-                 _value=fset_id,
-               )
-
     def persistent_filters(self):
+        if not self.dbfilterable:
+            return SPAN()
         s = SPAN(
               T('Filter'),
               ': ',
