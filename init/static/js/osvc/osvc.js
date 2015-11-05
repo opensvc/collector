@@ -3821,8 +3821,6 @@ function table_add_bookmarks(t) {
   area.append(save_name)
 
   var save_name_input = $("<input style='margin-left:1em' class='oi' />")
-  var now = new Date()
-  save_name_input.val(print_date(now))
   save_name.append(save_name_input)
 
   area.append("<hr>")
@@ -3878,6 +3876,8 @@ function table_add_bookmarks(t) {
   })
 
   save.bind("click", function() {
+    var now = new Date()
+    save_name_input.val(print_date(now))
     save_name.toggle("fold")
     save_name_input.focus()
   })
@@ -3886,18 +3886,22 @@ function table_add_bookmarks(t) {
     if (!is_enter(event)) {
       return
     }
-    var url = $(location).attr("origin") + "/init/ajax/save_bookmark"
-    var bookmark = $(this).val()
-    var query = "table_id="+t.id+"&bookmark="+encodeURIComponent(bookmark)
-    $.ajax({
-         type: "POST",
-         url: url,
-         data: query,
-         success: function(msg){
-           t.insert_bookmark(bookmark)
-           t.e_tool_bookmarks_save_name.hide()
-           t.e_tool_bookmarks_save.show()
-         }
+    var name = $(this).val()
+    var data = {
+      "col_tableid": t.id,
+      "bookmark": name,
+    }
+    services_osvcpostrest("R_USERS_SELF_TABLE_FILTERS_SAVE_BOOKMARK", "", "", data, function(jd) {
+      if (jd.error) {
+        $(".flash").show("fold").html(services_error_fmt(jd))
+        return
+      }
+      t.insert_bookmark(name)
+      t.e_tool_bookmarks_save_name.hide()
+      t.e_tool_bookmarks_save.show()
+    },
+    function(xhr, stat, error) {
+      $(".flash").show("fold").html(services_ajax_error_fmt(xhr, stat, error))
     })
   })
 
