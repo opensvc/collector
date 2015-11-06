@@ -4792,3 +4792,18 @@ CREATE TABLE `links` (
   PRIMARY KEY (`id`),
   KEY `idx1` (`link_md5`)
 ) ENGINE=InnoDB AUTO_INCREMENT=10362517 DEFAULT CHARSET=utf8;
+
+drop table links;
+
+CREATE TABLE `links` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `link_function` varchar(255) DEFAULT NULL,
+  `link_parameters` varchar(255) DEFAULT NULL,
+  `link_creation_user_id` varchar(60) DEFAULT NULL,
+  `link_creation_date` datetime NOT NULL,
+  `link_last_consultation_date` datetime NOT NULL,
+  `link_md5` varchar(32) DEFAULT NULL,
+  `link_access_counter` int(10) DEFAULT '0',
+  PRIMARY KEY (`id`),
+  KEY `idx1` (`link_md5`)
+) ENGINE=InnoDB AUTO_INCREMENT=10362534 DEFAULT CHARSET=utf8;
