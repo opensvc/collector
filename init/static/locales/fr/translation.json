@@ -1,4 +1,7 @@
 {
+  "layout": {
+    "search": "Recherche globale"
+  },
   "api": {
     "loading": "Loading",
     "formatting": "Formating",

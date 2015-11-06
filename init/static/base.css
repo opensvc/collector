@@ -2132,7 +2132,7 @@ a.search-link:hover {
 }
 .search > input {
   color: black;
-  width: 6em;
+  width: 9em;
   padding-left: 18px;
   border: 1px solid #ccc;
   -moz-border-radius: 4px;

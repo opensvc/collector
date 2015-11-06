@@ -281,6 +281,8 @@ function search_init()
 {
   var timer;
 
+  $('#search_div').i18n()
+
   $('#search_div').on("keyup",function (event) {
     if (event.keyCode == 13) 
       search_routing(0);
