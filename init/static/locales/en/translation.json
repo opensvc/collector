@@ -17,7 +17,8 @@
     "refresh": "  Refresh",
     "csv": "Export to csv",
     "columns": "Configure columns",
-    "commonality": "Commonality"
+    "commonality": "Commonality",
+    "filter": "Filter: "
   },
   "app": {
     "name": "collector"

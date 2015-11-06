@@ -336,19 +336,6 @@ class HtmlTable(object):
                 continue
             self.colprops[field].display = True
 
-    def persistent_filters(self):
-        if not self.dbfilterable:
-            return SPAN()
-        s = SPAN(
-              T('Filter'),
-              ': ',
-              SPAN(
-                _name='fset_selector',
-              ),
-              _class='floatw filter16',
-            )
-        return s
-
     def pager_info(self):
         d = {
           'perpage': self.perpage,
@@ -929,7 +916,6 @@ class HtmlTable(object):
         d = DIV(
               self.show_flash(),
               DIV(
-                self.persistent_filters(),
                 additional_tools,
                 DIV('', _class='spacer'),
                 _name='toolbar',

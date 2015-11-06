@@ -2592,15 +2592,6 @@ function table_add_scrollers(t) {
   $("#table_"+t.id).after(s)
 }
 
-function table_add_fset_selector(t) {
-  if (!t.options.dbfilterable) {
-    return
-  }
-  t.e_fset_selector = t.div.find("[name=fset_selector]").first()
-  t.e_fset_selector.uniqueId()
-  fset_selector(t.e_fset_selector.attr("id"), function(){t.refresh()})
-}
-
 function table_add_filterbox(t) {
   var s = "<span id='fsr"+t.id+"' class='right_click_menu'>"
   s += "<table>"
@@ -3775,6 +3766,32 @@ function table_cell_decorator(id) {
 
 
 //
+// table tool: fset selector
+//
+function table_add_fset_selector(t) {
+  if (!t.options.dbfilterable) {
+    return
+  }
+
+  var e = $("<span class='floatw filter16' name='tool_fset_selector'></span>")
+  e.text(i18n.t('table.filter'))
+  t.e_tool_fset_selector = e
+
+  var span_selector = $("<span name='fset_selector'></span>")
+  e.append(span_selector)
+  t.e_fset_selector = span_selector
+  t.e_fset_selector.uniqueId()
+
+  e.i18n()
+  t.e_toolbar.prepend(e)
+
+  fset_selector(t.e_fset_selector.attr("id"), function(){
+    t.refresh()
+  })
+}
+
+
+//
 // table tool: column selector
 //
 function table_add_column_selector(t) {
@@ -4594,6 +4611,7 @@ function table_init(opts) {
   t.div.find("select:visible").combobox()
 
   create_overlay()
+  t.add_fset_selector()
   t.add_commonality()
   t.add_column_selector()
   t.add_csv()
@@ -4606,7 +4624,6 @@ function table_init(opts) {
   t.hide_cells()
   t.format_header()
   t.add_filterbox()
-  t.add_fset_selector()
   t.add_scrollers()
   t.scroll_enable()
 
