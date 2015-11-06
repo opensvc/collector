@@ -722,7 +722,7 @@ div.error {
   vertical-align: middle;
 }
 .menu_entry > a > div > div {
-  font-size: 0.8em;
+  //font-size: 0.8em;
   white-space: normal;
 }
 .menu_section > a {
@@ -758,8 +758,29 @@ div.error {
   color: #ccc;
 }
 .menu_entry * {
-  color: #ccc;
+  color: #aaa;
 }
+
+div.menu_box {
+	display: flex;
+}
+.menu_box > div {
+	display: inline-block;
+	align-self: center;
+}
+.menu_icon {
+	margin-right: .5em;
+	font-size: x-large;
+	min-width: 1em;
+	text-align: center;
+}
+.menu_title {
+	color: white;
+}
+.menu_subtitle {
+	font-size: 0.8em;
+}
+
 
 .warn {
     background-color: yellow;
@@ -1468,6 +1489,18 @@ ul.login_menu ul {
     padding: 0 0 0 20px;
     min-height: 16px;
 }
+.key:before {
+  content: '\f084  ';
+  font-family: awesome;
+}
+.logout:before {
+  content: '\f011  ';
+  font-family: awesome;
+}
+.mail:before {
+  content: '\f0e0  ';
+  font-family: awesome;
+}
 .status:before {
   content: '\f0f1  ';
   font-family: awesome;
@@ -1824,6 +1857,26 @@ ul.login_menu ul {
 }
 .avail16:before {
   content: '\f21e  ';
+  font-family: awesome;
+}
+.api:before {
+  content: '\f121  ';
+  font-family: awesome;
+}
+.keyboard:before {
+  content: '\f11c  ';
+  font-family: awesome;
+}
+.tags:before {
+  content: '\f02c  ';
+  font-family: awesome;
+}
+.actions:before {
+  content: '\f085  ';
+  font-family: awesome;
+}
+.patch:before {
+  content: '\f1b2  ';
   font-family: awesome;
 }
 .nologo16 {
