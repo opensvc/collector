@@ -136,7 +136,7 @@ function sysrep_init(o)
   });
 
   o.filter.find("input").bind("change", function(){
-    o.sysrep_createlink_off();
+    //osvc_clean_link();
   });
 
   // apply initial filters as default values

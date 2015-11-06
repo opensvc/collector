@@ -2597,7 +2597,8 @@ function table_link(t){
     }
     args += '&'+$(this).attr('id')+"="+encodeURIComponent($(this).val())
   })
-  osvc_show_link(url+args)
+  //modification with new link handler
+  osvc_create_link(url,args);
 }
 
 function table_add_scrollers(t) {

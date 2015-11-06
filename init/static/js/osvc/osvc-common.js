@@ -89,6 +89,10 @@ function print_date(d) {
   return ds
 }
 
+String.prototype.beginsWith = function (string) {
+    return(this.indexOf(string) === 0);
+};
+
 function str_from_datetime(date)
 {
   var d = (date+'').split(' ');
@@ -111,15 +115,8 @@ function diff_date(d1,d2)
 
 function link(divid, options)
 {
-    var o = {}
-
-    // store parameters
-    o.divid = divid
-
-    o.div = $("#"+divid);
-    o.link_id = options.link_id;
-
-    o.div.load("/init/" + o.link_id, options, function() {
+    var link_id = options.link_id;
+    $("#"+divid).load("/init/" + link_id, options, function() {
     });   
 }
 
@@ -131,6 +128,10 @@ function osvc_create_link(fn, parameters, target)
   if (!parameters) {
     parameters = {}
   }
+
+  // Security for old link
+  fn = fn.replace("?","");
+
   var link_id =  services_osvcpostrest("R_POST_LINK", "", "", {"fn": fn, "param": JSON.stringify(parameters)}, function(jd) {
       if (jd.error) {
         target.html(services_error_fmt(jd))
@@ -138,7 +139,42 @@ function osvc_create_link(fn, parameters, target)
       }
       var link_id = jd.link_id;
       var url = $(location).attr("origin");
-      url += "/init/link/link?link_id="+link_id+"&js=true";
+
+      url += "/init/link/link?link_id="+link_id;
+      if (fn.beginsWith("https://")) // if is not an ajax link, but a function js call
+        url +="&js=false";
+      else
+        url += "&js=true";
+
+      // header
+      var e = $("<div></div>")
+
+      var title = $("<div class='attach16 fa-2x' data-i18n='api.link'></div>")
+      e.append(title)
+
+      var subtitle = $("<div style='color:lightgray' data-i18n='api.link_text'></div>")
+      e.append(subtitle)
+
+      // link display area
+      p = $("<textarea style='width:100%' class='clickable'></textarea>")
+      p.val(url)
+      p.css({
+        "width": "100%",
+        "background": "rgba(0,0,0,0)",
+        "border": "rgba(0,0,0,0)",
+        "padding": "2em 0 0 0",
+      })
+      p.select()
+      p.bind("click", function() {
+        send_link($(this).val())
+      })
+
+      e.i18n()
+      e.append(p)
+
+      target.empty().append(e);
+      p.autogrow();
+
       osvc_show_link(url, target)
     },
     function(xhr, stat, error) {
@@ -183,13 +219,25 @@ function osvc_show_link(url, target) {
 function osvc_get_link(divid,link_id)
 {
   services_osvcgetrest("R_GET_LINK",[link_id] , "", function(jd) {
-      if (jd.data === undefined) {
+      if (jd.data.length === 0) { // Link not found
+        var val = "<div style='text-align:center'>" + i18n.t("link.notfound")+"</div>"
+        $('#'+divid).html(val);
         return;
       }
       var result = jd.data;
 
       var param = JSON.parse(result[0].link_parameters);
-      var fn = window[result[0].link_function];
-      fn(divid,param);
+      var link = result[0].link_function;
+
+      // if ajax link
+      if (link.beginsWith("https://"))
+      {
+        $("#"+divid).load(link, param, function() {});   
+      }
+      else // or js function link
+      {
+        var fn = window[link];
+        fn(divid,param);
+      }
   });
 }

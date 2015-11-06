@@ -288,5 +288,8 @@
     "to" : "to",
     "tonow" : "to now",
     "help" : "hover on a range to display details"
+  },
+  "link" : {
+    "notfound" : "Link not found.It may have expired , please re generate it."
   }
 }

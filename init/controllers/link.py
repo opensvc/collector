@@ -17,7 +17,8 @@ def link():
         link_div = DIV(
             SCRIPT(_src="/init/static/js/jquery.min.js"),
             SCRIPT(_src="/init/static/js/osvc/osvc-common.js"),
-            SCRIPT("""link("link", %s) """ % str(options)),
+            SCRIPT(_src="/init/static/js/osvc/osvc-services.js"),
+            SCRIPT("""osvc_get_link("link", "%(link_id)s") """ % dict(link_id=link_id)),
           _id="link",
             )
         return link_div
