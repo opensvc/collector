@@ -717,7 +717,7 @@ function table_refresh(t) {
     if (t.div.length > 0 && !t.div.is(":visible")) {
         return
     }
-    if (t.e_tool_refresh.length > 0 && t.e_tool_refresh_spin.hasClass("fa-spin")) {
+    if (t.e_tool_refresh && t.e_tool_refresh.length > 0 && t.e_tool_refresh_spin && t.e_tool_refresh_spin.hasClass("fa-spin")) {
         t.need_refresh = true
         return
     } else {
@@ -4445,10 +4445,16 @@ function table_relocate_extra_rows(t) {
 }
 
 function table_unset_refresh_spin(t) {
+  if (!t.e_tool_refresh_spin) {
+    return
+  }
   t.e_tool_refresh_spin.removeClass("fa-spin")
 }
 
 function table_set_refresh_spin(t) {
+  if (!t.e_tool_refresh_spin) {
+    return
+  }
   t.e_tool_refresh_spin.addClass("fa-spin")
 }
 
