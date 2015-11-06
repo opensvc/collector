@@ -930,11 +930,6 @@ class HtmlTable(object):
               ),
               DIV(
                 INPUT(
-                  _id=self.id_perpage,
-                  _type='hidden',
-                  _value=self.perpage,
-                ),
-                INPUT(
                   _id=self.id_page,
                   _type='hidden',
                   _value=self.page,
