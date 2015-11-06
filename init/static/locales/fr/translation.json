@@ -16,7 +16,8 @@
     "bookmarks_no_bookmarks": "Aucun marque-page",
     "refresh": "  Recharger",
     "csv": "Export to csv",
-    "columns": "Colonnes"
+    "columns": "Colonnes",
+    "commonality": "Commonalité"
   },
   "app": {
     "name": "collector"

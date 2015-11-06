@@ -3856,6 +3856,40 @@ function table_add_column_selector(t) {
 }
 
 //
+// table tool: commonality
+//
+function table_add_commonality(t) {
+  if (!t.options.commonalityable) {
+    return
+  }
+
+  var e = $("<div class='floatw' name='tool_commonality'></div>")
+  t.e_tool_commonality = e
+
+  var span = $("<span class='common16' data-i18n='table.commonality'></span>")
+  e.append(span)
+
+  var area = $("<div class='white_float hidden'></div>")
+  area.uniqueId()
+  e.append(area)
+  t.e_tool_commonality_area = area
+
+  e.bind("click", function() {
+    if (t.e_tool_commonality_area.is(":visible")) {
+      t.e_tool_commonality_area.hide()
+      return
+    }
+    click_toggle_vis(event, t.e_tool_commonality_area.attr("id"), 'block')
+    t.e_tool_commonality_area.empty()
+    spinner_add(t.e_tool_commonality_area)
+    ajax(t.ajax_url+"/commonality", [], t.e_tool_commonality_area.attr("id"))
+  })
+
+  e.i18n()
+  t.e_toolbar.prepend(e)
+}
+
+//
 // table tool: csv export
 //
 function table_add_csv(t) {
@@ -4542,6 +4576,9 @@ function table_init(opts) {
     },
     'add_column_selector': function(){
       table_add_column_selector(this)
+    },
+    'add_commonality': function(){
+      table_add_commonality(this)
     }
   }
 
@@ -4557,6 +4594,7 @@ function table_init(opts) {
   t.div.find("select:visible").combobox()
 
   create_overlay()
+  t.add_commonality()
   t.add_column_selector()
   t.add_csv()
   t.add_bookmarks()

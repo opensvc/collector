@@ -16,7 +16,8 @@
     "bookmarks_no_bookmarks": "No saved bookmarks",
     "refresh": "  Refresh",
     "csv": "Export to csv",
-    "columns": "Configure columns"
+    "columns": "Configure columns",
+    "commonality": "Commonality"
   },
   "app": {
     "name": "collector"

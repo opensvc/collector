@@ -349,31 +349,6 @@ class HtmlTable(object):
             )
         return s
 
-    def commonality(self):
-        if not self.commonalityable:
-            return SPAN()
-        d = DIV(
-              A(
-                T("Commonality"),
-                _class="common16",
-                _onclick="""click_toggle_vis(event, '%(div)s','block');ajax('%(url)s', [], '%(div_d)s')"""%dict(
-                  url=URL(r=request,f=self.func, args=["commonality"]),
-                  div="commonality"+self.id,
-                  div_d="commonality_d"+self.id,
-                ),
-              ),
-              DIV(
-                DIV(
-                  _id='commonality_d'+self.id,
-                ),
-                _name='commonality'+self.id,
-                _class='white_float',
-                _style='max-width:50%;display:none;',
-              ),
-              _class='floatw',
-           )
-        return d
-
     def pager_info(self):
         d = {
           'perpage': self.perpage,
@@ -954,7 +929,6 @@ class HtmlTable(object):
         d = DIV(
               self.show_flash(),
               DIV(
-                self.commonality(),
                 self.persistent_filters(),
                 additional_tools,
                 DIV('', _class='spacer'),
@@ -1004,6 +978,7 @@ table_init({
  'bookmarkable': %(bookmarkable)s,
  'exportable': %(exportable)s,
  'columnable': %(columnable)s,
+ 'commonalityable': %(commonalityable)s,
  'wsable': %(wsable)s,
  'pageable': %(pageable)s
 })
@@ -1033,6 +1008,7 @@ function ajax_enter_submit_%(id)s(event){%(ajax_enter_submit)s};
                    exportable=str(self.exportable).lower(),
                    pageable=str(self.pageable).lower(),
                    columnable=str(self.columnable).lower(),
+                   commonalityable=str(self.commonalityable).lower(),
                    wsable=str(self.wsable).lower(),
                    action_menu=str(self.action_menu),
                 ),
