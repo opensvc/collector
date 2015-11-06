@@ -2583,10 +2583,6 @@ function get_view_url() {
 }
 
 function table_link(t){
-  if (t.e_tool_link_area.is(":visible")) {
-    t.e_tool_link_area.hide()
-    return
-  }
   var url = get_view_url()
   url = url.replace(/#$/, "")+"?";
   var args = "clear_filters=true&discard_filters=true"
@@ -2601,14 +2597,8 @@ function table_link(t){
     }
     args += '&'+$(this).attr('id')+"="+encodeURIComponent($(this).val())
   })
-  
+  //modification with new link handler
   osvc_create_link(url,args);
-
-  //t.e_tool_link_textarea.val(url+args).attr("readonly", "on").select()
-  //t.e_tool_link_area.show()
-  //t.e_tool_link_textarea.autogrow()
-  //t.e_tool_link_textarea.select()
-  keep_inside(t.e_tool_link_area.get())
 }
 
 function table_add_scrollers(t) {
@@ -3823,9 +3813,7 @@ function table_add_bookmarks(t) {
   var save_name = $("<div class='hidden'><hr><div class='edit16' data-i18n='table.bookmarks_save_name'></div><div>")
   area.append(save_name)
 
-  var save_name_input = $("<input class='editable' />")
-  var now = new Date()
-  save_name_input.val(print_date(now))
+  var save_name_input = $("<input style='margin-left:1em' class='oi' />")
   save_name.append(save_name_input)
 
   area.append("<hr>")
@@ -3881,6 +3869,8 @@ function table_add_bookmarks(t) {
   })
 
   save.bind("click", function() {
+    var now = new Date()
+    save_name_input.val(print_date(now))
     save_name.toggle("fold")
     save_name_input.focus()
   })
@@ -3889,18 +3879,22 @@ function table_add_bookmarks(t) {
     if (!is_enter(event)) {
       return
     }
-    var url = $(location).attr("origin") + "/init/ajax/save_bookmark"
-    var bookmark = $(this).val()
-    var query = "table_id="+t.id+"&bookmark="+encodeURIComponent(bookmark)
-    $.ajax({
-         type: "POST",
-         url: url,
-         data: query,
-         success: function(msg){
-           t.insert_bookmark(bookmark)
-           t.e_tool_bookmarks_save_name.hide()
-           t.e_tool_bookmarks_save.show()
-         }
+    var name = $(this).val()
+    var data = {
+      "col_tableid": t.id,
+      "bookmark": name,
+    }
+    services_osvcpostrest("R_USERS_SELF_TABLE_FILTERS_SAVE_BOOKMARK", "", "", data, function(jd) {
+      if (jd.error) {
+        $(".flash").show("fold").html(services_error_fmt(jd))
+        return
+      }
+      t.insert_bookmark(name)
+      t.e_tool_bookmarks_save_name.hide()
+      t.e_tool_bookmarks_save.show()
+    },
+    function(xhr, stat, error) {
+      $(".flash").show("fold").html(services_ajax_error_fmt(xhr, stat, error))
     })
   })
 
@@ -3988,16 +3982,9 @@ function table_add_link(t) {
   span.text(i18n.t("table.link"))
   e.append(span)
 
-  var area = $("<div class='white_float hidden'><textarea class='link_ta' /></div>")
-  e.append(area)
-
   // bindings
   e.bind("click", function() {
     t.link()
-  })
-
-  area.children("textarea").bind("click", function(){
-    window.open($(this).val(), '_blank')
   })
 
   $(this).bind("keypress", function(event) {
@@ -4009,8 +3996,6 @@ function table_add_link(t) {
   })
 
   t.e_tool_link = e
-  t.e_tool_link_area = area
-  t.e_tool_link_textarea = area.children("textarea")
   t.e_toolbar.prepend(e)
 }
 

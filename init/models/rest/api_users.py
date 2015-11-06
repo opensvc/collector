@@ -989,7 +989,6 @@ class rest_delete_user_table_filters(rest_delete_handler):
             )
         return dict(info=T("column filters deleted"))
 
-
 #
 class rest_post_user_table_filters_load_bookmark(rest_post_handler):
     def __init__(self):
@@ -1072,5 +1071,89 @@ class rest_post_user_table_filters_load_bookmark(rest_post_handler):
           query="col_tableid=%s and bookmark=current" % (vars["col_tableid"])
         )
         return rest_get_user_table_filters().handler(id, **qvars)
+
+#
+class rest_post_user_table_filters_save_bookmark(rest_post_handler):
+    def __init__(self):
+        desc = [
+          "Save current filters as a bookmark.",
+          "Managers and UserManager are allowed to change all settings.",
+          "Others can only change their own settings.",
+          "The action is logged in the collector's log.",
+        ]
+        examples = [
+          "# curl -u %(email)s -X POST -o- -d -d col_tableid=nodes -d bookmark=foo https://%(collector)s/init/rest/api/users/self/table_filters/save_bookmark",
+        ]
+        rest_post_handler.__init__(
+          self,
+          path="/users/<id>/table_filters/save_bookmark",
+          tables=["column_filters"],
+          desc=desc,
+          examples=examples
+        )
+
+    def handler(self, id, **vars):
+        if "col_tableid" not in vars:
+            raise Exception("col_tableid is mandatory in POST data")
+        if "bookmark" not in vars:
+            raise Exception("bookmark is mandatory in POST data")
+
+        if "col_name" in vars:
+            delete(vars["col_name"])
+        if "col_filter" in vars:
+            delete(vars["col_filter"])
+
+        q = user_id_q(id)
+        user = db(q).select().first()
+        if user is None:
+            raise Exception("User %s does not exist" % str(id))
+
+        if user.id != auth.user_id:
+            ug = user_groups()
+            if "UserManager" not in ug and "Manager" not in ug:
+                raise Exception("You are not allowed to change another user table settings")
+
+        q = db.column_filters.col_tableid == vars["col_tableid"]
+        q &= db.column_filters.bookmark == vars["bookmark"]
+        q &= db.column_filters.user_id == user.id
+        db(q).delete()
+
+        sql = """insert into column_filters
+                 (
+                   col_tableid,
+                   col_name,
+                   col_filter,
+                   user_id,
+                   bookmark
+                 )
+                 select
+                   col_tableid,
+                   col_name,
+                   col_filter,
+                   user_id,
+                   "%(bookmark)s"
+                 from column_filters
+                 where
+                   col_tableid="%(table_id)s" and
+                   user_id=%(user_id)d and
+                   bookmark="current"
+              """ % dict(
+                      user_id=user.id,
+                      table_id=vars["col_tableid"],
+                      bookmark=vars["bookmark"]
+                    )
+        db.executesql(sql)
+        db.commit()
+
+        _log('user.table_filters.change',
+             'save bookmark %(data)s',
+             dict(data=vars["bookmark"]),
+            )
+        qvars = dict(
+          meta="0",
+          query="col_tableid=%s and bookmark=current" % (vars["col_tableid"])
+        )
+        return rest_get_user_table_filters().handler(id, **qvars)
+
 
 

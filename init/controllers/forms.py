@@ -958,7 +958,7 @@ def forms():
 
 def format_form_script(path, script_data):
     if script_data['returncode'] == 0:
-        cl = "check16"
+        cl = "ok"
     else:
         cl = "nok"
     return TABLE(
