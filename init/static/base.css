@@ -1,6 +1,6 @@
 @charset "UTF-8";
 
-form *:focus {
+form :focus {
   border: 1px dotted;
 }
 
@@ -33,7 +33,7 @@ form *:focus {
   padding-bottom: 0.2em;
   border-bottom: none;
 }
-.line *:before {
+.line :before {
   font-style: normal;
 }
 
@@ -56,7 +56,7 @@ form *:focus {
 }
 
 .groups > span {
-  padding: 0.2em 0.5em 0.2em 0px;
+  padding: 0.2em 0.5em 0.2em 0;
   cursor: pointer;
 }
 .groups > span:hover {
@@ -221,7 +221,7 @@ img {
 }
 
 .tag_input {
-    border: 0px;
+    border: 0;
     background-color:#cdcdcd;
     width:5em;
 }
@@ -397,7 +397,7 @@ img {
 }
 
 .menucell {
-    padding:0px;
+    padding:0;
     padding-left:5px;
     vertical-align: bottom;
 }
@@ -648,7 +648,7 @@ a {
 input,
 textarea {
     border: 1px solid #dddddd;
-    padding: 0px 0.4em;
+    padding: 0 0.4em;
 }
 
 button {
@@ -681,7 +681,6 @@ textarea[readonly] {
 
 html {
     font-size: 10pt;
-    //font-family: Arial, Sans, Georgia, Times new Roman;
     font-family: "opensans", 'Ubuntu', Arial, Sans, Georgia, Times new Roman;
     color: #333333;
     background: url('images/background.gif') repeat-x #3A3A3A;
@@ -726,7 +725,6 @@ div.error {
   vertical-align: middle;
 }
 .menu_entry > a > div > div {
-  //font-size: 0.8em;
   white-space: normal;
 }
 .menu_section > a {
@@ -757,7 +755,6 @@ div.error {
   padding: 1em;
   min-height: 60px;
   float: left;
-  //width: 22%;
   width: 15em;
   color: #ccc;
 }
@@ -1000,7 +997,11 @@ a.xinfo_shown span {
 }
 
 .panel_move {
-   -moz-user-select:none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select:none;
     padding-right:10px;
     cursor: move;
     background: orange;
@@ -1008,7 +1009,11 @@ a.xinfo_shown span {
 }
 
 .panel_close {
-   -moz-user-select:none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select:none;
     cursor: crosshair;
 }
 
@@ -1050,7 +1055,7 @@ a.xinfo_shown span {
 }
 
 .menubar {
-   padding: 0px;
+   padding: 0;
    display: none; /* on masque l'infobulle */
 }
 
@@ -1063,7 +1068,7 @@ a.xinfo_shown span {
     background:orange;
     color: #ffffff;
     text-align: center;
-    padding: 0px;
+    padding: 0;
     font-size: 0.5em;
 }
 
@@ -1079,7 +1084,7 @@ a.xinfo_shown span {
 }
 .extraline > td > table {
   width: 96%;
-  box-shadow: 0px 0px 20px 2px;
+  box-shadow: 0 0 20px 2px;
   border-radius: 4px;
   -moz-border-radius: 4px;
   -webkit-border-radius: 4px;
@@ -1088,17 +1093,17 @@ a.xinfo_shown span {
 .tab {
     background: whitesmoke;
     color: black;
-    padding:0px;
-    border-radius: 4px 4px 0px 0px;
+    padding:0;
+    border-radius: 4px 4px 0 0;
 }
 .tab:after {
   content: ".";
-  height: 0px;
+  height: 0;
   display: block;
   clear: both;
 }
 .tab ul {
-    padding:0px;
+    padding:0;
 }
 .tab li {
     text-align: center;
@@ -1173,12 +1178,11 @@ div.container {
 }
 
 div.container > * {
-    //padding:0.2em;
     vertical-align: middle;
 }
 
 div.spacer {
-    height: 0px;
+    height: 0;
     clear: both;
 }
 
@@ -1297,18 +1301,18 @@ div.sym_detail_visible {
     border-right-style: solid;
     border-top-color: #AAA;
     border-top-style: solid;
-    border-width: 0px;
+    border-width: 0;
     color: black;
     cursor: default;
     display: none;
-    margin: 0px;
+    margin: 0;
     padding: 8px;
     position: absolute;
     vertical-align: baseline;
     text-align: left;
     z-index: 499;
     background-color: white;
-    box-shadow: 0px 0px 20px 2px;
+    box-shadow: 0 0 20px 2px;
     border-radius: 4px;
     -moz-border-radius: 4px;
     -webkit-border-radius: 4px;
@@ -1323,17 +1327,17 @@ div.sym_detail_visible {
     border-right-style: solid;
     border-top-color: #AAA;
     border-top-style: solid;
-    border-width: 0px;
+    border-width: 0;
     color: black;
     cursor: default;
-    margin: 0px;
+    margin: 0;
     padding: 8px;
     position: absolute;
     vertical-align: baseline;
     text-align: left;
     z-index: 499;
     background-color: white;
-    box-shadow: 0px 0px 20px 2px;
+    box-shadow: 0 0 20px 2px;
     border-radius: 4px;
     -moz-border-radius: 4px;
     -webkit-border-radius: 4px;
@@ -1344,7 +1348,7 @@ div.sym_detail_visible {
 }
 textarea.link_ta {
     background: none;
-    border: 0px;
+    border: 0;
 }
 
 .floatw {
@@ -1364,7 +1368,7 @@ textarea.link_ta {
 
 div.floatw:hover {
   background-color: rgba(0,0,0,0.02);
-  box-shadow: inset 0px -1px 1px rgba(0,0,0,0.3), inset 0px 1px 1px rgba(0,0,0,0.5);
+  box-shadow: inset 0 -1px 1px rgba(0,0,0,0.3), inset 0 1px 1px rgba(0,0,0,0.5);
   border-radius: 3px;
 }
 div.floatw:active {
@@ -2268,7 +2272,7 @@ a.search-link:hover {
 .theader {
     background-color: #e0e1cd;
     color: black;
-    padding: 1px 0px 0px 0px;
+    padding: 1px 0 0 0;
     margin-top: 0;
     margin-bottom: 0;
 }
@@ -2384,7 +2388,6 @@ a.search-link:hover {
 
 .perf_plot {
    width: 600px;
-   //height: 300px;
 }
 
 .nowrap {
@@ -2392,7 +2395,7 @@ a.search-link:hover {
 }
 
 .right_click_menu {
-    box-shadow: 0px 0px 20px 2px;
+    box-shadow: 0 0 20px 2px;
     display: none;
     position: absolute;
     background: white;
@@ -2489,7 +2492,6 @@ div.summary {
     vertical-align: top;
 }
 .summary .title {
-    //width: 65%;
     text-align: left;
 }
 .summary .summary_header {
@@ -2722,7 +2724,7 @@ a.jqplot-image-container-close {
 
 .searchtab {
   width: 96%;
-  box-shadow: 0px 0px 20px #555;
+  box-shadow: 0 0 20px #555;
   border-radius: 4px;
   -moz-border-radius: 4px;
   -webkit-border-radius: 4px;
@@ -2777,7 +2779,6 @@ div.searchtab {
    border-right: solid 2px lightgrey;
    background-color: black;
    color: lightgrey;
-   //font-size: 14pt;
    font-family: courrier;
    padding-right: 0.5em;
    padding-left: 0.5em;
@@ -2788,7 +2789,6 @@ div.searchtab {
 }
 .keyboard-label {
    float: left;
-   //display: table-cell;
    padding-left: 0.4em;
 }
 
@@ -2803,7 +2803,7 @@ div.searchtab {
 	position: relative;
 }
 input.ocb {
-  width: 0px;
+  width: 0;
   visibility: hidden;
   position: fixed;
 }
@@ -2815,9 +2815,9 @@ input.ocb {
 	height: 14px;
 	top: 0;
 	border-radius: 4px;
-	-webkit-box-shadow: inset 0px 1px 1px rgba(0,0,0,0.5), 0px 1px 0px rgba(255,255,255,.4);
-	-moz-box-shadow: inset 0px 1px 1px rgba(0,0,0,0.5), 0px 1px 0px rgba(255,255,255,.4);
-	box-shadow: inset 0px 1px 1px rgba(0,0,0,0.5), 0px 1px 0px rgba(255,255,255,.4);
+	-webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,.4);
+	-moz-box-shadow: inset 0 1px 1px rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,.4);
+	box-shadow: inset 0 1px 1px rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,.4);
 	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#222', endColorstr='#45484d',GradientType=0 );
 }
 
@@ -2910,7 +2910,7 @@ input[disabled].ocb + label {
 }
 textarea.link_ta_sub {
     background: white;
-    /*border: 0px;*/
+    /*border: 0;*/
 }
 
 .ql {
@@ -2925,13 +2925,13 @@ textarea.link_ta_sub {
   vertical-align:middle; 
   height: 24px;
   background-color: rgba(0,0,0,0);
-  border: 0px;
+  border: 0;
   padding: 0 0.3em;
 }
 
 .button_div:hover {
   background-color: rgba(0,0,0,0.02);
-  box-shadow: inset 0px -1px 1px rgba(0,0,0,0.3), inset 0px 1px 1px rgba(0,0,0,0.5);
+  box-shadow: inset 0 -1px 1px rgba(0,0,0,0.3), inset 0 1px 1px rgba(0,0,0,0.5);
   border-radius: 3px;
   border-color: rgba(0,0,0,0);
 }
@@ -2951,13 +2951,13 @@ textarea.link_ta_sub {
 
 .oi {
 	background-color: rgba(0,0,0,0.05);
-	box-shadow: inset 0px 0px 1px rgba(255,200,100,0.3), inset 0px 0px 1px rgba(255,200,100,0.3);
+	box-shadow: inset 0 0 1px rgba(255,200,100,0.3), inset 0 0 1px rgba(255,200,100,0.3);
 	border-radius: 3px;
 	-moz-border-radius: 3px;
 	-webkit-border-radius: 3px;
 }
 input.oi:focus {
-	box-shadow: inset 0px 0px 1px rgba(255,100,50,0.3), inset 0px 0px 1px rgba(255,100,50,0.3);
+	box-shadow: inset 0 0 1px rgba(255,100,50,0.3), inset 0 0 1px rgba(255,100,50,0.3);
 	background: rgba(140,34,34,0.1);
 }
 
@@ -2970,16 +2970,16 @@ input.oi:focus {
     border-right-style: solid;
     border-top-color: #AAA;
     border-top-style: solid;
-    border-width: 0px;
+    border-width: 0;
     color: black;
     cursor: default;
-    margin: 0px;
+    margin: 0;
     padding: 8px;
     vertical-align: baseline;
     text-align: left;
     z-index: 500;
     background-color: white;
-    box-shadow: 0px 0px 20px 2px;
+    box-shadow: 0 0 20px 2px;
     border-radius: 4px;
     -moz-border-radius: 4px;
     -webkit-border-radius: 4px;

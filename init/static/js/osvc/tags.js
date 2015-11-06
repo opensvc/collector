@@ -220,7 +220,7 @@ function tags_load(o) {
     if ((_data.length == 0) && o.data.candidates) {
       o.div.info.text(i18n.t("tags.no_candidates"))
     }
-    d = $("<div></div>")
+    d = $("<div name='tag_container'></div>")
     for (i=0; i<_data.length; i++) {
       d.append(o.add_tag(_data[i]))
     }
@@ -228,7 +228,7 @@ function tags_load(o) {
       d.append(o.add_add_tag())
       d.append(o.add_del_tag())
     }
-    o.div.find(".tag").parent().remove()
+    o.div.find("[name=tag_container]").remove()
     o.div.prepend(d)
 
     o.bind_admin_tools()
