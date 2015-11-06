@@ -57,6 +57,7 @@ function float2int (value) {
 function spinner_del(e, text)
 {
     e.children(".spinner").remove()
+    e.children(".spinner_text").remove()
 }
 
 function spinner_add(e, text)
@@ -67,9 +68,11 @@ function spinner_add(e, text)
     if (!text) {
         text = ""
     }
-    s = $("<span class='spinner fa-spin'><span>")
-    s.text(text)
+    var s = $("<span class='spinner fa-spin'><span>")
     e.append(s)
+    var t = $("<span style='margin-left:1em' class='spinner_text'><span>")
+    t.text(text)
+    e.append(t)
     if (!e.is(":visible")) {
         e.slideToggle()
     }

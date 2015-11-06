@@ -4,6 +4,10 @@ form *:focus {
   border: 1px dotted;
 }
 
+.tags {
+	min-height: 5em;
+}
+
 .asset_tab {
   display: inline-table;
 }
@@ -1549,10 +1553,9 @@ ul.login_menu ul {
   content: '\f0fe  ';
   font-family: awesome;
 }
-.fw16 {
-    background: transparent url('images/fw16.png') no-repeat;
-    padding: 0 0 0 20px;
-    min-height: 16px;
+.fw16:before {
+  content: '\f06d  ';
+  font-family: awesome;
 }
 .alert16:before {
   content: '\f071  ';
@@ -1867,7 +1870,7 @@ ul.login_menu ul {
   content: '\f11c  ';
   font-family: awesome;
 }
-.tags:before {
+.fa-tags:before {
   content: '\f02c  ';
   font-family: awesome;
 }

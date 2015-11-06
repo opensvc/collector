@@ -180,7 +180,7 @@ menu_entries_data = {
   'view-resources': menu_fmt_e('Resources', "Service resources status", 'svc'),
   'view-appinfo': menu_fmt_e('App Info', "Service 'app' resources key:val store", 'svc'),
   'view-nodes': menu_fmt_e('Nodes', "Technical and organizational info", 'node16'),
-  'view-tagattach': menu_fmt_e('Tag Attachments', "Tags attached to nodes and services", 'tags'),
+  'view-tagattach': menu_fmt_e('Tag Attachments', "Tags attached to nodes and services", 'fa-tags'),
   'view-actions': menu_fmt_e('Actions', "Service actions log", 'actions'),
   'view-checks': menu_fmt_e('Checks', "Nodes health monitoring", 'check16'),
   'view-pkg': menu_fmt_e('Packages', "All packages installed on nodes", 'pkg16'),
@@ -224,7 +224,7 @@ menu_entries_data = {
   'adm-metrics': menu_fmt_e('Metrics', "Design sql requests to embed in charts", 'spark16'),
   'adm-charts': menu_fmt_e('Charts', "Design charts to embed in reports", 'spark16'),
   'adm-reports': menu_fmt_e('Reports', "Design custom reports", 'spark16'),
-  'adm-tags': menu_fmt_e('Tags', "Manage tag properties", 'tags'),
+  'adm-tags': menu_fmt_e('Tags', "Manage tag properties", 'fa-tags'),
 }
 
 response.menu = [
