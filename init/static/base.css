@@ -2599,35 +2599,29 @@ button, input[type=button], input[type=submit] {
     background-color: #2d2d2d;
 }
 
-.alertorange {
-    border-left-style: solid;
-    border-left-color: orange;
-    border-left-width: 0.5em;
-    padding-left: 0.4em;
+.alertorange:before {
+	content: '\f0c8  ';
+	font-family: awesome;
+	color: orange;
 }
-.alertred {
-    border-left-style: solid;
-    border-left-color: #990000;
-    border-left-width: 0.5em;
-    padding-left: 0.4em;
+.alertred:before {
+	content: '\f0c8  ';
+	font-family: awesome;
+	color: #990000;
 }
-.alertdarkred {
-    border-left-style: solid;
-    border-left-color: #660000;
-    border-left-width: 0.5em;
-    padding-left: 0.4em;
+.alertdarkred:before {
+	content: '\f0c8  ';
+	font-family: awesome;
+	color: #660000;
 }
-.alertgreen {
-    border-left-style: solid;
-    border-left-color: #009900;
-    border-left-width: 0.5em;
-    padding-left: 0.4em;
+.alertgreen:before {
+	content: '\f0c8  ';
+	font-family: awesome;
+	color: #009900;
 }
-.alertblack {
-    border-left-style: solid;
-    border-left-color: #2d2d2d;
-    border-left-width: 0.5em;
-    padding-left: 0.4em;
+.alertblack:before {
+	content: '\f0c8  ';
+	font-family: awesome;
 }
 
 

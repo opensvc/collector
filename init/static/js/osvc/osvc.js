@@ -3257,7 +3257,7 @@ function cell_decorator_dash_severity(e) {
   } else {
       l.push("alertblack")
   }
-  $(e).html("<div class='"+l.join(" ")+"'>"+v+"</div>")
+  $(e).html("<div class='"+l.join(" ")+"' title='"+v+"'></div>")
 }
 
 function cell_decorator_form_id(e) {
