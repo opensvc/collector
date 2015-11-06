@@ -14,7 +14,8 @@
     "bookmarks_save": "Save current filters as bookmark",
     "bookmarks_save_name": "Enter new bookmark name",
     "bookmarks_no_bookmarks": "No saved bookmarks",
-    "refresh": "  Refresh"
+    "refresh": "  Refresh",
+    "csv": "Export to csv"
   },
   "app": {
     "name": "collector"

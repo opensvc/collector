@@ -3791,6 +3791,35 @@ function table_cell_decorator(id) {
 
 
 //
+// table tool: csv export
+//
+function table_add_csv(t) {
+  if (!t.options.exportable) {
+    return
+  }
+
+  var e = $("<div class='floatw' name='tool_csv'></div>")
+  t.e_tool_csv = e
+
+  var span = $("<span class='csv' data-i18n='table.csv'></span>")
+  e.append(span)
+
+  e.bind("click", function() {
+    var _e = t.e_tool_csv.children("span")
+    if (!_e.hasClass("csv")) {
+      return
+    }
+    _e.removeClass("csv").addClass("csv_disabled")
+    setTimeout(function() {
+      _e.removeClass("csv_disabled").addClass("csv")
+    }, 10000)
+    document.location.href = t.ajax_url+"/csv"
+  })
+  e.i18n()
+  t.e_toolbar.prepend(e)
+}
+
+//
 // table tool: bookmarks
 //
 function table_add_bookmarks(t) {
@@ -4467,6 +4496,9 @@ function table_init(opts) {
     },
     'add_bookmarks': function(){
       table_add_bookmarks(this)
+    },
+    'add_csv': function(){
+      table_add_csv(this)
     }
   }
 
@@ -4480,6 +4512,7 @@ function table_init(opts) {
   t.div.find("select:visible").combobox()
 
   create_overlay()
+  t.add_csv()
   t.add_bookmarks()
   t.add_link()
   t.add_refresh()

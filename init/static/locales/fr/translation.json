@@ -14,7 +14,8 @@
     "bookmarks_save": "Enregistrer les filtres actuels en marque-page",
     "bookmarks_save_name": "Entrez le nom du nouveau marque-page",
     "bookmarks_no_bookmarks": "Aucun marque-page",
-    "refresh": "  Recharger"
+    "refresh": "  Recharger",
+    "csv": "Export to csv"
   },
   "app": {
     "name": "collector"

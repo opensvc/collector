@@ -996,37 +996,6 @@ class HtmlTable(object):
         else:
             additional_tools = SPAN()
 
-        if self.exportable:
-            args = ['csv']
-            if hasattr(self, 'csv_extra_args') and type(self.csv_extra_args):
-                args += self.csv_extra_args
-            export = DIV(
-                  A(
-                    SPAN(
-                      T('Export to csv'),
-                      _class='csv',
-                    ),
-                    _href=URL(
-                            r=request,
-                            f=self.func,
-                            vars=request.vars,
-                            args=args
-                          ),
-                    _onclick="""$(this).hide();$("#csv%(id)s").show()"""%dict(id=self.id),
-                  ),
-                  DIV(
-                    SPAN(
-                      T('Export to csv'),
-                      _class='csv_disabled',
-                    ),
-                    _style="display:none",
-                    _id="csv"+self.id,
-                  ),
-                  _class='floatw',
-                )
-        else:
-            export = SPAN()
-
         table_lines = []
         if self.headers:
             table_lines.append(self.table_header())
@@ -1052,7 +1021,6 @@ class HtmlTable(object):
         d = DIV(
               self.show_flash(),
               DIV(
-                export,
                 self.columns_selector(),
                 self.commonality(),
                 self.persistent_filters(),
@@ -1102,6 +1070,7 @@ table_init({
  'dbfilterable': %(dbfilterable)s,
  'refreshable': %(refreshable)s,
  'bookmarkable': %(bookmarkable)s,
+ 'exportable': %(exportable)s,
  'wsable': %(wsable)s,
  'pageable': %(pageable)s
 })
@@ -1128,6 +1097,7 @@ function ajax_enter_submit_%(id)s(event){%(ajax_enter_submit)s};
                    dbfilterable=str(self.dbfilterable).lower(),
                    refreshable=str(self.refreshable).lower(),
                    bookmarkable=str(self.bookmarkable).lower(),
+                   exportable=str(self.exportable).lower(),
                    pageable=str(self.pageable).lower(),
                    wsable=str(self.wsable).lower(),
                    action_menu=str(self.action_menu),
