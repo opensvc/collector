@@ -1501,7 +1501,7 @@ ul.login_menu ul {
   content: '\f0e0  ';
   font-family: awesome;
 }
-.status:before {
+.fa-status:before {
   content: '\f0f1  ';
   font-family: awesome;
 }
