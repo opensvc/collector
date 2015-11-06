@@ -4114,7 +4114,7 @@ function table_add_wsswitch(t) {
     if (!jd.data) {
       return
     }
-    if (jd.data[0].upc_visible) {
+    if ((jd.data.length == 0) || (jd.data[0].upc_visible)) {
       input.prop("checked", true)
     } else {
       input.prop("checked", false)
