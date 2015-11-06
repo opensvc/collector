@@ -2601,10 +2601,13 @@ function table_link(t){
     }
     args += '&'+$(this).attr('id')+"="+encodeURIComponent($(this).val())
   })
-  t.e_tool_link_textarea.val(url+args).attr("readonly", "on").select()
-  t.e_tool_link_area.show()
-  t.e_tool_link_textarea.autogrow()
-  t.e_tool_link_textarea.select()
+  
+  osvc_create_link(url,args);
+
+  //t.e_tool_link_textarea.val(url+args).attr("readonly", "on").select()
+  //t.e_tool_link_area.show()
+  //t.e_tool_link_textarea.autogrow()
+  //t.e_tool_link_textarea.select()
   keep_inside(t.e_tool_link_area.get())
 }
 
