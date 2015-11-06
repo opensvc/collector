@@ -15,7 +15,8 @@
     "bookmarks_save_name": "Enter new bookmark name",
     "bookmarks_no_bookmarks": "No saved bookmarks",
     "refresh": "  Refresh",
-    "csv": "Export to csv"
+    "csv": "Export to csv",
+    "columns": "Configure columns"
   },
   "app": {
     "name": "collector"

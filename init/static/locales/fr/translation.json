@@ -15,7 +15,8 @@
     "bookmarks_save_name": "Entrez le nom du nouveau marque-page",
     "bookmarks_no_bookmarks": "Aucun marque-page",
     "refresh": "  Recharger",
-    "csv": "Export to csv"
+    "csv": "Export to csv",
+    "columns": "Colonnes"
   },
   "app": {
     "name": "collector"
