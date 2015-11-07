@@ -182,6 +182,9 @@ def workflows():
         )
     return dict(table=t)
 
+def workflows_load():
+    return workflows()["table"]
+
 
 class col_forms_yaml(HtmlTableColumn):
     def html(self, o):
@@ -687,6 +690,9 @@ def forms_admin():
         )
     return dict(table=t)
 
+def forms_admin_load():
+    return forms_admin()["table"]
+
 def get_folders_info():
     h = {}
     for id, form_name, form_folder, form_type, data in get_forms("folder"):
@@ -953,8 +959,12 @@ def forms():
       H1(T("Choose a customization form")),
       tool_forms_search(),
       DIV(forms_list(), _id="forms_list"),
+      _style="text-align:center",
     )
     return dict(table=d)
+
+def forms_load():
+    return forms()["table"]
 
 def format_form_script(path, script_data):
     if script_data['returncode'] == 0:
@@ -1467,6 +1477,7 @@ $.ajax({
 })
 """ % dict(url=URL(c='forms', f=loader)),
       ),
+      _style="text-align:center"
     )
     return dict(table=d)
 
@@ -1477,6 +1488,9 @@ def workflows_assigned_to_me():
              title="Requests assigned to my team",
              empty_msg="You currently have no assigned request",
            )
+
+def workflows_assigned_to_me_load():
+    return workflows_assigned_to_me()["table"]
 
 @auth.requires_login()
 def ajax_workflows_pending_tiers_action():
@@ -1515,6 +1529,9 @@ def workflows_pending_tiers_action():
              title="Requests pending tiers action",
              empty_msg="None of your workflow are pending tiers action",
            )
+
+def workflows_pending_tiers_action_load():
+    return workflows_pending_tiers_action()["table"]
 
 @auth.requires_login()
 def _get_node_portnames(nodename):
