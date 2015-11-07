@@ -50,14 +50,16 @@ $(".menu").find("a").bind("click", function(event) {
     return
   }
   event.preventDefault()
+  var _href
   if (href.indexOf("?") >= 0) {
     l = href.split("?")
-    href = l[0] + "_load?" + l[1]
+    _href = l[0] + "_load?" + l[1]
   } else {
-    href +=  "_load"
+    _href = href + "_load"
   }
-  console.log("load", href)
-  $(".layout").load(href)
+  console.log("load", _href)
+  history.pushState({}, "", href)
+  $(".layout").load(_href)
 
   // purge tables not displayed anymore
   for (tid in osvc.tables) {
