@@ -631,13 +631,16 @@ function table_add_filtered_to_visible_columns(t) {
     var s = $(this).attr("id")
     var col = s.split("_f_")[1]
     var val = $(this).val()
-    if (val === "") {
-      t.e_tool_column_selector_area.find("[colname="+col+"]").removeAttr("disabled")
-      return
-    }
-    t.e_tool_column_selector_area.find("[colname="+col+"]").prop("disabled", true)
-    if (t.visible_columns.indexOf(col) >= 0) {
-      return
+    if (t.e_tool_column_selector_area) {
+      // no column selector
+      if (val === "") {
+        t.e_tool_column_selector_area.find("[colname="+col+"]").removeAttr("disabled")
+        return
+      }
+      t.e_tool_column_selector_area.find("[colname="+col+"]").prop("disabled", true)
+      if (t.visible_columns.indexOf(col) >= 0) {
+        return
+      }
     }
     t.visible_columns.push(col)
   })
