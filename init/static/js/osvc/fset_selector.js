@@ -85,7 +85,7 @@ function fset_selector_load_input(o, current_fset_name) {
   }
   o.input.append(option)
 
-  services_osvcgetrest("R_FILTERSETS", "", "", function(jd) {
+  services_osvcgetrest("R_FILTERSETS", "", {"limit": "0", "props": "id,fset_name", "meta": "0"}, function(jd) {
     for (var i=0; i<jd.data.length; i++) {
       var data = jd.data[i]
       var option = $("<option></option)")
