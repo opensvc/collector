@@ -154,7 +154,7 @@ class table_appinfo(HtmlTable):
             'app_updated': HtmlTableColumn(
                      title='Last update',
                      field='app_updated',
-                     img='svc',
+                     img='time16',
                      display=True,
                      _class='datetime_daily',
                     ),
@@ -221,4 +221,6 @@ def appinfo():
         )
     return dict(table=t)
 
+def appinfo_load():
+    return appinfo()["table"]
 

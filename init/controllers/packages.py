@@ -3,7 +3,7 @@ class table_packages(HtmlTable):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
-        self.cols = ['nodename']+v_nodes_cols
+        self.cols = ['nodename']
         self.cols += ['id',
                       'pkg_name',
                       'pkg_version',
@@ -13,6 +13,7 @@ class table_packages(HtmlTable):
                       'pkg_sig',
                       'pkg_install_date',
                       'pkg_updated']
+        self.cols += v_nodes_cols
         self.colprops = v_nodes_colprops
         self.colprops.update({
             'pkg_name': HtmlTableColumn(
@@ -70,7 +71,7 @@ class table_packages(HtmlTable):
                      title='Updated',
                      table='packages',
                      field='pkg_updated',
-                     img='pkg16',
+                     img='time16',
                      display=True,
                      _class='datetime_daily',
                     ),
@@ -154,4 +155,6 @@ def packages():
         )
     return dict(table=t)
 
+def packages_load():
+    return packages()["table"]
 
