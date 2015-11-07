@@ -269,7 +269,7 @@ function search_routing(delay)
   var menu = $(".header").find(".menu16").parents("ul").first().siblings(".menu");
   if (menu.is(":visible")) {
     filter_menu(null);
-  } else if ($("[name=fset_selector]").is(":visible")) {
+  } else if ($(".header [name=fset_selector_entries]").is(":visible")) {
     filter_fset_selector(null);
   } else {
     clearTimeout(timer);
