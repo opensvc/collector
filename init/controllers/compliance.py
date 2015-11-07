@@ -350,7 +350,7 @@ class col_var_value(HtmlTableColumn):
             edit = ""
         else:
             edit = A(
-                 IMG(_src=URL(r=request, c='static', f='images/edit.png')),
+                 _class="edit16",
                  _id=eid,
                  _onclick="""hide_eid('%(eid)s');show_eid('%(cid)s');show_eid('%(formid)s');sync_ajax('%(url)s', [], '%(formid)s', function(){})"""%dict(
                    formid=hid,
@@ -372,7 +372,7 @@ class col_var_value(HtmlTableColumn):
                )
 
         cancel = A(
-                 IMG(_src=URL(r=request, c='static', f='images/cancel.png')),
+                 _class="nok",
                  _id=cid,
                  _onclick="""hide_eid('%(cid)s');show_eid('%(eid)s');show_eid('%(formid)s');ajax('%(url)s', [], '%(formid)s')"""%dict(
                    formid=hid,
@@ -8364,10 +8364,7 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False, display_detaile
             cl = ""
 
         if 'Help' in input and input['Help'] is not None and len(input['Help']) > 0:
-            _help = IMG(
-              _src=URL(r=request, c='static', f='images/help.png'),
-              _title=input['Help']
-            )
+            _help = DIV(_class="help", _title=input['Help'])
         else:
             _help = ""
 

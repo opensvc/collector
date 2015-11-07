@@ -1757,6 +1757,10 @@ ul.login_menu ul {
 	content: '\f111  ';
 	font-family: awesome;
 }
+.help:before {
+	content: '\f059  ';
+	font-family: awesome;
+}
 .nok:before {
 	content: '\f00d  ';
 	font-family: awesome;
