@@ -622,7 +622,7 @@ label {
 
 a {
     cursor: pointer;
-    color: #000000;
+    color: inherit;
 }
 
 .a {
@@ -768,7 +768,7 @@ div.menu_box {
 	min-width: 1em;
 	text-align: center;
 }
-.menu_title {
+.menu .menu_title {
 	color: white;
 }
 .menu_subtitle {
@@ -1117,7 +1117,7 @@ a.xinfo_shown span {
   color: darkred;
 }
 .tab > ul > li:first-child:hover {
-  color: #d99;
+  color: lightgray;
 }
 
 .tab > ul > li:first-child {
@@ -1689,6 +1689,11 @@ ul.login_menu ul {
   content: '\f0c8  ';
   font-family: awesome;
 }
+.na:before {
+  content: '\f0c8  ';
+  font-family: awesome;
+  color: lightgray;
+}
 .hw16:before {
   content: '\f0c8  ';
   font-family: awesome;
@@ -1744,11 +1749,6 @@ ul.login_menu ul {
 .svc:before {
   content: '\f111  ';
   font-family: awesome;
-}
-.na {
-    background: transparent url('images/na.png') no-repeat;
-    padding: 0 0 0 20px;
-    min-height: 16px;
 }
 .nok:before {
   content: '\f00d  ';
@@ -1881,6 +1881,10 @@ ul.login_menu ul {
 }
 .patch:before {
   content: '\f1b2  ';
+  font-family: awesome;
+}
+.folder-closed:before {
+  content: '\f07b  ';
   font-family: awesome;
 }
 .nologo16 {
@@ -3025,7 +3029,32 @@ div.containertrans {
 }
 
 .coloredDiv {
-  height:20px; width:20px; float:left;
+	height:20px;
+	width:20px;
+	float:left;
+}
+
+.designer {
+	text-align:left;
+}
+.casep {
+	float:left;
+	cursor:pointer;
+	width:5px;
+	background-color:lightgray;
+}
+.cainfo {
+	float:left;
+	overflow-y:auto;
+	float:left;
+	padding:20px;
+}
+.catree {
+	overflow-x: overlay;
+	overflow-y: scroll;
+	float: left;
+}
+.casearch {
 }
 
 
