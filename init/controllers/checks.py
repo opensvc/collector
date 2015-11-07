@@ -906,6 +906,9 @@ wsh["%(id)s"] = ws_action_switch_%(id)s
         )
     return dict(table=t)
 
+def checks_load():
+    return checks()["table"]
+
 def update_dash_checks_nodes(nodenames):
     for nodename in nodenames:
         update_dash_checks(nodename)

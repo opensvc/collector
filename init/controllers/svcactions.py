@@ -539,6 +539,9 @@ wsh["%(divid)s"] = ws_action_switch_%(divid)s
         )
     return dict(table=t)
 
+def svcactions_load():
+    return svcactions()["table"]
+
 #
 # actions tab
 #

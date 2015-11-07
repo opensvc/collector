@@ -317,4 +317,6 @@ def apps():
         )
     return dict(table=t)
 
+def apps_load():
+    return apps()["table"]
 

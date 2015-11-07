@@ -3,12 +3,13 @@ class table_patches(HtmlTable):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
-        self.cols = ['nodename']+v_nodes_cols
+        self.cols = ['nodename']
         self.cols += ['id',
                       'patch_num',
                       'patch_rev',
                       'patch_install_date',
                       'patch_updated']
+        self.cols += v_nodes_cols
         self.colprops = v_nodes_colprops
         self.colprops.update({
             'nodename': HtmlTableColumn(
@@ -122,4 +123,6 @@ def patches():
         )
     return dict(table=t)
 
+def patches_load():
+    return patches()["table"]
 

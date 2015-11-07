@@ -190,4 +190,6 @@ def nodesan():
         )
     return dict(table=t)
 
+def nodesan_load():
+    return nodesan()["table"]
 

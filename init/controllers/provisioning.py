@@ -140,6 +140,9 @@ def prov_admin():
         )
     return dict(table=t)
 
+def prov_admin_load():
+    return prov_admin()["table"]
+
 @auth.requires_login()
 def prov_list():
     q = db.prov_templates.id > 0

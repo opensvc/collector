@@ -174,6 +174,9 @@ wsh["%(divid)s"] = ws_action_switch_%(divid)s
         )
     return dict(table=t)
 
+def resmon_load():
+    return resmon()["table"]
+
 class table_resmon_svc(table_resmon):
     def __init__(self, id=None, func=None, innerhtml=None):
         table_resmon.__init__(self, id, func, innerhtml)

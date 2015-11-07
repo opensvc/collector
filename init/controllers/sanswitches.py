@@ -156,4 +156,6 @@ def sanswitches():
         )
     return dict(table=t)
 
+def sanswitches_load():
+    return sanswitches()["table"]
 

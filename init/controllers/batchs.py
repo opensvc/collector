@@ -140,3 +140,5 @@ def batchs():
             d.append(_d)
     return dict(table=DIV(d, _class="batchs"))
 
+def batchs_load():
+    return batchs()["table"]

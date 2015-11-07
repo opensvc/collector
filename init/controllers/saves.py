@@ -253,6 +253,9 @@ def saves():
         )
     return dict(table=t)
 
+def saves_load():
+    return saves()["table"]
+
 class col_chart(HtmlTableColumn):
     def html(self, o):
        l = []

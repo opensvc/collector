@@ -1209,4 +1209,6 @@ def svcmon_log():
         )
     return dict(table=t)
 
+def svcmon_log_load():
+    return svcmon_log()["table"]
 

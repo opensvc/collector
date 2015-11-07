@@ -173,6 +173,9 @@ def tags():
         )
     return dict(table=t)
 
+def tags_load():
+    return tags()["table"]
+
 #
 # view-tagattach view code
 #
@@ -379,4 +382,6 @@ def tagattach():
         )
     return dict(table=t)
 
+def tagattach_load():
+    return tagattach()["table"]
 

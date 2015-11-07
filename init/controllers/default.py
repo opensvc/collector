@@ -920,6 +920,9 @@ wsh["%(divid)s"] = ws_action_switch_%(divid)s
         )
     return dict(table=t)
 
+def svcmon_load():
+    return svcmon()["table"]
+
 class table_svcmon_node(table_svcmon):
     def __init__(self, id=None, func=None, innerhtml=None):
         table_svcmon.__init__(self, id, func, innerhtml)

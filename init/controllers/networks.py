@@ -552,4 +552,6 @@ def networks():
         )
     return dict(table=t)
 
+def networks_load():
+    return networks()["table"]
 
