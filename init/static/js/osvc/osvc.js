@@ -2574,7 +2574,7 @@ function table_link(t){
   var args = "clear_filters=true&discard_filters=true"
 
   // fset
-  var current_fset = t.e_fset_selector.find(":selected").attr("id")
+  var current_fset = $("[name=fset_selector]").find(":selected").attr("id")
   args += "&dbfilter="+current_fset
 
   t.div.find("[name=fi]").each(function(){
@@ -3769,32 +3769,6 @@ function table_cell_decorator(id) {
 
 
 //
-// table tool: fset selector
-//
-function table_add_fset_selector(t) {
-  if (!t.options.dbfilterable) {
-    return
-  }
-
-  var e = $("<span class='floatw filter16' name='tool_fset_selector'></span>")
-  e.text(i18n.t('table.filter'))
-  t.e_tool_fset_selector = e
-
-  var span_selector = $("<span name='fset_selector'></span>")
-  e.append(span_selector)
-  t.e_fset_selector = span_selector
-  t.e_fset_selector.uniqueId()
-
-  e.i18n()
-  t.e_toolbar.prepend(e)
-
-  fset_selector(t.e_fset_selector.attr("id"), function(){
-    t.refresh()
-  })
-}
-
-
-//
 // table tool: column selector
 //
 function table_add_column_selector(t) {
@@ -4540,9 +4514,6 @@ function table_init(opts) {
     'add_scrollers': function(){
       table_add_scrollers(this)
     },
-    'add_fset_selector': function(){
-      table_add_fset_selector(this)
-    },
     'add_filterbox': function(){
       table_add_filterbox(this)
     },
@@ -4620,7 +4591,6 @@ function table_init(opts) {
   t.div.find("select:visible").combobox()
 
   create_overlay()
-  t.add_fset_selector()
   t.add_commonality()
   t.add_column_selector()
   t.add_csv()

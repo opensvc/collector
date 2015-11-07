@@ -814,6 +814,13 @@ div.menu_box {
 	color: white;
 	width: 100%;
 }
+.header option {
+	color: initial;
+}
+.header select {
+	color: white;
+	border: 0;
+}
 
 .statusbar {
 	background: url('images/menu.gif');

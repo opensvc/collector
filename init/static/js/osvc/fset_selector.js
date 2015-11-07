@@ -6,41 +6,70 @@ function fset_selector(divid, callback) {
   o.callback = callback
 
   o.load_span = function() {
-    return fset_selector_load_span(this)
+    return fset_selector_load_span(o)
   }
   o.load_input = function(current_fset_name) {
-    return fset_selector_load_input(this, current_fset_name)
+    return fset_selector_load_input(o, current_fset_name)
   }
   o.load_bindings = function() {
-    return fset_selector_load_bindings(this)
+    return fset_selector_load_bindings(o)
   }
   o.set_fset = function(new_fset) {
-    return fset_selector_set_fset(this, new_fset)
+    return fset_selector_set_fset(o, new_fset)
   }
   o.unset_fset = function() {
-    return fset_selector_unset_fset(this)
+    return fset_selector_unset_fset(o)
+  }
+  o.container = function() {
+    return fset_selector_container(o)
+  }
+  o.callbacks = function() {
+    return fset_selector_callbacks(o)
   }
 
-  o.span = $("<span class='clickable'></span>")
+  o.container()
+  return o
+}
+
+function fset_selector_container(o) {
+  var e = $("<span class='filter16' name='fset_selector'></span>")
+  e.text(i18n.t('table.filter'))
+
+  var span_selector = $("<span class='clickable'></span>")
+  span_selector.uniqueId()
+  e.append(span_selector)
+  o.span = span_selector
+
+  e.i18n()
+  o.div.append(e)
+
   o.input = $("<select class='editable hidden'></select>")
-  o.div.append(o.span)
-  o.div.append(o.input)
+  e.append(o.input)
 
   o.load_span()
-  return o
+}
+
+function fset_selector_callbacks(o) {
+  // refresh tables
+  for (tid in osvc.tables) {
+    osvc.tables[tid].refresh()
+  }
+  if (o.callback) {
+    o.callback()
+  }
 }
 
 function fset_selector_unset_fset(o) {
   services_osvcdeleterest("R_USERS_SELF_FILTERSET", [], "", "", function(jd) {
-      o.span.empty()
-      o.span.text(o.input.val())
-      o.span.show()
-      o.input.hide()
-      o.callback()
+    o.span.empty()
+    o.span.text(o.input.val())
+    o.span.show()
+    o.input.hide()
+    o.callbacks()
   },
   function(xhr, stat, error) {
-      o.span.html(services_ajax_error_fmt(xhr, stat, error))
-      o.span.show()
+    o.span.html(services_ajax_error_fmt(xhr, stat, error))
+    o.span.show()
   })
 }
 
@@ -50,7 +79,7 @@ function fset_selector_set_fset(o, new_fset) {
       o.span.text(o.input.val())
       o.span.show()
       o.input.hide()
-      o.callback()
+      o.callbacks()
   },
   function(xhr, stat, error) {
       o.span.html(services_ajax_error_fmt(xhr, stat, error))
@@ -70,6 +99,10 @@ function fset_selector_load_bindings(o) {
     } else {
       o.set_fset(new_fset)
     }
+  })
+  o.input.bind("blur", function() {
+    o.span.show()
+    o.input.hide()
   })
 }
 
