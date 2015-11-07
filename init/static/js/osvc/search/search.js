@@ -267,11 +267,11 @@ function search_search()
 function search_routing(delay)
 {
   var menu = $(".header").find(".menu16").parents("ul").first().siblings(".menu");
-  if (menu.is(":visible")) 
-  {
+  if (menu.is(":visible")) {
     filter_menu(null);
-  } 
-  else {
+  } else if ($("[name=fset_selector]").is(":visible")) {
+    filter_fset_selector(null);
+  } else {
     clearTimeout(timer);
     timer = setTimeout(search_search,delay);
   }
@@ -350,5 +350,24 @@ function filter_menu(event) {
     menu.append("<div class='menu_entry meta_not_found'><a><div class='question48'>"+T("No menu entry found matching filter")+"</div></a></div>")
   } else {
     menu.find(".meta_not_found").remove()
+  }
+}
+
+function filter_fset_selector(event) {
+  var div = $(".flash [name=fset_selector_entries]")
+  var text = searchbox = $(".search").find("input").val()
+  var reg = new RegExp(text, "i");
+  div.find(".menu_entry").each(function(){
+    if ($(this).find("[name=title]").text().match(reg)) {
+      $(this).show()
+    } else {
+      $(this).hide()
+    }
+  })
+  var entries = div.find(".menu_entry:visible")
+  if (entries.length==0) {
+    div.append("<div class='menu_entry meta_not_found'><a><div class='question48'>"+T("No menu entry found matching filter")+"</div></a></div>")
+  } else {
+    div.find(".meta_not_found").remove()
   }
 }
