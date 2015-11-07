@@ -42,6 +42,34 @@
         {{=T('Powered by')}} <a href="http://www.web2py.com" style="color:silver">web2py</a>
       </div>
     </div>
-    <script>services_feed_self_and_group()</script>
+    <script>
+services_feed_self_and_group()
+$(".menu").find("a").bind("click", function(event) {
+  var href = $(this).attr("href")
+  if (!href) {
+    return
+  }
+  event.preventDefault()
+  if (href.indexOf("?") >= 0) {
+    l = href.split("?")
+    href = l[0] + "_load?" + l[1]
+  } else {
+    href +=  "_load"
+  }
+  console.log("load", href)
+  $(".layout").load(href)
+
+  // purge tables not displayed anymore
+  for (tid in osvc.tables) {
+    if ($('#'+tid).length == 0) {
+      delete osvc.tables[tid]
+      if (tid in wsh) {
+        delete wsh[tid]
+      }
+    }
+  }
+})
+
+   </script>
   </body>
 </html>
