@@ -24,6 +24,12 @@ def user():
     """
     return dict(form=auth())
 
+def user_load():
+    if request.args[0] != "profile":
+        raise HTTP(404)
+    # only profile is loadable
+    return auth()
+
 def call():
     """
     exposes services. for example:

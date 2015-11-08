@@ -20,12 +20,23 @@ function app_load_href(href) {
     // loadable co-functions ends with '_load'
     event.preventDefault()
     var _href
-    if (href.indexOf("?") >= 0) {
-      l = href.split("?")
-      _href = l[0] + "_load?" + l[1]
+
+    if (href.match(/:\/\//)) {
+      // full url
+      var fn_idx = 5
     } else {
-      _href = href + "_load"
-    }
+      // relative url
+      var fn_idx = 3
+    }
+
+    // http:, , host:port, app, ctrl, fn, arg0, arg1, ... lastarg?key=val,key=val
+    var l = href.split("?")
+    var v = l[0].split("/")
+
+    v[fn_idx] += "_load"
+
+    l[0] = v.join("/")
+    _href = l.join("?")
 
     console.log("load", _href)
     $(".layout").load(_href, {}, function (responseText, textStatus, req) {
