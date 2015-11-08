@@ -400,7 +400,7 @@ def ajax_service():
             LI(P(T("log"), _class='log16'), _id="litab15_"+str(rowid)),
             LI(P(T("env"), _class='file16'), _id="litab4_"+str(rowid)),
             LI(P(T("topology"), _class='dia16'), _id="litab5_"+str(rowid)),
-            LI(P(T("startup"), _class='action_start_16'), _id="litab16_"+str(rowid)),
+            LI(P(T("startup"), _class='startup'), _id="litab16_"+str(rowid)),
             LI(P(T("storage"), _class='hd16'), _id="litab6_"+str(rowid)),
             LI(P(T("container stats"), _class='spark16'), _id="litab12_"+str(rowid)),
             LI(P(T("stats"), _class='spark16'), _id="litab7_"+str(rowid)),
