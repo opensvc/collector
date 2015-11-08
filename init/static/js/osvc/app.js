@@ -64,12 +64,12 @@ function app_menu_entries_bind_click_to_load() {
     if (!href) {
       return
     }
-    // update browser url and history
-    history.pushState({}, "", href)
-  
     app_load_href(href)
     $(".header .menu").hide("fold")
 
+    // update browser url and history
+    history.pushState({}, "", href)
+  
     // prevent default
     return false
   })
