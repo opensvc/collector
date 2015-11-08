@@ -32,7 +32,7 @@ function fset_selector(divid, callback) {
 }
 
 function fset_selector_container(o) {
-  var e = $("<span class='filter16' name='fset_selector'></span>")
+  var e = $("<a class='filter16' name='fset_selector'></a>")
   e.text(i18n.t('table.filter'))
 
   var span_selector = $("<span class='clickable'></span>")
