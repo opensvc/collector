@@ -10,7 +10,7 @@ function app_start() {
 
 function _app_start() {
   $(document).i18n()
-  search_init()
+  search("layout_search_tool")
   services_feed_self_and_group()
   fset_selector("fset_selector")
   app_menu_entries_bind_click_to_load()

@@ -261,6 +261,7 @@ function search_search()
       if (!$("#search_result").is(':visible')) toggle('search_result');
       $("#search_div").removeClass("searching");
       $("#search_div").addClass("searchidle");
+      search_highlight($("#search_result"), search_query)
   });
 }
 
@@ -277,20 +278,36 @@ function search_routing(delay)
   }
 }
 
-function search_init()
+function search(divid) {
+  var o = {}
+  o.divid = divid
+  o.div = $("#"+divid)
+  
+  o.init = function init() {
+    return search_init(o)
+  }
+  o.div.load("/init/static/views/search.html", function() {
+    o.init()
+  })
+
+  return o
+}
+
+function search_init(o)
 {
   var timer;
 
-  $('#search_div').i18n()
+  o.div.i18n()
+  o.e_search_div = $("#search_div")
+  o.e_search_input = $("#search_input")
 
-  $('#search_div').on("keyup",function (event) {
-    if (event.keyCode == 13) 
+  o.e_search_div.on("keyup",function (event) {
+    if (event.keyCode == 13) {
       search_routing(0);
+    }
   });
-
-  $("#search_input").on("keyup",function (event) {
-    if (event.keyCode !=27)
-    {
+  o.e_search_input.on("keyup",function (event) {
+    if (event.keyCode != 27) {
       search_routing(1000);
     }
   });
@@ -351,6 +368,7 @@ function filter_menu(event) {
   } else {
     menu.find(".meta_not_found").remove()
   }
+  search_highlight(menu, text)
 }
 
 function filter_fset_selector(event) {
@@ -370,4 +388,50 @@ function filter_fset_selector(event) {
   } else {
     div.find(".meta_not_found").remove()
   }
+  search_highlight(div, text)
+}
+
+function search_highlight(e, s) {
+  // keep track of original texts
+  if (e.children("[name=orig]").length == 0) {
+    var cache = $("<div name='orig'></div>")
+    cache.css({"display": "none"})
+    e.find("*").each(function() {
+      var clone = $(this).clone()
+      clone.children().remove()
+      if (clone.text().match(/^$/)) {
+        return
+      }
+      var cache_entry = $("<div></div>")
+      cache_entry.uniqueId()
+      var id = cache_entry.attr("id")
+      $(this).attr("highlight_id", id)
+      cache_entry.html(clone.html())
+      cache.append(cache_entry)
+    })
+    e.append(cache)
+  }
+
+  var regexp = new RegExp(s, 'ig');
+  var repl = '<span class="highlight_light">' + s + '</span>';
+
+  e.children("[name=orig]").children().each(function(){
+    // restore orig
+    var id = $(this).attr("id")
+    console.log($(this).text())
+    var tgt = e.find("[highlight_id="+id+"]")
+    console.log(tgt)
+    tgt.find("[name=highlighted]").remove()
+    var children = tgt.children().detach()
+
+    tgt.empty()
+    tgt.text($(this).text())
+
+    if ($(this).text().match(regexp)) {
+      var highlighted = $("<span name='highlighted'>"+$(this).text().replace(regexp, repl)+"</span>")
+      tgt.text("")
+      tgt.prepend(highlighted)
+    }
+    tgt.append(children)
+  })
 }
