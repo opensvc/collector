@@ -1,4 +1,10 @@
 function app_start() {
+  $(window).on("popstate", function(e) {
+    if (e.originalEvent.state !== null) {
+      app_load_href(location.href);
+    }
+  })
+
   i18n_init(_app_start)
 }
 
@@ -7,16 +13,10 @@ function _app_start() {
   search_init()
   services_feed_self_and_group()
   fset_selector("fset_selector")
-  menu_entries_bind_click_to_load()
+  app_menu_entries_bind_click_to_load()
 }
 
-function menu_entries_bind_click_to_load() {
-  $(".menu").find("a").bind("click", function(event) {
-    var href = $(this).attr("href")
-    if (!href) {
-      return
-    }
-
+function app_load_href(href) {
     // loadable co-functions ends with '_load'
     event.preventDefault()
     var _href
@@ -27,14 +27,11 @@ function menu_entries_bind_click_to_load() {
       _href = href + "_load"
     }
 
-    // update browser url and history
-    history.pushState({}, "", href)
-  
     console.log("load", _href)
     $(".layout").load(_href, {}, function (responseText, textStatus, req) {
       if (textStatus == "error") {
         // load error
-        console.log("fallback to location.href", _href)
+        console.log("fallback to location", href)
         document.location.replace(href)
       } else {
         // load success, purge tables not displayed anymore
@@ -48,5 +45,21 @@ function menu_entries_bind_click_to_load() {
         }
       }
     })
+}
+
+function app_menu_entries_bind_click_to_load() {
+  $(".menu").find("a").bind("click", function(event) {
+    var href = $(this).attr("href")
+    if (!href) {
+      return
+    }
+    // update browser url and history
+    history.pushState({}, "", href)
+  
+    app_load_href(href)
+    $(".header .menu").hide("fold")
+
+    // prevent default
+    return false
   })
 }
