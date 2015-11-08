@@ -1,5 +1,26 @@
 from gluon.dal import smart_query
 
+class rest_get_links(rest_get_table_handler):
+    def __init__(self):
+        desc = [
+          "Get links.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/links",
+        ]
+        rest_get_table_handler.__init__(
+          self,
+          path="/links",
+          tables=["links"],
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, **vars):
+        q = db.links.id > 0
+        self.set_q(q)
+        return self.prepare_data(**vars)
+
 class rest_get_link(rest_get_line_handler):
     def __init__(self):
         desc = [
@@ -20,8 +41,10 @@ class rest_get_link(rest_get_line_handler):
         q = db.links.link_md5 == id
 
         # Update consultation timestamp
-        if q is not None:
-          db(db.links.link_md5 == id).update(link_last_consultation_date=request.now,link_access_counter=db.links.link_access_counter+1)
+        db(db.links.link_md5 == id).update(
+          link_last_consultation_date=request.now,
+          link_access_counter=db.links.link_access_counter+1
+        )
 
         self.set_q(q)
         return self.prepare_data(**vars)

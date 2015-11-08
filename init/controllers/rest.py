@@ -100,6 +100,7 @@ handlers = {
      rest_get_ips(),
      rest_get_ip(),
      rest_get_link(),
+     rest_get_links(),
      rest_get_log(),
      rest_get_logs(),
      rest_get_networks(),
