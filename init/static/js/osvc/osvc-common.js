@@ -232,13 +232,11 @@ function osvc_get_link(divid,link_id)
       var param = JSON.parse(result[0].link_parameters);
       var link = result[0].link_function;
 
-      // if ajax link
-      if (link.beginsWith("https://"))
-      {
-        $("#"+divid).load(link, param, function() {});   
-      }
-      else // or js function link
-      {
+      if (link.beginsWith("https://")) {
+        // ajax link
+        app_load_href(link+"?"+param)
+      } else {
+        // js function link
         var fn = window[link];
         fn(divid,param);
       }
