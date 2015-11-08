@@ -32,14 +32,15 @@ var t_dictionary = {
 }
 
 // Init i18n
-i18n.init({
-    debug: true,
-    fallbackLng: false,
-    load:'unspecific',
-    resGetPath: "/init/static/locales/__lng__/__ns__.json",
-    ns: {
-        namespaces: ['translation'],
-        defaultNs: 'translation'
-    }
-});
-
+function i18n_init(callback) {
+  i18n.init({
+      debug: true,
+      fallbackLng: false,
+      load:'unspecific',
+      resGetPath: "/init/static/locales/__lng__/__ns__.json",
+      ns: {
+          namespaces: ['translation'],
+          defaultNs: 'translation'
+      }
+  }, callback);
+}

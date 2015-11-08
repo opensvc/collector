@@ -3845,7 +3845,7 @@ function table_add_column_selector(t) {
     t.e_tool_column_selector_area.toggle()
   })
 
-  e.i18n()
+  try { e.i18n() } catch(e) {}
   t.e_toolbar.prepend(e)
 }
 
@@ -3879,7 +3879,7 @@ function table_add_commonality(t) {
     ajax(t.ajax_url+"/commonality", [], t.e_tool_commonality_area.attr("id"))
   })
 
-  e.i18n()
+  try { e.i18n() } catch(e) {}
   t.e_toolbar.prepend(e)
 }
 
@@ -3908,7 +3908,7 @@ function table_add_csv(t) {
     }, 10000)
     document.location.href = t.ajax_url+"/csv"
   })
-  e.i18n()
+  try { e.i18n() } catch(e) {}
   t.e_toolbar.prepend(e)
 }
 
@@ -3977,7 +3977,7 @@ function table_add_bookmarks(t) {
     $(".flash").show("fold").html(services_ajax_error_fmt(xhr, stat, error))
   })
 
-  e.i18n()
+  try { e.i18n() } catch(e) {}
   t.e_tool_bookmarks = e
   t.e_tool_bookmarks_area = area
   t.e_tool_bookmarks_save = save
@@ -4098,9 +4098,7 @@ function table_add_link(t) {
 
   var e = $("<div class='floatw' name='tool_link'></div>")
 
-  var span = $("<span class='link16'></span>")
-  span.attr("title", i18n.t("table.link_title"))
-  span.text(i18n.t("table.link"))
+  var span = $("<span class='link16' title='table.link_title' data-i18n='table.link'></span>")
   e.append(span)
 
   // bindings
@@ -4129,7 +4127,7 @@ function table_add_refresh(t) {
   }
 
   var e = $("<div class='floatw' name='tool_refresh'><span class='refresh16'></span><span data-i18n='table.refresh'></span></div>")
-  e.i18n()
+  try { e.i18n() } catch(e) {}
 
   // bindings
   e.bind("click", function(){
@@ -4187,11 +4185,10 @@ function table_add_wsswitch(t) {
   label.attr("for", input.attr("id"))
 
   // title
-  var title = $("<span style='padding-left:0.3em;'></span>")
-  title.text(i18n.t("table.live"))
+  var title = $("<span data-i18n='table.live' style='padding-left:0.3em;'></span>")
 
   // container
-  var e = $("<span class='floatw'><span data-i18n='table.live'></span></span>")
+  var e = $("<span class='floatw'></span>")
   e.append(input)
   e.append(label)
   e.append(title)
