@@ -3781,6 +3781,7 @@ function table_add_column_selector(t) {
 
   var span = $("<span class='columns' data-i18n='table.columns'></span>")
   e.append(span)
+  try { e.i18n() } catch(e) {}
 
   var area = $("<div class='hidden white_float'></div>")
   e.append(area)
@@ -4100,6 +4101,7 @@ function table_add_link(t) {
 
   var span = $("<span class='link16' title='table.link_title' data-i18n='table.link'></span>")
   e.append(span)
+  try { e.i18n() } catch(e) {}
 
   // bindings
   e.bind("click", function() {
@@ -4192,6 +4194,7 @@ function table_add_wsswitch(t) {
   e.append(input)
   e.append(label)
   e.append(title)
+  try { e.i18n() } catch(e) {}
 
   var data = {
     "query": "upc_table="+t.id+" and upc_field=wsenabled",
