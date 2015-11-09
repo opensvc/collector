@@ -605,7 +605,7 @@ def mail_form(output, data, form, to=None, record_id=None, _d=None):
     except Exception, e:
         return [(1, "form.submit", str(e), dict())]
     try:
-        with open("applications/init/static/mail.css", "r") as f:
+        with open("applications/init/static/css/mail.css", "r") as f:
             style = f.read()
     except:
         style = ""
