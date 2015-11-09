@@ -29,7 +29,7 @@ pass
  * browser can fill this field asynchronously
  */
 function email_focus() {
-    document.getElementById('auth_user_email').select();
+    $('#auth_user_email').select();
 }
 function align_login_inputs() {
     var w = "250px"
@@ -46,7 +46,7 @@ function margins() {
 jQuery(window).load(function(){
     align_login_inputs()
     margins()
-    document.getElementById('auth_user_email').focus();
+    $('#auth_user_email').focus();
     setTimeout(email_focus, 500);
 });
     </script>
