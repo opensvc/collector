@@ -19,6 +19,7 @@ $(document).keydown(function(event) {
       $(".extraline").remove()
       $(".menu").hide("fold")
       $(".menu").find("[id^=sextra]").remove()
+      $("#search_input").val("")
       return
     }
 
@@ -42,7 +43,7 @@ $(document).keydown(function(event) {
     if (!$('#search_input').is(":focus")) 
       {
         event.preventDefault();
-        $(".header").find(".menu16").parents("ul").first().siblings(".menu").show("fold");
+        $(".header").find(".menu16").parents("ul").first().siblings(".menu").show("fold", function(){filter_menu()});
         $('#search_input').val('');
         $('#search_input').focus();
       }
