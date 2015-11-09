@@ -242,3 +242,45 @@ function osvc_get_link(divid,link_id)
       }
   });
 }
+
+/*
+ * pin a DOM element to top on scroll past
+ */
+function sticky_relocate(e, anchor, onstick) {
+    if (!e || !anchor) {
+      return
+    }
+    var window_top = $(window).scrollTop();
+    var div_top = anchor.offset().top;
+    if (window_top > div_top) {
+        // add the top-fixed clone element if not already present
+        if (!e.next().is(".stick")) {
+          var clone = e.clone()
+          if (onstick) {
+            onstick(clone, e)
+          }
+          clone.addClass('stick')
+          clone.insertAfter(e)
+
+          // adjust top-fixed clone element width
+          clone.css({"width": e.width()})
+  
+          // adjust top-fixed clone element children width
+          var e_children = e.children()
+          var i = 0
+          clone.children().each(function(){
+            $(this).css({"width": $(e_children.get(i)).width()})
+            i++
+          })
+        } else {
+          var clone = e.next()
+        }
+
+        // adjust left position
+        var left = e.scrollParent().scrollLeft()
+
+        e.next(".stick").css({"left": -left})
+    } else {
+        e.next('.stick').remove()
+    }
+}

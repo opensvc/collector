@@ -1,5 +1,10 @@
 @charset "UTF-8";
 
+.stick {
+	position: fixed;
+	top: 0;
+}
+
 .icon16:before {
 	display: inline-block;
 	width: 20px;
