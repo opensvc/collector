@@ -30,6 +30,13 @@ $(document).keydown(function(event) {
       return
     }
 
+   if (event.which == 70) // s for search
+   {
+     if (!$('#search_input').is(":focus")) {
+       event.preventDefault();
+       $("[name=fset_selector]").click()
+     }
+   }
    if (event.which == 83) // s for search
    {
       if (!$('#search_input').is(":focus")) 
