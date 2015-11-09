@@ -692,8 +692,12 @@ class rest_post_user_filterset(rest_post_handler):
              dict(u=user.email, g=fset.fset_name),
             )
         l = {
-          'event': 'auth_user',
-          'data': {'foo': 'bar'},
+          'event': 'gen_filterset_user_change',
+          'data': {
+            'user_id': user.id,
+            'fset_id': fset.id,
+            'fset_name': fset.fset_name,
+          },
         }
         _websocket_send(event_msg(l))
         return dict(info="User %s filterset set to %s" % (str(user.email), str(fset.fset_name)))
@@ -743,8 +747,10 @@ class rest_delete_user_filterset(rest_delete_handler):
              dict(u=user.email),
             )
         l = {
-          'event': 'auth_user',
-          'data': {'foo': 'bar'},
+          'event': 'gen_filterset_user_delete',
+          'data': {
+            'user_id': user.id,
+          },
         }
         _websocket_send(event_msg(l))
         return dict(info="User %s filterset unset" % str(user.email))

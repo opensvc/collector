@@ -416,6 +416,8 @@ def obsolescence_config():
         )
     return dict(table=t)
 
+def obsolescence_config_load():
+    return obsolescence_config()["table"]
 
 #
 # Dashboard updates

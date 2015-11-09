@@ -350,3 +350,5 @@ def billing_data():
 def billing():
     return dict(table=ajax_billing())
 
+def billing_load():
+    return ajax_billing()

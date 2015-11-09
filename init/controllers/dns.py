@@ -686,4 +686,6 @@ def dns():
         )
     return dict(table=t)
 
+def dns_load():
+    return dns()["table"]
 

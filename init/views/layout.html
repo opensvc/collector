@@ -16,8 +16,8 @@
     <div class=header>
       <!-- search tool-->
       <span id="layout_search_tool"></span>
-      <script type="text/javascript">$('#layout_search_tool').load("/init/static/views/search.html");</script>
       {{=DIV(A("", _href=URL(r=request,c='action_queue',f='action_queue'), _class="gear16"), _class='action_q_widget')}}
+      <div id="fset_selector" class='header_logo'></div>
       <div class='header_logo'>
         {{=A((response.title or request.application), _href="http://www.opensvc.com", _class="www16", _target="_blank")}}
       </div>
@@ -42,6 +42,6 @@
         {{=T('Powered by')}} <a href="http://www.web2py.com" style="color:silver">web2py</a>
       </div>
     </div>
-    <script>services_feed_self_and_group()</script>
+    <script> app_start() </script>
   </body>
 </html>

@@ -411,6 +411,9 @@ wsh["%(divid)s"] = ws_action_switch_%(divid)s
         )
     return dict(table=d)
 
+def nodes_load():
+    return nodes()["table"]
+
 def delete_pkg(nodename):
     q = db.packages.pkg_nodename == nodename
     db(q).delete()

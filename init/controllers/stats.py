@@ -289,6 +289,9 @@ def ajax_compare():
 def compare():
     return dict(table=ajax_compare())
 
+def compare_load():
+    return ajax_compare()
+
 class table_stats(HtmlTable):
     def __init__(self, id=None, func=None, innerhtml=None):
         if id is None and 'tableid' in request.vars:
@@ -721,6 +724,9 @@ def ajax_stats():
 @auth.requires_login()
 def stats():
     return dict(table=ajax_stats())
+
+def stats_load():
+    return stats()["table"]
 
 @auth.requires_login()
 def ajax_containerperf_plot():

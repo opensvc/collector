@@ -168,4 +168,6 @@ def services():
           )
     return dict(table=t)
 
+def services_load():
+    return services()["table"]
 

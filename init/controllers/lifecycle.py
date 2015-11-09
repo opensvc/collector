@@ -184,6 +184,9 @@ class table_lifecycle_os(HtmlTable):
 def lifecycle_os():
     return dict(table=ajax_lifecycle_os())
 
+def lifecycle_os_load():
+    return ajax_lifecycle_os()
+
 @auth.requires_login()
 def ajax_lifecycle_os():
     session.forget(response)

@@ -300,6 +300,8 @@ def metrics_admin():
         )
     return dict(table=t)
 
+def metrics_admin_load():
+    return metrics_admin()["table"]
 
 ###############################################################################
 #
@@ -478,6 +480,9 @@ def charts_admin():
           _id='charts',
         )
     return dict(table=t)
+
+def charts_admin_load():
+    return charts_admin()["table"]
 
 def get_chart(chart_id):
     q = db.charts.id == chart_id
@@ -760,6 +765,9 @@ def reports_admin():
         )
     return dict(table=t)
 
+def reports_admin_load():
+    return reports_admin()["table"]
+
 @auth.requires_login()
 def ajax_report(report_id):
     q = db.reports.id == report_id
@@ -920,6 +928,9 @@ def ajax_reports():
 @auth.requires_login()
 def reports():
     return dict(table=ajax_reports())
+
+def reports_load():
+    return reports()["table"]
 
 def batch_task_metrics():
     task_metrics()

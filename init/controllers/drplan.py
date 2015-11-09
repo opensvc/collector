@@ -511,4 +511,6 @@ def drplan():
         )
     return dict(table=t)
 
+def drplan_load():
+    return drplan()["table"]
 

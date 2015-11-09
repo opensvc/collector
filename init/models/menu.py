@@ -132,7 +132,7 @@ menu_entries = [
   'view-dns',
   'view-saves',
   'view-disks',
-  'view-arrays',
+#  'view-arrays',
   'comp-status',
   'comp-log',
   'comp-modsets',
@@ -180,7 +180,7 @@ menu_entries_data = {
   'view-resources': menu_fmt_e('Resources', "Service resources status", 'svc'),
   'view-appinfo': menu_fmt_e('App Info', "Service 'app' resources key:val store", 'svc'),
   'view-nodes': menu_fmt_e('Nodes', "Technical and organizational info", 'node16'),
-  'view-tagattach': menu_fmt_e('Tag Attachments', "Tags attached to nodes and services", 'tags'),
+  'view-tagattach': menu_fmt_e('Tag Attachments', "Tags attached to nodes and services", 'fa-tags'),
   'view-actions': menu_fmt_e('Actions', "Service actions log", 'actions'),
   'view-checks': menu_fmt_e('Checks', "Nodes health monitoring", 'check16'),
   'view-pkg': menu_fmt_e('Packages', "All packages installed on nodes", 'pkg16'),
@@ -192,7 +192,7 @@ menu_entries_data = {
   'view-dns': menu_fmt_e('Domain Name Service', "Internal dns zones and records", '', 'IN'),
   'view-saves': menu_fmt_e('Saves', "Backup servers aggregated index", 'save16'),
   'view-disks': menu_fmt_e('Disks', "All known disks with their array information", 'hd16'),
-  'view-arrays': menu_fmt_e('Storage Arrays', "Symmetrix detailled information", 'hd16'),
+#  'view-arrays': menu_fmt_e('Storage Arrays', "Symmetrix detailled information", 'hd16'),
   'comp-status': menu_fmt_e('Status', "Nodes and service last configuration checks", 'check16'),
   'comp-log': menu_fmt_e('Log', "All configuration checks and fixes", 'log16'),
   'comp-modsets': menu_fmt_e('Modulesets', "Search-optimized modules grouping view", 'actions'),
@@ -224,7 +224,7 @@ menu_entries_data = {
   'adm-metrics': menu_fmt_e('Metrics', "Design sql requests to embed in charts", 'spark16'),
   'adm-charts': menu_fmt_e('Charts', "Design charts to embed in reports", 'spark16'),
   'adm-reports': menu_fmt_e('Reports', "Design custom reports", 'spark16'),
-  'adm-tags': menu_fmt_e('Tags', "Manage tag properties", 'tags'),
+  'adm-tags': menu_fmt_e('Tags', "Manage tag properties", 'fa-tags'),
 }
 
 response.menu = [
@@ -260,7 +260,7 @@ response.menu = [
              [menu_entries_data['view-dns'], display('view-dns'), URL(request.application,'dns','dns')],
              [menu_entries_data['view-saves'], display('view-saves'), URL(request.application,'saves','saves')],
              [menu_entries_data['view-disks'], display('view-disks'), URL(request.application,'disks','disks')],
-             [menu_entries_data['view-arrays'], display('view-arrays'), URL(request.application,'sym','index')],
+#             [menu_entries_data['view-arrays'], display('view-arrays'), URL(request.application,'sym','index')],
          ]
     ],
     [T('Compliance'), False, '',

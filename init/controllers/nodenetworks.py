@@ -258,4 +258,6 @@ def nodenetworks():
         )
     return dict(table=t)
 
+def nodenetworks_load():
+    return nodenetworks()["table"]
 

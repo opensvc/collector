@@ -336,111 +336,6 @@ class HtmlTable(object):
                 continue
             self.colprops[field].display = True
 
-    def persistent_filters(self):
-        if not self.dbfilterable:
-            return SPAN()
-        s = SPAN(
-              T('Filter'),
-              ': ',
-              SPAN(
-                _name='fset_selector',
-              ),
-              _class='floatw filter16',
-            )
-        return s
-
-    def columns_selector(self):
-        if not self.columnable:
-            return SPAN()
-        def checkbox(a):
-            id_col = self.col_checkbox_key(a)
-
-            if self.get_column_visibility(a) or \
-               (id_col in request.vars and request.vars[id_col] == 'on'):
-                val = 'on'
-            else:
-                val = ''
-
-            s = SPAN(
-                  INPUT(
-                    _type='checkbox',
-                    _class='ocb',
-                    _id=id_col,
-                    _name=id_col,
-                    _onclick="""table_toggle_column("%(id)s","%(column)s", "%(table)s")
-                             """%dict(url=URL(r=request,c='ajax',f='ajax_set_user_prefs_column'),
-                                      column=a,
-                                      id=self.id,
-                                      table=self.upc_table,
-                                 ),
-                    value=val,
-                    _style='vertical-align:text-bottom',
-                  ),
-                  LABEL(
-                    _for=id_col,
-                  ),
-                  SPAN(
-                    T(self.colprops[a].title),
-                    _style="""background-image:url(%s);
-                              background-repeat:no-repeat;
-                              padding-left:18px;
-                              margin-left:0.2em;
-                           """%URL(r=request,c='static',f='images/'+self.colprops[a].img+'.png'),
-                  ),
-                  BR(),
-                  _style='white-space:nowrap',
-                )
-            return s
-
-        a = DIV(
-              SPAN(
-                _id='set_col_dummy',
-                _style='display:none',
-              ),
-              SPAN(map(checkbox, self.cols)),
-              _style='-moz-column-width:13em;-webkit-column-width:13em;column-width:13em',
-            )
-        d = DIV(
-              A(
-                SPAN(T('Configure columns'), _class='columns'),
-                _onclick="click_toggle_vis(event, '%(div)s', 'block')"%dict(
-                                                          div=self.col_selector_key()),
-              ),
-              DIV(
-                a,
-                _style='display:none',
-                _class='white_float',
-                _name=self.col_selector_key(),
-              ),
-              _class='floatw',
-            )
-        return d
-
-    def commonality(self):
-        if not self.commonalityable:
-            return SPAN()
-        d = DIV(
-              A(
-                T("Commonality"),
-                _class="common16",
-                _onclick="""click_toggle_vis(event, '%(div)s','block');ajax('%(url)s', [], '%(div_d)s')"""%dict(
-                  url=URL(r=request,f=self.func, args=["commonality"]),
-                  div="commonality"+self.id,
-                  div_d="commonality_d"+self.id,
-                ),
-              ),
-              DIV(
-                DIV(
-                  _id='commonality_d'+self.id,
-                ),
-                _name='commonality'+self.id,
-                _class='white_float',
-                _style='max-width:50%;display:none;',
-              ),
-              _class='floatw',
-           )
-        return d
-
     def pager_info(self):
         d = {
           'perpage': self.perpage,
@@ -1021,9 +916,6 @@ class HtmlTable(object):
         d = DIV(
               self.show_flash(),
               DIV(
-                self.columns_selector(),
-                self.commonality(),
-                self.persistent_filters(),
                 additional_tools,
                 DIV('', _class='spacer'),
                 _name='toolbar',
@@ -1037,11 +929,6 @@ class HtmlTable(object):
                 ),
               ),
               DIV(
-                INPUT(
-                  _id=self.id_perpage,
-                  _type='hidden',
-                  _value=self.perpage,
-                ),
                 INPUT(
                   _id=self.id_page,
                   _type='hidden',
@@ -1071,6 +958,8 @@ table_init({
  'refreshable': %(refreshable)s,
  'bookmarkable': %(bookmarkable)s,
  'exportable': %(exportable)s,
+ 'columnable': %(columnable)s,
+ 'commonalityable': %(commonalityable)s,
  'wsable': %(wsable)s,
  'pageable': %(pageable)s
 })
@@ -1099,6 +988,8 @@ function ajax_enter_submit_%(id)s(event){%(ajax_enter_submit)s};
                    bookmarkable=str(self.bookmarkable).lower(),
                    exportable=str(self.exportable).lower(),
                    pageable=str(self.pageable).lower(),
+                   columnable=str(self.columnable).lower(),
+                   commonalityable=str(self.commonalityable).lower(),
                    wsable=str(self.wsable).lower(),
                    action_menu=str(self.action_menu),
                 ),

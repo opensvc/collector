@@ -350,7 +350,7 @@ class col_var_value(HtmlTableColumn):
             edit = ""
         else:
             edit = A(
-                 IMG(_src=URL(r=request, c='static', f='images/edit.png')),
+                 _class="edit16",
                  _id=eid,
                  _onclick="""hide_eid('%(eid)s');show_eid('%(cid)s');show_eid('%(formid)s');sync_ajax('%(url)s', [], '%(formid)s', function(){})"""%dict(
                    formid=hid,
@@ -372,7 +372,7 @@ class col_var_value(HtmlTableColumn):
                )
 
         cancel = A(
-                 IMG(_src=URL(r=request, c='static', f='images/cancel.png')),
+                 _class="nok",
                  _id=cid,
                  _onclick="""hide_eid('%(cid)s');show_eid('%(eid)s');show_eid('%(formid)s');ajax('%(url)s', [], '%(formid)s')"""%dict(
                    formid=hid,
@@ -428,7 +428,7 @@ class table_comp_rulesets_services(HtmlTable):
         self.colprops['rulesets'] = col_run_ruleset(
                      title='Rule set',
                      field='rulesets',
-                     img='action16',
+                     img='comp16',
                      display=True,
                     )
         self.colprops['encap'] = HtmlTableColumn(
@@ -487,7 +487,7 @@ class table_comp_rulesets_nodes(HtmlTable):
         self.colprops['rulesets'] = col_run_ruleset(
                      title='Rule set',
                      field='rulesets',
-                     img='action16',
+                     img='comp16',
                      display=True,
                     )
         self.colprops['nodename'].t = self
@@ -538,21 +538,21 @@ class table_comp_explicit_rules(HtmlTable):
                      field='id',
                      table='v_comp_explicit_rulesets',
                      display=False,
-                     img='action16',
+                     img='comp16',
                     ),
             'ruleset_name': HtmlTableColumn(
                      title='Rule set',
                      field='ruleset_name',
                      table='v_comp_explicit_rulesets',
                      display=True,
-                     img='action16',
+                     img='comp16',
                     ),
             'variables': HtmlTableColumn(
                      title='Variables',
                      field='variables',
                      table='v_comp_explicit_rulesets',
                      display=True,
-                     img='action16',
+                     img='comp16',
                      _class='rsetvars',
                     ),
         }
@@ -745,7 +745,7 @@ class table_comp_rulesets(HtmlTable):
                      field='var_updated',
                      table='v_comp_rulesets',
                      display=True,
-                     img='action16',
+                     img='comp16',
                     ),
             'teams_responsible': HtmlTableColumn(
                      title='Teams responsible',
@@ -773,70 +773,70 @@ class table_comp_rulesets(HtmlTable):
                      field='id',
                      table='v_comp_rulesets',
                      display=False,
-                     img='action16',
+                     img='comp16',
                     ),
             'fset_id': HtmlTableColumn(
                      title='Filterset id',
                      field='fset_id',
                      table='v_comp_rulesets',
                      display=False,
-                     img='action16',
+                     img='filter16',
                     ),
             'ruleset_id': HtmlTableColumn(
                      title='Ruleset id',
                      field='ruleset_id',
                      table='v_comp_rulesets',
                      display=False,
-                     img='action16',
+                     img='comp16',
                     ),
             'chain_len': HtmlTableColumn(
                      title='Chain length',
                      field='chain_len',
                      table='v_comp_rulesets',
                      display=False,
-                     img='action16',
+                     img='comp16',
                     ),
             'chain': HtmlTableColumn(
                      title='Chain',
                      field='chain',
                      table='v_comp_rulesets',
                      display=False,
-                     img='action16',
+                     img='comp16',
                     ),
             'encap_rset': col_encap_rset(
                      title='Encapsulated ruleset',
                      field='encap_rset',
                      table='v_comp_rulesets',
                      display=True,
-                     img='action16',
+                     img='comp16',
                     ),
             'encap_rset_id': HtmlTableColumn(
                      title='Encapsulated ruleset id',
                      field='encap_rset_id',
                      table='v_comp_rulesets',
                      display=False,
-                     img='action16',
+                     img='comp16',
                     ),
             'ruleset_name': col_ruleset_name(
                      title='Ruleset',
                      field='ruleset_name',
                      table='v_comp_rulesets',
                      display=True,
-                     img='action16',
+                     img='comp16',
                     ),
             'ruleset_type': HtmlTableColumn(
                      title='Ruleset type',
                      field='ruleset_type',
                      table='v_comp_rulesets',
                      display=True,
-                     img='action16',
+                     img='comp16',
                     ),
             'ruleset_public': HtmlTableColumn(
                      title='Ruleset public',
                      field='ruleset_public',
                      table='v_comp_rulesets',
                      display=True,
-                     img='action16',
+                     img='comp16',
                     ),
             'fset_name': HtmlTableColumn(
                      title='Filterset',
@@ -850,21 +850,21 @@ class table_comp_rulesets(HtmlTable):
                      field='var_value',
                      table='v_comp_rulesets',
                      display=True,
-                     img='action16',
+                     img='comp16',
                     ),
             'var_name': col_var_name(
                      title='Variable',
                      field='var_name',
                      table='v_comp_rulesets',
                      display=True,
-                     img='action16',
+                     img='comp16',
                     ),
             'var_class': HtmlTableColumn(
                      title='Class',
                      field='var_class',
                      table='v_comp_rulesets',
                      display=False,
-                     img='action16',
+                     img='wf16',
                     ),
         }
         self.colprops['var_name'].t = self
@@ -2285,6 +2285,9 @@ def comp_rules():
         )
     return dict(table=t)
 
+def comp_rules_load():
+    return comp_rules()["table"]
+
 @auth.requires_login()
 def comp_rulesets_services_attachment():
     r = table_comp_explicit_rules('crs1', 'ajax_comp_explicit_rules')
@@ -2320,6 +2323,9 @@ def comp_rulesets_services_attachment():
              """),
            )
     return dict(table=t)
+
+def comp_rulesets_services_attachment_load():
+    return comp_rulesets_services_attachment()["table"]
 
 @auth.requires_login()
 def comp_rulesets_nodes_attachment():
@@ -2357,6 +2363,9 @@ def comp_rulesets_nodes_attachment():
            )
     return dict(table=t)
 
+def comp_rulesets_nodes_attachment_load():
+    return comp_rulesets_nodes_attachment()["table"]
+
 #
 # Filters sub-view
 #
@@ -2383,7 +2392,7 @@ filters_colprops = {
              title='Updated',
              field='f_updated',
              display=True,
-             img='action16',
+             img='time16',
             ),
     'f_author': HtmlTableColumn(
              title='Author',
@@ -2444,7 +2453,7 @@ class table_comp_filtersets(HtmlTable):
                      title='Fset updated',
                      field='fset_updated',
                      display=False,
-                     img='action16',
+                     img='time16',
                     ),
             'fset_author': HtmlTableColumn(
                      title='Fset author',
@@ -3248,6 +3257,9 @@ def comp_filters():
         )
     return dict(table=t)
 
+def comp_filters_load():
+    return comp_filters()["table"]
+
 #
 # Modules sub-view
 #
@@ -3290,7 +3302,7 @@ class table_comp_moduleset(HtmlTable):
                      table='v_comp_modulesets',
                      field='modset_mod_updated',
                      display=True,
-                     img='action16',
+                     img='time16',
                     ),
             'modset_mod_author': HtmlTableColumn(
                      title='Author',
@@ -3946,13 +3958,13 @@ class table_comp_modulesets_services(HtmlTable):
         self.colprops['modulesets'] = HtmlTableColumn(
                      title='Module set',
                      field='modulesets',
-                     img='comp16',
+                     img='actions',
                      display=True,
                     )
         self.colprops['encap'] = HtmlTableColumn(
                      title='Encap',
                      field='encap',
-                     img='comp16',
+                     img='svc',
                      display=True,
                     )
         self.colprops['svc_name'].t = self
@@ -3965,7 +3977,7 @@ class table_comp_modulesets_services(HtmlTable):
         self.dataable = True
         self.checkboxes = True
         self.dbfilterable = False
-        self += HtmlTableMenu('Moduleset', 'action16', ['moduleset_attach', 'moduleset_detach'], id='menu_moduleset2')
+        self += HtmlTableMenu('Moduleset', 'actions', ['moduleset_attach', 'moduleset_detach'], id='menu_moduleset2')
         self.ajax_col_values = 'ajax_comp_modulesets_services_col_values'
 
     def line_id(self, o):
@@ -4006,7 +4018,7 @@ class table_comp_modulesets_nodes(HtmlTable):
                      title='Module set',
                      table='comp_moduleset',
                      field='modulesets',
-                     img='comp16',
+                     img='actions',
                      display=True,
                     )
         self.colprops['nodename'].t = self
@@ -4020,7 +4032,7 @@ class table_comp_modulesets_nodes(HtmlTable):
         self.dataable = True
         self.checkboxes = True
         self.dbfilterable = False
-        self += HtmlTableMenu('Moduleset', 'action16', ['moduleset_attach', 'moduleset_detach'], id='menu_moduleset2')
+        self += HtmlTableMenu('Moduleset', 'actions', ['moduleset_attach', 'moduleset_detach'], id='menu_moduleset2')
         self.ajax_col_values = 'ajax_comp_modulesets_nodes_col_values'
 
     def moduleset_detach(self):
@@ -4334,6 +4346,9 @@ def comp_modulesets_services():
            )
     return dict(table=t)
 
+def comp_modulesets_services_load():
+    return comp_modulesets_services()["table"]
+
 @auth.requires_login()
 def comp_modulesets_nodes():
     r = table_comp_moduleset_short('cmn1', 'ajax_comp_modulesets_short')
@@ -4370,6 +4385,9 @@ def comp_modulesets_nodes():
            )
     return dict(table=t)
 
+def comp_modulesets_nodes_load():
+    return comp_modulesets_nodes()["table"]
+
 #
 # Status sub-view
 #
@@ -4388,7 +4406,7 @@ class table_comp_mod_status(HtmlTable):
                      field='mod_name',
                      table='comp_mod_status',
                      display=True,
-                     img='check16',
+                     img='action16',
                     ),
             'total': HtmlTableColumn(
                      title='Total',
@@ -4471,7 +4489,7 @@ class table_comp_svc_status(HtmlTable):
                      field='svc_name',
                      table='comp_svc_status',
                      display=True,
-                     img='node16',
+                     img='svc',
                      _class='svcname',
                     ),
             'total': HtmlTableColumn(
@@ -4670,7 +4688,7 @@ class table_comp_status(HtmlTable):
                      title='Run date',
                      field='run_date',
                      table='comp_status',
-                     img='check16',
+                     img='time16',
                      display=True,
                      _class='datetime_weekly',
                     ),
@@ -4686,7 +4704,7 @@ class table_comp_status(HtmlTable):
                      title='Service',
                      field='run_svcname',
                      table='comp_status',
-                     img='node16',
+                     img='svc',
                      display=True,
                      _class='svcname',
                     ),
@@ -4694,21 +4712,21 @@ class table_comp_status(HtmlTable):
                      title='Action',
                      field='run_action',
                      table='comp_status',
-                     img='node16',
+                     img='action16',
                      display=True,
                     ),
             'run_module': HtmlTableColumn(
                      title='Module',
                      field='run_module',
                      table='comp_status',
-                     img='check16',
+                     img='action16',
                      display=True,
                     ),
             'rset_md5': HtmlTableColumn(
                      title='Ruleset md5',
                      field='rset_md5',
                      table='comp_status',
-                     img='check16',
+                     img='comp16',
                      display=False,
                      _class='nowrap pre rset_md5',
                     ),
@@ -4724,7 +4742,7 @@ class table_comp_status(HtmlTable):
                      title='History',
                      field='un_status_log',
                      table='comp_status',
-                     img='check16',
+                     img='log16',
                      display=False,
                      _class='run_status_log',
                     ),
@@ -4732,7 +4750,7 @@ class table_comp_status(HtmlTable):
                      title='Log',
                      field='run_log',
                      table='comp_status',
-                     img='check16',
+                     img='log16',
                      display=False,
                      _class='run_log',
                     ),
@@ -5356,6 +5374,9 @@ wsh["%(divid)s"] = ws_action_switch_%(divid)s
         )
     return dict(table=d)
 
+def comp_status_load():
+    return comp_status()["table"]
+
 
 @auth.requires_login()
 def ajax_comp_svc_status():
@@ -5853,6 +5874,9 @@ wsh["%(divid)s"] = ws_action_switch_%(divid)s
           ),
         )
     return dict(table=t)
+
+def comp_log_load():
+    return comp_log()["table"]
 
 def call():
     session.forget(response)
@@ -8340,10 +8364,7 @@ def inputs_block(data, idx=0, defaults=None, display_mode=False, display_detaile
             cl = ""
 
         if 'Help' in input and input['Help'] is not None and len(input['Help']) > 0:
-            _help = IMG(
-              _src=URL(r=request, c='static', f='images/help.png'),
-              _title=input['Help']
-            )
+            _help = DIV(_class="help", _title=input['Help'])
         else:
             _help = ""
 
@@ -10078,78 +10099,23 @@ def comp_admin():
                         cacheable=True,
                         orderby=db.forms.form_name)
     var_class_names = [row.form_name for row in rows]
-    var_class_names = map(lambda x: '"'+x+'"', var_class_names)
 
-    js = """
-     designer.init({"var_class_names": [%(var_class_names)s]})
-     """ % dict(
-      var_class_names = ', '.join(var_class_names),
+    js = """ designer("designer", %(options)s) """ % dict(
+      options = str({
+        "search": request.vars.obj_filter if request.vars.obj_filter else "",
+        "search2": request.vars.obj_filter2 if request.vars.obj_filter2 else "",
+        "var_class_names": var_class_names,
+      }),
     )
-    search = DIV(
-        INPUT(
-          _id="casearch",
-          _value=request.vars.obj_filter,
-          _style="float:left",
-        _class="wfsearch",
-        ),
-        DIV(
-          _id="calink",
-          _class="link16 clickable",
-          _style="float:left",
-          _onclick="designer_link()",
-        ),
-        DIV(
-          TEXTAREA(),
-          _id="calink_val",
-          _class="white_float hidden",
-          _style="margin-top:1.1em",
-        ),
-        DIV(
-          _class="spacer",
-        ),
-        _style="position:absolute;padding:0.2em",
-      )
-
-    if request.vars.obj_filter2 is None:
-        tree2_display = "display:none"
-    else:
-        tree2_display = ""
-    search2 = INPUT(
-          _id="casearch2",
-          _value=request.vars.get("obj_filter2", "opensvc"),
-          _style="float:left;position:absolute;margin-top:0.2em;"+tree2_display,
-        _class="wfsearch",
-        )
 
     d = DIV(
-      search,
-      search2,
-      DIV(
-        DIV(
-          _id="catree",
-          _name="catree",
-          _style="height:100%;overflow-y:scroll;width:20%;float:left",
-        ),
-        DIV(
-          _id="catree2",
-          _name="catree",
-          _style="height:100%;overflow-y:scroll;width:20%;float:left;"+tree2_display,
-        ),
-        DIV(
-          XML("&nbsp;"),
-          _id="sep",
-          _style="height:100%;float:left;cursor:pointer;width:5px;text-align:left;background-color:lightgrey",
-        ),
-        DIV(
-          _id="cainfo",
-          _style="height:100%;float:left;overflow-y:auto;float:left;text-align:left;padding:20px",
-        ),
-        _id="treerow",
-      ),
       SCRIPT(js),
-      _style="text-align:left",
+      _id="designer",
     )
     return dict(table=d)
+
+def comp_admin_load():
+    return comp_admin()["table"]
 
 @service.json
 def json_tree_action():

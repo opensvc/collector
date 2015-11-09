@@ -635,4 +635,6 @@ def users():
         )
     return dict(table=t)
 
+def users_load():
+    return users()["table"]
 

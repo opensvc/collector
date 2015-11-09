@@ -24,6 +24,12 @@ def user():
     """
     return dict(form=auth())
 
+def user_load():
+    if request.args[0] != "profile":
+        raise HTTP(404)
+    # only profile is loadable
+    return auth()
+
 def call():
     """
     exposes services. for example:
@@ -394,7 +400,7 @@ def ajax_service():
             LI(P(T("log"), _class='log16'), _id="litab15_"+str(rowid)),
             LI(P(T("env"), _class='file16'), _id="litab4_"+str(rowid)),
             LI(P(T("topology"), _class='dia16'), _id="litab5_"+str(rowid)),
-            LI(P(T("startup"), _class='action_start_16'), _id="litab16_"+str(rowid)),
+            LI(P(T("startup"), _class='startup'), _id="litab16_"+str(rowid)),
             LI(P(T("storage"), _class='hd16'), _id="litab6_"+str(rowid)),
             LI(P(T("container stats"), _class='spark16'), _id="litab12_"+str(rowid)),
             LI(P(T("stats"), _class='spark16'), _id="litab7_"+str(rowid)),
@@ -919,6 +925,9 @@ wsh["%(divid)s"] = ws_action_switch_%(divid)s
           _id='svcmon',
         )
     return dict(table=t)
+
+def svcmon_load():
+    return svcmon()["table"]
 
 class table_svcmon_node(table_svcmon):
     def __init__(self, id=None, func=None, innerhtml=None):

@@ -1,4 +1,7 @@
 {
+  "layout": {
+    "search": "Recherche globale"
+  },
   "api": {
     "loading": "Loading",
     "formatting": "Formating",
@@ -15,7 +18,10 @@
     "bookmarks_save_name": "Entrez le nom du nouveau marque-page",
     "bookmarks_no_bookmarks": "Aucun marque-page",
     "refresh": "  Recharger",
-    "csv": "Export to csv"
+    "csv": "Export to csv",
+    "columns": "Colonnes",
+    "commonality": "Commonalité",
+    "filter": "Filtre: "
   },
   "app": {
     "name": "collector"
@@ -43,7 +49,7 @@
     "timeline_tree_file_title" : "Fichiers"
   },
   "search": {
-    "nothing_found" : "No menu entry found matching filter",
+    "nothing_found" : "Aucun résultat ne répond au critère de recherche.",
     "menu_header" : {
       "title_services" : "Services",
       "title_nodes" : "Noeuds",

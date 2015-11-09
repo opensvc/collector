@@ -306,7 +306,7 @@ function check_toggle_vis(id, checked, col){
     } else {
       t.visible_columns = t.visible_columns.filter(function(x){if (x!=c){return true}})
     }
-    $("#table_"+id).find('[name='+col+']').each(function(){
+    $("#table_"+id).find('.tl>[name='+col+']').each(function(){
          if (checked) {
              if ($(this).attr("cell") == '1') {
                _table_cell_decorator(id, this)
@@ -618,12 +618,13 @@ function table_format_theader_slim(t, c, val) {
 
 function table_refresh_column_filter(t, c, val) {
   if (typeof(val) === "undefined") {
-    var e = $("#table_"+t.id).find("#"+t.id+"_f_"+c)
+    var e = t.e_header_filters.find("#"+t.id+"_f_"+c)
     val = e.val()
   }
-  cell = $("#table_"+t.id).find("tr.sym_headers").find("td[name="+t.id+"_c_"+c+"]")
+  cell = t.e_header.find("[name="+t.id+"_c_"+c+"]").show()
+  cell = t.e_header_filters.find("td[name="+t.id+"_c_"+c+"]")
   cell.replaceWith(table_format_input(t, c, val))
-  cell = $("#table_"+t.id).find("tr.theader_slim").find("td[name="+t.id+"_c_"+c+"]")
+  cell = t.div.find("tr.theader_slim").first().find("td[name="+t.id+"_c_"+c+"]")
   cell.replaceWith(table_format_theader_slim(t, c, val))
 }
 
@@ -631,15 +632,17 @@ function table_add_filtered_to_visible_columns(t) {
   $("#table_"+t.id).find("[id^="+t.id+"_f_]").each(function(){
     var s = $(this).attr("id")
     var col = s.split("_f_")[1]
-    var ckcc = t.id+"_cc_"+col
     var val = $(this).val()
-    if (val === "") {
-      t.div.find("[name="+ckcc+"]").removeAttr("disabled")
-      return
-    }
-    t.div.find("[name="+ckcc+"]").attr("disabled", "true")
-    if (t.visible_columns.indexOf(col) >= 0) {
-      return
+    if (t.e_tool_column_selector_area) {
+      // no column selector
+      if (val === "") {
+        t.e_tool_column_selector_area.find("[colname="+col+"]").removeAttr("disabled")
+        return
+      }
+      t.e_tool_column_selector_area.find("[colname="+col+"]").prop("disabled", true)
+      if (t.visible_columns.indexOf(col) >= 0) {
+        return
+      }
     }
     t.visible_columns.push(col)
   })
@@ -692,23 +695,6 @@ function table_bind_checkboxes(t) {
   })
 }
 
-function table_bind_persistent_filter(t) {
-  $("#avs"+t.id).bind("change", function() {
-    var v = $(this).find("option:selected").val()
-    var url = $(location).attr("origin") + "/init/ajax/ajax_select_filter/"+v
-    $.ajax({
-         type: "POST",
-         url: url,
-         data: "",
-         success: function(msg){
-           for (tid in osvc.tables) {
-             osvc.tables[tid].refresh()
-           }
-         }
-    })
-  })
-}
-
 function table_data_to_lines(t, data) {
   var lines = ""
   for (var i=0; i<data.length; i++) {
@@ -736,7 +722,7 @@ function table_refresh(t) {
     if (t.div.length > 0 && !t.div.is(":visible")) {
         return
     }
-    if (t.e_tool_refresh.length > 0 && t.e_tool_refresh_spin.hasClass("fa-spin")) {
+    if (t.e_tool_refresh && t.e_tool_refresh.length > 0 && t.e_tool_refresh_spin && t.e_tool_refresh_spin.hasClass("fa-spin")) {
         t.need_refresh = true
         return
     } else {
@@ -1010,7 +996,7 @@ function table_ajax_submit(url, id, additional_inputs, input_name, additional_in
     t.div.find(".white_float").hide()
     t.div.find(".white_float_input").hide()
 
-    var inputs = ['tableid', id+"_page", id+"_perpage"]
+    var inputs = ['tableid', id+"_page"]
     var s = inputs.concat(additional_inputs).concat(getIdsByName(input_name))
     t.div.find("[name="+additional_input_name+"]").each(function(){s.push(this.id)})
     t.div.find("input[id^="+t.id+"_f_]").each(function(){s.push(this.id)})
@@ -2590,7 +2576,7 @@ function table_link(t){
   var args = "clear_filters=true&discard_filters=true"
 
   // fset
-  var current_fset = t.e_fset_selector.find(":selected").attr("id")
+  var current_fset = $("[name=fset_selector]").find(":selected").attr("id")
   args += "&dbfilter="+current_fset
 
   t.div.find("[name=fi]").each(function(){
@@ -2609,15 +2595,6 @@ function table_add_scrollers(t) {
   $("#table_"+t.id).before(s)
   s = "<div id='table_"+t.id+"_right' class='scroll_right'>&nbsp</div>"
   $("#table_"+t.id).after(s)
-}
-
-function table_add_fset_selector(t) {
-  if (!t.options.dbfilterable) {
-    return
-  }
-  t.e_fset_selector = t.div.find("[name=fset_selector]").first()
-  t.e_fset_selector.uniqueId()
-  fset_selector(t.e_fset_selector.attr("id"), function(){t.refresh()})
 }
 
 function table_add_filterbox(t) {
@@ -3285,7 +3262,7 @@ function cell_decorator_dash_severity(e) {
   } else {
       l.push("alertblack")
   }
-  $(e).html("<div class='"+l.join(" ")+"'>"+v+"</div>")
+  $(e).html("<div class='"+l.join(" ")+"' title='"+v+"'></div>")
 }
 
 function cell_decorator_form_id(e) {
@@ -3794,6 +3771,122 @@ function table_cell_decorator(id) {
 
 
 //
+// table tool: column selector
+//
+function table_add_column_selector(t) {
+  if (!t.options.columnable) {
+    return
+  }
+
+  var e = $("<div class='floatw' name='tool_column_selector'></div>")
+  t.e_tool_column_selector = e
+
+  var span = $("<span class='columns' data-i18n='table.columns'></span>")
+  e.append(span)
+  try { e.i18n() } catch(e) {}
+
+  var area = $("<div class='hidden white_float'></div>")
+  e.append(area)
+  t.e_tool_column_selector_area = area
+
+  for (var i=0; i<t.columns.length; i++) {
+    var colname = t.columns[i]
+
+    // checkbox
+    var input = $("<input type='checkbox' class='ocb' />")
+    input.attr("colname", colname)
+    input.uniqueId()
+    input.bind("click", function() {
+      var colname = $(this).attr("colname")
+      var current_state
+      if ($(this).is(":checked")) {
+        current_state = 1
+      } else {
+        current_state = 0
+      }
+      var data = {
+        "upc_table": t.id,
+        "upc_field": colname,
+        "upc_visible": current_state,
+      }
+      services_osvcpostrest("R_USERS_SELF_TABLE_SETTINGS", "", "", data, function(jd) {
+        check_toggle_vis(t.id, current_state, t.id+'_c_'+colname)
+        t.refresh()
+      },
+      function(xhr, stat, error) {
+        $(".flash").show("fold").html(services_ajax_error_fmt(xhr, stat, error))
+      })
+    })
+    if (t.visible_columns.indexOf(colname) >= 0) {
+      input.prop("checked", true)
+    }
+    var k = t.id + "_f_" + colname
+    if (t.e_header_filters.find("#"+k).val()) {
+      input.prop("disabled", true)
+    }
+
+    // label
+    var label = $("<label></label>")
+    label.attr("for", input.attr("id"))
+
+    // title
+    var title = $("<span style='padding-left:0.3em;'></span>")
+    title.text(t.colprops[colname].title)
+    title.addClass(t.colprops[colname].img)
+
+    // container
+    var _e = $("<div style='white-space:nowrap'></div>")
+    _e.append(input)
+    _e.append(label)
+    _e.append(title)
+
+    area.append(_e)
+  }
+
+  // bindings
+  e.bind("click", function() {
+    t.e_tool_column_selector_area.toggle()
+  })
+
+  try { e.i18n() } catch(e) {}
+  t.e_toolbar.prepend(e)
+}
+
+//
+// table tool: commonality
+//
+function table_add_commonality(t) {
+  if (!t.options.commonalityable) {
+    return
+  }
+
+  var e = $("<div class='floatw' name='tool_commonality'></div>")
+  t.e_tool_commonality = e
+
+  var span = $("<span class='common16' data-i18n='table.commonality'></span>")
+  e.append(span)
+
+  var area = $("<div class='white_float hidden'></div>")
+  area.uniqueId()
+  e.append(area)
+  t.e_tool_commonality_area = area
+
+  e.bind("click", function() {
+    if (t.e_tool_commonality_area.is(":visible")) {
+      t.e_tool_commonality_area.hide()
+      return
+    }
+    click_toggle_vis(event, t.e_tool_commonality_area.attr("id"), 'block')
+    t.e_tool_commonality_area.empty()
+    spinner_add(t.e_tool_commonality_area)
+    ajax(t.ajax_url+"/commonality", [], t.e_tool_commonality_area.attr("id"))
+  })
+
+  try { e.i18n() } catch(e) {}
+  t.e_toolbar.prepend(e)
+}
+
+//
 // table tool: csv export
 //
 function table_add_csv(t) {
@@ -3818,7 +3911,7 @@ function table_add_csv(t) {
     }, 10000)
     document.location.href = t.ajax_url+"/csv"
   })
-  e.i18n()
+  try { e.i18n() } catch(e) {}
   t.e_toolbar.prepend(e)
 }
 
@@ -3887,7 +3980,7 @@ function table_add_bookmarks(t) {
     $(".flash").show("fold").html(services_ajax_error_fmt(xhr, stat, error))
   })
 
-  e.i18n()
+  try { e.i18n() } catch(e) {}
   t.e_tool_bookmarks = e
   t.e_tool_bookmarks_area = area
   t.e_tool_bookmarks_save = save
@@ -4008,10 +4101,9 @@ function table_add_link(t) {
 
   var e = $("<div class='floatw' name='tool_link'></div>")
 
-  var span = $("<span class='link16'></span>")
-  span.attr("title", i18n.t("table.link_title"))
-  span.text(i18n.t("table.link"))
+  var span = $("<span class='link16' title='table.link_title' data-i18n='table.link'></span>")
   e.append(span)
+  try { e.i18n() } catch(e) {}
 
   // bindings
   e.bind("click", function() {
@@ -4039,7 +4131,7 @@ function table_add_refresh(t) {
   }
 
   var e = $("<div class='floatw' name='tool_refresh'><span class='refresh16'></span><span data-i18n='table.refresh'></span></div>")
-  e.i18n()
+  try { e.i18n() } catch(e) {}
 
   // bindings
   e.bind("click", function(){
@@ -4097,14 +4189,14 @@ function table_add_wsswitch(t) {
   label.attr("for", input.attr("id"))
 
   // title
-  var title = $("<span style='padding-left:0.3em;'></span>")
-  title.text(i18n.t("table.live"))
+  var title = $("<span data-i18n='table.live' style='padding-left:0.3em;'></span>")
 
   // container
-  var e = $("<span class='floatw'><span data-i18n='table.live'></span></span>")
+  var e = $("<span class='floatw'></span>")
   e.append(input)
   e.append(label)
   e.append(title)
+  try { e.i18n() } catch(e) {}
 
   var data = {
     "query": "upc_table="+t.id+" and upc_field=wsenabled",
@@ -4319,28 +4411,6 @@ function table_hide_cells(t) {
   }
 }
 
-function table_toggle_column(id, column, table) {
-  var fid = id + '_f_' + column
-  var cname = id + '_c_' + column
-  var ccname = id + '_cc_' + column
-  var value = $("[name="+ccname+"]").is(":checked")
-
-  if ($("#"+fid) && $("#"+fid).val().length>0) {
-    $("[name="+ccname+"]").checked = true
-    return
-  }
-
-  check_toggle_vis(id, value, cname);
-  var query = "set_col_table="+table
-  query += "&set_col_field="+column
-  query += "&set_col_value="+value
-  var url = $(location).attr("origin") + "/init/ajax/ajax_set_user_prefs_column?"+query
-  ajax(url, [], "set_col_dummy")
-  var t = osvc.tables[id]
-  t.format_header()
-  t.refresh()
-}
-
 function table_relocate_extra_rows(t) {
   $("td[id^="+t.id+"_x_]").each(function(){
     var cksum = $(this).attr("id").split("_x_")[1]
@@ -4354,10 +4424,16 @@ function table_relocate_extra_rows(t) {
 }
 
 function table_unset_refresh_spin(t) {
+  if (!t.e_tool_refresh_spin) {
+    return
+  }
   t.e_tool_refresh_spin.removeClass("fa-spin")
 }
 
 function table_set_refresh_spin(t) {
+  if (!t.e_tool_refresh_spin) {
+    return
+  }
   t.e_tool_refresh_spin.addClass("fa-spin")
 }
 
@@ -4404,9 +4480,6 @@ function table_init(opts) {
     'bind_filter_input_events': function(){
       table_bind_filter_input_events(this)
     },
-    'bind_persistent_filter': function(){
-      table_bind_persistent_filter(this)
-    },
     'insert_bookmark': function(name){
       table_insert_bookmark(this, name)
     },
@@ -4442,9 +4515,6 @@ function table_init(opts) {
     },
     'add_scrollers': function(){
       table_add_scrollers(this)
-    },
-    'add_fset_selector': function(){
-      table_add_fset_selector(this)
     },
     'add_filterbox': function(){
       table_add_filterbox(this)
@@ -4502,19 +4572,29 @@ function table_init(opts) {
     },
     'add_csv': function(){
       table_add_csv(this)
+    },
+    'add_column_selector': function(){
+      table_add_column_selector(this)
+    },
+    'add_commonality': function(){
+      table_add_commonality(this)
     }
   }
 
   // selectors cache
   t.div = $("#"+t.id)
   t.e_toolbar = t.div.find("[name=toolbar]").first()
-  t.e_header_filters = t.div.find("[name=filters]").first()
+  t.e_table = t.div.find("table#table_"+t.id).first()
+  t.e_header = t.e_table.find(".theader").first()
+  t.e_header_filters = t.e_table.find("[name=filters]").first()
 
   osvc.tables[t.id] = t
   t.div.find("select").parent().css("white-space", "nowrap")
   t.div.find("select:visible").combobox()
 
   create_overlay()
+  t.add_commonality()
+  t.add_column_selector()
   t.add_csv()
   t.add_bookmarks()
   t.add_link()
@@ -4525,9 +4605,7 @@ function table_init(opts) {
   t.hide_cells()
   t.format_header()
   t.add_filterbox()
-  t.add_fset_selector()
   t.add_scrollers()
-  t.bind_persistent_filter()
   t.scroll_enable()
 
   if (t.dataable) {

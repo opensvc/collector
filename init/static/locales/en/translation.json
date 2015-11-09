@@ -1,4 +1,7 @@
 {
+  "layout": {
+    "search": "Global search"
+  },
   "api": {
     "loading": "Loading",
     "formatting": "Formating",
@@ -15,7 +18,10 @@
     "bookmarks_save_name": "Enter new bookmark name",
     "bookmarks_no_bookmarks": "No saved bookmarks",
     "refresh": "  Refresh",
-    "csv": "Export to csv"
+    "csv": "Export to csv",
+    "columns": "Configure columns",
+    "commonality": "Commonality",
+    "filter": "Filter: "
   },
   "app": {
     "name": "collector"
@@ -65,7 +71,7 @@
     "no_candidates": "No candidates found. Press <enter> to create and attach the new tag."
   },
   "search": {
-    "nothing_found" : "No menu entry found matching filter",
+    "nothing_found" : "No entry found matching filter",
     "menu_header" : {
       "title_services" : "Services",
       "title_nodes" : "Nodes",

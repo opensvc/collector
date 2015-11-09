@@ -267,6 +267,8 @@ def log():
         )
     return dict(table=t)
 
+def log_load():
+    return log()["table"]
 
 class table_log_node(table_log):
     def __init__(self, id=None, func=None, innerhtml=None):

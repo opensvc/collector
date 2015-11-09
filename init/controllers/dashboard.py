@@ -641,6 +641,9 @@ wsh["%(divid)s"] = ws_action_switch_%(divid)s
 
     return dict(table=t)
 
+def index_load():
+    return index()["table"]
+
 #
 # Dashboard change detection
 #

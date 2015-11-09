@@ -1436,6 +1436,9 @@ wsh["%(divid)s"] = ws_action_switch_%(divid)s
         )
     return dict(table=d)
 
+def disks_load():
+    return disks()["table"]
+
 @auth.requires_login()
 def ajax_disk_charts():
     nt = table_disk_charts('charts', 'ajax_disk_charts')
