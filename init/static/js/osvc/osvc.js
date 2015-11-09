@@ -16,7 +16,9 @@ $(document).keydown(function(event) {
       $(".white_float").hide()
       $(".white_float_input").hide()
       $(".right_click_menu").hide()
-      $(".extraline").remove()
+      // Handle popup push/pop
+      //$(".extraline").remove()
+      osvc_popup_remove_from_stack();
       $(".menu").hide("fold")
       $(".menu").find("[id^=sextra]").remove()
       return

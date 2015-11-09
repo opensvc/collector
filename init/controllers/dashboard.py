@@ -636,6 +636,7 @@ wsh["%(divid)s"] = ws_action_switch_%(divid)s
                      divid=t.innerhtml,
                     )
              ),
+             SCRIPT("""osvc_popup_listen_for_row_change('table_dashboard');"""),
         )
 
     return dict(table=t)
