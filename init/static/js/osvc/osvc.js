@@ -50,22 +50,19 @@ $(document).keydown(function(event) {
     }
   else if ( event.which == 9 ) // init menu key navigation
   {
-    var menu = $(".header").find(".menu16").parents("ul").first().siblings(".menu");
-    var entries = menu.find(".menu_entry:visible");
+    var entries = $(".header").find(".menu_entry:visible");
     $(entries[0]).addClass("menu_selected");
   }
   else if ((event.which == 37)||(event.which == 38)) { // Left/Up key function
-    var menu = $(".header").find(".menu16").parents("ul").first().siblings(".menu");
     event.preventDefault();
-    var menu = $(".header").find(".menu16").parents("ul").first().siblings(".menu");
-    var entries = menu.find(".menu_entry:visible");
+    var entries = $(".header").find(".menu_entry:visible");
     var i = 0;
     var prev;
     entries.each(function(){
       i += 1;
       if ($(this).hasClass("menu_selected")) {
         if (i==1) { return; }
-        menu.find(".menu_entry").removeClass("menu_selected");
+        entries.removeClass("menu_selected");
         $(prev).addClass("menu_selected");
         return;
       }
@@ -73,9 +70,8 @@ $(document).keydown(function(event) {
     });
   }
   else if ((event.which == 39)||(event.which == 40)) { // Right/down function
-    var menu = $(".header").find(".menu16").parents("ul").first().siblings(".menu");
     event.preventDefault();
-    var entries = menu.find(".menu_entry:visible");
+    var entries = $(".header").find(".menu_entry:visible");
     var i = 0;
     var found = false;
     entries.each(function(){
@@ -86,7 +82,7 @@ $(document).keydown(function(event) {
         return;
       }
       if (found) {
-        menu.find(".menu_entry").removeClass("menu_selected");
+        entries.removeClass("menu_selected");
         $(this).addClass("menu_selected");
         found = false;
         return;
@@ -94,11 +90,10 @@ $(document).keydown(function(event) {
     });
   }
   else if (is_enter(event)) { // validation in menu function
-    var menu = $(".header").find(".menu16").parents("ul").first().siblings(".menu");
-    menu.find(".menu_selected:visible").each(function(){
+    $(".header").find(".menu_selected:visible").each(function(){
       event.preventDefault();;
       $(this).effect("highlight");
-      window.location = $(this).children("a").attr("href");
+      $(this).trigger("click")
     })
   }
 });

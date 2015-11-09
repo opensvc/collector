@@ -59,8 +59,8 @@ function app_load_href(href) {
 }
 
 function app_menu_entries_bind_click_to_load() {
-  $(".menu").find("a").bind("click", function(event) {
-    var href = $(this).attr("href")
+  $(".menu .menu_entry").bind("click", function(event) {
+    var href = $(this).find("a").attr("href")
     if (!href) {
       return
     }
