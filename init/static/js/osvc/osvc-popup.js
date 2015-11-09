@@ -2,9 +2,37 @@
 
 var _stack = [];
 
-function osvc_popup_is_in_stack(value)
+function osvc_popup_find_in_stack(value)
 {
-	return (_stack.indexOf(value) > -1);
+	for(i=0;i<_stack.length;i++)
+	{
+		if (value == _stack[i].span)
+			return i;
+	}
+	return 0;
+}
+
+function osvc_popup_remove_from_stack_by_id(value)
+{
+	var line = osvc_popup_find_in_stack(value);
+
+	var span = _stack[line].span;
+
+	var target = $("#"+"table_dashboard").find("tr[spansum='"+ span + "']");
+	target.next().toggle("Blind",function () {
+		target.next().remove();
+	});
+
+	_stack.splice(line,1); // remove the element
+
+	// Handle children remove
+	for(i=0;i<_stack.length;i++)
+	{
+		if (_stack[i].parent == span) // Children found
+		{
+			_stack.splice(i,1); // destroy it
+		}
+	}
 }
 
 function osvc_popup_listen_for_row_change(table_id)
@@ -15,10 +43,40 @@ function osvc_popup_listen_for_row_change(table_id)
 
 	    var span = e.currentTarget.attributes["spansum"].value; // collect identifier of the selected row
 
-	    if (span === undefined || osvc_popup_is_in_stack(span)) // if not a tr or already in stack, stop collect
-	    	return;
+	    if (span === undefined || osvc_popup_find_in_stack(span) !=0 ) // if not a tr or already in stack, stop collect
+	        return;
 
-	    _stack.push(span); // push rows in stack process
+	    var parent = e.currentTarget.parentElement;
+	    var p = null;
+	    try {
+	    	while(1)
+	    	{
+	    		parent = parent.parentElement;//.parentElement.parentElement.previousSibling.attributes["spansum"];
+	    		if (parent === undefined) break;
+	    		else if (parent.className == "extraline") 
+	    		{
+	    			p = parent.previousSibling.attributes["spansum"].value;
+	    			break;
+	    		}
+	    	}
+	    }
+	    catch (e)
+	    {
+	    	// No parent
+	    }
+
+	    // Check if still on same table
+	    /*for(i=0;i<_stack.length;i++)
+	    {
+	    	if (_stack[i].parent == p) // Same parent = same tabulation
+	    	{
+
+	    	}
+	    }*/
+
+	    var id = {"span":span,"tableid":table_id,"parent":p};
+
+	    _stack.push(id); // push rows in stack process
 	});
 }
 
@@ -26,5 +84,22 @@ function osvc_popup_remove_from_stack() // Remove last item from stack and destr
 {
 	var span = _stack.pop();
 
-	$("#"+table_id).find("tr[spansum='"+span + "']").next().remove();
+	if (span.parent=="menuflash") // If link tab
+	{
+		$(".flash").hide("fold");
+		return;
+	}
+
+	var target = $("#"+span.tableid).find("tr[spansum='"+span.span + "']");
+	target.next().toggle("Blind",function () {
+		target.next().remove();
+	});
+	// Handle children remove
+	for(i=0;i<_stack.length;i++)
+	{
+		if (_stack.parent == span.span) // Children found
+		{
+			_stack.splice(i,1); // destroy it
+		}
+	}
 }

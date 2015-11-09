@@ -19,8 +19,8 @@ $(document).keydown(function(event) {
       // Handle popup push/pop
       //$(".extraline").remove()
       osvc_popup_remove_from_stack();
-      $(".menu").hide("fold")
-      $(".menu").find("[id^=sextra]").remove()
+      //$(".menu").hide("fold")
+      //$(".menu").find("[id^=sextra]").remove()
       return
     }
 

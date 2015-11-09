@@ -181,7 +181,10 @@ function osvc_create_link(fn, parameters, target)
       osvc_show_link(url, target)
     },
     function(xhr, stat, error) {
-      $(".flash").show("fold").html(services_ajax_error_fmt(xhr, stat, error))
+      $(".flash").show("fold").html(services_ajax_error_fmt(xhr, stat, error));
+      //MD Stack
+      var menu = {"span":".flash","tableid":"","parent":"menuflash"};
+      _stack.push(menu);
     })
 }
 
@@ -215,6 +218,10 @@ function osvc_show_link(url, target) {
   e.append(p)
 
   target.empty().append(e).show("fold")
+  //MD Stack
+      var menu = {"span":".flash","tableid":"","parent":"menuflash"};
+      _stack.push(menu);
+      
   p.autogrow();
   p.select()
 }
