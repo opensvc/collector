@@ -109,6 +109,7 @@ def display(s, privs=[]):
     return True
 
 menu_entries = [
+  'key-f',
   'key-l',
   'key-n',
   'key-r',
@@ -168,6 +169,7 @@ menu_entries = [
 ]
 
 menu_entries_data = {
+  'key-f': menu_fmt_e("Filter selector", "Switch the filter applied to all displayed data", "", "f"),
   'key-l': menu_fmt_e("Link", "Show url to share your filters", "", "l"),
   'key-n': menu_fmt_e("Navigation", "Open the navigation menu", "", "n"),
   'key-r': menu_fmt_e("Refresh", "Reload table data", "", "r"),
@@ -232,6 +234,7 @@ response.menu = [
     [
     [T('Shortcuts'), False, '',
          [
+             [menu_entries_data['key-f'], display('key-f'), ''],
              [menu_entries_data['key-l'], display('key-l'), ''],
              [menu_entries_data['key-n'], display('key-n'), ''],
              [menu_entries_data['key-r'], display('key-r'), ''],
