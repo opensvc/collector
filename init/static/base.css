@@ -2315,6 +2315,7 @@ a.search-link:hover {
 	padding: 1px 0 0 0;
 	margin-top: 0;
 	margin-bottom: 0;
+	z-index: 2;
 }
 
 .tableo_flash {
