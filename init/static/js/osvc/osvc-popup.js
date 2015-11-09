@@ -7,9 +7,17 @@ function osvc_popup_find_in_stack(value)
 	for(i=0;i<_stack.length;i++)
 	{
 		if (value == _stack[i].span)
-			return i;
+			return i+1;
 	}
 	return 0;
+}
+
+function osvc_popup_push_to_stack(obj)
+{
+	var test = osvc_popup_find_in_stack(obj.span);
+	if ( test == 0) {
+		_stack.push(obj);
+	}
 }
 
 function osvc_popup_remove_from_stack_by_id(value)
@@ -82,11 +90,13 @@ function osvc_popup_listen_for_row_change(table_id)
 
 function osvc_popup_remove_from_stack() // Remove last item from stack and destroy DOM element
 {
+	if (_stack.length == 0) return;
+
 	var span = _stack.pop();
 
-	if (span.parent=="menuflash") // If link tab
+	if (span.parent=="menuflash" || span.parent=="menusearch" || span.parent=="menu") // If menu element 
 	{
-		$(".flash").hide("fold");
+		$(span.span).hide("fold");
 		return;
 	}
 

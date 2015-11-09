@@ -16,11 +16,13 @@ $(document).keydown(function(event) {
       $(".white_float").hide()
       $(".white_float_input").hide()
       $(".right_click_menu").hide()
+
       // Handle popup push/pop
       //$(".extraline").remove()
       osvc_popup_remove_from_stack();
       //$(".menu").hide("fold")
       //$(".menu").find("[id^=sextra]").remove()
+      $("#search_input").val("")
       return
     }
 
@@ -44,7 +46,7 @@ $(document).keydown(function(event) {
     if (!$('#search_input').is(":focus")) 
       {
         event.preventDefault();
-        $(".header").find(".menu16").parents("ul").first().siblings(".menu").show("fold");
+        $(".header").find(".menu16").parents("ul").first().siblings(".menu").show("fold", function(){filter_menu()});
         $('#search_input').val('');
         $('#search_input').focus();
       }
@@ -2669,6 +2671,7 @@ var action_img_h = {
   'reboot': 'action_restart_16',
   'shutdown': 'action_stop_16',
   'syncservices': 'action_sync_16',
+  'sync_services': 'action_sync_16',
   'updateservices': 'action16',
   'updatepkg': 'pkg16',
   'updatecomp': 'pkg16',
@@ -2693,9 +2696,12 @@ var action_img_h = {
   'mount': 'action_start_16',
   'restart': 'action_restart_16',
   'provision': 'prov',
-  'switch': 'action_restart_16',
+  'switch': 'action_switch_16',
   'freeze': 'frozen16',
   'thaw': 'frozen16',
+  'sync_all': 'action_sync_16',
+  'sync_nodes': 'action_sync_16',
+  'sync_drp': 'action_sync_16',
   'syncall': 'action_sync_16',
   'syncnodes': 'action_sync_16',
   'syncdrp': 'action_sync_16',
@@ -4317,6 +4323,7 @@ function table_add_pager(t) {
 // table horizontal scroll
 //
 function table_scroll(t){
+  sticky_relocate(t.e_header, t.e_sticky_anchor)
   to=$("#table_"+t.id)
   to_p=to.parent()
   ww=$(window).width()
@@ -4348,7 +4355,7 @@ function table_scroll_enable(t) {
   $("#table_"+t.id+"_right").click(function(){
     $("#table_"+t.id).parent().animate({'scrollLeft': '+='+$(window).width()}, 500)
   })
-  $("#table_"+t.id).parent().scroll(function(){
+  $("#table_"+t.id).parent().bind("scroll", function(){
     table_scroll(t)
   })
   $(window).resize(function(){
@@ -4437,6 +4444,17 @@ function table_set_refresh_spin(t) {
   t.e_tool_refresh_spin.addClass("fa-spin")
 }
 
+function table_stick(t) {
+  var anchor = $("<span></span>")
+  anchor.uniqueId()
+  anchor.insertBefore(t.e_header)
+  t.e_sticky_anchor = anchor
+  sticky_relocate(t.e_header, t.e_sticky_anchor)
+  $(window).scroll(function(){
+    sticky_relocate(t.e_header, t.e_sticky_anchor)
+  })
+  sticky_relocate(t.e_header, t.e_sticky_anchor)
+}
 
 var osvc = {
  'tables': {}
@@ -4555,6 +4573,9 @@ function table_init(opts) {
     'refresh': function(){
       table_refresh(this)
     },
+    'stick': function(){
+      table_stick(this)
+    },
     'add_pager': function(){
       table_add_pager(this)
     },
@@ -4607,6 +4628,7 @@ function table_init(opts) {
   t.add_filterbox()
   t.add_scrollers()
   t.scroll_enable()
+  t.stick()
 
   if (t.dataable) {
     t.refresh()

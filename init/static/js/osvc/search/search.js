@@ -258,7 +258,12 @@ function search_search()
         td.trigger("click");
       }
 
-      if (!$("#search_result").is(':visible')) toggle('search_result');
+      if (!$("#search_result").is(':visible')) 
+        {
+          toggle('search_result');
+          //MD Stack
+          osvc_popup_push_to_stack({"span":"#search_result","tableid":"","parent":"menusearch"});
+        }
       $("#search_div").removeClass("searching");
       $("#search_div").addClass("searchidle");
       search_highlight($("#search_result"), search_query)
@@ -317,7 +322,7 @@ function search_show_tab(item, tab, param, index)
 {
   var _url = null;
   var value = $(item).text();
-  var _id = "sextra_" + value.replace(/[ \.-]/g, '_');
+  var _id = "sextra_" + value.replace(/[ \/\.-]/g, '_');
   var d = "<div id='" + _id + "' class='searchtab hidden'></div>";
 
   //$(item).parents('table').find("[name=extra]").html(d);
@@ -339,6 +344,9 @@ function search_show_tab(item, tab, param, index)
 }
 
 function filter_menu(event) {
+  // MD Stack
+  osvc_popup_push_to_stack({"span":".menu","tableid":"","parent":"menu"});
+
   var menu = $(".header").find(".menu16").parents("ul").first().siblings(".menu")
   var text = searchbox = $(".search").find("input").val()
   var reg = new RegExp(text, "i");
@@ -372,7 +380,7 @@ function filter_menu(event) {
 }
 
 function filter_fset_selector(event) {
-  var div = $(".flash [name=fset_selector_entries]")
+  var div = $(".header [name=fset_selector_entries]")
   var text = searchbox = $(".search").find("input").val()
   var reg = new RegExp(text, "i");
   div.find(".menu_entry").each(function(){
@@ -418,9 +426,7 @@ function search_highlight(e, s) {
   e.children("[name=orig]").children().each(function(){
     // restore orig
     var id = $(this).attr("id")
-    console.log($(this).text())
     var tgt = e.find("[highlight_id="+id+"]")
-    console.log(tgt)
     tgt.find("[name=highlighted]").remove()
     var children = tgt.children().detach()
 
@@ -428,7 +434,10 @@ function search_highlight(e, s) {
     tgt.text($(this).text())
 
     if ($(this).text().match(regexp)) {
-      var highlighted = $("<span name='highlighted'>"+$(this).text().replace(regexp, repl)+"</span>")
+      var highlighted = $("<span name='highlighted'></span>")
+      highlighted.html($(this).text().replace(regexp, function(x) {
+        return '<span class="highlight_light">' + x + '</span>'
+      }))
       tgt.text("")
       tgt.prepend(highlighted)
     }

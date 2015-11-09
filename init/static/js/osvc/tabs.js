@@ -62,7 +62,7 @@ function tabs_init(o) {
   // empty tabs on click closetab
   o.closetab.bind("click", function() {
     //o.div.remove();
-    //MD
+    //MD use of ID , 3 third value
     var base  = id.split("_");
     var sid = base[base.length-1];
     osvc_popup_remove_from_stack_by_id(sid);

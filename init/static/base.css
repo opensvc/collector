@@ -1,5 +1,16 @@
 @charset "UTF-8";
 
+.stick {
+	position: fixed;
+	top: 2em;
+}
+
+.icon16:before {
+	display: inline-block;
+	width: 20px;
+	text-align: center;
+}
+
 form :focus {
 	border: 1px dotted;
 }
@@ -729,7 +740,7 @@ div.error {
 	top: 0;
 	display: none;
 	margin-top: 1.8em;
-	position: absolute;
+	position: fixed;
 	z-index: 1001;
 	width: 100%;
 	max-height: 90%;
@@ -802,7 +813,7 @@ div.menu_box {
 
 .layout {
 	width: 100%;
-	padding: 0;
+	padding: 2em 0 0 0;
 	border: 0;
 	border-spacing: 0;
 	background: #fff;
@@ -813,6 +824,9 @@ div.menu_box {
 	background: #2d2d2d;
 	color: white;
 	width: 100%;
+	position: fixed;
+	z-index: 2000;
+	height: 2em;
 }
 .header option {
 	color: initial;
@@ -1730,6 +1744,11 @@ ul.login_menu ul {
 	content: '\f140  ';
 	font-family: awesome;
 }
+.comp-c:before {
+	content: '\f140  ';
+	font-family: awesome;
+	color: darkred;
+}
 .ok:before {
 	content: '\f00c  ';
 	font-family: awesome;
@@ -1760,6 +1779,11 @@ ul.login_menu ul {
 .svc:before {
 	content: '\f111  ';
 	font-family: awesome;
+}
+.svc-c:before {
+	content: '\f111  ';
+	font-family: awesome;
+	color: #D4E5CA;
 }
 .help:before {
 	content: '\f059  ';
@@ -1798,20 +1822,15 @@ ul.login_menu ul {
 	padding: 0 0 0 20px;
 	min-height: 16px;
 }
-.action_sync_16 {
-	background: transparent url('images/action_sync_16.png') no-repeat;
-	padding: 0 0 0 20px;
-	min-height: 16px;
+.action_sync_16:before {
+	content: '\f0ec  ';
+	font-family: awesome;
+	color: orange;
 }
-.action_switch_16 {
-	background: transparent url('images/action_switch_16.png') no-repeat;
-	padding: 0 0 0 20px;
-	min-height: 16px;
-}
-.action_stop_16 {
-	background: transparent url('images/action_stop_16.png') no-repeat;
-	padding: 0 0 0 20px;
-	min-height: 16px;
+.action_stop_16:before {
+	content: '\f063  ';
+	font-family: awesome;
+	color: darkred;
 }
 .action_stonith_16 {
 	background: transparent url('images/action_stonith_16.png') no-repeat;
@@ -1823,10 +1842,15 @@ ul.login_menu ul {
 	font-family: awesome;
 	color: darkgreen;
 }
-.action_restart_16 {
-	background: transparent url('images/action_restart_16.png') no-repeat;
-	padding: 0 0 0 20px;
-	min-height: 16px;
+.action_restart_16:before {
+	content: '\f021  ';
+	font-family: awesome;
+	color: darkgreen;
+}
+.action_switch_16:before {
+	content: '\f061  ';
+	font-family: awesome;
+	color: darkgreen;
 }
 .www16:before {
 	content: '\f0ac  ';
@@ -3094,9 +3118,11 @@ div.containertrans {
 		padding: 0;
 		margin-top: 0;
 		margin-bottom: 0;
-		max-height: 1.2em;
 	}
-	.theader:hover {
+	.toolbar {
+		max-height: 2em;
+	}
+	.toolbar:hover {
 		max-height: none;
 	}
 	.floatw {
@@ -3108,6 +3134,18 @@ div.containertrans {
 	}
 	.sym_headers {
 		display: none;
+	}
+	.menu_top > ul > li > a > div:before {
+		font-size: initial;
+	}
+	.menu_top > ul > li > a > div {
+		font-size: 0;
+	}
+	.header_logo > a:before {
+		font-size: initial;
+	}
+	.header_logo > a{
+		font-size: 0;
 	}
 }
 /* end small screen */
