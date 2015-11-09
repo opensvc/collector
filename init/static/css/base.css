@@ -98,7 +98,7 @@ form :focus {
 	overflow-y: scroll;
 }
 .corner:hover {
-	background-image: url('images/corner8.png');
+	background-image: url('../images/corner8.png');
 	background-position: 0 100%;
 	background-repeat: no-repeat;
 }
@@ -315,7 +315,7 @@ img {
 }
 
 .tag_drag {
-	background-image:url('images/drag10.png');
+	background-image:url('../images/drag10.png');
 	background-position: 5px 4px;
 	background-repeat:no-repeat;
 	cursor: pointer;
@@ -373,7 +373,7 @@ img {
 
 .boxtlc, .boxtrc, .boxblc, .boxbrc {
 	background-color:transparent;
-	background-image:url('images/corners.gif');
+	background-image:url('../images/corners.gif');
 	background-repeat:no-repeat;
 	height:10px;
 	width:10px;
@@ -667,7 +667,7 @@ textarea {
 }
 
 button {
-	background: url('images/menu.jpg');
+	background: url('../images/menu.jpg');
 }
 
 input:focus,
@@ -682,14 +682,14 @@ textarea[readonly] {
 
 @font-face {
 	font-family:"opensans";
-	src:url(OpenSans-Regular.woff);
+	src:url(../fonts/OpenSans-Regular.woff);
 	font-style:normal;
 	font-weight:300;
 }
 
 @font-face {
 	font-family:"awesome";
-	src:url(fontawesome-webfont.woff);
+	src:url(../fonts/fontawesome-webfont.woff);
 	font-style:normal;
 	font-weight:normal;
 }
@@ -698,7 +698,7 @@ html {
 	font-size: 10pt;
 	font-family: "opensans";
 	color: #333333;
-	background: url('images/background.gif') repeat-x #3A3A3A;
+	background: url('../images/background.gif') repeat-x #3A3A3A;
 }
 
 .flash {
@@ -851,7 +851,7 @@ div.menu_box {
 }
 
 .statusbar {
-	background: url('images/menu.gif');
+	background: url('../images/menu.gif');
 	border-bottom: 1px #ddf solid;
 }
 
@@ -1459,7 +1459,7 @@ ul.login_menu ul {
 }
 
 .extraline_marker {
-	background-image: url('images/markerup16.png');
+	background-image: url('../images/markerup16.png');
 	background-repeat: no-repeat;
 	background-position-x: 10%;
 	background-position-y: 100%;
@@ -1470,61 +1470,61 @@ ul.login_menu ul {
 	font-family: awesome;
 }
 .os_vmware {
-	background: transparent url('images/vmware16.png') no-repeat;
+	background: transparent url('../images/vmware16.png') no-repeat;
 	background-size: 16px 16px;
 	padding: 0 0 0 20px;
 	min-height: 16px;
 }
 .os_win {
-	background: transparent url('images/win24.png') no-repeat;
+	background: transparent url('../images/win24.png') no-repeat;
 	background-size: 16px 16px;
 	padding: 0 0 0 20px;
 	min-height: 16px;
 }
 .os_aix {
-	background: transparent url('images/aix24.png') no-repeat;
+	background: transparent url('../images/aix24.png') no-repeat;
 	background-size: 16px 16px;
 	padding: 0 0 0 20px;
 	min-height: 16px;
 }
 .os_opensolaris {
-	background: transparent url('images/opensolaris.png') no-repeat;
+	background: transparent url('../images/opensolaris.png') no-repeat;
 	background-size: 16px 16px;
 	padding: 0 0 0 20px;
 	min-height: 16px;
 }
 .os_tru64 {
-	background: transparent url('images/tru64.png') no-repeat;
+	background: transparent url('../images/tru64.png') no-repeat;
 	background-size: 16px 16px;
 	padding: 0 0 0 20px;
 	min-height: 16px;
 }
 .os_hpux {
-	background: transparent url('images/hpux.png') no-repeat;
+	background: transparent url('../images/hpux.png') no-repeat;
 	background-size: 16px 16px;
 	padding: 0 0 0 20px;
 	min-height: 16px;
 }
 .os_darwin {
-	background: transparent url('images/darwin.png') no-repeat;
+	background: transparent url('../images/darwin.png') no-repeat;
 	background-size: 16px 16px;
 	padding: 0 0 0 20px;
 	min-height: 16px;
 }
 .os_solaris {
-	background: transparent url('images/solaris.png') no-repeat;
+	background: transparent url('../images/solaris.png') no-repeat;
 	background-size: 16px 16px;
 	padding: 0 0 0 20px;
 	min-height: 16px;
 }
 .os_freebsd {
-	background: transparent url('images/freebsd.png') no-repeat;
+	background: transparent url('../images/freebsd.png') no-repeat;
 	background-size: 16px 16px;
 	padding: 0 0 0 20px;
 	min-height: 16px;
 }
 .os_linux {
-	background: transparent url('images/linux.png') no-repeat;
+	background: transparent url('../images/linux.png') no-repeat;
 	background-size: 16px 16px;
 	padding: 0 0 0 20px;
 	min-height: 16px;
@@ -1647,7 +1647,7 @@ ul.login_menu ul {
 	font-family: awesome;
 }
 .dns16 {
-	background: transparent url('images/dns16.png') no-repeat;
+	background: transparent url('../images/dns16.png') no-repeat;
 	padding: 0 0 0 20px;
 	min-height: 16px;
 }
@@ -1656,14 +1656,14 @@ ul.login_menu ul {
 	font-family: awesome;
 }
 .down {
-	background: transparent url('images/down16.png') no-repeat;
+	background: transparent url('../images/down16.png') no-repeat;
 	padding: 0 0 0 15px;
 	background-size: 12px 12px;
 	background-position-y: 2px;
 	min-height: 16px;
 }
 .right {
-	background: transparent url('images/right16.png') no-repeat;
+	background: transparent url('../images/right16.png') no-repeat;
 	padding: 0 0 0 15px;
 	background-size: 12px 12px;
 	background-position-y: 2px;
@@ -1687,12 +1687,12 @@ ul.login_menu ul {
 	font-family: awesome;
 }
 .expert16 {
-	background: transparent url('images/expert16.png') no-repeat;
+	background: transparent url('../images/expert16.png') no-repeat;
 	padding: 0 0 0 20px;
 	min-height: 16px;
 }
 .modset16 {
-	background: transparent url('images/modset16.png') no-repeat;
+	background: transparent url('../images/modset16.png') no-repeat;
 	padding: 0 0 0 20px;
 	min-height: 16px;
 }
@@ -1750,7 +1750,7 @@ ul.login_menu ul {
 	font-family: awesome;
 }
 .fixable16 {
-	background: transparent url('images/fixable16.png') no-repeat;
+	background: transparent url('../images/fixable16.png') no-repeat;
 	padding: 0 0 0 20px;
 	min-height: 16px;
 }
@@ -1817,22 +1817,22 @@ ul.login_menu ul {
 	font-family: awesome;
 }
 .key16 {
-	background: transparent url('images/key16.png') no-repeat;
+	background: transparent url('../images/key16.png') no-repeat;
 	padding: 0 0 0 20px;
 	min-height: 16px;
 }
 .frozen16 {
-	background: transparent url('images/frozen16.png') no-repeat;
+	background: transparent url('../images/frozen16.png') no-repeat;
 	padding: 0 0 0 20px;
 	min-height: 16px;
 }
 .frozen16 {
-	background: transparent url('images/frozen16.png') no-repeat;
+	background: transparent url('../images/frozen16.png') no-repeat;
 	padding: 0 0 0 20px;
 	min-height: 16px;
 }
 .action_toc_16 {
-	background: transparent url('images/action_toc_16.png') no-repeat;
+	background: transparent url('../images/action_toc_16.png') no-repeat;
 	padding: 0 0 0 20px;
 	min-height: 16px;
 }
@@ -1847,7 +1847,7 @@ ul.login_menu ul {
 	color: darkred;
 }
 .action_stonith_16 {
-	background: transparent url('images/action_stonith_16.png') no-repeat;
+	background: transparent url('../images/action_stonith_16.png') no-repeat;
 	padding: 0 0 0 20px;
 	min-height: 16px;
 }
@@ -1947,215 +1947,215 @@ ul.login_menu ul {
 	padding: 0 0 0 52px;
 }
 .api48 {
-	background: transparent url('images/api48.png') no-repeat left center;
+	background: transparent url('../images/api48.png') no-repeat left center;
 	padding: 0 0 0 52px;
 }
 .tag48 {
-	background: transparent url('images/tag48.png') no-repeat left center;
+	background: transparent url('../images/tag48.png') no-repeat left center;
 	padding: 0 0 0 52px;
 }
 .alert48 {
-	background: transparent url('images/alert48.png') no-repeat left center;
+	background: transparent url('../images/alert48.png') no-repeat left center;
 	padding: 0 0 0 52px;
 }
 .obs48 {
-	background: transparent url('images/obs48.png') no-repeat left center;
+	background: transparent url('../images/obs48.png') no-repeat left center;
 	padding: 0 0 0 52px;
 }
 .filter48 {
-	background: transparent url('images/filter48.png') no-repeat left center;
+	background: transparent url('../images/filter48.png') no-repeat left center;
 	padding: 0 0 0 52px;
 }
 .drp48 {
-	background: transparent url('images/drp48.png') no-repeat left center;
+	background: transparent url('../images/drp48.png') no-repeat left center;
 	padding: 0 0 0 52px;
 }
 .prov48 {
-	background: transparent url('images/prov48.png') no-repeat left center;
+	background: transparent url('../images/prov48.png') no-repeat left center;
 	padding: 0 0 0 52px;
 }
 .guys48 {
-	background: transparent url('images/guys48.png') no-repeat left center;
+	background: transparent url('../images/guys48.png') no-repeat left center;
 	padding: 0 0 0 52px;
 }
 .stats48 {
-	background: transparent url('images/stats48.png') no-repeat left center;
+	background: transparent url('../images/stats48.png') no-repeat left center;
 	padding: 0 0 0 52px;
 }
 .billing48 {
-	background: transparent url('images/billing48.png') no-repeat left center;
+	background: transparent url('../images/billing48.png') no-repeat left center;
 	padding: 0 0 0 52px;
 }
 .rsetattach48 {
-	background: transparent url('images/rsetattach48.png') no-repeat left center;
+	background: transparent url('../images/rsetattach48.png') no-repeat left center;
 	padding: 0 0 0 52px;
 }
 .modsetattach48 {
-	background: transparent url('images/modsetattach48.png') no-repeat left center;
+	background: transparent url('../images/modsetattach48.png') no-repeat left center;
 	padding: 0 0 0 52px;
 }
 .log48 {
-	background: transparent url('images/log48.png') no-repeat left center;
+	background: transparent url('../images/log48.png') no-repeat left center;
 	padding: 0 0 0 52px;
 }
 .wf48 {
-	background: transparent url('images/wf48.png') no-repeat left center;
+	background: transparent url('../images/wf48.png') no-repeat left center;
 	padding: 0 0 0 52px;
 }
 .key48 {
-	background: transparent url('images/key48.png') no-repeat left center;
+	background: transparent url('../images/key48.png') no-repeat left center;
 	padding: 0 0 0 52px;
 }
 .logout48 {
-	background: transparent url('images/logout48.png') no-repeat left center;
+	background: transparent url('../images/logout48.png') no-repeat left center;
 	padding: 0 0 0 52px;
 }
 .svc48 {
-	background: transparent url('images/svc48.png') no-repeat left center;
+	background: transparent url('../images/svc48.png') no-repeat left center;
 	padding: 0 0 0 52px;
 }
 .cd48 {
-	background: transparent url('images/cd48.png') no-repeat left center;
+	background: transparent url('../images/cd48.png') no-repeat left center;
 	padding: 0 0 0 52px;
 }
 .edit48 {
-	background: transparent url('images/edit48.png') no-repeat left center;
+	background: transparent url('../images/edit48.png') no-repeat left center;
 	padding: 0 0 0 52px;
 }
 .question48 {
-	background: transparent url('images/question48.png') no-repeat left center;
+	background: transparent url('../images/question48.png') no-repeat left center;
 	padding: 0 0 0 52px;
 }
 .action48 {
-	background: transparent url('images/action48.png') no-repeat left center;
+	background: transparent url('../images/action48.png') no-repeat left center;
 	padding: 0 0 0 52px;
 }
 .comp48 {
-	background: transparent url('images/comp48.png') no-repeat left center;
+	background: transparent url('../images/comp48.png') no-repeat left center;
 	padding: 0 0 0 52px;
 }
 .parent48 {
-	background: transparent url('images/folder48.png') no-repeat left center;
+	background: transparent url('../images/folder48.png') no-repeat left center;
 	padding: 0 0 0 52px;
 }
 .dns48 {
-	background: transparent url('images/dns48.png') no-repeat left center;
+	background: transparent url('../images/dns48.png') no-repeat left center;
 	padding: 0 0 0 52px;
 }
 .folderoracle48 {
-	background-image: url('images/oracle48.png'),url('images/folder48.png');
+	background-image: url('../images/oracle48.png'),url('../images/folder48.png');
 	background-repeat: no-repeat;
 	background-position: left center;
 	padding: 0 0 0 52px;
 }
 .folderapache48 {
-	background-image: url('images/apache48.png'),url('images/folder48.png');
+	background-image: url('../images/apache48.png'),url('../images/folder48.png');
 	background-repeat: no-repeat;
 	background-position: left center;
 	padding: 0 0 0 52px;
 }
 .s_net48 {
-	background: transparent url('images/net48.png') no-repeat left center;
+	background: transparent url('../images/net48.png') no-repeat left center;
 	width: 48px;
 }
 .s_filter48 {
-	background: transparent url('images/filter48.png') no-repeat left center;
+	background: transparent url('../images/filter48.png') no-repeat left center;
 	width: 48px;
 }
 .s_svc48 {
-	background: transparent url('images/svc48.png') no-repeat left center;
+	background: transparent url('../images/svc48.png') no-repeat left center;
 	width: 48px;
 }
 .s_node48 {
-	background: transparent url('images/node48.png') no-repeat left center;
+	background: transparent url('../images/node48.png') no-repeat left center;
 	width: 48px;
 }
 .s_disk48 {
-	background: transparent url('images/disk48.png') no-repeat left center;
+	background: transparent url('../images/disk48.png') no-repeat left center;
 	width: 48px;
 }
 .s_guy48 {
-	background: transparent url('images/guy48.png') no-repeat left center;
+	background: transparent url('../images/guy48.png') no-repeat left center;
 	width: 48px;
 }
 .s_guys48 {
-	background: transparent url('images/guys48.png') no-repeat left center;
+	background: transparent url('../images/guys48.png') no-repeat left center;
 	background-size: 40px 40px;
 	width: 48px;
 }
 .folder48 {
-	background: transparent url('images/folder48.png') no-repeat left center;
+	background: transparent url('../images/folder48.png') no-repeat left center;
 	padding: 0 0 0 52px;
 }
 .net48 {
-	background: transparent url('images/net48.png') no-repeat left center;
+	background: transparent url('../images/net48.png') no-repeat left center;
 	padding: 0 0 0 52px;
 }
 .pkg48 {
-	background: transparent url('images/pkg48.png') no-repeat left center;
+	background: transparent url('../images/pkg48.png') no-repeat left center;
 	padding: 0 0 0 52px;
 }
 .svc48 {
-	background: transparent url('images/svc48.png') no-repeat left center;
+	background: transparent url('../images/svc48.png') no-repeat left center;
 	padding: 0 0 0 52px;
 }
 .node48 {
-	background: transparent url('images/node48.png') no-repeat left center;
+	background: transparent url('../images/node48.png') no-repeat left center;
 	padding: 0 0 0 52px;
 }
 .disk48 {
-	background: transparent url('images/disk48.png') no-repeat left center;
+	background: transparent url('../images/disk48.png') no-repeat left center;
 	padding: 0 0 0 52px;
 }
 .guy48 {
-	background: transparent url('images/guy48.png') no-repeat left center;
+	background: transparent url('../images/guy48.png') no-repeat left center;
 	padding: 0 0 0 52px;
 }
 .completed48 {
-	background: transparent url('images/completed48.png') no-repeat left center;
+	background: transparent url('../images/completed48.png') no-repeat left center;
 	padding: 0 0 0 52px;
 }
 .reject48 {
-	background: transparent url('images/reject48.png') no-repeat left center;
+	background: transparent url('../images/reject48.png') no-repeat left center;
 	padding: 0 0 0 52px;
 }
 .disk48 {
-	background: transparent url('images/disk48.png') no-repeat left center;
+	background: transparent url('../images/disk48.png') no-repeat left center;
 	padding: 0 0 0 52px;
 }
 .backup48 {
-	background: transparent url('images/backup48.png') no-repeat left center;
+	background: transparent url('../images/backup48.png') no-repeat left center;
 	padding: 0 0 0 52px;
 }
 .addnode48 {
-	background: transparent url('images/addnode48.png') no-repeat left center;
+	background: transparent url('../images/addnode48.png') no-repeat left center;
 	padding: 0 0 0 52px;
 }
 .axway48 {
-	background: transparent url('images/axway48.png') no-repeat left center;
+	background: transparent url('../images/axway48.png') no-repeat left center;
 	padding: 0 0 0 52px;
 }
 .apache48 {
-	background: transparent url('images/apache48.png') no-repeat left center;
+	background: transparent url('../images/apache48.png') no-repeat left center;
 	padding: 0 0 0 52px;
 }
 .tomcat48 {
-	background: transparent url('images/tomcat48.png') no-repeat left center;
+	background: transparent url('../images/tomcat48.png') no-repeat left center;
 	padding: 0 0 0 52px;
 }
 .oracle48 {
-	background: transparent url('images/oracle48.png') no-repeat left center;
+	background: transparent url('../images/oracle48.png') no-repeat left center;
 	padding: 0 0 0 52px;
 }
 
 .wfsearch {
 	color: black;
 	padding-left: 18px;
-	background: white url('images/search.png') no-repeat;
+	background: white url('../images/search.png') no-repeat;
 	width: 6em;
 }
 .wfsearch:focus {
-	background: rgb(255, 248, 239) url('images/search.png') no-repeat;
+	background: rgb(255, 248, 239) url('../images/search.png') no-repeat;
 }
 .action_q_widget {
 	float: right;
@@ -2176,16 +2176,16 @@ a.search-link:hover {
 	padding:0.2em;
 }
 .searchidle > input {
-	background: white url('images/search.png') no-repeat;
+	background: white url('../images/search.png') no-repeat;
 }
 .searchidle > input:focus {
-	background: rgb(255, 248, 239) url('images/search.png') no-repeat;
+	background: rgb(255, 248, 239) url('../images/search.png') no-repeat;
 }
 .searching > input {
-	background: white url('images/spinner.gif') no-repeat;
+	background: white url('../images/spinner.gif') no-repeat;
 }
 .searching > input:focus {
-	background: rgb(255, 248, 239) url('images/spinner.gif') no-repeat;
+	background: rgb(255, 248, 239) url('../images/spinner.gif') no-repeat;
 }
 .search > input {
 	color: black;
@@ -2225,7 +2225,7 @@ a.search-link:hover {
 	padding-left: 0.2em;
 }
 .end > input {
-	background: white url('images/end16.png') no-repeat;
+	background: white url('../images/end16.png') no-repeat;
 	color: black;
 	width: 10em;
 	padding-left: 18px;
@@ -2243,7 +2243,7 @@ a.search-link:hover {
 	padding-left: 0.2em;
 }
 .begin > input {
-	background: white url('images/begin16.png') no-repeat;
+	background: white url('../images/begin16.png') no-repeat;
 	color: black;
 	width: 10em;
 	padding-left: 18px;
@@ -2261,7 +2261,7 @@ a.search-link:hover {
 	padding-left: 0.2em;
 }
 .filter > input {
-	background: white url('images/filter16.png') no-repeat;
+	background: white url('../images/filter16.png') no-repeat;
 	color: black;
 	width: 20em;
 	padding-left: 18px;
