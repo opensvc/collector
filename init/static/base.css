@@ -1,5 +1,11 @@
 @charset "UTF-8";
 
+.icon16:before {
+	display: inline-block;
+	width: 20px;
+	text-align: center;
+}
+
 form :focus {
 	border: 1px dotted;
 }
@@ -1730,6 +1736,11 @@ ul.login_menu ul {
 	content: '\f140  ';
 	font-family: awesome;
 }
+.comp-c:before {
+	content: '\f140  ';
+	font-family: awesome;
+	color: darkred;
+}
 .ok:before {
 	content: '\f00c  ';
 	font-family: awesome;
@@ -1760,6 +1771,11 @@ ul.login_menu ul {
 .svc:before {
 	content: '\f111  ';
 	font-family: awesome;
+}
+.svc-c:before {
+	content: '\f111  ';
+	font-family: awesome;
+	color: #D4E5CA;
 }
 .help:before {
 	content: '\f059  ';
@@ -1798,20 +1814,15 @@ ul.login_menu ul {
 	padding: 0 0 0 20px;
 	min-height: 16px;
 }
-.action_sync_16 {
-	background: transparent url('images/action_sync_16.png') no-repeat;
-	padding: 0 0 0 20px;
-	min-height: 16px;
+.action_sync_16:before {
+	content: '\f0ec  ';
+	font-family: awesome;
+	color: orange;
 }
-.action_switch_16 {
-	background: transparent url('images/action_switch_16.png') no-repeat;
-	padding: 0 0 0 20px;
-	min-height: 16px;
-}
-.action_stop_16 {
-	background: transparent url('images/action_stop_16.png') no-repeat;
-	padding: 0 0 0 20px;
-	min-height: 16px;
+.action_stop_16:before {
+	content: '\f063  ';
+	font-family: awesome;
+	color: darkred;
 }
 .action_stonith_16 {
 	background: transparent url('images/action_stonith_16.png') no-repeat;
@@ -1823,10 +1834,15 @@ ul.login_menu ul {
 	font-family: awesome;
 	color: darkgreen;
 }
-.action_restart_16 {
-	background: transparent url('images/action_restart_16.png') no-repeat;
-	padding: 0 0 0 20px;
-	min-height: 16px;
+.action_restart_16:before {
+	content: '\f021  ';
+	font-family: awesome;
+	color: darkgreen;
+}
+.action_switch_16:before {
+	content: '\f061  ';
+	font-family: awesome;
+	color: darkgreen;
 }
 .www16:before {
 	content: '\f0ac  ';

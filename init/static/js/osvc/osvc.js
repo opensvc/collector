@@ -2692,7 +2692,7 @@ var action_img_h = {
   'mount': 'action_start_16',
   'restart': 'action_restart_16',
   'provision': 'prov',
-  'switch': 'action_restart_16',
+  'switch': 'action_switch_16',
   'freeze': 'frozen16',
   'thaw': 'frozen16',
   'sync_all': 'action_sync_16',
