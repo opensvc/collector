@@ -26,9 +26,39 @@ function fset_selector(divid, callback) {
   o.add_fset = function(id, name) {
     return fset_selector_add_fset(o, id, name)
   }
+  o.event_handler = function(data) {
+    return fset_selector_event_handler(o, data)
+  }
+
+  wsh["fset_selector"] = function(data) {
+    fset_selector_event_handler(o, data)
+  }
 
   o.container()
   return o
+}
+
+function fset_selector_event_handler(o, data) {
+  if (!data.event) {
+    return
+  }
+  if (data.event == "gen_filterset_change") {
+    o.container()
+    return
+  }
+  if (data.event == "gen_filterset_user_change") {
+    var d = data.data
+    o.span.text(d.fset_name)
+    o.span.attr("fset_id", d.fset_id)
+    o.callbacks()
+    return
+  }
+  if (data.event == "gen_filterset_user_delete") {
+    o.span.text(i18n.t("table.none"))
+    o.span.attr("fset_id", "-1")
+    o.callbacks()
+    return
+  }
 }
 
 function fset_selector_container(o) {
