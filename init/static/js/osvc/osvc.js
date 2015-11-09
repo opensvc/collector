@@ -4450,6 +4450,11 @@ function table_set_refresh_spin(t) {
 }
 
 function table_stick(t) {
+  // bypass conditions
+  if (t.div.parents(".tableo").length > 0) {
+    return
+  }
+
   var anchor = $("<span></span>")
   anchor.uniqueId()
   anchor.insertBefore(t.e_header)
