@@ -696,7 +696,7 @@ textarea[readonly] {
 
 html {
 	font-size: 10pt;
-	font-family: "opensans", 'Ubuntu', Arial, Sans, Georgia, Times new Roman;
+	font-family: "opensans";
 	color: #333333;
 	background: url('images/background.gif') repeat-x #3A3A3A;
 }
@@ -2771,12 +2771,11 @@ a.jqplot-image-container-close {
 }
 
 .searchtab {
-	width: 96%;
 	box-shadow: 0 0 20px #555;
 	border-radius: 4px;
 	-moz-border-radius: 4px;
 	-webkit-border-radius: 4px;
-	margin: 20px;
+	margin: 20px 0;
 }
 .searchtab > table {
 	width: 100%;
@@ -3119,13 +3118,6 @@ div.containertrans {
 
 /* begin small screen */
 @media all and (max-width:640px) {
-	html {
-		font-size: 14pt;
-		-webkit-text-size-adjust: none;
-	}
-	textarea, table, td, th, code, pre, samp {
-		word-wrap: break-word; /* césure forcée */
-	}
 	.theader {
 		background-color: #e0e1cd;
 		color: black;
@@ -3150,13 +3142,13 @@ div.containertrans {
 		display: none;
 	}
 	.menu_top > ul > li > a > div:before {
-		font-size: initial;
+		font-size: 12pt;
 	}
 	.menu_top > ul > li > a > div {
 		font-size: 0;
 	}
 	.header_logo > a:before {
-		font-size: initial;
+		font-size: 12pt;
 	}
 	.header_logo > a{
 		font-size: 0;
