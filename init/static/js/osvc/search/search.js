@@ -372,7 +372,7 @@ function filter_menu(event) {
 }
 
 function filter_fset_selector(event) {
-  var div = $(".flash [name=fset_selector_entries]")
+  var div = $(".header [name=fset_selector_entries]")
   var text = searchbox = $(".search").find("input").val()
   var reg = new RegExp(text, "i");
   div.find(".menu_entry").each(function(){

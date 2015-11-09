@@ -919,7 +919,7 @@ class HtmlTable(object):
                 additional_tools,
                 DIV('', _class='spacer'),
                 _name='toolbar',
-                _class='theader',
+                _class='theader toolbar',
               ),
               additional_filters,
               DIV(

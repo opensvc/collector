@@ -73,6 +73,9 @@ function fset_selector_container(o) {
   e.i18n()
   o.div.append(e)
 
+  o.area = $("<div style='position:fixed' class='menu hidden' name='fset_selector_entries'></div>")
+  o.div.append(o.area)
+
   o.load_span()
 }
 
@@ -91,7 +94,7 @@ function fset_selector_unset_fset(o) {
     o.span.empty()
     o.span.text(i18n.t("table.none"))
     o.span.attr("fset_id", "-1")
-    $(".flash").hide()
+    o.area.hide()
     o.callbacks()
   },
   function(xhr, stat, error) {
@@ -105,7 +108,7 @@ function fset_selector_set_fset(o, new_fset_id, new_fset_name) {
     o.span.empty()
     o.span.text(new_fset_name)
     o.span.attr("fset_id", new_fset_id)
-    $(".flash").hide()
+    o.area.hide()
     o.callbacks()
   },
   function(xhr, stat, error) {
@@ -141,10 +144,7 @@ function fset_selector_add_fset(o, id, name) {
 }
 
 function fset_selector_load_area(o) {
-  if (o.area) {
-    o.area.remove()
-  }
-  o.area = $("<div name='fset_selector_entries'></div>")
+  o.area.empty()
   var current_fset_id = o.span.attr("fset_id")
 
   // add the "none" option
@@ -157,7 +157,6 @@ function fset_selector_load_area(o) {
     }
 
     o.area.find("[fset_id="+current_fset_id+"]").addClass("menu_selected")
-    $(".flash").html(o.area)
   })
 }
 
@@ -174,9 +173,9 @@ function fset_selector_load_span(o) {
     }
     o.span.text(fset_name)
     o.span.attr("fset_id", fset_id)
-    o.span.bind("click", function() {
-      if (!$(".flash").is(":visible")) {
-        $(".flash").show("fold")
+    o.div.bind("click", function() {
+      if (!o.area.is(":visible")) {
+        o.area.show("fold")
         $("#search_input").focus()
         o.load_area()
       }

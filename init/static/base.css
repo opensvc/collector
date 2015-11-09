@@ -2,7 +2,7 @@
 
 .stick {
 	position: fixed;
-	top: 0;
+	top: 2em;
 }
 
 .icon16:before {
@@ -740,7 +740,7 @@ div.error {
 	top: 0;
 	display: none;
 	margin-top: 1.8em;
-	position: absolute;
+	position: fixed;
 	z-index: 1001;
 	width: 100%;
 	max-height: 90%;
@@ -813,7 +813,7 @@ div.menu_box {
 
 .layout {
 	width: 100%;
-	padding: 0;
+	padding: 2em 0 0 0;
 	border: 0;
 	border-spacing: 0;
 	background: #fff;
@@ -824,6 +824,9 @@ div.menu_box {
 	background: #2d2d2d;
 	color: white;
 	width: 100%;
+	position: fixed;
+	z-index: 2000;
+	height: 2em;
 }
 .header option {
 	color: initial;
@@ -3115,9 +3118,11 @@ div.containertrans {
 		padding: 0;
 		margin-top: 0;
 		margin-bottom: 0;
-		max-height: 1.2em;
 	}
-	.theader:hover {
+	.toolbar {
+		max-height: 2em;
+	}
+	.toolbar:hover {
 		max-height: none;
 	}
 	.floatw {
@@ -3129,6 +3134,18 @@ div.containertrans {
 	}
 	.sym_headers {
 		display: none;
+	}
+	.menu_top > ul > li > a > div:before {
+		font-size: initial;
+	}
+	.menu_top > ul > li > a > div {
+		font-size: 0;
+	}
+	.header_logo > a:before {
+		font-size: initial;
+	}
+	.header_logo > a{
+		font-size: 0;
 	}
 }
 /* end small screen */
