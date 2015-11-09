@@ -724,6 +724,9 @@ div.error {
 .menu_section > span > table {
 	width: 100%;
 }
+.menu_current {
+	background: #1f1f1f;
+}
 .menu_selected {
 	background: #3f3f3f;
 }
