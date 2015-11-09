@@ -317,7 +317,7 @@ function search_show_tab(item, tab, param, index)
 {
   var _url = null;
   var value = $(item).text();
-  var _id = "sextra_" + value.replace(/[ \.-]/g, '_');
+  var _id = "sextra_" + value.replace(/[ \/\.-]/g, '_');
   var d = "<div id='" + _id + "' class='searchtab hidden'></div>";
 
   //$(item).parents('table').find("[name=extra]").html(d);
