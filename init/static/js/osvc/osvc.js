@@ -2917,7 +2917,7 @@ function cell_decorator_svc_action_err(e) {
   var line = $(e).parent(".tl")
   var svcname = line.children("[name$=mon_svcname]").attr("v")
   url = $(location).attr("origin") + "/init/svcactions/svcactions?actions_f_svcname="+svcname+"&actions_f_status=err&actions_f_ack=!1|empty&actions_f_begin=>-30d&volatile_filters=true"
-  s = "<a class='boxed_small bgred clickable' href='"+url+"' target='_blank'>"+v+"</a>"
+  s = "<a class='action16 icon-red clickable' href='"+url+"' target='_blank'>"+v+"</a>"
   $(e).html(s)
 }
 
@@ -3031,8 +3031,16 @@ function cell_decorator_status(e) {
   if (status_outdated(line)) {
     c = "undef"
   }
-  c = c.replace(' ', '_')
-  $(e).html("<div class='boxed_small boxed_status boxed_status_"+c+"'>"+v+"</div>")
+  t = {
+    "warn": "orange",
+    "up": "green",
+    "stdby up": "green",
+    "down": "red",
+    "stdby down": "red",
+    "undef": "gray",
+    "n/a": "gray",
+  }
+  $(e).html("<div class='svc nowrap icon-"+t[c]+"'></div>")
 }
 
 function cell_decorator_svcmon_links(e) {
