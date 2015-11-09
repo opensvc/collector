@@ -418,9 +418,7 @@ function search_highlight(e, s) {
   e.children("[name=orig]").children().each(function(){
     // restore orig
     var id = $(this).attr("id")
-    console.log($(this).text())
     var tgt = e.find("[highlight_id="+id+"]")
-    console.log(tgt)
     tgt.find("[name=highlighted]").remove()
     var children = tgt.children().detach()
 
