@@ -53,7 +53,7 @@ $(document).keydown(function(event) {
     var entries = $(".header").find(".menu_entry:visible");
     $(entries[0]).addClass("menu_selected");
   }
-  else if ((event.which == 37)||(event.which == 38)) { // Left/Up key function
+  else if (event.which == 37) { // Left
     event.preventDefault();
     var entries = $(".header").find(".menu_entry:visible");
     var i = 0;
@@ -69,7 +69,30 @@ $(document).keydown(function(event) {
       prev = this;
     });
   }
-  else if ((event.which == 39)||(event.which == 40)) { // Right/down function
+  else if (event.which == 38) { // Up
+    event.preventDefault();
+    var entries = $(".header").find(".menu_entry:visible");
+    var selected = entries.filter(".menu_selected")
+    var selected_index = entries.index(selected)
+    var candidate_entries = entries.slice(0, selected_index)
+    if (selected.length == 0) {
+      selected = entries.first()
+    }
+    if (candidate_entries.length == 0) {
+      candidate_entries = entries
+    }
+    candidate_entries.filter(function(i, e){
+      if ($(this).position().left == selected.position().left) {
+        return true
+      }
+      return false
+    }).last().each(function(){
+      entries.removeClass("menu_selected");
+      $(this).addClass("menu_selected");
+      return;
+    });
+  }
+  else if (event.which == 39) { // Right
     event.preventDefault();
     var entries = $(".header").find(".menu_entry:visible");
     var i = 0;
@@ -87,6 +110,29 @@ $(document).keydown(function(event) {
         found = false;
         return;
       }
+    });
+  }
+  else if (event.which == 40) { // Down
+    event.preventDefault();
+    var entries = $(".header").find(".menu_entry:visible");
+    var selected = entries.filter(".menu_selected")
+    var selected_index = entries.index(selected)
+    var candidate_entries = entries.slice(selected_index+1)
+    if (selected.length == 0) {
+      selected = entries.first()
+    }
+    if (candidate_entries.length == 0) {
+      candidate_entries = entries
+    }
+    candidate_entries.filter(function(i, e){
+      if ($(this).position().left == selected.position().left) {
+        return true
+      }
+      return false
+    }).first().each(function(){
+      entries.removeClass("menu_selected");
+      $(this).addClass("menu_selected");
+      return;
     });
   }
   else if (is_enter(event)) { // validation in menu function
