@@ -3398,18 +3398,27 @@ function cell_decorator_action_q_status(e) {
   $(e).html(s)
 }
 
-function _outdated(s, max_age) {
+function datetime_age(s) {
+  // return age in minutes
   if (typeof s === 'undefined') {
-    return true
+    return
   }
   if (s == 'empty') {
-    return true
+    return
   }
   s = s.replace(/ /, "T")
   var d = new Date(s)
   var now = new Date()
-  delta = now - d
-  if (delta > max_age*60000) {
+  delta = now.getTime() - d.getTime() - now.getTimezoneOffset() * 60000
+  return delta / 60000
+}
+
+function _outdated(s, max_age) {
+  delta = datetime_age(s)
+  if (!delta) {
+    return true
+  }
+  if (delta > max_age) {
     return true
   }
   return false
@@ -3436,47 +3445,92 @@ function cell_decorator_date_no_age(e) {
 }
 
 function cell_decorator_datetime_no_age(e) {
-  $(e).addClass("nowrap")
+  cell_decorator_datetime(e)
 }
 
 function cell_decorator_date_future(e) {
-  _cell_decorator_date(e, 0)
+  cell_decorator_datetime(e)
 }
 
 function cell_decorator_datetime_status(e) {
-  _cell_decorator_datetime(e, 15)
+  $(e).attr("max_age", 15)
+  cell_decorator_datetime(e)
 }
 
 function cell_decorator_datetime_future(e) {
-  _cell_decorator_datetime(e, 0)
+  cell_decorator_datetime(e)
 }
 
 function cell_decorator_datetime_daily(e) {
-  _cell_decorator_datetime(e, 60*24)
+  $(e).attr("max_age", 1440)
+  cell_decorator_datetime(e)
 }
 
 function cell_decorator_datetime_weekly(e) {
-  _cell_decorator_datetime(e, 60*24*7)
+  $(e).attr("max_age", 10080)
+  cell_decorator_datetime(e)
 }
 
-function _cell_decorator_datetime(e, max_age) {
-  s = $(e).attr("v")
-  if (_outdated(s, max_age)) {
-    var cl = " class='nowrap highlight'"
-  } else {
-    var cl = " class='nowrap'"
+function cell_decorator_datetime(e) {
+  var s = $(e).attr("v")
+  var max_age = $(e).attr("max_age")
+  var delta = datetime_age(s)
+
+  if (!delta) {
+    $(e).html()
+    return
   }
-  $(e).html("<div"+cl+">"+s+"</div>")
+
+  if (delta > 0) {
+    var prefix = "-"
+  } else {
+    var prefix = ""
+    delta = -delta
+  }
+
+  var hour = 60
+  var day = 1440
+  var week = 10080
+  var month = 43200
+  var year = 524520
+
+  if (delta < hour) {
+    var cl = "minute icon"
+    var text = prefix + i18n.t("table.minute", {"count": Math.floor(delta)})
+    var color = "#000000"
+  } else if (delta < day) {
+    var cl = "hour icon"
+    var text = prefix + i18n.t("table.hour", {"count": Math.floor(delta/hour)})
+    var color = "#181818"
+  } else if (delta < week) {
+    var cl = "day icon "
+    var text = prefix + i18n.t("table.day", {"count": Math.floor(delta/day)})
+    var color = "#333333"
+  } else if (delta < month) {
+    var cl = "week icon "
+    var text = prefix + i18n.t("table.week", {"count": Math.floor(delta/week)})
+    var color = "#333333"
+  } else if (delta < year) {
+    var cl = "month icon"
+    var text = prefix + i18n.t("table.month", {"count": Math.floor(delta/month)})
+    var color = "#484848"
+  } else {
+    var cl = "year icon"
+    var text = prefix + i18n.t("table.year", {"count": Math.floor(delta/year)})
+    var color = "#666666"
+  } 
+  cl += " nowrap"
+
+  if (max_age && (delta > max_age)) {
+    cl += " icon-red"
+  }
+  $(e).html("<div class='"+cl+"' style='color:"+color+"' title='"+s+"'>"+text+"</div>")
 }
 
-function _cell_decorator_date(e, max_age) {
+function cell_decorator_date(e) {
+  cell_decorator_datetime(e)
   s = $(e).attr("v")
-  if (_outdated(s, max_age)) {
-    var cl = " class='nowrap highlight'"
-  } else {
-    var cl = " class='nowrap'"
-  }
-  $(e).html("<div"+cl+">"+s.split(" ")[0]+"</div>")
+  $(e).text(s.split(" ")[0])
 }
 
 function cell_decorator_env(e) {

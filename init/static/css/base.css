@@ -5,6 +5,31 @@
 	top: 2em;
 }
 
+.minute:before {
+	content: '\f017  ';
+	font-family: awesome;
+}
+.hour:before {
+	content: '\f250  ';
+	font-family: awesome;
+}
+.day:before {
+	content: '\f133  ';
+	font-family: awesome;
+}
+.week:before {
+	content: '\f272  ';
+	font-family: awesome;
+}
+.month:before {
+	content: '\f073  ';
+	font-family: awesome;
+}
+.year:before {
+	content: '\f073  ';
+	font-family: awesome;
+}
+
 .icon-orange:before {
 	color: #777700;
 }

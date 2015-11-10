@@ -429,6 +429,7 @@ class table_dashboard(HtmlTable):
                      table='dashboard',
                      field='dash_created',
                      img='time16',
+                     _class='datetime_no_age',
                      display=True,
                     ),
             'dash_updated': HtmlTableColumn(
@@ -436,6 +437,7 @@ class table_dashboard(HtmlTable):
                      table='dashboard',
                      field='dash_updated',
                      img='time16',
+                     _class='datetime_no_age',
                      display=True,
                     ),
             'dash_severity': HtmlTableColumn(

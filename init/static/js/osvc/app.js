@@ -9,6 +9,7 @@ function _app_start() {
   fset_selector("fset_selector")
   app_bindings()
   app_menu_entries_bind_click_to_load()
+  app_datetime_decorators()
 }
 
 function app_load_href(href) {
@@ -257,4 +258,21 @@ function app_bindings() {
   });
 }
 
-
+function app_datetime_decorators() {
+  var data = {
+   "date_future": cell_decorator_date_future,
+   "datetime_future": cell_decorator_datetime_future,
+   "datetime_weekly": cell_decorator_datetime_weekly,
+   "datetime_daily": cell_decorator_datetime_daily,
+   "datetime_status": cell_decorator_datetime_status,
+   "datetime_no_age": cell_decorator_datetime_no_age,
+   "date_no_age": cell_decorator_date_no_age
+  }
+  osvc.interval_datetime_decorators = setInterval(function(){
+    for (key in data) {
+      $("."+key).each(function() {
+        cell_decorators[key](this)
+      })
+    }
+  }, 5000)
+}

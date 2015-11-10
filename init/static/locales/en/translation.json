@@ -10,6 +10,18 @@
     "link_text": "This link target is stored in the collector database. You can share it with collaborators so they can see the same information, granted they have equivalent privileges."
   },
   "table": {
+    "minute": "__count__ minute",
+    "minute_plural": "__count__ minutes",
+    "hour": "__count__ hour",
+    "hour_plural": "__count__ hours",
+    "day": "__count__ day",
+    "day_plural": "__count__ days",
+    "week": "__count__ week",
+    "week_plural": "__count__ weeks",
+    "month": "__count__ month",
+    "month_plural": "__count__ months",
+    "year": "__count__ year",
+    "year_plural": "__count__ years",
     "live": "Live",
     "link": "Link",
     "link_title": "Share your view using this hyperlink",
