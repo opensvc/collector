@@ -10,6 +10,18 @@
     "link_text": "La cible de ce lien est stockée en base de données du collecteur. Vous pouvez le partager avec des collaborateurs afin qu'ils consultent les mêmes informations, si tant es qu'ils bénéficient des mêmes privilèges que vous"
   },
   "table": {
+    "minute": "__count__ minute",
+    "minute_plural": "__count__ minutes",
+    "hour": "__count__ heure",
+    "hour_plural": "__count__ heures",
+    "day": "__count__ jour",
+    "day_plural": "__count__ jours",
+    "week": "__count__ semaine",
+    "week_plural": "__count__ semaines",
+    "month": "__count__ mois",
+    "month_plural": "__count__ mois",
+    "year": "__count__ an",
+    "year_plural": "__count__ ans",
     "live": "Live",
     "link": "Lien",
     "link_title": "Partagez votre vue par cet hyperlien",
