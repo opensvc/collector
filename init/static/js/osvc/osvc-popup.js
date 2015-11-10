@@ -15,7 +15,7 @@ function osvc_popup_find_in_stack(value)
 function osvc_popup_push_to_stack(obj)
 {
 	var test = osvc_popup_find_in_stack(obj.span);
-	
+
 	if ( test == 0) {
 		_stack.push(obj);
 	}
@@ -76,9 +76,14 @@ function osvc_popup_listen_for_row_change(table_id)
 	    	// No parent
 	    }
 
-	    var id = {"span":span,"tableid":table_id,"parent":p};
+	    var id = {"span":span,"parent":p};
 
 	    _stack.push(id); // push rows in stack process
+	});
+
+	$(document).bind("DOMNodeRemoved", function (e)
+	{
+		var obj = e;
 	});
 }
 

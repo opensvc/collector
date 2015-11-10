@@ -345,7 +345,7 @@ function search_show_tab(item, tab, param, index)
 
 function filter_menu(event) {
   // MD Stack
-  osvc_popup_push_to_stack({"span":".menu","tableid":"","parent":"menu"});
+  osvc_popup_push_to_stack({"span":".menu","parent":"menu"});
 
   var menu = $(".header").find(".menu16").parents("ul").first().siblings(".menu")
   var text = searchbox = $(".search").find("input").val()
