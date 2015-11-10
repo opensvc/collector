@@ -164,7 +164,8 @@ def cron_purge_expiry():
               ('patches', 'patch_updated', None),
               ('node_ip', 'updated', None),
               ('node_users', 'updated', None),
-              ('node_groups', 'updated', None)]
+              ('node_groups', 'updated', None),
+              ('links','link_last_consultation_date',None)]
     for table, date_col, orderby in tables:
         try:
             _cron_table_purge(table, date_col, orderby=orderby)

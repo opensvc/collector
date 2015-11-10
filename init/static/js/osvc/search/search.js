@@ -258,7 +258,12 @@ function search_search()
         td.trigger("click");
       }
 
-      if (!$("#search_result").is(':visible')) toggle('search_result');
+      if (!$("#search_result").is(':visible')) 
+        {
+          toggle('search_result');
+          //MD Stack
+          osvc_popup_push_to_stack({"span":"#search_result","tableid":"","parent":"menusearch"});
+        }
       $("#search_div").removeClass("searching");
       $("#search_div").addClass("searchidle");
       search_highlight($("#search_result"), search_query)
@@ -339,6 +344,9 @@ function search_show_tab(item, tab, param, index)
 }
 
 function filter_menu(event) {
+  // MD Stack
+  osvc_popup_push_to_stack({"span":".menu","tableid":"","parent":"menu"});
+
   var menu = $(".header").find(".menu16").parents("ul").first().siblings(".menu")
   var text = searchbox = $(".search").find("input").val()
   var reg = new RegExp(text, "i");
