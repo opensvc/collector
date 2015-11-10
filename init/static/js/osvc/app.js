@@ -160,19 +160,13 @@ function app_bindings() {
     // Left
     else if (event.which == 37) {
       event.preventDefault();
-      var entries = $(".header").find(".menu_entry:visible");
-      var i = 0;
-      var prev;
-      entries.each(function(){
-        i += 1;
-        if ($(this).hasClass("menu_selected")) {
-          if (i==1) { return; }
-          entries.removeClass("menu_selected");
-          $(prev).addClass("menu_selected");
-          return;
-        }
-        prev = this;
-      });
+      var entries = $(".header").find(".menu_entry:visible")
+      var selected = entries.filter(".menu_selected")
+      entries.removeClass("menu_selected")
+      var new_selected = selected.prev().addClass("menu_selected")
+      if (new_selected.length == 0) {
+        entries.last().addClass("menu_selected")
+      }
     }
 
     // Up
@@ -203,23 +197,13 @@ function app_bindings() {
     // Right
     else if (event.which == 39) {
       event.preventDefault();
-      var entries = $(".header").find(".menu_entry:visible");
-      var i = 0;
-      var found = false;
-      entries.each(function(){
-        i += 1;
-        if ($(this).hasClass("menu_selected")) {
-          if (i==entries.length) { return; }
-          found = true;
-          return;
-        }
-        if (found) {
-          entries.removeClass("menu_selected");
-          $(this).addClass("menu_selected");
-          found = false;
-          return;
-        }
-      });
+      var entries = $(".header").find(".menu_entry:visible")
+      var selected = entries.filter(".menu_selected")
+      entries.removeClass("menu_selected")
+      var new_selected = selected.next().addClass("menu_selected")
+      if (new_selected.length == 0) {
+        entries.first().addClass("menu_selected")
+      }
     }
 
     // Down
@@ -245,6 +229,7 @@ function app_bindings() {
         $(this).addClass("menu_selected");
         return;
       });
+
     }
 
     // 'Enter' from a menu entry does a click
@@ -254,6 +239,34 @@ function app_bindings() {
         $(this).effect("highlight");
         $(this).trigger("click")
       })
+    }
+
+
+    // scroll up/down to keep selected entry displayed
+    var directional_events = [37, 38, 39, 40]
+    if (directional_events.indexOf(event.which) >= 0) {
+      var selected = entries.filter(".menu_selected")
+      var container = selected.parents(".menu,.flash").first()
+
+      // scroll down
+      var selected_y = selected.position().top + selected.outerHeight()
+      var container_y = container.position().top + container.height()
+      console.log(container_y, selected_y)
+      if (container_y < selected_y) {
+        container.stop().animate({
+          scrollTop: container.scrollTop()+selected_y-selected.outerHeight()
+        }, 500)
+      }
+  
+      // scroll up
+      var selected_y = selected.position().top
+      var container_y = container.position().top
+      console.log(container_y, selected_y)
+      if (container_y > selected_y) {
+        container.stop().animate({
+          scrollTop: container.scrollTop() + selected_y + container_y - container.height() + selected.outerHeight()
+        }, 500)
+      }
     }
   });
 }
