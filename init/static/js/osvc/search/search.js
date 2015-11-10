@@ -226,7 +226,10 @@ function search_search()
 {
   var count=0;
   var search_query = $('#search_input').val();
-  if (search_query == "") return;
+
+  if (search_query == "") {
+    return
+  }
 
   $("#search_div").removeClass("searchidle");
   $("#search_div").addClass("searching");
@@ -278,8 +281,13 @@ function search_routing(delay)
   } else if ($(".header [name=fset_selector_entries]").is(":visible")) {
     filter_fset_selector(null);
   } else {
-    clearTimeout(timer);
-    timer = setTimeout(search_search,delay);
+    // close the search result panel if no search keyword
+    if ($("#search_input").val() == "") {
+      $("#search_result").hide("fold")
+    } else {
+      clearTimeout(timer);
+      timer = setTimeout(search_search,delay);
+    }
   }
 }
 
