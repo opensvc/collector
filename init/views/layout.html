@@ -33,10 +33,7 @@
     <div class=spacer>&nbsp;</div>
     <div class=layout>
       <div class=spacer>&nbsp;</div>
-      <table id="table_main" style="width:100%"><tr><td>
-      <div align=center>{{include}}</div>
-      <script>osvc_popup_listen_for_row_change('table_main');</script>
-      </td></tr></table>
+        <div align=center>{{include}}</div>
     </div>
     <div class=spacer>&nbsp;</div>
     <div class=footer>
@@ -46,5 +43,6 @@
       </div>
     </div>
     <script> app_start() </script>
+    <script>osvc_popup_listen_for_row_change('table_main');</script>
   </body>
 </html>

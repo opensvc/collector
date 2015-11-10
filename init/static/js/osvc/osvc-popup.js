@@ -15,6 +15,7 @@ function osvc_popup_find_in_stack(value)
 function osvc_popup_push_to_stack(obj)
 {
 	var test = osvc_popup_find_in_stack(obj.span);
+	
 	if ( test == 0) {
 		_stack.push(obj);
 	}
@@ -22,11 +23,11 @@ function osvc_popup_push_to_stack(obj)
 
 function osvc_popup_remove_from_stack_by_id(value)
 {
-	var line = osvc_popup_find_in_stack(value);
+	var line = osvc_popup_find_in_stack(value)-1;
 
 	var span = _stack[line].span;
 
-	var target = $("#"+"table_dashboard").find("tr[spansum='"+ span + "']");
+	var target = $(".layout").find("tr[spansum='"+ span + "']");
 	target.next().toggle("Blind",function () {
 		target.next().remove();
 	});
@@ -45,16 +46,18 @@ function osvc_popup_remove_from_stack_by_id(value)
 
 function osvc_popup_listen_for_row_change(table_id)
 {
-	$("#"+table_id).on("click", "tr", function (e) 
-	{ // Listen for any Rows/Columns click
-		if (e.currentTarget.attributes["spansum"] === undefined) return; // Not a DOM element
+	$(document).bind("DOMNodeInserted", function (e)
+	{
+		if (e.target.className!="extraline") return;
 
-	    var span = e.currentTarget.attributes["spansum"].value; // collect identifier of the selected row
+		if (e.target.previousSibling.attributes["spansum"] === undefined) return; // Not a DOM element
+
+	    var span = e.target.previousSibling.attributes["spansum"].value; // collect identifier of the selected row
 
 	    if (span === undefined || osvc_popup_find_in_stack(span) !=0 ) // if not a tr or already in stack, stop collect
 	        return;
 
-	    var parent = e.currentTarget.parentElement;
+	    var parent = e.target.parentElement;
 	    var p = null;
 	    try {
 	    	while(1)
@@ -72,15 +75,6 @@ function osvc_popup_listen_for_row_change(table_id)
 	    {
 	    	// No parent
 	    }
-
-	    // Check if still on same table
-	    /*for(i=0;i<_stack.length;i++)
-	    {
-	    	if (_stack[i].parent == p) // Same parent = same tabulation
-	    	{
-
-	    	}
-	    }*/
 
 	    var id = {"span":span,"tableid":table_id,"parent":p};
 
@@ -100,7 +94,7 @@ function osvc_popup_remove_from_stack() // Remove last item from stack and destr
 		return;
 	}
 
-	var target = $("#"+span.tableid).find("tr[spansum='"+span.span + "']");
+	var target = $(".layout").find("tr[spansum='"+span.span + "']");
 	target.next().toggle("Blind",function () {
 		target.next().remove();
 	});

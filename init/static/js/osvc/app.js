@@ -103,9 +103,11 @@ function app_bindings() {
       $(".white_float").hide()
       $(".white_float_input").hide()
       $(".right_click_menu").hide()
-      $(".extraline").remove()
+      osvc_popup_remove_from_stack();
+      /*$(".extraline").remove()
       $(".menu").hide("fold")
       $(".menu").find("[id^=sextra]").remove()
+      */
       $("#search_input").val("")
       return
     }
