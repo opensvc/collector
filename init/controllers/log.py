@@ -109,6 +109,7 @@ class table_log(HtmlTable):
                      field='log_date',
                      img='time16',
                      display=True,
+                     _class='datetime_no_age',
                      default_filter='>-1d',
                     ),
             'log_icons': col_log_icons(
