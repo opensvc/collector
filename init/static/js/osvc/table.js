@@ -3519,6 +3519,10 @@ function cell_decorator_datetime(e) {
     var text = prefix + i18n.t("table.year", {"count": Math.floor(delta/year)})
     var color = "#666666"
   } 
+
+  if ($(e).text() == text) {
+    return
+  }
   cl += " nowrap"
 
   if (max_age && (delta > max_age)) {
