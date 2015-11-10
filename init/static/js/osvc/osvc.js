@@ -1,111 +1,3 @@
-$(document).on('click', function(event){
-  if(event.which == 2){
-    event.preventDefault()
-  }
-}).on('contextmenu', function(event){
-  if ($(event.target).is("canvas")){return}
-  event.preventDefault()
-})
-
-// Handle pop up exit
-$(document).keydown(function(event) {
-    if ( event.which == 27 ) {
-      $("input:focus").blur()
-      $("textarea:focus").blur()
-      $("#overlay").empty()
-      $(".white_float").hide()
-      $(".white_float_input").hide()
-      $(".right_click_menu").hide()
-
-      // Handle popup push/pop
-      //$(".extraline").remove()
-      osvc_popup_remove_from_stack();
-      //$(".menu").hide("fold")
-      //$(".menu").find("[id^=sextra]").remove()
-      $("#search_input").val("")
-      return
-    }
-
-    if ($('input').is(":focus")) {
-      return
-    }
-    if ($('textarea').is(":focus")) {
-      return
-    }
-
-   if (event.which == 83) // s for search
-   {
-      if (!$('#search_input').is(":focus")) 
-        {
-          event.preventDefault();
-          $('#search_input').val('');
-        }
-      $('#search_input').focus();
-   }
-   else if ( event.which == 78 ) { // n for menu, siwth the search functionnality to filter only menu
-    if (!$('#search_input').is(":focus")) 
-      {
-        event.preventDefault();
-        $(".header").find(".menu16").parents("ul").first().siblings(".menu").show("fold", function(){filter_menu()});
-        $('#search_input').val('');
-        $('#search_input').focus();
-      }
-    }
-  else if ( event.which == 9 ) // init menu key navigation
-  {
-    var menu = $(".header").find(".menu16").parents("ul").first().siblings(".menu");
-    var entries = menu.find(".menu_entry:visible");
-    $(entries[0]).addClass("menu_selected");
-  }
-  else if ((event.which == 37)||(event.which == 38)) { // Left/Up key function
-    var menu = $(".header").find(".menu16").parents("ul").first().siblings(".menu");
-    event.preventDefault();
-    var menu = $(".header").find(".menu16").parents("ul").first().siblings(".menu");
-    var entries = menu.find(".menu_entry:visible");
-    var i = 0;
-    var prev;
-    entries.each(function(){
-      i += 1;
-      if ($(this).hasClass("menu_selected")) {
-        if (i==1) { return; }
-        menu.find(".menu_entry").removeClass("menu_selected");
-        $(prev).addClass("menu_selected");
-        return;
-      }
-      prev = this;
-    });
-  }
-  else if ((event.which == 39)||(event.which == 40)) { // Right/down function
-    var menu = $(".header").find(".menu16").parents("ul").first().siblings(".menu");
-    event.preventDefault();
-    var entries = menu.find(".menu_entry:visible");
-    var i = 0;
-    var found = false;
-    entries.each(function(){
-      i += 1;
-      if ($(this).hasClass("menu_selected")) {
-        if (i==entries.length) { return; }
-        found = true;
-        return;
-      }
-      if (found) {
-        menu.find(".menu_entry").removeClass("menu_selected");
-        $(this).addClass("menu_selected");
-        found = false;
-        return;
-      }
-    });
-  }
-  else if (is_enter(event)) { // validation in menu function
-    var menu = $(".header").find(".menu16").parents("ul").first().siblings(".menu");
-    menu.find(".menu_selected:visible").each(function(){
-      event.preventDefault();;
-      $(this).effect("highlight");
-      window.location = $(this).children("a").attr("href");
-    })
-  }
-});
-
 //
 // user group tool
 //
@@ -2920,7 +2812,7 @@ function cell_decorator_svc_action_err(e) {
   var line = $(e).parent(".tl")
   var svcname = line.children("[name$=mon_svcname]").attr("v")
   url = $(location).attr("origin") + "/init/svcactions/svcactions?actions_f_svcname="+svcname+"&actions_f_status=err&actions_f_ack=!1|empty&actions_f_begin=>-30d&volatile_filters=true"
-  s = "<a class='boxed_small bgred clickable' href='"+url+"' target='_blank'>"+v+"</a>"
+  s = "<a class='action16 icon-red clickable' href='"+url+"' target='_blank'>"+v+"</a>"
   $(e).html(s)
 }
 
@@ -3034,8 +2926,16 @@ function cell_decorator_status(e) {
   if (status_outdated(line)) {
     c = "undef"
   }
-  c = c.replace(' ', '_')
-  $(e).html("<div class='boxed_small boxed_status boxed_status_"+c+"'>"+v+"</div>")
+  t = {
+    "warn": "orange",
+    "up": "green",
+    "stdby up": "green",
+    "down": "red",
+    "stdby down": "red",
+    "undef": "gray",
+    "n/a": "gray",
+  }
+  $(e).html("<div class='svc nowrap icon-"+t[c]+"'></div>")
 }
 
 function cell_decorator_svcmon_links(e) {
@@ -4445,6 +4345,11 @@ function table_set_refresh_spin(t) {
 }
 
 function table_stick(t) {
+  // bypass conditions
+  if (t.div.parents(".tableo").length > 0) {
+    return
+  }
+
   var anchor = $("<span></span>")
   anchor.uniqueId()
   anchor.insertBefore(t.e_header)

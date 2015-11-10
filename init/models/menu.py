@@ -109,6 +109,7 @@ def display(s, privs=[]):
     return True
 
 menu_entries = [
+  'key-f',
   'key-l',
   'key-n',
   'key-r',
@@ -168,6 +169,7 @@ menu_entries = [
 ]
 
 menu_entries_data = {
+  'key-f': menu_fmt_e("Filter selector", "Switch the filter applied to all displayed data", "", "f"),
   'key-l': menu_fmt_e("Link", "Show url to share your filters", "", "l"),
   'key-n': menu_fmt_e("Navigation", "Open the navigation menu", "", "n"),
   'key-r': menu_fmt_e("Refresh", "Reload table data", "", "r"),
@@ -230,16 +232,6 @@ menu_entries_data = {
 response.menu = [
   [DIV(T('Navigation'), _class="menu16"), False, '',
     [
-    [T('Shortcuts'), False, '',
-         [
-             [menu_entries_data['key-l'], display('key-l'), ''],
-             [menu_entries_data['key-n'], display('key-n'), ''],
-             [menu_entries_data['key-r'], display('key-r'), ''],
-             [menu_entries_data['key-s'], display('key-s'), ''],
-             [menu_entries_data['key-esc'], display('key-esc'), ''],
-             [menu_entries_data['help-api'], display('help-api'), URL(request.application,'rest','doc')],
-         ]
-    ],
     [T('Views'), False, '',
          [
              [menu_entries_data['view-dashboard'], display('view-dashboard'), URL(request.application,'dashboard','index')],
@@ -309,6 +301,17 @@ response.menu = [
              [menu_entries_data['adm-charts'], display('adm-charts'), URL(request.application,'charts','charts_admin')],
              [menu_entries_data['adm-reports'], display('adm-reports'), URL(request.application,'charts','reports_admin')],
              [menu_entries_data['adm-tags'], display('adm-tags'), URL(request.application,'tags','tags')],
+         ]
+    ],
+    [T('Shortcuts'), False, '',
+         [
+             [menu_entries_data['key-f'], display('key-f'), ''],
+             [menu_entries_data['key-l'], display('key-l'), ''],
+             [menu_entries_data['key-n'], display('key-n'), ''],
+             [menu_entries_data['key-r'], display('key-r'), ''],
+             [menu_entries_data['key-s'], display('key-s'), ''],
+             [menu_entries_data['key-esc'], display('key-esc'), ''],
+             [menu_entries_data['help-api'], display('help-api'), URL(request.application,'rest','doc')],
          ]
     ],
     ]

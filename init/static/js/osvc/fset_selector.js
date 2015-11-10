@@ -156,7 +156,7 @@ function fset_selector_load_area(o) {
       o.add_fset(data.id, data.fset_name)
     }
 
-    o.area.find("[fset_id="+current_fset_id+"]").addClass("menu_selected")
+    o.area.find("[fset_id="+current_fset_id+"]").addClass("menu_current")
   })
 }
 
