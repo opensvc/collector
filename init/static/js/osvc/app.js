@@ -175,7 +175,13 @@ function app_bindings() {
       var entries = $(".header").find(".menu_entry:visible");
       var selected = entries.filter(".menu_selected")
       var selected_index = entries.index(selected)
-      var candidate_entries = entries.slice(0, selected_index)
+      var selected_y = selected.position().top
+      var first_y = entries.first().position().top
+      if (selected_y == first_y) {
+        var candidate_entries = entries
+      } else {
+        var candidate_entries = entries.slice(0, selected_index)
+      }
       if (selected.length == 0) {
         selected = entries.first()
       }
@@ -212,19 +218,35 @@ function app_bindings() {
       var entries = $(".header").find(".menu_entry:visible");
       var selected = entries.filter(".menu_selected")
       var selected_index = entries.index(selected)
-      var candidate_entries = entries.slice(selected_index+1)
+      var selected_y = selected.position().top
+      var last_y = entries.last().position.top
+      if (selected_y == last_y) {
+        var candidate_entries = entries
+      } else {
+        var candidate_entries = entries.slice(selected_index+1)
+      }
       if (selected.length == 0) {
         selected = entries.first()
       }
       if (candidate_entries.length == 0) {
         candidate_entries = entries
       }
-      candidate_entries.filter(function(i, e){
+      found = candidate_entries.filter(function(i, e){
         if ($(this).position().left == selected.position().left) {
           return true
         }
         return false
-      }).first().each(function(){
+      }).first()
+      if (found.length == 0) {
+        // wrap to top
+        found = entries.filter(function(i, e){
+          if ($(this).position().left == selected.position().left) {
+            return true
+          }
+          return false
+        }).first()
+      }
+      found.each(function(){
         entries.removeClass("menu_selected");
         $(this).addClass("menu_selected");
         return;
@@ -251,7 +273,6 @@ function app_bindings() {
       // scroll down
       var selected_y = selected.position().top + selected.outerHeight()
       var container_y = container.position().top + container.height()
-      console.log(container_y, selected_y)
       if (container_y < selected_y) {
         container.stop().animate({
           scrollTop: container.scrollTop()+selected_y-selected.outerHeight()
@@ -261,7 +282,6 @@ function app_bindings() {
       // scroll up
       var selected_y = selected.position().top
       var container_y = container.position().top
-      console.log(container_y, selected_y)
       if (container_y > selected_y) {
         container.stop().animate({
           scrollTop: container.scrollTop() + selected_y + container_y - container.height() + selected.outerHeight()
