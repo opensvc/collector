@@ -93,14 +93,16 @@ class table_workflows(HtmlTable):
                 field = 'create_date',
                 display = True,
                 table = 'workflows',
-                img = 'time16'
+                img = 'time16',
+                _class="datetime_no_age",
             ),
             'last_update': HtmlTableColumn(
                 title = 'Last updated',
                 field = 'last_update',
                 display = True,
                 table = 'workflows',
-                img = 'time16'
+                img = 'time16',
+                _class="datetime_no_age",
             ),
             'form_name': HtmlTableColumn(
                 title = 'Name',
@@ -256,7 +258,8 @@ class table_forms(HtmlTable):
                 field = 'form_created',
                 display = False,
                 table = 'v_forms',
-                img = 'time16'
+                img = 'time16',
+                _class="datetime_no_age",
             ),
             'form_author': HtmlTableColumn(
                 title = 'Author',

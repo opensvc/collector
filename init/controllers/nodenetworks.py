@@ -198,6 +198,7 @@ class table_nodenetworks(HtmlTable):
                      field='addr_updated',
                      img='net16',
                      display=True,
+                     _class="datetime_no_age",
                     ),
         })
         for c in self.cols:

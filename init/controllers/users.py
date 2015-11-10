@@ -131,6 +131,7 @@ class table_users(HtmlTable):
                      field='last',
                      img='time16',
                      display=True,
+                     _class="datetime_no_age",
                     ),
         }
         self.colprops['domains'].t = self

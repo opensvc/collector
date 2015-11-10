@@ -746,6 +746,7 @@ class table_comp_rulesets(HtmlTable):
                      table='v_comp_rulesets',
                      display=True,
                      img='comp16',
+                     _class="datetime_no_age",
                     ),
             'teams_responsible': HtmlTableColumn(
                      title='Teams responsible',
@@ -2393,6 +2394,7 @@ filters_colprops = {
              field='f_updated',
              display=True,
              img='time16',
+             _class="datetime_no_age",
             ),
     'f_author': HtmlTableColumn(
              title='Author',
@@ -2454,6 +2456,7 @@ class table_comp_filtersets(HtmlTable):
                      field='fset_updated',
                      display=False,
                      img='time16',
+                     _class="datetime_no_age",
                     ),
             'fset_author': HtmlTableColumn(
                      title='Fset author',
@@ -3303,6 +3306,7 @@ class table_comp_moduleset(HtmlTable):
                      field='modset_mod_updated',
                      display=True,
                      img='time16',
+                     _class="datetime_no_age",
                     ),
             'modset_mod_author': HtmlTableColumn(
                      title='Author',

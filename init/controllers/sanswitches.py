@@ -87,6 +87,7 @@ class table_sanswitches(HtmlTable):
                      field='sw_updated',
                      img='time16',
                      display=True,
+                     _class="datetime_no_age",
                     ),
             'sw_fabric': HtmlTableColumn(
                      title='Switch Fabric',

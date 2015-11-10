@@ -126,6 +126,7 @@ class table_nodesan(HtmlTable):
                      field='array_updated',
                      img='time16',
                      display=False,
+                     _class="datetime_no_age",
                     ),
             'array_level': HtmlTableColumn(
                      title='Array Level',
