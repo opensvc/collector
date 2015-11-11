@@ -236,6 +236,17 @@ form :focus {
 	border: 2px solid red;
 }
 
+.theader_filters {
+	background-color: #e0e1cd;
+	padding: 0.2em;
+	margin-top: 0.3em;
+	margin-bottom: 0;
+}
+
+.theader_filters > th {
+	font-weight: normal;
+}
+
 .theader_slim {
 	background-color: #e0e1cd;
 	min-height: 5px;
@@ -1276,14 +1287,6 @@ div.svcstatus td {
 	padding: 0.3em;
 	overflow: auto;
 	display: block;
-}
-
-.sym_headers {
-	background-color: #e0e1cd;
-	color: black;
-	padding: 0.2em;
-	margin-top: 0.3em;
-	margin-bottom: 0;
 }
 
 .sym_inputs {
@@ -3153,8 +3156,6 @@ div.containertrans {
 /* begin small screen */
 @media all and (max-width:640px) {
 	.theader {
-		background-color: #e0e1cd;
-		color: black;
 		padding: 0;
 		margin-top: 0;
 		margin-bottom: 0;

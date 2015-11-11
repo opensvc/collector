@@ -601,18 +601,6 @@ class HtmlTable(object):
             l += map(self.filter_key, self.cols+self.additional_filters)
         return l
 
-    def table_header(self):
-        cells = []
-        if self.checkboxes:
-            cells.append(TH(''))
-        if self.extrarow:
-            cells.append(TD(''))
-        for c in self.cols:
-            cells.append(TH(T(self.colprops[c].title),
-                            _class=self.colprops[c]._class,
-                            _name=self.col_key(c)))
-        return TR(cells, _class='theader')
-
     def format_extrarow(self, o):
         return ""
 
@@ -754,56 +742,6 @@ class HtmlTable(object):
                 self.last = o
         return lines, line_count
 
-    def header_slim(self):
-        inputs = []
-        if self.checkboxes:
-            inputs.append(TD(''))
-        if self.extrarow:
-            inputs.append(TD(''))
-        for c in self.cols:
-            inputs.append(
-              TD(
-                '',
-                 _name=self.col_key(c),
-              ),
-            )
-        return TR(
-          inputs,
-          _class='theader_slim',
-          _onclick="""$("[name=filters]").toggle()"""
-        )
-
-    def table_inputs(self):
-        inputs = []
-        if self.checkboxes:
-            inputs.append(TD(
-                            INPUT(
-                              _type='checkbox',
-                              _class='ocb',
-                              _id=self.master_checkbox_key(),
-                              _onclick="check_all('%(name)s', this.checked);"%dict(name=self.checkbox_name_key())
-                            ),
-                            LABEL(
-                              _for=self.master_checkbox_key(),
-                            ),
-                          ))
-        if self.extrarow:
-            inputs.append(TD(''))
-        for c in self.cols:
-            filter_text = self.filter_parse(c)
-            inputs.append(TD(
-                            DIV(
-                              INPUT(
-                                _id=self.filter_key(c),
-                                _name="fi",
-                                _value=self.filter_parse(c),
-                              ),
-                            ),
-                            _name=self.col_key(c),
-                            _class=self.colprops[c]._class,
-                          ))
-        return TR(inputs, _name="filters", _class='sym_headers')
-
     def table_additional_inputs(self):
         inputs = []
         for c in self.additional_filters:
@@ -862,11 +800,6 @@ class HtmlTable(object):
         self.set_column_visibility()
         lines, line_count = self.table_lines()
 
-        if self.filterable:
-            inputs = self.table_inputs()
-        else:
-            inputs = None
-
         if self.filterable and len(self.additional_filters) > 0:
             additional_filters = DIV(
               B(T('Additional filters')),
@@ -892,12 +825,6 @@ class HtmlTable(object):
             additional_tools = SPAN()
 
         table_lines = []
-        if self.headers:
-            table_lines.append(self.table_header())
-
-        if self.headers and inputs is not None:
-            table_lines.append(inputs)
-            table_lines.append(self.header_slim())
 
         if len(lines) > 0:
             table_lines += lines
@@ -955,11 +882,13 @@ table_init({
  'dataable': %(dataable)s,
  'linkable': %(linkable)s,
  'dbfilterable': %(dbfilterable)s,
+ 'filterable': %(filterable)s,
  'refreshable': %(refreshable)s,
  'bookmarkable': %(bookmarkable)s,
  'exportable': %(exportable)s,
  'columnable': %(columnable)s,
  'commonalityable': %(commonalityable)s,
+ 'headers': %(headers)s,
  'wsable': %(wsable)s,
  'pageable': %(pageable)s
 })
@@ -984,6 +913,7 @@ function ajax_enter_submit_%(id)s(event){%(ajax_enter_submit)s};
                    dataable=str(self.dataable).lower(),
                    linkable=str(self.linkable).lower(),
                    dbfilterable=str(self.dbfilterable).lower(),
+                   filterable=str(self.filterable).lower(),
                    refreshable=str(self.refreshable).lower(),
                    bookmarkable=str(self.bookmarkable).lower(),
                    exportable=str(self.exportable).lower(),
@@ -991,6 +921,7 @@ function ajax_enter_submit_%(id)s(event){%(ajax_enter_submit)s};
                    columnable=str(self.columnable).lower(),
                    commonalityable=str(self.commonalityable).lower(),
                    wsable=str(self.wsable).lower(),
+                   headers=str(self.headers).lower(),
                    action_menu=str(self.action_menu),
                 ),
               ),
