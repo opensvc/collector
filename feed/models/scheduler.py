@@ -635,14 +635,18 @@ def _update_asset(vars, vals, auth):
     update_dash_node_without_maintenance_end(auth[1])
     update_dash_node_without_asset(auth[1])
 
-def _resmon_clean(node, svcname):
+def _resmon_clean(node, svcname, threshold):
+    try:
+        threshold = datetime.datetime.strptime(threshold.strip("'").split(".")[0], "%Y-%m-%d %H:%M:%S")
+    except:
+        threshold = datetime.datetime.now()
     if node is None or node == '':
         return
     if svcname is None or svcname == '':
         return
     q = db.resmon.nodename==node.strip("'")
     q &= db.resmon.svcname==svcname.strip("'")
-    q &= db.resmon.updated < datetime.datetime.now() - datetime.timedelta(minutes=10)
+    q &= db.resmon.updated < threshold - datetime.timedelta(minutes=10)
     db(q).delete()
     db.commit()
 
@@ -661,6 +665,7 @@ def __resmon_update(vars, vals):
         return
     for a,b in zip(vars, vals[0]):
         h[a] = b
+    updated = h.get("updated")
     if 'nodename' in h and 'svcname' in h:
         nodename, vmname, vmtype = translate_encap_nodename(h['svcname'], h['nodename'])
         if nodename is not None:
@@ -674,9 +679,10 @@ def __resmon_update(vars, vals):
             if v[idx] == "'None'":
                 vals[i][idx] = "n/a"
     elif type(vals) == list:
-        vals[idx] = "n/a"
+        if vals[idx] == "'None'":
+            vals[idx] = "n/a"
     generic_insert('resmon', vars, vals)
-    _resmon_clean(h['nodename'], h['svcname'])
+    _resmon_clean(h['nodename'], h['svcname'], updated)
 
 def _register_disk(vars, vals, auth):
     h = {}
