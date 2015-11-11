@@ -2638,9 +2638,10 @@ var os_class_h = {
 
 function cell_decorator_boolean(e) {
   var v = $(e).attr("v")
+  true_vals = [1, "1", "T", "True", true]
   if (typeof v === "undefined") {
     var cl = ""
-  } else if (v) {
+  } else if (true_vals.indexOf(v) >= 0) {
     var cl = "toggle-on"
   } else {
     var cl = "toggle-off"
