@@ -51,6 +51,7 @@ class table_sanswitches(HtmlTable):
                      field='sw_portnego',
                      img='net16',
                      display=True,
+                     _class='boolean',
                     ),
             'sw_porttype': HtmlTableColumn(
                      title='Port Type',

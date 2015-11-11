@@ -119,6 +119,7 @@ class table_users(HtmlTable):
                      field='lock_filter',
                      img='attach16',
                      display=True,
+                     _class='boolean',
                     ),
             'fset_name': HtmlTableColumn(
                      title='Filterset',
