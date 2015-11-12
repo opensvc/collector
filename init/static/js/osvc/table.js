@@ -455,7 +455,13 @@ function table_reset_column_filters(t, c, val) {
   t.e_header_filters.find("th").each(function() {
     var input = $(this).find("input")
     var label = $(this).find(".col_filter_label")
-    input.val()
+    if ((c in t.colprops) && (t.colprops[c].force_filter != "")) {
+      input.val(t.colprops[c].force_filter)
+    } else if ((c in t.colprops) && (t.colprops[c].default_filter != "")) {
+      input.val(t.colprops[c].default_filter)
+    } else {
+      input.val("")
+    }
     label.empty()
     $(this).find(".clear16,.invert16").hide()
   })
@@ -559,8 +565,12 @@ function table_add_column_header_input(t, tr, c) {
   var input = $("<input name='fi'>")
   var value_to_filter_tool = $("<span class='clickable values_to_filter'></span><br>")
   var value_cloud = $("<span></span>")
+  var input_id = t.id+"_f_"+c
 
-  input.attr("id", t.id+"_f_"+c)
+  input.attr("id", input_id)
+  if (t.options.request_vars && (input_id in t.options.request_vars)) {
+    input.val(t.options.request_vars[input_id])
+  }
   value_cloud.attr("id", t.id+"_fc_"+c)
 
   input_float.append(input)
@@ -1117,26 +1127,6 @@ function filter_submit(id,k,v){
   osvc.tables[id].refresh_column_filters()
 };
 
-function table_delete_column_filter(t, c) {
-  if (t.options.volatile_filters) {
-    return
-  }
-  var data = {
-    'bookmark': 'current',
-    'col_tableid': t.id,
-    'col_name': c,
-  }
-  services_osvcdeleterest("R_USERS_SELF_TABLE_FILTERS", "", "", data, function(jd) {
-    if (jd.error) {
-      $(".flash").show("blind").html(services_error_fmt(jd))
-      return
-    }
-  },
-  function(xhr, stat, error) {
-    $(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
-  })
-}
-
 function table_save_column_filters(t) {
   if (t.options.volatile_filters) {
     return
@@ -1250,8 +1240,16 @@ function table_bind_filter_input_events(t) {
   // clear column filter click
   inputs.parent().siblings(".clear16").bind("click", function(event) {
     var c = $(this).parent().attr("col")
-    t.e_header_filters.find("th[col="+c+"]").find("input").val("")
-    t.delete_column_filter(c)
+    var input = t.e_header_filters.find("th[col="+c+"]").find("input")
+    console.log(t.colprops)
+    if ((c in t.colprops) && (t.colprops[c].force_filter != "")) {
+      input.val(t.colprops[c].force_filter)
+    } else if ((c in t.colprops) && (t.colprops[c].default_filter != "")) {
+      input.val(t.colprops[c].default_filter)
+    } else {
+      input.val("")
+    }
+    t.save_column_filters(c)
     t.refresh_column_filters()
     t.refresh()
   })
@@ -4232,9 +4230,6 @@ function table_insert_bookmark(t, name) {
         return
       }
 
-      // flush the column filters
-      t.e_header_filters.find("[name=fi]").val("")
-
       // update the column filters
       t.reset_column_filters()
       for (var i=0; i<jd.data.length; i++) {
@@ -4862,9 +4857,6 @@ function table_init(opts) {
     },
     'save_column_filters': function(){
       table_save_column_filters(this)
-    },
-    'delete_column_filter': function(c){
-      table_delete_column_filter(this, c)
     }
   }
 
@@ -4881,6 +4873,7 @@ function table_init(opts) {
   t.add_column_headers_slim()
   t.add_column_headers_input()
   t.add_column_headers()
+  t.refresh_column_filters()
   t.add_commonality()
   t.add_column_selector()
   t.add_csv()
@@ -4897,7 +4890,7 @@ function table_init(opts) {
   t.scroll_enable()
   t.stick()
 
-  t.get_column_filters(function(t){
+  function init_post_get_column_filters() {
     if (t.dataable) {
       t.refresh()
     } else {
@@ -4909,6 +4902,28 @@ function table_init(opts) {
       t.bind_action_menu()
       t.restripe_lines()
     }
-  })
+  }
+
+  function has_filter_in_request_vars() {
+    if (!t.options.request_vars) {
+      return false
+    }
+    for (c in t.colprops) {
+      if (t.id+"_f_"+c in t.options.request_vars) {
+        return true
+      }
+    }
+    return false
+  }
+
+  if (t.options.volatile_filters || has_filter_in_request_vars()) {
+    // though column filters can still be set through the options.request_vars
+    init_post_get_column_filters()
+  } else {
+    // get the column filters from the collector
+    t.get_column_filters(
+      init_post_get_column_filters
+    )
+  }
 }
 

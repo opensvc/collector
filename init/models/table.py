@@ -804,7 +804,8 @@ var ti_%(id)s = setInterval(function(){
      'commonalityable': %(commonalityable)s,
      'headers': %(headers)s,
      'wsable': %(wsable)s,
-     'pageable': %(pageable)s
+     'pageable': %(pageable)s,
+     'request_vars': %(request_vars)s
     })
   }
 }, 200)
@@ -837,6 +838,7 @@ var ti_%(id)s = setInterval(function(){
                    wsable=str(self.wsable).lower(),
                    headers=str(self.headers).lower(),
                    action_menu=str(self.action_menu),
+                   request_vars=json.dumps(request.vars),
                 ),
               ),
               _class='tableo',
