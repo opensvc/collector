@@ -865,33 +865,38 @@ class HtmlTable(object):
               DIV(XML('&nbsp;'), _class='spacer'),
               SCRIPT(
                 """
-table_init({
- 'id': '%(id)s',
- 'pager': %(pager)s,
- 'extrarow': %(extrarow)s,
- 'extrarow_class': "%(extrarow_class)s",
- 'checkboxes': %(checkboxes)s,
- 'ajax_url': '%(ajax_url)s',
- 'span': %(span)s,
- 'columns': %(columns)s,
- 'colprops': %(colprops)s,
- 'volatile_filters': "%(volatile_filters)s",
- 'visible_columns': %(visible_columns)s,
- 'child_tables': %(child_tables)s,
- 'action_menu': %(action_menu)s,
- 'dataable': %(dataable)s,
- 'linkable': %(linkable)s,
- 'dbfilterable': %(dbfilterable)s,
- 'filterable': %(filterable)s,
- 'refreshable': %(refreshable)s,
- 'bookmarkable': %(bookmarkable)s,
- 'exportable': %(exportable)s,
- 'columnable': %(columnable)s,
- 'commonalityable': %(commonalityable)s,
- 'headers': %(headers)s,
- 'wsable': %(wsable)s,
- 'pageable': %(pageable)s
-})
+var ti_%(id)s = setInterval(function(){
+  if (i18n.isInitialized()) {
+    clearInterval(ti_%(id)s)
+    table_init({
+     'id': '%(id)s',
+     'pager': %(pager)s,
+     'extrarow': %(extrarow)s,
+     'extrarow_class': "%(extrarow_class)s",
+     'checkboxes': %(checkboxes)s,
+     'ajax_url': '%(ajax_url)s',
+     'span': %(span)s,
+     'columns': %(columns)s,
+     'colprops': %(colprops)s,
+     'volatile_filters': "%(volatile_filters)s",
+     'visible_columns': %(visible_columns)s,
+     'child_tables': %(child_tables)s,
+     'action_menu': %(action_menu)s,
+     'dataable': %(dataable)s,
+     'linkable': %(linkable)s,
+     'dbfilterable': %(dbfilterable)s,
+     'filterable': %(filterable)s,
+     'refreshable': %(refreshable)s,
+     'bookmarkable': %(bookmarkable)s,
+     'exportable': %(exportable)s,
+     'columnable': %(columnable)s,
+     'commonalityable': %(commonalityable)s,
+     'headers': %(headers)s,
+     'wsable': %(wsable)s,
+     'pageable': %(pageable)s
+    })
+  }
+}, 200)
 function ajax_submit_%(id)s(){%(ajax_submit)s};
 function ajax_enter_submit_%(id)s(event){%(ajax_enter_submit)s};
 """%dict(
