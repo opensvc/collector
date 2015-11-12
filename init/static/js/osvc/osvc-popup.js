@@ -44,15 +44,21 @@ function osvc_popup_remove_from_stack_by_id(value)
 	}
 }
 
-function osvc_popup_listen_for_row_change(table_id)
+function osvc_popup_stack_listener()
 {
 	$(document).bind("DOMNodeInserted", function (e)
 	{
-		if (e.target.className!="extraline") return;
-
-		if (e.target.previousSibling.attributes["spansum"] === undefined) return; // Not a DOM element
-
-	    var span = e.target.previousSibling.attributes["spansum"].value; // collect identifier of the selected row
+		var span ="";
+		if (e.target.className == "extraline") 
+		{ 
+	    	span = e.target.previousSibling.attributes["spansum"].value;
+	    }
+	    else if (e.target.className == "white_float action_menu")
+	    {
+	    	span = ".white_float";
+	    }
+	    else 
+	    	return;
 
 	    if (span === undefined || osvc_popup_find_in_stack(span) !=0 ) // if not a tr or already in stack, stop collect
 	        return;
@@ -83,7 +89,22 @@ function osvc_popup_listen_for_row_change(table_id)
 
 	$(document).bind("DOMNodeRemoved", function (e)
 	{
+		return;
 		var obj = e;
+
+		if (e.target.className == "extraline") return; // if remove by ESC
+
+		try {
+	    	var sarray = e.target.offsetParent.attributes["id"].value.split("_"); // collect identifier of the selected row
+		}
+		catch (e)
+		{
+			return; // Not a valid stackable element
+		}
+	    var span = sarray[sarray.length-1];
+
+	    osvc_popup_remove_from_stack_by_id(span);
+	    osvc_popup_delete_from_stack({"span":span,"parent":""});
 	});
 }
 
@@ -93,7 +114,12 @@ function osvc_popup_remove_from_stack() // Remove last item from stack and destr
 
 	var span = _stack.pop();
 
-	if (span.parent=="menuflash" || span.parent=="menusearch" || span.parent=="menu") // If menu element 
+	osvc_popup_delete_from_stack(span);
+}
+
+function osvc_popup_delete_from_stack(span)
+{
+	if (span.parent=="menuflash" || span.parent=="menusearch" || span.parent=="menu" || span.span==".white_float") // If menu element 
 	{
 		$(span.span).hide("fold");
 		return;
@@ -106,7 +132,7 @@ function osvc_popup_remove_from_stack() // Remove last item from stack and destr
 	// Handle children remove
 	for(i=0;i<_stack.length;i++)
 	{
-		if (_stack.parent == span.span) // Children found
+		if (_stack[i].parent == span.span) // Children found
 		{
 			_stack.splice(i,1); // destroy it
 		}

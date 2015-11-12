@@ -3,11 +3,7 @@
 //
 function bind_tabs(id, callbacks, active_id) {
   $("#"+id).find('.closetab').click(function () {
-    // MD Handle PopStack function
-    //$("#"+id).remove();
-    var base  = id.split("_");
-    var sid = base[base.length-1];
-    osvc_popup_remove_from_stack_by_id(sid);
+    $("#"+id).remove();
   })
   $("#"+id).find('[id^=litab]').click(function () {
     var _id = $(this).attr('id')
@@ -61,11 +57,7 @@ function tabs_init(o) {
 
   // empty tabs on click closetab
   o.closetab.bind("click", function() {
-    //o.div.remove();
-    //MD use of ID , 3 third value
-    var base  = id.split("_");
-    var sid = base[base.length-1];
-    osvc_popup_remove_from_stack_by_id(sid);
+  o.div.remove();
   })
 }
 

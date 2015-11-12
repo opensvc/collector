@@ -4,6 +4,7 @@ function app_start() {
 
 function _app_start() {
   $(document).i18n()
+  osvc_popup_stack_listener();
   search("layout_search_tool")
   services_feed_self_and_group()
   fset_selector("fset_selector")
@@ -100,7 +101,8 @@ function app_bindings() {
       $("input:focus").blur()
       $("textarea:focus").blur()
       $("#overlay").empty()
-      $(".white_float").hide()
+      
+      //$(".white_float").hide()
       $(".white_float_input").hide()
       $(".right_click_menu").hide()
       osvc_popup_remove_from_stack();

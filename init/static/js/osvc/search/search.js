@@ -265,7 +265,7 @@ function search_search()
         {
           toggle('search_result');
           //MD Stack
-          osvc_popup_push_to_stack({"span":"#search_result","tableid":"","parent":"menusearch"});
+          osvc_popup_push_to_stack({"span":"#search_result","parent":"menusearch"});
         }
       $("#search_div").removeClass("searching");
       $("#search_div").addClass("searchidle");
@@ -352,9 +352,6 @@ function search_show_tab(item, tab, param, index)
 }
 
 function filter_menu(event) {
-  // MD Stack
-  osvc_popup_push_to_stack({"span":".menu","parent":"menu"});
-
   var menu = $(".header").find(".menu16").parents("ul").first().siblings(".menu")
   var text = searchbox = $(".search").find("input").val()
   var reg = new RegExp(text, "i");
