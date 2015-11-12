@@ -1241,7 +1241,6 @@ function table_bind_filter_input_events(t) {
   inputs.parent().siblings(".clear16").bind("click", function(event) {
     var c = $(this).parent().attr("col")
     var input = t.e_header_filters.find("th[col="+c+"]").find("input")
-    console.log(t.colprops)
     if ((c in t.colprops) && (t.colprops[c].force_filter != "")) {
       input.val(t.colprops[c].force_filter)
     } else if ((c in t.colprops) && (t.colprops[c].default_filter != "")) {
@@ -2652,7 +2651,7 @@ function table_link(t){
   var args = "clear_filters=true&discard_filters=true"
 
   // fset
-  var current_fset = $("[name=fset_selector]").find(":selected").attr("id")
+  var current_fset = $("[name=fset_selector]").find("span").attr("fset_id")
   args += "&dbfilter="+current_fset
 
   t.e_header_filters.find("input[name=fi]").each(function(){
