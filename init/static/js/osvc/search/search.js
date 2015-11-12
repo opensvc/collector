@@ -265,7 +265,7 @@ function search_search()
         {
           toggle('search_result');
           //MD Stack
-          osvc_popup_push_to_stack({"span":"#search_result","parent":"menusearch"});
+          //osvc_popup_push_to_stack({"span":"#search_result","parent":"menusearch"});
         }
       $("#search_div").removeClass("searching");
       $("#search_div").addClass("searchidle");

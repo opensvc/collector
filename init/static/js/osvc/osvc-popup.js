@@ -2,110 +2,144 @@
 
 var _stack = [];
 
-function osvc_popup_find_in_stack(value)
+var _stack_className = "stackable";
+var _stackcounter = 0;
+
+function osvc_popup_delete_children(value)
 {
-	for(i=0;i<_stack.length;i++)
-	{
-		if (value == _stack[i].span)
-			return i+1;
-	}
-	return 0;
-}
-
-function osvc_popup_push_to_stack(obj)
-{
-	var test = osvc_popup_find_in_stack(obj.span);
-
-	if ( test == 0) {
-		_stack.push(obj);
-	}
-}
-
-function osvc_popup_remove_from_stack_by_id(value)
-{
-	var line = osvc_popup_find_in_stack(value)-1;
-
-	var span = _stack[line].span;
-
-	var target = $(".layout").find("tr[spansum='"+ span + "']");
-	target.next().toggle("Blind",function () {
-		target.next().remove();
-	});
-
-	_stack.splice(line,1); // remove the element
-
 	// Handle children remove
 	for(i=0;i<_stack.length;i++)
 	{
-		if (_stack[i].parent == span) // Children found
+		if (_stack[i].parent == value) // Children found
 		{
+			console.log("splice children : " + _stack[i].span + ' for parent : ' + value);
+			//osvc_popup_delete_children(_stack[i].span);
 			_stack.splice(i,1); // destroy it
 		}
 	}
 }
 
+function osvc_popup_delete_by_id(value)
+{
+	for(i=0;i<_stack.length;i++)
+	{
+		if (_stack[i].span == value)
+		{
+			console.log("splice element :" + _stack[i].span + ' for span : ' + value);
+			_stack.splice(i,1);
+			osvc_popup_delete_children(value);
+		}
+	}
+
+}
+
 function osvc_popup_stack_listener()
 {
-	$(document).bind("DOMNodeInserted", function (e)
-	{
-		var span ="";
-		if (e.target.className == "extraline") 
-		{ 
-	    	span = e.target.previousSibling.attributes["spansum"].value;
-	    }
-	    else if (e.target.className == "white_float action_menu")
-	    {
-	    	span = ".white_float";
-	    }
-	    else 
-	    	return;
+	var target = document;//.querySelector('');
+	 
+	// create an observer instance
+	var observer = new MutationObserver(function(mutations) {
+	  mutations.forEach(function(mutation) {
+	  	var classe ="";
+	  	if (mutation.addedNodes.length !=0 || mutation.removedNodes.length !=0) // Add or remove nodes
+		  	{
+		  	try {
 
-	    if (span === undefined || osvc_popup_find_in_stack(span) !=0 ) // if not a tr or already in stack, stop collect
-	        return;
+		  		for(i=0;i<mutation.addedNodes.length;i++)
+		  		{
+		  			if (mutation.addedNodes[i].className.indexOf(_stack_className) != -1)
+		  			{
+		  				if (mutation.addedNodes[i].attributes !== undefined &&
+		  					mutation.addedNodes[i].attributes["style"] != null) 
+		  				{
+		  					if (mutation.addedNodes[i].attributes["style"].value.indexOf("display: none") != -1)
+		  						break;
+		  				}
+		  				// Gather parent
+		  				var parent = mutation.addedNodes[i].parentElement;
+					    var p = null;
+					    try {
+					    	while(1)
+					    	{
+					    		parent = parent.parentElement;//.parentElement.parentElement.previousSibling.attributes["spansum"];
+					    		if (parent === undefined) break;
+					    		else if (parent.className.indexOf("stackable") != -1) 
+					    		{
+					    			p = parent.attributes["stack_id"].value;
+					    			break;
+					    		}
+					    	}
+					    }
+					    catch (e)
+					    {
+					    	// No parent
+					    }
+					    var sc = "A"+ (++_stackcounter).toString();
+		  				$(mutation.addedNodes[i]).attr('stack_id', sc);
+		  				_stack.push({"span":sc,"parent" : p});
+		  				console.log("add stack for " + mutation.addedNodes[i].className + " : " + sc);
+		  			}
+		  		}
+		  	 	for(i=0;i<mutation.removedNodes.length;i++)
+		  		{
+		  			if (mutation.removedNodes[i].className.indexOf(_stack_className) != -1)
+		  			{
+		  				if (mutation.removedNodes[i].attributes["stack_id"] != undefined)
+		  				{
+		  					var s = mutation.removedNodes[i].attributes["stack_id"].value;
+		  					console.log("del stack for " + mutation.removedNodes[i].className + " : " + s);
+		  					osvc_popup_delete_by_id(s);
+		  				}
+		  			}
+		  		}
+			}
+			catch (e)
+			{
 
-	    var parent = e.target.parentElement;
-	    var p = null;
-	    try {
-	    	while(1)
-	    	{
-	    		parent = parent.parentElement;//.parentElement.parentElement.previousSibling.attributes["spansum"];
-	    		if (parent === undefined) break;
-	    		else if (parent.className == "extraline") 
-	    		{
-	    			p = parent.previousSibling.attributes["spansum"].value;
-	    			break;
-	    		}
-	    	}
-	    }
-	    catch (e)
-	    {
-	    	// No parent
-	    }
-
-	    var id = {"span":span,"parent":p};
-
-	    _stack.push(id); // push rows in stack process
-	});
-
-	$(document).bind("DOMNodeRemoved", function (e)
-	{
-		return;
-		var obj = e;
-
-		if (e.target.className == "extraline") return; // if remove by ESC
-
-		try {
-	    	var sarray = e.target.offsetParent.attributes["id"].value.split("_"); // collect identifier of the selected row
+			}
 		}
-		catch (e)
-		{
-			return; // Not a valid stackable element
-		}
-	    var span = sarray[sarray.length-1];
+		else // Show/hide
+		  	{
+		  	try {
+		  		if (mutation.target.className.indexOf(_stack_className) != -1)
+		  		{
+		  			if (mutation.target.attributes["style"].value.indexOf("display: none") != -1)
+		  			{
+		  				if (mutation.target.attributes["stack_id"] != undefined)
+		  				{
+		  					var s = mutation.target.attributes["stack_id"].value;
+		  					console.log("del v stack for " + mutation.target.className + " : " + s);
+							osvc_popup_delete_by_id(s);
+							mutation.target.removeAttribute('stack_id');
+		  				}
+		  			}
+		  			else
+		  			{
+		  				if ($(mutation.target).attr('stack_id') == undefined)
+		  				{
+		  					var sc = "V"+(++_stackcounter).toString();
+		  					$(mutation.target).attr('stack_id', sc);
+		  					_stack.push({"span":sc,"parent":""});
+		  					console.log("add v stack for " + mutation.target.className + " : " + sc);
+		  				}
+		  			}
+		  		}
+		  	}
+			catch (e)
+			{
 
-	    osvc_popup_remove_from_stack_by_id(span);
-	    osvc_popup_delete_from_stack({"span":span,"parent":""});
-	});
+			}
+		}	
+
+	  });    
+});
+
+// configuration of the observer:
+var config = { attributes: true, childList: true, characterData: true, subtree: true, attributeFilter:['style','class']};
+ 
+// pass in the target node, as well as the observer options
+observer.observe(target, config);
+
 }
 
 function osvc_popup_remove_from_stack() // Remove last item from stack and destroy DOM element
@@ -119,22 +153,18 @@ function osvc_popup_remove_from_stack() // Remove last item from stack and destr
 
 function osvc_popup_delete_from_stack(span)
 {
-	if (span.parent=="menuflash" || span.parent=="menusearch" || span.parent=="menu" || span.span==".white_float") // If menu element 
+	if (span.parent=="menuflash" || span.parent=="menusearch" || span.parent=="menu") // If menu element 
 	{
 		$(span.span).hide("fold");
 		return;
 	}
 
-	var target = $(".layout").find("tr[spansum='"+span.span + "']");
-	target.next().toggle("Blind",function () {
-		target.next().remove();
+	var target = $(document).find("[stack_id='"+span.span + "']");
+	target.toggle("Blind",function () {
+		//if (span.span[0] == "A") target.remove();
+		//else 
+		target.hide("fold");
 	});
 	// Handle children remove
-	for(i=0;i<_stack.length;i++)
-	{
-		if (_stack[i].parent == span.span) // Children found
-		{
-			_stack.splice(i,1); // destroy it
-		}
-	}
+	//osvc_popup_remove_child(span);
 }

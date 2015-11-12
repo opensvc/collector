@@ -73,7 +73,7 @@ function fset_selector_container(o) {
   e.i18n()
   o.div.append(e)
 
-  o.area = $("<div style='position:fixed' class='menu hidden' name='fset_selector_entries'></div>")
+  o.area = $("<div style='position:fixed' class='menu hidden stackable' name='fset_selector_entries'></div>")
   o.div.append(o.area)
 
   o.load_span()

@@ -22,13 +22,13 @@
         {{=A((response.title or request.application), _href="http://www.opensvc.com", _class="www16", _target="_blank")}}
       </div>
       {{if response.menu_auth:}}
-      {{=OSVCMENU(response.menu_auth, _class='menu')}}
+      {{=OSVCMENU(response.menu_auth, _class='menu stackable')}}
       {{pass}}
       {{if response.menu:}}
-      {{=OSVCMENU(response.menu, _class='menu')}}
+      {{=OSVCMENU(response.menu, _class='menu stackable')}}
       {{pass}}
       <div class=spacer>&nbsp;</div>
-      <div class="menu flash">{{=response.flash or ''}}</div>
+      <div class="menu flash stackable">{{=response.flash or ''}}</div>
     </div>
     <div class=spacer>&nbsp;</div>
     <div class=layout>

@@ -182,8 +182,6 @@ function osvc_create_link(fn, parameters, target)
     },
     function(xhr, stat, error) {
       $(".flash").show("fold").html(services_ajax_error_fmt(xhr, stat, error));
-      //MD Stack
-      osvc_popup_push_to_stack({"span":".flash","tableid":"","parent":"menuflash"});
     })
 }
 
@@ -217,8 +215,7 @@ function osvc_show_link(url, target) {
   e.append(p)
 
   target.empty().append(e).show("fold")
-  //MD Stack
-  osvc_popup_push_to_stack({"span":".flash","tableid":"","parent":"menuflash"});
+
       
   p.autogrow();
   p.select()

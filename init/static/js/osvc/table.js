@@ -476,7 +476,7 @@ function table_format_input(t, c, val) {
     s += "<span class='clickable clear16'></span>"
     s += "<span title='"+val+"'>"+_val+"</span>"
   }
-  s +=  "<div class='white_float_input'>"
+  s +=  "<div class='white_float_input stackable'>"
   s +=   "<input name='fi' value='"+val+"' id='"+t.id+"_f_"+c+"'>"
   s +=   "<span class='clickable values_to_filter'></span>"
   s +=   "<br>"
@@ -941,7 +941,7 @@ function toggle_extra(url, id, e, ncols) {
     if (line.next().children("#"+id).attr("id")==id) {
         line.next().remove()
     }
-    line.after("<tr class='extraline'>"+toolbar+"<td id="+id+" colspan="+ncols+"></td></tr>")
+    line.after("<tr class='extraline stackable'>"+toolbar+"<td id="+id+" colspan="+ncols+"></td></tr>")
     if (url) {
       sync_ajax(url, [], id, function(){
         $("#"+id).removeClass("spinner")
@@ -1301,7 +1301,7 @@ function table_action_menu(t, e){
   if (s == "") {
     return
   }
-  s = "<div id='am_"+t.id+"' class='white_float action_menu'><ul>"+s+"</ul></div>"
+  s = "<div id='am_"+t.id+"' class='white_float action_menu stackable'><ul>"+s+"</ul></div>"
 
   // position the popup at the mouse click
   var pos = get_pos(e)
@@ -2492,7 +2492,7 @@ function table_add_scrollers(t) {
 }
 
 function table_add_filterbox(t) {
-  var s = "<span id='fsr"+t.id+"' class='right_click_menu'>"
+  var s = "<span id='fsr"+t.id+"' class='right_click_menu stackable' style='display: none'>"
   s += "<table>"
   s +=  "<tr>"
   s +=   "<td id='fsrview' colspan=3></td>"

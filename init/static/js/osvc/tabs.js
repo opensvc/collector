@@ -3,6 +3,7 @@
 //
 function bind_tabs(id, callbacks, active_id) {
   $("#"+id).find('.closetab').click(function () {
+    $("#"+id).parent().remove(); // Remove extraline
     $("#"+id).remove();
   })
   $("#"+id).find('[id^=litab]').click(function () {
@@ -57,6 +58,7 @@ function tabs_init(o) {
 
   // empty tabs on click closetab
   o.closetab.bind("click", function() {
+  o.div[0].parentElement.remove(); // Remove extraline
   o.div.remove();
   })
 }
@@ -65,6 +67,7 @@ function tabs_register_tab(o, data) {
   // allocate a div to store tab information
   e = $("<div></div>")
   e.addClass("hidden")
+  e.addClass("stackable");
   e.css({"width": "100%"})
   e.uniqueId()
   o.display.append(e)

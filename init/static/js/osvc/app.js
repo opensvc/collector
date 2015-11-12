@@ -103,11 +103,11 @@ function app_bindings() {
       $("#overlay").empty()
       
       //$(".white_float").hide()
-      $(".white_float_input").hide()
-      $(".right_click_menu").hide()
+      //$(".white_float_input").hide()
+      //$(".right_click_menu").hide()
       osvc_popup_remove_from_stack();
-      /*$(".extraline").remove()
-      $(".menu").hide("fold")
+      //$(".extraline").remove()
+      /*$(".menu").hide("fold")
       $(".menu").find("[id^=sextra]").remove()
       */
       $("#search_input").val("")
