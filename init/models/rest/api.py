@@ -200,22 +200,6 @@ class rest_handler(object):
 """ % dict(props=", ".join(sorted(props)))
         return s
 
-class rest_post_handler(rest_handler):
-    def __init__(self, **vars):
-        vars["action"] = "POST"
-        rest_handler.__init__(self, **vars)
-
-    def handle(self, *args, **vars):
-        if request.env.http_content_type == "application/json":
-            data = json.loads(request.body.read())
-            if type(data) == list:
-                return self.handle_list(data, args, vars)
-            elif type(data) == dict:
-                return rest_handler.handle(self, *args, **data)
-        if "query" in vars and hasattr(self, "get_handler"):
-            return self.handle_multi_update(*args, **vars)
-        return rest_handler.handle(self, *args, **vars)
-
     def handle_list(self, data, args, vars):
         rdata = {
           "info": [],
@@ -235,6 +219,22 @@ class rest_post_handler(rest_handler):
                    else:
                        rdata[key] += [d]
         return rdata
+
+class rest_post_handler(rest_handler):
+    def __init__(self, **vars):
+        vars["action"] = "POST"
+        rest_handler.__init__(self, **vars)
+
+    def handle(self, *args, **vars):
+        if "application/json" in request.env.http_content_type:
+            data = json.loads(request.body.read())
+            if type(data) == list:
+                return self.handle_list(data, args, vars)
+            elif type(data) == dict:
+                return rest_handler.handle(self, *args, **data)
+        if "query" in vars and hasattr(self, "get_handler"):
+            return self.handle_multi_update(*args, **vars)
+        return rest_handler.handle(self, *args, **vars)
 
     def handle_multi_update(self, *args, **vars):
         l = self.get_handler.handler(query=vars["query"], limit=0, props=self.update_one_param)["data"]
@@ -273,6 +273,15 @@ class rest_delete_handler(rest_handler):
     def __init__(self, **vars):
         vars["action"] = "DELETE"
         rest_handler.__init__(self, **vars)
+
+    def handle(self, *args, **vars):
+        if "application/json" in request.env.http_content_type:
+            data = json.loads(request.body.read())
+            if type(data) == list:
+                return self.handle_list(data, args, vars)
+            elif type(data) == dict:
+                return rest_handler.handle(self, *args, **data)
+        return rest_handler.handle(self, *args, **vars)
 
     def update_parameters(self):
         self.params = copy.copy(self.init_params)
