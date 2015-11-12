@@ -574,7 +574,7 @@ def ajax_comp_explicit_rules_col_values():
     o = db.v_comp_explicit_rulesets[col]
     q = db.v_comp_explicit_rulesets.id > 0
     for f in t.cols:
-        q = _where(q, 'v_comp_explicit_rulesets', t.filter_parse_glob(f), f)
+        q = _where(q, 'v_comp_explicit_rulesets', t.filter_parse(f), f)
     q = apply_gen_filters(q, t.tables())
     t.object_list = db(q).select(o, orderby=o, cacheable=True)
     return t.col_values_cloud_ungrouped(col)
@@ -588,7 +588,7 @@ def ajax_comp_rulesets_services_col_values():
     o = db.v_comp_services[col]
     q = _where(None, 'v_comp_services', domain_perms(), 'svc_name')
     for f in t.cols:
-        q = _where(q, 'v_comp_services', t.filter_parse_glob(f), f)
+        q = _where(q, 'v_comp_services', t.filter_parse(f), f)
     t.object_list = db(q).select(o, orderby=o, cacheable=True)
     return t.col_values_cloud_ungrouped(col)
 
@@ -601,7 +601,7 @@ def ajax_comp_rulesets_nodes_col_values():
     o = db.v_comp_nodes[col]
     q = _where(None, 'v_comp_nodes', domain_perms(), 'nodename')
     for f in t.cols:
-        q = _where(q, 'v_comp_nodes', t.filter_parse_glob(f), f)
+        q = _where(q, 'v_comp_nodes', t.filter_parse(f), f)
     t.object_list = db(q).select(o, orderby=o, cacheable=True)
     return t.col_values_cloud_ungrouped(col)
 
@@ -614,7 +614,7 @@ def ajax_comp_explicit_rules():
     if 'Manager' not in user_groups():
         q &= db.comp_ruleset_team_publication.group_id.belongs(user_group_ids())
     for f in r.cols:
-        q = _where(q, 'v_comp_explicit_rulesets', r.filter_parse_glob(f), f)
+        q = _where(q, 'v_comp_explicit_rulesets', r.filter_parse(f), f)
 
     if len(request.args) == 1 and request.args[0] == 'data':
         n = db(q).count()
@@ -666,7 +666,7 @@ def ajax_comp_rulesets_services():
     o = db.v_comp_services.svc_name|db.v_comp_services.encap
     q = _where(None, 'v_comp_services', domain_perms(), 'svc_name')
     for f in t.cols:
-        q = _where(q, 'v_comp_services', t.filter_parse_glob(f), f)
+        q = _where(q, 'v_comp_services', t.filter_parse(f), f)
     q = apply_gen_filters(q, t.tables())
 
     if len(request.args) == 1 and request.args[0] == 'data':
@@ -702,7 +702,7 @@ def ajax_comp_rulesets_nodes():
     if 'Manager' not in user_groups():
         q &= db.v_comp_nodes.team_responsible.belongs(user_groups())
     for f in t.cols:
-        q = _where(q, 'v_comp_nodes', t.filter_parse_glob(f), f)
+        q = _where(q, 'v_comp_nodes', t.filter_parse(f), f)
     q = apply_gen_filters(q, t.tables())
 
     if len(request.args) == 1 and request.args[0] == 'data':
@@ -2109,7 +2109,7 @@ def ajax_comp_rulesets_col_values():
     o = db.v_comp_rulesets[col]
     q = db.v_comp_rulesets.id > 0
     for f in t.cols:
-        q = _where(q, 'v_comp_rulesets', t.filter_parse_glob(f), f)
+        q = _where(q, 'v_comp_rulesets', t.filter_parse(f), f)
     t.object_list = db(q).select(o, orderby=o, cacheable=True)
     return t.col_values_cloud_ungrouped(col)
 
@@ -4152,7 +4152,7 @@ def ajax_comp_modulesets_short_col_values():
         q &= db.comp_moduleset_team_publication.modset_id == db.comp_moduleset.id
         q &= db.comp_moduleset_team_publication.group_id.belongs(user_group_ids())
     for f in r.cols:
-        q = _where(q, 'comp_moduleset', r.filter_parse_glob(f), f)
+        q = _where(q, 'comp_moduleset', r.filter_parse(f), f)
     q = apply_gen_filters(q, r.tables())
     r.object_list = db(q).select(o, orderby=o, groupby=g)
     return r.col_values_cloud_ungrouped(col)
@@ -4168,7 +4168,7 @@ def ajax_comp_modulesets_services_col_values():
     if 'Manager' not in user_groups():
         q &= db.v_comp_services.team_responsible.belongs(user_groups())
     for f in t.cols:
-        q = _where(q, 'v_comp_services', t.filter_parse_glob(f), f)
+        q = _where(q, 'v_comp_services', t.filter_parse(f), f)
     q = apply_gen_filters(q, t.tables())
     t.object_list = db(q).select(o, orderby=o)
     return t.col_values_cloud_ungrouped(col)
@@ -4184,7 +4184,7 @@ def ajax_comp_modulesets_nodes_col_values():
     if 'Manager' not in user_groups():
         q &= db.v_comp_nodes.team_responsible.belongs(user_groups())
     for f in t.cols:
-        q = _where(q, 'v_comp_nodes', t.filter_parse_glob(f), f)
+        q = _where(q, 'v_comp_nodes', t.filter_parse(f), f)
     q = apply_gen_filters(q, t.tables())
     t.object_list = db(q).select(o, orderby=o)
     return t.col_values_cloud_ungrouped(col)
@@ -4224,7 +4224,7 @@ def ajax_comp_modulesets_services():
     if 'Manager' not in user_groups():
         q &= db.v_comp_services.team_responsible.belongs(user_groups())
     for f in t.cols:
-        q = _where(q, 'v_comp_services', t.filter_parse_glob(f), f)
+        q = _where(q, 'v_comp_services', t.filter_parse(f), f)
     q = apply_gen_filters(q, t.tables())
 
     if len(request.args) == 1 and request.args[0] == 'data':
@@ -4261,7 +4261,7 @@ def ajax_comp_modulesets_nodes():
     if 'Manager' not in user_groups():
         q &= db.v_comp_nodes.team_responsible.belongs(user_groups())
     for f in t.cols:
-        q = _where(q, 'v_comp_nodes', t.filter_parse_glob(f), f)
+        q = _where(q, 'v_comp_nodes', t.filter_parse(f), f)
     q = apply_gen_filters(q, t.tables())
 
     if len(request.args) == 1 and request.args[0] == 'data':
@@ -4293,7 +4293,7 @@ def ajax_comp_modulesets_short():
     if 'Manager' not in user_groups():
         q &= db.comp_moduleset_team_publication.group_id.belongs(user_group_ids())
     for f in r.cols:
-        q = _where(q, 'comp_moduleset', r.filter_parse_glob(f), f)
+        q = _where(q, 'comp_moduleset', r.filter_parse(f), f)
 
     if len(request.args) == 1 and request.args[0] == 'data':
         n = db(q).count()
