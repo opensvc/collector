@@ -94,10 +94,16 @@ function services_osvcpostrest(service, uri, params, data, callback, error_callb
         }
         url = url.replace(/&$/, "");
     }
+    var content_type = "application/x-www-form-urlencoded"
+    if (Object.prototype.toString.call(data) === '[object Array]') {
+      data = JSON.stringify(data)
+      content_type = "application/json"
+    }
     var req = $.ajax(
     {
         type: "POST",
         url: url,
+        contentType: content_type,
         data: data,
         error: error_callback,
         success: callback
@@ -170,10 +176,16 @@ function services_osvcdeleterest(service, uri, params, data, callback, error_cal
         }
         url = url.replace(/&$/, "");
     }
+    var content_type = "application/x-www-form-urlencoded"
+    if (Object.prototype.toString.call(data) === '[object Array]') {
+      data = JSON.stringify(data)
+      content_type = "application/json"
+    }
     var req = $.ajax(
     {
         type: "DELETE",
         url: url,
+        contentType: content_type,
         data: data,
         error: error_callback,
         success: callback,
