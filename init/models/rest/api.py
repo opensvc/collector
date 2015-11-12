@@ -148,7 +148,32 @@ class rest_handler(object):
         return "``" + s + "``\n"
 
     def prepare_data(self, **vars):
-        for v in ["q", "orderby", "groupby", "left", "vprops", "vprops_fn", "count_prop", "props_blacklist", "tables", "db"]:
+        add_to_vars = [
+          "q",
+          "orderby",
+          "groupby",
+          "left",
+          "vprops",
+          "vprops_fn",
+          "count_prop",
+          "props_blacklist",
+          "tables",
+          "db"
+        ]
+
+        if "orderby" in vars:
+            cols = props_to_cols(vars["orderby"], tables=self.tables, blacklist=self.props_blacklist, db=self.db)
+            if len(cols) == 0:
+                pass
+            else:
+                add_to_vars.remove("orderby")
+                o = cols[0]
+                if len(cols) > 1:
+                   for col in cols[1:]:
+                       o |= col
+                vars["orderby"] = o
+
+        for v in add_to_vars:
             if hasattr(self, v) and vars.get(v) is None:
                 vars[v] = getattr(self, v)
         return prepare_data(**vars)
@@ -200,12 +225,38 @@ class rest_handler(object):
 """ % dict(props=", ".join(sorted(props)))
         return s
 
+    def handle_list(self, data, args, vars):
+        rdata = {
+          "info": [],
+          "error": [],
+          "data": [],
+        }
+        for entry in data:
+            if type(entry) != dict:
+                rdata["error"].append("skip '%s': not a dict" % str(entry))
+                continue
+            r = rest_handler.handle(self, *args, **entry)
+            for key in ("info", "error", "data"):
+               if key in r:
+                   d = r[key]
+                   if type(d) == list:
+                       rdata[key] += d
+                   else:
+                       rdata[key] += [d]
+        return rdata
+
 class rest_post_handler(rest_handler):
     def __init__(self, **vars):
         vars["action"] = "POST"
         rest_handler.__init__(self, **vars)
 
     def handle(self, *args, **vars):
+        if "application/json" in request.env.http_content_type:
+            data = json.loads(request.body.read())
+            if type(data) == list:
+                return self.handle_list(data, args, vars)
+            elif type(data) == dict:
+                return rest_handler.handle(self, *args, **data)
         if "query" in vars and hasattr(self, "get_handler"):
             return self.handle_multi_update(*args, **vars)
         return rest_handler.handle(self, *args, **vars)
@@ -247,6 +298,15 @@ class rest_delete_handler(rest_handler):
     def __init__(self, **vars):
         vars["action"] = "DELETE"
         rest_handler.__init__(self, **vars)
+
+    def handle(self, *args, **vars):
+        if "application/json" in request.env.http_content_type:
+            data = json.loads(request.body.read())
+            if type(data) == list:
+                return self.handle_list(data, args, vars)
+            elif type(data) == dict:
+                return rest_handler.handle(self, *args, **data)
+        return rest_handler.handle(self, *args, **vars)
 
     def update_parameters(self):
         self.params = copy.copy(self.init_params)
@@ -294,6 +354,16 @@ class rest_get_table_handler(rest_handler):
           "query": {
             "desc": """
 . A web2py smart query
+
+""",
+          },
+          "orderby": {
+            "desc": """
+. A comma-separated list of properties.
+. Sort the resultset using the specified properties.
+. Property sorting priority decreases from left to right.
+. The order is descending by default.
+. A property can be prefixed by '~' to activate the ascending order.
 
 """,
           },
@@ -469,10 +539,18 @@ def props_to_cols(props, tables=[], vprops={}, blacklist=[], db=db):
     for _vprops in vprops.values():
         props |= set(_vprops)
     for p in props:
+        if p[0] == "~":
+            desc = True
+            p = p[1:]
+        else:
+            desc = False
         v = p.split(".")
         if len(v) == 1 and len(tables) == 1:
             v = [tables[0], p]
-        cols.append(db[v[0]][v[1]])
+        col = db[v[0]][v[1]]
+        if desc:
+            col = ~col
+        cols.append(col)
     return cols
 
 def cols_to_props(cols, tables):

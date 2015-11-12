@@ -138,6 +138,7 @@ class table_users(HtmlTable):
         self.colprops['domains'].t = self
         self.ajax_col_values = 'ajax_users_col_values'
         self.dbfilterable = False
+        self.wsable = True
         self.checkboxes = True
         if 'Manager' in user_groups():
             self += HtmlTableMenu('Group', 'guys16', ['group_add', 'group_del', 'group_attach', 'group_detach', 'group_set_primary'])

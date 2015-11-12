@@ -110,7 +110,6 @@ class HtmlTable(object):
         self.id_page = '_'.join((self.id, 'page'))
         self.upc_table = self.id
         self.last = None
-        self.column_filter_reset = '**clear**'
         self.object_list = []
         self.child_tables = []
         self.force_cols = []
@@ -157,9 +156,6 @@ class HtmlTable(object):
 
         # initialize the pager, to be re-executed by instanciers
         self.setup_pager()
-
-        # drop stored filters if request asks for it
-        self.drop_filters()
 
         # csv
         self.csv_q = None
@@ -490,107 +486,16 @@ class HtmlTable(object):
                 ids.append(key.replace(prefix, ''))
         return ids
 
-    def stored_filter_field(self, f):
-        if f not in self.colprops:
-            return None
-        cp = self.colprops[f]
-        if not hasattr(cp, 'table') and not hasattr(cp, 'field'):
-            return None
-        if not hasattr(cp, 'table') or cp.table is None:
-            return cp.field
-        return '.'.join((cp.table, cp.field))
-
-    def drop_filters(self, bookmark="current"):
-        if request.vars.clear_filters != 'true':
-            return
-        q = db.column_filters.col_tableid==self.id
-        q &= db.column_filters.user_id==session.auth.user.id
-        q &= db.column_filters.bookmark==bookmark
-        db(q).delete()
-
-    def drop_filter_value(self, f, bookmark="current"):
-        if request.vars.volatile_filters is not None:
-            return
-        field = self.stored_filter_field(f)
-        if field is None:
-            return
-        q = db.column_filters.col_tableid==self.id
-        q &= db.column_filters.col_name==field
-        q &= db.column_filters.user_id==session.auth.user.id
-        q &= db.column_filters.bookmark==bookmark
-        db(q).delete()
-
-    def store_filter_value(self, f, v, bookmark="current"):
-        if request.vars.volatile_filters is not None:
-            return
-        field = self.stored_filter_field(f)
-        if field is None:
-            return
-        q = db.column_filters.col_tableid==self.id
-        q &= db.column_filters.col_name==field
-        q &= db.column_filters.user_id==session.auth.user.id
-        q &= db.column_filters.bookmark==bookmark
-        try:
-            db.column_filters.insert(col_tableid=self.id,
-                                     col_name=field,
-                                     col_filter=v,
-                                     bookmark=bookmark,
-                                     user_id=session.auth.user.id)
-        except:
-            db(q).update(col_filter=v)
-
-    def stored_filter_value(self, f, bookmark="current"):
-        if request.vars.volatile_filters is not None:
-            return ""
-        field = self.stored_filter_field(f)
-        if field is None:
-            return ""
-        q = db.column_filters.col_tableid==self.id
-        q &= db.column_filters.col_name==field
-        q &= db.column_filters.user_id==session.auth.user.id
-        q &= db.column_filters.bookmark==bookmark
-        rows = db(q).select(cacheable=True)
-        if len(rows) == 0:
-            return ""
-        return rows[0].col_filter
-
     def filter_parse(self, f):
         v = self._filter_parse(f)
-        if v == self.column_filter_reset:
-            self.drop_filter_value(f)
-            key = self.filter_key(f)
-            del(request.vars[key])
-            return ""
-        if request.vars.volatile_filters:
-            _v = self.stored_filter_value(f)
-            if _v != "" and v != "":
-                return v+"&"+_v
-            if v == "":
-                return _v
-            return v
-        if v == "":
-            return self.stored_filter_value(f)
-        self.store_filter_value(f, v)
-        if v == "" and self.colprops[f].default_filter is not None:
-            v = self.colprops[f].default_filter
         return v
 
     def _filter_parse(self, f):
         key = self.filter_key(f)
         if key in request.vars:
             v = request.vars[key]
-            if v == "**clear**" and self.colprops[f].default_filter:
-                return self.colprops[f].default_filter
-            if v == "":
-                if self.colprops[f].default_filter is not None:
-                    return self.colprops[f].default_filter
-                return "**clear**"
             return v
         return ""
-
-    def filter_parse_glob(self, f):
-        val = self.filter_parse(f)
-        return val
 
     def ajax_inputs(self):
         l = ['tableid']
@@ -600,18 +505,6 @@ class HtmlTable(object):
         if self.filterable:
             l += map(self.filter_key, self.cols+self.additional_filters)
         return l
-
-    def table_header(self):
-        cells = []
-        if self.checkboxes:
-            cells.append(TH(''))
-        if self.extrarow:
-            cells.append(TD(''))
-        for c in self.cols:
-            cells.append(TH(T(self.colprops[c].title),
-                            _class=self.colprops[c]._class,
-                            _name=self.col_key(c)))
-        return TR(cells, _class='theader')
 
     def format_extrarow(self, o):
         return ""
@@ -730,7 +623,7 @@ class HtmlTable(object):
         else:
             object_list = self.object_list
 
-        if request.vars.volatile_filters is None and self.nodatabanner and len(object_list) == 0:
+        if self.nodatabanner and len(object_list) == 0:
             lines.append(TR(TD(T("no data"), _colspan=len(self.cols)), _class="tl nodataline"))
             return lines, 0
 
@@ -753,56 +646,6 @@ class HtmlTable(object):
                 lines.append(self.table_line(o))
                 self.last = o
         return lines, line_count
-
-    def header_slim(self):
-        inputs = []
-        if self.checkboxes:
-            inputs.append(TD(''))
-        if self.extrarow:
-            inputs.append(TD(''))
-        for c in self.cols:
-            inputs.append(
-              TD(
-                '',
-                 _name=self.col_key(c),
-              ),
-            )
-        return TR(
-          inputs,
-          _class='theader_slim',
-          _onclick="""$("[name=filters]").toggle()"""
-        )
-
-    def table_inputs(self):
-        inputs = []
-        if self.checkboxes:
-            inputs.append(TD(
-                            INPUT(
-                              _type='checkbox',
-                              _class='ocb',
-                              _id=self.master_checkbox_key(),
-                              _onclick="check_all('%(name)s', this.checked);"%dict(name=self.checkbox_name_key())
-                            ),
-                            LABEL(
-                              _for=self.master_checkbox_key(),
-                            ),
-                          ))
-        if self.extrarow:
-            inputs.append(TD(''))
-        for c in self.cols:
-            filter_text = self.filter_parse(c)
-            inputs.append(TD(
-                            DIV(
-                              INPUT(
-                                _id=self.filter_key(c),
-                                _name="fi",
-                                _value=self.filter_parse(c),
-                              ),
-                            ),
-                            _name=self.col_key(c),
-                            _class=self.colprops[c]._class,
-                          ))
-        return TR(inputs, _name="filters", _class='sym_headers')
 
     def table_additional_inputs(self):
         inputs = []
@@ -862,11 +705,6 @@ class HtmlTable(object):
         self.set_column_visibility()
         lines, line_count = self.table_lines()
 
-        if self.filterable:
-            inputs = self.table_inputs()
-        else:
-            inputs = None
-
         if self.filterable and len(self.additional_filters) > 0:
             additional_filters = DIV(
               B(T('Additional filters')),
@@ -892,15 +730,15 @@ class HtmlTable(object):
             additional_tools = SPAN()
 
         table_lines = []
-        if self.headers:
-            table_lines.append(self.table_header())
-
-        if self.headers and inputs is not None:
-            table_lines.append(inputs)
-            table_lines.append(self.header_slim())
 
         if len(lines) > 0:
             table_lines += lines
+
+        volatile_filters = request.vars.get("volatile_filters")
+        if volatile_filters in (None, "0", 0, False, "false", "False", "F"):
+            self.volatile_filters = False
+        else:
+            self.volatile_filters = True
 
         pager_attrs = dict(
           perpage=int(self.perpage),
@@ -938,33 +776,39 @@ class HtmlTable(object):
               DIV(XML('&nbsp;'), _class='spacer'),
               SCRIPT(
                 """
-table_init({
- 'id': '%(id)s',
- 'pager': %(pager)s,
- 'extrarow': %(extrarow)s,
- 'extrarow_class': "%(extrarow_class)s",
- 'checkboxes': %(checkboxes)s,
- 'ajax_url': '%(ajax_url)s',
- 'span': %(span)s,
- 'columns': %(columns)s,
- 'colprops': %(colprops)s,
- 'volatile_filters': "%(volatile_filters)s",
- 'visible_columns': %(visible_columns)s,
- 'child_tables': %(child_tables)s,
- 'action_menu': %(action_menu)s,
- 'dataable': %(dataable)s,
- 'linkable': %(linkable)s,
- 'dbfilterable': %(dbfilterable)s,
- 'refreshable': %(refreshable)s,
- 'bookmarkable': %(bookmarkable)s,
- 'exportable': %(exportable)s,
- 'columnable': %(columnable)s,
- 'commonalityable': %(commonalityable)s,
- 'wsable': %(wsable)s,
- 'pageable': %(pageable)s
-})
-function ajax_submit_%(id)s(){%(ajax_submit)s};
-function ajax_enter_submit_%(id)s(event){%(ajax_enter_submit)s};
+var ti_%(id)s = setInterval(function(){
+  if (i18n.isInitialized()) {
+    clearInterval(ti_%(id)s)
+    table_init({
+     'id': '%(id)s',
+     'pager': %(pager)s,
+     'extrarow': %(extrarow)s,
+     'extrarow_class': "%(extrarow_class)s",
+     'checkboxes': %(checkboxes)s,
+     'ajax_url': '%(ajax_url)s',
+     'span': %(span)s,
+     'columns': %(columns)s,
+     'colprops': %(colprops)s,
+     'volatile_filters': %(volatile_filters)s,
+     'visible_columns': %(visible_columns)s,
+     'child_tables': %(child_tables)s,
+     'action_menu': %(action_menu)s,
+     'dataable': %(dataable)s,
+     'linkable': %(linkable)s,
+     'dbfilterable': %(dbfilterable)s,
+     'filterable': %(filterable)s,
+     'refreshable': %(refreshable)s,
+     'bookmarkable': %(bookmarkable)s,
+     'exportable': %(exportable)s,
+     'columnable': %(columnable)s,
+     'commonalityable': %(commonalityable)s,
+     'headers': %(headers)s,
+     'wsable': %(wsable)s,
+     'pageable': %(pageable)s,
+     'request_vars': %(request_vars)s
+    })
+  }
+}, 200)
 """%dict(
                    id=self.id,
                    pager=str(pager_attrs),
@@ -976,7 +820,7 @@ function ajax_enter_submit_%(id)s(event){%(ajax_enter_submit)s};
                    span=str(self.span),
                    columns=str(self.cols),
                    colprops=self.serialize_colprops(),
-                   volatile_filters=str(request.vars.get("volatile_filters", "")),
+                   volatile_filters=str(self.volatile_filters).lower(),
                    visible_columns=str(self.visible_columns()),
                    child_tables=str(self.child_tables),
                    ajax_submit=self.ajax_submit(),
@@ -984,6 +828,7 @@ function ajax_enter_submit_%(id)s(event){%(ajax_enter_submit)s};
                    dataable=str(self.dataable).lower(),
                    linkable=str(self.linkable).lower(),
                    dbfilterable=str(self.dbfilterable).lower(),
+                   filterable=str(self.filterable).lower(),
                    refreshable=str(self.refreshable).lower(),
                    bookmarkable=str(self.bookmarkable).lower(),
                    exportable=str(self.exportable).lower(),
@@ -991,7 +836,9 @@ function ajax_enter_submit_%(id)s(event){%(ajax_enter_submit)s};
                    columnable=str(self.columnable).lower(),
                    commonalityable=str(self.commonalityable).lower(),
                    wsable=str(self.wsable).lower(),
+                   headers=str(self.headers).lower(),
                    action_menu=str(self.action_menu),
+                   request_vars=json.dumps(request.vars),
                 ),
               ),
               _class='tableo',

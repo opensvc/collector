@@ -20,7 +20,7 @@ function bind_user_groups() {
 }
 
 //
-// group hiddenn menu entries tool
+// group hidden menu entries tool
 //
 function bind_group_hidden_menu_entries() {
   $("[name=group_hidden_menu_entry_check]").bind("click", function(){
@@ -58,14 +58,10 @@ function values_to_filter(iid, did){
 	$("#"+iid).val(v)
 }
 
-function invert_filter(did){
-  e = $('#'+did)
-  _invert_filter(e)
-}
-
-function table_invert_filter(id, did){
-  e = $("#"+id).find('#'+did)
-  _invert_filter(e)
+function table_invert_column_filter(t, c){
+  var input = t.e_header_filters.find("th[col="+c+"]").find("input")
+  _invert_filter(input)
+  t.save_column_filters()
 }
 
 function _invert_filter(e){
@@ -452,74 +448,88 @@ function sort_table(id) {
     cmp = null
 }
 
-function table_format_input(t, c, val) {
-  var s = "<td name='"+t.id+"_c_"+c+"'>"
-  s += "<span class='clickable filter16'></span>"
-  if (typeof(val) === "undefined") {
-    val = ""
+function table_reset_column_filters(t, c, val) {
+  if (!t.options.filterable) {
+    return
   }
-  if (val == "**clear**") {
-    val = ""
-  }
-  var n = val.length
-  if ((n == 0) && (t.colprops[c].default_filter != "")) {
-    val = t.colprops[c].default_filter
-    n = val.length
-  }
-  if (n > 0) {
-    if (n > 20) {
-      _val = val.substring(0, 17)+"..."
+  t.e_header_filters.find("th").each(function() {
+    var input = $(this).find("input")
+    var label = $(this).find(".col_filter_label")
+    if ((c in t.colprops) && (t.colprops[c].force_filter != "")) {
+      input.val(t.colprops[c].force_filter)
+    } else if ((c in t.colprops) && (t.colprops[c].default_filter != "")) {
+      input.val(t.colprops[c].default_filter)
     } else {
-      _val = val
+      input.val("")
     }
-    s += "<span class='clickable invert16'></span>"
-    s += "<span class='clickable clear16'></span>"
-    s += "<span title='"+val+"'>"+_val+"</span>"
-  }
-  s +=  "<div class='white_float_input stackable'>"
-  s +=   "<input name='fi' value='"+val+"' id='"+t.id+"_f_"+c+"'>"
-  s +=   "<span class='clickable values_to_filter'></span>"
-  s +=   "<br>"
-  s +=   "<span id='"+t.id+"_fc_"+c+"'></span>"
-  s +=  "</div>"
-  s += "</td>"
-  return s
-}
+    label.empty()
+    $(this).find(".clear16,.invert16").hide()
+  })
 
-function table_format_theader_slim(t, c, val) {
-  if (typeof(val) === "undefined") {
-    val = ""
-  }
-  if (val == "**clear**") {
-    val = ""
-  }
-  var n = val.length
-  if ((n == 0) && (t.colprops[c].default_filter != "")) {
-    val = t.colprops[c].default_filter
-    n = val.length
-  }
-  var cl = ""
-  if ((val.length > 0) && (val != "**clear**")) {
-    if (t.volatile_filters == "") {
-      cl = " class='bgred'"
-    } else {
-      cl = " class='bgblack'"
-    }
-  }
-  var s = "<td name='"+t.id+"_c_"+c+"'"+cl+">"
-  return s
+  t.e_header_slim.find("th").each(function() {
+    $(this).removeClass("bgblack")
+    $(this).removeClass("bgred")
+    $(this).removeClass("bgorange")
+  })
+
 }
 
 function table_refresh_column_filter(t, c, val) {
-  if (typeof(val) === "undefined") {
-    var e = t.e_header_filters.find("#"+t.id+"_f_"+c)
-    val = e.val()
+  if (!t.options.filterable) {
+    return
   }
-  cell = t.e_header.find("[name="+t.id+"_c_"+c+"]").show()
-  cell = t.e_header_filters.find("td[name="+t.id+"_c_"+c+"]")
-  cell.replaceWith(table_format_input(t, c, val))
-  cell = t.div.find("tr.theader_slim").first().find("td[name="+t.id+"_c_"+c+"]")
-  cell.replaceWith(table_format_theader_slim(t, c, val))
+  var th = t.e_header_filters.find("th[col="+c+"]")
+  var input = th.find("input")
+  var label = th.find(".col_filter_label")
+  var val
+
+  if (typeof(val) === "undefined") {
+    val = input.val()
+  }
+
+  // make sure the column title is visible
+  th.show()
+
+  // update val in input, and text in display area
+  if (typeof(val) === "undefined") {
+    val = ""
+  }
+  if (val == "**clear**") {
+    val = ""
+  }
+  var n = val.length
+  if ((n == 0) && (t.colprops[c].default_filter != "")) {
+    val = t.colprops[c].default_filter
+    n = val.length
+  }
+  var _val = val
+  if (n > 20) {
+    _val = val.substring(0, 17)+"..."
+  }
+  label.attr("title", val)
+  label.text(_val)
+  input.val(val)
+
+  // toggle the clear and invert tools visibility
+  if (val == "") {
+    th.find(".clear16,.invert16").hide()
+  } else {
+    th.find(".clear16,.invert16").show()
+  }
+
+  // update the slim header cell colorization
+  var th = t.e_header_slim.find("[col="+c+"]")
+  th.removeClass("bgblack")
+  th.removeClass("bgred")
+  th.removeClass("bgorange")
+  var cl = ""
+  if ((val.length > 0) && (val != "**clear**")) {
+    if (!t.options.volatile_filters) {
+      th.addClass("bgred")
+    } else {
+      th.addClass("bgblack")
+    }
+  }
 }
 
 function table_add_filtered_to_visible_columns(t) {
@@ -542,16 +552,130 @@ function table_add_filtered_to_visible_columns(t) {
   })
 }
 
+function table_add_column_header_input(t, tr, c) {
+  var th = $("<th></th>")
+  th.addClass(t.colprops[c]._class)
+  th.attr("name", t.id+"_c_"+c)
+  th.attr("col", c)
+
+  var filter_tool = $("<span class='clickable filter16'></span>")
+  var invert_tool = $("<span class='clickable hidden invert16'></span>")
+  var clear_tool = $("<span class='clickable hidden clear16'></span>")
+  var label = $("<span class='col_filter_label'></span>")
+  var input_float = $("<div class='white_float_input stackable'>")
+  var input = $("<input name='fi'>")
+  var value_to_filter_tool = $("<span class='clickable values_to_filter'></span><br>")
+  var value_cloud = $("<span></span>")
+  var input_id = t.id+"_f_"+c
+
+  input.attr("id", input_id)
+  if (t.options.request_vars && (input_id in t.options.request_vars)) {
+    input.val(t.options.request_vars[input_id])
+  }
+  value_cloud.attr("id", t.id+"_fc_"+c)
+
+  input_float.append(input)
+  input_float.append(value_to_filter_tool)
+  input_float.append(value_cloud)
+  th.append(filter_tool)
+  th.append(invert_tool)
+  th.append(clear_tool)
+  th.append(label)
+  th.append(input_float)
+  tr.append(th)
+}
+
+function table_add_column_headers_input(t) {
+  if (!t.options.headers || !t.options.filterable) {
+    return
+  }
+  var tr = $("<tr class='theader_filters'></tr>")
+  if (t.checkboxes) {
+    var mcb_id = t.id+"_mcb"
+    var th = $("<th></th>")
+    var input = $("<input type='checkbox' class='ocb'></input>")
+    input.attr("id", mcb_id)
+    var label = $("<label></label>")
+    label.attr("for", mcb_id)
+    input.bind("click", function() {
+      check_all(t.id+"_ck", this.checked)
+    })
+    th.append(input)
+    th.append(label)
+    tr.append(th)
+  }
+  if (t.extrarow) {
+    tr.append($("<th></th>"))
+  }
+  for (i=0; i<t.columns.length; i++) {
+    var c = t.columns[i]
+    t.add_column_header_input(tr, c)
+  }
+  t.e_table.prepend(tr)
+  t.e_header_filters = tr
+  t.bind_filter_input_events()
+}
+
+function table_add_column_header_slim(t, tr, c) {
+  var th = $("<th></th>")
+  th.addClass(t.colprops[c]._class)
+  th.attr("name", t.id+"_c_"+c)
+  th.attr("col", c)
+  tr.append(th)
+}
+
+function table_add_column_headers_slim(t) {
+  var tr = $("<tr class='theader_slim'></tr>")
+  if (t.checkboxes) {
+    tr.append($("<th></th>"))
+  }
+  if (t.extrarow) {
+    tr.append($("<th></th>"))
+  }
+  for (i=0; i<t.columns.length; i++) {
+    var c = t.columns[i]
+    t.add_column_header_slim(tr, c)
+  }
+  tr.bind("click", function() {
+    t.e_header_filters.toggle()
+  })
+  t.e_table.prepend(tr)
+  t.e_header_slim = tr
+}
+
+function table_add_column_header(t, tr, c) {
+  var th = $("<th></th>")
+  th.addClass(t.colprops[c]._class)
+  th.attr("name", t.id+"_c_"+c)
+  th.attr("col", c)
+  th.text(t.colprops[c].title)
+  tr.append(th)
+}
+
+function table_add_column_headers(t) {
+  if (!t.options.headers) {
+    return
+  }
+  var tr = $("<tr class='theader'></tr>")
+  if (t.checkboxes) {
+    tr.append($("<th></th>"))
+  }
+  if (t.extrarow) {
+    tr.append($("<th></th>"))
+  }
+  for (i=0; i<t.columns.length; i++) {
+    var c = t.columns[i]
+    t.add_column_header(tr, c)
+  }
+  t.e_table.prepend(tr)
+  t.e_header = tr
+}
+
 function table_refresh_column_filters(t) {
   for (i=0; i<t.visible_columns.length; i++) {
     var c = t.visible_columns[i]
     t.refresh_column_filter(c)
   }
-  t.bind_filter_input_events()
-}
-
-function table_format_header(t) {
-  table_refresh_column_filters(t)
 }
 
 function table_cell_fmt(t, k, v) {
@@ -578,7 +702,7 @@ function table_cell_fmt(t, k, v) {
   } else {
     var text = v
   }
-  s += "<td cell='1' name='"+n+"' v='"+v+"'"+cl+">"+text+"</td>"
+  s += "<td cell='1' col='"+k+"' name='"+n+"' v='"+v+"'"+cl+">"+text+"</td>"
   return s
 }
 
@@ -638,9 +762,6 @@ function table_refresh(t) {
     var data = {
       "table_id": t.id,
       "visible_columns": t.visible_columns.join(',')
-    }
-    if (t.volatile_filters != "") {
-      data["volatile_filters"] = true
     }
     data[t.id+"_page"] = $("#"+t.id+"_page").val()
     for (c in t.colprops) {
@@ -759,7 +880,6 @@ function table_refresh(t) {
 }
 
 function table_insert(t, data) {
-    var query="volatile_filters="+t.volatile_filters
     for (i=0; i<data.length; i++) {
         try {
             key=data[i]["key"]
@@ -901,9 +1021,6 @@ function table_ajax_submit(url, id, additional_inputs, input_name, additional_in
             query=query+encodeURIComponent(s[i])+"="+encodeURIComponent(document.getElementById(s[i]).value);
         } catch(e) {}
     }
-    if (t.volatile_filters != "") {
-      query += "&volatile_filters=true"
-    }
     $.ajax({
          type: "POST",
          url: url,
@@ -1011,8 +1128,60 @@ function filter_submit(id,k,v){
   osvc.tables[id].refresh_column_filters()
 };
 
+function table_save_column_filters(t) {
+  if (t.options.volatile_filters) {
+    return
+  }
+  var data = []
+  var del_data = []
+
+  t.e_header_filters.find("input[name=fi]").each(function(){
+    var val = $(this).val()
+    if (val != "") {
+      // filter value to save
+      var d = {
+        'bookmark': 'current',
+        'col_tableid': t.id,
+        'col_name': $(this).parents("th").first().attr("col"),
+        'col_filter': val
+      }
+      data.push(d)
+    } else {
+      // filter value to delete
+      var d = {
+        'bookmark': 'current',
+        'col_tableid': t.id,
+        'col_name': $(this).parents("th").first().attr("col")
+      }
+      del_data.push(d)
+    }
+  })
+
+  if (data.length > 0) {
+    services_osvcpostrest("R_USERS_SELF_TABLE_FILTERS", "", "", data, function(jd) {
+      if (jd.error && (jd.error.length > 0)) {
+        $(".flash").show("blind").html(services_error_fmt(jd))
+      }
+      if (del_data.length > 0) {
+        services_osvcdeleterest("R_USERS_SELF_TABLE_FILTERS", "", "", del_data, function(jd) {
+          if (jd.error && (jd.error.length > 0)) {
+            $(".flash").show("blind").html(services_error_fmt(jd))
+          }
+        },
+        function(xhr, stat, error) {
+          $(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
+        })
+      }
+    },
+    function(xhr, stat, error) {
+      $(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
+    })
+
+  }
+}
+
 function table_bind_filter_input_events(t) {
-  var inputs = t.div.find("input[name=fi]")
+  var inputs = t.e_header_filters.find("input[name=fi]")
   var url = t.ajax_url + "_col_values/"
 
   // refresh column filter cloud on keyup
@@ -1020,7 +1189,7 @@ function table_bind_filter_input_events(t) {
     var input = $(this)
     if (!is_enter(event)) {
       var col = input.attr('id').split('_f_')[1]
-      input.parents('tr.sym_headers').siblings("tr.theader_slim").find("[name='"+t.id+"_c_"+col+"']").removeClass("bgred").addClass("bgorange")
+      t.e_header_slim.find("[col='"+col+"']").removeClass("bgred").addClass("bgorange")
       clearTimeout(timer)
       timer = setTimeout(function validate(){
         var data = {}
@@ -1031,9 +1200,6 @@ function table_bind_filter_input_events(t) {
           } else if (t.colprops[c].force_filter != "") {
             data[t.id+"_f_"+c] = t.colprops[c].force_filter
           }
-        }
-        if (t.volatile_filters != "") {
-          data["volatile_filters"] = true
         }
         data[input.attr('id')] = input.val()
         var dest = input.siblings("[id^="+t.id+"_fc_]")
@@ -1054,10 +1220,11 @@ function table_bind_filter_input_events(t) {
   // validate column filter on <enter> keypress
   inputs.bind("keypress", function(event) {
     if (is_enter(event)) {
+      t.e_header_filters.find(".white_float_input").hide()
+      t.save_column_filters()
       t.refresh_column_filters()
+      t.refresh()
     }
-    var fn = "ajax_enter_submit_"+t.id
-    window[fn](event)
   })
 
   // open filter input on filter icon click
@@ -1073,16 +1240,26 @@ function table_bind_filter_input_events(t) {
 
   // clear column filter click
   inputs.parent().siblings(".clear16").bind("click", function(event) {
-    var k = $(this).parent().attr('name').replace("_c_", "_f_")
-    filter_submit(t.id, k, "**clear**")
+    var c = $(this).parent().attr("col")
+    var input = t.e_header_filters.find("th[col="+c+"]").find("input")
+    if ((c in t.colprops) && (t.colprops[c].force_filter != "")) {
+      input.val(t.colprops[c].force_filter)
+    } else if ((c in t.colprops) && (t.colprops[c].default_filter != "")) {
+      input.val(t.colprops[c].default_filter)
+    } else {
+      input.val("")
+    }
+    t.save_column_filters(c)
+    t.refresh_column_filters()
+    t.refresh()
   })
 
   // invert column filter click
   inputs.parent().siblings(".invert16").bind("click", function(event) {
-    var k = $(this).parent().attr('name').replace("_c_", "_f_")
-    table_invert_filter(t.id, k)
-    window["ajax_submit_"+t.id]()
+    var c = $(this).parent().attr("col")
+    t.invert_column_filter(c)
     t.refresh_column_filters()
+    t.refresh()
   })
 
   // values to column filter click
@@ -1092,12 +1269,15 @@ function table_bind_filter_input_events(t) {
     var col = k.split("_f_")[1]
     function f() {
       values_to_filter(k, ck)
-      window["ajax_submit_"+t.id]()
+      t.e_header_filters.find("th[col="+col+"]").find(".white_float_input").hide()
+      t.save_column_filters()
       t.refresh_column_filters()
+      t.refresh()
     }
     _url = url + col
     sync_ajax(_url, [k], ck, f)
   })
+
   t.bind_filter_reformat()
 }
 
@@ -1120,7 +1300,7 @@ function table_bind_filter_selector(t) {
       if (typeof cell.attr("v") === 'undefined') {
         cell = cell.parents("[cell=1]").first()
       }
-      filter_selector(t.id, event, cell.attr('name'), cell.attr('v'))
+      t.filter_selector(event, cell.attr('name'), cell.attr('v'))
     })
     $(this).bind("click", function() {
       $("#fsr"+t.id).hide()
@@ -1778,7 +1958,7 @@ function menu_action_status(msg){
   if (msg.factorized>0) {
     s = "factorized: "+msg.factorized+", "+s
   }
-  $(".flash").html(s).show("fold")
+  $(".flash").html(s).show("blind")
 }
 
 function table_action_menu_modules_all(t, e){
@@ -2166,11 +2346,11 @@ function get_selected() {
     return "";
 }
 
-function filter_selector(id,e,k,v){
+function table_filter_selector(t, e, k, v){
   if(e.button != 2) {
     return
   }
-  $("#am_"+id).remove()
+  $("#am_"+t.id).remove()
   try {
     var sel = window.getSelection().toString()
   } catch(e) {
@@ -2180,68 +2360,70 @@ function filter_selector(id,e,k,v){
     sel = v
   }
   _sel = sel
-  $("#fsr"+id).show()
+  $("#fsr"+t.id).show()
   var pos = get_pos(e)
-  $("#fsr"+id).find(".bgred").each(function(){
+  $("#fsr"+t.id).find(".bgred").each(function(){
     $(this).removeClass("bgred")
   })
   function getsel(){
     __sel = _sel
-    if ($("#fsr"+id).find("#fsrwildboth").hasClass("bgred")) {
+    if ($("#fsr"+t.id).find("#fsrwildboth").hasClass("bgred")) {
       __sel = '%' + __sel + '%'
     } else
-    if ($("#fsr"+id).find("#fsrwildleft").hasClass("bgred")) {
+    if ($("#fsr"+t.id).find("#fsrwildleft").hasClass("bgred")) {
       __sel = '%' + __sel
     } else
-    if ($("#fsr"+id).find("#fsrwildright").hasClass("bgred")) {
+    if ($("#fsr"+t.id).find("#fsrwildright").hasClass("bgred")) {
       __sel = __sel + '%'
     }
-    if ($("#fsr"+id).find("#fsrneg").hasClass("bgred")) {
+    if ($("#fsr"+t.id).find("#fsrneg").hasClass("bgred")) {
       __sel = '!' + __sel
     }
     return __sel
   }
-  $("#fsr"+id).css({"left": pos[0] + "px", "top": pos[1] + "px"})
-  $("#fsr"+id).find("#fsrview").each(function(){
+  $("#fsr"+t.id).css({"left": pos[0] + "px", "top": pos[1] + "px"})
+  $("#fsr"+t.id).find("#fsrview").each(function(){
     $(this).text($("[name="+k+"]").find("input").val())
     $(this).unbind()
     $(this).bind("dblclick", function(){
       sel = $(this).text()
-      $(".sym_headers").find("[name="+k+"]").find("input").val(sel)
-      filter_submit(id,k,sel)
-      $("#fsr"+id).hide()
+      $(".theader_filters").find("[name="+k+"]").find("input").val(sel)
+      t.save_column_filters()
+      t.refresh_column_filters()
+      t.refresh()
+      $("#fsr"+t.id).hide()
     })
     $(this).bind("click", function(){
       sel = $(this).text()
       cur = sel
       $(this).removeClass("highlight")
       $(this).addClass("b")
-      $(".sym_headers").find("[name="+k+"]").find("input").val(sel)
+      $(".theader_filters").find("[name="+k+"]").find("input").val(sel)
       $(".theader_slim").find("[name="+k+"]").each(function(){
         $(this).removeClass("bgred")
         $(this).addClass("bgorange")
       })
     })
   })
-  $("#fsr"+id).find("#fsrreset").each(function(){
+  $("#fsr"+t.id).find("#fsrreset").each(function(){
     $(this).unbind()
     $(this).bind("click", function(){
-      $("#fsr"+id).find("#fsrview").each(function(){
+      $("#fsr"+t.id).find("#fsrview").each(function(){
         $(this).text("")
         $(this).addClass("highlight")
       })
     })
   })
-  $("#fsr"+id).find("#fsrclear").each(function(){
+  $("#fsr"+t.id).find("#fsrclear").each(function(){
     $(this).unbind()
     $(this).bind("click", function(){
-      $("#fsr"+id).find("#fsrview").each(function(){
+      $("#fsr"+t.id).find("#fsrview").each(function(){
         $(this).text("**clear**")
         $(this).addClass("highlight")
       })
     })
   })
-  $("#fsr"+id).find("#fsrneg").each(function(){
+  $("#fsr"+t.id).find("#fsrneg").each(function(){
     $(this).unbind()
     $(this).bind("click", function(){
       if ($(this).hasClass("bgred")) {
@@ -2252,13 +2434,13 @@ function filter_selector(id,e,k,v){
       sel = getsel()
     })
   })
-  $("#fsr"+id).find("#fsrwildboth").each(function(){
+  $("#fsr"+t.id).find("#fsrwildboth").each(function(){
     $(this).unbind()
     $(this).bind("click", function(){
       if ($(this).hasClass("bgred")) {
         $(this).removeClass("bgred")
       } else {
-        $("#fsr"+id).find("[id^=fsrwild]").each(function(){
+        $("#fsr"+t.id).find("[id^=fsrwild]").each(function(){
           $(this).removeClass("bgred")
         })
         $(this).addClass("bgred")
@@ -2266,13 +2448,13 @@ function filter_selector(id,e,k,v){
       sel = getsel()
     })
   })
-  $("#fsr"+id).find("#fsrwildleft").each(function(){
+  $("#fsr"+t.id).find("#fsrwildleft").each(function(){
     $(this).unbind()
     $(this).bind("click", function(){
       if ($(this).hasClass("bgred")) {
         $(this).removeClass("bgred")
       } else {
-        $("#fsr"+id).find("[id^=fsrwild]").each(function(){
+        $("#fsr"+t.id).find("[id^=fsrwild]").each(function(){
           $(this).removeClass("bgred")
         })
         $(this).addClass("bgred")
@@ -2280,13 +2462,13 @@ function filter_selector(id,e,k,v){
       sel = getsel()
     })
   })
-  $("#fsr"+id).find("#fsrwildright").each(function(){
+  $("#fsr"+t.id).find("#fsrwildright").each(function(){
     $(this).unbind()
     $(this).bind("click", function(){
       if ($(this).hasClass("bgred")) {
         $(this).removeClass("bgred")
       } else {
-        $("#fsr"+id).find("[id^=fsrwild]").each(function(){
+        $("#fsr"+t.id).find("[id^=fsrwild]").each(function(){
           $(this).removeClass("bgred")
         })
         $(this).addClass("bgred")
@@ -2294,158 +2476,158 @@ function filter_selector(id,e,k,v){
       sel = getsel()
     })
   })
-  $("#fsr"+id).find("#fsreq").each(function(){
+  $("#fsr"+t.id).find("#fsreq").each(function(){
     $(this).unbind()
     $(this).bind("click", function(){
-      $("#fsr"+id).find("#fsrview").each(function(){
+      $("#fsr"+t.id).find("#fsrview").each(function(){
         $(this).text(sel)
         $(this).addClass("highlight")
       })
     })
   })
-  $("#fsr"+id).find("#fsrandeq").each(function(){
+  $("#fsr"+t.id).find("#fsrandeq").each(function(){
     $(this).unbind()
     $(this).bind("click", function(){
-      cur =  $(".sym_headers").find("[name="+k+"]").find("input").val()
+      cur =  $(".theader_filters").find("[name="+k+"]").find("input").val()
       val = cur + '&' + sel
-      $("#fsr"+id).find("#fsrview").each(function(){
+      $("#fsr"+t.id).find("#fsrview").each(function(){
         $(this).text(val)
         $(this).addClass("highlight")
       })
     })
   })
-  $("#fsr"+id).find("#fsroreq").each(function(){
+  $("#fsr"+t.id).find("#fsroreq").each(function(){
     $(this).unbind()
     $(this).bind("click", function(){
-      cur =  $(".sym_headers").find("[name="+k+"]").find("input").val()
+      cur =  $(".theader_filters").find("[name="+k+"]").find("input").val()
       val = cur + '|' + sel
-      $("#fsr"+id).find("#fsrview").each(function(){
+      $("#fsr"+t.id).find("#fsrview").each(function(){
         $(this).text(val)
         $(this).addClass("highlight")
       })
     })
   })
-  $("#fsr"+id).find("#fsrsup").each(function(){
+  $("#fsr"+t.id).find("#fsrsup").each(function(){
     $(this).unbind()
     $(this).bind("click", function(){
       val = '>' + sel
-      $("#fsr"+id).find("#fsrview").each(function(){
+      $("#fsr"+t.id).find("#fsrview").each(function(){
         $(this).text(val)
         $(this).addClass("highlight")
       })
     })
   })
-  $("#fsr"+id).find("#fsrandsup").each(function(){
+  $("#fsr"+t.id).find("#fsrandsup").each(function(){
     $(this).unbind()
     $(this).bind("click", function(){
-      val = $("#fsr"+id).find("#fsrview").text()
+      val = $("#fsr"+t.id).find("#fsrview").text()
       if (val.length==0) {
         val = $("#"+k).val()
       }
       val = val + '&>' + sel
-      $("#fsr"+id).find("#fsrview").each(function(){
+      $("#fsr"+t.id).find("#fsrview").each(function(){
         $(this).text(val)
         $(this).addClass("highlight")
       })
     })
   })
-  $("#fsr"+id).find("#fsrorsup").each(function(){
+  $("#fsr"+t.id).find("#fsrorsup").each(function(){
     $(this).unbind()
     $(this).bind("click", function(){
-      val = $("#fsr"+id).find("#fsrview").text()
+      val = $("#fsr"+t.id).find("#fsrview").text()
       if (val.length==0) {
         val = $("#"+k).val()
       }
       val = val + '|>' + sel
-      $("#fsr"+id).find("#fsrview").each(function(){
+      $("#fsr"+t.id).find("#fsrview").each(function(){
         $(this).text(val)
         $(this).addClass("highlight")
       })
     })
   })
-  $("#fsr"+id).find("#fsrinf").each(function(){
+  $("#fsr"+t.id).find("#fsrinf").each(function(){
     $(this).unbind()
     $(this).bind("click", function(){
       val = '<' + sel
-      $("#fsr"+id).find("#fsrview").each(function(){
+      $("#fsr"+t.id).find("#fsrview").each(function(){
         $(this).text(val)
         $(this).addClass("highlight")
       })
     })
   })
-  $("#fsr"+id).find("#fsrandinf").each(function(){
+  $("#fsr"+t.id).find("#fsrandinf").each(function(){
     $(this).unbind()
     $(this).bind("click", function(){
-      val = $("#fsr"+id).find("#fsrview").text()
+      val = $("#fsr"+t.id).find("#fsrview").text()
       if (val.length==0) {
         val = $("#"+k).val()
       }
       val = val + '&<' + sel
-      $("#fsr"+id).find("#fsrview").each(function(){
+      $("#fsr"+t.id).find("#fsrview").each(function(){
         $(this).text(val)
         $(this).addClass("highlight")
       })
     })
   })
-  $("#fsr"+id).find("#fsrorinf").each(function(){
+  $("#fsr"+t.id).find("#fsrorinf").each(function(){
     $(this).unbind()
     $(this).bind("click", function(){
-      val = $("#fsr"+id).find("#fsrview").text()
+      val = $("#fsr"+t.id).find("#fsrview").text()
       if (val.length==0) {
         val = $("#"+k).val()
       }
       val = val + '|<' + sel
-      $("#fsr"+id).find("#fsrview").each(function(){
+      $("#fsr"+t.id).find("#fsrview").each(function(){
         $(this).text(val)
         $(this).addClass("highlight")
       })
     })
   })
-  $("#fsr"+id).find("#fsrempty").each(function(){
+  $("#fsr"+t.id).find("#fsrempty").each(function(){
     $(this).unbind()
     $(this).bind("click", function(){
-      if ($("#fsr"+id).find("#fsrneg").hasClass("bgred")) {
+      if ($("#fsr"+t.id).find("#fsrneg").hasClass("bgred")) {
         val = '!empty'
       } else {
         val = 'empty'
       }
-      $("#fsr"+id).find("#fsrview").each(function(){
+      $("#fsr"+t.id).find("#fsrview").each(function(){
         $(this).text(val)
         $(this).addClass("highlight")
       })
     })
   })
-  $("#fsr"+id).find("#fsrandempty").each(function(){
+  $("#fsr"+t.id).find("#fsrandempty").each(function(){
     $(this).unbind()
     $(this).bind("click", function(){
-      val = $("#fsr"+id).find("#fsrview").text()
+      val = $("#fsr"+t.id).find("#fsrview").text()
       if (val.length==0) {
         val = $("#"+k).val()
       }
-      if ($("#fsr"+id).find("#fsrneg").hasClass("bgred")) {
+      if ($("#fsr"+t.id).find("#fsrneg").hasClass("bgred")) {
         val = val + '&!empty'
       } else {
         val = val + '&empty'
       }
-      $("#fsr"+id).find("#fsrview").each(function(){
+      $("#fsr"+t.id).find("#fsrview").each(function(){
         $(this).text(val)
         $(this).addClass("highlight")
       })
     })
   })
-  $("#fsr"+id).find("#fsrorempty").each(function(){
+  $("#fsr"+t.id).find("#fsrorempty").each(function(){
     $(this).unbind()
     $(this).bind("click", function(){
-      val = $("#fsr"+id).find("#fsrview").text()
+      val = $("#fsr"+t.id).find("#fsrview").text()
       if (val.length==0) {
         val = $("#"+k).val()
       }
-      if ($("#fsr"+id).find("#fsrneg").hasClass("bgred")) {
+      if ($("#fsr"+t.id).find("#fsrneg").hasClass("bgred")) {
         val = val + '|!empty'
       } else {
         val = val + '|empty'
       }
-      $("#fsr"+id).find("#fsrview").each(function(){
+      $("#fsr"+t.id).find("#fsrview").each(function(){
         $(this).text(val)
         $(this).addClass("highlight")
       })
@@ -2470,10 +2652,10 @@ function table_link(t){
   var args = "clear_filters=true&discard_filters=true"
 
   // fset
-  var current_fset = $("[name=fset_selector]").find(":selected").attr("id")
+  var current_fset = $("[name=fset_selector]").find("span").attr("fset_id")
   args += "&dbfilter="+current_fset
 
-  t.div.find("[name=fi]").each(function(){
+  t.e_header_filters.find("input[name=fi]").each(function(){
     if ($(this).val().length==0) {
       return
     }
@@ -3793,14 +3975,13 @@ function table_add_column_selector(t) {
         t.refresh()
       },
       function(xhr, stat, error) {
-        $(".flash").show("fold").html(services_ajax_error_fmt(xhr, stat, error))
+        $(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
       })
     })
     if (t.visible_columns.indexOf(colname) >= 0) {
       input.prop("checked", true)
     }
-    var k = t.id + "_f_" + colname
-    if (t.e_header_filters.find("#"+k).val()) {
+    if (t.e_header_filters.find("th[col="+colname+"]").find("input").val()) {
       input.prop("disabled", true)
     }
 
@@ -3956,7 +4137,7 @@ function table_add_bookmarks(t) {
   },
   function(xhr, stat, error) {
     spinner_del(listarea)
-    $(".flash").show("fold").html(services_ajax_error_fmt(xhr, stat, error))
+    $(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
   })
 
   try { e.i18n() } catch(e) {}
@@ -3974,7 +4155,7 @@ function table_add_bookmarks(t) {
   save.bind("click", function() {
     var now = new Date()
     save_name_input.val(print_date(now))
-    save_name.toggle("fold")
+    save_name.toggle("blind")
     save_name_input.focus()
   })
 
@@ -3989,7 +4170,7 @@ function table_add_bookmarks(t) {
     }
     services_osvcpostrest("R_USERS_SELF_TABLE_FILTERS_SAVE_BOOKMARK", "", "", data, function(jd) {
       if (jd.error) {
-        $(".flash").show("fold").html(services_error_fmt(jd))
+        $(".flash").show("blind").html(services_error_fmt(jd))
         return
       }
       t.insert_bookmark(name)
@@ -3997,7 +4178,7 @@ function table_add_bookmarks(t) {
       t.e_tool_bookmarks_save.show()
     },
     function(xhr, stat, error) {
-      $(".flash").show("fold").html(services_ajax_error_fmt(xhr, stat, error))
+      $(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
     })
   })
 
@@ -4026,13 +4207,13 @@ function table_insert_bookmark(t, name) {
     }
     services_osvcdeleterest("R_USERS_SELF_TABLE_FILTERS", "", "", data, function(jd) {
       if (jd.error) {
-        $(".flash").show("fold").html(services_error_fmt(jd))
+        $(".flash").show("blind").html(services_error_fmt(jd))
         return
       }
-      line.hide("fold", function(){line.remove()})
+      line.hide("blind", function(){line.remove()})
     },
     function(xhr, stat, error) {
-      $(".flash").show("fold").html(services_ajax_error_fmt(xhr, stat, error))
+      $(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
     })
   })
 
@@ -4045,26 +4226,27 @@ function table_insert_bookmark(t, name) {
     }
     services_osvcpostrest("R_USERS_SELF_TABLE_FILTERS_LOAD_BOOKMARK", "", "", data, function(jd) {
       if (jd.error) {
-        $(".flash").show("fold").html(services_error_fmt(jd))
+        $(".flash").show("blind").html(services_error_fmt(jd))
         return
       }
 
-      // flush the column filters
-      t.e_header_filters.find("[name=fi]").val("")
-
       // update the column filters
+      t.reset_column_filters()
       for (var i=0; i<jd.data.length; i++) {
         var data = jd.data[i]
-        var k = t.id + "_f_" + data.col_name.split('.')[1]
+        if (data.col_name.indexOf(".") >= 0) {
+          var k = data.col_name.split('.')[1]
+        } else {
+          var k = data.col_name
+        }
         var v = data.col_filter
-        t.e_header_filters.find("#"+k).val(v)
+        t.refresh_column_filter(k, v)
       }
-      t.format_header()
 
       t.refresh()
     },
     function(xhr, stat, error) {
-      $(".flash").show("fold").html(services_ajax_error_fmt(xhr, stat, error))
+      $(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
     })
   })
 }
@@ -4131,6 +4313,45 @@ function table_add_refresh(t) {
 }
 
 //
+// table tool: volatile toggle
+//
+function table_add_volatile(t) {
+  // checkbox
+  var input = $("<input type='checkbox' class='ocb' />")
+  if (t.options.volatile_filters) {
+    input.prop("checked", true)
+  }
+  input.uniqueId()
+  input.bind("click", function() {
+    var current_state
+    if ($(this).is(":checked")) {
+      current_state = true
+    } else {
+      current_state = false
+    }
+    t.options.volatile_filters = current_state
+    t.refresh_column_filters()
+  })
+
+  // label
+  var label = $("<label></label>")
+  label.attr("for", input.attr("id"))
+
+  // title
+  var title = $("<span data-i18n='table.volatile' style='padding-left:0.3em;'></span>")
+  title.attr("title", i18n.t("table.volatile_title"))
+
+  // container
+  var e = $("<span class='floatw'></span>")
+  e.append(input)
+  e.append(label)
+  e.append(title)
+  e.i18n()
+
+  t.e_toolbar.prepend(e)
+}
+
+//
 // table tool: websocket toggle
 //
 function table_add_wsswitch(t) {
@@ -4159,7 +4380,7 @@ function table_add_wsswitch(t) {
       }
     },
     function(xhr, stat, error) {
-      $(".flash").show("fold").html(services_ajax_error_fmt(xhr, stat, error))
+      $(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
     })
   })
 
@@ -4194,7 +4415,7 @@ function table_add_wsswitch(t) {
     }
   },
   function(xhr, stat, error) {
-    $(".flash").show("fold").html(services_ajax_error_fmt(xhr, stat, error))
+    $(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
   })
 
   t.e_toolbar.prepend(e)
@@ -4278,7 +4499,7 @@ function table_pager(t, options) {
       t.refresh()
     },
     function(xhr, stat, error) {
-      $(".flash").show("fold").html(services_ajax_error_fmt(xhr, stat, error))
+      $(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
     })
   })
 }
@@ -4434,6 +4655,33 @@ function table_stick(t) {
   sticky_relocate(t.e_header, t.e_sticky_anchor)
 }
 
+function table_get_column_filters(t, callback) {
+  var data = {
+    "query": "col_tableid="+t.id+" and bookmark=current",
+    "meta": "0"
+  }
+  services_osvcgetrest("R_USERS_SELF_TABLE_FILTERS", "", data, function(jd) {
+    if (jd.error) {
+      $(".flash").show("blind").html(services_error_fmt(jd))
+      return
+    }
+    t.reset_column_filters()
+    for (i=0; i<jd.data.length; i++) {
+      var d = jd.data[i]
+      if (d.col_name.indexOf(".") >= 0) {
+        var k = d.col_name.split('.')[1]
+      } else {
+        var k = d.col_name
+      }
+      t.refresh_column_filter(k, d.col_filter)
+    }
+    callback(t)
+  },
+  function(xhr, stat, error) {
+    $(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
+  }) 
+}
+
 var osvc = {
  'tables': {}
 }
@@ -4451,7 +4699,6 @@ function table_init(opts) {
     'columns': opts['columns'],
     'colprops': opts['colprops'],
     'visible_columns': opts['visible_columns'],
-    'volatile_filters': opts['volatile_filters'],
     'child_tables': opts['child_tables'],
     'dataable': opts['dataable'],
     'action_menu': opts['action_menu'],
@@ -4469,6 +4716,9 @@ function table_init(opts) {
     },
     'bind_action_menu': function(){
       table_bind_action_menu(this)
+    },
+    'filter_selector': function(e, k, v){
+      table_filter_selector(this, e, k, v)
     },
     'bind_filter_selector': function(){
       table_bind_filter_selector(this)
@@ -4521,14 +4771,32 @@ function table_init(opts) {
     'refresh_column_filters': function(){
       table_refresh_column_filters(this)
     },
+    'reset_column_filters': function(){
+      table_reset_column_filters(this)
+    },
+    'add_column_header': function(e, c){
+      table_add_column_header(this, e, c)
+    },
+    'add_column_headers': function(){
+      table_add_column_headers(this)
+    },
+    'add_column_header_slim': function(e, c){
+      table_add_column_header_slim(this, e, c)
+    },
+    'add_column_headers_slim': function(){
+      table_add_column_headers_slim(this)
+    },
+    'add_column_header_input': function(e, c){
+      table_add_column_header_input(this, e, c)
+    },
+    'add_column_headers_input': function(){
+      table_add_column_headers_input(this)
+    },
     'add_filtered_to_visible_columns': function(){
       table_add_filtered_to_visible_columns(this)
     },
     'relocate_extra_rows': function(){
       table_relocate_extra_rows(this)
-    },
-    'format_header': function(){
-      table_format_header(this)
     },
     'action_menu_param_moduleset': function(){
       return table_action_menu_param_moduleset(this)
@@ -4554,11 +4822,17 @@ function table_init(opts) {
     'stick': function(){
       table_stick(this)
     },
+    'get_column_filters': function(callback){
+      table_get_column_filters(this, callback)
+    },
     'add_pager': function(){
       table_add_pager(this)
     },
     'add_wsswitch': function(){
       table_add_wsswitch(this)
+    },
+    'add_volatile': function(){
+      table_add_volatile(this)
     },
     'add_refresh': function(){
       table_add_refresh(this)
@@ -4577,6 +4851,12 @@ function table_init(opts) {
     },
     'add_commonality': function(){
       table_add_commonality(this)
+    },
+    'invert_column_filter': function(c){
+      table_invert_column_filter(this, c)
+    },
+    'save_column_filters': function(){
+      table_save_column_filters(this)
     }
   }
 
@@ -4584,14 +4864,16 @@ function table_init(opts) {
   t.div = $("#"+t.id)
   t.e_toolbar = t.div.find("[name=toolbar]").first()
   t.e_table = t.div.find("table#table_"+t.id).first()
-  t.e_header = t.e_table.find(".theader").first()
-  t.e_header_filters = t.e_table.find("[name=filters]").first()
 
   osvc.tables[t.id] = t
   t.div.find("select").parent().css("white-space", "nowrap")
   t.div.find("select:visible").combobox()
 
   create_overlay()
+  t.add_column_headers_slim()
+  t.add_column_headers_input()
+  t.add_column_headers()
+  t.refresh_column_filters()
   t.add_commonality()
   t.add_column_selector()
   t.add_csv()
@@ -4599,25 +4881,49 @@ function table_init(opts) {
   t.add_link()
   t.add_refresh()
   t.add_wsswitch()
+  t.add_volatile()
   t.add_pager()
   t.add_filtered_to_visible_columns()
   t.hide_cells()
-  t.format_header()
   t.add_filterbox()
   t.add_scrollers()
   t.scroll_enable()
   t.stick()
 
-  if (t.dataable) {
-    t.refresh()
+  function init_post_get_column_filters() {
+    if (t.dataable) {
+      t.refresh()
+    } else {
+      t.pager()
+      t.bind_checkboxes()
+      t.hide_cells()
+      t.decorate_cells()
+      t.bind_filter_selector()
+      t.bind_action_menu()
+      t.restripe_lines()
+    }
+  }
+
+  function has_filter_in_request_vars() {
+    if (!t.options.request_vars) {
+      return false
+    }
+    for (c in t.colprops) {
+      if (t.id+"_f_"+c in t.options.request_vars) {
+        return true
+      }
+    }
+    return false
+  }
+
+  if (t.options.volatile_filters || has_filter_in_request_vars()) {
+    // though column filters can still be set through the options.request_vars
+    init_post_get_column_filters()
   } else {
-    t.pager()
-    t.bind_checkboxes()
-    t.hide_cells()
-    t.decorate_cells()
-    t.bind_filter_selector()
-    t.bind_action_menu()
-    t.restripe_lines()
+    // get the column filters from the collector
+    t.get_column_filters(
+      init_post_get_column_filters
+    )
   }
 }
 

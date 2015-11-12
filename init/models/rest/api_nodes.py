@@ -575,7 +575,10 @@ class rest_post_nodes(rest_post_handler):
         if "team_responsible" in vars and auth_is_node():
             del(vars["team_responsible"])
 
-        db.nodes.insert(**vars)
+        k = dict(
+          nodename=vars["nodename"],
+        )
+        db.nodes.update_or_insert(k, **vars)
         _log('node.add',
              'create properties %(data)s',
              dict(data=str(vars)),

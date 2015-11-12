@@ -22,6 +22,8 @@
     "month_plural": "__count__ mois",
     "year": "__count__ an",
     "year_plural": "__count__ ans",
+    "volatile": "Filtres volatiles",
+    "volatile_title": "Activé, les filtres de colonne ne sont pas sauvegarde sur le serveur.",
     "live": "Live",
     "link": "Lien",
     "link_title": "Partagez votre vue par cet hyperlien",
