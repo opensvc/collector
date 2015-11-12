@@ -2636,6 +2636,20 @@ var os_class_h = {
   'vmware': 'os_vmware'
 }
 
+function cell_decorator_boolean(e) {
+  var v = $(e).attr("v")
+  true_vals = [1, "1", "T", "True", true]
+  if (typeof v === "undefined") {
+    var cl = ""
+  } else if (true_vals.indexOf(v) >= 0) {
+    var cl = "toggle-on"
+  } else {
+    var cl = "toggle-off"
+  }
+  s = "<span class='"+cl+"' title='"+v+"'></span>"
+  $(e).html(s)
+}
+
 function cell_decorator_network(e) {
   var v = $(e).attr("v")
   $(e).html("<span class='clickable'>"+v+"</span>")
@@ -3705,6 +3719,7 @@ cell_decorators = {
  "dash_links": cell_decorator_dash_links,
  "tag_exclude": cell_decorator_tag_exclude,
  "_network": cell_decorator_network,
+ "boolean": cell_decorator_boolean,
  "status": cell_decorator_status
 }
 

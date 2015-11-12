@@ -208,7 +208,7 @@ class rest_get_service_resources(rest_get_table_handler):
           "Display service resources on all nodes.",
         ]
         examples = [
-          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/services/mysvc/resources?props=rid,res_status",
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/services/mysvc/resources?props=nodename,rid,res_status",
         ]
         rest_get_table_handler.__init__(
           self,

@@ -19,7 +19,7 @@ tags_colprops = {
              field='tag_created',
              img='time16',
              display=True,
-             _class='datetime',
+             _class='datetime_no_age',
             ),
     'tag_exclude': HtmlTableColumn(
              title='Tag exclude',

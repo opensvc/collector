@@ -211,7 +211,7 @@ class table_tagattach(HtmlTable):
                      field='created',
                      img='time16',
                      display=True,
-                     _class='datetime',
+                     _class='datetime_no_age',
                     ),
             'nodename': HtmlTableColumn(
                      title='Node',

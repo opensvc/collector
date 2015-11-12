@@ -5,6 +5,15 @@
 	top: 2em;
 }
 
+.toggle-on:before {
+	content: '\f205  ';
+	font-family: awesome;
+}
+.toggle-off:before {
+	content: '\f204  ';
+	font-family: awesome;
+}
+
 .minute:before {
 	content: '\f017  ';
 	font-family: awesome;
