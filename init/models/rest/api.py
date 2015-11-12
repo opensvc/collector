@@ -206,9 +206,35 @@ class rest_post_handler(rest_handler):
         rest_handler.__init__(self, **vars)
 
     def handle(self, *args, **vars):
+        if request.env.http_content_type == "application/json":
+            data = json.loads(request.body.read())
+            if type(data) == list:
+                return self.handle_list(data, args, vars)
+            elif type(data) == dict:
+                return rest_handler.handle(self, *args, **data)
         if "query" in vars and hasattr(self, "get_handler"):
             return self.handle_multi_update(*args, **vars)
         return rest_handler.handle(self, *args, **vars)
+
+    def handle_list(self, data, args, vars):
+        rdata = {
+          "info": [],
+          "error": [],
+          "data": [],
+        }
+        for entry in data:
+            if type(entry) != dict:
+                rdata["error"].append("skip '%s': not a dict" % str(entry))
+                continue
+            r = rest_handler.handle(self, *args, **entry)
+            for key in ("info", "error", "data"):
+               if key in r:
+                   d = r[key]
+                   if type(d) == list:
+                       rdata[key] += d
+                   else:
+                       rdata[key] += [d]
+        return rdata
 
     def handle_multi_update(self, *args, **vars):
         l = self.get_handler.handler(query=vars["query"], limit=0, props=self.update_one_param)["data"]
