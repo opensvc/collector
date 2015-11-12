@@ -20,7 +20,7 @@ function bind_user_groups() {
 }
 
 //
-// group hiddenn menu entries tool
+// group hidden menu entries tool
 //
 function bind_group_hidden_menu_entries() {
   $("[name=group_hidden_menu_entry_check]").bind("click", function(){
@@ -58,14 +58,10 @@ function values_to_filter(iid, did){
 	$("#"+iid).val(v)
 }
 
-function invert_filter(did){
-  e = $('#'+did)
-  _invert_filter(e)
-}
-
-function table_invert_filter(id, did){
-  e = $("#"+id).find('#'+did)
-  _invert_filter(e)
+function table_invert_column_filter(t, c){
+  var input = t.e_header_filters.find("th[col="+c+"]").find("input")
+  _invert_filter(input)
+  t.save_column_filters()
 }
 
 function _invert_filter(e){
@@ -475,7 +471,7 @@ function table_refresh_column_filter(t, c, val) {
   if (!t.options.filterable) {
     return
   }
-  var th = t.e_header_filters.find("[col="+c+"]")
+  var th = t.e_header_filters.find("th[col="+c+"]")
   var input = th.find("input")
   var label = th.find(".col_filter_label")
   var val
@@ -521,7 +517,7 @@ function table_refresh_column_filter(t, c, val) {
   th.removeClass("bgorange")
   var cl = ""
   if ((val.length > 0) && (val != "**clear**")) {
-    if (t.options.volatile_filters == "") {
+    if (!t.options.volatile_filters) {
       th.addClass("bgred")
     } else {
       th.addClass("bgblack")
@@ -756,9 +752,6 @@ function table_refresh(t) {
       "table_id": t.id,
       "visible_columns": t.visible_columns.join(',')
     }
-    if (t.options.volatile_filters != "") {
-      data["volatile_filters"] = true
-    }
     data[t.id+"_page"] = $("#"+t.id+"_page").val()
     for (c in t.colprops) {
       var current = $("#"+t.id+"_f_"+c).val()
@@ -876,7 +869,6 @@ function table_refresh(t) {
 }
 
 function table_insert(t, data) {
-    var query="volatile_filters="+t.options.volatile_filters
     for (i=0; i<data.length; i++) {
         try {
             key=data[i]["key"]
@@ -1018,9 +1010,6 @@ function table_ajax_submit(url, id, additional_inputs, input_name, additional_in
             query=query+encodeURIComponent(s[i])+"="+encodeURIComponent(document.getElementById(s[i]).value);
         } catch(e) {}
     }
-    if (t.options.volatile_filters != "") {
-      query += "&volatile_filters=true"
-    }
     $.ajax({
          type: "POST",
          url: url,
@@ -1128,8 +1117,80 @@ function filter_submit(id,k,v){
   osvc.tables[id].refresh_column_filters()
 };
 
+function table_delete_column_filter(t, c) {
+  if (t.options.volatile_filters) {
+    return
+  }
+  var data = {
+    'bookmark': 'current',
+    'col_tableid': t.id,
+    'col_name': c,
+  }
+  services_osvcdeleterest("R_USERS_SELF_TABLE_FILTERS", "", "", data, function(jd) {
+    if (jd.error) {
+      $(".flash").show("blind").html(services_error_fmt(jd))
+      return
+    }
+  },
+  function(xhr, stat, error) {
+    $(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
+  })
+}
+
+function table_save_column_filters(t) {
+  if (t.options.volatile_filters) {
+    return
+  }
+  var data = []
+  var del_data = []
+
+  t.e_header_filters.find("input[name=fi]").each(function(){
+    var val = $(this).val()
+    if (val != "") {
+      // filter value to save
+      var d = {
+        'bookmark': 'current',
+        'col_tableid': t.id,
+        'col_name': $(this).parents("th").first().attr("col"),
+        'col_filter': val
+      }
+      data.push(d)
+    } else {
+      // filter value to delete
+      var d = {
+        'bookmark': 'current',
+        'col_tableid': t.id,
+        'col_name': $(this).parents("th").first().attr("col")
+      }
+      del_data.push(d)
+    }
+  })
+
+  if (data.length > 0) {
+    services_osvcpostrest("R_USERS_SELF_TABLE_FILTERS", "", "", data, function(jd) {
+      if (jd.error && (jd.error.length > 0)) {
+        $(".flash").show("blind").html(services_error_fmt(jd))
+      }
+      if (del_data.length > 0) {
+        services_osvcdeleterest("R_USERS_SELF_TABLE_FILTERS", "", "", del_data, function(jd) {
+          if (jd.error && (jd.error.length > 0)) {
+            $(".flash").show("blind").html(services_error_fmt(jd))
+          }
+        },
+        function(xhr, stat, error) {
+          $(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
+        })
+      }
+    },
+    function(xhr, stat, error) {
+      $(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
+    })
+
+  }
+}
+
 function table_bind_filter_input_events(t) {
-  var inputs = t.div.find("input[name=fi]")
+  var inputs = t.e_header_filters.find("input[name=fi]")
   var url = t.ajax_url + "_col_values/"
 
   // refresh column filter cloud on keyup
@@ -1148,9 +1209,6 @@ function table_bind_filter_input_events(t) {
           } else if (t.colprops[c].force_filter != "") {
             data[t.id+"_f_"+c] = t.colprops[c].force_filter
           }
-        }
-        if (t.options.volatile_filters != "") {
-          data["volatile_filters"] = true
         }
         data[input.attr('id')] = input.val()
         var dest = input.siblings("[id^="+t.id+"_fc_]")
@@ -1171,10 +1229,11 @@ function table_bind_filter_input_events(t) {
   // validate column filter on <enter> keypress
   inputs.bind("keypress", function(event) {
     if (is_enter(event)) {
+      t.e_header_filters.find(".white_float_input").hide()
+      t.save_column_filters()
       t.refresh_column_filters()
+      t.refresh()
     }
-    var fn = "ajax_enter_submit_"+t.id
-    window[fn](event)
   })
 
   // open filter input on filter icon click
@@ -1190,16 +1249,19 @@ function table_bind_filter_input_events(t) {
 
   // clear column filter click
   inputs.parent().siblings(".clear16").bind("click", function(event) {
-    var k = $(this).parent().attr('name').replace("_c_", "_f_")
-    filter_submit(t.id, k, "**clear**")
+    var c = $(this).parent().attr("col")
+    t.e_header_filters.find("th[col="+c+"]").find("input").val("")
+    t.delete_column_filter(c)
+    t.refresh_column_filters()
+    t.refresh()
   })
 
   // invert column filter click
   inputs.parent().siblings(".invert16").bind("click", function(event) {
-    var k = $(this).parent().attr('name').replace("_c_", "_f_")
-    table_invert_filter(t.id, k)
-    window["ajax_submit_"+t.id]()
+    var c = $(this).parent().attr("col")
+    t.invert_column_filter(c)
     t.refresh_column_filters()
+    t.refresh()
   })
 
   // values to column filter click
@@ -1209,12 +1271,15 @@ function table_bind_filter_input_events(t) {
     var col = k.split("_f_")[1]
     function f() {
       values_to_filter(k, ck)
-      window["ajax_submit_"+t.id]()
+      t.e_header_filters.find("th[col="+col+"]").find(".white_float_input").hide()
+      t.save_column_filters()
       t.refresh_column_filters()
+      t.refresh()
     }
     _url = url + col
     sync_ajax(_url, [k], ck, f)
   })
+
   t.bind_filter_reformat()
 }
 
@@ -1237,7 +1302,7 @@ function table_bind_filter_selector(t) {
       if (typeof cell.attr("v") === 'undefined') {
         cell = cell.parents("[cell=1]").first()
       }
-      filter_selector(t.id, event, cell.attr('name'), cell.attr('v'))
+      t.filter_selector(event, cell.attr('name'), cell.attr('v'))
     })
     $(this).bind("click", function() {
       $("#fsr"+t.id).hide()
@@ -2283,11 +2348,11 @@ function get_selected() {
     return "";
 }
 
-function filter_selector(id,e,k,v){
+function table_filter_selector(t, e, k, v){
   if(e.button != 2) {
     return
   }
-  $("#am_"+id).remove()
+  $("#am_"+t.id).remove()
   try {
     var sel = window.getSelection().toString()
   } catch(e) {
@@ -2297,36 +2362,38 @@ function filter_selector(id,e,k,v){
     sel = v
   }
   _sel = sel
-  $("#fsr"+id).show()
+  $("#fsr"+t.id).show()
   var pos = get_pos(e)
-  $("#fsr"+id).find(".bgred").each(function(){
+  $("#fsr"+t.id).find(".bgred").each(function(){
     $(this).removeClass("bgred")
   })
   function getsel(){
     __sel = _sel
-    if ($("#fsr"+id).find("#fsrwildboth").hasClass("bgred")) {
+    if ($("#fsr"+t.id).find("#fsrwildboth").hasClass("bgred")) {
       __sel = '%' + __sel + '%'
     } else
-    if ($("#fsr"+id).find("#fsrwildleft").hasClass("bgred")) {
+    if ($("#fsr"+t.id).find("#fsrwildleft").hasClass("bgred")) {
       __sel = '%' + __sel
     } else
-    if ($("#fsr"+id).find("#fsrwildright").hasClass("bgred")) {
+    if ($("#fsr"+t.id).find("#fsrwildright").hasClass("bgred")) {
       __sel = __sel + '%'
     }
-    if ($("#fsr"+id).find("#fsrneg").hasClass("bgred")) {
+    if ($("#fsr"+t.id).find("#fsrneg").hasClass("bgred")) {
       __sel = '!' + __sel
     }
     return __sel
   }
-  $("#fsr"+id).css({"left": pos[0] + "px", "top": pos[1] + "px"})
-  $("#fsr"+id).find("#fsrview").each(function(){
+  $("#fsr"+t.id).css({"left": pos[0] + "px", "top": pos[1] + "px"})
+  $("#fsr"+t.id).find("#fsrview").each(function(){
     $(this).text($("[name="+k+"]").find("input").val())
     $(this).unbind()
     $(this).bind("dblclick", function(){
       sel = $(this).text()
       $(".theader_filters").find("[name="+k+"]").find("input").val(sel)
-      filter_submit(id,k,sel)
-      $("#fsr"+id).hide()
+      t.save_column_filters()
+      t.refresh_column_filters()
+      t.refresh()
+      $("#fsr"+t.id).hide()
     })
     $(this).bind("click", function(){
       sel = $(this).text()
@@ -2340,25 +2407,25 @@ function filter_selector(id,e,k,v){
       })
     })
   })
-  $("#fsr"+id).find("#fsrreset").each(function(){
+  $("#fsr"+t.id).find("#fsrreset").each(function(){
     $(this).unbind()
     $(this).bind("click", function(){
-      $("#fsr"+id).find("#fsrview").each(function(){
+      $("#fsr"+t.id).find("#fsrview").each(function(){
         $(this).text("")
         $(this).addClass("highlight")
       })
     })
   })
-  $("#fsr"+id).find("#fsrclear").each(function(){
+  $("#fsr"+t.id).find("#fsrclear").each(function(){
     $(this).unbind()
     $(this).bind("click", function(){
-      $("#fsr"+id).find("#fsrview").each(function(){
+      $("#fsr"+t.id).find("#fsrview").each(function(){
         $(this).text("**clear**")
         $(this).addClass("highlight")
       })
     })
   })
-  $("#fsr"+id).find("#fsrneg").each(function(){
+  $("#fsr"+t.id).find("#fsrneg").each(function(){
     $(this).unbind()
     $(this).bind("click", function(){
       if ($(this).hasClass("bgred")) {
@@ -2369,13 +2436,13 @@ function filter_selector(id,e,k,v){
       sel = getsel()
     })
   })
-  $("#fsr"+id).find("#fsrwildboth").each(function(){
+  $("#fsr"+t.id).find("#fsrwildboth").each(function(){
     $(this).unbind()
     $(this).bind("click", function(){
       if ($(this).hasClass("bgred")) {
         $(this).removeClass("bgred")
       } else {
-        $("#fsr"+id).find("[id^=fsrwild]").each(function(){
+        $("#fsr"+t.id).find("[id^=fsrwild]").each(function(){
           $(this).removeClass("bgred")
         })
         $(this).addClass("bgred")
@@ -2383,13 +2450,13 @@ function filter_selector(id,e,k,v){
       sel = getsel()
     })
   })
-  $("#fsr"+id).find("#fsrwildleft").each(function(){
+  $("#fsr"+t.id).find("#fsrwildleft").each(function(){
     $(this).unbind()
     $(this).bind("click", function(){
       if ($(this).hasClass("bgred")) {
         $(this).removeClass("bgred")
       } else {
-        $("#fsr"+id).find("[id^=fsrwild]").each(function(){
+        $("#fsr"+t.id).find("[id^=fsrwild]").each(function(){
           $(this).removeClass("bgred")
         })
         $(this).addClass("bgred")
@@ -2397,13 +2464,13 @@ function filter_selector(id,e,k,v){
       sel = getsel()
     })
   })
-  $("#fsr"+id).find("#fsrwildright").each(function(){
+  $("#fsr"+t.id).find("#fsrwildright").each(function(){
     $(this).unbind()
     $(this).bind("click", function(){
       if ($(this).hasClass("bgred")) {
         $(this).removeClass("bgred")
       } else {
-        $("#fsr"+id).find("[id^=fsrwild]").each(function(){
+        $("#fsr"+t.id).find("[id^=fsrwild]").each(function(){
           $(this).removeClass("bgred")
         })
         $(this).addClass("bgred")
@@ -2411,158 +2478,158 @@ function filter_selector(id,e,k,v){
       sel = getsel()
     })
   })
-  $("#fsr"+id).find("#fsreq").each(function(){
+  $("#fsr"+t.id).find("#fsreq").each(function(){
     $(this).unbind()
     $(this).bind("click", function(){
-      $("#fsr"+id).find("#fsrview").each(function(){
+      $("#fsr"+t.id).find("#fsrview").each(function(){
         $(this).text(sel)
         $(this).addClass("highlight")
       })
     })
   })
-  $("#fsr"+id).find("#fsrandeq").each(function(){
+  $("#fsr"+t.id).find("#fsrandeq").each(function(){
     $(this).unbind()
     $(this).bind("click", function(){
       cur =  $(".theader_filters").find("[name="+k+"]").find("input").val()
       val = cur + '&' + sel
-      $("#fsr"+id).find("#fsrview").each(function(){
+      $("#fsr"+t.id).find("#fsrview").each(function(){
         $(this).text(val)
         $(this).addClass("highlight")
       })
     })
   })
-  $("#fsr"+id).find("#fsroreq").each(function(){
+  $("#fsr"+t.id).find("#fsroreq").each(function(){
     $(this).unbind()
     $(this).bind("click", function(){
       cur =  $(".theader_filters").find("[name="+k+"]").find("input").val()
       val = cur + '|' + sel
-      $("#fsr"+id).find("#fsrview").each(function(){
+      $("#fsr"+t.id).find("#fsrview").each(function(){
         $(this).text(val)
         $(this).addClass("highlight")
       })
     })
   })
-  $("#fsr"+id).find("#fsrsup").each(function(){
+  $("#fsr"+t.id).find("#fsrsup").each(function(){
     $(this).unbind()
     $(this).bind("click", function(){
       val = '>' + sel
-      $("#fsr"+id).find("#fsrview").each(function(){
+      $("#fsr"+t.id).find("#fsrview").each(function(){
         $(this).text(val)
         $(this).addClass("highlight")
       })
     })
   })
-  $("#fsr"+id).find("#fsrandsup").each(function(){
+  $("#fsr"+t.id).find("#fsrandsup").each(function(){
     $(this).unbind()
     $(this).bind("click", function(){
-      val = $("#fsr"+id).find("#fsrview").text()
+      val = $("#fsr"+t.id).find("#fsrview").text()
       if (val.length==0) {
         val = $("#"+k).val()
       }
       val = val + '&>' + sel
-      $("#fsr"+id).find("#fsrview").each(function(){
+      $("#fsr"+t.id).find("#fsrview").each(function(){
         $(this).text(val)
         $(this).addClass("highlight")
       })
     })
   })
-  $("#fsr"+id).find("#fsrorsup").each(function(){
+  $("#fsr"+t.id).find("#fsrorsup").each(function(){
     $(this).unbind()
     $(this).bind("click", function(){
-      val = $("#fsr"+id).find("#fsrview").text()
+      val = $("#fsr"+t.id).find("#fsrview").text()
       if (val.length==0) {
         val = $("#"+k).val()
       }
       val = val + '|>' + sel
-      $("#fsr"+id).find("#fsrview").each(function(){
+      $("#fsr"+t.id).find("#fsrview").each(function(){
         $(this).text(val)
         $(this).addClass("highlight")
       })
     })
   })
-  $("#fsr"+id).find("#fsrinf").each(function(){
+  $("#fsr"+t.id).find("#fsrinf").each(function(){
     $(this).unbind()
     $(this).bind("click", function(){
       val = '<' + sel
-      $("#fsr"+id).find("#fsrview").each(function(){
+      $("#fsr"+t.id).find("#fsrview").each(function(){
         $(this).text(val)
         $(this).addClass("highlight")
       })
     })
   })
-  $("#fsr"+id).find("#fsrandinf").each(function(){
+  $("#fsr"+t.id).find("#fsrandinf").each(function(){
     $(this).unbind()
     $(this).bind("click", function(){
-      val = $("#fsr"+id).find("#fsrview").text()
+      val = $("#fsr"+t.id).find("#fsrview").text()
       if (val.length==0) {
         val = $("#"+k).val()
       }
       val = val + '&<' + sel
-      $("#fsr"+id).find("#fsrview").each(function(){
+      $("#fsr"+t.id).find("#fsrview").each(function(){
         $(this).text(val)
         $(this).addClass("highlight")
       })
     })
   })
-  $("#fsr"+id).find("#fsrorinf").each(function(){
+  $("#fsr"+t.id).find("#fsrorinf").each(function(){
     $(this).unbind()
     $(this).bind("click", function(){
-      val = $("#fsr"+id).find("#fsrview").text()
+      val = $("#fsr"+t.id).find("#fsrview").text()
       if (val.length==0) {
         val = $("#"+k).val()
       }
       val = val + '|<' + sel
-      $("#fsr"+id).find("#fsrview").each(function(){
+      $("#fsr"+t.id).find("#fsrview").each(function(){
         $(this).text(val)
         $(this).addClass("highlight")
       })
     })
   })
-  $("#fsr"+id).find("#fsrempty").each(function(){
+  $("#fsr"+t.id).find("#fsrempty").each(function(){
     $(this).unbind()
     $(this).bind("click", function(){
-      if ($("#fsr"+id).find("#fsrneg").hasClass("bgred")) {
+      if ($("#fsr"+t.id).find("#fsrneg").hasClass("bgred")) {
         val = '!empty'
       } else {
         val = 'empty'
       }
-      $("#fsr"+id).find("#fsrview").each(function(){
+      $("#fsr"+t.id).find("#fsrview").each(function(){
         $(this).text(val)
         $(this).addClass("highlight")
       })
     })
   })
-  $("#fsr"+id).find("#fsrandempty").each(function(){
+  $("#fsr"+t.id).find("#fsrandempty").each(function(){
     $(this).unbind()
     $(this).bind("click", function(){
-      val = $("#fsr"+id).find("#fsrview").text()
+      val = $("#fsr"+t.id).find("#fsrview").text()
       if (val.length==0) {
         val = $("#"+k).val()
       }
-      if ($("#fsr"+id).find("#fsrneg").hasClass("bgred")) {
+      if ($("#fsr"+t.id).find("#fsrneg").hasClass("bgred")) {
         val = val + '&!empty'
       } else {
         val = val + '&empty'
       }
-      $("#fsr"+id).find("#fsrview").each(function(){
+      $("#fsr"+t.id).find("#fsrview").each(function(){
         $(this).text(val)
         $(this).addClass("highlight")
       })
     })
   })
-  $("#fsr"+id).find("#fsrorempty").each(function(){
+  $("#fsr"+t.id).find("#fsrorempty").each(function(){
     $(this).unbind()
     $(this).bind("click", function(){
-      val = $("#fsr"+id).find("#fsrview").text()
+      val = $("#fsr"+t.id).find("#fsrview").text()
       if (val.length==0) {
         val = $("#"+k).val()
       }
-      if ($("#fsr"+id).find("#fsrneg").hasClass("bgred")) {
+      if ($("#fsr"+t.id).find("#fsrneg").hasClass("bgred")) {
         val = val + '|!empty'
       } else {
         val = val + '|empty'
       }
-      $("#fsr"+id).find("#fsrview").each(function(){
+      $("#fsr"+t.id).find("#fsrview").each(function(){
         $(this).text(val)
         $(this).addClass("highlight")
       })
@@ -2590,7 +2657,7 @@ function table_link(t){
   var current_fset = $("[name=fset_selector]").find(":selected").attr("id")
   args += "&dbfilter="+current_fset
 
-  t.div.find("[name=fi]").each(function(){
+  t.e_header_filters.find("input[name=fi]").each(function(){
     if ($(this).val().length==0) {
       return
     }
@@ -3916,8 +3983,7 @@ function table_add_column_selector(t) {
     if (t.visible_columns.indexOf(colname) >= 0) {
       input.prop("checked", true)
     }
-    var k = t.id + "_f_" + colname
-    if (t.e_header_filters.find("#"+k).val()) {
+    if (t.e_header_filters.find("th[col="+colname+"]").find("input").val()) {
       input.prop("disabled", true)
     }
 
@@ -4248,6 +4314,45 @@ function table_add_refresh(t) {
 
   t.e_tool_refresh = e
   t.e_tool_refresh_spin = e.find(".refresh16")
+  t.e_toolbar.prepend(e)
+}
+
+//
+// table tool: volatile toggle
+//
+function table_add_volatile(t) {
+  // checkbox
+  var input = $("<input type='checkbox' class='ocb' />")
+  if (t.options.volatile_filters) {
+    input.prop("checked", true)
+  }
+  input.uniqueId()
+  input.bind("click", function() {
+    var current_state
+    if ($(this).is(":checked")) {
+      current_state = true
+    } else {
+      current_state = false
+    }
+    t.options.volatile_filters = current_state
+    t.refresh_column_filters()
+  })
+
+  // label
+  var label = $("<label></label>")
+  label.attr("for", input.attr("id"))
+
+  // title
+  var title = $("<span data-i18n='table.volatile' style='padding-left:0.3em;'></span>")
+  title.attr("title", i18n.t("table.volatile_title"))
+
+  // container
+  var e = $("<span class='floatw'></span>")
+  e.append(input)
+  e.append(label)
+  e.append(title)
+  e.i18n()
+
   t.e_toolbar.prepend(e)
 }
 
@@ -4617,6 +4722,9 @@ function table_init(opts) {
     'bind_action_menu': function(){
       table_bind_action_menu(this)
     },
+    'filter_selector': function(e, k, v){
+      table_filter_selector(this, e, k, v)
+    },
     'bind_filter_selector': function(){
       table_bind_filter_selector(this)
     },
@@ -4728,6 +4836,9 @@ function table_init(opts) {
     'add_wsswitch': function(){
       table_add_wsswitch(this)
     },
+    'add_volatile': function(){
+      table_add_volatile(this)
+    },
     'add_refresh': function(){
       table_add_refresh(this)
     },
@@ -4745,6 +4856,15 @@ function table_init(opts) {
     },
     'add_commonality': function(){
       table_add_commonality(this)
+    },
+    'invert_column_filter': function(c){
+      table_invert_column_filter(this, c)
+    },
+    'save_column_filters': function(){
+      table_save_column_filters(this)
+    },
+    'delete_column_filter': function(c){
+      table_delete_column_filter(this, c)
     }
   }
 
@@ -4768,6 +4888,7 @@ function table_init(opts) {
   t.add_link()
   t.add_refresh()
   t.add_wsswitch()
+  t.add_volatile()
   t.add_pager()
   t.add_filtered_to_visible_columns()
   t.hide_cells()

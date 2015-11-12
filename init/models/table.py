@@ -110,7 +110,6 @@ class HtmlTable(object):
         self.id_page = '_'.join((self.id, 'page'))
         self.upc_table = self.id
         self.last = None
-        self.column_filter_reset = '**clear**'
         self.object_list = []
         self.child_tables = []
         self.force_cols = []
@@ -157,9 +156,6 @@ class HtmlTable(object):
 
         # initialize the pager, to be re-executed by instanciers
         self.setup_pager()
-
-        # drop stored filters if request asks for it
-        self.drop_filters()
 
         # csv
         self.csv_q = None
@@ -490,107 +486,16 @@ class HtmlTable(object):
                 ids.append(key.replace(prefix, ''))
         return ids
 
-    def stored_filter_field(self, f):
-        if f not in self.colprops:
-            return None
-        cp = self.colprops[f]
-        if not hasattr(cp, 'table') and not hasattr(cp, 'field'):
-            return None
-        if not hasattr(cp, 'table') or cp.table is None:
-            return cp.field
-        return '.'.join((cp.table, cp.field))
-
-    def drop_filters(self, bookmark="current"):
-        if request.vars.clear_filters != 'true':
-            return
-        q = db.column_filters.col_tableid==self.id
-        q &= db.column_filters.user_id==session.auth.user.id
-        q &= db.column_filters.bookmark==bookmark
-        db(q).delete()
-
-    def drop_filter_value(self, f, bookmark="current"):
-        if request.vars.volatile_filters is not None:
-            return
-        field = self.stored_filter_field(f)
-        if field is None:
-            return
-        q = db.column_filters.col_tableid==self.id
-        q &= db.column_filters.col_name==field
-        q &= db.column_filters.user_id==session.auth.user.id
-        q &= db.column_filters.bookmark==bookmark
-        db(q).delete()
-
-    def store_filter_value(self, f, v, bookmark="current"):
-        if request.vars.volatile_filters is not None:
-            return
-        field = self.stored_filter_field(f)
-        if field is None:
-            return
-        q = db.column_filters.col_tableid==self.id
-        q &= db.column_filters.col_name==field
-        q &= db.column_filters.user_id==session.auth.user.id
-        q &= db.column_filters.bookmark==bookmark
-        try:
-            db.column_filters.insert(col_tableid=self.id,
-                                     col_name=field,
-                                     col_filter=v,
-                                     bookmark=bookmark,
-                                     user_id=session.auth.user.id)
-        except:
-            db(q).update(col_filter=v)
-
-    def stored_filter_value(self, f, bookmark="current"):
-        if request.vars.volatile_filters is not None:
-            return ""
-        field = self.stored_filter_field(f)
-        if field is None:
-            return ""
-        q = db.column_filters.col_tableid==self.id
-        q &= db.column_filters.col_name==field
-        q &= db.column_filters.user_id==session.auth.user.id
-        q &= db.column_filters.bookmark==bookmark
-        rows = db(q).select(cacheable=True)
-        if len(rows) == 0:
-            return ""
-        return rows[0].col_filter
-
     def filter_parse(self, f):
         v = self._filter_parse(f)
-        if v == self.column_filter_reset:
-            self.drop_filter_value(f)
-            key = self.filter_key(f)
-            del(request.vars[key])
-            return ""
-        if request.vars.volatile_filters:
-            _v = self.stored_filter_value(f)
-            if _v != "" and v != "":
-                return v+"&"+_v
-            if v == "":
-                return _v
-            return v
-        if v == "":
-            return self.stored_filter_value(f)
-        self.store_filter_value(f, v)
-        if v == "" and self.colprops[f].default_filter is not None:
-            v = self.colprops[f].default_filter
         return v
 
     def _filter_parse(self, f):
         key = self.filter_key(f)
         if key in request.vars:
             v = request.vars[key]
-            if v == "**clear**" and self.colprops[f].default_filter:
-                return self.colprops[f].default_filter
-            if v == "":
-                if self.colprops[f].default_filter is not None:
-                    return self.colprops[f].default_filter
-                return "**clear**"
             return v
         return ""
-
-    def filter_parse_glob(self, f):
-        val = self.filter_parse(f)
-        return val
 
     def ajax_inputs(self):
         l = ['tableid']
@@ -718,7 +623,7 @@ class HtmlTable(object):
         else:
             object_list = self.object_list
 
-        if request.vars.volatile_filters is None and self.nodatabanner and len(object_list) == 0:
+        if self.nodatabanner and len(object_list) == 0:
             lines.append(TR(TD(T("no data"), _colspan=len(self.cols)), _class="tl nodataline"))
             return lines, 0
 
@@ -829,6 +734,12 @@ class HtmlTable(object):
         if len(lines) > 0:
             table_lines += lines
 
+        volatile_filters = request.vars.get("volatile_filters")
+        if volatile_filters in (None, "0", 0, False, "false", "False", "F"):
+            self.volatile_filters = False
+        else:
+            self.volatile_filters = True
+
         pager_attrs = dict(
           perpage=int(self.perpage),
           page=int(self.page),
@@ -878,7 +789,7 @@ var ti_%(id)s = setInterval(function(){
      'span': %(span)s,
      'columns': %(columns)s,
      'colprops': %(colprops)s,
-     'volatile_filters': "%(volatile_filters)s",
+     'volatile_filters': %(volatile_filters)s,
      'visible_columns': %(visible_columns)s,
      'child_tables': %(child_tables)s,
      'action_menu': %(action_menu)s,
@@ -897,8 +808,6 @@ var ti_%(id)s = setInterval(function(){
     })
   }
 }, 200)
-function ajax_submit_%(id)s(){%(ajax_submit)s};
-function ajax_enter_submit_%(id)s(event){%(ajax_enter_submit)s};
 """%dict(
                    id=self.id,
                    pager=str(pager_attrs),
@@ -910,7 +819,7 @@ function ajax_enter_submit_%(id)s(event){%(ajax_enter_submit)s};
                    span=str(self.span),
                    columns=str(self.cols),
                    colprops=self.serialize_colprops(),
-                   volatile_filters=str(request.vars.get("volatile_filters", "")),
+                   volatile_filters=str(self.volatile_filters).lower(),
                    visible_columns=str(self.visible_columns()),
                    child_tables=str(self.child_tables),
                    ajax_submit=self.ajax_submit(),

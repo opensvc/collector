@@ -22,6 +22,8 @@
     "month_plural": "__count__ months",
     "year": "__count__ year",
     "year_plural": "__count__ years",
+    "volatile": "Volatile filters",
+    "volatile_title": "If enabled column filters are not saved server-side.",
     "live": "Live",
     "link": "Link",
     "link_title": "Share your view using this hyperlink",
