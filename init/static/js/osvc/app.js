@@ -14,7 +14,6 @@ function _app_start() {
 
 function app_load_href(href) {
     // loadable co-functions ends with '_load'
-    event.preventDefault()
     var _href
 
     if (href.match(/:\/\//)) {
@@ -56,6 +55,7 @@ function app_load_href(href) {
 
 function app_menu_entries_bind_click_to_load() {
   $(".menu .menu_entry").bind("click", function(event) {
+    event.preventDefault()
     var href = $(this).find("a").attr("href")
     if (!href) {
       return
@@ -76,6 +76,7 @@ function app_bindings() {
   // Handle navigation between load()ed pages through browser tools 
   $(window).on("popstate", function(e) {
     if (e.originalEvent.state !== null) {
+      e.preventDefault()
       app_load_href(location.href);
     }
   })
