@@ -2067,7 +2067,7 @@ function table_action_menu_node(t, e){
 function create_overlay() {
   e = $("#overlay")
   if (e.length == 0) {
-    $("body").append("<div class='white_float hidden' id='overlay'></div>")
+    $("body").append("<div class='white_float hidden stackable' id='overlay'></div>")
   }
   $(window).resize(function(){
     resize_overlay()
@@ -3946,7 +3946,7 @@ function table_add_column_selector(t) {
   e.append(span)
   try { e.i18n() } catch(e) {}
 
-  var area = $("<div class='hidden white_float'></div>")
+  var area = $("<div class='hidden white_float stackable'></div>")
   e.append(area)
   t.e_tool_column_selector_area = area
 
@@ -4026,7 +4026,7 @@ function table_add_commonality(t) {
   var span = $("<span class='common16' data-i18n='table.commonality'></span>")
   e.append(span)
 
-  var area = $("<div class='white_float hidden'></div>")
+  var area = $("<div class='white_float hidden stackable'></div>")
   area.uniqueId()
   e.append(area)
   t.e_tool_commonality_area = area
@@ -4088,7 +4088,7 @@ function table_add_bookmarks(t) {
   var span = $("<span class='bookmark16' data-i18n='table.bookmarks'></span>")
   e.append(span)
 
-  var area = $("<div class='white_float hidden'></div>")
+  var area = $("<div class='white_float hidden stackable'></div>")
   e.append(area)
 
   var save = $("<a class='add16' data-i18n='table.bookmarks_save'></a>")
@@ -4450,7 +4450,7 @@ function table_pager(t, options) {
 
   // perpage selector
   var l = [20, 50, 100, 500]
-  var selector = "<div name='pager_perpage' class='white_float' style='max-width:50%;display:none;text-align:right;'>"
+  var selector = "<div name='pager_perpage' class='white_float stackable' style='max-width:50%;display:none;text-align:right;'>"
   for (i=0; i<l.length; i++) {
      v = l[i]
      if (v == p_perpage) {
