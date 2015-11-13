@@ -11,6 +11,7 @@ function _app_start() {
   osvc_popup_stack_listener();
   search("layout_search_tool")
   services_feed_self_and_group()
+  menu("menu_location")
   fset_selector("fset_selector")
   app_bindings()
   app_menu_entries_bind_click_to_load()

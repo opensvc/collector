@@ -4509,7 +4509,7 @@ function table_pager(t, options) {
     // right arrow
     if ((p_total < 0) || ((p_page * p_perpage) < p_total)) {
       var right = $("<span name='pager_right'></span>")
-      left.text(" >>")
+      right.text(" >>")
       t.e_pager.append(right)
     }
   }
