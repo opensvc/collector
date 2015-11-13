@@ -276,7 +276,7 @@ class table_forms(HtmlTable):
         self.ajax_col_values = 'ajax_forms_admin_col_values'
         self.dbfilterable = False
         self.dataable = True
-        self.liveable = True
+        self.wsable = True
         self.checkboxes = True
         self.extrarow = True
         self.extrarow_class = "forms_links"

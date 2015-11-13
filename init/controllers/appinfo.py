@@ -134,7 +134,7 @@ class table_appinfo(HtmlTable):
         self.extraline = True
         self.dbfilterable = True
         self.dataable = True
-        self.liveable = True
+        self.wsable = True
         self.ajax_col_values = 'ajax_appinfo_col_values'
         self.span = ['app_svcname', 'app_nodename', 'app_launcher']
 
