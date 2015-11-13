@@ -67,7 +67,6 @@ function tabs_register_tab(o, data) {
   // allocate a div to store tab information
   e = $("<div></div>")
   e.addClass("hidden")
-  e.addClass("stackable");
   e.css({"width": "100%"})
   e.uniqueId()
   o.display.append(e)

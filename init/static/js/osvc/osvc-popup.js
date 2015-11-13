@@ -122,6 +122,7 @@ function osvc_popup_stack_listener()
 		  				{
 		  					var sc = "V"+(++_stackcounter).toString();
 		  					$(mutation.target).attr('stack_id', sc);
+		  					$(mutation.target).css({'z-index': 1000+_stack.length});
 		  					_stack.push({"span":sc,"parent":""});
 		  					console.log("add v stack for " + mutation.target.className + " : " + sc);
 		  				}
@@ -156,14 +157,11 @@ function osvc_popup_remove_from_stack() // Remove last item from stack and destr
 
 function osvc_popup_delete_from_stack(span)
 {
-	if (span.parent=="menuflash" || span.parent=="menusearch" || span.parent=="menu") // If menu element 
-	{
-		$(span.span).hide("fold");
-		return;
-	}
-
 	var target = $(document).find("[stack_id='"+span.span + "']");
-	target.toggle("Blind",function () {
-		target.hide("fold");
-	});
+
+        if (target.hasClass("menu") || (target.parents(".menu").length > 0)) {
+          target.hide("blind")
+        } else {
+          target.hide()
+        }
 }
