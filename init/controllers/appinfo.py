@@ -8,45 +8,6 @@ def call():
     session.forget(response)
     return service()
 
-class col_app_key(HtmlTableColumn):
-    def html(self, o):
-       d = self.get(o)
-       if d == "Error":
-           return DIV(d, _class="boxed_small bgred")
-       return DIV(d, _class="boxed_small bgblack")
-
-class col_app_value(HtmlTableColumn):
-    def chart(self, o):
-        id = self.t.extra_line_key(o)
-        return SPAN(
-          IMG(_src=URL(c='static', f='images/spark16.png')),
-          _class="clickable",
-          _onclick="""toggle_extra('%(url)s', '%(id)s', this, 0);
-          """%dict(
-                  url=URL(r=request, c='appinfo',f='ajax_appinfo_log',
-                          vars={'svcname': o.app_svcname,
-                                'nodename': o.app_nodename,
-                                'launcher': o.app_launcher,
-                                'key': o.app_key,
-                                'rowid': id,
-                               }
-                      ),
-                  id=id,
-              ),
-        )
-
-    def html(self, o):
-       d = self.get(o)
-       try:
-           v = float(d)
-           c = self.chart(o)
-       except:
-           c = ""
-       return DIV(
-         d,
-         c,
-       )
-
 @auth.requires_login()
 @service.json
 def json_appinfo_log():
@@ -76,10 +37,7 @@ def json_appinfo_log():
 def ajax_appinfo_log():
     session.forget(response)
     row_id = request.vars.rowid
-    id = 'chart_'+request.vars.nodename.replace(" ", "").replace("-", "").replace('.', '_')
-    id += '_'+request.vars.svcname.replace(" ", "").replace("-", "").replace('.', '_')
-    id += '_'+request.vars.launcher.replace(" ", "").replace("-", "").replace('.', '_')
-    id += '_'+request.vars.key.replace(" ", "").replace("-", "").replace('.', '_')
+    id = 'chart_'+row_id
 
     return TABLE(
       H3(T("History of key '%(key)s' from launcher '%(launcher)s'", dict(launcher=request.vars.launcher, key=request.vars.key))),
@@ -106,7 +64,9 @@ class table_appinfo(HtmlTable):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
-        self.cols = ['app_svcname',
+        self.force_cols = ['id']
+        self.cols = ['id',
+                     'app_svcname',
                      'app_nodename',
                      'app_launcher',
                      'app_key',
@@ -114,13 +74,15 @@ class table_appinfo(HtmlTable):
                      'app_updated']
         self.colprops = {
             'id': HtmlTableColumn(
-                     title='Network Id',
+                     title='Id',
+                     table='appinfo',
                      field='id',
-                     img='svc',
-                     display=True,
+                     img='key16',
+                     display=False,
                     ),
             'app_svcname': HtmlTableColumn(
                      title='Service',
+                     table='appinfo',
                      field='app_svcname',
                      img='svc',
                      display=True,
@@ -128,6 +90,7 @@ class table_appinfo(HtmlTable):
                     ),
             'app_nodename': HtmlTableColumn(
                      title='Node',
+                     table='appinfo',
                      field='app_nodename',
                      img='hw16',
                      display=True,
@@ -135,24 +98,30 @@ class table_appinfo(HtmlTable):
                     ),
             'app_launcher': HtmlTableColumn(
                      title='Launcher',
+                     table='appinfo',
                      field='app_launcher',
                      img='svc',
                      display=True,
                     ),
-            'app_key': col_app_key(
+            'app_key': HtmlTableColumn(
                      title='Key',
+                     table='appinfo',
                      field='app_key',
                      img='svc',
                      display=True,
+                     _class='appinfo_key',
                     ),
-            'app_value': col_app_value(
+            'app_value': HtmlTableColumn(
                      title='Value',
+                     table='appinfo',
                      field='app_value',
                      img='svc',
                      display=True,
+                     _class='appinfo_value',
                     ),
             'app_updated': HtmlTableColumn(
                      title='Last update',
+                     table='appinfo',
                      field='app_updated',
                      img='time16',
                      display=True,
@@ -164,6 +133,8 @@ class table_appinfo(HtmlTable):
         self.checkboxes = True
         self.extraline = True
         self.dbfilterable = True
+        self.dataable = True
+        self.liveable = True
         self.ajax_col_values = 'ajax_appinfo_col_values'
         self.span = ['app_svcname', 'app_nodename', 'app_launcher']
 
@@ -200,23 +171,30 @@ def ajax_appinfo():
         return t.csv()
     if len(request.args) == 1 and request.args[0] == 'commonality':
         return t.do_commonality()
-    if len(request.args) == 1 and request.args[0] == 'line':
+    if len(request.args) == 1 and request.args[0] == 'data':
         n = db(q).count()
         t.setup_pager(n)
         limitby = (t.pager_start,t.pager_end)
-        t.object_list = db(q).select(orderby=o, limitby=limitby, cacheable=False)
-        return t.table_lines_data(n)
-
-    n = db(q).count()
-    t.setup_pager(n)
-    t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
-
-    return t.html()
+        cols = t.get_visible_columns()
+        t.object_list = db(q).select(*cols, orderby=o, limitby=limitby, cacheable=False)
+        return t.table_lines_data(n, html=False)
 
 @auth.requires_login()
 def appinfo():
+    t = table_appinfo('appinfo', 'ajax_appinfo')
     t = DIV(
-          ajax_appinfo(),
+          t.html(),
+          SCRIPT("""
+function ws_action_switch_%(divid)s(data) {
+        if (data["event"] == "appinfo_change") {
+          osvc.tables["%(divid)s"].refresh()
+        }
+}
+wsh["%(divid)s"] = ws_action_switch_%(divid)s
+               """% dict(
+                     divid=t.innerhtml,
+                    )
+          ),
           _id='appinfo',
         )
     return dict(table=t)

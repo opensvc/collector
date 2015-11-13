@@ -1113,6 +1113,43 @@ function cell_decorator_yaml(e) {
   $(e).html(_e)
 }
 
+function cell_decorator_appinfo_key(e) {
+  var s = $(e).attr("v")
+  var _e = $("<div class='boxed_small'></div>")
+  _e.text(s)
+  if (s == "Error") {
+    _e.addClass("bgred")
+  } else {
+    _e.addClass("bgblack")
+  }
+  $(e).html(_e)
+}
+
+function cell_decorator_appinfo_value(e) {
+  var s = $(e).attr("v")
+  var _e = $("<span></span>")
+  _e.text(s)
+  if (is_numeric(s)) {
+    _e.addClass("spark16")
+    $(e).addClass("corner clickable")
+  }
+  $(e).bind("click", function() {
+    var line = $(e).parent(".tl")
+    var span_id = line.attr("spansum")
+    var table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
+    var id = table_id + "_x_" + span_id
+    var params = "svcname="+encodeURIComponent(line.children("[name$=_c_app_svcname]").attr("v"))
+    params += "&nodename="+encodeURIComponent(line.children("[name$=_c_app_nodename]").attr("v"))
+    params += "&launcher="+encodeURIComponent(line.children("[name$=_c_app_launcher]").attr("v"))
+    params += "&key="+encodeURIComponent(line.children("[name$=_c_app_key]").attr("v"))
+    params += "&rowid="+encodeURIComponent(id)
+    var url = $(location).attr("origin") + "/init/appinfo/ajax_appinfo_log?" + params
+
+    toggle_extra(url, id, e, 0)
+  })
+  $(e).html(_e)
+}
+
 cell_decorators = {
  "yaml": cell_decorator_yaml,
  "rsetvars": cell_decorator_rsetvars,
@@ -1162,7 +1199,9 @@ cell_decorators = {
  "tag_exclude": cell_decorator_tag_exclude,
  "_network": cell_decorator_network,
  "boolean": cell_decorator_boolean,
- "status": cell_decorator_status
+ "status": cell_decorator_status,
+ "appinfo_key": cell_decorator_appinfo_key,
+ "appinfo_value": cell_decorator_appinfo_value
 }
 
 
