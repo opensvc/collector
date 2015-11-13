@@ -2215,42 +2215,41 @@ function tool_nodediff(t, data) {
   if (data.length<=1) {
     return ""
   }
-  return "<div class='clickable common16' onclick='trigger_tool_nodediff(\""+t.id+"\")'>"+i18n.t("action_menu.node_diff")+"</div>"
+  return "<div class='clickable icon common16' onclick='trigger_tool_nodediff(\""+t.id+"\")'>"+i18n.t("action_menu.node_diff")+"</div>"
 }
 
 function tool_nodesantopo(t, data) {
   if (data.length==0) {
     return ""
   }
-  return "<div class='clickable hd16' onclick='trigger_tool_nodesantopo(\""+t.id+"\")'>"+i18n.t("action_menu.node_san_topo")+"</div>"
+  return "<div class='clickable icon hd16' onclick='trigger_tool_nodesantopo(\""+t.id+"\")'>"+i18n.t("action_menu.node_san_topo")+"</div>"
 }
 
 function tool_nodesysrepdiff(t, data) {
   if (data.length<2) {
     return ""
   }
-  return "<div class='clickable common16' onclick='trigger_tool_nodesysrepdiff(\""+t.id+"\")'>"+i18n.t("action_menu.node_sysrep_diff")+"</div>"
+  return "<div class='clickable icon common16' onclick='trigger_tool_nodesysrepdiff(\""+t.id+"\")'>"+i18n.t("action_menu.node_sysrep_diff")+"</div>"
 }
 
 function tool_nodesysrep(t, data) {
   if (data.length==0) {
     return ""
   }
-  return "<div class='clickable log16' onclick='trigger_tool_nodesysrep(\""+t.id+"\")'>"+i18n.t("action_menu.Nodes sysreport")+"</div>"
-}
+  return "<div class='clickable icon log16' onclick='trigger_tool_nodesysrep(\""+t.id+"\")'>"+i18n.t("action_menu.node_sysrep")+"</div>"
 
 function tool_grpprf(t, data) {
   if (data.length==0) {
     return ""
   }
-  return "<div class='clickable spark16' onclick='trigger_tool_grpprf(\""+t.id+"\")'>"+i18n.t("action_menu.node_perf")+"</div>"
+  return "<div class='clickable icon spark16' onclick='trigger_tool_grpprf(\""+t.id+"\")'>"+i18n.t("action_menu.node_perf")+"</div>"
 }
 
 function tool_svcdiff(t, data) {
   if (data.length<=1) {
     return ""
   }
-  return "<div class='clickable common16' onclick='trigger_tool_svcdiff(\""+t.id+"\")'>"+i18n.t("action_menu.svc_diff")+"</div>"
+  return "<div class='clickable icon common16' onclick='trigger_tool_svcdiff(\""+t.id+"\")'>"+i18n.t("action_menu.svc_diff")+"</div>"
 }
 
 function tool_topo(t) {
@@ -2259,7 +2258,7 @@ function tool_topo(t) {
   if (datasvc.length+datanode.length==0) {
     return ""
   }
-  return "<div class='clickable dia16' onclick='trigger_tool_topo(\""+t.id+"\")'>"+i18n.t("action_menu.topology")+"</div>"
+  return "<div class='clickable icon dia16' onclick='trigger_tool_topo(\""+t.id+"\")'>"+i18n.t("action_menu.topology")+"</div>"
 }
 
 function table_tools_menu_nodes(t){
