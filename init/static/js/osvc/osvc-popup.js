@@ -5,8 +5,9 @@ var _stack = [];
 var _stack_className = "stackable";
 var _stackcounter = 0;
 
-function osvc_popup_delete_children(value)
+function osvc_popup_delete_children(value) // Multiple childran can have 1 parent
 {
+	is = 0;
 	// handle children remove
 	for(i=0; i<_stack.length; i++) {
 		if (_stack[i].parent != value) {
@@ -16,18 +17,26 @@ function osvc_popup_delete_children(value)
 		console.log("splice children : " + _stack[i].span + ' for parent : ' + value);
 
 		 // destroy it
-		_stack.splice(i,1);
+		_stack.splice(i, 1);
+
+		is=1;
+		break;
+	}
+	if (is==1) {
+		osvc_popup_delete_children(_stack[i].span);
 	}
 }
 
-function osvc_popup_delete_by_id(value)
+function osvc_popup_delete_by_id(value) // Only 1 stack can be found
 {
 	for (i=0; i<_stack.length; i++) {
 		if (_stack[i].span != value) {
-			continue
+			console.log("splice element :" + _stack[i].span + ' for span : ' + value);
+			_stack.splice(i,1);
+			break;
 		}
 		console.log("splice element :" + _stack[i].span + ' for span : ' + value);
-		_stack.splice(i,1);
+		_stack.splice(i, 1);
 		osvc_popup_delete_children(value);
 	}
 
@@ -155,13 +164,10 @@ function osvc_popup_remove_from_stack()
 function osvc_popup_delete_from_stack(span)
 {
 	var target = $(document).find("[stack_id='"+span.span + "']")
+
         if (target.hasClass("menu") || (target.parents(".menu").length > 0)) {
 		target.hide("blind")
         } else {
 		target.hide()
         }
-
-	// Handle children remove
-	//osvc_popup_remove_child(span);
 }
-
