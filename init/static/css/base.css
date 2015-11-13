@@ -1,5 +1,9 @@
 @charset "UTF-8";
 
+.grayed {
+	color: gray;
+}
+
 .stick {
 	position: fixed;
 	top: 2em;
