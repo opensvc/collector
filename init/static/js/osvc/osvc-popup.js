@@ -4,6 +4,7 @@ var _stack = [];
 
 var _stack_className = "stackable";
 var _stackcounter = 0;
+var _stacklog =0;
 
 function osvc_popup_delete_children(value) // Multiple childran can have 1 parent
 {
@@ -13,7 +14,7 @@ function osvc_popup_delete_children(value) // Multiple childran can have 1 paren
 	{
 		if (_stack[i].parent == value) // Children found
 		{
-			console.log("splice children : " + _stack[i].span + ' for parent : ' + value);
+			if (_stacklog==1) console.log("splice children : " + _stack[i].span + ' for parent : ' + value);
 			_stack.splice(i,1); // destroy it
 			is=1;
 			break;
@@ -28,7 +29,7 @@ function osvc_popup_delete_by_id(value) // Only 1 stack can be found
 	{
 		if (_stack[i].span == value)
 		{
-			console.log("splice element :" + _stack[i].span + ' for span : ' + value);
+			if (_stacklog==1) console.log("splice element :" + _stack[i].span + ' for span : ' + value);
 			_stack.splice(i,1);
 			break;
 		}
@@ -80,7 +81,7 @@ function osvc_popup_stack_listener()
 					    var sc = "A"+ (++_stackcounter).toString();
 		  				$(mutation.addedNodes[i]).attr('stack_id', sc);
 		  				_stack.push({"span":sc,"parent" : p});
-		  				console.log("add stack for " + mutation.addedNodes[i].className + " : " + sc);
+		  				if (_stacklog==1) console.log("add stack for " + mutation.addedNodes[i].className + " : " + sc);
 		  			}
 		  		}
 		  	 	for(i=0;i<mutation.removedNodes.length;i++)
@@ -90,7 +91,7 @@ function osvc_popup_stack_listener()
 		  				if (mutation.removedNodes[i].attributes["stack_id"] != undefined)
 		  				{
 		  					var s = mutation.removedNodes[i].attributes["stack_id"].value;
-		  					console.log("del stack for " + mutation.removedNodes[i].className + " : " + s);
+		  					if (_stacklog==1) console.log("del stack for " + mutation.removedNodes[i].className + " : " + s);
 		  					osvc_popup_delete_by_id(s);
 		  				}
 		  			}
@@ -111,7 +112,7 @@ function osvc_popup_stack_listener()
 		  				if (mutation.target.attributes["stack_id"] != undefined)
 		  				{
 		  					var s = mutation.target.attributes["stack_id"].value;
-		  					console.log("del v stack for " + mutation.target.className + " : " + s);
+		  					if (_stacklog==1) console.log("del v stack for " + mutation.target.className + " : " + s);
 							osvc_popup_delete_by_id(s);
 							mutation.target.removeAttribute('stack_id');
 		  				}
@@ -124,7 +125,7 @@ function osvc_popup_stack_listener()
 		  					$(mutation.target).attr('stack_id', sc);
 		  					$(mutation.target).css({'z-index': 1000+_stack.length});
 		  					_stack.push({"span":sc,"parent":""});
-		  					console.log("add v stack for " + mutation.target.className + " : " + sc);
+		  					if (_stacklog==1) console.log("add v stack for " + mutation.target.className + " : " + sc);
 		  				}
 		  			}
 		  		}
