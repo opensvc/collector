@@ -748,7 +748,7 @@ function table_refresh(t) {
     }
 
     // refresh open tabs to overlay to preserve what was in use
-    if (t.div.find(".extraline").children("td").children("table").length > 0) {
+    if (t.div.find(".extraline:visible").children("td").children("table").length > 0) {
       $("#overlay").empty().hide()
       t.div.find(".extraline").children("td").children("table").parent().each(function() {
         var e = $("<div></div>")
