@@ -2063,23 +2063,28 @@ function table_action_menu_node(t, e){
   return s
 }
 
-function create_overlay() {
-  e = $("#overlay")
-  if (e.length == 0) {
-    $("body").append("<div class='white_float hidden stackable' id='overlay'></div>")
+function table_add_overlay(t) {
+  if (t.e_overlay) {
+    return
   }
+  var e = $("<div class='white_float hidden stackable' id='overlay'></div>")
+  $("body").append(e)
+ 
   $(window).resize(function(){
     resize_overlay()
     resize_extralines()
   })
-  $("#overlay").bind("DOMSubtreeModified", function(){
+  e.bind("DOMSubtreeModified", function(){
     resize_overlay()
   })
+  t.e_overlay = e
 }
 
 function resize_overlay() {
   _resize_overlay()
-  e.find("img").one("load", function(){_resize_overlay()})
+  $("#overlay").find("img").one("load", function(){
+    _resize_overlay()
+  })
 }
 
 function _resize_overlay() {
@@ -4409,6 +4414,7 @@ function table_add_wsswitch(t) {
     }
     if ((jd.data.length == 0) || (jd.data[0].upc_visible)) {
       input.prop("checked", true)
+      t.pager()
     } else {
       input.prop("checked", false)
     }
@@ -4433,11 +4439,28 @@ function table_pager(t, options) {
     t.options.pager = options
   }
 
+  if (t.e_wsswitch && t.e_wsswitch.find("input").is(":checked")) {
+    var wsswitch = true
+  } else {
+    var wsswitch = false
+  }
+
   var p_page = parseInt(t.options.pager.page)
   var p_start = parseInt(t.options.pager.start)
   var p_end = parseInt(t.options.pager.end)
   var p_total = parseInt(t.options.pager.total)
   var p_perpage = parseInt(t.options.pager.perpage)
+  var max_perpage = 50
+
+  if (t.e_wsswitch && t.e_wsswitch.find("input").is(":checked")) {
+    var wsswitch = true
+    if (p_perpage > max_perpage) {
+      p_perpage = max_perpage
+      t.options.pager.perpage = max_perpage
+    }
+  } else {
+    var wsswitch = false
+  }
 
   if ((p_total > 0) && (p_end > p_total)) {
     p_end = p_total
@@ -4449,48 +4472,65 @@ function table_pager(t, options) {
 
   // perpage selector
   var l = [20, 50, 100, 500]
-  var selector = "<div name='pager_perpage' class='white_float stackable' style='max-width:50%;display:none;text-align:right;'>"
+  var selector = $("<div name='pager_perpage' class='white_float stackable' style='display:none;max-width:50%;text-align:right;'></div>")
   for (i=0; i<l.length; i++) {
-     v = l[i]
+     var v = l[i]
+     var entry = $("<span name='perpage_val' class='clickable'>"+v+"</span>")
      if (v == p_perpage) {
-       c = " current_page"
-     } else {
-       c = ""
+       entry.addClass("current_page")
      }
-     selector += "<span name='perpage_val' class='clickable"+c+"'>"+v+"</span><br>"
+     if (wsswitch && (v > max_perpage)) {
+       entry.addClass("grayed")
+       entry.removeClass("clickable")
+     }
+     selector.append(entry)
+     selector.append($("<br>"))
   }
-  selector += "</div>"
-
-  // main pager
-  var d = ""
-  if (p_total == 0) {
-    d += "No records found matching filters"
-  } else {
-    if (p_page > 1) {
-      d += "<span name='pager_left'><< </span>"
-    }
-    d += "<span name='pager_center'>"+(p_start+1)+"-"+p_end+s_total+"</span>"
-    if ((p_total < 0) || ((p_page * p_perpage) < p_total)) {
-      d += "<span name='pager_right'> >></span>"
-    }
-  }
-  d += selector
 
   t.e_pager.empty()
-  t.e_pager.append(d)
+
+  // main pager
+  if (p_total == 0) {
+    t.e_pager.text("No records found matching filters")
+  } else {
+    // left arrow
+    if (p_page > 1) {
+      var left = $("<span name='pager_left'></span>")
+      left.text("<< ")
+      t.e_pager.append(left)
+    }
+
+    // line start - line end
+    var center = $("<span name='pager_center'></span>")
+    center.text((p_start+1)+"-"+p_end+s_total)
+    t.e_pager.append(center)
+
+    // right arrow
+    if ((p_total < 0) || ((p_page * p_perpage) < p_total)) {
+      var right = $("<span name='pager_right'></span>")
+      left.text(" >>")
+      t.e_pager.append(right)
+    }
+  }
+  t.e_pager.append(selector)
+  keep_inside(selector[0])
+
   t.e_pager.children("span").each(function () {
     $(this).addClass('current_page clickable')
   })
-  t.e_pager.children("[name=pager_right]").click(function(){
+  t.e_pager.find("[name=pager_right]").click(function(){
     filter_submit(t.id, t.id+"_page", p_page+1)
   })
-  t.e_pager.children("[name=pager_left]").click(function(){
+  t.e_pager.find("[name=pager_left]").click(function(){
     filter_submit(t.id, t.id+"_page", p_page-1)
   })
-  t.e_pager.children("[name=pager_center]").click(function(){
-    $(this).parent().children("[name=pager_perpage]").toggle()
+  t.e_pager.find("[name=pager_center]").click(function(){
+    t.e_pager.find("[name=pager_perpage]").toggle()
   })
   t.e_pager.find("[name=perpage_val]").click(function(){
+    if ($(this).hasClass("grayed")) {
+      return
+    }
     var data = {
       "perpage": parseInt($(this).text())
     }
@@ -4681,10 +4721,6 @@ function table_get_column_filters(t, callback) {
   }) 
 }
 
-var osvc = {
- 'tables': {}
-}
-
 function table_init(opts) {
   var t = {
     'options': opts,
@@ -4856,6 +4892,9 @@ function table_init(opts) {
     },
     'save_column_filters': function(){
       table_save_column_filters(this)
+    },
+    'add_overlay': function(){
+      table_add_overlay(this)
     }
   }
 
@@ -4868,7 +4907,7 @@ function table_init(opts) {
   t.div.find("select").parent().css("white-space", "nowrap")
   t.div.find("select:visible").combobox()
 
-  create_overlay()
+  t.add_overlay()
   t.add_column_headers_slim()
   t.add_column_headers_input()
   t.add_column_headers()
