@@ -1162,21 +1162,20 @@ function table_save_column_filters(t) {
       if (jd.error && (jd.error.length > 0)) {
         $(".flash").show("blind").html(services_error_fmt(jd))
       }
-      if (del_data.length > 0) {
-        services_osvcdeleterest("R_USERS_SELF_TABLE_FILTERS", "", "", del_data, function(jd) {
-          if (jd.error && (jd.error.length > 0)) {
-            $(".flash").show("blind").html(services_error_fmt(jd))
-          }
-        },
-        function(xhr, stat, error) {
-          $(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
-        })
+    },
+    function(xhr, stat, error) {
+      $(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
+    })
+  }
+  if (del_data.length > 0) {
+    services_osvcdeleterest("R_USERS_SELF_TABLE_FILTERS", "", "", del_data, function(jd) {
+      if (jd.error && (jd.error.length > 0)) {
+        $(".flash").show("blind").html(services_error_fmt(jd))
       }
     },
     function(xhr, stat, error) {
       $(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
     })
-
   }
 }
 
