@@ -2,6 +2,43 @@
   "layout": {
     "search": "Global search"
   },
+  "decorators": {
+    "cancelled": "cancelled",
+    "queued": "queued",
+    "waiting": "waiting",
+    "running": "running",
+    "done": "done"
+  },
+  "designer": {
+    "warn_remove": "Warning, this object might be referenced by other objects. Do you really want to delete this compliance object ?"
+  },
+  "action_menu": {
+    "confirmation": "Are you sure ?",
+    "tools": "Tools",
+    "actions": "Actions",
+    "actions_on_all_modules": "Actions on all modules",
+    "actions_on_module_on_service_on_node": "Actions on module <b>__module__</b> on <b>__svcname__</b> service instance on node <b>__nodename__</b>",
+    "actions_on_module_on_node": "Actions on module <b>__module__</b> on node <b>__nodename__</b>",
+    "actions_on_selected_modules": "Actions on selected modules",
+    "actions_on_all_resources": "Actions on all resources",
+    "actions_on_resource_on_service_on_node": "Actions on resource <b>__rid__</b> of <b>__svcname__</b> service instance on node <b>__nodename__</b>",
+    "actions_on_selected_resources": "Actions on selected resources",
+    "actions_on_all_services_instances": "Actions on all service instances",
+    "actions_on_services_instances_on_node": "Actions on <b>__svcname__</b> service instance on node <b>__nodename__</b>",
+    "actions_on_selected_services_instances": "Actions on selected service instances",
+    "actions_on_all_nodes": "Actions on all nodes",
+    "actions_on_selected_nodes": "Actions on selected nodes",
+    "actions_on_node": "Actions on node",
+    "node_diff": "Nodes differences",
+    "node_san_topo": "Nodes SAN topology",
+    "node_sysrep_diff": "Nodes sysreport differences",
+    "node_sysrep": "Nodes sysreport",
+    "node_perf": "Nodes performance",
+    "svc_diff": "Services differences",
+    "topology": "Topology",
+    "no": "No",
+    "yes": "Yes"
+  },
   "api": {
     "loading": "Loading",
     "formatting": "Formating",

@@ -2,9 +2,46 @@
   "layout": {
     "search": "Recherche globale"
   },
+  "decorators": {
+    "cancelled": "annulé",
+    "queued": "en queue",
+    "waiting": "en attente",
+    "running": "en cours",
+    "done": "fait"
+  }, 
+  "designer": {
+    "warn_remove": "Attention, cet objet peut être référencé par d'autres objets. Voulez-vous vraiment le supprimer ?"
+  },
+  "action_menu": {
+    "confirmation": "Etes-vous certain ?",
+    "tools": "Outils",
+    "actions": "Actions",
+    "actions_on_all_modules": "Actions sur tous les modules",
+    "actions_on_module_on_service_on_node": "Actions sur le module <b>__module__</b> du service <b>__svcname__</b> sur le noeud <b>__nodename__</b>",
+    "actions_on_module_on_node": "Actions sur le module <b>__module__</b> sur le noeud <b>__nodename__</b>",
+    "actions_on_selected_modules": "Actions sur les modules sélectionnés",
+    "actions_on_all_resources": "Actions sur toutes les ressources",
+    "actions_on_resource_on_service_on_node": "Actions sur la ressource <b>__rid__</b> du service <b>__svcname__</b> sur le noeud <b>__nodename__</b>",
+    "actions_on_selected_resources": "Actions sur les resources sélectionnées",
+    "actions_on_all_services_instances": "Actions sur toutes les instances de service",
+    "actions_on_services_instances_on_node": "Actions sur le service <b>__svcname__</b> sur le noeud <b>__nodename__</b>",
+    "actions_on_selected_services_instances": "Actions sur les instances de service sélectionnés",
+    "actions_on_all_nodes": "Actions sur tous les noeuds",
+    "actions_on_selected_nodes": "Actions sur les noeuds sélectionnés",
+    "actions_on_node": "Actions sur le noeud",
+    "node_diff": "Différences entre noeuds",
+    "node_san_topo": "Topologie SAN des noeuds",
+    "node_sysrep_diff": "Différences entre sysreports",
+    "node_sysrep": "Sysreport des noeuds",
+    "node_perf": "Performance des noeuds",
+    "svc_diff": "Différences entre services",
+    "topology": "Topologie",
+    "no": "Non",
+    "yes": "Oui"
+  },
   "api": {
-    "loading": "Loading",
-    "formatting": "Formating",
+    "loading": "Chargement des données",
+    "formatting": "Formattage des données",
     "error": "La requête au collecteur a renvoyé une erreur.",
     "link": "Lien",
     "link_text": "La cible de ce lien est stockée en base de données du collecteur. Vous pouvez le partager avec des collaborateurs afin qu'ils consultent les mêmes informations, si tant es qu'ils bénéficient des mêmes privilèges que vous"

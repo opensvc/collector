@@ -2,6 +2,19 @@ var osvc = {
  'tables': {}
 }
 
+function i18n_init(callback) {
+  i18n.init({
+      debug: true,
+      fallbackLng: false,
+      load:'unspecific',
+      resGetPath: "/init/static/locales/__lng__/__ns__.json",
+      ns: {
+          namespaces: ['translation'],
+          defaultNs: 'translation'
+      }
+  }, callback);
+}
+
 function app_start() {
   i18n_init(_app_start)
 }
@@ -161,10 +174,12 @@ function app_bindings() {
       event.preventDefault();
       var entries = $(".header").find(".menu_entry:visible")
       var selected = entries.filter(".menu_selected")
-      entries.removeClass("menu_selected")
-      var new_selected = selected.prev().addClass("menu_selected")
-      if (new_selected.length == 0) {
-        entries.last().addClass("menu_selected")
+      if ((selected.length > 0) && (entries.length > 0)) {
+        entries.removeClass("menu_selected")
+        var new_selected = selected.prev().addClass("menu_selected")
+        if (new_selected.length == 0) {
+          entries.last().addClass("menu_selected")
+        }
       }
     }
 
@@ -173,30 +188,33 @@ function app_bindings() {
       event.preventDefault();
       var entries = $(".header").find(".menu_entry:visible");
       var selected = entries.filter(".menu_selected")
-      var selected_index = entries.index(selected)
-      var selected_y = selected.position().top
-      var first_y = entries.first().position().top
-      if (selected_y == first_y) {
-        var candidate_entries = entries
-      } else {
-        var candidate_entries = entries.slice(0, selected_index)
-      }
-      if (selected.length == 0) {
-        selected = entries.first()
-      }
-      if (candidate_entries.length == 0) {
-        candidate_entries = entries
-      }
-      candidate_entries.filter(function(i, e){
-        if ($(this).position().left == selected.position().left) {
-          return true
+      if ((selected.length > 0) && (entries.length > 0)) {
+        var selected_index = entries.index(selected)
+        console.log(selected, selected.position())
+        var selected_y = selected.position().top
+        var first_y = entries.first().position().top
+        if (selected_y == first_y) {
+          var candidate_entries = entries
+        } else {
+          var candidate_entries = entries.slice(0, selected_index)
         }
-        return false
-      }).last().each(function(){
-        entries.removeClass("menu_selected");
-        $(this).addClass("menu_selected");
-        return;
-      });
+        if (selected.length == 0) {
+          selected = entries.first()
+        }
+        if (candidate_entries.length == 0) {
+          candidate_entries = entries
+        }
+        candidate_entries.filter(function(i, e){
+          if ($(this).position().left == selected.position().left) {
+            return true
+          }
+          return false
+        }).last().each(function(){
+          entries.removeClass("menu_selected");
+          $(this).addClass("menu_selected");
+          return;
+        })
+      }
     }
 
     // Right
@@ -204,10 +222,12 @@ function app_bindings() {
       event.preventDefault();
       var entries = $(".header").find(".menu_entry:visible")
       var selected = entries.filter(".menu_selected")
-      entries.removeClass("menu_selected")
-      var new_selected = selected.next().addClass("menu_selected")
-      if (new_selected.length == 0) {
-        entries.first().addClass("menu_selected")
+      if ((selected.length > 0) && (entries.length > 0)) {
+        entries.removeClass("menu_selected")
+        var new_selected = selected.next().addClass("menu_selected")
+        if (new_selected.length == 0) {
+          entries.first().addClass("menu_selected")
+        }
       }
     }
 
@@ -216,41 +236,42 @@ function app_bindings() {
       event.preventDefault();
       var entries = $(".header").find(".menu_entry:visible");
       var selected = entries.filter(".menu_selected")
-      var selected_index = entries.index(selected)
-      var selected_y = selected.position().top
-      var last_y = entries.last().position.top
-      if (selected_y == last_y) {
-        var candidate_entries = entries
-      } else {
-        var candidate_entries = entries.slice(selected_index+1)
-      }
-      if (selected.length == 0) {
-        selected = entries.first()
-      }
-      if (candidate_entries.length == 0) {
-        candidate_entries = entries
-      }
-      found = candidate_entries.filter(function(i, e){
-        if ($(this).position().left == selected.position().left) {
-          return true
+      if ((selected.length > 0) && (entries.length > 0)) {
+        var selected_index = entries.index(selected)
+        var selected_y = selected.position().top
+        var last_y = entries.last().position.top
+        if (selected_y == last_y) {
+          var candidate_entries = entries
+        } else {
+          var candidate_entries = entries.slice(selected_index+1)
         }
-        return false
-      }).first()
-      if (found.length == 0) {
-        // wrap to top
-        found = entries.filter(function(i, e){
+        if (selected.length == 0) {
+          selected = entries.first()
+        }
+        if (candidate_entries.length == 0) {
+          candidate_entries = entries
+        }
+        found = candidate_entries.filter(function(i, e){
           if ($(this).position().left == selected.position().left) {
             return true
           }
           return false
         }).first()
+        if (found.length == 0) {
+          // wrap to top
+          found = entries.filter(function(i, e){
+            if ($(this).position().left == selected.position().left) {
+              return true
+            }
+            return false
+          }).first()
+        }
+        found.each(function(){
+          entries.removeClass("menu_selected")
+          $(this).addClass("menu_selected")
+          return
+        })
       }
-      found.each(function(){
-        entries.removeClass("menu_selected");
-        $(this).addClass("menu_selected");
-        return;
-      });
-
     }
 
     // 'Enter' from a menu entry does a click
@@ -265,8 +286,8 @@ function app_bindings() {
 
     // scroll up/down to keep selected entry displayed
     var directional_events = [37, 38, 39, 40]
-    if (directional_events.indexOf(event.which) >= 0) {
-      var selected = entries.filter(".menu_selected")
+    var selected = entries.filter(".menu_selected")
+    if ((directional_events.indexOf(event.which) >= 0) && (selected.length >0)) {
       var container = selected.parents(".menu,.flash").first()
 
       // scroll down

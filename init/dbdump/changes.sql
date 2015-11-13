@@ -3410,7 +3410,6 @@ CREATE VIEW `v_services` AS select s.svc_ha, s.svc_status, s.svc_availstatus, s.
 
 alter table forms_store add column form_var_id integer;
 
-<<<<<<< HEAD:init/dbdump/changes.sql
 alter table nodes add column hvpool varchar(64);
 
 alter table nodes add column hv varchar(128);
@@ -4807,3 +4806,4 @@ CREATE TABLE `links` (
   PRIMARY KEY (`id`),
   KEY `idx1` (`link_md5`)
 ) ENGINE=InnoDB AUTO_INCREMENT=10362534 DEFAULT CHARSET=utf8;
+
