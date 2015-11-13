@@ -9179,9 +9179,6 @@ function replace_references(s) {
 }
 
 function form_input_functions (o, init) {
-    if (!init && !o.parent().is(":visible")) {
-      return
-    }
     l = $(o).attr("id").split("_")
     index = l[l.length-1]
     var trigger_args = o.attr("trigger_args")

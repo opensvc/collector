@@ -400,6 +400,15 @@ function cell_decorator_status(e) {
   $(e).html("<div class='svc nowrap icon-"+t[c]+"'></div>")
 }
 
+function cell_decorator_forms_links(e) {
+  var line = $(e).parent(".tl")
+  var form_id = line.children("[name$=id]").attr("v")
+  var query = "form_id="+form_id
+  url = $(location).attr("origin") + "/init/forms/forms_editor?"+query
+  var d = "<a class='clickable edit16' target='_blank' href="+url+"></a>"
+  $(e).html(d)
+}
+
 function cell_decorator_svcmon_links(e) {
   var line = $(e).parent(".tl")
   var mon_svcname = line.children("[name$=mon_svcname]").attr("v")
@@ -1088,7 +1097,24 @@ function cell_decorator_overallstatus(e) {
   $(e).html(s)
 }
 
+function cell_decorator_yaml(e) {
+  var s = $(e).attr("v")
+  var _e = $("<pre></pre>")
+  s = s.replace(/Id:\s*(\w+)/gi, function(x) {
+    return '<span class=syntax_red>'+x+'</span>'
+  })
+  s = s.replace(/(#\w+)/gi, function(x) {
+    return '<span class=syntax_red>'+x+'</span>'
+  })
+  s = s.replace(/(\w+:)/gi, function(x) {
+    return '<span class=syntax_green>'+x+'</span>'
+  })
+  _e.html(s)
+  $(e).html(_e)
+}
+
 cell_decorators = {
+ "yaml": cell_decorator_yaml,
  "rsetvars": cell_decorator_rsetvars,
  "dash_entry": cell_decorator_dash_entry,
  "disk_array_dg": cell_decorator_disk_array_dg,
@@ -1121,6 +1147,7 @@ cell_decorators = {
  "overallstatus": cell_decorator_overallstatus,
  "chk_type": cell_decorator_chk_type,
  "svcmon_links": cell_decorator_svcmon_links,
+ "forms_links": cell_decorator_forms_links,
  "svc_ha": cell_decorator_svc_ha,
  "env": cell_decorator_env,
  "date_future": cell_decorator_date_future,

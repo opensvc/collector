@@ -285,8 +285,8 @@ function app_bindings() {
 
     // scroll up/down to keep selected entry displayed
     var directional_events = [37, 38, 39, 40]
-    var selected = entries.filter(".menu_selected")
-    if ((directional_events.indexOf(event.which) >= 0) && (selected.length >0)) {
+    if (directional_events.indexOf(event.which) >= 0) {
+      var selected = entries.filter(".menu_selected")
       var container = selected.parents(".menu,.flash").first()
 
       // scroll down
