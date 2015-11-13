@@ -2,6 +2,19 @@ var osvc = {
  'tables': {}
 }
 
+function i18n_init(callback) {
+  i18n.init({
+      debug: true,
+      fallbackLng: false,
+      load:'unspecific',
+      resGetPath: "/init/static/locales/__lng__/__ns__.json",
+      ns: {
+          namespaces: ['translation'],
+          defaultNs: 'translation'
+      }
+  }, callback);
+}
+
 function app_start() {
   i18n_init(_app_start)
 }

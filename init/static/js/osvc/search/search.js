@@ -377,7 +377,7 @@ function filter_menu(event) {
     }
   }
   if (entries.length==0) {
-    menu.append("<div class='menu_entry meta_not_found'><a><div class='question48'>"+T("No menu entry found matching filter")+"</div></a></div>")
+    menu.append("<div class='menu_entry meta_not_found'><a><div class='question48'>"+i18n.t("search.nothing_found")+"</div></a></div>")
   } else {
     menu.find(".meta_not_found").remove()
   }
@@ -397,7 +397,7 @@ function filter_fset_selector(event) {
   })
   var entries = div.find(".menu_entry:visible")
   if (entries.length==0) {
-    div.append("<div class='menu_entry meta_not_found'><a><div class='question48'>"+T("No menu entry found matching filter")+"</div></a></div>")
+    div.append("<div class='menu_entry meta_not_found'><a><div class='question48'>"+i18n.t("search.nothing_found")+"</div></a></div>")
   } else {
     div.find(".meta_not_found").remove()
   }

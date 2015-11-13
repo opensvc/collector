@@ -332,7 +332,7 @@ function designer__remove(o, e, data) {
   data.rslt.obj.each(function() {
     var obj_id = $(this).attr("obj_id")
     var obj_rel = $(this).attr("rel")
-    if (!confirm(T("Warning, this object might be referenced by other objects. Do you really want to delete this compliance object ?"))) {
+    if (!confirm(i18n.t("designer.warn_remove"))) {
       $.jstree.rollback(data.rlbk)
       return
     }
