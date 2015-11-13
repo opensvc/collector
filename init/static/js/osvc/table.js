@@ -747,7 +747,7 @@ function table_refresh(t) {
         t.set_refresh_spin()
     }
 
-    // move open tabs to overlay to preserve what was in use
+    // refresh open tabs to overlay to preserve what was in use
     if (t.div.find(".extraline").children("td").children("table").length > 0) {
       $("#overlay").empty().hide()
       t.div.find(".extraline").children("td").children("table").parent().each(function() {
@@ -2064,7 +2064,8 @@ function table_action_menu_node(t, e){
 }
 
 function table_add_overlay(t) {
-  if (t.e_overlay) {
+  if ($("#overlay").length > 0) {
+    t.e_overlay = $("#overlay")
     return
   }
   var e = $("<div class='white_float hidden stackable' id='overlay'></div>")
@@ -2089,11 +2090,6 @@ function resize_overlay() {
 
 function _resize_overlay() {
   e = $("#overlay")
-  if (e.is(":empty")) {
-    e.hide()
-    return
-  }
-  e.show()
   e.css({
    'overflow': 'auto',
    'position': 'fixed',
@@ -2128,6 +2124,7 @@ function trigger_tool_topo(tid) {
     "svcnames": svcnames,
     "display": ["nodes", "services", "countries", "cities", "buildings", "rooms", "racks", "enclosures", "hvs", "hvpools", "hvvdcs"]
   })
+  t.e_overlay.show()
 }
 
 function trigger_tool_nodesantopo(tid) {
@@ -2140,6 +2137,7 @@ function trigger_tool_nodesantopo(tid) {
   for (i=0;i<data.length;i++) {
     nodes.push(data[i]['nodename'])
   }
+  t.e_overlay.show()
   sync_ajax('/init/ajax_node/ajax_nodes_stor?nodes='+nodes.join(","), [], 'overlay', function(){})
 }
 
@@ -2153,8 +2151,8 @@ function trigger_tool_nodesysrepdiff(tid) {
   for (i=0;i<data.length;i++) {
     nodes.push(data[i]['nodename'])
   }
+  t.e_overlay.show()
   sysrepdiff("overlay", {"nodes": nodes.join(",")})
-  $("#overlay").width($("#overlay").css("max-width"))
 }
 
 function trigger_tool_nodesysrep(tid) {
@@ -2167,8 +2165,8 @@ function trigger_tool_nodesysrep(tid) {
   for (i=0;i<data.length;i++) {
     nodes.push(data[i]['nodename'])
   }
+  t.e_overlay.show()
   sysrep("overlay", {"nodes": nodes.join(",")})
-  $("#overlay").width($("#overlay").css("max-width"))
 }
 
 function trigger_tool_svcdiff(tid) {
@@ -2181,6 +2179,7 @@ function trigger_tool_svcdiff(tid) {
   for (i=0;i<data.length;i++) {
     nodes.push(data[i]['svcname'])
   }
+  t.e_overlay.show()
   sync_ajax('/init/nodediff/ajax_svcdiff?node='+nodes.join(","), [], 'overlay', function(){})
 }
 
@@ -2194,6 +2193,7 @@ function trigger_tool_nodediff(tid) {
   for (i=0;i<data.length;i++) {
     nodes.push(data[i]['nodename'])
   }
+  t.e_overlay.show()
   sync_ajax('/init/nodediff/ajax_nodediff?node='+nodes.join(","), [], 'overlay', function(){})
 }
 
@@ -2207,6 +2207,7 @@ function trigger_tool_grpprf(tid) {
   for (i=0;i<data.length;i++) {
     nodes.push(data[i]['nodename'])
   }
+  t.e_overlay.show()
   sync_ajax('/init/nodes/ajax_grpprf?node='+nodes.join(","), [], 'overlay', function(){})
 }
 
