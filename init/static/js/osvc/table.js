@@ -2237,6 +2237,7 @@ function tool_nodesysrep(t, data) {
     return ""
   }
   return "<div class='clickable icon log16' onclick='trigger_tool_nodesysrep(\""+t.id+"\")'>"+i18n.t("action_menu.node_sysrep")+"</div>"
+}
 
 function tool_grpprf(t, data) {
   if (data.length==0) {
