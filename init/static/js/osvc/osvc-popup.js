@@ -5,21 +5,24 @@ var _stack = [];
 var _stack_className = "stackable";
 var _stackcounter = 0;
 
-function osvc_popup_delete_children(value)
+function osvc_popup_delete_children(value) // Multiple childran can have 1 parent
 {
+	is = 0;
 	// Handle children remove
 	for(i=0;i<_stack.length;i++)
 	{
 		if (_stack[i].parent == value) // Children found
 		{
 			console.log("splice children : " + _stack[i].span + ' for parent : ' + value);
-			//osvc_popup_delete_children(_stack[i].span);
 			_stack.splice(i,1); // destroy it
+			is=1;
+			break;
 		}
 	}
+	if (is==1) osvc_popup_delete_children(_stack[i].span);
 }
 
-function osvc_popup_delete_by_id(value)
+function osvc_popup_delete_by_id(value) // Only 1 stack can be found
 {
 	for(i=0;i<_stack.length;i++)
 	{
@@ -27,10 +30,10 @@ function osvc_popup_delete_by_id(value)
 		{
 			console.log("splice element :" + _stack[i].span + ' for span : ' + value);
 			_stack.splice(i,1);
-			osvc_popup_delete_children(value);
+			break;
 		}
 	}
-
+	osvc_popup_delete_children(value);
 }
 
 function osvc_popup_stack_listener()
@@ -161,10 +164,6 @@ function osvc_popup_delete_from_stack(span)
 
 	var target = $(document).find("[stack_id='"+span.span + "']");
 	target.toggle("Blind",function () {
-		//if (span.span[0] == "A") target.remove();
-		//else 
 		target.hide("fold");
 	});
-	// Handle children remove
-	//osvc_popup_remove_child(span);
 }
