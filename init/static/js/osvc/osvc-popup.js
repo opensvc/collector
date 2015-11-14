@@ -1,8 +1,5 @@
-//MD
-
 var _stack = [];
 var _stack_counter = 0;
-
 var _stack_className = "stackable";
 
 function osvc_popup_remove_from_stack()
@@ -170,6 +167,7 @@ function osvc_popup_stack_listener_callback(mutations) {
 
 function osvc_popup_stack_listener()
 {
+	console.log("init popup event observer")
 	var target = document;
 	 
 	// create an observer instance

@@ -2075,9 +2075,7 @@ function table_add_overlay(t) {
     resize_overlay()
     resize_extralines()
   })
-  e.bind("DOMSubtreeModified", function(){
-    resize_overlay()
-  })
+  e.bind("DOMSubtreeModified", resize_overlay)
   t.e_overlay = e
 }
 
@@ -2090,6 +2088,7 @@ function resize_overlay() {
 
 function _resize_overlay() {
   e = $("#overlay")
+  e.unbind("DOMSubtreeModified", resize_overlay)
   e.css({
    'overflow': 'auto',
    'position': 'fixed',
@@ -2098,6 +2097,7 @@ function _resize_overlay() {
    'top': ($(window).height()-e.height())/2,
    'left': ($(window).width()-e.width())/2
   })
+  e.bind("DOMSubtreeModified", resize_overlay)
 }
 
 function resize_extralines() {
