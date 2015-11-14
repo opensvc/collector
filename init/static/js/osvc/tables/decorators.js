@@ -1132,21 +1132,21 @@ function cell_decorator_appinfo_value(e) {
   if (is_numeric(s)) {
     _e.addClass("spark16")
     $(e).addClass("corner clickable")
+    $(e).bind("click", function() {
+      var line = $(e).parent(".tl")
+      var span_id = line.attr("spansum")
+      var table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
+      var id = table_id + "_x_" + span_id
+      var params = "svcname="+encodeURIComponent(line.children("[name$=_c_app_svcname]").attr("v"))
+      params += "&nodename="+encodeURIComponent(line.children("[name$=_c_app_nodename]").attr("v"))
+      params += "&launcher="+encodeURIComponent(line.children("[name$=_c_app_launcher]").attr("v"))
+      params += "&key="+encodeURIComponent(line.children("[name$=_c_app_key]").attr("v"))
+      params += "&rowid="+encodeURIComponent(id)
+      var url = $(location).attr("origin") + "/init/appinfo/ajax_appinfo_log?" + params
+  
+      toggle_extra(url, id, e, 0)
+    })
   }
-  $(e).bind("click", function() {
-    var line = $(e).parent(".tl")
-    var span_id = line.attr("spansum")
-    var table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
-    var id = table_id + "_x_" + span_id
-    var params = "svcname="+encodeURIComponent(line.children("[name$=_c_app_svcname]").attr("v"))
-    params += "&nodename="+encodeURIComponent(line.children("[name$=_c_app_nodename]").attr("v"))
-    params += "&launcher="+encodeURIComponent(line.children("[name$=_c_app_launcher]").attr("v"))
-    params += "&key="+encodeURIComponent(line.children("[name$=_c_app_key]").attr("v"))
-    params += "&rowid="+encodeURIComponent(id)
-    var url = $(location).attr("origin") + "/init/appinfo/ajax_appinfo_log?" + params
-
-    toggle_extra(url, id, e, 0)
-  })
   $(e).html(_e)
 }
 
