@@ -77,7 +77,7 @@ class table_appinfo(HtmlTable):
                      title='Id',
                      table='appinfo',
                      field='id',
-                     img='key16',
+                     img='key',
                      display=False,
                     ),
             'app_svcname': HtmlTableColumn(

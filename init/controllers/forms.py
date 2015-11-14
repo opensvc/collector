@@ -212,7 +212,7 @@ class table_forms(HtmlTable):
                 field = 'id',
                 display = False,
                 table = 'v_forms',
-                img = 'prov'
+                img = 'key'
             ),
             'form_name': HtmlTableColumn(
                 title = 'Name',
