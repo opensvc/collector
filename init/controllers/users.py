@@ -1,49 +1,3 @@
-class col_users_domains(HtmlTableColumn):
-    def html(self, o):
-        s = self.get(o)
-        if s == '':
-            ss = '(no permission)'
-        else:
-            ss = s
-        tid = 'd_t_%s'%o.id
-        iid = 'd_i_%s'%o.id
-        sid = 'd_s_%s'%o.id
-        d = SPAN(
-              SPAN(
-                ss,
-                _id=tid,
-                _onclick="""hide_eid('%(tid)s');show_eid('%(sid)s');getElementById('%(iid)s').focus()"""%dict(tid=tid, sid=sid, iid=iid),
-                _class="clickable",
-              ),
-              SPAN(
-                INPUT(
-                  value=s,
-                  _id=iid,
-                  _onkeypress="if (is_enter(event)) {%s};"%\
-                     self.t.ajax_submit(additional_inputs=[iid],
-                                        args="domain_set"),
-                ),
-                _id=sid,
-                _style="display:none",
-              ),
-            )
-        return d
-
-class col_users_last(HtmlTableColumn):
-    def html(self, o):
-        return A(self.get(o),
-                 _href=URL(r=request, c='log',f='log',
-                           vars={'log_f_log_user':o.fullname}),
-               )
-
-class col_users_manager(HtmlTableColumn):
-    def html(self, o):
-        role = self.get(o)
-        if role == 0:
-            img = 'images/oneguy.png'
-        else:
-            img = 'images/admin.png'
-        return IMG(_src=URL(r=request,c='static',f=img))
 
 class table_users(HtmlTable):
     def __init__(self, id=None, func=None, innerhtml=None):
@@ -61,17 +15,20 @@ class table_users(HtmlTable):
                      'fset_name',
                      'domains',
                      'last']
+        self.force_cols = ['id']
         self.keys = ['id']
         self.span = ['id']
         self.colprops = {
             'id': HtmlTableColumn(
                      title='User Id',
+                     table='v_users',
                      field='id',
                      img='guy16',
                      display=True,
                     ),
             'fullname': HtmlTableColumn(
                      title='Full name',
+                     table='v_users',
                      field='fullname',
                      img='guy16',
                      display=True,
@@ -79,43 +36,52 @@ class table_users(HtmlTable):
                     ),
             'email': HtmlTableColumn(
                      title='Email',
+                     table='v_users',
                      field='email',
                      img='guy16',
                      display=True,
                     ),
             'phone_work': HtmlTableColumn(
                      title='Work desk phone',
+                     table='v_users',
                      field='phone_work',
                      img='guy16',
                      display=True,
                     ),
             'primary_group': HtmlTableColumn(
                      title='Primary group',
+                     table='v_users',
                      field='primary_group',
                      img='guys16',
                      display=True,
                     ),
             'groups': HtmlTableColumn(
                      title='Groups',
+                     table='v_users',
                      field='groups',
                      img='guys16',
                      display=True,
                      _class="groups",
                     ),
-            'domains': col_users_domains(
+            'domains': HtmlTableColumn(
                      title='Domains',
+                     table='v_users',
                      field='domains',
                      img='filter16',
                      display=True,
+                     _class='users_domain',
                     ),
-            'manager': col_users_manager(
+            'manager': HtmlTableColumn(
                      title='Role',
+                     table='v_users',
                      field='manager',
                      img='guy16',
                      display=True,
+                     _class='users_role',
                     ),
             'lock_filter': HtmlTableColumn(
                      title='Lock filterset',
+                     table='v_users',
                      field='lock_filter',
                      img='attach16',
                      display=True,
@@ -123,12 +89,14 @@ class table_users(HtmlTable):
                     ),
             'fset_name': HtmlTableColumn(
                      title='Filterset',
+                     table='v_users',
                      field='fset_name',
                      img='filter16',
                      display=True,
                     ),
-            'last': col_users_last(
+            'last': HtmlTableColumn(
                      title='Last events',
+                     table='v_users',
                      field='last',
                      img='time16',
                      display=True,
@@ -138,6 +106,7 @@ class table_users(HtmlTable):
         self.colprops['domains'].t = self
         self.ajax_col_values = 'ajax_users_col_values'
         self.dbfilterable = False
+        self.dataable = True
         self.wsable = True
         self.checkboxes = True
         if 'Manager' in user_groups():
@@ -531,34 +500,6 @@ def users_del(ids=[]):
          'deleted users %(x)s',
          dict(x=x))
 
-@auth.requires_membership('Manager')
-def domain_set():
-    l = [k for k in request.vars if 'd_i_' in k]
-    if len(l) != 1:
-        raise ToolError("one user must be selected")
-    id = int(l[0].replace('d_i_',''))
-    new = request.vars[l[0]]
-    gid = auth.user_group(id)
-
-    q = db.domain_permissions.group_id == gid
-    rows = db(q).select(db.domain_permissions.id)
-    n = len(rows)
-    if n == 1:
-        if new == '':
-            db(q).delete()
-        else:
-            db(q).update(domains=new)
-    elif n == 0:
-        if new == '':
-            raise ToolError("no domain specified")
-        db.domain_permissions.insert(domains=new, group_id=gid)
-
-    rows = db(db.v_users.id==id).select(db.v_users.fullname)
-    x = ', '.join([r.fullname for r in rows])
-    _log('users.user.change',
-         'set domain %(d)s for user %(x)s',
-         dict(x=x, d=new))
-
 @auth.requires_login()
 def ajax_users():
     t = table_users('users', 'ajax_users')
@@ -566,9 +507,7 @@ def ajax_users():
     if len(request.args) == 1:
         action = request.args[0]
         try:
-            if action == 'domain_set':
-                domain_set()
-            elif action == 'group_del':
+            if action == 'group_del':
                 group_del()
             elif action == 'users_del':
                 users_del(t.get_checked())
@@ -618,25 +557,33 @@ def ajax_users():
     for f in t.cols:
         q = _where(q, 'v_users', t.filter_parse(f), f)
 
-    if len(request.args) == 1 and request.args[0] == 'line':
+    if len(request.args) == 1 and request.args[0] == 'data':
         n = db(q).count()
         limitby = (t.pager_start,t.pager_end)
-        t.object_list = db(q).select(orderby=o, limitby=limitby, cacheable=False)
+        cols = t.get_visible_columns()
+        t.object_list = db(q).select(*cols, orderby=o, limitby=limitby, cacheable=False)
         t.set_column_visibility()
-        return t.table_lines_data(n)
-
-    n = db(q).count()
-    t.setup_pager(n)
-    t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
-    return t.html()
+        return t.table_lines_data(n, html=False)
 
 @auth.requires_login()
 def users():
-    t = DIV(
-          ajax_users(),
+    t = table_users('users', 'ajax_users')
+    d = DIV(
+          t.html(),
+          SCRIPT("""
+function ws_action_switch_%(divid)s(data) {
+        if (data["event"] == "auth_user_change") {
+          osvc.tables["%(divid)s"].refresh()
+        }
+}
+wsh["%(divid)s"] = ws_action_switch_%(divid)s
+         """ % dict(
+                     divid=t.innerhtml,
+                    )
+          ),
           _id='users',
         )
-    return dict(table=t)
+    return dict(table=d)
 
 def users_load():
     return users()["table"]
