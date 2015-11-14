@@ -1047,7 +1047,7 @@ function table_ajax_submit(url, id, additional_inputs, input_name, additional_in
     })
 }
 function toggle_extra(url, id, e, ncols) {
-    line=$(e).parents(".tl")
+    line=$(e).parents(".tl").first()
     if (ncols==0) {
         ncols = line.children("[cell=1]").length
     }
@@ -1062,10 +1062,13 @@ function toggle_extra(url, id, e, ncols) {
     if (url) {
       sync_ajax(url, [], id, function(){
         $("#"+id).removeClass("spinner")
-        $("#"+id).children().each(function(){$(this).width($(window).width()-$(this).children().position().left-20)})
+        $("#"+id).children().each(function(){
+          $(this).width($(window).width()-$(this).children().position().left-20)
+        })
       })
     }
 }
+
 function checked_services() {
     d = new Array()
     $("[name=svcmon_ck]").each(function(){
@@ -2080,6 +2083,9 @@ function table_add_overlay(t) {
 }
 
 function resize_overlay() {
+  if ($("#overlay:visible").length == 0) {
+    return
+  }
   _resize_overlay()
   $("#overlay").find("img").one("load", function(){
     _resize_overlay()
