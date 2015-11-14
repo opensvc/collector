@@ -400,9 +400,86 @@ function cell_decorator_status(e) {
   $(e).html("<div class='svc nowrap icon-"+t[c]+"'></div>")
 }
 
+function cell_decorator_reports_links(e) {
+  $(e).empty()
+  $(e).addClass("corner nowrap")
+
+  var line = $(e).parent(".tl")
+  var id = line.children("[name$=_c_id]").attr("v")
+  var query = "report_id="+id
+  url = $(location).attr("origin") + "/init/charts/reports_editor?"+query
+  var d = "<a class='clickable edit16' target='_blank' href="+url+"></a>"
+  $(e).append(d)
+
+  // test chart
+  var d = $("<span></span>")
+  $(d).addClass("clickable action16")
+  $(d).click(function(){
+    var table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
+    var span_id = $(e).parent(".tl").attr("spansum")
+    var id = table_id + "_x_" + span_id
+    var report_id = $(this).parents(".tl").first().children("[name$=_c_id]").attr("v")
+    url = $(location).attr("origin") + "/init/charts/ajax_report_test?report_id="+report_id
+    toggle_extra(url, id, e, 0)
+  })
+  $(e).append(d)
+}
+
+function cell_decorator_charts_links(e) {
+  $(e).empty()
+  $(e).addClass("corner nowrap")
+
+  // editor
+  var line = $(e).parent(".tl")
+  var id = line.children("[name$=_c_id]").attr("v")
+  var query = "chart_id="+id
+  url = $(location).attr("origin") + "/init/charts/charts_editor?"+query
+  var d = "<a class='clickable edit16' target='_blank' href="+url+"></a>"
+  $(e).append(d)
+
+  // test chart
+  var d = $("<span></span>")
+  $(d).addClass("clickable action16")
+  $(d).click(function(){
+    var table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
+    var span_id = $(e).parent(".tl").attr("spansum")
+    var id = table_id + "_x_" + span_id
+    var chart_id = $(this).parents(".tl").first().children("[name$=_c_id]").attr("v")
+    url = $(location).attr("origin") + "/init/charts/ajax_chart_test?chart_id="+chart_id
+    toggle_extra(url, id, e, 0)
+  })
+  $(e).append(d)
+}
+
+function cell_decorator_metrics_links(e) {
+  $(e).empty()
+  $(e).addClass("corner nowrap")
+
+  // editor
+  var line = $(e).parent(".tl")
+  var id = line.children("[name$=_c_id]").attr("v")
+  var query = "metric_id="+id
+  url = $(location).attr("origin") + "/init/charts/metrics_editor?"+query
+  var d = "<a class='clickable edit16' target='_blank' href="+url+"></a>"
+  $(e).append(d)
+
+  // test metric
+  var d = $("<span></span>")
+  $(d).addClass("clickable action16")
+  $(d).click(function(){
+    var table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
+    var span_id = $(e).parent(".tl").attr("spansum")
+    var id = table_id + "_x_" + span_id
+    var metric_id = $(this).parents(".tl").first().children("[name$=_c_id]").attr("v")
+    url = $(location).attr("origin") + "/init/charts/ajax_metric_test?metric_id="+metric_id
+    toggle_extra(url, id, e, 0)
+  })
+  $(e).append(d)
+}
+
 function cell_decorator_forms_links(e) {
   var line = $(e).parent(".tl")
-  var form_id = line.children("[name$=id]").attr("v")
+  var form_id = line.children("[name$=_c_id]").attr("v")
   var query = "form_id="+form_id
   url = $(location).attr("origin") + "/init/forms/forms_editor?"+query
   var d = "<a class='clickable edit16' target='_blank' href="+url+"></a>"
@@ -1097,6 +1174,25 @@ function cell_decorator_overallstatus(e) {
   $(e).html(s)
 }
 
+function cell_decorator_sql(e) {
+  var s = $(e).attr("v")
+  var _e = $("<pre></pre>")
+  s = s.replace(/(SELECT|FROM|GROUP BY|WHERE)/gi, function(x) {
+    return '<span class=syntax_red>'+x+'</span>'
+  })
+  s = s.replace(/(COUNT|DATE_SUB|SUM|MAX|MIN|CEIL|FLOOR|AVG|CONCAT|GROUP_CONCAT)/gi, function(x) {
+    return '<span class=syntax_green>'+x+'</span>'
+  })
+  s = s.replace(/([\"\']\w*[\"\'])/gi, function(x) {
+    return '<span class=syntax_blue>'+x+'</span>'
+  })
+  s = s.replace(/(%%\w+%%)/gi, function(x) {
+    return '<span class=syntax_blue>'+x+'</span>'
+  })
+  _e.html(s)
+  $(e).html(_e)
+}
+
 function cell_decorator_yaml(e) {
   var s = $(e).attr("v")
   var _e = $("<pre></pre>")
@@ -1152,6 +1248,7 @@ function cell_decorator_appinfo_value(e) {
 
 cell_decorators = {
  "yaml": cell_decorator_yaml,
+ "sql": cell_decorator_sql,
  "rsetvars": cell_decorator_rsetvars,
  "dash_entry": cell_decorator_dash_entry,
  "disk_array_dg": cell_decorator_disk_array_dg,
@@ -1196,6 +1293,9 @@ cell_decorators = {
  "date_no_age": cell_decorator_date_no_age,
  "dash_severity": cell_decorator_dash_severity,
  "dash_links": cell_decorator_dash_links,
+ "metrics_links": cell_decorator_metrics_links,
+ "charts_links": cell_decorator_charts_links,
+ "reports_links": cell_decorator_reports_links,
  "tag_exclude": cell_decorator_tag_exclude,
  "_network": cell_decorator_network,
  "boolean": cell_decorator_boolean,
