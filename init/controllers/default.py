@@ -819,7 +819,7 @@ class table_svcmon(HtmlTable):
               ),
               DIV(
                 _style='display:none',
-                _class='white_float',
+                _class='stackable white_float',
                 _id="prov_container",
               ),
               _class='floatw',

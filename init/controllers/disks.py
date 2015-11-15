@@ -348,7 +348,7 @@ class table_quota(HtmlTable):
               ),
               DIV(
                 _style='display:none',
-                _class='white_float',
+                _class='stackable white_float',
                 _id="prov_container",
               ),
               _class='floatw',
@@ -419,7 +419,7 @@ class table_quota(HtmlTable):
                   ),
                 ),
                 _style='display:none',
-                _class='white_float',
+                _class='stackable white_float',
                 _name=divid,
                 _id=divid,
               ),
@@ -754,7 +754,7 @@ class table_disks(HtmlTable):
               ),
               DIV(
                 _style='display:none',
-                _class='white_float',
+                _class='stackable white_float',
                 _id="prov_container",
               ),
               _class='floatw',

@@ -504,7 +504,7 @@ class table_checks(HtmlTable):
               DIV(
                 self.form_add_fset_threshold,
                 _style='display:none',
-                _class='white_float',
+                _class='stackable white_float',
                 _name='add_fset_threshold_d',
                 _id='add_fset_threshold_d',
               ),
@@ -603,7 +603,7 @@ class table_checks(HtmlTable):
                   ),
                 ),
                 _style='display:none',
-                _class='white_float',
+                _class='stackable white_float',
                 _name=divid,
               ),
             )
@@ -635,7 +635,7 @@ class table_checks(HtmlTable):
                   ),
                 ),
                 _style='display:none',
-                _class='white_float',
+                _class='stackable white_float',
                 _name='set_%s_threshold_d'%t,
                 _id='set_%s_threshold_d'%t,
               ),

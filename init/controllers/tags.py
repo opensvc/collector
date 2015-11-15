@@ -70,7 +70,7 @@ class table_tags(HtmlTable):
               DIV(
                 self.form_tag_add,
                 _style='display:none',
-                _class='white_float',
+                _class='stackable white_float',
                 _name='tag_add',
                 _id='tag_add',
               ),
@@ -286,7 +286,7 @@ class table_tagattach(HtmlTable):
                   ),
                 ),
                 _style='display:none',
-                _class='white_float',
+                _class='stackable white_float',
                 _name=divid,
               ),
             )

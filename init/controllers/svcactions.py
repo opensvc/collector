@@ -407,7 +407,7 @@ class table_actions(HtmlTable):
                   ),
                 ),
                 _style='display:none',
-                _class='white_float',
+                _class='stackable white_float',
                 _name='ackcomment_d',
                 _id='ackcomment_d',
               ),
