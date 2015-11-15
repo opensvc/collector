@@ -3584,11 +3584,6 @@ function table_add_ws_handler(t) {
 function table_format_values_cloud(t, span, data) {
   span.removeClass("spinner")
 
-  // header
-  var header = $("<h3></h3>")
-  header.text(i18n.t("table.unique_matching_values", {"count": data.length}))
-  span.append(header)
-
   var keys = []
   var max = 0
   var min = 0
@@ -3604,6 +3599,11 @@ function table_format_values_cloud(t, span, data) {
     if (n < min) min = n
     delta = max - min
   }
+
+  // header
+  var header = $("<h3></h3>")
+  header.text(i18n.t("table.unique_matching_values", {"count": keys.length}))
+  span.append(header)
 
   // 'empty' might not be comparable with other keys type
   if ('empty' in keys) {
