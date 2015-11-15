@@ -3154,6 +3154,10 @@ function table_add_refresh(t) {
 // table tool: volatile toggle
 //
 function table_add_volatile(t) {
+  if (!t.options.headers || !t.options.filterable) {
+    return
+  }
+
   // checkbox
   var input = $("<input type='checkbox' class='ocb' />")
   if (t.options.volatile_filters) {
