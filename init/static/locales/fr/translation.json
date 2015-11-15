@@ -47,6 +47,9 @@
     "link_text": "La cible de ce lien est stockée en base de données du collecteur. Vous pouvez le partager avec des collaborateurs afin qu'ils consultent les mêmes informations, si tant es qu'ils bénéficient des mêmes privilèges que vous"
   },
   "table": {
+    "number_of_occurence": "__count__ occurence",
+    "number_of_occurence_plural": "__count__ occurences",
+    "unique_matching_values": "__count__ valeurs distinctes correspondantes",
     "minute": "__count__ minute",
     "minute_plural": "__count__ minutes",
     "hour": "__count__ heure",

@@ -47,6 +47,9 @@
     "link_text": "This link target is stored in the collector database. You can share it with collaborators so they can see the same information, granted they have equivalent privileges."
   },
   "table": {
+    "number_of_occurence": "__count__ occurence",
+    "number_of_occurence_plural": "__count__ occurences",
+    "unique_matching_values": "__count__ unique matching values",
     "minute": "__count__ minute",
     "minute_plural": "__count__ minutes",
     "hour": "__count__ hour",

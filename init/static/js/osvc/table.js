@@ -573,6 +573,7 @@ function table_add_column_header_input(t, tr, c) {
     input.val(t.options.request_vars[input_id])
   }
   value_cloud.attr("id", t.id+"_fc_"+c)
+  value_cloud.css({"overflow-wrap": "break-word"})
 
   input_float.append(input)
   input_float.append(value_to_filter_tool)
@@ -1188,35 +1189,41 @@ function table_bind_filter_input_events(t) {
 
   // refresh column filter cloud on keyup
   inputs.bind("keyup", function(event) {
-    var input = $(this)
-    if (!is_enter(event)) {
-      var col = input.attr('id').split('_f_')[1]
-      t.e_header_slim.find("[col='"+col+"']").removeClass("bgred").addClass("bgorange")
-      clearTimeout(timer)
-      timer = setTimeout(function validate(){
-        var data = {}
-        for (c in t.colprops) {
-          var current = $("#"+t.id+"_f_"+c).val()
-          if ((current != "") && (typeof current !== 'undefined')) {
-            data[t.id+"_f_"+c] = current
-          } else if (t.colprops[c].force_filter != "") {
-            data[t.id+"_f_"+c] = t.colprops[c].force_filter
-          }
-        }
-        data[input.attr('id')] = input.val()
-        var dest = input.siblings("[id^="+t.id+"_fc_]")
-        _url = url + col
-        $.ajax({
-         type: "POST",
-         url: _url,
-         data: data,
-         context: document.body,
-         success: function(msg){
-           dest.html(msg)
-         }
-        })
-      }, 1000)
+    if (is_enter(event)) {
+      return
     }
+    var input = $(this)
+    var col = input.attr('id').split('_f_')[1]
+    t.e_header_slim.find("[col='"+col+"']").removeClass("bgred").addClass("bgorange")
+    clearTimeout(timer)
+    timer = setTimeout(function validate(){
+      var data = {}
+      for (c in t.colprops) {
+        var current = $("#"+t.id+"_f_"+c).val()
+        if ((current != "") && (typeof current !== 'undefined')) {
+          data[t.id+"_f_"+c] = current
+        } else if (t.colprops[c].force_filter != "") {
+          data[t.id+"_f_"+c] = t.colprops[c].force_filter
+        }
+      }
+      data[input.attr('id')] = input.val()
+      var dest = input.siblings("[id^="+t.id+"_fc_]")
+      _url = url + col
+      $.ajax({
+       type: "POST",
+       url: _url,
+       data: data,
+       context: document.body,
+       beforeSend: function(req){
+         dest.empty()
+         dest.addClass("spinner")
+       },
+       success: function(msg){
+          var data = $.parseJSON(msg)
+          t.format_values_cloud(dest, data)
+       }
+      })
+    }, 1000)
   })
 
   // validate column filter on <enter> keypress
@@ -3574,6 +3581,63 @@ function table_add_ws_handler(t) {
   }
 }
 
+function table_format_values_cloud(t, span, data) {
+  span.removeClass("spinner")
+
+  // header
+  var header = $("<h3></h3>")
+  header.text(i18n.t("table.unique_matching_values", {"count": data.length}))
+  span.append(header)
+
+  var keys = []
+  var max = 0
+  var min = 0
+  var delta = 0
+  for (key in data) {
+    keys.push(key)
+    n = data[key]
+    if (n > max) max = n
+    min = max
+  }
+  for (key in data) {
+    n = data[key]
+    if (n < min) min = n
+    delta = max - min
+  }
+
+  // 'empty' might not be comparable with other keys type
+  if ('empty' in keys) {
+    var skeys = keys
+    skeys.remove('empty')
+    skeys = ['empty'] + skeys.sort()
+  } else {
+    skeys = keys.sort()
+  }
+
+  // candidates
+  for (var i=0; i<skeys.length ; i++) {
+    var key = skeys[i]
+    var n = data[key]
+    if (delta > 0) {
+      var size = 100 + 100. * (n - min) / delta
+    } else {
+      var size = 100
+    }
+
+    e = $("<a class='h cloud_tag'></a>")
+    e.text(key)
+    e.css({"font-size": size+"%"})
+    e.attr("title", i18n.t("table.number_of_occurence", {"count": data[key]}))
+    e.bind("click", function(){
+      span.siblings("input").val($(this).text())
+      t.refresh()
+      t.refresh_column_filters()
+      t.save_column_filters()
+    })
+    span.append(e)
+  }
+}
+
 function table_init(opts) {
   var t = {
     'options': opts,
@@ -3592,6 +3656,12 @@ function table_init(opts) {
     'action_menu': opts['action_menu'],
     'decorate_cells': function(){
       table_cell_decorator(opts['id'])
+    },
+    'column_values': function(){
+      table_column_values(this)
+    },
+    'format_values_cloud': function(span, data){
+      table_format_values_cloud(this, span, data)
     },
     'add_ws_handler': function(){
       table_add_ws_handler(this)
