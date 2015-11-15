@@ -12,19 +12,6 @@ def call():
     session.forget(response)
     return service()
 
-class col_form_head_id(HtmlTableColumn):
-    def html(self, o):
-        id = self.t.extra_line_key(o)
-        d = A(
-          self.get(o),
-          _href=URL(
-            c='forms',
-            f='workflow',
-            vars={'wfid': self.get(o)},
-          ),
-        )
-        return d
-
 class table_workflows(HtmlTable):
     def __init__(self, id=None, func=None, innerhtml=None):
         if id is None and 'tableid' in request.vars:
@@ -46,19 +33,21 @@ class table_workflows(HtmlTable):
                      'form_yaml',
                     ]
         self.colprops = {
-            'form_head_id': col_form_head_id(
+            'form_head_id': HtmlTableColumn(
                 title = 'Head form id',
                 field = 'form_head_id',
                 display = True,
                 table = 'workflows',
-                img = 'wf16'
+                img = 'wf16',
+                _class = 'form_id',
             ),
-            'last_form_id': col_form_head_id(
+            'last_form_id': HtmlTableColumn(
                 title = 'Last form id',
                 field = 'last_form_id',
                 display = True,
                 table = 'workflows',
-                img = 'wf16'
+                img = 'wf16',
+                _class = 'form_id',
             ),
             'status': HtmlTableColumn(
                 title = 'Status',
@@ -138,6 +127,8 @@ class table_workflows(HtmlTable):
             self.colprops[col].t = self
         self.ajax_col_values = 'ajax_workflows_col_values'
         self.dbfilterable = False
+        self.dataable = True
+        self.wsable = True
         self.checkboxes = False
 
     def extra_line_key(self, o):
@@ -166,21 +157,18 @@ def ajax_workflows():
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
 
-    if len(request.args) == 1 and request.args[0] == 'line':
+    if len(request.args) == 1 and request.args[0] == 'data':
         n = db(q).count()
         limitby = (t.pager_start,t.pager_end)
-        t.object_list = db(q).select(orderby=o, limitby=limitby)
-        return t.table_lines_data(n)
-
-    n = db(q).count()
-    t.setup_pager(n)
-    t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
-    return t.html()
+        cols = t.get_visible_columns()
+        t.object_list = db(q).select(*cols, orderby=o, limitby=limitby, cacheable=True)
+        return t.table_lines_data(n, html=True)
 
 @auth.requires_login()
 def workflows():
+    t = table_workflows('workflows', 'ajax_workflows')
     t = DIV(
-          ajax_workflows(),
+          t.html(),
           _id='workflows',
         )
     return dict(table=t)

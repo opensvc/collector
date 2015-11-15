@@ -723,7 +723,7 @@ function cell_decorator_form_id(e) {
   var v = $(e).attr("v")
   var s = ""
   url = $(location).attr("origin") + "/init/forms/workflow?wfid="+v+"&volatile_filters=true"
-  s = "<a class='clickable' target='_blank' href='"+url+"'></a>"
+  s = "<a class='wf16 icon nowrap clickable' target='_blank' href='"+url+"'>"+v+"</a>"
   $(e).html(s)
 }
 
