@@ -24,6 +24,7 @@ class table_metrics(HtmlTable):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
+        self.events = ["metrics_change"]
         self.span = ['id']
         self.keys = ['id']
         self.force_cols = ['id']
@@ -266,17 +267,6 @@ def metrics_admin():
     t = table_metrics('metrics', 'ajax_metrics_admin')
     t = DIV(
           t.html(),
-          SCRIPT("""
-function ws_action_switch_%(divid)s(data) {
-        if (data["event"] == "metrics_change") {
-          osvc.tables["%(divid)s"].refresh()
-        }
-}
-wsh["%(divid)s"] = ws_action_switch_%(divid)s
-              """ % dict(
-                     divid=t.innerhtml,
-                    )
-          ),
           _id='metrics',
         )
     return dict(table=t)
@@ -302,6 +292,7 @@ class table_charts(HtmlTable):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
+        self.events = ["charts_change"]
         self.span = ['id']
         self.keys = ['id']
         self.force_cols = ['id']
@@ -443,17 +434,6 @@ def charts_admin():
     t = table_charts('charts', 'ajax_charts_admin')
     t = DIV(
           t.html(),
-          SCRIPT("""
-function ws_action_switch_%(divid)s(data) {
-        if (data["event"] == "charts_change") {
-          osvc.tables["%(divid)s"].refresh()
-        }
-}
-wsh["%(divid)s"] = ws_action_switch_%(divid)s
-              """ % dict(
-                     divid=t.innerhtml,
-                    )
-          ),
           _id='charts',
         )
     return dict(table=t)
@@ -582,6 +562,7 @@ class table_reports_admin(HtmlTable):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
+        self.events = ["reports_change"]
         self.span = ['id']
         self.keys = ['id']
         self.force_cols = ['id']
@@ -723,17 +704,6 @@ def reports_admin():
     t = table_reports_admin('reports', 'ajax_reports_admin')
     t = DIV(
           t.html(),
-          SCRIPT("""
-function ws_action_switch_%(divid)s(data) {
-        if (data["event"] == "reports_change") {
-          osvc.tables["%(divid)s"].refresh()
-        }
-}
-wsh["%(divid)s"] = ws_action_switch_%(divid)s
-              """ % dict(
-                     divid=t.innerhtml,
-                    )
-          ),
           _id='reports',
         )
     return dict(table=t)

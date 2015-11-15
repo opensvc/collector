@@ -112,6 +112,7 @@ class table_resmon(HtmlTable):
         self.dataable = True
         self.checkboxes = True
         self.wsable = True
+        self.events = ["resmon_change"]
 
 @auth.requires_login()
 def ajax_resmon_col_values():
@@ -159,17 +160,6 @@ def resmon():
     t = table_resmon('resmon', 'ajax_resmon')
     t = DIV(
           t.html(),
-          SCRIPT("""
-function ws_action_switch_%(divid)s(data) {
-        if (data["event"] == "svcmon_change") {
-          osvc.tables["%(divid)s"].refresh()
-        }
-}
-wsh["%(divid)s"] = ws_action_switch_%(divid)s
-           """ % dict(
-                  divid=t.innerhtml,
-                 )
-          ),
           _id='resmon',
         )
     return dict(table=t)

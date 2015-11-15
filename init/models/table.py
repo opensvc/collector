@@ -153,6 +153,8 @@ class HtmlTable(object):
         self.wsable = False
         self.dataable = False
         self.action_menu = []
+        self.events = []
+        self.on_change = "false"
 
         # initialize the pager, to be re-executed by instanciers
         self.setup_pager()
@@ -805,6 +807,8 @@ var ti_%(id)s = setInterval(function(){
      'headers': %(headers)s,
      'wsable': %(wsable)s,
      'pageable': %(pageable)s,
+     'on_change': %(on_change)s,
+     'events': %(events)s,
      'request_vars': %(request_vars)s
     })
   }
@@ -838,6 +842,8 @@ var ti_%(id)s = setInterval(function(){
                    wsable=str(self.wsable).lower(),
                    headers=str(self.headers).lower(),
                    action_menu=str(self.action_menu),
+                   events=str(self.events),
+                   on_change=str(self.on_change),
                    request_vars=json.dumps(request.vars),
                 ),
               ),

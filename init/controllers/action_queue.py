@@ -136,6 +136,7 @@ class table_actions(HtmlTable):
         self.additional_tools.append('cancel_actions')
         self.dataable = True
         self.wsable = True
+        self.events = ["action_q_change"]
 
     def cancel_actions(self):
         d = DIV(
@@ -224,15 +225,6 @@ def action_queue():
     t = table_actions('action_queue', 'ajax_actions')
     t = DIV(
           t.html(),
-          SCRIPT("""
-function ws_action_switch_%(divid)s(data) {
-        if (data["event"] == "action_q_change") {
-          osvc.tables["%(divid)s"].refresh()
-        }
-}
-wsh["%(divid)s"] = ws_action_switch_%(divid)s
-         """ % dict(divid=t.innerhtml),
-          ),
           _id='action_queue',
         )
     return dict(table=t)

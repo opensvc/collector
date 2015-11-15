@@ -52,7 +52,7 @@ class table_saves(HtmlTable):
                       'save_volume',
                       'save_date',
                       'save_retention']
-        self.force_cols = ["os_name"]
+        self.force_cols = ["id", "os_name"]
         self.keys =  ['id']
         self.span = v_nodes_cols + [
                       'save_server',
@@ -68,7 +68,7 @@ class table_saves(HtmlTable):
                      title='Id',
                      table='saves',
                      field='id',
-                     img='save16',
+                     img='key',
                      display=False,
                     ),
             'save_server': HtmlTableColumn(
@@ -171,8 +171,10 @@ class table_saves(HtmlTable):
         self.checkbox_id_col = 'id'
         self.checkbox_id_table = 'saves'
         self.dataable = True
+        self.wsable = True
         self.dbfilterable = True
         self.ajax_col_values = 'ajax_saves_col_values'
+        self.events = ["saves_change"]
 
 @auth.requires_login()
 def ajax_saves_col_values():
@@ -249,7 +251,6 @@ def saves():
                t.html(),
                _id='saves',
              ),
-             SCRIPT("""osvc.tables["charts"]["on_change"] = plot_savedonuts"""),
         )
     return dict(table=t)
 
@@ -549,4 +550,5 @@ class table_saves_charts(HtmlTable):
         self.columnable = False
         self.headers = False
         self.highlight = False
+        self.on_change = "plot_savedonuts"
 

@@ -4778,6 +4778,7 @@ class table_comp_status(HtmlTable):
         self.checkbox_id_table = 'comp_status'
         if 'CompManager' in user_groups():
             self.additional_tools.append('check_del')
+        self.events = ["comp_status_change"]
 
     def check_del(self):
         d = DIV(
@@ -5367,18 +5368,6 @@ def comp_status():
             t.html(),
             _id='cs0',
           ),
-          SCRIPT(
-               """
-function ws_action_switch_%(divid)s(data) {
-        if (data["event"] == "comp_status_change") {
-          osvc.tables["%(divid)s"].refresh();
-        }
-}
-wsh["%(divid)s"] = ws_action_switch_%(divid)s
-              """ % dict(
-                     divid=t.innerhtml,
-                    ),
-          ),
         )
     return dict(table=d)
 
@@ -5831,6 +5820,7 @@ class table_comp_log(table_comp_status):
         self.child_tables = []
         self.keys = ["run_date", "run_nodename", "run_svcname", "run_module", "run_action"]
         self.span = ["run_date", "run_nodename", "run_svcname", "run_module", "run_action"]
+        self.events = ["comp_log_change"]
 
 @auth.requires_login()
 def ajax_comp_log():
@@ -5868,17 +5858,6 @@ def comp_log():
           DIV(
             t.html(),
             _id='comp_log',
-          ),
-          SCRIPT("""
-function ws_action_switch_%(divid)s(data) {
-        if (data["event"] == "comp_status_change") {
-          osvc.tables["%(divid)s"].refresh();
-        }
-}
-wsh["%(divid)s"] = ws_action_switch_%(divid)s
-              """ % dict(
-                     divid=t.innerhtml,
-                    ),
           ),
         )
     return dict(table=t)
@@ -6983,6 +6962,23 @@ class table_comp_status_svc(table_comp_status):
         self.cols.remove('run_status_log')
         self.child_tables = []
         self.force_cols = ["os_name"]
+        self.on_change = """function() {
+            $("[name=%(tid)s_c_run_status]").bind("mouseover", function(){
+             line = $(this).parents("tr")
+             var s = line.children("[name=%(tid)s_c_run_status]")
+             var e = line.children("[name=%(tid)s_c_run_log]")
+             var pos = s.position()
+             e.width($(window).width()*0.8)
+             e.css({"left": pos.left - e.width() - 10 + "px", "top": pos.top+s.parent().height() + "px"})
+             e.addClass("white_float")
+             cell_decorator_run_log(e)
+             e.show()
+            })
+            $("[name=%(tid)s_c_run_status]").bind("mouseout", function(){
+             $(this).parents("tr").children("[name=%(tid)s_c_run_log]").hide()
+            })
+           }
+        """ % dict(tid=self.id)
 
 def ajax_svc_comp_status():
     tid = request.vars.table_id
@@ -7001,25 +6997,6 @@ def svc_comp_status(svcname):
 
     return DIV(
       t.html(),
-      SCRIPT(
-        """osvc.tables["%(tid)s"]["on_change"] = function() {
-            $("[name=%(tid)s_c_run_status]").bind("mouseover", function(){
-             line = $(this).parents("tr")
-             var s = line.children("[name=%(tid)s_c_run_status]")
-             var e = line.children("[name=%(tid)s_c_run_log]")
-             var pos = s.position()
-             e.width($(window).width()*0.8)
-             e.css({"left": pos.left - e.width() - 10 + "px", "top": pos.top+s.parent().height() + "px"})
-             e.addClass("white_float")
-             cell_decorator_run_log(e)
-             e.show()
-            })
-            $("[name=%(tid)s_c_run_status]").bind("mouseout", function(){
-             $(this).parents("tr").children("[name=%(tid)s_c_run_log]").hide()
-            })
-           }
-        """ % dict(tid=t.id)
-      ),
       _id=tid,
     )
 
@@ -7043,6 +7020,23 @@ class table_comp_status_node(table_comp_status):
         self.cols.remove('run_status_log')
         self.child_tables = []
         self.force_cols = ["os_name"]
+        self.on_change = """function() {
+            $("[name=%(tid)s_c_run_status]").bind("mouseover", function(){
+             line = $(this).parents("tr")
+             var s = line.children("[name=%(tid)s_c_run_status]")
+             var e = line.children("[name=%(tid)s_c_run_log]")
+             var pos = s.position()
+             e.width($(window).width()*0.8)
+             e.css({"left": pos.left - e.width() - 10 + "px", "top": pos.top+s.parent().height() + "px"})
+             e.addClass("white_float")
+             cell_decorator_run_log(e)
+             e.show()
+            })
+            $("[name=%(tid)s_c_run_status]").bind("mouseout", function(){
+             $(this).parents("tr").children("[name=%(tid)s_c_run_log]").hide()
+            })
+           }
+        """ % dict(tid=self.id)
 
 def ajax_node_comp_status():
     tid = request.vars.table_id
@@ -7060,25 +7054,6 @@ def node_comp_status(node):
     t.colprops['run_nodename'].force_filter = node
     return DIV(
       t.html(),
-      SCRIPT(
-        """osvc.tables["%(tid)s"]["on_change"] = function() {
-            $("[name=%(tid)s_c_run_status]").bind("mouseover", function(){
-             line = $(this).parents("tr")
-             var s = line.children("[name=%(tid)s_c_run_status]")
-             var e = line.children("[name=%(tid)s_c_run_log]")
-             var pos = s.position()
-             e.width($(window).width()*0.8)
-             e.css({"left": pos.left - e.width() - 10 + "px", "top": pos.top+s.parent().height() + "px"})
-             e.addClass("white_float")
-             cell_decorator_run_log(e)
-             e.show()
-            })
-            $("[name=%(tid)s_c_run_status]").bind("mouseout", function(){
-             $(this).parents("tr").children("[name=%(tid)s_c_run_log]").hide()
-            })
-           }
-        """ % dict(tid=t.id)
-      ),
       _id=tid,
     )
 

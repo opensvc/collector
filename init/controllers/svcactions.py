@@ -369,6 +369,7 @@ class table_actions(HtmlTable):
         self.checkbox_id_table = 'v_svcactions'
         self.additional_tools.append('ack')
         self.keys = ["id"]
+        self.events = ["begin_action", "end_action", "svcactions_change"]
 
     def checkbox_disabled(self, o):
         status = self.colprops['status'].get(o)
@@ -513,28 +514,6 @@ def svcactions():
           DIV(
             t.html(),
             _id='actions',
-          ),
-          SCRIPT("""
-function ws_action_switch_%(divid)s(data) {
-        if (data["event"] == "begin_action") {
-          osvc.tables["%(divid)s"].refresh()
-          //_data = []
-          //_data.push({"key": "id", "val": data["data"]["id"], "op": "="})
-          //osvc.tables["%(divid)s"].insert(_data)
-        } else if (data["event"] == "end_action") {
-          osvc.tables["%(divid)s"].refresh()
-          //_data = []
-          //_data.push({"key": "id", "val": data["data"]["id"], "op": ">="})
-          //_data.push({"key": "pid", "val": data["data"]["pid"], "op": "="})
-          //osvc.tables["%(divid)s"].insert(_data)
-        } else if (data["event"] == "svcactions_change") {
-          osvc.tables["%(divid)s"].refresh()
-        }
-}
-wsh["%(divid)s"] = ws_action_switch_%(divid)s
-              """ % dict(
-                     divid=t.innerhtml,
-                    )
           ),
         )
     return dict(table=t)

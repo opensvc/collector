@@ -137,6 +137,7 @@ class table_appinfo(HtmlTable):
         self.wsable = True
         self.ajax_col_values = 'ajax_appinfo_col_values'
         self.span = ['app_svcname', 'app_nodename', 'app_launcher']
+        self.events = ["appinfo_change"]
 
 @auth.requires_login()
 def ajax_appinfo_col_values():
@@ -184,17 +185,6 @@ def appinfo():
     t = table_appinfo('appinfo', 'ajax_appinfo')
     t = DIV(
           t.html(),
-          SCRIPT("""
-function ws_action_switch_%(divid)s(data) {
-        if (data["event"] == "appinfo_change") {
-          osvc.tables["%(divid)s"].refresh()
-        }
-}
-wsh["%(divid)s"] = ws_action_switch_%(divid)s
-               """% dict(
-                     divid=t.innerhtml,
-                    )
-          ),
           _id='appinfo',
         )
     return dict(table=t)

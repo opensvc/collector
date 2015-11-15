@@ -109,6 +109,7 @@ class table_users(HtmlTable):
         self.dataable = True
         self.wsable = True
         self.checkboxes = True
+        self.events = ["auth_user_change"]
         if 'Manager' in user_groups():
             self += HtmlTableMenu('Group', 'guys16', ['group_add', 'group_del', 'group_attach', 'group_detach', 'group_set_primary'])
             self += HtmlTableMenu('User', 'guy16', ['user_add', 'users_del', 'lock_filter', 'unlock_filter', 'set_filterset'])
@@ -570,17 +571,6 @@ def users():
     t = table_users('users', 'ajax_users')
     d = DIV(
           t.html(),
-          SCRIPT("""
-function ws_action_switch_%(divid)s(data) {
-        if (data["event"] == "auth_user_change") {
-          osvc.tables["%(divid)s"].refresh()
-        }
-}
-wsh["%(divid)s"] = ws_action_switch_%(divid)s
-         """ % dict(
-                     divid=t.innerhtml,
-                    )
-          ),
           _id='users',
         )
     return dict(table=d)

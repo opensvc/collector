@@ -666,6 +666,7 @@ class table_disks(HtmlTable):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
+        self.events = ["disks_change"]
         self.cols = ['disk_id',
                      'disk_region',
                      'disk_vendor',
@@ -1424,15 +1425,6 @@ def disks():
             t.html(),
             _id='disks',
           ),
-          SCRIPT("""
-osvc.tables["charts"]["on_change"] = plot_diskdonuts
-function ws_action_switch_%(divid)s(data) {
-        if (data["event"] == "disks_change") {
-          osvc.tables["%(divid)s"].refresh()
-        }
-}
-wsh["%(divid)s"] = ws_action_switch_%(divid)s
-""" % dict(divid=t.id)),
         )
     return dict(table=d)
 

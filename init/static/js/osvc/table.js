@@ -3555,6 +3555,21 @@ function table_get_column_filters(t, callback) {
   }) 
 }
 
+function table_add_ws_handler(t) {
+  if (!t.options.events) {
+    return
+  }
+  for (var i=0; i<t.options.events.length; i++) {
+    console.log("register table", t.id, t.options.events[i], "event handler")
+    var ev = t.options.events[i]
+    wsh[t.id] = function(data) {
+      if (data["event"] == ev) {
+        t.refresh()
+      }
+    }
+  }
+}
+
 function table_init(opts) {
   var t = {
     'options': opts,
@@ -3573,6 +3588,9 @@ function table_init(opts) {
     'action_menu': opts['action_menu'],
     'decorate_cells': function(){
       table_cell_decorator(opts['id'])
+    },
+    'add_ws_handler': function(){
+      table_add_ws_handler(this)
     },
     'hide_cells': function(){
       table_hide_cells(this)
@@ -3674,7 +3692,10 @@ function table_init(opts) {
       return table_action_menu_param_module(this)
     },
     'on_change': function(){
-      // placeholder to override after table_init()
+      if (!t.options.on_change) {
+        return
+      }
+      t.options.on_change()
     },
     'refresh_child_tables': function(){
       for (var i=0; i<this.child_tables.length; i++) {
@@ -3761,6 +3782,7 @@ function table_init(opts) {
   t.add_scrollers()
   t.scroll_enable()
   t.stick()
+  t.add_ws_handler()
 
   function init_post_get_column_filters() {
     if (t.dataable) {

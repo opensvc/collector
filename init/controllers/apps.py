@@ -102,6 +102,7 @@ class table_apps(HtmlTable):
         self.wsable = True
         self.checkbox_id_table = 'v_apps'
         self.checkbox_id_col = 'id'
+        self.events = ["apps_change"]
         if 'Manager' in user_groups():
             self.additional_tools.append('app_del')
             self.additional_tools.append('app_add')
@@ -321,18 +322,6 @@ def apps():
     t = table_apps('apps', 'ajax_apps')
     t = DIV(
           t.html(),
-          SCRIPT("""
-function ws_action_switch_%(divid)s(data) {
-        if (data["event"] == "apps_change") {
-          osvc.tables["%(divid)s"].refresh()
-        }
-}
-wsh["%(divid)s"] = ws_action_switch_%(divid)s
-              """ % dict(
-                     divid=t.innerhtml,
-                    )
-
-          ),
           _id='apps',
         )
     return dict(table=t)

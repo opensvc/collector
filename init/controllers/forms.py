@@ -194,6 +194,7 @@ class table_forms(HtmlTable):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
+        self.events = ["forms_change"]
         self.keys = ['id']
         self.force_cols = ['id']
         self.span = ['id']
@@ -686,17 +687,6 @@ def forms_admin():
     t = table_forms('forms', 'ajax_forms_admin')
     t = DIV(
           t.html(),
-          SCRIPT("""
-function ws_action_switch_%(divid)s(data) {
-        if (data["event"] == "forms_change") {
-          osvc.tables["%(divid)s"].refresh()
-        }
-}
-wsh["%(divid)s"] = ws_action_switch_%(divid)s
-              """ % dict(
-                     divid=t.innerhtml,
-                    )
-          ),
           _id='forms',
         )
     return dict(table=t)
