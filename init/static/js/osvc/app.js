@@ -78,12 +78,16 @@ function app_menu_entries_bind_click_to_load() {
     if (!href) {
       return
     }
+    if(event.ctrlKey) {
+      window.open(href, "_blank")
+      return
+    }
     app_load_href(href)
     $(".header .menu").hide("fold")
 
     // update browser url and history
     history.pushState({}, "", href)
-  
+
     // prevent default
     return false
   })
@@ -91,7 +95,7 @@ function app_menu_entries_bind_click_to_load() {
 
 
 function app_bindings() {
-  // Handle navigation between load()ed pages through browser tools 
+  // Handle navigation between load()ed pages through browser tools
   $(window).on("popstate", function(e) {
     if (e.originalEvent.state !== null) {
       e.preventDefault()
@@ -111,7 +115,7 @@ function app_bindings() {
     }
     event.preventDefault()
   })
-  
+
   // key bindings
   $(document).keydown(function(event) {
     // ESC closes pop-ups and blur inputs
@@ -122,7 +126,7 @@ function app_bindings() {
       osvc_popup_remove_from_stack();
       return
     }
-  
+
     // 'TAB' from search input focuses the first visible menu_entry
     if (event.which == 9) {
       if ($('#search_input').is(":focus")) {
@@ -137,7 +141,7 @@ function app_bindings() {
     if ($('textarea').is(":focus")) {
       return
     }
-  
+
 
     //
     // shortcuts
@@ -278,7 +282,10 @@ function app_bindings() {
       $(".header").find(".menu_selected:visible").each(function(){
         event.preventDefault();;
         $(this).effect("highlight");
-        $(this).trigger("click")
+
+        e = jQuery.Event("click")
+        e.ctrlKey = event.ctrlKey
+        $(this).trigger(e)
       })
     }
 
@@ -297,7 +304,7 @@ function app_bindings() {
           scrollTop: container.scrollTop()+selected_y-selected.outerHeight()
         }, 500)
       }
-  
+
       // scroll up
       var selected_y = selected.position().top
       var container_y = container.position().top
