@@ -4,337 +4,276 @@ function menu_search_key()
 {
 	var menu = 
 	{
-		"Views" : 
+		"views" : 
 		[
 			{ 
-			  "title" : "Dashboard",
+			  "title" : "dashboard",
 			  "class" : "alert16",
-			  "text" : "Current issues on nodes and services",
 			  "link" : "/dashboard/index" },
 			{ 
-			  "title" : "Services",
+			  "title" : "services",
 			  "class" : "svc",
-			  "text" : "Services information and status",
 			  "link" : "/init/services/services" },
 			{ 
-			  "title" : "Services Instances",
+			  "title" : "services_instances",
 			  "class" : "svc",
-			  "text" : "Service instances status",
 			  "link" : "/init/default/svcmon" },
 			{ 
-			  "title" : "Resources",
+			  "title" : "resources",
 			  "class" : "svc",
-			  "class" : "Service resources status",
 			  "link" : "/init/resmon/resmon" },
 			{ 
-			  "title" : "App Info",
+			  "title" : "app_info",
 			  "class" : "svc",
-			  "text" : "Service 'app' resources key:val store",
 			  "link" : "/init/appinfo/appinfo" },
 			{ 
-			  "title" : "Nodes",
+			  "title" : "nodes",
 			  "class" : "node16",
-			  "text" : "Technical and organizational info",
 			  "link" : "/init/nodes/nodes" },
 			{ 
-			  "title" : "Tag Attachments",
+			  "title" : "tag_attachments",
 			  "class" : "fa-tags",
-			  "text" : "Tags attached to nodes and services",
 			  "link" : "/init/tags/tagattach" },
 			{ 
-			  "title" : "Actions",
+			  "title" : "actions",
 			  "class" : "actions",
-			  "text" : "Service actions log",
 			  "link" : "/init/svcactions/svcactions" },
 			{ 
-			  "title" : "Checks",
+			  "title" : "checks",
 			  "class" : "check16",
-			  "text" : "Nodes health monitoring",
 			  "link" : "/init/checks/checks" },
 			{ 
-			  "title" : "Packages",
+			  "title" : "packages",
 			  "class" : "pkg16",
-			  "text" : "All packages installed on nodes",
 			  "link" : "/init/packages/packages" },
 			{ 
-			  "title" : "Patches",
+			  "title" : "patches",
 			  "class" : "patch",
-			  "text" : "All patches installed on nodes",
 			  "link" : "/init/patches/patches" },
 			{ 
-			  "title" : "Networks",
+			  "title" : "networks",
 			  "class" : "net16",
-			  "text" : "Known subnets, gateways, vlans, ...",
 			  "link" : "/init/networks/networks" },
 			{ 
-			  "title" : "Node Networks",
+			  "title" : "node_networks",
 			  "class" : "net16",
-			  "text" : "Node ips with their network information",
 			  "link" : "/init/nodenetworks/nodenetworks" },
 			{ 
-			  "title" : "Node SAN",
+			  "title" : "node_san",
 			  "class" : "net16",
-			  "text" : "Node SAN ports with their fabric information",
 			  "link" : "/init/nodesan/nodesan" },
 			{ 
-			  "title" : "SAN switches",
+			  "title" : "san_switches",
 			  "class" : "net16",
-			  "text" : "Ports id, state, remote ports",
 			  "link" : "/init/sanswitches/sanswitches" },
 			{ 
-			  "title" : "Domain Name Service",
+			  "title" : "dns",
 			  "class" : "net16",
-			  "text" : "Internal dns zones and records",
 			  "link" : "/init/dns/dns" },
 			{ 
-			  "title" : "Saves",
+			  "title" : "saves",
 			  "class" : "save16",
-			  "text" : "Backup servers aggregated index",
 			  "link" : "/init/saves/saves" },
 			{ 
-			  "title" : "Disks",
+			  "title" : "disks",
 			  "class" : "hd16",
-			  "text" : "All known disks with their array information",
 			  "link" : "/init/disks/disks" },
 		],
-		"Compliance" : 
+		"compliance" : 
 		[
 			{ 
-			  "title" : "Status",
+			  "title" : "statut",
 			  "class" : "check16",
-			  "text" : "Nodes and service last configuration checks",
 			  "link" : "/init/compliance/comp_status" },
 			{ 
-			  "title" : "Log",
+			  "title" : "log",
 			  "class" : "log16",
-			  "text" : "All configuration checks and fixes",
 			  "link" : "/init/compliance/comp_log" },
 			{ 
-			  "title" : "Modulesets",
+			  "title" : "modulesets",
 			  "class" : "actions",
-			  "text" : "Search-optimized modules grouping view",
 			  "link" : "/init/compliance/comp_modules" },
 			{ 
-			  "title" : "Status",
+			  "title" : "rulessets",
 			  "class" : "comp16",
-			  "text" : "Search-optimized target configurations view",
 			  "link" : "/init/compliance/comp_rules" },
 			{ 
-			  "title" : "Designer",
+			  "title" : "designer",
 			  "class" : "wf16",
-			  "text" : "Creation-optimized configuration targets tool",
 			  "link" : "/init/compliance/comp_admin?obj_filter=opensvc" },
 			{ 
-			  "title" : "Node rulesets",
+			  "title" : "nrulesets",
 			  "class" : "node16",
-			  "text" : "Mass attach and detach tool",
 			  "link" : "/init/compliance/comp_rulesets_nodes_attachment" },
 			{ 
-			  "title" : "Service rulesets",
+			  "title" : "srulesets",
 			  "class" : "svc",
-			  "text" : "Mass attach and detach tool",
 			  "link" : "/init/compliance/comp_rulesets_services_attachment" },
 			{ 
-			  "title" : "Service modulesets",
+			  "title" : "service_modulesets",
 			  "class" : "svc",
-			  "text" : "Mass attach and detach tool",
 			  "link" : "/init/compliance/comp_modulesets_services" },
 			{ 
-			  "title" : "Node modulesets",
+			  "title" : "node_modulesets",
 			  "class" : "node16",
-			  "text" : "Mass attach and detach tool",
 			  "link" : "/init/compliance/comp_modulesets_nodes" },
 		],
-		"Statistic" : 
+		"statistic" : 
 		[
 			{ 
-			  "title" : "Reports",
+			  "title" : "reports",
 			  "class" : "spark16",
-			  "text" : "User-defined reports",
 			  "link" : "/init/charts/reports" },
 			{ 
-			  "title" : "Site",
+			  "title" : "site",
 			  "class" : "spark16",
-			  "text" : "Pre-defined site report",
 			  "link" : "/init/stats/stats" },
 			{ 
-			  "title" : "Compare",
+			  "title" : "compare",
 			  "class" : "spark16",
-			  "text" : "Compare node and service subsets evolution",
 			  "link" : "/init/stats/compare" },
 			{ 
-			  "title" : "Os lifecycle",
+			  "title" : "os_lc",
 			  "class" : "spark16",
-			  "text" : "Operating systems dispatch evolution",
 			  "link" : "/init/lifecycle/lifecycle_os" },
 			{ 
-			  "title" : "Availability",
+			  "title" : "availability",
 			  "class" : "avail16",
-			  "text" : "Service outage timelines",
 			  "link" : "/init/svcmon_log/svcmon_log" },
 			{ 
-			  "title" : "Node rulesets",
+			  "title" : "n_rulesets",
 			  "class" : "node16",
-			  "text" : "Mass attach and detach tool",
 			  "link" : "/init/compliance/comp_rulesets_nodes_attachment" },
 			{ 
-			  "title" : "Service rulesets",
+			  "title" : "s_rulesets",
 			  "class" : "svc",
-			  "text" : "Mass attach and detach tool",
 			  "link" : "/init/compliance/comp_rulesets_services_attachment" },
 			{ 
-			  "title" : "Service modulesets",
+			  "title" : "s_modulesets",
 			  "class" : "svc",
-			  "text" : "Mass attach and detach tool",
 			  "link" : "/init/compliance/comp_modulesets_services" },
 			{ 
-			  "title" : "Node modulesets",
+			  "title" : "n_modulesets",
 			  "class" : "node16",
-			  "text" : "Mass attach and detach tool",
 			  "link" : "/init/compliance/comp_modulesets_nodes" },
 		],
-		"Requests" : 
+		"requests" : 
 		[
 			{ 
-			  "title" : "New request",
+			  "title" : "new_request",
 			  "class" : "wf16",
-			  "text" : "Start a new workflow or orchestration",
 			  "link" : "/init/forms/forms" },
 			{ 
-			  "title" : "Assigned to my team",
+			  "title" : "a_t_m_t",
 			  "class" : "wf16",
-			  "text" : "Workflows waiting for action from my team",
 			  "link" : "/init/forms/workflows_assigned_to_me" },
 			{ 
-			  "title" : "Pending tiers action",
+			  "title" : "p_t_a",
 			  "class" : "wf16",
-			  "text" : "Workflows started by my team waiting action from a tier",
 			  "link" : "/init/forms/workflows_pending_tiers_action" },
 			{ 
-			  "title" : "All requests",
+			  "title" : "all_requests",
 			  "class" : "wf16",
-			  "text" : "Workflow and orchestration history",
 			  "link" : "/init/forms/workflows" },
 		],
-		"Administration" : 
+		"administration" : 
 		[
 			{ 
-			  "title" : "Users",
+			  "title" : "users",
 			  "class" : "guys16",
-			  "text" : "Users and group administration",
 			  "link" : "/init/users/users",
 			  "secure" : ["Manager"] },
 			{ 
-			  "title" : "Log",
+			  "title" : "log",
 			  "class" : "log16",
-			  "text" : "Collector events log",
 			  "link" : "/init/log/log" },
 			{ 
-			  "title" : "Obsolescence setup",
+			  "title" : "o_setup",
 			  "class" : "obs16",
-			  "text" : "Set server models and os releases obsolescence dates",
 			  "link" : "/init/obsolescence/obsolescence_config" },
 			{ 
-			  "title" : "Applications",
+			  "title" : "application",
 			  "class" : "svc",
-			  "text" : "Application codes assigned to nodes and services",
 			  "link" : "/init/apps/apps" },
 			{ 
-			  "title" : "Drplan",
+			  "title" : "drpplan",
 			  "class" : "drp16",
-			  "text" : "Designer for disaster recovery plans",
 			  "link" : "/init/drplan/drplan" },
 			{ 
-			  "title" : "Batchs",
+			  "title" : "batchs",
 			  "class" : "actions",
-			  "text" : "Collector janitoring batchs",
 			  "link" : "/init/batchs/batchs",
 			  "secure" : ["Manager"] },
 			{ 
-			  "title" : "Billing",
+			  "title" : "billing",
 			  "class" : "bill16",
-			  "text" : "Licensing tokens count and dispatch",
 			  "link" : "/init/billing/billing",
 			  "secure" : ["Manager"] },
 			{ 
-			  "title" : "Applications",
+			  "title" : "app_services",
 			  "class" : "svc",
-			  "text" : "Create service provisioning templates",
 			  "link" : "/init/apps/apps" },
 			{ 
-			  "title" : "Provisioning",
+			  "title" : "prov",
 			  "class" : "prov",
-			  "text" : "Create service provisioning templates",
 			  "link" : "/init/provisioning/prov_admin",
 			  "secure" : ["Manager","ProvManager"] },
 			{ 
-			  "title" : "Filters",
+			  "title" : "filters",
 			  "class" : "filter16",
-			  "text" : "Create new filtersets",
 			  "link" : "/init/compliance/comp_filters" },
 			{ 
-			  "title" : "Forms",
+			  "title" : "forms",
 			  "class" : "wf16",
-			  "text" : "SeDesign new workflows and orchestrations",
 			  "link" : "/init/forms/forms_admin" },
 			{ 
-			  "title" : "Metrics",
+			  "title" : "metrics",
 			  "class" : "spark16",
-			  "text" : "Design sql requests to embed in charts",
 			  "link" : "/init/charts/metrics_admin" },
 			{ 
-			  "title" : "Charts",
+			  "title" : "charts",
 			  "class" : "spark16",
-			  "text" : "Design charts to embed in reports",
 			  "link" : "/init/charts/charts_admin" },
 			{ 
-			  "title" : "Reports",
+			  "title" : "reports",
 			  "class" : "spark16",
-			  "text" : "Design custom reports",
 			  "link" : "/init/charts/reports_admin" },
 			{ 
-			  "title" : "Tags",
+			  "title" : "tags",
 			  "class" : "fa-tags",
-			  "text" : "Manage tag properties",
 			  "link" : "/init/tags/tags" },
 		],
-		"Shortcuts" :
+		"shortcuts" :
 		[
 			{ 
-			  "title" : "Filter selector",
+			  "title" : "filter_sel",
 			  "class" : "",
 			  "label" : "f",
-			  "text" : "Switch the filter applied to all displayed data",
 			  "link" : "" },
 			{ 
-			  "title" : "Link",
+			  "title" : "link",
 			  "class" : "",
 			  "label" : "l",
-			  "text" : "Show url to share your filters",
 			  "link" : "" },
 			{ 
-			  "title" : "Navigation",
+			  "title" : "nav",
 			  "class" : "",
 			  "label" : "n",
-			  "text" : "Open the navigation menu",
 			  "link" : "" },
 			{ 
-			  "title" : "Search",
+			  "title" : "search",
 			  "class" : "",
 			  "label" : "s",
-			  "text" : "Focus the global search tool",
 			  "link" : "" },
 			{ 
-			  "title" : "Unfocus",
+			  "title" : "unfocus",
 			  "class" : "",
 			  "label" : "ESC",
-			  "text" : "Close pop-ups and menus",
 			  "link" : "" },
 			{ 
-			  "title" : "Rest API",
+			  "title" : "rest_api",
 			  "class" : "api",
 			  "label" : "",
-			  "text" : "Documentation",
 			  "link" : "/init/rest/doc" }
 		],
 	}
@@ -377,7 +316,7 @@ function menu_init(o)
   });
 }
 
-function menu_create_entry(o, entry)
+function menu_create_entry(o, title, entry)
 {
 	if (entry.secure !== undefined)
 	{
@@ -388,7 +327,10 @@ function menu_create_entry(o, entry)
 		if (sectest==0) return;
 	}
 
-	var div_entry = "<div id='"+ entry.title.replace(" ","_") +"' class='menu_entry' link='" + entry.link + "'>";
+	var titre = i18n.t("menu."+title+ "." + entry.title +".title");
+	var text = i18n.t("menu."+title+ "." + entry.title +".text");
+
+	var div_entry = "<div id='"+ entry.title +"' class='menu_entry' link='" + entry.link + "'>";
 
 	div_entry += "<div class='menu_box'>";
 
@@ -398,8 +340,8 @@ function menu_create_entry(o, entry)
 	else
 		div_entry += "<div class='menu_icon'>" + entry.label +  "</div>";
 	div_entry += "<div>";
-	div_entry += "<div class='menu_title'>" + entry.title + "</div>";
-	div_entry += "<div class='menu_subtitle'>" + entry.text + "</div>";
+	div_entry += "<div class='menu_title'>" + titre + "</div>";
+	div_entry += "<div class='menu_subtitle'>" + text + "</div>";
 
 	div_entry +="</div></div></div>";
 	return div_entry;
@@ -431,11 +373,11 @@ function menu_bind_sub_link(o, section)
 function menu_create_section(o, title, section)
 {
 	var div_section = "<div id='menu_section' class='menu_section' style='display: block;'><a>";
-	div_section += title + "</a><div>";
+	div_section += i18n.t("menu."+title+".title") + "</a><div>";
 
 	for (i=0;i<section.length;i++)
 	{
-		div_section += menu_create_entry(o,section[i]);
+		div_section += menu_create_entry(o,title, section[i]);
 	}
 
 	div_section += "</div></div>";
