@@ -563,10 +563,14 @@ function table_add_column_header_input(t, tr, c) {
   var clear_tool = $("<span class='clickable hidden clear16'></span>")
   var label = $("<span class='col_filter_label'></span>")
   var input_float = $("<div class='white_float_input stackable'>")
-  var input = $("<input name='fi'>")
-  var value_to_filter_tool = $("<span class='clickable values_to_filter'></span><br>")
+  var input = $("<input class='oi' name='fi'>")
+  var value_to_filter_tool = $("<span class='clickable icon values_to_filter'></span><br>")
   var value_cloud = $("<span></span>")
   var input_id = t.id+"_f_"+c
+  var header = $("<h3></h3>")
+
+  header.text(i18n.t("table.column_filter_header", {"col": t.colprops[c].title}))
+  value_to_filter_tool.attr("title", i18n.t("table.value_to_filter_tool_title"))
 
   input.attr("id", input_id)
   if (t.options.request_vars && (input_id in t.options.request_vars)) {
@@ -575,6 +579,7 @@ function table_add_column_header_input(t, tr, c) {
   value_cloud.attr("id", t.id+"_fc_"+c)
   value_cloud.css({"overflow-wrap": "break-word"})
 
+  input_float.append(header)
   input_float.append(input)
   input_float.append(value_to_filter_tool)
   input_float.append(value_cloud)
