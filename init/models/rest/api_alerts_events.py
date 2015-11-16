@@ -1,4 +1,3 @@
-from gluon.dal import smart_query
 import json
 
 class rest_get_alert_event(rest_get_line_handler):
