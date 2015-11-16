@@ -56,7 +56,10 @@ def _where(query, table, var, field, depth=0, db=db):
     q = db[table].id < 0
 
     if chunk == 'empty':
-        q = (db[table][field]==None)|(db[table][field]=='')
+        if db[table][field].type == "string":
+            q = (db[table][field]==None)|(db[table][field]=='')
+        else:
+            q = db[table][field]==None
     elif chunk[0] == '(' and chunk[-1] == ')' and len(chunk) > 2:
         chunk = chunk[1:-1]
         if field not in db[table]:
