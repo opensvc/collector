@@ -257,13 +257,24 @@ class rest_post_handler(rest_handler):
                 return self.handle_list(data, args, vars)
             elif type(data) == dict:
                 return rest_handler.handle(self, *args, **data)
+        if "filters" in vars and hasattr(self, "get_handler"):
+            return self.handle_multi_update(*args, **vars)
         if "query" in vars and hasattr(self, "get_handler"):
             return self.handle_multi_update(*args, **vars)
         return rest_handler.handle(self, *args, **vars)
 
     def handle_multi_update(self, *args, **vars):
-        l = self.get_handler.handler(query=vars["query"], limit=0, props=self.update_one_param)["data"]
-        del(vars["query"])
+        _vars = {
+          "limit": 0,
+          "props": self.update_one_param,
+        }
+        if "query" in vars:
+            _vars["query"] = vars["query"]
+            del(vars["query"])
+        if "filters" in vars:
+            _vars["filters"] = vars["filters"]
+            del(vars["filters"])
+        l = self.get_handler.handler(**vars)["data"]
         result = {"data": []}
         for e in l:
             try:
@@ -280,9 +291,15 @@ class rest_post_handler(rest_handler):
         if len(self.tables) == 0:
             return
         self.params.update({
+          "filters": {
+            "desc": """
+. An opensvc property values filter.
+
+""",
+          },
           "query": {
             "desc": """
-. A web2py smart query
+. A web2py smart query.
 
 """,
           },
@@ -357,6 +374,13 @@ class rest_get_table_handler(rest_handler):
 
 """,
           },
+          "filters": {
+            "type": "list",
+            "desc": """
+. An opensvc property values filter. Example: "updated>-2d".
+
+""",
+          },
           "orderby": {
             "desc": """
 . A comma-separated list of properties.
@@ -394,6 +418,8 @@ class rest_get_line_handler(rest_handler):
 
     def prepare_data(self, **vars):
         vars["meta"] = False
+        if "filters" in vars:
+            del(vars["filters"])
         if "query" in vars:
             del(vars["query"])
         return rest_handler.prepare_data(self, **vars)
@@ -403,6 +429,7 @@ def prepare_data(
      meta=True,
      count_prop=None,
      query=None,
+     filters=[],
      props=None,
      vprops={},
      vprops_fn=None,
@@ -425,6 +452,17 @@ def prepare_data(
     else:
         meta = True
     if not data and q:
+        if type(filters) in (str, unicode):
+            filters = [filters]
+        for f in filters:
+            f_prop = re.findall(r'\w+', f)[0]
+            f_val = f[len(f_prop):].strip()
+            if '.' in f_prop:
+                t, f_col = f_prop.split(".")
+            else:
+                t = tables[0]
+                f_col = f_prop
+            q = _where(q, t, f_val, f_col)
         if query:
             try:
                 q &= smart_query(all_cols, query)
