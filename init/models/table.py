@@ -234,6 +234,10 @@ class HtmlTable(object):
             s = self.colprops[c].get(o)
             if s is None or s == "":
                 s = 'empty'
+            elif type(s) == datetime.datetime:
+                s = s.strftime("%Y-%m-%d %H:%M:%S")
+            elif type(s) == datetime.date:
+                s = s.strftime("%Y-%m-%d")
             if s not in h:
                 h[s] = 1
             else:
