@@ -353,7 +353,8 @@ function search_show_tab(item, tab, param, index)
 
 function filter_menu(event) {
   var menu = $("#menu_menu");//$(".header").find(".menu16").parents("ul").first().siblings(".menu")
-  var text = searchbox = $(".search").find("input").val()
+  var text = searchbox = $(".search").find("input").val();
+  
   var reg = new RegExp(text, "i");
   menu.find(".menu_entry").each(function(){
     if ($(this).text().match(reg)) {

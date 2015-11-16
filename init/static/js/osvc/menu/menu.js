@@ -222,7 +222,8 @@ function menu_search_key()
 			  "title" : "Users",
 			  "class" : "guys16",
 			  "text" : "Users and group administration",
-			  "link" : "/init/users/users" },
+			  "link" : "/init/users/users",
+			  "secure" : ["Manager"] },
 			{ 
 			  "title" : "Log",
 			  "class" : "log16",
@@ -247,12 +248,14 @@ function menu_search_key()
 			  "title" : "Batchs",
 			  "class" : "actions",
 			  "text" : "Collector janitoring batchs",
-			  "link" : "/init/batchs/batchs" },
+			  "link" : "/init/batchs/batchs",
+			  "secure" : ["Manager"] },
 			{ 
 			  "title" : "Billing",
 			  "class" : "bill16",
 			  "text" : "Licensing tokens count and dispatch",
-			  "link" : "/init/billing/billing" },
+			  "link" : "/init/billing/billing",
+			  "secure" : ["Manager"] },
 			{ 
 			  "title" : "Applications",
 			  "class" : "svc",
@@ -262,7 +265,8 @@ function menu_search_key()
 			  "title" : "Provisioning",
 			  "class" : "prov",
 			  "text" : "Create service provisioning templates",
-			  "link" : "/init/provisioning/prov_admin" },
+			  "link" : "/init/provisioning/prov_admin",
+			  "secure" : ["Manager","ProvManager"] },
 			{ 
 			  "title" : "Filters",
 			  "class" : "filter16",
@@ -375,7 +379,16 @@ function menu_init(o)
 
 function menu_create_entry(o, entry)
 {
-	var div_entry = "<div id='"+ entry.title +"' class='menu_entry' link='" + entry.link + "'>";
+	if (entry.secure !== undefined)
+	{
+		var sectest=0;
+		services_ismemberof(entry.secure, function () {
+			sectest = 1;
+		});
+		if (sectest==0) return;
+	}
+
+	var div_entry = "<div id='"+ entry.title.replace(" ","_") +"' class='menu_entry' link='" + entry.link + "'>";
 
 	div_entry += "<div class='menu_box'>";
 
@@ -396,7 +409,7 @@ function menu_bind_sub_link(o, section)
 {
 	for(i=0;i<section.length;i++)
 	{
-		$("#"+section[i].title).on("click",function (event) {
+		$("#"+section[i].title.replace(" ","_")).on("click",function (event) {
 	  		event.preventDefault()
 			var href = $(this).attr("link");
 			if (!href) {

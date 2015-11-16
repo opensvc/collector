@@ -202,6 +202,8 @@ function services_feed_self_and_group()
         services_osvcgetrest("R_USER_GROUPS", [_self.id], {"meta": "false", "limit": "0"}, function(datagroup)
         {
             _groups = datagroup.data;
+            // Build menu after Groups loading
+            menu("menu_location");
         });
     });
 }
