@@ -82,37 +82,14 @@ class table_dns_domains(HtmlTable):
         self.dbfilterable = False
         self.ajax_col_values = 'ajax_dns_domains_col_values'
         self.extrarow = True
+        self.extrarow_class = 'dns_domains_links'
         self.checkboxes = True
         if 'DnsManager' in user_groups():
             self.additional_tools.append('domain_add')
             self.additional_tools.append('domain_del')
 
     def format_extrarow(self, o):
-        id = self.extra_line_key(o)
-        s = self.colprops['id'].get(o)
-        d = DIV(
-              A(
-                IMG(
-                  _src=URL(r=request, c='static', f='images/edit.png'),
-                  _style='vertical-align:middle',
-                ),
-                _href=URL(r=request, c='dns', f='domain_edit',
-                          vars={'domain_id':s,
-                                '_next': URL(r=request)}
-                      ),
-              ),
-              A(
-                IMG(
-                  _src=URL(r=request, c='static', f='images/action_sync_16.png'),
-                  _style='vertical-align:middle',
-                ),
-                _href=URL(r=request, c='dns', f='domain_sync',
-                          vars={'domain_id':s,
-                                '_next': URL(r=request)}
-                      ),
-              ),
-            )
-        return d
+        return ''
 
     def domain_del(self):
         d = DIV(
@@ -262,15 +239,6 @@ def ajax_dns_domains():
 #
 # Records
 #
-class col_type(HtmlTableColumn):
-    def html(self, o):
-       d = self.get(o)
-       if d in ["A", "PTR"]:
-           return DIV(d, _class="boxed_small bgblack")
-       elif d == "CNAME":
-           return DIV(d, _class="boxed_small bggreen")
-       else:
-           return DIV(d, _class="boxed_small bgred")
 
 @auth.requires_membership('DnsManager')
 def _record_form(record=None):
@@ -362,11 +330,12 @@ class table_dns_records(HtmlTable):
                      img='dns16',
                      display=True,
                     ),
-            'type': col_type(
+            'type': HtmlTableColumn(
                      title='Type',
                      field='type',
                      img='dns16',
                      display=True,
+                     _class='dns_records_type',
                     ),
             'content': HtmlTableColumn(
                      title='Content',
@@ -396,27 +365,14 @@ class table_dns_records(HtmlTable):
         self.dbfilterable = False
         self.ajax_col_values = 'ajax_dns_records_col_values'
         self.extrarow = True
+        self.extrarow_class = 'dns_records_links'
         self.checkboxes = True
         if 'DnsManager' in user_groups():
             self.additional_tools.append('record_add')
             self.additional_tools.append('record_del')
 
     def format_extrarow(self, o):
-        id = self.extra_line_key(o)
-        s = o['id']
-        d = DIV(
-              A(
-                IMG(
-                  _src=URL(r=request, c='static', f='images/edit.png'),
-                  _style='vertical-align:middle',
-                ),
-                _href=URL(r=request, c='dns', f='record_edit',
-                          vars={'record_id':s,
-                                '_next': URL(r=request)}
-                      ),
-              ),
-            )
-        return d
+        return ""
 
     def record_del(self):
         d = DIV(

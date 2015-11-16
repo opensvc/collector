@@ -477,6 +477,51 @@ function cell_decorator_metrics_links(e) {
   $(e).append(d)
 }
 
+function cell_decorator_dns_records_type(e) {
+  var v = $(e).attr("v")
+  var cl = ["boxed_small"]
+  if ((v == "A") || (v == "PTR")) {
+    cl.push("bgblack")
+  } else if (v == "CNAME") {
+    cl.push("bggreen")
+  } else {
+    cl.push("bgred")
+  }
+  var s = ""
+  s = "<div class='"+cl.join(" ")+"'>"+v+"</div>"
+  $(e).html(s)
+}
+
+function cell_decorator_dns_records_links(e) {
+  $(e).empty()
+  var line = $(e).parent(".tl")
+  var record_id = line.children("[name$=_c_id]").attr("v")
+
+  var query = "record_id="+record_id
+  var query = query + "&_next="+window.location
+  url = $(location).attr("origin") + "/init/dns/record_edit?"+query
+  var d = $("<a class='clickable icon edit16' target='_blank' href="+url+"></a>")
+  $(e).append(d)
+}
+
+function cell_decorator_dns_domains_links(e) {
+  $(e).empty()
+  var line = $(e).parent(".tl")
+  var domain_id = line.children("[name$=_c_id]").attr("v")
+
+  var query = "domain_id="+domain_id
+  var query = query + "&_next="+window.location
+  url = $(location).attr("origin") + "/init/dns/domain_edit?"+query
+  var d = $("<a class='clickable icon edit16' target='_blank' href="+url+"></a>")
+  $(e).append(d)
+
+  var query = "domain_id="+domain_id
+  var query = query + "&_next="+window.location
+  url = $(location).attr("origin") + "/init/dns/domain_sync?"+query
+  var d = $("<a class='clickable icon action_sync_16' target='_blank' href="+url+"></a>")
+  $(e).append(d)
+}
+
 function cell_decorator_forms_links(e) {
   var line = $(e).parent(".tl")
   var form_id = line.children("[name$=_c_id]").attr("v")
@@ -1368,6 +1413,9 @@ cell_decorators = {
  "metrics_links": cell_decorator_metrics_links,
  "charts_links": cell_decorator_charts_links,
  "reports_links": cell_decorator_reports_links,
+ "dns_domains_links": cell_decorator_dns_domains_links,
+ "dns_records_links": cell_decorator_dns_records_links,
+ "dns_records_type": cell_decorator_dns_records_type,
  "tag_exclude": cell_decorator_tag_exclude,
  "_network": cell_decorator_network,
  "boolean": cell_decorator_boolean,
