@@ -347,6 +347,12 @@ class rest_get_table_handler(rest_handler):
     def update_parameters(self):
         self.params = copy.copy(self.init_params)
         self.params.update({
+          "stats": {
+            "desc": """
+. true: return the selected properties distinct values counts.
+. false: do no return the selected properties distinct values counts.
+""",
+          },
           "meta": {
             "desc": """
 . Controls the inclusion in the returned dictionnary of a "meta" key, whose parameter is a dictionnary containing the following properties: displayed entry count, total entry count, displayed properties, available properties, offset and limit.
@@ -418,6 +424,7 @@ class rest_get_line_handler(rest_handler):
 
     def prepare_data(self, **vars):
         vars["meta"] = False
+        vars["stats"] = False
         if "filters" in vars:
             del(vars["filters"])
         if "query" in vars:
@@ -429,6 +436,7 @@ def prepare_data(
      meta=True,
      count_prop=None,
      query=None,
+     stats=False,
      filters=[],
      props=None,
      vprops={},
@@ -447,10 +455,16 @@ def prepare_data(
      total=None):
     cols = props_to_cols(props, tables=tables, vprops=vprops, blacklist=props_blacklist, db=db)
     all_cols = props_to_cols(None, tables=tables, blacklist=props_blacklist, db=db)
-    if meta in ("0", "f", "F", "False", "false", False):
+    false_values = ("0", "f", "F", "False", "false", False)
+    if meta in false_values:
         meta = False
     else:
         meta = True
+    if stats in false_values:
+        stats = False
+    else:
+        stats = True
+        limit = 0
     if not data and q:
         if type(filters) in (str, unicode):
             filters = [filters]
@@ -505,6 +519,28 @@ def prepare_data(
 
     data = mangle_data(data, props=props, vprops=vprops, vprops_fn=vprops_fn)
 
+    if stats:
+        h = {}
+        if len(data) == 0:
+            return dict(stats=h)
+        for c in cols:
+            _col = ".".join((c.table._tablename, c.name))
+            if _col not in data[0]:
+                _col = c.name
+            h[_col] = {}
+            for d in data:
+                val = d[_col]
+                if val is None or val == "":
+                    val = 'empty'
+                elif type(val) == datetime.datetime:
+                    val = val.strftime("%Y-%m-%d %H:%M:%S")
+                elif type(val) == datetime.date:
+                    val = val.strftime("%Y-%m-%d")
+                if val not in h[_col]:
+                    h[_col][val] = 1
+                else:
+                    h[_col][val] += 1
+        return dict(stats=h)
     if meta:
         _cols = [".".join((c.table._tablename, c.name)) for c in cols]
         if props is None:
