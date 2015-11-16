@@ -532,7 +532,7 @@ def prepare_data(
             else:
                 t = tables[0]
                 f_col = f_prop
-            q = _where(q, t, f_val, f_col)
+            q = _where(q, t, f_val, f_col, db=db)
         if query:
             try:
                 q &= smart_query(all_cols, query)
