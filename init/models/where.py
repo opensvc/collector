@@ -68,7 +68,7 @@ def _where(query, table, var, field, depth=0, db=db):
     elif chunk[0] not in '<>=':
         if field not in db[table]:
             pass
-        elif db[table][field].type in ('string', 'text', 'date'):
+        elif db[table][field].type in ('string', 'text', 'date', 'upload'):
             if '%' in chunk:
                 q = db[table][field].like(chunk)
             else:
