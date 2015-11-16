@@ -193,7 +193,6 @@ function app_bindings() {
       var selected = entries.filter(".menu_selected")
       if ((selected.length > 0) && (entries.length > 0)) {
         var selected_index = entries.index(selected)
-        console.log(selected, selected.position())
         var selected_y = selected.position().top
         var first_y = entries.first().position().top
         if (selected_y == first_y) {
@@ -296,22 +295,24 @@ function app_bindings() {
       var selected = entries.filter(".menu_selected")
       var container = selected.parents(".menu,.flash").first()
 
-      // scroll down
-      var selected_y = selected.position().top + selected.outerHeight()
-      var container_y = container.position().top + container.height()
-      if (container_y < selected_y) {
-        container.stop().animate({
-          scrollTop: container.scrollTop()+selected_y-selected.outerHeight()
-        }, 500)
-      }
-
-      // scroll up
-      var selected_y = selected.position().top
-      var container_y = container.position().top
-      if (container_y > selected_y) {
-        container.stop().animate({
-          scrollTop: container.scrollTop() + selected_y + container_y - container.height() + selected.outerHeight()
-        }, 500)
+      if (selected.length > 0) {
+        // scroll down
+        var selected_y = selected.position().top + selected.outerHeight()
+        var container_y = container.position().top + container.height()
+        if (container_y < selected_y) {
+          container.stop().animate({
+            scrollTop: container.scrollTop()+selected_y-selected.outerHeight()
+          }, 500)
+        }
+  
+        // scroll up
+        var selected_y = selected.position().top
+        var container_y = container.position().top
+        if (container_y > selected_y) {
+          container.stop().animate({
+            scrollTop: container.scrollTop() + selected_y + container_y - container.height() + selected.outerHeight()
+          }, 500)
+        }
       }
     }
   });
