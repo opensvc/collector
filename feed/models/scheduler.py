@@ -658,6 +658,12 @@ def _resmon_update(vars, vals, auth):
     else:
         for v in vals:
             __resmon_update(vars, v)
+    _websocket_send(event_msg({
+                 'event': 'resmon_change',
+                 'data': {
+                   'foo': 'bar',
+                 },
+                }))
 
 def __resmon_update(vars, vals):
     h = {}

@@ -1019,7 +1019,7 @@ class table_avail(HtmlTable):
                   ),
                 ),
                 _style='display:none',
-                _class='white_float',
+                _class='stackable white_float',
                 _name='ackcomment_d_'+self.id,
                 _id='ackcomment_d_'+self.id,
               ),

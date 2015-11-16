@@ -3828,6 +3828,7 @@ function _jqplot_resize(e, p){
 }
 
 function _jqplot_img(e){
+            return;
             var outerDiv = $('<div></div>');
             var header = $('<div></div>');
             var div = $('<div></div>');

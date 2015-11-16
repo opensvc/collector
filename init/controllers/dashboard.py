@@ -121,6 +121,7 @@ class table_dash_agg(HtmlTable):
         self.columnable = False
         self.headers = False
         self.highlight = False
+        self.on_change = """function(){plot_dashpie_sev; plot_dashpie_sev()}"""
 
 
 def ajax_dash_history():
@@ -325,7 +326,6 @@ $("#dashboard_f_dash_type").val('%(s)s')
 
     return DIV(
              mt.html(),
-             SCRIPT("""osvc.tables["dash_agg"]["on_change"] = plot_dashpie_sev; plot_dashpie_sev() """),
            )
 
 @service.json
@@ -540,6 +540,7 @@ class table_dashboard(HtmlTable):
         self.wsable = True
         self.dataable = True
         self.child_tables = ['dash_agg']
+        self.events = ["dash_change"]
 
 @auth.requires_login()
 def ajax_dashboard_col_values():
@@ -627,18 +628,6 @@ def index():
                t.html(),
                _id='dashboard',
              ),
-             SCRIPT("""
-function ws_action_switch_%(divid)s(data) {
-        if (data["event"] == "dash_change") {
-          osvc.tables["%(divid)s"].refresh()
-        }
-}
-wsh["%(divid)s"] = ws_action_switch_%(divid)s
-              """ % dict(
-                     divid=t.innerhtml,
-                    )
-             ),
-             #SCRIPT("""osvc_popup_listen_for_row_change('table_dashboard');"""),
         )
 
     return dict(table=t)

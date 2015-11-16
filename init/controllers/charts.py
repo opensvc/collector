@@ -19,28 +19,15 @@ def call():
 #
 ###############################################################################
 
-class col_metrics_sql(HtmlTableColumn):
-    def html(self, o):
-        val = self.get(o)
-        regex = re.compile(r'(SELECT|FROM|GROUP BY|WHERE)', re.I)
-        val = re.sub(regex, r'<span class=syntax_red>\1</span>', val)
-        regex = re.compile(r'(COUNT|DATE_SUB|SUM|MAX|MIN|CEIL|FLOOR|AVG|CONCAT|GROUP_CONCAT)', re.I)
-        val = re.sub(regex, r'<span class=syntax_green>\1</span>', val)
-        regex = re.compile(r'=(\'\w*\')', re.I)
-        val = re.sub(regex, r'=<span class=syntax_blue>\1</span>', val)
-        regex = re.compile(r'=(\"\w*\")', re.I)
-        val = re.sub(regex, r'=<span class=syntax_blue>\1</span>', val)
-        regex = re.compile(r'(%%\w+%%)', re.I)
-        val = re.sub(regex, r'<span class=syntax_blue>\1</span>', val)
-        return PRE(XML(val))
-
 class table_metrics(HtmlTable):
     def __init__(self, id=None, func=None, innerhtml=None):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
+        self.events = ["metrics_change"]
         self.span = ['id']
         self.keys = ['id']
+        self.force_cols = ['id']
         self.cols = ['id',
                      'metric_name',
                      'metric_sql',
@@ -55,7 +42,7 @@ class table_metrics(HtmlTable):
                 field = 'id',
                 display = True,
                 table = 'metrics',
-                img = 'prov'
+                img = 'key'
             ),
             'metric_name': HtmlTableColumn(
                 title = 'Name',
@@ -64,12 +51,13 @@ class table_metrics(HtmlTable):
                 table = 'metrics',
                 img = 'prov'
             ),
-            'metric_sql': col_metrics_sql(
+            'metric_sql': HtmlTableColumn(
                 title = 'SQL request',
                 field = 'metric_sql',
                 display = True,
                 table = 'metrics',
-                img = 'action16'
+                img = 'action16',
+                _class = 'sql',
             ),
             'metric_created': HtmlTableColumn(
                 title = 'Created on',
@@ -109,33 +97,19 @@ class table_metrics(HtmlTable):
         }
         self.ajax_col_values = 'ajax_metrics_admin_col_values'
         self.dbfilterable = True
+        self.dataable = True
+        self.wsable = True
         self.checkboxes = False
         self.extrarow = True
         self.extraline = True
+        self.extrarow_class = "metrics_links"
 
         if 'Manager' in user_groups():
             self.additional_tools.append('add_metrics')
 
 
     def format_extrarow(self, o):
-        d = DIV(
-              A(
-                "",
-                _href=URL(r=request, c='charts', f='metrics_editor', vars={'metric_id': o.id}),
-                _title=T("Edit metric"),
-                _class="edit16",
-              ),
-              A(
-                _onclick="""toggle_extra("%(url)s", "%(id)s", this, 0)
-                """%dict(
-                     url=URL(r=request, c='charts', f='ajax_metric_test', vars={'metric_id': o.id}),
-                     id=self.extra_line_key(o),
-                    ),
-                _title=T("Test request"),
-                _class="action16",
-              ),
-            )
-        return d
+        d = ""
 
     def add_metrics(self):
         d = DIV(
@@ -281,21 +255,18 @@ def ajax_metrics_admin():
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
 
-    if len(request.args) == 1 and request.args[0] == 'line':
+    if len(request.args) == 1 and request.args[0] == 'data':
         n = db(q).count()
         limitby = (t.pager_start,t.pager_end)
-        t.object_list = db(q).select(orderby=o, limitby=limitby)
-        return t.table_lines_data(n)
-
-    n = db(q).count()
-    t.setup_pager(n)
-    t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
-    return t.html()
+        cols = t.get_visible_columns()
+        t.object_list = db(q).select(*cols, orderby=o, limitby=limitby, cacheable=True)
+        return t.table_lines_data(n, html=False)
 
 @auth.requires_login()
 def metrics_admin():
+    t = table_metrics('metrics', 'ajax_metrics_admin')
     t = DIV(
-          ajax_metrics_admin(),
+          t.html(),
           _id='metrics',
         )
     return dict(table=t)
@@ -321,8 +292,10 @@ class table_charts(HtmlTable):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
+        self.events = ["charts_change"]
         self.span = ['id']
         self.keys = ['id']
+        self.force_cols = ['id']
         self.cols = ['id',
                      'chart_name',
                      'chart_yaml']
@@ -339,44 +312,31 @@ class table_charts(HtmlTable):
                 field = 'chart_yaml',
                 display = True,
                 table = 'charts',
-                img = 'log16'
+                img = 'log16',
+                _class = 'yaml',
             ),
             'id': HtmlTableColumn(
                 title = 'Id',
                 field = 'id',
                 display = True,
                 table = 'charts',
-                img = 'spark16'
+                img = 'key'
             ),
         }
         self.ajax_col_values = 'ajax_charts_admin_col_values'
         self.dbfilterable = True
         self.checkboxes = False
+        self.dataable = True
+        self.wsable = True
         self.extrarow = True
+        self.extrarow_class = 'charts_links'
         self.extraline = True
 
         if 'Manager' in user_groups():
             self.additional_tools.append('add_chart')
 
     def format_extrarow(self, o):
-        d = DIV(
-              A(
-                "",
-                _href=URL(r=request, c='charts', f='charts_editor', vars={'chart_id': o.id}),
-                _title=T("Edit chart"),
-                _class="edit16",
-              ),
-              A(
-                _onclick="""toggle_extra("%(url)s", "%(id)s", this, 0)
-                """%dict(
-                     url=URL(r=request, c='charts', f='ajax_chart_test', vars={'chart_id': o.id}),
-                     id=self.extra_line_key(o),
-                    ),
-                _title=T("Test chart"),
-                _class="action16",
-              ),
-            )
-        return d
+        d = ""
 
     def add_chart(self):
         d = DIV(
@@ -462,21 +422,18 @@ def ajax_charts_admin():
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
 
-    if len(request.args) == 1 and request.args[0] == 'line':
+    if len(request.args) == 1 and request.args[0] == 'data':
         n = db(q).count()
         limitby = (t.pager_start,t.pager_end)
-        t.object_list = db(q).select(orderby=o, limitby=limitby)
-        return t.table_lines_data(n)
-
-    n = db(q).count()
-    t.setup_pager(n)
-    t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
-    return t.html()
+        cols = t.get_visible_columns()
+        t.object_list = db(q).select(*cols, orderby=o, limitby=limitby, cacheable=True)
+        return t.table_lines_data(n, html=False)
 
 @auth.requires_login()
 def charts_admin():
+    t = table_charts('charts', 'ajax_charts_admin')
     t = DIV(
-          ajax_charts_admin(),
+          t.html(),
           _id='charts',
         )
     return dict(table=t)
@@ -605,8 +562,10 @@ class table_reports_admin(HtmlTable):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
+        self.events = ["reports_change"]
         self.span = ['id']
         self.keys = ['id']
+        self.force_cols = ['id']
         self.cols = ['id',
                      'report_name',
                      'report_yaml']
@@ -618,49 +577,36 @@ class table_reports_admin(HtmlTable):
                 table = 'reports',
                 img = 'spark16'
             ),
-            'report_yaml': col_yaml(
+            'report_yaml': HtmlTableColumn(
                 title = 'Definition',
                 field = 'report_yaml',
                 display = True,
                 table = 'reports',
-                img = 'log16'
+                img = 'log16',
+                _class='yaml',
             ),
             'id': HtmlTableColumn(
                 title = 'Id',
                 field = 'id',
                 display = True,
                 table = 'reports',
-                img = 'spark16'
+                img = 'key'
             ),
         }
         self.ajax_col_values = 'ajax_reports_admin_col_values'
         self.dbfilterable = True
+        self.dataable = True
+        self.wsable = True
         self.checkboxes = False
         self.extrarow = True
+        self.extrarow_class = 'reports_links'
         self.extraline = True
 
         if 'Manager' in user_groups():
             self.additional_tools.append('add_report')
 
     def format_extrarow(self, o):
-        d = DIV(
-              A(
-                "",
-                _href=URL(r=request, c='charts', f='reports_editor', vars={'report_id': o.id}),
-                _title=T("Edit report"),
-                _class="edit16",
-              ),
-              A(
-                _onclick="""toggle_extra("%(url)s", "%(id)s", this, 0)
-                """%dict(
-                     url=URL(r=request, c='charts', f='ajax_report_test', vars={'report_id': o.id}),
-                     id=self.extra_line_key(o),
-                    ),
-                _title=T("Test report"),
-                _class="action16",
-              ),
-            )
-        return d
+        d = ''
 
     def add_report(self):
         d = DIV(
@@ -746,21 +692,18 @@ def ajax_reports_admin():
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
 
-    if len(request.args) == 1 and request.args[0] == 'line':
+    if len(request.args) == 1 and request.args[0] == 'data':
         n = db(q).count()
         limitby = (t.pager_start,t.pager_end)
-        t.object_list = db(q).select(orderby=o, limitby=limitby)
-        return t.table_lines_data(n)
-
-    n = db(q).count()
-    t.setup_pager(n)
-    t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
-    return t.html()
+        cols = t.get_visible_columns()
+        t.object_list = db(q).select(*cols, orderby=o, limitby=limitby, cacheable=True)
+        return t.table_lines_data(n, html=False)
 
 @auth.requires_login()
 def reports_admin():
+    t = table_reports_admin('reports', 'ajax_reports_admin')
     t = DIV(
-          ajax_reports_admin(),
+          t.html(),
           _id='reports',
         )
     return dict(table=t)

@@ -441,6 +441,7 @@ class table_checks(HtmlTable):
         }
         self.colprops.update(v_nodes_colprops)
         self.cols += v_nodes_cols
+        self.events = ["checks_change"]
 
         self.colprops.update({
             'app_domain': HtmlTableColumn(
@@ -503,7 +504,7 @@ class table_checks(HtmlTable):
               DIV(
                 self.form_add_fset_threshold,
                 _style='display:none',
-                _class='white_float',
+                _class='stackable white_float',
                 _name='add_fset_threshold_d',
                 _id='add_fset_threshold_d',
               ),
@@ -602,7 +603,7 @@ class table_checks(HtmlTable):
                   ),
                 ),
                 _style='display:none',
-                _class='white_float',
+                _class='stackable white_float',
                 _name=divid,
               ),
             )
@@ -634,7 +635,7 @@ class table_checks(HtmlTable):
                   ),
                 ),
                 _style='display:none',
-                _class='white_float',
+                _class='stackable white_float',
                 _name='set_%s_threshold_d'%t,
                 _id='set_%s_threshold_d'%t,
               ),
@@ -891,17 +892,6 @@ def checks():
           DIV(
             t.html(),
             _id='checks',
-          ),
-          SCRIPT("""
-function ws_action_switch_%(id)s(data) {
-        if (data["event"] == "checks_change") {
-          osvc.tables["%(id)s"].refresh();
-        }
-}
-wsh["%(id)s"] = ws_action_switch_%(id)s
-              """ % dict(
-                     id=t.innerhtml,
-                    )
           ),
         )
     return dict(table=t)

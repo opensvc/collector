@@ -791,7 +791,7 @@ class table_svcmon(HtmlTable):
         self.user_name = user_name()
         self.additional_tools.append('tool_provisioning')
         self.additional_tools.append('svc_del')
-
+        self.events = ["svcmon_change"]
 
     def svc_del(self):
         d = DIV(
@@ -819,7 +819,7 @@ class table_svcmon(HtmlTable):
               ),
               DIV(
                 _style='display:none',
-                _class='white_float',
+                _class='stackable white_float',
                 _id="prov_container",
               ),
               _class='floatw',
@@ -911,17 +911,6 @@ def svcmon():
     t = table_svcmon('svcmon', 'ajax_svcmon')
     t = DIV(
           t.html(),
-          SCRIPT("""
-function ws_action_switch_%(divid)s(data) {
-        if (data["event"] == "svcmon_change") {
-          osvc.tables["%(divid)s"].refresh()
-        }
-}
-wsh["%(divid)s"] = ws_action_switch_%(divid)s
-           """ % dict(
-                  divid=t.innerhtml,
-                 )
-          ),
           _id='svcmon',
         )
     return dict(table=t)

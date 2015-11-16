@@ -1162,4 +1162,95 @@ class rest_post_user_table_filters_save_bookmark(rest_post_handler):
         return rest_get_user_table_filters().handler(id, **qvars)
 
 
+#
+# /users/<id>/domains
+#
+class rest_get_user_domains(rest_get_line_handler):
+    def __init__(self):
+        desc = [
+          "Display the domains pattern the user is allowed to see.",
+          "Managers and UserManager are allowed to see all users' domains values.",
+          "Others can only see the domains values of users in their organisational groups.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/users/%(email)s/domains",
+        ]
+        rest_get_line_handler.__init__(
+          self,
+          path="/users/<id>/domains",
+          tables=["domain_permissions"],
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, id, **vars):
+        gid = auth.user_group(id)
+        q = allowed_user_ids_q()
+        q &= user_id_q(id)
+        user = db(q).select().first()
+        if user is None:
+            check_privilege("UserManager")
+
+        q &= db.domain_permissions.group_id == gid
+        self.set_q(q)
+        return self.prepare_data(**vars)
+
+
+#
+class rest_post_user_domains(rest_post_handler):
+    def __init__(self):
+        desc = [
+          "Set the domain pattern the user is allowed to see.",
+          "The api user must be in the UserManager or Manager privilege group",
+          "The action is logged in the collector's log.",
+          "A websocket event is sent to announce the change in the users table.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- -X POST https://%(collector)s/init/rest/api/users/10/domains",
+        ]
+        rest_post_handler.__init__(
+          self,
+          path="/users/<id>/domains",
+          tables=["domain_permissions"],
+          desc=desc,
+          examples=examples
+        )
+
+    def handler(self, user_id, **vars):
+        check_privilege("UserManager")
+
+        q = user_id_q(user_id)
+        user = db(q).select().first()
+        if user is None:
+            return dict(error="User %s does not exist" % str(user_id))
+        gid = auth.user_group(user_id)
+        vars["group_id"] = gid
+
+        if 'domains' not in vars:
+            raise Exception("The 'domains' parameter must be specified")
+
+        q = db.domain_permissions.group_id == gid
+        row = db(q).select().first()
+        if row is None or row.domains == "":
+            current_domains = "None"
+        else:
+            current_domains = row.domains
+
+        k = dict(
+          group_id=gid
+        )
+        db.domain_permissions.update_or_insert(k, **vars)
+        _log('user.change',
+             'user %(u)s domain permissions changed from %(c)s to %(g)s',
+             dict(u=user.email, c=current_domains, g=vars["domains"]),
+            )
+        l = {
+          'event': 'auth_user',
+          'data': {
+            'foo': 'bar',
+          },
+        }
+        _websocket_send(event_msg(l))
+        return rest_get_user_domains().handler(user_id)
+
 

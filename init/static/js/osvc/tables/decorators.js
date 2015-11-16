@@ -400,6 +400,92 @@ function cell_decorator_status(e) {
   $(e).html("<div class='svc nowrap icon-"+t[c]+"'></div>")
 }
 
+function cell_decorator_reports_links(e) {
+  $(e).empty()
+  $(e).addClass("corner nowrap")
+
+  var line = $(e).parent(".tl")
+  var id = line.children("[name$=_c_id]").attr("v")
+  var query = "report_id="+id
+  url = $(location).attr("origin") + "/init/charts/reports_editor?"+query
+  var d = "<a class='clickable edit16' target='_blank' href="+url+"></a>"
+  $(e).append(d)
+
+  // test chart
+  var d = $("<span></span>")
+  $(d).addClass("clickable action16")
+  $(d).click(function(){
+    var table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
+    var span_id = $(e).parent(".tl").attr("spansum")
+    var id = table_id + "_x_" + span_id
+    var report_id = $(this).parents(".tl").first().children("[name$=_c_id]").attr("v")
+    url = $(location).attr("origin") + "/init/charts/ajax_report_test?report_id="+report_id
+    toggle_extra(url, id, e, 0)
+  })
+  $(e).append(d)
+}
+
+function cell_decorator_charts_links(e) {
+  $(e).empty()
+  $(e).addClass("corner nowrap")
+
+  // editor
+  var line = $(e).parent(".tl")
+  var id = line.children("[name$=_c_id]").attr("v")
+  var query = "chart_id="+id
+  url = $(location).attr("origin") + "/init/charts/charts_editor?"+query
+  var d = "<a class='clickable edit16' target='_blank' href="+url+"></a>"
+  $(e).append(d)
+
+  // test chart
+  var d = $("<span></span>")
+  $(d).addClass("clickable action16")
+  $(d).click(function(){
+    var table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
+    var span_id = $(e).parent(".tl").attr("spansum")
+    var id = table_id + "_x_" + span_id
+    var chart_id = $(this).parents(".tl").first().children("[name$=_c_id]").attr("v")
+    url = $(location).attr("origin") + "/init/charts/ajax_chart_test?chart_id="+chart_id
+    toggle_extra(url, id, e, 0)
+  })
+  $(e).append(d)
+}
+
+function cell_decorator_metrics_links(e) {
+  $(e).empty()
+  $(e).addClass("corner nowrap")
+
+  // editor
+  var line = $(e).parent(".tl")
+  var id = line.children("[name$=_c_id]").attr("v")
+  var query = "metric_id="+id
+  url = $(location).attr("origin") + "/init/charts/metrics_editor?"+query
+  var d = "<a class='clickable edit16' target='_blank' href="+url+"></a>"
+  $(e).append(d)
+
+  // test metric
+  var d = $("<span></span>")
+  $(d).addClass("clickable action16")
+  $(d).click(function(){
+    var table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
+    var span_id = $(e).parent(".tl").attr("spansum")
+    var id = table_id + "_x_" + span_id
+    var metric_id = $(this).parents(".tl").first().children("[name$=_c_id]").attr("v")
+    url = $(location).attr("origin") + "/init/charts/ajax_metric_test?metric_id="+metric_id
+    toggle_extra(url, id, e, 0)
+  })
+  $(e).append(d)
+}
+
+function cell_decorator_forms_links(e) {
+  var line = $(e).parent(".tl")
+  var form_id = line.children("[name$=_c_id]").attr("v")
+  var query = "form_id="+form_id
+  url = $(location).attr("origin") + "/init/forms/forms_editor?"+query
+  var d = "<a class='clickable edit16' target='_blank' href="+url+"></a>"
+  $(e).html(d)
+}
+
 function cell_decorator_svcmon_links(e) {
   var line = $(e).parent(".tl")
   var mon_svcname = line.children("[name$=mon_svcname]").attr("v")
@@ -637,7 +723,7 @@ function cell_decorator_form_id(e) {
   var v = $(e).attr("v")
   var s = ""
   url = $(location).attr("origin") + "/init/forms/workflow?wfid="+v+"&volatile_filters=true"
-  s = "<a class='clickable' target='_blank' href='"+url+"'></a>"
+  s = "<a class='wf16 icon nowrap clickable' target='_blank' href='"+url+"'>"+v+"</a>"
   $(e).html(s)
 }
 
@@ -1088,7 +1174,153 @@ function cell_decorator_overallstatus(e) {
   $(e).html(s)
 }
 
+function cell_decorator_sql(e) {
+  var s = $(e).attr("v")
+  var _e = $("<pre></pre>")
+  s = s.replace(/(SELECT|FROM|GROUP BY|WHERE)/gi, function(x) {
+    return '<span class=syntax_red>'+x+'</span>'
+  })
+  s = s.replace(/(COUNT|DATE_SUB|SUM|MAX|MIN|CEIL|FLOOR|AVG|CONCAT|GROUP_CONCAT)/gi, function(x) {
+    return '<span class=syntax_green>'+x+'</span>'
+  })
+  s = s.replace(/([\"\']\w*[\"\'])/gi, function(x) {
+    return '<span class=syntax_blue>'+x+'</span>'
+  })
+  s = s.replace(/(%%\w+%%)/gi, function(x) {
+    return '<span class=syntax_blue>'+x+'</span>'
+  })
+  _e.html(s)
+  $(e).html(_e)
+}
+
+function cell_decorator_yaml(e) {
+  var s = $(e).attr("v")
+  var _e = $("<pre></pre>")
+  s = s.replace(/Id:\s*(\w+)/gi, function(x) {
+    return '<span class=syntax_red>'+x+'</span>'
+  })
+  s = s.replace(/(#\w+)/gi, function(x) {
+    return '<span class=syntax_red>'+x+'</span>'
+  })
+  s = s.replace(/(\w+:)/gi, function(x) {
+    return '<span class=syntax_green>'+x+'</span>'
+  })
+  _e.html(s)
+  $(e).html(_e)
+}
+
+function cell_decorator_appinfo_key(e) {
+  var s = $(e).attr("v")
+  var _e = $("<div class='boxed_small'></div>")
+  _e.text(s)
+  if (s == "Error") {
+    _e.addClass("bgred")
+  } else {
+    _e.addClass("bgblack")
+  }
+  $(e).html(_e)
+}
+
+function cell_decorator_appinfo_value(e) {
+  var s = $(e).attr("v")
+  var _e = $("<span></span>")
+  _e.text(s)
+  if (is_numeric(s)) {
+    _e.addClass("spark16")
+    $(e).addClass("corner clickable")
+    $(e).bind("click", function() {
+      var line = $(e).parent(".tl")
+      var span_id = line.attr("spansum")
+      var table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
+      var id = table_id + "_x_" + span_id
+      var params = "svcname="+encodeURIComponent(line.children("[name$=_c_app_svcname]").attr("v"))
+      params += "&nodename="+encodeURIComponent(line.children("[name$=_c_app_nodename]").attr("v"))
+      params += "&launcher="+encodeURIComponent(line.children("[name$=_c_app_launcher]").attr("v"))
+      params += "&key="+encodeURIComponent(line.children("[name$=_c_app_key]").attr("v"))
+      params += "&rowid="+encodeURIComponent(id)
+      var url = $(location).attr("origin") + "/init/appinfo/ajax_appinfo_log?" + params
+  
+      toggle_extra(url, id, e, 0)
+    })
+  }
+  $(e).html(_e)
+}
+
+function cell_decorator_users_role(e) {
+  var s = $(e).attr("v")
+  $(e).empty()
+  if (s == 1) {
+    $(e).addClass("admin")
+  } else {
+    $(e).addClass("guy16")
+  }
+}
+
+function cell_decorator_users_domain(e) {
+  var s = $(e).attr("v")
+  if (s == "empty") {
+    s = ""
+  }
+  var span = $("<span class='clickable'></span>")
+  var input = $("<input class='hidden oi'></input>")
+  var line = $(e).parent(".tl")
+  var user_id = line.children("[name$=_c_id]").attr("v")
+
+  services_ismemberof(["Manager", "UserManager"], function() {
+    $(e).hover(
+      function() {
+        span.addClass("editable")
+      },
+      function() {
+        span.removeClass("editable")
+      }
+    )
+  })
+  span.bind("click", function() {
+    span.hide()
+    input.show()
+    input.focus()
+    input.select()
+  })
+  input.bind("blur", function(event) {
+    span.show()
+    input.hide()
+  })
+  input.bind("keyup", function(event) {
+    if (!is_enter(event)) {
+      return
+    }
+    data = {
+      "domains": $(this).val()
+    }
+    services_osvcpostrest("R_USER_DOMAINS", [user_id], "", data, function(jd) {
+      if (!jd.data) {
+        span.html(services_error_fmt(jd))
+        span.show()
+        input.hide()
+        return
+      }
+      span.text(input.val())
+      span.show()
+      input.hide()
+    },
+    function(xhr, stat, error) {
+      span.html(services_ajax_error_fmt(xhr, stat, error))
+      span.show()
+      input.hide()
+    })
+  })
+
+  span.text(s)
+  input.val(s)
+  $(e).empty()
+  $(e).append(span)
+  $(e).append(input)
+}
+
 cell_decorators = {
+ "yaml": cell_decorator_yaml,
+ "sql": cell_decorator_sql,
  "rsetvars": cell_decorator_rsetvars,
  "dash_entry": cell_decorator_dash_entry,
  "disk_array_dg": cell_decorator_disk_array_dg,
@@ -1121,6 +1353,7 @@ cell_decorators = {
  "overallstatus": cell_decorator_overallstatus,
  "chk_type": cell_decorator_chk_type,
  "svcmon_links": cell_decorator_svcmon_links,
+ "forms_links": cell_decorator_forms_links,
  "svc_ha": cell_decorator_svc_ha,
  "env": cell_decorator_env,
  "date_future": cell_decorator_date_future,
@@ -1132,10 +1365,17 @@ cell_decorators = {
  "date_no_age": cell_decorator_date_no_age,
  "dash_severity": cell_decorator_dash_severity,
  "dash_links": cell_decorator_dash_links,
+ "metrics_links": cell_decorator_metrics_links,
+ "charts_links": cell_decorator_charts_links,
+ "reports_links": cell_decorator_reports_links,
  "tag_exclude": cell_decorator_tag_exclude,
  "_network": cell_decorator_network,
  "boolean": cell_decorator_boolean,
- "status": cell_decorator_status
+ "status": cell_decorator_status,
+ "users_domain": cell_decorator_users_domain,
+ "users_role": cell_decorator_users_role,
+ "appinfo_key": cell_decorator_appinfo_key,
+ "appinfo_value": cell_decorator_appinfo_value
 }
 
 

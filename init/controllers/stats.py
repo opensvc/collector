@@ -42,7 +42,7 @@ class table_compare(HtmlTable):
               DIV(
                 self.form_compare_del(),
                 _style='display:none',
-                _class='white_float',
+                _class='stackable white_float',
                 _name='compare_del',
                 _id='compare_del',
               ),
@@ -61,7 +61,7 @@ class table_compare(HtmlTable):
               DIV(
                 self.form_compare_add(),
                 _style='display:none',
-                _class='white_float',
+                _class='stackable white_float',
                 _name='compare_add',
                 _id='compare_add',
               ),

@@ -563,17 +563,23 @@ function table_add_column_header_input(t, tr, c) {
   var clear_tool = $("<span class='clickable hidden clear16'></span>")
   var label = $("<span class='col_filter_label'></span>")
   var input_float = $("<div class='white_float_input stackable'>")
-  var input = $("<input name='fi'>")
-  var value_to_filter_tool = $("<span class='clickable values_to_filter'></span><br>")
+  var input = $("<input class='oi' name='fi'>")
+  var value_to_filter_tool = $("<span class='clickable icon values_to_filter'></span><br>")
   var value_cloud = $("<span></span>")
   var input_id = t.id+"_f_"+c
+  var header = $("<h3></h3>")
+
+  header.text(i18n.t("table.column_filter_header", {"col": t.colprops[c].title}))
+  value_to_filter_tool.attr("title", i18n.t("table.value_to_filter_tool_title"))
 
   input.attr("id", input_id)
   if (t.options.request_vars && (input_id in t.options.request_vars)) {
     input.val(t.options.request_vars[input_id])
   }
   value_cloud.attr("id", t.id+"_fc_"+c)
+  value_cloud.css({"overflow-wrap": "break-word"})
 
+  input_float.append(header)
   input_float.append(input)
   input_float.append(value_to_filter_tool)
   input_float.append(value_cloud)
@@ -748,7 +754,7 @@ function table_refresh(t) {
     }
 
     // refresh open tabs to overlay to preserve what was in use
-    if (t.div.find(".extraline").children("td").children("table").length > 0) {
+    if (t.div.find(".extraline:visible").children("td").children("table").length > 0) {
       $("#overlay").empty().hide()
       t.div.find(".extraline").children("td").children("table").parent().each(function() {
         var e = $("<div></div>")
@@ -1047,7 +1053,7 @@ function table_ajax_submit(url, id, additional_inputs, input_name, additional_in
     })
 }
 function toggle_extra(url, id, e, ncols) {
-    line=$(e).parents(".tl")
+    line=$(e).parents(".tl").first()
     if (ncols==0) {
         ncols = line.children("[cell=1]").length
     }
@@ -1062,10 +1068,13 @@ function toggle_extra(url, id, e, ncols) {
     if (url) {
       sync_ajax(url, [], id, function(){
         $("#"+id).removeClass("spinner")
-        $("#"+id).children().each(function(){$(this).width($(window).width()-$(this).children().position().left-20)})
+        $("#"+id).children().each(function(){
+          $(this).width($(window).width()-$(this).children().position().left-20)
+        })
       })
     }
 }
+
 function checked_services() {
     d = new Array()
     $("[name=svcmon_ck]").each(function(){
@@ -1185,35 +1194,41 @@ function table_bind_filter_input_events(t) {
 
   // refresh column filter cloud on keyup
   inputs.bind("keyup", function(event) {
-    var input = $(this)
-    if (!is_enter(event)) {
-      var col = input.attr('id').split('_f_')[1]
-      t.e_header_slim.find("[col='"+col+"']").removeClass("bgred").addClass("bgorange")
-      clearTimeout(timer)
-      timer = setTimeout(function validate(){
-        var data = {}
-        for (c in t.colprops) {
-          var current = $("#"+t.id+"_f_"+c).val()
-          if ((current != "") && (typeof current !== 'undefined')) {
-            data[t.id+"_f_"+c] = current
-          } else if (t.colprops[c].force_filter != "") {
-            data[t.id+"_f_"+c] = t.colprops[c].force_filter
-          }
-        }
-        data[input.attr('id')] = input.val()
-        var dest = input.siblings("[id^="+t.id+"_fc_]")
-        _url = url + col
-        $.ajax({
-         type: "POST",
-         url: _url,
-         data: data,
-         context: document.body,
-         success: function(msg){
-           dest.html(msg)
-         }
-        })
-      }, 1000)
+    if (is_enter(event)) {
+      return
     }
+    var input = $(this)
+    var col = input.attr('id').split('_f_')[1]
+    t.e_header_slim.find("[col='"+col+"']").removeClass("bgred").addClass("bgorange")
+    clearTimeout(timer)
+    timer = setTimeout(function validate(){
+      var data = {}
+      for (c in t.colprops) {
+        var current = $("#"+t.id+"_f_"+c).val()
+        if ((current != "") && (typeof current !== 'undefined')) {
+          data[t.id+"_f_"+c] = current
+        } else if (t.colprops[c].force_filter != "") {
+          data[t.id+"_f_"+c] = t.colprops[c].force_filter
+        }
+      }
+      data[input.attr('id')] = input.val()
+      var dest = input.siblings("[id^="+t.id+"_fc_]")
+      _url = url + col
+      $.ajax({
+       type: "POST",
+       url: _url,
+       data: data,
+       context: document.body,
+       beforeSend: function(req){
+         dest.empty()
+         dest.addClass("spinner")
+       },
+       success: function(msg){
+          var data = $.parseJSON(msg)
+          t.format_values_cloud(dest, data)
+       }
+      })
+    }, 1000)
   })
 
   // validate column filter on <enter> keypress
@@ -1280,789 +1295,6 @@ function table_bind_filter_input_events(t) {
   t.bind_filter_reformat()
 }
 
-function table_bind_action_menu(t) {
-  $("#table_"+t.id).find("[name="+t.id+"_tools]").each(function(){
-    $(this).bind("mouseup", function(event) {
-      table_action_menu(t, event)
-    })
-    $(this).bind("click", function() {
-      $("#fsr"+t.id).hide()
-      $(".menu").hide("fold")
-    })
-  })
-}
-
-function table_bind_filter_selector(t) {
-  $("#table_"+t.id).find("[cell=1]").each(function(){
-    $(this).bind("mouseup", function(event) {
-      cell = $(event.target)
-      if (typeof cell.attr("v") === 'undefined') {
-        cell = cell.parents("[cell=1]").first()
-      }
-      t.filter_selector(event, cell.attr('name'), cell.attr('v'))
-    })
-    $(this).bind("click", function() {
-      $("#fsr"+t.id).hide()
-      $("#am_"+t.id).remove()
-      $(".menu").hide("fold")
-    })
-  })
-}
-
-function table_action_menu_click_animation(t) {
-  var src = $("#am_"+t.id)
-  var dest = $(".header").find("[href$=action_queue]")
-  var destp = dest.position()
-  src.animate({
-   top: destp.top,
-   left: destp.left,
-   opacity: "toggle",
-   height: ["toggle", "swing"],
-   width: ["toggle", "swing"]
-  }, 1500, function(){dest.parent().effect("highlight")})
-}
-
-function table_action_menu_param_moduleset(t) {
-  var s = ""
-  $.ajax({
-    async: false,
-    type: "POST",
-    url: $(location).attr("origin") + "/init/compliance/call/json/comp_get_all_moduleset",
-    data: "",
-    success: function(data){
-      for (var i=0; i<data.length; i++) {
-        var e = data[i]
-        s += "<div><input type=checkbox otype='moduleset' oid="+e[0]+" oname='"+e[1]+"'>"+e[1]+"</div>"
-      }
-    }
-  })
-  return "<p class='clickable b' onclick='$(this).next().toggle()'>--moduleset</p><div class='panselector10 hidden'>"+s+"</div>"
-}
-
-function table_action_menu_param_module(t) {
-  var s = ""
-  $.ajax({
-    async: false,
-    type: "POST",
-    url: $(location).attr("origin") + "/init/compliance/call/json/comp_get_all_module",
-    data: "",
-    success: function(data){
-      for (var i=0; i<data.length; i++) {
-        var e = data[i]
-        s += "<div><input type=checkbox otype='module' oid="+e[0]+" oname='"+e[1]+"'>"+e[1]+"</div>"
-      }
-    }
-  })
-  return "<p class='clickable b' onclick='$(this).next().toggle()'>--module</p><div class='panselector10 hidden'>"+s+"</div>"
-}
-
-function table_action_menu_post_data(t, data, confirmation) {
-    action = data[0]['action']
-    if (!(confirmation==true)) {
-      s = ""
-      $("#am_"+t.id).find("li.right").remove()
-      $("#am_"+t.id).find("li[action="+action+"]").each(function(){
-        $(this).addClass("b")
-        $(this).unbind("click")
-        $(this).siblings().remove()
-        $(this).parent("ul").parent().unbind("click")
-
-        // action parameters
-        var params = $(this).attr("params")
-        if (typeof params !== "undefined") {
-          params = params.split(",")
-          for (var i=0; i<params.length; i++) {
-            var param = params[i]
-            try {
-              s += t["action_menu_param_"+param]()
-            } catch(err) {}
-          }
-        }
-      })
-      s += "<hr>"
-      s += "<div>"+i18n.t("action_menu.confirmation")+"</div><br>"
-      s += "<div class='check16 float clickable' name='yes'>"+i18n.t("action_menu.yes")+"</div>"
-      s += "<div class='nok float clickable' name='no'>"+i18n.t("action_menu.no")+"</div>"
-      $("#am_"+t.id).find("ul").last().append(s)
-      $("#am_"+t.id).find("[name=yes]").bind("click", function(){
-        $(this).unbind("click")
-        $(this).removeClass("check16")
-        $(this).addClass("spinner")
-        table_action_menu_post_data(t, data, true)
-      })
-      $("#am_"+t.id).find("[name=no]").bind("click", function(){$("#am_"+t.id).remove()})
-      return
-    }
-    var params = {}
-    $("#am_"+t.id).find("input[otype]:checked").each(function(){
-      otype = $(this).attr("otype")
-      oname = $(this).attr("oname")
-      if (!(otype in params)) {
-        params[otype] = []
-      }
-      params[otype].push(oname)
-    })
-    for (otype in params) {
-      if (params[otype].length > 0) {
-        for (var i=0; i<data.length; i++) {
-          data[i][otype] = params[otype].join(",")
-        }
-      }
-    }
-    table_action_menu_click_animation(t)
-    $.ajax({
-      //async: false,
-      type: "POST",
-      url: $(location).attr("origin") + "/init/action_menu/call/json/json_action",
-      data: {"data": JSON.stringify(data)},
-      success: function(msg){
-        menu_action_status(msg)
-      }
-    })
-}
-
-function table_action_menu(t, e){
-  // drop the previous action menu
-  $("#am_"+t.id).remove()
-  if(e.button != 2) {
-    return
-  }
-  if (typeof t.action_menu === "undefined") {
-    return
-  }
-  $(".right_click_menu").hide()
-
-  var s = ""
-
-  // format the tools menu
-  var tm = ""
-  if ("nodes" in t.action_menu) {
-    tm += table_tools_menu_nodes(t)
-  }
-  if ("services" in t.action_menu) {
-    tm += table_tools_menu_svcs(t)
-  }
-  if (("nodes" in t.action_menu) || ("services" in t.action_menu)) {
-    tm += tool_topo(t)
-  }
-  if (tm != "") {
-    s += "<h3 class='line'><span>"+i18n.t("action_menu.tools")+"</span></h3>" + s
-    s += tm
-  }
-
-  // format the action menu
-  var am = ""
-  if ("nodes" in t.action_menu) {
-    am += table_action_menu_node(t, e)
-    am += table_action_menu_nodes(t)
-    am += table_action_menu_nodes_all(t, e)
-  }
-  if ("services" in t.action_menu) {
-    am += table_action_menu_svc(t, e)
-    am += table_action_menu_svcs(t)
-    am += table_action_menu_svcs_all(t, e)
-  }
-  if ("resources" in t.action_menu) {
-    am += table_action_menu_resource(t, e)
-    am += table_action_menu_resources(t)
-    am += table_action_menu_resources_all(t, e)
-  }
-  if ("modules" in t.action_menu) {
-    am += table_action_menu_module(t, e)
-    am += table_action_menu_modules(t)
-    am += table_action_menu_modules_all(t, e)
-  }
-  if (am != "") {
-      s += "<h3 class='line'><span>"+i18n.t("action_menu.actions")+"</span></h3>"
-      s += am
-  }
-
-  if (s == "") {
-    return
-  }
-  s = "<div id='am_"+t.id+"' class='white_float action_menu stackable'><ul>"+s+"</ul></div>"
-
-  // position the popup at the mouse click
-  var pos = get_pos(e)
-  t.div.append(s)
-  $("#am_"+t.id).css({"left": pos[0] + "px", "top": pos[1] + "px"})
-
-  // bind action click triggers
-  $("#am_"+t.id).find("[scope=module]").bind("click", function(){
-    var action = $(this).attr("action")
-    var data = table_action_menu_get_module_data(t, e, action)
-    if (data.length==0) {
-      return
-    }
-    table_action_menu_post_data(t, data)
-  })
-  $("#am_"+t.id).find("[scope=modules]").bind("click", function(){
-    var action = $(this).attr("action")
-    var data = table_action_menu_get_modules_data(t, action)
-    if (data.length==0) {
-      return
-    }
-    table_action_menu_post_data(t, data)
-  })
-  $("#am_"+t.id).find("[scope=modules_all]").bind("click", function(){
-    var action = $(this).attr("action")
-    var data = table_action_menu_get_modules_all_data(t, e, action)
-    if (data.length==0) {
-      return
-    }
-    table_action_menu_post_data(t, data)
-  })
-  $("#am_"+t.id).find("[scope=resource]").bind("click", function(){
-    var action = $(this).attr("action")
-    var data = table_action_menu_get_resource_data(t, e, action)
-    if (data.length==0) {
-      return
-    }
-    table_action_menu_post_data(t, data)
-  })
-  $("#am_"+t.id).find("[scope=resources]").bind("click", function(){
-    var action = $(this).attr("action")
-    var data = table_action_menu_get_resources_data(t, action)
-    if (data.length==0) {
-      return
-    }
-    table_action_menu_post_data(t, data)
-  })
-  $("#am_"+t.id).find("[scope=resources_all]").bind("click", function(){
-    var action = $(this).attr("action")
-    var data = table_action_menu_get_resources_all_data(t, e, action)
-    if (data.length==0) {
-      return
-    }
-    table_action_menu_post_data(t, data)
-  })
-  $("#am_"+t.id).find("[scope=svc]").bind("click", function(){
-    var action = $(this).attr("action")
-    var data = table_action_menu_get_svc_data(t, e, action)
-    if (data.length==0) {
-      return
-    }
-    table_action_menu_post_data(t, data)
-  })
-  $("#am_"+t.id).find("[scope=svcs]").bind("click", function(){
-    var action = $(this).attr("action")
-    var data = table_action_menu_get_svcs_data(t, action)
-    if (data.length==0) {
-      return
-    }
-    table_action_menu_post_data(t, data)
-  })
-  $("#am_"+t.id).find("[scope=svcs_all]").bind("click", function(){
-    var action = $(this).attr("action")
-    var data = table_action_menu_get_svcs_all_data(t, e, action)
-    if (data.length==0) {
-      return
-    }
-    table_action_menu_post_data(t, data)
-  })
-  $("#am_"+t.id).find("[scope=node]").bind("click", function(){
-    var action = $(this).attr("action")
-    var data = table_action_menu_get_node_data(t, e, action)
-    if (data.length==0) {
-      return
-    }
-    table_action_menu_post_data(t, data)
-  })
-  $("#am_"+t.id).find("[scope=nodes]").bind("click", function(){
-    var action = $(this).attr("action")
-    var data = table_action_menu_get_nodes_data(t, action)
-    if (data.length==0) {
-      return
-    }
-    table_action_menu_post_data(t, data)
-  })
-  $("#am_"+t.id).find("[scope=nodes_all]").bind("click", function(){
-    var action = $(this).attr("action")
-    var data = table_action_menu_get_nodes_all_data(t, e, action)
-    if (data.length==0) {
-      return
-    }
-    table_action_menu_post_data(t, data)
-  })
-
-  // display actions only for the clicked section
-  var sections = $("#am_"+t.id).children("ul").children("li")
-  sections.addClass("right")
-  sections.children("ul").hide()
-  sections.bind("click", function(){
-    var v = $(this).children("ul").is(":visible")
-    sections.removeClass("down")
-    sections.addClass("right")
-    sections.children("ul").hide()
-    if (!v) {
-      $(this).children("ul").show()
-      $(this).removeClass("right")
-      $(this).addClass("down")
-    }
-  })
-}
-
-function table_action_menu_get_nodes_all_data(t, e, action) {
-    var cell = $(e.target)
-    var line = cell.parents(".tl").first()
-    var name = line.find("td[cell=1][name$=nodename],td[cell=1][name$=mon_nodname],td[cell=1][name$=disk_nodename],td[cell=1][name$=hostname]").first().attr("name")
-    var col = name.replace(/.*_c_/, "")
-    var url = t.ajax_url+"/data"
-    var vars = {}
-    vars["table_id"] = t.id
-    vars["visible_columns"] = col
-    vars[t.id+"_page"] = 0
-    var data = []
-    $.ajax({
-         async: false,
-         type: "POST",
-         url: url,
-         data: vars,
-         success: function(msg){
-           try {
-             var _data = $.parseJSON(msg)
-             var lines = _data['table_lines']
-           } catch(e) {
-             return []
-           }
-           if (t.extrarow) {
-             var cols = ["extra"].concat(t.columns)
-           } else {
-             var cols = t.columns
-           }
-           idx = cols.indexOf(col)
-           var sigs = []
-           for (i=0; i<lines.length; i++) {
-             var sig = lines[i]["cells"][idx]
-             if (sigs.indexOf(sig) >= 0) { continue }
-             sigs.push(sig)
-             data.push({nodename: lines[i]["cells"][idx], action: action})
-           }
-         }
-    })
-    return data
-}
-
-function table_action_menu_get_svcs_all_data(t, e, action) {
-    var cell = $(e.target)
-    var line = cell.parents(".tl").first()
-    var nodename = line.find("td[cell=1][name$=nodename],td[cell=1][name$=mon_nodname],td[cell=1][name$=disk_nodename],td[cell=1][name$=hostname]").first().attr("name")
-    var svcname = line.find("td[cell=1][name$=svcname],td[cell=1][name$=svc_name],td[cell=1][name$=disk_svcname]").first().attr("name")
-    var colnode = nodename.replace(/.*_c_/, "")
-    var colsvc = svcname.replace(/.*_c_/, "")
-    var url = t.ajax_url+"/data"
-    var vars = {}
-    vars["table_id"] = t.id
-    vars["visible_columns"] = colnode+","+colsvc
-    vars[t.id+"_page"] = 0
-    var data = []
-    $.ajax({
-         async: false,
-         type: "POST",
-         url: url,
-         data: vars,
-         success: function(msg){
-           try {
-             var _data = $.parseJSON(msg)
-             var lines = _data['table_lines']
-           } catch(e) {
-             return []
-           }
-           if (t.extrarow) {
-             var cols = ["extra"].concat(t.columns)
-           } else {
-             var cols = t.columns
-           }
-           idxnode = cols.indexOf(colnode)
-           idxsvc = cols.indexOf(colsvc)
-           var sigs = []
-           for (i=0; i<lines.length; i++) {
-             var sig = lines[i]["cells"][idxnode]+"--"+lines[i]["cells"][idxsvc]
-             if (sigs.indexOf(sig) >= 0) { continue }
-             sigs.push(sig)
-             data.push({nodename: lines[i]["cells"][idxnode], svcname: lines[i]["cells"][idxsvc], action: action})
-           }
-         }
-    })
-    return data
-}
-
-function table_action_menu_get_resources_all_data(t, e, action) {
-    var cell = $(e.target)
-    var line = cell.parents(".tl").first()
-    var nodename = line.find("td[cell=1][name$=nodename],td[cell=1][name$=mon_nodname],td[cell=1][name$=disk_nodename],td[cell=1][name$=hostname]").first().attr("name")
-    var svcname = line.find("td[cell=1][name$=svcname],td[cell=1][name$=svc_name],td[cell=1][name$=disk_svcname]").first().attr("name")
-    var rid = line.find("td[cell=1][name$=_rid]").first().attr("name")
-    var colnode = nodename.replace(/.*_c_/, "")
-    var colsvc = svcname.replace(/.*_c_/, "")
-    var colrid = rid.replace(/.*_c_/, "")
-    var url = t.ajax_url+"/data"
-    var vars = {}
-    vars["table_id"] = t.id
-    vars["visible_columns"] = colnode+","+colsvc+","+rid
-    vars[t.id+"_page"] = 0
-    var data = []
-    $.ajax({
-         async: false,
-         type: "POST",
-         url: url,
-         data: vars,
-         success: function(msg){
-           try {
-             var _data = $.parseJSON(msg)
-             var lines = _data['table_lines']
-           } catch(e) {
-             return []
-           }
-           if (t.extrarow) {
-             var cols = ["extra"].concat(t.columns)
-           } else {
-             var cols = t.columns
-           }
-           idxnode = cols.indexOf(colnode)
-           idxsvc = cols.indexOf(colsvc)
-           idxrid = cols.indexOf(colrid)
-           for (i=0; i<lines.length; i++) {
-             data.push({
-               nodename: lines[i]["cells"][idxnode],
-               svcname: lines[i]["cells"][idxsvc],
-               rid: lines[i]["cells"][idxrid],
-               action: action
-             })
-           }
-         }
-    })
-    return data
-}
-
-function table_action_menu_get_modules_all_data(t, e, action) {
-    var cell = $(e.target)
-    var line = cell.parents(".tl").first()
-    var nodename = line.find("td[cell=1][name$=nodename],td[cell=1][name$=mon_nodname],td[cell=1][name$=disk_nodename],td[cell=1][name$=hostname]").first().attr("name")
-    var svcname = line.find("td[cell=1][name$=svcname],td[cell=1][name$=svc_name],td[cell=1][name$=disk_svcname]").first().attr("name")
-    var module = line.find("td[cell=1][name$=_run_module]").first().attr("name")
-    var colnode = nodename.replace(/.*_c_/, "")
-    var colsvc = svcname.replace(/.*_c_/, "")
-    var colmodule = module.replace(/.*_c_/, "")
-    var url = t.ajax_url+"/data"
-    var vars = {}
-    vars["table_id"] = t.id
-    vars["visible_columns"] = colnode+","+colsvc+","+colmodule
-    vars[t.id+"_page"] = 0
-    var data = []
-    $.ajax({
-         async: false,
-         type: "POST",
-         url: url,
-         data: vars,
-         success: function(msg){
-           try {
-             var _data = $.parseJSON(msg)
-             var lines = _data['table_lines']
-           } catch(e) {
-             return []
-           }
-           if (t.extrarow) {
-             var cols = ["extra"].concat(t.columns)
-           } else {
-             var cols = t.columns
-           }
-           idxnode = cols.indexOf(colnode)
-           idxsvc = cols.indexOf(colsvc)
-           idxmodule = cols.indexOf(colmodule)
-           for (i=0; i<lines.length; i++) {
-             data.push({
-               nodename: lines[i]["cells"][idxnode],
-               svcname: lines[i]["cells"][idxsvc],
-               module: lines[i]["cells"][idxmodule],
-               action: action
-             })
-           }
-         }
-    })
-    return data
-}
-
-function table_action_menu_get_nodes_data(t, action) {
-    var lines = $("[id^="+t.id+"_ckid_]:checked").parent().parent()
-    var data = []
-    var nodenames = []
-    lines.find("td[cell=1][name$=nodename],td[cell=1][name$=mon_nodname],td[cell=1][name$=disk_nodname],td[cell=1][name$=hostname]").each(function(){
-      nodename = $(this).attr("v")
-      var d = {'nodename': nodename, 'action': action}
-      if (nodenames.indexOf(nodename) < 0) {
-        nodenames.push(nodename)
-        data.push({'nodename': nodename, 'action': action})
-      }
-    })
-    return data
-}
-
-function table_action_menu_get_node_data(t, e, action) {
-    var cell = $(e.target)
-    var line = cell.parents(".tl").first()
-    var nodename = line.find("td[cell=1][name$=nodename],td[cell=1][name$=mon_nodname],td[cell=1][name$=disk_nodename],td[cell=1][name$=hostname]").first().attr("v")
-    if ((typeof nodename === "undefined")||(nodename=="")) {
-      return []
-    }
-    var data = [{'nodename': nodename, 'action': action}]
-    return data
-}
-
-function table_action_menu_get_svcs_data_with_node(t, action) {
-    var d = table_action_menu_get_svcs_data(t, action)
-    var n = []
-    for (i=0; i<d.length; i++) {
-        if (d[i]["nodename"] != "") {
-            n.push(d[i])
-        }
-    }
-    return n
-}
-
-function table_action_menu_get_svcs_data(t, action) {
-    var lines = $("[id^="+t.id+"_ckid_]:checked").parent().parent()
-    var data = []
-    var index = []
-    lines.each(function(){
-      var nodename = $(this).find("td[cell=1][name$=nodename],td[cell=1][name$=mon_nodname],td[cell=1][name$=disk_nodename],td[cell=1][name$=hostname]").attr("v")
-      if ((typeof nodename === "undefined")||(nodename=="")) {
-        nodename = ""
-      }
-      var svcname = $(this).find("td[cell=1][name$=svcname],td[cell=1][name$=svc_name],td[cell=1][name$=disk_svcname]").attr("v")
-      if ((typeof svcname === "undefined")||(svcname=="")) {
-        return []
-      }
-      var i = nodename+"--"+svcname
-      if (index.indexOf(i)<0) {
-        index.push(i)
-        data.push({"nodename": nodename, "svcname": svcname, "action": action})
-      }
-    })
-    return data
-}
-
-function table_action_menu_get_svc_data(t, e, action) {
-    var cell = $(e.target)
-    var line = cell.parents(".tl").first()
-    var nodename = line.find("td[cell=1][name$=nodename],td[cell=1][name$=mon_nodname],td[cell=1][name$=hostname]").first().attr("v")
-    if ((typeof nodename === "undefined")||(nodename=="")) {
-      return []
-    }
-    var svcname = line.find("td[cell=1][name$=svcname],td[cell=1][name$=svc_name]").first().attr("v")
-    if ((typeof svcname === "undefined")||(svcname=="")) {
-      return []
-    }
-    var data = [{'nodename': nodename, 'svcname': svcname, 'action': action}]
-    return data
-}
-
-function table_action_menu_get_modules_data(t, action) {
-    var lines = $("[id^="+t.id+"_ckid_]:checked").parent().parent()
-    var data = []
-    var index = []
-    lines.each(function(){
-      var nodename = $(this).find("td[cell=1][name$=nodename],td[cell=1][name$=mon_nodname],td[cell=1][name$=hostname]").attr("v")
-      if ((typeof nodename === "undefined")||(nodename=="")) {
-        return
-      }
-      var module = $(this).find("td[cell=1][name$=_run_module]").attr("v")
-      if ((typeof module === "undefined")||(module=="")) {
-        return
-      }
-      var svcname = $(this).find("td[cell=1][name$=svcname],td[cell=1][name$=svc_name]").attr("v")
-      if ((typeof svcname === "undefined")||(svcname=="")) {
-        var i = nodename+"--"+svcname+"--"+module
-        d = {"nodename": nodename, "module": module, "action": action}
-      } else {
-        var i = nodename+"--"+module
-        d = {"nodename": nodename, "svcname": svcname, "module": module, "action": action}
-      }
-      if (index.indexOf(i)<0) {
-        index.push(i)
-        data.push(d)
-      }
-    })
-    return data
-}
-
-function table_action_menu_get_module_data(t, e, action) {
-    var cell = $(e.target)
-    var line = cell.parents(".tl").first()
-    var nodename = line.find("td[cell=1][name$=nodename],td[cell=1][name$=mon_nodname],td[cell=1][name$=hostname]").first().attr("v")
-    if ((typeof nodename === "undefined")||(nodename=="")) {
-      return []
-    }
-    var module = line.find("td[cell=1][name$=_run_module]").first().attr("v")
-    if ((typeof module === "undefined")||(module=="")) {
-      return []
-    }
-    var data = [{'nodename': nodename, 'module': module, 'action': action}]
-    var svcname = line.find("td[cell=1][name$=svcname],td[cell=1][name$=svc_name]").first().attr("v")
-    if ((typeof svcname === "undefined")||(svcname=="")) {
-      return data
-    }
-    data[0]['svcname'] = svcname
-    return data
-}
-
-function table_action_menu_get_resources_data(t, action) {
-    var lines = $("[id^="+t.id+"_ckid_]:checked").parent().parent()
-    var data = []
-    var index = []
-    lines.each(function(){
-      var nodename = $(this).find("td[cell=1][name$=nodename],td[cell=1][name$=mon_nodname],td[cell=1][name$=hostname]").attr("v")
-      if ((typeof nodename === "undefined")||(nodename=="")) {
-        return
-      }
-      var svcname = $(this).find("td[cell=1][name$=svcname],td[cell=1][name$=svc_name]").attr("v")
-      if ((typeof svcname === "undefined")||(svcname=="")) {
-        return
-      }
-      var rid = $(this).find("td[cell=1][name$=_rid]").attr("v")
-      if ((typeof rid === "undefined")||(rid=="")) {
-        return
-      }
-      var i = nodename+"--"+svcname+"--"+rid
-      if (index.indexOf(i)<0) {
-        index.push(i)
-        data.push({"nodename": nodename, "svcname": svcname, "rid": rid, "action": action})
-      }
-    })
-    return data
-}
-
-function table_action_menu_get_resource_data(t, e, action) {
-    var lines = $("[id^="+t.id+"_ckid_]:checked").parent().parent()
-    var cell = $(e.target)
-    var line = cell.parents(".tl").first()
-    var nodename = line.find("td[cell=1][name$=nodename],td[cell=1][name$=mon_nodname],td[cell=1][name$=hostname]").first().attr("v")
-    if ((typeof nodename === "undefined")||(nodename=="")) {
-      return []
-    }
-    var svcname = line.find("td[cell=1][name$=svcname],td[cell=1][name$=svc_name]").first().attr("v")
-    if ((typeof svcname === "undefined")||(svcname=="")) {
-      return []
-    }
-    var rid = line.find("td[cell=1][name$=_rid]").first().attr("v")
-    if ((typeof rid === "undefined")||(rid=="")) {
-      return []
-    }
-    var data = [{'nodename': nodename, 'svcname': svcname, 'rid': rid, 'action': action}]
-    return data
-}
-
-function menu_action_status(msg){
-  var s = "accepted: "+msg.accepted+", rejected: "+msg.rejected
-  if (msg.factorized>0) {
-    s = "factorized: "+msg.factorized+", "+s
-  }
-  $(".flash").html(s).show("blind")
-}
-
-function table_action_menu_modules_all(t, e){
-  var data = table_action_menu_get_module_data(t, e)
-  if (data.length==0) {
-    return ""
-  }
-  var s = "<li class='clickable'>"+i18n.t("action_menu.actions_on_all_modules")+table_action_menu_module_entries(t, "modules_all")+"</li>"
-  return s
-}
-
-function table_action_menu_module(t, e){
-  var data = table_action_menu_get_module_data(t, e)
-  if (data.length==0) {
-    return ""
-  }
-  if ('svcname' in data[0]) {
-    var s = "<li class='clickable'>"+i18n.t("action_menu.actions_on_module_on_service_on_node", data[0])+table_action_menu_module_entries(t, "module")+"</li>"
-  } else {
-    var s = "<li class='clickable'>"+i18n.t("action_menu.actions_on_module_on_node", data[0])+table_action_menu_module_entries(t, "module")+"</li>"
-  }
-  return s
-}
-
-function table_action_menu_modules(t){
-  var data = table_action_menu_get_modules_data(t)
-  if (data.length==0) {
-    return ""
-  }
-  var s = "<li class='clickable'>"+i18n.t("action_menu.actions_on_selected_modules")+" (<b>"+data.length+"</b>)"+table_action_menu_module_entries(t, "modules")+"</li>"
-  return s
-}
-
-function table_action_menu_resources_all(t, e){
-  var data = table_action_menu_get_resource_data(t, e)
-  if (data.length==0) {
-    return ""
-  }
-  var s = "<li class='clickable'>"+i18n.t("action_menu.actions_on_all_resources")+table_action_menu_resource_entries(t, "resources_all")+"</li>"
-  return s
-}
-
-function table_action_menu_resource(t, e){
-  var data = table_action_menu_get_resource_data(t, e)
-  if (data.length==0) {
-    return ""
-  }
-  var s = "<li class='clickable'>"+i18n.t("action_menu.actions_on_resource_on_service_on_node", data[0])+table_action_menu_resource_entries(t, "resource")+"</li>"
-  return s
-}
-
-function table_action_menu_resources(t){
-  var data = table_action_menu_get_resources_data(t)
-  if (data.length==0) {
-    return ""
-  }
-  var s = "<li class='clickable'>"+i18n.t("action_menu.actions_on_selected_resource")+" (<b>"+data.length+"</b>)"+table_action_menu_resource_entries(t, "resources")+"</li>"
-  return s
-}
-
-function table_action_menu_svcs_all(t, e){
-  var data = table_action_menu_get_svc_data(t, e)
-  if (data.length==0) {
-    return ""
-  }
-  var s = "<li class='clickable'>"+i18n.t("action_menu.actions_on_all_services_instances")+table_action_menu_svc_entries(t, "svcs_all")+"</li>"
-  return s
-}
-
-function table_action_menu_svc(t, e){
-  var data = table_action_menu_get_svc_data(t, e)
-  if (data.length==0) {
-    return ""
-  }
-  var s = "<li class='clickable'>"+i18n.t("action_menu.actions_on_services_instances_on_node", data[0])+table_action_menu_svc_entries(t, "svc")+"</li>"
-  return s
-}
-
-function table_action_menu_svcs(t){
-  var data = table_action_menu_get_svcs_data_with_node(t)
-  if (data.length==0) {
-    return ""
-  }
-  var s = "<li class='clickable'>"+i18n.t("action_menu.actions_on_selected_services_instances")+" (<b>"+data.length+"</b>)"+table_action_menu_svc_entries(t, "svcs")+"</li>"
-  return s
-}
-
-function table_action_menu_nodes_all(t, e){
-  var data = table_action_menu_get_node_data(t, e)
-  if (data.length==0) {
-    return ""
-  }
-  var s = "<li class='clickable'>"+i18n.t("action_menu.actions_on_all_nodes")+table_action_menu_node_entries(t, "nodes_all")+"</li>"
-  return s
-}
-
-function table_action_menu_node(t, e){
-  var data = table_action_menu_get_node_data(t, e)
-  if (data.length==0) {
-    return ""
-  }
-  var s = "<li class='clickable'>"+i18n.t("action_menu.actions_on_node")+" <b>"+data[0]['nodename']+"</b>"+table_action_menu_node_entries(t, "node")+"</li>"
-  return s
-}
-
 function table_add_overlay(t) {
   if ($("#overlay").length > 0) {
     t.e_overlay = $("#overlay")
@@ -2075,13 +1307,14 @@ function table_add_overlay(t) {
     resize_overlay()
     resize_extralines()
   })
-  e.bind("DOMSubtreeModified", function(){
-    resize_overlay()
-  })
+  e.bind("DOMSubtreeModified", resize_overlay)
   t.e_overlay = e
 }
 
 function resize_overlay() {
+  if ($("#overlay:visible").length == 0) {
+    return
+  }
   _resize_overlay()
   $("#overlay").find("img").one("load", function(){
     _resize_overlay()
@@ -2090,6 +1323,7 @@ function resize_overlay() {
 
 function _resize_overlay() {
   e = $("#overlay")
+  e.unbind("DOMSubtreeModified", resize_overlay)
   e.css({
    'overflow': 'auto',
    'position': 'fixed',
@@ -2098,6 +1332,7 @@ function _resize_overlay() {
    'top': ($(window).height()-e.height())/2,
    'left': ($(window).width()-e.width())/2
   })
+  e.bind("DOMSubtreeModified", resize_overlay)
 }
 
 function resize_extralines() {
@@ -3148,6 +2383,10 @@ function table_add_refresh(t) {
 // table tool: volatile toggle
 //
 function table_add_volatile(t) {
+  if (!t.options.headers || !t.options.filterable) {
+    return
+  }
+
   // checkbox
   var input = $("<input type='checkbox' class='ocb' />")
   if (t.options.volatile_filters) {
@@ -3549,6 +2788,78 @@ function table_get_column_filters(t, callback) {
   }) 
 }
 
+function table_add_ws_handler(t) {
+  if (!t.options.events) {
+    return
+  }
+  for (var i=0; i<t.options.events.length; i++) {
+    console.log("register table", t.id, t.options.events[i], "event handler")
+    var ev = t.options.events[i]
+    wsh[t.id] = function(data) {
+      if (data["event"] == ev) {
+        t.refresh()
+      }
+    }
+  }
+}
+
+function table_format_values_cloud(t, span, data) {
+  span.removeClass("spinner")
+
+  var keys = []
+  var max = 0
+  var min = 0
+  var delta = 0
+  for (key in data) {
+    keys.push(key)
+    n = data[key]
+    if (n > max) max = n
+    min = max
+  }
+  for (key in data) {
+    n = data[key]
+    if (n < min) min = n
+    delta = max - min
+  }
+
+  // header
+  var header = $("<h3></h3>")
+  header.text(i18n.t("table.unique_matching_values", {"count": keys.length}))
+  span.append(header)
+
+  // 'empty' might not be comparable with other keys type
+  if ('empty' in keys) {
+    var skeys = keys
+    skeys.remove('empty')
+    skeys = ['empty'] + skeys.sort()
+  } else {
+    skeys = keys.sort()
+  }
+
+  // candidates
+  for (var i=0; i<skeys.length ; i++) {
+    var key = skeys[i]
+    var n = data[key]
+    if (delta > 0) {
+      var size = 100 + 100. * (n - min) / delta
+    } else {
+      var size = 100
+    }
+
+    e = $("<a class='h cloud_tag'></a>")
+    e.text(key)
+    e.css({"font-size": size+"%"})
+    e.attr("title", i18n.t("table.number_of_occurence", {"count": data[key]}))
+    e.bind("click", function(){
+      span.siblings("input").val($(this).text())
+      t.refresh()
+      t.refresh_column_filters()
+      t.save_column_filters()
+    })
+    span.append(e)
+  }
+}
+
 function table_init(opts) {
   var t = {
     'options': opts,
@@ -3567,6 +2878,15 @@ function table_init(opts) {
     'action_menu': opts['action_menu'],
     'decorate_cells': function(){
       table_cell_decorator(opts['id'])
+    },
+    'column_values': function(){
+      table_column_values(this)
+    },
+    'format_values_cloud': function(span, data){
+      table_format_values_cloud(this, span, data)
+    },
+    'add_ws_handler': function(){
+      table_add_ws_handler(this)
     },
     'hide_cells': function(){
       table_hide_cells(this)
@@ -3668,7 +2988,10 @@ function table_init(opts) {
       return table_action_menu_param_module(this)
     },
     'on_change': function(){
-      // placeholder to override after table_init()
+      if (!t.options.on_change) {
+        return
+      }
+      t.options.on_change()
     },
     'refresh_child_tables': function(){
       for (var i=0; i<this.child_tables.length; i++) {
@@ -3755,6 +3078,7 @@ function table_init(opts) {
   t.add_scrollers()
   t.scroll_enable()
   t.stick()
+  t.add_ws_handler()
 
   function init_post_get_column_filters() {
     if (t.dataable) {

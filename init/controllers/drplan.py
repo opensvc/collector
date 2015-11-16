@@ -310,7 +310,7 @@ class table_drplan(HtmlTable):
               DIV(
                 SPAN(*l),
                 _style='display:none',
-                _class='white_float',
+                _class='stackable white_float',
                 _name='wave',
                 _id='wave',
               ),
@@ -351,7 +351,7 @@ class table_drplan(HtmlTable):
                   ),
                 ),
                 _style='display:none',
-                _class='white_float',
+                _class='stackable white_float',
                 _name=action,
                 _id=action,
               ),
@@ -383,7 +383,7 @@ class table_drplan(HtmlTable):
               DIV(
                 SPAN(*l),
                 _style='display:none',
-                _class='white_float',
+                _class='stackable white_float',
                 _name='del_project',
                 _id='del_project',
               ),
@@ -421,7 +421,7 @@ class table_drplan(HtmlTable):
               DIV(
                 SPAN(*l),
                 _style='display:none',
-                _class='white_float',
+                _class='stackable white_float',
                 _name='project',
                 _id='project',
               ),

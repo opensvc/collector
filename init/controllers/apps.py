@@ -33,15 +33,24 @@ class table_apps(HtmlTable):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
-        self.cols = ['app',
+        self.force_cols = ['id']
+        self.cols = ['id',
+                     'app',
                      'app_domain',
                      'app_team_ops',
                      'roles',
                      'responsibles',
                      'mailto']
-        self.keys = ['app']
-        self.span = ['app']
+        self.keys = ['id']
+        self.span = ['id']
         self.colprops = {
+            'id': HtmlTableColumn(
+                     title='Id',
+                     table='v_apps',
+                     field='id',
+                     img='key',
+                     display=False,
+                    ),
             'app': HtmlTableColumn(
                      title='Application code',
                      table='v_apps',
@@ -89,8 +98,11 @@ class table_apps(HtmlTable):
         self.ajax_col_values = 'ajax_apps_col_values'
         #self.dbfilterable = True
         self.checkboxes = True
+        self.dataable = True
+        self.wsable = True
         self.checkbox_id_table = 'v_apps'
         self.checkbox_id_col = 'id'
+        self.events = ["apps_change"]
         if 'Manager' in user_groups():
             self.additional_tools.append('app_del')
             self.additional_tools.append('app_add')
@@ -134,7 +146,7 @@ class table_apps(HtmlTable):
                   ),
                 ),
                 _style='display:none',
-                _class='white_float',
+                _class='stackable white_float',
                 _name=divid,
                 _id=divid,
               ),
@@ -178,7 +190,7 @@ class table_apps(HtmlTable):
                   ),
                 ),
                 _style='display:none',
-                _class='white_float',
+                _class='stackable white_float',
                 _name=divid,
                 _id=divid,
               ),
@@ -297,22 +309,19 @@ def ajax_apps():
     for f in t.cols:
         q = _where(q, 'v_apps', t.filter_parse(f), f)
 
-    if len(request.args) == 1 and request.args[0] == 'line':
+    if len(request.args) == 1 and request.args[0] == 'data':
         n = db(q).count()
         limitby = (t.pager_start,t.pager_end)
-        t.object_list = db(q).select(orderby=o, groupby=o, limitby=limitby)
-        return t.table_lines_data(n)
+        cols = t.get_visible_columns()
+        t.object_list = db(q).select(*cols, orderby=o, groupby=o, limitby=limitby, cacheable=True)
+        return t.table_lines_data(n, html=False)
 
-    n = db(q).count()
-    t.setup_pager(n)
-    t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end),
-                                 orderby=o, groupby=o)
-    return t.html()
 
 @auth.requires_login()
 def apps():
+    t = table_apps('apps', 'ajax_apps')
     t = DIV(
-          ajax_apps(),
+          t.html(),
           _id='apps',
         )
     return dict(table=t)

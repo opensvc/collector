@@ -395,17 +395,6 @@ def nodes():
              ),
              DIV(
                t.html(),
-               SCRIPT("""
-function ws_action_switch_%(divid)s(data) {
-        if (data["event"] == "nodes_change") {
-          osvc.tables["%(divid)s"].refresh()
-        }
-}
-wsh["%(divid)s"] = ws_action_switch_%(divid)s
-              """ % dict(
-                     divid=t.innerhtml,
-                    )
-               ),
               _id='nodes',
              ),
         )
@@ -532,7 +521,7 @@ class table_uids(HtmlTable):
                    _id='r'+divid,
                  ),
                  _style='display:none',
-                 _class='white_float',
+                 _class='stackable white_float',
                  _id=divid,
                  _name=divid,
               ),
@@ -638,7 +627,7 @@ class table_gids(HtmlTable):
                    _id='r'+divid,
                  ),
                  _style='display:none',
-                 _class='white_float',
+                 _class='stackable white_float',
                  _id=divid,
                  _name=divid,
               ),
@@ -660,6 +649,7 @@ class table_obs_agg(HtmlTable):
                      img='spark16',
                     ),
         }
+        self.events = ["nodes_change"]
         self.dbfilterable = False
         self.filterable = False
         self.pageable = False

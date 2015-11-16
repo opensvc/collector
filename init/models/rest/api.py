@@ -257,13 +257,24 @@ class rest_post_handler(rest_handler):
                 return self.handle_list(data, args, vars)
             elif type(data) == dict:
                 return rest_handler.handle(self, *args, **data)
+        if "filters" in vars and hasattr(self, "get_handler"):
+            return self.handle_multi_update(*args, **vars)
         if "query" in vars and hasattr(self, "get_handler"):
             return self.handle_multi_update(*args, **vars)
         return rest_handler.handle(self, *args, **vars)
 
     def handle_multi_update(self, *args, **vars):
-        l = self.get_handler.handler(query=vars["query"], limit=0, props=self.update_one_param)["data"]
-        del(vars["query"])
+        _vars = {
+          "limit": 0,
+          "props": self.update_one_param,
+        }
+        if "query" in vars:
+            _vars["query"] = vars["query"]
+            del(vars["query"])
+        if "filters" in vars:
+            _vars["filters"] = vars["filters"]
+            del(vars["filters"])
+        l = self.get_handler.handler(**vars)["data"]
         result = {"data": []}
         for e in l:
             try:
@@ -280,9 +291,15 @@ class rest_post_handler(rest_handler):
         if len(self.tables) == 0:
             return
         self.params.update({
+          "filters": {
+            "desc": """
+. An opensvc property values filter.
+
+""",
+          },
           "query": {
             "desc": """
-. A web2py smart query
+. A web2py smart query.
 
 """,
           },
@@ -330,6 +347,18 @@ class rest_get_table_handler(rest_handler):
     def update_parameters(self):
         self.params = copy.copy(self.init_params)
         self.params.update({
+          "commonality": {
+            "desc": """
+. true: return the selected properties most frequent value with its occurence percentile.
+. false: do not return the selected properties most frequent value with its occurence percentile.
+""",
+          },
+          "stats": {
+            "desc": """
+. true: return the selected properties distinct values counts.
+. false: do not return the selected properties distinct values counts.
+""",
+          },
           "meta": {
             "desc": """
 . Controls the inclusion in the returned dictionnary of a "meta" key, whose parameter is a dictionnary containing the following properties: displayed entry count, total entry count, displayed properties, available properties, offset and limit.
@@ -354,6 +383,13 @@ class rest_get_table_handler(rest_handler):
           "query": {
             "desc": """
 . A web2py smart query
+
+""",
+          },
+          "filters": {
+            "type": "list",
+            "desc": """
+. An opensvc property values filter. Example: "updated>-2d".
 
 """,
           },
@@ -394,15 +430,65 @@ class rest_get_line_handler(rest_handler):
 
     def prepare_data(self, **vars):
         vars["meta"] = False
+        vars["stats"] = False
+        vars["commonality"] = False
+        if "filters" in vars:
+            del(vars["filters"])
         if "query" in vars:
             del(vars["query"])
         return rest_handler.prepare_data(self, **vars)
 
+def data_commonality(cols, data):
+    total = len(data)
+    data = data_stats(cols, data)["data"]
+    top = []
+    for col in data:
+        l = data[col].items()
+        if len(l) == 0:
+            continue
+        l.sort(lambda x, y: cmp(x[1], y[1]), reverse=True)
+        v, n = l[0]
+        pct = 100*n//total
+        if pct == 0 or n == 1:
+            continue
+        top.append({
+          "prop": col,
+          "value": v,
+          "percent": pct,
+        })
+    top.sort(lambda x, y: cmp(x["percent"], y["percent"]), reverse=True)
+    return dict(data=top)
+
+def data_stats(cols, data):
+    h = {}
+    if len(data) == 0:
+        return dict(data=h)
+    for c in cols:
+        _col = ".".join((c.table._tablename, c.name))
+        if _col not in data[0]:
+            _col = c.name
+        h[_col] = {}
+        for d in data:
+            val = d[_col]
+            if val is None or val == "":
+                val = 'empty'
+            elif type(val) == datetime.datetime:
+                val = val.strftime("%Y-%m-%d %H:%M:%S")
+            elif type(val) == datetime.date:
+                val = val.strftime("%Y-%m-%d")
+            if val not in h[_col]:
+                h[_col][val] = 1
+            else:
+                h[_col][val] += 1
+    return dict(data=h)
 
 def prepare_data(
      meta=True,
      count_prop=None,
      query=None,
+     stats=False,
+     commonality=False,
+     filters=[],
      props=None,
      vprops={},
      vprops_fn=None,
@@ -420,11 +506,33 @@ def prepare_data(
      total=None):
     cols = props_to_cols(props, tables=tables, vprops=vprops, blacklist=props_blacklist, db=db)
     all_cols = props_to_cols(None, tables=tables, blacklist=props_blacklist, db=db)
-    if meta in ("0", "f", "F", "False", "false", False):
+    false_values = ("0", "f", "F", "False", "false", False)
+    if meta in false_values:
         meta = False
     else:
         meta = True
+    if stats in false_values:
+        stats = False
+    else:
+        stats = True
+        limit = 0
+    if commonality in false_values:
+        commonality = False
+    else:
+        commonality = True
+        limit = 0
     if not data and q:
+        if type(filters) in (str, unicode):
+            filters = [filters]
+        for f in filters:
+            f_prop = re.findall(r'\w+', f)[0]
+            f_val = f[len(f_prop):].strip()
+            if '.' in f_prop:
+                t, f_col = f_prop.split(".")
+            else:
+                t = tables[0]
+                f_col = f_prop
+            q = _where(q, t, f_val, f_col)
         if query:
             try:
                 q &= smart_query(all_cols, query)
@@ -467,6 +575,10 @@ def prepare_data(
 
     data = mangle_data(data, props=props, vprops=vprops, vprops_fn=vprops_fn)
 
+    if stats:
+        return data_stats(cols, data)
+    if commonality:
+        return data_commonality(cols, data)
     if meta:
         _cols = [".".join((c.table._tablename, c.name)) for c in cols]
         if props is None:

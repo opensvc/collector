@@ -12,19 +12,6 @@ def call():
     session.forget(response)
     return service()
 
-class col_form_head_id(HtmlTableColumn):
-    def html(self, o):
-        id = self.t.extra_line_key(o)
-        d = A(
-          self.get(o),
-          _href=URL(
-            c='forms',
-            f='workflow',
-            vars={'wfid': self.get(o)},
-          ),
-        )
-        return d
-
 class table_workflows(HtmlTable):
     def __init__(self, id=None, func=None, innerhtml=None):
         if id is None and 'tableid' in request.vars:
@@ -46,19 +33,21 @@ class table_workflows(HtmlTable):
                      'form_yaml',
                     ]
         self.colprops = {
-            'form_head_id': col_form_head_id(
+            'form_head_id': HtmlTableColumn(
                 title = 'Head form id',
                 field = 'form_head_id',
                 display = True,
                 table = 'workflows',
-                img = 'wf16'
+                img = 'wf16',
+                _class = 'form_id',
             ),
-            'last_form_id': col_form_head_id(
+            'last_form_id': HtmlTableColumn(
                 title = 'Last form id',
                 field = 'last_form_id',
                 display = True,
                 table = 'workflows',
-                img = 'wf16'
+                img = 'wf16',
+                _class = 'form_id',
             ),
             'status': HtmlTableColumn(
                 title = 'Status',
@@ -125,18 +114,21 @@ class table_workflows(HtmlTable):
                 table = 'forms_revisions',
                 img = 'hd16'
             ),
-            'form_yaml': col_forms_yaml(
+            'form_yaml': HtmlTableColumn(
                 title = 'Definition',
                 field = 'form_yaml',
                 display = False,
                 table = 'forms_revisions',
-                img = 'action16'
+                img = 'action16',
+                _class = 'yaml'
             ),
         }
         for col in self.cols:
             self.colprops[col].t = self
         self.ajax_col_values = 'ajax_workflows_col_values'
         self.dbfilterable = False
+        self.dataable = True
+        self.wsable = True
         self.checkboxes = False
 
     def extra_line_key(self, o):
@@ -165,21 +157,18 @@ def ajax_workflows():
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
 
-    if len(request.args) == 1 and request.args[0] == 'line':
+    if len(request.args) == 1 and request.args[0] == 'data':
         n = db(q).count()
         limitby = (t.pager_start,t.pager_end)
-        t.object_list = db(q).select(orderby=o, limitby=limitby)
-        return t.table_lines_data(n)
-
-    n = db(q).count()
-    t.setup_pager(n)
-    t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
-    return t.html()
+        cols = t.get_visible_columns()
+        t.object_list = db(q).select(*cols, orderby=o, limitby=limitby, cacheable=True)
+        return t.table_lines_data(n, html=True)
 
 @auth.requires_login()
 def workflows():
+    t = table_workflows('workflows', 'ajax_workflows')
     t = DIV(
-          ajax_workflows(),
+          t.html(),
           _id='workflows',
         )
     return dict(table=t)
@@ -188,21 +177,17 @@ def workflows_load():
     return workflows()["table"]
 
 
-class col_forms_yaml(HtmlTableColumn):
-    def html(self, o):
-        val = self.get(o)
-        val = re.sub(r'(%\(\w+\)s)', r'<span class=syntax_red>\1</span>', val)
-        val = re.sub(r'(\w+:)', r'<span class=syntax_green>\1</span>', val)
-        return PRE(XML(val))
-
 class table_forms(HtmlTable):
     def __init__(self, id=None, func=None, innerhtml=None):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
-        self.keys = ['form_name']
-        self.span = ['form_name']
-        self.cols = ['form_name',
+        self.events = ["forms_change"]
+        self.keys = ['id']
+        self.force_cols = ['id']
+        self.span = ['id']
+        self.cols = ['id',
+                     'form_name',
                      'form_type',
                      'form_folder',
                      'form_team_responsible',
@@ -211,6 +196,13 @@ class table_forms(HtmlTable):
                      'form_created',
                      'form_author']
         self.colprops = {
+            'id': HtmlTableColumn(
+                title = 'Id',
+                field = 'id',
+                display = False,
+                table = 'v_forms',
+                img = 'key'
+            ),
             'form_name': HtmlTableColumn(
                 title = 'Name',
                 field = 'form_name',
@@ -232,7 +224,7 @@ class table_forms(HtmlTable):
                 table = 'v_forms',
                 img = 'guys16'
             ),
-            'form_type': col_forms_yaml(
+            'form_type': HtmlTableColumn(
                 title = 'Type',
                 field = 'form_type',
                 display = True,
@@ -244,14 +236,15 @@ class table_forms(HtmlTable):
                 field = 'form_folder',
                 display = True,
                 table = 'v_forms',
-                img = 'hd16'
+                img = 'hd16',
             ),
-            'form_yaml': col_forms_yaml(
+            'form_yaml': HtmlTableColumn(
                 title = 'Definition',
                 field = 'form_yaml',
                 display = True,
                 table = 'v_forms',
-                img = 'action16'
+                img = 'action16',
+                _class = 'yaml'
             ),
             'form_created': HtmlTableColumn(
                 title = 'Created on',
@@ -271,8 +264,11 @@ class table_forms(HtmlTable):
         }
         self.ajax_col_values = 'ajax_forms_admin_col_values'
         self.dbfilterable = False
+        self.dataable = True
+        self.wsable = True
         self.checkboxes = True
         self.extrarow = True
+        self.extrarow_class = "forms_links"
 
         if 'FormsManager' in user_groups():
             self.additional_tools.append('add_forms')
@@ -281,14 +277,7 @@ class table_forms(HtmlTable):
 
 
     def format_extrarow(self, o):
-        d = DIV(
-              A(
-                '',
-                _href=URL(r=request, c='forms', f='forms_editor', vars={'form_id': o.id}),
-                _class="edit16",
-              ),
-            )
-        return d
+        return ""
 
     def team_responsible_attach(self):
         d = self.team_responsible_select_tool(label="Attach",
@@ -391,7 +380,7 @@ class table_forms(HtmlTable):
                   ),
                 ),
                 _style='display:none',
-                _class='white_float',
+                _class='stackable white_float',
                 _name=divid,
                 _id=divid,
               ),
@@ -444,7 +433,7 @@ class table_forms(HtmlTable):
                   ),
                 ),
                 _style='display:none',
-                _class='white_float',
+                _class='stackable white_float',
                 _name=divid,
                 _id=divid,
               ),
@@ -674,21 +663,18 @@ def ajax_forms_admin():
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
 
-    if len(request.args) == 1 and request.args[0] == 'line':
+    if len(request.args) == 1 and request.args[0] == 'data':
         n = db(q).count()
         limitby = (t.pager_start,t.pager_end)
-        t.object_list = db(q).select(orderby=o, limitby=limitby)
-        return t.table_lines_data(n)
-
-    n = db(q).count()
-    t.setup_pager(n)
-    t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
-    return t.html()
+        cols = t.get_visible_columns()
+        t.object_list = db(q).select(*cols, orderby=o, limitby=limitby, cacheable=True)
+        return t.table_lines_data(n, html=False)
 
 @auth.requires_login()
 def forms_admin():
+    t = table_forms('forms', 'ajax_forms_admin')
     t = DIV(
-          ajax_forms_admin(),
+          t.html(),
           _id='forms',
         )
     return dict(table=t)

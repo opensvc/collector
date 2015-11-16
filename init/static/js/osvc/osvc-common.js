@@ -286,3 +286,8 @@ function sticky_relocate(e, anchor, onstick) {
         e.next('.stick').remove()
     }
 }
+
+function is_numeric(n) {
+  return !isNaN(parseFloat(n)) && isFinite(n);
+}
+

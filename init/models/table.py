@@ -153,6 +153,8 @@ class HtmlTable(object):
         self.wsable = False
         self.dataable = False
         self.action_menu = []
+        self.events = []
+        self.on_change = "false"
 
         # initialize the pager, to be re-executed by instanciers
         self.setup_pager()
@@ -228,80 +230,19 @@ class HtmlTable(object):
 
     def col_values_cloud_ungrouped(self, c):
         h = {}
-        l = []
         for o in self.object_list:
             s = self.colprops[c].get(o)
             if s is None or s == "":
                 s = 'empty'
+            elif type(s) == datetime.datetime:
+                s = s.strftime("%Y-%m-%d %H:%M:%S")
+            elif type(s) == datetime.date:
+                s = s.strftime("%Y-%m-%d")
             if s not in h:
                 h[s] = 1
             else:
                 h[s] += 1
-
-        max = 0
-        for n in h.values():
-            if n > max: max = n
-        min = max
-        for n in h.values():
-            if n < min: min = n
-        delta = max - min
-
-        # 'empty' might not be comparable with other keys type
-        if 'empty' in h.keys():
-            skeys = h.keys()
-            skeys.remove('empty')
-            skeys = ['empty'] + sorted(skeys)
-        else:
-            skeys = sorted(h.keys())
-
-        for s in skeys:
-            n = h[s]
-            if delta > 0:
-                size = 100 + 100. * (n - min) / delta
-            else:
-                size = 100
-            if n == 1:
-                title = "%d occurence"%n
-            else:
-                title = "%d occurences"%n
-            l.append(A(
-                       s,
-                       ' ',
-                       _class="cloud_tag",
-                       _style="font-size:%d%%"%size,
-                       _title="%d occurences"%n,
-                       _onclick="filter_submit('%(id)s','%(iid)s','%(val)s')"%dict(
-                                id=self.id,
-                                iid=self.filter_key(c),
-                                val=s,
-                               ),
-                    ))
-        return DIV(
-                 H3(T("%(n)d unique matching values", dict(n=len(h)))),
-                 DIV(l),
-               )
-
-    def col_values_cloud(self, c):
-        session.forget(response)
-        l = []
-        for o in self.object_list:
-            s = self.colprops[c].get(o)
-            if s is None:
-                s = 'empty'
-            l.append(A(
-                       s,
-                       ' ',
-                       _class="cloud_tag",
-                       _onclick="filter_submit('%(id)s','%(iid)s','%(val)s')"%dict(
-                                id=self.id,
-                                iid=self.filter_key(c),
-                                val=self.colprops[c].get(o),
-                               ),
-                    ))
-        return DIV(
-                 H3(T("%(n)d unique matching values", dict(n=len(self.object_list)))),
-                 DIV(l),
-               )
+        return json.dumps(h)
 
     def visible_columns(self):
         return [k for k, v in self.colprops.items() if v.display]
@@ -805,6 +746,8 @@ var ti_%(id)s = setInterval(function(){
      'headers': %(headers)s,
      'wsable': %(wsable)s,
      'pageable': %(pageable)s,
+     'on_change': %(on_change)s,
+     'events': %(events)s,
      'request_vars': %(request_vars)s
     })
   }
@@ -838,6 +781,8 @@ var ti_%(id)s = setInterval(function(){
                    wsable=str(self.wsable).lower(),
                    headers=str(self.headers).lower(),
                    action_menu=str(self.action_menu),
+                   events=str(self.events),
+                   on_change=str(self.on_change),
                    request_vars=json.dumps(request.vars),
                 ),
               ),
