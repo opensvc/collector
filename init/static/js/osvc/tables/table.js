@@ -742,6 +742,35 @@ function table_data_to_lines(t, data) {
   return lines
 }
 
+function table_parent_table_data(t, ptid) {
+  if (!(ptid in osvc.tables)) {
+    console.log("table", t.id, "parent table", ptid, "not found")
+    return {}
+  }
+  var pt = osvc.tables[ptid]
+  var data = {}
+  for (c in pt.colprops) {
+    var current = $("#"+pt.id+"_f_"+c).val()
+    if ((current != "") && (typeof current !== 'undefined')) {
+      data[pt.id+"_f_"+c] = current
+    } else if (pt.colprops[c].force_filter != "") {
+      data[pt.id+"_f_"+c] = pt.colprops[c].force_filter
+    }
+  }
+  return data
+}
+
+function table_parent_tables_data(t) {
+  if (!t.options.parent_tables || (t.options.parent_tables.length == 0)) {
+    return {}
+  }
+  var data = {}
+  for (var i=0; i<t.options.parent_tables.length; i++) {
+    data = $.extend(data, t.parent_table_data(t.options.parent_tables[i]))
+  }
+  return data
+}
+
 function table_refresh(t) {
     if (t.div.length > 0 && !t.div.is(":visible")) {
         return
@@ -752,6 +781,8 @@ function table_refresh(t) {
     } else {
         t.set_refresh_spin()
     }
+
+    var data = t.parent_tables_data()
 
     // refresh open tabs to overlay to preserve what was in use
     if (t.div.find(".extraline:visible").children("td").children("table").length > 0) {
@@ -765,10 +796,8 @@ function table_refresh(t) {
       $("#overlay").hide().show("scale")
     }
 
-    var data = {
-      "table_id": t.id,
-      "visible_columns": t.visible_columns.join(',')
-    }
+    data.table_id = t.id
+    data.visible_columns = t.visible_columns.join(',')
     data[t.id+"_page"] = $("#"+t.id+"_page").val()
     for (c in t.colprops) {
       var current = $("#"+t.id+"_f_"+c).val()
@@ -2893,109 +2922,109 @@ function table_init(opts) {
     'dataable': opts['dataable'],
     'action_menu': opts['action_menu'],
     'decorate_cells': function(){
-      table_cell_decorator(opts['id'])
+      return table_cell_decorator(opts['id'])
     },
     'column_values': function(){
-      table_column_values(this)
+      return table_column_values(this)
     },
     'format_values_cloud': function(span, data){
-      table_format_values_cloud(this, span, data)
+      return table_format_values_cloud(this, span, data)
     },
     'add_ws_handler': function(){
-      table_add_ws_handler(this)
+      return table_add_ws_handler(this)
     },
     'hide_cells': function(){
-      table_hide_cells(this)
+      return table_hide_cells(this)
     },
     'scroll': function(){
-      table_scroll(opts['id'])
+      return table_scroll(opts['id'])
     },
     'bind_filter_reformat': function(){
-      table_bind_filter_reformat(this)
+      return table_bind_filter_reformat(this)
     },
     'bind_action_menu': function(){
-      table_bind_action_menu(this)
+      return table_bind_action_menu(this)
     },
     'filter_selector': function(e, k, v){
-      table_filter_selector(this, e, k, v)
+      return table_filter_selector(this, e, k, v)
     },
     'bind_filter_selector': function(){
-      table_bind_filter_selector(this)
+      return table_bind_filter_selector(this)
     },
     'bind_filter_input_events': function(){
-      table_bind_filter_input_events(this)
+      return table_bind_filter_input_events(this)
     },
     'insert_bookmark': function(name){
-      table_insert_bookmark(this, name)
+      return table_insert_bookmark(this, name)
     },
     'bind_checkboxes': function(){
-      table_bind_checkboxes(this)
+      return table_bind_checkboxes(this)
     },
     'pager': function(options){
-      table_pager(this, options)
+      return table_pager(this, options)
     },
     'trim_lines': function(){
-      table_trim_lines(this)
+      return table_trim_lines(this)
     },
     'restripe_lines': function(){
-      table_restripe_lines(opts['id'])
+      return table_restripe_lines(opts['id'])
     },
     'scroll_enable': function(){
-      table_scroll_enable(this)
+      return table_scroll_enable(this)
     },
     'scroll_enable_dom': function(){
-      table_scroll_enable_dom(this)
+      return table_scroll_enable_dom(this)
     },
     'scroll_disable_dom': function(){
-      table_scroll_disable_dom(this)
+      return table_scroll_disable_dom(this)
     },
     'set_refresh_spin': function(){
-      table_set_refresh_spin(this)
+      return table_set_refresh_spin(this)
     },
     'unset_refresh_spin': function(){
-      table_unset_refresh_spin(this)
+      return table_unset_refresh_spin(this)
     },
     'link': function(){
-      table_link(this)
+      return table_link(this)
     },
     'add_scrollers': function(){
-      table_add_scrollers(this)
+      return table_add_scrollers(this)
     },
     'add_filterbox': function(){
-      table_add_filterbox(this)
+      return table_add_filterbox(this)
     },
     'refresh_column_filter': function(c, val){
-      table_refresh_column_filter(this, c, val)
+      return table_refresh_column_filter(this, c, val)
     },
     'refresh_column_filters': function(){
-      table_refresh_column_filters(this)
+      return table_refresh_column_filters(this)
     },
     'reset_column_filters': function(){
-      table_reset_column_filters(this)
+      return table_reset_column_filters(this)
     },
     'add_column_header': function(e, c){
-      table_add_column_header(this, e, c)
+      return table_add_column_header(this, e, c)
     },
     'add_column_headers': function(){
-      table_add_column_headers(this)
+      return table_add_column_headers(this)
     },
     'add_column_header_slim': function(e, c){
-      table_add_column_header_slim(this, e, c)
+      return table_add_column_header_slim(this, e, c)
     },
     'add_column_headers_slim': function(){
-      table_add_column_headers_slim(this)
+      return table_add_column_headers_slim(this)
     },
     'add_column_header_input': function(e, c){
-      table_add_column_header_input(this, e, c)
+      return table_add_column_header_input(this, e, c)
     },
     'add_column_headers_input': function(){
-      table_add_column_headers_input(this)
+      return table_add_column_headers_input(this)
     },
     'add_filtered_to_visible_columns': function(){
-      table_add_filtered_to_visible_columns(this)
+      return table_add_filtered_to_visible_columns(this)
     },
     'relocate_extra_rows': function(){
-      table_relocate_extra_rows(this)
+      return table_relocate_extra_rows(this)
     },
     'action_menu_param_moduleset': function(){
       return table_action_menu_param_moduleset(this)
@@ -3020,55 +3049,61 @@ function table_init(opts) {
       }
     },
     'insert': function(data){
-      table_insert(this, data)
+      return table_insert(this, data)
     },
     'refresh': function(){
-      table_refresh(this)
+      return table_refresh(this)
     },
     'stick': function(){
-      table_stick(this)
+      return table_stick(this)
+    },
+    'parent_table_data': function(ptid){
+      return table_parent_table_data(this, ptid)
+    },
+    'parent_tables_data': function(){
+      return table_parent_tables_data(this)
     },
     'get_column_filters': function(callback){
-      table_get_column_filters(this, callback)
+      return table_get_column_filters(this, callback)
     },
     'add_pager': function(){
-      table_add_pager(this)
+      return table_add_pager(this)
     },
     'add_wsswitch': function(){
-      table_add_wsswitch(this)
+      return table_add_wsswitch(this)
     },
     'add_volatile': function(){
-      table_add_volatile(this)
+      return table_add_volatile(this)
     },
     'add_refresh': function(){
-      table_add_refresh(this)
+      return table_add_refresh(this)
     },
     'add_link': function(){
-      table_add_link(this)
+      return table_add_link(this)
     },
     'add_bookmarks': function(){
-      table_add_bookmarks(this)
+      return table_add_bookmarks(this)
     },
     'add_csv': function(){
-      table_add_csv(this)
+      return table_add_csv(this)
     },
     'add_column_selector': function(){
-      table_add_column_selector(this)
+      return table_add_column_selector(this)
     },
     'add_commonality': function(){
-      table_add_commonality(this)
+      return table_add_commonality(this)
     },
     'invert_column_filter': function(c){
-      table_invert_column_filter(this, c)
+      return table_invert_column_filter(this, c)
     },
     'save_column_filters': function(){
-      table_save_column_filters(this)
+      return table_save_column_filters(this)
     },
     'add_overlay': function(){
-      table_add_overlay(this)
+      return table_add_overlay(this)
     },
     'flash': function(){
-      table_flash(this)
+      return table_flash(this)
     }
   }
 

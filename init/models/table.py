@@ -112,6 +112,7 @@ class HtmlTable(object):
         self.last = None
         self.object_list = []
         self.child_tables = []
+        self.parent_tables = []
         self.force_cols = []
 
         # to be set by children
@@ -724,6 +725,7 @@ var ti_%(id)s = setInterval(function(){
      'volatile_filters': %(volatile_filters)s,
      'visible_columns': %(visible_columns)s,
      'child_tables': %(child_tables)s,
+     'parent_tables': %(parent_tables)s,
      'action_menu': %(action_menu)s,
      'dataable': %(dataable)s,
      'linkable': %(linkable)s,
@@ -758,6 +760,7 @@ var ti_%(id)s = setInterval(function(){
                    volatile_filters=str(self.volatile_filters).lower(),
                    visible_columns=str(self.visible_columns()),
                    child_tables=str(self.child_tables),
+                   parent_tables=str(self.parent_tables),
                    ajax_submit=self.ajax_submit(),
                    ajax_enter_submit=self.ajax_enter_submit(),
                    dataable=str(self.dataable).lower(),
