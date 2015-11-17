@@ -1078,6 +1078,7 @@ function table_ajax_submit(t, tool, additional_inputs, input_name, additional_in
 	   t.set_refresh_spin()
          },
          success: function(msg){
+	   t.unset_refresh_spin()
            t.refresh()
          }
     })
