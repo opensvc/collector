@@ -134,7 +134,7 @@ function services_encodes_json_param(params)
     return url;
 }
 
-function services_osvcgetrest(service, uri, params, callback, error_callback)
+function services_osvcgetrest(service, uri, params, callback, error_callback, async)
 {
     url = services_getaccessurl(service)
     if (is_blank(url)) {
@@ -144,6 +144,8 @@ function services_osvcgetrest(service, uri, params, callback, error_callback)
     for(i=0; i<uri.length; i++) {
         url = url.replace("%"+(i+1), uri[i])
     }
+
+    if (async === undefined || async == null) async=true;
     
     var parameters = services_encodes_json_param(params);
     if (parameters != "")
@@ -153,6 +155,7 @@ function services_osvcgetrest(service, uri, params, callback, error_callback)
     {
         type: "GET",
         url: url,
+        async : async,
         dataType: "json",
         error: error_callback,
         success: callback,
@@ -202,10 +205,8 @@ function services_feed_self_and_group()
         services_osvcgetrest("R_USER_GROUPS", [_self.id], {"meta": "false", "limit": "0"}, function(datagroup)
         {
             _groups = datagroup.data;
-            // Build menu after Groups loading
-            menu("menu_location");
-        });
-    });
+        }, null, false);
+    }, null, false);
 }
 
 function waitfor(test, expectedValue, msec, count, callback) {

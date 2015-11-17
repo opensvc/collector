@@ -5,6 +5,7 @@ var osvc = {
 function i18n_init(callback) {
   i18n.init({
       debug: true,
+      postAsync : false,
       fallbackLng: false,
       load:'unspecific',
       resGetPath: "/init/static/locales/__lng__/__ns__.json",
@@ -20,14 +21,20 @@ function app_start() {
 }
 
 function _app_start() {
-  $(document).i18n()
-  osvc_popup_stack_listener();
-  search("layout_search_tool")
-  services_feed_self_and_group()
-  fset_selector("fset_selector")
-  app_bindings()
-  app_menu_entries_bind_click_to_load()
-  app_datetime_decorators()
+  // Wait mandatory language info and User/groups info to be loaded before creating the IHM
+  $.when(
+      $(document).i18n(),
+      services_feed_self_and_group()
+    ).then(function() 
+    {
+      menu("menu_location");
+      osvc_popup_stack_listener();
+      search("layout_search_tool");
+      fset_selector("fset_selector");
+      app_bindings();
+      app_menu_entries_bind_click_to_load();
+      app_datetime_decorators();
+    });
 }
 
 function app_load_href(href) {

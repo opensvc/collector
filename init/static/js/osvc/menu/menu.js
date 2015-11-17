@@ -9,7 +9,7 @@ function menu_search_key()
 			{ 
 			  "title" : "dashboard",
 			  "class" : "alert16",
-			  "link" : "/dashboard/index" },
+			  "link" : "/init/dashboard/index" },
 			{ 
 			  "title" : "services",
 			  "class" : "svc",
@@ -304,7 +304,6 @@ function menu_init(o)
 {
   var timer;
 
-  o.div.i18n()
   o.menu_div = $("#menu_menu");
   o.menu_clickable = $("#menu_top");
 
@@ -330,7 +329,7 @@ function menu_create_entry(o, title, entry)
 	var titre = i18n.t("menu."+title+ "." + entry.title +".title");
 	var text = i18n.t("menu."+title+ "." + entry.title +".text");
 
-	var div_entry = "<div id='"+ entry.title +"' class='menu_entry' link='" + entry.link + "'>";
+	var div_entry = "<div id='menu_"+ entry.title +"' class='menu_entry clickable' link='" + entry.link + "'>";
 
 	div_entry += "<div class='menu_box'>";
 
@@ -351,7 +350,7 @@ function menu_bind_sub_link(o, section)
 {
 	for(i=0;i<section.length;i++)
 	{
-		$("#"+section[i].title.replace(" ","_")).on("click",function (event) {
+		$("#menu_"+section[i].title).on("click",function (event) {
 	  		event.preventDefault()
 			var href = $(this).attr("link");
 			if (!href) {
@@ -398,7 +397,6 @@ function menu_clicked(o)
 {
 	o.menu_div.toggle("fold", function()
 	{
-		filter_menu();
 		$("#search_input").focus();
 	});
 }
