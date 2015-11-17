@@ -352,11 +352,12 @@ function search_show_tab(item, tab, param, index)
 }
 
 function filter_menu(event) {
-  var menu = $(".header").find(".menu16").parents("ul").first().siblings(".menu")
-  var text = searchbox = $(".search").find("input").val()
+  var menu = $("#menu_menu");//$(".header").find(".menu16").parents("ul").first().siblings(".menu")
+  var text = searchbox = $(".search").find("input").val();
+  
   var reg = new RegExp(text, "i");
   menu.find(".menu_entry").each(function(){
-    if (($(this).parents(".menu_section").children("a").text().match(reg)) || ($(this).text().match(reg))) {
+    if ($(this).text().match(reg)) {
       $(this).show()
       $(this).parents(".menu_section").first().show()
     } else {
@@ -373,7 +374,7 @@ function filter_menu(event) {
   if (is_enter(event)) {
     if (menu.is(":visible") && (entries.length == 1)) {
       entries.effect("highlight")
-      window.location = entries.children("a").attr("href")
+      window.location = entries.attr("link");
     }
   }
   if (entries.length==0) {

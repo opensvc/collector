@@ -170,7 +170,6 @@ function osvc_popup_stack_listener()
 	console.log("init popup event observer")
 	var target = document;
 	 
-	// create an observer instance
 	var observer = new MutationObserver(osvc_popup_stack_listener_callback)
 
 	// configuration of the observer:

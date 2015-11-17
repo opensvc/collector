@@ -24,9 +24,10 @@
       {{if response.menu_auth:}}
       {{=OSVCMENU(response.menu_auth, _class='menu stackable')}}
       {{pass}}
-      {{if response.menu:}}
+      <!--{{if response.menu:}}
       {{=OSVCMENU(response.menu, _class='menu stackable')}}
-      {{pass}}
+      {{pass}}-->
+      <span id="menu_location"></span>
       <div class=spacer>&nbsp;</div>
       <div class="menu flash stackable">{{=response.flash or ''}}</div>
     </div>
