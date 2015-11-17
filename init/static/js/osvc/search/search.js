@@ -438,7 +438,7 @@ function search_highlight(e, s) {
     tgt.empty()
     tgt.text($(this).text())
 
-    if ($(this).text().match(regexp)) {
+    if ((s != "") && $(this).text().match(regexp)) {
       var highlighted = $("<span name='highlighted'></span>")
       highlighted.html($(this).text().replace(regexp, function(x) {
         return '<span class="highlight_light">' + x + '</span>'
