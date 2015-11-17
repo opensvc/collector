@@ -1,4 +1,3 @@
-from gluon.dal import smart_query
 import datetime
 
 #

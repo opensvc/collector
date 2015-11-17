@@ -1,4 +1,3 @@
-from gluon.dal import smart_query
 
 def raise_on_error(response):
     if response.errors:

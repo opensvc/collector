@@ -1077,6 +1077,7 @@
 "Lock user's session filter": "Verrouille le filtre de session de l'utilisateur",
 'log': 'journal',
 'Log': 'Journal',
+'Log In': 'Log In',
 'Logged in': 'Admis',
 'Logged out': 'Déconnecté',
 'Logical operator': 'Opérateur logique',

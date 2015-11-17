@@ -1,5 +1,10 @@
 import re
 
+try:
+    from pydal.helpers.methods import smart_query
+except:
+    from gluon.dal import smart_query
+
 class rest_handler(object):
     def __init__(self,
                  action="GET",

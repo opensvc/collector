@@ -4807,3 +4807,18 @@ CREATE TABLE `links` (
   KEY `idx1` (`link_md5`)
 ) ENGINE=InnoDB AUTO_INCREMENT=10362534 DEFAULT CHARSET=utf8;
 
+alter table scheduler_task modify uuid varchar(255);
+
+alter table scheduler_task modify assigned_worker_name varchar(512) default '';
+
+CREATE TABLE `scheduler_task_deps` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `job_name` int(11) DEFAULT NULL,
+  `task_parent` int(11) DEFAULT NULL,
+  `task_child` int(11) DEFAULT NULL,
+  `can_visit` varchar(1) DEFAULT "F",
+  PRIMARY KEY (`id`),
+  KEY `idx1` (`task_parent`),
+  KEY `idx2` (`task_child`)
+) ENGINE=InnoDB AUTO_INCREMENT=10362534 DEFAULT CHARSET=utf8;
+

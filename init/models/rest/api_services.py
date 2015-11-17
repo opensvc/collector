@@ -1,4 +1,3 @@
-from gluon.dal import smart_query
 
 def get_slave(vars):
     slave = vars.get("slave", False)

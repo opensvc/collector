@@ -1,4 +1,3 @@
-from gluon.dal import smart_query
 
 class rest_get_wikis(rest_get_table_handler):
     def __init__(self):

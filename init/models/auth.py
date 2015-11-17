@@ -191,7 +191,9 @@ class MyAuth(Auth):
 
     def login_bare(self, username, password):
         r = Auth.login_bare(self, username, password)
-        if type(self.user) == str and self.user == username:
+        if r is False:
+            return False
+        if self.user is None or (type(self.user) == str and self.user == username):
             from gluon.storage import Storage
             self.user = Storage()
             self.user.id = -1

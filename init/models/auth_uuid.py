@@ -56,14 +56,20 @@ def node_auth():
             #session.auth.user_id = session.auth.user.nodename
             return True
         except Exception as e:
-            _log('node.auth',
-                 'node authentication error: %(e)s',
-                 dict(e=str(e)),
-                 nodename=node,
-                 user="feed",
-                 level="warning")
+            if not auth_is_user(node):
+                _log('node.auth',
+                     'node authentication error: %(e)s',
+                     dict(e=str(e)),
+                     nodename=node,
+                     user="feed",
+                     level="warning")
             return False
     return node_login_aux
+
+def auth_is_user(email):
+    if db(db.auth_user.email==email).select().first() is None:
+        return False
+    return True
 
 def auth_is_node():
     if hasattr(auth.user, "nodename"):

@@ -1,4 +1,3 @@
-from gluon.dal import smart_query
 
 #
 class rest_get_groups(rest_get_table_handler):

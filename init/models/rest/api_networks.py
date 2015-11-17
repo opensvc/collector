@@ -1,4 +1,3 @@
-from gluon.dal import smart_query
 import datetime
 
 def network_segment_responsible(id):

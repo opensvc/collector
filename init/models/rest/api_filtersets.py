@@ -1,4 +1,3 @@
-from gluon.dal import smart_query
 
 #
 class rest_get_filters(rest_get_table_handler):
