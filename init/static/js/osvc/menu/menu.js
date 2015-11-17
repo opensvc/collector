@@ -329,7 +329,7 @@ function menu_create_entry(o, title, entry)
 	var titre = i18n.t("menu."+title+ "." + entry.title +".title");
 	var text = i18n.t("menu."+title+ "." + entry.title +".text");
 
-	var div_entry = "<div id='menu_"+ entry.title +"' class='menu_entry clickable' link='" + entry.link + "'>";
+	var div_entry = "<div id='menu_" + title + "_" + entry.title + "' class='menu_entry clickable' link='" + entry.link + "'>";
 
 	div_entry += "<div class='menu_box'>";
 
@@ -346,11 +346,12 @@ function menu_create_entry(o, title, entry)
 	return div_entry;
 }
 
-function menu_bind_sub_link(o, section)
+function menu_bind_sub_link(o, title)
 {
+        var section = menu_search_key()[title]
 	for(i=0;i<section.length;i++)
 	{
-		$("#menu_"+section[i].title).on("click",function (event) {
+		$("#menu_"+title+"_"+section[i].title).on("click",function (event) {
 	  		event.preventDefault()
 			var href = $(this).attr("link");
 			if (!href) {
@@ -361,7 +362,7 @@ function menu_bind_sub_link(o, section)
 			  return
 			}
 			$("menu_menu").hide("fold");
-		    app_load_href(href)
+			app_load_href(href)
 
 			// update browser url and history
 			history.pushState({}, "", href)
@@ -369,8 +370,9 @@ function menu_bind_sub_link(o, section)
 	}
 }
 
-function menu_create_section(o, title, section)
+function menu_create_section(o, title)
 {
+        var section = menu_search_key()[title]
 	var div_section = "<div id='menu_section' class='menu_section' style='display: block;'><a>";
 	div_section += i18n.t("menu."+title+".title") + "</a><div>";
 
@@ -387,9 +389,9 @@ function menu_load_config(o)
 {
 	for (d in menu_search_key())
 	{
-		var result = menu_create_section(o, d, menu_search_key()[d]);
+		var result = menu_create_section(o, d);
 		o.menu_div.append(result);
-		menu_bind_sub_link(o, menu_search_key()[d]);
+		menu_bind_sub_link(o, d);
 	}
 }
 
