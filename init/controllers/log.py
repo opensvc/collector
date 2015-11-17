@@ -240,7 +240,7 @@ def ajax_log():
 
     n = db(q).count()
     t.setup_pager(n)
-    t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
+    t.object_list = []
 
     return DIV(
              t.html(),
