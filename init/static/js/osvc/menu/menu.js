@@ -94,7 +94,7 @@ function menu_search_key()
 			  "class" : "actions",
 			  "link" : "/init/compliance/comp_modules" },
 			{ 
-			  "title" : "rulessets",
+			  "title" : "rulesets",
 			  "class" : "comp16",
 			  "link" : "/init/compliance/comp_rules" },
 			{ 

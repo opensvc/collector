@@ -448,9 +448,9 @@
       { 
         "title" : "Modulesets",
         "text" : "Search-optimized modules grouping view" },
-      "rulessets" :
+      "rulesets" :
       { 
-        "title" : "Rulessets",
+        "title" : "Rulesets",
         "text" : "Search-optimized target configurations view" },
       "designer" :
       { 
