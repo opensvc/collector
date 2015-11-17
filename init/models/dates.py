@@ -2,8 +2,50 @@ def str_to_date(s, fmt="%Y-%m-%d %H:%M:%S"):
     if s is None or s == "" or len(fmt) == 0:
         return None
     s = s.strip()
+    if "." in s:
+        s = s.split(".")[0]
     if s[0] in ["<", ">"]:
         s = s[1:]
+    if re.match("[-+]{0,1}[0-9]+[ywdhms]{1}", s):
+        # past/future
+        if s[0] == "-":
+            past = True
+            s = s[1:]
+        elif s[0] == "+":
+            past = False
+            s = s[1:]
+        else:
+            past = False
+
+        p = s[-1]
+        n = int(s[:-1])
+
+        # timedelta
+        days = 0
+        hours = 0
+        hours = 0
+        minutes = 0
+        seconds = 0
+        if p == "y":
+            days = 365 * n
+        elif p == "w":
+            days = 7 * n
+        elif p == "d":
+            days = n
+        elif p == "h":
+            hours = n
+        elif p == "m":
+            minutes = n
+        elif p == "s":
+            seconds = n
+        else:
+            raise Exception("unknown time delta suffix %s" % p)
+        delta = datetime.timedelta(days=days, hours=hours, minutes=minutes, seconds=seconds)
+
+        if past:
+            return datetime.datetime.now() - delta
+        else:
+            return datetime.datetime.now() + delta
     try:
         return datetime.datetime.strptime(s, fmt)
     except:
