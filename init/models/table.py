@@ -557,7 +557,8 @@ class HtmlTable(object):
 
         if hasattr(self, 'sort_objects'):
             if isinstance(self.object_list, list):
-                object_list = self.object_list.sort(self.sort_objects)
+                object_list = self.object_list
+                object_list.sort(self.sort_objects)
             elif isinstance(self.object_list, dict):
                 object_list = self.object_list.keys()
                 object_list.sort(self.sort_objects)
@@ -613,16 +614,6 @@ class HtmlTable(object):
                  ajax=self.ajax_submit(args=args,
                                        additional_inputs=additional_inputs),
                  id=self.id)
-
-    def show_flash(self):
-        if self.flash is None:
-            return SPAN()
-        d = DIV(
-              self.flash,
-              _class='tableo_flash',
-              _onclick="this.style['display']='none';"
-            )
-        return d
 
     def get_wsenabled(self):
         if hasattr(self, "wsenabled"):
@@ -693,7 +684,6 @@ class HtmlTable(object):
           _order=",".join(self.order),
         )
         d = DIV(
-              self.show_flash(),
               DIV(
                 additional_tools,
                 DIV('', _class='spacer'),
@@ -725,6 +715,7 @@ var ti_%(id)s = setInterval(function(){
      'pager': %(pager)s,
      'extrarow': %(extrarow)s,
      'extrarow_class': "%(extrarow_class)s",
+     'flash': "%(flash)s",
      'checkboxes': %(checkboxes)s,
      'ajax_url': '%(ajax_url)s',
      'span': %(span)s,
@@ -757,6 +748,7 @@ var ti_%(id)s = setInterval(function(){
                    pager=str(pager_attrs),
                    extrarow=str(self.extrarow).lower(),
                    extrarow_class=self.extrarow_class if self.extrarow_class else "",
+                   flash = self.flash if self.flash else "",
                    checkboxes=str(self.checkboxes).lower(),
                    ajax_url=URL(r=request,f=self.func),
                    a=self.ajax_inputs(),

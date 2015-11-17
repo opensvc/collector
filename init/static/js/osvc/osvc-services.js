@@ -236,9 +236,9 @@ function services_ismemberof(groups, callback)
 }
 
 function services_ajax_error_fmt(xhr, stat, error) {
-    e = $("<span class='alert16'></span>")
-    e.text(i18n.t("ajax.error"))
-    p = $("<pre></pre>")
+    var e = $("<span><span class='alert16 err fa-2x'></span><span data-i18n='ajax.error'></span></span>")
+    e.i18n()
+    var p = $("<pre></pre>")
     p.text("status: " + stat + "\nerror: " + error)
     p.css({
       "padding": "5px",
@@ -249,9 +249,9 @@ function services_ajax_error_fmt(xhr, stat, error) {
 }
 
 function services_error_fmt(data) {
-    e = $("<span><span class='alert16 err fa-2x'></span><span data-i18n='api.error'></span></span>")
+    var e = $("<span><span class='alert16 err fa-2x'></span><span data-i18n='api.error'></span></span>")
     e.i18n()
-    p = $("<pre></pre>")
+    var p = $("<pre></pre>")
     p.text(data.error)
     p.css({
       "padding": "2em 0 0 0",

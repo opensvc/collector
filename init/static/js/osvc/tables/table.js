@@ -2048,7 +2048,7 @@ function table_add_column_selector(t) {
     if (t.visible_columns.indexOf(colname) >= 0) {
       input.prop("checked", true)
     }
-    if (t.e_header_filters.find("th[col="+colname+"]").find("input").val()) {
+    if (t.e_header_filters && t.e_header_filters.find("th[col="+colname+"]").find("input").val()) {
       input.prop("disabled", true)
     }
 
@@ -2860,6 +2860,22 @@ function table_format_values_cloud(t, span, data) {
   }
 }
 
+function table_flash(t) {
+  if (!t.options.flash || t.options.flash.length == 0) {
+    return
+  }
+  var e = $("<span><span class='alert16 err fa-2x'></span><span data-i18n='table.tool_error'></span></span>")
+  e.i18n()
+  var p = $("<pre></pre>")
+  p.text(t.options.flash)
+  p.css({
+    "padding": "5px",
+    "padding-left": "20px",
+  })
+  e.append(p)
+  $(".flash").show("blind").html(e)
+}
+
 function table_init(opts) {
   var t = {
     'options': opts,
@@ -2996,6 +3012,10 @@ function table_init(opts) {
     'refresh_child_tables': function(){
       for (var i=0; i<this.child_tables.length; i++) {
         var id = this.child_tables[i]
+        if (!(id in osvc.tables)) {
+          console.log("child table not found in osvc.tables:", id)
+          continue
+        }
         osvc.tables[id].refresh()
       }
     },
@@ -3046,6 +3066,9 @@ function table_init(opts) {
     },
     'add_overlay': function(){
       table_add_overlay(this)
+    },
+    'flash': function(){
+      table_flash(this)
     }
   }
 
@@ -3079,19 +3102,10 @@ function table_init(opts) {
   t.scroll_enable()
   t.stick()
   t.add_ws_handler()
+  t.flash()
 
   function init_post_get_column_filters() {
-    if (t.dataable) {
-      t.refresh()
-    } else {
-      t.pager()
-      t.bind_checkboxes()
-      t.hide_cells()
-      t.decorate_cells()
-      t.bind_filter_selector()
-      t.bind_action_menu()
-      t.restripe_lines()
-    }
+    t.refresh()
   }
 
   function has_filter_in_request_vars() {
