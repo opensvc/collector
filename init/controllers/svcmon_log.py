@@ -798,7 +798,7 @@ class col_avail_holes(HtmlTableColumn):
             disabled = False
             click='this.value=this.checked'
 
-        ckid = '_'.join(('svcmon_log', 'ckid',
+        ckid = '_'.join((self.t.id, 'ckid',
                          svcname,
                          str(hole['begin']),
                          str(hole['end'])))
@@ -932,9 +932,10 @@ class table_avail(HtmlTable):
         self.colprops = {
             'avail_svcname': col_avail_svcname(
                      title='Service',
-                     field='avail_svcname',
+                     field='svcname',
                      img='svc',
                      display=True,
+                     _class='svcname',
                     ),
             'avail_holes': col_avail_holes(
                      title='Unavailabity ranges',
@@ -944,13 +945,13 @@ class table_avail(HtmlTable):
                     ),
             'avail_pct': col_avail_pct(
                      title='Availabity',
-                     field='avail_pct',
+                     field='availability',
                      img='spark16',
                      display=True,
                     ),
             'avail_downtime': col_avail_downtime(
                      title='Downtime',
-                     field='avail_downtime',
+                     field='downtime',
                      img='spark16',
                      display=True,
                     ),
@@ -965,8 +966,15 @@ class table_avail(HtmlTable):
             self.colprops[c].t = self
         self.dbfilterable = False
         self.filterable = False
+        self.bookmarkable = False
+        self.linkable = False
+        self.refreshable = True
         self.pageable = False
+        self.columnable = False
+        self.commonalityable = False
+        self.exportable = True
         self.additional_tools.append('ack')
+        self.parent_tables = ['svcmon_log']
         self.checkbox_names = ['avail_ck']
 
     def sort_objects(self, x, y):
@@ -977,6 +985,7 @@ class table_avail(HtmlTable):
               A(
                 T("Acknowledge unavailabity"),
                 _onclick="""click_toggle_vis(event,'%(div)s', 'block');$('#ackcomment').focus();"""%dict(div='ackcomment_d_'+self.id),
+                _class='check16',
               ),
               DIV(
                 TABLE(
@@ -987,9 +996,13 @@ class table_avail(HtmlTable):
                     TD(
                       INPUT(
                        _id='ackcomment',
-                       _onkeypress="if (is_enter(event)) {%s};"%\
-                          self.ajax_submit(additional_inputs=['ackcomment', 'ac'],
-                                           args="ack"),
+                       _onkeypress="""
+if (is_enter(event)) {
+  osvc.tables.%(id)s.ajax_submit("ack", ['ackcomment', 'ac'], 'avail_ck')
+}
+"""%dict(
+  id=self.id,
+    ),
 
                       ),
                     ),
@@ -1047,6 +1060,7 @@ class table_svcmon_log(HtmlTable):
                      table='services_log',
                      field='svc_begin',
                      img='time16',
+                     default_filter='>-7d',
                      display=True,
                     ),
             'svc_end': HtmlTableColumn(
@@ -1054,6 +1068,7 @@ class table_svcmon_log(HtmlTable):
                      table='services_log',
                      field='svc_end',
                      img='time16',
+                     default_filter='<-20m',
                      display=True,
                     ),
         })
@@ -1066,12 +1081,14 @@ class table_svcmon_log(HtmlTable):
         self.colprops['svc_availstatus'].table = 'services_log'
         self.colprops['svc_availstatus'].display = True
         self.dbfilterable = True
+        self.exportable = True
         self.extraline = True
+        self.dataable = True
+        self.wsable = True
         self.checkbox_id_col = 'id'
         self.checkbox_id_table = 'services_log'
         self.ajax_col_values = 'ajax_svcmon_log_col_values'
-        self.span = v_services_cols
-        self.span.remove('svc_availstatus')
+        self.child_tables = ['svcmon_log_avail']
 
 @auth.requires_login()
 def ajax_svcmon_log_col_values():
@@ -1096,7 +1113,45 @@ def ajax_svcmon_log_col_values():
 @auth.requires_login()
 def ajax_svcmon_log():
     t = table_svcmon_log('svcmon_log', 'ajax_svcmon_log')
-    v = table_avail('svcmon_log_avail', 'ajax_svcmon_log')
+
+    o = db.services_log.svc_name|db.services_log.svc_begin|db.services_log.svc_end
+    q = db.v_services.svc_name==db.services_log.svc_name
+    q = _where(q, 'services_log', domain_perms(), 'svc_name')
+    for f in t.cols:
+        q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
+    q = apply_filters(q, None, db.services_log.svc_name)
+
+    if len(request.args) == 1 and request.args[0] == 'data':
+        t.setup_pager(-1)
+        limitby = (t.pager_start,t.pager_end)
+        t.object_list = db(q).select(orderby=o, limitby=limitby)
+        cols = t.visible_columns()
+        return t.table_lines_data(-1, html=False)
+
+    t.csv_q = q
+    t.csv_orderby = o
+
+    if len(request.args) == 1 and request.args[0] == 'csv':
+        return t.csv()
+
+@auth.requires_login()
+def ajax_svcmon_log_avail():
+    session.forget(response)
+    tableid = 'svcmon_log_avail'
+    v = table_avail('svcmon_log_avail', 'ajax_svcmon_log_avail')
+    t = table_svcmon_log('svcmon_log', 'ajax_svcmon_log')
+
+    begin = t.filter_parse('svc_begin')
+    if begin == "":
+        begin = now - datetime.timedelta(days=7, microseconds=now.microsecond)
+    else:
+        begin = str_to_date(begin)
+
+    end = t.filter_parse('svc_end')
+    if end == "":
+        end = now - datetime.timedelta(seconds=1200, microseconds=now.microsecond)
+    else:
+        end = str_to_date(end)
 
     if len(request.args) == 1:
         action = request.args[0]
@@ -1104,74 +1159,41 @@ def ajax_svcmon_log():
             if action == 'ack':
                 ack(v.get_checked())
         except ToolError, e:
-            t.flash = str(e)
+            v.flash = str(e)
 
-    if t.filter_parse('svc_begin') == "":
-        begin = now - datetime.timedelta(days=7, microseconds=now.microsecond)
-        t.store_filter_value('svc_begin', ">"+str(begin))
-    else:
-        begin = str_to_date(t.filter_parse('svc_begin'))
+    if len(request.args) > 0 and request.args[0] in ('line', 'csv'):
+        o = db.services_log.svc_name|db.services_log.svc_begin|db.services_log.svc_end
+        q = db.v_services.svc_name==db.services_log.svc_name
+        q = _where(q, 'services_log', domain_perms(), 'svc_name')
+        for f in set(t.cols):
+            q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
+        q = apply_filters(q, None, db.services_log.svc_name)
+        v.object_list = service_availability_2(
+                           db(q).select(orderby=o),
+                           begin,
+                           end
+                        )
 
-    if t.filter_parse('svc_end') == "":
-        end = now - datetime.timedelta(seconds=1200, microseconds=now.microsecond)
-        t.store_filter_value('svc_end', "<"+str(end))
-    else:
-        end = str_to_date(t.filter_parse('svc_end'))
-
-    o = db.services_log.svc_name|db.services_log.svc_begin|db.services_log.svc_end
-
-    q = db.v_services.svc_name==db.services_log.svc_name
-    q = _where(q, 'services_log', domain_perms(), 'svc_name')
-
-    for f in set(t.cols)-set(['svc_begin', 'svc_end']):
-        q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
-
-    q = _where(q, 'services_log', t.filter_parse('svc_begin'), 'svc_end')
-    q = _where(q, 'services_log', t.filter_parse('svc_end'), 'svc_begin')
-
-    q = apply_filters(q, None, db.services_log.svc_name)
-
-    if len(request.args) == 1 and request.args[0] == 'line':
-        if request.vars.volatile_filters is None:
-            limitby = (t.pager_start,t.pager_end)
-        else:
-            limitby = (0, 500)
-        t.object_list = db(q).select(orderby=o, limitby=limitby)
-        return t.table_lines_data(-1)
-
-    t.setup_pager(-1)
-    t.object_list = db(q).select(orderby=o, limitby=(t.pager_start,t.pager_end))
-    v.object_list = service_availability_2(db(q).select(orderby=o), begin, end)
-
-    t.csv_q = q
-    t.csv_orderby = o
-    v.csv_extra_args = ['foo']
+    if len(request.args) > 0 and request.args[0] == 'line':
+        return v.table_lines_data(-1)
 
     if len(request.args) == 1 and request.args[0] == 'csv':
-        return t.csv()
-    elif len(request.args) == 2 and request.args[0] == 'csv':
-        v.cols.remove('avail_holes')
-        v.cols.remove('avail_plot')
+        v.cols = ["avail_svcname", "avail_pct", "avail_downtime"]
         return v.csv()
-
-    return DIV(
-             DIV(
-               _id='ackpanel',
-               _class='ackpanel',
-             ),
-             v.html(),
-             t.html(),
-           )
 
 @auth.requires_login()
 def ajax_svcmon_log_1():
     session.forget(response)
-    v = table_avail(request.vars.rowid, request.vars.rowid)
-    v.colprops['avail_svcname'].display = False
-    v.columnable = False
-    v.refreshable = False
+    if request.vars.rowid:
+        tableid = request.vars.rowid
+    elif request.vars.table_id:
+        tableid = request.vars.table_id
+    else:
+        tableid = 'svcmon_log_avail'
+    v = table_avail(tableid, 'ajax_svcmon_log_1')
     v.exportable = False
-    v.additional_tools = []
+    if request.vars.svcname:
+        v.colprops['avail_svcname'].force_filter = request.vars.svcname
 
     if len(request.args) == 1:
         action = request.args[0]
@@ -1179,33 +1201,41 @@ def ajax_svcmon_log_1():
             if action == 'ack':
                 ack(v.get_checked())
         except ToolError, e:
-            t.flash = str(e)
+            v.flash = str(e)
 
-    begin = now - datetime.timedelta(days=7, microseconds=now.microsecond)
-    end = now - datetime.timedelta(seconds=1200, microseconds=now.microsecond)
+    if len(request.args) > 0 and request.args[0] == 'line':
+        begin = now - datetime.timedelta(days=7, microseconds=now.microsecond)
+        end = now - datetime.timedelta(seconds=1200, microseconds=now.microsecond)
 
-    o = db.services_log.svc_begin|db.services_log.svc_end
-    q = db.v_services.svc_name==db.services_log.svc_name
-    q &= db.services_log.svc_name==request.vars.svcname
-    q &= db.services_log.svc_begin<end
-    q &= db.services_log.svc_end>begin
-    q = _where(q, 'services_log', domain_perms(), 'svc_name')
+        o = db.services_log.svc_begin|db.services_log.svc_end
+        q = db.v_services.svc_name==db.services_log.svc_name
+        q &= db.services_log.svc_name==request.vars[tableid+'_f_avail_svcname']
+        q &= db.services_log.svc_begin<end
+        q &= db.services_log.svc_end>begin
+        q = _where(q, 'services_log', domain_perms(), 'svc_name')
 
-    v.object_list = service_availability_2(db(q).select(orderby=o), begin, end)
+        v.object_list = service_availability_2(db(q).select(orderby=o), begin, end)
+        return v.table_lines_data(-1)
 
-    return DIV(
-             DIV(
-               _id='ackpanel',
-               _class='ackpanel',
-             ),
-             v.html(),
-           )
+    return v.html()
 
 @auth.requires_login()
 def svcmon_log():
+    v = table_avail('svcmon_log_avail', 'ajax_svcmon_log_avail')
+    t = table_svcmon_log('svcmon_log', 'ajax_svcmon_log')
     t = DIV(
-          ajax_svcmon_log(),
-          _id='svcmon_log',
+          DIV(
+            _id='ackpanel',
+            _class='ackpanel',
+          ),
+          DIV(
+            v.html(),
+            _id='svcmon_log_avail',
+          ),
+          DIV(
+            t.html(),
+            _id='svcmon_log',
+          ),
         )
     return dict(table=t)
 

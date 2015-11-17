@@ -509,7 +509,7 @@ def ajax_service():
                rid=str(rowid),
                rowid='avail_'+rowid,
                url=URL(r=request, c='svcmon_log', f='ajax_svcmon_log_1',
-                       vars={'svcname':request.vars.node, 'rowid':'avail_'+rowid})
+                       vars={'svcname':request.vars.node, 'rowid': 'tab9_'+str(rowid)})
             ),
             """function s%(rid)s_load_wiki(){wiki("%(id)s", {"nodes": "%(node)s"})}"""%dict(
                id='tab8_'+str(rowid),
