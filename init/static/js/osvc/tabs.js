@@ -58,7 +58,7 @@ function tabs_init(o) {
 
   // empty tabs on click closetab
   o.closetab.bind("click", function() {
-  o.div[0].parentElement.remove(); // Remove extraline
+  o.div.parent().remove(); // Remove extraline
   o.div.remove();
   })
 }

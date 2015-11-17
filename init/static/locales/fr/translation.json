@@ -332,5 +332,297 @@
   },
   "link" : {
     "notfound" : "Lien non trouvé.  Il peut avoir expiré, veuillez le régénérer s'il vous plaît."
+  },
+  "menu" :
+  {
+    "views" :
+    {
+      "title" : "Views",
+      "dashboard" :
+        {
+          "title" : "Dashboard",
+          "text" : "Current issues on nodes and services"},
+      "services" : 
+        { 
+        "title" : "Services",
+        "text" : "Services information and status"},
+      "services_instances" :
+        { 
+          "title" : "Services Instances",
+          "text" : "Service instances status"},
+      "resources" : 
+        { 
+          "title" : "Resources",
+          "text" : "Service resources status"},
+      "app_info" :
+        { 
+          "title" : "App Info",
+          "text" : "Service 'app' resources key:val store"},
+      "nodes" :  
+        { 
+          "title" : "Nodes",
+          "text" : "Technical and organizational info" },
+      "tag_attachments" : 
+        { 
+          "title" : "Tag Attachments",
+          "text" : "Tags attached to nodes and services"},
+      "actions" :
+        { 
+          "title" : "Actions",
+          "text" : "Service actions log" },
+      "checks" :
+        { 
+          "title" : "Checks",
+          "text" : "Nodes health monitoring"},
+      "packages" :
+        { 
+          "title" : "Packages",
+          "text" : "All packages installed on nodes"},
+      "patches" :
+        { 
+          "title" : "Patches",
+          "text" : "All patches installed on nodes"},
+      "networks" :
+        { 
+          "title" : "Networks",
+          "text" : "Known subnets, gateways, vlans, ..."},
+      "node_networks" :
+        { 
+          "title" : "Node Networks",
+          "text" : "Node ips with their network information"},
+      "node_san" :
+        { 
+          "title" : "Node SAN",
+          "text" : "Node SAN ports with their fabric information"},
+      "san_switches" :
+        { 
+          "title" : "SAN switches",
+          "text" : "Ports id, state, remote ports"},
+      "dns" :
+        { 
+          "title" : "Domain Name Service",
+          "text" : "Internal dns zones and records"},
+      "saves" :
+        { 
+          "title" : "Saves",
+          "text" : "Backup servers aggregated index" },
+      "disks" :
+        { 
+          "title" : "Disks",
+          "text" : "All known disks with their array information"}
+    },
+  "compliance" :
+    {
+      "title" : "Compliance",
+      "statut" :
+      { 
+        "title" : "Status",
+        "text" : "Nodes and service last configuration checks" },
+      "log" :
+      { 
+        "title" : "Log",
+        "text" : "All configuration checks and fixes"},
+      "modulesets" :
+      { 
+        "title" : "Modulesets",
+        "text" : "Search-optimized modules grouping view" },
+      "rulessets" :
+      { 
+        "title" : "Rulessets",
+        "text" : "Search-optimized target configurations view" },
+      "designer" :
+      { 
+        "title" : "Designer",
+        "text" : "Creation-optimized configuration targets tool" },
+      "nrulesets" :
+      { 
+        "title" : "Node rulesets",
+        "text" : "Mass attach and detach tool" },
+      "srulesets" :
+      { 
+        "title" : "Service rulesets",
+        "text" : "Mass attach and detach tool" },
+      "service_modulesets" :
+      { 
+        "title" : "Service modulesets",
+        "text" : "Mass attach and detach tool" },
+      "node_modulesets" :
+      { 
+        "title" : "Node modulesets",
+        "text" : "Mass attach and detach tool" }
+    },
+    "statistic" :
+    {
+      "title" : "Statistics",
+      "reports" :
+      { 
+        "title" : "Reports",
+        "text" : "User-defined reports" },
+      "site" :
+      { 
+        "title" : "Site",
+        "text" : "Pre-defined site report" },
+      "compare" :
+      { 
+        "title" : "Compare",
+        "text" : "Compare node and service subsets evolution" },
+      "os_lc" :
+      { 
+        "title" : "Os lifecycle",
+        "text" : "Operating systems dispatch evolution" },
+      "availability" :
+      { 
+        "title" : "Availability",
+        "text" : "Service outage timelines" },
+      "n_rulesets" :
+      { 
+        "title" : "Node rulesets",
+        "text" : "Mass attach and detach tool" },
+      "s_rulesets" :
+      { 
+        "title" : "Service rulesets",
+        "text" : "Mass attach and detach tool" },
+      "s_modulesets" :
+      { 
+        "title" : "Service modulesets",
+        "text" : "Mass attach and detach tool" },
+      "n_modulesets" :
+      { 
+        "title" : "Node modulesets",
+        "text" : "Mass attach and detach tool" }
+    },
+    "requests":
+    {
+      "title" : "Requests",
+      "new_request":
+      { 
+        "title" : "New request",
+        "text" : "Start a new workflow or orchestration" },
+      "a_t_m_t":
+      { 
+        "title" : "Assigned to my team",
+        "text" : "Workflows waiting for action from my team" },
+      "p_t_a":
+      { 
+        "title" : "Pending tiers action",
+        "text" : "Workflows started by my team waiting action from a tier" },
+      "all_requests" :
+      { 
+        "title" : "All requests",
+        "text" : "Workflow and orchestration history"}
+    },
+    "administration" : 
+    {
+      "title" : "Administration",
+      "users" :
+      { 
+        "title" : "Users",
+        "text" : "Users and group administration" },
+      "log" :
+      { 
+        "title" : "Log",
+        "text" : "Collector events log"},
+      "o_setup" :
+      { 
+        "title" : "Obsolescence setup",
+        "text" : "Set server models and os releases obsolescence dates" },
+      "application" :
+      { 
+        "title" : "Applications",
+        "text" : "Application codes assigned to nodes and services" },
+      "drpplan" :
+      { 
+        "title" : "Drplan",
+        "text" : "Designer for disaster recovery plans" },
+      "batchs" :
+      { 
+        "title" : "Batchs",
+        "text" : "Collector janitoring batchs",
+        "link" : "/init/batchs/batchs" },
+      "billing" :
+      { 
+        "title" : "Billing",
+        "text" : "Licensing tokens count and dispatch",
+        "link" : "/init/billing/billing" },
+      "app_services" :
+      { 
+        "title" : "Applications",
+        "text" : "Create service provisioning templates" },
+      "prov" :
+      { 
+        "title" : "Provisioning",
+        "text" : "Create service provisioning templates" },
+      "filters" :
+      { 
+        "title" : "Filters",
+        "text" : "Create new filtersets" },
+      "forms" :
+      { 
+        "title" : "Forms",
+        "text" : "Design new workflows and orchestrations" },
+      "metrics" :
+      { 
+        "title" : "Metrics",
+        "text" : "Design sql requests to embed in charts" },
+      "charts" :
+      { 
+        "title" : "Charts",
+        "text" : "Design charts to embed in reports" },
+      "reports" :
+      { 
+        "title" : "Reports",
+        "text" : "Design custom reports" },
+      "tags" :
+      { 
+        "title" : "Tags",
+        "text" : "Manage tag properties" }
+    },
+    "shortcuts" :
+    {
+      "title" : "Shortcuts",
+      "filter_sel" :
+      { 
+        "title" : "Filter selector",
+        "text" : "Switch the filter applied to all displayed data" },
+      "link" :
+      { 
+        "title" : "Link",
+        "text" : "Show url to share your filters" },
+      "nav" :
+      { 
+        "title" : "Navigation",
+        "text" : "Open the navigation menu" },
+      "search" :
+      { 
+        "title" : "Search",
+        "text" : "Focus the global search tool" },
+      "unfocus" :
+      { 
+        "title" : "Unfocus",
+        "text" : "Close pop-ups and menus" },
+      "rest_api" :
+      { 
+        "title" : "Rest API",
+        "text" : "Documentation" }
+    }
+  },
+  "login" :
+  {
+    "title" : "User Action",
+    "logout_title" : "Logout",
+    "logout_text" : "Reconnect as another user",
+    "edit_title" : "Edit Profile",
+    "edit_text" : "User name, alerting levels...",
+    "change_title": "Change Password",
+    "change_text" : "You need to know your current password"
+  },
+  "notlogin" :
+  {
+    "top_title" : "Help",
+    "title" : "User Action",
+    "register_title" : "Register",
+    "register_text" : "Create a new user",
+    "lost_title" : "Lost Password",
+    "lost_text" : "Send a new password by email"
   }
 }

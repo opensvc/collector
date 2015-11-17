@@ -89,7 +89,15 @@ function services_osvcpostrest(service, uri, params, data, callback, error_callb
     for(var i=0; i<uri.length; i++) {
         url = url.replace("%"+(i+1), uri[i])
     }
-    if (Object.keys(params).length > 0) {
+
+    var isobj=0;
+    try {
+        var t = Object.keys(params);
+        isobj=1;
+    }
+    catch (e){;}
+
+    if (isobj==1) {
         url += "?"
         for (key in params) {
             url += encodeURIComponent(key) + "=" + encodeURIComponent(params[key]) + "&";
@@ -115,6 +123,17 @@ function services_osvcpostrest(service, uri, params, data, callback, error_callb
 function services_encodes_json_param(params)
 {
     var url="";
+
+    var isobj = 0;
+    try {
+        var t = Object.keys(params);
+        isobj=1;
+    }
+    catch (e)
+    {
+
+    }
+
     if (params.length >0)
     {
         for (i=0;i<params.length;i++)
@@ -125,7 +144,7 @@ function services_encodes_json_param(params)
         }
         url = url.replace(/&$/, "");
     }
-    else if (Object.keys(params).length > 0) {
+    else if (isobj==1) {
         for (key in params) {
             url += encodeURIComponent(key) + "=" + encodeURIComponent(params[key]) + "&";
         }
