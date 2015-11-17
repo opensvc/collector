@@ -52,9 +52,7 @@ jQuery(window).load(function(){
     </script>
   </head>
   <body>
-    {{if response.menu_auth:}}
-    <div class='login_menu header'>
-      {{=OSVCMENU(response.menu_auth, _class="menu")}}
+    <div id="not_login" class='login_menu header'>
     </div>
     {{pass}}
     <div class='login'>
@@ -62,4 +60,7 @@ jQuery(window).load(function(){
       {{=form}}
     </div>
   </body>
+  <script>
+  nlogin("not_login");
+  </script>
 </html>

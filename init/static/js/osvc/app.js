@@ -5,7 +5,7 @@ var osvc = {
 function i18n_init(callback) {
   i18n.init({
       debug: true,
-      postAsync : false,
+      getAsync : false,
       fallbackLng: false,
       load:'unspecific',
       resGetPath: "/init/static/locales/__lng__/__ns__.json",
@@ -17,7 +17,7 @@ function i18n_init(callback) {
 }
 
 function app_start() {
-  i18n_init(_app_start)
+  i18n_init(_app_start);
 }
 
 function _app_start() {
@@ -28,6 +28,7 @@ function _app_start() {
     ).then(function() 
     {
       menu("menu_location");
+      login("login_location");
       osvc_popup_stack_listener();
       search("layout_search_tool");
       fset_selector("fset_selector");

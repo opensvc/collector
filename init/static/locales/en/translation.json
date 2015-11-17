@@ -626,5 +626,24 @@
         "title" : "Rest API",
         "text" : "Documentation" }
     }
+  },
+  "login" :
+  {
+    "title" : "User Action",
+    "logout_title" : "Logout",
+    "logout_text" : "Reconnect as another user",
+    "edit_title" : "Edit Profile",
+    "edit_text" : "User name, alerting levels...",
+    "change_title": "Change Password",
+    "change_text" : "You need to know your current password"
+  },
+  "notlogin" :
+  {
+    "top_title" : "Help",
+    "title" : "User Action",
+    "register_title" : "Register",
+    "register_text" : "Create a new user",
+    "lost_title" : "Lost Password",
+    "lost_text" : "Send a new password by email"
   }
 }
