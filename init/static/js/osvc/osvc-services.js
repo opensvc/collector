@@ -120,39 +120,6 @@ function services_osvcpostrest(service, uri, params, data, callback, error_callb
     })
 }
 
-function services_encodes_json_param(params)
-{
-    var url="";
-
-    var isobj = 0;
-    try {
-        var t = Object.keys(params);
-        isobj=1;
-    }
-    catch (e)
-    {
-
-    }
-
-    if (params.length >0)
-    {
-        for (i=0;i<params.length;i++)
-        {
-            for (key in params[i]) {
-                        url += encodeURIComponent(key) + "=" + encodeURIComponent(params[i][key]) + "&";
-                    }
-        }
-        url = url.replace(/&$/, "");
-    }
-    else if (isobj==1) {
-        for (key in params) {
-            url += encodeURIComponent(key) + "=" + encodeURIComponent(params[key]) + "&";
-        }
-        url = url.replace(/&$/, "");
-    }
-    return url;
-}
-
 function services_osvcgetrest(service, uri, params, callback, error_callback, async)
 {
     url = services_getaccessurl(service)
@@ -166,14 +133,11 @@ function services_osvcgetrest(service, uri, params, callback, error_callback, as
 
     if (async === undefined || async == null) async=true;
     
-    var parameters = services_encodes_json_param(params);
-    if (parameters != "")
-        url += "?" + parameters;
-
     var req = $.ajax(
     {
         type: "GET",
         url: url,
+        data: params,
         async : async,
         dataType: "json",
         error: error_callback,
