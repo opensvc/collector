@@ -1038,46 +1038,46 @@ function table_insert(t, data) {
     })
 }
 
-function table_ajax_submit(url, id, additional_inputs, input_name, additional_input_name) {
-    var t = osvc.tables[id]
-
+//
+// used by non-rest server side tool
+// all users should migrate to direct use of the rest api from the js code
+//
+function table_ajax_submit(t, tool, additional_inputs, input_name, additional_input_name) {
     // close dialogs
     t.div.find(".white_float").hide()
     t.div.find(".white_float_input").hide()
 
-    var inputs = ['tableid', id+"_page"]
-    var s = inputs.concat(additional_inputs).concat(getIdsByName(input_name))
-    t.div.find("[name="+additional_input_name+"]").each(function(){s.push(this.id)})
-    t.div.find("input[id^="+t.id+"_f_]").each(function(){s.push(this.id)})
-    var query="table_id="+t.id
-    for (i=0; i<s.length; i++) {
-        if (i > 0) {query=query+"&"}
-        try {
-            query=query+encodeURIComponent(s[i])+"="+encodeURIComponent(document.getElementById(s[i]).value);
-        } catch(e) {}
+    var data = {
+      "tableid": t.id,
+      "table_id": t.id,
     }
+    data[t.id+"_page"] = t.e_header.find("#"+t.id+"_page").val()
+
+    if (additional_inputs) {
+      for (var i=0; i<additional_inputs.length; i++) {
+        var iid = additional_inputs[i]
+        data[iid] = $("#"+iid).val()
+      }
+    }
+    t.div.find("[name="+input_name+"]").each(function() {
+      data[$(this).attr("id")] = $(this).val()
+    })
+    t.div.find("[name="+additional_input_name+"]").each(function() {
+      data[$(this).attr("id")] = $(this).val()
+    })
+    t.div.find("input[id^="+t.id+"_f_]").each(function(){
+      data[$(this).attr("id")] = $(this).val()
+    })
     $.ajax({
          type: "POST",
-         url: url,
-         data: query,
+         url: t.ajax_url+"/"+tool,
+         data: data,
          context: document.body,
          beforeSend: function(req){
 	   t.set_refresh_spin()
          },
          success: function(msg){
-           if (!t.dataable) {
-             $("#"+id).html(msg)
-             $("#"+id).find("script").each(function(i){
-               //eval($(this).text());
-               $(this).remove();
-             })
-             t.on_change()
-	     t.unset_refresh_spin()
-           } else {
-	     t.unset_refresh_spin()
-             t.refresh()
-           }
-           t.refresh_child_tables()
+           t.refresh()
          }
     })
 }
@@ -1160,10 +1160,10 @@ function toggle_plot(url, rowid, id) {
     }
 }
 
-function filter_submit(id,k,v){
-  $("#"+k).val(v)
-  window["ajax_submit_"+id]()
-  osvc.tables[id].refresh_column_filters()
+function table_page_submit(t, v){
+  t.div.find("#"+t.id+"_page").val(v)
+  t.refresh()
+  t.refresh_column_filters()
 };
 
 function table_save_column_filters(t) {
@@ -2615,10 +2615,10 @@ function table_pager(t, options) {
     $(this).addClass('current_page clickable')
   })
   t.e_pager.find("[name=pager_right]").click(function(){
-    filter_submit(t.id, t.id+"_page", p_page+1)
+    t.page_submit(p_page+1)
   })
   t.e_pager.find("[name=pager_left]").click(function(){
-    filter_submit(t.id, t.id+"_page", p_page-1)
+    t.page_submit(p_page-1)
   })
   t.e_pager.find("[name=pager_center]").click(function(){
     t.e_pager.find("[name=pager_perpage]").toggle()
@@ -2923,6 +2923,12 @@ function table_init(opts) {
     'action_menu': opts['action_menu'],
     'decorate_cells': function(){
       return table_cell_decorator(opts['id'])
+    },
+    'page_submit': function(v){
+      return table_page_submit(this, v)
+    },
+    'ajax_submit': function(tool, additional_inputs, input_name, additional_input_name){
+      return table_ajax_submit(this, tool, additional_inputs, input_name, additional_input_name)
     },
     'column_values': function(){
       return table_column_values(this)
