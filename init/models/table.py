@@ -601,9 +601,8 @@ class HtmlTable(object):
         return inputs
 
     def ajax_submit(self, args=[], vars={}, additional_inputs=[], additional_input_name=None):
-        return """table_ajax_submit('%(url)s', '%(divid)s', %(additional_inputs)s, %(input_name)s, "%(additional_input_name)s");"""%dict(
-                         url=URL(r=request,f=self.func, args=args, vars=vars),
-                         divid=self.innerhtml,
+        return """osvc.tables["%(id)s"].ajax_submit('%(tool)s', %(additional_inputs)s, %(input_name)s, "%(additional_input_name)s");"""%dict(
+                         tool='/'.join(args),
                          id=self.id,
                          additional_inputs = str(additional_inputs+self.additional_inputs),
                          input_name=str(self.checkbox_names),
