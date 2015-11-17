@@ -1068,6 +1068,7 @@ function table_ajax_submit(t, tool, additional_inputs, input_name, additional_in
     t.div.find("input[id^="+t.id+"_f_]").each(function(){
       data[$(this).attr("id")] = $(this).val()
     })
+    data = $.extend(data, t.parent_tables_data())
     $.ajax({
          type: "POST",
          url: t.ajax_url+"/"+tool,
@@ -2165,7 +2166,22 @@ function table_add_csv(t) {
     setTimeout(function() {
       _e.removeClass("csv_disabled").addClass("csv")
     }, 10000)
-    document.location.href = t.ajax_url+"/csv"
+
+    var data = {}
+    t.div.find("input[id^="+t.id+"_f_]").each(function(){
+      data[$(this).attr("id")] = $(this).val()
+    })
+    data = $.extend(data, t.parent_tables_data())
+    var l = []
+    for (k in data) {
+      l.push(encodeURIComponent(k)+"="+encodeURIComponent(data[k]))
+    }
+    var q = l.join("&")
+    var url = t.ajax_url+"/csv"
+    if (q.length > 0) {
+      url += "?"+q
+    }
+    document.location.href = url
   })
   try { e.i18n() } catch(e) {}
   t.e_toolbar.prepend(e)
