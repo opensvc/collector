@@ -2,6 +2,8 @@ var osvc = {
  'tables': {}
 }
 
+var _badIE=0;
+
 function i18n_init(callback) {
   i18n.init({
       debug: true,
@@ -21,6 +23,12 @@ function app_start() {
 }
 
 function _app_start() {
+  // Check if IE and version < 10
+  for (i=6; i< 10; i++) {
+    if (IE(i)) _badIE=1;
+    else _badIE=0;
+  }
+
   // Wait mandatory language info and User/groups info to be loaded before creating the IHM
   $.when(
       $(document).i18n(),
@@ -131,7 +139,11 @@ function app_bindings() {
       $("input:focus").blur()
       $("textarea:focus").blur()
       $("#search_input").val("")
-      osvc_popup_remove_from_stack();
+      
+      if (_badIE)
+       $('document').find(".stackable").hide(); 
+      else
+       osvc_popup_remove_from_stack();
       return
     }
 

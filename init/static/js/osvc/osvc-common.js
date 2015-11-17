@@ -291,3 +291,6 @@ function is_numeric(n) {
   return !isNaN(parseFloat(n)) && isFinite(n);
 }
 
+function IE(v) {
+  return RegExp('msie' + (!isNaN(v)?('\\s'+v):''), 'i').test(navigator.userAgent);
+}
