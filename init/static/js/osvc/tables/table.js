@@ -695,6 +695,23 @@ function table_cell_fmt(t, k, v) {
   return s
 }
 
+function table_bind_filter_selector(t) {
+  $("#table_"+t.id).find("[cell=1]").each(function(){
+    $(this).bind("mouseup", function(event) {
+      cell = $(event.target)
+      if (typeof cell.attr("v") === 'undefined') {
+        cell = cell.parents("[cell=1]").first()
+      }
+      t.filter_selector(event, cell.attr('name'), cell.attr('v'))
+    })
+    $(this).bind("click", function() {
+      $("#fsr"+t.id).hide()
+      $("#am_"+t.id).remove()
+      $(".menu").hide("fold")
+    })
+  })
+}
+
 function table_bind_checkboxes(t) {
   $("#table_"+t.id).find("[name="+t.id+"_ck]").each(function(){
     this.value = this.checked
