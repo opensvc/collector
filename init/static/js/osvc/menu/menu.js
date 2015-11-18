@@ -350,7 +350,7 @@ function menu_bind_sub_link(o, title)
 			app_load_href(href)
 
 			// update browser url and history
-			history.pushState({}, "", href)
+			if (!_badIE) history.pushState({}, "", href)
 	  	});
 	}
 }

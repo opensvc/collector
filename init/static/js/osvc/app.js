@@ -133,7 +133,8 @@ function app_bindings() {
   })
 
   // key bindings
-  $(document).keydown(function(event) {
+  //$(document).keydown(function(event) {
+    $(document).keydown(function (event) {
     // ESC closes pop-ups and blur inputs
     if ( event.which == 27 ) {
       $("input:focus").blur()
@@ -141,7 +142,7 @@ function app_bindings() {
       $("#search_input").val("")
       
       if (_badIE)
-       $('document').find(".stackable").hide(); 
+       $(document).find(".stackable").hide() 
       else
        osvc_popup_remove_from_stack();
       return
