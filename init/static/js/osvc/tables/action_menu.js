@@ -117,7 +117,7 @@ function table_action_menu_post_data(t, data, confirmation) {
       url: $(location).attr("origin") + "/init/action_menu/call/json/json_action",
       data: {"data": JSON.stringify(data)},
       success: function(msg){
-        menu_action_status(msg)
+        table_action_menu_status(msg)
       }
     })
 }
@@ -653,7 +653,7 @@ function table_action_menu_get_resource_data(t, e, action) {
     return data
 }
 
-function menu_action_status(msg){
+function table_action_menu_status(msg){
   var s = "accepted: "+msg.accepted+", rejected: "+msg.rejected
   if (msg.factorized>0) {
     s = "factorized: "+msg.factorized+", "+s
