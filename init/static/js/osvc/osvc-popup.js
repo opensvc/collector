@@ -7,6 +7,10 @@ function osvc_popup_remove_from_stack()
 	// public function
 	// pop from stack and hide DOM element
 
+	if (_badIE) {
+		$(document).find(".stackable").hide()
+		return
+	}
 	if (_stack.length == 0) {
 		return
 	}
