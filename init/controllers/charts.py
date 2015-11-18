@@ -799,6 +799,7 @@ class table_reports(HtmlTable):
         self.object_list = []
         self.nodatabanner = False
         self.additional_tools.append('report')
+        self.dataable = True
 
     def format_report_option(self, row):
         if row is None:
@@ -857,6 +858,9 @@ class table_reports(HtmlTable):
 @auth.requires_login()
 def ajax_reports():
     t = table_reports('reports', 'ajax_reports')
+    if len(request.args) == 1 and request.args[0] == 'data':
+        t.object_list = []
+        return t.table_lines_data(-1, html=False)
     d = DIV(
      DIV(
        t.html(),
