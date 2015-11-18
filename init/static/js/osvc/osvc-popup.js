@@ -167,6 +167,7 @@ function osvc_popup_stack_listener_callback(mutations) {
 
 function osvc_popup_stack_listener()
 {
+	if (_badIE) return; // No stack function if IE9>10
 	console.log("init popup event observer")
 	var target = document;
 	 

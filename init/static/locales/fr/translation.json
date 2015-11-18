@@ -333,296 +333,288 @@
   "link" : {
     "notfound" : "Lien non trouvé.  Il peut avoir expiré, veuillez le régénérer s'il vous plaît."
   },
-  "menu" :
-  {
-    "views" :
-    {
-      "title" : "Views",
-      "dashboard" :
-        {
-          "title" : "Dashboard",
-          "text" : "Current issues on nodes and services"},
-      "services" : 
-        { 
+  "menu" : {
+    "views" : {
+      "title" : "Vues",
+      "dashboard" : {
+          "title" : "Pilotage",
+          "text" : "Problèmes actuels sur les nœuds et services"
+      },
+      "services" : {
         "title" : "Services",
-        "text" : "Services information and status"},
-      "services_instances" :
-        { 
-          "title" : "Services Instances",
-          "text" : "Service instances status"},
-      "resources" : 
-        { 
-          "title" : "Resources",
-          "text" : "Service resources status"},
-      "app_info" :
-        { 
+        "text" : "Informations et états des services"
+      },
+      "services_instances" : {
+          "title" : "Instances de services",
+          "text" : "Informations et états des services"
+      },
+      "resources" : {
+          "title" : "Ressources",
+          "text" : "état des ressources"
+      },
+      "app_info" : {
           "title" : "App Info",
-          "text" : "Service 'app' resources key:val store"},
-      "nodes" :  
-        { 
-          "title" : "Nodes",
-          "text" : "Technical and organizational info" },
-      "tag_attachments" : 
-        { 
-          "title" : "Tag Attachments",
-          "text" : "Tags attached to nodes and services"},
-      "actions" :
-        { 
+          "text" : "Dépôt des couples clé:valeur des ressources 'app' des services"
+      },
+      "nodes" :  {
+          "title" : "Noeuds",
+          "text" : "Infos techniques et organisationelles"
+      },
+      "tag_attachments" : {
+          "title" : "Attachements des tags",
+          "text" : "Tags attachés aux noeuds et aux services"
+      },
+      "actions" : {
           "title" : "Actions",
-          "text" : "Service actions log" },
-      "checks" :
-        { 
-          "title" : "Checks",
-          "text" : "Nodes health monitoring"},
-      "packages" :
-        { 
-          "title" : "Packages",
-          "text" : "All packages installed on nodes"},
-      "patches" :
-        { 
+          "text" : "Journal des actions de service"
+      },
+      "checks" : {
+          "title" : "Sondes",
+          "text" : "Etats des sondes de santé des noeuds"
+      },
+      "packages" : {
+          "title" : "Paquetages",
+          "text" : "Tous les paquets installés sur les noeuds"
+      },
+      "patches" : {
           "title" : "Patches",
-          "text" : "All patches installed on nodes"},
-      "networks" :
-        { 
-          "title" : "Networks",
-          "text" : "Known subnets, gateways, vlans, ..."},
-      "node_networks" :
-        { 
-          "title" : "Node Networks",
-          "text" : "Node ips with their network information"},
-      "node_san" :
-        { 
-          "title" : "Node SAN",
-          "text" : "Node SAN ports with their fabric information"},
-      "san_switches" :
-        { 
-          "title" : "SAN switches",
-          "text" : "Ports id, state, remote ports"},
-      "dns" :
-        { 
+          "text" : "Tous les patchs installés sur les noeuds"
+      },
+      "networks" : {
+          "title" : "Réseau",
+          "text" : "Sous-réseaux, passerelles, vlans, ..."
+      },
+      "node_networks" : {
+          "title" : "Réseaux des noeuds",
+          "text" : "Adresses ip des noeuds avec leurs informations de réseau"
+      },
+      "node_san" : {
+          "title" : "SAN des noeuds",
+          "text" : "Ports SAN des noeuds avec leurs informations réseau"
+      },
+      "san_switches" : {
+          "title" : "Switches SAN",
+          "text" : "id, états, pair des ports"
+      },
+      "dns" : {
           "title" : "Domain Name Service",
-          "text" : "Internal dns zones and records"},
-      "saves" :
-        { 
-          "title" : "Saves",
-          "text" : "Backup servers aggregated index" },
-      "disks" :
-        { 
-          "title" : "Disks",
-          "text" : "All known disks with their array information"}
+          "text" : "Zones et enregistrements du dns interne"
+      },
+      "saves" : {
+          "title" : "Sauvegardes",
+          "text" : "Index aggrégé des serveurs de sauvegarde"
+      },
+      "disks" : {
+          "title" : "Disques",
+          "text" : "Tous les disques connus avec leurs informations prises dans les baies"}
     },
-  "compliance" :
-    {
-      "title" : "Compliance",
-      "statut" :
-      { 
-        "title" : "Status",
-        "text" : "Nodes and service last configuration checks" },
-      "log" :
-      { 
-        "title" : "Log",
-        "text" : "All configuration checks and fixes"},
-      "modulesets" :
-      { 
-        "title" : "Modulesets",
-        "text" : "Search-optimized modules grouping view" },
-      "rulessets" :
-      { 
-        "title" : "Rulessets",
-        "text" : "Search-optimized target configurations view" },
-      "designer" :
-      { 
-        "title" : "Designer",
-        "text" : "Creation-optimized configuration targets tool" },
-      "nrulesets" :
-      { 
-        "title" : "Node rulesets",
-        "text" : "Mass attach and detach tool" },
-      "srulesets" :
-      { 
-        "title" : "Service rulesets",
-        "text" : "Mass attach and detach tool" },
-      "service_modulesets" :
-      { 
-        "title" : "Service modulesets",
-        "text" : "Mass attach and detach tool" },
-      "node_modulesets" :
-      { 
-        "title" : "Node modulesets",
-        "text" : "Mass attach and detach tool" }
+  "compliance" : {
+      "title" : "Conformité",
+      "statut" : {
+        "title" : "état de conformité",
+        "text" : "Dernière analyse des sondes de conformité sur les noeuds et services"
+      },
+      "log" : {
+        "title" : "Journal",
+        "text" : "Toutes les vérifications et remédiations"
+      },
+      "modulesets" : {
+        "title" : "Jeux de modules",
+        "text" : "Vue des groupements de modules, optimisée pour la recherche"
+      },
+      "rulesets" : {
+        "title" : "Jeux de règles",
+        "text" : "Vue des configurations cibles, optimisée pour la recherche"
+      },
+      "designer" : {
+        "title" : "Modélisateur",
+        "text" : "Outil optimisé pour la modélisation des règles de conformité"
+      },
+      "nrulesets" : {
+        "title" : "Jeux de règles des noeuds",
+        "text" : "Outil d'attachement et détachement en masse"
+      },
+      "srulesets" : {
+        "title" : "Jeux de règles du service",
+        "text" : "Outil d'attachement et détachement en masse"
+      },
+      "service_modulesets" : {
+        "title" : "Jeux de modules du service",
+        "text" : "Outil d'attachement et détachement en masse"
+      },
+      "node_modulesets" : {
+        "title" : "Jeux de modules des noeuds",
+        "text" : "Outil d'attachement et détachement en masse"
+      }
     },
-    "statistic" :
-    {
-      "title" : "Statistics",
-      "reports" :
-      { 
-        "title" : "Reports",
-        "text" : "User-defined reports" },
-      "site" :
-      { 
+    "statistic" : {
+      "title" : "Statistiques",
+      "reports" : {
+        "title" : "Rapports",
+        "text" : "Rapports définis par les utilisateurs"
+      },
+      "site" : {
         "title" : "Site",
-        "text" : "Pre-defined site report" },
-      "compare" :
-      { 
-        "title" : "Compare",
-        "text" : "Compare node and service subsets evolution" },
-      "os_lc" :
-      { 
-        "title" : "Os lifecycle",
-        "text" : "Operating systems dispatch evolution" },
-      "availability" :
-      { 
-        "title" : "Availability",
-        "text" : "Service outage timelines" },
-      "n_rulesets" :
-      { 
-        "title" : "Node rulesets",
-        "text" : "Mass attach and detach tool" },
-      "s_rulesets" :
-      { 
-        "title" : "Service rulesets",
-        "text" : "Mass attach and detach tool" },
-      "s_modulesets" :
-      { 
-        "title" : "Service modulesets",
-        "text" : "Mass attach and detach tool" },
-      "n_modulesets" :
-      { 
-        "title" : "Node modulesets",
-        "text" : "Mass attach and detach tool" }
+        "text" : "Rapport pré-défini d'évolution de site"
+      },
+      "compare" : {
+        "title" : "Comparer",
+        "text" : "Compare l'évolution de lots de serveurs ou de services"
+      },
+      "os_lc" : {
+        "title" : "Cycle de vie SE",
+        "text" : "Evolution de la répartition entre systèmes d'exploitation"
+      },
+      "availability" : {
+        "title" : "Disponibilité",
+        "text" : "Histogrammes des dégradations d'état des services"
+      },
+      "n_rulesets" : {
+        "title" : "Jeux de règles des noeuds",
+        "text" : "Outil d'attachement et détachement en masse"
+      },
+      "s_rulesets" : {
+        "title" : "Jeux de règles du service",
+        "text" : "Outil d'attachement et détachement en masse"
+      },
+      "s_modulesets" : {
+        "title" : "Jeux de modules du service",
+        "text" : "Outil d'attachement et détachement en masse"
+      },
+      "n_modulesets" : {
+        "title" : "Jeux de modules des noeuds",
+        "text" : "Outil d'attachement et détachement en masse"
+      }
     },
-    "requests":
-    {
-      "title" : "Requests",
-      "new_request":
-      { 
-        "title" : "New request",
-        "text" : "Start a new workflow or orchestration" },
-      "a_t_m_t":
-      { 
-        "title" : "Assigned to my team",
-        "text" : "Workflows waiting for action from my team" },
-      "p_t_a":
-      { 
-        "title" : "Pending tiers action",
-        "text" : "Workflows started by my team waiting action from a tier" },
-      "all_requests" :
-      { 
-        "title" : "All requests",
-        "text" : "Workflow and orchestration history"}
+    "requests": {
+      "title" : "Demandes",
+      "new_request": {
+        "title" : "Nouvelle demande",
+        "text" : "Instancier une nouvelle demande ou une orchestration'"
+      },
+      "a_t_m_t": {
+        "title" : "Assignées à mon équipe",
+        "text" : "Demandes en attente d'action de mon équipe"
+      },
+      "p_t_a": {
+        "title" : "En attente d'action de tiers",
+        "text" : "Demandes déclenchées par mon équipe et en attente d'action d'un tiers"
+      },
+      "all_requests" : {
+        "title" : "Toutes les demandes",
+        "text" : "Journal des demandes et des orchestrations"
+      }
     },
-    "administration" : 
-    {
+    "administration" : {
       "title" : "Administration",
-      "users" :
-      { 
-        "title" : "Users",
-        "text" : "Users and group administration" },
-      "log" :
-      { 
-        "title" : "Log",
-        "text" : "Collector events log"},
-      "o_setup" :
-      { 
-        "title" : "Obsolescence setup",
-        "text" : "Set server models and os releases obsolescence dates" },
-      "application" :
-      { 
+      "users" : {
+        "title" : "Utilisateurs",
+        "text" : "Administration des utilisateurs et des groupes"
+      },
+      "log" : {
+        "title" : "Journal",
+        "text" : "Journal d'événements du collecteur"
+      },
+      "o_setup" : {
+        "title" : "Seuils d'obsolescence",
+        "text" : "Définition des dates d'obsolescence des modèles de serveurs et des versions de systèmes d'exploitation"
+      },
+      "application" : {
         "title" : "Applications",
-        "text" : "Application codes assigned to nodes and services" },
-      "drpplan" :
-      { 
-        "title" : "Drplan",
-        "text" : "Designer for disaster recovery plans" },
-      "batchs" :
-      { 
-        "title" : "Batchs",
-        "text" : "Collector janitoring batchs",
-        "link" : "/init/batchs/batchs" },
-      "billing" :
-      { 
-        "title" : "Billing",
-        "text" : "Licensing tokens count and dispatch",
-        "link" : "/init/billing/billing" },
-      "app_services" :
-      { 
-        "title" : "Applications",
-        "text" : "Create service provisioning templates" },
-      "prov" :
-      { 
-        "title" : "Provisioning",
-        "text" : "Create service provisioning templates" },
-      "filters" :
-      { 
-        "title" : "Filters",
-        "text" : "Create new filtersets" },
-      "forms" :
-      { 
-        "title" : "Forms",
-        "text" : "Design new workflows and orchestrations" },
-      "metrics" :
-      { 
-        "title" : "Metrics",
-        "text" : "Design sql requests to embed in charts" },
-      "charts" :
-      { 
-        "title" : "Charts",
-        "text" : "Design charts to embed in reports" },
-      "reports" :
-      { 
-        "title" : "Reports",
-        "text" : "Design custom reports" },
-      "tags" :
-      { 
+        "text" : "Codes applicatifs assignés aux noeuds et aux services"
+      },
+      "drpplan" : {
+        "title" : "Pra",
+        "text" : "Modélisateur de plan de reprise d'activité"
+      },
+      "batchs" : {
+        "title" : "Traitements",
+        "text" : "Traitements de maintenance du collecteur",
+        "link" : "/init/batchs/batchs"
+      },
+      "billing" : {
+        "title" : "Facturation",
+        "text" : "Jetons de facturation et leur répartition",
+        "link" : "/init/billing/billing"
+      },
+      "prov" : {
+        "title" : "Instanciation",
+        "text" : "Créer des gabarits d'instanciation de services"
+      },
+      "filters" : {
+        "title" : "Filtres",
+        "text" : "Créer de nouveaux jeux de filtres"
+      },
+      "forms" : {
+        "title" : "Formulaires",
+        "text" : "Modélisation des demandes et orchestrations"
+      },
+      "metrics" : {
+        "title" : "Métriques",
+        "text" : "Modélisation de requêtes sql à embarquer dans les courbes"
+      },
+      "charts" : {
+        "title" : "Courbes",
+        "text" : "Modélisation de courbes à embarquer dans les rapports"
+      },
+      "reports" : {
+        "title" : "Rapports",
+        "text" : "Modélisation de rapports personnalisés"
+      },
+      "tags" : {
         "title" : "Tags",
-        "text" : "Manage tag properties" }
+        "text" : "Gérer les propriétés des tags"
+      }
     },
-    "shortcuts" :
-    {
-      "title" : "Shortcuts",
-      "filter_sel" :
-      { 
+    "shortcuts" : {
+      "title" : "Raccourcis",
+      "filter_sel" : {
         "title" : "Filter selector",
-        "text" : "Switch the filter applied to all displayed data" },
-      "link" :
-      { 
-        "title" : "Link",
-        "text" : "Show url to share your filters" },
-      "nav" :
-      { 
+        "text" : "Choisir les filtres afféctés aux données affichés"
+      },
+      "link" : {
+        "title" : "Lien",
+        "text" : "Afficher l'url pour partager vos filtres"
+      },
+      "nav" : {
         "title" : "Navigation",
-        "text" : "Open the navigation menu" },
-      "search" :
-      { 
-        "title" : "Search",
-        "text" : "Focus the global search tool" },
-      "unfocus" :
-      { 
-        "title" : "Unfocus",
-        "text" : "Close pop-ups and menus" },
-      "rest_api" :
-      { 
+        "text" : "Ouvre le menu de navigation"
+      },
+      "refresh" : {
+        "title" : "Rafraichir",
+        "text" : "Recharger les données du tableau"
+      },
+      "search" : {
+        "title" : "Recherche",
+        "text" : "Saisir dans l'outil de recherche global"
+      },
+      "unfocus" : {
+        "title" : "Retirer le focus",
+        "text" : "Ferme pop-ups et menus"
+      },
+      "rest_api" : {
         "title" : "Rest API",
-        "text" : "Documentation" }
+        "text" : "Documentation"
+      }
     }
   },
   "login" :
   {
-    "title" : "User Action",
-    "logout_title" : "Logout",
-    "logout_text" : "Reconnect as another user",
-    "edit_title" : "Edit Profile",
-    "edit_text" : "User name, alerting levels...",
-    "change_title": "Change Password",
-    "change_text" : "You need to know your current password"
+    "title" : "Actions pour l'utilisateur",
+    "logout_title" : "Déconnexion",
+    "logout_text" : "Se reconnecter en temps qu'un autre utilisateur",
+    "edit_title" : "Edition du profil",
+    "edit_text" : "Nom de l'utilisateur, seuils de déclenchement des alertes, ...",
+    "change_title": "Changer le mot de passe",
+    "change_text" : "Vous devez connaitre votre mot de passe actuel"
   },
   "notlogin" :
   {
-    "top_title" : "Help",
-    "title" : "User Action",
-    "register_title" : "Register",
-    "register_text" : "Create a new user",
-    "lost_title" : "Lost Password",
-    "lost_text" : "Send a new password by email"
+    "top_title" : "Aide",
+    "title" : "Actions pour l'utilisateur",
+    "register_title" : "Enregistrement",
+    "register_text" : "Créer un nouvel utilisateur",
+    "lost_title" : "Mot de passe perdu",
+    "lost_text" : "Envoyer un nouveau mot de passe par mèl"
   }
 }
