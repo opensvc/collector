@@ -191,7 +191,7 @@ function table_action_menu(t, e){
     am += table_action_menu_modules_all(t, e)
   }
   if (am != "") {
-      s += "<h3 class='line'><span>"+i18n.t("action_menu.actions")+"</span></h3>"
+      s += "<h3 class='line'><span>"+i18n.t("action_menu.agent_actions")+"</span></h3>"
       s += am
   }
 

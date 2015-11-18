@@ -15,7 +15,7 @@
   "action_menu": {
     "confirmation": "Are you sure ?",
     "tools": "Tools",
-    "actions": "Actions",
+    "agent_actions": "Agent actions",
     "actions_on_all_modules": "Actions on all modules",
     "actions_on_module_on_service_on_node": "Actions on module <b>__module__</b> on <b>__svcname__</b> service instance on node <b>__nodename__</b>",
     "actions_on_module_on_node": "Actions on module <b>__module__</b> on node <b>__nodename__</b>",
