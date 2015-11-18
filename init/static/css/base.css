@@ -1732,11 +1732,6 @@ ul.login_menu ul {
 	padding: 0 0 0 20px;
 	min-height: 16px;
 }
-.modset16 {
-	background: transparent url('../images/modset16.png') no-repeat;
-	padding: 0 0 0 20px;
-	min-height: 16px;
-}
 .hv16:before {
 	content: '\f0c2  ';
 	font-family: awesome;
@@ -1967,6 +1962,10 @@ ul.login_menu ul {
 }
 .fa-tags:before {
 	content: '\f02c  ';
+	font-family: awesome;
+}
+.modset16:before {
+	content: '\f085  ';
 	font-family: awesome;
 }
 .actions:before {
