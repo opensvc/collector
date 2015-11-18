@@ -4,9 +4,9 @@ function designer(divid, options) {
   o.div = $('#'+divid)
   o.options = options
 
-  o.url_images = $(location).attr("origin") + "/init/static/images",
-  o.url_action = $(location).attr("origin") + "/init/compliance/call/json/json_tree_action",
-  o.url = $(location).attr("origin") + "/init/compliance/call/json/json_tree",
+  o.url_images = services_get_url() + "/init/static/images",
+  o.url_action = services_get_url() + "/init/compliance/call/json/json_tree_action",
+  o.url = services_get_url() + "/init/compliance/call/json/json_tree",
 
   o.init = function() {
     return designer_init(o)

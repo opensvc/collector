@@ -141,7 +141,7 @@ function osvc_create_link(fn, parameters, target)
         return
       }
       var link_id = jd.link_id;
-      var url = $(location).attr("origin");
+      var url = services_get_url();
 
       url += "/init/link/link?link_id="+link_id;
       if (fn.beginsWith("https://")) // if is not an ajax link, but a function js call

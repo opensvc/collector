@@ -45,7 +45,7 @@ function table_action_menu_param_moduleset(t) {
   $.ajax({
     async: false,
     type: "POST",
-    url: $(location).attr("origin") + "/init/compliance/call/json/comp_get_all_moduleset",
+    url: services_get_url() + "/init/compliance/call/json/comp_get_all_moduleset",
     data: "",
     success: function(data){
       for (var i=0; i<data.length; i++) {
@@ -62,7 +62,7 @@ function table_action_menu_param_module(t) {
   $.ajax({
     async: false,
     type: "POST",
-    url: $(location).attr("origin") + "/init/compliance/call/json/comp_get_all_module",
+    url: services_get_url() + "/init/compliance/call/json/comp_get_all_module",
     data: "",
     success: function(data){
       for (var i=0; i<data.length; i++) {
@@ -131,7 +131,7 @@ function table_action_menu_post_data(t, data, confirmation) {
     $.ajax({
       //async: false,
       type: "POST",
-      url: $(location).attr("origin") + "/init/action_menu/call/json/json_action",
+      url: services_get_url() + "/init/action_menu/call/json/json_action",
       data: {"data": JSON.stringify(data)},
       success: function(msg){
         menu_action_status(msg)

@@ -6,7 +6,7 @@ function action_queue_stats(data) {
       _action_queue_stats(data)
       return
     }
-    url = $(location).attr("origin") + "/init/rest/api/actions/stats"
+    url = services_get_url() + "/init/rest/api/actions/stats"
     $.getJSON(url, function(data){_action_queue_stats(data)})
 }
 

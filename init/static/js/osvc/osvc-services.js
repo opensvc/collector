@@ -246,3 +246,7 @@ function services_error_fmt(data) {
     return e
 }
 
+function services_get_url()
+{
+    return window.location.protocol +"//" + window.location.host;
+}
