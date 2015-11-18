@@ -210,22 +210,26 @@ function check_toggle_vis(id, checked, col){
 }
 function keep_inside(box){
     box_off_l = $(box).offset().left
-    box_pos_l = $(box).position().left
     box_w = $(box).width()
     doc_w = $('body').width()
-    if ((box_off_l+box_w+20)>doc_w) {
-        if (box_off_l != box_pos_l) {
-            over = doc_w-(box_off_l+box_w+20)
-            $(box).css("left", over+'px')
-        } else {
-            new_l = doc_w - box_w - 20
-            if (new_l < 0) {
-		$(box).css("width", box_w + new_l)
-		$(box).css("overflow-x", "auto")
-		new_l = 0
-	    }
-            $(box).css("left", new_l+'px')
-        }
+
+    // trim the box width to fit the doc
+    if ((box_w+20)>doc_w) {
+        $(box).css("width", doc_w - 30)
+        $(box).css("overflow-x", "auto")
+        box_w = $(box).width()
+    }
+
+    // align to the right doc border
+    if (box_off_l + box_w > doc_w) {
+        $(box).offset({"left": doc_w - box_w - 20})
+        box_off_l = $(box).offset().left
+    }
+
+    // align to the left doc border
+    if (box_off_l < 0) {
+        $(box).offset({"left": 10})
+        box_off_l = $(box).offset().left
     }
 }
 function click_toggle_vis(e, name, mode){
@@ -278,15 +282,6 @@ function check_all(name, checked){
         }
     }
 }
-function getIdsByName(names){
-    ids = []
-    for (j = 0; j < names.length; j++) {
-        $("[name="+names[j]+"]").each(function(){
-            ids.push($(this).attr('id'))
-        })
-    }
-    return ids
-}
 function sparkl(url, id) {
     if (!$("#"+id).is(":visible")) {
         return
@@ -295,18 +290,6 @@ function sparkl(url, id) {
     $.getJSON(url, function(data) {
         $(document.getElementById(id)).sparkline(data, chartoptions);
     });
-}
-function ajax_changed(url1, last, f) {
-    $.ajax({
-         type: "POST",
-         url: url1,
-         data: "",
-         success: function(msg){
-             if (parseInt(msg) < last) {
-                 f()
-             }
-         }
-    })
 }
 function sync_ajax(url, inputs, id, f) {
     s = inputs
