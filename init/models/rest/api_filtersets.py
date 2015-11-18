@@ -204,7 +204,7 @@ class rest_post_filterset(rest_post_handler):
             )
         l = {
           'event': 'gen_filtersets',
-          'data': {'foo': 'bar'},
+          'data': {'id': row.id},
         }
         _websocket_send(event_msg(l))
         return rest_get_filterset().handler(row.id)
