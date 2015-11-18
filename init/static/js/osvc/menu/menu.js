@@ -270,12 +270,12 @@ function menu(divid) {
   o.divid = divid
   o.div = $("#"+divid)
 
-  o.init = function init() {
+  o.init = function() {
     return menu_init(o)
   }
 
-  o.menu_clicked = function menu_clicked() {
-  	return menu_clicked(o);
+  o.clicked = function() {
+    return menu_clicked(o);
   }
 
   o.div.load("/init/static/views/menu.html", function() {
@@ -290,13 +290,13 @@ function menu_init(o)
   var timer;
 
   o.menu_div = $("#menu_menu");
-  o.menu_clickable = $("#menu_top");
+  o.menu_clickable = $("#menu_top > ul");
 
   menu_load_config(o);
 
   //Binding
-  o.menu_clickable.on("click",function (event) {
-  	menu_clicked(o);
+  o.menu_clickable.on("click", function (event) {
+    o.clicked();
   });
 }
 
@@ -346,7 +346,8 @@ function menu_bind_sub_link(o, title)
 			  window.open(href, "_blank")
 			  return
 			}
-			$("menu_menu").hide("fold");
+			o.menu_div.hide("fold");
+			$("#search_input").val("").blur()
 			app_load_href(href)
 
 			// update browser url and history
@@ -382,8 +383,6 @@ function menu_load_config(o)
 
 function menu_clicked(o)
 {
-	o.menu_div.toggle("fold", function()
-	{
-		$("#search_input").focus();
-	});
+	$("#search_input").val("").focus();
+	o.menu_div.stop().toggle("fold")
 }
