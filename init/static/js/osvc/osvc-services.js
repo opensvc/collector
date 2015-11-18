@@ -157,13 +157,22 @@ function services_osvcdeleterest(service, uri, params, data, callback, error_cal
     for(i=0; i<uri.length; i++) {
         url = url.replace("%"+(i+1), uri[i])
     }
-    if (Object.keys(params).length > 0) {
+    
+    var isobj=0;
+    try {
+        var t = Object.keys(params);
+        isobj=1;
+    }
+    catch (e){;}
+
+    if ((isobj==1) && (t.length > 0)) {
         url += "?"
-        for (key in Object.keys(params)) {
+        for (key in t) {
             url += encodeURIComponent(key) + "=" + encodeURIComponent(params[key]) + "&";
         }
         url = url.replace(/&$/, "");
     }
+    
     var content_type = "application/x-www-form-urlencoded"
     if (Object.prototype.toString.call(data) === '[object Array]') {
       data = JSON.stringify(data)
