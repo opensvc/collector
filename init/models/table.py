@@ -153,7 +153,6 @@ class HtmlTable(object):
         self.highlight = True
         self.wsable = False
         self.dataable = False
-        self.action_menu = []
         self.events = []
         self.on_change = "false"
 
@@ -165,14 +164,6 @@ class HtmlTable(object):
         self.csv_orderby = None
         self.csv_left = None
         self.csv_limit = 20000
-
-        self.action_menu = {
-          'nodes': node_actions,
-          'services': svc_actions,
-          'resources': resource_actions,
-          'modules': module_actions,
-        }
-
 
     def __iadd__(self, o):
         if isinstance(o, HtmlTableMenu):
@@ -727,7 +718,6 @@ var ti_%(id)s = setInterval(function(){
      'visible_columns': %(visible_columns)s,
      'child_tables': %(child_tables)s,
      'parent_tables': %(parent_tables)s,
-     'action_menu': %(action_menu)s,
      'dataable': %(dataable)s,
      'linkable': %(linkable)s,
      'dbfilterable': %(dbfilterable)s,
@@ -776,7 +766,6 @@ var ti_%(id)s = setInterval(function(){
                    commonalityable=str(self.commonalityable).lower(),
                    wsable=str(self.wsable).lower(),
                    headers=str(self.headers).lower(),
-                   action_menu=str(self.action_menu),
                    events=str(self.events),
                    on_change=str(self.on_change),
                    request_vars=json.dumps(request.vars),
@@ -1109,54 +1098,3 @@ def beautify_size_mb(d):
            v = -v
        return fmt%(v, unit)
 
-module_actions = [
-  {'title': 'Check', 'class': 'icon comp-c', 'action': 'check'},
-  {'title': 'Fix', 'class': 'icon comp-c', 'action': 'fix'},
-]
-
-resource_actions = [
-  {'title': 'Start', 'class': 'icon action_start_16', 'action': 'start'},
-  {'title': 'Stop', 'class': 'icon action_stop_16', 'action': 'stop'},
-  {'title': 'Restart', 'class': 'icon action_restart_16', 'action': 'restart'},
-  {'title': 'Enable', 'class': 'icon ok', 'action': 'enable'},
-  {'title': 'Disable', 'class': 'icon nok', 'action': 'disable'},
-]
-
-svc_actions = [
-  {'title': 'Start', 'class': 'icon action_start_16', 'action': 'start'},
-  {'title': 'Stop', 'class': 'icon action_stop_16', 'action': 'stop'},
-  {'title': 'Restart', 'class': 'icon action_restart_16', 'action': 'restart'},
-  {'title': 'Switch', 'class': 'icon action_switch_16', 'action': 'switch'},
-  {'title': 'Sync all remotes', 'class': 'icon action_sync_16', 'action': 'syncall'},
-  {'title': 'Sync peer remotes', 'class': 'icon action_sync_16', 'action': 'syncnodes'},
-  {'title': 'Sync disaster recovery remotes', 'class': 'icon action_sync_16', 'action': 'syncdrp'},
-  {'title': 'Enable', 'class': 'icon ok', 'action': 'enable'},
-  {'title': 'Disable', 'class': 'icon nok', 'action': 'disable'},
-  {'title': 'Thaw', 'class': 'icon ok', 'action': 'thaw'},
-  {'title': 'Freeze', 'class': 'icon nok', 'action': 'freeze'},
-  {'title': 'Compliance check', 'class': 'icon comp-c', 'action': 'compliance_check', 'params': ["module", "moduleset"]},
-  {'title': 'Compliance fix', 'class': 'icon comp-c', 'action': 'compliance_fix', 'params': ["module", "moduleset"]},
-]
-
-node_actions = [
-  {'title': 'Update node information', 'class': 'icon node16', 'action': 'pushasset'},
-  {'title': 'Update disks information', 'class': 'icon hd16', 'action': 'pushdisks'},
-  {'title': 'Update app information', 'class': 'icon svc-c', 'action': 'push_appinfo'},
-  {'title': 'Update services information', 'class': 'icon svc-c', 'action': 'pushservices'},
-  {'title': 'Update installed packages information', 'class': 'icon pkg16', 'action': 'pushpkg'},
-  {'title': 'Update installed patches information', 'class': 'icon pkg16', 'action': 'pushpatch'},
-  {'title': 'Update stats', 'class': 'icon spark16', 'action': 'pushstats'},
-  {'title': 'Update check values', 'class': 'icon ok', 'action': 'checks'},
-  {'title': 'Update sysreport', 'class': 'icon log16', 'action': 'sysreport'},
-  {'title': 'Update compliance modules', 'class': 'icon comp-c', 'action': 'updatecomp'},
-  {'title': 'Update opensvc agent', 'class': 'icon pkg16', 'action': 'updatepkg'},
-  {'title': 'Rotate root password', 'class': 'icon key', 'action': 'rotate root pw'},
-  {'title': 'Rescan scsi hosts', 'class': 'icon hd16', 'action': 'scanscsi'},
-  {'title': 'Reboot', 'class': 'icon action_restart_16', 'action': 'reboot'},
-  {'title': 'Reboot schedule', 'class': 'icon action_restart_16', 'action': 'schedule_reboot'},
-  {'title': 'Reboot unschedule', 'class': 'icon action_restart_16', 'action': 'unschedule_reboot'},
-  {'title': 'Shutdown', 'class': 'icon action_stop_16', 'action': 'shutdown'},
-  {'title': 'Wake On LAN', 'class': 'icon action_start_16', 'action': 'wol'},
-  {'title': 'Compliance check', 'class': 'icon comp-c', 'action': 'compliance_check', 'params': ["module", "moduleset"]},
-  {'title': 'Compliance fix', 'class': 'icon comp-c', 'action': 'compliance_fix', 'params': ["module", "moduleset"]},
-]
