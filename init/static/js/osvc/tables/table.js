@@ -8,7 +8,7 @@ function bind_user_groups() {
      'group_id': $(this).attr("group_id"),
      'membership': $(this).is(":checked")
     }
-    var url = $(location).attr("origin") + "/init/ajax_user/call/json/set_user_group"
+    var url = services_get_url() + "/init/ajax_user/call/json/set_user_group"
     $.ajax({
          type: "POST",
          url: url,
@@ -29,7 +29,7 @@ function bind_group_hidden_menu_entries() {
      'menu_entry': $(this).attr("menu_entry"),
      'hidden': $(this).is(":checked")
     }
-    var url = $(location).attr("origin") + "/init/ajax_group/call/json/set_group_hidden_menu_entry"
+    var url = services_get_url() + "/init/ajax_group/call/json/set_group_hidden_menu_entry"
     $.ajax({
          type: "POST",
          url: url,

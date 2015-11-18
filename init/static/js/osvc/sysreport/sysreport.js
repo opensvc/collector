@@ -197,7 +197,7 @@ function sysrep_init(o)
         var data = jd.data;
         for (var i=0;i<data.length;i++)
         {
-          if (!data[i].role.startsWith("user"))
+          if (!(data[i].role.substring(0,3) == "user"))
           {
             var option = $('<option />');
             option.attr('value', data[i].role).text(data[i].role);
@@ -382,7 +382,7 @@ function sysrep_timeline_data(o, jd)
     }
 
     // DOM element where the Timeline will be attached
-    var container = o.timeline_graph[0];
+    var container =document.getElementById("sysrep_timeline_graph");//o.timeline_graph[0];
 
     // Handle max lines
     var max_fpath = 5;

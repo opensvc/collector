@@ -337,13 +337,13 @@ function search_show_tab(item, tab, param, index)
   $("#extra_"+tab+index).html(d);
   
   if (tab=="users")
-    var _url = $(location).attr("origin") + "/init/ajax_user/ajax_user?username=" + value + "&rowid=" + _id;
+    var _url = services_get_url() + "/init/ajax_user/ajax_user?username=" + value + "&rowid=" + _id;
   else if (tab=="services")
-    var _url = $(location).attr("origin") + "/init/default/ajax_service?node="+value+"&rowid="+_id;
+    var _url = services_get_url() + "/init/default/ajax_service?node="+value+"&rowid="+_id;
   else if (tab=="groups")
-    var _url = $(location).attr("origin") + "/init/ajax_group/ajax_group?groupname="+value+"&rowid="+_id;
+    var _url = services_get_url() + "/init/ajax_group/ajax_group?groupname="+value+"&rowid="+_id;
   else if (tab=="filtersets")
-    var _url = $(location).attr("origin") + "/init/compliance/json_tree_action?operation=show&obj_type=filterset&obj_id="+value;
+    var _url = services_get_url() + "/init/compliance/json_tree_action?operation=show&obj_type=filterset&obj_id="+value;
   if (_url)
     sync_ajax(_url, [], _id, function() {});
   if (tab=="nodes")
