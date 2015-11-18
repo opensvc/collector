@@ -1852,6 +1852,11 @@ def create_filterset(fset_name=None, fset_stats="F"):
     _log('filterset.create',
          'added filterset %(name)s',
          dict(name=fset_name))
+    l = {
+      'event': 'gen_filtersets_change',
+      'data': {'id': obj_id},
+    }
+    _websocket_send(event_msg(l))
     return obj_id
 
 @auth.requires_membership('CompManager')
@@ -1913,6 +1918,11 @@ def delete_filterset(fset_id):
     _log('filterset.delete',
          'deleted filterset %(fset_name)s',
          dict(fset_name=v.fset_name))
+    l = {
+      'event': 'gen_filtersets_change',
+      'data': {'id': fset_id},
+    }
+    _websocket_send(event_msg(l))
     raise CompInfo("filterset deleted")
 
 @auth.requires_membership('CompManager')
@@ -1940,6 +1950,11 @@ def detach_filterset_from_filterset(fset_id, parent_fset_id):
          'detach filterset %(fset_name)s from filterset %(parent_fset_name)s',
          dict(fset_name=w.fset_name,
               parent_fset_name=v.fset_name))
+    l = {
+      'event': 'gen_filtersets_filters_change',
+      'data': {'parent_fset_id': parent_fset_id, 'fset_id': fset_id},
+    }
+    _websocket_send(event_msg(l))
     raise CompInfo("filterset detached")
 
 @auth.requires_membership('CompManager')
@@ -1967,6 +1982,11 @@ def detach_filter_from_filterset(f_id, fset_id):
          'detach filter %(f_name)s from filterset %(fset_name)s',
          dict(fset_name=v.fset_name,
               f_name=w.f_table+'.'+w.f_field+' '+w.f_op+' '+w.f_value))
+    l = {
+      'event': 'gen_filtersets_filters_change',
+      'data': {'f_id': f_id, 'fset_id': fset_id},
+    }
+    _websocket_send(event_msg(l))
     raise CompInfo("filter detached")
 
 @auth.requires_membership('CompManager')
@@ -2001,6 +2021,11 @@ def attach_filterset_to_filterset(fset_id, dst_fset_id):
          'attach filterset %(fset_name)s to filterset %(dst_fset_name)s',
          dict(dst_fset_name=v.fset_name,
               fset_name=w.fset_name))
+    l = {
+      'event': 'gen_filtersets_filters_change',
+      'data': {'parent_fset_id': dst_fset_id, 'fset_id': fset_id},
+    }
+    _websocket_send(event_msg(l))
     raise CompInfo("filterset attached")
 
 @auth.requires_membership('CompManager')
@@ -2046,6 +2071,11 @@ def attach_filter_to_filterset(f_id, fset_id, **vars):
          'attach filter %(f_name)s to filterset %(fset_name)s',
          dict(fset_name=w.fset_name,
               f_name=v.f_table+'.'+v.f_field+' '+v.f_op+' '+v.f_value))
+    l = {
+      'event': 'gen_filtersets_filters_change',
+      'data': {'f_id': f_id, 'fset_id': fset_id},
+    }
+    _websocket_send(event_msg(l))
     raise CompInfo("filter attached")
 
 @auth.requires_membership('CompManager')
@@ -2067,6 +2097,11 @@ def delete_filter(f_id):
     _log('filter.delete',
          'deleted filter %(t)s.%(f)s %(o)s %(val)s',
          dict(t=v.f_table, f=v.f_field, o=v.f_op, val=v.f_value))
+    l = {
+      'event': 'gen_filters_change',
+      'data': {'id': f_id},
+    }
+    _websocket_send(event_msg(l))
     raise CompInfo("filterset deleted")
 
 @auth.requires_membership('CompManager')
@@ -2126,5 +2161,11 @@ def create_filter(f_table=None, f_field=None, f_op=None, f_value=None):
     _log('filter.create',
          'added filter %(t)s.%(f)s %(o)s %(val)s',
          dict(t=f_table, f=f_field, o=f_op, val=f_value))
+    l = {
+      'event': 'gen_filters_change',
+      'data': {'id': obj_id},
+    }
+    _websocket_send(event_msg(l))
+
     return obj_id
 
