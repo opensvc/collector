@@ -97,9 +97,9 @@ function services_osvcpostrest(service, uri, params, data, callback, error_callb
     }
     catch (e){;}
 
-    if (isobj==1) {
+    if ((isobj==1) && (t.length > 0)) {
         url += "?"
-        for (key in params) {
+        for (key in t) {
             url += encodeURIComponent(key) + "=" + encodeURIComponent(params[key]) + "&";
         }
         url = url.replace(/&$/, "");
@@ -159,7 +159,7 @@ function services_osvcdeleterest(service, uri, params, data, callback, error_cal
     }
     if (Object.keys(params).length > 0) {
         url += "?"
-        for (key in params) {
+        for (key in Object.keys(params)) {
             url += encodeURIComponent(key) + "=" + encodeURIComponent(params[key]) + "&";
         }
         url = url.replace(/&$/, "");
