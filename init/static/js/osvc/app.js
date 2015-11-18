@@ -68,12 +68,17 @@ function app_load_href(href) {
     _href = l.join("?")
 
     console.log("load", _href)
+    var e = $("<span><span class='refresh16 icon fa-spin fa-2x'></span><span data-i18n='api.loading'></span></span>").i18n()
+    $(".flash").html(e).show("fold")
     $(".layout").load(_href, {}, function (responseText, textStatus, req) {
       if (textStatus == "error") {
         // load error
         console.log("fallback to location", href)
         document.location.replace(href)
       } else {
+        if ($(".flash").find(".refresh16").length == 1) {
+          $(".flash").empty().hide("fold")
+        }
         // load success, purge tables not displayed anymore
         for (tid in osvc.tables) {
           if ($('#'+tid).length == 0) {
