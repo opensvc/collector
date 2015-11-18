@@ -601,6 +601,8 @@ class HtmlTable(object):
         return inputs
 
     def ajax_submit(self, args=[], vars={}, additional_inputs=[], additional_input_name=None):
+        if type(args) != list:
+            args = [args]
         return """osvc.tables["%(id)s"].ajax_submit('%(tool)s', %(additional_inputs)s, %(input_name)s, "%(additional_input_name)s");"""%dict(
                          tool='/'.join(args),
                          id=self.id,
