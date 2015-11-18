@@ -100,11 +100,11 @@ class col_obs_warn_date(HtmlTableColumn):
                   _class="date",
                   _onkeypress="if (is_enter(event)) {%s};"%\
                      self.t.ajax_submit(additional_inputs=[iid],
-                                        args="warn_date_set"),
+                                        args=["warn_date_set"]),
                 ),
                 A(
                   T("save"),
-                  _onclick=self.t.ajax_submit(additional_inputs=[iid], args="warn_date_set"),
+                  _onclick=self.t.ajax_submit(additional_inputs=[iid], args=["warn_date_set"]),
                   _class="toola",
                 ),
                 A(
@@ -145,11 +145,11 @@ class col_obs_alert_date(HtmlTableColumn):
                   _class="date",
                   _onkeypress="if (is_enter(event)) {%s};"%\
                      self.t.ajax_submit(additional_inputs=[iid],
-                                            args="alert_date_set"),
+                                            args=["alert_date_set"]),
                 ),
                 A(
                   T("save"),
-                  _onclick=self.t.ajax_submit(additional_inputs=[iid], args="alert_date_set"),
+                  _onclick=self.t.ajax_submit(additional_inputs=[iid], args=["alert_date_set"]),
                   _class="toola",
                 ),
                 A(
