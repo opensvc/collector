@@ -352,7 +352,7 @@ function search_show_tab(item, tab, param, index)
 }
 
 function filter_menu(event) {
-  var menu = $("#menu_menu");//$(".header").find(".menu16").parents("ul").first().siblings(".menu")
+  var menu = $("#menu_menu");
   var text = searchbox = $(".search").find("input").val();
   
   var reg = new RegExp(text, "i");
@@ -365,6 +365,10 @@ function filter_menu(event) {
     }
   })
   menu.find(".menu_section").each(function(){
+    if ($(this).children("a").text().match(reg)) {
+      $(this).find(".menu_entry").show()
+      $(this).show()
+    }
     n = $(this).find(".menu_entry:visible").length
     if (n == 0) {
       $(this).hide()
