@@ -64,28 +64,6 @@ def strip_unprintable(s):
 #
 # custom column formatting
 #
-class col_comp_filters_table(HtmlTableColumn):
-    def html(self, o):
-        if o.f_table is None:
-            return ''
-        if o.f_table not in tables:
-            return o.f_table
-        return DIV(
-                 tables[o.f_table]['title'],
-                 _class=tables[o.f_table]['cl'],
-               )
-
-class col_comp_filters_field(HtmlTableColumn):
-    def html(self, o):
-        if o.f_field is None:
-            return ''
-        if o.f_field not in props:
-            return o.f_field
-        return DIV(
-                 props[o.f_field].title,
-                 _class=props[o.f_field].img,
-               )
-
 def plot_log(s):
     height = 30
     cols = 20
@@ -253,7 +231,7 @@ sid=sid, iid=iid),
 tid=tid),
                   _onkeypress="if (is_enter(event)) {%s};"%\
                      self.t.ajax_submit(additional_inputs=[iid],
-                                        args="mod_name_set"),
+                                        args=["mod_name_set"]),
                 ),
                 _id=sid,
                 _style="display:none",
@@ -289,19 +267,17 @@ class col_var_name(HtmlTableColumn):
               DIV(
                 ss,
                 _id=tid,
-                _onclick="""hide_eid('%(tid)s');show_eid('%(sid)s');getElementById('%(iid)s').focus()"""%dict(tid=tid,
-sid=sid, iid=iid),
+                _onclick="""hide_eid('%(tid)s');show_eid('%(sid)s');getElementById('%(iid)s').focus()"""%dict(tid=tid, sid=sid, iid=iid),
                 _class="clickable",
               ),
               DIV(
                 INPUT(
                   value=s,
                   _id=iid,
-                  _onblur="""hide_eid('%(sid)s');show_eid('%(tid)s');"""%dict(sid=sid,
-tid=tid),
+                  _onblur="""hide_eid('%(sid)s');show_eid('%(tid)s');"""%dict(sid=sid, tid=tid),
                   _onkeypress="if (is_enter(event)) {%s};"%\
                      self.t.ajax_submit(additional_inputs=[iid],
-                                        args="var_name_set"),
+                                        args=["var_name_set"]),
                 ),
                 _id=sid,
                 _style="display:none",
@@ -924,7 +900,7 @@ class table_comp_rulesets(HtmlTable):
                       INPUT(
                         _type='submit',
                         _onclick="""if (confirm("%(text)s")){%(s)s};
-                                 """%dict(s=self.ajax_submit(additional_inputs=[sid], args=action),
+                                 """%dict(s=self.ajax_submit(additional_inputs=[sid], args=[action]),
                                           text=T("Changing the ruleset publication resets all attachments to nodes and services. Please confirm ruleset publication change."),
                                  ),
                       ),
@@ -969,7 +945,7 @@ class table_comp_rulesets(HtmlTable):
                       INPUT(
                         _type='submit',
                         _onclick="""if (confirm("%(text)s")){%(s)s};
-                                 """%dict(s=self.ajax_submit(additional_inputs=[sid], args=action),
+                                 """%dict(s=self.ajax_submit(additional_inputs=[sid], args=[action]),
                                           text=T("Changing the ruleset type resets all attachments to nodes and services. Please confirm ruleset type change."),
                                  ),
                       ),
@@ -1032,7 +1008,7 @@ class table_comp_rulesets(HtmlTable):
                       INPUT(
                         _type='submit',
                         _onclick=self.ajax_submit(additional_inputs=[sid,iid],
-                                                  args=action),
+                                                  args=[action]),
                       ),
                     ),
                   ),
@@ -1106,7 +1082,7 @@ class table_comp_rulesets(HtmlTable):
                       INPUT(
                         _type='submit',
                         _onclick=self.ajax_submit(additional_inputs=[sid],
-                                                  args=action),
+                                                  args=[action]),
                       ),
                     ),
                   ),
@@ -2372,26 +2348,32 @@ def comp_rulesets_nodes_attachment_load():
 # Filters sub-view
 #
 filters_colprops = {
-    'f_table': col_comp_filters_table(
+    'f_table': HtmlTableColumn(
              title='Table',
+             table='gen_filters',
              field='f_table',
              display=True,
              img='filter16',
+             _class='db_table_name',
             ),
-    'f_field': col_comp_filters_field(
+    'f_field': HtmlTableColumn(
              title='Field',
+             table='gen_filters',
              field='f_field',
              display=True,
              img='filter16',
+             _class='db_column_name',
             ),
     'f_value': HtmlTableColumn(
              title='Value',
+             table='gen_filters',
              field='f_value',
              display=True,
              img='filter16',
             ),
     'f_updated': HtmlTableColumn(
              title='Updated',
+             table='gen_filters',
              field='f_updated',
              display=True,
              img='time16',
@@ -2399,15 +2381,24 @@ filters_colprops = {
             ),
     'f_author': HtmlTableColumn(
              title='Author',
+             table='gen_filters',
              field='f_author',
              display=True,
              img='guy16',
             ),
     'f_op': HtmlTableColumn(
              title='Operator',
+             table='gen_filters',
              field='f_op',
              display=True,
              img='filter16',
+            ),
+    'id': HtmlTableColumn(
+             title='Id',
+             table='gen_filters',
+             field='id',
+             display=False,
+             img='key',
             ),
 }
 
@@ -2418,24 +2409,20 @@ filters_cols = ['f_table',
                 'f_updated',
                 'f_author']
 
-class col_fset_stats(HtmlTableColumn):
-    def html(self, o):
-        val = self.get(o)
-        if val is None:
-            return SPAN()
-        return T(str(val))
-
 class table_comp_filtersets(HtmlTable):
     def __init__(self, id=None, func=None, innerhtml=None):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
-        self.cols = ['fset_name',
+        self.cols = ['fset_id',
+                     'fset_name',
                      'fset_stats',
                      'fset_updated',
                      'fset_author',
+                     'f_id',
                      'f_log_op',
                      'f_order',
+                     'encap_fset_id',
                      'encap_fset_name']
         self.cols += filters_cols
 
@@ -2446,7 +2433,7 @@ class table_comp_filtersets(HtmlTable):
                      display=True,
                      img='filter16',
                     ),
-            'fset_stats': col_fset_stats(
+            'fset_stats': HtmlTableColumn(
                      title='Compute stats',
                      field='fset_stats',
                      display=True,
@@ -2472,6 +2459,24 @@ class table_comp_filtersets(HtmlTable):
                      display=True,
                      img='filter16',
                     ),
+            'id': HtmlTableColumn(
+                     title='Id',
+                     field='id',
+                     display=False,
+                     img='key',
+                    ),
+            'fset_id': HtmlTableColumn(
+                     title='Filterset id',
+                     field='fset_id',
+                     display=False,
+                     img='key',
+                    ),
+            'f_id': HtmlTableColumn(
+                     title='Filter id',
+                     field='f_id',
+                     display=False,
+                     img='key',
+                    ),
             'f_order': HtmlTableColumn(
                      title='Ordering',
                      field='f_order',
@@ -2484,10 +2489,22 @@ class table_comp_filtersets(HtmlTable):
                      display=True,
                      img='filter16',
                     ),
+            'encap_fset_id': HtmlTableColumn(
+                     title='Encap filterset id',
+                     field='encap_fset_id',
+                     display=False,
+                     img='key',
+                    ),
         }
         self.colprops.update(filters_colprops)
+        for c in self.colprops:
+            self.colprops[c].table = 'v_gen_filtersets'
+        self.events = ["gen_filtersets_change",
+                       "gen_filtersets_filters_change",
+                       "gen_filters_change"]
+        self.force_cols = ["fset_id", "f_id", "encap_fset_id"]
         self.span = ['fset_name']
-        self.keys = ['fset_name', 'encap_fset_name'] + filters_cols
+        self.keys = ['fset_id', 'f_id', 'encap_fset_id']
         if 'CompManager' in user_groups():
             self.form_encap_filterset_attach = self.comp_encap_filterset_attach_sqlform()
             self.form_filterset_add = self.comp_filterset_add_sqlform()
@@ -2501,13 +2518,16 @@ class table_comp_filtersets(HtmlTable):
                                                            'filterset_change_stats'])
         self.ajax_col_values = ajax_comp_filtersets_col_values
         self.dbfilterable = False
+        self.dataable = True
+        self.wsable = True
+        self.checkboxes = True
 
     def checkbox_key(self, o):
         if o is None:
             return '_'.join((self.id, 'ckid', ''))
         ids = []
         ids.append(o['fset_id'])
-        ids.append(o['id'])
+        ids.append(o['f_id'])
         ids.append(o['encap_fset_id'])
         return '_'.join([self.id, 'ckid']+map(str,ids))
 
@@ -2551,7 +2571,7 @@ class table_comp_filtersets(HtmlTable):
                     TD(
                       INPUT(
                         _type='submit',
-                        _onclick=self.ajax_submit(additional_inputs=[sid], args=action),
+                        _onclick=self.ajax_submit(additional_inputs=[sid], args=[action]),
                       ),
                     ),
                   ),
@@ -2895,14 +2915,20 @@ class table_comp_filters(HtmlTable):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
-        self.keys = ["f_table", "f_field", "f_op", "f_value"]
+        self.keys = ["id"]
+        self.force_cols = ["id"]
         self.span = ["f_table", "f_field"]
-        self.cols = filters_cols
+        self.cols = ["id"] + filters_cols
         self.colprops = filters_colprops
         if 'CompManager' in user_groups():
             self += HtmlTableMenu('Filter', 'filters', ['filter_add', 'filter_del'], id='menu_filters1')
         self.ajax_col_values = 'ajax_comp_filters_col_values'
         self.dbfilterable = False
+        self.dataable = True
+        self.wsable = True
+        self.checkboxes = True
+        self.checkbox_id = "id"
+        self.events = ["gen_filters_change"]
 
     def filter_del(self):
         d = DIV(
@@ -3067,22 +3093,6 @@ def comp_add_filter():
         pass
 
 @auth.requires_membership('CompManager')
-def comp_delete_filtersets_filters(ids, f_names):
-    q = db.gen_filtersets_filters.f_id.belongs(ids)
-    rows = db(q).select(cacheable=True)
-    if len(rows) == 0:
-        return
-    fset_ids = [r.fset_id for r in rows]
-    q2 = db.gen_filtersets.id.belongs(fset_ids)
-    fset_names = ', '.join([r.fset_name for r in db(q2).select(cacheable=True)])
-    n = db(q).delete()
-    table_modified("gen_filtersets")
-    _log('compliance.filter.delete',
-         'deleted filter %(f_names)s membership in filtersets %(fset_names)s',
-         dict(f_names=f_names, fset_names=fset_names))
-
-
-@auth.requires_membership('CompManager')
 def comp_delete_filter(ids=[]):
     if len(ids) == 0:
         raise ToolError("delete filter failed: no filter selected")
@@ -3091,20 +3101,11 @@ def comp_delete_filter(ids=[]):
     rows = db(q).select(cacheable=True)
     if len(rows) == 0:
         raise ToolError("delete filter failed: can't find selected filters")
-    f_names = ', '.join(map(lambda f: ' '.join([
-                       f.f_table+'.'+f.f_field,
-                       f.f_op,
-                       f.f_value]), rows))
-
-    # delete filterset membership for the filters
-    comp_delete_filtersets_filters(ids, f_names)
-
-    # delete filters
-    n = db(q).delete()
-    table_modified("gen_filters")
-    _log('compliance.filter.delete',
-        'deleted filters %(f_names)s',
-        dict(f_names=f_names))
+    for row in rows:
+        try:
+            delete_filter(row.id)
+        except CompInfo:
+            pass
 
 @auth.requires_login()
 def ajax_comp_filters_col_values():
@@ -3123,20 +3124,14 @@ def ajax_comp_filters():
     v = table_comp_filters('ajax_comp_filters',
                            'ajax_comp_filters')
     v.checkboxes = True
-    reload_fsets = SCRIPT(
-                     "table_ajax_submit('/init/compliance/ajax_comp_filtersets', 'ajax_comp_filtersets', inputs_ajax_comp_filtersets, [], ['ajax_comp_filtersets_ck'])",
-                     _name=v.id+"_to_eval",
-                   )
 
     if len(request.args) == 1:
         action = request.args[0]
         try:
             if action == 'delete_filter':
                 comp_delete_filter(v.get_checked())
-                extra = reload_fsets
             elif action == 'add_filter':
                 comp_add_filter()
-                extra = reload_fsets
         except ToolError, e:
             v.flash = str(e)
 
@@ -3145,17 +3140,12 @@ def ajax_comp_filters():
     for f in v.cols:
         q = _where(q, 'gen_filters', v.filter_parse(f), f)
 
-    if len(request.args) == 1 and request.args[0] == 'line':
+    if len(request.args) == 1 and request.args[0] == 'data':
         n = db(q).count()
         limitby = (v.pager_start,v.pager_end)
-        v.object_list = db(q).select(orderby=o, limitby=limitby, cacheable=False)
-        return v.table_lines_data(n)
-
-    n = db(q).count()
-    v.setup_pager(n)
-    v.object_list = db(q).select(limitby=(v.pager_start,v.pager_end), orderby=o, cacheable=True)
-
-    return SPAN(v.html(),extra)
+        cols = v.get_visible_columns()
+        v.object_list = db(q).select(*cols, orderby=o, limitby=limitby, cacheable=False)
+        return v.table_lines_data(n, html=False)
 
 @auth.requires_login()
 def ajax_comp_filtersets_col_values():
@@ -3192,6 +3182,24 @@ def ajax_comp_filtersets():
         except ToolError, e:
             t.flash = str(e)
 
+    o = db.v_gen_filtersets.fset_name|db.v_gen_filtersets.f_order|db.v_gen_filtersets.join_id
+    q = db.v_gen_filtersets.fset_id > 0
+    for f in t.cols:
+        q = _where(q, 'v_gen_filtersets', t.filter_parse(f), f)
+
+    if len(request.args) == 1 and request.args[0] == 'data':
+        n = db(q).count()
+        limitby = (t.pager_start,t.pager_end)
+        cols = t.get_visible_columns()
+        t.object_list = db(q).select(*cols, orderby=o, limitby=limitby, cacheable=False)
+        return t.table_lines_data(n, html=False)
+
+@auth.requires_login()
+def comp_filters():
+    t = table_comp_filtersets('ajax_comp_filtersets', 'ajax_comp_filtersets')
+    v = table_comp_filters('ajax_comp_filters', 'ajax_comp_filters')
+
+    # form submit handlers
     try:
         if t.form_filterset_add.accepts(request.vars):
             t.form_filter_attach = t.comp_filter_attach_sqlform()
@@ -3231,36 +3239,17 @@ def ajax_comp_filtersets():
     except AttributeError:
         pass
 
-    o = db.v_gen_filtersets.fset_name|db.v_gen_filtersets.f_order|db.v_gen_filtersets.join_id
-    q = db.v_gen_filtersets.fset_id > 0
-    for f in t.cols:
-        q = _where(q, 'v_gen_filtersets', t.filter_parse(f), f)
-
-    if len(request.args) == 1 and request.args[0] == 'line':
-        n = db(q).count()
-        limitby = (t.pager_start,t.pager_end)
-        t.object_list = db(q).select(orderby=o, limitby=limitby, cacheable=False)
-        return t.table_lines_data(n)
-
-    n = db(q).count()
-    t.setup_pager(n)
-    t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o, cacheable=True)
-
-    return t.html()
-
-@auth.requires_login()
-def comp_filters():
-    t = DIV(
+    d = DIV(
           DIV(
-            ajax_comp_filters(),
+            v.html(),
             _id='ajax_comp_filters',
           ),
           DIV(
-            ajax_comp_filtersets(),
+            t.html(),
             _id='ajax_comp_filtersets',
           ),
         )
-    return dict(table=t)
+    return dict(table=d)
 
 def comp_filters_load():
     return comp_filters()["table"]
@@ -3405,7 +3394,7 @@ class table_comp_moduleset(HtmlTable):
                       INPUT(
                         _type='submit',
                         _onclick=self.ajax_submit(additional_inputs=[sid],
-                                                  args=action),
+                                                  args=[action]),
                       ),
                     ),
                   ),
