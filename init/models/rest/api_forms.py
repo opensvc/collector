@@ -64,6 +64,7 @@ class rest_get_form(rest_get_line_handler):
         q = db.forms.id == int(id)
         q &= db.forms.id == db.forms_team_publication.form_id
         q &= db.forms_team_publication.group_id.belongs(user_group_ids())
+        self.set_q(q)
         data = self.prepare_data(**vars)
         return data
 
