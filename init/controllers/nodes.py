@@ -176,6 +176,7 @@ class table_nodes(HtmlTable):
         self.checkbox_id_col = 'nodename'
         self.checkbox_id_table = 'v_nodes'
         self.dbfilterable = True
+        self.events = ["nodes_change"]
         self.child_tables = ["obs_agg", "uids", "gids"]
         self.ajax_col_values = 'ajax_nodes_col_values'
         if 'NodeManager' in user_groups():
