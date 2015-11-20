@@ -790,22 +790,7 @@ class table_svcmon(HtmlTable):
         self.ajax_col_values = 'ajax_svcmon_col_values'
         self.user_name = user_name()
         self.additional_tools.append('tool_provisioning')
-        self.additional_tools.append('svc_del')
         self.events = ["svcmon_change"]
-
-    def svc_del(self):
-        d = DIV(
-              A(
-                T("Delete instance"),
-                _class='del16',
-                _onclick="""if (confirm("%(text)s")){%(s)s};"""%dict(
-                   s=self.ajax_submit(args=['svc_del']),
-                   text=T("Please confirm service instances deletion"),
-                ),
-              ),
-              _class='floatw',
-            )
-        return d
 
     def tool_provisioning(self):
         d = DIV(
@@ -827,38 +812,6 @@ class table_svcmon(HtmlTable):
         return d
 
 @auth.requires_login()
-def svc_del(ids):
-    groups = user_groups()
-
-    q = db.svcmon.id.belongs(ids)
-    if 'Manager' not in groups:
-        # Manager can delete any svc
-        # A user can delete only services he is responsible of
-        l1 = db.services.on(db.svcmon.mon_svcname == db.services.svc_name)
-        l2 = db.apps.on(db.services.svc_app == db.apps.app)
-        l3 = db.apps_responsibles.on(db.apps.id == db.apps_responsibles.app_id)
-        l4 = db.auth_group.on(db.apps_responsibles.group_id == db.auth_group.id)
-        q &= (db.auth_group.role.belongs(groups)) | (db.auth_group.role==None)
-        ids = map(lambda x: x.id, db(q).select(db.svcmon.id, left=(l1,l2,l3,l4), cacheable=True))
-        q = db.svcmon.id.belongs(ids)
-    rows = db(q).select(cacheable=True)
-    for r in rows:
-        q = db.svcmon.id == r.id
-        db(q).delete()
-        _log('service.delete',
-             'deleted service instance %(u)s',
-              dict(u='@'.join((r.mon_svcname, r.mon_nodname))),
-             svcname=r.mon_svcname,
-             nodename=r.mon_nodname)
-        purge_svc(r.mon_svcname)
-    if len(rows) > 0:
-        _websocket_send(event_msg({
-             'event': 'svcmon_change',
-             'data': {'f': 'b'},
-            }))
-
-
-@auth.requires_login()
 def ajax_svcmon_col_values():
     t = table_svcmon('svcmon', 'ajax_svcmon')
     col = request.args[0]
@@ -875,14 +828,6 @@ def ajax_svcmon_col_values():
 @auth.requires_login()
 def ajax_svcmon():
     t = table_svcmon('svcmon', 'ajax_svcmon')
-
-    if len(request.args) == 1:
-        action = request.args[0]
-        try:
-            if action == 'svc_del':
-                svc_del(t.get_checked())
-        except ToolError, e:
-            t.flash = str(e)
 
     o = db.v_svcmon.mon_svcname
     o |= db.v_svcmon.mon_nodname

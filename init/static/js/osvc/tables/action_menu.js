@@ -107,6 +107,22 @@ function table_action_menu_init_data(t) {
               "min": 1
             }
           ]
+        },
+        {
+          "selector": ["clicked", "checked", "all"],
+          "foldable": true,
+          'title': 'action_menu.on_services_instances',
+          "cols": ["svcname", "nodename"],
+          "condition": "svcname+nodename",
+          "children": [
+            {
+              "selector": ["clicked", "checked", "all"],
+              "title": "action_menu.delete",
+              "class": "icon del16",
+              "fn": "data_action_delete_svc_instances",
+              "min": 1
+            }
+          ]
         }
       ]
     },
@@ -1131,6 +1147,33 @@ function data_action_delete_svcs(t, e) {
     del_data.push({'svc_name': data[i]['svcname']})
   }
   services_osvcdeleterest("R_SERVICES", "", "", del_data, function(jd) {
+    if (jd.error && (jd.error.length > 0)) {
+      $(".flash").show("blind").html(services_error_fmt(jd))
+    }
+    if (jd.info && (jd.info.length > 0)) {
+      $(".flash").show("blind").html("<pre>"+jd.info+"</pre>")
+    }
+  },
+  function(xhr, stat, error) {
+    $(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
+  })
+}
+
+//
+// data action: delete service instances
+//
+function data_action_delete_svc_instances(t, e) {
+  var entry = $(e.target)
+  var cache_id = entry.attr("cache_id")
+  var data = t.action_menu_data_cache[cache_id]
+  var del_data = new Array()
+  for (i=0;i<data.length;i++) {
+    del_data.push({
+      'mon_svcname': data[i]['svcname'],
+      'mon_nodname': data[i]['nodename']
+    })
+  }
+  services_osvcdeleterest("R_SERVICE_INSTANCES", "", "", del_data, function(jd) {
     if (jd.error && (jd.error.length > 0)) {
       $(".flash").show("blind").html(services_error_fmt(jd))
     }
