@@ -874,7 +874,10 @@ def ajax_reports():
 
 @auth.requires_login()
 def reports():
-    return dict(table=ajax_reports())
+    d = DIV(DIV(
+       _id="reports_div",
+     ),SCRIPT( """reports('reports_div');"""))
+    return dict(table=d)#dict(table=ajax_reports())
 
 def reports_load():
     return reports()["table"]

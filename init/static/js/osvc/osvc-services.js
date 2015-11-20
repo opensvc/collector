@@ -64,7 +64,11 @@ var services_access_uri = {
     "R_IPS" : "rest/api/nodes/%1/ips",
     "R_ALERT_EVENT" : "rest/api/alert_event",
     "R_POST_LINK" : "rest/api/link",
-    "R_GET_LINK" : "rest/api/link/%1"
+    "R_GET_LINK" : "rest/api/link/%1",
+    "R_GET_REPORTS" : "rest/api/reports",
+    "R_GET_REPORT" : "rest/api/reports/%1",
+    "R_GET_REPORT_METRIC" : "rest/api/reports/metrics/%1",
+    "R_GET_REPORT_CHART" : "rest/api/reports/charts/%1"
 }
 
 function services_getaccessurl(service)
