@@ -192,12 +192,12 @@ class HtmlTable(object):
         if self.pageable:
             q = db.auth_user.id==auth.user.id
             try:
-                self.perpage = db(q).select(cacheable=True).first().perpage
+                self.perpage = int(request.vars[self.id+"_perpage"])
             except:
-                self.perpage = 20
-
-            if self.perpage > max_perpage:
-                self.perpage = max_perpage
+                try:
+                    self.perpage = db(q).select(cacheable=True).first().perpage
+                except:
+                    self.perpage = 20
 
             if self.id_page in request.vars and request.vars[self.id_page] != "undefined":
                 self.page = int(request.vars[self.id_page])
