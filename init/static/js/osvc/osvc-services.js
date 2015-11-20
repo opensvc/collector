@@ -65,8 +65,8 @@ var services_access_uri = {
     "R_USER_GROUPS" : "rest/api/users/%1/groups",
     "R_WIKI" : "rest/api/wiki/%1",
     "R_WIKIS" : "rest/api/wiki",
-    "R_LINKS" : "rest/api/link",
-    "R_LINK" : "rest/api/link/%1"
+    "R_LINKS" : "rest/api/links",
+    "R_LINK" : "rest/api/links/%1"
 }
 
 function services_getaccessurl(service)
