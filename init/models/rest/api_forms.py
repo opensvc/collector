@@ -47,7 +47,7 @@ class rest_get_form(rest_get_line_handler):
           "List form <id> properties.",
         ]
         examples = [
-          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/forms?query=form_name contains dns"
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/forms/1"
         ]
 
         rest_get_line_handler.__init__(
