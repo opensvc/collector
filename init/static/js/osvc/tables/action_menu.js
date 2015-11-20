@@ -943,7 +943,7 @@ function table_action_menu_agent_action(t, e, confirmation) {
       }
       s += "<hr>"
       s += "<div>"+i18n.t("action_menu.confirmation")+"</div><br>"
-      s += "<div class='check16 float clickable' name='yes'>"+i18n.t("action_menu.yes")+"</div>"
+      s += "<div class='ok float clickable' name='yes'>"+i18n.t("action_menu.yes")+"</div>"
       s += "<div class='nok float clickable' name='no'>"+i18n.t("action_menu.no")+"</div>"
       $(s).insertAfter(entry)
       $("#am_"+t.id).find("[name=yes]").bind("click", function(){
