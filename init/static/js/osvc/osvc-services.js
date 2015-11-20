@@ -81,6 +81,47 @@ function services_getaccessurl(service)
     return base_path
 }
 
+function services_osvcputrest(service, uri, params, data, callback, error_callback)
+{
+    url = services_getaccessurl(service)
+    if (is_blank(url)) {
+        console.log(service + " uri undefined")
+        return
+    }
+    for(var i=0; i<uri.length; i++) {
+        url = url.replace("%"+(i+1), uri[i])
+    }
+
+    var isobj=0;
+    try {
+        var t = Object.keys(params);
+        isobj=1;
+    }
+    catch (e){;}
+
+    if ((isobj==1) && (t.length > 0)) {
+        url += "?"
+        for (key in t) {
+            url += encodeURIComponent(key) + "=" + encodeURIComponent(params[key]) + "&";
+        }
+        url = url.replace(/&$/, "");
+    }
+    var content_type = "application/x-www-form-urlencoded"
+    if (Object.prototype.toString.call(data) === '[object Array]') {
+      data = JSON.stringify(data)
+      content_type = "application/json"
+    }
+    var req = $.ajax(
+    {
+        type: "PUT",
+        url: url,
+        contentType: content_type,
+        data: data,
+        error: error_callback,
+        success: callback
+    })
+}
+
 function services_osvcpostrest(service, uri, params, data, callback, error_callback)
 {
     url = services_getaccessurl(service)
