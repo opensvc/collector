@@ -298,6 +298,11 @@ def _update_service(vars, vals, auth):
             vals.append(val)
     generic_insert('services', vars, vals)
     db.commit()
+    _websocket_send(event_msg({
+                     'event': 'services_change',
+                     'data': {'a': 'b'}
+                    }))
+
     update_dash_service_not_updated(h['svc_name'].strip("'"))
     nodename, vmname, vmtype = translate_encap_nodename(h['svc_name'], auth[1])
     if nodename is not None:
