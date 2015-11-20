@@ -256,7 +256,7 @@ class rest_post_handler(rest_handler):
         rest_handler.__init__(self, **vars)
 
     def handle(self, *args, **vars):
-        if "application/json" in request.env.http_content_type:
+        if request.env.http_content_type and "application/json" in request.env.http_content_type:
             data = json.loads(request.body.read())
             if type(data) == list:
                 return self.handle_list(data, args, vars)
@@ -317,7 +317,7 @@ class rest_put_handler(rest_handler):
         rest_handler.__init__(self, **vars)
 
     def handle(self, *args, **vars):
-        if "application/json" in request.env.http_content_type:
+        if request.env.http_content_type and "application/json" in request.env.http_content_type:
             data = json.loads(request.body.read())
             if type(data) == list:
                 return self.handle_list(data, args, vars)
@@ -336,7 +336,7 @@ class rest_delete_handler(rest_handler):
         rest_handler.__init__(self, **vars)
 
     def handle(self, *args, **vars):
-        if "application/json" in request.env.http_content_type:
+        if request.env.http_content_type and "application/json" in request.env.http_content_type:
             data = json.loads(request.body.read())
             if type(data) == list:
                 return self.handle_list(data, args, vars)
