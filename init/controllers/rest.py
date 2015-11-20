@@ -220,6 +220,8 @@ handlers = {
      rest_delete_node(),
      rest_delete_node_compliance_moduleset(),
      rest_delete_node_compliance_ruleset(),
+     rest_delete_service(),
+     rest_delete_services(),
      rest_delete_service_compliance_moduleset(),
      rest_delete_service_compliance_ruleset(),
      rest_delete_scheduler_task(),
