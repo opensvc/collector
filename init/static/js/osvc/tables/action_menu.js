@@ -725,11 +725,10 @@ function table_action_menu_format_selector(t, e, selector) {
         li.bind("click", function(e) {
           e.stopPropagation()
           var fn = $(this).attr("fn")
-          var cache_id = $(this).attr("cache_id")
           if (fn) {
-            window[fn](t, cache_id)
+            window[fn](t, e)
           } else {
-            table_action_menu_agent_action(t, e, cache_id)
+            table_action_menu_agent_action(t, e)
           }
         })
         ul.append(li)
@@ -786,7 +785,7 @@ function table_action_menu_format_selector(t, e, selector) {
     }
 
     // add the action list and bind click handler if not disabled
-    if ((ul.length > 0) && !s.hasClass("action_menu_selector_disabled")) {
+    if ((ul.children().length > 0) && !s.hasClass("action_menu_selector_disabled")) {
       if (!s.hasClass("action_menu_selector_selected")) {
         ul.hide()
       }
@@ -911,8 +910,9 @@ function table_action_menu_param_module(t) {
 // ask for a confirmation on first call, recurse once to do real stuff
 // given a dataset, post each entry into the action_q
 //
-function table_action_menu_agent_action(t, e, cache_id, confirmation) {
+function table_action_menu_agent_action(t, e, confirmation) {
     var entry = $(e.target)
+    var cache_id = entry.attr("cache_id")
     var action = entry.attr("action")
 
     if (!(confirmation==true)) {
@@ -951,7 +951,7 @@ function table_action_menu_agent_action(t, e, cache_id, confirmation) {
         $(this).unbind("click")
         $(this).removeClass("check16")
         $(this).addClass("spinner")
-        table_action_menu_agent_action(t, e, cache_id, true)
+        table_action_menu_agent_action(t, e, true)
       })
       $("#am_"+t.id).find("[name=no]").bind("click", function(){$("#am_"+t.id).remove()})
       return
@@ -1004,7 +1004,9 @@ function table_action_menu_agent_action(t, e, cache_id, confirmation) {
 //
 // tool: topo
 //
-function tool_topo(t, cache_id) {
+function tool_topo(t, e) {
+  var entry = $(e.target)
+  var cache_id = entry.attr("cache_id")
   var data = t.action_menu_data_cache[cache_id]
   var nodenames = new Array()
   for (i=0;i<data.length;i++) {
@@ -1025,7 +1027,9 @@ function tool_topo(t, cache_id) {
 //
 // tool: nodesantopo
 //
-function tool_nodesantopo(t, cache_id) {
+function tool_nodesantopo(t, e) {
+  var entry = $(e.target)
+  var cache_id = entry.attr("cache_id")
   var data = t.action_menu_data_cache[cache_id]
   if (data.length==0) {
     return ""
@@ -1041,7 +1045,9 @@ function tool_nodesantopo(t, cache_id) {
 //
 // tool: nodesysrepdiff
 //
-function tool_nodesysrepdiff(t, cache_id) {
+function tool_nodesysrepdiff(t, e) {
+  var entry = $(e.target)
+  var cache_id = entry.attr("cache_id")
   var data = t.action_menu_data_cache[cache_id]
   var nodes = new Array()
   for (i=0;i<data.length;i++) {
@@ -1054,7 +1060,9 @@ function tool_nodesysrepdiff(t, cache_id) {
 //
 // tool: nodesysrep
 //
-function tool_nodesysrep(t, cache_id) {
+function tool_nodesysrep(t, e) {
+  var entry = $(e.target)
+  var cache_id = entry.attr("cache_id")
   var data = t.action_menu_data_cache[cache_id]
   var nodes = new Array()
   for (i=0;i<data.length;i++) {
@@ -1067,7 +1075,9 @@ function tool_nodesysrep(t, cache_id) {
 //
 // tool: svcdiff
 //
-function tool_svcdiff(t, cache_id) {
+function tool_svcdiff(t, e) {
+  var entry = $(e.target)
+  var cache_id = entry.attr("cache_id")
   var data = t.action_menu_data_cache[cache_id]
   var nodes = new Array()
   for (i=0;i<data.length;i++) {
@@ -1080,7 +1090,9 @@ function tool_svcdiff(t, cache_id) {
 //
 // tool: nodediff
 //
-function tool_nodediff(t, cache_id) {
+function tool_nodediff(t, e) {
+  var entry = $(e.target)
+  var cache_id = entry.attr("cache_id")
   var data = t.action_menu_data_cache[cache_id]
   var nodes = new Array()
   for (i=0;i<data.length;i++) {
@@ -1093,7 +1105,9 @@ function tool_nodediff(t, cache_id) {
 //
 // tool: grpprf
 //
-function tool_grpprf(t, cache_id) {
+function tool_grpprf(t, e) {
+  var entry = $(e.target)
+  var cache_id = entry.attr("cache_id")
   var data = t.action_menu_data_cache[cache_id]
   if (data.length==0) {
     return ""
@@ -1109,7 +1123,9 @@ function tool_grpprf(t, cache_id) {
 //
 // data action: delete services
 //
-function data_action_delete_svcs(t, cache_id) {
+function data_action_delete_svcs(t, e) {
+  var entry = $(e.target)
+  var cache_id = entry.attr("cache_id")
   var data = t.action_menu_data_cache[cache_id]
   var del_data = new Array()
   for (i=0;i<data.length;i++) {
