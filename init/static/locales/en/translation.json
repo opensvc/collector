@@ -13,10 +13,17 @@
     "warn_remove": "Warning, this object might be referenced by other objects. Do you really want to delete this compliance object ?"
   },
   "action_menu": {
+    "delete": "Delete",
     "confirmation": "Are you sure ?",
     "tools": "Data analysis",
     "data_actions": "Data actions",
     "agent_actions": "Agent actions",
+    "on_modules": "On modules",
+    "on_resources": "On resources",
+    "on_services": "On services",
+    "on_services_instances": "On services instances",
+    "on_nodes": "On nodes",
+    "on_nodes_and_services": "On nodes and services",
     "actions_on_all_modules": "Actions on all modules",
     "actions_on_module_on_service_on_node": "Actions on module <b>__module__</b> on <b>__svcname__</b> service instance on node <b>__nodename__</b>",
     "actions_on_module_on_node": "Actions on module <b>__module__</b> on node <b>__nodename__</b>",
