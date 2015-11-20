@@ -135,7 +135,7 @@ function osvc_create_link(fn, parameters, target)
   // Security for old link
   fn = fn.replace("?","");
 
-  var link_id =  services_osvcpostrest("R_POST_LINK", "", "", {"fn": fn, "param": JSON.stringify(parameters)}, function(jd) {
+  var link_id =  services_osvcpostrest("R_LINKS", "", "", {"fn": fn, "param": JSON.stringify(parameters)}, function(jd) {
       if (jd.error) {
         target.html(services_error_fmt(jd))
         return
@@ -223,7 +223,7 @@ function osvc_show_link(url, target) {
 
 function osvc_get_link(divid,link_id)
 {
-  services_osvcgetrest("R_GET_LINK",[link_id] , "", function(jd) {
+  services_osvcgetrest("R_LINK",[link_id] , "", function(jd) {
       if (jd.data.length === 0) { // Link not found
         var val = "<div style='text-align:center'>" + i18n.t("link.notfound")+"</div>"
         $('#'+divid).html(val);
