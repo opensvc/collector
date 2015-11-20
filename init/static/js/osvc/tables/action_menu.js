@@ -457,13 +457,13 @@ function table_action_menu(t, e){
 
   // display actions only for the clicked section
   var folders = $("#am_"+t.id+" .action_menu_folder")
-  folders.addClass("right")
+  folders.addClass("right16")
   folders.children("ul,.action_menu_selector").hide()
   folders.bind("click", function(e){
     e.stopPropagation()
     var v = $(this).children(".action_menu_selector").is(":visible")
-    folders.removeClass("down")
-    folders.addClass("right")
+    folders.removeClass("down16")
+    folders.addClass("right16")
     folders.children("ul,.action_menu_selector").hide()
     if (!v) {
       var selector = $(this).children(".action_menu_selector")
@@ -471,8 +471,8 @@ function table_action_menu(t, e){
       var scope = selector.children(".action_menu_selector_selected").attr("scope")
       $(this).children("ul").hide()
       $(this).children("ul[scope="+scope+"]").show()
-      $(this).removeClass("right")
-      $(this).addClass("down")
+      $(this).removeClass("right16")
+      $(this).addClass("down16")
     }
   })
   return
@@ -686,7 +686,7 @@ function table_action_menu_get_cols_data(t, e, scope, selector) {
 
 function table_action_menu_format_selector(t, e, selector) {
   if (selector.title) {
-    var title = $("<div></div>")
+    var title = $("<span></span>")
     title.text(i18n.t(selector.title))
   }
   var e_selector = $("<div class='action_menu_selector'></div>")
@@ -917,7 +917,6 @@ function table_action_menu_agent_action(t, e, confirmation) {
 
     if (!(confirmation==true)) {
       s = ""
-      var clone = $("#am_"+t.id).clone(true, true)
 
       // hide other choices
       entry.parent().parent().parent().parent().siblings().hide()
