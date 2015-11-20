@@ -1048,7 +1048,6 @@ function table_ajax_submit(t, tool, additional_inputs, input_name, additional_in
     t.div.find(".white_float_input").hide()
 
     var data = {
-      "tableid": t.id,
       "table_id": t.id,
     }
     data[t.id+"_page"] = t.e_header.find("#"+t.id+"_page").val()

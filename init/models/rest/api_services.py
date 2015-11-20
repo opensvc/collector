@@ -56,7 +56,7 @@ class rest_get_services(rest_get_table_handler):
           "List OpenSVC services.",
         ]
         examples = [
-          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/services?props=svc_name,app&fset_id=10",
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/services?props=svc_name,app",
         ]
         rest_get_table_handler.__init__(
           self,
@@ -71,6 +71,99 @@ class rest_get_services(rest_get_table_handler):
         q = _where(q, 'services', domain_perms(), 'svc_name')
         self.set_q(q)
         return self.prepare_data(**vars)
+
+#
+class rest_delete_service(rest_delete_handler):
+    def __init__(self):
+        desc = [
+          "- Delete an OpenSVC service.",
+          "- Cascade delete services instances, dashboard entries.",
+          "- Log the deletion.",
+          "- Send websocket change events on services, services instances and dashboard tables.",
+        ]
+        examples = [
+          "# curl -u %(email)s -X DELETE -o- https://%(collector)s/init/rest/api/services/mytestsvc",
+        ]
+        rest_delete_handler.__init__(
+          self,
+          path="/services/<svcname>",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, svcname, **vars):
+        q = db.services.svc_name == svcname
+        q = _where(q, 'services', domain_perms(), 'svc_name')
+        row = db(q).select(db.services.id, db.services.svc_name).first()
+        if row is None:
+            raise Exception("service %s does not exist" % svcname)
+        svc_responsible(row.svc_name)
+
+        db(q).delete()
+
+        _log('service.delete',
+             'delete service %(data)s',
+             dict(data=svcname),
+            )
+        l = {
+          'event': 'services_change',
+          'data': {'id': row.id},
+        }
+        _websocket_send(event_msg(l))
+
+        q = db.svcmon.mon_svcname == svcname
+        db(q).delete()
+        l = {
+          'event': 'svcmon_change',
+          'data': {'a': 'b'},
+        }
+        _websocket_send(event_msg(l))
+
+        q = db.dashboard.dash_svcname == svcname
+        db(q).delete()
+        l = {
+          'event': 'dashboard_change',
+          'data': {'a': 'b'},
+        }
+        _websocket_send(event_msg(l))
+
+        return dict(info="service %s deleted" % svcname)
+
+#
+class rest_delete_services(rest_delete_handler):
+    def __init__(self):
+        desc = [
+          "- Delete OpenSVC services.",
+          "- Cascade delete services instances and dashboard entries.",
+          "- Log the deletion.",
+          "- Send websocket change events on services, services instances and dashboard tables.",
+        ]
+        examples = [
+          "# curl -u %(email)s -X DELETE -o- https://%(collector)s/init/rest/api/services?filter[]=svc_name=test%",
+        ]
+        rest_delete_handler.__init__(
+          self,
+          path="/services",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, **vars):
+        q = None
+        if 'svc_name' in vars:
+            s = vars["svc_name"]
+            q = db.services.svc_name == s
+        if 'id' in vars:
+            s = vars["id"]
+            q = db.services.svc_name == vars["id"]
+            s = str(s)
+        if q is None:
+            raise Exception("svc_name or id key must be specified")
+        q = _where(q, 'services', domain_perms(), 'svc_name')
+        row = db(q).select(db.services.id, db.services.svc_name).first()
+        if row is None:
+            raise Exception("service %s does not exist" % s)
+        return rest_delete_service().handler(row.svc_name)
 
 
 #
@@ -95,6 +188,95 @@ class rest_get_service_instances(rest_get_table_handler):
         q = _where(q, 'svcmon', domain_perms(), 'mon_nodname')
         self.set_q(q)
         return self.prepare_data(**vars)
+
+
+#
+class rest_delete_service_instance(rest_delete_handler):
+    def __init__(self):
+        desc = [
+          "- Delete an OpenSVC service instance.",
+          "- Cascade the deletion to the dashboard alerts.",
+          "- Log the deletion.",
+          "- Send websocket change events on the services instances and dashboard table.",
+        ]
+        examples = [
+          "# curl -u %(email)s -X DELETE -o- https://%(collector)s/init/rest/api/service_instances/1",
+        ]
+        rest_delete_handler.__init__(
+          self,
+          path="/service_instances/<id>",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, id, **vars):
+        q = db.svcmon.id == id
+        q = _where(q, 'svcmon', domain_perms(), 'mon_nodname')
+        row = db(q).select(db.svcmon.id, db.svcmon.mon_svcname, db.svcmon.mon_nodname).first()
+        if row is None:
+            raise Exception("service instance %s does not exist" % str(id))
+        svc_responsible(row.mon_svcname)
+
+        db(q).delete()
+
+        _log('service_instance.delete',
+             'delete service %(svcname)s instance on node %(nodename)s',
+             dict(svcname=row.mon_svcname, nodename=row.mon_nodname),
+            )
+        l = {
+          'event': 'svcmon_change',
+          'data': {'id': row.id},
+        }
+        _websocket_send(event_msg(l))
+
+        q = db.dashboard.dash_svcname == row.mon_svcname
+        q = db.dashboard.dash_nodename == row.mon_nodname
+        db(q).delete()
+        l = {
+          'event': 'dashboard_change',
+          'data': {'a': 'b'},
+        }
+        _websocket_send(event_msg(l))
+
+        return dict(info='service %(svcname)s instance on node %(nodename)s deleted' % dict(svcname=row.mon_svcname, nodename=row.mon_nodname))
+
+#
+class rest_delete_service_instances(rest_delete_handler):
+    def __init__(self):
+        desc = [
+          "- Delete OpenSVC service instances.",
+          "- Cascade delete dashboard entries.",
+          "- Log the deletion.",
+          "- Send websocket change events on services instances and dashboard tables.",
+        ]
+        examples = [
+          "# curl -u %(email)s -X DELETE -o- https://%(collector)s/init/rest/api/service_instances?filter[]=svc_name=test%",
+        ]
+        rest_delete_handler.__init__(
+          self,
+          path="/service_instances",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, **vars):
+        q = None
+        if 'mon_svcname' in vars and 'mon_nodname':
+            q = db.svcmon.mon_svcname == vars["mon_svcname"]
+            q &= db.svcmon.mon_nodname == vars["mon_nodname"]
+            s = vars["mon_svcname"] + "@" + vars["mon_nodname"]
+        if 'id' in vars:
+            s = vars["id"]
+            q = db.services.svc_name == vars["id"]
+            s = str(s)
+        if q is None:
+            raise Exception("mon_svcname+mon_nodname or id keys must be specified")
+        q = _where(q, 'svcmon', domain_perms(), 'mon_nodname')
+        row = db(q).select(db.svcmon.id, db.svcmon.mon_svcname, db.svcmon.mon_nodname).first()
+        if row is None:
+            raise Exception("service instance %s does not exist" % s)
+        return rest_delete_service_instance().handler(row.id)
+
 
 
 #

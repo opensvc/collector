@@ -232,41 +232,45 @@ def do_svc_action(nodename, svcname, action, rid=None):
     if action is None or len(action) == 0:
         raise ToolError("no action specified")
 
-    # filter out services we are not responsible for
-    sql = """select m.mon_nodname, m.mon_svcname
-             from v_svcmon m
-             join apps a on m.svc_app=a.app
-             join apps_responsibles ar on a.id=ar.app_id
-             join auth_group g on ar.group_id=g.id and g.id in (%(gids)s)
-             where
-               m.mon_svcname="%(svcname)s" and
-               (mon_nodname="%(nodename)s" or mon_vmname="%(nodename)s")
-             group by m.mon_nodname, m.mon_svcname
-          """%dict(nodename=nodename,
-                   svcname=svcname,
-                   gids=",".join(map(lambda x: str(x), user_group_ids())))
-    rows = db.executesql(sql)
-    if len(rows) == 0:
-        return 0
+    if not action.startswith("create"):
+        # filter out services we are not responsible for
+        sql = """select m.mon_nodname, m.mon_svcname
+                 from v_svcmon m
+                 join apps a on m.svc_app=a.app
+                 join apps_responsibles ar on a.id=ar.app_id
+                 join auth_group g on ar.group_id=g.id and g.id in (%(gids)s)
+                 where
+                   m.mon_svcname="%(svcname)s" and
+                   (mon_nodname="%(nodename)s" or mon_vmname="%(nodename)s")
+                 group by m.mon_nodname, m.mon_svcname
+              """%dict(nodename=nodename,
+                       svcname=svcname,
+                       gids=",".join(map(lambda x: str(x), user_group_ids())))
+        rows = db.executesql(sql)
+        if len(rows) == 0:
+            return 0
 
-    row = rows[0]
-    node = db(db.nodes.nodename==nodename).select().first()
+    # filter out nodes we are not responsible for
+    q = db.nodes.nodename == nodename
+    q &= db.nodes.team_responsible.belongs(user_groups())
+    node = db(q).select(db.nodes.nodename, db.nodes.os_name, db.nodes.action_type, cacheable=True).first()
     if node is None:
         return 0
+
     enqueue_svc_action(node, svcname, action, rid=rid)
     if rid is None:
         _log('service.action',
              'run %(a)s',
              dict(a=action),
-             svcname=row[1],
-             nodename=row[0]
+             svcname=svcname,
+             nodename=nodename
         )
     else:
         _log('service.resource.action',
              'run %(a)s on rid %(r)s',
              dict(a=action, r=rid),
-             svcname=row[1],
-             nodename=row[0]
+             svcname=svcname,
+             nodename=nodename
         )
     return 1
 

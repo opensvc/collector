@@ -2,61 +2,420 @@
 // install agent action menu entries definitions in the table object
 //
 function table_action_menu_init_data(t) {
-   t.action_menu = {
-    "nodes": [
-      {'title': 'Update node information', 'class': 'icon node16', 'action': 'pushasset'},
-      {'title': 'Update disks information', 'class': 'icon hd16', 'action': 'pushdisks'},
-      {'title': 'Update app information', 'class': 'icon svc-c', 'action': 'push_appinfo'},
-      {'title': 'Update services information', 'class': 'icon svc-c', 'action': 'pushservices'},
-      {'title': 'Update installed packages information', 'class': 'icon pkg16', 'action': 'pushpkg'},
-      {'title': 'Update installed patches information', 'class': 'icon pkg16', 'action': 'pushpatch'},
-      {'title': 'Update stats', 'class': 'icon spark16', 'action': 'pushstats'},
-      {'title': 'Update check values', 'class': 'icon ok', 'action': 'checks'},
-      {'title': 'Update sysreport', 'class': 'icon log16', 'action': 'sysreport'},
-      {'title': 'Update compliance modules', 'class': 'icon comp-c', 'action': 'updatecomp'},
-      {'title': 'Update opensvc agent', 'class': 'icon pkg16', 'action': 'updatepkg'},
-      {'title': 'Rotate root password', 'class': 'icon key', 'action': 'rotate root pw'},
-      {'title': 'Rescan scsi hosts', 'class': 'icon hd16', 'action': 'scanscsi'},
-      {'title': 'Reboot', 'class': 'icon action_restart_16', 'action': 'reboot'},
-      {'title': 'Reboot schedule', 'class': 'icon action_restart_16', 'action': 'schedule_reboot'},
-      {'title': 'Reboot unschedule', 'class': 'icon action_restart_16', 'action': 'unschedule_reboot'},
-      {'title': 'Shutdown', 'class': 'icon action_stop_16', 'action': 'shutdown'},
-      {'title': 'Wake On LAN', 'class': 'icon action_start_16', 'action': 'wol'},
-      {'title': 'Compliance check', 'class': 'icon comp-c', 'action': 'compliance_check', 'params': ["module", "moduleset"]},
-      {'title': 'Compliance fix', 'class': 'icon comp-c', 'action': 'compliance_fix', 'params': ["module", "moduleset"]}
-    ],
-    "services": [
-      {'title': 'Start', 'class': 'icon action_start_16', 'action': 'start'},
-      {'title': 'Stop', 'class': 'icon action_stop_16', 'action': 'stop'},
-      {'title': 'Restart', 'class': 'icon action_restart_16', 'action': 'restart'},
-      {'title': 'Switch', 'class': 'icon action_switch_16', 'action': 'switch'},
-      {'title': 'Sync all remotes', 'class': 'icon action_sync_16', 'action': 'syncall'},
-      {'title': 'Sync peer remotes', 'class': 'icon action_sync_16', 'action': 'syncnodes'},
-      {'title': 'Sync disaster recovery remotes', 'class': 'icon action_sync_16', 'action': 'syncdrp'},
-      {'title': 'Enable', 'class': 'icon ok', 'action': 'enable'},
-      {'title': 'Disable', 'class': 'icon nok', 'action': 'disable'},
-      {'title': 'Thaw', 'class': 'icon ok', 'action': 'thaw'},
-      {'title': 'Freeze', 'class': 'icon nok', 'action': 'freeze'},
-      {'title': 'Compliance check', 'class': 'icon comp-c', 'action': 'compliance_check', 'params': ["module", "moduleset"]},
-      {'title': 'Compliance fix', 'class': 'icon comp-c', 'action': 'compliance_fix', 'params': ["module", "moduleset"]}
-    ],
-    "resources": [
-      {'title': 'Start', 'class': 'icon action_start_16', 'action': 'start'},
-      {'title': 'Stop', 'class': 'icon action_stop_16', 'action': 'stop'},
-      {'title': 'Restart', 'class': 'icon action_restart_16', 'action': 'restart'},
-      {'title': 'Enable', 'class': 'icon ok', 'action': 'enable'},
-      {'title': 'Disable', 'class': 'icon nok', 'action': 'disable'}
-    ],
-    "modules": [
-      {'title': 'Check', 'class': 'icon comp-c', 'action': 'check'},
-      {'title': 'Fix', 'class': 'icon comp-c', 'action': 'fix'}
-    ]
+  t.action_menu_req_max = 1000
+  t.column_selectors = {
+    "svcname": "td[cell=1][name$=svcname],td[cell=1][name$=svc_name],td[cell=1][name$=disk_svcname]",
+    "nodename": "td[cell=1][name$=nodename],td[cell=1][name$=mon_nodname],td[cell=1][name$=disk_nodename],td[cell=1][name$=hostname]",
+    "rid": "td[cell=1][name$=_rid]",
+    "module": "td[cell=1][name$=_run_module]"
   }
+
+  t.action_menu_data = [
+    {
+      "title": "action_menu.tools",
+      "class": "spark16",
+      "children": [
+        {
+          "selector": ["clicked", "checked"],
+          "title": "action_menu.on_nodes",
+          "foldable": true,
+          "cols": ["nodename"],
+          "condition": "nodename",
+          "children": [
+            {
+              "title": "action_menu.node_diff",
+              "class": "icon common16",
+              "fn": "tool_nodediff",
+              "min": 2
+            },
+            {
+              "title": "action_menu.node_sysrep",
+              "class": "icon log16",
+              "fn": "tool_nodesysrep",
+              "min": 1
+            },
+            {
+              "title": "action_menu.node_sysrep_diff",
+              "class": "icon common16",
+              "fn": "tool_nodesysrepdiff",
+              "min": 2
+            },
+            {
+              "title": "action_menu.node_san_topo",
+              "class": "icon hd16",
+              "fn": "tool_nodesantopo",
+              "min": 1
+            },
+            {
+              "title": "action_menu.node_perf",
+              "class": "icon spark16",
+              "fn": "tool_grpprf",
+              "min": 1
+            }
+          ]
+        },
+        {
+          "selector": ["checked"],
+          "title": "action_menu.on_services",
+          "foldable": true,
+          "cols": ["svcname"],
+          "condition": "svcname",
+          "children": [
+            {
+              "title": "action_menu.svc_diff",
+              "class": "icon common16",
+              "fn": "tool_svcdiff",
+              "min": 2
+            }
+          ]
+        },
+        {
+          "selector": ["clicked", "checked"],
+          "title": "action_menu.on_nodes_and_services",
+          "foldable": true,
+          "cols": ["svcname", "nodename"],
+          "condition": "svcname,nodename",
+          "children": [
+            {
+              "title": "action_menu.topology",
+              "class": "icon dia16",
+              "fn": "tool_topo",
+              "min": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "action_menu.data_actions",
+      "class": "hd16",
+      "children": [
+        {
+          "selector": ["clicked", "checked", "all"],
+          "foldable": true,
+          'title': 'action_menu.on_services',
+          "cols": ["svcname"],
+          "condition": "svcname",
+          "children": [
+            {
+              "selector": ["clicked", "checked", "all"],
+              "title": "action_menu.delete",
+              "class": "icon del16",
+              "fn": "data_action_delete_svcs",
+              "min": 1
+            }
+          ]
+        },
+        {
+          "selector": ["clicked", "checked", "all"],
+          "foldable": true,
+          'title': 'action_menu.on_services_instances',
+          "cols": ["svcname", "nodename"],
+          "condition": "svcname+nodename",
+          "children": [
+            {
+              "selector": ["clicked", "checked", "all"],
+              "title": "action_menu.delete",
+              "class": "icon del16",
+              "fn": "data_action_delete_svc_instances",
+              "min": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "action_menu.agent_actions",
+      "class": "action16",
+      "children": [
+        {
+          "selector": ["clicked", "checked", "all"],
+          "foldable": true,
+          'title': 'action_menu.on_nodes',
+          "cols": ["nodename"],
+          "condition": "nodename",
+          "children": [
+            {
+              'title': 'Update node information',
+              'class': 'icon node16',
+              "min": 1,
+              'action': 'pushasset'
+            },
+            {
+              'title': 'Update disks information',
+              'class': 'icon hd16',
+              "min": 1,
+              'action': 'pushdisks'
+            },
+            {
+              'title': 'Update app information',
+              'class': 'icon svc-c',
+              "min": 1,
+              'action': 'push_appinfo'
+            },
+            {
+              'title': 'Update services information',
+              'class': 'icon svc-c',
+              "min": 1,
+              'action': 'pushservices'
+            },
+            {
+              'title': 'Update installed packages information',
+              'class': 'icon pkg16',
+              "min": 1,
+              'action': 'pushpkg'
+            },
+            {
+              'title': 'Update installed patches information',
+              'class': 'icon pkg16',
+              "min": 1,
+              'action': 'pushpatch'
+            },
+            {
+              'title': 'Update stats',
+              'class': 'icon spark16',
+              "min": 1,
+              'action': 'pushstats'
+            },
+            {
+              'title': 'Update check values',
+              'class': 'icon ok',
+              "min": 1,
+              'action': 'checks'
+            },
+            {
+              'title': 'Update sysreport',
+              'class': 'icon log16',
+              "min": 1,
+              'action': 'sysreport'
+            },
+            {
+              'title': 'Update compliance modules',
+              'class': 'icon comp-c',
+              "min": 1,
+              'action': 'updatecomp'
+            },
+            {
+              'title': 'Update opensvc agent',
+              'class': 'icon pkg16',
+              "min": 1,
+              'action': 'updatepkg'
+            },
+            {
+              'title': 'Rotate root password',
+              'class': 'icon key',
+              "min": 1,
+              'action': 'rotate root pw'
+            },
+            {
+              'title': 'Rescan scsi hosts',
+              'class': 'icon hd16',
+              "min": 1,
+              'action': 'scanscsi'
+            },
+            {
+              'title': 'Reboot',
+              'class': 'icon action_restart_16',
+              "min": 1,
+              'action': 'reboot'
+            },
+            {
+              'title': 'Reboot schedule',
+              'class': 'icon action_restart_16',
+              "min": 1,
+              'action': 'schedule_reboot'
+            },
+            {
+              'title': 'Reboot unschedule',
+              'class': 'icon action_restart_16',
+              "min": 1,
+              'action': 'unschedule_reboot'
+            },
+            {
+              'title': 'Shutdown',
+              'class': 'icon action_stop_16',
+              "min": 1,
+              'action': 'shutdown'
+            },
+            {
+              'title': 'Wake On LAN',
+              'class': 'icon action_start_16',
+              "min": 1,
+              'action': 'wol'
+            },
+            {
+              'title': 'Compliance check',
+              'class': 'icon comp-c',
+              "min": 1,
+              'action': 'compliance_check',
+              'params': ["module", "moduleset"]
+            },
+            {
+              'title': 'Compliance fix',
+              'class': 'icon comp-c',
+              "min": 1,
+              'action': 'compliance_fix',
+              'params': ["module", "moduleset"]
+            }
+          ]
+        },
+        {
+          "selector": ["clicked", "checked", "all"],
+          "foldable": true,
+          'title': 'action_menu.on_services_instances',
+          "cols": ["svcname", "nodename"],
+          "condition": "svcname+nodename",
+          "children": [
+            {
+              'title': 'Start',
+              'class': 'icon action_start_16',
+              "min": 1,
+              'action': 'start'
+            },
+            {
+              'title': 'Stop',
+              'class': 'icon action_stop_16',
+              "min": 1,
+              'action': 'stop'
+            },
+            {
+              'title': 'Restart',
+              'class': 'icon action_restart_16',
+              "min": 1,
+              'action': 'restart'
+            },
+            {
+              'title': 'Switch',
+              'class': 'icon action_switch_16',
+              "min": 1,
+              'action': 'switch'
+            },
+            {
+              'title': 'Sync all remotes',
+              'class': 'icon action_sync_16',
+              "min": 1,
+              'action': 'syncall'
+            },
+            {
+              'title': 'Sync peer remotes',
+              'class': 'icon action_sync_16',
+              "min": 1,
+              'action': 'syncnodes'
+            },
+            {
+              'title': 'Sync disaster recovery remotes',
+              'class': 'icon action_sync_16',
+              "min": 1,
+              'action': 'syncdrp'
+            },
+            {
+              'title': 'Enable',
+              'class': 'icon ok',
+              "min": 1,
+              'action': 'enable'
+            },
+            {
+              'title': 'Disable',
+              'class': 'icon nok',
+              "min": 1,
+              'action': 'disable'
+            },
+            {
+              'title': 'Thaw',
+              'class': 'icon ok',
+              "min": 1,
+              'action': 'thaw'
+            },
+            {
+              'title': 'Freeze',
+              'class': 'icon nok',
+              "min": 1,
+              'action': 'freeze'
+            },
+            {
+              'title': 'Compliance check',
+              'class': 'icon comp-c',
+              "min": 1,
+              'action': 'compliance_check',
+              'params': ["module", "moduleset"]
+            },
+            {
+              'title': 'Compliance fix',
+              'class': 'icon comp-c',
+              "min": 1,
+              'action': 'compliance_fix',
+              'params': ["module", "moduleset"]
+            }
+          ]
+        },
+        {
+          "selector": ["clicked", "checked", "all"],
+          "foldable": true,
+          'title': 'action_menu.on_resources',
+          "cols": ["svcname", "nodename", "rid"],
+          "condition": "svcname+nodename+rid",
+          "children": [
+            {
+              'title': 'Start',
+              'class': 'icon action_start_16',
+              "min": 1,
+              'action': 'start'
+            },
+            {
+              'title': 'Stop',
+              'class': 'icon action_stop_16',
+              "min": 1,
+              'action': 'stop'
+            },
+            {
+              'title': 'Restart',
+              'class': 'icon action_restart_16',
+              "min": 1,
+              'action': 'restart'
+            },
+            {
+              'title': 'Enable',
+              'class': 'icon ok',
+              "min": 1,
+              'action': 'enable'
+            },
+            {
+              'title': 'Disable',
+              'class': 'icon nok',
+              "min": 1,
+              'action': 'disable'
+            }
+          ]
+        },
+        {
+          "selector": ["clicked", "checked", "all"],
+          "foldable": true,
+          'title': 'action_menu.on_modules',
+          "cols": ["svcname", "nodename", "module"],
+          "condition": "svcname+nodename+module,nodename+module",
+          "children": [
+            {
+              'title': 'Check',
+              'class': 'icon comp-c',
+              "min": 1,
+              'action': 'check'
+            },
+            {
+              'title': 'Fix',
+              'class': 'icon comp-c',
+              "min": 1,
+              'action': 'fix'
+            }
+          ]
+        }
+      ]
+    }
+  ]
 }
 
 //
-// install handler for click events on the table checkbox column
-// only function called at table init
+// install handler for click events on the table checkbox column.
+// only function called at table init.
 //
 function table_bind_action_menu(t) {
   table_action_menu_init_data(t)
@@ -75,6 +434,424 @@ function table_bind_action_menu(t) {
     })
   })
 }
+
+//
+// action menu formatter entry point
+//
+function table_action_menu(t, e){
+  // drop the previous action menu
+  $("#am_"+t.id).remove()
+
+  // purge the caches
+  t.action_menu_req_cache = null
+  t.action_menu_data_cache = {}
+
+  // create and position the popup at the mouse click
+  var am = $("<div id='am_"+t.id+"' class='white_float action_menu stackable'></div>")
+  var pos = get_pos(e)
+  t.div.append(am)
+  $("#am_"+t.id).css({"left": pos[0] + "px", "top": pos[1] + "px"})
+
+  // format the data as menu
+  var ul = $("<ul></ul>")
+  for (var i=0; i<t.action_menu_data.length; i++) {
+    var li = table_action_menu_format_section(t, e, t.action_menu_data[i])
+    if (li.html().length == 0) {
+      continue
+    }
+    ul.append(li)
+  }
+
+  // empty menu banner
+  if (ul.html().length == 0) {
+    am.append("<span class='alert16 icon'>"+i18n.t("action_menu.no_action")+"</span>")
+    return
+  }
+  am.append(ul)
+
+  // display actions only for the clicked section
+  var folders = $("#am_"+t.id+" .action_menu_folder")
+  folders.addClass("right16")
+  folders.children("ul,.action_menu_selector").hide()
+  folders.bind("click", function(e){
+    e.stopPropagation()
+    var v = $(this).children(".action_menu_selector").is(":visible")
+    folders.removeClass("down16")
+    folders.addClass("right16")
+    folders.children("ul,.action_menu_selector").hide()
+    if (!v) {
+      var selector = $(this).children(".action_menu_selector")
+      selector.show()
+      var scope = selector.children(".action_menu_selector_selected").attr("scope")
+      $(this).children("ul").hide()
+      $(this).children("ul[scope="+scope+"]").show()
+      $(this).removeClass("right16")
+      $(this).addClass("down16")
+    }
+  })
+  return
+}
+
+function table_action_menu_format_section(t, e, section) {
+  var ul = $("<ul></ul>")
+  for (var i=0; i<section.children.length; i++) {
+    var li = table_action_menu_format_selector(t, e, section.children[i])
+    if (li.html().length == 0) {
+      continue
+    }
+    ul.append(li)
+  }
+  var content = $("<li></li>")
+  if (ul.children().length == 0) {
+    return content
+  }
+  var title = $("<h3 class='line'><span></span></h3>")
+  title.children().text(i18n.t(section.title))
+  content.append(title)
+  content.append(ul)
+
+  return content
+}
+
+//
+// filter a dataset, removing elements not meeting conditions defined
+// in the action menu data
+//
+function table_action_menu_condition_filter(t, condition, data) {
+  var cond = []
+  var or_cond = condition.split(",")
+  for (var i=0; i<or_cond.length; i++) {
+    cond.push(or_cond[i].split("+"))
+  }
+  var _data = []
+  for (var i=0; i<data.length; i++) {
+    for (var j=0; j<cond.length; j++) {
+      var violation = false
+      for (var k=0; k<cond[j].length; k++) {
+        if (!(cond[j][k] in data[i])) {
+          violation = true
+          break
+        }
+      }
+      if (!violation) {
+        _data.push(data[i])
+        break
+      }
+    }
+  }
+  return _data
+}
+
+function table_action_menu_get_cols_data_clicked(t, e, scope, selector) {
+  var data = []
+  var cell = $(e.target)
+  var line = cell.parents(".tl").first()
+  var d = {}
+  for (var i=0; i<selector.cols.length; i++) {
+    var c = selector.cols[i]
+    var s = t.column_selectors[c]
+    var val = line.find(s).first().attr("v")
+    if ((typeof val === "undefined") || (val=="") || (val == "empty")) {
+      continue
+    }
+    d[c] = val
+  }
+  data.push(d)
+  return table_action_menu_condition_filter(t, selector.condition, data)
+}
+
+function table_action_menu_get_cols_data_checked(t, e, scope, selector) {
+  var data = []
+  var sigs = []
+  t.div.find(".tl").each(function(){
+    var ck = $(this).find("input[id^="+t.id+"_ckid_]").first()
+    if ((ck.length == 0) || !ck.is(":checked")) {
+      return
+    }
+    var d = {}
+    var sig = ""
+    for (var i=0; i<selector.cols.length; i++) {
+      var c = selector.cols[i]
+      var s = t.column_selectors[c]
+      var val = $(this).find(s).first().attr("v")
+      if ((typeof val === "undefined") || (val=="") || (val == "empty")) {
+        sig += "-"
+        continue
+      }
+      sig += val
+      d[c] = val
+    }
+    if (sigs.indexOf(sig) < 0) {
+      sigs.push(sig)
+      data.push(d)
+    }
+  })
+  return table_action_menu_condition_filter(t, selector.condition, data)
+}
+
+function table_action_menu_get_cols_data_all(t, e, scope, selector) {
+  var data = []
+  var cell = $(e.target)
+  var line = cell.parents(".tl").first()
+  var cols = []
+
+  // fetch all columns meaningful for the action menu
+  // so we can cache the result and avoid other requests
+  if (t.action_menu_req_cache) {
+    data = t.action_menu_req_cache
+  } else {
+    var reverse_col = {}
+    for (var c in t.column_selectors) {
+      var s = t.column_selectors[c]
+      var name = line.find(s).first().attr("name")
+      if (!name) {
+        continue
+      }
+      var col = name.replace(/.*_c_/, "")
+      cols.push(col)
+      reverse_col[col] = c
+    }
+    if (cols.length == 0) {
+      t.action_menu_req_cache = []
+      return data
+    }
+
+    var sigs = []
+    var url = t.ajax_url+"/data"
+    var vars = {}
+    vars["table_id"] = t.id
+    vars["visible_columns"] = cols.join(",")
+    vars[t.id+"_page"] = 1
+    vars[t.id+"_perpage"] = t.action_menu_req_max
+    t.div.find("input[id^="+t.id+"_f_]").each(function(){
+      vars[$(this).attr("id")] = $(this).val()
+    })
+    $.ajax({
+         async: false,
+         type: "POST",
+         url: url,
+         data: vars,
+         success: function(msg){
+           try {
+             var _data = $.parseJSON(msg)
+             var lines = _data['table_lines']
+           } catch(e) {
+             return []
+           }
+           if (t.extrarow) {
+             var _cols = ["extra"].concat(t.columns)
+           } else {
+             var _cols = t.columns
+           }
+           for (i=0; i<lines.length; i++) {
+             var d = {}
+             var sig = ""
+             for (var j=0; j<cols.length; j++) {
+               col = cols[j]
+               idx = _cols.indexOf(col)
+               var val = lines[i]["cells"][idx]
+               d[reverse_col[col]] = val
+               sig += "-"+val
+             }
+             if (sigs.indexOf(sig) < 0) {
+               sigs.push(sig)
+               data.push(d)
+             }
+           }
+         }
+    })
+    t.action_menu_req_cache = data
+  }
+
+  // digest cached data for the selector
+  var sigs = []
+  var _data = []
+  for (i=0; i<data.length; i++) {
+    var d = {}
+    var _d = data[i]
+    var sig = ""
+    for (var j=0; j<selector.cols.length; j++) {
+      var col = selector.cols[j]
+      if (!(col in _d)) {
+        continue
+      }
+      var val = _d[col]
+      d[col] = val
+      sig += "-"+val
+    }
+    if (sigs.indexOf(sig) < 0) {
+      sigs.push(sig)
+      _data.push(d)
+    }
+  }
+  return table_action_menu_condition_filter(t, selector.condition, _data)
+}
+
+function table_action_menu_get_cols_data(t, e, scope, selector) {
+  if (scope == "clicked") {
+    return table_action_menu_get_cols_data_clicked(t, e, scope, selector)
+  } else if (scope == "checked") {
+    return table_action_menu_get_cols_data_checked(t, e, scope, selector)
+  } else if (scope == "all") {
+    return table_action_menu_get_cols_data_all(t, e, scope, selector)
+  }
+  return []
+}
+
+function table_action_menu_format_selector(t, e, selector) {
+  if (selector.title) {
+    var title = $("<span></span>")
+    title.text(i18n.t(selector.title))
+  }
+  var e_selector = $("<div class='action_menu_selector'></div>")
+  var content = $("<li></li>")
+  if (selector.foldable) {
+    content.addClass("action_menu_folder")
+  }
+
+  for (var i=0; i<selector.selector.length; i++) {
+    var scope = selector.selector[i]
+
+    // compute selected cursor
+    cache_id = ""
+    for (var j=0; j<selector.cols.length; j++) {
+      cache_id += '-'+selector.cols[j]
+    }
+    cache_id += '-'+scope
+    if (cache_id in t.action_menu_data_cache) {
+      var data = t.action_menu_data_cache[cache_id]
+    } else {
+      var data = table_action_menu_get_cols_data(t, e, scope, selector)
+      t.action_menu_data_cache[cache_id] = data
+    }
+
+    // prepare action list for scope
+    var ul = $("<ul></ul>")
+    ul.attr("scope", scope)
+    if (data.length > 0) {
+      for (var j=0; j<selector.children.length; j++) {
+        var leaf = selector.children[j]
+        if (data.length < leaf.min) {
+          continue
+        }
+        var li = table_action_menu_format_leaf(t, e, leaf)
+        li.attr("cache_id", cache_id)
+        li.bind("click", function(e) {
+          e.stopPropagation()
+          var fn = $(this).attr("fn")
+          if (fn) {
+            window[fn](t, e)
+          } else {
+            table_action_menu_agent_action(t, e)
+          }
+        })
+        ul.append(li)
+      }
+    }
+
+    // prepare the selector scope button
+    var s = $("<div class='ellipsis'></div>")
+    s.attr("scope", scope)
+
+    // disable the scope if no data
+    if (data.length == 0) {
+      s.addClass("action_menu_selector_disabled")
+    }
+
+    // set as selected if not disabled and no other scope is already selected
+    if ((e_selector.children(".action_menu_selector_selected").length == 0) && !s.hasClass("action_menu_selector_disabled")) {
+      s.addClass("action_menu_selector_selected")
+    }
+
+    // set the span text
+    if ((scope == "clicked") && (data.length > 0)) {
+      var l = []
+      for (var j=0; j<selector.cols.length; j++) {
+        var c = selector.cols[j]
+        if (c in data[0]) {
+          l.push(data[0][c])
+        }
+      }
+      s.text(l.join("-"))
+      s.hover(function() {
+        $(this).removeClass("ellipsis");
+        var maxscroll = $(this).width();
+        var speed = maxscroll * 15;
+        $(this).animate({
+          scrollLeft: maxscroll
+        }, speed, "linear");
+      }, function() {
+        $(this).stop();
+        $(this).addClass("ellipsis");
+        $(this).animate({
+          scrollLeft: 0
+        }, 'slow');
+      })
+    } else if ((scope == "checked") || (scope == "all")) {
+      var count = data.length
+      var suffix = ""
+      if (count == t.action_menu_req_max) {
+        suffix = "+"
+      }
+      s.text(scope+" ("+count+suffix+")")
+    } else {
+      s.text(scope)
+    }
+
+    // add the action list and bind click handler if not disabled
+    if ((ul.children().length > 0) && !s.hasClass("action_menu_selector_disabled")) {
+      if (!s.hasClass("action_menu_selector_selected")) {
+        ul.hide()
+      }
+      content.append(ul)
+      s.addClass("clickable")
+      s.bind("click", function(e) {
+        e.stopPropagation()
+        $(this).siblings().removeClass("action_menu_selector_selected")
+        $(this).addClass("action_menu_selector_selected")
+        var scope = $(this).attr("scope")
+        $(this).parent().siblings("ul").hide()
+        $(this).parent().siblings("ul[scope="+scope+"]").show()
+      })
+    } else {
+      s.bind("click", function(e) {
+        e.stopPropagation()
+      })
+    }
+
+    e_selector.append(s)
+  }
+  if (content.children("ul").length > 0) {
+    content.prepend(e_selector)
+    if (selector.title) {
+      content.prepend(title)
+    }
+  }
+
+  return content
+}
+
+function table_action_menu_format_leaf(t, e, leaf) {
+  var li = $("<li class='action_menu_leaf clickable'></li>")
+  if (leaf.action) {
+    try {
+      var params = leaf.params.join(",")
+    } catch(err) {
+      var params = ""
+    }
+    li.attr("action", leaf.action)
+    li.attr("params", params)
+    //li.attr("scope", scope)
+  }
+  li.attr("fn", leaf.fn)
+  li.addClass(leaf['class'])
+  li.text(i18n.t(leaf.title))
+  return li
+}
+
+
+
+
 
 //
 // format action submit result as a flash message
@@ -147,43 +924,59 @@ function table_action_menu_param_module(t) {
 // ask for a confirmation on first call, recurse once to do real stuff
 // given a dataset, post each entry into the action_q
 //
-function table_action_menu_post_data(t, data, confirmation) {
-    action = data[0]['action']
+function table_action_menu_agent_action(t, e, confirmation) {
+    var entry = $(e.target)
+    var cache_id = entry.attr("cache_id")
+    var action = entry.attr("action")
+
     if (!(confirmation==true)) {
       s = ""
-      $("#am_"+t.id).find("li.right").remove()
-      $("#am_"+t.id).find("li[action="+action+"]").each(function(){
-        $(this).addClass("b")
-        $(this).unbind("click")
-        $(this).siblings().remove()
-        $(this).parent("ul").parent().unbind("click")
 
-        // action parameters
-        var params = $(this).attr("params")
-        if (typeof params !== "undefined") {
-          params = params.split(",")
-          for (var i=0; i<params.length; i++) {
-            var param = params[i]
-            try {
-              s += t["action_menu_param_"+param]()
-            } catch(err) {}
-          }
+      // hide other choices
+      entry.parent().parent().parent().parent().siblings().hide()
+      entry.parent().parent().parent().siblings('ul').hide()
+      entry.parent().parent().siblings('li').hide()
+      entry.parent().siblings('ul').hide()
+
+      // hide other actions in this selector scope
+      entry.siblings().hide()
+      entry.addClass("b")
+      entry.unbind("click")
+      entry.parent("ul").parent().unbind("click")
+
+      // action parameters
+      var params = entry.attr("params")
+      if (typeof params !== "undefined") {
+        params = params.split(",")
+        for (var i=0; i<params.length; i++) {
+          var param = params[i]
+          try {
+            s += t["action_menu_param_"+param]()
+          } catch(err) {}
         }
-      })
+      }
       s += "<hr>"
       s += "<div>"+i18n.t("action_menu.confirmation")+"</div><br>"
-      s += "<div class='check16 float clickable' name='yes'>"+i18n.t("action_menu.yes")+"</div>"
+      s += "<div class='ok float clickable' name='yes'>"+i18n.t("action_menu.yes")+"</div>"
       s += "<div class='nok float clickable' name='no'>"+i18n.t("action_menu.no")+"</div>"
-      $("#am_"+t.id).find("ul").last().append(s)
+      $(s).insertAfter(entry)
       $("#am_"+t.id).find("[name=yes]").bind("click", function(){
         $(this).unbind("click")
         $(this).removeClass("check16")
         $(this).addClass("spinner")
-        table_action_menu_post_data(t, data, true)
+        table_action_menu_agent_action(t, e, true)
       })
       $("#am_"+t.id).find("[name=no]").bind("click", function(){$("#am_"+t.id).remove()})
       return
     }
+
+    // after confirmation
+    var data = t.action_menu_data_cache[cache_id]
+    for (var i=0; i<data.length; i++) {
+      data[i]["action"] = action
+    }
+
+    // fetched checked options
     var params = {}
     $("#am_"+t.id).find("input[otype]:checked").each(function(){
       otype = $(this).attr("otype")
@@ -193,6 +986,8 @@ function table_action_menu_post_data(t, data, confirmation) {
       }
       params[otype].push(oname)
     })
+
+    // add action parameters to each data entry
     for (otype in params) {
       if (params[otype].length > 0) {
         for (var i=0; i<data.length; i++) {
@@ -200,7 +995,11 @@ function table_action_menu_post_data(t, data, confirmation) {
         }
       }
     }
+
+    // trigger the animation to highlight the action_q posting
     table_action_menu_click_animation(t)
+
+    //services_osvcpostrest("R_ACTION_QUEUE", "", "", del_data, function(jd) {
     $.ajax({
       //async: false,
       type: "POST",
@@ -212,800 +1011,23 @@ function table_action_menu_post_data(t, data, confirmation) {
     })
 }
 
-//
-// action menu formatter entry point
-//
-function table_action_menu(t, e){
-  // drop the previous action menu
-  $("#am_"+t.id).remove()
 
-  if (typeof t.action_menu === "undefined") {
-    return
-  }
-  $(".right_click_menu").hide()
-
-  var s = ""
-
-  // format the tools menu
-  var tm = ""
-  tm += table_tools_menu_nodes(t)
-  tm += table_tools_menu_svcs(t)
-  tm += tool_topo(t)
-  if (tm != "") {
-    s += "<h3 class='line'><span>"+i18n.t("action_menu.tools")+"</span></h3>"
-    s += tm
-  }
-
-  // format the data action menu
-  var dm = ""
-  dm += table_data_action_menu_svc(t, e)
-  dm += table_data_action_menu_svcs(t)
-  dm += table_data_action_menu_svcs_all(t, e)
-  if (dm != "") {
-    s += "<h3 class='line'><span>"+i18n.t("action_menu.data_actions")+"</span></h3>"
-    s += dm
-  }
-
-  // format the agent action menu
-  var am = ""
-  if ("nodes" in t.action_menu) {
-    am += table_action_menu_node(t, e)
-    am += table_action_menu_nodes(t)
-    am += table_action_menu_nodes_all(t, e)
-  }
-  if ("services" in t.action_menu) {
-    am += table_action_menu_svc(t, e)
-    am += table_action_menu_svcs(t)
-    am += table_action_menu_svcs_all(t, e)
-  }
-  if ("resources" in t.action_menu) {
-    am += table_action_menu_resource(t, e)
-    am += table_action_menu_resources(t)
-    am += table_action_menu_resources_all(t, e)
-  }
-  if ("modules" in t.action_menu) {
-    am += table_action_menu_module(t, e)
-    am += table_action_menu_modules(t)
-    am += table_action_menu_modules_all(t, e)
-  }
-  if (am != "") {
-      s += "<h3 class='line'><span>"+i18n.t("action_menu.agent_actions")+"</span></h3>"
-      s += am
-  }
-
-  if (s == "") {
-    return
-  }
-  s = "<div id='am_"+t.id+"' class='white_float action_menu stackable'><ul>"+s+"</ul></div>"
-
-  // position the popup at the mouse click
-  var pos = get_pos(e)
-  t.div.append(s)
-  $("#am_"+t.id).css({"left": pos[0] + "px", "top": pos[1] + "px"})
-
-  // bind action click triggers
-  $("#am_"+t.id).find("[scope=module]").bind("click", function(){
-    var action = $(this).attr("action")
-    var data = table_action_menu_get_module_data(t, e, action)
-    if (data.length==0) {
-      return
-    }
-    table_action_menu_post_data(t, data)
-  })
-  $("#am_"+t.id).find("[scope=modules]").bind("click", function(){
-    var action = $(this).attr("action")
-    var data = table_action_menu_get_modules_data(t, action)
-    if (data.length==0) {
-      return
-    }
-    table_action_menu_post_data(t, data)
-  })
-  $("#am_"+t.id).find("[scope=modules_all]").bind("click", function(){
-    var action = $(this).attr("action")
-    var data = table_action_menu_get_modules_all_data(t, e, action)
-    if (data.length==0) {
-      return
-    }
-    table_action_menu_post_data(t, data)
-  })
-  $("#am_"+t.id).find("[scope=resource]").bind("click", function(){
-    var action = $(this).attr("action")
-    var data = table_action_menu_get_resource_data(t, e, action)
-    if (data.length==0) {
-      return
-    }
-    table_action_menu_post_data(t, data)
-  })
-  $("#am_"+t.id).find("[scope=resources]").bind("click", function(){
-    var action = $(this).attr("action")
-    var data = table_action_menu_get_resources_data(t, action)
-    if (data.length==0) {
-      return
-    }
-    table_action_menu_post_data(t, data)
-  })
-  $("#am_"+t.id).find("[scope=resources_all]").bind("click", function(){
-    var action = $(this).attr("action")
-    var data = table_action_menu_get_resources_all_data(t, e, action)
-    if (data.length==0) {
-      return
-    }
-    table_action_menu_post_data(t, data)
-  })
-  $("#am_"+t.id).find("[scope=svc]").bind("click", function(){
-    var action = $(this).attr("action")
-    var data = table_action_menu_get_svc_instance_data(t, e, action)
-    if (data.length==0) {
-      return
-    }
-    table_action_menu_post_data(t, data)
-  })
-  $("#am_"+t.id).find("[scope=svcs]").bind("click", function(){
-    var action = $(this).attr("action")
-    var data = table_action_menu_get_svcs_instances_data(t, action)
-    if (data.length==0) {
-      return
-    }
-    table_action_menu_post_data(t, data)
-  })
-  $("#am_"+t.id).find("[scope=svcs_all]").bind("click", function(){
-    var action = $(this).attr("action")
-    var data = table_action_menu_get_svcs_instances_all_data(t, e, action)
-    if (data.length==0) {
-      return
-    }
-    table_action_menu_post_data(t, data)
-  })
-  $("#am_"+t.id).find("[scope=node]").bind("click", function(){
-    var action = $(this).attr("action")
-    var data = table_action_menu_get_node_data(t, e, action)
-    if (data.length==0) {
-      return
-    }
-    table_action_menu_post_data(t, data)
-  })
-  $("#am_"+t.id).find("[scope=nodes]").bind("click", function(){
-    var action = $(this).attr("action")
-    var data = table_action_menu_get_nodes_data(t, action)
-    if (data.length==0) {
-      return
-    }
-    table_action_menu_post_data(t, data)
-  })
-  $("#am_"+t.id).find("[scope=nodes_all]").bind("click", function(){
-    var action = $(this).attr("action")
-    var data = table_action_menu_get_nodes_all_data(t, e, action)
-    if (data.length==0) {
-      return
-    }
-    table_action_menu_post_data(t, data)
-  })
-
-  // display actions only for the clicked section
-  var sections = $("#am_"+t.id).children("ul").children("li")
-  sections.addClass("right")
-  sections.children("ul").hide()
-  sections.bind("click", function(){
-    var v = $(this).children("ul").is(":visible")
-    sections.removeClass("down")
-    sections.addClass("right")
-    sections.children("ul").hide()
-    if (!v) {
-      $(this).children("ul").show()
-      $(this).removeClass("right")
-      $(this).addClass("down")
-    }
-  })
-}
-
-
-//
-// data selectors: node
-//
-function table_action_menu_get_nodes_data(t, action) {
-    var lines = $("[id^="+t.id+"_ckid_]:checked").parent().parent()
-    var data = []
-    var nodenames = []
-    lines.find("td[cell=1][name$=nodename],td[cell=1][name$=mon_nodname],td[cell=1][name$=disk_nodname],td[cell=1][name$=hostname]").each(function(){
-      nodename = $(this).attr("v")
-      var d = {'nodename': nodename, 'action': action}
-      if (nodenames.indexOf(nodename) < 0) {
-        nodenames.push(nodename)
-        data.push({'nodename': nodename, 'action': action})
-      }
-    })
-    return data
-}
-
-function table_action_menu_get_node_data(t, e, action) {
-    var cell = $(e.target)
-    var line = cell.parents(".tl").first()
-    var nodename = line.find("td[cell=1][name$=nodename],td[cell=1][name$=mon_nodname],td[cell=1][name$=disk_nodename],td[cell=1][name$=hostname]").first().attr("v")
-    if ((typeof nodename === "undefined")||(nodename=="")) {
-      return []
-    }
-    var data = [{'nodename': nodename, 'action': action}]
-    return data
-}
-
-function table_action_menu_get_nodes_all_data(t, e, action) {
-    var cell = $(e.target)
-    var line = cell.parents(".tl").first()
-    var name = line.find("td[cell=1][name$=nodename],td[cell=1][name$=mon_nodname],td[cell=1][name$=disk_nodename],td[cell=1][name$=hostname]").first().attr("name")
-    var col = name.replace(/.*_c_/, "")
-    var url = t.ajax_url+"/data"
-    var vars = {}
-    vars["table_id"] = t.id
-    vars["visible_columns"] = col
-    vars[t.id+"_page"] = 0
-    var data = []
-    $.ajax({
-         async: false,
-         type: "POST",
-         url: url,
-         data: vars,
-         success: function(msg){
-           try {
-             var _data = $.parseJSON(msg)
-             var lines = _data['table_lines']
-           } catch(e) {
-             return []
-           }
-           if (t.extrarow) {
-             var cols = ["extra"].concat(t.columns)
-           } else {
-             var cols = t.columns
-           }
-           idx = cols.indexOf(col)
-           var sigs = []
-           for (i=0; i<lines.length; i++) {
-             var sig = lines[i]["cells"][idx]
-             if (sigs.indexOf(sig) >= 0) { continue }
-             sigs.push(sig)
-             data.push({nodename: lines[i]["cells"][idx], action: action})
-           }
-         }
-    })
-    return data
-}
-
-//
-// data selectors: service
-//
-function table_action_menu_get_svcs_data(t, action) {
-    var lines = $("[id^="+t.id+"_ckid_]:checked").parent().parent()
-    var data = []
-    var index = []
-    lines.each(function(){
-      var svcname = $(this).find("td[cell=1][name$=svcname],td[cell=1][name$=svc_name],td[cell=1][name$=disk_svcname]").attr("v")
-      if ((typeof svcname === "undefined")||(svcname=="")) {
-        return []
-      }
-      var i = svcname
-      if (index.indexOf(i)<0) {
-        index.push(i)
-        data.push({"svcname": svcname, "action": action})
-      }
-    })
-    return data
-}
-
-function table_action_menu_get_svc_data(t, e, action) {
-    var cell = $(e.target)
-    var line = cell.parents(".tl").first()
-    var svcname = line.find("td[cell=1][name$=svcname],td[cell=1][name$=svc_name]").first().attr("v")
-    if ((typeof svcname === "undefined")||(svcname=="")) {
-      return []
-    }
-    var data = [{'svcname': svcname, 'action': action}]
-    return data
-}
-
-function table_action_menu_get_svcs_all_data(t, e, action) {
-    var cell = $(e.target)
-    var line = cell.parents(".tl").first()
-    var svcname = line.find("td[cell=1][name$=svcname],td[cell=1][name$=svc_name],td[cell=1][name$=disk_svcname]").first().attr("name")
-    var colsvc = svcname.replace(/.*_c_/, "")
-    var url = t.ajax_url+"/data"
-    var vars = {}
-    vars["table_id"] = t.id
-    vars["visible_columns"] = colsvc
-    vars[t.id+"_page"] = 0
-    var data = []
-    $.ajax({
-         async: false,
-         type: "POST",
-         url: url,
-         data: vars,
-         success: function(msg){
-           try {
-             var _data = $.parseJSON(msg)
-             var lines = _data['table_lines']
-           } catch(e) {
-             return []
-           }
-           if (t.extrarow) {
-             var cols = ["extra"].concat(t.columns)
-           } else {
-             var cols = t.columns
-           }
-           idxsvc = cols.indexOf(colsvc)
-           var sigs = []
-           for (i=0; i<lines.length; i++) {
-             var sig = lines[i]["cells"][idxsvc]
-             if (sigs.indexOf(sig) >= 0) { continue }
-             sigs.push(sig)
-             data.push({svcname: lines[i]["cells"][idxsvc], action: action})
-           }
-         }
-    })
-    return data
-}
-
-//
-// data selectors: service instances
-//
-function table_action_menu_get_svcs_instances_data_with_node(t, action) {
-    var d = table_action_menu_get_svcs_instances_data(t, action)
-    var n = []
-    for (i=0; i<d.length; i++) {
-        if (d[i]["nodename"] != "") {
-            n.push(d[i])
-        }
-    }
-    return n
-}
-
-function table_action_menu_get_svcs_instances_data(t, action) {
-    var lines = $("[id^="+t.id+"_ckid_]:checked").parent().parent()
-    var data = []
-    var index = []
-    lines.each(function(){
-      var nodename = $(this).find("td[cell=1][name$=nodename],td[cell=1][name$=mon_nodname],td[cell=1][name$=disk_nodename],td[cell=1][name$=hostname]").attr("v")
-      if ((typeof nodename === "undefined")||(nodename=="")) {
-        nodename = ""
-      }
-      var svcname = $(this).find("td[cell=1][name$=svcname],td[cell=1][name$=svc_name],td[cell=1][name$=disk_svcname]").attr("v")
-      if ((typeof svcname === "undefined")||(svcname=="")) {
-        return []
-      }
-      var i = nodename+"--"+svcname
-      if (index.indexOf(i)<0) {
-        index.push(i)
-        data.push({"nodename": nodename, "svcname": svcname, "action": action})
-      }
-    })
-    return data
-}
-
-function table_action_menu_get_svc_instance_data(t, e, action) {
-    var cell = $(e.target)
-    var line = cell.parents(".tl").first()
-    var nodename = line.find("td[cell=1][name$=nodename],td[cell=1][name$=mon_nodname],td[cell=1][name$=hostname]").first().attr("v")
-    if ((typeof nodename === "undefined")||(nodename=="")) {
-      return []
-    }
-    var svcname = line.find("td[cell=1][name$=svcname],td[cell=1][name$=svc_name]").first().attr("v")
-    if ((typeof svcname === "undefined")||(svcname=="")) {
-      return []
-    }
-    var data = [{'nodename': nodename, 'svcname': svcname, 'action': action}]
-    return data
-}
-
-function table_action_menu_get_svcs_instances_all_data(t, e, action) {
-    var cell = $(e.target)
-    var line = cell.parents(".tl").first()
-    var nodename = line.find("td[cell=1][name$=nodename],td[cell=1][name$=mon_nodname],td[cell=1][name$=disk_nodename],td[cell=1][name$=hostname]").first().attr("name")
-    var svcname = line.find("td[cell=1][name$=svcname],td[cell=1][name$=svc_name],td[cell=1][name$=disk_svcname]").first().attr("name")
-    var colnode = nodename.replace(/.*_c_/, "")
-    var colsvc = svcname.replace(/.*_c_/, "")
-    var url = t.ajax_url+"/data"
-    var vars = {}
-    vars["table_id"] = t.id
-    vars["visible_columns"] = colnode+","+colsvc
-    vars[t.id+"_page"] = 0
-    var data = []
-    $.ajax({
-         async: false,
-         type: "POST",
-         url: url,
-         data: vars,
-         success: function(msg){
-           try {
-             var _data = $.parseJSON(msg)
-             var lines = _data['table_lines']
-           } catch(e) {
-             return []
-           }
-           if (t.extrarow) {
-             var cols = ["extra"].concat(t.columns)
-           } else {
-             var cols = t.columns
-           }
-           idxnode = cols.indexOf(colnode)
-           idxsvc = cols.indexOf(colsvc)
-           var sigs = []
-           for (i=0; i<lines.length; i++) {
-             var sig = lines[i]["cells"][idxnode]+"--"+lines[i]["cells"][idxsvc]
-             if (sigs.indexOf(sig) >= 0) { continue }
-             sigs.push(sig)
-             data.push({nodename: lines[i]["cells"][idxnode], svcname: lines[i]["cells"][idxsvc], action: action})
-           }
-         }
-    })
-    return data
-}
-
-//
-// data selector: module
-//
-function table_action_menu_get_modules_data(t, action) {
-    var lines = $("[id^="+t.id+"_ckid_]:checked").parent().parent()
-    var data = []
-    var index = []
-    lines.each(function(){
-      var nodename = $(this).find("td[cell=1][name$=nodename],td[cell=1][name$=mon_nodname],td[cell=1][name$=hostname]").attr("v")
-      if ((typeof nodename === "undefined")||(nodename=="")) {
-        return
-      }
-      var module = $(this).find("td[cell=1][name$=_run_module]").attr("v")
-      if ((typeof module === "undefined")||(module=="")) {
-        return
-      }
-      var svcname = $(this).find("td[cell=1][name$=svcname],td[cell=1][name$=svc_name]").attr("v")
-      if ((typeof svcname === "undefined")||(svcname=="")) {
-        var i = nodename+"--"+svcname+"--"+module
-        d = {"nodename": nodename, "module": module, "action": action}
-      } else {
-        var i = nodename+"--"+module
-        d = {"nodename": nodename, "svcname": svcname, "module": module, "action": action}
-      }
-      if (index.indexOf(i)<0) {
-        index.push(i)
-        data.push(d)
-      }
-    })
-    return data
-}
-
-function table_action_menu_get_module_data(t, e, action) {
-    var cell = $(e.target)
-    var line = cell.parents(".tl").first()
-    var nodename = line.find("td[cell=1][name$=nodename],td[cell=1][name$=mon_nodname],td[cell=1][name$=hostname]").first().attr("v")
-    if ((typeof nodename === "undefined")||(nodename=="")) {
-      return []
-    }
-    var module = line.find("td[cell=1][name$=_run_module]").first().attr("v")
-    if ((typeof module === "undefined")||(module=="")) {
-      return []
-    }
-    var data = [{'nodename': nodename, 'module': module, 'action': action}]
-    var svcname = line.find("td[cell=1][name$=svcname],td[cell=1][name$=svc_name]").first().attr("v")
-    if ((typeof svcname === "undefined")||(svcname=="")) {
-      return data
-    }
-    data[0]['svcname'] = svcname
-    return data
-}
-
-function table_action_menu_get_modules_all_data(t, e, action) {
-    var cell = $(e.target)
-    var line = cell.parents(".tl").first()
-    var nodename = line.find("td[cell=1][name$=nodename],td[cell=1][name$=mon_nodname],td[cell=1][name$=disk_nodename],td[cell=1][name$=hostname]").first().attr("name")
-    var svcname = line.find("td[cell=1][name$=svcname],td[cell=1][name$=svc_name],td[cell=1][name$=disk_svcname]").first().attr("name")
-    var module = line.find("td[cell=1][name$=_run_module]").first().attr("name")
-    var colnode = nodename.replace(/.*_c_/, "")
-    var colsvc = svcname.replace(/.*_c_/, "")
-    var colmodule = module.replace(/.*_c_/, "")
-    var url = t.ajax_url+"/data"
-    var vars = {}
-    vars["table_id"] = t.id
-    vars["visible_columns"] = colnode+","+colsvc+","+colmodule
-    vars[t.id+"_page"] = 0
-    var data = []
-    $.ajax({
-         async: false,
-         type: "POST",
-         url: url,
-         data: vars,
-         success: function(msg){
-           try {
-             var _data = $.parseJSON(msg)
-             var lines = _data['table_lines']
-           } catch(e) {
-             return []
-           }
-           if (t.extrarow) {
-             var cols = ["extra"].concat(t.columns)
-           } else {
-             var cols = t.columns
-           }
-           idxnode = cols.indexOf(colnode)
-           idxsvc = cols.indexOf(colsvc)
-           idxmodule = cols.indexOf(colmodule)
-           for (i=0; i<lines.length; i++) {
-             data.push({
-               nodename: lines[i]["cells"][idxnode],
-               svcname: lines[i]["cells"][idxsvc],
-               module: lines[i]["cells"][idxmodule],
-               action: action
-             })
-           }
-         }
-    })
-    return data
-}
-
-//
-// data selector: resource
-//
-function table_action_menu_get_resources_data(t, action) {
-    var lines = $("[id^="+t.id+"_ckid_]:checked").parent().parent()
-    var data = []
-    var index = []
-    lines.each(function(){
-      var nodename = $(this).find("td[cell=1][name$=nodename],td[cell=1][name$=mon_nodname],td[cell=1][name$=hostname]").attr("v")
-      if ((typeof nodename === "undefined")||(nodename=="")) {
-        return
-      }
-      var svcname = $(this).find("td[cell=1][name$=svcname],td[cell=1][name$=svc_name]").attr("v")
-      if ((typeof svcname === "undefined")||(svcname=="")) {
-        return
-      }
-      var rid = $(this).find("td[cell=1][name$=_rid]").attr("v")
-      if ((typeof rid === "undefined")||(rid=="")) {
-        return
-      }
-      var i = nodename+"--"+svcname+"--"+rid
-      if (index.indexOf(i)<0) {
-        index.push(i)
-        data.push({"nodename": nodename, "svcname": svcname, "rid": rid, "action": action})
-      }
-    })
-    return data
-}
-
-function table_action_menu_get_resource_data(t, e, action) {
-    var lines = $("[id^="+t.id+"_ckid_]:checked").parent().parent()
-    var cell = $(e.target)
-    var line = cell.parents(".tl").first()
-    var nodename = line.find("td[cell=1][name$=nodename],td[cell=1][name$=mon_nodname],td[cell=1][name$=hostname]").first().attr("v")
-    if ((typeof nodename === "undefined")||(nodename=="")) {
-      return []
-    }
-    var svcname = line.find("td[cell=1][name$=svcname],td[cell=1][name$=svc_name]").first().attr("v")
-    if ((typeof svcname === "undefined")||(svcname=="")) {
-      return []
-    }
-    var rid = line.find("td[cell=1][name$=_rid]").first().attr("v")
-    if ((typeof rid === "undefined")||(rid=="")) {
-      return []
-    }
-    var data = [{'nodename': nodename, 'svcname': svcname, 'rid': rid, 'action': action}]
-    return data
-}
-
-function table_action_menu_get_resources_all_data(t, e, action) {
-    var cell = $(e.target)
-    var line = cell.parents(".tl").first()
-    var nodename = line.find("td[cell=1][name$=nodename],td[cell=1][name$=mon_nodname],td[cell=1][name$=disk_nodename],td[cell=1][name$=hostname]").first().attr("name")
-    var svcname = line.find("td[cell=1][name$=svcname],td[cell=1][name$=svc_name],td[cell=1][name$=disk_svcname]").first().attr("name")
-    var rid = line.find("td[cell=1][name$=_rid]").first().attr("name")
-    var colnode = nodename.replace(/.*_c_/, "")
-    var colsvc = svcname.replace(/.*_c_/, "")
-    var colrid = rid.replace(/.*_c_/, "")
-    var url = t.ajax_url+"/data"
-    var vars = {}
-    vars["table_id"] = t.id
-    vars["visible_columns"] = colnode+","+colsvc+","+rid
-    vars[t.id+"_page"] = 0
-    var data = []
-    $.ajax({
-         async: false,
-         type: "POST",
-         url: url,
-         data: vars,
-         success: function(msg){
-           try {
-             var _data = $.parseJSON(msg)
-             var lines = _data['table_lines']
-           } catch(e) {
-             return []
-           }
-           if (t.extrarow) {
-             var cols = ["extra"].concat(t.columns)
-           } else {
-             var cols = t.columns
-           }
-           idxnode = cols.indexOf(colnode)
-           idxsvc = cols.indexOf(colsvc)
-           idxrid = cols.indexOf(colrid)
-           for (i=0; i<lines.length; i++) {
-             data.push({
-               nodename: lines[i]["cells"][idxnode],
-               svcname: lines[i]["cells"][idxsvc],
-               rid: lines[i]["cells"][idxrid],
-               action: action
-             })
-           }
-         }
-    })
-    return data
-}
-
-//
-// data actions menu: services
-//
-function table_data_action_menu_svcs_all(t, e){
-  var data = table_action_menu_get_svc_data(t, e)
-  if (data.length==0) {
-    return ""
-  }
-  var s = "<li class='clickable'>"+i18n.t("action_menu.data_actions_on_all_services")+"</li>"
-  return s
-}
-
-function table_data_action_menu_svc(t, e){
-  var data = table_action_menu_get_svc_data(t, e)
-  if (data.length==0) {
-    return ""
-  }
-  var s = "<li class='clickable'>"+i18n.t("action_menu.data_actions_on_service", data[0])+"</li>"
-  return s
-}
-
-function table_data_action_menu_svcs(t){
-  var data = table_action_menu_get_svcs_data(t)
-  if (data.length==0) {
-    return ""
-  }
-  var s = "<li class='clickable'>"+i18n.t("action_menu.data_actions_on_selected_services")+" (<b>"+data.length+"</b>)"+"</li>"
-  return s
-}
-
-//
-// agent actions menu: modules
-//
-function table_action_menu_modules_all(t, e){
-  var data = table_action_menu_get_module_data(t, e)
-  if (data.length==0) {
-    return ""
-  }
-  var s = "<li class='clickable'>"+i18n.t("action_menu.actions_on_all_modules")+table_action_menu_module_entries(t, "modules_all")+"</li>"
-  return s
-}
-
-function table_action_menu_module(t, e){
-  var data = table_action_menu_get_module_data(t, e)
-  if (data.length==0) {
-    return ""
-  }
-  if ('svcname' in data[0]) {
-    var s = "<li class='clickable'>"+i18n.t("action_menu.actions_on_module_on_service_on_node", data[0])+table_action_menu_module_entries(t, "module")+"</li>"
-  } else {
-    var s = "<li class='clickable'>"+i18n.t("action_menu.actions_on_module_on_node", data[0])+table_action_menu_module_entries(t, "module")+"</li>"
-  }
-  return s
-}
-
-function table_action_menu_modules(t){
-  var data = table_action_menu_get_modules_data(t)
-  if (data.length==0) {
-    return ""
-  }
-  var s = "<li class='clickable'>"+i18n.t("action_menu.actions_on_selected_modules")+" (<b>"+data.length+"</b>)"+table_action_menu_module_entries(t, "modules")+"</li>"
-  return s
-}
-
-//
-// agent actions menu: resources
-//
-function table_action_menu_resources_all(t, e){
-  var data = table_action_menu_get_resource_data(t, e)
-  if (data.length==0) {
-    return ""
-  }
-  var s = "<li class='clickable'>"+i18n.t("action_menu.actions_on_all_resources")+table_action_menu_resource_entries(t, "resources_all")+"</li>"
-  return s
-}
-
-function table_action_menu_resource(t, e){
-  var data = table_action_menu_get_resource_data(t, e)
-  if (data.length==0) {
-    return ""
-  }
-  var s = "<li class='clickable'>"+i18n.t("action_menu.actions_on_resource_on_service_on_node", data[0])+table_action_menu_resource_entries(t, "resource")+"</li>"
-  return s
-}
-
-function table_action_menu_resources(t){
-  var data = table_action_menu_get_resources_data(t)
-  if (data.length==0) {
-    return ""
-  }
-  var s = "<li class='clickable'>"+i18n.t("action_menu.actions_on_selected_resource")+" (<b>"+data.length+"</b>)"+table_action_menu_resource_entries(t, "resources")+"</li>"
-  return s
-}
-
-//
-// agent actions menu: services instances
-//
-function table_action_menu_svcs_all(t, e){
-  var data = table_action_menu_get_svc_instance_data(t, e)
-  if (data.length==0) {
-    return ""
-  }
-  var s = "<li class='clickable'>"+i18n.t("action_menu.actions_on_all_services_instances")+table_action_menu_svc_entries(t, "svcs_all")+"</li>"
-  return s
-}
-
-function table_action_menu_svc(t, e){
-  var data = table_action_menu_get_svc_instance_data(t, e)
-  if (data.length==0) {
-    return ""
-  }
-  var s = "<li class='clickable'>"+i18n.t("action_menu.actions_on_services_instances_on_node", data[0])+table_action_menu_svc_entries(t, "svc")+"</li>"
-  return s
-}
-
-function table_action_menu_svcs(t){
-  var data = table_action_menu_get_svcs_instances_data_with_node(t)
-  if (data.length==0) {
-    return ""
-  }
-  var s = "<li class='clickable'>"+i18n.t("action_menu.actions_on_selected_services_instances")+" (<b>"+data.length+"</b>)"+table_action_menu_svc_entries(t, "svcs")+"</li>"
-  return s
-}
-
-//
-// agent actions menu: nodes
-//
-function table_action_menu_nodes_all(t, e){
-  var data = table_action_menu_get_node_data(t, e)
-  if (data.length==0) {
-    return ""
-  }
-  var s = "<li class='clickable'>"+i18n.t("action_menu.actions_on_all_nodes")+table_action_menu_node_entries(t, "nodes_all")+"</li>"
-  return s
-}
-
-function table_action_menu_node(t, e){
-  var data = table_action_menu_get_node_data(t, e)
-  if (data.length==0) {
-    return ""
-  }
-  var s = "<li class='clickable'>"+i18n.t("action_menu.actions_on_node")+" <b>"+data[0]['nodename']+"</b>"+table_action_menu_node_entries(t, "node")+"</li>"
-  return s
-}
-
-function table_action_menu_nodes(t){
-  var data = table_action_menu_get_nodes_data(t)
-  if (data.length==0) {
-    return ""
-  }
-  var s = "<li class='clickable'>"+i18n.t("action_menu.actions_on_selected_nodes")+" (<b>"+data.length+"</b>)"+table_action_menu_node_entries(t, "nodes")+"</li>"
-  return s
-}
 
 
 //
 // tool: topo
 //
-function trigger_tool_topo(tid) {
-  var t = osvc.tables[tid]
-  var datasvc = table_action_menu_get_svcs_data(t)
-  var datanode = table_action_menu_get_nodes_data(t)
-  if (datasvc.length+datanode.length==0) {
-    return ""
-  }
+function tool_topo(t, e) {
+  var entry = $(e.target)
+  var cache_id = entry.attr("cache_id")
+  var data = t.action_menu_data_cache[cache_id]
   var nodenames = new Array()
-  for (i=0;i<datanode.length;i++) {
-    nodenames.push(datanode[i]['nodename'])
+  for (i=0;i<data.length;i++) {
+    nodenames.push(data[i]['nodename'])
   }
   var svcnames = new Array()
-  for (i=0;i<datasvc.length;i++) {
-    svcnames.push(datasvc[i]['svcname'])
+  for (i=0;i<data.length;i++) {
+    svcnames.push(data[i]['svcname'])
   }
   topology("overlay", {
     "nodenames": nodenames,
@@ -1015,21 +1037,13 @@ function trigger_tool_topo(tid) {
   t.e_overlay.show()
 }
 
-function tool_topo(t) {
-  var datasvc = table_action_menu_get_svcs_data(t)
-  var datanode = table_action_menu_get_nodes_data(t)
-  if (datasvc.length+datanode.length==0) {
-    return ""
-  }
-  return "<div class='clickable icon dia16' onclick='trigger_tool_topo(\""+t.id+"\")'>"+i18n.t("action_menu.topology")+"</div>"
-}
-
 //
 // tool: nodesantopo
 //
-function trigger_tool_nodesantopo(tid) {
-  var t = osvc.tables[tid]
-  var data = table_action_menu_get_nodes_data(t)
+function tool_nodesantopo(t, e) {
+  var entry = $(e.target)
+  var cache_id = entry.attr("cache_id")
+  var data = t.action_menu_data_cache[cache_id]
   if (data.length==0) {
     return ""
   }
@@ -1041,22 +1055,13 @@ function trigger_tool_nodesantopo(tid) {
   sync_ajax('/init/ajax_node/ajax_nodes_stor?nodes='+nodes.join(","), [], 'overlay', function(){})
 }
 
-function tool_nodesantopo(t, data) {
-  if (data.length==0) {
-    return ""
-  }
-  return "<div class='clickable icon hd16' onclick='trigger_tool_nodesantopo(\""+t.id+"\")'>"+i18n.t("action_menu.node_san_topo")+"</div>"
-}
-
 //
 // tool: nodesysrepdiff
 //
-function trigger_tool_nodesysrepdiff(tid) {
-  var t = osvc.tables[tid]
-  var data = table_action_menu_get_nodes_data(t)
-  if (data.length<2) {
-    return ""
-  }
+function tool_nodesysrepdiff(t, e) {
+  var entry = $(e.target)
+  var cache_id = entry.attr("cache_id")
+  var data = t.action_menu_data_cache[cache_id]
   var nodes = new Array()
   for (i=0;i<data.length;i++) {
     nodes.push(data[i]['nodename'])
@@ -1065,22 +1070,13 @@ function trigger_tool_nodesysrepdiff(tid) {
   sysrepdiff("overlay", {"nodes": nodes.join(",")})
 }
 
-function tool_nodesysrepdiff(t, data) {
-  if (data.length<2) {
-    return ""
-  }
-  return "<div class='clickable icon common16' onclick='trigger_tool_nodesysrepdiff(\""+t.id+"\")'>"+i18n.t("action_menu.node_sysrep_diff")+"</div>"
-}
-
 //
 // tool: nodesysrep
 //
-function trigger_tool_nodesysrep(tid) {
-  var t = osvc.tables[tid]
-  var data = table_action_menu_get_nodes_data(t)
-  if (data.length==0) {
-    return ""
-  }
+function tool_nodesysrep(t, e) {
+  var entry = $(e.target)
+  var cache_id = entry.attr("cache_id")
+  var data = t.action_menu_data_cache[cache_id]
   var nodes = new Array()
   for (i=0;i<data.length;i++) {
     nodes.push(data[i]['nodename'])
@@ -1089,22 +1085,13 @@ function trigger_tool_nodesysrep(tid) {
   sysrep("overlay", {"nodes": nodes.join(",")})
 }
 
-function tool_nodesysrep(t, data) {
-  if (data.length==0) {
-    return ""
-  }
-  return "<div class='clickable icon log16' onclick='trigger_tool_nodesysrep(\""+t.id+"\")'>"+i18n.t("action_menu.node_sysrep")+"</div>"
-}
-
 //
 // tool: svcdiff
 //
-function trigger_tool_svcdiff(tid) {
-  var t = osvc.tables[tid]
-  var data = table_action_menu_get_svcs_data(t)
-  if (data.length==0) {
-    return ""
-  }
+function tool_svcdiff(t, e) {
+  var entry = $(e.target)
+  var cache_id = entry.attr("cache_id")
+  var data = t.action_menu_data_cache[cache_id]
   var nodes = new Array()
   for (i=0;i<data.length;i++) {
     nodes.push(data[i]['svcname'])
@@ -1113,22 +1100,13 @@ function trigger_tool_svcdiff(tid) {
   sync_ajax('/init/nodediff/ajax_svcdiff?node='+nodes.join(","), [], 'overlay', function(){})
 }
 
-function tool_svcdiff(t, data) {
-  if (data.length<=1) {
-    return ""
-  }
-  return "<div class='clickable icon common16' onclick='trigger_tool_svcdiff(\""+t.id+"\")'>"+i18n.t("action_menu.svc_diff")+"</div>"
-}
-
 //
 // tool: nodediff
 //
-function trigger_tool_nodediff(tid) {
-  var t = osvc.tables[tid]
-  var data = table_action_menu_get_nodes_data(t)
-  if (data.length==0) {
-    return ""
-  }
+function tool_nodediff(t, e) {
+  var entry = $(e.target)
+  var cache_id = entry.attr("cache_id")
+  var data = t.action_menu_data_cache[cache_id]
   var nodes = new Array()
   for (i=0;i<data.length;i++) {
     nodes.push(data[i]['nodename'])
@@ -1137,19 +1115,13 @@ function trigger_tool_nodediff(tid) {
   sync_ajax('/init/nodediff/ajax_nodediff?node='+nodes.join(","), [], 'overlay', function(){})
 }
 
-function tool_nodediff(t, data) {
-  if (data.length<=1) {
-    return ""
-  }
-  return "<div class='clickable icon common16' onclick='trigger_tool_nodediff(\""+t.id+"\")'>"+i18n.t("action_menu.node_diff")+"</div>"
-}
-
 //
 // tool: grpprf
 //
-function trigger_tool_grpprf(tid) {
-  var t = osvc.tables[tid]
-  var data = table_action_menu_get_nodes_data(t)
+function tool_grpprf(t, e) {
+  var entry = $(e.target)
+  var cache_id = entry.attr("cache_id")
+  var data = t.action_menu_data_cache[cache_id]
   if (data.length==0) {
     return ""
   }
@@ -1161,25 +1133,55 @@ function trigger_tool_grpprf(tid) {
   sync_ajax('/init/nodes/ajax_grpprf?node='+nodes.join(","), [], 'overlay', function(){})
 }
 
-function tool_grpprf(t, data) {
-  if (data.length==0) {
-    return ""
-  }
-  return "<div class='clickable icon spark16' onclick='trigger_tool_grpprf(\""+t.id+"\")'>"+i18n.t("action_menu.node_perf")+"</div>"
-}
-
 //
 // data action: delete services
 //
-function trigger_data_action_delete_services() {
-  console.log("delete")
+function data_action_delete_svcs(t, e) {
+  var entry = $(e.target)
+  var cache_id = entry.attr("cache_id")
+  var data = t.action_menu_data_cache[cache_id]
+  var del_data = new Array()
+  for (i=0;i<data.length;i++) {
+    del_data.push({'svc_name': data[i]['svcname']})
+  }
+  services_osvcdeleterest("R_SERVICES", "", "", del_data, function(jd) {
+    if (jd.error && (jd.error.length > 0)) {
+      $(".flash").show("blind").html(services_error_fmt(jd))
+    }
+    if (jd.info && (jd.info.length > 0)) {
+      $(".flash").show("blind").html("<pre>"+jd.info+"</pre>")
+    }
+  },
+  function(xhr, stat, error) {
+    $(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
+  })
 }
 
-function tool_data_action_delete_services(t, data) {
-  if (data.length==0) {
-    return ""
+//
+// data action: delete service instances
+//
+function data_action_delete_svc_instances(t, e) {
+  var entry = $(e.target)
+  var cache_id = entry.attr("cache_id")
+  var data = t.action_menu_data_cache[cache_id]
+  var del_data = new Array()
+  for (i=0;i<data.length;i++) {
+    del_data.push({
+      'mon_svcname': data[i]['svcname'],
+      'mon_nodname': data[i]['nodename']
+    })
   }
-  return "<li class='clickable icon del16' onclick='trigger_tool_data_action_delete_services()'>"+i18n.t("action_menu.delete")+"</div>"
+  services_osvcdeleterest("R_SERVICE_INSTANCES", "", "", del_data, function(jd) {
+    if (jd.error && (jd.error.length > 0)) {
+      $(".flash").show("blind").html(services_error_fmt(jd))
+    }
+    if (jd.info && (jd.info.length > 0)) {
+      $(".flash").show("blind").html("<pre>"+jd.info+"</pre>")
+    }
+  },
+  function(xhr, stat, error) {
+    $(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
+  })
 }
 
 
@@ -1207,48 +1209,6 @@ function table_tools_menu_svcs(t){
   return s
 }
 
-//
-// data actions wrapper: services
-//
-function table_data_actions_menu_svcs(t){
-  var data = table_action_menu_get_svcs_data(t)
-  var s = ""
-  s += data_action_delete_services(t, data)
-  return s
-}
 
-//
-// agent actions wrappers
-//
-function table_action_menu_module_entries(t, scope){
-  return table_action_menu_single_entries(t, "modules", scope)
-}
-
-function table_action_menu_resource_entries(t, scope){
-  return table_action_menu_single_entries(t, "resources", scope)
-}
-
-function table_action_menu_svc_entries(t, scope){
-  return table_action_menu_single_entries(t, "services", scope)
-}
-
-function table_action_menu_node_entries(t, scope){
-  return table_action_menu_single_entries(t, "nodes", scope)
-}
-
-function table_action_menu_single_entries(t, action_menu_key, scope){
-  s = "<ul>"
-  for (i=0; i<t.action_menu[action_menu_key].length; i++) {
-    var e = t.action_menu[action_menu_key][i]
-    try {
-      var params = " params='"+e.params.join(",")+"'"
-    } catch(err) {
-      var params = ""
-    }
-    s += "<li class='clickable "+e['class']+"' action='"+e.action+"' scope='"+scope+"'"+params+">"+e.title+"</li>"
-  }
-  s += "</ul>"
-  return s
-}
 
 

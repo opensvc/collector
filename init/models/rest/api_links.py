@@ -30,7 +30,7 @@ class rest_get_link(rest_get_line_handler):
         ]
         rest_get_line_handler.__init__(
           self,
-          path="/link/<id>",
+          path="/links/<id>",
           tables=["links"],
           desc=desc,
           examples=examples,
@@ -58,7 +58,7 @@ class rest_post_link(rest_post_handler):
         ]
         rest_post_handler.__init__(
           self,
-          path="/link",
+          path="/links",
           tables=["links"],
           desc=desc,
           examples=examples
