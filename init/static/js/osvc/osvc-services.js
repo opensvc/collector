@@ -20,6 +20,7 @@ var services_access_uri = {
     "R_GROUPS" : "rest/api/groups",
     "R_IPS" : "rest/api/nodes/%1/ips",
     "R_NODE" : "rest/api/nodes/%1",
+    "R_NODES" : "rest/api/nodes",
     "R_NODE_AM_I_RESPONSIBLE" : "rest/api/nodes/%1/am_i_responsible",
     "R_NODE_CANDIDATE_TAGS" : "rest/api/nodes/%1/candidate_tags",
     "R_NODE_TAGS" : "rest/api/nodes/%1/tags",

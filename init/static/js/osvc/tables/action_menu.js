@@ -93,6 +93,21 @@ function table_action_menu_init_data(t) {
         {
           "selector": ["clicked", "checked", "all"],
           "foldable": true,
+          'title': 'action_menu.on_nodes',
+          "cols": ["nodename"],
+          "condition": "nodename",
+          "children": [
+            {
+              "title": "action_menu.delete",
+              "class": "icon del16",
+              "fn": "data_action_delete_nodes",
+              "min": 1
+            }
+          ]
+        },
+        {
+          "selector": ["clicked", "checked", "all"],
+          "foldable": true,
           'title': 'action_menu.on_services',
           "cols": ["svcname"],
           "condition": "svcname",
@@ -1159,6 +1174,30 @@ function tool_grpprf(t, e) {
   }
   t.e_overlay.show()
   sync_ajax('/init/nodes/ajax_grpprf?node='+nodes.join(","), [], 'overlay', function(){})
+}
+
+//
+// data action: delete nodes
+//
+function data_action_delete_nodes(t, e) {
+  var entry = $(e.target)
+  var cache_id = entry.attr("cache_id")
+  var data = t.action_menu_data_cache[cache_id]
+  var del_data = new Array()
+  for (i=0;i<data.length;i++) {
+    del_data.push({'nodename': data[i]['nodename']})
+  }
+  services_osvcdeleterest("R_NODES", "", "", del_data, function(jd) {
+    if (jd.error && (jd.error.length > 0)) {
+      $(".flash").show("blind").html(services_error_fmt(jd))
+    }
+    if (jd.info && (jd.info.length > 0)) {
+      $(".flash").show("blind").html("<pre>"+jd.info+"</pre>")
+    }
+  },
+  function(xhr, stat, error) {
+    $(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
+  })
 }
 
 //

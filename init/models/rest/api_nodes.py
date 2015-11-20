@@ -489,7 +489,7 @@ class rest_delete_node(rest_delete_handler):
           "- Delete an OpenSVC node.",
           "- The user must be responsible for the node.",
           "- The user must be in the NodeManager privilege group.",
-          "- Cascade delete services instances, dashboard entries.",
+          "- Cascade delete services instances, dashboard, checks, packages and patches entries.",
           "- Log the deletion.",
           "- Send websocket change events on nodes, services instances and dashboard tables.",
         ]
@@ -523,6 +523,7 @@ class rest_delete_node(rest_delete_handler):
           'data': {'id': row.id},
         }
         _websocket_send(event_msg(l))
+        table_modified("nodes")
 
         q = db.svcmon.mon_nodname == row.nodename
         db(q).delete()
@@ -531,6 +532,7 @@ class rest_delete_node(rest_delete_handler):
           'data': {'a': 'b'},
         }
         _websocket_send(event_msg(l))
+        table_modified("svcmon")
 
         q = db.dashboard.dash_nodename == row.nodename
         db(q).delete()
@@ -539,6 +541,34 @@ class rest_delete_node(rest_delete_handler):
           'data': {'a': 'b'},
         }
         _websocket_send(event_msg(l))
+        table_modified("dashboard")
+
+        q = db.checks_live.chk_nodename == row.nodename
+        db(q).delete()
+        l = {
+          'event': 'checks_change',
+          'data': {'a': 'b'},
+        }
+        _websocket_send(event_msg(l))
+        table_modified("checks_live")
+
+        q = db.packages.pkg_nodename == row.nodename
+        db(q).delete()
+        l = {
+          'event': 'packages_change',
+          'data': {'a': 'b'},
+        }
+        _websocket_send(event_msg(l))
+        table_modified("packages")
+
+        q = db.patches.patch_nodename == row.nodename
+        db(q).delete()
+        l = {
+          'event': 'patches_change',
+          'data': {'a': 'b'},
+        }
+        _websocket_send(event_msg(l))
+        table_modified("patches")
 
         return dict(info="node %s deleted" % row.nodename)
 
@@ -548,7 +578,7 @@ class rest_delete_nodes(rest_delete_handler):
     def __init__(self):
         desc = [
           "- Delete OpenSVC nodes.",
-          "- Cascade delete services instances and dashboard entries.",
+          "- Cascade delete services instances, dashboard, checks, packages and patches entries.",
           "- Log the deletion.",
           "- Send websocket change events on nodes, services instances and dashboard tables.",
         ]

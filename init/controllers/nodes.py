@@ -181,21 +181,6 @@ class table_nodes(HtmlTable):
         self.ajax_col_values = 'ajax_nodes_col_values'
         if 'NodeManager' in user_groups():
             self.additional_tools.append('node_add')
-            self.additional_tools.append('node_del')
-
-    def node_del(self):
-        d = DIV(
-              A(
-                T("Delete nodes"),
-                _class='del16',
-                _onclick="""if (confirm("%(text)s")){%(s)s};"""%dict(
-                   s=self.ajax_submit(args=['node_del']),
-                   text=T("Deleting a node also deletes all its asset information. Please confirm node deletion"),
-                ),
-              ),
-              _class='floatw',
-            )
-        return d
 
     def node_add(self):
         d = DIV(
@@ -250,28 +235,6 @@ def ajax_grpprf():
         )
     return d
 
-@auth.requires_membership('NodeManager')
-def node_del(ids):
-    q = db.nodes.nodename.belongs(ids)
-    groups = user_groups()
-    if 'Manager' not in groups:
-        # Manager+NodeManager can delete any node
-        # NodeManager can delete the nodes they are responsible of
-        q &= db.nodes.team_responsible.belongs(groups)
-    rows = db(q).select(db.nodes.nodename)
-    u = ', '.join([r.nodename for r in rows])
-    for nodename in [r.nodename for r in rows]:
-        delete_dash_node(nodename)
-        delete_svcmon(nodename)
-        delete_pkg(nodename)
-        delete_patches(nodename)
-        delete_checks(nodename)
-
-    db(q).delete()
-    table_modified("nodes")
-    _log('nodes.delete',
-         'deleted nodes %(u)s',
-         dict(u=u))
 
 @auth.requires_login()
 def ajax_nodes_col_values():
@@ -403,30 +366,6 @@ def nodes():
 
 def nodes_load():
     return nodes()["table"]
-
-def delete_pkg(nodename):
-    q = db.packages.pkg_nodename == nodename
-    db(q).delete()
-    table_modified("packages")
-
-def delete_patches(nodename):
-    q = db.patches.patch_nodename == nodename
-    db(q).delete()
-    table_modified("patches")
-
-def delete_checks(nodename):
-    q = db.checks_live.chk_nodename == nodename
-    db(q).delete()
-    table_modified("checks_live")
-
-def delete_svcmon(nodename):
-    sql = """delete from svcmon
-               where
-                 mon_nodname="%(nodename)s"
-          """%dict(nodename=nodename)
-    rows = db.executesql(sql)
-    db.commit()
-    table_modified("svcmon")
 
 class col_obs_chart(HtmlTableColumn):
     def html(self, o):
@@ -986,14 +925,6 @@ def ajax_gids():
 #
 # Dashboard updates
 #
-def delete_dash_node(nodename):
-    sql = """delete from dashboard
-               where
-                 dash_nodename="%(nodename)s"
-          """%dict(nodename=nodename)
-    rows = db.executesql(sql)
-    db.commit()
-
 def delete_dash_node_without_asset(nodename):
     sql = """delete from dashboard
                where
