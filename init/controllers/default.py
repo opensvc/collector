@@ -789,27 +789,7 @@ class table_svcmon(HtmlTable):
         self.checkbox_id_table = 'v_svcmon'
         self.ajax_col_values = 'ajax_svcmon_col_values'
         self.user_name = user_name()
-        self.additional_tools.append('tool_provisioning')
         self.events = ["svcmon_change"]
-
-    def tool_provisioning(self):
-        d = DIV(
-              A(
-                T("Provisioning"),
-                _class='prov',
-                _onclick="""$('#prov_container').toggle();ajax('%(url)s', [], '%(id)s')"""%dict(
-                  url=URL(r=request, c='provisioning', f='prov_list'),
-                  id="prov_container",
-                ),
-              ),
-              DIV(
-                _style='display:none',
-                _class='stackable white_float',
-                _id="prov_container",
-              ),
-              _class='floatw',
-            )
-        return d
 
 @auth.requires_login()
 def ajax_svcmon_col_values():

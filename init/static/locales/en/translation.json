@@ -47,6 +47,10 @@
     "node_perf": "Nodes performance",
     "svc_diff": "Services differences",
     "topology": "Topology",
+    "provisioning": "Provision a service",
+    "provisioning_submit": "Submit the command",
+    "provisioning_selector_title": "Choose a template",
+    "provisioning_selector_empty": "No available template",
     "no": "No",
     "yes": "Yes"
   },
