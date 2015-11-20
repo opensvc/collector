@@ -50,7 +50,7 @@ class rest_put_provisioning_template(rest_put_handler):
           "Submit provisioning_template <id>.",
         ]
         data = """
-- **data**
+- **depends on the template definition**
 . The information the template expects, marked as %(key>)s in its definition.
 . The 'nodename' and 'svcname' are mandatory, even if not present in the form
 definition.
@@ -67,25 +67,23 @@ definition.
           examples=examples,
         )
 
-    def handler(self, id, data=None):
+    def handler(self, id, **vars):
         q = db.prov_templates.id == id
         provisioning_template = db(q).select(db.prov_templates.ALL).first()
         if provisioning_template is None:
             return dict("error", "the requested provisioning template does not exist or you don't have permission to use it")
 
-        provisioning_template_data = json.loads(data)
-
         import re
         command = provisioning_template.tpl_command
-        for k, v in provisioning_template_data.items():
+        for k, v in vars.items():
             v = str(v)
             command = re.sub('%\('+k+'\)s', v, command)
 
         # remove the '/opt/opensvc/bin/svcmgr -s svcname ' prefix
         command = re.sub('^.*create ', 'create ', command)
 
-        n = do_svc_action(provisioning_template_data["nodename"],
-                          provisioning_template_data["svcname"],
+        n = do_svc_action(vars["nodename"],
+                          vars["svcname"],
                           command)
 
         if n == 1:
