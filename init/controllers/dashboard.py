@@ -532,8 +532,8 @@ class table_dashboard(HtmlTable):
         self.special_filtered_cols = ['dash_entry']
         self.wsable = True
         self.dataable = True
+        self.events = ["dashboard_change"]
         self.child_tables = ['dash_agg']
-        self.events = ["dash_change"]
 
 @auth.requires_login()
 def ajax_dashboard_col_values():
