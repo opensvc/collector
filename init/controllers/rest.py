@@ -134,6 +134,8 @@ handlers = {
      rest_get_node_tags(),
      rest_get_node_uuid(),
      rest_get_packages_diff(),
+     rest_get_provisioning_templates(),
+     rest_get_provisioning_template(),
      rest_get_resources(),
      rest_get_scheduler_tasks(),
      rest_get_scheduler_task(),
@@ -316,6 +318,7 @@ handlers = {
      rest_put_compliance_ruleset(),
      rest_put_compliance_ruleset_variable(),
      rest_put_form(),
+     rest_put_provisioning_template(),
   ],
 }
 
