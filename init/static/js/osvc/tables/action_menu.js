@@ -2,8 +2,6 @@
 // install agent action menu entries definitions in the table object
 //
 function table_action_menu_init_data(t) {
-  t.action_menu_req_cache = null
-  t.action_menu_data_cache = {}
   t.action_menu_req_max = 1000
   t.column_selectors = {
     "svcname": "td[cell=1][name$=svcname],td[cell=1][name$=svc_name],td[cell=1][name$=disk_svcname]",
