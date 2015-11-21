@@ -244,9 +244,9 @@ function tags_bind_admin_tools(o) {
     o._bind_admin_tools()
     return
   }
-  services_ismemberof("Manager", function() {
+  if (services_ismemberof("Manager")) {
     o._bind_admin_tools()
-  })
+  }
 }
 
 function _tags_bind_admin_tools(o) {

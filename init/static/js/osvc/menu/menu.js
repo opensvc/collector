@@ -302,13 +302,8 @@ function menu_init(o)
 
 function menu_create_entry(o, title, entry)
 {
-	if (entry.secure !== undefined)
-	{
-		var sectest=0;
-		services_ismemberof(entry.secure, function () {
-			sectest = 1;
-		});
-		if (sectest==0) return;
+	if (entry.secure && !services_ismemberof(entry.secure)) {
+		return
 	}
 
 	var titre = i18n.t("menu."+title+ "." + entry.title +".title");

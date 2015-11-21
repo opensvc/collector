@@ -3029,7 +3029,7 @@ function cell_decorator_users_domain(e) {
   var line = $(e).parent(".tl")
   var user_id = line.children("[name$=_c_id]").attr("v")
 
-  services_ismemberof(["Manager", "UserManager"], function() {
+  if (services_ismemberof(["Manager", "UserManager"])) {
     $(e).hover(
       function() {
         span.addClass("editable")
@@ -3038,7 +3038,7 @@ function cell_decorator_users_domain(e) {
         span.removeClass("editable")
       }
     )
-  })
+  }
   span.bind("click", function() {
     span.hide()
     input.show()

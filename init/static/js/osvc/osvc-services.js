@@ -259,22 +259,21 @@ function waitfor(test, expectedValue, msec, count, callback) {
     callback();
 }
 
-function services_ismemberof(groups, callback)
+function services_ismemberof(groups)
 {
     if (typeof groups === "string") {
-      groups = [groups]
+        groups = [groups]
     }
-    return waitfor(function(){return (_groups.length > 0)}, true, 500, 20, function() {
-        var result = $.grep(_groups, function(g) {
-            if (groups.indexOf(g.role) < 0) {
-                return false;
-            }
-            return true;
-        });
-        if (result.length > 0) {
-            callback();
+    var result = $.grep(_groups, function(g) {
+       if (groups.indexOf(g.role) < 0) {
+            return false;
         }
-    });
+        return true;
+    })
+    if (result.length > 0) {
+        return true
+    }
+    return false
 }
 
 function services_ajax_error_fmt(xhr, stat, error) {

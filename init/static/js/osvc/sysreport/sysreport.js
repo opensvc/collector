@@ -156,7 +156,7 @@ function sysrep_init(o)
     o.filter.slideToggle();
   }
 
-  services_ismemberof("Manager", function() {
+  if (services_ismemberof("Manager")) {
     // Authorization process
     o.ql_admin.on("click", function() {
       o.administration.slideToggle();
@@ -179,7 +179,7 @@ function sysrep_init(o)
     o.form_secure.on("submit", function (event) {
       event.preventDefault();
       o.sysrep_admin_secure_handle('','add')
-    });
+    })
 
     // Feed FilterSet
     services_osvcgetrest("R_FILTERSETS", "", {"meta": "false", "limit": "0"}, function(jd) {
@@ -209,7 +209,7 @@ function sysrep_init(o)
     // Show section
     o.sysrep_admin_allow();
     o.sysrep_admin_secure();
-  })
+  }
 }
 
 function sysrep_getparams(o)
