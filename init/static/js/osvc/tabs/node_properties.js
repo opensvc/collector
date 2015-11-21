@@ -70,6 +70,10 @@ function node_props_responsible_init(o)
     if (!jd.data) {
       o.div.find("#uuid").html(services_error_fmt(jd))
     }
+    if (jd.data.length == 0) {
+      o.div.find("#uuid").text(i18n.t("node_properties.no_uuid"))
+      return
+    }
     var data = jd.data[0];
     o.div.find("#uuid").text(data.uuid)
   },

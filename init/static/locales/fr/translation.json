@@ -13,6 +13,8 @@
     "warn_remove": "Attention, cet objet peut être référencé par d'autres objets. Voulez-vous vraiment le supprimer ?"
   },
   "action_menu": {
+    "nodename": "Nom du noeud",
+    "add": "Ajouter",
     "delete": "Supprimer",
     "confirmation": "Etes-vous certain ?",
     "tools": "Analyse des données",
@@ -160,6 +162,7 @@
     }
   },
   "node_properties": {
+    "no_uuid": "Agent non enregistré",
     "organization": "organisation",
     "team_responsible": "responsable",
     "team_integration": "intégration",

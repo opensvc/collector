@@ -13,6 +13,8 @@
     "warn_remove": "Warning, this object might be referenced by other objects. Do you really want to delete this compliance object ?"
   },
   "action_menu": {
+    "nodename": "Node name",
+    "add": "Add",
     "delete": "Delete",
     "confirmation": "Are you sure ?",
     "tools": "Data analysis",
@@ -212,6 +214,7 @@
     "cluster_type": "cluster type"
   },
   "node_properties": {
+    "no_uuid": "Agent not registered",
     "organization": "organization",
     "team_responsible": "responsible",
     "team_integration": "integration",
