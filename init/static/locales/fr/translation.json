@@ -13,6 +13,7 @@
     "warn_remove": "Attention, cet objet peut être référencé par d'autres objets. Voulez-vous vraiment le supprimer ?"
   },
   "action_menu": {
+    "no_action": "Aucune action disponible dans ce contexte.",
     "node_createable": "Ce noeud n'existe pas encore. Appuyez sur <entrée> pour le créer.",
     "nodename": "Nom du noeud",
     "add": "Ajouter",
@@ -156,7 +157,7 @@
       "san" : "San",
       "apps" : "Applications",
       "app" : "Application",
-      "user" : "Utilisateurs",
+      "users" : "Utilisateurs",
       "filterset" : "Filterset",
       "designer" : "Designer",
       "nodes_net" : "Réseau de noeuds"

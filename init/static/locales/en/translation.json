@@ -13,6 +13,7 @@
     "warn_remove": "Warning, this object might be referenced by other objects. Do you really want to delete this compliance object ?"
   },
   "action_menu": {
+    "no_action": "No action available in this context.",
     "node_createable": "This node does not exist yet. Press <enter> to create.",
     "nodename": "Node name",
     "add": "Add",
@@ -178,7 +179,7 @@
       "san" : "San",
       "apps" : "Applications",
       "app" : "Application",
-      "user" : "User",
+      "users" : "Users",
       "filterset" : "Filterset",
       "designer" : "Designer",
       "nodes_net" : "Nodes net"
