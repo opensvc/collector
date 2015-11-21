@@ -147,7 +147,9 @@ def lib_search_user(pattern):
     o = db.v_users.fullname
     q = _where(None, 'v_users', pattern, 'fullname')
     n = db(q).count()
-    data = db(q).select(o,
+    data = db(q).select(db.v_users.fullname,
+                        db.v_users.id,
+                        db.v_users.email,
                         orderby=o,
                         limitby=(0,max_search_result),
     ).as_list()
