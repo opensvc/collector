@@ -13,6 +13,7 @@
     "warn_remove": "Attention, cet objet peut être référencé par d'autres objets. Voulez-vous vraiment le supprimer ?"
   },
   "action_menu": {
+    "node_createable": "Ce noeud n'existe pas encore. Appuyez sur <entrée> pour le créer.",
     "nodename": "Nom du noeud",
     "add": "Ajouter",
     "delete": "Supprimer",
@@ -163,6 +164,7 @@
   },
   "node_properties": {
     "no_uuid": "Agent non enregistré",
+    "nodename": "nom du noeud",
     "organization": "organisation",
     "team_responsible": "responsable",
     "team_integration": "intégration",

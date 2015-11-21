@@ -112,7 +112,7 @@ function services_osvcputrest(service, uri, params, data, callback, error_callba
       data = JSON.stringify(data)
       content_type = "application/json"
     }
-    var req = $.ajax(
+    var xhr = $.ajax(
     {
         type: "PUT",
         url: url,
@@ -121,6 +121,7 @@ function services_osvcputrest(service, uri, params, data, callback, error_callba
         error: error_callback,
         success: callback
     })
+    return xhr
 }
 
 function services_osvcpostrest(service, uri, params, data, callback, error_callback)
@@ -153,7 +154,7 @@ function services_osvcpostrest(service, uri, params, data, callback, error_callb
       data = JSON.stringify(data)
       content_type = "application/json"
     }
-    var req = $.ajax(
+    var xhr = $.ajax(
     {
         type: "POST",
         url: url,
@@ -162,6 +163,7 @@ function services_osvcpostrest(service, uri, params, data, callback, error_callb
         error: error_callback,
         success: callback
     })
+    return xhr
 }
 
 function services_osvcgetrest(service, uri, params, callback, error_callback, async)
@@ -177,7 +179,7 @@ function services_osvcgetrest(service, uri, params, callback, error_callback, as
 
     if (async === undefined || async == null) async=true;
     
-    var req = $.ajax(
+    var xhr = $.ajax(
     {
         type: "GET",
         url: url,
@@ -187,7 +189,7 @@ function services_osvcgetrest(service, uri, params, callback, error_callback, as
         error: error_callback,
         success: callback,
     });
-
+    return xhr
 }
 
 function services_osvcdeleterest(service, uri, params, data, callback, error_callback)
@@ -222,7 +224,7 @@ function services_osvcdeleterest(service, uri, params, data, callback, error_cal
       data = JSON.stringify(data)
       content_type = "application/json"
     }
-    var req = $.ajax(
+    var xhr = $.ajax(
     {
         type: "DELETE",
         url: url,
@@ -231,6 +233,7 @@ function services_osvcdeleterest(service, uri, params, data, callback, error_cal
         error: error_callback,
         success: callback,
     });
+    return xhr
 }
 
 function services_feed_self_and_group()

@@ -13,6 +13,7 @@
     "warn_remove": "Warning, this object might be referenced by other objects. Do you really want to delete this compliance object ?"
   },
   "action_menu": {
+    "node_createable": "This node does not exist yet. Press <enter> to create.",
     "nodename": "Node name",
     "add": "Add",
     "delete": "Delete",
@@ -215,6 +216,7 @@
   },
   "node_properties": {
     "no_uuid": "Agent not registered",
+    "nodename": "node name",
     "organization": "organization",
     "team_responsible": "responsible",
     "team_integration": "integration",
