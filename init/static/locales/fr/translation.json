@@ -136,8 +136,7 @@
       "title_groups" : "Groupes",
       "title_vms" : "Machines virtuelles"
     },
-    "services" : {
-      "title" : "Services",
+    "menu_link" : {
       "dashboard" : "Pilotage",
       "status" : "Etat",
       "resources" : "Resources",
@@ -145,11 +144,12 @@
       "action" : "Action",
       "checks" : "Sondes",
       "disks" : "Disques",
+      "disk_info" : "Disques",
       "saves" : "Sauvegardes",
       "compliance_status" : "Etat de conformité",
       "compliance_log" : "Journal de conformité",
       "availability" : "Disponibilité",
-      "log" : "Journal",
+      "logs" : "Journaux",
       "nodes" : "Noeuds",
       "services" : "Services",
       "network" : "Réseau",
