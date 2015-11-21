@@ -359,7 +359,11 @@ function menu_create_section(o, title)
 
 	for (i=0;i<section.length;i++)
 	{
-		div_section += menu_create_entry(o,title, section[i]);
+		var s = menu_create_entry(o,title, section[i]);
+                if (!s) {
+                  continue
+                }
+		div_section += s
 	}
 
 	div_section += "</div></div>";
