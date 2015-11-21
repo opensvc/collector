@@ -101,12 +101,14 @@ function table_action_menu_init_data(t) {
               "title": "action_menu.add",
               "class": "icon add16",
               "fn": "data_action_add_node",
+              "privileges": ["Manager", "NodeManager"],
               "min": 0
             },
             {
               "title": "action_menu.delete",
               "class": "icon del16",
               "fn": "data_action_delete_nodes",
+              "privileges": ["Manager", "NodeManager"],
               "min": 1
             }
           ]
@@ -760,6 +762,9 @@ function table_action_menu_format_selector(t, e, selector) {
           continue
         }
         var li = table_action_menu_format_leaf(t, e, leaf)
+        if (!li) {
+          continue
+        }
         li.attr("cache_id", cache_id)
         li.bind("click", function(e) {
           e.stopPropagation()
@@ -858,6 +863,9 @@ function table_action_menu_format_selector(t, e, selector) {
 
 function table_action_menu_format_leaf(t, e, leaf) {
   var li = $("<li class='action_menu_leaf clickable'></li>")
+  if (leaf.privileges && !services_ismemberof(leaf.privileges)) {
+    return
+  }
   if (leaf.action) {
     try {
       var params = leaf.params.join(",")
@@ -866,7 +874,6 @@ function table_action_menu_format_leaf(t, e, leaf) {
     }
     li.attr("action", leaf.action)
     li.attr("params", params)
-    //li.attr("scope", scope)
   }
   li.attr("fn", leaf.fn)
   li.addClass(leaf['class'])
