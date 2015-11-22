@@ -549,6 +549,7 @@ function table_add_column_header_input(t, tr, c) {
   var input = $("<input class='oi' name='fi'>")
   var value_to_filter_tool = $("<span class='clickable icon values_to_filter'></span><br>")
   var value_cloud = $("<span></span>")
+  var value_pie = $("<div></div>")
   var input_id = t.id+"_f_"+c
   var header = $("<h3></h3>")
 
@@ -559,12 +560,15 @@ function table_add_column_header_input(t, tr, c) {
   if (t.options.request_vars && (input_id in t.options.request_vars)) {
     input.val(t.options.request_vars[input_id])
   }
+  value_pie.attr("id", t.id+"_fp_"+c)
+  value_pie.css({"margin-top": "0.8em"})
   value_cloud.attr("id", t.id+"_fc_"+c)
   value_cloud.css({"overflow-wrap": "break-word"})
 
   input_float.append(header)
   input_float.append(input)
   input_float.append(value_to_filter_tool)
+  input_float.append(value_pie)
   input_float.append(value_cloud)
   th.append(filter_tool)
   th.append(invert_tool)
@@ -1218,6 +1222,84 @@ function table_save_column_filters(t) {
   }
 }
 
+function table_format_values_pie(t, o, data) {
+  o.empty()
+
+  // avoid ploting too difuse datasets and single pie dataset
+  var n = Object.keys(data).length
+  if ((n > 200) || (n < 2)) {
+    return
+  }
+
+  o.height("15em")
+  o.width("100%")
+
+  // format as jqplot expects
+  var l = []
+  for (key in data) {
+    l.push([key, data[key]])
+  }
+
+  l.sort(function(a, b){
+    if(a[1] < b[1]) return 1;
+    if(a[1] > b[1]) return -1;
+    return 0;
+  })
+
+  // jqplot pie aspect
+  options = {
+      grid:{
+        background: 'transparent',
+        borderColor: 'transparent',
+        shadow: false,
+        drawBorder: false,
+        shadowColor: 'transparent'
+      },
+      seriesDefaults: {
+        sortData: true,
+        renderer: $.jqplot.PieRenderer,
+        //seriesColors: c,
+        rendererOptions: {
+          padding: 10,
+          sliceMargin: 4,
+          dataLabelPositionFactor: 1,
+          startAngle: -90,
+          dataLabelThreshold: 4,
+          dataLabelNudge: 12,
+          dataLabels: 'percent',
+          showDataLabels: true
+        }
+      },
+      legend: {
+        show:false,
+      }
+  }
+  $.jqplot(o.attr('id'), [l], options)
+  o.unbind('jqplotDataHighlight')
+  o.unbind('jqplotDataUnhighlight')
+  o.unbind('jqplotDataClick')
+  o.bind('jqplotDataHighlight', function(ev, seriesIndex, pointIndex, data) {
+    var val = data[0]
+    $(this).next().find("a").each(function(){
+      $(this).removeClass("pie_hover")
+      if ($(this).text() == val) {
+        $(this).addClass("pie_hover")
+      }
+    })
+  })
+  o.bind('jqplotDataUnhighlight', function(ev, seriesIndex, pointIndex, data) {
+    $(this).next().find("a").removeClass("pie_hover")
+  })
+  o.bind('jqplotDataClick', function(ev, seriesIndex, pointIndex, data) {
+    var val = data[0]
+    var input = $(this).siblings("input")
+    input.val(val)
+    t.refresh()
+    t.refresh_column_filters()
+    t.save_column_filters()
+  })
+}
+
 function table_bind_filter_input_events(t) {
   var inputs = t.e_header_filters.find("input[name=fi]")
   var url = t.ajax_url + "_col_values/"
@@ -1243,6 +1325,8 @@ function table_bind_filter_input_events(t) {
       }
       data[input.attr('id')] = input.val()
       var dest = input.siblings("[id^="+t.id+"_fc_]")
+      var pie = input.siblings("[id^="+t.id+"_fp_]")
+      pie.height(0)
       _url = url + col
       $.ajax({
        type: "POST",
@@ -1256,6 +1340,7 @@ function table_bind_filter_input_events(t) {
        success: function(msg){
           var data = $.parseJSON(msg)
           t.format_values_cloud(dest, data)
+          t.format_values_pie(pie, data)
        }
       })
     }, 1000)
@@ -1278,7 +1363,7 @@ function table_bind_filter_input_events(t) {
     if (e.is(":visible")) {
       keep_inside(e)
       register_pop_up(event, $(e))
-      e.find("input").focus()
+      e.find("input").focus().trigger("keyup")
     }
   })
 
@@ -2732,6 +2817,9 @@ function table_init(opts) {
     },
     'column_values': function(){
       return table_column_values(this)
+    },
+    'format_values_pie': function(span, data){
+      return table_format_values_pie(this, span, data)
     },
     'format_values_cloud': function(span, data){
       return table_format_values_cloud(this, span, data)

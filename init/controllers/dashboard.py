@@ -8,142 +8,6 @@ def call():
     session.forget(response)
     return service()
 
-class col_dash_chart(HtmlTableColumn):
-    def html(self, o):
-       h = self.get(o)
-       if len(h['nb']) < 2:
-           return SPAN()
-       return DIV(
-                DIV(
-                  H3(T("Alerts severity")),
-                  DIV(
-                    json.dumps(h['sev']),
-                    _id='sev_chart',
-                  ),
-                  _style="float:left;width:350px",
-                ),
-                DIV(
-                  H3(T("Number of alerts")),
-                  DIV(
-                    h['nb'],
-                    _id='nb_chart',
-                    _style="float:left;width:350px;padding:1em",
-                  ),
-                  DIV(
-                    _id='chart_info',
-                  ),
-                  _style="float:left;width:350px;margin-left:1em",
-                ),
-              )
-
-def spark_data(data):
-    if len(data) == 0:
-        l = [None]
-    elif len(data) == 1:
-        l = [str(data[0][1])]
-    else:
-        d = {}
-        l = []
-        last_value = data[-1][1]
-        begin = data[0][0]
-        if begin == 0:
-            return str(data[0][1])
-        if begin > 20:
-            begin = 20
-        for a, b in data:
-            d[a] = b
-        for i in range(0, begin):
-            if i in d:
-                l.append(d[i])
-                last_value = d[i]
-            else:
-                #l.append(last_value)
-                l.append(None)
-        l.reverse()
-    return l
-
-def html_bar(val, total):
-    if total ==  0:
-        p = 0
-    else:
-        p = 100-100*val/total
-    p = "%d%%"%int(p)
-    n = "%d"%(val)
-    d = DIV(
-          DIV(
-            DIV(
-              _style="""font-size: 0px;
-                        line-height: 0px;
-                        height: 4px;
-                        min-width: 0%%;
-                        max-width: %(p)s;
-                        width: %(p)s;
-                        background: #dddddd;
-                     """%dict(p=p),
-            ),
-            _style="""text-align: left;
-                      margin: 2px auto;
-                      background: #FF7863;
-                      overflow: hidden;
-                   """,
-          ),
-          DIV(n),
-          _style="""margin: auto;
-                    text-align: right;
-                    width: 100%;
-                 """,
-        )
-    return d
-
-class table_dash_agg(HtmlTable):
-    def __init__(self, id=None, func=None, innerhtml=None):
-        if id is None and 'tableid' in request.vars:
-            id = request.vars.tableid
-        HtmlTable.__init__(self, id, func, innerhtml)
-        self.cols = ['chart']
-        self.colprops = {
-            'chart': col_dash_chart(
-                     title='Chart',
-                     field='chart',
-                     display=True,
-                     img='spark16',
-                    ),
-        }
-        self.dbfilterable = False
-        self.filterable = False
-        self.pageable = False
-        self.bookmarkable = False
-        self.commonalityable = False
-        self.exportable = False
-        self.bookmarkable = False
-        self.linkable = False
-        self.refreshable = False
-        self.columnable = False
-        self.headers = False
-        self.highlight = False
-        self.on_change = """function(){plot_dashpie_sev; plot_dashpie_sev()}"""
-
-
-def ajax_dash_history():
-    session.forget(response)
-    id = request.vars.divid
-    id_chart = 'dh_chart'
-    d = DIV(
-          DIV(
-            #IMG(_src=URL(r=request,c='static',f='images/spinner.gif')),
-            _id=id_chart,
-            _style="height:300px",
-          ),
-          SCRIPT(
-            "dash_history('%(url)s', '%(id)s');"%dict(
-               url=URL(r=request, f='call/json/json_dash_history'),
-               id=id_chart,
-            ),
-            _name='dh_to_eval'
-          ),
-        )
-    return d
-
 @service.json
 def json_dash_history():
     t = table_dashboard('dashboard', 'ajax_dashboard')
@@ -207,172 +71,6 @@ def json_dash_history():
         data.append((row[0], row[1]))
     return data
 
-@auth.requires_login()
-def ajax_dash_agg():
-    session.forget(response)
-    t = table_dashboard('dashboard', 'ajax_dashboard')
-    mt = table_dash_agg('dash_agg', 'ajax_dash_agg')
-
-    q = db.dashboard.id > 0
-    for f in set(t.cols):
-        q = _where(q, 'dashboard', t.filter_parse(f),  f if t.colprops[f].filter_redirect is None else t.colprops[f].filter_redirect)
-    q &= _where(None, 'dashboard', domain_perms(), 'dash_svcname')|_where(None, 'dashboard', domain_perms(), 'dash_nodename')
-    q = apply_filters(q, db.dashboard.dash_nodename, db.dashboard.dash_svcname)
-
-    sql1 = db(q)._select().rstrip(';').replace('services.id, ','').replace('nodes.id, ','').replace('dashboard.id>0 AND', '')
-    regex = re.compile("SELECT .* FROM dashboard")
-    sql1 = regex.sub('', sql1)
-
-    q = db.dash_agg.id > 0
-    for f in mt.cols:
-        q = _where(q, mt.colprops[f].table, mt.filter_parse(f), f)
-    where = str(q).replace("dash_agg.", "dashboard.")
-
-    mt.additional_inputs = t.ajax_inputs()
-
-    h = {'nb': [], 'sev': []}
-
-    sql2 = """ select
-                  dashboard.dash_type,
-                  count(dashboard.dash_type)
-                from dashboard ignore index (idx1)
-                  %(sql)s
-                group by dash_type
-              """%dict(
-                sql=sql1,
-                where=where,
-           )
-    rows = db.executesql(sql2)
-
-    _h = {}
-    for r in rows:
-        _h[r[0]] = r[1]
-
-    max = 0
-    for n in _h.values():
-        if n > max: max = n
-    min = max
-    for n in _h.values():
-        if n < min: min = n
-    delta = max - min
-
-    l = []
-    for s, n in _h.items():
-        if delta > 0:
-            size = 100 + 100. * (n - min) / delta
-        else:
-            size = 100
-        if n == 1:
-            title = "%d occurence"%n
-        else:
-            title = "%d occurences"%n
-        attr = {
-          '_class': "cloud_tag",
-          '_style': "font-size:%d%%"%size,
-          '_title': "%d occurences"%n,
-          '_onclick': """
-$("#dashboard_f_dash_type").val('%(s)s')
-%(submit)s"""%dict(submit=t.ajax_submit(), s=s),
-        }
-        l.append(A(
-                   T(s)+' ',
-                   **attr
-                ))
-    h['nb'] = DIV(l)
-
-    sql2 = """ select
-                  dashboard.id,
-                  dashboard.dash_severity,
-                  count(dashboard.id)
-                from dashboard ignore index (idx1)
-                  %(sql)s
-                group by dash_severity
-              """%dict(
-                sql=sql1,
-                where=where,
-           )
-
-    rows = db.executesql(sql2)
-
-    l = map(lambda x: {'dash_severity': x[1],
-                       'dash_alerts':x[2]},
-             rows)
-
-    for line in l:
-        s = T.translate("Severity %(s)s", dict(s=line['dash_severity']))
-        h['sev'].append([s, int(line['dash_alerts'])])
-    h['sev'].sort(lambda x, y: cmp(y[0], x[0]))
-
-    mt.object_list = [{'chart': h}]
-
-    from hashlib import md5
-    o = md5()
-    o.update(sql1)
-    filters_md5 = str(o.hexdigest())
-
-    q = db.dashboard_log.dash_filters_md5==filters_md5
-    row = db(q).select(db.dashboard_log.dash_date,
-                       orderby=~db.dashboard_log.id,
-                       limitby=(0,1)).first()
-
-    now = datetime.datetime.now()
-
-    if len(request.args) == 1 and request.args[0] == 'csv':
-        return mt.csv()
-
-    if len(request.args) == 1 and request.args[0] == 'line':
-        return mt.table_lines_data(-1)
-
-
-    return DIV(
-             mt.html(),
-           )
-
-@service.json
-def update_dashboard_log(s):
-    try:
-        md5, dash_type = s.split('-')
-        dash_type = dash_type.replace("_", " ")
-    except:
-        return [None]
-
-    """ Insert a datapoint in dashboard_log with
-        the same value as the last point for dash_filters_md5/dash_type
-        If a point already has been inserted in the last minute, skip.
-    """
-    sql = """insert into dashboard_log
-               select
-                 NULL,
-                 dash_type,
-                 dash_filters_md5,
-                 dash_alerts,
-                 now()
-               from dashboard_log
-               where
-                 dash_filters_md5="%(md5)s" and
-                 dash_type="%(dash_type)s" and
-                 dash_date < date_sub(now(), interval 1 minute)
-               order by dash_date desc
-               limit 1
-          """%dict(md5=md5, dash_type=dash_type)
-    db.executesql(sql)
-    with open("/tmp/bar", "w") as f:
-        f.write(sql+'\n')
-
-    now = datetime.datetime.now()
-    thisminute = now.toordinal()*1440+now.hour*60+now.minute
-
-    q = db.dashboard_log.dash_filters_md5 == md5
-    q &= db.dashboard_log.dash_type == dash_type
-    q &= db.dashboard_log.dash_date > now - datetime.timedelta(minutes=21)
-    rows = db(q).select()
-    data = []
-    for row in rows:
-        rowminute = row.dash_date.toordinal()*1440+row.dash_date.hour*60+row.dash_date.minute
-        data.append((thisminute-rowminute,
-                     row.dash_alerts))
-
-    return s, spark_data(data)
 
 
 #############################################################################
@@ -533,7 +231,6 @@ class table_dashboard(HtmlTable):
         self.wsable = True
         self.dataable = True
         self.events = ["dashboard_change"]
-        self.child_tables = ['dash_agg']
 
 @auth.requires_login()
 def ajax_dashboard_col_values():
@@ -579,68 +276,14 @@ def ajax_dashboard():
 @auth.requires_login()
 def index():
     t = table_dashboard('dashboard', 'ajax_dashboard')
-    mt = table_dash_agg('dash_agg', 'ajax_dash_agg')
     t = DIV(
-             DIV(
-               T("Alerts Statistics"),
-               _style="text-align:left;font-size:120%;background-color:#e0e1cd",
-               _class="right16 clickable",
-               _onclick="""
-               if (!$("#dash_agg").is(":visible")) {
-                 $(this).addClass("down16");
-                 $(this).removeClass("right16");
-                 $("#dash_agg").show(); %s ;
-               } else {
-                 $(this).addClass("right16");
-                 $(this).removeClass("down16");
-                 $("#dash_agg").hide();
-               }"""%mt.ajax_submit(additional_inputs=t.ajax_inputs()),
-             ),
-             DIV(
-                mt.html(),
-                _style="display:none",
-               _id="dash_agg",
-             ),
-             DIV(
-               T("Alerts History"),
-               _style="text-align:left;font-size:120%;background-color:#e0e1cd",
-               _class="right16 clickable",
-               _onclick="""
-               if (!$("#dh").is(":visible")) {
-                 $(this).addClass("down16");
-                 $(this).removeClass("right16");
-                 $("#dh").show(); sync_ajax("%(url)s", [], "dh", function(){});
-               } else {
-                 $(this).addClass("right16");
-                 $(this).removeClass("down16");
-                 $("#dh").hide();
-               }"""%dict(url=URL(r=request,f='ajax_dash_history', vars={"divid": "dh"})),
-             ),
-             DIV(_id="dh", _style="display:none"),
-             DIV(
-               t.html(),
-               _id='dashboard',
-             ),
+          t.html(),
+          _id='dashboard',
         )
-
     return dict(table=t)
 
 def index_load():
     return index()["table"]
-
-#
-# Dashboard change detection
-#
-def dash_changed():
-    sql = """select (now()-update_time)*6/10
-             from information_schema.tables
-             where
-               table_schema = 'opensvc' and
-               table_name = 'dashboard'
-          """
-    rows = db.executesql(sql)
-    return rows[0][0]
-
 
 @auth.requires_login()
 def ajax_alert_events():
@@ -704,7 +347,7 @@ def ajax_alert_events():
                id='wiki_%s'%request.vars.rowid,
                rid=str(request.vars.rowid),
                node=wikipage_name)
-    
+
     return TABLE(DIV(
              H2(T("Alert timeline")),
              DIV(
@@ -724,7 +367,7 @@ def test_dashboard_events():
     dashboard_events()
 
 #
-# alert tab
+# alerts tabs
 #
 class table_dashboard_node(table_dashboard):
     def __init__(self, id=None, func=None, innerhtml=None):

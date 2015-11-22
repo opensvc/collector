@@ -503,6 +503,9 @@ img {
 	background: white;
 }
 
+.pie_hover {
+	background-color: #d8eee7;
+}
 .h:hover {
 	background-color: #d8eee7;
 }
