@@ -221,6 +221,9 @@ function search_build_result_row(label, first, res, count) {
       for (key in res) {
         url = url.replace("__"+key+"__", res[key])
       }
+      // leftover (the first==1 case)
+      url = url.replace(/__\w+__/, title)
+
       var a_link = $("<a class='search-link'></a>")
       a_link.addClass(cl)
       a_link.attr("href", url)
