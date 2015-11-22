@@ -23,7 +23,7 @@ function search_get_menu(fk)
         "class": "hd16 fa-2x search-section-icon",
         "subclass" : "meta_app",
         "link" : [
-          { "disk info" : [ {"class" : "hd16"},{"link" : "/init/disks/disks?clear_filters=true&disks_f_disk_id=__disk_id__"} ] }
+          { "disk_info" : [ {"class" : "hd16"},{"link" : "/init/disks/disks?clear_filters=true&disks_f_disk_id=__disk_id__"} ] }
         ]
     },
     "apps": {

@@ -127,6 +127,7 @@
   "search": {
     "nothing_found" : "Aucun résultat ne répond au critère de recherche.",
     "menu_header" : {
+      "title_disks" : "Disques",
       "title_services" : "Services",
       "title_nodes" : "Noeuds",
       "title_users" : "Utilisateurs",

@@ -149,6 +149,7 @@
   "search": {
     "nothing_found" : "No entry found matching filter",
     "menu_header" : {
+      "title_disks" : "Disks",
       "title_services" : "Services",
       "title_nodes" : "Nodes",
       "title_users" : "Users",
