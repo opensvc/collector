@@ -302,13 +302,8 @@ function menu_init(o)
 
 function menu_create_entry(o, title, entry)
 {
-	if (entry.secure !== undefined)
-	{
-		var sectest=0;
-		services_ismemberof(entry.secure, function () {
-			sectest = 1;
-		});
-		if (sectest==0) return;
+	if (entry.secure && !services_ismemberof(entry.secure)) {
+		return
 	}
 
 	var titre = i18n.t("menu."+title+ "." + entry.title +".title");
@@ -364,7 +359,11 @@ function menu_create_section(o, title)
 
 	for (i=0;i<section.length;i++)
 	{
-		div_section += menu_create_entry(o,title, section[i]);
+		var s = menu_create_entry(o,title, section[i]);
+                if (!s) {
+                  continue
+                }
+		div_section += s
 	}
 
 	div_section += "</div></div>";

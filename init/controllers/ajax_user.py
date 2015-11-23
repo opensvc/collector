@@ -28,13 +28,13 @@ def ajax_user():
     if tab is None:
         tab = "tab1"
 
-    user = db(db.v_users.fullname==request.vars.username).select(cacheable=True).first()
+    user = db(db.v_users.id==request.vars.user_id).select(cacheable=True).first()
     if user is None:
         return TABLE(
                  TR(
                    TD(
                      T("No user information for %(user)s",
-                       dict(user=request.vars.username)),
+                       dict(user=str(request.vars.user_id))),
                    ),
                  ),
                )
@@ -59,7 +59,7 @@ def ajax_user():
           UL(
             LI(
               P(
-                T("%(n)s", dict(n=request.vars.username)),
+                T("%(n)s", dict(n=user.fullname)),
                 _class='nok',
                 _onclick="""$('#%(id)s').remove()"""%dict(id=rowid),
               ),
@@ -96,7 +96,7 @@ def ajax_user():
                id='tab2_'+str(rowid),
                rid=str(rowid),
                url=URL(r=request, c='ajax_user', f='ajax_user_groups',
-                       args=['tab2_'+str(rowid)], vars={'username': request.vars.username})
+                       args=['tab2_'+str(rowid)], vars={'user_id': request.vars.user_id})
             ),
             """callbacks = {"tab2": %(id)s_load_user_groups,
                            }"""%dict(id='n'+str(rowid)),
@@ -134,9 +134,9 @@ blist_groups = [
 @auth.requires_login()
 def ajax_user_groups():
     id = request.args[0]
-    username = request.vars.username
+    user_id = request.vars.user_id
 
-    q = db.v_users.fullname == username
+    q = db.v_users.id == user_id
     user = db(q).select(db.v_users.id).first()
     if user is None:
         return ""

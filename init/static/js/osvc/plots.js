@@ -3874,50 +3874,6 @@ function _jqplot_img(e){
             }
 }
 
-function dashpie_sev(o) {
-  var data = $.parseJSON(o.html())
-  o.html("")
-  o.height("300px")
-  colors = {
-    "4": "#2d2d2d",
-    "3": "#660000",
-    "2": "#990000",
-    "1": "#ffa500",
-    "0": "#009900"
-  }
-  c = []
-  for (i=0;i<data.length;i++) {
-      c.push(colors[data[i][0][data[i][0].length-1]])
-  }
-  options = {
-      grid:{background:'transparent',borderColor:'transparent',shadow:false,drawBorder:false,shadowColor:'transparent'},
-      seriesDefaults: {
-        renderer: $.jqplot.PieRenderer,
-        seriesColors: c,
-        rendererOptions: {
-          sliceMargin: 4,
-          dataLabelPositionFactor: 0.7,
-          startAngle: -90,
-          dataLabels: 'value',
-          showDataLabels: true
-        }
-      },
-      legend: { show:false, location: 'e' }
-    }
-  $.jqplot(o.attr('id'), [data], options)
-  o.bind('jqplotDataClick', function(ev, seriesIndex, pointIndex, data) {
-    dash_severity = data[seriesIndex][data[seriesIndex].length-1]
-    $("#dashboard_f_dash_severity").val(dash_severity)
-    filter_submit("dashboard", "dashboard_f_dash_severity", d)
-  })
-}
-
-function plot_dashpie_sev(o) {
-  $("#sev_chart").each(function(){
-    dashpie_sev($(this))
-  })
-}
-
 function savedonut(o) {
   try{
   var d = $.parseJSON(o.html())

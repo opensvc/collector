@@ -13,6 +13,10 @@
     "warn_remove": "Attention, cet objet peut être référencé par d'autres objets. Voulez-vous vraiment le supprimer ?"
   },
   "action_menu": {
+    "no_action": "Aucune action disponible dans ce contexte.",
+    "node_createable": "Ce noeud n'existe pas encore. Appuyez sur <entrée> pour le créer.",
+    "nodename": "Nom du noeud",
+    "add": "Ajouter",
     "delete": "Supprimer",
     "confirmation": "Etes-vous certain ?",
     "tools": "Analyse des données",
@@ -47,6 +51,10 @@
     "node_perf": "Performance des noeuds",
     "svc_diff": "Différences entre services",
     "topology": "Topologie",
+    "provisioning": "Provisionner un service",
+    "provisioning_submit": "Lancer la commande",
+    "provisioning_selector_title": "Choisissez un modèle",
+    "provisioning_selector_empty": "Aucun modèle disponible",
     "no": "Non",
     "yes": "Oui"
   },
@@ -119,6 +127,7 @@
   "search": {
     "nothing_found" : "Aucun résultat ne répond au critère de recherche.",
     "menu_header" : {
+      "title_disks" : "Disques",
       "title_services" : "Services",
       "title_nodes" : "Noeuds",
       "title_users" : "Utilisateurs",
@@ -128,8 +137,7 @@
       "title_groups" : "Groupes",
       "title_vms" : "Machines virtuelles"
     },
-    "services" : {
-      "title" : "Services",
+    "menu_link" : {
       "dashboard" : "Pilotage",
       "status" : "Etat",
       "resources" : "Resources",
@@ -137,11 +145,12 @@
       "action" : "Action",
       "checks" : "Sondes",
       "disks" : "Disques",
+      "disk_info" : "Disques",
       "saves" : "Sauvegardes",
       "compliance_status" : "Etat de conformité",
       "compliance_log" : "Journal de conformité",
       "availability" : "Disponibilité",
-      "log" : "Journal",
+      "logs" : "Journaux",
       "nodes" : "Noeuds",
       "services" : "Services",
       "network" : "Réseau",
@@ -149,13 +158,15 @@
       "san" : "San",
       "apps" : "Applications",
       "app" : "Application",
-      "user" : "Utilisateurs",
+      "users" : "Utilisateurs",
       "filterset" : "Filterset",
       "designer" : "Designer",
       "nodes_net" : "Réseau de noeuds"
     }
   },
   "node_properties": {
+    "no_uuid": "Agent non enregistré",
+    "nodename": "nom du noeud",
     "organization": "organisation",
     "team_responsible": "responsable",
     "team_integration": "intégration",

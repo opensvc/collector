@@ -2064,13 +2064,15 @@ function cell_decorator_username(e) {
   if ((v=="") || (v=="empty")) {
     return
   }
+  var line = $(e).parent(".tl")
+  var user_id = line.children("[name$=_c_id]").attr("v")
   $(e).addClass("corner")
   $(e).click(function(){
     if (get_selected() != "") {return}
     table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
     span_id = $(e).parent(".tl").attr("spansum")
     id = table_id + "_x_" + span_id
-    url = services_get_url() + "/init/ajax_user/ajax_user?username="+encodeURIComponent(v)+"&rowid="+id
+    url = services_get_url() + "/init/ajax_user/ajax_user?user_id="+encodeURIComponent(user_id)+"&rowid="+id
     toggle_extra(url, id, e, 0)
   })
 }
@@ -3027,7 +3029,7 @@ function cell_decorator_users_domain(e) {
   var line = $(e).parent(".tl")
   var user_id = line.children("[name$=_c_id]").attr("v")
 
-  services_ismemberof(["Manager", "UserManager"], function() {
+  if (services_ismemberof(["Manager", "UserManager"])) {
     $(e).hover(
       function() {
         span.addClass("editable")
@@ -3036,7 +3038,7 @@ function cell_decorator_users_domain(e) {
         span.removeClass("editable")
       }
     )
-  })
+  }
   span.bind("click", function() {
     span.hide()
     input.show()

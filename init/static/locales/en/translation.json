@@ -13,6 +13,10 @@
     "warn_remove": "Warning, this object might be referenced by other objects. Do you really want to delete this compliance object ?"
   },
   "action_menu": {
+    "no_action": "No action available in this context.",
+    "node_createable": "This node does not exist yet. Press <enter> to create.",
+    "nodename": "Node name",
+    "add": "Add",
     "delete": "Delete",
     "confirmation": "Are you sure ?",
     "tools": "Data analysis",
@@ -47,6 +51,10 @@
     "node_perf": "Nodes performance",
     "svc_diff": "Services differences",
     "topology": "Topology",
+    "provisioning": "Provision a service",
+    "provisioning_submit": "Submit the command",
+    "provisioning_selector_title": "Choose a template",
+    "provisioning_selector_empty": "No available template",
     "no": "No",
     "yes": "Yes"
   },
@@ -141,6 +149,7 @@
   "search": {
     "nothing_found" : "No entry found matching filter",
     "menu_header" : {
+      "title_disks" : "Disks",
       "title_services" : "Services",
       "title_nodes" : "Nodes",
       "title_users" : "Users",
@@ -158,7 +167,7 @@
       "action" : "Action",
       "checks" : "Checks",
       "disks" : "Disks",
-      "disk_info" : "Disk Info",
+      "disk_info" : "Disks",
       "saves" : "Saves",
       "compliance_status" : "Compliance status",
       "compliance_log" : "Compliance log",
@@ -171,7 +180,7 @@
       "san" : "San",
       "apps" : "Applications",
       "app" : "Application",
-      "user" : "User",
+      "users" : "Users",
       "filterset" : "Filterset",
       "designer" : "Designer",
       "nodes_net" : "Nodes net"
@@ -208,6 +217,8 @@
     "cluster_type": "cluster type"
   },
   "node_properties": {
+    "no_uuid": "Agent not registered",
+    "nodename": "node name",
     "organization": "organization",
     "team_responsible": "responsible",
     "team_integration": "integration",

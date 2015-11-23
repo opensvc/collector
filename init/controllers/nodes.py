@@ -1,128 +1,3 @@
-def _label(key):
-    return DIV(
-             IMG(
-               _src=URL(r=request, c='static',
-                        f='images/'+v_nodes_colprops[key].img+'.png'),
-               _style='vertical-align:top;margin-right:10px',
-             ),
-             v_nodes_colprops[key].title,
-           )
-
-@auth.requires_membership('NodeManager')
-def _node_form(record=None):
-    if record is not None:
-        deletable = True
-    else:
-        deletable = False
-    return SQLFORM(db.nodes,
-                 record=record,
-                 deletable=deletable,
-                 hidden_fields=['mem_bytes',
-                                'mem_banks',
-                                'mem_slots',
-                                'os_name',
-                                'os_kernel',
-                                'os_vendor',
-                                'os_release',
-                                'os_arch',
-                                'cpu_freq',
-                                'cpu_dies',
-                                'cpu_cores',
-                                'cpu_threads',
-                                'cpu_model',
-                                'cpu_vendor',
-                                'host_mode',
-                                'serial',
-                                'model'],
-                 fields=['nodename',
-                         'assetname',
-                         'fqdn',
-                         'team_responsible',
-                         'team_integ',
-                         'team_support',
-                         'project',
-                         'environnement',
-                         'action_type',
-                         'warranty_end',
-                         'maintenance_end',
-                         'status',
-                         'role',
-                         'type',
-                         'enclosure',
-                         'enclosureslot',
-                         'sec_zone',
-                         'loc_country',
-                         'loc_zip',
-                         'loc_city',
-                         'loc_addr',
-                         'loc_building',
-                         'loc_floor',
-                         'loc_room',
-                         'loc_rack',
-                         'power_supply_nb',
-                         'power_cabinet1',
-                         'power_cabinet2',
-                         'power_protect',
-                         'power_protect_breaker',
-                         'power_breaker1',
-                         'power_breaker2',
-                        ],
-                 labels={
-                         'nodename': _label('nodename'),
-                         'assetname': _label('assetname'),
-                         'fqdn': _label('fqdn'),
-                         'team_responsible': _label('team_responsible'),
-                         'team_integ': _label('team_integ'),
-                         'team_support': _label('team_support'),
-                         'project': _label('project'),
-                         'action_type': _label('action_type'),
-                         'warranty_end': _label('warranty_end'),
-                         'maintenance_end': _label('maintenance_end'),
-                         'status': _label('status'),
-                         'role': _label('role'),
-                         'type': _label('type'),
-                         'enclosure': _label('enclosure'),
-                         'enclosureslot': _label('enclosureslot'),
-                         'loc_country': _label('loc_country'),
-                         'sec_zone': _label('sec_zone'),
-                         'loc_zip': _label('loc_zip'),
-                         'loc_city': _label('loc_city'),
-                         'loc_addr': _label('loc_addr'),
-                         'loc_building': _label('loc_building'),
-                         'loc_floor': _label('loc_floor'),
-                         'loc_room': _label('loc_room'),
-                         'loc_rack': _label('loc_rack'),
-                         'power_supply_nb': _label('power_supply_nb'),
-                         'power_cabinet1': _label('power_cabinet1'),
-                         'power_cabinet2': _label('power_cabinet2'),
-                         'power_protect': _label('power_protect'),
-                         'power_protect_breaker': _label('power_protect_breaker'),
-                         'power_breaker1': _label('power_breaker1'),
-                         'power_breaker2': _label('power_breaker2'),
-                        },
-                )
-
-@auth.requires_login()
-def node_insert():
-    form = _node_form()
-    import gluon.contrib.pymysql.err
-    try:
-        if form.accepts(request.vars):
-            table_modified("nodes")
-            update_dash_node_without_maintenance_end(request.vars.nodename)
-            update_dash_node_beyond_maintenance_end(request.vars.nodename)
-            update_dash_node_near_maintenance_end(request.vars.nodename)
-            delete_dash_node_not_updated(request.vars.nodename)
-            delete_dash_node_without_asset(request.vars.nodename)
-            table_modified("dashboard")
-            response.flash = T("edition recorded")
-            redirect(URL(r=request, f='nodes'))
-        elif form.errors:
-            response.flash = T("errors in form")
-    except gluon.contrib.pymysql.err.IntegrityError:
-        response.flash = T("Integrity Error")
-    return dict(form=form)
-
 class table_nodes(HtmlTable):
     def __init__(self, id=None, func=None, innerhtml=None):
         if id is None and 'tableid' in request.vars:
@@ -176,36 +51,9 @@ class table_nodes(HtmlTable):
         self.checkbox_id_col = 'nodename'
         self.checkbox_id_table = 'v_nodes'
         self.dbfilterable = True
+        self.events = ["nodes_change"]
         self.child_tables = ["obs_agg", "uids", "gids"]
         self.ajax_col_values = 'ajax_nodes_col_values'
-        if 'NodeManager' in user_groups():
-            self.additional_tools.append('node_add')
-            self.additional_tools.append('node_del')
-
-    def node_del(self):
-        d = DIV(
-              A(
-                T("Delete nodes"),
-                _class='del16',
-                _onclick="""if (confirm("%(text)s")){%(s)s};"""%dict(
-                   s=self.ajax_submit(args=['node_del']),
-                   text=T("Deleting a node also deletes all its asset information. Please confirm node deletion"),
-                ),
-              ),
-              _class='floatw',
-            )
-        return d
-
-    def node_add(self):
-        d = DIV(
-              A(
-                T("Add node"),
-                _class='add16',
-                _onclick="""location.href='node_insert?_next=%s'"""%URL(r=request),
-              ),
-              _class='floatw',
-            )
-        return d
 
 @auth.requires_login()
 def ajax_grpprf():
@@ -249,28 +97,6 @@ def ajax_grpprf():
         )
     return d
 
-@auth.requires_membership('NodeManager')
-def node_del(ids):
-    q = db.nodes.nodename.belongs(ids)
-    groups = user_groups()
-    if 'Manager' not in groups:
-        # Manager+NodeManager can delete any node
-        # NodeManager can delete the nodes they are responsible of
-        q &= db.nodes.team_responsible.belongs(groups)
-    rows = db(q).select(db.nodes.nodename)
-    u = ', '.join([r.nodename for r in rows])
-    for nodename in [r.nodename for r in rows]:
-        delete_dash_node(nodename)
-        delete_svcmon(nodename)
-        delete_pkg(nodename)
-        delete_patches(nodename)
-        delete_checks(nodename)
-
-    db(q).delete()
-    table_modified("nodes")
-    _log('nodes.delete',
-         'deleted nodes %(u)s',
-         dict(u=u))
 
 @auth.requires_login()
 def ajax_nodes_col_values():
@@ -402,30 +228,6 @@ def nodes():
 
 def nodes_load():
     return nodes()["table"]
-
-def delete_pkg(nodename):
-    q = db.packages.pkg_nodename == nodename
-    db(q).delete()
-    table_modified("packages")
-
-def delete_patches(nodename):
-    q = db.patches.patch_nodename == nodename
-    db(q).delete()
-    table_modified("patches")
-
-def delete_checks(nodename):
-    q = db.checks_live.chk_nodename == nodename
-    db(q).delete()
-    table_modified("checks_live")
-
-def delete_svcmon(nodename):
-    sql = """delete from svcmon
-               where
-                 mon_nodname="%(nodename)s"
-          """%dict(nodename=nodename)
-    rows = db.executesql(sql)
-    db.commit()
-    table_modified("svcmon")
 
 class col_obs_chart(HtmlTableColumn):
     def html(self, o):
@@ -985,14 +787,6 @@ def ajax_gids():
 #
 # Dashboard updates
 #
-def delete_dash_node(nodename):
-    sql = """delete from dashboard
-               where
-                 dash_nodename="%(nodename)s"
-          """%dict(nodename=nodename)
-    rows = db.executesql(sql)
-    db.commit()
-
 def delete_dash_node_without_asset(nodename):
     sql = """delete from dashboard
                where

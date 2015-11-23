@@ -39,7 +39,7 @@ class HtmlTableMenu(object):
                    l,
                    _name=self.mid,
                    _style='display:none;position:absolute',
-                   _class='white_float',
+                   _class='stackable white_float',
                  ),
                  _class='floatw',
                )

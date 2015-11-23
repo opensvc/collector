@@ -275,6 +275,9 @@ def do_svc_action(nodename, svcname, action, rid=None):
     return 1
 
 def json_action_one(d):
+    if "vmname" in d:
+        d["nodename"] = d["vmname"]
+        del(d["vmname"])
     if "rid" in d and "svcname" in d and "nodename" in d:
         if "action" in d:
             return do_svc_action(d["nodename"], d["svcname"], d["action"], rid=d["rid"])
@@ -303,6 +306,9 @@ def factorize_actions(data):
     rid_h = {}
     for d in data:
         if "rid" in d and "svcname" in d and "nodename" in d:
+            if "vmname" in d:
+                d["nodename"] = d["vmname"]
+                del(d["vmname"])
             i = (d["svcname"], d["nodename"], d["action"])
             if i in rid_h:
                 rid_h[i].append(d["rid"])

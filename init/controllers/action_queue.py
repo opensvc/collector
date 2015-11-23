@@ -64,12 +64,14 @@ class table_actions(HtmlTable):
                      field='date_queued',
                      img='time16',
                      display=True,
+                     _class="datetime_no_age",
                     ),
             'date_dequeued': HtmlTableColumn(
                      title='Dequeued',
                      field='date_dequeued',
                      img='time16',
                      display=True,
+                     _class="datetime_no_age",
                     ),
             'nodename': HtmlTableColumn(
                      title='Nodename',

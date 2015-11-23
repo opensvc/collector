@@ -7,7 +7,8 @@ function table_action_menu_init_data(t) {
     "svcname": "td[cell=1][name$=svcname],td[cell=1][name$=svc_name],td[cell=1][name$=disk_svcname]",
     "nodename": "td[cell=1][name$=nodename],td[cell=1][name$=mon_nodname],td[cell=1][name$=disk_nodename],td[cell=1][name$=hostname]",
     "rid": "td[cell=1][name$=_rid]",
-    "module": "td[cell=1][name$=_run_module]"
+    "module": "td[cell=1][name$=_run_module]",
+    "vmname": "td[cell=1][name$=_vmname]"
   }
 
   t.action_menu_data = [
@@ -93,12 +94,34 @@ function table_action_menu_init_data(t) {
         {
           "selector": ["clicked", "checked", "all"],
           "foldable": true,
+          'title': 'action_menu.on_nodes',
+          "cols": ["nodename"],
+          "condition": "nodename",
+          "children": [
+            {
+              "title": "action_menu.add",
+              "class": "icon add16",
+              "fn": "data_action_add_node",
+              "privileges": ["Manager", "NodeManager"],
+              "min": 0
+            },
+            {
+              "title": "action_menu.delete",
+              "class": "icon del16",
+              "fn": "data_action_delete_nodes",
+              "privileges": ["Manager", "NodeManager"],
+              "min": 1
+            }
+          ]
+        },
+        {
+          "selector": ["clicked", "checked", "all"],
+          "foldable": true,
           'title': 'action_menu.on_services',
           "cols": ["svcname"],
           "condition": "svcname",
           "children": [
             {
-              "selector": ["clicked", "checked", "all"],
               "title": "action_menu.delete",
               "class": "icon del16",
               "fn": "data_action_delete_svcs",
@@ -114,7 +137,6 @@ function table_action_menu_init_data(t) {
           "condition": "svcname+nodename",
           "children": [
             {
-              "selector": ["clicked", "checked", "all"],
               "title": "action_menu.delete",
               "class": "icon del16",
               "fn": "data_action_delete_svc_instances",
@@ -138,114 +160,133 @@ function table_action_menu_init_data(t) {
             {
               'title': 'Update node information',
               'class': 'icon node16',
+              "privileges": ["Manager", "NodeManager"],
               "min": 1,
               'action': 'pushasset'
             },
             {
               'title': 'Update disks information',
               'class': 'icon hd16',
+              "privileges": ["Manager", "NodeManager"],
               "min": 1,
               'action': 'pushdisks'
             },
             {
               'title': 'Update app information',
               'class': 'icon svc-c',
+              "privileges": ["Manager", "NodeManager"],
               "min": 1,
               'action': 'push_appinfo'
             },
             {
               'title': 'Update services information',
               'class': 'icon svc-c',
+              "privileges": ["Manager", "NodeManager"],
               "min": 1,
               'action': 'pushservices'
             },
             {
               'title': 'Update installed packages information',
               'class': 'icon pkg16',
+              "privileges": ["Manager", "NodeManager"],
               "min": 1,
               'action': 'pushpkg'
             },
             {
               'title': 'Update installed patches information',
               'class': 'icon pkg16',
+              "privileges": ["Manager", "NodeManager"],
               "min": 1,
               'action': 'pushpatch'
             },
             {
               'title': 'Update stats',
               'class': 'icon spark16',
+              "privileges": ["Manager", "NodeManager"],
               "min": 1,
               'action': 'pushstats'
             },
             {
               'title': 'Update check values',
               'class': 'icon ok',
+              "privileges": ["Manager", "NodeManager"],
               "min": 1,
               'action': 'checks'
             },
             {
               'title': 'Update sysreport',
               'class': 'icon log16',
+              "privileges": ["Manager", "NodeManager"],
               "min": 1,
               'action': 'sysreport'
             },
             {
               'title': 'Update compliance modules',
               'class': 'icon comp-c',
+              "privileges": ["Manager", "NodeManager"],
               "min": 1,
               'action': 'updatecomp'
             },
             {
               'title': 'Update opensvc agent',
               'class': 'icon pkg16',
+              "privileges": ["Manager", "NodeManager"],
               "min": 1,
               'action': 'updatepkg'
             },
             {
               'title': 'Rotate root password',
               'class': 'icon key',
+              "privileges": ["Manager", "NodeManager"],
               "min": 1,
               'action': 'rotate root pw'
             },
             {
               'title': 'Rescan scsi hosts',
               'class': 'icon hd16',
+              "privileges": ["Manager", "NodeManager"],
               "min": 1,
               'action': 'scanscsi'
             },
             {
               'title': 'Reboot',
               'class': 'icon action_restart_16',
+              "privileges": ["Manager", "NodeManager"],
               "min": 1,
               'action': 'reboot'
             },
             {
               'title': 'Reboot schedule',
               'class': 'icon action_restart_16',
+              "privileges": ["Manager", "NodeManager"],
               "min": 1,
               'action': 'schedule_reboot'
             },
             {
               'title': 'Reboot unschedule',
               'class': 'icon action_restart_16',
+              "privileges": ["Manager", "NodeManager"],
               "min": 1,
               'action': 'unschedule_reboot'
             },
             {
               'title': 'Shutdown',
               'class': 'icon action_stop_16',
+              "privileges": ["Manager", "NodeManager"],
               "min": 1,
               'action': 'shutdown'
             },
             {
               'title': 'Wake On LAN',
               'class': 'icon action_start_16',
+              "privileges": ["Manager", "NodeManager"],
               "min": 1,
               'action': 'wol'
             },
             {
               'title': 'Compliance check',
               'class': 'icon comp-c',
+              "privileges": ["Manager", "NodeManager"],
               "min": 1,
               'action': 'compliance_check',
               'params': ["module", "moduleset"]
@@ -253,9 +294,17 @@ function table_action_menu_init_data(t) {
             {
               'title': 'Compliance fix',
               'class': 'icon comp-c',
+              "privileges": ["Manager", "NodeManager"],
               "min": 1,
               'action': 'compliance_fix',
               'params': ["module", "moduleset"]
+            },
+            {
+              'title': 'action_menu.provisioning',
+              'class': 'icon prov',
+              "privileges": ["Manager", "NodeManager"],
+              "min": 1,
+              'fn': 'agent_action_provisioning'
             }
           ]
         },
@@ -269,72 +318,84 @@ function table_action_menu_init_data(t) {
             {
               'title': 'Start',
               'class': 'icon action_start_16',
+              "privileges": ["Manager", "NodeManager"],
               "min": 1,
               'action': 'start'
             },
             {
               'title': 'Stop',
               'class': 'icon action_stop_16',
+              "privileges": ["Manager", "NodeManager"],
               "min": 1,
               'action': 'stop'
             },
             {
               'title': 'Restart',
               'class': 'icon action_restart_16',
+              "privileges": ["Manager", "NodeManager"],
               "min": 1,
               'action': 'restart'
             },
             {
               'title': 'Switch',
               'class': 'icon action_switch_16',
+              "privileges": ["Manager", "NodeManager"],
               "min": 1,
               'action': 'switch'
             },
             {
               'title': 'Sync all remotes',
               'class': 'icon action_sync_16',
+              "privileges": ["Manager", "NodeManager"],
               "min": 1,
               'action': 'syncall'
             },
             {
               'title': 'Sync peer remotes',
               'class': 'icon action_sync_16',
+              "privileges": ["Manager", "NodeManager"],
               "min": 1,
               'action': 'syncnodes'
             },
             {
               'title': 'Sync disaster recovery remotes',
               'class': 'icon action_sync_16',
+              "privileges": ["Manager", "NodeManager"],
               "min": 1,
               'action': 'syncdrp'
             },
             {
               'title': 'Enable',
               'class': 'icon ok',
+              "privileges": ["Manager", "NodeManager"],
               "min": 1,
               'action': 'enable'
             },
             {
               'title': 'Disable',
               'class': 'icon nok',
+              "privileges": ["Manager", "NodeManager"],
               "min": 1,
               'action': 'disable'
             },
             {
               'title': 'Thaw',
               'class': 'icon ok',
+              "privileges": ["Manager", "NodeManager"],
               "min": 1,
               'action': 'thaw'
             },
             {
               'title': 'Freeze',
               'class': 'icon nok',
+              "privileges": ["Manager", "NodeManager"],
               "min": 1,
               'action': 'freeze'
             },
             {
               'title': 'Compliance check',
               'class': 'icon comp-c',
+              "privileges": ["Manager", "NodeManager"],
               "min": 1,
               'action': 'compliance_check',
               'params': ["module", "moduleset"]
@@ -342,6 +403,7 @@ function table_action_menu_init_data(t) {
             {
               'title': 'Compliance fix',
               'class': 'icon comp-c',
+              "privileges": ["Manager", "NodeManager"],
               "min": 1,
               'action': 'compliance_fix',
               'params': ["module", "moduleset"]
@@ -352,36 +414,41 @@ function table_action_menu_init_data(t) {
           "selector": ["clicked", "checked", "all"],
           "foldable": true,
           'title': 'action_menu.on_resources',
-          "cols": ["svcname", "nodename", "rid"],
-          "condition": "svcname+nodename+rid",
+          "cols": ["svcname", "nodename", "vmname", "rid"],
+          "condition": "svcname+nodename+vmname+rid,svcname+nodename+rid",
           "children": [
             {
               'title': 'Start',
               'class': 'icon action_start_16',
+              "privileges": ["Manager", "NodeManager"],
               "min": 1,
               'action': 'start'
             },
             {
               'title': 'Stop',
               'class': 'icon action_stop_16',
+              "privileges": ["Manager", "NodeManager"],
               "min": 1,
               'action': 'stop'
             },
             {
               'title': 'Restart',
               'class': 'icon action_restart_16',
+              "privileges": ["Manager", "NodeManager"],
               "min": 1,
               'action': 'restart'
             },
             {
               'title': 'Enable',
               'class': 'icon ok',
+              "privileges": ["Manager", "NodeManager"],
               "min": 1,
               'action': 'enable'
             },
             {
               'title': 'Disable',
               'class': 'icon nok',
+              "privileges": ["Manager", "NodeManager"],
               "min": 1,
               'action': 'disable'
             }
@@ -397,12 +464,14 @@ function table_action_menu_init_data(t) {
             {
               'title': 'Check',
               'class': 'icon comp-c',
+              "privileges": ["Manager", "NodeManager", "CompExec"],
               "min": 1,
               'action': 'check'
             },
             {
               'title': 'Fix',
               'class': 'icon comp-c',
+              "privileges": ["Manager", "NodeManager", "CompExec"],
               "min": 1,
               'action': 'fix'
             }
@@ -735,6 +804,9 @@ function table_action_menu_format_selector(t, e, selector) {
           continue
         }
         var li = table_action_menu_format_leaf(t, e, leaf)
+        if (!li) {
+          continue
+        }
         li.attr("cache_id", cache_id)
         li.bind("click", function(e) {
           e.stopPropagation()
@@ -833,6 +905,9 @@ function table_action_menu_format_selector(t, e, selector) {
 
 function table_action_menu_format_leaf(t, e, leaf) {
   var li = $("<li class='action_menu_leaf clickable'></li>")
+  if (leaf.privileges && !services_ismemberof(leaf.privileges)) {
+    return
+  }
   if (leaf.action) {
     try {
       var params = leaf.params.join(",")
@@ -841,7 +916,6 @@ function table_action_menu_format_leaf(t, e, leaf) {
     }
     li.attr("action", leaf.action)
     li.attr("params", params)
-    //li.attr("scope", scope)
   }
   li.attr("fn", leaf.fn)
   li.addClass(leaf['class'])
@@ -921,6 +995,46 @@ function table_action_menu_param_module(t) {
 }
 
 //
+// Only leave the chosen leaf and its parents visible.
+// Used by tools needing the space to pop addtional questions.
+//
+function table_action_menu_focus_on_leaf(t, entry) {
+  // hide other choices
+  entry.parent().parent().parent().parent().siblings().hide()
+  entry.parent().parent().parent().siblings('ul').hide()
+  entry.parent().parent().siblings('li').hide()
+  entry.parent().siblings('ul').hide()
+
+  // hide other actions in this selector scope
+  entry.siblings().hide()
+  entry.addClass("b")
+  entry.unbind("click")
+  entry.parent("ul").parent().unbind("click")
+}
+
+function table_action_menu_yes_no(t, msg, callback) {
+   var e = $("<div style='margin-top:0.6em'></div>")
+   var title = $("<div></div>")
+   title.text(i18n.t(msg))
+   var yes = $("<div class='ok float clickable' name='yes'>"+i18n.t("action_menu.yes")+"</div>")
+   var no = $("<div class='nok float clickable' name='no'>"+i18n.t("action_menu.no")+"</div>")
+   e.append(title)
+   e.append(yes)
+   e.append(no)
+   e.append($("<br>"))
+   yes.bind("click", function(e){
+     $(this).unbind("click")
+     $(this).removeClass("check16")
+     $(this).addClass("spinner")
+     callback(e)
+   })
+   no.bind("click", function(){
+     $("#am_"+t.id).remove()
+   })
+   return e
+}
+
+//
 // ask for a confirmation on first call, recurse once to do real stuff
 // given a dataset, post each entry into the action_q
 //
@@ -932,17 +1046,7 @@ function table_action_menu_agent_action(t, e, confirmation) {
     if (!(confirmation==true)) {
       s = ""
 
-      // hide other choices
-      entry.parent().parent().parent().parent().siblings().hide()
-      entry.parent().parent().parent().siblings('ul').hide()
-      entry.parent().parent().siblings('li').hide()
-      entry.parent().siblings('ul').hide()
-
-      // hide other actions in this selector scope
-      entry.siblings().hide()
-      entry.addClass("b")
-      entry.unbind("click")
-      entry.parent("ul").parent().unbind("click")
+      table_action_menu_focus_on_leaf(t, entry)
 
       // action parameters
       var params = entry.attr("params")
@@ -955,18 +1059,12 @@ function table_action_menu_agent_action(t, e, confirmation) {
           } catch(err) {}
         }
       }
-      s += "<hr>"
-      s += "<div>"+i18n.t("action_menu.confirmation")+"</div><br>"
-      s += "<div class='ok float clickable' name='yes'>"+i18n.t("action_menu.yes")+"</div>"
-      s += "<div class='nok float clickable' name='no'>"+i18n.t("action_menu.no")+"</div>"
-      $(s).insertAfter(entry)
-      $("#am_"+t.id).find("[name=yes]").bind("click", function(){
-        $(this).unbind("click")
-        $(this).removeClass("check16")
-        $(this).addClass("spinner")
+
+      var yes_no = table_action_menu_yes_no(t, 'action_menu.confirmation', function(){
         table_action_menu_agent_action(t, e, true)
       })
-      $("#am_"+t.id).find("[name=no]").bind("click", function(){$("#am_"+t.id).remove()})
+      $("<hr>").insertAfter(entry)
+      yes_no.insertAfter(entry)
       return
     }
 
@@ -1134,6 +1232,109 @@ function tool_grpprf(t, e) {
 }
 
 //
+// data action: add node
+//
+function data_action_add_node(t, e) {
+  var entry = $(e.target)
+
+  // create and focus tool area
+  table_action_menu_focus_on_leaf(t, entry)
+  var div = $("<div></div>")
+  div.uniqueId()
+  div.append($("<hr>"))
+  div.css({"display": "table-caption"})
+  div.insertAfter(entry)
+
+  // minimal create information
+  var line = $("<div class='template_form_line'></div>")
+  var title = $("<div data-i18n='action_menu.nodename'></div>").i18n()
+  var input = $("<input class='oi'></input>")
+  var info = $("<div></div>")
+  info.uniqueId()
+  info.css({"margin": "0.8em 0 0.8em 0"})
+  line.append(title)
+  line.append(input)
+  div.append(line)
+  div.append(info)
+  input.focus()
+
+  var timer = null
+  var xhr = null
+
+  input.bind("keyup", function(e) {
+    clearTimeout(timer)
+    if (is_enter(e)) {
+      data = {
+        "nodename": input.val()
+      }
+      info.empty()
+      spinner_add(info)
+      xhr  = services_osvcpostrest("R_NODES", "", "", data, function(jd) {
+        spinner_del(info)
+        if (jd.error && (jd.error.length > 0)) {
+          info.html(services_error_fmt(jd))
+        }
+        // display the node properties tab to set more properties
+        node_properties(div.attr("id"), data)
+      },
+      function(xhr, stat, error) {
+        info.html(services_ajax_error_fmt(xhr, stat, error))
+      })
+    } else {
+      var nodename = input.val()
+      timer = setTimeout(function(){
+        info.empty()
+        spinner_add(info)
+        if (xhr) {
+          xhr.abort()
+        }
+        services_osvcgetrest("R_NODE", [nodename], "", function(jd) {
+          xhr = null
+          spinner_del(info)
+          if (jd.error && (jd.error.length > 0)) {
+            info.html(services_error_fmt(jd))
+          }
+          if (jd.data.length == 0) {
+            info.text(i18n.t("action_menu.node_createable"))
+            return
+          }
+  
+          // display the node properties tab
+          node_properties(info.attr("id"), {"nodename": nodename})
+        },
+        function(xhr, stat, error) {
+          info.html(services_ajax_error_fmt(xhr, stat, error))
+        })
+      }, 500)
+    }
+  })
+}
+
+//
+// data action: delete nodes
+//
+function data_action_delete_nodes(t, e) {
+  var entry = $(e.target)
+  var cache_id = entry.attr("cache_id")
+  var data = t.action_menu_data_cache[cache_id]
+  var del_data = new Array()
+  for (i=0;i<data.length;i++) {
+    del_data.push({'nodename': data[i]['nodename']})
+  }
+  services_osvcdeleterest("R_NODES", "", "", del_data, function(jd) {
+    if (jd.error && (jd.error.length > 0)) {
+      $(".flash").show("blind").html(services_error_fmt(jd))
+    }
+    if (jd.info && (jd.info.length > 0)) {
+      $(".flash").show("blind").html("<pre>"+jd.info+"</pre>")
+    }
+  },
+  function(xhr, stat, error) {
+    $(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
+  })
+}
+
+//
 // data action: delete services
 //
 function data_action_delete_svcs(t, e) {
@@ -1184,31 +1385,169 @@ function data_action_delete_svc_instances(t, e) {
   })
 }
 
+//
+// agent action: provisioning
+//
+function agent_action_provisioning(t, e) {
+  var entry = $(e.target)
 
-//
-// tools wrapper: nodes
-//
-function table_tools_menu_nodes(t){
-  var data = table_action_menu_get_nodes_data(t)
-  var s = ""
-  s += tool_nodediff(t, data)
-  s += tool_nodesysrep(t, data)
-  s += tool_nodesysrepdiff(t, data)
-  s += tool_nodesantopo(t, data)
-  s += tool_grpprf(t, data)
-  return s
+  table_action_menu_focus_on_leaf(t, entry)
+  var div = $("<div class='template_selector'></div>")
+  var title = $("<div data-i18n='action_menu.provisioning_selector_title'></div>").i18n()
+  div.append($("<hr>"))
+  div.append(title)
+  div.insertAfter(entry)
+
+  spinner_add(div)
+  services_osvcgetrest("R_PROVISIONING_TEMPLATES", "", "", function(jd) {
+    spinner_del(div)
+    if (jd.error && (jd.error.length > 0)) {
+      $(".flash").show("blind").html(services_error_fmt(jd))
+    }
+    if (jd.data.length == 0) {
+      div.append($("<div data-i18n='action_menu.provisioning_selector_empty'></div>").i18n())
+    }
+    for (var i=0; i<jd.data.length; i++) {
+      var d = jd.data[i]
+
+      // populate the template selector
+      var input = $("<input name='template_selector' type='radio'></input>")
+      input.attr("tpl_id", d.id)
+      input.uniqueId()
+      var label = $("<label></label>")
+      label.attr("for", input.attr("id"))
+      var name = $("<div class='template_title'></div>").text(d.tpl_name)
+      var comment = $("<div class='template_comment'></div>").text(d.tpl_comment)
+      label.append(name)
+      label.append(comment)
+      div.append(input)
+      div.append(label)
+
+      // create the submit form
+      tpl_form = $("<form></form>")
+      tpl_form.hide()
+
+      // get keys from the template command
+      var keys = []
+      var re = RegExp(/%\((\w+)\)s/g)
+      do {
+        var m = re.exec(d.tpl_command)
+        if (m) {
+          var key = m[1]
+          if (keys.indexOf(key) < 0) {
+            keys.push(key)
+          }
+        }
+      } while (m)
+
+      // for each key add a text input to the form
+      for (var j=0; j<keys.length; j++) {
+        var key = keys[j]
+        if (key == "nodename") {
+          continue
+        }
+        var line = $("<div class='template_form_line'></div>")
+        var title = $("<div></div>")
+        title.text(key)
+        var input = $("<input class='oi'></input>")
+        input.attr("key", key)
+        line.append(title)
+        line.append(input)
+        tpl_form.append(line)
+      }
+
+      // keyup in the form inputs subst and beautifies the command
+      // in the display_beautified div
+      tpl_form.find("input").bind("keyup", function(ev) {
+        var form = $(this).parents("form").first()
+        var command = form.find("[name=command]").text()
+        var display_beautified = form.find("[name=beautified]")
+        form.find("input").each(function(){
+          var val = $(this).val()
+          var key = $(this).attr("key")
+          var re = new RegExp("%\\(" + key + "\\)s", "g")
+          if (val == "") {
+            return
+          }
+          command = command.replace(re, "<span class=syntax_red>"+val+"</span>")
+        })
+        command = command.replace(/--provision/g, "<br>&nbsp;&nbsp;<span class=syntax_blue>--provision</span>")
+        command = command.replace(/--resource/g, "<br>&nbsp;&nbsp;<span class=syntax_blue>--resource</span>")
+        command = command.replace(/{/g, "{<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;")
+        command = command.replace(/\",/g, "\",<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;")
+        command = command.replace(/}/g, "<br>&nbsp;&nbsp;&nbsp;&nbsp;}")
+        command = command.replace(/%\(\w+\)s/g, function(x) {
+          return "<span class=syntax_red>" + x + "</span>"
+        })
+        command = command.replace(/("\w+":)/g, function(x) {
+          return "<span class=syntax_green>" + x + "</span>"
+        })
+        display_beautified.html("<tt>"+command+"</tt>")
+      })
+
+      // add a command display zone
+      var display =$("<div name='command'><div>")
+      display.text(d.tpl_command)
+      display.hide()
+      tpl_form.append(display)
+      var display_beautified = $("<div class='template_beautified' name='beautified'><div>")
+      tpl_form.append(display_beautified)
+
+      // add submit/cancel buttons
+      var yes_no = table_action_menu_yes_no(t, 'action_menu.provisioning_submit', function(e){
+        var entry = $(e.target).parents(".template_selector").prev()
+        var cache_id = entry.attr("cache_id")
+        var data = t.action_menu_data_cache[cache_id]
+        var form = $(e.target).parents("form").first()
+        var tpl_id = $(e.target).parents(".template_selector").find("input[type=radio]:checked").attr("tpl_id")
+        var input_data = {}
+        var put_data = []
+        form.find("input").each(function(){
+          var val = $(this).val()
+          var key = $(this).attr("key")
+          input_data[key] = val
+        })
+        for (var i=0; i<data.length; i++) {
+          var d = {}
+          for (k in input_data) {
+            d[k] = input_data[k]
+          }
+          d.nodename = data[i].nodename
+          put_data.push(d)
+        }
+
+        // animate to highlight the enqueueing
+        table_action_menu_click_animation(t)
+
+        // put the provisioning action in queue
+        services_osvcputrest("R_PROVISIONING_TEMPLATE", [tpl_id], "", put_data, function(jd) {
+          if (jd.error && (jd.error.length > 0)) {
+            $(".flash").show("blind").html(services_error_fmt(jd))
+          }
+          if (jd.info && (jd.info.length > 0)) {
+            $(".flash").show("blind").html("<pre>"+jd.info+"</pre>")
+          }
+        },
+        function(xhr, stat, error) {
+          $(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
+        })
+      })
+
+      tpl_form.append(yes_no)
+      div.append(tpl_form)
+
+      // click on a label opens the associated form
+      label.bind("click", function(ev) {
+        $(this).parent().children("form").hide()
+        $(this).next().show()
+        $(this).next("form").find("input").first().focus()
+      })
+    }
+  },
+  function(xhr, stat, error) {
+    spinner_del(div)
+    $(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
+  })
+
 }
-
-//
-// tools wrapper: services
-//
-function table_tools_menu_svcs(t){
-  var data = table_action_menu_get_svcs_data(t)
-  var s = ""
-  s += tool_svcdiff(t, data)
-  return s
-}
-
-
-
 

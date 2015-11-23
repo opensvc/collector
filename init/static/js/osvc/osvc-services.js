@@ -20,6 +20,7 @@ var services_access_uri = {
     "R_GROUPS" : "rest/api/groups",
     "R_IPS" : "rest/api/nodes/%1/ips",
     "R_NODE" : "rest/api/nodes/%1",
+    "R_NODES" : "rest/api/nodes",
     "R_NODE_AM_I_RESPONSIBLE" : "rest/api/nodes/%1/am_i_responsible",
     "R_NODE_CANDIDATE_TAGS" : "rest/api/nodes/%1/candidate_tags",
     "R_NODE_TAGS" : "rest/api/nodes/%1/tags",
@@ -87,6 +88,48 @@ function services_getaccessurl(service)
     return base_path
 }
 
+function services_osvcputrest(service, uri, params, data, callback, error_callback)
+{
+    url = services_getaccessurl(service)
+    if (is_blank(url)) {
+        console.log(service + " uri undefined")
+        return
+    }
+    for(var i=0; i<uri.length; i++) {
+        url = url.replace("%"+(i+1), uri[i])
+    }
+
+    var isobj=0;
+    try {
+        var t = Object.keys(params);
+        isobj=1;
+    }
+    catch (e){;}
+
+    if ((isobj==1) && (t.length > 0)) {
+        url += "?"
+        for (key in t) {
+            url += encodeURIComponent(key) + "=" + encodeURIComponent(params[key]) + "&";
+        }
+        url = url.replace(/&$/, "");
+    }
+    var content_type = "application/x-www-form-urlencoded"
+    if (Object.prototype.toString.call(data) === '[object Array]') {
+      data = JSON.stringify(data)
+      content_type = "application/json"
+    }
+    var xhr = $.ajax(
+    {
+        type: "PUT",
+        url: url,
+        contentType: content_type,
+        data: data,
+        error: error_callback,
+        success: callback
+    })
+    return xhr
+}
+
 function services_osvcpostrest(service, uri, params, data, callback, error_callback)
 {
     url = services_getaccessurl(service)
@@ -117,7 +160,7 @@ function services_osvcpostrest(service, uri, params, data, callback, error_callb
       data = JSON.stringify(data)
       content_type = "application/json"
     }
-    var req = $.ajax(
+    var xhr = $.ajax(
     {
         type: "POST",
         url: url,
@@ -126,6 +169,7 @@ function services_osvcpostrest(service, uri, params, data, callback, error_callb
         error: error_callback,
         success: callback
     })
+    return xhr
 }
 
 function services_osvcgetrest(service, uri, params, callback, error_callback, async)
@@ -141,7 +185,7 @@ function services_osvcgetrest(service, uri, params, callback, error_callback, as
 
     if (async === undefined || async == null) async=true;
     
-    var req = $.ajax(
+    var xhr = $.ajax(
     {
         type: "GET",
         url: url,
@@ -151,7 +195,7 @@ function services_osvcgetrest(service, uri, params, callback, error_callback, as
         error: error_callback,
         success: callback,
     });
-
+    return xhr
 }
 
 function services_osvcdeleterest(service, uri, params, data, callback, error_callback)
@@ -186,7 +230,7 @@ function services_osvcdeleterest(service, uri, params, data, callback, error_cal
       data = JSON.stringify(data)
       content_type = "application/json"
     }
-    var req = $.ajax(
+    var xhr = $.ajax(
     {
         type: "DELETE",
         url: url,
@@ -195,6 +239,7 @@ function services_osvcdeleterest(service, uri, params, data, callback, error_cal
         error: error_callback,
         success: callback,
     });
+    return xhr
 }
 
 function services_feed_self_and_group()
@@ -220,22 +265,21 @@ function waitfor(test, expectedValue, msec, count, callback) {
     callback();
 }
 
-function services_ismemberof(groups, callback)
+function services_ismemberof(groups)
 {
     if (typeof groups === "string") {
-      groups = [groups]
+        groups = [groups]
     }
-    return waitfor(function(){return (_groups.length > 0)}, true, 500, 20, function() {
-        var result = $.grep(_groups, function(g) {
-            if (groups.indexOf(g.role) < 0) {
-                return false;
-            }
-            return true;
-        });
-        if (result.length > 0) {
-            callback();
+    var result = $.grep(_groups, function(g) {
+       if (groups.indexOf(g.role) < 0) {
+            return false;
         }
-    });
+        return true;
+    })
+    if (result.length > 0) {
+        return true
+    }
+    return false
 }
 
 function services_ajax_error_fmt(xhr, stat, error) {

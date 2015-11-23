@@ -223,6 +223,7 @@ handlers = {
      rest_delete_network(),
      rest_delete_network_segment(),
      rest_delete_network_segment_responsible(),
+     rest_delete_nodes(),
      rest_delete_node(),
      rest_delete_node_compliance_moduleset(),
      rest_delete_node_compliance_ruleset(),

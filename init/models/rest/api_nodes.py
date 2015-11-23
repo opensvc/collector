@@ -461,23 +461,17 @@ class rest_get_node_root_password(rest_get_handler):
 #
 class rest_get_nodes(rest_get_table_handler):
     def __init__(self):
-        params = {
-          "fset_id": {
-             "desc": "Filter the list using the filterset identified by fset_id."
-          }
-        }
         desc = [
           "List all node names and their selected properties.",
           "List node names and their selected properties for nodes matching a specified filterset id.",
         ]
         examples = [
-          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/nodes?props=nodename,loc_city&fset_id=10",
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/nodes?props=nodename,loc_city",
         ]
         rest_get_table_handler.__init__(
           self,
           path="/nodes",
           tables=["nodes"],
-          params=params,
           desc=desc,
           examples=examples,
         )
@@ -485,11 +479,135 @@ class rest_get_nodes(rest_get_table_handler):
     def handler(self, **vars):
         q = db.nodes.id > 0
         q = _where(q, 'nodes', domain_perms(), 'nodename')
-        fset_id = vars.get("fset_id")
-        if fset_id:
-            q = apply_filters(q, node_field=db.nodes.nodename, fset_id=fset_id)
         self.set_q(q)
         return self.prepare_data(**vars)
+
+#
+class rest_delete_node(rest_delete_handler):
+    def __init__(self):
+        desc = [
+          "- Delete an OpenSVC node.",
+          "- The user must be responsible for the node.",
+          "- The user must be in the NodeManager privilege group.",
+          "- Cascade delete services instances, dashboard, checks, packages and patches entries.",
+          "- Log the deletion.",
+          "- Send websocket change events on nodes, services instances and dashboard tables.",
+        ]
+        examples = [
+          "# curl -u %(email)s -X DELETE -o- https://%(collector)s/init/rest/api/nodes/mynode",
+        ]
+        rest_delete_handler.__init__(
+          self,
+          path="/nodes/<nodename>",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, nodename, **vars):
+        check_privilege("NodeManager")
+        q = db.nodes.nodename == nodename
+        q = _where(q, 'nodes', domain_perms(), 'nodename')
+        row = db(q).select(db.nodes.id, db.nodes.nodename).first()
+        if row is None:
+            raise Exception("node %s does not exist" % nodename)
+        node_responsible(row.nodename)
+
+        db(q).delete()
+
+        _log('node.delete',
+             'delete node %(data)s',
+             dict(data=row.nodename),
+            )
+        l = {
+          'event': 'nodes_change',
+          'data': {'id': row.id},
+        }
+        _websocket_send(event_msg(l))
+        table_modified("nodes")
+
+        q = db.svcmon.mon_nodname == row.nodename
+        db(q).delete()
+        l = {
+          'event': 'svcmon_change',
+          'data': {'a': 'b'},
+        }
+        _websocket_send(event_msg(l))
+        table_modified("svcmon")
+
+        q = db.dashboard.dash_nodename == row.nodename
+        db(q).delete()
+        l = {
+          'event': 'dashboard_change',
+          'data': {'a': 'b'},
+        }
+        _websocket_send(event_msg(l))
+        table_modified("dashboard")
+
+        q = db.checks_live.chk_nodename == row.nodename
+        db(q).delete()
+        l = {
+          'event': 'checks_change',
+          'data': {'a': 'b'},
+        }
+        _websocket_send(event_msg(l))
+        table_modified("checks_live")
+
+        q = db.packages.pkg_nodename == row.nodename
+        db(q).delete()
+        l = {
+          'event': 'packages_change',
+          'data': {'a': 'b'},
+        }
+        _websocket_send(event_msg(l))
+        table_modified("packages")
+
+        q = db.patches.patch_nodename == row.nodename
+        db(q).delete()
+        l = {
+          'event': 'patches_change',
+          'data': {'a': 'b'},
+        }
+        _websocket_send(event_msg(l))
+        table_modified("patches")
+
+        return dict(info="node %s deleted" % row.nodename)
+
+
+#
+class rest_delete_nodes(rest_delete_handler):
+    def __init__(self):
+        desc = [
+          "- Delete OpenSVC nodes.",
+          "- Cascade delete services instances, dashboard, checks, packages and patches entries.",
+          "- Log the deletion.",
+          "- Send websocket change events on nodes, services instances and dashboard tables.",
+        ]
+        examples = [
+          "# curl -u %(email)s -X DELETE -o- https://%(collector)s/init/rest/api/nodes?filter[]=nodename=test%%",
+        ]
+        rest_delete_handler.__init__(
+          self,
+          path="/nodes",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, **vars):
+        q = None
+        if 'nodename' in vars:
+            s = vars["nodename"]
+            q = db.nodes.nodename == s
+        if 'id' in vars:
+            s = vars["id"]
+            q = db.nodes.nodename == vars["id"]
+            s = str(s)
+        if q is None:
+            raise Exception("nodename or id key must be specified")
+        q = _where(q, 'nodes', domain_perms(), 'nodename')
+        row = db(q).select(db.nodes.id, db.nodes.nodename).first()
+        if row is None:
+            raise Exception("node %s does not exist" % s)
+        return rest_delete_node().handler(row.nodename)
 
 
 #
@@ -589,42 +707,6 @@ class rest_post_nodes(rest_post_handler):
         _websocket_send(event_msg(l))
         return rest_get_node().handler(nodename)
 
-
-#
-class rest_delete_node(rest_delete_handler):
-    def __init__(self):
-        desc = [
-          "Delete a node.",
-          "The user must be responsible for the node.",
-          "The user must be in the NodeManager privilege group.",
-          "The action is logged in the collector's log.",
-          "A websocket event is sent to announce the change in the nodes table.",
-        ]
-        examples = [
-          "# curl -u %(email)s -o- -X DELETE https://%(collector)s/init/rest/api/nodes/mynode",
-        ]
-        rest_delete_handler.__init__(
-          self,
-          path="/nodes/<nodename>",
-          desc=desc,
-          examples=examples,
-        )
-
-    def handler(self, nodename, **vars):
-        node_responsible(nodename)
-        check_privilege("NodeManager")
-        q = db.nodes.nodename == nodename
-        db(q).delete()
-        _log('node.delete',
-             '',
-             dict(),
-             nodename=nodename)
-        l = {
-          'event': 'nodes_change',
-          'data': {'foo': 'bar'},
-        }
-        _websocket_send(event_msg(l))
-        return dict(info="Node %s deleted" % nodename)
 
 #
 class rest_get_node_compliance_status(rest_get_table_handler):

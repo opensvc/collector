@@ -139,7 +139,7 @@ class rest_delete_services(rest_delete_handler):
           "- Send websocket change events on services, services instances and dashboard tables.",
         ]
         examples = [
-          "# curl -u %(email)s -X DELETE -o- https://%(collector)s/init/rest/api/services?filter[]=svc_name=test%",
+          "# curl -u %(email)s -X DELETE -o- https://%(collector)s/init/rest/api/services?filter[]=svc_name=test%%",
         ]
         rest_delete_handler.__init__(
           self,
@@ -250,7 +250,7 @@ class rest_delete_service_instances(rest_delete_handler):
           "- Send websocket change events on services instances and dashboard tables.",
         ]
         examples = [
-          "# curl -u %(email)s -X DELETE -o- https://%(collector)s/init/rest/api/service_instances?filter[]=svc_name=test%",
+          "# curl -u %(email)s -X DELETE -o- https://%(collector)s/init/rest/api/service_instances?filter[]=mon_svcname=test%%",
         ]
         rest_delete_handler.__init__(
           self,

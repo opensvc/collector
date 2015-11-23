@@ -503,6 +503,9 @@ img {
 	background: white;
 }
 
+.pie_hover {
+	background-color: #d8eee7;
+}
 .h:hover {
 	background-color: #d8eee7;
 }
@@ -2918,6 +2921,34 @@ div.searchtab {
 
 .group_list_small li {
 	list-style: none;
+}
+
+/* provisioning template selector */
+.template_selector input[type=radio] {
+	display: none;
+}
+.template_selector input + label > div {
+	padding: 0.3em;
+}
+.template_selector form {
+	padding: 0.3em 0 0.3em 0;
+}
+.template_selector .template_beautified {
+	margin-top: 0.8em;
+}
+.template_selector .template_comment {
+	padding-top: 0.1em;
+	padding-left: 0.6em;
+	margin: 0 0 1px 0;
+	color: #333;
+	font-size: 90%;
+	font-weight: normal;
+}
+.template_selector input + label > div {
+	background: lightgrey;
+}
+.template_selector input:checked + label > div {
+	background: cadetblue;
 }
 
 /* styled checkbox */
