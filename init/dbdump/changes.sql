@@ -4822,3 +4822,9 @@ CREATE TABLE `scheduler_task_deps` (
   KEY `idx2` (`task_child`)
 ) ENGINE=InnoDB AUTO_INCREMENT=10362534 DEFAULT CHARSET=utf8;
 
+alter table resmon add column res_monitor varchar(1);
+
+alter table resmon add column res_disable varchar(1);
+
+alter table resmon add column res_optional varchar(1);
+
