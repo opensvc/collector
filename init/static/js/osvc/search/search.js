@@ -76,7 +76,7 @@ function search_get_menu(fk)
         ]
     },
     "services": {
-        "tab" : "/init/default/ajax_service?node=__svc_name__&rowid=__rowid__",
+        "tab" : 'service_tabs("__rowid__", {"svcname": "__svc_name__"})',
         "title": "__svc_name__",
         "class": "svc fa-2x search-section-icon",
         "subclass" : "meta_svcname clickable",

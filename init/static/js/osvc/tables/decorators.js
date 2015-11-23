@@ -2090,9 +2090,8 @@ function cell_decorator_svcname(e) {
     table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
     span_id = $(e).parent(".tl").attr("spansum")
     id = table_id + "_x_" + span_id
-    url = services_get_url() + "/init/default/ajax_service?node="+v+"&rowid="+id
-    url = window.location.protocol +"//" + window.location.host + "/init/default/ajax_service?node="+v+"&rowid="+id;
-    toggle_extra(url, id, e, 0)
+    toggle_extra(null, id, e, 0)
+    service_tabs(id, {"svcname": v})
   })
 }
 
@@ -2298,8 +2297,8 @@ function cell_decorator_dash_link_comp_tab(e) {
       table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
       span_id = $(e).parent(".tl").attr("spansum")
       id = table_id + "_x_" + span_id
-      url = services_get_url() + "/init/default/ajax_service?node="+svcname+"&tab=tab11&rowid="+id
-      toggle_extra(url, id, e, 0)
+      toggle_extra(null, id, e, 0)
+      service_tabs(id, {"svcname": svcname, "tab": "service_tabs.compliance"})
     })
   } else if (nodename != "") {
     $(e).click(function(){
@@ -2323,8 +2322,8 @@ function cell_decorator_dash_link_pkg_tab(e) {
       table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
       span_id = $(e).parent(".tl").attr("spansum")
       id = table_id + "_x_" + span_id
-      url = services_get_url() + "/init/default/ajax_service?node="+svcname+"&tab=tab10&rowid="+id
-      toggle_extra(url, id, e, 0)
+      toggle_extra(null, id, e, 0)
+      service_tabs(id, {"svcname": svcname, "tab": "service_tabs.pkgdiff"})
     })
   }
 }

@@ -116,12 +116,12 @@ function avail_plot(id, data) {
 
 function plot_height(id, data) {
     h = Math.max(100+data.length*30, 200)+'px'
-    document.getElementById(id).style['height'] = h
+    $("#"+id).height(h)
 }
 
 function plot_width_x(id, data) {
     h = Math.max(100+data.length*40, 200)+'px'
-    document.getElementById(id).style['width'] = h
+    $("#"+id).width(h)
 }
 
 function plot_width(id, data) {
@@ -325,9 +325,9 @@ function stats_avg_block_for_nodes(url, id) {
             data[1][1][i][0] /= d['div']
         }
 
-        plot_height('tps_'+id, data[0])
-        $('#tps_'+id).width('450px')
-	p = $.jqplot('tps_'+id, [data[1][0], data[1][1]], {
+        plot_height(id+'_tps', data[0])
+        $('#'+id+'_tps').width('450px')
+	p = $.jqplot(id+'_tps', [data[1][0], data[1][1]], {
 	    stackSeries: true,
 	    grid: {
                 borderWidth: 0.5
@@ -368,7 +368,7 @@ function stats_avg_block_for_nodes(url, id) {
 		}
 	    }
 	});
-        _jqplot_extra($('#tps_'+id), p)
+        _jqplot_extra($('#'+id+'_tps'), p)
 
         max = 0
         for (i=0; i<data[1][2].length; i++) {
@@ -380,9 +380,9 @@ function stats_avg_block_for_nodes(url, id) {
             data[1][3][i][0] /= d['div']
         }
 
-        plot_height('bps_'+id, data[0])
-        $('#bps_'+id).width('450px')
-	p = $.jqplot('bps_'+id, [data[1][2], data[1][3]], {
+        plot_height(id+'_bps', data[0])
+        $('#'+id+'_bps').width('450px')
+	p = $.jqplot(id+'_bps', [data[1][2], data[1][3]], {
 	    stackSeries: true,
 	    grid: {
                 borderWidth: 0.5
@@ -423,7 +423,7 @@ function stats_avg_block_for_nodes(url, id) {
 		}
 	    }
 	});
-        _jqplot_extra($('#bps_'+id), p)
+        _jqplot_extra($('#'+id+'_bps'), p)
     });
 }
 function stats_disk_for_svc(url, id) {

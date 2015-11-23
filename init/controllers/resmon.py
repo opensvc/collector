@@ -184,9 +184,9 @@ class table_resmon_svc(table_resmon):
 
 @auth.requires_login()
 def resmon_svc():
-    tid = request.args[0]
+    svcname = request.args[0]
+    tid = 'resmon_'+svcname.replace('-', '_').replace('.', '_')
     t = table_resmon_svc(tid, 'ajax_resmon_svc')
-    svcname = request.args[1]
     t.colprops['svcname'].force_filter = svcname
     return t.html()
 

@@ -290,6 +290,7 @@
     "last_year": "Dernière année",
     "begin": "Date de fin des graphs",
     "end": "Date de début des graphs",
+    "overview": "Vue d'ensemble",
     "containers": "Utilisation des ressources par container",
     "cpu": "Utilisation cpu",
     "mem": "Utilisation de la mémoire et du swap",
@@ -299,6 +300,21 @@
     "agg_bdev": "Utilisation aggrégée des disques",
     "netdev": "Utilisations des interfaces réseau",
     "netdev_err": "Erreurs des interfaces réseau"
+  },
+  "service_tabs": {
+    "status": "états",
+    "resources": "ressources",
+    "actions": "actions",
+    "log": "journal",
+    "env": "env",
+    "topology": "topologie",
+    "startup": "démarrage",
+    "storage": "stockage",
+    "stats": "stats",
+    "avail": "disponibilité",
+    "pkgdiff": "pkgdiff",
+    "container_stats": "container stats",
+    "compliance": "conformité"
   },
   "node_tabs": {
     "properties": "propriétés",
