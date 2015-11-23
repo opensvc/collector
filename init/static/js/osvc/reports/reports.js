@@ -108,6 +108,9 @@ function reports_load_metrics(o, metric, count)
 
 function reports_create_report(o, data)
 {
+  var global = 0;
+
+  
   var div = "<div id='report' class='reports_div'>";
   div += "<div style='text-align:center'><h1>" + data.Title + "</h1></div>";
   
@@ -117,6 +120,7 @@ function reports_create_report(o, data)
   }
 
   div += "</div>";    
+
   o.div_reports_data.append(div);
 }
 
