@@ -312,6 +312,7 @@
     "last_year": "Last year",
     "begin": "Plots begin date",
     "end": "Plots end date",
+    "overview": "Overview",
     "containers": "Per container resource usage",
     "cpu": "Cpu usage",
     "mem": "Memory and swap usage",
@@ -321,6 +322,21 @@
     "agg_bdev": "Aggregated block devices usage",
     "netdev": "Network devices usage",
     "netdev_err": "Network devices errors"
+  },
+  "service_tabs": {
+    "status": "status",
+    "resources": "resources",
+    "actions": "actions",
+    "log": "log",
+    "env": "env",
+    "topology": "topology",
+    "startup": "startup",
+    "storage": "storage",
+    "stats": "stats",
+    "avail": "avail",
+    "pkgdiff": "pkgdiff",
+    "container_stats": "container stats",
+    "compliance": "compliance"
   },
   "node_tabs": {
     "properties": "properties",

@@ -1228,7 +1228,11 @@ function tool_grpprf(t, e) {
     nodes.push(data[i]['nodename'])
   }
   t.e_overlay.show()
-  sync_ajax('/init/nodes/ajax_grpprf?node='+nodes.join(","), [], 'overlay', function(){})
+  node_stats("overlay", {
+    "nodename": nodes.join(","),
+    "view": "/init/static/views/nodes_stats.html",
+    "controller": "/init/stats",
+  })
 }
 
 //

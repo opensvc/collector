@@ -192,7 +192,7 @@ function node_tabs(divid, options) {
       "title_class": "hd16"
     })
     o.tabs[i].callback = function(divid) {
-      sync_ajax("/init/ajax_node/ajax_node_stor/"+divid+"/"+encodeURIComponent(o.options.nodename), [], divid, function(){})
+      sync_ajax("/init/ajax_node/ajax_node_stor/"+divid.replace("-", "_")+"/"+encodeURIComponent(o.options.nodename), [], divid, function(){})
     }
 
     // tab network
@@ -210,7 +210,11 @@ function node_tabs(divid, options) {
       "title_class": "spark16"
     })
     o.tabs[i].callback = function(divid) {
-      node_stats(divid, {"nodename": o.options.nodename})
+      node_stats(divid, {
+        "nodename": o.options.nodename,
+        "view": "/init/static/views/node_stats.html",
+        "controller": "/init/ajax_perf"
+      })
     }
 
     // tab wiki
@@ -247,6 +251,227 @@ function node_tabs(divid, options) {
     })
     o.tabs[i].callback = function(divid) {
       sysrep(divid, {"nodes": o.options.nodename})
+    }
+
+    if (!o.options.tab) {
+      o.closetab.next("li").trigger("click")
+    } else {
+      for (var i=0; i<o.tabs.length; i++) {
+        if (o.tabs[i].title != o.options.tab) {
+          continue
+        }
+        o.tabs[i].tab.trigger("click")
+        break
+      }
+    }
+  })
+  return o
+}
+
+//
+// service
+//
+function service_tabs(divid, options) {
+  o = tabs(divid)
+  o.options = options
+  o.load(function(){
+    var i = 0
+
+    o.closetab.children("p").text(o.options.svcname)
+
+    // tab properties
+    i = o.register_tab({
+      "title": "node_tabs.properties",
+      "title_class": "svc"
+    })
+    o.tabs[i].callback = function(divid) {
+      service_properties(divid, {"svcname": o.options.svcname})
+    }
+
+    // tab alerts
+    i = o.register_tab({
+      "title": "node_tabs.alerts",
+      "title_class": "alert16"
+    })
+    o.tabs[i].callback = function(divid) {
+      sync_ajax("/init/dashboard/dashboard_svc/"+encodeURIComponent(o.options.svcname), [], divid, function(){})
+    }
+
+    // tab status
+    i = o.register_tab({
+      "title": "service_tabs.status",
+      "title_class": "svc"
+    })
+    o.tabs[i].callback = function(divid) {
+      sync_ajax("/init/default/svcmon_svc/"+encodeURIComponent(o.options.svcname), [], divid, function(){})
+    }
+
+    // tab resources
+    i = o.register_tab({
+      "title": "service_tabs.resources",
+      "title_class": "svc"
+    })
+    o.tabs[i].callback = function(divid) {
+      sync_ajax("/init/resmon/resmon_svc/"+encodeURIComponent(o.options.svcname), [], divid, function(){})
+    }
+
+    // tab actions
+    i = o.register_tab({
+      "title": "service_tabs.actions",
+      "title_class": "action16"
+    })
+    o.tabs[i].callback = function(divid) {
+      sync_ajax("/init/svcactions/actions_svc/"+encodeURIComponent(o.options.svcname), [], divid, function(){})
+    }
+
+    // tab log
+    i = o.register_tab({
+      "title": "service_tabs.log",
+      "title_class": "log16"
+    })
+    o.tabs[i].callback = function(divid) {
+      sync_ajax("/init/log/log_svc/"+encodeURIComponent(o.options.svcname), [], divid, function(){})
+    }
+
+    // tab env
+    i = o.register_tab({
+      "title": "service_tabs.env",
+      "title_class": "file16"
+    })
+    o.tabs[i].callback = function(divid) {
+      service_env(divid, {"svcname": o.options.svcname})
+    }
+
+    // tab topology
+    i = o.register_tab({
+      "title": "service_tabs.topology",
+      "title_class": "dia16"
+    })
+    o.tabs[i].callback = function(divid) {
+      topology(divid, {
+        "svcnames": [
+          o.options.svcname
+        ],
+        "display": [
+          "nodes",
+          "services",
+          "countries",
+          "cities",
+          "buildings",
+          "rooms",
+          "racks",
+          "enclosures",
+          "hvs",
+          "hvpools",
+          "hvvdcs",
+          "disks"]
+      })
+    }
+
+    // tab startup
+    i = o.register_tab({
+      "title": "service_tabs.startup",
+      "title_class": "startup"
+    })
+    o.tabs[i].callback = function(divid) {
+      startup(divid, {"svcnames": [o.options.svcname]})
+    }
+
+    // tab storage
+    i = o.register_tab({
+      "title": "service_tabs.storage",
+      "title_class": "hd16"
+    })
+    o.tabs[i].callback = function(divid) {
+      sync_ajax("/init/ajax_node/ajax_svc_stor/"+divid.replace("-", "_")+"/"+encodeURIComponent(o.options.svcname), [], divid, function(){})
+    }
+
+    // tab stats
+    i = o.register_tab({
+      "title": "service_tabs.container_stats",
+      "title_class": "spark16"
+    })
+    o.tabs[i].callback = function(divid) {
+      services_osvcgetrest("R_SERVICE_NODES", [o.options.svcname], {"limit": "0", "props": "mon_nodname,mon_vmname", "meta": "0"}, function(jd) {
+        if (jd.error) {
+          $("#"+divid).html(services_error_fmt(jd))
+          return
+        }
+        var nodes = []
+        for (i=0; i<jd.data.length; i++) {
+          d = jd.data[i]
+          if (d.mon_vmname && (d.mon_vmname != "")) {
+            nodes.push(d.mon_vmname+"@"+d.mon_nodname)
+          }
+        }
+        sync_ajax("/init/stats/ajax_containerperf_plot?node="+encodeURIComponent(nodes), [], divid, function(){})
+      },
+      function(xhr, stat, error) {
+        $("#"+divid).html(services_ajax_error_fmt(xhr, stat, error))
+      })
+    }
+
+    // tab stats
+    i = o.register_tab({
+      "title": "service_tabs.stats",
+      "title_class": "spark16"
+    })
+    o.tabs[i].callback = function(divid) {
+      services_osvcgetrest("R_SERVICE_NODES", [o.options.svcname], {"limit": "0", "props": "mon_nodname", "meta": "0"}, function(jd) {
+        if (jd.error) {
+          $("#"+divid).html(services_error_fmt(jd))
+          return
+        }
+        var nodenames = []
+        for (i=0; i<jd.data.length; i++) {
+          nodenames.push(jd.data[i].mon_nodname)
+        }
+        node_stats(divid, {
+          "nodename": nodenames.join(","), 
+          "view": "/init/static/views/nodes_stats.html",
+          "controller": "/init/stats"
+        })
+      },
+      function(xhr, stat, error) {
+        $("#"+divid).html(services_ajax_error_fmt(xhr, stat, error))
+      })
+
+    }
+
+    // tab wiki
+    i = o.register_tab({
+      "title": "node_tabs.wiki",
+      "title_class": "edit"
+    })
+    o.tabs[i].callback = function(divid) {
+      wiki(divid, {"nodes": o.options.svcname})
+    }
+
+    // tab avail
+    i = o.register_tab({
+      "title": "service_tabs.avail",
+      "title_class": "svc"
+    })
+    o.tabs[i].callback = function(divid) {
+      sync_ajax("/init/svcmon_log/ajax_svcmon_log_1?svcname="+encodeURIComponent(o.options.svcname), [], divid, function(){})
+    }
+
+    // tab pkgdiff
+    i = o.register_tab({
+      "title": "service_tabs.pkgdiff",
+      "title_class": "pkg16"
+    })
+    o.tabs[i].callback = function(divid) {
+      svc_pkgdiff(divid, {"svcnames": o.options.svcname})
+    }
+
+    // tab compliance
+    i = o.register_tab({
+      "title": "service_tabs.compliance",
+      "title_class": "comp16"
+    })
+    o.tabs[i].callback = function(divid) {
+      sync_ajax("/init/compliance/ajax_compliance_svc/"+encodeURIComponent(o.options.svcname), [], divid, function(){})
     }
 
     if (!o.options.tab) {

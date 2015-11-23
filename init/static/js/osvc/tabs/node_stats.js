@@ -32,7 +32,7 @@ function node_stats(divid, options) {
     return node_stats_refresh_container_groups(o)
   }
 
-  o.div.load("/init/static/views/node_stats.html", "", function() {
+  o.div.load(o.options.view, "", function() {
     o.init()
   })
   return o
@@ -172,10 +172,13 @@ function node_stats_init_container(o, container) {
         $(this).slideToggle()
         return
       }
+      $(this).show()
       o.refresh_container_group($(this))
-      $(this).slideToggle()
     })
   })
+  if (container.hasClass("open_on_load")) {
+    container.children("a").first().trigger("click")
+  }
 }
 
 function node_stats_refresh_container_groups(o) {
@@ -190,7 +193,10 @@ function node_stats_refresh_container_groups(o) {
 }
 
 function node_stats_refresh_container_group(o, group) {
-  group.children(".perf_plot").empty()
+  if (group.hasClass("jqplot-target")) {
+    group.empty()
+  }
+  group.find(".jqplot-target").empty()
   group.siblings(".jqplot-image-container").remove()
 
   // jqplot needs per graph id
@@ -205,7 +211,7 @@ function node_stats_refresh_container_group(o, group) {
   })
 
   var groupname = group.attr("group")
-  var url = "/init/ajax_perf/call/json/json_"+groupname
+  var url = o.options.controller+"/call/json/json_"+groupname
   url += "?node=" + o.options.nodename
   url += "&b=" + o.begin.val()
   url += "&e=" + o.end.val()
