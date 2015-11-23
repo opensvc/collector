@@ -66,6 +66,12 @@ var services_access_uri = {
     "R_USER_GROUPS" : "rest/api/users/%1/groups",
     "R_WIKI" : "rest/api/wiki/%1",
     "R_WIKIS" : "rest/api/wiki",
+    "R_IPS" : "rest/api/nodes/%1/ips",
+    "R_ALERT_EVENT" : "rest/api/alert_event",
+    "R_GET_REPORTS" : "rest/api/reports",
+    "R_GET_REPORT" : "rest/api/reports/%1",
+    "R_GET_REPORT_METRIC" : "rest/api/reports/metrics/%1",
+    "R_GET_REPORT_CHART" : "rest/api/reports/charts/%1",
     "R_LINKS" : "rest/api/links",
     "R_LINK" : "rest/api/links/%1"
 }
@@ -304,4 +310,18 @@ function services_error_fmt(data) {
 function services_get_url()
 {
     return window.location.protocol +"//" + window.location.host;
+}
+
+function services_get_direct_json_link(service, uri)
+{
+    url = services_getaccessurl(service)
+    if (is_blank(url)) {
+        console.log(service + " uri undefined")
+        return
+    }
+    for(i=0; i<uri.length; i++) {
+        url = url.replace("%"+(i+1), uri[i])
+    }
+
+    return url;
 }
