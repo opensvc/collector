@@ -182,29 +182,30 @@ function sysrep_init(o)
     })
 
     // Feed FilterSet
+    var fsets = []
     services_osvcgetrest("R_FILTERSETS", "", {"meta": "false", "limit": "0"}, function(jd) {
-        var data = jd.data;
-        for (var i=0;i<data.length;i++)
-        {
-          var option = $('<option />');
-          option.attr('value', data[i].fset_name).text(data[i].fset_name);
-          o.allow_filterset.append(option);
-        }
-    });
+      var data = jd.data;
+      for (var i=0;i<data.length;i++) {
+        fsets.push(data[i].fset_name)
+      }
+    })
+    o.allow_filterset.autocomplete({
+      source: fsets,
+      minLength: 0
+    })
 
     // Feed Groups
+    var groups = []
     services_osvcgetrest("R_GROUPS", [], {"meta": "false", "limit": "0", "query": "not role starts with user_ and privilege=F"}, function(jd) {
-        var data = jd.data;
-        for (var i=0;i<data.length;i++)
-        {
-          if (!(data[i].role.substring(0,3) == "user"))
-          {
-            var option = $('<option />');
-            option.attr('value', data[i].role).text(data[i].role);
-            o.allow_groups.append(option);
-          }
-        }
-    });
+      var data = jd.data;
+      for (var i=0;i<data.length;i++) {
+        groups.push(data[i].role)
+      }
+    })
+    o.allow_groups.autocomplete({
+      source: groups,
+      minLength: 0
+    })
 
     // Show section
     o.sysrep_admin_allow();
