@@ -311,3 +311,17 @@ function services_get_url()
 {
     return window.location.protocol +"//" + window.location.host;
 }
+
+function services_get_direct_json_link(service, uri)
+{
+    url = services_getaccessurl(service)
+    if (is_blank(url)) {
+        console.log(service + " uri undefined")
+        return
+    }
+    for(i=0; i<uri.length; i++) {
+        url = url.replace("%"+(i+1), uri[i])
+    }
+
+    return url;
+}
