@@ -537,7 +537,7 @@ function table_add_filtered_to_visible_columns(t) {
 
 function table_add_column_header_input(t, tr, c) {
   var th = $("<th></th>")
-  th.addClass(t.colprops[c]._class)
+  //th.addClass(t.colprops[c]._class)
   th.attr("name", t.id+"_c_"+c)
   th.attr("col", c)
 
