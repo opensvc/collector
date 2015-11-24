@@ -575,7 +575,7 @@ function table_action_menu_format_section(t, e, section) {
     return content
   }
   var title = $("<h3 class='line'><span></span></h3>")
-  title.children().text(i18n.t(section.title))
+  title.children().text(i18n.t(section.title)).addClass(section.class)
   content.append(title)
   content.append(ul)
 
