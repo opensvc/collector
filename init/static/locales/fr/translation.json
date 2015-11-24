@@ -59,6 +59,24 @@
     "yes": "Oui"
   },
   "api": {
+    "doc": {
+      "none": "Aucun",
+      "data_unique": "Unique",
+      "data_writable": "Modifiable",
+      "data_desc": "Description",
+      "data_type": "Type",
+      "example": "Exemples",
+      "data": "Données",
+      "params": "Paramètres",
+      "desc": "Description",
+      "title": "Documentation de l'API RESTful",
+      "smart_queries_title": "Smart Queries",
+      "smart_queries_p1_1": "La plupart des handlers de l'API qui retournent des listes acceptent le paramètre ",
+      "smart_queries_p1_2": ", dont la valeur est une smart query du framework web2py.",
+      "smart_queries_p2": "Une smart query est une chaîne de caractères de filtrage comme:",
+      "smart_queries_p3": "Les opérateurs supportés sont :",
+      "using_with_python_title": "Utilisation de l'API avec python"
+    },
     "loading": "Chargement des données",
     "formatting": "Formattage des données",
     "error": "La requête au collecteur a renvoyé une erreur.",

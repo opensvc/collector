@@ -59,6 +59,24 @@
     "yes": "Yes"
   },
   "api": {
+    "doc": {
+      "none": "None",
+      "data_unique": "Unique",
+      "data_writable": "Writable",
+      "data_desc": "Description",
+      "data_type": "Type",
+      "example": "Examples",
+      "data": "Data",
+      "params": "Parameters",
+      "desc": "Description",
+      "title": "RESTful API documentation",
+      "smart_queries_title": "Smart Queries",
+      "smart_queries_p1_1": "Most API handlers returning lists accept the ",
+      "smart_queries_p1_2": " parameter, which value is a web2py smart query.",
+      "smart_queries_p2": "A smart query is a filtering string like:",
+      "smart_queries_p3": "Supported operators are:",
+      "using_with_python_title": "Using the API with python"
+    },
     "loading": "Loading",
     "formatting": "Formating",
     "error": "The collector request returned an error.",
@@ -466,8 +484,9 @@
       },
       "disks" : {
           "title" : "Disks",
-          "text" : "All known disks with their array information"}
-    },
+          "text" : "All known disks with their array information"
+      }
+  },
   "compliance" : {
       "title" : "Compliance",
       "statut" : {
@@ -658,8 +677,7 @@
       }
     }
   },
-  "login" :
-  {
+  "login" : {
     "title" : "User Action",
     "logout_title" : "Logout",
     "logout_text" : "Reconnect as another user",
@@ -668,8 +686,7 @@
     "change_title": "Change Password",
     "change_text" : "You need to know your current password"
   },
-  "notlogin" :
-  {
+  "notlogin" : {
     "top_title" : "Help",
     "title" : "User Action",
     "register_title" : "Register",

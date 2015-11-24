@@ -4,6 +4,10 @@
 	text-overflow: ellipsis;
 }
 
+.greened {
+	color: darkgreen;
+}
+
 .grayed {
 	color: gray;
 }
@@ -3306,6 +3310,37 @@ div.containertrans {
     background-color: #EEEEEE;
 }
 
+.param {
+	font-family: monospace, courier;
+	background: #444;
+	color: white;
+	padding-left: 5px;
+	padding-right: 5px;
+	border-radius: 3px;
+	-moz-border-radius: 3px;
+	-webkit-border-radius: 3px;
+}
+
+pre.api_doc {
+	background: #333;
+	color: lightgrey;
+	box-shadow: #333 1px 1px 20px 0;
+	border-radius: 4px;
+	padding: 1em;
+	margin: 0.5em;
+}
+
+.api_handler .param {
+	top: 0.3em;
+	position: relative;
+}
+.api_handler td {
+	vertical-align: top;
+}
+
+[section=paths] > tbody > tr:nth-child(even) {
+    background-color: #fafafa;
+}
 
 @media screen and (max-width:960px) and (orientation: landscape) {
 	body {

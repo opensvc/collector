@@ -1,0 +1,49 @@
+<div style="padding:1em;text-align:left">
+	<h1 data-i18n='api.doc.title'></h1>
+	<table section='paths' style='width:100%'></table>
+
+	<h1 data-i18n='api.doc.smart_queries_title'></h1>
+	<p>
+		<span data-i18n='api.doc.smart_queries_p1_1'></span>
+		<span class="param">query</span>
+		<span data-i18n='api.doc.smart_queries_p1_2'></span>
+	</p>
+	<p data-i18n='api.doc.smart_queries_p2'></p>
+	<pre class="api_doc">os_name=linux and os_release contains 6.1</pre>
+	<p data-i18n='api.doc.smart_queries_p3'></p>
+	<ul>
+		<li>=, >, >=, <, <=</li>
+		<li>equals, greater than, lesser than</li>
+		<li>in aaa,bbb</li>
+		<li>not</li>
+	</ul>
+
+	<h1 data-i18n='api.doc.using_with_python_title'></h1>
+	<pre class="api_doc">#!/usr/bin/python
+
+import requests, json
+
+requests.packages.urllib3.disable_warnings()
+
+host = 'https://<span wildcard="collector"></span>'
+url = host + '/init/rest/api'
+
+user = "<span wildcard='email'></span>"
+password = "mypass"
+auth = (user, password)
+verify=False
+
+print "* post node"
+data = {"nodename": "testnode", "model": "x1234", "team_responsible": "myteam"}
+r = requests.post(url+"/nodes", data, auth=auth, verify=verify)
+print r.content
+
+print "* get node"
+r = requests.get(url+"/nodes/testnode?props=nodename,os_name,model,updated",
+auth=auth, verify=verify)
+print r.content
+
+print "* delete node"
+r = requests.delete(url+"/nodes/testnode", auth=auth, verify=verify)
+print r.content</pre>
+</div>

@@ -49,11 +49,6 @@ class rest_handler(object):
     def set_q(self, q):
         self.q = q
 
-    def match_doc(self, args):
-        if args == self.path:
-            return True
-        return False
-
     def match(self, args):
         return self.regexp.match(args)
 
@@ -65,92 +60,6 @@ class rest_handler(object):
             if a.startswith("<") and a.endswith(">"):
                 nargs.append(args[i-1])
         return self.handler(*nargs, **vars)
-
-    def doc(self):
-        s = self.fmt_title()
-        s += self.fmt_desc()
-        s += self.fmt_parameters()
-        s += self.fmt_data()
-        s += self.fmt_examples()
-        return s
-
-    def fmt_title(self):
-        s = "[[%s]]\n" % (self.action)
-        s += "## ``%s :: %s``:red\n" % (self.path, self.action)
-        return s
-
-    def fmt_desc(self):
-        s = ""
-        if len(self.desc) > 0:
-           s += "\n".join(map(lambda x: "- "+x, self.desc))
-        if len(s) > 0:
-           s = "### Description\n"+s+"\n"
-        return s
-
-    def fmt_parameters(self):
-        self.update_parameters()
-        s = ""
-        if len(self.params) > 0:
-           s += "\n".join(map(lambda x: "- **%s**\n. %s"%(x[0], x[1].get("desc", "")), self.params.items()))
-        if len(s) > 0:
-           s = "### Parameters\n"+s+"\n"
-        return s
-
-    def fmt_data(self):
-        title = "### Data\n\n"
-        text = ""
-        if type(self.init_data) in (str, unicode):
-            text += self.init_data
-        self.update_data()
-        if self.data is None or type(self.init_data) in (str, unicode):
-            return title + text
-        s = ""
-        for key in sorted(set(self.data.keys())-set(["_extra"])):
-            d = self.data[key]
-            _writable = d.get("writable", True)
-            if not _writable:
-                continue
-            l = []
-            img = d.get("img", "")
-            if len(img) > 0:
-                l.append("[[ https://%s/init/static/images/%s.png left 16px]]" % (request.env.http_host, img))
-            else:
-                l.append("")
-            l.append("**%s**"%key)
-            _type = d.get("type", "")
-            if len(_type) > 0:
-                l.append("type: %s" % _type)
-            else:
-                l.append("")
-            _unique = d.get("unique", False)
-            if _unique:
-                l.append("unique")
-            else:
-                l.append("")
-            desc = d.get("desc", "")
-            if len(desc) > 0:
-                l.append("%s " % desc)
-            else:
-                l.append("")
-            s += " | ".join(l)+"\n"
-        if len(s) > 0:
-           s = "\n-----\n"+s+"-----\n"
-        text += s
-        if len(text) > 0:
-            return title+text
-        return ""
-
-    def fmt_examples(self):
-        if len(self.examples) == 0:
-            return ""
-        s = "### Examples\n"
-        for ex in self.examples:
-            s += self.fmt_example(ex)
-        return s
-
-    def fmt_example(self, ex):
-        s = ex % dict(email=user_email(), collector=request.env.http_host)
-        return "``" + s + "``\n"
 
     def prepare_data(self, **vars):
         add_to_vars = [
@@ -225,10 +134,13 @@ class rest_handler(object):
         cols = props_to_cols(None, tables=self.tables, blacklist=self.props_blacklist, db=self.db)
         props = cols_to_props(cols, self.tables)
         s = """
-. A list of properties to include in each data dictionnary.
-. If omitted, all properties are included.
-. The separator is ','.
-. Available properties are: ``%(props)s``:green.
+A list of properties to include in each data dictionnary.
+
+If omitted, all properties are included.
+
+The separator is ','.
+
+Available properties are: ``%(props)s``:green.
 
 """ % dict(props=", ".join(sorted(props)))
         return s
@@ -301,13 +213,13 @@ class rest_post_handler(rest_handler):
         self.params.update({
           "filters": {
             "desc": """
-. An opensvc property values filter.
+An opensvc property values filter.
 
 """,
           },
           "query": {
             "desc": """
-. A web2py smart query.
+A web2py smart query.
 
 """,
           },
@@ -371,57 +283,62 @@ class rest_get_table_handler(rest_handler):
         self.params.update({
           "commonality": {
             "desc": """
-. true: return the selected properties most frequent value with its occurence percentile.
-. false: do not return the selected properties most frequent value with its occurence percentile.
+Controls the inclusion in the returned dictionnary of a "commonality" key, containing the selected properties most frequent value with its occurence percentile.
+* true: include.
+* false: do not include.
 """,
           },
           "stats": {
             "desc": """
-. true: return the selected properties distinct values counts.
-. false: do not return the selected properties distinct values counts.
+Controls the inclusion in the returned dictionnary of a "stats" key, containing the selected properties distinct values counts.
+* true: include.
+* false: do not include.
 """,
           },
           "meta": {
             "desc": """
-. Controls the inclusion in the returned dictionnary of a "meta" key, whose parameter is a dictionnary containing the following properties: displayed entry count, total entry count, displayed properties, available properties, offset and limit.
-. true: include data cursor metadata.
-. false: do no include data cursor metadata.
+Controls the inclusion in the returned dictionnary of a "meta" key, whose parameter is a dictionnary containing the following properties: displayed entry count, total entry count, displayed properties, available properties, offset and limit.
+* true: include.
+* false: do not include.
 
 """,
           },
           "limit": {
             "desc": """
-. The maximum number of entries to return.
-. 0 means no limit.
+The maximum number of entries to return. 0 means no limit.
 
 """,
           },
           "offset": {
             "desc": """
-. Skip the first <offset> entries of the data cursor.
+Skip the first <offset> entries of the data cursor.
 
 """,
           },
           "query": {
             "desc": """
-. A web2py smart query
+A web2py smart query
 
 """,
           },
           "filters": {
             "type": "list",
             "desc": """
-. An opensvc property values filter. Example: "updated>-2d".
+An opensvc property values filter. Example: "updated>-2d".
 
 """,
           },
           "orderby": {
             "desc": """
-. A comma-separated list of properties.
-. Sort the resultset using the specified properties.
-. Property sorting priority decreases from left to right.
-. The order is descending by default.
-. A property can be prefixed by '~' to activate the ascending order.
+A comma-separated list of properties.
+
+Sort the resultset using the specified properties.
+
+Property sorting priority decreases from left to right.
+
+The order is descending by default.
+
+A property can be prefixed by '~' to activate the ascending order.
 
 """,
           },

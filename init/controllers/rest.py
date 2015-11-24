@@ -26,14 +26,16 @@ class rest_get_api(rest_get_handler):
                 handler.update_parameters()
                 handler.update_data()
                 if type(handler.data) == dict:
-                    hdata = list(set(handler.data.keys()) - set(["_extra"]))
+                    hdata = handler.data
                 else:
-                    hdata = []
+                    hdata = {}
                 data[a].append({
                   "path": handler.path,
                   "pattern": handler.pattern,
                   "data": hdata,
                   "params": handler.params,
+                  "examples": handler.examples,
+                  "desc": handler.desc,
                 })
         return dict(data=data)
 
@@ -355,116 +357,19 @@ def api():
         return rest_router("DELETE", args, vars)
     return locals()
 
-def doc_section():
-    s = ""
-    actions = [
-      "GET",
-      "DELETE",
-      "POST",
-      "PUT",
-    ]
-    for action in actions:
-        for handler in handlers[action]:
-            if handler.match_doc("/"+request.raw_args):
-                s += handler.doc()
-    return dict(doc=DIV(MARKMIN(s), _style="padding:1em;text-align:left"))
-
 def doc():
     # the default restful wrapper suppress the trailing .xxx
     # we need it for fqdn nodenames and svcname though.
     args = request.raw_args.split('/')
-    if len(args) > 0 and args != ['']:
-        return doc_section()
 
-    # doc index
-    all_docs = {}
-    for a in handlers:
-        for handler in handlers[a]:
-            if handler.path not in all_docs:
-                all_docs[handler.path] = {}
-            all_docs[handler.path][a] = handler.doc()
+    d = DIV(
+          SCRIPT("""
+            api_doc("api_doc", {args: %(args)s})
+          """ % dict(args=str(args))),
+          _id="api_doc",
+        )
+    return dict(doc=d)
 
-    s = """
-# RESTful API documentation
-
-"""
-    actions = [
-      "GET",
-      "DELETE",
-      "POST",
-      "PUT",
-    ]
-    urls = sorted(all_docs.keys())
-    s += "-----\n"
-    for url in urls:
-        l = []
-        d = all_docs[url]
-        l.append(url)
-        for a in actions:
-            if a in d:
-                l.append("[[``%(a)s``:red %(url)s#%(anchor)s]]" % dict(a=a, url=URL(r=request, f="doc"+url), anchor=a))
-            else:
-                l.append("[[``%(a)s``:gray #]]" % dict(a=a))
-        s += " | ".join(l)
-        s += "\n"
-    s += "-----\n"
-
-    s += """
-# Smart queries
-
-Most API urls returning lists accept the ''query'' parameter, which value is a
-web2py smart query.
-
-A smart query is a filtering string like:
-
-''os_name=linux and os_release contains 6.1''
-
-Supported operators are:
-- =, >, >=, <, <=
-- equals, greater than, lesser than
-- in aaa,bbb
-- not
-
-
-# Using the API with python
-
-``
-#!/usr/bin/python
-
-import requests, json
-
-requests.packages.urllib3.disable_warnings()
-
-host = 'https://%(collector)s'
-url = host + '/init/rest/api'
-
-user = "%(email)s"
-password = "mypass"
-auth = (user, password)
-verify=False
-
-print "* post node"
-data = {"nodename": "testnode", "model": "x1234", "team_responsible": "myteam"}
-r = requests.post(url+"/nodes", data, auth=auth, verify=verify)
-print r.content
-
-print "* get node"
-r = requests.get(url+"/nodes/testnode?props=nodename,os_name,model,updated",
-auth=auth, verify=verify)
-print r.content
-
-print "* delete node"
-r = requests.delete(url+"/nodes/testnode", auth=auth, verify=verify)
-print r.content
-``
-
-""" % dict(
-        email=user_email(),
-        collector=request.env.http_host,
-      )
-
-    #return dict(doc=PRE(s, _style="padding:1em;text-align:left"))
-    return dict(doc=DIV(MARKMIN(s), _style="padding:1em;text-align:left"))
-
-
+def doc_load():
+    return doc()["doc"]
 
