@@ -2512,10 +2512,12 @@ function table_pager(t, options) {
     if ($(this).hasClass("grayed")) {
       return
     }
+    var new_perpage = parseInt($(this).text())
     var data = {
-      "perpage": parseInt($(this).text())
+      "perpage": new_perpage
     }
     services_osvcpostrest("R_USERS_SELF", "", "", data, function(jd) {
+      $("#"+t.id+"_page").val(Math.floor(((p_page - 1) * p_perpage) / new_perpage)+1)
       t.refresh()
     },
     function(xhr, stat, error) {
