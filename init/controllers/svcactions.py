@@ -3,109 +3,6 @@ def pid_to_filter(pid):
         return ''
     return pid.replace(',', '|')
 
-def update_dash_action_errors(svc_name, nodename):
-    svc_name = svc_name.strip("'")
-    nodename = nodename.strip("'")
-    sql = """select e.err, s.svc_type from b_action_errors e
-             join services s on e.svcname=s.svc_name
-             where
-               svcname="%(svcname)s" and
-               nodename="%(nodename)s"
-          """%dict(svcname=svc_name, nodename=nodename)
-    rows = db.executesql(sql)
-
-    if len(rows) == 1:
-        if rows[0][1] == 'PRD':
-            sev = 4
-        else:
-            sev = 3
-        sql = """insert into dashboard
-                 set
-                   dash_type="action errors",
-                   dash_svcname="%(svcname)s",
-                   dash_nodename="%(nodename)s",
-                   dash_severity=%(sev)d,
-                   dash_fmt="%%(err)s action errors",
-                   dash_dict='{"err": "%(err)d"}',
-                   dash_env='%(env)s',
-                   dash_created="%(now)s",
-                   dash_updated="%(now)s"
-                 on duplicate key update
-                   dash_severity=%(sev)d,
-                   dash_fmt="%%(err)s action errors",
-                   dash_dict='{"err": "%(err)d"}',
-                   dash_updated="%(now)s"
-              """%dict(svcname=svc_name,
-                       nodename=nodename,
-                       sev=sev,
-                       env=rows[0][1],
-                       now=str(datetime.datetime.now()),
-                       err=rows[0][0])
-        db.executesql(sql)
-        db.commit()
-        sqlws = """select
-                     dash_md5
-                   from
-                     dashboard
-                   where
-                     dash_type="action errors" and
-                     dash_svcname="%(svcname)s" and
-                     dash_nodename="%(nodename)s" and
-                     dash_fmt="%%(err)s action errors"
-              """%dict(svcname=svc_name,
-                       nodename=nodename,
-                  )
-        rows = db.executesql(sqlws)
-        if len(rows) > 0:
-            _websocket_send(event_msg({
-              'event': 'dash_change',
-              'data': {
-                'dash_md5': rows[0][0],
-              }
-            }))
-
-    else:
-        sqlws = """select dash_md5 from dashboard
-                 where
-                   dash_type="action errors" and
-                   dash_svcname="%(svcname)s" and
-                   dash_nodename="%(nodename)s"
-              """%dict(svcname=svc_name,
-                       nodename=nodename)
-        rows = db.executesql(sqlws)
-        if len(rows) > 0:
-            _websocket_send(event_msg({
-              'event': 'dash_delete',
-              'data': {
-                'dash_md5': rows[0][0],
-              }
-            }))
-        sql = """delete from dashboard
-                 where
-                   dash_type="action errors" and
-                   dash_svcname="%(svcname)s" and
-                   dash_nodename="%(nodename)s"
-              """%dict(svcname=svc_name,
-                       nodename=nodename)
-        db.executesql(sql)
-        db.commit()
-
-def update_action_errors():
-    sql = """truncate b_action_errors
-          """
-    db.executesql(sql)
-    sql = """insert into b_action_errors
-               select null, svcname, hostname, count(id)
-               from SVCactions
-               where
-                 status = 'err' and
-                 (ack <> 1 or isnull(ack)) and
-                 end is not null
-               group by svcname, hostname
-          """
-    db.executesql(sql)
-    db.commit()
-
 @auth.requires_login()
 def ajax_action_status():
     if len(request.args) == 0:
@@ -367,7 +264,6 @@ class table_actions(HtmlTable):
         self.dbfilterable = True
         self.checkboxes = True
         self.checkbox_id_table = 'v_svcactions'
-        self.additional_tools.append('ack')
         self.keys = ["id"]
         self.events = ["begin_action", "end_action", "svcactions_change"]
 
@@ -377,43 +273,6 @@ class table_actions(HtmlTable):
         if status == 'err' and ack != 1:
             return False
         return True
-
-    def ack(self):
-        d = DIV(
-              A(
-                T("Acknowledge error"),
-                _class='ok',
-                _onclick="""
-                  click_toggle_vis(event, '%(div)s', 'block');
-                """%dict(div='ackcomment_d'),
-              ),
-              DIV(
-                TABLE(
-                  TR(
-                    TD(
-                      T('Comment'),
-                    ),
-                    TD(
-                      TEXTAREA(
-                        _id='ackcomment',
-                        _style="width:20em;height:10em;margin-bottom:0.3em",
-                      ),
-                      BR(),
-                      INPUT(
-                        _type="submit",
-                        _onclick=self.ajax_submit(additional_inputs=['ackcomment'], args="ack"),
-                      ),
-                    ),
-                  ),
-                ),
-                _style='display:none',
-                _class='stackable white_float',
-                _name='ackcomment_d',
-                _id='ackcomment_d',
-              ),
-              _class='floatw',
-            )
-        return d
 
 @auth.requires_login()
 def ajax_actions_col_values():
@@ -430,58 +289,8 @@ def ajax_actions_col_values():
     return t.col_values_cloud_ungrouped(col)
 
 @auth.requires_login()
-def ack(ids=[]):
-    if len(ids) == 0:
-        raise ToolError("no action selected")
-    ackcomment = request.vars.ackcomment
-    q = db.SVCactions.id.belongs(ids)
-    q &= db.SVCactions.status != "ok"
-    rows = db(q).select(db.SVCactions.hostname,
-                        db.SVCactions.svcname,
-                        db.SVCactions.id,
-                        db.SVCactions.action,
-                        cacheable=True)
-    if len(rows) == 0:
-        return
-
-    user = user_name()
-
-    db(q).update(ack=1,
-                 acked_comment=ackcomment,
-                 acked_by=user,
-                 acked_date=datetime.datetime.now())
-    db.commit()
-
-    if 'ackcomment' in request.vars:
-        del request.vars.ackcomment
-
-    update_action_errors()
-
-    l = []
-    for r in rows:
-        if (r.svcname, r.hostname) not in l:
-            l.append((r.svcname, r.hostname))
-        _log('action.ack',
-             'acknowledged action error with id %(g)s: %(action)s on %(svc)s@%(node)s',
-             dict(g=r.id, action=r.action, svc=r.svcname, node=r.hostname),
-             user=user,
-             svcname=r.svcname,
-             nodename=r.hostname)
-
-    for svcname, hostname in l:
-        update_dash_action_errors(svcname, hostname)
-
-@auth.requires_login()
 def ajax_actions():
     t = table_actions('actions', 'ajax_actions')
-
-    if len(request.args) == 1:
-        action = request.args[0]
-        try:
-            if action == 'ack':
-                ack(t.get_checked())
-        except ToolError, e:
-            t.flash = str(e)
 
     o = ~db.v_svcactions.id
     q = _where(None, 'v_svcactions', domain_perms(), 'hostname')

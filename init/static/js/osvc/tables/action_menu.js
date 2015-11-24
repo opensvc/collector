@@ -6,9 +6,11 @@ function table_action_menu_init_data(t) {
   t.column_selectors = {
     "svcname": "td[cell=1][name$=svcname],td[cell=1][name$=svc_name],td[cell=1][name$=disk_svcname]",
     "nodename": "td[cell=1][name$=nodename],td[cell=1][name$=mon_nodname],td[cell=1][name$=disk_nodename],td[cell=1][name$=hostname]",
-    "rid": "td[cell=1][name$=_rid]",
-    "module": "td[cell=1][name$=_run_module]",
-    "vmname": "td[cell=1][name$=_vmname]"
+    "rid": "td[cell=1][name$=_c_rid]",
+    "module": "td[cell=1][name$=_c_run_module]",
+    "vmname": "td[cell=1][name$=_c_vmname]",
+    "action": "td[cell=1][name$=_c_action]",
+    "id": "td[cell=1][name$=_c_id]"
   }
 
   t.action_menu_data = [
@@ -140,6 +142,21 @@ function table_action_menu_init_data(t) {
               "title": "action_menu.delete",
               "class": "icon del16",
               "fn": "data_action_delete_svc_instances",
+              "min": 1
+            }
+          ]
+        },
+        {
+          "selector": ["clicked", "checked", "all"],
+          "foldable": true,
+          'title': 'action_menu.on_service_actions',
+          "cols": ["id", "action", "ack"],
+          "condition": "id+action",
+          "children": [
+            {
+              "title": "action_menu.ack",
+              "class": "icon check16",
+              "fn": "data_action_ack_actions",
               "min": 1
             }
           ]
@@ -1022,20 +1039,21 @@ function table_action_menu_yes_no(t, msg, callback) {
    var e = $("<div style='margin-top:0.6em'></div>")
    var title = $("<div></div>")
    title.text(i18n.t(msg))
-   var yes = $("<div class='ok float clickable' name='yes'>"+i18n.t("action_menu.yes")+"</div>")
-   var no = $("<div class='nok float clickable' name='no'>"+i18n.t("action_menu.no")+"</div>")
+   var yes = $("<button class='ok clickable' style='float:left;width:49%' name='yes'>"+i18n.t("action_menu.yes")+"</button>")
+   var no = $("<button class='nok clickable' style='float:right;width:49%' name='no'>"+i18n.t("action_menu.no")+"</button>")
    e.append(title)
    e.append(yes)
    e.append(no)
    e.append($("<br>"))
    yes.bind("click", function(e){
+     event.preventDefault()
      $(this).unbind("click")
-     $(this).removeClass("check16")
-     $(this).addClass("spinner")
+     $(this).prop("disabled", true)
      callback(e)
    })
-   no.bind("click", function(){
+   no.bind("click", function(event){
      $("#am_"+t.id).remove()
+     event.preventDefault()
    })
    return e
 }
@@ -1336,7 +1354,7 @@ function data_action_delete_nodes(t, e) {
       $(".flash").show("blind").html(services_error_fmt(jd))
     }
     if (jd.info && (jd.info.length > 0)) {
-      $(".flash").show("blind").html("<pre>"+jd.info+"</pre>")
+      $(".flash").show("blind").html(services_info_fmt(jd))
     }
   },
   function(xhr, stat, error) {
@@ -1360,7 +1378,7 @@ function data_action_delete_svcs(t, e) {
       $(".flash").show("blind").html(services_error_fmt(jd))
     }
     if (jd.info && (jd.info.length > 0)) {
-      $(".flash").show("blind").html("<pre>"+jd.info+"</pre>")
+      $(".flash").show("blind").html(services_info_fmt(jd))
     }
   },
   function(xhr, stat, error) {
@@ -1387,13 +1405,64 @@ function data_action_delete_svc_instances(t, e) {
       $(".flash").show("blind").html(services_error_fmt(jd))
     }
     if (jd.info && (jd.info.length > 0)) {
-      $(".flash").show("blind").html("<pre>"+jd.info+"</pre>")
+      $(".flash").show("blind").html(services_info_fmt(jd))
     }
   },
   function(xhr, stat, error) {
     $(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
   })
 }
+
+//
+// data action: acknowledge action
+//
+function data_action_ack_actions(t, e) {
+  var entry = $(e.target)
+  var cache_id = entry.attr("cache_id")
+  var data = t.action_menu_data_cache[cache_id]
+  var post_data = new Array()
+
+  // comment textarea
+  var form = $("<form></form>")
+  var c = $("<textarea class='oi' style='width:100%;height:8em'></textarea>")
+  c.uniqueId()
+  var label = $("<div data-i18n='action_menu.ack_comment'></div>")
+  form.append(label)
+  form.append(c)
+  c.bind("click", function(event) {
+    event.stopPropagation()
+  })
+  table_action_menu_focus_on_leaf(t, entry)
+  var yes_no = table_action_menu_yes_no(t, 'action_menu.submit', function(e){
+    var comment = $(e.target).parents("form").first().find("textarea").val()
+    for (i=0;i<data.length;i++) {
+      if (data[i].ack) {
+        // avoid acknowledgeing already acknowledged actions
+        continue
+      }
+      post_data.push({
+        'id': data[i]['id'],
+        'ack': 1,
+        'acked_comment': comment
+      })
+    }
+    services_osvcpostrest("R_SERVICES_ACTIONS", "", "", post_data, function(jd) {
+      if (jd.error && (jd.error.length > 0)) {
+        $(".flash").show("blind").html(services_error_fmt(jd))
+      }
+      if (jd.info && (jd.info.length > 0)) {
+        $(".flash").show("blind").html(services_info_fmt(jd))
+      }
+    },
+    function(xhr, stat, error) {
+      $(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
+    })
+  })
+  form.append(yes_no)
+  form.insertAfter(entry)
+  c.focus()
+}
+
 
 //
 // agent action: provisioning
@@ -1535,7 +1604,7 @@ function agent_action_provisioning(t, e) {
             $(".flash").show("blind").html(services_error_fmt(jd))
           }
           if (jd.info && (jd.info.length > 0)) {
-            $(".flash").show("blind").html("<pre>"+jd.info+"</pre>")
+            $(".flash").show("blind").html(services_info_fmt(jd))
           }
         },
         function(xhr, stat, error) {
@@ -1560,4 +1629,5 @@ function agent_action_provisioning(t, e) {
   })
 
 }
+
 

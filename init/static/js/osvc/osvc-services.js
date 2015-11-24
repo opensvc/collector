@@ -39,6 +39,7 @@ var services_access_uri = {
     "R_SERVICE" : "rest/api/services/%1",
     "R_SERVICE_AM_I_RESPONSIBLE" : "rest/api/services/%1/am_i_responsible",
     "R_SERVICES" : "rest/api/services",
+    "R_SERVICES_ACTIONS" : "rest/api/services_actions",
     "R_SERVICE_ACTIONS" : "rest/api/services/%1/actions",
     "R_SERVICE_ACTIONS_UNACKNOWLEDGED_ERRORS" : "rest/api/services/%1/actions_unacknowledged_errors",
     "R_SERVICE_INSTANCES" : "rest/api/service_instances",
@@ -300,7 +301,27 @@ function services_error_fmt(data) {
     var e = $("<span><span class='alert16 err fa-2x'></span><span data-i18n='api.error'></span></span>")
     e.i18n()
     var p = $("<pre></pre>")
-    p.text(data.error)
+    if (typeof data.error === "string") {
+	   p.text(data.error)
+    } else {
+	   p.text(data.error.join("\n"))
+    }
+    p.css({
+      "padding": "2em 0 0 0",
+    })
+    e.append(p)
+    return e
+}
+
+function services_info_fmt(data) {
+    var e = $("<span><span class='alert16 fa-2x'></span><span data-i18n='api.info'></span></span>")
+    e.i18n()
+    var p = $("<pre></pre>")
+    if (typeof data.error === "string") {
+	   p.text(data.info)
+    } else {
+	   p.text(data.info.join("\n"))
+    }
     p.css({
       "padding": "2em 0 0 0",
     })

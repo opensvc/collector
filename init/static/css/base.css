@@ -3415,7 +3415,15 @@ pre.api_doc {
 }
 
 [section=paths] > tbody > tr:nth-child(even) {
-    background-color: #fafafa;
+	background-color: #fafafa;
+}
+
+button:disabled:before {
+	color: lightgray;
+}
+button:disabled {
+	box-shadow: inset #fff 0px 10px 28px;
+	color: lightgray;
 }
 
 @media screen and (max-width:960px) and (orientation: landscape) {

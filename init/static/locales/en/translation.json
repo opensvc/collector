@@ -13,6 +13,8 @@
     "warn_remove": "Warning, this object might be referenced by other objects. Do you really want to delete this compliance object ?"
   },
   "action_menu": {
+    "ack": "Acknowledge error",
+    "ack_comment": "Acknowledge comment",
     "no_action": "No action available in this context.",
     "node_createable": "This node does not exist yet. Press <enter> to create.",
     "nodename": "Node name",
@@ -22,6 +24,7 @@
     "tools": "Data analysis",
     "data_actions": "Data actions",
     "agent_actions": "Agent actions",
+    "on_service_actions": "On service actions",
     "on_modules": "On modules",
     "on_resources": "On resources",
     "on_services": "On services",
@@ -51,6 +54,7 @@
     "node_perf": "Nodes performance",
     "svc_diff": "Services differences",
     "topology": "Topology",
+    "submit": "Submit",
     "provisioning": "Provision a service",
     "provisioning_submit": "Submit the command",
     "provisioning_selector_title": "Choose a template",
@@ -79,6 +83,7 @@
     },
     "loading": "Loading",
     "formatting": "Formating",
+    "info": "Returned information",
     "error": "The collector request returned an error.",
     "link": "Link",
     "link_text": "This link target is stored in the collector database. You can share it with collaborators so they can see the same information, granted they have equivalent privileges."

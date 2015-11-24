@@ -13,6 +13,8 @@
     "warn_remove": "Attention, cet objet peut être référencé par d'autres objets. Voulez-vous vraiment le supprimer ?"
   },
   "action_menu": {
+    "ack": "Acquitter des erreurs",
+    "ack_comment": "Commentaire d'acquittement",
     "no_action": "Aucune action disponible dans ce contexte.",
     "node_createable": "Ce noeud n'existe pas encore. Appuyez sur <entrée> pour le créer.",
     "nodename": "Nom du noeud",
@@ -22,6 +24,7 @@
     "tools": "Analyse des données",
     "data_actions": "Actions sur les données",
     "agent_actions": "Actions sur les agents",
+    "on_service_actions": "Sur les actions de service",
     "on_modules": "Sur les modules",
     "on_resources": "Sur les ressources",
     "on_services": "Sur les services",
@@ -51,6 +54,7 @@
     "node_perf": "Performance des noeuds",
     "svc_diff": "Différences entre services",
     "topology": "Topologie",
+    "submit": "Appliquer",
     "provisioning": "Provisionner un service",
     "provisioning_submit": "Lancer la commande",
     "provisioning_selector_title": "Choisissez un modèle",
@@ -79,6 +83,7 @@
     },
     "loading": "Chargement des données",
     "formatting": "Formattage des données",
+    "info": "Informations renvoyées",
     "error": "La requête au collecteur a renvoyé une erreur.",
     "link": "Lien",
     "link_text": "La cible de ce lien est stockée en base de données du collecteur. Vous pouvez le partager avec des collaborateurs afin qu'ils consultent les mêmes informations, si tant es qu'ils bénéficient des mêmes privilèges que vous"
