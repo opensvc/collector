@@ -124,13 +124,13 @@ function node_props_responsible_init(o)
       //$(this).unbind("mouseenter mouseleave click")
       if ($(this).siblings().find("form").length > 0) {
         $(this).siblings().show()
-        $(this).siblings().find("input[type=text],select").focus()
+        $(this).siblings().find("input[type=text]:visible,select").focus()
         $(this).hide()
         return
       }
       var updater = $(this).attr("upd")
       if ((updater == "string") || (updater == "integer") || (updater == "date") || (updater == "datetime")) {
-        e = $("<td><form><input class='oi' type='text'></input></form></td>")
+        var e = $("<td><form><input class='oi' type='text'></input></form></td>")
         e.css({"padding-left": "0px"})
         var input = e.find("input")
         input.uniqueId() // for date picker
@@ -142,41 +142,38 @@ function node_props_responsible_init(o)
         })
         $(this).parent().append(e)
         $(this).hide()
-        e.find("input").focus()
+        input.focus()
       } else if (updater == "action_type") {
-        e = $("<td><form><select class='oi' type='text'></select><input type='submit'></input></form></td>")
+        var e = $("<td></td>")
+        var form = $("<form></form>")
+        var input = $("<input class='oi' type='text'></input>")
+        e.append(form)
+        form.append(input)
         e.css({"padding-left": "0px"})
-        var select = e.find("select")
-        var opt
-        opt = $("<option id='push'>push</option>")
-        if ($(this).text() == "push") {
-          opt.attr("selected", "")
-        }
-        select.append(opt)
-        opt = $("<option id='pull'>pull</option>")
-        if ($(this).text() == "pull") {
-          opt.attr("selected", "")
-        }
-        select.append(opt)
-        select.attr("pid", $(this).attr("id"))
-        e.find("select,input").bind("blur", function(){
-          var _this = $(this)
-          setTimeout(function(){
-            if ($(document.activeElement).parent().children("[pid=action_type]").length > 0) {
-              return
-            }
-            _this.parents("td").first().siblings("td").show()
-            _this.parents("td").first().hide()
-          }, 1)
+        input.val($(this).text())
+        input.attr("pid", $(this).attr("id"))
+        var opts = ["push", "pull"]
+        input.autocomplete({
+          source: opts,
+          minLength: 0
+        })
+        input.bind("blur", function(){
+          $(this).parents("td").first().siblings("td").show()
+          $(this).parents("td").first().hide()
         })
         $(this).parent().append(e)
         $(this).hide()
-        e.find("select").focus()
+        input.focus()
       } else if (updater == "group") {
-        e = $("<td><form><select class='oi' type='text'></select><input type='submit'></input></form></td>")
+        var e = $("<td></td>")
+        var form = $("<form></form>")
+        var input = $("<input class='oi' type='text'></input>")
+        e.append(form)
+        form.append(input)
         e.css({"padding-left": "0px"})
-        var select = e.find("select")
-        var opt
+        input.val($(this).text())
+        input.attr("pid", $(this).attr("id"))
+        var opts = []
         for (var i=0; i<_groups.length; i++) {
           var group = _groups[i]
           if (group.privilege) {
@@ -186,60 +183,46 @@ function node_props_responsible_init(o)
           if (role.match(/^user_/)) {
             continue
           }
-          opt = $("<option></option>")
-          opt.attr("id", role)
-          opt.text(role)
-          if ($(this).text() == role) {
-            opt.attr("selected", "")
-          }
-          select.append(opt)
+          opts.push(role)
         }
-        select.attr("pid", $(this).attr("id"))
-        e.find("select,input").bind("blur", function(){
-          var _this = $(this)
-          setTimeout(function(){
-            if ($(document.activeElement).parent().children("[pid="+select.attr("pid")+"]").length > 0) {
-              return
-            }
-            _this.parents("td").first().siblings("td").show()
-            _this.parents("td").first().hide()
-          }, 1)
+        input.autocomplete({
+          source: opts,
+          minLength: 0
+        })
+        input.bind("blur", function(){
+          $(this).parents("td").first().siblings("td").show()
+          $(this).parents("td").first().hide()
         })
         $(this).parent().append(e)
         $(this).hide()
-        e.find("select").focus()
+        input.focus()
       } else if (updater == "app") {
-        var _td = $(this)
-        e = $("<td><form><select class='oi' type='text'></select><input type='submit'></input></form></td>")
+        var e = $("<td></td>")
+        var form = $("<form></form>")
+        var input = $("<input class='oi' type='text'></input>")
+        e.append(form)
+        form.append(input)
         e.css({"padding-left": "0px"})
-        var select = e.find("select")
-        select.attr("pid", _td.attr("id"))
+        input.val($(this).text())
+        input.attr("pid", $(this).attr("id"))
         services_osvcgetrest("R_USER_APPS", [_self.id], {"props": "app", "meta": "false", "limit": "0"}, function(jd) {
-          var opt
+          var opts = []
           for (var i=0; i<jd.data.length; i++) {
             var app = jd.data[i].app
-            opt = $("<option></option>")
-            opt.attr("id", app)
-            opt.text(app)
-            if ($(this).text() == app) {
-              opt.attr("selected", "")
-            }
-            select.append(opt)
+            opts.push(app)
           }
-          e.find("select,input").bind("blur", function(){
-            var _this = $(this)
-            setTimeout(function(){
-              if ($(document.activeElement).parent().children("[pid="+select.attr("pid")+"]").length > 0) {
-                return
-              }
-              _this.parents("td").first().siblings("td").show()
-              _this.parents("td").first().hide()
-            }, 1)
+          input.autocomplete({
+            source: opts,
+            minLength: 0
           })
-          _td.parent().append(e)
-          _td.hide()
-          e.find("select").focus()
+          input.bind("blur", function(){
+            $(this).parents("td").first().siblings("td").show()
+            $(this).parents("td").first().hide()
+          })
         })
+        $(this).parent().append(e)
+        $(this).hide()
+        input.focus()
       } else {
         return
       }
@@ -260,6 +243,7 @@ function node_props_responsible_init(o)
       }
 
       e.find("form").submit(function(event) {
+        console.log($(this), event)
         event.preventDefault()
         var input = $(this).find("input[type=text],select")
         input.blur()

@@ -892,6 +892,12 @@ function table_action_menu_format_selector(t, e, selector) {
     }
 
     e_selector.append(s)
+
+    // set the "checked" scope as selected if not disabled: take precedence to the "clicked" scope
+    if ((scope == "checked") && !s.hasClass("action_menu_selector_disabled")) {
+      s.click()
+    }
+
   }
   if (content.children("ul").length > 0) {
     content.prepend(e_selector)

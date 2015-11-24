@@ -337,7 +337,10 @@ def svcmon_svc():
     tid = 'svcmon_'+svcname.replace('-', '_').replace('.', '_')
     t = table_svcmon_svc(tid, 'ajax_svcmon_svc')
     t.colprops['mon_svcname'].force_filter = svcname
-    return t.html()
+    return DIV(
+      t.html(),
+      _id=tid,
+    )
 
 @auth.requires_login()
 def ajax_svcmon_svc():

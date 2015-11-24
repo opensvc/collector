@@ -215,7 +215,10 @@ def resmon_svc():
     tid = 'resmon_'+svcname.replace('-', '_').replace('.', '_')
     t = table_resmon_svc(tid, 'ajax_resmon_svc')
     t.colprops['svcname'].force_filter = svcname
-    return t.html()
+    return DIV(
+      t.html(),
+      _id=tid,
+    )
 
 @auth.requires_login()
 def ajax_resmon_svc():
