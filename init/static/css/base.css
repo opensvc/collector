@@ -125,6 +125,11 @@ form :focus {
 	padding-right: 0.5em;
 	margin-left: 0;
 }
+.line.yellow > span {
+	background: #E0E1CD;
+	padding-right: 0.5em;
+	margin-left: 0;
+}
 
 .groups > span {
 	padding: 0.2em 0.5em 0.2em 0;
@@ -1684,6 +1689,14 @@ ul.login_menu ul {
 	content: '\f00a  ';
 	font-family: awesome;
 }
+.aright16:before {
+	content: '\f061  ';
+	font-family: awesome;
+}
+.aleft16:before {
+	content: '\f060  ';
+	font-family: awesome;
+}
 .startup:before {
 	content: '\f062  ';
 	font-family: awesome;
@@ -3145,6 +3158,10 @@ textarea.link_ta_sub {
 	background-color: rgba(0,0,0,0.1);
 }
 
+.button_div_active {
+	background-color: rgba(0,0,0,0.1);
+}
+
 .del16_allow:before {
 	content: '\f146  ';
 	font-family: awesome;
@@ -3296,6 +3313,65 @@ div.containertrans {
 	background-color : #E0E1CD;
 	overflow: hidden;
 }
+
+.reports_section_sel {
+	width:20%;
+	position: fixed;
+	overflow: hidden;
+	left: Opx;
+	background-color : #E0E1CD;
+	/*margin: 0px auto;
+	vertical-align:middle;*/
+	height: -moz-calc(100% - 19px); /* Firefox */
+ 	height: -webkit-calc(100% - 19px); /* Chrome, Safari */
+ 	height: calc(100% - 19px); /* IE9+ and future browsers */
+	overflow-y:auto;
+	z-index:10;
+}
+
+.reports_section_sel_off {
+	width:2em;
+	position: fixed;
+	overflow: hidden;
+	left: Opx;
+	background-color: rgba(255,255,255,0.6);
+	/*margin: 0px auto;
+	vertical-align:middle;*/
+	height: -moz-calc(100% - 19px); /* Firefox */
+ 	height: -webkit-calc(100% - 19px); /* Chrome, Safari */
+ 	height: calc(100% - 19px); /* IE9+ and future browsers */
+	z-index:10;
+}
+
+.report_button_div {
+	cursor: pointer;
+	vertical-align:middle;
+	height: 24px;
+	border-radius: 3px;
+	border-color: rgba(0,0,0,0);
+	border : 1px;
+	padding: 0.3em;
+	padding-right : 0.3em;
+	background-color: rgba(255,255,255,0.6);
+	font-weight: normal;
+}
+
+.report_button_div:hover {
+	background-color: rgba(255,255,255,1.0);
+	border-radius: 3px;
+	border-color: rgba(0,0,0,1.0);
+}
+
+.report_button_div:active {
+	background-color: rgba(255,255,255,1.0);
+	font-weight: bold;
+}
+
+.report_button_div_active {
+	background-color: rgba(255,255,255,1.0);
+	font-weight: bold;
+}
+
 
 .reports_table {
 	width : 100%;
