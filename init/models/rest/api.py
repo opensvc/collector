@@ -207,13 +207,16 @@ class rest_handler(object):
             if _prop == "id":
                 continue
             colprops = globals().get(_table+"_colprops", {}).get(_prop, {})
+            if colprops is None:
+                colprops = globals().get("v_"+_table+"_colprops", {}).get(_prop, {})
 
             self.data[prop] = {
               "desc":  getattr(colprops, "title") if hasattr(colprops, "title") else "",
               "img":  getattr(colprops, "img") if hasattr(colprops, "img") else "",
               "type": self.db[_table][_prop].type,
-              "requires": self.db[_table][_prop].requires,
-              "default": self.db[_table][_prop].default,
+              "table": _table,
+              #"requires": self.db[_table][_prop].requires,
+              #"default": self.db[_table][_prop].default,
               "unique": self.db[_table][_prop].unique,
               "writable": self.db[_table][_prop].writable,
             }
