@@ -677,5 +677,8 @@
     "register_text" : "Créer un nouvel utilisateur",
     "lost_title" : "Mot de passe perdu",
     "lost_text" : "Envoyer un nouveau mot de passe par mèl"
+  },
+  "forms": {
+    "not_found": "non trouvé"
   }
 }

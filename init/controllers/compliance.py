@@ -8988,7 +8988,7 @@ function refresh_div(e) {
     if (data instanceof Array) {
       s = data.join("\\n")
     } else if (("data" in data) && (data["data"].length == 0)) {
-      s = T("not found")
+      s = i18n.t("forms.not_found")
     } else {
       s = data
     }
@@ -9092,7 +9092,7 @@ function refresh_textarea(e) {
         h = 1.3 * data.length
       }
     } else if (("data" in data) && (data["data"].length == 0)) {
-      s = T("not found")
+      s = i18n.t("forms.not_found")
     } else {
       s = data
     }

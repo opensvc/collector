@@ -698,5 +698,8 @@
     "register_text" : "Create a new user",
     "lost_title" : "Lost Password",
     "lost_text" : "Send a new password by email"
+  },
+  "forms": {
+    "not_found": "not found"
   }
 }
