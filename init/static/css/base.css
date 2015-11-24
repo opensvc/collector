@@ -3095,6 +3095,10 @@ textarea.link_ta_sub {
 	background-color: rgba(0,0,0,0.1);
 }
 
+.button_div_active {
+	background-color: rgba(0,0,0,0.1);
+}
+
 .del16_allow:before {
 	content: '\f146  ';
 	font-family: awesome;
@@ -3246,6 +3250,48 @@ div.containertrans {
 	background-color : #E0E1CD;
 	overflow: hidden;
 }
+
+.reports_section_sel {
+	width:100%;
+	/*max-height:100px;*/
+	position:fixed;
+	overflow: hidden;
+	background-color : #E0E1CD;
+	margin: 0px auto;
+	vertical-align:middle;
+	display: table-cell;
+}
+
+.report_button_div {
+	cursor: pointer;
+	vertical-align:middle;
+	display: table-cell;
+	height: 24px;
+	border-radius: 3px;
+	border-color: rgba(0,0,0,0);
+	border : 1px;
+	padding: 0.3em;
+	margin-right : 0.3em;
+	background-color: rgba(255,255,255,0.6);
+	font-weight: normal;
+}
+
+.report_button_div:hover {
+	background-color: rgba(255,255,255,1.0);
+	border-radius: 3px;
+	border-color: rgba(0,0,0,1.0);
+}
+
+.report_button_div:active {
+	background-color: rgba(255,255,255,1.0);
+	font-weight: bold;
+}
+
+.report_button_div_active {
+	background-color: rgba(255,255,255,1.0);
+	font-weight: bold;
+}
+
 
 .reports_table {
 	width : 100%;

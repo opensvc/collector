@@ -3,6 +3,8 @@ function reports(divid, options) {
   o.divid = divid
   o.div = $("#"+divid)
   
+  o.current_reports = 0;
+
   o.init = function init(options) {
     return reports_init(o, options)
   }
@@ -21,8 +23,13 @@ function reports(divid, options) {
     return reports_create_sections_chart(o, section, count);
   }
 
-  o.refresh = function refresh() {
-    return reports_refresh(o);
+  o.select_report = function select_report(report_id)
+  {
+    return reports_set_selected(o, report_id);
+  }
+
+  o.refresh = function refresh(event) {
+    return reports_refresh(o, event);
   }
   
   o.div.load("/init/static/views/reports.html", function() {
@@ -45,19 +52,45 @@ function reports_init(o, options)
     var url = osvc_create_link("reports", {"report_id" : o.reports_select.val() });
   });
 
+  /*
   o.reports_select.bind("change", function()
   {
     o.refresh();
-  });
+  });*/
 
   // Init Select Report
   services_osvcgetrest("R_GET_REPORTS", "", {"meta": "false", "limit": "0"}, function(jd) {
       var data = jd.data;
+      var max_fastacess=5;
+      //o.reports_select.append("");
       for (var i=0;i<data.length;i++)
       {
+        /*
         var option = $('<option />');
         option.attr('value', data[i].id).text(data[i].report_name);
         o.reports_select.append(option);
+        */
+        if (i<max_fastacess)
+        {
+          var faccess = "<span id='reports_fa_"+i+"' class='report_button_div' value='" + data[i].id + "'>" + data[i].report_name + "</span>";
+          //if (i==0)
+          o.reports_select.append(faccess);
+          $("#reports_fa_"+i).bind("click", function()
+              {
+                o.refresh(this);
+              });
+        }
+        else
+        {
+          if (i==max_fastacess) o.reports_select.append("<div style='vertical-align:middle'>Others<select id='reports_selector' type='text' class='ui-combobox-content ui-widget ui-corner-left ui-autocomplete-input' style='background-color:white;margin-left:10px'></select></div>");
+          var option = $('<option />');
+          option.attr('value', data[i].id).text(data[i].report_name);
+          $("#reports_selector").append(option);
+          $("#reports_selector").bind("change", function()
+          {
+            o.refresh(data[i].id);
+          });
+        }
       }
       if (data.length >0) 
       {
@@ -68,16 +101,28 @@ function reports_init(o, options)
           $(document).find("#link").removeAttr("style");
         }
 
-        reports_load_selected(o,o.reports_select.val());
+        o.reports_select.append("<hr>");
+        reports_load_selected(o,data[0].id);
+        // Visualy select reports
+        o.select_report(data[0].id);
       }
   });
 }
 
-function reports_refresh(o)
+function reports_set_selected(o, report_id)
+{
+  o.reports_select.find("[value="+o.current_reports+"]").removeClass("report_button_div_active");
+  o.current_reports = report_id;
+  o.reports_select.find("[value="+o.current_reports+"]").addClass("report_button_div_active");
+}
+
+function reports_refresh(o, event)
 {
   o.div_reports_data.empty();
+  var report_id = $(event).attr("value");
   // Reload data
-  reports_load_selected(o,o.reports_select.val());
+  reports_load_selected(o,report_id);
+  o.select_report(report_id);
 }
 
 function reports_load_selected(o, report_id)
@@ -122,11 +167,14 @@ function reports_load_metrics(o, metric, count)
 
       for (j=0;j<d.length;j++)
       {
-        var tr = "<tr><td>";
-        tr += d[j][objname[0]] +"</td>";
-        tr += "<td>"+ d[j][objname[1]];
-        tr += "</td></tr>";
-        $("#metrics_"+count).append(tr);
+        if (d[j][objname[1]] != null)
+        {
+          var tr = "<tr><td>";
+          tr += d[j][objname[0]] +"</td>";
+          tr += "<td>"+ d[j][objname[1]];
+          tr += "</td></tr>";
+          $("#metrics_"+count).append(tr);
+        }
       }
 
       $("#spinner_"+count).remove();
@@ -139,8 +187,8 @@ function reports_create_report(o, data)
   var global = 0;
 
 
-  var div = "<div id='report' class='reports_div'>";
-  div += "<div style='text-align:center'><h1>" + data.Title + "</h1></div>";
+  var div = "<div id='report'>";
+  div += "<div style='text-align:center'><span><h1 class='clickable link16'>" + data.Title + "</h1></span></div>";
   j=0;
   if (data.Sections[0].Charts !== undefined)
     for(j=0;j<data.Sections[0].Charts.length;j++)
@@ -161,7 +209,7 @@ function reports_create_report(o, data)
 
 function reports_create_sections_metric(o, section, count)
 {
-  var div = "<div style='float:left;margin:20px;width:28%' class='reports_section'>";
+  var div = "<div style='float:left;margin:20px;width:28%;min-width:200px;' class='reports_section'>";
 
   div += "<h3>" + section.Title ;
   if (section.Desc !== undefined && section.Desc != "")
