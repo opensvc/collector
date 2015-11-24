@@ -536,6 +536,7 @@ function table_action_menu(t, e){
   var am = $("<div id='am_"+t.id+"' class='white_float action_menu stackable'></div>")
   var pos = get_pos(e)
   t.div.append(am)
+  am.draggable()
   $("#am_"+t.id).css({"left": pos[0] + "px", "top": pos[1] + "px"})
 
   // format the data as menu
