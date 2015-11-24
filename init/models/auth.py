@@ -25,7 +25,7 @@ def svc_responsible(svcname):
     q &= db.apps.id == db.apps_responsibles.app_id
     db.apps_responsibles.group_id.belongs(user_group_ids())
     n = db(q).count()
-    if n != 1:
+    if n == 0:
         raise Exception("Not authorized: user is not responsible for service %s" % svcname)
 
 
