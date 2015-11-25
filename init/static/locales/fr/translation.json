@@ -684,6 +684,7 @@
     "lost_text" : "Envoyer un nouveau mot de passe par mèl"
   },
   "forms": {
-    "not_found": "non trouvé"
+    "not_found": "non trouvé",
+    "no_data": "Pas de données"
   }
 }

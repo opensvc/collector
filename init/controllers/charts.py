@@ -174,67 +174,6 @@ def metrics_editor():
     return dict(form=form)
 
 @auth.requires_login()
-def ajax_metric_test():
-    return format_metric(request.vars.metric_id)
-
-@auth.requires_login()
-def metric():
-    return dict(table=format_metric(request.vars.metric_id))
-
-def format_metric(metric_id):
-    q = db.metrics.id == metric_id
-    row = db(q).select().first()
-    if row is None:
-        return T("No metric request definition")
-    sql = replace_fset_sql(row.metric_sql)
-    if row.metric_col_instance_index is None or row.metric_col_value_index is None:
-        as_dict = True
-    else:
-        as_dict = False
-    try:
-        rows = dbro.executesql(sql, as_dict=as_dict)
-    except Exception as e:
-        return str(e)
-
-    link = DIV(
-             A(
-               IMG(_src=URL(r=request, c='static', f='images/link16.png')),
-               _onclick="""$(this).siblings().toggle()""",
-             ),
-             DIV(
-               "https://"+request.env.http_host+URL(r=request, f='metric', vars={'metric_id': metric_id}),
-               _style="display:none",
-             ),
-           )
-    return DIV(
-             link,
-             _format_metric(rows, row)
-           )
-
-def _format_metric(rows, m):
-    n = len(rows)
-    if n == 0:
-        return T("No data")
-
-    if n == 1 and type(rows[0]) == list:
-        if m.metric_col_value_index > len(rows[0])-1:
-            response. flash = T("metric column value index (%(idx)s) out of range: %(data)s", dict(idx=str(m.metric_col_value_index), data=str(rows[0])))
-        else:
-            return rows[0][m.metric_col_value_index]
-
-    if m.metric_col_instance_index is None or m.metric_col_value_index is None:
-        l = [TR(map(lambda x: TH(x), rows[0].keys()))]
-        for row in rows:
-            l.append(map(lambda x: TD(x), row.values()))
-        return TABLE(l)
-
-    l = [TR(TH(m.metric_col_instance_label), TH(T("Value")))]
-    for row in rows:
-        l.append(TR(TD(row[m.metric_col_instance_index]), TD(row[m.metric_col_value_index])))
-
-    return TABLE(l)
-
-@auth.requires_login()
 def ajax_metrics_admin_col_values():
     t = table_metrics('metrics', 'ajax_metrics_admin')
 
@@ -394,14 +333,6 @@ def charts_editor():
     return dict(form=form)
 
 @auth.requires_login()
-def ajax_chart_test():
-    return ajax_chart_plot(request.vars.chart_id)
-
-@auth.requires_login()
-def chart():
-    return dict(table=ajax_chart_plot(request.vars.chart_id))
-
-@auth.requires_login()
 def ajax_charts_admin_col_values():
     t = table_charts('charts', 'ajax_charts_admin')
 
@@ -440,115 +371,6 @@ def charts_admin():
 
 def charts_admin_load():
     return charts_admin()["table"]
-
-def get_chart(chart_id):
-    q = db.charts.id == chart_id
-    chart = db(q).select().first()
-    if chart is None:
-        return
-    try:
-        chart_yaml = yaml.load(chart.chart_yaml)
-    except Exception as e:
-        return
-    chart.chart_yaml = chart_yaml
-    return chart
-
-@auth.requires_login()
-def ajax_chart_plot(chart_id):
-    fset_id = user_fset_id()
-    uid = uuid.uuid1().hex
-    s = """charts_plot('%(url)s', '%(id)s');"""%dict(
-      id="c%s"%str(uid),
-      url=URL(r=request, c='charts', f='call/json/json_chart_data', args=[chart_id, fset_id]),
-    )
-
-    chart = get_chart(chart_id)
-    if chart is None:
-        return T("chart not found")
-
-    title = chart.chart_yaml.get('Title')
-    if title is None:
-        title = SPAN()
-    else:
-        title = DIV(H3(T(title)))
-
-    link = DIV(
-             A(
-               IMG(_src=URL(r=request, c='static', f='images/link16.png')),
-               _onclick="""$(this).siblings().toggle()""",
-             ),
-             DIV(
-               "https://"+request.env.http_host+URL(r=request, f='chart', vars={'chart_id': chart_id}),
-               _style="display:none",
-             ),
-           )
-
-    d = DIV(
-      link,
-      title,
-      DIV(
-        _id="c%s"%str(uid),
-        _style="width:600px",
-      ),
-      SCRIPT(s),
-      _class="chart",
-    )
-    return d
-
-@service.json
-def json_chart_data(chart_id, fset_id):
-    q = db.charts.id == int(chart_id)
-    chart = db(q).select().first()
-
-    if chart is None:
-        return
-
-    try:
-        chart_data = yaml.load(chart.chart_yaml)
-    except:
-        return
-
-    l = []
-    instances = []
-    options = {
-      'stack': False,
-    }
-    _options = chart_data.get('Options', {})
-    if _options is None:
-        _options = {}
-    options.update(_options)
-
-    for m in chart_data['Metrics']:
-        h = get_metric_series(m['metric_id'], fset_id)
-        for instance, series in h.items():
-            l.append(series)
-            i = {
-              'label': instance,
-              'fill': m.get('fill'),
-              'shadow': m.get('shadow'),
-              'unit': m.get('unit', ''),
-            }
-            instances.append(i)
-
-    return {'data': l, 'instances': instances, 'options': options}
-
-def get_metric_series(metric_id, fset_id):
-    q = db.metrics_log.metric_id == int(metric_id)
-    q &= db.metrics_log.fset_id == int(fset_id)
-    rows = db(q).select(db.metrics_log.date,
-                        db.metrics_log.value,
-                        db.metrics_log.instance)
-    h = {}
-    for row in rows:
-        if row.instance is None or len(row.instance) == 0:
-            instance = "empty"
-        else:
-            instance = row.instance
-        if instance not in h:
-            h[instance] = [[row.date, row.value]]
-        else:
-            h[instance].append([row.date, row.value])
-    return h
 
 
 ###############################################################################
@@ -664,14 +486,6 @@ def reports_editor():
     return dict(form=form)
 
 @auth.requires_login()
-def report():
-    return dict(table=ajax_report(request.vars.report_id))
-
-@auth.requires_login()
-def ajax_report_test():
-    return ajax_report(request.vars.report_id)
-
-@auth.requires_login()
 def ajax_reports_admin_col_values():
     t = table_reports_admin('reports', 'ajax_reports_admin')
 
@@ -711,173 +525,16 @@ def reports_admin():
 def reports_admin_load():
     return reports_admin()["table"]
 
-@auth.requires_login()
-def ajax_report(report_id):
-    q = db.reports.id == report_id
-    report = db(q).select().first()
-    if report is None:
-        return T("Report not found")
-
-    try:
-        report.report_yaml = yaml.load(report.report_yaml)
-    except Exception as e:
-        return T('Report definition error')+": "+str(e)
-
-    return do_report(report_id, report.report_yaml)
-
-def do_report(report_id, report_yaml):
-    link = DIV(
-             A(
-               IMG(_src=URL(r=request, c='static', f='images/link16.png')),
-               _onclick="""$(this).siblings().toggle()""",
-             ),
-             DIV(
-               "https://"+request.env.http_host+URL(r=request, f='report', vars={'report_id': report_id}),
-               _style="display:none",
-             ),
-           )
-
-    d = [link, H1(report_yaml.get('Title', ''))]
-    for section in report_yaml.get('Sections', []):
-        s = do_section(section)
-        _d = DIV(
-          s,
-          _class="container",
-        )
-        d.append(_d)
-    return DIV(d)
-
-def do_section(section_yaml):
-    d = [H2(section_yaml.get('Title', ''))]
-    d.append(I(section_yaml.get('Desc', '')))
-    d.append(DIV(_class="spacer", _style="height:100px"))
-    for chart in section_yaml.get('Charts', []):
-        chart_id = chart.get('chart_id')
-        if chart_id is None:
-            continue
-        c = ajax_chart_plot(chart_id)
-        _d = DIV(
-           c,
-           _class="float",
-           #_style="width:400px;height:300px",
-        )
-        d.append(H3(chart.get('Title', '')))
-        d.append(_d)
-
-    for metric in section_yaml.get('Metrics', []):
-        metric_id = metric.get('metric_id')
-        if metric_id is None:
-            continue
-        d.append(H3(metric.get('Title', '')))
-        d.append(I(metric.get('Desc', '')))
-        d.append(format_metric(metric_id))
-
-    d.append(DIV(_class="spacer", _style="height:100px"))
-    return SPAN(d)
-
-
-###############################################################################
-#
-# Reports
-#
-###############################################################################
-
-class table_reports(HtmlTable):
-    def __init__(self, id=None, func=None, innerhtml=None):
-        if id is None and 'tableid' in request.vars:
-            id = request.vars.tableid
-        HtmlTable.__init__(self, id, func, innerhtml)
-        self.dbfilterable = True
-        self.refreshable = False
-        self.pageable = False
-        self.bookmarkable = False
-        self.commonalityable = False
-        self.exportable = False
-        self.linkable = False
-        self.bookmarkable = False
-        self.columnable = False
-        self.object_list = []
-        self.nodatabanner = False
-        self.additional_tools.append('report')
-        self.dataable = True
-
-    def format_report_option(self, row):
-        if row is None:
-            name = T("None")
-            report_id = 0
-        else:
-            name = row.report_name
-            report_id = row.id
-        return OPTION(
-                 name,
-                 _value=report_id,
-               )
-
-    def get_current_report(self):
-        q = db.report_user.user_id == auth.user_id
-        row = db(q).select().first()
-        if row is None:
-            active_report_id = 0
-        else:
-            active_report_id = row.report_id
-        return active_report_id
-
-    def report_selector(self):
-        #active_report_id = get_current_report()
-        active_report_id = None
-
-        # create the report select()
-        q = db.reports.id > 0
-        rows = db(q).select(db.reports.id,
-                            db.reports.report_name)
-        av = [self.format_report_option(None)]
-        for row in rows:
-            av.append(self.format_report_option(row))
-        content = SELECT(
-                    av,
-                    value=active_report_id,
-                    _onchange="""
-                       sync_ajax('%(url)s?report_id='+this.options[this.selectedIndex].value, [], '%(div)s', function(){});
-                    """%dict(url=URL(
-                                   r=request, c='charts',
-                                   f='ajax_report_test',
-                                ),
-                              div="reports_div",
-                             ),
-                  )
-
-        return SPAN(
-                 T('Report'),
-                 content,
-                 _class='floatw',
-               )
-
-    def report(self):
-        return self.report_selector()
-
-@auth.requires_login()
-def ajax_reports():
-    t = table_reports('reports', 'ajax_reports')
-    if len(request.args) == 1 and request.args[0] == 'data':
-        t.object_list = []
-        return t.table_lines_data(-1, html=False)
-    d = DIV(
-     DIV(
-       t.html(),
-       _id="reports",
-     ),
-     DIV(
-       _id="reports_div",
-     )
-    )
-    return d
 
 @auth.requires_login()
 def reports():
-    d = DIV(DIV(
-       _id="reports_div",
-     ),SCRIPT( """reports('reports_div');"""))
-    return dict(table=d)#dict(table=ajax_reports())
+    d = DIV(
+          DIV(
+           _id="reports_div",
+          ),
+          SCRIPT( """reports('reports_div');""")
+        )
+    return dict(table=d)
 
 def reports_load():
     return reports()["table"]

@@ -705,6 +705,7 @@
     "lost_text" : "Send a new password by email"
   },
   "forms": {
+    "no_data": "No data",
     "not_found": "not found"
   }
 }

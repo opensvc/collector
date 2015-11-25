@@ -75,7 +75,9 @@ var services_access_uri = {
     "R_GET_REPORTS" : "rest/api/reports",
     "R_GET_REPORT" : "rest/api/reports/%1",
     "R_GET_REPORT_METRIC" : "rest/api/reports/metrics/%1",
+    "R_GET_REPORT_METRIC_SAMPLES" : "rest/api/reports/metrics/%1/samples",
     "R_GET_REPORT_CHART" : "rest/api/reports/charts/%1",
+    "R_GET_REPORT_CHART_SAMPLES" : "rest/api/reports/charts/%1/samples",
     "R_LINKS" : "rest/api/links",
     "R_LINK" : "rest/api/links/%1"
 }
@@ -360,16 +362,3 @@ function services_get_url()
     return window.location.protocol +"//" + window.location.host;
 }
 
-function services_get_direct_json_link(service, uri)
-{
-    url = services_getaccessurl(service)
-    if (is_blank(url)) {
-        console.log(service + " uri undefined")
-        return
-    }
-    for(i=0; i<uri.length; i++) {
-        url = url.replace("%"+(i+1), uri[i])
-    }
-
-    return url;
-}

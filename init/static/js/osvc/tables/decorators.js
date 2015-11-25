@@ -2128,7 +2128,7 @@ function cell_decorator_reports_links(e) {
   var d = "<a class='clickable edit16' target='_blank' href="+url+"></a>"
   $(e).append(d)
 
-  // test chart
+  // test report
   var d = $("<span></span>")
   $(d).addClass("clickable action16")
   $(d).click(function(){
@@ -2136,9 +2136,9 @@ function cell_decorator_reports_links(e) {
     var span_id = $(e).parent(".tl").attr("spansum")
     var id = table_id + "_x_" + span_id
     var report_id = $(this).parents(".tl").first().children("[name$=_c_id]").attr("v")
-    $(e).parent(".tl").after("<tr class='extraline stackable'><td colspan='4'><table><tr><td id='"+id+"'></td></table></td></tr>");
-    var options = {"report_id" : report_id};
-    reports_single(id,options);
+    $(e).parent(".tl").after("<tr class='extraline stackable'><td colspan='14'><table><tr><td id='"+id+"'></td></table></td></tr>")
+    var options = {"report_id" : report_id}
+    report(id, options)
   })
   $(e).append(d)
 }
@@ -2163,8 +2163,9 @@ function cell_decorator_charts_links(e) {
     var span_id = $(e).parent(".tl").attr("spansum")
     var id = table_id + "_x_" + span_id
     var chart_id = $(this).parents(".tl").first().children("[name$=_c_id]").attr("v")
-    url = services_get_url() + "/init/charts/ajax_chart_test?chart_id="+chart_id
-    toggle_extra(url, id, e, 0)
+    $(e).parent(".tl").after("<tr class='extraline stackable'><td colspan='14' id='"+id+"'></td></tr>")
+    var options = {"chart_id" : chart_id}
+    chart(id, options)
   })
   $(e).append(d)
 }
@@ -2189,8 +2190,9 @@ function cell_decorator_metrics_links(e) {
     var span_id = $(e).parent(".tl").attr("spansum")
     var id = table_id + "_x_" + span_id
     var metric_id = $(this).parents(".tl").first().children("[name$=_c_id]").attr("v")
-    url = services_get_url() + "/init/charts/ajax_metric_test?metric_id="+metric_id
-    toggle_extra(url, id, e, 0)
+    $(e).parent(".tl").after("<tr class='extraline stackable'><td colspan='14' id="+id+"></td></tr>")
+    var options = {"metric_id" : metric_id}
+    metric(id, options)
   })
   $(e).append(d)
 }
