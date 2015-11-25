@@ -919,20 +919,26 @@ function table_refresh(t) {
 }
 
 function table_insert(t, data) {
+    var params = {}
     for (i=0; i<data.length; i++) {
         try {
             key=data[i]["key"]
             val=data[i]["val"]
             op=data[i]["op"]
-            query=query+"&"+encodeURIComponent(t.id+"_f_"+key)+op+encodeURIComponent(val)
+            params[t.id+"_f_"+key] = op+val
         } catch(e) {
             return
         }
     }
+    if (t.dataable) {
+      var ajax_interface = "data"
+    } else {
+      var ajax_interface = "line"
+    }
     $.ajax({
          type: "POST",
-         url: t.ajax_url+"/line",
-         data: query,
+         url: t.ajax_url+"/"+ajax_interface,
+         data: params,
          context: document.body,
          beforeSend: function(req){
              t.set_refresh_spin()
@@ -2705,7 +2711,7 @@ function table_get_column_filters(t, callback) {
 }
 
 function table_add_ws_handler(t) {
-  if (!t.options.events) {
+  if (!t.options.events || (t.options.events.length == 0)) {
     return
   }
   console.log("register table", t.id, t.options.events.join(","), "event handler")
