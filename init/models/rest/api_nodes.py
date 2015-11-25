@@ -570,6 +570,15 @@ class rest_delete_node(rest_delete_handler):
         _websocket_send(event_msg(l))
         table_modified("patches")
 
+        q = db.node_tags.nodename == row.nodename
+        db(q).delete()
+        l = {
+          'event': 'node_tags_change',
+          'data': {'a': 'b'},
+        }
+        _websocket_send(event_msg(l))
+        table_modified("node_tags")
+
         return dict(info="node %s deleted" % row.nodename)
 
 
