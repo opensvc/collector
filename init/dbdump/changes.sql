@@ -4828,3 +4828,5 @@ alter table resmon add column res_disable varchar(1);
 
 alter table resmon add column res_optional varchar(1);
 
+alter table metrics_log add column id int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY;
+
