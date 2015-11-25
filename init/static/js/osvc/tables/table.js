@@ -2708,13 +2708,10 @@ function table_add_ws_handler(t) {
   if (!t.options.events) {
     return
   }
-  for (var i=0; i<t.options.events.length; i++) {
-    console.log("register table", t.id, t.options.events[i], "event handler")
-    var ev = t.options.events[i]
-    wsh[t.id] = function(data) {
-      if (data["event"] == ev) {
-        t.refresh()
-      }
+  console.log("register table", t.id, t.options.events.join(","), "event handler")
+  wsh[t.id] = function(data) {
+    if (t.options.events.indexOf(data["event"]) >= 0) {
+      t.refresh()
     }
   }
 }
