@@ -155,7 +155,10 @@ Available properties are: ``%(props)s``:green.
             if type(entry) != dict:
                 rdata["error"].append("skip '%s': not a dict" % str(entry))
                 continue
-            r = rest_handler.handle(self, *args, **entry)
+            try:
+                r = rest_handler.handle(self, *args, **entry)
+            except Exception as e:
+                r = dict(error=str(e))
             for key in ("info", "error", "data"):
                if key in r:
                    d = r[key]
