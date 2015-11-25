@@ -2136,7 +2136,7 @@ function cell_decorator_reports_links(e) {
     var span_id = $(e).parent(".tl").attr("spansum")
     var id = table_id + "_x_" + span_id
     var report_id = $(this).parents(".tl").first().children("[name$=_c_id]").attr("v")
-    $(e).parent(".tl").after("<tr><td id='"+id+"' colspan='4'></td></tr>");
+    $(e).parent(".tl").after("<tr class='extraline stackable'><td colspan='4'><table><tr><td id='"+id+"'></td></table></td></tr>");
     var options = {"report_id" : report_id};
     reports_single(id,options);
   })
