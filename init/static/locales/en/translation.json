@@ -13,6 +13,7 @@
     "warn_remove": "Warning, this object might be referenced by other objects. Do you really want to delete this compliance object ?"
   },
   "action_menu": {
+    "tag_attach": "Attach tags",
     "ack": "Acknowledge error",
     "ack_comment": "Acknowledge comment",
     "no_action": "No action available in this context.",

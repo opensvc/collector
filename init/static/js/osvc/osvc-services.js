@@ -55,6 +55,8 @@ var services_access_uri = {
     "R_TAGS" : "rest/api/tags",
     "R_TAG_NODE" : "rest/api/tags/%1/nodes/%2",
     "R_TAG_SERVICE" : "rest/api/tags/%1/services/%2",
+    "R_TAGS_NODES" : "rest/api/tags/nodes",
+    "R_TAGS_SERVICES" : "rest/api/tags/services",
     "R_USERS_SELF" : "rest/api/users/self",
     "R_USERS_SELF_FILTERSET" : "rest/api/users/self/filterset",
     "R_USERS_SELF_FILTERSET_ONE" : "rest/api/users/self/filterset/%1",
@@ -96,6 +98,12 @@ function services_osvcputrest(service, uri, params, data, callback, error_callba
     if (is_blank(url)) {
         console.log(service + " uri undefined")
         return
+    }
+    if (!uri) {
+        uri = []
+    }
+    if (!params) {
+        params = {}
     }
     for(var i=0; i<uri.length; i++) {
         url = url.replace("%"+(i+1), uri[i])
@@ -139,6 +147,12 @@ function services_osvcpostrest(service, uri, params, data, callback, error_callb
         console.log(service + " uri undefined")
         return
     }
+    if (!uri) {
+        uri = []
+    }
+    if (!params) {
+        params = {}
+    }
     for(var i=0; i<uri.length; i++) {
         url = url.replace("%"+(i+1), uri[i])
     }
@@ -181,6 +195,12 @@ function services_osvcgetrest(service, uri, params, callback, error_callback, as
         console.log(service + " uri undefined")
         return
     }
+    if (!uri) {
+        uri = []
+    }
+    if (!params) {
+        params = {}
+    }
     for(i=0; i<uri.length; i++) {
         url = url.replace("%"+(i+1), uri[i])
     }
@@ -207,6 +227,12 @@ function services_osvcdeleterest(service, uri, params, data, callback, error_cal
     {
         console.log(service + " uri undefined")
         return
+    }
+    if (!uri) {
+        uri = []
+    }
+    if (!params) {
+        params = {}
     }
     for(i=0; i<uri.length; i++) {
         url = url.replace("%"+(i+1), uri[i])
