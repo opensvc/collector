@@ -54,4 +54,17 @@ function generic_selector(divid, options) {
   return o
 }
 
-
+function generic_selector_tags(id) {
+  return generic_selector(id, {
+    "url_path": "R_TAGS",
+    "url_params": {
+      "orderby": "tag_name",
+      "limit": "0",
+      "props": "id,tag_name",
+      "meta": "0"
+    },
+    "object_class": "tag16",
+    "object_id": "id",
+    "object_name": "tag_name"
+  })
+}
