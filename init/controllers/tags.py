@@ -37,6 +37,7 @@ class table_tags(HtmlTable):
         self.ajax_col_values = 'ajax_tags_col_values'
         self.span = ["id"]
         self.keys = ["id"]
+        self.events = ["tags_change"]
 
         ug = user_groups()
         if 'Manager' in ug or 'TagManager' in ug:
@@ -239,6 +240,7 @@ class table_tagattach(HtmlTable):
         self.force_cols = ["ckid"]
         self.span = ["tag_id"]
         self.keys = ["tag_id", "nodename", "svcname"]
+        self.events = ["tags", "node_tags_change", "svc_tags_change"]
         if 'Manager' in ug or 'TagManager' in ug:
             self += HtmlTableMenu('Tags', 'tag16', [
               't_tag_attach',
