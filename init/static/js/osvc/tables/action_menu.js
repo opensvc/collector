@@ -135,6 +135,12 @@ function table_action_menu_init_data(t) {
               "class": "icon del16",
               "fn": "data_action_delete_svcs",
               "min": 1
+            },
+            {
+              "title": "action_menu.tag_attach",
+              "class": "icon tag16",
+              "fn": "data_action_services_tags_attach",
+              "min": 1
             }
           ]
         },
@@ -1472,6 +1478,52 @@ function data_action_ack_actions(t, e) {
 }
 
 //
+// data action: attach tags to services
+//
+function data_action_services_tags_attach(t, e) {
+  var entry = $(e.target)
+  var cache_id = entry.attr("cache_id")
+  var data = t.action_menu_data_cache[cache_id]
+  var post_data = new Array()
+  table_action_menu_focus_on_leaf(t, entry)
+
+  // form
+  var form = $("<form></form>")
+  form.css({"width": entry.width(), "padding": "0.3em"})
+  form.insertAfter(entry)
+
+  // tag selector
+  var selector = $("<div></div>")
+  selector.uniqueId()
+  form.append(selector)
+  var tag_selector = generic_selector_tags(selector.attr("id"))
+  var yes_no = table_action_menu_yes_no(t, 'action_menu.submit', function(e){
+    var selected = tag_selector.get_selected()
+    for (i=0;i<data.length;i++) {
+      for (j=0;j<selected.length;j++) {
+        post_data.push({
+          'tag_id': selected[j],
+          'svcname': data[i]["svcname"]
+        })
+      }
+    }
+    services_osvcpostrest("R_TAGS_SERVICES", "", "", post_data, function(jd) {
+      if (jd.error && (jd.error.length > 0)) {
+        form.html(services_error_fmt(jd))
+      }
+      if (jd.info && (jd.info.length > 0)) {
+        form.html(services_info_fmt(jd))
+      }
+    },
+    function(xhr, stat, error) {
+      form.html(services_ajax_error_fmt(xhr, stat, error))
+    })
+  })
+  form.append(yes_no)
+}
+
+
+//
 // data action: attach tags to nodes
 //
 function data_action_nodes_tags_attach(t, e) {
@@ -1490,19 +1542,7 @@ function data_action_nodes_tags_attach(t, e) {
   var selector = $("<div></div>")
   selector.uniqueId()
   form.append(selector)
-  var tag_selector = generic_selector(selector.attr("id"), {
-    "url_path": "R_TAGS",
-    "url_params": {
-      "orderby": "tag_name",
-      "limit": "0",
-      "props": "id,tag_name",
-      "meta": "0"
-    },
-    "object_class": "tag16",
-    "object_id": "id",
-    "object_name": "tag_name"
-  })
-
+  var tag_selector = generic_selector_tags(selector.attr("id"))
   var yes_no = table_action_menu_yes_no(t, 'action_menu.submit', function(e){
     var selected = tag_selector.get_selected()
     for (i=0;i<data.length;i++) {
