@@ -10,10 +10,12 @@ function table_action_menu_init_data(t) {
     "module": "td[cell=1][name$=_c_run_module]",
     "vmname": "td[cell=1][name$=_c_vmname]",
     "action": "td[cell=1][name$=_c_action]",
-    "id": "td[cell=1][name$=_c_id]"
+    "id": "td[cell=1][name$=_c_id]",
+    "tag_id": "td[cell=1][name$=_c_tag_id]"
   }
 
   t.action_menu_data = [
+    // section: tools
     {
       "title": "action_menu.tools",
       "class": "spark16",
@@ -89,6 +91,7 @@ function table_action_menu_init_data(t) {
         }
       ]
     },
+    // section: data actions
     {
       "title": "action_menu.data_actions",
       "class": "hd16",
@@ -121,6 +124,22 @@ function table_action_menu_init_data(t) {
               "privileges": ["Manager", "NodeManager"],
               "min": 1
             }
+          ]
+        },
+        {
+          "selector": ["clicked", "checked", "all"],
+          "foldable": true,
+          'title': 'action_menu.on_nodes_tags',
+          "cols": ["nodename", "tag_id"],
+          "condition": "nodename+tag_id",
+          "children": [
+            {
+              "title": "action_menu.nodes_tags_detach",
+              "class": "icon del16",
+              "fn": "data_action_nodes_tags_detach",
+              "privileges": ["Manager", "NodeManager"],
+              "min": 1
+            },
           ]
         },
         {
@@ -173,9 +192,25 @@ function table_action_menu_init_data(t) {
               "min": 1
             }
           ]
-        }
+        },
+        {
+          "selector": ["clicked", "checked", "all"],
+          "foldable": true,
+          'title': 'action_menu.on_services_tags',
+          "cols": ["svcname", "tag_id"],
+          "condition": "svcname+tag_id",
+          "children": [
+            {
+              "title": "action_menu.services_tags_detach",
+              "class": "icon del16",
+              "fn": "data_action_services_tags_detach",
+              "min": 1
+            },
+          ]
+        },
       ]
     },
+    // section: agent actions
     {
       "title": "action_menu.agent_actions",
       "class": "action16",
@@ -629,6 +664,11 @@ function table_action_menu_condition_filter(t, condition, data) {
       var violation = false
       for (var k=0; k<cond[j].length; k++) {
         if (!(cond[j][k] in data[i])) {
+          violation = true
+          break
+        }
+        var val = data[i][cond[j][k]]
+        if ((typeof val === "undefined") || (val=="") || (val == "empty")) {
           violation = true
           break
         }
@@ -1568,6 +1608,64 @@ function data_action_nodes_tags_attach(t, e) {
   form.append(yes_no)
 }
 
+//
+// data action: detach nodes tags
+//
+function data_action_nodes_tags_detach(t, e) {
+  var entry = $(e.target)
+  var cache_id = entry.attr("cache_id")
+  var data = t.action_menu_data_cache[cache_id]
+  var del_data = new Array()
+  for (i=0;i<data.length;i++) {
+    del_data.push({
+      'tag_id': data[i]['tag_id'],
+      'nodename': data[i]['nodename']
+    })
+  }
+  services_osvcdeleterest("R_TAGS_NODES", "", "", del_data, function(jd) {
+    if (jd.error && (jd.error.length > 0)) {
+      $(".flash").show("blind").html(services_error_fmt(jd))
+    }
+    if (jd.info && (jd.info.length > 0)) {
+      $(".flash").show("blind").html(services_info_fmt(jd))
+    }
+  },
+  function(xhr, stat, error) {
+    $(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
+  })
+}
+
+//
+// data action: detach services tags
+//
+function data_action_services_tags_detach(t, e) {
+  var entry = $(e.target)
+  var cache_id = entry.attr("cache_id")
+  var data = t.action_menu_data_cache[cache_id]
+  var del_data = new Array()
+  for (i=0;i<data.length;i++) {
+    del_data.push({
+      'tag_id': data[i]['tag_id'],
+      'svcname': data[i]['svcname']
+    })
+  }
+  services_osvcdeleterest("R_TAGS_SERVICES", "", "", del_data, function(jd) {
+    if (jd.error && (jd.error.length > 0)) {
+      $(".flash").show("blind").html(services_error_fmt(jd))
+    }
+    if (jd.info && (jd.info.length > 0)) {
+      $(".flash").show("blind").html(services_info_fmt(jd))
+    }
+  },
+  function(xhr, stat, error) {
+    $(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
+  })
+}
+
+
+//
+// agent actions
+//
 
 //
 // agent action: provisioning

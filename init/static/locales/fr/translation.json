@@ -13,6 +13,8 @@
     "warn_remove": "Attention, cet objet peut être référencé par d'autres objets. Voulez-vous vraiment le supprimer ?"
   },
   "action_menu": {
+    "nodes_tags_detach": "Detacher les tags des noeuds",
+    "services_tags_detach": "Detacher les tags des services",
     "tag_attach": "Attacher des tags",
     "ack": "Acquitter des erreurs",
     "ack_comment": "Commentaire d'acquittement",
@@ -25,7 +27,9 @@
     "tools": "Analyse des données",
     "data_actions": "Actions sur les données",
     "agent_actions": "Actions sur les agents",
-    "on_service_actions": "Sur les actions de service",
+    "on_nodes_tags": "Sur les tags des noeuds",
+    "on_services_tags": "Sur les tags des services",
+    "on_service_actions": "Sur les actions des services",
     "on_modules": "Sur les modules",
     "on_resources": "Sur les ressources",
     "on_services": "Sur les services",

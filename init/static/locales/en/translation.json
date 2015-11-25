@@ -13,6 +13,8 @@
     "warn_remove": "Warning, this object might be referenced by other objects. Do you really want to delete this compliance object ?"
   },
   "action_menu": {
+    "nodes_tags_detach": "Detach tags from nodes",
+    "services_tags_detach": "Detach tags from services",
     "tag_attach": "Attach tags",
     "ack": "Acknowledge error",
     "ack_comment": "Acknowledge comment",
@@ -25,7 +27,9 @@
     "tools": "Data analysis",
     "data_actions": "Data actions",
     "agent_actions": "Agent actions",
-    "on_service_actions": "On service actions",
+    "on_nodes_tags": "On nodes tags",
+    "on_services_tags": "On services tags",
+    "on_service_actions": "On services actions",
     "on_modules": "On modules",
     "on_resources": "On resources",
     "on_services": "On services",
