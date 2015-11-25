@@ -2,7 +2,7 @@ function reports_single(divid,options)
 {
     if (options !== undefined)
     {
-      if (options.report_id !== undefined && (options.metric_id === undefined && options.chart_id === undefined))
+      if (options.report_id !== undefined && (options.metric_id == undefined && options.chart_id == undefined))
         {
           o = reports_init(divid, options , function ()
           {
@@ -190,6 +190,7 @@ function reports_load_selected_sub(o, options)
             o.div_reports_data.append(div);
             o.div_reports_data.find(".reports_section").removeAttr("style");
             reports_load_metrics(o,data.Sections[cs].Metrics[i],0,0);
+            break;
           }
         }
         else if (data.Sections[cs].Charts !== undefined)
@@ -204,22 +205,11 @@ function reports_load_selected_sub(o, options)
             div.append(met_div);
             o.div_reports_data.append(div);
             reports_load_charts(o,data.Sections[cs].Charts[i],0,0);
+            break;
           }
         }
     }
     });
-    /*
-    if (options.metric_id != undefined)
-    {
-      
-      var div = $("<div></div>");
-      var sect_div = $("<div id='section_0' style='clear:both'></div>");
-      div.append(sect_div);
-      var met_div=o.create_sections_metric(sample, 0);
-      div.append(met_div);
-      div_reports_data.append(div);
-      reports_load_metrics(sample,0,0);
-    }*/
 }
 
 function reports_load_charts(o, chart, count, sectioncount)
