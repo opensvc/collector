@@ -31,8 +31,6 @@ def lib_tag_detach_node(tagid, nodename):
     return dict(info="tag detached")
 
 def lib_tag_detach_service(tagid, svcname):
-    if not svcname or len(svcname) == 0:
-        raise Exception("invalid svcname: '%s'" % str(svcname))
     svc_responsible(svcname)
     tag_name = get_tag_name(tagid)
     q = db.svc_tags.tag_id == tagid
@@ -66,7 +64,7 @@ def lib_tag_attach_node(tagid, nodename):
     q &= db.node_tags.nodename == nodename
     q &= _where(None, 'node_tags', domain_perms(), 'nodename')
     if db(q).count() == 1:
-        return dict(info="tag already attached")
+        return dict(info="tag '%s' already attached to node '%s'" % (tag_name, nodename))
     db.node_tags.insert(tag_id=tagid, nodename=nodename)
     table_modified("node_tags")
     _log("node.tag",
@@ -86,17 +84,19 @@ def lib_tag_attach_node(tagid, nodename):
       },
     }
     _websocket_send(event_msg(l))
-    return dict(info="tag attached")
+    return dict(info="tag '%s' attached to node '%s'" % (tag_name, nodename))
 
 
 def lib_tag_attach_service(tagid, svcname):
+    if not svcname or len(svcname) == 0:
+        raise Exception("invalid svcname: '%s'" % str(svcname))
     svc_responsible(svcname)
     tag_name = get_tag_name(tagid)
     q = db.svc_tags.tag_id == tagid
     q &= db.svc_tags.svcname == svcname
     q &= _where(None, 'svc_tags', domain_perms(), 'svcname')
     if db(q).count() == 1:
-        return dict(info="tag already attached")
+        return dict(info="tag '%s' already attached to service '%s'" % (tag_name, nodename))
     db.svc_tags.insert(tag_id=tagid, svcname=svcname)
     table_modified("svc_tags")
     _log("service.tag",
@@ -116,7 +116,7 @@ def lib_tag_attach_service(tagid, svcname):
       },
     }
     _websocket_send(event_msg(l))
-    return dict(info="tag attached")
+    return dict(info="tag '%s' attached to service '%s'" % (tag_name, svcname))
 
 
 
