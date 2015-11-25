@@ -190,7 +190,7 @@ function reports_load_selected_sub(o, options)
             o.div_reports_data.append(div);
             o.div_reports_data.find(".reports_section").removeAttr("style");
             reports_load_metrics(o,data.Sections[cs].Metrics[i],0,0);
-            break;
+            return;
           }
         }
         else if (data.Sections[cs].Charts !== undefined)
@@ -205,7 +205,7 @@ function reports_load_selected_sub(o, options)
             div.append(met_div);
             o.div_reports_data.append(div);
             reports_load_charts(o,data.Sections[cs].Charts[i],0,0);
-            break;
+            return;
           }
         }
     }
@@ -418,7 +418,7 @@ function reports_charts_plot(url, id, section, count) {
             }
 
   });
-        $("#section_" + section).find("#spinner_"+count).remove();
+        $("#spinner_" + section + "_" + ""+count).remove();
         _jqplot_extra($('#'+id), p);
     });
 }
