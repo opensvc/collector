@@ -114,16 +114,6 @@ class rest_get_charts(rest_get_line_handler):
         )
 
     def handler(self, id, **vars):
-        #q = db.charts.id == id
-        #data = db(q).select(db.charts.ALL).first()
-        
-        #if (data == None):
-        #  return dict(info="No charts found.")
-        
-        #import yaml
-        #d = yaml.load(data.chart_yaml)
-
-        #return dict(data=d)
         fset_id = user_fset_id()
         q = db.charts.id == id
         chart = db(q).select().first()
