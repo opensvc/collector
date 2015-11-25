@@ -196,11 +196,13 @@ function check_toggle_vis(id, checked, col){
     } else {
       t.visible_columns = t.visible_columns.filter(function(x){if (x!=c){return true}})
     }
+    t.refresh_column_headers()
+    t.refresh_column_headers_slim()
+    t.refresh_column_filters()
     $("#table_"+id).find('.tl>[name='+col+']').each(function(){
          if (checked) {
              if ($(this).attr("cell") == '1') {
                _table_cell_decorator(id, this)
-               table_refresh_column_filter(t, c)
              }
              $(this).fadeIn('slow')
          } else {
@@ -617,6 +619,11 @@ function table_add_column_header_slim(t, tr, c) {
   tr.append(th)
 }
 
+function table_refresh_column_headers_slim(t) {
+  t.e_header_slim.remove()
+  t.add_column_headers_slim()
+}
+
 function table_add_column_headers_slim(t) {
   var tr = $("<tr class='theader_slim'></tr>")
   if (t.checkboxes) {
@@ -632,7 +639,7 @@ function table_add_column_headers_slim(t) {
   tr.bind("click", function() {
     t.e_header_filters.toggle()
   })
-  t.e_table.prepend(tr)
+  t.e_table.append(tr)
   t.e_header_slim = tr
 }
 
@@ -643,6 +650,14 @@ function table_add_column_header(t, tr, c) {
   th.attr("col", c)
   th.text(t.colprops[c].title)
   tr.append(th)
+}
+
+function table_refresh_column_headers(t) {
+  if (!t.options.headers) {
+    return
+  }
+  t.e_header.remove()
+  t.add_column_headers()
 }
 
 function table_add_column_headers(t) {
@@ -2900,6 +2915,12 @@ function table_init(opts) {
     },
     'reset_column_filters': function(){
       return table_reset_column_filters(this)
+    },
+    'refresh_column_headers_slim': function(){
+      return table_refresh_column_headers_slim(this)
+    },
+    'refresh_column_headers': function(){
+      return table_refresh_column_headers(this)
     },
     'add_column_header': function(e, c){
       return table_add_column_header(this, e, c)
