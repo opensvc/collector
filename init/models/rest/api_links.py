@@ -73,6 +73,7 @@ class rest_post_link(rest_post_handler):
 
         import hashlib
         hash = hashlib.md5()
+        hash.update(fn)
         hash.update(param)
 
         md5id =hash.hexdigest()
