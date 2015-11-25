@@ -1,10 +1,21 @@
 function reports_single(divid,options)
 {
-    o = reports_init(divid, options);
-
     if (options !== undefined)
     {
-      reports_load_selected(o,options.report_id);
+      if (options.report_id !== undefined && (options.metric_id == undefined && options.chart_id == undefined))
+        {
+          o = reports_init(divid, options , function ()
+          {
+            reports_load_selected(o,options.report_id);
+          });
+        }
+      else if (options.metric_id !== undefined || options.chart_id !== undefined)
+      {
+        o = reports_init(divid, options , function ()
+        {
+          reports_load_selected_sub(o,options);
+        });
+      }
       $(document).find("#link").removeAttr("style");
     }
 }
@@ -48,14 +59,14 @@ function reports_init(divid, options, callback) {
     return reports_create_report(o, data, report_id);
   }
 
-  o.create_sections_metric = function create_sections_metric(section, count)
+  o.create_sections_metric = function create_sections_metric(section, count, sectioncount)
   {
-    return reports_create_sections_metric(o, section, count);
+    return reports_create_sections_metric(o, section, count, sectioncount);
   }
 
-  o.create_sections_chart = function create_sections_chart(section, count)
+  o.create_sections_chart = function create_sections_chart(section, count, sectioncount)
   {
-    return reports_create_sections_chart(o, section, count);
+    return reports_create_sections_chart(o, section, count, sectioncount);
   }
 
   o.select_report = function select_report(report_id)
@@ -79,7 +90,7 @@ function reports_init(divid, options, callback) {
     o.div_reports_header = o.div.find("#reports_header");
     o.div_reports_data = o.div.find("#reports_data");
     o.ql_link = o.div.find("#reports_ql_link");
-    callback();
+    if (callback !== undefined) callback();
   })
   return o;
 }
@@ -137,6 +148,7 @@ function reports_load_selected(o, report_id)
   services_osvcgetrest("R_GET_REPORT", [report_id], {"meta": "false", "limit": "0"}, function(jd) {
       var data = jd.data;
       o.create_report(jd.data, report_id);
+      o.report_id = report_id; // Current selected report
       // Refresh data
       for(cs=0;cs<data.Sections.length;cs++)
       {
@@ -157,9 +169,57 @@ function reports_load_selected(o, report_id)
     });
 }
 
+function reports_load_selected_sub(o, options)
+{
+  services_osvcgetrest("R_GET_REPORT", [options.report_id], {"meta": "false", "limit": "0"}, function(jd) {
+    var data = jd.data;
+    
+    o.report_id = options.report_id; // Current selected report
+    for(cs=0;cs<data.Sections.length;cs++)
+    {
+      if (data.Sections[cs].Metrics !== undefined)
+        for(i=0;i<data.Sections[cs].Metrics.length;i++)
+        {
+          if (options.metric_id == data.Sections[cs].Metrics[i].metric_id)
+          {
+            var div = $("<div></div>");
+            var sect_div = $("<div id='section_0' style='clear:both;'></div>");
+            div.append(sect_div);
+            var met_div=o.create_sections_metric(data.Sections[cs].Metrics[i], 0,0);
+            div.append(met_div);
+            o.div_reports_data.append(div);
+            o.div_reports_data.find(".reports_section").removeAttr("style");
+            reports_load_metrics(o,data.Sections[cs].Metrics[i],0,0);
+            return;
+          }
+        }
+        else if (data.Sections[cs].Charts !== undefined)
+        for(i=0;i<data.Sections[cs].Charts.length;i++)
+        {
+          if (options.chart_id == data.Sections[cs].Charts[i].metric_id)
+          {
+            var div = $("<div></div>");
+            var sect_div = $("<div id='section_0' style='clear:both'></div>");
+            div.append(sect_div);
+            var met_div=o.create_sections_chart(data.Sections[cs].Charts[i], 0,0);
+            div.append(met_div);
+            o.div_reports_data.append(div);
+            reports_load_charts(o,data.Sections[cs].Charts[i],0,0);
+            return;
+          }
+        }
+    }
+    });
+}
+
 function reports_load_charts(o, chart, count, sectioncount)
 {
-  reports_charts_plot(services_get_direct_json_link("R_GET_REPORT_CHART",[chart.metric_id]), 'section '+ sectioncount+ 'charts_'+count, count);
+  reports_charts_plot(services_get_direct_json_link("R_GET_REPORT_CHART",[chart.metric_id]), "", sectioncount, count);
+  // Activate link
+  $("#link_"+ sectioncount + "_" + count).bind("click", function() {  
+    var url = osvc_create_link("reports_single", 
+      {"chart_id" : chart.metric_id, "report_id" : o.report_id});
+  });
 }
 
 function reports_load_metrics(o, metric, count, sectioncount)
@@ -174,7 +234,7 @@ function reports_load_metrics(o, metric, count, sectioncount)
         th += "<th>" + key + "</th>";
         objname.push(key); 
       }
-      $("#section_" + sectioncount).find("#metrics_"+count).append(th);
+      $("#metrics_"+ sectioncount + "_" +count).append(th);
 
       for (j=0;j<d.length;j++)
       {
@@ -184,11 +244,17 @@ function reports_load_metrics(o, metric, count, sectioncount)
           tr += d[j][objname[0]] +"</td>";
           tr += "<td>"+ d[j][objname[1]];
           tr += "</td></tr>";
-          $("#section_" + sectioncount).find("#metrics_"+count).append(tr);
+          $("#metrics_"+ sectioncount + "_" +count).append(tr);
         }
       }
 
-       $("#section_" + sectioncount).find("#spinner_"+count).remove();
+      $("#spinner_"+ sectioncount + "_" +count).remove();
+
+      // Activate link
+      $("#link_"+ sectioncount + "_" + count).bind("click", function() { 
+        var url = osvc_create_link("reports_single", 
+          {"metric_id" : metric.metric_id, "report_id" : o.report_id});
+      });
 
     });
 }
@@ -198,14 +264,15 @@ function reports_create_report(o, data, report_id)
   var div = $("<div></div>");
   var div_report = $("<div id='report'></div>");
   div.append(div_report);
-  div_report.append("<div style='text-align:center'><span><h1><span class='clickable link16'></span>" + data.Title + "</h1></span></div>");
+  div_report.append("<div style='text-align:center'><span><h1><span id='report_title' class='clickable link16'></span>" + data.Title + "</h1></span></div>");
 
   for(cs=0;cs<data.Sections.length;cs++)
   {
     div_report.append(o.create_section(data.Sections[cs],cs));
   } 
   o.div_reports_data.append(div);
-  o.div_reports_data.find(".link16").bind("click", function() { 
+
+  div_report.find("#report_title").bind("click", function() { 
     var url = osvc_create_link("reports_single", {"report_id" : report_id });
   });
 }
@@ -221,54 +288,56 @@ function reports_create_section(o, section, count)
   if (section.Charts !== undefined)
     for(j=0;j<section.Charts.length;j++)
     {
-      sect_div.append(o.create_sections_chart(section.Charts[j], j));
+      sect_div.append(o.create_sections_chart(section.Charts[j], j, count));
     }
 
   if (section.Metrics !== undefined)
     for(i=0;i<section.Metrics.length;i++)
     {
-      sect_div.append(o.create_sections_metric(section.Metrics[i], j++));
+      sect_div.append(o.create_sections_metric(section.Metrics[i], j++, count));
     }
 
   return div.html();
 }
 
-function reports_create_sections_metric(o, section, count)
+function reports_create_sections_metric(o, section, count, sectioncount)
 {
-  var div = "<div style='float:left;margin:20px;width:28%;min-width:200px;' class='reports_section'>";
+  var link_id = "link_"+ sectioncount + "_" + count;
+  var div = "<div style='float:left;width:28%;min-width:200px;' class='reports_section'>";
 
-  div += "<h3>" + section.Title ;
+  div += "<h3><span id='"+ link_id +"' class='clickable link16'></span>" + section.Title ;
   if (section.Desc !== undefined && section.Desc != "")
   {
     div += "<br>(" + section.Desc + ")";
   }
   div += "</h3><br>";
 
-  div += "<div id='spinner_" + count + "' class='spinner'></div>"
-  div += "<table id='metrics_" + count + "' class='reports_table'>";
+  div += "<div id='spinner_" + sectioncount + "_" + count + "' class='spinner'></div>"
+  div += "<table id='metrics_" + sectioncount + "_" + count + "' class='reports_table'>";
   div += "</table>";
   div += "</div>";
   return div;
 }
 
-function reports_create_sections_chart(o, section, count)
+function reports_create_sections_chart(o, section, count, sectioncount)
 {
-  var div = "<div style='width:94%;height:600px;max-height:600px;overflow:auto;' class='reports_section'>";
+  var link_id = "link_"+ sectioncount + "_" + count;
+  var div = "<div style='width:94%;height:600px;overflow-y:auto' class='reports_section'>";
 
-  div += "<h3>" + section.Title ;
+  div += "<h3><span id='"+ link_id +"' class='clickable link16'></span>" + section.Title ;
   if (section.Desc !== undefined && section.Desc != "")
   {
     div += "<br>(" + section.Desc + ")";
   }
   div += "</h3><br>";
 
-  div += "<div id='spinner_" + count + "' class='spinner'></div>"
-  div += "<div id='charts_" + count + "'></div>";
+  div += "<div id='spinner_" + sectioncount + "_" + count + "' class='spinner'></div>"
+  div += "<div id='charts_" + sectioncount + "_" + count + "'></div>";
   div += "</div>";
   return div;
 }
 
-function reports_charts_plot(url, id, count) {
+function reports_charts_plot(url, id, section, count) {
     $.jqplot.config.enablePlugins = true
     $.getJSON(url, function(dd) {
         data = dd['data']
@@ -282,13 +351,14 @@ function reports_charts_plot(url, id, count) {
                 renderer: $.jqplot.EnhancedLegendRenderer,
                 rendererOptions:{
                   numberRows: 0,
-                  numberColumns: 8//instances.length/7
+                  numberColumns: 10//instances.length/10
                 },
-                show: false,
+                show: true,
                 placement: "outside",
                 location: 's',
                 fontSize : '1',
-                rowSpacing : '0.1em'
+                rowSpacing : '0.05em',
+                yoffset: 40
             }
   } else {
       legend = {
@@ -316,6 +386,9 @@ function reports_charts_plot(url, id, count) {
                 data[i][j][1] /= d['div']
             }
         }
+
+  id = "charts_" + section + "_"+count;
+
   p = $.jqplot(id, data, {
       stackSeries: stackSeries,
             cursor:{zoom:true, showTooltip:false},
@@ -345,7 +418,7 @@ function reports_charts_plot(url, id, count) {
             }
 
   });
-        $("#spinner_"+count).remove();
+        $("#spinner_" + section + "_" + ""+count).remove();
         _jqplot_extra($('#'+id), p);
     });
 }
