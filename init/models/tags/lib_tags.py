@@ -31,6 +31,8 @@ def lib_tag_detach_node(tagid, nodename):
     return dict(info="tag detached")
 
 def lib_tag_detach_service(tagid, svcname):
+    if not svcname or len(svcname) == 0:
+        raise Exception("invalid svcname: '%s'" % str(svcname))
     svc_responsible(svcname)
     tag_name = get_tag_name(tagid)
     q = db.svc_tags.tag_id == tagid
@@ -56,6 +58,8 @@ def lib_tag_detach_service(tagid, svcname):
 
 
 def lib_tag_attach_node(tagid, nodename):
+    if not nodename or len(nodename) == 0:
+        raise Exception("invalid nodename: '%s'" % str(nodename))
     node_responsible(nodename)
     tag_name = get_tag_name(tagid)
     q = db.node_tags.tag_id == tagid
