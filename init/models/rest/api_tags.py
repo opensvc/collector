@@ -22,6 +22,7 @@ class rest_get_tags(rest_get_table_handler):
         self.set_q(q)
         return self.prepare_data(**vars)
 
+
 #
 class rest_get_node_tags(rest_get_table_handler):
     def __init__(self):
@@ -424,5 +425,76 @@ class rest_delete_tag_service(rest_delete_handler):
         return lib_tag_detach_service(tagid, svcname)
 
 
+#
+# /tags/nodes :: GET
+#
+class rest_get_tags_nodes(rest_get_table_handler):
+    def __init__(self):
+        desc = [
+          "List tags-nodes attachments.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/tags/nodes",
+        ]
+        rest_get_table_handler.__init__(
+          self,
+          path="/tags/nodes",
+          tables=["node_tags"],
+          desc=desc,
+          examples=examples,
+        )
 
+    def handler(self, **vars):
+        q = db.node_tags.id > 0
+        q &= _where(None, 'node_tags', domain_perms(), 'nodename')
+        self.set_q(q)
+        return self.prepare_data(**vars)
+
+#
+class rest_post_tags_nodes(rest_post_handler):
+    def __init__(self):
+        desc = [
+          "Attach tags to nodes",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- -X POST -d nodename=mynode -d tag_id=10 https://%(collector)s/init/rest/api/tags/nodes",
+        ]
+        rest_post_handler.__init__(
+          self,
+          path="/tags/nodes",
+          tables=["node_tags"],
+          desc=desc,
+          examples=examples
+        )
+
+    def handler(self, **vars):
+        if "nodename" not in vars:
+            raise Exception("the 'nodename' key is mandatory")
+        if "tag_id" not in vars:
+            raise Exception("the 'tag_id' key is mandatory")
+        return lib_tag_attach_node(vars["tag_id"], vars["nodename"])
+
+#
+class rest_delete_tags_nodes(rest_delete_handler):
+    def __init__(self):
+        desc = [
+          "Detach tags from a nodes.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- -X DELETE -d nodename=mynode -d tag_id=10 https://%(collector)s/init/rest/api/tags/nodes",
+        ]
+        rest_delete_handler.__init__(
+          self,
+          path="/tags/nodes",
+          tables=["node_tags"],
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, **vars):
+        if "nodename" not in vars:
+            raise Exception("the 'nodename' key is mandatory")
+        if "tag_id" not in vars:
+            raise Exception("the 'tag_id' key is mandatory")
+        return lib_tag_detach_node(vars["tag_id"], vars["nodename"])
 
