@@ -241,68 +241,6 @@ class table_tagattach(HtmlTable):
         self.span = ["tag_id"]
         self.keys = ["tag_id", "nodename", "svcname"]
         self.events = ["tags", "node_tags_change", "svc_tags_change"]
-        if 'Manager' in ug or 'TagManager' in ug:
-            self += HtmlTableMenu('Tags', 'tag16', [
-              't_tag_attach',
-              't_tag_detach'
-            ])
-
-    def t_tag_attach(self):
-        label = 'Attach'
-        action = 'tag_attach'
-        divid = 'tag_attach'
-        sid = 'tag_attach_s'
-        o = db.tags.tag_name
-        q = db.tags.id > 0
-        options = [OPTION(g.tag_name, _value=g.id) for g in db(q).select(orderby=o, cacheable=True)]
-
-        d = DIV(
-              A(
-                T(label),
-                _class='attach16',
-                _onclick="""
-                  click_toggle_vis(event,'%(div)s', 'block');
-                """%dict(div=divid),
-              ),
-              DIV(
-                TABLE(
-                  TR(
-                    TH(T('Tag')),
-                    TD(
-                      SELECT(
-                        *options,
-                        **dict(_id=sid,
-                               _requires=IS_IN_DB(db, 'tags.id'))
-                      ),
-                    ),
-                  ),
-                  TR(
-                    TH(),
-                    TD(
-                      INPUT(
-                        _type='submit',
-                        _onclick=self.ajax_submit(additional_inputs=[sid],
-                                                  args=action),
-                      ),
-                    ),
-                  ),
-                ),
-                _style='display:none',
-                _class='stackable white_float',
-                _name=divid,
-              ),
-            )
-        return d
-
-    def t_tag_detach(self):
-        d = DIV(
-              A(
-                T("Detach"),
-                _class='detach16',
-                _onclick=self.ajax_submit(args=['tag_detach']),
-              ),
-            )
-        return d
 
 
 @auth.requires_login()
@@ -316,31 +254,6 @@ def ajax_tagattach_col_values():
     t.object_list = db(q).select(o, orderby=o)
     return t.col_values_cloud_ungrouped(col)
 
-@auth.requires(auth.has_membership('Manager') or auth.has_membership('TagManager'))
-def tag_detach(ids):
-    for id in ids:
-        nodename, svcname, tag_id = id.split("_")
-        tag_id = int(tag_id)
-	try:
-            if nodename == "null":
-                lib_tag_detach_service(tag_id, svcname)
-            if svcname == "null":
-                lib_tag_detach_node(tag_id, nodename)
-        except Exception as e:
-	    response.flash = str(e)
-
-@auth.requires(auth.has_membership('Manager') or auth.has_membership('TagManager'))
-def tag_attach(tag_id, ids):
-    for id in ids:
-        nodename, svcname, dummy = id.split("_")
-	try:
-            if nodename == "null":
-                lib_tag_attach_service(tag_id, svcname)
-            if svcname == "null":
-                lib_tag_attach_node(tag_id, nodename)
-        except Exception as e:
-	    response.flash = str(e)
-
 @auth.requires_login()
 def ajax_tagattach():
     t = table_tagattach('tagattach', 'ajax_tagattach')
@@ -349,16 +262,6 @@ def ajax_tagattach():
     q = db.v_tags_full.id >= 0
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
-
-    if len(request.args) == 1:
-        action = request.args[0]
-        try:
-            if action == 'tag_attach':
-                tag_attach(request.vars.tag_attach_s, t.get_checked())
-            elif action == 'tag_detach':
-                tag_detach(t.get_checked())
-        except ToolError as e:
-            t.flash = str(e)
 
     if len(request.args) == 1 and request.args[0] == 'csv':
         t.csv_q = q
