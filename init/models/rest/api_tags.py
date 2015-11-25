@@ -451,6 +451,8 @@ class rest_get_tags_nodes(rest_get_table_handler):
         return self.prepare_data(**vars)
 
 #
+# /tags/nodes :: POST
+#
 class rest_post_tags_nodes(rest_post_handler):
     def __init__(self):
         desc = [
@@ -475,6 +477,8 @@ class rest_post_tags_nodes(rest_post_handler):
         return lib_tag_attach_node(vars["tag_id"], vars["nodename"])
 
 #
+# /tags/nodes :: DELETE
+#
 class rest_delete_tags_nodes(rest_delete_handler):
     def __init__(self):
         desc = [
@@ -497,4 +501,81 @@ class rest_delete_tags_nodes(rest_delete_handler):
         if "tag_id" not in vars:
             raise Exception("the 'tag_id' key is mandatory")
         return lib_tag_detach_node(vars["tag_id"], vars["nodename"])
+
+#
+# /tags/services :: GET
+#
+class rest_get_tags_services(rest_get_table_handler):
+    def __init__(self):
+        desc = [
+          "List tags-services attachments.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/tags/services",
+        ]
+        rest_get_table_handler.__init__(
+          self,
+          path="/tags/services",
+          tables=["svc_tags"],
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, **vars):
+        q = db.svc_tags.id > 0
+        q &= _where(None, 'svc_tags', domain_perms(), 'svcname')
+        self.set_q(q)
+        return self.prepare_data(**vars)
+
+#
+# /tags/services :: POST
+#
+class rest_post_tags_services(rest_post_handler):
+    def __init__(self):
+        desc = [
+          "Attach tags to services",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- -X POST -d svcname=mysvc -d tag_id=10 https://%(collector)s/init/rest/api/tags/services",
+        ]
+        rest_post_handler.__init__(
+          self,
+          path="/tags/services",
+          tables=["svc_tags"],
+          desc=desc,
+          examples=examples
+        )
+
+    def handler(self, **vars):
+        if "svcname" not in vars:
+            raise Exception("the 'svcname' key is mandatory")
+        if "tag_id" not in vars:
+            raise Exception("the 'tag_id' key is mandatory")
+        return lib_tag_attach_service(vars["tag_id"], vars["svcname"])
+
+#
+# /tags/services :: DELETE
+#
+class rest_delete_tags_services(rest_delete_handler):
+    def __init__(self):
+        desc = [
+          "Detach tags from services.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- -X DELETE -d svcname=mysvc -d tag_id=10 https://%(collector)s/init/rest/api/tags/services",
+        ]
+        rest_delete_handler.__init__(
+          self,
+          path="/tags/services",
+          tables=["svc_tags"],
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, **vars):
+        if "svcname" not in vars:
+            raise Exception("the 'svcname' key is mandatory")
+        if "tag_id" not in vars:
+            raise Exception("the 'tag_id' key is mandatory")
+        return lib_tag_detach_service(vars["tag_id"], vars["svcname"])
 
