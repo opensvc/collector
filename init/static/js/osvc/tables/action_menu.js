@@ -1099,11 +1099,11 @@ function table_action_menu_yes_no(t, msg, callback) {
    e.append(yes)
    e.append(no)
    e.append($("<br>"))
-   yes.bind("click", function(e){
+   yes.bind("click", function(event){
      event.preventDefault()
      $(this).unbind("click")
      $(this).prop("disabled", true)
-     callback(e)
+     callback(event)
    })
    no.bind("click", function(event){
      $("#am_"+t.id).remove()
