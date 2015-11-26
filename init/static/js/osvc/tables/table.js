@@ -918,10 +918,8 @@ function table_refresh(t) {
              t.decorate_cells()
              t.unset_refresh_spin()
              t.relocate_extra_rows()
-
+             tbody.find("tr.tl").children("td.tohighlight").removeClass("tohighlight").effect("highlight", 1000)
              t.scroll_enable_dom()
-
-             tbody.find(".tohighlight").removeClass("tohighlight").effect("highlight", 1000)
 
              t.refresh_child_tables()
              t.on_change()
