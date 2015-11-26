@@ -838,10 +838,6 @@ class rest_post_user_table_settings(rest_post_handler):
           upc_field=vars["upc_field"],
         )
         obj_id = db.user_prefs_columns.update_or_insert(k, **vars)
-        _log('user.table_settings.change',
-             'change user table settings %(data)s',
-             dict(data=str(vars)),
-            )
         qvars = dict(
           meta="0",
           query="upc_table=%s and upc_field=%s" % (vars["upc_table"], vars["upc_field"])
@@ -936,10 +932,6 @@ class rest_post_user_table_filters(rest_post_handler):
           bookmark=vars["bookmark"],
         )
         obj_id = db.column_filters.update_or_insert(k, **vars)
-        _log('user.table_filters.change',
-             'change user table filters %(data)s',
-             dict(data=str(vars)),
-            )
         qvars = dict(
           meta="0",
           query="col_tableid=%s and col_name=%s and bookmark=%s" % (vars["col_tableid"], vars["col_name"], vars["bookmark"])
@@ -990,10 +982,6 @@ class rest_delete_user_table_filters(rest_delete_handler):
             q &= db.column_filters.bookmark == vars["bookmark"]
 
         db(q).delete()
-        _log('user.table_filters.delete',
-             'delete user table filters %(data)s',
-             dict(data=str(vars)),
-            )
         return dict(info=T("column filters deleted"))
 
 #
