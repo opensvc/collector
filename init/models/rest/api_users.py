@@ -1254,4 +1254,36 @@ class rest_post_user_domains(rest_post_handler):
         _websocket_send(event_msg(l))
         return rest_get_user_domains().handler(user_id)
 
+#
+class rest_get_user_hidden_menu_entries(rest_get_table_handler):
+    def __init__(self):
+        desc = [
+          "List menu entries hidden from the menu for the specified user.",
+          "Managers and UserManager are allowed to all hidden menu entries.",
+          "Others can only see hidden menu entries for their groups.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/users/self/hidden_menu_entries"
+        ]
+
+        rest_get_table_handler.__init__(
+          self,
+          path="/users/<id>/hidden_menu_entries",
+          tables=["group_hidden_menu_entries"],
+          desc=desc,
+          groupby=db.group_hidden_menu_entries.group_id|db.group_hidden_menu_entries.menu_entry,
+          examples=examples,
+        )
+
+    def handler(self, user_id, **vars):
+        q = user_id_q(user_id)
+        q &= db.auth_membership.user_id == db.auth_user.id
+        q &= db.group_hidden_menu_entries.group_id == db.auth_membership.group_id
+        try:
+            check_privilege("UserManager")
+        except:
+            q = db.group_hidden_menu_entries.group_id.belongs(user_group_ids())
+        self.set_q(q)
+        return self.prepare_data(**vars)
+
 

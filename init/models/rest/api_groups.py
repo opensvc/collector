@@ -439,3 +439,34 @@ class rest_delete_group(rest_delete_handler):
 
         return dict(info="Group %s deleted" % row.role)
 
+#
+class rest_get_frontend_hidden_menu_entries(rest_get_table_handler):
+    def __init__(self):
+        desc = [
+          "List menu entries hidden from the menu for each group.",
+          "Managers and UserManager are allowed to all hidden menu entries.",
+          "Others can only see hidden menu entries for their groups.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/hidden_menu_entries"
+        ]
+
+        rest_get_table_handler.__init__(
+          self,
+          path="/frontend/hidden_menu_entries",
+          tables=["group_hidden_menu_entries"],
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, **vars):
+        try:
+            check_privilege("UserManager")
+            q = db.group_hidden_menu_entries.id > 0
+        except:
+            q = db.group_hidden_menu_entries.group_id.belongs(user_group_ids())
+        self.set_q(q)
+        return self.prepare_data(**vars)
+
+
+

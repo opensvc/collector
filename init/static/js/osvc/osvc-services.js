@@ -68,6 +68,7 @@ var services_access_uri = {
     "R_USER_DOMAINS" : "rest/api/users/%1/domains",
     "R_USER_APPS" : "rest/api/users/%1/apps",
     "R_USER_GROUPS" : "rest/api/users/%1/groups",
+    "R_USER_HIDDEN_MENU_ENTRIES" : "rest/api/users/%1/hidden_menu_entries",
     "R_WIKI" : "rest/api/wiki/%1",
     "R_WIKIS" : "rest/api/wiki",
     "R_IPS" : "rest/api/nodes/%1/ips",
