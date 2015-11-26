@@ -481,6 +481,10 @@ function menu_load_config(o)
 
 function menu_clicked(o)
 {
-	$("#search_input").val("").focus();
-	o.menu_div.stop().toggle("fold")
+	if (!o.menu_div.is(":visible")) {
+		o.menu_div.stop().show("fold", function(){filter_menu()})
+		$("#search_input").val("").focus();
+	} else {
+		o.menu_div.stop().hide("fold")
+	}
 }
