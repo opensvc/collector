@@ -2114,7 +2114,7 @@ function cell_decorator_status(e) {
     "undef": "gray",
     "n/a": "gray",
   }
-  $(e).html("<div class='svc nowrap icon-"+t[c]+"'></div>")
+  $(e).html("<div class='svc nowrap icon-"+t[c]+"'>"+v+"</div>")
 }
 
 function cell_decorator_reports_links(e) {
