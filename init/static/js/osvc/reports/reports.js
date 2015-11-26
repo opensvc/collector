@@ -359,19 +359,21 @@ function reports_init(o) {
 	o.div_reports_data = o.div.find("#reports_data");
 	o.ql_link = o.div.find("#reports_ql_link");
 	o.reports_select = o.div_reports_header.find("#reports_select");
-	o.reports_select_off = o.div_reports_header.find("#reports_select_off");
 
 	o.div_reports_data.bind("click", function () {
-		o.reports_select.hide("slide", { direction: "left" }, 500);
-		o.reports_select_off.show("slide", { direction: "left" }, 500);
+		o.reports_select.animate({ left: "-13em" }, 300, "linear");
 	})
 
-	o.reports_select_off.bind("click", function() {
-		o.reports_select.show("slide", { direction: "left" }, 500);
-		o.reports_select_off.hide("slide", { direction: "left" }, 500);
+	o.reports_select.hover(function() {
+		o.reports_select.animate({ left: "0" }, 300, "linear");
+	},
+	function() {
+		o.reports_select.animate({ left: "-13em" }, 300, "linear");
+	})
+	o.reports_select.bind("click", function() {
+		o.reports_select.animate({ left: "0" }, 300, "linear");
 	})
 	o.load();
-	o.reports_select_off.show();
 }
 
 function reports_load(o) {  
@@ -410,7 +412,7 @@ function reports_build_selection(o, data) {
 
 function reports_set_selected(o, report_id) {
 	o.current_reports = report_id
-	o.reports_select.find("[report_id="+o.current_reports+"]").removeClass("report_button_div_active")
+	o.reports_select.find(".report_button_div_active").removeClass("report_button_div_active")
 	o.reports_select.find("[report_id="+o.current_reports+"]").addClass("report_button_div_active")
 }
 
