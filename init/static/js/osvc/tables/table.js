@@ -943,6 +943,17 @@ function table_insert(t, data) {
             return
         }
     }
+    for (c in t.colprops) {
+      if (c == key) {
+        continue
+      }
+      var current = $("#"+t.id+"_f_"+c).val()
+      if ((current != "") && (typeof current !== 'undefined')) {
+        params[t.id+"_f_"+c] = current
+      } else if (t.colprops[c].force_filter != "") {
+        params[t.id+"_f_"+c] = t.colprops[c].force_filter
+      }
+    }
     if (t.dataable) {
       var ajax_interface = "data"
     } else {
