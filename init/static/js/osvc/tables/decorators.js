@@ -2686,11 +2686,11 @@ function datetime_age(s) {
   if (s == 'empty') {
     return
   }
-  s = s.replace(/ /, "T")
+  s = s.replace(/ /, "T")+"Z"
   var d = new Date(s)
   var now = new Date()
-  delta = now.getTime() - d.getTime() - now.getTimezoneOffset() * 60000
-  return delta / 60000
+  var delta = (now.getTime() - d.getTime())/60000 - now.getTimezoneOffset()
+  return delta
 }
 
 function _outdated(s, max_age) {
