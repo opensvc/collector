@@ -982,7 +982,8 @@ class rest_delete_user_table_filters(rest_delete_handler):
         if "col_tableid" in vars:
             q &= db.column_filters.col_tableid == vars["col_tableid"]
         if "col_name" in vars:
-            q &= db.column_filters.col_name == vars["col_name"]
+            q &= ((db.column_filters.col_name == vars["col_name"]) | \
+                  (db.column_filters.col_name.like("%."+vars["col_name"])))
         if "col_filter" in vars:
             q &= db.column_filters.col_filter == vars["col_filter"]
         if "bookmark" in vars:
