@@ -8,42 +8,18 @@ if hasattr(config, "billing_method") and config.billing_method == "agents":
 else:
     agents_billing_method = False
 
-class table_billing(HtmlTable):
-    def __init__(self, id=None, func=None, innerhtml=None):
-        if id is None and 'tableid' in request.vars:
-            id = request.vars.tableid
-        HtmlTable.__init__(self, id, func, innerhtml)
-        self.cols = []
-        self.colprops = {}
-        self.dbfilterable = True
-        self.headers = False
-        self.filterable = False
-        self.refreshable = False
-        self.pageable = False
-        self.bookmarkable = False
-        self.commonalityable = False
-        self.exportable = True
-        self.columnable = False
-        self.object_list = []
-        self.nodatabanner = False
-
 @auth.requires_login()
 def ajax_billing():
-    t = table_billing('billing', 'ajax_billing')
 
     fset_id = user_fset_id()
 
-    q = db.stat_day_billing.id > 0
-    q &= db.stat_day_billing.fset_id == fset_id
-    t.csv_q = q
-    if len(request.args) == 1 and request.args[0] == 'csv':
-        return t.csv()
-
-    rows = db(q).select()
+    # csv
+    #q = db.stat_day_billing.id > 0
+    #q &= db.stat_day_billing.fset_id == fset_id
+    #rows = db(q).select()
 
     table = DIV(
-     t.html(),
-     billing_fmt(t.html()),
+     billing_fmt(),
      _id="billing",
     )
     return table
@@ -63,7 +39,7 @@ def num_fmt(n, k, os, token, _class=""):
              _class=_class,
            )
 
-def billing_fmt(table):
+def billing_fmt():
     local_headings = {
       'services': 'Services',
       'agents_without_svc': 'Agents without services',
