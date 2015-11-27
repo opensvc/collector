@@ -19,6 +19,7 @@ var services_access_uri = {
     "R_APP_RESPONSIBLES" : "rest/api/apps/%1/responsibles",
     "R_FILTERSETS" : "rest/api/filtersets",
     "R_GROUPS" : "rest/api/groups",
+    "R_GROUP_HIDDEN_MENU_ENTRIES" : "rest/api/groups/%1/hidden_menu_entries",
     "R_IPS" : "rest/api/nodes/%1/ips",
     "R_NODE" : "rest/api/nodes/%1",
     "R_NODES" : "rest/api/nodes",

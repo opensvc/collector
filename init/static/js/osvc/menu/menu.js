@@ -396,7 +396,7 @@ function menu_init(o)
   });
 }
 
-function menu_create_entry(o, title, entry)
+function menu_create_entry(o, section, entry)
 {
 	if (o.hidden.indexOf(entry.id) >= 0) {
 		return
@@ -404,11 +404,14 @@ function menu_create_entry(o, title, entry)
 	if (entry.secure && !services_ismemberof(entry.secure)) {
 		return
 	}
+	return menu_create_entry_s(section, entry)
+}
+function menu_create_entry_s(section, entry)
+{
+	var titre = i18n.t("menu."+section+ "." + entry.title +".title");
+	var text = i18n.t("menu."+section+ "." + entry.title +".text");
 
-	var titre = i18n.t("menu."+title+ "." + entry.title +".title");
-	var text = i18n.t("menu."+title+ "." + entry.title +".text");
-
-	var div_entry = "<div id='menu_" + title + "_" + entry.title + "' class='menu_entry clickable' link='" + entry.link + "'>";
+	var div_entry = "<div id='menu_" + section + "_" + entry.title + "' class='menu_entry clickable' link='" + entry.link + "'>";
 
 	div_entry += "<div class='menu_box'>";
 

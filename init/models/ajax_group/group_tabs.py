@@ -102,15 +102,14 @@ def group_tabs(gid=None, role=None):
             _class='cloud',
           ),
           SCRIPT(
-            "function n%(rid)s_load_group_hidden_menu_entries(){sync_ajax('%(url)s', [], '%(id)s', function(){})}"%dict(
+            "function n%(rid)s_load_group_hidden_menu_entries(){group_hidden_menu_entries('%(id)s', %(options)s)};"%dict(
                id='tab2_'+str(rowid),
+               options=str({"group_id": int(group.id)}),
                rid=str(rowid),
-               url=URL(r=request, c='ajax_group', f='ajax_group_hidden_menu_entries',
-                       args=['tab2_'+str(rowid)], vars={'groupname': group.role})
             ),
             """callbacks = {
                 "tab2": %(id)s_load_group_hidden_menu_entries,
-               }"""%dict(id='n'+str(rowid)),
+               };"""%dict(id='n'+str(rowid)),
             js(tab, rowid),
             _name='%s_to_eval'%rowid,
           ),

@@ -3440,6 +3440,36 @@ button:disabled {
 	display: inline-block;
 }
 
+.group_hidden_menu {
+	width: 100%;
+	text-align: left;
+	display: inline-block;
+}
+.group_hidden_menu > h2 {
+	display: block;
+	clear: both;
+}
+.group_hidden_menu > div {
+	float: left;
+}
+.group_hidden_menu label {
+	align-self: center;
+	margin: 1em;
+}
+.group_hidden_menu .menu_icon {
+	color: black;
+}
+.group_hidden_menu .menu_title {
+	color: black;
+}
+.group_hidden_menu .menu_entry {
+	padding: 0.5em;
+	width: 18em;
+}
+.group_hidden_menu .menu_entry:hover {
+	background: none;
+}
+
 @media screen and (max-width:960px) and (orientation: landscape) {
 	body {
 		-webkit-text-size-adjust: 70%;

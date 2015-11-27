@@ -303,7 +303,7 @@ class rest_post_groups(rest_post_handler):
     def handler(self, **vars):
         check_privilege("UserManager")
         db.auth_group.insert(**vars)
-        _log('rest.groups.add',
+        _log('groups.add',
              'add group %(data)s',
              dict(data=str(vars)),
             )
@@ -351,7 +351,7 @@ class rest_post_group(rest_post_handler):
         l = []
         for key in vars:
             l.append("%s: %s => %s" % (str(key), str(row[key]), str(vars[key])))
-        _log('rest.groups.change',
+        _log('groups.change',
              'change group %(data)s',
              dict(data=', '.join(l)),
             )
@@ -398,7 +398,7 @@ class rest_delete_group(rest_delete_handler):
 
         # group
         db(q).delete()
-        _log('rest.groups.delete',
+        _log('groups.delete',
              'deleted group %(g)s',
              dict(g=row.role))
         l = {
@@ -448,7 +448,7 @@ class rest_get_frontend_hidden_menu_entries(rest_get_table_handler):
           "Others can only see hidden menu entries for their groups.",
         ]
         examples = [
-          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/hidden_menu_entries"
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/frontend/hidden_menu_entries"
         ]
 
         rest_get_table_handler.__init__(
@@ -469,4 +469,152 @@ class rest_get_frontend_hidden_menu_entries(rest_get_table_handler):
         return self.prepare_data(**vars)
 
 
+#
+class rest_get_group_hidden_menu_entries(rest_get_table_handler):
+    def __init__(self):
+        desc = [
+          "List menu entries hidden from the menu for the specified group.",
+          "Managers and UserManager are allowed to all hidden menu entries.",
+          "Others can only see hidden menu entries for their groups.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/groups/1/hidden_menu_entries"
+        ]
 
+        rest_get_table_handler.__init__(
+          self,
+          path="/groups/<id>/hidden_menu_entries",
+          tables=["group_hidden_menu_entries"],
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, group_id, **vars):
+        try:
+            group_id = int(group_id)
+            q = db.auth_group.id == group_id
+        except:
+            q = db.auth_group.role == group_id
+
+        group = db(q).select().first()
+        if group is None:
+            return dict(info="Group %s does not exists" % str(group_id))
+
+        if group.privilege:
+            raise Exception("Can not set hidden menu entries for privilege groups")
+
+        q = db.group_hidden_menu_entries.group_id == group_id
+        try:
+            check_privilege("UserManager")
+        except:
+            q &= db.group_hidden_menu_entries.group_id.belongs(user_group_ids())
+        self.set_q(q)
+        return self.prepare_data(**vars)
+
+
+class rest_post_group_hidden_menu_entries(rest_post_handler):
+    def __init__(self):
+        desc = [
+          "Set menu entries as hidden for the specified group.",
+          "The user must be in the UserManager privilege group.",
+          "The action is logged in the collector's log.",
+          "A websocket event is sent to announce the change in the changed tables.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- -X POST -d 'menu_entry=key-f' https://%(collector)s/init/rest/api/groups/10/hidden_menu_entries",
+        ]
+
+        rest_post_handler.__init__(
+          self,
+          path="/groups/<id>/hidden_menu_entries",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, group_id, **vars):
+        check_privilege("UserManager")
+
+        if "menu_entry" not in vars:
+            raise Exception("'menu_entry' key must be set")
+        menu_entry = vars["menu_entry"]
+
+        if menu_entry not in menu_entries:
+            raise Exception("invalid menu entry %s" % menu_entry)
+
+        try:
+            group_id = int(group_id)
+            q = db.auth_group.id == group_id
+        except:
+            q = db.auth_group.role == group_id
+
+        group = db(q).select().first()
+        if group is None:
+            return dict(info="Group %s does not exists" % str(group_id))
+
+        if group.privilege:
+            raise Exception("Can not set hidden menu entries for privilege groups")
+
+        q = db.group_hidden_menu_entries.group_id == group.id
+        q &= db.group_hidden_menu_entries.menu_entry == menu_entry
+        row = db(q).select().first()
+        if row is not None:
+            return dict(info="menu entry %s is already hidden for group %s" % (menu_entry, group.role))
+
+        db.group_hidden_menu_entries.insert(group_id=group.id, menu_entry=menu_entry)
+        _log('groups.hidden_menu_entries.add',
+             'hide %(m)s for group %(g)s',
+             dict(m=menu_entry, g=group.role))
+        return dict(info="menu entry %s hidden for group %s" % (menu_entry, group.role))
+
+
+class rest_delete_group_hidden_menu_entries(rest_delete_handler):
+    def __init__(self):
+        desc = [
+          "Unset menu entries as hidden for the specified group.",
+          "The user must be in the UserManager privilege group.",
+          "The action is logged in the collector's log.",
+          "A websocket event is sent to announce the change in the changed tables.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- -X DELETE -d 'menu_entry=key-f' https://%(collector)s/init/rest/api/groups/10/hidden_menu_entries",
+        ]
+
+        rest_delete_handler.__init__(
+          self,
+          path="/groups/<id>/hidden_menu_entries",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, group_id, **vars):
+        check_privilege("UserManager")
+
+        if "menu_entry" not in vars:
+            raise Exception("'menu_entry' key must be set")
+        menu_entry = vars["menu_entry"]
+
+        try:
+            group_id = int(group_id)
+            q = db.auth_group.id == group_id
+        except:
+            q = db.auth_group.role == group_id
+
+        group = db(q).select().first()
+        if group is None:
+            return dict(info="Group %s does not exists" % str(group_id))
+
+        if group.privilege:
+            raise Exception("Can not set hidden menu entries for privilege groups")
+
+        q = db.group_hidden_menu_entries.group_id == group.id
+        q &= db.group_hidden_menu_entries.menu_entry == menu_entry
+        row = db(q).select().first()
+        if row is None:
+            return dict(info="menu entry %s is already not hidden for group %s" % (menu_entry, group.role))
+
+        db(q).delete()
+        _log('groups.hidden_menu_entries.delete',
+             'unhide %(m)s for group %(g)s',
+             dict(m=menu_entry, g=group.role))
+
+        return dict(info="menu entry %s unhidden for group %s" % (menu_entry, group.role))
