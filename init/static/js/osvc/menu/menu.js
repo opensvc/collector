@@ -354,7 +354,7 @@ function menu(divid) {
 	}
       */
       if (jd.error && (jd.error.length > 0)) {
-        $("#flash").show("blind").html(services_error_fmt(jd))
+        $(".flash").show("blind").html(services_error_fmt(jd))
       }
       o.hidden = []
       var ref_count = 0

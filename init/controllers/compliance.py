@@ -2296,8 +2296,10 @@ def comp_rulesets_services_attachment():
               $("#crs1").find("div.theader").css({height: $("#crs2").find("div.theader").height()})
               $("#crs1").find("tr.theader").css({height: $("#crs2").find("tr.theader").height()})
              }
-             osvc.tables["crs2"].on_change = calign
-             osvc.tables["crs1"].on_change = calign
+             try {
+              osvc.tables["crs2"].on_change = calign
+              osvc.tables["crs1"].on_change = calign
+             } catch(e) {}
              """),
            )
     return dict(table=t)
@@ -2335,8 +2337,10 @@ def comp_rulesets_nodes_attachment():
               $("#crn1").find("div.theader").css({height: $("#crn2").find("div.theader").height()})
               $("#crn1").find("tr.theader").css({height: $("#crn2").find("tr.theader").height()})
              }
-             osvc.tables["crn2"].on_change = calign
-             osvc.tables["crn1"].on_change = calign
+             try {
+              osvc.tables["crn2"].on_change = calign
+              osvc.tables["crn1"].on_change = calign
+             } catch(e) {}
              """),
            )
     return dict(table=t)
@@ -4337,8 +4341,10 @@ def comp_modulesets_services():
               $("#cms1").find("div.theader").css({height: $("#cms2").find("div.theader").height()})
               $("#cms1").find("tr.theader").css({height: $("#cms2").find("tr.theader").height()})
              }
-             osvc.tables["cms2"].on_change = calign
-             osvc.tables["cms1"].on_change = calign
+             try {
+              osvc.tables["cms2"].on_change = calign
+              osvc.tables["cms1"].on_change = calign
+             } catch(e) {}
              """),
            )
     return dict(table=t)
@@ -4376,8 +4382,10 @@ def comp_modulesets_nodes():
               $("#cmn1").find("div.theader").css({height: $("#cmn2").find("div.theader").height()})
               $("#cmn1").find("tr.theader").css({height: $("#cmn2").find("tr.theader").height()})
              }
-             osvc.tables["cmn2"].on_change = calign
-             osvc.tables["cmn1"].on_change = calign
+             try {
+              osvc.tables["cmn2"].on_change = calign
+              osvc.tables["cmn1"].on_change = calign
+             } catch(e) {}
              """),
            )
     return dict(table=t)

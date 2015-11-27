@@ -41,7 +41,7 @@ function metric(divid, options) {
 	o.render_table = function() {
 		services_osvcgetrest("R_GET_REPORT_METRIC_SAMPLES", [o.options.metric_id], {"meta": "false", "limit": "0"}, function(jd) {
 			if (jd.error && (jd.error.length > 0)) {
-				$("#flash").show("blind").html(services_error_fmt(jd))
+				$(".flash").show("blind").html(services_error_fmt(jd))
 				return
 			}
 			var data = jd.data;
@@ -128,7 +128,7 @@ function chart(divid, options) {
 		$.jqplot.config.enablePlugins = true
 		services_osvcgetrest("R_GET_REPORT_CHART_SAMPLES", [o.options.chart_id], {"meta": "false", "limit": "5000"}, function(jd) {
 			if (jd.error && (jd.error.length > 0)) {
-				$("#flash").show("blind").html(services_error_fmt(jd))
+				$(".flash").show("blind").html(services_error_fmt(jd))
 				return
 			}
 			var data = jd.data
@@ -308,7 +308,7 @@ function report(divid, options) {
 	o.load = function() {
 		services_osvcgetrest("R_GET_REPORT", [o.options.report_id], {"meta": "false", "limit": "0"}, function(jd) {
 			if (jd.error && (jd.error.length > 0)) {
-				$("#flash").show("blind").html(services_error_fmt(jd))
+				$(".flash").show("blind").html(services_error_fmt(jd))
 				return
 			}
 			o.definition = jd.data
@@ -380,7 +380,7 @@ function reports_load(o) {
 	// Init Select Report
 	services_osvcgetrest("R_GET_REPORTS", "", {"meta": "false", "limit": "0"}, function(jd) {
 		if (jd.error && (jd.error.length > 0)) {
-			$("#flash").show("blind").html(services_error_fmt(jd))
+			$(".flash").show("blind").html(services_error_fmt(jd))
 			return
 		}
 		var data = jd.data;

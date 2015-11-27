@@ -10,7 +10,7 @@ function group_hidden_menu_entries(divid, options) {
 		}
 		services_osvcpostrest("R_GROUP_HIDDEN_MENU_ENTRIES", [o.options.group_id], "", data, function(jd) {
 			if (jd.error && (jd.error.length > 0)) {
-				$("#flash").show("blind").html(services_error_fmt(jd))
+				$(".flash").show("blind").html(services_error_fmt(jd))
 			}
 			
 		})
@@ -22,7 +22,7 @@ function group_hidden_menu_entries(divid, options) {
 		}
 		services_osvcdeleterest("R_GROUP_HIDDEN_MENU_ENTRIES", [o.options.group_id], "", data, function(jd) {
 			if (jd.error && (jd.error.length > 0)) {
-				$("#flash").show("blind").html(services_error_fmt(jd))
+				$(".flash").show("blind").html(services_error_fmt(jd))
 			}
 		})
 	}
@@ -34,7 +34,7 @@ function group_hidden_menu_entries(divid, options) {
 		}
 		services_osvcgetrest("R_GROUP_HIDDEN_MENU_ENTRIES", [o.options.group_id], params, function(jd) {
 			if (jd.error && (jd.error.length > 0)) {
-				$("#flash").show("blind").html(services_error_fmt(jd))
+				$(".flash").show("blind").html(services_error_fmt(jd))
 			}
 			o.hidden = []
 			for (i=0; i<jd.data.length; i++) {
