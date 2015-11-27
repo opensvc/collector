@@ -208,9 +208,6 @@ def ajax_compare():
 
     d = DIV(
      DIV(
-       t.html(),
-     ),
-     DIV(
        H2(T("Services")),
        DIV(
          DIV(T("Number of services")),
@@ -281,16 +278,24 @@ def ajax_compare():
        ),
        _name=t.id+'_to_eval',
      ),
-     _id="stats",
     )
     return d
 
 @auth.requires_login()
 def compare():
-    return dict(table=ajax_compare())
+    t = table_compare('stats', 'ajax_compare')
+    d = DIV(
+      DIV(
+        t.html(),
+      ),
+      DIV(
+        _id="stats",
+      ),
+    )
+    return dict(table=d)
 
 def compare_load():
-    return ajax_compare()
+    return compare()["table"]
 
 class table_stats(HtmlTable):
     def __init__(self, id=None, func=None, innerhtml=None):
@@ -527,9 +532,6 @@ def ajax_stats():
 
     d = DIV(
      DIV(
-       t.html(),
-     ),
-     DIV(
        H2(T("Services")),
        DIV(
          DIV(_id='stat_day_svc_drp'),
@@ -717,13 +719,21 @@ def ajax_stats():
        "jqplot_img()",
        _name=t.id+'_to_eval',
      ),
-     _id="stats",
    )
     return d
 
 @auth.requires_login()
 def stats():
-    return dict(table=ajax_stats())
+    t = table_stats('stats', 'ajax_stats')
+    d = DIV(
+      DIV(
+        t.html(),
+      ),
+      DIV(
+        _id="stats",
+      ),
+    )
+    return dict(table=d)
 
 def stats_load():
     return stats()["table"]

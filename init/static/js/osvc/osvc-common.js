@@ -257,12 +257,11 @@ function sticky_relocate(e, anchor, onstick) {
     if (window_top > div_top) {
         // add the top-fixed clone element if not already present
         if (!e.next().is(".stick")) {
-          var clone = e.clone()
+          var clone = e.clone(false, false)
           if (onstick) {
             onstick(clone, e)
           }
           clone.addClass('stick')
-          clone.insertAfter(e)
 
           // adjust top-fixed clone element width
           clone.css({"width": e.width()})
@@ -271,9 +270,10 @@ function sticky_relocate(e, anchor, onstick) {
           var e_children = e.children()
           var i = 0
           clone.children().each(function(){
-            $(this).css({"width": $(e_children.get(i)).width()})
+            $(this).width(e_children[i].offsetWidth)
             i++
           })
+          clone.insertAfter(e)
         } else {
           var clone = e.next()
         }

@@ -918,10 +918,8 @@ function table_refresh(t) {
              t.decorate_cells()
              t.unset_refresh_spin()
              t.relocate_extra_rows()
-
+             tbody.find("tr.tl").children("td.tohighlight").removeClass("tohighlight").effect("highlight", 1000)
              t.scroll_enable_dom()
-
-             tbody.find(".tohighlight").removeClass("tohighlight").effect("highlight", 1000)
 
              t.refresh_child_tables()
              t.on_change()
@@ -944,6 +942,17 @@ function table_insert(t, data) {
         } catch(e) {
             return
         }
+    }
+    for (c in t.colprops) {
+      if (c == key) {
+        continue
+      }
+      var current = $("#"+t.id+"_f_"+c).val()
+      if ((current != "") && (typeof current !== 'undefined')) {
+        params[t.id+"_f_"+c] = current
+      } else if (t.colprops[c].force_filter != "") {
+        params[t.id+"_f_"+c] = t.colprops[c].force_filter
+      }
     }
     if (t.dataable) {
       var ajax_interface = "data"

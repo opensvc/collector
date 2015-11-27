@@ -164,22 +164,6 @@ def __get_lifecycle_os():
         os += [r.lc_os_name]
     return os
 
-class table_lifecycle_os(HtmlTable):
-    def __init__(self, id=None, func=None, innerhtml=None):
-        if id is None and 'tableid' in request.vars:
-            id = request.vars.tableid
-        HtmlTable.__init__(self, id, func, innerhtml)
-        self.dbfilterable = True
-        self.refreshable = False
-        self.pageable = False
-        self.commonalityable = False
-        self.exportable = False
-        self.linkable = False
-        self.bookmarkable = False
-        self.columnable = False
-        self.object_list = []
-        self.nodatabanner = False
-
 @auth.requires_login()
 def lifecycle_os():
     return dict(table=ajax_lifecycle_os())
@@ -215,7 +199,6 @@ def ajax_lifecycle_os():
 
         pass
     h = DIV(
-          t.html(),
           DIV(
             H2(T("Operating systems lifecycle")),
             DIV(

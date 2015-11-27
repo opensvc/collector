@@ -59,8 +59,20 @@
 	font-family: awesome;
 }
 
+.icon-orange {
+	color: orange;
+}
+.icon-red {
+	color: #990000;
+}
+.icon-green {
+	color: #009900;
+}
+.icon-gray {
+	color: #666666;
+}
 .icon-orange:before {
-	color: #777700;
+	color: orange;
 }
 .icon-red:before {
 	color: #990000;
@@ -595,7 +607,7 @@ img {
 }
 
 .boxed_status_warn {
-	background-color: #777700;
+	background-color: orange;
 }
 
 .status_n\/a, .status_undef {
@@ -616,7 +628,7 @@ img {
 }
 
 .status_warn {
-	color: #777700;
+	color: orange;
 }
 
 .status_t {

@@ -838,10 +838,6 @@ class rest_post_user_table_settings(rest_post_handler):
           upc_field=vars["upc_field"],
         )
         obj_id = db.user_prefs_columns.update_or_insert(k, **vars)
-        _log('user.table_settings.change',
-             'change user table settings %(data)s',
-             dict(data=str(vars)),
-            )
         qvars = dict(
           meta="0",
           query="upc_table=%s and upc_field=%s" % (vars["upc_table"], vars["upc_field"])
@@ -936,10 +932,6 @@ class rest_post_user_table_filters(rest_post_handler):
           bookmark=vars["bookmark"],
         )
         obj_id = db.column_filters.update_or_insert(k, **vars)
-        _log('user.table_filters.change',
-             'change user table filters %(data)s',
-             dict(data=str(vars)),
-            )
         qvars = dict(
           meta="0",
           query="col_tableid=%s and col_name=%s and bookmark=%s" % (vars["col_tableid"], vars["col_name"], vars["bookmark"])
@@ -982,17 +974,14 @@ class rest_delete_user_table_filters(rest_delete_handler):
         if "col_tableid" in vars:
             q &= db.column_filters.col_tableid == vars["col_tableid"]
         if "col_name" in vars:
-            q &= db.column_filters.col_name == vars["col_name"]
+            q &= ((db.column_filters.col_name == vars["col_name"]) | \
+                  (db.column_filters.col_name.like("%."+vars["col_name"])))
         if "col_filter" in vars:
             q &= db.column_filters.col_filter == vars["col_filter"]
         if "bookmark" in vars:
             q &= db.column_filters.bookmark == vars["bookmark"]
 
         db(q).delete()
-        _log('user.table_filters.delete',
-             'delete user table filters %(data)s',
-             dict(data=str(vars)),
-            )
         return dict(info=T("column filters deleted"))
 
 #
@@ -1253,6 +1242,7 @@ class rest_post_user_domains(rest_post_handler):
         _websocket_send(event_msg(l))
         return rest_get_user_domains().handler(user_id)
 
+
 class rest_get_user_details(rest_get_line_handler):
     def __init__(self):
         desc = [
@@ -1275,4 +1265,36 @@ class rest_get_user_details(rest_get_line_handler):
         q = db.v_users.id == id
         self.set_q(q)
         return self.prepare_data(**vars)
+#
+class rest_get_user_hidden_menu_entries(rest_get_table_handler):
+    def __init__(self):
+        desc = [
+          "List menu entries hidden from the menu for the specified user.",
+          "Managers and UserManager are allowed to all hidden menu entries.",
+          "Others can only see hidden menu entries for their groups.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/users/self/hidden_menu_entries"
+        ]
+
+        rest_get_table_handler.__init__(
+          self,
+          path="/users/<id>/hidden_menu_entries",
+          tables=["group_hidden_menu_entries"],
+          desc=desc,
+          groupby=db.group_hidden_menu_entries.group_id|db.group_hidden_menu_entries.menu_entry,
+          examples=examples,
+        )
+
+    def handler(self, user_id, **vars):
+        q = user_id_q(user_id)
+        q &= db.auth_membership.user_id == db.auth_user.id
+        q &= db.group_hidden_menu_entries.group_id == db.auth_membership.group_id
+        try:
+            check_privilege("UserManager")
+        except:
+            q = db.group_hidden_menu_entries.group_id.belongs(user_group_ids())
+        self.set_q(q)
+        return self.prepare_data(**vars)
+
 
