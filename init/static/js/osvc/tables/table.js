@@ -794,7 +794,7 @@ function table_refresh(t) {
     if (t.div.length > 0 && !t.div.is(":visible")) {
         return
     }
-    if (t.e_tool_refresh && t.e_tool_refresh.length > 0 && t.e_tool_refresh_spin && t.e_tool_refresh_spin.hasClass("fa-spin")) {
+    if (t.e_tool_refresh && t.e_tool_refresh.length > 0 && t.e_tool_refresh_spin && t.e_tool_refresh_spin.hasClass(t.spin_class)) {
         t.need_refresh = true
         return
     } else {
@@ -1171,7 +1171,9 @@ function ackpanel(e, show, s){
 }
 
 function refresh_action(url, id){
-    spintimer=setTimeout(function validate(){ajax(url, [], 'spin_span_'+id)}, 3000);
+    spintimer = setTimeout(function validate(){
+      ajax(url, [], 'spin_span_'+id)
+    }, 3000);
 }
 function click_action_queue(url) {
     $("#action_queue").toggle('fast')
@@ -2685,14 +2687,14 @@ function table_unset_refresh_spin(t) {
   if (!t.e_tool_refresh_spin) {
     return
   }
-  t.e_tool_refresh_spin.removeClass("fa-spin")
+  t.e_tool_refresh_spin.removeClass(t.spin_class)
 }
 
 function table_set_refresh_spin(t) {
   if (!t.e_tool_refresh_spin) {
     return
   }
-  t.e_tool_refresh_spin.addClass("fa-spin")
+  t.e_tool_refresh_spin.addClass(t.spin_class)
 }
 
 function table_stick(t) {
@@ -2840,6 +2842,7 @@ function table_init(opts) {
     'child_tables': opts['child_tables'],
     'dataable': opts['dataable'],
     'action_menu': opts['action_menu'],
+    'spin_class': 'fa-spin',
 
     'page_submit': function(v){
       return table_page_submit(this, v)
