@@ -185,7 +185,9 @@ function user_build_group_div(o, data, list_user_group)
 	  "UnaffectedProjects"
 	];
 
-	var div = $("<div id='role_" + data.id+ "' class='user_group clickable'></div>");
+	var userdiv = $("<div class='user_group'></div>");
+	var div = $("<div id='role_" + data.id+ "' class='clickable'></div>");
+	userdiv.append(div);
 
 	if (list_user_group.indexOf(data.role) > 0)
 		div.addClass("bcheck");
@@ -196,9 +198,9 @@ function user_build_group_div(o, data, list_user_group)
 	
 	var p = priv_groups.indexOf(data.role);
 	if (p != -1)
-		o.div_user_priv_group.append(div);
+		o.div_user_priv_group.append(userdiv);
 	else
-		o.div_user_org_group.append(div);
+		o.div_user_org_group.append(userdiv);
 
 	// Bind action on group tab
 	var target = o.divid.find("#role_" + data.id);
