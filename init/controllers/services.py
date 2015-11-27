@@ -33,7 +33,7 @@ class table_services(HtmlTable):
                      display=False,
                     ),
         })
-        self.force_cols = ['svc_name', 'Status updated']
+        self.force_cols = ['svc_name', 'svc_status_updated']
         for col in self.colprops:
             self.colprops[col].table = "services"
         self.colprops["updated"] = self.colprops["svc_updated"]
