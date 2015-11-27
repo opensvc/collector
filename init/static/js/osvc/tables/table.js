@@ -1942,7 +1942,7 @@ function table_add_column_selector(t) {
     return
   }
 
-  var e = $("<div class='floatw' name='tool_column_selector'></div>")
+  var e = $("<div class='floatw clickable' name='tool_column_selector'></div>")
   t.e_tool_column_selector = e
 
   var span = $("<span class='columns' data-i18n='table.columns'></span>")
@@ -2023,7 +2023,7 @@ function table_add_commonality(t) {
     return
   }
 
-  var e = $("<div class='floatw' name='tool_commonality'></div>")
+  var e = $("<div class='floatw clickable' name='tool_commonality'></div>")
   t.e_tool_commonality = e
 
   var span = $("<span class='common16' data-i18n='table.commonality'></span>")
@@ -2057,7 +2057,7 @@ function table_add_csv(t) {
     return
   }
 
-  var e = $("<div class='floatw' name='tool_csv'></div>")
+  var e = $("<div class='floatw clickable' name='tool_csv'></div>")
   t.e_tool_csv = e
 
   var span = $("<span class='csv' data-i18n='table.csv'></span>")
@@ -2101,7 +2101,7 @@ function table_add_bookmarks(t) {
     return
   }
 
-  var e = $("<div class='floatw' name='tool_bookmark'></div>")
+  var e = $("<div class='floatw clickable' name='tool_bookmark'></div>")
 
   var span = $("<span class='bookmark16' data-i18n='table.bookmarks'></span>")
   e.append(span)
@@ -2278,7 +2278,7 @@ function table_add_link(t) {
     return
   }
 
-  var e = $("<div class='floatw' name='tool_link'></div>")
+  var e = $("<div class='floatw clickable' name='tool_link'></div>")
 
   var span = $("<span class='link16' title='table.link_title' data-i18n='table.link'></span>")
   e.append(span)
@@ -2309,7 +2309,7 @@ function table_add_refresh(t) {
     return
   }
 
-  var e = $("<div class='floatw' name='tool_refresh'><span class='refresh16'></span><span data-i18n='table.refresh'></span></div>")
+  var e = $("<div class='floatw clickable' name='tool_refresh'><span class='refresh16'></span><span data-i18n='table.refresh'></span></div>")
   try { e.i18n() } catch(e) {}
 
   // bindings
