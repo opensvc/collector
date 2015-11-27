@@ -1862,6 +1862,7 @@ class table_disk_charts(HtmlTable):
         self.columnable = False
         self.headers = False
         self.highlight = False
+        self.on_change = """plot_diskdonuts"""
 
 @auth.requires_login()
 def ajax_array_dg():
