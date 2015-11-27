@@ -1798,6 +1798,9 @@ ul.login_menu ul {
 	content: '\f021';
 	font-family: awesome;
 }
+.refresh16 {
+	display: inline-block;
+}
 .spinner:before {
 	content: '\f110';
 	font-family: awesome;
