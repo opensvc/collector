@@ -9334,6 +9334,7 @@ $("input[name^=%(xid)s][readonly=on],select[name^=%(xid)s][readonly=on],textarea
              ),
              footer,
              _name="container_head",
+             _class="container_head",
            )
 
 @auth.requires_login()
