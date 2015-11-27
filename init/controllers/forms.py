@@ -839,6 +839,9 @@ def form_title(form_name, data, form_id):
 def forms_list(folder="/", form_names=[], prev_wfid=None, search=None):
     l = []
 
+    if type(form_names) in (unicode, str):
+        form_names = [form_names]
+
     # no use to list all forms in a flat list
     if search == "":
         folder = "/"
