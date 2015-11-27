@@ -54,7 +54,7 @@ function fset_selector_event_handler(o, data) {
     return
   }
   if (data.event == "gen_filterset_user_delete") {
-    o.span.text(i18n.t("table.none"))
+    o.span.text(i18n.t("fset_selector.none"))
     o.span.attr("fset_id", "-1")
     o.callbacks()
     return
@@ -92,7 +92,7 @@ function fset_selector_callbacks(o) {
 function fset_selector_unset_fset(o) {
   services_osvcdeleterest("R_USERS_SELF_FILTERSET", [], "", "", function(jd) {
     o.span.empty()
-    o.span.text(i18n.t("table.none"))
+    o.span.text(i18n.t("fset_selector.none"))
     o.span.attr("fset_id", "-1")
     o.area.hide()
     o.callbacks()
