@@ -915,7 +915,7 @@ function table_refresh(t) {
              t.bind_action_menu()
              t.restripe_lines()
              t.hide_cells()
-             t.decorate_cells()
+             t.cell_decorator()
              t.unset_refresh_spin()
              t.relocate_extra_rows()
              tbody.find("tr.tl").children("td.tohighlight").removeClass("tohighlight").effect("highlight", 1000)
@@ -1047,7 +1047,7 @@ function table_insert(t, data) {
              t.bind_filter_selector()
              t.bind_action_menu()
              t.hide_cells()
-             t.decorate_cells()
+             t.cell_decorator()
 
              $(".highlight").each(function(){
                 $(this).removeClass("highlight")
@@ -1920,9 +1920,14 @@ function _table_cell_decorator(id, cell) {
   }
 }
 
-function table_cell_decorator(id) {
-  $("#table_"+id).find("[cell=1]:visible").each(function(){
-    _table_cell_decorator(id, this)
+function table_cell_decorator(t) {
+  t.e_table.find("tbody > .tl").each(function(){
+    var line = $(this)
+    setTimeout(function(){
+      line.children("[cell=1]:visible").each(function(){
+        _table_cell_decorator(t.id, this)
+      })
+    }, 1)
   })
 }
 
@@ -2835,9 +2840,7 @@ function table_init(opts) {
     'child_tables': opts['child_tables'],
     'dataable': opts['dataable'],
     'action_menu': opts['action_menu'],
-    'decorate_cells': function(){
-      return table_cell_decorator(opts['id'])
-    },
+
     'page_submit': function(v){
       return table_page_submit(this, v)
     },
@@ -3033,6 +3036,9 @@ function table_init(opts) {
     },
     'flash': function(){
       return table_flash(this)
+    },
+    'cell_decorator': function(){
+      return table_cell_decorator(this)
     }
   }
 
