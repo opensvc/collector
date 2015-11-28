@@ -13,6 +13,10 @@
     "warn_remove": "Warning, this object might be referenced by other objects. Do you really want to delete this compliance object ?"
   },
   "action_menu": {
+    "on_nodes_modulesets": "On nodes modulesets",
+    "on_services_modulesets": "On services modulesets",
+    "on_nodes_rulesets": "On nodes rulesets",
+    "on_services_rulesets": "On services rulesets",
     "modset_detach": "Detach modulesets",
     "modset_attach": "Attach modulesets",
     "ruleset_detach": "Detach rulesets",

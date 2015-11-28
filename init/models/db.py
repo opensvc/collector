@@ -1270,14 +1270,18 @@ db.define_table('v_comp_mod_status',
 
 db.define_table('v_comp_nodes',
     db.nodes,
+    Field('ruleset_id','integer'),
     Field('ruleset_name','string'),
+    Field('modset_id','integer'),
     Field('modset_name','string'),
     migrate=False)
 
 db.define_table('v_comp_services',
     db.v_services,
     Field('encap','boolean'),
+    Field('ruleset_id','integer'),
     Field('ruleset_name','string'),
+    Field('modset_id','integer'),
     Field('modset_name','string'),
     migrate=False)
 

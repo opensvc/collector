@@ -436,6 +436,7 @@ def lib_comp_moduleset_detach_service(svcname, modset_id, slave=False):
         if not comp_moduleset_svc_attached(svcname, modset_id, slave):
             return dict(info="moduleset %s is not attached to this service"%moduleset)
     q = db.comp_modulesets_services.modset_svcname == svcname
+    q &= db.comp_modulesets_services.slave == slave
     if isinstance(modset_id, list):
         q &= db.comp_modulesets_services.modset_id.belongs(modset_id)
     else:
@@ -562,6 +563,7 @@ def lib_comp_ruleset_detach_service(svcname, ruleset_id, slave=False):
         if not comp_ruleset_svc_attached(svcname, ruleset_id, slave):
             return dict(info="ruleset %s is not attached to this service"%ruleset)
     q = db.comp_rulesets_services.svcname == svcname
+    q &= db.comp_rulesets_services.slave == slave
     if isinstance(ruleset_id, list):
         q &= db.comp_rulesets_services.ruleset_id.belongs(ruleset_id)
     else:

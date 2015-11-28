@@ -399,8 +399,14 @@ class table_comp_rulesets_services(HtmlTable):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
-        self.cols = ['svc_name', 'encap', 'ruleset_name'] + v_services_cols
+        self.cols = ['svc_name', 'encap', 'ruleset_id', 'ruleset_name'] + v_services_cols
         self.colprops = v_services_colprops
+        self.colprops['ruleset_id'] = HtmlTableColumn(
+                     title='Ruleset id',
+                     field='ruleset_id',
+                     img='key',
+                     display=True,
+                    )
         self.colprops['ruleset_name'] = col_run_ruleset(
                      title='Ruleset',
                      field='ruleset_name',
@@ -420,6 +426,7 @@ class table_comp_rulesets_services(HtmlTable):
             self.colprops[c].table = 'v_comp_services'
         self.span = ['svc_name']
         self.key = ['svc_name']
+        self.force_cols = ['ruleset_id']
         self.checkboxes = True
         self.checkbox_id_table = 'v_comp_services'
         self.ajax_col_values = 'ajax_comp_rulesets_services_col_values'
@@ -432,8 +439,14 @@ class table_comp_rulesets_nodes(HtmlTable):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
-        self.cols = ['nodename', 'ruleset_name'] + v_nodes_cols
+        self.cols = ['nodename', 'ruleset_id', 'ruleset_name'] + v_nodes_cols
         self.colprops = v_nodes_colprops
+        self.colprops['ruleset_id'] = HtmlTableColumn(
+                     title='Ruleset id',
+                     field='ruleset_id',
+                     img='key',
+                     display=True,
+                    )
         self.colprops['ruleset_name'] = col_run_ruleset(
                      title='Ruleset',
                      field='ruleset_name',
@@ -444,7 +457,7 @@ class table_comp_rulesets_nodes(HtmlTable):
         self.colprops['nodename'].display = True
         for c in self.cols:
             self.colprops[c].table = 'v_comp_nodes'
-        self.force_cols = ['os_name']
+        self.force_cols = ['os_name', 'ruleset_id']
         self.span = ['nodename']
         self.key = ['nodename']
         self.checkboxes = True
@@ -3399,8 +3412,14 @@ class table_comp_modulesets_services(HtmlTable):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
-        self.cols = ['svc_name', 'encap', 'modset_name'] + v_services_cols
+        self.cols = ['svc_name', 'encap', 'modset_id', 'modset_name'] + v_services_cols
         self.colprops = v_services_colprops
+        self.colprops['modset_id'] = HtmlTableColumn(
+                     title='Moduleset id',
+                     field='modset_id',
+                     img='key',
+                     display=True,
+                    )
         self.colprops['modset_name'] = HtmlTableColumn(
                      title='Moduleset',
                      field='modset_name',
@@ -3420,6 +3439,7 @@ class table_comp_modulesets_services(HtmlTable):
             self.colprops[c].table = 'v_comp_services'
         self.span = ['svc_name']
         self.key = ['svc_name']
+        self.force_cols = ['modset_id']
         self.checkbox_id_table = 'v_comp_services'
         self.dataable = True
         self.checkboxes = True
@@ -3432,8 +3452,14 @@ class table_comp_modulesets_nodes(HtmlTable):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
-        self.cols = ['nodename', 'modset_name'] + v_nodes_cols
+        self.cols = ['nodename', 'modset_id', 'modset_name'] + v_nodes_cols
         self.colprops = v_nodes_colprops
+        self.colprops['modset_id'] = HtmlTableColumn(
+                     title='Moduleset id',
+                     field='modset_id',
+                     img='key',
+                     display=True,
+                    )
         self.colprops['modset_name'] = HtmlTableColumn(
                      title='Moduleset',
                      table='v_comp_moduleset',
@@ -3445,7 +3471,7 @@ class table_comp_modulesets_nodes(HtmlTable):
         self.colprops['nodename'].display = True
         for c in self.cols:
             self.colprops[c].table = 'v_comp_nodes'
-        self.force_cols = ['os_name']
+        self.force_cols = ['os_name', 'modset_id']
         self.span = ['nodename']
         self.key = ['nodename']
         self.checkbox_id_table = 'v_comp_nodes'

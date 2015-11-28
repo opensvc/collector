@@ -12,8 +12,8 @@ function table_action_menu_init_data(t) {
     "action": "td[cell=1][name$=_c_action]",
     "id": "td[cell=1][name$=_c_id]",
     "tag_id": "td[cell=1][name$=_c_tag_id]",
-    "ruleset_name": "td[cell=1][name$=_c_ruleset_name]",
-    "modset_name": "td[cell=1][name$=_c_modset_name]",
+    "ruleset_id": "td[cell=1][name$=_c_ruleset_id]",
+    "modset_id": "td[cell=1][name$=_c_modset_id]",
     "slave": "td[cell=1][name$=_c_encap]"
   }
 
@@ -160,6 +160,38 @@ function table_action_menu_init_data(t) {
         {
           "selector": ["clicked", "checked", "all"],
           "foldable": true,
+          'title': 'action_menu.on_nodes_modulesets',
+          "cols": ["nodename", "modset_id"],
+          "condition": "nodename+modset_id",
+          "children": [
+            {
+              "title": "action_menu.modset_detach",
+              "class": "icon del16",
+              "fn": "data_action_nodes_modsets_detach_no_selector",
+              "privileges": ["Manager", "NodeManager"],
+              "min": 1
+            },
+          ]
+        },
+        {
+          "selector": ["clicked", "checked", "all"],
+          "foldable": true,
+          'title': 'action_menu.on_nodes_rulesets',
+          "cols": ["nodename", "ruleset_id"],
+          "condition": "nodename+ruleset_id",
+          "children": [
+            {
+              "title": "action_menu.ruleset_detach",
+              "class": "icon del16",
+              "fn": "data_action_nodes_rulesets_detach_no_selector",
+              "privileges": ["Manager", "NodeManager"],
+              "min": 1
+            },
+          ]
+        },
+        {
+          "selector": ["clicked", "checked", "all"],
+          "foldable": true,
           'title': 'action_menu.on_nodes_tags',
           "cols": ["nodename", "tag_id"],
           "condition": "nodename+tag_id",
@@ -263,6 +295,36 @@ function table_action_menu_init_data(t) {
             },
           ]
         },
+        {
+          "selector": ["clicked", "checked", "all"],
+          "foldable": true,
+          'title': 'action_menu.on_services_modulesets',
+          "cols": ["svcname", "modset_id", "slave"],
+          "condition": "svcname+modset_id+slave",
+          "children": [
+            {
+              "title": "action_menu.modset_detach",
+              "class": "icon del16",
+              "fn": "data_action_services_modsets_detach_no_selector",
+              "min": 1
+            },
+          ]
+        },
+        {
+          "selector": ["clicked", "checked", "all"],
+          "foldable": true,
+          'title': 'action_menu.on_services_rulesets',
+          "cols": ["svcname", "ruleset_id", "slave"],
+          "condition": "svcname+ruleset_id+slave",
+          "children": [
+            {
+              "title": "action_menu.ruleset_detach",
+              "class": "icon del16",
+              "fn": "data_action_services_rulesets_detach_no_selector",
+              "min": 1
+            },
+          ]
+        }
       ]
     },
     // section: agent actions
@@ -1576,117 +1638,49 @@ function data_action_ack_actions(t, e) {
 // data action: attach tags to services
 //
 function data_action_services_tags_attach(t, e) {
-  var entry = $(e.target)
-  var cache_id = entry.attr("cache_id")
-  var data = t.action_menu_data_cache[cache_id]
-  var post_data = new Array()
-  table_action_menu_focus_on_leaf(t, entry)
-
-  // form
-  var form = $("<form></form>")
-  form.css({"width": entry.width(), "padding": "0.3em"})
-  form.insertAfter(entry)
-
-  // tag selector
-  var selector = $("<div></div>")
-  selector.uniqueId()
-  form.append(selector)
-  var tag_selector = generic_selector_tags(selector.attr("id"))
-  var yes_no = table_action_menu_yes_no(t, 'action_menu.submit', function(e){
-    var selected = tag_selector.get_selected()
-    for (i=0;i<data.length;i++) {
-      for (j=0;j<selected.length;j++) {
-        post_data.push({
-          'tag_id': selected[j],
-          'svcname': data[i]["svcname"]
-        })
+  data_action_generic_selector(t, e, {
+    "requestor": services_osvcpostrest,
+    "request_service": "R_TAGS_SERVICES",
+    "selector": generic_selector_tags,
+    "request_data_entry": function(selected, data) {
+      return {
+        "tag_id": selected,
+        "svcname": data["svcname"]
       }
     }
-    services_osvcpostrest("R_TAGS_SERVICES", "", "", post_data, function(jd) {
-      if (jd.error && (jd.error.length > 0)) {
-        form.html(services_error_fmt(jd))
-      }
-      if (jd.info && (jd.info.length > 0)) {
-        form.html(services_info_fmt(jd))
-      }
-    },
-    function(xhr, stat, error) {
-      form.html(services_ajax_error_fmt(xhr, stat, error))
-    })
   })
-  form.append(yes_no)
 }
-
 
 //
 // data action: attach tags to nodes
 //
 function data_action_nodes_tags_attach(t, e) {
-  var entry = $(e.target)
-  var cache_id = entry.attr("cache_id")
-  var data = t.action_menu_data_cache[cache_id]
-  var post_data = new Array()
-  table_action_menu_focus_on_leaf(t, entry)
-
-  // form
-  var form = $("<form></form>")
-  form.css({"width": entry.width(), "padding": "0.3em"})
-  form.insertAfter(entry)
-
-  // tag selector
-  var selector = $("<div></div>")
-  selector.uniqueId()
-  form.append(selector)
-  var tag_selector = generic_selector_tags(selector.attr("id"))
-  var yes_no = table_action_menu_yes_no(t, 'action_menu.submit', function(e){
-    var selected = tag_selector.get_selected()
-    for (i=0;i<data.length;i++) {
-      for (j=0;j<selected.length;j++) {
-        post_data.push({
-          'tag_id': selected[j],
-          'nodename': data[i]["nodename"]
-        })
+  data_action_generic_selector(t, e, {
+    "requestor": services_osvcpostrest,
+    "request_service": "R_TAGS_NODES",
+    "selector": generic_selector_tags,
+    "request_data_entry": function(selected, data) {
+      return {
+        "tag_id": selected,
+        "nodename": data["nodename"]
       }
     }
-    services_osvcpostrest("R_TAGS_NODES", "", "", post_data, function(jd) {
-      if (jd.error && (jd.error.length > 0)) {
-        form.html(services_error_fmt(jd))
-      }
-      if (jd.info && (jd.info.length > 0)) {
-        form.html(services_info_fmt(jd))
-      }
-    },
-    function(xhr, stat, error) {
-      form.html(services_ajax_error_fmt(xhr, stat, error))
-    })
   })
-  form.append(yes_no)
 }
 
 //
 // data action: detach nodes tags
 //
 function data_action_nodes_tags_detach(t, e) {
-  var entry = $(e.target)
-  var cache_id = entry.attr("cache_id")
-  var data = t.action_menu_data_cache[cache_id]
-  var del_data = new Array()
-  for (i=0;i<data.length;i++) {
-    del_data.push({
-      'tag_id': data[i]['tag_id'],
-      'nodename': data[i]['nodename']
-    })
-  }
-  services_osvcdeleterest("R_TAGS_NODES", "", "", del_data, function(jd) {
-    if (jd.error && (jd.error.length > 0)) {
-      $(".flash").show("blind").html(services_error_fmt(jd))
+  data_action_generic(t, e, {
+    "requestor": services_osvcdeleterest,
+    "request_service": "R_TAGS_NODES",
+    "request_data_entry": function(data) {
+      return {
+        'tag_id': data['tag_id'],
+        'nodename': data['nodename']
+      }
     }
-    if (jd.info && (jd.info.length > 0)) {
-      $(".flash").show("blind").html(services_info_fmt(jd))
-    }
-  },
-  function(xhr, stat, error) {
-    $(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
   })
 }
 
@@ -1694,31 +1688,86 @@ function data_action_nodes_tags_detach(t, e) {
 // data action: detach services tags
 //
 function data_action_services_tags_detach(t, e) {
-  var entry = $(e.target)
-  var cache_id = entry.attr("cache_id")
-  var data = t.action_menu_data_cache[cache_id]
-  var del_data = new Array()
-  for (i=0;i<data.length;i++) {
-    del_data.push({
-      'tag_id': data[i]['tag_id'],
-      'svcname': data[i]['svcname']
-    })
-  }
-  services_osvcdeleterest("R_TAGS_SERVICES", "", "", del_data, function(jd) {
-    if (jd.error && (jd.error.length > 0)) {
-      $(".flash").show("blind").html(services_error_fmt(jd))
+  data_action_generic(t, e, {
+    "requestor": services_osvcdeleterest,
+    "request_service": "R_TAGS_SERVICES",
+    "request_data_entry": function(data) {
+      return {
+        'tag_id': data['tag_id'],
+        'svcname': data['svcname']
+      }
     }
-    if (jd.info && (jd.info.length > 0)) {
-      $(".flash").show("blind").html(services_info_fmt(jd))
-    }
-  },
-  function(xhr, stat, error) {
-    $(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
   })
 }
 
 //
-// data action: attach modsets from nodes
+// data action: detach nodes modulesets
+//
+function data_action_nodes_modsets_detach_no_selector(t, e) {
+  data_action_generic(t, e, {
+    "requestor": services_osvcdeleterest,
+    "request_service": "R_COMPLIANCE_MODULESETS_NODES",
+    "request_data_entry": function(data) {
+      return {
+        'modset_id': data['modset_id'],
+        'nodename': data['nodename']
+      }
+    }
+  })
+}
+
+//
+// data action: detach services modulesets
+//
+function data_action_services_modsets_detach_no_selector(t, e) {
+  data_action_generic(t, e, {
+    "requestor": services_osvcdeleterest,
+    "request_service": "R_COMPLIANCE_MODULESETS_SERVICES",
+    "request_data_entry": function(data) {
+      return {
+        'modset_id': data['modset_id'],
+        'svcname': data['svcname'],
+        'slave': data['slave']
+      }
+    }
+  })
+}
+
+//
+// data action: detach nodes rulesets
+//
+function data_action_nodes_rulesets_detach_no_selector(t, e) {
+  data_action_generic(t, e, {
+    "requestor": services_osvcdeleterest,
+    "request_service": "R_COMPLIANCE_RULESETS_NODES",
+    "request_data_entry": function(data) {
+      return {
+        'ruleset_id': data['ruleset_id'],
+        'nodename': data['nodename']
+      }
+    }
+  })
+}
+
+//
+// data action: detach services rulesets
+//
+function data_action_services_rulesets_detach_no_selector(t, e) {
+  data_action_generic(t, e, {
+    "requestor": services_osvcdeleterest,
+    "request_service": "R_COMPLIANCE_RULESETS_SERVICES",
+    "request_data_entry": function(data) {
+      return {
+        'ruleset_id': data['ruleset_id'],
+        'svcname': data['svcname'],
+        'slave': data['slave']
+      }
+    }
+  })
+}
+
+//
+// data action: attach modsets to nodes
 //
 function data_action_nodes_modsets_attach(t, e) {
   data_action_generic_selector(t, e, {
@@ -1735,7 +1784,7 @@ function data_action_nodes_modsets_attach(t, e) {
 }
 
 //
-// data action: attach modsets from services
+// data action: attach modsets to services
 //
 function data_action_services_modsets_attach(t, e) {
   data_action_generic_selector(t, e, {
@@ -1753,7 +1802,7 @@ function data_action_services_modsets_attach(t, e) {
 }
 
 //
-// data action: attach rulesets from nodes
+// data action: attach rulesets to nodes
 //
 function data_action_nodes_rulesets_attach(t, e) {
   data_action_generic_selector(t, e, {
@@ -1770,7 +1819,7 @@ function data_action_nodes_rulesets_attach(t, e) {
 }
 
 //
-// data action: attach rulesets from services
+// data action: attach rulesets to services
 //
 function data_action_services_rulesets_attach(t, e) {
   data_action_generic_selector(t, e, {
@@ -1856,6 +1905,38 @@ function data_action_services_rulesets_detach(t, e) {
     }
   })
 }
+
+//
+// customizable data action tool
+//
+function data_action_generic(t, e, options) {
+  var entry = $(e.target)
+  var cache_id = entry.attr("cache_id")
+  var data = t.action_menu_data_cache[cache_id]
+  var request_data = new Array()
+  table_action_menu_focus_on_leaf(t, entry)
+
+  // result
+  var result = $("<div></div>")
+  result.css({"width": entry.width(), "padding": "0.3em"})
+  result.insertAfter(entry)
+
+  for (i=0;i<data.length;i++) {
+    request_data.push(options.request_data_entry(data[i]))
+  }
+  options.requestor(options.request_service, "", "", request_data, function(jd) {
+    if (jd.error && (jd.error.length > 0)) {
+      result.html(services_error_fmt(jd))
+    }
+    if (jd.info && (jd.info.length > 0)) {
+      result.html(services_info_fmt(jd))
+    }
+  },
+  function(xhr, stat, error) {
+    result.html(services_ajax_error_fmt(xhr, stat, error))
+  })
+}
+
 
 //
 // customizable selector based data action
