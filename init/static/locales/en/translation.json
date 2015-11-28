@@ -13,6 +13,10 @@
     "warn_remove": "Warning, this object might be referenced by other objects. Do you really want to delete this compliance object ?"
   },
   "action_menu": {
+    "modset_detach": "Detach modulesets",
+    "modset_attach": "Attach modulesets",
+    "ruleset_detach": "Detach rulesets",
+    "ruleset_attach": "Attach rulesets",
     "nodes_tags_detach": "Detach tags from nodes",
     "services_tags_detach": "Detach tags from services",
     "tag_attach": "Attach tags",

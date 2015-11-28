@@ -399,11 +399,11 @@ class table_comp_rulesets_services(HtmlTable):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
-        self.cols = ['svc_name', 'encap', 'rulesets'] + v_services_cols
+        self.cols = ['svc_name', 'encap', 'ruleset_name'] + v_services_cols
         self.colprops = v_services_colprops
-        self.colprops['rulesets'] = col_run_ruleset(
-                     title='Rule set',
-                     field='rulesets',
+        self.colprops['ruleset_name'] = col_run_ruleset(
+                     title='Ruleset',
+                     field='ruleset_name',
                      img='comp16',
                      display=True,
                     )
@@ -412,6 +412,7 @@ class table_comp_rulesets_services(HtmlTable):
                      field='encap',
                      img='svc',
                      display=True,
+                     _class="boolean",
                     )
         self.colprops['svc_name'].t = self
         self.colprops['svc_name'].display = True
@@ -421,36 +422,9 @@ class table_comp_rulesets_services(HtmlTable):
         self.key = ['svc_name']
         self.checkboxes = True
         self.checkbox_id_table = 'v_comp_services'
-        self += HtmlTableMenu('Ruleset', 'comp16', ['ruleset_attach', 'ruleset_detach'], id='menu_ruleset2')
         self.ajax_col_values = 'ajax_comp_rulesets_services_col_values'
         self.dataable = True
-
-    def line_id(self, o):
-        if o is None:
-            return ""
-        return '_'.join((str(o.id), str(o.encap)))
-
-    def ruleset_detach(self):
-        d = DIV(
-              A(
-                T("Detach ruleset"),
-                _class='detach16',
-                _onclick=self.ajax_submit(args=['detach_ruleset'],
-                                          additional_inputs=self.rulesets.ajax_inputs()),
-              ),
-            )
-        return d
-
-    def ruleset_attach(self):
-        d = DIV(
-              A(
-                T("Attach ruleset"),
-                _class='attach16',
-                _onclick=self.ajax_submit(args=['attach_ruleset'],
-                                          additional_inputs=self.rulesets.ajax_inputs()),
-              ),
-            )
-        return d
+        self.events = ["comp_rulesets_services_change"]
 
 
 class table_comp_rulesets_nodes(HtmlTable):
@@ -458,11 +432,11 @@ class table_comp_rulesets_nodes(HtmlTable):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
-        self.cols = ['nodename', 'rulesets'] + v_nodes_cols
+        self.cols = ['nodename', 'ruleset_name'] + v_nodes_cols
         self.colprops = v_nodes_colprops
-        self.colprops['rulesets'] = col_run_ruleset(
-                     title='Rule set',
-                     field='rulesets',
+        self.colprops['ruleset_name'] = col_run_ruleset(
+                     title='Ruleset',
+                     field='ruleset_name',
                      img='comp16',
                      display=True,
                     )
@@ -475,182 +449,52 @@ class table_comp_rulesets_nodes(HtmlTable):
         self.key = ['nodename']
         self.checkboxes = True
         self.checkbox_id_table = 'v_comp_nodes'
-        self += HtmlTableMenu('Ruleset', 'comp16', ['ruleset_attach', 'ruleset_detach'], id='menu_ruleset2')
         self.ajax_col_values = 'ajax_comp_rulesets_nodes_col_values'
         self.dataable = True
+        self.events = ["comp_rulesets_nodes_change"]
 
-    def ruleset_detach(self):
-        d = DIV(
-              A(
-                T("Detach ruleset"),
-                _class='detach16',
-                _onclick=self.ajax_submit(args=['detach_ruleset'],
-                                          additional_inputs=self.rulesets.ajax_inputs()),
-              ),
-            )
-        return d
-
-    def ruleset_attach(self):
-        d = DIV(
-              A(
-                T("Attach ruleset"),
-                _class='attach16',
-                _onclick=self.ajax_submit(args=['attach_ruleset'],
-                                          additional_inputs=self.rulesets.ajax_inputs()),
-              ),
-            )
-        return d
-
-
-class table_comp_explicit_rules(HtmlTable):
-    def __init__(self, id=None, func=None, innerhtml=None):
-        if id is None and 'tableid' in request.vars:
-            id = request.vars.tableid
-        HtmlTable.__init__(self, id, func, innerhtml)
-        self.cols = ['id', 'ruleset_name', 'variables']
-        self.colprops = {
-            'id': HtmlTableColumn(
-                     title='Ruleset id',
-                     field='id',
-                     table='v_comp_explicit_rulesets',
-                     display=False,
-                     img='comp16',
-                    ),
-            'ruleset_name': HtmlTableColumn(
-                     title='Rule set',
-                     field='ruleset_name',
-                     table='v_comp_explicit_rulesets',
-                     display=True,
-                     img='comp16',
-                    ),
-            'variables': HtmlTableColumn(
-                     title='Variables',
-                     field='variables',
-                     table='v_comp_explicit_rulesets',
-                     display=True,
-                     img='comp16',
-                     _class='rsetvars',
-                    ),
-        }
-        self.span = ['id']
-        self.key = ['id']
-        self.checkboxes = True
-        self.dbfilterable = False
-        self.exportable = False
-        self.ajax_col_values = 'ajax_comp_explicit_rules_col_values'
-        self.checkbox_id_table = 'v_comp_explicit_rulesets'
-        self.dataable = True
-        self.commonalityable = False
-
-@auth.requires_login()
-def ajax_comp_explicit_rules_col_values():
-    t = table_comp_explicit_rules('crn1', 'ajax_comp_rulesets_nodes',
-                                  innerhtml='crn1')
-    col = request.args[0]
-    o = db.v_comp_explicit_rulesets[col]
-    q = db.v_comp_explicit_rulesets.id > 0
-    for f in t.cols:
-        q = _where(q, 'v_comp_explicit_rulesets', t.filter_parse(f), f)
-    q = apply_gen_filters(q, t.tables())
-    t.object_list = db(q).select(o, orderby=o, cacheable=True)
-    return t.col_values_cloud_ungrouped(col)
 
 @auth.requires_login()
 def ajax_comp_rulesets_services_col_values():
-    r = table_comp_explicit_rules('crs1', 'ajax_comp_explicit_rules')
-    t = table_comp_rulesets_services('crs2', 'ajax_comp_rulesets_services')
-    t.rulesets = r
+    t = table_comp_rulesets_services('crs', 'ajax_comp_rulesets_services')
     col = request.args[0]
     o = db.v_comp_services[col]
+    g = db.v_comp_services.svc_name | db.v_comp_services.encap | db.v_comp_services.ruleset_name
     q = _where(None, 'v_comp_services', domain_perms(), 'svc_name')
     for f in t.cols:
         q = _where(q, 'v_comp_services', t.filter_parse(f), f)
-    t.object_list = db(q).select(o, orderby=o, cacheable=True)
+    t.object_list = db(q).select(o, orderby=o, groupby=g, cacheable=True)
     return t.col_values_cloud_ungrouped(col)
 
 @auth.requires_login()
 def ajax_comp_rulesets_nodes_col_values():
-    r = table_comp_explicit_rules('crn1', 'ajax_comp_explicit_rules')
-    t = table_comp_rulesets_nodes('crn2', 'ajax_comp_rulesets_nodes')
-    t.rulesets = r
+    t = table_comp_rulesets_nodes('crn', 'ajax_comp_rulesets_nodes')
     col = request.args[0]
     o = db.v_comp_nodes[col]
+    g = db.v_comp_nodes.nodename | db.v_comp_nodes.ruleset_name
     q = _where(None, 'v_comp_nodes', domain_perms(), 'nodename')
     for f in t.cols:
         q = _where(q, 'v_comp_nodes', t.filter_parse(f), f)
-    t.object_list = db(q).select(o, orderby=o, cacheable=True)
+    t.object_list = db(q).select(o, orderby=o, groupby=g, cacheable=True)
     return t.col_values_cloud_ungrouped(col)
 
 @auth.requires_login()
-def ajax_comp_explicit_rules():
-    r = table_comp_explicit_rules('crn1', 'ajax_comp_explicit_rules')
-
-    o = db.v_comp_explicit_rulesets.ruleset_name
-    q = db.v_comp_explicit_rulesets.id == db.comp_ruleset_team_publication.ruleset_id
-    if 'Manager' not in user_groups():
-        q &= db.comp_ruleset_team_publication.group_id.belongs(user_group_ids())
-    for f in r.cols:
-        q = _where(q, 'v_comp_explicit_rulesets', r.filter_parse(f), f)
-
-    if len(request.args) == 1 and request.args[0] == 'data':
-        n = db(q).count()
-        r.setup_pager(n)
-        cols = r.get_visible_columns()
-        r.object_list = db(q).select(*cols, limitby=(r.pager_start,r.pager_end),
-                                     orderby=o, groupby=o, cacheable=True)
-        return r.table_lines_data(n, html=False)
-    if len(request.args) == 1 and request.args[0] == 'commonality':
-        r.csv_q = q
-        r.csv_groupby = o
-        return t.do_commonality()
-    if len(request.args) == 1 and request.args[0] == 'csv':
-        r.csv_q = q
-        r.csv_orderby = o
-        r.csv_groupby = o
-        return r.csv()
-
-@auth.requires_login()
 def ajax_comp_rulesets_services():
-    r = table_comp_explicit_rules('crs1', 'ajax_comp_explicit_rules')
-    t = table_comp_rulesets_services('crs2', 'ajax_comp_rulesets_services')
-    t.rulesets = r
+    t = table_comp_rulesets_services('crs', 'ajax_comp_rulesets_services')
 
-    try:
-        if len(request.args) == 1 and request.args[0] == 'attach_ruleset':
-            l = t.get_checked()
-            d = {'True': [] , 'False': []}
-            for s in l:
-                _id, _encap = s.split("_")
-                d[_encap].append(_id)
-            if len(d['True']) > 0:
-                comp_attach_svc_rulesets(d['True'], r.get_checked(), slave=True)
-            if len(d['False']) > 0:
-                comp_attach_svc_rulesets(d['False'], r.get_checked(), slave=False)
-        elif len(request.args) == 1 and request.args[0] == 'detach_ruleset':
-            l = t.get_checked()
-            d = {'True': [] , 'False': []}
-            for s in l:
-                _id, _encap = s.split("_")
-                d[_encap].append(_id)
-            if len(d['True']) > 0:
-                comp_detach_svc_rulesets(d['True'], r.get_checked(), slave=True)
-            if len(d['False']) > 0:
-                comp_detach_svc_rulesets(d['False'], r.get_checked(), slave=False)
-    except ToolError as e:
-        response.flash = str(e)
-
-    o = db.v_comp_services.svc_name|db.v_comp_services.encap
+    o = db.v_comp_services.svc_name | db.v_comp_services.encap | db.v_comp_services.ruleset_name
+    g = db.v_comp_services.svc_name | db.v_comp_services.encap | db.v_comp_services.ruleset_name
     q = _where(None, 'v_comp_services', domain_perms(), 'svc_name')
     for f in t.cols:
         q = _where(q, 'v_comp_services', t.filter_parse(f), f)
     q = apply_gen_filters(q, t.tables())
 
     if len(request.args) == 1 and request.args[0] == 'data':
-        n = db(q).count()
+        n = db(q).select(db.v_comp_services.id.count(), cacheable=True).first()._extra[db.v_comp_services.id.count()]
         t.setup_pager(n)
         cols = t.get_visible_columns()
         t.object_list = db(q).select(*cols, limitby=(t.pager_start,t.pager_end),
-                                     orderby=o, cacheable=True)
+                                     groupby=g, orderby=o, cacheable=True)
         return t.table_lines_data(n, html=False)
     if len(request.args) == 1 and request.args[0] == 'commonality':
         t.csv_q = q
@@ -661,19 +505,10 @@ def ajax_comp_rulesets_services():
 
 @auth.requires_login()
 def ajax_comp_rulesets_nodes():
-    r = table_comp_explicit_rules('crn1', 'ajax_comp_explicit_rules')
-    t = table_comp_rulesets_nodes('crn2', 'ajax_comp_rulesets_nodes')
-    t.rulesets = r
-
-    try:
-        if len(request.args) == 1 and request.args[0] == 'attach_ruleset':
-            comp_attach_rulesets(t.get_checked(), r.get_checked())
-        elif len(request.args) == 1 and request.args[0] == 'detach_ruleset':
-            comp_detach_rulesets(t.get_checked(), r.get_checked())
-    except ToolError as e:
-        response.flash = str(e)
+    t = table_comp_rulesets_nodes('crn', 'ajax_comp_rulesets_nodes')
 
     o = db.v_comp_nodes.nodename
+    g = db.v_comp_nodes.nodename | db.v_comp_nodes.ruleset_name
     q = _where(None, 'v_comp_nodes', domain_perms(), 'nodename')
     if 'Manager' not in user_groups():
         q &= db.v_comp_nodes.team_responsible.belongs(user_groups())
@@ -682,11 +517,11 @@ def ajax_comp_rulesets_nodes():
     q = apply_gen_filters(q, t.tables())
 
     if len(request.args) == 1 and request.args[0] == 'data':
-        n = db(q).count()
+        n = db(q).select(db.v_comp_nodes.id.count(), cacheable=True).first()._extra[db.v_comp_nodes.id.count()]
         t.setup_pager(n)
         cols = t.get_visible_columns()
         t.object_list = db(q).select(*cols, limitby=(t.pager_start,t.pager_end),
-                                     orderby=o, cacheable=True)
+                                     groupby=g, orderby=o, cacheable=True)
         return t.table_lines_data(n, html=False)
     if len(request.args) == 1 and request.args[0] == 'commonality':
         t.csv_q = q
@@ -1776,308 +1611,6 @@ def comp_detach_filterset(ids=[]):
          'detached filterset %(x)s',
          dict(x=x))
 
-@auth.requires_membership('CompManager')
-def comp_detach_rulesets(node_ids=[], ruleset_ids=[], node_names=[]):
-    if len(node_ids) + len(node_names) == 0:
-        raise ToolError("detach ruleset failed: no node selected")
-    if len(ruleset_ids) == 0:
-        raise ToolError("detach ruleset failed: no ruleset selected")
-
-    if len(node_ids) > 0:
-        q = db.v_nodes.id.belongs(node_ids)
-        rows = db(q).select(db.v_nodes.nodename, cacheable=True)
-        node_names += [r.nodename for r in rows]
-
-    nodes = ', '.join(node_names)
-
-    for rsid in ruleset_ids:
-        for node in node_names:
-            q = db.comp_rulesets_nodes.nodename == node
-            q &= db.comp_rulesets_nodes.ruleset_id == rsid
-            db(q).delete()
-    table_modified("comp_rulesets_nodes")
-
-    for node in node_names:
-        update_dash_rsetdiff_node(node)
-
-    q = db.comp_rulesets.id.belongs(ruleset_ids)
-    rows = db(q).select(db.comp_rulesets.ruleset_name, cacheable=True)
-    rulesets = ', '.join([r.ruleset_name for r in rows])
-    _log('compliance.ruleset.node.detach',
-         'detached rulesets %(rulesets)s from nodes %(nodes)s',
-         dict(rulesets=rulesets, nodes=nodes))
-
-@auth.requires_membership('CompManager')
-def comp_attach_rulesets(node_ids=[], ruleset_ids=[], node_names=[]):
-    return internal_comp_attach_rulesets(node_ids, ruleset_ids, node_names)
-
-def internal_comp_attach_rulesets(node_ids=[], ruleset_ids=[], node_names=[]):
-    if len(node_ids) + len(node_names) == 0:
-        raise ToolError("attach ruleset failed: no node selected")
-    if len(ruleset_ids) == 0:
-        raise ToolError("attach ruleset failed: no ruleset selected")
-
-    log = []
-
-    if len(node_ids) > 0:
-        q = db.v_nodes.id.belongs(node_ids)
-        rows = db(q).select(db.v_nodes.nodename, cacheable=True)
-        node_names += [r.nodename for r in rows]
-
-    nodes = ', '.join(node_names)
-
-    for rsid in ruleset_ids:
-        for node in node_names:
-            q = db.comp_rulesets_nodes.nodename == node
-            q &= db.comp_rulesets_nodes.ruleset_id == rsid
-            if db(q).count() == 0:
-                db.comp_rulesets_nodes.insert(nodename=node,
-                                            ruleset_id=rsid)
-    table_modified("comp_rulesets_nodes")
-
-    for node in node_names:
-        update_dash_rsetdiff_node(node)
-
-    q = db.comp_rulesets.id.belongs(ruleset_ids)
-    rows = db(q).select(db.comp_rulesets.ruleset_name, cacheable=True)
-    rulesets = ', '.join([r.ruleset_name for r in rows])
-
-    log.append([
-      0,
-      'compliance.ruleset.node.attach',
-      'attached rulesets %(rulesets)s to nodes %(nodes)s',
-      dict(rulesets=rulesets, nodes=nodes)
-    ])
-
-    for ret, action, fmt, d in log:
-        _log(action, fmt, d)
-
-    return log
-
-@auth.requires_membership('CompManager')
-def comp_detach_svc_modulesets(svc_ids=[], modset_ids=[], svc_names=[], slave=True):
-    return internal_comp_detach_svc_modulesets(svc_ids, modset_ids, svc_names, slave)
-
-@auth.requires_membership('CompManager')
-def comp_attach_svc_modulesets(svc_ids=[], modset_ids=[], svc_names=[], slave=True):
-    return internal_comp_attach_svc_modulesets(svc_ids, modset_ids, svc_names, slave)
-
-def internal_comp_detach_svc_modulesets(svc_ids=[], modset_ids=[], svc_names=[], slave=True):
-    if len(svc_ids) + len(svc_names) == 0:
-        raise ToolError("detach moduleset failed: no service selected")
-    if len(modset_ids) == 0:
-        raise ToolError("detach moduleset failed: no moduleset selected")
-
-    log = []
-
-    if len(svc_ids) > 0:
-        q = db.services.id.belongs(svc_ids)
-        rows = db(q).select(db.services.svc_name, cacheable=True)
-        svc_names += [r.svc_name for r in rows]
-
-    # init modset name cache
-    modset_names = get_modset_names(modset_ids)
-
-    for modset_id in modset_ids:
-        for svc in svc_names:
-            sl = slave
-            if slave and not has_slave(svc):
-                sl = False
-            q = db.comp_modulesets_services.modset_svcname == svc
-            q &= db.comp_modulesets_services.modset_id == modset_id
-            q &= db.comp_modulesets_services.slave == sl
-            row = db(q).select(cacheable=True).first()
-            if row is None:
-                log.append([
-                  0,
-                  'compliance.moduleset.service.detach',
-                  'moduleset %(moduleset)s already detached from service %(service)s (slave=%(slave)s)',
-                  dict(moduleset=modset_names[modset_id], service=svc, slave=str(slave)),
-                ])
-                continue
-            db(q).delete()
-            log.append([
-              0,
-              'compliance.moduleset.service.detach',
-              'moduleset %(moduleset)s detached from service %(service)s (slave=%(slave)s)',
-              dict(moduleset=modset_names[modset_id], service=svc, slave=str(slave)),
-            ])
-
-    table_modified("comp_modulesets_services")
-
-    for ret, action, fmt, d in log:
-        _log(action, fmt, d)
-
-    for svc in svc_names:
-        update_dash_moddiff(svc)
-
-    return log
-
-def internal_comp_attach_svc_modulesets(svc_ids=[], modset_ids=[], svc_names=[], slave=True):
-    if len(svc_ids) + len(svc_names) == 0:
-        raise ToolError("attach moduleset failed: no service selected")
-    if len(modset_ids) == 0:
-        raise ToolError("attach moduleset failed: no moduleset selected")
-
-    log = []
-
-    if len(svc_ids) > 0:
-        q = db.services.id.belongs(svc_ids)
-        rows = db(q).select(db.services.svc_name, cacheable=True)
-        svc_names += [r.svc_name for r in rows]
-
-    # init modset name cache
-    modset_names = get_modset_names(modset_ids)
-
-    for modset_id in modset_ids:
-        for svc in svc_names:
-            sl = slave
-            if slave and not has_slave(svc):
-                sl = False
-            q = db.comp_modulesets_services.modset_svcname == svc
-            q &= db.comp_modulesets_services.modset_id == modset_id
-            q &= db.comp_modulesets_services.slave == sl
-            row = db(q).select(cacheable=True).first()
-            if row is not None:
-                log.append([
-                  0,
-                  'compliance.moduleset.service.attach',
-                  'moduleset %(moduleset)s already attached to service %(service)s (slave=%(slave)s)',
-                  dict(moduleset=modset_names[modset_id], service=svc, slave=str(slave)),
-                ])
-                continue
-            db.comp_modulesets_services.insert(modset_svcname=svc,
-                                               slave=sl,
-                                               modset_id=modset_id)
-            log.append([
-              0,
-              'compliance.moduleset.service.attach',
-              'moduleset %(moduleset)s attached to service %(service)s (slave=%(slave)s)',
-              dict(moduleset=modset_names[modset_id], service=svc, slave=str(slave)),
-            ])
-
-    table_modified("comp_modulesets_services")
-
-    for ret, action, fmt, d in log:
-        _log(action, fmt, d)
-
-    for svc in svc_names:
-        update_dash_moddiff(svc)
-
-    return log
-
-@auth.requires_membership('CompManager')
-def comp_detach_svc_rulesets(svc_ids=[], ruleset_ids=[], svc_names=[], slave=True):
-    return internal_comp_detach_svc_rulesets(svc_ids, ruleset_ids, svc_names, slave)
-
-@auth.requires_membership('CompManager')
-def comp_attach_svc_rulesets(svc_ids=[], ruleset_ids=[], svc_names=[], slave=True):
-    return internal_comp_attach_svc_rulesets(svc_ids, ruleset_ids, svc_names, slave)
-
-def internal_comp_detach_svc_rulesets(svc_ids=[], ruleset_ids=[], svc_names=[], slave=True):
-    if len(svc_ids) + len(svc_names) == 0:
-        raise ToolError("detach ruleset failed: no service selected")
-    if len(ruleset_ids) == 0:
-        raise ToolError("detach ruleset failed: no ruleset selected")
-
-    log = []
-
-    if len(svc_ids) > 0:
-        q = db.services.id.belongs(svc_ids)
-        rows = db(q).select(db.services.svc_name, cacheable=True)
-        svc_names += [r.svc_name for r in rows]
-
-    # init rset name cache
-    rset_names = get_rset_names(ruleset_ids)
-
-    for rsid in ruleset_ids:
-        for svc in svc_names:
-            sl = slave
-            if slave and not has_slave(svc):
-                sl = False
-            q = db.comp_rulesets_services.svcname == svc
-            q &= db.comp_rulesets_services.ruleset_id == rsid
-            q &= db.comp_rulesets_services.slave == sl
-            row = db(q).select(cacheable=True).first()
-            if row is None:
-                log.append([
-                  0,
-                  'compliance.ruleset.service.detach',
-                  'ruleset %(ruleset)s already detached from service %(service)s (slave=%(slave)s)',
-                  dict(ruleset=rset_names[rsid], service=svc, slave=str(slave)),
-                ])
-                continue
-            db(q).delete()
-            log.append([
-              0,
-              'compliance.ruleset.service.detach',
-              'ruleset %(ruleset)s detached from service %(service)s (slave=%(slave)s)',
-              dict(ruleset=rset_names[rsid], service=svc, slave=str(slave)),
-            ])
-
-    table_modified("comp_rulesets_services")
-
-    for ret, action, fmt, d in log:
-        _log(action, fmt, d)
-
-    for svc in svc_names:
-        update_dash_rsetdiff(svc)
-
-    return log
-
-def internal_comp_attach_svc_rulesets(svc_ids=[], ruleset_ids=[], svc_names=[], slave=True):
-    if len(svc_ids) + len(svc_names) == 0:
-        raise ToolError("attach ruleset failed: no service selected")
-    if len(ruleset_ids) == 0:
-        raise ToolError("attach ruleset failed: no ruleset selected")
-
-    log = []
-
-    if len(svc_ids) > 0:
-        q = db.services.id.belongs(svc_ids)
-        rows = db(q).select(db.services.svc_name, cacheable=True)
-        svc_names += [r.svc_name for r in rows]
-
-    # init rset name cache
-    rset_names = get_rset_names(ruleset_ids)
-
-    for rsid in ruleset_ids:
-        for svc in svc_names:
-            sl = slave
-            if slave and not has_slave(svc):
-                sl = False
-            q = db.comp_rulesets_services.svcname == svc
-            q &= db.comp_rulesets_services.ruleset_id == rsid
-            q &= db.comp_rulesets_services.slave == sl
-            row = db(q).select(cacheable=True).first()
-            if row is not None:
-                log.append([
-                  0,
-                  'compliance.ruleset.service.attach',
-                  'ruleset %(ruleset)s already attached to service %(service)s (slave=%(slave)s)',
-                  dict(ruleset=rset_names[rsid], service=svc, slave=str(slave)),
-                ])
-                continue
-            db.comp_rulesets_services.insert(svcname=svc,
-                                             slave=sl,
-                                             ruleset_id=rsid)
-            log.append([
-              0,
-              'compliance.ruleset.service.attach',
-              'ruleset %(ruleset)s attached to service %(service)s (slave=%(slave)s)',
-              dict(ruleset=rset_names[rsid], service=svc, slave=str(slave)),
-            ])
-
-    table_modified("comp_rulesets_services")
-
-    for ret, action, fmt, d in log:
-        _log(action, fmt, d)
-
-    for svc in svc_names:
-        update_dash_rsetdiff(svc)
-
-    return log
-
 @auth.requires_login()
 def ajax_comp_rulesets_col_values():
     t = table_comp_rulesets('cr0', 'ajax_comp_rulesets')
@@ -2268,39 +1801,12 @@ def comp_rules_load():
 
 @auth.requires_login()
 def comp_rulesets_services_attachment():
-    r = table_comp_explicit_rules('crs1', 'ajax_comp_explicit_rules')
-    t = table_comp_rulesets_services('crs2', 'ajax_comp_rulesets_services')
-    t.rulesets = r
-    t.checkbox_names.append(r.id+'_ck')
+    t = table_comp_rulesets_services('crs', 'ajax_comp_rulesets_services')
     t = DIV(
              DIV(
                t.html(),
-               _style="""min-width:60%;
-                         max-width:60%;
-                         float:left;
-                         border-right:0px solid;
-                      """,
-               _id='crs2',
+               _id='crs',
              ),
-             DIV(
-               r.html(),
-               _style="""min-width:40%;
-                         max-width:40%;
-                         float:left;
-                      """,
-               _id='crs1',
-             ),
-             DIV(XML('&nbsp;'), _class='spacer'),
-             SCRIPT("""
-             function calign() {
-              $("#crs1").find("div.theader").css({height: $("#crs2").find("div.theader").height()})
-              $("#crs1").find("tr.theader").css({height: $("#crs2").find("tr.theader").height()})
-             }
-             try {
-              osvc.tables["crs2"].on_change = calign
-              osvc.tables["crs1"].on_change = calign
-             } catch(e) {}
-             """),
            )
     return dict(table=t)
 
@@ -2309,39 +1815,12 @@ def comp_rulesets_services_attachment_load():
 
 @auth.requires_login()
 def comp_rulesets_nodes_attachment():
-    r = table_comp_explicit_rules('crn1', 'ajax_comp_explicit_rules')
-    t = table_comp_rulesets_nodes('crn2', 'ajax_comp_rulesets_nodes')
-    t.rulesets = r
-    t.checkbox_names.append(r.id+'_ck')
+    t = table_comp_rulesets_nodes('crn', 'ajax_comp_rulesets_nodes')
     t = DIV(
              DIV(
                t.html(),
-               _style="""min-width:60%;
-                         max-width:60%;
-                         float:left;
-                         border-right:0px solid;
-                      """,
-               _id='crn2',
+               _id='crn',
              ),
-             DIV(
-               r.html(),
-               _style="""min-width:40%;
-                         max-width:40%;
-                         float:left;
-                      """,
-               _id='crn1',
-             ),
-             DIV(XML('&nbsp;'), _class='spacer'),
-             SCRIPT("""
-             function calign() {
-              $("#crn1").find("div.theader").css({height: $("#crn2").find("div.theader").height()})
-              $("#crn1").find("tr.theader").css({height: $("#crn2").find("tr.theader").height()})
-             }
-             try {
-              osvc.tables["crn2"].on_change = calign
-              osvc.tables["crn1"].on_change = calign
-             } catch(e) {}
-             """),
            )
     return dict(table=t)
 
@@ -3915,49 +3394,16 @@ def ajax_comp_moduleset():
 
     return t.html()
 
-class table_comp_moduleset_short(HtmlTable):
-    def __init__(self, id=None, func=None, innerhtml=None):
-        if id is None and 'tableid' in request.vars:
-            id = request.vars.tableid
-        HtmlTable.__init__(self, id, func, innerhtml)
-        self.cols = ['id', 'modset_name']
-        self.colprops = {
-            'id': HtmlTableColumn(
-                     title='Moduleset Id',
-                     table='comp_moduleset',
-                     field='id',
-                     display=False,
-                     img='action16',
-                    ),
-            'modset_name': HtmlTableColumn(
-                     title='Moduleset',
-                     table='comp_moduleset',
-                     field='modset_name',
-                     display=True,
-                     img='action16',
-                    ),
-        }
-        self.span = ['id']
-        self.key = ['id']
-        self.checkboxes = True
-        self.dbfilterable = False
-        self.exportable = False
-        self.columnable = False
-        self.dataable = True
-        self.commonalityable = False
-        self.checkbox_id_table = 'comp_moduleset'
-        self.ajax_col_values = 'ajax_comp_modulesets_short_col_values'
-
 class table_comp_modulesets_services(HtmlTable):
     def __init__(self, id=None, func=None, innerhtml=None):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
-        self.cols = ['svc_name', 'encap', 'modulesets'] + v_services_cols
+        self.cols = ['svc_name', 'encap', 'modset_name'] + v_services_cols
         self.colprops = v_services_colprops
-        self.colprops['modulesets'] = HtmlTableColumn(
-                     title='Module set',
-                     field='modulesets',
+        self.colprops['modset_name'] = HtmlTableColumn(
+                     title='Moduleset',
+                     field='modset_name',
                      img='actions',
                      display=True,
                     )
@@ -3978,47 +3424,20 @@ class table_comp_modulesets_services(HtmlTable):
         self.dataable = True
         self.checkboxes = True
         self.dbfilterable = False
-        self += HtmlTableMenu('Moduleset', 'actions', ['moduleset_attach', 'moduleset_detach'], id='menu_moduleset2')
         self.ajax_col_values = 'ajax_comp_modulesets_services_col_values'
-
-    def line_id(self, o):
-        if o is None:
-            return ""
-        return '_'.join((str(o.id), str(o.encap)))
-
-    def moduleset_detach(self):
-        d = DIV(
-              A(
-                T("Detach"),
-                _class='detach16',
-                _onclick=self.ajax_submit(args=['detach_moduleset'],
-                                          additional_inputs=self.modulesets.ajax_inputs()),
-              ),
-            )
-        return d
-
-    def moduleset_attach(self):
-        d = DIV(
-              A(
-                T("Attach"),
-                _class='attach16',
-                _onclick=self.ajax_submit(args=['attach_moduleset'],
-                                          additional_inputs=self.modulesets.ajax_inputs()),
-              ),
-            )
-        return d
+        self.events = ["comp_modulesets_services_change"]
 
 class table_comp_modulesets_nodes(HtmlTable):
     def __init__(self, id=None, func=None, innerhtml=None):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
-        self.cols = ['nodename', 'modulesets'] + v_nodes_cols
+        self.cols = ['nodename', 'modset_name'] + v_nodes_cols
         self.colprops = v_nodes_colprops
-        self.colprops['modulesets'] = HtmlTableColumn(
-                     title='Module set',
-                     table='comp_moduleset',
-                     field='modulesets',
+        self.colprops['modset_name'] = HtmlTableColumn(
+                     title='Moduleset',
+                     table='v_comp_moduleset',
+                     field='modset_name',
                      img='actions',
                      display=True,
                     )
@@ -4033,186 +3452,45 @@ class table_comp_modulesets_nodes(HtmlTable):
         self.dataable = True
         self.checkboxes = True
         self.dbfilterable = False
-        self += HtmlTableMenu('Moduleset', 'actions', ['moduleset_attach', 'moduleset_detach'], id='menu_moduleset2')
         self.ajax_col_values = 'ajax_comp_modulesets_nodes_col_values'
-
-    def moduleset_detach(self):
-        d = DIV(
-              A(
-                T("Detach"),
-                _class='detach16',
-                _onclick=self.ajax_submit(args=['detach_moduleset'],
-                                          additional_inputs=self.modulesets.ajax_inputs()),
-              ),
-            )
-        return d
-
-    def moduleset_attach(self):
-        d = DIV(
-              A(
-                T("Attach"),
-                _class='attach16',
-                _onclick=self.ajax_submit(args=['attach_moduleset'],
-                                          additional_inputs=self.modulesets.ajax_inputs()),
-              ),
-            )
-        return d
-
-@auth.requires_membership('CompManager')
-def comp_detach_modulesets(node_ids=[], modset_ids=[]):
-    if len(node_ids) == 0:
-        raise ToolError("detach modulesets failed: no node selected")
-    if len(modset_ids) == 0:
-        raise ToolError("detach modulesets failed: no moduleset selected")
-
-    q = db.v_nodes.id.belongs(node_ids)
-    rows = db(q).select(db.v_nodes.nodename)
-    node_names = [r.nodename for r in rows]
-    nodes = ', '.join(node_names)
-
-    for msid in modset_ids:
-        for node in node_names:
-            q = db.comp_node_moduleset.modset_node == node
-            q &= db.comp_node_moduleset.modset_id == msid
-            db(q).delete()
-    table_modified("comp_node_moduleset")
-    for node in node_names:
-        update_dash_moddiff_node(node)
-
-    q = db.comp_moduleset.id.belongs(modset_ids)
-    rows = db(q).select(db.comp_moduleset.modset_name)
-    modulesets = ', '.join([r.modset_name for r in rows])
-    _log('compliance.moduleset.node.detach',
-         'detached modulesets %(modulesets)s from nodes %(nodes)s',
-         dict(modulesets=modulesets, nodes=nodes))
-
-@auth.requires_membership('CompManager')
-def comp_attach_modulesets(node_ids=[], modset_ids=[], node_names=[]):
-    return internal_comp_attach_modulesets(node_ids, modset_ids, node_names)
-
-def internal_comp_attach_modulesets(node_ids=[], modset_ids=[], node_names=[]):
-    if len(node_ids+node_names) == 0:
-        raise ToolError("attach modulesets failed: no node selected")
-    if len(modset_ids) == 0:
-        raise ToolError("attach modulesets failed: no moduleset selected")
-
-    log = []
-
-    if len(node_ids) > 0:
-        q = db.v_nodes.id.belongs(node_ids)
-        rows = db(q).select(db.v_nodes.nodename)
-        node_names += [r.nodename for r in rows]
-
-    nodes = ', '.join(node_names)
-
-    for msid in modset_ids:
-        for node in node_names:
-            q = db.comp_node_moduleset.modset_node == node
-            q &= db.comp_node_moduleset.modset_id == msid
-            if db(q).count() == 0:
-                db.comp_node_moduleset.insert(modset_node=node,
-                                            modset_id=msid)
-    table_modified("comp_node_moduleset")
-    for node in node_names:
-        update_dash_moddiff_node(node)
-
-    q = db.comp_moduleset.id.belongs(modset_ids)
-    rows = db(q).select(db.comp_moduleset.modset_name)
-    modulesets = ', '.join([r.modset_name for r in rows])
-
-    log.append([
-      0,
-      'compliance.moduleset.node.attach',
-      'attached modulesets %(modulesets)s to nodes %(nodes)s',
-      dict(modulesets=modulesets, nodes=nodes)
-    ])
-
-    for ret, action, fmt, d in log:
-        _log(action, fmt, d)
-
-    return log
-
-@auth.requires_login()
-def ajax_comp_modulesets_short_col_values():
-    r = table_comp_moduleset_short('cmn1', 'ajax_comp_modulesets_nodes')
-    t = table_comp_modulesets_nodes('cmn2', 'ajax_comp_modulesets_nodes')
-    t.modulesets = r
-    col = request.args[0]
-    o = db.comp_moduleset[col]
-    g = db.comp_moduleset.id
-    q = db.comp_moduleset.id > 0
-    if 'Manager' not in user_groups():
-        q &= db.comp_moduleset_team_publication.modset_id == db.comp_moduleset.id
-        q &= db.comp_moduleset_team_publication.group_id.belongs(user_group_ids())
-    for f in r.cols:
-        q = _where(q, 'comp_moduleset', r.filter_parse(f), f)
-    q = apply_gen_filters(q, r.tables())
-    r.object_list = db(q).select(o, orderby=o, groupby=g)
-    return r.col_values_cloud_ungrouped(col)
+        self.events = ["comp_node_moduleset_change"]
 
 @auth.requires_login()
 def ajax_comp_modulesets_services_col_values():
-    r = table_comp_moduleset_short('cms1', 'ajax_comp_modulesets_services')
-    t = table_comp_modulesets_services('cms2', 'ajax_comp_modulesets_services')
-    t.modulesets = r
+    t = table_comp_modulesets_services('cms', 'ajax_comp_modulesets_services')
     col = request.args[0]
     o = db.v_comp_services[col]
+    g = db.v_comp_services.svc_name | db.v_comp_services.encap | db.v_comp_services.modset_name
     q = _where(None, 'v_comp_services', domain_perms(), 'svc_name')
     if 'Manager' not in user_groups():
         q &= db.v_comp_services.team_responsible.belongs(user_groups())
     for f in t.cols:
         q = _where(q, 'v_comp_services', t.filter_parse(f), f)
     q = apply_gen_filters(q, t.tables())
-    t.object_list = db(q).select(o, orderby=o)
+    t.object_list = db(q).select(o, groupby=g, orderby=o)
     return t.col_values_cloud_ungrouped(col)
 
 @auth.requires_login()
 def ajax_comp_modulesets_nodes_col_values():
-    r = table_comp_moduleset_short('cmn1', 'ajax_comp_modulesets_nodes')
-    t = table_comp_modulesets_nodes('cmn2', 'ajax_comp_modulesets_nodes')
-    t.modulesets = r
+    t = table_comp_modulesets_nodes('cmn', 'ajax_comp_modulesets_nodes')
     col = request.args[0]
     o = db.v_comp_nodes[col]
+    g = db.v_comp_nodes.nodename | db.v_comp_nodes.modset_name
     q = _where(None, 'v_comp_nodes', domain_perms(), 'nodename')
     if 'Manager' not in user_groups():
         q &= db.v_comp_nodes.team_responsible.belongs(user_groups())
     for f in t.cols:
         q = _where(q, 'v_comp_nodes', t.filter_parse(f), f)
     q = apply_gen_filters(q, t.tables())
-    t.object_list = db(q).select(o, orderby=o)
+    t.object_list = db(q).select(o, groupby=g, orderby=o)
     return t.col_values_cloud_ungrouped(col)
 
 @auth.requires_login()
 def ajax_comp_modulesets_services():
-    r = table_comp_moduleset_short('cms1', 'ajax_comp_modulesets_short')
-    t = table_comp_modulesets_services('cms2', 'ajax_comp_modulesets_services')
-    t.modulesets = r
+    t = table_comp_modulesets_services('cms', 'ajax_comp_modulesets_services')
 
-    try:
-        if len(request.args) == 1 and request.args[0] == 'attach_moduleset':
-            l = t.get_checked()
-            d = {'True': [] , 'False': []}
-            for s in l:
-                _id, _encap = s.split("_")
-                d[_encap].append(_id)
-            if len(d['True']) > 0:
-                comp_attach_svc_modulesets(d['True'], r.get_checked(), slave=True)
-            if len(d['False']) > 0:
-                comp_attach_svc_modulesets(d['False'], r.get_checked(), slave=False)
-        elif len(request.args) == 1 and request.args[0] == 'detach_moduleset':
-            l = t.get_checked()
-            d = {'True': [] , 'False': []}
-            for s in l:
-                _id, _encap = s.split("_")
-                d[_encap].append(_id)
-            if len(d['True']) > 0:
-                comp_detach_svc_modulesets(d['True'], r.get_checked(), slave=True)
-            if len(d['False']) > 0:
-                comp_detach_svc_modulesets(d['False'], r.get_checked(), slave=False)
-    except ToolError as e:
-        response.flash = str(e)
-
-    o = db.v_comp_services.svc_name
+    o = db.v_comp_services.svc_name | db.v_comp_services.encap | db.v_comp_services.modset_name
+    g = db.v_comp_services.svc_name | db.v_comp_services.encap | db.v_comp_services.modset_name
     q = _where(None, 'v_comp_services', domain_perms(), 'svc_name')
     if 'Manager' not in user_groups():
         q &= db.v_comp_services.team_responsible.belongs(user_groups())
@@ -4221,10 +3499,10 @@ def ajax_comp_modulesets_services():
     q = apply_gen_filters(q, t.tables())
 
     if len(request.args) == 1 and request.args[0] == 'data':
-        n = db(q).count()
+        n = db(q).select(db.v_comp_services.id.count(), cacheable=True).first()._extra[db.v_comp_services.id.count()]
         t.setup_pager(n)
         cols = t.get_visible_columns()
-        t.object_list = db(q).select(*cols, limitby=(t.pager_start,t.pager_end), orderby=o)
+        t.object_list = db(q).select(*cols, groupby=g, limitby=(t.pager_start,t.pager_end), orderby=o)
         return t.table_lines_data(n, html=False)
     if len(request.args) == 1 and request.args[0] == 'commonality':
         t.csv_q = q
@@ -4236,20 +3514,10 @@ def ajax_comp_modulesets_services():
 
 @auth.requires_login()
 def ajax_comp_modulesets_nodes():
-    r = table_comp_moduleset_short('cmn1', 'ajax_comp_modulesets_short')
-    t = table_comp_modulesets_nodes('cmn2', 'ajax_comp_modulesets_nodes')
-    t.modulesets = r
-
-    try:
-        if len(request.args) == 1 and request.args[0] == 'attach_moduleset':
-            comp_attach_modulesets(t.get_checked(), r.get_checked())
-        elif len(request.args) == 1 and request.args[0] == 'detach_moduleset':
-            comp_detach_modulesets(t.get_checked(), r.get_checked())
-    except ToolError as e:
-        response.flash = str(e)
-
+    t = table_comp_modulesets_nodes('cmn', 'ajax_comp_modulesets_nodes')
 
     o = db.v_comp_nodes.nodename
+    g = db.v_comp_nodes.nodename | db.v_comp_nodes.modset_name
     q = _where(None, 'v_comp_nodes', domain_perms(), 'nodename')
     if 'Manager' not in user_groups():
         q &= db.v_comp_nodes.team_responsible.belongs(user_groups())
@@ -4258,10 +3526,10 @@ def ajax_comp_modulesets_nodes():
     q = apply_gen_filters(q, t.tables())
 
     if len(request.args) == 1 and request.args[0] == 'data':
-        n = db(q).count()
+        n = db(q).select(db.v_comp_nodes.id.count(), cacheable=True).first()._extra[db.v_comp_nodes.id.count()]
         t.setup_pager(n)
         cols = t.get_visible_columns()
-        t.object_list = db(q).select(*cols, limitby=(t.pager_start,t.pager_end), orderby=o)
+        t.object_list = db(q).select(*cols, groupby=g, limitby=(t.pager_start,t.pager_end), orderby=o)
         return t.table_lines_data(n, html=False)
     if len(request.args) == 1 and request.args[0] == 'commonality':
         t.csv_q = q
@@ -4270,36 +3538,6 @@ def ajax_comp_modulesets_nodes():
         t.csv_q = q
         t.csv_o = o
         return t.csv()
-
-@auth.requires_login()
-def ajax_comp_modulesets_short():
-    r = table_comp_moduleset_short('cmn1', 'ajax_comp_modulesets_short')
-    t = table_comp_modulesets_nodes('cmn2', 'ajax_comp_modulesets_nodes')
-    t.modulesets = r
-
-    o = db.comp_moduleset.modset_name
-    j = db.comp_moduleset.id == db.comp_moduleset_team_publication.modset_id
-    l1 = db.comp_moduleset_team_publication.on(j)
-    j = db.comp_moduleset.id == db.comp_moduleset_team_responsible.modset_id
-    l2 = db.comp_moduleset_team_responsible.on(j)
-    q = db.comp_moduleset.id > 0
-    if 'Manager' not in user_groups():
-        q &= db.comp_moduleset_team_publication.group_id.belongs(user_group_ids())
-    for f in r.cols:
-        q = _where(q, 'comp_moduleset', r.filter_parse(f), f)
-
-    if len(request.args) == 1 and request.args[0] == 'data':
-        n = db(q).count()
-        r.setup_pager(n)
-        r.object_list = db(q).select(limitby=(r.pager_start,r.pager_end),
-                                     orderby=o, groupby=o, left=(l1,l2))
-        return r.table_lines_data(n, html=False)
-
-    if len(request.args) == 1 and request.args[0] == 'csv':
-        r.csv_q = q
-        r.csv_o = o
-        r.csv_left = l
-        return r.csv()
 
 @auth.requires_login()
 def comp_modules():
@@ -4313,39 +3551,12 @@ def comp_modules():
 
 @auth.requires_login()
 def comp_modulesets_services():
-    r = table_comp_moduleset_short('cms1', 'ajax_comp_modulesets_short')
-    t = table_comp_modulesets_services('cms2', 'ajax_comp_modulesets_services')
-    t.modulesets = r
-    t.checkbox_names.append(r.id+'_ck')
+    t = table_comp_modulesets_services('cms', 'ajax_comp_modulesets_services')
     t = DIV(
              DIV(
                t.html(),
-               _style="""min-width:60%;
-                         max-width:60%;
-                         float:left;
-                         border-right:0px solid;
-                      """,
-               _id='cms2',
+               _id='cms',
              ),
-             DIV(
-               r.html(),
-               _style="""min-width:40%;
-                         max-width:40%;
-                         float:left;
-                      """,
-               _id='cms1',
-             ),
-             DIV(XML('&nbsp;'), _class='spacer'),
-             SCRIPT("""
-             function calign() {
-              $("#cms1").find("div.theader").css({height: $("#cms2").find("div.theader").height()})
-              $("#cms1").find("tr.theader").css({height: $("#cms2").find("tr.theader").height()})
-             }
-             try {
-              osvc.tables["cms2"].on_change = calign
-              osvc.tables["cms1"].on_change = calign
-             } catch(e) {}
-             """),
            )
     return dict(table=t)
 
@@ -4354,39 +3565,12 @@ def comp_modulesets_services_load():
 
 @auth.requires_login()
 def comp_modulesets_nodes():
-    r = table_comp_moduleset_short('cmn1', 'ajax_comp_modulesets_short')
-    t = table_comp_modulesets_nodes('cmn2', 'ajax_comp_modulesets_nodes')
-    t.modulesets = r
-    t.checkbox_names.append(r.id+'_ck')
+    t = table_comp_modulesets_nodes('cmn', 'ajax_comp_modulesets_nodes')
     t = DIV(
              DIV(
                t.html(),
-               _style="""min-width:60%;
-                         max-width:60%;
-                         float:left;
-                         border-right:0px solid;
-                      """,
-               _id='cmn2',
+               _id='cmn',
              ),
-             DIV(
-               r.html(),
-               _style="""min-width:40%;
-                         max-width:40%;
-                         float:left;
-                      """,
-               _id='cmn1',
-             ),
-             DIV(XML('&nbsp;'), _class='spacer'),
-             SCRIPT("""
-             function calign() {
-              $("#cmn1").find("div.theader").css({height: $("#cmn2").find("div.theader").height()})
-              $("#cmn1").find("tr.theader").css({height: $("#cmn2").find("tr.theader").height()})
-             }
-             try {
-              osvc.tables["cmn2"].on_change = calign
-              osvc.tables["cmn1"].on_change = calign
-             } catch(e) {}
-             """),
            )
     return dict(table=t)
 

@@ -11,7 +11,10 @@ function table_action_menu_init_data(t) {
     "vmname": "td[cell=1][name$=_c_vmname]",
     "action": "td[cell=1][name$=_c_action]",
     "id": "td[cell=1][name$=_c_id]",
-    "tag_id": "td[cell=1][name$=_c_tag_id]"
+    "tag_id": "td[cell=1][name$=_c_tag_id]",
+    "ruleset_name": "td[cell=1][name$=_c_ruleset_name]",
+    "modset_name": "td[cell=1][name$=_c_modset_name]",
+    "slave": "td[cell=1][name$=_c_encap]"
   }
 
   t.action_menu_data = [
@@ -123,6 +126,34 @@ function table_action_menu_init_data(t) {
               "fn": "data_action_nodes_tags_attach",
               "privileges": ["Manager", "NodeManager"],
               "min": 1
+            },
+            {
+              "title": "action_menu.modset_attach",
+              "class": "icon actions",
+              "fn": "data_action_nodes_modsets_attach",
+              "privileges": ["Manager", "NodeManager"],
+              "min": 1
+            },
+            {
+              "title": "action_menu.modset_detach",
+              "class": "icon actions",
+              "fn": "data_action_nodes_modsets_detach",
+              "privileges": ["Manager", "NodeManager"],
+              "min": 1
+            },
+            {
+              "title": "action_menu.ruleset_attach",
+              "class": "icon comp16",
+              "fn": "data_action_nodes_rulesets_attach",
+              "privileges": ["Manager", "NodeManager"],
+              "min": 1
+            },
+            {
+              "title": "action_menu.ruleset_detach",
+              "class": "icon comp16",
+              "fn": "data_action_nodes_rulesets_detach",
+              "privileges": ["Manager", "NodeManager"],
+              "min": 1
             }
           ]
         },
@@ -146,8 +177,8 @@ function table_action_menu_init_data(t) {
           "selector": ["clicked", "checked", "all"],
           "foldable": true,
           'title': 'action_menu.on_services',
-          "cols": ["svcname"],
-          "condition": "svcname",
+          "cols": ["svcname", "slave"],
+          "condition": "svcname+slave,svcname",
           "children": [
             {
               "title": "action_menu.delete",
@@ -159,6 +190,30 @@ function table_action_menu_init_data(t) {
               "title": "action_menu.tag_attach",
               "class": "icon tag16",
               "fn": "data_action_services_tags_attach",
+              "min": 1
+            },
+            {
+              "title": "action_menu.modset_attach",
+              "class": "icon actions",
+              "fn": "data_action_services_modsets_attach",
+              "min": 1
+            },
+            {
+              "title": "action_menu.modset_detach",
+              "class": "icon actions",
+              "fn": "data_action_services_modsets_detach",
+              "min": 1
+            },
+            {
+              "title": "action_menu.ruleset_attach",
+              "class": "icon comp16",
+              "fn": "data_action_services_rulesets_attach",
+              "min": 1
+            },
+            {
+              "title": "action_menu.ruleset_detach",
+              "class": "icon comp16",
+              "fn": "data_action_services_rulesets_detach",
               "min": 1
             }
           ]
@@ -1662,6 +1717,187 @@ function data_action_services_tags_detach(t, e) {
   })
 }
 
+//
+// data action: attach modsets from nodes
+//
+function data_action_nodes_modsets_attach(t, e) {
+  data_action_generic_selector(t, e, {
+    "requestor": services_osvcpostrest,
+    "request_service": "R_COMPLIANCE_MODULESETS_NODES",
+    "selector": generic_selector_modsets,
+    "request_data_entry": function(selected, data) {
+      return {
+        "modset_id": selected,
+        "nodename": data["nodename"]
+      }
+    }
+  })
+}
+
+//
+// data action: attach modsets from services
+//
+function data_action_services_modsets_attach(t, e) {
+  data_action_generic_selector(t, e, {
+    "requestor": services_osvcpostrest,
+    "request_service": "R_COMPLIANCE_MODULESETS_SERVICES",
+    "selector": generic_selector_modsets,
+    "request_data_entry": function(selected, data) {
+      return {
+        "modset_id": selected,
+        "svcname": data["svcname"],
+        "slave": data["slave"]
+      }
+    }
+  })
+}
+
+//
+// data action: attach rulesets from nodes
+//
+function data_action_nodes_rulesets_attach(t, e) {
+  data_action_generic_selector(t, e, {
+    "requestor": services_osvcpostrest,
+    "request_service": "R_COMPLIANCE_RULESETS_NODES",
+    "selector": generic_selector_rulesets,
+    "request_data_entry": function(selected, data) {
+      return {
+        "ruleset_id": selected,
+        "nodename": data["nodename"]
+      }
+    }
+  })
+}
+
+//
+// data action: attach rulesets from services
+//
+function data_action_services_rulesets_attach(t, e) {
+  data_action_generic_selector(t, e, {
+    "requestor": services_osvcpostrest,
+    "request_service": "R_COMPLIANCE_RULESETS_SERVICES",
+    "selector": generic_selector_rulesets,
+    "request_data_entry": function(selected, data) {
+      return {
+        "ruleset_id": selected,
+        "svcname": data["svcname"],
+        "slave": data["slave"]
+      }
+    }
+  })
+}
+
+//
+// data action: detach modsets from nodes
+//
+function data_action_nodes_modsets_detach(t, e) {
+  data_action_generic_selector(t, e, {
+    "requestor": services_osvcdeleterest,
+    "request_service": "R_COMPLIANCE_MODULESETS_NODES",
+    "selector": generic_selector_modsets,
+    "request_data_entry": function(selected, data) {
+      return {
+        "modset_id": selected,
+        "nodename": data["nodename"]
+      }
+    }
+  })
+}
+
+//
+// data action: detach modsets from services
+//
+function data_action_services_modsets_detach(t, e) {
+  data_action_generic_selector(t, e, {
+    "requestor": services_osvcdeleterest,
+    "request_service": "R_COMPLIANCE_MODULESETS_SERVICES",
+    "selector": generic_selector_modsets,
+    "request_data_entry": function(selected, data) {
+      return {
+        "modset_id": selected,
+        "svcname": data["svcname"],
+        "slave": data["slave"]
+      }
+    }
+  })
+}
+
+//
+// data action: detach rulesets from nodes
+//
+function data_action_nodes_rulesets_detach(t, e) {
+  data_action_generic_selector(t, e, {
+    "requestor": services_osvcdeleterest,
+    "request_service": "R_COMPLIANCE_RULESETS_NODES",
+    "selector": generic_selector_rulesets,
+    "request_data_entry": function(selected, data) {
+      return {
+        "ruleset_id": selected,
+        "nodename": data["nodename"]
+      }
+    }
+  })
+}
+
+//
+// data action: detach rulesets from services
+//
+function data_action_services_rulesets_detach(t, e) {
+  data_action_generic_selector(t, e, {
+    "requestor": services_osvcdeleterest,
+    "request_service": "R_COMPLIANCE_RULESETS_SERVICES",
+    "selector": generic_selector_rulesets,
+    "request_data_entry": function(selected, data) {
+      return {
+        "ruleset_id": selected,
+        "svcname": data["svcname"],
+        "slave": data["slave"]
+      }
+    }
+  })
+}
+
+//
+// customizable selector based data action
+//
+function data_action_generic_selector(t, e, options) {
+  var entry = $(e.target)
+  var cache_id = entry.attr("cache_id")
+  var data = t.action_menu_data_cache[cache_id]
+  var request_data = new Array()
+  table_action_menu_focus_on_leaf(t, entry)
+
+  // form
+  var form = $("<form></form>")
+  form.css({"width": entry.width(), "padding": "0.3em"})
+  form.insertAfter(entry)
+
+  // selector
+  var selector_div = $("<div></div>")
+  selector_div.uniqueId()
+  form.append(selector_div)
+  var selector_instance = options.selector(selector_div.attr("id"))
+  var yes_no = table_action_menu_yes_no(t, 'action_menu.submit', function(e){
+    var selected = selector_instance.get_selected()
+    for (i=0;i<data.length;i++) {
+      for (j=0;j<selected.length;j++) {
+        request_data.push(options.request_data_entry(selected[j], data[i]))
+      }
+    }
+    options.requestor(options.request_service, "", "", request_data, function(jd) {
+      if (jd.error && (jd.error.length > 0)) {
+        form.html(services_error_fmt(jd))
+      }
+      if (jd.info && (jd.info.length > 0)) {
+        form.html(services_info_fmt(jd))
+      }
+    },
+    function(xhr, stat, error) {
+      form.html(services_ajax_error_fmt(xhr, stat, error))
+    })
+  })
+  form.append(yes_no)
+}
 
 //
 // agent actions

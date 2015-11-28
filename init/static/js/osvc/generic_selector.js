@@ -21,6 +21,7 @@ function generic_selector(divid, options) {
       spinner_del(o.object_area)
       if (jd.error && (jd.error.length > 0)) {
         o.object_area.html(services_error_fmt(jd))
+        return
       }
       for (var i=0; i<jd.data.length; i++) {
         o.add_object(jd.data[i])
@@ -68,3 +69,35 @@ function generic_selector_tags(id) {
     "object_name": "tag_name"
   })
 }
+
+function generic_selector_modsets(id) {
+  return generic_selector(id, {
+    "url_path": "R_COMPLIANCE_MODULESETS",
+    "url_params": {
+      "orderby": "modset_name",
+      "limit": "0",
+      "props": "id,modset_name",
+      "meta": "0"
+    },
+    "object_class": "actions",
+    "object_id": "id",
+    "object_name": "modset_name"
+  })
+}
+
+function generic_selector_rulesets(id) {
+  return generic_selector(id, {
+    "url_path": "R_COMPLIANCE_RULESETS",
+    "url_params": {
+      "orderby": "ruleset_name",
+      "limit": "0",
+      "props": "id,ruleset_name",
+      "meta": "0",
+      "filters": ["ruleset_type=explicit", "ruleset_public=T"]
+    },
+    "object_class": "comp16",
+    "object_id": "id",
+    "object_name": "ruleset_name"
+  })
+}
+
