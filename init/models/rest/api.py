@@ -59,6 +59,12 @@ class rest_handler(object):
         for i, a in enumerate(self.path.split("/")):
             if a.startswith("<") and a.endswith(">"):
                 nargs.append(args[i-1])
+        if "filters[]" in vars:
+            if "filters" in vars:
+                vars["filters"] += vars["filters[]"]
+            else:
+                vars["filters"] = vars["filters[]"]
+            del(vars["filters[]"])
         return self.handler(*nargs, **vars)
 
     def prepare_data(self, **vars):
