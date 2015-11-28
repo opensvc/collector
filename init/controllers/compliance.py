@@ -8533,7 +8533,7 @@ $("input[name^=%(xid)s],select[name^=%(xid)s],textarea[name^=%(xid)s]").each(fun
   })
 })
 $("input[name^=%(xid)s][readonly=on],select[name^=%(xid)s][readonly=on],textarea[name^=%(xid)s][readonly=on]").trigger('change')
-$("select").combobox();
+setTimeout(function(){$("select").combobox()}, 500);
 """%dict(
      uid = auth.user_id,
      idx=len(l),
