@@ -50,6 +50,14 @@
 	content: '\f073  ';
 	font-family: awesome;
 }
+.bcheck:before {
+	content: '\f046  ';
+	font-family: awesome;
+}
+.buncheck:before {
+	content: '\f096  ';
+	font-family: awesome;
+}
 
 .icon-orange {
 	color: orange;

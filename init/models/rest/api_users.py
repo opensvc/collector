@@ -1242,6 +1242,29 @@ class rest_post_user_domains(rest_post_handler):
         _websocket_send(event_msg(l))
         return rest_get_user_domains().handler(user_id)
 
+
+class rest_get_user_details(rest_get_line_handler):
+    def __init__(self):
+        desc = [
+          "Display user properties from user_id.",
+          "Managers and UserManager are allowed to see all users.",
+          "Others can only see users in their organisational groups.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/users/%(id)s/details",
+        ]
+        rest_get_line_handler.__init__(
+          self,
+          path="/users/<id>/details",
+          tables=["v_users"],
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, id, **vars):
+        q = db.v_users.id == id
+        self.set_q(q)
+        return self.prepare_data(**vars)
 #
 class rest_get_user_hidden_menu_entries(rest_get_table_handler):
     def __init__(self):

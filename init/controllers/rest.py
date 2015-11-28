@@ -176,6 +176,7 @@ handlers = {
      rest_get_tag_services(),
      rest_get_users(),
      rest_get_user(),
+     rest_get_user_details(),
      rest_get_user_apps(),
      rest_get_user_domains(),
      rest_get_user_nodes(),

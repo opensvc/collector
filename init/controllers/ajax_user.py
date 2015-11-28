@@ -25,6 +25,9 @@ def ajax_user():
     session.forget(response)
     rowid = request.vars.rowid
     tab = request.vars.tab
+
+    return "<script>user('"+rowid+"',{'user_id' : '" + request.vars.user_id + "'});</script>";
+
     if tab is None:
         tab = "tab1"
 

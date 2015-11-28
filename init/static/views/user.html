@@ -1,0 +1,84 @@
+<table id="users_tab" style="width: 1366px;">
+	<tbody>
+		<tr>
+			<td class="tab">
+				<ul>
+					<li class="closetab">
+						<p class="nok" id="close_tab_label"></p>
+					</li>
+					<li class="tab_active" id="tab_user_info">
+						<p class="guy16">info</p>
+                	</li>
+                	<li id="tab_user_groups">
+                		<p class="guys16">groups</p>
+                	</li>
+                </ul>
+               </td>
+              </tr>
+             <tr>
+             <td>
+             	<div style="display: block;" class="cloud_shown" id="tab_user_info_detail">
+             		<table>
+             			<tbody>
+             				<tr>
+             					<td style="font-style:italic">Email</td>
+             					<td id="user_info_email"></td>
+             				</tr>
+             				<tr>
+             					<td style="font-style:italic">Phone</td>
+             					<td id="user_info_phone_work"></td>
+             				</tr>
+             				<tr>
+             					<td style="font-style:italic">Domains</td>
+             					<td>
+             						<input id="user_info_domains" class="oi" type="text">
+             					</td>
+             				</tr>
+             				<tr>
+             					<td style="font-style:italic">Manager</td>
+             					<td id="user_info_manager"></td>
+             				</tr>
+             				<tr>
+             					<td style="font-style:italic">Primary Group</td>
+             					<td>
+             						<input id="user_info_primary_group" class="oi" type="text">
+             					</td>
+             				</tr>
+             				<tr>
+								<td style="font-style:italic">Groups</td>
+								<td>
+									<div id="user_info_groups" style="max-width:60%"></div>
+								</td>
+							</tr>
+							<tr>
+								<td style="font-style:italic">Lock Filter</td>
+								<td id="user_info_lock_filter"></td>
+							</tr>
+							<tr>
+								<td style="font-style:italic">Filterset Name</td>
+								<td>
+									<input id="user_info_filterset" class="oi" type="text">
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+				<div style="display: none;" class="cloud" id="tab_user_groups_detail">
+					<div>
+						<div>
+							<h2>Organizational groups</h2>
+							<div id="div_user_org_groups">
+							</div>
+						</div>
+						<div class="spacer"></div>
+						<div>
+							<h2>Privilege groups</h2>
+							<div id="div_user_priv_groups">
+							</div>
+						</div>
+					</div>
+				</div>
+			</td>
+		</tr>
+	</tbody>
+</table>
