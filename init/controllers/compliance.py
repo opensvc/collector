@@ -8158,7 +8158,6 @@ sync_ajax('%(url)s', ids, '%(rid)s', %(callback)s)
              ),
              SCRIPT("""
 var count=0;
-$("select").combobox();
 
 function form_inputs_trigger (o) {
   form_inputs_mandatory(o)
@@ -8534,6 +8533,7 @@ $("input[name^=%(xid)s],select[name^=%(xid)s],textarea[name^=%(xid)s]").each(fun
   })
 })
 $("input[name^=%(xid)s][readonly=on],select[name^=%(xid)s][readonly=on],textarea[name^=%(xid)s][readonly=on]").trigger('change')
+$("select").combobox();
 """%dict(
      uid = auth.user_id,
      idx=len(l),

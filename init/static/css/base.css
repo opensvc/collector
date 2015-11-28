@@ -2786,6 +2786,7 @@ button, input[type=button], input[type=submit] {
 	border-color: #FFFB82 #918F4A #918F4A #FFFB82;
 	border-width: 1px;
 	border-style: solid;
+	overflow: auto;
 }
 
 .syntax_blue {
