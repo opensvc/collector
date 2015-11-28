@@ -192,7 +192,13 @@ function services_osvcpostrest(service, uri, params, data, callback, error_callb
         url: url,
         contentType: content_type,
         data: data,
-        error: error_callback,
+        error: function(xhr, stat, error) {
+          console.log(error)
+          if (error == "UNAUTHORIZED") {
+            app_load_href("/init/default/user/login")
+          }
+          error_callback(xhr, stat, error)
+        },
         success: callback
     })
     return xhr
@@ -224,7 +230,13 @@ function services_osvcgetrest(service, uri, params, callback, error_callback, as
         data: params,
         async : async,
         dataType: "json",
-        error: error_callback,
+        error: function(xhr, stat, error) {
+          console.log(error)
+          if (error == "UNAUTHORIZED") {
+            app_load_href("/init/default/user/login")
+          }
+          error_callback(xhr, stat, error)
+        },
         success: callback,
     });
     return xhr
