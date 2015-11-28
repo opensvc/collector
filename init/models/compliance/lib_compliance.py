@@ -381,6 +381,11 @@ def lib_comp_moduleset_attach_node(nodename, modset_id):
          dict(node=nodename, moduleset=moduleset),
          nodename=nodename,
     )
+    l = {
+      'event': 'comp_node_moduleset_change',
+      'data': {'modset_id': modset_id},
+    }
+    _websocket_send(event_msg(l))
     return dict(info="moduleset %s attached"%moduleset)
 
 
@@ -411,6 +416,11 @@ def lib_comp_moduleset_detach_node(nodename, modset_id):
          dict(node=nodename, moduleset=moduleset),
          nodename=nodename,
     )
+    l = {
+      'event': 'comp_node_moduleset_change',
+      'data': {'modset_id': modset_id},
+    }
+    _websocket_send(event_msg(l))
     return dict(info="moduleset %s detached"%moduleset)
 
 
@@ -439,6 +449,11 @@ def lib_comp_moduleset_detach_service(svcname, modset_id, slave=False):
          dict(svcname=svcname, moduleset=moduleset),
          svcname=svcname,
     )
+    l = {
+      'event': 'comp_modulesets_services_change',
+      'data': {'modset_id': modset_id},
+    }
+    _websocket_send(event_msg(l))
     return dict(info="moduleset %s detached"%moduleset)
 
 
@@ -461,6 +476,11 @@ def lib_comp_moduleset_attach_service(svcname, modset_id, slave):
         dict(svcname=svcname, moduleset=moduleset),
         svcname=svcname,
     )
+    l = {
+      'event': 'comp_modulesets_services_change',
+      'data': {'modset_id': modset_id},
+    }
+    _websocket_send(event_msg(l))
     return dict(info="moduleset %s attached"%moduleset)
 
 #
@@ -487,6 +507,11 @@ def lib_comp_ruleset_attach_node(nodename, ruleset_id):
          dict(node=nodename, ruleset=ruleset),
          nodename=nodename,
     )
+    l = {
+      'event': 'comp_rulesets_nodes_change',
+      'data': {'ruleset_id': ruleset_id},
+    }
+    _websocket_send(event_msg(l))
     return dict(info="ruleset %s attached"%ruleset)
 
 
@@ -517,6 +542,11 @@ def lib_comp_ruleset_detach_node(nodename, ruleset_id):
          dict(node=nodename, ruleset=ruleset),
          nodename=nodename,
     )
+    l = {
+      'event': 'comp_rulesets_nodes_change',
+      'data': {'ruleset_id': ruleset_id},
+    }
+    _websocket_send(event_msg(l))
     return dict(info="ruleset %s detached"%ruleset)
 
 
@@ -545,6 +575,11 @@ def lib_comp_ruleset_detach_service(svcname, ruleset_id, slave=False):
          dict(svcname=svcname, ruleset=ruleset),
          svcname=svcname,
     )
+    l = {
+      'event': 'comp_rulesets_services_change',
+      'data': {'ruleset_id': ruleset_id},
+    }
+    _websocket_send(event_msg(l))
     return dict(info="ruleset %s detached"%ruleset)
 
 
@@ -567,6 +602,11 @@ def lib_comp_ruleset_attach_service(svcname, ruleset_id, slave):
         dict(svcname=svcname, ruleset=ruleset),
         svcname=svcname,
     )
+    l = {
+      'event': 'comp_rulesets_services_change',
+      'data': {'ruleset_id': ruleset_id},
+    }
+    _websocket_send(event_msg(l))
     return dict(info="ruleset %s attached"%ruleset)
 
 def get_modset_tree_nodes(modset_ids=None):
