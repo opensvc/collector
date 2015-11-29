@@ -534,15 +534,17 @@ class rest_post_user_primary_group(rest_post_handler):
 
         q = db.auth_membership.user_id == user.id
         q &= db.auth_membership.group_id == group.id
-        q &= db.auth_membership.primary_group == 'T'
+        q &= db.auth_membership.primary_group == True
         row = db(q).select().first()
         if row is not None:
             return dict(info="User %s primary group is already %s" % (str(user.id), str(group.id)))
 
         q = db.auth_membership.user_id == user_id
-        q &= db.auth_membership.primary_group == 'T'
-        db(q).delete()
-        db.auth_membership.insert(user_id=user.id, group_id=group.id, primary_group='T')
+        q &= db.auth_membership.primary_group == True
+        db.auth_membership.update_or_insert({
+          "user_id": user.id,
+          "group_id": group.id,
+        }, primary_group=True)
         _log('user.primary_group.attach',
              'user %(u)s primary group set to %(g)s',
              dict(u=user.email, g=group.role),
@@ -1243,28 +1245,6 @@ class rest_post_user_domains(rest_post_handler):
         return rest_get_user_domains().handler(user_id)
 
 
-class rest_get_user_details(rest_get_line_handler):
-    def __init__(self):
-        desc = [
-          "Display user properties from user_id.",
-          "Managers and UserManager are allowed to see all users.",
-          "Others can only see users in their organisational groups.",
-        ]
-        examples = [
-          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/users/%(id)s/details",
-        ]
-        rest_get_line_handler.__init__(
-          self,
-          path="/users/<id>/details",
-          tables=["v_users"],
-          desc=desc,
-          examples=examples,
-        )
-
-    def handler(self, id, **vars):
-        q = db.v_users.id == id
-        self.set_q(q)
-        return self.prepare_data(**vars)
 #
 class rest_get_user_hidden_menu_entries(rest_get_table_handler):
     def __init__(self):
