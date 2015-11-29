@@ -2,7 +2,7 @@ function search_get_menu(fk)
 {
   var menu = {
     "users": {
-        "tab" : "/init/ajax_user/ajax_user?user_id=__id__&rowid=__rowid__",
+        "tab" : 'user_tabs("__rowid__", {"user_id": "__id__", "fullname": "__fullname__"})',
         "title": "__fullname__ <__email__>",
         "class": "guy16 fa-2x search-section-icon",
         "subclass" : "meta_username clickable",
@@ -427,7 +427,6 @@ function search_highlight(e, s) {
   }
 
   var regexp = new RegExp(s, 'ig');
-  var repl = '<span class="highlight_light">' + s + '</span>';
 
   e.children("[name=orig]").children().each(function(){
     // restore orig
@@ -441,7 +440,7 @@ function search_highlight(e, s) {
 
     if ((s != "") && $(this).text().match(regexp)) {
       var highlighted = $("<span name='highlighted'></span>")
-      highlighted.html($(this).text().replace(regexp, function(x) {
+      highlighted.html($(this).text().replace("<", "&lt;").replace(">", "&gt;").replace(regexp, function(x) {
         return '<span class="highlight_light">' + x + '</span>'
       }))
       tgt.text("")
