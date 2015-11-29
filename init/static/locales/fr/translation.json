@@ -694,5 +694,34 @@
   "forms": {
     "not_found": "non trouvé",
     "no_data": "Pas de données"
+  },
+  "user_properties": {
+    "first_name": "prénom",
+    "last_name": "nom de famille",
+    "perpage": "lignes par page",
+    "email": "adresse",
+    "email_section": "Messagerie",
+    "phone_work": "téléphone",
+    "manager": "manager",
+    "primary_group": "groupe primaire",
+    "settings": "Réglages",
+    "domains": "domaines",
+    "lock_filter": "filtre vérouillé",
+    "filterset": "jeux de filtres",
+    "email_log_level": "niveau d'alerte",
+    "email_notifications": "notifications",
+    "im_log_level": "niveau d'alerte",
+    "im_username": "nom d'utilisateur",
+    "im_type": "type",
+    "im_notifications": "notifications",
+    "im": "Messagerie intantannée",
+    "email_section": "Mèl"
+  },
+  "user_groups": {
+    "org_groups": "Groupes organisationnels",
+    "priv_groups": "Groupes de privilège"
+  },
+  "user_tabs": {
+    "groups": "groupes"
   }
 }

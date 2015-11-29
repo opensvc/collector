@@ -489,3 +489,66 @@ function service_tabs(divid, options) {
   return o
 }
 
+//
+// user
+//
+function user_tabs(divid, options) {
+  o = tabs(divid)
+  o.options = options
+
+  o.load(function(){
+    var i = 0
+
+    if (!("user_id" in o.options) && ("fullname" in o.options)) {
+      services_osvcgetrest("R_SEARCH", "", {"substring": o.options.fullname}, function(jd) {
+        var users = jd.data.users.data
+        for (var i=0; i<users.length; i++) {
+          var user = users[i]
+          if (user.fullname == o.options.fullname) {
+            o.options.user_id = user.id
+            break
+          }
+        }
+        o._load()
+      })
+    } else {
+      o._load()
+    }
+  })
+
+  o._load = function() {
+        console.log(o.options)
+    o.closetab.children("p").text(o.options.fullname ? o.options.fullname : o.options.user_id)
+
+    // tab properties
+    i = o.register_tab({
+      "title": "node_tabs.properties",
+      "title_class": "guy16"
+    })
+    o.tabs[i].callback = function(divid) {
+      user_properties(divid, o.options)
+    }
+    i = o.register_tab({
+      "title": "user_tabs.groups",
+      "title_class": "guys16"
+    })
+    o.tabs[i].callback = function(divid) {
+      user_groups(divid, o.options)
+    }
+
+    if (!o.options.tab) {
+      o.closetab.next("li").trigger("click")
+    } else {
+      for (var i=0; i<o.tabs.length; i++) {
+        if (o.tabs[i].title != o.options.tab) {
+          continue
+        }
+        o.tabs[i].tab.trigger("click")
+        break
+      }
+    }
+  }
+  return o
+}
+
+

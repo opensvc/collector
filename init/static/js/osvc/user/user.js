@@ -1,282 +1,544 @@
 
-function user(divid, options)
-{
-  var o = {}
+function user_groups(divid, options) {
+	var o = {}
 
-  // store parameters
-  o.divid = $("#"+divid);
-  o.user_id = options.user_id;
+	// store parameters
+	o.divid = divid
+	o.div = $("#"+divid);
+	o.options = options
 
-  o.init = function init() {
-  	return user_init(o);
-  }
-
-  o.divid.load("/init/static/views/user.html", function() {
-  	o.init();
-  })
-}
-
-function user_init(o)
-{
-	
-	o.closetab = o.divid.find('.closetab');
-	o.info_email = o.divid.find("#user_info_email");
-	o.info_phone = o.divid.find("#user_info_phone_work");
-	o.info_domains = o.divid.find("#user_info_domains");
-	o.info_manager = o.divid.find("#user_info_manager");
-	o.info_primaryg = o.divid.find("#user_info_primary_group");
-	o.info_groups = o.divid.find("#user_info_groups");
-	o.info_lfilter = o.divid.find("#user_info_lock_filter");
-	o.info_filterset = o.divid.find("#user_info_filterset");
-	o.close_tab_label = o.divid.find("#close_tab_label");
-
-	o.tab_info = o.divid.find("#tab_user_info");
-	o.tab_info_details = o.divid.find("#tab_user_info_detail");
-
-	o.tab_group = o.divid.find("#tab_user_groups");
-	o.tab_group_details = o.divid.find("#tab_user_groups_detail");
-
-	o.div_user_org_group = o.divid.find("#div_user_org_groups");
-	o.div_user_priv_group = o.divid.find("#div_user_priv_groups");
-
-	o.tab_info.bind("click", function() {
-		user_switch_tab(o, o.tab_info,o.tab_info_details);
-	});
-
-	o.tab_group.bind("click", function() {
-		user_switch_tab(o, o.tab_group,o.tab_group_details);
-	});
-
-	o.current_tab = o.tab_info;
-	o.current_tab_details = o.tab_info_details;
-
-	o.closetab.bind("click", function () {
-		o.divid.remove();
-	});
-
-	user_load_details(o);
-}
-
-function user_load_details(o)
-{
-	services_osvcgetrest("R_USER_DETAILS", [o.user_id], "", function(jd) {
-	    var data = jd.data[0];
-	    
-	    o.info_email.html(data.email);
-	    o.close_tab_label.html(data.fullname);
-	    o.info_phone.html(data.phone_work);
-	   	o.info_groups.html(data.groups);
-		o.info_filterset.val(data.fset_name);
-
-	   	if (data.domains != null) o.info_domains.val(data.domains);	
-	   	if (data.primary_group !=null) o.info_primaryg.val(data.primary_group);
-
-		//AutoComplete and bind filter set
-		var fset = []
-		services_osvcgetrest("R_FILTERSETS", [], {"meta": "false", "limit": "0"}, function(jd) {
-		  var data = jd.data;
-		  for (var i=0;i<data.length;i++) {
-		    fset.push({ "label" : data[i].fset_name,"id" : data[i].id});
-		  }
-		  o.info_filterset.autocomplete({
-		  	source: fset,
-		  	minLength: 0,
-		  	select: function(event, ui) {
-		  	          event.preventDefault();
-		  	          user_update_filter_set(o,ui.item.label,ui.item.id);
-		  	      }
-			});
-		});
-
-		// Bind lock filter action
-		if (data.lock_filter != "F") 
-	    {
-	    	o.info_lfilter.attr('class','bcheck');
-	    	o.info_filterset.attr("readonly","readonly");
-	    }
-	    else
-	    {
-	    	o.info_lfilter.attr('class','buncheck');
-	    	o.info_filterset.bind("keypress", function (event) {
-	    		if (event.keyCode == 13)
-	    		{
-	    			var d="here";
-	    		}
-	    	});
-	    }
-
-	    if (services_ismemberof(["Manager","UserManager"]))
-	    {
-		    // Bind domains actions
-		     o.info_domains.bind("keypress", function (event) {
-		    	if (event.keyCode == 13)
-		    	{
-		    		user_update_domains(o, o.info_domains.val());
-		    	}
-		    });
-	     }
-	     else
-	     	o.info_domains.attr("readonly","readonly");
-
-	    if (data.manager==1)
-	    	o.info_manager.attr('class','bcheck');
-	   	else
-	   		o.info_manager.attr('class','buncheck');
-
-	   	user_load_groups(o, data);
-	});
-}
-
-function user_load_groups(o, data)
-{
-	group_list= data.groups;
-
-	   	// Build group Tab
-	   	services_osvcgetrest("R_GROUPS", [o.user_id], {"meta": "false", "limit": "0","query": "not role starts with user_"}, function(jd) {
-	   	    var data = jd.data;
-	   	    for(i=0;i<data.length;i++)
-	   	    {
-	   	    	user_build_group_div(o, data[i], group_list);
-	   	    }
-
-	   	   	if (services_ismemberof(["Manager","UserManager"]))
-		    {
-		   	    var pg =[];
-		   	    // Bind Primary group automplete
-				for (var i=0;i<data.length;i++) {
-				  pg.push({ "label" : data[i].role,"id" : data[i].id});
-				}
-				o.info_primaryg.autocomplete({
-				  	source: pg,
-				  	minLength: 0,
-				  	select: function(event, ui) {
-				  	          event.preventDefault();
-				  	          user_update_primary_group(o,ui.item.label,ui.item.id);
-				  	      }
-				});
+	o.set_group = function(group_id) {
+		services_osvcpostrest("R_USER_GROUP", [o.options.user_id, group_id], "", "", function(jd) {
+			if (jd.error) {
+				return
 			}
-			else
-				o.primary_group.attr("readonly","readonly");
-	   	});
-}
+		},function() {})
+	}
 
-function user_build_group_div(o, data, list_user_group)
-{
-  var priv_groups = [
-	  "CheckExec",
-	  "CheckManager",
-	  "CheckRefresh",
-	  "CompExec",
-	  "CompManager",
-	  "DnsManager",
-	  "FormsManager",
-	  "Manager",
-	  "NetworkManager",
-	  "NodeManager",
-	  "ObsManager",
-	  "ProvisioningManager",
-	  "StorageExec",
-	  "StorageManager",
-	  "TagManager",
-	  "UserManager"
-	];
+	o.unset_group = function(group_id) {
+		services_osvcdeleterest("R_USER_GROUP", [o.options.user_id, group_id], "", "", function(jd) {
+			if (jd.error) {
+				return
+			}
+		},function() {})
+	}
 
-	blist_groups = [
-	  "UnaffectedProjects"
-	];
+	o.init = function() {
+		services_osvcgetrest("R_USER_GROUPS", [o.options.user_id], {"limit": "0", "meta": "0"}, function(jd) {
+			o.user_groups = {}
+			for (var i=0; i<jd.data.length; i++) {
+				o.user_groups[jd.data[i].role] = jd.data[i]
+			}
+			services_osvcgetrest("R_GROUPS", "", {"limit": "0", "meta": "0", "orderby": "role", "filters": ["role !user_%"]}, function(jd) {
+				o.all_groups = jd.data
+				o.div.load("/init/static/views/user_groups.html", function(){
+					o.build()
+				})
+			}, function() {})
+		}, function() {})
+	}
 
-	var userdiv = $("<div class='user_group'></div>");
-	var div = $("<div id='role_" + data.id+ "' class='clickable'></div>");
-	userdiv.append(div);
-
-	if (list_user_group.indexOf(data.role) > 0)
-		div.addClass("bcheck");
-	else
-		div.addClass("buncheck");
-
-	div.append(data.role);
-	
-	var p = priv_groups.indexOf(data.role);
-	if (p != -1)
-		o.div_user_priv_group.append(userdiv);
-	else
-		o.div_user_org_group.append(userdiv);
-
-	// Bind action on group tab
-	var target = o.divid.find("#role_" + data.id);
-	target.bind("click", function () {
-		if (target.hasClass("bcheck"))
-		{
-			target.removeClass("bcheck");
-			target.addClass("buncheck");
-			user_delete_groups(o, data);
+	o.build = function() {
+		o.div.i18n()
+		o.org = o.div.find("#org")
+		o.priv = o.div.find("#priv")
+		for (var i=0; i<o.all_groups.length; i++) {
+			d = o.all_groups[i]
+			o.add_group(d)
 		}
-		else
-		{
-			target.removeClass("buncheck");
-			target.addClass("bcheck");
-			user_update_groups(o, data);
+	}
+
+	o.add_group = function(data) {
+		var div = $("<div class='clickable'></div>")
+		var input = $("<input type='checkbox' class='ocb'>")
+		var label = $("<label for='checkbox'>")
+		var title = $("<div></div>")
+		input.attr("id", data.id)
+		label.attr("for", data.id)
+		title.text(d.role)
+		div.append(input)
+		div.append(label)
+		div.append(title)
+
+		if (data.privilege) {
+			o.priv.append(div)
+		} else {
+			o.org.append(div)
 		}
-	});
+
+		if (data.role in o.user_groups) {
+			div.children("input").prop("checked", true)
+		}
+
+		// Bind action on group tab
+		input.bind("click", function () {
+			if ($(this).is(":checked")) {
+				o.set_group($(this).attr("id"))
+			} else {
+				o.unset_group($(this).attr("id"))
+			}
+		})
+	}
+
+	o.init()
+	return o
 }
 
-function user_update_groups(o, data)
-{
-	services_osvcpostrest("R_POST_GROUPS", [o.user_id, data.id], "", "", function(jd) {
-      if (jd.error) {
-        return
-      }
-      o.info_groups.append(" " + data.role);
-    },function() {});
+function user_properties(divid, options) {
+	var o = {}
+
+	// store parameters
+	o.divid = divid
+	o.div = $("#"+divid);
+	o.options = options
+
+	o.init = function() {
+		o.info_first_name = o.div.find("#first_name");
+		o.info_last_name = o.div.find("#last_name");
+		o.info_perpage = o.div.find("#perpage");
+		o.info_email = o.div.find("#email");
+		o.info_phone_work = o.div.find("#phone_work");
+		o.info_email_log_level = o.div.find("#email_log_level");
+		o.info_email_notifications = o.div.find("#email_notifications");
+		o.info_im_type = o.div.find("#im_type");
+		o.info_im_notifications = o.div.find("#im_notifications");
+		o.info_im_log_level = o.div.find("#im_log_level");
+		o.info_im_username = o.div.find("#im_username");
+		o.info_domains = o.div.find("#domains");
+		o.info_manager = o.div.find("#manager");
+		o.info_primaryg = o.div.find("#primary_group");
+		o.info_lfilter = o.div.find("#lock_filter");
+		o.info_filterset = o.div.find("#filterset");
+
+		o.load_user()
+		o.load_fset()
+	}
+
+	o.load_fset = function() {
+		// AutoComplete and bind filter set
+		var fset = []
+		services_osvcgetrest("R_FILTERSETS", "", {"limit": "0", "meta": "0", "orderby": "fset_name"}, function(jd) {
+			var fsets = {"": {"id": 0, "label": ""}}
+			var pg = [{"id": 0, "label": ""}]
+			for (var i=0; i<jd.data.length; i++) {
+				fsets[jd.data[i].fset_name] = jd.data[i]
+				pg.push({
+					"id": jd.data[i].id,
+					"label": jd.data[i].fset_name
+				})
+			}
+			o.info_filterset.addClass("clickable")
+			o.info_filterset.hover(
+				function() {
+					$(this).addClass("editable")
+				},
+				function() {
+					$(this).removeClass("editable")
+				}
+			)
+			o.info_filterset.bind("click", function() {
+				//$(this).unbind("mouseenter mouseleave click")
+				if ($(this).siblings().find("form").length > 0) {
+					$(this).siblings().show()
+					$(this).siblings().find("input[type=text]:visible,select").focus()
+					$(this).hide()
+					return
+				}
+				var e = $("<td><form><input class='oi' type='text'></input></form></td>")
+				e.css({"padding-left": "0px"})
+				var input = e.find("input")
+				input.uniqueId() // for date picker
+				input.attr("pid", $(this).attr("id"))
+				input.attr("value", $(this).text())
+				input.autocomplete({
+					source: pg,
+					minLength: 0,
+					select: function(event, ui) {
+						event.preventDefault()
+						o.set_filterset(ui.item.label, ui.item.id)
+					}
+				})
+				e.find("form").submit(function(event) {
+					event.preventDefault()
+					var val = input.val()
+					if (!(val in fsets)) {
+						return
+					}
+					var fset_id = fsets[val].id
+					o.set_filterset(val, fset_id)
+				})
+				input.bind("blur", function(){
+					$(this).parents("td").first().siblings("td").show()
+					$(this).parents("td").first().hide()
+				})
+				$(this).parent().append(e)
+				$(this).hide()
+				input.focus()
+			})
+		})
+
+	}
+
+	o.load_user = function() {
+		services_osvcgetrest("R_USER", [o.options.user_id], "", function(jd) {
+			o._load_user(jd.data[0])
+		})
+	}
+
+	o._load_user = function(data) {
+		o.info_first_name.html(data.first_name);
+		o.info_last_name.html(data.last_name);
+		o.info_perpage.html(data.perpage);
+		o.info_email.html(data.email);
+		o.info_phone_work.html(data.phone_work);
+		o.info_email_log_level.html(data.email_log_level);
+		o.info_im_type.html(data.im_type);
+		o.info_im_username.html(data.im_username);
+		o.info_im_log_level.html(data.im_log_level);
+
+		// lock filter
+		if (data.lock_filter == true) {
+			o.info_lfilter.attr('class', 'toggle-on');
+		} else {
+			o.info_lfilter.attr('class','toggle-off');
+		}
+		if (data.email_notifications == true) {
+			o.info_email_notifications.attr('class', 'toggle-on');
+		} else {
+			o.info_email_notifications.attr('class','toggle-off');
+		}
+		if (data.im_notifications == true) {
+			o.info_im_notifications.attr('class', 'toggle-on');
+		} else {
+			o.info_im_notifications.attr('class','toggle-off');
+		}
+
+		services_osvcgetrest("R_USER_DOMAINS", [o.options.user_id], "", function(jd) {
+			if (!jd.data || (jd.data.length == 0)) {
+				return
+			}
+			o.info_domains.text(jd.data[0].domains)
+		})
+
+		services_osvcgetrest("R_USER_FILTERSET", [o.options.user_id], "", function(jd) {
+			if (!jd.data || (jd.data.length == 0)) {
+				return
+			}
+			o.info_filterset.text(jd.data[0].fset_name)
+		})
+
+		// modifications for privileged user
+		if (services_ismemberof(["Manager","UserManager"])) {
+			// lock filter
+			//o.info_lfilter.addClass("clickable")
+			o.info_lfilter.bind("click", function (event) {
+				o.toggle_lock_filterset(this)
+			});
+			o.info_email_notifications.bind("click", function (event) {
+				o.toggle_email_notifications(this)
+			});
+			o.info_im_notifications.bind("click", function (event) {
+				o.toggle_im_notifications(this)
+			});
+
+			// domains
+			o.info_domains.bind("keypress", function (event) {
+				if (event.keyCode == 13) {
+					user_update_domains(o, o.info_domains.val());
+				}
+			})
+		}
+
+		o.load_groups()
+
+	}
+
+	o.load_groups = function() {
+	   	services_osvcgetrest("R_USER_PRIMARY_GROUP", [o.options.user_id], {"meta": "false", "limit": "0"}, function(jd) {
+			if (jd.data.length != 1) {
+				return
+			}
+			var current_primary = jd.data[0].role
+			o.info_primaryg.text(current_primary)
+		})
+	   	services_osvcgetrest("R_GROUPS", [o.options.user_id], {"meta": "false", "limit": "0","query": "not role starts with user_"}, function(jd) {
+			var data = jd.data;
+			var pg = []
+			var org_groups = {}
+			var priv_groups = {}
+
+			for (var i=0; i<data.length; i++) {
+				var d = data[i]
+				if (d.privilege == true) {
+					priv_groups[d.role] = d
+				} else {
+					org_groups[d.role] = data[i]
+
+					// for automplete
+					pg.push({
+						"label" : d.role,
+						"id" : d.id
+					})
+				}
+			}
+
+			// manager
+			if ("Manager" in priv_groups) {
+				o.info_manager.attr('class', 'toggle-on');
+			} else {
+				o.info_manager.attr('class', 'toggle-off');
+			}
+
+			o.div.find("[upd]").each(function(){
+				$(this).addClass("clickable")
+				$(this).hover(
+					function() {
+						$(this).addClass("editable")
+					},
+					function() {
+						$(this).removeClass("editable")
+					}
+				)
+				$(this).bind("click", function() {
+					//$(this).unbind("mouseenter mouseleave click")
+					if ($(this).siblings().find("form").length > 0) {
+						$(this).siblings().show()
+						$(this).siblings().find("input[type=text]:visible,select").focus()
+						$(this).hide()
+						return
+					}
+					var updater = $(this).attr("upd")
+					if ((updater == "string") || (updater == "integer") || (updater == "date") || (updater == "datetime")) {
+						var e = $("<td><form><input class='oi' type='text'></input></form></td>")
+						e.css({"padding-left": "0px"})
+						var input = e.find("input")
+						input.uniqueId() // for date picker
+						input.attr("pid", $(this).attr("id"))
+						input.attr("value", $(this).text())
+						input.bind("blur", function(){
+							$(this).parents("td").first().siblings("td").show()
+							$(this).parents("td").first().hide()
+						})
+						$(this).parent().append(e)
+						$(this).hide()
+						input.focus()
+						e.find("form").submit(function(event) {
+							event.preventDefault()
+							var input = $(this).find("input[type=text],select")
+							input.blur()
+							var data = {}
+							data[input.attr("pid")] = input.val()
+							services_osvcpostrest("R_USER", [o.options.user_id], "", data, function(jd) {
+								e.hide()
+								e.prev().text(input.val()).show()
+							})
+						})
+					} else if (updater == "domains") {
+						var e = $("<td><form><input class='oi' type='text'></input></form></td>")
+						e.css({"padding-left": "0px"})
+						var input = e.find("input")
+						input.uniqueId() // for date picker
+						input.attr("pid", $(this).attr("id"))
+						input.attr("value", $(this).text())
+						input.bind("blur", function(){
+							$(this).parents("td").first().siblings("td").show()
+							$(this).parents("td").first().hide()
+						})
+						$(this).parent().append(e)
+						$(this).hide()
+						input.focus()
+						e.find("form").submit(function(event) {
+							event.preventDefault()
+							var input = $(this).find("input[type=text],select")
+							input.blur()
+							var data = {}
+							data[input.attr("pid")] = input.val()
+							services_osvcpostrest("R_USER_DOMAINS", [o.options.user_id], "", data, function(jd) {
+								e.hide()
+								e.prev().text(input.val()).show()
+							})
+						})
+					} else if (updater == "im_type") {
+						var e = $("<td></td>")
+						var form = $("<form></form>")
+						var input = $("<input class='oi' type='text'></input>")
+						e.append(form)
+						form.append(input)
+						e.css({"padding-left": "0px"})
+						input.val($(this).text())
+						input.attr("pid", $(this).attr("id"))
+						var opts = [
+							{"label": "gtalk", "id": 1}
+						]
+						input.autocomplete({
+							source: opts,
+							minLength: 0,
+							select: function(event, ui) {
+								event.preventDefault()
+								o.set_im_type(ui.item.label, ui.item.id);
+							}
+						})
+						e.find("form").submit(function(event) {
+							event.preventDefault()
+						})
+						input.bind("blur", function(){
+							$(this).parents("td").first().siblings("td").show()
+							$(this).parents("td").first().hide()
+						})
+						$(this).parent().append(e)
+						$(this).hide()
+						input.focus()
+					} else if (updater == "primary_group") {
+						var e = $("<td></td>")
+						var form = $("<form></form>")
+						var input = $("<input class='oi' type='text'></input>")
+						e.append(form)
+						form.append(input)
+						e.css({"padding-left": "0px"})
+						input.val($(this).text())
+						input.attr("pid", $(this).attr("id"))
+						input.autocomplete({
+							source: pg,
+							minLength: 0,
+							select: function(event, ui) {
+								event.preventDefault()
+								o.set_primary_group(ui.item.label, ui.item.id)
+							}
+						})
+						e.find("form").submit(function(event) {
+							event.preventDefault()
+							var val = input.val()
+							if (!(val in org_groups)) {
+								return
+							}
+							var group_id = org_groups[val].id
+							o.set_primary_group(val, group_id)
+						})
+						input.bind("blur", function(){
+							$(this).parents("td").first().siblings("td").show()
+							$(this).parents("td").first().hide()
+						})
+						$(this).parent().append(e)
+						$(this).hide()
+						input.focus()
+					}
+				})
+			})
+		});
+	}
+
+	o.toggle_im_notifications = function() {
+		if (o.info_im_notifications.hasClass("toggle-on")) {
+			var data = {im_notifications: false}
+		} else {
+			var data = {im_notifications: true}
+		}
+		services_osvcpostrest("R_USER", [o.options.user_id], "", data, function(jd) {
+			if (jd.error) {
+				return
+			}
+			if (jd.data[0].im_notifications == false) {
+				o.info_im_notifications.removeClass("toggle-on").addClass("toggle-off")
+			} else {
+				o.info_im_notifications.removeClass("toggle-off").addClass("toggle-on")
+			}
+		},
+		function() {}
+	)}
+
+	o.toggle_email_notifications = function() {
+		if (o.info_email_notifications.hasClass("toggle-on")) {
+			var data = {email_notifications: false}
+		} else {
+			var data = {email_notifications: true}
+		}
+		services_osvcpostrest("R_USER", [o.options.user_id], "", data, function(jd) {
+			if (jd.error) {
+				return
+			}
+			if (jd.data[0].email_notifications == false) {
+				o.info_email_notifications.removeClass("toggle-on").addClass("toggle-off")
+			} else {
+				o.info_email_notifications.removeClass("toggle-off").addClass("toggle-on")
+			}
+		},
+		function() {}
+	)}
+
+	o.toggle_lock_filterset = function() {
+		if (o.info_lfilter.hasClass("toggle-on")) {
+			var data = {lock_filter: false}
+		} else {
+			var data = {lock_filter: true}
+		}
+		services_osvcpostrest("R_USER", [o.options.user_id], "", data, function(jd) {
+			if (jd.error) {
+				return
+			}
+			if (jd.data[0].lock_filter == false) {
+				o.info_lfilter.removeClass("toggle-on").addClass("toggle-off")
+			} else {
+				o.info_lfilter.removeClass("toggle-off").addClass("toggle-on")
+			}
+		},
+		function() {}
+	)}
+
+	o.set_im_type = function(label, id) {
+		var domain = o.info
+		services_osvcpostrest("R_USER", [o.options.user_id], "", {"im_type" : id}, function(jd) {
+			if (jd.error && jd.error.length > 0) {
+				return
+			}
+			o.info_im_type.next().hide()
+			o.info_im_type.text(label).show()
+		},
+		function() {})
+	}
+
+	o.set_primary_group = function(label, group_id) {
+		services_osvcpostrest("R_USER_PRIMARY_GROUP_SET", [o.options.user_id, group_id], "","", function(jd) {
+			if (jd.error && jd.error.length > 0) {
+				return
+			}
+			o.info_primaryg.next().hide()
+			o.info_primaryg.text(label).show()
+		},
+		function() {})
+	}
+
+	o.set_filterset = function(label, fset_id) {
+		if (fset_id == 0) {
+			services_osvcdeleterest("R_USER_FILTERSET", [o.options.user_id], "","", function(jd) {
+				if (jd.error && jd.error.length > 0) {
+					o.info_filterset.next().hide()
+					o.info_filterset.text(jd.error).show()
+					return
+				}
+				o.info_filterset.next().hide()
+				o.info_filterset.text(label).show()
+			},
+			function() {})
+		} else {
+			services_osvcpostrest("R_USER_FILTERSET_SET", [o.options.user_id, fset_id], "","", function(jd) {
+				if (jd.error && jd.error.length > 0) {
+					o.info_filterset.next().hide()
+					o.info_filterset.text(jd.error).show()
+					return
+				}
+				o.info_filterset.next().hide()
+				o.info_filterset.text(label).show()
+			},
+			function() {})
+		}
+	}
+
+	o.div.load("/init/static/views/user_properties.html", function() {
+		o.div.i18n()
+		o.init()
+	})
+
+	return o
 }
 
-function user_update_primary_group(o, label, group_id)
-{
-	services_osvcpostrest("R_USER_PRIMARY_GROUP", [o.user_id, group_id], "","", function(jd) {
-      if (jd.error) {
-        return
-      }
-      o.info_primaryg.val(label);
-    },function() {});
-}
 
-function user_update_filter_set(o, label, filter_id)
-{
-	services_osvcpostrest("R_USER_PRIMARY_GROUP", [o.user_id,filter_id], "","", function(jd) {
-      if (jd.error) {
-        return
-      }
-      o.info_filterset.val(label);
-    },function() {});
-}
-
-function user_update_domains(o, domain)
-{
-	services_osvcpostrest("R_USER_DOMAINS", [o.user_id], "", [{"domains" : domain}], function(jd) {
-      if (jd.error) {
-        return
-      }
-    },function() {});
-}
-
-function user_delete_groups(o, data)
-{
-	services_osvcdeleterest("R_POST_GROUPS", [o.user_id, data.id], "", "", function(jd) {
-      if (jd.error) {
-        return
-      }
-      var val = o.info_groups.html();
-      val = val.replace(" " + data.role,"");
-      o.info_groups.html(val);
-    },function() {});
-}
-
-function user_switch_tab(o, tab, details)
-{
-	tab.addClass("tab_active");
-	o.current_tab.removeClass("tab_active");
-	o.current_tab_details.hide();
-	details.show();
-	o.current_tab = tab;
-	o.current_tab_details = details;
-}

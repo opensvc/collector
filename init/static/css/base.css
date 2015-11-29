@@ -17,6 +17,10 @@
 	top: 2em;
 }
 
+.im:before {
+	content: "\f27a  ";
+	font-family: awesome;
+}
 .toggle-on:before {
 	content: '\f205  ';
 	font-family: awesome;
@@ -3477,6 +3481,23 @@ button:disabled {
 }
 .group_hidden_menu .menu_entry:hover {
 	background: none;
+}
+
+.user_groups {
+	width: 100%;
+}
+.user_groups > div > div {
+	padding: 1em;
+	word-wrap: break-word;
+	word-break: break-word;
+}
+.user_groups div {
+	width: 13em;
+	display: inline-flex;
+	align-self: center;
+}
+.user_groups label {
+	align-self: center;
 }
 
 @media screen and (max-width:960px) and (orientation: landscape) {

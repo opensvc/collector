@@ -2059,21 +2059,38 @@ function cell_decorator_groups(e) {
   })
 }
 
-function cell_decorator_username(e) {
+function cell_decorator_user_id(e) {
   var v = $(e).attr("v")
   if ((v=="") || (v=="empty")) {
     return
   }
   var line = $(e).parent(".tl")
-  var user_id = line.children("[name$=_c_id]").attr("v")
+  var fullname = line.children("[name$=_c_fullname]").attr("v")
   $(e).addClass("corner")
   $(e).click(function(){
     if (get_selected() != "") {return}
     table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
     span_id = $(e).parent(".tl").attr("spansum")
     id = table_id + "_x_" + span_id
-    url = services_get_url() + "/init/ajax_user/ajax_user?user_id="+encodeURIComponent(user_id)+"&rowid="+id
-    toggle_extra(url, id, e, 0)
+    toggle_extra(null, id, e, 0)
+    user_tabs(id, {"user_id": v, "fullname": fullname})
+  })
+}
+
+function cell_decorator_username(e) {
+  var v = $(e).attr("v")
+  if ((v=="") || (v=="empty")) {
+    return
+  }
+  var line = $(e).parent(".tl")
+  $(e).addClass("corner")
+  $(e).click(function(){
+    if (get_selected() != "") {return}
+    table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
+    span_id = $(e).parent(".tl").attr("spansum")
+    id = table_id + "_x_" + span_id
+    toggle_extra(null, id, e, 0)
+    user_tabs(id, {"fullname": v})
   })
 }
 
@@ -3111,6 +3128,7 @@ cell_decorators = {
  "action_q_status": cell_decorator_action_q_status,
  "action_q_ret": cell_decorator_action_q_ret,
  "svcname": cell_decorator_svcname,
+ "user_id": cell_decorator_user_id,
  "username": cell_decorator_username,
  "groups": cell_decorator_groups,
  "nodename": cell_decorator_nodename,

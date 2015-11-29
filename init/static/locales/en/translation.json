@@ -715,5 +715,34 @@
   "forms": {
     "no_data": "No data",
     "not_found": "not found"
+  },
+  "user_properties": {
+    "first_name": "first name",
+    "last_name": "last name",
+    "perpage": "lines per page",
+    "email": "address",
+    "email_section": "Mail",
+    "phone_work": "phone",
+    "manager": "manager",
+    "primary_group": "primary group",
+    "settings": "Settings",
+    "domains": "domains",
+    "lock_filter": "lock filter",
+    "filterset": "current filterset",
+    "email_log_level": "log level",
+    "email_notifications": "notifications",
+    "im_log_level": "log level",
+    "im_username": "user name",
+    "im_type": "type",
+    "im_notifications": "notifications",
+    "im": "Instant messaging",
+    "email_section": "Mail"
+  },
+  "user_groups": {
+    "org_groups": "Organization groups",
+    "priv_groups": "Privilege groups"
+  },
+  "user_tabs": {
+    "groups": "groups"
   }
 }
