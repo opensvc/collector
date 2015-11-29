@@ -48,6 +48,9 @@ function fset_selector_event_handler(o, data) {
   }
   if (data.event == "gen_filterset_user_change") {
     var d = data.data
+    if (d.user_id != _self.id) {
+      return
+    }
     o.span.text(d.fset_name)
     o.span.attr("fset_id", d.fset_id)
     o.callbacks()
