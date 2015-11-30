@@ -95,6 +95,7 @@ class table_packages(HtmlTable):
         self.ajax_col_values = 'ajax_packages_col_values'
         self.span = ["id"]
         self.keys = ["id"]
+        self.events = ["packages_change"]
 
 @auth.requires_login()
 def ajax_packages_col_values():

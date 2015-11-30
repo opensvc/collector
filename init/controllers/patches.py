@@ -69,6 +69,7 @@ class table_patches(HtmlTable):
         self.ajax_col_values = 'ajax_patches_col_values'
         self.span = ["id"]
         self.keys = ["id"]
+        self.events = ["patches_change"]
 
 @auth.requires_login()
 def ajax_patches_col_values():
