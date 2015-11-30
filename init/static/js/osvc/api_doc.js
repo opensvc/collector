@@ -140,8 +140,8 @@ function api_doc(divid, path) {
 		}
 		var pre = $("<pre class='api_doc'></pre>")
 		var s = examples.join("<br>")
-		s.replace(/%(email)s/g, window.location.host)
-		s.replace(/%(collector)s/g, _self.email)
+		s = s.replace(/%\(collector\)s/g, window.location.host)
+		s = s.replace(/%\(email\)s/g, _self.email)
 		pre.text(s)
 		return pre
 	}
