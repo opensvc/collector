@@ -160,6 +160,7 @@ function fset_selector_load_area(o) {
     }
 
     o.area.find("[fset_id="+current_fset_id+"]").addClass("menu_current")
+    o.area.find("[name=orig]").remove()
   })
 }
 

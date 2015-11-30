@@ -296,7 +296,7 @@ function search_search() {
 
 function search_routing(delay) {
   var menu = $(".header").find(".menu16").parents("ul").first().siblings(".menu");
-  if (menu.is(":visible") || $("[name=fset_selector_entries]").is(":visible")) {
+  if (menu.is(":visible")) {
     filter_menu(null);
   } else if ($(".header [name=fset_selector_entries]").is(":visible")) {
     filter_fset_selector(null);
@@ -349,7 +349,7 @@ function search_init(o)
 
 function filter_menu(event) {
   var menu = $("#menu_menu");
-  var text = searchbox = $(".search").find("input").val();
+  var text = $(".search").find("input").val();
 
   var reg = new RegExp(text, "i");
   menu.find(".menu_entry").each(function(){
@@ -387,7 +387,7 @@ function filter_menu(event) {
 
 function filter_fset_selector(event) {
   var div = $(".header [name=fset_selector_entries]")
-  var text = searchbox = $(".search").find("input").val()
+  var text = $(".search").find("input").val()
   var reg = new RegExp(text, "i");
   div.find(".menu_entry").each(function(){
     if ($(this).find("[name=title]").text().match(reg)) {
