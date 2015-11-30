@@ -527,6 +527,23 @@ def ajax_users():
         except ToolError, e:
             t.flash = str(e)
 
+    o = ~db.v_users.last
+    q = db.v_users.id > 0
+    for f in t.cols:
+        q = _where(q, 'v_users', t.filter_parse(f), f)
+
+    if len(request.args) == 1 and request.args[0] == 'data':
+        n = db(q).count()
+        limitby = (t.pager_start,t.pager_end)
+        cols = t.get_visible_columns()
+        t.object_list = db(q).select(*cols, orderby=o, limitby=limitby, cacheable=False)
+        t.set_column_visibility()
+        return t.table_lines_data(n, html=False)
+
+@auth.requires_login()
+def users():
+    t = table_users('users', 'ajax_users')
+
     try:
         if t.form_group_add.accepts(request.vars, formname='form_add_group'):
             response.flash = T("group added")
@@ -553,22 +570,6 @@ def ajax_users():
     except AttributeError:
         pass
 
-    o = ~db.v_users.last
-    q = db.v_users.id > 0
-    for f in t.cols:
-        q = _where(q, 'v_users', t.filter_parse(f), f)
-
-    if len(request.args) == 1 and request.args[0] == 'data':
-        n = db(q).count()
-        limitby = (t.pager_start,t.pager_end)
-        cols = t.get_visible_columns()
-        t.object_list = db(q).select(*cols, orderby=o, limitby=limitby, cacheable=False)
-        t.set_column_visibility()
-        return t.table_lines_data(n, html=False)
-
-@auth.requires_login()
-def users():
-    t = table_users('users', 'ajax_users')
     d = DIV(
           t.html(),
           _id='users',
