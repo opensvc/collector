@@ -342,133 +342,133 @@ function table_action_menu_init_data(t) {
             {
               'title': 'Update node information',
               'class': 'icon node16',
-              "privileges": ["Manager", "NodeManager"],
+              "privileges": ["Manager", "NodeManager", "NodeExec"],
               "min": 1,
               'action': 'pushasset'
             },
             {
               'title': 'Update disks information',
               'class': 'icon hd16',
-              "privileges": ["Manager", "NodeManager"],
+              "privileges": ["Manager", "NodeManager", "NodeExec"],
               "min": 1,
               'action': 'pushdisks'
             },
             {
               'title': 'Update app information',
               'class': 'icon svc-c',
-              "privileges": ["Manager", "NodeManager"],
+              "privileges": ["Manager", "NodeManager", "NodeExec"],
               "min": 1,
               'action': 'push_appinfo'
             },
             {
               'title': 'Update services information',
               'class': 'icon svc-c',
-              "privileges": ["Manager", "NodeManager"],
+              "privileges": ["Manager", "NodeManager", "NodeExec"],
               "min": 1,
               'action': 'pushservices'
             },
             {
               'title': 'Update installed packages information',
               'class': 'icon pkg16',
-              "privileges": ["Manager", "NodeManager"],
+              "privileges": ["Manager", "NodeManager", "NodeExec"],
               "min": 1,
               'action': 'pushpkg'
             },
             {
               'title': 'Update installed patches information',
               'class': 'icon pkg16',
-              "privileges": ["Manager", "NodeManager"],
+              "privileges": ["Manager", "NodeManager", "NodeExec"],
               "min": 1,
               'action': 'pushpatch'
             },
             {
               'title': 'Update stats',
               'class': 'icon spark16',
-              "privileges": ["Manager", "NodeManager"],
+              "privileges": ["Manager", "NodeManager", "NodeExec"],
               "min": 1,
               'action': 'pushstats'
             },
             {
               'title': 'Update check values',
               'class': 'icon ok',
-              "privileges": ["Manager", "NodeManager"],
+              "privileges": ["Manager", "NodeManager", "NodeExec"],
               "min": 1,
               'action': 'checks'
             },
             {
               'title': 'Update sysreport',
               'class': 'icon log16',
-              "privileges": ["Manager", "NodeManager"],
+              "privileges": ["Manager", "NodeManager", "NodeExec"],
               "min": 1,
               'action': 'sysreport'
             },
             {
               'title': 'Update compliance modules',
               'class': 'icon comp-c',
-              "privileges": ["Manager", "NodeManager"],
+              "privileges": ["Manager", "NodeManager", "NodeExec"],
               "min": 1,
               'action': 'updatecomp'
             },
             {
               'title': 'Update opensvc agent',
               'class': 'icon pkg16',
-              "privileges": ["Manager", "NodeManager"],
+              "privileges": ["Manager", "NodeManager", "NodeExec"],
               "min": 1,
               'action': 'updatepkg'
             },
             {
               'title': 'Rotate root password',
               'class': 'icon key',
-              "privileges": ["Manager", "NodeManager"],
+              "privileges": ["Manager", "NodeManager", "NodeExec"],
               "min": 1,
               'action': 'rotate root pw'
             },
             {
               'title': 'Rescan scsi hosts',
               'class': 'icon hd16',
-              "privileges": ["Manager", "NodeManager"],
+              "privileges": ["Manager", "NodeManager", "NodeExec"],
               "min": 1,
               'action': 'scanscsi'
             },
             {
               'title': 'Reboot',
               'class': 'icon action_restart_16',
-              "privileges": ["Manager", "NodeManager"],
+              "privileges": ["Manager", "NodeManager", "NodeExec"],
               "min": 1,
               'action': 'reboot'
             },
             {
               'title': 'Reboot schedule',
               'class': 'icon action_restart_16',
-              "privileges": ["Manager", "NodeManager"],
+              "privileges": ["Manager", "NodeManager", "NodeExec"],
               "min": 1,
               'action': 'schedule_reboot'
             },
             {
               'title': 'Reboot unschedule',
               'class': 'icon action_restart_16',
-              "privileges": ["Manager", "NodeManager"],
+              "privileges": ["Manager", "NodeManager", "NodeExec"],
               "min": 1,
               'action': 'unschedule_reboot'
             },
             {
               'title': 'Shutdown',
               'class': 'icon action_stop_16',
-              "privileges": ["Manager", "NodeManager"],
+              "privileges": ["Manager", "NodeManager", "NodeExec"],
               "min": 1,
               'action': 'shutdown'
             },
             {
               'title': 'Wake On LAN',
               'class': 'icon action_start_16',
-              "privileges": ["Manager", "NodeManager"],
+              "privileges": ["Manager", "NodeManager", "NodeExec"],
               "min": 1,
               'action': 'wol'
             },
             {
               'title': 'Compliance check',
               'class': 'icon comp-c',
-              "privileges": ["Manager", "NodeManager"],
+              "privileges": ["Manager", "NodeManager", "NodeExec"],
               "min": 1,
               'action': 'compliance_check',
               'params': ["module", "moduleset"]
@@ -476,7 +476,7 @@ function table_action_menu_init_data(t) {
             {
               'title': 'Compliance fix',
               'class': 'icon comp-c',
-              "privileges": ["Manager", "NodeManager"],
+              "privileges": ["Manager", "NodeManager", "NodeExec"],
               "min": 1,
               'action': 'compliance_fix',
               'params': ["module", "moduleset"]
@@ -484,7 +484,7 @@ function table_action_menu_init_data(t) {
             {
               'title': 'action_menu.provisioning',
               'class': 'icon prov',
-              "privileges": ["Manager", "NodeManager"],
+              "privileges": ["Manager", "NodeManager", "NodeExec"],
               "min": 1,
               'fn': 'agent_action_provisioning'
             }
@@ -500,84 +500,84 @@ function table_action_menu_init_data(t) {
             {
               'title': 'Start',
               'class': 'icon action_start_16',
-              "privileges": ["Manager", "NodeManager"],
+              "privileges": ["Manager", "NodeManager", "NodeExec"],
               "min": 1,
               'action': 'start'
             },
             {
               'title': 'Stop',
               'class': 'icon action_stop_16',
-              "privileges": ["Manager", "NodeManager"],
+              "privileges": ["Manager", "NodeManager", "NodeExec"],
               "min": 1,
               'action': 'stop'
             },
             {
               'title': 'Restart',
               'class': 'icon action_restart_16',
-              "privileges": ["Manager", "NodeManager"],
+              "privileges": ["Manager", "NodeManager", "NodeExec"],
               "min": 1,
               'action': 'restart'
             },
             {
               'title': 'Switch',
               'class': 'icon action_switch_16',
-              "privileges": ["Manager", "NodeManager"],
+              "privileges": ["Manager", "NodeManager", "NodeExec"],
               "min": 1,
               'action': 'switch'
             },
             {
               'title': 'Sync all remotes',
               'class': 'icon action_sync_16',
-              "privileges": ["Manager", "NodeManager"],
+              "privileges": ["Manager", "NodeManager", "NodeExec"],
               "min": 1,
               'action': 'syncall'
             },
             {
               'title': 'Sync peer remotes',
               'class': 'icon action_sync_16',
-              "privileges": ["Manager", "NodeManager"],
+              "privileges": ["Manager", "NodeManager", "NodeExec"],
               "min": 1,
               'action': 'syncnodes'
             },
             {
               'title': 'Sync disaster recovery remotes',
               'class': 'icon action_sync_16',
-              "privileges": ["Manager", "NodeManager"],
+              "privileges": ["Manager", "NodeManager", "NodeExec"],
               "min": 1,
               'action': 'syncdrp'
             },
             {
               'title': 'Enable',
               'class': 'icon ok',
-              "privileges": ["Manager", "NodeManager"],
+              "privileges": ["Manager", "NodeManager", "NodeExec"],
               "min": 1,
               'action': 'enable'
             },
             {
               'title': 'Disable',
               'class': 'icon nok',
-              "privileges": ["Manager", "NodeManager"],
+              "privileges": ["Manager", "NodeManager", "NodeExec"],
               "min": 1,
               'action': 'disable'
             },
             {
               'title': 'Thaw',
               'class': 'icon ok',
-              "privileges": ["Manager", "NodeManager"],
+              "privileges": ["Manager", "NodeManager", "NodeExec"],
               "min": 1,
               'action': 'thaw'
             },
             {
               'title': 'Freeze',
               'class': 'icon nok',
-              "privileges": ["Manager", "NodeManager"],
+              "privileges": ["Manager", "NodeManager", "NodeExec"],
               "min": 1,
               'action': 'freeze'
             },
             {
               'title': 'Compliance check',
               'class': 'icon comp-c',
-              "privileges": ["Manager", "NodeManager"],
+              "privileges": ["Manager", "NodeManager", "NodeExec"],
               "min": 1,
               'action': 'compliance_check',
               'params': ["module", "moduleset"]
@@ -585,7 +585,7 @@ function table_action_menu_init_data(t) {
             {
               'title': 'Compliance fix',
               'class': 'icon comp-c',
-              "privileges": ["Manager", "NodeManager"],
+              "privileges": ["Manager", "NodeManager", "NodeExec"],
               "min": 1,
               'action': 'compliance_fix',
               'params': ["module", "moduleset"]
@@ -602,35 +602,35 @@ function table_action_menu_init_data(t) {
             {
               'title': 'Start',
               'class': 'icon action_start_16',
-              "privileges": ["Manager", "NodeManager"],
+              "privileges": ["Manager", "NodeManager", "NodeExec"],
               "min": 1,
               'action': 'start'
             },
             {
               'title': 'Stop',
               'class': 'icon action_stop_16',
-              "privileges": ["Manager", "NodeManager"],
+              "privileges": ["Manager", "NodeManager", "NodeExec"],
               "min": 1,
               'action': 'stop'
             },
             {
               'title': 'Restart',
               'class': 'icon action_restart_16',
-              "privileges": ["Manager", "NodeManager"],
+              "privileges": ["Manager", "NodeManager", "NodeExec"],
               "min": 1,
               'action': 'restart'
             },
             {
               'title': 'Enable',
               'class': 'icon ok',
-              "privileges": ["Manager", "NodeManager"],
+              "privileges": ["Manager", "NodeManager", "NodeExec"],
               "min": 1,
               'action': 'enable'
             },
             {
               'title': 'Disable',
               'class': 'icon nok',
-              "privileges": ["Manager", "NodeManager"],
+              "privileges": ["Manager", "NodeManager", "NodeExec"],
               "min": 1,
               'action': 'disable'
             }
@@ -646,14 +646,14 @@ function table_action_menu_init_data(t) {
             {
               'title': 'Check',
               'class': 'icon comp-c',
-              "privileges": ["Manager", "NodeManager", "CompExec"],
+              "privileges": ["Manager", "NodeManager", "NodeExec", "CompExec"],
               "min": 1,
               'action': 'check'
             },
             {
               'title': 'Fix',
               'class': 'icon comp-c',
-              "privileges": ["Manager", "NodeManager", "CompExec"],
+              "privileges": ["Manager", "NodeManager", "NodeExec", "CompExec"],
               "min": 1,
               'action': 'fix'
             }
