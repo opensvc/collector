@@ -46,6 +46,9 @@ function node_props_init(o)
     if (o.options.nodename) {
       services_osvcgetrest("R_NODE_AM_I_RESPONSIBLE", [o.options.nodename], "", function(jd) {
         o.options.responsible = jd.data
+	if (!o.options.responsible) {
+          return
+	}
         o.responsible_init()
       })
     }
