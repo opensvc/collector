@@ -203,7 +203,9 @@ function services_osvcpostrest(service, uri, params, data, callback, error_callb
           if (error == "UNAUTHORIZED") {
             app_load_href("/init/default/user/login")
           }
-          error_callback(xhr, stat, error)
+          if (error_callback) {
+            error_callback(xhr, stat, error)
+	  }
         },
         success: callback
     })
@@ -241,7 +243,9 @@ function services_osvcgetrest(service, uri, params, callback, error_callback, as
           if (error == "UNAUTHORIZED") {
             app_load_href("/init/default/user/login")
           }
-          error_callback(xhr, stat, error)
+          if (error_callback) {
+            error_callback(xhr, stat, error)
+	  }
         },
         success: callback,
     });
