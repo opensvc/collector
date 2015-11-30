@@ -152,6 +152,7 @@ class table_svcmon(HtmlTable):
             'mon_syncstatus',
             'mon_appstatus',
             'mon_hbstatus',
+            'mon_updated',
             'os_name',
         ]
         self.colprops = {
