@@ -517,7 +517,6 @@ function user_tabs(divid, options) {
   })
 
   o._load = function() {
-        console.log(o.options)
     o.closetab.children("p").text(o.options.fullname ? o.options.fullname : o.options.user_id)
 
     // tab properties
