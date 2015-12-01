@@ -1,63 +1,23 @@
 //
-// user group tool
+// column filter tool: distinct values to filtering string
 //
-function bind_user_groups() {
-  $("[name=user_group_check]").bind("click", function(){
-    var data = {
-     'user_id': $(this).attr("user_id"),
-     'group_id': $(this).attr("group_id"),
-     'membership': $(this).is(":checked")
-    }
-    var url = services_get_url() + "/init/ajax_user/call/json/set_user_group"
-    $.ajax({
-         type: "POST",
-         url: url,
-         data: data,
-         success: function(msg){
-         }
-    })
-  })
-}
-
-//
-// group hidden menu entries tool
-//
-function bind_group_hidden_menu_entries() {
-  $("[name=group_hidden_menu_entry_check]").bind("click", function(){
-    var data = {
-     'group_id': $(this).attr("group_id"),
-     'menu_entry': $(this).attr("menu_entry"),
-     'hidden': $(this).is(":checked")
-    }
-    var url = services_get_url() + "/init/ajax_group/call/json/set_group_hidden_menu_entry"
-    $.ajax({
-         type: "POST",
-         url: url,
-         data: data,
-         success: function(msg){
-         }
-    })
-  })
-}
-
-
-
-//
-//
-//
-function values_to_filter(iid, did){
+function values_to_filter(input, cloud){
 	l = []
 	var reg = new RegExp("[ ]+$", "g");
-	$("#"+did).contents().find("a").each(function(){
+	cloud.find("a.cloud_tag").each(function(){
                 s = this.text
+		console.log(s)
       		s = s.replace(reg, "")
 		if (s == "None") {s = "empty"}
 		l.push(s)
 	})
         v = '(' + l.join(",") + ')'
-	$("#"+iid).val(v)
+	input.val(v)
 }
 
+//
+// column filter tool: invert column filter
+//
 function table_invert_column_filter(t, c){
   var input = t.e_header_filters.find("th[col="+c+"]").find("input")
   _invert_filter(input)
@@ -144,23 +104,6 @@ function select_all(checked, aform) {
   }
 }
 
-function dumpProps(obj, parent) {
-   // Go through all the properties of the passed-in object
-   for (var i in obj) {
-      // if a parent (2nd parameter) was passed in, then use that to
-      // build the message. Message includes i (the object's property name)
-      // then the object's property value on a new line
-      if (parent) { var msg = parent + "." + i + "\n" + obj[i]; } else { var msg = i + "\n" + obj[i]; }
-      // Display the message. If the user clicks "OK", then continue. If they
-      // click "CANCEL" then quit this level of recursion
-      if (!confirm(msg)) { return; }
-      // If this property (i) is an object, then recursively process the object
-      if (typeof obj[i] == "object") {
-         if (parent) { dumpProps(obj[i], parent + "." + i); } else { dumpProps(obj[i], i); }
-      }
-   }
-}
-
 function show_eid(id) {
   if ((navigator.appName == 'Netscape')||(navigator.appName == 'Opera')) {
     document.getElementById(id).style['display']='table-row'
@@ -184,10 +127,6 @@ function toggle_filter_value_input() {
   }
 }
 
-//
-// table class js functions
-//
-var timer;
 function check_toggle_vis(id, checked, col){
     var t = osvc.tables[id]
     var c = col.split("_c_")[1]
@@ -567,6 +506,7 @@ function table_add_column_header_input(t, tr, c) {
   value_cloud.attr("id", t.id+"_fc_"+c)
   value_cloud.css({"overflow-wrap": "break-word"})
 
+  input_float.draggable()
   input_float.append(header)
   input_float.append(input)
   input_float.append(value_to_filter_tool)
@@ -1344,8 +1284,8 @@ function table_bind_filter_input_events(t) {
     var input = $(this)
     var col = input.attr('id').split('_f_')[1]
     t.e_header_slim.find("[col='"+col+"']").removeClass("bgred").addClass("bgorange")
-    clearTimeout(timer)
-    timer = setTimeout(function validate(){
+    clearTimeout(t.refresh_timer)
+    t.refresh_timer = setTimeout(function validate(){
       var data = {}
       for (c in t.colprops) {
         var current = $("#"+t.id+"_f_"+c).val()
@@ -1425,18 +1365,13 @@ function table_bind_filter_input_events(t) {
 
   // values to column filter click
   inputs.siblings(".values_to_filter").bind("click", function(event) {
-    var k = $(this).parent().find("input").attr('id')
-    var ck = k.replace("_f_", "_fc_")
-    var col = k.split("_f_")[1]
-    function f() {
-      values_to_filter(k, ck)
-      t.e_header_filters.find("th[col="+col+"]").find(".white_float_input").hide()
-      t.save_column_filters()
-      t.refresh_column_filters()
-      t.refresh()
-    }
-    _url = url + col
-    sync_ajax(_url, [k], ck, f)
+    var input = $(this).parent().find("input")
+    var ck = input.attr("id").replace("_f_", "_fc_")
+    var cloud = $(this).parent().find("#"+ck)
+    values_to_filter(input, cloud)
+    t.save_column_filters()
+    t.refresh_column_filters()
+    t.refresh()
   })
 
   t.bind_filter_reformat()
@@ -3044,6 +2979,8 @@ function table_init(opts) {
       return table_cell_decorator(this)
     }
   }
+
+  t.refresh_timer = null
 
   // selectors cache
   t.div = $("#"+t.id)
