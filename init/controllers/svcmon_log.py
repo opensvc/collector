@@ -938,13 +938,13 @@ class table_avail(HtmlTable):
                      _class='svcname',
                     ),
             'avail_holes': col_avail_holes(
-                     title='Unavailabity ranges',
+                     title='Unavailability ranges',
                      field='avail_holes',
                      img='time16',
                      display=True,
                     ),
             'avail_pct': col_avail_pct(
-                     title='Availabity',
+                     title='Availability',
                      field='availability',
                      img='spark16',
                      display=True,
@@ -983,7 +983,7 @@ class table_avail(HtmlTable):
     def ack(self):
         d = DIV(
               A(
-                T("Acknowledge unavailabity"),
+                T("Acknowledge unavailability"),
                 _onclick="""click_toggle_vis(event,'%(div)s', 'block');$('#ackcomment').focus();"""%dict(div='ackcomment_d_'+self.id),
                 _class='check16',
               ),
