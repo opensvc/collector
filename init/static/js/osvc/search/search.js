@@ -387,6 +387,10 @@ function filter_menu(event) {
 
 function filter_fset_selector(event) {
   var div = $(".header [name=fset_selector_entries]")
+  if (!div.is("[ready]")) {
+    var timer = setTimeout(function(){filter_fset_selector(event)}, 500)
+    return
+  }
   var text = $(".search").find("input").val()
   var reg = new RegExp(text, "i");
   div.find(".menu_entry").each(function(){
