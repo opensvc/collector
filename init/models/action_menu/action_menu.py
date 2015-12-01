@@ -252,7 +252,6 @@ def do_svc_action(nodename, svcname, action, rid=None):
 
     # filter out nodes we are not responsible for
     q = db.nodes.nodename == nodename
-    q &= db.nodes.team_responsible.belongs(user_groups())
     node = db(q).select(db.nodes.nodename, db.nodes.os_name, db.nodes.action_type, cacheable=True).first()
     if node is None:
         return 0
