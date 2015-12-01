@@ -11,6 +11,7 @@
   }, 
   "designer": {
     "warn_remove": "Attention, cet objet peut être référencé par d'autres objets. Voulez-vous vraiment le supprimer ?"
+    "import": "Import"
   },
   "action_menu": {
     "on_nodes_modulesets": "Sur les jeux de modules des noeuds",

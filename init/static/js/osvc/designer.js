@@ -11,6 +11,9 @@ function designer(divid, options) {
   o.init = function() {
     return designer_init(o)
   }
+  o.show_importer = function() {
+    return designer_show_importer(o)
+  }
   o.json_data_url = function(t) {
     return designer_json_data_url(o, t)
   }
@@ -478,8 +481,32 @@ function designer__create(o, e, data) {
   });
 }
 
+function designer_show_importer(o) {
+  if (!services_ismemberof("Manager", "CompManager")) {
+    return
+  }
+  var div = $("<div id='impoprt'></div>")
+  var title = $("<h3 data-i18n='designer.import'></h3>")
+  var textarea = $("<textarea id='import_text' class='pre' style='width:100%;height:20em;margin-bottom:1em'></textarea>")
+  var input = $("<input type='button'></input>")
+  input.attr("value", i18n.t("designer.import"))
+  input.bind("click", function() {
+    o.comp_import()
+  })
+  div.append(title)
+  div.append(textarea)
+  div.append("<br>")
+  div.append(input)
+  div.i18n()
+  o.e_info.html(div)
+}
+
 function designer__select(o, e, data) {
   data.rslt.obj.each(function() {
+    if ($(this).is("[rel$=_head]")) {
+      o.show_importer()
+      return
+    }
     $.ajax({
     async: false,
     type: "POST",
@@ -509,8 +536,8 @@ function designer__select(o, e, data) {
       $(".flash").html(msg).slideDown()
     },
     success: function(msg){
-      $("#cainfo").html(msg)
-      $("#cainfo").find("script").each(function(i){
+      o.e_info.html(msg)
+      o.e_info.find("script").each(function(i){
         eval($(this).text());
         $(this).remove();
       });
@@ -531,6 +558,7 @@ function designer_init(o) {
   o.e_sep = o.div.find("#casep")
   o.e_search_input = o.div.find("#casearch")
   o.e_search_input2 = o.div.find("#casearch2")
+
 
   if (o.options.search2) {
     o.e_tree_container2.show(500)
@@ -1535,7 +1563,7 @@ function designer_comp_import(o) {
      "value": $("#import_text").val(),
     },
     success: function(msg){
-      o.cainfo.find("#import").html(msg)
+      o.e_info.html(msg)
     }
   });
 }

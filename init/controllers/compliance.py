@@ -9493,11 +9493,7 @@ def json_tree_action_create():
     return ""
 
 def json_tree_action_show():
-    if request.vars.obj_type is None:
-        return json_tree_action_show_import()
-    elif request.vars.obj_type in ["ruleset_head", "moduleset_head", "filterset_head"]:
-        return json_tree_action_show_import()
-    elif request.vars.obj_type.startswith("ruleset"):
+    if request.vars.obj_type.startswith("ruleset"):
         return json_tree_action_show_ruleset(request.vars.obj_id)
     elif request.vars.obj_type == "variable":
         return json_tree_action_show_variable(request.vars.obj_id)
@@ -10117,32 +10113,6 @@ def json_tree_action_import():
     comp_rulesets_chains()
     l =  map(lambda x: P(x), l)
     return DIV(l)
-
-def json_tree_action_show_import():
-    if "CompManager" not in user_groups():
-        ro = True
-    else:
-        ro = False
-    d = DIV(
-      H3(
-        T("Import"),
-      ),
-      DIV(
-        TEXTAREA(
-          _id="import_text",
-          _readonly=ro,
-          _style="width:100%;height:20em;margin-bottom:1em",
-        ),
-        BR(),
-        INPUT(
-          _value=T("Import"),
-          _type="button",
-          _onclick="comp_import()",
-        ),
-      ),
-      _id="import",
-    )
-    return d
 
 def json_tree_action_show_group(group_id):
     t = group_tabs(group_id)

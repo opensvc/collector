@@ -10,7 +10,8 @@
     "done": "done"
   },
   "designer": {
-    "warn_remove": "Warning, this object might be referenced by other objects. Do you really want to delete this compliance object ?"
+    "warn_remove": "Warning, this object might be referenced by other objects. Do you really want to delete this compliance object ?",
+    "import": "Import"
   },
   "action_menu": {
     "on_nodes_modulesets": "On nodes modulesets",
