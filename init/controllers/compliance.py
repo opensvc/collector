@@ -24,6 +24,7 @@ tables = {
     'b_disk_app':dict(name='b_disk_app', title='disks', cl='hd16', hide=False),
     'v_comp_moduleset_attachments':dict(name='v_comp_moduleset_attachments', title='moduleset attachments', cl='modset16', hide=False),
     'v_tags':dict(name='v_tags', title='tags', cl='tag16', hide=False),
+    'packages':dict(name='packages', title='packages', cl='pkg16', hide=False),
 }
 operators = [dict(id='op0', title='='),
              dict(id='op1', title='LIKE'),
@@ -42,6 +43,7 @@ props.update(apps_colprops)
 props.update(v_comp_moduleset_attachments_colprops)
 props.update(v_tags_colprops)
 props.update(resmon_colprops)
+props.update(packages_colprops)
 fields = {
     'nodes': db.nodes.fields,
     'services': db.services.fields,
@@ -52,6 +54,7 @@ fields = {
     'apps': set(db.apps.fields) - set(['updated', 'id']),
     'v_comp_moduleset_attachments': ['modset_name'],
     'v_tags': ['tag_name'],
+    'packages': db.packages.fields,
 }
 
 import re
@@ -2546,11 +2549,12 @@ class table_comp_filters(HtmlTable):
                 UL(
                   INPUT(
                     _id='f_value',
-                    _onkeypress=self.ajax_enter_submit(additional_inputs=['f_table',
-                                                                          'f_field',
-                                                                          'f_op',
-                                                                          'f_value'],
-                                                       args=['add_filter']),
+                    _onkeypress="if (is_enter(event)) {%s};" % \
+                       self.ajax_submit(additional_inputs=['f_table',
+                                                           'f_field',
+                                                           'f_op',
+                                                           'f_value'],
+                                        args=["add_filter"]),
                   ),
                 ),
                 _id='value',

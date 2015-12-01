@@ -271,6 +271,16 @@ def filterset_query(row, nodes, services, i=0, nodename=None, svcname=None):
                               cacheable=True)
         n_nodes = set(map(lambda x: x.nodes.nodename, rows)) - set([None])
         n_services = set(map(lambda x: x.svcmon.mon_svcname, rows)) - set([None])
+    elif v.f_table == 'packages':
+        if svcname is not None:
+            qry &= db.svcmon.mon_svcname == svcname
+        if nodename is not None:
+            qry &= db.packages.pkg_nodename == nodename
+        rows = db(qry).select(db.svcmon.mon_svcname, db.packages.pkg_nodename,
+                              left=db.svcmon.on(db.packages.pkg_nodename==db.svcmon.mon_nodname),
+                              cacheable=True)
+        n_nodes = set(map(lambda x: x.packages.pkg_nodename, rows)) - set([None])
+        n_services = set(map(lambda x: x.svcmon.mon_svcname, rows)) - set([None])
     elif v.f_table == 'svcmon':
         if svcname is not None:
             qry &= db.svcmon.mon_svcname == svcname

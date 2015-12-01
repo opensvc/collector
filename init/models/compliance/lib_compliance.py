@@ -2158,6 +2158,7 @@ def create_filter(f_table=None, f_field=None, f_op=None, f_value=None):
         'b_disk_app',
         'v_comp_moduleset_attachments',
         'v_tags',
+        'packages',
     ]
     operators = ['=', 'LIKE', '>', '>=', '<', '<=', 'IN']
 

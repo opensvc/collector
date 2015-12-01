@@ -15,74 +15,7 @@ class table_packages(HtmlTable):
                       'pkg_updated']
         self.cols += v_nodes_cols
         self.colprops = v_nodes_colprops
-        self.colprops.update({
-            'pkg_name': HtmlTableColumn(
-                     title='Package',
-                     table='packages',
-                     field='pkg_name',
-                     img='pkg16',
-                     display=True,
-                    ),
-            'sig_provider': HtmlTableColumn(
-                     title='Signature provider',
-                     table='pkg_sig_provider',
-                     field='sig_provider',
-                     img='pkg16',
-                     display=False,
-                    ),
-            'pkg_sig': HtmlTableColumn(
-                     title='Signature',
-                     table='packages',
-                     field='pkg_sig',
-                     img='pkg16',
-                     display=False,
-                     _class='pre',
-                    ),
-            'pkg_version': HtmlTableColumn(
-                     title='Version',
-                     table='packages',
-                     field='pkg_version',
-                     img='pkg16',
-                     display=True,
-                    ),
-            'pkg_arch': HtmlTableColumn(
-                     title='Arch',
-                     table='packages',
-                     field='pkg_arch',
-                     img='pkg16',
-                     display=True,
-                    ),
-            'pkg_type': HtmlTableColumn(
-                     title='Type',
-                     table='packages',
-                     field='pkg_type',
-                     img='pkg16',
-                     display=True,
-                    ),
-            'pkg_install_date': HtmlTableColumn(
-                     title='Install date',
-                     table='packages',
-                     field='pkg_install_date',
-                     img='time16',
-                     display=True,
-                     _class='datetime_no_age',
-                    ),
-            'pkg_updated': HtmlTableColumn(
-                     title='Updated',
-                     table='packages',
-                     field='pkg_updated',
-                     img='time16',
-                     display=True,
-                     _class='datetime_daily',
-                    ),
-            'id': HtmlTableColumn(
-                     title='Id',
-                     table='packages',
-                     field='id',
-                     img='pkg16',
-                     display=False,
-                    ),
-        })
+        self.colprops.update(packages_colprops)
         self.force_cols = ['os_name']
         self.colprops['nodename'].display = True
         self.colprops['nodename'].t = self
