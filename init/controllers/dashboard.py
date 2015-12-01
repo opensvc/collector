@@ -237,7 +237,7 @@ class table_dashboard(HtmlTable):
 def ajax_dashboard_col_values():
     t = table_dashboard('dashboard', 'ajax_dashboard')
     col = request.args[0]
-    if t.colprops[col].filter_redirect is None:
+    if t.colprops[col].filter_redirect is None and col in db.dashboard:
         o = db.dashboard[col]
         s = [o]
     else:

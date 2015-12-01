@@ -9493,7 +9493,9 @@ def json_tree_action_create():
     return ""
 
 def json_tree_action_show():
-    if request.vars.obj_type.startswith("ruleset"):
+    if request.vars.obj_type is None:
+        return
+    elif request.vars.obj_type.startswith("ruleset"):
         return json_tree_action_show_ruleset(request.vars.obj_id)
     elif request.vars.obj_type == "variable":
         return json_tree_action_show_variable(request.vars.obj_id)
