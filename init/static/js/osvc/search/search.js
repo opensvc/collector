@@ -294,7 +294,7 @@ function search_search() {
   });
 }
 
-function search_routing(delay) {
+function search_router(o, delay) {
   var menu = $(".header").find(".menu16").parents("ul").first().siblings(".menu");
   if (menu.is(":visible")) {
     filter_menu(null);
@@ -305,8 +305,8 @@ function search_routing(delay) {
     if ($("#search_input").val() == "") {
       $("#search_result").hide("fold")
     } else {
-      clearTimeout(timer);
-      timer = setTimeout(search_search,delay);
+      clearTimeout(o.timer);
+      o.timer = setTimeout(search_search, delay);
     }
   }
 }
@@ -319,6 +319,9 @@ function search(divid) {
   o.init = function init() {
     return search_init(o)
   }
+  o.router = function router(delay) {
+    return search_router(o, delay)
+  }
   o.div.load("/init/static/views/search.html", function() {
     o.init()
   })
@@ -328,7 +331,7 @@ function search(divid) {
 
 function search_init(o)
 {
-  var timer;
+  o.timer = null
 
   o.div.i18n()
   o.e_search_div = $("#search_div")
@@ -336,12 +339,12 @@ function search_init(o)
 
   o.e_search_div.on("keyup",function (event) {
     if (event.keyCode == 13) {
-      search_routing(0);
+      o.router(0);
     }
   });
   o.e_search_input.on("keyup",function (event) {
     if (event.keyCode != 27) {
-      search_routing(1000);
+      o.router(1000);
     }
   });
 }
