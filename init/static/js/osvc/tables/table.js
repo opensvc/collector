@@ -486,7 +486,7 @@ function table_add_column_header_input(t, tr, c) {
   var invert_tool = $("<span class='clickable hidden invert16'></span>")
   var clear_tool = $("<span class='clickable hidden clear16'></span>")
   var label = $("<span class='col_filter_label'></span>")
-  var input_float = $("<div class='white_float_input stackable'>")
+  var input_float = $("<div class='white_float_input stackable' style='position:absolute'>")
   var input = $("<input class='oi' name='fi'>")
   var value_to_filter_tool = $("<span class='clickable icon values_to_filter'></span><br>")
   var value_cloud = $("<span></span>")
