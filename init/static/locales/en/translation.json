@@ -1100,5 +1100,27 @@
     "Array Cache": "Array Cache",
     "Encapsulated ruleset": "Encapsulated ruleset",
     "Gateway": "Gateway"
+  },
+  "alert_type": {
+    "action errors": "action errors",
+    "application code without responsible": "application code without responsible",
+    "feed queue": "feed queue",
+    "flex error": "flex error",
+    "hardware obsolescence alert date not set": "hardware obsolescence alert date not set",
+    "hardware obsolescence warning date not set": "hardware obsolescence warning date not set",
+    "hardware obsolescence warning": "hardware obsolescence warning",
+    "hardware obsolescence alert": "hardware obsolescence alert",
+    "node close to maintenance end": "node close to maintenance end",
+    "node information not updated": "node information not updated",
+    "node maintenance expired": "node maintenance expired",
+    "node without asset information": "node without asset information",
+    "node without maintenance end date": "node without maintenance end date",
+    "os obsolescence alert date not set": "os obsolescence alert date not set",
+    "os obsolescence warning date not set": "os obsolescence warning date not set",
+    "os obsolescence alert": "os obsolescence alert",
+    "os obsolescence warning": "os obsolescence warning",
+    "service available but degraded": "service available but degraded",
+    "service status not updated": "service status not updated",
+    "service unavailable": "service unavailable"
   }
 }

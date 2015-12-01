@@ -199,6 +199,7 @@ class table_dashboard(HtmlTable):
                      field='dash_type',
                      img='alert16',
                      display=True,
+                     _class='alert_type',
                     ),
             'dash_md5': HtmlTableColumn(
                      title='Signature',

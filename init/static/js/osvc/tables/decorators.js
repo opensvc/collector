@@ -2975,6 +2975,11 @@ function cell_decorator_sql(e) {
   $(e).html(_e)
 }
 
+function cell_decorator_alert_type(e) {
+  var s = $(e).attr("v")
+  $(e).html(i18n.t("alert_type."+s))
+}
+
 function cell_decorator_yaml(e) {
   var s = $(e).attr("v")
   var _e = $("<pre></pre>")
@@ -3162,6 +3167,7 @@ cell_decorators = {
  "status": cell_decorator_status,
  "users_domain": cell_decorator_users_domain,
  "users_role": cell_decorator_users_role,
+ "alert_type": cell_decorator_alert_type,
  "appinfo_key": cell_decorator_appinfo_key,
  "appinfo_value": cell_decorator_appinfo_value
 }

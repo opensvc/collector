@@ -1032,5 +1032,27 @@
     "Tag exclude": "Anti-affinité du tag",
     "Tag created": "Date de création du tag",
     "Node name": "Noeud"
+  },
+  "alert_type": {
+    "action errors": "actions en erreur",
+    "application code without responsible": "code applicatif sans responsable",
+    "feed queue": "file d'alimentation",
+    "flex error": "erreur de flex",
+    "hardware obsolescence alert date not set": "date d'alerte d'obsolescence du matériel non paramétrée",
+    "hardware obsolescence warning date not set": "date d'attention d'obsolescence du matériel non paramétrée",
+    "hardware obsolescence alert": "alerte, matériel obsolète",
+    "hardware obsolescence warning": "attention, matériel obsolète",
+    "node close to maintenance end": "noeud proche de sa fin de maintenance",
+    "node information not updated": "information du noeud non rafraîchies",
+    "node maintenance expired": "noeud hors maintenance",
+    "node without asset information": "noeud sans information de bien",
+    "node without maintenance end date": "noeud sans date de fin de maintenance",
+    "os obsolescence alert date not set": "date d'alerte d'obsolescence de l'os non paramétrée",
+    "os obsolescence warning date not set": "date d'attention d'obsolescence de l'os non paramétrée",
+    "os obsolescence alert": "alerte, os obsolète",
+    "os obsolescence warning": "attention, os obsolète",
+    "service available but degraded": "service disponible mais dégradé",
+    "service status not updated": "état de service non rafraîchi",
+    "service unavailable": "service indisponible"
   }
 }
