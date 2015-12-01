@@ -107,7 +107,7 @@ class table_actions(HtmlTable):
                      display=True,
                     ),
             'command': HtmlTableColumn(
-                     title='Commande',
+                     title='Command',
                      field='command',
                      img='action16',
                      display=True,

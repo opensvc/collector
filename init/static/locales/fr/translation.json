@@ -1032,6 +1032,15 @@
     "Instance label": "Label de l'instance",
     "Tag exclude": "Anti-affinité du tag",
     "Tag created": "Date de création du tag",
+    "Connect to": "Connexion vers",
+    "User name": "Demandeur",
+    "Request form id": "Id du formulaire demandeur",
+    "Queued": "Empilé",
+    "Dequeued": "Dépilé",
+    "Return code": "Code retour",
+    "Command": "Commande",
+    "Stdout": "Stdout",
+    "Stderr": "Stderr",
     "Node name": "Noeud"
   },
   "alert_type": {

@@ -1100,6 +1100,15 @@
     "Module": "Module",
     "Array Cache": "Array Cache",
     "Encapsulated ruleset": "Encapsulated ruleset",
+    "Connect to": "Connect to",
+    "User name": "User name",
+    "Request form id": "Request form id",
+    "Queued": "Queued",
+    "Dequeued": "Dequeued",
+    "Return code": "Return code",
+    "Command": "Command",
+    "Stdout": "Stdout",
+    "Stderr": "Stderr",
     "Gateway": "Gateway"
   },
   "alert_type": {
