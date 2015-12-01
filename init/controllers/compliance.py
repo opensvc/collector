@@ -54,7 +54,7 @@ fields = {
     'apps': set(db.apps.fields) - set(['updated', 'id']),
     'v_comp_moduleset_attachments': ['modset_name'],
     'v_tags': ['tag_name'],
-    'packages': db.packages.fields,
+    'packages': set(db.packages.fields) - set(["pkg_nodename", "id"]),
 }
 
 import re
