@@ -494,7 +494,7 @@ function table_add_column_header_input(t, tr, c) {
   var input_id = t.id+"_f_"+c
   var header = $("<h3></h3>")
 
-  header.text(i18n.t("table.column_filter_header", {"col": t.colprops[c].title}))
+  header.text(i18n.t("table.column_filter_header", {"col": i18n.t("col."+t.colprops[c].title)}))
   value_to_filter_tool.attr("title", i18n.t("table.value_to_filter_tool_title"))
 
   input.attr("id", input_id)
@@ -588,7 +588,7 @@ function table_add_column_header(t, tr, c) {
   th.addClass(t.colprops[c]._class)
   th.attr("name", t.id+"_c_"+c)
   th.attr("col", c)
-  th.text(t.colprops[c].title)
+  th.text(i18n.t("col."+t.colprops[c].title))
   tr.append(th)
 }
 
@@ -1929,7 +1929,7 @@ function table_add_column_selector(t) {
 
     // title
     var title = $("<span style='padding-left:0.3em;'></span>")
-    title.text(t.colprops[colname].title)
+    title.text(i18n.t("col."+t.colprops[colname].title))
     title.addClass(t.colprops[colname].img)
 
     // container
@@ -1969,7 +1969,7 @@ function table_add_commonality(t) {
   e.append(area)
   t.e_tool_commonality_area = area
 
-  e.bind("click", function() {
+  e.bind("click", function(event) {
     if (t.e_tool_commonality_area.is(":visible")) {
       t.e_tool_commonality_area.hide()
       return
