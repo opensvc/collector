@@ -603,7 +603,7 @@ class HtmlTable(object):
                         )
 
     def ajax_enter_submit(self, args=[], additional_inputs=[]):
-        return """if (is_enter(event)){clearTimeout(timer);$("#tableid").val("%(id)s");%(ajax)s};"""%dict(
+        return """if (is_enter(event)){clearTimeout(osvc.tables.%(id)s.refresh_timer);$("#tableid").val("%(id)s");%(ajax)s};"""%dict(
                  ajax=self.ajax_submit(args=args,
                                        additional_inputs=additional_inputs),
                  id=self.id)
