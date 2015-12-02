@@ -118,7 +118,7 @@ def comp_get_matching_filters(fset_ids, fset_data=None, nodename=None, svcname=N
 
         if nodename is not None:
             if table in ("nodes", 'node_hba', "b_disk_app", "svcdisks", "svcmon", "svcmon_log", "resmon"):
-                if table in ("nodes", "packages", "patches", 'node_hba', "resmon"):
+                if table in ("nodes", 'node_hba', "resmon"):
                     _field = "nodename"
                 elif table in ("b_disk_app", "svcdisks"):
                     _field = "disk_nodename"
@@ -136,6 +136,7 @@ def comp_get_matching_filters(fset_ids, fset_data=None, nodename=None, svcname=N
                 where_ext += " and %s.%s = '%s'" % (table, _field, nodename)
             elif table == "packages" and svcname is None:
                 _field = "pkg_nodename"
+                where_ext += " and %s.%s = '%s'" % (table, _field, nodename)
             elif table == "patches" and svcname is None:
                 _field = "patch_nodename"
                 where_ext += " and %s.%s = '%s'" % (table, _field, nodename)
