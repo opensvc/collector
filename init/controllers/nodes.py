@@ -392,7 +392,7 @@ class table_gids(HtmlTable):
                      display=True,
                     ),
             'group_name': HtmlTableColumn(
-                     title='User name',
+                     title='Group name',
                      field='group_name',
                      table='v_gids',
                      img='guy16',
