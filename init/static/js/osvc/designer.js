@@ -87,7 +87,7 @@ function designer_link(o){
   url = url.replace(re, "");
   args = "obj_filter="+encodeURIComponent($("#casearch").val())
   args += "&obj_filter2="+encodeURIComponent($("#casearch2").val())
-  osvc_create_link(url + "?" + args);
+  osvc_create_link(url, args);
 }
 
 function designer_set_stats(o, value, label, node) {
