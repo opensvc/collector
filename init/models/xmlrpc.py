@@ -8,7 +8,12 @@ def var_wrap(a):
     return "`%(a)s`"%dict(a=a)
 
 def quote_wrap(x):
-    if isinstance(x, (int, long, float, complex)):
+    if isinstance(x, bool):
+        if x == True:
+            return "'T'"
+        else:
+            return "'F'"
+    elif isinstance(x, (int, long, float, complex)):
         return str(x)
     elif isinstance(x, datetime.datetime):
         return "'%s'"%str(x)

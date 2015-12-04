@@ -67,6 +67,7 @@ class table_nodenetworks(HtmlTable):
                       'addr_type',
                       'addr',
                       'mask',
+                      'flag_deprecated',
                       'addr_updated',
                       'net_name',
                       'net_network',
@@ -193,6 +194,13 @@ class table_nodenetworks(HtmlTable):
                      img='net16',
                      display=True,
                     ),
+            'flag_deprecated': HtmlTableColumn(
+                     title='Flag, deprecated',
+                     field='flag_deprecated',
+                     img='net16',
+                     display=False,
+                     _class="boolean",
+                    ),
             'addr_updated': HtmlTableColumn(
                      title='Address Update',
                      field='addr_updated',
@@ -209,6 +217,8 @@ class table_nodenetworks(HtmlTable):
         self.extraline = True
         self.dataable = True
         self.checkboxes = True
+        self.wsable = True
+        self.events = ["node_ip_change", "nodes_change", "networks_change"]
         self.ajax_col_values = 'ajax_nodenetworks_col_values'
         self.keys = ["nodename", "addr"]
         self.span = ["nodename"]

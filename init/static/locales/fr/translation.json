@@ -1046,6 +1046,7 @@
     "Command": "Commande",
     "Stdout": "Stdout",
     "Stderr": "Stderr",
+    "Flag, deprecated": "Flag, déprécié",
     "Node name": "Noeud"
   },
   "alert_type": {

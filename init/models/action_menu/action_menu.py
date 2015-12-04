@@ -29,6 +29,7 @@ def get_reachable_name(node):
     q = db.v_nodenetworks.nodename == node.nodename
     q &= db.v_nodenetworks.mask != None
     q &= db.v_nodenetworks.mask != ""
+    q &= db.v_nodenetworks.flag_deprecated == False
     q &= db.v_nodenetworks.net_gateway != None
     q &= db.v_nodenetworks.net_gateway != ""
     q &= db.v_nodenetworks.net_gateway != "0.0.0.0"

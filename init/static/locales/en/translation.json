@@ -1114,6 +1114,7 @@
     "Command": "Command",
     "Stdout": "Stdout",
     "Stderr": "Stderr",
+    "Flag, deprecated": "Flag, deprecated",
     "Gateway": "Gateway"
   },
   "alert_type": {

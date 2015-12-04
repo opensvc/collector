@@ -402,6 +402,10 @@ def _insert_generic(data, auth):
         sql = """delete from node_hba where nodename="%s" """%auth[1]
         db.executesql(sql)
         generic_insert('node_hba', vars, vals)
+        _websocket_send(event_msg({
+                 'event': 'node_hba_change',
+                 'data': {'f': 'b'}
+                }))
     if 'targets' in data:
         vars, vals = data['targets']
         if 'updated' not in vars:
@@ -415,6 +419,10 @@ def _insert_generic(data, auth):
         sql = """delete from stor_zone where nodename="%s" """%auth[1]
         db.executesql(sql)
         generic_insert('stor_zone', vars, vals)
+        _websocket_send(event_msg({
+                 'event': 'stor_zone_change',
+                 'data': {'f': 'b'}
+                }))
     if 'lan' in data:
         vars, vals = data['lan']
         if 'updated' not in vars:
@@ -463,6 +471,10 @@ def _insert_generic(data, auth):
         sql = """delete from node_ip where nodename="%s" """%auth[1]
         db.executesql(sql)
         generic_insert('node_ip', vars, _vals)
+        _websocket_send(event_msg({
+                 'event': 'node_ip_change',
+                 'data': {'f': 'b'}
+                }))
     if 'uids' in data:
         vars, vals = data['uids']
         if 'updated' not in vars:
@@ -477,6 +489,10 @@ def _insert_generic(data, auth):
         db.executesql(sql)
         generic_insert('node_users', vars, vals)
         node_users_alerts(auth[1])
+        _websocket_send(event_msg({
+                 'event': 'node_users_change',
+                 'data': {'f': 'b'}
+                }))
     if 'gids' in data:
         vars, vals = data['gids']
         if 'updated' not in vars:
@@ -490,6 +506,10 @@ def _insert_generic(data, auth):
         sql = """delete from node_groups where nodename="%s" """%auth[1]
         db.executesql(sql)
         generic_insert('node_groups', vars, vals)
+        _websocket_send(event_msg({
+                 'event': 'node_groups_change',
+                 'data': {'f': 'b'}
+                }))
         node_groups_alerts(auth[1])
 
     db.commit()

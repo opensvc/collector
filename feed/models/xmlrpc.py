@@ -2,7 +2,12 @@ def value_wrap(a):
     return "%(a)s=values(%(a)s)"%dict(a=a)
 
 def quote_wrap(x):
-    if isinstance(x, (int, long, float, complex)):
+    if isinstance(x, bool):
+        if x == True:
+            return "'T'"
+        else:
+            return "'F'"
+    elif isinstance(x, (int, long, float, complex)):
         return x
     elif isinstance(x, datetime.datetime):
         return "'%s'"%str(x)
