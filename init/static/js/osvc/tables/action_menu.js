@@ -24,7 +24,7 @@ function table_action_menu_init_data(t) {
       "class": "spark16",
       "children": [
         {
-          "selector": ["clicked", "checked"],
+          "selector": ["clicked", "checked", "all"],
           "title": "action_menu.on_nodes",
           "foldable": true,
           "cols": ["nodename"],
@@ -34,31 +34,42 @@ function table_action_menu_init_data(t) {
               "title": "action_menu.node_diff",
               "class": "icon common16",
               "fn": "tool_nodediff",
-              "min": 2
+              "min": 2,
+              "max": 10
             },
             {
               "title": "action_menu.node_sysrep",
               "class": "icon log16",
               "fn": "tool_nodesysrep",
-              "min": 1
+              "min": 1,
+              "max": 10
             },
             {
               "title": "action_menu.node_sysrep_diff",
               "class": "icon common16",
               "fn": "tool_nodesysrepdiff",
-              "min": 2
+              "min": 2,
+              "max": 10
             },
             {
               "title": "action_menu.node_san_topo",
               "class": "icon hd16",
               "fn": "tool_nodesantopo",
-              "min": 1
+              "min": 1,
+              "max": 50
             },
             {
               "title": "action_menu.node_perf",
               "class": "icon spark16",
               "fn": "tool_grpprf",
-              "min": 1
+              "min": 1,
+              "max": 20
+            },
+            {
+              "title": "action_menu.obsolescence",
+              "class": "icon spark16",
+              "fn": "tool_obsolescence",
+              "min": 2
             }
           ]
         },
@@ -988,7 +999,10 @@ function table_action_menu_format_selector(t, e, selector) {
     if (data.length > 0) {
       for (var j=0; j<selector.children.length; j++) {
         var leaf = selector.children[j]
-        if (data.length < leaf.min) {
+        if (leaf.max && (data.length > leaf.max)) {
+          continue
+        }
+        if (leaf.min && (data.length < leaf.min)) {
           continue
         }
         var li = table_action_menu_format_leaf(t, e, leaf)
@@ -1427,6 +1441,31 @@ function tool_grpprf(t, e) {
     "nodename": nodes.join(","),
     "view": "/init/static/views/nodes_stats.html",
     "controller": "/init/stats",
+  })
+}
+
+//
+// tool: obsolescence
+//
+function tool_obsolescence(t, e) {
+  var entry = $(e.target)
+  var cache_id = entry.attr("cache_id")
+  var data = t.action_menu_data_cache[cache_id]
+  if (data.length==0) {
+    return ""
+  }
+  var nodes = new Array()
+  for (i=0;i<data.length;i++) {
+    nodes.push(data[i]['nodename'])
+  }
+  t.e_overlay.show()
+  $.ajax({
+    type: "POST",
+    url: services_get_url() + "/init/nodes/ajax_obs_agg",
+    data: {"nodes": nodes},
+    success: function(msg){
+      $("#overlay").html(msg)
+    }
   })
 }
 

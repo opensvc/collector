@@ -30,6 +30,7 @@
     "no_action": "No action available in this context.",
     "node_createable": "This node does not exist yet. Press <enter> to create.",
     "nodename": "Node name",
+    "obsolescence": "Obsolescence",
     "add": "Add",
     "delete": "Delete",
     "confirmation": "Are you sure ?",

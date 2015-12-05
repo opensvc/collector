@@ -30,6 +30,7 @@
     "no_action": "Aucune action disponible dans ce contexte.",
     "node_createable": "Ce noeud n'existe pas encore. Appuyez sur <entrée> pour le créer.",
     "nodename": "Nom du noeud",
+    "obsolescence": "Obsolescence",
     "add": "Ajouter",
     "delete": "Supprimer",
     "confirmation": "Etes-vous certain ?",

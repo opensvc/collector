@@ -154,30 +154,9 @@ def ajax_nodes():
 @auth.requires_login()
 def nodes():
     t = table_nodes('nodes', 'ajax_nodes')
-    mt = table_obs_agg('obs_agg', 'ajax_obs_agg')
     ut = table_uids('uids', 'ajax_uids')
     gt = table_gids('gids', 'ajax_gids')
     d = DIV(
-             DIV(
-               T("Obsolescence Statistics"),
-               _style="text-align:left;font-size:120%;background-color:#e0e1cd",
-               _class="right16 clickable",
-               _onclick="""
-               if (!$("#obs_agg").is(":visible")) {
-                 $(this).addClass("down16");
-                 $(this).removeClass("right16");
-                 $("#obs_agg").show(); %s ;
-               } else {
-                 $(this).addClass("right16");
-                 $(this).removeClass("down16");
-                 $("#obs_agg").hide();
-               }"""%mt.ajax_submit(additional_inputs=t.ajax_inputs()),
-             ),
-             DIV(
-               mt.html(),
-                _style="display:none",
-               _id="obs_agg",
-             ),
              DIV(
                T("User mapping"),
                _style="text-align:left;font-size:120%;background-color:#e0e1cd",
@@ -437,46 +416,18 @@ class table_gids(HtmlTable):
             )
         return d
 
-class table_obs_agg(HtmlTable):
-    def __init__(self, id=None, func=None, innerhtml=None):
-        if id is None and 'tableid' in request.vars:
-            id = request.vars.tableid
-        HtmlTable.__init__(self, id, func, innerhtml)
-        self.cols = ['chart']
-        self.colprops = {
-            'chart': col_obs_chart(
-                     title='Chart',
-                     field='chart',
-                     display=True,
-                     img='spark16',
-                    ),
-        }
-        self.events = ["nodes_change"]
-        self.dbfilterable = False
-        self.filterable = False
-        self.pageable = False
-        self.bookmarkable = False
-        self.commonalityable = False
-        self.exportable = False
-        self.refreshable = False
-        self.columnable = False
-        self.headers = False
-
 @auth.requires_login()
 def ajax_obs_agg():
-    t = table_nodes('nodes', 'ajax_nodes')
-    mt = table_obs_agg('obs_agg', 'ajax_obs_agg')
-
     def get_rows(field_date):
-        q = db.v_nodes.id>0
-        q = _where(q, 'v_nodes', domain_perms(), 'nodename')
-        q = apply_filters(q, db.v_nodes.nodename, None)
-        for f in t.cols:
-            q = _where(q, 'v_nodes', t.filter_parse(f), f)
-        return db(q).select(db.v_nodes.id.count(),
-                            db.v_nodes[field_date],
-                            groupby=db.v_nodes[field_date],
-                            orderby=db.v_nodes[field_date])
+        q = db.nodes.id>0
+        q = _where(q, 'nodes', domain_perms(), 'nodename')
+        q = apply_filters(q, db.nodes.nodename, None)
+        if "nodes[]" in request.vars:
+            q &= db.nodes.nodename.belongs(request.vars["nodes[]"])
+        return db(q).select(db.nodes.id.count(),
+                            db.nodes[field_date],
+                            groupby=db.nodes[field_date],
+                            orderby=db.nodes[field_date])
 
     def get_data(field_date):
         data = []
@@ -485,13 +436,13 @@ def ajax_obs_agg():
         max = 0
         rows = get_rows(field_date)
         for row in rows:
-            if row.v_nodes[field_date] is None:
+            if row.nodes[field_date] is None:
                 continue
-            val = row(db.v_nodes.id.count())
+            val = row(db.nodes.id.count())
             if prev+val > max: max = prev+val
-            data.append([row.v_nodes[field_date].strftime('%Y-%m-%d %H:%M:%S'),
+            data.append([row.nodes[field_date].strftime('%Y-%m-%d %H:%M:%S'),
                          val])
-            cumul.append([row.v_nodes[field_date].strftime('%Y-%m-%d %H:%M:%S'),
+            cumul.append([row.nodes[field_date].strftime('%Y-%m-%d %H:%M:%S'),
                           prev+val])
             prev = cumul[-1][1]
         nowserie = [[datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 0],
@@ -505,7 +456,6 @@ def ajax_obs_agg():
     h['os_alert_chart_data'] = get_data('os_obs_alert_date')
 
     return DIV(
-             #mt.html(),
              STYLE("""
 .chartcontainer {
   float:left;
