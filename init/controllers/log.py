@@ -1,34 +1,3 @@
-img_h = {
-  'ack': 'check16',
-  'action': 'action16',
-  'add': 'add16',
-  'apps': 'svc',
-  'attach': 'attach16',
-  'auth': 'lock',
-  'change': 'edit16',
-  'checks': 'check16',
-  'compliance': 'comp16',
-  'delete': 'del16',
-  'detach': 'detach16',
-  'dns': 'dns16',
-  'filterset': 'filter16',
-  'filter': 'filter16',
-  'group': 'guys16',
-  'moduleset': 'action16',
-  'module': 'action16',
-  'networks': 'net16',
-  'node': 'node16',
-  'password': 'lock',
-  'rename': 'edit16',
-  'service': 'svc',
-  'status': 'fa-status',
-  'status': 'fa-status',
-  'table_settings': 'settings',
-  'table_filters': 'filter16',
-  'user': 'guy16',
-  'users': 'guys16',
-}
-
 class col_log_evt(HtmlTableColumn):
     def get(self, o):
         try:
@@ -52,22 +21,6 @@ class col_log_evt(HtmlTableColumn):
         except Exception as e:
             s = str(e)
         return s
-
-class col_log_icons(HtmlTableColumn):
-    def get(self, o):
-        return o.log_action
-
-    def html(self, o):
-        t = self.get(o)
-        l = t.split('.')
-        i = []
-        d = []
-        for w in l:
-            if w not in img_h or img_h[w] in d:
-                continue
-            d.append(img_h[w])
-            i.append(SPAN(_class="iconlist "+img_h[w]))
-        return SPAN(i)
 
 class col_log_level(HtmlTableColumn):
     def html(self, o):
@@ -112,11 +65,12 @@ class table_log(HtmlTable):
                      _class='datetime_no_age',
                      default_filter='>-1d',
                     ),
-            'log_icons': col_log_icons(
+            'log_icons': HtmlTableColumn(
                      title='Icons',
                      field='log_icons',
                      img='action16',
                      display=True,
+                     _class="log_icons",
                     ),
             'log_level': col_log_level(
                      title='Severity',

@@ -1773,6 +1773,57 @@ var os_class_h = {
   'vmware': 'os_vmware'
 }
 
+var img_h = {
+  'ack': 'check16',
+  'action': 'action16',
+  'add': 'add16',
+  'apps': 'svc',
+  'attach': 'attach16',
+  'auth': 'lock',
+  'change': 'edit16',
+  'checks': 'check16',
+  'compliance': 'comp16',
+  'delete': 'del16',
+  'detach': 'detach16',
+  'dns': 'dns16',
+  'filterset': 'filter16',
+  'filter': 'filter16',
+  'group': 'guys16',
+  'moduleset': 'action16',
+  'module': 'action16',
+  'networks': 'net16',
+  'node': 'node16',
+  'password': 'lock',
+  'rename': 'edit16',
+  'service': 'svc',
+  'status': 'fa-status',
+  'status': 'fa-status',
+  'table_settings': 'settings',
+  'table_filters': 'filter16',
+  'user': 'guy16',
+  'users': 'guys16'
+}
+
+function cell_decorator_log_icons(e) {
+  var v = $(e).attr("v")
+  var line = $(e).parent(".tl")
+  var action = line.children("[name$=_c_log_action]").attr("v")
+  var l = action.split(".")
+  var span = $("<span></span>")
+  span.attr("title", v)
+  for (var i=0; i<l.length; i++) {
+    var w = l[i]
+    if (!(w in img_h)) {
+      continue
+    }
+    var cl = img_h[w]
+    var icon = $("<span class='iconlist'></span>")
+    icon.addClass(cl)
+    span.append(icon)
+  }
+  $(e).html(span)
+}
+
 function cell_decorator_boolean(e) {
   var v = $(e).attr("v")
   true_vals = [1, "1", "T", "True", "true", true]
@@ -3169,7 +3220,8 @@ cell_decorators = {
  "users_role": cell_decorator_users_role,
  "alert_type": cell_decorator_alert_type,
  "appinfo_key": cell_decorator_appinfo_key,
- "appinfo_value": cell_decorator_appinfo_value
+ "appinfo_value": cell_decorator_appinfo_value,
+ "log_icons": cell_decorator_log_icons
 }
 
 
