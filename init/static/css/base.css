@@ -169,7 +169,7 @@ form :focus {
 }
 
 .ui-autocomplete {
-	position: absolute;
+	position: fixed;
 	top: 100%;
 	left: 0;
 	z-index: 1000;
