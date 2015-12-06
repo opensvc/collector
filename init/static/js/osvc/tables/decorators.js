@@ -2576,7 +2576,7 @@ function cell_decorator_run_status(e) {
   var cl = ""
   var _v = ""
   if (v == 0) {
-    cl = "check16"
+    cl = "ok"
   } else if (v == 1) {
     cl = "nok"
   } else if (v == 2) {
