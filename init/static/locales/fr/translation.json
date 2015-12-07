@@ -162,6 +162,15 @@
     "timeline_tree_diff_title" : "Changement du noeud __node__",
     "timeline_tree_file_title" : "Fichiers"
   },
+  "tags": {
+    "detaching": "Detachement du tag ...",
+    "attaching": "Attachement du tag ...",
+    "creating": "Création du tag ...",
+    "add": "Ajouter un tag",
+    "del": "Déposer ici pour détacher un tag",
+    "candidates": "Tags candidats",
+    "no_candidates": "Pas de candidats trouvés. Appuyer sur <entrée> pour créer ce nouveau tag et l'attacher."
+  },
   "search": {
     "nothing_found" : "Aucun résultat ne répond au critère de recherche.",
     "menu_header" : {
@@ -1037,6 +1046,14 @@
     "User name": "Utilisateur",
     "User count": "Compte d'utilisateurs",
     "User id": "Id d'utilisateur",
+    "User Id": "Id d'utilisateur",
+    "Full name": "Nom complet",
+    "Email": "Mèl",
+    "Work desk phone": "Téléphone pro",
+    "Primary group": "Groupe primaire",
+    "Lock filterset": "Verrou du jeu de filtres",
+    "Domains": "Domaines",
+    "Last events": "Dernier évènement",
     "Group name": "Nom de groupe",
     "Group count": "Compte de groupes",
     "Group id": "Id de groupe",
