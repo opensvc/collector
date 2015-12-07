@@ -1272,8 +1272,11 @@ function table_action_menu_agent_action(t, e, confirmation) {
       var yes_no = table_action_menu_yes_no(t, 'action_menu.confirmation', function(){
         table_action_menu_agent_action(t, e, true)
       })
-      $("<hr>").insertAfter(entry)
       yes_no.insertAfter(entry)
+      $("<hr>").insertAfter(entry)
+      if (s.length > 0) {
+        $(s).insertAfter(entry)
+      }
       return
     }
 
