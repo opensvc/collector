@@ -551,4 +551,5 @@ class table_saves_charts(HtmlTable):
         self.headers = False
         self.highlight = False
         self.on_change = "plot_savedonuts"
+        self.parent_tables = ["saves"]
 
