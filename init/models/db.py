@@ -257,6 +257,7 @@ db.define_table('v_services',
     Field('svc_containertype'),
     Field('responsibles'),
     Field('mailto'),
+    Field('svc_status_updated'),
     migrate=False)
 
 db.define_table('services',

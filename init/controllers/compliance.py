@@ -402,7 +402,7 @@ class table_comp_rulesets_services(HtmlTable):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
-        self.cols = ['svc_name', 'encap', 'ruleset_id', 'ruleset_name'] + v_services_cols
+        self.cols = ['svc_name', 'encap', 'ruleset_id', 'ruleset_name'] + v_services_cols + ['svc_status_updated']
         self.colprops = v_services_colprops
         self.colprops['ruleset_id'] = HtmlTableColumn(
                      title='Ruleset id',
@@ -415,6 +415,13 @@ class table_comp_rulesets_services(HtmlTable):
                      field='ruleset_name',
                      img='comp16',
                      display=True,
+                    )
+        self.colprops['svc_status_updated'] = HtmlTableColumn(
+                     title='Status updated',
+                     field='svc_status_updated',
+                     img='time16',
+                     display=False,
+                     _class='datetime_status',
                     )
         self.colprops['encap'] = HtmlTableColumn(
                      title='Encap',
@@ -429,7 +436,7 @@ class table_comp_rulesets_services(HtmlTable):
             self.colprops[c].table = 'v_comp_services'
         self.span = ['svc_name']
         self.key = ['svc_name']
-        self.force_cols = ['ruleset_id']
+        self.force_cols = ['ruleset_id', 'svc_status_updated']
         self.checkboxes = True
         self.checkbox_id_table = 'v_comp_services'
         self.ajax_col_values = 'ajax_comp_rulesets_services_col_values'
@@ -3416,7 +3423,7 @@ class table_comp_modulesets_services(HtmlTable):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
-        self.cols = ['svc_name', 'encap', 'modset_id', 'modset_name'] + v_services_cols
+        self.cols = ['svc_name', 'encap', 'modset_id', 'modset_name'] + v_services_cols + ['svc_status_updated']
         self.colprops = v_services_colprops
         self.colprops['modset_id'] = HtmlTableColumn(
                      title='Moduleset id',
@@ -3429,6 +3436,13 @@ class table_comp_modulesets_services(HtmlTable):
                      field='modset_name',
                      img='actions',
                      display=True,
+                    )
+        self.colprops['svc_status_updated'] = HtmlTableColumn(
+                     title='Status updated',
+                     field='svc_status_updated',
+                     img='time16',
+                     display=False,
+                     _class='datetime_status',
                     )
         self.colprops['encap'] = HtmlTableColumn(
                      title='Encap',
@@ -3443,7 +3457,7 @@ class table_comp_modulesets_services(HtmlTable):
             self.colprops[c].table = 'v_comp_services'
         self.span = ['svc_name']
         self.key = ['svc_name']
-        self.force_cols = ['modset_id']
+        self.force_cols = ['modset_id', 'svc_status_updated']
         self.checkbox_id_table = 'v_comp_services'
         self.dataable = True
         self.checkboxes = True
