@@ -104,7 +104,7 @@ function search_get_menu(fk)
           { "nodes" : [ {"class" : "hw16"},{"link" : "/init/nodes/nodes?clear_filters=true&nodes_f_nodename=__nodename__"} ] },
           { "dashboard" : [ {"class" : "alert16"},{"link" : "/init/dashboard/index?clear_filters=true&dashboard_f_dash_nodename=__nodename__"} ] },
           { "services" : [ {"class" : "svc"},{"link" : "/init/default/svcmon?clear_filters=true&svcmon_f_mon_nodname=__nodename__"} ] },
-          { "resources" : [ {"class" : "svc"},{"link" : "/init/default/svcmon?clear_filters=true&svcmon_f_mon_nodname=__nodename__"} ] },
+          { "resources" : [ {"class" : "svc"},{"link" : "/init/resmon/resmon?clear_filters=true&resmon_f_nodename=__nodename__"} ] },
           { "appinfo" : [ {"class" : "svc"},{"link" : "/init/appinfo/appinfo?clear_filters=true&appinfo_f_app_nodename=__nodename__"} ] },
           { "action" : [ {"class" : "action16"},{"link" : "/init/svcactions/svcactions?clear_filters=true&actions_f_hostname=__nodename__"} ] },
           { "checks" : [ {"class" : "check16"},{"link" : "/init/checks/checks?clear_filters=true&checks_f_chk_nodename=__nodename__"} ] },
