@@ -5607,6 +5607,11 @@ def rpc_comp_log_action(vars, vals, auth):
       'data': {'foo': 'bar'},
     }
     _websocket_send(event_msg(l))
+    l = {
+      'event': 'comp_log_change',
+      'data': {'foo': 'bar'},
+    }
+    _websocket_send(event_msg(l))
 
 
 @service.xmlrpc
@@ -5640,6 +5645,11 @@ def rpc_comp_log_actions(vars, vals, auth):
         generic_insert('comp_status', vars, check_vals)
     l = {
       'event': 'comp_status_change',
+      'data': {'foo': 'bar'},
+    }
+    _websocket_send(event_msg(l))
+    l = {
+      'event': 'comp_log_change',
       'data': {'foo': 'bar'},
     }
     _websocket_send(event_msg(l))
