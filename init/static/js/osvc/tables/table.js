@@ -373,9 +373,6 @@ function sort_table(id) {
 }
 
 function table_reset_column_filters(t, c, val) {
-  if (!t.options.filterable) {
-    return
-  }
   t.e_header_filters.find("th").each(function() {
     var input = $(this).find("input")
     var label = $(this).find(".col_filter_label")
@@ -399,9 +396,6 @@ function table_reset_column_filters(t, c, val) {
 }
 
 function table_refresh_column_filter(t, c, val) {
-  if (!t.options.filterable) {
-    return
-  }
   var th = t.e_header_filters.find("th[col="+c+"]")
   var input = th.find("input")
   var label = th.find(".col_filter_label")
@@ -521,10 +515,13 @@ function table_add_column_header_input(t, tr, c) {
 }
 
 function table_add_column_headers_input(t) {
-  if (!t.options.headers || !t.options.filterable) {
+  if (!t.options.headers) {
     return
   }
   var tr = $("<tr class='theader_filters'></tr>")
+  if (!t.options.filterable) {
+    tr.hide()
+  }
   if (t.checkboxes) {
     var mcb_id = t.id+"_mcb"
     var th = $("<th></th>")
@@ -2295,7 +2292,9 @@ function table_add_volatile(t) {
   label.attr("for", input.attr("id"))
 
   // title
-  var title = $("<span data-i18n='table.volatile' style='padding-left:0.3em;'></span>")
+  var title = $("<span style='padding-left:0.3em'></span>")
+  console.log("here", i18n.t("table.volatile"))
+  title.text(i18n.t("table.volatile"))
   title.attr("title", i18n.t("table.volatile_title"))
 
   // container
@@ -2303,7 +2302,6 @@ function table_add_volatile(t) {
   e.append(input)
   e.append(label)
   e.append(title)
-  e.i18n()
 
   t.e_toolbar.prepend(e)
 }
@@ -2761,6 +2759,28 @@ function table_flash(t) {
   $(".flash").show("blind").html(e)
 }
 
+function table_add_table(t) {
+  if (t.options.divid === "undefined") {
+    // web2py provided table structure
+    return
+  }
+  var container = $("#"+t.options.divid)
+  var d = $("<div class='tableo'></div>")
+  var toolbar = $("<div class='theader toolbar' name='toolbar'></div>")
+  var table_div = $("<div></div>")
+  var table = $("<table></table>")
+  var page = $("<input type='hidden'></input>")
+  d.attr("id", t.id)
+  page.attr("id", t.id+"_page")
+  page.val(t.options.pager.page)
+  table.attr("id", "table_"+t.id)
+  table_div.append(table)
+  d.append(toolbar)
+  d.append(table_div)
+  d.append(page)
+  container.empty().append(d)
+}
+
 function table_init(opts) {
   var t = {
     'options': opts,
@@ -2977,10 +2997,15 @@ function table_init(opts) {
     },
     'cell_decorator': function(){
       return table_cell_decorator(this)
+    },
+    'add_table': function(){
+      return table_add_table(this)
     }
   }
 
   t.refresh_timer = null
+
+  t.add_table()
 
   // selectors cache
   t.div = $("#"+t.id)
