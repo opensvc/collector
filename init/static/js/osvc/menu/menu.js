@@ -245,6 +245,7 @@ function menu_search_key()
 			{
 			  "title" : "filters",
 			  "class" : "filter16",
+			  "id" : "adm-filters",
 			  "link" : "/init/compliance/comp_filters" },
 			{
 			  "title" : "forms",
