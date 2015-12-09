@@ -833,6 +833,7 @@
     "Node": "Noeud",
     "Env": "Env",
     "Alert": "Alerte",
+    "Alert id": "Id d'alerte",
     "Begin date": "Date de début",
     "End date": "Date de fin",
     "Last update": "Mise à jour",
