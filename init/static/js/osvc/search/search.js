@@ -4,12 +4,13 @@ function search_get_menu(fk)
     "users": {
         "tab" : 'user_tabs("__rowid__", {"user_id": "__id__", "fullname": "__fullname__"})',
         "title": "__fullname__ <__email__>",
+        "menu_entry_id": "adm-usr",
         "class": "guy16 fa-2x search-section-icon",
         "subclass" : "meta_username clickable",
         "links" : [
           {
             "title": "users",
-            "menu_entry_id": "view-users",
+            "menu_entry_id": "adm-usr",
             "class" : "guys16",
             "link" : "/init/users/users?clear_filters=true&users_f_fullname=__fullname__"
           },
@@ -29,12 +30,14 @@ function search_get_menu(fk)
     },
     "safe_files": {
         "title": "__name__ (__uuid__)",
+        "menu_entry_id": "view-safe",
         "class": "pkg16 fa-2x search-section-icon",
         "subclass" : "meta_file",
         "links" : []
     },
     "disks": {
         "title": "__disk_id__",
+        "menu_entry_id": "view-disks",
         "class": "hd16 fa-2x search-section-icon",
         "subclass" : "meta_app",
         "links" : [
@@ -48,6 +51,7 @@ function search_get_menu(fk)
     },
     "apps": {
         "title": "__app__",
+        "menu_entry_id": "view-dummy",
         "class": "svc fa-2x search-section-icon",
         "subclass" : "",
         "links" : [
@@ -85,6 +89,7 @@ function search_get_menu(fk)
     },
     "ips": {
         "title": "__addr__@__nodename__",
+        "menu_entry_id": "view-node-net",
         "class": "net16 fa-2x search-section-icon",
         "subclass" : "meta_username",
         "links" : [
@@ -191,6 +196,7 @@ function search_get_menu(fk)
     "groups": {
         "tab" : "/init/ajax_group/ajax_group?groupname=__role__&rowid=__rowid__",
         "title": "__role__",
+        "menu_entry_id": "adm-usr",
         "class": "guys16 fa-2x search-section-icon",
         "subclass" : "meta_username clickable",
         "links" : [
@@ -223,6 +229,7 @@ function search_get_menu(fk)
     "services": {
         "tab" : 'service_tabs("__rowid__", {"svcname": "__svc_name__"})',
         "title": "__svc_name__",
+        "menu_entry_id": "view-services",
         "class": "svc fa-2x search-section-icon",
         "subclass" : "meta_svcname clickable",
         "links" : [
@@ -303,6 +310,7 @@ function search_get_menu(fk)
     "nodes": {
         "tab" : 'node_tabs("__rowid__", {"nodename": "__nodename__"})',
         "title": "__nodename__",
+        "menu_entry_id": "view-nodes",
         "class": "node16 fa-2x search-section-icon",
         "subclass" : "meta_nodename clickable",
         "links" : [
@@ -395,6 +403,7 @@ function search_get_menu(fk)
     "filtersets": {
         "tab" : "/init/compliance/json_tree_action?operation=show&obj_type=filterset&obj_id=__id__",
         "title": "__fset_name__",
+        "menu_entry_id": "adm-filters",
         "class": "filter16 fa-2x search-section-icon",
         "subclass" : "meta_username clickable",
         "links" : [
@@ -409,12 +418,13 @@ function search_get_menu(fk)
     "vms": {
         "tab" : 'node_tabs("__rowid__", {"nodename": "__mon_vmname__"})',
         "title": "__mon_vmname__",
+        "menu_entry_id": "view-nodes",
         "class": "hv16 fa-2x search-section-icon",
         "subclass" : "meta_nodename",
         "links" : [
           {
             "title": "status",
-            "menu_entry_id": "comp-designer",
+            "menu_entry_id": "view-service-instances",
             "class" : "svc",
             "link" : "/init/default/svcmon?clear_filters=true&svcmon_f_mon_vmname=__mon_vmname__"
           }
@@ -519,6 +529,10 @@ function search_build_result_row(label, first, res, count) {
 }
 
 function search_build_result_view(label, resultset) {
+  var section_data = search_get_menu(label)
+  if (osvc.hidden_menu_entries.indexOf(section_data.menu_entry_id) >= 0) {
+    return
+  }
   var section_div = $("<div class='menu_section'></div>")
   section_div.attr("id", label)
   section_div.text(i18n.t("search.menu_header.title_"+label) + " (" + resultset.total +")")
@@ -549,11 +563,9 @@ function search_search() {
 
   services_osvcgetrest("R_SEARCH", "", {"substring" : search_query}, function(jd) {
       var result = jd.data;
-      for (d in result)
-      {
+      for (d in result) {
         if (result[d].data.length>0 && search_get_menu(d) !== undefined) {
-          // check if definition exists in format JSON
-          response = search_build_result_view(d,result[d]);
+          response = search_build_result_view(d, result[d]);
           $("#search_result").append(response);
           count += result[d].data.length;
         }
