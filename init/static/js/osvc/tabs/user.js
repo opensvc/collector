@@ -29,7 +29,7 @@ function user_groups(divid, options) {
 			for (var i=0; i<jd.data.length; i++) {
 				o.user_groups[jd.data[i].role] = jd.data[i]
 			}
-			services_osvcgetrest("R_GROUPS", "", {"limit": "0", "meta": "0", "orderby": "role", "filters": ["role !user_%"]}, function(jd) {
+			services_osvcgetrest("R_GROUPS", "", {"limit": "0", "meta": "0", "orderby": "role", "query": "not role starts with user_"}, function(jd) {
 				o.all_groups = jd.data
 				o.div.load("/init/static/views/user_groups.html", function(){
 					o.build()
