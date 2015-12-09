@@ -1,5 +1,8 @@
 var osvc = {
- 'tables': {}
+ 'tables': {},
+ 'user_groups_loaded': $.Deferred(),
+ 'i18n_started': $.Deferred(),
+ 'app_started': $.Deferred()
 }
 
 var _badIE=0;
@@ -7,7 +10,7 @@ var _badIE=0;
 function i18n_init(callback) {
   i18n.init({
       debug: true,
-      getAsync : false,
+      getAsync : true,
       fallbackLng: false,
       load:'unspecific',
       resGetPath: "/init/static/locales/__lng__/__ns__.json",
@@ -15,14 +18,16 @@ function i18n_init(callback) {
           namespaces: ['translation'],
           defaultNs: 'translation'
       }
-  }, callback);
+  }, function() {
+     $(document).i18n()
+     osvc.i18n_started.resolve(true)
+  });
 }
 
 function app_start() {
-  i18n_init(_app_start);
-}
+  i18n_init()
+  services_feed_self_and_group()
 
-function _app_start() {
   // Check if IE and version < 10
   for (i=6; i< 10; i++) {
     if (IE(i)) _badIE=1;
@@ -31,10 +36,9 @@ function _app_start() {
 
   // Wait mandatory language info and User/groups info to be loaded before creating the IHM
   $.when(
-      $(document).i18n(),
-      services_feed_self_and_group()
-    ).then(function() 
-    {
+      osvc.i18n_started,
+      osvc.user_groups_loaded
+    ).then(function() {
       menu("menu_location");
       login("login_location");
       osvc_popup_stack_listener();
@@ -43,7 +47,8 @@ function _app_start() {
       app_bindings();
       app_menu_entries_bind_click_to_load();
       app_datetime_decorators();
-    });
+      osvc.app_started.resolve(true)
+    })
 }
 
 function app_load_href(href) {

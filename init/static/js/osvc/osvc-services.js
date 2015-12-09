@@ -302,16 +302,14 @@ function services_osvcdeleterest(service, uri, params, data, callback, error_cal
     return xhr
 }
 
-function services_feed_self_and_group()
-{
-    services_osvcgetrest("R_USERS_SELF", "", "", function(dataself)
-    {
-        _self = dataself.data[0];
-        services_osvcgetrest("R_USER_GROUPS", [_self.id], {"meta": "false", "limit": "0"}, function(datagroup)
-        {
+function services_feed_self_and_group() {
+    services_osvcgetrest("R_USERS_SELF", "", "", function(dataself) {
+        _self = dataself.data[0]
+        services_osvcgetrest("R_USER_GROUPS", [_self.id], {"meta": "false", "limit": "0"}, function(datagroup) {
             _groups = datagroup.data;
-        }, null, false);
-    }, null, false);
+            osvc.user_groups_loaded.resolve(true)
+        })
+    })
 }
 
 function waitfor(test, expectedValue, msec, count, callback) {
