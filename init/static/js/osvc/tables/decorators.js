@@ -2640,36 +2640,38 @@ function cell_decorator_tag_exclude(e) {
   $(window).bind("click", function() {
     $("input.tag_exclude").parent().html(v)
   })
-  $(e).bind("click", function(){
-    event.stopPropagation()
-    i = $("<input class='tag_exclude'></input>")
-    var _v = $(this).attr("v")
-    if (_v == "empty") {
-      _v = ""
-    }
-    i.val(_v)
-    i.bind("keyup", function(){
-      if (!is_enter(event)) {
-        return
+  if (services_ismemberof(["Manager", "TagManager"])) {
+    $(e).bind("click", function(event){
+      event.stopPropagation()
+      i = $("<input class='tag_exclude'></input>")
+      var _v = $(this).attr("v")
+      if (_v == "empty") {
+        _v = ""
       }
-      var url = services_get_url() + "/init/tags/call/json/tag_exclude"
-      var data = {
-        "tag_exclude": $(this).val(),
-        "tag_id": $(this).parents(".tl").find("[name=tags_c_id]").attr("v")
-      }
-      var _i = $(this)
-      $.ajax({
-        type: "POST",
-        url: url,
-        data: data,
-        success: function(msg){
-          _i.parent().html(data.tag_exclude)
+      i.val(_v)
+      i.bind("keyup", function(){
+        if (!is_enter(event)) {
+          return
         }
+        var url = services_get_url() + "/init/tags/call/json/tag_exclude"
+        var data = {
+          "tag_exclude": $(this).val(),
+          "tag_id": $(this).parents(".tl").find("[name=tags_c_id]").attr("v")
+        }
+        var _i = $(this)
+        $.ajax({
+          type: "POST",
+          url: url,
+          data: data,
+          success: function(msg){
+            _i.parent().html(data.tag_exclude)
+          }
+        })
       })
+      $(e).empty().append(i)
+      i.focus()
     })
-    $(e).empty().append(i)
-    i.focus()
-  })
+  }
 }
 
 function cell_decorator_dash_entry(e) {
