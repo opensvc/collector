@@ -6,61 +6,186 @@ function search_get_menu(fk)
         "title": "__fullname__ <__email__>",
         "class": "guy16 fa-2x search-section-icon",
         "subclass" : "meta_username clickable",
-        "link" : [
-          { "users" : [ {"class" : "guys16"},{"link" : "/init/users/users?clear_filters=true&users_f_fullname=__fullname__"} ] },
-          { "logs" : [ {"class" : "log16"},{"link" : "/init/log/log?clear_filters=true&log_f_log_user=__fullname__"} ] },
-          { "apps" : [ {"class" : "svc"},{"link" : "/init/apps/apps?clear_filters=true&apps_f_responsibles=%__fullname__%"} ] }
+        "links" : [
+          {
+            "title": "users",
+            "menu_entry_id": "view-users",
+            "class" : "guys16",
+            "link" : "/init/users/users?clear_filters=true&users_f_fullname=__fullname__"
+          },
+          {
+            "title": "logs",
+            "menu_entry_id": "adm-log",
+            "class" : "log16",
+            "link" : "/init/log/log?clear_filters=true&log_f_log_user=__fullname__"
+          },
+          {
+            "title": "apps",
+            "menu_entry_id": "adm-app",
+            "class" : "svc",
+            "link" : "/init/apps/apps?clear_filters=true&apps_f_responsibles=%__fullname__%"
+          }
         ]
     },
     "safe_files": {
         "title": "__name__ (__uuid__)",
         "class": "pkg16 fa-2x search-section-icon",
         "subclass" : "meta_file",
-        "link" : []
+        "links" : []
     },
     "disks": {
         "title": "__disk_id__",
         "class": "hd16 fa-2x search-section-icon",
         "subclass" : "meta_app",
-        "link" : [
-          { "disk_info" : [ {"class" : "hd16"},{"link" : "/init/disks/disks?clear_filters=true&disks_f_disk_id=__disk_id__"} ] }
+        "links" : [
+          {
+            "title": "disk_info",
+            "menu_entry_id": "view-disks",
+            "class" : "hd16",
+            "link" : "/init/disks/disks?clear_filters=true&disks_f_disk_id=__disk_id__"
+          }
         ]
     },
     "apps": {
         "title": "__app__",
         "class": "svc fa-2x search-section-icon",
         "subclass" : "",
-        "link" : [
-         { "nodes" : [ {"class" : "hw16"},{"link" : "/init/nodes/nodes?clear_filters=true&nodes_f_project=__app__"} ] },
-         { "status" : [ {"class" : "svc"},{"link" : "/init/default/svcmon?clear_filters=true&svcmon_f_svc_app=__app__"} ] },
-         { "disk_info" : [ {"class" : "hd16"},{"link" : "/init/disks/disks?clear_filters=true&disks_f_app=__app__"} ] },
-         { "availability" : [ {"class" : "avail16"},{"link" : "/init/svcmon_log/svcmon_log?clear_filters=true&svcmon_log_f_svc_app=__app__"} ] },
-         { "app" : [ {"class" : "svc"},{"link" : "/init/apps/apps?clear_filters=true&apps_f_app=__app__"} ] }
+        "links" : [
+          {
+            "title": "nodes",
+            "menu_entry_id": "view-nodes",
+            "class" : "hw16",
+            "link" : "/init/nodes/nodes?clear_filters=true&nodes_f_project=__app__"
+          },
+          {
+            "title": "status",
+            "menu_entry_id": "view-service-instances",
+            "class" : "svc",
+            "link" : "/init/default/svcmon?clear_filters=true&svcmon_f_svc_app=__app__"
+          },
+          {
+            "title": "disk_info",
+            "menu_entry_id": "view-disks",
+            "class" : "hd16",
+            "link" : "/init/disks/disks?clear_filters=true&disks_f_app=__app__"
+          },
+          {
+            "title": "availability",
+            "menu_entry_id": "stat-avail",
+            "class" : "avail16",
+            "link" : "/init/svcmon_log/svcmon_log?clear_filters=true&svcmon_log_f_svc_app=__app__"
+          },
+          {
+            "title": "app",
+            "menu_entry_id": "adm-app",
+            "class" : "svc",
+            "link" : "/init/apps/apps?clear_filters=true&apps_f_app=__app__"
+          }
         ]
     },
     "ips": {
         "title": "__addr__@__nodename__",
         "class": "net16 fa-2x search-section-icon",
         "subclass" : "meta_username",
-        "link" : [
-          { "nodes" : [ {"class" : "hw16"},{"link" : "/init/nodes/nodes?clear_filters=true&nodes_f_nodename=__nodename__"} ] },
-          { "dashboard" : [ {"class" : "alert16"},{"link" : "/init/dashboard/index?clear_filters=true&dashboard_f_dash_nodename=__nodename__"} ] },
-          { "services" : [ {"class" : "svc"},{"link" : "/init/default/svcmon?clear_filters=true&svcmon_f_mon_nodname=__nodename__"} ] },
-          { "resources" : [ {"class" : "svc"},{"link" : "/init/resmon/resmon?clear_filters=true&resmon_f_nodename=__nodename__"} ] },
-          { "appinfo" : [ {"class" : "svc"},{"link" : "/init/appinfo/appinfo?clear_filters=true&appinfo_f_app_nodename=__nodename__"} ] },
-          { "action" : [ {"class" : "action16"},{"link" : "/init/svcactions/svcactions?clear_filters=true&actions_f_hostname=__nodename__"} ] },
-          { "checks" : [ {"class" : "check16"},{"link" : "/init/checks/checks?clear_filters=true&checks_f_chk_nodename=__nodename__"} ] },
-          { "packages" : [ {"class" : "pkg16"},{"link" : "/init/packages/packages?clear_filters=true&packages_f_nodename=__nodename__"} ] },
-          { "network" : [ {"class" : "net16"},{"link" : "/init/nodenetworks/nodenetworks?clear_filters=true&nodenetworks_f_nodename=__nodename__"} ] },
-          { "san" : [ {"class" : "net16"},{"link" : "/init/nodesan/nodesan?clear_filters=true&nodesan_f_nodename=__nodename__"} ] },
-          { "disks" : [ {"class" : "hd16"},{"link" : "/init/disks/disks?clear_filters=true&disks_f_disk_nodename=__nodename__"} ] },
-          { "saves" : [ {"class" : "cd16"},{"link" : "/init/saves/saves?clear_filters=true&saves_f_save_nodename=__nodename__"} ] },
-          { "compliance_status" : [ {"class" : "comp16"},{"link" : "/init/compliance/comp_status?clear_filters=true&cs0_f_run_nodename=__nodename__"} ] },
-          { "compliance_log" : [ {"class" : "log16"},{"link" : "/init/compliance/comp_log?clear_filters=true&comp_log_f_run_nodename=__nodename__"} ] },
-          { "logs" : [ {"class" : "log16"},{"link" : "/init/log/log?clear_filters=true&log_f_log_nodename=__nodename__"} ] }
+        "links" : [
+          {
+            "title": "nodes",
+            "menu_entry_id": "view-nodes",
+            "class" : "hw16",
+            "link" : "/init/nodes/nodes?clear_filters=true&nodes_f_nodename=__nodename__"
+          },
+          {
+            "title": "dashboard",
+            "menu_entry_id": "view-dashboard",
+            "class" : "alert16",
+            "link" : "/init/dashboard/index?clear_filters=true&dashboard_f_dash_nodename=__nodename__"
+          },
+          {
+            "title": "services",
+            "menu_entry_id": "view-services",
+            "class" : "svc",
+            "link" : "/init/default/svcmon?clear_filters=true&svcmon_f_mon_nodname=__nodename__"
+          },
+          {
+            "title": "resources",
+            "menu_entry_id": "view-resources",
+            "class" : "svc",
+            "link" : "/init/resmon/resmon?clear_filters=true&resmon_f_nodename=__nodename__"
+          },
+          {
+            "title": "appinfo",
+            "menu_entry_id": "view-appinfo",
+            "class" : "svc",
+            "link" : "/init/appinfo/appinfo?clear_filters=true&appinfo_f_app_nodename=__nodename__"
+          },
+          {
+            "title": "action",
+            "menu_entry_id": "view-actions",
+            "class" : "action16",
+            "link" : "/init/svcactions/svcactions?clear_filters=true&actions_f_hostname=__nodename__"
+          },
+          {
+            "title": "checks",
+            "menu_entry_id": "view-checks",
+            "class" : "check16",
+            "link" : "/init/checks/checks?clear_filters=true&checks_f_chk_nodename=__nodename__"
+          },
+          {
+            "title": "packages",
+            "menu_entry_id": "view-pkg",
+            "class" : "pkg16",
+            "link" : "/init/packages/packages?clear_filters=true&packages_f_nodename=__nodename__"
+          },
+          {
+            "title": "network",
+            "menu_entry_id": "view-net",
+            "class" : "net16",
+            "link" : "/init/nodenetworks/nodenetworks?clear_filters=true&nodenetworks_f_nodename=__nodename__"
+          },
+          {
+            "title": "san",
+            "menu_entry_id": "view-san",
+            "class" : "net16",
+            "link" : "/init/nodesan/nodesan?clear_filters=true&nodesan_f_nodename=__nodename__"
+          },
+          {
+            "title": "disks",
+            "menu_entry_id": "view-disks",
+            "class" : "hd16",
+            "link" : "/init/disks/disks?clear_filters=true&disks_f_disk_nodename=__nodename__"
+          },
+          {
+            "title": "saves",
+            "menu_entry_id": "view-saves",
+            "class" : "cd16",
+            "link" : "/init/saves/saves?clear_filters=true&saves_f_save_nodename=__nodename__"
+          },
+          {
+            "title": "compliance_status",
+            "menu_entry_id": "comp-status",
+            "class" : "comp16",
+            "link" : "/init/compliance/comp_status?clear_filters=true&cs0_f_run_nodename=__nodename__"
+          },
+          {
+            "title": "compliance_log",
+            "menu_entry_id": "comp-log",
+            "class" : "log16",
+            "link" : "/init/compliance/comp_log?clear_filters=true&comp_log_f_run_nodename=__nodename__"
+          },
+          {
+            "title": "logs",
+            "menu_entry_id": "adm-log",
+            "class" : "log16",
+            "link" : "/init/log/log?clear_filters=true&log_f_log_nodename=__nodename__"
+          }
         ],
-        "special_header_link" : [
-          { "nodes_net" : [ {"class" : "hw16"},{"link" : "/init/nodenetworks/nodenetworks?clear_filters=true&nodenetworks_f_addr=__addr__"} ] }
+        "special_header_links" : [
+          {
+            "title": "nodes_net",
+            "menu_entry_id": "view-node-net",
+            "class" : "hw16",
+            "link" : "/init/nodenetworks/nodenetworks?clear_filters=true&nodenetworks_f_addr=__addr__"
+          }
         ]
     },
     "groups": {
@@ -68,11 +193,31 @@ function search_get_menu(fk)
         "title": "__role__",
         "class": "guys16 fa-2x search-section-icon",
         "subclass" : "meta_username clickable",
-        "link" : [
-          { "nodes" : [ {"class" : "hw16"},{"link" : "/init/nodes/nodes?clear_filters=true&nodes_f_team_responsible=__role__"} ] },
-          { "apps" : [ {"class" : "svc"},{"link" : "/init/apps/apps?clear_filters=true&apps_f_roles=__role__"} ] },
-          { "checks" : [ {"class" : "check16"},{"link" : "/init/checks/checks?clear_filters=true&checks_f_team_responsible=__role__"} ] },
-          { "compliance_status" : [ {"class" : "comp16"},{"link" : "/init/compliance/comp_status?clear_filters=true&cs0_f_team_responsible=__role__"} ] }
+        "links" : [
+          {
+            "title": "nodes",
+            "menu_entry_id": "view-nodes",
+            "class" : "hw16",
+            "link" : "/init/nodes/nodes?clear_filters=true&nodes_f_team_responsible=__role__"
+          },
+          {
+            "title": "apps",
+            "menu_entry_id": "adm-app",
+            "class" : "svc",
+            "link" : "/init/apps/apps?clear_filters=true&apps_f_roles=__role__"
+          },
+          {
+            "title": "checks",
+            "menu_entry_id": "view-checks",
+            "class" : "check16",
+            "link" : "/init/checks/checks?clear_filters=true&checks_f_team_responsible=__role__"
+          },
+          {
+            "title": "compliance_status",
+            "menu_entry_id": "comp-status",
+            "class" : "comp16",
+            "link" : "/init/compliance/comp_status?clear_filters=true&cs0_f_team_responsible=__role__"
+          }
         ]
     },
     "services": {
@@ -80,19 +225,79 @@ function search_get_menu(fk)
         "title": "__svc_name__",
         "class": "svc fa-2x search-section-icon",
         "subclass" : "meta_svcname clickable",
-        "link" : [
-          { "dashboard" : [ {"class" : "alert16"},{"link" : "/init/dashboard/index?clear_filters=true&dashboard_f_dash_svcname=__svc_name__"} ] },
-          { "status" : [ {"class" : "alert16"},{"link" : "/init/default/svcmon?clear_filters=true&svcmon_f_mon_svcname=__svc_name__"} ] },
-          { "resources" : [ {"class" : "svc"},{"link" : "/init/resmon/resmon?clear_filters=true&resmon_f_svcname=__svc_name__"} ] },
-          { "appinfo" : [ {"class" : "alert16"},{"link" : "/init/dashboard/index?clear_/init/appinfo/appinfo?clear_filters=true&appinfo_f_app_svcname=__svc_name__"} ] },
-          { "action" : [ {"class" : "action16"},{"link" : "/init/svcactions/svcactions?clear_filters=true&actions_f_svcname=__svc_name__"} ] },
-          { "checks" : [ {"class" : "check16"},{"link" : "/init/checks/checks?clear_filters=true&checks_f_chk_svcname=__svc_name__"} ] },
-          { "disks" : [ {"class" : "hd16"},{"link" : "/init/disks/disks?clear_filters=true&disks_f_disk_svcname=__svc_name__"} ] },
-          { "saves" : [ {"class" : "cd16"},{"link" : "/init/saves/saves?clear_filters=true&saves_f_save_svcname=__svc_name__"} ] },
-          { "compliance_status" : [ {"class" : "comp16"},{"link" : "/init/compliance/comp_status?clear_filters=true&cs0_f_run_svcname=__svc_name__"} ] },
-          { "compliance_log" : [ {"class" : "log16"},{"link" : "/init/compliance/comp_log?clear_filters=true&comp_log_f_run_svcname=__svc_name__"} ] },
-          { "availability" : [ {"class" : "avail16"},{"link" : "/init/svcmon_log/svcmon_log?clear_filters=true&svcmon_log_f_svc_name=__svc_name__"} ] },
-          { "logs" : [ {"class" : "log16"},{"link" : "/init/log/log?clear_filters=true&log_f_log_svcname=__svc_name__"} ] }
+        "links" : [
+          {
+            "title": "dashboard",
+            "menu_entry_id": "view-dashboard",
+            "class" : "alert16",
+            "link" : "/init/dashboard/index?clear_filters=true&dashboard_f_dash_svcname=__svc_name__"
+          },
+          {
+            "title": "status",
+            "menu_entry_id": "view-service-instances",
+            "class" : "alert16",
+            "link" : "/init/default/svcmon?clear_filters=true&svcmon_f_mon_svcname=__svc_name__"
+          },
+          {
+            "title": "resources",
+            "menu_entry_id": "view-resources",
+            "class" : "svc",
+            "link" : "/init/resmon/resmon?clear_filters=true&resmon_f_svcname=__svc_name__"
+          },
+          {
+            "title": "appinfo",
+            "menu_entry_id": "view-appinfo",
+            "class" : "alert16",
+            "link" : "/init/dashboard/index?clear_/init/appinfo/appinfo?clear_filters=true&appinfo_f_app_svcname=__svc_name__"
+          },
+          {
+            "title": "action",
+            "menu_entry_id": "view-actions",
+            "class" : "action16",
+            "link" : "/init/svcactions/svcactions?clear_filters=true&actions_f_svcname=__svc_name__"
+          },
+          {
+            "title": "checks",
+            "menu_entry_id": "view-checks",
+            "class" : "check16",
+            "link" : "/init/checks/checks?clear_filters=true&checks_f_chk_svcname=__svc_name__"
+          },
+          {
+            "title": "disks",
+            "menu_entry_id": "view-disks",
+            "class" : "hd16",
+            "link" : "/init/disks/disks?clear_filters=true&disks_f_disk_svcname=__svc_name__"
+          },
+          {
+            "title": "saves",
+            "menu_entry_id": "view-saves",
+            "class" : "cd16",
+            "link" : "/init/saves/saves?clear_filters=true&saves_f_save_svcname=__svc_name__"
+          },
+          {
+            "title": "compliance_status",
+            "menu_entry_id": "comp-status",
+            "class" : "comp16",
+            "link" : "/init/compliance/comp_status?clear_filters=true&cs0_f_run_svcname=__svc_name__"
+          },
+          {
+            "title": "compliance_log",
+            "menu_entry_id": "comp-log",
+            "class" : "log16",
+            "link" : "/init/compliance/comp_log?clear_filters=true&comp_log_f_run_svcname=__svc_name__"
+          },
+          {
+            "title": "availability",
+            "menu_entry_id": "stat-avail",
+            "class" : "avail16",
+            "link" : "/init/svcmon_log/svcmon_log?clear_filters=true&svcmon_log_f_svc_name=__svc_name__"
+          },
+          {
+            "title": "logs",
+            "menu_entry_id": "adm-log",
+            "class" : "log16",
+            "link" : "/init/log/log?clear_filters=true&log_f_log_svcname=__svc_name__"
+          }
         ]
     },
     "nodes": {
@@ -100,21 +305,91 @@ function search_get_menu(fk)
         "title": "__nodename__",
         "class": "node16 fa-2x search-section-icon",
         "subclass" : "meta_nodename clickable",
-        "link" : [
-          { "nodes" : [ {"class" : "hw16"},{"link" : "/init/nodes/nodes?clear_filters=true&nodes_f_nodename=__nodename__"} ] },
-          { "dashboard" : [ {"class" : "alert16"},{"link" : "/init/dashboard/index?clear_filters=true&dashboard_f_dash_nodename=__nodename__"} ] },
-          { "services" : [ {"class" : "svc"},{"link" : "/init/default/svcmon?clear_filters=true&svcmon_f_mon_nodname=__nodename__"} ] },
-          { "resources" : [ {"class" : "svc"},{"link" : "/init/resmon/resmon?clear_filters=true&resmon_f_nodename=__nodename__"} ] },
-          { "appinfo" : [ {"class" : "svc"},{"link" : "/init/appinfo/appinfo?clear_filters=true&appinfo_f_app_nodename=__nodename__"} ] },
-          { "action" : [ {"class" : "action16"},{"link" : "/init/svcactions/svcactions?clear_filters=true&actions_f_hostname=__nodename__"} ] },
-          { "checks" : [ {"class" : "check16"},{"link" : "/init/checks/checks?clear_filters=true&checks_f_chk_nodename=__nodename__"} ] },
-          { "packages" : [ {"class" : "pkg16"},{"link" : "/init/packages/packages?clear_filters=true&packages_f_nodename=__nodename__"} ] },
-          { "network" : [ {"class" : "net16"},{"link" : "/init/nodenetworks/nodenetworks?clear_filters=true&nodenetworks_f_nodename=__nodename__"} ] },
-          { "san" : [ {"class" : "net16"},{"link" : "/init/nodesan/nodesan?clear_filters=true&nodesan_f_nodename=__nodename__"} ] },
-          { "disks" : [ {"class" : "hd16"},{"link" : "/init/disks/disks?clear_filters=true&disks_f_disk_nodename=__nodename__"} ] },
-          { "compliance_status" : [ {"class" : "comp16"},{"link" : "/init/compliance/comp_status?clear_filters=true&cs0_f_run_nodename=__nodename__"} ] },
-          { "compliance_log" : [ {"class" : "log16"},{"link" : "/init/compliance/comp_log?clear_filters=true&comp_log_f_run_nodename=__nodename__"} ] },
-          { "logs" : [ {"class" : "log16"},{"link" : "/init/log/log?clear_filters=true&log_f_log_nodename=__nodename__"} ] }
+        "links" : [
+          {
+            "title": "nodes",
+            "menu_entry_id": "view-nodes",
+            "class" : "hw16",
+            "link" : "/init/nodes/nodes?clear_filters=true&nodes_f_nodename=__nodename__"
+          },
+          {
+            "title": "dashboard",
+            "menu_entry_id": "view-dashboard",
+            "class" : "alert16",
+            "link" : "/init/dashboard/index?clear_filters=true&dashboard_f_dash_nodename=__nodename__"
+          },
+          {
+            "title": "services",
+            "menu_entry_id": "view-service-instances",
+            "class" : "svc",
+            "link" : "/init/default/svcmon?clear_filters=true&svcmon_f_mon_nodname=__nodename__"
+          },
+          {
+            "title": "resources",
+            "menu_entry_id": "view-resources",
+            "class" : "svc",
+            "link" : "/init/resmon/resmon?clear_filters=true&resmon_f_nodename=__nodename__"
+          },
+          {
+            "title": "appinfo",
+            "menu_entry_id": "view-appinfo",
+            "class" : "svc",
+            "link" : "/init/appinfo/appinfo?clear_filters=true&appinfo_f_app_nodename=__nodename__"
+          },
+          {
+            "title": "actions",
+            "menu_entry_id": "view-actions",
+            "class" : "action16",
+            "link" : "/init/svcactions/svcactions?clear_filters=true&actions_f_hostname=__nodename__"
+          },
+          {
+            "title": "checks",
+            "menu_entry_id": "view-checks",
+            "class" : "check16",
+            "link" : "/init/checks/checks?clear_filters=true&checks_f_chk_nodename=__nodename__"
+          },
+          {
+            "title": "packages",
+            "menu_entry_id": "view-pkg",
+            "class" : "pkg16",
+            "link" : "/init/packages/packages?clear_filters=true&packages_f_nodename=__nodename__"
+          },
+          {
+            "title": "network",
+            "menu_entry_id": "view-net",
+            "class" : "net16",
+            "link" : "/init/nodenetworks/nodenetworks?clear_filters=true&nodenetworks_f_nodename=__nodename__"
+          },
+          {
+            "title": "san",
+            "menu_entry_id": "view-san",
+            "class" : "net16",
+            "link" : "/init/nodesan/nodesan?clear_filters=true&nodesan_f_nodename=__nodename__"
+          },
+          {
+            "title": "disks",
+            "menu_entry_id": "view-disks",
+            "class" : "hd16",
+            "link" : "/init/disks/disks?clear_filters=true&disks_f_disk_nodename=__nodename__"
+          },
+          {
+            "title": "compliance_status",
+            "menu_entry_id": "comp-status",
+            "class" : "comp16",
+            "link" : "/init/compliance/comp_status?clear_filters=true&cs0_f_run_nodename=__nodename__"
+          },
+          {
+            "title": "compliance_log",
+            "menu_entry_id": "comp-log",
+            "class" : "log16",
+            "link" : "/init/compliance/comp_log?clear_filters=true&comp_log_f_run_nodename=__nodename__"
+          },
+          {
+            "title": "logs",
+            "menu_entry_id": "adm-log",
+            "class" : "log16",
+            "link" : "/init/log/log?clear_filters=true&log_f_log_nodename=__nodename__"
+          }
         ]
     },
     "filtersets": {
@@ -122,8 +397,13 @@ function search_get_menu(fk)
         "title": "__fset_name__",
         "class": "filter16 fa-2x search-section-icon",
         "subclass" : "meta_username clickable",
-        "link" : [
-          { "designer" : [ {"class" : "wf16"},{"link" : "/init/compliance/comp_admin?obj_filter=__fset_name__"} ] },
+        "links" : [
+          {
+            "title": "designer",
+            "menu_entry_id": "comp-designer",
+            "class" : "wf16",
+            "link" : "/init/compliance/comp_admin?obj_filter=__fset_name__"
+          }
         ]
     },
     "vms": {
@@ -131,9 +411,13 @@ function search_get_menu(fk)
         "title": "__mon_vmname__",
         "class": "hv16 fa-2x search-section-icon",
         "subclass" : "meta_nodename",
-        "link" : [
-          { "status" : [ {"class" : "svc"},{"link" : "/init/default/svcmon?clear_filters=true&svcmon_f_mon_vmname=__mon_vmname__"} ] },
-          { "filterset" : [ {"class" : "filter16"},{"link" : "/init/compliance/comp_filters?clear_filters=true&ajax_comp_filtersets_f_fset_name=__mon_vmname__"} ] }
+        "links" : [
+          {
+            "title": "status",
+            "menu_entry_id": "comp-designer",
+            "class" : "svc",
+            "link" : "/init/default/svcmon?clear_filters=true&svcmon_f_mon_vmname=__mon_vmname__"
+          }
         ]
     }
   }
@@ -205,32 +489,31 @@ function search_build_result_row(label, first, res, count) {
   }
 
   // add links to views
-  if (first==1 && section_data.special_header_link != undefined) {
+  if (first==1 && section_data.special_header_links != undefined) {
     // special condition for first element if present
-    link = section_data.special_header_link;
+    links = section_data.special_header_links
   } else {
-    link = section_data.link;
+    links = section_data.links
   }
 
-  for(j=0;j<link.length;j++) {
-    var links = link[j]
-    for (link_label in links) {
-      var link_data = links[link_label]
-      var cl = link_data[0].class
-      var url = link_data[1].link
-      for (key in res) {
-        url = url.replace("__"+key+"__", res[key])
-      }
-      // leftover (the first==1 case)
-      url = url.replace(/__\w+__/, title)
-
-      var a_link = $("<a class='search-link'></a>")
-      a_link.addClass(cl)
-      a_link.attr("href", url)
-      a_link.attr("target", "_blank")
-      a_link.text(i18n.t("search.menu_link."+ link_label))
-      cell_result.append(a_link)
+  for(j=0; j<links.length; j++) {
+    var link_data = links[j]
+    if (osvc.hidden_menu_entries.indexOf(link_data.menu_entry_id) >= 0) {
+      continue
     }
+    var url = link_data.link
+    for (key in res) {
+      url = url.replace("__"+key+"__", res[key])
+    }
+    // leftover (the first==1 case)
+    url = url.replace(/__\w+__/, title)
+
+    var a_link = $("<a class='search-link'></a>")
+    a_link.addClass(link_data.class)
+    a_link.attr("href", url)
+    a_link.attr("target", "_blank")
+    a_link.text(i18n.t("search.menu_link."+ link_data.title))
+    cell_result.append(a_link)
   }
   return row_group.children()
 }

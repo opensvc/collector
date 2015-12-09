@@ -227,7 +227,7 @@ function menu_search_key()
 			{
 			  "title" : "batchs",
 			  "class" : "actions",
-			  "id" : "adm-batch",
+			  "id" : "adm-batchs",
 			  "link" : "/init/batchs/batchs",
 			  "secure" : ["Manager"] },
 			{
@@ -356,7 +356,7 @@ function menu(divid) {
       if (jd.error && (jd.error.length > 0)) {
         $(".flash").show("blind").html(services_error_fmt(jd))
       }
-      o.hidden = []
+      osvc.hidden_menu_entries = []
       var ref_count = 0
       for (var i=0; i<_groups.length; i++) {
         var g = _groups[i]
@@ -370,10 +370,10 @@ function menu(divid) {
       }
       for (key in jd.data.menu_entry) {
         if (jd.data.menu_entry[key] == ref_count) {
-          o.hidden.push(key)
+          osvc.hidden_menu_entries.push(key)
         }
       }
-      console.log("hidden menu entries:", o.hidden)
+      console.log("hidden menu entries:", osvc.hidden_menu_entries)
       o.init()
     })
   })
@@ -398,7 +398,7 @@ function menu_init(o)
 
 function menu_create_entry(o, section, entry)
 {
-	if (o.hidden.indexOf(entry.id) >= 0) {
+	if (osvc.hidden_menu_entries.indexOf(entry.id) >= 0) {
 		return
 	}
 	if (entry.secure && !services_ismemberof(entry.secure)) {

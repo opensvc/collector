@@ -189,7 +189,7 @@
       "status" : "Etat",
       "resources" : "Resources",
       "appinfo" : "Appinfo",
-      "action" : "Action",
+      "actions" : "Actions",
       "checks" : "Sondes",
       "disks" : "Disques",
       "disk_info" : "Disques",
