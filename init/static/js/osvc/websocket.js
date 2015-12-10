@@ -2,33 +2,20 @@
 // websockets
 //
 var wsh = {}
-var last_events = []
-
-function ws_duplicate_event(uid) {
-    if (last_events.indexOf(uid) >= 0) {
-        return true
-    }
-    last_events.push(uid)
-    if (last_events.length > 10) {
-        last_events = last_events.slice(0, 10)
-    }
-    return false
-}
+var ws_scheduled = {}
 
 function ws_switch(e) {
-    var data = []
-    try {
-        data = eval('('+e.data+')')
-    } catch(ex) {
+    var data = $.parseJSON(e.data)
+    if (data.uuid in ws_scheduled) {
         return
     }
-    if (ws_duplicate_event(data['uuid'])) {
-        return
-    }
-    data = data['data']
-    for (i=0; i<data.length; i++) {
-        ws_switch_one(data[i])
-    }
+    var _data = data.data
+    ws_scheduled[data.uuid] = setTimeout(function() {
+        delete(ws_scheduled[data.uuid])
+        for (i=0; i<_data.length; i++) {
+            ws_switch_one(_data[i])
+        }
+    }, 1000)
 }
 
 function ws_switch_one(data) {

@@ -1,6 +1,6 @@
 from gluon.contrib.websocket_messaging import websocket_send
 import json
-import uuid
+import hashlib
 
 from applications.init.modules import config
 
@@ -13,8 +13,10 @@ websocket_url = "http://%s:8889" % dbopensvc
 websocket_key = "magix123"
 
 def event_msg(data):
+    uuid = hashlib.md5()
+    uuid.update(json.dumps(data))
     _data = {
-      'uuid': uuid.uuid1().hex,
+      'uuid': uuid.hexdigest(),
     }
     if type(data) == dict:
         _data['data'] = [data]
