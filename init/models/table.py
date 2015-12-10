@@ -77,6 +77,7 @@ class HtmlTableColumn(Column):
          'default_filter': self.default_filter or "",
          'force_filter': self.force_filter or "",
          'img': self.img,
+         'display': 1 if self.display else 0,
         }
         return data
 
@@ -236,35 +237,6 @@ class HtmlTable(object):
                 h[s] += 1
         return json.dumps(h)
 
-    def visible_columns(self):
-        return [k for k, v in self.colprops.items() if v.display]
-
-    def get_column_visibility(self, c):
-        return self.colprops[c].display
-
-    def set_column_visibility(self):
-        q = db.user_prefs_columns.upc_user_id==session.auth.user.id
-        q &= db.user_prefs_columns.upc_table==self.upc_table
-        rows = db(q).select(cacheable=True)
-        for row in rows:
-            if row.upc_field not in self.colprops:
-                continue
-            self.colprops[row.upc_field].display = row.upc_visible
-
-        #
-        # if a column has a filter set, make it visible, even if it
-        # marked for hiding.
-        #
-        q = db.column_filters.user_id==session.auth.user.id
-        q &= db.column_filters.col_tableid==self.id
-        q &= db.column_filters.bookmark=="current"
-        rows = db(q).select(cacheable=True)
-        for row in rows:
-            field = row.col_name.split('.')[-1]
-            if field not in self.colprops:
-                continue
-            self.colprops[field].display = True
-
     def pager_info(self):
         d = {
           'perpage': self.perpage,
@@ -338,7 +310,6 @@ class HtmlTable(object):
         else:
             max_perpage = 500
         self.setup_pager(n, max_perpage=max_perpage)
-        self.set_column_visibility()
         if html:
             fmt = "html"
             formatter = self._table_lines_data_html
@@ -627,7 +598,6 @@ class HtmlTable(object):
         if len(request.args) == 1 and request.args[0] == 'csv':
             return self.csv()
 
-        self.set_column_visibility()
         lines, line_count = self.table_lines()
 
         if self.filterable and len(self.additional_filters) > 0:
@@ -715,7 +685,6 @@ var ti_%(id)s = setInterval(function(){
      'columns': %(columns)s,
      'colprops': %(colprops)s,
      'volatile_filters': %(volatile_filters)s,
-     'visible_columns': %(visible_columns)s,
      'child_tables': %(child_tables)s,
      'parent_tables': %(parent_tables)s,
      'dataable': %(dataable)s,
@@ -749,7 +718,6 @@ var ti_%(id)s = setInterval(function(){
                    columns=str(self.cols),
                    colprops=self.serialize_colprops(),
                    volatile_filters=str(self.volatile_filters).lower(),
-                   visible_columns=str(self.visible_columns()),
                    child_tables=str(self.child_tables),
                    parent_tables=str(self.parent_tables),
                    ajax_submit=self.ajax_submit(),

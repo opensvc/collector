@@ -139,7 +139,7 @@ function node_tabs(divid, options) {
       "title_class": "svc"
     })
     o.tabs[i].callback = function(divid) {
-      sync_ajax("/init/default/svcmon_node/"+encodeURIComponent(o.options.nodename), [], divid, function(){})
+      table_service_instances_node(divid, o.options.nodename)
     }
 
     // tab actions
@@ -303,7 +303,7 @@ function service_tabs(divid, options) {
       "title_class": "svc"
     })
     o.tabs[i].callback = function(divid) {
-      sync_ajax("/init/default/svcmon_svc/"+encodeURIComponent(o.options.svcname), [], divid, function(){})
+      table_service_instances_svc(divid, o.options.svcname)
     }
 
     // tab resources

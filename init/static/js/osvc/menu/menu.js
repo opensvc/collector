@@ -11,7 +11,8 @@ var menu_data = {
 		  "title" : "services",
 		  "class" : "svc",
 		  "id" : "view-services",
-		  "link" : "/init/services/services"
+		  "link" : "/init/services/services",
+		  "fn" : "table_services"
 		},
 		{
 		  "title" : "services_instances",

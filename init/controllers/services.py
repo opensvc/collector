@@ -52,7 +52,8 @@ class table_services(HtmlTable):
 
 @auth.requires_login()
 def ajax_services_col_values():
-    t = table_services('services', 'ajax_services')
+    table_id = request.vars.table_id
+    t = table_services(table_id, 'ajax_services')
     col = request.args[0]
     o = db[t.colprops[col].table][col]
     q = db.services.id > 0
@@ -65,7 +66,8 @@ def ajax_services_col_values():
 
 @auth.requires_login()
 def ajax_services():
-    t = table_services('services', 'ajax_services')
+    table_id = request.vars.table_id
+    t = table_services(table_id, 'ajax_services')
 
     o = db.services.svc_name
     q = db.services.id > 0
@@ -92,11 +94,9 @@ def ajax_services():
 
 @auth.requires_login()
 def services():
-    t = table_services('services', 'ajax_services')
-    t = DIV(
-          t.html(),
-          _id='services',
-          )
+    t = SCRIPT(
+          """$.when(osvc.app_started).then(function(){ table_services("layout") })""",
+        )
     return dict(table=t)
 
 def services_load():

@@ -205,7 +205,8 @@ class table_svcmon(HtmlTable):
 
 @auth.requires_login()
 def ajax_svcmon_col_values():
-    t = table_svcmon('svcmon', 'ajax_svcmon')
+    table_id = request.vars.table_id
+    t = table_svcmon(tabled_id, 'ajax_svcmon')
     col = request.args[0]
     o = db.v_svcmon[col]
     q = _where(None, 'v_svcmon', domain_perms(), 'mon_nodname')
@@ -219,7 +220,8 @@ def ajax_svcmon_col_values():
 
 @auth.requires_login()
 def ajax_svcmon():
-    t = table_svcmon('svcmon', 'ajax_svcmon')
+    table_id = request.vars.table_id
+    t = table_svcmon(table_id, 'ajax_svcmon')
 
     o = db.v_svcmon.mon_svcname
     o |= db.v_svcmon.mon_nodname
@@ -245,111 +247,12 @@ def ajax_svcmon():
 
 @auth.requires_login()
 def svcmon():
-    t = table_svcmon('svcmon', 'ajax_svcmon')
-    t = DIV(
-          t.html(),
-          _id='svcmon',
+    t = SCRIPT(
+          """$.when(osvc.app_started).then(function(){ table_service_instances("layout") })""",
         )
     return dict(table=t)
 
 def svcmon_load():
     return svcmon()["table"]
 
-class table_svcmon_node(table_svcmon):
-    def __init__(self, id=None, func=None, innerhtml=None):
-        table_svcmon.__init__(self, id, func, innerhtml)
-        self.hide_tools = True
-        self.pageable = False
-        self.bookmarkable = False
-        self.commonalityable = False
-        self.linkable = False
-        self.filterable = False
-        self.exportable = False
-        self.dbfilterable = False
-        self.columnable = False
-        self.checkboxes = True
-        self.extrarow = True
-        self.wsable = False
-        self.colprops['mon_updated'].display = True
 
-@auth.requires_login()
-def svcmon_node():
-    node = request.args[0]
-    tid = 'svcmon_'+node.replace('-', '_').replace('.', '_')
-    t = table_svcmon_node(tid, 'ajax_svcmon_node')
-    t.colprops['mon_nodname'].force_filter = node
-    return DIV(
-             t.html(),
-             _id=tid
-           )
-
-@auth.requires_login()
-def ajax_svcmon_node():
-    tid = request.vars.table_id
-    t = table_svcmon_node(tid, 'ajax_svcmon_node')
-    q = _where(None, 'v_svcmon', domain_perms(), 'mon_nodname')
-    for f in ['mon_nodname']:
-        q = _where(q, 'v_svcmon', t.filter_parse(f), f)
-    if request.args[0] == "data":
-        t.object_list = db(q).select(cacheable=True)
-        return t.table_lines_data(-1, html=False)
-
-class table_svcmon_svc(table_svcmon):
-    def __init__(self, id=None, func=None, innerhtml=None):
-        table_svcmon.__init__(self, id, func, innerhtml)
-        self.cols = [
-         'svc_ha',
-         'svc_availstatus',
-         'svc_status',
-         'svc_cluster_type',
-         'mon_vmtype',
-         'mon_vmname',
-         'mon_nodname',
-         'mon_availstatus',
-         'mon_overallstatus',
-         'mon_ipstatus',
-         'mon_fsstatus',
-         'mon_diskstatus',
-         'mon_appstatus',
-         'mon_sharestatus',
-         'mon_containerstatus',
-         'mon_hbstatus',
-         'mon_syncstatus',
-         'mon_updated',
-        ]
-        self.colprops['mon_updated'].display = True
-
-        self.pageable = False
-        self.bookmarkable = False
-        self.commonalityable = False
-        self.linkable = False
-        self.checkboxes = True
-        self.filterable = False
-        self.exportable = False
-        self.dbfilterable = False
-        self.columnable = False
-        self.extrarow = False
-        self.wsable = False
-
-
-@auth.requires_login()
-def svcmon_svc():
-    svcname = request.args[0]
-    tid = 'svcmon_'+svcname.replace('-', '_').replace('.', '_')
-    t = table_svcmon_svc(tid, 'ajax_svcmon_svc')
-    t.colprops['mon_svcname'].force_filter = svcname
-    return DIV(
-      t.html(),
-      _id=tid,
-    )
-
-@auth.requires_login()
-def ajax_svcmon_svc():
-    tid = request.vars.table_id
-    t = table_svcmon_svc(tid, 'ajax_svcmon_svc')
-    q = _where(None, 'v_svcmon', domain_perms(), 'mon_nodname')
-    for f in ['mon_svcname']:
-        q = _where(q, 'v_svcmon', t.filter_parse(f), f)
-    if request.args[0] == "data":
-        t.object_list = db(q).select(cacheable=True)
-        return t.table_lines_data(-1, html=False)
