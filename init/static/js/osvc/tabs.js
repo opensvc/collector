@@ -130,7 +130,7 @@ function node_tabs(divid, options) {
       "title_class": "alert16"
     })
     o.tabs[i].callback = function(divid) {
-      sync_ajax("/init/dashboard/dashboard_node/"+encodeURIComponent(o.options.nodename), [], divid, function(){})
+      table_dashboard_node(divid, o.options.nodename)
     }
 
     // tab services
@@ -294,7 +294,7 @@ function service_tabs(divid, options) {
       "title_class": "alert16"
     })
     o.tabs[i].callback = function(divid) {
-      sync_ajax("/init/dashboard/dashboard_svc/"+encodeURIComponent(o.options.svcname), [], divid, function(){})
+      table_dashboard_svc(divid, o.options.svcname)
     }
 
     // tab status

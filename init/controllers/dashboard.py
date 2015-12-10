@@ -224,18 +224,14 @@ class table_dashboard(HtmlTable):
         self.colprops['dash_nodename'].t = self
         self.colprops['dash_links'].t = self
         self.colprops['dash_entry'].t = self
-        self.extraline = True
-        self.checkboxes = True
         self.checkbox_id_table = 'dashboard'
         self.checkbox_id_col = 'id'
         self.special_filtered_cols = ['dash_entry']
-        self.wsable = True
-        self.dataable = True
-        self.events = ["dashboard_change"]
 
 @auth.requires_login()
 def ajax_dashboard_col_values():
-    t = table_dashboard('dashboard', 'ajax_dashboard')
+    table_id = request.vars.table_id
+    t = table_dashboard(table_id, 'ajax_dashboard')
     col = request.args[0]
     if t.colprops[col].filter_redirect is None and col in db.dashboard:
         o = db.dashboard[col]
@@ -253,7 +249,8 @@ def ajax_dashboard_col_values():
 
 @auth.requires_login()
 def ajax_dashboard():
-    t = table_dashboard('dashboard', 'ajax_dashboard')
+    table_id = request.vars.table_id
+    t = table_dashboard(table_id, 'ajax_dashboard')
     o = ~db.dashboard.dash_severity|db.dashboard.dash_type|db.dashboard.dash_nodename|db.dashboard.dash_svcname
     q = db.dashboard.id > 0
     for f in set(t.cols):
@@ -276,10 +273,8 @@ def ajax_dashboard():
 
 @auth.requires_login()
 def index():
-    t = table_dashboard('dashboard', 'ajax_dashboard')
-    t = DIV(
-          t.html(),
-          _id='dashboard',
+    t = SCRIPT(
+          """$.when(osvc.app_started).then(function(){ table_dashboard("layout") })""",
         )
     return dict(table=t)
 
@@ -366,70 +361,5 @@ def ajax_alert_events():
 
 def test_dashboard_events():
     dashboard_events()
-
-#
-# alerts tabs
-#
-class table_dashboard_node(table_dashboard):
-    def __init__(self, id=None, func=None, innerhtml=None):
-        table_dashboard.__init__(self, id, func, innerhtml)
-        self.hide_tools = True
-        self.pageable = False
-        self.bookmarkable = False
-        self.commonalityable = False
-        self.linkable = False
-        self.checkboxes = True
-        self.filterable = False
-        self.exportable = False
-        self.dbfilterable = False
-        self.columnable = False
-        self.refreshable = False
-        self.wsable = False
-        self.dataable = True
-        self.child_tables = []
-
-def ajax_dashboard_node():
-    tid = request.vars.table_id
-    t = table_dashboard_node(tid, 'ajax_dashboard_node')
-    q = _where(None, 'dashboard', domain_perms(), 'dash_nodename')
-    for f in ['dash_nodename']:
-        q = _where(q, 'dashboard', t.filter_parse(f), f)
-    if request.args[0] == "data":
-        t.object_list = db(q).select(cacheable=True)
-        return t.table_lines_data(-1, html=False)
-
-def ajax_dashboard_svc():
-    tid = request.vars.table_id
-    t = table_dashboard_node(tid, 'ajax_dashboard_svc')
-    q = _where(None, 'dashboard', domain_perms(), 'dash_svcname')
-    for f in ['dash_svcname']:
-        q = _where(q, 'dashboard', t.filter_parse(f), f)
-    if request.args[0] == "data":
-        t.object_list = db(q).select(cacheable=True)
-        return t.table_lines_data(-1, html=False)
-
-@auth.requires_login()
-def dashboard_node():
-    node = request.args[0]
-    tid = 'dashboard_'+node.replace('-', '_').replace('.', '_')
-    t = table_dashboard_node(tid, 'ajax_dashboard_node')
-    t.colprops['dash_nodename'].force_filter = node
-
-    return DIV(
-             t.html(),
-             _id=tid,
-           )
-
-@auth.requires_login()
-def dashboard_svc():
-    svcname = request.args[0]
-    tid = 'dashboard_'+svcname.replace('-','_').replace('.','_')
-    t = table_dashboard_node(tid, 'ajax_dashboard_svc')
-    t.colprops['dash_svcname'].force_filter = svcname
-
-    return DIV(
-             t.html(),
-             _id=tid,
-           )
 
 

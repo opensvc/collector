@@ -240,7 +240,7 @@ function osvc_get_link(divid,link_id)
       } else {
         // js function link
         var fn = window[link];
-        fn(divid,param);
+        fn(divid, param);
       }
   });
 }

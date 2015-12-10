@@ -39,19 +39,19 @@ function app_start() {
       osvc.i18n_started,
       osvc.user_groups_loaded
     ).then(function() {
-      menu("menu_location");
-      login("login_location");
-      osvc_popup_stack_listener();
-      search("layout_search_tool");
-      fset_selector("fset_selector");
-      app_bindings();
-      app_menu_entries_bind_click_to_load();
-      app_datetime_decorators();
+      osvc.menu = menu("menu_location")
+      osvc.login = login("login_location")
+      osvc_popup_stack_listener()
+      osvc.search = search("layout_search_tool")
+      osvc.fset_selector = fset_selector("fset_selector")
+      app_bindings()
+      app_menu_entries_bind_click_to_load()
+      app_datetime_decorators()
       osvc.app_started.resolve(true)
     })
 }
 
-function app_load_href(href) {
+function app_load_href(href, fn) {
     // loadable co-functions ends with '_load'
     var _href
 
@@ -72,29 +72,39 @@ function app_load_href(href) {
     l[0] = v.join("/")
     _href = l.join("?")
 
-    console.log("load", _href)
     var e = $("<span><span class='refresh16 icon fa-spin fa-2x'></span><span data-i18n='api.loading'></span></span>").i18n()
     $(".flash").html(e).show("fold")
+    if (fn != "undefined") {
+      console.log("load", fn)
+      window[fn]("layout")
+      post_load()
+      return
+    }
+    console.log("load", _href)
     $(".layout").load(_href, {}, function (responseText, textStatus, req) {
       if (textStatus == "error") {
         // load error
         console.log("fallback to location", href)
         document.location.replace(href)
       } else {
-        if ($(".flash").find(".refresh16").length == 1) {
-          $(".flash").empty().hide("fold")
-        }
-        // load success, purge tables not displayed anymore
-        for (tid in osvc.tables) {
-          if ($('#'+tid).length == 0) {
-            delete osvc.tables[tid]
-            if (tid in wsh) {
-              delete wsh[tid]
-            }
+        post_load()
+      }
+    })
+
+    function post_load() {
+      if ($(".flash").find(".refresh16").length == 1) {
+        $(".flash").empty().hide("fold")
+      }
+      // load success, purge tables not displayed anymore
+      for (tid in osvc.tables) {
+        if ($('#'+tid).length == 0) {
+          delete osvc.tables[tid]
+          if (tid in wsh) {
+            delete wsh[tid]
           }
         }
       }
-    })
+    }
 }
 
 function app_menu_entries_bind_click_to_load() {

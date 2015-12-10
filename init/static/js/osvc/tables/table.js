@@ -1749,7 +1749,31 @@ function get_view_url() {
   return url
 }
 
-function table_link(t){
+function table_link(t) {
+  if (t.options.caller) {
+    table_link_fn(t)
+  } else {
+    table_link_href(t)
+  }
+}
+
+function table_link_fn(t) {
+  var options = t.options
+  options.volatile_filters = true
+
+  var current_fset = $("[name=fset_selector]").find("span").attr("fset_id")
+  options.fset_id = current_fset
+
+  t.e_header_filters.find("input[name=fi]").each(function(){
+    if ($(this).val().length==0) {
+      return
+    }
+    options.request_vars[$(this).attr('id')] = $(this).val()
+  })
+  osvc_create_link(t.options.caller, options);
+}
+
+function table_link_href(t) {
   var url = get_view_url()
   url = url.replace(/#$/, "")+"?";
   var args = "clear_filters=true&discard_filters=true"
@@ -1764,8 +1788,7 @@ function table_link(t){
     }
     args += '&'+$(this).attr('id')+"="+encodeURIComponent($(this).val())
   })
-  //modification with new link handler
-  osvc_create_link(url,args);
+  osvc_create_link(url, args);
 }
 
 function table_add_scrollers(t) {
@@ -1777,6 +1800,9 @@ function table_add_scrollers(t) {
 }
 
 function table_add_filterbox(t) {
+  if ($("#fsr"+t.id).length > 0) {
+    return
+  }
   var s = "<span id='fsr"+t.id+"' class='right_click_menu stackable' style='display: none'>"
   s += "<table>"
   s +=  "<tr>"
@@ -2293,7 +2319,6 @@ function table_add_volatile(t) {
 
   // title
   var title = $("<span style='padding-left:0.3em'></span>")
-  console.log("here", i18n.t("table.volatile"))
   title.text(i18n.t("table.volatile"))
   title.attr("title", i18n.t("table.volatile_title"))
 
