@@ -107,7 +107,14 @@ function fset_selector_unset_fset(o) {
 }
 
 function fset_selector_set_fset(o, new_fset_id, new_fset_name) {
+  if (new_fset_id <= 0) {
+    o.unset_fset()
+    return
+  }
   services_osvcpostrest("R_USERS_SELF_FILTERSET_ONE", [new_fset_id], "", "", function(jd) {
+    if (!new_fset_name) {
+      new_fset_name = o.area.find("[fset_id="+new_fset_id+"]").find("[name=title]").text()
+    }
     o.span.empty()
     o.span.text(new_fset_name)
     o.span.attr("fset_id", new_fset_id)
@@ -136,11 +143,7 @@ function fset_selector_add_fset(o, id, name) {
   e.bind("click", function() {
     var new_fset_id = $(this).attr("fset_id")
     var new_fset_name = $(this).find("[name=title]").text()
-    if (new_fset_id < 0) {
-      o.unset_fset()
-    } else {
-      o.set_fset(new_fset_id, new_fset_name)
-    }
+    o.set_fset(new_fset_id, new_fset_name)
   })
 
   o.area.append(e)
