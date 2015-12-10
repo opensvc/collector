@@ -5,7 +5,11 @@ var wsh = {}
 var ws_scheduled = {}
 
 function ws_switch(e) {
-    var data = $.parseJSON(e.data)
+    try {
+        var data = $.parseJSON(e.data)
+    } catch(e) {
+        return
+    }
     if (data.uuid in ws_scheduled) {
         return
     }
