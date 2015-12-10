@@ -844,6 +844,13 @@ class rest_post_user_table_settings(rest_post_handler):
           meta="0",
           query="upc_table=%s and upc_field=%s" % (vars["upc_table"], vars["upc_field"])
         )
+        l = {
+          'event': 'user_prefs_columns_change',
+          'data': {
+            'user_id': user.id,
+          },
+        }
+        _websocket_send(event_msg(l))
         return rest_get_user_table_settings().handler(id, **qvars)
 
 #
@@ -938,6 +945,13 @@ class rest_post_user_table_filters(rest_post_handler):
           meta="0",
           query="col_tableid=%s and col_name=%s and bookmark=%s" % (vars["col_tableid"], vars["col_name"], vars["bookmark"])
         )
+        l = {
+          'event': 'column_filters_change',
+          'data': {
+            'user_id': user.id,
+          },
+        }
+        _websocket_send(event_msg(l))
         return rest_get_user_table_filters().handler(id, **qvars)
 
 #
@@ -984,6 +998,13 @@ class rest_delete_user_table_filters(rest_delete_handler):
             q &= db.column_filters.bookmark == vars["bookmark"]
 
         db(q).delete()
+        l = {
+          'event': 'column_filters_change',
+          'data': {
+            'user_id': user.id,
+          },
+        }
+        _websocket_send(event_msg(l))
         return dict(info=T("column filters deleted"))
 
 #
@@ -1067,6 +1088,13 @@ class rest_post_user_table_filters_load_bookmark(rest_post_handler):
           meta="0",
           query="col_tableid=%s and bookmark=current" % (vars["col_tableid"])
         )
+        l = {
+          'event': 'column_filters_change',
+          'data': {
+            'user_id': user.id,
+          },
+        }
+        _websocket_send(event_msg(l))
         return rest_get_user_table_filters().handler(id, **qvars)
 
 #
@@ -1150,6 +1178,13 @@ class rest_post_user_table_filters_save_bookmark(rest_post_handler):
           meta="0",
           query="col_tableid=%s and bookmark=current" % (vars["col_tableid"])
         )
+        l = {
+          'event': 'column_filters_change',
+          'data': {
+            'user_id': user.id,
+          },
+        }
+        _websocket_send(event_msg(l))
         return rest_get_user_table_filters().handler(id, **qvars)
 
 

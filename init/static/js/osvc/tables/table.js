@@ -620,13 +620,7 @@ function table_add_column_headers(t) {
 //
 function table_get_visible_columns(t) {
   if (t.options.visible_columns) {
-    t.deferreds.visible_columns.resolve(true)
     return
-  }
-  var data = {
-    "query": "upc_table="+t.id+" and not upc_field=wsenabled",
-    "meta": "0",
-    "limit": "0"
   }
 
   // init with default visibility defined in colprops
@@ -638,27 +632,25 @@ function table_get_visible_columns(t) {
     }
   }
 
-  // adjust with db-stored user settings
-  services_osvcgetrest("R_USERS_SELF_TABLE_SETTINGS", "", data, function(jd) {
-    if (!jd.data) {
-      return
+  // adjust with db-stored user's table settings
+  if (!(t.id in osvc.table_settings.data)) {
+    return
+  }
+  for (col in osvc.table_settings.data[t.id]) {
+    if (col == "wsenabled") {
+      continue
     }
-    for (var i=0; i<jd.data.length; i++) {
-      var col = jd.data[i].upc_field
-      if (jd.data[i].upc_visible) {
-        if (t.options.visible_columns.indexOf(col) < 0) {
-          t.options.visible_columns.push(col)
-        }
-      } else {
-        var idx = t.options.visible_columns.indexOf(col)
-        if (idx >= 0) {
-          t.options.visible_columns.splice(idx, 1)
-        }
+    if (osvc.table_settings.data[t.id][col]) {
+      if (t.options.visible_columns.indexOf(col) < 0) {
+        t.options.visible_columns.push(col)
+      }
+    } else {
+      var idx = t.options.visible_columns.indexOf(col)
+      if (idx >= 0) {
+        t.options.visible_columns.splice(idx, 1)
       }
     }
-    t.deferreds.visible_columns.resolve(true)
-  })
-  return
+  }
 }
 
 function table_refresh_column_filters(t) {
@@ -2129,39 +2121,26 @@ function table_add_bookmarks(t) {
   area.append(listarea)
   t.e_tool_bookmarks_listarea = listarea
 
-  var params = {
-    "query": "col_tableid="+t.id,
-    "limit": "0",
-    "props": "bookmark"
+  var bookmarks = []
+  if (t.id in osvc.table_filters.data) {
+    for (var b in osvc.table_filters.data[t.id]) {
+      if (b == "current") {
+        continue
+      }
+      bookmarks.push(b)
+    }
+    bookmarks.sort()
   }
-  spinner_add(listarea)
-  services_osvcgetrest("R_USERS_SELF_TABLE_FILTERS", "", params, function(jd) {
-    spinner_del(listarea)
-    if (!jd.data) {
-      return
-    }
-    if (!jd.data.length) {
-      listarea.text(i18n.t("table.bookmarks_no_bookmarks"))
-      return
-    }
 
-    var done = []
-    for (var i=0; i<jd.data.length; i++) {
-      var name = jd.data[i].bookmark
-      if (name == "current") {
-        continue
-      }
-      if (done.indexOf(name) >= 0) {
-        continue
-      }
-      done.push(name)
-      t.insert_bookmark(name)
-    }
-  },
-  function(xhr, stat, error) {
-    spinner_del(listarea)
-    $(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
-  })
+  if (!bookmarks.length) {
+    listarea.text(i18n.t("table.bookmarks_no_bookmarks"))
+  }
+
+  for (var i=0; i<bookmarks.length; i++) {
+    var name = bookmarks[i]
+    console.log(name)
+    t.insert_bookmark(name)
+  }
 
   try { e.i18n() } catch(e) {}
   t.e_tool_bookmarks = e
@@ -2425,26 +2404,12 @@ function table_add_wsswitch(t) {
   e.append(title)
   try { e.i18n() } catch(e) {}
 
-  var data = {
-    "query": "upc_table="+t.id+" and upc_field=wsenabled",
-    "meta": "0"
+  if (!(t.id in osvc.table_settings.data) || !("wsenabled" in osvc.table_settings.data[t.id]) || osvc.table_settings.data[t.id].wsenabled) {
+    input.prop("checked", true)
+    t.pager()
+  } else {
+    input.prop("checked", false)
   }
-  input.prop("disabled", true)
-  services_osvcgetrest("R_USERS_SELF_TABLE_SETTINGS", "", data, function(jd) {
-    input.prop("disabled", false)
-    if (!jd.data) {
-      return
-    }
-    if ((jd.data.length == 0) || (jd.data[0].upc_visible)) {
-      input.prop("checked", true)
-      t.pager()
-    } else {
-      input.prop("checked", false)
-    }
-  },
-  function(xhr, stat, error) {
-    $(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
-  })
 
   t.e_toolbar.prepend(e)
   t.e_wsswitch = e
@@ -2719,31 +2684,27 @@ function table_stick(t) {
   sticky_relocate(t.e_header, t.e_sticky_anchor)
 }
 
-function table_get_column_filters(t, callback) {
-  var data = {
-    "query": "col_tableid="+t.id+" and bookmark=current",
-    "meta": "0"
+function table_set_column_filters(t) {
+  if (t.options.volatile_filters || t.has_filter_in_request_vars()) {
+    return
   }
-  services_osvcgetrest("R_USERS_SELF_TABLE_FILTERS", "", data, function(jd) {
-    if (jd.error) {
-      $(".flash").show("blind").html(services_error_fmt(jd))
-      return
-    }
-    t.reset_column_filters()
-    for (i=0; i<jd.data.length; i++) {
-      var d = jd.data[i]
-      if (d.col_name.indexOf(".") >= 0) {
-        var k = d.col_name.split('.')[1]
+  if (!(t.id in osvc.table_filters.data)) {
+    return
+  }
+  if (!("current" in osvc.table_filters.data[t.id])) {
+    return
+  }
+  var table_filters = osvc.table_filters.data[t.id]["current"]
+  t.reset_column_filters()
+  for (col in table_filters) {
+      var f = table_filters[col]
+      if (col.indexOf(".") >= 0) {
+        var k = col.split('.')[1]
       } else {
-        var k = d.col_name
+        var k = col
       }
-      t.refresh_column_filter(k, d.col_filter)
-    }
-    callback(t)
-  },
-  function(xhr, stat, error) {
-    $(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
-  }) 
+      t.refresh_column_filter(k, f)
+  }
 }
 
 function table_add_ws_handler(t) {
@@ -3024,8 +2985,8 @@ function table_init(opts) {
     'parent_tables_data': function(){
       return table_parent_tables_data(this)
     },
-    'get_column_filters': function(callback){
-      return table_get_column_filters(this, callback)
+    'set_column_filters': function(){
+      return table_set_column_filters(this)
     },
     'add_pager': function(){
       return table_add_pager(this)
@@ -3077,11 +3038,7 @@ function table_init(opts) {
     }
   }
 
-  function init_post_get_column_filters() {
-    t.refresh()
-  }
-
-  function has_filter_in_request_vars() {
+  t.has_filter_in_request_vars = function() {
     if (!t.options.request_vars) {
       return false
     }
@@ -3094,7 +3051,6 @@ function table_init(opts) {
   }
 
   t.deferreds = {
-    "visible_columns": $.Deferred()
   }
   t.refresh_timer = null
 
@@ -3111,7 +3067,10 @@ function table_init(opts) {
   t.div.find("select:visible").combobox()
 
   t.add_overlay()
-  $.when(t.deferreds.visible_columns).then(function(){
+  $.when(
+    osvc.table_settings_loaded,
+    osvc.table_filters_loaded
+  ).then(function(){
     t.add_column_headers_slim()
     t.add_column_headers_input()
     t.add_column_headers()
@@ -3133,16 +3092,8 @@ function table_init(opts) {
     t.stick()
     t.add_ws_handler()
     t.flash()
-  
-    if (t.options.volatile_filters || has_filter_in_request_vars()) {
-      // though column filters can still be set through the options.request_vars
-      init_post_get_column_filters()
-    } else {
-      // get the column filters from the collector
-      t.get_column_filters(
-        init_post_get_column_filters
-      )
-    }
+    t.set_column_filters()
+    t.refresh()
   })
 }
 

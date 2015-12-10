@@ -1,6 +1,8 @@
 var osvc = {
  'tables': {},
  'user_groups_loaded': $.Deferred(),
+ 'table_settings_loaded': $.Deferred(),
+ 'table_filters_loaded': $.Deferred(),
  'i18n_started': $.Deferred(),
  'app_started': $.Deferred()
 }
@@ -27,12 +29,16 @@ function i18n_init(callback) {
 function app_start() {
   i18n_init()
   services_feed_self_and_group()
+  osvc.table_settings = table_settings()
+  osvc.table_filters = table_filters()
 
   // Check if IE and version < 10
   for (i=6; i< 10; i++) {
     if (IE(i)) _badIE=1;
     else _badIE=0;
   }
+
+  osvc_popup_stack_listener()
 
   // Wait mandatory language info and User/groups info to be loaded before creating the IHM
   $.when(
@@ -41,7 +47,6 @@ function app_start() {
     ).then(function() {
       osvc.menu = menu("menu_location")
       osvc.login = login("login_location")
-      osvc_popup_stack_listener()
       osvc.search = search("layout_search_tool")
       osvc.fset_selector = fset_selector("fset_selector")
       app_bindings()
