@@ -141,7 +141,8 @@ class table_appinfo(HtmlTable):
 
 @auth.requires_login()
 def ajax_appinfo_col_values():
-    t = table_appinfo('appinfo', 'ajax_appinfo')
+    table_id = request.vars.table_id
+    t = table_appinfo(table_id, 'ajax_appinfo')
     col = request.args[0]
     o = db.appinfo[col]
     q = db.appinfo.id > 0
@@ -155,7 +156,8 @@ def ajax_appinfo_col_values():
 
 @auth.requires_login()
 def ajax_appinfo():
-    t = table_appinfo('appinfo', 'ajax_appinfo')
+    table_id = request.vars.table_id
+    t = table_appinfo(table_id, 'ajax_appinfo')
 
     o = db.appinfo.app_svcname | db.appinfo.app_nodename | db.appinfo.app_launcher | db.appinfo.app_key
     q = db.appinfo.id > 0
@@ -182,10 +184,8 @@ def ajax_appinfo():
 
 @auth.requires_login()
 def appinfo():
-    t = table_appinfo('appinfo', 'ajax_appinfo')
-    t = DIV(
-          t.html(),
-          _id='appinfo',
+    t = SCRIPT(
+          """$.when(osvc.app_started).then(function(){ table_appinfo("layout") })""",
         )
     return dict(table=t)
 

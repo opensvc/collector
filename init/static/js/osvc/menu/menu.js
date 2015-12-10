@@ -32,7 +32,8 @@ var menu_data = {
 		  "title" : "app_info",
 		  "class" : "svc",
 		  "id" : "view-appinfo",
-		  "link" : "/init/appinfo/appinfo"
+		  "link" : "/init/appinfo/appinfo",
+		  "fn" : "table_appinfo"
 		},
 		{
 		  "title" : "nodes",
