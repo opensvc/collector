@@ -143,7 +143,8 @@ class table_resmon(HtmlTable):
 
 @auth.requires_login()
 def ajax_resmon_col_values():
-    t = table_resmon('resmon', 'ajax_resmon')
+    table_id = request.vars.table_id
+    t = table_resmon(table_id, 'ajax_resmon')
     col = request.args[0]
     o = db[t.colprops[col].table][col]
     q = db.resmon.nodename==db.v_nodes.nodename
@@ -156,7 +157,8 @@ def ajax_resmon_col_values():
 
 @auth.requires_login()
 def ajax_resmon():
-    t = table_resmon('resmon', 'ajax_resmon')
+    table_id = request.vars.table_id
+    t = table_resmon(table_id, 'ajax_resmon')
     o = db.resmon.svcname
     o |= db.resmon.nodename
     o |= db.resmon.vmname
@@ -184,58 +186,11 @@ def ajax_resmon():
 
 @auth.requires_login()
 def resmon():
-    t = table_resmon('resmon', 'ajax_resmon')
-    t = DIV(
-          t.html(),
-          _id='resmon',
+    t = SCRIPT(
+          """$.when(osvc.app_started).then(function(){ table_resources("layout") })""",
         )
     return dict(table=t)
 
 def resmon_load():
     return resmon()["table"]
-
-class table_resmon_svc(table_resmon):
-    def __init__(self, id=None, func=None, innerhtml=None):
-        table_resmon.__init__(self, id, func, innerhtml)
-        self.dbfilterable = False
-        self.filterable = False
-        self.exportable = False
-        self.columnable = False
-        self.refreshable = False
-        self.pageable = False
-        self.linkable = False
-        self.bookmarkable = False
-        self.commonalityable = False
-        self.wsable = False
-        self.colprops['svcname'].display=False
-
-@auth.requires_login()
-def resmon_svc():
-    svcname = request.args[0]
-    tid = 'resmon_'+svcname.replace('-', '_').replace('.', '_')
-    t = table_resmon_svc(tid, 'ajax_resmon_svc')
-    t.colprops['svcname'].force_filter = svcname
-    return DIV(
-      t.html(),
-      _id=tid,
-    )
-
-@auth.requires_login()
-def ajax_resmon_svc():
-    tid = request.vars.table_id
-    t = table_resmon_svc(tid, 'ajax_resmon_svc')
-
-    o = db.resmon.svcname
-    o |= db.resmon.nodename
-    o |= db.resmon.vmname
-    o |= db.resmon.rid
-
-    q = db.resmon.id>0
-    q &= db.resmon.nodename==db.v_nodes.nodename
-    q = _where(q, 'resmon', domain_perms(), 'nodename')
-    for f in ['svcname']:
-        q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
-
-    t.object_list = db(q).select(orderby=o, cacheable=True)
-    return t.table_lines_data(-1, html=False)
 

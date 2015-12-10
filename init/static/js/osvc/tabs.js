@@ -312,7 +312,7 @@ function service_tabs(divid, options) {
       "title_class": "svc"
     })
     o.tabs[i].callback = function(divid) {
-      sync_ajax("/init/resmon/resmon_svc/"+encodeURIComponent(o.options.svcname), [], divid, function(){})
+      table_resources_svc(divid, o.options.svcname)
     }
 
     // tab actions

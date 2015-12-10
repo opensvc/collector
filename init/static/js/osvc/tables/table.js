@@ -83,13 +83,12 @@ function submit_form_on_enter(e, form) {
     e = e
     characterCode = e.which
   }else{
-//    e = event
     characterCode = e.keyCode
   }
-  if(characterCode == 13) {
+  if (characterCode == 13) {
     form.submit()
     return false
-  }else{
+  } else {
     return true
   }
 }
@@ -1329,7 +1328,9 @@ function table_bind_filter_input_events(t) {
     t.e_header_slim.find("[col='"+col+"']").removeClass("bgred").addClass("bgorange")
     clearTimeout(t.refresh_timer)
     t.refresh_timer = setTimeout(function validate(){
-      var data = {}
+      var data = {
+        "table_id": t.id
+      }
       for (c in t.colprops) {
         var current = $("#"+t.id+"_f_"+c).val()
         if ((current != "") && (typeof current !== 'undefined')) {

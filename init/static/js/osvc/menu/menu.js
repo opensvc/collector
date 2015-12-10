@@ -18,13 +18,15 @@ var menu_data = {
 		  "title" : "services_instances",
 		  "class" : "svc",
 		  "id" : "view-service-instances",
-		  "link" : "/init/default/svcmon"
+		  "link" : "/init/default/svcmon",
+		  "fn" : "table_service_instances"
 		},
 		{
 		  "title" : "resources",
 		  "class" : "svc",
 		  "id" : "view-resources",
-		  "link" : "/init/resmon/resmon"
+		  "link" : "/init/resmon/resmon",
+		  "fn" : "table_resources"
 		},
 		{
 		  "title" : "app_info",
