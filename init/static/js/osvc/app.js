@@ -74,7 +74,7 @@ function app_load_href(href, fn) {
 
     var e = $("<span><span class='refresh16 icon fa-spin fa-2x'></span><span data-i18n='api.loading'></span></span>").i18n()
     $(".flash").html(e).show("fold")
-    if (fn != "undefined") {
+    if ((fn != "undefined") && (fn !== "undefined") && fn) {
       console.log("load", fn)
       window[fn]("layout")
       post_load()
