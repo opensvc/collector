@@ -52,7 +52,7 @@ class table_nodes(HtmlTable):
         self.checkbox_id_table = 'v_nodes'
         self.dbfilterable = True
         self.events = ["nodes_change"]
-        self.child_tables = ["obs_agg", "uids", "gids"]
+        self.child_tables = ["uids", "gids"]
         self.ajax_col_values = 'ajax_nodes_col_values'
 
 @auth.requires_login()
@@ -100,7 +100,8 @@ def ajax_grpprf():
 
 @auth.requires_login()
 def ajax_nodes_col_values():
-    t = table_nodes('nodes', 'ajax_nodes')
+    table_id = request.vars.table_id
+    t = table_nodes(table_id, 'ajax_nodes')
     col = request.args[0]
     o = db[t.colprops[col].table][col]
     q = db.v_nodes.id > 0
@@ -115,7 +116,8 @@ def ajax_nodes_col_values():
 
 @auth.requires_login()
 def ajax_nodes():
-    t = table_nodes('nodes', 'ajax_nodes')
+    table_id = request.vars.table_id
+    t = table_nodes(table_id, 'ajax_nodes')
 
     if len(request.args) >= 1:
         action = request.args[0]
@@ -153,74 +155,13 @@ def ajax_nodes():
 
 @auth.requires_login()
 def nodes():
-    t = table_nodes('nodes', 'ajax_nodes')
-    ut = table_uids('uids', 'ajax_uids')
-    gt = table_gids('gids', 'ajax_gids')
-    d = DIV(
-             DIV(
-               T("User mapping"),
-               _style="text-align:left;font-size:120%;background-color:#e0e1cd",
-               _class="right16 clickable",
-               _onclick="""
-               if (!$("#uids").is(":visible")) {
-                 $(this).addClass("down16");
-                 $(this).removeClass("right16");
-                 $("#uids").show(); %s ;
-               } else {
-                 $(this).addClass("right16");
-                 $(this).removeClass("down16");
-                 $("#uids").hide();
-               }"""%ut.ajax_submit(additional_inputs=t.ajax_inputs()),
-             ),
-             DIV(
-               ut.html(),
-                _style="display:none",
-               _id="uids",
-             ),
-             DIV(
-               T("Group mapping"),
-               _style="text-align:left;font-size:120%;background-color:#e0e1cd",
-               _class="right16 clickable",
-               _onclick="""
-               if (!$("#gids").is(":visible")) {
-                 $(this).addClass("down16");
-                 $(this).removeClass("right16");
-                 $("#gids").show(); %s ;
-               } else {
-                 $(this).addClass("right16");
-                 $(this).removeClass("down16");
-                 $("#gids").hide();
-               }"""%gt.ajax_submit(additional_inputs=t.ajax_inputs()),
-             ),
-             DIV(
-               gt.html(),
-               IMG(_src=URL(r=request,c='static',f='images/spinner.gif')),
-                _style="display:none",
-               _id="gids",
-             ),
-             DIV(
-               t.html(),
-              _id='nodes',
-             ),
+    t = SCRIPT(
+          """$.when(osvc.app_started).then(function(){ view_nodes("layout") })""",
         )
-    return dict(table=d)
+    return dict(table=t)
 
 def nodes_load():
     return nodes()["table"]
-
-class col_obs_chart(HtmlTableColumn):
-    def html(self, o):
-       h = self.get(o)
-       return DIV(
-                DIV(
-                  H3(T("Hardware obsolescence warning roadmap")),
-                  DIV(
-                    json.dumps(h['hw_warn_chart_data']),
-                    _id='hw_warn_chart',
-                  ),
-                  _style="float:left;width:350px",
-                ),
-              )
 
 class col_user_id(HtmlTableColumn):
     def html(self, o):
@@ -274,41 +215,12 @@ class table_uids(HtmlTable):
         }
         self.colprops['user_id'].t = self
         self.extraline = True
+        self.checkboxes = True
         self.dbfilterable = True
         self.ajax_col_values = 'ajax_uids_col_values'
-        self.additional_tools.append('free_uids')
 
     def extra_line_key(self, o):
         return "uid_"+str(o['user_id'])
-
-    def free_uids(self):
-        divid = 'free_uids'
-        d = DIV(
-              A(
-                T("Free uids"),
-               _class='guy16',
-               _onclick="""click_toggle_vis(event, '%(div)s', 'block')"""%dict(div=divid),
-              ),
-              DIV(
-                T("User id range start"),
-                INPUT(
-                  _id="uid_start",
-                  _onkeypress="if (is_enter(event)) {sync_ajax('%(url)s', ['uid_start'], '%(div)s', function(){})};"""%dict(
-                                url=URL(r=request,c='nodes',f='ajax_free_uids'),
-                                div='r'+divid,
-                              ),
-                 ),
-                 DIV(
-                   _id='r'+divid,
-                 ),
-                 _style='display:none',
-                 _class='stackable white_float',
-                 _id=divid,
-                 _name=divid,
-              ),
-              _class='floatw',
-            )
-        return d
 
 def free_ids(rows, start=500):
     if len(rows) == 0:
@@ -379,42 +291,13 @@ class table_gids(HtmlTable):
                     ),
         }
         self.colprops['group_id'].t = self
+        self.checkboxes = True
         self.extraline = True
         self.dbfilterable = True
         self.ajax_col_values = 'ajax_gids_col_values'
-        self.additional_tools.append('free_gids')
 
     def extra_line_key(self, o):
         return "gid_"+str(o['group_id'])
-
-    def free_gids(self):
-        divid = 'free_gids'
-        d = DIV(
-              A(
-                T("Free gids"),
-               _class='guy16',
-               _onclick="""click_toggle_vis(event, '%(div)s', 'block')"""%dict(div=divid),
-              ),
-              DIV(
-                T("Group id range start"),
-                INPUT(
-                  _id="gid_start",
-                  _onkeypress="if (is_enter(event)) {sync_ajax('%(url)s', ['gid_start'], '%(div)s', function(){})};"""%dict(
-                                url=URL(r=request,c='nodes',f='ajax_free_gids'),
-                                div='r'+divid,
-                              ),
-                 ),
-                 DIV(
-                   _id='r'+divid,
-                 ),
-                 _style='display:none',
-                 _class='stackable white_float',
-                 _id=divid,
-                 _name=divid,
-              ),
-              _class='floatw',
-            )
-        return d
 
 @auth.requires_login()
 def ajax_obs_agg():

@@ -24,6 +24,36 @@ function table_action_menu_init_data(t) {
       "class": "spark16",
       "children": [
         {
+          "selector": [],
+          "title": "action_menu.on_users",
+          "foldable": true,
+          "cols": [],
+          "condition": "",
+          "children": [
+            {
+              "title": "action_menu.free_uids",
+              "class": "icon guy16",
+              "fn": "tool_free_uids",
+              "min": 0
+            }
+          ]
+        },
+        {
+          "selector": [],
+          "title": "action_menu.on_groups",
+          "foldable": true,
+          "cols": [],
+          "condition": "",
+          "children": [
+            {
+              "title": "action_menu.free_gids",
+              "class": "icon guys16",
+              "fn": "tool_free_gids",
+              "min": 0
+            }
+          ]
+        },
+        {
           "selector": ["clicked", "checked", "all"],
           "title": "action_menu.on_nodes",
           "foldable": true,
@@ -747,7 +777,11 @@ function table_action_menu(t, e){
       selector.show()
       var scope = selector.children(".action_menu_selector_selected").attr("scope")
       $(this).children("ul").hide()
-      $(this).children("ul[scope="+scope+"]").show()
+      if (scope) {
+        $(this).children("ul[scope="+scope+"]").show()
+      } else {
+        $(this).children("ul").show()
+      }
       $(this).removeClass("right16")
       $(this).addClass("down16")
     }
@@ -966,16 +1000,60 @@ function table_action_menu_get_cols_data(t, e, scope, selector) {
   return []
 }
 
+function table_prepare_scope_action_list(t, e, selector, scope, data, cache_id) {
+    var ul = $("<ul></ul>")
+    ul.attr("scope", scope)
+    if (data && (data.length == 0)) {
+      return ul
+    }
+    for (var j=0; j<selector.children.length; j++) {
+      var leaf = selector.children[j]
+      if (leaf.max && data && (data.length > leaf.max)) {
+        continue
+      }
+      if (leaf.min && data && (data.length < leaf.min)) {
+        continue
+      }
+      var li = table_action_menu_format_leaf(t, e, leaf)
+      if (!li) {
+        continue
+      }
+      if (cache_id) {
+        li.attr("cache_id", cache_id)
+      }
+      li.bind("click", function(e) {
+        e.stopPropagation()
+        var fn = $(this).attr("fn")
+        if (fn) {
+          window[fn](t, e)
+        } else {
+          table_action_menu_agent_action(t, e)
+        }
+      })
+      ul.append(li)
+    }
+  return ul
+}
+
 function table_action_menu_format_selector(t, e, selector) {
-  if (selector.title) {
-    var title = $("<span></span>")
-    title.text(i18n.t(selector.title))
-  }
-  var e_selector = $("<div class='action_menu_selector'></div>")
   var content = $("<li></li>")
   if (selector.foldable) {
     content.addClass("action_menu_folder")
   }
+  if (selector.title) {
+    var title = $("<span></span>")
+    title.text(i18n.t(selector.title))
+  }
+  if (selector.selector.length == 0) {
+    // no selector, special case for tools not working on data lines
+    var ul = table_prepare_scope_action_list(t, e, selector)
+    if (ul.length > 0) {
+      content.prepend(ul)
+      content.prepend(title)
+    }
+    return content
+  }
+  var e_selector = $("<div class='action_menu_selector'></div>")
 
   for (var i=0; i<selector.selector.length; i++) {
     var scope = selector.selector[i]
@@ -994,34 +1072,7 @@ function table_action_menu_format_selector(t, e, selector) {
     }
 
     // prepare action list for scope
-    var ul = $("<ul></ul>")
-    ul.attr("scope", scope)
-    if (data.length > 0) {
-      for (var j=0; j<selector.children.length; j++) {
-        var leaf = selector.children[j]
-        if (leaf.max && (data.length > leaf.max)) {
-          continue
-        }
-        if (leaf.min && (data.length < leaf.min)) {
-          continue
-        }
-        var li = table_action_menu_format_leaf(t, e, leaf)
-        if (!li) {
-          continue
-        }
-        li.attr("cache_id", cache_id)
-        li.bind("click", function(e) {
-          e.stopPropagation()
-          var fn = $(this).attr("fn")
-          if (fn) {
-            window[fn](t, e)
-          } else {
-            table_action_menu_agent_action(t, e)
-          }
-        })
-        ul.append(li)
-      }
-    }
+    var ul = table_prepare_scope_action_list(t, e, selector, scope, data, cache_id)
 
     // prepare the selector scope button
     var s = $("<div class='ellipsis'></div>")
@@ -1323,6 +1374,54 @@ function table_action_menu_agent_action(t, e, confirmation) {
 
 
 
+
+//
+// tool: free uids
+//
+function tool_free_uids(t, e) {
+  var entry = $(e.target)
+  entry.next("[name=tool]").remove()
+  var div = $("<div name='tool' style='padding:0.5em'></div>")
+  var title = $("<div></div>")
+  var input = $("<input class='oi' id='uid_start'>")
+  var area = $("<div style='padding-top:1em' class='pre'></div>")
+  area.uniqueId()
+  title.text(i18n.t("action_menu.user_id_range_start"))
+  div.append(title)
+  div.append(input)
+  div.append(area)
+  div.insertAfter(entry)
+  input.bind("keyup", function() {
+    if (!is_enter(event)) {
+      return
+    }
+    sync_ajax("/init/nodes/ajax_free_uids", ["uid_start"], area.attr("id"), function(){})
+  })
+}
+
+//
+// tool: free gids
+//
+function tool_free_gids(t, e) {
+  var entry = $(e.target)
+  entry.next("[name=tool]").remove()
+  var div = $("<div name='tool' style='padding:0.5em'></div>")
+  var title = $("<div></div>")
+  var input = $("<input class='oi' id='gid_start'>")
+  var area = $("<div style='padding-top:1em' class='pre'></div>")
+  area.uniqueId()
+  title.text(i18n.t("action_menu.user_id_range_start"))
+  div.append(title)
+  div.append(input)
+  div.append(area)
+  div.insertAfter(entry)
+  input.bind("keyup", function() {
+    if (!is_enter(event)) {
+      return
+    }
+    sync_ajax("/init/nodes/ajax_free_gids", ["gid_start"], area.attr("id"), function(){})
+  })
+}
 
 //
 // tool: topo

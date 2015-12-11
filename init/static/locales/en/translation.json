@@ -14,6 +14,12 @@
     "import": "Import"
   },
   "action_menu": {
+    "user_id_range_start": "User id range start",
+    "group_id_range_start": "Group id range start",
+    "on_users": "On users",
+    "on_groups": "On groups",
+    "free_uids": "Free uids",
+    "free_gids": "Free gids",
     "on_nodes_modulesets": "On nodes modulesets",
     "on_services_modulesets": "On services modulesets",
     "on_nodes_rulesets": "On nodes rulesets",
@@ -1148,5 +1154,11 @@
     "service available but degraded": "service available but degraded",
     "service status not updated": "service status not updated",
     "service unavailable": "service unavailable"
+  },
+  "views": {
+    "nodes": {
+      "user_mapping": "User mapping",
+      "group_mapping": "Group mapping"
+    }
   }
 }

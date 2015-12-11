@@ -14,6 +14,12 @@
     "import": "Import"
   },
   "action_menu": {
+    "user_id_range_start": "Début de la plage d'uids",
+    "group_id_range_start": "Début de la plage de gids",
+    "on_users": "Sur les utilisateurs",
+    "on_groups": "Sur les groupes",
+    "free_uids": "Uids libres",
+    "free_gids": "Gids libres",
     "on_nodes_modulesets": "Sur les jeux de modules des noeuds",
     "on_services_modulesets": "Sur les jeux de modules des services",
     "on_nodes_rulesets": "Sur les jeux de règles des noeuds",
@@ -1089,5 +1095,11 @@
     "service available but degraded": "service disponible mais dégradé",
     "service status not updated": "état de service non rafraîchi",
     "service unavailable": "service indisponible"
+  },
+  "views": {
+    "nodes": {
+      "user_mapping": "Cartographie des utilisateurs",
+      "group_mapping": "Cartographie des groupes"
+    }
   }
 }

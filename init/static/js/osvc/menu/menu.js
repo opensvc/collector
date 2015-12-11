@@ -39,7 +39,8 @@ var menu_data = {
 		  "title" : "nodes",
 		  "class" : "node16",
 		  "id" : "view-nodes",
-		  "link" : "/init/nodes/nodes"
+		  "link" : "/init/nodes/nodes",
+		  "fn" : "view_nodes"
 		},
 		{
 		  "title" : "tag_attachments",
