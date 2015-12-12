@@ -408,6 +408,7 @@ function menu(divid) {
 
 
 	o.div.load("/init/static/views/menu.html", function() {
+		o.div.i18n()
 		params = {
 			"stats": "menu_entry",
 			"props": "menu_entry",
@@ -523,11 +524,6 @@ function menu(divid) {
 				o.menu_div.hide("fold");
 				$("#search_input").val("").blur()
 				app_load_href(href, fn)
-
-				// update browser url and history
-				if (!_badIE) {
-					history.pushState({}, "", href)
-				}
 			})
 		}
 	}

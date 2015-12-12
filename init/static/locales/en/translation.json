@@ -441,6 +441,7 @@
     "notfound" : "Link not found.It may have expired , please re generate it."
   },
   "menu" : {
+    "navigation": "Navigation",
     "views" : {
       "title" : "Views",
       "dashboard" : {

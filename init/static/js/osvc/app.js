@@ -77,8 +77,15 @@ function app_load_href(href, fn) {
     l[0] = v.join("/")
     _href = l.join("?")
 
-    var e = $("<span><span class='refresh16 icon fa-spin fa-2x'></span><span data-i18n='api.loading'></span></span>").i18n()
-    $(".flash").html(e).show("fold")
+    // update browser url and history
+    if (!_badIE) {
+      history.pushState({}, "", href)
+    }
+
+    var menu = $(".header .menu16")
+    console.log(menu)
+    menu.removeClass("menu16")
+    menu.parent().prepend($("<span class='refresh16 fa-spin'></span>"))
     if ((fn != "undefined") && (fn !== "undefined") && fn) {
       console.log("load", fn)
       window[fn]("layout")
@@ -97,9 +104,8 @@ function app_load_href(href, fn) {
     })
 
     function post_load() {
-      if ($(".flash").find(".refresh16").length == 1) {
-        $(".flash").empty().hide("fold")
-      }
+      menu.addClass("menu16")
+      menu.prev(".refresh16").remove()
       // load success, purge tables not displayed anymore
       for (tid in osvc.tables) {
         if ($('#'+tid).length == 0) {

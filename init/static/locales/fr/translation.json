@@ -428,6 +428,7 @@
     "notfound" : "Lien non trouvé.  Il peut avoir expiré, veuillez le régénérer s'il vous plaît."
   },
   "menu" : {
+    "navigation": "Navigation",
     "views" : {
       "title" : "Vues",
       "dashboard" : {
