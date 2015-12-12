@@ -14,6 +14,9 @@
     "import": "Import"
   },
   "action_menu": {
+    "redo": "Redo",
+    "cancel": "Cancel",
+    "on_queued_actions": "On queued actions",
     "user_id_range_start": "User id range start",
     "group_id_range_start": "Group id range start",
     "on_users": "On users",

@@ -135,55 +135,15 @@ class table_actions(HtmlTable):
         self.extraline = True
         self.checkboxes = True
         self.ajax_col_values = 'ajax_actions_col_values'
-        self.additional_tools.append('cancel_actions')
         self.dataable = True
         self.wsable = True
         self.events = ["action_q_change"]
 
-    def cancel_actions(self):
-        d = DIV(
-              A(
-                T("Cancel actions"),
-                _class='del16',
-                _onclick=self.ajax_submit(args=['cancel_actions']),
-              ),
-              _class='floatw',
-            )
-        return d
-
-
-@auth.requires_login()
-def cancel_actions(ids):
-    if len(ids) == 0:
-        raise ToolError("No actions selected")
-
-    q = db.action_queue.id.belongs(ids)
-    q &= db.action_queue.status != 'T'
-    if 'Manager' not in user_groups():
-        q &= db.action_queue.user_id == auth.user_id
-    rows = db(q).select(db.action_queue.id, db.action_queue.command)
-    if len(rows) == 0:
-        return
-    u = ', '.join([r.command for r in rows])
-
-    ids = [r.id for r in rows]
-    q = db.action_queue.id.belongs(ids)
-    db(q).update(status='C')
-    table_modified('action_queue')
-
-    _log('action.delete',
-         'deleted actions %(u)s',
-         dict(u=u))
-    l = {
-      'event': 'action_queue',
-      'data': {'foo': 'bar'},
-    }
-    _websocket_send(event_msg(l))
-    action_q_event()
 
 @auth.requires_login()
 def ajax_actions_col_values():
-    t = table_actions('action_queue', 'ajax_actions')
+    table_id = request.vars.table_id
+    t = table_actions(table_id, 'ajax_actions')
     col = request.args[0]
     o = db['v_action_queue'][col]
     q = db.v_action_queue.id > 0
@@ -194,18 +154,9 @@ def ajax_actions_col_values():
 
 @auth.requires_login()
 def ajax_actions():
-    t = table_actions('action_queue', 'ajax_actions')
-
-    if len(request.args) == 1:
-        action = request.args[0]
-        try:
-            if action == 'cancel_actions':
-                cancel_actions(t.get_checked())
-        except ToolError, e:
-            t.flash = str(e)
-
+    table_id = request.vars.table_id
+    t = table_actions(table_id, 'ajax_actions')
     o = ~db.v_action_queue.id
-
     q = db.v_action_queue.id>0
     for f in t.cols:
         q = _where(q, 'v_action_queue', t.filter_parse(f), f)
@@ -224,10 +175,8 @@ def ajax_actions():
 
 @auth.requires_login()
 def action_queue():
-    t = table_actions('action_queue', 'ajax_actions')
-    t = DIV(
-          t.html(),
-          _id='action_queue',
+    t = SCRIPT(
+          """$.when(osvc.app_started).then(function(){ table_action_queue("layout") })""",
         )
     return dict(table=t)
 

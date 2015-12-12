@@ -14,7 +14,8 @@ function table_action_menu_init_data(t) {
     "tag_id": "td[cell=1][name$=_c_tag_id]",
     "ruleset_id": "td[cell=1][name$=_c_ruleset_id]",
     "modset_id": "td[cell=1][name$=_c_modset_id]",
-    "slave": "td[cell=1][name$=_c_encap]"
+    "slave": "td[cell=1][name$=_c_encap]",
+    "command": "td[cell=1][name$=_c_command]"
   }
 
   t.action_menu_data = [
@@ -210,6 +211,29 @@ function table_action_menu_init_data(t) {
               "class": "icon del16",
               "fn": "data_action_nodes_modsets_detach_no_selector",
               "privileges": ["Manager", "NodeManager"],
+              "min": 1
+            },
+          ]
+        },
+        {
+          "selector": ["clicked", "checked", "all"],
+          "foldable": true,
+          'title': 'action_menu.on_queued_actions',
+          "cols": ["id", "command"],
+          "condition": "id+command",
+          "children": [
+            {
+              "title": "action_menu.cancel",
+              "class": "icon del16",
+              "fn": "data_action_action_queue_cancel",
+              "privileges": ["Manager", "NodeExec", "CompExec"],
+              "min": 1
+            },
+            {
+              "title": "action_menu.redo",
+              "class": "icon refresh16",
+              "fn": "data_action_action_queue_redo",
+              "privileges": ["Manager", "NodeExec", "CompExec"],
               "min": 1
             },
           ]
@@ -1202,7 +1226,7 @@ function table_action_menu_status(msg){
 //
 function table_action_menu_click_animation(t) {
   var src = $("#am_"+t.id)
-  var dest = $(".header").find("[href$=action_queue]")
+  var dest = $(".header").find(".action_q_widget")
   var destp = dest.position()
   src.animate({
    top: destp.top,
@@ -1360,7 +1384,7 @@ function table_action_menu_agent_action(t, e, confirmation) {
     // trigger the animation to highlight the action_q posting
     table_action_menu_click_animation(t)
 
-    //services_osvcpostrest("R_ACTION_QUEUE", "", "", del_data, function(jd) {
+    //services_osvcputrest("R_ACTIONS", "", "", del_data, function(jd) {
     $.ajax({
       //async: false,
       type: "POST",
@@ -1647,6 +1671,60 @@ function data_action_add_node(t, e) {
         })
       }, 500)
     }
+  })
+}
+
+//
+// data action: cancel queued actions
+//
+function data_action_action_queue_cancel(t, e) {
+  var entry = $(e.target)
+  var cache_id = entry.attr("cache_id")
+  var data = t.action_menu_data_cache[cache_id]
+  var _data = new Array()
+  for (i=0;i<data.length;i++) {
+    _data.push({
+      'id': data[i]['id'],
+      'status': 'C'
+    })
+  }
+  services_osvcpostrest("R_ACTIONS", "", "", _data, function(jd) {
+    if (jd.error && (jd.error.length > 0)) {
+      $(".flash").show("blind").html(services_error_fmt(jd))
+    }
+    if (jd.info && (jd.info.length > 0)) {
+      $(".flash").show("blind").html(services_info_fmt(jd))
+    }
+  },
+  function(xhr, stat, error) {
+    $(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
+  })
+}
+
+//
+// data action: redo queued actions
+//
+function data_action_action_queue_redo(t, e) {
+  var entry = $(e.target)
+  var cache_id = entry.attr("cache_id")
+  var data = t.action_menu_data_cache[cache_id]
+  var _data = new Array()
+  for (i=0;i<data.length;i++) {
+    _data.push({
+      'id': data[i]['id'],
+      'status': 'W'
+    })
+  }
+  services_osvcpostrest("R_ACTIONS", "", "", _data, function(jd) {
+    if (jd.error && (jd.error.length > 0)) {
+      $(".flash").show("blind").html(services_error_fmt(jd))
+    }
+    if (jd.info && (jd.info.length > 0)) {
+      $(".flash").show("blind").html(services_info_fmt(jd))
+    }
+  },
+  function(xhr, stat, error) {
+    $(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
   })
 }
 

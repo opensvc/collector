@@ -14,6 +14,9 @@
     "import": "Import"
   },
   "action_menu": {
+    "redo": "Refaire",
+    "cancel": "Annuler",
+    "on_queued_actions": "Sur les actions en queue",
     "user_id_range_start": "Début de la plage d'uids",
     "group_id_range_start": "Début de la plage de gids",
     "on_users": "Sur les utilisateurs",

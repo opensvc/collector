@@ -1,5 +1,3 @@
-import json
-
 #
 class rest_get_action_queue(rest_get_table_handler):
     def __init__(self):
@@ -25,6 +23,30 @@ class rest_get_action_queue(rest_get_table_handler):
 
 #
 class rest_post_action_queue(rest_post_handler):
+    def __init__(self):
+        desc = [
+          "Modify action queue entries",
+        ]
+        examples = [
+          """# curl -u %(email)s -X POST --header 'Content-Type: application/json' -d @/tmp/list.json -o- https://%(collector)s/init/rest/api/actions"""
+        ]
+        rest_post_handler.__init__(
+          self,
+          path="/actions",
+          tables=["action_queue"],
+          desc=desc,
+          examples=examples
+        )
+
+    def handler(self, **vars):
+        if 'id' not in vars:
+           raise Exception("The 'id' key must be specified")
+        id = vars["id"]
+        del(vars["id"])
+        return rest_post_action_queue_one().handler(id, **vars)
+
+#
+class rest_put_action_queue(rest_put_handler):
     def __init__(self):
         desc = [
           "Enqueue an action that will be executed by opensvc agents.",
@@ -83,10 +105,10 @@ Each action has specific property requirements:
 - ``wol``:green requires **nodename**
 """
         examples = [
-          "# curl -u %(email)s -o- -X POST -d nodename=clementine -d action=pushasset https://%(collector)s/init/rest/api/actions",
+          "# curl -u %(email)s -o- -X PUT -d nodename=clementine -d action=pushasset https://%(collector)s/init/rest/api/actions",
         ]
 
-        rest_post_handler.__init__(
+        rest_put_handler.__init__(
           self,
           path="/actions",
           desc=desc,
@@ -192,7 +214,7 @@ class rest_post_action_queue_one(rest_post_handler):
         desc = [
           "Modify properties of an action posted in the action queue.",
           "The user must be responsible for the node.",
-          "The user must be in the NodeManager privilege group.",
+          "The user must be in the NodeExec or CompExec privilege group.",
           "The modification is logged in the collector's log.",
           "A websocket event is sent to announce the change in the table.",
         ]
@@ -209,11 +231,12 @@ class rest_post_action_queue_one(rest_post_handler):
           path="/actions/<id>",
           desc=desc,
           data=data,
+          tables=["action_queue"],
           examples=examples,
         )
 
     def handler(self, _id, **vars):
-        check_privilege("NodeManager")
+        check_privilege(["NodeExec", "CompExec"])
         q = db.action_queue.id == int(_id)
         q &= _where(q, 'action_queue', domain_perms(), 'nodename')
         row = db(q).select().first()
@@ -223,6 +246,10 @@ class rest_post_action_queue_one(rest_post_handler):
         if vars.keys() != ["status"]:
             invalid = ', '.join(sorted(set(vars.keys())-set(["status"])))
             return dict(error="Permission denied: properties not updateable: %(props)s" % dict(props=invalid))
+        if row.status == 'T' and vars.get("status") == "C":
+            return dict(error="Can not cancel action %d in %s state" % (row.id, row.status))
+        if row.status in ('R', 'W') and vars.get("status") == "W":
+            return dict(error="Can not redo action %d in %s state" % (row.id, row.status))
         db(q).update(**vars)
         _log('rest.action.update',
              'update properties %(data)s',

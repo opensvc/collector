@@ -343,6 +343,7 @@ handlers = {
      rest_post_wikis(),
   ],
   'PUT': [
+     rest_put_action_queue(),
      rest_put_compliance_moduleset(),
      rest_put_compliance_ruleset(),
      rest_put_compliance_ruleset_variable(),

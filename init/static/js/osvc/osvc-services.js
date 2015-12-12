@@ -14,6 +14,7 @@ var services_access_uri = {
     "S_SYSREPCOMMIT" : "ajax_sysreport/ajax_sysreport_commit",
     "S_SYSREPADMIN" : "ajax_sysreport/ajax_sysreport_admin",
     "S_SYSREPSHOWFILE" : "ajax_sysreport/ajax_sysreport_show_file",
+    "R_ACTIONS" : "rest/api/actions",
     "R_ALERT_EVENT" : "rest/api/alert_event",
     "R_API" : "rest/api",
     "R_APP_RESPONSIBLES" : "rest/api/apps/%1/responsibles",

@@ -26,7 +26,7 @@ function _action_queue_stats(data) {
     if (data["ko"] > 0) {
       s += "<span class='boxed_small bgred'>"+data['ko']+'</span>'
     }
-    $(".header").find("[href$=action_queue]").html(s)
+    $(".header").find(".action_q_widget>a").html(s)
 }
 
 function action_queue_stats_wsh(data) {
