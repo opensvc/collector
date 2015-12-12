@@ -245,7 +245,8 @@ class table_tagattach(HtmlTable):
 
 @auth.requires_login()
 def ajax_tagattach_col_values():
-    t = table_tagattach('tagattach', 'ajax_tagattach')
+    table_id = request.vars.table_id
+    t = table_tagattach(table_id, 'ajax_tagattach')
     col = request.args[0]
     o = db[t.colprops[col].table][col]
     q = db.v_tags_full.id >= 0
@@ -256,7 +257,8 @@ def ajax_tagattach_col_values():
 
 @auth.requires_login()
 def ajax_tagattach():
-    t = table_tagattach('tagattach', 'ajax_tagattach')
+    table_id = request.vars.table_id
+    t = table_tagattach(table_id, 'ajax_tagattach')
     o = db.v_tags_full.tag_name | db.v_tags_full.nodename | db.v_tags_full.svcname
 
     q = db.v_tags_full.id >= 0
@@ -280,10 +282,8 @@ def ajax_tagattach():
 
 @auth.requires_login()
 def tagattach():
-    t = table_tagattach('tagattach', 'ajax_tagattach')
-    t = DIV(
-          t.html(),
-          _id='tagattach',
+    t = SCRIPT(
+          """$.when(osvc.app_started).then(function(){ table_tagattach("layout") })""",
         )
     return dict(table=t)
 

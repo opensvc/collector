@@ -46,7 +46,8 @@ var menu_data = {
 		  "title" : "tag_attachments",
 		  "class" : "fa-tags",
 		  "id" : "view-tagattach",
-		  "link" : "/init/tags/tagattach"
+		  "link" : "/init/tags/tagattach",
+		  "fn" : "table_tagattach"
 		},
 		{
 		  "title" : "actions",
