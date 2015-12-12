@@ -269,7 +269,9 @@ function api_doc(divid, path) {
 		})
 	}
 
-	o.init()
+	$.when(osvc.app_started).then(function(){
+		o.init()
+	})
 
 	return o
 }
