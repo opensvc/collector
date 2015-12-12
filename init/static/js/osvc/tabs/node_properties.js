@@ -246,7 +246,6 @@ function node_props_responsible_init(o)
       }
 
       e.find("form").submit(function(event) {
-        console.log($(this), event)
         event.preventDefault()
         var input = $(this).find("input[type=text],select")
         input.blur()
