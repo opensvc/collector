@@ -32,7 +32,8 @@ class table_packages(HtmlTable):
 
 @auth.requires_login()
 def ajax_packages_col_values():
-    t = table_packages('packages', 'ajax_packages')
+    table_id = request.vars.table_id
+    t = table_packages(table_id, 'ajax_packages')
     col = request.args[0]
     o = db[t.colprops[col].table][col]
     q = db.packages.pkg_nodename==db.v_nodes.nodename
@@ -47,7 +48,8 @@ def ajax_packages_col_values():
 
 @auth.requires_login()
 def ajax_packages():
-    t = table_packages('packages', 'ajax_packages')
+    table_id = request.vars.table_id
+    t = table_packages(table_id, 'ajax_packages')
     o = db.packages.pkg_nodename
     o |= db.packages.pkg_name
     o |= db.packages.pkg_arch
@@ -82,10 +84,8 @@ def ajax_packages():
 
 @auth.requires_login()
 def packages():
-    t = table_packages('packages', 'ajax_packages')
-    t = DIV(
-          t.html(),
-          _id='packages',
+    t = SCRIPT(
+          """$.when(osvc.app_started).then(function(){ table_packages("layout") })""",
         )
     return dict(table=t)
 

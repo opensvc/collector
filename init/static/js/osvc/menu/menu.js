@@ -66,7 +66,8 @@ var menu_data = {
 		  "title" : "packages",
 		  "class" : "pkg16",
 		  "id" : "view-pkg",
-		  "link" : "/init/packages/packages"
+		  "link" : "/init/packages/packages",
+		  "fn" : "table_packages"
 		},
 		{
 		  "title" : "patches",
