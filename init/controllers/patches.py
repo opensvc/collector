@@ -73,7 +73,8 @@ class table_patches(HtmlTable):
 
 @auth.requires_login()
 def ajax_patches_col_values():
-    t = table_patches('patches', 'ajax_patches')
+    table_id = request.vars.table_id
+    t = table_patches(table_id, 'ajax_patches')
     col = request.args[0]
     o = db[t.colprops[col].table][col]
     q = db.patches.patch_nodename==db.v_nodes.nodename
@@ -87,7 +88,8 @@ def ajax_patches_col_values():
 
 @auth.requires_login()
 def ajax_patches():
-    t = table_patches('patches', 'ajax_patches')
+    table_id = request.vars.table_id
+    t = table_patches(table_id, 'ajax_patches')
     o = db.patches.patch_nodename
     o |= db.patches.patch_num
     o |= db.patches.patch_rev
@@ -117,10 +119,8 @@ def ajax_patches():
 
 @auth.requires_login()
 def patches():
-    t = table_patches('patches', 'ajax_patches')
-    t = DIV(
-          t.html(),
-          _id='patches',
+    t = SCRIPT(
+          """$.when(osvc.app_started).then(function(){ table_patches("layout") })""",
         )
     return dict(table=t)
 

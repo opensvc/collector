@@ -73,7 +73,8 @@ var menu_data = {
 		  "title" : "patches",
 		  "class" : "patch",
 		  "id" : "view-patch",
-		  "link" : "/init/patches/patches"
+		  "link" : "/init/patches/patches",
+		  "fn" : "table_patches"
 		},
 		{
 		  "title" : "networks",
