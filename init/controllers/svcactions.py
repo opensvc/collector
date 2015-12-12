@@ -276,7 +276,8 @@ class table_actions(HtmlTable):
 
 @auth.requires_login()
 def ajax_actions_col_values():
-    t = table_actions('actions', 'ajax_actions')
+    table_id = request.vars.table_id
+    t = table_actions(table_id, 'ajax_actions')
     col = request.args[0]
     o = db.v_svcactions[col]
     q = _where(None, 'v_svcactions', domain_perms(), 'hostname')
@@ -290,7 +291,8 @@ def ajax_actions_col_values():
 
 @auth.requires_login()
 def ajax_actions():
-    t = table_actions('actions', 'ajax_actions')
+    table_id = request.vars.table_id
+    t = table_actions(table_id, 'ajax_actions')
 
     o = ~db.v_svcactions.id
     q = _where(None, 'v_svcactions', domain_perms(), 'hostname')
@@ -314,16 +316,8 @@ def ajax_actions():
 
 @auth.requires_login()
 def svcactions():
-    t = table_actions('actions', 'ajax_actions')
-    t = DIV(
-          DIV(
-            _id='ackpanel',
-            _class='ackpanel',
-          ),
-          DIV(
-            t.html(),
-            _id='actions',
-          ),
+    t = SCRIPT(
+          """$.when(osvc.app_started).then(function(){ table_actions("layout") })""",
         )
     return dict(table=t)
 

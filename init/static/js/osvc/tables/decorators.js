@@ -1932,6 +1932,22 @@ function cell_decorator_action_pid(e) {
   })
 }
 
+function ackpanel(e, show, s){
+    var panel = $("#ackpanel")
+    if (panel.length == 0) {
+      panel = $("<div id='ackpanel' class='ackpanel'></div>")
+      $("#layout").append(panel)
+    }
+    var pos = get_pos(e)
+    if (show) {
+        panel.css({"left": pos[0] + "px", "top": pos[1] + "px"});
+        panel.show();
+    } else {
+        panel.hide();
+    }
+    panel.html(s)
+}
+
 function cell_decorator_action_status(e) {
   var v = $(e).attr("v")
   if (v == "empty") {

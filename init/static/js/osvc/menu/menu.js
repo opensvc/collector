@@ -53,7 +53,8 @@ var menu_data = {
 		  "title" : "actions",
 		  "class" : "actions",
 		  "id" : "view-actions",
-		  "link" : "/init/svcactions/svcactions"
+		  "link" : "/init/svcactions/svcactions",
+		  "fn" : "table_actions"
 		},
 		{
 		  "title" : "checks",

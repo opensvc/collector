@@ -1133,17 +1133,6 @@ function checked_nodes() {
     return d.join(",");
 }
 
-function ackpanel(e, show, s){
-    var pos = get_pos(e)
-    if (show) {
-        $("#ackpanel").css({"left": pos[0] + "px", "top": pos[1] + "px"});
-        $("#ackpanel").show();
-    } else {
-        $("#ackpanel").hide();
-    }
-    $("#ackpanel").html(s)
-}
-
 function refresh_action(url, id){
     spintimer = setTimeout(function validate(){
       ajax(url, [], 'spin_span_'+id)
