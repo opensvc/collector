@@ -91,7 +91,7 @@ class rest_post_link(rest_post_handler):
               link_access_counter=0
           )
 
-          _log('link.created',
+          _log('link.add',
                "link '%(link_md5)s' created",
                dict(link_md5=md5id),
           )

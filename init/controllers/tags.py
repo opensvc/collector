@@ -1,20 +1,3 @@
-def call():
-    session.forget()
-    return service()
-
-@auth.requires_login()
-@service.json
-def tag_exclude():
-    tag_exclude = request.vars.tag_exclude
-    tag_id = request.vars.tag_id
-    q = db.tags.id == tag_id
-    db(q).update(tag_exclude=tag_exclude)
-    _log("tag",
-         "tag id '%(tag_id)d' exclude updated to %(tag_exclude)s",
-         dict(tag_id=tag_id, tag_exclude=tag_exclude),
-    )
-    return {"ret": 0, "tag_id": tag_id, "msg": "tag exclude successfully updated"}
-
 #
 # adm-tags view code
 #

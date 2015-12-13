@@ -168,7 +168,7 @@ class rest_post_tag(rest_post_handler):
         db(q).update(**vars)
         _log('tag.change',
              'change tag %(tag_name)s: %(data)s',
-             dict(tag_name=row.tag_name, data=str(vars)),
+             dict(tag_name=row.tag_name, data=beautify_change(row, vars)),
             )
         l = {
           'event': 'tags',

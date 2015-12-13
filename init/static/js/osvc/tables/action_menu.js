@@ -15,7 +15,9 @@ function table_action_menu_init_data(t) {
     "ruleset_id": "td[cell=1][name$=_c_ruleset_id]",
     "modset_id": "td[cell=1][name$=_c_modset_id]",
     "slave": "td[cell=1][name$=_c_encap]",
-    "command": "td[cell=1][name$=_c_command]"
+    "command": "td[cell=1][name$=_c_command]",
+    "chk_type": "td[cell=1][name$=_c_chk_type]",
+    "chk_instance": "td[cell=1][name$=_c_chk_instance]"
   }
 
   t.action_menu_data = [
@@ -197,6 +199,22 @@ function table_action_menu_init_data(t) {
               "privileges": ["Manager", "NodeManager"],
               "min": 1
             }
+          ]
+        },
+        {
+          "selector": ["clicked", "checked", "all"],
+          "foldable": true,
+          'title': 'action_menu.on_check_instances',
+          "cols": ["nodename", "svcname", "chk_type", "chk_instance"],
+          "condition": "nodename+chk_type+chk_instance,nodename+svcname+chk_type+chk_instance",
+          "children": [
+            {
+              "title": "action_menu.delete",
+              "class": "icon del16",
+              "fn": "data_action_chk_instance_delete",
+              "privileges": ["Manager", "CheckManager"],
+              "min": 1
+            },
           ]
         },
         {
@@ -456,7 +474,7 @@ function table_action_menu_init_data(t) {
             {
               'title': 'Update check values',
               'class': 'icon ok',
-              "privileges": ["Manager", "NodeManager", "NodeExec"],
+              "privileges": ["Manager", "NodeManager", "NodeExec", "CheckExec"],
               "min": 1,
               'action': 'checks'
             },
@@ -1671,6 +1689,35 @@ function data_action_add_node(t, e) {
         })
       }, 500)
     }
+  })
+}
+
+//
+// data action: delete check instances
+//
+function data_action_chk_instance_delete(t, e) {
+  var entry = $(e.target)
+  var cache_id = entry.attr("cache_id")
+  var data = t.action_menu_data_cache[cache_id]
+  var _data = new Array()
+  for (i=0;i<data.length;i++) {
+    _data.push({
+      'chk_nodename': data[i]['nodename'],
+      'chk_svcname': data[i]['svcname'],
+      'chk_type': data[i]['chk_type'],
+      'chk_instance': data[i]['chk_instance']
+    })
+  }
+  services_osvcdeleterest("R_CHECKS", "", "", _data, function(jd) {
+    if (jd.error && (jd.error.length > 0)) {
+      $(".flash").show("blind").html(services_error_fmt(jd))
+    }
+    if (jd.info && (jd.info.length > 0)) {
+      $(".flash").show("blind").html(services_info_fmt(jd))
+    }
+  },
+  function(xhr, stat, error) {
+    $(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
   })
 }
 

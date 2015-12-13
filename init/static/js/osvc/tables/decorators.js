@@ -1776,11 +1776,13 @@ var os_class_h = {
 var img_h = {
   'ack': 'check16',
   'action': 'action16',
+  'action_queue': 'action16',
   'add': 'add16',
   'apps': 'svc',
   'attach': 'attach16',
   'auth': 'lock',
   'change': 'edit16',
+  'check': 'check16',
   'checks': 'check16',
   'compliance': 'comp16',
   'delete': 'del16',
@@ -1789,6 +1791,7 @@ var img_h = {
   'filterset': 'filter16',
   'filter': 'filter16',
   'group': 'guys16',
+  'link': 'link16',
   'moduleset': 'action16',
   'module': 'action16',
   'networks': 'net16',
@@ -1800,8 +1803,10 @@ var img_h = {
   'status': 'fa-status',
   'table_settings': 'settings',
   'table_filters': 'filter16',
+  'update': 'edit16',
   'user': 'guy16',
-  'users': 'guys16'
+  'users': 'guys16',
+  'tag': 'tag16'
 }
 
 function cell_decorator_log_icons(e) {
@@ -2659,29 +2664,30 @@ function cell_decorator_tag_exclude(e) {
   if (services_ismemberof(["Manager", "TagManager"])) {
     $(e).bind("click", function(event){
       event.stopPropagation()
-      i = $("<input class='tag_exclude'></input>")
+      i = $("<input class='oi tag_exclude'></input>")
       var _v = $(this).attr("v")
       if (_v == "empty") {
         _v = ""
       }
       i.val(_v)
-      i.bind("keyup", function(){
+      i.bind("keyup", function(event){
         if (!is_enter(event)) {
           return
         }
-        var url = services_get_url() + "/init/tags/call/json/tag_exclude"
+        var tag_id = $(this).parents(".tl").find("[name=tags_c_id]").attr("v")
         var data = {
           "tag_exclude": $(this).val(),
-          "tag_id": $(this).parents(".tl").find("[name=tags_c_id]").attr("v")
         }
         var _i = $(this)
-        $.ajax({
-          type: "POST",
-          url: url,
-          data: data,
-          success: function(msg){
-            _i.parent().html(data.tag_exclude)
+        services_osvcpostrest("R_TAG", [tag_id], "", data, function(jd) {
+          if (jd.error && (jd.error.length > 0)) {
+            $(".flash").show("blind").html(services_error_fmt(jd))
+            return
           }
+          _i.parent().html(data.tag_exclude)
+        },
+        function(xhr, stat, error) {
+          $(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
         })
       })
       $(e).empty().append(i)

@@ -652,10 +652,14 @@ class rest_post_node(rest_post_handler):
         if "team_responsible" in vars and auth_is_node():
             del(vars["team_responsible"])
 
+        row = db(q).select().first()
+        if row is None:
+            raise Exception("node %s does not exist" % str(id))
+
         db(q).update(**vars)
         _log('node.change',
              'update properties %(data)s',
-             dict(data=str(vars)),
+             dict(data=beautify_change(row, vars)),
              nodename=id)
         l = {
           'event': 'nodes_change',

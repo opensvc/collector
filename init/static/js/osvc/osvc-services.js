@@ -18,6 +18,7 @@ var services_access_uri = {
     "R_ALERT_EVENT" : "rest/api/alert_event",
     "R_API" : "rest/api",
     "R_APP_RESPONSIBLES" : "rest/api/apps/%1/responsibles",
+    "R_CHECKS" : "rest/api/checks",
     "R_COMPLIANCE_MODULESETS" : "rest/api/compliance/modulesets",
     "R_COMPLIANCE_MODULESETS_NODES" : "rest/api/compliance/modulesets_nodes",
     "R_COMPLIANCE_MODULESETS_SERVICES" : "rest/api/compliance/modulesets_services",
@@ -94,7 +95,8 @@ var services_access_uri = {
     "R_GET_REPORT_CHART" : "rest/api/reports/charts/%1",
     "R_GET_REPORT_CHART_SAMPLES" : "rest/api/reports/charts/%1/samples",
     "R_LINKS" : "rest/api/links",
-    "R_LINK" : "rest/api/links/%1"
+    "R_LINK" : "rest/api/links/%1",
+    "R_TAG" : "rest/api/tags/%1"
 }
 
 function services_getaccessurl(service)

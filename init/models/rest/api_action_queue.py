@@ -195,7 +195,7 @@ class rest_delete_action_queue_one(rest_delete_handler):
             return dict(info="Action %s does not exist in action queue" % id)
         node_responsible(row.nodename)
         db(q).delete()
-        _log('rest.action.delete',
+        _log('action_queue.delete',
              'deleted actions %(u)s',
              dict(u=row.command),
              nodename=row.nodename)
@@ -251,9 +251,9 @@ class rest_post_action_queue_one(rest_post_handler):
         if row.status in ('R', 'W') and vars.get("status") == "W":
             return dict(error="Can not redo action %d in %s state" % (row.id, row.status))
         db(q).update(**vars)
-        _log('rest.action.update',
+        _log('action_queue.update',
              'update properties %(data)s',
-             dict(data=str(vars)),
+             dict(data=beautify_change(row, vars)),
              svcname=row.svcname,
              nodename=row.nodename)
         l = {

@@ -482,9 +482,6 @@ class table_checks(HtmlTable):
             self.additional_tools.append('set_high_threshold')
             self.additional_tools.append('set_low_threshold')
             self.additional_tools.append('reset_thresholds')
-            self.additional_tools.append('delete_checks')
-        if 'NodeManager' in ug or 'NodeExec' in ug or 'CheckRefresh' in ug:
-            self.additional_tools.append('refresh_checks')
 
     def set_low_threshold(self):
         return self.set_threshold('low')
@@ -508,28 +505,6 @@ class table_checks(HtmlTable):
                 _name='add_fset_threshold_d',
                 _id='add_fset_threshold_d',
               ),
-            )
-        return d
-
-    def refresh_checks(self):
-        d = DIV(
-              A(
-                T("Refresh check values"),
-                _class='refresh16',
-                _onclick=self.ajax_submit(args=['check_refresh']),
-              ),
-              _class='floatw',
-            )
-        return d
-
-    def delete_checks(self):
-        d = DIV(
-              A(
-                T("Delete"),
-                _class='del16',
-                _onclick=self.ajax_submit(args=['check_del']),
-              ),
-              _class='floatw',
             )
         return d
 
@@ -657,119 +632,6 @@ class table_checks(HtmlTable):
         return d
 
 
-def queue_check_refresh(rows):
-    vals = []
-    vars = ['nodename', 'action_type', 'command', 'user_id']
-    action = "checks"
-
-    def fmt_action(node, action):
-        cmd = ['ssh', '-o', 'StrictHostKeyChecking=no',
-                      '-o', 'ForwardX11=no',
-                      '-o', 'PasswordAuthentication=no',
-                      '-o', 'ConnectTimeout=5',
-                      '-tt',
-               'opensvc@'+node,
-               '--',
-               'sudo', '/opt/opensvc/bin/nodemgr', action,
-               '--force']
-        return ' '.join(cmd)
-
-    for row in rows:
-        if row.fqdn is not None and len(row.fqdn) > 0:
-            node = row.fqdn
-        else:
-            node = row.nodename
-
-        if row.os_name == "Windows":
-            action_type = "pull"
-            command = action
-        else:
-            action_type = "push"
-            command = fmt_action(node, action)
-
-        vals.append([row.nodename, action_type, command, str(auth.user_id)])
-
-    generic_insert('action_queue', vars, vals)
-
-    from subprocess import Popen
-    import sys
-    actiond = 'applications'+str(URL(r=request,c='actiond',f='actiond.py'))
-    process = Popen([sys.executable, actiond])
-    process.communicate()
-
-    _log('node.action', 'run %(a)s on nodes %(s)s', dict(
-          a=action,
-          s=','.join(map(lambda x: x.nodename, rows)),
-          ))
-    if len(vals) > 0:
-        l = {
-          'event': 'action_q_change',
-          'data': action_queue_ws_data(),
-        }
-        _websocket_send(event_msg(l))
-
-
-@auth.requires(auth.has_membership('Manager') or auth.has_membership('CheckRefresh') or auth.has_membership('NodeManager') or auth.has_membership('NodeExec'))
-def check_refresh():
-    q = db.checks_live.chk_nodename == db.v_nodes.nodename
-    groups = user_groups()
-    if 'Manager' not in groups:
-        q &= (db.v_nodes.team_responsible.belongs(groups)) | \
-             (db.v_nodes.team_integ.belongs(groups)) | \
-             (db.v_nodes.team_support.belongs(groups))
-    q = _where(q, 'checks_live', domain_perms(), 'chk_nodename')
-    q = apply_filters(q, db.checks_live.chk_nodename, None)
-    t = table_checks('checks', 'ajax_checks')
-    for f in t.cols:
-        q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
-    rows = db(q).select(db.v_nodes.nodename,
-                        db.v_nodes.fqdn,
-                        db.v_nodes.os_name,
-                        groupby=db.v_nodes.nodename)
-    if len(rows) == 0:
-        raise ToolError("No node to refresh checks on")
-
-    u = ', '.join([r.nodename for r in rows])
-
-    purge_action_queue()
-    queue_check_refresh(rows)
-
-    _log('checks.refresh',
-         'refresh checks sent to nodes %(u)s',
-         dict(u=u))
-
-    return T("checks refresh queued on %(n)d nodes", dict(n=len(rows)))
-
-@auth.requires_membership('CheckExec')
-def check_del(ids):
-    if len(ids) == 0:
-        raise ToolError("No check selected")
-
-    q = db.checks_live.id.belongs(ids)
-    q &= db.checks_live.chk_nodename == db.nodes.nodename
-    groups = user_groups()
-    if 'Manager' not in groups:
-        q &= (db.nodes.team_responsible.belongs(groups)) | \
-             (db.nodes.team_integ.belongs(groups))
-    rows = db(q).select(db.checks_live.ALL)
-    if len(rows) == 0:
-        return
-    u = ', '.join([":".join((r.chk_nodename,
-                             r.chk_type,
-                             r.chk_instance)) for r in rows])
-
-    ids = [r.id for r in rows]
-    q = db.checks_live.id.belongs(ids)
-    db(q).delete()
-    table_modified("checks_live")
-
-    for nodename in set([r.chk_nodename for r in rows]):
-        update_dash_checks(nodename)
-
-    _log('checks.delete',
-         'deleted checks %(u)s',
-         dict(u=u))
-
 @auth.requires_login()
 def ajax_checks_col_values():
     t = table_checks('checks', 'ajax_checks')
@@ -794,11 +656,7 @@ def ajax_checks():
     if len(request.args) == 1:
         action = request.args[0]
         try:
-            if action == 'check_del':
-                check_del(t.get_checked())
-            elif action == 'check_refresh':
-                t.flash = check_refresh()
-            elif action == 'set_low_threshold':
+            if action == 'set_low_threshold':
                 set_low_threshold(t.get_checked())
             elif action == 'set_high_threshold':
                 set_high_threshold(t.get_checked())

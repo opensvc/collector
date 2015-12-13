@@ -14,6 +14,7 @@
     "import": "Import"
   },
   "action_menu": {
+    "on_check_instances": "Sur les instances de sonde",
     "redo": "Refaire",
     "cancel": "Annuler",
     "on_queued_actions": "Sur les actions en queue",

@@ -1,5 +1,14 @@
 import gluon.contrib.simplejson as json
 
+def beautify_change(d1, d2):
+    l = []
+    for key in sorted(d2.keys()):
+        if key not in d1:
+            continue
+        if d1[key] != d2[key]:
+            l.append("%s: %s => %s" % (key, d1[key], d2[key]))
+    return ", ".join(l)
+
 def log_events(i):
     l = {
       'event': 'log_change',
