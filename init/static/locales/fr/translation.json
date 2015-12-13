@@ -15,6 +15,7 @@
   },
   "action_menu": {
     "on_check_instances": "Sur les instances de sonde",
+    "reset_thresholds": "Réinitialiser les seuils",
     "redo": "Refaire",
     "cancel": "Annuler",
     "on_queued_actions": "Sur les actions en queue",

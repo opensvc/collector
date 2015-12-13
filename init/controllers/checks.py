@@ -193,35 +193,6 @@ def set_high_threshold(ids):
     update_thresholds_batch(rows)
     update_dash_checks_nodes(map(lambda x: x.chk_nodename, rows))
 
-@auth.requires_membership('CheckExec')
-def reset_thresholds(ids):
-    if len(ids) == 0:
-        raise ToolError("No check selected")
-    ugroups = user_groups()
-    for i in ids:
-        q = db.checks_live.id==i
-        if 'Manager' not in ugroups:
-            q &= db.nodes.nodename == db.checks_live.chk_nodename
-            q &= (db.nodes.team_responsible.belongs(ugroups)) | (db.nodes.team_integ.belongs(ugroups))
-        rows = db(q).select(db.checks_live.ALL)
-        if len(rows) != 1:
-            continue
-        chk = rows[0]
-        q = db.checks_settings.chk_nodename==chk.chk_nodename
-        q &= db.checks_settings.chk_type==chk.chk_type
-        q &= db.checks_settings.chk_instance==chk.chk_instance
-        settings = db(q).delete()
-        where = ""
-        if len(chk.chk_svcname) > 0: where = chk.chk_svcname + "@"
-        where += chk.chk_nodename
-        _log('checks.thresholds.reset',
-             'reset thresholds for check %(inst)s on %(where)s',
-             dict(where=where, inst='.'.join((chk.chk_type, chk.chk_instance))))
-    q = db.checks_live.id.belongs(ids)
-    rows = db(q).select()
-    table_modified("checks_settings")
-    update_thresholds_batch(rows)
-
 @auth.requires_login()
 def ajax_chk_type_defaults():
     chk_type = request.args[0]
@@ -481,7 +452,6 @@ class table_checks(HtmlTable):
         if 'CheckManager' in ug or 'CheckExec' in ug:
             self.additional_tools.append('set_high_threshold')
             self.additional_tools.append('set_low_threshold')
-            self.additional_tools.append('reset_thresholds')
 
     def set_low_threshold(self):
         return self.set_threshold('low')
@@ -618,19 +588,6 @@ class table_checks(HtmlTable):
             )
         return d
 
-    def reset_thresholds(self):
-        d = DIV(
-              A(
-                T("Reset thresholds"),
-                _onclick="""if (confirm("%(text)s")){%(s)s};
-                         """%dict(s=self.ajax_submit(args=['reset_thresholds']),
-                                  text=T("Resetting thresholds will definitively lose the custom thresholds of the selected checks. Please confirm reset"),
-                                 ),
-              ),
-              _class='floatw',
-            )
-        return d
-
 
 @auth.requires_login()
 def ajax_checks_col_values():
@@ -660,8 +617,6 @@ def ajax_checks():
                 set_low_threshold(t.get_checked())
             elif action == 'set_high_threshold':
                 set_high_threshold(t.get_checked())
-            elif action == 'reset_thresholds':
-                reset_thresholds(t.get_checked())
             elif action == 'del_fset_threshold':
                 del_fset_threshold(request.vars.del_fset_threshold_s)
                 enqueue_update_thresholds_batch()
@@ -756,92 +711,6 @@ def checks():
 
 def checks_load():
     return checks()["table"]
-
-def update_dash_checks_nodes(nodenames):
-    for nodename in nodenames:
-        update_dash_checks(nodename)
-
-def update_dash_checks(nodename):
-    nodename = nodename.strip("'")
-    now = datetime.datetime.now()
-    now = now - datetime.timedelta(microseconds=now.microsecond)
-    sql = """select host_mode from nodes
-             where
-               nodename="%(nodename)s"
-          """%dict(nodename=nodename)
-    rows = db.executesql(sql)
-
-    env = rows[0][0]
-    if len(rows) == 1 and env == 'PRD':
-        sev = 3
-    else:
-        sev = 2
-
-    sql = """insert into dashboard
-               select
-                 NULL,
-                 "check out of bounds",
-                 t.svcname,
-                 t.nodename,
-                 %(sev)d,
-                 "%%(ctype)s:%%(inst)s check value %%(val)d. %%(ttype)s thresholds: %%(min)d - %%(max)d",
-                 concat('{"ctype": "', t.ctype,
-                        '", "inst": "', t.inst,
-                        '", "ttype": "', t.ttype,
-                        '", "val": ', t.val,
-                        ', "min": ', t.min,
-                        ', "max": ', t.max,
-                        '}'),
-                 "%(now)s",
-                 md5(concat('{"ctype": "', t.ctype,
-                        '", "inst": "', t.inst,
-                        '", "ttype": "', t.ttype,
-                        '", "val": ', t.val,
-                        ', "min": ', t.min,
-                        ', "max": ', t.max,
-                        '}')),
-                 "%(env)s",
-                 "",
-                 "%(now)s"
-               from (
-                 select
-                   chk_svcname as svcname,
-                   chk_nodename as nodename,
-                   chk_type as ctype,
-                   chk_instance as inst,
-                   chk_threshold_provider as ttype,
-                   chk_value as val,
-                   chk_low as min,
-                   chk_high as max
-                 from checks_live
-                 where
-                   chk_nodename = "%(nodename)s" and
-                   chk_updated >= date_sub(now(), interval 1 day) and
-                   (
-                     chk_value < chk_low or
-                     chk_value > chk_high
-                   )
-               ) t
-               on duplicate key update
-                 dash_updated="%(now)s"
-          """%dict(nodename=nodename,
-                   sev=sev,
-                   env=env,
-                   now=str(now),
-                  )
-    db.executesql(sql)
-    db.commit()
-
-    sql = """delete from dashboard
-               where
-                 dash_nodename = "%(nodename)s" and
-                 dash_type = "check out of bounds" and
-                 dash_updated < "%(now)s"
-          """%dict(nodename=nodename, now=str(now))
-    n = db.executesql(sql)
-    if n > 0:
-        table_modified("dashboard")
-    db.commit()
 
 
 class table_checks_node(table_checks):

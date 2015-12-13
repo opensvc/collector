@@ -6,6 +6,11 @@ def update_thresholds_batch(rows=None, one_source=False):
         update_thresholds_rows_one_source(rows)
     else:
         update_thresholds_rows(rows)
+    l = {
+      'event': 'checks_change',
+      'data': {'a': 'b'},
+    }
+    _websocket_send(event_msg(l))
 
 def update_thresholds_batch_type(chk_type):
     q = db.checks_live.chk_type == chk_type
@@ -280,5 +285,91 @@ def update_thresholds_from_settings(rows):
 
 def b_update_thresholds_batch():
     update_thresholds_batch()
+
+def update_dash_checks_nodes(nodenames):
+    for nodename in nodenames:
+        update_dash_checks(nodename)
+
+def update_dash_checks(nodename):
+    nodename = nodename.strip("'")
+    now = datetime.datetime.now()
+    now = now - datetime.timedelta(microseconds=now.microsecond)
+    sql = """select host_mode from nodes
+             where
+               nodename="%(nodename)s"
+          """%dict(nodename=nodename)
+    rows = db.executesql(sql)
+
+    env = rows[0][0]
+    if len(rows) == 1 and env == 'PRD':
+        sev = 3
+    else:
+        sev = 2
+
+    sql = """insert into dashboard
+               select
+                 NULL,
+                 "check out of bounds",
+                 t.svcname,
+                 t.nodename,
+                 %(sev)d,
+                 "%%(ctype)s:%%(inst)s check value %%(val)d. %%(ttype)s thresholds: %%(min)d - %%(max)d",
+                 concat('{"ctype": "', t.ctype,
+                        '", "inst": "', t.inst,
+                        '", "ttype": "', t.ttype,
+                        '", "val": ', t.val,
+                        ', "min": ', t.min,
+                        ', "max": ', t.max,
+                        '}'),
+                 "%(now)s",
+                 md5(concat('{"ctype": "', t.ctype,
+                        '", "inst": "', t.inst,
+                        '", "ttype": "', t.ttype,
+                        '", "val": ', t.val,
+                        ', "min": ', t.min,
+                        ', "max": ', t.max,
+                        '}')),
+                 "%(env)s",
+                 "",
+                 "%(now)s"
+               from (
+                 select
+                   chk_svcname as svcname,
+                   chk_nodename as nodename,
+                   chk_type as ctype,
+                   chk_instance as inst,
+                   chk_threshold_provider as ttype,
+                   chk_value as val,
+                   chk_low as min,
+                   chk_high as max
+                 from checks_live
+                 where
+                   chk_nodename = "%(nodename)s" and
+                   chk_updated >= date_sub(now(), interval 1 day) and
+                   (
+                     chk_value < chk_low or
+                     chk_value > chk_high
+                   )
+               ) t
+               on duplicate key update
+                 dash_updated="%(now)s"
+          """%dict(nodename=nodename,
+                   sev=sev,
+                   env=env,
+                   now=str(now),
+                  )
+    db.executesql(sql)
+    db.commit()
+
+    sql = """delete from dashboard
+               where
+                 dash_nodename = "%(nodename)s" and
+                 dash_type = "check out of bounds" and
+                 dash_updated < "%(now)s"
+          """%dict(nodename=nodename, now=str(now))
+    n = db.executesql(sql)
+    if n > 0:
+        table_modified("dashboard")
+    db.commit()
 
 

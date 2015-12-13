@@ -15,6 +15,7 @@
   },
   "action_menu": {
     "on_check_instances": "On check instances",
+    "reset_thresholds": "Reset thresholds",
     "redo": "Redo",
     "cancel": "Cancel",
     "on_queued_actions": "On queued actions",
