@@ -85,114 +85,6 @@ def get_defaults(row):
         return
     return (rows[0].chk_low, rows[0].chk_high, 'defaults')
 
-@auth.requires_membership('CheckExec')
-def set_low_threshold(ids):
-    if len(ids) == 0:
-        raise ToolError("No check selected")
-    val = request.vars.set_low_threshold
-    if val is None or len(val) == 0:
-        raise ToolError("New threshold value invalid")
-    val = int(val)
-    ugroups = user_groups()
-    for i in ids:
-        q = db.checks_live.id==i
-        if 'Manager' not in ugroups:
-            q &= db.nodes.nodename == db.checks_live.chk_nodename
-            q &= (db.nodes.team_responsible.belongs(ugroups)) | (db.nodes.team_integ.belongs(ugroups))
-        rows = db(q).select(db.checks_live.ALL)
-        if len(rows) != 1:
-            continue
-        chk = rows[0]
-        q = db.checks_settings.chk_nodename==chk.chk_nodename
-        q &= db.checks_settings.chk_type==chk.chk_type
-        q &= db.checks_settings.chk_instance==chk.chk_instance
-        settings = db(q).select()
-        if len(settings) == 0:
-            # insert
-            chk_default = get_defaults(chk)
-            db.checks_settings.insert(chk_nodename=chk.chk_nodename,
-                                      chk_type=chk.chk_type,
-                                      chk_instance=chk.chk_instance,
-                                      chk_low=val,
-                                      chk_high=chk_default[1],
-                                      chk_changed_by=user_name(),
-                                      chk_changed=now)
-        elif len(settings) == 1:
-            # update
-            if settings[0].chk_high < val:
-                high = val
-            else:
-                high = settings[0].chk_high
-            db(q).update(chk_low=val,
-                         chk_high=high,
-                         chk_changed_by=user_name(),
-                         chk_changed=now)
-        where = ""
-        if len(chk.chk_svcname) > 0: where = chk.chk_svcname + "@"
-        where += chk.chk_nodename
-        _log('checks.thresholds.set',
-             'set high threshold to %(val)d for check %(inst)s on %(where)s',
-             dict(val=val, where=where, inst='.'.join((chk.chk_type, chk.chk_instance))))
-    table_modified("checks_settings")
-    q = db.checks_live.id.belongs(ids)
-    rows = db(q).select()
-    update_thresholds_batch(rows)
-    update_dash_checks_nodes(map(lambda x: x.chk_nodename, rows))
-
-@auth.requires_membership('CheckExec')
-def set_high_threshold(ids):
-    if len(ids) == 0:
-        raise ToolError("No check selected")
-    val = request.vars.set_high_threshold
-    if val is None or len(val) == 0:
-        raise ToolError("New threshold value invalid")
-    val = int(val)
-    ugroups = user_groups()
-    for i in ids:
-        q = db.checks_live.id==i
-        if 'Manager' not in ugroups:
-            q &= db.nodes.nodename == db.checks_live.chk_nodename
-            q &= (db.nodes.team_responsible.belongs(ugroups)) | (db.nodes.team_integ.belongs(ugroups))
-        rows = db(q).select(db.checks_live.ALL)
-        if len(rows) != 1:
-            continue
-        chk = rows[0]
-        q = db.checks_settings.chk_nodename==chk.chk_nodename
-        q &= db.checks_settings.chk_type==chk.chk_type
-        q &= db.checks_settings.chk_instance==chk.chk_instance
-        settings = db(q).select()
-        if len(settings) == 0:
-            # insert
-            chk_default = get_defaults(chk)
-            db.checks_settings.insert(chk_nodename=chk.chk_nodename,
-                                      chk_type=chk.chk_type,
-                                      chk_instance=chk.chk_instance,
-                                      chk_high=val,
-                                      chk_low=chk_default[0],
-                                      chk_changed_by=user_name(),
-                                      chk_changed=now)
-        elif len(settings) == 1:
-            # update
-            if settings[0].chk_low > val:
-                low = val
-            else:
-                low = settings[0].chk_low
-            db(q).update(chk_high=val,
-                         chk_low=low,
-                         chk_changed_by=user_name(),
-                         chk_changed=now)
-        where = ""
-        if len(chk.chk_svcname) > 0: where = chk.chk_svcname + "@"
-        where += chk.chk_nodename
-        _log('checks.thresholds.set',
-             'set high threshold to %(val)d for check %(inst)s on %(where)s',
-             dict(val=val, where=where, inst='.'.join((chk.chk_type, chk.chk_instance))))
-    table_modified("checks_settings")
-    q = db.checks_live.id.belongs(ids)
-    rows = db(q).select()
-    update_thresholds_batch(rows)
-    update_dash_checks_nodes(map(lambda x: x.chk_nodename, rows))
-
 @auth.requires_login()
 def ajax_chk_type_defaults():
     chk_type = request.args[0]
@@ -449,15 +341,6 @@ class table_checks(HtmlTable):
             self.form_add_fset_threshold = self.add_fset_threshold_sqlform()
             self.form_del_fset_threshold = self.del_fset_threshold()
             self += HtmlTableMenu('Contuextual threshold', 'filter16', ['add_fset_threshold', 'del_fset_threshold'])
-        if 'CheckManager' in ug or 'CheckExec' in ug:
-            self.additional_tools.append('set_high_threshold')
-            self.additional_tools.append('set_low_threshold')
-
-    def set_low_threshold(self):
-        return self.set_threshold('low')
-
-    def set_high_threshold(self):
-        return self.set_threshold('high')
 
     def add_fset_threshold(self):
         d = DIV(
@@ -551,40 +434,6 @@ class table_checks(HtmlTable):
                 _class='stackable white_float',
                 _name=divid,
               ),
-            )
-        return d
-
-    def set_threshold(self, t):
-        d = DIV(
-              A(
-                T("Set %s threshold"%t),
-                _onclick="""
-                  click_toggle_vis(event,'%(div)s', 'block');
-                """%dict(div='set_%s_threshold_d'%t),
-              ),
-              DIV(
-                TABLE(
-                  TR(
-                    TD(
-                      T('New threshold value'),
-                    ),
-                    TD(
-                      INPUT(
-                       _id='set_%s_threshold'%t,
-                       _onkeypress="if (is_enter(event)) {%s};"%\
-                          self.ajax_submit(additional_inputs=['set_%s_threshold'%t],
-                                           args="set_%s_threshold"%t),
-
-                      ),
-                    ),
-                  ),
-                ),
-                _style='display:none',
-                _class='stackable white_float',
-                _name='set_%s_threshold_d'%t,
-                _id='set_%s_threshold_d'%t,
-              ),
-              _class='floatw',
             )
         return d
 

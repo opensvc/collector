@@ -277,6 +277,8 @@ handlers = {
      rest_post_apps(),
      rest_post_app(),
      rest_post_app_responsible(),
+     rest_post_checks_settings(),
+     rest_post_checks_setting(),
      rest_post_compliance_moduleset_moduleset(),
      rest_post_compliance_moduleset_module(),
      rest_post_compliance_moduleset_modules(),

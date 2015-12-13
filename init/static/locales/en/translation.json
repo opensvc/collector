@@ -15,6 +15,8 @@
   },
   "action_menu": {
     "on_check_instances": "On check instances",
+    "set_low_threshold": "Set low threshold",
+    "set_high_threshold": "Set high threshold",
     "reset_thresholds": "Reset thresholds",
     "redo": "Redo",
     "cancel": "Cancel",

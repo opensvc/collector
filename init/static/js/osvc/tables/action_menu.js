@@ -217,8 +217,22 @@ function table_action_menu_init_data(t) {
             },
             {
               "title": "action_menu.reset_thresholds",
-              "class": "icon del16",
+              "class": "icon fa-undo",
               "fn": "data_action_chk_instance_reset_thresholds",
+              "privileges": ["Manager", "CheckManager"],
+              "min": 1
+            },
+            {
+              "title": "action_menu.set_low_threshold",
+              "class": "icon fa-angle-down",
+              "fn": "data_action_chk_instance_set_low_threshold",
+              "privileges": ["Manager", "CheckManager"],
+              "min": 1
+            },
+            {
+              "title": "action_menu.set_high_threshold",
+              "class": "icon fa-angle-up",
+              "fn": "data_action_chk_instance_set_high_threshold",
               "privileges": ["Manager", "CheckManager"],
               "min": 1
             },
@@ -1440,7 +1454,7 @@ function tool_free_uids(t, e) {
   div.append(input)
   div.append(area)
   div.insertAfter(entry)
-  input.bind("keyup", function() {
+  input.bind("keyup", function(event) {
     if (!is_enter(event)) {
       return
     }
@@ -1464,7 +1478,7 @@ function tool_free_gids(t, e) {
   div.append(input)
   div.append(area)
   div.insertAfter(entry)
-  input.bind("keyup", function() {
+  input.bind("keyup", function(event) {
     if (!is_enter(event)) {
       return
     }
@@ -1696,6 +1710,60 @@ function data_action_add_node(t, e) {
         })
       }, 500)
     }
+  })
+}
+
+//
+// data action: set low threshold
+//
+function data_action_chk_instance_set_low_threshold(t, e) {
+  data_action_chk_instance_set_threshold(t, e, "low")
+}
+
+function data_action_chk_instance_set_high_threshold(t, e) {
+  data_action_chk_instance_set_threshold(t, e, "high")
+}
+
+function data_action_chk_instance_set_threshold(t, e, threshold) {
+  var entry = $(e.target)
+  entry.next("[name=tool]").remove()
+  var div = $("<div name='tool' style='padding:0.5em'></div>")
+  var input = $("<input class='oi'>")
+  div.append(input)
+  div.insertAfter(entry)
+  input.focus()
+
+  input.bind("keyup", function(event) {
+    if (!is_enter(event)) {
+      return
+    }
+    var cache_id = entry.attr("cache_id")
+    var data = t.action_menu_data_cache[cache_id]
+    var _data = new Array()
+    for (i=0;i<data.length;i++) {
+      var d = {
+        'chk_nodename': data[i]['nodename'],
+        'chk_svcname': data[i]['svcname'],
+        'chk_type': data[i]['chk_type'],
+        'chk_instance': data[i]['chk_instance'],
+      }
+      if (threshold == "low") {
+        d['chk_low'] = $(this).val()
+      } else if (threshold == "high") {
+        d['chk_high'] = $(this).val()
+      } else {
+        continue
+      }
+      _data.push(d)
+    }
+    xhr  = services_osvcpostrest("R_CHECKS_SETTINGS", "", "", _data, function(jd) {
+      if (jd.error && (jd.error.length > 0)) {
+        $(".flash").show("blind").html(services_error_fmt(jd))
+      }
+    },
+    function(xhr, stat, error) {
+      $(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
+    })
   })
 }
 

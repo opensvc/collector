@@ -1,5 +1,6 @@
 @charset "UTF-8";
 
+
 .ellipsis {
 	text-overflow: ellipsis;
 }
@@ -92,6 +93,7 @@
 	display: inline-block;
 	width: 2em;
 	text-align: center;
+	font-family: awesome;
 }
 
 form :focus {

@@ -15,6 +15,8 @@
   },
   "action_menu": {
     "on_check_instances": "Sur les instances de sonde",
+    "set_low_threshold": "Définir le seuil bas",
+    "set_high_threshold": "Définir le seuil haut",
     "reset_thresholds": "Réinitialiser les seuils",
     "redo": "Refaire",
     "cancel": "Annuler",
