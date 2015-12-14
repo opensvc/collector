@@ -3,70 +3,6 @@ def pid_to_filter(pid):
         return ''
     return pid.replace(',', '|')
 
-@auth.requires_login()
-def ajax_action_status():
-    if len(request.args) == 0:
-        return SPAN()
-    id = int(request.args[0])
-
-    rows = db(db.SVCactions.id==id).select()
-
-    if len(rows) != 1:
-        return SPAN('action not found')
-
-    status = rows[0].status
-    if status is not None:
-        if rows[0].end is None:
-            end = rows[0].begin
-        else:
-            end = rows[0].end
-            pass
-
-        pid = A(
-             rows[0].pid,
-             _href=URL(
-                     r=request,
-                     f='svcactions',
-                     vars={
-                       'actions_f_pid':pid_to_filter(rows[0].pid),
-                       'actions_f_hostname':rows[0].hostname,
-                       'actions_f_svcname':rows[0].svcname,
-                       'actions_f_begin':'>'+str(rows[0].begin-datetime.timedelta(days=1)),
-                       'actions_f_end':'<'+str(end+datetime.timedelta(days=1)),
-                       'actions_f_perpage':0,
-                       'clear_filters': 'true',
-                       'volatile_filters': 'true',
-                     }
-          ),
-        )
-        return SPAN(
-                 IMG(
-                   _src=URL(r=request,c='static',f='images/action16.png'),
-                   _border=0,
-                   _onload="""
-                     document.getElementById('spin_span_pid_%(id)s').innerHTML='%(pid)s';
-                     document.getElementById('spin_span_end_%(id)s').innerHTML='%(end)s';
-                   """%dict(
-                         id=id,
-                         pid=pid,
-                         end=rows[0].end,
-                       ),
-                   _style='display:none',
-                 ),
-                 status,
-                 _class="status_"+status,
-               )
-    else:
-        return IMG(
-                _src=URL(r=request,c='static',f='images/spinner.gif'),
-                _border=0,
-                _title=T("unfinished"),
-                _onload="""refresh_action('%(url)s', '%(id)s')"""%dict(
-                      url=URL(r=request,f='ajax_action_status', args=[id]),
-                      id=id,
-                    )
-              )
-
 def svcactions_rss():
     #return BEAUTIFY(request)
     import gluon.contrib.rss2 as rss2
@@ -267,13 +203,6 @@ class table_actions(HtmlTable):
         self.keys = ["id"]
         self.events = ["begin_action", "end_action", "svcactions_change"]
 
-    def checkbox_disabled(self, o):
-        status = self.colprops['status'].get(o)
-        ack = self.colprops['ack'].get(o)
-        if status == 'err' and ack != 1:
-            return False
-        return True
-
 @auth.requires_login()
 def ajax_actions_col_values():
     table_id = request.vars.table_id
@@ -323,71 +252,4 @@ def svcactions():
 
 def svcactions_load():
     return svcactions()["table"]
-
-#
-# actions tab
-#
-class table_actions_node(table_actions):
-    def __init__(self, id=None, func=None, innerhtml=None):
-        table_actions.__init__(self, id, func, innerhtml)
-        self.hide_tools = True
-        self.pageable = False
-        self.bookmarkable = False
-        self.commonalityable = False
-        self.linkable = False
-        self.checkboxes = True
-        self.filterable = False
-        self.exportable = False
-        self.dbfilterable = False
-        self.columnable = False
-        self.refreshable = False
-        self.wsable = False
-        self.dataable = True
-        self.child_tables = []
-
-def ajax_actions_node():
-    tid = request.vars.table_id
-    t = table_actions_node(tid, 'ajax_actions_node')
-    o = ~db.v_svcactions.id
-    q = _where(None, 'v_svcactions', domain_perms(), 'hostname')
-    for f in ['hostname']:
-        q = _where(q, 'v_svcactions', t.filter_parse(f), f)
-    if request.args[0] == "data":
-        t.object_list = db(q).select(cacheable=True, orderby=o, limitby=(0,20))
-        return t.table_lines_data(-1, html=False)
-
-def ajax_actions_svc():
-    tid = request.vars.table_id
-    t = table_actions_node(tid, 'ajax_actions_svc')
-    o = ~db.v_svcactions.id
-    q = _where(None, 'v_svcactions', domain_perms(), 'svcname')
-    for f in ['svcname']:
-        q = _where(q, 'v_svcactions', t.filter_parse(f), f)
-    if request.args[0] == "data":
-        t.object_list = db(q).select(cacheable=True, orderby=o, limitby=(0,20))
-        return t.table_lines_data(-1, html=False)
-
-@auth.requires_login()
-def actions_node():
-    node = request.args[0]
-    tid = 'actions_'+node.replace('-', '_').replace('.', '_')
-    t = table_actions_node(tid, 'ajax_actions_node')
-    t.colprops['hostname'].force_filter = node
-
-    return DIV(
-             t.html(),
-             _id=tid,
-           )
-
-@auth.requires_login()
-def actions_svc():
-    svcname = request.args[0]
-    tid = 'actions_'+svcname.replace('-','_').replace('.','_')
-    t = table_actions_node(tid, 'ajax_actions_svc')
-    t.colprops['svcname'].force_filter = svcname
-
-    return DIV(
-             t.html(),
-             _id=tid,
-           )
 

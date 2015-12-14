@@ -60,23 +60,13 @@ function table_service_instances_node(divid, nodename) {
     "filterable": false,
     "wsable": false,
     "visible_columns": [
+         'mon_svcname',
          'svc_ha',
-         'svc_availstatus',
-         'svc_status',
          'svc_cluster_type',
          'mon_vmtype',
          'mon_vmname',
-         'mon_nodname',
          'mon_availstatus',
          'mon_overallstatus',
-         'mon_ipstatus',
-         'mon_fsstatus',
-         'mon_diskstatus',
-         'mon_appstatus',
-         'mon_sharestatus',
-         'mon_containerstatus',
-         'mon_hbstatus',
-         'mon_syncstatus',
          'mon_updated'
     ]
   })
@@ -102,23 +92,13 @@ function table_service_instances_svc(divid, svcname) {
     "filterable": false,
     "wsable": false,
     "visible_columns": [
-         'mon_svcname',
          'svc_ha',
-         'svc_availstatus',
-         'svc_status',
          'svc_cluster_type',
+         'mon_nodname',
          'mon_vmtype',
          'mon_vmname',
          'mon_availstatus',
          'mon_overallstatus',
-         'mon_ipstatus',
-         'mon_fsstatus',
-         'mon_diskstatus',
-         'mon_appstatus',
-         'mon_sharestatus',
-         'mon_containerstatus',
-         'mon_hbstatus',
-         'mon_syncstatus',
          'mon_updated'
     ]
   })

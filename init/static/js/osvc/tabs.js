@@ -148,7 +148,7 @@ function node_tabs(divid, options) {
       "title_class": "action16"
     })
     o.tabs[i].callback = function(divid) {
-      sync_ajax("/init/svcactions/actions_node/"+encodeURIComponent(o.options.nodename), [], divid, function(){})
+      table_actions_node(divid, o.options.nodename)
     }
 
     // tab log
@@ -321,7 +321,7 @@ function service_tabs(divid, options) {
       "title_class": "action16"
     })
     o.tabs[i].callback = function(divid) {
-      sync_ajax("/init/svcactions/actions_svc/"+encodeURIComponent(o.options.svcname), [], divid, function(){})
+      table_actions_svc(divid, o.options.svcname)
     }
 
     // tab log

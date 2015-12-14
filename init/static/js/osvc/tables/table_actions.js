@@ -36,3 +36,83 @@ function table_actions(divid, options) {
   table_init(_options)
 }
 
+function table_actions_node(divid, nodename) {
+  var id = "actions_" + nodename.replace(".","_").replace("-", "_")
+  var f_hostname = id+"_f_hostname"
+  var f_begin = id+"_f_begin"
+  var request_vars = {}
+  request_vars[f_hostname] = nodename
+  request_vars[f_begin] = ">-60d"
+  table_actions(divid, {
+    "id": id,
+    "caller": "table_actions_node",
+    "request_vars": request_vars,
+    "volatile_filters": true,
+    "bookmarkable": false,
+    "refreshable": false,
+    "linkable": false,
+    "exportable": false,
+    "pageable": false,
+    "columnable": false,
+    "commonalityable": false,
+    "filterable": false,
+    "wsable": false,
+    "visible_columns": [
+	'svcname',
+	'pid',
+	'action',
+	'status',
+	'begin',
+	'end',
+	'time',
+	'id',
+	'status_log',
+	'cron',
+	'ack',
+	'acked_by',
+	'acked_date',
+	'acked_comment'
+    ]
+  })
+}
+
+function table_actions_svc(divid, svcname) {
+  var id = "actions_" + svcname.replace(".","_").replace("-", "_")
+  var f_svcname = id+"_f_svcname"
+  var f_begin = id+"_f_begin"
+  var perpage = id+"_perpage"
+  var request_vars = {}
+  request_vars[f_svcname] = svcname
+  request_vars[f_begin] = ">-60d"
+  table_actions(divid, {
+    "id": id,
+    "caller": "table_actions_svc",
+    "request_vars": request_vars,
+    "volatile_filters": true,
+    "bookmarkable": false,
+    "refreshable": false,
+    "linkable": false,
+    "exportable": false,
+    "pageable": false,
+    "columnable": false,
+    "commonalityable": false,
+    "filterable": false,
+    "wsable": false,
+    "visible_columns": [
+	'hostname',
+	'pid',
+	'action',
+	'status',
+	'begin',
+	'end',
+	'time',
+	'id',
+	'status_log',
+	'cron',
+	'ack',
+	'acked_by',
+	'acked_date',
+	'acked_comment'
+    ]
+  })
+}
