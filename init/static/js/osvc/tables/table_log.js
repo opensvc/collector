@@ -46,7 +46,7 @@ function table_log(divid, options) {
 }
 
 function table_log_node(divid, nodename) {
-  var id = "log_" + nodename.replace(".","_").replace("-", "_")
+  var id = "log_" + nodename.replace(/[\.-]/g, "_")
   var f = id+"_f_log_nodename"
   var request_vars = {}
   request_vars[f] = nodename
@@ -68,7 +68,7 @@ function table_log_node(divid, nodename) {
 }
 
 function table_log_svc(divid, svcname) {
-  var id = "log_" + svcname.replace(".","_").replace("-", "_")
+  var id = "log_" + svcname.replace(/[\.-]/g, "_")
   var f = id+"_f_log_svcname"
   var request_vars = {}
   request_vars[f] = svcname

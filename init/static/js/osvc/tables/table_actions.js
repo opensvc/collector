@@ -37,7 +37,7 @@ function table_actions(divid, options) {
 }
 
 function table_actions_node(divid, nodename) {
-  var id = "actions_" + nodename.replace(".","_").replace("-", "_")
+  var id = "actions_" + nodename.replace(/[\.-]/g, "_")
   var f_hostname = id+"_f_hostname"
   var f_begin = id+"_f_begin"
   var request_vars = {}
@@ -77,7 +77,7 @@ function table_actions_node(divid, nodename) {
 }
 
 function table_actions_svc(divid, svcname) {
-  var id = "actions_" + svcname.replace(".","_").replace("-", "_")
+  var id = "actions_" + svcname.replace(/[\.-]/g, "_")
   var f_svcname = id+"_f_svcname"
   var f_begin = id+"_f_begin"
   var perpage = id+"_perpage"

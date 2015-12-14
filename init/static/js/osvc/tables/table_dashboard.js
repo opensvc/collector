@@ -37,7 +37,7 @@ function table_dashboard(divid, options) {
 }
 
 function table_dashboard_node(divid, nodename) {
-  var id = "dashboard_" + nodename.replace(".","_").replace("-", "_")
+  var id = "dashboard_" + nodename.replace(/[\.-]/g, "_")
   var f = id+"_f_dash_nodename"
   var request_vars = {}
   request_vars[f] = nodename
@@ -60,7 +60,7 @@ function table_dashboard_node(divid, nodename) {
 }
 
 function table_dashboard_svc(divid, svcname) {
-  var id = "dashboard_" + svcname.replace(".","_").replace("-", "_")
+  var id = "dashboard_" + svcname.replace(/[\.-]/g, "_")
   var f = id+"_f_dash_svcname"
   var request_vars = {}
   request_vars[f] = svcname

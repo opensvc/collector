@@ -48,7 +48,7 @@ function table_checks(divid, options) {
 }
 
 function table_checks_node(divid, nodename) {
-  var id = "checks_" + nodename.replace(".","_").replace("-", "_")
+  var id = "checks_" + nodename.replace(/[\.-]/g, "_")
   var f = id+"_f_chk_nodename"
   var request_vars = {}
   request_vars[f] = nodename
@@ -82,7 +82,7 @@ function table_checks_node(divid, nodename) {
 }
 
 function table_checks_svc(divid, svcname) {
-  var id = "checks_" + svcname.replace(".","_").replace("-", "_")
+  var id = "checks_" + svcname.replace(/[\.-]/g, "_")
   var f = id+"_f_chk_svcname"
   var request_vars = {}
   request_vars[f] = svcname

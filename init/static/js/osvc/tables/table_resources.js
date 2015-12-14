@@ -38,7 +38,7 @@ function table_resources(divid, options) {
 }
 
 function table_resources_node(divid, nodename) {
-  var id = "resmon_" + nodename.replace(".","_").replace("-", "_")
+  var id = "resmon_" + nodename.replace(/[\.-]/g, "_")
   var f = id+"_f_nodename"
   var request_vars = {}
   request_vars[f] = nodename
@@ -61,7 +61,7 @@ function table_resources_node(divid, nodename) {
 }
 
 function table_resources_svc(divid, svcname) {
-  var id = "resmon_" + svcname.replace(".","_").replace("-", "_")
+  var id = "resmon_" + svcname.replace(/[\.-]/g, "_")
   var f = id+"_f_svcname"
   var request_vars = {}
   request_vars[f] = svcname

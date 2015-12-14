@@ -41,7 +41,7 @@ function table_service_instances(divid, options) {
 }
 
 function table_service_instances_node(divid, nodename) {
-  var id = "svcmon_" + nodename.replace(".","_").replace("-", "_")
+  var id = "svcmon_" + nodename.replace(/[\.-]/g, "_")
   var f = id+"_f_mon_nodname"
   var request_vars = {}
   request_vars[f] = nodename
@@ -73,7 +73,7 @@ function table_service_instances_node(divid, nodename) {
 }
 
 function table_service_instances_svc(divid, svcname) {
-  var id = "svcmon_" + svcname.replace(".","_").replace("-", "_")
+  var id = "svcmon_" + svcname.replace(/[\.-]/g, "_")
   var f = id+"_f_mon_svcname"
   var request_vars = {}
   request_vars[f] = svcname
