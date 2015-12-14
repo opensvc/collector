@@ -372,4 +372,25 @@ def update_dash_checks(nodename):
         table_modified("dashboard")
     db.commit()
 
+def enqueue_update_thresholds_batch(chk_type=None):
+    if chk_type is None:
+        q_fn = 'update_thresholds_batch'
+        q_args = []
+        task = scheduler.task_status(
+          (db.scheduler_task.function_name == q_fn) & \
+          (db.scheduler_task.status == "QUEUED")
+        )
+    else:
+        q_fn = 'update_thresholds_batch_type'
+        q_args = [chk_type]
+        task = scheduler.task_status(
+          (db.scheduler_task.function_name == q_fn) & \
+          (db.scheduler_task.args.like('%'+chk_type+'%')) & \
+          (db.scheduler_task.status == "QUEUED")
+        )
+
+    if task is not None:
+        return
+    scheduler.queue_task(q_fn, q_args, group_name="slow")
+    db.commit()
 

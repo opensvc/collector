@@ -20,6 +20,7 @@ var services_access_uri = {
     "R_APP_RESPONSIBLES" : "rest/api/apps/%1/responsibles",
     "R_CHECKS" : "rest/api/checks/live",
     "R_CHECKS_SETTINGS" : "rest/api/checks/settings",
+    "R_CHECKS_CONTEXTUAL_SETTINGS" : "rest/api/checks/contextual_settings",
     "R_COMPLIANCE_MODULESETS" : "rest/api/compliance/modulesets",
     "R_COMPLIANCE_MODULESETS_NODES" : "rest/api/compliance/modulesets_nodes",
     "R_COMPLIANCE_MODULESETS_SERVICES" : "rest/api/compliance/modulesets_services",
@@ -377,7 +378,7 @@ function services_info_fmt(data) {
     var e = $("<span><span class='alert16 fa-2x'></span><span data-i18n='api.info'></span></span>")
     e.i18n()
     var p = $("<pre></pre>")
-    if (typeof data.error === "string") {
+    if (typeof data.info === "string") {
 	   p.text(data.info)
     } else {
 	   p.text(data.info.join("\n"))

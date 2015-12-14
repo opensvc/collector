@@ -236,6 +236,20 @@ function table_action_menu_init_data(t) {
               "privileges": ["Manager", "CheckManager"],
               "min": 1
             },
+            {
+              "title": "action_menu.add_contextual_thresholds",
+              "class": "icon add16",
+              "fn": "data_action_add_contextual_thresholds",
+              "privileges": ["Manager", "CheckManager"],
+              "min": 0
+            },
+            {
+              "title": "action_menu.delete_contextual_thresholds",
+              "class": "icon del16",
+              "fn": "data_action_delete_contextual_thresholds",
+              "privileges": ["Manager", "CheckManager"],
+              "min": 0
+            }
           ]
         },
         {
@@ -1824,6 +1838,100 @@ function data_action_chk_instance_delete(t, e) {
     $(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
   })
 }
+
+//
+// data action: add contextual threshold
+//
+function data_action_add_contextual_thresholds(t, e) {
+  var entry = $(e.target)
+  table_action_menu_focus_on_leaf(t, entry)
+
+  // form elements
+  var div = $("<div style='padding:0.5em'></div>")
+  var label_chk_type = $("<div data-i18n='col.Type'></div>")
+  var input_chk_type = $("<input id='chk_type' class='oi'>")
+  var label_chk_instance = $("<div data-i18n='col.Instance'></div>")
+  var input_chk_instance = $("<input id='chk_instance' class='oi'>")
+  var label_chk_low = $("<div data-i18n='col.Low threshold'></div>")
+  var input_chk_low = $("<input id='chk_low' class='oi'>")
+  var label_chk_high = $("<div data-i18n='col.High threshold'></div>")
+  var input_chk_high = $("<input id='chk_high' class='oi'>")
+  var label_fset_id = $("<div data-i18n='col.Filterset'></div>")
+  var input_fset_id = $("<input id='fset_id' class='oi'>")
+  var yes_no = table_action_menu_yes_no(t, 'action_menu.submit', function(e){
+    var _data = {
+      "chk_type": input_chk_type.val(),
+      "chk_instance": input_chk_instance.val(),
+      "chk_low": input_chk_low.val(),
+      "chk_high": input_chk_high.val(),
+      "fset_id": input_fset_id.attr("fset_id")
+    }
+    services_osvcpostrest("R_CHECKS_CONTEXTUAL_SETTINGS", "", "", _data, function(jd) {
+      if (jd.error && (jd.error.length > 0)) {
+        div.html(services_error_fmt(jd))
+      }
+      if (jd.info && (jd.info.length > 0)) {
+        div.html(services_info_fmt(jd))
+      }
+    },
+    function(xhr, stat, error) {
+      div.html(services_ajax_error_fmt(xhr, stat, error))
+    })
+  })
+
+  // fset autocomplete
+  var fsets = []
+  services_osvcgetrest("R_FILTERSETS", "", {"limit": "0", "meta": "0", "orderby": "fset_name"}, function(jd) {
+    for (var i=0; i<jd.data.length; i++) {
+      fsets.push({
+        "id": jd.data[i].id,
+        "label": jd.data[i].fset_name
+      })
+    }
+  })
+  input_fset_id.autocomplete({
+    source: fsets,
+    minLength: 0,
+    focus: function(event, ui) {
+      input_fset_id.attr("fset_id", ui.item.id)
+    },
+    select: function(event, ui) {
+      input_fset_id.attr("fset_id", ui.item.id)
+    }
+  })
+
+  // assemble the form elements
+  div.append(label_chk_type)
+  div.append(input_chk_type)
+  div.append(label_chk_instance)
+  div.append(input_chk_instance)
+  div.append(label_chk_low)
+  div.append(input_chk_low)
+  div.append(label_chk_high)
+  div.append(input_chk_high)
+  div.append(label_fset_id)
+  div.append(input_fset_id)
+  div.append(yes_no)
+  div.i18n()
+  div.insertAfter(entry)
+}
+
+//
+// data action: delete contextual threshold
+//
+function data_action_delete_contextual_thresholds(t, e) {
+  data_action_generic_selector(t, e, {
+    "requestor": services_osvcdeleterest,
+    "request_service": "R_CHECKS_CONTEXTUAL_SETTINGS",
+    "selector": generic_selector_checks_contextual_settings,
+    "request_data_entry": function(selected, data) {
+      return {
+        "id": selected
+      }
+    }
+  })
+}
+
 
 //
 // data action: cancel queued actions

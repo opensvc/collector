@@ -101,3 +101,18 @@ function generic_selector_rulesets(id) {
   })
 }
 
+function generic_selector_checks_contextual_settings(id) {
+  return generic_selector(id, {
+    "url_path": "R_CHECKS_CONTEXTUAL_SETTINGS",
+    "url_params": {
+      "orderby": "name",
+      "limit": "0",
+      "props": "id,name",
+      "meta": "0"
+    },
+    "object_class": "filter16",
+    "object_id": "id",
+    "object_name": "name"
+  })
+}
+

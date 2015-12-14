@@ -1410,6 +1410,15 @@ db.define_table('gen_filterset_check_threshold',
     Field('chk_high','integer'),
     migrate=False)
 
+db.define_table('v_gen_filterset_check_threshold',
+    Field('fset_id','string'),
+    Field('chk_type','string'),
+    Field('chk_instance','string'),
+    Field('chk_low','integer'),
+    Field('chk_high','integer'),
+    Field('name','string'),
+    migrate=False)
+
 db.define_table('forms_team_responsible',
     Field('form_id','string'),
     Field('group_id','string'),

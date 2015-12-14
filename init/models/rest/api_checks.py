@@ -398,3 +398,202 @@ class rest_post_checks_settings(rest_post_handler):
 
         return rest_post_checks_setting().handler(row.id, **vars)
 
+#
+# gen_filterset_check_threshold table handlers
+#
+class rest_get_checks_contextual_settings(rest_get_table_handler):
+    def __init__(self):
+        desc = [
+          "List checks contextual threshold settings.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/checks/contextual_settings",
+        ]
+        rest_get_table_handler.__init__(
+          self,
+          path="/checks/contextual_settings",
+          tables=["v_gen_filterset_check_threshold"],
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, **vars):
+        q = db.v_gen_filterset_check_threshold.id > 0
+        self.set_q(q)
+        return self.prepare_data(**vars)
+
+#
+class rest_get_checks_contextual_setting(rest_get_line_handler):
+    def __init__(self):
+        desc = [
+          "List a checks contextual threshold setting properties.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/checks/contextual_settings/1",
+        ]
+        rest_get_line_handler.__init__(
+          self,
+          path="/checks/contextual_settings/<id>",
+          tables=["v_gen_filterset_check_threshold"],
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, id, **vars):
+        q = db.v_gen_filterset_check_threshold.id == id
+        self.set_q(q)
+        return self.prepare_data(**vars)
+
+#
+class rest_delete_checks_contextual_setting(rest_delete_handler):
+    def __init__(self):
+        desc = [
+          "- Delete a checks contextual threshold setting.",
+          "- The user must be in the CheckManager privilege group.",
+          "- Log the deletion.",
+          "- Send a websocket change event.",
+        ]
+        examples = [
+          "# curl -u %(email)s -X DELETE -o- https://%(collector)s/init/rest/api/checks/contextual_settings/1",
+        ]
+        rest_delete_handler.__init__(
+          self,
+          path="/checks/contextual_settings/<id>",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, id, **vars):
+        check_privilege("CheckManager")
+        q = db.v_gen_filterset_check_threshold.id == id
+        row = db(q).select().first()
+        if row is None:
+            raise Exception("Checks contextual settings %s does not exist" % str(id))
+
+        q = db.gen_filterset_check_threshold.id == id
+        db(q).delete()
+
+        _log('check.contextual_settings.delete',
+             'delete checks contextual settings %(data)s',
+             dict(data=row.name),
+            )
+        table_modified("gen_filterset_check_threshold")
+
+        enqueue_update_thresholds_batch(row.chk_type)
+        return dict(info="checks contextual settings %s deleted" % str(id))
+
+#
+class rest_delete_checks_contextual_settings(rest_delete_handler):
+    def __init__(self):
+        desc = [
+          "- Delete checks contextual threshold settings.",
+          "- The user must be in the CheckManager privilege group.",
+          "- Log the deletion.",
+          "- Send a websocket change event.",
+        ]
+        examples = [
+          "# curl -u %(email)s -X DELETE -o- https://%(collector)s/init/rest/api/checks/contextual_settings",
+        ]
+        rest_delete_handler.__init__(
+          self,
+          path="/checks/contextual_settings",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, **vars):
+        if "id" not in vars:
+            raise Exception("The 'id' key is mandatory.")
+        return rest_delete_checks_contextual_setting().handler(vars["id"])
+
+
+#
+class rest_post_checks_contextual_setting(rest_post_handler):
+    def __init__(self):
+        desc = [
+          "- Modify a checks contextual threshold settings.",
+          "- The user must be in the CheckManager privilege group.",
+          "- Log the changes.",
+          "- Start a background job to update the checks thresholds.",
+        ]
+        examples = [
+          "# curl -u %(email)s -X POST -d fset_id=1 -d chk_type=eth -d chk_instance=eth0.speed -d chk_high=90 -d chk_low=0 -o- https://%(collector)s/init/rest/api/checks/contextual_settings",
+        ]
+        rest_post_handler.__init__(
+          self,
+          path="/checks/contextual_settings/<id>",
+          tables=["gen_filterset_check_threshold"],
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, id, **vars):
+        q = db.gen_filterset_check_threshold.id == id
+        row = db(q).select().first()
+        if row is None:
+            raise Exception("Contextual setting %s not found" % str(id))
+
+        db(q).update(**vars)
+        _log('check.contextual_settings.change',
+             'changed checks contextual instance settings %(data)s',
+             dict(data=beautify_change(row, vars)),
+            )
+        table_modified("gen_filterset_check_threshold")
+
+        enqueue_update_thresholds_batch()
+        return_data = rest_get_checks_contextual_setting().handler(id)
+        return_data["info"] = 'changed checks contextual instance settings %(data)s' % dict(data=beautify_change(row, vars))
+        return return_data
+
+#
+class rest_post_checks_contextual_settings(rest_post_handler):
+    def __init__(self):
+        desc = [
+          "- Modify or add checks contextual threshold settings.",
+          "- The user must be in the CheckManager privilege group.",
+          "- Log the changes.",
+          "- Start a background job to update the checks thresholds.",
+        ]
+        examples = [
+          "# curl -u %(email)s -X POST -d fset_id=1 -d chk_type=eth -d chk_instance=eth0.speed -d chk_high=90 -d chk_low=0 -o- https://%(collector)s/init/rest/api/checks/contextual_settings",
+        ]
+        rest_post_handler.__init__(
+          self,
+          path="/checks/contextual_settings",
+          tables=["gen_filterset_check_threshold"],
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, **vars):
+        s = ""
+        if 'id' in vars:
+            q = db.gen_filterset_check_threshold.id == vars["id"]
+            s = vars["id"]
+        elif 'fset_id' in vars and 'chk_type' in vars and 'chk_instance' in vars:
+            q = db.gen_filterset_check_threshold.fset_id == vars["fset_id"]
+            q &= db.gen_filterset_check_threshold.chk_type == vars["chk_type"]
+            q &= db.gen_filterset_check_threshold.chk_instance == vars["chk_instance"]
+            s = "%s %s %s" % (vars["chk_type"], vars["chk_instance"], str(vars["fset_id"]))
+        else:
+            raise Exception("id key or fset_id+chk_type+chk_instance must be specified")
+        row = db(q).select().first()
+        if row is None:
+            if not "fset_id" in vars or not "chk_type" in vars or not "chk_instance" in vars or not "chk_low" in vars or not "chk_high" in vars:
+                raise Exception("fset_id+chk_type+chk_instance+chk_low+chk_high must be specified")
+
+            id = db.gen_filterset_check_threshold.insert(**vars)
+            _log('check.contextual_settings.add',
+                 'add checks contextual instance settings %(data)s',
+                 dict(data=beautify_data(vars)),
+                )
+            table_modified("gen_filterset_check_threshold")
+
+            enqueue_update_thresholds_batch()
+            return_data = rest_get_checks_contextual_setting().handler(id)
+            return_data["info"] = "checks contextual instance %d added" % id
+            return return_data
+
+        return rest_post_checks_contextual_setting().handler(row.id, **vars)
+
+
