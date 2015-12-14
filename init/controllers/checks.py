@@ -290,7 +290,8 @@ class table_checks(HtmlTable):
 
 @auth.requires_login()
 def ajax_checks_col_values():
-    t = table_checks('checks', 'ajax_checks')
+    table_id = request.vars.table_id
+    t = table_checks(table_id, 'ajax_checks')
     col = request.args[0]
     q = db.checks_live.id>0
     q = _where(q, 'checks_live', domain_perms(), 'chk_nodename')
@@ -307,7 +308,8 @@ def ajax_checks_col_values():
 
 @auth.requires_login()
 def ajax_checks():
-    t = table_checks('checks', 'ajax_checks')
+    table_id = request.vars.table_id
+    t = table_checks(table_id, 'ajax_checks')
 
     o = db.checks_live.chk_nodename
     o |= db.checks_live.chk_type
@@ -341,59 +343,13 @@ def ajax_checks():
 
 @auth.requires_login()
 def checks():
-    t = table_checks('checks', 'ajax_checks')
-    t = DIV(
-          DIV(
-            t.html(),
-            _id='checks',
-          ),
+    t = SCRIPT(
+          """$.when(osvc.app_started).then(function(){ table_checks("layout") })""",
         )
     return dict(table=t)
 
 def checks_load():
     return checks()["table"]
-
-
-class table_checks_node(table_checks):
-    def __init__(self, id=None, func=None, innerhtml=None):
-        table_checks.__init__(self, id, func, innerhtml)
-        self.hide_tools = True
-        self.pageable = False
-        self.bookmarkable = False
-        self.commonalityable = False
-        self.linkable = False
-        self.checkboxes = False
-        self.filterable = False
-        self.exportable = False
-        self.dbfilterable = False
-        self.columnable = False
-        self.refreshable = False
-        self.wsable = False
-        self.dataable = True
-        self.child_tables = []
-        #self.cols.remove("chk_nodename")
-
-def ajax_checks_node():
-    tid = request.vars.table_id
-    t = table_checks_node(tid, 'ajax_checks_node')
-    q = _where(None, 'checks_live', domain_perms(), 'chk_nodename')
-    for f in ['chk_nodename']:
-        q = _where(q, 'checks_live', t.filter_parse(f), f)
-    if request.args[0] == "data":
-        t.object_list = db(q).select(cacheable=True)
-        return t.table_lines_data(-1, html=False)
-
-@auth.requires_login()
-def checks_node():
-    node = request.args[0]
-    tid = 'checks_'+node.replace('-', '_').replace('.', '_')
-    t = table_checks_node(tid, 'ajax_checks_node')
-    t.colprops['chk_nodename'].force_filter = node
-
-    return DIV(
-             t.html(),
-             _id=tid,
-           )
 
 def batch_update_thresholds():
     update_thresholds_batch()

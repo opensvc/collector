@@ -60,7 +60,8 @@ var menu_data = {
 		  "title" : "checks",
 		  "class" : "check16",
 		  "id" : "view-checks",
-		  "link" : "/init/checks/checks"
+		  "link" : "/init/checks/checks",
+		  "fn" : "table_checks"
 		},
 		{
 		  "title" : "packages",

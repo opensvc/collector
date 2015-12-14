@@ -232,7 +232,7 @@ function node_tabs(divid, options) {
       "title_class": "check16"
     })
     o.tabs[i].callback = function(divid) {
-      sync_ajax("/init/checks/checks_node/"+encodeURIComponent(o.options.nodename), [], divid, function(){})
+      table_checks_node(divid, o.options.nodename)
     }
 
     // tab compliance
