@@ -87,19 +87,22 @@ var menu_data = {
 		  "title" : "node_networks",
 		  "class" : "net16",
 		  "id" : "view-node-net",
-		  "link" : "/init/nodenetworks/nodenetworks"
+		  "link" : "/init/nodenetworks/nodenetworks",
+		  "fn" : "table_nodenetworks"
 		},
 		{
 		  "title" : "node_san",
 		  "class" : "net16",
 		  "id" : "view-node-san",
-		  "link" : "/init/nodesan/nodesan"
+		  "link" : "/init/nodesan/nodesan",
+		  "fn" : "table_nodesan"
 		},
 		{
 		  "title" : "san_switches",
 		  "class" : "net16",
 		  "id" : "view-san",
-		  "link" : "/init/sanswitches/sanswitches"
+		  "link" : "/init/sanswitches/sanswitches",
+		  "fn" : "table_sanswitches"
 		},
 		{
 		  "title" : "dns",

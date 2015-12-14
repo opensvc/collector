@@ -114,7 +114,8 @@ class table_sanswitches(HtmlTable):
 
 @auth.requires_login()
 def ajax_sanswitches_col_values():
-    t = table_sanswitches('sanswitches', 'ajax_sanswitches')
+    table_id = request.vars.table_id
+    t = table_sanswitches(table_id, 'ajax_sanswitches')
     col = request.args[0]
     o = db.v_switches[col]
     q = db.v_switches.id > 0
@@ -126,7 +127,8 @@ def ajax_sanswitches_col_values():
 
 @auth.requires_login()
 def ajax_sanswitches():
-    t = table_sanswitches('sanswitches', 'ajax_sanswitches')
+    table_id = request.vars.table_id
+    t = table_sanswitches(table_id, 'ajax_sanswitches')
 
     o = db.v_switches.sw_name|db.v_switches.sw_index|db.v_switches.sw_portstate
     q = db.v_switches.id > 0
@@ -151,10 +153,8 @@ def ajax_sanswitches():
 
 @auth.requires_login()
 def sanswitches():
-    t = table_sanswitches('sanswitches', 'ajax_sanswitches')
-    t = DIV(
-          t.html(),
-          _id='sanswitches',
+    t = SCRIPT(
+          """$.when(osvc.app_started).then(function(){ table_sanswitches("layout") })""",
         )
     return dict(table=t)
 

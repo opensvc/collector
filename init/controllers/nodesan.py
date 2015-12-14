@@ -148,7 +148,8 @@ class table_nodesan(HtmlTable):
 
 @auth.requires_login()
 def ajax_nodesan_col_values():
-    t = table_nodesan('nodesan', 'ajax_nodesan')
+    table_id = request.vars.table_id
+    t = table_nodesan(table_id, 'ajax_nodesan')
     col = request.args[0]
     o = db.v_nodesan[col]
     q = db.v_nodesan.id > 0
@@ -159,7 +160,8 @@ def ajax_nodesan_col_values():
 
 @auth.requires_login()
 def ajax_nodesan():
-    t = table_nodesan('nodesan', 'ajax_nodesan')
+    table_id = request.vars.table_id
+    t = table_nodesan(table_id, 'ajax_nodesan')
 
     o = db.v_nodesan.nodename|db.v_nodesan.hba_id|db.v_nodesan.tgt_id
     q = db.v_nodesan.id > 0
@@ -184,10 +186,8 @@ def ajax_nodesan():
 
 @auth.requires_login()
 def nodesan():
-    t = table_nodesan('nodesan', 'ajax_nodesan')
-    t = DIV(
-          t.html(),
-          _id='nodesan',
+    t = SCRIPT(
+          """$.when(osvc.app_started).then(function(){ table_nodesan("layout") })""",
         )
     return dict(table=t)
 

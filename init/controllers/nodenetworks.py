@@ -226,7 +226,8 @@ class table_nodenetworks(HtmlTable):
 
 @auth.requires_login()
 def ajax_nodenetworks_col_values():
-    t = table_nodenetworks('nodenetworks', 'ajax_nodenetworks')
+    table_id = request.vars.table_id
+    t = table_nodenetworks(table_id, 'ajax_nodenetworks')
     col = request.args[0]
     o = db.v_nodenetworks[col]
     q = db.v_nodenetworks.id > 0
@@ -237,7 +238,8 @@ def ajax_nodenetworks_col_values():
 
 @auth.requires_login()
 def ajax_nodenetworks():
-    t = table_nodenetworks('nodenetworks', 'ajax_nodenetworks')
+    table_id = request.vars.table_id
+    t = table_nodenetworks(table_id, 'ajax_nodenetworks')
 
     o = db.v_nodenetworks.nodename|db.v_nodenetworks.intf
     q = db.v_nodenetworks.id > 0
@@ -262,10 +264,8 @@ def ajax_nodenetworks():
 
 @auth.requires_login()
 def nodenetworks():
-    t = table_nodenetworks('nodenetworks', 'ajax_nodenetworks')
-    t = DIV(
-          t.html(),
-          _id='nodenetworks',
+    t = SCRIPT(
+          """$.when(osvc.app_started).then(function(){ table_nodenetworks("layout") })""",
         )
     return dict(table=t)
 
