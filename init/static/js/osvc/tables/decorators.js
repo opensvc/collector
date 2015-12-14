@@ -1785,6 +1785,7 @@ var img_h = {
   'check': 'check16',
   'checks': 'check16',
   'compliance': 'comp16',
+  'contextual_settings': 'filter16',
   'delete': 'del16',
   'detach': 'detach16',
   'dns': 'dns16',
