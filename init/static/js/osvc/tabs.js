@@ -157,7 +157,7 @@ function node_tabs(divid, options) {
       "title_class": "log16"
     })
     o.tabs[i].callback = function(divid) {
-      sync_ajax("/init/log/log_node/"+encodeURIComponent(o.options.nodename), [], divid, function(){})
+      table_log_node(divid, o.options.nodename)
     }
 
     // tab topology
@@ -330,7 +330,7 @@ function service_tabs(divid, options) {
       "title_class": "log16"
     })
     o.tabs[i].callback = function(divid) {
-      sync_ajax("/init/log/log_svc/"+encodeURIComponent(o.options.svcname), [], divid, function(){})
+      table_log_svc(divid, o.options.svcname)
     }
 
     // tab env

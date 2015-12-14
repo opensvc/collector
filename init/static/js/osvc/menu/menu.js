@@ -246,7 +246,8 @@ var menu_data = {
 		  "title" : "log",
 		  "class" : "log16",
 		  "id" : "adm-log",
-		  "link" : "/init/log/log"
+		  "link" : "/init/log/log",
+		  "fn" : "table_log"
 		},
 		{
 		  "title" : "o_setup",

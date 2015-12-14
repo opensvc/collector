@@ -155,7 +155,8 @@ class table_log(HtmlTable):
 
 @auth.requires_login()
 def ajax_log_col_values():
-    t = table_log('log', 'ajax_log')
+    table_id = request.vars.table_id
+    t = table_log(table_id, 'ajax_log')
     col = request.args[0]
     if t.colprops[col].filter_redirect is None:
         o = db.log[col]
@@ -172,7 +173,8 @@ def ajax_log_col_values():
 
 @auth.requires_login()
 def ajax_log():
-    t = table_log('log', 'ajax_log')
+    table_id = request.vars.table_id
+    t = table_log(table_id, 'ajax_log')
 
     o = ~db.log.log_date
     q = db.log.id > 0
@@ -192,101 +194,14 @@ def ajax_log():
         t.object_list = db(q).select(limitby=limitby, orderby=o, cacheable=False)
         return t.table_lines_data(n)
 
-    n = db(q).count()
-    t.setup_pager(n)
-    t.object_list = []
-
-    return DIV(
-             t.html(),
-             SCRIPT("""
-function ws_action_switch_%(divid)s(data) {
-        if (data["event"] == "log_change") {
-          _data = []
-          _data.push({"key": "id", "val": data["data"]["id"], "op": "="})
-          osvc.tables["%(divid)s"].insert(_data)
-        }
-}
-wsh["%(divid)s"] = ws_action_switch_%(divid)s
-              """ % dict(
-                     divid=t.innerhtml,
-                    )
-              ),
-            )
-
-
 @auth.requires_login()
 def log():
-    t = DIV(
-          ajax_log(),
-          _id='log',
+    t = SCRIPT(
+          """$.when(osvc.app_started).then(function(){ table_log("layout") })""",
         )
     return dict(table=t)
 
 def log_load():
     return log()["table"]
-
-class table_log_node(table_log):
-    def __init__(self, id=None, func=None, innerhtml=None):
-        table_log.__init__(self, id, func, innerhtml)
-        self.hide_tools = True
-        self.pageable = False
-        self.bookmarkable = False
-        self.commonalityable = False
-        self.linkable = False
-        self.checkboxes = True
-        self.filterable = False
-        self.exportable = False
-        self.dbfilterable = False
-        self.columnable = False
-        self.refreshable = False
-        self.wsable = False
-        self.dataable = True
-        self.child_tables = []
-
-def ajax_log_node():
-    tid = request.vars.table_id
-    t = table_log_node(tid, 'ajax_log_node')
-    o = ~db.log.log_date
-    q = _where(None, 'log', domain_perms(), 'log_nodename')
-    for f in ['log_nodename']:
-        q = _where(q, 'log', t.filter_parse(f), f)
-    if request.args[0] == "data":
-        t.object_list = db(q).select(cacheable=True, orderby=o, limitby=(0,20))
-        return t.table_lines_data(-1, html=False)
-
-def ajax_log_svc():
-    tid = request.vars.table_id
-    t = table_log_node(tid, 'ajax_log_svc')
-    o = ~db.log.log_date
-    q = _where(None, 'log', domain_perms(), 'log_svcname')
-    for f in ['log_svcname']:
-        q = _where(q, 'log', t.filter_parse(f), f)
-    if request.args[0] == "data":
-        t.object_list = db(q).select(cacheable=True, orderby=o, limitby=(0,20))
-        return t.table_lines_data(-1, html=False)
-
-@auth.requires_login()
-def log_node():
-    node = request.args[0]
-    tid = 'log_'+node.replace('-', '_').replace('.', '_')
-    t = table_log_node(tid, 'ajax_log_node')
-    t.colprops['log_nodename'].force_filter = node
-
-    return DIV(
-             t.html(),
-             _id=tid,
-           )
-
-@auth.requires_login()
-def log_svc():
-    svcname = request.args[0]
-    tid = 'log_'+svcname.replace('-','_').replace('.','_')
-    t = table_log_node(tid, 'ajax_log_svc')
-    t.colprops['log_svcname'].force_filter = svcname
-
-    return DIV(
-             t.html(),
-             _id=tid,
-           )
 
 
