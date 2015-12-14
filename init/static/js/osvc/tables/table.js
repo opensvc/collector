@@ -906,7 +906,9 @@ function table_refresh(t) {
 }
 
 function table_insert(t, data) {
-    var params = {}
+    var params = {
+      "table_id": t.id
+    }
     for (i=0; i<data.length; i++) {
         try {
             key=data[i]["key"]
