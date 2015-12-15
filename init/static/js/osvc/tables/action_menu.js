@@ -17,7 +17,8 @@ function table_action_menu_init_data(t) {
     "slave": "td[cell=1][name$=_c_encap]",
     "command": "td[cell=1][name$=_c_command]",
     "chk_type": "td[cell=1][name$=_c_chk_type]",
-    "chk_instance": "td[cell=1][name$=_c_chk_instance]"
+    "chk_instance": "td[cell=1][name$=_c_chk_instance]",
+    "network": "td[cell=1][name$=_c_network]"
   }
 
   t.action_menu_data = [
@@ -143,6 +144,27 @@ function table_action_menu_init_data(t) {
       "title": "action_menu.data_actions",
       "class": "hd16",
       "children": [
+        {
+          "selector": ["clicked", "checked", "all"],
+          "title": "action_menu.on_networks",
+          "foldable": true,
+          "cols": ["id", "network"],
+          "condition": "id+network",
+          "children": [
+            {
+              "title": "action_menu.add",
+              "class": "icon add16",
+              "fn": "data_action_add_network",
+              "min": 0
+            },
+            {
+              "title": "action_menu.delete",
+              "class": "icon del16",
+              "fn": "data_action_delete_networks",
+              "min": 1
+            }
+          ]
+        },
         {
           "selector": ["clicked", "checked", "all"],
           "foldable": true,
@@ -2023,6 +2045,123 @@ function data_action_delete_svcs(t, e) {
     del_data.push({'svc_name': data[i]['svcname']})
   }
   services_osvcdeleterest("R_SERVICES", "", "", del_data, function(jd) {
+    if (jd.error && (jd.error.length > 0)) {
+      $(".flash").show("blind").html(services_error_fmt(jd))
+    }
+    if (jd.info && (jd.info.length > 0)) {
+      $(".flash").show("blind").html(services_info_fmt(jd))
+    }
+  },
+  function(xhr, stat, error) {
+    $(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
+  })
+}
+
+//
+// data action: add network
+//
+function data_action_add_network(t, e) {
+  var entry = $(e.target)
+
+  // create and focus tool area
+  table_action_menu_focus_on_leaf(t, entry)
+  var div = $("<div></div>")
+  div.uniqueId()
+  div.append($("<hr>"))
+  div.css({"display": "table-caption"})
+  div.insertAfter(entry)
+
+  // minimal create information
+  var line = $("<div class='template_form_line'></div>")
+  var title_network = $("<div data-i18n='action_menu.network'></div>").i18n()
+  var input_network = $("<input id='netmask' class='oi' placeholder='192.168.0.0'></input>")
+  var title_netmask = $("<div data-i18n='action_menu.netmask'></div>").i18n()
+  var input_netmask = $("<input id='netmask' class='oi' placeholder='24'></input>")
+  var info = $("<div></div>")
+  info.uniqueId()
+  info.css({"margin": "0.8em 0 0.8em 0"})
+  line.append(title_network)
+  line.append(input_network)
+  line.append(title_netmask)
+  line.append(input_netmask)
+  div.append(line)
+  div.append(info)
+  input_network.focus()
+
+  var timer = null
+  var xhr = null
+
+  function keyup_trigger(e) {
+    clearTimeout(timer)
+    if (is_enter(e)) {
+      var data = {
+        "network": input_network.val(),
+        "netmask": input_netmask.val()
+      }
+      info.empty()
+      spinner_add(info)
+      xhr  = services_osvcpostrest("R_NETWORKS", "", "", data, function(jd) {
+        spinner_del(info)
+        if (jd.error && (jd.error.length > 0)) {
+          info.html(services_error_fmt(jd))
+        }
+        // display the node properties tab to set more properties
+        network_properties(div.attr("id"), {"network_id": jd.data[0].id})
+      },
+      function(xhr, stat, error) {
+        info.html(services_ajax_error_fmt(xhr, stat, error))
+      })
+    } else {
+      var data = {
+        "filters": [
+          "network=" + input_network.val(),
+          "netmask=" + input_netmask.val()
+        ]
+      }
+      timer = setTimeout(function(){
+        info.empty()
+        spinner_add(info)
+        if (xhr) {
+          xhr.abort()
+        }
+        services_osvcgetrest("R_NETWORKS", [], data, function(jd) {
+          xhr = null
+          spinner_del(info)
+          if (jd.error && (jd.error.length > 0)) {
+            info.html(services_error_fmt(jd))
+          }
+          if (jd.data.length == 0) {
+            info.text(i18n.t("action_menu.net_createable"))
+            return
+          }
+  
+          // display the net properties tab
+          network_properties(info.attr("id"), {"network_id": jd.data[0].id})
+        },
+        function(xhr, stat, error) {
+          info.html(services_ajax_error_fmt(xhr, stat, error))
+        })
+      }, 500)
+    }
+  }
+  input_network.bind("keyup", keyup_trigger)
+  input_netmask.bind("keyup", keyup_trigger)
+}
+
+//
+// data action: delete networks
+//
+function data_action_delete_networks(t, e) {
+  var entry = $(e.target)
+  var cache_id = entry.attr("cache_id")
+  var data = t.action_menu_data_cache[cache_id]
+  var del_data = new Array()
+  for (i=0;i<data.length;i++) {
+    del_data.push({
+      'id': data[i]['id']
+    })
+  }
+  services_osvcdeleterest("R_NETWORKS", "", "", del_data, function(jd) {
     if (jd.error && (jd.error.length > 0)) {
       $(".flash").show("blind").html(services_error_fmt(jd))
     }

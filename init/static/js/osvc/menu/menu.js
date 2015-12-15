@@ -81,7 +81,8 @@ var menu_data = {
 		  "title" : "networks",
 		  "class" : "net16",
 		  "id" : "view-net",
-		  "link" : "/init/networks/networks"
+		  "link" : "/init/networks/networks",
+		  "fn" : "table_networks"
 		},
 		{
 		  "title" : "node_networks",

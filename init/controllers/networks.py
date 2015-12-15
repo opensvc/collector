@@ -28,36 +28,6 @@ def _segment_form(record=None, net_id=None):
         f.vars.seg_end = rows[0].broadcast
     return f
 
-@auth.requires_membership('NetworkManager')
-def _network_form(record=None):
-    if record is not None:
-        deletable = True
-    else:
-        deletable = False
-    return SQLFORM(db.networks,
-                 record=record,
-                 deletable=deletable,
-                 hidden_fields=['id'],
-                 fields=[
-                     'name',
-                     'pvid',
-                     'network',
-                     'netmask',
-                     'gateway',
-                     'prio',
-                     'team_responsible',
-                     'comment'],
-                 labels={
-                     'name': 'Name',
-                     'pvid': 'VLAN id',
-                     'network': 'Network',
-                     'netmask': 'Netmask',
-                     'gateway': 'Gateway',
-                     'prio': 'Priority',
-                     'team_responsible': 'Team Responsible',
-                     'comment': 'Comment',
-                 })
-
 class table_networks(HtmlTable):
     def __init__(self, id=None, func=None, innerhtml=None):
         if id is None and 'tableid' in request.vars:
@@ -68,7 +38,7 @@ class table_networks(HtmlTable):
         self.cols = networks_cols
         self.colprops = networks_colprops
 
-        self.extrarow = True
+        self.extrarow = False
         self.extraline = True
         self.checkboxes = True
         self.dbfilterable = False
@@ -77,57 +47,12 @@ class table_networks(HtmlTable):
         self.span = ["id"]
         self.csv_limit = 30000
         self.force_cols = ['id']
+        self.events = ['networks_change']
 
         for c in self.cols:
             self.colprops[c].table = 'networks'
 
         self.ajax_col_values = 'ajax_networks_col_values'
-
-        if 'NetworkManager' in user_groups():
-            self.additional_tools.append('network_add')
-            self.additional_tools.append('network_del')
-
-    def format_extrarow(self, o):
-        id = self.extra_line_key(o)
-        s = self.colprops['id'].get(o)
-        d = DIV(
-              A(
-                IMG(
-                  _src=URL(r=request, c='static', f='images/edit.png'),
-                  _style='vertical-align:middle',
-                ),
-                _href=URL(r=request, c='networks', f='network_edit',
-                          vars={'network_id':s,
-                                '_next': URL(r=request)}
-                      ),
-              ),
-            )
-        return d.xml()
-
-    def network_del(self):
-        d = DIV(
-              A(
-                T("Delete networks"),
-                _class='del16',
-                _onclick="""if (confirm("%(text)s")){%(s)s};"""%dict(
-                   s=self.ajax_submit(args=['network_del']),
-                   text=T("Please confirm network deletion"),
-                ),
-              ),
-              _class='floatw',
-            )
-        return d
-
-    def network_add(self):
-        d = DIV(
-              A(
-                T("Add network"),
-                _class='add16',
-                _onclick="""location.href='network_add?_next=%s'"""%URL(r=request),
-              ),
-              _class='floatw',
-            )
-        return d
 
 @auth.requires_login()
 def segments():
@@ -423,33 +348,6 @@ def segment_add():
     return dict(form=form)
 
 @auth.requires_login()
-def network_add():
-    form = _network_form()
-    if form.accepts(request.vars):
-        response.flash = T("edition recorded")
-        _log('networks.add',
-             'added network %(u)s',
-             dict(u='/'.join((request.vars.network, request.vars.netmask))))
-        redirect(URL(r=request, f='networks'))
-    elif form.errors:
-        response.flash = T("errors in form")
-    return dict(form=form)
-
-@auth.requires_membership('NetworkManager')
-def network_del(ids):
-    q = db.networks.id.belongs(ids)
-    groups = user_groups()
-    if 'Manager' not in groups:
-        # Manager+NetworkManager can delete any network
-        # NetworkManager can delete the networks they are responsible of
-        q &= db.networks.team_responsible.belongs(groups)
-    u = ', '.join(['/'.join((r.network, r.netmask)) for r in db(q).select()])
-    db(q).delete()
-    _log('networks.delete',
-         'deleted networks %(u)s',
-         dict(u=u))
-
-@auth.requires_login()
 def segment_edit():
     query = (db.network_segments.id>0)
     query &= _where(None, 'network_segments', request.args[0], 'id')
@@ -475,33 +373,9 @@ def segment_edit():
     return dict(form=form)
 
 @auth.requires_login()
-def network_edit():
-    query = (db.networks.id>0)
-    query &= _where(None, 'networks', request.vars.network_id, 'id')
-    groups = user_groups()
-    if 'Manager' not in groups:
-        # Manager+NetworkManager can edit any network
-        # NetworkManager can edit the networks they are responsible of
-        query &= db.networks.team_responsible.belongs(groups)
-    rows = db(query).select()
-    if len(rows) != 1:
-        response.flash = "network %s not found or insufficient privileges"%str(request.vars.network_id)
-        return dict(form="")
-    record = rows[0]
-    form = _network_form(record)
-    if form.accepts(request.vars):
-        response.flash = T("edition recorded")
-        _log('networks.change',
-             'edited network %(u)s',
-             dict(u='/'.join((request.vars.network, request.vars.netmask))))
-        redirect(URL(r=request, f='networks'))
-    elif form.errors:
-        response.flash = T("errors in form")
-    return dict(form=form)
-
-@auth.requires_login()
 def ajax_networks_col_values():
-    t = table_networks('networks', 'ajax_networks')
+    table_id = request.vars.table_id
+    t = table_networks(table_id, 'ajax_networks')
     col = request.args[0]
     o = db.networks[col]
     q = db.networks.id > 0
@@ -512,7 +386,8 @@ def ajax_networks_col_values():
 
 @auth.requires_login()
 def ajax_networks():
-    t = table_networks('networks', 'ajax_networks')
+    table_id = request.vars.table_id
+    t = table_networks(table_id, 'ajax_networks')
 
     if len(request.args) >= 1:
         action = request.args[0]
@@ -545,10 +420,8 @@ def ajax_networks():
 
 @auth.requires_login()
 def networks():
-    t = table_networks('networks', 'ajax_networks')
-    t = DIV(
-          t.html(),
-          _id='networks',
+    t = SCRIPT(
+          """$.when(osvc.app_started).then(function(){ table_networks("layout") })""",
         )
     return dict(table=t)
 

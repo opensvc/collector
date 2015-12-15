@@ -14,6 +14,10 @@
     "import": "Import"
   },
   "action_menu": {
+    "on_networks": "Sur les réseaux",
+    "net_createable": "Ce réseau n'existe pas encore. Appuyez sur <entrée> pour le créer.",
+    "network": "Réseau",
+    "netmask": "Masque",
     "on_check_instances": "Sur les instances de sonde",
     "delete_contextual_thresholds": "Supprimer des seuils contextuels",
     "add_contextual_thresholds": "Ajouter des seuils contextuels",
@@ -189,6 +193,7 @@
   "search": {
     "nothing_found" : "Aucun résultat ne répond au critère de recherche.",
     "menu_header" : {
+      "title_safe_files" : "Fichiers du coffre-fort",
       "title_disks" : "Disques",
       "title_services" : "Services",
       "title_nodes" : "Noeuds",
@@ -225,6 +230,20 @@
       "designer" : "Designer",
       "nodes_net" : "Réseau de noeuds"
     }
+  },
+  "network_properties": {
+    "ip": "Ip",
+    "lan": "Lan",
+    "pvid": "pvid",
+    "network": "réseau",
+    "netmask": "masque",
+    "gateway": "passerelle",
+    "broadcast": "broadcast",
+    "name": "nom",
+    "comment": "commentaire",
+    "begin": "début",
+    "end": "fin",
+    "prio": "priorité de connexion"
   },
   "node_properties": {
     "no_uuid": "Agent non enregistré",
@@ -377,6 +396,9 @@
     "pkgdiff": "pkgdiff",
     "container_stats": "container stats",
     "compliance": "conformité"
+  },
+  "network_tabs": {
+    "segments": "segments"
   },
   "node_tabs": {
     "properties": "propriétés",

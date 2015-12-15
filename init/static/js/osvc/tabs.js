@@ -551,3 +551,45 @@ function user_tabs(divid, options) {
 }
 
 
+//
+// network
+//
+function network_tabs(divid, options) {
+  o = tabs(divid)
+  o.options = options
+
+  o.load(function() {
+    o.closetab.children("p").text(o.options.network_id)
+
+    // tab properties
+    i = o.register_tab({
+      "title": "node_tabs.properties",
+      "title_class": "net16"
+    })
+    o.tabs[i].callback = function(divid) {
+      network_properties(divid, o.options)
+    }
+    i = o.register_tab({
+      "title": "network_tabs.segments",
+      "title_class": "net16"
+    })
+    o.tabs[i].callback = function(divid) {
+      sync_ajax("/init/networks/segments/"+o.options.network_id, [], divid, function(){})
+    }
+
+    if (!o.options.tab) {
+      o.closetab.next("li").trigger("click")
+    } else {
+      for (var i=0; i<o.tabs.length; i++) {
+        if (o.tabs[i].title != o.options.tab) {
+          continue
+        }
+        o.tabs[i].tab.trigger("click")
+        break
+      }
+    }
+  })
+  return o
+}
+
+

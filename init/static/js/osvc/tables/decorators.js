@@ -1847,11 +1847,15 @@ function cell_decorator_boolean(e) {
 function cell_decorator_network(e) {
   var v = $(e).attr("v")
   $(e).html("<span class='clickable'>"+v+"</span>")
+  $(e).addClass("corner")
   $(e).click(function(){
     var line = $(this).parent(".tl")
     var net_id = line.children("[name$=_c_id]").attr("v")
-    url = services_get_url() + "/init/networks/segments/"+net_id
-    toggle_extra(url, net_id, $(this), 0)
+    table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
+    span_id = $(e).parent(".tl").attr("spansum")
+    id = table_id + "_x_" + span_id
+    toggle_extra(null, id, e, 0)
+    network_tabs(id, {"network_id": net_id})
   })
 }
 

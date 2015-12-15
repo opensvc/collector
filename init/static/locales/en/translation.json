@@ -14,6 +14,10 @@
     "import": "Import"
   },
   "action_menu": {
+    "on_networks": "On networks",
+    "network": "Network",
+    "netmask": "Netmask",
+    "net_createable": "This network does not exist yet. Press <enter> to create.",
     "on_check_instances": "On check instances",
     "delete_contextual_thresholds": "Delete contextual thresholds",
     "add_contextual_thresholds": "Add contextual thresholds",
@@ -202,6 +206,7 @@
   "search": {
     "nothing_found" : "No entry found matching filter",
     "menu_header" : {
+      "title_safe_files" : "Safe files",
       "title_disks" : "Disks",
       "title_services" : "Services",
       "title_nodes" : "Nodes",
@@ -268,6 +273,20 @@
     "overall_status": "overall status",
     "avail_status": "availability status",
     "cluster_type": "cluster type"
+  },
+  "network_properties": {
+    "ip": "Ip",
+    "lan": "Lan",
+    "pvid": "pvid",
+    "network": "network",
+    "netmask": "netmask",
+    "gateway": "gateway",
+    "broadcast": "broadcast",
+    "name": "name",
+    "comment": "comment",
+    "begin": "begin",
+    "end": "end",
+    "prio": "Connect-to priority"
   },
   "node_properties": {
     "no_uuid": "Agent not registered",
@@ -390,6 +409,9 @@
     "pkgdiff": "pkgdiff",
     "container_stats": "container stats",
     "compliance": "compliance"
+  },
+  "network_tabs": {
+    "segments": "segments"
   },
   "node_tabs": {
     "properties": "properties",
