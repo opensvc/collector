@@ -160,25 +160,29 @@ var menu_data = {
 		  "title" : "nrulesets",
 		  "class" : "node16",
 		  "id" : "comp-node-rset",
-		  "link" : "/init/compliance/comp_rulesets_nodes_attachment"
+		  "link" : "/init/compliance/comp_rulesets_nodes",
+		  "fn" : "table_comp_rulesets_nodes"
 		},
 		{
 		  "title" : "node_modulesets",
 		  "class" : "node16",
 		  "id" : "comp-node-modset",
-		  "link" : "/init/compliance/comp_modulesets_nodes"
+		  "link" : "/init/compliance/comp_modulesets_nodes",
+		  "fn" : "table_comp_modulesets_nodes"
 		},
 		{
 		  "title" : "srulesets",
 		  "class" : "svc",
 		  "id" : "comp-svc-rset",
-		  "link" : "/init/compliance/comp_rulesets_services_attachment"
+		  "link" : "/init/compliance/comp_rulesets_services",
+		  "fn" : "table_comp_rulesets_services"
 		},
 		{
 		  "title" : "service_modulesets",
 		  "class" : "svc",
 		  "id" : "comp-svc-modset",
-		  "link" : "/init/compliance/comp_modulesets_services"
+		  "link" : "/init/compliance/comp_modulesets_services",
+		  "fn" : "table_comp_modulesets_services"
 		},
 	],
 	"statistic": [

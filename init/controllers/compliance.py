@@ -479,7 +479,8 @@ class table_comp_rulesets_nodes(HtmlTable):
 
 @auth.requires_login()
 def ajax_comp_rulesets_services_col_values():
-    t = table_comp_rulesets_services('crs', 'ajax_comp_rulesets_services')
+    table_id = request.vars.table_id
+    t = table_comp_rulesets_services(table_id, 'ajax_comp_rulesets_services')
     col = request.args[0]
     o = db.v_comp_services[col]
     g = db.v_comp_services.svc_name | db.v_comp_services.encap | db.v_comp_services.ruleset_name
@@ -491,7 +492,8 @@ def ajax_comp_rulesets_services_col_values():
 
 @auth.requires_login()
 def ajax_comp_rulesets_nodes_col_values():
-    t = table_comp_rulesets_nodes('crn', 'ajax_comp_rulesets_nodes')
+    table_id = request.vars.table_id
+    t = table_comp_rulesets_nodes(table_id, 'table_comp_rulesets_nodes')
     col = request.args[0]
     o = db.v_comp_nodes[col]
     g = db.v_comp_nodes.nodename | db.v_comp_nodes.ruleset_name
@@ -503,7 +505,8 @@ def ajax_comp_rulesets_nodes_col_values():
 
 @auth.requires_login()
 def ajax_comp_rulesets_services():
-    t = table_comp_rulesets_services('crs', 'ajax_comp_rulesets_services')
+    table_id = request.vars.table_id
+    t = table_comp_rulesets_services(table_id, 'ajax_comp_rulesets_services')
 
     o = db.v_comp_services.svc_name | db.v_comp_services.encap | db.v_comp_services.ruleset_name
     g = db.v_comp_services.svc_name | db.v_comp_services.encap | db.v_comp_services.ruleset_name
@@ -528,7 +531,8 @@ def ajax_comp_rulesets_services():
 
 @auth.requires_login()
 def ajax_comp_rulesets_nodes():
-    t = table_comp_rulesets_nodes('crn', 'ajax_comp_rulesets_nodes')
+    table_id = request.vars.table_id
+    t = table_comp_rulesets_nodes(table_id, 'table_comp_rulesets_nodes')
 
     o = db.v_comp_nodes.nodename
     g = db.v_comp_nodes.nodename | db.v_comp_nodes.ruleset_name
@@ -1823,32 +1827,24 @@ def comp_rules_load():
     return comp_rules()["table"]
 
 @auth.requires_login()
-def comp_rulesets_services_attachment():
-    t = table_comp_rulesets_services('crs', 'ajax_comp_rulesets_services')
-    t = DIV(
-             DIV(
-               t.html(),
-               _id='crs',
-             ),
-           )
+def comp_rulesets_services():
+    t = SCRIPT(
+          """$.when(osvc.app_started).then(function(){ table_comp_rulesets_services("layout") })""",
+        )
     return dict(table=t)
 
-def comp_rulesets_services_attachment_load():
-    return comp_rulesets_services_attachment()["table"]
+def comp_rulesets_services_load():
+    return comp_rulesets_services()["table"]
 
 @auth.requires_login()
-def comp_rulesets_nodes_attachment():
-    t = table_comp_rulesets_nodes('crn', 'ajax_comp_rulesets_nodes')
-    t = DIV(
-             DIV(
-               t.html(),
-               _id='crn',
-             ),
-           )
+def comp_rulesets_nodes():
+    t = SCRIPT(
+          """$.when(osvc.app_started).then(function(){ table_comp_rulesets_nodes("layout") })""",
+        )
     return dict(table=t)
 
-def comp_rulesets_nodes_attachment_load():
-    return comp_rulesets_nodes_attachment()["table"]
+def comp_rulesets_nodes_load():
+    return comp_rulesets_nodes()["table"]
 
 #
 # Filters sub-view
@@ -3501,7 +3497,8 @@ class table_comp_modulesets_nodes(HtmlTable):
 
 @auth.requires_login()
 def ajax_comp_modulesets_services_col_values():
-    t = table_comp_modulesets_services('cms', 'ajax_comp_modulesets_services')
+    table_id = request.vars.table_id
+    t = table_comp_modulesets_services(table_id, 'ajax_comp_modulesets_services')
     col = request.args[0]
     o = db.v_comp_services[col]
     g = db.v_comp_services.svc_name | db.v_comp_services.encap | db.v_comp_services.modset_name
@@ -3516,7 +3513,8 @@ def ajax_comp_modulesets_services_col_values():
 
 @auth.requires_login()
 def ajax_comp_modulesets_nodes_col_values():
-    t = table_comp_modulesets_nodes('cmn', 'ajax_comp_modulesets_nodes')
+    table_id = request.vars.table_id
+    t = table_comp_modulesets_nodes(table_id, 'ajax_comp_modulesets_services')
     col = request.args[0]
     o = db.v_comp_nodes[col]
     g = db.v_comp_nodes.nodename | db.v_comp_nodes.modset_name
@@ -3531,7 +3529,8 @@ def ajax_comp_modulesets_nodes_col_values():
 
 @auth.requires_login()
 def ajax_comp_modulesets_services():
-    t = table_comp_modulesets_services('cms', 'ajax_comp_modulesets_services')
+    table_id = request.vars.table_id
+    t = table_comp_modulesets_services(table_id, 'ajax_comp_modulesets_services')
 
     o = db.v_comp_services.svc_name | db.v_comp_services.encap | db.v_comp_services.modset_name
     g = db.v_comp_services.svc_name | db.v_comp_services.encap | db.v_comp_services.modset_name
@@ -3556,7 +3555,8 @@ def ajax_comp_modulesets_services():
 
 @auth.requires_login()
 def ajax_comp_modulesets_nodes():
-    t = table_comp_modulesets_nodes('cmn', 'ajax_comp_modulesets_nodes')
+    table_id = request.vars.table_id
+    t = table_comp_modulesets_nodes(table_id, 'ajax_comp_modulesets_services')
 
     o = db.v_comp_nodes.nodename
     g = db.v_comp_nodes.nodename | db.v_comp_nodes.modset_name
@@ -3593,13 +3593,9 @@ def comp_modules():
 
 @auth.requires_login()
 def comp_modulesets_services():
-    t = table_comp_modulesets_services('cms', 'ajax_comp_modulesets_services')
-    t = DIV(
-             DIV(
-               t.html(),
-               _id='cms',
-             ),
-           )
+    t = SCRIPT(
+          """$.when(osvc.app_started).then(function(){ table_comp_modulesets_services("layout") })""",
+        )
     return dict(table=t)
 
 def comp_modulesets_services_load():
@@ -3607,13 +3603,9 @@ def comp_modulesets_services_load():
 
 @auth.requires_login()
 def comp_modulesets_nodes():
-    t = table_comp_modulesets_nodes('cmn', 'ajax_comp_modulesets_nodes')
-    t = DIV(
-             DIV(
-               t.html(),
-               _id='cmn',
-             ),
-           )
+    t = SCRIPT(
+          """$.when(osvc.app_started).then(function(){ table_comp_modulesets_nodes("layout") })""",
+        )
     return dict(table=t)
 
 def comp_modulesets_nodes_load():
