@@ -135,7 +135,8 @@ var menu_data = {
 		  "title" : "log",
 		  "class" : "log16",
 		  "id" : "comp-log",
-		  "link" : "/init/compliance/comp_log"
+		  "link" : "/init/compliance/comp_log",
+		  "fn" : "table_comp_log"
 		},
 		{
 		  "title" : "modulesets",

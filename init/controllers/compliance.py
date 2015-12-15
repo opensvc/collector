@@ -4294,7 +4294,8 @@ def check_del(ids):
 
 @auth.requires_login()
 def ajax_comp_log_col_values():
-    t = table_comp_log('comp_log', 'ajax_comp_log')
+    table_id = request.vars.table_id
+    t = table_comp_log(table_id, 'ajax_comp_log')
     col = request.args[0]
     o = db.comp_log[col]
     q = _where(None, 'comp_log', domain_perms(), 'run_nodename')
@@ -5047,7 +5048,8 @@ class table_comp_log(table_comp_status):
 
 @auth.requires_login()
 def ajax_comp_log():
-    t = table_comp_log('comp_log', 'ajax_comp_log')
+    table_id = request.vars.table_id
+    t = table_comp_log(table_id, 'ajax_comp_log')
 
     db.commit()
     o = ~db.comp_log.id
@@ -5076,12 +5078,8 @@ def ajax_comp_log():
 
 @auth.requires_login()
 def comp_log():
-    t = table_comp_log('comp_log', 'ajax_comp_log')
-    t = DIV(
-          DIV(
-            t.html(),
-            _id='comp_log',
-          ),
+    t = SCRIPT(
+          """$.when(osvc.app_started).then(function(){ table_comp_log("layout") })""",
         )
     return dict(table=t)
 
