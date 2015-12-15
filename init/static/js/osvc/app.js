@@ -50,13 +50,18 @@ function app_start() {
       osvc.search = search("layout_search_tool")
       osvc.fset_selector = fset_selector("fset_selector")
       app_bindings()
-      app_menu_entries_bind_click_to_load()
       app_datetime_decorators()
       osvc.app_started.resolve(true)
     })
 }
 
-function app_load_href(href, fn) {
+function app_load_href(href, fn, options) {
+    if (!options) {
+      options = {
+        "disable_pushstate": false
+      }
+    }
+
     // loadable co-functions ends with '_load'
     var _href
 
@@ -78,12 +83,12 @@ function app_load_href(href, fn) {
     _href = l.join("?")
 
     // update browser url and history
-    if (!_badIE) {
-      history.pushState({}, "", href)
+    if (!_badIE && !options.disable_pushstate) {
+      console.log("pushstate", fn, href)
+      history.pushState({"fn": fn}, "", href)
     }
 
     var menu = $(".header .menu16")
-    console.log(menu)
     menu.removeClass("menu16")
     menu.parent().prepend($("<span class='refresh16 fa-spin'></span>"))
     if ((fn != "undefined") && (fn !== "undefined") && fn) {
@@ -106,6 +111,7 @@ function app_load_href(href, fn) {
     function post_load() {
       menu.addClass("menu16")
       menu.prev(".refresh16").remove()
+      osvc.menu.set_title_from_href()
       // load success, purge tables not displayed anymore
       for (tid in osvc.tables) {
         if ($('#'+tid).length == 0) {
@@ -118,35 +124,20 @@ function app_load_href(href, fn) {
     }
 }
 
-function app_menu_entries_bind_click_to_load() {
-  $(".menu .menu_entry").bind("click", function(event) {
-    event.preventDefault()
-    var href = $(this).find("a").attr("href")
-    if (!href) {
-      return
-    }
-    if(event.ctrlKey) {
-      window.open(href, "_blank")
-      return
-    }
-    app_load_href(href)
-    $(".header .menu").hide("fold")
-
-    // update browser url and history
-    history.pushState({}, "", href)
-
-    // prevent default
-    return false
-  })
-}
-
-
 function app_bindings() {
   // Handle navigation between load()ed pages through browser tools
   $(window).on("popstate", function(e) {
     if (e.originalEvent.state !== null) {
-      e.preventDefault()
-      app_load_href(location.href);
+      if (e.state && e.state.fn) {
+        fn = e.state.fn
+      } else if (e.originalEvent && e.originalEvent.state && e.originalEvent.state.fn) {
+        fn = e.originalEvent.state.fn
+      } else {
+        fn = null
+      }
+      console.log("popstate", location.href, fn)
+      app_load_href(location.href, fn, {disable_pushstate: true});
+      //e.preventDefault()
     }
   })
 
@@ -165,6 +156,10 @@ function app_bindings() {
 
   // key bindings
   $(document).keydown(function(event) {
+    if (event.altKey) {
+      return
+    }
+
     // ESC closes pop-ups and blur inputs
     if ( event.which == 27 ) {
       $("input:focus").blur()

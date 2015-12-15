@@ -511,8 +511,7 @@ function menu(divid) {
 
 	o.bind_sub_link = function(title) {
 		var section = menu_data[title]
-		for(i=0;i<section.length;i++)
-		{
+		for (i=0; i<section.length; i++) {
 			$("#menu_"+title+"_"+section[i].title).on("click", function (event) {
 				event.preventDefault()
 				var title = $(this).find(".menu_title").text()

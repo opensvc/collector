@@ -2129,7 +2129,6 @@ function table_add_bookmarks(t) {
 
   for (var i=0; i<bookmarks.length; i++) {
     var name = bookmarks[i]
-    console.log(name)
     t.insert_bookmark(name)
   }
 
