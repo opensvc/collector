@@ -246,6 +246,7 @@ handlers = {
      rest_delete_group(),
      rest_delete_group_hidden_menu_entries(),
      rest_delete_network(),
+     rest_delete_networks(),
      rest_delete_network_segment(),
      rest_delete_network_segment_responsible(),
      rest_delete_nodes(),

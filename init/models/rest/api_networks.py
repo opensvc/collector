@@ -488,7 +488,7 @@ class rest_post_networks(rest_post_handler):
         vars["updated"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         if "team_responsible" not in vars:
             vars["team_responsible"] = user_primary_group()
-        id = db.networks.insert(**vars)
+        id = db.networks.validate_and_insert(**vars)
         _log('rest.networks.create',
              'create properties %(data)s',
              dict(data=str(vars))
@@ -539,4 +539,31 @@ class rest_delete_network(rest_delete_handler):
         }
         _websocket_send(event_msg(l))
         return dict(info="Network %s deleted" % id)
+
+#
+class rest_delete_networks(rest_delete_handler):
+    def __init__(self):
+        desc = [
+          "Delete networks.",
+          "The user must be responsible for the networks.",
+          "The user must be in the NetworkManager privilege group.",
+          "The action is logged in the collector's log.",
+          "Websocket events are sent to announce the changes in the networks table.",
+        ]
+        examples = [
+          """# curl -u %(email)s -o- -X DELETE "https://%(collector)s/init/rest/api/networks?filters[]=pvid 10" """,
+        ]
+        rest_delete_handler.__init__(
+          self,
+          path="/networks",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, **vars):
+        if "id" not in vars:
+            raise Exception("The 'id' key is mandatory")
+        id = vars["id"]
+        del(vars["id"])
+        return rest_delete_network().handler(id, **vars)
 
