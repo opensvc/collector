@@ -246,7 +246,7 @@ def ajax_actions():
 @auth.requires_login()
 def svcactions():
     t = SCRIPT(
-          """$.when(osvc.app_started).then(function(){ table_actions("layout") })""",
+          """$.when(osvc.app_started).then(function(){ table_actions("layout", %s) })""" % request_vars_to_table_options(),
         )
     return dict(table=t)
 

@@ -197,7 +197,7 @@ def ajax_log():
 @auth.requires_login()
 def log():
     t = SCRIPT(
-          """$.when(osvc.app_started).then(function(){ table_log("layout") })""",
+          """$.when(osvc.app_started).then(function(){ table_log("layout", %s) })""" % request_vars_to_table_options(),
         )
     return dict(table=t)
 

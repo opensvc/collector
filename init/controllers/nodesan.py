@@ -187,7 +187,7 @@ def ajax_nodesan():
 @auth.requires_login()
 def nodesan():
     t = SCRIPT(
-          """$.when(osvc.app_started).then(function(){ table_nodesan("layout") })""",
+          """$.when(osvc.app_started).then(function(){ table_nodesan("layout", %s) })""" % request_vars_to_table_options(),
         )
     return dict(table=t)
 

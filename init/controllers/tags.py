@@ -266,7 +266,7 @@ def ajax_tagattach():
 @auth.requires_login()
 def tagattach():
     t = SCRIPT(
-          """$.when(osvc.app_started).then(function(){ table_tagattach("layout") })""",
+          """$.when(osvc.app_started).then(function(){ table_tagattach("layout", %s) })""" % request_vars_to_table_options(),
         )
     return dict(table=t)
 

@@ -85,7 +85,7 @@ def ajax_packages():
 @auth.requires_login()
 def packages():
     t = SCRIPT(
-          """$.when(osvc.app_started).then(function(){ table_packages("layout") })""",
+          """$.when(osvc.app_started).then(function(){ table_packages("layout", %s) })""" % request_vars_to_table_options(),
         )
     return dict(table=t)
 

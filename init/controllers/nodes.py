@@ -156,7 +156,7 @@ def ajax_nodes():
 @auth.requires_login()
 def nodes():
     t = SCRIPT(
-          """$.when(osvc.app_started).then(function(){ view_nodes("layout") })""",
+          """$.when(osvc.app_started).then(function(){ view_nodes("layout", %s) })""" % request_vars_to_table_options(),
         )
     return dict(table=t)
 

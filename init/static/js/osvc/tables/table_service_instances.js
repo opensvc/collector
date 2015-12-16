@@ -24,7 +24,22 @@ table_service_instances_defaults = {
      'wsable': true,
      'pageable': true,
      'on_change': false,
-     'force_cols': ['mon_svcname', 'mon_updated'],
+     'force_cols': [
+            'mon_svcname',
+            'svc_autostart',
+            'mon_guestos',
+            'mon_nodname',
+            'mon_containerstatus',
+            'mon_ipstatus',
+            'mon_fsstatus',
+            'mon_diskstatus',
+            'mon_sharestatus',
+            'mon_syncstatus',
+            'mon_appstatus',
+            'mon_hbstatus',
+            'mon_updated',
+            'os_name',
+     ],
      'events': ['svcmon_change'],
      'request_vars': {}
 }

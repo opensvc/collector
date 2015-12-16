@@ -7,6 +7,15 @@ def print_duration(begin, s):
     print s, duration
     return end
 
+def request_vars_to_table_options():
+    o = {'request_vars': {}}
+    for key in request.vars:
+        if '_f_' in key:
+            o["request_vars"][key] = request.vars[key]
+    if "volatile_filters" in request.vars:
+        o["volatile_filters"] = request.vars.volatile_filters
+    return json.dumps(o)
+
 class ToolError(Exception):
     def __init__(self, value):
         self.value = value
@@ -682,6 +691,7 @@ var ti_%(id)s = setInterval(function(){
      'checkboxes': %(checkboxes)s,
      'ajax_url': '%(ajax_url)s',
      'span': %(span)s,
+     'force_cols': %(force_cols)s,
      'columns': %(columns)s,
      'colprops': %(colprops)s,
      'volatile_filters': %(volatile_filters)s,
@@ -715,6 +725,7 @@ var ti_%(id)s = setInterval(function(){
                    ajax_url=URL(r=request,f=self.func),
                    a=self.ajax_inputs(),
                    span=str(self.span),
+                   force_cols=str(self.force_cols),
                    columns=str(self.cols),
                    colprops=self.serialize_colprops(),
                    volatile_filters=str(self.volatile_filters).lower(),

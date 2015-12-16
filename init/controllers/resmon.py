@@ -187,7 +187,7 @@ def ajax_resmon():
 @auth.requires_login()
 def resmon():
     t = SCRIPT(
-          """$.when(osvc.app_started).then(function(){ table_resources("layout") })""",
+          """$.when(osvc.app_started).then(function(){ table_resources("layout", %s) })""" % request_vars_to_table_options(),
         )
     return dict(table=t)
 

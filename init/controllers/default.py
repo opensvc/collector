@@ -248,7 +248,7 @@ def ajax_svcmon():
 @auth.requires_login()
 def svcmon():
     t = SCRIPT(
-          """$.when(osvc.app_started).then(function(){ table_service_instances("layout") })""",
+          """$.when(osvc.app_started).then(function(){ table_service_instances("layout", %s) })""" % request_vars_to_table_options(),
         )
     return dict(table=t)
 
