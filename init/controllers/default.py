@@ -206,7 +206,7 @@ class table_svcmon(HtmlTable):
 @auth.requires_login()
 def ajax_svcmon_col_values():
     table_id = request.vars.table_id
-    t = table_svcmon(tabled_id, 'ajax_svcmon')
+    t = table_svcmon(table_id, 'ajax_svcmon')
     col = request.args[0]
     o = db.v_svcmon[col]
     q = _where(None, 'v_svcmon', domain_perms(), 'mon_nodname')
