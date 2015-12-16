@@ -1311,7 +1311,17 @@ function table_bind_filter_input_events(t) {
     }
     var input = $(this)
     var col = input.attr('id').split('_f_')[1]
-    t.e_header_slim.find("[col='"+col+"']").removeClass("bgred").addClass("bgorange")
+
+    // handle slim header colorization
+    current_filter = input.parents("th").first().find(".col_filter_label").attr("title")
+    if (current_filter != input.val()) {
+      t.e_header_slim.find("[col='"+col+"']").removeClass("bgred").addClass("bgorange")
+    } else {
+      t.e_header_slim.find("[col='"+col+"']").removeClass("bgorange")
+      if (input.val() != "") {
+        t.e_header_slim.find("[col='"+col+"']").addClass("bgred")
+      }
+    }
     clearTimeout(t.refresh_timer)
     t.refresh_timer = setTimeout(function validate(){
       var data = {
