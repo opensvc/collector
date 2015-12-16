@@ -394,6 +394,9 @@ function table_reset_column_filters(t, c, val) {
 }
 
 function table_refresh_column_filter(t, c, val) {
+  if (!t.e_header_filters) {
+    return
+  }
   var th = t.e_header_filters.find("th[col="+c+"]")
   var input = th.find("input")
   var label = th.find(".col_filter_label")
