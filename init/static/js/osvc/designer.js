@@ -2,6 +2,9 @@ function designer(divid, options) {
   var o = {}
   o.divid = divid
   o.div = $('#'+divid)
+  if (!options) {
+    options = {}
+  }
   o.options = options
 
   o.url_images = services_get_url() + "/init/static/images",

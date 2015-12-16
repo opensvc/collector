@@ -143,13 +143,15 @@ var menu_data = {
 		  "title" : "modulesets",
 		  "class" : "actions",
 		  "id" : "comp-modsets",
-		  "link" : "/init/compliance/comp_modules"
+		  "link" : "/init/compliance/comp_modules",
+		  "fn" : "table_comp_modules"
 		},
 		{
 		  "title" : "rulesets",
 		  "class" : "comp16",
 		  "id" : "comp-rsets",
-		  "link" : "/init/compliance/comp_rules"
+		  "link" : "/init/compliance/comp_rules",
+		  "fn" : "table_comp_rules"
 		},
 		{
 		  "title" : "designer",
