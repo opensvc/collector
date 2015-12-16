@@ -3897,7 +3897,8 @@ class table_comp_status(HtmlTable):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
-        self.cols = ['run_date',
+        self.cols = ['id',
+                     'run_date',
                      'run_nodename',
                      'run_svcname',
                      'run_module',
@@ -3906,7 +3907,15 @@ class table_comp_status(HtmlTable):
                      'rset_md5',
                      'run_log']
         self.cols += v_nodes_cols
-        self.colprops = {
+        self.colprops = v_nodes_colprops
+        self.colprops.update({
+            'id': HtmlTableColumn(
+                     title='id',
+                     field='id',
+                     table='comp_status',
+                     img='key16',
+                     display=False,
+                    ),
             'run_date': HtmlTableColumn(
                      title='Run date',
                      field='run_date',
@@ -3977,37 +3986,18 @@ class table_comp_status(HtmlTable):
                      display=False,
                      _class='run_log',
                     ),
-        }
-        self.colprops.update(v_nodes_colprops)
-        for i in self.cols:
-            self.colprops[i].t = self
+        })
         self.ajax_col_values = 'ajax_comp_status_col_values'
         self.extraline = True
         self.wsable = True
         self.dataable = True
         self.child_tables = ["agg", "cms", "cns", "css"]
-        self.force_cols = ['os_name']
+        self.force_cols = ['id', 'os_name']
         self.keys = ["run_nodename", "run_svcname", "run_module"]
         self.span = ["run_nodename", "run_svcname", "run_module"]
         self.checkboxes = True
         self.checkbox_id_table = 'comp_status'
-        if 'CompManager' in user_groups():
-            self.additional_tools.append('check_del')
         self.events = ["comp_status_change"]
-
-    def check_del(self):
-        d = DIV(
-              A(
-                T("Delete check"),
-                _class='del16',
-                _onclick="""if (confirm("%(text)s")){%(s)s};"""%dict(
-                   s=self.ajax_submit(args=['check_del']),
-                   text=T("Please confirm deletion"),
-                ),
-              ),
-              _class='floatw',
-            )
-        return d
 
 @auth.requires_login()
 def fix_module_on_node():
@@ -4265,25 +4255,6 @@ def var_value_set_list(name):
             l.append(request.vars[i])
     db(db.comp_rulesets_variables.id==vid).update(var_value=json.dumps(l))
 
-@auth.requires_membership('CompManager')
-def check_del(ids):
-    q = db.comp_status.id.belongs(ids)
-    groups = user_groups()
-    if 'Manager' not in groups:
-        # Manager+CompManager can delete any check
-        # CompManager can delete the nodes they are responsible of
-        q &= db.comp_status.run_nodename.belongs([r.nodename for r in db(db.nodes.team_responsible.belongs(groups)).select(db.nodes.nodename)])
-    rows = db(q).select()
-    u = ', '.join([r.run_module+'@'+r.run_nodename for r in rows])
-
-    db(q).delete()
-    table_modified("comp_status")
-    for node in [r.run_nodename for r in rows]:
-        update_dash_compdiff(node)
-    _log('compliance.status.delete',
-         'deleted module status %(u)s',
-         dict(u=u))
-
 @auth.requires_login()
 def ajax_comp_log_col_values():
     table_id = request.vars.table_id
@@ -4299,7 +4270,8 @@ def ajax_comp_log_col_values():
 
 @auth.requires_login()
 def ajax_comp_status_col_values():
-    t = table_comp_status('cs0', 'ajax_comp_status')
+    table_id = request.vars.table_id
+    t = table_comp_status(table_id, 'ajax_comp_status')
     col = request.args[0]
     try:
         o = db[t.colprops[col].table][col]
@@ -4315,16 +4287,8 @@ def ajax_comp_status_col_values():
 
 @auth.requires_login()
 def ajax_comp_status():
-    t = table_comp_status('cs0', 'ajax_comp_status')
-
-    if len(request.args) >= 1:
-        action = request.args[0]
-        try:
-            if action == 'check_del':
-                check_del(t.get_checked())
-        except ToolError, e:
-            t.flash = str(e)
-
+    table_id = request.vars.table_id
+    t = table_comp_status(table_id, 'ajax_comp_status')
     o = ~db.comp_status.run_nodename
     q = _where(None, 'comp_status', domain_perms(), 'run_nodename')
     q &= db.comp_status.run_nodename == db.v_nodes.nodename
@@ -4347,147 +4311,17 @@ def ajax_comp_status():
         t.object_list = db(q).select(*cols, limitby=limitby, orderby=o, cacheable=False)
         return t.table_lines_data(n, html=False)
 
-    """
-    spark_cmds = ""
-    for r in t.object_list:
-        spark_cmds += "sparkl('%(url)s', '%(id)s');"%dict(
-          url=spark_url(r.comp_status.run_nodename, r.comp_status.run_module),
-          id=spark_id(r.comp_status.run_nodename, r.comp_status.run_module),
-        )
-    """
-
-class col_comp_status_agg(HtmlTableColumn):
-    def chart(self, a, b, c, d):
-        total = a + b + c + d
-        if total == 0:
-            pa = 0
-            pb = 0
-            pc = 0
-            pd = 0
-            fpa = "0%"
-            fpb = "0%"
-            fpc = "0%"
-            fpd = "0%"
-        else:
-            fpa = 100.*a/total
-            fpb = 100.*b/total
-            fpc = 100.*c/total
-            fpd = 100.*d/total
-            pa = "%d%%"%int(fpa)
-            pb = "%d%%"%int(fpb)
-            pc = "%d%%"%int(fpc)
-            pd = "%d%%"%int(fpd)
-            fpa = "%.1f%%"%fpa
-            fpb = "%.1f%%"%fpb
-            fpc = "%.1f%%"%fpc
-            fpd = "%.1f%%"%fpd
-
-
-        d = DIV(
-              DIV(
-                DIV(
-                  _style="""font-size: 0px;
-                            line-height: 0px;
-                            height: 8px;
-                            float: left;
-                            min-width: 0%%;
-                            max-width: %(p)s;
-                            width: %(p)s;
-                            background: #15367A;
-                         """%dict(p=pa),
-                ),
-                DIV(
-                  _style="""font-size: 0px;
-                            line-height: 0px;
-                            height: 8px;
-                            float: left;
-                            min-width: 0%%;
-                            max-width: %(p)s;
-                            width: %(p)s;
-                            background: #3aaa50;
-                         """%dict(p=pb),
-                ),
-                DIV(
-                  _style="""font-size: 0px;
-                            line-height: 0px;
-                            height: 8px;
-                            float: left;
-                            min-width: 0%%;
-                            max-width: %(p)s;
-                            width: %(p)s;
-                            background: #dcdcdc;
-                         """%dict(p=pc),
-                ),
-                _style="""text-align: left;
-                          margin: 2px auto;
-                          background: #FF7863;
-                          overflow: hidden;
-                       """,
-              ),
-              DIV(
-                SPAN("%d (%s)"%(a, fpa), " ", T("obsolete"), _style="color:#15367A;padding:3px"),
-                SPAN("%d (%s)"%(b, fpb), " ", T("ok"), _style="color:#3aaa50;padding:3px"),
-                SPAN("%d (%s)"%(c, fpc), " ", T("n/a"), _style="color:#acacac;padding:3px"),
-                SPAN("%d (%s)"%(d, fpd), " ", T("not ok"), _style="color:#FF7863;padding:3px"),
-              ),
-              _style="""margin: auto;
-                        text-align: center;
-                        width: 100%;
-                     """,
-            ),
-        return d
-
-    def html(self, o):
-        obs, ok, na, nok = o['agg']
-        return DIV(
-                 self.chart(obs, ok, na, nok),
-                 _style="padding:4px"
-               )
-
-
-class table_comp_status_agg(HtmlTable):
-    def __init__(self, id=None, func=None, innerhtml=None):
-        if id is None and 'tableid' in request.vars:
-            id = request.vars.tableid
-        HtmlTable.__init__(self, id, func, innerhtml)
-        self.cols = ['agg']
-        self.colprops = {
-            'agg': col_comp_status_agg(
-                     title='Aggregation',
-                     field='add',
-                     display=True,
-                     img='spark16',
-                    ),
-        }
-        self.dbfilterable = False
-        self.filterable = False
-        self.pageable = False
-        self.bookmarkable = False
-        self.commonalityable = False
-        self.exportable = False
-        self.bookmarkable = False
-        self.linkable = False
-        self.refreshable = False
-        self.columnable = False
-        self.headers = False
-        self.highlight = False
-
+@service.json
 @auth.requires_login()
-def ajax_comp_status_agg():
-    ag = table_comp_status_agg('agg', 'ajax_comp_status_agg')
-    t = table_comp_status('cs0', 'ajax_comp_status')
+def json_comp_status_agg():
+    table_id = request.vars.table_id
+    t = table_comp_status(table_id, 'ajax_comp_status')
     o = ~db.comp_status.run_nodename
     q = _where(None, 'comp_status', domain_perms(), 'run_nodename')
     q &= db.comp_status.run_nodename == db.v_nodes.nodename
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
     q = apply_filters(q, db.comp_status.run_nodename)
-
-    n = db(q).select(db.comp_status.id.count(), cacheable=True).first()._extra[db.comp_status.id.count()]
-    t.setup_pager(n)
-    #all = db(q).select(db.comp_status.ALL, db.v_nodes.id)
-    t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end),
-                                 orderby=o, cacheable=True)
 
     q_obs = q & (db.comp_status.run_date < now - datetime.timedelta(days=7))
     q_nok = q & (db.comp_status.run_date > now - datetime.timedelta(days=7)) & (db.comp_status.run_status == 1)
@@ -4499,93 +4333,14 @@ def ajax_comp_status_agg():
     na = db(q_na).count()
     ok = db(q_ok).count()
 
-    ag.object_list = [{'agg': (obs, ok, na, nok)}]
-
-    if len(request.args) == 1 and request.args[0] == 'line':
-        return ag.table_lines_data(-1)
+    return {'obs': obs, 'ok': ok, 'na':na, 'nok': nok}
 
 @auth.requires_login()
 def comp_status():
-    t = table_comp_status('cs0', 'ajax_comp_status')
-    ag = table_comp_status_agg('agg', 'ajax_comp_status_agg')
-    mt = table_comp_mod_status('cms', 'ajax_comp_mod_status')
-    nt = table_comp_node_status('cns', 'ajax_comp_node_status')
-    st = table_comp_svc_status('css', 'ajax_comp_svc_status')
-
-    d = DIV(
-          DIV(
-            ag.html(),
-            _id="agg",
-          ),
-          DIV(
-            T("Modules aggregation"),
-            _style="text-align:left;font-size:120%;background-color:#e0e1cd",
-            _class="right16 clickable",
-            _onclick="""
-            if (!$("#cms").is(":visible")) {
-              $(this).addClass("down16");
-              $(this).removeClass("right16");
-              $("#cms").show();
-              osvc.tables["cms"].refresh()
-            } else {
-              $(this).addClass("right16");
-              $(this).removeClass("down16");
-              $("#cms").hide();
-            }"""
-          ),
-          DIV(
-            mt.html(),
-            _id="cms",
-            _style="display:none"
-          ),
-          DIV(
-            T("Nodes aggregation"),
-            _style="text-align:left;font-size:120%;background-color:#e0e1cd",
-            _class="right16 clickable",
-            _onclick="""
-            if (!$("#cns").is(":visible")) {
-              $(this).addClass("down16");
-              $(this).removeClass("right16");
-              $("#cns").show();
-              osvc.tables["cns"].refresh()
-            } else {
-              $(this).addClass("right16");
-              $(this).removeClass("down16");
-              $("#cns").hide();
-            }"""
-          ),
-          DIV(
-            nt.html(),
-            _id="cns",
-            _style="display:none"
-          ),
-          DIV(
-            T("Services aggregation"),
-            _style="text-align:left;font-size:120%;background-color:#e0e1cd",
-            _class="right16 clickable",
-            _onclick="""
-            if (!$("#css").is(":visible")) {
-              $(this).addClass("down16");
-              $(this).removeClass("right16");
-              $("#css").show();
-              osvc.tables["css"].refresh()
-            } else {
-              $(this).addClass("right16");
-              $(this).removeClass("down16");
-              $("#css").hide();
-            }"""
-          ),
-          DIV(
-            st.html(),
-            _id="css",
-            _style="display:none"
-          ),
-          DIV(
-            t.html(),
-            _id='cs0',
-          ),
+    t = SCRIPT(
+          """$.when(osvc.app_started).then(function(){ view_comp_status("layout") })""",
         )
-    return dict(table=d)
+    return dict(table=t)
 
 def comp_status_load():
     return comp_status()["table"]

@@ -14,6 +14,7 @@
     "import": "Import"
   },
   "action_menu": {
+    "on_compliance_status": "On compliance run last status",
     "on_networks": "On networks",
     "network": "Network",
     "netmask": "Netmask",
@@ -1188,6 +1189,15 @@
     "service unavailable": "service unavailable"
   },
   "views": {
+    "comp_status": {
+      "ok": "ok",
+      "nok": "not ok",
+      "na": "n/a",
+      "obs": "obsolete",
+      "module_agg": "Modules aggregation",
+      "node_agg": "Node aggregation",
+      "service_agg": "Services aggregation"
+    },
     "nodes": {
       "user_mapping": "User mapping",
       "group_mapping": "Group mapping"

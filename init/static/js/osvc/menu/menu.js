@@ -129,7 +129,8 @@ var menu_data = {
 		  "title" : "statut",
 		  "class" : "check16",
 		  "id" : "comp-status",
-		  "link" : "/init/compliance/comp_status"
+		  "link" : "/init/compliance/comp_status",
+		  "fn" : "view_comp_status"
 		},
 		{
 		  "title" : "log",

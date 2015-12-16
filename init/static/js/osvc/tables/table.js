@@ -3088,5 +3088,7 @@ function table_init(opts) {
     t.set_column_filters()
     t.refresh()
   })
+
+  return t
 }
 

@@ -18,6 +18,7 @@ function table_action_menu_init_data(t) {
     "command": "td[cell=1][name$=_c_command]",
     "chk_type": "td[cell=1][name$=_c_chk_type]",
     "chk_instance": "td[cell=1][name$=_c_chk_instance]",
+    "run_module": "td[cell=1][name$=_c_run_module]",
     "network": "td[cell=1][name$=_c_network]"
   }
 
@@ -144,6 +145,21 @@ function table_action_menu_init_data(t) {
       "title": "action_menu.data_actions",
       "class": "hd16",
       "children": [
+        {
+          "selector": ["clicked", "checked", "all"],
+          "title": "action_menu.on_compliance_status",
+          "foldable": true,
+          "cols": ["id", "run_module"],
+          "condition": "id+run_module",
+          "children": [
+            {
+              "title": "action_menu.delete",
+              "class": "icon del16",
+              "fn": "data_action_delete_compliance_status",
+              "min": 1
+            }
+          ]
+        },
         {
           "selector": ["clicked", "checked", "all"],
           "title": "action_menu.on_networks",
@@ -2045,6 +2061,32 @@ function data_action_delete_svcs(t, e) {
     del_data.push({'svc_name': data[i]['svcname']})
   }
   services_osvcdeleterest("R_SERVICES", "", "", del_data, function(jd) {
+    if (jd.error && (jd.error.length > 0)) {
+      $(".flash").show("blind").html(services_error_fmt(jd))
+    }
+    if (jd.info && (jd.info.length > 0)) {
+      $(".flash").show("blind").html(services_info_fmt(jd))
+    }
+  },
+  function(xhr, stat, error) {
+    $(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
+  })
+}
+
+//
+// data action: delete compliance status
+//
+function data_action_delete_compliance_status(t, e) {
+  var entry = $(e.target)
+  var cache_id = entry.attr("cache_id")
+  var data = t.action_menu_data_cache[cache_id]
+  var del_data = new Array()
+  for (i=0;i<data.length;i++) {
+    del_data.push({
+      'id': data[i]['id']
+    })
+  }
+  services_osvcdeleterest("R_COMPLIANCE_STATUS", "", "", del_data, function(jd) {
     if (jd.error && (jd.error.length > 0)) {
       $(".flash").show("blind").html(services_error_fmt(jd))
     }

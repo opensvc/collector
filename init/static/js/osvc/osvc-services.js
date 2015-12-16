@@ -27,6 +27,7 @@ var services_access_uri = {
     "R_COMPLIANCE_RULESETS" : "rest/api/compliance/rulesets",
     "R_COMPLIANCE_RULESETS_NODES" : "rest/api/compliance/rulesets_nodes",
     "R_COMPLIANCE_RULESETS_SERVICES" : "rest/api/compliance/rulesets_services",
+    "R_COMPLIANCE_STATUS" : "rest/api/compliance/status",
     "R_FILTERSETS" : "rest/api/filtersets",
     "R_GROUPS" : "rest/api/groups",
     "R_GROUP_HIDDEN_MENU_ENTRIES" : "rest/api/groups/%1/hidden_menu_entries",

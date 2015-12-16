@@ -237,6 +237,7 @@ handlers = {
      rest_delete_compliance_rulesets_nodes(),
      rest_delete_compliance_rulesets_services(),
      rest_delete_compliance_status_run(),
+     rest_delete_compliance_status_runs(),
      rest_delete_dns_domain(),
      rest_delete_dns_record(),
      rest_delete_filter(),

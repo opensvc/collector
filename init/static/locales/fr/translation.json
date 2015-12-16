@@ -14,6 +14,7 @@
     "import": "Import"
   },
   "action_menu": {
+    "on_compliance_status": "Sur les derniers audits de conformité",
     "on_networks": "Sur les réseaux",
     "net_createable": "Ce réseau n'existe pas encore. Appuyez sur <entrée> pour le créer.",
     "network": "Réseau",
@@ -1129,6 +1130,15 @@
     "service unavailable": "service indisponible"
   },
   "views": {
+    "comp_status": {
+      "ok": "ok",
+      "nok": "non ok",
+      "na": "n/a",
+      "obs": "obsolète",
+      "module_agg": "Aggregation par modules",
+      "node_agg": "Aggregation par noeuds",
+      "service_agg": "Aggregation par services"
+    },
     "nodes": {
       "user_mapping": "Cartographie des utilisateurs",
       "group_mapping": "Cartographie des groupes"
