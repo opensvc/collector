@@ -2370,7 +2370,7 @@ class table_comp_status(HtmlTable):
         self.wsable = True
         self.dataable = True
         self.child_tables = ["agg", "cms", "cns", "css"]
-        self.force_cols = ['id', 'os_name']
+        self.force_cols = ['id', 'os_name', 'run_log']
         self.keys = ["run_nodename", "run_svcname", "run_module"]
         self.span = ["run_nodename", "run_svcname", "run_module"]
         self.checkboxes = True
@@ -4299,119 +4299,23 @@ def beautify_modulesets(node):
         l.append(beautify_moduleset(mset, modulesets=modulesets, modset_relations=modset_relations))
     return SPAN(l, _class='xset')
 
-class table_comp_status_svc(table_comp_status):
-    def __init__(self, id=None, func=None, innerhtml=None):
-        table_comp_status.__init__(self, id, func, innerhtml)
-        self.hide_tools = True
-        self.pageable = False
-        self.bookmarkable = False
-        self.commonalityable = False
-        self.linkable = False
-        self.checkboxes = False
-        self.filterable = False
-        self.exportable = False
-        self.dbfilterable = False
-        self.columnable = False
-        self.refreshable = False
-        self.wsable = False
-        self.dataable = True
-        self.cols.remove('run_status_log')
-        self.child_tables = []
-        self.force_cols = ["os_name"]
-        self.on_change = """function() {
-            $("[name=%(tid)s_c_run_status]").bind("mouseover", function(){
-             line = $(this).parents("tr")
-             var s = line.children("[name=%(tid)s_c_run_status]")
-             var e = line.children("[name=%(tid)s_c_run_log]")
-             var pos = s.position()
-             e.width($(window).width()*0.8)
-             e.css({"left": pos.left - e.width() - 10 + "px", "top": pos.top+s.parent().height() + "px"})
-             e.addClass("white_float")
-             cell_decorator_run_log(e)
-             e.show()
-            })
-            $("[name=%(tid)s_c_run_status]").bind("mouseout", function(){
-             $(this).parents("tr").children("[name=%(tid)s_c_run_log]").hide()
-            })
-           }
-        """ % dict(tid=self.id)
-
-def ajax_svc_comp_status():
-    tid = request.vars.table_id
-    t = table_comp_status_svc(tid, 'ajax_svc_comp_status')
-    q = _where(None, 'comp_status', domain_perms(), 'run_nodename')
-    for f in ['run_svcname']:
-        q = _where(q, 'comp_status', t.filter_parse(f), f)
-    if request.args[0] == "data":
-        t.object_list = db(q).select(cacheable=True)
-        return t.table_lines_data(-1, html=False)
-
 def svc_comp_status(svcname):
     tid = 'scs_'+svcname.replace('-','_').replace('.','_')
-    t = table_comp_status_svc(tid, 'ajax_svc_comp_status')
-    t.colprops['run_svcname'].force_filter = svcname
-
     return DIV(
-      t.html(),
-      _id=tid,
-    )
-
-
-class table_comp_status_node(table_comp_status):
-    def __init__(self, id=None, func=None, innerhtml=None):
-        table_comp_status.__init__(self, id, func, innerhtml)
-        self.hide_tools = True
-        self.pageable = False
-        self.bookmarkable = False
-        self.commonalityable = False
-        self.linkable = False
-        self.checkboxes = True
-        self.filterable = False
-        self.exportable = False
-        self.dbfilterable = False
-        self.columnable = False
-        self.refreshable = False
-        self.wsable = False
-        self.dataable = True
-        self.cols.remove('run_status_log')
-        self.child_tables = []
-        self.force_cols = ["os_name"]
-        self.on_change = """function() {
-            $("[name=%(tid)s_c_run_status]").bind("mouseover", function(){
-             line = $(this).parents("tr")
-             var s = line.children("[name=%(tid)s_c_run_status]")
-             var e = line.children("[name=%(tid)s_c_run_log]")
-             var pos = s.position()
-             e.width($(window).width()*0.8)
-             e.css({"left": pos.left - e.width() - 10 + "px", "top": pos.top+s.parent().height() + "px"})
-             e.addClass("white_float")
-             cell_decorator_run_log(e)
-             e.show()
-            })
-            $("[name=%(tid)s_c_run_status]").bind("mouseout", function(){
-             $(this).parents("tr").children("[name=%(tid)s_c_run_log]").hide()
-            })
-           }
-        """ % dict(tid=self.id)
-
-def ajax_node_comp_status():
-    tid = request.vars.table_id
-    t = table_comp_status_node(tid, 'ajax_node_comp_status')
-    q = _where(None, 'comp_status', domain_perms(), 'run_nodename')
-    for f in ['run_nodename']:
-        q = _where(q, 'comp_status', t.filter_parse(f), f)
-    if request.args[0] == "data":
-        t.object_list = db(q).select(cacheable=True)
-        return t.table_lines_data(-1, html=False)
+            SCRIPT(
+              """$.when(osvc.app_started).then(function(){ table_comp_status_svc("%s", "%s") })""" % (tid, svcname),
+            ),
+            _id=tid,
+          )
 
 def node_comp_status(node):
     tid = 'ncs_'+node.replace('-','_').replace('.','_')
-    t = table_comp_status_node(tid, 'ajax_node_comp_status')
-    t.colprops['run_nodename'].force_filter = node
     return DIV(
-      t.html(),
-      _id=tid,
-    )
+            SCRIPT(
+              """$.when(osvc.app_started).then(function(){ table_comp_status_node("%s", "%s") })""" % (tid, node),
+            ),
+            _id=tid,
+          )
 
 @auth.requires_login()
 def ajax_rset_md5():

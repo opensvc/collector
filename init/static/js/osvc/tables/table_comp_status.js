@@ -273,3 +273,81 @@ function view_comp_status(divid, options) {
 	})
 
 }
+
+function comp_status_log_on_hover(t) {
+	t.div.find("[name$=_c_run_status]").hover(
+	function() {
+		line = $(this).parents("tr")
+		var s = line.children("[name$=_c_run_status]")
+		var e = line.children("[name$=_c_run_log]")
+		var pos = s.position()
+		e.width($(window).width()*0.8)
+		e.css({"left": pos.left - e.width() - 10 + "px", "top": pos.top+s.parent().height() + "px"})
+		e.addClass("white_float")
+		cell_decorator_run_log(e)
+		e.show()
+	},
+	function() {
+		$(this).parents("tr").children("[name$=_c_run_log]").hide()
+	})
+}
+
+function table_comp_status_node(divid, nodename) {
+	var id = "cs_node_" + nodename.replace(/[\.-]/g, "_")
+	var f = id+"_f_run_nodename"
+	var request_vars = {}
+	request_vars[f] = nodename
+
+	t = table_comp_status(divid, {
+		"id": id,
+		"caller": "table_comp_status_node",
+		"request_vars": request_vars,
+		"volatile_filters": true,
+		"bookmarkable": false,
+		"refreshable": false,
+		"linkable": false,
+		"exportable": false,
+		"pageable": false,
+		"columnable": false,
+		"commonalityable": false,
+		"filterable": false,
+		"wsable": false,
+		"force_cols": ['id', 'os_name', 'run_log'],
+		"visible_columns": ['run_date', 'run_svcname', 'run_module', 'run_status']
+	})
+	t.on_change = function() {
+		comp_status_log_on_hover(t)
+	}
+	return t
+}
+
+function table_comp_status_svc(divid, svcname) {
+	var id = "cs_svc_" + svcname.replace(/[\.-]/g, "_")
+	var f = id+"_f_run_svcname"
+	var request_vars = {}
+	request_vars[f] = svcname
+
+	t = table_comp_status(divid, {
+		"id": id,
+		"caller": "table_comp_status_svc",
+		"request_vars": request_vars,
+		"volatile_filters": true,
+		"bookmarkable": false,
+		"refreshable": false,
+		"linkable": false,
+		"exportable": false,
+		"pageable": false,
+		"columnable": false,
+		"commonalityable": false,
+		"filterable": false,
+		"wsable": false,
+		"force_cols": ['id', 'os_name', 'run_log'],
+		"visible_columns": ['run_date', 'run_nodename', 'run_module', 'run_status']
+	})
+	t.on_change = function() {
+		comp_status_log_on_hover(t)
+	}
+	return t
+}
+
+
