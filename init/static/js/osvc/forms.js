@@ -403,3 +403,87 @@ function forms() {
 	return o
 }
 
+
+//
+// form renderer
+//
+function form(divid, options) {
+	o = {}
+	o.options = options
+	o.div = $("#"+divid)
+
+	o.load = function() {
+		if (!o.options.form_name) {
+			console.log(o.options)
+			o.div.html(i18n.t("forms.form_name_not_in_options"))
+			return
+		}
+		o.form_data = osvc.forms.data[o.options.form_name]
+		if (!o.form_data) {
+			o.div.html(i18n.t("forms.form_def_not_found"))
+			return
+		}
+		if (o.options.display_mode) {
+			o.render_display_mode()
+		} else {
+			o.render_form_mode()
+		}
+	}
+
+	o.render_form_mode = function() {
+		var area = $("<div name='form_area'></div>")
+		o.div.empty().append(area)
+		o.render_form()
+	}
+
+	o.render_display_mode = function() {
+		var div = $("<div class='postit' style='position:relative'></div>")
+		var area = $("<div name='form_area'></div>")
+		div.append(o.render_edit())
+		div.append(o.render_cancel())
+		div.append(area)
+		o.render_display()
+		o.div.empty().append(div)
+	}
+
+	o.render_edit = function() {
+		if (o.options.editable == false) {
+			return ""
+		}
+		var a = $("<a class='edit16' style='position:absolute;top:2px;right:2px;z-index:400'></a>")
+		a.attr("title", i18n.t("forms.edit"))
+		a.bind("click", function(){
+			$(this).siblings("a.nok").show()
+			$(this).hide()
+			o.render_form()
+		})
+		return a
+	}
+
+	o.render_cancel = function() {
+		if (o.options.editable == false) {
+			return ""
+		}
+		var a = $("<a class='nok' style='display:none;position:absolute;top:2px;right:2px;z-index:400'></a>")
+		a.attr("title", i18n.t("forms.cancel"))
+		a.bind("click", function(){
+			$(this).siblings("a.edit16").show()
+			$(this).hide()
+			o.render_display()
+		})
+		return a
+	}
+
+	o.render_display = function() {
+	}
+
+	o.render_form = function() {
+	}
+
+
+	$.when(osvc.forms_loaded).then(function() {
+		o.load()
+	})
+	return o
+}
+

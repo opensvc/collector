@@ -208,52 +208,6 @@ class col_mod_percent(HtmlTableColumn):
             ),
         return d
 
-class col_encap_rset(HtmlTableColumn):
-    def html(self, o):
-        s = self.get(o)
-        if s is None:
-            return ""
-        return s
-
-class col_ruleset_name(HtmlTableColumn):
-    def html(self, o):
-        s = self.get(o)
-        return DIV(s, _class="postit", _style="width:95%")
-
-class col_var_name(HtmlTableColumn):
-    def html(self, o):
-        s = self.get(o)
-        if s == '':
-            ss = '(no name)'
-        elif s is None:
-            ss = ''
-        else:
-            ss = s
-        tid = 'nd_t_%s_%s'%(self.t.colprops['id'].get(o), self.t.colprops['ruleset_id'].get(o))
-        iid = 'nd_i_%s_%s'%(self.t.colprops['id'].get(o), self.t.colprops['ruleset_id'].get(o))
-        sid = 'nd_s_%s_%s'%(self.t.colprops['id'].get(o), self.t.colprops['ruleset_id'].get(o))
-        d = DIV(
-              DIV(
-                ss,
-                _id=tid,
-                _onclick="""hide_eid('%(tid)s');show_eid('%(sid)s');getElementById('%(iid)s').focus()"""%dict(tid=tid, sid=sid, iid=iid),
-                _class="clickable",
-              ),
-              DIV(
-                INPUT(
-                  value=s,
-                  _id=iid,
-                  _onblur="""hide_eid('%(sid)s');show_eid('%(tid)s');"""%dict(sid=sid, tid=tid),
-                  _onkeypress="if (is_enter(event)) {%s};"%\
-                     self.t.ajax_submit(additional_inputs=[iid],
-                                        args=["var_name_set"]),
-                ),
-                _id=sid,
-                _style="display:none",
-              ),
-            )
-        return d
-
 class col_var_value(HtmlTableColumn):
     def load_form_cache(self):
         if hasattr(self.t, "form_cache"):
@@ -608,7 +562,7 @@ class table_comp_rulesets(HtmlTable):
                      display=False,
                      img='comp16',
                     ),
-            'encap_rset': col_encap_rset(
+            'encap_rset': HtmlTableColumn(
                      title='Encapsulated ruleset',
                      field='encap_rset',
                      table='v_comp_rulesets',
@@ -622,7 +576,7 @@ class table_comp_rulesets(HtmlTable):
                      display=False,
                      img='comp16',
                     ),
-            'ruleset_name': col_ruleset_name(
+            'ruleset_name': HtmlTableColumn(
                      title='Ruleset',
                      field='ruleset_name',
                      table='v_comp_rulesets',
@@ -651,14 +605,14 @@ class table_comp_rulesets(HtmlTable):
                      display=True,
                      img='filter16',
                     ),
-            'var_value': col_var_value(
+            'var_value': HtmlTableColumn(
                      title='Value',
                      field='var_value',
                      table='v_comp_rulesets',
                      display=True,
                      img='comp16',
                     ),
-            'var_name': col_var_name(
+            'var_name': HtmlTableColumn(
                      title='Variable',
                      field='var_name',
                      table='v_comp_rulesets',
@@ -673,6 +627,7 @@ class table_comp_rulesets(HtmlTable):
                      img='wf16',
                     ),
         }
+        self.force_cols = ["var_class", "encap_rset"]
         self.colprops['var_name'].t = self
         self.colprops['var_value'].t = self
         self.span = ['ruleset_name', 'ruleset_type', 'ruleset_public',

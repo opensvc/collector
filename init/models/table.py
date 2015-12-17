@@ -296,8 +296,8 @@ class HtmlTable(object):
                         v = str(v)
                 elif v is None:
                     v = 'empty'
-                elif type(v) in (str, unicode):
-                    v = v.replace('"','').replace("'","")
+                #elif type(v) in (str, unicode):
+                #    v = v.replace('"','').replace("'","")
                 _l.append(v)
                 if c in self.keys:
                     cksum.update(str(v))
@@ -487,6 +487,7 @@ class HtmlTable(object):
                 cksum.update(str(v))
             attrs = dict(
                _name=self.col_key(c),
+               _col=c,
                _v=v,
                _cell=1,
             )

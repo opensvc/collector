@@ -1144,5 +1144,11 @@
       "user_mapping": "Cartographie des utilisateurs",
       "group_mapping": "Cartographie des groupes"
     }
+  },
+  "forms": {
+    "form_def_not_found": "Définition du formulaire introuvable",
+    "form_name_not_in_options": "'form_name' doit être passé en option",
+    "edit": "Editer",
+    "cancel": "Annuler"
   }
 }

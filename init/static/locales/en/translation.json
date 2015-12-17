@@ -1203,5 +1203,11 @@
       "user_mapping": "User mapping",
       "group_mapping": "Group mapping"
     }
+  },
+  "forms": {
+    "form_def_not_found": "Form definition not found",
+    "form_name_not_in_options": "'form_name' must be passed in options",
+    "edit": "Edit",
+    "cancel": "Cancel"
   }
 }

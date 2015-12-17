@@ -1811,9 +1811,9 @@ var img_h = {
 }
 
 function cell_decorator_log_icons(e) {
-  var v = $(e).attr("v")
+  var v = $.data(e, "v")
   var line = $(e).parent(".tl")
-  var action = line.children("[name$=_c_log_action]").attr("v")
+  var action = $.data(line.children("[col=log_action]")[0], "v")
   var l = action.split(".")
   var span = $("<span></span>")
   span.attr("title", v)
@@ -1831,7 +1831,7 @@ function cell_decorator_log_icons(e) {
 }
 
 function cell_decorator_boolean(e) {
-  var v = $(e).attr("v")
+  var v = $.data(e, "v")
   true_vals = [1, "1", "T", "True", "true", true]
   if (typeof v === "undefined") {
     var cl = ""
@@ -1845,12 +1845,12 @@ function cell_decorator_boolean(e) {
 }
 
 function cell_decorator_network(e) {
-  var v = $(e).attr("v")
+  var v = $.data(e, "v")
   $(e).html("<span class='clickable'>"+v+"</span>")
   $(e).addClass("corner")
   $(e).click(function(){
     var line = $(this).parent(".tl")
-    var net_id = line.children("[name$=_c_id]").attr("v")
+    var net_id = $.data(line.children("[col=id]")[0], "v")
     table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
     span_id = $(e).parent(".tl").attr("spansum")
     id = table_id + "_x_" + span_id
@@ -1860,9 +1860,9 @@ function cell_decorator_network(e) {
 }
 
 function cell_decorator_chk_instance(e) {
-  var v = $(e).attr("v")
+  var v = $.data(e, "v")
   var line = $(e).parent(".tl")
-  var chk_type = line.children("[name$=_chk_type]").attr("v")
+  var chk_type = $.data(line.children("[col=chk_type]")[0], "v")
   if (chk_type == "mpath") {
     url = services_get_url() + "/init/disks/disks?disks_f_disk_id="+v+"&volatile_filters=true"
     s = "<a class='hd16' href='"+url+"' target='_blank'>"+v+"</a>"
@@ -1871,9 +1871,9 @@ function cell_decorator_chk_instance(e) {
 }
 
 function cell_decorator_chk_high(e) {
-  var high = $(e).attr("v")
+  var high = $.data(e, "v")
   var line = $(e).parent(".tl")
-  var v = line.children("[name$=_chk_value]").attr("v")
+  var v = $.data(line.children("[col=chk_value]")[0], "v")
   var cl = []
   v = parseInt(v)
   high = parseInt(high)
@@ -1884,9 +1884,9 @@ function cell_decorator_chk_high(e) {
 }
 
 function cell_decorator_chk_low(e) {
-  var low = $(e).attr("v")
+  var low = $.data(e, "v")
   var line = $(e).parent(".tl")
-  var v = line.children("[name$=_chk_value]").attr("v")
+  var v = $.data(line.children("[col=chk_value]")[0], "v")
   var cl = []
   v = parseInt(v)
   low = parseInt(low)
@@ -1897,10 +1897,10 @@ function cell_decorator_chk_low(e) {
 }
 
 function cell_decorator_chk_value(e) {
-  var v = $(e).attr("v")
+  var v = $.data(e, "v")
   var line = $(e).parent(".tl")
-  var low = line.children("[name$=_chk_low]").attr("v")
-  var high = line.children("[name$=_chk_high]").attr("v")
+  var low = $.data(line.children("[col=chk_low]")[0], "v")
+  var high = $.data(line.children("[col=chk_high]")[0], "v")
   var cl = []
   v = parseInt(v)
   low = parseInt(low)
@@ -1912,7 +1912,7 @@ function cell_decorator_chk_value(e) {
 }
 
 function cell_decorator_action_pid(e) {
-  var v = $(e).attr("v")
+  var v = $.data(e, "v")
   if (v == "empty") {
     $(e).empty()
     return
@@ -1921,10 +1921,10 @@ function cell_decorator_action_pid(e) {
   $(e).html(s)
   $(e).bind('click', function(){
     var line = $(e).parent(".tl")
-    var hostname = line.children("[name$=_hostname]").attr("v")
-    var svcname = line.children("[name$=_svcname]").attr("v")
-    var begin = line.children("[name$=_begin]").attr("v")
-    var end = line.children("[name$=_end]").attr("v")
+    var hostname = $.data(line.children("[col=hostname]")[0], "v")
+    var svcname = $.data(line.children("[col=svcname]")[0], "v")
+    var begin = $.data(line.children("[col=begin]")[0], "v")
+    var end = $.data(line.children("[col=end]")[0], "v")
 
     var _begin = begin.replace(/ /, "T")
     var d = new Date(+new Date(_begin) - 1000*60*60*24)
@@ -1959,14 +1959,14 @@ function ackpanel(e, show, s){
 }
 
 function cell_decorator_action_status(e) {
-  var v = $(e).attr("v")
+  var v = $.data(e, "v")
   if (v == "empty") {
     $(e).html("<div class='spinner'></div>")
     return
   }
   cl = ["status_"+v.replace(' ', '_')]
   var line = $(e).parent(".tl")
-  var ack = line.children("[name$=_ack]").attr("v")
+  var ack = $.data(line.children("[col=ack]")[0], "v")
   if (ack == 1) {
     cl.push("ack_1")
   }
@@ -1979,9 +1979,9 @@ function cell_decorator_action_status(e) {
     ackpanel(event, false, "")
   })
   $(e).bind("mouseover", function(){
-    var acked_date = line.children("[name$=_acked_date]").attr("v")
-    var acked_by = line.children("[name$=_acked_by]").attr("v")
-    var acked_comment = line.children("[name$=_acked_comment]").attr("v")
+    var acked_date = $.data(line.children("[col=acked_date]")[0], "v")
+    var acked_by = $.data(line.children("[col=acked_by]")[0], "v")
+    var acked_comment = $.data(line.children("[col=acked_comment]")[0], "v")
     s = "<div>"
     s += "<b>acked by </b>"+acked_by+"<br>"
     s += "<b> on </b>"+acked_date+"<br>"
@@ -1992,7 +1992,7 @@ function cell_decorator_action_status(e) {
 }
 
 function cell_decorator_action_end(e) {
-  var v = $(e).attr("v")
+  var v = $.data(e, "v")
   if (v == "empty") {
     $(e).empty()
     return
@@ -2001,12 +2001,12 @@ function cell_decorator_action_end(e) {
     return
   }
   var line = $(e).parent(".tl")
-  var id = line.children("[name$=_id]").attr("v")
+  var id = $.data(line.children("[col=id]")[0], "v")
   s = "<span class='highlight nowrap' id='spin_span_end_"+id+"'>"+v+"</span>"
 }
 
 function cell_decorator_action_log(e) {
-  var v = $(e).attr("v")
+  var v = $.data(e, "v")
   if (v == "empty") {
     $(e).empty()
     return
@@ -2016,7 +2016,7 @@ function cell_decorator_action_log(e) {
 }
 
 function cell_decorator_db_table_name(e) {
-  var v = $(e).attr("v")
+  var v = $.data(e, "v")
   if (v == "empty") {
     return
   }
@@ -2029,7 +2029,7 @@ function cell_decorator_db_table_name(e) {
 }
 
 function cell_decorator_db_column_name(e) {
-  var v = $(e).attr("v")
+  var v = $.data(e, "v")
   if (v == "empty") {
     return
   }
@@ -2042,9 +2042,9 @@ function cell_decorator_db_column_name(e) {
 }
 
 function cell_decorator_action(e) {
-  var v = $(e).attr("v")
+  var v = $.data(e, "v")
   var line = $(e).parent(".tl")
-  var status_log = line.children("[name$=status_log]").attr("v")
+  var status_log = $.data(line.children("[col=status_log]")[0], "v")
   cl = []
   if (status_log == "empty") {
     cl.push("metaaction")
@@ -2058,13 +2058,13 @@ function cell_decorator_action(e) {
 }
 
 function cell_decorator_svc_action_err(e) {
-  var v = $(e).attr("v")
+  var v = $.data(e, "v")
   if (v == "empty") {
     $(e).empty()
     return
   }
   var line = $(e).parent(".tl")
-  var svcname = line.children("[name$=mon_svcname]").attr("v")
+  var svcname = $.data(line.children("[col=mon_svcname]")[0], "v")
   url = services_get_url() + "/init/svcactions/svcactions?actions_f_svcname="+svcname+"&actions_f_status=err&actions_f_ack=!1|empty&actions_f_begin=>-30d&volatile_filters=true"
   s = "<a class='action16 icon-red clickable' href='"+url+"' target='_blank'>"+v+"</a>"
   $(e).html(s)
@@ -2079,7 +2079,7 @@ function cell_decorator_nodename_no_os(e) {
 }
 
 function _cell_decorator_nodename(e, os_icon) {
-  var v = $(e).attr("v")
+  var v = $.data(e, "v")
   if ((v=="") || (v=="empty")) {
     return
   }
@@ -2089,14 +2089,14 @@ function _cell_decorator_nodename(e, os_icon) {
   div = $(":first-child", e)
   if (os_icon) {
     try {
-      os_cell = $(e).parent().children(".os_name")
-      os_c = os_class_h[os_cell.attr("v").toLowerCase()]
+      os_cell = $(e).parent().children(".os_name")[0]
+      os_c = os_class_h[$.data(os_cell, "v").toLowerCase()]
       div.addClass(os_c)
     } catch(e) {}
   }
   try {
-    svc_autostart_cell = $(e).parent().children(".svc_autostart")
-    if (svc_autostart_cell.attr("v") == v) {
+    svc_autostart_cell = $(e).parent().children(".svc_autostart")[0]
+    if ($.data(svc_autostart_cell, "v") == v) {
       div.addClass("b")
     }
   } catch(e) {}
@@ -2111,7 +2111,7 @@ function _cell_decorator_nodename(e, os_icon) {
 }
 
 function cell_decorator_groups(e) {
-  var v = $(e).attr("v")
+  var v = $.data(e, "v")
   if ((v=="") || (v=="empty")) {
     return
   }
@@ -2137,12 +2137,12 @@ function cell_decorator_groups(e) {
 }
 
 function cell_decorator_user_id(e) {
-  var v = $(e).attr("v")
+  var v = $.data(e, "v")
   if ((v=="") || (v=="empty")) {
     return
   }
   var line = $(e).parent(".tl")
-  var fullname = line.children("[name$=_c_fullname]").attr("v")
+  var fullname = $.data(line.children("[col=fullname]")[0], "v")
   $(e).addClass("corner")
   $(e).click(function(){
     if (get_selected() != "") {return}
@@ -2155,7 +2155,7 @@ function cell_decorator_user_id(e) {
 }
 
 function cell_decorator_username(e) {
-  var v = $(e).attr("v")
+  var v = $.data(e, "v")
   if ((v=="") || (v=="empty")) {
     return
   }
@@ -2172,7 +2172,7 @@ function cell_decorator_username(e) {
 }
 
 function cell_decorator_svcname(e) {
-  var v = $(e).attr("v")
+  var v = $.data(e, "v")
   if ((v=="") || (v=="empty")) {
     return
   }
@@ -2190,7 +2190,7 @@ function cell_decorator_svcname(e) {
 }
 
 function cell_decorator_status(e) {
-  var v = $(e).attr("v")
+  var v = $.data(e, "v")
   if ((v=="") || (v=="empty")) {
     v = "undef"
   }
@@ -2216,7 +2216,7 @@ function cell_decorator_reports_links(e) {
   $(e).addClass("corner nowrap")
 
   var line = $(e).parent(".tl")
-  var id = line.children("[name$=_c_id]").attr("v")
+  var id = $.data(line.children("[col=id]")[0], "v")
   var query = "report_id="+id
   url = services_get_url() + "/init/charts/reports_editor?"+query
   var d = "<a class='clickable edit16' target='_blank' href="+url+"></a>"
@@ -2229,7 +2229,7 @@ function cell_decorator_reports_links(e) {
     var table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
     var span_id = $(e).parent(".tl").attr("spansum")
     var id = table_id + "_x_" + span_id
-    var report_id = $(this).parents(".tl").first().children("[name$=_c_id]").attr("v")
+    var report_id = $.data($(this).parents(".tl").first().children("[col=id]")[0], "v")
     $(e).parent(".tl").after("<tr class='extraline stackable'><td colspan='14'><table><tr><td id='"+id+"'></td></table></td></tr>")
     var options = {"report_id" : report_id}
     report(id, options)
@@ -2243,7 +2243,7 @@ function cell_decorator_charts_links(e) {
 
   // editor
   var line = $(e).parent(".tl")
-  var id = line.children("[name$=_c_id]").attr("v")
+  var id = $.data(line.children("[col=id]")[0], "v")
   var query = "chart_id="+id
   url = services_get_url() + "/init/charts/charts_editor?"+query
   var d = "<a class='clickable edit16' target='_blank' href="+url+"></a>"
@@ -2256,7 +2256,7 @@ function cell_decorator_charts_links(e) {
     var table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
     var span_id = $(e).parent(".tl").attr("spansum")
     var id = table_id + "_x_" + span_id
-    var chart_id = $(this).parents(".tl").first().children("[name$=_c_id]").attr("v")
+    var chart_id = $.data($(this).parents(".tl").first().children("[col=id]")[0], "v")
     $(e).parent(".tl").after("<tr class='extraline stackable'><td colspan='14' id='"+id+"'></td></tr>")
     var options = {"chart_id" : chart_id}
     chart(id, options)
@@ -2270,7 +2270,7 @@ function cell_decorator_metrics_links(e) {
 
   // editor
   var line = $(e).parent(".tl")
-  var id = line.children("[name$=_c_id]").attr("v")
+  var id = $.data(line.children("[col=id]")[0], "v")
   var query = "metric_id="+id
   url = services_get_url() + "/init/charts/metrics_editor?"+query
   var d = "<a class='clickable edit16' target='_blank' href="+url+"></a>"
@@ -2283,7 +2283,7 @@ function cell_decorator_metrics_links(e) {
     var table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
     var span_id = $(e).parent(".tl").attr("spansum")
     var id = table_id + "_x_" + span_id
-    var metric_id = $(this).parents(".tl").first().children("[name$=_c_id]").attr("v")
+    var metric_id = $.data($(this).parents(".tl").first().children("[col=id]")[0], "v")
     $(e).parent(".tl").after("<tr class='extraline stackable'><td colspan='14' id="+id+"></td></tr>")
     var options = {"metric_id" : metric_id}
     metric(id, options)
@@ -2292,7 +2292,7 @@ function cell_decorator_metrics_links(e) {
 }
 
 function cell_decorator_dns_records_type(e) {
-  var v = $(e).attr("v")
+  var v = $.data(e, "v")
   var cl = ["boxed_small"]
   if ((v == "A") || (v == "PTR")) {
     cl.push("bgblack")
@@ -2309,7 +2309,7 @@ function cell_decorator_dns_records_type(e) {
 function cell_decorator_dns_records_links(e) {
   $(e).empty()
   var line = $(e).parent(".tl")
-  var record_id = line.children("[name$=_c_id]").attr("v")
+  var record_id = $.data(line.children("[col=id]")[0], "v")
 
   var query = "record_id="+record_id
   var query = query + "&_next="+window.location
@@ -2321,7 +2321,7 @@ function cell_decorator_dns_records_links(e) {
 function cell_decorator_dns_domains_links(e) {
   $(e).empty()
   var line = $(e).parent(".tl")
-  var domain_id = line.children("[name$=_c_id]").attr("v")
+  var domain_id = $.data(line.children("[col=id]")[0], "v")
 
   var query = "domain_id="+domain_id
   var query = query + "&_next="+window.location
@@ -2338,7 +2338,7 @@ function cell_decorator_dns_domains_links(e) {
 
 function cell_decorator_forms_links(e) {
   var line = $(e).parent(".tl")
-  var form_id = line.children("[name$=_c_id]").attr("v")
+  var form_id = $.data(line.children("[col=id]")[0], "v")
   var query = "form_id="+form_id
   url = services_get_url() + "/init/forms/forms_editor?"+query
   var d = "<a class='clickable edit16' target='_blank' href="+url+"></a>"
@@ -2347,14 +2347,14 @@ function cell_decorator_forms_links(e) {
 
 function cell_decorator_svcmon_links(e) {
   var line = $(e).parent(".tl")
-  var mon_svcname = line.children("[name$=mon_svcname]").attr("v")
+  var mon_svcname = $.data(line.children("[col=mon_svcname]")[0], "v")
   var query = "volatile_filters=true&actions_f_svcname="+mon_svcname
   query += "&actions_f_status_log=empty"
   query += "&actions_f_begin="+encodeURIComponent(">-1d")
   url = services_get_url() + "/init/svcactions/svcactions?"+query
   var d = "<a class='clickable action16' target='_blank' href="+url+"></a>"
 
-  var mon_frozen = line.children("[name$=mon_frozen]").attr("v")
+  var mon_frozen = $.data(line.children("[col=mon_frozen]")[0], "v")
   if (mon_frozen == "1") {
     d += "<span class='frozen16'>&nbsp</span>"
   }
@@ -2362,7 +2362,7 @@ function cell_decorator_svcmon_links(e) {
 }
 
 function cell_decorator_chk_type(e) {
-  var v = $(e).attr("v")
+  var v = $.data(e, "v")
   if (v=="") {
     return
   }
@@ -2384,8 +2384,8 @@ function cell_decorator_chk_type(e) {
 
 function cell_decorator_dash_link_comp_tab(e) {
   var line = $(e).parent(".tl")
-  var svcname = line.find("[name$=dash_svcname]").attr("v")
-  var nodename = line.find("[name$=dash_nodename]").attr("v")
+  var svcname = $.data(line.find("[col=dash_svcname]")[0], "v")
+  var nodename = $.data(line.find("[col=dash_nodename]")[0], "v")
   s = "<div class='comp16 clickable'></div>"
   $(e).html(s)
   $(e).addClass("corner")
@@ -2410,7 +2410,7 @@ function cell_decorator_dash_link_comp_tab(e) {
 
 function cell_decorator_dash_link_pkg_tab(e) {
   var line = $(e).parent(".tl")
-  var svcname = line.find("[name$=dash_svcname]").attr("v")
+  var svcname = $.data(line.find("[col=dash_svcname]")[0], "v")
   s = "<div class='pkg16 clickable'></div>"
   $(e).html(s)
   $(e).addClass("corner")
@@ -2444,7 +2444,7 @@ function _cell_decorator_dash_link_action_error(svcname) {
 
 function cell_decorator_dash_link_action_error(e) {
   var line = $(e).parent(".tl")
-  var svcname = line.find("[name$=dash_svcname]").attr("v")
+  var svcname = $.data(line.find("[col=dash_svcname]")[0], "v")
   var s = ""
   s += _cell_decorator_dash_link_action_error(svcname)
   s += _cell_decorator_dash_link_actions(svcname)
@@ -2459,7 +2459,7 @@ function _cell_decorator_dash_link_svcmon(svcname) {
 
 function cell_decorator_dash_link_svcmon(e) {
   var line = $(e).parent(".tl")
-  var svcname = line.find("[name$=dash_svcname]").attr("v")
+  var svcname = $.data(line.find("[col=dash_svcname]")[0], "v")
   var s = ""
   s += _cell_decorator_dash_link_svcmon(svcname)
   $(e).html(s)
@@ -2473,7 +2473,7 @@ function _cell_decorator_dash_link_node(nodename) {
 
 function cell_decorator_dash_link_node(e) {
   var line = $(e).parent(".tl")
-  var nodename = line.find("[name$=dash_nodename]").attr("v")
+  var nodename = $.data(line.find("[col=dash_nodename]")[0], "v")
   var s = ""
   s += _cell_decorator_dash_link_node(nodename)
   $(e).html(s)
@@ -2487,7 +2487,7 @@ function _cell_decorator_dash_link_checks(nodename) {
 
 function cell_decorator_dash_link_checks(e) {
   var line = $(e).parent(".tl")
-  var nodename = line.find("[name$=dash_nodename]").attr("v")
+  var nodename = $.data(line.find("[col=dash_nodename]")[0], "v")
   var s = ""
   s += _cell_decorator_dash_link_checks(nodename)
   $(e).html(s)
@@ -2501,7 +2501,7 @@ function _cell_decorator_dash_link_mac_networks(mac) {
 
 function cell_decorator_dash_link_mac_duplicate(e) {
   var line = $(e).parent(".tl")
-  var mac = line.find("[name$=dash_entry]").attr("v").split(" ")[1]
+  var mac = $.data(line.find("[col=dash_entry]")[0], "v").split(" ")[1]
   var s = ""
   s += _cell_decorator_dash_link_mac_networks(mac)
   $(e).html(s)
@@ -2509,7 +2509,7 @@ function cell_decorator_dash_link_mac_duplicate(e) {
 
 function cell_decorator_dash_link_obsolescence(e, t) {
   var line = $(e).parent(".tl")
-  var nodename = line.find("[name$=dash_nodename]").attr("v")
+  var nodename = $.data(line.find("[col=dash_nodename]")[0], "v")
   var s = ""
   url = services_get_url() + "/init/obsolescence/obsolescence_config?obs_f_obs_type="+t+"&volatile_filters=true"
   s = "<a class='"+t+"16 clickable' target='_blank' href='"+url+"'></a>"
@@ -2518,7 +2518,7 @@ function cell_decorator_dash_link_obsolescence(e, t) {
 
 function cell_decorator_dash_links(e) {
   var line = $(e).parent(".tl")
-  var dash_type = line.find("[name$=dash_type]").attr("v")
+  var dash_type = $.data(line.find("[col=dash_type]")[0], "v")
   if (dash_type == "action errors") {
     cell_decorator_dash_link_action_error(e)
   } else if ((dash_type == "node warranty expired") ||
@@ -2553,7 +2553,7 @@ function cell_decorator_dash_links(e) {
 }
 
 function cell_decorator_action_cron(e) {
-  var v = $(e).attr("v")
+  var v = $.data(e, "v")
   var l = []
   if (v == 1) {
       l.push("time16")
@@ -2562,7 +2562,7 @@ function cell_decorator_action_cron(e) {
 }
 
 function cell_decorator_dash_severity(e) {
-  var v = $(e).attr("v")
+  var v = $.data(e, "v")
   var l = []
   if (v == 0) {
       l.push("alertgreen")
@@ -2579,7 +2579,7 @@ function cell_decorator_dash_severity(e) {
 }
 
 function cell_decorator_form_id(e) {
-  var v = $(e).attr("v")
+  var v = $.data(e, "v")
   var s = ""
   url = services_get_url() + "/init/forms/workflow?wfid="+v+"&volatile_filters=true"
   s = "<a class='wf16 icon nowrap clickable' target='_blank' href='"+url+"'>"+v+"</a>"
@@ -2587,7 +2587,7 @@ function cell_decorator_form_id(e) {
 }
 
 function cell_decorator_run_log(e) {
-  var v = $(e).attr("v")
+  var v = $.data(e, "v")
   if (typeof v === "undefined") {
     var s = ""
   } else {
@@ -2597,7 +2597,7 @@ function cell_decorator_run_log(e) {
 }
 
 function cell_decorator_run_status(e) {
-  var v = $(e).attr("v")
+  var v = $.data(e, "v")
   var s = ""
   var cl = ""
   var _v = ""
@@ -2616,12 +2616,12 @@ function cell_decorator_run_status(e) {
 }
 
 function cell_decorator_disk_array(e) {
-  var v = $(e).attr("v")
+  var v = $.data(e, "v")
   if (v == "empty") {
     return
   }
   var line = $(e).parent(".tl")
-  var model = line.find("[name$=_array_model]").attr("v")
+  var model = $.data(line.find("[col=array_model]")[0], "v")
   var s = ""
   s = "<div class='clickable'>"+v+"</div>"
   $(e).html(s)
@@ -2637,7 +2637,7 @@ function cell_decorator_disk_array(e) {
 }
 
 function cell_decorator_disk_array_dg(e) {
-  var v = $(e).attr("v")
+  var v = $.data(e, "v")
   if (v == "empty") {
     return
   }
@@ -2649,7 +2649,7 @@ function cell_decorator_disk_array_dg(e) {
     if (get_selected() != "") {return}
     var line = $(e).parent(".tl")
     table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
-    array = line.find("[name$=_disk_arrayid],[name$=_array_name]").attr("v")
+    array = $.data(line.find("[col=disk_arrayid],[col=array_name]")[0], "v")
     span_id = line.attr("spansum")
     id = table_id + "_x_" + span_id
     url = services_get_url() + "/init/disks/ajax_array_dg?array="+array+"&dg="+v+"&rowid="+id
@@ -2658,7 +2658,7 @@ function cell_decorator_disk_array_dg(e) {
 }
 
 function cell_decorator_tag_exclude(e) {
-  var v = $(e).attr("v")
+  var v = $.data(e, "v")
   if (v == "empty") {
     v = ""
   }
@@ -2670,7 +2670,7 @@ function cell_decorator_tag_exclude(e) {
     $(e).bind("click", function(event){
       event.stopPropagation()
       i = $("<input class='oi tag_exclude'></input>")
-      var _v = $(this).attr("v")
+      var _v = $.data(this, "v")
       if (_v == "empty") {
         _v = ""
       }
@@ -2679,7 +2679,7 @@ function cell_decorator_tag_exclude(e) {
         if (!is_enter(event)) {
           return
         }
-        var tag_id = $(this).parents(".tl").find("[name=tags_c_id]").attr("v")
+        var tag_id = $.data($(this).parents(".tl").find("[name=tags_c_id]")[0], "v")
         var data = {
           "tag_exclude": $(this).val(),
         }
@@ -2702,7 +2702,7 @@ function cell_decorator_tag_exclude(e) {
 }
 
 function cell_decorator_dash_entry(e) {
-  var v = $(e).attr("v")
+  var v = $.data(e, "v")
   var s = ""
   s = "<div class='clickable'>"+v+"</div>"
   $(e).html(s)
@@ -2710,10 +2710,10 @@ function cell_decorator_dash_entry(e) {
   $(e).click(function(){
     if (get_selected() != "") {return}
     var line = $(e).parent(".tl")
-    var nodename = line.children("[name$=dash_nodename]").attr("v")
-    var svcname = line.children("[name$=dash_svcname]").attr("v")
-    var dash_md5 = line.children("[name$=dash_md5]").attr("v")
-    var dash_created = line.children("[name$=dash_created]").attr("v")
+    var nodename = $.data(line.children("[col=dash_nodename]")[0], "v")
+    var svcname = $.data(line.children("[col=dash_svcname]")[0], "v")
+    var dash_md5 = $.data(line.children("[col=dash_md5]")[0], "v")
+    var dash_created = $.data(line.children("[col=dash_created]")[0], "v")
     var rowid = line.attr("cksum")
     url = services_get_url() + "/init/dashboard/ajax_alert_events?dash_nodename="+nodename+"&dash_svcname="+svcname+"&dash_md5="+dash_md5+"&dash_created="+dash_created+"&rowid="+rowid
     table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
@@ -2724,7 +2724,7 @@ function cell_decorator_dash_entry(e) {
 }
 
 function cell_decorator_rset_md5(e) {
-  var v = $(e).attr("v")
+  var v = $.data(e, "v")
   var s = ""
   s = "<div class='clickable'>"+v+"</div>"
   $(e).html(s)
@@ -2740,7 +2740,7 @@ function cell_decorator_rset_md5(e) {
 }
 
 function cell_decorator_action_q_ret(e) {
-  var v = $(e).attr("v")
+  var v = $.data(e, "v")
   var cl = ["boxed_small"]
   if (v == 0) {
     cl.push("bggreen")
@@ -2753,7 +2753,7 @@ function cell_decorator_action_q_ret(e) {
 }
 
 function cell_decorator_action_q_status(e) {
-  var v = $(e).attr("v")
+  var v = $.data(e, "v")
   var st = ""
   var cl = ["boxed_small"]
   if (v == "T") {
@@ -2802,18 +2802,18 @@ function _outdated(s, max_age) {
 }
 
 function status_outdated(line) {
-  var s = line.children("[cell=1][name$=mon_updated]").attr("v")
+  var s = $.data(line.children("[cell=1][col=mon_updated]")[0], "v")
   if (typeof s === 'undefined') {
-    var s = line.children("[cell=1][name$=status_updated]").attr("v")
+    var s = $.data(line.children("[cell=1][col=status_updated]")[0], "v")
   }
   if (typeof s === 'undefined') {
-    var s = line.children("[cell=1][name$=_updated]").attr("v")
+    var s = $.data(line.children("[cell=1][name$=_updated]")[0], "v")
   }
   return _outdated(s, 15)
 }
 
 function cell_decorator_date_no_age(e) {
-  v = $(e).attr("v")
+  v = $.data(e, "v")
   if (typeof v === 'undefined') {
     return
   }
@@ -2849,7 +2849,7 @@ function cell_decorator_datetime_weekly(e) {
 }
 
 function cell_decorator_datetime(e) {
-  var s = $(e).attr("v")
+  var s = $.data(e, "v")
   var max_age = $(e).attr("max_age")
   var delta = datetime_age(s)
 
@@ -2910,12 +2910,12 @@ function cell_decorator_datetime(e) {
 
 function cell_decorator_date(e) {
   cell_decorator_datetime(e)
-  s = $(e).attr("v")
+  s = $.data(e, "v")
   $(e).text(s.split(" ")[0])
 }
 
 function cell_decorator_env(e) {
-  if ($(e).attr("v") != "PRD") {
+  if ($.data(e, "v") != "PRD") {
     return
   }
   s = "<div class='b'>PRD</div>"
@@ -2923,7 +2923,7 @@ function cell_decorator_env(e) {
 }
 
 function cell_decorator_svc_ha(e) {
-  if ($(e).attr("v") != 1) {
+  if ($.data(e, "v") != 1) {
     $(e).empty()
     return
   }
@@ -2932,7 +2932,7 @@ function cell_decorator_svc_ha(e) {
 }
 
 function cell_decorator_size_mb(e) {
-  v = $(e).attr("v")
+  v = $.data(e, "v")
   if (v == "empty") {
     return
   }
@@ -2941,7 +2941,7 @@ function cell_decorator_size_mb(e) {
 }
 
 function cell_decorator_size_b(e) {
-  v = $(e).attr("v")
+  v = $.data(e, "v")
   if (v == "empty") {
     return
   }
@@ -2951,16 +2951,16 @@ function cell_decorator_size_b(e) {
 
 function cell_decorator_availstatus(e) {
   var line = $(e).parent(".tl")
-  var mon_availstatus = $(e).attr("v")
+  var mon_availstatus = $.data(e, "v")
   if (mon_availstatus=="") {
     return
   }
-  var mon_containerstatus = line.children("[name$=mon_containerstatus]").attr("v")
-  var mon_ipstatus = line.children("[name$=mon_ipstatus]").attr("v")
-  var mon_fsstatus = line.children("[name$=mon_fsstatus]").attr("v")
-  var mon_diskstatus = line.children("[name$=mon_diskstatus]").attr("v")
-  var mon_sharestatus = line.children("[name$=mon_sharestatus]").attr("v")
-  var mon_appstatus = line.children("[name$=mon_appstatus]").attr("v")
+  var mon_containerstatus = $.data(line.children("[col=mon_containerstatus]")[0], "v")
+  var mon_ipstatus = $.data(line.children("[col=mon_ipstatus]")[0], "v")
+  var mon_fsstatus = $.data(line.children("[col=mon_fsstatus]")[0], "v")
+  var mon_diskstatus = $.data(line.children("[col=mon_diskstatus]")[0], "v")
+  var mon_sharestatus = $.data(line.children("[col=mon_sharestatus]")[0], "v")
+  var mon_appstatus = $.data(line.children("[col=mon_appstatus]")[0], "v")
 
   if (status_outdated(line)) {
     var cl_availstatus = "status_undef"
@@ -2996,20 +2996,20 @@ function cell_decorator_availstatus(e) {
 }
 
 function cell_decorator_rsetvars(e) {
-  var s = $(e).attr("v")
+  var s = $.data(e, "v")
   $(e).html("<pre>"+s.replace(/\|/g, "\n")+"</pre>")
 }
 
 function cell_decorator_overallstatus(e) {
   var line = $(e).parent(".tl")
-  var mon_overallstatus = $(e).attr("v")
+  var mon_overallstatus = $.data(e, "v")
   if (mon_overallstatus=="") {
     return
   }
-  var mon_containerstatus = line.children("[name$=mon_containerstatus]").attr("v")
-  var mon_availstatus = line.children("[name$=mon_availstatus]").attr("v")
-  var mon_hbstatus = line.children("[name$=mon_hbstatus]").attr("v")
-  var mon_syncstatus = line.children("[name$=mon_syncstatus]").attr("v")
+  var mon_containerstatus = $.data(line.children("[col=mon_containerstatus]")[0], "v")
+  var mon_availstatus = $.data(line.children("[col=mon_availstatus]")[0], "v")
+  var mon_hbstatus = $.data(line.children("[col=mon_hbstatus]")[0], "v")
+  var mon_syncstatus = $.data(line.children("[col=mon_syncstatus]")[0], "v")
 
   if (status_outdated(line)) {
     var cl_overallstatus = "status_undef"
@@ -3037,7 +3037,7 @@ function cell_decorator_overallstatus(e) {
 }
 
 function cell_decorator_sql(e) {
-  var s = $(e).attr("v")
+  var s = $.data(e, "v")
   var _e = $("<pre></pre>")
   s = s.replace(/(SELECT|FROM|GROUP BY|WHERE)/gi, function(x) {
     return '<span class=syntax_red>'+x+'</span>'
@@ -3056,12 +3056,12 @@ function cell_decorator_sql(e) {
 }
 
 function cell_decorator_alert_type(e) {
-  var s = $(e).attr("v")
+  var s = $.data(e, "v")
   $(e).html(i18n.t("alert_type."+s))
 }
 
 function cell_decorator_yaml(e) {
-  var s = $(e).attr("v")
+  var s = $.data(e, "v")
   var _e = $("<pre></pre>")
   s = s.replace(/Id:\s*(\w+)/gi, function(x) {
     return '<span class=syntax_red>'+x+'</span>'
@@ -3077,7 +3077,7 @@ function cell_decorator_yaml(e) {
 }
 
 function cell_decorator_appinfo_key(e) {
-  var s = $(e).attr("v")
+  var s = $.data(e, "v")
   var _e = $("<div class='boxed_small'></div>")
   _e.text(s)
   if (s == "Error") {
@@ -3089,7 +3089,7 @@ function cell_decorator_appinfo_key(e) {
 }
 
 function cell_decorator_appinfo_value(e) {
-  var s = $(e).attr("v")
+  var s = $.data(e, "v")
   var _e = $("<span></span>")
   _e.text(s)
   if (is_numeric(s)) {
@@ -3100,10 +3100,10 @@ function cell_decorator_appinfo_value(e) {
       var span_id = line.attr("spansum")
       var table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
       var id = table_id + "_x_" + span_id
-      var params = "svcname="+encodeURIComponent(line.children("[name$=_c_app_svcname]").attr("v"))
-      params += "&nodename="+encodeURIComponent(line.children("[name$=_c_app_nodename]").attr("v"))
-      params += "&launcher="+encodeURIComponent(line.children("[name$=_c_app_launcher]").attr("v"))
-      params += "&key="+encodeURIComponent(line.children("[name$=_c_app_key]").attr("v"))
+      var params = "svcname="+encodeURIComponent($.data(line.children("[col=app_svcname]")[0], "v"))
+      params += "&nodename="+encodeURIComponent($.data(line.children("[col=app_nodename]")[0], "v"))
+      params += "&launcher="+encodeURIComponent($.data(line.children("[col=app_launcher]")[0], "v"))
+      params += "&key="+encodeURIComponent($.data(line.children("[col=app_key]")[0], "v"))
       params += "&rowid="+encodeURIComponent(id)
       var url = services_get_url() + "/init/appinfo/ajax_appinfo_log?" + params
  
@@ -3114,7 +3114,7 @@ function cell_decorator_appinfo_value(e) {
 }
 
 function cell_decorator_users_role(e) {
-  var s = $(e).attr("v")
+  var s = $.data(e, "v")
   $(e).empty()
   if (s == 1) {
     $(e).addClass("admin")
@@ -3124,14 +3124,14 @@ function cell_decorator_users_role(e) {
 }
 
 function cell_decorator_users_domain(e) {
-  var s = $(e).attr("v")
+  var s = $.data(e, "v")
   if (s == "empty") {
     s = ""
   }
   var span = $("<span class='clickable'></span>")
   var input = $("<input class='hidden oi'></input>")
   var line = $(e).parent(".tl")
-  var user_id = line.children("[name$=_c_id]").attr("v")
+  var user_id = $.data(line.children("[col=id]")[0], "v")
 
   if (services_ismemberof(["Manager", "UserManager"])) {
     $(e).hover(
@@ -3183,6 +3183,30 @@ function cell_decorator_users_domain(e) {
   $(e).empty()
   $(e).append(span)
   $(e).append(input)
+}
+
+function cell_decorator_rule_value(e) {
+  var line = $(e).parent(".tl")
+  $(e).uniqueId()
+  var id = $(e).attr("id")
+  var var_class = $.data(line.children("[col=var_class]")[0], "v")
+  var encap = $.data(line.children("[col=encap_rset]")[0], "v")
+  if (encap != "") {
+    var disable_edit = true
+  } else {
+    var disable_edit = false
+  }
+  try {
+    var data = $.parseJSON($.data(e, "v"))
+  } catch(err) {
+    console.log(err)
+  }
+  form(id, {
+    "data": data,
+    "display_mode": true,
+    "form_name": var_class,
+    "disable_edit": disable_edit
+  })
 }
 
 cell_decorators = {
@@ -3250,7 +3274,8 @@ cell_decorators = {
  "alert_type": cell_decorator_alert_type,
  "appinfo_key": cell_decorator_appinfo_key,
  "appinfo_value": cell_decorator_appinfo_value,
- "log_icons": cell_decorator_log_icons
+ "log_icons": cell_decorator_log_icons,
+ "rule_value": cell_decorator_rule_value
 }
 
 

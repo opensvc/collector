@@ -967,7 +967,7 @@ function table_action_menu_get_cols_data_clicked(t, e, scope, selector) {
   for (var i=0; i<selector.cols.length; i++) {
     var c = selector.cols[i]
     var s = t.column_selectors[c]
-    var val = line.find(s).first().attr("v")
+    var val = $.data(line.find(s).first()[0], "v")
     if ((typeof val === "undefined") || (val=="") || (val == "empty")) {
       continue
     }
@@ -990,7 +990,7 @@ function table_action_menu_get_cols_data_checked(t, e, scope, selector) {
     for (var i=0; i<selector.cols.length; i++) {
       var c = selector.cols[i]
       var s = t.column_selectors[c]
-      var val = $(this).find(s).first().attr("v")
+      var val = $.data($(this).find(s).first()[0], "v")
       if ((typeof val === "undefined") || (val=="") || (val == "empty")) {
         sig += "-"
         continue

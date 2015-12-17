@@ -317,8 +317,8 @@ function sort_table(id) {
                     asc = true
                 }
                 cname = id+"_c_"+key
-                v1 = line1.find("[name="+cname+"]").attr("v")
-                v2 = line2.find("[name="+cname+"]").attr("v")
+                v1 = $.data(line1.find("[name="+cname+"]")[0], "v")
+                v2 = $.data(line2.find("[name="+cname+"]")[0], "v")
                 //if (i==0) {alert(v1+" "+ v2 + " " + asc )}
                 if (v1 == v2) {
                     eq += 1
@@ -664,7 +664,6 @@ function table_refresh_column_filters(t) {
 }
 
 function table_cell_fmt(t, k, v) {
-  var s = ""
   var cl = ""
   var n = t.id+"_c_"+k
   var classes = []
@@ -687,7 +686,8 @@ function table_cell_fmt(t, k, v) {
   } else {
     var text = v
   }
-  s += "<td cell='1' col='"+k+"' name='"+n+"' v='"+v+"'"+cl+">"+text+"</td>"
+  var s = $("<td cell='1' col='"+k+"' name='"+n+"' "+cl+">"+text+"</td>")
+  $.data(s[0], "v", v)
   return s
 }
 
@@ -695,10 +695,10 @@ function table_bind_filter_selector(t) {
   $("#table_"+t.id).find("[cell=1]").each(function(){
     $(this).bind("mouseup", function(event) {
       cell = $(event.target)
-      if (typeof cell.attr("v") === 'undefined') {
+      if (typeof cell.attr("cell") === 'undefined') {
         cell = cell.parents("[cell=1]").first()
       }
-      t.filter_selector(event, cell.attr('name'), cell.attr('v'))
+      t.filter_selector(event, cell.attr('name'), $.data(cell, 'v'))
     })
     $(this).bind("click", function() {
       $("#fsr"+t.id).hide()
@@ -716,12 +716,12 @@ function table_bind_checkboxes(t) {
 }
 
 function table_data_to_lines(t, data) {
-  var lines = ""
+  var lines = $("<span></span>")
   for (var i=0; i<data.length; i++) {
-    var line = ""
+    var line = $("<tr class='tl h' spansum='"+data[i]['spansum']+"' cksum='"+data[i]['cksum']+"'></tr>")
     var ckid = t.id + "_ckid_" + data[i]['id']
     if (t.checkboxes) {
-      line += "<td name='"+t.id+"_tools' class='tools'><input class='ocb' value='"+data[i]['checked']+"' type='checkbox' id='"+ckid+"' name='"+t.id+"_ck'><label for='"+ckid+"'></label></td>"
+      line.append("<td name='"+t.id+"_tools' class='tools'><input class='ocb' value='"+data[i]['checked']+"' type='checkbox' id='"+ckid+"' name='"+t.id+"_ck'><label for='"+ckid+"'></label></td>")
     }
     if (t.extrarow) {
       var cols = ["extra"].concat(t.columns)
@@ -731,11 +731,12 @@ function table_data_to_lines(t, data) {
     for (var j=0; j<cols.length; j++) {
       var k = cols[j]
       var v = data[i]['cells'][j]
-      line += table_cell_fmt(t, k, v)
+      var cell = table_cell_fmt(t, k, v)
+      line.append(cell)
     }
-    lines += "<tr class='tl h' spansum='"+data[i]['spansum']+"' cksum='"+data[i]['cksum']+"'>"+line+"</tr>"
+    lines.append(line)
   }
-  return lines
+  return lines.children().detach()
 }
 
 function table_parent_table_data(t, ptid) {
@@ -836,11 +837,16 @@ function table_refresh(t) {
              if (format == "json") {
                msg = table_data_to_lines(t, lines)
              } else {
-               msg = lines
+               msg = $(lines)
+               // strip the topmost table marks
+               if (msg.is("table")) {
+                 msg = msg.children("tbody").children()
+               }
+               msg.find("[v]").each(function(){
+                 $.data(this, "v", $(this).attr("v"))
+                 $(this).removeAttr("v")
+               })
              }
-
-             // strip the topmost table marks
-             msg = msg.replace(/^.table.|.\/table.$/g, '')
 
              // detach old lines
              var old_lines = $("<tbody></tbody>").append($("#table_"+t.id).children("tbody").children(".tl").detach())
@@ -867,7 +873,7 @@ function table_refresh(t) {
                    continue
                  }
                  var old_cell = $(":nth-child("+i+")", old_line)
-                 if (old_cell.attr("v") == new_cell.attr("v")) {
+                 if ($.data(old_cell[0], "v") == $.data(new_cell[0], "v")) {
                    continue
                  }
                  new_cell.addClass("tohighlight")
@@ -963,11 +969,16 @@ function table_insert(t, data) {
              if (format == "json") {
                msg = table_data_to_lines(t, lines)
              } else {
-               msg = lines
+               msg = $(lines)
+               // strip the topmost table marks
+               if (msg.is("table")) {
+                 msg = msg.children("tbody").children()
+               }
+               msg.find("[v]").each(function(){
+                 $.data(this, "v", $(this).attr("v"))
+                 $(this).removeAttr("v")
+               })
              }
-
-             // strip the topmost table marks
-             msg = msg.replace(/^.table.|.\/table.$/g, '')
 
              // replace already displayed lines
              modified = []
@@ -986,7 +997,7 @@ function table_insert(t, data) {
                      continue
                    }
                    new_cell = $(":nth-child("+i+")", new_line)
-                   if (cell.attr("v") == new_cell.attr("v")) {
+                   if ($.data(cell[0], "v") == $.data(new_cell[0], "v")) {
                      continue
                    }
                    new_cell.addClass("highlight")
@@ -1116,26 +1127,6 @@ function toggle_extra(url, id, e, ncols) {
         })
       })
     }
-}
-
-function checked_services() {
-    d = new Array()
-    $("[name=svcmon_ck]").each(function(){
-        if (this.type == 'checkbox' && this.disabled == false && this.checked) {
-            d.push($(this).parents('tr').children("[name=svcmon_c_mon_svcname]").attr('v'))
-        }
-    })
-    return d.join(",");
-}
-function checked_nodes() {
-    l = document.getElementsByName('nodes_ck');
-    d = new Array()
-    for(i=0; i<l.length; i++) {
-        if (l[i].type == 'checkbox' && l[i].disabled == false && l[i].checked) {
-            d.push(l[i].id.replace("nodes_ckid_",""));
-        }
-    }
-    return d.join(",");
 }
 
 function refresh_action(url, id){
