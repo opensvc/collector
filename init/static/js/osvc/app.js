@@ -3,6 +3,7 @@ var osvc = {
  'user_groups_loaded': $.Deferred(),
  'table_settings_loaded': $.Deferred(),
  'table_filters_loaded': $.Deferred(),
+ 'forms_loaded': $.Deferred(),
  'i18n_started': $.Deferred(),
  'app_started': $.Deferred()
 }
@@ -31,6 +32,7 @@ function app_start() {
   services_feed_self_and_group()
   osvc.table_settings = table_settings()
   osvc.table_filters = table_filters()
+  osvc.forms = forms()
 
   // Check if IE and version < 10
   for (i=6; i< 10; i++) {
