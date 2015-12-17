@@ -3199,11 +3199,12 @@ function cell_decorator_rule_value(e) {
   try {
     var data = $.parseJSON($.data(e, "v"))
   } catch(err) {
-    console.log(err)
+    var data = $.data(e, "v")
   }
   form(id, {
     "data": data,
     "display_mode": true,
+    "digest": true,
     "form_name": var_class,
     "disable_edit": disable_edit
   })

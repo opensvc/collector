@@ -418,6 +418,9 @@ function form(divid, options) {
 			o.div.html(i18n.t("forms.form_name_not_in_options"))
 			return
 		}
+		if ((o.options.form_name == "") || (o.options.form_name == "empty")) {
+			return
+		}
 		o.form_data = osvc.forms.data[o.options.form_name]
 		if (!o.form_data) {
 			o.div.html(i18n.t("forms.form_def_not_found"))
@@ -432,6 +435,7 @@ function form(divid, options) {
 
 	o.render_form_mode = function() {
 		var area = $("<div name='form_area'></div>")
+		o.area = area
 		o.div.empty().append(area)
 		o.render_form()
 	}
@@ -439,6 +443,7 @@ function form(divid, options) {
 	o.render_display_mode = function() {
 		var div = $("<div class='postit' style='position:relative'></div>")
 		var area = $("<div name='form_area'></div>")
+		o.area = area
 		div.append(o.render_edit())
 		div.append(o.render_cancel())
 		div.append(area)
@@ -475,6 +480,137 @@ function form(divid, options) {
 	}
 
 	o.render_display = function() {
+		if (typeof(o.options.data) == "string") {
+			o.area.html(o.options.data)
+			o.area.addClass("pre")
+			return
+		}
+		if (o.options.digest) {
+			o.render_display_digest()
+		} else if (o.options.detailled) {
+			o.render_display_detailled()
+		} else {
+			o.render_display_normal()
+		}
+	}
+
+	o.render_display_digest_header = function() {
+		var line = $("<tr></tr>")
+		for (var i=0; i<o.form_data.form_definition.Inputs.length; i++) {
+			var d = o.form_data.form_definition.Inputs[i]
+			if (d.Hidden == true) {
+				continue
+			}
+			if (d.DisplayInDigest == false) {
+				continue
+			}
+			var cell = $("<th></th>")
+			cell.text(d.DisplayModeLabel)
+			if (i == 0) {
+				cell.addClass("comp16")
+			}
+			line.append(cell)
+		}
+		o.area_table.append(line)
+	}
+
+	o.render_display_digest_line = function(data, key) {
+		var line = $("<tr></tr>")
+		if (key) {
+			var key_id = o.form_data.form_definition.Outputs[0].Key
+		}
+		for (var i=0; i<o.form_data.form_definition.Inputs.length; i++) {
+			var d = o.form_data.form_definition.Inputs[i]
+			if (d.Hidden == true) {
+				continue
+			}
+			if (d.DisplayInDigest == false) {
+				continue
+			}
+			var cell = $("<td></td>")
+			if (key && (d.Id == key_id)) {
+				var content = key
+				cell.addClass("b")
+			} else if (typeof(data) === "string") {
+				var content = data
+				if(d.Css) {
+					cell.addClass(d.Css)
+				}
+				if(d.LabelCss) {
+					cell.addClass(d.LabelCss)
+				}
+			} else if (d.Id in data) {
+				var content = data[d.Id]
+			}
+			if (content == "") {
+				content = "-"
+			}
+			if (d.DisplayModeTrim && (content.length > d.DisplayModeTrim)) {
+				content = content.slice(0, d.DisplayModeTrim/3) + "..." + content.slice(content.length-d.DisplayModeTrim/3*2, content.length)
+			}
+			cell.text(content)
+			line.append(cell)
+		}
+		o.area_table.append(line)
+	}
+
+	o.render_display_digest = function() {
+		if (o.form_data.form_definition.Outputs[0].Format == "dict") {
+			// no digest view for dict. switch to normal.
+			o.render_display_normal()
+			return
+		}
+
+		o.area_table = $("<table></table>")
+		o.area.append(o.area_table)
+		o.render_display_digest_header()
+		if ((o.form_data.form_definition.Outputs[0].Format == "list") ||
+                    (o.form_data.form_definition.Outputs[0].Format == "list of dict")) {
+			for (var i=0; i<o.options.data.length; i++) {
+				o.render_display_digest_line(o.options.data[i])
+			} 
+		} else if (o.form_data.form_definition.Outputs[0].Format == "dict of dict") {
+			for (key in o.options.data) {
+				o.render_display_digest_line(o.options.data[key], key)
+			} 
+		}
+	}
+
+	o.render_display_detailled = function() {
+	}
+
+	o.render_display_normal = function() {
+		o.area_table = $("<table></table>")
+		o.area.append(o.area_table)
+		for (var i=0; i<o.form_data.form_definition.Inputs.length; i++) {
+			var d = o.form_data.form_definition.Inputs[i]
+			if (d.Hidden == true) {
+				continue
+			}
+			var line = $("<tr></tr>")
+			var label = $("<td style='white-space:nowrap' class='b'></td>")
+			var value = $("<td></td>")
+			label.text(d.DisplayModeLabel)
+			if(d.LabelCss) {
+				label.addClass(d.LabelCss)
+			}
+			if(d.Css) {
+				value.addClass(d.Css)
+			}
+			line.append(label)
+			line.append(value)
+			if (d.Id in o.options.data) {
+				var content = o.options.data[d.Id]
+			}
+			if (content == "") {
+				content = "-"
+			}
+			if (d.DisplayModeTrim && (content.length > d.DisplayModeTrim)) {
+				content = content.slice(0, d.DisplayModeTrim/3) + "..." + content.slice(content.length-d.DisplayModeTrim/3*2, content.length)
+			}
+			value.text(content)
+			o.area_table.append(line)
+		}
 	}
 
 	o.render_form = function() {
