@@ -174,6 +174,7 @@ function app_bindings() {
     // 'TAB' from search input focuses the first visible menu_entry
     if (event.which == 9) {
       if ($('#search_input').is(":focus")) {
+        $(".header").find(".menu_selected").removeClass("menu_selected")
         $(".header").find(".menu_entry:visible").first().addClass("menu_selected")
       }
     }
@@ -212,6 +213,7 @@ function app_bindings() {
     else if (event.which == 78) {
       event.preventDefault();
       $(".header").find(".menu16").parents("ul").first().siblings(".menu").show("fold", function(){filter_menu()});
+      $(".header").find(".menu_selected").removeClass("menu_selected")
       $('#search_input').val('');
       $('#search_input').focus();
     }
