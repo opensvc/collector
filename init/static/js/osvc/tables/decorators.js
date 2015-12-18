@@ -2802,13 +2802,17 @@ function _outdated(s, max_age) {
 }
 
 function status_outdated(line) {
-  var s = $.data(line.children("[cell=1][col=mon_updated]")[0], "v")
-  if (typeof s === 'undefined') {
-    var s = $.data(line.children("[cell=1][col=status_updated]")[0], "v")
+  var l = line.children("[cell=1][col=mon_updated]")
+  if (l.length == 0) {
+    l = line.children("[cell=1][col=status_updated]")
   }
-  if (typeof s === 'undefined') {
-    var s = $.data(line.children("[cell=1][name$=_updated]")[0], "v")
+  if (l.length == 0) {
+    l = line.children("[cell=1][name$=_updated]")
   }
+  if (l.length == 0) {
+    return true
+  }
+  var s = $.data(l[0], "v")
   return _outdated(s, 15)
 }
 
