@@ -537,7 +537,6 @@ def ajax_users():
         limitby = (t.pager_start,t.pager_end)
         cols = t.get_visible_columns()
         t.object_list = db(q).select(*cols, orderby=o, limitby=limitby, cacheable=False)
-        t.set_column_visibility()
         return t.table_lines_data(n, html=False)
 
 @auth.requires_login()
