@@ -7145,8 +7145,6 @@ def json_tree_action_show():
         return
     elif request.vars.obj_type.startswith("ruleset"):
         return json_tree_action_show_ruleset(request.vars.obj_id)
-    elif request.vars.obj_type == "variable":
-        return json_tree_action_show_variable(request.vars.obj_id)
     elif request.vars.obj_type == "filterset":
         return json_tree_action_show_filterset(request.vars.obj_id)
     elif request.vars.obj_type == "modset":
@@ -7905,22 +7903,6 @@ def json_tree_action_show_ruleset(rset_id):
              _style="position:relative;padding:0px",
            )
 
-
-def json_tree_action_show_variable(var_id):
-    q = db.comp_rulesets_variables.id == var_id
-    rows = db(q).select()
-    renderer = col_var_value(title='Value',
-                             field='var_value',
-                             table='comp_rulesets')
-    t = table_comp_rulesets("treetable")
-    renderer.t = t
-    l = []
-    for row in rows:
-        l.append(H3(row.var_name))
-        l.append(P(T("Variable class: %(var_class)s", dict(var_class=str(row.var_class)))))
-        l.append(P(T("Last modified by %(user)s on %(date)s", dict(user=row.var_author, date=str(row.var_updated)))))
-        l.append(renderer.html(row))
-    return DIV(l)
 
 def json_tree_action_create_filterset(name):
     name = name.strip()

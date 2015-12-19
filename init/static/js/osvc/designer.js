@@ -14,6 +14,9 @@ function designer(divid, options) {
   o.init = function() {
     return designer_init(o)
   }
+  o.show_variable = function(e) {
+    return designer_show_variable(o, e)
+  }
   o.show_importer = function() {
     return designer_show_importer(o)
   }
@@ -504,10 +507,62 @@ function designer_show_importer(o) {
   o.e_info.html(div)
 }
 
+function designer_show_variable(o, e) {
+  var var_id = e.attr('obj_id')
+  var rset_id = e.parents("li").first().attr('obj_id')
+
+  services_osvcgetrest("R_COMPLIANCE_RULESET_VARIABLE", [rset_id, var_id], "", function(jd){
+    if (jd.error && (jd.error.length > 0)) {
+      o.e_info.html(services_error_fmt(jd))
+      return
+    }
+    var data = jd.data[0]
+    var div = $("<div></div>")
+    var form_div = $("<div></div>")
+    var title = $("<h3>"+data.var_name+"</h3>")
+    var p1 = $("<p></p>")
+    var p2 = $("<p></p>")
+
+    p1.text(i18n.t("designer.var_class", {"name": data.var_class}))
+    p2.text(i18n.t("designer.var_last_mod", {"by": data.var_author, "on": data.var_updated}))
+    form_div.uniqueId()
+    id = form_div.attr("id")
+
+    div.append(title)
+    div.append(p1)
+    div.append(p2)
+    div.append("<br>")
+    div.append(form_div)
+    o.e_info.html(div)
+
+    try {
+      var _data = $.parseJSON(data.var_value)
+    } catch(err) {
+      var _data = data.var_value
+    }
+
+    form(id, {
+      "data": _data,
+      "var_id": var_id,
+      "rset_id": rset_id,
+      "display_mode": true,
+      "digest": true,
+      "form_name": data.var_class,
+      "disable_edit": false
+    })
+  },
+  function(xhr, stat, error) {
+    o.e_info.html(services_ajax_error_fmt(xhr, stat, error))
+  })
+}
+
 function designer__select(o, e, data) {
   data.rslt.obj.each(function() {
     if ($(this).is("[rel$=_head]")) {
       o.show_importer()
+      return
+    } else if ($(this).is("[rel=variable]")) {
+      o.show_variable($(this))
       return
     }
     $.ajax({

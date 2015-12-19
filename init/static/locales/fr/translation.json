@@ -10,6 +10,8 @@
     "done": "fait"
   }, 
   "designer": {
+    "var_class": "Classe de variable: __name__",
+    "var_last_mod": "Dernière modification par __by__ le __on__",
     "warn_remove": "Attention, cet objet peut être référencé par d'autres objets. Voulez-vous vraiment le supprimer ?",
     "import": "Import"
   },
