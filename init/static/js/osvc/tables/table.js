@@ -128,7 +128,7 @@ function toggle_filter_value_input() {
 function check_toggle_vis(id, checked, col){
     var t = osvc.tables[id]
     var c = col.split("_c_")[1]
-    if (checked) {
+    if (checked && (t.options.visible_columns.indexOf(c) < 0)) {
       t.options.visible_columns.push(c)
     } else {
       t.options.visible_columns = t.options.visible_columns.filter(function(x){if (x!=c){return true}})
@@ -698,7 +698,7 @@ function table_bind_filter_selector(t) {
       if (typeof cell.attr("cell") === 'undefined') {
         cell = cell.parents("[cell=1]").first()
       }
-      t.filter_selector(event, cell.attr('name'), $.data(cell, 'v'))
+      t.filter_selector(event, cell.attr('name'), $.data(cell[0], 'v'))
     })
     $(this).bind("click", function() {
       $("#fsr"+t.id).hide()
@@ -1976,8 +1976,11 @@ function table_add_column_selector(t) {
     if (t.options.visible_columns.indexOf(colname) >= 0) {
       input.prop("checked", true)
     }
+
+    // filtered columns are always visible
     if (t.e_header_filters && t.e_header_filters.find("th[col="+colname+"]").find("input").val()) {
       input.prop("disabled", true)
+      input.prop("checked", true)
     }
 
     // label
