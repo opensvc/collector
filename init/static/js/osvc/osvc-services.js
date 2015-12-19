@@ -27,6 +27,7 @@ var services_access_uri = {
     "R_COMPLIANCE_RULESETS" : "rest/api/compliance/rulesets",
     "R_COMPLIANCE_RULESETS_NODES" : "rest/api/compliance/rulesets_nodes",
     "R_COMPLIANCE_RULESETS_SERVICES" : "rest/api/compliance/rulesets_services",
+    "R_COMPLIANCE_RULESET_VARIABLE" : "rest/api/compliance/rulesets/%1/variables/%2",
     "R_COMPLIANCE_STATUS" : "rest/api/compliance/status",
     "R_FILTERSETS" : "rest/api/filtersets",
     "R_FORMS" : "rest/api/forms",
@@ -366,6 +367,9 @@ function services_ajax_error_fmt(xhr, stat, error) {
 }
 
 function services_error_fmt(data) {
+    if (!data.error) {
+        return
+    }
     var e = $("<span><span class='alert16 err fa-2x'></span><span data-i18n='api.error'></span></span>")
     e.i18n()
     var p = $("<pre></pre>")
@@ -382,6 +386,9 @@ function services_error_fmt(data) {
 }
 
 function services_info_fmt(data) {
+    if (!data.info) {
+        return
+    }
     var e = $("<span><span class='alert16 fa-2x'></span><span data-i18n='api.info'></span></span>")
     e.i18n()
     var p = $("<pre></pre>")

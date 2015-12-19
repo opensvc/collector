@@ -408,13 +408,12 @@ function forms() {
 // form renderer
 //
 function form(divid, options) {
-	o = {}
+	var o = {}
 	o.options = options
 	o.div = $("#"+divid)
 
 	o.load = function() {
 		if (!o.options.form_name) {
-			console.log(o.options)
 			o.div.html(i18n.t("forms.form_name_not_in_options"))
 			return
 		}
@@ -481,14 +480,12 @@ function form(divid, options) {
 
 	o.render_display = function() {
 		if (typeof(o.options.data) == "string") {
-			o.area.html(o.options.data)
+			o.area.text(o.options.data)
 			o.area.addClass("pre")
 			return
 		}
 		if (o.options.digest) {
 			o.render_display_digest()
-		} else if (o.options.detailled) {
-			o.render_display_detailled()
 		} else {
 			o.render_display_normal()
 		}
@@ -528,11 +525,13 @@ function form(divid, options) {
 				continue
 			}
 			var cell = $("<td></td>")
+			var content = ""
+
 			if (key && (d.Id == key_id)) {
-				var content = key
+				content = key
 				cell.addClass("b")
 			} else if (typeof(data) === "string") {
-				var content = data
+				content = data
 				if(d.Css) {
 					cell.addClass(d.Css)
 				}
@@ -540,12 +539,13 @@ function form(divid, options) {
 					cell.addClass(d.LabelCss)
 				}
 			} else if (d.Id in data) {
-				var content = data[d.Id]
+				content = data[d.Id]
 			}
+
 			if (content == "") {
 				content = "-"
 			}
-			if (d.DisplayModeTrim && (content.length > d.DisplayModeTrim)) {
+			if (!o.options.detailled && d.DisplayModeTrim && (content.length > d.DisplayModeTrim)) {
 				content = content.slice(0, d.DisplayModeTrim/3) + "..." + content.slice(content.length-d.DisplayModeTrim/3*2, content.length)
 			}
 			cell.text(content)
@@ -562,7 +562,7 @@ function form(divid, options) {
 		}
 
 		o.area_table = $("<table></table>")
-		o.area.append(o.area_table)
+		o.area.empty().append(o.area_table)
 		o.render_display_digest_header()
 		if ((o.form_data.form_definition.Outputs[0].Format == "list") ||
                     (o.form_data.form_definition.Outputs[0].Format == "list of dict")) {
@@ -576,12 +576,9 @@ function form(divid, options) {
 		}
 	}
 
-	o.render_display_detailled = function() {
-	}
-
 	o.render_display_normal = function() {
 		o.area_table = $("<table></table>")
-		o.area.append(o.area_table)
+		o.area.empty().append(o.area_table)
 		for (var i=0; i<o.form_data.form_definition.Inputs.length; i++) {
 			var d = o.form_data.form_definition.Inputs[i]
 			if (d.Hidden == true) {
@@ -605,7 +602,7 @@ function form(divid, options) {
 			if (content == "") {
 				content = "-"
 			}
-			if (d.DisplayModeTrim && (content.length > d.DisplayModeTrim)) {
+			if (!o.options.detailled && d.DisplayModeTrim && (content.length > d.DisplayModeTrim)) {
 				content = content.slice(0, d.DisplayModeTrim/3) + "..." + content.slice(content.length-d.DisplayModeTrim/3*2, content.length)
 			}
 			value.text(content)
@@ -613,9 +610,308 @@ function form(divid, options) {
 		}
 	}
 
-	o.render_form = function() {
+	o.render_form_group = function(data) {
+		var table = $("<table></table>")
+		for (var i=0; i<o.form_data.form_definition.Inputs.length; i++) {
+			var d = o.form_data.form_definition.Inputs[i]
+			var line = $("<tr></tr>")
+			var label = $("<td style='white-space:nowrap' class='b'></td>")
+			var value = $("<td name='val'></td>")
+			var help = $("<td class='help'></td>")
+			help.attr("title", d.Help)
+			line.attr("iid", d.Id)
+			if (d.Hidden == true) {
+				line.hide()
+			}
+			label.text(d.Label)
+			if(d.LabelCss) {
+				label.addClass(d.LabelCss)
+			}
+			line.append(label)
+			line.append(value)
+			line.append(help)
+			if (typeof(data) === "undefined") {
+				var content = ""
+			} else if (typeof(data) === "string") {
+				var content = data
+			} else if (d.Id in data) {
+				var content = data[d.Id]
+			} else {
+				var content = ""
+			}
+			if (d.Type == "date") {
+				value.append(o.render_date(d, content))
+			} else if (d.Type == "datetime") {
+				value.append(o.render_date(d, content))
+			} else if (d.Type == "text") {
+				value.append(o.render_text(d, content))
+			} else if (d.Candidates && (d.Candidates instanceof Array)) {
+				value.append(o.render_select(d, content))
+			} else {
+				value.append(o.render_input(d, content))
+			}
+			table.append(line)
+		}
+		return table
 	}
 
+	o.render_del_group = function() {
+		var div = $("<div class='del16 clickable' style='text-align:center'></div>")
+		div.text(i18n.t("forms.del_group"))
+		div.bind("click", function() {
+			$(this).next("table").remove()
+			$(this).remove()
+		})
+		return div
+	}
+
+	o.render_add_group = function() {
+		var div = $("<div class='add16 clickable' style='text-align:center'></div>")
+		div.text(i18n.t("forms.add_group"))
+		o.area.append(div)
+		div.bind("click", function() {
+			var ref = o.area.children("table").last()
+			var remove = o.render_del_group()
+			remove.insertAfter(ref)
+			ref.clone(true, true).insertAfter(remove)
+		})
+	}
+
+	o.render_form_list = function() {
+		o.area.empty()
+		if (o.options.data.length == 0) {
+			o.area.append(o.render_form_group({}))
+		} else {
+			for (var i=0; i<o.options.data.length; i++) {
+				o.area.append(o.render_del_group())
+				o.area.append(o.render_form_group(o.options.data[i]))
+			}
+		}
+		o.render_add_group()
+		o.render_submit()
+		o.render_result()
+	}
+
+	o.render_form_dict_of_dict = function() {
+		o.area.empty()
+		var key_id = o.form_data.form_definition.Outputs[0].Key
+		var i = 0
+		for (key in o.options.data) {
+			i++
+			o.options.data[key][key_id] = key
+			o.area.append(o.render_del_group())
+			o.area.append(o.render_form_group(o.options.data[key]))
+		}
+		if (i == 0) {
+			o.area.append(o.render_del_group())
+			o.area.append(o.render_form_group({}))
+		}
+		o.render_add_group()
+		o.render_submit()
+		o.render_result()
+	}
+
+	o.render_form_dict = function() {
+		o.area.empty().append(o.render_form_group(o.options.data))
+		o.render_submit()
+		o.render_result()
+	}
+
+	o.render_form = function() {
+		var f = o.form_data.form_definition.Outputs[0].Format
+		if (!f || (f == "dict")) {
+			o.render_form_dict()
+		} else if (f == "dict of dict") {
+			o.render_form_dict_of_dict()
+		} else if (f == "list of dict") {
+			o.render_form_list()
+		} else if (f == "list") {
+			o.render_form_list()
+		} else {
+			console.log("render_form: unsupported format", f) 
+		}
+	}
+
+	o.render_result = function() {
+		var result = $("<div></div>")
+		o.area.append(result)
+		o.result = result
+	}
+
+	o.submit_output_compliance = function(data) {
+		var _data = {}
+		if (typeof(data) === "string") {
+			_data.var_value = data
+		} else {
+			_data.var_value = JSON.stringify(data)
+		}
+		services_osvcpostrest("R_COMPLIANCE_RULESET_VARIABLE", [o.options.rset_id, o.options.var_id], "", _data, function(jd) {
+			if (jd.error && (jd.error.length > 0)) {
+				o.result.html(services_error_fmt(jd))
+				return
+			}
+			try {
+				o.options.data = $.parseJSON(jd.data[0].var_value)
+			} catch(e) {
+				o.options.data = jd.data[0].var_value
+			}
+			o.result.html("<div class='ok'>"+i18n.t("forms.success")+"</div>")
+		},
+		function(xhr, stat, error) {
+			o.result.html(services_ajax_error_fmt(xhr, stat, error))
+		})
+	}
+
+	o.submit_output = function(output, data) {
+		if (output.Dest == "compliance variable") {
+			o.submit_output_compliance(data)
+		} else {
+			console.log("Output " + output.Dest + " not supported")
+		}
+	}
+
+	o.render_submit = function() {
+		var button = $("<input type='button' style='margin:1em'>")
+		button.attr("value", i18n.t("forms.submit"))
+		o.area.append(button)
+
+		button.bind("click", function() {
+			var data = o.form_to_data()
+			for (var i=0; i<o.form_data.form_definition.Outputs.length; i++) {
+				var output = o.form_data.form_definition.Outputs[i]
+				o.submit_output(output, data)
+			}
+		})
+	}
+
+	o.render_datetime = function(d, content) {
+		var input = $("<input class='oi'>")
+		input.val(content)
+		input.uniqueId()
+		input.datetimepicker({dateFormat:'yy-mm-dd'})
+		return input
+	}
+	o.render_date = function(d, content) {
+		var input = $("<input class='oi'>")
+		input.val(content)
+		input.uniqueId()
+		input.datepicker({dateFormat:'yy-mm-dd'})
+		return input
+	}
+	o.render_text = function(d, content) {
+		var textarea = $("<textarea class='oi pre' style='padding:0.4em;width:17em;height:8em'>")
+		textarea.val(content)
+		return textarea
+	}
+	o.render_input = function(d, content) {
+		var input = $("<input class='oi'>")
+		input.val(content)
+		return input
+	}
+	o.render_select = function(d, content) {
+		var input = $("<input class='oi aci'>")
+		var opts = []
+		for (var i=0; i<d.Candidates.length; i++) {
+			opts.push(d.Candidates[i])
+		}
+		input.autocomplete({
+			source: opts,
+			minLength: 0
+		})
+		input.val(content)
+		return input
+	}
+
+	o.form_to_data = function() {
+		var t = o.form_data.form_definition.Outputs[0].Template
+		var f = o.form_data.form_definition.Outputs[0].Format
+		if (t) {
+			return o.form_to_data_template(t)
+		} else if (f == "dict") {
+			return o.form_to_data_dict()
+		} else if (f == "list") {
+			return o.form_to_data_list()
+		} else if (f == "list of dict") {
+			return o.form_to_data_list_of_dict()
+		} else if (f == "dict of dict") {
+			return o.form_to_data_dict_of_dict()
+		}
+	}
+
+	o.get_val = function(td, d) {
+		if ((d.Type == "string") ||
+		    (d.Type == "string or integer") ||
+		    (d.Type == "list of string") ||
+		    (d.Type == "date") ||
+                    (d.Type == "datetime")) {
+			return td.find("input").val()
+		} else if (d.Type == "text") {
+			return td.find("textarea").val()
+		} else {
+			console.log("form::get_val, " + d.Type + " not supported")
+		}
+	}
+
+	o.form_to_data_template = function(t) {
+		var data = t
+		for (var i=0; i<o.form_data.form_definition.Inputs.length; i++) {
+			var d = o.form_data.form_definition.Inputs[i]
+			var td = o.area.find("tr[iid="+d.Id+"] > [name=val]")
+			if (td.length == 0) {
+				continue
+			}
+			var re = RegExp("%%"+d.Id+"%%", "g")
+			data = data.replace(re, o.get_val(td, d))
+		}
+		return data
+	}
+
+	o.table_to_dict = function(table) {
+		var data = {}
+		for (var i=0; i<o.form_data.form_definition.Inputs.length; i++) {
+			var d = o.form_data.form_definition.Inputs[i]
+			var td = table.find("tr[iid="+d.Id+"] > [name=val]")
+			if (td.length == 0) {
+				continue
+			}
+			data[d.Id] = o.get_val(td, d)
+		}
+		return data
+	}
+
+	o.form_to_data_dict = function() {
+		return o.table_to_dict(o.area.children("table"))
+	}
+
+	o.form_to_data_dict_of_dict = function() {
+		var data = {}
+		var key_id = o.form_data.form_definition.Outputs[0].Key
+		o.area.children("table").each(function(){
+			var _data = o.table_to_dict($(this))
+			key = _data[key_id]
+			data[key] = _data
+		})
+		return data
+	}
+
+	o.form_to_data_list = function() {
+		var data = []
+		o.area.children("table").each(function(){
+			var _data = o.table_to_dict($(this))
+			for (key in _data) {
+				data.push(_data[key])
+			}
+		})
+		return data
+	}
+
+	o.form_to_data_list_of_dict = function() {
+		var data = []
+		o.area.children("table").each(function(){
+			data.push(o.table_to_dict($(this)))
+		})
+		return data
+	}
 
 	$.when(osvc.forms_loaded).then(function() {
 		o.load()

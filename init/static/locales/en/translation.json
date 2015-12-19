@@ -1161,6 +1161,7 @@
     "Request form id": "Request form id",
     "Queued": "Queued",
     "Dequeued": "Dequeued",
+    "Rule id": "Rule id",
     "Return code": "Return code",
     "Command": "Command",
     "Stdout": "Stdout",
@@ -1206,9 +1207,13 @@
     }
   },
   "forms": {
+    "submit": "Submit",
+    "success": "Success",
     "form_def_not_found": "Form definition not found",
     "form_name_not_in_options": "'form_name' must be passed in options",
     "edit": "Edit",
+    "add_group": "Add more",
+    "del_group": "Remove",
     "cancel": "Cancel"
   }
 }

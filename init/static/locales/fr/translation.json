@@ -1031,6 +1031,7 @@
     "Ruleset id": "Id du jeu de règles",
     "Ruleset type": "Type de jeu de règles",
     "Ruleset public": "Jeu de règle publié",
+    "Rule id": "Id de règle",
     "Filterset": "Jeu de filtres",
     "Chain": "Chaîne",
     "Chain length": "Longueur de chaîne",
@@ -1147,9 +1148,13 @@
     }
   },
   "forms": {
+    "submit": "Valider",
+    "success": "Succès",
     "form_def_not_found": "Définition du formulaire introuvable",
     "form_name_not_in_options": "'form_name' doit être passé en option",
     "edit": "Editer",
+    "add_group": "Ajouter",
+    "del_group": "Supprimer",
     "cancel": "Annuler"
   }
 }

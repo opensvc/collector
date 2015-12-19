@@ -3193,6 +3193,8 @@ function cell_decorator_rule_value(e) {
   var line = $(e).parent(".tl")
   $(e).uniqueId()
   var id = $(e).attr("id")
+  var var_id = $.data(line.children("[col=id]")[0], "v")
+  var rset_id = $.data(line.children("[col=ruleset_id]")[0], "v")
   var var_class = $.data(line.children("[col=var_class]")[0], "v")
   var encap = $.data(line.children("[col=encap_rset]")[0], "v")
   if (encap != "") {
@@ -3207,6 +3209,8 @@ function cell_decorator_rule_value(e) {
   }
   form(id, {
     "data": data,
+    "var_id": var_id,
+    "rset_id": rset_id,
     "display_mode": true,
     "digest": true,
     "form_name": var_class,

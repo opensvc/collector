@@ -482,7 +482,9 @@ class table_comp_rulesets(HtmlTable):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
-        self.cols = ['ruleset_name',
+        self.cols = ['id',
+                     'ruleset_id',
+                     'ruleset_name',
                      'ruleset_type',
                      'ruleset_public',
                      'teams_responsible',
@@ -627,7 +629,7 @@ class table_comp_rulesets(HtmlTable):
                      img='wf16',
                     ),
         }
-        self.force_cols = ["var_class", "encap_rset"]
+        self.force_cols = ["id", "ruleset_id", "var_class", "encap_rset"]
         self.colprops['var_name'].t = self
         self.colprops['var_value'].t = self
         self.span = ['ruleset_name', 'ruleset_type', 'ruleset_public',
