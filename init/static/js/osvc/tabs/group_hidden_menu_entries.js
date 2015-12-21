@@ -2,7 +2,6 @@ function group_hidden_menu_entries(divid, options) {
 	o = {}
 	o.options = options
 	o.div = $("#"+divid)
-	o.data = menu_search_key()
 
 	o.set = function(id) {
 		var data = {
@@ -82,15 +81,15 @@ function group_hidden_menu_entries(divid, options) {
 		var title = $("<h2></h2>")
 		title.text(i18n.t("menu."+section+".title"))
 		o.area.append(title)
-		for (entry in o.data[section]) {
-			o.format_entry(section, o.data[section][entry])
+		for (entry in menu_data[section]) {
+			o.format_entry(section, menu_data[section][entry])
 		}
 	}
 
 	o.init = function() {
 		var area = $("<div class='group_hidden_menu'></div>")
 		o.area = area
-		for (section in o.data) {
+		for (section in menu_data) {
 			o.format_section(section)
 		}
 		o.div.empty()

@@ -194,7 +194,7 @@ function search_get_menu(fk)
         ]
     },
     "groups": {
-        "tab" : "/init/ajax_group/ajax_group?groupname=__role__&rowid=__rowid__",
+        "tab" : 'group_tabs("__rowid__", {"group_id": "__id__", "group_name": "__role__"})',
         "title": "__role__",
         "menu_entry_id": "adm-usr",
         "class": "guys16 fa-2x search-section-icon",

@@ -168,6 +168,7 @@ def lib_search_group(pattern):
     q = _where(q, 'auth_group', pattern, 'role')
     n = db(q).count()
     data = db(q).select(o,
+                        db.auth_group.id,
                         orderby=o,
                         limitby=(0,max_search_result),
     ).as_list()

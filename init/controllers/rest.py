@@ -78,6 +78,7 @@ handlers = {
      rest_get_compliance_ruleset_variables(),
      rest_get_compliance_ruleset_variable(),
      rest_get_compliance_ruleset_export(),
+     rest_get_compliance_ruleset_usage(),
      rest_get_compliance_ruleset(),
      rest_get_compliance_status(),
      rest_get_compliance_status_one(),

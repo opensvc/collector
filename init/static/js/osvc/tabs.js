@@ -552,6 +552,64 @@ function user_tabs(divid, options) {
 
 
 //
+// group
+//
+function group_tabs(divid, options) {
+  o = tabs(divid)
+  o.options = options
+
+  o.load(function(){
+    var i = 0
+
+    if (!("group_id" in o.options) && ("group_name" in o.options)) {
+      services_osvcgetrest("R_GROUPS", "", {"filters": ["role "+o.options.group_name]}, function(jd) {
+        var group = jd.data[0]
+        o.options.group_id = group.id
+        o._load()
+      })
+    } else {
+      o._load()
+    }
+  })
+
+  o._load = function() {
+    o.closetab.children("p").text(o.options.group_name ? o.options.group_name : o.options.group_id)
+
+    // tab properties
+    i = o.register_tab({
+      "title": "node_tabs.properties",
+      "title_class": "guys16"
+    })
+    o.tabs[i].callback = function(divid) {
+      group_properties(divid, o.options)
+    }
+
+    // tab hidden menu entries
+    i = o.register_tab({
+      "title": "group_tabs.hidden_menu_entries",
+      "title_class": "menu16"
+    })
+    o.tabs[i].callback = function(divid) {
+      group_hidden_menu_entries(divid, o.options)
+    }
+
+    if (!o.options.tab) {
+      o.closetab.next("li").trigger("click")
+    } else {
+      for (var i=0; i<o.tabs.length; i++) {
+        if (o.tabs[i].title != o.options.tab) {
+          continue
+        }
+        o.tabs[i].tab.trigger("click")
+        break
+      }
+    }
+  }
+  return o
+}
+
+
+//
 // network
 //
 function network_tabs(divid, options) {
@@ -575,6 +633,53 @@ function network_tabs(divid, options) {
     })
     o.tabs[i].callback = function(divid) {
       sync_ajax("/init/networks/segments/"+o.options.network_id, [], divid, function(){})
+    }
+
+    if (!o.options.tab) {
+      o.closetab.next("li").trigger("click")
+    } else {
+      for (var i=0; i<o.tabs.length; i++) {
+        if (o.tabs[i].title != o.options.tab) {
+          continue
+        }
+        o.tabs[i].tab.trigger("click")
+        break
+      }
+    }
+  })
+  return o
+}
+
+
+//
+// ruleset
+//
+function ruleset_tabs(divid, options) {
+  o = tabs(divid)
+  o.options = options
+
+  o.load(function() {
+    if (o.options.ruleset_name) {
+      var title = o.options.ruleset_name
+    } else {
+      var title = o.options.ruleset_id
+    }
+    o.closetab.children("p").text(title)
+
+    // tab properties
+    i = o.register_tab({
+      "title": "ruleset_tabs.ruleset",
+      "title_class": "pkg16"
+    })
+    o.tabs[i].callback = function(divid) {
+      ruleset_properties(divid, o.options)
+    }
+    i = o.register_tab({
+      "title": "ruleset_tabs.export",
+      "title_class": "log16"
+    })
+    o.tabs[i].callback = function(divid) {
+      ruleset_export(divid, o.options)
     }
 
     if (!o.options.tab) {

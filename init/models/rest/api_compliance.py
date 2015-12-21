@@ -492,6 +492,60 @@ class rest_get_compliance_ruleset(rest_get_line_handler):
         return self.prepare_data(**vars)
 
 #
+class rest_get_compliance_ruleset_usage(rest_get_handler):
+    def __init__(self):
+        desc = [
+          "Display the ruleset usage.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/compliance/rulesets/2/usage"
+        ]
+
+        rest_get_handler.__init__(
+          self,
+          path="/compliance/rulesets/<id>/usage",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, id, **vars):
+        q = ruleset_id_q(id)
+        if not "Manager" in user_groups():
+            q &= db.auth_group.id.belongs(user_group_ids())
+            q &= db.comp_ruleset_team_publication.group_id == db.auth_group.id
+            q &= db.comp_ruleset_team_publication.ruleset_id == db.comp_rulesets.id
+        rset = db(q).select(db.comp_rulesets.ALL).first()
+
+        if rset is None:
+            raise Exception("ruleset not found or not visible to your groups")
+
+        data = {}
+
+        #
+        q = db.comp_moduleset_ruleset.ruleset_id == rset.id
+        q &= db.comp_moduleset_ruleset.modset_id == db.comp_moduleset.id
+        rows = db(q).select(db.comp_moduleset.modset_name, cacheable=False)
+        data["modulesets"] = [ r.modset_name for r in rows ]
+
+        #
+        q = db.comp_rulesets_rulesets.child_rset_id == rset.id
+        q &= db.comp_rulesets_rulesets.parent_rset_id == db.comp_rulesets.id
+        rows = db(q).select(db.comp_rulesets.ruleset_name, cacheable=False)
+        data["rulesets"] = [ r.ruleset_name for r in rows ]
+
+        #
+        q = db.comp_rulesets_nodes.ruleset_id == rset.id
+        rows = db(q).select(cacheable=False)
+        data["nodes"] = [ r.nodename for r in rows ]
+
+        #
+        q = db.comp_rulesets_services.ruleset_id == rset.id
+        rows = db(q).select(cacheable=False)
+        data["services"] = [ r.svcname for r in rows ]
+
+        return dict(data=data)
+
+#
 class rest_get_compliance_ruleset_export(rest_get_handler):
     def __init__(self):
         desc = [

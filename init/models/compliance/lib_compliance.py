@@ -907,9 +907,12 @@ def _export_rulesets(rset_ids):
         if row.comp_rulesets.ruleset_name not in ruleset_vars:
             ruleset_vars[row.comp_rulesets.ruleset_name] = []
         d = {
+          'id': row.comp_rulesets_variables.id,
           'var_name': row.comp_rulesets_variables.var_name,
           'var_value': row.comp_rulesets_variables.var_value,
           'var_class': row.comp_rulesets_variables.var_class,
+          'var_author': row.comp_rulesets_variables.var_author,
+          'var_updated': row.comp_rulesets_variables.var_updated.strftime("%Y-%m-%d %H:%M:%S"),
         }
         ruleset_vars[row.comp_rulesets.ruleset_name].append(d)
 

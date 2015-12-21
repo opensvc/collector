@@ -2130,8 +2130,8 @@ function cell_decorator_groups(e) {
     $(this).click(function(){
       if (get_selected() != "") {return}
       g = $(this).text()
-      url = services_get_url() + "/init/ajax_group/ajax_group?groupname="+encodeURIComponent(g)+"&rowid="+id
-      toggle_extra(url, id, e, 0)
+      toggle_extra(null, id, e, 0)
+      group_tabs(id, {"group_name": g})
     })
   })
 }

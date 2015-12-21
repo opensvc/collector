@@ -17,6 +17,12 @@ function designer(divid, options) {
   o.show_variable = function(e) {
     return designer_show_variable(o, e)
   }
+  o.show_ruleset = function(e) {
+    return designer_show_ruleset(o, e)
+  }
+  o.show_group = function(e) {
+    return designer_show_group(o, e)
+  }
   o.show_importer = function() {
     return designer_show_importer(o)
   }
@@ -507,6 +513,24 @@ function designer_show_importer(o) {
   o.e_info.html(div)
 }
 
+function designer_show_group(o, e) {
+  var group_id = e.attr('obj_id')
+  var group_name = e.children('a').text()
+  var div = $("<div class='white_float' style='position:relative;padding:0px'></div>")
+  div.uniqueId()
+  o.e_info.empty().append(div)
+  group_tabs(div.attr("id"), {"group_id": group_id, "group_name": group_name})
+}
+
+function designer_show_ruleset(o, e) {
+  var rset_id = e.attr('obj_id')
+  var rset_name = e.children('a').text()
+  var div = $("<div class='white_float' style='position:relative;padding:0px'></div>")
+  div.uniqueId()
+  o.e_info.empty().append(div)
+  ruleset_tabs(div.attr("id"), {"ruleset_id": rset_id, "ruleset_name": rset_name})
+}
+
 function designer_show_variable(o, e) {
   var var_id = e.attr('obj_id')
   var rset_id = e.parents("li").first().attr('obj_id')
@@ -563,6 +587,12 @@ function designer__select(o, e, data) {
       return
     } else if ($(this).is("[rel=variable]")) {
       o.show_variable($(this))
+      return
+    } else if ($(this).is("[rel^=ruleset]")) {
+      o.show_ruleset($(this))
+      return
+    } else if ($(this).is("[rel^=group]")) {
+      o.show_group($(this))
       return
     }
     $.ajax({

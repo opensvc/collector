@@ -7143,14 +7143,10 @@ def json_tree_action_create():
 def json_tree_action_show():
     if request.vars.obj_type is None:
         return
-    elif request.vars.obj_type.startswith("ruleset"):
-        return json_tree_action_show_ruleset(request.vars.obj_id)
     elif request.vars.obj_type == "filterset":
         return json_tree_action_show_filterset(request.vars.obj_id)
     elif request.vars.obj_type == "modset":
         return json_tree_action_show_moduleset(request.vars.obj_id)
-    elif request.vars.obj_type in ("group", "group_pub", "group_resp"):
-        return json_tree_action_show_group(request.vars.obj_id)
     return ""
 
 def json_tree_action_rename():
@@ -7761,148 +7757,6 @@ def json_tree_action_import():
     comp_rulesets_chains()
     l =  map(lambda x: P(x), l)
     return DIV(l)
-
-def json_tree_action_show_group(group_id):
-    t = group_tabs(group_id)
-    return DIV(
-             t,
-             _class="white_float",
-             _style="position:relative;padding:0px",
-           )
-
-def json_tree_action_show_ruleset(rset_id):
-    q = db.comp_rulesets.id == rset_id
-    j = db.comp_rulesets.id == db.comp_rulesets_filtersets.ruleset_id
-    l1 = db.comp_rulesets_filtersets.on(j)
-    j = db.comp_rulesets_filtersets.fset_id == db.gen_filtersets.id
-    l2 = db.gen_filtersets.on(j)
-    row = db(q).select(db.comp_rulesets.ALL,
-                       db.comp_rulesets_filtersets.ALL,
-                       db.gen_filtersets.ALL,
-                       left=(l1,l2), cacheable=True).first()
-    if row is None:
-        return ""
-    if 'comp_rulesets' in row:
-        rset = row.comp_rulesets
-    else:
-        rset = row
-    if 'comp_rulesets_filtersets' in row:
-        fset_name = row.gen_filtersets.fset_name
-    else:
-        fset_name = T("not set")
-    l = []
-    l.append(P(T('Type')+': ' + str(rset.ruleset_type)))
-    if rset.ruleset_type == "contextual":
-        l.append(P(T('Filterset')+': ' + str(fset_name)))
-    l.append(P(T('Public')+': ' + str(rset.ruleset_public)))
-
-    rset_id = int(rset_id)
-
-    #
-    q = db.comp_moduleset_ruleset.ruleset_id == rset_id
-    q &= db.comp_moduleset_ruleset.modset_id == db.comp_moduleset.id
-    rows = db(q).select(db.comp_moduleset.modset_name, cacheable=False)
-    if len(rows) > 0:
-        _l = [ r.modset_name for r in rows ]
-        d = DIV(
-          H3(SPAN(T("Encapsulated in modulesets"), " (%d) "%len(rows)), _class="line"),
-          SPAN(' '.join(_l)),
-        )
-        l.append(d)
-
-    #
-    q = db.comp_rulesets_rulesets.child_rset_id == rset_id
-    q &= db.comp_rulesets_rulesets.parent_rset_id == db.comp_rulesets.id
-    rows = db(q).select(db.comp_rulesets.ruleset_name, cacheable=False)
-    if len(rows) > 0:
-        _l = [ r.ruleset_name for r in rows ]
-        d = DIV(
-          H3(SPAN(T("Encapsulated in rulesets"), " (%d) "%len(rows)), _class="line"),
-          SPAN(' '.join(_l)),
-        )
-        l.append(d)
-
-
-    #
-    q = db.comp_rulesets_nodes.ruleset_id == rset_id
-    rows = db(q).select(cacheable=False)
-    if len(rows) > 0:
-        l.append(H3(SPAN(T("Attached to servers"), " (%d) "%len(rows)), _class="line"))
-        l.append(P(' '.join(map(lambda x: x.nodename, rows))))
-
-    #
-    q = db.comp_rulesets_services.ruleset_id == rset_id
-    rows = db(q).select(cacheable=False)
-    if len(rows) > 0:
-        l.append(H3(SPAN(T("Attached to services"), " (%d) "%len(rows)), _class="line"))
-        l.append(P(' '.join(map(lambda x: x.svcname, rows))))
-
-    q = db.comp_rulesets_rulesets.id > 0
-    rows = db(q).select(cacheable=True)
-    rel = {}
-    for row in rows:
-        if row.parent_rset_id not in rel:
-            rel[row.parent_rset_id] = []
-        rel[row.parent_rset_id].append(row.child_rset_id)
-
-    def recurse_rel(rset_id, l=[]):
-        l.append(rset_id)
-        for child_rset_id in rel.get(rset_id, []):
-            l = recurse_rel(child_rset_id, l)
-        return l
-
-    rset_ids = recurse_rel(rset_id)
-
-    q = db.comp_rulesets_variables.ruleset_id.belongs(rset_ids)
-    rows = db(q).select()
-    renderer = col_var_value(title='Value',
-                             field='var_value',
-                             table='comp_rulesets')
-    t = table_comp_rulesets("treetable")
-    renderer.t = t
-    if len(rows) > 0:
-        l.append(H3(SPAN(T("Variables"), " (%d) "%len(rows)), _class="line"))
-    for row in rows:
-        l.append(H3(row.var_name))
-        l.append(P(T("Variable class: %(var_class)s", dict(var_class=str(row.var_class)))))
-        l.append(P(T("Last modified by %(user)s on %(date)s", dict(user=row.var_author, date=str(row.var_updated)))))
-        l.append(renderer.html(row))
-
-    _id = "tabs"
-    t = DIV(
-      DIV(
-        UL(
-          LI(P(rset.ruleset_name, _class='nok'), _class="closetab"),
-          LI(P(T("ruleset"), _class='pkg16'), _id="litab1_"+_id),
-          LI(P(T("export"), _class='log16'), _id="litab2_"+_id),
-        ),
-        _class='tab',
-      ),
-      DIV(
-        l,
-        _class="cloud",
-        _id='tab1_'+_id,
-      ),
-      DIV(
-        PRE(
-          export_rulesets([rset_id]),
-          _style="overflow:auto",
-        ),
-        _class="cloud",
-        _id='tab2_'+_id,
-      ),
-      SCRIPT(
-        """bind_tabs("%(id)s", {}, "litab1_%(id)s")
-        """ % dict(id=_id)
-      ),
-      _id=_id,
-    )
-    return DIV(
-             t,
-             _class="white_float",
-             _style="position:relative;padding:0px",
-           )
-
 
 def json_tree_action_create_filterset(name):
     name = name.strip()
