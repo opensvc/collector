@@ -757,10 +757,6 @@
     "lost_title" : "Mot de passe perdu",
     "lost_text" : "Envoyer un nouveau mot de passe par mèl"
   },
-  "forms": {
-    "not_found": "non trouvé",
-    "no_data": "Pas de données"
-  },
   "group_properties": {
     "properties": "Propriétés",
     "description": "description",
@@ -1177,7 +1173,11 @@
     }
   },
   "forms": {
+    "not_found": "non trouvé",
+    "no_data": "Pas de données",
+    "expert": "Mode expert",
     "submit": "Valider",
+    "error": "Erreur",
     "success": "Succès",
     "form_def_not_found": "Définition du formulaire introuvable",
     "form_name_not_in_options": "'form_name' doit être passé en option",
@@ -1185,5 +1185,11 @@
     "add_group": "Ajouter",
     "del_group": "Supprimer",
     "cancel": "Annuler"
+  },
+  "requests": {
+    "parent_folder": "Répertoire parent",
+    "current_folder": "Répertoire actuel",
+    "search": "Recherche de formulaire",
+    "choose_form": "Choisissez un formulaire de demande"
   }
 }

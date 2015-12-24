@@ -32,6 +32,7 @@ var services_access_uri = {
     "R_COMPLIANCE_RULESET_VARIABLE" : "rest/api/compliance/rulesets/%1/variables/%2",
     "R_COMPLIANCE_STATUS" : "rest/api/compliance/status",
     "R_FILTERSETS" : "rest/api/filtersets",
+    "R_FORM" : "rest/api/forms/%1",
     "R_FORMS" : "rest/api/forms",
     "R_GROUPS" : "rest/api/groups",
     "R_GROUP" : "rest/api/groups/%1",
@@ -233,7 +234,11 @@ function services_osvcpostrest(service, uri, params, data, callback, error_callb
 
 function services_osvcgetrest(service, uri, params, callback, error_callback, async)
 {
-    url = services_getaccessurl(service)
+    if (service.match(/^\/init\/rest/)) {
+      var url = service
+    } else {
+      var url = services_getaccessurl(service)
+    }
     if (is_blank(url)) {
         console.log(service + " uri undefined")
         return

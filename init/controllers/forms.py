@@ -836,95 +836,6 @@ def form_title(form_name, data, form_id):
           )
 
 @auth.requires_login()
-def forms_list(folder="/", form_names=[], prev_wfid=None, search=None):
-    l = []
-
-    if type(form_names) in (unicode, str):
-        form_names = [form_names]
-
-    # no use to list all forms in a flat list
-    if search == "":
-        folder = "/"
-        search = None
-
-    # folder == None means search forms whatever their folder
-    if folder is not None:
-        folder = os.path.realpath(folder)
-
-        if len(form_names) == 0:
-            l += folder_list(folder)
-
-    form_types = ["custo", "generic"]
-    if 'CompManager' in user_groups():
-        form_types.append("obj")
-
-    for id, form_name, form_folder, form_type, data in get_forms(form_types, folder=folder, form_names=form_names, search=search):
-        if form_type in ("custo", "obj"):
-            id_target = "forms_target"
-        else:
-            id_target = None
-
-        l.append(DIV(
-          form_title(form_name, data, id),
-          _onclick="""
-$(this).siblings().toggle()
-$("#%(id2)s").toggle()
-$("#forms_inputs").each(function(){
-  $(this).text('');
-  $(this).slideToggle(400);
-})
-$('[name=radio_form]').each(function(){
-  if ($(this).attr("id")=='%(rid)s'){return};
-  $(this).prop('checked', false)
-});
-$("#%(id)s").html('%(spinner)s');
-$("#%(id2)s").html('%(spinner)s');
-if (("%(id2)s" != "None") && ($("#%(id2)s").is(":visible"))) {
-  sync_ajax('%(url2)s', [], '%(id2)s', function(){});
-}
-if ($("#%(id)s").is(":visible")) {
-  sync_ajax('%(url)s', [], '%(id)s', function(){});
-}
-"""%dict(
-                spinner=IMG(_src=URL(r=request,c='static',f='images/spinner.gif')).xml(),
-                id="forms_inputs",
-                id2=id_target,
-                rid=id,
-                url=URL(
-                  r=request, c='compliance', f='ajax_forms_inputs',
-                  vars={
-                    "form_id": id,
-                    "hid": "forms_inputs",
-                    "prev_wfid": prev_wfid,
-                  }
-                ),
-                url2=URL(
-                  r=request, c='compliance', f='ajax_target',
-                  vars={
-                    "form_id": id,
-                  }
-                ),
-              ),
-          _class="formentry",
-        ),
-      )
-    d = DIV(
-          DIV(
-            l,
-            _style="margin:1em;display:inline-block;vertical-align:top;text-align:left",
-          ),
-          DIV(
-            _id="forms_target",
-            _style="padding-top:3em;display:none",
-          ),
-          DIV(
-            _id="forms_inputs",
-            _style="padding-top:3em;display:none",
-          ),
-        )
-    return d
-
-@auth.requires_login()
 def form():
     form_id = request.vars.form_id
     id, form_name, form_folder, form_type, data = get_forms(form_id=form_id)[0]
@@ -947,11 +858,8 @@ def form():
 
 @auth.requires_login()
 def forms():
-    d = DIV(
-      H1(T("Choose a customization form")),
-      tool_forms_search(),
-      DIV(forms_list(), _id="forms_list"),
-      _style="text-align:center",
+    d = SCRIPT(
+          """$.when(osvc.app_started).then(function(){ requests("layout", {}) })""" 
     )
     return dict(table=d)
 
@@ -1202,22 +1110,6 @@ def workflow():
       DIV(_forms_list, _id="forms_list"),
     )
     return dict(table=d)
-
-def tool_forms_search():
-    d = DIV(
-          SPAN(
-            _style='padding-right: 0.5em',
-          ),
-          INPUT(
-            _id='forms_search',
-            _onKeyUp="""sync_ajax('%(url)s', ['forms_search'], 'forms_list')"""%dict(
-                url=URL(r=request, c='forms', f='ajax_forms_list'),
-              ),
-          ),
-          _class='search',
-          _style='float:none',
-        )
-    return d
 
 @auth.requires_login()
 def ajax_rset_list():

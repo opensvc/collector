@@ -5,7 +5,7 @@ input.aci, input.aci:focus {
 	background-repeat: no-repeat;
 	background-position: right;
 	background-size: 8px;
-	background-clip: padding-box;
+	background-origin: content-box;
 }
 
 .ellipsis {
@@ -101,10 +101,6 @@ input.aci, input.aci:focus {
 	width: 2em;
 	text-align: center;
 	font-family: awesome;
-}
-
-form :focus {
-	border: 1px dotted;
 }
 
 .tags {
@@ -3209,16 +3205,19 @@ textarea.link_ta_sub {
 }
 
 .oi {
-	background-color: rgba(0,0,0,0.08);
-	box-shadow: inset 0 0 1px rgba(0,0,0,0.2), inset 0 0 1px rgba(0,0,0,0.2);
+	background-color: rgba(0,0,0,0.02);
 	border-radius: 3px;
 	-moz-border-radius: 3px;
 	-webkit-border-radius: 3px;
 }
 input.oi:focus, textarea.oi:focus {
-	box-shadow: inset 0 0 1px rgba(0,0,0,0.8), inset 0 0 1px rgba(0,0,0,0.8);
-	background-color: #e0e1cd;
+	background-color: rgba(0,0,0,0.05);
 }
+.constraint_violation,input.constraint_violation:focus,textarea.constraint_violation:focus {
+	background-color: #fff4f2;
+	border-color: #ddcccc;
+}
+
 
 .link_white {
 	border-bottom-color: black;

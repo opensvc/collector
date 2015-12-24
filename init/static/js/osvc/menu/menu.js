@@ -225,7 +225,8 @@ var menu_data = {
 		  "title" : "new_request",
 		  "class" : "wf16",
 		  "id" : "req-new",
-		  "link" : "/init/forms/forms"
+		  "link" : "/init/forms/forms",
+		  "fn" : "requests"
 		},
 		{
 		  "title" : "a_t_m_t",

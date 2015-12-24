@@ -370,15 +370,20 @@ function forms() {
 
 	o.load = function() {
 		o.data = {}
+		o.folders = {}
 		var data = {
 			"limit": "0",
 			"meta": "0",
-			"props": "form_definition,form_name,id,form_type"
+			"props": "form_definition,form_name,id,form_type,form_folder"
 		}
 		services_osvcgetrest("R_FORMS", "", data, function(jd) {
 			for (var i=0; i<jd.data.length; i++) {
 				var d = jd.data[i]
 				o.data[d.form_name] = d
+				if (!(d.form_folder in o.folders)) {
+					o.folders[d.form_folder] = []
+				}
+				o.folders[d.form_folder].push(d.form_name)
 			}
 			osvc.forms_loaded.resolve(true)
 		})
@@ -410,6 +415,10 @@ function forms() {
 function form(divid, options) {
 	var o = {}
 	o.options = options
+	o.fn_triggers = {}
+	o.fn_triggers_signs = []
+	o.fn_trigger_last = {}
+	o.cond_triggers = {}
 	o.div = $("#"+divid)
 
 	o.load = function() {
@@ -425,6 +434,7 @@ function form(divid, options) {
 			o.div.html(i18n.t("forms.form_def_not_found"))
 			return
 		}
+		o.mangle_form_data()
 		if (o.options.display_mode) {
 			o.render_display_mode()
 		} else {
@@ -432,8 +442,32 @@ function form(divid, options) {
 		}
 	}
 
+	o.mangle_form_data = function() {
+		for (var i=0; i<o.form_data.form_definition.Inputs.length; i++) {
+			var d = o.form_data.form_definition.Inputs[i]
+			if (d.Candidates == "__node_selector__") {
+				console.log("mange form definition: swich __node_selector__ to rest GET /users/self/nodes")
+				o.form_data.form_definition.Inputs[i].Function = "/users/self/nodes"
+				o.form_data.form_definition.Inputs[i].Args = ["props = nodename", "meta = 0", "limit = 0"]
+				o.form_data.form_definition.Inputs[i].Candidates = null
+			}
+			if (d.Candidates == "__service_selector__") {
+				console.log("mange form definition: swich __node_selector__ to rest GET /users/self/services")
+				o.form_data.form_definition.Inputs[i].Function = "/users/self/services"
+				o.form_data.form_definition.Inputs[i].Args = ["props = svc_name", "meta = 0", "limit = 0"]
+				o.form_data.form_definition.Inputs[i].Candidates = null
+			}
+			if (d.Default == "__user_primary_group__") {
+				console.log("mange form definition: swich __user_primary_group__ to rest GET /users/self/primary_group")
+				o.form_data.form_definition.Inputs[i].Function = "/users/self/primary_group"
+				o.form_data.form_definition.Inputs[i].Args = ["props = role"]
+				o.form_data.form_definition.Inputs[i].Default = null
+			}
+		}
+	}
+
 	o.render_form_mode = function() {
-		var area = $("<div name='form_area'></div>")
+		var area = $("<div name='form_area' class='container_head'></div>")
 		o.area = area
 		o.div.empty().append(area)
 		o.render_form()
@@ -585,7 +619,7 @@ function form(divid, options) {
 				continue
 			}
 			var line = $("<tr></tr>")
-			var label = $("<td style='white-space:nowrap' class='b'></td>")
+			var label = $("<td style='white-space:nowrap'></td>")
 			var value = $("<td></td>")
 			label.text(d.DisplayModeLabel)
 			if(d.LabelCss) {
@@ -615,11 +649,14 @@ function form(divid, options) {
 		for (var i=0; i<o.form_data.form_definition.Inputs.length; i++) {
 			var d = o.form_data.form_definition.Inputs[i]
 			var line = $("<tr></tr>")
-			var label = $("<td style='white-space:nowrap' class='b'></td>")
+			var label = $("<td style='white-space:nowrap'></td>")
 			var value = $("<td name='val'></td>")
 			var help = $("<td class='help'></td>")
 			help.attr("title", d.Help)
 			line.attr("iid", d.Id)
+			if (d.ExpertMode == true) {
+				line.hide()
+			}
 			if (d.Hidden == true) {
 				line.hide()
 			}
@@ -630,8 +667,20 @@ function form(divid, options) {
 			line.append(label)
 			line.append(value)
 			line.append(help)
-			if (typeof(data) === "undefined") {
-				var content = ""
+			if ((typeof(data) === "undefined") || !(d.Id in data)) {
+				if (d.Default == "__user_email__") {
+					var content = _self.email
+				} else if (d.Default == "__user_primary_group__") {
+					var content = _self.primary_group
+				} else if (d.Default == "__user_phone_work__") {
+					var content = _self.phone_work
+				} else if (d.Default == "__user_name__") {
+					var content = _self.first_name + " " + _self.last_name
+				} else if (d.Default) {
+					var content = d.Default
+				} else {
+					var content = ""
+				}
 			} else if (typeof(data) === "string") {
 				var content = data
 			} else if (d.Id in data) {
@@ -639,19 +688,36 @@ function form(divid, options) {
 			} else {
 				var content = ""
 			}
+
 			if (d.Type == "date") {
-				value.append(o.render_date(d, content))
+				var input = o.render_date(d, content)
 			} else if (d.Type == "datetime") {
-				value.append(o.render_date(d, content))
+				var input = o.render_datetime(d, content)
+			} else if (d.Type == "time") {
+				var input = o.render_time(d, content)
+			} else if (d.Type == "info") {
+				var input = o.render_info(d, content)
 			} else if (d.Type == "text") {
-				value.append(o.render_text(d, content))
+				var input = o.render_text(d, content)
 			} else if (d.Candidates && (d.Candidates instanceof Array)) {
-				value.append(o.render_select(d, content))
+				var input = o.render_select(d, content)
+			} else if (d.Function) {
+				var input = o.render_select_rest(d, content)
 			} else {
-				value.append(o.render_input(d, content))
+				var input = o.render_input(d, content)
 			}
+
+			if (d.Condition && d.Condition.match(/#/)) {
+				o.add_cond_triggers(d)
+			}
+			o.install_mandatory_trigger(input, d)
+			o.install_constraint_trigger(input, d)
+
+			value.append(input)
 			table.append(line)
 		}
+		o.install_fn_triggers(table)
+		o.install_cond_triggers(table)
 		return table
 	}
 
@@ -659,10 +725,41 @@ function form(divid, options) {
 		var div = $("<div class='del16 clickable' style='text-align:center'></div>")
 		div.text(i18n.t("forms.del_group"))
 		div.bind("click", function() {
+			$(this).prev("hr").remove()
 			$(this).next("table").remove()
 			$(this).remove()
 		})
 		return div
+	}
+
+	o.render_expert_toggle = function() {
+		var n = 0
+		for (var i=0; i<o.form_data.form_definition.Inputs.length; i++) {
+			var d = o.form_data.form_definition.Inputs[i]
+			if (d.ExpertMode) {
+				n++
+			}
+		}
+		if (n == 0) {
+			return
+		}
+		var div = $("<div class='icon fa-unlock clickable' style='text-align:center'></div>")
+		div.text(i18n.t("forms.expert"))
+		o.area.append(div)
+		div.bind("click", function() {
+			if (div.hasClass("fa-unlock")) {
+				div.removeClass("fa-unlock").addClass("fa-lock")
+			} else {
+				div.removeClass("fa-lock").addClass("fa-unlock")
+			}
+			for (var i=0; i<o.form_data.form_definition.Inputs.length; i++) {
+				var d = o.form_data.form_definition.Inputs[i]
+				if (!d.ExpertMode) {
+					continue
+				}
+				o.div.find("[iid="+d.Id+"]").toggle(500)
+			}
+		})
 	}
 
 	o.render_add_group = function() {
@@ -672,14 +769,18 @@ function form(divid, options) {
 		div.bind("click", function() {
 			var ref = o.area.children("table").last()
 			var remove = o.render_del_group()
-			remove.insertAfter(ref)
-			ref.clone(true, true).insertAfter(remove)
+			var hr = $("<hr>")
+			var data = o.table_to_dict(ref)
+			var new_group = o.render_form_group(data)
+			hr.insertAfter(ref)
+			remove.insertAfter(hr)
+			new_group.insertAfter(remove)
 		})
 	}
 
 	o.render_form_list = function() {
 		o.area.empty()
-		if (o.options.data.length == 0) {
+		if (!o.options.data || o.options.data.length == 0) {
 			o.area.append(o.render_form_group({}))
 		} else {
 			for (var i=0; i<o.options.data.length; i++) {
@@ -688,6 +789,7 @@ function form(divid, options) {
 			}
 		}
 		o.render_add_group()
+		o.render_expert_toggle()
 		o.render_submit()
 		o.render_result()
 	}
@@ -707,12 +809,14 @@ function form(divid, options) {
 			o.area.append(o.render_form_group({}))
 		}
 		o.render_add_group()
+		o.render_expert_toggle()
 		o.render_submit()
 		o.render_result()
 	}
 
 	o.render_form_dict = function() {
 		o.area.empty().append(o.render_form_group(o.options.data))
+		o.render_expert_toggle()
 		o.render_submit()
 		o.render_result()
 	}
@@ -733,9 +837,49 @@ function form(divid, options) {
 	}
 
 	o.render_result = function() {
-		var result = $("<div></div>")
+		var result = $("<div style='padding:1em'></div>")
 		o.area.append(result)
 		o.result = result
+	}
+
+	o.submit_form_data = function(data) {
+		var _data = {}
+		if (typeof(data) === "string") {
+			_data.data = data
+		} else {
+			_data.data = JSON.stringify(data)
+		}
+		if (o.options.prev_wfid) {
+			_data.prev_wfid = o.options.prev_wfid
+		}
+		services_osvcputrest("R_FORM", [o.form_data.id], "", _data, function(jd) {
+			if (jd.error.length == 0) {
+				o.result.html("<div class='ok'>"+i18n.t("forms.success")+"</div>")
+			} else {
+				o.result.html("<div class='nok'>"+i18n.t("forms.error")+"</div>")
+			}
+			if (jd.info) {
+				if (typeof(jd.info) === "string") {
+					o.result.append("<p class='icon fa-info-circle'>"+jd.info+"</p>")
+				} else {
+					for (var i=0; i<jd.info.length; i++) {
+						o.result.append("<p class='icon fa-info-circle'>"+jd.info[i]+"</p>")
+					}
+				}
+			}
+			if (jd.error) {
+				if (typeof(jd.error) === "string") {
+					o.result.append("<p class='icon fa-exclamation-triangle'>"+jd.error+"</p>")
+				} else {
+					for (var i=0; i<jd.error.length; i++) {
+						o.result.append("<p class='icon fa-exclamation-triangle'>"+jd.error[i]+"</p>")
+					}
+				}
+			}
+		},
+		function(xhr, stat, error) {
+			o.result.html(services_ajax_error_fmt(xhr, stat, error))
+		})
 	}
 
 	o.submit_output_compliance = function(data) {
@@ -766,7 +910,8 @@ function form(divid, options) {
 		if (output.Dest == "compliance variable") {
 			o.submit_output_compliance(data)
 		} else {
-			console.log("Output " + output.Dest + " not supported")
+			console.log("Output " + output.Dest + " not supported client-side")
+			o.need_submit_form_data = true
 		}
 	}
 
@@ -781,11 +926,28 @@ function form(divid, options) {
 				var output = o.form_data.form_definition.Outputs[i]
 				o.submit_output(output, data)
 			}
+			if (o.need_submit_form_data == true) {
+				o.need_submit_form_data = false
+				o.submit_form_data(data)
+			}
 		})
 	}
 
+	o.render_time = function(d, content) {
+		var input = $("<input class='oi'>")
+		if (d.ReadOnly == true) {
+			input.prop("disabled", true)
+		}
+		input.val(content)
+		input.uniqueId()
+		input.timepicker()
+		return input
+	}
 	o.render_datetime = function(d, content) {
 		var input = $("<input class='oi'>")
+		if (d.ReadOnly == true) {
+			input.prop("disabled", true)
+		}
 		input.val(content)
 		input.uniqueId()
 		input.datetimepicker({dateFormat:'yy-mm-dd'})
@@ -793,33 +955,513 @@ function form(divid, options) {
 	}
 	o.render_date = function(d, content) {
 		var input = $("<input class='oi'>")
+		if (d.ReadOnly == true) {
+			input.prop("disabled", true)
+		}
 		input.val(content)
 		input.uniqueId()
 		input.datepicker({dateFormat:'yy-mm-dd'})
 		return input
 	}
+	o.render_info = function(d, content) {
+		var div = $("<div class='form_input_info' style='padding:0.4em'>")
+		div.text(content)
+		if (d.Function && fn_has_refs(d)) {
+			o.add_fn_triggers(d)
+		}
+		return div
+	}
 	o.render_text = function(d, content) {
 		var textarea = $("<textarea class='oi pre' style='padding:0.4em;width:17em;height:8em'>")
+		if (d.ReadOnly == true) {
+			textarea.prop("disabled", true)
+		}
 		textarea.val(content)
+		if (d.Function && fn_has_refs(d)) {
+			o.add_fn_triggers(d)
+		}
 		return textarea
 	}
 	o.render_input = function(d, content) {
 		var input = $("<input class='oi'>")
+		if (d.ReadOnly == true) {
+			input.prop("disabled", true)
+		}
 		input.val(content)
 		return input
 	}
 	o.render_select = function(d, content) {
 		var input = $("<input class='oi aci'>")
+		if (d.ReadOnly == true) {
+			input.prop("disabled", true)
+		}
 		var opts = []
 		for (var i=0; i<d.Candidates.length; i++) {
-			opts.push(d.Candidates[i])
+			var _d = d.Candidates[i]
+			if (typeof(_d) === "string") {
+				opts.push({
+					"id": _d,
+					"label": _d
+				})
+			} else if (("Label" in _d) && ("Value" in _d)) {
+				opts.push({
+					"id": _d.Value,
+					"label": _d.Label
+				})
+				if (_d.Value == content) {
+					var acid = _d.Value
+					content = _d.Label
+				}
+			}
 		}
 		input.autocomplete({
+			mustMatch: true,
+			autoFocus: true,
 			source: opts,
-			minLength: 0
+			minLength: 0,
+			select: function(event, ui) {
+				$(this).prop("acid", ui.item.id)
+				$(this).change()
+			}
 		})
-		input.val(content)
+		if (content && content.length > 0) {
+			input.prop("acid", acid)
+			input.val(content)
+		}
+		input.change()
 		return input
+	}
+	o.render_select_rest = function(d, content) {
+		var input = $("<input class='oi aci'>")
+		if (d.ReadOnly == true) {
+			input.prop("disabled", true)
+		}
+		if (fn_has_refs(d)) {
+			o.add_fn_triggers(d)
+			return input
+		}
+		fn_init_autocomplete(input, d, content)
+		return input
+	}
+
+	function fn_has_refs(d) {
+		// hardcoded refs
+		d.Function = d.Function.replace(/#user_id/g, _self.id)
+
+		if (d.Function.match(/#/)) {
+			return true
+		}
+		if (d.Args) {
+			for (var i=0; i<d.Args.length; i++) {
+				d.Args[i] = d.Args[i].replace(/#user_id/g, _self.id)
+				if (d.Args[i].match(/#/)) {
+					return true
+				}
+			}
+		}
+		return false
+	}
+
+	function fn_init_autocomplete(input, d, content) {
+		if (d.Function.match(/^\//)) {
+			return rest_init_autocomplete(input, d, content)
+		} else {
+			return jsonrpc_init_autocomplete(input, d, content)
+		}
+	}
+
+	function fn_callback(input, d, args, data, content) {
+		if (typeof(data) === "string") {
+			if (input.hasClass("form_input_info")) {
+				input.text(data)
+			} else {
+				input.val(data)
+			}
+			input.change()
+			return
+		}
+		var opts = []
+		for (var i=0; i<data.length; i++) {
+			var _d = data[i]
+			if (typeof(_d) === "string") {
+				opts.push({
+					"id": _d,
+					"label": _d
+				})
+			} else if (("Format" in d) && ("Value" in d)) {
+				var label = d.Format
+				var value = d.Value
+				var props = args.props.split(",")
+				for (var j=0; j<props.length; j++) {
+					var prop = props[j]
+					var re = RegExp("#"+prop, "g")
+					label = label.replace(re, _d[prop])
+					value = value.replace(re, _d[prop])
+				}
+				opts.push({
+					"id": value,
+					"label": label
+				})
+				if (content && (value == content)) {
+					var acid = value
+					content = label
+				}
+			} else {
+				opts.push({
+					"id": _d[args.props],
+					"label": _d[args.props]
+				})
+			}
+		}
+
+		function opts_to_text(opts) {
+			if (!opts) {
+				return ""
+			}
+			var l = []
+			for (var i=0; i<opts.length; i++) {
+				l.push(opts[i].label)
+			}
+			return l.join("\n")
+		}
+
+		if (input.hasClass("form_input_info")) {
+			input.text(opts_to_text(opts))
+		} else if (input.is("textarea")) {
+			input.val(opts_to_text(opts))
+		} else {
+			try { input.autocomplete("destroy") } catch(e) {}
+			input.val("")
+			input.removeProp("acid")
+			input.autocomplete({
+				mustMatch: true,
+				autoFocus: true,
+				source: opts,
+				minLength: 0,
+				select: function(event, ui) {
+					$(this).prop("acid", ui.item.id)
+					$(this).change()
+				}
+			})
+			if (opts.length == 1) {
+				input.removeClass("aci")
+			} else {
+				input.addClass("aci")
+			}
+			if (input.is(":visible") && (opts.length > 0)) {
+				input.val(opts[0].label)
+				input.prop("acid", opts[0].id)
+			}
+		}
+		if (content && content.length > 0) {
+			input.prop("acid", acid)
+			input.val(content)
+		}
+		input.change()
+	}
+
+	function jsonrpc_init_autocomplete(input, d, content) {
+		var args = prepare_args(input, d.Args)
+		for (key in args) {
+			if (!args[key]) {
+				console.log("cancel jsonrpc on", d.Function, ": missing parameters", args)
+				return
+			}
+		}
+		$.ajax({
+			url: "/init/forms/call/json/"+d.Function,
+			data: args,
+			success: function(data) {
+				fn_callback(input, d, args, data, content)
+			}
+
+		})
+	}
+
+	function rest_init_autocomplete(input, d, content) {
+		var args = prepare_args(input, d.Args)
+		var fn = subst_refs(input, d.Function)
+		if (fn.match(/\/\//) || fn.match(/\/undefined\//) || fn.match(/\/$/)) {
+			console.log("cancel rest get on", fn, ": missing parameters")
+			return
+		}
+		var key = input.attr("id")
+		if (!key) {
+			input.uniqueId()
+			var key = input.attr("id")
+		}
+		var sign = fn_sign(fn, args)
+		console.log(key, sign)
+		if ((key in o.fn_trigger_last) && (o.fn_trigger_last[key] == sign)) {
+			console.log("cancel rest get on", fn, ": same as last call")
+			return
+		}
+		o.fn_trigger_last[key] = sign
+		services_osvcgetrest("/init/rest/api"+fn, "", args, function(jd) {
+			fn_callback(input, d, args, jd.data, content)
+		})
+	}
+
+	function fn_sign(fn, args) {
+		s = fn
+		for (key in args) {
+			s += "-"+args[key]
+		}
+		return s
+	}
+
+	function subst_refs(input, s) {
+		var table = input.parents("table").first()
+		var re = RegExp(/#\w+/g)
+		var _s = s
+
+		do {
+			var m = re.exec(s)
+			if (m) {
+				var key = m[0].replace("#", "")
+				var td = table.find("tr[iid="+key+"] td[name=val]")
+				var val = o.get_val(td)
+				var re1 = RegExp("#"+key, "g")
+				_s = _s.replace(re1, val)
+			}
+		} while (m)
+		return _s
+	}
+
+	o.install_constraint_trigger = function(input, d) {
+		if (!d.Constraint) {
+			return
+		}
+		trigger(input)
+		input.bind("keyup change", function() {
+			trigger($(this))
+		})
+		function trigger(e) {
+			var s = e.val()
+			var re = RegExp(d.Constraint.replace(/^match\s+/, ""))
+			if (!re.exec(s)) {
+				e.addClass("constraint_violation")
+			} else {
+				e.removeClass("constraint_violation")
+			}
+			if (o.div.find(".constraint_violation").filter(":visible").length == 0) {
+				o.div.find("input[type=button]").prop("disabled", false)
+			} else {
+				o.div.find("input[type=button]").prop("disabled", true)
+			}
+		}
+	}
+
+	o.install_mandatory_trigger = function(input, d) {
+		if (d.Mandatory != true) {
+			return
+		}
+		trigger(input)
+		input.bind("keyup change", function() {
+			trigger($(this))
+		})
+		function trigger(e) {
+			if (e.val() == "") {
+				e.addClass("constraint_violation")
+			} else {
+				e.removeClass("constraint_violation")
+			}
+			if (o.div.find(".constraint_violation").filter(":visible").length == 0) {
+				o.div.find("input[type=button]").prop("disabled", false)
+			} else {
+				o.div.find("input[type=button]").prop("disabled", true)
+			}
+		}
+	}
+
+	o.hide_input = function(table, d, initial) {
+		var tr = table.find("[iid="+d.Id+"]")
+		if (!initial && !tr.is(":visible")) {
+			console.log("hide", d.Id, "already not visible", tr.parents("table"))
+			return
+		}
+		console.log("hide", d.Id)
+		tr.hide()
+		tr.find("[name=val]").children("input,textarea").val("").prop("acid", "").trigger("change")
+	}
+
+	o.show_input = function(table, d) {
+		var tr = table.find("[iid="+d.Id+"]")
+		if (tr.is(":visible")) {
+			return
+		}
+		console.log("show", d.Id)
+		tr.show(500)
+		var input = tr.find("[name=val]").children("input,textarea,.form_input_info")
+		if (d.Function && fn_has_refs(d)) {
+			fn_init_autocomplete(input, d)
+			var data = $.data(input[0])
+			if (data.autocomplete && data.autocomplete.options.source.length > 0) {
+				input.val(data.autocomplete.options.source[0].label)
+				input.prop("acid", data.autocomplete.options.source[0].id)
+				input.change()
+			}
+		}
+	}
+
+	o.install_cond_trigger = function(table, key, d) {
+		console.log("install cond trigger", key, "->", d.Id)
+
+		var cell = table.find("[iid="+key+"]").children("[name=val]").children("input,textarea")
+		trigger(cell, true)
+		cell.bind("blur change", function() {
+			trigger($(this))
+		})
+		function trigger(input, initial) {
+			var val = o.get_val(input.parent())
+			var tr = input.parents("table").first().find("[iid="+d.Id+"]")
+
+			if (d.Condition.match(/!=/)) {
+				var eq = false
+				var ref = d.Condition.split("!=")[1]
+			} else if (d.Condition.match(/==/)) {
+				var eq = true
+				var ref = d.Condition.split("==")[1]
+			} else {
+				console.log(d.Id, "unsupported condition operator:", d.Condition)
+			}
+
+			// strip
+			ref = ref.replace(/^\s+/, "").replace(/\s+$/, "")
+
+			console.log("condition:", key, "->", d.Id, val, eq, ref)
+			if (val != "") {
+				if (!eq) {
+					if (ref == "empty") {
+						// foo != empty
+						o.show_input(table, d)
+					} else if (val != ref) {
+						// foo != bar
+						o.show_input(table, d)
+					} else {
+						// foo != foo
+						o.hide_input(table, d, initial)
+					}
+				} else {
+					if (ref == "empty") {
+						// foo == empty
+						o.hide_input(table, d, initial)
+					} else if (val == ref) {
+						// foo == foo
+						o.show_input(table, d)
+					} else {
+						// foo == bar
+						o.hide_input(table, d, initial)
+					}
+				}
+			} else {
+				if (!eq) {
+					if (ref == "empty") {
+						// empty != empty
+						o.hide_input(table, d, initial)
+					} else {
+						// empty != foo
+						o.show_input(table, d)
+					}
+				} else {
+					if (ref == "empty") {
+						// empty == empty
+						o.show_input(table, d)
+					} else {
+						// empty == foo
+						o.hide_input(table, d, initial)
+					}
+				}
+			}
+		}
+	}
+
+	o.install_cond_triggers = function(table) {
+		for (key in o.cond_triggers) {
+			var triggers = o.cond_triggers[key]
+			for (var i=0; i<triggers.length; i++) {
+				var d = triggers[i]
+				o.install_cond_trigger(table, key, d)
+			}
+		}
+	}
+
+	o.add_cond_triggers = function(d) {
+		var re = RegExp(/#\w+/g)
+		do {
+			var m = re.exec(d.Condition)
+			if (m) {
+				var key = m[0].replace("#", "")
+				if (key in o.cond_triggers) {
+					o.cond_triggers[key].push(d)
+				} else {
+					o.cond_triggers[key] = [d]
+				}
+			}
+		} while (m)
+	}
+
+	o.install_fn_trigger = function(table, key, d) {
+		console.log("install fn trigger", key, "->", d.Id)
+		var cell = table.find("[iid="+key+"]").children("[name=val]").children("input,textarea")
+		cell.bind("blur change", function() {
+			var input = table.find("[iid="+d.Id+"]").find("input,textarea,.form_input_info")
+			if (input.length == 0) {
+				return
+			}
+			console.log("fn:", key, "->", d.Id)
+			fn_init_autocomplete(input, d)
+		})
+	}
+
+	o.install_fn_triggers = function(table) {
+		for (key in o.fn_triggers) {
+			var triggers = o.fn_triggers[key]
+			for (var i=0; i<triggers.length; i++) {
+				var d = triggers[i]
+				o.install_fn_trigger(table, key, d)
+			}
+		}
+	}
+
+	o.add_fn_triggers = function(d) {
+		function parse(s) {
+			var re = RegExp(/#\w+/g)
+			do {
+				var m = re.exec(s)
+				if (m) {
+					var key = m[0].replace("#", "")
+					var sign = key + "-" + d.Id
+					if (o.fn_triggers_signs.indexOf(sign) >= 0) {
+						continue
+					} else {
+						o.fn_triggers_signs.push(sign)
+					}
+					if (key in o.fn_triggers) {
+						o.fn_triggers[key].push(d)
+					} else {
+						o.fn_triggers[key] = [d]
+					}
+				}
+			} while (m)
+		}
+		parse(d.Function)
+		for (var i=0; i<d.Args.length; i++) {
+			parse(d.Args[i])
+		}
+	}
+
+	function prepare_args(input, l) {
+		var d = {}
+		for (var i=0; i<l.length; i++) {
+			var s = l[i]
+			var idx = s.indexOf("=")
+			var key = s.slice(0, idx).replace(/\s+/g, "")
+			var val = s.slice(idx+1, s.length).replace(/^\s+/, "")
+			val = subst_refs(input, val)
+			d[key] = val
+		}
+		return d
 	}
 
 	o.form_to_data = function() {
@@ -835,21 +1477,21 @@ function form(divid, options) {
 			return o.form_to_data_list_of_dict()
 		} else if (f == "dict of dict") {
 			return o.form_to_data_dict_of_dict()
+		} else {
+			return o.form_to_data_dict()
 		}
 	}
 
-	o.get_val = function(td, d) {
-		if ((d.Type == "string") ||
-		    (d.Type == "string or integer") ||
-		    (d.Type == "list of string") ||
-		    (d.Type == "date") ||
-                    (d.Type == "datetime")) {
-			return td.find("input").val()
-		} else if (d.Type == "text") {
-			return td.find("textarea").val()
-		} else {
-			console.log("form::get_val, " + d.Type + " not supported")
+	o.get_val = function(td) {
+		var input = td.find("input,textarea")
+		var val = input.prop("acid")
+		if (typeof(val) === "undefined") {
+			val = input.val()
 		}
+		if (typeof(val) === "undefined") {
+			console.log("get_val: unable to determine value of", td)
+		}
+		return val
 	}
 
 	o.form_to_data_template = function(t) {
@@ -861,7 +1503,7 @@ function form(divid, options) {
 				continue
 			}
 			var re = RegExp("%%"+d.Id+"%%", "g")
-			data = data.replace(re, o.get_val(td, d))
+			data = data.replace(re, o.get_val(td))
 		}
 		return data
 	}
@@ -874,7 +1516,7 @@ function form(divid, options) {
 			if (td.length == 0) {
 				continue
 			}
-			data[d.Id] = o.get_val(td, d)
+			data[d.Id] = o.get_val(td)
 		}
 		return data
 	}
@@ -913,7 +1555,7 @@ function form(divid, options) {
 		return data
 	}
 
-	$.when(osvc.forms_loaded).then(function() {
+	$.when(osvc.forms_loaded,osvc.user_groups_loaded).then(function() {
 		o.load()
 	})
 	return o

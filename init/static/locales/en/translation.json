@@ -769,10 +769,6 @@
     "lost_title" : "Lost Password",
     "lost_text" : "Send a new password by email"
   },
-  "forms": {
-    "no_data": "No data",
-    "not_found": "not found"
-  },
   "group_properties": {
     "properties": "Properties",
     "description": "description",
@@ -1236,13 +1232,23 @@
     }
   },
   "forms": {
+    "no_data": "No data",
+    "not_found": "not found",
+    "expert": "Expert mode",
     "submit": "Submit",
     "success": "Success",
+    "error": "Error",
     "form_def_not_found": "Form definition not found",
     "form_name_not_in_options": "'form_name' must be passed in options",
     "edit": "Edit",
     "add_group": "Add more",
     "del_group": "Remove",
     "cancel": "Cancel"
+  },
+  "requests": {
+    "parent_folder": "Parent folder",
+    "current_folder": "Current folder",
+    "search": "Search forms",
+    "choose_form": "Choose a request form"
   }
 }
