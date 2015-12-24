@@ -1125,7 +1125,7 @@ def ajax_svcmon_log():
         t.setup_pager(-1)
         limitby = (t.pager_start,t.pager_end)
         t.object_list = db(q).select(orderby=o, limitby=limitby)
-        cols = t.visible_columns()
+        cols = t.get_visible_columns()
         return t.table_lines_data(-1, html=False)
 
     t.csv_q = q
