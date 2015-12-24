@@ -106,6 +106,8 @@ class rest_handler(object):
         if type(self.init_data) in (str, unicode):
             for i in re.findall("\*\*(\w+)\*\*", self.init_data):
                 self.data[i] = {"desc": ""}
+        elif type(self.init_data) == dict:
+                self.data.update(self.init_data)
         if len(self.tables) == 0 or self.action not in ("POST", "PUT"):
             return
         for prop in all_props(tables=self.tables, vprops=self.vprops, blacklist=self.props_blacklist, db=self.db):

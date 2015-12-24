@@ -582,21 +582,25 @@ def ajax_custo_form_submit(output, data):
 
     return dict(log=log, var_id=__var_id)
 
-def mail_form(output, data, form, to=None, record_id=None, _d=None):
+def mail_form(output, data, form, to=None, record_id=None, _d=None, form_html=None):
+    if type(to) in (str, unicode):
+        to = [to]
+
     if to is None:
         to = output.get('To', set([]))
 
     if len(to) == 0:
         return [(1, "form.submit", "No mail destination", dict())]
 
-    if '@' not in to:
-        to = email_of(to)
+    for i, t in enumerate(to):
+        if '@' not in t:
+            t = email_of(t)
+            if t is None:
+                continue
+            to[i] = t
 
-    if to is None:
+    if len(to) == 0:
         return [(1, "form.submit", "No mail destination", dict())]
-
-    if type(to) in (str, unicode):
-        to = [to]
 
     label = data.get('Label', form.form_name)
     title = label
@@ -620,15 +624,21 @@ def mail_form(output, data, form, to=None, record_id=None, _d=None):
     else:
         next = ""
 
+    if form_html is None:
+        try:
+            form_html = _ajax_forms_inputs(
+              _mode="showdetailed",
+              form=form,
+              form_output=output,
+              showexpert=True,
+              current_values=d,
+            )
+        except:
+            form_html = PRE(json.dumps(_d, indent=4))
+
     body = BODY(
       P(T("Form submitted on %(date)s by %(submitter)s", dict(date=now_s, submitter=user_name()))),
-      _ajax_forms_inputs(
-         _mode="showdetailed",
-         form=form,
-         form_output=output,
-         showexpert=True,
-         current_values=d,
-       ),
+       form_html,
        next,
     )
 
@@ -650,6 +660,7 @@ def mail_form(output, data, form, to=None, record_id=None, _d=None):
 
 def form_submit(form, data,
                 _d=None,
+                form_html=None,
                 var_id=None, prev_wfid=None,
                 svcname=None, nodename=None):
     log = []
@@ -826,7 +837,7 @@ def form_submit(form, data,
                   'path': path,
                   'returncode': 1,
                   'stdout': "",
-                  'stderr': "Script %(path)s execution error: %(err)s "%dict(path=path, err=str(e))
+                  'stderr': "Script %(path)s execution error: %(err)s" % dict(path=path, err=str(e))
                 }
                 continue
 
@@ -843,9 +854,9 @@ def form_submit(form, data,
             if p.returncode != 0:
                 log.append((1, "form.submit", "Script %(path)s returned with error:\n%(err)s", dict(path=path, err=msg)))
                 continue
-            log.append((0, "form.submit", "script %(path)s returned on success:\n%(out)s", dict(path=path, out=msg)))
+            log.append((0, "form.submit", "Script %(path)s returned on success:\n%(out)s", dict(path=path, out=msg)))
         elif dest == "mail":
-            log += mail_form(output, data, form, _d=_d)
+            log += mail_form(output, data, form, _d=_d, form_html=form_html)
         elif dest == "workflow":
             try:
                 d = get_form_formatted_data(output, data, _d)
@@ -998,7 +1009,7 @@ def form_submit(form, data,
                 table_modified("workflows")
 
             if next_id != 0 and output.get('Mail', False):
-                log += mail_form(output, data, form, to=form_assignee, record_id=record_id, _d=_d)
+                log += mail_form(output, data, form, to=form_assignee, record_id=record_id, _d=_d, form_html=form_html)
 
             db.commit()
 
