@@ -34,6 +34,8 @@ var services_access_uri = {
     "R_FILTERSETS" : "rest/api/filtersets",
     "R_FORM" : "rest/api/forms/%1",
     "R_FORMS" : "rest/api/forms",
+    "R_FORMS_REVISION" : "rest/api/forms_revisions/%1",
+    "R_FORMS_REVISIONS" : "rest/api/forms_revisions",
     "R_GROUPS" : "rest/api/groups",
     "R_GROUP" : "rest/api/groups/%1",
     "R_GROUP_USERS" : "rest/api/groups/%1/users",
@@ -72,6 +74,8 @@ var services_access_uri = {
     "R_SERVICE_NODES" : "rest/api/services/%1/nodes",
     "R_SERVICE_TAGS" : "rest/api/services/%1/tags",
     "R_SERVICE_CANDIDATE_TAGS" : "rest/api/services/%1/candidate_tags",
+    "R_STORE_FORMS" : "rest/api/forms_store",
+    "R_STORE_FORM" : "rest/api/forms_store/%1",
     "R_SYSREPORT_TIMELINE" : "rest/api/sysreport/timeline",
     "R_SYSREPORT_NODEDIFF" : "rest/api/sysreport/nodediff",
     "R_SYSREPORT_SECURE_PATTERNS" : "rest/api/sysreport/secure_patterns",
@@ -113,7 +117,9 @@ var services_access_uri = {
     "R_GET_REPORT_CHART_SAMPLES" : "rest/api/reports/charts/%1/samples",
     "R_LINKS" : "rest/api/links",
     "R_LINK" : "rest/api/links/%1",
-    "R_TAG" : "rest/api/tags/%1"
+    "R_TAG" : "rest/api/tags/%1",
+    "R_WORKFLOW" : "rest/api/workflows/%1",
+    "R_WORKFLOWS" : "rest/api/workflows"
 }
 
 function services_getaccessurl(service)

@@ -422,14 +422,18 @@ function form(divid, options) {
 	o.div = $("#"+divid)
 
 	o.load = function() {
-		if (!o.options.form_name) {
-			o.div.html(i18n.t("forms.form_name_not_in_options"))
-			return
+		if ("form_data" in o.options) {
+			o.form_data = o.options.form_data
+		} else {
+			if (!o.options.form_name) {
+				o.div.html(i18n.t("forms.form_name_not_in_options"))
+				return
+			}
+			if ((o.options.form_name == "") || (o.options.form_name == "empty")) {
+				return
+			}
+			o.form_data = osvc.forms.data[o.options.form_name]
 		}
-		if ((o.options.form_name == "") || (o.options.form_name == "empty")) {
-			return
-		}
-		o.form_data = osvc.forms.data[o.options.form_name]
 		if (!o.form_data) {
 			o.div.html(i18n.t("forms.form_def_not_found"))
 			return
@@ -446,19 +450,19 @@ function form(divid, options) {
 		for (var i=0; i<o.form_data.form_definition.Inputs.length; i++) {
 			var d = o.form_data.form_definition.Inputs[i]
 			if (d.Candidates == "__node_selector__") {
-				console.log("mange form definition: swich __node_selector__ to rest GET /users/self/nodes")
+				console.log("mangle form definition: swich __node_selector__ to rest GET /users/self/nodes")
 				o.form_data.form_definition.Inputs[i].Function = "/users/self/nodes"
 				o.form_data.form_definition.Inputs[i].Args = ["props = nodename", "meta = 0", "limit = 0"]
 				o.form_data.form_definition.Inputs[i].Candidates = null
 			}
 			if (d.Candidates == "__service_selector__") {
-				console.log("mange form definition: swich __node_selector__ to rest GET /users/self/services")
+				console.log("mangle form definition: swich __node_selector__ to rest GET /users/self/services")
 				o.form_data.form_definition.Inputs[i].Function = "/users/self/services"
 				o.form_data.form_definition.Inputs[i].Args = ["props = svc_name", "meta = 0", "limit = 0"]
 				o.form_data.form_definition.Inputs[i].Candidates = null
 			}
 			if (d.Default == "__user_primary_group__") {
-				console.log("mange form definition: swich __user_primary_group__ to rest GET /users/self/primary_group")
+				console.log("mangle form definition: swich __user_primary_group__ to rest GET /users/self/primary_group")
 				o.form_data.form_definition.Inputs[i].Function = "/users/self/primary_group"
 				o.form_data.form_definition.Inputs[i].Args = ["props = role"]
 				o.form_data.form_definition.Inputs[i].Default = null
@@ -481,7 +485,8 @@ function form(divid, options) {
 		div.append(o.render_cancel())
 		div.append(area)
 		o.render_display()
-		o.div.empty().append(div)
+		o.div.empty()
+		o.div.append(div)
 	}
 
 	o.render_edit = function() {
@@ -513,6 +518,7 @@ function form(divid, options) {
 	}
 
 	o.render_display = function() {
+		console.log("here", o.options.data)
 		if (typeof(o.options.data) == "string") {
 			o.area.text(o.options.data)
 			o.area.addClass("pre")
@@ -611,8 +617,22 @@ function form(divid, options) {
 	}
 
 	o.render_display_normal = function() {
-		o.area_table = $("<table></table>")
-		o.area.empty().append(o.area_table)
+		if (!(o.options.data instanceof Array)) {
+			var l = [o.options.data]
+		} else {
+			var l = o.options.data
+		}
+		o.area.empty()
+		for (var i=0; i<l.length; i++) {
+			if (i>0) {
+				o.area.append("<hr>")
+			}
+			o.area.append(o.render_display_normal_dict(l[i]))
+		}
+	}
+
+	o.render_display_normal_dict = function(data) {
+		var table = $("<table></table>")
 		for (var i=0; i<o.form_data.form_definition.Inputs.length; i++) {
 			var d = o.form_data.form_definition.Inputs[i]
 			if (d.Hidden == true) {
@@ -630,8 +650,8 @@ function form(divid, options) {
 			}
 			line.append(label)
 			line.append(value)
-			if (d.Id in o.options.data) {
-				var content = o.options.data[d.Id]
+			if (d.Id in data) {
+				var content = data[d.Id]
 			}
 			if (content == "") {
 				content = "-"
@@ -640,8 +660,9 @@ function form(divid, options) {
 				content = content.slice(0, d.DisplayModeTrim/3) + "..." + content.slice(content.length-d.DisplayModeTrim/3*2, content.length)
 			}
 			value.text(content)
-			o.area_table.append(line)
+			table.append(line)
 		}
+		return table
 	}
 
 	o.render_form_group = function(data) {

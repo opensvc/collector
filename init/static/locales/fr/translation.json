@@ -1187,6 +1187,13 @@
     "cancel": "Annuler"
   },
   "requests": {
+    "not_assigned": "ette étape de workflow ne vous est pas assignée",
+    "no_successor": "Cette étape de workflow n'a pas de continuation",
+    "already_completed": "Cette étape de workflow est déjà traitée",
+    "stored_form_subtitle1": "Demande faite par __requestor__ le __request_date__",
+    "stored_form_subtitle2": "Assignée à __team__",
+    "workflow": "Workflow de demande",
+    "next_steps": "Etapes suivantes",
     "parent_folder": "Répertoire parent",
     "current_folder": "Répertoire actuel",
     "search": "Recherche de formulaire",

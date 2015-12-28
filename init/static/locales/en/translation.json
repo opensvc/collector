@@ -1246,6 +1246,13 @@
     "cancel": "Cancel"
   },
   "requests": {
+    "not_assigned": "This Workflow step is not assigned to you",
+    "no_successor": "This Workflow step has no successor",
+    "already_completed": "This Workflow step is already completed",
+    "stored_form_subtitle1": "Submitted by __requestor__ on __request_date__",
+    "stored_form_subtitle2": "Assigned to __team__",
+    "workflow": "Request workflow",
+    "next_steps": "Next steps",
     "parent_folder": "Parent folder",
     "current_folder": "Current folder",
     "search": "Search forms",

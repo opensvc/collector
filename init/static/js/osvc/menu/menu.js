@@ -232,19 +232,22 @@ var menu_data = {
 		  "title" : "a_t_m_t",
 		  "class" : "wf16",
 		  "id" : "req-pending-my",
-		  "link" : "/init/forms/workflows_assigned_to_me"
+		  "link" : "/init/forms/workflows_assigned_to_me",
+		  "fn" : "table_workflows_assigned_to_me"
 		},
 		{
 		  "title" : "p_t_a",
 		  "class" : "wf16",
 		  "id" : "req-pending-tiers",
-		  "link" : "/init/forms/workflows_pending_tiers_action"
+		  "link" : "/init/forms/workflows_pending_tiers_action",
+		  "fn" : "table_workflows_assigned_to_tiers"
 		},
 		{
 		  "title" : "all_requests",
 		  "class" : "wf16",
 		  "id" : "req-all",
-		  "link" : "/init/forms/workflows"
+		  "link" : "/init/forms/workflows",
+		  "fn" : "table_workflows"
 		},
 	],
 	"administration": [

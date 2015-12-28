@@ -2580,10 +2580,19 @@ function cell_decorator_dash_severity(e) {
 
 function cell_decorator_form_id(e) {
   var v = $.data(e, "v")
-  var s = ""
-  url = services_get_url() + "/init/forms/workflow?wfid="+v+"&volatile_filters=true"
-  s = "<a class='wf16 icon nowrap clickable' target='_blank' href='"+url+"'>"+v+"</a>"
-  $(e).html(s)
+  $(e).html("<span class='wf16 nowrap clickable'>"+v+"</span>")
+  $(e).addClass("corner")
+  $(e).click(function(){
+    var line = $(this).parent(".tl")
+    table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
+    span_id = $(e).parent(".tl").attr("spansum")
+    id = table_id + "_x_" + span_id
+    toggle_extra(null, id, e, 0)
+    var table = $("<table></table>")
+    table.uniqueId()
+    $("#"+id).append(table)
+    workflow(table.attr("id"), {"form_id": v})
+  })
 }
 
 function cell_decorator_run_log(e) {
