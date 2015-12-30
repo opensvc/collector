@@ -1161,7 +1161,7 @@ function form(divid, options) {
 	o.get_val = function(td) {
 		var input = td.find("input,textarea")
 		var val = input.prop("acid")
-		if (typeof(val) === "undefined") {
+		if ((typeof(val) === "undefined") || (typeof(input.attr("autocomplete")) === "undefined")) {
 			val = input.val()
 		}
 		if (typeof(val) === "undefined") {
