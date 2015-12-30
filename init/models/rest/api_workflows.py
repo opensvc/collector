@@ -71,13 +71,15 @@ class rest_get_store_forms(rest_get_table_handler):
         rest_get_table_handler.__init__(
           self,
           path="/forms_store",
-          tables=["forms_store"],
+          tables=["v_forms_store"],
+          vprops={"form_definition": ["form_yaml"]},
+          vprops_fn=mangle_form_data,
           desc=desc,
           examples=examples,
         )
 
     def handler(self, **vars):
-        q = db.forms_store.id > 0
+        q = db.v_forms_store.id > 0
         self.set_q(q)
         data = self.prepare_data(**vars)
         return data
@@ -95,13 +97,15 @@ class rest_get_store_form(rest_get_line_handler):
         rest_get_line_handler.__init__(
           self,
           path="/forms_store/<id>",
-          tables=["forms_store"],
+          tables=["v_forms_store"],
+          vprops={"form_definition": ["form_yaml"]},
+          vprops_fn=mangle_form_data,
           desc=desc,
           examples=examples,
         )
 
     def handler(self, id, **vars):
-        q = db.forms_store.id == int(id)
+        q = db.v_forms_store.id == int(id)
         self.set_q(q)
         data = self.prepare_data(**vars)
         return data

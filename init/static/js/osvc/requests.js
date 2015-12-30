@@ -198,11 +198,12 @@ function workflow(divid, options) {
 
 	o.div.load("/init/static/views/workflow.html", function() {
 		o.div.i18n()
-		o.e_form = $("[name=form]")
-		o.e_form_next = $("[name=form_next]")
-		o.e_form_prev = $("[name=form_prev]")
-		o.e_next = $("[name=next_steps]")
-		o.e_next_form = $("[name=next_form]")
+		o.e_form = o.div.find("[name=form]")
+		o.e_form_next = o.div.find("[name=form_next]")
+		o.e_form_prev = o.div.find("[name=form_prev]")
+		o.e_next = o.div.find("[name=next_steps]")
+		o.e_next_form = o.div.find("[name=next_form]")
+
 		$.when(osvc.forms_loaded).then(function() {
 			o.init()
 		})
@@ -211,8 +212,8 @@ function workflow(divid, options) {
 	o.init = function() {
 		services_osvcgetrest("R_STORE_FORM", [o.options.form_id], {"meta": 0}, function(jd) {
 			o.stored_form = jd.data[0]
-			services_osvcgetrest("R_FORMS_REVISIONS", "", {"meta": 0, "filters": ["form_md5 "+o.stored_form.form_md5]}, function(jd) {
-				o.form_data = jd.data[0]
+			services_osvcgetrest("R_STORE_FORMS", "", {"meta": 0, "filters": ["form_head_id "+o.stored_form.form_head_id]}, function(jd) {
+				o.workflow_stored_forms = jd.data
 				o.render()
 			})
 		})
@@ -220,10 +221,14 @@ function workflow(divid, options) {
 	}
 
 	o.render = function() {
-		o.render_form()
-		o.render_form_prev()
-		o.render_form_next()
-		o.render_next()
+		for (var i=0; i<o.workflow_stored_forms.length; i++) {
+			if (i>0) {
+				var arrow = $("<div class='icon fa-angle-double-down'></div>")
+				o.e_form.append(arrow)
+			}
+			o.render_form(o.workflow_stored_forms[i])
+		}
+		o.render_next(o.stored_form)
 	}
 
 	o.render_form_list_entry = function(form_name) {
@@ -241,7 +246,7 @@ function workflow(divid, options) {
 			div.addClass("wf48")
 		}
 		var h = $("<h2 style='text-align:left'></h2>")
-		if (o.form_data.form_definition.Label) {
+		if (d.form_definition.Label) {
 			var title = d.form_definition.Label
 		} else {
 			var title = form_name
@@ -268,14 +273,14 @@ function workflow(divid, options) {
 		return div
 	}
 
-	o.render_form_title = function(stored_form, form_data) {
+	o.render_form_title = function(stored_form) {
 		var div = $("<div class='clickable' style='padding-bottom:0.5em'></div>")
-		div.addClass(form_data.form_definition.Css)
+		div.addClass(stored_form.form_definition.Css)
 		var h = $("<h2 style='text-align:left'></h2>")
-		if (form_data.form_definition.Label) {
-			var title = form_data.form_definition.Label
+		if (stored_form.form_definition.Label) {
+			var title = stored_form.form_definition.Label
 		} else {
-			var title = form_data.form_name
+			var title = stored_form.form_name
 		}
 		h.text(stored_form.id+": "+title)
 		div.append(h)
@@ -293,84 +298,110 @@ function workflow(divid, options) {
 		return div
 	}
 
-	o.render_form_prev = function() {
-		if (!o.stored_form.form_prev_id) {
+	o.render_form_scripts = function(stored_form) {
+		try {
+			var scripts = $.parseJSON(stored_form.form_scripts)
+		} catch(e) {
+			console.log(e)
 			return
 		}
-		services_osvcgetrest("R_STORE_FORM", [o.stored_form.form_prev_id], {"meta": 0}, function(jd) {
-			var stored_form = jd.data[0]
-			services_osvcgetrest("R_FORMS_REVISIONS", "", {"meta": 0, "filters": ["form_md5 "+stored_form.form_md5]}, function(jd) {
-				var form_data = jd.data[0]
-				var div = $("<div class='forms grayed'></div>")
-				var arrow = $("<div class='icon fa-angle-double-down'></div>")
-				o.e_form_prev.show()
-				o.e_form_prev.append(div)
-				o.e_form_prev.append(arrow)
-				div.append(o.render_form_title(stored_form, form_data))
-				div.bind("click", function() {
-					workflow(o.divid, {
-						"form_id": o.stored_form.form_prev_id
-					})
-				})
-			})
-		})
-	}
+		console.log(scripts)
+		var ret = scripts.returncode
+		delete(scripts["returncode"])
 
-	o.render_form_next = function() {
-		if (!o.stored_form.form_next_id) {
+		// count the number of scripts executed
+		var n = 0
+		for (script in scripts) {
+			n++
+		}
+
+		if (n == 0) {
 			return
 		}
-		services_osvcgetrest("R_STORE_FORM", [o.stored_form.form_next_id], {"meta": 0}, function(jd) {
-			var stored_form = jd.data[0]
-			services_osvcgetrest("R_FORMS_REVISIONS", "", {"meta": 0, "filters": ["form_md5 "+stored_form.form_md5]}, function(jd) {
-				var form_data = jd.data[0]
-				var div = $("<div class='forms grayed'></div>")
-				var arrow = $("<div class='icon fa-angle-double-down'></div>")
-				o.e_form_next.show()
-				o.e_form_next.append(arrow)
-				o.e_form_next.append(div)
-				div.append(o.render_form_title(stored_form, form_data))
-				div.bind("click", function() {
-					workflow(o.divid, {
-						"form_id": o.stored_form.form_next_id
-					})
-				})
-			})
-		})
+
+		var div = $("<div class='postit' style='margin-top:0.5em'></div>")
+		var title = $("<h3 style='text-align:left'></h3>")
+		title.text(i18n.t("requests.scripts"))
+		if (ret == 0) {
+			title.addClass("ok")
+		} else {
+			title.addClass("nok")
+		}
+		div.append(title)
+
+		var ul = $("<ul style='list-style-type:none;text-align:left'></ul>")
+		for (key in scripts) {
+			var d = scripts[key]
+			console.log(d)
+			var li = $("<li>"+d.path+"</li>")
+			if (d.returncode == 0) {
+				li.addClass("ok")
+			} else {
+				li.addClass("nok")
+			}
+			var _ul = $("<ul style='list-style-type:none'></ul>")
+			if (d.stdout.length > 0) {
+				_ul.append("<li>"+d.stdout+"</li>")
+			}
+			if (d.stderr.length > 0) {
+				_ul.append("<li class='highlight'>"+d.stderr+"</li>")
+			}
+			li.append(_ul)
+			ul.append(li)
+		}
+		div.append(ul)
+		return div
 	}
 
-	o.render_form = function() {
-		var div = $("<div class='forms'></div>")
-		div.append(o.render_form_title(o.stored_form, o.form_data))
+	o.render_form = function(stored_form) {
+		var div = $("<div class='forms' style='padding-bottom:1em'></div>")
 		var div_form = $("<div></div>")
+		div.append(o.render_form_title(stored_form))
 		div_form.uniqueId()
 		div.append(div_form)
 		o.e_form.append(div)
 		var options = {
-			"form_data": o.form_data,
-			"data": $.parseJSON(o.stored_form.form_data),
+			"form_data": stored_form,
+			"data": $.parseJSON(stored_form.form_data),
 			"display_mode": true,
 			"editable": false,
 			"detailled": true
 		}
+
+		if (stored_form.id != o.stored_form.id) {
+			div.addClass("grayed")
+			div_form.hide()
+		}
+
+		div.bind("click", function() {
+			$(this).parent().find(".forms").addClass("grayed")
+			$(this).parent().find(".postit").parent().hide(500)
+			$(this).removeClass("grayed")
+			div_form.show()
+			o.render_next(stored_form)
+		})
+
 		form(div_form.attr("id"), options)
+
+		div_form.append(o.render_form_scripts(stored_form))
 	}
 
-	o.get_workflow_output = function() {
-		for (var i=0; i<o.form_data.form_definition.Outputs.length; i++) {
-			var d = o.form_data.form_definition.Outputs[i]
+	o.get_workflow_output = function(stored_form) {
+		for (var i=0; i<stored_form.form_definition.Outputs.length; i++) {
+			var d = stored_form.form_definition.Outputs[i]
 			if (d.Dest && (d.Dest == "workflow")) {
 				return d
 			}
 		}
 	}
 
-	o.render_next = function() {
-		if (o.stored_form.form_next_id) {
+	o.render_next = function(stored_form) {
+		o.e_next.empty()
+		if (stored_form.form_next_id) {
 			o.e_next.html(i18n.t("requests.already_completed"))
 			return
 		}
-		var d = o.get_workflow_output()
+		var d = o.get_workflow_output(stored_form)
 		if (!d) {
 			return
 		}
@@ -378,8 +409,8 @@ function workflow(divid, options) {
 			o.e_next.html(i18n.t("requests.no_successor"))
 			return
 		}
-		if ((_self.first_name + " " + _self.last_name != o.stored_form.form_assignee) &&
-		    !services_ismemberof(o.stored_form.form_assignee)) {
+		if ((_self.first_name + " " + _self.last_name != stored_form.form_assignee) &&
+		    !services_ismemberof(stored_form.form_assignee)) {
 			o.e_next.html(i18n.t("requests.not_assigned"))
 			return
 		}
@@ -388,4 +419,6 @@ function workflow(divid, options) {
 			o.e_next.append(o.render_form_list_entry(e))
 		}
 	}
+
+	return o
 }

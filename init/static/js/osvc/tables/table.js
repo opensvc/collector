@@ -1118,7 +1118,7 @@ function toggle_extra(url, id, e, ncols) {
     if (line.next().children("#"+id).attr("id")==id) {
         line.next().remove()
     }
-    line.after("<tr class='extraline stackable'>"+toolbar+"<td id="+id+" colspan="+ncols+"></td></tr>")
+    line.after("<tr class='extraline stackable empty_on_pop'>"+toolbar+"<td id="+id+" colspan="+ncols+"></td></tr>")
     if (url) {
       sync_ajax(url, [], id, function(){
         $("#"+id).removeClass("spinner")
@@ -1413,7 +1413,7 @@ function table_add_overlay(t) {
     t.e_overlay = $("#overlay")
     return
   }
-  var e = $("<div class='white_float hidden stackable' id='overlay'></div>")
+  var e = $("<div class='white_float hidden stackable empty_on_pop' id='overlay'></div>")
   $("body").append(e)
  
   $(window).resize(function(){
@@ -1978,7 +1978,7 @@ function table_add_column_selector(t) {
     }
 
     // filtered columns are always visible
-    if (t.e_header_filters && t.e_header_filters.find("th[col="+colname+"]").find("input").val()) {
+    if (t.e_header_filters && (t.e_header_filters.find("th[col="+colname+"]").find("input").val() != "")) {
       input.prop("disabled", true)
       input.prop("checked", true)
     }

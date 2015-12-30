@@ -4846,3 +4846,4 @@ alter table links modify column link_parameters text;
 
 drop view v_gen_filterset_check_threshold ; create view v_gen_filterset_check_threshold as (select fsc.*, concat(if(not fs.fset_name is NULL, fs.fset_name, "fset_deleted"), " ", fsc.chk_type, ":", chk_instance, " ", chk_low, ":", chk_high) as name from gen_filterset_check_threshold fsc left join gen_filtersets fs on fsc.fset_id=fs.id);
 
+create view v_forms_store as select fs.*, fr.form_yaml, fr.form_date, fr.form_id, fr.form_folder, fr.form_name from forms_store fs, forms_revisions fr where fs.form_md5=fr.form_md5;

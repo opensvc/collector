@@ -1187,6 +1187,7 @@
     "cancel": "Annuler"
   },
   "requests": {
+    "scripts": "Scripts exécutés pour cette étape",
     "not_assigned": "ette étape de workflow ne vous est pas assignée",
     "no_successor": "Cette étape de workflow n'a pas de continuation",
     "already_completed": "Cette étape de workflow est déjà traitée",

@@ -193,4 +193,7 @@ function osvc_popup_hide(span)
         } else {
 		target.hide()
         }
+	if (target.hasClass("empty_on_pop")) {
+		target.empty()
+	}
 }

@@ -1246,6 +1246,7 @@
     "cancel": "Cancel"
   },
   "requests": {
+    "scripts": "Scripts executed for this step",
     "not_assigned": "This Workflow step is not assigned to you",
     "no_successor": "This Workflow step has no successor",
     "already_completed": "This Workflow step is already completed",
