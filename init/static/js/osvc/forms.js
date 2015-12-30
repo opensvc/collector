@@ -363,14 +363,14 @@ function form(divid, options) {
 			if (d.Condition && d.Condition.match(/#/)) {
 				o.add_cond_triggers(d)
 			}
-			o.install_mandatory_trigger(input, d)
-			o.install_constraint_trigger(input, d)
 
 			value.append(input)
 			table.append(line)
 		}
-		o.install_fn_triggers(table)
+		o.install_mandatory_triggers(table)
+		o.install_constraint_triggers(table)
 		o.install_cond_triggers(table)
+		o.install_fn_triggers(table)
 		return table
 	}
 
@@ -641,6 +641,7 @@ function form(divid, options) {
 			input.prop("disabled", true)
 		}
 		input.val(content)
+		input.prop("acid", content)
 		return input
 	}
 	o.render_select = function(d, content) {
@@ -649,6 +650,7 @@ function form(divid, options) {
 			input.prop("disabled", true)
 		}
 		var opts = []
+		var acid = content
 		for (var i=0; i<d.Candidates.length; i++) {
 			var _d = d.Candidates[i]
 			if (typeof(_d) === "string") {
@@ -662,7 +664,7 @@ function form(divid, options) {
 					"label": _d.Label
 				})
 				if (_d.Value == content) {
-					var acid = _d.Value
+					acid = _d.Value
 					content = _d.Label
 				}
 			}
@@ -685,18 +687,20 @@ function form(divid, options) {
 				$(this).change()
 			}
 		})
-		if (content && content.length > 0) {
+		if (content && (content.length > 0)) {
 			input.prop("acid", acid)
 			input.val(content)
 		}
 		input.change()
 		return input
 	}
+
 	o.render_select_rest = function(d, content) {
 		var input = $("<input class='oi aci'>")
 		if (d.ReadOnly == true) {
 			input.prop("disabled", true)
 		}
+		input.val(content)
 		if (fn_has_refs(d)) {
 			o.add_fn_triggers(d)
 			return input
@@ -834,8 +838,8 @@ function form(divid, options) {
 				input.prop("acid", opts[0].id)
 			}
 		}
-		if (content && content.length > 0) {
-			input.prop("acid", acid)
+		if (content && (content.length > 0)) {
+			input.prop("acid", content)
 			input.val(content)
 		}
 		input.change()
@@ -908,6 +912,14 @@ function form(divid, options) {
 		return _s
 	}
 
+	o.install_constraint_triggers = function(table) {
+		for (var i=0; i<o.form_data.form_definition.Inputs.length; i++) {
+			var d = o.form_data.form_definition.Inputs[i]
+			var input = table.find("[iid="+d.Id+"] > [name=val]").children("div,textarea,input")
+			o.install_constraint_trigger(input, d)
+		}
+	}
+
 	o.install_constraint_trigger = function(input, d) {
 		if (!d.Constraint) {
 			return
@@ -929,6 +941,14 @@ function form(divid, options) {
 			} else {
 				o.div.find("input[type=button]").prop("disabled", true)
 			}
+		}
+	}
+
+	o.install_mandatory_triggers = function(table) {
+		for (var i=0; i<o.form_data.form_definition.Inputs.length; i++) {
+			var d = o.form_data.form_definition.Inputs[i]
+			var input = table.find("[iid="+d.Id+"] > [name=val]").children("div,textarea,input")
+			o.install_mandatory_trigger(input, d)
 		}
 	}
 
@@ -957,7 +977,7 @@ function form(divid, options) {
 	o.hide_input = function(table, d, initial) {
 		var tr = table.find("[iid="+d.Id+"]")
 		if (!initial && tr.hasClass("hidden")) {
-			console.log("hide", d.Id, "already not visible", tr.parents("table"))
+			console.log("hide", d.Id, "already not visible")
 			return
 		}
 		console.log("hide", d.Id)
@@ -1165,7 +1185,7 @@ function form(divid, options) {
 	o.get_val = function(td) {
 		var input = td.find("input,textarea,div")
 		if (input.is("div")) {
-			return div.text()
+			return input.text()
 		}
 		var val = input.prop("acid")
 		if ((typeof(val) === "undefined") || (typeof(input.attr("autocomplete")) === "undefined")) {
