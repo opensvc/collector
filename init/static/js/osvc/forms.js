@@ -677,6 +677,12 @@ function form(divid, options) {
 				$(this).change()
 			}
 		})
+		input.bind("keyup", function() {
+			if ($(this).val() == "") {
+				$(this).removeProp("acid")
+				$(this).change()
+			}
+		})
 		if (content && content.length > 0) {
 			input.prop("acid", acid)
 			input.val(content)
@@ -793,6 +799,12 @@ function form(divid, options) {
 				minLength: 0,
 				select: function(event, ui) {
 					$(this).prop("acid", ui.item.id)
+					$(this).change()
+				}
+			})
+			input.bind("keyup", function() {
+				if ($(this).val() == "") {
+					$(this).removeProp("acid")
 					$(this).change()
 				}
 			})
