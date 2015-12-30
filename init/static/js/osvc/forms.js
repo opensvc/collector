@@ -669,15 +669,17 @@ function form(divid, options) {
 		}
 		input.autocomplete({
 			mustMatch: true,
-			autoFocus: true,
 			source: opts,
 			minLength: 0,
+			focus: function(event, ui) {
+				$(this).prop("acid", ui.item.id)
+			},
 			select: function(event, ui) {
 				$(this).prop("acid", ui.item.id)
 				$(this).change()
 			}
 		})
-		input.bind("keyup", function() {
+		input.bind("keyup", function(event) {
 			if ($(this).val() == "") {
 				$(this).removeProp("acid")
 				$(this).change()
@@ -806,15 +808,17 @@ function form(divid, options) {
 			input.removeProp("acid")
 			input.autocomplete({
 				mustMatch: true,
-				autoFocus: true,
 				source: opts,
 				minLength: 0,
+				focus: function(event, ui) {
+					$(this).prop("acid", ui.item.id)
+				},
 				select: function(event, ui) {
 					$(this).prop("acid", ui.item.id)
 					$(this).change()
 				}
 			})
-			input.bind("keyup", function() {
+			input.bind("keyup", function(event) {
 				if ($(this).val() == "") {
 					$(this).removeProp("acid")
 					$(this).change()
@@ -1159,7 +1163,10 @@ function form(divid, options) {
 	}
 
 	o.get_val = function(td) {
-		var input = td.find("input,textarea")
+		var input = td.find("input,textarea,div")
+		if (input.is("div")) {
+			return div.text()
+		}
 		var val = input.prop("acid")
 		if ((typeof(val) === "undefined") || (typeof(input.attr("autocomplete")) === "undefined")) {
 			val = input.val()
