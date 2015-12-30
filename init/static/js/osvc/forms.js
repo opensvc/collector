@@ -308,10 +308,10 @@ function form(divid, options) {
 			help.attr("title", d.Help)
 			line.attr("iid", d.Id)
 			if (d.ExpertMode == true) {
-				line.hide()
+				line.addClass("hidden")
 			}
 			if (d.Hidden == true) {
-				line.hide()
+				line.addClass("hidden")
 			}
 			label.text(d.Label)
 			if(d.LabelCss) {
@@ -761,6 +761,10 @@ function form(divid, options) {
 					"id": value,
 					"label": label
 				})
+				if (!content && (opts.length > 0)) {
+					value = opts[0].id
+					content = opts[0].label
+				}
 				if (content && (value == content)) {
 					var acid = value
 					content = label
@@ -770,6 +774,14 @@ function form(divid, options) {
 					"id": _d[args.props],
 					"label": _d[args.props]
 				})
+				if (!content && (opts.length > 0)) {
+					value = opts[0].id
+					content = opts[0].label
+				}
+				if (content) {
+					var acid = content
+					content = content
+				}
 			}
 		}
 
@@ -856,7 +868,6 @@ function form(divid, options) {
 			var key = input.attr("id")
 		}
 		var sign = fn_sign(fn, args)
-		console.log(key, sign)
 		if ((key in o.fn_trigger_last) && (o.fn_trigger_last[key] == sign)) {
 			console.log("cancel rest get on", fn, ": same as last call")
 			return
@@ -909,7 +920,7 @@ function form(divid, options) {
 			} else {
 				e.removeClass("constraint_violation")
 			}
-			if (o.div.find(":not(tr.hidden) .constraint_violation").length == 0) {
+			if (o.div.find(".constraint_violation").parents("tr:not(.hidden)").length == 0) {
 				o.div.find("input[type=button]").prop("disabled", false)
 			} else {
 				o.div.find("input[type=button]").prop("disabled", true)
@@ -931,7 +942,7 @@ function form(divid, options) {
 			} else {
 				e.removeClass("constraint_violation")
 			}
-			if (o.div.find(":not(tr.hidden) .constraint_violation").length == 0) {
+			if (o.div.find(".constraint_violation").parents("tr:not(.hidden)").length == 0) {
 				o.div.find("input[type=button]").prop("disabled", false)
 			} else {
 				o.div.find("input[type=button]").prop("disabled", true)
