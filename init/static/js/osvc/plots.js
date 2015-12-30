@@ -3284,6 +3284,67 @@ function stats_netdev(url, id) {
         _jqplot_extra($('#'+id+'_pckps'), p)
     });
 }
+function convert_size(val) {
+	if (val == "") {
+		return 0
+	}
+	if (val instanceof Array) {
+		var l = []
+		for (var i=0; i<val.length; i++) {
+			l.push(convert_size(val[i]))
+		}
+		return l
+	}
+
+	// strip all whitespaces
+	var _val = val.replace(/\s+/g, "")
+
+	// extract unit
+	var unit = _val.match(/[a-zA-Z]+/)
+	if (unit) {
+		unit = unit[0].toLowerCase()
+	} else {
+		unit = null
+	}
+
+	// extract value
+	_val = _val.match(/^[0-9]+/)
+	if (!_val) {
+		return val
+	}
+	_val = _val[0]
+
+	if (!unit || (unit == "b")) {
+		_val = _val * 1
+	} else if ((unit == "k") || (unit == "kb")) {
+		_val = _val * 1024
+	} else if ((unit == "ki") || (unit == "kib")) {
+		_val = _val * 1000
+	} else if ((unit == "m") || (unit == "mb")) {
+		_val = _val * 1024 * 1024
+	} else if ((unit == "mi") || (unit == "mib")) {
+		_val = _val * 1000 * 1000
+	} else if ((unit == "g") || (unit == "gb")) {
+		_val = _val * 1024 * 1024 * 1024
+	} else if ((unit == "gi") || (unit == "gib")) {
+		_val = _val * 1000 * 1000 * 1000
+	} else if ((unit == "t") || (unit == "tb")) {
+		_val = _val * 1024 * 1024 * 1024 * 1024
+	} else if ((unit == "ti") || (unit == "tib")) {
+		_val = _val * 1000 * 1000 * 1000 * 1000
+	} else if ((unit == "p") || (unit == "pb")) {
+		_val = _val * 1024 * 1024 * 1024 * 1024 * 1024
+	} else if ((unit == "pi") || (unit == "pib")) {
+		_val = _val * 1000 * 1000 * 1000 * 1000 * 1000
+	} else if ((unit == "e") || (unit == "eb")) {
+		_val = _val * 1024 * 1024 * 1024 * 1024 * 1024 * 1024
+	} else if ((unit == "ei") || (unit == "eib")) {
+		_val = _val * 1000 * 1000 * 1000 * 1000 * 1000 * 1000
+        } else {
+		return val
+	}
+	return _val
+}
 function fancy_size_b(size) {
     if (size<1024) {
         unit = 'B'

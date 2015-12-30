@@ -1181,7 +1181,15 @@ function form(divid, options) {
 			if (td.length == 0) {
 				continue
 			}
-			data[d.Id] = o.get_val(td)
+			var val = o.get_val(td)
+			if (d.Type == "list of string") {
+				val = val.split(",")
+				val = convert_size(val)
+			}
+			if ((d.Type == "string or integer") || (d.Type == "size") || (d.Type == "integer")) {
+				val = convert_size(val)
+			}
+			data[d.Id] = val
 		}
 		return data
 	}
