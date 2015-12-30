@@ -306,7 +306,7 @@ svcmon_colprops = {
              display = False,
              img = 'time16',
              table = 'svcmon',
-             _class = 'datetime_daily',
+             _class = 'datetime_status',
             ),
     'mon_frozen': HtmlTableColumn(
              title = 'Frozen',
