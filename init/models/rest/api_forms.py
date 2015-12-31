@@ -131,6 +131,7 @@ class rest_delete_form_publication(rest_delete_handler):
         )
 
     def handler(self, form_id, group_id, **vars):
+        check_privilege("FormsManager")
         form_responsible(form_id)
         q = db.forms_team_publication.form_id == form_id
         q &= db.forms_team_publication.group_id == group_id
@@ -202,6 +203,7 @@ class rest_post_form_publication(rest_post_handler):
         )
 
     def handler(self, form_id, group_id, **vars):
+        check_privilege("FormsManager")
         form_responsible(form_id)
 
         try:
@@ -309,6 +311,7 @@ class rest_delete_form_responsible(rest_delete_handler):
         )
 
     def handler(self, form_id, group_id, **vars):
+        check_privilege("FormsManager")
         form_responsible(form_id)
         q = db.forms_team_responsible.form_id == form_id
         q &= db.forms_team_responsible.group_id == group_id
@@ -381,6 +384,7 @@ class rest_post_form_responsible(rest_post_handler):
         )
 
     def handler(self, form_id, group_id, **vars):
+        check_privilege("FormsManager")
         form_responsible(form_id)
 
         try:
