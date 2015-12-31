@@ -330,6 +330,8 @@ handlers = {
      rest_post_filterset(),
      rest_post_filterset_filterset(),
      rest_post_filterset_filter(),
+     rest_post_forms(),
+     rest_post_form(),
      rest_post_form_publication(),
      rest_post_form_responsible(),
      rest_post_forms_publications(),

@@ -29,6 +29,99 @@ def mangle_form_data(data):
     return data
 
 
+class rest_post_form(rest_post_handler):
+    def __init__(self):
+        desc = [
+          "Modify a form properties",
+        ]
+        examples = [
+          "# curl -u %(email)s -X POST -d form_name=test -o- https://%(collector)s/init/rest/api/forms/1"
+        ]
+
+        rest_post_handler.__init__(
+          self,
+          path="/forms/<id>",
+          tables=["forms"],
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, id, **vars):
+        check_privilege("FormsManager")
+
+        if "id" in vars:
+            del(vars["id"])
+
+        q = db.forms.id == id
+        form = db(q).select().first()
+        if form is None:
+            raise Exception("Form %s not found"%str(id))
+
+        form_id = db(q).update(**vars)
+
+        fmt = "Form %(form_name)s change: %(data)s"
+        d = dict(form_name=form.form_name, data=beautify_change(form, vars))
+
+        _log(
+          'form.change',
+          fmt,
+          d
+        )
+        l = {
+          'event': 'forms_change',
+          'data': {'id': form.form_id},
+        }
+        _websocket_send(event_msg(l))
+
+        return rest_get_form().handler(form.form_id)
+
+class rest_post_forms(rest_post_handler):
+    def __init__(self):
+        desc = [
+          "Publish the form to a group",
+        ]
+        examples = [
+          "# curl -u %(email)s -X POST -d form_name=test -o- https://%(collector)s/init/rest/api/forms"
+        ]
+
+        rest_post_handler.__init__(
+          self,
+          path="/forms",
+          tables=["forms"],
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, **vars):
+        check_privilege("FormsManager")
+
+        if "form_name" not in vars:
+            raise Exception("Key 'form_name' is mandatory")
+        form_name = vars.get("form_name")
+
+        vars["form_created"] = datetime.datetime.now()
+        vars["form_author"] = user_name()
+
+        form_id = db.forms.insert(**vars)
+        lib_forms_add_default_team_responsible(form_name)
+        lib_forms_add_default_team_publication(form_name)
+
+        fmt = "Form %(form_name)s added"
+        d = dict(form_name=form_name)
+
+        _log(
+          'form.add',
+          fmt,
+          d
+        )
+        l = {
+          'event': 'forms_change',
+          'data': {'id': form_id},
+        }
+        _websocket_send(event_msg(l))
+
+        return rest_get_form().handler(form_id)
+
 class rest_get_forms(rest_get_table_handler):
     def __init__(self):
         desc = [
