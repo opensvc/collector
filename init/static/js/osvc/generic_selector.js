@@ -116,3 +116,35 @@ function generic_selector_checks_contextual_settings(id) {
   })
 }
 
+function generic_selector_org_groups(id) {
+  return generic_selector(id, {
+    "url_path": "R_GROUPS",
+    "url_params": {
+      "orderby": "role",
+      "limit": "0",
+      "props": "id,role",
+      "filters": ["role !user_%", "privilege F"],
+      "meta": "0"
+    },
+    "object_class": "guys16",
+    "object_id": "id",
+    "object_name": "role"
+  })
+}
+
+function generic_selector_org_and_private_groups(id) {
+  return generic_selector(id, {
+    "url_path": "R_GROUPS",
+    "url_params": {
+      "orderby": "role",
+      "limit": "0",
+      "props": "id,role",
+      "filters": ["privilege F"],
+      "meta": "0"
+    },
+    "object_class": "guys16",
+    "object_id": "id",
+    "object_name": "role"
+  })
+}
+

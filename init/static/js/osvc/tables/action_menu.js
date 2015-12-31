@@ -11,6 +11,7 @@ function table_action_menu_init_data(t) {
     "vmname": "td[cell=1][name$=_c_vmname]",
     "action": "td[cell=1][name$=_c_action]",
     "id": "td[cell=1][name$=_c_id]",
+    "form_type": "td[cell=1][name$=_c_form_type]",
     "tag_id": "td[cell=1][name$=_c_tag_id]",
     "ruleset_id": "td[cell=1][name$=_c_ruleset_id]",
     "modset_id": "td[cell=1][name$=_c_modset_id]",
@@ -177,6 +178,43 @@ function table_action_menu_init_data(t) {
               "title": "action_menu.delete",
               "class": "icon del16",
               "fn": "data_action_delete_networks",
+              "min": 1
+            }
+          ]
+        },
+        {
+          "selector": ["clicked", "checked", "all"],
+          "title": "action_menu.on_forms",
+          "foldable": true,
+          "cols": ["id", "form_type"],
+          "condition": "id+form_type",
+          "children": [
+            {
+              "title": "action_menu.add_publication",
+              "class": "icon add16",
+              "fn": "data_action_add_form_publication",
+              "privileges": ["Manager", "FormsManager"],
+              "min": 1
+            },
+            {
+              "title": "action_menu.del_publication",
+              "class": "icon del16",
+              "fn": "data_action_del_form_publication",
+              "privileges": ["Manager", "FormsManager"],
+              "min": 1
+            },
+            {
+              "title": "action_menu.add_responsible",
+              "class": "icon add16",
+              "fn": "data_action_add_form_responsible",
+              "privileges": ["Manager", "FormsManager"],
+              "min": 1
+            },
+            {
+              "title": "action_menu.del_responsible",
+              "class": "icon del16",
+              "fn": "data_action_del_form_responsible",
+              "privileges": ["Manager", "FormsManager"],
               "min": 1
             }
           ]
@@ -994,7 +1032,12 @@ function table_action_menu_get_cols_data_checked(t, e, scope, selector) {
     for (var i=0; i<selector.cols.length; i++) {
       var c = selector.cols[i]
       var s = t.column_selectors[c]
-      var val = $.data($(this).find(s).first()[0], "v")
+      try {
+        var val = $.data($(this).find(s).first()[0], "v")
+      } catch(e) {
+        sig += "-"
+        continue
+      }
       if ((typeof val === "undefined") || (val=="") || (val == "empty")) {
         sig += "-"
         continue
@@ -2295,6 +2338,74 @@ function data_action_ack_actions(t, e) {
   form.append(yes_no)
   form.insertAfter(entry)
   c.focus()
+}
+
+//
+// data action: add form publication
+//
+function data_action_add_form_publication(t, e) {
+  data_action_generic_selector(t, e, {
+    "requestor": services_osvcpostrest,
+    "request_service": "R_FORMS_PUBLICATIONS",
+    "selector": generic_selector_org_groups,
+    "request_data_entry": function(selected, data) {
+      return {
+        "group_id": selected,
+        "form_id": data["id"]
+      }
+    }
+  })
+}
+
+//
+// data action: del form publication
+//
+function data_action_del_form_publication(t, e) {
+  data_action_generic_selector(t, e, {
+    "requestor": services_osvcdeleterest,
+    "request_service": "R_FORMS_PUBLICATIONS",
+    "selector": generic_selector_org_and_private_groups,
+    "request_data_entry": function(selected, data) {
+      return {
+        "group_id": selected,
+        "form_id": data["id"]
+      }
+    }
+  })
+}
+
+//
+// data action: add form responsibles
+//
+function data_action_add_form_responsible(t, e) {
+  data_action_generic_selector(t, e, {
+    "requestor": services_osvcpostrest,
+    "request_service": "R_FORMS_RESPONSIBLES",
+    "selector": generic_selector_org_groups,
+    "request_data_entry": function(selected, data) {
+      return {
+        "group_id": selected,
+        "form_id": data["id"]
+      }
+    }
+  })
+}
+
+//
+// data action: del form responsible
+//
+function data_action_del_form_responsible(t, e) {
+  data_action_generic_selector(t, e, {
+    "requestor": services_osvcdeleterest,
+    "request_service": "R_FORMS_RESPONSIBLES",
+    "selector": generic_selector_org_and_private_groups,
+    "request_data_entry": function(selected, data) {
+      return {
+        "group_id": selected,
+        "form_id": data["id"]
+      }
+    }
+  })
 }
 
 //

@@ -36,6 +36,8 @@ var services_access_uri = {
     "R_FORMS" : "rest/api/forms",
     "R_FORMS_REVISION" : "rest/api/forms_revisions/%1",
     "R_FORMS_REVISIONS" : "rest/api/forms_revisions",
+    "R_FORMS_PUBLICATIONS" : "rest/api/forms_publications",
+    "R_FORMS_RESPONSIBLES" : "rest/api/forms_responsibles",
     "R_GROUPS" : "rest/api/groups",
     "R_GROUP" : "rest/api/groups/%1",
     "R_GROUP_USERS" : "rest/api/groups/%1/users",

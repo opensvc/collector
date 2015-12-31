@@ -16,6 +16,11 @@
     "import": "Import"
   },
   "action_menu": {
+    "on_forms": "On forms",
+    "del_publication": "Delete publications",
+    "del_responsible": "Delete responsibles",
+    "add_publication": "Add publications",
+    "add_responsible": "Add responsibles",
     "on_compliance_status": "On compliance run last status",
     "on_networks": "On networks",
     "network": "Network",

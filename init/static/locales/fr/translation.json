@@ -16,6 +16,11 @@
     "import": "Import"
   },
   "action_menu": {
+    "on_forms": "Sur les formulaires",
+    "del_publication": "Supprimer des publications",
+    "del_responsible": "Supprimer des responsables",
+    "add_publication": "Ajouter des publications",
+    "add_responsible": "Ajouter des responsibles",
     "on_compliance_status": "Sur les derniers audits de conformité",
     "on_networks": "Sur les réseaux",
     "net_createable": "Ce réseau n'existe pas encore. Appuyez sur <entrée> pour le créer.",
