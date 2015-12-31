@@ -57,6 +57,16 @@ class rest_post_form(rest_post_handler):
         if form is None:
             raise Exception("Form %s not found"%str(id))
 
+        if "form_definition" in vars:
+            try:
+                form_definition = json.loads(vars["form_definition"])
+                vars["form_yaml"] = yaml.dump(form_definition)
+                del(vars["form_definition"])
+            except Exception as e:
+                pass
+        elif "form_yaml" in vars:
+            form_yaml = yaml.load(vars["form_yaml"])
+
         form_id = db(q).update(**vars)
 
         fmt = "Form %(form_name)s change: %(data)s"

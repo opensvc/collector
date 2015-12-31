@@ -840,3 +840,30 @@ def form_submit(form, data,
 
     return log
 
+def lib_forms_add_default_team_responsible(form_name):
+    q = db.forms.form_name == form_name
+    form_id = db(q).select()[0].id
+    q = db.auth_membership.user_id == auth.user_id
+    q &= db.auth_membership.group_id == db.auth_group.id
+    q &= db.auth_group.role.like('user_%')
+    try:
+        group_id = db(q).select()[0].auth_group.id
+    except:
+        q = db.auth_group.role == 'Manager'
+        group_id = db(q).select()[0].id
+    db.forms_team_responsible.insert(form_id=form_id, group_id=group_id)
+
+def lib_forms_add_default_team_publication(form_name):
+    q = db.forms.form_name == form_name
+    form_id = db(q).select()[0].id
+    q = db.auth_membership.user_id == auth.user_id
+    q &= db.auth_membership.group_id == db.auth_group.id
+    q &= db.auth_group.role.like('user_%')
+    try:
+        group_id = db(q).select()[0].auth_group.id
+    except:
+        q = db.auth_group.role == 'Manager'
+        group_id = db(q).select()[0].id
+    db.forms_team_publication.insert(form_id=form_id, group_id=group_id)
+
+

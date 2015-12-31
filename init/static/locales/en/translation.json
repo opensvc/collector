@@ -17,6 +17,9 @@
   },
   "action_menu": {
     "on_forms": "On forms",
+    "add_form": "Add form",
+    "form_name": "Form name",
+    "form_createable": "This form name does not exist yet. Press <enter> to create.",
     "del_publication": "Delete publications",
     "del_responsible": "Delete responsibles",
     "add_publication": "Add publications",
@@ -252,6 +255,19 @@
       "nodes_net" : "Nodes net"
     }
   },
+  "form_properties": {
+    "save": "save",
+    "publications": "Publications",
+    "responsibles": "Responsibles",
+    "base": "Base",
+    "id": "Id",
+    "name": "Name",
+    "folder": "Folder",
+    "type": "Type",
+    "creation": "Creation",
+    "author": "Author",
+    "creation_date": "Creation date"
+  },
   "service_properties": {
     "service": "service",
     "unacknowleged_errors": "unacknowleged errors",
@@ -434,6 +450,10 @@
   "ruleset_tabs": {
     "export": "export",
     "ruleset": "ruleset"
+  },
+  "form_tabs": {
+    "properties": "properties",
+    "definition": "definition"
   },
   "node_tabs": {
     "properties": "properties",

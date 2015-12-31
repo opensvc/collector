@@ -1844,6 +1844,21 @@ function cell_decorator_boolean(e) {
   $(e).html(s)
 }
 
+function cell_decorator_form_name(e) {
+  var v = $.data(e, "v")
+  $(e).html("<span class='clickable'>"+v+"</span>")
+  $(e).addClass("corner")
+  $(e).click(function(){
+    var line = $(this).parent(".tl")
+    var form_id = $.data(line.children("[col=id]")[0], "v")
+    table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
+    span_id = $(e).parent(".tl").attr("spansum")
+    id = table_id + "_x_" + span_id
+    toggle_extra(null, id, e, 0)
+    form_tabs(id, {"form_id": form_id})
+  })
+}
+
 function cell_decorator_network(e) {
   var v = $.data(e, "v")
   $(e).html("<span class='clickable'>"+v+"</span>")
@@ -2334,15 +2349,6 @@ function cell_decorator_dns_domains_links(e) {
   url = services_get_url() + "/init/dns/domain_sync?"+query
   var d = $("<a class='clickable icon action_sync_16' target='_blank' href="+url+"></a>")
   $(e).append(d)
-}
-
-function cell_decorator_forms_links(e) {
-  var line = $(e).parent(".tl")
-  var form_id = $.data(line.children("[col=id]")[0], "v")
-  var query = "form_id="+form_id
-  url = services_get_url() + "/init/forms/forms_editor?"+query
-  var d = "<a class='clickable edit16' target='_blank' href="+url+"></a>"
-  $(e).html(d)
 }
 
 function cell_decorator_svcmon_links(e) {
@@ -3265,7 +3271,6 @@ cell_decorators = {
  "overallstatus": cell_decorator_overallstatus,
  "chk_type": cell_decorator_chk_type,
  "svcmon_links": cell_decorator_svcmon_links,
- "forms_links": cell_decorator_forms_links,
  "svc_ha": cell_decorator_svc_ha,
  "env": cell_decorator_env,
  "date_future": cell_decorator_date_future,
@@ -3284,6 +3289,7 @@ cell_decorators = {
  "dns_records_links": cell_decorator_dns_records_links,
  "dns_records_type": cell_decorator_dns_records_type,
  "tag_exclude": cell_decorator_tag_exclude,
+ "form_name": cell_decorator_form_name,
  "_network": cell_decorator_network,
  "boolean": cell_decorator_boolean,
  "status": cell_decorator_status,

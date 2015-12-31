@@ -697,4 +697,50 @@ function ruleset_tabs(divid, options) {
   return o
 }
 
+//
+// form
+//
+function form_tabs(divid, options) {
+  o = tabs(divid)
+  o.options = options
+
+  o.load(function() {
+    if (o.options.form_name) {
+      var title = o.options.form_name
+    } else {
+      var title = o.options.form_id
+    }
+    o.closetab.children("p").text(title)
+
+    // tab properties
+    i = o.register_tab({
+      "title": "form_tabs.properties",
+      "title_class": "wf16"
+    })
+    o.tabs[i].callback = function(divid) {
+      form_properties(divid, o.options)
+    }
+    i = o.register_tab({
+      "title": "form_tabs.definition",
+      "title_class": "edit16"
+    })
+    o.tabs[i].callback = function(divid) {
+      form_definition(divid, o.options)
+    }
+
+    if (!o.options.tab) {
+      o.closetab.next("li").trigger("click")
+    } else {
+      for (var i=0; i<o.tabs.length; i++) {
+        if (o.tabs[i].title != o.options.tab) {
+          continue
+        }
+        o.tabs[i].tab.trigger("click")
+        break
+      }
+    }
+  })
+  return o
+}
+
 

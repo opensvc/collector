@@ -208,21 +208,24 @@ class table_forms(HtmlTable):
                 field = 'form_name',
                 display = True,
                 table = 'v_forms',
-                img = 'prov'
+                img = 'prov',
+                _class="form_name"
             ),
             'form_team_publication': HtmlTableColumn(
                 title = 'Team publication',
                 field = 'form_team_publication',
                 display = True,
                 table = 'v_forms',
-                img = 'guys16'
+                img = 'guys16',
+                _class='groups'
             ),
             'form_team_responsible': HtmlTableColumn(
                 title = 'Team responsible',
                 field = 'form_team_responsible',
                 display = True,
                 table = 'v_forms',
-                img = 'guys16'
+                img = 'guys16',
+                _class='groups'
             ),
             'form_type': HtmlTableColumn(
                 title = 'Type',
@@ -267,113 +270,7 @@ class table_forms(HtmlTable):
         self.dataable = True
         self.wsable = True
         self.checkboxes = True
-        self.extrarow = True
-        self.extrarow_class = "forms_links"
         self.force_cols = ["id", "form_type"]
-
-        if 'FormsManager' in user_groups():
-            self.additional_tools.append('add_forms')
-
-
-    def format_extrarow(self, o):
-        return ""
-
-    def add_forms(self):
-        d = DIV(
-              A(
-                T("Add forms"),
-                _href=URL(r=request, f='forms_editor'),
-                _class='add16',
-              ),
-              _class='floatw',
-            )
-        return d
-
-@auth.requires_membership('FormsManager')
-def forms_editor():
-    q = db.forms.id == request.vars.form_id
-    rows = db(q).select()
-
-    if len(rows) == 1:
-        record = rows[0]
-        if 'Manager' not in user_groups():
-            q &= db.forms.id == db.forms_team_responsible.form_id
-            q &= db.forms_team_responsible.group_id.belongs(user_group_ids())
-            rows = db(q).select()
-            if len(rows) == 0:
-                session.flash = T("You are not allowed to edit this form")
-                redirect(URL(r=request, c='forms', f='forms_admin'))
-    else:
-        record = None
-
-    db.forms.form_author.default = user_name()
-    form = SQLFORM(db.forms,
-                 record=record,
-                 deletable=True,
-                 fields=['form_name',
-                         'form_folder',
-                         'form_type',
-                         'form_yaml',],
-                 labels={'form_name': T('Form name'),
-                         'form_folder': T('Form folder'),
-                         'form_type': T('Form type'),
-                         'form_yaml': T('Form yaml definition')}
-                )
-    form.custom.widget.form_yaml['_class'] = 'pre'
-    form.custom.widget.form_yaml['_style'] = 'min-width:60em;min-height:60em'
-    if form.accepts(request.vars):
-        if request.vars.form_id is None:
-            _log('compliance.form.add',
-                 "Created '%(form_type)s' form '%(form_name)s' with definition:\n%(form_yaml)s",
-                     dict(form_name=request.vars.form_name,
-                          form_type=request.vars.form_type,
-                          form_yaml=request.vars.form_yaml))
-            add_default_team_responsible(request.vars.form_name)
-            add_default_team_publication(request.vars.form_name)
-        elif request.vars.delete_this_record == 'on':
-            _log('compliance.form.delete',
-                 "Deleted '%(form_type)s' form '%(form_name)s' with definition:\n%(form_yaml)s",
-                     dict(form_name=request.vars.form_name,
-                          form_type=request.vars.form_type,
-                          form_yaml=request.vars.form_yaml))
-        else:
-            _log('compliance.form.change',
-                 "Changed '%(form_type)s' form '%(form_name)s' with definition:\n%(form_yaml)s",
-                     dict(form_name=request.vars.form_name,
-                          form_type=request.vars.form_type,
-                          form_yaml=request.vars.form_yaml))
-
-        session.flash = T("Form recorded")
-        redirect(URL(r=request, c='forms', f='forms_admin'))
-    elif form.errors:
-        response.flash = T("errors in form")
-    return dict(form=form)
-
-def add_default_team_responsible(form_name):
-    q = db.forms.form_name == form_name
-    form_id = db(q).select()[0].id
-    q = db.auth_membership.user_id == auth.user_id
-    q &= db.auth_membership.group_id == db.auth_group.id
-    q &= db.auth_group.role.like('user_%')
-    try:
-        group_id = db(q).select()[0].auth_group.id
-    except:
-        q = db.auth_group.role == 'Manager'
-        group_id = db(q).select()[0].id
-    db.forms_team_responsible.insert(form_id=form_id, group_id=group_id)
-
-def add_default_team_publication(form_name):
-    q = db.forms.form_name == form_name
-    form_id = db(q).select()[0].id
-    q = db.auth_membership.user_id == auth.user_id
-    q &= db.auth_membership.group_id == db.auth_group.id
-    q &= db.auth_group.role.like('user_%')
-    try:
-        group_id = db(q).select()[0].auth_group.id
-    except:
-        q = db.auth_group.role == 'Manager'
-        group_id = db(q).select()[0].id
-    db.forms_team_publication.insert(form_id=form_id, group_id=group_id)
 
 @auth.requires_login()
 def ajax_forms_admin_col_values():

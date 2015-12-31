@@ -190,6 +190,13 @@ function table_action_menu_init_data(t) {
           "condition": "id+form_type",
           "children": [
             {
+              "title": "action_menu.add_form",
+              "class": "icon add16",
+              "fn": "data_action_add_form",
+              "privileges": ["Manager", "FormsManager"],
+              "min": 0
+            },
+            {
               "title": "action_menu.add_publication",
               "class": "icon add16",
               "fn": "data_action_add_form_publication",
@@ -2338,6 +2345,85 @@ function data_action_ack_actions(t, e) {
   form.append(yes_no)
   form.insertAfter(entry)
   c.focus()
+}
+
+//
+// data action: add form
+//
+function data_action_add_form(t, e) {
+  var entry = $(e.target)
+
+  // create and focus tool area
+  table_action_menu_focus_on_leaf(t, entry)
+  var div = $("<div></div>")
+  div.uniqueId()
+  div.append($("<hr>"))
+  div.css({"display": "table-caption"})
+  div.insertAfter(entry)
+
+  // minimal create information
+  var line = $("<div class='template_form_line'></div>")
+  var title = $("<div data-i18n='action_menu.form_name'></div>").i18n()
+  var input = $("<input class='oi'></input>")
+  var info = $("<div></div>")
+  info.uniqueId()
+  info.css({"margin": "0.8em 0 0.8em 0"})
+  line.append(title)
+  line.append(input)
+  div.append(line)
+  div.append(info)
+  input.focus()
+
+  var timer = null
+  var xhr = null
+
+  input.bind("keyup", function(e) {
+    clearTimeout(timer)
+    if (is_enter(e)) {
+      data = {
+        "form_name": input.val()
+      }
+      info.empty()
+      spinner_add(info)
+      xhr  = services_osvcpostrest("R_FORMS", "", "", data, function(jd) {
+        spinner_del(info)
+        if (jd.error && (jd.error.length > 0)) {
+          info.html(services_error_fmt(jd))
+        }
+        // display the node properties tab to set more properties
+        form_properties(div.attr("id"), {"form_id": jd.data[0].id})
+      },
+      function(xhr, stat, error) {
+        info.html(services_ajax_error_fmt(xhr, stat, error))
+      })
+    } else {
+      var form_name = input.val()
+      timer = setTimeout(function(){
+        info.empty()
+        spinner_add(info)
+        if (xhr) {
+          xhr.abort()
+        }
+        services_osvcgetrest("R_FORMS", "", {"filters": "form_name "+form_name}, function(jd) {
+          xhr = null
+          spinner_del(info)
+          if (jd.error && (jd.error.length > 0)) {
+            info.html(services_error_fmt(jd))
+          }
+          if (jd.data.length == 0) {
+            info.text(i18n.t("action_menu.form_createable"))
+            return
+          }
+  
+          // display the node properties tab
+          form_properties(info.attr("id"), {"form_id": jd.data[0].id})
+        },
+        function(xhr, stat, error) {
+          info.html(services_ajax_error_fmt(xhr, stat, error))
+        })
+      }, 500)
+    }
+  })
 }
 
 //

@@ -17,6 +17,9 @@
   },
   "action_menu": {
     "on_forms": "Sur les formulaires",
+    "add_form": "Ajouter un formulaire",
+    "form_name": "Nom du formulaire",
+    "form_createable": "Ce formulaire n'existe pas encore. Appuyez sur <entrée> pour le créer.",
     "del_publication": "Supprimer des publications",
     "del_responsible": "Supprimer des responsables",
     "add_publication": "Ajouter des publications",
@@ -239,6 +242,19 @@
       "nodes_net" : "Réseau de noeuds"
     }
   },
+  "form_properties": {
+    "save": "sauvegarder",
+    "publications": "Publications",
+    "responsibles": "Responsables",
+    "base": "Base",
+    "id": "Id",
+    "name": "Nom",
+    "folder": "Répertoire",
+    "type": "Type",
+    "creation": "Création",
+    "author": "Auteur",
+    "creation_date": "Date de création"
+  },
   "network_properties": {
     "ip": "Ip",
     "lan": "Lan",
@@ -421,6 +437,10 @@
   "ruleset_tabs": {
     "export": "export",
     "ruleset": "jeu de règles"
+  },
+  "form_tabs": {
+    "properties": "propriétés",
+    "definition": "définition"
   },
   "node_tabs": {
     "properties": "propriétés",
