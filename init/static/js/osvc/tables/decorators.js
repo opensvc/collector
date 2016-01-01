@@ -1774,6 +1774,9 @@ var os_class_h = {
 }
 
 var img_h = {
+  'responsible': 'guys16',
+  'publication': 'guys16',
+  'form': 'wf16',
   'ack': 'check16',
   'action': 'action16',
   'action_queue': 'action16',
