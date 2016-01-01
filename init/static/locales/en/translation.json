@@ -16,9 +16,13 @@
     "import": "Import"
   },
   "action_menu": {
+    "on_tags": "On tags",
     "on_forms": "On forms",
     "add_form": "Add form",
+    "tag_name": "Tag name",
     "form_name": "Form name",
+    "tag_createable": "This tag name does not exist yet. Press <enter> to create.",
+    "tag_not_createable": "This tag name already exists.",
     "form_createable": "This form name does not exist yet. Press <enter> to create.",
     "del_publication": "Delete publications",
     "del_responsible": "Delete responsibles",
@@ -62,6 +66,7 @@
     "nodename": "Node name",
     "obsolescence": "Obsolescence",
     "add": "Add",
+    "del": "Delete",
     "delete": "Delete",
     "confirmation": "Are you sure ?",
     "tools": "Data analysis",

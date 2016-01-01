@@ -240,6 +240,33 @@ class rest_get_tag(rest_get_line_handler):
 
 
 #
+class rest_delete_tags(rest_delete_handler):
+    def __init__(self):
+        desc = [
+          "Delete the tags.",
+          "Also delete the attachments to nodes and services",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- -X DELETE --header 'Content-Type: application/json' -d @/tmp/data.json https://%(collector)s/init/rest/api/tags",
+        ]
+        rest_delete_handler.__init__(
+          self,
+          path="/tags",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, **vars):
+        if "id" not in vars:
+            raise Exception("The 'id' key is mandatory")
+
+        tagid = vars.get("id")
+        del(vars["id"])
+
+        return rest_delete_tag().handler(tagid, **vars)
+
+
+#
 class rest_delete_tag(rest_delete_handler):
     def __init__(self):
         desc = [

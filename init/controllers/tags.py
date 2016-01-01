@@ -13,85 +13,21 @@ class table_tags(HtmlTable):
         self.colprops = tags_colprops
 
         self.dataable = True
+        self.wsable = True
         #self.extraline = True
         self.checkboxes = True
         self.checkbox_id_col = 'id'
         self.checkbox_id_table = 'tags'
         self.ajax_col_values = 'ajax_tags_col_values'
+        self.force_cols = ["id", "tag_name"]
         self.span = ["id"]
         self.keys = ["id"]
         self.events = ["tags_change"]
 
-        ug = user_groups()
-        if 'Manager' in ug or 'TagManager' in ug:
-	    self.form_tag_add = self.tag_add_sqlform()
-            self += HtmlTableMenu('Tag', 'tag16', [
-              't_tag_add',
-              't_tag_del'
-            ])
-
-    @auth.requires_membership('CompManager')
-    def tag_add_sqlform(self):
-        f = SQLFORM(
-                 db.tags,
-                 labels={
-                  'tag_name': T('Tag name'),
-                  'tag_exclude': T('Tag exclusions')
-                 },
-                 _name='form_tag_add',
-            )
-        return f
-
-    def t_tag_add(self):
-        d = DIV(
-              A(
-                T("Add tag"),
-                _class='add16',
-                _onclick="""
-                  click_toggle_vis(event,'%(div)s', 'block');
-                """%dict(div='tag_add'),
-              ),
-              DIV(
-                self.form_tag_add,
-                _style='display:none',
-                _class='stackable white_float',
-                _name='tag_add',
-                _id='tag_add',
-              ),
-            )
-        return d
-
-    def t_tag_del(self):
-        d = DIV(
-              A(
-                T("Delete tags"),
-                _class='del16',
-                _onclick="""if (confirm("%(text)s")){%(s)s};
-                         """%dict(s=self.ajax_submit(args=['t_tag_del']),
-                                  text=T("Deleting tags also deletes their attachments to nodes and services. Please confirm tags deletion"),
-                                 ),
-              ),
-            )
-        return d
-
-@auth.requires(auth.has_membership('Manager') or auth.has_membership('TagManager'))
-def t_tag_del(ids):
-    q = db.tags.id.belongs(ids)
-    u = ', '.join([r.tag_name for r in db(q).select(db.tags.tag_name) if r.tag_name is not None])
-    db(db.node_tags.tag_id.belongs(ids)).delete()
-    db(db.svc_tags.tag_id.belongs(ids)).delete()
-    table_modified("node_tags")
-    table_modified("svc_tags")
-    db(q).delete()
-    table_modified("tags")
-    db.commit()
-    _log('tag.delete',
-         'deleted tags %(u)s',
-         dict(u=u))
-
 @auth.requires_login()
 def ajax_tags_col_values():
-    t = table_tags('tags', 'ajax_tags')
+    table_id = request.vars.table_id
+    t = table_tags(table_id, 'ajax_tags')
     col = request.args[0]
     o = db[t.colprops[col].table][col]
     q = db.tags.id > 0
@@ -102,17 +38,9 @@ def ajax_tags_col_values():
 
 @auth.requires_login()
 def ajax_tags():
-    t = table_tags('tags', 'ajax_tags')
+    table_id = request.vars.table_id
+    t = table_tags(table_id, 'ajax_tags')
     o = db.tags.tag_name
-
-    if len(request.args) == 1:
-        action = request.args[0]
-        try:
-            if action == 't_tag_del':
-                t_tag_del(t.get_checked())
-        except ToolError, e:
-            t.flash = str(e)
-
     q = db.tags.id>0
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
@@ -134,26 +62,8 @@ def ajax_tags():
 
 @auth.requires_login()
 def tags():
-    t = table_tags('tags', 'ajax_tags')
-
-    try:
-        if t.form_tag_add.accepts(request.vars, formname='add_tag'):
-            _log("tag",
-                 "tag '%(tag_name)s' created",
-                 dict(tag_name=request.vars.tag_name)
-            )
-            table_modified("tags")
-            redirect(URL(r=request))
-        elif t.form_ruleset_add.errors:
-            response.flash = T("errors in form")
-    except AttributeError:
-        pass
-    except ToolError as e:
-        t.flash = str(e)
-
-    t = DIV(
-          t.html(),
-          _id='tags',
+    t = SCRIPT(
+          """$.when(osvc.app_started).then(function(){ table_tags("layout", %s) })""" % request_vars_to_table_options(),
         )
     return dict(table=t)
 

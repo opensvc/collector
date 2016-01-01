@@ -348,7 +348,7 @@ class rest_post_forms_publications(rest_post_handler):
           "Publish the forms to groups",
         ]
         examples = [
-          "# curl -u %(email)s --header 'Content-Type: application/json' --d @/tmp/data.json -X POST -o- https://%(collector)s/init/rest/api/forms_publications"
+          "# curl -u %(email)s --header 'Content-Type: application/json' -d @/tmp/data.json -X POST -o- https://%(collector)s/init/rest/api/forms_publications"
         ]
 
         rest_post_handler.__init__(
@@ -529,7 +529,7 @@ class rest_post_forms_responsibles(rest_post_handler):
           "Add responsible groups to forms",
         ]
         examples = [
-          "# curl -u %(email)s --header 'Content-Type: application/json' --d @/tmp/data.json -X POST -o- https://%(collector)s/init/rest/api/forms_responsibles"
+          "# curl -u %(email)s --header 'Content-Type: application/json' -d @/tmp/data.json -X POST -o- https://%(collector)s/init/rest/api/forms_responsibles"
         ]
 
         rest_post_handler.__init__(

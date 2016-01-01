@@ -339,7 +339,8 @@ var menu_data = {
 		  "title" : "tags",
 		  "class" : "fa-tags",
 		  "id" : "adm-tags",
-		  "link" : "/init/tags/tags"
+		  "link" : "/init/tags/tags",
+                  "fn": "table_tags"
 		},
 	],
 	"shortcuts": [

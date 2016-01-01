@@ -16,9 +16,13 @@
     "import": "Import"
   },
   "action_menu": {
+    "on_tags": "Sur les tags",
     "on_forms": "Sur les formulaires",
     "add_form": "Ajouter un formulaire",
+    "tag_name": "Nom du tag",
     "form_name": "Nom du formulaire",
+    "tag_createable": "Ce tag n'existe pas encore. Appuyez sur <entrée> pour le créer.",
+    "tag_not_createable": "Ce tag existe déjà.",
     "form_createable": "Ce formulaire n'existe pas encore. Appuyez sur <entrée> pour le créer.",
     "del_publication": "Supprimer des publications",
     "del_responsible": "Supprimer des responsables",
@@ -62,6 +66,7 @@
     "nodename": "Nom du noeud",
     "obsolescence": "Obsolescence",
     "add": "Ajouter",
+    "del": "Supprimer",
     "delete": "Supprimer",
     "confirmation": "Etes-vous certain ?",
     "tools": "Analyse des données",

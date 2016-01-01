@@ -281,6 +281,7 @@ handlers = {
      rest_delete_sysreport_authorization(),
      rest_delete_tags_nodes(),
      rest_delete_tags_services(),
+     rest_delete_tags(),
      rest_delete_tag(),
      rest_delete_tag_node(),
      rest_delete_tag_service(),
