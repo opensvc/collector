@@ -1,6 +1,9 @@
 //
 // tabs
 //
+
+// old tabs support function.
+// remove me when fset and modset tabs are ported to js
 function bind_tabs(id, callbacks, active_id) {
   $("#"+id).find('.closetab').click(function () {
     $("#"+id).parent().remove(); // Remove extraline
@@ -21,89 +24,97 @@ function bind_tabs(id, callbacks, active_id) {
   $("#"+id).find('#'+active_id).trigger("click")
 }
 
+//
+// base tabs object
+// derive to make object-specific tabs
+//
 function tabs(divid) {
-  var o = {}
-  o.divid = divid
-  o.div = $("#"+divid)
+	var o = {}
+	o.divid = divid
+	o.div = $("#"+divid)
 
-  o.tabs = []
+	o.tabs = []
 
-  o.load = function(callback) {
-    return tabs_load(o, callback)
-  }
-  o.init = function() {
-    return tabs_init(o)
-  }
-  o.register_tab = function(data) {
-    return tabs_register_tab(o, data)
-  }
-  o.add_tab = function(index) {
-    return tabs_add_tab(o, index)
-  }
+	o.load = function(callback) {
+		o.div.load('/init/static/views/tabs.html', "", function() {
+			o.init()
+			callback(o)
+		})
+	}
 
-  return o
+	o.init = function() {
+		o.closetab = o.div.find(".closetab")
+		o.tabs_ul = o.closetab.parent()
+		o.display = o.div.find(".tab_display")
+
+		// empty tabs on click closetab
+		o.closetab.bind("click", function() {
+			o.div.parent().remove(); // Remove extraline
+			o.div.remove();
+		})
+	}
+
+	o.register_tab = function(data) {
+		// allocate a div to store tab information
+		e = $("<div></div>")
+		e.addClass("hidden")
+		e.css({"width": "100%"})
+		e.uniqueId()
+		o.display.append(e)
+		data.divid = e.attr("id")
+		data.div = e
+
+		var index = o.tabs.length
+		o.tabs.push(data)
+
+		o.add_tab(index)
+
+		return index
+	}
+
+	o.add_tab = function(index) {
+		var data = o.tabs[index]
+		var e = $("<li></li>")
+		var p = $("<p></p>")
+		p.addClass(data.title_class)
+		p.text(i18n.t(data.title))
+		e.append(p)
+		o.tabs_ul.append(e)
+		data.tab = e
+
+		e.bind("click", function() {
+			for (var i=0; i<o.tabs.length; i++) {
+				o.tabs[i].tab.removeClass("tab_active")
+				o.tabs[i].div.hide()
+			}
+			data.tab.addClass("tab_active")
+			data.div.show()
+			if (!data.div.is(":empty")) {
+				return
+			}
+			data.callback(data.divid)
+		})
+	}
+
+	o.set_tab = function(tab_title) {
+		if (!tab_title) {
+			// set the first tab active
+			o.closetab.next("li").trigger("click")
+			return
+		}
+		for (var i=0; i<o.tabs.length; i++) {
+			if (o.tabs[i].title != tab_title) {
+				continue
+			}
+			// found the tab, set active and stop iterating
+			o.tabs[i].tab.trigger("click")
+			return
+		}
+	}
+
+	return o
 }
 
-function tabs_load(o, callback) {
-  o.div.load('/init/static/views/tabs.html', "", function() {
-    o.init()
-    callback(o)
-  })
-}
-
-function tabs_init(o) {
-  o.closetab = o.div.find(".closetab")
-  o.tabs_ul = o.closetab.parent()
-  o.display = o.div.find(".tab_display")
-
-  // empty tabs on click closetab
-  o.closetab.bind("click", function() {
-  o.div.parent().remove(); // Remove extraline
-  o.div.remove();
-  })
-}
-
-function tabs_register_tab(o, data) {
-  // allocate a div to store tab information
-  e = $("<div></div>")
-  e.addClass("hidden")
-  e.css({"width": "100%"})
-  e.uniqueId()
-  o.display.append(e)
-  data.divid = e.attr("id")
-  data.div = e
-
-  var index = o.tabs.length
-  o.tabs.push(data)
-
-  o.add_tab(index)
-
-  return index
-}
-
-function tabs_add_tab(o, index) {
-  var data = o.tabs[index]
-  var e = $("<li></li>")
-  var p = $("<p></p>")
-  p.addClass(data.title_class)
-  p.text(i18n.t(data.title))
-  e.append(p)
-  o.tabs_ul.append(e)
-  data.tab = e
-
-  e.bind("click", function() {
-    for (var i=0; i<o.tabs.length; i++) {
-      o.tabs[i].tab.removeClass("tab_active")
-      o.tabs[i].div.hide()
-    }
-    data.tab.addClass("tab_active")
-    data.div.show()
-    if (!data.div.is(":empty")) {
-      return
-    }
-    data.callback(data.divid)
-  })
-}
 
 //
 // node
@@ -253,17 +264,7 @@ function node_tabs(divid, options) {
       sysrep(divid, {"nodes": o.options.nodename})
     }
 
-    if (!o.options.tab) {
-      o.closetab.next("li").trigger("click")
-    } else {
-      for (var i=0; i<o.tabs.length; i++) {
-        if (o.tabs[i].title != o.options.tab) {
-          continue
-        }
-        o.tabs[i].tab.trigger("click")
-        break
-      }
-    }
+    o.set_tab(o.options.tab)
   })
   return o
 }
@@ -474,17 +475,7 @@ function service_tabs(divid, options) {
       sync_ajax("/init/compliance/ajax_compliance_svc/"+encodeURIComponent(o.options.svcname), [], divid, function(){})
     }
 
-    if (!o.options.tab) {
-      o.closetab.next("li").trigger("click")
-    } else {
-      for (var i=0; i<o.tabs.length; i++) {
-        if (o.tabs[i].title != o.options.tab) {
-          continue
-        }
-        o.tabs[i].tab.trigger("click")
-        break
-      }
-    }
+    o.set_tab(o.options.tab)
   })
   return o
 }
@@ -535,17 +526,7 @@ function user_tabs(divid, options) {
       user_groups(divid, o.options)
     }
 
-    if (!o.options.tab) {
-      o.closetab.next("li").trigger("click")
-    } else {
-      for (var i=0; i<o.tabs.length; i++) {
-        if (o.tabs[i].title != o.options.tab) {
-          continue
-        }
-        o.tabs[i].tab.trigger("click")
-        break
-      }
-    }
+    o.set_tab(o.options.tab)
   }
   return o
 }
@@ -593,17 +574,7 @@ function group_tabs(divid, options) {
       group_hidden_menu_entries(divid, o.options)
     }
 
-    if (!o.options.tab) {
-      o.closetab.next("li").trigger("click")
-    } else {
-      for (var i=0; i<o.tabs.length; i++) {
-        if (o.tabs[i].title != o.options.tab) {
-          continue
-        }
-        o.tabs[i].tab.trigger("click")
-        break
-      }
-    }
+    o.set_tab(o.options.tab)
   }
   return o
 }
@@ -635,17 +606,7 @@ function network_tabs(divid, options) {
       sync_ajax("/init/networks/segments/"+o.options.network_id, [], divid, function(){})
     }
 
-    if (!o.options.tab) {
-      o.closetab.next("li").trigger("click")
-    } else {
-      for (var i=0; i<o.tabs.length; i++) {
-        if (o.tabs[i].title != o.options.tab) {
-          continue
-        }
-        o.tabs[i].tab.trigger("click")
-        break
-      }
-    }
+    o.set_tab(o.options.tab)
   })
   return o
 }
@@ -682,17 +643,7 @@ function ruleset_tabs(divid, options) {
       ruleset_export(divid, o.options)
     }
 
-    if (!o.options.tab) {
-      o.closetab.next("li").trigger("click")
-    } else {
-      for (var i=0; i<o.tabs.length; i++) {
-        if (o.tabs[i].title != o.options.tab) {
-          continue
-        }
-        o.tabs[i].tab.trigger("click")
-        break
-      }
-    }
+    o.set_tab(o.options.tab)
   })
   return o
 }
@@ -728,17 +679,7 @@ function form_tabs(divid, options) {
       form_definition(divid, o.options)
     }
 
-    if (!o.options.tab) {
-      o.closetab.next("li").trigger("click")
-    } else {
-      for (var i=0; i<o.tabs.length; i++) {
-        if (o.tabs[i].title != o.options.tab) {
-          continue
-        }
-        o.tabs[i].tab.trigger("click")
-        break
-      }
-    }
+    o.set_tab(o.options.tab)
   })
   return o
 }
