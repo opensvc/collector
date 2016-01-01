@@ -314,7 +314,8 @@ var menu_data = {
 		  "title" : "forms",
 		  "class" : "wf16",
 		  "id" : "adm-forms",
-		  "link" : "/init/forms/forms_admin"
+		  "link" : "/init/forms/forms_admin",
+                  "fn": "table_forms"
 		},
 		{
 		  "title" : "metrics",

@@ -274,7 +274,8 @@ class table_forms(HtmlTable):
 
 @auth.requires_login()
 def ajax_forms_admin_col_values():
-    t = table_forms('forms', 'ajax_forms_admin')
+    table_id = request.vars.table_id
+    t = table_forms(table_id, 'ajax_forms_admin')
 
     col = request.args[0]
     o = db.v_forms[col]
@@ -286,7 +287,8 @@ def ajax_forms_admin_col_values():
 
 @auth.requires_login()
 def ajax_forms_admin():
-    t = table_forms('forms', 'ajax_forms_admin')
+    table_id = request.vars.table_id
+    t = table_forms(table_id, 'ajax_forms_admin')
     o = db.v_forms.form_name
     q = db.v_forms.id > 0
     for f in t.cols:
@@ -301,10 +303,8 @@ def ajax_forms_admin():
 
 @auth.requires_login()
 def forms_admin():
-    t = table_forms('forms', 'ajax_forms_admin')
-    t = DIV(
-          t.html(),
-          _id='forms',
+    t = SCRIPT(
+          """$.when(osvc.app_started).then(function(){ table_forms("layout", %s) })""" % request_vars_to_table_options(),
         )
     return dict(table=t)
 
