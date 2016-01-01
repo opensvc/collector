@@ -1855,7 +1855,7 @@ function cell_decorator_form_name(e) {
     span_id = $(e).parent(".tl").attr("spansum")
     id = table_id + "_x_" + span_id
     toggle_extra(null, id, e, 0)
-    form_tabs(id, {"form_id": form_id})
+    form_tabs(id, {"form_id": form_id, "form_name": v})
   })
 }
 

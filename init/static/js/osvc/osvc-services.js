@@ -33,6 +33,8 @@ var services_access_uri = {
     "R_COMPLIANCE_STATUS" : "rest/api/compliance/status",
     "R_FILTERSETS" : "rest/api/filtersets",
     "R_FORM" : "rest/api/forms/%1",
+    "R_FORM_PUBLICATIONS" : "rest/api/forms/%1/publications",
+    "R_FORM_RESPONSIBLES" : "rest/api/forms/%1/responsibles",
     "R_FORMS" : "rest/api/forms",
     "R_FORMS_REVISION" : "rest/api/forms_revisions/%1",
     "R_FORMS_REVISIONS" : "rest/api/forms_revisions",

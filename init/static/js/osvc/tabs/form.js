@@ -133,9 +133,22 @@ function form_properties(divid, options) {
 	}
 
 	o.load_publications = function() {
+		o.load_groups(o.info_publications, {"service": "R_FORM_PUBLICATIONS"})
 	}
 
 	o.load_responsibles = function() {
+		o.load_groups(o.info_responsibles, {"service": "R_FORM_RESPONSIBLES"})
+	}
+
+	o.load_groups = function(div, options) {
+		div.empty().addClass("tag_container")
+		services_osvcgetrest(options.service, [o.options.form_id], {"props": "role", "orderby": "role"}, function(jd) {
+			for (var i=0; i<jd.data.length; i++) {
+				var g = $("<span class='tag tag_attached'></span>")
+				g.text(jd.data[i].role)
+				div.append(g)
+			}
+		})
 	}
 
 	o.div.load("/init/static/views/form_properties.html", function() {
