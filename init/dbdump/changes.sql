@@ -4851,3 +4851,8 @@ create view v_forms_store as select fs.*, fr.form_yaml, fr.form_date, fr.form_id
 alter table forms drop key idx1;
 
 alter table forms add unique key idx1 (form_name);
+
+alter table scheduler_run add column duration integer as (timediff(stop_time, start_time)) persistent;
+
+create view v_scheduler_run as select sr.*,st.timeout,st.args,st.vars,st.retry_failed,st.times_run,st.times_failed,st.group_name,st.function_name,st.application_name,st.assigned_worker_name from scheduler_run sr left join scheduler_task st on sr.task_id = st.id;
+

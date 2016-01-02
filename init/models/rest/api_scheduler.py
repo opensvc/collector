@@ -114,6 +114,18 @@ class rest_post_scheduler_task(rest_post_handler):
         return rest_get_scheduler_task().handler(_id)
 
 
+def mangle_scheduler_run_data(data):
+    for i, row in enumerate(data):
+        try:
+            data[i]["run_args"] = json.loads(data[i]["args"])
+        except:
+            pass
+        try:
+            data[i]["run_vars"] = json.loads(data[i]["vars"])
+        except:
+            pass
+    return data
+
 #
 class rest_get_scheduler_runs(rest_get_table_handler):
     def __init__(self):
@@ -126,14 +138,16 @@ class rest_get_scheduler_runs(rest_get_table_handler):
         rest_get_table_handler.__init__(
           self,
           path="/scheduler/runs",
-          tables=["scheduler_run"],
+          tables=["v_scheduler_run"],
+          vprops={"run_vars": ["vars"], "run_args": ["args"]},
+          vprops_fn=mangle_scheduler_run_data,
           desc=desc,
           examples=examples,
         )
 
     def handler(self, **vars):
         check_privilege("Manager")
-        q = db.scheduler_run.id > 0
+        q = db.v_scheduler_run.id > 0
         self.set_q(q)
         return self.prepare_data(**vars)
 
