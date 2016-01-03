@@ -35,8 +35,8 @@ function scheduler_stats(divid) {
 		}
 		console.log(data)
 
-		$.jqplot.config.enablePlugins = true;
-		o.plot_feed_task_status = $.jqplot(o.e_feed_task_status.attr("id"), data, {
+		$.jqplot.config.enablePlugins = true
+		var options = {
 			stackSeries: true,
 			cursor:{
 				zoom: true,
@@ -72,7 +72,10 @@ function scheduler_stats(divid) {
 					tickOptions: {formatString:'%d'}
 				}
 			}
-		})
+		}
+		try {
+			o.plot_feed_task_status = $.jqplot(o.e_feed_task_status.attr("id"), data, options)
+		} catch (e) { }
 	}
 
 	o.div.load("/init/static/views/scheduler_stats.html", function() {
