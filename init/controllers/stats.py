@@ -1521,4 +1521,12 @@ def json_disk_for_svc():
     d.reverse()
     return [d, [disk_size]]
 
+def scheduler_stats():
+    d = SCRIPT(
+        """scheduler_stats("layout") """
+    )
+    return dict(table=d)
+
+def scheduler_stats_load():
+    return scheduler_stats()["table"]
 

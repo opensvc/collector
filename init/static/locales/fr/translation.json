@@ -631,6 +631,10 @@
         "title" : "Comparer",
         "text" : "Compare l'évolution de lots de serveurs ou de services"
       },
+      "scheduler_stats" : {
+        "title" : "Stats de l'ordonnanceur",
+        "text" : "Débit de tâches récurrentes et postées"
+      },
       "os_lc" : {
         "title" : "Cycle de vie SE",
         "text" : "Evolution de la répartition entre systèmes d'exploitation"

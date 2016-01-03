@@ -645,6 +645,10 @@
         "title" : "Compare",
         "text" : "Compare node and service subsets evolution"
       },
+      "scheduler_stats" : {
+        "title" : "Scheduler stats",
+        "text" : "Scheduled and fed tasks throughput"
+      },
       "os_lc" : {
         "title" : "Os lifecycle",
         "text" : "Operating systems dispatch evolution"

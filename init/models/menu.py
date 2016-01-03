@@ -45,6 +45,7 @@ menu_entries = [
   'stat-site',
   'stat-compare',
   'stat-os-lifecycle',
+  'stat-scheduler',
   'stat-avail',
   'req-new',
   'req-pending-my',

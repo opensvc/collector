@@ -214,6 +214,13 @@ var menu_data = {
 		  "link" : "/init/lifecycle/lifecycle_os"
 		},
 		{
+		  "title" : "scheduler_stats",
+		  "class" : "spark16",
+		  "id" : "stat-scheduler",
+		  "link" : "/init/stats/scheduler_stats",
+                  "fn": "scheduler_stats"
+		},
+		{
 		  "title" : "availability",
 		  "class" : "avail16",
 		  "id" : "stat-avail",
