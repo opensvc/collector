@@ -1,6 +1,7 @@
 function scheduler_stats(divid) {
 	var o = {}
 	o.div = $("#"+divid)
+	o.feed_task_status_data = {}
 
 	o.refresh = function() {
 		services_osvcgetrest("R_SCHEDULER_STATS", "", "", function(jd) {
@@ -8,30 +9,44 @@ function scheduler_stats(divid) {
 
 			setTimeout(function() {
 				o.refresh()
-			}, 3000)
+			}, 6000)
 		})
 	}
 
 	o.load_feed_task_status = function(data) {
+		var now = new Date()
 		if (o.plot_feed_task_status) {
 			o.plot_feed_task_status.destroy()
 		}
-		var d = []
-		var labels = []
 		for (key in data.feed.status) {
-			labels.push(key)
-			d.push(data.feed.status[key].count)
+			if (!(key in o.feed_task_status_data)) {
+				o.feed_task_status_data[key] = []
+			}
+			o.feed_task_status_data[key].push([now, data.feed.status[key].count])
+			if (o.feed_task_status_data[key].length > 600) {
+				o.feed_task_status_data[key].shift()
+			}
 		}
-		console.log(d)
+		var series = []
+		var data = []
+		for (key in o.feed_task_status_data) {
+			series.push({"label": key})
+			data.push(o.feed_task_status_data[key])
+		}
+		console.log(data)
 
 		$.jqplot.config.enablePlugins = true;
-		o.plot_feed_task_status = $.jqplot(o.e_feed_task_status.attr("id"), [d], {
+		o.plot_feed_task_status = $.jqplot(o.e_feed_task_status.attr("id"), data, {
 			stackSeries: true,
+			cursor:{
+				zoom: true,
+				showTooltip: true
+			},
 			grid: {
 				borderWidth: 0.5
 			},
 			legend: {
-				show: false,
+				show: true,
 				location: 'e',
 				placement: "outside"
 			},
@@ -39,25 +54,22 @@ function scheduler_stats(divid) {
 				right: 90
 			},
 			seriesDefaults: {
-				renderer: $.jqplot.BarRenderer,
-				rendererOptions: {
-					barDirection: 'horizontal',
-					barWidth: 20,
-					barPadding: 6
-				},
-				shadowAngle: 135
+				markerOptions: {size: 2},
+				fill: true,
+				shadowAngle: 135,
+				shadowOffset: 1.0,
+				breakOnNull : true,
+				shadowWidth: 2
 			},
-			series: [
-				{label: 'count'}
-			],
+			series: series,
 			axes: {
 				xaxis: {
-					min: 0,
-					tickOptions: {formatString:'%d'}
+					renderer: $.jqplot.DateAxisRenderer,
+					tickOptions:{formatString:'%b,%d\n%H:%M'}
 				},
 				yaxis: {
-					renderer: $.jqplot.CategoryAxisRenderer,
-					ticks: labels
+					min: 0,
+					tickOptions: {formatString:'%d'}
 				}
 			}
 		})
