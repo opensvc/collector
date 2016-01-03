@@ -1235,6 +1235,7 @@
     "choose_form": "Choisissez un formulaire de demande"
   },
   "scheduler_stats": {
-    "feed_task_status": "Etat des tâches insérées"
+    "feed_task_status": "Etat des tâches insérées",
+    "feed_task_functions": "Fonction des tâches insérées"
   }
 }
