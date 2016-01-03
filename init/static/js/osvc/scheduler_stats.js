@@ -7,6 +7,10 @@ function scheduler_stats(divid) {
 		services_osvcgetrest("R_SCHEDULER_STATS", "", "", function(jd) {
 			o.load_feed_task_status(jd)
 
+			if (o.div.find("[name=feed_task_status]").length == 0) {
+				// stop refreshing if the user nav'ed out
+				return
+			}
 			setTimeout(function() {
 				o.refresh()
 			}, 6000)
@@ -22,7 +26,16 @@ function scheduler_stats(divid) {
 			if (!(key in o.feed_task_status_data)) {
 				o.feed_task_status_data[key] = []
 			}
-			o.feed_task_status_data[key].push([now, data.feed.status[key].count])
+		}
+		for (key in o.feed_task_status_data) {
+			if (key in data.feed.status) {
+				var val = data.feed.status[key].count
+			} else {
+				var val = 0
+			}
+			o.feed_task_status_data[key].push([now, val])
+
+			// don't store too many history to not fill up the client ram
 			if (o.feed_task_status_data[key].length > 600) {
 				o.feed_task_status_data[key].shift()
 			}
@@ -33,7 +46,6 @@ function scheduler_stats(divid) {
 			series.push({"label": key})
 			data.push(o.feed_task_status_data[key])
 		}
-		console.log(data)
 
 		$.jqplot.config.enablePlugins = true
 		var options = {
