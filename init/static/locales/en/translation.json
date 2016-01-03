@@ -1288,5 +1288,8 @@
     "current_folder": "Current folder",
     "search": "Search forms",
     "choose_form": "Choose a request form"
+  },
+  "scheduler_stats": {
+    "feed_task_status": "Feed tasks status"
   }
 }

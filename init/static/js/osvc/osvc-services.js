@@ -67,6 +67,7 @@ var services_access_uri = {
     "R_PACKAGES_DIFF" : "rest/api/packages/diff",
     "R_PROVISIONING_TEMPLATES" : "rest/api/provisioning_templates",
     "R_PROVISIONING_TEMPLATE" : "rest/api/provisioning_templates/%1",
+    "R_SCHEDULER_STATS" : "rest/api/scheduler/stats",
     "R_SEARCH" : "rest/api/search",
     "R_SERVICE" : "rest/api/services/%1",
     "R_SERVICE_AM_I_RESPONSIBLE" : "rest/api/services/%1/am_i_responsible",
