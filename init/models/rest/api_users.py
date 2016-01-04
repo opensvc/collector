@@ -293,6 +293,38 @@ class rest_post_user(rest_post_handler):
 
 
 #
+class rest_delete_users(rest_delete_handler):
+    def __init__(self):
+        desc = [
+          "Delete users.",
+          "Delete all group membership.",
+          "The user must be in the UserManager privilege group.",
+          "The action is logged in the collector's log.",
+          "A websocket event is sent to announce the change in the changed tables.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- --header 'Content-Type: application/json' -d @/tmp/data.json -X DELETE https://%(collector)s/init/rest/api/users",
+        ]
+
+        rest_delete_handler.__init__(
+          self,
+          path="/users",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, **vars):
+        if 'id' in vars:
+            user_id = vars["id"]
+            del(vars["id"])
+        elif 'email' in vars:
+            user_id = vars["email"]
+            del(vars["email"])
+        else:
+            raise Exception("Either the 'id' or 'email' key is mandatory")
+        return rest_delete_user().handler(user_id, **vars)
+
+#
 class rest_delete_user(rest_delete_handler):
     def __init__(self):
         desc = [

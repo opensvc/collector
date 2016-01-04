@@ -16,11 +16,13 @@
     "import": "Import"
   },
   "action_menu": {
+    "email": "Adresse mèl",
     "on_tags": "Sur les tags",
     "on_forms": "Sur les formulaires",
     "add_form": "Ajouter un formulaire",
     "tag_name": "Nom du tag",
     "form_name": "Nom du formulaire",
+    "user_createable": "Cet utilisateur n'existe pas encore. Appuyez sur <entrée> pour le créer.",
     "tag_createable": "Ce tag n'existe pas encore. Appuyez sur <entrée> pour le créer.",
     "tag_not_createable": "Ce tag existe déjà.",
     "form_createable": "Ce formulaire n'existe pas encore. Appuyez sur <entrée> pour le créer.",

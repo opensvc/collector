@@ -112,9 +112,8 @@ class table_users(HtmlTable):
         self.events = ["auth_user_change"]
         if 'Manager' in user_groups():
             self += HtmlTableMenu('Group', 'guys16', ['group_add', 'group_del', 'group_attach', 'group_detach', 'group_set_primary'])
-            self += HtmlTableMenu('User', 'guy16', ['user_add', 'users_del', 'lock_filter', 'unlock_filter', 'set_filterset'])
+            self += HtmlTableMenu('User', 'guy16', ['lock_filter', 'unlock_filter', 'set_filterset'])
             self.form_group_add = self.group_add_sqlform()
-            self.form_user_add = self.user_add_sqlform()
 
     def group_add(self):
         d = DIV(
@@ -131,25 +130,6 @@ class table_users(HtmlTable):
                 _class='stackable white_float',
                 _name='group_add',
                 _id='group_add',
-              ),
-            )
-        return d
-
-    def user_add(self):
-        d = DIV(
-              A(
-                T("Add"),
-                _class='add16',
-                _onclick="""
-                  click_toggle_vis(event,'%(div)s', 'block');
-                """%dict(div='user_add'),
-              ),
-              DIV(
-                self.form_user_add,
-                _style='display:none',
-                _class='stackable white_float',
-                _name='user_add',
-                _id='user_add',
               ),
             )
         return d
@@ -272,19 +252,6 @@ class table_users(HtmlTable):
                                    _class="del16")
         return d
 
-    def users_del(self):
-        d = DIV(
-              A(
-                T("Delete"),
-                _class='del16',
-                _onclick="""if (confirm("%(text)s")){%(s)s};
-                         """%dict(s=self.ajax_submit(args=['users_del']),
-                                  text=T("Deleting a user also deletes its group membership. Please confirm user deletion"),
-                                 ),
-              ),
-            )
-        return d
-
     def lock_filter(self):
         d = DIV(
               A(
@@ -304,19 +271,6 @@ class table_users(HtmlTable):
               ),
             )
         return d
-
-    @auth.requires_membership('Manager')
-    def user_add_sqlform(self):
-        f = SQLFORM(
-                 db.auth_user,
-                 labels={
-                         'first_name': T('First name'),
-                         'last_name': T('Last name'),
-                         'email': T('Email'),
-                        },
-                 _name='form_user_add',
-            )
-        return f
 
     @auth.requires_membership('Manager')
     def group_add_sqlform(self):
@@ -489,18 +443,6 @@ def group_del():
          'deleted group %(g)s',
          dict(g=g))
 
-@auth.requires_membership('Manager')
-def users_del(ids=[]):
-    if len(ids) == 0:
-        raise ToolError("no user selected")
-    rows = db(db.v_users.id.belongs(ids)).select(db.v_users.fullname)
-    x = ', '.join([r.fullname for r in rows])
-    db(db.auth_user.id.belongs(ids)).delete()
-    db(db.auth_membership.user_id.belongs(ids)).delete()
-    _log('users.user.delete',
-         'deleted users %(x)s',
-         dict(x=x))
-
 @auth.requires_login()
 def ajax_users():
     t = table_users('users', 'ajax_users')
@@ -510,8 +452,6 @@ def ajax_users():
         try:
             if action == 'group_del':
                 group_del()
-            elif action == 'users_del':
-                users_del(t.get_checked())
             elif action == 'lock_filter':
                 lock_filter(t.get_checked())
             elif action == 'unlock_filter':
@@ -553,18 +493,6 @@ def users():
                  'added group %(u)s',
                  dict(u=request.vars.role))
         elif t.form_group_add.errors:
-            response.flash = T("errors in form")
-
-        if t.form_user_add.accepts(request.vars, formname='form_add_user'):
-            response.flash = T("user added")
-            # refresh forms comboboxes
-            t.form_group_attach = t.group_attach_sqlform()
-            t.form_group_set_primary = t.group_set_primary_sqlform()
-            _log('users.user.add',
-                 'added user %(u)s',
-                 dict(u=' '.join((request.vars.first_name,
-                                  request.vars.last_name))))
-        elif t.form_user_add.errors:
             response.flash = T("errors in form")
     except AttributeError:
         pass

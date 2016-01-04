@@ -11,6 +11,7 @@ function table_action_menu_init_data(t) {
     "vmname": "td[cell=1][name$=_c_vmname]",
     "action": "td[cell=1][name$=_c_action]",
     "id": "td[cell=1][name$=_c_id]",
+    "email": "td[cell=1][name$=_c_email]",
     "form_type": "td[cell=1][name$=_c_form_type]",
     "tag_id": "td[cell=1][name$=_c_tag_id]",
     "tag_name": "td[cell=1][name$=_c_tag_name]",
@@ -546,6 +547,29 @@ function table_action_menu_init_data(t) {
               "class": "icon del16",
               "fn": "data_action_del_tag",
               "privileges": ["Manager", "TagManager"],
+              "min": 1
+            }
+          ]
+        },
+        {
+          "selector": ["clicked", "checked", "all"],
+          "title": "action_menu.on_users",
+          "foldable": true,
+          "cols": ["id", "email"],
+          "condition": "id+email",
+          "children": [
+            {
+              "title": "action_menu.add",
+              "class": "icon add16",
+              "fn": "data_action_add_user",
+              "privileges": ["Manager", "UserManager"],
+              "min": 0
+            },
+            {
+              "title": "action_menu.del",
+              "class": "icon del16",
+              "fn": "data_action_del_user",
+              "privileges": ["Manager", "UserManager"],
               "min": 1
             }
           ]
@@ -1760,6 +1784,111 @@ function tool_obsolescence(t, e) {
     data: {"nodes": nodes},
     success: function(msg){
       $("#overlay").html(msg)
+    }
+  })
+}
+
+//
+// data action: delete user
+//
+function data_action_del_user(t, e) {
+  var entry = $(e.target)
+  var cache_id = entry.attr("cache_id")
+  var data = t.action_menu_data_cache[cache_id]
+  var del_data = new Array()
+  for (i=0;i<data.length;i++) {
+    del_data.push({
+      'id': data[i]['id'],
+    })
+  }
+  services_osvcdeleterest("R_USERS", "", "", del_data, function(jd) {
+    if (jd.error && (jd.error.length > 0)) {
+      $(".flash").show("blind").html(services_error_fmt(jd))
+    }
+    if (jd.info && (jd.info.length > 0)) {
+      $(".flash").show("blind").html(services_info_fmt(jd))
+    }
+  },
+  function(xhr, stat, error) {
+    $(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
+  })
+}
+
+//
+// data action: add user
+//
+function data_action_add_user(t, e) {
+  var entry = $(e.target)
+
+  // create and focus tool area
+  table_action_menu_focus_on_leaf(t, entry)
+  var div = $("<div></div>")
+  div.uniqueId()
+  div.append($("<hr>"))
+  div.css({"display": "table-caption"})
+  div.insertAfter(entry)
+
+  // minimal create information
+  var line = $("<div class='template_form_line'></div>")
+  var title = $("<div data-i18n='action_menu.email'></div>").i18n()
+  var input = $("<input class='oi'></input>")
+  var info = $("<div></div>")
+  info.uniqueId()
+  info.css({"margin": "0.8em 0 0.8em 0"})
+  line.append(title)
+  line.append(input)
+  div.append(line)
+  div.append(info)
+  input.focus()
+
+  var timer = null
+  var xhr = null
+
+  input.bind("keyup", function(e) {
+    clearTimeout(timer)
+    if (is_enter(e)) {
+      data = {
+        "email": input.val()
+      }
+      info.empty()
+      spinner_add(info)
+      xhr  = services_osvcpostrest("R_USERS", "", "", data, function(jd) {
+        spinner_del(info)
+        if (jd.error && (jd.error.length > 0)) {
+          info.html(services_error_fmt(jd))
+        }
+        // display the user properties tab to set more properties
+        user_properties(div.attr("id"), {"user_id": jd.data[0].id})
+      },
+      function(xhr, stat, error) {
+        info.html(services_ajax_error_fmt(xhr, stat, error))
+      })
+    } else {
+      var email = input.val()
+      timer = setTimeout(function(){
+        info.empty()
+        spinner_add(info)
+        if (xhr) {
+          xhr.abort()
+        }
+        services_osvcgetrest("R_USERS", "", {"filters": ["email "+email]}, function(jd) {
+          xhr = null
+          spinner_del(info)
+          if (jd.error && (jd.error.length > 0)) {
+            info.html(services_error_fmt(jd))
+          }
+          if (jd.data.length == 0) {
+            info.text(i18n.t("action_menu.user_createable"))
+            return
+          }
+  
+          // display the user properties tab
+          user_properties(info.attr("id"), {"user_id": jd.data[0].id})
+        },
+        function(xhr, stat, error) {
+          info.html(services_ajax_error_fmt(xhr, stat, error))
+        })
+      }, 500)
     }
   })
 }

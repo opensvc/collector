@@ -92,6 +92,7 @@ var services_access_uri = {
     "R_TAG_SERVICE" : "rest/api/tags/%1/services/%2",
     "R_TAGS_NODES" : "rest/api/tags/nodes",
     "R_TAGS_SERVICES" : "rest/api/tags/services",
+    "R_USERS" : "rest/api/users",
     "R_USERS_SELF" : "rest/api/users/self",
     "R_USERS_SELF_FILTERSET" : "rest/api/users/self/filterset",
     "R_USERS_SELF_FILTERSET_ONE" : "rest/api/users/self/filterset/%1",

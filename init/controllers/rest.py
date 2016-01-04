@@ -286,6 +286,7 @@ handlers = {
      rest_delete_tag(),
      rest_delete_tag_node(),
      rest_delete_tag_service(),
+     rest_delete_users(),
      rest_delete_user(),
      rest_delete_user_group(),
      rest_delete_user_primary_group(),
