@@ -643,6 +643,13 @@ function table_action_menu_init_data(t) {
               "fn": "data_action_add_group",
               "privileges": ["Manager", "UserManager"],
               "min": 0
+            },
+            {
+              "title": "action_menu.del",
+              "class": "icon del16",
+              "fn": "data_action_del_groups",
+              "privileges": ["Manager", "UserManager"],
+              "min": 0
             }
           ]
         }
@@ -2125,6 +2132,22 @@ function data_action_del_user(t, e) {
   },
   function(xhr, stat, error) {
     $(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
+  })
+}
+
+//
+// data action: del groups
+//
+function data_action_del_groups(t, e) {
+  data_action_generic_selector(t, e, {
+    "requestor": services_osvcdeleterest,
+    "request_service": "R_GROUPS",
+    "selector": generic_selector_groups,
+    "request_data_entry": function(selected, data) {
+      return {
+        "id": selected
+      }
+    }
   })
 }
 

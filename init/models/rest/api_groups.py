@@ -365,6 +365,36 @@ class rest_post_group(rest_post_handler):
 
 
 #
+class rest_delete_groups(rest_delete_handler):
+    def __init__(self):
+        desc = [
+          "Delete groups.",
+          "Delete all group membership, apps/forms/rulesets/modulesets responsabilities and publications.",
+          "The user must be in the UserManager privilege group.",
+          "The action is logged in the collector's log.",
+          "A websocket event is sent to announce the change in the changed tables.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- --header 'Content-Type: application/json' -d @/tmp/data.json -X DELETE https://%(collector)s/init/rest/api/groups",
+        ]
+
+        rest_delete_handler.__init__(
+          self,
+          path="/groups",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, **vars):
+        if "id" in vars:
+            group_id = vars["id"]
+        elif "role" in vars:
+            group_id = vars["role"]
+        else:
+            raise Exception("Either the 'id' or the 'role' key is mandatory")
+        return rest_delete_group().handler(group_id)
+
+#
 class rest_delete_group(rest_delete_handler):
     def __init__(self):
         desc = [
