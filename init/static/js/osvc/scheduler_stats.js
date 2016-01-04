@@ -91,6 +91,8 @@ function scheduler_stats(divid) {
 
 		$.jqplot.config.enablePlugins = true
 		var options = o.plot_options(series)
+		options.seriesDefaults.fill = false
+		options.stackSeries = false
 		try {
 			o.plot_feed_task_functions = $.jqplot(o.e_feed_task_functions.attr("id"), data, options)
 		} catch (e) { }
