@@ -348,19 +348,20 @@ class rest_post_group(rest_post_handler):
         if "id" in vars.keys():
             del(vars["id"])
         db(q).update(**vars)
-        l = []
-        for key in vars:
-            l.append("%s: %s => %s" % (str(key), str(row[key]), str(vars[key])))
+        fmt = "change group %(role)s: %(data)s"
+        d = dict(role=row.role, data=beautify_change(row, vars))
         _log('groups.change',
-             'change group %(data)s',
-             dict(data=', '.join(l)),
+             fmt,
+             d,
             )
         l = {
           'event': 'auth_group',
           'data': {'foo': 'bar'},
         }
         _websocket_send(event_msg(l))
-        return rest_get_group().handler(row.id)
+        ret = rest_get_group().handler(row.id)
+        ret["info"] = fmt % d
+        return ret
 
 
 #
