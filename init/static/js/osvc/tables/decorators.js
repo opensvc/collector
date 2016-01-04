@@ -2460,18 +2460,21 @@ function cell_decorator_dash_link_action_error(e) {
   $(e).html(s)
 }
 
-function _cell_decorator_dash_link_svcmon(svcname) {
-  url = services_get_url() + "/init/default/svcmon?svcmon_f_mon_svcname="+svcname+"&volatile_filters=true"
-  s = "<a class='svc clickable' target='_blank' href='"+url+"'></a>"
-  return s
-}
-
 function cell_decorator_dash_link_svcmon(e) {
   var line = $(e).parent(".tl")
   var svcname = $.data(line.find("[col=dash_svcname]")[0], "v")
-  var s = ""
-  s += _cell_decorator_dash_link_svcmon(svcname)
+  s = "<div class='svc clickable'></div>"
   $(e).html(s)
+  $(e).addClass("corner")
+  if (svcname != "") {
+    $(e).click(function(){
+      table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
+      span_id = $(e).parent(".tl").attr("spansum")
+      id = table_id + "_x_" + span_id
+      toggle_extra(null, id, e, 0)
+      service_tabs(id, {"svcname": svcname, "tab": "service_tabs.status"})
+    })
+  }
 }
 
 function _cell_decorator_dash_link_node(nodename) {
