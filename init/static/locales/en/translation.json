@@ -1229,6 +1229,14 @@
     "Gateway": "Gateway"
   },
   "alert_type": {
+    "duplicate uid": "duplicate uid",
+    "duplicate gid": "duplicate gid",
+    "compliance differences in cluster": "compliance differences in cluster",
+    "compliance moduleset attachment differences in cluster": "compliance moduleset attachment differences in cluster",
+    "compliance ruleset attachment differences in cluster": "compliance ruleset attachment differences in cluster",
+    "check out of bounds": "check out of bounds",
+    "check value not updated": "check value not updated",
+    "package differences in cluster": "package differences in cluster",
     "action errors": "action errors",
     "application code without responsible": "application code without responsible",
     "feed queue": "feed queue",

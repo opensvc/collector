@@ -1170,6 +1170,14 @@
     "Node name": "Noeud"
   },
   "alert_type": {
+    "duplicate uid": "doublon d'uid",
+    "duplicate gid": "doublon de gid",
+    "compliance moduleset attachment differences in cluster": "différences d'attachement de jeux de modules dans le cluster",
+    "compliance ruleset attachment differences in cluster": "différences d'attachement de jeux de règles dans le cluster",
+    "compliance differences in cluster": "différences de conformité dans le cluster",
+    "check out of bounds": "sonde en dehors des seuils",
+    "check value not updated": "valeur de sonde non mise à jour",
+    "package differences in cluster": "différences de paquets dans le cluster",
     "action errors": "actions en erreur",
     "application code without responsible": "code applicatif sans responsable",
     "feed queue": "file d'alimentation",
