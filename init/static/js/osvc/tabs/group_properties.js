@@ -102,9 +102,37 @@ function group_properties(divid, options) {
 					o.info_services.append(e)
 				}
 			})
+
+			// modifications for privileged user
+			if (services_ismemberof(["Manager", "UserManager"])) {
+				o.info_privilege.addClass("clickable")
+				o.info_privilege.bind("click", function (event) {
+					o.toggle_privilege(this)
+				})
+			}
+
 		})
 
 	}
+
+	o.toggle_privilege = function() {
+		if (o.info_privilege.hasClass("toggle-on")) {
+			var data = {privilege: false}
+		} else {
+			var data = {privilege: true}
+		}
+		services_osvcpostrest("R_GROUP", [o.options.group_id], "", data, function(jd) {
+			if (jd.error) {
+				return
+			}
+			if (jd.data[0].privilege == false) {
+				o.info_privilege.removeClass("toggle-on").addClass("toggle-off")
+			} else {
+				o.info_privilege.removeClass("toggle-off").addClass("toggle-on")
+			}
+		},
+		function() {}
+	)}
 
 	o.div.load("/init/static/views/group_properties.html", function() {
 		o.div.i18n()
