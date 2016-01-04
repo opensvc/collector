@@ -578,12 +578,14 @@ class rest_post_user_primary_group(rest_post_handler):
         if row is not None:
             return dict(info="User %s primary group is already %s" % (str(user.id), str(group.id)))
 
-        q = db.auth_membership.user_id == user_id
+        q = db.auth_membership.user_id == user.id
         q &= db.auth_membership.primary_group == True
+        db(q).delete()
+
         db.auth_membership.update_or_insert({
           "user_id": user.id,
           "group_id": group.id,
-        }, primary_group=True)
+        }, user_id=user.id, group_id=group.id, primary_group=True)
         _log('user.primary_group.attach',
              'user %(u)s primary group set to %(g)s',
              dict(u=user.email, g=group.role),
