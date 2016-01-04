@@ -585,6 +585,13 @@ function table_action_menu_init_data(t) {
               "fn": "data_action_user_unlock_filterset",
               "privileges": ["Manager", "UserManager"],
               "min": 1
+            },
+            {
+              "title": "action_menu.set_filterset",
+              "class": "icon filter16",
+              "fn": "data_action_user_set_filterset",
+              "privileges": ["Manager", "UserManager"],
+              "min": 1
             }
           ]
         }
@@ -1800,6 +1807,65 @@ function tool_obsolescence(t, e) {
       $("#overlay").html(msg)
     }
   })
+}
+
+//
+// data action: set user filterset
+//
+function data_action_user_set_filterset(t, e) {
+  var entry = $(e.target)
+  var cache_id = entry.attr("cache_id")
+  var data = t.action_menu_data_cache[cache_id]
+  table_action_menu_focus_on_leaf(t, entry)
+
+  // form elements
+  var div = $("<div style='padding:0.5em'></div>")
+  var label_fset_id = $("<div data-i18n='col.Filterset'></div>")
+  var input_fset_id = $("<input id='fset_id' class='oi'>")
+  var yes_no = table_action_menu_yes_no(t, 'action_menu.submit', function(e){
+    var _data = []
+    for (i=0;i<data.length;i++) {
+      services_osvcpostrest("R_USER_FILTERSET_SET", [data[i]['id'], input_fset_id.attr("fset_id")], "", "", function(jd) {
+        if (jd.error && (jd.error.length > 0)) {
+          div.html(services_error_fmt(jd))
+        }
+        if (jd.info && (jd.info.length > 0)) {
+          div.html(services_info_fmt(jd))
+        }
+      },
+      function(xhr, stat, error) {
+        div.html(services_ajax_error_fmt(xhr, stat, error))
+      })
+    }
+  })
+
+  // fset autocomplete
+  var fsets = []
+  services_osvcgetrest("R_FILTERSETS", "", {"limit": "0", "meta": "0", "orderby": "fset_name"}, function(jd) {
+    for (var i=0; i<jd.data.length; i++) {
+      fsets.push({
+        "id": jd.data[i].id,
+        "label": jd.data[i].fset_name
+      })
+    }
+  })
+  input_fset_id.autocomplete({
+    source: fsets,
+    minLength: 0,
+    focus: function(event, ui) {
+      input_fset_id.attr("fset_id", ui.item.id)
+    },
+    select: function(event, ui) {
+      input_fset_id.attr("fset_id", ui.item.id)
+    }
+  })
+
+  // assemble the form elements
+  div.append(label_fset_id)
+  div.append(input_fset_id)
+  div.append(yes_no)
+  div.i18n()
+  div.insertAfter(entry)
 }
 
 //

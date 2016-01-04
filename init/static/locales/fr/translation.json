@@ -16,6 +16,7 @@
     "import": "Import"
   },
   "action_menu": {
+    "set_filterset": "Changer le jeu de filtres",
     "lock_filterset": "Vérouiller le jeu de filtres",
     "unlock_filterset": "Dévérouiller le jeu de filtres",
     "email": "Adresse mèl",

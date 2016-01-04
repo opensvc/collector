@@ -112,7 +112,6 @@ class table_users(HtmlTable):
         self.events = ["auth_user_change"]
         if 'Manager' in user_groups():
             self += HtmlTableMenu('Group', 'guys16', ['group_add', 'group_del', 'group_attach', 'group_detach', 'group_set_primary'])
-            self += HtmlTableMenu('User', 'guy16', ['set_filterset'])
             self.form_group_add = self.group_add_sqlform()
 
     def group_add(self):
@@ -177,49 +176,6 @@ class table_users(HtmlTable):
             )
         return d
 
-    def set_filterset(self):
-        q = db.gen_filtersets.id > 0
-        o = db.gen_filtersets.fset_name
-        options = [OPTION(T("None"),_value=0)]
-        options += [OPTION(g.fset_name,_value=g.id) for g in db(q).select(orderby=o)]
-        d = DIV(
-              A(
-                T("Set filterset"),
-                _class='edit16',
-                _onclick="""
-                  click_toggle_vis(event,'set_filterset_div', 'block');
-                """
-              ),
-              DIV(
-                TABLE(
-                  TR(
-                    TH(T('Filterset')),
-                    TD(
-                      SELECT(
-                        *options,
-                        **dict(_id='fset_id')
-                      ),
-                    ),
-                  ),
-                  TR(
-                    TH(),
-                    TD(
-                      INPUT(
-                        _type='submit',
-                        _onclick=self.ajax_submit(additional_inputs=['fset_id'],
-                                                  args='set_filterset'),
-                      ),
-                    ),
-                  ),
-                ),
-                _style='display:none',
-                _class='stackable white_float',
-                _name='set_filterset_div',
-                _id='set_filterset_div',
-              ),
-            )
-        return d
-
     def group_detach(self):
         d = self.group_select_tool(label="Detach",
                                    action="group_detach",
@@ -277,40 +233,6 @@ def ajax_users_col_values():
         q = _where(q, 'v_users', t.filter_parse(f), f)
     t.object_list = db(q).select(o, orderby=o)
     return t.col_values_cloud_ungrouped(col)
-
-@auth.requires_membership('Manager')
-def set_filterset(ids=[]):
-    if len(ids) == 0:
-        raise ToolError("no user selected")
-    fset_id = request.vars.fset_id
-
-    q = db.auth_user.id.belongs(ids)
-    rows = db(q).select()
-    u = ', '.join([" ".join((r.first_name, r.last_name)) for r in rows])
-
-    if fset_id == '0':
-        q = db.gen_filterset_user.user_id.belongs(ids)
-        db(q).delete()
-        _log('users.filter.detach',
-             'detach filter from users %(u)s',
-             dict(u=u))
-        return
-
-    q = db.gen_filtersets.id == fset_id
-    rows = db(q).select()
-    if len(rows) != 1:
-        raise ToolError("Filterset not found")
-    fset_name = rows.first().fset_name
-
-    for uid in ids:
-        q = db.gen_filterset_user.user_id == uid
-        if db(q).count() > 0:
-            db(q).delete()
-        db.gen_filterset_user.insert(user_id=uid, fset_id=fset_id)
-
-    _log('users.filter.attach',
-         'attach filter %(f)s to users %(u)s',
-         dict(f=fset_name, u=u))
 
 @auth.requires_membership('Manager')
 def group_set_primary(ids=[]):
@@ -406,8 +328,6 @@ def ajax_users():
         try:
             if action == 'group_del':
                 group_del()
-            elif action == 'set_filterset':
-                set_filterset(t.get_checked())
             elif action == 'group_set_primary':
                 group_set_primary(t.get_checked())
             elif action == 'group_attach':

@@ -16,6 +16,7 @@
     "import": "Import"
   },
   "action_menu": {
+    "set_filterset": "Set filterset",
     "lock_filterset": "Lock filterset",
     "unlock_filterset": "Unlock filterset",
     "email": "Email address",
