@@ -113,7 +113,8 @@ class table_users(HtmlTable):
 
 @auth.requires_login()
 def ajax_users_col_values():
-    t = table_users('users', 'ajax_users')
+    table_id = request.vars.table_id
+    t = table_users(table_id, 'ajax_users')
     col = request.args[0]
     o = db.v_users[col]
     q = db.v_users.id > 0
@@ -126,7 +127,8 @@ def ajax_users_col_values():
 @auth.requires_membership('Manager')
 @auth.requires_login()
 def ajax_users():
-    t = table_users('users', 'ajax_users')
+    table_id = request.vars.table_id
+    t = table_users(table_id, 'ajax_users')
     o = ~db.v_users.last
     q = db.v_users.id > 0
     for f in t.cols:
@@ -141,12 +143,10 @@ def ajax_users():
 
 @auth.requires_login()
 def users():
-    t = table_users('users', 'ajax_users')
-    d = DIV(
-          t.html(),
-          _id='users',
+    t = SCRIPT(
+          """$.when(osvc.app_started).then(function(){ table_users("layout", %s) })""" % request_vars_to_table_options(),
         )
-    return dict(table=d)
+    return dict(table=t)
 
 def users_load():
     return users()["table"]

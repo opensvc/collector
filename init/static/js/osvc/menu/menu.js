@@ -263,7 +263,8 @@ var menu_data = {
 		  "class" : "guys16",
 		  "id" : "adm-usr",
 		  "link" : "/init/users/users",
-		  "secure" : ["Manager"]
+		  "fn" : "table_users",
+		  "secure" : ["Manager", "UserManager"]
 		},
 		{
 		  "title" : "log",
