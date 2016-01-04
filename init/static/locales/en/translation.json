@@ -16,6 +16,10 @@
     "import": "Import"
   },
   "action_menu": {
+    "attach_privileges": "Attach privileges",
+    "detach_privileges": "Detach privileges",
+    "attach_groups": "Attach groups",
+    "detach_groups": "Detach groups",
     "group_name": "Group name",
     "set_primary_group": "Set primary group",
     "set_filterset": "Set filterset",

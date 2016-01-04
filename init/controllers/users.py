@@ -111,7 +111,7 @@ class table_users(HtmlTable):
         self.checkboxes = True
         self.events = ["auth_user_change"]
         if 'Manager' in user_groups():
-            self += HtmlTableMenu('Group', 'guys16', ['group_del', 'group_attach', 'group_detach'])
+            self += HtmlTableMenu('Group', 'guys16', ['group_del'])
 
     def group_select_tool(self, label, action, divid, sid, _class=''):
         q = ~db.auth_group.role.like('user_%')
@@ -156,22 +156,6 @@ class table_users(HtmlTable):
             )
         return d
 
-    def group_detach(self):
-        d = self.group_select_tool(label="Detach",
-                                   action="group_detach",
-                                   divid="group_detach",
-                                   sid="group_detach_s",
-                                   _class="attach16")
-        return d
-
-    def group_attach(self):
-        d = self.group_select_tool(label="Attach",
-                                   action="group_attach",
-                                   divid="group_attach",
-                                   sid="group_attach_s",
-                                   _class="attach16")
-        return d
-
     def group_del(self):
         d = self.group_select_tool(label="Delete",
                                    action="group_del",
@@ -192,43 +176,6 @@ def ajax_users_col_values():
         q = _where(q, 'v_users', t.filter_parse(f), f)
     t.object_list = db(q).select(o, orderby=o)
     return t.col_values_cloud_ungrouped(col)
-
-@auth.requires_membership('Manager')
-def group_attach(ids=[]):
-    if len(ids) == 0:
-        raise ToolError("no user selected")
-    gid = request.vars.group_attach_s
-
-    done = []
-    for id in ids:
-        q = db.auth_membership.user_id == id
-        q &= db.auth_membership.group_id==gid
-        if db(q).count() != 0:
-            continue
-        done.append(id)
-        db.auth_membership.insert(user_id=id, group_id=gid)
-    rows = db(db.v_users.id.belongs(done)).select(db.v_users.fullname)
-    u = ', '.join([r.fullname for r in rows])
-    g = db(db.auth_group.id==gid).select(db.auth_group.role)[0].role
-    _log('users.group.attach',
-         'attached group %(g)s to users %(u)s',
-         dict(g=g, u=u))
-
-@auth.requires_membership('Manager')
-def group_detach(ids=[]):
-    if len(ids) == 0:
-        raise ToolError("no user selected")
-    gid = request.vars.group_detach_s
-    rows = db(db.v_users.id.belongs(ids)).select(db.v_users.fullname)
-    u = ', '.join([r.fullname for r in rows])
-    g = db(db.auth_group.id==gid).select(db.auth_group.role)[0].role
-
-    q = db.auth_membership.user_id.belongs(ids)
-    q &= db.auth_membership.group_id==gid
-    db(q).delete()
-    _log('users.group.detach',
-         'detached group %(g)s from users %(u)s',
-         dict(g=g, u=u))
 
 @auth.requires_membership('Manager')
 def group_del():

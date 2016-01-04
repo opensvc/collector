@@ -443,6 +443,59 @@ class rest_post_user_group(rest_post_handler):
 
 
 #
+class rest_post_users_groups(rest_post_handler):
+    def __init__(self):
+        desc = [
+          "Attach users to groups.",
+          "The api user must be in the UserManager privilege group.",
+          "The action is logged in the collector's log.",
+          "A websocket event is sent to announce the changes in the users table.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- --header 'Content-Type: application/json' -d @/tmp/data.json -X POST https://%(collector)s/init/rest/api/users_groups",
+        ]
+        rest_post_handler.__init__(
+          self,
+          path="/users_groups",
+          tables=["auth_membership"],
+          desc=desc,
+          examples=examples
+        )
+
+    def handler(self, **vars):
+        if "user_id" not in vars:
+            raise Exception("The 'user_id' key is mandatory")
+        if "group_id" not in vars:
+            raise Exception("The 'group_id' key is mandatory")
+        return rest_post_user_group().handler(vars["user_id"], vars["group_id"])
+
+#
+class rest_delete_users_groups(rest_delete_handler):
+    def __init__(self):
+        desc = [
+          "Detach users from groups.",
+          "The api user must be in the UserManager privilege group.",
+          "The action is logged in the collector's log.",
+          "A websocket event is sent to announce the changes in the users table.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- --header 'Content-Type: application/json' -d @/tmp/data.json -X DELETE https://%(collector)s/init/rest/api/users_groups",
+        ]
+        rest_delete_handler.__init__(
+          self,
+          path="/users_groups",
+          desc=desc,
+          examples=examples
+        )
+
+    def handler(self, **vars):
+        if "user_id" not in vars:
+            raise Exception("The 'user_id' key is mandatory")
+        if "group_id" not in vars:
+            raise Exception("The 'group_id' key is mandatory")
+        return rest_delete_user_group().handler(vars["user_id"], vars["group_id"])
+
+#
 class rest_delete_user_group(rest_delete_handler):
     def __init__(self):
         desc = [
@@ -483,7 +536,6 @@ class rest_delete_user_group(rest_delete_handler):
 
         q = db.auth_membership.user_id == user.id
         q &= db.auth_membership.group_id == group.id
-        q &= db.auth_membership.primary_group == 'F'
         row = db(q).select().first()
         if row is None:
             return dict(info="User %s is already detached from group %s" % (str(user.email), str(group.role)))

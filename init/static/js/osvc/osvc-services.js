@@ -111,6 +111,7 @@ var services_access_uri = {
     "R_USER_GROUP" : "rest/api/users/%1/groups/%2",
     "R_USER_GROUPS" : "rest/api/users/%1/groups",
     "R_USER_HIDDEN_MENU_ENTRIES" : "rest/api/users/%1/hidden_menu_entries",
+    "R_USERS_GROUPS" : "rest/api/users_groups",
     "R_WIKI" : "rest/api/wiki/%1",
     "R_WIKIS" : "rest/api/wiki",
     "R_IPS" : "rest/api/nodes/%1/ips",

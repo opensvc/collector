@@ -148,3 +148,34 @@ function generic_selector_org_and_private_groups(id) {
   })
 }
 
+function generic_selector_privilege_groups(id) {
+  return generic_selector(id, {
+    "url_path": "R_GROUPS",
+    "url_params": {
+      "orderby": "role",
+      "limit": "0",
+      "props": "id,role",
+      "filters": ["privilege T"],
+      "meta": "0"
+    },
+    "object_class": "guys16",
+    "object_id": "id",
+    "object_name": "role"
+  })
+}
+
+function generic_selector_groups(id) {
+  return generic_selector(id, {
+    "url_path": "R_GROUPS",
+    "url_params": {
+      "orderby": "role",
+      "limit": "0",
+      "props": "id,role",
+      "meta": "0"
+    },
+    "object_class": "guys16",
+    "object_id": "id",
+    "object_name": "role"
+  })
+}
+

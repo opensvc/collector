@@ -573,6 +573,34 @@ function table_action_menu_init_data(t) {
               "min": 1
             },
             {
+              "title": "action_menu.attach_groups",
+              "class": "icon attach16",
+              "fn": "data_action_user_attach_groups",
+              "privileges": ["Manager", "UserManager"],
+              "min": 1
+            },
+            {
+              "title": "action_menu.detach_groups",
+              "class": "icon detach16",
+              "fn": "data_action_user_detach_groups",
+              "privileges": ["Manager", "UserManager"],
+              "min": 1
+            },
+            {
+              "title": "action_menu.attach_privileges",
+              "class": "icon attach16",
+              "fn": "data_action_user_attach_privileges",
+              "privileges": ["Manager", "UserManager"],
+              "min": 1
+            },
+            {
+              "title": "action_menu.detach_privileges",
+              "class": "icon detach16",
+              "fn": "data_action_user_detach_privileges",
+              "privileges": ["Manager", "UserManager"],
+              "min": 1
+            },
+            {
               "title": "action_menu.lock_filterset",
               "class": "icon fa-lock",
               "fn": "data_action_user_lock_filterset",
@@ -1828,6 +1856,74 @@ function tool_obsolescence(t, e) {
     data: {"nodes": nodes},
     success: function(msg){
       $("#overlay").html(msg)
+    }
+  })
+}
+
+//
+// data action: attach user privilege
+//
+function data_action_user_attach_privileges(t, e) {
+  data_action_generic_selector(t, e, {
+    "requestor": services_osvcpostrest,
+    "request_service": "R_USERS_GROUPS",
+    "selector": generic_selector_privilege_groups,
+    "request_data_entry": function(selected, data) {
+      return {
+        "group_id": selected,
+        "user_id": data["id"]
+      }
+    }
+  })
+}
+
+//
+// data action: detach user privilege
+//
+function data_action_user_detach_privileges(t, e) {
+  data_action_generic_selector(t, e, {
+    "requestor": services_osvcdeleterest,
+    "request_service": "R_USERS_GROUPS",
+    "selector": generic_selector_privilege_groups,
+    "request_data_entry": function(selected, data) {
+      return {
+        "group_id": selected,
+        "user_id": data["id"]
+      }
+    }
+  })
+}
+
+//
+// data action: attach user groups
+//
+function data_action_user_attach_groups(t, e) {
+  data_action_generic_selector(t, e, {
+    "requestor": services_osvcpostrest,
+    "request_service": "R_USERS_GROUPS",
+    "selector": generic_selector_org_groups,
+    "request_data_entry": function(selected, data) {
+      return {
+        "group_id": selected,
+        "user_id": data["id"]
+      }
+    }
+  })
+}
+
+//
+// data action: detach user groups
+//
+function data_action_user_detach_groups(t, e) {
+  data_action_generic_selector(t, e, {
+    "requestor": services_osvcdeleterest,
+    "request_service": "R_USERS_GROUPS",
+    "selector": generic_selector_org_groups,
+    "request_data_entry": function(selected, data) {
+      return {
+        "group_id": selected,
+        "user_id": data["id"]
+      }
     }
   })
 }
