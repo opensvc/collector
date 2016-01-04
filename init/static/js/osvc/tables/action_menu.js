@@ -592,6 +592,29 @@ function table_action_menu_init_data(t) {
               "fn": "data_action_user_set_filterset",
               "privileges": ["Manager", "UserManager"],
               "min": 1
+            },
+            {
+              "title": "action_menu.set_primary_group",
+              "class": "icon guys16",
+              "fn": "data_action_user_set_primary_group",
+              "privileges": ["Manager", "UserManager"],
+              "min": 1
+            }
+          ]
+        },
+        {
+          "selector": ["clicked", "checked", "all"],
+          "title": "action_menu.on_groups",
+          "foldable": true,
+          "cols": ["id", "email"],
+          "condition": "id+email",
+          "children": [
+            {
+              "title": "action_menu.add",
+              "class": "icon add16",
+              "fn": "data_action_add_group",
+              "privileges": ["Manager", "UserManager"],
+              "min": 0
             }
           ]
         }
@@ -1810,6 +1833,66 @@ function tool_obsolescence(t, e) {
 }
 
 //
+// data action: set user primary group
+//
+function data_action_user_set_primary_group(t, e) {
+  var entry = $(e.target)
+  var cache_id = entry.attr("cache_id")
+  var data = t.action_menu_data_cache[cache_id]
+  table_action_menu_focus_on_leaf(t, entry)
+
+  // form elements
+  var div = $("<div style='padding:0.5em'></div>")
+  var label_group_id = $("<div data-i18n='action_menu.group_name'></div>")
+  var input_group_id = $("<input id='group_id' class='oi'>")
+  var yes_no = table_action_menu_yes_no(t, 'action_menu.submit', function(e){
+    var _data = []
+    div.empty()
+    for (i=0;i<data.length;i++) {
+      services_osvcpostrest("R_USER_PRIMARY_GROUP_SET", [data[i]['id'], input_group_id.attr("group_id")], "", "", function(jd) {
+        if (jd.error && (jd.error.length > 0)) {
+          div.html(services_error_fmt(jd))
+        }
+        if (jd.info && (jd.info.length > 0)) {
+          div.append("<pre>"+jd.info+"</pre>")
+        }
+      },
+      function(xhr, stat, error) {
+        div.html(services_ajax_error_fmt(xhr, stat, error))
+      })
+    }
+  })
+
+  // groups autocomplete
+  var groups = []
+  services_osvcgetrest("R_GROUPS", "", {"limit": "0", "meta": "0", "orderby": "role", "filters": ["role !user_", "privilege F"]}, function(jd) {
+    for (var i=0; i<jd.data.length; i++) {
+      groups.push({
+        "id": jd.data[i].id,
+        "label": jd.data[i].role
+      })
+    }
+  })
+  input_group_id.autocomplete({
+    source: groups,
+    minLength: 0,
+    focus: function(event, ui) {
+      input_group_id.attr("group_id", ui.item.id)
+    },
+    select: function(event, ui) {
+      input_group_id.attr("group_id", ui.item.id)
+    }
+  })
+
+  // assemble the form elements
+  div.append(label_group_id)
+  div.append(input_group_id)
+  div.append(yes_no)
+  div.i18n()
+  div.insertAfter(entry)
+}
+
+//
 // data action: set user filterset
 //
 function data_action_user_set_filterset(t, e) {
@@ -1824,13 +1907,14 @@ function data_action_user_set_filterset(t, e) {
   var input_fset_id = $("<input id='fset_id' class='oi'>")
   var yes_no = table_action_menu_yes_no(t, 'action_menu.submit', function(e){
     var _data = []
+    div.empty()
     for (i=0;i<data.length;i++) {
       services_osvcpostrest("R_USER_FILTERSET_SET", [data[i]['id'], input_fset_id.attr("fset_id")], "", "", function(jd) {
         if (jd.error && (jd.error.length > 0)) {
           div.html(services_error_fmt(jd))
         }
         if (jd.info && (jd.info.length > 0)) {
-          div.html(services_info_fmt(jd))
+          div.append("<pre>"+jd.info+"</pre>")
         }
       },
       function(xhr, stat, error) {
@@ -1945,6 +2029,85 @@ function data_action_del_user(t, e) {
   },
   function(xhr, stat, error) {
     $(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
+  })
+}
+
+//
+// data action: add group
+//
+function data_action_add_group(t, e) {
+  var entry = $(e.target)
+
+  // create and focus tool area
+  table_action_menu_focus_on_leaf(t, entry)
+  var div = $("<div></div>")
+  div.uniqueId()
+  div.append($("<hr>"))
+  div.css({"display": "table-caption"})
+  div.insertAfter(entry)
+
+  // minimal create information
+  var line = $("<div class='template_form_line'></div>")
+  var title = $("<div data-i18n='action_menu.group_name'></div>").i18n()
+  var input = $("<input class='oi'></input>")
+  var info = $("<div></div>")
+  info.uniqueId()
+  info.css({"margin": "0.8em 0 0.8em 0"})
+  line.append(title)
+  line.append(input)
+  div.append(line)
+  div.append(info)
+  input.focus()
+
+  var timer = null
+  var xhr = null
+
+  input.bind("keyup", function(e) {
+    clearTimeout(timer)
+    if (is_enter(e)) {
+      data = {
+        "role": input.val()
+      }
+      info.empty()
+      spinner_add(info)
+      xhr  = services_osvcpostrest("R_GROUPS", "", "", data, function(jd) {
+        spinner_del(info)
+        if (jd.error && (jd.error.length > 0)) {
+          info.html(services_error_fmt(jd))
+        }
+        // display the user properties tab to set more properties
+        group_properties(div.attr("id"), {"group_id": jd.data[0].id})
+      },
+      function(xhr, stat, error) {
+        info.html(services_ajax_error_fmt(xhr, stat, error))
+      })
+    } else {
+      var role = input.val()
+      timer = setTimeout(function(){
+        info.empty()
+        spinner_add(info)
+        if (xhr) {
+          xhr.abort()
+        }
+        services_osvcgetrest("R_GROUPS", "", {"filters": ["role "+role]}, function(jd) {
+          xhr = null
+          spinner_del(info)
+          if (jd.error && (jd.error.length > 0)) {
+            info.html(services_error_fmt(jd))
+          }
+          if (jd.data.length == 0) {
+            info.text(i18n.t("action_menu.group_createable"))
+            return
+          }
+  
+          // display the user properties tab
+          group_properties(info.attr("id"), {"group_id": jd.data[0].id})
+        },
+        function(xhr, stat, error) {
+          info.html(services_ajax_error_fmt(xhr, stat, error))
+        })
+      }, 500)
+    }
   })
 }
 

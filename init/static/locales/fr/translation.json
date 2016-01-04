@@ -16,6 +16,8 @@
     "import": "Import"
   },
   "action_menu": {
+    "group_name": "Nom du groupe",
+    "set_primary_group": "Changer le groupe primaire",
     "set_filterset": "Changer le jeu de filtres",
     "lock_filterset": "Vérouiller le jeu de filtres",
     "unlock_filterset": "Dévérouiller le jeu de filtres",
@@ -25,6 +27,7 @@
     "add_form": "Ajouter un formulaire",
     "tag_name": "Nom du tag",
     "form_name": "Nom du formulaire",
+    "group_createable": "Ce groupe n'existe pas encore. Appuyez sur <entrée> pour le créer.",
     "user_createable": "Cet utilisateur n'existe pas encore. Appuyez sur <entrée> pour le créer.",
     "tag_createable": "Ce tag n'existe pas encore. Appuyez sur <entrée> pour le créer.",
     "tag_not_createable": "Ce tag existe déjà.",

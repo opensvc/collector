@@ -16,6 +16,8 @@
     "import": "Import"
   },
   "action_menu": {
+    "group_name": "Group name",
+    "set_primary_group": "Set primary group",
     "set_filterset": "Set filterset",
     "lock_filterset": "Lock filterset",
     "unlock_filterset": "Unlock filterset",
@@ -25,6 +27,7 @@
     "add_form": "Add form",
     "tag_name": "Tag name",
     "form_name": "Form name",
+    "group_createable": "This group does not exist yet. Press <enter> to create.",
     "user_createable": "This user does not exist yet. Press <enter> to create.",
     "tag_createable": "This tag name does not exist yet. Press <enter> to create.",
     "tag_not_createable": "This tag name already exists.",
