@@ -112,7 +112,7 @@ class table_users(HtmlTable):
         self.events = ["auth_user_change"]
         if 'Manager' in user_groups():
             self += HtmlTableMenu('Group', 'guys16', ['group_add', 'group_del', 'group_attach', 'group_detach', 'group_set_primary'])
-            self += HtmlTableMenu('User', 'guy16', ['lock_filter', 'unlock_filter', 'set_filterset'])
+            self += HtmlTableMenu('User', 'guy16', ['set_filterset'])
             self.form_group_add = self.group_add_sqlform()
 
     def group_add(self):
@@ -252,26 +252,6 @@ class table_users(HtmlTable):
                                    _class="del16")
         return d
 
-    def lock_filter(self):
-        d = DIV(
-              A(
-                T("Lock filterset"),
-                _class='attach16',
-                _onclick=self.ajax_submit(args=['lock_filter']),
-              ),
-            )
-        return d
-
-    def unlock_filter(self):
-        d = DIV(
-              A(
-                T("Unlock filterset"),
-                _class='detach16',
-                _onclick=self.ajax_submit(args=['unlock_filter']),
-              ),
-            )
-        return d
-
     @auth.requires_membership('Manager')
     def group_add_sqlform(self):
         db.auth_group.description.readable = False
@@ -297,32 +277,6 @@ def ajax_users_col_values():
         q = _where(q, 'v_users', t.filter_parse(f), f)
     t.object_list = db(q).select(o, orderby=o)
     return t.col_values_cloud_ungrouped(col)
-
-@auth.requires_membership('Manager')
-def lock_filter(ids=[]):
-    if len(ids) == 0:
-        raise ToolError("no user selected")
-    q = db.auth_user.id.belongs(ids)
-    q &= db.auth_user.lock_filter == False
-    rows = db(q).select()
-    u = ', '.join([" ".join((r.first_name, r.last_name)) for r in rows])
-    db(q).update(lock_filter=True)
-    _log('users.filter.lock',
-         'lock filter for users %(u)s',
-         dict(u=u))
-
-@auth.requires_membership('Manager')
-def unlock_filter(ids=[]):
-    if len(ids) == 0:
-        raise ToolError("no user selected")
-    q = db.auth_user.id.belongs(ids)
-    q &= db.auth_user.lock_filter == True
-    rows = db(q).select()
-    u = ', '.join([" ".join((r.first_name, r.last_name)) for r in rows])
-    db(q).update(lock_filter=False)
-    _log('users.filter.unlock',
-         'unlock filter for users %(u)s',
-         dict(u=u))
 
 @auth.requires_membership('Manager')
 def set_filterset(ids=[]):
@@ -452,10 +406,6 @@ def ajax_users():
         try:
             if action == 'group_del':
                 group_del()
-            elif action == 'lock_filter':
-                lock_filter(t.get_checked())
-            elif action == 'unlock_filter':
-                unlock_filter(t.get_checked())
             elif action == 'set_filterset':
                 set_filterset(t.get_checked())
             elif action == 'group_set_primary':

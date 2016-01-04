@@ -226,6 +226,11 @@ class rest_post_users(rest_post_handler):
         )
 
     def handler(self, **vars):
+        if 'id' in vars:
+            user_id = vars["id"]
+            del(vars["id"])
+            return rest_post_user().handler(user_id, **vars)
+
         check_privilege("UserManager")
 
         if "perpage" in vars and int(vars["perpage"]) > user_max_perpage:
@@ -278,18 +283,20 @@ class rest_post_user(rest_post_handler):
 
         db(q).update(**vars)
         l = []
-        for key in vars:
-            l.append("%s: %s => %s" % (str(key), str(row[key]), str(vars[key])))
+        fmt = "change user %(email)s: %(data)s"
+        d = dict(email=row.email, data=beautify_change(row, vars))
         _log('user.change',
-             'change user %(data)s',
-             dict(data=', '.join(l)),
+             fmt,
+             d,
             )
         l = {
           'event': 'auth_user',
           'data': {'foo': 'bar'},
         }
         _websocket_send(event_msg(l))
-        return rest_get_user().handler(row.id)
+        ret = rest_get_user().handler(row.id)
+        ret["info"] = fmt % d
+        return ret
 
 
 #

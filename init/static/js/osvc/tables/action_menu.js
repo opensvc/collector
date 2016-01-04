@@ -571,6 +571,20 @@ function table_action_menu_init_data(t) {
               "fn": "data_action_del_user",
               "privileges": ["Manager", "UserManager"],
               "min": 1
+            },
+            {
+              "title": "action_menu.lock_filterset",
+              "class": "icon fa-lock",
+              "fn": "data_action_user_lock_filterset",
+              "privileges": ["Manager", "UserManager"],
+              "min": 1
+            },
+            {
+              "title": "action_menu.unlock_filterset",
+              "class": "icon fa-unlock",
+              "fn": "data_action_user_unlock_filterset",
+              "privileges": ["Manager", "UserManager"],
+              "min": 1
             }
           ]
         }
@@ -1785,6 +1799,60 @@ function tool_obsolescence(t, e) {
     success: function(msg){
       $("#overlay").html(msg)
     }
+  })
+}
+
+//
+// data action: lock user filterset
+//
+function data_action_user_lock_filterset(t, e) {
+  var entry = $(e.target)
+  var cache_id = entry.attr("cache_id")
+  var data = t.action_menu_data_cache[cache_id]
+  var _data = new Array()
+  for (i=0;i<data.length;i++) {
+    _data.push({
+      'id': data[i]['id'],
+      'lock_filter': true
+    })
+  }
+  services_osvcpostrest("R_USERS", "", "", _data, function(jd) {
+    if (jd.error && (jd.error.length > 0)) {
+      $(".flash").show("blind").html(services_error_fmt(jd))
+    }
+    if (jd.info && (jd.info.length > 0)) {
+      $(".flash").show("blind").html(services_info_fmt(jd))
+    }
+  },
+  function(xhr, stat, error) {
+    $(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
+  })
+}
+
+//
+// data action: unlock user filterset
+//
+function data_action_user_unlock_filterset(t, e) {
+  var entry = $(e.target)
+  var cache_id = entry.attr("cache_id")
+  var data = t.action_menu_data_cache[cache_id]
+  var _data = new Array()
+  for (i=0;i<data.length;i++) {
+    _data.push({
+      'id': data[i]['id'],
+      'lock_filter': false
+    })
+  }
+  services_osvcpostrest("R_USERS", "", "", _data, function(jd) {
+    if (jd.error && (jd.error.length > 0)) {
+      $(".flash").show("blind").html(services_error_fmt(jd))
+    }
+    if (jd.info && (jd.info.length > 0)) {
+      $(".flash").show("blind").html(services_info_fmt(jd))
+    }
+  },
+  function(xhr, stat, error) {
+    $(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
   })
 }
 

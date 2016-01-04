@@ -16,6 +16,8 @@
     "import": "Import"
   },
   "action_menu": {
+    "lock_filterset": "Vérouiller le jeu de filtres",
+    "unlock_filterset": "Dévérouiller le jeu de filtres",
     "email": "Adresse mèl",
     "on_tags": "Sur les tags",
     "on_forms": "Sur les formulaires",

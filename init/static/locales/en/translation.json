@@ -16,6 +16,8 @@
     "import": "Import"
   },
   "action_menu": {
+    "lock_filterset": "Lock filterset",
+    "unlock_filterset": "Unlock filterset",
     "email": "Email address",
     "on_tags": "On tags",
     "on_forms": "On forms",
