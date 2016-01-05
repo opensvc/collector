@@ -1014,7 +1014,7 @@ var ti_%(id)s = setInterval(function(){
     def match_col(self, value, o, f):
         return self.match(value, self.colprops[f].get(o))
 
-    def get_visible_columns(self, fmt="dal", force=[]):
+    def get_visible_columns(self, fmt="dal", force=[], db=db):
         visible_columns = request.vars.visible_columns.split(',')
         visible_columns = list(set(visible_columns)|set(force)|set(self.force_cols))
         sorted_visible_columns = []

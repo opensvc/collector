@@ -36,42 +36,49 @@ class table_dns_domains(HtmlTable):
         self.colprops = {
             'id': HtmlTableColumn(
                      title='Domain Id',
+                     table="domains",
                      field='id',
                      img='dns16',
                      display=True,
                     ),
             'name': HtmlTableColumn(
                      title='Name',
+                     table="domains",
                      field='name',
                      img='dns16',
                      display=True,
                     ),
             'master': HtmlTableColumn(
                      title='Master',
+                     table="domains",
                      field='master',
                      img='dns16',
                      display=False,
                     ),
             'last_check': HtmlTableColumn(
                      title='Last Check',
+                     table="domains",
                      field='last_check',
                      img='time16',
                      display=False,
                     ),
             'type': HtmlTableColumn(
                      title='Type',
+                     table="domains",
                      field='type',
                      img='dns16',
                      display=True,
                     ),
             'notified_serial': HtmlTableColumn(
                      title='Notified Serial',
+                     table="domains",
                      field='notified_serial',
                      img='dns16',
                      display=True,
                     ),
             'account': HtmlTableColumn(
                      title='Account',
+                     table="domains",
                      field='account',
                      img='guy16',
                      display=False,
@@ -79,11 +86,14 @@ class table_dns_domains(HtmlTable):
         }
         self.keys = ["id"]
         self.span = ["id"]
+        self.force_cols = ["id"]
         self.dbfilterable = False
         self.ajax_col_values = 'ajax_dns_domains_col_values'
         self.extrarow = True
         self.extrarow_class = 'dns_domains_links'
         self.checkboxes = True
+        self.dataable = True
+        self.wsable = True
         if 'DnsManager' in user_groups():
             self.additional_tools.append('domain_add')
             self.additional_tools.append('domain_del')
@@ -224,17 +234,12 @@ def ajax_dns_domains():
     for f in set(t.cols):
         q = _where(q, 'domains', t.filter_parse(f), f, db=dbdns)
 
-    if len(request.args) == 1 and request.args[0] == 'line':
+    if len(request.args) == 1 and request.args[0] == 'data':
         n = dbdns(q).count()
         limitby = (t.pager_start,t.pager_end)
-        t.object_list = dbdns(q).select(orderby=o, limitby=limitby, cacheable=False)
-        return t.table_lines_data(n)
-
-    n = dbdns(q).count()
-    t.setup_pager(n)
-    t.object_list = dbdns(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
-
-    return t.html()
+        cols = t.get_visible_columns(db=dbdns)
+        t.object_list = dbdns(q).select(*cols, orderby=o, limitby=limitby, cacheable=False)
+        return t.table_lines_data(n, html=False)
 
 #
 # Records
@@ -309,29 +314,34 @@ class table_dns_records(HtmlTable):
                      'ttl',
                      'prio',
                      'change_date']
+        self.force_cols = ["id"]
         self.keys = ["id"]
         self.span = ["id"]
         self.colprops = {
             'id': HtmlTableColumn(
                      title='Record Id',
+                     table='records',
                      field='id',
                      img='dns16',
                      display=False,
                     ),
             'domain_id': HtmlTableColumn(
                      title='Domain Id',
+                     table='records',
                      field='domain_id',
                      img='dns16',
                      display=True,
                     ),
             'name': HtmlTableColumn(
                      title='Name',
+                     table='records',
                      field='name',
                      img='dns16',
                      display=True,
                     ),
             'type': HtmlTableColumn(
                      title='Type',
+                     table='records',
                      field='type',
                      img='dns16',
                      display=True,
@@ -339,29 +349,35 @@ class table_dns_records(HtmlTable):
                     ),
             'content': HtmlTableColumn(
                      title='Content',
+                     table='records',
                      field='content',
                      img='dns16',
                      display=True,
                     ),
             'ttl': HtmlTableColumn(
                      title='Time to Live',
+                     table='records',
                      field='ttl',
                      img='dns16',
                      display=True,
                     ),
             'prio': HtmlTableColumn(
                      title='Priority',
+                     table='records',
                      field='prio',
                      img='dns16',
                      display=True,
                     ),
             'change_date': HtmlTableColumn(
                      title='Last change',
+                     table='records',
                      field='change_date',
                      img='time16',
                      display=False,
                     ),
         }
+        self.dataable = True
+        self.wsable = True
         self.dbfilterable = False
         self.ajax_col_values = 'ajax_dns_records_col_values'
         self.extrarow = True
@@ -501,17 +517,12 @@ def ajax_dns_records():
     for f in set(t.cols):
         q = _where(q, 'records', t.filter_parse(f), f, db=dbdns)
 
-    if len(request.args) == 1 and request.args[0] == 'line':
+    if len(request.args) == 1 and request.args[0] == 'data':
         n = dbdns(q).count()
         limitby = (t.pager_start,t.pager_end)
-        t.object_list = dbdns(q).select(orderby=o, limitby=limitby, cacheable=False)
-        return t.table_lines_data(n)
-
-    n = dbdns(q).count()
-    t.setup_pager(n)
-    t.object_list = dbdns(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
-
-    return t.html()
+        cols = t.get_visible_columns(db=dbdns)
+        t.object_list = dbdns(q).select(*cols, orderby=o, limitby=limitby, cacheable=False)
+        return t.table_lines_data(n, html=False)
 
 @auth.requires_login()
 def networks():
@@ -630,13 +641,15 @@ def ping():
 #
 @auth.requires_login()
 def dns():
+    t1 = table_dns_domains('dnsd', 'ajax_dns_domains')
+    t2 = table_dns_records('dnsr', 'ajax_dns_records')
     t = DIV(
           DIV(
-            ajax_dns_domains(),
+            t1.html(),
             _id='dnsd',
           ),
           DIV(
-            ajax_dns_records(),
+            t2.html(),
             _id='dnsr',
           ),
         )
