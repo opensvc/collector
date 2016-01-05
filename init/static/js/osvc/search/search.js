@@ -51,9 +51,10 @@ function search_get_menu(fk)
     },
     "apps": {
         "title": "__app__",
+        "tab" : 'app_tabs("__rowid__", {"app_name": "__app__"})',
         "menu_entry_id": "view-dummy",
         "class": "svc fa-2x search-section-icon",
-        "subclass" : "",
+        "subclass" : "meta_app clickable",
         "links" : [
           {
             "title": "nodes",

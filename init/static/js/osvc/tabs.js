@@ -579,6 +579,44 @@ function group_tabs(divid, options) {
   return o
 }
 
+//
+// app
+//
+function app_tabs(divid, options) {
+  o = tabs(divid)
+  o.options = options
+
+  o.load(function(){
+    var i = 0
+
+    if (!("app_id" in o.options) && ("app_name" in o.options)) {
+      services_osvcgetrest("R_APPS", "", {"filters": ["app "+o.options.app_name]}, function(jd) {
+        var app = jd.data[0]
+        o.options.app_id = app.id
+        o._load()
+      })
+    } else {
+      o._load()
+    }
+  })
+
+  o._load = function() {
+    o.closetab.children("p").text(o.options.app_name ? o.options.app_name : o.options.app_id)
+
+    // tab properties
+    i = o.register_tab({
+      "title": "node_tabs.properties",
+      "title_class": "svc"
+    })
+    o.tabs[i].callback = function(divid) {
+      app_properties(divid, o.options)
+    }
+
+    o.set_tab(o.options.tab)
+  }
+  return o
+}
+
 
 //
 // network

@@ -283,7 +283,8 @@ var menu_data = {
 		  "title" : "application",
 		  "class" : "svc",
 		  "id" : "adm-app",
-		  "link" : "/init/apps/apps"
+		  "link" : "/init/apps/apps",
+		  "fn" : "table_apps"
 		},
 		{
 		  "title" : "drpplan",

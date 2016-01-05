@@ -16,6 +16,8 @@
     "import": "Import"
   },
   "action_menu": {
+    "app_name": "Nom de l'application",
+    "on_apps": "Sur les applications",
     "attach_privileges": "Attacher des privilèges",
     "detach_privileges": "Détacher des privilèges",
     "attach_groups": "Attacher des groupes",
@@ -31,6 +33,7 @@
     "add_form": "Ajouter un formulaire",
     "tag_name": "Nom du tag",
     "form_name": "Nom du formulaire",
+    "app_createable": "Cette application n'existe pas encore. Appuyez sur <entrée> pour le créer.",
     "group_createable": "Ce groupe n'existe pas encore. Appuyez sur <entrée> pour le créer.",
     "user_createable": "Cet utilisateur n'existe pas encore. Appuyez sur <entrée> pour le créer.",
     "tag_createable": "Ce tag n'existe pas encore. Appuyez sur <entrée> pour le créer.",
@@ -803,8 +806,21 @@
     "lost_title" : "Mot de passe perdu",
     "lost_text" : "Envoyer un nouveau mot de passe par mèl"
   },
+  "app_properties": {
+    "properties": "propriétés",
+    "description": "description",
+    "id": "id",
+    "app": "application",
+    "app_domain": "domaine",
+    "app_team_ops": "équipe opérations",
+    "dates": "Dates",
+    "updated": "mise à jour",
+    "responsibles": "Responsables (__n__)",
+    "services": "Services (__n__)",
+    "nodes": "Noeuds (__n__)"
+  },
   "group_properties": {
-    "properties": "Propriétés",
+    "properties": "propriétés",
     "description": "description",
     "id": "id",
     "privilege": "privilège",

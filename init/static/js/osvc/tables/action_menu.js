@@ -12,17 +12,13 @@ function table_action_menu_init_data(t) {
     "action": "td[cell=1][name$=_c_action]",
     "id": "td[cell=1][name$=_c_id]",
     "email": "td[cell=1][name$=_c_email]",
-    "form_type": "td[cell=1][name$=_c_form_type]",
     "tag_id": "td[cell=1][name$=_c_tag_id]",
-    "tag_name": "td[cell=1][name$=_c_tag_name]",
     "ruleset_id": "td[cell=1][name$=_c_ruleset_id]",
     "modset_id": "td[cell=1][name$=_c_modset_id]",
     "slave": "td[cell=1][name$=_c_encap]",
     "command": "td[cell=1][name$=_c_command]",
     "chk_type": "td[cell=1][name$=_c_chk_type]",
-    "chk_instance": "td[cell=1][name$=_c_chk_instance]",
-    "run_module": "td[cell=1][name$=_c_run_module]",
-    "network": "td[cell=1][name$=_c_network]"
+    "chk_instance": "td[cell=1][name$=_c_chk_instance]"
   }
 
   t.action_menu_data = [
@@ -150,10 +146,48 @@ function table_action_menu_init_data(t) {
       "children": [
         {
           "selector": ["clicked", "checked", "all"],
+          "foldable": true,
+          'title': 'action_menu.on_apps',
+          "table": ["apps"],
+          "cols": ["id"],
+          "condition": "id",
+          "children": [
+            {
+              "title": "action_menu.add",
+              "class": "icon add16",
+              "fn": "data_action_add_app",
+              "privileges": ["Manager", "AppManager"],
+              "min": 0
+            },
+            {
+              "title": "action_menu.del",
+              "class": "icon del16",
+              "fn": "data_action_del_apps",
+              "privileges": ["Manager", "AppManager"],
+              "min": 1
+            },
+            {
+              "title": "action_menu.add_responsible",
+              "class": "icon add16",
+              "fn": "data_action_add_app_responsible",
+              "privileges": ["Manager", "AppManager"],
+              "min": 1
+            },
+            {
+              "title": "action_menu.del_responsible",
+              "class": "icon del16",
+              "fn": "data_action_del_app_responsible",
+              "privileges": ["Manager", "AppManager"],
+              "min": 1
+            }
+          ]
+        },
+        {
+          "selector": ["clicked", "checked", "all"],
           "title": "action_menu.on_compliance_status",
           "foldable": true,
-          "cols": ["id", "run_module"],
-          "condition": "id+run_module",
+          "cols": ["id", "module"],
+          "condition": "id+module",
           "children": [
             {
               "title": "action_menu.delete",
@@ -166,9 +200,10 @@ function table_action_menu_init_data(t) {
         {
           "selector": ["clicked", "checked", "all"],
           "title": "action_menu.on_networks",
+          "table": ["networks"],
           "foldable": true,
-          "cols": ["id", "network"],
-          "condition": "id+network",
+          "cols": ["id"],
+          "condition": "id",
           "children": [
             {
               "title": "action_menu.add",
@@ -187,9 +222,10 @@ function table_action_menu_init_data(t) {
         {
           "selector": ["clicked", "checked", "all"],
           "title": "action_menu.on_forms",
+          "table": ["forms"],
           "foldable": true,
-          "cols": ["id", "form_type"],
-          "condition": "id+form_type",
+          "cols": ["id"],
+          "condition": "id",
           "children": [
             {
               "title": "action_menu.add_form",
@@ -532,8 +568,9 @@ function table_action_menu_init_data(t) {
           "selector": ["clicked", "checked", "all"],
           "foldable": true,
           'title': 'action_menu.on_tags',
-          "cols": ["id", "tag_name"],
-          "condition": "id+tag_name",
+          "table": ["tags"],
+          "cols": ["id"],
+          "condition": "id",
           "children": [
             {
               "title": "action_menu.add",
@@ -1080,7 +1117,7 @@ function table_action_menu_format_section(t, e, section) {
   var ul = $("<ul></ul>")
   for (var i=0; i<section.children.length; i++) {
     var li = table_action_menu_format_selector(t, e, section.children[i])
-    if (li.html().length == 0) {
+    if (!li || (li.html().length == 0)) {
       continue
     }
     ul.append(li)
@@ -1331,7 +1368,23 @@ function table_prepare_scope_action_list(t, e, selector, scope, data, cache_id) 
   return ul
 }
 
+function table_selector_match_table(t, selector) {
+  if (!selector.table) {
+    return true
+  }
+  for (var i=0; i<selector.table.length; i++) {
+    var tid = selector.table[i]
+    if (tid == t.id) {
+      return true
+    }
+  }
+  return false
+}
+
 function table_action_menu_format_selector(t, e, selector) {
+  if (!table_selector_match_table(t, selector)) {
+    return
+  }
   var content = $("<li></li>")
   if (selector.foldable) {
     content.addClass("action_menu_folder")
@@ -2053,6 +2106,145 @@ function data_action_user_set_filterset(t, e) {
   div.append(yes_no)
   div.i18n()
   div.insertAfter(entry)
+}
+
+//
+// data action: add app responsibles
+//
+function data_action_add_app_responsible(t, e) {
+  data_action_generic_selector(t, e, {
+    "requestor": services_osvcpostrest,
+    "request_service": "R_APPS_RESPONSIBLES",
+    "selector": generic_selector_org_groups,
+    "request_data_entry": function(selected, data) {
+      return {
+        "group_id": selected,
+        "app_id": data["id"]
+      }
+    }
+  })
+}
+
+//
+// data action: del app responsible
+//
+function data_action_del_app_responsible(t, e) {
+  data_action_generic_selector(t, e, {
+    "requestor": services_osvcdeleterest,
+    "request_service": "R_APPS_RESPONSIBLES",
+    "selector": generic_selector_org_groups,
+    "request_data_entry": function(selected, data) {
+      return {
+        "group_id": selected,
+        "app_id": data["id"]
+      }
+    }
+  })
+}
+
+//
+// data action: delete app
+//
+function data_action_del_apps(t, e) {
+  var entry = $(e.target)
+  var cache_id = entry.attr("cache_id")
+  var data = t.action_menu_data_cache[cache_id]
+  var del_data = new Array()
+  for (i=0;i<data.length;i++) {
+    del_data.push({
+      'id': data[i]['id'],
+    })
+  }
+  services_osvcdeleterest("R_APPS", "", "", del_data, function(jd) {
+    if (jd.error && (jd.error.length > 0)) {
+      $(".flash").show("blind").html(services_error_fmt(jd))
+    }
+    if (jd.info && (jd.info.length > 0)) {
+      $(".flash").show("blind").html(services_info_fmt(jd))
+    }
+  },
+  function(xhr, stat, error) {
+    $(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
+  })
+}
+
+//
+// data action: add app
+//
+function data_action_add_app(t, e) {
+  var entry = $(e.target)
+
+  // create and focus tool area
+  table_action_menu_focus_on_leaf(t, entry)
+  var div = $("<div></div>")
+  div.uniqueId()
+  div.append($("<hr>"))
+  div.css({"display": "table-caption"})
+  div.insertAfter(entry)
+
+  // minimal create information
+  var line = $("<div class='template_form_line'></div>")
+  var title = $("<div data-i18n='action_menu.app_name'></div>").i18n()
+  var input = $("<input class='oi'></input>")
+  var info = $("<div></div>")
+  info.uniqueId()
+  info.css({"margin": "0.8em 0 0.8em 0"})
+  line.append(title)
+  line.append(input)
+  div.append(line)
+  div.append(info)
+  input.focus()
+
+  var timer = null
+  var xhr = null
+
+  input.bind("keyup", function(e) {
+    clearTimeout(timer)
+    if (is_enter(e)) {
+      data = {
+        "app": input.val()
+      }
+      info.empty()
+      spinner_add(info)
+      xhr  = services_osvcpostrest("R_APPS", "", "", data, function(jd) {
+        spinner_del(info)
+        if (jd.error && (jd.error.length > 0)) {
+          info.html(services_error_fmt(jd))
+        }
+        // display the user properties tab to set more properties
+        app_properties(div.attr("id"), {"app_id": jd.data[0].id})
+      },
+      function(xhr, stat, error) {
+        info.html(services_ajax_error_fmt(xhr, stat, error))
+      })
+    } else {
+      var app = input.val()
+      timer = setTimeout(function(){
+        info.empty()
+        spinner_add(info)
+        if (xhr) {
+          xhr.abort()
+        }
+        services_osvcgetrest("R_APPS", "", {"filters": ["app "+app]}, function(jd) {
+          xhr = null
+          spinner_del(info)
+          if (jd.error && (jd.error.length > 0)) {
+            info.html(services_error_fmt(jd))
+          }
+          if (jd.data.length == 0) {
+            info.text(i18n.t("action_menu.app_createable"))
+            return
+          }
+  
+          // display the user properties tab
+          app_properties(info.attr("id"), {"app_id": jd.data[0].id})
+        },
+        function(xhr, stat, error) {
+          info.html(services_ajax_error_fmt(xhr, stat, error))
+        })
+      }, 500)
+    }
+  })
 }
 
 //

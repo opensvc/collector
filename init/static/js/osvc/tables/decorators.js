@@ -1847,6 +1847,21 @@ function cell_decorator_boolean(e) {
   $(e).html(s)
 }
 
+function cell_decorator_app(e) {
+  var v = $.data(e, "v")
+  $(e).html("<span class='clickable'>"+v+"</span>")
+  $(e).addClass("corner")
+  $(e).click(function(){
+    var line = $(this).parent(".tl")
+    var app_id = $.data(line.children("[col=id]")[0], "v")
+    table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
+    span_id = $(e).parent(".tl").attr("spansum")
+    id = table_id + "_x_" + span_id
+    toggle_extra(null, id, e, 0)
+    app_tabs(id, {"app_id": app_id, "app_name": v})
+  })
+}
+
 function cell_decorator_form_name(e) {
   var v = $.data(e, "v")
   $(e).html("<span class='clickable'>"+v+"</span>")
@@ -3305,6 +3320,7 @@ cell_decorators = {
  "appinfo_key": cell_decorator_appinfo_key,
  "appinfo_value": cell_decorator_appinfo_value,
  "log_icons": cell_decorator_log_icons,
+ "app": cell_decorator_app,
  "rule_value": cell_decorator_rule_value
 }
 

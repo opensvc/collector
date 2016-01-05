@@ -222,7 +222,9 @@ handlers = {
   ],
   'DELETE': [
      rest_delete_action_queue_one(),
+     rest_delete_apps(),
      rest_delete_app(),
+     rest_delete_apps_responsibles(),
      rest_delete_app_responsible(),
      rest_delete_checks_settings(),
      rest_delete_checks_setting(),
@@ -300,6 +302,7 @@ handlers = {
      rest_post_action_queue_one(),
      rest_post_apps(),
      rest_post_app(),
+     rest_post_apps_responsibles(),
      rest_post_app_responsible(),
      rest_post_checks_contextual_settings(),
      rest_post_checks_contextual_setting(),

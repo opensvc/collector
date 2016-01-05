@@ -16,6 +16,8 @@
     "import": "Import"
   },
   "action_menu": {
+    "app_name": "Application name",
+    "on_apps": "On applications",
     "attach_privileges": "Attach privileges",
     "detach_privileges": "Detach privileges",
     "attach_groups": "Attach groups",
@@ -31,6 +33,7 @@
     "add_form": "Add form",
     "tag_name": "Tag name",
     "form_name": "Form name",
+    "app_createable": "This application does not exist yet. Press <enter> to create.",
     "group_createable": "This group does not exist yet. Press <enter> to create.",
     "user_createable": "This user does not exist yet. Press <enter> to create.",
     "tag_createable": "This tag name does not exist yet. Press <enter> to create.",
@@ -814,6 +817,19 @@
     "register_text" : "Create a new user",
     "lost_title" : "Lost Password",
     "lost_text" : "Send a new password by email"
+  },
+  "app_properties": {
+    "properties": "properties",
+    "description": "description",
+    "id": "id",
+    "app": "application",
+    "app_domain": "domain",
+    "app_team_ops": "operations team",
+    "dates": "Dates",
+    "updated": "updated",
+    "responsibles": "Responsibles (__n__)",
+    "services": "Services (__n__)",
+    "nodes": "Nodes (__n__)"
   },
   "group_properties": {
     "properties": "Properties",
