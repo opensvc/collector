@@ -115,7 +115,7 @@ function form_properties(divid, options) {
 					e.find("form").submit(function(event) {
 						event.preventDefault()
 						var val = input.val()
-						o.set_group(e, val)
+						o.set_form_type(e, val)
 					})
 				}
 			})
