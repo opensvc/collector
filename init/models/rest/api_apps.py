@@ -97,7 +97,7 @@ class rest_post_apps(rest_post_handler):
         response = db.apps.validate_and_insert(**vars)
         raise_on_error(response)
         row = db(q).select().first()
-        _log('rest.apps.create',
+        _log('apps.create',
              'app %(app)s created. data %(data)s',
              dict(app=row.app, data=str(vars)),
             )
@@ -134,18 +134,22 @@ class rest_post_app(rest_post_handler):
         if id is None:
             return Exception("app code not found")
         q = db.apps.id == id
+        row = db(q).select().first()
+        if row is None:
+            raise Exception("app %s does not exist" % str(id))
         response = db(q).validate_and_update(**vars)
         raise_on_error(response)
-        _log('rest.apps.change',
-             'app %(app)s changed. data %(data)s',
-             dict(app=row.app, data=str(vars)),
-            )
+        fmt = 'app %(app)s changed: %(data)s'
+        d = dict(app=row.app, data=beautify_change(row, vars))
+        _log('apps.change', fmt, d)
         l = {
           'event': 'apps_change',
-          'data': {'foo': 'bar'},
+          'data': {'id': row.id},
         }
         _websocket_send(event_msg(l))
-        return rest_get_app().handler(row.app)
+        ret = rest_get_app().handler(row.id)
+        ret["info"] = fmt % d
+        return ret
 
 
 #
@@ -208,7 +212,7 @@ class rest_delete_app(rest_delete_handler):
         db(q).delete()
         q = db.apps_responsibles.app_id == row.id
         db(q).delete()
-        _log('rest.apps.delete',
+        _log('apps.delete',
              'app %(app)s deleted',
              dict(app=row.app),
             )
