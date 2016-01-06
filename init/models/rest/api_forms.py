@@ -3,6 +3,8 @@ import datetime
 from hashlib import md5
 
 def form_responsible(id):
+    if "Manager" in user_groups():
+        return
     q = db.forms.id == id
     q &= db.forms.id == db.forms_team_responsible.form_id
     q &= db.forms_team_responsible.group_id.belongs(user_group_ids())
@@ -11,6 +13,8 @@ def form_responsible(id):
         raise Exception("Form %s not found or you are not responsible" % str(id))
 
 def form_published(id):
+    if "Manager" in user_groups():
+        return
     q = db.forms.id == id
     q1 = db.forms.form_type == "folder"
     q2 = (db.forms.id == db.forms_team_publication.form_id) & db.forms_team_publication.group_id.belongs(user_group_ids())
@@ -72,18 +76,16 @@ class rest_post_form(rest_post_handler):
         fmt = "Form %(form_name)s change: %(data)s"
         d = dict(form_name=form.form_name, data=beautify_change(form, vars))
 
-        _log(
-          'form.change',
-          fmt,
-          d
-        )
+        _log('form.change', fmt, d)
         l = {
           'event': 'forms_change',
-          'data': {'id': form.form_id},
+          'data': {'id': form.id},
         }
         _websocket_send(event_msg(l))
 
-        return rest_get_form().handler(form.form_id)
+        ret = rest_get_form().handler(form.id)
+        ret["info"] = fmt % d
+        return ret
 
 class rest_post_forms(rest_post_handler):
     def __init__(self):
