@@ -71,7 +71,7 @@ class rest_delete_scheduler_task(rest_delete_handler):
         if row is None:
             return dict(info="Task %s does not exist in the scheduler" % id)
         db(q).delete()
-        _log('rest.scheduler.delete',
+        _log('scheduler.delete',
              'deleted task %(u)s',
              dict(u=row.function_name))
         return dict(info="Task %s deleted" % id)
@@ -108,8 +108,8 @@ class rest_post_scheduler_task(rest_post_handler):
         l = []
         for key in vars:
             l.append("%s: %s => %s" % (str(key), str(row[key]), str(vars[key])))
-        _log('rest.scheduler.update',
-             'update properties %(data)s',
+        _log('scheduler.change',
+             'change properties %(data)s',
              dict(data=", ".join(l)))
         return rest_get_scheduler_task().handler(_id)
 
@@ -274,7 +274,7 @@ class rest_delete_scheduler_run(rest_delete_handler):
         else:
             u = "%d (%s)" % (row.id, str(task.function_name))
         db(q).delete()
-        _log('rest.scheduler.delete',
+        _log('scheduler.delete',
              'deleted run %(u)s',
              dict(u=u))
         return dict(info="Run %s deleted" % id)
@@ -311,8 +311,8 @@ class rest_post_scheduler_run(rest_post_handler):
         l = []
         for key in vars:
             l.append("%s: %s => %s" % (str(key), str(row[key]), str(vars[key])))
-        _log('rest.scheduler.update',
-             'update properties %(data)s',
+        _log('scheduler.change',
+             'change properties %(data)s',
              dict(data=", ".join(l)))
         return rest_get_scheduler_run().handler(_id)
 

@@ -299,7 +299,7 @@ class rest_post_network(rest_post_handler):
         if "team_responsible" not in vars:
             vars["team_responsible"] = user_primary_group()
         db(q).update(**vars)
-        _log('rest.networks.update',
+        _log('networks.update',
              'update properties %(data)s',
              dict(data=str(vars)),
             )
@@ -348,7 +348,7 @@ class rest_delete_network_segment(rest_delete_handler):
         q = db.network_segment_responsibles.seg_id == seg_id
         db(q).delete()
 
-        _log('rest.networks.segment.delete',
+        _log('networks.segment.delete',
              'delete segment %(s)s of network %(n)s',
              dict(s="-".join((seg.seg_begin, seg.seg_end)), n="/".join((net.network, str(net.netmask))))
             )
@@ -394,7 +394,7 @@ class rest_post_network_segments(rest_post_handler):
 
         self.validate_range(net_id, vars)
         seg_id = db.network_segments.insert(**vars)
-        _log('rest.networks.segment.create',
+        _log('networks.segment.create',
              'create segment of network %(n)s with properties %(data)s',
              dict(n="/".join((row.network, str(row.netmask))), data=str(vars))
             )
@@ -448,7 +448,7 @@ class rest_post_network_segment(rest_post_handler):
         network_segment_responsible(seg_id)
         q = db.network_segments.id == seg_id
         db(q).update(**vars)
-        _log('rest.networks.update',
+        _log('networks.update',
              'update properties %(data)s of segment %(seg_id)s',
              dict(data=str(vars), seg_id=seg_id),
             )
@@ -489,7 +489,7 @@ class rest_post_networks(rest_post_handler):
         if "team_responsible" not in vars:
             vars["team_responsible"] = user_primary_group()
         id = db.networks.validate_and_insert(**vars)
-        _log('rest.networks.create',
+        _log('networks.create',
              'create properties %(data)s',
              dict(data=str(vars))
             )
@@ -529,7 +529,7 @@ class rest_delete_network(rest_delete_handler):
         if net is None:
             return dict(info="network does not exist")
         db(q).delete()
-        _log('rest.networks.delete',
+        _log('networks.delete',
              '%(network)s/%(netmask)s',
              dict(network=net.network, netmask=net.netmask),
             )

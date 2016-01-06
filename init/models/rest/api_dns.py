@@ -215,7 +215,7 @@ class rest_post_dns_domains(rest_post_handler):
         response = dbdns.domains.validate_and_insert(**vars)
         raise_on_error(response)
         row = dbdns(q).select().first()
-        _log('rest.dns.domains.create',
+        _log('dns.domains.create',
              'record %(name)s %(type)s created. data %(data)s',
              dict(name=row.name, type=row.type, data=str(vars)),
             )
@@ -256,7 +256,7 @@ class rest_post_dns_domain(rest_post_handler):
             return dict(error="Domain %s does not exist"%domain_id)
         response = dbdns(q).validate_and_update(**vars)
         raise_on_error(response)
-        _log('rest.dns.domains.change',
+        _log('dns.domains.change',
              'record %(name)s %(type)s changed. data %(data)s',
              dict(name=row.name, type=row.type, data=str(vars)),
             )
@@ -294,6 +294,7 @@ class rest_post_dns_records(rest_post_handler):
         check_privilege("DnsOperator")
         if len(vars) == 0:
             raise Exception("Insufficient data")
+        vars["change_date"] = int((datetime.datetime.now()-datetime.datetime(1970, 1, 1)).total_seconds())
         q = dbdns.records.id > 0
         for v in vars:
             q &= dbdns.records[v] == vars[v]
@@ -304,16 +305,18 @@ class rest_post_dns_records(rest_post_handler):
         response = dbdns.records.validate_and_insert(**vars)
         raise_on_error(response)
         row = dbdns(q).select().first()
-        _log('rest.dns.records.create',
-             'record %(name)s %(type)s %(content)s created. data %(data)s',
-             dict(name=row.name, type=row.type, content=row.content, data=str(vars)),
-            )
+
+        fmt = 'record %(name)s %(type)s %(content)s created in domain %(domain)s'
+        d = dict(name=row.name, type=row.type, content=row.content, domain=str(row.domain_id))
+        _log('dns.records.create', fmt, d)
         l = {
           'event': 'pdns_records_change',
           'data': {'foo': 'bar'},
         }
         _websocket_send(event_msg(l))
-        return rest_get_dns_record().handler(row.id)
+        ret = rest_get_dns_record().handler(row.id)
+        ret["info"] = fmt % d
+        return ret
 
 
 #
@@ -348,7 +351,7 @@ class rest_post_dns_record(rest_post_handler):
         dns_record_responsible(vars, current=row)
         response = dbdns(q).validate_and_update(**vars)
         raise_on_error(response)
-        _log('rest.dns.records.change',
+        _log('dns.records.change',
              'record %(name)s %(type)s %(content)s changed. data %(data)s',
              dict(name=row.name, type=row.type, content=row.content, data=str(vars)),
             )
@@ -393,7 +396,7 @@ class rest_delete_dns_domain(rest_delete_handler):
         q = dbdns(q).delete()
 
         # todo lookup nodename, svcname for logging
-        _log('rest.dns.domains.delete',
+        _log('dns.domains.delete',
              'record %(name)s %(type)s deleted',
              dict(name=row.name, type=row.type),
             )
@@ -438,7 +441,7 @@ class rest_delete_dns_record(rest_delete_handler):
         dns_record_responsible(row)
         dbdns(q).delete()
         # todo lookup nodename, svcname for logging
-        _log('rest.dns.records.delete',
+        _log('dns.records.delete',
              'record %(name)s %(type)s %(content)s deleted',
              dict(name=row.name, type=row.type, content=row.content),
             )
