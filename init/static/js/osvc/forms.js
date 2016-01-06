@@ -317,8 +317,6 @@ function form(divid, options) {
 			var line = $("<tr></tr>")
 			var label = $("<td style='white-space:nowrap'></td>")
 			var value = $("<td name='val'></td>")
-			var help = $("<td class='help'></td>")
-			help.attr("title", d.Help)
 			line.attr("iid", d.Id)
 			if (d.ExpertMode == true) {
 				line.addClass("hidden")
@@ -332,6 +330,10 @@ function form(divid, options) {
 			}
 			line.append(label)
 			line.append(value)
+			if (d.Help) {
+				var help = $("<td class='help'></td>")
+				help.attr("title", d.Help)
+			}
 			line.append(help)
 			if ((typeof(data) === "undefined") || ((typeof(data) !== "string") && !(input_key_id in data))) {
 				if (d.Default == "__user_email__") {
