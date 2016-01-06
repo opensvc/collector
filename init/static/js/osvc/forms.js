@@ -27,6 +27,7 @@ function forms() {
 			return
 		}
 		if (data.event == "forms_change") {
+			console.log("refresh forms cache on change event")
 			o.load()
 			return
 		}
@@ -183,6 +184,13 @@ function form(divid, options) {
 		o.area_table.append(line)
 	}
 
+	function get_dict_id(input) {
+		if ("Key" in input) {
+			return input.Key
+		}
+		return input.Id
+	}
+
 	o.render_display_digest_line = function(data, key) {
 		var line = $("<tr></tr>")
 		if (key) {
@@ -190,6 +198,7 @@ function form(divid, options) {
 		}
 		for (var i=0; i<o.form_data.form_definition.Inputs.length; i++) {
 			var d = o.form_data.form_definition.Inputs[i]
+			var input_key_id = get_dict_id(d)
 			if (d.Hidden == true) {
 				continue
 			}
@@ -199,7 +208,7 @@ function form(divid, options) {
 			var cell = $("<td></td>")
 			var content = ""
 
-			if (key && (d.Id == key_id)) {
+			if (key && (input_key_id == key_id)) {
 				content = key
 				cell.addClass("b")
 			} else if (typeof(data) === "string") {
@@ -210,8 +219,8 @@ function form(divid, options) {
 				if(d.LabelCss) {
 					cell.addClass(d.LabelCss)
 				}
-			} else if (d.Id in data) {
-				content = data[d.Id]
+			} else if (input_key_id in data) {
+				content = data[input_key_id]
 			}
 
 			if (content == "") {
@@ -267,6 +276,7 @@ function form(divid, options) {
 		var table = $("<table></table>")
 		for (var i=0; i<o.form_data.form_definition.Inputs.length; i++) {
 			var d = o.form_data.form_definition.Inputs[i]
+			var input_key_id = get_dict_id(d)
 			if (d.Hidden == true) {
 				continue
 			}
@@ -282,8 +292,8 @@ function form(divid, options) {
 			}
 			line.append(label)
 			line.append(value)
-			if (d.Id in data) {
-				var content = data[d.Id]
+			if (input_key_id in data) {
+				var content = data[input_key_id]
 			}
 			if (content == "") {
 				content = "-"
@@ -301,6 +311,7 @@ function form(divid, options) {
 		var table = $("<table></table>")
 		for (var i=0; i<o.form_data.form_definition.Inputs.length; i++) {
 			var d = o.form_data.form_definition.Inputs[i]
+			var input_key_id = get_dict_id(d)
 			var line = $("<tr></tr>")
 			var label = $("<td style='white-space:nowrap'></td>")
 			var value = $("<td name='val'></td>")
@@ -320,7 +331,7 @@ function form(divid, options) {
 			line.append(label)
 			line.append(value)
 			line.append(help)
-			if ((typeof(data) === "undefined") || !(d.Id in data)) {
+			if ((typeof(data) === "undefined") || ((typeof(data) !== "string") && !(input_key_id in data))) {
 				if (d.Default == "__user_email__") {
 					var content = _self.email
 				} else if (d.Default == "__user_primary_group__") {
@@ -336,8 +347,8 @@ function form(divid, options) {
 				}
 			} else if (typeof(data) === "string") {
 				var content = data
-			} else if (d.Id in data) {
-				var content = data[d.Id]
+			} else if (input_key_id in data) {
+				var content = data[input_key_id]
 			} else {
 				var content = ""
 			}
@@ -535,6 +546,44 @@ function form(divid, options) {
 		})
 	}
 
+	o.submit_output_rest = function(output, data) {
+		if (typeof(data) === "string") {
+			console.log("rest output data can not be string")
+			return
+		}
+		if (!output.Function) {
+			console.log("rest output must have a Function defined (rest api path relative to /init/rest/api)")
+			return
+		}
+		if (!output.Handler) {
+			console.log("rest output must have a Handler defined (PUT, POST or DELETE)")
+			return
+		}
+		if (output.Handler == "POST") {
+			var fn = services_osvcpostrest
+		} else if (output.Handler == "DELETE") {
+			var fn = services_osvcdeleterest
+		} else if (output.Handler == "PUT") {
+			var fn = services_osvcputrest
+		} else {
+			console.log("rest output must have a Handler defined (PUT, POST or DELETE)")
+			return
+		}
+		fn(output.Function, "", "", data, function(jd) {
+			if (jd.error && (jd.error.length > 0)) {
+				o.result.html(services_error_fmt(jd))
+				return
+			}
+			if (jd.info && (jd.info.length > 0)) {
+                                o.result.html(services_info_fmt(jd))
+                                return
+                        }
+		},
+		function(xhr, stat, error) {
+			o.result.html(services_ajax_error_fmt(xhr, stat, error))
+		})
+	}
+
 	o.submit_output_compliance = function(data) {
 		var _data = {}
 		if (typeof(data) === "string") {
@@ -562,6 +611,8 @@ function form(divid, options) {
 	o.submit_output = function(output, data) {
 		if (output.Dest == "compliance variable") {
 			o.submit_output_compliance(data)
+		} else if (output.Dest == "rest") {
+			o.submit_output_rest(output, data)
 		} else {
 			console.log("Output " + output.Dest + " not supported client-side")
 			o.need_submit_form_data = true
@@ -575,6 +626,7 @@ function form(divid, options) {
 
 		button.bind("click", function() {
 			var data = o.form_to_data()
+			o.need_submit_form_data = false
 			for (var i=0; i<o.form_data.form_definition.Outputs.length; i++) {
 				var output = o.form_data.form_definition.Outputs[i]
 				o.submit_output(output, data)
@@ -746,6 +798,7 @@ function form(divid, options) {
 			return
 		}
 		var opts = []
+		var acid = content
 		for (var i=0; i<data.length; i++) {
 			var _d = data[i]
 			if (typeof(_d) === "string") {
@@ -768,12 +821,8 @@ function form(divid, options) {
 					"label": label
 				})
 				if (!content && (opts.length > 0)) {
-					value = opts[0].id
+					var acid = opts[0].id
 					content = opts[0].label
-				}
-				if (content && (value == content)) {
-					var acid = value
-					content = label
 				}
 			} else {
 				opts.push({
@@ -781,12 +830,8 @@ function form(divid, options) {
 					"label": _d[args.props]
 				})
 				if (!content && (opts.length > 0)) {
-					value = opts[0].id
+					var acid = opts[0].id
 					content = opts[0].label
-				}
-				if (content) {
-					var acid = content
-					content = content
 				}
 			}
 		}
@@ -833,13 +878,9 @@ function form(divid, options) {
 			} else {
 				input.addClass("aci")
 			}
-			if (input.parents("tr").first().hasClass("hidden") && (opts.length > 0)) {
-				input.val(opts[0].label)
-				input.prop("acid", opts[0].id)
-			}
 		}
 		if (content && (content.length > 0)) {
-			input.prop("acid", content)
+			input.prop("acid", acid)
 			input.val(content)
 		}
 		input.change()
@@ -1201,11 +1242,12 @@ function form(divid, options) {
 		var data = t
 		for (var i=0; i<o.form_data.form_definition.Inputs.length; i++) {
 			var d = o.form_data.form_definition.Inputs[i]
+			var input_key_id = get_dict_id(d)
 			var td = o.area.find("tr[iid="+d.Id+"] > [name=val]")
 			if (td.length == 0) {
 				continue
 			}
-			var re = RegExp("%%"+d.Id+"%%", "g")
+			var re = RegExp("%%"+input_key_id+"%%", "g")
 			data = data.replace(re, o.get_val(td))
 		}
 		return data
@@ -1215,6 +1257,10 @@ function form(divid, options) {
 		var data = {}
 		for (var i=0; i<o.form_data.form_definition.Inputs.length; i++) {
 			var d = o.form_data.form_definition.Inputs[i]
+			var input_key_id = get_dict_id(d)
+			if (!input_key_id) {
+				continue
+			}
 			var td = table.find("tr[iid="+d.Id+"] > [name=val]")
 			if (td.length == 0) {
 				continue
@@ -1227,7 +1273,7 @@ function form(divid, options) {
 			if ((d.Type == "string or integer") || (d.Type == "size") || (d.Type == "integer")) {
 				val = convert_size(val)
 			}
-			data[d.Id] = val
+			data[input_key_id] = val
 		}
 		return data
 	}
