@@ -180,16 +180,16 @@ function form_definition(divid, options) {
 	}
 
 	o._load_form = function(data) {
-		var div = $("<pre></pre>")
+		var div = $("<div></div>")
 		o.div.append(div)
-		div.text(data.form_yaml)
-		hljs.highlightBlock(div[0])
+		$.data(div, "v", data.form_yaml)
+		cell_decorator_yaml(div)
 
 		div.bind("click", function() {
 			div.hide()
 			var edit = $("<div name='edit'></div>")
-			var textarea = $("<textarea class='oi' style='width:100%;min-height:20em'></textarea>")
-			var button = $("<input type='button'>")
+			var textarea = $("<textarea class='oi' style='width:97%;min-height:20em'></textarea>")
+			var button = $("<input type='button' style='margin:0.5em 0 0.5em 0'>")
 			button.attr("value", i18n.t("form_properties.save"))
 			textarea.val(div.text())
 			edit.append(textarea)
