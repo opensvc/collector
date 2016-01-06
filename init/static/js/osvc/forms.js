@@ -294,6 +294,8 @@ function form(divid, options) {
 			line.append(value)
 			if (input_key_id in data) {
 				var content = data[input_key_id]
+			} else {
+				var content = ""
 			}
 			if (content == "") {
 				content = "-"
