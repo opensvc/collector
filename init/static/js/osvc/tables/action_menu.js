@@ -199,6 +199,61 @@ function table_action_menu_init_data(t) {
         },
         {
           "selector": ["clicked", "checked", "all"],
+          "foldable": true,
+          'title': 'action_menu.on_dns_domains',
+          "table": ["dnsd"],
+          "cols": ["id"],
+          "condition": "id",
+          "children": [
+            {
+              "title": "action_menu.add",
+              "class": "icon add16",
+              "fn": "data_action_add_dns_domain",
+              "privileges": ["Manager", "DnsManager"],
+              "min": 0
+            },
+            {
+              "title": "action_menu.del",
+              "class": "icon del16",
+              "fn": "data_action_del_dns_domains",
+              "privileges": ["Manager", "DnsManager"],
+              "min": 1
+            },
+            {
+              "title": "action_menu.sync_dns_domains",
+              "class": "icon net16",
+              "fn": "data_action_sync_dns_domains",
+              "privileges": ["Manager", "DnsManager"],
+              "min": 1
+            },
+          ]
+        },
+        {
+          "selector": ["clicked", "checked", "all"],
+          "foldable": true,
+          'title': 'action_menu.on_dns_records',
+          "table": ["dnsr"],
+          "cols": ["id"],
+          "condition": "id",
+          "children": [
+            {
+              "title": "action_menu.add",
+              "class": "icon add16",
+              "fn": "data_action_add_dns_record",
+              "privileges": ["Manager", "DnsManager"],
+              "min": 0
+            },
+            {
+              "title": "action_menu.del",
+              "class": "icon del16",
+              "fn": "data_action_del_dns_records",
+              "privileges": ["Manager", "DnsManager"],
+              "min": 1
+            }
+          ]
+        },
+        {
+          "selector": ["clicked", "checked", "all"],
           "title": "action_menu.on_networks",
           "table": ["networks"],
           "foldable": true,
@@ -2106,6 +2161,181 @@ function data_action_user_set_filterset(t, e) {
   div.append(yes_no)
   div.i18n()
   div.insertAfter(entry)
+}
+
+//
+// data action: add dns domain
+//
+function data_action_add_dns_domain(t, e) {
+  var entry = $(e.target)
+
+  // create and focus tool area
+  table_action_menu_focus_on_leaf(t, entry)
+  var div = $("<div></div>")
+  div.uniqueId()
+  div.append($("<hr>"))
+  div.css({"display": "table-caption"})
+  div.insertAfter(entry)
+
+  // minimal create information
+  var line = $("<div class='template_form_line'></div>")
+  var title = $("<div data-i18n='action_menu.domain_name'></div>").i18n()
+  var input = $("<input class='oi'></input>")
+  var info = $("<div></div>")
+  info.uniqueId()
+  info.css({"margin": "0.8em 0 0.8em 0"})
+  line.append(title)
+  line.append(input)
+  div.append(line)
+  div.append(info)
+  input.focus()
+
+  var timer = null
+  var xhr = null
+
+  input.bind("keyup", function(e) {
+    clearTimeout(timer)
+    if (is_enter(e)) {
+      data = {
+        "name": input.val()
+      }
+      info.empty()
+      spinner_add(info)
+      xhr  = services_osvcpostrest("R_DNS_DOMAINS", "", "", data, function(jd) {
+        spinner_del(info)
+        if (jd.error && (jd.error.length > 0)) {
+          info.html(services_error_fmt(jd))
+        }
+        // display the domain properties tab to set more properties
+        dns_domain_properties(div.attr("id"), {"domain_id": jd.data[0].id})
+      },
+      function(xhr, stat, error) {
+        info.html(services_ajax_error_fmt(xhr, stat, error))
+      })
+    } else {
+      var domain_name = input.val()
+      timer = setTimeout(function(){
+        info.empty()
+        spinner_add(info)
+        if (xhr) {
+          xhr.abort()
+        }
+        services_osvcgetrest("R_DNS_DOMAINS", "", {"filters": ["name "+domain_name]}, function(jd) {
+          xhr = null
+          spinner_del(info)
+          if (jd.error && (jd.error.length > 0)) {
+            info.html(services_error_fmt(jd))
+          }
+          if (jd.data.length == 0) {
+            info.text(i18n.t("action_menu.domain_createable"))
+            return
+          }
+  
+          // display the node properties tab
+          dns_domain_properties(info.attr("id"), {"domain_id": jd.data[0].id})
+        },
+        function(xhr, stat, error) {
+          info.html(services_ajax_error_fmt(xhr, stat, error))
+        })
+      }, 500)
+    }
+  })
+}
+
+//
+// data action: delete dns domains
+//
+function data_action_del_dns_domains(t, e) {
+  var entry = $(e.target)
+  var cache_id = entry.attr("cache_id")
+  var data = t.action_menu_data_cache[cache_id]
+  var del_data = new Array()
+  for (i=0;i<data.length;i++) {
+    del_data.push({
+      'id': data[i]['id'],
+    })
+  }
+  services_osvcdeleterest("R_DNS_DOMAINS", "", "", del_data, function(jd) {
+    if (jd.error && (jd.error.length > 0)) {
+      $(".flash").show("blind").html(services_error_fmt(jd))
+    }
+    if (jd.info && (jd.info.length > 0)) {
+      $(".flash").show("blind").html(services_info_fmt(jd))
+    }
+  },
+  function(xhr, stat, error) {
+    $(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
+  })
+}
+
+//
+// data action: sync dns domains
+//
+function data_action_sync_dns_domains(t, e) {
+  var entry = $(e.target)
+  var cache_id = entry.attr("cache_id")
+  var data = t.action_menu_data_cache[cache_id]
+  var div = $("<div></div>")
+  var info = $("<div></div>")
+  div.append($("<hr>"))
+  div.append(info)
+  div.insertAfter(entry)
+
+  for (i=0; i<data.length; i++) {
+    services_osvcputrest("R_DNS_DOMAIN_SYNC", [data[i]['id']], "", "", function(jd) {
+      if (jd.error && (jd.error.length > 0)) {
+        info.append("<pre>"+jd.error+"</pre>")
+      }
+      if (jd.info && (jd.info.length > 0)) {
+        info.append("<pre>"+jd.info+"</pre>")
+      }
+    },
+    function(xhr, stat, error) {
+      $(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
+    })
+  }
+}
+
+//
+// data action: delete dns records
+//
+function data_action_del_dns_records(t, e) {
+  var entry = $(e.target)
+  var cache_id = entry.attr("cache_id")
+  var data = t.action_menu_data_cache[cache_id]
+  var del_data = new Array()
+  for (i=0;i<data.length;i++) {
+    del_data.push({
+      'id': data[i]['id'],
+    })
+  }
+  services_osvcdeleterest("R_DNS_RECORDS", "", "", del_data, function(jd) {
+    if (jd.error && (jd.error.length > 0)) {
+      $(".flash").show("blind").html(services_error_fmt(jd))
+    }
+    if (jd.info && (jd.info.length > 0)) {
+      $(".flash").show("blind").html(services_info_fmt(jd))
+    }
+  },
+  function(xhr, stat, error) {
+    $(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
+  })
+}
+
+//
+// data action: add dns record
+//
+function data_action_add_dns_record(t, e) {
+  var entry = $(e.target)
+
+  // create and focus tool area
+  table_action_menu_focus_on_leaf(t, entry)
+  var div = $("<div></div>")
+  div.uniqueId()
+  div.append($("<hr>"))
+  div.css({"display": "table-caption"})
+  div.insertAfter(entry)
+  form(div.attr("id"), {"form_name": "add_dns_record"})
 }
 
 //

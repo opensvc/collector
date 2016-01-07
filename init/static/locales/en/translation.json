@@ -17,7 +17,11 @@
   },
   "action_menu": {
     "app_name": "Application name",
+    "domain_name": "Domain name",
+    "on_dns_domains": "On dns domains",
+    "sync_dns_domains": "Increment SOA serial",
     "on_apps": "On applications",
+    "on_dns_records": "On dns records",
     "attach_privileges": "Attach privileges",
     "detach_privileges": "Detach privileges",
     "attach_groups": "Attach groups",
@@ -33,6 +37,7 @@
     "add_form": "Add form",
     "tag_name": "Tag name",
     "form_name": "Form name",
+    "domain_createable": "This domain does not exist yet. Press <enter> to create.",
     "app_createable": "This application does not exist yet. Press <enter> to create.",
     "group_createable": "This group does not exist yet. Press <enter> to create.",
     "user_createable": "This user does not exist yet. Press <enter> to create.",
@@ -275,6 +280,29 @@
       "nodes_net" : "Nodes net"
     }
   },
+  "dns_domain_properties": {
+    "base": "Base",
+    "dates": "Dates",
+    "id": "Id",
+    "name": "Name",
+    "account": "Account",
+    "notified_serial": "Notified serial",
+    "master": "Master",
+    "last_check": "Last check",
+    "type": "Type"
+  },
+  "dns_record_properties": {
+    "base": "Base",
+    "dates": "Dates",
+    "id": "Id",
+    "name": "Name",
+    "content": "Content",
+    "prio": "Priority",
+    "ttl": "TTL",
+    "domain": "Domain",
+    "last_change": "Last change",
+    "type": "Type"
+  },
   "form_properties": {
     "save": "save",
     "publications": "Publications",
@@ -470,6 +498,14 @@
   "ruleset_tabs": {
     "export": "export",
     "ruleset": "ruleset"
+  },
+  "dns_domain_tabs": {
+    "properties": "properties",
+    "records": "records"
+  },
+  "dns_record_tabs": {
+    "properties": "properties",
+    "nodes": "nodes"
   },
   "form_tabs": {
     "properties": "properties",

@@ -18,6 +18,10 @@
   "action_menu": {
     "app_name": "Nom de l'application",
     "on_apps": "Sur les applications",
+    "domain_name": "Nom de domaine",
+    "on_dns_domains": "Sur les domaines dns",
+    "sync_dns_domains": "Incrémenter le numéro de série du SOA",
+    "on_dns_records": "Sur les enregistrements dns",
     "attach_privileges": "Attacher des privilèges",
     "detach_privileges": "Détacher des privilèges",
     "attach_groups": "Attacher des groupes",
@@ -33,6 +37,7 @@
     "add_form": "Ajouter un formulaire",
     "tag_name": "Nom du tag",
     "form_name": "Nom du formulaire",
+    "domain_createable": "Ce domaine n'existe pas encore. Appuyez sur <entrée> pour le créer.",
     "app_createable": "Cette application n'existe pas encore. Appuyez sur <entrée> pour le créer.",
     "group_createable": "Ce groupe n'existe pas encore. Appuyez sur <entrée> pour le créer.",
     "user_createable": "Cet utilisateur n'existe pas encore. Appuyez sur <entrée> pour le créer.",
@@ -42,7 +47,7 @@
     "del_publication": "Supprimer des publications",
     "del_responsible": "Supprimer des responsables",
     "add_publication": "Ajouter des publications",
-    "add_responsible": "Ajouter des responsibles",
+    "add_responsible": "Ajouter des responsables",
     "on_compliance_status": "Sur les derniers audits de conformité",
     "on_networks": "Sur les réseaux",
     "net_createable": "Ce réseau n'existe pas encore. Appuyez sur <entrée> pour le créer.",
@@ -262,6 +267,29 @@
       "nodes_net" : "Réseau de noeuds"
     }
   },
+  "dns_domain_properties": {
+    "base": "Base",
+    "dates": "Dates",
+    "id": "Id",
+    "name": "Nom",
+    "account": "Compte",
+    "notified_serial": "Numéro de série notifié",
+    "master": "Maître",
+    "last_check": "Dernière vérification",
+    "type": "Type"
+  },
+  "dns_record_properties": {
+    "base": "Base",
+    "dates": "Dates",
+    "id": "Id",
+    "name": "Nom",
+    "content": "Contenu",
+    "prio": "Priorité",
+    "ttl": "TTL",
+    "domain": "Domaine",
+    "last_change": "Dernier changement",
+    "type": "Type"
+  },
   "form_properties": {
     "save": "sauvegarder",
     "publications": "Publications",
@@ -457,6 +485,14 @@
   "ruleset_tabs": {
     "export": "export",
     "ruleset": "jeu de règles"
+  },
+  "dns_domain_tabs": {
+    "properties": "propriétés",
+    "records": "enregistrements"
+  },
+  "dns_record_tabs": {
+    "properties": "propriétés",
+    "nodes": "noeuds"
   },
   "form_tabs": {
     "properties": "propriétés",

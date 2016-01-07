@@ -1,11 +1,5 @@
-// OpenSvc Services JS Script
-// MD 09062015
-
-// Global JS Static self
 var _self;
-
 var _groups = [];
-
 var services_access_uri = {
     "S_SYSREP" : "ajax_sysreport/ajax_sysrep",
     "S_SYSREPVIEW" : "ajax_sysreport/sysrep",
@@ -36,6 +30,11 @@ var services_access_uri = {
     "R_COMPLIANCE_RULESETS_SERVICES" : "/compliance/rulesets_services",
     "R_COMPLIANCE_RULESET_VARIABLE" : "/compliance/rulesets/%1/variables/%2",
     "R_COMPLIANCE_STATUS" : "/compliance/status",
+    "R_DNS_RECORD" : "/dns/records/%1",
+    "R_DNS_RECORDS" : "/dns/records",
+    "R_DNS_DOMAIN" : "/dns/domains/%1",
+    "R_DNS_DOMAIN_SYNC" : "/dns/domains/%1/sync",
+    "R_DNS_DOMAINS" : "/dns/domains",
     "R_FILTERSETS" : "/filtersets",
     "R_FORM" : "/forms/%1",
     "R_FORM_PUBLICATIONS" : "/forms/%1/publications",

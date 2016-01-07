@@ -1862,6 +1862,36 @@ function cell_decorator_app(e) {
   })
 }
 
+function cell_decorator_dns_domain(e) {
+  var v = $.data(e, "v")
+  $(e).html("<span class='clickable'>"+v+"</span>")
+  $(e).addClass("corner")
+  $(e).click(function(){
+    var line = $(this).parent(".tl")
+    var domain_id = $.data(line.children("[col=id]")[0], "v")
+    table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
+    span_id = $(e).parent(".tl").attr("spansum")
+    id = table_id + "_x_" + span_id
+    toggle_extra(null, id, e, 0)
+    dns_domain_tabs(id, {"domain_id": domain_id, "domain_name": v})
+  })
+}
+
+function cell_decorator_dns_record(e) {
+  var v = $.data(e, "v")
+  $(e).html("<span class='clickable'>"+v+"</span>")
+  $(e).addClass("corner")
+  $(e).click(function(){
+    var line = $(this).parent(".tl")
+    var record_id = $.data(line.children("[col=id]")[0], "v")
+    table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
+    span_id = $(e).parent(".tl").attr("spansum")
+    id = table_id + "_x_" + span_id
+    toggle_extra(null, id, e, 0)
+    dns_record_tabs(id, {"record_id": record_id, "record_name": v})
+  })
+}
+
 function cell_decorator_form_name(e) {
   var v = $.data(e, "v")
   $(e).html("<span class='clickable'>"+v+"</span>")
@@ -2337,18 +2367,6 @@ function cell_decorator_dns_records_type(e) {
   var s = ""
   s = "<div class='"+cl.join(" ")+"'>"+v+"</div>"
   $(e).html(s)
-}
-
-function cell_decorator_dns_records_links(e) {
-  $(e).empty()
-  var line = $(e).parent(".tl")
-  var record_id = $.data(line.children("[col=id]")[0], "v")
-
-  var query = "record_id="+record_id
-  var query = query + "&_next="+window.location
-  url = services_get_url() + "/init/dns/record_edit?"+query
-  var d = $("<a class='clickable icon edit16' target='_blank' href="+url+"></a>")
-  $(e).append(d)
 }
 
 function cell_decorator_dns_domains_links(e) {
@@ -3307,10 +3325,11 @@ cell_decorators = {
  "charts_links": cell_decorator_charts_links,
  "reports_links": cell_decorator_reports_links,
  "dns_domains_links": cell_decorator_dns_domains_links,
- "dns_records_links": cell_decorator_dns_records_links,
  "dns_records_type": cell_decorator_dns_records_type,
  "tag_exclude": cell_decorator_tag_exclude,
  "form_name": cell_decorator_form_name,
+ "dns_record": cell_decorator_dns_record,
+ "dns_domain": cell_decorator_dns_domain,
  "_network": cell_decorator_network,
  "boolean": cell_decorator_boolean,
  "status": cell_decorator_status,

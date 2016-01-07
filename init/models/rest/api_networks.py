@@ -121,7 +121,7 @@ class rest_get_network_segments(rest_get_table_handler):
           "A segment is an ip range suppporting management delegation and ip provisioning properties.",
         ]
         examples = [
-          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/network/10/segments",
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/networks/10/segments",
         ]
         rest_get_table_handler.__init__(
           self,
@@ -142,11 +142,11 @@ class rest_get_network_segments(rest_get_table_handler):
 class rest_get_network_segment(rest_get_line_handler):
     def __init__(self):
         desc = [
-          "Display a segments of a network.",
+          "Display a segment of a network.",
           "A segment is an ip range suppporting management delegation and ip provisioning properties.",
         ]
         examples = [
-          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/network/10/segments/10",
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/networks/10/segments/10",
         ]
         rest_get_line_handler.__init__(
           self,
@@ -164,6 +164,85 @@ class rest_get_network_segment(rest_get_line_handler):
         return self.prepare_data(**vars)
 
 #
+class rest_get_network_ips(rest_get_handler):
+    def __init__(self):
+        desc = [
+          "Display ips of a network.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/networks/10/ips",
+        ]
+        rest_get_handler.__init__(
+          self,
+          path="/networks/<id>/ips",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, net_id, **vars):
+        from socket import inet_ntoa
+        from struct import pack
+        sql = """select count(id) from network_segments where net_id=%s"""%net_id
+        n_segs = db.executesql(sql)[0][0]
+
+        sql = """select
+                   inet_aton(s.seg_begin),
+                   inet_aton(s.seg_end),
+                   s.seg_type
+                 from
+                   network_segments s,
+                   network_segment_responsibles sr,
+                   auth_group g
+                 where
+                   s.net_id = %s and
+                   s.id = sr.seg_id and
+                   sr.group_id = g.id and
+                   g.role in (%s)
+                 group by s.id
+                 order by inet_aton(seg_begin)
+              """%(net_id, ','.join(map(lambda x: "'"+x+"'", user_groups())))
+        rows = db.executesql(sql)
+        ipl = []
+
+        if n_segs > 0:
+            if len(rows) == 0:
+                raise Exception("you are owner of no segment of this network")
+            for row in rows:
+                ipl += map(lambda x: {"ip": inet_ntoa(pack('>L', x)), "type": row[2]}, range(row[0], row[1]))
+        else:
+            sql = """select inet_aton(network), inet_aton(broadcast) from networks where id=%s"""%net_id
+            rows = db.executesql(sql)
+            if len(rows) == 0:
+                return T("network not found")
+            ipl = map(lambda x: {"ip": inet_ntoa(pack('>L', x)), "type": ""}, range(rows[0][0], rows[0][1]))
+        if len(ipl) == 0:
+            return []
+
+        sql = """select content,name from records where content in (%s)"""%','.join(map(lambda x: repr(x["ip"]), ipl))
+        rows = dbdns.executesql(sql)
+        alloc_ips = {}
+        for content, name in rows:
+            alloc_ips[content] = name
+        for i, ip in enumerate(ipl):
+            if ip["ip"] in alloc_ips:
+               ipl[i]["record_name"] = alloc_ips[ip["ip"]]
+            else:
+               ipl[i]["record_name"] = ""
+
+        sql = """select nodename, addr from v_nodenetworks where net_id=%s"""%net_id
+        rows = db.executesql(sql)
+        alloc_ips = {}
+        for nodename, addr in rows:
+            alloc_ips[addr] = nodename
+        for i, ip in enumerate(ipl):
+            if ip["ip"] in alloc_ips:
+               ipl[i]["nodename"] = alloc_ips[ip["ip"]]
+            else:
+               ipl[i]["nodename"] = ""
+
+        return dict(data=ipl)
+
+#
 class rest_get_network_segment_responsibles(rest_get_table_handler):
     def __init__(self):
         desc = [
@@ -171,7 +250,7 @@ class rest_get_network_segment_responsibles(rest_get_table_handler):
           "A segment is an ip range suppporting management delegation and ip provisioning properties.",
         ]
         examples = [
-          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/network/10/segments/10/responsibles",
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/networks/10/segments/10/responsibles",
         ]
         rest_get_table_handler.__init__(
           self,
@@ -199,7 +278,7 @@ class rest_post_network_segment_responsible(rest_post_handler):
           "Members of responsible groups are allowed to allocate ips in the segment",
         ]
         examples = [
-          "# curl -u %(email)s -o- -X POST https://%(collector)s/init/rest/api/network/10/segments/10/responsibles/2",
+          "# curl -u %(email)s -o- -X POST https://%(collector)s/init/rest/api/networks/10/segments/10/responsibles/2",
         ]
         rest_post_handler.__init__(
           self,
@@ -238,7 +317,7 @@ class rest_delete_network_segment_responsible(rest_delete_handler):
           "Members of responsible groups are allowed to allocate ips in the segment",
         ]
         examples = [
-          "# curl -u %(email)s -o- -X DELETE https://%(collector)s/init/rest/api/network/10/segments/10/responsibles/2",
+          "# curl -u %(email)s -o- -X DELETE https://%(collector)s/init/rest/api/networks/10/segments/10/responsibles/2",
         ]
         rest_delete_handler.__init__(
           self,

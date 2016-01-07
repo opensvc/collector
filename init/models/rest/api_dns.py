@@ -62,6 +62,59 @@ def dns_record_responsible(row, current={}):
     raise Exception("Not allowed to manage the record %s %s %s"%(name, t, content))
 
 #
+class rest_put_dns_domain_sync(rest_put_handler):
+    def __init__(self):
+        desc = [
+          "Increment a domain SOA record serial so that secondary dns refresh the zone content.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- -X PUT https://%(collector)s/init/rest/api/dns/domains/<id>/sync",
+        ]
+
+        rest_put_handler.__init__(
+          self,
+          path="/dns/domains/<id>/sync",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, domain_id, **vars):
+        q = (dbdns.domains.id>0)
+        q &= _where(None, 'domains', domain_id, 'id', db=dbdns)
+        domain = dbdns(q).select().first()
+
+        if domain is None:
+            raise Exception("domain %s not found" % domain_id)
+        dname = domain.name
+
+        q = dbdns.records.name == dname
+        q &= dbdns.records.type == "SOA"
+        rows = dbdns(q).select()
+
+        if len(rows) != 1:
+            raise Exception("no single SOA found for domain %s"%dname)
+
+        l = rows[0].content.split()
+
+        if len(l) < 3:
+            raise Exception("SOA record content has less than 3 fields for domain %s"%dname)
+
+        new = int(l[2]) + 1
+        l[2] = str(new)
+        dbdns(q).update(content=' '.join(l))
+
+        fmt = "SOA incremented to %(new)d for domain %(dname)s"
+        d = dict(new=new, dname=dname)
+
+        _log('dns.domain.sync', fmt, d)
+        l = {
+          'event': 'pdns_records_change',
+          'data': {'foo': 'bar'},
+        }
+        _websocket_send(event_msg(l))
+        return dict(info=fmt%d)
+
+#
 class rest_get_dns_domains(rest_get_table_handler):
     def __init__(self):
         desc = [
@@ -364,6 +417,31 @@ class rest_post_dns_record(rest_post_handler):
 
 
 #
+class rest_delete_dns_domains(rest_delete_handler):
+    def __init__(self):
+        desc = [
+          "Delete dns domains.",
+          "Also delete dns records in this domain.",
+          "The user must be in the DnsManager privilege group.",
+          "The action is logged in the collector's log.",
+          "A websocket event is sent to announce the change in the nodes table.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- --header 'Content-Type: application/json' -d @/tmp/data.json -X DELETE https://%(collector)s/init/rest/api/dns/domains",
+        ]
+        rest_delete_handler.__init__(
+          self,
+          path="/dns/domains",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, **vars):
+        if "id" not in vars:
+            raise Exception("The 'id' key is mandatory")
+        return rest_delete_dns_domain().handler(vars["id"])
+
+#
 class rest_delete_dns_domain(rest_delete_handler):
     def __init__(self):
         desc = [
@@ -411,6 +489,31 @@ class rest_delete_dns_domain(rest_delete_handler):
         }
         _websocket_send(event_msg(l))
         return dict(info="Domain %s %s deleted" % (row.name, row.type))
+
+#
+class rest_delete_dns_records(rest_delete_handler):
+    def __init__(self):
+        desc = [
+          "Delete dns records.",
+          "The user must be responsible for the ip address network or segment.",
+          "The user must be in the DnsOperator privilege group.",
+          "The action is logged in the collector's log.",
+          "A websocket event is sent to announce the change in the nodes table.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- --header 'Content-Type: application/json' -d @/tmp/data.json -X DELETE https://%(collector)s/init/rest/api/dns/records",
+        ]
+        rest_delete_handler.__init__(
+          self,
+          path="/dns/records",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, **vars):
+        if "id" not in vars:
+            raise Exception("The 'id' key is mandatory")
+        return rest_delete_dns_record().handler(vars["id"])
 
 #
 class rest_delete_dns_record(rest_delete_handler):

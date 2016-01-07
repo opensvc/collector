@@ -37,3 +37,26 @@ function table_nodenetworks(divid, options) {
   table_init(_options)
 }
 
+function table_nodenetworks_addr(divid, addr) {
+  var id = "nodenetworks_" + addr.replace(/[\.-]/g, "_")
+  var f = id+"_f_addr"
+  var request_vars = {}
+  request_vars[f] = addr
+  table_nodenetworks(divid, {
+    "id": id,
+    "caller": "table_table_nodenetworks_addr",
+    "request_vars": request_vars,
+    "volatile_filters": true,
+    "bookmarkable": false,
+    "refreshable": false,
+    "linkable": false,
+    "exportable": false,
+    "pageable": false,
+    "columnable": false,
+    "commonalityable": false,
+    "filterable": false,
+    "wsable": false,
+    "visible_columns": ['nodename', 'fqdn', 'loc_city', 'team_responsible', 'project', 'host_mode', 'environnement', 'status', 'mac', 'intf', 'addr', 'mask', 'flag_deprecated', 'addr_updated', 'net_name', 'net_network', 'net_gateway', 'net_pvid', 'net_netmask']
+  })
+}
+

@@ -722,4 +722,90 @@ function form_tabs(divid, options) {
   return o
 }
 
+//
+// dns records
+//
+function dns_record_tabs(divid, options) {
+  o = tabs(divid)
+  o.options = options
+
+  o.load(function() {
+    services_osvcgetrest("R_DNS_RECORD", [o.options.record_id], {"meta": "0"}, function(jd) {
+      o.data = jd.data[0]
+      o._load()
+    })
+  })
+
+  o._load = function() {
+    var title = o.data.name
+    o.closetab.children("p").text(title)
+
+    // tab properties
+    i = o.register_tab({
+      "title": "dns_record_tabs.properties",
+      "title_class": "dns16"
+    })
+    o.tabs[i].callback = function(divid) {
+      dns_record_properties(divid, o.options)
+    }
+
+    if ((typeof(o.data.type) === "string") && (o.data.type.length > 0) && (o.data.type[0] == "A")) {
+      // tab alerts
+      i = o.register_tab({
+        "title": "dns_record_tabs.nodes",
+        "title_class": "node16"
+      })
+      o.tabs[i].callback = function(divid) {
+        table_nodenetworks_addr(divid, o.data.content)
+      }
+    }
+
+    o.set_tab(o.options.tab)
+  }
+
+  return o
+}
+
+//
+// dns domains
+//
+function dns_domain_tabs(divid, options) {
+  o = tabs(divid)
+  o.options = options
+
+  o.load(function() {
+    services_osvcgetrest("R_DNS_DOMAIN", [o.options.domain_id], {"meta": "0"}, function(jd) {
+      o.data = jd.data[0]
+      o._load()
+    })
+  })
+
+  o._load = function() {
+    var title = o.data.name
+    o.closetab.children("p").text(title)
+
+    // tab properties
+    i = o.register_tab({
+      "title": "dns_domain_tabs.properties",
+      "title_class": "dns16"
+    })
+    o.tabs[i].callback = function(divid) {
+      dns_domain_properties(divid, o.options)
+    }
+
+    // tab alerts
+    i = o.register_tab({
+      "title": "dns_domain_tabs.records",
+      "title_class": "dns16"
+    })
+    o.tabs[i].callback = function(divid) {
+      table_dns_records_domain_id(divid, o.options.domain_id)
+    }
+
+    o.set_tab(o.options.tab)
+  }
+
+  return o
+}
+
 
