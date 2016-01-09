@@ -30,7 +30,7 @@ table_dns_records_defaults = {
 }
 
 function table_dns_records(divid, options) {
-  var _options = {"id": "dns_records"}
+  var _options = {"id": "dnsr"}
   $.extend(true, _options, table_dns_records_defaults, options)
   _options.divid = divid
   _options.caller = "table_dns_records"
