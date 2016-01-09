@@ -291,6 +291,7 @@
     "type": "Type"
   },
   "form_properties": {
+    "no_yaml": "Pas de définition de formulaire. Cliquez pour éditer.",
     "save": "sauvegarder",
     "publications": "Publications",
     "responsibles": "Responsables",

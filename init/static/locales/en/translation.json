@@ -304,6 +304,7 @@
     "type": "Type"
   },
   "form_properties": {
+    "no_yaml": "No form definition. Click to edit.",
     "save": "save",
     "publications": "Publications",
     "responsibles": "Responsibles",

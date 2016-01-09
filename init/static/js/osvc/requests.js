@@ -61,6 +61,11 @@ function requests(divid, options) {
 	}
 
 	o.render_folder = function(d) {
+		if (!d || !d.form_definition) {
+			console.log("skip render_folder:", d)
+			return
+		}
+
 		var div = $("<div class='formentry'></div>")
 		var div_icon = $("<div style='padding-top:1em;padding-bottom:1em'></div>")
 		var p1 = $("<p></p>")

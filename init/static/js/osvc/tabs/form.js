@@ -180,9 +180,14 @@ function form_definition(divid, options) {
 	}
 
 	o._load_form = function(data) {
-		var div = $("<div></div>")
+		var div = $("<div style='padding:1em'></div>")
 		o.div.append(div)
-		$.data(div, "v", data.form_yaml)
+		if (data.form_yaml && (data.form_yaml.length > 0)) {
+			var text = data.form_yaml
+		} else {
+			var text = i18n.t("form_properties.no_yaml")
+		}
+		$.data(div, "v", text)
 		cell_decorator_yaml(div)
 
 		div.bind("click", function() {
@@ -191,7 +196,9 @@ function form_definition(divid, options) {
 			var textarea = $("<textarea class='oi' style='width:97%;min-height:20em'></textarea>")
 			var button = $("<input type='button' style='margin:0.5em 0 0.5em 0'>")
 			button.attr("value", i18n.t("form_properties.save"))
-			textarea.val(div.text())
+			if (data.form_yaml && (data.form_yaml.length > 0)) {
+				textarea.val(div.text())
+			}
 			edit.append(textarea)
 			edit.append(button)
 			o.div.append(edit)
