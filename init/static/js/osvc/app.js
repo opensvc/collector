@@ -24,6 +24,9 @@ function i18n_init(callback) {
   }, function() {
      $(document).i18n()
      osvc.i18n_started.resolve(true)
+     if (callback) {
+       callback()
+     }
   });
 }
 
@@ -209,10 +212,13 @@ function app_bindings() {
       $('#search_input').focus();
     }
 
-    // 'n' for search
+    // 'n' to open nav menu
     else if (event.which == 78) {
       event.preventDefault();
-      $(".header").find(".menu16").parents("ul").first().siblings(".menu").show("fold", function(){filter_menu()});
+      $(".header").find(".menu").hide()
+      $(".header").find(".menu16").parents("ul").first().siblings(".menu").show("fold", function(){
+          filter_menu()
+      })
       $(".header").find(".menu_selected").removeClass("menu_selected")
       $('#search_input').val('');
       $('#search_input').focus();
