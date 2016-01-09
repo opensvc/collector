@@ -2927,9 +2927,11 @@ function cell_decorator_datetime(e) {
 
   if (delta > 0) {
     var prefix = "-"
+    var round = Math.ceil
   } else {
     var prefix = ""
     delta = -delta
+    var round = Math.floor
   }
 
   var hour = 60
@@ -2940,27 +2942,27 @@ function cell_decorator_datetime(e) {
 
   if (delta < hour) {
     var cl = "minute icon"
-    var text = prefix + i18n.t("table.minute", {"count": Math.floor(delta)})
+    var text = prefix + i18n.t("table.minute", {"count": round(delta)})
     var color = "#000000"
   } else if (delta < day) {
     var cl = "hour icon"
-    var text = prefix + i18n.t("table.hour", {"count": Math.floor(delta/hour)})
+    var text = prefix + i18n.t("table.hour", {"count": round(delta/hour)})
     var color = "#181818"
   } else if (delta < week) {
     var cl = "day icon "
-    var text = prefix + i18n.t("table.day", {"count": Math.floor(delta/day)})
+    var text = prefix + i18n.t("table.day", {"count": round(delta/day)})
     var color = "#333333"
   } else if (delta < month) {
     var cl = "week icon "
-    var text = prefix + i18n.t("table.week", {"count": Math.floor(delta/week)})
+    var text = prefix + i18n.t("table.week", {"count": round(delta/week)})
     var color = "#333333"
   } else if (delta < year) {
     var cl = "month icon"
-    var text = prefix + i18n.t("table.month", {"count": Math.floor(delta/month)})
+    var text = prefix + i18n.t("table.month", {"count": round(delta/month)})
     var color = "#484848"
   } else {
     var cl = "year icon"
-    var text = prefix + i18n.t("table.year", {"count": Math.floor(delta/year)})
+    var text = prefix + i18n.t("table.year", {"count": round(delta/year)})
     var color = "#666666"
   }
 
