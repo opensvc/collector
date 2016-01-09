@@ -739,35 +739,6 @@ function table_data_to_lines(t, data) {
   return lines.children().detach()
 }
 
-function table_parent_table_data(t, ptid) {
-  if (!(ptid in osvc.tables)) {
-    console.log("table", t.id, "parent table", ptid, "not found")
-    return {}
-  }
-  var pt = osvc.tables[ptid]
-  var data = {}
-  for (c in pt.colprops) {
-    var current = $("#"+pt.id+"_f_"+c).val()
-    if ((current != "") && (typeof current !== 'undefined')) {
-      data[pt.id+"_f_"+c] = current
-    } else if (pt.colprops[c].force_filter != "") {
-      data[pt.id+"_f_"+c] = pt.colprops[c].force_filter
-    }
-  }
-  return data
-}
-
-function table_parent_tables_data(t) {
-  if (!t.options.parent_tables || (t.options.parent_tables.length == 0)) {
-    return {}
-  }
-  var data = {}
-  for (var i=0; i<t.options.parent_tables.length; i++) {
-    data = $.extend(data, t.parent_table_data(t.options.parent_tables[i]))
-  }
-  return data
-}
-
 function table_refresh(t) {
     if (t.div.length > 0 && !t.div.is(":visible")) {
         return
@@ -779,7 +750,7 @@ function table_refresh(t) {
         t.set_refresh_spin()
     }
 
-    var data = t.parent_tables_data()
+    var data = t.prepare_request_data()
 
     // refresh open tabs to overlay to preserve what was in use
     if (t.div.find(".extraline:visible").children("td").children("table").length > 0) {
@@ -793,17 +764,8 @@ function table_refresh(t) {
       $("#overlay").hide().show("scale")
     }
 
-    data.table_id = t.id
     data.visible_columns = t.options.visible_columns.join(',')
     data[t.id+"_page"] = $("#"+t.id+"_page").val()
-    for (c in t.colprops) {
-      var current = $("#"+t.id+"_f_"+c).val()
-      if ((current != "") && (typeof current !== 'undefined')) {
-        data[t.id+"_f_"+c] = current
-      } else if (t.colprops[c].force_filter != "") {
-        data[t.id+"_f_"+c] = t.colprops[c].force_filter
-      }
-    }
     if (t.dataable) {
       var ajax_interface = "data"
     } else {
@@ -1315,17 +1277,7 @@ function table_bind_filter_input_events(t) {
     }
     clearTimeout(t.refresh_timer)
     t.refresh_timer = setTimeout(function validate(){
-      var data = {
-        "table_id": t.id
-      }
-      for (c in t.colprops) {
-        var current = $("#"+t.id+"_f_"+c).val()
-        if ((current != "") && (typeof current !== 'undefined')) {
-          data[t.id+"_f_"+c] = current
-        } else if (t.colprops[c].force_filter != "") {
-          data[t.id+"_f_"+c] = t.colprops[c].force_filter
-        }
-      }
+      var data = t.prepare_request_data()
       data[input.attr('id')] = input.val()
       var dest = input.siblings("[id^="+t.id+"_fc_]")
       var pie = input.siblings("[id^="+t.id+"_fp_]")
@@ -2037,7 +1989,16 @@ function table_add_commonality(t) {
     click_toggle_vis(event, t.e_tool_commonality_area.attr("id"), 'block')
     t.e_tool_commonality_area.empty()
     spinner_add(t.e_tool_commonality_area)
-    ajax(t.ajax_url+"/commonality", [], t.e_tool_commonality_area.attr("id"))
+    var data = t.prepare_request_data()
+    $.ajax({
+         type: "POST",
+         url: t.ajax_url+"/commonality",
+         data: data,
+         context: document.body,
+         success: function(msg){
+             t.e_tool_commonality_area.html(msg)
+         }
+    })
   })
 
   try { e.i18n() } catch(e) {}
@@ -2951,22 +2912,6 @@ function table_init(opts) {
     'action_menu_param_module': function(){
       return table_action_menu_param_module(this)
     },
-    'on_change': function(){
-      if (!t.options.on_change) {
-        return
-      }
-      t.options.on_change()
-    },
-    'refresh_child_tables': function(){
-      for (var i=0; i<this.child_tables.length; i++) {
-        var id = this.child_tables[i]
-        if (!(id in osvc.tables)) {
-          console.log("child table not found in osvc.tables:", id)
-          continue
-        }
-        osvc.tables[id].refresh()
-      }
-    },
     'insert': function(data){
       return table_insert(this, data)
     },
@@ -2975,12 +2920,6 @@ function table_init(opts) {
     },
     'stick': function(){
       return table_stick(this)
-    },
-    'parent_table_data': function(ptid){
-      return table_parent_table_data(this, ptid)
-    },
-    'parent_tables_data': function(){
-      return table_parent_tables_data(this)
     },
     'set_column_filters': function(){
       return table_set_column_filters(this)
@@ -3035,64 +2974,123 @@ function table_init(opts) {
     }
   }
 
-  t.has_filter_in_request_vars = function() {
-    if (!t.options.request_vars) {
-      return false
-    }
-    for (c in t.colprops) {
-      if (t.id+"_f_"+c in t.options.request_vars) {
-        return true
-      }
-    }
-    return false
-  }
+	t.on_change = function() {
+		if (!t.options.on_change) {
+			return
+		}
+		t.options.on_change()
+	}
 
-  t.deferreds = {
-  }
-  t.refresh_timer = null
+	t.refresh_child_tables = function() {
+		for (var i=0; i<this.child_tables.length; i++) {
+			var id = this.child_tables[i]
+			if (!(id in osvc.tables)) {
+				console.log("child table not found in osvc.tables:", id)
+				continue
+			}
+			osvc.tables[id].refresh()
+		}
+	}
 
-  t.add_table()
-  t.get_visible_columns()
+	t.parent_table_data = function(ptid) {
+		if (!(ptid in osvc.tables)) {
+			console.log("table", t.id, "parent table", ptid, "not found")
+			return {}
+		}
+		var pt = osvc.tables[ptid]
+		var data = {}
+		for (c in pt.colprops) {
+			var current = $("#"+pt.id+"_f_"+c).val()
+			if ((current != "") && (typeof current !== 'undefined')) {
+				data[pt.id+"_f_"+c] = current
+			} else if (pt.colprops[c].force_filter != "") {
+				data[pt.id+"_f_"+c] = pt.colprops[c].force_filter
+			}
+		}
+		return data
+	}
 
-  // selectors cache
-  t.div = $("#"+t.id)
-  t.e_toolbar = t.div.find("[name=toolbar]").first()
-  t.e_table = t.div.find("table#table_"+t.id).first()
+	t.parent_tables_data = function() {
+		if (!t.options.parent_tables || (t.options.parent_tables.length == 0)) {
+			return {}
+		}
+		var data = {}
+		for (var i=0; i<t.options.parent_tables.length; i++) {
+			data = $.extend(data, t.parent_table_data(t.options.parent_tables[i]))
+		}
+		return data
+	}
 
-  osvc.tables[t.id] = t
-  t.div.find("select").parent().css("white-space", "nowrap")
-  t.div.find("select:visible").combobox()
+	t.prepare_request_data = function() {
+		var data = t.parent_tables_data()
+		data.table_id = t.id
+		for (c in t.colprops) {
+			var current = $("#"+t.id+"_f_"+c).val()
+			if ((current != "") && (typeof current !== 'undefined')) {
+				data[t.id+"_f_"+c] = current
+			} else if (t.colprops[c].force_filter != "") {
+				data[t.id+"_f_"+c] = t.colprops[c].force_filter
+			}
+		}
+		return data
+	}
 
-  t.add_overlay()
-  $.when(
-    osvc.table_settings_loaded,
-    osvc.table_filters_loaded
-  ).then(function(){
-    t.add_column_headers_slim()
-    t.add_column_headers_input()
-    t.add_column_headers()
-    t.refresh_column_filters()
-    t.add_commonality()
-    t.add_column_selector()
-    t.add_csv()
-    t.add_bookmarks()
-    t.add_link()
-    t.add_refresh()
-    t.add_wsswitch()
-    t.add_volatile()
-    t.add_pager()
-    t.add_filtered_to_visible_columns()
-    t.hide_cells()
-    t.add_filterbox()
-    t.add_scrollers()
-    t.scroll_enable()
-    t.stick()
-    t.add_ws_handler()
-    t.flash()
-    t.set_column_filters()
-    t.refresh()
-  })
+	t.has_filter_in_request_vars = function() {
+		if (!t.options.request_vars) {
+			return false
+		}
+		for (c in t.colprops) {
+			if (t.id+"_f_"+c in t.options.request_vars) {
+				return true
+			}
+		}
+		return false
+	}
 
-  return t
+	t.refresh_timer = null
+
+	t.add_table()
+	t.get_visible_columns()
+
+	// selectors cache
+	t.div = $("#"+t.id)
+	t.e_toolbar = t.div.find("[name=toolbar]").first()
+	t.e_table = t.div.find("table#table_"+t.id).first()
+
+	osvc.tables[t.id] = t
+	t.div.find("select").parent().css("white-space", "nowrap")
+	t.div.find("select:visible").combobox()
+
+	t.add_overlay()
+	$.when(
+		osvc.table_settings_loaded,
+		osvc.table_filters_loaded
+	).then(function(){
+		t.add_column_headers_slim()
+		t.add_column_headers_input()
+		t.add_column_headers()
+		t.refresh_column_filters()
+		t.add_commonality()
+		t.add_column_selector()
+		t.add_csv()
+		t.add_bookmarks()
+		t.add_link()
+		t.add_refresh()
+		t.add_wsswitch()
+		t.add_volatile()
+		t.add_pager()
+		t.add_filtered_to_visible_columns()
+		t.hide_cells()
+		t.add_filterbox()
+		t.add_scrollers()
+		t.scroll_enable()
+		t.stick()
+		t.add_ws_handler()
+		t.flash()
+		t.set_column_filters()
+		t.refresh()
+	})
+
+	return t
 }
 
