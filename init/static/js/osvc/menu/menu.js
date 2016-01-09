@@ -526,6 +526,7 @@ function menu(divid) {
 
 	o.clicked = function() {
 		if (!o.menu_div.is(":visible")) {
+			$(".header").find(".menu").hide()
 			o.menu_div.stop().show("fold", function(){filter_menu()})
 			$("#search_input").val("").focus()
 		} else {
