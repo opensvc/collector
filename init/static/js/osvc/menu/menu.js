@@ -107,7 +107,7 @@ var menu_data = {
 		},
 		{
 		  "title" : "dns",
-		  "class" : "net16",
+		  "class" : "dns16",
 		  "id" : "view-dns",
 		  "link" : "/init/dns/dns"
 		},
@@ -127,21 +127,21 @@ var menu_data = {
 	"compliance": [
 		{
 		  "title" : "statut",
-		  "class" : "check16",
+		  "class" : "compstatus",
 		  "id" : "comp-status",
 		  "link" : "/init/compliance/comp_status",
 		  "fn" : "view_comp_status"
 		},
 		{
 		  "title" : "log",
-		  "class" : "log16",
+		  "class" : "complog",
 		  "id" : "comp-log",
 		  "link" : "/init/compliance/comp_log",
 		  "fn" : "table_comp_log"
 		},
 		{
 		  "title" : "modulesets",
-		  "class" : "actions",
+		  "class" : "modset16",
 		  "id" : "comp-modsets",
 		  "link" : "/init/compliance/comp_modules",
 		  "fn" : "table_comp_modules"
@@ -155,7 +155,7 @@ var menu_data = {
 		},
 		{
 		  "title" : "designer",
-		  "class" : "wf16",
+		  "class" : "designer16",
 		  "id" : "comp-designer",
 		  "link" : "/init/compliance/comp_admin?obj_filter=opensvc"
 		},

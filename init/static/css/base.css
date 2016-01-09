@@ -71,31 +71,6 @@ input.aci, input.aci:focus {
 	font-family: awesome;
 }
 
-.icon-orange {
-	color: orange;
-}
-.icon-red {
-	color: #990000;
-}
-.icon-green {
-	color: #009900;
-}
-.icon-gray {
-	color: #666666;
-}
-.icon-orange:before {
-	color: orange;
-}
-.icon-red:before {
-	color: #990000;
-}
-.icon-green:before {
-	color: #009900;
-}
-.icon-gray:before {
-	color: #666666;
-}
-
 .icon:before {
 	display: inline-block;
 	width: 2em;
@@ -154,7 +129,7 @@ input.aci, input.aci:focus {
 	padding-right: 0.5em;
 	margin-left: 0;
 }
-.line.yellow > span {
+.line.#dddd66 > span {
 	background: #E0E1CD;
 	padding-right: 0.5em;
 	margin-left: 0;
@@ -422,7 +397,7 @@ img {
 }
 
 .tag_del_hover {
-	background-color:darkred;
+	background-color:#EE5464;
 }
 
 .tag_add {
@@ -451,7 +426,7 @@ img {
 	cursor: pointer;
 }
 .tag_create, .tag_create:focus {
-	background-color:darkred;
+	background-color:#EE5464;
 }
 
 .tag_drag {
@@ -620,6 +595,12 @@ img {
 
 .boxed_status_warn {
 	background-color: orange;
+}
+
+
+.status_icon:before {
+	content: '\f111  ';
+	font-family: awesome;
 }
 
 .status_n\/a, .status_undef {
@@ -945,7 +926,7 @@ div.menu_box {
 
 
 .warn {
-	background-color: yellow;
+	background-color: #dddd66;
 	color: black;
 	padding: 5px;
 }
@@ -1292,7 +1273,7 @@ a.xinfo_shown span {
 	border-right: 1px solid #ddd;
 }
 .tab > ul > li:hover {
-	color: darkred;
+	color: #EE5464;
 }
 .tab > ul > li:first-child:hover {
 	color: lightgray;
@@ -1746,6 +1727,7 @@ ul.login_menu ul {
 	font-family: awesome;
 }
 .prov:before {
+	color: lightgreen;
 	content: '\f0d0  ';
 	font-family: awesome;
 }
@@ -1770,18 +1752,22 @@ ul.login_menu ul {
 	font-family: awesome;
 }
 .fw16:before {
+	color: cadetblue;
 	content: '\f06d  ';
 	font-family: awesome;
 }
 .alert16:before {
+	color: orange;
 	content: '\f071  ';
 	font-family: awesome;
 }
 .wspark16:before {
+	color: sandybrown;
 	content: '\f201  ';
 	font-family: awesome;
 }
 .spark16:before {
+	color: sandybrown;
 	content: '\f201  ';
 	font-family: awesome;
 }
@@ -1810,6 +1796,11 @@ ul.login_menu ul {
 	font-family: awesome;
 	color: rgba(0, 0, 0, 0.5);
 }
+.dashlink16:before {
+	color: orange;
+	content: '\f0c1  ';
+	font-family: awesome;
+}
 .link16:before {
 	content: '\f0c1  ';
 	font-family: awesome;
@@ -1826,10 +1817,12 @@ ul.login_menu ul {
 	font-family: awesome;
 }
 .dns16:before {
+	color: aquamarine;
 	content: '\f0e1  ';
 	font-family: awesome;
 }
 .net16:before {
+	color: cadetblue;
 	content: '\f0ec  ';
 	font-family: awesome;
 }
@@ -1857,10 +1850,17 @@ ul.login_menu ul {
 }
 .cd16:before,
 .save16:before {
+	color: #dddd66;
 	content: '\f0c7  ';
 	font-family: awesome;
 }
+.designer16:before {
+	color: #EE5464;
+	content: '\f12e  ';
+	font-family: awesome;
+}
 .wf16:before {
+	color: palevioletred;
 	content: '\f12e  ';
 	font-family: awesome;
 }
@@ -1870,6 +1870,7 @@ ul.login_menu ul {
 	min-height: 16px;
 }
 .hv16:before {
+	color: aqua;
 	content: '\f0c2  ';
 	font-family: awesome;
 }
@@ -1878,11 +1879,18 @@ ul.login_menu ul {
 	font-family: awesome;
 }
 .hd16:before {
+	color: #dddd66;
 	content: '\f1c0  ';
 	font-family: awesome;
 }
 .pkg16:before {
+	color: #CC9966;
 	content: '\f1b3  ';
+	font-family: awesome;
+}
+.complog:before {
+	color: #EE5464;
+	content: '\f1da  ';
 	font-family: awesome;
 }
 .log16:before {
@@ -1894,10 +1902,12 @@ ul.login_menu ul {
 	font-family: awesome;
 }
 .tag16:before {
+	color: darkcyan;
 	content: '\f02b  ';
 	font-family: awesome;
 }
 .cpu16:before {
+	color: aqua;
 	content: '\f0c8  ';
 	font-family: awesome;
 }
@@ -1907,18 +1917,22 @@ ul.login_menu ul {
 	color: lightgray;
 }
 .hw16:before {
+	color: aqua;
 	content: '\f0c8  ';
 	font-family: awesome;
 }
 .mem16:before {
+	color: aqua;
 	content: '\f0c8  ';
 	font-family: awesome;
 }
 .obs16:before {
+	color: aqua;
 	content: '\f1b8  ';
 	font-family: awesome;
 }
 .os16:before {
+	color: aqua;
 	content: '\f268  ';
 	font-family: awesome;
 }
@@ -1928,20 +1942,27 @@ ul.login_menu ul {
 	min-height: 16px;
 }
 .comp16:before {
+	color: #EE5464;
 	content: '\f140  ';
 	font-family: awesome;
 }
 .comp-c:before {
 	content: '\f140  ';
 	font-family: awesome;
-	color: darkred;
+	color: #EE5464;
 }
 .ok:before {
 	content: '\f00c  ';
 	font-family: awesome;
-	color: darkgreen;
+	color: green;
+}
+.compstatus:before {
+	color: #EE5464;
+	content: '\f00c  ';
+	font-family: awesome;
 }
 .check16:before {
+	color: green;
 	content: '\f00c  ';
 	font-family: awesome;
 }
@@ -1951,6 +1972,7 @@ ul.login_menu ul {
 	color: gold;
 }
 .guy16:before {
+	color: pink;
 	content: '\f007  ';
 	font-family: awesome;
 }
@@ -1960,10 +1982,12 @@ ul.login_menu ul {
 	color: gold;
 }
 .guys16:before {
+	color: pink;
 	content: '\f0c0  ';
 	font-family: awesome;
 }
 .svc:before {
+	color: lightgreen;
 	content: '\f111  ';
 	font-family: awesome;
 }
@@ -1982,6 +2006,7 @@ ul.login_menu ul {
 	color: red;
 }
 .node16:before {
+	color: aqua;
 	content: '\f233  ';
 	font-family: awesome;
 }
@@ -2017,7 +2042,7 @@ ul.login_menu ul {
 .action_stop_16:before {
 	content: '\f063  ';
 	font-family: awesome;
-	color: darkred;
+	color: #EE5464;
 }
 .action_stonith_16 {
 	background: transparent url('../images/action_stonith_16.png') no-repeat;
@@ -2027,17 +2052,17 @@ ul.login_menu ul {
 .action_start_16:before {
 	content: '\f062  ';
 	font-family: awesome;
-	color: darkgreen;
+	color: green;
 }
 .action_restart_16:before {
 	content: '\f021  ';
 	font-family: awesome;
-	color: darkgreen;
+	color: green;
 }
 .action_switch_16:before {
 	content: '\f061  ';
 	font-family: awesome;
-	color: darkgreen;
+	color: green;
 }
 .www16:before {
 	content: '\f0ac  ';
@@ -2048,7 +2073,13 @@ ul.login_menu ul {
 	font-family: awesome;
 	color: lightgray;
 }
+.mod16:before {
+	color: #EE5464;
+	content: '\f013  ';
+	font-family: awesome;
+}
 .action16:before {
+	color: lightgreen;
 	content: '\f013  ';
 	font-family: awesome;
 }
@@ -2065,6 +2096,7 @@ ul.login_menu ul {
 	font-family: awesome;
 }
 .pwr:before {
+	color: aqua;
 	content: '\f0e7  ';
 	font-family: awesome;
 }
@@ -2078,6 +2110,7 @@ ul.login_menu ul {
 	font-family: awesome;
 }
 .loc:before {
+	color: aqua;
 	content: '\f041  ';
 	font-family: awesome;
 }
@@ -2086,6 +2119,7 @@ ul.login_menu ul {
 	font-family: awesome;
 }
 .avail16:before {
+	color: lightgreen;
 	content: '\f21e  ';
 	font-family: awesome;
 }
@@ -2098,18 +2132,22 @@ ul.login_menu ul {
 	font-family: awesome;
 }
 .fa-tags:before {
+	color: darkcyan;
 	content: '\f02c  ';
 	font-family: awesome;
 }
 .modset16:before {
+	color: #EE5464;
 	content: '\f085  ';
 	font-family: awesome;
 }
 .actions:before {
+	color: lightgreen;
 	content: '\f085  ';
 	font-family: awesome;
 }
 .patch:before {
+	color: #CC9966;
 	content: '\f1b2  ';
 	font-family: awesome;
 }
@@ -2456,15 +2494,17 @@ a.search-link:hover {
 }
 
 .highlight_light {
-	color: salmon;
+	//color: salmon;
 	font-weight: bold;
+	text-decoration: underline;
+	opacity: 0.5;
 }
 .highlight {
-	color: darkred;
+	color: #EE5464;
 	font-weight: bold;
 }
 .floatw .current_page {
-	color: darkred;
+	color: #EE5464;
 	font-weight: bold;
 }
 
@@ -2500,7 +2540,7 @@ a.search-link:hover {
 
 .theader {
 	background-color: #e0e1cd;
-	color: black;
+	color: #555;
 	padding: 1px 0 0 0;
 	margin-top: 0;
 	margin-bottom: 0;
@@ -2824,7 +2864,7 @@ button, input[type=button], input[type=submit] {
 .bgred {
 	background-color: #990000;
 }
-.bgdarkred {
+.bg#EE5464 {
 	background-color: #660000;
 }
 .bggreen {
@@ -3262,13 +3302,13 @@ div.containertrans {
 .vis-item.red {
 	color: white;
 	background-color: #FF8080;
-	border-color: darkred;
+	border-color: #EE5464;
 }
 
 .vis-item.redlight {
 	color: white;
 	background-color: #FF6666;
-	border-color: darkred;
+	border-color: #EE5464;
 }
 
 .axis path,
@@ -3509,6 +3549,36 @@ button:disabled {
 .user_groups label {
 	align-self: center;
 }
+
+.icon-orange {
+	color: orange;
+}
+.icon-red {
+	color: #990000;
+}
+.icon-green {
+	color: #009900;
+}
+.icon-gray {
+	color: #666666;
+}
+.icon-orange:before {
+	color: orange;
+}
+.icon-red:before {
+	color: #990000;
+}
+.icon-green:before {
+	color: #009900;
+}
+.icon-gray:before {
+	color: #666666;
+}
+
+.nocolor:before {
+	color: inherit;
+}
+
 
 @media screen and (max-width:960px) and (orientation: landscape) {
 	body {

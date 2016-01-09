@@ -349,14 +349,14 @@ function table_action_menu_init_data(t) {
             },
             {
               "title": "action_menu.modset_attach",
-              "class": "icon actions",
+              "class": "icon modset16",
               "fn": "data_action_nodes_modsets_attach",
               "privileges": ["Manager", "NodeManager"],
               "min": 1
             },
             {
               "title": "action_menu.modset_detach",
-              "class": "icon actions",
+              "class": "icon modset16",
               "fn": "data_action_nodes_modsets_detach",
               "privileges": ["Manager", "NodeManager"],
               "min": 1
@@ -520,13 +520,13 @@ function table_action_menu_init_data(t) {
             },
             {
               "title": "action_menu.modset_attach",
-              "class": "icon actions",
+              "class": "icon modset16",
               "fn": "data_action_services_modsets_attach",
               "min": 1
             },
             {
               "title": "action_menu.modset_detach",
-              "class": "icon actions",
+              "class": "icon modset16",
               "fn": "data_action_services_modsets_detach",
               "min": 1
             },
@@ -775,14 +775,14 @@ function table_action_menu_init_data(t) {
             },
             {
               'title': 'Update app information',
-              'class': 'icon svc-c',
+              'class': 'icon svc',
               "privileges": ["Manager", "NodeManager", "NodeExec"],
               "min": 1,
               'action': 'push_appinfo'
             },
             {
               'title': 'Update services information',
-              'class': 'icon svc-c',
+              'class': 'icon svc',
               "privileges": ["Manager", "NodeManager", "NodeExec"],
               "min": 1,
               'action': 'pushservices'
@@ -824,7 +824,7 @@ function table_action_menu_init_data(t) {
             },
             {
               'title': 'Update compliance modules',
-              'class': 'icon comp-c',
+              'class': 'icon comp16',
               "privileges": ["Manager", "NodeManager", "NodeExec"],
               "min": 1,
               'action': 'updatecomp'
@@ -887,7 +887,7 @@ function table_action_menu_init_data(t) {
             },
             {
               'title': 'Compliance check',
-              'class': 'icon comp-c',
+              'class': 'icon comp16',
               "privileges": ["Manager", "NodeManager", "NodeExec"],
               "min": 1,
               'action': 'compliance_check',
@@ -895,7 +895,7 @@ function table_action_menu_init_data(t) {
             },
             {
               'title': 'Compliance fix',
-              'class': 'icon comp-c',
+              'class': 'icon comp16',
               "privileges": ["Manager", "NodeManager", "NodeExec"],
               "min": 1,
               'action': 'compliance_fix',
@@ -996,7 +996,7 @@ function table_action_menu_init_data(t) {
             },
             {
               'title': 'Compliance check',
-              'class': 'icon comp-c',
+              'class': 'icon comp16',
               "privileges": ["Manager", "NodeManager", "NodeExec"],
               "min": 1,
               'action': 'compliance_check',
@@ -1004,7 +1004,7 @@ function table_action_menu_init_data(t) {
             },
             {
               'title': 'Compliance fix',
-              'class': 'icon comp-c',
+              'class': 'icon comp16',
               "privileges": ["Manager", "NodeManager", "NodeExec"],
               "min": 1,
               'action': 'compliance_fix',
@@ -1065,14 +1065,14 @@ function table_action_menu_init_data(t) {
           "children": [
             {
               'title': 'Check',
-              'class': 'icon comp-c',
+              'class': 'icon comp16',
               "privileges": ["Manager", "NodeManager", "NodeExec", "CompExec"],
               "min": 1,
               'action': 'check'
             },
             {
               'title': 'Fix',
-              'class': 'icon comp-c',
+              'class': 'icon comp16',
               "privileges": ["Manager", "NodeManager", "NodeExec", "CompExec"],
               "min": 1,
               'action': 'fix'

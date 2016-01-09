@@ -3,6 +3,12 @@
 //
 
 var db_tables = {
+  "packages": {
+    "cl": "pkg16",
+    "hide": false,
+    "name": "packages",
+    "title": "packages"
+  },
   "v_tags": {
     "cl": "tag16",
     "hide": false,
@@ -2271,7 +2277,7 @@ function cell_decorator_status(e) {
     "undef": "gray",
     "n/a": "gray",
   }
-  $(e).html("<div class='svc nowrap icon-"+t[c]+"'>"+v+"</div>")
+  $(e).html("<div class='status_icon nowrap icon-"+t[c]+"'>"+v+"</div>")
 }
 
 function cell_decorator_reports_links(e) {
@@ -2857,6 +2863,9 @@ function _outdated(s, max_age) {
 
 function status_outdated(line) {
   var l = line.children("[cell=1][col=mon_updated]")
+  if (l.length == 0) {
+    l = line.children("[cell=1][col=svc_status_updated]")
+  }
   if (l.length == 0) {
     l = line.children("[cell=1][col=status_updated]")
   }
