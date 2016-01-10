@@ -642,6 +642,10 @@
       "disks" : {
           "title" : "Disks",
           "text" : "All known disks with their array information"
+      },
+      "disks_quotas" : {
+          "title" : "Disks quotas",
+          "text" : "Per application and diskgroup disk provisioning size limits"
       }
   },
   "compliance" : {

@@ -123,6 +123,12 @@ var menu_data = {
 		  "id" : "view-disks",
 		  "link" : "/init/disks/disks"
 		},
+		{
+		  "title" : "disks_quotas",
+		  "class" : "quota16",
+		  "id" : "view-disks-quotas",
+		  "link" : "/init/disks/quota"
+		}
 	],
 	"compliance": [
 		{

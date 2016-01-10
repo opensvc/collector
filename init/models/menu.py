@@ -32,6 +32,7 @@ menu_entries = [
   'view-dns',
   'view-saves',
   'view-disks',
+  'view-disks-quotas',
   'comp-status',
   'comp-log',
   'comp-modsets',

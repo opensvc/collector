@@ -2646,10 +2646,6 @@ def ajax_comp_svc_status():
     if len(request.args) == 1 and request.args[0] == 'line':
         return mt.table_lines_data(-1)
 
-    return DIV(
-             mt.html(),
-           )
-
 @auth.requires_login()
 def ajax_comp_node_status():
     t = table_comp_status('cs0', 'ajax_comp_status')
@@ -2718,10 +2714,6 @@ def ajax_comp_node_status():
         return mt.csv()
     if len(request.args) == 1 and request.args[0] == 'line':
         return mt.table_lines_data(-1)
-
-    return DIV(
-             mt.html(),
-           )
 
 @auth.requires_login()
 def ajax_svc_history():
@@ -2988,10 +2980,6 @@ def ajax_comp_mod_status():
         return mt.csv()
     if len(request.args) == 1 and request.args[0] == 'line':
         return mt.table_lines_data(-1)
-
-    return DIV(
-             mt.html(),
-           )
 
 class table_comp_log(table_comp_status):
     def __init__(self, id=None, func=None, innerhtml=None):

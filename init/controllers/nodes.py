@@ -505,10 +505,6 @@ def ajax_uids():
         return mt.table_lines_data(-1)
 
 
-    return DIV(
-             mt.html(),
-           )
-
 @auth.requires_login()
 def ajax_gids_col_values():
     col = request.args[0]
@@ -610,11 +606,6 @@ def ajax_gids():
         return mt.do_commonality()
     if len(request.args) == 1 and request.args[0] == 'line':
         return mt.table_lines_data(-1)
-
-    return DIV(
-             mt.html(),
-           )
-
 
 
 #

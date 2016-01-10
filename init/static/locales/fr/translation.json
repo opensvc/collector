@@ -628,7 +628,12 @@
       },
       "disks" : {
           "title" : "Disques",
-          "text" : "Tous les disques connus avec leurs informations prises dans les baies"}
+          "text" : "Tous les disques connus avec leurs informations prises dans les baies"
+      },
+      "disks_quotas" : {
+          "title" : "Quotas disques",
+          "text" : "Limites d'allocation de disque par application et groupe de disque"
+      }
     },
   "compliance" : {
       "title" : "Conformité",

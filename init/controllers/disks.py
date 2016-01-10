@@ -334,7 +334,6 @@ class table_quota(HtmlTable):
         if 'StorageManager' in user_groups() or \
            'StorageExec' in user_groups():
             self.additional_tools.append('provision')
-        self.additional_tools.append('disks_link')
 
     def provision(self):
         d = DIV(
@@ -655,6 +654,9 @@ def quota():
         )
     return dict(table=t)
 
+def quota_load():
+    return quota()["table"]
+
 
 
 
@@ -728,7 +730,6 @@ class table_disks(HtmlTable):
         if 'StorageManager' in user_groups() or \
            'StorageExec' in user_groups():
             self.additional_tools.append('provision')
-        self.additional_tools.append('quota')
 
     def quota(self):
         d = DIV(

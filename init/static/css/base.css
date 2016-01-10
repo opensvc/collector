@@ -1878,6 +1878,11 @@ ul.login_menu ul {
 	content: '\f1c0  ';
 	font-family: awesome;
 }
+.quota16:before {
+	color: #dddd66;
+	content: '\f1b2  ';
+	font-family: awesome;
+}
 .hd16:before {
 	color: #dddd66;
 	content: '\f1c0  ';
