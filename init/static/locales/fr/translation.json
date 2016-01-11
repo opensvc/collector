@@ -904,6 +904,14 @@
     "hidden_menu_entries": "entrées cachées du menu"
   },
   "col" : {
+    "Used": "Utilisé",
+    "Free": "Libre",
+    "Quota": "Quota",
+    "Quota Used": "Quota Utilisé",
+    "Reserved": "Réservé",
+    "Reservable": "Réservable",
+    "Array": "Baie",
+    "Array Disk Group": "Groupe de disque de la baie",
     "City": "Ville",
     "Service": "Service",
     "Env file date": "Date du fichier env",

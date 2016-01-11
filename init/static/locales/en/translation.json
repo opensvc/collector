@@ -915,6 +915,14 @@
     "hidden_menu_entries": "hidden menu entries"
   },
   "col" : {
+    "Used": "Used",
+    "Free": "Free",
+    "Quota": "Quota",
+    "Quota Used": "Quota Used",
+    "Reserved": "Reserved",
+    "Reservable": "Reservable",
+    "Array": "Array",
+    "Array Disk Group": "Array Disk Group",
     "City": "City",
     "Service": "Service",
     "Env file date": "Env file date",
