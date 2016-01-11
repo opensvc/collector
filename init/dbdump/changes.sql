@@ -4856,3 +4856,90 @@ alter table scheduler_run add column duration integer as (timediff(stop_time, st
 
 create view v_scheduler_run as select sr.*,st.timeout,st.args,st.vars,st.retry_failed,st.times_run,st.times_failed,st.group_name,st.function_name,st.application_name,st.assigned_worker_name from scheduler_run sr left join scheduler_task st on sr.task_id = st.id;
 
+drop view v_disk_app;
+create view v_disk_app as 
+                     select
+                       diskinfo.id,
+                       diskinfo.disk_id,
+                       svcdisks.disk_region,
+                       svcdisks.disk_svcname,
+                       svcdisks.disk_nodename,
+                       svcdisks.disk_vendor,
+                       svcdisks.disk_model,
+                       svcdisks.disk_dg,
+                       svcdisks.disk_updated as svcdisk_updated,
+                       svcdisks.id as svcdisk_id,
+                       svcdisks.disk_local,
+                       services.svc_app as app,
+                       apps.id as app_id,
+                       svcdisks.disk_used as disk_used,
+                       diskinfo.disk_size,
+                       diskinfo.disk_arrayid,
+                       diskinfo.disk_group,
+                       diskinfo.disk_devid,
+                       diskinfo.disk_name,
+                       diskinfo.disk_alloc,
+                       diskinfo.disk_created,
+                       diskinfo.disk_updated,
+                       diskinfo.disk_raid,
+                       diskinfo.disk_level
+                     from
+                       diskinfo
+                     left join svcdisks on diskinfo.disk_id=svcdisks.disk_id
+                     left join services on svcdisks.disk_svcname=services.svc_name
+                     left join apps on services.svc_app=apps.app
+                     where svcdisks.disk_svcname != ""
+                     union all
+                     select
+                       diskinfo.id,
+                       diskinfo.disk_id,
+                       svcdisks.disk_region,
+                       svcdisks.disk_svcname,
+                       svcdisks.disk_nodename,
+                       svcdisks.disk_vendor,
+                       svcdisks.disk_model,
+                       svcdisks.disk_dg,
+                       svcdisks.disk_updated as svcdisk_updated,
+                       svcdisks.id as svcdisk_id,
+                       svcdisks.disk_local,
+                       nodes.project as app,
+                       apps.id as app_id,
+                       svcdisks.disk_used as disk_used,
+                       diskinfo.disk_size,
+                       diskinfo.disk_arrayid,
+                       diskinfo.disk_group,
+                       diskinfo.disk_devid,
+                       diskinfo.disk_name,
+                       diskinfo.disk_alloc,
+                       diskinfo.disk_created,
+                       diskinfo.disk_updated,
+                       diskinfo.disk_raid,
+                       diskinfo.disk_level
+                     from
+                       diskinfo
+                     left join svcdisks on diskinfo.disk_id=svcdisks.disk_id
+                     left join nodes on svcdisks.disk_nodename=nodes.nodename
+                     left join apps on nodes.project=apps.app
+                     where (svcdisks.disk_svcname = "" or svcdisks.disk_svcname is NULL)
+;
+
+alter table stor_array_dg add key idx_array_id (array_id);
+
+alter table stor_array_dg add key idx_dg_name (dg_name);
+
+alter table stor_array_dg_quota add key key_dg_id (dg_id);
+
+drop view v_disk_quota;
+create view v_disk_quota as 
+  SELECT
+    stor_array_dg_quota.id, stor_array.id as array_id, stor_array_dg.id as dg_id, stor_array_dg_quota.app_id as app_id, stor_array.array_name, stor_array_dg.dg_name, stor_array_dg.dg_free, stor_array_dg.dg_size, stor_array_dg.dg_used, stor_array_dg.dg_reserved, stor_array_dg.dg_size - stor_array_dg.dg_reserved as dg_reservable, stor_array.array_model, apps.app, stor_array_dg_quota.quota, sum(v_disk_app_dedup.disk_used) as quota_used
+  FROM
+    stor_array_dg_quota
+    LEFT JOIN apps ON apps.id = stor_array_dg_quota.app_id
+    LEFT JOIN stor_array_dg ON stor_array_dg.id = stor_array_dg_quota.dg_id
+    LEFT JOIN stor_array ON stor_array_dg.array_id = stor_array.id
+    LEFT JOIN v_disk_app_dedup ON ( v_disk_app_dedup.app=apps.app and v_disk_app_dedup.disk_arrayid=stor_array.array_name and v_disk_app_dedup.disk_group=stor_array_dg.dg_name)
+  group by stor_array_dg_quota.id
+;
+
+
