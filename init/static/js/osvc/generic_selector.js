@@ -79,7 +79,7 @@ function generic_selector_modsets(id) {
       "props": "id,modset_name",
       "meta": "0"
     },
-    "object_class": "actions",
+    "object_class": "modset16",
     "object_id": "id",
     "object_name": "modset_name"
   })
