@@ -604,7 +604,11 @@ function table_add_column_headers(t) {
   }
   var tr = $("<tr class='theader'></tr>")
   if (t.checkboxes) {
-    tr.append($("<th></th>"))
+    var th = $("<th class='fa fa-bars'></th>")
+    th.click(function(e){
+      table_action_menu(t, e)
+    })
+    tr.append(th)
   }
   if (t.extrarow) {
     tr.append($("<th></th>"))
