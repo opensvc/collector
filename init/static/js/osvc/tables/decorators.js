@@ -1859,12 +1859,11 @@ function cell_decorator_app(e) {
   $(e).addClass("corner")
   $(e).click(function(){
     var line = $(this).parent(".tl")
-    var app_id = $.data(line.children("[col=id]")[0], "v")
     table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
     span_id = $(e).parent(".tl").attr("spansum")
     id = table_id + "_x_" + span_id
     toggle_extra(null, id, e, 0)
-    app_tabs(id, {"app_id": app_id, "app_name": v})
+    app_tabs(id, {"app_name": v})
   })
 }
 
