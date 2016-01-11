@@ -58,6 +58,12 @@ def task_refresh_b_disk_app():
     db.executesql(sql)
     sql = """alter table b_disk_app add index idx_disk_vendor (disk_vendor)"""
     db.executesql(sql)
+    sql = """alter table b_disk_app add index idx_disk_arrayid (disk_arrayid)"""
+    db.executesql(sql)
+    sql = """alter table b_disk_app add index idx_disk_group (disk_group)"""
+    db.executesql(sql)
+    sql = """alter table b_disk_app add index idx_app (app)"""
+    db.executesql(sql)
     db.commit()
     _websocket_send(event_msg({
                  'event': 'disks_change',
