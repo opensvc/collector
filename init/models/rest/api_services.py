@@ -215,7 +215,13 @@ class rest_delete_service_instance(rest_delete_handler):
         row = db(q).select(db.svcmon.id, db.svcmon.mon_svcname, db.svcmon.mon_nodname).first()
         if row is None:
             raise Exception("service instance %s does not exist" % str(id))
-        svc_responsible(row.mon_svcname)
+
+        # allow anybody to remove a service instance with no service entry in
+        # the service
+        q2 = db.services.svc_name == row.mon_svcname
+        n = db(q2).count()
+        if n > 0:
+            svc_responsible(row.mon_svcname)
 
         db(q).delete()
 
