@@ -75,6 +75,244 @@ class rest_get_array_diskgroups(rest_get_table_handler):
         self.set_q(q)
         return self.prepare_data(**vars)
 
+#
+class rest_get_array_diskgroup_quotas(rest_get_table_handler):
+    def __init__(self):
+        desc = [
+          "List storage array diskgroup quotas.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/arrays/myarray/diskgroups/1/quotas"
+        ]
+        rest_get_table_handler.__init__(
+          self,
+          path="/arrays/<id>/diskgroups/<id>/quotas",
+          tables=["stor_array_dg_quota"],
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, array_id, dg_id, **vars):
+        q = db.stor_array_dg_quota.dg_id == dg_id
+        self.set_q(q)
+        return self.prepare_data(**vars)
+
+#
+class rest_get_array_diskgroup_quota(rest_get_line_handler):
+    def __init__(self):
+        desc = [
+          "List a storage array diskgroup quota.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/arrays/myarray/diskgroups/1/quotas/1"
+        ]
+        rest_get_line_handler.__init__(
+          self,
+          path="/arrays/<id>/diskgroups/<id>/quotas/<id>",
+          tables=["stor_array_dg_quota"],
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, array_id, dg_id, id, **vars):
+        q = db.stor_array_dg_quota.id == id
+        q &= db.stor_array_dg_quota.dg_id == dg_id
+        self.set_q(q)
+        return self.prepare_data(**vars)
+
+#
+class rest_post_array_diskgroup_quota(rest_post_handler):
+    def __init__(self):
+        desc = [
+          "Change a storage array diskgroup quota.",
+        ]
+        examples = [
+          "# curl -u %(email)s -d quota=10000 -X POST -o- https://%(collector)s/init/rest/api/arrays/myarray/diskgroups/1/quotas/1"
+        ]
+        rest_post_handler.__init__(
+          self,
+          path="/arrays/<id>/diskgroups/<id>/quotas/<id>",
+          tables=["stor_array_dg_quota"],
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, array_id, dg_id, quota_id, **vars):
+        check_privilege("StorageManager")
+
+        q = db.stor_array_dg_quota.id == quota_id
+        quota = db(q).select().first()
+        if quota is None:
+            raise Exception("quota %s not found" % str(quota_id))
+
+        if "app_id" in vars:
+            q = db.apps.id == vars["app_id"]
+            app = db(q).select().first()
+            if app is None:
+                raise Exception("app %s not found" % str(vars["app_id"]))
+        elif "app" in vars:
+            q = db.apps.app == vars["app"]
+            app = db(q).select().first()
+            if app is None:
+                raise Exception("app %s not found" % str(vars["app"]))
+            del(vars["app"])
+            vars["app_id"] = app.id
+        else:
+            q = db.apps.id == quota.app_id
+            app = db(q).select().first()
+
+        q = db.stor_array_dg.id == dg_id
+        dg = db(q).select().first()
+        if dg is None:
+            raise Exception("dg %s not found" % str(dg_id))
+
+        q = db.stor_array_dg_quota.id == quota_id
+        db(q).update(**vars)
+
+        fmt = "%(quota)s quota change for app %(app)s in dg %(dg)s: %(data)s"
+        d = dict(quota=str(vars.get("quota", "")), app=app.app, dg=dg.dg_name, data=beautify_change(quota, vars))
+
+        _log('quota.change', fmt, d)
+        l = {
+          'event': 'stor_array_dg_quota_change',
+          'data': {'id': quota.id},
+        }
+        _websocket_send(event_msg(l))
+        table_modified("stor_array_dg_quota")
+
+        ret = rest_get_array_diskgroup_quota().handler(array_id, dg_id, quota_id)
+        ret["info"] = fmt % d
+        return ret
+
+#
+class rest_post_array_diskgroup_quotas(rest_post_handler):
+    def __init__(self):
+        desc = [
+          "Add a storage array diskgroup quota.",
+        ]
+        examples = [
+          "# curl -u %(email)s -d app_id=1 -d quota=10000 -X POST -o- https://%(collector)s/init/rest/api/arrays/myarray/diskgroups/1/quotas"
+        ]
+        rest_post_handler.__init__(
+          self,
+          path="/arrays/<id>/diskgroups/<id>/quotas",
+          tables=["stor_array_dg_quota"],
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, array_id, dg_id, **vars):
+        check_privilege("StorageManager")
+
+        if not "quota" in vars:
+            raise Exception("The 'quota' key is mandatory")
+
+        if "app_id" in vars:
+            q = db.apps.id == vars["app_id"]
+            app = db(q).select().first()
+            if app is None:
+                raise Exception("app %s not found" % str(vars["app_id"]))
+        elif "app" in vars:
+            q = db.apps.app == vars["app"]
+            app = db(q).select().first()
+            if app is None:
+                raise Exception("app %s not found" % str(vars["app"]))
+            del(vars["app"])
+        else:
+            raise Exception("Either 'app' or 'app_id' is mandatory")
+
+        q = db.stor_array_dg.id == dg_id
+        dg = db(q).select().first()
+        if dg is None:
+            raise Exception("dg %s not found" % str(dg_id))
+
+        vars["app_id"] = app.id
+        vars["dg_id"] = dg_id
+        id = db.stor_array_dg_quota.insert(**vars)
+
+        fmt = "%(quota)s quota added for app %(app)s in dg %(dg)s"
+        d = dict(quota=str(vars.get("quota", "")), app=app.app, dg=dg.dg_name)
+
+        _log('quota.add', fmt, d)
+        l = {
+          'event': 'stor_array_dg_quota_change',
+          'data': {'id': id},
+        }
+        _websocket_send(event_msg(l))
+        table_modified("stor_array_dg_quota")
+
+        ret = rest_get_array_diskgroup_quota().handler(array_id, dg_id, id)
+        ret["info"] = fmt % d
+        return ret
+
+#
+class rest_delete_array_diskgroup_quotas(rest_delete_handler):
+    def __init__(self):
+        desc = [
+          "Delete storage array diskgroup quotas.",
+        ]
+        examples = [
+          "# curl -u %(email)s -X DELETE -o- https://%(collector)s/init/rest/api/arrays/myarray/diskgroups/1/quotas"
+        ]
+        rest_delete_handler.__init__(
+          self,
+          path="/arrays/<id>/diskgroups/<id>/quotas",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, array_id, dg_id, **vars):
+        if "id" not in vars:
+            raise Exception("The 'id' key is mandatory")
+        quota_id = vars.get("id")
+        del(vars["id"])
+        return rest_delete_array_diskgroup_quota().handler(array_id, dg_id, quota_id, **vars)
+
+#
+class rest_delete_array_diskgroup_quota(rest_delete_handler):
+    def __init__(self):
+        desc = [
+          "Delete a storage array diskgroup quota.",
+        ]
+        examples = [
+          "# curl -u %(email)s -X DELETE -o- https://%(collector)s/init/rest/api/arrays/myarray/diskgroups/1/quotas/1"
+        ]
+        rest_delete_handler.__init__(
+          self,
+          path="/arrays/<id>/diskgroups/<id>/quotas/<id>",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, array_id, dg_id, quota_id, **vars):
+        check_privilege("StorageManager")
+
+        q = db.stor_array_dg_quota.id == quota_id
+        quota = db(q).select().first()
+        if quota is None:
+            raise Exception("quota %s not found" % str(quota_id))
+
+        q = db.apps.id == quota.app_id
+        app = db(q).select().first()
+
+        q = db.stor_array_dg.id == quota.dg_id
+        dg = db(q).select().first()
+
+        fmt = "%(quota)s quota deleted for app %(app)s in dg %(dg)s"
+        d = dict(quota=str(quota.quota), app=str(app.app), dg=str(dg.dg_name))
+
+        _log('quota.del', fmt, d)
+        l = {
+          'event': 'stor_array_dg_quota_change',
+          'data': {'id': quota.id},
+        }
+        _websocket_send(event_msg(l))
+        table_modified("stor_array_dg_quota")
+
+        ret = {}
+        ret["info"] = fmt % d
+        return ret
+
 
 #
 class rest_get_array_proxies(rest_get_table_handler):
