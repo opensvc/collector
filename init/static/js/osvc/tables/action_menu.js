@@ -1110,83 +1110,89 @@ function table_bind_action_menu(t) {
 // action menu formatter entry point
 //
 function table_action_menu(t, e){
-  // drop the previous action menu
-  $("#am_"+t.id).remove()
+	o = {}
+	o.menu_id = "am_"+t.id
+	o.menu = $("#"+o.menu_id)
 
-  // purge the caches
-  t.action_menu_req_cache = null
-  t.action_menu_data_cache = {}
+	// drop the previous action menu
+	o.menu.remove()
 
-  // create and position the popup at the mouse click
-  var am = $("<div id='am_"+t.id+"' class='white_float action_menu stackable'></div>")
-  var pos = get_pos(e)
-  t.div.append(am)
-  am.draggable()
-  $("#am_"+t.id).css({"left": pos[0] + "px", "top": pos[1] + "px"})
+	// purge the caches
+	t.action_menu_req_cache = null
+	t.action_menu_data_cache = {}
 
-  // format the data as menu
-  var ul = $("<ul></ul>")
-  for (var i=0; i<t.action_menu_data.length; i++) {
-    var li = table_action_menu_format_section(t, e, t.action_menu_data[i])
-    if (li.html().length == 0) {
-      continue
-    }
-    ul.append(li)
-  }
+	// create and position the popup at the mouse click
+	var am = $("<div id='"+o.menu_id+"' class='white_float action_menu stackable'></div>")
+	var pos = get_pos(e)
+	t.div.append(am)
+	o.menu = $("#"+o.menu_id)
+	am.draggable()
+	o.menu.css({"left": pos[0] + "px", "top": pos[1] + "px", "max-width": "50%"})
 
-  // empty menu banner
-  if (ul.html().length == 0) {
-    am.append("<span class='alert16 icon'>"+i18n.t("action_menu.no_action")+"</span>")
-    return
-  }
-  am.append(ul)
+	// format the data as menu
+	var ul = $("<ul></ul>")
+	for (var i=0; i<t.action_menu_data.length; i++) {
+		var li = table_action_menu_format_section(t, e, t.action_menu_data[i])
+		if (li.html().length == 0) {
+			continue
+		}
+		ul.append(li)
+	}
 
-  // display actions only for the clicked section
-  var folders = $("#am_"+t.id+" .action_menu_folder")
-  folders.addClass("right16")
-  folders.children("ul,.action_menu_selector").hide()
-  folders.bind("click", function(e){
-    e.stopPropagation()
-    var v = $(this).children(".action_menu_selector").is(":visible")
-    folders.removeClass("down16")
-    folders.addClass("right16")
-    folders.children("ul,.action_menu_selector").hide()
-    if (!v) {
-      var selector = $(this).children(".action_menu_selector")
-      selector.show()
-      var scope = selector.children(".action_menu_selector_selected").attr("scope")
-      $(this).children("ul").hide()
-      if (scope) {
-        $(this).children("ul[scope="+scope+"]").show()
-      } else {
-        $(this).children("ul").show()
-      }
-      $(this).removeClass("right16")
-      $(this).addClass("down16")
-    }
-  })
-  return
+	// empty menu banner
+	if (ul.html().length == 0) {
+		am.append("<span class='alert16 icon'>"+i18n.t("action_menu.no_action")+"</span>")
+		return
+	}
+	am.append(ul)
+
+	// display actions only for the clicked section
+	var folders = $("#"+o.menu_id+" .action_menu_folder")
+	folders.addClass("right16")
+	folders.children("ul,.action_menu_selector").hide()
+	folders.bind("click", function(e){
+		e.stopPropagation()
+		var v = $(this).children(".action_menu_selector").is(":visible")
+		folders.removeClass("down16")
+		folders.addClass("right16")
+		folders.children("ul,.action_menu_selector").hide()
+		if (!v) {
+			var selector = $(this).children(".action_menu_selector")
+			selector.show()
+			var scope = selector.children(".action_menu_selector_selected").attr("scope")
+			$(this).children("ul").hide()
+			if (scope) {
+				$(this).children("ul[scope="+scope+"]").show()
+			} else {
+				$(this).children("ul").show()
+			}
+			$(this).removeClass("right16")
+			$(this).addClass("down16")
+		}
+	})
+
+	return o
 }
 
 function table_action_menu_format_section(t, e, section) {
-  var ul = $("<ul></ul>")
-  for (var i=0; i<section.children.length; i++) {
-    var li = table_action_menu_format_selector(t, e, section.children[i])
-    if (!li || (li.html().length == 0)) {
-      continue
-    }
-    ul.append(li)
-  }
-  var content = $("<li></li>")
-  if (ul.children().length == 0) {
-    return content
-  }
-  var title = $("<h3 class='line'><span></span></h3>")
-  title.children().text(i18n.t(section.title)).addClass(section.class)
-  content.append(title)
-  content.append(ul)
+	var ul = $("<ul></ul>")
+	for (var i=0; i<section.children.length; i++) {
+		var li = table_action_menu_format_selector(t, e, section.children[i])
+		if (!li || (li.html().length == 0)) {
+			continue
+		}
+		ul.append(li)
+	}
+	var content = $("<li></li>")
+	if (ul.children().length == 0) {
+		return content
+	}
+	var title = $("<h3 class='line'><span></span></h3>")
+	title.children().text(i18n.t(section.title)).addClass(section.class)
+	content.append(title)
+	content.append(ul)
 
-  return content
+	return content
 }
 
 //
@@ -1281,8 +1287,6 @@ function table_action_menu_get_cols_data_checked(t, e, scope, selector) {
 
 function table_action_menu_get_cols_data_all(t, e, scope, selector) {
   var data = []
-  var cell = $(e.target)
-  var line = cell.parents(".tl").first()
   var cols = []
 
   // fetch all columns meaningful for the action menu
@@ -1293,7 +1297,7 @@ function table_action_menu_get_cols_data_all(t, e, scope, selector) {
     var reverse_col = {}
     for (var c in t.column_selectors) {
       var s = t.column_selectors[c]
-      var name = line.find(s).first().attr("name")
+      var name = t.div.find(".tl").first().find(s).first().attr("name")
       if (!name) {
         continue
       }
@@ -1308,14 +1312,10 @@ function table_action_menu_get_cols_data_all(t, e, scope, selector) {
 
     var sigs = []
     var url = t.ajax_url+"/data"
-    var vars = {}
-    vars["table_id"] = t.id
+    var vars = t.prepare_request_data()
     vars["visible_columns"] = cols.join(",")
     vars[t.id+"_page"] = 1
     vars[t.id+"_perpage"] = t.action_menu_req_max
-    t.div.find("input[id^="+t.id+"_f_]").each(function(){
-      vars[$(this).attr("id")] = $(this).val()
-    })
     $.ajax({
          async: false,
          type: "POST",
@@ -1424,146 +1424,156 @@ function table_prepare_scope_action_list(t, e, selector, scope, data, cache_id) 
 }
 
 function table_selector_match_table(t, selector) {
-  if (!selector.table) {
-    return true
-  }
-  for (var i=0; i<selector.table.length; i++) {
-    var tid = selector.table[i]
-    if (tid == t.id) {
-      return true
-    }
-  }
-  return false
+	if (!selector.table) {
+		return true
+	}
+	for (var i=0; i<selector.table.length; i++) {
+		var tid = selector.table[i]
+		if (tid == t.id) {
+			return true
+		}
+	}
+	return false
 }
 
 function table_action_menu_format_selector(t, e, selector) {
-  if (!table_selector_match_table(t, selector)) {
-    return
-  }
-  var content = $("<li></li>")
-  if (selector.foldable) {
-    content.addClass("action_menu_folder")
-  }
-  if (selector.title) {
-    var title = $("<span></span>")
-    title.text(i18n.t(selector.title))
-  }
-  if (selector.selector.length == 0) {
-    // no selector, special case for tools not working on data lines
-    var ul = table_prepare_scope_action_list(t, e, selector)
-    if (ul.length > 0) {
-      content.prepend(ul)
-      content.prepend(title)
-    }
-    return content
-  }
-  var e_selector = $("<div class='action_menu_selector'></div>")
+	if (!table_selector_match_table(t, selector)) {
+		return
+	}
+	var content = $("<li></li>")
+	if (selector.foldable) {
+		content.addClass("action_menu_folder")
+	}
+	if (selector.title) {
+		var title = $("<span></span>")
+		title.text(i18n.t(selector.title))
+	}
+	if (selector.selector.length == 0) {
+		// no selector, special case for tools not working on data lines
+		var ul = table_prepare_scope_action_list(t, e, selector)
+		if (ul.length > 0) {
+			content.prepend(ul)
+			content.prepend(title)
+		}
+		return content
+	}
+	var e_selector = $("<div class='action_menu_selector'></div>")
 
-  for (var i=0; i<selector.selector.length; i++) {
-    var scope = selector.selector[i]
+	for (var i=0; i<selector.selector.length; i++) {
+		var scope = selector.selector[i]
 
-    // compute selected cursor
-    cache_id = ""
-    for (var j=0; j<selector.cols.length; j++) {
-      cache_id += '-'+selector.cols[j]
-    }
-    cache_id += '-'+scope
-    if (cache_id in t.action_menu_data_cache) {
-      var data = t.action_menu_data_cache[cache_id]
-    } else {
-      var data = table_action_menu_get_cols_data(t, e, scope, selector)
-      t.action_menu_data_cache[cache_id] = data
-    }
+		// don't compute the "all" scope on right-click
+		if ((scope == "all") && (e.which == 3)) {
+			continue
+		}
 
-    // prepare action list for scope
-    var ul = table_prepare_scope_action_list(t, e, selector, scope, data, cache_id)
+		// don't compute the "clicked" scope on not right-click
+		if ((scope == "clicked") && (e.which != 3)) {
+			continue
+		}
 
-    // prepare the selector scope button
-    var s = $("<div class='ellipsis'></div>")
-    s.attr("scope", scope)
+		// compute selected cursor
+		cache_id = ""
+		for (var j=0; j<selector.cols.length; j++) {
+			cache_id += '-'+selector.cols[j]
+		}
+		cache_id += '-'+scope
+		if (cache_id in t.action_menu_data_cache) {
+			var data = t.action_menu_data_cache[cache_id]
+		} else {
+			var data = table_action_menu_get_cols_data(t, e, scope, selector)
+			t.action_menu_data_cache[cache_id] = data
+		}
 
-    // disable the scope if no data
-    if (data.length == 0) {
-      s.addClass("action_menu_selector_disabled")
-    }
+		// prepare action list for scope
+		var ul = table_prepare_scope_action_list(t, e, selector, scope, data, cache_id)
 
-    // set as selected if not disabled and no other scope is already selected
-    if ((e_selector.children(".action_menu_selector_selected").length == 0) && !s.hasClass("action_menu_selector_disabled")) {
-      s.addClass("action_menu_selector_selected")
-    }
+		// prepare the selector scope button
+		var s = $("<div class='ellipsis'></div>")
+		s.attr("scope", scope)
 
-    // set the span text
-    if ((scope == "clicked") && (data.length > 0)) {
-      var l = []
-      for (var j=0; j<selector.cols.length; j++) {
-        var c = selector.cols[j]
-        if (c in data[0]) {
-          l.push(data[0][c])
-        }
-      }
-      s.text(l.join("-"))
-      s.hover(function() {
-        $(this).removeClass("ellipsis");
-        var maxscroll = $(this).width();
-        var speed = maxscroll * 15;
-        $(this).animate({
-          scrollLeft: maxscroll
-        }, speed, "linear");
-      }, function() {
-        $(this).stop();
-        $(this).addClass("ellipsis");
-        $(this).animate({
-          scrollLeft: 0
-        }, 'slow');
-      })
-    } else if ((scope == "checked") || (scope == "all")) {
-      var count = data.length
-      var suffix = ""
-      if (count == t.action_menu_req_max) {
-        suffix = "+"
-      }
-      s.text(scope+" ("+count+suffix+")")
-    } else {
-      s.text(scope)
-    }
+		// disable the scope if no data
+		if (data.length == 0) {
+			s.addClass("action_menu_selector_disabled")
+		}
 
-    // add the action list and bind click handler if not disabled
-    if ((ul.children().length > 0) && !s.hasClass("action_menu_selector_disabled")) {
-      if (!s.hasClass("action_menu_selector_selected")) {
-        ul.hide()
-      }
-      content.append(ul)
-      s.addClass("clickable")
-      s.bind("click", function(e) {
-        e.stopPropagation()
-        $(this).siblings().removeClass("action_menu_selector_selected")
-        $(this).addClass("action_menu_selector_selected")
-        var scope = $(this).attr("scope")
-        $(this).parent().siblings("ul").hide()
-        $(this).parent().siblings("ul[scope="+scope+"]").show()
-      })
-    } else {
-      s.bind("click", function(e) {
-        e.stopPropagation()
-      })
-    }
+		// set as selected if not disabled and no other scope is already selected
+		if ((e_selector.children(".action_menu_selector_selected").length == 0) && !s.hasClass("action_menu_selector_disabled")) {
+			s.addClass("action_menu_selector_selected")
+		}
 
-    e_selector.append(s)
+		// set the span text
+		if ((scope == "clicked") && (data.length > 0)) {
+			var l = []
+			for (var j=0; j<selector.cols.length; j++) {
+				var c = selector.cols[j]
+				if (c in data[0]) {
+					l.push(data[0][c])
+				}
+			}
+			s.text(l.join("-"))
+			s.hover(function() {
+				$(this).removeClass("ellipsis");
+				var maxscroll = $(this).width();
+				var speed = maxscroll * 15;
+				$(this).animate({
+					scrollLeft: maxscroll
+				}, speed, "linear");
+			}, function() {
+				$(this).stop();
+				$(this).addClass("ellipsis");
+				$(this).animate({
+					scrollLeft: 0
+				}, 'slow');
+			})
+		} else if ((scope == "checked") || (scope == "all")) {
+			var count = data.length
+			var suffix = ""
+			if (count == t.action_menu_req_max) {
+				suffix = "+"
+			}
+			s.text(scope+" ("+count+suffix+")")
+		} else {
+			s.text(scope)
+		}
 
-    // set the "checked" scope as selected if not disabled: take precedence to the "clicked" scope
-    if ((scope == "checked") && !s.hasClass("action_menu_selector_disabled")) {
-      s.click()
-    }
+		// add the action list and bind click handler if not disabled
+		if ((ul.children().length > 0) && !s.hasClass("action_menu_selector_disabled")) {
+			if (!s.hasClass("action_menu_selector_selected")) {
+				ul.hide()
+			}
+			content.append(ul)
+			s.addClass("clickable")
+			s.bind("click", function(e) {
+				e.stopPropagation()
+				$(this).siblings().removeClass("action_menu_selector_selected")
+				$(this).addClass("action_menu_selector_selected")
+				var scope = $(this).attr("scope")
+				$(this).parent().siblings("ul").hide()
+				$(this).parent().siblings("ul[scope="+scope+"]").show()
+			})
+		} else {
+			s.bind("click", function(e) {
+				e.stopPropagation()
+			})
+		}
 
-  }
-  if (content.children("ul").length > 0) {
-    content.prepend(e_selector)
-    if (selector.title) {
-      content.prepend(title)
-    }
-  }
+		e_selector.append(s)
 
-  return content
+		// set the "checked" scope as selected if not disabled: take precedence to the "clicked" scope
+		if ((scope == "checked") && !s.hasClass("action_menu_selector_disabled")) {
+			s.click()
+		}
+
+	}
+	if (content.children("ul").length > 0) {
+		content.prepend(e_selector)
+		if (selector.title) {
+			content.prepend(title)
+		}
+	}
+
+	return content
 }
 
 function table_action_menu_format_leaf(t, e, leaf) {
