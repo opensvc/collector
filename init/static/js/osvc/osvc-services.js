@@ -10,7 +10,7 @@ var services_access_uri = {
     "S_SYSREPSHOWFILE" : "ajax_sysreport/ajax_sysreport_show_file",
     "R_ACTIONS" : "/actions",
     "R_ALERT_EVENT" : "/alert_event",
-    "R_API" : "",
+    "R_API" : "/",
     "R_APP" : "/apps/%1",
     "R_APPS" : "/apps",
     "R_APP_RESPONSIBLES" : "/apps/%1/responsibles",
