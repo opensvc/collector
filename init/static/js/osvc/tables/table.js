@@ -2033,11 +2033,7 @@ function table_add_csv(t) {
       _e.removeClass("csv_disabled").addClass("csv")
     }, 10000)
 
-    var data = {}
-    t.div.find("input[id^="+t.id+"_f_]").each(function(){
-      data[$(this).attr("id")] = $(this).val()
-    })
-    data = $.extend(data, t.parent_tables_data())
+    var data = t.prepare_request_data()
     var l = []
     for (k in data) {
       l.push(encodeURIComponent(k)+"="+encodeURIComponent(data[k]))
