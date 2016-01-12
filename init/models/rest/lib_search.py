@@ -1,5 +1,25 @@
 max_search_result = 10
 
+def lib_search_form(pattern):
+    t = datetime.datetime.now()
+    o = db.forms.form_name
+    q = db.forms.form_name.like(pattern)
+    q &= db.forms.id == db.forms_team_publication.form_id
+    q &= db.forms_team_publication.group_id.belongs(user_group_ids())
+    n = db(q).count()
+    data = db(q).select(db.forms.form_name,
+                        db.forms.id,
+                        groupby=o,
+                        orderby=o,
+                        limitby=(0,max_search_result)
+    ).as_list()
+    t = datetime.datetime.now() - t
+    return {
+      "total": n,
+      "data": data,
+      "elapsed": "%f" % (t.seconds + 1. * t.microseconds / 1000000),
+    }
+
 def lib_search_fset(pattern):
     t = datetime.datetime.now()
     o = db.gen_filtersets.fset_name

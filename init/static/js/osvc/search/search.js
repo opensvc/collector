@@ -1,6 +1,27 @@
 function search_get_menu(fk)
 {
   var menu = {
+    "forms": {
+        "tab" : 'form_tabs("__rowid__", {"form_id": "__id__", "form_name": "__form_name__"})',
+        "title": "__form_name__",
+        "menu_entry_id": "adm-forms",
+        "class": "wf16 fa-2x search-section-icon",
+        "subclass" : "meta_form clickable",
+        "links" : [
+          {
+            "title": "request",
+            "menu_entry_id": "req-new",
+            "class" : "wf16",
+            "link" : "/init/forms/forms?form_name=__form_name__"
+          },
+          {
+            "title": "forms",
+            "menu_entry_id": "adm-forms",
+            "class" : "wf16",
+            "link" : "/init/forms/forms_admin?volatile_filters=true&forms_f_form_name=__form_name__"
+          }
+        ]
+    },
     "users": {
         "tab" : 'user_tabs("__rowid__", {"user_id": "__id__", "fullname": "__fullname__"})',
         "title": "__fullname__ <__email__>",
@@ -12,19 +33,19 @@ function search_get_menu(fk)
             "title": "users",
             "menu_entry_id": "adm-usr",
             "class" : "guys16",
-            "link" : "/init/users/users?clear_filters=true&users_f_fullname=__fullname__"
+            "link" : "/init/users/users?volatile_filters=true&users_f_fullname=__fullname__"
           },
           {
             "title": "logs",
             "menu_entry_id": "adm-log",
             "class" : "log16",
-            "link" : "/init/log/log?clear_filters=true&log_f_log_user=__fullname__"
+            "link" : "/init/log/log?volatile_filters=true&log_f_log_user=__fullname__"
           },
           {
             "title": "apps",
             "menu_entry_id": "adm-app",
             "class" : "svc",
-            "link" : "/init/apps/apps?clear_filters=true&apps_f_responsibles=%__fullname__%"
+            "link" : "/init/apps/apps?volatile_filters=true&apps_f_responsibles=%__fullname__%"
           }
         ]
     },
@@ -45,7 +66,7 @@ function search_get_menu(fk)
             "title": "disk_info",
             "menu_entry_id": "view-disks",
             "class" : "hd16",
-            "link" : "/init/disks/disks?clear_filters=true&disks_f_disk_id=__disk_id__"
+            "link" : "/init/disks/disks?volatile_filters=true&disks_f_disk_id=__disk_id__"
           }
         ]
     },
@@ -60,31 +81,31 @@ function search_get_menu(fk)
             "title": "nodes",
             "menu_entry_id": "view-nodes",
             "class" : "hw16",
-            "link" : "/init/nodes/nodes?clear_filters=true&nodes_f_project=__app__"
+            "link" : "/init/nodes/nodes?volatile_filters=true&nodes_f_project=__app__"
           },
           {
             "title": "status",
             "menu_entry_id": "view-service-instances",
             "class" : "svc",
-            "link" : "/init/default/svcmon?clear_filters=true&svcmon_f_svc_app=__app__"
+            "link" : "/init/default/svcmon?volatile_filters=true&svcmon_f_svc_app=__app__"
           },
           {
             "title": "disk_info",
             "menu_entry_id": "view-disks",
             "class" : "hd16",
-            "link" : "/init/disks/disks?clear_filters=true&disks_f_app=__app__"
+            "link" : "/init/disks/disks?volatile_filters=true&disks_f_app=__app__"
           },
           {
             "title": "availability",
             "menu_entry_id": "stat-avail",
             "class" : "avail16",
-            "link" : "/init/svcmon_log/svcmon_log?clear_filters=true&svcmon_log_f_svc_app=__app__"
+            "link" : "/init/svcmon_log/svcmon_log?volatile_filters=true&svcmon_log_f_svc_app=__app__"
           },
           {
             "title": "app",
             "menu_entry_id": "adm-app",
             "class" : "svc",
-            "link" : "/init/apps/apps?clear_filters=true&apps_f_app=__app__"
+            "link" : "/init/apps/apps?volatile_filters=true&apps_f_app=__app__"
           }
         ]
     },
@@ -98,91 +119,91 @@ function search_get_menu(fk)
             "title": "nodes",
             "menu_entry_id": "view-nodes",
             "class" : "hw16",
-            "link" : "/init/nodes/nodes?clear_filters=true&nodes_f_nodename=__nodename__"
+            "link" : "/init/nodes/nodes?volatile_filters=true&nodes_f_nodename=__nodename__"
           },
           {
             "title": "dashboard",
             "menu_entry_id": "view-dashboard",
             "class" : "alert16",
-            "link" : "/init/dashboard/index?clear_filters=true&dashboard_f_dash_nodename=__nodename__"
+            "link" : "/init/dashboard/index?volatile_filters=true&dashboard_f_dash_nodename=__nodename__"
           },
           {
             "title": "services",
             "menu_entry_id": "view-services",
             "class" : "svc",
-            "link" : "/init/default/svcmon?clear_filters=true&svcmon_f_mon_nodname=__nodename__"
+            "link" : "/init/default/svcmon?volatile_filters=true&svcmon_f_mon_nodname=__nodename__"
           },
           {
             "title": "resources",
             "menu_entry_id": "view-resources",
             "class" : "svc",
-            "link" : "/init/resmon/resmon?clear_filters=true&resmon_f_nodename=__nodename__"
+            "link" : "/init/resmon/resmon?volatile_filters=true&resmon_f_nodename=__nodename__"
           },
           {
             "title": "appinfo",
             "menu_entry_id": "view-appinfo",
             "class" : "svc",
-            "link" : "/init/appinfo/appinfo?clear_filters=true&appinfo_f_app_nodename=__nodename__"
+            "link" : "/init/appinfo/appinfo?volatile_filters=true&appinfo_f_app_nodename=__nodename__"
           },
           {
             "title": "action",
             "menu_entry_id": "view-actions",
             "class" : "action16",
-            "link" : "/init/svcactions/svcactions?clear_filters=true&actions_f_hostname=__nodename__"
+            "link" : "/init/svcactions/svcactions?volatile_filters=true&actions_f_hostname=__nodename__"
           },
           {
             "title": "checks",
             "menu_entry_id": "view-checks",
             "class" : "check16",
-            "link" : "/init/checks/checks?clear_filters=true&checks_f_chk_nodename=__nodename__"
+            "link" : "/init/checks/checks?volatile_filters=true&checks_f_chk_nodename=__nodename__"
           },
           {
             "title": "packages",
             "menu_entry_id": "view-pkg",
             "class" : "pkg16",
-            "link" : "/init/packages/packages?clear_filters=true&packages_f_nodename=__nodename__"
+            "link" : "/init/packages/packages?volatile_filters=true&packages_f_nodename=__nodename__"
           },
           {
             "title": "network",
             "menu_entry_id": "view-net",
             "class" : "net16",
-            "link" : "/init/nodenetworks/nodenetworks?clear_filters=true&nodenetworks_f_nodename=__nodename__"
+            "link" : "/init/nodenetworks/nodenetworks?volatile_filters=true&nodenetworks_f_nodename=__nodename__"
           },
           {
             "title": "san",
             "menu_entry_id": "view-san",
             "class" : "net16",
-            "link" : "/init/nodesan/nodesan?clear_filters=true&nodesan_f_nodename=__nodename__"
+            "link" : "/init/nodesan/nodesan?volatile_filters=true&nodesan_f_nodename=__nodename__"
           },
           {
             "title": "disks",
             "menu_entry_id": "view-disks",
             "class" : "hd16",
-            "link" : "/init/disks/disks?clear_filters=true&disks_f_disk_nodename=__nodename__"
+            "link" : "/init/disks/disks?volatile_filters=true&disks_f_disk_nodename=__nodename__"
           },
           {
             "title": "saves",
             "menu_entry_id": "view-saves",
             "class" : "cd16",
-            "link" : "/init/saves/saves?clear_filters=true&saves_f_save_nodename=__nodename__"
+            "link" : "/init/saves/saves?volatile_filters=true&saves_f_save_nodename=__nodename__"
           },
           {
             "title": "compliance_status",
             "menu_entry_id": "comp-status",
             "class" : "comp16",
-            "link" : "/init/compliance/comp_status?clear_filters=true&cs0_f_run_nodename=__nodename__"
+            "link" : "/init/compliance/comp_status?volatile_filters=true&cs0_f_run_nodename=__nodename__"
           },
           {
             "title": "compliance_log",
             "menu_entry_id": "comp-log",
             "class" : "log16",
-            "link" : "/init/compliance/comp_log?clear_filters=true&comp_log_f_run_nodename=__nodename__"
+            "link" : "/init/compliance/comp_log?volatile_filters=true&comp_log_f_run_nodename=__nodename__"
           },
           {
             "title": "logs",
             "menu_entry_id": "adm-log",
             "class" : "log16",
-            "link" : "/init/log/log?clear_filters=true&log_f_log_nodename=__nodename__"
+            "link" : "/init/log/log?volatile_filters=true&log_f_log_nodename=__nodename__"
           }
         ],
         "special_header_links" : [
@@ -190,7 +211,7 @@ function search_get_menu(fk)
             "title": "nodes_net",
             "menu_entry_id": "view-node-net",
             "class" : "hw16",
-            "link" : "/init/nodenetworks/nodenetworks?clear_filters=true&nodenetworks_f_addr=__addr__"
+            "link" : "/init/nodenetworks/nodenetworks?volatile_filters=true&nodenetworks_f_addr=__addr__"
           }
         ]
     },
@@ -205,25 +226,25 @@ function search_get_menu(fk)
             "title": "nodes",
             "menu_entry_id": "view-nodes",
             "class" : "hw16",
-            "link" : "/init/nodes/nodes?clear_filters=true&nodes_f_team_responsible=__role__"
+            "link" : "/init/nodes/nodes?volatile_filters=true&nodes_f_team_responsible=__role__"
           },
           {
             "title": "apps",
             "menu_entry_id": "adm-app",
             "class" : "svc",
-            "link" : "/init/apps/apps?clear_filters=true&apps_f_roles=__role__"
+            "link" : "/init/apps/apps?volatile_filters=true&apps_f_roles=__role__"
           },
           {
             "title": "checks",
             "menu_entry_id": "view-checks",
             "class" : "check16",
-            "link" : "/init/checks/checks?clear_filters=true&checks_f_team_responsible=__role__"
+            "link" : "/init/checks/checks?volatile_filters=true&checks_f_team_responsible=__role__"
           },
           {
             "title": "compliance_status",
             "menu_entry_id": "comp-status",
             "class" : "comp16",
-            "link" : "/init/compliance/comp_status?clear_filters=true&cs0_f_team_responsible=__role__"
+            "link" : "/init/compliance/comp_status?volatile_filters=true&cs0_f_team_responsible=__role__"
           }
         ]
     },
@@ -238,73 +259,73 @@ function search_get_menu(fk)
             "title": "dashboard",
             "menu_entry_id": "view-dashboard",
             "class" : "alert16",
-            "link" : "/init/dashboard/index?clear_filters=true&dashboard_f_dash_svcname=__svc_name__"
+            "link" : "/init/dashboard/index?volatile_filters=true&dashboard_f_dash_svcname=__svc_name__"
           },
           {
             "title": "status",
             "menu_entry_id": "view-service-instances",
             "class" : "alert16",
-            "link" : "/init/default/svcmon?clear_filters=true&svcmon_f_mon_svcname=__svc_name__"
+            "link" : "/init/default/svcmon?volatile_filters=true&svcmon_f_mon_svcname=__svc_name__"
           },
           {
             "title": "resources",
             "menu_entry_id": "view-resources",
             "class" : "svc",
-            "link" : "/init/resmon/resmon?clear_filters=true&resmon_f_svcname=__svc_name__"
+            "link" : "/init/resmon/resmon?volatile_filters=true&resmon_f_svcname=__svc_name__"
           },
           {
             "title": "appinfo",
             "menu_entry_id": "view-appinfo",
             "class" : "alert16",
-            "link" : "/init/dashboard/index?clear_/init/appinfo/appinfo?clear_filters=true&appinfo_f_app_svcname=__svc_name__"
+            "link" : "/init/dashboard/index?clear_/init/appinfo/appinfo?volatile_filters=true&appinfo_f_app_svcname=__svc_name__"
           },
           {
             "title": "action",
             "menu_entry_id": "view-actions",
             "class" : "action16",
-            "link" : "/init/svcactions/svcactions?clear_filters=true&actions_f_svcname=__svc_name__"
+            "link" : "/init/svcactions/svcactions?volatile_filters=true&actions_f_svcname=__svc_name__"
           },
           {
             "title": "checks",
             "menu_entry_id": "view-checks",
             "class" : "check16",
-            "link" : "/init/checks/checks?clear_filters=true&checks_f_chk_svcname=__svc_name__"
+            "link" : "/init/checks/checks?volatile_filters=true&checks_f_chk_svcname=__svc_name__"
           },
           {
             "title": "disks",
             "menu_entry_id": "view-disks",
             "class" : "hd16",
-            "link" : "/init/disks/disks?clear_filters=true&disks_f_disk_svcname=__svc_name__"
+            "link" : "/init/disks/disks?volatile_filters=true&disks_f_disk_svcname=__svc_name__"
           },
           {
             "title": "saves",
             "menu_entry_id": "view-saves",
             "class" : "cd16",
-            "link" : "/init/saves/saves?clear_filters=true&saves_f_save_svcname=__svc_name__"
+            "link" : "/init/saves/saves?volatile_filters=true&saves_f_save_svcname=__svc_name__"
           },
           {
             "title": "compliance_status",
             "menu_entry_id": "comp-status",
             "class" : "comp16",
-            "link" : "/init/compliance/comp_status?clear_filters=true&cs0_f_run_svcname=__svc_name__"
+            "link" : "/init/compliance/comp_status?volatile_filters=true&cs0_f_run_svcname=__svc_name__"
           },
           {
             "title": "compliance_log",
             "menu_entry_id": "comp-log",
             "class" : "log16",
-            "link" : "/init/compliance/comp_log?clear_filters=true&comp_log_f_run_svcname=__svc_name__"
+            "link" : "/init/compliance/comp_log?volatile_filters=true&comp_log_f_run_svcname=__svc_name__"
           },
           {
             "title": "availability",
             "menu_entry_id": "stat-avail",
             "class" : "avail16",
-            "link" : "/init/svcmon_log/svcmon_log?clear_filters=true&svcmon_log_f_svc_name=__svc_name__"
+            "link" : "/init/svcmon_log/svcmon_log?volatile_filters=true&svcmon_log_f_svc_name=__svc_name__"
           },
           {
             "title": "logs",
             "menu_entry_id": "adm-log",
             "class" : "log16",
-            "link" : "/init/log/log?clear_filters=true&log_f_log_svcname=__svc_name__"
+            "link" : "/init/log/log?volatile_filters=true&log_f_log_svcname=__svc_name__"
           }
         ]
     },
@@ -319,85 +340,85 @@ function search_get_menu(fk)
             "title": "nodes",
             "menu_entry_id": "view-nodes",
             "class" : "hw16",
-            "link" : "/init/nodes/nodes?clear_filters=true&nodes_f_nodename=__nodename__"
+            "link" : "/init/nodes/nodes?volatile_filters=true&nodes_f_nodename=__nodename__"
           },
           {
             "title": "dashboard",
             "menu_entry_id": "view-dashboard",
             "class" : "alert16",
-            "link" : "/init/dashboard/index?clear_filters=true&dashboard_f_dash_nodename=__nodename__"
+            "link" : "/init/dashboard/index?volatile_filters=true&dashboard_f_dash_nodename=__nodename__"
           },
           {
             "title": "services",
             "menu_entry_id": "view-service-instances",
             "class" : "svc",
-            "link" : "/init/default/svcmon?clear_filters=true&svcmon_f_mon_nodname=__nodename__"
+            "link" : "/init/default/svcmon?volatile_filters=true&svcmon_f_mon_nodname=__nodename__"
           },
           {
             "title": "resources",
             "menu_entry_id": "view-resources",
             "class" : "svc",
-            "link" : "/init/resmon/resmon?clear_filters=true&resmon_f_nodename=__nodename__"
+            "link" : "/init/resmon/resmon?volatile_filters=true&resmon_f_nodename=__nodename__"
           },
           {
             "title": "appinfo",
             "menu_entry_id": "view-appinfo",
             "class" : "svc",
-            "link" : "/init/appinfo/appinfo?clear_filters=true&appinfo_f_app_nodename=__nodename__"
+            "link" : "/init/appinfo/appinfo?volatile_filters=true&appinfo_f_app_nodename=__nodename__"
           },
           {
             "title": "actions",
             "menu_entry_id": "view-actions",
             "class" : "action16",
-            "link" : "/init/svcactions/svcactions?clear_filters=true&actions_f_hostname=__nodename__"
+            "link" : "/init/svcactions/svcactions?volatile_filters=true&actions_f_hostname=__nodename__"
           },
           {
             "title": "checks",
             "menu_entry_id": "view-checks",
             "class" : "check16",
-            "link" : "/init/checks/checks?clear_filters=true&checks_f_chk_nodename=__nodename__"
+            "link" : "/init/checks/checks?volatile_filters=true&checks_f_chk_nodename=__nodename__"
           },
           {
             "title": "packages",
             "menu_entry_id": "view-pkg",
             "class" : "pkg16",
-            "link" : "/init/packages/packages?clear_filters=true&packages_f_nodename=__nodename__"
+            "link" : "/init/packages/packages?volatile_filters=true&packages_f_nodename=__nodename__"
           },
           {
             "title": "network",
             "menu_entry_id": "view-net",
             "class" : "net16",
-            "link" : "/init/nodenetworks/nodenetworks?clear_filters=true&nodenetworks_f_nodename=__nodename__"
+            "link" : "/init/nodenetworks/nodenetworks?volatile_filters=true&nodenetworks_f_nodename=__nodename__"
           },
           {
             "title": "san",
             "menu_entry_id": "view-san",
             "class" : "net16",
-            "link" : "/init/nodesan/nodesan?clear_filters=true&nodesan_f_nodename=__nodename__"
+            "link" : "/init/nodesan/nodesan?volatile_filters=true&nodesan_f_nodename=__nodename__"
           },
           {
             "title": "disks",
             "menu_entry_id": "view-disks",
             "class" : "hd16",
-            "link" : "/init/disks/disks?clear_filters=true&disks_f_disk_nodename=__nodename__"
+            "link" : "/init/disks/disks?volatile_filters=true&disks_f_disk_nodename=__nodename__"
           },
           {
             "title": "compliance_status",
             "menu_entry_id": "comp-status",
             "class" : "comp16",
-            "link" : "/init/compliance/comp_status?clear_filters=true&cs0_f_run_nodename=__nodename__"
+            "link" : "/init/compliance/comp_status?volatile_filters=true&cs0_f_run_nodename=__nodename__"
           },
           {
             "title": "compliance_log",
             "menu_entry_id": "comp-log",
             "class" : "log16",
-            "link" : "/init/compliance/comp_log?clear_filters=true&comp_log_f_run_nodename=__nodename__"
+            "link" : "/init/compliance/comp_log?volatile_filters=true&comp_log_f_run_nodename=__nodename__"
           },
           {
             "title": "logs",
             "menu_entry_id": "adm-log",
             "class" : "log16",
-            "link" : "/init/log/log?clear_filters=true&log_f_log_nodename=__nodename__"
+            "link" : "/init/log/log?volatile_filters=true&log_f_log_nodename=__nodename__"
           }
         ]
     },
@@ -427,7 +448,7 @@ function search_get_menu(fk)
             "title": "status",
             "menu_entry_id": "view-service-instances",
             "class" : "svc",
-            "link" : "/init/default/svcmon?clear_filters=true&svcmon_f_mon_vmname=__mon_vmname__"
+            "link" : "/init/default/svcmon?volatile_filters=true&svcmon_f_mon_vmname=__mon_vmname__"
           }
         ]
     }

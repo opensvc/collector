@@ -12,7 +12,7 @@ class rest_get_search(rest_get_handler):
              "desc": "The substring to search.",
           },
           "in": {
-             "desc": "Limit the search to the selected object type: fset, disk, app, svc, vm, ip, node, user, group, safe",
+             "desc": "Limit the search to the selected object type: fset, disk, app, svc, vm, ip, node, user, group, safe, form",
           },
         }
         rest_get_handler.__init__(
@@ -50,5 +50,7 @@ class rest_get_search(rest_get_handler):
             data["groups"] = lib_search_group(substring)
         if otype is None or otype == "safe":
             data["safe_files"] = lib_search_safe_file(substring)
+        if otype is None or otype == "form":
+            data["forms"] = lib_search_form(substring)
         return dict(data=data)
 

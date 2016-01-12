@@ -243,6 +243,7 @@
   "search": {
     "nothing_found" : "No entry found matching filter",
     "menu_header" : {
+      "title_forms" : "Forms",
       "title_safe_files" : "Safe files",
       "title_disks" : "Disks",
       "title_services" : "Services",
@@ -255,6 +256,8 @@
       "title_vms" : "Virtuals machines"
     },
     "menu_link" : {
+      "request" : "Request",
+      "forms" : "Forms",
       "dashboard" : "Dashboard",
       "status" : "Status",
       "resources" : "Resources",

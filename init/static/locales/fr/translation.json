@@ -230,6 +230,7 @@
   "search": {
     "nothing_found" : "Aucun résultat ne répond au critère de recherche.",
     "menu_header" : {
+      "title_forms" : "Formulaires",
       "title_safe_files" : "Fichiers du coffre-fort",
       "title_disks" : "Disques",
       "title_services" : "Services",
@@ -242,6 +243,8 @@
       "title_vms" : "Machines virtuelles"
     },
     "menu_link" : {
+      "request" : "Requête",
+      "forms" : "Formulaires",
       "dashboard" : "Pilotage",
       "status" : "Etat",
       "resources" : "Resources",

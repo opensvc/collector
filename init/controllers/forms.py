@@ -313,8 +313,11 @@ def forms_admin_load():
 
 @auth.requires_login()
 def forms():
+    o = {}
+    if "form_name" in request.vars:
+        o["form_name"] = request.vars.form_name
     d = SCRIPT(
-          """$.when(osvc.app_started).then(function(){ requests("layout", {}) })""" 
+          """$.when(osvc.app_started).then(function(){ requests("layout", %s) })""" % json.dumps(o)
     )
     return dict(table=d)
 

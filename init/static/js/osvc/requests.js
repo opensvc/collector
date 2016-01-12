@@ -17,7 +17,7 @@ function requests(divid, options) {
 		})
 	})
 
-	o.init_search = function() {
+	o.search = function() {
 		function match(re, d) {
 			if (!d.form_folder) {
 				return false
@@ -37,25 +37,40 @@ function requests(divid, options) {
 			return false
 
 		}
+		o.e_list.empty()
+		var s = o.e_search.val()
+		if (s == "") {
+			delete(o.options.form_name)
+			o.init_list()
+			return
+		}
+		var re = RegExp(s, "i")
+		for (form_name in osvc.forms.data) {
+			var d = osvc.forms.data[form_name]
+			if (match(re, d)) {
+				o.e_list.append(o.render_form(d))
+			}
+		}
+	}
+
+	o.init_search = function() {
 		o.e_search.bind("keyup", function() {
-			o.e_list.empty()
-			var s = $(this).val()
-			if (s == "") {
-				o.init_list()
-				return
-			}
-			var re = RegExp(s, "i")
-			for (form_name in osvc.forms.data) {
-				var d = osvc.forms.data[form_name]
-				if (match(re, d)) {
-					o.e_list.append(o.render_form(d))
-				}
-			}
+			o.search()
 		})
+
+		if (o.options.form_name) {
+			o.e_search.val(o.options.form_name)
+			o.search()
+		}
 	}
 
 	o.init_list = function() {
+		if (o.options.form_name) {
+			return
+		}
 		o.e_list.empty()
+		o.e_inputs.empty()
+		o.e_target.empty()
 		o.render_folders()
 		o.render_forms()
 	}
@@ -105,6 +120,9 @@ function requests(divid, options) {
 		var p2 = $("<p style='font-style:italic;padding-left:1em'></p>")
 
 		div.attr("form_name", d.form_name)
+		if (!d.form_definition) {
+			return div
+		}
 		if (d.form_definition.Css) {
 			div_icon.addClass(d.form_definition.Css)
 		} else {
