@@ -454,7 +454,8 @@ function search_build_result_row(label, first, res, count) {
 
   if (first==1) {
     // first header with %___%
-    var title = "%"+ $('#search_input').val() +"%";
+    var val = $('#search_input').val()
+    var title = "%" + search_parse_input(val).substring + "%"
     p_title.text(title)
   } else {
     // substitute key in the title format
@@ -550,6 +551,17 @@ function search_build_result_view(label, resultset) {
   return section_div;
 }
 
+function search_parse_input(search_query) {
+  var data = {}
+  if (search_query.match(/^\w+:\s+/)) {
+    data["substring"] = search_query.replace(/^\w+:\s+/, "")
+    data["in"] = search_query.match(/^\w+:\s+/)[0].replace(/:\s+$/, "")
+  } else {
+    data["substring"] = search_query
+  }
+  return data
+}
+
 function search_search() {
   var count=0;
   var search_query = $('#search_input').val();
@@ -558,12 +570,14 @@ function search_search() {
     return
   }
 
+  var data = search_parse_input(search_query)
+
   $("#search_div").removeClass("searchidle");
   $("#search_div").addClass("searching");
 
   $("#search_result").empty();
 
-  services_osvcgetrest("R_SEARCH", "", {"substring" : search_query}, function(jd) {
+  services_osvcgetrest("R_SEARCH", "", data, function(jd) {
       var result = jd.data;
       for (d in result) {
         if (result[d].data.length>0 && search_get_menu(d) !== undefined) {
@@ -587,7 +601,7 @@ function search_search() {
       }
       $("#search_div").removeClass("searching");
       $("#search_div").addClass("searchidle");
-      search_highlight($("#search_result"), search_query)
+      search_highlight($("#search_result"), data.substring)
   });
 }
 
@@ -649,7 +663,7 @@ function search_init(o)
 
 function filter_menu(event) {
   var menu = $("#menu_menu");
-  var text = $(".search").find("input").val();
+  var text = $(".search").find("input").val()
 
   var reg = new RegExp(text, "i");
   menu.find(".menu_entry").each(function(){
