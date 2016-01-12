@@ -504,6 +504,7 @@
     "nodes": "noeuds"
   },
   "form_tabs": {
+    "request": "demande",
     "properties": "propriétés",
     "definition": "définition"
   },

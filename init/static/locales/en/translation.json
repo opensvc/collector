@@ -517,6 +517,7 @@
     "nodes": "nodes"
   },
   "form_tabs": {
+    "request": "request",
     "properties": "properties",
     "definition": "definition"
   },
