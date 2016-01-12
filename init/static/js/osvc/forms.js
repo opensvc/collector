@@ -1307,7 +1307,7 @@ function form(divid, options) {
 				val = convert_size(val)
 			}
 			if ((d.Type == "string or integer") || (d.Type == "size") || (d.Type == "integer")) {
-				val = convert_size(val)
+				val = convert_size(val, d.Unit)
 			}
 			data[input_key_id] = val
 		}

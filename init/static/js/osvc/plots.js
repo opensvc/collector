@@ -3284,7 +3284,7 @@ function stats_netdev(url, id) {
         _jqplot_extra($('#'+id+'_pckps'), p)
     });
 }
-function convert_size(val) {
+function convert_size(val, target_unit) {
 	if (val == "") {
 		return 0
 	}
@@ -3294,6 +3294,12 @@ function convert_size(val) {
 			l.push(convert_size(val[i]))
 		}
 		return l
+	}
+
+	if (!target_unit) {
+		target_unit = "b"
+	} else {
+		target_unit = target_unit.toLowerCase()
 	}
 
 	// strip all whitespaces
@@ -3343,8 +3349,39 @@ function convert_size(val) {
         } else {
 		return val
 	}
-	return _val
+
+	if (target_unit == "b") {
+		return _val
+	} else if ((target_unit == "k") || (target_unit == "kb")) {
+		return Math.ceil(_val / 1024)
+	} else if ((target_unit == "ki") || (target_unit == "kib")) {
+		return Math.ceil(_val / 1000)
+	} else if ((target_unit == "m") || (target_unit == "mb")) {
+		return Math.ceil(_val / 1024 / 1024)
+	} else if ((target_unit == "mi") || (target_unit == "mib")) {
+		return Math.ceil(_val / 1000 / 1000)
+	} else if ((target_unit == "g") || (target_unit == "gb")) {
+		return Math.ceil(_val / 1024 / 1024 / 1024)
+	} else if ((target_unit == "gi") || (target_unit == "gib")) {
+		return Math.ceil(_val / 1000 / 1000 / 1000)
+	} else if ((target_unit == "t") || (target_unit == "tb")) {
+		return Math.ceil(_val / 1024 / 1024 / 1024 / 1024)
+	} else if ((target_unit == "ti") || (target_unit == "tib")) {
+		return Math.ceil(_val / 1000 / 1000 / 1000 / 1000)
+	} else if ((target_unit == "p") || (target_unit == "pb")) {
+		return Math.ceil(_val / 1024 / 1024 / 1024 / 1024 / 1024)
+	} else if ((target_unit == "pi") || (target_unit == "pib")) {
+		return Math.ceil(_val / 1000 / 1000 / 1000 / 1000 / 1000)
+	} else if ((target_unit == "e") || (target_unit == "eb")) {
+		return Math.ceil(_val / 1024 / 1024 / 1024 / 1024 / 1024 / 1024)
+	} else if ((target_unit == "ei") || (target_unit == "eib")) {
+		return Math.ceil(_val / 1000 / 1000 / 1000 / 1000 / 1000 / 1000)
+	} else {
+		console.log("unknown target unit")
+		return val
+	}
 }
+
 function fancy_size_b(size) {
     if (size<1024) {
         unit = 'B'
