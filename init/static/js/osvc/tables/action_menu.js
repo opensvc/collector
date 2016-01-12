@@ -4,21 +4,21 @@
 function table_action_menu_init_data(t) {
   t.action_menu_req_max = 1000
   t.column_selectors = {
-    "svcname": "td[cell=1][name$=svcname],td[cell=1][name$=svc_name],td[cell=1][name$=disk_svcname]",
-    "nodename": "td[cell=1][name$=nodename],td[cell=1][name$=mon_nodname],td[cell=1][name$=disk_nodename],td[cell=1][name$=hostname]",
-    "rid": "td[cell=1][name$=_c_rid]",
-    "module": "td[cell=1][name$=_c_run_module]",
-    "vmname": "td[cell=1][name$=_c_vmname]",
-    "action": "td[cell=1][name$=_c_action]",
-    "id": "td[cell=1][name$=_c_id]",
-    "email": "td[cell=1][name$=_c_email]",
-    "tag_id": "td[cell=1][name$=_c_tag_id]",
-    "ruleset_id": "td[cell=1][name$=_c_ruleset_id]",
-    "modset_id": "td[cell=1][name$=_c_modset_id]",
-    "slave": "td[cell=1][name$=_c_encap]",
-    "command": "td[cell=1][name$=_c_command]",
-    "chk_type": "td[cell=1][name$=_c_chk_type]",
-    "chk_instance": "td[cell=1][name$=_c_chk_instance]"
+    "svcname": "[col$=svcname],[col=svc_name]",
+    "nodename": "[col$=nodename],[col=mon_nodname][col=hostname]",
+    "rid": "[col=rid]",
+    "module": "[col=run_module]",
+    "vmname": "[col=vmname]",
+    "action": "[col=action]",
+    "id": "[col=id]",
+    "email": "[col=email]",
+    "tag_id": "[col=tag_id]",
+    "ruleset_id": "[col=ruleset_id]",
+    "modset_id": "[col=modset_id]",
+    "slave": "[col=encap]",
+    "command": "[col=command]",
+    "chk_type": "[col=chk_type]",
+    "chk_instance": "[col=chk_instance]"
   }
 
   t.action_menu_data = [
@@ -1321,7 +1321,7 @@ function table_action_menu_get_cols_data_all(t, e, scope, selector) {
     var reverse_col = {}
     for (var c in t.column_selectors) {
       var s = t.column_selectors[c]
-      var name = t.div.find(".tl").first().find(s).first().attr("name")
+      var name = t.div.find("tr.theader").first().find(s).first().attr("name")
       if (!name) {
         continue
       }
@@ -1415,9 +1415,6 @@ function table_action_menu_get_cols_data(t, e, scope, selector) {
 function table_prepare_scope_action_list(t, e, selector, scope, data, cache_id) {
     var ul = $("<ul></ul>")
     ul.attr("scope", scope)
-    if (data && (data.length == 0)) {
-      return ul
-    }
     for (var j=0; j<selector.children.length; j++) {
       var leaf = selector.children[j]
       if (leaf.max && data && (data.length > leaf.max)) {
@@ -1444,7 +1441,7 @@ function table_prepare_scope_action_list(t, e, selector, scope, data, cache_id) 
       })
       ul.append(li)
     }
-  return ul
+    return ul
 }
 
 function table_selector_match_table(t, selector) {
@@ -1516,8 +1513,8 @@ function table_action_menu_format_selector(t, e, selector) {
 		var s = $("<div class='ellipsis'></div>")
 		s.attr("scope", scope)
 
-		// disable the scope if no data
-		if (data.length == 0) {
+		// disable the scope if no data and not in natural table
+		if (data.length == 0 && (selector.table != t.id)) {
 			s.addClass("action_menu_selector_disabled")
 		}
 
@@ -1585,7 +1582,7 @@ function table_action_menu_format_selector(t, e, selector) {
 		e_selector.append(s)
 
 		// set the "checked" scope as selected if not disabled: take precedence to the "clicked" scope
-		if ((scope == "checked") && !s.hasClass("action_menu_selector_disabled")) {
+		if ((scope == "checked") && !s.hasClass("action_menu_selector_disabled") && (data.length > 0)) {
 			s.click()
 		}
 
