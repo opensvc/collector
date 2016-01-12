@@ -453,7 +453,7 @@ function search_get_menu(fk)
         ]
     }
   }
-  return menu[fk];
+  return menu[fk]
 }
 
 function search_build_result_row(label, first, res, count) {
@@ -569,7 +569,7 @@ function search_build_result_view(label, resultset) {
   for (i=0; i<resultset.data.length; i++) {
     table.append(search_build_result_row(label, 0, resultset.data[i], i))
   }
-  return section_div;
+  return section_div
 }
 
 function search_parse_input(search_query) {
@@ -584,8 +584,8 @@ function search_parse_input(search_query) {
 }
 
 function search_search() {
-  var count=0;
-  var search_query = $('#search_input').val();
+  var count=0
+  var search_query = $('#search_input').val()
 
   if (search_query == "") {
     return
@@ -593,100 +593,113 @@ function search_search() {
 
   var data = search_parse_input(search_query)
 
-  $("#search_div").removeClass("searchidle");
-  $("#search_div").addClass("searching");
+  $("#search_div").removeClass("searchidle")
+  $("#search_div").addClass("searching")
 
-  $("#search_result").empty();
+  $("#search_result").empty()
 
   services_osvcgetrest("R_SEARCH", "", data, function(jd) {
-      var result = jd.data;
+      var result = jd.data
       for (d in result) {
         if (result[d].data.length>0 && search_get_menu(d) !== undefined) {
-          response = search_build_result_view(d, result[d]);
-          $("#search_result").append(response);
-          count += result[d].data.length;
+          response = search_build_result_view(d, result[d])
+          $("#search_result").append(response)
+          count += result[d].data.length
         }
       }
 
       if (count == 0) {
-        var div = "<div class='menu_entry meta_not_found'><a><div class='question48'>"+i18n.t("search.nothing_found")+"</div></a></div>";
-        $("#search_result").append(div);
+        var div = "<div class='menu_entry meta_not_found'><a><div class='question48'>"+i18n.t("search.nothing_found")+"</div></a></div>"
+        $("#search_result").append(div)
       } else if (count == 1) {
-        $('#search_result_table tr:first').remove();
-        var td = $('#search_title_click0');
-        td.trigger("click");
+        $('#search_result_table tr:first').remove()
+        var td = $('#search_title_click0')
+        td.trigger("click")
       }
 
       if (!$("#search_result").is(':visible')) {
-        toggle('search_result');
+        toggle('search_result')
       }
-      $("#search_div").removeClass("searching");
-      $("#search_div").addClass("searchidle");
+      $("#search_div").removeClass("searching")
+      $("#search_div").addClass("searchidle")
       search_highlight($("#search_result"), data.substring)
-  });
-}
-
-function search_router(o, delay) {
-  var menu = $(".header").find(".menu16").parents("ul").first().siblings(".menu");
-  if (menu.is(":visible")) {
-    filter_menu(null);
-  } else if ($(".header [name=fset_selector_entries]").is(":visible")) {
-    filter_fset_selector(null);
-  } else {
-    // close the search result panel if no search keyword
-    if ($("#search_input").val() == "") {
-      $("#search_result").hide("fold")
-    } else {
-      clearTimeout(o.timer);
-      o.timer = setTimeout(search_search, delay);
-    }
-  }
+  })
 }
 
 function search(divid) {
-  var o = {}
-  o.divid = divid
-  o.div = $("#"+divid)
+	var o = {}
+	o.divid = divid
+	o.div = $("#"+divid)
+	o.placeholders = [
+		i18n.t("layout.search"),
+		"fset: linux",
+		"disk: 6005",
+		"user: me",
+		"group: Manager",
+		"net: intra",
+		"ip: 192.168",
+		"svc: web",
+		"node: 02",
+		"vm: 02",
+		"safe: etc",
+		"form: add_"
+	]
 
-  o.init = function init() {
-    return search_init(o)
-  }
-  o.router = function router(delay) {
-    return search_router(o, delay)
-  }
-  o.div.load("/init/static/views/search.html", function() {
-    o.init()
-  })
+	o.router = function router(delay) {
+		var menu = $(".header").find(".menu16").parents("ul").first().siblings(".menu")
+		if (menu.is(":visible")) {
+			filter_menu(null)
+		} else if ($(".header [name=fset_selector_entries]").is(":visible")) {
+			filter_fset_selector(null)
+		} else {
+			// close the search result panel if no search keyword
+			if ($("#search_input").val() == "") {
+				$("#search_result").hide("fold")
+			} else {
+				clearTimeout(o.timer)
+				o.timer = setTimeout(search_search, delay)
+			}
+		}
+	}
 
-  return o
-}
+	o.div.load("/init/static/views/search.html", function() {
+		o.init()
+	})
 
-function search_init(o)
-{
-  o.timer = null
+	o.init = function() {
+		o.timer = null
+		o.phi = 0
+		o.div.i18n()
+		o.e_search_div = $("#search_div")
+		o.e_search_input = $("#search_input")
 
-  o.div.i18n()
-  o.e_search_div = $("#search_div")
-  o.e_search_input = $("#search_input")
+		setInterval(function() {
+			o.e_search_input.attr("placeholder", o.placeholders[o.phi++])
+			if (o.phi == o.placeholders.length-1) {
+				o.phi = 0
+			}
+		}, 15000)
+		o.e_search_div.on("keyup",function (event) {
+			if (event.keyCode == 13) {
+				o.router(0)
+			}
+		})
+		o.e_search_input.on("keyup",function (event) {
+			if (event.keyCode != 27) {
+				o.router(1000)
+			}
+		})
+	}
 
-  o.e_search_div.on("keyup",function (event) {
-    if (event.keyCode == 13) {
-      o.router(0);
-    }
-  });
-  o.e_search_input.on("keyup",function (event) {
-    if (event.keyCode != 27) {
-      o.router(1000);
-    }
-  });
+	return o
 }
 
 
 function filter_menu(event) {
-  var menu = $("#menu_menu");
+  var menu = $("#menu_menu")
   var text = $(".search").find("input").val()
 
-  var reg = new RegExp(text, "i");
+  var reg = new RegExp(text, "i")
   menu.find(".menu_entry").each(function(){
     if ($(this).text().match(reg)) {
       $(this).show()
@@ -709,7 +722,7 @@ function filter_menu(event) {
   if (is_enter(event)) {
     if (menu.is(":visible") && (entries.length == 1)) {
       entries.effect("highlight")
-      window.location = entries.attr("link");
+      window.location = entries.attr("link")
     }
   }
   if (entries.length==0) {
@@ -727,7 +740,7 @@ function filter_fset_selector(event) {
     return
   }
   var text = $(".search").find("input").val()
-  var reg = new RegExp(text, "i");
+  var reg = new RegExp(text, "i")
   div.find(".menu_entry").each(function(){
     if ($(this).find("[name=title]").text().match(reg)) {
       $(this).show()
@@ -765,7 +778,7 @@ function search_highlight(e, s) {
     e.append(cache)
   }
 
-  var regexp = new RegExp(s, 'ig');
+  var regexp = new RegExp(s, 'ig')
 
   e.children("[name=orig]").children().each(function(){
     // restore orig
