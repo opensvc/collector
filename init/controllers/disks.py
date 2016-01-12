@@ -32,29 +32,6 @@ def array_icon(array_model):
         img = ''
     return img
 
-class col_app(HtmlTableColumn):
-    def html(self, o):
-        id = self.t.extra_line_key(o)
-        app = self.get(o)
-        app_id = self.t.colprops['app_id'].get(o)
-        dg_id = self.t.colprops['dg_id'].get(o)
-        if app == 'unknown':
-            return T(app)
-        if app_id is None:
-            return ''
-        d = DIV(
-              A(
-                app,
-                _onclick="toggle_extra('%(url)s', '%(id)s', this, 0);"%dict(
-                  url=URL(r=request, c='disks',f='ajax_app',
-                          vars={'app_id': app_id, 'dg_id': dg_id, 'rowid': id}),
-                  id=id,
-                ),
-              ),
-              _class='nowrap',
-            )
-        return d
-
 class col_chart(HtmlTableColumn):
     def html(self, o):
        l = []
@@ -112,76 +89,13 @@ class col_size_gb(HtmlTableColumn):
        unit = 'GB'
        return DIV("%d %s"%(d/1024, unit))
 
-class col_quota_used(HtmlTableColumn):
-    def html(self, o):
-        if o.app is None:
-            return ""
-        s = self.get(o)
-        ss = s
-        c = "nowrap"
-        if s is None:
-            s = "-"
-            ss = ""
-        elif s > o.quota:
-            c += " highlight"
-        if s != "-":
-            s = beautify_size_mb(int(s))
-        return SPAN(
-                 s,
-                 _class=c,
-                 _title="%s MB"%str(ss),
-               )
-
-class col_quota(HtmlTableColumn):
-    def html(self, o):
-        if o.app is None:
-            return ""
-        s = self.get(o)
-        if s is None:
-            s = "-"
-            ss = ""
-        else:
-            ss = s
-            s = beautify_size_mb(int(s))
-
-        if o.app == "unknown":
-            return DIV(s, _class="status_undef")
-
-        tid = 'd_t_%s'%o.id
-        iid = 'd_i_%s'%o.id
-        sid = 'd_s_%s'%o.id
-        if 'StorageManager' in user_groups():
-            d = SPAN(
-              DIV(
-                s,
-                _id=tid,
-                _onclick="""hide_eid('%(tid)s');show_eid('%(sid)s');getElementById('%(iid)s').focus()"""%dict(tid=tid, sid=sid, iid=iid),
-                _class="clickable",
-                _title="%s MB"%str(ss),
-              ),
-              SPAN(
-                INPUT(
-                  value=ss,
-                  _id=iid,
-                  _onblur="""hide_eid('%(sid)s');show_eid('%(tid)s')"""%dict(tid=tid, sid=sid),
-                  _onkeypress="if (is_enter(event)) {%s};"%\
-                     self.t.ajax_submit(additional_inputs=[iid],
-                                        args="quota_set"),
-                ),
-                _id=sid,
-                _style="display:none",
-              ),
-            )
-        else:
-            d = SPAN(s)
-        return d
-
 class table_quota(HtmlTable):
     def __init__(self, id=None, func=None, innerhtml=None):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
-        self.cols = ['array_name',
+        self.cols = ['id',
+                     'array_name',
                      'array_model',
                      'dg_name',
                      'dg_size',
@@ -199,6 +113,12 @@ class table_quota(HtmlTable):
                      'dg_name',
                      'app']
         self.colprops.update({
+            'id': HtmlTableColumn(
+                     title='Id',
+                     table='v_disk_quota',
+                     field='id',
+                     img='key',
+                    ),
             'array_name': HtmlTableColumn(
                      title='Array',
                      #table='stor_array',
@@ -287,13 +207,14 @@ class table_quota(HtmlTable):
                      img='hd16',
                      display=True,
                     ),
-            'app': col_app(
+            'app': HtmlTableColumn(
                      title='App',
                      #table='apps',
                      table='v_disk_quota',
                      field='app',
                      img='svc',
                      display=True,
+                     _class="app",
                     ),
             'app_id': HtmlTableColumn(
                      title='App Id',
@@ -303,21 +224,23 @@ class table_quota(HtmlTable):
                      img='svc',
                      display=True,
                     ),
-            'quota': col_quota(
+            'quota': HtmlTableColumn(
                      title='Quota',
                      #table='stor_array_dg_quota',
                      table='v_disk_quota',
                      field='quota',
                      img='hd16',
                      display=True,
+                     _class="quota numeric size_mb",
                     ),
-            'quota_used': col_quota_used(
+            'quota_used': HtmlTableColumn(
                      title='Quota Used',
                      #table='stor_array_dg_quota',
                      table='v_disk_quota',
                      field='quota_used',
                      img='hd16',
                      display=True,
+                     _class="numeric size_mb",
                     ),
         })
         for i in self.cols:
@@ -326,14 +249,10 @@ class table_quota(HtmlTable):
         self.checkboxes = True
         self.dbfilterable = False
         self.ajax_col_values = 'ajax_quota_col_values'
-        #self.span = ['array_name', 'dg_free', 'array_model', 'array_name']
-
-        if 'StorageManager' in user_groups():
-            self.additional_tools.append('app_attach')
-            self.additional_tools.append('app_detach')
-        if 'StorageManager' in user_groups() or \
-           'StorageExec' in user_groups():
-            self.additional_tools.append('provision')
+        self.dataable = True
+        self.force_cols = ["id"]
+        self.keys = ["id"]
+        self.events = ["stor_array_dg_quota_change"]
 
     def provision(self):
         d = DIV(
@@ -354,100 +273,6 @@ class table_quota(HtmlTable):
             )
         return d
 
-    def extra_line_key(self, o):
-        l = [self.id,
-             'x',
-             str(self.colprops['dg_id'].get(o)),
-             str(self.colprops['array_id'].get(o)),
-             str(self.colprops['app_id'].get(o))]
-        return '_'.join(l)
-
-    def disks_link(self):
-        d = DIV(
-              A(
-                T("Disks"),
-                _class='hd16',
-                _href=URL(r=request, f='disks'),
-              ),
-              _class='floatw',
-            )
-        return d
-
-    def checkbox_key(self, o):
-        if o is None:
-            return '_'.join((self.id, 'ckid', ''))
-        ids = []
-        ids.append(self.colprops['dg_id'].get(o))
-        ids.append(self.colprops['array_id'].get(o))
-        ids.append(self.colprops['app_id'].get(o))
-        return '_'.join([self.id, 'ckid']+map(str,ids))
-
-    def app_select_tool(self, label, action, divid, sid, _class=''):
-        q = db.apps.id > 0
-        o = db.apps.app
-        options = [OPTION(g.app,_value=g.id) for g in db(q).select(orderby=o)]
-        d = DIV(
-              A(
-                T(label),
-                _class=_class,
-                _onclick="""
-                  click_toggle_vis(event,'%(div)s', 'block');
-                """%dict(div=divid),
-              ),
-              DIV(
-                TABLE(
-                  TR(
-                    TH(T('App')),
-                    TD(
-                      SELECT(
-                        *options,
-                        **dict(_id=sid,
-                               _requires=IS_IN_DB(db, 'apps.id'))
-                      ),
-                    ),
-                  ),
-                  TR(
-                    TH(),
-                    TD(
-                      INPUT(
-                        _type='submit',
-                        _onclick=self.ajax_submit(additional_inputs=[sid],
-                                                  args=action),
-                      ),
-                    ),
-                  ),
-                ),
-                _style='display:none',
-                _class='stackable white_float',
-                _name=divid,
-                _id=divid,
-              ),
-              _class="floatw",
-            )
-        return d
-
-    def app_attach(self):
-        d = self.app_select_tool(label="Attach app",
-                                 action="app_attach",
-                                 divid="app_attach",
-                                 sid="app_attach_s",
-                                 _class="attach16")
-        return d
-
-    def app_detach(self):
-        d = DIV(
-              A(
-                T("Detach app"),
-                _class='detach16',
-                _onclick="""if (confirm("%(text)s")){%(s)s};
-                         """%dict(s=self.ajax_submit(args=['app_detach']),
-                                  text=T("Detaching applications from disk groups also drops quota information. Please confirm application detach"),
-                                 ),
-              ),
-              _class="floatw",
-            )
-        return d
-
 def update_dg_reserved():
     sql = """select dg_id, sum(v_disk_quota.quota)
              from v_disk_quota
@@ -463,140 +288,10 @@ def update_dg_reserved():
         db.executesql(sql)
     db.commit()
 
-def _update_dg_reserved(dg_id):
-    sql = """update stor_array_dg set dg_reserved=(
-               select sum(v_disk_quota.quota) as reserved
-               from v_disk_quota
-               where dg_id=%(dg_id)s
-             ) where id=%(dg_id)s
-          """%dict(dg_id=dg_id)
-    db.executesql(sql)
-    db.commit()
-
-@auth.requires_membership('StorageManager')
-def quota_set():
-    l = [k for k in request.vars if 'd_i_' in k]
-    if len(l) != 1:
-        raise ToolError("one quota must be selected")
-    qid = int(l[0].replace('d_i_',''))
-    new = request.vars[l[0]]
-    new = new.replace(' ', '')
-
-    try:
-        if new.endswith('M'):
-            new = new.replace('M', '')
-            new = int(new)
-        elif new.endswith('m'):
-            new = new.replace('m', '')
-            new = int(new)
-        elif new.endswith('MB'):
-            new = new.replace('MB', '')
-            new = int(new)
-        elif new.endswith('mb'):
-            new = new.replace('mb', '')
-            new = int(new)
-        elif new.endswith('G'):
-            new = new.replace('G', '')
-            new = int(new) * 1024
-        elif new.endswith('g'):
-            new = new.replace('g', '')
-            new = int(new) * 1024
-        elif new.endswith('GB'):
-            new = new.replace('GB', '')
-            new = int(new) * 1024
-        elif new.endswith('gb'):
-            new = new.replace('gb', '')
-            new = int(new) * 1024
-        elif new.endswith('T'):
-            new = new.replace('T', '')
-            new = int(new) * 1024 * 1024
-        elif new.endswith('t'):
-            new = new.replace('t', '')
-            new = int(new) * 1024 * 1024
-        elif new.endswith('TB'):
-            new = new.replace('TB', '')
-            new = int(new) * 1024 * 1024
-        elif new.endswith('tb'):
-            new = new.replace('tb', '')
-            new = int(new) * 1024 * 1024
-    except:
-        raise ToolError("quota must be an integer value")
-
-    q = db.stor_array_dg_quota.id == qid
-    q &= db.stor_array_dg_quota.app_id == db.apps.id
-    q &= db.stor_array_dg_quota.dg_id == db.stor_array_dg.id
-    q &= db.stor_array_dg.array_id == db.stor_array.id
-    info = db(q).select().first()
-    if info is None:
-        raise ToolError("quota not found")
-
-    q = db.stor_array_dg_quota.id == qid
-    db(q).update(quota=new)
-    _log('storage.quota.change',
-         'set quota from %(old)s to %(new)s for application %(app)s in disk group %(dg)s of array %(array)s',
-         dict(app=info.apps.app,
-              new=str(new),
-              old=str(info.stor_array_dg_quota.quota),
-              dg=info.stor_array_dg.dg_name,
-              array=info.stor_array.array_name))
-
-    #_update_dg_reserved(info.stor_array_dg_quota.dg_id)
-
-
-@auth.requires_membership('StorageManager')
-def app_detach(ids=[]):
-    if len(ids) == 0:
-        raise ToolError("no application selected")
-
-    for id in ids:
-        dg_id, array_id, app_id = id.split('_')
-        q = db.stor_array_dg_quota.dg_id == int(dg_id)
-        try:
-            app_id = int(app_id)
-        except:
-            apps = db(db.apps.id>0).select(db.apps.id)
-            qq = ~db.stor_array_dg_quota.app_id.belongs(apps)
-            db(qq).delete()
-            continue
-        q &= db.stor_array_dg_quota.app_id == int(app_id)
-        if db(q).count() == 0:
-            continue
-        db(q).delete()
-
-        app = db(db.apps.id==app_id).select().first().app
-        q = db.stor_array_dg.id == dg_id
-        q &= db.stor_array_dg.array_id == db.stor_array.id
-        info = db(q).select().first()
-        _log('storage.quota.detach',
-             'detached application quota %(app)s from disk group %(dg)s of array %(array)s',
-             dict(app=app, dg=info.stor_array_dg.dg_name, array=info.stor_array.array_name))
-
-
-@auth.requires_membership('StorageManager')
-def app_attach(ids=[]):
-    if len(ids) == 0:
-        raise ToolError("no disk group selected")
-    app_id = request.vars.app_attach_s
-    app = db(db.apps.id==app_id).select().first().app
-
-    for id in ids:
-        dg_id, array_id, _app_id = id.split('_')
-        q = db.stor_array_dg_quota.dg_id == int(dg_id)
-        q &= db.stor_array_dg_quota.app_id == int(app_id)
-        if db(q).count() != 0:
-            continue
-        db.stor_array_dg_quota.insert(dg_id=dg_id, app_id=app_id)
-
-        q = db.stor_array_dg.id == dg_id
-        q &= db.stor_array_dg.array_id == db.stor_array.id
-        info = db(q).select().first()
-        _log('storage.quota.attach',
-             'attached application quota %(app)s to disk group %(dg)s of array %(array)s',
-             dict(app=app, dg=info.stor_array_dg.dg_name, array=info.stor_array.array_name))
-
 @auth.requires_login()
 def ajax_quota_col_values():
-    t = table_quota('quota', 'ajax_quota')
+    table_id = request.vars.table_id
+    t = table_quota(table_id, 'ajax_quota')
     col = request.args[0]
     o = db[t.colprops[col].table][col]
     q = db.v_disk_quota.id>0
@@ -608,19 +303,8 @@ def ajax_quota_col_values():
 
 @auth.requires_login()
 def ajax_quota():
-    t = table_quota('quota', 'ajax_quota')
-
-    if len(request.args) == 1:
-        action = request.args[0]
-        try:
-            if action == 'app_attach':
-                app_attach(t.get_checked())
-            elif action == 'app_detach':
-                app_detach(t.get_checked())
-            elif action == 'quota_set':
-                quota_set()
-        except ToolError, e:
-            t.flash = str(e)
+    table_id = request.vars.table_id
+    t = table_quota(table_id, 'ajax_quota')
 
     update_dg_reserved()
 
@@ -630,27 +314,18 @@ def ajax_quota():
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
 
-    if len(request.args) == 1 and request.args[0] == 'line':
-        n = len(db(q).select(cacheable=True))
+    if len(request.args) == 1 and request.args[0] == 'data':
+        n = db(q).count()
         t.setup_pager(n)
         limitby = (t.pager_start, t.pager_end)
-        t.object_list = db(q).select(orderby=o, limitby=limitby, cacheable=False)
-        return t.table_lines_data(n)
-
-    n = len(db(q).select(cacheable=True))
-    t.setup_pager(n)
-    t.object_list = db(q).select(cacheable=True, limitby=(t.pager_start,t.pager_end), orderby=o)
-
-    t.csv_q = q
-    t.csv_orderby = o
-
-    return t.html()
+        cols = t.get_visible_columns()
+        t.object_list = db(q).select(*cols, orderby=o, limitby=limitby, cacheable=False)
+        return t.table_lines_data(n, html=False)
 
 @auth.requires_login()
 def quota():
-    t = DIV(
-          ajax_quota(),
-          _id='quota',
+    t = SCRIPT(
+          """$.when(osvc.app_started).then(function(){ table_quota("layout", %s) })""" % request_vars_to_table_options(),
         )
     return dict(table=t)
 

@@ -1897,6 +1897,49 @@ function cell_decorator_dns_record(e) {
   })
 }
 
+function cell_decorator_disk_array_dg(e) {
+  var v = $.data(e, "v")
+  $(e).html("<span class='clickable'>"+v+"</span>")
+  $(e).addClass("corner")
+  $(e).click(function(){
+    var line = $(this).parent(".tl")
+    var array_name = $.data(line.children("[col=array_name],[col=disk_arrayid]")[0], "v")
+    table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
+    span_id = $(e).parent(".tl").attr("spansum")
+    id = table_id + "_x_" + span_id
+    toggle_extra(null, id, e, 0)
+    diskgroup_tabs(id, {"array_name": array_name, "dg_name": v})
+  })
+}
+
+function cell_decorator_disk_array(e) {
+  var v = $.data(e, "v")
+  $(e).html("<span class='clickable'>"+v+"</span>")
+  $(e).addClass("corner")
+  $(e).click(function(){
+    table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
+    span_id = $(e).parent(".tl").attr("spansum")
+    id = table_id + "_x_" + span_id
+    toggle_extra(null, id, e, 0)
+    array_tabs(id, {"array_name": v})
+  })
+}
+
+function cell_decorator_quota(e) {
+  var v = $.data(e, "v")
+  $(e).html("<span class='clickable'>"+v+"</span>")
+  $(e).addClass("corner")
+  $(e).click(function(){
+    var line = $(this).parent(".tl")
+    var quota_id = $.data(line.children("[col=id]")[0], "v")
+    table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
+    span_id = $(e).parent(".tl").attr("spansum")
+    id = table_id + "_x_" + span_id
+    toggle_extra(null, id, e, 0)
+    quota_tabs(id, {"quota_id": quota_id})
+  })
+}
+
 function cell_decorator_form_name(e) {
   var v = $.data(e, "v")
   $(e).html("<span class='clickable'>"+v+"</span>")
@@ -2674,48 +2717,6 @@ function cell_decorator_run_status(e) {
   $(e).html("<div class='"+cl+"'>"+_v+"</div>")
 }
 
-function cell_decorator_disk_array(e) {
-  var v = $.data(e, "v")
-  if (v == "empty") {
-    return
-  }
-  var line = $(e).parent(".tl")
-  var model = $.data(line.find("[col=array_model]")[0], "v")
-  var s = ""
-  s = "<div class='clickable'>"+v+"</div>"
-  $(e).html(s)
-  $(e).addClass("corner")
-  $(e).click(function(){
-    if (get_selected() != "") {return}
-    table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
-    span_id = line.attr("spansum")
-    id = table_id + "_x_" + span_id
-    url = services_get_url() + "/init/disks/ajax_array?array="+v+"&rowid="+id
-    toggle_extra(url, id, this, 0)
-  })
-}
-
-function cell_decorator_disk_array_dg(e) {
-  var v = $.data(e, "v")
-  if (v == "empty") {
-    return
-  }
-  var s = ""
-  s = "<div class='clickable'>"+v+"</div>"
-  $(e).html(s)
-  $(e).addClass("corner")
-  $(e).click(function(){
-    if (get_selected() != "") {return}
-    var line = $(e).parent(".tl")
-    table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
-    array = $.data(line.find("[col=disk_arrayid],[col=array_name]")[0], "v")
-    span_id = line.attr("spansum")
-    id = table_id + "_x_" + span_id
-    url = services_get_url() + "/init/disks/ajax_array_dg?array="+array+"&dg="+v+"&rowid="+id
-    toggle_extra(url, id, this, 0)
-  })
-}
-
 function cell_decorator_tag_exclude(e) {
   var v = $.data(e, "v")
   if (v == "empty") {
@@ -3338,6 +3339,7 @@ cell_decorators = {
  "dns_records_type": cell_decorator_dns_records_type,
  "tag_exclude": cell_decorator_tag_exclude,
  "form_name": cell_decorator_form_name,
+ "quota": cell_decorator_quota,
  "dns_record": cell_decorator_dns_record,
  "dns_domain": cell_decorator_dns_domain,
  "_network": cell_decorator_network,

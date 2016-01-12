@@ -550,6 +550,28 @@ function form(divid, options) {
 		})
 	}
 
+	o.submit_output_rest_one = function(fn, output, data, result) {
+		var path = subst_refs_from_data(data, output.Function)
+		if (output.Keys) {
+			for (key in data) {
+				if (output.Keys.indexOf(key) < 0) {
+					delete(data[key])
+				}
+			}
+		}
+		fn(path, "", "", data, function(jd) {
+			if (jd.error && (jd.error.length > 0)) {
+				o.result.append("<pre>"+jd.error+"</pre>")
+			}
+			if (jd.info && (jd.info.length > 0)) {
+				o.result.append("<pre>"+jd.info+"</pre>")
+                        }
+		},
+		function(xhr, stat, error) {
+			return services_ajax_error_fmt(xhr, stat, error)
+		})
+        }
+
 	o.submit_output_rest = function(output, data) {
 		if (typeof(data) === "string") {
 			console.log("rest output data can not be string")
@@ -573,19 +595,13 @@ function form(divid, options) {
 			console.log("rest output must have a Handler defined (PUT, POST or DELETE)")
 			return
 		}
-		fn(output.Function, "", "", data, function(jd) {
-			if (jd.error && (jd.error.length > 0)) {
-				o.result.html(services_error_fmt(jd))
-				return
-			}
-			if (jd.info && (jd.info.length > 0)) {
-                                o.result.html(services_info_fmt(jd))
-                                return
-                        }
-		},
-		function(xhr, stat, error) {
-			o.result.html(services_ajax_error_fmt(xhr, stat, error))
-		})
+		if (!(data instanceof Array)) {
+			data = [data]
+		}
+		for (var i=0; i<data.length; i++) {
+			var _data = data[i]
+			o.submit_output_rest_one(fn, output, _data)
+		}
 	}
 
 	o.submit_output_compliance = function(data) {
@@ -937,6 +953,22 @@ function form(divid, options) {
 			s += "-"+args[key]
 		}
 		return s
+	}
+
+	function subst_refs_from_data(data, s) {
+		var re = RegExp(/#\w+/g)
+		var _s = s
+
+		do {
+			var m = re.exec(s)
+			if (m) {
+				var key = m[0].replace("#", "")
+				var val = data[key]
+				var re1 = RegExp("#"+key, "g")
+				_s = _s.replace(re1, val)
+			}
+		} while (m)
+		return _s
 	}
 
 	function subst_refs(input, s) {

@@ -49,6 +49,43 @@ class rest_get_array(rest_get_line_handler):
 
 
 #
+class rest_get_array_diskgroup(rest_get_line_handler):
+    def __init__(self):
+        desc = [
+          "Display a storage array diskgroup.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/arrays/myarray/diskgroup/1"
+        ]
+        rest_get_line_handler.__init__(
+          self,
+          path="/arrays/<id>/diskgroups/<id>",
+          tables=["stor_array_dg"],
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, array_id, dg_id, **vars):
+        if not array_id in (0, "0"):
+            q = db.stor_array.array_name == array_id
+            try:
+                array_id = db(q).select().first().id
+            except:
+                array_id = int(array_id)
+            q = db.stor_array_dg.array_id == array_id
+        else:
+            q = db.stor_array_dg.id > 0
+
+        try:
+            dg_id = int(dg_id)
+            q &= db.stor_array_dg.id == dg_id
+        except:
+            q &= db.stor_array_dg.dg_name == dg_id
+
+        self.set_q(q)
+        return self.prepare_data(**vars)
+
+#
 class rest_get_array_diskgroups(rest_get_table_handler):
     def __init__(self):
         desc = [
@@ -116,7 +153,8 @@ class rest_get_array_diskgroup_quota(rest_get_line_handler):
 
     def handler(self, array_id, dg_id, id, **vars):
         q = db.stor_array_dg_quota.id == id
-        q &= db.stor_array_dg_quota.dg_id == dg_id
+        if not dg_id in (0, "0"):
+            q &= db.stor_array_dg_quota.dg_id == dg_id
         self.set_q(q)
         return self.prepare_data(**vars)
 

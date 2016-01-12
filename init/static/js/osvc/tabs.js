@@ -612,6 +612,15 @@ function app_tabs(divid, options) {
       app_properties(divid, o.options)
     }
 
+    // tab quotas
+    i = o.register_tab({
+      "title": "array_tabs.quotas",
+      "title_class": "quota16"
+    })
+    o.tabs[i].callback = function(divid) {
+      table_quota_app(divid, o.options.app_name)
+    }
+
     o.set_tab(o.options.tab)
   }
   return o
@@ -793,7 +802,7 @@ function dns_domain_tabs(divid, options) {
       dns_domain_properties(divid, o.options)
     }
 
-    // tab alerts
+    // tab records
     i = o.register_tab({
       "title": "dns_domain_tabs.records",
       "title_class": "dns16"
@@ -807,5 +816,161 @@ function dns_domain_tabs(divid, options) {
 
   return o
 }
+
+//
+// quotas
+//
+function quota_tabs(divid, options) {
+  o = tabs(divid)
+  o.options = options
+
+  o.load(function() {
+    var title = o.options.quota_id
+    o.closetab.children("p").text(title)
+
+    // tab properties
+    i = o.register_tab({
+      "title": "node_tabs.properties",
+      "title_class": "quota16"
+    })
+    o.tabs[i].callback = function(divid) {
+      quota_properties(divid, o.options)
+    }
+
+    // tab usage
+    i = o.register_tab({
+      "title": "node_tabs.stats",
+      "title_class": "spark16"
+    })
+    o.tabs[i].callback = function(divid) {
+      services_osvcgetrest("R_ARRAY_DISKGROUP_QUOTA", [0, 0, o.options.quota_id], {"meta": "0"}, function(jd) {
+        $.ajax({
+          "url": "/init/disks/ajax_app",
+          "type": "POST",
+          "success": function(msg) {$("#"+divid).html(msg)},
+          "data": {"app_id": jd.data[0].app_id, "dg_id": jd.data[0].dg_id, "rowid": divid}
+        })
+      })
+    }
+
+    o.set_tab(o.options.tab)
+  })
+
+  return o
+}
+
+//
+// array
+//
+function array_tabs(divid, options) {
+  o = tabs(divid)
+  o.options = options
+
+  o.load(function() {
+    services_osvcgetrest("R_ARRAY", [o.options.array_name], {"meta": "0"}, function(jd) {
+      o.data = jd.data[0]
+      o._load()
+    })
+  })
+
+  o._load = function() {
+    var title = o.data.array_name
+    o.closetab.children("p").text(title)
+
+    // tab properties
+    i = o.register_tab({
+      "title": "node_tabs.properties",
+      "title_class": "hd16"
+    })
+    o.tabs[i].callback = function(divid) {
+      array_properties(divid, {"array_id": o.data.id})
+    }
+
+    // tab quotas
+    i = o.register_tab({
+      "title": "array_tabs.quotas",
+      "title_class": "quota16"
+    })
+    o.tabs[i].callback = function(divid) {
+      table_quota_array(divid, o.data.array_name)
+    }
+
+    // tab usage
+    i = o.register_tab({
+      "title": "node_tabs.stats",
+      "title_class": "spark16"
+    })
+    o.tabs[i].callback = function(divid) {
+      $.ajax({
+        "url": "/init/disks/ajax_array",
+        "type": "POST",
+        "success": function(msg) {$("#"+divid).html(msg)},
+        "data": {"array": o.data.array_name, "rowid": divid}
+      })
+    }
+
+    o.set_tab(o.options.tab)
+  }
+
+  return o
+}
+
+
+//
+// disk group
+//
+function diskgroup_tabs(divid, options) {
+  o = tabs(divid)
+  o.options = options
+
+  o.load(function() {
+    services_osvcgetrest("R_ARRAY_DISKGROUP", [o.options.array_name, o.options.dg_name], {"meta": "0"}, function(jd) {
+      o.data = jd.data[0]
+      o._load()
+    })
+  })
+
+  o._load = function() {
+    var title = o.data.dg_name
+    o.closetab.children("p").text(title)
+
+    // tab properties
+    i = o.register_tab({
+      "title": "node_tabs.properties",
+      "title_class": "hd16"
+    })
+    o.tabs[i].callback = function(divid) {
+      diskgroup_properties(divid, {"dg_id": o.data.id})
+    }
+
+    // tab quotas
+    i = o.register_tab({
+      "title": "array_tabs.quotas",
+      "title_class": "quota16"
+    })
+    o.tabs[i].callback = function(divid) {
+      table_quota_array_dg(divid, o.options.array_name, o.options.dg_name)
+    }
+
+    // tab usage
+    i = o.register_tab({
+      "title": "node_tabs.stats",
+      "title_class": "spark16"
+    })
+    o.tabs[i].callback = function(divid) {
+      $.ajax({
+        "url": "/init/disks/ajax_array_dg",
+        "type": "POST",
+        "success": function(msg) {$("#"+divid).html(msg)},
+        "data": {"array": o.options.array_name, "dg": o.data.dg_name, "rowid": divid}
+      })
+    }
+
+    o.set_tab(o.options.tab)
+  }
+
+  return o
+}
+
 
 

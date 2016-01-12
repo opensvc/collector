@@ -57,6 +57,7 @@ handlers = {
      rest_get_arrays(),
      rest_get_array(),
      rest_get_array_diskgroups(),
+     rest_get_array_diskgroup(),
      rest_get_array_diskgroup_quota(),
      rest_get_array_diskgroup_quotas(),
      rest_get_array_proxies(),

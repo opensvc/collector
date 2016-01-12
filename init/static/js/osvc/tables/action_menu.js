@@ -147,6 +147,30 @@ function table_action_menu_init_data(t) {
         {
           "selector": ["clicked", "checked", "all"],
           "foldable": true,
+          'title': 'action_menu.on_quotas',
+          "table": ["quota"],
+          "cols": ["id"],
+          "condition": "id",
+          "children": [
+            {
+              "title": "action_menu.add",
+              "class": "icon add16",
+              "fn": "data_action_add_quota",
+              "privileges": ["Manager", "StorageManager"],
+              "min": 0
+            },
+            {
+              "title": "action_menu.del",
+              "class": "icon del16",
+              "fn": "data_action_del_quotas",
+              "privileges": ["Manager", "StorageManager"],
+              "min": 1
+            }
+          ]
+        },
+        {
+          "selector": ["clicked", "checked", "all"],
+          "foldable": true,
           'title': 'action_menu.on_apps',
           "table": ["apps"],
           "cols": ["id"],
@@ -4116,6 +4140,48 @@ function agent_action_provisioning(t, e) {
     $(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
   })
 
+}
+
+//
+// data action: delete quotas
+//
+function data_action_del_quotas(t, e) {
+  var entry = $(e.target)
+  var cache_id = entry.attr("cache_id")
+  var data = t.action_menu_data_cache[cache_id]
+  var del_data = new Array()
+  for (i=0;i<data.length;i++) {
+    del_data.push({
+      'id': data[i]['id'],
+    })
+  }
+  services_osvcdeleterest("R_ARRAY_DISKGROUP_QUOTAS", [0, 0], "", del_data, function(jd) {
+    if (jd.error && (jd.error.length > 0)) {
+      $(".flash").show("blind").html(services_error_fmt(jd))
+    }
+    if (jd.info && (jd.info.length > 0)) {
+      $(".flash").show("blind").html(services_info_fmt(jd))
+    }
+  },
+  function(xhr, stat, error) {
+    $(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
+  })
+}
+
+//
+// data action: add quota
+//
+function data_action_add_quota(t, e) {
+  var entry = $(e.target)
+
+  // create and focus tool area
+  table_action_menu_focus_on_leaf(t, entry)
+  var div = $("<div></div>")
+  div.uniqueId()
+  div.append($("<hr>"))
+  div.css({"display": "table-caption"})
+  div.insertAfter(entry)
+  form(div.attr("id"), {"form_name": "add_quota"})
 }
 
 

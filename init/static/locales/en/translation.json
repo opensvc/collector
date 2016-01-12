@@ -20,6 +20,7 @@
     "domain_name": "Domain name",
     "on_dns_domains": "On dns domains",
     "sync_dns_domains": "Increment SOA serial",
+    "on_quotas": "On quotas",
     "on_apps": "On applications",
     "on_dns_records": "On dns records",
     "attach_privileges": "Attach privileges",
@@ -486,6 +487,10 @@
   "network_tabs": {
     "segments": "segments"
   },
+  "array_tabs": {
+    "quotas": "quotas",
+    "disks": "disks"
+  },
   "ruleset_tab": {
     "usage_modulesets": "Encapsulated in modulesets (__n__)",
     "usage_rulesets": "Encapsulated in rulesets (__n__)",
@@ -915,6 +920,7 @@
     "hidden_menu_entries": "hidden menu entries"
   },
   "col" : {
+    "Usage": "Usage",
     "Used": "Used",
     "Free": "Free",
     "Quota": "Quota",

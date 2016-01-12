@@ -19,6 +19,7 @@
     "app_name": "Nom de l'application",
     "on_apps": "Sur les applications",
     "domain_name": "Nom de domaine",
+    "on_quotas": "Sut les quotas",
     "on_dns_domains": "Sur les domaines dns",
     "sync_dns_domains": "Incrémenter le numéro de série du SOA",
     "on_dns_records": "Sur les enregistrements dns",
@@ -473,6 +474,10 @@
   "network_tabs": {
     "segments": "segments"
   },
+  "array_tabs": {
+    "quotas": "quotas",
+    "disks": "disques"
+  }, 
   "ruleset_tab": {
     "usage_modulesets": "Encapsulé dans les jeux de modules (__n__)",
     "usage_rulesets": "Encapsulé dans les jeux de règles (__n__)",
@@ -904,6 +909,7 @@
     "hidden_menu_entries": "entrées cachées du menu"
   },
   "col" : {
+    "Usage": "Utilisation",
     "Used": "Utilisé",
     "Free": "Libre",
     "Quota": "Quota",
