@@ -1272,6 +1272,9 @@ a.xinfo_shown span {
 	float:left;
 	border-right: 1px solid #ddd;
 }
+.tab > ul > li:hover > p:before {
+	color: #EE5464;
+}
 .tab > ul > li:hover {
 	color: #EE5464;
 }
