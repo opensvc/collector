@@ -148,8 +148,9 @@ function app_bindings() {
         fn_options = e.originalEvent.state.fn_options
       } else {
         fn = null
+        fn_options = null
       }
-      console.log("popstate", location.href, fn)
+      console.log("popstate", location.href, fn, fn_options)
       app_load_href(location.href, fn, {disable_pushstate: true}, fn_options)
       //e.preventDefault()
     }
@@ -238,12 +239,16 @@ function app_bindings() {
       event.preventDefault();
       var entries = $(".header").find(".menu_entry:visible")
       var selected = entries.filter(".menu_selected")
-      if ((selected.length > 0) && (entries.length > 0)) {
-        entries.removeClass("menu_selected")
-        var new_selected = selected.prev().addClass("menu_selected")
-        if (new_selected.length == 0) {
-          entries.last().addClass("menu_selected")
+      if ((selected.length > 0) && (entries.length > 1)) {
+        var selected_index = entries.index(selected)
+        if (selected_index == 0) {
+          var next_index = entries.length - 1
+        } else {
+          var next_index = selected_index - 1
         }
+        entries.removeClass("menu_selected")
+        var new_selected = $(entries[next_index])
+        new_selected.addClass("menu_selected")
       }
     }
 
@@ -285,12 +290,16 @@ function app_bindings() {
       event.preventDefault();
       var entries = $(".header").find(".menu_entry:visible")
       var selected = entries.filter(".menu_selected")
-      if ((selected.length > 0) && (entries.length > 0)) {
-        entries.removeClass("menu_selected")
-        var new_selected = selected.next().addClass("menu_selected")
-        if (new_selected.length == 0) {
-          entries.first().addClass("menu_selected")
+      if ((selected.length > 0) && (entries.length > 1)) {
+        var selected_index = entries.index(selected)
+        if (selected_index == entries.length - 1) {
+          var next_index = 0
+        } else {
+          var next_index = selected_index + 1
         }
+        entries.removeClass("menu_selected")
+        var new_selected = $(entries[next_index])
+        new_selected.addClass("menu_selected")
       }
     }
 
