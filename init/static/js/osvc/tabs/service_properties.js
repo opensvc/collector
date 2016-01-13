@@ -10,8 +10,26 @@ function service_properties(divid, options)
     o.init = function(){
       return service_props_init(this)
     }
-    o.decorator_status = function(e){
-      return service_props_decorator_status(this, e)
+    o.decorator_status = function(e, updated) {
+      var v = e.text()
+      if ((v=="") || (v=="empty")) {
+        v = "undef"
+      }
+      var c = v
+      console.log(updated)
+      if (_outdated(updated, 15)) {
+        c = "undef"
+      }
+      t = {
+        "warn": "orange",
+        "up": "green",
+        "stdby up": "green",
+        "down": "red",
+        "stdby down": "red",
+        "undef": "gray",
+        "n/a": "gray",
+      }
+      e.html("<div class='status_icon nowrap icon-"+t[c]+"'>"+v+"</div>")
     }
 
     o.div.load('/init/static/views/service_properties.html', "", function() {
@@ -20,20 +38,6 @@ function service_properties(divid, options)
       o.init()
     })
     return o
-}
-
-function service_props_decorator_status(o, e) {
-  var v = e.text()
-  if ((v=="") || (v=="empty")) {
-    v = "undef"
-  }
-  var c = v
-  var updated = o.div.find("#updated").text()
-  if (_outdated(updated, 15)) {
-    c = "undef"
-  }
-  c = c.replace(' ', '_')
-  e.html("<div class='boxed_small boxed_status boxed_status_"+c+"'>"+v+"</div>")
 }
 
 function service_props_init(o)
@@ -78,8 +82,8 @@ function service_props_init(o)
     }
 
     // status
-    o.decorator_status(o.div.find("#svc_status"))
-    o.decorator_status(o.div.find("#svc_availstatus"))
+    o.decorator_status(o.div.find("#svc_status"), data.svc_status_updated)
+    o.decorator_status(o.div.find("#svc_availstatus"), data.svc_status_updated)
 
     // responsibles
     o.responsibles = o.div.find("#responsibles")
