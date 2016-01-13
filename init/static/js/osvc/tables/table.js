@@ -1260,10 +1260,27 @@ function table_format_values_pie(t, o, data) {
 function table_bind_filter_input_events(t) {
   var inputs = t.e_header_filters.find("input[name=fi]")
   var url = t.ajax_url + "_col_values/"
+  var no_refresh_keys = [
+    9,  // tab
+    16, // shift
+    17, // ctrl
+    18, // alt
+    20, // caps lock
+    27, // esc
+    33, // page up
+    34, // page down
+    35, // end
+    36, // home
+    37, // left
+    38, // up
+    39, // right
+    40, // down
+    45 // insert
+  ]
 
   // refresh column filter cloud on keyup
   inputs.bind("keyup", function(event) {
-    if (is_enter(event)) {
+    if (is_enter(event) || (no_refresh_keys.indexOf(event.which) >= 0)) {
       return
     }
     var input = $(this)
