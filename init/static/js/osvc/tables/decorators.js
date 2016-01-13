@@ -74,7 +74,7 @@ var db_columns = {
     "_dataclass": "",
     "title": "City",
     "_class": "",
-    "table": "v_nodes",
+    "table": "nodes",
     "default_filter": ""
   },
   "mon_svcname": {
@@ -118,7 +118,7 @@ var db_columns = {
     "_dataclass": "",
     "title": "CPU dies",
     "_class": "",
-    "table": "v_nodes",
+    "table": "nodes",
     "default_filter": ""
   },
   "assetname": {
@@ -129,7 +129,7 @@ var db_columns = {
     "_dataclass": "",
     "title": "Asset name",
     "_class": "",
-    "table": "v_nodes",
+    "table": "nodes",
     "default_filter": ""
   },
   "loc_country": {
@@ -140,7 +140,7 @@ var db_columns = {
     "_dataclass": "",
     "title": "Country",
     "_class": "",
-    "table": "v_nodes",
+    "table": "nodes",
     "default_filter": ""
   },
   "cpu_vendor": {
@@ -151,7 +151,7 @@ var db_columns = {
     "_dataclass": "",
     "title": "CPU vendor",
     "_class": "",
-    "table": "v_nodes",
+    "table": "nodes",
     "default_filter": ""
   },
   "mon_diskstatus": {
@@ -173,7 +173,7 @@ var db_columns = {
     "_dataclass": "",
     "title": "Building",
     "_class": "",
-    "table": "v_nodes",
+    "table": "nodes",
     "default_filter": ""
   },
   "team_responsible": {
@@ -184,7 +184,7 @@ var db_columns = {
     "_dataclass": "",
     "title": "Team responsible",
     "_class": "groups",
-    "table": "v_nodes",
+    "table": "nodes",
     "default_filter": ""
   },
   "cpu_cores": {
@@ -195,7 +195,7 @@ var db_columns = {
     "_dataclass": "",
     "title": "CPU cores",
     "_class": "",
-    "table": "v_nodes",
+    "table": "nodes",
     "default_filter": ""
   },
   "loc_rack": {
@@ -206,7 +206,7 @@ var db_columns = {
     "_dataclass": "",
     "title": "Rack",
     "_class": "",
-    "table": "v_nodes",
+    "table": "nodes",
     "default_filter": ""
   },
   "res_desc": {
@@ -228,7 +228,7 @@ var db_columns = {
     "_dataclass": "",
     "title": "CPU model",
     "_class": "",
-    "table": "v_nodes",
+    "table": "nodes",
     "default_filter": ""
   },
   "disk_devid": {
@@ -261,7 +261,7 @@ var db_columns = {
     "_dataclass": "",
     "title": "CPU threads",
     "_class": "",
-    "table": "v_nodes",
+    "table": "nodes",
     "default_filter": ""
   },
   "svc_wave": {
@@ -338,7 +338,7 @@ var db_columns = {
     "_dataclass": "",
     "title": "Action type",
     "_class": "",
-    "table": "v_nodes",
+    "table": "nodes",
     "default_filter": ""
   },
   "mon_updated": {
@@ -360,7 +360,7 @@ var db_columns = {
     "_dataclass": "",
     "title": "Hardware obsolescence warning date",
     "_class": "date_future",
-    "table": "v_nodes",
+    "table": "nodes",
     "default_filter": ""
   },
   "power_breaker2": {
@@ -371,7 +371,7 @@ var db_columns = {
     "_dataclass": "",
     "title": "Power breaker #2",
     "_class": "",
-    "table": "v_nodes",
+    "table": "nodes",
     "default_filter": ""
   },
   "status": {
@@ -382,7 +382,7 @@ var db_columns = {
     "_dataclass": "",
     "title": "Status",
     "_class": "",
-    "table": "v_nodes",
+    "table": "nodes",
     "default_filter": ""
   },
   "mon_vmem": {
@@ -404,7 +404,7 @@ var db_columns = {
     "_dataclass": "",
     "title": "Memory",
     "_class": "",
-    "table": "v_nodes",
+    "table": "nodes",
     "default_filter": ""
   },
   "power_protect_breaker": {
@@ -415,7 +415,7 @@ var db_columns = {
     "_dataclass": "",
     "title": "Power protector breaker",
     "_class": "",
-    "table": "v_nodes",
+    "table": "nodes",
     "default_filter": ""
   },
   "hvpool": {
@@ -426,7 +426,7 @@ var db_columns = {
     "_dataclass": "",
     "title": "Hypervisor pool",
     "_class": "",
-    "table": "v_nodes",
+    "table": "nodes",
     "default_filter": ""
   },
   "mon_overallstatus": {
@@ -459,7 +459,7 @@ var db_columns = {
     "_dataclass": "",
     "title": "Support",
     "_class": "groups",
-    "table": "v_nodes",
+    "table": "nodes",
     "default_filter": ""
   },
   "host_mode": {
@@ -470,7 +470,7 @@ var db_columns = {
     "_dataclass": "",
     "title": "Host Mode",
     "_class": "env",
-    "table": "v_nodes",
+    "table": "nodes",
     "default_filter": ""
   },
   "enclosure": {
@@ -481,7 +481,7 @@ var db_columns = {
     "_dataclass": "",
     "title": "Enclosure",
     "_class": "",
-    "table": "v_nodes",
+    "table": "nodes",
     "default_filter": ""
   },
   "responsibles": {
@@ -569,7 +569,7 @@ var db_columns = {
     "_dataclass": "",
     "title": "Agent version",
     "_class": "",
-    "table": "v_nodes",
+    "table": "nodes",
     "default_filter": ""
   },
   "svcdisk_updated": {
@@ -591,7 +591,7 @@ var db_columns = {
     "_dataclass": "",
     "title": "Memory slots",
     "_class": "",
-    "table": "v_nodes",
+    "table": "nodes",
     "default_filter": ""
   },
   "disk_updated": {
@@ -613,7 +613,7 @@ var db_columns = {
     "_dataclass": "",
     "title": "OS obsolescence alert date",
     "_class": "date_future",
-    "table": "v_nodes",
+    "table": "nodes",
     "default_filter": ""
   },
   "warranty_end": {
@@ -624,7 +624,7 @@ var db_columns = {
     "_dataclass": "",
     "title": "Warranty end",
     "_class": "date_future",
-    "table": "v_nodes",
+    "table": "nodes",
     "default_filter": ""
   },
   "last_boot": {
@@ -635,7 +635,7 @@ var db_columns = {
     "_dataclass": "",
     "title": "Last boot",
     "_class": "",
-    "table": "v_nodes",
+    "table": "nodes",
     "default_filter": ""
   },
   "mon_guestos": {
@@ -668,7 +668,7 @@ var db_columns = {
     "_dataclass": "",
     "title": "Address",
     "_class": "",
-    "table": "v_nodes",
+    "table": "nodes",
     "default_filter": ""
   },
   "changed": {
@@ -701,7 +701,7 @@ var db_columns = {
     "_dataclass": "",
     "title": "Power breaker #1",
     "_class": "",
-    "table": "v_nodes",
+    "table": "nodes",
     "default_filter": ""
   },
   "mon_hbstatus": {
@@ -734,7 +734,7 @@ var db_columns = {
     "_dataclass": "",
     "title": "Virtual datacenter",
     "_class": "",
-    "table": "v_nodes",
+    "table": "nodes",
     "default_filter": ""
   },
   "disk_raid": {
@@ -789,7 +789,7 @@ var db_columns = {
     "_dataclass": "",
     "title": "Security zone",
     "_class": "",
-    "table": "v_nodes",
+    "table": "nodes",
     "default_filter": ""
   },
   "svc_app": {
@@ -822,7 +822,7 @@ var db_columns = {
     "_dataclass": "",
     "title": "Power cabinet #1",
     "_class": "",
-    "table": "v_nodes",
+    "table": "nodes",
     "default_filter": ""
   },
   "power_cabinet2": {
@@ -833,7 +833,7 @@ var db_columns = {
     "_dataclass": "",
     "title": "Power cabinet #2",
     "_class": "",
-    "table": "v_nodes",
+    "table": "nodes",
     "default_filter": ""
   },
   "mon_vcpus": {
@@ -877,7 +877,7 @@ var db_columns = {
     "_dataclass": "",
     "title": "OS vendor",
     "_class": "",
-    "table": "v_nodes",
+    "table": "nodes",
     "default_filter": ""
   },
   "mailto": {
@@ -910,7 +910,7 @@ var db_columns = {
     "_dataclass": "",
     "title": "CPU freq",
     "_class": "",
-    "table": "v_nodes",
+    "table": "nodes",
     "default_filter": ""
   },
   "mem_banks": {
@@ -921,7 +921,7 @@ var db_columns = {
     "_dataclass": "",
     "title": "Memory banks",
     "_class": "",
-    "table": "v_nodes",
+    "table": "nodes",
     "default_filter": ""
   },
   "res_log": {
@@ -954,7 +954,7 @@ var db_columns = {
     "_dataclass": "",
     "title": "Type",
     "_class": "",
-    "table": "v_nodes",
+    "table": "nodes",
     "default_filter": ""
   },
   "enclosureslot": {
@@ -965,7 +965,7 @@ var db_columns = {
     "_dataclass": "",
     "title": "Enclosure Slot",
     "_class": "",
-    "table": "v_nodes",
+    "table": "nodes",
     "default_filter": ""
   },
   "svc_type": {
@@ -1009,7 +1009,7 @@ var db_columns = {
     "_dataclass": "",
     "title": "Hypervisor",
     "_class": "",
-    "table": "v_nodes",
+    "table": "nodes",
     "default_filter": ""
   },
   "mon_vmname": {
@@ -1064,7 +1064,7 @@ var db_columns = {
     "_dataclass": "",
     "title": "OS full name",
     "_class": "",
-    "table": "v_nodes",
+    "table": "nodes",
     "default_filter": ""
   },
   "svc_status_updated": {
@@ -1097,7 +1097,7 @@ var db_columns = {
     "_dataclass": "",
     "title": "Listener port",
     "_class": "",
-    "table": "v_nodes",
+    "table": "nodes",
     "default_filter": ""
   },
   "environnement": {
@@ -1108,7 +1108,7 @@ var db_columns = {
     "_dataclass": "",
     "title": "Env",
     "_class": "env",
-    "table": "v_nodes",
+    "table": "nodes",
     "default_filter": ""
   },
   "mon_nodname": {
@@ -1163,7 +1163,7 @@ var db_columns = {
     "_dataclass": "",
     "title": "OS obsolescence warning date",
     "_class": "date_future",
-    "table": "v_nodes",
+    "table": "nodes",
     "default_filter": ""
   },
   "svc_name": {
@@ -1196,7 +1196,7 @@ var db_columns = {
     "_dataclass": "",
     "title": "Room",
     "_class": "",
-    "table": "v_nodes",
+    "table": "nodes",
     "default_filter": ""
   },
   "project": {
@@ -1207,7 +1207,7 @@ var db_columns = {
     "_dataclass": "",
     "title": "Project",
     "_class": "",
-    "table": "v_nodes",
+    "table": "nodes",
     "default_filter": ""
   },
   "loc_floor": {
@@ -1218,7 +1218,7 @@ var db_columns = {
     "_dataclass": "",
     "title": "Floor",
     "_class": "",
-    "table": "v_nodes",
+    "table": "nodes",
     "default_filter": ""
   },
   "mon_availstatus": {
@@ -1262,7 +1262,7 @@ var db_columns = {
     "_dataclass": "",
     "title": "OS kernel",
     "_class": "",
-    "table": "v_nodes",
+    "table": "nodes",
     "default_filter": ""
   },
   "updated": {
@@ -1284,7 +1284,7 @@ var db_columns = {
     "_dataclass": "",
     "title": "Fqdn",
     "_class": "",
-    "table": "v_nodes",
+    "table": "nodes",
     "default_filter": ""
   },
   "disk_svcname": {
@@ -1339,7 +1339,7 @@ var db_columns = {
     "_dataclass": "",
     "title": "Id",
     "_class": "",
-    "table": "v_nodes",
+    "table": "nodes",
     "default_filter": ""
   },
   "svc_hostid": {
@@ -1372,7 +1372,7 @@ var db_columns = {
     "_dataclass": "",
     "title": "OS arch",
     "_class": "",
-    "table": "v_nodes",
+    "table": "nodes",
     "default_filter": ""
   },
   "node_updated": {
@@ -1383,7 +1383,7 @@ var db_columns = {
     "_dataclass": "",
     "title": "Last node update",
     "_class": "datetime_daily",
-    "table": "v_nodes",
+    "table": "nodes",
     "default_filter": ""
   },
   "svc_comment": {
@@ -1405,7 +1405,7 @@ var db_columns = {
     "_dataclass": "",
     "title": "Role",
     "_class": "",
-    "table": "v_nodes",
+    "table": "nodes",
     "default_filter": ""
   },
   "team_integ": {
@@ -1416,7 +1416,7 @@ var db_columns = {
     "_dataclass": "",
     "title": "Integrator",
     "_class": "groups",
-    "table": "v_nodes",
+    "table": "nodes",
     "default_filter": ""
   },
   "power_supply_nb": {
@@ -1427,7 +1427,7 @@ var db_columns = {
     "_dataclass": "",
     "title": "Power supply number",
     "_class": "",
-    "table": "v_nodes",
+    "table": "nodes",
     "default_filter": ""
   },
   "svc_flex_max_nodes": {
@@ -1471,7 +1471,7 @@ var db_columns = {
     "_dataclass": "",
     "title": "Maintenance end",
     "_class": "date_future",
-    "table": "v_nodes",
+    "table": "nodes",
     "default_filter": ""
   },
   "loc_zip": {
@@ -1482,7 +1482,7 @@ var db_columns = {
     "_dataclass": "",
     "title": "ZIP",
     "_class": "",
-    "table": "v_nodes",
+    "table": "nodes",
     "default_filter": ""
   },
   "app_domain": {
@@ -1504,7 +1504,7 @@ var db_columns = {
     "_dataclass": "",
     "title": "OS name",
     "_class": "os_name",
-    "table": "v_nodes",
+    "table": "nodes",
     "default_filter": ""
   },
   "nodename": {
@@ -1526,7 +1526,7 @@ var db_columns = {
     "_dataclass": "",
     "title": "Power protector",
     "_class": "",
-    "table": "v_nodes",
+    "table": "nodes",
     "default_filter": ""
   },
   "mon_appstatus": {
@@ -1581,7 +1581,7 @@ var db_columns = {
     "_dataclass": "",
     "title": "Serial",
     "_class": "",
-    "table": "v_nodes",
+    "table": "nodes",
     "default_filter": ""
   },
   "hw_obs_alert_date": {
@@ -1592,7 +1592,7 @@ var db_columns = {
     "_dataclass": "",
     "title": "Hardware obsolescence alert date",
     "_class": "date_future",
-    "table": "v_nodes",
+    "table": "nodes",
     "default_filter": ""
   },
   "disk_size": {
@@ -1647,7 +1647,7 @@ var db_columns = {
     "_dataclass": "",
     "title": "OS release",
     "_class": "",
-    "table": "v_nodes",
+    "table": "nodes",
     "default_filter": ""
   },
   "mon_syncstatus": {
@@ -1669,7 +1669,7 @@ var db_columns = {
     "_dataclass": "",
     "title": "Model",
     "_class": "",
-    "table": "v_nodes",
+    "table": "nodes",
     "default_filter": ""
   },
   "disk_region": {
