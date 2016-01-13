@@ -2762,6 +2762,7 @@ function table_add_table(t) {
   var table = $("<table></table>")
   var page = $("<input type='hidden'></input>")
   d.attr("id", t.id)
+  t.div = d
   page.attr("id", t.id+"_page")
   page.val(t.options.pager.page)
   table.attr("id", "table_"+t.id)
@@ -3053,7 +3054,6 @@ function table_init(opts) {
 	t.get_visible_columns()
 
 	// selectors cache
-	t.div = $("#"+t.id)
 	t.e_toolbar = t.div.find("[name=toolbar]").first()
 	t.e_table = t.div.find("table#table_"+t.id).first()
 
