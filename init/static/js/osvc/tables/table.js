@@ -2750,29 +2750,6 @@ function table_flash(t) {
   $(".flash").show("blind").html(e)
 }
 
-function table_add_table(t) {
-  if (t.options.divid === "undefined") {
-    // web2py provided table structure
-    return
-  }
-  var container = $("#"+t.options.divid)
-  var d = $("<div class='tableo'></div>")
-  var toolbar = $("<div class='theader toolbar' name='toolbar'></div>")
-  var table_div = $("<div></div>")
-  var table = $("<table></table>")
-  var page = $("<input type='hidden'></input>")
-  d.attr("id", t.id)
-  t.div = d
-  page.attr("id", t.id+"_page")
-  page.val(t.options.pager.page)
-  table.attr("id", "table_"+t.id)
-  table_div.append(table)
-  d.append(toolbar)
-  d.append(table_div)
-  d.append(page)
-  container.empty().append(d)
-}
-
 function table_init(opts) {
   var t = {
     'options': opts,
@@ -2974,6 +2951,30 @@ function table_init(opts) {
       return table_get_visible_columns(this)
     }
   }
+
+	t.add_table = function() {
+		if (typeof(t.options.divid) === "undefined") {
+			// web2py provided table structure
+			t.div = $("#"+t.id+" .tableo")
+			return
+		}
+		var container = $("#"+t.options.divid)
+		var d = $("<div class='tableo'></div>")
+		var toolbar = $("<div class='theader toolbar' name='toolbar'></div>")
+		var table_div = $("<div></div>")
+		var table = $("<table></table>")
+		var page = $("<input type='hidden'></input>")
+		d.attr("id", t.id)
+		t.div = d
+		page.attr("id", t.id+"_page")
+		page.val(t.options.pager.page)
+		table.attr("id", "table_"+t.id)
+		table_div.append(table)
+		d.append(toolbar)
+		d.append(table_div)
+		d.append(page)
+		container.empty().append(d)
+	}
 
 	t.on_change = function() {
 		if (!t.options.on_change) {
