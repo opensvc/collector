@@ -58,14 +58,14 @@ function requests(divid, options) {
 			o.search()
 		})
 
-		if (o.options.form_name) {
+		if (o.options && o.options.form_name) {
 			o.e_search.val(o.options.form_name)
 			o.search()
 		}
 	}
 
 	o.init_list = function() {
-		if (o.options.form_name) {
+		if (o.options && o.options.form_name) {
 			return
 		}
 		o.e_list.empty()
