@@ -60,7 +60,7 @@ function app_start() {
     })
 }
 
-function app_load_href(href, fn, options) {
+function app_load_href(href, fn, options, fn_options) {
     if (!options) {
       options = {
         "disable_pushstate": false
@@ -89,8 +89,8 @@ function app_load_href(href, fn, options) {
 
     // update browser url and history
     if (!_badIE && !options.disable_pushstate) {
-      console.log("pushstate", fn, href)
-      history.pushState({"fn": fn}, "", href)
+      console.log("pushstate", {"fn": fn, "fn_options": fn_options}, href)
+      history.pushState({"fn": fn, "fn_options": fn_options}, "", href)
     }
 
     var menu = $(".header .menu16")
@@ -98,7 +98,7 @@ function app_load_href(href, fn, options) {
     menu.parent().prepend($("<span class='refresh16 fa-spin'></span>"))
     if ((fn != "undefined") && (fn !== "undefined") && fn) {
       console.log("load", fn)
-      window[fn]("layout")
+      window[fn]("layout", fn_options)
       post_load()
       return
     }
@@ -135,13 +135,15 @@ function app_bindings() {
     if (e.originalEvent.state !== null) {
       if (e.state && e.state.fn) {
         fn = e.state.fn
+        fn_options = e.state.fn_options
       } else if (e.originalEvent && e.originalEvent.state && e.originalEvent.state.fn) {
         fn = e.originalEvent.state.fn
+        fn_options = e.originalEvent.state.fn_options
       } else {
         fn = null
       }
       console.log("popstate", location.href, fn)
-      app_load_href(location.href, fn, {disable_pushstate: true});
+      app_load_href(location.href, fn, {disable_pushstate: true}, fn_options)
       //e.preventDefault()
     }
   })
