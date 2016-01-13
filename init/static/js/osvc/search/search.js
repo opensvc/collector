@@ -146,7 +146,7 @@ function search_get_menu(fk)
             "link" : "/init/appinfo/appinfo?volatile_filters=true&appinfo_f_app_nodename=__nodename__"
           },
           {
-            "title": "action",
+            "title": "actions",
             "menu_entry_id": "view-actions",
             "class" : "action16",
             "link" : "/init/svcactions/svcactions?volatile_filters=true&actions_f_hostname=__nodename__"
@@ -280,7 +280,7 @@ function search_get_menu(fk)
             "link" : "/init/dashboard/index?clear_/init/appinfo/appinfo?volatile_filters=true&appinfo_f_app_svcname=__svc_name__"
           },
           {
-            "title": "action",
+            "title": "actions",
             "menu_entry_id": "view-actions",
             "class" : "action16",
             "link" : "/init/svcactions/svcactions?volatile_filters=true&actions_f_svcname=__svc_name__"
