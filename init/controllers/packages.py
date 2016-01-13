@@ -13,8 +13,8 @@ class table_packages(HtmlTable):
                       'pkg_sig',
                       'pkg_install_date',
                       'pkg_updated']
-        self.cols += v_nodes_cols
-        self.colprops = v_nodes_colprops
+        self.cols += nodes_cols
+        self.colprops = nodes_colprops
         self.colprops.update(packages_colprops)
         self.force_cols = ['os_name']
         self.colprops['nodename'].display = True
@@ -36,7 +36,7 @@ def ajax_packages_col_values():
     t = table_packages(table_id, 'ajax_packages')
     col = request.args[0]
     o = db[t.colprops[col].table][col]
-    q = db.packages.pkg_nodename==db.v_nodes.nodename
+    q = db.packages.pkg_nodename==db.nodes.nodename
     q = _where(q, 'packages', domain_perms(), 'pkg_nodename')
     q = apply_filters(q, db.packages.pkg_nodename, None)
     j = db.packages.pkg_sig == db.pkg_sig_provider.sig_id
@@ -55,7 +55,7 @@ def ajax_packages():
     o |= db.packages.pkg_arch
 
     q = db.packages.id>0
-    q &= db.packages.pkg_nodename==db.v_nodes.nodename
+    q &= db.packages.pkg_nodename==db.nodes.nodename
     q = _where(q, 'packages', domain_perms(), 'pkg_nodename')
     q = apply_filters(q, db.packages.pkg_nodename, None)
     j = db.packages.pkg_sig == db.pkg_sig_provider.sig_id

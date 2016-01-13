@@ -1,15 +1,15 @@
 def ajax_obsolete_os_nodes():
     if request.vars.obs_type == "os":
-        query = (db.obsolescence.obs_type=="os")&(db.v_nodes.os_concat==request.vars.obs_name)
+        query = (db.obsolescence.obs_type=="os")&(db.nodes.os_concat==request.vars.obs_name)
     elif request.vars.obs_type == "hw":
-        query = (db.obsolescence.obs_type=="hw")&(db.v_nodes.model==request.vars.obs_name)
+        query = (db.obsolescence.obs_type=="hw")&(db.nodes.model==request.vars.obs_name)
     else:
         return DIV()
 
     q = db.obsolescence.id > 0
-    q = apply_filters(q, db.v_nodes.nodename, None)
+    q = apply_filters(q, db.nodes.nodename, None)
 
-    rows = db(query).select(db.v_nodes.nodename, orderby=db.v_nodes.nodename, groupby=db.v_nodes.nodename)
+    rows = db(query).select(db.nodes.nodename, orderby=db.nodes.nodename, groupby=db.nodes.nodename)
     nodes = [row.nodename for row in rows]
     return DIV(
              H3(T("""Nodes in %(os)s""",dict(os=request.vars.obs_name))),
@@ -168,7 +168,7 @@ class col_obs_alert_date(HtmlTableColumn):
 
 class col_obs_count(HtmlTableColumn):
     def get(self, o):
-        return o['COUNT(v_nodes.id)']
+        return o['COUNT(nodes.id)']
 
     def html(self, o):
         id = self.t.extra_line_key(o)
@@ -238,7 +238,7 @@ class table_obs(HtmlTable):
                     ),
             'obs_count': col_obs_count(
                      title='Count',
-                     table='v_nodes',
+                     table='nodes',
                      field='count',
                      img='svc',
                      display=True,
@@ -286,14 +286,14 @@ def ajax_obs_col_values():
     t = table_obs('obs', 'ajax_obs')
     col = request.args[0]
     o = db[t.colprops[col].table][col]
-    q = (db.obsolescence.obs_type=="os")&(db.obsolescence.obs_name==db.v_nodes.os_concat)
-    q |= (db.obsolescence.obs_type=="hw")&(db.obsolescence.obs_name==db.v_nodes.model)
-    q &= ~db.v_nodes.model.like("%virtual%")
-    q &= ~db.v_nodes.model.like("%virtuel%")
-    q &= ~db.v_nodes.model.like("%cluster%")
+    q = (db.obsolescence.obs_type=="os")&(db.obsolescence.obs_name==db.nodes.os_concat)
+    q |= (db.obsolescence.obs_type=="hw")&(db.obsolescence.obs_name==db.nodes.model)
+    q &= ~db.nodes.model.like("%virtual%")
+    q &= ~db.nodes.model.like("%virtuel%")
+    q &= ~db.nodes.model.like("%cluster%")
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
-    q = apply_gen_filters(q, ['v_nodes', 'obsolescence'])
+    q = apply_gen_filters(q, ['nodes', 'obsolescence'])
 
     t.object_list = db(q).select(o, orderby=o)
     return t.col_values_cloud_ungrouped(col)
@@ -380,20 +380,20 @@ def ajax_obs():
 
     g = db.obsolescence.obs_type|db.obsolescence.obs_name
 
-    q = (db.obsolescence.obs_type=="os")&(db.obsolescence.obs_name==db.v_nodes.os_concat)
-    q2 = ~db.v_nodes.model.like("%virtual%")
-    q2 &= ~db.v_nodes.model.like("%virtuel%")
-    q2 &= ~db.v_nodes.model.like("%cluster%")
-    q |= (db.obsolescence.obs_type=="hw")&(db.obsolescence.obs_name==db.v_nodes.model)&q2
+    q = (db.obsolescence.obs_type=="os")&(db.obsolescence.obs_name==db.nodes.os_concat)
+    q2 = ~db.nodes.model.like("%virtual%")
+    q2 &= ~db.nodes.model.like("%virtuel%")
+    q2 &= ~db.nodes.model.like("%cluster%")
+    q |= (db.obsolescence.obs_type=="hw")&(db.obsolescence.obs_name==db.nodes.model)&q2
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
-    q = apply_gen_filters(q, ['v_nodes', 'obsolescence'])
+    q = apply_gen_filters(q, ['nodes', 'obsolescence'])
 
     if len(request.args) == 1 and request.args[0] == 'line':
         n = len(db(q).select(db.obsolescence.id, groupby=g))
         limitby = (t.pager_start,t.pager_end)
         t.object_list = db(q).select(db.obsolescence.ALL,
-                                     db.v_nodes.id.count(),
+                                     db.nodes.id.count(),
                                      orderby=o,
                                      groupby=g,
                                      limitby=limitby,
@@ -403,7 +403,7 @@ def ajax_obs():
     n = len(db(q).select(db.obsolescence.id, groupby=g))
     t.setup_pager(n)
     t.object_list = db(q).select(db.obsolescence.ALL,
-                                 db.v_nodes.id.count(),
+                                 db.nodes.id.count(),
                                  limitby=(t.pager_start,t.pager_end),
                                  orderby=o, groupby=g)
     return t.html()

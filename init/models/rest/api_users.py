@@ -994,7 +994,7 @@ class rest_post_user_table_filters(rest_post_handler):
           "The action is logged in the collector's log.",
         ]
         examples = [
-          "# curl -u %(email)s -X POST -o- -d -d col_tableid=nodes -d col_name=v_nodes.sec_zone -d col_filter=a https://%(collector)s/init/rest/api/users/self/table_filters",
+          "# curl -u %(email)s -X POST -o- -d -d col_tableid=nodes -d col_name=nodes.sec_zone -d col_filter=a https://%(collector)s/init/rest/api/users/self/table_filters",
         ]
         rest_post_handler.__init__(
           self,

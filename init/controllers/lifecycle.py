@@ -174,7 +174,6 @@ def lifecycle_os_load():
 @auth.requires_login()
 def ajax_lifecycle_os():
     session.forget(response)
-    t = table_lifecycle_os('lifecycle_os', 'ajax_lifecycle_os')
     os = __get_lifecycle_os()
     l = []
     for o in os:
@@ -193,7 +192,7 @@ def ajax_lifecycle_os():
                        url=URL(r=request, f='call/json/json_stat_os_release',
                                vars={'os_name':o}),
                      ),
-                     _name=t.id+'_to_eval',
+                     _name='lifecycle_os_to_eval',
                    ),
                  ))
 
@@ -213,7 +212,7 @@ def ajax_lifecycle_os():
               "stat_os('%(url)s', 'stat_os_name');"%dict(
                 url=URL(r=request, f='call/json/json_stat_os_name'),
               ),
-              _name=t.id+'_to_eval',
+              _name='lifecycle_os_to_eval',
             ),
             _class='container',
           ),

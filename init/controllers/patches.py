@@ -9,12 +9,12 @@ class table_patches(HtmlTable):
                       'patch_rev',
                       'patch_install_date',
                       'patch_updated']
-        self.cols += v_nodes_cols
-        self.colprops = v_nodes_colprops
+        self.cols += nodes_cols
+        self.colprops = nodes_colprops
         self.colprops.update({
             'nodename': HtmlTableColumn(
                      title='Nodename',
-                     table='v_nodes',
+                     table='nodes',
                      field='nodename',
                      img='node16',
                      display=True,
@@ -77,7 +77,7 @@ def ajax_patches_col_values():
     t = table_patches(table_id, 'ajax_patches')
     col = request.args[0]
     o = db[t.colprops[col].table][col]
-    q = db.patches.patch_nodename==db.v_nodes.nodename
+    q = db.patches.patch_nodename==db.nodes.nodename
     q = _where(q, 'patches', domain_perms(), 'patch_nodename')
     q = apply_filters(q, db.patches.patch_nodename, None)
 
@@ -95,7 +95,7 @@ def ajax_patches():
     o |= db.patches.patch_rev
 
     q = db.patches.id>0
-    q &= db.patches.patch_nodename==db.v_nodes.nodename
+    q &= db.patches.patch_nodename==db.nodes.nodename
     q = _where(q, 'patches', domain_perms(), 'patch_nodename')
     q = apply_filters(q, db.patches.patch_nodename, None)
 

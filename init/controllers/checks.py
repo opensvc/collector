@@ -254,8 +254,8 @@ class table_checks(HtmlTable):
                 img = 'check16'
             ),
         }
-        self.colprops.update(v_nodes_colprops)
-        self.cols += v_nodes_cols
+        self.colprops.update(nodes_colprops)
+        self.cols += nodes_cols
         self.events = ["checks_change"]
 
         self.colprops.update({
@@ -296,8 +296,8 @@ def ajax_checks_col_values():
     q = db.checks_live.id>0
     q = _where(q, 'checks_live', domain_perms(), 'chk_nodename')
     q = apply_filters(q, db.checks_live.chk_nodename, None)
-    q &= db.checks_live.chk_nodename==db.v_nodes.nodename
-    j = db.apps.app == db.v_nodes.project
+    q &= db.checks_live.chk_nodename==db.nodes.nodename
+    j = db.apps.app == db.nodes.project
     l = db.apps.on(j)
 
     o = db[t.colprops[col].table][col]
@@ -317,8 +317,8 @@ def ajax_checks():
     q = db.checks_live.id>0
     q = _where(q, 'checks_live', domain_perms(), 'chk_nodename')
     q = apply_filters(q, db.checks_live.chk_nodename, None)
-    q &= db.checks_live.chk_nodename==db.v_nodes.nodename
-    j = db.apps.app == db.v_nodes.project
+    q &= db.checks_live.chk_nodename==db.nodes.nodename
+    j = db.apps.app == db.nodes.project
     l = db.apps.on(j)
 
     for f in t.cols:

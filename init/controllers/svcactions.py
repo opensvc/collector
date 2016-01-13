@@ -171,13 +171,13 @@ class table_actions(HtmlTable):
                 img = 'svc',
             ),
         }
-        cp = v_nodes_colprops
+        cp = nodes_colprops
         for k in cp.keys():
             cp[k].table = "v_svcactions"
         del(cp['status'])
         self.colprops.update(cp)
         self.colprops.update(v_services_colprops)
-        ncols = v_nodes_cols
+        ncols = nodes_cols
         ncols.remove('updated')
         ncols.remove('power_supply_nb')
         ncols.remove('power_cabinet1')

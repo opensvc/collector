@@ -728,8 +728,6 @@ def stats():
     d = DIV(
       DIV(
         t.html(),
-      ),
-      DIV(
         _id="stats",
       ),
     )

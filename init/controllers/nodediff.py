@@ -105,10 +105,10 @@ def svcdiff(svcs):
     return compare(svcs, rows, v_services_cols, v_services_colprops, "Services")
 
 def nodediff(nodes):
-    q = db.v_nodes.nodename.belongs(nodes)
+    q = db.nodes.nodename.belongs(nodes)
     rows = db(q).select()
     nodes = [ r.nodename for r in rows]
-    return compare(nodes, rows, v_nodes_cols, v_nodes_colprops, "Nodes")
+    return compare(nodes, rows, nodes_cols, nodes_colprops, "Nodes")
 
 def ajax_services_compdiff():
     divid = "svcdiff_compdiff"

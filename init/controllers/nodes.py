@@ -3,8 +3,8 @@ class table_nodes(HtmlTable):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
-        self.cols = ['nodename']+v_nodes_cols
-        self.colprops = v_nodes_colprops
+        self.cols = ['nodename']+nodes_cols
+        self.colprops = nodes_colprops
         self.span = ["nodename"]
         self.keys = ["nodename"]
         self.colprops.update({
@@ -17,7 +17,7 @@ class table_nodes(HtmlTable):
                     ),
         })
         for c in self.cols:
-            self.colprops[c].table = 'v_nodes'
+            self.colprops[c].table = 'nodes'
 
         self.colprops.update({
             'app_domain': HtmlTableColumn(
@@ -49,7 +49,7 @@ class table_nodes(HtmlTable):
         self.extraline = True
         self.checkboxes = True
         self.checkbox_id_col = 'nodename'
-        self.checkbox_id_table = 'v_nodes'
+        self.checkbox_id_table = 'nodes'
         self.dbfilterable = True
         self.events = ["nodes_change"]
         self.child_tables = ["uids", "gids"]
@@ -104,11 +104,11 @@ def ajax_nodes_col_values():
     t = table_nodes(table_id, 'ajax_nodes')
     col = request.args[0]
     o = db[t.colprops[col].table][col]
-    q = db.v_nodes.id > 0
-    j = db.apps.app == db.v_nodes.project
+    q = db.nodes.id > 0
+    j = db.apps.app == db.nodes.project
     l = db.apps.on(j)
-    q = _where(q, 'v_nodes', domain_perms(), 'nodename')
-    q = apply_filters(q, db.v_nodes.nodename, None)
+    q = _where(q, 'nodes', domain_perms(), 'nodename')
+    q = apply_filters(q, db.nodes.nodename, None)
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
     t.object_list = db(q).select(o, orderby=o, left=l)
@@ -127,12 +127,12 @@ def ajax_nodes():
         except ToolError, e:
             t.flash = str(e)
 
-    o = db.v_nodes.nodename
-    q = db.v_nodes.id>0
-    j = db.apps.app == db.v_nodes.project
+    o = db.nodes.nodename
+    q = db.nodes.id>0
+    j = db.apps.app == db.nodes.project
     l = db.apps.on(j)
-    q = _where(q, 'v_nodes', domain_perms(), 'nodename')
-    q = apply_filters(q, db.v_nodes.nodename, None)
+    q = _where(q, 'nodes', domain_perms(), 'nodename')
+    q = apply_filters(q, db.nodes.nodename, None)
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
 
@@ -147,7 +147,7 @@ def ajax_nodes():
         t.csv_left = l
         return t.do_commonality()
     if len(request.args) == 1 and request.args[0] == 'data':
-        n = db(q).select(db.v_nodes.id.count(), left=l).first()(db.v_nodes.id.count())
+        n = db(q).select(db.nodes.id.count(), left=l).first()(db.nodes.id.count())
         limitby = (t.pager_start,t.pager_end)
         cols = t.get_visible_columns()
         t.object_list = db(q).select(*cols, orderby=o, limitby=limitby, cacheable=True, left=l)
@@ -409,11 +409,11 @@ def ajax_uids_col_values():
     t = table_nodes('nodes', 'ajax_nodes')
     mt = table_uids('uids', 'ajax_uids')
 
-    q = _where(None, 'v_nodes', domain_perms(), 'nodename')
+    q = _where(None, 'nodes', domain_perms(), 'nodename')
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
     q = apply_filters(q, db.nodes.nodename)
-    sql1 = db(q)._select(db.v_nodes.nodename).rstrip(';')
+    sql1 = db(q)._select(db.nodes.nodename).rstrip(';')
 
     q = db.v_uids.id > 0
     for f in mt.cols:
@@ -454,11 +454,11 @@ def ajax_uids():
     mt = table_uids('uids', 'ajax_uids')
 
     o = ~db.comp_status.run_nodename
-    q = _where(None, 'v_nodes', domain_perms(), 'nodename')
+    q = _where(None, 'nodes', domain_perms(), 'nodename')
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
     q = apply_filters(q, db.nodes.nodename)
-    sql1 = db(q)._select(db.v_nodes.nodename).rstrip(';')
+    sql1 = db(q)._select(db.nodes.nodename).rstrip(';')
 
     q = db.v_uids.id > 0
     for f in mt.cols:
@@ -511,11 +511,11 @@ def ajax_gids_col_values():
     t = table_nodes('nodes', 'ajax_nodes')
     mt = table_gids('gids', 'ajax_gids')
 
-    q = _where(None, 'v_nodes', domain_perms(), 'nodename')
+    q = _where(None, 'nodes', domain_perms(), 'nodename')
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
     q = apply_filters(q, db.nodes.nodename)
-    sql1 = db(q)._select(db.v_nodes.nodename).rstrip(';')
+    sql1 = db(q)._select(db.nodes.nodename).rstrip(';')
 
     q = db.v_gids.id > 0
     for f in mt.cols:
@@ -556,11 +556,11 @@ def ajax_gids():
     mt = table_gids('gids', 'ajax_gids')
 
     o = ~db.comp_status.run_nodename
-    q = _where(None, 'v_nodes', domain_perms(), 'nodename')
+    q = _where(None, 'nodes', domain_perms(), 'nodename')
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
     q = apply_filters(q, db.nodes.nodename)
-    sql1 = db(q)._select(db.v_nodes.nodename).rstrip(';')
+    sql1 = db(q)._select(db.nodes.nodename).rstrip(';')
 
     q = db.v_gids.id > 0
     for f in mt.cols:

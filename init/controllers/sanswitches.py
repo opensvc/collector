@@ -18,7 +18,7 @@ class table_sanswitches(HtmlTable):
                       'sw_rname',
                       'sw_updated',
                      ]
-        #self.colprops = v_nodes_colprops
+        #self.colprops = nodes_colprops
         self.keys = ['sw_fabric', 'sw_name', 'sw_index', 'sw_rportname']
         self.span = ['sw_fabric', 'sw_name', 'sw_index']
         self.colprops.update({

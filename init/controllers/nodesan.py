@@ -71,7 +71,7 @@ class table_nodesan(HtmlTable):
                       'array_updated',
                       'array_level',
                      ]
-        self.colprops = v_nodes_colprops
+        self.colprops = nodes_colprops
         self.span = ["nodename"]
         self.keys = ['hba_id', 'tgt_id']
         for col in self.colprops:

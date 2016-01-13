@@ -427,16 +427,16 @@ def json_service_loc_city(svcname):
 
 @auth.requires_login()
 def _get_node_generic(nodename, col):
-    q = db.v_nodes.team_responsible.belongs(user_groups())
-    q &= db.v_nodes.nodename == nodename
+    q = db.nodes.team_responsible.belongs(user_groups())
+    q &= db.nodes.nodename == nodename
     node = db(q).select().first()
     if node is not None:
         if node[col] is None:
             return ""
         else:
             return node[col]
-    q = db.v_nodes.team_responsible.belongs(user_groups())
-    q &= db.v_nodes.nodename == nodename.split('.')[0]
+    q = db.nodes.team_responsible.belongs(user_groups())
+    q &= db.nodes.nodename == nodename.split('.')[0]
     node = db(q).select().first()
     if node is not None:
         if node[col] is None:

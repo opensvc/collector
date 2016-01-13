@@ -36,7 +36,7 @@ operators = [dict(id='op0', title='='),
 props = v_services_colprops
 props.update(svcmon_colprops)
 props.update(v_svcmon_colprops)
-props.update(v_nodes_colprops)
+props.update(nodes_colprops)
 props.update(node_hba_colprops)
 props.update(disk_app_colprops)
 props.update(apps_colprops)
@@ -264,8 +264,8 @@ class table_comp_rulesets_nodes(HtmlTable):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
-        self.cols = ['nodename', 'ruleset_id', 'ruleset_name'] + v_nodes_cols
-        self.colprops = v_nodes_colprops
+        self.cols = ['nodename', 'ruleset_id', 'ruleset_name'] + nodes_cols
+        self.colprops = nodes_colprops
         self.colprops['ruleset_id'] = HtmlTableColumn(
                      title='Ruleset id',
                      field='ruleset_id',
@@ -1699,8 +1699,8 @@ class table_comp_modulesets_nodes(HtmlTable):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
-        self.cols = ['nodename', 'modset_id', 'modset_name'] + v_nodes_cols
-        self.colprops = v_nodes_colprops
+        self.cols = ['nodename', 'modset_id', 'modset_name'] + nodes_cols
+        self.colprops = nodes_colprops
         self.colprops['modset_id'] = HtmlTableColumn(
                      title='Moduleset id',
                      field='modset_id',
@@ -2136,8 +2136,8 @@ class table_comp_status(HtmlTable):
                      'run_status_log',
                      'rset_md5',
                      'run_log']
-        self.cols += v_nodes_cols
-        self.colprops = v_nodes_colprops
+        self.cols += nodes_cols
+        self.colprops = nodes_colprops
         self.colprops.update({
             'id': HtmlTableColumn(
                      title='id',
@@ -2508,7 +2508,7 @@ def ajax_comp_status_col_values():
     except:
         return T("this column is not filterable")
     q = _where(None, 'comp_status', domain_perms(), 'run_nodename')
-    q &= db.comp_status.run_nodename == db.v_nodes.nodename
+    q &= db.comp_status.run_nodename == db.nodes.nodename
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
     q = apply_filters(q, db.comp_status.run_nodename)
@@ -2521,7 +2521,7 @@ def ajax_comp_status():
     t = table_comp_status(table_id, 'ajax_comp_status')
     o = ~db.comp_status.run_nodename
     q = _where(None, 'comp_status', domain_perms(), 'run_nodename')
-    q &= db.comp_status.run_nodename == db.v_nodes.nodename
+    q &= db.comp_status.run_nodename == db.nodes.nodename
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
     q = apply_filters(q, db.comp_status.run_nodename)
@@ -2548,7 +2548,7 @@ def json_comp_status_agg():
     t = table_comp_status(table_id, 'ajax_comp_status')
     o = ~db.comp_status.run_nodename
     q = _where(None, 'comp_status', domain_perms(), 'run_nodename')
-    q &= db.comp_status.run_nodename == db.v_nodes.nodename
+    q &= db.comp_status.run_nodename == db.nodes.nodename
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
     q = apply_filters(q, db.comp_status.run_nodename)
@@ -2584,7 +2584,7 @@ def ajax_comp_svc_status():
     o = ~db.comp_status.run_svcname
     q = _where(None, 'comp_status', domain_perms(), 'run_svcname')
     #q &= db.comp_status.run_svcname == db.v_svcmon.mon_svcname
-    q &= db.comp_status.run_nodename == db.v_nodes.nodename
+    q &= db.comp_status.run_nodename == db.nodes.nodename
     q &= (db.comp_status.run_svcname != None) & (db.comp_status.run_svcname != "")
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
@@ -2618,7 +2618,7 @@ def ajax_comp_svc_status():
                            sum(if(run_date>="%(d)s" and run_status=1, 1, 0)) as nok,
                            sum(if(run_date>="%(d)s" and run_status=2, 1, 0)) as na,
                            sum(if(run_date<"%(d)s", 1, 0)) as obs
-                    from %(sql)s and comp_status.run_nodename=v_nodes.nodename group by run_svcname) t) u
+                    from %(sql)s and comp_status.run_nodename=nodes.nodename group by run_svcname) t) u
               where %(where)s
               order by pct, total desc, svc_name
               limit %(limit)d
@@ -2653,12 +2653,12 @@ def ajax_comp_node_status():
 
     o = ~db.comp_status.run_nodename
     q = _where(None, 'comp_status', domain_perms(), 'run_nodename')
-    q &= db.comp_status.run_nodename == db.v_nodes.nodename
+    q &= db.comp_status.run_nodename == db.nodes.nodename
     q &= (db.comp_status.run_svcname == None) | (db.comp_status.run_svcname == "")
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
     q = apply_filters(q, db.comp_status.run_nodename)
-    sql1 = db(q)._select().rstrip(';').replace('v_nodes.id, ','').replace('comp_status.id>0 AND', '')
+    sql1 = db(q)._select().rstrip(';').replace('nodes.id, ','').replace('comp_status.id>0 AND', '')
     regex = re.compile("SELECT .* FROM")
     sql1 = regex.sub('', sql1)
 
@@ -2738,7 +2738,7 @@ def ajax_svc_history():
 def json_svc_history():
     t = table_comp_status('cs0', 'ajax_comp_status')
     q = _where(None, 'comp_status', domain_perms(), 'run_nodename')
-    q &= db.comp_status.run_nodename == db.v_nodes.nodename
+    q &= db.comp_status.run_nodename == db.nodes.nodename
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
     q = apply_filters(q, db.comp_status.run_nodename)
@@ -2797,7 +2797,7 @@ def json_mod_history():
     t = table_comp_status('cs0', 'ajax_comp_status')
     q = _where(None, 'comp_status', domain_perms(), 'run_nodename')
     q &= db.comp_status.run_module == request.vars.modname
-    q &= db.comp_status.run_nodename == db.v_nodes.nodename
+    q &= db.comp_status.run_nodename == db.nodes.nodename
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
     q = apply_filters(q, db.comp_status.run_nodename)
@@ -2856,7 +2856,7 @@ def ajax_node_history():
 def json_node_history():
     t = table_comp_status('cs0', 'ajax_comp_status')
     q = _where(None, 'comp_status', domain_perms(), 'run_nodename')
-    q &= db.comp_status.run_nodename == db.v_nodes.nodename
+    q &= db.comp_status.run_nodename == db.nodes.nodename
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
     q = apply_filters(q, db.comp_status.run_nodename)
@@ -2897,11 +2897,11 @@ def ajax_comp_mod_status():
 
     o = ~db.comp_status.run_nodename
     q = _where(None, 'comp_status', domain_perms(), 'run_nodename')
-    q &= db.comp_status.run_nodename == db.v_nodes.nodename
+    q &= db.comp_status.run_nodename == db.nodes.nodename
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
     q = apply_filters(q, db.comp_status.run_nodename)
-    sql1 = db(q)._select().rstrip(';').replace('v_nodes.id, ','').replace('comp_status.id>0 AND', '')
+    sql1 = db(q)._select().rstrip(';').replace('nodes.id, ','').replace('comp_status.id>0 AND', '')
     regex = re.compile("SELECT .* FROM")
     sql1 = regex.sub('', sql1)
 
@@ -3674,7 +3674,7 @@ def comp_get_service_ruleset(svcname):
     return {'osvc_service':ruleset}
 
 def comp_get_node_ruleset(nodename):
-    q = db.v_nodes.nodename == nodename
+    q = db.nodes.nodename == nodename
     rows = db(q).select(cacheable=True)
     if len(rows) != 1:
         return {}

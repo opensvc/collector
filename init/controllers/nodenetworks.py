@@ -80,7 +80,7 @@ class table_nodenetworks(HtmlTable):
                       'net_pvid',
                       'net_netmask',
                       'net_team_responsible']
-        self.colprops = v_nodes_colprops
+        self.colprops = nodes_colprops
         self.force_cols = ['id', 'os_name']
         for col in self.colprops:
             self.colprops[col].display = False

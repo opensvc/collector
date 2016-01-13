@@ -244,10 +244,10 @@ class table_drplan(HtmlTable):
                      'drp_wave']
         self.cols += svcmon_cols
         self.cols += v_services_cols
-        self.cols += v_nodes_cols
+        self.cols += nodes_cols
         self.colprops.update(v_services_colprops)
         self.colprops.update(svcmon_colprops)
-        self.colprops.update(v_nodes_colprops)
+        self.colprops.update(nodes_colprops)
         self.colprops.update({
             'drp_wave': HtmlTableColumn(
                 title = 'Wave',
@@ -262,7 +262,7 @@ class table_drplan(HtmlTable):
         self.colprops['svc_nodes'].display = True
         self.colprops['svc_drpnode'].display = True
         self.colprops['svc_drpnodes'].display = True
-        for c in svcmon_cols + v_services_cols + v_nodes_cols + ['mon_svcname']:
+        for c in svcmon_cols + v_services_cols + nodes_cols + ['mon_svcname']:
             self.colprops[c].table = 'v_svcmon'
         for c in self.cols:
             self.colprops[c].t = self

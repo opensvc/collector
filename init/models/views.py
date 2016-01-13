@@ -431,11 +431,9 @@ joins = {
   },
   'nodes':{
     'nodes': None,
-    'v_nodes': None,
     'dashboard': db.nodes.nodename == db.dashboard.dash_nodename,
     'dashboard': db.nodes.nodename == db.dashboard.dash_nodename,
     'v_svcmon': None,
-    'v_nodes': None,
     'v_svcactions': None,
     'checks_live': db.nodes.nodename == db.checks_live.chk_nodename,
     'packages': db.nodes.nodename == db.packages.pkg_nodename,

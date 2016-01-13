@@ -26,10 +26,10 @@ class table_resmon(HtmlTable):
          #'changed',
          'updated'
         ]
-        for col in v_nodes_cols:
+        for col in nodes_cols:
             if col not in self.cols:
                 self.cols.append(col)
-        self.colprops = v_nodes_colprops
+        self.colprops = nodes_colprops
         self.colprops.update({
             'svcname': HtmlTableColumn(
                      title='Service',
@@ -147,7 +147,7 @@ def ajax_resmon_col_values():
     t = table_resmon(table_id, 'ajax_resmon')
     col = request.args[0]
     o = db[t.colprops[col].table][col]
-    q = db.resmon.nodename==db.v_nodes.nodename
+    q = db.resmon.nodename==db.nodes.nodename
     q = _where(q, 'resmon', domain_perms(), 'nodename')
     q = apply_filters(q, db.resmon.nodename, db.resmon.svcname)
     for f in t.cols:
@@ -165,7 +165,7 @@ def ajax_resmon():
     o |= db.resmon.rid
 
     q = db.resmon.id>0
-    q &= db.resmon.nodename==db.v_nodes.nodename
+    q &= db.resmon.nodename==db.nodes.nodename
     q = _where(q, 'resmon', domain_perms(), 'nodename')
     q = apply_filters(q, db.resmon.nodename, db.resmon.svcname)
     for f in t.cols:

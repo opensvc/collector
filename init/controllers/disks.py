@@ -383,10 +383,10 @@ class table_disks(HtmlTable):
         self.force_cols = ["os_name"]
         self.colprops.update(disk_app_colprops)
         import copy
-        nodes_colprops = copy.copy(v_nodes_colprops)
-        for i in nodes_colprops:
-            nodes_colprops[i].table = 'nodes'
-        self.colprops.update(nodes_colprops)
+        _nodes_colprops = copy.copy(nodes_colprops)
+        for i in _nodes_colprops:
+            _nodes_colprops[i].table = 'nodes'
+        self.colprops.update(_nodes_colprops)
         for i in self.cols:
             self.colprops[i].t = self
         self.extraline = True
