@@ -96,6 +96,13 @@ function app_load_href(href, fn, options, fn_options) {
     var menu = $(".header .menu16")
     menu.removeClass("menu16")
     menu.parent().prepend($("<span class='refresh16 fa-spin'></span>"))
+
+    // the designer view sets a height, and triggers a resizer on resize and
+    // load window events, which is annoying for other views. clean-up
+    $(window).unbind("resize")
+    $(window).unbind("load")
+    $("#layout").removeAttr("style")
+
     if ((fn != "undefined") && (fn !== "undefined") && fn) {
       console.log("load", fn)
       window[fn]("layout", fn_options)
