@@ -2520,25 +2520,57 @@ function cell_decorator_dash_link_feed_queue(e) {
   $(e).html(s)
 }
 
-function _cell_decorator_dash_link_actions(svcname) {
-  url = services_get_url() + "/init/svcactions/svcactions?actions_f_svcname="+svcname+"&actions_f_begin=>-7d&volatile_filters=true"
-  s = "<a class='action16 clickable' target='_blank' href='"+url+"'></a>"
+function _cell_decorator_dash_link_actions(svcname, e) {
+  s = $("<a class='action16 clickable'></a>")
+  s.click(function(){
+    if (get_selected() != "") {return}
+    table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
+    span_id = $(e).parent(".tl").attr("spansum")
+    id = table_id + "_x_" + span_id
+    toggle_extra(null, id, e, 0)
+    d = $("<table></table>")
+    d.uniqueId()
+    $("#"+id).empty().append(d)
+    table_actions(d.attr("id"), {
+	"volatile_filters": true,
+	"request_vars": {
+		"actions_f_svcname": svcname,
+		"actions_f_begin": ">-7d"
+	}
+    })
+  })
   return s
 }
 
-function _cell_decorator_dash_link_action_error(svcname) {
-  url = services_get_url() + "/init/svcactions/svcactions?actions_f_svcname="+svcname+"&actions_f_status=err&actions_f_ack=!1|empty&actions_f_begin=>-30d&volatile_filters=true"
-  s = "<a class='alert16 clickable' target='_blank' href='"+url+"'></a>"
+function _cell_decorator_dash_link_action_error(svcname, e) {
+  s = $("<a class='alert16 clickable'></a>")
+  s.click(function(){
+    if (get_selected() != "") {return}
+    table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
+    span_id = $(e).parent(".tl").attr("spansum")
+    id = table_id + "_x_" + span_id
+    toggle_extra(null, id, e, 0)
+    d = $("<table></table>")
+    d.uniqueId()
+    $("#"+id).empty().append(d)
+    table_actions(d.attr("id"), {
+	"volatile_filters": true,
+	"request_vars": {
+		"actions_f_svcname": svcname,
+		"actions_f_status": "err",
+		"actions_f_ack": "!1|empty",
+		"actions_f_begin": ">-30d"
+	}
+    })
+  })
   return s
 }
 
 function cell_decorator_dash_link_action_error(e) {
   var line = $(e).parent(".tl")
   var svcname = $.data(line.find("[col=dash_svcname]")[0], "v")
-  var s = ""
-  s += _cell_decorator_dash_link_action_error(svcname)
-  s += _cell_decorator_dash_link_actions(svcname)
-  $(e).html(s)
+  $(e).append(_cell_decorator_dash_link_action_error(svcname, e))
+  $(e).append(_cell_decorator_dash_link_actions(svcname, e))
 }
 
 function cell_decorator_dash_link_svcmon(e) {
