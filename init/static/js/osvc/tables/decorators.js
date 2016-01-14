@@ -1940,6 +1940,21 @@ function cell_decorator_quota(e) {
   })
 }
 
+function cell_decorator_prov_template(e) {
+  var v = $.data(e, "v")
+  $(e).html("<span class='clickable'>"+v+"</span>")
+  $(e).addClass("corner")
+  $(e).click(function(){
+    var line = $(this).parent(".tl")
+    var tpl_id = $.data(line.children("[col=id]")[0], "v")
+    table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
+    span_id = $(e).parent(".tl").attr("spansum")
+    id = table_id + "_x_" + span_id
+    toggle_extra(null, id, e, 0)
+    prov_template_tabs(id, {"tpl_id": tpl_id, "tpl_name": v})
+  })
+}
+
 function cell_decorator_form_name(e) {
   var v = $.data(e, "v")
   $(e).html("<span class='clickable'>"+v+"</span>")
@@ -3225,6 +3240,24 @@ function cell_decorator_alert_type(e) {
   $(e).html(i18n.t("alert_type."+s))
 }
 
+function cell_decorator_tpl_command(e) {
+  var s = $.data(e, "v")
+  var _e = $("<pre></pre>")
+  s = s.replace(/--provision/g, "<br><span class=syntax_blue>  --provision</span>")
+  s = s.replace(/--resource/g, "<br><span class=syntax_blue>  --resource</span>")
+  s = s.replace(/{/g, "{<br>      ")
+  s = s.replace(/\",/g, "\",<br>     ")
+  s = s.replace(/}/g, "<br>    }")
+  s = s.replace(/(\(\w+\)s)/gi, function(x) {
+    return '<span class=syntax_red>'+x+'</span>'
+  })
+  s = s.replace(/("\w+":)/gi, function(x) {
+    return '<span class=syntax_green>'+x+'</span>'
+  })
+  _e.html(s)
+  $(e).html(_e)
+}
+
 function cell_decorator_yaml(e) {
   var s = $.data(e, "v")
   var _e = $("<pre></pre>")
@@ -3450,6 +3483,8 @@ cell_decorators = {
  "app": cell_decorator_app,
  "obs_type": cell_decorator_obs_type,
  "obs_count": cell_decorator_obs_count,
+ "tpl_command": cell_decorator_tpl_command,
+ "prov_template": cell_decorator_prov_template,
  "rule_value": cell_decorator_rule_value
 }
 

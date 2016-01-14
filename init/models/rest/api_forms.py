@@ -90,7 +90,7 @@ class rest_post_form(rest_post_handler):
 class rest_post_forms(rest_post_handler):
     def __init__(self):
         desc = [
-          "Publish the form to a group",
+          "Modify or create forms",
         ]
         examples = [
           "# curl -u %(email)s -X POST -d form_name=test -o- https://%(collector)s/init/rest/api/forms"

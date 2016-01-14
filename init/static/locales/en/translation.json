@@ -21,6 +21,7 @@
     "refresh": "Refresh list and alerts",
     "set_warn_date": "Set warn date",
     "set_alert_date": "Set alert date",
+    "on_prov_templates": "On provisioning templates",
     "on_obsolescence_settings": "On obsolescence settings",
     "on_dns_domains": "On dns domains",
     "sync_dns_domains": "Increment SOA serial",
@@ -42,6 +43,7 @@
     "add_form": "Add form",
     "tag_name": "Tag name",
     "form_name": "Form name",
+    "tpl_createable": "This template name does not exist yet. Press <enter> to create.",
     "domain_createable": "This domain does not exist yet. Press <enter> to create.",
     "app_createable": "This application does not exist yet. Press <enter> to create.",
     "group_createable": "This group does not exist yet. Press <enter> to create.",
@@ -310,6 +312,19 @@
     "domain": "Domain",
     "last_change": "Last change",
     "type": "Type"
+  },
+  "prov_template_properties": {
+    "no_command": "No provisioning command definition. Click to edit.",
+    "save": "save",
+    "comment": "Comment",
+    "publications": "Publications",
+    "responsibles": "Responsibles",
+    "base": "Base",
+    "id": "Id",
+    "name": "Name",
+    "creation": "Creation",
+    "author": "Author",
+    "creation_date": "Creation date"
   },
   "form_properties": {
     "no_yaml": "No form definition. Click to edit.",

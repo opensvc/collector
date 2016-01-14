@@ -1,142 +1,118 @@
-import re
-
-class col_tpl_command(HtmlTableColumn):
-    def html(self, o):
-        val = self.get(o)
-        val = val.replace('--resource', '<br>&nbsp;&nbsp;<span class=syntax_blue>--resource</span>')
-        val = re.sub(r'(%\(\w+\)s)', r'<span class=syntax_red>\1</span>', val)
-        val = re.sub(r'("\w+":)', r'<span class=syntax_green>\1</span>', val)
-        return TT(XML(val))
-
 class table_templates(HtmlTable):
     def __init__(self, id=None, func=None, innerhtml=None):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
-        self.cols = ['tpl_name',
+        self.cols = ['id',
+                     'tpl_name',
                      'tpl_command',
                      'tpl_comment',
                      'tpl_created',
-                     'tpl_author']
-        self.keys = ['tpl_name']
-        self.span = ['tpl_name']
+                     'tpl_author',
+                     'tpl_team_responsible']
+        self.keys = ['id']
+        self.force_cols = ['id', 'tpl_name']
         self.colprops = {
+            'id': HtmlTableColumn(
+                title = 'Id',
+                field = 'id',
+                display = False,
+                table = 'v_prov_templates',
+                img = 'key'
+            ),
             'tpl_name': HtmlTableColumn(
                 title = 'Name',
                 field = 'tpl_name',
                 display = True,
-                table = 'prov_templates',
-                img = 'prov'
+                table = 'v_prov_templates',
+                img = 'prov',
+                _class = 'prov_template',
             ),
-            'tpl_command': col_tpl_command(
+            'tpl_command': HtmlTableColumn(
                 title = 'Command',
                 field = 'tpl_command',
                 display = True,
-                table = 'prov_templates',
-                img = 'action16'
+                table = 'v_prov_templates',
+                img = 'action16',
+                _class='tpl_command',
             ),
             'tpl_comment': HtmlTableColumn(
                 title = 'Comment',
                 field = 'tpl_comment',
                 display = True,
-                table = 'prov_templates',
+                table = 'v_prov_templates',
                 img = 'edit16'
             ),
             'tpl_created': HtmlTableColumn(
                 title = 'Created on',
                 field = 'tpl_created',
                 display = False,
-                table = 'prov_templates',
+                table = 'v_prov_templates',
                 img = 'time16'
             ),
             'tpl_author': HtmlTableColumn(
                 title = 'Author',
                 field = 'tpl_author',
                 display = False,
-                table = 'prov_templates',
+                table = 'v_prov_templates',
                 img = 'guy16'
+            ),
+            'tpl_team_responsible': HtmlTableColumn(
+                title = 'Team responsible',
+                field = 'tpl_team_responsible',
+                display = True,
+                table = 'v_prov_templates',
+                img = 'guys16',
+                _class='groups',
             ),
         }
         self.ajax_col_values = 'ajax_prov_admin_col_values'
+        self.events = ["prov_templates_change"]
+        self.dataable = True
+        self.wsable = True
         self.dbfilterable = False
-        self.checkboxes = False
-        self.extrarow = True
-
-        if 'ProvisioningManager' in user_groups():
-            self.additional_tools.append('add_template')
-
-    def format_extrarow(self, o):
-        d = DIV(
-              A(
-                '',
-                _href=URL(r=request, c='provisioning', f='prov_editor', vars={'tpl_id': o.id}),
-                _class="edit16",
-              ),
-            )
-        return d
-
-    def add_template(self):
-        d = DIV(
-              A(
-                T("Add template"),
-                _href=URL(r=request, f='prov_editor'),
-                _class='add16',
-              ),
-              _class='floatw',
-            )
-        return d
+        self.checkboxes = True
 
 @auth.requires_login()
-def prov_editor():
-    q = (db.prov_templates.id==request.vars.tpl_id)
-    rows = db(q).select()
-    if len(rows) == 1:
-        record = rows[0]
-    else:
-        record = None
-
-    db.prov_templates.tpl_author.default = user_name()
-    form = SQLFORM(db.prov_templates,
-                 record=record,
-                 fields=['tpl_name',
-                         'tpl_command',
-                         'tpl_comment'],
-                 labels={'tpl_name': T('Template name'),
-                         'tpl_command': T('Provisioning command'),
-                         'tpl_comment': T('Template comment')},
-                )
-    if form.accepts(request.vars):
-        session.flash = T("template recorded")
-        redirect(URL(r=request, c='provisioning', f='prov_admin'))
-    elif form.errors:
-        response.flash = T("errors in form")
-    return dict(form=form)
+def ajax_prov_admin_col_values():
+    table_id = request.vars.table_id
+    t = table_templates(table_id, 'ajax_prov_admin')
+    col = request.args[0]
+    o = db.v_prov_templates[col]
+    q = db.v_prov_templates.id > 0
+    for f in t.cols:
+        q = _where(q, 'v_prov_templates', t.filter_parse(f), f)
+    t.object_list = db(q).select(o, orderby=o)
+    return t.col_values_cloud_ungrouped(col)
 
 @auth.requires_login()
 def ajax_prov_admin():
-    t = table_templates('templates', 'ajax_prov_admin')
+    table_id = request.vars.table_id
+    t = table_templates(table_id, 'ajax_prov_admin')
 
-    o = db.prov_templates.tpl_name > 0
-    q = db.prov_templates.id > 0
+    o = db.v_prov_templates.tpl_name > 0
+    q = db.v_prov_templates.id > 0
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
 
-    if len(request.args) == 1 and request.args[0] == 'line':
+    if len(request.args) == 1 and request.args[0] == 'csv':
+        t.csv_q = q
+        t.csv_orderby = o
+        return t.csv()
+    if len(request.args) == 1 and request.args[0] == 'commonality':
+        t.csv_q = q
+        return t.do_commonality()
+    if len(request.args) == 1 and request.args[0] == 'data':
         n = db(q).count()
         limitby = (t.pager_start,t.pager_end)
-        t.object_list = db(q).select(orderby=o, limitby=limitby)
+        cols = t.get_visible_columns()
+        t.object_list = db(q).select(*cols, orderby=o, limitby=limitby)
         return t.table_lines_data(n)
-
-    n = db(q).count()
-    t.setup_pager(n)
-    t.object_list = db(q).select(limitby=(t.pager_start,t.pager_end), orderby=o)
-    return t.html()
 
 @auth.requires_login()
 def prov_admin():
-    t = DIV(
-          ajax_prov_admin(),
-          _id='templates',
+    t = SCRIPT(
+          """$.when(osvc.app_started).then(function(){ table_prov_templates("layout", %s) })""" % request_vars_to_table_options(),
         )
     return dict(table=t)
 

@@ -1414,6 +1414,15 @@ db.define_table('prov_templates',
     Field('tpl_created','datetime'),
     migrate=False)
 
+db.define_table('v_prov_templates',
+    Field('tpl_name','string'),
+    Field('tpl_command','text'),
+    Field('tpl_comment','text'),
+    Field('tpl_author','string'),
+    Field('tpl_created','datetime'),
+    Field('tpl_team_responsible','string'),
+    migrate=False)
+
 db.define_table('prov_template_team_responsible',
     Field('tpl_id','integer'),
     Field('group_id','integer'),

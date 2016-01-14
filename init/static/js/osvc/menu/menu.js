@@ -318,6 +318,7 @@ var menu_data = {
 		  "class" : "prov",
 		  "id" : "adm-prov",
 		  "link" : "/init/provisioning/prov_admin",
+		  "fn" : "table_prov_templates",
 		  "secure" : ["Manager","ProvManager"]
 		},
 		{

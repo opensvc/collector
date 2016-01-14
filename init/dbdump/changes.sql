@@ -4959,3 +4959,5 @@ select obsolescence.*, count(nodes.id) as obs_count from obsolescence left join 
 union all
 select obsolescence.*, count(nodes.id) as obs_count from obsolescence left join nodes on obsolescence.obs_name=nodes.os_concat where obsolescence.obs_type="os" group by obsolescence.id;
 
+create view v_prov_templates as (select `f`.*, group_concat(distinct `g`.`role` order by `g`.`role` ASC separator ', ') AS `tpl_team_responsible` from `prov_templates` `f` left join `prov_template_team_responsible` `fr` on `f`.`id` = `fr`.`tpl_id`  left join `auth_group` `g` on `fr`.`group_id` = `g`.`id` group by `f`.`id`);
+
