@@ -4961,3 +4961,6 @@ select obsolescence.*, count(nodes.id) as obs_count from obsolescence left join 
 
 create view v_prov_templates as (select `f`.*, group_concat(distinct `g`.`role` order by `g`.`role` ASC separator ', ') AS `tpl_team_responsible` from `prov_templates` `f` left join `prov_template_team_responsible` `fr` on `f`.`id` = `fr`.`tpl_id`  left join `auth_group` `g` on `fr`.`group_id` = `g`.`id` group by `f`.`id`);
 
+alter table prov_templates drop key idx1;
+
+alter table prov_templates add unique key idx1 (tpl_name);

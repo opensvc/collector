@@ -176,8 +176,8 @@ class rest_post_provisioning_templates(rest_post_handler):
         vars["tpl_author"] = user_name()
 
         tpl_id = db.prov_templates.insert(**vars)
-        lib_provisioning_templates_add_default_team_responsible(tpl_name)
-        #lib_provisioning_templates_add_default_team_publication(tpl_name)
+        lib_provisioning_templates_add_default_team_responsible(tpl_id)
+        #lib_provisioning_templates_add_default_team_publication(tpl_id)
 
         fmt = "Provisioning template %(tpl_name)s added"
         d = dict(tpl_name=tpl_name)
