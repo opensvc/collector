@@ -2678,12 +2678,28 @@ function cell_decorator_dash_link_mac_duplicate(e) {
 }
 
 function cell_decorator_dash_link_obsolescence(e, t) {
-  var line = $(e).parent(".tl")
-  var nodename = $.data(line.find("[col=dash_nodename]")[0], "v")
-  var s = ""
-  url = services_get_url() + "/init/obsolescence/obsolescence_config?obs_f_obs_type="+t+"&volatile_filters=true"
-  s = "<a class='"+t+"16 clickable' target='_blank' href='"+url+"'></a>"
-  $(e).html(s)
+  $(e).empty().addClass("corner")
+  s = $("<a class='obs16 clickable'></a>")
+  s.click(function(){
+    if (get_selected() != "") {return}
+    var line = $(this).parents(".tl").first()
+    var dash_entry = $.data(line.find("[col=dash_entry]")[0], "v")
+    var name = dash_entry.match(/(.*) obsolete/)[1]
+    table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
+    span_id = $(e).parent(".tl").attr("spansum")
+    id = table_id + "_x_" + span_id
+    toggle_extra(null, id, e, 0)
+    d = $("<table></table>")
+    d.uniqueId()
+    $("#"+id).empty().append(d)
+    table_obsolescence(d.attr("id"), {
+	"volatile_filters": true,
+	"request_vars": {
+		"obs_f_obs_name": name
+	}
+    })
+  })
+  $(e).append(s)
 }
 
 function cell_decorator_dash_links(e) {

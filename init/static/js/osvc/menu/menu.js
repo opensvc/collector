@@ -283,7 +283,8 @@ var menu_data = {
 		  "title" : "o_setup",
 		  "class" : "obs16",
 		  "id" : "adm-obs",
-		  "link" : "/init/obsolescence/obsolescence_config"
+		  "link" : "/init/obsolescence/obsolescence_config",
+		  "fn" : "table_obsolescence"
 		},
 		{
 		  "title" : "application",

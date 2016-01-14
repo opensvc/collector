@@ -67,7 +67,8 @@ class table_obs(HtmlTable):
 
 @auth.requires_login()
 def ajax_obs_col_values():
-    t = table_obs('obs', 'ajax_obs')
+    table_id = request.vars.table_id
+    t = table_obs(table_id, 'ajax_obs')
     col = request.args[0]
     o = db[t.colprops[col].table][col]
     q = db.v_obsolescence.id >0
@@ -79,7 +80,8 @@ def ajax_obs_col_values():
 
 @auth.requires_login()
 def ajax_obs():
-    t = table_obs('obs', 'ajax_obs')
+    table_id = request.vars.table_id
+    t = table_obs(table_id, 'ajax_obs')
 
     o = ~db.v_obsolescence.obs_count
 
@@ -106,10 +108,8 @@ def ajax_obs():
 
 @auth.requires_login()
 def obsolescence_config():
-    t = table_obs('obs', 'ajax_obs')
-    t = DIV(
-          t.html(),
-          _id='obs',
+    t = SCRIPT(
+          """$.when(osvc.app_started).then(function(){ table_obsolescence("layout", %s) })""" % request_vars_to_table_options(),
         )
     return dict(table=t)
 
