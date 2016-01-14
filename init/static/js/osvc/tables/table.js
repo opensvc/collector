@@ -707,7 +707,6 @@ function table_bind_filter_selector(t) {
     $(this).bind("click", function() {
       $("#fsr"+t.id).hide()
       $("#am_"+t.id).remove()
-      $(".menu").hide("fold")
     })
   })
 }
