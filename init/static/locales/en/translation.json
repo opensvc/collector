@@ -18,6 +18,10 @@
   "action_menu": {
     "app_name": "Application name",
     "domain_name": "Domain name",
+    "refresh": "Refresh list and alerts",
+    "set_warn_date": "Set warn date",
+    "set_alert_date": "Set alert date",
+    "on_obsolescence_settings": "On obsolescence settings",
     "on_dns_domains": "On dns domains",
     "sync_dns_domains": "Increment SOA serial",
     "on_quotas": "On quotas",

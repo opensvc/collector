@@ -4954,3 +4954,8 @@ drop view v_nodesan; CREATE VIEW `v_nodesan` AS select `z`.`id` AS `id`,`z`.`tgt
 
 alter table nodes add key idx_os_concat (os_concat);
 
+create view v_obsolescence as 
+select obsolescence.*, count(nodes.id) as obs_count from obsolescence left join nodes on obsolescence.obs_name=nodes.model and not obsolescence.obs_name like "%virt%" and not obsolescence.obs_name like "%cluster%" where obsolescence.obs_type="hw" group by obsolescence.id
+union all
+select obsolescence.*, count(nodes.id) as obs_count from obsolescence left join nodes on obsolescence.obs_name=nodes.os_concat where obsolescence.obs_type="os" group by obsolescence.id;
+

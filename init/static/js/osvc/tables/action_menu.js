@@ -147,6 +147,44 @@ function table_action_menu_init_data(t) {
         {
           "selector": ["clicked", "checked", "all"],
           "foldable": true,
+          'title': 'action_menu.on_obsolescence_settings',
+          "table": ["obs"],
+          "cols": ["id"],
+          "condition": "id",
+          "children": [
+            {
+              "title": "action_menu.refresh",
+              "class": "icon refresh16",
+              "fn": "data_action_obs_refresh",
+              "privileges": ["Manager", "ObsManager"],
+              "min": 0
+            },
+            {
+              "title": "action_menu.set_warn_date",
+              "class": "icon edit16",
+              "fn": "data_action_obs_set_warn_date",
+              "privileges": ["Manager", "ObsManager"],
+              "min": 1
+            },
+            {
+              "title": "action_menu.set_alert_date",
+              "class": "icon edit16",
+              "fn": "data_action_obs_set_alert_date",
+              "privileges": ["Manager", "ObsManager"],
+              "min": 1
+            },
+            {
+              "title": "action_menu.del",
+              "class": "icon del16",
+              "fn": "data_action_obs_del",
+              "privileges": ["Manager", "ObsManager"],
+              "min": 1
+            }
+          ]
+        },
+        {
+          "selector": ["clicked", "checked", "all"],
+          "foldable": true,
           'title': 'action_menu.on_quotas',
           "table": ["quota"],
           "cols": ["id"],
@@ -4181,4 +4219,123 @@ function data_action_add_quota(t, e) {
   form(div.attr("id"), {"form_name": "add_quota"})
 }
 
+//
+// data action: refresh obsolescence list and alerts
+//
+function data_action_obs_refresh(t, e) {
+  var entry = $(e.target)
+  table_action_menu_focus_on_leaf(t, entry)
+  services_osvcputrest("/obsolescence/refresh", "", "", "", function(jd) {
+    if (jd.error && (jd.error.length > 0)) {
+      $(".flash").show("blind").html(services_error_fmt(jd))
+    }
+    if (jd.info && (jd.info.length > 0)) {
+      $(".flash").show("blind").html(services_info_fmt(jd))
+    }
+  },
+  function(xhr, stat, error) {
+    $(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
+  })
+}
 
+//
+// data action: delete obsolescence settings
+//
+function data_action_obs_del(t, e) {
+  var entry = $(e.target)
+  table_action_menu_focus_on_leaf(t, entry)
+  var cache_id = entry.attr("cache_id")
+  var data = t.action_menu_data_cache[cache_id]
+  var del_data = new Array()
+  for (i=0;i<data.length;i++) {
+    del_data.push({
+      'id': data[i]['id'],
+    })
+  }
+  services_osvcdeleterest("/obsolescence/settings", "", "", del_data, function(jd) {
+    if (jd.error && (jd.error.length > 0)) {
+      $(".flash").show("blind").html(services_error_fmt(jd))
+    }
+    if (jd.info && (jd.info.length > 0)) {
+      $(".flash").show("blind").html(services_info_fmt(jd))
+    }
+  },
+  function(xhr, stat, error) {
+    $(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
+  })
+}
+
+//
+// data action: delete obsolescence settings
+//
+function data_action_obs_set_warn_date(t, e) {
+  return data_action_obs_set(t, e, {
+	"label": "col.Warn date",
+	"key": "obs_warn_date",
+  })
+}
+
+function data_action_obs_set_alert_date(t, e) {
+  return data_action_obs_set(t, e, {
+	"label": "col.Alert date",
+	"key": "obs_alert_date",
+  })
+}
+
+function data_action_obs_set(t, e, options) {
+  var entry = $(e.target)
+  var cache_id = entry.attr("cache_id")
+  var data = t.action_menu_data_cache[cache_id]
+
+  // create and focus tool area
+  table_action_menu_focus_on_leaf(t, entry)
+  var div = $("<div></div>")
+  div.uniqueId()
+  div.append($("<hr>"))
+  div.css({"display": "table-caption"})
+  div.insertAfter(entry)
+
+  // minimal create information
+  var line = $("<div class='template_form_line'></div>")
+  var title = $("<div></div>")
+  title.text(i18n.t(options.label))
+  var input = $("<input class='oi'></input>")
+  input.uniqueId()
+  input.datetimepicker({dateFormat:'yy-mm-dd'})
+  var info = $("<div></div>")
+  info.uniqueId()
+  info.css({"margin": "0.8em 0 0.8em 0"})
+  line.append(title)
+  line.append(input)
+  div.append(line)
+  div.append(info)
+  input.focus()
+
+  input.bind("keyup", function(e) {
+    if (!is_enter(e)) {
+      return
+    }
+    var _data = new Array()
+    for (i=0;i<data.length;i++) {
+      var d = {
+        'id': data[i]['id'],
+      }
+      d[options.key] = input.val()
+      _data.push(d)
+    }
+    info.empty()
+    spinner_add(info)
+    services_osvcpostrest("/obsolescence/settings", "", "", _data, function(jd) {
+      spinner_del(info)
+      if (jd.error && (jd.error.length > 0)) {
+        info.html(services_error_fmt(jd))
+      }
+      if (jd.info && (jd.info.length > 0)) {
+        info.html(services_info_fmt(jd))
+      }
+    },
+    function(xhr, stat, error) {
+      info.html(services_ajax_error_fmt(xhr, stat, error))
+    })
+  })
+}

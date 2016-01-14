@@ -2189,6 +2189,21 @@ function cell_decorator_nodename_no_os(e) {
   _cell_decorator_nodename(e, false)
 }
 
+function cell_decorator_obs_type(e) {
+  var v = $.data(e, "v")
+  if ((v=="") || (v=="empty")) {
+    return
+  }
+  $(e).empty()
+  div = $("<div class='nowrap'>"+v+"</div>")
+  $(e).append(div)
+  if (v == "os") {
+      div.addClass("os16")
+  } else if (v == "hw") {
+      div.addClass("hw16")
+  }
+}
+
 function _cell_decorator_nodename(e, os_icon) {
   var v = $.data(e, "v")
   if ((v=="") || (v=="empty")) {
@@ -2540,6 +2555,36 @@ function _cell_decorator_dash_link_actions(svcname, e) {
     })
   })
   return s
+}
+
+function cell_decorator_obs_count(e) {
+  var v = $.data(e, "v")
+  $(e).addClass("corner")
+  s = $("<a class='node16 clickable'>"+v+"</a>")
+  $(e).empty().append(s)
+  s.click(function(){
+    if (get_selected() != "") {return}
+    var line = $(this).parents(".tl").first()
+    var obs_name = $.data(line.find("[col=obs_name]")[0], "v")
+    var obs_type = $.data(line.find("[col=obs_type]")[0], "v")
+    var options = {
+	"volatile_filters": true,
+	"request_vars": {}
+    }
+    if (obs_type == "hw") {
+      options.request_vars.nodes_f_model = obs_name
+    } else {
+      options.request_vars.nodes_f_os_concat = obs_name
+    }
+    table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
+    span_id = $(e).parent(".tl").attr("spansum")
+    id = table_id + "_x_" + span_id
+    toggle_extra(null, id, e, 0)
+    d = $("<table></table>")
+    d.uniqueId()
+    $("#"+id).empty().append(d)
+    table_nodes(d.attr("id"), options)
+  })
 }
 
 function _cell_decorator_dash_link_action_error(svcname, e) {
@@ -3384,6 +3429,8 @@ cell_decorators = {
  "appinfo_value": cell_decorator_appinfo_value,
  "log_icons": cell_decorator_log_icons,
  "app": cell_decorator_app,
+ "obs_type": cell_decorator_obs_type,
+ "obs_count": cell_decorator_obs_count,
  "rule_value": cell_decorator_rule_value
 }
 

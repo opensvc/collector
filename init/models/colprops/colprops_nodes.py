@@ -26,6 +26,7 @@ nodes_cols = [
     'os_vendor',
     'os_arch',
     'os_kernel',
+    'os_concat',
     'cpu_dies',
     'cpu_cores',
     'cpu_threads',

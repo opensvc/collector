@@ -2,7 +2,7 @@ def task_dash_comp():
     LOAD('compliance', 'cron_dash_comp')
 
 def task_refresh_obsolescence():
-    LOAD('obsolescence', 'refresh_obsolescence')
+    refresh_obsolescence()
 
 def task_perf():
     LOAD('cron', 'cron_perf')
