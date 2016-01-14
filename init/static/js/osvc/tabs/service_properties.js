@@ -16,7 +16,6 @@ function service_properties(divid, options)
         v = "undef"
       }
       var c = v
-      console.log(updated)
       if (_outdated(updated, 15)) {
         c = "undef"
       }
