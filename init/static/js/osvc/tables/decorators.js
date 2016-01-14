@@ -2635,18 +2635,21 @@ function cell_decorator_dash_link_svcmon(e) {
   }
 }
 
-function _cell_decorator_dash_link_node(nodename) {
-  url = services_get_url() + "/init/nodes/nodes?nodes_f_nodename="+nodename+"&volatile_filters=true"
-  s = "<a class='node16 clickable' target='_blank' href='"+url+"'></a>"
-  return s
-}
-
 function cell_decorator_dash_link_node(e) {
   var line = $(e).parent(".tl")
   var nodename = $.data(line.find("[col=dash_nodename]")[0], "v")
-  var s = ""
-  s += _cell_decorator_dash_link_node(nodename)
+  s = "<div class='node16 clickable'></div>"
   $(e).html(s)
+  $(e).addClass("corner")
+  if (nodename != "") {
+    $(e).click(function(){
+      table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
+      span_id = $(e).parent(".tl").attr("spansum")
+      id = table_id + "_x_" + span_id
+      toggle_extra(null, id, e, 0)
+      node_tabs(id, {"nodename": nodename, "tab": "node_tabs.properties"})
+    })
+  }
 }
 
 function _cell_decorator_dash_link_checks(nodename) {
