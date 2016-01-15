@@ -2143,7 +2143,7 @@ class table_comp_status(HtmlTable):
                      title='id',
                      field='id',
                      table='comp_status',
-                     img='key16',
+                     img='key',
                      display=False,
                     ),
             'run_date': HtmlTableColumn(
