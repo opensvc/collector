@@ -178,7 +178,8 @@ class table_saves(HtmlTable):
 
 @auth.requires_login()
 def ajax_saves_col_values():
-    t = table_saves('saves', 'ajax_saves')
+    table_id = request.vars.table_id
+    t = table_saves(table_id, 'ajax_saves')
     col = request.args[0]
     o = db[t.colprops[col].table][col]
     q = db.saves.id > 0
@@ -192,7 +193,8 @@ def ajax_saves_col_values():
 
 @auth.requires_login()
 def ajax_saves():
-    t = table_saves('saves', 'ajax_saves')
+    table_id = request.vars.table_id
+    t = table_saves(table_id, 'ajax_saves')
 
     o = ~db.saves.save_date
     o |= db.saves.save_nodename
@@ -225,32 +227,8 @@ def ajax_saves():
 
 @auth.requires_login()
 def saves():
-    t = table_saves('saves', 'ajax_saves')
-    nt = table_saves_charts('charts', 'ajax_saves_charts')
-    t = DIV(
-            DIV(
-               T("Statistics"),
-               _style="text-align:left;font-size:120%;background-color:#e0e1cd",
-               _class="down16 clickable",
-               _onclick="""
-               if (!$("#charts").is(":visible")) {
-                 $(this).addClass("down16");
-                 $(this).removeClass("right16");
-                 $("#charts").show(); osvc.tables["charts"].refresh();
-               } else {
-                 $(this).addClass("right16");
-                 $(this).removeClass("down16");
-                 $("#charts").hide();
-               }""",
-             ),
-             DIV(
-               nt.html(),
-               _id="charts",
-             ),
-             DIV(
-               t.html(),
-               _id='saves',
-             ),
+    t = SCRIPT(
+          """$.when(osvc.app_started).then(function(){ view_saves("layout", %s) })""" % request_vars_to_table_options(),
         )
     return dict(table=t)
 

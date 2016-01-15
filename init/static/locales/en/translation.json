@@ -1374,6 +1374,9 @@
       "node_agg": "Node aggregation",
       "service_agg": "Services aggregation"
     },
+    "saves": {
+      "statistics": "Statistics"
+    },
     "nodes": {
       "user_mapping": "User mapping",
       "group_mapping": "Group mapping"

@@ -115,7 +115,8 @@ var menu_data = {
 		  "title" : "saves",
 		  "class" : "save16",
 		  "id" : "view-saves",
-		  "link" : "/init/saves/saves"
+		  "link" : "/init/saves/saves",
+		  "fn" : "view_saves"
 		},
 		{
 		  "title" : "disks",

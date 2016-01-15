@@ -110,6 +110,14 @@ function search_get_menu(fk)
             "link": "/init/disks/disks?volatile_filters=true&disks_f_app=__app__"
           },
           {
+            "title": "saves",
+            "menu_entry_id": "view-saves",
+            "class": "cd16",
+            "link": "/init/saves/saves?volatile_filters=true&saves_f_save_app=__app__",
+            "fn": "view_saves",
+            "options": {"volatile_filters": true, "request_vars": {"saves_f_save_app": "__app__"}}
+          },
+          {
             "title": "availability",
             "menu_entry_id": "stat-avail",
             "class": "avail16",
@@ -221,7 +229,9 @@ function search_get_menu(fk)
             "title": "saves",
             "menu_entry_id": "view-saves",
             "class": "cd16",
-            "link": "/init/saves/saves?volatile_filters=true&saves_f_save_nodename=__nodename__"
+            "link": "/init/saves/saves?volatile_filters=true&saves_f_save_nodename=__nodename__",
+            "fn": "view_saves",
+            "options": {"volatile_filters": true, "request_vars": {"saves_f_save_nodename": "__nodename__"}}
           },
           {
             "title": "compliance_status",
@@ -365,7 +375,9 @@ function search_get_menu(fk)
             "title": "saves",
             "menu_entry_id": "view-saves",
             "class": "cd16",
-            "link": "/init/saves/saves?volatile_filters=true&saves_f_save_svcname=__svc_name__"
+            "link": "/init/saves/saves?volatile_filters=true&saves_f_save_svcname=__svc_name__",
+            "fn": "view_saves",
+            "options": {"volatile_filters": true, "request_vars": {"saves_f_save_svcname": "__svc_name__"}}
           },
           {
             "title": "compliance_status",
@@ -491,6 +503,14 @@ function search_get_menu(fk)
             "menu_entry_id": "view-disks",
             "class": "hd16",
             "link": "/init/disks/disks?volatile_filters=true&disks_f_disk_nodename=__nodename__"
+          },
+          {
+            "title": "saves",
+            "menu_entry_id": "view-saves",
+            "class": "cd16",
+            "link": "/init/saves/saves?volatile_filters=true&saves_f_save_nodename=__nodename__",
+            "fn": "view_saves",
+            "options": {"volatile_filters": true, "request_vars": {"saves_f_save_nodename": "__nodename__"}}
           },
           {
             "title": "compliance_status",

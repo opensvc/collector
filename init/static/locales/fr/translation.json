@@ -1316,6 +1316,9 @@
       "node_agg": "Aggregation par noeuds",
       "service_agg": "Aggregation par services"
     },
+    "saves": {
+      "statistics": "Statistiques"
+    },
     "nodes": {
       "user_mapping": "Cartographie des utilisateurs",
       "group_mapping": "Cartographie des groupes"
