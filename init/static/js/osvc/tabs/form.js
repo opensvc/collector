@@ -35,58 +35,23 @@ function form_properties(divid, options) {
 		o.load_publications()
 		o.load_responsibles()
 
+		tab_properties_generic_updater({
+			"div": o.div,
+			"post": function(data, callback, error_callback) {
+				services_osvcpostrest("R_FORM", [o.options.form_id], "", data, callback, error_callback)
+			}
+		})
+
 		o.div.find("[upd]").each(function(){
-			$(this).addClass("clickable")
-			$(this).hover(
-				function() {
-					$(this).addClass("editable")
-				},
-				function() {
-					$(this).removeClass("editable")
-				}
-			)
-			$(this).bind("click", function() {
-				//$(this).unbind("mouseenter mouseleave click")
-				if ($(this).siblings().find("form").length > 0) {
-					$(this).siblings().show()
-					$(this).siblings().find("input[type=text]:visible,select").focus()
-					$(this).hide()
-					return
-				}
-				var updater = $(this).attr("upd")
-				if ((updater == "string") || (updater == "integer") || (updater == "date") || (updater == "datetime")) {
-					var e = $("<td><form><input class='oi' type='text'></input></form></td>")
-					e.css({"padding-left": "0px"})
-					var input = e.find("input")
-					input.uniqueId() // for date picker
-					input.attr("pid", $(this).attr("id"))
-					input.attr("value", $(this).text())
-					input.bind("blur", function(){
-						$(this).parents("td").first().siblings("td").show()
-						$(this).parents("td").first().hide()
-					})
-					$(this).parent().append(e)
-					$(this).hide()
-					input.focus()
-					e.find("form").submit(function(event) {
-						event.preventDefault()
-						var input = $(this).find("input[type=text],select")
-						input.blur()
-						var data = {}
-						data[input.attr("pid")] = input.val()
-						services_osvcpostrest("R_FORM", [o.options.form_id], "", data, function(jd) {
-							if (jd.error && (jd.error.length > 0)) {
-								$(".flash").show("blind").html(services_error_fmt(jd))
-								return
-							}
-							e.hide()
-							e.prev().text(input.val()).show()
-						},
-						function(xhr, stat, error) {
-							$(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
-						})
-					})
-				} else if (updater == "form_type") {
+			var updater = $(this).attr("upd")
+			if (updater == "form_type") {
+				$(this).bind("click", function() {
+					if ($(this).siblings().find("form").length > 0) {
+						$(this).siblings().show()
+						$(this).siblings().find("input[type=text]:visible,select").focus()
+						$(this).hide()
+						return
+					}
 					var e = $("<td></td>")
 					var form = $("<form></form>")
 					var input = $("<input class='oi' type='text'></input>")
@@ -117,8 +82,8 @@ function form_properties(divid, options) {
 						var val = input.val()
 						o.set_form_type(e, val)
 					})
-				}
-			})
+				})
+			}
 		})
 	}
 
