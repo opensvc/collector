@@ -2951,7 +2951,7 @@ function datetime_age(s) {
   if (typeof s === 'undefined') {
     return
   }
-  if (s == 'empty') {
+  if (!s || (s == 'empty')) {
     return
   }
   s = s.replace(/ /, "T")+"Z"
