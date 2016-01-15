@@ -107,7 +107,7 @@ def ajax_prov_admin():
         limitby = (t.pager_start,t.pager_end)
         cols = t.get_visible_columns()
         t.object_list = db(q).select(*cols, orderby=o, limitby=limitby)
-        return t.table_lines_data(n)
+        return t.table_lines_data(n, html=False)
 
 @auth.requires_login()
 def prov_admin():
