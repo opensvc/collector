@@ -766,6 +766,10 @@
     },
     "administration" : {
       "title" : "Administration",
+      "replication" : {
+          "title" : "Replication",
+          "text" : "Current state of the collector to collector replications"
+      },
       "users" : {
         "title" : "Utilisateurs",
         "text" : "Administration des utilisateurs et des groupes"
@@ -932,6 +936,12 @@
     "hidden_menu_entries": "entrées cachées du menu"
   },
   "col" : {
+    "Mode": "Mode",
+    "Remote": "Distant",
+    "Database": "Base de données",
+    "Current csum": "Csum actuel",
+    "Last csum": "Dernier csum",
+    "Need resync": "Resync nécessaire",
     "Usage": "Utilisation",
     "Used": "Utilisé",
     "Free": "Libre",

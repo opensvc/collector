@@ -1824,6 +1824,10 @@ ul.login_menu ul {
 	content: '\f0e1  ';
 	font-family: awesome;
 }
+.repl16:before {
+	content: '\f0ec  ';
+	font-family: awesome;
+}
 .net16:before {
 	color: cadetblue;
 	content: '\f0ec  ';

@@ -47,13 +47,13 @@ class table_replication_status(HtmlTable):
             'mode': HtmlTableColumn(
                      title='Mode',
                      field='mode',
-                     img='sync16',
+                     img='net16',
                      display=True,
                     ),
             'remote': HtmlTableColumn(
                      title='Remote',
                      field='remote',
-                     img='hw16',
+                     img='node16',
                      display=True,
                     ),
             'table_schema': HtmlTableColumn(
@@ -71,7 +71,7 @@ class table_replication_status(HtmlTable):
             'need_resync': HtmlTableColumn(
                      title='Need resync',
                      field='need_resync',
-                     img='action16',
+                     img='db16',
                      display=True,
                     ),
             'current_cksum': HtmlTableColumn(
@@ -98,6 +98,7 @@ class table_replication_status(HtmlTable):
         self.filterable = False
         self.pageable = False
         self.checkboxes = True
+        self.dataable = True
 
         self.ajax_col_values = 'ajax_replication_status_col_values'
 
@@ -110,18 +111,23 @@ class table_replication_status(HtmlTable):
 
 @auth.requires_login()
 def ajax_replication_status():
-    t = table_replication_status('rs', 'ajax_replication_status')
+    table_id = request.vars.table_id
+    t = table_replication_status(table_id, 'ajax_replication_status')
     t.object_list = table_status()
     n = len(t.object_list)
-    t.setup_pager(n)
-
-    return t.html()
+    if len(request.args) == 1 and request.args[0] == 'csv':
+        return t.csv()
+    if len(request.args) == 1 and request.args[0] == 'commonality':
+        return t.do_commonality()
+    if len(request.args) == 1 and request.args[0] == 'data':
+        t.setup_pager(n)
+        limitby = (t.pager_start,t.pager_end)
+        return t.table_lines_data(n, html=False)
 
 @auth.requires_login()
 def repl_admin():
-    t = DIV(
-          ajax_replication_status(),
-          _id='rs',
+    t = SCRIPT(
+          """$.when(osvc.app_started).then(function(){ table_replication("layout", %s) })""" % request_vars_to_table_options(),
         )
     return dict(table=t)
 

@@ -360,6 +360,13 @@ var menu_data = {
 		  "link" : "/init/tags/tags",
                   "fn": "table_tags"
 		},
+		{
+		  "title" : "replication",
+		  "class" : "repl16",
+		  "id" : "adm-replication",
+		  "link" : "/init/replication/repl_admin",
+                  "fn": "table_replication"
+		}
 	],
 	"shortcuts": [
 		{
