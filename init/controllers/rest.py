@@ -388,6 +388,8 @@ handlers = {
      rest_post_safe_file_responsible(),
      rest_post_scheduler_task(),
      rest_post_scheduler_run(),
+     rest_post_services(),
+     rest_post_service(),
      rest_post_services_actions(),
      rest_post_services_action(),
      rest_post_service_compliance_moduleset(),

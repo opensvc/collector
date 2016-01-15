@@ -100,7 +100,12 @@ function service_props_init(o)
       }
     })
 
-
+    tab_properties_generic_updater({
+      "div": o.div,
+      "post": function(data, callback, error_callback) {
+        services_osvcpostrest("R_SERVICE", [o.options.svcname], "", data, callback, error_callback)
+      }
+    })
   },
   function() {
     o.div.html(services_ajax_error_fmt(xhr, stat, error))

@@ -73,6 +73,89 @@ class rest_get_services(rest_get_table_handler):
         return self.prepare_data(**vars)
 
 #
+class rest_post_service(rest_post_handler):
+    def __init__(self):
+        desc = [
+          "Modify a service properties",
+        ]
+        examples = [
+          "# curl -u %(email)s -X POST -d svc_wave=3 -o- https://%(collector)s/init/rest/api/services/foo"
+        ]
+
+        rest_post_handler.__init__(
+          self,
+          path="/services/<id>",
+          tables=["services"],
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, svcname, **vars):
+        svc_responsible(svcname)
+
+        q = db.services.svc_name == svcname
+        svc = db(q).select().first()
+        if svc is None:
+            raise Exception("Service %s not found"%str(id))
+
+        db(q).update(**vars)
+
+        fmt = "Service %(svcname)s change: %(data)s"
+        d = dict(svcname=svc.svc_name, data=beautify_change(svc, vars))
+
+        _log('service.change', fmt, d)
+        l = {
+          'event': 'services_change',
+          'data': {'id': svc.id},
+        }
+        _websocket_send(event_msg(l))
+
+        ret = rest_get_service().handler(svc.svc_name)
+        ret["info"] = fmt % d
+        return ret
+
+class rest_post_services(rest_post_handler):
+    def __init__(self):
+        desc = [
+          "Modify or create services",
+        ]
+        examples = [
+          "# curl -u %(email)s -X POST -d svc_name=test -o- https://%(collector)s/init/rest/api/services"
+        ]
+
+        rest_post_handler.__init__(
+          self,
+          path="/services",
+          tables=["services"],
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, **vars):
+        if 'svc_name' in vars:
+            svcname = vars["svc_name"]
+            del(vars["svc_name"])
+            return rest_post_service().handler(svcname, **vars)
+
+        if "svc_name" not in vars:
+            raise Exception("Key 'svc_name' is mandatory")
+        svcname = vars.get("svc_name")
+
+        svc_id = db.services.insert(**vars)
+
+        fmt = "Service %(svcname)s added"
+        d = dict(svcname=svcname)
+
+        _log('service.add', fmt, d)
+        l = {
+          'event': 'services_change',
+          'data': {'id': svc_id},
+        }
+        _websocket_send(event_msg(l))
+
+        return rest_get_service().handler(svcname)
+
+#
 class rest_delete_service(rest_delete_handler):
     def __init__(self):
         desc = [
