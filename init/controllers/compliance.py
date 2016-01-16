@@ -501,6 +501,7 @@ class table_comp_rulesets(HtmlTable):
                      table='v_comp_rulesets',
                      display=True,
                      img='filter16',
+                     _class='fset_name',
                     ),
             'var_value': HtmlTableColumn(
                      title='Value',
@@ -700,6 +701,7 @@ class table_comp_filtersets(HtmlTable):
                      field='fset_name',
                      display=True,
                      img='filter16',
+                     _class='fset_name',
                     ),
             'fset_stats': HtmlTableColumn(
                      title='Compute stats',
@@ -756,6 +758,7 @@ class table_comp_filtersets(HtmlTable):
                      field='encap_fset_name',
                      display=True,
                      img='filter16',
+                     _class='fset_name',
                     ),
             'encap_fset_id': HtmlTableColumn(
                      title='Encap filterset id',
@@ -5913,8 +5916,6 @@ def json_tree_action_create():
 def json_tree_action_show():
     if request.vars.obj_type is None:
         return
-    elif request.vars.obj_type == "filterset":
-        return json_tree_action_show_filterset(request.vars.obj_id)
     elif request.vars.obj_type == "modset":
         return json_tree_action_show_moduleset(request.vars.obj_id)
     return ""
@@ -6025,140 +6026,6 @@ def json_tree_action_rename_variable(var_id, new):
          'renamed variable %(old)s as %(new)s in ruleset %(rset_name)s',
          dict(old=old, new=new, rset_name=rset_name))
     return "0"
-
-def json_tree_action_show_filterset(fset_id):
-    fset_id = int(fset_id)
-
-    #
-    q = db.gen_filtersets.id == fset_id
-    rows = db(q).select(cacheable=False)
-    v = rows.first()
-    if v is None:
-        return {"err": "filterset does not exist"}
-    fset_name = v.fset_name
-
-    #
-    q = db.nodes.id > 0
-    q = apply_filters(q, node_field=db.nodes.nodename, fset_id=fset_id)
-    rows = db(q).select(db.nodes.nodename, orderby=db.nodes.nodename)
-    nodes = [r.nodename.lower() for r in rows]
-
-    if len(nodes) == 0:
-        matching_nodes = SPAN()
-    else:
-        matching_nodes = DIV(
-          H3(SPAN(T("Matching nodes"), " (%d) "%len(nodes)), _class="line"),
-          P(', '.join(nodes)),
-        )
-
-    #
-    q = db.services.id > 0
-    q = apply_filters(q, service_field=db.services.svc_name, fset_id=fset_id)
-    rows = db(q).select(db.services.svc_name, orderby=db.services.svc_name)
-    services = [r.svc_name.lower() for r in rows]
-
-    if len(services) == 0:
-        matching_services = SPAN()
-    else:
-        matching_services = DIV(
-          H3(SPAN(T("Matching services"), " (%d) "%len(services)), _class="line"),
-          P(', '.join(services)),
-        )
-
-    #
-    a = fset_get_ancestors()
-    if fset_id not in a:
-        ancestors = SPAN()
-    else:
-        q = db.gen_filtersets.id.belongs(a[fset_id])
-        rows = db(q).select(cacheable=False)
-        l = [ r.fset_name for r in rows ]
-        ancestors = DIV(
-          H3(SPAN(T("Encapsulated in other filtersets"), " (%d) "%len(a[fset_id])), _class="line"),
-          SPAN(', '.join(l)),
-        )
-
-    #
-    q = db.comp_rulesets_filtersets.fset_id == fset_id
-    q &= db.comp_rulesets_filtersets.ruleset_id == db.comp_rulesets.id
-    rows = db(q).select(db.comp_rulesets.ruleset_name, cacheable=False)
-    if len(rows) == 0:
-        rulesets = SPAN()
-    else:
-        l = [ r.ruleset_name for r in rows ]
-        rulesets = DIV(
-          H3(SPAN(T("Used by rulesets"), " (%d) "%len(rows)), _class="line"),
-          SPAN(', '.join(l)),
-        )
-
-    #
-    q = db.gen_filterset_check_threshold.fset_id == fset_id
-    rows = db(q).select(cacheable=False)
-    if len(rows) == 0:
-        check_thres = SPAN()
-    else:
-        l = [ "%(ti)s:%(low)s-%(high)s" % dict(
-                 ti='.'.join((r.chk_type, r.chk_instance)),
-                 low=str(r.chk_low),
-                 high=str(r.chk_high)) for r in rows ]
-        check_thres = DIV(
-          H3(SPAN(T("Used by checker thresholds"), " (%d) "%len(rows)), _class="line"),
-          SPAN(', '.join(l)),
-        )
-
-    #
-    compare = SPAN()
-
-    #
-    metrics = SPAN()
-
-
-    d = DIV(
-      P(T('Filterset id')+': ' + str(fset_id)),
-      P(T('Compute statistics')+': ' + T(str(v.fset_stats))),
-      matching_nodes,
-      matching_services,
-      ancestors,
-      rulesets,
-      check_thres,
-      compare,
-      metrics,
-    )
-
-    _id = "tabs"
-    t = DIV(
-      DIV(
-        UL(
-          LI(P(fset_name, _class='nok'), _class="closetab"),
-          LI(P(T("filterset"), _class='filter16'), _id="litab1_"+_id),
-          LI(P(T("export"), _class='log16'), _id="litab2_"+_id),
-        ),
-        _class='tab',
-      ),
-      DIV(
-        d,
-        _class="cloud",
-        _id='tab1_'+_id,
-      ),
-      DIV(
-        PRE(
-          export_filtersets([fset_id]),
-          _style="overflow:auto",
-        ),
-        _class="cloud",
-        _id='tab2_'+_id,
-      ),
-      SCRIPT(
-        """bind_tabs("%(id)s", {}, "litab1_%(id)s")
-        """ % dict(id=_id)
-      ),
-      _id=_id,
-    )
-    return DIV(
-             t,
-             _class="white_float",
-             _style="position:relative;padding:0px",
-           )
 
 def json_tree_action_show_moduleset(modset_id):
     modset_id = int(modset_id)

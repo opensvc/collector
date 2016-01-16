@@ -222,7 +222,7 @@ function tags_load(o) {
     }
     d = $("<div name='tag_container'></div>")
     for (i=0; i<_data.length; i++) {
-      d.append(o.add_tag(_data[i]))
+      d.append(o.add_tag(_data[i]), " ")
     }
     if (o.data.responsible && o.data.candidates != true) {
       d.append(o.add_add_tag())

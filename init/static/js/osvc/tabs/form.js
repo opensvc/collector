@@ -111,7 +111,7 @@ function form_properties(divid, options) {
 			for (var i=0; i<jd.data.length; i++) {
 				var g = $("<span class='tag tag_attached'></span>")
 				g.text(jd.data[i].role)
-				div.append(g)
+				div.append(g, " ")
 			}
 		})
 	}

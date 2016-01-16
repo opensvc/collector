@@ -313,6 +313,23 @@
     "author": "Auteur",
     "creation_date": "Date de création"
   },
+  "fset_tabs": {
+    "export": "export"
+  },
+  "fset_properties": {
+    "nodes": "Noeuds correspondants",
+    "services": "Services correspondants",
+    "used_by_filtersets": "Utilisé par les jeux de filtres",
+    "used_by_rulesets": "Utilisés par les jeux de règles",
+    "used_by_checks_contextual_thresholds": "Utilisé par les seuils contextuels de sondes",
+    "base": "Base",
+    "id": "Id",
+    "name": "Nom",
+    "stats": "Historiser les métriques",
+    "updated": "Mise à jour",
+    "author": "Auteur",
+    "creation": "Création"
+  },
   "form_properties": {
     "no_yaml": "Pas de définition de formulaire. Cliquez pour éditer.",
     "save": "sauvegarder",

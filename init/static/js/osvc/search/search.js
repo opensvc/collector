@@ -539,7 +539,7 @@ function search_get_menu(fk)
         ]
     },
     "filtersets": {
-        "tab": "/init/compliance/json_tree_action?operation=show&obj_type=filterset&obj_id=__id__",
+        "tab" : 'filterset_tabs("__rowid__", {"fset_name": "__fset_name__"})',
         "title": "__fset_name__",
         "menu_entry_id": "adm-filters",
         "class": "filter16 fa-2x search-section-icon",

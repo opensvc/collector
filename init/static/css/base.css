@@ -83,12 +83,13 @@ input.aci, input.aci:focus {
 }
 
 .asset_tab {
-	display: inline-table;
+	display: flex;
+	flex-wrap: wrap;
 }
 
 .asset_tab > div {
 	padding: 1em;
-	width: 24em;
+	width: 28em;
 	display: inline-block;
 }
 
@@ -437,6 +438,7 @@ img {
 }
 
 .tag {
+	white-space: nowrap;
 	line-height: 1.7em;
 	margin: 0.1em;
 	font-weight: bold;

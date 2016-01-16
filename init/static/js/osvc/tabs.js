@@ -116,6 +116,43 @@ function tabs(divid) {
 	return o
 }
 
+tab_properties_boolean = function(options) {
+	if (options.div.text() == "true") {
+		options.div.attr('class', 'toggle-on');
+	} else {
+		options.div.attr('class','toggle-off');
+	}
+	options.div.empty()
+
+	if (!options.privileges || services_ismemberof(options.privileges)) {
+		options.div.addClass("clickable")
+		options.div.bind("click", function (event) {
+			toggle_prop()
+		})
+	}
+
+        function toggle_prop() {
+		var data = {}
+		var key = options.div.attr("id")
+		if (options.div.hasClass("toggle-on")) {
+			data[key] = false
+		} else {
+			data[key] = true
+		}
+		options.post(data, function(jd) {
+			if (jd.error) {
+				return
+			}
+			if (jd.data[0][key] == false) {
+				options.div.removeClass("toggle-on").addClass("toggle-off")
+			} else {
+				options.div.removeClass("toggle-off").addClass("toggle-on")
+			}
+		},
+		function() {}
+	)}
+}
+
 tab_properties_generic_updater = function(options) {
 	options.div.find("[upd]").each(function(){
 		$(this).addClass("clickable")
@@ -1085,5 +1122,40 @@ function prov_template_tabs(divid, options) {
   return o
 }
 
+
+//
+// filterset
+//
+function filterset_tabs(divid, options) {
+  o = tabs(divid)
+  o.options = options
+
+  o.load(function() {
+    var title = o.options.fset_name
+    o.closetab.children("p").text(title)
+
+    // tab properties
+    i = o.register_tab({
+      "title": "node_tabs.properties",
+      "title_class": "fset16"
+    })
+    o.tabs[i].callback = function(divid) {
+      fset_properties(divid, o.options)
+    }
+
+    // tab quotas
+    i = o.register_tab({
+      "title": "fset_tabs.export",
+      "title_class": "log16"
+    })
+    o.tabs[i].callback = function(divid) {
+      fset_export(divid, o.options)
+    }
+
+    o.set_tab(o.options.tab)
+  })
+
+  return o
+}
 
 

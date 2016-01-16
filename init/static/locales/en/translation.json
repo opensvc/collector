@@ -326,6 +326,23 @@
     "author": "Author",
     "creation_date": "Creation date"
   },
+  "fset_tabs": {
+    "export": "export"
+  },
+  "fset_properties": {
+    "nodes": "Matching nodes",
+    "services": "Matching services",
+    "used_by_filtersets": "Used by filtersets",
+    "used_by_rulesets": "Used by rulesets",
+    "used_by_checks_contextual_thresholds": "Used by checks contextual thresholds",
+    "base": "Base",
+    "id": "Id",
+    "name": "Name",
+    "stats": "Historize metrics",
+    "updated": "Updated",
+    "author": "Author",
+    "creation": "Creation"
+  },
   "form_properties": {
     "no_yaml": "No form definition. Click to edit.",
     "save": "save",

@@ -83,6 +83,57 @@ class rest_get_filterset(rest_get_line_handler):
         self.set_q(q)
         return self.prepare_data(**vars)
 
+#
+class rest_get_filterset_usage(rest_get_handler):
+    def __init__(self):
+        desc = [
+          "Display a filterset usage.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/filtersets/10/usage"
+        ]
+        rest_get_handler.__init__(
+          self,
+          path="/filtersets/<id>/usage",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, id, **vars):
+        try:
+            id = int(id)
+            q = db.gen_filtersets.id == id
+        except:
+            q = db.gen_filtersets.fset_name == id
+        fset = db(q).select().first()
+        if fset is None:
+            raise Exception("fset %s does not exist" % str(id))
+        data = {}
+
+        #
+        q = db.gen_filtersets_filters.encap_fset_id == fset.id
+        q &= db.gen_filtersets.id == db.gen_filtersets_filters.fset_id
+        o = db.gen_filtersets.fset_name
+        rows = db(q).select(o, orderby=o, groupby=o, cacheable=False)
+        data["filtersets"] = [ r.fset_name for r in rows ]
+
+        #
+        q = db.comp_rulesets_filtersets.fset_id == fset.id
+        q &= db.comp_rulesets_filtersets.ruleset_id == db.comp_rulesets.id
+        o = db.comp_rulesets.ruleset_name
+        rows = db(q).select(o, orderby=o, cacheable=False)
+        data["rulesets"] = [ r.ruleset_name for r in rows ]
+
+        #
+        q = db.gen_filterset_check_threshold.fset_id == fset.id
+        rows = db(q).select(cacheable=False)
+        data["thresholds"] = [ "%(ti)s:%(low)s-%(high)s" % dict(
+                 ti='.'.join((r.chk_type, r.chk_instance)),
+                 low=str(r.chk_low),
+                 high=str(r.chk_high)) for r in rows ]
+
+        return dict(data=data)
+
 class rest_get_filterset_filtersets(rest_get_table_handler):
     def __init__(self):
         desc = [

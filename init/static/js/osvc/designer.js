@@ -20,6 +20,9 @@ function designer(divid, options) {
   o.show_ruleset = function(e) {
     return designer_show_ruleset(o, e)
   }
+  o.show_fset = function(e) {
+    return designer_show_fset(o, e)
+  }
   o.show_group = function(e) {
     return designer_show_group(o, e)
   }
@@ -513,6 +516,14 @@ function designer_show_importer(o) {
   o.e_info.html(div)
 }
 
+function designer_show_fset(o, e) {
+  var fset_name = e.children('a').text().replace(/^\s/, "")
+  var div = $("<div class='white_float' style='position:relative;padding:0px'></div>")
+  div.uniqueId()
+  o.e_info.empty().append(div)
+  filterset_tabs(div.attr("id"), {"fset_name": fset_name})
+}
+
 function designer_show_group(o, e) {
   var group_id = e.attr('obj_id')
   var group_name = e.children('a').text()
@@ -593,6 +604,9 @@ function designer__select(o, e, data) {
       return
     } else if ($(this).is("[rel^=group]")) {
       o.show_group($(this))
+      return
+    } else if ($(this).is("[rel^=filterset]")) {
+      o.show_fset($(this))
       return
     }
     $.ajax({
