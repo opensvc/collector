@@ -313,6 +313,21 @@
     "author": "Auteur",
     "creation_date": "Date de création"
   },
+  "modset_tabs": {
+    "export": "export"
+  },
+  "modset_properties": {
+    "nodes": "Attaché aux noeuds",
+    "services": "Attaché aux services",
+    "modules": "Modules",
+    "used_by_modulesets": "Utilisé dans les jeux de modules",
+    "base": "Base",
+    "id": "Id",
+    "name": "Nom",
+    "updated": "Mise à jour",
+    "author": "Auteur",
+    "creation": "Création"
+  },
   "fset_tabs": {
     "export": "export"
   },

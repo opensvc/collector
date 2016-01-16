@@ -1,30 +1,4 @@
 //
-// tabs
-//
-
-// old tabs support function.
-// remove me when fset and modset tabs are ported to js
-function bind_tabs(id, callbacks, active_id) {
-  $("#"+id).find('.closetab').click(function () {
-    $("#"+id).parent().remove(); // Remove extraline
-    $("#"+id).remove();
-  })
-  $("#"+id).find('[id^=litab]').click(function () {
-    var _id = $(this).attr('id')
-    var did = _id.slice(2, _id.length)
-    $("#"+id).find('div[id^=tab]').hide()
-    $(this).siblings('[id^=litab]').removeClass('tab_active')
-    $("#"+id).find('#'+did).show()
-    $(this).show().addClass('tab_active')
-    if (_id in callbacks) {
-      callbacks[_id]()
-      delete callbacks[_id]
-    }
-  })
-  $("#"+id).find('#'+active_id).trigger("click")
-}
-
-//
 // base tabs object
 // derive to make object-specific tabs
 //
@@ -1137,7 +1111,7 @@ function filterset_tabs(divid, options) {
     // tab properties
     i = o.register_tab({
       "title": "node_tabs.properties",
-      "title_class": "fset16"
+      "title_class": "filter16"
     })
     o.tabs[i].callback = function(divid) {
       fset_properties(divid, o.options)
@@ -1150,6 +1124,41 @@ function filterset_tabs(divid, options) {
     })
     o.tabs[i].callback = function(divid) {
       fset_export(divid, o.options)
+    }
+
+    o.set_tab(o.options.tab)
+  })
+
+  return o
+}
+
+//
+// moduleset
+//
+function moduleset_tabs(divid, options) {
+  o = tabs(divid)
+  o.options = options
+
+  o.load(function() {
+    var title = o.options.modset_name
+    o.closetab.children("p").text(title)
+
+    // tab properties
+    i = o.register_tab({
+      "title": "node_tabs.properties",
+      "title_class": "modset16"
+    })
+    o.tabs[i].callback = function(divid) {
+      modset_properties(divid, o.options)
+    }
+
+    // tab quotas
+    i = o.register_tab({
+      "title": "modset_tabs.export",
+      "title_class": "log16"
+    })
+    o.tabs[i].callback = function(divid) {
+      modset_export(divid, o.options)
     }
 
     o.set_tab(o.options.tab)

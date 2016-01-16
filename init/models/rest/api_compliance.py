@@ -1052,6 +1052,113 @@ class rest_post_compliance_ruleset_variables(rest_post_handler):
         return rest_get_compliance_ruleset_variable().handler(ruleset_id, obj_id)
 
 #
+# modulesets/<id>/services
+#
+class rest_get_compliance_moduleset_services(rest_get_table_handler):
+    def __init__(self):
+        desc = [
+          "Display services attached to a moduleset.",
+          "The user must be member of one of the moduleset publication groups.",
+        ]
+        examples = [
+          """# curl -u %(email)s -o- https://%(collector)s/init/rest/api/compliance/modulesets/10/services""",
+        ]
+        rest_get_table_handler.__init__(
+          self,
+          path="/compliance/modulesets/<id>/services",
+          tables=["services"],
+          desc=desc,
+          groupby=db.services.svc_name,
+          examples=examples
+        )
+
+    def handler(self, modset_id, **vars):
+        try:
+            modset_id = int(modset_id)
+        except:
+            modset_id = comp_moduleset_id(modset_id)
+        if modset_id is None:
+            return dict(error="moduleset not found")
+        if not moduleset_publication(modset_id):
+            return dict(error="you are not member of one of the moduleset publication groups")
+        q = db.comp_modulesets_services.modset_id == modset_id
+        q &= db.comp_modulesets_services.modset_svcname == db.services.svc_name
+        self.set_q(q)
+        return self.prepare_data(**vars)
+
+#
+# /compliance/modulesets/<id>/usage
+#
+class rest_get_compliance_moduleset_usage(rest_get_handler):
+    def __init__(self):
+        desc = [
+          "Display a moduleset usage.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/compliance/modulesets/10/usage"
+        ]
+        rest_get_handler.__init__(
+          self,
+          path="/compliance/modulesets/<id>/usage",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, modset_id, **vars):
+        try:
+            modset_id = int(modset_id)
+        except:
+            modset_id = comp_moduleset_id(modset_id)
+        if modset_id is None:
+            return dict(error="moduleset not found")
+        if not moduleset_publication(modset_id):
+            return dict(error="you are not member of one of the moduleset publication groups")
+        data = {}
+
+        #
+        q = db.comp_moduleset_moduleset.child_modset_id == modset_id
+        q &= db.comp_moduleset.id == db.comp_moduleset_moduleset.parent_modset_id
+        o = db.comp_moduleset.modset_name
+        rows = db(q).select(o, orderby=o, cacheable=False)
+        data["modulesets"] = [ r.modset_name for r in rows ]
+
+        return dict(data=data)
+
+#
+# modulesets/<id>/nodes
+#
+class rest_get_compliance_moduleset_nodes(rest_get_table_handler):
+    def __init__(self):
+        desc = [
+          "Display nodes attached to a moduleset.",
+          "The user must be member of one of the moduleset publication groups.",
+        ]
+        examples = [
+          """# curl -u %(email)s -o- https://%(collector)s/init/rest/api/compliance/modulesets/10/nodes""",
+        ]
+        rest_get_table_handler.__init__(
+          self,
+          path="/compliance/modulesets/<id>/nodes",
+          tables=["nodes"],
+          desc=desc,
+          examples=examples
+        )
+
+    def handler(self, modset_id, **vars):
+        try:
+            modset_id = int(modset_id)
+        except:
+            modset_id = comp_moduleset_id(modset_id)
+        if modset_id is None:
+            return dict(error="moduleset not found")
+        if not moduleset_publication(modset_id):
+            return dict(error="you are not member of one of the moduleset publication groups")
+        q = db.comp_node_moduleset.modset_id == modset_id
+        q &= db.comp_node_moduleset.modset_node == db.nodes.nodename
+        self.set_q(q)
+        return self.prepare_data(**vars)
+
+#
 # modulesets/<id>/modules
 #
 class rest_get_compliance_moduleset_modules(rest_get_table_handler):

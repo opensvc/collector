@@ -5731,8 +5731,6 @@ def json_tree_action():
         return json_tree_action_rename()
     elif action == "import":
         return json_tree_action_import()
-    elif action == "show":
-        return json_tree_action_show()
     elif action == "create":
         return json_tree_action_create()
     elif action == "delete":
@@ -5913,13 +5911,6 @@ def json_tree_action_create():
         return json_tree_action_create_filterset(request.vars.obj_name)
     return ""
 
-def json_tree_action_show():
-    if request.vars.obj_type is None:
-        return
-    elif request.vars.obj_type == "modset":
-        return json_tree_action_show_moduleset(request.vars.obj_id)
-    return ""
-
 def json_tree_action_rename():
     if request.vars.obj_type.startswith("ruleset"):
         return json_tree_action_rename_ruleset(request.vars.obj_id, request.vars.new_name)
@@ -6026,85 +6017,6 @@ def json_tree_action_rename_variable(var_id, new):
          'renamed variable %(old)s as %(new)s in ruleset %(rset_name)s',
          dict(old=old, new=new, rset_name=rset_name))
     return "0"
-
-def json_tree_action_show_moduleset(modset_id):
-    modset_id = int(modset_id)
-
-    q = db.comp_moduleset.id == modset_id
-    modset = db(q).select(cacheable=True).first()
-    if modset is None:
-        return ""
-    l = []
-
-    q = db.comp_node_moduleset.modset_id == modset_id
-    rows = db(q).select(cacheable=False)
-    if len(rows) > 0:
-        l.append(H3(SPAN(T("Attached to servers"), " (%d) "%len(rows)), _class="line"))
-        l.append(P(' '.join(map(lambda x: x.modset_node, rows))))
-
-    q = db.comp_modulesets_services.modset_id == modset_id
-    rows = db(q).select(cacheable=False)
-    if len(rows) > 0:
-        l.append(H3(SPAN(T("Attached to services"), " (%d) "%len(rows)), _class="line"))
-        l.append(P(' '.join(map(lambda x: x.modset_svcname, rows))))
-
-    q = db.comp_moduleset_moduleset.child_modset_id == modset_id
-    q &= db.comp_moduleset.id == db.comp_moduleset_moduleset.parent_modset_id
-    rows = db(q).select(db.comp_moduleset.modset_name,
-                        groupby=db.comp_moduleset.modset_name,
-                        cacheable=False)
-    if len(rows) > 0:
-        l.append(H3(SPAN(T("Encapsulated in modulesets"), " (%d) "%len(rows)), _class="line"))
-        l.append(P(' '.join(map(lambda x: x.modset_name, rows))))
-
-    def mod_html(x):
-        l = []
-        l.append(B(x.modset_mod_name))
-        l.append(P(T("Author"), ": ", I(x.modset_mod_author),
-                      ", ",
-                      T("Updated"), ": ", I(x.modset_mod_updated)))
-        return P(l)
-
-    q = db.comp_moduleset_modules.modset_id == modset_id
-    rows = db(q).select(cacheable=False)
-    if len(rows) > 0:
-        l.append(H3(SPAN(T("Modules"), " (%d) "%len(rows)), _class="line"))
-        l.append(SPAN(map(lambda x: mod_html(x), rows)))
-
-    _id = "tabs"
-    t = DIV(
-      DIV(
-        UL(
-          LI(P(modset.modset_name, _class='nok'), _class="closetab"),
-          LI(P(T("moduleset"), _class='modset16'), _id="litab1_"+_id),
-          LI(P(T("export"), _class='log16'), _id="litab2_"+_id),
-        ),
-        _class='tab',
-      ),
-      DIV(
-        l,
-        _class="cloud",
-        _id='tab1_'+_id,
-      ),
-      DIV(
-        PRE(
-          export_modulesets([modset_id]),
-          _style="overflow:auto",
-        ),
-        _class="cloud",
-        _id='tab2_'+_id,
-      ),
-      SCRIPT(
-        """bind_tabs("%(id)s", {}, "litab1_%(id)s")
-        """ % dict(id=_id)
-      ),
-      _id=_id,
-    )
-    return DIV(
-             t,
-             _class="white_float",
-             _style="position:relative;padding:0px",
-           )
 
 @auth.requires_membership('CompManager')
 def json_tree_action_import():

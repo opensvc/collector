@@ -17,6 +17,9 @@ function designer(divid, options) {
   o.show_variable = function(e) {
     return designer_show_variable(o, e)
   }
+  o.show_moduleset = function(e) {
+    return designer_show_moduleset(o, e)
+  }
   o.show_ruleset = function(e) {
     return designer_show_ruleset(o, e)
   }
@@ -533,6 +536,14 @@ function designer_show_group(o, e) {
   group_tabs(div.attr("id"), {"group_id": group_id, "group_name": group_name})
 }
 
+function designer_show_moduleset(o, e) {
+  var modset_name = e.children('a').text().replace(/^\s/, "")
+  var div = $("<div class='white_float' style='position:relative;padding:0px'></div>")
+  div.uniqueId()
+  o.e_info.empty().append(div)
+  moduleset_tabs(div.attr("id"), {"modset_name": modset_name})
+}
+
 function designer_show_ruleset(o, e) {
   var rset_id = e.attr('obj_id')
   var rset_name = e.children('a').text()
@@ -605,48 +616,14 @@ function designer__select(o, e, data) {
     } else if ($(this).is("[rel^=group]")) {
       o.show_group($(this))
       return
+    } else if ($(this).is("[rel^=modset]")) {
+      o.show_moduleset($(this))
+      return
     } else if ($(this).is("[rel^=filterset]")) {
       o.show_fset($(this))
       return
     }
-    $.ajax({
-    async: false,
-    type: "POST",
-    url: o.url_action,
-    data: {
-      "operation": "show",
-      "obj_type": $(this).attr('rel'),
-      "obj_id": $(this).attr('obj_id'),
-    },
-    error: function(jqXHR, exception) {
-      if (jqXHR.status === 0) {
-        msg = 'Connection error.'
-      } else if (jqXHR.status == 404) {
-        msg = 'Requested page not found. [404]'
-      } else if (jqXHR.status == 500) {
-        msg = 'Internal Server Error [500].'
-      } else if (exception === 'parsererror') {
-        msg = 'Requested JSON parse failed.'
-      } else if (exception === 'timeout') {
-        msg = 'Time out error.'
-      } else if (exception === 'abort') {
-        msg = 'Ajax request aborted.'
-      } else {
-        msg = 'Error: ' + jqXHR.responseText
-      }
-      $.jstree.rollback(data.rlbk)
-      $(".flash").html(msg).slideDown()
-    },
-    success: function(msg){
-      o.e_info.html(msg)
-      o.e_info.find("script").each(function(i){
-        eval($(this).text());
-        $(this).remove();
-      });
-      o.resizer()
-    }
-  });
- });
+  })
 }
 
 function designer_init(o) {

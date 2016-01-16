@@ -326,6 +326,21 @@
     "author": "Author",
     "creation_date": "Creation date"
   },
+  "modset_tabs": {
+    "export": "export"
+  },
+  "modset_properties": {
+    "nodes": "Attached to nodes",
+    "services": "Attached to services",
+    "modules": "Modules",
+    "used_by_modulesets": "Used by modulesets",
+    "base": "Base",
+    "id": "Id",
+    "name": "Name",
+    "updated": "Updated",
+    "author": "Author",
+    "creation": "Creation"
+  },
   "fset_tabs": {
     "export": "export"
   },
