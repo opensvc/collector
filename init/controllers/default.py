@@ -55,6 +55,7 @@ class table_svcmon(HtmlTable):
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
         self.cols = [
+            'id',
             'mon_svcname',
             'err',
             'svc_ha',
@@ -140,6 +141,7 @@ class table_svcmon(HtmlTable):
             'mem_bytes',
         ]
         self.force_cols = [
+            'id',
             'mon_svcname',
             'svc_autostart',
             'mon_guestos',
@@ -156,6 +158,12 @@ class table_svcmon(HtmlTable):
             'os_name',
         ]
         self.colprops = {
+            'id': HtmlTableColumn(
+                     title = 'Id',
+                     field='id',
+                     display = True,
+                     img = 'key',
+                    ),
             'err': HtmlTableColumn(
                      title = 'Action errors',
                      field='err',

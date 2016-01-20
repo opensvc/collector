@@ -272,6 +272,29 @@ class rest_get_service_instances(rest_get_table_handler):
         self.set_q(q)
         return self.prepare_data(**vars)
 
+#
+class rest_get_service_instance(rest_get_line_handler):
+    def __init__(self):
+        desc = [
+          "List a OpenSVC service instance details.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/service_instances/1",
+        ]
+        rest_get_line_handler.__init__(
+          self,
+          path="/service_instances/<id>",
+          tables=["svcmon"],
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, id, **vars):
+        q = db.svcmon.id == id 
+        q = _where(q, 'svcmon', domain_perms(), 'mon_nodname')
+        self.set_q(q)
+        return self.prepare_data(**vars)
+
 
 #
 class rest_delete_service_instance(rest_delete_handler):
@@ -350,21 +373,20 @@ class rest_delete_service_instances(rest_delete_handler):
 
     def handler(self, **vars):
         q = None
-        if 'mon_svcname' in vars and 'mon_nodname':
+        if 'mon_svcname' in vars and 'mon_nodname' in vars:
             q = db.svcmon.mon_svcname == vars["mon_svcname"]
             q &= db.svcmon.mon_nodname == vars["mon_nodname"]
             s = vars["mon_svcname"] + "@" + vars["mon_nodname"]
         if 'id' in vars:
             s = vars["id"]
-            q = db.services.svc_name == vars["id"]
-            s = str(s)
+            q = db.svcmon.id == vars["id"]
         if q is None:
-            raise Exception("mon_svcname+mon_nodname or id keys must be specified")
+            raise Exception("'mon_svcname+mon_nodname' or 'id' keys must be specified")
         q = _where(q, 'svcmon', domain_perms(), 'mon_nodname')
-        row = db(q).select(db.svcmon.id, db.svcmon.mon_svcname, db.svcmon.mon_nodname).first()
-        if row is None:
+        svc = db(q).select(db.svcmon.id).first()
+        if svc is None:
             raise Exception("service instance %s does not exist" % s)
-        return rest_delete_service_instance().handler(row.id)
+        return rest_delete_service_instance().handler(svc.id)
 
 
 

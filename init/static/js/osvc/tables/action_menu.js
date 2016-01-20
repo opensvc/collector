@@ -647,9 +647,10 @@ function table_action_menu_init_data(t) {
         {
           "selector": ["clicked", "checked", "all"],
           "foldable": true,
+          "table": ["svcmon"],
           'title': 'action_menu.on_services_instances',
-          "cols": ["svcname", "nodename"],
-          "condition": "svcname+nodename",
+          "cols": ["id"],
+          "condition": "id",
           "children": [
             {
               "title": "action_menu.delete",
@@ -3381,8 +3382,7 @@ function data_action_delete_svc_instances(t, e) {
   var del_data = new Array()
   for (i=0;i<data.length;i++) {
     del_data.push({
-      'mon_svcname': data[i]['svcname'],
-      'mon_nodname': data[i]['nodename']
+      'id': data[i]['id'],
     })
   }
   services_osvcdeleterest("R_SERVICE_INSTANCES", "", "", del_data, function(jd) {
