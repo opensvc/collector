@@ -1,5 +1,7 @@
 import re
 import hashlib
+import datetime
+import gluon.contrib.simplejson as json
 
 def print_duration(begin, s):
     end = datetime.datetime.now()
@@ -14,7 +16,7 @@ def request_vars_to_table_options():
             o["request_vars"][key] = request.vars[key]
     if "volatile_filters" in request.vars:
         o["volatile_filters"] = request.vars.volatile_filters
-    return json.dumps(o)
+    return json.dumps(o, use_decimal=True)
 
 class ToolError(Exception):
     def __init__(self, value):
@@ -244,7 +246,7 @@ class HtmlTable(object):
                 h[s] = 1
             else:
                 h[s] += 1
-        return json.dumps(h)
+        return json.dumps(h, use_decimal=True)
 
     def pager_info(self):
         d = {
@@ -330,7 +332,7 @@ class HtmlTable(object):
           'pager': self.pager_info(),
           'table_lines': formatter(),
         }
-        return json.dumps(d)
+        return json.dumps(d, use_decimal=True)
 
     def col_checkbox_key(self, f):
         return '_'.join((self.id, 'cc', f))
@@ -748,7 +750,7 @@ var ti_%(id)s = setInterval(function(){
                    headers=str(self.headers).lower(),
                    events=str(self.events),
                    on_change=str(self.on_change),
-                   request_vars=json.dumps(request.vars),
+                   request_vars=json.dumps(request.vars, use_decimal=True),
                 ),
               ),
               _class='tableo',
