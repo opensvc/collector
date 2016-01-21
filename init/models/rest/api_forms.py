@@ -609,4 +609,73 @@ class rest_put_form(rest_put_handler):
         return dict(info=infos, error=errors)
 
 
+class rest_delete_form(rest_delete_handler):
+    def __init__(self):
+        desc = [
+          "Delete a form",
+          "Delete also the form publications and responsibles",
+        ]
+        examples = [
+          "# curl -u %(email)s -X DELETE -o- https://%(collector)s/init/rest/api/forms/1"
+        ]
+
+        rest_delete_handler.__init__(
+          self,
+          path="/forms/<id>",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, id, **vars):
+        check_privilege("FormsManager")
+        form_responsible(id)
+
+        q = db.forms.id == id
+        row = db(q).select().first()
+        if row is None:
+            raise Exception("Form %s not found"%str(id))
+
+        form_id = db(q).delete()
+
+        q = db.forms_team_publication.form_id == id
+        db(q).delete()
+        q = db.forms_team_responsible.form_id == id
+        db(q).delete()
+
+        fmt = "Form %(form_name)s deleted"
+        d = dict(form_name=row.form_name)
+
+        _log('form.del', fmt, d)
+        l = {
+          'event': 'forms_change',
+          'data': {'id': row.id},
+        }
+        _websocket_send(event_msg(l))
+
+        return dict(info=fmt%d)
+
+class rest_delete_forms(rest_delete_handler):
+    def __init__(self):
+        desc = [
+          "Delete forms",
+        ]
+        examples = [
+          "# curl -u %(email)s -X DELETE -o- https://%(collector)s/init/rest/api/forms"
+        ]
+
+        rest_delete_handler.__init__(
+          self,
+          path="/forms",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, **vars):
+        if not 'id' in vars:
+            raise Exception("The 'id' key is mandatory")
+
+        form_id = vars["id"]
+        del(vars["id"])
+        return rest_delete_form().handler(form_id, **vars)
+
 

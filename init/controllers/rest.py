@@ -271,6 +271,8 @@ handlers = {
      rest_delete_filterset(),
      rest_delete_filterset_filterset(),
      rest_delete_filterset_filter(),
+     rest_delete_form(),
+     rest_delete_forms(),
      rest_delete_form_publication(),
      rest_delete_form_responsible(),
      rest_delete_forms_publications(),
