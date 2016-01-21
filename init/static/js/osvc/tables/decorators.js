@@ -2219,8 +2219,26 @@ function cell_decorator_svc_action_err(e) {
   }
   var line = $(e).parent(".tl")
   var svcname = $.data(line.children("[col=mon_svcname]")[0], "v")
-  url = services_get_url() + "/init/svcactions/svcactions?actions_f_svcname="+svcname+"&actions_f_status=err&actions_f_ack=!1|empty&actions_f_begin=>-30d&volatile_filters=true"
-  s = "<a class='action16 icon-red clickable' href='"+url+"' target='_blank'>"+v+"</a>"
+  s = $("<a class='action16 icon-red clickable'>"+v+"</a>")
+  s.click(function(){
+    if (get_selected() != "") {return}
+    table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
+    span_id = $(e).parent(".tl").attr("spansum")
+    id = table_id + "_x_" + span_id
+    toggle_extra(null, id, e, 0)
+    d = $("<table></table>")
+    d.uniqueId()
+    $("#"+id).empty().append(d)
+    table_actions(d.attr("id"), {
+	"volatile_filters": true,
+	"request_vars": {
+		"actions_f_svcname": svcname,
+		"actions_f_status": "err",
+		"actions_f_ack": "!1|empty",
+		"actions_f_begin": ">-300d"
+	}
+    })
+  })
   $(e).html(s)
 }
 
@@ -2475,38 +2493,48 @@ function cell_decorator_dns_records_type(e) {
   $(e).html(s)
 }
 
-function cell_decorator_dns_domains_links(e) {
-  $(e).empty()
+function cell_decorator_svcmon_link_actions(e) {
+  var s = $("<a class='action16 clickable'></a>")
+  s.click(function(){
+    var line = $(this).parents(".tl").first()
+    var svcname = $.data(line.children("[col=mon_svcname]")[0], "v")
+    if (get_selected() != "") {return}
+    table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
+    span_id = $(e).parent(".tl").attr("spansum")
+    id = table_id + "_x_" + span_id
+    toggle_extra(null, id, e, 0)
+    d = $("<table></table>")
+    d.uniqueId()
+    $("#"+id).empty().append(d)
+    table_actions(d.attr("id"), {
+        "volatile_filters": true,
+        "request_vars": {
+                "actions_f_svcname": svcname,
+                "actions_f_status_log": "empty",
+                "actions_f_begin": ">-7d"
+        }
+    })
+  })
+  return s
+}
+
+function cell_decorator_svcmon_link_frozen(e) {
   var line = $(e).parent(".tl")
-  var domain_id = $.data(line.children("[col=id]")[0], "v")
-
-  var query = "domain_id="+domain_id
-  var query = query + "&_next="+window.location
-  url = services_get_url() + "/init/dns/domain_edit?"+query
-  var d = $("<a class='clickable icon edit16' target='_blank' href="+url+"></a>")
-  $(e).append(d)
-
-  var query = "domain_id="+domain_id
-  var query = query + "&_next="+window.location
-  url = services_get_url() + "/init/dns/domain_sync?"+query
-  var d = $("<a class='clickable icon action_sync_16' target='_blank' href="+url+"></a>")
-  $(e).append(d)
+  var mon_frozen = $.data(line.children("[col=mon_frozen]")[0], "v")
+  if (mon_frozen == "1") {
+    var s = $("<span class='frozen16'>&nbsp</span>")
+  } else {
+    var s = null
+  }
+  return s
 }
 
 function cell_decorator_svcmon_links(e) {
-  var line = $(e).parent(".tl")
-  var mon_svcname = $.data(line.children("[col=mon_svcname]")[0], "v")
-  var query = "volatile_filters=true&actions_f_svcname="+mon_svcname
-  query += "&actions_f_status_log=empty"
-  query += "&actions_f_begin="+encodeURIComponent(">-1d")
-  url = services_get_url() + "/init/svcactions/svcactions?"+query
-  var d = "<a class='clickable action16' target='_blank' href="+url+"></a>"
-
-  var mon_frozen = $.data(line.children("[col=mon_frozen]")[0], "v")
-  if (mon_frozen == "1") {
-    d += "<span class='frozen16'>&nbsp</span>"
-  }
-  $(e).html(d)
+  $(e).html(
+    cell_decorator_svcmon_link_actions(e),
+    cell_decorator_svcmon_link_frozen(e)
+  )
+  console.log($(e))
 }
 
 function cell_decorator_chk_type(e) {
@@ -3492,7 +3520,6 @@ cell_decorators = {
  "metrics_links": cell_decorator_metrics_links,
  "charts_links": cell_decorator_charts_links,
  "reports_links": cell_decorator_reports_links,
- "dns_domains_links": cell_decorator_dns_domains_links,
  "dns_records_type": cell_decorator_dns_records_type,
  "tag_exclude": cell_decorator_tag_exclude,
  "form_name": cell_decorator_form_name,
