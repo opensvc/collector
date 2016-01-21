@@ -783,6 +783,18 @@ function table_refresh(t) {
              t.div.find(".nodataline>td").text(i18n.t("api.loading"))
          },
          success: function(msg){
+             // don't install the new data if nothing has changed.
+             // avoids flickering and useless client load.
+             md5sum = md5(msg)
+             if (md5sum == t.md5sum) {
+               console.log("refresh: data unchanged,", md5sum)
+               t.need_refresh = false
+               t.unset_refresh_spin()
+               return
+             }
+             console.log("refresh: data changed,", md5sum)
+             t.md5sum = md5sum
+
              // disable DOM insert event trigger for perf
              t.need_refresh = false
              t.scroll_disable_dom()
