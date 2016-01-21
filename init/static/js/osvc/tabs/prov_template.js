@@ -1,3 +1,42 @@
+//
+// prov template
+//
+function prov_template_tabs(divid, options) {
+  o = tabs(divid)
+  o.options = options
+
+  o.load(function() {
+    if (o.options.tpl_name) {
+      var title = o.options.tpl_name
+    } else {
+      var title = o.options.tpl_id
+    }
+    o.closetab.children("p").text(title)
+
+    // tab properties
+    i = o.register_tab({
+      "title": "form_tabs.properties",
+      "title_class": "prov"
+    })
+    o.tabs[i].callback = function(divid) {
+      prov_template_properties(divid, o.options)
+    }
+
+    // tab definition
+    i = o.register_tab({
+      "title": "form_tabs.definition",
+      "title_class": "edit16"
+    })
+    o.tabs[i].callback = function(divid) {
+      prov_template_definition(divid, o.options)
+    }
+
+    o.set_tab(o.options.tab)
+  })
+  return o
+}
+
+
 function prov_template_properties(divid, options) {
 	var o = {}
 

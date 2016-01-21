@@ -1,3 +1,38 @@
+//
+// filterset
+//
+function filterset_tabs(divid, options) {
+  o = tabs(divid)
+  o.options = options
+
+  o.load(function() {
+    var title = o.options.fset_name
+    o.closetab.children("p").text(title)
+
+    // tab properties
+    i = o.register_tab({
+      "title": "node_tabs.properties",
+      "title_class": "filter16"
+    })
+    o.tabs[i].callback = function(divid) {
+      fset_properties(divid, o.options)
+    }
+
+    // tab quotas
+    i = o.register_tab({
+      "title": "fset_tabs.export",
+      "title_class": "log16"
+    })
+    o.tabs[i].callback = function(divid) {
+      fset_export(divid, o.options)
+    }
+
+    o.set_tab(o.options.tab)
+  })
+
+  return o
+}
+
 function fset_properties(divid, options) {
 	var o = {}
 

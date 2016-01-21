@@ -1,3 +1,39 @@
+//
+// ruleset
+//
+function ruleset_tabs(divid, options) {
+  o = tabs(divid)
+  o.options = options
+
+  o.load(function() {
+    if (o.options.ruleset_name) {
+      var title = o.options.ruleset_name
+    } else {
+      var title = o.options.ruleset_id
+    }
+    o.closetab.children("p").text(title)
+
+    // tab properties
+    i = o.register_tab({
+      "title": "ruleset_tabs.ruleset",
+      "title_class": "pkg16"
+    })
+    o.tabs[i].callback = function(divid) {
+      ruleset_properties(divid, o.options)
+    }
+    i = o.register_tab({
+      "title": "ruleset_tabs.export",
+      "title_class": "log16"
+    })
+    o.tabs[i].callback = function(divid) {
+      ruleset_export(divid, o.options)
+    }
+
+    o.set_tab(o.options.tab)
+  })
+  return o
+}
+
 function ruleset_export(divid, options) {
 	o = {}
 	o.options = options

@@ -1,3 +1,50 @@
+//
+// form
+//
+function form_tabs(divid, options) {
+  o = tabs(divid)
+  o.options = options
+
+  o.load(function() {
+    if (o.options.form_name) {
+      var title = o.options.form_name
+    } else {
+      var title = o.options.form_id
+    }
+    o.closetab.children("p").text(title)
+
+    // tab properties
+    i = o.register_tab({
+      "title": "form_tabs.properties",
+      "title_class": "wf16"
+    })
+    o.tabs[i].callback = function(divid) {
+      form_properties(divid, o.options)
+    }
+
+    // tab definition
+    i = o.register_tab({
+      "title": "form_tabs.definition",
+      "title_class": "edit16"
+    })
+    o.tabs[i].callback = function(divid) {
+      form_definition(divid, o.options)
+    }
+
+    // tab request
+    i = o.register_tab({
+      "title": "form_tabs.request",
+      "title_class": "wf16"
+    })
+    o.tabs[i].callback = function(divid) {
+      form(divid, options)
+    }
+
+    o.set_tab(o.options.tab)
+  })
+  return o
+}
+
 function form_properties(divid, options) {
 	var o = {}
 

@@ -1,3 +1,60 @@
+//
+// array
+//
+function array_tabs(divid, options) {
+  o = tabs(divid)
+  o.options = options
+
+  o.load(function() {
+    services_osvcgetrest("R_ARRAY", [o.options.array_name], {"meta": "0"}, function(jd) {
+      o.data = jd.data[0]
+      o._load()
+    })
+  })
+
+  o._load = function() {
+    var title = o.data.array_name
+    o.closetab.children("p").text(title)
+
+    // tab properties
+    i = o.register_tab({
+      "title": "node_tabs.properties",
+      "title_class": "hd16"
+    })
+    o.tabs[i].callback = function(divid) {
+      array_properties(divid, {"array_id": o.data.id})
+    }
+
+    // tab quotas
+    i = o.register_tab({
+      "title": "array_tabs.quotas",
+      "title_class": "quota16"
+    })
+    o.tabs[i].callback = function(divid) {
+      table_quota_array(divid, o.data.array_name)
+    }
+
+    // tab usage
+    i = o.register_tab({
+      "title": "node_tabs.stats",
+      "title_class": "spark16"
+    })
+    o.tabs[i].callback = function(divid) {
+      $.ajax({
+        "url": "/init/disks/ajax_array",
+        "type": "POST",
+        "success": function(msg) {$("#"+divid).html(msg)},
+        "data": {"array": o.data.array_name, "rowid": divid}
+      })
+    }
+
+    o.set_tab(o.options.tab)
+  }
+
+  return o
+}
+
+
 function array_properties(divid, options) {
 	var o = {}
 
