@@ -153,7 +153,7 @@ input.aci, input.aci:focus {
 	position: fixed;
 	top: 100%;
 	left: 0;
-	z-index: 1000;
+	z-index: 3000;
 	float: left;
 	display: none;
 	min-width: 160px;   
@@ -434,25 +434,6 @@ img {
 	background-image:url('../images/drag10.png');
 	background-position: 5px 4px;
 	background-repeat:no-repeat;
-	cursor: pointer;
-}
-
-.tag {
-	white-space: nowrap;
-	line-height: 1.7em;
-	margin: 0.1em;
-	font-weight: bold;
-	font-size: 85%;
-	text-align: center;
-	color: white;
-	-moz-border-radius:4px;
-	-webkit-border-radius:4px;
-	border-radius:4px;
-	padding: 0.1em 20px 0.1em 20px;
-	overflow:hidden;
-}
-
-.tag:hover {
 	cursor: pointer;
 }
 
@@ -3591,6 +3572,28 @@ button:disabled {
 
 .nocolor:before {
 	color: inherit;
+}
+
+.tag:before {
+	color: white;
+}
+.tag {
+	white-space: nowrap;
+	line-height: 1.7em;
+	margin: 0.1em;
+	font-weight: bold;
+	font-size: 85%;
+	text-align: center;
+	color: white;
+	-moz-border-radius:4px;
+	-webkit-border-radius:4px;
+	border-radius:4px;
+	padding: 0.1em 20px 0.1em 20px;
+	overflow:hidden;
+}
+
+.tag:hover {
+	cursor: pointer;
 }
 
 

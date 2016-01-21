@@ -84,141 +84,53 @@ function app_properties(divid, options) {
 			o.info_updated.html(data.updated);
 			o.info_id.html(data.id);
 
-			services_osvcgetrest("R_APP_RESPONSIBLES", [data.id], {"limit": 50, "props": "role"}, function(jd) {
-				if (!jd.data) {
-					return
-				}
-				o.info_responsibles_title.text(i18n.t("app_properties.responsibles", {"n": jd.meta.total}))
-				for (var i=0; i<jd.data.length; i++) {
-					var e = $("<span style='display:inline-block;padding:0 0.2em'></span>")
-					e.text(jd.data[i].role)
-					o.info_responsibles.append(e)
-				}
-				if (jd.meta.total > jd.meta.count) {
-					var e = $("<span></span>")
-					e.text("...")
-					o.info_responsibles.append(e)
+			tab_properties_generic_list({
+				"request_service": "R_APP_RESPONSIBLES",
+				"request_parameters": [data.id],
+				"limit": "50",
+				"key": "role",
+				"title": "app_properties.responsibles",
+				"item_class": "guys16",
+				"e_title": o.info_responsibles_title,
+				"e_list": o.info_responsibles
+			})
+			tab_properties_generic_list({
+				"request_service": "R_APP_SERVICES",
+				"request_parameters": [data.id],
+				"limit": "50",
+				"key": "svc_name",
+				"title": "app_properties.services",
+				"item_class": "svc",
+				"e_title": o.info_services_title,
+				"e_list": o.info_services,
+				"lowercase": true
+			})
+			tab_properties_generic_list({
+				"request_service": "R_APP_NODES",
+				"request_parameters": [data.id],
+				"limit": "50",
+				"key": "nodename",
+				"title": "app_properties.nodes",
+				"item_class": "node16",
+				"e_title": o.info_nodes_title,
+				"e_list": o.info_nodes,
+				"lowercase": true
+			})
+			tab_properties_generic_autocomplete_org_group({
+				"div": o.info_app_team_ops,
+				"privileges": ["AppManager", "Manager"],
+				"post": function(_data, callback, error_callback) {
+					services_osvcpostrest("R_APP", [data.id], "", _data, callback, error_callback)
 				}
 			})
-			services_osvcgetrest("R_APP_SERVICES", [data.id], {"limit": 50, "props": "svc_name"}, function(jd) {
-				if (!jd.data) {
-					return
-				}
-				o.info_services_title.text(i18n.t("app_properties.services", {"n": jd.meta.total}))
-				for (var i=0; i<jd.data.length; i++) {
-					var e = $("<span style='display:inline-block;padding:0 0.2em'></span>")
-					e.text(jd.data[i].svc_name)
-					o.info_services.append(e)
-				}
-				if (jd.meta.total > jd.meta.count) {
-					var e = $("<span></span>")
-					e.text("...")
-					o.info_services.append(e)
-				}
-			})
-			services_osvcgetrest("R_APP_NODES", [data.id], {"limit": 50, "props": "nodename"}, function(jd) {
-				if (!jd.data) {
-					return
-				}
-				o.info_nodes_title.text(i18n.t("app_properties.nodes", {"n": jd.meta.total}))
-				for (var i=0; i<jd.data.length; i++) {
-					var e = $("<span style='display:inline-block;padding:0 0.2em'></span>")
-					e.text(jd.data[i].nodename.toLowerCase())
-					o.info_nodes.append(e)
-				}
-				if (jd.meta.total > jd.meta.count) {
-					var e = $("<span></span>")
-					e.text("...")
-					o.info_nodes.append(e)
+			tab_properties_generic_updater({
+				"div": o.div,
+				"privileges": ["AppManager", "Manager"],
+				"post": function(_data, callback, error_callback) {
+					services_osvcpostrest("R_APP", [data.id], "", _data, callback, error_callback)
 				}
 			})
 
-			// modifications for privileged user
-			if (services_ismemberof(["Manager", "AppManager"])) {
-			}
-
-		})
-
-		o.div.find("[upd]").each(function(){
-			$(this).addClass("clickable")
-			$(this).hover(
-				function() {
-					$(this).addClass("editable")
-				},
-				function() {
-					$(this).removeClass("editable")
-				}
-			)
-			$(this).bind("click", function() {
-				if ($(this).siblings().find("form").length > 0) {
-					$(this).siblings().show()
-					$(this).siblings().find("input[type=text]:visible,select").focus()
-					$(this).hide()
-					return
-				}
-				var updater = $(this).attr("upd")
-				if ((updater == "string") || (updater == "integer") || (updater == "date") || (updater == "datetime")) {
-					var e = $("<td><form><input class='oi' type='text'></input></form></td>")
-					e.css({"padding-left": "0px"})
-					var input = e.find("input")
-					input.uniqueId() // for date picker
-					input.attr("pid", $(this).attr("id"))
-					input.attr("value", $(this).text())
-					input.bind("blur", function(){
-						$(this).parents("td").first().siblings("td").show()
-						$(this).parents("td").first().hide()
-					})
-					$(this).parent().append(e)
-					$(this).hide()
-					input.focus()
-
-				} else if (updater == "group") {
-					var e = $("<td></td>")
-					var form = $("<form></form>")
-					var input = $("<input class='oi' type='text'></input>")
-					e.append(form)
-					form.append(input)
-					e.css({"padding-left": "0px"})
-					input.val($(this).text())
-					input.attr("pid", $(this).attr("id"))
-					var opts = []
-					for (var i=0; i<_groups.length; i++) {
-						var group = _groups[i]
-						if (group.privilege) {
-							continue
-						}
-						var role = group.role
-						if (role.match(/^user_/)) {
-							continue
-						}
-						opts.push(role)
-					}
-					input.autocomplete({
-						source: opts,
-						minLength: 0
-					})
-					input.bind("blur", function(){
-						$(this).parents("td").first().siblings("td").show()
-						$(this).parents("td").first().hide()
-					})
-					$(this).parent().append(e)
-					$(this).hide()
-					input.focus()
-				} else {
-					return
-				}
-				e.find("form").submit(function(event) {
-					event.preventDefault()
-					var input = $(this).find("input[type=text],select")
-					input.blur()
-					data = {}
-					data["nodename"] = o.options.nodename
-					data[input.attr("pid")] = input.val()
-					services_osvcpostrest("R_APP", [o.options.app_id], "", data, function(jd) {
-						o.init()
-					})
-				})
-			})
 		})
 	}
 

@@ -90,6 +90,65 @@ function tabs(divid) {
 	return o
 }
 
+tab_properties_generic_autocomplete_org_group = function(options) {
+	if (options.privileges && !services_ismemberof(options.privileges)) {
+		return
+	}
+	options.div.bind("click", function() {
+		var updater = $(this).attr("upd")
+		var e = $("<td></td>")
+		var form = $("<form></form>")
+		var input = $("<input class='aci oi' type='text'></input>")
+		e.append(form)
+		form.append(input)
+		e.css({"padding-left": "0px"})
+		input.val($(this).text())
+		input.attr("pid", $(this).attr("id"))
+		var opts = []
+		for (var i=0; i<_groups.length; i++) {
+			var group = _groups[i]
+			if (group.privilege) {
+				continue
+			}
+			var role = group.role
+			if (role.match(/^user_/)) {
+				continue
+			}
+			opts.push(role)
+		}
+		input.autocomplete({
+			source: opts,
+			minLength: 0
+		})
+		input.bind("blur", function(){
+			$(this).parents("td").first().siblings("td").show()
+			$(this).parents("td").first().remove()
+		})
+		$(this).parent().append(e)
+		$(this).hide()
+		input.focus()
+
+		e.find("form").submit(function(event) {
+			event.preventDefault()
+			var input = $(this).find("textarea,input[type=text],select")
+			input.blur()
+			var data = {}
+			data[input.attr("pid")] = input.val()
+			options.post(data, function(jd) {
+				if (jd.error && (jd.error.length > 0)) {
+					$(".flash").show("blind").html(services_error_fmt(jd))
+					return
+				}
+				e.hide()
+				e.prev().text(input.val()).show()
+			},
+			function(xhr, stat, error) {
+				$(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
+			})
+		})
+	})
+}
+
 tab_properties_boolean = function(options) {
 	if (options.div.text() == "true") {
 		options.div.attr('class', 'toggle-on');
@@ -128,6 +187,10 @@ tab_properties_boolean = function(options) {
 }
 
 tab_properties_generic_updater = function(options) {
+	if (options.privileges && !services_ismemberof(options.privileges)) {
+		return
+	}
+
 	options.div.find("[upd]").each(function(){
 		$(this).addClass("clickable")
 		$(this).hover(
@@ -188,6 +251,35 @@ tab_properties_generic_updater = function(options) {
 				})
 			}
 		})
+	})
+}
+
+tab_properties_generic_list = function(options) {
+	if (!options.limit) {
+		options.limit = 0
+	}
+	services_osvcgetrest(options.request_service, options.request_parameters, {"limit": options.limit, "props": options.key}, function(jd) {
+		if (!jd.data) {
+			return
+		}
+		options.e_title.text(i18n.t(options.title, {"n": jd.meta.total}))
+		options.e_list.empty()
+		for (var i=0; i<jd.data.length; i++) {
+			var e = $("<span style='display:inline-block;padding:0 0.2em'></span>")
+			e.addClass(options.item_class)
+			e.addClass("tag tag_attached")
+			var val = jd.data[i][options.key]
+			if (options.lowercase) {
+				val.toLowerCase()
+			}
+			e.text(val)
+			options.e_list.append(e)
+		}
+		if (jd.meta.total > jd.meta.count) {
+			var e = $("<span></span>")
+			e.text("...")
+			options.e_list.append(e)
+		}
 	})
 }
 
