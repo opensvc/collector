@@ -2534,7 +2534,6 @@ function cell_decorator_svcmon_links(e) {
     cell_decorator_svcmon_link_actions(e),
     cell_decorator_svcmon_link_frozen(e)
   )
-  console.log($(e))
 }
 
 function cell_decorator_chk_type(e) {
