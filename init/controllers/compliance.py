@@ -1,6 +1,5 @@
 from hashlib import md5
 import datetime
-import json
 import copy
 now=datetime.datetime.today()
 sevendays = str(now-datetime.timedelta(days=7,
