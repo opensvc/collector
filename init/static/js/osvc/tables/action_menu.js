@@ -390,6 +390,13 @@ function table_action_menu_init_data(t) {
               "min": 0
             },
             {
+              "title": "action_menu.del_form",
+              "class": "icon del16",
+              "fn": "data_action_del_form",
+              "privileges": ["Manager", "FormsManager"],
+              "min": 1
+            },
+            {
               "title": "action_menu.add_publication",
               "class": "icon add16",
               "fn": "data_action_add_form_publication",
@@ -2278,6 +2285,22 @@ function data_action_user_set_filterset(t, e) {
 // data action: add dns domain
 //
 function data_action_add_dns_domain(t, e) {
+  data_action_generic_add(t, e, {
+    "request_service": "R_DNS_DOMAINS",
+    "properties_tab": function(divid, data) {
+       dns_domain_properties(divid, {"domain_id": data.id})
+    },
+    "createable_message": "action_menu.domain_createable",
+    "inputs": [
+      {
+        "title": "action_menu.domain_name",
+        "key": "name"
+      }
+     ]
+  })
+}
+
+function data_action_generic_add(t, e, options) {
   var entry = $(e.target)
 
   // create and focus tool area
@@ -2289,68 +2312,86 @@ function data_action_add_dns_domain(t, e) {
   div.insertAfter(entry)
 
   // minimal create information
-  var line = $("<div class='template_form_line'></div>")
-  var title = $("<div data-i18n='action_menu.domain_name'></div>").i18n()
-  var input = $("<input class='oi'></input>")
+  for (var i=0; i<options.inputs.length; i++) {
+    var input_data = options.inputs[i]
+    var line = $("<div class='template_form_line'></div>")
+    var title = $("<div></div>")
+    title.text(i18n.t(input_data.title))
+    var input = $("<input class='oi'></input>")
+    input.attr("id", input_data.key)
+    input.attr("placeholder", input_data.placeholder)
+    line.append(title)
+    line.append(input)
+    div.append(line)
+  }
   var info = $("<div></div>")
   info.uniqueId()
   info.css({"margin": "0.8em 0 0.8em 0"})
-  line.append(title)
-  line.append(input)
-  div.append(line)
   div.append(info)
-  input.focus()
+  div.find("div.template_form_line input").first().focus()
 
   var timer = null
   var xhr = null
 
-  input.bind("keyup", function(e) {
+  div.find("div.template_form_line input").bind("keyup", keyup_trigger)
+
+  function keyup_trigger(e) {
     clearTimeout(timer)
     if (is_enter(e)) {
-      data = {
-        "name": input.val()
-      }
+      var data = {}
+      div.find("div.template_form_line input").each(function(){
+        data[$(this).attr("id")] = $(this).val()
+      })
       info.empty()
       spinner_add(info)
-      xhr  = services_osvcpostrest("R_DNS_DOMAINS", "", "", data, function(jd) {
+      xhr  = services_osvcpostrest(options.request_service, options.request_parameters, "", data, function(jd) {
         spinner_del(info)
         if (jd.error && (jd.error.length > 0)) {
           info.html(services_error_fmt(jd))
         }
-        // display the domain properties tab to set more properties
-        dns_domain_properties(div.attr("id"), {"domain_id": jd.data[0].id})
+        // display the properties tab to set more properties
+        options.properties_tab(info.attr("id"), jd.data[0])
       },
       function(xhr, stat, error) {
         info.html(services_ajax_error_fmt(xhr, stat, error))
       })
     } else {
-      var domain_name = input.val()
       timer = setTimeout(function(){
         info.empty()
-        spinner_add(info)
         if (xhr) {
           xhr.abort()
         }
-        services_osvcgetrest("R_DNS_DOMAINS", "", {"filters": ["name "+domain_name]}, function(jd) {
+        var data = {"filters": []}
+        var inputs = div.find("div.template_form_line input")
+        for (var i=0; i<inputs.length; i++) {
+          var key = $(inputs[i]).attr("id")
+          var val = $(inputs[i]).val()
+          if (!val || val.match(/^\s*$/)) {
+            return
+          }
+          data.filters.push(key + " " + val)
+        }
+        spinner_add(info)
+        services_osvcgetrest(options.request_service, "", data, function(jd) {
           xhr = null
           spinner_del(info)
           if (jd.error && (jd.error.length > 0)) {
             info.html(services_error_fmt(jd))
           }
           if (jd.data.length == 0) {
-            info.text(i18n.t("action_menu.domain_createable"))
+            info.text(i18n.t(options.createable_message))
             return
           }
   
-          // display the node properties tab
-          dns_domain_properties(info.attr("id"), {"domain_id": jd.data[0].id})
+          // display the properties tab
+          options.properties_tab(info.attr("id"), jd.data[0])
         },
         function(xhr, stat, error) {
           info.html(services_ajax_error_fmt(xhr, stat, error))
         })
       }, 500)
     }
-  })
+  }
 }
 
 //
@@ -2477,78 +2518,18 @@ function data_action_del_apps(t, e) {
 // data action: add app
 //
 function data_action_add_app(t, e) {
-  var entry = $(e.target)
-
-  // create and focus tool area
-  table_action_menu_focus_on_leaf(t, entry)
-  var div = $("<div></div>")
-  div.uniqueId()
-  div.append($("<hr>"))
-  div.css({"display": "table-caption"})
-  div.insertAfter(entry)
-
-  // minimal create information
-  var line = $("<div class='template_form_line'></div>")
-  var title = $("<div data-i18n='action_menu.app_name'></div>").i18n()
-  var input = $("<input class='oi'></input>")
-  var info = $("<div></div>")
-  info.uniqueId()
-  info.css({"margin": "0.8em 0 0.8em 0"})
-  line.append(title)
-  line.append(input)
-  div.append(line)
-  div.append(info)
-  input.focus()
-
-  var timer = null
-  var xhr = null
-
-  input.bind("keyup", function(e) {
-    clearTimeout(timer)
-    if (is_enter(e)) {
-      data = {
-        "app": input.val()
+  data_action_generic_add(t, e, {
+    "request_service": "R_APPS",
+    "properties_tab": function(divid, data) {
+       app_properties(divid, {"app_id": data.id})
+    },
+    "createable_message": "action_menu.app_createable",
+    "inputs": [
+      {
+        "title": "action_menu.app_name",
+        "key": "app"
       }
-      info.empty()
-      spinner_add(info)
-      xhr  = services_osvcpostrest("R_APPS", "", "", data, function(jd) {
-        spinner_del(info)
-        if (jd.error && (jd.error.length > 0)) {
-          info.html(services_error_fmt(jd))
-        }
-        // display the user properties tab to set more properties
-        app_properties(div.attr("id"), {"app_id": jd.data[0].id})
-      },
-      function(xhr, stat, error) {
-        info.html(services_ajax_error_fmt(xhr, stat, error))
-      })
-    } else {
-      var app = input.val()
-      timer = setTimeout(function(){
-        info.empty()
-        spinner_add(info)
-        if (xhr) {
-          xhr.abort()
-        }
-        services_osvcgetrest("R_APPS", "", {"filters": ["app "+app]}, function(jd) {
-          xhr = null
-          spinner_del(info)
-          if (jd.error && (jd.error.length > 0)) {
-            info.html(services_error_fmt(jd))
-          }
-          if (jd.data.length == 0) {
-            info.text(i18n.t("action_menu.app_createable"))
-            return
-          }
-  
-          // display the user properties tab
-          app_properties(info.attr("id"), {"app_id": jd.data[0].id})
-        },
-        function(xhr, stat, error) {
-          info.html(services_ajax_error_fmt(xhr, stat, error))
-        })
-      }, 500)
-    }
+     ]
   })
 }
 
@@ -2640,78 +2621,18 @@ function data_action_del_groups(t, e) {
 // data action: add group
 //
 function data_action_add_group(t, e) {
-  var entry = $(e.target)
-
-  // create and focus tool area
-  table_action_menu_focus_on_leaf(t, entry)
-  var div = $("<div></div>")
-  div.uniqueId()
-  div.append($("<hr>"))
-  div.css({"display": "table-caption"})
-  div.insertAfter(entry)
-
-  // minimal create information
-  var line = $("<div class='template_form_line'></div>")
-  var title = $("<div data-i18n='action_menu.group_name'></div>").i18n()
-  var input = $("<input class='oi'></input>")
-  var info = $("<div></div>")
-  info.uniqueId()
-  info.css({"margin": "0.8em 0 0.8em 0"})
-  line.append(title)
-  line.append(input)
-  div.append(line)
-  div.append(info)
-  input.focus()
-
-  var timer = null
-  var xhr = null
-
-  input.bind("keyup", function(e) {
-    clearTimeout(timer)
-    if (is_enter(e)) {
-      data = {
-        "role": input.val()
+  data_action_generic_add(t, e, {
+    "request_service": "R_GROUPS",
+    "properties_tab": function(divid, data) {
+       group_properties(divid, {"group_id": data.id})
+    },
+    "createable_message": "action_menu.group_createable",
+    "inputs": [
+      {
+        "title": "action_menu.group_name",
+        "key": "role"
       }
-      info.empty()
-      spinner_add(info)
-      xhr  = services_osvcpostrest("R_GROUPS", "", "", data, function(jd) {
-        spinner_del(info)
-        if (jd.error && (jd.error.length > 0)) {
-          info.html(services_error_fmt(jd))
-        }
-        // display the user properties tab to set more properties
-        group_properties(div.attr("id"), {"group_id": jd.data[0].id})
-      },
-      function(xhr, stat, error) {
-        info.html(services_ajax_error_fmt(xhr, stat, error))
-      })
-    } else {
-      var role = input.val()
-      timer = setTimeout(function(){
-        info.empty()
-        spinner_add(info)
-        if (xhr) {
-          xhr.abort()
-        }
-        services_osvcgetrest("R_GROUPS", "", {"filters": ["role "+role]}, function(jd) {
-          xhr = null
-          spinner_del(info)
-          if (jd.error && (jd.error.length > 0)) {
-            info.html(services_error_fmt(jd))
-          }
-          if (jd.data.length == 0) {
-            info.text(i18n.t("action_menu.group_createable"))
-            return
-          }
-  
-          // display the user properties tab
-          group_properties(info.attr("id"), {"group_id": jd.data[0].id})
-        },
-        function(xhr, stat, error) {
-          info.html(services_ajax_error_fmt(xhr, stat, error))
-        })
-      }, 500)
-    }
+     ]
   })
 }
 
@@ -2719,78 +2640,18 @@ function data_action_add_group(t, e) {
 // data action: add user
 //
 function data_action_add_user(t, e) {
-  var entry = $(e.target)
-
-  // create and focus tool area
-  table_action_menu_focus_on_leaf(t, entry)
-  var div = $("<div></div>")
-  div.uniqueId()
-  div.append($("<hr>"))
-  div.css({"display": "table-caption"})
-  div.insertAfter(entry)
-
-  // minimal create information
-  var line = $("<div class='template_form_line'></div>")
-  var title = $("<div data-i18n='action_menu.email'></div>").i18n()
-  var input = $("<input class='oi'></input>")
-  var info = $("<div></div>")
-  info.uniqueId()
-  info.css({"margin": "0.8em 0 0.8em 0"})
-  line.append(title)
-  line.append(input)
-  div.append(line)
-  div.append(info)
-  input.focus()
-
-  var timer = null
-  var xhr = null
-
-  input.bind("keyup", function(e) {
-    clearTimeout(timer)
-    if (is_enter(e)) {
-      data = {
-        "email": input.val()
+  data_action_generic_add(t, e, {
+    "request_service": "R_USERS",
+    "properties_tab": function(divid, data) {
+       user_properties(divid, {"user_id": data.id})
+    },
+    "createable_message": "action_menu.user_createable",
+    "inputs": [
+      {
+        "title": "action_menu.email",
+        "key": "email"
       }
-      info.empty()
-      spinner_add(info)
-      xhr  = services_osvcpostrest("R_USERS", "", "", data, function(jd) {
-        spinner_del(info)
-        if (jd.error && (jd.error.length > 0)) {
-          info.html(services_error_fmt(jd))
-        }
-        // display the user properties tab to set more properties
-        user_properties(div.attr("id"), {"user_id": jd.data[0].id})
-      },
-      function(xhr, stat, error) {
-        info.html(services_ajax_error_fmt(xhr, stat, error))
-      })
-    } else {
-      var email = input.val()
-      timer = setTimeout(function(){
-        info.empty()
-        spinner_add(info)
-        if (xhr) {
-          xhr.abort()
-        }
-        services_osvcgetrest("R_USERS", "", {"filters": ["email "+email]}, function(jd) {
-          xhr = null
-          spinner_del(info)
-          if (jd.error && (jd.error.length > 0)) {
-            info.html(services_error_fmt(jd))
-          }
-          if (jd.data.length == 0) {
-            info.text(i18n.t("action_menu.user_createable"))
-            return
-          }
-  
-          // display the user properties tab
-          user_properties(info.attr("id"), {"user_id": jd.data[0].id})
-        },
-        function(xhr, stat, error) {
-          info.html(services_ajax_error_fmt(xhr, stat, error))
-        })
-      }, 500)
-    }
+     ]
   })
 }
 
@@ -2798,78 +2659,18 @@ function data_action_add_user(t, e) {
 // data action: add node
 //
 function data_action_add_node(t, e) {
-  var entry = $(e.target)
-
-  // create and focus tool area
-  table_action_menu_focus_on_leaf(t, entry)
-  var div = $("<div></div>")
-  div.uniqueId()
-  div.append($("<hr>"))
-  div.css({"display": "table-caption"})
-  div.insertAfter(entry)
-
-  // minimal create information
-  var line = $("<div class='template_form_line'></div>")
-  var title = $("<div data-i18n='action_menu.nodename'></div>").i18n()
-  var input = $("<input class='oi'></input>")
-  var info = $("<div></div>")
-  info.uniqueId()
-  info.css({"margin": "0.8em 0 0.8em 0"})
-  line.append(title)
-  line.append(input)
-  div.append(line)
-  div.append(info)
-  input.focus()
-
-  var timer = null
-  var xhr = null
-
-  input.bind("keyup", function(e) {
-    clearTimeout(timer)
-    if (is_enter(e)) {
-      data = {
-        "nodename": input.val()
+  data_action_generic_add(t, e, {
+    "request_service": "R_NODES",
+    "properties_tab": function(divid, data) {
+       node_properties(divid, {"nodename": data.nodename})
+    },
+    "createable_message": "action_menu.node_createable",
+    "inputs": [
+      {
+        "title": "action_menu.nodename",
+        "key": "nodename"
       }
-      info.empty()
-      spinner_add(info)
-      xhr  = services_osvcpostrest("R_NODES", "", "", data, function(jd) {
-        spinner_del(info)
-        if (jd.error && (jd.error.length > 0)) {
-          info.html(services_error_fmt(jd))
-        }
-        // display the node properties tab to set more properties
-        node_properties(div.attr("id"), data)
-      },
-      function(xhr, stat, error) {
-        info.html(services_ajax_error_fmt(xhr, stat, error))
-      })
-    } else {
-      var nodename = input.val()
-      timer = setTimeout(function(){
-        info.empty()
-        spinner_add(info)
-        if (xhr) {
-          xhr.abort()
-        }
-        services_osvcgetrest("R_NODE", [nodename], "", function(jd) {
-          xhr = null
-          spinner_del(info)
-          if (jd.error && (jd.error.length > 0)) {
-            info.html(services_error_fmt(jd))
-          }
-          if (jd.data.length == 0) {
-            info.text(i18n.t("action_menu.node_createable"))
-            return
-          }
-  
-          // display the node properties tab
-          node_properties(info.attr("id"), {"nodename": nodename})
-        },
-        function(xhr, stat, error) {
-          info.html(services_ajax_error_fmt(xhr, stat, error))
-        })
-      }, 500)
-    }
+     ]
   })
 }
 
@@ -3155,91 +2956,25 @@ function data_action_delete_compliance_status(t, e) {
 // data action: add network
 //
 function data_action_add_network(t, e) {
-  var entry = $(e.target)
-
-  // create and focus tool area
-  table_action_menu_focus_on_leaf(t, entry)
-  var div = $("<div></div>")
-  div.uniqueId()
-  div.append($("<hr>"))
-  div.css({"display": "table-caption"})
-  div.insertAfter(entry)
-
-  // minimal create information
-  var line = $("<div class='template_form_line'></div>")
-  var title_network = $("<div data-i18n='action_menu.network'></div>").i18n()
-  var input_network = $("<input id='netmask' class='oi' placeholder='192.168.0.0'></input>")
-  var title_netmask = $("<div data-i18n='action_menu.netmask'></div>").i18n()
-  var input_netmask = $("<input id='netmask' class='oi' placeholder='24'></input>")
-  var info = $("<div></div>")
-  info.uniqueId()
-  info.css({"margin": "0.8em 0 0.8em 0"})
-  line.append(title_network)
-  line.append(input_network)
-  line.append(title_netmask)
-  line.append(input_netmask)
-  div.append(line)
-  div.append(info)
-  input_network.focus()
-
-  var timer = null
-  var xhr = null
-
-  function keyup_trigger(e) {
-    clearTimeout(timer)
-    if (is_enter(e)) {
-      var data = {
-        "network": input_network.val(),
-        "netmask": input_netmask.val()
-      }
-      info.empty()
-      spinner_add(info)
-      xhr  = services_osvcpostrest("R_NETWORKS", "", "", data, function(jd) {
-        spinner_del(info)
-        if (jd.error && (jd.error.length > 0)) {
-          info.html(services_error_fmt(jd))
-        }
-        // display the node properties tab to set more properties
-        network_properties(div.attr("id"), {"network_id": jd.data[0].id})
+  data_action_generic_add(t, e, {
+    "request_service": "R_NETWORKS",
+    "properties_tab": function(divid, data) {
+       network_properties(divid, {"network_id": data.id})
+    },
+    "createable_message": "action_menu.net_createable",
+    "inputs": [
+      {
+        "title": "action_menu.network",
+        "key": "network",
+        "placeholder": "192.168.0.0"
       },
-      function(xhr, stat, error) {
-        info.html(services_ajax_error_fmt(xhr, stat, error))
-      })
-    } else {
-      var data = {
-        "filters": [
-          "network=" + input_network.val(),
-          "netmask=" + input_netmask.val()
-        ]
+      {
+        "title": "action_menu.netmask",
+        "key": "netmask",
+        "placeholder": "24"
       }
-      timer = setTimeout(function(){
-        info.empty()
-        spinner_add(info)
-        if (xhr) {
-          xhr.abort()
-        }
-        services_osvcgetrest("R_NETWORKS", [], data, function(jd) {
-          xhr = null
-          spinner_del(info)
-          if (jd.error && (jd.error.length > 0)) {
-            info.html(services_error_fmt(jd))
-          }
-          if (jd.data.length == 0) {
-            info.text(i18n.t("action_menu.net_createable"))
-            return
-          }
-  
-          // display the net properties tab
-          network_properties(info.attr("id"), {"network_id": jd.data[0].id})
-        },
-        function(xhr, stat, error) {
-          info.html(services_ajax_error_fmt(xhr, stat, error))
-        })
-      }, 500)
-    }
-  }
-  input_network.bind("keyup", keyup_trigger)
-  input_netmask.bind("keyup", keyup_trigger)
+     ]
+  })
 }
 
 //
@@ -3338,80 +3073,18 @@ function data_action_del_tag(t, e) {
 // data action: add tag
 //
 function data_action_add_tag(t, e) {
-  var entry = $(e.target)
-
-  // create and focus tool area
-  table_action_menu_focus_on_leaf(t, entry)
-  var div = $("<div></div>")
-  div.uniqueId()
-  div.append($("<hr>"))
-  div.css({"display": "table-caption"})
-  div.insertAfter(entry)
-
-  // minimal create information
-  var line = $("<div class='template_form_line'></div>")
-  var title = $("<div data-i18n='action_menu.tag_name'></div>").i18n()
-  var input = $("<input class='oi'></input>")
-  var info = $("<div></div>")
-  info.uniqueId()
-  info.css({"margin": "0.8em 0 0.8em 0"})
-  line.append(title)
-  line.append(input)
-  div.append(line)
-  div.append(info)
-  input.focus()
-
-  var timer = null
-  var xhr = null
-
-  input.bind("keyup", function(e) {
-    clearTimeout(timer)
-    if (is_enter(e)) {
-      data = {
-        "tag_name": input.val()
+  data_action_generic_add(t, e, {
+    "request_service": "R_TAGS",
+    "properties_tab": function(divid, data) {
+       $("#"+divid).html(i18n.t("action_menu.tag_not_createable"))
+    },
+    "createable_message": "action_menu.tag_createable",
+    "inputs": [
+      {
+        "title": "action_menu.tag_name",
+        "key": "tag_name"
       }
-      info.empty()
-      spinner_add(info)
-      xhr  = services_osvcpostrest("R_TAGS", "", "", data, function(jd) {
-        spinner_del(info)
-        if (jd.error && (jd.error.length > 0)) {
-          info.html(services_error_fmt(jd))
-        }
-        // display the tag properties tab to set more properties
-        //tag_properties(div.attr("id"), {"form_id": jd.data[0].id})
-        info.empty()
-      },
-      function(xhr, stat, error) {
-        info.html(services_ajax_error_fmt(xhr, stat, error))
-      })
-    } else {
-      var tag_name = input.val()
-      timer = setTimeout(function(){
-        info.empty()
-        spinner_add(info)
-        if (xhr) {
-          xhr.abort()
-        }
-        services_osvcgetrest("R_TAGS", "", {"filters": "tag_name "+tag_name}, function(jd) {
-          xhr = null
-          spinner_del(info)
-          if (jd.error && (jd.error.length > 0)) {
-            info.html(services_error_fmt(jd))
-          }
-          if (jd.data.length == 0) {
-            info.text(i18n.t("action_menu.tag_createable"))
-            return
-          }
-  
-          // display the tag properties tab
-          //tag_properties(info.attr("id"), {"form_id": jd.data[0].id})
-          info.text(i18n.t("action_menu.tag_not_createable"))
-        },
-        function(xhr, stat, error) {
-          info.html(services_ajax_error_fmt(xhr, stat, error))
-        })
-      }, 500)
-    }
+     ]
   })
 }
 
@@ -3419,77 +3092,31 @@ function data_action_add_tag(t, e) {
 // data action: add form
 //
 function data_action_add_form(t, e) {
-  var entry = $(e.target)
-
-  // create and focus tool area
-  table_action_menu_focus_on_leaf(t, entry)
-  var div = $("<div></div>")
-  div.uniqueId()
-  div.append($("<hr>"))
-  div.css({"display": "table-caption"})
-  div.insertAfter(entry)
-
-  // minimal create information
-  var line = $("<div class='template_form_line'></div>")
-  var title = $("<div data-i18n='action_menu.form_name'></div>").i18n()
-  var input = $("<input class='oi'></input>")
-  var info = $("<div></div>")
-  info.uniqueId()
-  info.css({"margin": "0.8em 0 0.8em 0"})
-  line.append(title)
-  line.append(input)
-  div.append(line)
-  div.append(info)
-  input.focus()
-
-  var timer = null
-  var xhr = null
-
-  input.bind("keyup", function(e) {
-    clearTimeout(timer)
-    if (is_enter(e)) {
-      data = {
-        "form_name": input.val()
+  data_action_generic_add(t, e, {
+    "request_service": "R_FORMS",
+    "properties_tab": function(divid, data) {
+      form_properties(divid, {"form_id": data.id})
+    },
+    "createable_message": "action_menu.form_createable",
+    "inputs": [
+      {
+        "title": "action_menu.form_name",
+        "key": "form_name"
       }
-      info.empty()
-      spinner_add(info)
-      xhr  = services_osvcpostrest("R_FORMS", "", "", data, function(jd) {
-        spinner_del(info)
-        if (jd.error && (jd.error.length > 0)) {
-          info.html(services_error_fmt(jd))
-        }
-        // display the node properties tab to set more properties
-        form_properties(div.attr("id"), {"form_id": jd.data[0].id})
-      },
-      function(xhr, stat, error) {
-        info.html(services_ajax_error_fmt(xhr, stat, error))
-      })
-    } else {
-      var form_name = input.val()
-      timer = setTimeout(function(){
-        info.empty()
-        spinner_add(info)
-        if (xhr) {
-          xhr.abort()
-        }
-        services_osvcgetrest("R_FORMS", "", {"filters": "form_name "+form_name}, function(jd) {
-          xhr = null
-          spinner_del(info)
-          if (jd.error && (jd.error.length > 0)) {
-            info.html(services_error_fmt(jd))
-          }
-          if (jd.data.length == 0) {
-            info.text(i18n.t("action_menu.form_createable"))
-            return
-          }
-  
-          // display the node properties tab
-          form_properties(info.attr("id"), {"form_id": jd.data[0].id})
-        },
-        function(xhr, stat, error) {
-          info.html(services_ajax_error_fmt(xhr, stat, error))
-        })
-      }, 500)
+     ]
+  })
+}
+
+//
+// data action: delete forms
+//
+function data_action_del_form(t, e) {
+  data_action_generic_delete(t, e, {
+    "request_service": "R_FORMS",
+    "request_data_entry": function(data) {
+      return {
+        'id': data['id']
+      }
     }
   })
 }
