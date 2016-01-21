@@ -785,8 +785,9 @@ function table_refresh(t) {
          success: function(msg){
              // don't install the new data if nothing has changed.
              // avoids flickering and useless client load.
-             md5sum = md5(msg)
+             var md5sum = md5(msg)
              if (md5sum == t.md5sum) {
+               var msg = ""
                console.log("refresh: data unchanged,", md5sum)
                t.need_refresh = false
                t.unset_refresh_spin()
