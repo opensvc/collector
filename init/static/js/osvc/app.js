@@ -54,6 +54,7 @@ function app_start() {
       osvc.login = login("login_location")
       osvc.search = search("layout_search_tool")
       osvc.fset_selector = fset_selector("fset_selector")
+      ws_init()
       app_bindings()
       app_datetime_decorators()
       osvc.app_started.resolve(true)

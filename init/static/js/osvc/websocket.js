@@ -38,6 +38,8 @@ function ws_switch_one(data) {
     }
 }
 
-web2py_websocket("wss://"+window.location.hostname+"/realtime/generic", ws_switch)
+function ws_init() {
+	web2py_websocket("wss://"+window.location.hostname+"/realtime/generic", ws_switch)
+}
 
 
