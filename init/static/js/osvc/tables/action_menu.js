@@ -2357,25 +2357,13 @@ function data_action_add_dns_domain(t, e) {
 // data action: delete dns domains
 //
 function data_action_del_dns_domains(t, e) {
-  var entry = $(e.target)
-  var cache_id = entry.attr("cache_id")
-  var data = t.action_menu_data_cache[cache_id]
-  var del_data = new Array()
-  for (i=0;i<data.length;i++) {
-    del_data.push({
-      'id': data[i]['id'],
-    })
-  }
-  services_osvcdeleterest("R_DNS_DOMAINS", "", "", del_data, function(jd) {
-    if (jd.error && (jd.error.length > 0)) {
-      $(".flash").show("blind").html(services_error_fmt(jd))
+  data_action_generic_delete(t, e, {
+    "request_service": "R_DNS_DOMAINS",
+    "request_data_entry": function(data) {
+      return {
+        'id': data['id']
+      }
     }
-    if (jd.info && (jd.info.length > 0)) {
-      $(".flash").show("blind").html(services_info_fmt(jd))
-    }
-  },
-  function(xhr, stat, error) {
-    $(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
   })
 }
 
@@ -2411,25 +2399,13 @@ function data_action_sync_dns_domains(t, e) {
 // data action: delete dns records
 //
 function data_action_del_dns_records(t, e) {
-  var entry = $(e.target)
-  var cache_id = entry.attr("cache_id")
-  var data = t.action_menu_data_cache[cache_id]
-  var del_data = new Array()
-  for (i=0;i<data.length;i++) {
-    del_data.push({
-      'id': data[i]['id'],
-    })
-  }
-  services_osvcdeleterest("R_DNS_RECORDS", "", "", del_data, function(jd) {
-    if (jd.error && (jd.error.length > 0)) {
-      $(".flash").show("blind").html(services_error_fmt(jd))
+  data_action_generic_delete(t, e, {
+    "request_service": "R_DNS_RECORDS",
+    "request_data_entry": function(data) {
+      return {
+        'id': data['id']
+      }
     }
-    if (jd.info && (jd.info.length > 0)) {
-      $(".flash").show("blind").html(services_info_fmt(jd))
-    }
-  },
-  function(xhr, stat, error) {
-    $(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
   })
 }
 
@@ -2487,25 +2463,13 @@ function data_action_del_app_responsible(t, e) {
 // data action: delete app
 //
 function data_action_del_apps(t, e) {
-  var entry = $(e.target)
-  var cache_id = entry.attr("cache_id")
-  var data = t.action_menu_data_cache[cache_id]
-  var del_data = new Array()
-  for (i=0;i<data.length;i++) {
-    del_data.push({
-      'id': data[i]['id'],
-    })
-  }
-  services_osvcdeleterest("R_APPS", "", "", del_data, function(jd) {
-    if (jd.error && (jd.error.length > 0)) {
-      $(".flash").show("blind").html(services_error_fmt(jd))
+  data_action_generic_delete(t, e, {
+    "request_service": "R_APPS",
+    "request_data_entry": function(data) {
+      return {
+        'id': data['id']
+      }
     }
-    if (jd.info && (jd.info.length > 0)) {
-      $(".flash").show("blind").html(services_info_fmt(jd))
-    }
-  },
-  function(xhr, stat, error) {
-    $(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
   })
 }
 
@@ -2646,25 +2610,13 @@ function data_action_user_unlock_filterset(t, e) {
 // data action: delete user
 //
 function data_action_del_user(t, e) {
-  var entry = $(e.target)
-  var cache_id = entry.attr("cache_id")
-  var data = t.action_menu_data_cache[cache_id]
-  var del_data = new Array()
-  for (i=0;i<data.length;i++) {
-    del_data.push({
-      'id': data[i]['id'],
-    })
-  }
-  services_osvcdeleterest("R_USERS", "", "", del_data, function(jd) {
-    if (jd.error && (jd.error.length > 0)) {
-      $(".flash").show("blind").html(services_error_fmt(jd))
+  data_action_generic_delete(t, e, {
+    "request_service": "R_USERS",
+    "request_data_entry": function(data) {
+      return {
+        'id': data['id']
+      }
     }
-    if (jd.info && (jd.info.length > 0)) {
-      $(".flash").show("blind").html(services_info_fmt(jd))
-    }
-  },
-  function(xhr, stat, error) {
-    $(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
   })
 }
 
@@ -2979,28 +2931,16 @@ function data_action_chk_instance_set_threshold(t, e, threshold) {
 // data action: delete check instances
 //
 function data_action_chk_instance_reset_thresholds(t, e) {
-  var entry = $(e.target)
-  var cache_id = entry.attr("cache_id")
-  var data = t.action_menu_data_cache[cache_id]
-  var _data = new Array()
-  for (i=0;i<data.length;i++) {
-    _data.push({
-      'chk_nodename': data[i]['nodename'],
-      'chk_svcname': data[i]['svcname'],
-      'chk_type': data[i]['chk_type'],
-      'chk_instance': data[i]['chk_instance']
-    })
-  }
-  services_osvcdeleterest("R_CHECKS_SETTINGS", "", "", _data, function(jd) {
-    if (jd.error && (jd.error.length > 0)) {
-      $(".flash").show("blind").html(services_error_fmt(jd))
+  data_action_generic_delete(t, e, {
+    "request_service": "R_CHECKS_SETTINGS",
+    "request_data_entry": function(data) {
+      return {
+        'chk_nodename': data['nodename'],
+        'chk_svcname': data['svcname'],
+        'chk_type': data['chk_type'],
+        'chk_instance': data['chk_instance']
+      }
     }
-    if (jd.info && (jd.info.length > 0)) {
-      $(".flash").show("blind").html(services_info_fmt(jd))
-    }
-  },
-  function(xhr, stat, error) {
-    $(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
   })
 }
 
@@ -3008,28 +2948,16 @@ function data_action_chk_instance_reset_thresholds(t, e) {
 // data action: delete check instances
 //
 function data_action_chk_instance_delete(t, e) {
-  var entry = $(e.target)
-  var cache_id = entry.attr("cache_id")
-  var data = t.action_menu_data_cache[cache_id]
-  var _data = new Array()
-  for (i=0;i<data.length;i++) {
-    _data.push({
-      'chk_nodename': data[i]['nodename'],
-      'chk_svcname': data[i]['svcname'],
-      'chk_type': data[i]['chk_type'],
-      'chk_instance': data[i]['chk_instance']
-    })
-  }
-  services_osvcdeleterest("R_CHECKS", "", "", _data, function(jd) {
-    if (jd.error && (jd.error.length > 0)) {
-      $(".flash").show("blind").html(services_error_fmt(jd))
+  data_action_generic_delete(t, e, {
+    "request_service": "R_CHECKS",
+    "request_data_entry": function(data) {
+      return {
+        'chk_nodename': data['nodename'],
+        'chk_svcname': data['svcname'],
+        'chk_type': data['chk_type'],
+        'chk_instance': data['chk_instance']
+      }
     }
-    if (jd.info && (jd.info.length > 0)) {
-      $(".flash").show("blind").html(services_info_fmt(jd))
-    }
-  },
-  function(xhr, stat, error) {
-    $(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
   })
 }
 
@@ -3185,23 +3113,13 @@ function data_action_action_queue_redo(t, e) {
 // data action: delete nodes
 //
 function data_action_delete_nodes(t, e) {
-  var entry = $(e.target)
-  var cache_id = entry.attr("cache_id")
-  var data = t.action_menu_data_cache[cache_id]
-  var del_data = new Array()
-  for (i=0;i<data.length;i++) {
-    del_data.push({'nodename': data[i]['nodename']})
-  }
-  services_osvcdeleterest("R_NODES", "", "", del_data, function(jd) {
-    if (jd.error && (jd.error.length > 0)) {
-      $(".flash").show("blind").html(services_error_fmt(jd))
+  data_action_generic_delete(t, e, {
+    "request_service": "R_NODES",
+    "request_data_entry": function(data) {
+      return {
+        'nodename': data['nodename']
+      }
     }
-    if (jd.info && (jd.info.length > 0)) {
-      $(".flash").show("blind").html(services_info_fmt(jd))
-    }
-  },
-  function(xhr, stat, error) {
-    $(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
   })
 }
 
@@ -3209,23 +3127,13 @@ function data_action_delete_nodes(t, e) {
 // data action: delete services
 //
 function data_action_delete_svcs(t, e) {
-  var entry = $(e.target)
-  var cache_id = entry.attr("cache_id")
-  var data = t.action_menu_data_cache[cache_id]
-  var del_data = new Array()
-  for (i=0;i<data.length;i++) {
-    del_data.push({'svc_name': data[i]['svcname']})
-  }
-  services_osvcdeleterest("R_SERVICES", "", "", del_data, function(jd) {
-    if (jd.error && (jd.error.length > 0)) {
-      $(".flash").show("blind").html(services_error_fmt(jd))
+  data_action_generic_delete(t, e, {
+    "request_service": "R_SERVICES",
+    "request_data_entry": function(data) {
+      return {
+        'svc_name': data['svcname']
+      }
     }
-    if (jd.info && (jd.info.length > 0)) {
-      $(".flash").show("blind").html(services_info_fmt(jd))
-    }
-  },
-  function(xhr, stat, error) {
-    $(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
   })
 }
 
@@ -3233,25 +3141,13 @@ function data_action_delete_svcs(t, e) {
 // data action: delete compliance status
 //
 function data_action_delete_compliance_status(t, e) {
-  var entry = $(e.target)
-  var cache_id = entry.attr("cache_id")
-  var data = t.action_menu_data_cache[cache_id]
-  var del_data = new Array()
-  for (i=0;i<data.length;i++) {
-    del_data.push({
-      'id': data[i]['id']
-    })
-  }
-  services_osvcdeleterest("R_COMPLIANCE_STATUS", "", "", del_data, function(jd) {
-    if (jd.error && (jd.error.length > 0)) {
-      $(".flash").show("blind").html(services_error_fmt(jd))
+  data_action_generic_delete(t, e, {
+    "request_service": "R_COMPLIANCE_STATUS",
+    "request_data_entry": function(data) {
+      return {
+        'id': data['id']
+      }
     }
-    if (jd.info && (jd.info.length > 0)) {
-      $(".flash").show("blind").html(services_info_fmt(jd))
-    }
-  },
-  function(xhr, stat, error) {
-    $(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
   })
 }
 
@@ -3350,25 +3246,13 @@ function data_action_add_network(t, e) {
 // data action: delete networks
 //
 function data_action_delete_networks(t, e) {
-  var entry = $(e.target)
-  var cache_id = entry.attr("cache_id")
-  var data = t.action_menu_data_cache[cache_id]
-  var del_data = new Array()
-  for (i=0;i<data.length;i++) {
-    del_data.push({
-      'id': data[i]['id']
-    })
-  }
-  services_osvcdeleterest("R_NETWORKS", "", "", del_data, function(jd) {
-    if (jd.error && (jd.error.length > 0)) {
-      $(".flash").show("blind").html(services_error_fmt(jd))
+  data_action_generic_delete(t, e, {
+    "request_service": "R_NETWORKS",
+    "request_data_entry": function(data) {
+      return {
+        'id': data['id']
+      }
     }
-    if (jd.info && (jd.info.length > 0)) {
-      $(".flash").show("blind").html(services_info_fmt(jd))
-    }
-  },
-  function(xhr, stat, error) {
-    $(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
   })
 }
 
@@ -3376,25 +3260,13 @@ function data_action_delete_networks(t, e) {
 // data action: delete service instances
 //
 function data_action_delete_svc_instances(t, e) {
-  var entry = $(e.target)
-  var cache_id = entry.attr("cache_id")
-  var data = t.action_menu_data_cache[cache_id]
-  var del_data = new Array()
-  for (i=0;i<data.length;i++) {
-    del_data.push({
-      'id': data[i]['id'],
-    })
-  }
-  services_osvcdeleterest("R_SERVICE_INSTANCES", "", "", del_data, function(jd) {
-    if (jd.error && (jd.error.length > 0)) {
-      $(".flash").show("blind").html(services_error_fmt(jd))
+  data_action_generic_delete(t, e, {
+    "request_service": "R_SERVICE_INSTANCES",
+    "request_data_entry": function(data) {
+      return {
+        'id': data['id']
+      }
     }
-    if (jd.info && (jd.info.length > 0)) {
-      $(".flash").show("blind").html(services_info_fmt(jd))
-    }
-  },
-  function(xhr, stat, error) {
-    $(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
   })
 }
 
@@ -3452,25 +3324,13 @@ function data_action_ack_actions(t, e) {
 // data action: delete tag
 //
 function data_action_del_tag(t, e) {
-  var entry = $(e.target)
-  var cache_id = entry.attr("cache_id")
-  var data = t.action_menu_data_cache[cache_id]
-  var del_data = new Array()
-  for (i=0;i<data.length;i++) {
-    del_data.push({
-      'id': data[i]['id'],
-    })
-  }
-  services_osvcdeleterest("R_TAGS", "", "", del_data, function(jd) {
-    if (jd.error && (jd.error.length > 0)) {
-      $(".flash").show("blind").html(services_error_fmt(jd))
+  data_action_generic_delete(t, e, {
+    "request_service": "R_TAGS",
+    "request_data_entry": function(data) {
+      return {
+        'id': data['id']
+      }
     }
-    if (jd.info && (jd.info.length > 0)) {
-      $(".flash").show("blind").html(services_info_fmt(jd))
-    }
-  },
-  function(xhr, stat, error) {
-    $(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
   })
 }
 
@@ -3992,19 +3852,39 @@ function data_action_generic(t, e, options) {
   for (i=0;i<data.length;i++) {
     request_data.push(options.request_data_entry(data[i]))
   }
-  options.requestor(options.request_service, "", "", request_data, function(jd) {
-    if (jd.error && (jd.error.length > 0)) {
-      result.html(services_error_fmt(jd))
-    }
-    if (jd.info && (jd.info.length > 0)) {
-      result.html(services_info_fmt(jd))
-    }
-  },
-  function(xhr, stat, error) {
-    result.html(services_ajax_error_fmt(xhr, stat, error))
-  })
+
+  if (options.confirmation) {
+    var yes_no = table_action_menu_yes_no(t, 'action_menu.submit', function(event){
+      do_action(event)
+    })
+    yes_no.insertAfter(result)
+  } else {
+    do_action(e)
+  }
+
+  function do_action(e) {
+    options.requestor(options.request_service, options.request_parameters, "", request_data, function(jd) {
+      if (jd.error && (jd.error.length > 0)) {
+        result.html(services_error_fmt(jd))
+      }
+      if (jd.info && (jd.info.length > 0)) {
+        result.html(services_info_fmt(jd))
+      }
+    },
+    function(xhr, stat, error) {
+      result.html(services_ajax_error_fmt(xhr, stat, error))
+    })
+  }
 }
 
+//
+// customizable data delete action tool
+//
+function data_action_generic_delete(t, e, options) {
+  options.requestor = services_osvcdeleterest
+  options.confirmation = true
+  data_action_generic(t, e, options)
+}
 
 //
 // customizable selector based data action
@@ -4222,25 +4102,14 @@ function agent_action_provisioning(t, e) {
 // data action: delete quotas
 //
 function data_action_del_quotas(t, e) {
-  var entry = $(e.target)
-  var cache_id = entry.attr("cache_id")
-  var data = t.action_menu_data_cache[cache_id]
-  var del_data = new Array()
-  for (i=0;i<data.length;i++) {
-    del_data.push({
-      'id': data[i]['id'],
-    })
-  }
-  services_osvcdeleterest("R_ARRAY_DISKGROUP_QUOTAS", [0, 0], "", del_data, function(jd) {
-    if (jd.error && (jd.error.length > 0)) {
-      $(".flash").show("blind").html(services_error_fmt(jd))
+  data_action_generic_delete(t, e, {
+    "request_service": "R_ARRAY_DISKGROUP_QUOTAS",
+    "request_parameters": [0, 0],
+    "request_data_entry": function(data) {
+      return {
+        'id': data['id']
+      }
     }
-    if (jd.info && (jd.info.length > 0)) {
-      $(".flash").show("blind").html(services_info_fmt(jd))
-    }
-  },
-  function(xhr, stat, error) {
-    $(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
   })
 }
 
@@ -4283,26 +4152,13 @@ function data_action_obs_refresh(t, e) {
 // data action: delete obsolescence settings
 //
 function data_action_obs_del(t, e) {
-  var entry = $(e.target)
-  table_action_menu_focus_on_leaf(t, entry)
-  var cache_id = entry.attr("cache_id")
-  var data = t.action_menu_data_cache[cache_id]
-  var del_data = new Array()
-  for (i=0;i<data.length;i++) {
-    del_data.push({
-      'id': data[i]['id'],
-    })
-  }
-  services_osvcdeleterest("/obsolescence/settings", "", "", del_data, function(jd) {
-    if (jd.error && (jd.error.length > 0)) {
-      $(".flash").show("blind").html(services_error_fmt(jd))
+  data_action_generic_delete(t, e, {
+    "request_service": "/obsolescence/settings",
+    "request_data_entry": function(data) {
+      return {
+        'id': data['id']
+      }
     }
-    if (jd.info && (jd.info.length > 0)) {
-      $(".flash").show("blind").html(services_info_fmt(jd))
-    }
-  },
-  function(xhr, stat, error) {
-    $(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
   })
 }
 
@@ -4464,26 +4320,13 @@ function data_action_add_prov_template(t, e) {
 // data action: delete prov templates
 //
 function data_action_del_prov_templates(t, e) {
-  var entry = $(e.target)
-  table_action_menu_focus_on_leaf(t, entry)
-  var cache_id = entry.attr("cache_id")
-  var data = t.action_menu_data_cache[cache_id]
-  var del_data = new Array()
-  for (i=0;i<data.length;i++) {
-    del_data.push({
-      'id': data[i]['id'],
-    })
-  }
-  services_osvcdeleterest("/provisioning_templates", "", "", del_data, function(jd) {
-    if (jd.error && (jd.error.length > 0)) {
-      $(".flash").show("blind").html(services_error_fmt(jd))
+  data_action_generic_delete(t, e, {
+    "request_service": "/provisioning_templates",
+    "request_data_entry": function(data) {
+      return {
+        'id': data['id']
+      }
     }
-    if (jd.info && (jd.info.length > 0)) {
-      $(".flash").show("blind").html(services_info_fmt(jd))
-    }
-  },
-  function(xhr, stat, error) {
-    $(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
   })
 }
 
