@@ -321,11 +321,20 @@ tab_properties_generic_list = function(options) {
 	if (!options.limit) {
 		options.limit = 0
 	}
+	if (!options.request_data) {
+		options.request_data = {}
+	}
+	if (options.limit) {
+		options.request_data.limit = options.limit
+	}
+	if (options.key && !options.request_data.props) {
+		options.request_data.props = options.key
+	}
 	if (options.data) {
 		render(options.data, options.data.length, options.data.length)
 		return
 	}
-	services_osvcgetrest(options.request_service, options.request_parameters, {"limit": options.limit, "props": options.key}, function(jd) {
+	services_osvcgetrest(options.request_service, options.request_parameters, options.request_data, function(jd) {
 		if (!jd.data) {
 			return
 		}
@@ -340,7 +349,11 @@ tab_properties_generic_list = function(options) {
 			e.addClass(options.item_class)
 			e.addClass("tag tag_attached")
 			if (options.key) {
-				var val = data[i][options.key]
+				if (typeof(options.key) === "string") {
+					var val = data[i][options.key]
+				} else {
+					var val = options.key(data[i])
+				}
 			} else {
 				var val = data[i]
 			}

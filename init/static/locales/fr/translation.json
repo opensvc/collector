@@ -931,10 +931,10 @@
     "description": "description",
     "id": "id",
     "privilege": "privilège",
-    "apps": "Applications (__n__)",
-    "users": "Utilisateurs (__n__)",
-    "nodes": "Noeuds (__n__)",
-    "services": "Services (__n__)"
+    "apps": "Applications",
+    "users": "Utilisateurs",
+    "nodes": "Noeuds",
+    "services": "Services"
   },
   "user_properties": {
     "first_name": "prénom",

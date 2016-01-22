@@ -78,108 +78,65 @@ function group_properties(divid, options) {
 			o.info_description.html(data.description);
 			o.info_id.html(data.id);
 
-			// nodes
-			if (data.privilege == true) {
-				o.info_privilege.attr('class', 'toggle-on');
-			} else {
-				o.info_privilege.attr('class','toggle-off');
-			}
-
-			services_osvcgetrest("R_NODES", "", {"limit": 50, "props": "nodename", "filters": ["team_responsible "+data.role]}, function(jd) {
-				if (!jd.data) {
-					return
-				}
-				o.info_nodes_title.text(i18n.t("group_properties.nodes", {"n": jd.meta.total}))
-				for (var i=0; i<jd.data.length; i++) {
-					var e = $("<span style='display:inline-block;padding:0 0.2em'></span>")
-					e.text(jd.data[i].nodename)
-					o.info_nodes.append(e)
-				}
-				if (jd.meta.total > jd.meta.count) {
-					var e = $("<span></span>")
-					e.text("...")
-					o.info_nodes.append(e)
+			tab_properties_boolean({
+				"div": o.info_privilege,
+				"privileges": ["Manager", "UsersManager"],
+				"post": function(_data, callback, error_callback) {
+					services_osvcpostrest("R_GROUP", [data.id], "", _data, callback, error_callback)
 				}
 			})
-			services_osvcgetrest("R_GROUP_USERS", [data.id], {"limit": 50, "props": "first_name,last_name"}, function(jd) {
-				if (!jd.data) {
-					return
-				}
-				o.info_users_title.text(i18n.t("group_properties.users", {"n": jd.meta.total}))
-				for (var i=0; i<jd.data.length; i++) {
-					var e = $("<span style='display:inline-block;padding:0 0.2em'></span>")
-					e.text(jd.data[i].first_name + " " + jd.data[i].last_name)
-					o.info_users.append(e)
-				}
-				if (jd.meta.total > jd.meta.count) {
-					var e = $("<span></span>")
-					e.text("...")
-					o.info_users.append(e)
+			tab_properties_generic_updater({
+				"div": o.div,
+				"post": function(_data, callback, error_callback) {
+					services_osvcpostrest("R_GROUP", [data.id], "", _data, callback, error_callback)
 				}
 			})
-			services_osvcgetrest("R_GROUP_APPS", [data.id], {"limit": 50, "props": "app"}, function(jd) {
-				if (!jd.data) {
-					return
-				}
-				o.info_apps_title.text(i18n.t("group_properties.apps", {"n": jd.meta.total}))
-				for (var i=0; i<jd.data.length; i++) {
-					var e = $("<span style='display:inline-block;padding:0 0.2em'></span>")
-					e.text(jd.data[i].app)
-					o.info_apps.append(e)
-				}
-				if (jd.meta.total > jd.meta.count) {
-					var e = $("<span></span>")
-					e.text("...")
-					o.info_apps.append(e)
-				}
+			tab_properties_generic_list({
+				"request_service": "R_NODES",
+				"request_data": {
+					"filters": ["team_responsible "+data.role]
+				},
+				"limit": 50,
+				"key": "nodename",
+				"item_class": "node16",
+				"e_title": o.info_nodes_title,
+				"e_list": o.info_nodes
 			})
-			services_osvcgetrest("R_GROUP_SERVICES", [data.id], {"limit": 50, "props": "svc_name"}, function(jd) {
-				if (!jd.data) {
-					return
-				}
-				o.info_services_title.text(i18n.t("group_properties.services", {"n": jd.meta.total}))
-				for (var i=0; i<jd.data.length; i++) {
-					var e = $("<span style='display:inline-block;padding:0 0.2em'></span>")
-					e.text(jd.data[i].svc_name)
-					o.info_services.append(e)
-				}
-				if (jd.meta.total > jd.meta.count) {
-					var e = $("<span></span>")
-					e.text("...")
-					o.info_services.append(e)
-				}
+			tab_properties_generic_list({
+				"request_service": "R_GROUP_SERVICES",
+				"request_parameters": [data.id],
+				"limit": 50,
+				"key": "svc_name",
+				"item_class": "svc",
+				"e_title": o.info_services_title,
+				"e_list": o.info_services
 			})
-
-			// modifications for privileged user
-			if (services_ismemberof(["Manager", "UserManager"])) {
-				o.info_privilege.addClass("clickable")
-				o.info_privilege.bind("click", function (event) {
-					o.toggle_privilege(this)
-				})
-			}
-
+			tab_properties_generic_list({
+				"request_service": "R_GROUP_USERS",
+				"request_parameters": [data.id],
+				"request_data": {
+					"props": "first_name,last_name"
+				},
+				"limit": 50,
+				"key": function(data) {
+					return data.first_name + " " + data.last_name
+				},
+				"item_class": "guy16",
+				"e_title": o.info_users_title,
+				"e_list": o.info_users
+			})
+			tab_properties_generic_list({
+				"request_service": "R_GROUP_APPS",
+				"request_parameters": [data.id],
+				"limit": 50,
+				"key": "app",
+				"item_class": "svc",
+				"e_title": o.info_apps_title,
+				"e_list": o.info_apps
+			})
 		})
 
 	}
-
-	o.toggle_privilege = function() {
-		if (o.info_privilege.hasClass("toggle-on")) {
-			var data = {privilege: false}
-		} else {
-			var data = {privilege: true}
-		}
-		services_osvcpostrest("R_GROUP", [o.options.group_id], "", data, function(jd) {
-			if (jd.error) {
-				return
-			}
-			if (jd.data[0].privilege == false) {
-				o.info_privilege.removeClass("toggle-on").addClass("toggle-off")
-			} else {
-				o.info_privilege.removeClass("toggle-off").addClass("toggle-on")
-			}
-		},
-		function() {}
-	)}
 
 	o.div.load("/init/static/views/group_properties.html", function() {
 		o.div.i18n()

@@ -942,10 +942,10 @@
     "description": "description",
     "id": "id",
     "privilege": "privilege",
-    "apps": "Applications (__n__)",
-    "users": "Users (__n__)",
-    "nodes": "Nodes (__n__)",
-    "services": "Services (__n__)"
+    "apps": "Applications",
+    "users": "Users",
+    "nodes": "Nodes",
+    "services": "Services"
   },
   "user_properties": {
     "first_name": "first name",
