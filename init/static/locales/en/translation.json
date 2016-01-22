@@ -362,8 +362,8 @@
   "form_properties": {
     "no_yaml": "No form definition. Click to edit.",
     "save": "save",
-    "publications": "Publications",
-    "responsibles": "Responsibles",
+    "publications": "Publications (__n__)",
+    "responsibles": "Responsibles (__n__)",
     "base": "Base",
     "id": "Id",
     "name": "Name",

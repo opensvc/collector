@@ -90,7 +90,7 @@ function tabs(divid) {
 	return o
 }
 
-tab_properties_generic_autocomplete_org_group = function(options) {
+tab_properties_generic_autocomplete = function(options) {
 	if (options.privileges && !services_ismemberof(options.privileges)) {
 		return
 	}
@@ -105,20 +105,32 @@ tab_properties_generic_autocomplete_org_group = function(options) {
 		input.val($(this).text())
 		input.attr("pid", $(this).attr("id"))
 		var opts = []
-		for (var i=0; i<_groups.length; i++) {
-			var group = _groups[i]
-			if (group.privilege) {
-				continue
+		options.get(function(data) {
+			for (var i=0; i<data.length; i++) {
+				if (options.value_key && options.label_key) {
+					var d = {
+						"label": data[i][options.label_key],
+						"id": data[i][options.value_key]
+					}
+					opts.push(d)
+				} else {
+					var d = {
+						"label": data[i],
+						"id": data[i]
+					}
+					opts.push(d)
+				}
 			}
-			var role = group.role
-			if (role.match(/^user_/)) {
-				continue
-			}
-			opts.push(role)
-		}
-		input.autocomplete({
-			source: opts,
-			minLength: 0
+			input.autocomplete({
+				source: opts,
+				minLength: 0,
+				focus: function(event, ui) {
+					input.attr("acid", ui.item.id)
+				},
+				select: function(event, ui) {
+					input.attr("acid", ui.item.id)
+				}
+			})
 		})
 		input.bind("blur", function(){
 			$(this).parents("td").first().siblings("td").show()
@@ -131,22 +143,40 @@ tab_properties_generic_autocomplete_org_group = function(options) {
 		e.find("form").submit(function(event) {
 			event.preventDefault()
 			var input = $(this).find("textarea,input[type=text],select")
-			input.blur()
 			var data = {}
-			data[input.attr("pid")] = input.val()
+			data[input.attr("pid")] = input.attr("acid")
 			options.post(data, function(jd) {
 				if (jd.error && (jd.error.length > 0)) {
 					$(".flash").show("blind").html(services_error_fmt(jd))
 					return
 				}
-				e.hide()
 				e.prev().text(input.val()).show()
+				input.blur()
 			},
 			function(xhr, stat, error) {
 				$(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
 			})
 		})
 	})
+}
+
+tab_properties_generic_autocomplete_org_group = function(options) {
+	options.get = function(callback) {
+		var opts = []
+		for (var i=0; i<_groups.length; i++) {
+			var group = _groups[i]
+			if (group.privilege) {
+				continue
+			}
+			var role = group.role
+			if (role.match(/^user_/)) {
+				continue
+			}
+			opts.push(role)
+		}
+		callback(opts)
+	}
+	tab_properties_generic_autocomplete(options)
 }
 
 tab_properties_boolean = function(options) {

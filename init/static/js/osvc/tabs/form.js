@@ -62,6 +62,8 @@ function form_properties(divid, options) {
 		o.info_form_created = o.div.find("#form_created")
 		o.info_publications = o.div.find("#publications")
 		o.info_responsibles = o.div.find("#responsibles")
+		o.info_publications_title = o.div.find("#publications_title")
+		o.info_responsibles_title = o.div.find("#responsibles_title")
 		o.load_form()
 	}
 
@@ -79,88 +81,45 @@ function form_properties(divid, options) {
 		o.info_form_author.html(data.form_author)
 		o.info_form_created.html(data.form_created)
 
-		o.load_publications()
-		o.load_responsibles()
-
 		tab_properties_generic_updater({
 			"div": o.div,
+			"privileges": ["FormsManager", "Manager"],
 			"post": function(data, callback, error_callback) {
 				services_osvcpostrest("R_FORM", [o.options.form_id], "", data, callback, error_callback)
 			}
 		})
-
-		o.div.find("[upd]").each(function(){
-			var updater = $(this).attr("upd")
-			if (updater == "form_type") {
-				$(this).bind("click", function() {
-					if ($(this).siblings().find("form").length > 0) {
-						$(this).siblings().show()
-						$(this).siblings().find("input[type=text]:visible,select").focus()
-						$(this).hide()
-						return
-					}
-					var e = $("<td></td>")
-					var form = $("<form></form>")
-					var input = $("<input class='oi' type='text'></input>")
-					e.append(form)
-					form.append(input)
-					e.css({"padding-left": "0px"})
-					input.val($(this).text())
-					input.attr("pid", $(this).attr("id"))
-					var opts = ["custo", "folder", "generic", "obj"]
-					input.autocomplete({
-						source: opts,
-						minLength: 0,
-						select: function(event, ui) {
-							o.set_form_type(e, ui.item.label)
-							event.preventDefault()
-						}
-					})
-					input.bind("blur", function(){
-						$(this).parents("td").first().siblings("td").show()
-						$(this).parents("td").first().hide()
-					})
-					$(this).parent().append(e)
-					$(this).hide()
-					input.focus()
-
-					e.find("form").submit(function(event) {
-						event.preventDefault()
-						var val = input.val()
-						o.set_form_type(e, val)
-					})
-				})
+		tab_properties_generic_autocomplete({
+			"div": o.info_form_type,
+			"privileges": ["FormsManager", "Manager"],
+			"post": function(_data, callback, error_callback) {
+				services_osvcpostrest("R_FORM", [data.id], "", _data, callback, error_callback)
+			},
+			"get": function(callback) {
+				var data = ["custo", "folder", "generic", "obj"]
+				callback(data)
 			}
 		})
-	}
-
-	o.set_form_type = function(e, val) {
-		var data = {
-			"form_type": val
-		}
-		services_osvcpostrest("R_FORM", [o.options.form_id], "", data, function(jd) {
-			e.hide()
-			e.prev().text(val).show()
+		tab_properties_generic_list({
+			"request_service": "R_FORM_PUBLICATIONS",
+			"request_parameters": [data.id],
+			"limit": "50",
+			"key": "role",
+			"title": "form_properties.publications",
+			"item_class": "guys16",
+			"e_title": o.info_publications_title,
+			"e_list": o.info_publications
 		})
-	}
-
-	o.load_publications = function() {
-		o.load_groups(o.info_publications, {"service": "R_FORM_PUBLICATIONS"})
-	}
-
-	o.load_responsibles = function() {
-		o.load_groups(o.info_responsibles, {"service": "R_FORM_RESPONSIBLES"})
-	}
-
-	o.load_groups = function(div, options) {
-		div.empty().addClass("tag_container")
-		services_osvcgetrest(options.service, [o.options.form_id], {"props": "role", "orderby": "role"}, function(jd) {
-			for (var i=0; i<jd.data.length; i++) {
-				var g = $("<span class='tag tag_attached'></span>")
-				g.text(jd.data[i].role)
-				div.append(g, " ")
-			}
+		tab_properties_generic_list({
+			"request_service": "R_FORM_RESPONSIBLES",
+			"request_parameters": [data.id],
+			"limit": "50",
+			"key": "role",
+			"title": "form_properties.responsibles",
+			"item_class": "guys16",
+			"e_title": o.info_responsibles_title,
+			"e_list": o.info_responsibles
 		})
+
 	}
 
 	o.div.load("/init/static/views/form_properties.html", function() {

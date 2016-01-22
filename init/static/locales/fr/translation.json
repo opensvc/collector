@@ -349,8 +349,8 @@
   "form_properties": {
     "no_yaml": "Pas de définition de formulaire. Cliquez pour éditer.",
     "save": "sauvegarder",
-    "publications": "Publications",
-    "responsibles": "Responsables",
+    "publications": "Publications (__n__)",
+    "responsibles": "Responsables (__n__)",
     "base": "Base",
     "id": "Id",
     "name": "Nom",
