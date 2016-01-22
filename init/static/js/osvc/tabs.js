@@ -283,10 +283,10 @@ tab_properties_generic_updater = function(options) {
 					var e = $("<td><form><input class='oi' type='text'></input></form></td>")
 				}
 				e.css({"padding-left": "0px"})
-				var input = e.find("input,textarea")
+				var input = e.find(".oi").first()
 				input.uniqueId() // for date picker
 				input.attr("pid", $(this).attr("id"))
-				input.attr("value", $(this).text())
+				input.val($(this).text())
 				input.bind("blur", function(){
 					$(this).parents("td").first().siblings("td").show()
 					$(this).parents("td").first().hide()
@@ -296,7 +296,7 @@ tab_properties_generic_updater = function(options) {
 				input.focus()
 				e.find("form").submit(function(event) {
 					event.preventDefault()
-					var input = $(this).find("textarea,input[type=text],select")
+					var input = $(this).find(".oi").first()
 					input.blur()
 					var data = {}
 					data[input.attr("pid")] = input.val()
