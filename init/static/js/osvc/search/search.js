@@ -834,13 +834,15 @@ function search(divid) {
 				o.phi = 0
 			}
 		}, 15000)
-		o.e_search_div.on("keyup",function (event) {
-			if (event.keyCode == 13) {
-				o.router(0)
-			}
-		})
 		o.e_search_input.on("keyup",function (event) {
-			if (event.keyCode != 27) {
+			if (is_special_key(event)) {
+				// do search on special key (esc, arrows, etc...)
+				return
+			} else if (event.keyCode == 13) {
+				// do a search immediately on <enter>
+				o.router(0)
+			} else {
+				// schedule a search
 				o.router(1000)
 			}
 		})

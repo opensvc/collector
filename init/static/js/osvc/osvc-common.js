@@ -1,6 +1,36 @@
 // OpenSvc Common JS function
 // MD 08062015
 
+function is_special_key(e) {
+  var no_refresh_keys = [
+    9,  // tab
+    16, // shift
+    17, // ctrl
+    18, // alt
+    20, // caps lock
+    27, // esc
+    33, // page up
+    34, // page down
+    35, // end
+    36, // home
+    37, // left
+    38, // up
+    39, // right
+    40, // down
+    45 // insert
+  ]
+  if (e && e.which) {
+    e = e
+    characterCode = e.which
+  } else if (e && e.keyCode) {
+    characterCode = e.keyCode
+  }
+  if (no_refresh_keys.indexOf(characterCode) >= 0) {
+    return true
+  }
+  return false
+}
+
 function is_enter(e) {
   var characterCode = -1;
   if (e && e.which) {
