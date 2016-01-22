@@ -349,8 +349,8 @@
   "form_properties": {
     "no_yaml": "Pas de définition de formulaire. Cliquez pour éditer.",
     "save": "sauvegarder",
-    "publications": "Publications (__n__)",
-    "responsibles": "Responsables (__n__)",
+    "publications": "Publications",
+    "responsibles": "Responsables",
     "base": "Base",
     "id": "Id",
     "name": "Nom",
@@ -922,9 +922,9 @@
     "app_team_ops": "équipe opérations",
     "dates": "Dates",
     "updated": "mise à jour",
-    "responsibles": "Responsables (__n__)",
-    "services": "Services (__n__)",
-    "nodes": "Noeuds (__n__)"
+    "responsibles": "Responsables",
+    "services": "Services",
+    "nodes": "Noeuds"
   },
   "group_properties": {
     "properties": "propriétés",

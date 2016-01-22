@@ -48,10 +48,15 @@ function fset_properties(divid, options) {
 		o.info_fset_author = o.div.find("#fset_author")
 		o.info_fset_updated = o.div.find("#fset_updated")
 		o.info_nodes = o.div.find("#nodes")
+		o.info_nodes_title = o.div.find("#nodes_title")
 		o.info_services = o.div.find("#services")
+		o.info_services_title = o.div.find("#services_title")
 		o.info_filtersets = o.div.find("#filtersets")
+		o.info_filtersets_title = o.div.find("#filtersets_title")
 		o.info_rulesets = o.div.find("#rulesets")
+		o.info_rulesets_title = o.div.find("#rulesets_title")
 		o.info_thresholds = o.div.find("#thresholds")
+		o.info_thresholds_title = o.div.find("#thresholds_title")
 		o.load_form()
 	}
 
@@ -69,8 +74,6 @@ function fset_properties(divid, options) {
 		o.info_fset_author.html(data.fset_author)
 		o.info_fset_updated.html(data.fset_updated)
 
-		o.load_nodes()
-		o.load_services()
 		o.load_usage()
 
 		tab_properties_boolean({
@@ -86,48 +89,50 @@ function fset_properties(divid, options) {
 				services_osvcpostrest("/filtersets/%1", [data.id], "", _data, callback, error_callback)
 			}
 		})
-	}
+		tab_properties_generic_list({
+			"request_service": "/filtersets/%1/nodes",
+                        "request_parameters": [data.id],
+                        "limit": "0",
+                        "key": "nodename",
+                        "item_class": "node16",
+                        "e_title": o.info_nodes_title,
+                        "e_list": o.info_nodes
+                })
+		tab_properties_generic_list({
+			"request_service": "/filtersets/%1/services",
+                        "request_parameters": [data.id],
+                        "limit": "0",
+                        "key": "svc_name",
+                        "item_class": "svc",
+                        "e_title": o.info_services_title,
+                        "e_list": o.info_services
+                })
 
-	o.load_nodes = function() {
-		o.load_scope(o.info_nodes, {"service": "/filtersets/%1/nodes", "key": "nodename"})
-	}
-
-	o.load_services = function() {
-		o.load_scope(o.info_services, {"service": "/filtersets/%1/services", "key": "svc_name"})
 	}
 
 	o.load_usage = function() {
 		services_osvcgetrest("/filtersets/%1/usage", [o.data.id], "", function(jd) {
-			o.populate(o.info_filtersets, jd.data.filtersets)
-			o.populate(o.info_rulesets, jd.data.rulesets)
-			o.populate(o.info_thresholds, jd.data.thresholds)
-		})
-	}
-
-	o.populate = function(div, data) {
-		var n = data.length
-		div.siblings(".line").find("span > span").append(" ("+n+")")
-		for (var i=0; i<n; i++) {
-			var g = $("<span class='tag tag_attached'></span>")
-			g.text(data[i])
-			div.append(g, " ")
-		}
-	}
-
-	o.load_scope = function(div, options) {
-		div.empty().addClass("tag_container")
-		services_osvcgetrest(options.service, [o.data.id], {
-			"meta": 1,
-			"limit": 0,
-			"props": options.key,
-			"orderby": options.key
-		}, function(jd) {
-			div.siblings(".line").find("span > span").append(" ("+jd.meta.total+")")
-			for (var i=0; i<jd.data.length; i++) {
-				var g = $("<span class='tag tag_attached'></span>")
-				g.text(jd.data[i][options.key])
-				div.append(g, " ")
-			}
+			tab_properties_generic_list({
+				"data": jd.data.filtersets,
+				"title": "fset_properties.services",
+				"item_class": "svc",
+				"e_title": o.info_filtersets_title,
+				"e_list": o.info_filtersets
+			})
+			tab_properties_generic_list({
+				"data": jd.data.rulesets,
+				"title": "fset_properties.rulesets",
+				"item_class": "comp16",
+				"e_title": o.info_rulesets_title,
+				"e_list": o.info_rulesets
+			})
+			tab_properties_generic_list({
+				"data": jd.data.thresholds,
+				"title": "fset_properties.thresholds",
+				"item_class": "check16",
+				"e_title": o.info_thresholds_title,
+				"e_list": o.info_thresholds
+			})
 		})
 	}
 

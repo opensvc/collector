@@ -321,29 +321,41 @@ tab_properties_generic_list = function(options) {
 	if (!options.limit) {
 		options.limit = 0
 	}
+	if (options.data) {
+		render(options.data, options.data.length, options.data.length)
+		return
+	}
 	services_osvcgetrest(options.request_service, options.request_parameters, {"limit": options.limit, "props": options.key}, function(jd) {
 		if (!jd.data) {
 			return
 		}
-		options.e_title.text(i18n.t(options.title, {"n": jd.meta.total}))
+		render(jd.data, jd.meta.count, jd.meta.total)
+	})
+
+	function render(data, n, total) {
+		options.e_title.append(" ("+total+")")
 		options.e_list.empty()
-		for (var i=0; i<jd.data.length; i++) {
+		for (var i=0; i<data.length; i++) {
 			var e = $("<span style='display:inline-block;padding:0 0.2em'></span>")
 			e.addClass(options.item_class)
 			e.addClass("tag tag_attached")
-			var val = jd.data[i][options.key]
+			if (options.key) {
+				var val = data[i][options.key]
+			} else {
+				var val = data[i]
+			}
 			if (options.lowercase) {
 				val.toLowerCase()
 			}
 			e.text(val)
 			options.e_list.append(e)
 		}
-		if (jd.meta.total > jd.meta.count) {
+		if (total > n) {
 			var e = $("<span></span>")
 			e.text("...")
 			options.e_list.append(e)
 		}
-	})
+	}
 }
 
 

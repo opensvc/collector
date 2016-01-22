@@ -362,8 +362,8 @@
   "form_properties": {
     "no_yaml": "No form definition. Click to edit.",
     "save": "save",
-    "publications": "Publications (__n__)",
-    "responsibles": "Responsibles (__n__)",
+    "publications": "Publications",
+    "responsibles": "Responsibles",
     "base": "Base",
     "id": "Id",
     "name": "Name",
@@ -933,9 +933,9 @@
     "app_team_ops": "operations team",
     "dates": "Dates",
     "updated": "updated",
-    "responsibles": "Responsibles (__n__)",
-    "services": "Services (__n__)",
-    "nodes": "Nodes (__n__)"
+    "responsibles": "Responsibles",
+    "services": "Services",
+    "nodes": "Nodes"
   },
   "group_properties": {
     "properties": "Properties",
