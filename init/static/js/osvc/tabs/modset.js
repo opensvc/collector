@@ -47,9 +47,13 @@ function modset_properties(divid, options) {
 		o.info_modset_author = o.div.find("#modset_author")
 		o.info_modset_updated = o.div.find("#modset_updated")
 		o.info_modules = o.div.find("#modules")
+		o.info_modules_title = o.div.find("#modules_title")
 		o.info_nodes = o.div.find("#nodes")
+		o.info_nodes_title = o.div.find("#nodes_title")
 		o.info_services = o.div.find("#services")
+		o.info_services_title = o.div.find("#services_title")
 		o.info_modulesets = o.div.find("#modulesets")
+		o.info_modulesets_title = o.div.find("#modulesets_title")
 		o.load_form()
 	}
 
@@ -66,11 +70,35 @@ function modset_properties(divid, options) {
 		o.info_modset_author.html(data.modset_author)
 		o.info_modset_updated.html(data.modset_updated)
 
-		o.load_modules()
-		o.load_nodes()
-		o.load_services()
 		o.load_usage()
 
+		tab_properties_generic_list({
+			"request_service": "/compliance/modulesets/%1/modules",
+                        "request_parameters": [data.id],
+                        "limit": "0",
+                        "key": "modset_mod_name",
+                        "item_class": "mod16",
+                        "e_title": o.info_modules_title,
+                        "e_list": o.info_modules
+                })
+		tab_properties_generic_list({
+			"request_service": "/compliance/modulesets/%1/nodes",
+                        "request_parameters": [data.id],
+                        "limit": "0",
+                        "key": "nodename",
+                        "item_class": "node16",
+                        "e_title": o.info_nodes_title,
+                        "e_list": o.info_nodes
+                })
+		tab_properties_generic_list({
+			"request_service": "/compliance/modulesets/%1/services",
+                        "request_parameters": [data.id],
+                        "limit": "0",
+                        "key": "svc_name",
+                        "item_class": "svc",
+                        "e_title": o.info_services_title,
+                        "e_list": o.info_services
+                })
 		tab_properties_generic_updater({
 			"div": o.div,
 			"post": function(_data, callback, error_callback) {
@@ -79,48 +107,14 @@ function modset_properties(divid, options) {
 		})
 	}
 
-	o.load_modules = function() {
-		o.load_scope(o.info_modules, {"service": "/compliance/modulesets/%1/modules", "key": "modset_mod_name"})
-	}
-
-	o.load_nodes = function() {
-		o.load_scope(o.info_nodes, {"service": "/compliance/modulesets/%1/nodes", "key": "nodename"})
-	}
-
-	o.load_services = function() {
-		o.load_scope(o.info_services, {"service": "/compliance/modulesets/%1/services", "key": "svc_name"})
-	}
-
 	o.load_usage = function() {
 		services_osvcgetrest("/compliance/modulesets/%1/usage", [o.data.id], "", function(jd) {
-			o.populate(o.info_modulesets, jd.data.modulesets)
-		})
-	}
-
-	o.populate = function(div, data) {
-		var n = data.length
-		div.siblings(".line").find("span > span").append(" ("+n+")")
-		for (var i=0; i<n; i++) {
-			var g = $("<span class='tag tag_attached'></span>")
-			g.text(data[i])
-			div.append(g, " ")
-		}
-	}
-
-	o.load_scope = function(div, options) {
-		div.empty().addClass("tag_container")
-		services_osvcgetrest(options.service, [o.data.id], {
-			"meta": 1,
-			"limit": 0,
-			"props": options.key,
-			"orderby": options.key
-		}, function(jd) {
-			div.siblings(".line").find("span > span").append(" ("+jd.meta.total+")")
-			for (var i=0; i<jd.data.length; i++) {
-				var g = $("<span class='tag tag_attached'></span>")
-				g.text(jd.data[i][options.key])
-				div.append(g, " ")
-			}
+			tab_properties_generic_list({
+				"data": jd.data.modulesets,
+				"item_class": "modset16",
+				"e_title": o.info_modulesets_title,
+				"e_list": o.info_modulesets
+			})
 		})
 	}
 

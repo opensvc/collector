@@ -114,21 +114,18 @@ function fset_properties(divid, options) {
 		services_osvcgetrest("/filtersets/%1/usage", [o.data.id], "", function(jd) {
 			tab_properties_generic_list({
 				"data": jd.data.filtersets,
-				"title": "fset_properties.services",
 				"item_class": "svc",
 				"e_title": o.info_filtersets_title,
 				"e_list": o.info_filtersets
 			})
 			tab_properties_generic_list({
 				"data": jd.data.rulesets,
-				"title": "fset_properties.rulesets",
 				"item_class": "comp16",
 				"e_title": o.info_rulesets_title,
 				"e_list": o.info_rulesets
 			})
 			tab_properties_generic_list({
 				"data": jd.data.thresholds,
-				"title": "fset_properties.thresholds",
 				"item_class": "check16",
 				"e_title": o.info_thresholds_title,
 				"e_list": o.info_thresholds
