@@ -106,29 +106,55 @@ tab_properties_generic_autocomplete = function(options) {
 		input.attr("pid", $(this).attr("id"))
 		var opts = []
 		options.get(function(data) {
-			for (var i=0; i<data.length; i++) {
-				if (options.value_key && options.label_key) {
-					var d = {
-						"label": data[i][options.label_key],
-						"id": data[i][options.value_key]
+			if (data.length == 0) {
+				opts = data
+			} else {
+				try {
+					("label" in data[0])
+					opts = data
+				} catch (err) {
+					for (var i=0; i<data.length; i++) {
+						var d = {
+							"label": data[i],
+							"value": data[i]
+						}
+						opts.push(d)
 					}
-					opts.push(d)
-				} else {
-					var d = {
-						"label": data[i],
-						"id": data[i]
-					}
-					opts.push(d)
 				}
 			}
+			input.click(function(){
+				input.autocomplete("search")
+			})
+			input.keyup(function(){
+				var opts = input.autocomplete("option").source
+				var current = input.val()
+				var found = false
+				for (var i=0; i<opts.length; i++) {
+					var opt = opts[i]
+					if (opt.label == current) {
+						found = true
+						break
+					}
+				}
+				if (!found) {
+					input.addClass("constraint_violation")
+				} else {
+					input.removeClass("constraint_violation")
+					input.attr("acid", opt.value)
+				}
+			})
 			input.autocomplete({
 				source: opts,
 				minLength: 0,
 				focus: function(event, ui) {
-					input.attr("acid", ui.item.id)
+					event.preventDefault()
+					input.val(ui.item.label)
+					input.attr("acid", ui.item.value)
 				},
 				select: function(event, ui) {
-					input.attr("acid", ui.item.id)
+					event.preventDefault()
+					input.val(ui.item.label)
+					input.attr("acid", ui.item.value)
 				}
 			})
 		})
@@ -143,8 +169,15 @@ tab_properties_generic_autocomplete = function(options) {
 		e.find("form").submit(function(event) {
 			event.preventDefault()
 			var input = $(this).find("textarea,input[type=text],select")
+			if (input.hasClass("constraint_violation")) {
+				return
+			}
 			var data = {}
-			data[input.attr("pid")] = input.attr("acid")
+			if (options.value_key) {
+				data[options.value_key] = input.attr("acid")
+			} else {
+				data[input.attr("pid")] = input.attr("acid")
+			}
 			options.post(data, function(jd) {
 				if (jd.error && (jd.error.length > 0)) {
 					$(".flash").show("blind").html(services_error_fmt(jd))

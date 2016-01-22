@@ -75,104 +75,23 @@ function dns_domain_properties(divid, options) {
 		o.info_notified_serial.html(data.notified_serial)
 		o.info_master.html(data.master)
 
-		o.div.find("[upd]").each(function(){
-			$(this).addClass("clickable")
-			$(this).hover(
-				function() {
-					$(this).addClass("editable")
-				},
-				function() {
-					$(this).removeClass("editable")
-				}
-			)
-			$(this).bind("click", function() {
-				//$(this).unbind("mouseenter mouseleave click")
-				if ($(this).siblings().find("form").length > 0) {
-					$(this).siblings().show()
-					$(this).siblings().find("input[type=text]:visible,select").focus()
-					$(this).hide()
-					return
-				}
-				var updater = $(this).attr("upd")
-				if ((updater == "string") || (updater == "integer") || (updater == "date") || (updater == "datetime")) {
-					var e = $("<td><form><input class='oi' type='text'></input></form></td>")
-					e.css({"padding-left": "0px"})
-					var input = e.find("input")
-					input.uniqueId() // for date picker
-					input.attr("pid", $(this).attr("id"))
-					input.attr("value", $(this).text())
-					input.bind("blur", function(){
-						$(this).parents("td").first().siblings("td").show()
-						$(this).parents("td").first().hide()
-					})
-					$(this).parent().append(e)
-					$(this).hide()
-					input.focus()
-					e.find("form").submit(function(event) {
-						event.preventDefault()
-						var input = $(this).find("input[type=text],select")
-						input.blur()
-						var data = {}
-						data[input.attr("pid")] = input.val()
-						services_osvcpostrest("R_DNS_DOMAIN", [o.options.domain_id], "", data, function(jd) {
-							if (jd.error && (jd.error.length > 0)) {
-								$(".flash").show("blind").html(services_error_fmt(jd))
-								return
-							}
-							e.hide()
-							e.prev().text(input.val()).show()
-						},
-						function(xhr, stat, error) {
-							$(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
-						})
-					})
-				} else if (updater == "type") {
-					var e = $("<td></td>")
-					var form = $("<form></form>")
-					var input = $("<input class='oi' type='text'></input>")
-					e.append(form)
-					form.append(input)
-					e.css({"padding-left": "0px"})
-					input.val($(this).text())
-					input.attr("pid", $(this).attr("id"))
-					var opts = [
-						"NATIVE",
-						"MASTER",
-						"SLAVE"
-					]
-					input.autocomplete({
-						source: opts,
-						minLength: 0,
-						select: function(event, ui) {
-							o.set_type(e, ui.item.label)
-							event.preventDefault()
-						}
-					})
-					input.bind("blur", function(){
-						$(this).parents("td").first().siblings("td").show()
-						$(this).parents("td").first().hide()
-					})
-					$(this).parent().append(e)
-					$(this).hide()
-					input.focus()
-
-					e.find("form").submit(function(event) {
-						event.preventDefault()
-						var val = input.val()
-						o.set_type(e, val)
-					})
-				}
-			})
+		tab_properties_generic_updater({
+			"div": o.div,
+			"privileges": ["DnsManager", "Manager"],
+			"post": function(data, callback, error_callback) {
+				services_osvcpostrest("R_DNS_DOMAIN", [o.options.domain_id], "", data, callback, error_callback)
+			}
 		})
-	}
-
-	o.set_type = function(e, val) {
-		var data = {
-			"type": val
-		}
-		services_osvcpostrest("R_DNS_DOMAIN", [o.options.domain_id], "", data, function(jd) {
-			e.hide()
-			e.prev().text(val).show()
+		tab_properties_generic_autocomplete({
+			"div": o.info_type,
+			"privileges": ["DnsManager", "Manager"],
+			"post": function(_data, callback, error_callback) {
+				services_osvcpostrest("R_DNS_DOMAIN", [data.id], "", _data, callback, error_callback)
+			},
+			"get": function(callback) {
+				var opts = ["NATIVE", "MASTER", "SLAVE"]
+				callback(opts)
+			}
 		})
 	}
 
