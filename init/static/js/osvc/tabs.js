@@ -212,6 +212,23 @@ tab_properties_generic_autocomplete_org_group = function(options) {
 	tab_properties_generic_autocomplete(options)
 }
 
+tab_properties_generic_autocomplete_app_id = function(options) {
+	options.get = function(callback) {
+		services_osvcgetrest("R_APPS", "", {"props": "id,app", "meta": "false", "limit": "0"}, function(jd) {
+			var opts = []
+			for (var i=0; i<jd.data.length; i++) {
+				var d = {
+					"label": jd.data[i].app,
+					"value": jd.data[i].id
+				}
+				opts.push(d)
+			}
+			callback(opts)
+		})
+	}
+	tab_properties_generic_autocomplete(options)
+}
+
 tab_properties_generic_autocomplete_user_app = function(options) {
 	options.get = function(callback) {
 		services_osvcgetrest("R_USER_APPS", [_self.id], {"props": "app", "meta": "false", "limit": "0"}, function(jd) {
@@ -303,14 +320,24 @@ tab_properties_generic_simple = function(options) {
 			var input = $(this).find(".oi").first()
 			input.blur()
 			var data = {}
-			data[input.attr("pid")] = input.val()
+			var val = input.val()
+			if (updater == "size_mb") {
+				val = Math.ceil(convert_size(val) / 1024 / 1024)
+			}
+			data[input.attr("pid")] = val
 			options.post(data, function(jd) {
 				if (jd.error && (jd.error.length > 0)) {
 					$(".flash").show("blind").html(services_error_fmt(jd))
 					return
 				}
 				e.hide()
-				e.prev().text(input.val()).show()
+				var cell = e.prev()
+				if (updater == "size_mb") {
+					$.data(cell, "v", val)
+					cell_decorator_size_mb(cell)
+				} else {
+					cell.text(val).show()
+				}
 			},
 			function(xhr, stat, error) {
 				$(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
@@ -351,12 +378,14 @@ tab_properties_generic_updater = function(options) {
 			)
 		}
 		var updater = $(this).attr("upd")
-		if ((updater == "string") || (updater == "text") || (updater == "integer") || (updater == "date") || (updater == "datetime")) {
+		if ((updater == "string") || (updater == "text") || (updater == "integer") || (updater == "date") || (updater == "datetime") || (updater == "size_mb")) {
 			tab_properties_generic_simple($.extend({}, options, {"div": $(this)}))
 		} else if (updater == "boolean") {
 			tab_properties_generic_boolean($.extend({}, options, {"div": $(this)}))
 		} else if (updater == "org_group") {
 			tab_properties_generic_autocomplete_org_group($.extend({}, options, {"div": $(this)}))
+		} else if (updater == "app_id") {
+			tab_properties_generic_autocomplete_app_id($.extend({}, options, {"div": $(this)}))
 		} else if (updater == "user_app") {
 			tab_properties_generic_autocomplete_user_app($.extend({}, options, {"div": $(this)}))
 		}
