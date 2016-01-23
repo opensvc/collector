@@ -79,13 +79,6 @@ function network_properties(divid, options) {
 		o.info_broadcast.html(data.broadcast)
 		o.info_updated.html(data.updated)
 
-		tab_properties_generic_autocomplete_org_group({
-			"div": o.info_team_responsible,
-			"privileges": ["NetworkManager", "Manager"],
-			"post": function(_data, callback, error_callback) {
-				services_osvcpostrest("R_NETWORK", [o.options.network_id], "", _data, callback, error_callback)
-			}
-		})
 		tab_properties_generic_updater({
 			"div": o.div,
 			"privileges": ["NetworkManager", "Manager"],

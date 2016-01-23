@@ -226,7 +226,7 @@ tab_properties_generic_autocomplete_user_app = function(options) {
 	tab_properties_generic_autocomplete(options)
 }
 
-tab_properties_boolean = function(options) {
+tab_properties_generic_boolean = function(options) {
 	if (options.div.text() == "true") {
 		options.div.attr('class', 'toggle-on');
 	} else {
@@ -263,89 +263,103 @@ tab_properties_boolean = function(options) {
 	)}
 }
 
-tab_properties_generic_updater = function(options) {
+tab_properties_generic_simple = function(options) {
 	if (options.privileges && !services_ismemberof(options.privileges)) {
 		return
 	}
 
+	options.div.bind("click", function(event) {
+		event.stopPropagation()
+		if ($(this).siblings().find("form").length > 0) {
+			$(this).siblings().show()
+			$(this).siblings().find("input[type=text]:visible,select").focus()
+			$(this).hide()
+			return
+		}
+		var updater = options.div.attr("upd")
+		if (updater == "text") {
+			var e = $("<td><form><textarea class='oi'></textarea></form></td>")
+			var button = $("<input type='submit'>")
+			e.find("form").append("<br>").append(button)
+			button.attr("value", i18n.t("prov_template_properties.save"))
+		} else {
+			var e = $("<td><form><input class='oi' type='text'></input></form></td>")
+		}
+		e.css({"padding-left": "0px"})
+		var input = e.find(".oi").first()
+		input.uniqueId() // for date picker
+		input.attr("pid", options.div.attr("id"))
+		input.val(options.div.text())
+		input.bind("blur", function(){
+			$(this).parents("td").first().siblings("td").show()
+			$(this).parents("td").first().hide()
+		})
+		options.div.parent().append(e)
+		options.div.hide()
+		input.focus()
+		e.find("form").submit(function(event) {
+			event.preventDefault()
+			console.log(options.div)
+			var input = $(this).find(".oi").first()
+			input.blur()
+			var data = {}
+			data[input.attr("pid")] = input.val()
+			options.post(data, function(jd) {
+				if (jd.error && (jd.error.length > 0)) {
+					$(".flash").show("blind").html(services_error_fmt(jd))
+					return
+				}
+				e.hide()
+				e.prev().text(input.val()).show()
+			},
+			function(xhr, stat, error) {
+				$(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
+			})
+		})
+		if (updater == "date") {
+			input.datepicker({
+				dateFormat:'yy-mm-dd',
+				onSelect: function() {
+					input.parents("td").first().siblings("td").click()
+				}
+			}).datepicker("show");
+		} else if (updater == "datetime") {
+			input.datetimepicker({
+				dateFormat:'yy-mm-dd',
+				onSelect: function() {
+					input.parents("td").first().siblings("td").click()
+				}
+			}).datepicker("show");
+		}
+	})
+}
+
+tab_properties_generic_updater = function(options) {
 	options.div.find("[upd]").each(function(){
 		if (options.condition && !options.condition($(this))) {
 			return
 		}
-		$(this).addClass("clickable")
-		$(this).hover(
-			function() {
-				$(this).addClass("editable")
-			},
-			function() {
-				$(this).removeClass("editable")
-			}
-		)
-		$(this).bind("click", function() {
-			//$(this).unbind("mouseenter mouseleave click")
-			if ($(this).siblings().find("form").length > 0) {
-				$(this).siblings().show()
-				$(this).siblings().find("input[type=text]:visible,select").focus()
-				$(this).hide()
-				return
-			}
-			var updater = $(this).attr("upd")
-			if ((updater == "string") || (updater == "text") || (updater == "integer") || (updater == "date") || (updater == "datetime")) {
-				if (updater == "text") {
-					var e = $("<td><form><textarea class='oi'></textarea></form></td>")
-					var button = $("<input type='submit'>")
-					e.find("form").append("<br>").append(button)
-					button.attr("value", i18n.t("prov_template_properties.save"))
-				} else {
-					var e = $("<td><form><input class='oi' type='text'></input></form></td>")
+		if (!options.privileges || services_ismemberof(options.privileges)) {
+			$(this).addClass("clickable")
+			$(this).hover(
+				function() {
+					$(this).addClass("editable")
+				},
+				function() {
+					$(this).removeClass("editable")
 				}
-				e.css({"padding-left": "0px"})
-				var input = e.find(".oi").first()
-				input.uniqueId() // for date picker
-				input.attr("pid", $(this).attr("id"))
-				input.val($(this).text())
-				input.bind("blur", function(){
-					$(this).parents("td").first().siblings("td").show()
-					$(this).parents("td").first().hide()
-				})
-				$(this).parent().append(e)
-				$(this).hide()
-				input.focus()
-				e.find("form").submit(function(event) {
-					event.preventDefault()
-					var input = $(this).find(".oi").first()
-					input.blur()
-					var data = {}
-					data[input.attr("pid")] = input.val()
-					options.post(data, function(jd) {
-						if (jd.error && (jd.error.length > 0)) {
-							$(".flash").show("blind").html(services_error_fmt(jd))
-							return
-						}
-						e.hide()
-						e.prev().text(input.val()).show()
-					},
-					function(xhr, stat, error) {
-						$(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
-					})
-				})
-			}
-			if (updater == "date") {
-				input.datepicker({
-					dateFormat:'yy-mm-dd',
-					onSelect: function() {
-						$(this).parents("td").first().siblings("td").click()
-					}
-				}).datepicker("show");
-			} else if (updater == "datetime") {
-				input.datetimepicker({
-					dateFormat:'yy-mm-dd',
-					onSelect: function() {
-        					    $(this).parents("td").first().siblings("td").click()
-					}
-				}).datepicker("show");
-			}
-		})
+			)
+		}
+		var updater = $(this).attr("upd")
+		if ((updater == "string") || (updater == "text") || (updater == "integer") || (updater == "date") || (updater == "datetime")) {
+			tab_properties_generic_simple($.extend({}, options, {"div": $(this)}))
+		} else if (updater == "boolean") {
+			tab_properties_generic_boolean($.extend({}, options, {"div": $(this)}))
+		} else if (updater == "org_group") {
+			tab_properties_generic_autocomplete_org_group($.extend({}, options, {"div": $(this)}))
+		} else if (updater == "user_app") {
+			tab_properties_generic_autocomplete_user_app($.extend({}, options, {"div": $(this)}))
+		}
 	})
 }
 

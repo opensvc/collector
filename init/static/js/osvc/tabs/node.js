@@ -297,22 +297,6 @@ function node_props_responsible_init(o)
 			callback(opts)
 		}
 	})
-	o.div.find("[upd=group]").each(function(){
-		tab_properties_generic_autocomplete_org_group({
-			"div": $(this),
-			"privileges": ["NodeManager", "Manager"],
-			"post": function(_data, callback, error_callback) {
-				services_osvcpostrest("R_NODE", [o.options.nodename], "", _data, callback, error_callback)
-			}
-		})
-	})
-	tab_properties_generic_autocomplete_user_app({
-		"div": o.e_project,
-		"privileges": ["NodeManager", "Manager"],
-		"post": function(_data, callback, error_callback) {
-			services_osvcpostrest("R_NODE", [o.options.nodename], "", _data, callback, error_callback)
-		}
-	})
 }
 
 function node_stats(divid, options) {

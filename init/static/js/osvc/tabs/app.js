@@ -116,13 +116,6 @@ function app_properties(divid, options) {
 				"e_list": o.info_nodes,
 				"lowercase": true
 			})
-			tab_properties_generic_autocomplete_org_group({
-				"div": o.info_app_team_ops,
-				"privileges": ["AppManager", "Manager"],
-				"post": function(_data, callback, error_callback) {
-					services_osvcpostrest("R_APP", [data.id], "", _data, callback, error_callback)
-				}
-			})
 			tab_properties_generic_updater({
 				"div": o.div,
 				"privileges": ["AppManager", "Manager"],
