@@ -212,6 +212,20 @@ tab_properties_generic_autocomplete_org_group = function(options) {
 	tab_properties_generic_autocomplete(options)
 }
 
+tab_properties_generic_autocomplete_user_app = function(options) {
+	options.get = function(callback) {
+		services_osvcgetrest("R_USER_APPS", [_self.id], {"props": "app", "meta": "false", "limit": "0"}, function(jd) {
+			var opts = []
+			for (var i=0; i<jd.data.length; i++) {
+				var app = jd.data[i].app
+				opts.push(app)
+			}
+			callback(opts)
+		})
+	}
+	tab_properties_generic_autocomplete(options)
+}
+
 tab_properties_boolean = function(options) {
 	if (options.div.text() == "true") {
 		options.div.attr('class', 'toggle-on');
@@ -255,6 +269,9 @@ tab_properties_generic_updater = function(options) {
 	}
 
 	options.div.find("[upd]").each(function(){
+		if (options.condition && !options.condition($(this))) {
+			return
+		}
 		$(this).addClass("clickable")
 		$(this).hover(
 			function() {
@@ -312,6 +329,21 @@ tab_properties_generic_updater = function(options) {
 						$(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
 					})
 				})
+			}
+			if (updater == "date") {
+				input.datepicker({
+					dateFormat:'yy-mm-dd',
+					onSelect: function() {
+						$(this).parents("td").first().siblings("td").click()
+					}
+				}).datepicker("show");
+			} else if (updater == "datetime") {
+				input.datetimepicker({
+					dateFormat:'yy-mm-dd',
+					onSelect: function() {
+        					    $(this).parents("td").first().siblings("td").click()
+					}
+				}).datepicker("show");
 			}
 		})
 	})
