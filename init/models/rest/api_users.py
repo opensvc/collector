@@ -1355,18 +1355,24 @@ class rest_post_user_domains(rest_post_handler):
         else:
             current_domains = row.domains
 
-        k = dict(
-          group_id=gid
-        )
-        db.domain_permissions.update_or_insert(k, **vars)
+        if vars["domains"] == "":
+            db(q).delete()
+            new_domains = "None"
+        else:
+            k = dict(
+              group_id=gid
+            )
+            db.domain_permissions.update_or_insert(k, **vars)
+            new_domains = vars["domains"]
+
         _log('user.change',
              'user %(u)s domain permissions changed from %(c)s to %(g)s',
-             dict(u=user.email, c=current_domains, g=vars["domains"]),
+             dict(u=user.email, c=current_domains, g=new_domains),
             )
         l = {
           'event': 'auth_user',
           'data': {
-            'foo': 'bar',
+            'id': user.id,
           },
         }
         _websocket_send(event_msg(l))
