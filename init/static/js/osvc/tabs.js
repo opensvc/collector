@@ -193,6 +193,25 @@ tab_properties_generic_autocomplete = function(options) {
 	})
 }
 
+tab_properties_generic_autocomplete_org_group_id = function(options) {
+	options.get = function(callback) {
+		var opts = [{"value": 0, "label": ""}]
+		for (var i=0; i<_groups.length; i++) {
+			var group = _groups[i]
+			if (group.privilege) {
+				continue
+			}
+			var role = group.role
+			if (role.match(/^user_/)) {
+				continue
+			}
+			opts.push({"value": group.id, "label": role})
+		}
+		callback(opts)
+	}
+	tab_properties_generic_autocomplete(options)
+}
+
 tab_properties_generic_autocomplete_org_group = function(options) {
 	options.get = function(callback) {
 		var opts = []
@@ -384,6 +403,8 @@ tab_properties_generic_updater = function(options) {
 			tab_properties_generic_boolean($.extend({}, options, {"div": $(this)}))
 		} else if (updater == "org_group") {
 			tab_properties_generic_autocomplete_org_group($.extend({}, options, {"div": $(this)}))
+		} else if (updater == "org_group_id") {
+			tab_properties_generic_autocomplete_org_group_id($.extend({}, options, {"div": $(this)}))
 		} else if (updater == "app_id") {
 			tab_properties_generic_autocomplete_app_id($.extend({}, options, {"div": $(this)}))
 		} else if (updater == "user_app") {

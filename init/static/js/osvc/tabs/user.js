@@ -279,28 +279,6 @@ function user_properties(divid, options) {
 			o.info_filterset.text(jd.data[0].fset_name)
 		})
 
-		// modifications for privileged user
-		if (services_ismemberof(["Manager","UserManager"])) {
-			// lock filter
-			//o.info_lfilter.addClass("clickable")
-			o.info_lfilter.bind("click", function (event) {
-				o.toggle_lock_filterset(this)
-			});
-			o.info_email_notifications.bind("click", function (event) {
-				o.toggle_email_notifications(this)
-			});
-			o.info_im_notifications.bind("click", function (event) {
-				o.toggle_im_notifications(this)
-			});
-
-			// domains
-			o.info_domains.bind("keypress", function (event) {
-				if (event.keyCode == 13) {
-					user_update_domains(o, o.info_domains.val());
-				}
-			})
-		}
-
 		o.load_groups()
 
 	}
@@ -315,7 +293,6 @@ function user_properties(divid, options) {
 		})
 	   	services_osvcgetrest("R_GROUPS", [o.options.user_id], {"meta": "false", "limit": "0","query": "not role starts with user_"}, function(jd) {
 			var data = jd.data;
-			var pg = []
 			var org_groups = {}
 			var priv_groups = {}
 
@@ -325,12 +302,6 @@ function user_properties(divid, options) {
 					priv_groups[d.role] = d
 				} else {
 					org_groups[d.role] = data[i]
-
-					// for automplete
-					pg.push({
-						"label" : d.role,
-						"id" : d.id
-					})
 				}
 			}
 
@@ -341,222 +312,63 @@ function user_properties(divid, options) {
 				o.info_manager.attr('class', 'toggle-off');
 			}
 
-			o.div.find("[upd]").each(function(){
-				$(this).addClass("clickable")
-				$(this).hover(
-					function() {
-						$(this).addClass("editable")
-					},
-					function() {
-						$(this).removeClass("editable")
-					}
-				)
-				$(this).bind("click", function() {
-					//$(this).unbind("mouseenter mouseleave click")
-					if ($(this).siblings().find("form").length > 0) {
-						$(this).siblings().show()
-						$(this).siblings().find("input[type=text]:visible,select").focus()
-						$(this).hide()
-						return
-					}
-					var updater = $(this).attr("upd")
-					if ((updater == "string") || (updater == "integer") || (updater == "date") || (updater == "datetime")) {
-						var e = $("<td><form><input class='oi' type='text'></input></form></td>")
-						e.css({"padding-left": "0px"})
-						var input = e.find("input")
-						input.uniqueId() // for date picker
-						input.attr("pid", $(this).attr("id"))
-						input.attr("value", $(this).text())
-						input.bind("blur", function(){
-							$(this).parents("td").first().siblings("td").show()
-							$(this).parents("td").first().hide()
-						})
-						$(this).parent().append(e)
-						$(this).hide()
-						input.focus()
-						e.find("form").submit(function(event) {
-							event.preventDefault()
-							var input = $(this).find("input[type=text],select")
-							input.blur()
-							var data = {}
-							data[input.attr("pid")] = input.val()
-							services_osvcpostrest("R_USER", [o.options.user_id], "", data, function(jd) {
-								e.hide()
-								e.prev().text(input.val()).show()
-							})
-						})
-					} else if (updater == "domains") {
-						var e = $("<td><form><input class='oi' type='text'></input></form></td>")
-						e.css({"padding-left": "0px"})
-						var input = e.find("input")
-						input.uniqueId() // for date picker
-						input.attr("pid", $(this).attr("id"))
-						input.attr("value", $(this).text())
-						input.bind("blur", function(){
-							$(this).parents("td").first().siblings("td").show()
-							$(this).parents("td").first().hide()
-						})
-						$(this).parent().append(e)
-						$(this).hide()
-						input.focus()
-						e.find("form").submit(function(event) {
-							event.preventDefault()
-							var input = $(this).find("input[type=text],select")
-							input.blur()
-							var data = {}
-							data[input.attr("pid")] = input.val()
-							services_osvcpostrest("R_USER_DOMAINS", [o.options.user_id], "", data, function(jd) {
-								e.hide()
-								e.prev().text(input.val()).show()
-							})
-						})
-					} else if (updater == "im_type") {
-						var e = $("<td></td>")
-						var form = $("<form></form>")
-						var input = $("<input class='oi' type='text'></input>")
-						e.append(form)
-						form.append(input)
-						e.css({"padding-left": "0px"})
-						input.val($(this).text())
-						input.attr("pid", $(this).attr("id"))
-						var opts = [
-							{"label": "gtalk", "id": 1}
-						]
-						input.autocomplete({
-							source: opts,
-							minLength: 0,
-							select: function(event, ui) {
-								event.preventDefault()
-								o.set_im_type(ui.item.label, ui.item.id);
-							}
-						})
-						e.find("form").submit(function(event) {
-							event.preventDefault()
-						})
-						input.bind("blur", function(){
-							$(this).parents("td").first().siblings("td").show()
-							$(this).parents("td").first().hide()
-						})
-						$(this).parent().append(e)
-						$(this).hide()
-						input.focus()
-					} else if (updater == "primary_group") {
-						var e = $("<td></td>")
-						var form = $("<form></form>")
-						var input = $("<input class='oi' type='text'></input>")
-						e.append(form)
-						form.append(input)
-						e.css({"padding-left": "0px"})
-						input.val($(this).text())
-						input.attr("pid", $(this).attr("id"))
-						input.autocomplete({
-							source: pg,
-							minLength: 0,
-							select: function(event, ui) {
-								event.preventDefault()
-								o.set_primary_group(ui.item.label, ui.item.id)
-							}
-						})
-						e.find("form").submit(function(event) {
-							event.preventDefault()
-							var val = input.val()
-							if (!(val in org_groups)) {
-								return
-							}
-							var group_id = org_groups[val].id
-							o.set_primary_group(val, group_id)
-						})
-						input.bind("blur", function(){
-							$(this).parents("td").first().siblings("td").show()
-							$(this).parents("td").first().hide()
-						})
-						$(this).parent().append(e)
-						$(this).hide()
-						input.focus()
-					}
-				})
+			tab_properties_generic_updater({
+				"div": o.div,
+				"post": function(data, callback, error_callback) {
+					services_osvcpostrest("R_USER", [o.options.user_id], "", data, callback, error_callback)
+				}
 			})
-		});
-	}
-
-	o.toggle_im_notifications = function() {
-		if (o.info_im_notifications.hasClass("toggle-on")) {
-			var data = {im_notifications: false}
-		} else {
-			var data = {im_notifications: true}
-		}
-		services_osvcpostrest("R_USER", [o.options.user_id], "", data, function(jd) {
-			if (jd.error) {
-				return
-			}
-			if (jd.data[0].im_notifications == false) {
-				o.info_im_notifications.removeClass("toggle-on").addClass("toggle-off")
-			} else {
-				o.info_im_notifications.removeClass("toggle-off").addClass("toggle-on")
-			}
-		},
-		function() {}
-	)}
-
-	o.toggle_email_notifications = function() {
-		if (o.info_email_notifications.hasClass("toggle-on")) {
-			var data = {email_notifications: false}
-		} else {
-			var data = {email_notifications: true}
-		}
-		services_osvcpostrest("R_USER", [o.options.user_id], "", data, function(jd) {
-			if (jd.error) {
-				return
-			}
-			if (jd.data[0].email_notifications == false) {
-				o.info_email_notifications.removeClass("toggle-on").addClass("toggle-off")
-			} else {
-				o.info_email_notifications.removeClass("toggle-off").addClass("toggle-on")
-			}
-		},
-		function() {}
-	)}
-
-	o.toggle_lock_filterset = function() {
-		if (o.info_lfilter.hasClass("toggle-on")) {
-			var data = {lock_filter: false}
-		} else {
-			var data = {lock_filter: true}
-		}
-		services_osvcpostrest("R_USER", [o.options.user_id], "", data, function(jd) {
-			if (jd.error) {
-				return
-			}
-			if (jd.data[0].lock_filter == false) {
-				o.info_lfilter.removeClass("toggle-on").addClass("toggle-off")
-			} else {
-				o.info_lfilter.removeClass("toggle-off").addClass("toggle-on")
-			}
-		},
-		function() {}
-	)}
-
-	o.set_im_type = function(label, id) {
-		var domain = o.info
-		services_osvcpostrest("R_USER", [o.options.user_id], "", {"im_type" : id}, function(jd) {
-			if (jd.error && jd.error.length > 0) {
-				return
-			}
-			o.info_im_type.next().hide()
-			o.info_im_type.text(label).show()
-		},
-		function() {})
-	}
-
-	o.set_primary_group = function(label, group_id) {
-		services_osvcpostrest("R_USER_PRIMARY_GROUP_SET", [o.options.user_id, group_id], "","", function(jd) {
-			if (jd.error && jd.error.length > 0) {
-				return
-			}
-			o.info_primaryg.next().hide()
-			o.info_primaryg.text(label).show()
-		},
-		function() {})
+			tab_properties_generic_boolean({
+				"div": o.info_lfilter,
+				"privileges": ["Manager","UserManager"],
+				"post": function(data, callback, error_callback) {
+					services_osvcpostrest("R_USER", [o.options.user_id], "", data, callback, error_callback)
+				}
+			})
+			tab_properties_generic_simple({
+				"div": o.info_domains,
+				"privileges": ["Manager","UserManager"],
+				"post": function(data, callback, error_callback) {
+					services_osvcpostrest("R_USER_DOMAINS", [o.options.user_id], "", data, callback, error_callback)
+				}
+			})
+			tab_properties_generic_autocomplete({
+				"div": o.info_email_log_level,
+				"post": function(_data, callback, error_callback) {
+					services_osvcpostrest("R_USER", [o.options.user_id], "", _data, callback, error_callback)
+				},
+				"get": function(callback) {
+					var data = ["debug", "info", "warning", "error", "critical"]
+					callback(data)
+				}
+			})
+			tab_properties_generic_autocomplete({
+				"div": o.info_im_log_level,
+				"post": function(_data, callback, error_callback) {
+					services_osvcpostrest("R_USER", [o.options.user_id], "", _data, callback, error_callback)
+				},
+				"get": function(callback) {
+					var data = ["debug", "info", "warning", "error", "critical"]
+					callback(data)
+				}
+			})
+			tab_properties_generic_autocomplete({
+				"div": o.info_im_type,
+				"post": function(_data, callback, error_callback) {
+					services_osvcpostrest("R_USER", [o.options.user_id], "", _data, callback, error_callback)
+				},
+				"get": function(callback) {
+					var data = [{"label": "gtalk", "value": 1}]
+					callback(data)
+				}
+			})
+			tab_properties_generic_autocomplete_org_group_id({
+				"div": o.info_primaryg,
+				"post": function(_data, callback, error_callback) {
+					services_osvcpostrest("R_USER_PRIMARY_GROUP_SET", [o.options.user_id, _data.primary_group], "", "", callback, error_callback)
+				}
+			})
+		})
 	}
 
 	o.set_filterset = function(label, fset_id) {
