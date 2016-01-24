@@ -409,7 +409,9 @@ tab_properties_generic_list = function(options) {
 		render(options.data, options.data.length, options.data.length)
 		return
 	}
+	spinner_add(options.e_list)
 	services_osvcgetrest(options.request_service, options.request_parameters, options.request_data, function(jd) {
+		spinner_del(options.e_list)
 		if (!jd.data) {
 			return
 		}
