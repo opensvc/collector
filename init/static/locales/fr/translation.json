@@ -22,7 +22,9 @@
     "refresh": "Rafraîchir la liste et les alertes",
     "set_warn_date": "Changer la date d'attention",
     "set_alert_date": "Changer la date d'alerte",
+    "chart_createable": "Ce nom de courbe n'existe pas encore. Appuyez sur <entrée> pour le créer.",
     "metric_createable": "Ce nom de métrique n'existe pas encore. Appuyez sur <entrée> pour le créer.",
+    "on_chart": "Sur les courbes",
     "on_metrics": "Sur les métriques",
     "on_prov_templates": "Sur les modèles de provisioning",
     "on_obsolescence_settings": "Sur les paramètres d'obsolescence",
@@ -303,6 +305,13 @@
     "last_change": "Dernier changement",
     "type": "Type"
   },
+  "chart_properties": {
+    "no_yaml": "Pas de définition de courbe. Cliquez pour éditer.",
+    "base": "Base",
+    "chart_name": "Nom",
+    "save": "sauvegarder",
+    "id": "Id"
+  },
   "metric_properties": {
     "base": "Base",
     "dates": "Dates",
@@ -569,6 +578,10 @@
   "dns_record_tabs": {
     "properties": "propriétés",
     "nodes": "noeuds"
+  },
+  "chart_tabs": {
+    "definition": "définition",
+    "properties": "propriétés"
   },
   "metric_tabs": {
     "request": "request",

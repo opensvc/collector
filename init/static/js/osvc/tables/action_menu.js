@@ -171,6 +171,30 @@ function table_action_menu_init_data(t) {
         {
           "selector": ["clicked", "checked", "all"],
           "foldable": true,
+          'title': 'action_menu.on_charts',
+          "table": ["charts"],
+          "cols": ["id"],
+          "condition": "id",
+          "children": [
+            {
+              "title": "action_menu.add",
+              "class": "icon add16",
+              "fn": "data_action_add_chart",
+              "privileges": ["Manager", "ReportsManager"],
+              "min": 0
+            },
+            {
+              "title": "action_menu.del",
+              "class": "icon del16",
+              "fn": "data_action_del_charts",
+              "privileges": ["Manager", "ReportsManager"],
+              "min": 1
+            }
+          ]
+        },
+        {
+          "selector": ["clicked", "checked", "all"],
+          "foldable": true,
           'title': 'action_menu.on_prov_templates',
           "table": ["templates"],
           "cols": ["id"],
@@ -3077,6 +3101,39 @@ function data_action_ack_actions(t, e) {
   form.append(yes_no)
   form.insertAfter(entry)
   c.focus()
+}
+
+//
+// data action: add chart
+//
+function data_action_add_chart(t, e) {
+  data_action_generic_add(t, e, {
+    "request_service": "/reports/charts",
+    "properties_tab": function(divid, data) {
+      chart_properties(divid, {"chart_id": data.id})
+    },
+    "createable_message": "action_menu.chart_createable",
+    "inputs": [
+      {
+        "title": "chart_properties.chart_name",
+        "key": "chart_name"
+      }
+     ]
+  })
+}
+
+//
+// data action: delete charts
+//
+function data_action_del_charts(t, e) {
+  data_action_generic_delete(t, e, {
+    "request_service": "/reports/charts",
+    "request_data_entry": function(data) {
+      return {
+        'id': data['id']
+      }
+    }
+  })
 }
 
 //

@@ -364,7 +364,6 @@ tab_properties_generic_simple = function(options) {
 		input.focus()
 		e.find("form").submit(function(event) {
 			event.preventDefault()
-			console.log(options.div)
 			var input = $(this).find(".oi").first()
 			input.blur()
 			var data = {}

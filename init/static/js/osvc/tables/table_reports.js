@@ -37,3 +37,43 @@ function table_metrics(divid, options) {
   table_init(_options)
 }
 
+table_charts_defaults = {
+     'pager': {'page': 1},
+     'extrarow': false,
+     'extrarow_class': "",
+     'flash': "",
+     'checkboxes': true,
+     'ajax_url': '/init/charts/ajax_charts_admin',
+     'span': ['id'],
+     'force_cols': ['id'],
+     'columns': ['id', 'chart_name', 'chart_yaml'],
+     'colprops': {'chart_name': {'field': 'chart_name', 'filter_redirect': '', 'force_filter': '', 'img': 'spark16', '_dataclass': '', 'title': 'Name', '_class': 'chart_name', 'table': 'charts', 'display': 1, 'default_filter': ''}, 'chart_yaml': {'field': 'chart_yaml', 'filter_redirect': '', 'force_filter': '', 'img': 'log16', '_dataclass': '', 'title': 'Definition', '_class': 'yaml', 'table': 'charts', 'display': 1, 'default_filter': ''}, 'id': {'field': 'id', 'filter_redirect': '', 'force_filter': '', 'img': 'key', '_dataclass': '', 'title': 'Id', '_class': '', 'table': 'charts', 'display': 1, 'default_filter': ''}},
+     'volatile_filters': false,
+     'child_tables': [],
+     'parent_tables': [],
+     'dataable': true,
+     'linkable': true,
+     'dbfilterable': true,
+     'filterable': true,
+     'refreshable': true,
+     'bookmarkable': true,
+     'exportable': true,
+     'columnable': true,
+     'commonalityable': true,
+     'headers': true,
+     'wsable': true,
+     'pageable': true,
+     'on_change': false,
+     'events': ['charts_change'],
+     'request_vars': {}
+}
+
+function table_charts(divid, options) {
+  var _options = {"id": "charts"}
+  $.extend(true, _options, table_charts_defaults, options)
+  _options.divid = divid
+  _options.caller = "table_charts"
+  table_init(_options)
+}
+
+

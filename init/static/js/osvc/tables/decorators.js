@@ -1983,6 +1983,21 @@ function cell_decorator_modset_name(e) {
   })
 }
 
+function cell_decorator_chart_name(e) {
+  var v = $.data(e, "v")
+  $(e).html("<span class='clickable'>"+v+"</span>")
+  $(e).addClass("corner")
+  $(e).click(function(){
+    var line = $(this).parent(".tl")
+    var chart_id = $.data(line.children("[col=id]")[0], "v")
+    table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
+    span_id = $(e).parent(".tl").attr("spansum")
+    id = table_id + "_x_" + span_id
+    toggle_extra(null, id, e, 0)
+    chart_tabs(id, {"chart_id": chart_id, "chart_name": v})
+  })
+}
+
 function cell_decorator_metric_name(e) {
   var v = $.data(e, "v")
   $(e).html("<span class='clickable'>"+v+"</span>")
@@ -2435,33 +2450,6 @@ function cell_decorator_reports_links(e) {
     $(e).parent(".tl").after("<tr class='extraline stackable'><td colspan='14'><table><tr><td id='"+id+"'></td></table></td></tr>")
     var options = {"report_id" : report_id}
     report(id, options)
-  })
-  $(e).append(d)
-}
-
-function cell_decorator_charts_links(e) {
-  $(e).empty()
-  $(e).addClass("corner nowrap")
-
-  // editor
-  var line = $(e).parent(".tl")
-  var id = $.data(line.children("[col=id]")[0], "v")
-  var query = "chart_id="+id
-  url = services_get_url() + "/init/charts/charts_editor?"+query
-  var d = "<a class='clickable edit16' target='_blank' href="+url+"></a>"
-  $(e).append(d)
-
-  // test chart
-  var d = $("<span></span>")
-  $(d).addClass("clickable action16")
-  $(d).click(function(){
-    var table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
-    var span_id = $(e).parent(".tl").attr("spansum")
-    var id = table_id + "_x_" + span_id
-    var chart_id = $.data($(this).parents(".tl").first().children("[col=id]")[0], "v")
-    $(e).parent(".tl").after("<tr class='extraline stackable'><td colspan='14' id='"+id+"'></td></tr>")
-    var options = {"chart_id" : chart_id}
-    chart(id, options)
   })
   $(e).append(d)
 }
@@ -3504,8 +3492,8 @@ cell_decorators = {
  "date_no_age": cell_decorator_date_no_age,
  "dash_severity": cell_decorator_dash_severity,
  "dash_links": cell_decorator_dash_links,
+ "chart_name": cell_decorator_chart_name,
  "metric_name": cell_decorator_metric_name,
- "charts_links": cell_decorator_charts_links,
  "reports_links": cell_decorator_reports_links,
  "dns_records_type": cell_decorator_dns_records_type,
  "tag_exclude": cell_decorator_tag_exclude,

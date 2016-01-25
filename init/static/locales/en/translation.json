@@ -21,7 +21,9 @@
     "refresh": "Refresh list and alerts",
     "set_warn_date": "Set warn date",
     "set_alert_date": "Set alert date",
+    "chart_createable": "This chart name does not exist yet. Press <enter> to create.",
     "metric_createable": "This metric name does not exist yet. Press <enter> to create.",
+    "on_charts": "On charts",
     "on_metrics": "On metrics",
     "on_prov_templates": "On provisioning templates",
     "on_obsolescence_settings": "On obsolescence settings",
@@ -316,6 +318,13 @@
     "last_change": "Last change",
     "type": "Type"
   },
+  "chart_properties": {
+    "no_yaml": "No chart definition. Click to edit.",
+    "base": "Base",
+    "chart_name": "Name",
+    "save": "save",
+    "id": "Id"
+  },
   "metric_properties": {
     "base": "Base",
     "dates": "Dates",
@@ -582,6 +591,10 @@
   "dns_record_tabs": {
     "properties": "properties",
     "nodes": "nodes"
+  },
+  "chart_tabs": {
+    "definition": "definition",
+    "properties": "properties"
   },
   "metric_tabs": {
     "request": "request",

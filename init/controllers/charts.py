@@ -150,13 +150,6 @@ def metrics_admin_load():
 #
 ###############################################################################
 
-class col_yaml(HtmlTableColumn):
-    def html(self, o):
-        val = self.get(o)
-        val = re.sub(r'(%\(\w+\)s)', r'<span class=syntax_red>\1</span>', val)
-        val = re.sub(r'(\w+:)', r'<span class=syntax_green>\1</span>', val)
-        return PRE(XML(val))
-
 class table_charts(HtmlTable):
     def __init__(self, id=None, func=None, innerhtml=None):
         if id is None and 'tableid' in request.vars:
@@ -175,9 +168,10 @@ class table_charts(HtmlTable):
                 field = 'chart_name',
                 display = True,
                 table = 'charts',
-                img = 'spark16'
+                img = 'spark16',
+                _class = 'chart_name',
             ),
-            'chart_yaml': col_yaml(
+            'chart_yaml': HtmlTableColumn(
                 title = 'Definition',
                 field = 'chart_yaml',
                 display = True,
@@ -195,77 +189,15 @@ class table_charts(HtmlTable):
         }
         self.ajax_col_values = 'ajax_charts_admin_col_values'
         self.dbfilterable = True
-        self.checkboxes = False
+        self.checkboxes = True
         self.dataable = True
         self.wsable = True
-        self.extrarow = True
-        self.extrarow_class = 'charts_links'
         self.extraline = True
-
-        if 'Manager' in user_groups():
-            self.additional_tools.append('add_chart')
-
-    def format_extrarow(self, o):
-        d = ""
-
-    def add_chart(self):
-        d = DIV(
-              A(
-                T("Add chart"),
-                _href=URL(r=request, f='charts_editor'),
-                _class='add16',
-              ),
-              _class='floatw',
-            )
-        return d
-
-@auth.requires_membership('Manager')
-def charts_editor():
-    q = db.charts.id == request.vars.chart_id
-    rows = db(q).select()
-
-    if len(rows) == 1:
-        record = rows[0]
-    else:
-        record = None
-
-    form = SQLFORM(db.charts,
-                 record=record,
-                 deletable=True,
-                 fields=['chart_name',
-                         'chart_yaml',],
-                 labels={'chart_name': T('Chart name'),
-                         'chart_yaml': T('Chart definition'),
-                        }
-                )
-    form.custom.widget.chart_yaml['_class'] = 'pre'
-    form.custom.widget.chart_yaml['_style'] = 'min-width:60em;min-height:60em'
-    if form.accepts(request.vars):
-        if request.vars.chart_id is None:
-            _log('chart.add',
-                 "Created chart '%(chart_name)s' with definition:\n%(chart_yaml)s",
-                     dict(chart_name=request.vars.chart_name,
-                          chart_yaml=request.vars.chart_yaml))
-        elif request.vars.delete_this_record == 'on':
-            _log('chart.delete',
-                 "Deleted chart '%(chart_name)s' with definition:\n%(chart_yaml)s",
-                     dict(chart_name=request.vars.chart_name,
-                          chart_yaml=request.vars.chart_yaml))
-        else:
-            _log('chart.change',
-                 "Changed chart '%(chart_name)s' with definition:\n%(chart_yaml)s",
-                     dict(chart_name=request.vars.chart_name,
-                          chart_yaml=request.vars.chart_yaml))
-
-        session.flash = T("Chart recorded")
-        redirect(URL(r=request, c='charts', f='charts_admin'))
-    elif form.errors:
-        response.flash = T("errors in form")
-    return dict(form=form)
 
 @auth.requires_login()
 def ajax_charts_admin_col_values():
-    t = table_charts('charts', 'ajax_charts_admin')
+    table_id = request.vars.table_id
+    t = table_charts(table_id, 'ajax_charts_admin')
 
     col = request.args[0]
     o = db.charts[col]
@@ -277,7 +209,8 @@ def ajax_charts_admin_col_values():
 
 @auth.requires_login()
 def ajax_charts_admin():
-    t = table_charts('charts', 'ajax_charts_admin')
+    table_id = request.vars.table_id
+    t = table_charts(table_id, 'ajax_charts_admin')
 
     o = db.charts.chart_name
     q = db.charts.id > 0
@@ -293,10 +226,8 @@ def ajax_charts_admin():
 
 @auth.requires_login()
 def charts_admin():
-    t = table_charts('charts', 'ajax_charts_admin')
-    t = DIV(
-          t.html(),
-          _id='charts',
+    t = SCRIPT(
+          """$.when(osvc.app_started).then(function(){ table_charts("layout", %s) })""" % request_vars_to_table_options(),
         )
     return dict(table=t)
 
@@ -350,7 +281,7 @@ class table_reports_admin(HtmlTable):
         self.dbfilterable = True
         self.dataable = True
         self.wsable = True
-        self.checkboxes = False
+        self.checkboxes = True
         self.extrarow = True
         self.extrarow_class = 'reports_links'
         self.extraline = True

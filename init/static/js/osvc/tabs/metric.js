@@ -152,7 +152,6 @@ function metric_request(divid, options) {
 			return
 		}
 		var options = {"metric_id" : o.options.metric_id}
-		console.log(div.attr("id"), options)
 		metric(div.attr("id"), options)
 	}
 

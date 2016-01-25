@@ -1,3 +1,207 @@
+#
+# Charts
+#
+class rest_delete_reports_chart(rest_delete_handler):
+    def __init__(self):
+        desc = [
+          "Delete a chart",
+        ]
+        examples = [
+          "# curl -u %(email)s -X DELETE -o- https://%(collector)s/init/rest/api/reports/charts/1"
+        ]
+
+        rest_delete_handler.__init__(
+          self,
+          path="/reports/charts/<id>",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, id, **vars):
+        check_privilege("ReportsManager")
+
+        q = db.charts.id == id
+        chart = db(q).select().first()
+        if chart is None:
+            raise Exception("Chart %s not found"%str(id))
+
+        chart_id = db(q).delete()
+
+        fmt = "Chart %(chart_name)s deleted"
+        d = dict(chart_name=chart.chart_name)
+
+        _log('chart.del', fmt, d)
+        l = {
+          'event': 'charts_change',
+          'data': {'id': chart.id},
+        }
+        _websocket_send(event_msg(l))
+
+        return dict(info=fmt%d)
+
+class rest_delete_reports_charts(rest_delete_handler):
+    def __init__(self):
+        desc = [
+          "Delete charts",
+        ]
+        examples = [
+          "# curl -u %(email)s -X DELETE -o- https://%(collector)s/init/rest/api/reports/charts"
+        ]
+
+        rest_delete_handler.__init__(
+          self,
+          path="/reports/charts",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, **vars):
+        if not 'id' in vars:
+            raise Exception("The 'id' key is mandatory")
+
+        chart_id = vars["id"]
+        del(vars["id"])
+        return rest_delete_reports_chart().handler(chart_id, **vars)
+
+class rest_post_reports_charts(rest_post_handler):
+    def __init__(self):
+        desc = [
+          "Modify or create charts",
+        ]
+        examples = [
+          "# curl -u %(email)s -X POST -d chart_name=test -o- https://%(collector)s/init/rest/api/reports/charts"
+        ]
+
+        rest_post_handler.__init__(
+          self,
+          path="/reports/charts",
+          tables=["charts"],
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, **vars):
+        check_privilege("ReportsManager")
+
+        if 'id' in vars:
+            chart_id = vars["id"]
+            del(vars["id"])
+            return rest_post_reports_chart().handler(chart_id, **vars)
+
+        if "chart_name" not in vars:
+            raise Exception("Key 'chart_name' is mandatory")
+        chart_name = vars.get("chart_name")
+
+        #vars["chart_created"] = datetime.datetime.now()
+        #vars["chart_author"] = user_name()
+
+        chart_id = db.charts.insert(**vars)
+        #lib_reports_add_default_team_responsible(chart_id)
+        #lib_reports_add_default_team_publication(chart_id)
+
+        fmt = "Chart %(chart_name)s added"
+        d = dict(chart_name=chart_name)
+
+        _log('chart.add', fmt, d)
+        l = {
+          'event': 'charts_change',
+          'data': {'id': chart_id},
+        }
+        _websocket_send(event_msg(l))
+
+        return rest_get_reports_chart().handler(chart_id)
+
+
+class rest_post_reports_chart(rest_post_handler):
+    def __init__(self):
+        desc = [
+          "Modify a chart properties",
+        ]
+        examples = [
+          "# curl -u %(email)s -X POST -d chart_name=test -o- https://%(collector)s/init/rest/api/reports/charts/1"
+        ]
+
+        rest_post_handler.__init__(
+          self,
+          path="/reports/charts/<id>",
+          tables=["charts"],
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, id, **vars):
+        check_privilege("ReportsManager")
+
+        if "id" in vars:
+            del(vars["id"])
+
+        q = db.charts.id == id
+        chart = db(q).select().first()
+        if chart is None:
+            raise Exception("Chart %s not found"%str(id))
+
+        db(q).update(**vars)
+
+        fmt = "Chart %(chart_name)s change: %(data)s"
+        d = dict(chart_name=chart.chart_name, data=beautify_change(chart, vars))
+
+        _log('chart.change', fmt, d)
+        l = {
+          'event': 'charts_change',
+          'data': {'id': chart.id},
+        }
+        _websocket_send(event_msg(l))
+
+        ret = rest_get_reports_chart().handler(chart.id)
+        ret["info"] = fmt % d
+        return ret
+
+class rest_get_reports_charts(rest_get_table_handler):
+    def __init__(self):
+        desc = [
+          "Display reports charts list.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/reports/charts",
+        ]
+        rest_get_table_handler.__init__(
+          self,
+          path="/reports/charts",
+          tables=["charts"],
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, **vars):
+        q = db.charts.id > 0
+        self.set_q(q)
+        return self.prepare_data(**vars)
+
+class rest_get_reports_chart(rest_get_line_handler):
+    def __init__(self):
+        desc = [
+          "Display report chart details.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/reports/charts/1",
+        ]
+        rest_get_line_handler.__init__(
+          self,
+          path="/reports/charts/<id>",
+          tables=["charts"],
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, id, **vars):
+        q = db.charts.id == id
+        self.set_q(q)
+        return self.prepare_data(**vars)
+
+
+#
+# Metrics
+#
 class rest_delete_reports_metric(rest_delete_handler):
     def __init__(self):
         desc = [
