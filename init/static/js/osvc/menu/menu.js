@@ -339,7 +339,8 @@ var menu_data = {
 		  "title" : "metrics",
 		  "class" : "spark16",
 		  "id" : "adm-metrics",
-		  "link" : "/init/charts/metrics_admin"
+		  "link" : "/init/charts/metrics_admin",
+                  "fn": "table_metrics"
 		},
 		{
 		  "title" : "charts",

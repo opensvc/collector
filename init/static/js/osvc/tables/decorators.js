@@ -1983,6 +1983,21 @@ function cell_decorator_modset_name(e) {
   })
 }
 
+function cell_decorator_metric_name(e) {
+  var v = $.data(e, "v")
+  $(e).html("<span class='clickable'>"+v+"</span>")
+  $(e).addClass("corner")
+  $(e).click(function(){
+    var line = $(this).parent(".tl")
+    var metric_id = $.data(line.children("[col=id]")[0], "v")
+    table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
+    span_id = $(e).parent(".tl").attr("spansum")
+    id = table_id + "_x_" + span_id
+    toggle_extra(null, id, e, 0)
+    metric_tabs(id, {"metric_id": metric_id, "metric_name": v})
+  })
+}
+
 function cell_decorator_form_name(e) {
   var v = $.data(e, "v")
   $(e).html("<span class='clickable'>"+v+"</span>")
@@ -2447,33 +2462,6 @@ function cell_decorator_charts_links(e) {
     $(e).parent(".tl").after("<tr class='extraline stackable'><td colspan='14' id='"+id+"'></td></tr>")
     var options = {"chart_id" : chart_id}
     chart(id, options)
-  })
-  $(e).append(d)
-}
-
-function cell_decorator_metrics_links(e) {
-  $(e).empty()
-  $(e).addClass("corner nowrap")
-
-  // editor
-  var line = $(e).parent(".tl")
-  var id = $.data(line.children("[col=id]")[0], "v")
-  var query = "metric_id="+id
-  url = services_get_url() + "/init/charts/metrics_editor?"+query
-  var d = "<a class='clickable edit16' target='_blank' href="+url+"></a>"
-  $(e).append(d)
-
-  // test metric
-  var d = $("<span></span>")
-  $(d).addClass("clickable action16")
-  $(d).click(function(){
-    var table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
-    var span_id = $(e).parent(".tl").attr("spansum")
-    var id = table_id + "_x_" + span_id
-    var metric_id = $.data($(this).parents(".tl").first().children("[col=id]")[0], "v")
-    $(e).parent(".tl").after("<tr class='extraline stackable'><td colspan='14' id="+id+"></td></tr>")
-    var options = {"metric_id" : metric_id}
-    metric(id, options)
   })
   $(e).append(d)
 }
@@ -3516,7 +3504,7 @@ cell_decorators = {
  "date_no_age": cell_decorator_date_no_age,
  "dash_severity": cell_decorator_dash_severity,
  "dash_links": cell_decorator_dash_links,
- "metrics_links": cell_decorator_metrics_links,
+ "metric_name": cell_decorator_metric_name,
  "charts_links": cell_decorator_charts_links,
  "reports_links": cell_decorator_reports_links,
  "dns_records_type": cell_decorator_dns_records_type,

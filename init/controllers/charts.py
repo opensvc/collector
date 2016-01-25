@@ -49,7 +49,8 @@ class table_metrics(HtmlTable):
                 field = 'metric_name',
                 display = True,
                 table = 'metrics',
-                img = 'prov'
+                img = 'prov',
+                _class='metric_name',
             ),
             'metric_sql': HtmlTableColumn(
                 title = 'SQL request',
@@ -99,83 +100,14 @@ class table_metrics(HtmlTable):
         self.dbfilterable = True
         self.dataable = True
         self.wsable = True
-        self.checkboxes = False
-        self.extrarow = True
+        self.checkboxes = True
         self.extraline = True
-        self.extrarow_class = "metrics_links"
-
-        if 'Manager' in user_groups():
-            self.additional_tools.append('add_metrics')
-
-
-    def format_extrarow(self, o):
-        d = ""
-
-    def add_metrics(self):
-        d = DIV(
-              A(
-                T("Add metric"),
-                _href=URL(r=request, f='metrics_editor'),
-                _class='add16',
-              ),
-              _class='floatw',
-            )
-        return d
-
-@auth.requires_membership('Manager')
-def metrics_editor():
-    q = db.metrics.id == request.vars.metric_id
-    rows = db(q).select()
-
-    if len(rows) == 1:
-        record = rows[0]
-    else:
-        record = None
-
-    db.metrics.metric_author.default = user_name()
-    form = SQLFORM(db.metrics,
-                 record=record,
-                 deletable=True,
-                 fields=['metric_name',
-                         'metric_sql',
-                         'metric_col_value_index',
-                         'metric_col_instance_index',
-                         'metric_col_instance_label',],
-                 labels={'metric_name': T('Metric name'),
-                         'metric_sql': T('Metric SQL request'),
-                         'metric_col_value_index': T('Metric value column index'),
-                         'metric_col_instance_index': T('Metric instance column index'),
-                         'metric_col_instance_label': T('Metric instance label'),
-                        }
-                )
-    form.custom.widget.metric_sql['_class'] = 'pre'
-    form.custom.widget.metric_sql['_style'] = 'min-width:60em;min-height:60em'
-    if form.accepts(request.vars):
-        if request.vars.metric_id is None:
-            _log('metric.add',
-                 "Created metric '%(metric_name)s' with definition:\n%(metric_sql)s",
-                     dict(metric_name=request.vars.metric_name,
-                          metric_sql=request.vars.metric_sql))
-        elif request.vars.delete_this_record == 'on':
-            _log('metric.delete',
-                 "Deleted metric '%(metric_name)s' with definition:\n%(metric_sql)s",
-                     dict(metric_name=request.vars.metric_name,
-                          metric_sql=request.vars.metric_sql))
-        else:
-            _log('metric.change',
-                 "Changed metric '%(metric_name)s' with definition:\n%(metric_sql)s",
-                     dict(metric_name=request.vars.metric_name,
-                          metric_sql=request.vars.metric_sql))
-
-        session.flash = T("Metric recorded")
-        redirect(URL(r=request, c='charts', f='metrics_admin'))
-    elif form.errors:
-        response.flash = T("errors in form")
-    return dict(form=form)
+        self.events = ["metrics_change"]
 
 @auth.requires_login()
 def ajax_metrics_admin_col_values():
-    t = table_metrics('metrics', 'ajax_metrics_admin')
+    table_id = request.vars.table_id
+    t = table_metrics(table_id, 'ajax_metrics_admin')
 
     col = request.args[0]
     o = db.metrics[col]
@@ -187,7 +119,8 @@ def ajax_metrics_admin_col_values():
 
 @auth.requires_login()
 def ajax_metrics_admin():
-    t = table_metrics('metrics', 'ajax_metrics_admin')
+    table_id = request.vars.table_id
+    t = table_metrics(table_id, 'ajax_metrics_admin')
 
     o = db.metrics.metric_name
     q = db.metrics.id > 0
@@ -203,10 +136,8 @@ def ajax_metrics_admin():
 
 @auth.requires_login()
 def metrics_admin():
-    t = table_metrics('metrics', 'ajax_metrics_admin')
-    t = DIV(
-          t.html(),
-          _id='metrics',
+    t = SCRIPT(
+          """$.when(osvc.app_started).then(function(){ table_metrics("layout", %s) })""" % request_vars_to_table_options(),
         )
     return dict(table=t)
 

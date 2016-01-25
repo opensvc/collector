@@ -21,6 +21,8 @@
     "refresh": "Refresh list and alerts",
     "set_warn_date": "Set warn date",
     "set_alert_date": "Set alert date",
+    "metric_createable": "This metric name does not exist yet. Press <enter> to create.",
+    "on_metrics": "On metrics",
     "on_prov_templates": "On provisioning templates",
     "on_obsolescence_settings": "On obsolescence settings",
     "on_dns_domains": "On dns domains",
@@ -314,6 +316,19 @@
     "last_change": "Last change",
     "type": "Type"
   },
+  "metric_properties": {
+    "base": "Base",
+    "dates": "Dates",
+    "metric_name": "Name",
+    "id": "Id",
+    "metric_col_value_index": "Value column index",
+    "metric_col_instance_index": "Instance column index",
+    "metric_col_instance_label": "Instance column label",
+    "metric_author": "Author",
+    "metric_created": "Created",
+    "save": "save",
+    "no_request": "No request definition. Click to edit."
+  },
   "prov_template_properties": {
     "no_command": "No provisioning command definition. Click to edit.",
     "save": "save",
@@ -567,6 +582,10 @@
   "dns_record_tabs": {
     "properties": "properties",
     "nodes": "nodes"
+  },
+  "metric_tabs": {
+    "request": "request",
+    "properties": "properties"
   },
   "form_tabs": {
     "request": "request",

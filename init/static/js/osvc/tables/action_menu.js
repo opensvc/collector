@@ -147,6 +147,30 @@ function table_action_menu_init_data(t) {
         {
           "selector": ["clicked", "checked", "all"],
           "foldable": true,
+          'title': 'action_menu.on_metrics',
+          "table": ["metrics"],
+          "cols": ["id"],
+          "condition": "id",
+          "children": [
+            {
+              "title": "action_menu.add",
+              "class": "icon add16",
+              "fn": "data_action_add_metric",
+              "privileges": ["Manager", "ReportsManager"],
+              "min": 0
+            },
+            {
+              "title": "action_menu.del",
+              "class": "icon del16",
+              "fn": "data_action_del_metrics",
+              "privileges": ["Manager", "ReportsManager"],
+              "min": 1
+            }
+          ]
+        },
+        {
+          "selector": ["clicked", "checked", "all"],
+          "foldable": true,
           'title': 'action_menu.on_prov_templates',
           "table": ["templates"],
           "cols": ["id"],
@@ -3053,6 +3077,39 @@ function data_action_ack_actions(t, e) {
   form.append(yes_no)
   form.insertAfter(entry)
   c.focus()
+}
+
+//
+// data action: add metric
+//
+function data_action_add_metric(t, e) {
+  data_action_generic_add(t, e, {
+    "request_service": "/reports/metrics",
+    "properties_tab": function(divid, data) {
+      metric_properties(divid, {"metric_id": data.id})
+    },
+    "createable_message": "action_menu.metric_createable",
+    "inputs": [
+      {
+        "title": "metric_properties.metric_name",
+        "key": "metric_name"
+      }
+     ]
+  })
+}
+
+//
+// data action: delete metrics
+//
+function data_action_del_metrics(t, e) {
+  data_action_generic_delete(t, e, {
+    "request_service": "/reports/metrics",
+    "request_data_entry": function(data) {
+      return {
+        'id': data['id']
+      }
+    }
+  })
 }
 
 //
