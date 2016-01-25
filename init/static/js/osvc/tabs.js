@@ -185,11 +185,38 @@ tab_properties_generic_autocomplete = function(options) {
 				}
 				e.prev().text(input.val()).show()
 				input.blur()
+				tab_properties_generic_update_peers(options.div)
+				tab_properties_generic_lists_refresh(options.div)
 			},
 			function(xhr, stat, error) {
 				$(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
 			})
 		})
+	})
+}
+
+function tab_properties_generic_update_peers(div) {
+	var val = div.text()
+	$("[upd]#"+div.attr("id")).each(function(){
+		if ($(this)[0] == div[0]) {
+			return
+		}
+		$(this).text(val)
+	})
+}
+
+function tab_properties_generic_lists_refresh(div) {
+	$("[generic_list]").each(function(){
+		var genlist = $(this)[0].generic_list
+		if (!genlist.options.depends) {
+			return
+		}
+		for (var i=0; i<genlist.options.depends.length; i++) {
+			var depend = genlist.options.depends[i]
+			if (div.attr("id") == depend) {
+				genlist.refresh()
+			}
+		}
 	})
 }
 
@@ -294,6 +321,8 @@ tab_properties_generic_boolean = function(options) {
 			} else {
 				options.div.removeClass("toggle-off").addClass("toggle-on")
 			}
+			tab_properties_generic_update_peers(options.div)
+			tab_properties_generic_lists_refresh(options.div)
 		},
 		function() {}
 	)}
@@ -357,6 +386,8 @@ tab_properties_generic_simple = function(options) {
 				} else {
 					cell.text(val).show()
 				}
+				tab_properties_generic_update_peers(options.div)
+				tab_properties_generic_lists_refresh(options.div)
 			},
 			function(xhr, stat, error) {
 				$(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
@@ -430,17 +461,26 @@ tab_properties_generic_list = function(options) {
 		render(options.data, options.data.length, options.data.length)
 		return
 	}
-	spinner_add(options.e_list)
-	services_osvcgetrest(options.request_service, options.request_parameters, options.request_data, function(jd) {
-		spinner_del(options.e_list)
-		if (!jd.data) {
-			return
+
+	function refresh() {
+		if (typeof(options.request_parameters) === "function") {
+			options.last_request_parameters = options.request_parameters()
+		} else {
+			options.last_request_parameters = options.request_parameters
 		}
-		render(jd.data, jd.meta.count, jd.meta.total)
-	})
+		spinner_add(options.e_list)
+		services_osvcgetrest(options.request_service, options.last_request_parameters, options.request_data, function(jd) {
+			spinner_del(options.e_list)
+			if (!jd.data) {
+				return
+			}
+			render(jd.data, jd.meta.count, jd.meta.total)
+		})
+	}
 
 	function render(data, n, total) {
-		options.e_title.append(" ("+total+")")
+		var title = options.e_title.text().replace(/\s*\([0-9]+\)\s*/, "")
+		options.e_title.text(title + " ("+total+")")
 		options.e_list.empty()
 		for (var i=0; i<data.length; i++) {
 			var e = $("<span style='display:inline-block;padding:0 0.2em'></span>")
@@ -467,6 +507,12 @@ tab_properties_generic_list = function(options) {
 			options.e_list.append(e)
 		}
 	}
+
+	refresh()
+	options.e_list.attr("generic_list", "")
+	options.e_list[0].generic_list = {}
+	options.e_list[0].generic_list.options = options
+	options.e_list[0].generic_list.refresh = refresh
 }
 
 

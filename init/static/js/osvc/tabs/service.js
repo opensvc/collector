@@ -306,10 +306,11 @@ function service_properties(divid, options)
 			o.responsibles_title = o.div.find("#responsibles_title")
 			tab_properties_generic_list({
 				"request_service": "R_APP_RESPONSIBLES",
-				"request_parameters": [data.svc_app],
+				"request_parameters": function(){return [o.div.find("#svc_app").text()]},
 				"limit": "0",
 				"key": "role",
 				"item_class": "guys16",
+				"depends": ["svc_app"],
 				"e_title": o.responsibles_title,
 				"e_list": o.responsibles
 			})
