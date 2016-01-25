@@ -259,7 +259,8 @@ class table_reports_admin(HtmlTable):
                 field = 'report_name',
                 display = True,
                 table = 'reports',
-                img = 'spark16'
+                img = 'spark16',
+                _class='report_name',
             ),
             'report_yaml': HtmlTableColumn(
                 title = 'Definition',
@@ -282,74 +283,12 @@ class table_reports_admin(HtmlTable):
         self.dataable = True
         self.wsable = True
         self.checkboxes = True
-        self.extrarow = True
-        self.extrarow_class = 'reports_links'
         self.extraline = True
-
-        if 'Manager' in user_groups():
-            self.additional_tools.append('add_report')
-
-    def format_extrarow(self, o):
-        d = ''
-
-    def add_report(self):
-        d = DIV(
-              A(
-                T("Add report"),
-                _href=URL(r=request, f='reports_editor'),
-                _class='add16',
-              ),
-              _class='floatw',
-            )
-        return d
-
-@auth.requires_membership('Manager')
-def reports_editor():
-    q = db.reports.id == request.vars.report_id
-    rows = db(q).select()
-
-    if len(rows) == 1:
-        record = rows[0]
-    else:
-        record = None
-
-    form = SQLFORM(db.reports,
-                 record=record,
-                 deletable=True,
-                 fields=['report_name',
-                         'report_yaml',],
-                 labels={'report_name': T('Chart name'),
-                         'report_yaml': T('Chart definition'),
-                        }
-                )
-    form.custom.widget.report_yaml['_class'] = 'pre'
-    form.custom.widget.report_yaml['_style'] = 'min-width:60em;min-height:60em'
-    if form.accepts(request.vars):
-        if request.vars.report_id is None:
-            _log('report.add',
-                 "Created report '%(report_name)s' with definition:\n%(report_yaml)s",
-                     dict(report_name=request.vars.report_name,
-                          report_yaml=request.vars.report_yaml))
-        elif request.vars.delete_this_record == 'on':
-            _log('report.delete',
-                 "Deleted report '%(report_name)s' with definition:\n%(report_yaml)s",
-                     dict(report_name=request.vars.report_name,
-                          report_yaml=request.vars.report_yaml))
-        else:
-            _log('report.change',
-                 "Changed report '%(report_name)s' with definition:\n%(report_yaml)s",
-                     dict(report_name=request.vars.report_name,
-                          report_yaml=request.vars.report_yaml))
-
-        session.flash = T("Report recorded")
-        redirect(URL(r=request, c='charts', f='reports_admin'))
-    elif form.errors:
-        response.flash = T("errors in form")
-    return dict(form=form)
 
 @auth.requires_login()
 def ajax_reports_admin_col_values():
-    t = table_reports_admin('reports', 'ajax_reports_admin')
+    table_id = request.vars.table_id
+    t = table_reports_admin(table_id, 'ajax_reports_admin')
 
     col = request.args[0]
     o = db.reports[col]
@@ -361,7 +300,8 @@ def ajax_reports_admin_col_values():
 
 @auth.requires_login()
 def ajax_reports_admin():
-    t = table_reports_admin('reports', 'ajax_reports_admin')
+    table_id = request.vars.table_id
+    t = table_reports_admin(table_id, 'ajax_reports_admin')
 
     o = db.reports.report_name
     q = db.reports.id > 0
@@ -377,10 +317,8 @@ def ajax_reports_admin():
 
 @auth.requires_login()
 def reports_admin():
-    t = table_reports_admin('reports', 'ajax_reports_admin')
-    t = DIV(
-          t.html(),
-          _id='reports',
+    t = SCRIPT(
+          """$.when(osvc.app_started).then(function(){ table_reports("layout", %s) })""" % request_vars_to_table_options(),
         )
     return dict(table=t)
 
@@ -390,16 +328,17 @@ def reports_admin_load():
 
 @auth.requires_login()
 def reports():
-    d = DIV(
-          DIV(
-           _id="reports_div",
-          ),
-          SCRIPT( """reports('reports_div');""")
+    t = SCRIPT(
+          """$.when(osvc.app_started).then(function(){ reports("layout") })""",
         )
     return dict(table=d)
 
 def reports_load():
     return reports()["table"]
 
+
+#
+# Batchs
+#
 def batch_task_metrics():
     task_metrics()

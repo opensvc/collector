@@ -21,8 +21,10 @@
     "refresh": "Refresh list and alerts",
     "set_warn_date": "Set warn date",
     "set_alert_date": "Set alert date",
+    "report_createable": "This report name does not exist yet. Press <enter> to create.",
     "chart_createable": "This chart name does not exist yet. Press <enter> to create.",
     "metric_createable": "This metric name does not exist yet. Press <enter> to create.",
+    "on_reports": "On reports",
     "on_charts": "On charts",
     "on_metrics": "On metrics",
     "on_prov_templates": "On provisioning templates",
@@ -318,8 +320,15 @@
     "last_change": "Last change",
     "type": "Type"
   },
-  "chart_properties": {
+  "report_properties": {
     "no_yaml": "No chart definition. Click to edit.",
+    "base": "Base",
+    "report_name": "Name",
+    "save": "save",
+    "id": "Id"
+  },
+  "chart_properties": {
+    "no_yaml": "No report definition. Click to edit.",
     "base": "Base",
     "chart_name": "Name",
     "save": "save",
@@ -591,6 +600,10 @@
   "dns_record_tabs": {
     "properties": "properties",
     "nodes": "nodes"
+  },
+  "report_tabs": {
+    "definition": "definition",
+    "properties": "properties"
   },
   "chart_tabs": {
     "definition": "definition",

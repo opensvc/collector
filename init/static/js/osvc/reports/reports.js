@@ -306,7 +306,7 @@ function report(divid, options) {
 	}
 
 	o.load = function() {
-		services_osvcgetrest("R_GET_REPORT", [o.options.report_id], {"meta": "false", "limit": "0"}, function(jd) {
+		services_osvcgetrest("/reports/%1/definition", [o.options.report_id], {"meta": "false", "limit": "0"}, function(jd) {
 			if (jd.error && (jd.error.length > 0)) {
 				$(".flash").show("blind").html(services_error_fmt(jd))
 				return

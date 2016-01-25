@@ -77,3 +77,43 @@ function table_charts(divid, options) {
 }
 
 
+table_reports_defaults = {
+     'pager': {'page': 1},
+     'extrarow': false,
+     'extrarow_class': "",
+     'flash': "",
+     'checkboxes': true,
+     'ajax_url': '/init/charts/ajax_reports_admin',
+     'span': ['id'],
+     'force_cols': ['id'],
+     'columns': ['id', 'report_name', 'report_yaml'],
+     'colprops': {'report_yaml': {'field': 'report_yaml', 'filter_redirect': '', 'force_filter': '', 'img': 'log16', '_dataclass': '', 'title': 'Definition', '_class': 'yaml', 'table': 'reports', 'display': 1, 'default_filter': ''}, 'id': {'field': 'id', 'filter_redirect': '', 'force_filter': '', 'img': 'key', '_dataclass': '', 'title': 'Id', '_class': '', 'table': 'reports', 'display': 1, 'default_filter': ''}, 'report_name': {'field': 'report_name', 'filter_redirect': '', 'force_filter': '', 'img': 'spark16', '_dataclass': '', 'title': 'Name', '_class': 'report_name', 'table': 'reports', 'display': 1, 'default_filter': ''}},
+     'volatile_filters': false,
+     'child_tables': [],
+     'parent_tables': [],
+     'dataable': true,
+     'linkable': true,
+     'dbfilterable': true,
+     'filterable': true,
+     'refreshable': true,
+     'bookmarkable': true,
+     'exportable': true,
+     'columnable': true,
+     'commonalityable': true,
+     'headers': true,
+     'wsable': true,
+     'pageable': true,
+     'on_change': false,
+     'events': ['reports_change'],
+     'request_vars': {}
+}
+
+function table_reports(divid, options) {
+  var _options = {"id": "reports"}
+  $.extend(true, _options, table_reports_defaults, options)
+  _options.divid = divid
+  _options.caller = "table_reports"
+  table_init(_options)
+}
+
+

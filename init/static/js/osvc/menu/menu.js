@@ -200,7 +200,8 @@ var menu_data = {
 		  "title" : "reports",
 		  "class" : "spark16",
 		  "id" : "stat-reports",
-		  "link" : "/init/charts/reports"
+		  "link" : "/init/charts/reports",
+		  "fn" : "reports"
 		},
 		{
 		  "title" : "site",
@@ -353,7 +354,8 @@ var menu_data = {
 		  "title" : "reports",
 		  "class" : "spark16",
 		  "id" : "adm-reports",
-		  "link" : "/init/charts/reports_admin"
+		  "link" : "/init/charts/reports_admin",
+		  "fn" : "table_reports"
 		},
 		{
 		  "title" : "tags",

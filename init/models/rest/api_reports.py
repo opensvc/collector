@@ -1,4 +1,205 @@
 #
+# Reports
+#
+class rest_delete_report(rest_delete_handler):
+    def __init__(self):
+        desc = [
+          "Delete a report",
+        ]
+        examples = [
+          "# curl -u %(email)s -X DELETE -o- https://%(collector)s/init/rest/api/reports/1"
+        ]
+
+        rest_delete_handler.__init__(
+          self,
+          path="/reports/<id>",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, id, **vars):
+        check_privilege("ReportsManager")
+
+        q = db.reports.id == id
+        report = db(q).select().first()
+        if report is None:
+            raise Exception("Report %s not found"%str(id))
+
+        report_id = db(q).delete()
+
+        fmt = "Report %(report_name)s deleted"
+        d = dict(report_name=report.report_name)
+
+        _log('report.del', fmt, d)
+        l = {
+          'event': 'reports_change',
+          'data': {'id': report.id},
+        }
+        _websocket_send(event_msg(l))
+
+        return dict(info=fmt%d)
+
+class rest_delete_reports(rest_delete_handler):
+    def __init__(self):
+        desc = [
+          "Delete reports",
+        ]
+        examples = [
+          "# curl -u %(email)s -X DELETE -o- https://%(collector)s/init/rest/api/reports"
+        ]
+
+        rest_delete_handler.__init__(
+          self,
+          path="/reports",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, **vars):
+        if not 'id' in vars:
+            raise Exception("The 'id' key is mandatory")
+
+        report_id = vars["id"]
+        del(vars["id"])
+        return rest_delete_report().handler(report_id, **vars)
+
+class rest_post_reports(rest_post_handler):
+    def __init__(self):
+        desc = [
+          "Modify or create reports",
+        ]
+        examples = [
+          "# curl -u %(email)s -X POST -d report_name=test -o- https://%(collector)s/init/rest/api/reports"
+        ]
+
+        rest_post_handler.__init__(
+          self,
+          path="/reports",
+          tables=["reports"],
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, **vars):
+        check_privilege("ReportsManager")
+
+        if 'id' in vars:
+            report_id = vars["id"]
+            del(vars["id"])
+            return rest_post_report().handler(report_id, **vars)
+
+        if "report_name" not in vars:
+            raise Exception("Key 'report_name' is mandatory")
+        report_name = vars.get("report_name")
+
+        #vars["report_created"] = datetime.datetime.now()
+        #vars["report_author"] = user_name()
+
+        report_id = db.reports.insert(**vars)
+        #lib_reports_add_default_team_responsible(report_id)
+        #lib_reports_add_default_team_publication(report_id)
+
+        fmt = "Chart %(report_name)s added"
+        d = dict(report_name=report_name)
+
+        _log('report.add', fmt, d)
+        l = {
+          'event': 'reports_change',
+          'data': {'id': report_id},
+        }
+        _websocket_send(event_msg(l))
+
+        return rest_get_report().handler(report_id)
+
+
+class rest_post_report(rest_post_handler):
+    def __init__(self):
+        desc = [
+          "Modify a report properties",
+        ]
+        examples = [
+          "# curl -u %(email)s -X POST -d report_name=test -o- https://%(collector)s/init/rest/api/reports/1"
+        ]
+
+        rest_post_handler.__init__(
+          self,
+          path="/reports/<id>",
+          tables=["reports"],
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, id, **vars):
+        check_privilege("ReportsManager")
+
+        if "id" in vars:
+            del(vars["id"])
+
+        q = db.reports.id == id
+        report = db(q).select().first()
+        if report is None:
+            raise Exception("Chart %s not found"%str(id))
+
+        db(q).update(**vars)
+
+        fmt = "Chart %(report_name)s change: %(data)s"
+        d = dict(report_name=report.report_name, data=beautify_change(report, vars))
+
+        _log('report.change', fmt, d)
+        l = {
+          'event': 'reports_change',
+          'data': {'id': report.id},
+        }
+        _websocket_send(event_msg(l))
+
+        ret = rest_get_report().handler(report.id)
+        ret["info"] = fmt % d
+        return ret
+
+class rest_get_reports(rest_get_table_handler):
+    def __init__(self):
+        desc = [
+          "Display reports list.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/reports",
+        ]
+        rest_get_table_handler.__init__(
+          self,
+          path="/reports",
+          tables=["reports"],
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, **vars):
+        q = db.reports.id > 0
+        self.set_q(q)
+        return self.prepare_data(**vars)
+
+class rest_get_report(rest_get_line_handler):
+    def __init__(self):
+        desc = [
+          "Display report report details.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/reports/1",
+        ]
+        rest_get_line_handler.__init__(
+          self,
+          path="/reports/<id>",
+          tables=["reports"],
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, id, **vars):
+        q = db.reports.id == id
+        self.set_q(q)
+        return self.prepare_data(**vars)
+
+
+#
 # Charts
 #
 class rest_delete_reports_chart(rest_delete_handler):
@@ -400,28 +601,10 @@ class rest_get_reports_metric(rest_get_line_handler):
         return self.prepare_data(**vars)
 
 
-class rest_get_reports(rest_get_table_handler):
-    def __init__(self):
-        desc = [
-          "Display reports list for connected user.",
-        ]
-        examples = [
-          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/reports",
-        ]
-        rest_get_table_handler.__init__(
-          self,
-          path="/reports",
-          tables=["reports"],
-          desc=desc,
-          examples=examples,
-        )
-
-    def handler(self, **vars):
-        q = db.reports.id > 0
-        self.set_q(q)
-        return self.prepare_data(**vars)
-
-class rest_get_report(rest_get_line_handler):
+#
+# for the report explorer and report object
+#
+class rest_get_report_definition(rest_get_line_handler):
     def __init__(self):
         desc = [
           "Display report details for a specific report id.",
@@ -431,7 +614,7 @@ class rest_get_report(rest_get_line_handler):
         ]
         rest_get_line_handler.__init__(
           self,
-          path="/reports/<id>",
+          path="/reports/<id>/definition",
           tables=["reports"],
           desc=desc,
           examples=examples,

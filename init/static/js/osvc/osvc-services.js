@@ -125,7 +125,7 @@ var services_access_uri = {
     "R_IPS" : "/nodes/%1/ips",
     "R_ALERT_EVENT" : "/alert_event",
     "R_GET_REPORTS" : "/reports",
-    "R_GET_REPORT" : "/reports/%1",
+    "R_GET_REPORT" : "/reports/%1/definition",
     "R_GET_REPORT_METRIC" : "/reports/metrics/%1",
     "R_GET_REPORT_METRIC_SAMPLES" : "/reports/metrics/%1/samples",
     "R_GET_REPORT_CHART" : "/reports/charts/%1",

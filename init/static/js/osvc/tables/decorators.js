@@ -1983,6 +1983,21 @@ function cell_decorator_modset_name(e) {
   })
 }
 
+function cell_decorator_report_name(e) {
+  var v = $.data(e, "v")
+  $(e).html("<span class='clickable'>"+v+"</span>")
+  $(e).addClass("corner")
+  $(e).click(function(){
+    var line = $(this).parent(".tl")
+    var report_id = $.data(line.children("[col=id]")[0], "v")
+    table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
+    span_id = $(e).parent(".tl").attr("spansum")
+    id = table_id + "_x_" + span_id
+    toggle_extra(null, id, e, 0)
+    report_tabs(id, {"report_id": report_id, "report_name": v})
+  })
+}
+
 function cell_decorator_chart_name(e) {
   var v = $.data(e, "v")
   $(e).html("<span class='clickable'>"+v+"</span>")
@@ -2426,32 +2441,6 @@ function cell_decorator_status(e) {
     "n/a": "gray",
   }
   $(e).html("<div class='status_icon nowrap icon-"+t[c]+"'>"+v+"</div>")
-}
-
-function cell_decorator_reports_links(e) {
-  $(e).empty()
-  $(e).addClass("corner nowrap")
-
-  var line = $(e).parent(".tl")
-  var id = $.data(line.children("[col=id]")[0], "v")
-  var query = "report_id="+id
-  url = services_get_url() + "/init/charts/reports_editor?"+query
-  var d = "<a class='clickable edit16' target='_blank' href="+url+"></a>"
-  $(e).append(d)
-
-  // test report
-  var d = $("<span></span>")
-  $(d).addClass("clickable action16")
-  $(d).click(function(){
-    var table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
-    var span_id = $(e).parent(".tl").attr("spansum")
-    var id = table_id + "_x_" + span_id
-    var report_id = $.data($(this).parents(".tl").first().children("[col=id]")[0], "v")
-    $(e).parent(".tl").after("<tr class='extraline stackable'><td colspan='14'><table><tr><td id='"+id+"'></td></table></td></tr>")
-    var options = {"report_id" : report_id}
-    report(id, options)
-  })
-  $(e).append(d)
 }
 
 function cell_decorator_dns_records_type(e) {
@@ -3492,9 +3481,9 @@ cell_decorators = {
  "date_no_age": cell_decorator_date_no_age,
  "dash_severity": cell_decorator_dash_severity,
  "dash_links": cell_decorator_dash_links,
+ "report_name": cell_decorator_report_name,
  "chart_name": cell_decorator_chart_name,
  "metric_name": cell_decorator_metric_name,
- "reports_links": cell_decorator_reports_links,
  "dns_records_type": cell_decorator_dns_records_type,
  "tag_exclude": cell_decorator_tag_exclude,
  "form_name": cell_decorator_form_name,
