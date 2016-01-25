@@ -732,7 +732,7 @@ function sysrepdiff(divid, options)
       return sysrepdiff_on_change_filters(this)
     }
     o.sysrep_createlink = function(){
-      return sysrep_createlink(this)
+      return osvc_create_link("sysrepdiff", options)
     }
     o.sysrep_admin_secure = function(){
       return sysrep_admin_secure(this)
