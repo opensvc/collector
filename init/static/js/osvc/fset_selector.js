@@ -4,6 +4,8 @@ function fset_selector(divid, callback) {
 	o.div = $("#"+divid)
 	o.div.empty()
 	o.callback = callback
+	o.get_data = []
+	o.get_deferred = $.Deferred()
 
 	o.load_span = function() {
 		spinner_add(o.div)
@@ -29,23 +31,36 @@ function fset_selector(divid, callback) {
 		return o
 	}
 
+	o.load_data = function() {
+		services_osvcgetrest("R_FILTERSETS", "", {"limit": "0", "props": "id,fset_name", "meta": "0"}, function(jd) {
+			o.get_data = jd.data
+			o.get_deferred.resolve(true)
+		})
+	}
+
 	o.load_area = function() {
+		$.when(
+			o.get_deferred
+		).then(function() {
+			o._load_area()
+		})
+	}
+
+	o._load_area = function() {
 		o.area.empty()
 		var current_fset_id = o.span.attr("fset_id")
 
 		// add the "none" option
 		o.add_fset(-1, i18n.t("fset_selector.none"))
+		for (var i=0; i<o.get_data.length; i++) {
+			var data = o.get_data[i]
+			o.add_fset(data.id, data.fset_name)
+		}
 
-		services_osvcgetrest("R_FILTERSETS", "", {"limit": "0", "props": "id,fset_name", "meta": "0"}, function(jd) {
-			for (var i=0; i<jd.data.length; i++) {
-				var data = jd.data[i]
-				o.add_fset(data.id, data.fset_name)
-			}
-
-			o.area.find("[fset_id="+current_fset_id+"]").addClass("menu_current")
-			o.area.attr("ready", "1")
-		})
+		o.area.find("[fset_id="+current_fset_id+"]").addClass("menu_current")
+		o.area.attr("ready", "1")
 	}
+
 
 	o.set_fset = function(new_fset_id, new_fset_name) {
 		if (new_fset_id <= 0) {
@@ -136,8 +151,8 @@ function fset_selector(divid, callback) {
 		if (!data.event) {
 			return
 		}
-		if (data.event == "gen_filterset_change") {
-			o.container()
+		if (data.event == "gen_filtersets_change") {
+			o.load_data()
 			return
 		}
 		if (data.event == "gen_filterset_user_change") {
@@ -162,6 +177,7 @@ function fset_selector(divid, callback) {
 		o.event_handler(data)
 	}
 
+	o.load_data()
 	o.container()
 	return o
 }
