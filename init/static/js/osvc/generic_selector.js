@@ -4,6 +4,7 @@ function generic_selector(divid, options) {
   //   'url_path': <a rest handler symbolic name as defined in osvc-services.js>
   //   'url_wildcards': <array of values to be substiuted in source>
   //   'url_params': <parameters to set with the GET request>
+  //   'data': <the list of data dictionnary to use instead of the result of a rest get>
   //   'object_id': <the data dictionnary key to use as selector obj id>
   //   'object_name': <the data dictionnary key to use as selector obj label>
   // }
@@ -13,9 +14,22 @@ function generic_selector(divid, options) {
   o.selected_class = "generic_selector_selected"
   o.object_base_class = "generic_selector_object"
 
+  o._init = function() {
+    for (var i=0; i<o.data.length; i++) {
+      o.add_object(o.data[i])
+    }
+  }
+
   o.init = function() {
+    if (typeof(o.multi) === "undefined") {
+      o.multi = true
+    }
     o.object_area = $("<div></div>")
     o.div.append(o.object_area)
+    if (o.data) {
+	o._init()
+        return
+    }
     spinner_add(o.object_area)
     services_osvcgetrest(o.url_path, o.url_wildcards, o.url_params, function(jd) {
       spinner_del(o.object_area)
@@ -23,9 +37,8 @@ function generic_selector(divid, options) {
         o.object_area.html(services_error_fmt(jd))
         return
       }
-      for (var i=0; i<jd.data.length; i++) {
-        o.add_object(jd.data[i])
-      }
+      o.data = jd.data
+      o._init()
     },
     function(xhr, stat, error) {
       o.object_area.html(services_ajax_error_fmt(xhr, stat, error))
@@ -40,6 +53,9 @@ function generic_selector(divid, options) {
     object.text(data[o.object_name])
     o.object_area.append(object)
     object.bind("click", function() {
+      if (o.multi == false) {
+        o.object_area.find("."+o.selected_class).removeClass(o.selected_class)
+      }
       $(this).toggleClass(o.selected_class)
     })
   }
@@ -176,6 +192,72 @@ function generic_selector_groups(id) {
     "object_class": "guys16",
     "object_id": "id",
     "object_name": "role"
+  })
+}
+
+function generic_selector_filtersets(id) {
+  return generic_selector(id, {
+    "url_path": "/filtersets",
+    "url_params": {
+      "orderby": "fset_name",
+      "limit": "0",
+      "props": "id,fset_name",
+      "meta": "0"
+    },
+    "object_class": "filter16",
+    "object_id": "id",
+    "object_name": "fset_name"
+  })
+}
+
+function generic_selector_filters(id) {
+  return generic_selector(id, {
+    "url_path": "/filters",
+    "url_params": {
+      "orderby": "f_label",
+      "limit": "0",
+      "props": "id,f_label",
+      "meta": "0"
+    },
+    "object_class": "filter16",
+    "object_id": "id",
+    "object_name": "f_label"
+  })
+}
+
+function generic_selector_operator(id) {
+  return generic_selector(id, {
+    "data": [
+      {"id": "AND"},
+      {"id": "OR"},
+      {"id": "AND NOT"},
+      {"id": "OR NOT"}
+    ],
+    "object_class": "filter16",
+    "object_id": "id",
+    "object_name": "id",
+    "multi": false
+  })
+}
+
+function generic_selector_order(id) {
+  return generic_selector(id, {
+    "data": [
+      {"id": 0},
+      {"id": 1},
+      {"id": 2},
+      {"id": 3},
+      {"id": 4},
+      {"id": 5},
+      {"id": 6},
+      {"id": 7},
+      {"id": 8},
+      {"id": 9}
+    ],
+    "object_class": "filter16",
+    "object_id": "id",
+    "object_name": "id",
+    "multi": false
   })
 }
 
