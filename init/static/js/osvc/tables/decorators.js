@@ -1957,6 +1957,9 @@ function cell_decorator_prov_template(e) {
 
 function cell_decorator_fset_name(e) {
   var v = $.data(e, "v")
+  if (v == "empty") {
+    return
+  }
   $(e).html("<span class='clickable'>"+v+"</span>")
   $(e).addClass("corner")
   $(e).click(function(){
