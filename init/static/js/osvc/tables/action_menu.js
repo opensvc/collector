@@ -11,6 +11,9 @@ function table_action_menu_init_data(t) {
     "vmname": "[col=vmname]",
     "action": "[col=action]",
     "id": "[col=id]",
+    "fset_id": "[col=fset_id]",
+    "encap_fset_id": "[col=encap_fset_id]",
+    "f_id": "[col=f_id]",
     "email": "[col=email]",
     "tag_id": "[col=tag_id]",
     "ruleset_id": "[col=ruleset_id]",
@@ -144,6 +147,106 @@ function table_action_menu_init_data(t) {
       "title": "action_menu.data_actions",
       "class": "hd16",
       "children": [
+        {
+          "selector": ["clicked", "checked", "all"],
+          "foldable": true,
+          'title': 'action_menu.on_filtersets',
+          "table": ["filtersets", "ajax_comp_filtersets"],
+          "cols": ["fset_id"],
+          "condition": "fset_id",
+          "children": [
+            {
+              "title": "action_menu.add",
+              "class": "icon add16",
+              "fn": "data_action_add_filterset",
+              "privileges": ["Manager", "CompManager"],
+              "min": 0
+            },
+            {
+              "title": "action_menu.del",
+              "class": "icon del16",
+              "fn": "data_action_del_filtersets",
+              "privileges": ["Manager", "CompManager"],
+              "min": 1
+            },
+            {
+              "title": "action_menu.attach_filters",
+              "class": "icon attach16",
+              "fn": "data_action_attach_filters",
+              "privileges": ["Manager", "CompManager"],
+              "min": 1
+            },
+            {
+              "title": "action_menu.attach_filtersets",
+              "class": "icon attach16",
+              "fn": "data_action_attach_filtersets",
+              "privileges": ["Manager", "CompManager"],
+              "min": 1
+            }
+          ]
+        },
+        {
+          "selector": ["clicked", "checked", "all"],
+          "foldable": true,
+          'title': 'action_menu.on_encap_filters',
+          "table": ["filtersets", "ajax_comp_filtersets"],
+          "cols": ["fset_id", "f_id"],
+          "condition": "fset_id+f_id",
+          "children": [
+            {
+              "title": "action_menu.detach_filters",
+              "class": "icon detach16",
+              "fn": "data_action_detach_filters",
+              "privileges": ["Manager", "CompManager"],
+              "min": 1
+            },
+            {
+              "title": "action_menu.set_operator",
+              "class": "icon edit16",
+              "fn": "data_action_filters_set_operator",
+              "privileges": ["Manager", "CompManager"],
+              "min": 1
+            },
+            {
+              "title": "action_menu.set_order",
+              "class": "icon edit16",
+              "fn": "data_action_filters_set_order",
+              "privileges": ["Manager", "CompManager"],
+              "min": 1
+            }
+          ]
+        },
+        {
+          "selector": ["clicked", "checked", "all"],
+          "foldable": true,
+          'title': 'action_menu.on_encap_filtersets',
+          "table": ["filtersets", "ajax_comp_filtersets"],
+          "cols": ["fset_id", "encap_fset_id"],
+          "condition": "fset_id+encap_fset_id",
+          "children": [
+            {
+              "title": "action_menu.detach_filtersets",
+              "class": "icon detach16",
+              "fn": "data_action_detach_filtersets",
+              "privileges": ["Manager", "CompManager"],
+              "min": 1
+            },
+            {
+              "title": "action_menu.set_operator",
+              "class": "icon edit16",
+              "fn": "data_action_filtersets_set_operator",
+              "privileges": ["Manager", "CompManager"],
+              "min": 1
+            },
+            {
+              "title": "action_menu.set_order",
+              "class": "icon edit16",
+              "fn": "data_action_filtersets_set_order",
+              "privileges": ["Manager", "CompManager"],
+              "min": 1
+            }
+          ]
+        },
         {
           "selector": ["clicked", "checked", "all"],
           "foldable": true,
@@ -2420,6 +2523,7 @@ function data_action_generic_add(t, e, options) {
         spinner_del(info)
         if (jd.error && (jd.error.length > 0)) {
           info.html(services_error_fmt(jd))
+          return
         }
         // display the properties tab to set more properties
         options.properties_tab(info.attr("id"), jd.data[0])
@@ -3178,6 +3282,176 @@ function data_action_add_chart(t, e) {
      ]
   })
 }
+
+//
+// data action: delete filtersets
+//
+function data_action_del_filtersets(t, e) {
+  data_action_generic_delete(t, e, {
+    "request_service": "/filtersets",
+    "request_data_entry": function(data) {
+      return {
+        'id': data['fset_id']
+      }
+    }
+  })
+}
+
+//
+// data action: add filterset
+//
+function data_action_add_filterset(t, e) {
+  data_action_generic_add(t, e, {
+    "request_service": "/filtersets",
+    "properties_tab": function(divid, data) {
+      fset_properties(divid, {"fset_name": data.fset_name})
+    },
+    "createable_message": "action_menu.fset_createable",
+    "inputs": [
+      {
+        "title": "fset_properties.name",
+        "key": "fset_name"
+      }
+     ]
+  })
+}
+
+//
+// data action: set fitlersets operator
+//
+function data_action_filtersets_set_operator(t, e) {
+  data_action_generic_selector(t, e, {
+    "requestor": services_osvcpostrest,
+    "request_service": "/filtersets_filtersets",
+    "selector": generic_selector_operator,
+    "request_data_entry": function(selected, data) {
+      return {
+        "parent_fset_id": data.fset_id,
+        "child_fset_id": data.encap_fset_id,
+        "f_log_op": selected
+      }
+    }
+  })
+}
+
+//
+// data action: set filtersets order
+//
+function data_action_filtersets_set_order(t, e) {
+  data_action_generic_selector(t, e, {
+    "requestor": services_osvcpostrest,
+    "request_service": "/filtersets_filtersets",
+    "selector": generic_selector_order,
+    "request_data_entry": function(selected, data) {
+      return {
+        "parent_fset_id": data.fset_id,
+        "child_fset_id": data.encap_fset_id,
+        "f_order": selected
+      }
+    }
+  })
+}
+
+//
+// data action: set fitlers operator
+//
+function data_action_filters_set_operator(t, e) {
+  data_action_generic_selector(t, e, {
+    "requestor": services_osvcpostrest,
+    "request_service": "/filtersets_filters",
+    "selector": generic_selector_operator,
+    "request_data_entry": function(selected, data) {
+      return {
+        "fset_id": data.fset_id,
+        "f_id": data.f_id,
+        "f_log_op": selected
+      }
+    }
+  })
+}
+
+//
+// data action: set filters order
+//
+function data_action_filters_set_order(t, e) {
+  data_action_generic_selector(t, e, {
+    "requestor": services_osvcpostrest,
+    "request_service": "/filtersets_filters",
+    "selector": generic_selector_order,
+    "request_data_entry": function(selected, data) {
+      return {
+        "fset_id": data.fset_id,
+        "f_id": data.f_id,
+        "f_order": selected
+      }
+    }
+  })
+}
+
+//
+// data action: attach filtersets to filtersets
+//
+function data_action_attach_filtersets(t, e) {
+  data_action_generic_selector(t, e, {
+    "requestor": services_osvcpostrest,
+    "request_service": "/filtersets_filtersets",
+    "selector": generic_selector_filtersets,
+    "request_data_entry": function(selected, data) {
+      return {
+        "parent_fset_id": data.fset_id,
+        "child_fset_id": selected
+      }
+    }
+  })
+}
+
+//
+// data action: attach filters to filtersets
+//
+function data_action_attach_filters(t, e) {
+  data_action_generic_selector(t, e, {
+    "requestor": services_osvcpostrest,
+    "request_service": "/filtersets_filters",
+    "selector": generic_selector_filters,
+    "request_data_entry": function(selected, data) {
+      return {
+        "fset_id": data.fset_id,
+        "f_id": selected
+      }
+    }
+  })
+}
+
+//
+// data action: detach filtersets from filtersets
+//
+function data_action_detach_filtersets(t, e) {
+  data_action_generic_delete(t, e, {
+    "request_service": "/filtersets_filtersets",
+    "request_data_entry": function(data) {
+      return {
+        'parent_fset_id': data['fset_id'],
+        'child_fset_id': data['encap_fset_id']
+      }
+    }
+  })
+}
+
+//
+// data action: detach filters from filtersets
+//
+function data_action_detach_filters(t, e) {
+  data_action_generic_delete(t, e, {
+    "request_service": "/filtersets_filters",
+    "request_data_entry": function(data) {
+      return {
+        'fset_id': data['fset_id'],
+        'f_id': data['f_id']
+      }
+    }
+  })
+}
+
 
 //
 // data action: delete charts

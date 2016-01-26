@@ -76,15 +76,9 @@ function fset_properties(divid, options) {
 
 		o.load_usage()
 
-		tab_properties_boolean({
-			"div": o.info_fset_stats,
-			"privileges": ["Manager", "CompManager"],
-			"post": function(_data, callback, error_callback) {
-				services_osvcpostrest("/filtersets/%1", [data.id], "", _data, callback, error_callback)
-			}
-		})
 		tab_properties_generic_updater({
 			"div": o.div,
+			"privileges": ["Manager", "CompManager"],
 			"post": function(_data, callback, error_callback) {
 				services_osvcpostrest("/filtersets/%1", [data.id], "", _data, callback, error_callback)
 			}
