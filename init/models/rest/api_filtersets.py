@@ -254,7 +254,7 @@ class rest_post_filterset(rest_post_handler):
              dict(data=', '.join(l)),
             )
         l = {
-          'event': 'gen_filtersets',
+          'event': 'gen_filtersets_change',
           'data': {'id': row.id},
         }
         _websocket_send(event_msg(l))
@@ -287,6 +287,32 @@ class rest_delete_filterset(rest_delete_handler):
             delete_filterset(fset_id, **vars)
         except CompInfo as e:
             return dict(info=str(e))
+
+#
+class rest_delete_filtersets(rest_delete_handler):
+    def __init__(self):
+        desc = [
+          "Delete filtersets.",
+          "The user must be in the CompManager privilege group.",
+          "The action is logged in the collector's log.",
+          "A websocket event is sent to announce the change in the filtersets table.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- -X DELETE https://%(collector)s/init/rest/api/filtersets",
+        ]
+        rest_delete_handler.__init__(
+          self,
+          path="/filtersets",
+          desc=desc,
+          examples=examples
+        )
+
+    def handler(self, **vars):
+        if "id" not in vars:
+            raise Exception("The 'id' key is mandatory")
+        fset_id = vars["id"]
+        del(vars["id"])
+        return rest_delete_filterset().handler(fset_id, **vars)
 
 #
 class rest_delete_filterset_filterset(rest_delete_handler):
@@ -342,11 +368,123 @@ class rest_post_filterset_filterset(rest_post_handler):
         if child_fset_id is None:
             return dict(error="child filterset not found")
         try:
-            attach_filterset_to_filterset(child_fset_id, parent_fset_id)
+            attach_filterset_to_filterset(child_fset_id, parent_fset_id, **vars)
         except CompError as e:
             return dict(error=str(e))
         except CompInfo as e:
             return dict(info=str(e))
+
+#
+class rest_delete_filtersets_filters(rest_delete_handler):
+    def __init__(self):
+        desc = [
+          "Detach filters from filtersets",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- -X DELETE https://%(collector)s/init/rest/api/filtersets_filters",
+        ]
+        rest_delete_handler.__init__(
+          self,
+          path="/filtersets_filters",
+          tables=["gen_filtersets_filters"],
+          desc=desc,
+          examples=examples
+        )
+
+    def handler(self, **vars):
+        if not "fset_id" in vars:
+            raise Exception("The 'fset_id' key is mandatory")
+        if not "f_id" in vars:
+            raise Exception("The 'f_id' key is mandatory")
+        fset_id = vars["fset_id"]
+        del(vars["fset_id"])
+        f_id = vars["f_id"]
+        del(vars["f_id"])
+        return rest_delete_filterset_filter().handler(fset_id, f_id, **vars)
+
+#
+class rest_post_filtersets_filters(rest_post_handler):
+    def __init__(self):
+        desc = [
+          "Attach filters to filtersets",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- -X POST https://%(collector)s/init/rest/api/filtersets_filters",
+        ]
+        rest_post_handler.__init__(
+          self,
+          path="/filtersets_filters",
+          tables=["gen_filtersets_filters"],
+          desc=desc,
+          examples=examples
+        )
+
+    def handler(self, **vars):
+        if not "fset_id" in vars:
+            raise Exception("The 'fset_id' key is mandatory")
+        if not "f_id" in vars:
+            raise Exception("The 'f_id' key is mandatory")
+        fset_id = vars["fset_id"]
+        del(vars["fset_id"])
+        f_id = vars["f_id"]
+        del(vars["f_id"])
+        return rest_post_filterset_filter().handler(fset_id, f_id, **vars)
+
+#
+class rest_delete_filtersets_filtersets(rest_delete_handler):
+    def __init__(self):
+        desc = [
+          "Detach filtersets from filtersets",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- -X DELETE https://%(collector)s/init/rest/api/filtersets_filtersets",
+        ]
+        rest_delete_handler.__init__(
+          self,
+          path="/filtersets_filtersets",
+          tables=["gen_filtersets_filters"],
+          desc=desc,
+          examples=examples
+        )
+
+    def handler(self, **vars):
+        if not "parent_fset_id" in vars:
+            raise Exception("The 'parent_fset_id' key is mandatory")
+        if not "child_fset_id" in vars:
+            raise Exception("The 'child_fset_id' key is mandatory")
+        parent_fset_id = vars["parent_fset_id"]
+        del(vars["parent_fset_id"])
+        child_fset_id = vars["child_fset_id"]
+        del(vars["child_fset_id"])
+        return rest_delete_filterset_filterset().handler(parent_fset_id, child_fset_id, **vars)
+
+#
+class rest_post_filtersets_filtersets(rest_post_handler):
+    def __init__(self):
+        desc = [
+          "Attach filtersets to filtersets",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- -X POST https://%(collector)s/init/rest/api/filtersets_filtersets",
+        ]
+        rest_post_handler.__init__(
+          self,
+          path="/filtersets_filtersets",
+          tables=["gen_filtersets_filters"],
+          desc=desc,
+          examples=examples
+        )
+
+    def handler(self, **vars):
+        if not "parent_fset_id" in vars:
+            raise Exception("The 'parent_fset_id' key is mandatory")
+        if not "child_fset_id" in vars:
+            raise Exception("The 'child_fset_id' key is mandatory")
+        parent_fset_id = vars["parent_fset_id"]
+        del(vars["parent_fset_id"])
+        child_fset_id = vars["child_fset_id"]
+        del(vars["child_fset_id"])
+        return rest_post_filterset_filterset().handler(parent_fset_id, child_fset_id, **vars)
 
 #
 class rest_post_filterset_filter(rest_post_handler):
@@ -536,7 +674,7 @@ class rest_post_filter(rest_post_handler):
              dict(data=', '.join(l)),
             )
         l = {
-          'event': 'gen_filters',
+          'event': 'gen_filters_change',
           'data': {'foo': 'bar'},
         }
         _websocket_send(event_msg(l))

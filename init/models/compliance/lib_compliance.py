@@ -2035,7 +2035,7 @@ def detach_filter_from_filterset(f_id, fset_id):
     raise CompInfo("filter detached")
 
 @auth.requires_membership('CompManager')
-def attach_filterset_to_filterset(fset_id, dst_fset_id):
+def attach_filterset_to_filterset(fset_id, dst_fset_id, **vars):
     q = db.gen_filtersets.id == dst_fset_id
     rows = db(q).select(cacheable=True)
     v = rows.first()
@@ -2050,16 +2050,31 @@ def attach_filterset_to_filterset(fset_id, dst_fset_id):
 
     q = db.gen_filtersets_filters.encap_fset_id == fset_id
     q &= db.gen_filtersets_filters.fset_id == dst_fset_id
-    if db(q).count() > 0:
-        raise CompInfo("filterset already detached")
+    x = db(q).select().first()
+    f_order = vars.get("f_order")
+    f_log_op = vars.get("f_log_op")
+    try:
+        f_order = int(f_order)
+    except:
+        pass
+    if x is not None and (f_order is None or x.f_order == f_order) and (f_log_op is None or x.f_log_op == f_log_op):
+        raise CompInfo("filterset %s already attached to filterset %s" % (str(fset_id), str(dst_fset_id)))
+    if "f_id" in vars:
+        del(vars["f_id"])
+    vars["fset_id"] = dst_fset_id
+    vars["encap_fset_id"] = fset_id
+    if x is None and "f_order" not in vars:
+        vars["f_order"] = 0
+    if x is None and "f_log_op" not in vars:
+        vars["f_log_op"] = "AND"
 
-    if fset_loop(fset_id, dst_fset_id):
-        raise CompError("the parent filterset is already a child of the encapsulated filterset. abort encapsulation not to cause infinite recursion")
+    if x is not None:
+        db(q).update(**vars)
+    else:
+        if fset_loop(fset_id, dst_fset_id):
+            raise CompError("the parent filterset is already a child of the encapsulated filterset. abort encapsulation not to cause infinite recursion")
+        db.gen_filtersets_filters.insert(**vars)
 
-    db.gen_filtersets_filters.insert(encap_fset_id=fset_id,
-                                     fset_id=dst_fset_id,
-                                     f_order=0,
-                                     f_log_op="AND")
     table_modified("gen_filtersets_filters")
 
     _log('filterset.attach',
@@ -2079,13 +2094,13 @@ def attach_filter_to_filterset(f_id, fset_id, **vars):
     rows = db(q).select(cacheable=True)
     v = rows.first()
     if v is None:
-        raise CompError("filter not found")
+        raise CompError("filter %s not found" % str(f_id))
 
     q = db.gen_filtersets.id == fset_id
     rows = db(q).select(cacheable=True)
     w = rows.first()
     if w is None:
-        raise CompError("filterset not found")
+        raise CompError("filterset %s not found" % str(fset_id))
 
     q = db.gen_filtersets_filters.f_id == f_id
     q &= db.gen_filtersets_filters.fset_id == fset_id
@@ -2098,13 +2113,13 @@ def attach_filter_to_filterset(f_id, fset_id, **vars):
     except:
         pass
     if x is not None and (f_order is None or x.f_order == f_order) and (f_log_op is None or x.f_log_op == f_log_op):
-        raise CompInfo("filter already attached")
+        raise CompInfo("filter %s already attached to filterset %s" % (str(f_id), str(fset_id)))
     vars["f_id"] = f_id
     vars["fset_id"] = fset_id
     vars["encap_fset_id"] = None
-    if "f_order" not in vars:
+    if x is None and "f_order" not in vars:
         vars["f_order"] = 0
-    if "f_log_op" not in vars:
+    if x is None and "f_log_op" not in vars:
         vars["f_log_op"] = "AND"
     if x is not None:
         db(q).update(**vars)
@@ -2121,7 +2136,7 @@ def attach_filter_to_filterset(f_id, fset_id, **vars):
       'data': {'f_id': f_id, 'fset_id': fset_id},
     }
     _websocket_send(event_msg(l))
-    raise CompInfo("filter attached")
+    raise CompInfo("filter %s attached to filterset %s" % (str(f_id), str(fset_id)))
 
 @auth.requires_membership('CompManager')
 def delete_filter(f_id):
