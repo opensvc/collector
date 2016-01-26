@@ -579,6 +579,15 @@ class rest_delete_node(rest_delete_handler):
         _websocket_send(event_msg(l))
         table_modified("node_tags")
 
+        q = db.node_ip.nodename == row.nodename
+        db(q).delete()
+        l = {
+          'event': 'node_ip_change',
+          'data': {'a': 'b'},
+        }
+        _websocket_send(event_msg(l))
+        table_modified("node_ip")
+
         return dict(info="node %s deleted" % row.nodename)
 
 
