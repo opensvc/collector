@@ -474,6 +474,22 @@ function table_action_menu_init_data(t) {
         },
         {
           "selector": ["clicked", "checked", "all"],
+          "title": "action_menu.on_node_ips",
+          "tables": ["nodenetworks"],
+          "foldable": true,
+          "cols": ["id"],
+          "condition": "id",
+          "children": [
+            {
+              "title": "action_menu.delete",
+              "class": "icon del16",
+              "fn": "data_action_delete_node_ips",
+              "min": 1
+            }
+          ]
+        },
+        {
+          "selector": ["clicked", "checked", "all"],
           "foldable": true,
           'title': 'action_menu.on_dns_domains',
           "table": ["dnsd"],
@@ -3173,6 +3189,20 @@ function data_action_delete_networks(t, e) {
 function data_action_delete_svc_instances(t, e) {
   data_action_generic_delete(t, e, {
     "request_service": "R_SERVICE_INSTANCES",
+    "request_data_entry": function(data) {
+      return {
+        'id': data['id']
+      }
+    }
+  })
+}
+
+//
+// data action: delete node ips
+//
+function data_action_delete_node_ips(t, e) {
+  data_action_generic_delete(t, e, {
+    "request_service": "/ips",
     "request_data_entry": function(data) {
       return {
         'id': data['id']

@@ -31,6 +31,7 @@
     "chart_createable": "This chart name does not exist yet. Press <enter> to create.",
     "metric_createable": "This metric name does not exist yet. Press <enter> to create.",
     "fset_createable": "This filterset name does not exist yet. Press <enter> to create.",
+    "on_node_ips": "On node ips",
     "on_encap_filtersets": "On encapsulated filtersets",
     "on_encap_filters": "On encapsulated filters",
     "on_filters": "On filters",
@@ -387,6 +388,7 @@
     "creation": "Creation"
   },
   "fset_tabs": {
+    "designer": "designer",
     "export": "export"
   },
   "fset_properties": {

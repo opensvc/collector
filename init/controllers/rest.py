@@ -288,6 +288,8 @@ handlers = {
      rest_delete_group(),
      rest_delete_groups(),
      rest_delete_group_hidden_menu_entries(),
+     rest_delete_ips(),
+     rest_delete_ip(),
      rest_delete_network(),
      rest_delete_networks(),
      rest_delete_network_segment(),

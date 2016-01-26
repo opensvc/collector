@@ -32,6 +32,7 @@
     "chart_createable": "Ce nom de courbe n'existe pas encore. Appuyez sur <entrée> pour le créer.",
     "metric_createable": "Ce nom de métrique n'existe pas encore. Appuyez sur <entrée> pour le créer.",
     "fset_createable": "Ce nom de métrique n'existe pas encore. Appuyez sur <entrée> pour le créer.",
+    "on_node_ips": "Sur les ips des noeuds",
     "on_encap_filtersets": "Sur les jeux de filtres encapsulés",
     "on_encap_filters": "Sur les filtres encapsulés",
     "on_filters": "Sur les fitres",
@@ -374,6 +375,7 @@
     "creation": "Création"
   },
   "fset_tabs": {
+    "designer": "designer",
     "export": "export"
   },
   "fset_properties": {
@@ -771,7 +773,7 @@
         "text" : "Vue des configurations cibles, optimisée pour la recherche"
       },
       "designer" : {
-        "title" : "Modélisateur",
+        "title" : "Designer",
         "text" : "Outil optimisé pour la modélisation des règles de conformité"
       },
       "nrulesets" : {
