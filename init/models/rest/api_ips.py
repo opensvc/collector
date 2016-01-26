@@ -99,7 +99,10 @@ class rest_delete_ip(rest_delete_handler):
         row = db(q).select().first()
         if row is None:
             raise Exception("ip %s not found" % str(id))
-        node_responsible(row.nodename)
+        node = db(db.nodes.nodename==row.nodename).select().first()
+        if node:
+            # don't check privs if the node does not exist
+            node_responsible(row.nodename)
         db(q).delete()
 
         fmt = "ip %(addr)s on node %(nodename)s deleted"
