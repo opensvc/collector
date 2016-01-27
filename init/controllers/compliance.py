@@ -4394,6 +4394,15 @@ def json_tree_modulesets():
 
     modset_done = set([])
     _data = None
+
+    # caches for _tree_rulesets_children()
+    trc_rsets = _tree_get_rsets()
+    trc_rsets_relations, trc_encap_rset_ids = _tree_get_rset_relations()
+    trc_rsets_fsets = _tree_get_rsets_fsets_relations()
+    trc_rsets_variables = _tree_get_rsets_variables_relations()
+    trc_rsets_publications = _tree_get_rsets_publications_relations()
+    trc_rsets_responsibles = _tree_get_rsets_responsibles_relations()
+
     for row in rows:
         if row.comp_moduleset.id not in modset_done:
             if _data is not None:
@@ -4415,7 +4424,14 @@ def json_tree_modulesets():
             if row.comp_moduleset.id in modset_rset_relations:
                 rulesets += _tree_rulesets_children(modset_rset_relations[row.comp_moduleset.id],
                                                     id_prefix="modset%d_"%row.comp_moduleset.id,
-                                                    hide_unpublished_and_encap_at_root_level=False)
+                                                    hide_unpublished_and_encap_at_root_level=False,
+                                                    rsets=trc_rsets,
+                                                    rsets_relations=trc_rsets_relations,
+                                                    encap_rset_ids=trc_encap_rset_ids,
+                                                    rsets_fsets=trc_rsets_fsets,
+                                                    rsets_variables=trc_rsets_variables,
+                                                    rsets_publications=trc_rsets_publications,
+                                                    rsets_responsibles=trc_rsets_responsibles)
             modset_done.add(row.comp_moduleset.id)
 
         if row.comp_moduleset_modules.id is not None and row.comp_moduleset_modules.id not in mods_done:
@@ -4503,36 +4519,6 @@ def json_tree_groups():
         groups['children'].append(_data)
     return groups
 
-def json_tree_filters():
-    filters = {
-     'data': 'filters',
-     'children': [],
-    }
-    q = db.gen_filters.id > 0
-    o = db.gen_filters.f_table | db.gen_filters.f_field
-    rows = db(q).select(orderby=o, cacheable=True)
-    h = {}
-    for row in rows:
-        _data = {
-          "attr": {"id": "f%d"%row.id, "rel": "filter", "obj_id": row.id},
-          "data": "%s %s %s" % (row.f_field, row.f_op, row.f_value),
-        }
-        if row.f_table not in h:
-            h[row.f_table] = []
-        h[row.f_table].append(_data)
-    for table in ('nodes', 'services', 'svcmon', 'node_hba', 'b_disk_app'):
-        if table in h:
-            l = h[table]
-        else:
-            l = []
-        _data = {
-         'data': table,
-         'attr': {"rel": "table"},
-         'children': l,
-        }
-        filters['children'].append(_data)
-    return filters
-
 def json_tree_filtersets():
     def recurse_json_tree_filtersets(data, parent_ids=[]):
         l = []
@@ -4597,8 +4583,7 @@ def json_tree_rulesets():
     rulesets['children'] = _tree_rulesets_children(obj_filter=request.vars.obj_filter)
     return rulesets
 
-def _tree_rulesets_children(ruleset_ids=None, id_prefix="", obj_filter=None, hide_unpublished_and_encap_at_root_level=True):
-    children = []
+def _tree_get_rset_relations():
     q = db.comp_rulesets_rulesets.id > 0
     rows = db(q).select(orderby=db.comp_rulesets_rulesets.parent_rset_id, cacheable=True)
     rsets_relations = {}
@@ -4608,7 +4593,9 @@ def _tree_rulesets_children(ruleset_ids=None, id_prefix="", obj_filter=None, hid
             rsets_relations[row.parent_rset_id] = []
         rsets_relations[row.parent_rset_id].append(row.child_rset_id)
         encap_rset_ids.add(row.child_rset_id)
+    return rsets_relations, encap_rset_ids
 
+def _tree_get_rsets_fsets_relations():
     q = db.comp_rulesets_filtersets.id > 0
     q &= db.comp_rulesets_filtersets.fset_id == db.gen_filtersets.id
     rows = db(q).select(cacheable=True)
@@ -4617,7 +4604,9 @@ def _tree_rulesets_children(ruleset_ids=None, id_prefix="", obj_filter=None, hid
         if row.comp_rulesets_filtersets.ruleset_id not in rsets_fsets:
             rsets_fsets[row.comp_rulesets_filtersets.ruleset_id] = []
         rsets_fsets[row.comp_rulesets_filtersets.ruleset_id].append(row)
+    return rsets_fsets
 
+def _tree_get_rsets_variables_relations():
     q = db.comp_rulesets_variables.id > 0
     o = db.comp_rulesets_variables.ruleset_id | db.comp_rulesets_variables.var_name
     rows = db(q).select(orderby=o, cacheable=True)
@@ -4626,7 +4615,9 @@ def _tree_rulesets_children(ruleset_ids=None, id_prefix="", obj_filter=None, hid
         if row.ruleset_id not in rsets_variables:
             rsets_variables[row.ruleset_id] = []
         rsets_variables[row.ruleset_id].append(row)
+    return rsets_variables
 
+def _tree_get_rsets_publications_relations():
     q = db.comp_ruleset_team_publication.id > 0
     q &= db.comp_ruleset_team_publication.group_id == db.auth_group.id
     rows = db(q).select(cacheable=True)
@@ -4635,7 +4626,9 @@ def _tree_rulesets_children(ruleset_ids=None, id_prefix="", obj_filter=None, hid
         if row.comp_ruleset_team_publication.ruleset_id not in rsets_publications:
             rsets_publications[row.comp_ruleset_team_publication.ruleset_id] = []
         rsets_publications[row.comp_ruleset_team_publication.ruleset_id].append(row)
+    return rsets_publications
 
+def _tree_get_rsets_responsibles_relations():
     q = db.comp_ruleset_team_responsible.id > 0
     q &= db.comp_ruleset_team_responsible.group_id == db.auth_group.id
     rows = db(q).select(cacheable=True)
@@ -4644,13 +4637,42 @@ def _tree_rulesets_children(ruleset_ids=None, id_prefix="", obj_filter=None, hid
         if row.comp_ruleset_team_responsible.ruleset_id not in rsets_responsibles:
             rsets_responsibles[row.comp_ruleset_team_responsible.ruleset_id] = []
         rsets_responsibles[row.comp_ruleset_team_responsible.ruleset_id].append(row)
+    return rsets_responsibles
 
+def _tree_get_rsets():
     q = db.comp_rulesets.id > 0
     q &= db.comp_rulesets.id == db.comp_ruleset_team_publication.ruleset_id
     rows = db(q).select(groupby=db.comp_rulesets.id, cacheable=True)
     rsets = {}
     for row in rows:
         rsets[row.comp_rulesets.id] = row.comp_rulesets
+    return rsets
+
+def _tree_rulesets_children(ruleset_ids=None, id_prefix="", obj_filter=None,
+                            hide_unpublished_and_encap_at_root_level=True,
+                            rsets=None,
+                            rsets_relations=None, encap_rset_ids=None,
+                            rsets_fsets=None, rsets_variables=None,
+                            rsets_publications=None, rsets_responsibles=None):
+    children = []
+
+    if rsets is None:
+        rsets = _tree_get_rsets()
+
+    if rsets_relations is None or encap_rset_ids is None:
+        rsets_relations, encap_rset_ids = _tree_get_rset_relations()
+
+    if rsets_fsets is None:
+        rsets_fsets = _tree_get_rsets_fsets_relations()
+
+    if rsets_variables is None:
+        rsets_variables = _tree_get_rsets_variables_relations()
+
+    if rsets_publications is None:
+        rsets_publications = _tree_get_rsets_publications_relations()
+
+    if rsets_responsibles is None:
+        rsets_responsibles = _tree_get_rsets_responsibles_relations()
 
     # main ruleset selection
     o = db.comp_rulesets.ruleset_name
@@ -4736,7 +4758,6 @@ def _tree_rulesets_children(ruleset_ids=None, id_prefix="", obj_filter=None, hid
 def json_tree():
     data = [
       json_tree_groups(),
-      json_tree_filters(),
       json_tree_filtersets(),
       json_tree_modulesets(),
       json_tree_rulesets(),
