@@ -151,7 +151,7 @@ function table_action_menu_init_data(t) {
           "selector": ["clicked", "checked", "all"],
           "foldable": true,
           'title': 'action_menu.on_filters',
-          "table": ["filters", "ajax_comp_filters"],
+          "table": ["filters"],
           "cols": ["id"],
           "condition": "id",
           "children": [
@@ -168,7 +168,7 @@ function table_action_menu_init_data(t) {
           "selector": ["clicked", "checked", "all"],
           "foldable": true,
           'title': 'action_menu.on_filtersets',
-          "table": ["filtersets", "ajax_comp_filtersets"],
+          "table": ["filtersets"],
           "cols": ["fset_id"],
           "condition": "fset_id",
           "children": [
@@ -206,7 +206,7 @@ function table_action_menu_init_data(t) {
           "selector": ["clicked", "checked", "all"],
           "foldable": true,
           'title': 'action_menu.on_encap_filters',
-          "table": ["filtersets", "ajax_comp_filtersets"],
+          "table": ["filtersets"],
           "cols": ["fset_id", "f_id"],
           "condition": "fset_id+f_id",
           "children": [
@@ -237,7 +237,7 @@ function table_action_menu_init_data(t) {
           "selector": ["clicked", "checked", "all"],
           "foldable": true,
           'title': 'action_menu.on_encap_filtersets',
-          "table": ["filtersets", "ajax_comp_filtersets"],
+          "table": ["filtersets"],
           "cols": ["fset_id", "encap_fset_id"],
           "condition": "fset_id+encap_fset_id",
           "children": [

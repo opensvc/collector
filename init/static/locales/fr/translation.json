@@ -900,9 +900,13 @@
         "title" : "Instanciation",
         "text" : "Créer des gabarits d'instanciation de services"
       },
+      "filtersets" : {
+        "title" : "Jeux de filtres",
+        "text" : "Gérer les jeux de filtres"
+      },
       "filters" : {
         "title" : "Filtres",
-        "text" : "Créer de nouveaux jeux de filtres"
+        "text" : "Gérer les filtres, composants des jeux de filtres"
       },
       "forms" : {
         "title" : "Formulaires",

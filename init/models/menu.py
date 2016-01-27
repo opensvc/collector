@@ -61,6 +61,7 @@ menu_entries = [
   'adm-bill',
   'adm-prov',
   'adm-filters',
+  'adm-filtersets',
   'adm-forms',
   'adm-metrics',
   'adm-charts',

@@ -915,7 +915,11 @@
       },
       "filters" : {
         "title" : "Filters",
-        "text" : "Create new filtersets"
+        "text" : "Manage filters, components of filtersets"
+      },
+      "filtersets" : {
+        "title" : "Filtersets",
+        "text" : "Manage filtersets"
       },
       "forms" : {
         "title" : "Forms",
