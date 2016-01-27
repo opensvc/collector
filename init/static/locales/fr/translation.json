@@ -9,6 +9,11 @@
     "running": "en cours",
     "done": "fait"
   }, 
+  "fset_designer": {
+    "save": "Valider",
+    "add_filter": "Ajouter un filtre",
+    "add_filterset": "Ajouter un jeu de filtres"
+  },
   "designer": {
     "var_class": "Classe de variable: __name__",
     "var_last_mod": "Dernière modification par __by__ le __on__",

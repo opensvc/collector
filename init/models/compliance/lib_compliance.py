@@ -1012,6 +1012,7 @@ def _export_filtersets(fset_ids):
     filters = {}
     for row in rows:
         d = {
+          'id': row.id,
           'f_table': row.f_table,
           'f_field': row.f_field,
           'f_op': row.f_op,
