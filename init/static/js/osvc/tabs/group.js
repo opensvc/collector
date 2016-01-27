@@ -78,7 +78,7 @@ function group_properties(divid, options) {
 			o.info_description.html(data.description);
 			o.info_id.html(data.id);
 
-			tab_properties_boolean({
+			tab_properties_generic_boolean({
 				"div": o.info_privilege,
 				"privileges": ["Manager", "UsersManager"],
 				"post": function(_data, callback, error_callback) {
