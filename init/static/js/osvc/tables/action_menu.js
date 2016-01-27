@@ -150,6 +150,23 @@ function table_action_menu_init_data(t) {
         {
           "selector": ["clicked", "checked", "all"],
           "foldable": true,
+          'title': 'action_menu.on_filters',
+          "table": ["filters", "ajax_comp_filters"],
+          "cols": ["id"],
+          "condition": "id",
+          "children": [
+            {
+              "title": "action_menu.del",
+              "class": "icon del16",
+              "fn": "data_action_del_filters",
+              "privileges": ["Manager", "CompManager"],
+              "min": 1
+            }
+          ]
+        },
+        {
+          "selector": ["clicked", "checked", "all"],
+          "foldable": true,
           'title': 'action_menu.on_filtersets',
           "table": ["filtersets", "ajax_comp_filtersets"],
           "cols": ["fset_id"],
@@ -3310,6 +3327,20 @@ function data_action_add_chart(t, e) {
         "key": "chart_name"
       }
      ]
+  })
+}
+
+//
+// data action: delete filters
+//
+function data_action_del_filters(t, e) {
+  data_action_generic_delete(t, e, {
+    "request_service": "/filters",
+    "request_data_entry": function(data) {
+      return {
+        'id': data['id']
+      }
+    }
   })
 }
 

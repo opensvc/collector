@@ -273,6 +273,7 @@ handlers = {
      rest_delete_dns_record(),
      rest_delete_dns_records(),
      rest_delete_filter(),
+     rest_delete_filters(),
      rest_delete_filterset(),
      rest_delete_filtersets(),
      rest_delete_filtersets_filtersets(),

@@ -606,6 +606,33 @@ class rest_post_filters(rest_post_handler):
 
 
 #
+class rest_delete_filters(rest_delete_handler):
+    def __init__(self):
+        desc = [
+          "Delete filters.",
+          "Also delete all filters attachments to filtersets (warning: verify which filtersets embed this filter before deletion).",
+          "The user must be in the CompManager privilege group.",
+          "The action is logged in the collector's log.",
+          "A websocket event is sent to announce the change in the filtersets table.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- -X DELETE https://%(collector)s/init/rest/api/filters",
+        ]
+        rest_delete_handler.__init__(
+          self,
+          path="/filters",
+          desc=desc,
+          examples=examples
+        )
+
+    def handler(self, **vars):
+        if not "id" in vars:
+            raise Exception("The 'id' key is mandatory")
+        id = vars["id"]
+        del(vars["id"])
+        return rest_delete_filter().handler(id, **vars)
+
+#
 class rest_delete_filter(rest_delete_handler):
     def __init__(self):
         desc = [
@@ -616,7 +643,7 @@ class rest_delete_filter(rest_delete_handler):
           "A websocket event is sent to announce the change in the filtersets table.",
         ]
         examples = [
-          "# curl -u %(email)s -o- -X DELETE https://%(collector)s/init/rest/api/filtersets/10",
+          "# curl -u %(email)s -o- -X DELETE https://%(collector)s/init/rest/api/filters/10",
         ]
         rest_delete_handler.__init__(
           self,
