@@ -2664,10 +2664,10 @@ function table_set_column_filters(t) {
   if (!("current" in osvc.table_filters.data[t.id])) {
     return
   }
-  var table_filters = osvc.table_filters.data[t.id]["current"]
+  var tf = osvc.table_filters.data[t.id]["current"]
   t.reset_column_filters()
-  for (col in table_filters) {
-      var f = table_filters[col]
+  for (col in tf) {
+      var f = tf[col]
       if (col.indexOf(".") >= 0) {
         var k = col.split('.')[1]
       } else {

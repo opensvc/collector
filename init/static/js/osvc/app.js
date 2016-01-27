@@ -34,7 +34,7 @@ function app_start() {
   i18n_init()
   services_feed_self_and_group()
   osvc.table_settings = table_settings()
-  osvc.table_filters = table_filters()
+  osvc.table_filters = table_column_filters()
   osvc.forms = forms()
 
   // Check if IE and version < 10

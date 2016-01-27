@@ -8,7 +8,7 @@
             "id": 46604
         }
 */
-function table_filters() {
+function table_column_filters() {
 	var o = {}
 
 	o.load = function() {

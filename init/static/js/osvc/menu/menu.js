@@ -327,13 +327,15 @@ var menu_data = {
 		  "title" : "filters",
 		  "class" : "filter16",
 		  "id" : "adm-filters",
-		  "link" : "/init/filtersets/filters"
+		  "link" : "/init/filtersets/filters",
+		  "fn" : "table_filters",
 		},
 		{
 		  "title" : "filtersets",
 		  "class" : "filter16",
 		  "id" : "adm-filtersets",
-		  "link" : "/init/filtersets/filtersets"
+		  "link" : "/init/filtersets/filtersets",
+		  "fn" : "table_filtersets",
 		},
 		{
 		  "title" : "forms",
