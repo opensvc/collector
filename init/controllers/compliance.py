@@ -4326,8 +4326,9 @@ def _show_rsetdiff(nodes, n, _rows, objtype="Nodes"):
 
 def json_tree_modulesets():
     modsets = {
-     'data': 'modulesets',
-     'attr': {"id": "moduleset_head", "rel": "moduleset_head"},
+     "id": "moduleset_head",
+     'text': 'modulesets',
+     'type': "moduleset_head",
      'children': [],
     }
     modset_by_objid = {}
@@ -4408,14 +4409,16 @@ def json_tree_modulesets():
             if _data is not None:
                 _data['children'] += mods
                 _data['children'] += rulesets
-                obj_id = _data["attr"]["obj_id"]
+                obj_id = _data["li_attr"]["obj_id"]
                 modset_by_objid[obj_id] = _data
                 if obj_id in visible_head_modset_ids:
                     modsets['children'].append(_data)
 
             _data = {
-              "attr": {"id": "modset%d"%row.comp_moduleset.id, "rel": "modset", "obj_id": row.comp_moduleset.id},
-              "data": row.comp_moduleset.modset_name,
+              "id": "modset%d"%row.comp_moduleset.id,
+              "type": "modset",
+              "li_attr": {"obj_id": row.comp_moduleset.id},
+              "text": row.comp_moduleset.modset_name,
               "children": []
             }
             mods_done = []
@@ -4440,8 +4443,10 @@ def json_tree_modulesets():
             else:
                 rel = "module"
             __data = {
-              "attr": {"id": "mod%d"%row.comp_moduleset_modules.id, "rel": rel, "obj_id": row.comp_moduleset_modules.id},
-              "data": row.comp_moduleset_modules.modset_mod_name,
+              "id": "mod%d"%row.comp_moduleset_modules.id,
+              "type": rel,
+              "li_attr": {"obj_id": row.comp_moduleset_modules.id},
+              "text": row.comp_moduleset_modules.modset_mod_name,
             }
             mods.append(__data)
             mods_done.append(row.comp_moduleset_modules.id)
@@ -4449,48 +4454,50 @@ def json_tree_modulesets():
     if _data is not None:
         _data['children'] += mods
         _data['children'] += rulesets
-        obj_id = _data["attr"]["obj_id"]
+        obj_id = _data["li_attr"]["obj_id"]
         modset_by_objid[obj_id] = _data
         if obj_id in visible_head_modset_ids:
             modsets['children'].append(_data)
 
     for i, modset in enumerate(modsets["children"]):
-        modset_id = modset["attr"]["obj_id"]
+        modset_id = modset["li_attr"]["obj_id"]
         for group_id in groups_responsible.get(modset_id, []):
             __data = {
-              "attr": {"id": "grpresp%d"%group_id, "rel": "group_resp", "obj_id": group_id},
-              "data": group_names.get(group_id, ""),
+              "id": "grpresp%d"%group_id,
+              "type": "group_resp",
+              "li_attr": {"obj_id": group_id},
+              "text": group_names.get(group_id, ""),
             }
             modsets["children"][i]["children"].append(__data)
 
         for group_id in groups_publication.get(modset_id, []):
             __data = {
-              "attr": {"id": "grppub%d"%group_id, "rel": "group_pub", "obj_id": group_id},
-              "data": group_names.get(group_id, ""),
+              "id": "grppub%d"%group_id,
+              "type": "group_pub",
+              "li_attr": {"obj_id": group_id},
+              "text": group_names.get(group_id, ""),
             }
             modsets["children"][i]["children"].append(__data)
 
     def recurse_modsets(head, id_prefix=""):
-        if "obj_id" in head["attr"]:
-            obj_id = head["attr"]["obj_id"]
+        if "li_attr" in head and "obj_id" in head["li_attr"]:
+            obj_id = head["li_attr"]["obj_id"]
             if obj_id in modset_relations:
                 for child_modset_id in modset_relations[obj_id]:
                     if child_modset_id in modset_by_objid:
                         _data = copy.deepcopy(modset_by_objid[child_modset_id])
-                        _data["attr"]["id"] = id_prefix + "modset" + str(_data["attr"]["obj_id"])
+                        _data["id"] = id_prefix + "modset" + str(_data["li_attr"]["obj_id"])
                         head['children'].append(_data)
         for i, child in enumerate(head['children']):
-            if child["attr"]["rel"] != "modset":
-                srel = child["attr"]["rel"]
+            if child["type"] != "modset":
+                srel = child["type"]
                 if srel.startswith("ruleset"):
                     srel = "rset"
                 elif srel == "module":
                     srel = "mod"
-                elif srel.startswith("group"):
-                    srel = "grp"
-                child["attr"]["id"] = id_prefix+srel+str(child["attr"]["obj_id"])
+                child["id"] = id_prefix+srel+str(child["li_attr"]["obj_id"])
                 continue
-            recurse_modsets(child, id_prefix=id_prefix+"modset"+str(child["attr"]["obj_id"])+'_')
+            recurse_modsets(child, id_prefix=id_prefix+"modset"+str(child["li_attr"]["obj_id"])+'_')
 
     recurse_modsets(modsets)
 
@@ -4498,8 +4505,10 @@ def json_tree_modulesets():
 
 def json_tree_groups():
     groups = {
-     'data': 'groups',
+     'id': 'grp_head',
+     'text': 'groups',
      'children': [],
+     "type": "groups",
     }
 
     if request.vars.obj_filter is not None:
@@ -4513,35 +4522,15 @@ def json_tree_groups():
     h = {}
     for row in rows:
         _data = {
-          "attr": {"id": "grp%d"%row['id'], "rel": "group", "obj_id": row['id']},
-          "data": row['role'],
+          "id": "grp%d"%row['id'],
+          "text": row['role'],
+          "type": "group",
+          "li_attr": {"obj_id": row['id']},
         }
         groups['children'].append(_data)
     return groups
 
 def json_tree_filtersets():
-    def recurse_json_tree_filtersets(data, parent_ids=[]):
-        l = []
-        if data is None:
-            return l
-        for o in data:
-            if o['type'] == 'filter':
-                row = o['data'].gen_filters
-                tmp_parent_ids = parent_ids + ["f%d"%row.id]
-                _data = {
-                  "attr": {"id": "_".join(tmp_parent_ids), "rel": "filter", "obj_id": row.id},
-                  "data": "%s %s.%s %s %s" % (o['op'], row.f_table, row.f_field, row.f_op, row.f_value),
-                }
-            elif o['type'] == 'filterset':
-                parent_ids.append("fset%d"%o['fset_id'])
-                _data = {
-                  "attr": {"id": "_".join(parent_ids), "rel": "filterset", "obj_id": o['fset_id']},
-                  "data": "%s %s" % (o['op'], fset_names[o['fset_id']]),
-                  "children": recurse_json_tree_filtersets(o['data'], parent_ids),
-                }
-            l.append(_data)
-        return l
-
     fset_names = {}
     q = db.gen_filtersets.id > 0
     rows = db(q).select(cacheable=True)
@@ -4549,8 +4538,9 @@ def json_tree_filtersets():
         fset_names[row.id] = row.fset_name
 
     filtersets = {
-     'data': 'filtersets',
-     'attr': {"id": "fset_head", "rel": "filterset_head"},
+     "id": "fset_head",
+     'text': 'filtersets',
+     'type': "filterset_head",
      'children': [],
     }
     fset_data = comp_get_fset_data()
@@ -4561,14 +4551,12 @@ def json_tree_filtersets():
         rows = db(q).select(db.gen_filtersets.id, orderby=o, cacheable=True)
 
     for fset_id in [r.id for r in rows]:
-        try:
-            l = recurse_json_tree_filtersets(fset_data[fset_id], parent_ids=["fset%d"%fset_id])
-        except KeyError:
-            l = []
         _data = {
-          "attr": {"id": "fset%d"%fset_id, "rel": "filterset", "obj_id": fset_id},
-          "data": fset_names[fset_id],
-          "children": l,
+          "id": "fset%d"%fset_id,
+          "type": "filterset",
+          "li_attr": {"obj_id": fset_id},
+          "text": fset_names[fset_id],
+          "children": [],
         }
         filtersets['children'].append(_data)
 
@@ -4576,8 +4564,9 @@ def json_tree_filtersets():
 
 def json_tree_rulesets():
     rulesets = {
-      'data': 'rulesets',
-      'attr': {"id": "rset_head", "rel": "ruleset_head"},
+      "id": "rset_head",
+      'text': 'rulesets',
+      'type': "ruleset_head",
       'children': [],
     }
     rulesets['children'] = _tree_rulesets_children(obj_filter=request.vars.obj_filter)
@@ -4695,37 +4684,45 @@ def _tree_rulesets_children(ruleset_ids=None, id_prefix="", obj_filter=None,
              if rset_id not in rsets:
                  continue
              child_rsets.append(recurse_rset(rsets[rset_id], parent_ids=copy.copy(parent_ids)))
-        child_rsets = sorted(child_rsets, lambda x, y: cmp(x['data'], y['data']))
+        child_rsets = sorted(child_rsets, lambda x, y: cmp(x['text'], y['text']))
         fsets = []
         for v in rsets_fsets.get(rset.id, []):
             _parent_ids = parent_ids + ["fset%d"%v.comp_rulesets_filtersets.fset_id]
             vdata = {
-             "attr": {"id": id_prefix+"_".join(_parent_ids), "rel": "filterset", "obj_id": v.comp_rulesets_filtersets.fset_id, "class": "jstree-draggable"},
-             "data": v.gen_filtersets.fset_name,
+             "id": id_prefix+"_".join(_parent_ids),
+             "type": "filterset",
+             "li_attr": {"obj_id": v.comp_rulesets_filtersets.fset_id, "class": "jstree-draggable"},
+             "text": v.gen_filtersets.fset_name,
             }
             fsets.append(vdata)
         variables = []
         for v in rsets_variables.get(rset.id, []):
             _parent_ids = parent_ids + ["var%d"%v.id]
             vdata = {
-             "attr": {"id": id_prefix+"_".join(_parent_ids), "rel": "variable", "obj_id": v.id, "class": "jstree-draggable"},
-             "data": v.var_name,
+             "id": id_prefix+"_".join(_parent_ids),
+             "type": "variable",
+             "li_attr": {"obj_id": v.id, "class": "jstree-draggable"},
+             "text": v.var_name,
             }
             variables.append(vdata)
         groups_publication = []
         for v in rsets_publications.get(rset.id, []):
             _parent_ids = parent_ids + ["grppub%d"%v.comp_ruleset_team_publication.group_id]
             vdata = {
-             "attr": {"id": id_prefix+"_".join(_parent_ids), "rel": "group_pub", "obj_id": v.comp_ruleset_team_publication.group_id, "class": "jstree-draggable"},
-             "data": v.auth_group.role,
+             "id": id_prefix+"_".join(_parent_ids),
+             "type": "group_pub",
+             "li_attr": {"obj_id": v.comp_ruleset_team_publication.group_id, "class": "jstree-draggable"},
+             "text": v.auth_group.role,
             }
             groups_publication.append(vdata)
         groups_responsible = []
         for v in rsets_responsibles.get(rset.id, []):
             _parent_ids = parent_ids + ["grpresp%d"%v.comp_ruleset_team_responsible.group_id]
             vdata = {
-             "attr": {"id": id_prefix+"_".join(_parent_ids), "rel": "group_resp", "obj_id": v.comp_ruleset_team_responsible.group_id, "class": "jstree-draggable"},
-             "data": v.auth_group.role,
+             "id": id_prefix+"_".join(_parent_ids),
+             "type": "group_resp",
+             "li_attr": {"obj_id": v.comp_ruleset_team_responsible.group_id, "class": "jstree-draggable"},
+             "text": v.auth_group.role,
             }
             groups_responsible.append(vdata)
         if rset.ruleset_type == "contextual":
@@ -4739,8 +4736,10 @@ def _tree_rulesets_children(ruleset_ids=None, id_prefix="", obj_filter=None,
             else:
                 rel = "ruleset_hidden"
         _data = {
-          "attr": {"id": id_prefix+"_".join(parent_ids), "rel": rel, "obj_id": rset.id, "rset_type": rset.ruleset_type, "class": "jstree-draggable,jstree-drop"},
-          "data": rset.ruleset_name,
+          "id": id_prefix+"_".join(parent_ids),
+          "type": rel,
+          "li_attr": {"obj_id": rset.id, "rset_type": rset.ruleset_type, "class": "jstree-draggable,jstree-drop"},
+          "text": rset.ruleset_name,
           "children": groups_publication+groups_responsible+fsets+variables+child_rsets,
         }
         return _data
@@ -4898,14 +4897,6 @@ def json_tree_action():
     elif action == "set_public":
         return json_tree_action_set_public(request.vars.obj_id,
                                            request.vars.publication)
-    elif action == "set_stats":
-        return json_tree_action_set_stats(request.vars.obj_id,
-                                          request.vars.value)
-    elif action == "set_log_op":
-        return json_tree_action_set_log_op(request.vars.obj_id,
-                                           request.vars.obj_type,
-                                           request.vars.parent_obj_id,
-                                           request.vars.type)
     elif action == "set_type":
         return json_tree_action_set_type(request.vars.obj_id,
                                          request.vars.type)
@@ -4918,9 +4909,6 @@ def json_tree_action():
     elif action == "detach_ruleset":
         return json_tree_action_detach_ruleset(request.vars.obj_id,
                                                request.vars.parent_obj_id)
-    elif action == "detach_filter":
-        return json_tree_action_detach_filter(request.vars.obj_id,
-                                              request.vars.parent_obj_id)
     elif action == "detach_publication_group":
         return json_tree_action_detach_group(request.vars.obj_id,
                                              request.vars.parent_obj_id,
@@ -5374,10 +5362,6 @@ def json_tree_action_import():
 def json_tree_action_create_filterset(name):
     name = name.strip()
     try:
-        name = name[4:]
-    except:
-        pass
-    try:
         obj_id = create_filterset(name)
     except CompError as e:
         return {"err": str(e)}
@@ -5387,10 +5371,6 @@ def json_tree_action_create_filterset(name):
 
 def json_tree_action_create_moduleset(modset_name):
     modset_name = modset_name.strip()
-    try:
-        modset_name = modset_name[4:]
-    except:
-        pass
     try:
         obj_id = create_moduleset(modset_name)
     except CompError as e:
@@ -5402,10 +5382,6 @@ def json_tree_action_create_moduleset(modset_name):
 def json_tree_action_create_ruleset(rset_name):
     rset_name = rset_name.strip()
     try:
-        rset_name = rset_name[4:]
-    except:
-        pass
-    try:
         obj_id = create_ruleset(rset_name)
     except CompError as e:
         return {"err": str(e)}
@@ -5415,10 +5391,6 @@ def json_tree_action_create_ruleset(rset_name):
 
 def json_tree_action_create_module(modset_id, modset_mod_name):
     modset_mod_name = modset_mod_name.strip()
-    try:
-        modset_mod_name = modset_mod_name[4:]
-    except:
-        pass
     try:
         obj_id = create_module(modset_id, modset_mod_name)
     except CompError as e:
@@ -5430,10 +5402,6 @@ def json_tree_action_create_module(modset_id, modset_mod_name):
 @service.json
 def json_tree_action_create_variable(rset_id, var_name):
     var_name = var_name.strip()
-    try:
-        var_name = var_name[4:]
-    except:
-        pass
     try:
         obj_id = create_variable(rset_id, var_name)
     except CompError as e:
@@ -5482,79 +5450,6 @@ def json_tree_action_set_var_class(var_id, var_class):
     return "0"
 
 @auth.requires_membership('CompManager')
-def json_tree_action_set_log_op(obj_id, obj_type, parent_obj_id, log_op):
-    if obj_type == "filter":
-        return json_tree_action_set_filter_log_op(obj_id, parent_obj_id, log_op)
-    elif obj_type == "filterset":
-        return json_tree_action_set_filterset_log_op(obj_id, parent_obj_id, log_op)
-    else:
-        return {'err': 'unsupported action on this object type'}
-
-@auth.requires_membership('CompManager')
-def json_tree_action_set_filterset_log_op(obj_id, parent_obj_id, log_op):
-    q = db.gen_filtersets.id == obj_id
-    rows = db(q).select(cacheable=True)
-    v = rows.first()
-    if v is None:
-        return {"err": "filterset does not exist"}
-
-    q = db.gen_filtersets.id == parent_obj_id
-    rows = db(q).select(cacheable=True)
-    w = rows.first()
-    if w is None:
-        return {"err": "filterset does not exist"}
-
-    q = db.gen_filtersets_filters.fset_id == parent_obj_id
-    q &= db.gen_filtersets_filters.encap_fset_id == obj_id
-    rows = db(q).select(cacheable=True)
-    x = rows.first()
-    if x.f_log_op == log_op:
-        return {"err": "filterset logical operator is already '%(log_op)s'"%dict(log_op=log_op)}
-    db(q).update(f_log_op=log_op)
-
-    db.commit()
-
-    _log('compliance.filterset.change',
-         'set filterset %(encap_fset_name)s logical operator from %(old)s to %(new)s in filterset %(fset_name)s',
-         dict(old=x.f_log_op,
-              encap_fset_name=v.fset_name,
-              new=log_op,
-              fset_name=w.fset_name))
-    return "0"
-
-@auth.requires_membership('CompManager')
-def json_tree_action_set_filter_log_op(obj_id, parent_obj_id, log_op):
-    q = db.gen_filters.id == obj_id
-    rows = db(q).select(cacheable=True)
-    v = rows.first()
-    if v is None:
-        return {"err": "filter does not exist"}
-
-    q = db.gen_filtersets.id == parent_obj_id
-    rows = db(q).select(cacheable=True)
-    w = rows.first()
-    if w is None:
-        return {"err": "filterset does not exist"}
-
-    q = db.gen_filtersets_filters.fset_id == parent_obj_id
-    q &= db.gen_filtersets_filters.f_id == obj_id
-    rows = db(q).select(cacheable=True)
-    x = rows.first()
-    if x.f_log_op == log_op:
-        return {"err": "filter logical operator is already '%(log_op)s'"%dict(log_op=log_op)}
-    db(q).update(f_log_op=log_op)
-
-    db.commit()
-
-    _log('compliance.filter.change',
-         'set filter %(f_name)s logical operator from %(old)s to %(new)s in filterset %(fset_name)s',
-         dict(old=x.f_log_op,
-              f_name=v.f_table+'.'+v.f_field+' '+v.f_op+' '+v.f_value,
-              new=log_op,
-              fset_name=w.fset_name))
-    return "0"
-
-@auth.requires_membership('CompManager')
 def json_tree_action_set_type(rset_id, rset_type):
     q = db.comp_rulesets.id == rset_id
     if 'Manager' not in user_groups():
@@ -5580,21 +5475,6 @@ def json_tree_action_set_type(rset_id, rset_type):
          dict(rset_name=v.ruleset_name,
               old=v.ruleset_type,
               new=rset_type))
-    return "0"
-
-@auth.requires_membership('CompManager')
-def json_tree_action_set_stats(fset_id, value):
-    q = db.gen_filtersets.id == fset_id
-    rows = db(q).select(cacheable=True)
-    v = rows.first()
-    if v is None:
-        return {"err": "filterset does not exist"}
-    db(q).update(fset_stats=value)
-    _log('compliance.filterset.change',
-         'set filterset %(fset_name)s stats from %(old)s to %(new)s',
-         dict(fset_name=v.fset_name,
-              old=v.fset_stats,
-              new=value))
     return "0"
 
 @auth.requires_membership('CompManager')
@@ -5686,8 +5566,6 @@ def json_tree_action_copy_or_move_rset_to_rset(rset_id, parent_rset_id, dst_rset
 def json_tree_action_detach_filterset(obj_id, parent_obj_id, parent_obj_type):
     if parent_obj_type.startswith("ruleset"):
         return json_tree_action_detach_filterset_from_rset(parent_obj_id)
-    elif parent_obj_type == "filterset":
-        return json_tree_action_detach_filterset_from_filterset(obj_id, parent_obj_id)
     else:
         return {"err": "detach filterset not supported for this parent object type"}
 
@@ -5769,25 +5647,6 @@ def json_tree_action_copy_fset_to_fset(fset_id, dst_fset_id):
 def json_tree_action_move_fset_to_rset(fset_id, rset_id):
     try:
         attach_filterset_to_ruleset(fset_id, rset_id)
-    except CompError as e:
-        return {"err": str(e)}
-    except CompInfo as e:
-        return {"info": str(e)}
-    return "0"
-
-def json_tree_action_detach_filter(f_id, fset_id):
-    try:
-        detach_filter_from_filterset(fset_id, rset_id)
-    except CompError as e:
-        return {"err": str(e)}
-    except CompInfo as e:
-        return {"info": str(e)}
-    return "0"
-
-
-def json_tree_action_detach_filterset_from_filterset(fset_id, parent_fset_id):
-    try:
-        detach_filterset_from_filterset(fset_id, parent_fset_id)
     except CompError as e:
         return {"err": str(e)}
     except CompInfo as e:

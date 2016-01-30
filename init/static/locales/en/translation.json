@@ -15,6 +15,7 @@
     "add_filterset": "Add filterset"
   },
   "designer": {
+    "empty_response": "empty api response",
     "var_class": "Variable class: __name__",
     "var_last_mod": "Last modified by __by__ on __on__",
     "warn_remove": "Warning, this object might be referenced by other objects. Do you really want to delete this compliance object ?",

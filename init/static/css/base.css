@@ -1936,6 +1936,11 @@ ul.login_menu ul {
 	padding: 0 0 0 20px;
 	min-height: 16px;
 }
+.rset16:before {
+	color: #EE5464;
+	content: '\f1b2  ';
+	font-family: awesome;
+}
 .comp16:before {
 	color: #EE5464;
 	content: '\f140  ';
@@ -2859,7 +2864,7 @@ button, input[type=button], input[type=submit] {
 .bgred {
 	background-color: #990000;
 }
-.bg#EE5464 {
+.bgdarkred {
 	background-color: #660000;
 }
 .bggreen {
