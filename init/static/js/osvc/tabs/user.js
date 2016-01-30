@@ -2,7 +2,7 @@
 // user
 //
 function user_tabs(divid, options) {
-  o = tabs(divid)
+  var o = tabs(divid)
   o.options = options
 
   o.load(function(){

@@ -2,7 +2,7 @@
 // quotas
 //
 function quota_tabs(divid, options) {
-  o = tabs(divid)
+  var o = tabs(divid)
   o.options = options
 
   o.load(function() {

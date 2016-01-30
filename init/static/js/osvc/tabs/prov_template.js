@@ -2,7 +2,7 @@
 // prov template
 //
 function prov_template_tabs(divid, options) {
-  o = tabs(divid)
+  var o = tabs(divid)
   o.options = options
 
   o.load(function() {

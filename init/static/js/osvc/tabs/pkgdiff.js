@@ -90,7 +90,7 @@ function pkgdiff_draw(o, data) {
 }
 
 function svc_pkgdiff(divid, options) {
-  o = {}
+  var o = {}
   o.div = $("#"+divid)
   o.options = options
 

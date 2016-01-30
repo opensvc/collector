@@ -2,7 +2,7 @@
 // ruleset
 //
 function ruleset_tabs(divid, options) {
-  o = tabs(divid)
+  var o = tabs(divid)
   o.options = options
 
   o.load(function() {
@@ -35,7 +35,7 @@ function ruleset_tabs(divid, options) {
 }
 
 function ruleset_export(divid, options) {
-	o = {}
+	var o = {}
 	o.options = options
 	o.div = $("#"+divid)
 	services_osvcgetrest("R_COMPLIANCE_RULESET_EXPORT", [o.options.ruleset_id], "", function(jd) {
@@ -54,7 +54,7 @@ function ruleset_export(divid, options) {
 }
 
 function ruleset_properties(divid, options) {
-	o = {}
+	var o = {}
 	o.options = options
 	o.div = $("#"+divid)
 	o.rulesets = {}

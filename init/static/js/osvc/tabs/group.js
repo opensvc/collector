@@ -2,7 +2,7 @@
 // group
 //
 function group_tabs(divid, options) {
-  o = tabs(divid)
+  var o = tabs(divid)
   o.options = options
 
   o.load(function(){
@@ -149,7 +149,7 @@ function group_properties(divid, options) {
 
 
 function group_hidden_menu_entries(divid, options) {
-	o = {}
+	var o = {}
 	o.options = options
 	o.div = $("#"+divid)
 
