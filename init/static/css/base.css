@@ -73,8 +73,7 @@ input.aci, input.aci:focus {
 
 .icon:before {
 	display: inline-block;
-	width: 2em;
-	text-align: center;
+	margin-right: 0.2em;
 	font-family: awesome;
 }
 
