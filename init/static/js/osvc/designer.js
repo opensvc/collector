@@ -1142,7 +1142,7 @@ function designer(divid, options) {
 		var var_classes = o.get_var_classes()
 		h = {
 			"remove" : {
-				"label": "Delete",
+				"label": i18n.t("designer.delete"),
 				"icon": "fa fa-minus-square",
 				"_disabled": false,
 				"separator_before": false,
@@ -1150,7 +1150,7 @@ function designer(divid, options) {
 				"action": o.__remove
 			},
 			"rename" : {
-				"label": "Rename",
+				"label": i18n.t("designer.rename"),
 				"icon": "fa fa-pencil",
 				"_disabled": false,
 				"separator_before": false,
@@ -1166,7 +1166,7 @@ function designer(divid, options) {
 			h["remove"]["_disabled"] = true
 			h["rename"]["_disabled"] = true
 			h["create"] = {
-				"label": "Add moduleset",
+				"label": i18n.t("designer.add_moduleset"),
 				"icon": "fa fa-plus-square",
 				"separator_before": false,
 				"separator_after": false,
@@ -1183,7 +1183,7 @@ function designer(divid, options) {
 			h["remove"]["_disabled"] = true
 			h["rename"]["_disabled"] = true
 			h["create"] = {
-				"label": "Add filterset",
+				"label": i18n.t("designer.add_filterset"),
 				"icon": "fa fa-plus-square",
 				"separator_before": false,
 				"separator_after": false,
@@ -1200,7 +1200,7 @@ function designer(divid, options) {
 			h["remove"]["_disabled"] = true
 			h["rename"]["_disabled"] = true
 			h["create"] = {
-				"label": "Add ruleset",
+				"label": i18n.t("designer.add_ruleset"),
 				"icon": "fa fa-plus-square",
 				"separator_before": false,
 				"separator_after": false,
@@ -1216,20 +1216,20 @@ function designer(divid, options) {
 		//
 		else if (node.type.match(/^module/)) {
 			h["autofix"] = {
-				"label": "Autofix",
+				"label": i18n.t("designer.autofix"),
 				"icon": "fa fa-pencil",
 				"separator_before": false,
 				"separator_after": false,
 				"submenu": {
 					"on": {
-						"label": "On",
+						"label": i18n.t("designer.on"),
 						"icon": "fa fa-toggle-on",
 						"action": function(data) {
 							o.action_set_autofix(data, true, "module_autofix")
 						}
 					},
 					"off": {
-						"label": "Off",
+						"label": i18n.t("designer.off"),
 						"icon": "fa fa-toggle-off",
 						"action": function(data) {
 							o.action_set_autofix(data, false, "module")
@@ -1244,7 +1244,7 @@ function designer(divid, options) {
 		//
 		else if (node.type=="modset") {
 			h["create"] = {
-				"label": "Add module",
+				"label": i18n.t("designer.add_module"),
 				"icon": "fa fa-plus-square",
 				"separator_before": false,
 				"separator_after": false,
@@ -1254,7 +1254,7 @@ function designer(divid, options) {
 			}
 
 			h["clone"] = {
-				"label": "Clone",
+				"label": i18n.t("designer.clone"),
 				"icon": "fa fa-copy",
 				"action": o.action_clone
 			}
@@ -1262,7 +1262,7 @@ function designer(divid, options) {
 			if (parent_type == "modset") {
 				h["remove"]["_disabled"] = true
 				h["detach_moduleset"] = {
-					"label": "Detach moduleset",
+					"label": i18n.t("designer.detach_moduleset"),
 					"icon": "fa fa-chain-broken",
 					"action": o.action_detach_moduleset
 				}
@@ -1274,7 +1274,7 @@ function designer(divid, options) {
 		//
 		else if (node.type.match(/^ruleset/)) {
 			h["create"] = {
-				"label": "Add variable",
+				"label": i18n.t("designer.add_variable"),
 				"icon": "fa fa-plus-square",
 				"separator_before": false,
 				"separator_after": false,
@@ -1283,41 +1283,41 @@ function designer(divid, options) {
 				}
 			}
 			h["clone"] = {
-				"label": "Clone",
+				"label": i18n.t("designer.clone"),
 				"icon": "fa fa-copy",
 				"action": o.action_clone
 			}
 			h["set_type"] = {
-				"label": "Set type",
+				"label": i18n.t("designer.set_type"),
 				"icon": "fa fa-pencil",
 				"separator_before": false,
 				"separator_after": false,
 				"submenu": {
 					"contextual": {
-						"label": "Contextual",
+						"label": i18n.t("designer.contextual"),
 						"icon": "fa fa-filter",
 						"action": o.action_set_contextual
 					},
 					"explicit": {
-						"label": "Explicit",
+						"label": i18n.t("designer.explicit"),
 						"icon": "fa fa-link",
 						"action": o.action_set_explicit
 					}
 				}
 			}
 			h["set_publication"] = {
-				"label": "Set publication",
+				"label": i18n.t("designer.set_publication"),
 				"icon": "fa fa-pencil",
 				"separator_before": false,
 				"separator_after": false,
 				"submenu": {
 					"published": {
-						"label": "Published",
+						"label": i18n.t("designer.published"),
 						"icon": "fa fa-eye",
 						"action": o.action_set_public
 					},
 					"not_published": {
-						"label": "Not published",
+						"label": i18n.t("designer.not_published"),
 						"icon": "fa fa-eye-slash",
 						"action": o.action_set_not_public
 					}
@@ -1326,7 +1326,7 @@ function designer(divid, options) {
 
 			if (node.li_attr.rset_type == "contextual") {
 				h["detach_filterset"] = {
-					"label": "Detach filterset",
+					"label": i18n.t("designer.detach_filterset"),
 					"icon": "fa fa-chain-broken",
 					"action": o.action_detach_ruleset_filterset
 				}
@@ -1335,7 +1335,7 @@ function designer(divid, options) {
 			if (parent_type == "modset") {
 				h["remove"]["_disabled"] = true
 				h["detach_ruleset"] = {
-					"label": "Detach ruleset",
+					"label": i18n.t("designer.detach_ruleset"),
 					"icon": "fa fa-chain-broken",
 					"action": o.action_detach_ruleset_from_moduleset
 				}
@@ -1344,7 +1344,7 @@ function designer(divid, options) {
 			if (parent_type.match(/^ruleset/) && parent_node.id != "rset_head") {
 				h["remove"]["_disabled"] = true
 				h["detach_ruleset"] = {
-					"label": "Detach ruleset",
+					"label": i18n.t("designer.detach_ruleset"),
 					"icon": "fa fa-chain-broken",
 					"action": o.action_detach_ruleset_from_ruleset
 				}
@@ -1366,19 +1366,21 @@ function designer(divid, options) {
 			}
 			if ((parent_type.match(/^ruleset/)) || (parent_type == "modset")) {
 				h["set_gtype"] = {
-					"label": "Set group role",
+					"label": i18n.t("designer.set_group_role"),
 					"icon": "fa fa-pencil",
 					"separator_before": false,
 					"separator_after": false,
 					"submenu": {
 						"publication": {
-							"label": "Publication",
+							"label": i18n.t("designer.publication"),
+							"icon": "fa fa-eye",
 							"action": function (data) {
 								o.action_set_group_publication(data, set_group_publication)
 							}
 						},
 						"responsible": {
-							"label": "Responsible",
+							"label": i18n.t("designer.responsible"),
+							"icon": "fa fa-pencil",
 							"action": function (data) {
 								o.action_set_group_responsible(data, set_group_responsible)
 							}
@@ -1394,7 +1396,7 @@ function designer(divid, options) {
 		if (node.type == "group_resp") {
 			if (parent_type.match(/^ruleset/) || parent_type == "modset") {
 				h["detach_group_responsible"] = {
-					"label": "Detach responsible",
+					"label": i18n.t("designer.detach_responsible"),
 					"icon": "fa fa-chain-broken",
 					"action": o.action_detach_group_responsible
 				}
@@ -1409,7 +1411,7 @@ function designer(divid, options) {
 			h["rename"]["_disabled"] = true
 			if (parent_type.match(/^ruleset/) || parent_type == "modset") {
 				h["detach_group_publication"] = {
-					"label": "Detach publication",
+					"label": i18n.t("designer.detach_publication"),
 					"icon": "fa fa-chain-broken",
 					"action": o.action_action_detach_moduleset
 				}
@@ -1437,7 +1439,7 @@ function designer(divid, options) {
 		//
 		else if (node.type=="variable") {
 			h["set_var_class"] = {
-				"label": "Set variable class",
+				"label": i18n.t("designer.set_variable_class"),
 				"icon": "fa fa-pencil",
 				"separator_before": false,
 				"separator_after": false,
@@ -1452,7 +1454,7 @@ function designer(divid, options) {
 			h["remove"]["_disabled"] = true
 			h["rename"]["_disabled"] = true
 			h["detach_filterset"] = {
-				"label": "Detach filterset",
+				"label": i18n.t("designer.detach_filterset"),
 				"icon": "fa fa-chain-broken",
 				"action": o.action_detach_filterset
 			}

@@ -4327,7 +4327,7 @@ def _show_rsetdiff(nodes, n, _rows, objtype="Nodes"):
 def json_tree_modulesets():
     modsets = {
      "id": "moduleset_head",
-     'text': 'modulesets',
+     'text': T('modulesets'),
      'type': "moduleset_head",
      'children': [],
     }
@@ -4506,7 +4506,7 @@ def json_tree_modulesets():
 def json_tree_groups():
     groups = {
      'id': 'grp_head',
-     'text': 'groups',
+     'text': T('groups'),
      'children': [],
      "type": "groups",
     }
@@ -4539,7 +4539,7 @@ def json_tree_filtersets():
 
     filtersets = {
      "id": "fset_head",
-     'text': 'filtersets',
+     'text': T('filtersets'),
      'type': "filterset_head",
      'children': [],
     }
@@ -4565,7 +4565,7 @@ def json_tree_filtersets():
 def json_tree_rulesets():
     rulesets = {
       "id": "rset_head",
-      'text': 'rulesets',
+      'text': T('rulesets'),
       'type': "ruleset_head",
       'children': [],
     }
