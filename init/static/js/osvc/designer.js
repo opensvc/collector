@@ -401,8 +401,9 @@ function designer__move(o, e, data) {
           o.for_each_node(dst_obj_id, dst_rel, null, null, function(t, node) {
             var tree = t.jstree()
             for (var i=0; i<node.children.length; i++) {
-              var n = node.children[i]
-              if (n.type == "filterset" && n.id != obj_id) {
+              var n = tree.get_node(node.children[i])
+              if (n.type == "filterset" && n.li_attr.obj_id != obj_id) {
+                console.log("remove old filterset", n.id)
                 tree.delete_node(n.id)
               }
             }
@@ -798,11 +799,11 @@ function designer_init(o) {
       "icon": o.url_images+"/pkglight16.png"
      },
      "ruleset_cxt": {
-      "valid_children": ["ruleset", "ruleset_cxt", "ruleset_hidden", "ruleset_cxt_hidden", "group", "group_pub", "group_resp", "variable"],
+      "valid_children": ["ruleset", "ruleset_cxt", "ruleset_hidden", "ruleset_cxt_hidden", "group", "group_pub", "group_resp", "variable", "filterset"],
       "icon": o.url_images+"/rsetcxt16.png"
      },
      "ruleset_cxt_hidden": {
-      "valid_children": ["ruleset", "ruleset_cxt", "ruleset_hidden", "ruleset_cxt_hidden", "group", "group_pub", "group_resp", "variable"],
+      "valid_children": ["ruleset", "ruleset_cxt", "ruleset_hidden", "ruleset_cxt_hidden", "group", "group_pub", "group_resp", "variable", "filterset"],
       "icon": o.url_images+"/rsetcxtlight16.png"
      },
      "variable": {
@@ -1284,7 +1285,7 @@ function designer_init(o) {
              "action": function(data){
                var tree = $.jstree.reference(data.reference)
                var node = tree.get_node(data.reference)
-               var filter_node = tree.get_node(node.children.filter(function(e){if (e.match(/^fset/)){return true} else {return false}})[0])
+               var filter_node = tree.get_node(node.children.filter(function(e){if (e.match(/fset/)){return true} else {return false}})[0])
                $.ajax({
                  async: false,
                  type: "POST",
