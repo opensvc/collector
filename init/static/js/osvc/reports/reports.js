@@ -115,7 +115,7 @@ function chart(divid, options) {
 		}
 
 		// chart plot area
-		var plot_div = $("<div style='width:94%;height:600px;overflow-y:auto'>")
+		var plot_div = $("<div style='height:400px;box-sizing:border-box'>")
 		plot_div.uniqueId()
 		div.append(plot_div)
 
@@ -220,7 +220,8 @@ function chart(divid, options) {
 				  breakOnNull : true,
 				  shadowAngle: 135,
 				  shadowOffset: 1.0,
-				  shadowWidth: 2
+				  shadowWidth: 2,
+				  markerOptions: {show: false}
 				},
 				series: series,
 				axes: {
@@ -228,7 +229,7 @@ function chart(divid, options) {
 				    renderer: $.jqplot.DateAxisRenderer,
 				    numberTicks: 5,
 				    tickOptions:{
-				      formatString:'%b,%d\n%H:%M'
+				      formatString:'%y %b,%d'
 				    }
 				  },
 				  yaxis: {
