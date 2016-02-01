@@ -656,6 +656,11 @@ class rest_get_reports_metric_samples(rest_get_handler):
 
         # handle fset ?
         sql_req = definition.metric_sql
+        if "%%fset_services%%" in sql_req or "%%fset_nodenames%%" in sql_req:
+            fset_id = user_fset_id()
+            nodenames, svcnames = filterset_encap_query_cached(fset_id)
+            sql_req = sql_req.replace("%%fset_nodenames%%", ','.join(map(lambda x: repr(x).lstrip('u'), nodenames)))
+            sql_req = sql_req.replace("%%fset_services%%", ','.join(map(lambda x: repr(x).lstrip("u"), svcnames)))
         rows = db.executesql(sql_req, as_dict = True)
 
         return dict(data=rows)
