@@ -492,7 +492,7 @@ function table_action_menu_init_data(t) {
         {
           "selector": ["clicked", "checked", "all"],
           "title": "action_menu.on_node_ips",
-          "tables": ["nodenetworks"],
+          "table": ["nodenetworks"],
           "foldable": true,
           "cols": ["id"],
           "condition": "id",
