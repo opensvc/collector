@@ -20,8 +20,8 @@ function service_tabs(divid, options) {
 
 		// tab alerts
 		i = o.register_tab({
-		"title": "node_tabs.alerts",
-		"title_class": "alert16"
+			"title": "node_tabs.alerts",
+			"title_class": "alert16"
 		})
 		o.tabs[i].callback = function(divid) {
 			table_dashboard_svc(divid, o.options.svcname)
@@ -29,8 +29,8 @@ function service_tabs(divid, options) {
 
 		// tab status
 		i = o.register_tab({
-		"title": "service_tabs.status",
-		"title_class": "svc"
+			"title": "service_tabs.status",
+			"title_class": "svc"
 		})
 		o.tabs[i].callback = function(divid) {
 			table_service_instances_svc(divid, o.options.svcname)
@@ -38,8 +38,8 @@ function service_tabs(divid, options) {
 
 		// tab resources
 		i = o.register_tab({
-		"title": "service_tabs.resources",
-		"title_class": "svc"
+			"title": "service_tabs.resources",
+			"title_class": "svc"
 		})
 		o.tabs[i].callback = function(divid) {
 			table_resources_svc(divid, o.options.svcname)
@@ -47,8 +47,8 @@ function service_tabs(divid, options) {
 
 		// tab actions
 		i = o.register_tab({
-		"title": "service_tabs.actions",
-		"title_class": "action16"
+			"title": "service_tabs.actions",
+			"title_class": "action16"
 		})
 		o.tabs[i].callback = function(divid) {
 			table_actions_svc(divid, o.options.svcname)
@@ -56,8 +56,8 @@ function service_tabs(divid, options) {
 
 		// tab log
 		i = o.register_tab({
-		"title": "service_tabs.log",
-		"title_class": "log16"
+			"title": "service_tabs.log",
+			"title_class": "log16"
 		})
 		o.tabs[i].callback = function(divid) {
 			table_log_svc(divid, o.options.svcname)
@@ -65,8 +65,8 @@ function service_tabs(divid, options) {
 
 		// tab env
 		i = o.register_tab({
-		"title": "service_tabs.env",
-		"title_class": "file16"
+			"title": "service_tabs.env",
+			"title_class": "file16"
 		})
 		o.tabs[i].callback = function(divid) {
 			service_env(divid, {"svcname": o.options.svcname})
@@ -74,8 +74,8 @@ function service_tabs(divid, options) {
 
 		// tab topology
 		i = o.register_tab({
-		"title": "service_tabs.topology",
-		"title_class": "dia16"
+			"title": "service_tabs.topology",
+			"title_class": "dia16"
 		})
 		o.tabs[i].callback = function(divid) {
 			topology(divid, {
@@ -222,7 +222,7 @@ function service_env(divid, options)
 		o.init()
 	})
 
-	o.init = function(o) {
+	o.init = function() {
 		o.header = o.div.find("p")
 		o.body = o.div.find("code")
 
