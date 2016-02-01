@@ -331,7 +331,7 @@ def reports():
     t = SCRIPT(
           """$.when(osvc.app_started).then(function(){ reports("layout") })""",
         )
-    return dict(table=d)
+    return dict(table=t)
 
 def reports_load():
     return reports()["table"]
