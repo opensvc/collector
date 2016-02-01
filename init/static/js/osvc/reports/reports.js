@@ -124,9 +124,9 @@ function chart(divid, options) {
 
 	}
 
-	o.plot = function reports_charts_plot(id) {
+	o.plot = function(id) {
 		$.jqplot.config.enablePlugins = true
-		services_osvcgetrest("R_GET_REPORT_CHART_SAMPLES", [o.options.chart_id], {"meta": "false", "limit": "5000"}, function(jd) {
+		services_osvcgetrest("R_GET_REPORT_CHART_SAMPLES", [o.options.chart_id], {"meta": "false", "limit": "2000"}, function(jd) {
 			if (jd.error && (jd.error.length > 0)) {
 				$(".flash").show("blind").html(services_error_fmt(jd))
 				return
@@ -194,8 +194,13 @@ function chart(divid, options) {
 			}
 			for (key in keys) {
 				var kc = keys[key]
+				if (kc.instance) {
+					var label = kc.instance
+				} else {
+					var label = metric_definition[kc.metric_id].label
+				}
 				var serie = {
-				  'label': kc.instance,
+				  'label': label,
 				  'shadow': metric_definition[kc.metric_id].shadow,
 				  'fill': metric_definition[kc.metric_id].fill
 				}
@@ -203,6 +208,7 @@ function chart(divid, options) {
 			}
 			delete metric_definition
 			delete series_data
+			delete data
 	
 			p = $.jqplot(id, series_list, {
 				stackSeries: stackSeries,
@@ -240,6 +246,11 @@ function chart(divid, options) {
 				  }
 				}
 			})
+			var report_section = $("#"+id).parents(".reports_section").first()
+			var legend_height = $("#"+id).find(".jqplot-table-legend").height()
+                        if (legend_height > 0) {
+				report_section.css({"padding-bottom": 50+legend_height})
+			}
 		})
 	}
 	o.load()
