@@ -3390,6 +3390,9 @@ div.containertrans {
 	background-color : #E0E1CD;
 	overflow: hidden;
 }
+.reports_div > div > h3.line > span {
+	background-color : #E0E1CD;
+}
 
 .reports_section_sel {
 	width:15em;

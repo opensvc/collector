@@ -278,7 +278,7 @@ function report(divid, options) {
 
 			// title
 			if (section.Title !== undefined) {
-				var title_h = $("<h3 class='line yellow' style='text-align:left;padding: 0.3em'></h3>")
+				var title_h = $("<h3 class='line' style='text-align:left;padding: 0.3em'></h3>")
 				var title_span = $("<span class='menu16'></span>")
 				title_span.text(section.Title)
 				title_h.append(title_span)
