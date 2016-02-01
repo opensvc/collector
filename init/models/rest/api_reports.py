@@ -677,6 +677,7 @@ class rest_get_reports_chart_samples(rest_get_table_handler):
           self,
           path="/reports/charts/<id>/samples",
           tables=["metrics_log"],
+          orderby=~db.metrics_log.date,
           desc=desc,
           examples=examples,
         )
