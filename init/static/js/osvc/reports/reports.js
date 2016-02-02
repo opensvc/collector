@@ -140,6 +140,8 @@ function chart(divid, options) {
 			var series_data = {}
 			var max = 0
 			var unit = ""
+			var dates = {}
+			var series_dates = {}
 
 			for (var i=0; i<definition.Metrics.length; i++) {
 				var m = definition.Metrics[i]
@@ -151,22 +153,53 @@ function chart(divid, options) {
 
 			for (var i=0; i<data.length; i++) {
 				var point = data[i]
+				if (!(point.date in dates)) {
+					dates[point.date] = null
+				}
 				var key = point.metric_id+"-"+point.instance
 				if (!(key in keys)) {
+					series_dates[key] = {}
 					keys[key] = {
 					  "metric_id": point.metric_id,
 					  "instance": point.instance
 					}
 					series_data[key] = []
 				}
+				if (stackSeries) {
+					series_dates[key][point.date] = point
+				}
 				max = Math.max(max, point.value)
 			}
 
 			var divisor = best_unit_mb(max, unit)
-			for (var i=0; i<data.length; i++) {
-				var point = data[i]
-				var key = point.metric_id+"-"+point.instance
-				series_data[key].push([point.date, point.value/divisor['div']])
+			if (!stackSeries) {
+				for (var i=0; i<data.length; i++) {
+					var point = data[i]
+					var key = point.metric_id+"-"+point.instance
+					series_data[key].push([point.date, point.value/divisor['div']])
+				}
+			} else {
+				// fix data series for stacking, which need aligned data points
+				// and apply the divisor to the values
+				for (var d in dates) {
+					for (var key in series_dates) {
+						var serie_dates = series_dates[key]
+						if (d in serie_dates) {
+							var point = serie_dates[d]
+							series_data[key].push([point.date, point.value/divisor['div']])
+						} else {
+							if (series_data[key].length == 0) {
+								var val = 0
+							} else {
+								var val = series_data[key][series_data[key].length-1].value
+								if (val) {
+									val /= divisor['div']
+								}
+							}
+							series_data[key].push([d, val])
+						}
+					}
+				}
 			}
 
 			var series_list = Object.keys(series_data).map(function (key) {
@@ -207,6 +240,7 @@ function chart(divid, options) {
 				series.push(serie)
 			}
 			delete metric_definition
+			delete series_dates
 			delete series_data
 			delete data
 	
