@@ -650,6 +650,7 @@
     "nodes": "nodes"
   },
   "report_tabs": {
+    "export": "export",
     "definition": "definition",
     "properties": "properties"
   },

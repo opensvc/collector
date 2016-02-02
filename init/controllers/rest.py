@@ -218,6 +218,7 @@ handlers = {
      rest_get_reports_metric_samples(),
      rest_get_reports_chart_samples(),
      rest_get_report_definition(),
+     rest_get_report_export(),
      rest_get_reports(),
      rest_get_report(),
      rest_get_safe(),

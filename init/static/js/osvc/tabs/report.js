@@ -31,6 +31,15 @@ function report_tabs(divid, options) {
 			report_definition(divid, o.options)
 		}
 
+		// tab export
+		i = o.register_tab({
+			"title": "report_tabs.export",
+			"title_class": "csv"
+		})
+		o.tabs[i].callback = function(divid) {
+			report_export(divid, o.options)
+		}
+
 		o.set_tab(o.options.tab)
 	})
 	return o
@@ -151,3 +160,30 @@ function report_definition(divid, options) {
 	return o
 }
 
+function report_export(divid, options) {
+	var o = {}
+
+	// store parameters
+	o.options = options
+	o.div = $("#"+divid)
+
+	o.init = function() {
+		div = $("<textarea style='width:100%;height:30em;font-family:monospace;background:rgba(0,0,0,0);border:rgba(0,0,0,0);padding:1em;box-sizing:border-box;font-size:0.8em'>")
+		div.prop("disabled", true)
+
+		spinner_add(o.div)
+		services_osvcgetrest("/reports/%1/export", [o.options.report_id], "", function(jd) {
+			if (jd.error) {
+				o.div.html(services_error_fmt(jd))
+			}
+			div.text(JSON.stringify(jd, null, 4))
+			o.div.html(div)
+		},
+		function() {
+			o.div.html(services_ajax_error_fmt(xhr, stat, error))
+		})
+	}
+
+	o.init()
+	return o
+}

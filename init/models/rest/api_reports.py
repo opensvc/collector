@@ -712,3 +712,99 @@ class rest_get_reports_chart_samples(rest_get_table_handler):
         data["chart_definition"] = definition
         return data
 
+#
+class rest_get_report_export(rest_get_handler):
+    def __init__(self):
+        desc = [
+          "Export the report and its required metrics and charts dedinitions in a JSON format compatible with the import handler.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/reports/2/export"
+        ]
+
+        rest_get_handler.__init__(
+          self,
+          path="/reports/<id>/export",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, id, **vars):
+        q = db.reports.id == id
+        report = db(q).select().first()
+        if report is None:
+            return {"error": "Report not found"}
+
+        report_definition = yaml.load(report.report_yaml)
+        report_data = {
+          "report_name": report.report_name,
+          "report_definition": report_definition
+        }
+
+        chart_ids = set([])
+        metric_ids = set([])
+
+        for s in report_definition.get("Sections", []):
+            for c in s.get("Charts", []):
+                if not "chart_id" in c:
+                    continue
+                chart_ids.add(c.get("chart_id"))
+            for m in s.get("Metrics", []):
+                if not "metric_id" in m:
+                    continue
+                metric_ids.add(m.get("metric_id"))
+
+        q = db.charts.id.belongs(chart_ids)
+        chart_rows = db(q).select()
+        charts_data = []
+        chart_name = {}
+
+        for row in chart_rows:
+            chart_definition = yaml.load(row.chart_yaml)
+            chart_data = {
+              "chart_name": row.chart_name,
+              "chart_definition": chart_definition
+            }
+            charts_data.append(chart_data)
+            chart_name[row.id] = row.chart_name
+
+            for m in chart_definition.get("Metrics", []):
+                if not "metric_id" in m:
+                    continue
+                metric_ids.add(m.get("metric_id"))
+
+        q = db.metrics.id.belongs(metric_ids)
+        metric_rows = db(q).select()
+        metrics_data = []
+        metric_name = {}
+        for row in metric_rows:
+            metrics_data.append({
+              "metric_name": row.metric_name,
+              "metric_sql": row.metric_sql,
+              "metric_col_value_index": row.metric_col_value_index,
+              "metric_col_instance_index": row.metric_col_instance_index,
+              "metric_col_instance_label": row.metric_col_instance_label,
+            })
+            metric_name[row.id] = row.metric_name
+
+        # replace chart and metric ids by their sym name reference
+        for i, chart in enumerate(charts_data):
+            for j, metric in enumerate(chart.get("chart_definition", {}).get("Metrics", [])):
+                if "metric_id" in metric:
+                    charts_data[i]["chart_definition"]["Metrics"][j]["metric_name"] = metric_name[metric["metric_id"]]
+
+        for i, section in enumerate(report_data.get("report_definition", {}).get("Sections", [])):
+            for j, metric in enumerate(section.get("Metrics", [])):
+                if "metric_id" in metric:
+                    report_data["report_definition"]["Sections"][i]["Metrics"][j]["metric_name"] = metric_name[metric["metric_id"]]
+            for j, chart in enumerate(section.get("Charts", [])):
+                if "chart_id" in chart:
+                    report_data["report_definition"]["Sections"][i]["Charts"][j]["chart_name"] = chart_name[chart["chart_id"]]
+
+        return {
+          "reports": [report_data],
+          "charts": charts_data,
+          "metrics": metrics_data,
+        }
+
+

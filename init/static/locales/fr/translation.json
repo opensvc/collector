@@ -637,6 +637,7 @@
     "nodes": "noeuds"
   },
   "report_tabs": {
+    "export": "export",
     "definition": "définition",
     "properties": "propriétés"
   },
