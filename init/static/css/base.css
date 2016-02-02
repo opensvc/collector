@@ -1,5 +1,9 @@
 @charset "UTF-8";
 
+.ui-datepicker{
+	z-index: 2000 !important;
+}
+
 input.aci, input.aci:focus {
 	background-image: url("/init/static/images/down16.png");
 	background-repeat: no-repeat;
