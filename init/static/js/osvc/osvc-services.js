@@ -238,14 +238,23 @@ function services_osvcpostrest(service, uri, params, data, callback, error_callb
         url = url.replace(/&$/, "");
     }
     var content_type = "application/x-www-form-urlencoded"
+    var data_type = null
     if (Object.prototype.toString.call(data) === '[object Array]') {
       data = JSON.stringify(data)
       content_type = "application/json"
+    } else {
+      try {
+        data = $.parseJSON(data)
+        content_type = "application/json"
+        data_type = "json"
+      } catch(err) {}
     }
+
     var xhr = $.ajax(
     {
         type: "POST",
         url: url,
+        dataType: data_type,
         contentType: content_type,
         data: data,
         error: function(xhr, stat, error) {
