@@ -287,6 +287,9 @@
   "search": {
     "nothing_found" : "Aucun résultat ne répond au critère de recherche.",
     "menu_header" : {
+      "title_metrics" : "Métriques",
+      "title_charts" : "Courbes",
+      "title_reports" : "Rapports",
       "title_forms" : "Formulaires",
       "title_safe_files" : "Fichiers du coffre-fort",
       "title_disks" : "Disques",

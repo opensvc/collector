@@ -52,5 +52,11 @@ class rest_get_search(rest_get_handler):
             data["safe_files"] = lib_search_safe_file(substring)
         if otype is None or otype == "form":
             data["forms"] = lib_search_form(substring)
+        if otype is None or otype == "chart":
+            data["charts"] = lib_search_chart(substring)
+        if otype is None or otype == "metric":
+            data["metrics"] = lib_search_metric(substring)
+        if otype is None or otype == "report":
+            data["reports"] = lib_search_report(substring)
         return dict(data=data)
 

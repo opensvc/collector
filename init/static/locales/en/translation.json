@@ -300,6 +300,9 @@
   "search": {
     "nothing_found" : "No entry found matching filter",
     "menu_header" : {
+      "title_metrics" : "Metrics",
+      "title_charts" : "Charts",
+      "title_reports" : "Reports",
       "title_forms" : "Forms",
       "title_safe_files" : "Safe files",
       "title_disks" : "Disks",

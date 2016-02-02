@@ -1,6 +1,30 @@
 function search_get_menu(fk)
 {
   var menu = {
+    "reports": {
+        "tab" : 'report_tabs("__rowid__", {"report_id": "__id__", "report_name": "__report_name__"})',
+        "title": "__report_name__",
+        "menu_entry_id": "adm-reports",
+        "class": "spark16 fa-2x search-section-icon",
+        "subclass": "meta_report clickable",
+        "links": []
+    },
+    "charts": {
+        "tab" : 'chart_tabs("__rowid__", {"chart_id": "__id__", "chart_name": "__chart_name__"})',
+        "title": "__chart_name__",
+        "menu_entry_id": "adm-charts",
+        "class": "spark16 fa-2x search-section-icon",
+        "subclass": "meta_chart clickable",
+        "links": []
+    },
+    "metrics": {
+        "tab" : 'metric_tabs("__rowid__", {"metric_id": "__id__", "metric_name": "__metric_name__"})',
+        "title": "__metric_name__",
+        "menu_entry_id": "adm-metrics",
+        "class": "spark16 fa-2x search-section-icon",
+        "subclass": "meta_metric clickable",
+        "links": []
+    },
     "forms": {
         "tab" : 'form_tabs("__rowid__", {"form_id": "__id__", "form_name": "__form_name__"})',
         "title": "__form_name__",
@@ -797,7 +821,10 @@ function search(divid) {
 		"node: 02",
 		"vm: 02",
 		"safe: etc",
-		"form: add_"
+		"form: add_",
+		"report: lifecycle",
+		"chart: disk",
+		"metric: lifecycle"
 	]
 
 	o.router = function router(delay) {

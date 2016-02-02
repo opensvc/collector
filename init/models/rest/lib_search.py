@@ -220,3 +220,54 @@ def lib_search_safe_file(pattern):
       "elapsed": "%f" % (t.seconds + 1. * t.microseconds / 1000000),
     }
 
+def lib_search_metric(pattern):
+    t = datetime.datetime.now()
+    o = db.metrics.metric_name
+    q = db.metrics.metric_name.like(pattern)
+    n = db(q).count()
+    data = db(q).select(o,
+                        db.metrics.id,
+                        orderby=o,
+                        limitby=(0,max_search_result),
+    ).as_list()
+    t = datetime.datetime.now() - t
+    return {
+      "total": n,
+      "data": data,
+      "elapsed": "%f" % (t.seconds + 1. * t.microseconds / 1000000),
+    }
+
+def lib_search_chart(pattern):
+    t = datetime.datetime.now()
+    o = db.charts.chart_name
+    q = db.charts.chart_name.like(pattern)
+    n = db(q).count()
+    data = db(q).select(o,
+                        db.charts.id,
+                        orderby=o,
+                        limitby=(0,max_search_result),
+    ).as_list()
+    t = datetime.datetime.now() - t
+    return {
+      "total": n,
+      "data": data,
+      "elapsed": "%f" % (t.seconds + 1. * t.microseconds / 1000000),
+    }
+
+def lib_search_report(pattern):
+    t = datetime.datetime.now()
+    o = db.reports.report_name
+    q = db.reports.report_name.like(pattern)
+    n = db(q).count()
+    data = db(q).select(o,
+                        db.reports.id,
+                        orderby=o,
+                        limitby=(0,max_search_result),
+    ).as_list()
+    t = datetime.datetime.now() - t
+    return {
+      "total": n,
+      "data": data,
+      "elapsed": "%f" % (t.seconds + 1. * t.microseconds / 1000000),
+    }
+
