@@ -3432,6 +3432,7 @@ function best_unit_mb(max, iunit) {
     if (typeof(iunit)==='undefined') {
         iunit = "MB"
     }
+    iunit = iunit.toUpperCase()
     if (iunit.length == 2) {
         unit = iunit[iunit.length-1]
     } else {

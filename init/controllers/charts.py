@@ -341,4 +341,4 @@ def reports_load():
 # Batchs
 #
 def batch_task_metrics():
-    task_metrics()
+    task_metrics(verbose=True)

@@ -204,24 +204,6 @@ var menu_data = {
 		  "fn" : "reports"
 		},
 		{
-		  "title" : "site",
-		  "class" : "spark16",
-		  "id" : "stat-site",
-		  "link" : "/init/stats/stats"
-		},
-		{
-		  "title" : "compare",
-		  "class" : "spark16",
-		  "id" : "stat-compare",
-		  "link" : "/init/stats/compare"
-		},
-		{
-		  "title" : "os_lc",
-		  "class" : "spark16",
-		  "id" : "stat-os-lifecycle",
-		  "link" : "/init/lifecycle/lifecycle_os"
-		},
-		{
 		  "title" : "scheduler_stats",
 		  "class" : "spark16",
 		  "id" : "stat-scheduler",

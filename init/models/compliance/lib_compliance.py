@@ -1945,17 +1945,9 @@ def delete_filterset(fset_id):
     db(q).delete()
     table_modified("stat_day_billing")
 
-    q = db.stat_day.fset_id == fset_id
-    db(q).delete()
-    table_modified("stat_day")
-
     q = db.metrics_log.fset_id == fset_id
     db(q).delete()
     table_modified("metrics_log")
-
-    q = db.lifecycle_os.fset_id == fset_id
-    db(q).delete()
-    table_modified("lifecycle_os")
 
     q = db.gen_filtersets.id == fset_id
     db(q).delete()
