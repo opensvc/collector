@@ -412,6 +412,7 @@ handlers = {
      rest_post_reports_charts(),
      rest_post_reports_metric(),
      rest_post_reports_metrics(),
+     rest_post_reports_import(),
      rest_post_reports(),
      rest_post_report(),
      rest_post_safe_upload(),

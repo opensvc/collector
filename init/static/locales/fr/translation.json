@@ -48,6 +48,8 @@
     "import": "Import"
   },
   "action_menu": {
+    "import": "Importer",
+    "json_data": "Données JSON",
     "app_name": "Nom de l'application",
     "on_apps": "Sur les applications",
     "domain_name": "Nom de domaine",

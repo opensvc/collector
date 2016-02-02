@@ -321,6 +321,13 @@ function table_action_menu_init_data(t) {
           "condition": "id",
           "children": [
             {
+              "title": "action_menu.import",
+              "class": "icon fa-upload",
+              "fn": "data_action_import_report",
+              "privileges": ["Manager", "ReportsManager"],
+              "min": 0
+            },
+            {
               "title": "action_menu.add",
               "class": "icon add16",
               "fn": "data_action_add_report",
@@ -3276,6 +3283,61 @@ function data_action_ack_actions(t, e) {
   form.append(yes_no)
   form.insertAfter(entry)
   c.focus()
+}
+
+//
+// data action: import report
+//
+function data_action_import_report(t, e) {
+  var entry = $(e.target)
+
+  // create and focus tool area
+  table_action_menu_focus_on_leaf(t, entry)
+  var div = $("<div></div>")
+  div.uniqueId()
+  div.append($("<hr>"))
+  div.css({"display": "table-caption"})
+  div.insertAfter(entry)
+
+  var line = $("<div class='template_form_line'></div>")
+  var title = $("<div></div>")
+  title.text(i18n.t("action_menu.json_data"))
+  var input = $("<textarea style='min-width:30em;height:30em' class='oi'>")
+  var button = $("<input type='button'></input>")
+  button.val(i18n.t("action_menu.submit"))
+  input.css({"margin": "1em 0"})
+  input.attr("id", "data")
+  line.append(title)
+  line.append(input)
+  div.append(line)
+  div.append(button)
+
+  var info = $("<div></div>")
+  info.uniqueId()
+  info.css({"margin": "0.8em 0 0.8em 0"})
+  div.append(info)
+  div.find("div.template_form_line input").first().focus()
+
+  var timer = null
+  var xhr = null
+
+  button.click(function(e) {
+      var data = JSON.stringify(input.val())
+      info.empty()
+      spinner_add(info)
+      xhr  = services_osvcpostrest("/reports/import", "", "", data, function(jd) {
+        spinner_del(info)
+        if (jd.error && (jd.error.length > 0)) {
+          info.html(services_error_fmt(jd))
+        }
+        if (jd.info && (jd.info.length > 0)) {
+          info.html(services_info_fmt(jd))
+        }
+      },
+      function(xhr, stat, error) {
+        info.html(services_ajax_error_fmt(xhr, stat, error))
+      })
+  })
 }
 
 //

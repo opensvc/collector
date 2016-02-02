@@ -808,3 +808,98 @@ class rest_get_report_export(rest_get_handler):
         }
 
 
+#
+class rest_post_reports_import(rest_post_handler):
+    def __init__(self):
+        desc = [
+          "Import a report and its required metrics and charts definitions from the JSON formatted posted data.",
+        ]
+        examples = [
+          "# curl -u %(email)s -d @/tmp/foo.json -X POST -o- https://%(collector)s/init/rest/api/reports/import"
+        ]
+
+        rest_post_handler.__init__(
+          self,
+          path="/reports/import",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, reports=[], charts=[], metrics=[]):
+        check_privilege("ReportsManager")
+        data = {
+          "info": [],
+          "error": [],
+        }
+
+        metric_id = {}
+        chart_id = {}
+
+        for i, m in enumerate(metrics):
+            if "metric_name" not in m:
+                data["error"].append("Missing 'metric_name' key in metric %d" % i)
+                continue
+            q = db.metrics.metric_name == m["metric_name"]
+            metric = db(q).select().first()
+            if metric:
+                metric_id[m["metric_name"]] = metric.id
+                data["info"].append("Skip metric %s: already exists" % m["metric_name"])
+            else:
+                if "id" in m:
+                    del(m["id"])
+                metric_id[m["metric_name"]] = db.metrics.insert(**m)
+                data["info"].append("Added metric %s" % m["metric_name"])
+
+        for i, m in enumerate(charts):
+            if "chart_name" not in m:
+                data["error"].append("Missing 'chart_name' key in chart %d" % i)
+                continue
+            q = db.charts.chart_name == m["chart_name"]
+            chart = db(q).select().first()
+            if chart:
+                chart_id[m["chart_name"]] = chart.id
+                data["info"].append("Skip chart %s: already exists" % m["chart_name"])
+            else:
+                if "id" in m:
+                    del(m["id"])
+                for j, metric in enumerate(m["chart_definition"].get("Metrics", [])):
+                     if not "metric_name" in metric:
+                         data["error"].append("Missing 'metric_name' key in metric %d of chart %d" % (j,i))
+                         continue
+                     m["chart_definition"]["Metrics"][j]["metric_id"] = metric_id[metric["metric_name"]]
+                     del(m["chart_definition"]["Metrics"][j]["metric_name"])
+                m["chart_yaml"] = yaml.safe_dump(m["chart_definition"], default_flow_style=False, allow_unicode=True)
+                del(m["chart_definition"])
+                chart_id[m["chart_name"]] = db.charts.insert(**m)
+                data["info"].append("Added chart %s" % m["chart_name"])
+
+        for i, m in enumerate(reports):
+            if "report_name" not in m:
+                data["error"].append("Missing 'report_name' key in report %d" % i)
+                continue
+            q = db.reports.report_name == m["report_name"]
+            report = db(q).select().first()
+            if report:
+                data["info"].append("Skip report %s: already exists" % m["report_name"])
+            else:
+                if "id" in m:
+                    del(m["id"])
+                for j, section in enumerate(m["report_definition"].get("Sections", [])):
+                    for k, metric in enumerate(m["report_definition"]["Sections"][j].get("Metrics", [])):
+                         if not "metric_name" in metric:
+                             data["error"].append("Missing 'metric_name' key in metric %d of section %d of report %d" % (k, j, i))
+                             continue
+                         m["report_definition"]["Sections"][j]["Metrics"][k]["metric_id"] = metric_id[metric["metric_name"]]
+                         del(m["report_definition"]["Sections"][j]["Metrics"][k]["metric_name"])
+                    for k, chart in enumerate(m["report_definition"]["Sections"][j].get("Charts", [])):
+                         if not "chart_name" in chart:
+                             data["error"].append("Missing 'chart_name' key in chart %d of section %d of report %d" % (k, j, i))
+                             continue
+                         m["report_definition"]["Sections"][j]["Charts"][k]["chart_id"] = chart_id[chart["chart_name"]]
+                         del(m["report_definition"]["Sections"][j]["Charts"][k]["chart_name"])
+                    m["report_yaml"] = yaml.safe_dump(m["report_definition"], default_flow_style=False, allow_unicode=True)
+                del(m["report_definition"])
+                db.reports.insert(**m)
+                data["info"].append("Added report %s" % m["report_name"])
+
+        return data

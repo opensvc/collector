@@ -48,6 +48,8 @@
     "import": "Import"
   },
   "action_menu": {
+    "import": "Import",
+    "json_data": "JSON data",
     "app_name": "Application name",
     "domain_name": "Domain name",
     "refresh": "Refresh list and alerts",
