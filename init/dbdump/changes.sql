@@ -4964,3 +4964,5 @@ create view v_prov_templates as (select `f`.*, group_concat(distinct `g`.`role` 
 alter table prov_templates drop key idx1;
 
 alter table prov_templates add unique key idx1 (tpl_name);
+
+alter table metrics_log add key idx2 (metric_id, fset_id);
