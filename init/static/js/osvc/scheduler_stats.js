@@ -21,7 +21,7 @@ function scheduler_stats(divid) {
 
 	o.plot_options = function(series) {
 		return options = {
-			stackSeries: true,
+			stackSeries: false,
 			cursor:{
 				zoom: true,
 				showTooltip: true
@@ -39,7 +39,7 @@ function scheduler_stats(divid) {
 			},
 			seriesDefaults: {
 				markerOptions: {size: 2},
-				fill: true,
+				fill: false,
 				shadowAngle: 135,
 				shadowOffset: 1.0,
 				breakOnNull : true,
