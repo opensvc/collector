@@ -2130,7 +2130,7 @@ function table_insert_bookmark(t, name) {
   // append the bookmark to the list area
   var bookmark = $("<p></p>")
   bookmark.append($("<a class='icon bookmark16'>"+name+"</a>"))
-  bookmark.append($("<a style='float:right' class='del16'>&nbsp;</a>"))
+  bookmark.append($("<a style='float:right' class='icon del16'>&nbsp;</a>"))
   t.e_tool_bookmarks_listarea.append(bookmark)
 
   // "del" binding
