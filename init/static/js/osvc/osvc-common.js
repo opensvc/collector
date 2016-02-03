@@ -24,6 +24,8 @@ function is_special_key(e) {
     characterCode = e.which
   } else if (e && e.keyCode) {
     characterCode = e.keyCode
+  } else {
+    return false
   }
   if (no_refresh_keys.indexOf(characterCode) >= 0) {
     return true
