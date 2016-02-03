@@ -1986,6 +1986,20 @@ function cell_decorator_modset_name(e) {
   })
 }
 
+function cell_decorator_ruleset_name(e) {
+  var v = $.data(e, "v")
+  $(e).html("<span class='clickable'>"+v+"</span>")
+  $(e).addClass("corner")
+  $(e).click(function(){
+    var line = $(this).parent(".tl")
+    table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
+    span_id = $(e).parent(".tl").attr("spansum")
+    id = table_id + "_x_" + span_id
+    toggle_extra(null, id, e, 0)
+    ruleset_tabs(id, {"ruleset_name": v})
+  })
+}
+
 function cell_decorator_report_name(e) {
   var v = $.data(e, "v")
   $(e).html("<span class='clickable'>"+v+"</span>")
@@ -3509,6 +3523,7 @@ cell_decorators = {
  "prov_template": cell_decorator_prov_template,
  "fset_name": cell_decorator_fset_name,
  "modset_name": cell_decorator_modset_name,
+ "ruleset_name": cell_decorator_ruleset_name,
  "rule_value": cell_decorator_rule_value
 }
 
