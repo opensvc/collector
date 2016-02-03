@@ -1215,7 +1215,7 @@ a.xinfo_shown span {
 .extraline {
 	padding: 0;
 }
-.extraline > td {
+.extraline > td:nth-child(2) {
 	padding: 15px;
 }
 .extraline > td > table {
