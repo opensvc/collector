@@ -177,7 +177,7 @@ function form(divid, options) {
 			var cell = $("<th></th>")
 			cell.text(d.DisplayModeLabel)
 			if (i == 0) {
-				cell.addClass("comp16")
+				cell.addClass("icon comp16")
 			}
 			line.append(cell)
 		}
@@ -214,9 +214,11 @@ function form(divid, options) {
 			} else if (typeof(data) === "string") {
 				content = data
 				if(d.Css) {
+					cell.addClass("icon")
 					cell.addClass(d.Css)
 				}
 				if(d.LabelCss) {
+					cell.addClass("icon")
 					cell.addClass(d.LabelCss)
 				}
 			} else if (input_key_id in data) {
@@ -285,9 +287,11 @@ function form(divid, options) {
 			var value = $("<td></td>")
 			label.text(d.DisplayModeLabel)
 			if(d.LabelCss) {
+				label.addClass("icon")
 				label.addClass(d.LabelCss)
 			}
 			if(d.Css) {
+				value.addClass("icon")
 				value.addClass(d.Css)
 			}
 			line.append(label)
@@ -326,6 +330,7 @@ function form(divid, options) {
 			}
 			label.text(d.Label)
 			if(d.LabelCss) {
+				label.addClass("icon")
 				label.addClass(d.LabelCss)
 			}
 			line.append(label)
