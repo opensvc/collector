@@ -25,7 +25,7 @@ function app_tabs(divid, options) {
     // tab properties
     i = o.register_tab({
       "title": "node_tabs.properties",
-      "title_class": "svc"
+      "title_class": "icon svc"
     })
     o.tabs[i].callback = function(divid) {
       app_properties(divid, o.options)
@@ -34,7 +34,7 @@ function app_tabs(divid, options) {
     // tab quotas
     i = o.register_tab({
       "title": "array_tabs.quotas",
-      "title_class": "quota16"
+      "title_class": "icon quota16"
     })
     o.tabs[i].callback = function(divid) {
       table_quota_app(divid, o.options.app_name)

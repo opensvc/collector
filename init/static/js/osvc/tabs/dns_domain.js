@@ -19,7 +19,7 @@ function dns_domain_tabs(divid, options) {
     // tab properties
     i = o.register_tab({
       "title": "dns_domain_tabs.properties",
-      "title_class": "dns16"
+      "title_class": "icon dns16"
     })
     o.tabs[i].callback = function(divid) {
       dns_domain_properties(divid, o.options)
@@ -28,7 +28,7 @@ function dns_domain_tabs(divid, options) {
     // tab records
     i = o.register_tab({
       "title": "dns_domain_tabs.records",
-      "title_class": "dns16"
+      "title_class": "icon dns16"
     })
     o.tabs[i].callback = function(divid) {
       table_dns_records_domain_id(divid, o.options.domain_id)

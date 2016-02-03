@@ -681,7 +681,7 @@ function search_build_result_row(label, first, res, count) {
     var a_link = $("<a class='search-link'></a>")
     $.data(a_link[0], "link_data", link_data)
     a_link.addClass(link_data.class)
-    a_link.addClass("nocolor")
+    a_link.addClass("nocolor icon")
     a_link.text(i18n.t("search.menu_link."+ link_data.title))
     cell_result.append(a_link)
 

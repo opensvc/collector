@@ -12,7 +12,7 @@ function filterset_tabs(divid, options) {
 		// tab properties
 		i = o.register_tab({
 			"title": "node_tabs.properties",
-			"title_class": "filter16"
+			"title_class": "icon filter16"
 		})
 		o.tabs[i].callback = function(divid) {
 			fset_properties(divid, o.options)
@@ -21,7 +21,7 @@ function filterset_tabs(divid, options) {
 		// tab quotas
 		i = o.register_tab({
 			"title": "fset_tabs.export",
-			"title_class": "log16"
+			"title_class": "icon log16"
 		})
 		o.tabs[i].callback = function(divid) {
 			fset_export(divid, o.options)
@@ -30,7 +30,7 @@ function filterset_tabs(divid, options) {
 		// tab designer
 		i = o.register_tab({
 			"title": "fset_tabs.designer",
-			"title_class": "designer16"
+			"title_class": "icon designer16"
 		})
 		o.tabs[i].callback = function(divid) {
 			fset_designer(divid, o.options)
@@ -133,74 +133,6 @@ function fset_properties(divid, options) {
 				"e_title": o.info_thresholds_title,
 				"e_list": o.info_thresholds
 			})
-		})
-	}
-
-	o.div.load("/init/static/views/fset_properties.html", function() {
-		o.div.i18n()
-		o.init()
-	})
-
-	return o
-}
-
-
-function fset_export(divid, options) {
-	var o = {}
-
-	// store parameters
-	o.load_services = function() {
-		o.load_scope(o.info_services, {"service": "/filtersets/%1/services", "key": "svc_name"})
-	}
-
-	o.load_scope = function(div, options) {
-		div.empty().addClass("tag_container")
-		services_osvcgetrest(options.service, [o.data.id], {
-			"meta": 1,
-			"limit": 0,
-			"props": options.key,
-			"orderby": options.key
-		}, function(jd) {
-			div.siblings(".line").find("span > span").append(" ("+jd.meta.total+")")
-			for (var i=0; i<jd.data.length; i++) {
-				var g = $("<span class='tag tag_attached'></span>")
-				g.text(jd.data[i][options.key])
-				div.append(g, " ")
-			}
-		})
-	}
-
-	o.div.load("/init/static/views/fset_properties.html", function() {
-		o.div.i18n()
-		o.init()
-	})
-
-	return o
-}
-
-
-function fset_export(divid, options) {
-	var o = {}
-
-	// store parameters
-	o.load_services = function() {
-		o.load_scope(o.info_services, {"service": "/filtersets/%1/services", "key": "svc_name"})
-	}
-
-	o.load_scope = function(div, options) {
-		div.empty().addClass("tag_container")
-		services_osvcgetrest(options.service, [o.data.id], {
-			"meta": 1,
-			"limit": 0,
-			"props": options.key,
-			"orderby": options.key
-		}, function(jd) {
-			div.siblings(".line").find("span > span").append(" ("+jd.meta.total+")")
-			for (var i=0; i<jd.data.length; i++) {
-				var g = $("<span class='tag tag_attached'></span>")
-				g.text(jd.data[i][options.key])
-				div.append(g, " ")
-			}
 		})
 	}
 
@@ -328,6 +260,7 @@ function fset_designer(divid, options) {
 		if (data.filter.f_table in db_tables) {
 			span.attr("value", data.filter.f_table)
 			span.text(db_tables[data.filter.f_table].title)
+			span.addClass("icon")
 			span.addClass(db_tables[data.filter.f_table].cl)
 		} else {
 			span.text(data.filter.f_table)
@@ -341,6 +274,7 @@ function fset_designer(divid, options) {
 		if (data.filter.f_field in db_columns) {
 			span.attr("value", data.filter.f_field)
 			span.text(db_columns[data.filter.f_field].title)
+			span.addClass("icon")
 			span.addClass(db_columns[data.filter.f_field].img)
 		} else {
 			span.text(data.filter.f_field)
@@ -802,7 +736,7 @@ function fset_designer(divid, options) {
 			}
 		})
 
-		var del = $("<span class='del16 highlight clickable' style='float:right'></span>")
+		var del = $("<span class='icon del16 highlight clickable' style='float:right'></span>")
 		div.append(del)
 		del.click(function(){
 			var item = $(this).parents(".fset_designer_adder,.fset_designer_item").first()
@@ -835,7 +769,7 @@ function fset_designer(divid, options) {
 		log_op.append(o.log_op_input(data.f_log_op))
 		div.append(log_op)
 
-		var fset_name = $("<span class='filter16'></span>")
+		var fset_name = $("<span class='icon filter16'></span>")
 		fset_name.append(o.fset_name_input(data.filterset))
 		div.append(fset_name)
 
@@ -866,7 +800,7 @@ function fset_designer(divid, options) {
 			})
 		})
 
-		var del = $("<span class='del16 highlight clickable' style='float:right'></span>")
+		var del = $("<span class='icon del16 highlight clickable' style='float:right'></span>")
 		div.append(del)
 		del.click(function(){
 			var item = $(this).parents(".fset_designer_adder,.fset_designer_item").first()
@@ -893,7 +827,7 @@ function fset_designer(divid, options) {
 		var handle = $("<span class='fa fa-plus-square'></span>")
 		item.append(handle)
 
-		var s1 = $("<span class='filter16 clickable'></span>")
+		var s1 = $("<span class='icon filter16 clickable'></span>")
 		s1.text(i18n.t("fset_designer.add_filter"))
 		item.append(s1)
 		s1.click(function(){
@@ -901,7 +835,7 @@ function fset_designer(divid, options) {
 			o.add_adder()
 		})
 
-		var s2 = $("<span class='filter16 clickable'></span>")
+		var s2 = $("<span class='icon filter16 clickable'></span>")
 		s2.text(i18n.t("fset_designer.add_filterset"))
 		item.append(s2)
 		s2.click(function(){
@@ -937,7 +871,7 @@ function fset_designer(divid, options) {
 
 		if (data.filterset) {
 			item.attr("fset_id", o.get_fset_id(data.filterset))
-			var fset_name = $("<span id='fset_name' class='filter16'></span>").text(data.filterset)
+			var fset_name = $("<span id='fset_name' class='icon filter16'></span>").text(data.filterset)
 			item.append(fset_name)
 		} else {
 			item.attr("f_id", data.filter.id)

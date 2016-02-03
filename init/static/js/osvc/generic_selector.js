@@ -46,7 +46,7 @@ function generic_selector(divid, options) {
   }
 
   o.add_object = function(data) {
-    var object = $("<div></div>")
+    var object = $("<div class='icon'></div>")
     object.addClass(o.object_class)
     object.addClass(o.object_base_class)
     object.attr("obj_id", data[o.object_id])

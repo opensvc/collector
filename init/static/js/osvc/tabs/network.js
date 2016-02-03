@@ -11,14 +11,14 @@ function network_tabs(divid, options) {
     // tab properties
     i = o.register_tab({
       "title": "node_tabs.properties",
-      "title_class": "net16"
+      "title_class": "icon net16"
     })
     o.tabs[i].callback = function(divid) {
       network_properties(divid, o.options)
     }
     i = o.register_tab({
       "title": "network_tabs.segments",
-      "title_class": "net16"
+      "title_class": "icon net16"
     })
     o.tabs[i].callback = function(divid) {
       sync_ajax("/init/networks/segments/"+o.options.network_id, [], divid, function(){})

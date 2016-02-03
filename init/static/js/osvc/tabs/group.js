@@ -25,7 +25,7 @@ function group_tabs(divid, options) {
     // tab properties
     i = o.register_tab({
       "title": "node_tabs.properties",
-      "title_class": "guys16"
+      "title_class": "icon guys16"
     })
     o.tabs[i].callback = function(divid) {
       group_properties(divid, o.options)
@@ -34,7 +34,7 @@ function group_tabs(divid, options) {
     // tab hidden menu entries
     i = o.register_tab({
       "title": "group_tabs.hidden_menu_entries",
-      "title_class": "menu16"
+      "title_class": "icon menu16"
     })
     o.tabs[i].callback = function(divid) {
       group_hidden_menu_entries(divid, o.options)

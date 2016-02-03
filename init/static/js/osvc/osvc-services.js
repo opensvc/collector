@@ -400,7 +400,7 @@ function services_ismemberof(groups)
 }
 
 function services_ajax_error_fmt(xhr, stat, error) {
-    var e = $("<span><span class='alert16 err fa-2x'></span><span data-i18n='ajax.error'></span></span>")
+    var e = $("<span><span class='icon alert16 err fa-2x'></span><span data-i18n='ajax.error'></span></span>")
     e.i18n()
     var p = $("<pre></pre>")
     p.text("status: " + stat + "\nerror: " + error)
@@ -416,7 +416,7 @@ function services_error_fmt(data) {
     if (!data.error) {
         return
     }
-    var e = $("<span><span class='alert16 err fa-2x'></span><span data-i18n='api.error'></span></span>")
+    var e = $("<span><span class='icon alert16 err fa-2x'></span><span data-i18n='api.error'></span></span>")
     e.i18n()
     var p = $("<pre></pre>")
     if (typeof data.error === "string") {

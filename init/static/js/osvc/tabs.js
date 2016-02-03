@@ -291,9 +291,9 @@ tab_properties_generic_autocomplete_user_app = function(options) {
 
 tab_properties_generic_boolean = function(options) {
 	if (options.div.text() == "true") {
-		options.div.attr('class', 'toggle-on');
+		options.div.attr('class', 'fa toggle-on');
 	} else {
-		options.div.attr('class','toggle-off');
+		options.div.attr('class','fa toggle-off');
 	}
 	options.div.empty()
 
@@ -484,7 +484,7 @@ tab_properties_generic_list = function(options) {
 		for (var i=0; i<data.length; i++) {
 			var e = $("<span style='display:inline-block;padding:0 0.2em'></span>")
 			e.addClass(options.item_class)
-			e.addClass("tag tag_attached")
+			e.addClass("icon tag tag_attached")
 			if (options.key) {
 				if (typeof(options.key) === "string") {
 					var val = data[i][options.key]

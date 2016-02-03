@@ -98,7 +98,7 @@ function spinner_add(e, text)
     if (!text) {
         text = ""
     }
-    var s = $("<span class='spinner fa-spin'><span>")
+    var s = $("<span class='icon spinner fa-spin'><span>")
     e.append(s)
     var t = $("<span style='margin-left:1em' class='spinner_text'><span>")
     t.text(text)
@@ -182,7 +182,7 @@ function osvc_create_link(fn, parameters, target)
       // header
       var e = $("<div></div>")
 
-      var title = $("<div class='attach16 fa-2x' data-i18n='api.link'></div>")
+      var title = $("<div class='icon attach16 fa-2x' data-i18n='api.link'></div>")
       e.append(title)
 
       var subtitle = $("<div style='color:lightgray' data-i18n='api.link_text'></div>")
@@ -222,7 +222,7 @@ function osvc_show_link(url, target) {
   // header
   var e = $("<div></div>")
 
-  var title = $("<div class='attach16 fa-2x' data-i18n='api.link'></div>")
+  var title = $("<div class='icon attach16 fa-2x' data-i18n='api.link'></div>")
   e.append(title)
 
   var subtitle = $("<div style='color:lightgray' data-i18n='api.link_text'></div>")

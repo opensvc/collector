@@ -876,7 +876,7 @@ var ti_%(id)s = setInterval(function(){
         for col, v, pct in top:
             line = TR(
                TD(fancypct(pct)),
-               TD(DIV(T(self.colprops[col].title), _class=self.colprops[col].img)),
+               TD(DIV(T(self.colprops[col].title), _class="icon "+self.colprops[col].img)),
                TD(v),
             )
             l.append(line)

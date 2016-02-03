@@ -12,7 +12,7 @@ function service_tabs(divid, options) {
 		// tab properties
 		i = o.register_tab({
 			"title": "node_tabs.properties",
-			"title_class": "svc"
+			"title_class": "icon svc"
 		})
 		o.tabs[i].callback = function(divid) {
 			service_properties(divid, {"svcname": o.options.svcname})
@@ -21,7 +21,7 @@ function service_tabs(divid, options) {
 		// tab alerts
 		i = o.register_tab({
 			"title": "node_tabs.alerts",
-			"title_class": "alert16"
+			"title_class": "icon alert16"
 		})
 		o.tabs[i].callback = function(divid) {
 			table_dashboard_svc(divid, o.options.svcname)
@@ -30,7 +30,7 @@ function service_tabs(divid, options) {
 		// tab status
 		i = o.register_tab({
 			"title": "service_tabs.status",
-			"title_class": "svc"
+			"title_class": "icon svc"
 		})
 		o.tabs[i].callback = function(divid) {
 			table_service_instances_svc(divid, o.options.svcname)
@@ -39,7 +39,7 @@ function service_tabs(divid, options) {
 		// tab resources
 		i = o.register_tab({
 			"title": "service_tabs.resources",
-			"title_class": "svc"
+			"title_class": "icon svc"
 		})
 		o.tabs[i].callback = function(divid) {
 			table_resources_svc(divid, o.options.svcname)
@@ -48,7 +48,7 @@ function service_tabs(divid, options) {
 		// tab actions
 		i = o.register_tab({
 			"title": "service_tabs.actions",
-			"title_class": "action16"
+			"title_class": "icon action16"
 		})
 		o.tabs[i].callback = function(divid) {
 			table_actions_svc(divid, o.options.svcname)
@@ -57,7 +57,7 @@ function service_tabs(divid, options) {
 		// tab log
 		i = o.register_tab({
 			"title": "service_tabs.log",
-			"title_class": "log16"
+			"title_class": "icon log16"
 		})
 		o.tabs[i].callback = function(divid) {
 			table_log_svc(divid, o.options.svcname)
@@ -66,7 +66,7 @@ function service_tabs(divid, options) {
 		// tab env
 		i = o.register_tab({
 			"title": "service_tabs.env",
-			"title_class": "file16"
+			"title_class": "icon file16"
 		})
 		o.tabs[i].callback = function(divid) {
 			service_env(divid, {"svcname": o.options.svcname})
@@ -75,7 +75,7 @@ function service_tabs(divid, options) {
 		// tab topology
 		i = o.register_tab({
 			"title": "service_tabs.topology",
-			"title_class": "dia16"
+			"title_class": "icon dia16"
 		})
 		o.tabs[i].callback = function(divid) {
 			topology(divid, {
@@ -101,7 +101,7 @@ function service_tabs(divid, options) {
 		// tab startup
 		i = o.register_tab({
 			"title": "service_tabs.startup",
-			"title_class": "startup"
+			"title_class": "icon startup"
 		})
 		o.tabs[i].callback = function(divid) {
 			startup(divid, {"svcnames": [o.options.svcname]})
@@ -110,7 +110,7 @@ function service_tabs(divid, options) {
 		// tab storage
 		i = o.register_tab({
 			"title": "service_tabs.storage",
-			"title_class": "hd16"
+			"title_class": "icon hd16"
 		})
 		o.tabs[i].callback = function(divid) {
 			sync_ajax("/init/ajax_node/ajax_svc_stor/"+divid.replace("-", "_")+"/"+encodeURIComponent(o.options.svcname), [], divid, function(){})
@@ -119,7 +119,7 @@ function service_tabs(divid, options) {
 		// tab stats
 		i = o.register_tab({
 			"title": "service_tabs.container_stats",
-			"title_class": "spark16"
+			"title_class": "icon spark16"
 		})
 		o.tabs[i].callback = function(divid) {
 			services_osvcgetrest("R_SERVICE_NODES", [o.options.svcname], {"limit": "0", "props": "mon_nodname,mon_vmname", "meta": "0"}, function(jd) {
@@ -144,7 +144,7 @@ function service_tabs(divid, options) {
 		// tab stats
 		i = o.register_tab({
 			"title": "service_tabs.stats",
-			"title_class": "spark16"
+			"title_class": "icon spark16"
 		})
 		o.tabs[i].callback = function(divid) {
 			services_osvcgetrest("R_SERVICE_NODES", [o.options.svcname], {"limit": "0", "props": "mon_nodname", "meta": "0"}, function(jd) {
@@ -170,7 +170,7 @@ function service_tabs(divid, options) {
 		// tab wiki
 		i = o.register_tab({
 			"title": "node_tabs.wiki",
-			"title_class": "edit"
+			"title_class": "icon edit"
 		})
 		o.tabs[i].callback = function(divid) {
 			wiki(divid, {"nodes": o.options.svcname})
@@ -179,7 +179,7 @@ function service_tabs(divid, options) {
 		// tab avail
 		i = o.register_tab({
 			"title": "service_tabs.avail",
-			"title_class": "svc"
+			"title_class": "icon svc"
 		})
 		o.tabs[i].callback = function(divid) {
 			sync_ajax("/init/svcmon_log/ajax_svcmon_log_1?svcname="+encodeURIComponent(o.options.svcname), [], divid, function(){})
@@ -188,7 +188,7 @@ function service_tabs(divid, options) {
 		// tab pkgdiff
 		i = o.register_tab({
 			"title": "service_tabs.pkgdiff",
-			"title_class": "pkg16"
+			"title_class": "icon pkg16"
 		})
 		o.tabs[i].callback = function(divid) {
 			svc_pkgdiff(divid, {"svcnames": o.options.svcname})
@@ -197,7 +197,7 @@ function service_tabs(divid, options) {
 		// tab compliance
 		i = o.register_tab({
 			"title": "service_tabs.compliance",
-			"title_class": "comp16"
+			"title_class": "icon comp16"
 		})
 		o.tabs[i].callback = function(divid) {
 			sync_ajax("/init/compliance/ajax_compliance_svc/"+encodeURIComponent(o.options.svcname), [], divid, function(){})
@@ -351,7 +351,7 @@ function service_properties(divid, options)
 			"undef": "gray",
 			"n/a": "gray",
 		}
-		e.html("<div class='status_icon nowrap icon-"+t[c]+"'>"+v+"</div>")
+		e.html("<div class='status_icon icon nowrap icon-"+t[c]+"'>"+v+"</div>")
 	}
 
 	o.div.load('/init/static/views/service_properties.html', "", function() {

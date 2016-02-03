@@ -30,54 +30,42 @@ input.aci, input.aci:focus {
 }
 
 .im:before {
-	content: "\f27a  ";
-	font-family: awesome;
+	content: "\f27a";
 }
 .toggle-on:before {
-	content: '\f205  ';
-	font-family: awesome;
+	content: '\f205';
 }
 .toggle-off:before {
-	content: '\f204  ';
-	font-family: awesome;
+	content: '\f204';
 }
 
 .minute:before {
-	content: '\f017  ';
-	font-family: awesome;
+	content: '\f017';
 }
 .hour:before {
-	content: '\f250  ';
-	font-family: awesome;
+	content: '\f250';
 }
 .day:before {
-	content: '\f133  ';
-	font-family: awesome;
+	content: '\f133';
 }
 .week:before {
-	content: '\f272  ';
-	font-family: awesome;
+	content: '\f272';
 }
 .month:before {
-	content: '\f073  ';
-	font-family: awesome;
+	content: '\f073';
 }
 .year:before {
-	content: '\f073  ';
-	font-family: awesome;
-}
-.bcheck:before {
-	content: '\f046  ';
-	font-family: awesome;
-}
-.buncheck:before {
-	content: '\f096  ';
-	font-family: awesome;
+	content: '\f073';
 }
 
+.icon_fixed_width:before {
+	display: inline-block;
+	width: 1.3em;
+	font-family: awesome;
+}
 .icon:before {
 	display: inline-block;
-	margin-right: 0.5em;
+	margin-right: 0.3em;
 	font-family: awesome;
 }
 
@@ -159,7 +147,7 @@ input.aci, input.aci:focus {
 	z-index: 3000;
 	float: left;
 	display: none;
-	min-width: 160px;   
+	min-width: 160px; 
 	max-height: 20em;
 	overflow-y: scroll;
 	overflow-x: hidden;
@@ -374,8 +362,7 @@ img {
 }
 
 .tag_del:before {
-	content: '\f146  ';
-	font-family: awesome;
+	content: '\f146';
 }
 .tag_del {
 	padding: 0.1em 20px 0.1em 20px;
@@ -585,8 +572,7 @@ img {
 
 
 .status_icon:before {
-	content: '\f111  ';
-	font-family: awesome;
+	content: '\f111';
 }
 
 .status_n\/a, .status_undef {
@@ -902,6 +888,7 @@ div.menu_box {
 	font-size: x-large;
 	min-width: 1em;
 	text-align: center;
+	font-family: awesome;
 }
 .menu .menu_title {
 	color: white;
@@ -1218,15 +1205,13 @@ a.xinfo_shown span {
 	padding: 0;
 }
 .extraline > td {
-	padding: 0;
+	padding: 15px;
 }
 .extraline > td > table {
-	width: 96%;
 	box-shadow: 0 0 20px 2px;
 	-moz-border-radius: 4px;
 	-webkit-border-radius: 4px;
 	border-radius: 4px;
-	margin: 20px
 }
 .tab {
 	background: whitesmoke;
@@ -1604,8 +1589,7 @@ ul.login_menu ul {
 }
 
 .common16:before {
-	content: '\f05b  ';
-	font-family: awesome;
+	content: '\f05b';
 }
 .os_vmware {
 	background: transparent url('../images/vmware16.png') no-repeat;
@@ -1668,156 +1652,109 @@ ul.login_menu ul {
 	min-height: 16px;
 }
 .key:before {
-	content: '\f084  ';
-	font-family: awesome;
+	content: '\f084';
 }
 .logout:before {
-	content: '\f011  ';
-	font-family: awesome;
+	content: '\f011';
 }
 .mail:before {
-	content: '\f0e0  ';
-	font-family: awesome;
+	content: '\f0e0';
 }
 .fa-status:before {
-	content: '\f0f1  ';
-	font-family: awesome;
+	content: '\f0f1';
 }
 .settings:before {
-	content: '\f1de  ';
-	font-family: awesome;
+	content: '\f1de';
 }
 .menu16:before {
-	content: '\f00a  ';
-	font-family: awesome;
-}
-.aright16:before {
-	content: '\f061  ';
-	font-family: awesome;
-}
-.aleft16:before {
-	content: '\f060  ';
-	font-family: awesome;
+	content: '\f00a';
 }
 .startup:before {
-	content: '\f062  ';
-	font-family: awesome;
+	content: '\f062';
 }
 .dia16:before {
-	content: '\f0e8  ';
-	font-family: awesome;
+	content: '\f0e8';
 }
 .detach16:before {
-	content: '\f127  ';
-	font-family: awesome;
+	content: '\f127';
 }
 .attach16:before {
-	content: '\f0c1  ';
-	font-family: awesome;
+	content: '\f0c1';
 }
 .prov:before {
 	color: lightgreen;
-	content: '\f0d0  ';
-	font-family: awesome;
+	content: '\f0d0';
 }
 .lock:before {
-	content: '\f023  ';
-	font-family: awesome;
+	content: '\f023';
 }
 .bookmark16:before {
-	content: '\f02e  ';
-	font-family: awesome;
+	content: '\f02e';
 }
 .bookmark_add16:before {
-	content: '\f02e  \f0fe  ';
-	font-family: awesome;
+	content: '\f0fe';
 }
 .del16:before {
-	content: '\f146  ';
-	font-family: awesome;
+	content: '\f146';
 }
 .add16:before {
-	content: '\f0fe  ';
-	font-family: awesome;
+	content: '\f0fe';
 }
 .fw16:before {
 	color: cadetblue;
-	content: '\f06d  ';
-	font-family: awesome;
+	content: '\f06d';
 }
 .alert16:before {
 	color: orange;
-	content: '\f071  ';
-	font-family: awesome;
-}
-.wspark16:before {
-	color: sandybrown;
-	content: '\f201  ';
-	font-family: awesome;
+	content: '\f071';
 }
 .spark16:before {
 	color: sandybrown;
-	content: '\f201  ';
-	font-family: awesome;
+	content: '\f201';
 }
 .values_to_filter:before {
-	content: '\f112  ';
-	font-family: awesome;
+	content: '\f112';
 }
 .clear16:before {
-	content: '\f1f8  ';
-	font-family: awesome;
+	content: '\f1f8';
 }
 .invert16:before {
-	content: '\f042  ';
-	font-family: awesome;
+	content: '\f042';
 }
 .columns:before {
-	content: '\f0db  ';
-	font-family: awesome;
+	content: '\f0db';
 }
 .csv:before {
-	content: '\f019  ';
-	font-family: awesome;
+	content: '\f019';
 }
 .csv_disabled:before {
-	content: '\f019  ';
-	font-family: awesome;
+	content: '\f019';
 	color: rgba(0, 0, 0, 0.5);
 }
 .dashlink16:before {
 	color: orange;
-	content: '\f0c1  ';
-	font-family: awesome;
+	content: '\f0c1';
 }
 .link16:before {
-	content: '\f0c1  ';
-	font-family: awesome;
+	content: '\f0c1';
 }
 .refresh16:before {
 	content: '\f021';
-	font-family: awesome;
-}
-.refresh16 {
 	display: inline-block;
 }
 .spinner:before {
 	content: '\f110';
-	font-family: awesome;
 }
 .dns16:before {
 	color: aquamarine;
-	content: '\f0e1  ';
-	font-family: awesome;
+	content: '\f0e1';
 }
 .repl16:before {
-	content: '\f0ec  ';
-	font-family: awesome;
+	content: '\f0ec';
 }
 .net16:before {
 	color: cadetblue;
-	content: '\f0ec  ';
-	font-family: awesome;
+	content: '\f0ec';
 }
 .down {
 	background: transparent url('../images/down16.png') no-repeat;
@@ -1834,104 +1771,84 @@ ul.login_menu ul {
 	min-height: 16px;
 }
 .right16:before {
-	content: '\f0da  ';
-	font-family: awesome;
+	content: '\f0da';
 }
 .down16:before {
-	content: '\f0d7  ';
-	font-family: awesome;
+	content: '\f0d7';
 }
 .cd16:before,
 .save16:before {
 	color: #dddd66;
-	content: '\f0c7  ';
-	font-family: awesome;
+	content: '\f0c7';
 }
 .designer16:before {
 	color: #EE5464;
-	content: '\f12e  ';
-	font-family: awesome;
+	content: '\f12e';
 }
 .wf16:before {
 	color: palevioletred;
-	content: '\f12e  ';
-	font-family: awesome;
-}
-.expert16 {
-	background: transparent url('../images/expert16.png') no-repeat;
-	padding: 0 0 0 20px;
-	min-height: 16px;
+	content: '\f12e';
 }
 .hv16:before {
 	color: aqua;
-	content: '\f0c2  ';
-	font-family: awesome;
+	content: '\f0c2';
 }
 .db16:before {
-	content: '\f1c0  ';
-	font-family: awesome;
+	content: '\f1c0';
 }
 .quota16:before {
 	color: #dddd66;
-	content: '\f1b2  ';
-	font-family: awesome;
+	content: '\f1b2';
 }
 .hd16:before {
 	color: #dddd66;
-	content: '\f1c0  ';
-	font-family: awesome;
+	content: '\f1c0';
 }
 .pkg16:before {
 	color: #CC9966;
-	content: '\f1b3  ';
-	font-family: awesome;
+	content: '\f1b3';
 }
 .complog:before {
 	color: #EE5464;
-	content: '\f1da  ';
-	font-family: awesome;
+	content: '\f1da';
 }
 .log16:before {
-	content: '\f1da  ';
-	font-family: awesome;
+	content: '\f1da';
 }
 .bill16:before {
-	content: '\f0d6  ';
-	font-family: awesome;
+	content: '\f0d6';
 }
 .tag16:before {
 	color: darkcyan;
-	content: '\f02b  ';
-	font-family: awesome;
+	content: '\f02b';
 }
 .cpu16:before {
 	color: aqua;
-	content: '\f0c8  ';
-	font-family: awesome;
+	content: '\f0c8';
 }
 .na:before {
-	content: '\f0c8  ';
+	content: '\f0c8';
 	font-family: awesome;
 	color: lightgray;
 }
 .hw16:before {
 	color: aqua;
-	content: '\f0c8  ';
+	content: '\f0c8';
 	font-family: awesome;
 }
 .mem16:before {
 	color: aqua;
-	content: '\f0c8  ';
+	content: '\f0c8';
 	font-family: awesome;
 }
 .obs16:before {
 	color: aqua;
-	content: '\f1b8  ';
+	content: '\f1b8';
 	font-family: awesome;
 }
 .os16:before {
 	color: aqua;
-	content: '\f268  ';
+	content: '\f268';
 	font-family: awesome;
 }
 .fixable16 {
@@ -1941,80 +1858,80 @@ ul.login_menu ul {
 }
 .rset16:before {
 	color: #EE5464;
-	content: '\f1b2  ';
+	content: '\f1b2';
 	font-family: awesome;
 }
 .comp16:before {
 	color: #EE5464;
-	content: '\f140  ';
+	content: '\f140';
 	font-family: awesome;
 }
 .comp-c:before {
-	content: '\f140  ';
+	content: '\f140';
 	font-family: awesome;
 	color: #EE5464;
 }
 .ok:before {
-	content: '\f00c  ';
+	content: '\f00c';
 	font-family: awesome;
 	color: green;
 }
 .compstatus:before {
 	color: #EE5464;
-	content: '\f00c  ';
+	content: '\f00c';
 	font-family: awesome;
 }
 .check16:before {
 	color: green;
-	content: '\f00c  ';
+	content: '\f00c';
 	font-family: awesome;
 }
 .admin:before {
-	content: '\f007  ';
+	content: '\f007';
 	font-family: awesome;
 	color: gold;
 }
 .guy16:before {
 	color: pink;
-	content: '\f007  ';
+	content: '\f007';
 	font-family: awesome;
 }
 .admins16:before {
-	content: '\f0c0  ';
+	content: '\f0c0';
 	font-family: awesome;
 	color: gold;
 }
 .guys16:before {
 	color: pink;
-	content: '\f0c0  ';
+	content: '\f0c0';
 	font-family: awesome;
 }
 .svc:before {
 	color: lightgreen;
-	content: '\f111  ';
+	content: '\f111';
 	font-family: awesome;
 }
 .svc-c:before {
-	content: '\f111  ';
+	content: '\f111';
 	font-family: awesome;
 	color: #D4E5CA;
 }
 .help:before {
-	content: '\f059  ';
+	content: '\f059';
 	font-family: awesome;
 }
 .nok:before {
-	content: '\f00d  ';
+	content: '\f00d';
 	font-family: awesome;
 	color: red;
 }
 .node16:before {
 	color: aqua;
-	content: '\f233  ';
+	content: '\f233';
 	font-family: awesome;
 }
 .drp16:before {
-	content: '\f1e2  ';
+	content: '\f1e2';
 	font-family: awesome;
 }
 .key16 {
@@ -2038,12 +1955,12 @@ ul.login_menu ul {
 	min-height: 16px;
 }
 .action_sync_16:before {
-	content: '\f0ec  ';
+	content: '\f0ec';
 	font-family: awesome;
 	color: orange;
 }
 .action_stop_16:before {
-	content: '\f063  ';
+	content: '\f063';
 	font-family: awesome;
 	color: #EE5464;
 }
@@ -2053,109 +1970,108 @@ ul.login_menu ul {
 	min-height: 16px;
 }
 .action_start_16:before {
-	content: '\f062  ';
+	content: '\f062';
 	font-family: awesome;
 	color: green;
 }
 .action_restart_16:before {
-	content: '\f021  ';
+	content: '\f021';
 	font-family: awesome;
 	color: green;
 }
 .action_switch_16:before {
-	content: '\f061  ';
+	content: '\f061';
 	font-family: awesome;
 	color: green;
 }
 .www16:before {
-	content: '\f0ac  ';
-	font-family: awesome;
+	content: '\f0ac';
 }
 .gear16:before {
-	content: '\f013  ';
+	content: '\f013';
 	font-family: awesome;
 	color: lightgray;
 }
 .mod16:before {
 	color: #EE5464;
-	content: '\f013  ';
+	content: '\f013';
 	font-family: awesome;
 }
 .action16:before {
 	color: lightgreen;
-	content: '\f013  ';
+	content: '\f013';
 	font-family: awesome;
 }
 .file16:before {
-	content: '\f15b  ';
+	content: '\f15b';
 	font-family: awesome;
 }
 .edit16:before {
-	content: '\f040  ';
+	content: '\f040';
 	font-family: awesome;
 }
 .edit:before {
-	content: '\f040  ';
+	content: '\f040';
 	font-family: awesome;
 }
 .pwr:before {
 	color: aqua;
-	content: '\f0e7  ';
+	content: '\f0e7';
 	font-family: awesome;
 }
 .time16:before {
-	content: '\f017  ';
+	content: '\f017';
 	font-family: awesome;
 }
 .filters:before,
 .filter16:before {
-	content: '\f0b0  ';
+	content: '\f0b0';
 	font-family: awesome;
 }
 .loc:before {
 	color: aqua;
-	content: '\f041  ';
+	content: '\f041';
 	font-family: awesome;
 }
 .search16:before {
-	content: '\f002  ';
+	content: '\f002';
 	font-family: awesome;
 }
 .avail16:before {
 	color: lightgreen;
-	content: '\f21e  ';
+	content: '\f21e';
 	font-family: awesome;
 }
 .api:before {
-	content: '\f121  ';
+	content: '\f121';
 	font-family: awesome;
 }
 .keyboard:before {
-	content: '\f11c  ';
+	content: '\f11c';
 	font-family: awesome;
 }
 .fa-tags:before {
 	color: darkcyan;
-	content: '\f02c  ';
+	content: '\f02c';
 	font-family: awesome;
 }
 .modset16:before {
 	color: #EE5464;
-	content: '\f085  ';
+	content: '\f085';
 	font-family: awesome;
 }
 .actions:before {
 	color: lightgreen;
-	content: '\f085  ';
+	content: '\f085';
 	font-family: awesome;
 }
 .patch:before {
 	color: #CC9966;
-	content: '\f1b2  ';
+	content: '\f1b2';
 	font-family: awesome;
 }
 .folder-closed:before {
-	content: '\f07b  ';
+	content: '\f07b';
 	font-family: awesome;
 }
 .nologo16 {
@@ -2878,28 +2794,23 @@ button, input[type=button], input[type=submit] {
 }
 
 .alertorange:before {
-	content: '\f0c8  ';
-	font-family: awesome;
+	content: '\f0c8';
 	color: orange;
 }
 .alertred:before {
-	content: '\f0c8  ';
-	font-family: awesome;
+	content: '\f0c8';
 	color: #990000;
 }
 .alertdarkred:before {
-	content: '\f0c8  ';
-	font-family: awesome;
+	content: '\f0c8';
 	color: #660000;
 }
 .alertgreen:before {
-	content: '\f0c8  ';
-	font-family: awesome;
+	content: '\f0c8';
 	color: #009900;
 }
 .alertblack:before {
-	content: '\f0c8  ';
-	font-family: awesome;
+	content: '\f0c8';
 }
 
 
@@ -3241,11 +3152,11 @@ textarea.link_ta_sub {
 }
 
 .del16_allow:before {
-	content: '\f146  ';
-	font-family: awesome;
+	content: '\f146';
 }
 .editable:after {
-	content: '  \f040';
+	content: '\f040';
+	padding-left: 0.3em;
 	font-family: awesome;
 }
 
@@ -3446,15 +3357,13 @@ div.containertrans {
 
 .reports_table {
 	width : 100%;
-    /*border-bottom: 1px solid black;*/
-}​
+}
 
 .reports_table tr:last-child { 
-    /*border-bottom: none;*/ 
 }
 
 .reports_table tr:nth-child(2n) {
-    background-color: #EEEEEE;
+	background-color: #EEEEEE;
 }
 
 .param {

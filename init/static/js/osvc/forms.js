@@ -127,7 +127,7 @@ function form(divid, options) {
 		if (o.options.editable == false) {
 			return ""
 		}
-		var a = $("<a class='edit16' style='position:absolute;top:2px;right:2px;z-index:400'></a>")
+		var a = $("<a class='icon edit16' style='position:absolute;top:2px;right:2px;z-index:400'></a>")
 		a.attr("title", i18n.t("forms.edit"))
 		a.bind("click", function(){
 			$(this).siblings("a.nok").show()
@@ -141,7 +141,7 @@ function form(divid, options) {
 		if (o.options.editable == false) {
 			return ""
 		}
-		var a = $("<a class='nok' style='display:none;position:absolute;top:2px;right:2px;z-index:400'></a>")
+		var a = $("<a class='icon nok' style='display:none;position:absolute;top:2px;right:2px;z-index:400'></a>")
 		a.attr("title", i18n.t("forms.cancel"))
 		a.bind("click", function(){
 			$(this).siblings("a.edit16").show()
@@ -331,7 +331,7 @@ function form(divid, options) {
 			line.append(label)
 			line.append(value)
 			if (d.Help) {
-				var help = $("<td class='help'></td>")
+				var help = $("<td class='icon help'></td>")
 				help.attr("title", d.Help)
 			}
 			line.append(help)
@@ -390,7 +390,7 @@ function form(divid, options) {
 	}
 
 	o.render_del_group = function() {
-		var div = $("<div class='del16 clickable' style='text-align:center'></div>")
+		var div = $("<div class='icon del16 clickable' style='text-align:center'></div>")
 		div.text(i18n.t("forms.del_group"))
 		div.bind("click", function() {
 			$(this).prev("hr").remove()
@@ -431,7 +431,7 @@ function form(divid, options) {
 	}
 
 	o.render_add_group = function() {
-		var div = $("<div class='add16 clickable' style='text-align:center'></div>")
+		var div = $("<div class='icon add16 clickable' style='text-align:center'></div>")
 		div.text(i18n.t("forms.add_group"))
 		o.area.append(div)
 		div.bind("click", function() {
@@ -522,9 +522,9 @@ function form(divid, options) {
 		}
 		services_osvcputrest("R_FORM", [o.form_data.id], "", _data, function(jd) {
 			if (jd.error.length == 0) {
-				o.result.html("<div class='ok'>"+i18n.t("forms.success")+"</div>")
+				o.result.html("<div class='icon ok'>"+i18n.t("forms.success")+"</div>")
 			} else {
-				o.result.html("<div class='nok'>"+i18n.t("forms.error")+"</div>")
+				o.result.html("<div class='icon nok'>"+i18n.t("forms.error")+"</div>")
 			}
 			if (jd.info) {
 				if (typeof(jd.info) === "string") {
@@ -621,7 +621,7 @@ function form(divid, options) {
 			} catch(e) {
 				o.options.data = jd.data[0].var_value
 			}
-			o.result.html("<div class='ok'>"+i18n.t("forms.success")+"</div>")
+			o.result.html("<div class='icon ok'>"+i18n.t("forms.success")+"</div>")
 		},
 		function(xhr, stat, error) {
 			o.result.html(services_ajax_error_fmt(xhr, stat, error))

@@ -16,14 +16,14 @@ function ruleset_tabs(divid, options) {
     // tab properties
     i = o.register_tab({
       "title": "ruleset_tabs.ruleset",
-      "title_class": "pkg16"
+      "title_class": "icon pkg16"
     })
     o.tabs[i].callback = function(divid) {
       ruleset_properties(divid, o.options)
     }
     i = o.register_tab({
       "title": "ruleset_tabs.export",
-      "title_class": "log16"
+      "title_class": "icon log16"
     })
     o.tabs[i].callback = function(divid) {
       ruleset_export(divid, o.options)
@@ -93,7 +93,7 @@ function ruleset_properties(divid, options) {
 				div.append("<br>")
 				div.append("<span class='icon fa-arrow-right'></span>")
 			}
-			var e = $("<span style='font-size:1.2em' class='pkg16'></span>")
+			var e = $("<span style='font-size:1.2em' class='icon pkg16'></span>")
 			e.text(rset.ruleset_name)
 			if (i == chain.length-1) {
 				e.addClass("highlight")
@@ -139,7 +139,7 @@ function ruleset_properties(divid, options) {
 				div.append(title)
 
 				for (var j=0; j<l.length; j++) {
-					var e = $("<span></span>")
+					var e = $("<span class='icon'></span>")
 					e.text(l[j])
 					e.addClass(data[key].cl)
 					div.append(e)

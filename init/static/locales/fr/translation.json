@@ -246,7 +246,7 @@
     "bookmarks_save": "Enregistrer les filtres actuels en marque-page",
     "bookmarks_save_name": "Entrez le nom du nouveau marque-page",
     "bookmarks_no_bookmarks": "Aucun marque-page",
-    "refresh": "  Recharger",
+    "refresh": "Recharger",
     "csv": "Export to csv",
     "columns": "Colonnes",
     "commonality": "Communité",
@@ -1014,7 +1014,7 @@
     "lost_text" : "Envoyer un nouveau mot de passe par mèl"
   },
   "app_properties": {
-    "properties": "propriétés",
+    "properties": "Propriétés",
     "description": "description",
     "id": "id",
     "app": "application",

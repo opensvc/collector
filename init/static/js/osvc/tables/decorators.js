@@ -1833,7 +1833,7 @@ function cell_decorator_log_icons(e) {
     }
     var cl = img_h[w]
     var icon = $("<span class='iconlist'></span>")
-    icon.addClass(cl)
+    icon.addClass(cl+" icon")
     span.append(icon)
   }
   $(e).html(span)
@@ -1845,9 +1845,9 @@ function cell_decorator_boolean(e) {
   if (typeof v === "undefined") {
     var cl = ""
   } else if (true_vals.indexOf(v) >= 0) {
-    var cl = "toggle-on"
+    var cl = "fa toggle-on"
   } else {
-    var cl = "toggle-off"
+    var cl = "fa toggle-off"
   }
   s = "<span class='"+cl+"' title='"+v+"'></span>"
   $(e).html(s)
@@ -2067,7 +2067,7 @@ function cell_decorator_chk_instance(e) {
   var chk_type = $.data(line.children("[col=chk_type]")[0], "v")
   if (chk_type == "mpath") {
     url = services_get_url() + "/init/disks/disks?disks_f_disk_id="+v+"&volatile_filters=true"
-    s = "<a class='hd16' href='"+url+"' target='_blank'>"+v+"</a>"
+    s = "<a class='icon hd16' href='"+url+"' target='_blank'>"+v+"</a>"
     $(e).html(s)
   }
 }
@@ -2163,7 +2163,7 @@ function ackpanel(e, show, s){
 function cell_decorator_action_status(e) {
   var v = $.data(e, "v")
   if (v == "empty") {
-    $(e).html("<div class='spinner'></div>")
+    $(e).html("<div class='icon spinner'></div>")
     return
   }
   cl = ["status_"+v.replace(' ', '_')]
@@ -2255,7 +2255,7 @@ function cell_decorator_action(e) {
   if (action in action_img_h) {
     cl.push(action_img_h[action])
   }
-  s = "<div class='"+cl.join(" ")+"'>"+v+"</div>"
+  s = "<div class='icon "+cl.join(" ")+"'>"+v+"</div>"
   $(e).html(s)
 }
 
@@ -2267,7 +2267,7 @@ function cell_decorator_svc_action_err(e) {
   }
   var line = $(e).parent(".tl")
   var svcname = $.data(line.children("[col=mon_svcname]")[0], "v")
-  s = $("<a class='action16 icon-red clickable'>"+v+"</a>")
+  s = $("<a class='icon action16 icon-red clickable'>"+v+"</a>")
   s.click(function(){
     if (get_selected() != "") {return}
     table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
@@ -2443,7 +2443,7 @@ function cell_decorator_status(e) {
     "undef": "gray",
     "n/a": "gray",
   }
-  $(e).html("<div class='status_icon nowrap icon-"+t[c]+"'>"+v+"</div>")
+  $(e).html("<div class='icon status_icon nowrap icon-"+t[c]+"'>"+v+"</div>")
 }
 
 function cell_decorator_dns_records_type(e) {
@@ -2462,7 +2462,7 @@ function cell_decorator_dns_records_type(e) {
 }
 
 function cell_decorator_svcmon_link_actions(e) {
-  var s = $("<a class='action16 clickable'></a>")
+  var s = $("<a class='icon action16 clickable'></a>")
   s.click(function(){
     var line = $(this).parents(".tl").first()
     var svcname = $.data(line.children("[col=mon_svcname]")[0], "v")
@@ -2490,7 +2490,7 @@ function cell_decorator_svcmon_link_frozen(e) {
   var line = $(e).parent(".tl")
   var mon_frozen = $.data(line.children("[col=mon_frozen]")[0], "v")
   if (mon_frozen == "1") {
-    var s = $("<span class='frozen16'>&nbsp</span>")
+    var s = $("<span class='icon frozen16'>&nbsp</span>")
   } else {
     var s = null
   }
@@ -2529,7 +2529,7 @@ function cell_decorator_dash_link_comp_tab(e) {
   var line = $(e).parent(".tl")
   var svcname = $.data(line.find("[col=dash_svcname]")[0], "v")
   var nodename = $.data(line.find("[col=dash_nodename]")[0], "v")
-  s = "<div class='comp16 clickable'></div>"
+  s = "<div class='icon comp16 clickable'></div>"
   $(e).html(s)
   $(e).addClass("corner")
   if (svcname != "") {
@@ -2554,7 +2554,7 @@ function cell_decorator_dash_link_comp_tab(e) {
 function cell_decorator_dash_link_pkg_tab(e) {
   var line = $(e).parent(".tl")
   var svcname = $.data(line.find("[col=dash_svcname]")[0], "v")
-  s = "<div class='pkg16 clickable'></div>"
+  s = "<div class='icon pkg16 clickable'></div>"
   $(e).html(s)
   $(e).addClass("corner")
   if (svcname != "") {
@@ -2569,12 +2569,12 @@ function cell_decorator_dash_link_pkg_tab(e) {
 }
 
 function cell_decorator_dash_link_feed_queue(e) {
-  s = "<a class='action16' href=''></a>"
+  s = "<a class='icon action16' href=''></a>"
   $(e).html(s)
 }
 
 function _cell_decorator_dash_link_actions(svcname, e) {
-  s = $("<a class='action16 clickable'></a>")
+  s = $("<a class='icon action16 clickable'></a>")
   s.click(function(){
     if (get_selected() != "") {return}
     table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
@@ -2598,7 +2598,7 @@ function _cell_decorator_dash_link_actions(svcname, e) {
 function cell_decorator_obs_count(e) {
   var v = $.data(e, "v")
   $(e).addClass("corner")
-  s = $("<a class='node16 clickable'>"+v+"</a>")
+  s = $("<a class='icon node16 clickable'>"+v+"</a>")
   $(e).empty().append(s)
   s.click(function(){
     if (get_selected() != "") {return}
@@ -2626,7 +2626,7 @@ function cell_decorator_obs_count(e) {
 }
 
 function _cell_decorator_dash_link_action_error(svcname, e) {
-  s = $("<a class='alert16 clickable'></a>")
+  s = $("<a class='icon alert16 clickable'></a>")
   s.click(function(){
     if (get_selected() != "") {return}
     table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
@@ -2659,7 +2659,7 @@ function cell_decorator_dash_link_action_error(e) {
 function cell_decorator_dash_link_svcmon(e) {
   var line = $(e).parent(".tl")
   var svcname = $.data(line.find("[col=dash_svcname]")[0], "v")
-  s = "<div class='svc clickable'></div>"
+  s = "<div class='icon svc clickable'></div>"
   $(e).html(s)
   $(e).addClass("corner")
   if (svcname != "") {
@@ -2676,7 +2676,7 @@ function cell_decorator_dash_link_svcmon(e) {
 function cell_decorator_dash_link_node(e) {
   var line = $(e).parent(".tl")
   var nodename = $.data(line.find("[col=dash_nodename]")[0], "v")
-  s = "<div class='node16 clickable'></div>"
+  s = "<div class='icon node16 clickable'></div>"
   $(e).html(s)
   $(e).addClass("corner")
   if (nodename != "") {
@@ -2692,7 +2692,7 @@ function cell_decorator_dash_link_node(e) {
 
 function _cell_decorator_dash_link_checks(nodename) {
   url = services_get_url() + "/init/checks/checks?checks_f_chk_nodename="+nodename+"&volatile_filters=true"
-  s = "<a class='check16 clickable' target='_blank' href='"+url+"'></a>"
+  s = "<a class='icon check16 clickable' target='_blank' href='"+url+"'></a>"
   return s
 }
 
@@ -2706,7 +2706,7 @@ function cell_decorator_dash_link_checks(e) {
 
 function _cell_decorator_dash_link_mac_networks(mac) {
   url = services_get_url() + "/init/nodenetworks/nodenetworks?nodenetworks_f_mac="+mac+"&volatile_filters=true"
-  s = "<a class='net16 clickable' target='_blank' href='"+url+"'></a>"
+  s = "<a class='icon net16 clickable' target='_blank' href='"+url+"'></a>"
   return s
 }
 
@@ -2720,7 +2720,7 @@ function cell_decorator_dash_link_mac_duplicate(e) {
 
 function cell_decorator_dash_link_obsolescence(e, t) {
   $(e).empty().addClass("corner")
-  s = $("<a class='obs16 clickable'></a>")
+  s = $("<a class='icon obs16 clickable'></a>")
   s.click(function(){
     if (get_selected() != "") {return}
     var line = $(this).parents(".tl").first()
@@ -2802,12 +2802,12 @@ function cell_decorator_dash_severity(e) {
   } else {
       l.push("alertblack")
   }
-  $(e).html("<div class='"+l.join(" ")+"' title='"+v+"'></div>")
+  $(e).html("<div class='icon "+l.join(" ")+"' title='"+v+"'></div>")
 }
 
 function cell_decorator_form_id(e) {
   var v = $.data(e, "v")
-  $(e).html("<span class='wf16 nowrap clickable'>"+v+"</span>")
+  $(e).html("<span class='icon wf16 nowrap clickable'>"+v+"</span>")
   $(e).addClass("corner")
   $(e).click(function(){
     var line = $(this).parent(".tl")
@@ -2848,7 +2848,7 @@ function cell_decorator_run_status(e) {
   } else {
     _v = v
   }
-  $(e).html("<div class='"+cl+"'>"+_v+"</div>")
+  $(e).html("<div class='icon "+cl+"'>"+_v+"</div>")
 }
 
 function cell_decorator_tag_exclude(e) {
@@ -3314,7 +3314,7 @@ function cell_decorator_appinfo_value(e) {
   var _e = $("<span></span>")
   _e.text(s)
   if (is_numeric(s)) {
-    _e.addClass("spark16")
+    _e.addClass("icon spark16")
     $(e).addClass("corner clickable")
     $(e).bind("click", function() {
       var line = $(e).parent(".tl")

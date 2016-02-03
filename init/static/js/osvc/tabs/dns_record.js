@@ -19,7 +19,7 @@ function dns_record_tabs(divid, options) {
     // tab properties
     i = o.register_tab({
       "title": "dns_record_tabs.properties",
-      "title_class": "dns16"
+      "title_class": "icon dns16"
     })
     o.tabs[i].callback = function(divid) {
       dns_record_properties(divid, o.options)
@@ -29,7 +29,7 @@ function dns_record_tabs(divid, options) {
       // tab alerts
       i = o.register_tab({
         "title": "dns_record_tabs.nodes",
-        "title_class": "node16"
+        "title_class": "icon node16"
       })
       o.tabs[i].callback = function(divid) {
         table_nodenetworks_addr(divid, o.data.content)

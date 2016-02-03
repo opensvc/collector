@@ -3109,7 +3109,7 @@ def beautify_ruleset(rset):
               rset['name'],
               P(rset['filter'], _style='font-weight:normal'),
               _onclick="""$("#%s").toggle();$(this).toggleClass("down16").toggleClass("right16")"""%did,
-              _class="right16",
+              _class="icon right16",
             ),
             UL(
               vl,
@@ -3246,7 +3246,7 @@ def ajax_compliance_svc():
         d.append(DIV(
                    B(title),
                    _onclick="""$("#%s").toggle();$(this).toggleClass("down16").toggleClass("right16")"""%did,
-                   _class="clickable right16",
+                   _class="clickable icon right16",
                 )
         )
         d.append(DIV(

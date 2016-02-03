@@ -19,7 +19,7 @@ function diskgroup_tabs(divid, options) {
     // tab properties
     i = o.register_tab({
       "title": "node_tabs.properties",
-      "title_class": "hd16"
+      "title_class": "icon hd16"
     })
     o.tabs[i].callback = function(divid) {
       diskgroup_properties(divid, {"dg_id": o.data.id})
@@ -28,7 +28,7 @@ function diskgroup_tabs(divid, options) {
     // tab quotas
     i = o.register_tab({
       "title": "array_tabs.quotas",
-      "title_class": "quota16"
+      "title_class": "icon quota16"
     })
     o.tabs[i].callback = function(divid) {
       table_quota_array_dg(divid, o.options.array_name, o.options.dg_name)
@@ -37,7 +37,7 @@ function diskgroup_tabs(divid, options) {
     // tab usage
     i = o.register_tab({
       "title": "node_tabs.stats",
-      "title_class": "spark16"
+      "title_class": "icon spark16"
     })
     o.tabs[i].callback = function(divid) {
       $.ajax({

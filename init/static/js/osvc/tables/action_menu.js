@@ -28,7 +28,7 @@ function table_action_menu_init_data(t) {
     // section: tools
     {
       "title": "action_menu.tools",
-      "class": "spark16",
+      "class": "icon spark16",
       "children": [
         {
           "selector": [],
@@ -39,7 +39,7 @@ function table_action_menu_init_data(t) {
           "children": [
             {
               "title": "action_menu.free_uids",
-              "class": "icon guy16",
+              "class": "icon_fixed_width guy16",
               "fn": "tool_free_uids",
               "min": 0
             }
@@ -54,7 +54,7 @@ function table_action_menu_init_data(t) {
           "children": [
             {
               "title": "action_menu.free_gids",
-              "class": "icon guys16",
+              "class": "icon_fixed_width guys16",
               "fn": "tool_free_gids",
               "min": 0
             }
@@ -69,42 +69,42 @@ function table_action_menu_init_data(t) {
           "children": [
             {
               "title": "action_menu.node_diff",
-              "class": "icon common16",
+              "class": "icon_fixed_width common16",
               "fn": "tool_nodediff",
               "min": 2,
               "max": 10
             },
             {
               "title": "action_menu.node_sysrep",
-              "class": "icon log16",
+              "class": "icon_fixed_width log16",
               "fn": "tool_nodesysrep",
               "min": 1,
               "max": 10
             },
             {
               "title": "action_menu.node_sysrep_diff",
-              "class": "icon common16",
+              "class": "icon_fixed_width common16",
               "fn": "tool_nodesysrepdiff",
               "min": 2,
               "max": 10
             },
             {
               "title": "action_menu.node_san_topo",
-              "class": "icon hd16",
+              "class": "icon_fixed_width hd16",
               "fn": "tool_nodesantopo",
               "min": 1,
               "max": 50
             },
             {
               "title": "action_menu.node_perf",
-              "class": "icon spark16",
+              "class": "icon_fixed_width spark16",
               "fn": "tool_grpprf",
               "min": 1,
               "max": 20
             },
             {
               "title": "action_menu.obsolescence",
-              "class": "icon spark16",
+              "class": "icon_fixed_width spark16",
               "fn": "tool_obsolescence",
               "min": 2
             }
@@ -119,7 +119,7 @@ function table_action_menu_init_data(t) {
           "children": [
             {
               "title": "action_menu.svc_diff",
-              "class": "icon common16",
+              "class": "icon_fixed_width common16",
               "fn": "tool_svcdiff",
               "min": 2
             }
@@ -134,7 +134,7 @@ function table_action_menu_init_data(t) {
           "children": [
             {
               "title": "action_menu.topology",
-              "class": "icon dia16",
+              "class": "icon_fixed_width dia16",
               "fn": "tool_topo",
               "min": 1
             }
@@ -145,7 +145,7 @@ function table_action_menu_init_data(t) {
     // section: data actions
     {
       "title": "action_menu.data_actions",
-      "class": "hd16",
+      "class": "icon hd16",
       "children": [
         {
           "selector": ["clicked", "checked", "all"],
@@ -157,7 +157,7 @@ function table_action_menu_init_data(t) {
           "children": [
             {
               "title": "action_menu.del",
-              "class": "icon del16",
+              "class": "icon_fixed_width del16",
               "fn": "data_action_del_filters",
               "privileges": ["Manager", "CompManager"],
               "min": 1
@@ -174,28 +174,28 @@ function table_action_menu_init_data(t) {
           "children": [
             {
               "title": "action_menu.add",
-              "class": "icon add16",
+              "class": "icon_fixed_width add16",
               "fn": "data_action_add_filterset",
               "privileges": ["Manager", "CompManager"],
               "min": 0
             },
             {
               "title": "action_menu.del",
-              "class": "icon del16",
+              "class": "icon_fixed_width del16",
               "fn": "data_action_del_filtersets",
               "privileges": ["Manager", "CompManager"],
               "min": 1
             },
             {
               "title": "action_menu.attach_filters",
-              "class": "icon attach16",
+              "class": "icon_fixed_width attach16",
               "fn": "data_action_attach_filters",
               "privileges": ["Manager", "CompManager"],
               "min": 1
             },
             {
               "title": "action_menu.attach_filtersets",
-              "class": "icon attach16",
+              "class": "icon_fixed_width attach16",
               "fn": "data_action_attach_filtersets",
               "privileges": ["Manager", "CompManager"],
               "min": 1
@@ -212,21 +212,21 @@ function table_action_menu_init_data(t) {
           "children": [
             {
               "title": "action_menu.detach_filters",
-              "class": "icon detach16",
+              "class": "icon_fixed_width detach16",
               "fn": "data_action_detach_filters",
               "privileges": ["Manager", "CompManager"],
               "min": 1
             },
             {
               "title": "action_menu.set_operator",
-              "class": "icon edit16",
+              "class": "icon_fixed_width edit16",
               "fn": "data_action_filters_set_operator",
               "privileges": ["Manager", "CompManager"],
               "min": 1
             },
             {
               "title": "action_menu.set_order",
-              "class": "icon edit16",
+              "class": "icon_fixed_width edit16",
               "fn": "data_action_filters_set_order",
               "privileges": ["Manager", "CompManager"],
               "min": 1
@@ -243,21 +243,21 @@ function table_action_menu_init_data(t) {
           "children": [
             {
               "title": "action_menu.detach_filtersets",
-              "class": "icon detach16",
+              "class": "icon_fixed_width detach16",
               "fn": "data_action_detach_filtersets",
               "privileges": ["Manager", "CompManager"],
               "min": 1
             },
             {
               "title": "action_menu.set_operator",
-              "class": "icon edit16",
+              "class": "icon_fixed_width edit16",
               "fn": "data_action_filtersets_set_operator",
               "privileges": ["Manager", "CompManager"],
               "min": 1
             },
             {
               "title": "action_menu.set_order",
-              "class": "icon edit16",
+              "class": "icon_fixed_width edit16",
               "fn": "data_action_filtersets_set_order",
               "privileges": ["Manager", "CompManager"],
               "min": 1
@@ -274,14 +274,14 @@ function table_action_menu_init_data(t) {
           "children": [
             {
               "title": "action_menu.add",
-              "class": "icon add16",
+              "class": "icon_fixed_width add16",
               "fn": "data_action_add_metric",
               "privileges": ["Manager", "ReportsManager"],
               "min": 0
             },
             {
               "title": "action_menu.del",
-              "class": "icon del16",
+              "class": "icon_fixed_width del16",
               "fn": "data_action_del_metrics",
               "privileges": ["Manager", "ReportsManager"],
               "min": 1
@@ -298,14 +298,14 @@ function table_action_menu_init_data(t) {
           "children": [
             {
               "title": "action_menu.add",
-              "class": "icon add16",
+              "class": "icon_fixed_width add16",
               "fn": "data_action_add_chart",
               "privileges": ["Manager", "ReportsManager"],
               "min": 0
             },
             {
               "title": "action_menu.del",
-              "class": "icon del16",
+              "class": "icon_fixed_width del16",
               "fn": "data_action_del_charts",
               "privileges": ["Manager", "ReportsManager"],
               "min": 1
@@ -322,21 +322,21 @@ function table_action_menu_init_data(t) {
           "children": [
             {
               "title": "action_menu.import",
-              "class": "icon fa-upload",
+              "class": "icon_fixed_width fa-upload",
               "fn": "data_action_import_report",
               "privileges": ["Manager", "ReportsManager"],
               "min": 0
             },
             {
               "title": "action_menu.add",
-              "class": "icon add16",
+              "class": "icon_fixed_width add16",
               "fn": "data_action_add_report",
               "privileges": ["Manager", "ReportsManager"],
               "min": 0
             },
             {
               "title": "action_menu.del",
-              "class": "icon del16",
+              "class": "icon_fixed_width del16",
               "fn": "data_action_del_reports",
               "privileges": ["Manager", "ReportsManager"],
               "min": 1
@@ -353,28 +353,28 @@ function table_action_menu_init_data(t) {
           "children": [
             {
               "title": "action_menu.add",
-              "class": "icon add16",
+              "class": "icon_fixed_width add16",
               "fn": "data_action_add_prov_template",
               "privileges": ["Manager", "ProvisioningManager"],
               "min": 0
             },
             {
               "title": "action_menu.del",
-              "class": "icon del16",
+              "class": "icon_fixed_width del16",
               "fn": "data_action_del_prov_templates",
               "privileges": ["Manager", "ProvisioningManager"],
               "min": 1
             },
             {
               "title": "action_menu.add_responsible",
-              "class": "icon add16",
+              "class": "icon_fixed_width add16",
               "fn": "data_action_add_prov_templates_responsible",
               "privileges": ["Manager", "ProvisioningManager"],
               "min": 1
             },
             {
               "title": "action_menu.del_responsible",
-              "class": "icon del16",
+              "class": "icon_fixed_width del16",
               "fn": "data_action_del_prov_templates_responsible",
               "privileges": ["Manager", "ProvisioningManager"],
               "min": 1
@@ -391,28 +391,28 @@ function table_action_menu_init_data(t) {
           "children": [
             {
               "title": "action_menu.refresh",
-              "class": "icon refresh16",
+              "class": "icon_fixed_width refresh16",
               "fn": "data_action_obs_refresh",
               "privileges": ["Manager", "ObsManager"],
               "min": 0
             },
             {
               "title": "action_menu.set_warn_date",
-              "class": "icon edit16",
+              "class": "icon_fixed_width edit16",
               "fn": "data_action_obs_set_warn_date",
               "privileges": ["Manager", "ObsManager"],
               "min": 1
             },
             {
               "title": "action_menu.set_alert_date",
-              "class": "icon edit16",
+              "class": "icon_fixed_width edit16",
               "fn": "data_action_obs_set_alert_date",
               "privileges": ["Manager", "ObsManager"],
               "min": 1
             },
             {
               "title": "action_menu.del",
-              "class": "icon del16",
+              "class": "icon_fixed_width del16",
               "fn": "data_action_obs_del",
               "privileges": ["Manager", "ObsManager"],
               "min": 1
@@ -429,14 +429,14 @@ function table_action_menu_init_data(t) {
           "children": [
             {
               "title": "action_menu.add",
-              "class": "icon add16",
+              "class": "icon_fixed_width add16",
               "fn": "data_action_add_quota",
               "privileges": ["Manager", "StorageManager"],
               "min": 0
             },
             {
               "title": "action_menu.del",
-              "class": "icon del16",
+              "class": "icon_fixed_width del16",
               "fn": "data_action_del_quotas",
               "privileges": ["Manager", "StorageManager"],
               "min": 1
@@ -453,28 +453,28 @@ function table_action_menu_init_data(t) {
           "children": [
             {
               "title": "action_menu.add",
-              "class": "icon add16",
+              "class": "icon_fixed_width add16",
               "fn": "data_action_add_app",
               "privileges": ["Manager", "AppManager"],
               "min": 0
             },
             {
               "title": "action_menu.del",
-              "class": "icon del16",
+              "class": "icon_fixed_width del16",
               "fn": "data_action_del_apps",
               "privileges": ["Manager", "AppManager"],
               "min": 1
             },
             {
               "title": "action_menu.add_responsible",
-              "class": "icon add16",
+              "class": "icon_fixed_width add16",
               "fn": "data_action_add_app_responsible",
               "privileges": ["Manager", "AppManager"],
               "min": 1
             },
             {
               "title": "action_menu.del_responsible",
-              "class": "icon del16",
+              "class": "icon_fixed_width del16",
               "fn": "data_action_del_app_responsible",
               "privileges": ["Manager", "AppManager"],
               "min": 1
@@ -490,7 +490,7 @@ function table_action_menu_init_data(t) {
           "children": [
             {
               "title": "action_menu.delete",
-              "class": "icon del16",
+              "class": "icon_fixed_width del16",
               "fn": "data_action_delete_compliance_status",
               "min": 1
             }
@@ -506,7 +506,7 @@ function table_action_menu_init_data(t) {
           "children": [
             {
               "title": "action_menu.delete",
-              "class": "icon del16",
+              "class": "icon_fixed_width del16",
               "fn": "data_action_delete_node_ips",
               "min": 1
             }
@@ -522,21 +522,21 @@ function table_action_menu_init_data(t) {
           "children": [
             {
               "title": "action_menu.add",
-              "class": "icon add16",
+              "class": "icon_fixed_width add16",
               "fn": "data_action_add_dns_domain",
               "privileges": ["Manager", "DnsManager"],
               "min": 0
             },
             {
               "title": "action_menu.del",
-              "class": "icon del16",
+              "class": "icon_fixed_width del16",
               "fn": "data_action_del_dns_domains",
               "privileges": ["Manager", "DnsManager"],
               "min": 1
             },
             {
               "title": "action_menu.sync_dns_domains",
-              "class": "icon net16",
+              "class": "icon_fixed_width net16",
               "fn": "data_action_sync_dns_domains",
               "privileges": ["Manager", "DnsManager"],
               "min": 1
@@ -553,14 +553,14 @@ function table_action_menu_init_data(t) {
           "children": [
             {
               "title": "action_menu.add",
-              "class": "icon add16",
+              "class": "icon_fixed_width add16",
               "fn": "data_action_add_dns_record",
               "privileges": ["Manager", "DnsManager"],
               "min": 0
             },
             {
               "title": "action_menu.del",
-              "class": "icon del16",
+              "class": "icon_fixed_width del16",
               "fn": "data_action_del_dns_records",
               "privileges": ["Manager", "DnsManager"],
               "min": 1
@@ -577,13 +577,13 @@ function table_action_menu_init_data(t) {
           "children": [
             {
               "title": "action_menu.add",
-              "class": "icon add16",
+              "class": "icon_fixed_width add16",
               "fn": "data_action_add_network",
               "min": 0
             },
             {
               "title": "action_menu.delete",
-              "class": "icon del16",
+              "class": "icon_fixed_width del16",
               "fn": "data_action_delete_networks",
               "min": 1
             }
@@ -599,42 +599,42 @@ function table_action_menu_init_data(t) {
           "children": [
             {
               "title": "action_menu.add_form",
-              "class": "icon add16",
+              "class": "icon_fixed_width add16",
               "fn": "data_action_add_form",
               "privileges": ["Manager", "FormsManager"],
               "min": 0
             },
             {
               "title": "action_menu.del_form",
-              "class": "icon del16",
+              "class": "icon_fixed_width del16",
               "fn": "data_action_del_form",
               "privileges": ["Manager", "FormsManager"],
               "min": 1
             },
             {
               "title": "action_menu.add_publication",
-              "class": "icon add16",
+              "class": "icon_fixed_width add16",
               "fn": "data_action_add_form_publication",
               "privileges": ["Manager", "FormsManager"],
               "min": 1
             },
             {
               "title": "action_menu.del_publication",
-              "class": "icon del16",
+              "class": "icon_fixed_width del16",
               "fn": "data_action_del_form_publication",
               "privileges": ["Manager", "FormsManager"],
               "min": 1
             },
             {
               "title": "action_menu.add_responsible",
-              "class": "icon add16",
+              "class": "icon_fixed_width add16",
               "fn": "data_action_add_form_responsible",
               "privileges": ["Manager", "FormsManager"],
               "min": 1
             },
             {
               "title": "action_menu.del_responsible",
-              "class": "icon del16",
+              "class": "icon_fixed_width del16",
               "fn": "data_action_del_form_responsible",
               "privileges": ["Manager", "FormsManager"],
               "min": 1
@@ -650,49 +650,49 @@ function table_action_menu_init_data(t) {
           "children": [
             {
               "title": "action_menu.add",
-              "class": "icon add16",
+              "class": "icon_fixed_width add16",
               "fn": "data_action_add_node",
               "privileges": ["Manager", "NodeManager"],
               "min": 0
             },
             {
               "title": "action_menu.delete",
-              "class": "icon del16",
+              "class": "icon_fixed_width del16",
               "fn": "data_action_delete_nodes",
               "privileges": ["Manager", "NodeManager"],
               "min": 1
             },
             {
               "title": "action_menu.tag_attach",
-              "class": "icon tag16",
+              "class": "icon_fixed_width tag16",
               "fn": "data_action_nodes_tags_attach",
               "privileges": ["Manager", "NodeManager"],
               "min": 1
             },
             {
               "title": "action_menu.modset_attach",
-              "class": "icon modset16",
+              "class": "icon_fixed_width modset16",
               "fn": "data_action_nodes_modsets_attach",
               "privileges": ["Manager", "NodeManager"],
               "min": 1
             },
             {
               "title": "action_menu.modset_detach",
-              "class": "icon modset16",
+              "class": "icon_fixed_width modset16",
               "fn": "data_action_nodes_modsets_detach",
               "privileges": ["Manager", "NodeManager"],
               "min": 1
             },
             {
               "title": "action_menu.ruleset_attach",
-              "class": "icon comp16",
+              "class": "icon_fixed_width comp16",
               "fn": "data_action_nodes_rulesets_attach",
               "privileges": ["Manager", "NodeManager"],
               "min": 1
             },
             {
               "title": "action_menu.ruleset_detach",
-              "class": "icon comp16",
+              "class": "icon_fixed_width comp16",
               "fn": "data_action_nodes_rulesets_detach",
               "privileges": ["Manager", "NodeManager"],
               "min": 1
@@ -708,42 +708,42 @@ function table_action_menu_init_data(t) {
           "children": [
             {
               "title": "action_menu.delete",
-              "class": "icon del16",
+              "class": "icon_fixed_width del16",
               "fn": "data_action_chk_instance_delete",
               "privileges": ["Manager", "CheckManager"],
               "min": 1
             },
             {
               "title": "action_menu.reset_thresholds",
-              "class": "icon fa-undo",
+              "class": "icon_fixed_width fa-undo",
               "fn": "data_action_chk_instance_reset_thresholds",
               "privileges": ["Manager", "CheckManager"],
               "min": 1
             },
             {
               "title": "action_menu.set_low_threshold",
-              "class": "icon fa-angle-down",
+              "class": "icon_fixed_width fa-angle-down",
               "fn": "data_action_chk_instance_set_low_threshold",
               "privileges": ["Manager", "CheckManager"],
               "min": 1
             },
             {
               "title": "action_menu.set_high_threshold",
-              "class": "icon fa-angle-up",
+              "class": "icon_fixed_width fa-angle-up",
               "fn": "data_action_chk_instance_set_high_threshold",
               "privileges": ["Manager", "CheckManager"],
               "min": 1
             },
             {
               "title": "action_menu.add_contextual_thresholds",
-              "class": "icon add16",
+              "class": "icon_fixed_width add16",
               "fn": "data_action_add_contextual_thresholds",
               "privileges": ["Manager", "CheckManager"],
               "min": 0
             },
             {
               "title": "action_menu.delete_contextual_thresholds",
-              "class": "icon del16",
+              "class": "icon_fixed_width del16",
               "fn": "data_action_delete_contextual_thresholds",
               "privileges": ["Manager", "CheckManager"],
               "min": 0
@@ -759,7 +759,7 @@ function table_action_menu_init_data(t) {
           "children": [
             {
               "title": "action_menu.modset_detach",
-              "class": "icon del16",
+              "class": "icon_fixed_width del16",
               "fn": "data_action_nodes_modsets_detach_no_selector",
               "privileges": ["Manager", "NodeManager"],
               "min": 1
@@ -775,14 +775,14 @@ function table_action_menu_init_data(t) {
           "children": [
             {
               "title": "action_menu.cancel",
-              "class": "icon del16",
+              "class": "icon_fixed_width del16",
               "fn": "data_action_action_queue_cancel",
               "privileges": ["Manager", "NodeExec", "CompExec"],
               "min": 1
             },
             {
               "title": "action_menu.redo",
-              "class": "icon refresh16",
+              "class": "icon_fixed_width refresh16",
               "fn": "data_action_action_queue_redo",
               "privileges": ["Manager", "NodeExec", "CompExec"],
               "min": 1
@@ -798,7 +798,7 @@ function table_action_menu_init_data(t) {
           "children": [
             {
               "title": "action_menu.ruleset_detach",
-              "class": "icon del16",
+              "class": "icon_fixed_width del16",
               "fn": "data_action_nodes_rulesets_detach_no_selector",
               "privileges": ["Manager", "NodeManager"],
               "min": 1
@@ -814,7 +814,7 @@ function table_action_menu_init_data(t) {
           "children": [
             {
               "title": "action_menu.nodes_tags_detach",
-              "class": "icon del16",
+              "class": "icon_fixed_width del16",
               "fn": "data_action_nodes_tags_detach",
               "privileges": ["Manager", "NodeManager"],
               "min": 1
@@ -830,37 +830,37 @@ function table_action_menu_init_data(t) {
           "children": [
             {
               "title": "action_menu.delete",
-              "class": "icon del16",
+              "class": "icon_fixed_width del16",
               "fn": "data_action_delete_svcs",
               "min": 1
             },
             {
               "title": "action_menu.tag_attach",
-              "class": "icon tag16",
+              "class": "icon_fixed_width tag16",
               "fn": "data_action_services_tags_attach",
               "min": 1
             },
             {
               "title": "action_menu.modset_attach",
-              "class": "icon modset16",
+              "class": "icon_fixed_width modset16",
               "fn": "data_action_services_modsets_attach",
               "min": 1
             },
             {
               "title": "action_menu.modset_detach",
-              "class": "icon modset16",
+              "class": "icon_fixed_width modset16",
               "fn": "data_action_services_modsets_detach",
               "min": 1
             },
             {
               "title": "action_menu.ruleset_attach",
-              "class": "icon comp16",
+              "class": "icon_fixed_width comp16",
               "fn": "data_action_services_rulesets_attach",
               "min": 1
             },
             {
               "title": "action_menu.ruleset_detach",
-              "class": "icon comp16",
+              "class": "icon_fixed_width comp16",
               "fn": "data_action_services_rulesets_detach",
               "min": 1
             }
@@ -876,7 +876,7 @@ function table_action_menu_init_data(t) {
           "children": [
             {
               "title": "action_menu.delete",
-              "class": "icon del16",
+              "class": "icon_fixed_width del16",
               "fn": "data_action_delete_svc_instances",
               "min": 1
             }
@@ -891,7 +891,7 @@ function table_action_menu_init_data(t) {
           "children": [
             {
               "title": "action_menu.ack",
-              "class": "icon check16",
+              "class": "icon_fixed_width check16",
               "fn": "data_action_ack_actions",
               "min": 1
             }
@@ -906,7 +906,7 @@ function table_action_menu_init_data(t) {
           "children": [
             {
               "title": "action_menu.services_tags_detach",
-              "class": "icon del16",
+              "class": "icon_fixed_width del16",
               "fn": "data_action_services_tags_detach",
               "min": 1
             },
@@ -921,7 +921,7 @@ function table_action_menu_init_data(t) {
           "children": [
             {
               "title": "action_menu.modset_detach",
-              "class": "icon del16",
+              "class": "icon_fixed_width del16",
               "fn": "data_action_services_modsets_detach_no_selector",
               "min": 1
             },
@@ -936,7 +936,7 @@ function table_action_menu_init_data(t) {
           "children": [
             {
               "title": "action_menu.ruleset_detach",
-              "class": "icon del16",
+              "class": "icon_fixed_width del16",
               "fn": "data_action_services_rulesets_detach_no_selector",
               "min": 1
             },
@@ -952,14 +952,14 @@ function table_action_menu_init_data(t) {
           "children": [
             {
               "title": "action_menu.add",
-              "class": "icon add16",
+              "class": "icon_fixed_width add16",
               "fn": "data_action_add_tag",
               "privileges": ["Manager", "TagManager"],
               "min": 0
             },
             {
               "title": "action_menu.del",
-              "class": "icon del16",
+              "class": "icon_fixed_width del16",
               "fn": "data_action_del_tag",
               "privileges": ["Manager", "TagManager"],
               "min": 1
@@ -975,70 +975,70 @@ function table_action_menu_init_data(t) {
           "children": [
             {
               "title": "action_menu.add",
-              "class": "icon add16",
+              "class": "icon_fixed_width add16",
               "fn": "data_action_add_user",
               "privileges": ["Manager", "UserManager"],
               "min": 0
             },
             {
               "title": "action_menu.del",
-              "class": "icon del16",
+              "class": "icon_fixed_width del16",
               "fn": "data_action_del_user",
               "privileges": ["Manager", "UserManager"],
               "min": 1
             },
             {
               "title": "action_menu.attach_groups",
-              "class": "icon attach16",
+              "class": "icon_fixed_width attach16",
               "fn": "data_action_user_attach_groups",
               "privileges": ["Manager", "UserManager"],
               "min": 1
             },
             {
               "title": "action_menu.detach_groups",
-              "class": "icon detach16",
+              "class": "icon_fixed_width detach16",
               "fn": "data_action_user_detach_groups",
               "privileges": ["Manager", "UserManager"],
               "min": 1
             },
             {
               "title": "action_menu.attach_privileges",
-              "class": "icon attach16",
+              "class": "icon_fixed_width attach16",
               "fn": "data_action_user_attach_privileges",
               "privileges": ["Manager", "UserManager"],
               "min": 1
             },
             {
               "title": "action_menu.detach_privileges",
-              "class": "icon detach16",
+              "class": "icon_fixed_width detach16",
               "fn": "data_action_user_detach_privileges",
               "privileges": ["Manager", "UserManager"],
               "min": 1
             },
             {
               "title": "action_menu.lock_filterset",
-              "class": "icon fa-lock",
+              "class": "icon_fixed_width fa-lock",
               "fn": "data_action_user_lock_filterset",
               "privileges": ["Manager", "UserManager"],
               "min": 1
             },
             {
               "title": "action_menu.unlock_filterset",
-              "class": "icon fa-unlock",
+              "class": "icon_fixed_width fa-unlock",
               "fn": "data_action_user_unlock_filterset",
               "privileges": ["Manager", "UserManager"],
               "min": 1
             },
             {
               "title": "action_menu.set_filterset",
-              "class": "icon filter16",
+              "class": "icon_fixed_width filter16",
               "fn": "data_action_user_set_filterset",
               "privileges": ["Manager", "UserManager"],
               "min": 1
             },
             {
               "title": "action_menu.set_primary_group",
-              "class": "icon guys16",
+              "class": "icon_fixed_width guys16",
               "fn": "data_action_user_set_primary_group",
               "privileges": ["Manager", "UserManager"],
               "min": 1
@@ -1054,14 +1054,14 @@ function table_action_menu_init_data(t) {
           "children": [
             {
               "title": "action_menu.add",
-              "class": "icon add16",
+              "class": "icon_fixed_width add16",
               "fn": "data_action_add_group",
               "privileges": ["Manager", "UserManager"],
               "min": 0
             },
             {
               "title": "action_menu.del",
-              "class": "icon del16",
+              "class": "icon_fixed_width del16",
               "fn": "data_action_del_groups",
               "privileges": ["Manager", "UserManager"],
               "min": 0
@@ -1073,7 +1073,7 @@ function table_action_menu_init_data(t) {
     // section: agent actions
     {
       "title": "action_menu.agent_actions",
-      "class": "action16",
+      "class": "icon action16",
       "children": [
         {
           "selector": ["clicked", "checked", "all"],
@@ -1084,133 +1084,133 @@ function table_action_menu_init_data(t) {
           "children": [
             {
               'title': 'Update node information',
-              'class': 'icon node16',
+              'class': 'icon_fixed_width node16',
               "privileges": ["Manager", "NodeManager", "NodeExec"],
               "min": 1,
               'action': 'pushasset'
             },
             {
               'title': 'Update disks information',
-              'class': 'icon hd16',
+              'class': 'icon_fixed_width hd16',
               "privileges": ["Manager", "NodeManager", "NodeExec"],
               "min": 1,
               'action': 'pushdisks'
             },
             {
               'title': 'Update app information',
-              'class': 'icon svc',
+              'class': 'icon_fixed_width svc',
               "privileges": ["Manager", "NodeManager", "NodeExec"],
               "min": 1,
               'action': 'push_appinfo'
             },
             {
               'title': 'Update services information',
-              'class': 'icon svc',
+              'class': 'icon_fixed_width svc',
               "privileges": ["Manager", "NodeManager", "NodeExec"],
               "min": 1,
               'action': 'pushservices'
             },
             {
               'title': 'Update installed packages information',
-              'class': 'icon pkg16',
+              'class': 'icon_fixed_width pkg16',
               "privileges": ["Manager", "NodeManager", "NodeExec"],
               "min": 1,
               'action': 'pushpkg'
             },
             {
               'title': 'Update installed patches information',
-              'class': 'icon pkg16',
+              'class': 'icon_fixed_width pkg16',
               "privileges": ["Manager", "NodeManager", "NodeExec"],
               "min": 1,
               'action': 'pushpatch'
             },
             {
               'title': 'Update stats',
-              'class': 'icon spark16',
+              'class': 'icon_fixed_width spark16',
               "privileges": ["Manager", "NodeManager", "NodeExec"],
               "min": 1,
               'action': 'pushstats'
             },
             {
               'title': 'Update check values',
-              'class': 'icon ok',
+              'class': 'icon_fixed_width ok',
               "privileges": ["Manager", "NodeManager", "NodeExec", "CheckExec"],
               "min": 1,
               'action': 'checks'
             },
             {
               'title': 'Update sysreport',
-              'class': 'icon log16',
+              'class': 'icon_fixed_width log16',
               "privileges": ["Manager", "NodeManager", "NodeExec"],
               "min": 1,
               'action': 'sysreport'
             },
             {
               'title': 'Update compliance modules',
-              'class': 'icon comp16',
+              'class': 'icon_fixed_width comp16',
               "privileges": ["Manager", "NodeManager", "NodeExec"],
               "min": 1,
               'action': 'updatecomp'
             },
             {
               'title': 'Update opensvc agent',
-              'class': 'icon pkg16',
+              'class': 'icon_fixed_width pkg16',
               "privileges": ["Manager", "NodeManager", "NodeExec"],
               "min": 1,
               'action': 'updatepkg'
             },
             {
               'title': 'Rotate root password',
-              'class': 'icon key',
+              'class': 'icon_fixed_width key',
               "privileges": ["Manager", "NodeManager", "NodeExec"],
               "min": 1,
               'action': 'rotate root pw'
             },
             {
               'title': 'Rescan scsi hosts',
-              'class': 'icon hd16',
+              'class': 'icon_fixed_width hd16',
               "privileges": ["Manager", "NodeManager", "NodeExec"],
               "min": 1,
               'action': 'scanscsi'
             },
             {
               'title': 'Reboot',
-              'class': 'icon action_restart_16',
+              'class': 'icon_fixed_width action_restart_16',
               "privileges": ["Manager", "NodeManager", "NodeExec"],
               "min": 1,
               'action': 'reboot'
             },
             {
               'title': 'Reboot schedule',
-              'class': 'icon action_restart_16',
+              'class': 'icon_fixed_width action_restart_16',
               "privileges": ["Manager", "NodeManager", "NodeExec"],
               "min": 1,
               'action': 'schedule_reboot'
             },
             {
               'title': 'Reboot unschedule',
-              'class': 'icon action_restart_16',
+              'class': 'icon_fixed_width action_restart_16',
               "privileges": ["Manager", "NodeManager", "NodeExec"],
               "min": 1,
               'action': 'unschedule_reboot'
             },
             {
               'title': 'Shutdown',
-              'class': 'icon action_stop_16',
+              'class': 'icon_fixed_width action_stop_16',
               "privileges": ["Manager", "NodeManager", "NodeExec"],
               "min": 1,
               'action': 'shutdown'
             },
             {
               'title': 'Wake On LAN',
-              'class': 'icon action_start_16',
+              'class': 'icon_fixed_width action_start_16',
               "privileges": ["Manager", "NodeManager", "NodeExec"],
               "min": 1,
               'action': 'wol'
             },
             {
               'title': 'Compliance check',
-              'class': 'icon comp16',
+              'class': 'icon_fixed_width comp16',
               "privileges": ["Manager", "NodeManager", "NodeExec"],
               "min": 1,
               'action': 'compliance_check',
@@ -1218,7 +1218,7 @@ function table_action_menu_init_data(t) {
             },
             {
               'title': 'Compliance fix',
-              'class': 'icon comp16',
+              'class': 'icon_fixed_width comp16',
               "privileges": ["Manager", "NodeManager", "NodeExec"],
               "min": 1,
               'action': 'compliance_fix',
@@ -1226,7 +1226,7 @@ function table_action_menu_init_data(t) {
             },
             {
               'title': 'action_menu.provisioning',
-              'class': 'icon prov',
+              'class': 'icon_fixed_width prov',
               "privileges": ["Manager", "NodeManager", "NodeExec"],
               "min": 1,
               'fn': 'agent_action_provisioning'
@@ -1242,84 +1242,84 @@ function table_action_menu_init_data(t) {
           "children": [
             {
               'title': 'Start',
-              'class': 'icon action_start_16',
+              'class': 'icon_fixed_width action_start_16',
               "privileges": ["Manager", "NodeManager", "NodeExec"],
               "min": 1,
               'action': 'start'
             },
             {
               'title': 'Stop',
-              'class': 'icon action_stop_16',
+              'class': 'icon_fixed_width action_stop_16',
               "privileges": ["Manager", "NodeManager", "NodeExec"],
               "min": 1,
               'action': 'stop'
             },
             {
               'title': 'Restart',
-              'class': 'icon action_restart_16',
+              'class': 'icon_fixed_width action_restart_16',
               "privileges": ["Manager", "NodeManager", "NodeExec"],
               "min": 1,
               'action': 'restart'
             },
             {
               'title': 'Switch',
-              'class': 'icon action_switch_16',
+              'class': 'icon_fixed_width action_switch_16',
               "privileges": ["Manager", "NodeManager", "NodeExec"],
               "min": 1,
               'action': 'switch'
             },
             {
               'title': 'Sync all remotes',
-              'class': 'icon action_sync_16',
+              'class': 'icon_fixed_width action_sync_16',
               "privileges": ["Manager", "NodeManager", "NodeExec"],
               "min": 1,
               'action': 'syncall'
             },
             {
               'title': 'Sync peer remotes',
-              'class': 'icon action_sync_16',
+              'class': 'icon_fixed_width action_sync_16',
               "privileges": ["Manager", "NodeManager", "NodeExec"],
               "min": 1,
               'action': 'syncnodes'
             },
             {
               'title': 'Sync disaster recovery remotes',
-              'class': 'icon action_sync_16',
+              'class': 'icon_fixed_width action_sync_16',
               "privileges": ["Manager", "NodeManager", "NodeExec"],
               "min": 1,
               'action': 'syncdrp'
             },
             {
               'title': 'Enable',
-              'class': 'icon ok',
+              'class': 'icon_fixed_width ok',
               "privileges": ["Manager", "NodeManager", "NodeExec"],
               "min": 1,
               'action': 'enable'
             },
             {
               'title': 'Disable',
-              'class': 'icon nok',
+              'class': 'icon_fixed_width nok',
               "privileges": ["Manager", "NodeManager", "NodeExec"],
               "min": 1,
               'action': 'disable'
             },
             {
               'title': 'Thaw',
-              'class': 'icon ok',
+              'class': 'icon_fixed_width ok',
               "privileges": ["Manager", "NodeManager", "NodeExec"],
               "min": 1,
               'action': 'thaw'
             },
             {
               'title': 'Freeze',
-              'class': 'icon nok',
+              'class': 'icon_fixed_width nok',
               "privileges": ["Manager", "NodeManager", "NodeExec"],
               "min": 1,
               'action': 'freeze'
             },
             {
               'title': 'Compliance check',
-              'class': 'icon comp16',
+              'class': 'icon_fixed_width comp16',
               "privileges": ["Manager", "NodeManager", "NodeExec"],
               "min": 1,
               'action': 'compliance_check',
@@ -1327,7 +1327,7 @@ function table_action_menu_init_data(t) {
             },
             {
               'title': 'Compliance fix',
-              'class': 'icon comp16',
+              'class': 'icon_fixed_width comp16',
               "privileges": ["Manager", "NodeManager", "NodeExec"],
               "min": 1,
               'action': 'compliance_fix',
@@ -1344,35 +1344,35 @@ function table_action_menu_init_data(t) {
           "children": [
             {
               'title': 'Start',
-              'class': 'icon action_start_16',
+              'class': 'icon_fixed_width action_start_16',
               "privileges": ["Manager", "NodeManager", "NodeExec"],
               "min": 1,
               'action': 'start'
             },
             {
               'title': 'Stop',
-              'class': 'icon action_stop_16',
+              'class': 'icon_fixed_width action_stop_16',
               "privileges": ["Manager", "NodeManager", "NodeExec"],
               "min": 1,
               'action': 'stop'
             },
             {
               'title': 'Restart',
-              'class': 'icon action_restart_16',
+              'class': 'icon_fixed_width action_restart_16',
               "privileges": ["Manager", "NodeManager", "NodeExec"],
               "min": 1,
               'action': 'restart'
             },
             {
               'title': 'Enable',
-              'class': 'icon ok',
+              'class': 'icon_fixed_width ok',
               "privileges": ["Manager", "NodeManager", "NodeExec"],
               "min": 1,
               'action': 'enable'
             },
             {
               'title': 'Disable',
-              'class': 'icon nok',
+              'class': 'icon_fixed_width nok',
               "privileges": ["Manager", "NodeManager", "NodeExec"],
               "min": 1,
               'action': 'disable'
@@ -1388,14 +1388,14 @@ function table_action_menu_init_data(t) {
           "children": [
             {
               'title': 'Check',
-              'class': 'icon comp16',
+              'class': 'icon_fixed_width comp16',
               "privileges": ["Manager", "NodeManager", "NodeExec", "CompExec"],
               "min": 1,
               'action': 'check'
             },
             {
               'title': 'Fix',
-              'class': 'icon comp16',
+              'class': 'icon_fixed_width comp16',
               "privileges": ["Manager", "NodeManager", "NodeExec", "CompExec"],
               "min": 1,
               'action': 'fix'
@@ -1471,7 +1471,7 @@ function table_action_menu(t, e){
 
 	// display actions only for the clicked section
 	var folders = $("#"+o.menu_id+" .action_menu_folder")
-	folders.addClass("right16")
+	folders.addClass("icon right16")
 	folders.children("ul,.action_menu_selector").hide()
 	folders.bind("click", function(e){
 		e.stopPropagation()

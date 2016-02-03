@@ -16,7 +16,7 @@ function form_tabs(divid, options) {
     // tab properties
     i = o.register_tab({
       "title": "form_tabs.properties",
-      "title_class": "wf16"
+      "title_class": "icon wf16"
     })
     o.tabs[i].callback = function(divid) {
       form_properties(divid, o.options)
@@ -25,7 +25,7 @@ function form_tabs(divid, options) {
     // tab definition
     i = o.register_tab({
       "title": "form_tabs.definition",
-      "title_class": "edit16"
+      "title_class": "icon edit16"
     })
     o.tabs[i].callback = function(divid) {
       form_definition(divid, o.options)
@@ -34,7 +34,7 @@ function form_tabs(divid, options) {
     // tab request
     i = o.register_tab({
       "title": "form_tabs.request",
-      "title_class": "wf16"
+      "title_class": "icon wf16"
     })
     o.tabs[i].callback = function(divid) {
       form(divid, options)

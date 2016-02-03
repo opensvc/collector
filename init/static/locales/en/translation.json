@@ -246,7 +246,7 @@
     "bookmarks_save": "Save current filters as bookmark",
     "bookmarks_save_name": "Enter new bookmark name",
     "bookmarks_no_bookmarks": "No saved bookmarks",
-    "refresh": "  Refresh",
+    "refresh": "Refresh",
     "csv": "Export to csv",
     "columns": "Configure columns",
     "commonality": "Commonality",
@@ -1025,7 +1025,7 @@
     "lost_text" : "Send a new password by email"
   },
   "app_properties": {
-    "properties": "properties",
+    "properties": "Properties",
     "description": "description",
     "id": "id",
     "app": "application",

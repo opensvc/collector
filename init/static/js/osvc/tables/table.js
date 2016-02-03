@@ -477,9 +477,9 @@ function table_add_column_header_input(t, tr, c) {
   th.attr("name", t.id+"_c_"+c)
   th.attr("col", c)
 
-  var filter_tool = $("<span class='clickable filter16'></span>")
-  var invert_tool = $("<span class='clickable hidden invert16'></span>")
-  var clear_tool = $("<span class='clickable hidden clear16'></span>")
+  var filter_tool = $("<span class='clickable icon filter16'></span>")
+  var invert_tool = $("<span class='clickable hidden icon invert16'></span>")
+  var clear_tool = $("<span class='clickable hidden icon clear16'></span>")
   var label = $("<span class='col_filter_label'></span>")
   var input_float = $("<div class='white_float_input stackable' style='position:absolute'>")
   var input = $("<input class='oi' name='fi'>")
@@ -1905,7 +1905,7 @@ function table_add_column_selector(t) {
   var e = $("<div class='floatw clickable' name='tool_column_selector'></div>")
   t.e_tool_column_selector = e
 
-  var span = $("<span class='columns' data-i18n='table.columns'></span>")
+  var span = $("<span class='icon columns' data-i18n='table.columns'></span>")
   e.append(span)
   try { e.i18n() } catch(e) {}
 
@@ -1958,6 +1958,7 @@ function table_add_column_selector(t) {
     // title
     var title = $("<span style='padding-left:0.3em;'></span>")
     title.text(i18n.t("col."+t.colprops[colname].title))
+    title.addClass("icon_fixed_width")
     title.addClass(t.colprops[colname].img)
 
     // container
@@ -1989,7 +1990,7 @@ function table_add_commonality(t) {
   var e = $("<div class='floatw clickable' name='tool_commonality'></div>")
   t.e_tool_commonality = e
 
-  var span = $("<span class='common16' data-i18n='table.commonality'></span>")
+  var span = $("<span class='icon common16' data-i18n='table.commonality'></span>")
   e.append(span)
 
   var area = $("<div class='white_float hidden stackable'></div>")
@@ -2032,7 +2033,7 @@ function table_add_csv(t) {
   var e = $("<div class='floatw clickable' name='tool_csv'></div>")
   t.e_tool_csv = e
 
-  var span = $("<span class='csv' data-i18n='table.csv'></span>")
+  var span = $("<span class='icon csv' data-i18n='table.csv'></span>")
   e.append(span)
 
   e.bind("click", function() {
@@ -2071,16 +2072,16 @@ function table_add_bookmarks(t) {
 
   var e = $("<div class='floatw clickable' name='tool_bookmark'></div>")
 
-  var span = $("<span class='bookmark16' data-i18n='table.bookmarks'></span>")
+  var span = $("<span class='icon bookmark16' data-i18n='table.bookmarks'></span>")
   e.append(span)
 
   var area = $("<div class='white_float hidden stackable'></div>")
   e.append(area)
 
-  var save = $("<a class='add16' data-i18n='table.bookmarks_save'></a>")
+  var save = $("<a class='icon add16' data-i18n='table.bookmarks_save'></a>")
   area.append(save)
 
-  var save_name = $("<div class='hidden'><hr><div class='edit16' data-i18n='table.bookmarks_save_name'></div><div>")
+  var save_name = $("<div class='hidden'><hr><div class='icon edit16' data-i18n='table.bookmarks_save_name'></div><div>")
   area.append(save_name)
 
   var save_name_input = $("<input style='margin-left:1em' class='oi' />")
@@ -2165,7 +2166,7 @@ function table_insert_bookmark(t, name) {
  
   // append the bookmark to the list area
   var bookmark = $("<p></p>")
-  bookmark.append($("<a class='bookmark16'>"+name+"</a>"))
+  bookmark.append($("<a class='icon bookmark16'>"+name+"</a>"))
   bookmark.append($("<a style='float:right' class='del16'>&nbsp;</a>"))
   t.e_tool_bookmarks_listarea.append(bookmark)
 
@@ -2234,7 +2235,7 @@ function table_add_link(t) {
 
   var e = $("<div class='floatw clickable' name='tool_link'></div>")
 
-  var span = $("<span class='link16' title='table.link_title' data-i18n='table.link'></span>")
+  var span = $("<span class='icon link16' title='table.link_title' data-i18n='table.link'></span>")
   e.append(span)
   try { e.i18n() } catch(e) {}
 
@@ -2263,8 +2264,8 @@ function table_add_refresh(t) {
     return
   }
 
-  var e = $("<div class='floatw clickable' name='tool_refresh'><span class='refresh16'></span><span data-i18n='table.refresh'></span></div>")
-  try { e.i18n() } catch(e) {}
+  var e = $("<div class='floatw clickable' name='tool_refresh'><span class='fa refresh16'></span><span></span></div>")
+  e.children().last().text("  "+i18n.t('table.refresh'))
 
   // bindings
   e.bind("click", function(){
@@ -2750,7 +2751,7 @@ function table_flash(t) {
   if (!t.options.flash || t.options.flash.length == 0) {
     return
   }
-  var e = $("<span><span class='alert16 err fa-2x'></span><span data-i18n='table.tool_error'></span></span>")
+  var e = $("<span><span class='icon alert16 err fa-2x'></span><span data-i18n='table.tool_error'></span></span>")
   e.i18n()
   var p = $("<pre></pre>")
   p.text(t.options.flash)

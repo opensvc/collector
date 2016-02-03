@@ -8,7 +8,7 @@ function alert_event(divid, options)
     // store parameters
     o.divid = divid
     o.div = $("#"+divid);
-    o.div.html("<span class='spinner'><span>");
+    o.div.html("<span class='icon spinner'><span>");
     o.nodes = options.nodes;
     o.begin_date = options.begin_date.replace(" ","T")+"Z"; // corrected timestamp to UC;
     o.svcname =  options.svcname;

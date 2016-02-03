@@ -114,9 +114,9 @@ function tags_del_tag(o, tag_data) {
 
 function tags_add_tag(o, tag_data) {
   if (o.data.candidates == true) {
-    cl = "tag tag_candidate"
+    cl = "icon tag tag_candidate"
   } else {
-    cl = "tag tag_attached"
+    cl = "icon tag tag_attached"
   }
   s = "<span tag_id='"+tag_data.id+"' class='"+cl+"'>"+tag_data.tag_name+" </span>"
   e = $(s)
@@ -153,7 +153,7 @@ function tags_add_del_tag(o) {
   if (o.data.candidates) {
     return
   }
-  e = $("<span class='tag_del'></span>")
+  e = $("<span class='icon tag_del'></span>")
   e.css({"display": "none"})
   e.text(i18n.t("tags.del"))
   e.droppable({
@@ -171,7 +171,7 @@ function tags_add_add_tag(o) {
   if (o.data.candidates) {
     return
   }
-  e = $("<span class='tag_add'></span>")
+  e = $("<span class='icon tag_add'></span>")
   e.css({"display": "none"})
   e.text(i18n.t("tags.add"))
   e.bind("click", function(){

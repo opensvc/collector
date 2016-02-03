@@ -31,14 +31,14 @@ function user_tabs(divid, options) {
     // tab properties
     i = o.register_tab({
       "title": "node_tabs.properties",
-      "title_class": "guy16"
+      "title_class": "icon guy16"
     })
     o.tabs[i].callback = function(divid) {
       user_properties(divid, o.options)
     }
     i = o.register_tab({
       "title": "user_tabs.groups",
-      "title_class": "guys16"
+      "title_class": "icon guys16"
     })
     o.tabs[i].callback = function(divid) {
       user_groups(divid, o.options)
@@ -250,19 +250,19 @@ function user_properties(divid, options) {
 
 		// lock filter
 		if (data.lock_filter == true) {
-			o.info_lfilter.attr('class', 'toggle-on');
+			o.info_lfilter.attr('class', 'fa toggle-on');
 		} else {
-			o.info_lfilter.attr('class','toggle-off');
+			o.info_lfilter.attr('class','fa toggle-off');
 		}
 		if (data.email_notifications == true) {
-			o.info_email_notifications.attr('class', 'toggle-on');
+			o.info_email_notifications.attr('class', 'fa toggle-on');
 		} else {
-			o.info_email_notifications.attr('class','toggle-off');
+			o.info_email_notifications.attr('class','fa toggle-off');
 		}
 		if (data.im_notifications == true) {
-			o.info_im_notifications.attr('class', 'toggle-on');
+			o.info_im_notifications.attr('class', 'fa toggle-on');
 		} else {
-			o.info_im_notifications.attr('class','toggle-off');
+			o.info_im_notifications.attr('class','fa toggle-off');
 		}
 
 		services_osvcgetrest("R_USER_DOMAINS", [o.options.user_id], "", function(jd) {
@@ -307,9 +307,9 @@ function user_properties(divid, options) {
 
 			// manager
 			if ("Manager" in priv_groups) {
-				o.info_manager.attr('class', 'toggle-on');
+				o.info_manager.attr('class', 'fa toggle-on');
 			} else {
-				o.info_manager.attr('class', 'toggle-off');
+				o.info_manager.attr('class', 'fa toggle-off');
 			}
 
 			tab_properties_generic_updater({

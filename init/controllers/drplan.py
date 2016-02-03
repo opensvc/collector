@@ -376,7 +376,7 @@ class table_drplan(HtmlTable):
         d = DIV(
               A(
                 T("Delete project"),
-                _class='del16',
+                _class='icon del16',
                 _onclick="""click_toggle_vis(event,'%(div)s', 'block');"""%dict(
                       div='del_project'),
               ),

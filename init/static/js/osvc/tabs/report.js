@@ -16,7 +16,7 @@ function report_tabs(divid, options) {
 		// tab properties
 		i = o.register_tab({
 			"title": "report_tabs.properties",
-			"title_class": "wf16"
+			"title_class": "icon wf16"
 		})
 		o.tabs[i].callback = function(divid) {
 			report_properties(divid, o.options)
@@ -25,7 +25,7 @@ function report_tabs(divid, options) {
 		// tab definition
 		i = o.register_tab({
 			"title": "report_tabs.definition",
-			"title_class": "edit16"
+			"title_class": "icon edit16"
 		})
 		o.tabs[i].callback = function(divid) {
 			report_definition(divid, o.options)
@@ -34,7 +34,7 @@ function report_tabs(divid, options) {
 		// tab export
 		i = o.register_tab({
 			"title": "report_tabs.export",
-			"title_class": "csv"
+			"title_class": "icon csv"
 		})
 		o.tabs[i].callback = function(divid) {
 			report_export(divid, o.options)

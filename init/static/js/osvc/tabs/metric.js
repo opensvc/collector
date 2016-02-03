@@ -16,7 +16,7 @@ function metric_tabs(divid, options) {
 		// tab properties
 		i = o.register_tab({
 			"title": "metric_tabs.properties",
-			"title_class": "spark16"
+			"title_class": "icon spark16"
 		})
 		o.tabs[i].callback = function(divid) {
 			metric_properties(divid, o.options)
@@ -25,7 +25,7 @@ function metric_tabs(divid, options) {
 		// tab request
 		i = o.register_tab({
 			"title": "metric_tabs.request",
-			"title_class": "edit16"
+			"title_class": "icon edit16"
 		})
 		o.tabs[i].callback = function(divid) {
 			metric_request(divid, o.options)

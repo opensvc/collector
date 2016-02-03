@@ -11,7 +11,7 @@ function node_tabs(divid, options) {
     o.closetab.children("p").text(o.options.nodename)
     i = o.register_tab({
       "title": "node_tabs.properties",
-      "title_class": "node16"
+      "title_class": "icon node16"
     })
     o.tabs[i].callback = function(divid) {
       node_properties(divid, {"nodename": o.options.nodename})
@@ -20,7 +20,7 @@ function node_tabs(divid, options) {
     // tab alerts
     i = o.register_tab({
       "title": "node_tabs.alerts",
-      "title_class": "alert16"
+      "title_class": "icon alert16"
     })
     o.tabs[i].callback = function(divid) {
       table_dashboard_node(divid, o.options.nodename)
@@ -29,7 +29,7 @@ function node_tabs(divid, options) {
     // tab services
     i = o.register_tab({
       "title": "node_tabs.services",
-      "title_class": "svc"
+      "title_class": "icon svc"
     })
     o.tabs[i].callback = function(divid) {
       table_service_instances_node(divid, o.options.nodename)
@@ -38,7 +38,7 @@ function node_tabs(divid, options) {
     // tab actions
     i = o.register_tab({
       "title": "node_tabs.actions",
-      "title_class": "action16"
+      "title_class": "icon action16"
     })
     o.tabs[i].callback = function(divid) {
       table_actions_node(divid, o.options.nodename)
@@ -47,7 +47,7 @@ function node_tabs(divid, options) {
     // tab log
     i = o.register_tab({
       "title": "node_tabs.log",
-      "title_class": "log16"
+      "title_class": "icon log16"
     })
     o.tabs[i].callback = function(divid) {
       table_log_node(divid, o.options.nodename)
@@ -56,7 +56,7 @@ function node_tabs(divid, options) {
     // tab topology
     i = o.register_tab({
       "title": "node_tabs.topology",
-      "title_class": "dia16"
+      "title_class": "icon dia16"
     })
     o.tabs[i].callback = function(divid) {
       topology(divid, {
@@ -82,7 +82,7 @@ function node_tabs(divid, options) {
     // tab storage
     i = o.register_tab({
       "title": "node_tabs.storage",
-      "title_class": "hd16"
+      "title_class": "icon hd16"
     })
     o.tabs[i].callback = function(divid) {
       sync_ajax("/init/ajax_node/ajax_node_stor/"+divid.replace("-", "_")+"/"+encodeURIComponent(o.options.nodename), [], divid, function(){})
@@ -91,7 +91,7 @@ function node_tabs(divid, options) {
     // tab network
     i = o.register_tab({
       "title": "node_tabs.network",
-      "title_class": "net16"
+      "title_class": "icon net16"
     })
     o.tabs[i].callback = function(divid) {
       ips(divid, {"nodes": o.options.nodename})
@@ -100,7 +100,7 @@ function node_tabs(divid, options) {
     // tab stats
     i = o.register_tab({
       "title": "node_tabs.stats",
-      "title_class": "spark16"
+      "title_class": "icon spark16"
     })
     o.tabs[i].callback = function(divid) {
       node_stats(divid, {
@@ -113,7 +113,7 @@ function node_tabs(divid, options) {
     // tab wiki
     i = o.register_tab({
       "title": "node_tabs.wiki",
-      "title_class": "edit"
+      "title_class": "icon edit"
     })
     o.tabs[i].callback = function(divid) {
       wiki(divid, {"nodes": o.options.nodename})
@@ -122,7 +122,7 @@ function node_tabs(divid, options) {
     // tab checks
     i = o.register_tab({
       "title": "node_tabs.checks",
-      "title_class": "check16"
+      "title_class": "icon check16"
     })
     o.tabs[i].callback = function(divid) {
       table_checks_node(divid, o.options.nodename)
@@ -131,7 +131,7 @@ function node_tabs(divid, options) {
     // tab compliance
     i = o.register_tab({
       "title": "node_tabs.compliance",
-      "title_class": "comp16"
+      "title_class": "icon comp16"
     })
     o.tabs[i].callback = function(divid) {
       sync_ajax("/init/compliance/ajax_compliance_node/"+encodeURIComponent(o.options.nodename), [], divid, function(){})
@@ -140,7 +140,7 @@ function node_tabs(divid, options) {
     // tab sysreport
     i = o.register_tab({
       "title": "node_tabs.sysreport",
-      "title_class": "log16"
+      "title_class": "icon log16"
     })
     o.tabs[i].callback = function(divid) {
       sysrep(divid, {"nodes": o.options.nodename})
@@ -270,7 +270,7 @@ function node_props_responsible_init(o)
 			o.e_root_pwd.removeClass("lock")
 		})
 	})
-	o.e_root_pwd.html(e).addClass("lock")
+	o.e_root_pwd.html(e).addClass("icon lock")
 
 	// init updaters
 	tab_properties_generic_updater({

@@ -345,7 +345,7 @@ function sysrep_timediff_data(o, jd, nodename, detail)
       detail.append(p);
     }
     if (detail.children().length == 0) {
-      e = $("<span class='alert16'></span>")
+      e = $("<span class='icon alert16'></span>")
       e.text(i18n.t("sysrep.error.no_change"))
       detail.append(e)
     }
@@ -376,7 +376,7 @@ function sysrep_timeline_data(o, jd)
 
     var data = jd.data;
     if (data.length == 0) {
-      e = $("<span class='alert16'></span>")
+      e = $("<span class='icon alert16'></span>")
       e.text(i18n.t("sysrep.error.no_change"))
       o.timeline_graph.append(e)
       return
@@ -546,9 +546,9 @@ function sysreport_timeline_on_select(o, item)
         for (var i=0; i<result.length; i++)
         {
           if (result[i].content_type == "command")
-            cl = "action16";
+            cl = "icon action16";
           else 
-            cl = "log16";
+            cl = "icon log16";
 
           var e = $("<h2>" + result[i].fpath + "</h2>");
           e.addClass("clickable");
@@ -599,7 +599,7 @@ function sysrep_admin_secure(o)
       var data = jd.data;
       for (i=0; i<data.length; i++)
       {
-        var e = $("<tr><td class='button_div'><span class='del16_allow'>" +
+        var e = $("<tr><td class='button_div'><span class='icon del16_allow'>" +
                   data[i].pattern +
                   "</span></td></tr>");
         var tid = data[i].id
@@ -625,7 +625,7 @@ function sysrep_admin_allow(o)
           "group" : data[i].group_name,
           "filterset" : data[i].fset_name
         };
-        var e = $("<tr><td class='button_div'><span class='del16_allow'>" +
+        var e = $("<tr><td class='button_div'><span class='icon del16_allow'>" +
                   i18n.t("sysrep.allow_read_sentence", filter) +
                   "</span></td></tr>");
         var tid = data[i].id
@@ -761,7 +761,7 @@ function sysrep_diff(o)
   nodes = o.nodes.split(",");
   if (nodes.length < 2) {
     e = $("<div></div");
-    e.addClass("alert16");
+    e.addClass("icon alert16");
     e.text(i18n.t("sysrep.sysrepdiff.error.not_enough_nodes"));
     o.diff.append(e);
     return;
@@ -813,7 +813,7 @@ function sysrep_diff_data(o, jd, node1, node2, detail)
     }
     var result = jd.data;
     if (result.length == 0) {
-      e = $("<span class='alert16'></span>")
+      e = $("<span class='icon alert16'></span>")
       e.text(i18n.t("sysrep.sysrepdiff.error.no_diff"))
       detail.append(e)
     }

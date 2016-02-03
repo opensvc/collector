@@ -254,25 +254,6 @@ class table_quota(HtmlTable):
         self.keys = ["id"]
         self.events = ["stor_array_dg_quota_change"]
 
-    def provision(self):
-        d = DIV(
-              A(
-                T("Provision"),
-                _class='prov',
-                _onclick="""$('#prov_container').toggle();ajax('%(url)s', [], '%(id)s')"""%dict(
-                  url=URL(r=request, c='disks', f='ajax_provision'),
-                  id="prov_container",
-                ),
-              ),
-              DIV(
-                _style='display:none',
-                _class='stackable white_float',
-                _id="prov_container",
-              ),
-              _class='floatw',
-            )
-        return d
-
 def update_dg_reserved():
     sql = """select dg_id, sum(v_disk_quota.quota)
              from v_disk_quota
@@ -422,7 +403,7 @@ class table_disks(HtmlTable):
         d = DIV(
               A(
                 T("Provision"),
-                _class='prov',
+                _class='icon prov',
                 _onclick="""$('#prov_container').toggle();ajax('%(url)s', [], '%(id)s')"""%dict(
                   url=URL(r=request, c='disks', f='ajax_provision'),
                   id="prov_container",
@@ -1081,7 +1062,7 @@ def disks():
           DIV(
             T("Statistics"),
              _style="text-align:left;font-size:120%;background-color:#e0e1cd",
-             _class="down16 clickable",
+             _class="icon down16 clickable",
              _onclick="""
                if (!$("#charts").is(":visible")) {
                  $(this).addClass("down16");

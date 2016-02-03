@@ -12,7 +12,7 @@ function moduleset_tabs(divid, options) {
     // tab properties
     i = o.register_tab({
       "title": "node_tabs.properties",
-      "title_class": "modset16"
+      "title_class": "icon modset16"
     })
     o.tabs[i].callback = function(divid) {
       modset_properties(divid, o.options)
@@ -21,7 +21,7 @@ function moduleset_tabs(divid, options) {
     // tab quotas
     i = o.register_tab({
       "title": "modset_tabs.export",
-      "title_class": "log16"
+      "title_class": "icon log16"
     })
     o.tabs[i].callback = function(divid) {
       modset_export(divid, o.options)

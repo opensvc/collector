@@ -16,7 +16,7 @@ function prov_template_tabs(divid, options) {
     // tab properties
     i = o.register_tab({
       "title": "form_tabs.properties",
-      "title_class": "prov"
+      "title_class": "icon prov"
     })
     o.tabs[i].callback = function(divid) {
       prov_template_properties(divid, o.options)
@@ -25,7 +25,7 @@ function prov_template_tabs(divid, options) {
     // tab definition
     i = o.register_tab({
       "title": "form_tabs.definition",
-      "title_class": "edit16"
+      "title_class": "icon edit16"
     })
     o.tabs[i].callback = function(divid) {
       prov_template_definition(divid, o.options)

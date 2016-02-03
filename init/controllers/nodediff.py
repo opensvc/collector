@@ -23,7 +23,7 @@ def link(url, name):
         $(this).children().show()
       """ % dict(url=url, name=name),
       _style="float:right",
-      _class="link16 clickable",
+      _class="icon link16 clickable",
     )
     return link
 
