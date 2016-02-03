@@ -1306,7 +1306,7 @@ function table_bind_filter_input_events(t) {
        context: document.body,
        beforeSend: function(req){
          dest.empty()
-         dest.addClass("spinner")
+         dest.addClass("icon spinner")
        },
        success: function(msg){
           var data = $.parseJSON(msg)
