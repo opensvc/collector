@@ -65,6 +65,9 @@ if hasattr(config, "allow_register") and not config.allow_register:
     auth.settings.actions_disabled.append('register')
 
 #request.requires_https()
+response.optimize_css="concat,minify"
+response.optimize_js="concat,minify"
+
 
 def table_modified(name):
     sql = """insert into table_modified values (null, "%s", now()) on duplicate key update table_modified=now()"""%name
