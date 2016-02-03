@@ -1357,7 +1357,11 @@ function form(divid, options) {
 		return data
 	}
 
-	$.when(osvc.forms_loaded,osvc.user_groups_loaded).then(function() {
+	$.when(
+		osvc.forms_loaded,
+		osvc.user_loaded,
+		osvc.user_groups_loaded
+	).then(function() {
 		o.load()
 	})
 	return o

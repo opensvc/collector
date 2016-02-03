@@ -42,7 +42,7 @@ function table_workflows(divid, options) {
 }
 
 function table_workflows_assigned_to_me(divid, options) {
-  $.when(osvc.user_groups_loaded).then(function() {
+  $.when(osvc.user_loaded).then(function() {
     var _options = {"id": "workflows_atm"}
     var me = _self.first_name + " " + _self.last_name
     var notme = "!" + me
@@ -63,7 +63,7 @@ function table_workflows_assigned_to_me(divid, options) {
 }
 
 function table_workflows_assigned_to_tiers(divid, options) {
-  $.when(osvc.user_groups_loaded).then(function() {
+  $.when(osvc.user_loaded).then(function() {
     var _options = {"id": "workflows_att"}
     var me = _self.first_name + " " + _self.last_name
     var notme = "!" + me

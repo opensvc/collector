@@ -364,10 +364,11 @@ function services_osvcdeleterest(service, uri, params, data, callback, error_cal
 function services_feed_self_and_group() {
     services_osvcgetrest("R_USERS_SELF", "", "", function(dataself) {
         _self = dataself.data[0]
-        services_osvcgetrest("R_USER_GROUPS", [_self.id], {"meta": "false", "limit": "0"}, function(datagroup) {
-            _groups = datagroup.data;
-            osvc.user_groups_loaded.resolve(true)
-        })
+        osvc.user_loaded.resolve(true)
+    })
+    services_osvcgetrest("/users/self/groups", "", {"meta": "false", "limit": "0"}, function(datagroup) {
+        _groups = datagroup.data;
+        osvc.user_groups_loaded.resolve(true)
     })
 }
 

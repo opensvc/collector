@@ -1,5 +1,6 @@
 var osvc = {
  'tables': {},
+ 'user_loaded': $.Deferred(),
  'user_groups_loaded': $.Deferred(),
  'table_settings_loaded': $.Deferred(),
  'table_filters_loaded': $.Deferred(),
@@ -48,6 +49,7 @@ function app_start() {
   // Wait mandatory language info and User/groups info to be loaded before creating the IHM
   $.when(
       osvc.i18n_started,
+      osvc.user_loaded,
       osvc.user_groups_loaded
     ).then(function() {
       osvc.menu = menu("menu_location")
