@@ -487,7 +487,7 @@ function table_add_column_header_input(t, tr, c) {
   var value_cloud = $("<span></span>")
   var value_pie = $("<div></div>")
   var input_id = t.id+"_f_"+c
-  var header = $("<h3></h3>")
+  var header = $("<h2 class='icon fa-bars'></h2>")
 
   header.text(i18n.t("table.column_filter_header", {"col": i18n.t("col."+t.colprops[c].title)}))
   value_to_filter_tool.attr("title", i18n.t("table.value_to_filter_tool_title"))
@@ -501,7 +501,9 @@ function table_add_column_header_input(t, tr, c) {
   value_cloud.attr("id", t.id+"_fc_"+c)
   value_cloud.css({"overflow-wrap": "break-word"})
 
-  input_float.draggable()
+  input_float.draggable({
+    "handle": ".fa-bars"
+  })
   input_float.append(header)
   input_float.append(input)
   input_float.append(value_to_filter_tool)
