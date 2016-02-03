@@ -65,8 +65,8 @@ if hasattr(config, "allow_register") and not config.allow_register:
     auth.settings.actions_disabled.append('register')
 
 #request.requires_https()
-response.optimize_css="concat,minify"
-response.optimize_js="concat,minify"
+#response.optimize_css="concat,minify"
+#response.optimize_js="concat,minify"
 
 
 def table_modified(name):
