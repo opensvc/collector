@@ -268,6 +268,7 @@ class table_drplan(HtmlTable):
             self.colprops[c].t = self
         self.extraline = True
         self.checkboxes = True
+        self.dataable = True
         self.checkbox_id_table = 'v_svcmon'
         self.dbfilterable = True
         self.ajax_col_values = 'ajax_drplan_col_values'
@@ -283,7 +284,7 @@ class table_drplan(HtmlTable):
         d = DIV(
               A(
                 T("Generate scripts"),
-                _class='action16',
+                _class='icon action16',
                 _href=URL(r=request, f='drplan_scripts',
                           vars={'prj': request.vars.prj}),
               ),
@@ -302,7 +303,7 @@ class table_drplan(HtmlTable):
         d = DIV(
               A(
                 T("Set wave"),
-                _class='edit16',
+                _class='icon edit16',
                 _onclick="""
                   click_toggle_vis(event,'%(div)s', 'block');
                 """%dict(div='wave'),
@@ -328,7 +329,7 @@ class table_drplan(HtmlTable):
         d = DIV(
               A(
                 T(title),
-                _class='add16',
+                _class='icon add16',
                 _onclick="""
                   click_toggle_vis(event,'%(div)s', 'block');
                 """%dict(div=action),
@@ -413,7 +414,7 @@ class table_drplan(HtmlTable):
         d = DIV(
               A(
                 s,
-                _class='drp16',
+                _class='icon drp16',
                 _onclick="""
                   click_toggle_vis(event,'%(div)s', 'block');
                 """%dict(div='project'),
@@ -482,34 +483,23 @@ def ajax_drplan():
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
 
-    if len(request.args) == 1 and request.args[0] == 'line':
+    if len(request.args) == 1 and request.args[0] == 'data':
         n = db(q).count()
         limitby = (t.pager_start,t.pager_end)
-        t.object_list = db(q).select(db.v_svcmon.ALL,
-                                 db.drpservices.drp_wave,
-                                 db.drpservices.drp_project_id,
+        cols = t.get_visible_columns()
+        t.object_list = db(q).select(*cols,
                                  left=db.drpservices.on(j),groupby=o,
                                  orderby=o, limitby=limitby)
-        return t.table_lines_data(n)
-
-    n = db(q).count()
-    t.setup_pager(n)
-    t.object_list = db(q).select(db.v_svcmon.ALL,
-                                 db.drpservices.drp_wave,
-                                 db.drpservices.drp_project_id,
-                                 left=db.drpservices.on(j),
-                                 limitby=(t.pager_start,t.pager_end),
-                                 groupby=o,
-                                 orderby=o)
-    return t.html()
+        return t.table_lines_data(n, html=False)
 
 @auth.requires_login()
 def drplan():
-    t = DIV(
-          ajax_drplan(),
+    t = table_drplan('drplan', 'ajax_drplan')
+    d = DIV(
+          t.html(),
           _id='drplan',
         )
-    return dict(table=t)
+    return dict(table=d)
 
 def drplan_load():
     return drplan()["table"]
