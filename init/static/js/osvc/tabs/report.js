@@ -168,7 +168,7 @@ function report_export(divid, options) {
 	o.div = $("#"+divid)
 
 	o.init = function() {
-		div = $("<textarea style='width:100%;height:30em;font-family:monospace;background:rgba(0,0,0,0);border:rgba(0,0,0,0);padding:1em;box-sizing:border-box;font-size:0.8em'>")
+		div = $("<textarea class='export_data'>")
 		div.prop("disabled", true)
 
 		spinner_add(o.div)

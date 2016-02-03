@@ -94,22 +94,22 @@ function fset_properties(divid, options) {
 		})
 		tab_properties_generic_list({
 			"request_service": "/filtersets/%1/nodes",
-                        "request_parameters": [data.id],
-                        "limit": "0",
-                        "key": "nodename",
-                        "item_class": "node16",
-                        "e_title": o.info_nodes_title,
-                        "e_list": o.info_nodes
-                })
+			"request_parameters": [data.id],
+			"limit": "0",
+			"key": "nodename",
+			"item_class": "node16",
+			"e_title": o.info_nodes_title,
+			"e_list": o.info_nodes
+		})
 		tab_properties_generic_list({
 			"request_service": "/filtersets/%1/services",
-                        "request_parameters": [data.id],
-                        "limit": "0",
-                        "key": "svc_name",
-                        "item_class": "svc",
-                        "e_title": o.info_services_title,
-                        "e_list": o.info_services
-                })
+			"request_parameters": [data.id],
+			"limit": "0",
+			"key": "svc_name",
+			"item_class": "svc",
+			"e_title": o.info_services_title,
+			"e_list": o.info_services
+		})
 
 	}
 
@@ -159,6 +159,7 @@ function fset_export(divid, options) {
 
 	o.load_export = function() {
 		o.div.empty()
+		spinner_add(o.div)
 		services_osvcgetrest("R_FILTERSETS", "", {"filters": ["fset_name "+o.options.fset_name]}, function(jd) {
 			services_osvcgetrest("/filtersets/%1/export", [jd.data[0].id], "", function(jd) {
 				o._load_export(jd)
@@ -167,9 +168,10 @@ function fset_export(divid, options) {
 	}
 
 	o._load_export = function(data) {
-		var div = $("<pre style='padding:1em'></pre>")
-		o.div.append(div)
+		var div = $("<textarea class='export_data'>")
+		div.prop("disabled", true)
 		div.text(JSON.stringify(data, null, 4))
+		o.div.html(div)
 	}
 
 	o.init()
@@ -458,8 +460,8 @@ function fset_designer(divid, options) {
 			'nodes': table_nodes_defaults.columns,
 			'services': table_services_defaults.columns,
 			'svcmon': table_service_instances_defaults.columns.filter(function(e){
-                                return e.match(/^mon_/)
-                        }),
+				return e.match(/^mon_/)
+			}),
 			'resmon': table_resources_defaults.columns.filter(function(e){
 				return e.match(/^res_/)
 			}),
@@ -469,8 +471,8 @@ function fset_designer(divid, options) {
 			'v_comp_moduleset_attachments': ['modset_name'],
 			'v_tags': ['tag_name'],
 			'packages': table_packages_defaults.columns.filter(function(e){
-                                return e.match(/^pkg_/)
-                        })
+				return e.match(/^pkg_/)
+			})
 		}
 
 		var input = $("<input id='f_field' class='aci oi'>")

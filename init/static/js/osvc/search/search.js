@@ -607,7 +607,7 @@ function search_build_result_row(label, first, res, count) {
   var row_group = $("<div></div>")
   var row = $("<tr></tr>")
   row_group.append(row)
-  var cell_icon = $("<td></td>")
+  var cell_icon = $("<td class='icon'></td>")
   cell_icon.addClass(section_data.class)
   row.append(cell_icon)
 

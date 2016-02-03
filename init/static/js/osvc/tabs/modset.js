@@ -131,74 +131,6 @@ function modset_export(divid, options) {
 	var o = {}
 
 	// store parameters
-	o.load_services = function() {
-		o.load_scope(o.info_services, {"service": "/filtersets/%1/services", "key": "svc_name"})
-	}
-
-	o.load_scope = function(div, options) {
-		div.empty().addClass("tag_container")
-		services_osvcgetrest(options.service, [o.data.id], {
-			"meta": 1,
-			"limit": 0,
-			"props": options.key,
-			"orderby": options.key
-		}, function(jd) {
-			div.siblings(".line").find("span > span").append(" ("+jd.meta.total+")")
-			for (var i=0; i<jd.data.length; i++) {
-				var g = $("<span class='tag tag_attached'></span>")
-				g.text(jd.data[i][options.key])
-				div.append(g, " ")
-			}
-		})
-	}
-
-	o.div.load("/init/static/views/modset_properties.html", function() {
-		o.div.i18n()
-		o.init()
-	})
-
-	return o
-}
-
-
-function modset_export(divid, options) {
-	var o = {}
-
-	// store parameters
-	o.load_services = function() {
-		o.load_scope(o.info_services, {"service": "/filtersets/%1/services", "key": "svc_name"})
-	}
-
-	o.load_scope = function(div, options) {
-		div.empty().addClass("tag_container")
-		services_osvcgetrest(options.service, [o.data.id], {
-			"meta": 1,
-			"limit": 0,
-			"props": options.key,
-			"orderby": options.key
-		}, function(jd) {
-			div.siblings(".line").find("span > span").append(" ("+jd.meta.total+")")
-			for (var i=0; i<jd.data.length; i++) {
-				var g = $("<span class='tag tag_attached'></span>")
-				g.text(jd.data[i][options.key])
-				div.append(g, " ")
-			}
-		})
-	}
-
-	o.div.load("/init/static/views/modset_properties.html", function() {
-		o.div.i18n()
-		o.init()
-	})
-
-	return o
-}
-
-
-function modset_export(divid, options) {
-	var o = {}
-
-	// store parameters
 	o.divid = divid
 	o.div = $("#"+divid)
 	o.options = options
@@ -209,6 +141,7 @@ function modset_export(divid, options) {
 
 	o.load_export = function() {
 		o.div.empty()
+		spinner_add(o.div)
 		services_osvcgetrest("/compliance/modulesets", "", {"filters": ["modset_name "+o.options.modset_name]}, function(jd) {
 			services_osvcgetrest("/compliance/modulesets/%1/export", [jd.data[0].id], "", function(jd) {
 				o._load_export(jd)
@@ -217,8 +150,9 @@ function modset_export(divid, options) {
 	}
 
 	o._load_export = function(data) {
-		var div = $("<pre style='padding:1em'></pre>")
-		o.div.append(div)
+		div = $("<textarea class='export_data'>")
+		div.prop("disabled", true)
+		o.div.html(div)
 		div.text(JSON.stringify(data, null, 4))
 	}
 

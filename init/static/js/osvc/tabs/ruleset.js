@@ -2,51 +2,64 @@
 // ruleset
 //
 function ruleset_tabs(divid, options) {
-  var o = tabs(divid)
-  o.options = options
+	var o = tabs(divid)
+	o.options = options
 
-  o.load(function() {
-    if (o.options.ruleset_name) {
-      var title = o.options.ruleset_name
-    } else {
-      var title = o.options.ruleset_id
-    }
-    o.closetab.children("p").text(title)
+	o.load(function() {
+		if (!("ruleset_id" in o.options)) {
+			services_osvcgetrest("/compliance/rulesets", "", {"meta": "0", "filters": ["ruleset_name "+o.options.ruleset_name]}, function(jd) {
+				o.options.ruleset_id = jd.data[0].id
+				o._load()
+			})
+		} else {
+			o._load()
+		}
+	})
 
-    // tab properties
-    i = o.register_tab({
-      "title": "ruleset_tabs.ruleset",
-      "title_class": "icon pkg16"
-    })
-    o.tabs[i].callback = function(divid) {
-      ruleset_properties(divid, o.options)
-    }
-    i = o.register_tab({
-      "title": "ruleset_tabs.export",
-      "title_class": "icon log16"
-    })
-    o.tabs[i].callback = function(divid) {
-      ruleset_export(divid, o.options)
-    }
+	o._load = function() {
+		if (o.options.ruleset_name) {
+			var title = o.options.ruleset_name
+		} else {
+			var title = o.options.ruleset_id
+		}
+		o.closetab.children("p").text(title)
 
-    o.set_tab(o.options.tab)
-  })
-  return o
+		// tab properties
+		i = o.register_tab({
+			"title": "ruleset_tabs.ruleset",
+			"title_class": "icon pkg16"
+		})
+		o.tabs[i].callback = function(divid) {
+			ruleset_properties(divid, o.options)
+		}
+		i = o.register_tab({
+			"title": "ruleset_tabs.export",
+			"title_class": "icon log16"
+		})
+		o.tabs[i].callback = function(divid) {
+			ruleset_export(divid, o.options)
+		}
+
+		o.set_tab(o.options.tab)
+	}
+
+	return o
 }
 
 function ruleset_export(divid, options) {
 	var o = {}
 	o.options = options
 	o.div = $("#"+divid)
+	spinner_add(o.div)
 	services_osvcgetrest("R_COMPLIANCE_RULESET_EXPORT", [o.options.ruleset_id], "", function(jd) {
 		if (!jd && jd.error) {
 			o.div.html(services_error_fmt(jd))
 			return
 		}
-		var div = $("<pre style='padding:1em'></pre>")
+		div = $("<textarea class='export_data'>")
+		div.prop("disabled", true)
 		div.text(JSON.stringify(jd, null, 4))
-		o.div.empty().append(div)
-		hljs.highlightBlock(div[0])
+		o.div.html(div)
 	},
 	function() {
 		o.div.html(services_ajax_error_fmt(xhr, stat, error))
