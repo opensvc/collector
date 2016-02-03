@@ -4971,3 +4971,5 @@ alter table charts add unique key (chart_name);
 
 alter table reports add unique key (report_name);
 
+alter table user_prefs_columns add key (upc_user_id);
+

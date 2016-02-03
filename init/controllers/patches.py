@@ -120,7 +120,7 @@ def ajax_patches():
 @auth.requires_login()
 def patches():
     t = SCRIPT(
-          """$.when(osvc.app_started).then(function(){ table_patches("layout", %s) })""" % request_vars_to_table_options(),
+          """table_patches("layout", %s)""" % request_vars_to_table_options(),
         )
     return dict(table=t)
 

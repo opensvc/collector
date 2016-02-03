@@ -63,7 +63,7 @@ def ajax_tags():
 @auth.requires_login()
 def tags():
     t = SCRIPT(
-          """$.when(osvc.app_started).then(function(){ table_tags("layout", %s) })""" % request_vars_to_table_options(),
+          """table_tags("layout", %s)""" % request_vars_to_table_options(),
         )
     return dict(table=t)
 
@@ -176,7 +176,7 @@ def ajax_tagattach():
 @auth.requires_login()
 def tagattach():
     t = SCRIPT(
-          """$.when(osvc.app_started).then(function(){ table_tagattach("layout", %s) })""" % request_vars_to_table_options(),
+          """table_tagattach("layout", %s)""" % request_vars_to_table_options(),
         )
     return dict(table=t)
 

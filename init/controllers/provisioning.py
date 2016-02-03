@@ -112,7 +112,7 @@ def ajax_prov_admin():
 @auth.requires_login()
 def prov_admin():
     t = SCRIPT(
-          """$.when(osvc.app_started).then(function(){ table_prov_templates("layout", %s) })""" % request_vars_to_table_options(),
+          """table_prov_templates("layout", %s)""" % request_vars_to_table_options(),
         )
     return dict(table=t)
 

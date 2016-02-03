@@ -198,7 +198,7 @@ def ajax_filtersets():
 @auth.requires_login()
 def filtersets():
     t = SCRIPT(
-          """$.when(osvc.app_started).then(function(){ table_filtersets("layout", %s) })""" % request_vars_to_table_options(),
+          """table_filtersets("layout", %s)""" % request_vars_to_table_options(),
         )
     return dict(table=t)
 
@@ -259,7 +259,7 @@ def ajax_filters():
 @auth.requires_login()
 def filters():
     t = SCRIPT(
-          """$.when(osvc.app_started).then(function(){ table_filters("layout", %s) })""" % request_vars_to_table_options(),
+          """table_filters("layout", %s)""" % request_vars_to_table_options(),
         )
     return dict(table=t)
 

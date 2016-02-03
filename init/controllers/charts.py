@@ -137,7 +137,7 @@ def ajax_metrics_admin():
 @auth.requires_login()
 def metrics_admin():
     t = SCRIPT(
-          """$.when(osvc.app_started).then(function(){ table_metrics("layout", %s) })""" % request_vars_to_table_options(),
+          """table_metrics("layout", %s)""" % request_vars_to_table_options(),
         )
     return dict(table=t)
 
@@ -227,7 +227,7 @@ def ajax_charts_admin():
 @auth.requires_login()
 def charts_admin():
     t = SCRIPT(
-          """$.when(osvc.app_started).then(function(){ table_charts("layout", %s) })""" % request_vars_to_table_options(),
+          """table_charts("layout", %s)""" % request_vars_to_table_options(),
         )
     return dict(table=t)
 
@@ -318,7 +318,7 @@ def ajax_reports_admin():
 @auth.requires_login()
 def reports_admin():
     t = SCRIPT(
-          """$.when(osvc.app_started).then(function(){ table_reports("layout", %s) })""" % request_vars_to_table_options(),
+          """table_reports("layout", %s)""" % request_vars_to_table_options(),
         )
     return dict(table=t)
 
@@ -329,7 +329,7 @@ def reports_admin_load():
 @auth.requires_login()
 def reports():
     t = SCRIPT(
-          """$.when(osvc.app_started).then(function(){ reports("layout") })""",
+          """reports("layout")""",
         )
     return dict(table=t)
 

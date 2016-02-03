@@ -607,7 +607,7 @@ def json_disk_for_svc():
 #
 def scheduler_stats():
     d = SCRIPT(
-        """$.when(osvc.app_started).then(function(){ scheduler_stats("layout") }) """
+        """scheduler_stats("layout")"""
     )
     return dict(table=d)
 

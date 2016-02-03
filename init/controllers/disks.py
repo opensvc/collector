@@ -306,7 +306,7 @@ def ajax_quota():
 @auth.requires_login()
 def quota():
     t = SCRIPT(
-          """$.when(osvc.app_started).then(function(){ table_quota("layout", %s) })""" % request_vars_to_table_options(),
+          """table_quota("layout", %s)""" % request_vars_to_table_options(),
         )
     return dict(table=t)
 

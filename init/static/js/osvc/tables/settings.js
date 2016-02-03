@@ -17,6 +17,7 @@ function table_settings() {
 				o.data[d.upc_table][d.upc_field] = d.upc_visible
 			}
 			osvc.table_settings_loaded.resolve(true)
+			console.log("table settings loaded")
 		})
 	}
 

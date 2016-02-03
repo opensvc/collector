@@ -169,7 +169,7 @@ def ajax_workflows():
 @auth.requires_login()
 def workflows():
     t = SCRIPT(
-          """$.when(osvc.app_started).then(function(){ table_workflows("layout", %s) })""" % request_vars_to_table_options(),
+          """table_workflows("layout", %s)""" % request_vars_to_table_options(),
         )
     return dict(table=t)
 
@@ -304,7 +304,7 @@ def ajax_forms_admin():
 @auth.requires_login()
 def forms_admin():
     t = SCRIPT(
-          """$.when(osvc.app_started).then(function(){ table_forms("layout", %s) })""" % request_vars_to_table_options(),
+          """table_forms("layout", %s)""" % request_vars_to_table_options(),
         )
     return dict(table=t)
 
@@ -317,7 +317,7 @@ def forms():
     if "form_name" in request.vars:
         o["form_name"] = request.vars.form_name
     d = SCRIPT(
-          """$.when(osvc.app_started).then(function(){ requests("layout", %s) })""" % json.dumps(o)
+          """requests("layout", %s)""" % json.dumps(o)
     )
     return dict(table=d)
 
@@ -327,7 +327,7 @@ def forms_load():
 @auth.requires_login()
 def workflows_assigned_to_me():
     d = SCRIPT(
-          """$.when(osvc.app_started).then(function(){ table_workflows_assigned_to_me("layout", {}) })""" 
+          """table_workflows_assigned_to_me("layout", %s)""" % request_vars_to_table_options(),
     )
     return dict(table=d)
 
@@ -337,7 +337,7 @@ def workflows_assigned_to_me_load():
 @auth.requires_login()
 def workflows_pending_tiers_action():
     d = SCRIPT(
-          """$.when(osvc.app_started).then(function(){ table_workflows_assigned_to_tiers("layout", {}) })""" 
+          """table_workflows_assigned_to_tiers("layout", %s)""" % request_vars_to_table_options(),
     )
     return dict(table=d)
 

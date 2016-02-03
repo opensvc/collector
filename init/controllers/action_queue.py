@@ -176,7 +176,7 @@ def ajax_actions():
 @auth.requires_login()
 def action_queue():
     t = SCRIPT(
-          """$.when(osvc.app_started).then(function(){ table_action_queue("layout", %s) })""" % request_vars_to_table_options(),
+          """table_action_queue("layout", %s)""" % request_vars_to_table_options(),
         )
     return dict(table=t)
 

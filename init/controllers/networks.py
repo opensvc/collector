@@ -421,7 +421,7 @@ def ajax_networks():
 @auth.requires_login()
 def networks():
     t = SCRIPT(
-          """$.when(osvc.app_started).then(function(){ table_networks("layout", %s) })""" % request_vars_to_table_options(),
+          """table_networks("layout", %s)""" % request_vars_to_table_options(),
         )
     return dict(table=t)
 

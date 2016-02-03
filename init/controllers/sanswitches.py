@@ -154,7 +154,7 @@ def ajax_sanswitches():
 @auth.requires_login()
 def sanswitches():
     t = SCRIPT(
-          """$.when(osvc.app_started).then(function(){ table_sanswitches("layout", %s) })""" % request_vars_to_table_options(),
+          """table_sanswitches("layout", %s)""" % request_vars_to_table_options(),
         )
     return dict(table=t)
 

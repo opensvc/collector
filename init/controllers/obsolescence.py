@@ -109,7 +109,7 @@ def ajax_obs():
 @auth.requires_login()
 def obsolescence_config():
     t = SCRIPT(
-          """$.when(osvc.app_started).then(function(){ table_obsolescence("layout", %s) })""" % request_vars_to_table_options(),
+          """table_obsolescence("layout", %s)""" % request_vars_to_table_options(),
         )
     return dict(table=t)
 

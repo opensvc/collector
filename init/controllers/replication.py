@@ -127,7 +127,7 @@ def ajax_replication_status():
 @auth.requires_login()
 def repl_admin():
     t = SCRIPT(
-          """$.when(osvc.app_started).then(function(){ table_replication("layout", %s) })""" % request_vars_to_table_options(),
+          """table_replication("layout", %s)""" % request_vars_to_table_options(),
         )
     return dict(table=t)
 

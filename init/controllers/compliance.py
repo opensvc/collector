@@ -542,7 +542,7 @@ def teams_publication_filter():
 @auth.requires_login()
 def comp_rules():
     t = SCRIPT(
-          """$.when(osvc.app_started).then(function(){ table_comp_rules("layout", %s) })""" % request_vars_to_table_options(),
+          """table_comp_rules("layout", %s)""" % request_vars_to_table_options(),
         )
     return dict(table=t)
 
@@ -552,7 +552,7 @@ def comp_rules_load():
 @auth.requires_login()
 def comp_rulesets_services():
     t = SCRIPT(
-          """$.when(osvc.app_started).then(function(){ table_comp_rulesets_services("layout", %s) })""" % request_vars_to_table_options(),
+          """table_comp_rulesets_services("layout", %s)""" % request_vars_to_table_options(),
         )
     return dict(table=t)
 
@@ -562,7 +562,7 @@ def comp_rulesets_services_load():
 @auth.requires_login()
 def comp_rulesets_nodes():
     t = SCRIPT(
-          """$.when(osvc.app_started).then(function(){ table_comp_rulesets_nodes("layout", %s) })""" % request_vars_to_table_options(),
+          """table_comp_rulesets_nodes("layout", %s)""" % request_vars_to_table_options(),
         )
     return dict(table=t)
 
@@ -863,14 +863,14 @@ def ajax_comp_modulesets_nodes():
 @auth.requires_login()
 def comp_modules():
     t = SCRIPT(
-          """$.when(osvc.app_started).then(function(){ table_comp_modules("layout", %s) })""" % request_vars_to_table_options(),
+          """table_comp_modules("layout", %s)""" % request_vars_to_table_options(),
         )
     return dict(table=t)
 
 @auth.requires_login()
 def comp_modulesets_services():
     t = SCRIPT(
-          """$.when(osvc.app_started).then(function(){ table_comp_modulesets_services("layout", %s) })""" % request_vars_to_table_options(),
+          """table_comp_modulesets_services("layout", %s)""" % request_vars_to_table_options(),
         )
     return dict(table=t)
 
@@ -880,7 +880,7 @@ def comp_modulesets_services_load():
 @auth.requires_login()
 def comp_modulesets_nodes():
     t = SCRIPT(
-          """$.when(osvc.app_started).then(function(){ table_comp_modulesets_nodes("layout", %s) })""" % request_vars_to_table_options(),
+          """table_comp_modulesets_nodes("layout", %s)""" % request_vars_to_table_options(),
         )
     return dict(table=t)
 
@@ -1614,7 +1614,7 @@ def json_comp_status_agg():
 @auth.requires_login()
 def comp_status():
     t = SCRIPT(
-          """$.when(osvc.app_started).then(function(){ view_comp_status("layout", %s) })""" % request_vars_to_table_options(),
+          """view_comp_status("layout", %s)""" % request_vars_to_table_options(),
         )
     return dict(table=t)
 
@@ -2090,7 +2090,7 @@ def ajax_comp_log():
 @auth.requires_login()
 def comp_log():
     t = SCRIPT(
-          """$.when(osvc.app_started).then(function(){ table_comp_log("layout", %s) })""" % request_vars_to_table_options(),
+          """table_comp_log("layout", %s)""" % request_vars_to_table_options(),
         )
     return dict(table=t)
 
@@ -3189,7 +3189,7 @@ def svc_comp_status(svcname):
     tid = 'scs_'+svcname.replace('-','_').replace('.','_')
     return DIV(
             SCRIPT(
-              """$.when(osvc.app_started).then(function(){ table_comp_status_svc("%s", "%s") })""" % (tid, svcname),
+              """table_comp_status_svc("%s", "%s")""" % (tid, svcname),
             ),
             _id=tid,
           )
@@ -3198,7 +3198,7 @@ def node_comp_status(node):
     tid = 'ncs_'+node.replace('-','_').replace('.','_')
     return DIV(
             SCRIPT(
-              """$.when(osvc.app_started).then(function(){ table_comp_status_node("%s", "%s") })""" % (tid, node),
+              """table_comp_status_node("%s", "%s")""" % (tid, node),
             ),
             _id=tid,
           )

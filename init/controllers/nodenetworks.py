@@ -265,7 +265,7 @@ def ajax_nodenetworks():
 @auth.requires_login()
 def nodenetworks():
     t = SCRIPT(
-          """$.when(osvc.app_started).then(function(){ table_nodenetworks("layout", %s) })""" % request_vars_to_table_options(),
+          """table_nodenetworks("layout", %s)""" % request_vars_to_table_options(),
         )
     return dict(table=t)
 

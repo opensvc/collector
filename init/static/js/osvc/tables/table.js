@@ -623,45 +623,6 @@ function table_add_column_headers(t) {
   t.e_header = tr
 }
 
-//
-// if visible columns is not explicitely set in options
-// fetch it from the db-stored table settings
-//
-function table_get_visible_columns(t) {
-  if (t.options.visible_columns) {
-    return
-  }
-
-  // init with default visibility defined in colprops
-  t.options.visible_columns = []
-  for (key in t.options.colprops) {
-    var d = t.options.colprops[key]
-    if (d.display) {
-      t.options.visible_columns.push(key)
-    }
-  }
-
-  // adjust with db-stored user's table settings
-  if (!(t.id in osvc.table_settings.data)) {
-    return
-  }
-  for (col in osvc.table_settings.data[t.id]) {
-    if (col == "wsenabled") {
-      continue
-    }
-    if (osvc.table_settings.data[t.id][col]) {
-      if (t.options.visible_columns.indexOf(col) < 0) {
-        t.options.visible_columns.push(col)
-      }
-    } else {
-      var idx = t.options.visible_columns.indexOf(col)
-      if (idx >= 0) {
-        t.options.visible_columns.splice(idx, 1)
-      }
-    }
-  }
-}
-
 function table_refresh_column_filters(t) {
   for (i=0; i<t.options.visible_columns.length; i++) {
     var c = t.options.visible_columns[i]
@@ -2961,11 +2922,45 @@ function table_init(opts) {
     },
     'add_table': function(){
       return table_add_table(this)
-    },
-    'get_visible_columns': function(){
-      return table_get_visible_columns(this)
     }
   }
+
+	t.get_visible_columns = function() {
+		// if visible columns is not explicitely set in options
+		// fetch it from the db-stored table settings
+		if (t.options.visible_columns) {
+			return
+		}
+
+		// init with default visibility defined in colprops
+		t.options.visible_columns = []
+		for (key in t.options.colprops) {
+			var d = t.options.colprops[key]
+			if (d.display) {
+				t.options.visible_columns.push(key)
+			}
+		}
+
+		// adjust with db-stored user's table settings
+		if (!(t.id in osvc.table_settings.data)) {
+			return
+		}
+		for (col in osvc.table_settings.data[t.id]) {
+			if (col == "wsenabled") {
+				continue
+			}
+			if (osvc.table_settings.data[t.id][col]) {
+				if (t.options.visible_columns.indexOf(col) < 0) {
+					t.options.visible_columns.push(col)
+				}
+			} else {
+				var idx = t.options.visible_columns.indexOf(col)
+				if (idx >= 0) {
+					t.options.visible_columns.splice(idx, 1)
+				}
+			}
+		}
+	}
 
 	t.add_table = function() {
 		if (typeof(t.options.divid) === "undefined") {
@@ -3067,7 +3062,6 @@ function table_init(opts) {
 	t.refresh_timer = null
 
 	t.add_table()
-	t.get_visible_columns()
 
 	// selectors cache
 	t.e_toolbar = t.div.find("[name=toolbar]").first()
@@ -3082,6 +3076,7 @@ function table_init(opts) {
 		osvc.table_settings_loaded,
 		osvc.table_filters_loaded
 	).then(function(){
+		t.get_visible_columns()
 		t.add_column_headers_slim()
 		t.add_column_headers_input()
 		t.add_column_headers()

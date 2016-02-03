@@ -228,7 +228,7 @@ def ajax_saves():
 @auth.requires_login()
 def saves():
     t = SCRIPT(
-          """$.when(osvc.app_started).then(function(){ view_saves("layout", %s) })""" % request_vars_to_table_options(),
+          """view_saves("layout", %s)""" % request_vars_to_table_options(),
         )
     return dict(table=t)
 

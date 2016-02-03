@@ -95,7 +95,7 @@ def ajax_services():
 @auth.requires_login()
 def services():
     t = SCRIPT(
-          """$.when(osvc.app_started).then(function(){ table_services("layout", %s) })""" % request_vars_to_table_options(),
+          """table_services("layout", %s)""" % request_vars_to_table_options(),
         )
     return dict(table=t)
 

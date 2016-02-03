@@ -344,7 +344,7 @@ def ajax_checks():
 @auth.requires_login()
 def checks():
     t = SCRIPT(
-          """$.when(osvc.app_started).then(function(){ table_checks("layout", %s) })""" % request_vars_to_table_options(),
+          """table_checks("layout", %s)""" % request_vars_to_table_options(),
         )
     return dict(table=t)
 

@@ -138,7 +138,7 @@ def ajax_apps():
 @auth.requires_login()
 def apps():
     t = SCRIPT(
-          """$.when(osvc.app_started).then(function(){ table_apps("layout", %s) })""" % request_vars_to_table_options(),
+          """table_apps("layout", %s)""" % request_vars_to_table_options(),
         )
     return dict(table=t)
 

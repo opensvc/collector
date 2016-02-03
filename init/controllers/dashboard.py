@@ -274,7 +274,7 @@ def ajax_dashboard():
 @auth.requires_login()
 def index():
     t = SCRIPT(
-          """$.when(osvc.app_started).then(function(){ table_dashboard("layout", %s) })""" % request_vars_to_table_options(),
+          """table_dashboard("layout", %s)""" % request_vars_to_table_options(),
         )
     return dict(table=t)
 

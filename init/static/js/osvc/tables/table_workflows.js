@@ -42,41 +42,45 @@ function table_workflows(divid, options) {
 }
 
 function table_workflows_assigned_to_me(divid, options) {
-  var _options = {"id": "workflows_atm"}
-  var me = _self.first_name + " " + _self.last_name
-  var notme = "!" + me
-  for (var i=0; i<_groups.length; i++) {
-    if (_groups[i].privilege == true) {
-      continue
+  $.when(osvc.user_groups_loaded).then(function() {
+    var _options = {"id": "workflows_atm"}
+    var me = _self.first_name + " " + _self.last_name
+    var notme = "!" + me
+    for (var i=0; i<_groups.length; i++) {
+      if (_groups[i].privilege == true) {
+        continue
+      }
+      me += "|" + _groups[i].role
+      notme += "&!" + _groups[i].role
     }
-    me += "|" + _groups[i].role
-    notme += "&!" + _groups[i].role
-  }
-  $.extend(true, _options, table_workflows_defaults, options)
-  _options.divid = divid
-  _options.caller = "table_workflows_assigned_to_me"
-  _options.request_vars["workflows_atm_f_status"] = "!closed"
-  _options.request_vars["workflows_atm_f_last_assignee"] = me
-  table_init(_options)
+    $.extend(true, _options, table_workflows_defaults, options)
+    _options.divid = divid
+    _options.caller = "table_workflows_assigned_to_me"
+    _options.request_vars["workflows_atm_f_status"] = "!closed"
+    _options.request_vars["workflows_atm_f_last_assignee"] = me
+    table_init(_options)
+  })
 }
 
 function table_workflows_assigned_to_tiers(divid, options) {
-  var _options = {"id": "workflows_att"}
-  var me = _self.first_name + " " + _self.last_name
-  var notme = "!" + me
-  for (var i=0; i<_groups.length; i++) {
-    if (_groups[i].privilege == true) {
-      continue
+  $.when(osvc.user_groups_loaded).then(function() {
+    var _options = {"id": "workflows_att"}
+    var me = _self.first_name + " " + _self.last_name
+    var notme = "!" + me
+    for (var i=0; i<_groups.length; i++) {
+      if (_groups[i].privilege == true) {
+        continue
+      }
+      me += "|" + _groups[i].role
+      notme += "&!" + _groups[i].role
     }
-    me += "|" + _groups[i].role
-    notme += "&!" + _groups[i].role
-  }
-  $.extend(true, _options, table_workflows_defaults, options)
-  _options.divid = divid
-  _options.caller = "table_workflows_assigned_to_tiers"
-  _options.request_vars["workflows_att_f_status"] = "!closed"
-  _options.request_vars["workflows_att_f_last_assignee"] = notme
-  _options.request_vars["workflows_att_f_creator"] = me
-  table_init(_options)
+    $.extend(true, _options, table_workflows_defaults, options)
+    _options.divid = divid
+    _options.caller = "table_workflows_assigned_to_tiers"
+    _options.request_vars["workflows_att_f_status"] = "!closed"
+    _options.request_vars["workflows_att_f_last_assignee"] = notme
+    _options.request_vars["workflows_att_f_creator"] = me
+    table_init(_options)
+  })
 }
 

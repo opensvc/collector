@@ -144,7 +144,7 @@ def ajax_users():
 @auth.requires_login()
 def users():
     t = SCRIPT(
-          """$.when(osvc.app_started).then(function(){ table_users("layout", %s) })""" % request_vars_to_table_options(),
+          """table_users("layout", %s)""" % request_vars_to_table_options(),
         )
     return dict(table=t)
 
