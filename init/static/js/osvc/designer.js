@@ -112,7 +112,7 @@ function designer(divid, options) {
 
 	o.show_moduleset = function(node) {
 		var modset_name = node.text
-		var div = $("<div class='white_float' style='position:relative;padding:0px'></div>")
+		var div = $("<div class='white_float' style='overflow:auto;position:relative;padding:0px'></div>")
 		div.uniqueId()
 		o.e_info.empty().append(div)
 		moduleset_tabs(div.attr("id"), {"modset_name": modset_name})
@@ -121,7 +121,7 @@ function designer(divid, options) {
 	o.show_ruleset = function(node) {
 		var rset_id = node.li_attr.obj_id
 		var rset_name = node.text
-		var div = $("<div class='white_float' style='position:relative;padding:0px'></div>")
+		var div = $("<div class='white_float' style='overflow:auto;position:relative;padding:0px'></div>")
 		div.uniqueId()
 		o.e_info.empty().append(div)
 		ruleset_tabs(div.attr("id"), {"ruleset_id": rset_id, "ruleset_name": rset_name})
@@ -129,7 +129,7 @@ function designer(divid, options) {
 
 	o.show_fset = function(node) {
 		var fset_name = node.text
-		var div = $("<div class='white_float' style='position:relative;padding:0px'></div>")
+		var div = $("<div class='white_float' style='overflow:auto;position:relative;padding:0px'></div>")
 		div.uniqueId()
 		o.e_info.empty().append(div)
 		filterset_tabs(div.attr("id"), {"fset_name": fset_name})
@@ -138,7 +138,7 @@ function designer(divid, options) {
 	o.show_group = function(node) {
 		var group_id = node.li_attr.obj_id
 		var group_name = node.text
-		var div = $("<div class='white_float' style='position:relative;padding:0px'></div>")
+		var div = $("<div class='white_float' style='overflow:auto;position:relative;padding:0px'></div>")
 		div.uniqueId()
 		o.e_info.empty().append(div)
 		group_tabs(div.attr("id"), {"group_id": group_id, "group_name": group_name})
