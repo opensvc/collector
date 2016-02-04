@@ -370,29 +370,6 @@ function sort_table(id) {
     cmp = null
 }
 
-function table_reset_column_filters(t, c, val) {
-  t.e_header_filters.find("th").each(function() {
-    var input = $(this).find("input")
-    var label = $(this).find(".col_filter_label")
-    if ((c in t.colprops) && (t.colprops[c].force_filter != "")) {
-      input.val(t.colprops[c].force_filter)
-    } else if ((c in t.colprops) && (t.colprops[c].default_filter != "")) {
-      input.val(t.colprops[c].default_filter)
-    } else {
-      input.val("")
-    }
-    label.empty()
-    $(this).find(".clear16,.invert16").hide()
-  })
-
-  t.e_header_slim.find("th").each(function() {
-    $(this).removeClass("bgblack")
-    $(this).removeClass("bgred")
-    $(this).removeClass("bgorange")
-  })
-
-}
-
 function table_refresh_column_filter(t, c, val) {
   if (!t.e_header_filters) {
     return
@@ -2824,9 +2801,6 @@ function table_init(opts) {
     'refresh_column_filters': function(){
       return table_refresh_column_filters(this)
     },
-    'reset_column_filters': function(){
-      return table_reset_column_filters(this)
-    },
     'refresh_column_headers_slim': function(){
       return table_refresh_column_headers_slim(this)
     },
@@ -2921,6 +2895,29 @@ function table_init(opts) {
       return table_add_table(this)
     }
   }
+	t.reset_column_filters = function(c, val) {
+		if (!t.e_header_filters) {
+			return
+		}
+		t.e_header_filters.find("th").each(function() {
+			var input = $(this).find("input")
+			var label = $(this).find(".col_filter_label")
+			if ((c in t.colprops) && (t.colprops[c].force_filter != "")) {
+				input.val(t.colprops[c].force_filter)
+			} else if ((c in t.colprops) && (t.colprops[c].default_filter != "")) {
+				input.val(t.colprops[c].default_filter)
+			} else {
+				input.val("")
+			}
+			label.empty()
+			$(this).find(".clear16,.invert16").hide()
+		})
+		t.e_header_slim.find("th").each(function() {
+			$(this).removeClass("bgblack")
+			$(this).removeClass("bgred")
+			$(this).removeClass("bgorange")
+		})
+	}
 
 	t.get_visible_columns = function() {
 		// if visible columns is not explicitely set in options
