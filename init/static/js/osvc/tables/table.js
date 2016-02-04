@@ -1759,9 +1759,9 @@ function table_link_href(t) {
 function table_add_scrollers(t) {
   var s = ""
   s = "<div id='table_"+t.id+"_left' class='scroll_left'>&nbsp</div>"
-  $("#table_"+t.id).before(s)
+  $("#"+t.id).prepend(s)
   s = "<div id='table_"+t.id+"_right' class='scroll_right'>&nbsp</div>"
-  $("#table_"+t.id).after(s)
+  $("#"+t.id).append(s)
 }
 
 function table_add_filterbox(t) {
@@ -2483,7 +2483,7 @@ function table_scroll(t){
   sticky_relocate(t.e_header, t.e_sticky_anchor)
   to=$("#table_"+t.id)
   to_p=to.parent()
-  ww=$(window).width()
+  ww=to_p.width()
   tw=to.width()
   if (ww>=tw) {
     $("#table_"+t.id+"_left").hide()
@@ -2492,14 +2492,11 @@ function table_scroll(t){
   }
   if (to_p.scrollLeft()>0) {
     $("#table_"+t.id+"_left").show()
-    $("#table_"+t.id+"_left").height(to.height())
   } else {
     $("#table_"+t.id+"_left").hide()
   }
   if (to_p.scrollLeft()+ww+1<tw) {
     $("#table_"+t.id+"_right").show()
-    $("#table_"+t.id+"_right").height(to.height())
-    $("#table_"+t.id+"_right").css({'top': to.position().top})
   } else {
     $("#table_"+t.id+"_right").hide()
   }

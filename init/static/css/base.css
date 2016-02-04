@@ -245,9 +245,12 @@ input.aci, input.aci:focus {
 }
 
 .scroll_left {
-	width:1em;
+	width:1em !important;
 	position:absolute;
 	left:0;
+	top:0;
+	height:100%;
+	content: ' ';
 	z-index:1000;
 	display:none;
 	background: -webkit-gradient(left, rgba(100, 100, 100, 0.5), rgba(100, 100, 100, 0));
@@ -258,9 +261,12 @@ input.aci, input.aci:focus {
 	cursor: pointer;
 }
 .scroll_right {
-	width:1em;
+	width:1em !important;
 	position:absolute;
 	right:0;
+	top:0;
+	height:100%;
+	content: ' ';
 	z-index:1000;
 	display:none;
 	background: -webkit-gradient(left, rgba(100, 100, 100, 0), rgba(100, 100, 100, 0.5));
@@ -2455,6 +2461,9 @@ a.search-link:hover {
 /*
  * table class
  */
+.tableo {
+	position: relative;
+}
 .tableo > div {
 	width: 100%;
 	overflow-x: auto;
