@@ -22,6 +22,15 @@ function report_tabs(divid, options) {
 			report_properties(divid, o.options)
 		}
 
+		// tab display
+		i = o.register_tab({
+			"title": "report_tabs.rendering",
+			"title_class": "icon wf16"
+		})
+		o.tabs[i].callback = function(divid) {
+			report(divid, o.options)
+		}
+
 		// tab definition
 		i = o.register_tab({
 			"title": "report_tabs.definition",
@@ -99,7 +108,6 @@ function report_definition(divid, options) {
 		o.div.empty()
 		services_osvcgetrest("/reports/%1", [o.options.report_id], {"props": "report_yaml"}, function(jd) {
 			o.load(jd.data[0])
-			o.test(jd.data[0])
 		})
 	}
 
@@ -136,23 +144,15 @@ function report_definition(divid, options) {
 						return
 					}
 					o.init()
+
+					// force a new render in the rendering tab
+					o.div.parents(".tab_display").first().find(".reports_div").parent().empty()
 				},
 				function(xhr, stat, error) {
 					$(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
 				})
 			})
 		})
-	}
-
-	o.test = function(data) {
-		var div = $("<div style='padding:1em'></div>")
-		div.uniqueId()
-		o.div.append(div)
-		if (!data.report_yaml || (data.report_yaml.length == 0)) {
-			return
-		}
-		var options = {"report_id" : o.options.report_id}
-		report(div.attr("id"), options)
 	}
 
 	o.init()

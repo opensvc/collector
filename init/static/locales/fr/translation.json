@@ -639,15 +639,18 @@
     "nodes": "noeuds"
   },
   "report_tabs": {
+    "rendering": "rendu",
     "export": "export",
     "definition": "définition",
     "properties": "propriétés"
   },
   "chart_tabs": {
+    "rendering": "rendu",
     "definition": "définition",
     "properties": "propriétés"
   },
   "metric_tabs": {
+    "rendering": "rendu",
     "request": "request",
     "properties": "properties"
   },

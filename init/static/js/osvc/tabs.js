@@ -70,22 +70,34 @@ function tabs(divid) {
 		})
 	}
 
-	o.set_tab = function(tab_title) {
+	o.find_tab = function(tab_title) {
 		if (!tab_title) {
-			// set the first tab active
-			o.closetab.next("li").trigger("click")
 			return
 		}
 		for (var i=0; i<o.tabs.length; i++) {
 			if (o.tabs[i].title != tab_title) {
 				continue
 			}
-			// found the tab, set active and stop iterating
-			o.tabs[i].tab.trigger("click")
-			return
+			// found the tab
+			return o.tabs[i]
 		}
 	}
 
+	o.set_tab = function(tab_title) {
+		if (!tab_title) {
+			// set the first tab active
+			o.closetab.next("li").trigger("click")
+			return
+		}
+		var tab = o.find_tab(tab_title)
+		if (!tab) {
+			// set the first tab active
+			o.closetab.next("li").trigger("click")
+			return
+		}
+		// found the tab, set active and stop iterating
+		tab.tab.trigger("click")
+	}
 
 	return o
 }

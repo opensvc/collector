@@ -652,15 +652,18 @@
     "nodes": "nodes"
   },
   "report_tabs": {
+    "rendering": "rendering",
     "export": "export",
     "definition": "definition",
     "properties": "properties"
   },
   "chart_tabs": {
+    "rendering": "rendering",
     "definition": "definition",
     "properties": "properties"
   },
   "metric_tabs": {
+    "rendering": "rendering",
     "request": "request",
     "properties": "properties"
   },
