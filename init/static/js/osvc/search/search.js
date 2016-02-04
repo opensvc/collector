@@ -718,7 +718,7 @@ function search_build_result_row(label, first, res, count) {
         }
       }
 
-      if (event.ctrlKey) {
+      if (e.ctrlKey) {
         window.open(url, "_blank")
         return
       }
