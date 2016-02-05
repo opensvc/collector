@@ -1529,6 +1529,7 @@
     }
   },
   "forms": {
+    "toggle_all": "Toggle all candidates",
     "no_data": "No data",
     "not_found": "not found",
     "expert": "Expert mode",

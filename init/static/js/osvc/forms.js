@@ -304,10 +304,16 @@ function form(divid, options) {
 			if (content == "") {
 				content = "-"
 			}
-			if (!o.options.detailled && d.DisplayModeTrim && (content.length > d.DisplayModeTrim)) {
-				content = content.slice(0, d.DisplayModeTrim/3) + "..." + content.slice(content.length-d.DisplayModeTrim/3*2, content.length)
+			if (content instanceof Array) {
+				for (var j=0; j<content.length; j++) {
+					value.append("<span class='tag tag_attached'>"+content[j]+"</span>")
+				}
+			} else {
+				if (!o.options.detailled && d.DisplayModeTrim && (content.length > d.DisplayModeTrim)) {
+					content = content.slice(0, d.DisplayModeTrim/3) + "..." + content.slice(content.length-d.DisplayModeTrim/3*2, content.length)
+				}
+				value.text(content)
 			}
-			value.text(content)
 			table.append(line)
 		}
 		return table
@@ -372,10 +378,8 @@ function form(divid, options) {
 				var input = o.render_info(d, content)
 			} else if (d.Type == "text") {
 				var input = o.render_text(d, content)
-			} else if (d.Candidates && (d.Candidates instanceof Array)) {
-				var input = o.render_select(d, content)
-			} else if (d.Function) {
-				var input = o.render_select_rest(d, content)
+			} else if (d.Type == "checklist") {
+				var input = o.render_checklist(d, content)
 			} else {
 				var input = o.render_input(d, content)
 			}
@@ -712,7 +716,7 @@ function form(divid, options) {
 		}
 		return textarea
 	}
-	o.render_input = function(d, content) {
+	o.render_input_simple = function(d, content) {
 		var input = $("<input class='oi'>")
 		if (d.ReadOnly == true) {
 			input.prop("disabled", true)
@@ -721,7 +725,16 @@ function form(divid, options) {
 		input.prop("acid", content)
 		return input
 	}
-	o.render_select = function(d, content) {
+	o.render_input = function(d, content) {
+		if (d.Candidates && (d.Candidates instanceof Array)) {
+			return o.render_select_static(d, content)
+		} else if (d.Function) {
+			return o.render_select_rest(d, content)
+		} else {
+			return o.render_input_simple(d, content)
+		}
+	}
+	o.render_select_static = function(d, content) {
 		var input = $("<input class='oi aci'>")
 		if (d.ReadOnly == true) {
 			input.prop("disabled", true)
@@ -782,9 +795,32 @@ function form(divid, options) {
 			o.add_fn_triggers(d)
 			return input
 		}
-		fn_init_autocomplete(input, d, content)
+		fn_init(input, d, content)
 		return input
 	}
+
+	o.render_checklist = function(d, content) {
+		if (d.Candidates && (d.Candidates instanceof Array)) {
+			return o.render_checklist_static(d, content)
+		} else if (d.Function) {
+			return o.render_checklist_rest(d, content)
+		}
+	}
+	o.render_checklist_rest = function(d, content) {
+		input = $("<div class='form_input_info'><div>")
+		if (fn_has_refs(d)) {
+			o.add_fn_triggers(d)
+			return input
+		}
+		fn_init(input, d, content)
+		return input
+	}
+	o.render_checklist_static = function(d, content) {
+		input = $("<div class='form_input_info' style='padding:0.5em 0'><div>")
+		checklist_callback(input, d, [], d.Candidates, content)
+		return input
+	}
+
 
 	function fn_has_refs(d) {
 		// hardcoded refs
@@ -804,15 +840,82 @@ function form(divid, options) {
 		return false
 	}
 
-	function fn_init_autocomplete(input, d, content) {
-		if (d.Function.match(/^\//)) {
-			return rest_init_autocomplete(input, d, content)
+	function fn_init(input, d, content) {
+		if (d.Type == "checklist") {
+			var fn_callback = checklist_callback
 		} else {
-			return jsonrpc_init_autocomplete(input, d, content)
+			var fn_callback = autocomplete_callback
+		}
+		if (d.Function.match(/^\//)) {
+			return rest_init(input, d, content, fn_callback)
+		} else {
+			return jsonrpc_init(input, d, content, fn_callback)
 		}
 	}
 
-	function fn_callback(input, d, args, data, content) {
+	function checklist_callback(input, d, args, data, content) {
+		if (data.length > 0) {
+			var line = $("<div style='padding:0.2em'></div>")
+			var cb = $("<input type='checkbox' class='ocb'>")
+			var cb_label = $("<label></label>")
+			var e_label = $("<span class='grayed' style='padding:0 0.3em'></span>")
+			cb.uniqueId()
+			cb_label.attr("for", cb.attr("id"))
+			e_label.text(i18n.t("forms.toggle_all"))
+			line.append(cb)
+			line.append(cb_label)
+			line.append(e_label)
+			input.append(line)
+			cb.bind("change", function() {
+				var state = $(this).prop("checked")
+				$(this).parent().siblings().children("input[type=checkbox]").prop("checked", state)
+			})
+		}
+		if (!content) {
+			// set a sane default to content
+			content = []
+		}
+		// ck value can be a string, ex: id from a rest get are strings
+		str_content = content.map(function(el){return ""+el})
+
+		for (var i=0; i<data.length; i++) {
+			var _d = data[i]
+			if (typeof(_d) === "string") {
+				var value = _d
+				var label = _d
+			} else if (("Value" in _d) && ("Label" in _d)) {
+				var value = _d.Value
+				var label = _d.Label
+			} else if (("Format" in d) && ("Value" in d)) {
+				var label = d.Format
+				var value = d.Value
+				var props = args.props.split(",")
+				for (var j=0; j<props.length; j++) {
+					var prop = props[j]
+					var re = RegExp("#"+prop, "g")
+					label = label.replace(re, _d[prop])
+					value = value.replace(re, _d[prop])
+				}
+			}
+			var line = $("<div style='padding:0.2em'></div>")
+			var cb = $("<input type='checkbox' class='ocb'>")
+			var cb_label = $("<label></label>")
+			var e_label = $("<span style='padding:0 0.3em'></span>")
+			cb.uniqueId()
+			cb.prop("acid", value)
+			cb_label.attr("for", cb.attr("id"))
+			e_label.text(label)
+			line.append(cb)
+			line.append(cb_label)
+			line.append(e_label)
+			input.append(line)
+			if (str_content.indexOf(""+value) >= 0) {
+				cb.prop("checked", true)
+			}
+		}
+	}
+
+	function autocomplete_callback(input, d, args, data, content) {
 		if (typeof(data) === "string") {
 			if (input.hasClass("form_input_info")) {
 				input.text(data)
@@ -911,7 +1014,7 @@ function form(divid, options) {
 		input.change()
 	}
 
-	function jsonrpc_init_autocomplete(input, d, content) {
+	function jsonrpc_init(input, d, content, fn_callback) {
 		var args = prepare_args(input, d.Args)
 		for (key in args) {
 			if (!args[key]) {
@@ -929,7 +1032,7 @@ function form(divid, options) {
 		})
 	}
 
-	function rest_init_autocomplete(input, d, content) {
+	function rest_init(input, d, content, fn_callback) {
 		var args = prepare_args(input, d.Args)
 		var fn = subst_refs(input, d.Function)
 		if (fn.match(/\/\//) || fn.match(/\/undefined\//) || fn.match(/\/$/)) {
@@ -948,7 +1051,12 @@ function form(divid, options) {
 		}
 		o.fn_trigger_last[key] = sign
 		services_osvcgetrest("/init/rest/api"+fn, "", args, function(jd) {
-			fn_callback(input, d, args, jd.data, content)
+			if (typeof(jd.data) === "undefined") {
+				var data = []
+			} else {
+				var data = jd.data
+			}
+			fn_callback(input, d, args, data, content)
 		})
 	}
 
@@ -1006,6 +1114,9 @@ function form(divid, options) {
 		if (!d.Constraint) {
 			return
 		}
+		if (d.Type == "checklist") {
+			return
+		}
 		trigger(input)
 		input.bind("keyup change", function() {
 			trigger($(this))
@@ -1036,6 +1147,9 @@ function form(divid, options) {
 
 	o.install_mandatory_trigger = function(input, d) {
 		if (d.Mandatory != true) {
+			return
+		}
+		if (d.Type == "checklist") {
 			return
 		}
 		trigger(input)
@@ -1076,7 +1190,7 @@ function form(divid, options) {
 		tr.removeClass("hidden")
 		var input = tr.find("[name=val]").children("input,textarea,.form_input_info")
 		if (d.Function && fn_has_refs(d)) {
-			fn_init_autocomplete(input, d)
+			fn_init(input, d, autocomplete_callback)
 			var data = $.data(input[0])
 			if (data.autocomplete && data.autocomplete.options.source.length > 0) {
 				input.val(data.autocomplete.options.source[0].label)
@@ -1192,7 +1306,7 @@ function form(divid, options) {
 				return
 			}
 			console.log("fn:", key, "->", d.Id)
-			fn_init_autocomplete(input, d)
+			fn_init(input, d)
 		})
 	}
 
@@ -1267,6 +1381,22 @@ function form(divid, options) {
 	o.get_val = function(td) {
 		var input = td.find("input,textarea,div")
 		if (input.is("div")) {
+			var cbs = input.find("input[type=checkbox]")
+			if (cbs.length > 0) {
+				// list type
+				var val = []
+				cbs.each(function(){
+					var _val = $(this).prop("acid")
+					if (typeof(_val) === "undefined") {
+						// skip the 'toggle all' checkbox
+						return
+					}
+					if ($(this).prop("checked")) {
+						val.push(_val)
+					}
+				})
+				return val
+			}
 			return input.text()
 		}
 		var val = input.prop("acid")

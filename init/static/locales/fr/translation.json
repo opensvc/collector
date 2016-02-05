@@ -1471,6 +1471,7 @@
     }
   },
   "forms": {
+    "toggle_all": "Basculer tous les candidats",
     "not_found": "non trouvé",
     "no_data": "Pas de données",
     "expert": "Mode expert",
