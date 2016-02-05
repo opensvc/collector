@@ -854,27 +854,33 @@ function form(divid, options) {
 	}
 
 	function checklist_callback(input, d, args, data, content) {
-		if (data.length > 0) {
-			var line = $("<div style='padding:0.2em'></div>")
-			var cb = $("<input type='checkbox' class='ocb'>")
-			var cb_label = $("<label></label>")
-			var e_label = $("<span class='grayed' style='padding:0 0.3em'></span>")
-			cb.uniqueId()
-			cb_label.attr("for", cb.attr("id"))
-			e_label.text(i18n.t("forms.toggle_all"))
-			line.append(cb)
-			line.append(cb_label)
-			line.append(e_label)
-			input.append(line)
-			cb.bind("change", function() {
-				var state = $(this).prop("checked")
-				$(this).parent().siblings().children("input[type=checkbox]").prop("checked", state)
-			})
+		if (data.length == 0) {
+			input.empty()
+			return
 		}
+
+		// add a 'toggle all' master checkbox
+		var line = $("<div style='padding:0.2em'></div>")
+		var cb = $("<input type='checkbox' class='ocb'>")
+		var cb_label = $("<label></label>")
+		var e_label = $("<span class='grayed' style='padding:0 0.3em'></span>")
+		cb.uniqueId()
+		cb_label.attr("for", cb.attr("id"))
+		e_label.text(i18n.t("forms.toggle_all"))
+		line.append(cb)
+		line.append(cb_label)
+		line.append(e_label)
+		input.append(line)
+		cb.bind("change", function() {
+			var state = $(this).prop("checked")
+			$(this).parent().siblings().children("input[type=checkbox]").prop("checked", state)
+		})
+
 		if (!content) {
 			// set a sane default to content
 			content = []
 		}
+
 		// ck value can be a string, ex: id from a rest get are strings
 		str_content = content.map(function(el){return ""+el})
 
