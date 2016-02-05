@@ -7,7 +7,13 @@
     "queued": "en queue",
     "waiting": "en attente",
     "running": "en cours",
-    "done": "fait"
+    "done": "fait",
+    "charts": {
+      "services": "Services",
+      "apps": "Applications",
+      "diskgroups": "Disk Groups",
+      "arrays": "Baies de stockage"
+    }
   }, 
   "fset_designer": {
     "save": "Valider",

@@ -7,7 +7,13 @@
     "queued": "queued",
     "waiting": "waiting",
     "running": "running",
-    "done": "done"
+    "done": "done",
+    "charts": {
+      "services": "Services",
+      "apps": "Applications",
+      "diskgroups": "Disk Groups",
+      "arrays": "Arrays"
+    }
   },
   "fset_designer": {
     "save": "Submit",

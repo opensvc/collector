@@ -11,55 +11,6 @@ def call():
 def refresh_b_disk_app():
     task_refresh_b_disk_app()
 
-class col_chart(HtmlTableColumn):
-    def html(self, o):
-       l = []
-       if len(o['chart_svc']) > 2:
-           l += [DIV(
-                      H3(T("Services")),
-                      DIV(
-                        o['chart_svc'],
-                        _id='chart_svc',
-                      ),
-                      _style="float:left;width:500px",
-                    )]
-       if len(o['chart_ap']) > 2:
-           l += [DIV(
-                      H3(T("Applications")),
-                      DIV(
-                        o['chart_ap'],
-                        _id='chart_ap',
-                      ),
-                      _style="float:left;width:500px",
-                    )]
-       if len(o['chart_dg']) > 2:
-           l += [DIV(
-                  H3(T("Disk Groups")),
-                  DIV(
-                    o['chart_dg'],
-                    _id='chart_dg',
-                  ),
-                  _style="float:left;width:500px",
-                )]
-
-       if len(o['chart_ar']) > 2:
-           l += [DIV(
-                  H3(T("Disk Arrays")),
-                  DIV(
-                    o['chart_ar'],
-                    _id='chart_ar',
-                  ),
-                  _style="float:left;width:500px",
-                )]
-       l += [DIV(
-               _class='spacer',
-             )]
-       l += [DIV(
-               '-',
-               _id='chart_info',
-             )]
-       return DIV(l)
-
 #
 # quotas
 #
@@ -439,6 +390,43 @@ def disks():
 
 def disks_load():
     return disks()["table"]
+
+
+#
+# charts table
+#
+class table_disk_charts(HtmlTable):
+    def __init__(self, id=None, func=None, innerhtml=None):
+        if id is None and 'tableid' in request.vars:
+            id = request.vars.tableid
+        HtmlTable.__init__(self, id, func, innerhtml)
+        self.cols = ['chart']
+        self.keys = ['chart']
+        self.span = ['chart']
+        self.colprops.update({
+            'chart': HtmlTableColumn(
+                     title='Chart',
+                     field='chart',
+                     img='spark16',
+                     display=True,
+                     _class="disks_charts",
+                    ),
+        })
+        for i in self.cols:
+            self.colprops[i].t = self
+        self.dbfilterable = False
+        self.filterable = False
+        self.pageable = False
+        self.exportable = False
+        self.linkable = False
+        self.bookmarkable = False
+        self.commonalityable = False
+        self.refreshable = False
+        self.columnable = False
+        self.headers = False
+        self.highlight = False
+        self.dataable = True
+        self.parent_tables = ["disks"]
 
 @auth.requires_login()
 def ajax_disk_charts():
@@ -834,46 +822,22 @@ def ajax_disk_charts():
         }
 
 
-    nt.object_list = [{'chart_svc': json.dumps(h_data_svc),
-                       'chart_ap': json.dumps(h_data_app),
-                       'chart_dg': json.dumps(h_data_dg),
-                       'chart_ar': json.dumps(h_data_array)}]
+    nt.object_list = [{
+      'chart': json.dumps({
+        'chart_svc': h_data_svc,
+        'chart_ap': h_data_app,
+        'chart_dg': h_data_dg,
+        'chart_ar': h_data_array
+      })
+    }]
 
-    if len(request.args) == 1 and request.args[0] == 'line':
+    if len(request.args) == 1 and request.args[0] == 'data':
         return nt.table_lines_data(-1)
 
-class table_disk_charts(HtmlTable):
-    def __init__(self, id=None, func=None, innerhtml=None):
-        if id is None and 'tableid' in request.vars:
-            id = request.vars.tableid
-        HtmlTable.__init__(self, id, func, innerhtml)
-        self.cols = ['chart']
-        self.keys = ['chart']
-        self.span = ['chart']
-        self.colprops.update({
-            'chart': col_chart(
-                     title='Chart',
-                     field='chart',
-                     img='spark16',
-                     display=True,
-                    ),
-        })
-        for i in self.cols:
-            self.colprops[i].t = self
-        self.dbfilterable = False
-        self.filterable = False
-        self.pageable = False
-        self.exportable = False
-        self.linkable = False
-        self.bookmarkable = False
-        self.commonalityable = False
-        self.refreshable = False
-        self.columnable = False
-        self.headers = False
-        self.highlight = False
-        self.on_change = """plot_diskdonuts"""
-        self.parent_tables = ["disks"]
 
+#
+# charts in tabs
+#
 @auth.requires_login()
 def ajax_array_dg():
     session.forget(response)

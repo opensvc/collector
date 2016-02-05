@@ -3348,6 +3348,55 @@ function cell_decorator_appinfo_value(e) {
   $(e).html(_e)
 }
 
+function cell_decorator_disks_charts(e) {
+  var v = $.data(e, "v")
+  var data = $.parseJSON(v)
+  $(e).empty()
+  if (data.chart_svc.data && data.chart_svc.data.length > 1) {
+    var div = $("<div style='float:left;width:500px'></div>")
+    var plot_div = $("<div id='chart_svc'></div>")
+    var title = $("<h3></h3>")
+    title.text(i18n.t("decorators.charts.services"))
+    plot_div.text(JSON.stringify(data.chart_svc))
+    div.append(title)
+    div.append(plot_div)
+    $(e).append(div)
+  }
+  if (data.chart_ap.data && data.chart_ap.data.length > 1) {
+    var div = $("<div style='float:left;width:500px'></div>")
+    var plot_div = $("<div id='chart_ap'></div>")
+    var title = $("<h3></h3>")
+    title.text(i18n.t("decorators.charts.apps"))
+    plot_div.text(JSON.stringify(data.chart_ap))
+    div.append(title)
+    div.append(plot_div)
+    $(e).append(div)
+  }
+  if (data.chart_dg.data && data.chart_dg.data.length > 1) {
+    var div = $("<div style='float:left;width:500px'></div>")
+    var plot_div = $("<div id='chart_dg'></div>")
+    var title = $("<h3></h3>")
+    title.text(i18n.t("decorators.charts.diskgroups"))
+    plot_div.text(JSON.stringify(data.chart_dg))
+    div.append(title)
+    div.append(plot_div)
+    $(e).append(div)
+  }
+  if (data.chart_ar.data && data.chart_ar.data.length > 1) {
+    var div = $("<div style='float:left;width:500px'></div>")
+    var plot_div = $("<div id='chart_ar'></div>")
+    var title = $("<h3></h3>")
+    title.text(i18n.t("decorators.charts.arrays"))
+    plot_div.text(JSON.stringify(data.chart_ar))
+    div.append(title)
+    div.append(plot_div)
+    $(e).append(div)
+  }
+  $(e).append("<div class='spacer'></div>")
+  $(e).append("<div id='chart_info'>-</div>")
+  plot_diskdonuts()
+}
+
 function cell_decorator_users_role(e) {
   var s = $.data(e, "v")
   $(e).empty()
@@ -3522,6 +3571,7 @@ cell_decorators = {
  "tpl_command": cell_decorator_tpl_command,
  "prov_template": cell_decorator_prov_template,
  "fset_name": cell_decorator_fset_name,
+ "disks_charts": cell_decorator_disks_charts,
  "modset_name": cell_decorator_modset_name,
  "ruleset_name": cell_decorator_ruleset_name,
  "rule_value": cell_decorator_rule_value
