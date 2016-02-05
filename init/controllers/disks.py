@@ -60,14 +60,6 @@ class col_chart(HtmlTableColumn):
              )]
        return DIV(l)
 
-class col_size_gb(HtmlTableColumn):
-    def html(self, o):
-       d = self.get(o)
-       if d is None:
-           return ''
-       unit = 'GB'
-       return DIV("%d %s"%(d/1024, unit))
-
 #
 # quotas
 #
