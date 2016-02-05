@@ -308,7 +308,8 @@ class table_disks(HtmlTable):
 
 @auth.requires_login()
 def ajax_disks_col_values():
-    t = table_disks('disks', 'ajax_disks')
+    table_id = request.vars.table_id
+    t = table_disks(table_id, 'ajax_disks')
     col = request.args[0]
     o = db[t.colprops[col].table][col]
     q = db.b_disk_app.id>0
@@ -324,7 +325,8 @@ def ajax_disks_col_values():
 
 @auth.requires_login()
 def ajax_disks():
-    t = table_disks('disks', 'ajax_disks')
+    table_id = request.vars.table_id
+    t = table_disks(table_id, 'ajax_disks')
 
     o = db.b_disk_app.disk_id | db.b_disk_app.disk_svcname | db.b_disk_app.disk_nodename
     q = db.b_disk_app.id>0
@@ -359,34 +361,10 @@ def ajax_disks():
 
 @auth.requires_login()
 def disks():
-    t = table_disks('disks', 'ajax_disks')
-    u = table_disk_charts('charts', 'ajax_disk_charts')
-    d = DIV(
-          DIV(
-            T("Statistics"),
-             _style="text-align:left;font-size:120%;background-color:#e0e1cd",
-             _class="icon down16 clickable",
-             _onclick="""
-               if (!$("#charts").is(":visible")) {
-                 $(this).addClass("down16");
-                 $(this).removeClass("right16");
-                 $("#charts").show();
-               } else {
-                 $(this).addClass("right16");
-                 $(this).removeClass("down16");
-                 $("#charts").hide();
-               }"""
-          ),
-          DIV(
-            u.html(),
-            _id="charts",
-          ),
-          DIV(
-            t.html(),
-            _id='disks',
-          ),
+    t = SCRIPT(
+          """view_disks("layout", %s)""" % request_vars_to_table_options(),
         )
-    return dict(table=d)
+    return dict(table=t)
 
 def disks_load():
     return disks()["table"]
@@ -430,7 +408,8 @@ class table_disk_charts(HtmlTable):
 
 @auth.requires_login()
 def ajax_disk_charts():
-    nt = table_disk_charts('charts', 'ajax_disk_charts')
+    table_id = request.vars.table_id
+    nt = table_disk_charts(table_id, 'ajax_disk_charts')
     t = table_disks('disks', 'ajax_disks')
     volatile_filters = request.vars.volatile_filters
     request.vars.volatile_filters = None

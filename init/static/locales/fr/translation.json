@@ -1471,6 +1471,9 @@
     "saves": {
       "statistics": "Statistiques"
     },
+    "disks": {
+      "statistics": "Statistiques"
+    },
     "nodes": {
       "user_mapping": "Cartographie des utilisateurs",
       "group_mapping": "Cartographie des groupes"
