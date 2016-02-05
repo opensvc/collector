@@ -1361,7 +1361,15 @@ function form(divid, options) {
 			var key = s.slice(0, idx).replace(/\s+/g, "")
 			var val = s.slice(idx+1, s.length).replace(/^\s+/, "")
 			val = subst_refs(input, val)
-			d[key] = val
+			if (key in d) {
+				// support multiple occurence of the same key
+				if (typeof(d[key]) !== "Array") {
+					d[key] = [d[key]]
+				}
+				d[key].push(val)
+			} else {
+				d[key] = val
+			}
 		}
 		return d
 	}
