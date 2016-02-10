@@ -2,327 +2,321 @@
 // MD 08062015
 
 function is_special_key(e) {
-  var no_refresh_keys = [
-    9,  // tab
-    16, // shift
-    17, // ctrl
-    18, // alt
-    20, // caps lock
-    27, // esc
-    33, // page up
-    34, // page down
-    35, // end
-    36, // home
-    37, // left
-    38, // up
-    39, // right
-    40, // down
-    45 // insert
-  ]
-  if (e && e.which) {
-    e = e
-    characterCode = e.which
-  } else if (e && e.keyCode) {
-    characterCode = e.keyCode
-  } else {
-    return false
-  }
-  if (no_refresh_keys.indexOf(characterCode) >= 0) {
-    return true
-  }
-  return false
+	var no_refresh_keys = [
+		9,  // tab
+		16, // shift
+		17, // ctrl
+		18, // alt
+		20, // caps lock
+		27, // esc
+		33, // page up
+		34, // page down
+		35, // end
+		36, // home
+		37, // left
+		38, // up
+		39, // right
+		40, // down
+		45 // insert
+	]
+	if (e && e.which) {
+		e = e
+		characterCode = e.which
+	} else if (e && e.keyCode) {
+		characterCode = e.keyCode
+	} else {
+		return false
+	}
+	if (no_refresh_keys.indexOf(characterCode) >= 0) {
+		return true
+	}
+	return false
 }
 
 function is_enter(e) {
-  var characterCode = -1;
-  if (e && e.which) {
-    e = e
-    characterCode = e.which
-  } else if (e && e.keyCode) {
-    characterCode = e.keyCode
-  }
-  if (characterCode == 13) {
-    return true
-  }
-  return false
+	var characterCode = -1;
+	if (e && e.which) {
+		e = e
+		characterCode = e.which
+	} else if (e && e.keyCode) {
+		characterCode = e.keyCode
+	}
+	if (characterCode == 13) {
+		return true
+	}
+	return false
 }
 
 function is_blank(str) {
-    return (!str || /^\s*$/.test(str));
+	return (!str || /^\s*$/.test(str));
 }
 
 function is_empty_or_null(str) {
-  if (str=='' || str=="null" || str==null)
-    return false;
-  else
-    return true;
+	if (str=='' || str=="null" || str==null) {
+		return false
+	} else {
+		return true
+	}
 }
 
-function toggle(divid, head)
-{
-  if (head) {
-    e = $("#"+head).find("#"+divid);
-  } else {
-    e = $('#'+divid);
-  }
-  e.slideToggle();
+function toggle(divid, head) {
+	if (head) {
+		e = $("#"+head).find("#"+divid)
+	} else {
+		e = $('#'+divid)
+	}
+	e.slideToggle()
 }
 
-function mul_toggle(divid,divid2, head)
-{
-  if (head) {
-    e1 = $("#"+head).find("#"+divid);
-    e2 = $("#"+head).find("#"+divid2);
-  } else {
-    e1 = $('#'+divid);
-    e2 = $('#'+divid2);
-  }
-  e1.slideToggle(200, function() {
-    e2.slideToggle(200);
-  });
+function mul_toggle(divid,divid2, head) {
+	if (head) {
+		e1 = $("#"+head).find("#"+divid)
+		e2 = $("#"+head).find("#"+divid2)
+	} else {
+		e1 = $('#'+divid)
+		e2 = $('#'+divid2)
+	}
+	e1.slideToggle(200, function() {
+		e2.slideToggle(200)
+	})
 }
 
 function float2int (value) {
-    return value | 0;
+	return value | 0
 }
 
 function spinner_del(e, text)
 {
-    e.children(".spinner").remove()
-    e.children(".spinner_text").remove()
+	e.children(".spinner").remove()
+	e.children(".spinner_text").remove()
 }
 
 function spinner_add(e, text)
 {
-    if (e.children(".spinner").length > 0) {
-        return
-    }
-    if (!text) {
-        text = ""
-    }
-    var s = $("<span class='icon spinner fa-spin'><span>")
-    e.append(s)
-    var t = $("<span style='margin-left:1em' class='spinner_text'><span>")
-    t.text(text)
-    e.append(t)
-    if (!e.is(":visible")) {
-        e.slideToggle()
-    }
+	if (e.children(".spinner").length > 0) {
+		return
+	}
+	if (!text) {
+		text = ""
+	}
+	var s = $("<span class='icon spinner fa-spin'><span>")
+	e.append(s)
+	var t = $("<span style='margin-left:1em' class='spinner_text'><span>")
+	t.text(text)
+	e.append(t)
+	if (!e.is(":visible")) {
+		e.slideToggle()
+	}
 }
 
 function print_date(d) {
-  var day = d.getDate()
-  var month = d.getMonth()+1
-  var year = d.getFullYear()
-  var hours = d.getHours()
-  var minutes = d.getMinutes()
-  if (month<10) { month = "0"+month }
-  if (day<10) { day = "0"+day }
-  if (hours<10) { hours = "0"+hours }
-  if (minutes<10) { minutes = "0"+minutes }
-  var ds = year+"-"+month+"-"+day+" "+hours+":"+minutes
-  return ds
+	var day = d.getDate()
+	var month = d.getMonth()+1
+	var year = d.getFullYear()
+	var hours = d.getHours()
+	var minutes = d.getMinutes()
+	if (month<10) { month = "0"+month }
+	if (day<10) { day = "0"+day }
+	if (hours<10) { hours = "0"+hours }
+	if (minutes<10) { minutes = "0"+minutes }
+	var ds = year+"-"+month+"-"+day+" "+hours+":"+minutes
+	return ds
 }
 
 String.prototype.beginsWith = function (string) {
-    return(this.indexOf(string) === 0);
-};
-
-function str_from_datetime(date)
-{
-  var d = (date+'').split(' ');
-  return [d[3], d[1], d[2], d[4]].join(' ');
+	return(this.indexOf(string) === 0);
 }
 
-function js_utc_date_from_str(str_date)
-{
-  return new Date(str_date.replace(" ","T")+"Z");
+function str_from_datetime(date) {
+	var d = (date+'').split(' ');
+	return [d[3], d[1], d[2], d[4]].join(' ');
 }
 
-function diff_date(d1,d2)
-{
-  var date1 = new Date(d1);
-  var date2 = new Date(d2);
-  var timeDiff = Math.abs(date2.getTime() - date1.getTime());
-  var diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24)); 
-  return diffDays;
+function js_utc_date_from_str(str_date) {
+	return new Date(str_date.replace(" ","T")+"Z");
 }
 
-function link(divid, options)
-{
-    var link_id = options.link_id;
-    $("#"+divid).load("/init/" + link_id, options, function() {
-    });   
+function diff_date(d1,d2) {
+	var date1 = new Date(d1)
+	var date2 = new Date(d2)
+	var timeDiff = Math.abs(date2.getTime() - date1.getTime())
+	var diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24))
+	return diffDays
 }
 
-function osvc_create_link(fn, parameters, target)
-{
-  if (!target) {
-    target = $(".flash")
-  }
-  if (!parameters) {
-    parameters = {}
-  }
+function link(divid, options) {
+	var link_id = options.link_id
+	$("#"+divid).load("/init/" + link_id, options, function() {})
+}
 
-  // Security for old link
-  fn = fn.replace("?","");
+function osvc_create_link(fn, parameters, target) {
+	if (!target) {
+		target = $(".flash")
+	}
+	if (!parameters) {
+		parameters = {}
+	}
 
-  var link_id =  services_osvcpostrest("R_LINKS", "", "", {"fn": fn, "param": JSON.stringify(parameters)}, function(jd) {
-      if (jd.error) {
-        target.html(services_error_fmt(jd))
-        return
-      }
-      var link_id = jd.link_id;
-      var url = services_get_url();
+	// Security for old link
+	fn = fn.replace("?","")
 
-      url += "/init/link/link?link_id="+link_id;
-      if (fn.beginsWith("https://")) // if is not an ajax link, but a function js call
-        url +="&js=false";
-      else
-        url += "&js=true";
+	var link_id =  services_osvcpostrest("R_LINKS", "", "", {"fn": fn, "param": JSON.stringify(parameters)}, function(jd) {
+		if (jd.error) {
+			target.html(services_error_fmt(jd))
+			return
+		}
+		var link_id = jd.link_id
+		var url = services_get_url()
 
-      // header
-      var e = $("<div></div>")
+		url += "/init/link/link?link_id="+link_id
+		if (fn.beginsWith("https://")) {
+			// if is not an ajax link, but a function js call
+			url +="&js=false"
+		} else {
+			url += "&js=true"
+		}
 
-      var title = $("<div class='icon attach16 fa-2x' data-i18n='api.link'></div>")
-      e.append(title)
+		// header
+		var e = $("<div></div>")
 
-      var subtitle = $("<div style='color:lightgray' data-i18n='api.link_text'></div>")
-      e.append(subtitle)
+		var title = $("<div class='icon attach16 fa-2x' data-i18n='api.link'></div>")
+		e.append(title)
 
-      // link display area
-      p = $("<textarea style='width:100%' class='clickable'></textarea>")
-      p.val(url)
-      p.css({
-        "width": "100%",
-        "background": "rgba(0,0,0,0)",
-        "border": "rgba(0,0,0,0)",
-        "padding": "2em 0 0 0",
-      })
-      p.select()
-      p.bind("click", function() {
-        send_link($(this).val())
-      })
+		var subtitle = $("<div style='color:lightgray' data-i18n='api.link_text'></div>")
+		e.append(subtitle)
 
-      e.i18n()
-      e.append(p)
+		// link display area
+		p = $("<textarea style='width:100%' class='clickable'></textarea>")
+		p.val(url)
+		p.css({
+			"width": "100%",
+			"background": "rgba(0,0,0,0)",
+			"border": "rgba(0,0,0,0)",
+			"padding": "2em 0 0 0"
+		})
+		p.select()
+		p.bind("click", function() {
+			send_link($(this).val())
+		})
 
-      target.empty().append(e);
-      p.autogrow();
+		e.i18n()
+		e.append(p)
 
-      osvc_show_link(url, target)
-    },
-    function(xhr, stat, error) {
-      $(".flash").show("fold").html(services_ajax_error_fmt(xhr, stat, error));
-    })
+		target.empty().append(e)
+		p.autogrow()
+
+		osvc_show_link(url, target)
+	},
+	function(xhr, stat, error) {
+		$(".flash").show("fold").html(services_ajax_error_fmt(xhr, stat, error))
+	})
 }
 
 function osvc_show_link(url, target) {
-  if (!target) {
-    target = $(".flash")
-  }
-  // header
-  var e = $("<div></div>")
+	if (!target) {
+		target = $(".flash")
+	}
+	// header
+	var e = $("<div></div>")
 
-  var title = $("<div class='icon attach16 fa-2x' data-i18n='api.link'></div>")
-  e.append(title)
+	var title = $("<div class='icon attach16 fa-2x' data-i18n='api.link'></div>")
+	e.append(title)
 
-  var subtitle = $("<div style='color:lightgray' data-i18n='api.link_text'></div>")
-  e.append(subtitle)
+	var subtitle = $("<div style='color:lightgray' data-i18n='api.link_text'></div>")
+	e.append(subtitle)
 
-  // link display area
-  p = $("<textarea style='width:100%' class='clickable'></textarea>")
-  p.val(url)
-  p.css({
-    "width": "100%",
-    "background": "rgba(0,0,0,0)",
-    "border": "rgba(0,0,0,0)",
-    "padding": "2em 0 0 0",
-  })
-  p.bind("click", function() {
-    send_link($(this).val())
-  })
+	// link display area
+	p = $("<textarea style='width:100%' class='clickable'></textarea>")
+	p.val(url)
+	p.css({
+		"width": "100%",
+		"background": "rgba(0,0,0,0)",
+		"border": "rgba(0,0,0,0)",
+		"padding": "2em 0 0 0",
+	})
+	p.bind("click", function() {
+		send_link($(this).val())
+	})
 
-  e.i18n()
-  e.append(p)
+	e.i18n()
+	e.append(p)
 
-  target.empty().append(e).show("fold")
+	target.empty().append(e).show("fold")
 
-      
-  p.autogrow();
-  p.select()
+	p.autogrow();
+	p.select()
 }
 
-function osvc_get_link(divid,link_id)
-{
-  services_osvcgetrest("R_LINK",[link_id] , "", function(jd) {
-      if (jd.data.length === 0) { // Link not found
-        var val = "<div style='text-align:center'>" + i18n.t("link.notfound")+"</div>"
-        $('#'+divid).html(val);
-        return;
-      }
-      var result = jd.data;
+function osvc_get_link(divid,link_id) {
+	services_osvcgetrest("R_LINK",[link_id] , "", function(jd) {
+		if (jd.data.length === 0) {
+			// Link not found
+			var val = "<div style='text-align:center'>" + i18n.t("link.notfound")+"</div>"
+			$('#'+divid).html(val)
+			return
+		}
+		var result = jd.data
+		var param = JSON.parse(result[0].link_parameters)
+		var link = result[0].link_function
 
-      var param = JSON.parse(result[0].link_parameters);
-      var link = result[0].link_function;
-
-      if (link.beginsWith("https://")) {
-        // ajax link
-        app_load_href(link+"?"+param)
-      } else {
-        // js function link
-        var fn = window[link];
-        fn(divid, param);
-      }
-  });
+		if (link.beginsWith("https://")) {
+			// ajax link
+			app_load_href(link+"?"+param)
+		} else {
+			// js function link
+			var fn = window[link]
+			fn(divid, param)
+		}
+	})
 }
 
 /*
  * pin a DOM element to top on scroll past
  */
 function sticky_relocate(e, anchor, onstick) {
-    if (!e || !anchor) {
-      return
-    }
-    var window_top = $(window).scrollTop();
-    var div_top = anchor.offset().top;
-    if (window_top > div_top) {
-        // add the top-fixed clone element if not already present
-        if (!e.next().is(".stick")) {
-          var clone = e.clone(false, false)
-          if (onstick) {
-            onstick(clone, e)
-          }
-          clone.addClass('stick')
+	if (!e || !anchor) {
+		return
+	}
+	var window_top = $(window).scrollTop();
+	var div_top = anchor.offset().top;
+	if (window_top > div_top) {
+		// add the top-fixed clone element if not already present
+		if (!e.next().is(".stick")) {
+			var clone = e.clone(true, true)
+			if (onstick) {
+				onstick(clone, e)
+			}
+			clone.addClass('stick')
 
-          // adjust top-fixed clone element width
-          clone.css({"width": e.width()})
-  
-          // adjust top-fixed clone element children width
-          var e_children = e.children()
-          var i = 0
-          clone.children().each(function(){
-            $(this).width(e_children[i].offsetWidth)
-            i++
-          })
-          clone.insertAfter(e)
-        } else {
-          var clone = e.next()
-        }
+			// adjust top-fixed clone element width
+			clone.css({"width": e[0].getBoundingClientRect().width})
 
-        // adjust left position
-        var left = e.scrollParent().scrollLeft()
+			// adjust top-fixed clone element children width
+			var e_children = e.children()
+			var i = 0
+			clone.children().each(function(){
+				//$(this).width(e_children[i].offsetWidth)
+				$(this).css({"box-sizing": "border-box", "width": e_children[i].getBoundingClientRect().width})
+				i++
+			})
+			clone.insertAfter(e)
+		} else {
+			var clone = e.next()
+		}
 
-        e.next(".stick").css({"left": -left})
-    } else {
-        e.next('.stick').remove()
-    }
+		// adjust left position
+		var left = e.scrollParent().scrollLeft()
+
+		e.next(".stick").css({"left": -left})
+	} else {
+		e.next('.stick').remove()
+	}
 }
 
 function is_numeric(n) {
-  return !isNaN(parseFloat(n)) && isFinite(n);
+	return !isNaN(parseFloat(n)) && isFinite(n);
 }
 
 function IE(v) {
-  return RegExp('msie' + (!isNaN(v)?('\\s'+v):''), 'i').test(navigator.userAgent);
+	return RegExp('msie' + (!isNaN(v)?('\\s'+v):''), 'i').test(navigator.userAgent);
 }

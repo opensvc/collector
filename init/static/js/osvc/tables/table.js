@@ -575,7 +575,7 @@ function table_add_column_headers(t) {
   }
   var tr = $("<tr class='theader'></tr>")
   if (t.checkboxes) {
-    var th = $("<th><div class='fa fa-bars'></div></th>")
+    var th = $("<th><div class='fa fa-bars clickable'></div></th>")
     th.click(function(e){
       table_action_menu(t, e)
     })
@@ -2503,18 +2503,6 @@ function table_hide_cells(t) {
   }
 }
 
-function table_relocate_extra_rows(t) {
-  $("td[id^="+t.id+"_x_]").each(function(){
-    var cksum = $(this).attr("id").split("_x_")[1]
-    var d = $(".tl[spansum="+cksum+"]")
-    if (d.length == 0) {
-      $(this).parent().remove()
-    } else {
-      $(this).parent().insertAfter(d)
-    }
-  })
-}
-
 function table_unset_refresh_spin(t) {
   if (!t.e_tool_refresh_spin) {
     return
@@ -2527,23 +2515,6 @@ function table_set_refresh_spin(t) {
     return
   }
   t.e_tool_refresh_spin.addClass(t.spin_class)
-}
-
-function table_stick(t) {
-  // bypass conditions
-  if (t.div.parents(".tableo").length > 0) {
-    return
-  }
-
-  var anchor = $("<span></span>")
-  anchor.uniqueId()
-  anchor.insertBefore(t.e_header)
-  t.e_sticky_anchor = anchor
-  sticky_relocate(t.e_header, t.e_sticky_anchor)
-  $(window).scroll(function(){
-    sticky_relocate(t.e_header, t.e_sticky_anchor)
-  })
-  sticky_relocate(t.e_header, t.e_sticky_anchor)
 }
 
 function table_set_column_filters(t) {
@@ -2781,9 +2752,6 @@ function table_init(opts) {
     'add_filtered_to_visible_columns': function(){
       return table_add_filtered_to_visible_columns(this)
     },
-    'relocate_extra_rows': function(){
-      return table_relocate_extra_rows(this)
-    },
     'action_menu_param_moduleset': function(){
       return table_action_menu_param_moduleset(this)
     },
@@ -2795,9 +2763,6 @@ function table_init(opts) {
     },
     'refresh': function(){
       return table_refresh(this)
-    },
-    'stick': function(){
-      return table_stick(this)
     },
     'set_column_filters': function(){
       return table_set_column_filters(this)
@@ -2848,6 +2813,36 @@ function table_init(opts) {
       return table_add_table(this)
     }
   }
+
+	t.stick = function() {
+		// bypass conditions
+		if (t.div.parents(".tableo").length > 0) {
+			return
+		}
+
+		var anchor = $("<span></span>")
+		anchor.uniqueId()
+		anchor.insertBefore(t.e_header)
+		t.e_sticky_anchor = anchor
+		sticky_relocate(t.e_header, t.e_sticky_anchor)
+		$(window).scroll(function(){
+			sticky_relocate(t.e_header, t.e_sticky_anchor)
+		})
+		sticky_relocate(t.e_header, t.e_sticky_anchor)
+	}
+
+	t.relocate_extra_rows = function() {
+		$("td[id^="+t.id+"_x_]").each(function(){
+			var cksum = $(this).attr("id").split("_x_")[1]
+			var d = $(".tl[spansum="+cksum+"]")
+			if (d.length == 0) {
+				$(this).parent().remove()
+			} else {
+				$(this).parent().insertAfter(d)
+			}
+		})
+	}
+
 	t.reset_column_filters = function(c, val) {
 		if (!t.e_header_filters) {
 			return
