@@ -447,15 +447,17 @@ def ajax_disk_charts():
     max_level = db.executesql(sql)[0][1]
 
     if max_level is None:
-        if len(request.args) == 1 and request.args[0] == 'line':
-            nt.object_list = [{'chart_svc': json.dumps([]),
-                               'chart_ap': json.dumps([]),
-                               'chart_dg': json.dumps([]),
-                               'chart_ar': json.dumps([])}]
+        nt.object_list = [{
+          'chart': json.dumps({
+            'chart_svc': h_data_svc,
+            'chart_ap': h_data_app,
+            'chart_dg': h_data_dg,
+            'chart_ar': h_data_array
+          })
+        }]
+        if len(request.args) == 1 and request.args[0] == 'data':
             return nt.table_lines_data(-1)
         return
-
-        return ''
 
     levels = range(0, max_level+1)
 
