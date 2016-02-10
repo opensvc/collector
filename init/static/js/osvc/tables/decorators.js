@@ -1853,6 +1853,38 @@ function cell_decorator_boolean(e) {
   $(e).html(s)
 }
 
+function cell_decorator_pct(e) {
+  var v = $.data(e, "v")
+  var dl = $("<div><div>")
+  var dr = $("<div><div>")
+  var dp = $("<div><div>")
+  var d = $("<div><div>")
+  dl.css({
+    "font-size": "0px",
+    "line-height": "0px",
+    "height": "4px",
+    "min-width": "0%",
+    "max-width": v+"%",
+    "width": v+"%",
+    "background": "#A6FF80"
+  })
+  dr.css({
+    "text-align": "left",
+    "margin": "2px auto",
+    "background": "#FF7863",
+    "overflow": "hidden"
+  })
+  d.css({
+    "margin": "auto",
+    "text-align": "center",
+    "width": "100%"
+  })
+  dp.text(v+"%")
+  dr.append(dl)
+  d.append([dr, dp])
+  $(e).html(d)
+}
+
 function cell_decorator_app(e) {
   var v = $.data(e, "v")
   $(e).html("<span class='clickable'>"+v+"</span>")
@@ -2516,6 +2548,63 @@ function cell_decorator_svcmon_links(e) {
     cell_decorator_svcmon_link_actions(e),
     cell_decorator_svcmon_link_frozen(e)
   )
+}
+
+function cell_decorator_comp_mod_log(e) {
+  var line = $(e).parent(".tl")
+  var modname = $.data(line.find("[col=mod_name]")[0], "v")
+  $(e).empty()
+  $(e).append("<div class='icon spark16'></div>")
+  div = $(":first-child", e)
+  div.addClass("a")
+  div.addClass("nowrap")
+  $(e).addClass("corner")
+  $(e).click(function(){
+    if (get_selected() != "") {return}
+    table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
+    span_id = $(e).parent(".tl").attr("spansum")
+    id = table_id + "_x_" + span_id
+    url = services_get_url() + "/init/compliance/ajax_mod_history?modname="+modname+"&rowid="+id
+    toggle_extra(url, id, e, 0)
+  })
+}
+
+function cell_decorator_comp_node_log(e) {
+  var line = $(e).parent(".tl")
+  var nodename = $.data(line.find("[col=node_name]")[0], "v")
+  $(e).empty()
+  $(e).append("<div class='icon spark16'></div>")
+  div = $(":first-child", e)
+  div.addClass("a")
+  div.addClass("nowrap")
+  $(e).addClass("corner")
+  $(e).click(function(){
+    if (get_selected() != "") {return}
+    table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
+    span_id = $(e).parent(".tl").attr("spansum")
+    id = table_id + "_x_" + span_id
+    url = services_get_url() + "/init/compliance/ajax_node_history?nodename="+nodename+"&rowid="+id
+    toggle_extra(url, id, e, 0)
+  })
+}
+
+function cell_decorator_comp_svc_log(e) {
+  var line = $(e).parent(".tl")
+  var svcname = $.data(line.find("[col=svc_name]")[0], "v")
+  $(e).empty()
+  $(e).append("<div class='icon spark16'></div>")
+  div = $(":first-child", e)
+  div.addClass("a")
+  div.addClass("nowrap")
+  $(e).addClass("corner")
+  $(e).click(function(){
+    if (get_selected() != "") {return}
+    table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
+    span_id = $(e).parent(".tl").attr("spansum")
+    id = table_id + "_x_" + span_id
+    url = services_get_url() + "/init/compliance/ajax_svc_history?svcname="+svcname+"&rowid="+id
+    toggle_extra(url, id, e, 0)
+  })
 }
 
 function cell_decorator_uid(e) {
@@ -3612,10 +3701,14 @@ cell_decorators = {
  "obs_count": cell_decorator_obs_count,
  "uid": cell_decorator_uid,
  "gid": cell_decorator_gid,
+ "pct": cell_decorator_pct,
  "tpl_command": cell_decorator_tpl_command,
  "prov_template": cell_decorator_prov_template,
  "fset_name": cell_decorator_fset_name,
  "disks_charts": cell_decorator_disks_charts,
+ "comp_mod_log": cell_decorator_comp_mod_log,
+ "comp_node_log": cell_decorator_comp_node_log,
+ "comp_svc_log": cell_decorator_comp_svc_log,
  "modset_name": cell_decorator_modset_name,
  "ruleset_name": cell_decorator_ruleset_name,
  "rule_value": cell_decorator_rule_value

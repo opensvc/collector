@@ -68,103 +68,6 @@ def plot_log(s):
                  ))
     return DIV(l)
 
-class col_comp_svc_status(HtmlTableColumn):
-    def html(self, o):
-        id = self.t.extra_line_key(o)
-        return A(
-                 IMG(
-                   _src=URL(r=request, c="static", f="images/spark16.png"),
-                 ),
-                 _onclick="toggle_extra('%(url)s', '%(id)s', this, 0);"%dict(
-                          url=URL(
-                                r=request,
-                                c='compliance',
-                                f='ajax_svc_history',
-                                vars={'svcname': self.t.colprops['svc_name'].get(o), 'rowid': id}
-                              ),
-                          id=id,
-                            ),
-               )
-
-class col_comp_node_status(HtmlTableColumn):
-    def html(self, o):
-        id = self.t.extra_line_key(o)
-        return A(
-                 IMG(
-                   _src=URL(r=request, c="static", f="images/spark16.png"),
-                 ),
-                 _onclick="toggle_extra('%(url)s', '%(id)s', this, 0);"%dict(
-                          url=URL(
-                                r=request,
-                                c='compliance',
-                                f='ajax_node_history',
-                                vars={'nodename': self.t.colprops['node_name'].get(o), 'rowid': id}
-                              ),
-                          id=id,
-                            ),
-               )
-
-class col_comp_mod_status(HtmlTableColumn):
-    def html(self, o):
-        id = self.t.extra_line_key(o)
-        return A(
-                 IMG(
-                   _src=URL(r=request, c="static", f="images/spark16.png"),
-                 ),
-                 _onclick="toggle_extra('%(url)s', '%(id)s', this, 0);"%dict(
-                          url=URL(
-                                r=request,
-                                c='compliance',
-                                f='ajax_mod_history',
-                                vars={'modname': self.t.colprops['mod_name'].get(o), 'rowid': id}
-                              ),
-                          id=id,
-                            ),
-               )
-
-
-class col_run_ruleset(HtmlTableColumn):
-    def html(self, o):
-        val = self.get(o)
-        if val is None:
-            return SPAN()
-        return val.replace(',',', ')
-
-class col_concat_list(HtmlTableColumn):
-    def html(self, o):
-        return ', '.join(self.get(o))
-
-class col_mod_percent(HtmlTableColumn):
-    def html(self, o):
-        p = self.get(o)
-        p = "%d%%"%int(p)
-        d = DIV(
-              DIV(
-                DIV(
-                  _style="""font-size: 0px;
-                            line-height: 0px;
-                            height: 4px;
-                            min-width: 0%%;
-                            max-width: %(p)s;
-                            width: %(p)s;
-                            background: #A6FF80;
-                         """%dict(p=p),
-                ),
-                _style="""text-align: left;
-                          margin: 2px auto;
-                          background: #FF7863;
-                          overflow: hidden;
-                       """,
-              ),
-              DIV(p),
-              _style="""margin: auto;
-                        text-align: center;
-                        width: 100%;
-                     """,
-            ),
-        return d
-
-
 #
 # Rules sub-view
 #
@@ -181,7 +84,7 @@ class table_comp_rulesets_services(HtmlTable):
                      img='key',
                      display=True,
                     )
-        self.colprops['ruleset_name'] = col_run_ruleset(
+        self.colprops['ruleset_name'] = HtmlTableColumn(
                      title='Ruleset',
                      field='ruleset_name',
                      img='comp16',
@@ -228,7 +131,7 @@ class table_comp_rulesets_nodes(HtmlTable):
                      img='key',
                      display=True,
                     )
-        self.colprops['ruleset_name'] = col_run_ruleset(
+        self.colprops['ruleset_name'] = HtmlTableColumn(
                      title='Ruleset',
                      field='ruleset_name',
                      img='comp16',
@@ -947,7 +850,7 @@ class table_comp_mod_status(HtmlTable):
                      img='check16',
                      _class='numeric',
                     ),
-            'pct': col_mod_percent(
+            'pct': HtmlTableColumn(
                      title='Percent',
                      field='pct',
                      table='comp_mod_status',
@@ -955,7 +858,7 @@ class table_comp_mod_status(HtmlTable):
                      img='check16',
                      _class='comp_pct',
                     ),
-            'mod_log': col_comp_mod_status(
+            'mod_log': HtmlTableColumn(
                      title='History',
                      field='mod_log',
                      display=True,
@@ -1031,7 +934,7 @@ class table_comp_svc_status(HtmlTable):
                      img='check16',
                      _class='numeric',
                     ),
-            'pct': col_mod_percent(
+            'pct': HtmlTableColumn(
                      title='Percent',
                      field='pct',
                      table='comp_svc_status',
@@ -1039,7 +942,7 @@ class table_comp_svc_status(HtmlTable):
                      img='check16',
                      _class='comp_pct',
                     ),
-            'svc_log': col_comp_svc_status(
+            'svc_log': HtmlTableColumn(
                      title='History',
                      field='svc_log',
                      display=True,
@@ -1115,7 +1018,7 @@ class table_comp_node_status(HtmlTable):
                      img='check16',
                      _class='numeric',
                     ),
-            'pct': col_mod_percent(
+            'pct': HtmlTableColumn(
                      title='Percent',
                      field='pct',
                      table='comp_node_status',
@@ -1123,7 +1026,7 @@ class table_comp_node_status(HtmlTable):
                      img='check16',
                      _class='comp_pct',
                     ),
-            'node_log': col_comp_node_status(
+            'node_log': HtmlTableColumn(
                      title='History',
                      field='node_log',
                      display=True,
@@ -1689,7 +1592,7 @@ def ajax_comp_svc_status():
 
     if len(request.args) == 1 and request.args[0] == 'csv':
         return mt.csv()
-    if len(request.args) == 1 and request.args[0] == 'line':
+    if len(request.args) == 1 and request.args[0] == 'data':
         return mt.table_lines_data(-1)
 
 @auth.requires_login()
@@ -1758,7 +1661,7 @@ def ajax_comp_node_status():
 
     if len(request.args) == 1 and request.args[0] == 'csv':
         return mt.csv()
-    if len(request.args) == 1 and request.args[0] == 'line':
+    if len(request.args) == 1 and request.args[0] == 'data':
         return mt.table_lines_data(-1)
 
 @auth.requires_login()
@@ -2024,7 +1927,7 @@ def ajax_comp_mod_status():
 
     if len(request.args) == 1 and request.args[0] == 'csv':
         return mt.csv()
-    if len(request.args) == 1 and request.args[0] == 'line':
+    if len(request.args) == 1 and request.args[0] == 'data':
         return mt.table_lines_data(-1)
 
 class table_comp_log(table_comp_status):
