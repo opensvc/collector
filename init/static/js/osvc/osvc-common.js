@@ -309,7 +309,7 @@ function sticky_relocate(e, anchor, onstick) {
 
 		e.next(".stick").css({"left": -left})
 	} else {
-		e.next('.stick').remove()
+		try {e.next('.stick').remove()} catch(err) {}
 	}
 }
 

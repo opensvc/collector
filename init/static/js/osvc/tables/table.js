@@ -14,15 +14,6 @@ function values_to_filter(input, cloud){
 	input.val(v)
 }
 
-//
-// column filter tool: invert column filter
-//
-function table_invert_column_filter(t, c){
-  var input = t.e_header_filters.find("th[col="+c+"]").find("input")
-  _invert_filter(input)
-  t.save_column_filters()
-}
-
 function _invert_filter(e){
 	var v = e.val()
 	var reg = new RegExp("[|]+", "g");
@@ -793,7 +784,9 @@ function table_refresh(t) {
              t.unset_refresh_spin()
              t.relocate_extra_rows()
              tbody.find("tr.tl").children("td.tohighlight").removeClass("tohighlight").effect("highlight", 1000)
+             t.set_scrollbars_position()
              t.scroll_enable_dom()
+             t.scroll()
 
              t.refresh_child_tables()
              t.on_change()
@@ -917,7 +910,9 @@ function table_insert(t, data) {
              })
 
              t.unset_refresh_spin()
+             t.set_scrollbars_position()
              t.scroll_enable_dom()
+             t.scroll()
 
              t.refresh_child_tables()
              t.on_change()
@@ -1268,50 +1263,6 @@ function table_bind_filter_input_events(t) {
   })
 
   t.bind_filter_reformat()
-}
-
-function table_add_overlay(t) {
-  if ($("#overlay").length > 0) {
-    t.e_overlay = $("#overlay")
-    return
-  }
-  var e = $("<div class='white_float hidden stackable empty_on_pop' id='overlay'></div>")
-  $("body").append(e)
- 
-  $(window).resize(function(){
-    resize_overlay()
-    resize_extralines()
-  })
-  e.bind("DOMSubtreeModified", resize_overlay)
-  t.e_overlay = e
-}
-
-function resize_overlay() {
-  if ($("#overlay:visible").length == 0) {
-    return
-  }
-  _resize_overlay()
-  $("#overlay").find("img").one("load", function(){
-    _resize_overlay()
-  })
-}
-
-function _resize_overlay() {
-  e = $("#overlay")
-  e.unbind("DOMSubtreeModified", resize_overlay)
-  e.css({
-   'overflow': 'auto',
-   'position': 'fixed',
-   'height': $(window).height()-60,
-   'width': $(window).width()-60,
-   'top': ($(window).height()-e.height())/2,
-   'left': ($(window).width()-e.width())/2
-  })
-  e.bind("DOMSubtreeModified", resize_overlay)
-}
-
-function resize_extralines() {
-  $(".extraline>td>table").each(function(){$(this).width($(window).width()-$(this).children().position().left-20)})
 }
 
 function get_pos(e) {
@@ -1685,14 +1636,6 @@ function table_link_href(t) {
     args += '&'+$(this).attr('id')+"="+encodeURIComponent($(this).val())
   })
   osvc_create_link(url, args);
-}
-
-function table_add_scrollers(t) {
-  var s = ""
-  s = "<div id='table_"+t.id+"_left' class='scroll_left'>&nbsp</div>"
-  $("#"+t.id).prepend(s)
-  s = "<div id='table_"+t.id+"_right' class='scroll_right'>&nbsp</div>"
-  $("#"+t.id).append(s)
 }
 
 function table_add_filterbox(t) {
@@ -2407,59 +2350,6 @@ function table_add_pager(t) {
   t.e_pager = e
 }
 
-//
-// table horizontal scroll
-//
-function table_scroll(t){
-  sticky_relocate(t.e_header, t.e_sticky_anchor)
-  to=$("#table_"+t.id)
-  to_p=to.parent()
-  ww=to_p.width()
-  tw=to.width()
-  if (ww>=tw) {
-    $("#table_"+t.id+"_left").hide()
-    $("#table_"+t.id+"_right").hide()
-    return
-  }
-  if (to_p.scrollLeft()>0) {
-    $("#table_"+t.id+"_left").show()
-  } else {
-    $("#table_"+t.id+"_left").hide()
-  }
-  if (to_p.scrollLeft()+ww+1<tw) {
-    $("#table_"+t.id+"_right").show()
-  } else {
-    $("#table_"+t.id+"_right").hide()
-  }
-}
-
-function table_scroll_enable(t) {
-  $("#table_"+t.id+"_left").click(function(){
-    $("#table_"+t.id).parent().animate({'scrollLeft': '-='+$(window).width()}, 500)
-  })
-  $("#table_"+t.id+"_right").click(function(){
-    $("#table_"+t.id).parent().animate({'scrollLeft': '+='+$(window).width()}, 500)
-  })
-  $("#table_"+t.id).parent().bind("scroll", function(){
-    table_scroll(t)
-  })
-  $(window).resize(function(){
-    table_scroll(t)
-  })
-  $(".down16,.right16").click(function() {
-    table_scroll(t)
-  })
-  t.scroll_enable_dom()
-}
-
-function table_scroll_enable_dom(t) {
-  $(window).bind("DOMNodeInserted", table_scroll(t))
-  table_scroll(t)
-}
-function table_scroll_disable_dom(t) {
-  $(window).unbind("DOMNodeInserted", table_scroll(t))
-}
-
 function table_bind_filter_reformat(t) {
   $("#table_"+t.id).find("input").each(function(){
    attr = $(this).attr('id')
@@ -2662,9 +2552,6 @@ function table_init(opts) {
     'hide_cells': function(){
       return table_hide_cells(this)
     },
-    'scroll': function(){
-      return table_scroll(opts['id'])
-    },
     'bind_filter_reformat': function(){
       return table_bind_filter_reformat(this)
     },
@@ -2695,15 +2582,6 @@ function table_init(opts) {
     'restripe_lines': function(){
       return table_restripe_lines(opts['id'])
     },
-    'scroll_enable': function(){
-      return table_scroll_enable(this)
-    },
-    'scroll_enable_dom': function(){
-      return table_scroll_enable_dom(this)
-    },
-    'scroll_disable_dom': function(){
-      return table_scroll_disable_dom(this)
-    },
     'set_refresh_spin': function(){
       return table_set_refresh_spin(this)
     },
@@ -2712,9 +2590,6 @@ function table_init(opts) {
     },
     'link': function(){
       return table_link(this)
-    },
-    'add_scrollers': function(){
-      return table_add_scrollers(this)
     },
     'add_filterbox': function(){
       return table_add_filterbox(this)
@@ -2794,14 +2669,8 @@ function table_init(opts) {
     'add_commonality': function(){
       return table_add_commonality(this)
     },
-    'invert_column_filter': function(c){
-      return table_invert_column_filter(this, c)
-    },
     'save_column_filters': function(){
       return table_save_column_filters(this)
-    },
-    'add_overlay': function(){
-      return table_add_overlay(this)
     },
     'flash': function(){
       return table_flash(this)
@@ -2813,6 +2682,124 @@ function table_init(opts) {
       return table_add_table(this)
     }
   }
+	//
+	// table horizontal scroll
+	//
+	t.scroll_enable = function() {
+		t.div.siblings(".scroll_left").click(function(){
+			t.e_table.parent().animate({'scrollLeft': '-='+$(window).width()}, 500, t.scroll)
+		})
+		t.div.siblings(".scroll_right").click(function(){
+			t.e_table.parent().animate({'scrollLeft': '+='+$(window).width()}, 500, t.scroll)
+		})
+		t.e_table.parent().bind("scroll", function(){
+			t.scroll()
+		})
+		$(window).resize(function(){
+			t.scroll()
+		})
+		$(".down16,.right16").click(function() {
+			t.scroll()
+		})
+		t.scroll_enable_dom()
+	}
+
+	t.scroll = function() {
+		t.scroll_disable_dom()
+		sticky_relocate(t.e_header, t.e_sticky_anchor)
+		t.set_scrollbars_position()
+		to=$("#table_"+t.id)
+		to_p=to.parent()
+		ww=to_p.width()
+		tw=to.width()
+		if (ww>=tw) {
+			$("#table_"+t.id+"_left").hide()
+			$("#table_"+t.id+"_right").hide()
+			return
+		}
+		if (to_p.scrollLeft()>0) {
+			$("#table_"+t.id+"_left").show()
+		} else {
+			$("#table_"+t.id+"_left").hide()
+		}
+		if (to_p.scrollLeft()+ww+1<tw) {
+			$("#table_"+t.id+"_right").show()
+		} else {
+			$("#table_"+t.id+"_right").hide()
+		}
+		t.scroll_enable_dom()
+	}
+
+	t.scroll_enable_dom = function() {
+		t.div.parent().bind("DOMNodeInserted DOMNodeRemoved", t.scroll)
+	}
+
+	t.scroll_disable_dom = function() {
+		t.div.parent().unbind("DOMNodeInserted DOMNodeRemoved", t.scroll)
+	}
+
+	t.set_scrollbars_position = function() {
+		t.div.parent().find(".scroll_left,.scroll_right").css({
+			"height": t.div.height(),
+			"top": t.div.offset().top
+		})
+	}
+
+	t.add_overlay = function() {
+		if ($("#overlay").length > 0) {
+			t.e_overlay = $("#overlay")
+			return
+		}
+		var e = $("<div class='white_float hidden stackable empty_on_pop' id='overlay'></div>")
+		$("body").append(e)
+
+		$(window).resize(function(){
+			t.resize_overlay()
+		})
+		e.bind("DOMSubtreeModified", t.resize_overlay)
+		t.e_overlay = e
+	}
+
+	t.resize_overlay = function() {
+		if ($("#overlay:visible").length == 0) {
+			return
+		}
+		t._resize_overlay()
+		$("#overlay").find("img").one("load", function(){
+			t._resize_overlay()
+		})
+	}
+
+	t._resize_overlay = function() {
+		e = $("#overlay")
+		e.unbind("DOMSubtreeModified", t.resize_overlay)
+		e.css({
+			'overflow': 'auto',
+			'position': 'fixed',
+			'height': $(window).height()-60,
+			'width': $(window).width()-60,
+			'top': ($(window).height()-e.height())/2,
+			'left': ($(window).width()-e.width())/2
+		})
+		e.bind("DOMSubtreeModified", t.resize_overlay)
+	}
+
+	t.add_scrollers = function() {
+		var s = ""
+		s = "<div id='table_"+t.id+"_left' class='scroll_left'>&nbsp</div>"
+		$("#"+t.id).prepend(s)
+		s = "<div id='table_"+t.id+"_right' class='scroll_right'>&nbsp</div>"
+		$("#"+t.id).append(s)
+	}
+
+	//
+	// column filter tool: invert column filter
+	//
+	t.invert_column_filter = function(c) {
+		var input = t.e_header_filters.find("th[col="+c+"]").find("input")
+		_invert_filter(input)
+		t.save_column_filters()
+	}
 
 	t.stick = function() {
 		// bypass conditions
