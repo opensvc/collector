@@ -52,7 +52,6 @@ menu_entries = [
   'adm-log',
   'adm-obs',
   'adm-app',
-  'adm-drp',
   'adm-batchs',
   'adm-bill',
   'adm-prov',

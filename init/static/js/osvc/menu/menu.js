@@ -272,12 +272,6 @@ var menu_data = {
 		  "fn" : "table_apps"
 		},
 		{
-		  "title" : "drpplan",
-		  "class" : "drp16",
-		  "id" : "adm-drp",
-		  "link" : "/init/drplan/drplan"
-		},
-		{
 		  "title" : "batchs",
 		  "class" : "actions",
 		  "id" : "adm-batchs",
