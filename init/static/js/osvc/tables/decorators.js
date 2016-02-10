@@ -2470,6 +2470,38 @@ function cell_decorator_svcname(e) {
   })
 }
 
+function cell_decorator_log_event(e) {
+  var line = $(e).parent(".tl")
+  var d = $.data(line.children("[col=log_dict]")[0], "v")
+  var fmt = $.data(line.children("[col=log_fmt]")[0], "v")
+  try {
+    d = $.parseJSON(d)
+  } catch(err) {
+    $(e).html(i18n.t("decorators.corrupted_log"))
+    return
+  }
+  for (key in d) {
+    var re = RegExp("%\\("+key+"\\)[sd]", "g")
+    fmt = fmt.replace(re, d[key])
+  }
+  $(e).html(fmt)
+}
+
+function cell_decorator_log_level(e) {
+  var v = $.data(e, "v")
+  t = {
+    "warning": "boxed_small bgorange",
+    "info": "boxed_small bggreen",
+    "error": "boxed_small bgred",
+  }
+  if (v in t) {
+    var cl = t[v]
+  } else {
+    var cl = "boxed_small bgblack"
+  }
+  $(e).html("<div class='"+cl+"'>"+v+"</div>")
+}
+
 function cell_decorator_status(e) {
   var v = $.data(e, "v")
   if ((v=="") || (v=="empty")) {
@@ -3732,6 +3764,8 @@ cell_decorators = {
  "comp_node_log": cell_decorator_comp_node_log,
  "comp_svc_log": cell_decorator_comp_svc_log,
  "modset_name": cell_decorator_modset_name,
+ "log_level": cell_decorator_log_level,
+ "log_event": cell_decorator_log_event,
  "ruleset_name": cell_decorator_ruleset_name,
  "rule_value": cell_decorator_rule_value
 }

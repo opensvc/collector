@@ -3,6 +3,7 @@
     "search": "Recherche globale"
   },
   "decorators": {
+    "corrupted_log": "entrée du journal corrompue",
     "cancelled": "annulé",
     "queued": "en queue",
     "waiting": "en attente",
@@ -1079,6 +1080,10 @@
     "hidden_menu_entries": "entrées cachées du menu"
   },
   "col" : {
+    "Format": "Format",
+    "Dictionary": "Dictionnaire",
+    "Sent via gtalk": "Envoyé par gtalk",
+    "Sent via email": "Envoyé par email",
     "Mode": "Mode",
     "Remote": "Distant",
     "Database": "Base de données",

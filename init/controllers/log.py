@@ -1,39 +1,3 @@
-class col_log_evt(HtmlTableColumn):
-    def get(self, o):
-        try:
-            d = json.loads(o.log_dict)
-            for k in d:
-                if isinstance(d[k], str) or isinstance(d[k], unicode):
-                    d[k] = d[k].encode('utf8')
-            s = T.translate(o.log_fmt,d)
-        except KeyError:
-            s = 'error parsing: %s'%o.log_dict
-        except json.decoder.JSONDecodeError:
-            s = 'error loading JSON: %s'%o.log_dict
-        except UnicodeEncodeError:
-            s = 'error transcoding: %s'%o.log_dict
-        except TypeError:
-            s = 'type error: %s'%o.log_dict
-        except ValueError:
-            s = 'value error: %s %% %s'%(o.log_fmt, o.log_dict)
-        except AttributeError as e:
-            s = 'attribute error: '+str(e)
-        except Exception as e:
-            s = str(e)
-        return s
-
-class col_log_level(HtmlTableColumn):
-    def html(self, o):
-       d = self.get(o)
-       if d == "info":
-           return DIV(d, _class="boxed_small bggreen")
-       elif d == "warning":
-           return DIV(d, _class="boxed_small bgorange")
-       elif d == "error":
-           return DIV(d, _class="boxed_small bgred")
-       else:
-           return DIV(d, _class="boxed_small bgblack")
-
 class table_log(HtmlTable):
     def __init__(self, id=None, func=None, innerhtml=None):
         if id is None and 'tableid' in request.vars:
@@ -48,17 +12,21 @@ class table_log(HtmlTable):
                      'log_user',
                      'log_action',
                      'log_evt',
+                     'log_fmt',
+                     'log_dict',
                      'log_gtalk_sent',
                      'log_email_sent']
         self.colprops = {
             'id': HtmlTableColumn(
                      title='Id',
+                     table='log',
                      field='id',
                      img='action16',
                      display=False,
                     ),
             'log_date': HtmlTableColumn(
                      title='Date',
+                     table='log',
                      field='log_date',
                      img='time16',
                      display=True,
@@ -67,25 +35,29 @@ class table_log(HtmlTable):
                     ),
             'log_icons': HtmlTableColumn(
                      title='Icons',
+                     table='log',
                      field='log_icons',
                      img='action16',
                      display=True,
                      _class="log_icons",
                     ),
-            'log_level': col_log_level(
+            'log_level': HtmlTableColumn(
                      title='Severity',
+                     table='log',
                      field='log_level',
                      img='action16',
                      display=True,
                     ),
             'log_action': HtmlTableColumn(
                      title='Action',
+                     table='log',
                      field='log_action',
                      img='action16',
                      display=True,
                     ),
             'log_svcname': HtmlTableColumn(
                      title='Service',
+                     table='log',
                      field='log_svcname',
                      img='svc',
                      display=True,
@@ -93,6 +65,7 @@ class table_log(HtmlTable):
                     ),
             'log_nodename': HtmlTableColumn(
                      title='Node',
+                     table='log',
                      field='log_nodename',
                      img='node16',
                      display=True,
@@ -100,13 +73,15 @@ class table_log(HtmlTable):
                     ),
             'log_user': HtmlTableColumn(
                      title='User',
+                     table='log',
                      field='log_user',
                      img='guy16',
                      display=True,
                      _class='username',
                     ),
-            'log_evt': col_log_evt(
+            'log_evt': HtmlTableColumn(
                      title='Event',
+                     table='log',
                      field='dummy',
                      img='log16',
                      filter_redirect='log_dict',
@@ -114,35 +89,41 @@ class table_log(HtmlTable):
                     ),
             'log_fmt': HtmlTableColumn(
                      title='Format',
+                     table='log',
                      field='log_fmt',
                      img='log16',
                      display=False,
                     ),
             'log_dict': HtmlTableColumn(
                      title='Dictionary',
+                     table='log',
                      field='log_dict',
                      img='log16',
                      display=False,
                     ),
             'log_entry_id': HtmlTableColumn(
                      title='Entry id',
+                     table='log',
                      field='log_entry_id',
                      img='log16',
                      display=False,
                     ),
             'log_gtalk_sent': HtmlTableColumn(
                      title='Sent via gtalk',
+                     table='log',
                      field='log_gtalk_sent',
                      img='log16',
                      display=False,
                     ),
             'log_email_sent': HtmlTableColumn(
                      title='Sent via email',
+                     table='log',
                      field='log_email_sent',
                      img='log16',
                      display=False,
                     ),
         }
+        self.force_cols = ["log_dict", "log_fmt"]
         self.colprops['log_nodename'].t = self
         self.colprops['log_svcname'].t = self
         self.dbfilterable = False
@@ -188,10 +169,11 @@ def ajax_log():
     if len(request.args) == 1 and request.args[0] == 'commonality':
         t.csv_q = q
         return t.do_commonality()
-    if len(request.args) == 1 and request.args[0] == 'line':
+    if len(request.args) == 1 and request.args[0] == 'data':
         n = db(q).count()
         limitby = (t.pager_start,t.pager_end)
-        t.object_list = db(q).select(limitby=limitby, orderby=o, cacheable=False)
+        cols = t.get_visible_columns()
+        t.object_list = db(q).select(*cols, limitby=limitby, orderby=o, cacheable=False)
         return t.table_lines_data(n)
 
 @auth.requires_login()

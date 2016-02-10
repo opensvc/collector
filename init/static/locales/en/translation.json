@@ -3,6 +3,7 @@
     "search": "Global search"
   },
   "decorators": {
+    "corrupted_log": "corrupted log",
     "cancelled": "cancelled",
     "queued": "queued",
     "waiting": "waiting",
@@ -1090,6 +1091,10 @@
     "hidden_menu_entries": "hidden menu entries"
   },
   "col" : {
+    "Format": "Format",
+    "Dictionary": "Dictionary",
+    "Sent via gtalk": "Sent via gtalk",
+    "Sent via email": "Sent via email",
     "Mode": "Mode",
     "Remote": "Remote",
     "Database": "Database",
