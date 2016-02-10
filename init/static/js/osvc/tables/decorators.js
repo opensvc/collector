@@ -2550,6 +2550,27 @@ function cell_decorator_svcmon_links(e) {
   )
 }
 
+function cell_decorator_comp_log(e) {
+  var line = $(e).parent(".tl")
+  var module = $.data(line.find("[col=run_module]")[0], "v")
+  var svcname = $.data(line.find("[col=run_svcname]")[0], "v")
+  var nodename = $.data(line.find("[col=run_nodename]")[0], "v")
+  $(e).empty()
+  $(e).append("<div class='icon spark16'></div>")
+  div = $(":first-child", e)
+  div.addClass("a")
+  div.addClass("nowrap")
+  $(e).addClass("corner")
+  $(e).click(function(){
+    if (get_selected() != "") {return}
+    table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
+    span_id = $(e).parent(".tl").attr("spansum")
+    id = table_id + "_x_" + span_id
+    toggle_extra(null, id, e, 0)
+    comp_log(id, {"module": module, "svcname": svcname, "nodename": nodename})
+  })
+}
+
 function cell_decorator_comp_mod_log(e) {
   var line = $(e).parent(".tl")
   var modname = $.data(line.find("[col=mod_name]")[0], "v")
@@ -3706,6 +3727,7 @@ cell_decorators = {
  "prov_template": cell_decorator_prov_template,
  "fset_name": cell_decorator_fset_name,
  "disks_charts": cell_decorator_disks_charts,
+ "comp_log": cell_decorator_comp_log,
  "comp_mod_log": cell_decorator_comp_mod_log,
  "comp_node_log": cell_decorator_comp_node_log,
  "comp_svc_log": cell_decorator_comp_svc_log,
