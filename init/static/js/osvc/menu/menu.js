@@ -209,13 +209,7 @@ var menu_data = {
 		  "id" : "stat-scheduler",
 		  "link" : "/init/stats/scheduler_stats",
                   "fn": "scheduler_stats"
-		},
-		{
-		  "title" : "availability",
-		  "class" : "avail16",
-		  "id" : "stat-avail",
-		  "link" : "/init/svcmon_log/svcmon_log"
-		},
+		}
 	],
 	"requests": [
 		{

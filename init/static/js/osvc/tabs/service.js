@@ -179,10 +179,10 @@ function service_tabs(divid, options) {
 		// tab avail
 		i = o.register_tab({
 			"title": "service_tabs.avail",
-			"title_class": "icon svc"
+			"title_class": "icon avail16"
 		})
 		o.tabs[i].callback = function(divid) {
-			sync_ajax("/init/svcmon_log/ajax_svcmon_log_1?svcname="+encodeURIComponent(o.options.svcname), [], divid, function(){})
+			services_status_log(divid, {"services": [o.options.svcname], "instances": true})
 		}
 
 		// tab pkgdiff

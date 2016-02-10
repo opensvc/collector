@@ -165,6 +165,8 @@ handlers = {
      rest_get_resources(),
      rest_get_search(),
      rest_get_services_actions(),
+     rest_get_services_instances_status_log(),
+     rest_get_services_status_log(),
      rest_get_services(),
      rest_get_service(),
      rest_get_service_actions(),

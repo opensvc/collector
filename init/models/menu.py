@@ -44,7 +44,6 @@ menu_entries = [
   'comp-svc-modset',
   'stat-reports',
   'stat-scheduler',
-  'stat-avail',
   'req-new',
   'req-pending-my',
   'req-pending-tiers',

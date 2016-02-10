@@ -183,6 +183,7 @@
     "data_actions_on_all_services": "Actions on all services",
     "data_actions_on_service": "Actions on service <b>__svcname__</b>",
     "data_actions_on_selected_services": "Actions on selected services",
+    "services_status_log": "Services status changes",
     "node_diff": "Nodes differences",
     "node_san_topo": "Nodes SAN topology",
     "node_sysrep_diff": "Nodes sysreport differences",

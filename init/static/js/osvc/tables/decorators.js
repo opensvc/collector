@@ -2455,7 +2455,7 @@ function cell_decorator_status(e) {
     "down": "red",
     "stdby down": "red",
     "undef": "gray",
-    "n/a": "gray",
+    "n/a": "gray"
   }
   $(e).html("<div class='icon status_icon nowrap icon-"+t[c]+"'>"+v+"</div>")
 }

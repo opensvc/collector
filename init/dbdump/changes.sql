@@ -4974,3 +4974,7 @@ alter table reports add unique key (report_name);
 alter table user_prefs_columns add key (upc_user_id);
 
 alter table column_filters add key (user_id);
+
+alter table svcmon_log add key (mon_begin,mon_end);
+
+

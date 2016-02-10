@@ -183,6 +183,7 @@
     "data_actions_on_all_services": "Actions sur tous les services",
     "data_actions_on_service": "Actions sur le service <b>__svcname__</b>",
     "data_actions_on_selected_services": "Actions sur les services sélectionnés",
+    "services_status_log": "Changements d'état des services",
     "node_diff": "Différences entre noeuds",
     "node_san_topo": "Topologie SAN des noeuds",
     "node_sysrep_diff": "Différences entre sysreports",

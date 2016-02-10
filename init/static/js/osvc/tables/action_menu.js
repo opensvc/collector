@@ -122,6 +122,12 @@ function table_action_menu_init_data(t) {
               "class": "icon_fixed_width common16",
               "fn": "tool_svcdiff",
               "min": 2
+            },
+            {
+              "title": "action_menu.services_status_log",
+              "class": "icon_fixed_width avail16",
+              "fn": "tool_services_status_log",
+              "min": 1
             }
           ]
         },
@@ -2244,6 +2250,21 @@ function tool_svcdiff(t, e) {
   }
   t.e_overlay.show()
   sync_ajax('/init/nodediff/ajax_svcdiff?node='+nodes.join(","), [], 'overlay', function(){})
+}
+
+//
+// tool: svc status log
+//
+function tool_services_status_log(t, e) {
+  var entry = $(e.target)
+  var cache_id = entry.attr("cache_id")
+  var data = t.action_menu_data_cache[cache_id]
+  var services = new Array()
+  for (i=0;i<data.length;i++) {
+    services.push(data[i]['svcname'])
+  }
+  t.e_overlay.show()
+  services_status_log("overlay", {"services": services})
 }
 
 //
