@@ -221,15 +221,7 @@ function check_all(name, checked){
         }
     }
 }
-function sparkl(url, id) {
-    if (!$("#"+id).is(":visible")) {
-        return
-    }
-    chartoptions = {type: 'tristate'};
-    $.getJSON(url, function(data) {
-        $(document.getElementById(id)).sparkline(data, chartoptions);
-    });
-}
+
 function sync_ajax(url, inputs, id, f) {
     s = inputs
     var query=""
@@ -709,14 +701,9 @@ function table_refresh(t) {
 
     data.visible_columns = t.options.visible_columns.join(',')
     data[t.id+"_page"] = $("#"+t.id+"_page").val()
-    if (t.dataable) {
-      var ajax_interface = "data"
-    } else {
-      var ajax_interface = "line"
-    }
     $.ajax({
          type: "POST",
-         url: t.ajax_url+"/"+ajax_interface,
+         url: t.ajax_url+"/data",
          data: data,
          context: document.body,
          beforeSend: function(req){
@@ -743,7 +730,6 @@ function table_refresh(t) {
 
              try {
                  var data = $.parseJSON(msg)
-                 var format = data['format']
                  var pager = data['pager']
                  var lines = data['table_lines']
              } catch(e) {
@@ -751,20 +737,7 @@ function table_refresh(t) {
                  return
              }
 
-             var msg = ""
-             if (format == "json") {
-               msg = table_data_to_lines(t, lines)
-             } else {
-               msg = $(lines)
-               // strip the topmost table marks
-               if (msg.is("table")) {
-                 msg = msg.children("tbody").children()
-               }
-               msg.find("[v]").each(function(){
-                 $.data(this, "v", $(this).attr("v"))
-                 $(this).removeAttr("v")
-               })
-             }
+             msg = table_data_to_lines(t, lines)
 
              // detach old lines
              var old_lines = $("<tbody></tbody>").append($("#table_"+t.id).children("tbody").children(".tl").detach())
@@ -857,14 +830,9 @@ function table_insert(t, data) {
         params[t.id+"_f_"+c] = t.colprops[c].force_filter
       }
     }
-    if (t.dataable) {
-      var ajax_interface = "data"
-    } else {
-      var ajax_interface = "line"
-    }
     $.ajax({
          type: "POST",
-         url: t.ajax_url+"/"+ajax_interface,
+         url: t.ajax_url+"/data",
          data: params,
          context: document.body,
          beforeSend: function(req){
@@ -878,25 +846,11 @@ function table_insert(t, data) {
 
              try {
                  var data = $.parseJSON(msg)
-                 var format = data['format']
                  var pager = data['pager']
                  var lines = data['table_lines']
              } catch(e) {}
 
-             var msg = ""
-             if (format == "json") {
-               msg = table_data_to_lines(t, lines)
-             } else {
-               msg = $(lines)
-               // strip the topmost table marks
-               if (msg.is("table")) {
-                 msg = msg.children("tbody").children()
-               }
-               msg.find("[v]").each(function(){
-                 $.data(this, "v", $(this).attr("v"))
-                 $(this).removeAttr("v")
-               })
-             }
+             msg = table_data_to_lines(t, lines)
 
              // replace already displayed lines
              modified = []
@@ -2713,7 +2667,6 @@ function table_init(opts) {
     'columns': opts['columns'],
     'colprops': opts['colprops'],
     'child_tables': opts['child_tables'],
-    'dataable': opts['dataable'],
     'action_menu': opts['action_menu'],
     'spin_class': 'fa-spin',
 

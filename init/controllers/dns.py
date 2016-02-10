@@ -191,9 +191,6 @@ class table_dns_records(HtmlTable):
         self.ajax_col_values = 'ajax_dns_records_col_values'
         self.checkboxes = True
 
-    def format_extrarow(self, o):
-        return ""
-
 def ptr_add():
     if request.vars.type != 'A':
         return

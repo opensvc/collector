@@ -389,14 +389,6 @@ def ajax_networks():
     table_id = request.vars.table_id
     t = table_networks(table_id, 'ajax_networks')
 
-    if len(request.args) >= 1:
-        action = request.args[0]
-        try:
-            if action == 'network_del':
-                network_del(t.get_checked())
-        except ToolError, e:
-            t.flash = str(e)
-
     o = ~db.networks.name
     q = db.networks.id > 0
     for f in set(t.cols):

@@ -119,14 +119,6 @@ def ajax_nodes():
     table_id = request.vars.table_id
     t = table_nodes(table_id, 'ajax_nodes')
 
-    if len(request.args) >= 1:
-        action = request.args[0]
-        try:
-            if action == 'node_del':
-                node_del(t.get_checked())
-        except ToolError, e:
-            t.flash = str(e)
-
     o = db.nodes.nodename
     q = db.nodes.id>0
     j = db.apps.app == db.nodes.project
