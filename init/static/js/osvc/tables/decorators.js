@@ -2518,6 +2518,48 @@ function cell_decorator_svcmon_links(e) {
   )
 }
 
+function cell_decorator_uid(e) {
+  var v = $.data(e, "v")
+  if (v=="") {
+    return
+  }
+  $(e).empty()
+  $(e).append("<div>"+v+"</div>")
+  div = $(":first-child", e)
+  div.addClass("a")
+  div.addClass("nowrap")
+  $(e).addClass("corner")
+  $(e).click(function(){
+    if (get_selected() != "") {return}
+    table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
+    span_id = $(e).parent(".tl").attr("spansum")
+    id = table_id + "_x_" + span_id
+    url = services_get_url() + "/init/nodes/ajax_uid_dispatch?user_id="+v
+    toggle_extra(url, id, e, 0)
+  })
+}
+
+function cell_decorator_gid(e) {
+  var v = $.data(e, "v")
+  if (v=="") {
+    return
+  }
+  $(e).empty()
+  $(e).append("<div>"+v+"</div>")
+  div = $(":first-child", e)
+  div.addClass("a")
+  div.addClass("nowrap")
+  $(e).addClass("corner")
+  $(e).click(function(){
+    if (get_selected() != "") {return}
+    table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
+    span_id = $(e).parent(".tl").attr("spansum")
+    id = table_id + "_x_" + span_id
+    url = services_get_url() + "/init/nodes/ajax_gid_dispatch?group_id="+v
+    toggle_extra(url, id, e, 0)
+  })
+}
+
 function cell_decorator_chk_type(e) {
   var v = $.data(e, "v")
   if (v=="") {
@@ -3568,6 +3610,8 @@ cell_decorators = {
  "app": cell_decorator_app,
  "obs_type": cell_decorator_obs_type,
  "obs_count": cell_decorator_obs_count,
+ "uid": cell_decorator_uid,
+ "gid": cell_decorator_gid,
  "tpl_command": cell_decorator_tpl_command,
  "prov_template": cell_decorator_prov_template,
  "fset_name": cell_decorator_fset_name,

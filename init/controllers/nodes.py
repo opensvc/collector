@@ -155,23 +155,6 @@ def nodes():
 def nodes_load():
     return nodes()["table"]
 
-class col_user_id(HtmlTableColumn):
-    def html(self, o):
-        id = self.t.extra_line_key(o)
-        h = self.get(o)
-        d = DIV(
-              A(
-                o['user_id'],
-                _onclick="toggle_extra('%(url)s', '%(id)s', this, 0);"%dict(
-                  url=URL(r=request, c='nodes',f='ajax_uid_dispatch',
-                          vars={'user_id': o['user_id']}),
-                  id=id,
-                ),
-              ),
-              _class='nowrap',
-            )
-        return d
-
 class table_uids(HtmlTable):
     def __init__(self, id=None, func=None, innerhtml=None):
         if id is None and 'tableid' in request.vars:
@@ -183,12 +166,13 @@ class table_uids(HtmlTable):
         self.keys = ["user_id"]
         self.span = ["user_id"]
         self.colprops = {
-            'user_id': col_user_id(
+            'user_id': HtmlTableColumn(
                      title='User id',
                      field='user_id',
                      table='v_uids',
                      img='guy16',
                      display=True,
+                     _class='uid',
                     ),
             'user_id_count': HtmlTableColumn(
                      title='User count',
@@ -232,23 +216,6 @@ def free_ids(rows, start=500):
              _class="pre",
            )
 
-class col_group_id(HtmlTableColumn):
-    def html(self, o):
-        id = self.t.extra_line_key(o)
-        h = self.get(o)
-        d = DIV(
-              A(
-                o['group_id'],
-                _onclick="toggle_extra('%(url)s', '%(id)s', this, 0);"%dict(
-                  url=URL(r=request, c='nodes',f='ajax_gid_dispatch',
-                          vars={'group_id': o['group_id']}),
-                  id=id,
-                ),
-              ),
-              _class='nowrap',
-            )
-        return d
-
 class table_gids(HtmlTable):
     def __init__(self, id=None, func=None, innerhtml=None):
         if id is None and 'tableid' in request.vars:
@@ -260,12 +227,13 @@ class table_gids(HtmlTable):
         self.keys = ["group_id"]
         self.span = ["group_id"]
         self.colprops = {
-            'group_id': col_group_id(
+            'group_id': HtmlTableColumn(
                      title='User id',
                      field='group_id',
                      table='v_gids',
                      img='guy16',
                      display=True,
+                     _class='gid',
                     ),
             'group_id_count': HtmlTableColumn(
                      title='Group count',
@@ -493,7 +461,7 @@ def ajax_uids():
         return mt.csv()
     if len(request.args) == 1 and request.args[0] == 'commonality':
         return mt.do_commonality()
-    if len(request.args) == 1 and request.args[0] == 'line':
+    if len(request.args) == 1 and request.args[0] == 'data':
         return mt.table_lines_data(-1)
 
 
@@ -596,7 +564,7 @@ def ajax_gids():
         return mt.csv()
     if len(request.args) == 1 and request.args[0] == 'commonality':
         return mt.do_commonality()
-    if len(request.args) == 1 and request.args[0] == 'line':
+    if len(request.args) == 1 and request.args[0] == 'data':
         return mt.table_lines_data(-1)
 
 
