@@ -823,6 +823,7 @@ function table_insert(t, data) {
         params[t.id+"_f_"+c] = t.colprops[c].force_filter
       }
     }
+    params.visible_columns = t.options.visible_columns.join(',')
     $.ajax({
          type: "POST",
          url: t.ajax_url+"/data",
@@ -853,7 +854,7 @@ function table_insert(t, data) {
              $(msg).each(function(){
                n_new_lines += 1
                new_line = $(this)
-               cksum = $(this).attr("cksum")
+               cksum = new_line.attr("cksum")
                $("#table_"+t.id).find("[cksum="+cksum+"]").each(function(){
                  $(this).before(new_line)
                  for (i=1; i<$(this).children().length+1; i++) {

@@ -123,7 +123,7 @@ class table_log(HtmlTable):
                      display=False,
                     ),
         }
-        self.force_cols = ["log_dict", "log_fmt"]
+        self.force_cols = ["id", "log_dict", "log_fmt"]
         self.colprops['log_nodename'].t = self
         self.colprops['log_svcname'].t = self
         self.dbfilterable = False
