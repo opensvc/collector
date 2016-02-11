@@ -2271,7 +2271,7 @@ function cell_decorator_db_table_name(e) {
   var s = $("<span class='nowrap'>"+v+"</span>")
   if (v in db_tables) {
     s.text(db_tables[v].title)
-    s.addClass(db_tables[v].cl)
+    s.addClass("icon "+db_tables[v].cl)
   }
   $(e).html(s)
 }
@@ -2284,7 +2284,7 @@ function cell_decorator_db_column_name(e) {
   var s = $("<span class='nowrap'>"+v+"</span>")
   if (v in db_columns) {
     s.text(db_columns[v].title)
-    s.addClass(db_columns[v].img)
+    s.addClass("icon "+db_columns[v].img)
   }
   $(e).html(s)
 }

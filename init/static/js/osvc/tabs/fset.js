@@ -478,6 +478,7 @@ function fset_designer(divid, options) {
 		var input = $("<input id='f_field' class='aci oi'>")
 		var opts = []
 		var keys = fields[table]
+console.log(table, keys)
 		if (!keys) {
 			keys = []
 		}
@@ -537,9 +538,9 @@ function fset_designer(divid, options) {
 			}
 		})
 		input.data("autocomplete")._renderItem = function(ul, item) {
-			return $("<li class='icon'></li>")
+			return $("<li></li>")
 				.data("item.autocomplete", item)
-				.append("<a class='"+item.cl+"'>"+item.label+"</a>")
+				.append("<a class='icon_fixed_width "+item.cl+"'>"+item.label+"</a>")
 				.appendTo(ul)
 		}
 		return input
@@ -572,6 +573,8 @@ function fset_designer(divid, options) {
 				event.preventDefault()
 				input.val(ui.item.label)
 				input.attr("acid", ui.item.value)
+				var new_fields = o.f_field_input(ui.item.value)
+				input.parents(".fset_designer_item,.fset_designer_adder").first().find("span#f_field").html(new_fields)
 			},
 			select: function(event, ui) {
 				event.preventDefault()
@@ -603,9 +606,9 @@ function fset_designer(divid, options) {
 			}
 		})
 		input.data("autocomplete")._renderItem = function(ul, item) {
-			return $("<li class='icon'></li>")
+			return $("<li></li>")
 				.data("item.autocomplete", item)
-				.append("<a class='"+item.cl+"'>"+item.label+"</a>")
+				.append("<a class='icon_fixed_width "+item.cl+"'>"+item.label+"</a>")
 				.appendTo(ul)
 		}
 		return input
