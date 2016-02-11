@@ -235,54 +235,6 @@ def saves():
 def saves_load():
     return saves()["table"]
 
-class col_chart(HtmlTableColumn):
-    def html(self, o):
-       l = []
-       if len(o['chart_svc']) > 2:
-           l += [DIV(
-                      H3(T("Services")),
-                      DIV(
-                        o['chart_svc'],
-                        _id='chart_svc',
-                      ),
-                      _style="float:left;width:500px",
-                    )]
-       if len(o['chart_ap']) > 2:
-           l += [DIV(
-                      H3(T("Applications")),
-                      DIV(
-                        o['chart_ap'],
-                        _id='chart_ap',
-                      ),
-                      _style="float:left;width:500px",
-                    )]
-       if len(o['chart_group']) > 2:
-           l += [DIV(
-                  H3(T("Groups")),
-                  DIV(
-                    o['chart_group'],
-                    _id='chart_group',
-                  ),
-                  _style="float:left;width:500px",
-                )]
-       if len(o['chart_server']) > 2:
-           l += [DIV(
-                  H3(T("Servers")),
-                  DIV(
-                    o['chart_server'],
-                    _id='chart_server',
-                  ),
-                  _style="float:left;width:500px",
-                )]
-
-       l += [DIV(
-               _class='spacer',
-             )]
-       l += [DIV(
-               _id='chart_info',
-             )]
-       return DIV(l)
-
 @auth.requires_login()
 def ajax_saves_charts():
     t = table_saves('saves', 'ajax_saves')
@@ -491,12 +443,17 @@ def ajax_saves_charts():
           'data': [data_server],
         }
 
-    nt.object_list = [{'chart_svc': json.dumps(h_data_svc),
-                       'chart_ap': json.dumps(h_data_app),
-                       'chart_group': json.dumps(h_data_group),
-                       'chart_server': json.dumps(h_data_server)}]
+    nt.object_list = [{
+      'chart': json.dumps({
+        'chart_svc': h_data_svc,
+        'chart_ap': h_data_app,
+        'chart_group': h_data_group,
+        'chart_server': h_data_server
+      })
+    }]
 
-    if len(request.args) == 1 and request.args[0] == 'line':
+
+    if len(request.args) == 1 and request.args[0] == 'data':
         return nt.table_lines_data(-1)
 
 class table_saves_charts(HtmlTable):
@@ -508,7 +465,7 @@ class table_saves_charts(HtmlTable):
         self.keys = ['chart']
         self.span = ['chart']
         self.colprops.update({
-            'chart': col_chart(
+            'chart': HtmlTableColumn(
                      title='Chart',
                      field='chart',
                      img='spark16',
@@ -517,17 +474,7 @@ class table_saves_charts(HtmlTable):
         })
         for i in self.cols:
             self.colprops[i].t = self
-        self.dbfilterable = False
         self.filterable = False
         self.pageable = False
-        self.exportable = False
-        self.linkable = False
-        self.bookmarkable = False
-        self.commonalityable = False
-        self.refreshable = False
-        self.columnable = False
-        self.headers = False
-        self.highlight = False
-        self.on_change = "plot_savedonuts"
         self.parent_tables = ["saves"]
 

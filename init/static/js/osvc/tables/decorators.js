@@ -3532,11 +3532,11 @@ function cell_decorator_appinfo_value(e) {
   $(e).html(_e)
 }
 
-function cell_decorator_disks_charts(e) {
+function cell_decorator_saves_charts(e) {
   var v = $.data(e, "v")
   var data = $.parseJSON(v)
   $(e).empty()
-  if (data.chart_svc.data && data.chart_svc.data.length > 1) {
+  if (data.chart_svc.data && data.chart_svc.data[0].length > 0) {
     var div = $("<div style='float:left;width:500px'></div>")
     var plot_div = $("<div id='chart_svc'></div>")
     var title = $("<h3></h3>")
@@ -3546,7 +3546,7 @@ function cell_decorator_disks_charts(e) {
     div.append(plot_div)
     $(e).append(div)
   }
-  if (data.chart_ap.data && data.chart_ap.data.length > 1) {
+  if (data.chart_ap.data && data.chart_ap.data[0].length > 0) {
     var div = $("<div style='float:left;width:500px'></div>")
     var plot_div = $("<div id='chart_ap'></div>")
     var title = $("<h3></h3>")
@@ -3556,7 +3556,56 @@ function cell_decorator_disks_charts(e) {
     div.append(plot_div)
     $(e).append(div)
   }
-  if (data.chart_dg.data && data.chart_dg.data.length > 1) {
+  if (data.chart_group.data && data.chart_group.data[0].length > 0) {
+    var div = $("<div style='float:left;width:500px'></div>")
+    var plot_div = $("<div id='chart_group'></div>")
+    var title = $("<h3></h3>")
+    title.text(i18n.t("decorators.charts.groups"))
+    plot_div.text(JSON.stringify(data.chart_group))
+    div.append(title)
+    div.append(plot_div)
+    $(e).append(div)
+  }
+  if (data.chart_server.data && data.chart_server.data[0].length > 0) {
+    var div = $("<div style='float:left;width:500px'></div>")
+    var plot_div = $("<div id='chart_server'></div>")
+    var title = $("<h3></h3>")
+    title.text(i18n.t("decorators.charts.servers"))
+    plot_div.text(JSON.stringify(data.chart_server))
+    div.append(title)
+    div.append(plot_div)
+    $(e).append(div)
+  }
+  $(e).append("<div class='spacer'></div>")
+  $(e).append("<div id='chart_info'>-</div>")
+  plot_savedonuts()
+}
+
+function cell_decorator_disks_charts(e) {
+  var v = $.data(e, "v")
+  var data = $.parseJSON(v)
+  $(e).empty()
+  if (data.chart_svc.data && data.chart_svc.data.length > 0) {
+    var div = $("<div style='float:left;width:500px'></div>")
+    var plot_div = $("<div id='chart_svc'></div>")
+    var title = $("<h3></h3>")
+    title.text(i18n.t("decorators.charts.services"))
+    plot_div.text(JSON.stringify(data.chart_svc))
+    div.append(title)
+    div.append(plot_div)
+    $(e).append(div)
+  }
+  if (data.chart_ap.data && data.chart_ap.data.length > 0) {
+    var div = $("<div style='float:left;width:500px'></div>")
+    var plot_div = $("<div id='chart_ap'></div>")
+    var title = $("<h3></h3>")
+    title.text(i18n.t("decorators.charts.apps"))
+    plot_div.text(JSON.stringify(data.chart_ap))
+    div.append(title)
+    div.append(plot_div)
+    $(e).append(div)
+  }
+  if (data.chart_dg.data && data.chart_dg.data.length > 0) {
     var div = $("<div style='float:left;width:500px'></div>")
     var plot_div = $("<div id='chart_dg'></div>")
     var title = $("<h3></h3>")
@@ -3566,7 +3615,7 @@ function cell_decorator_disks_charts(e) {
     div.append(plot_div)
     $(e).append(div)
   }
-  if (data.chart_ar.data && data.chart_ar.data.length > 1) {
+  if (data.chart_ar.data && data.chart_ar.data.length > 0) {
     var div = $("<div style='float:left;width:500px'></div>")
     var plot_div = $("<div id='chart_ar'></div>")
     var title = $("<h3></h3>")
@@ -3759,6 +3808,7 @@ cell_decorators = {
  "prov_template": cell_decorator_prov_template,
  "fset_name": cell_decorator_fset_name,
  "disks_charts": cell_decorator_disks_charts,
+ "saves_charts": cell_decorator_saves_charts,
  "comp_log": cell_decorator_comp_log,
  "comp_mod_log": cell_decorator_comp_mod_log,
  "comp_node_log": cell_decorator_comp_node_log,

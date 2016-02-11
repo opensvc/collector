@@ -47,7 +47,7 @@ table_saves_charts_defaults = {
      'span': ['chart'],
      'force_cols': [],
      'columns': ['chart'],
-     'colprops': {'chart': {'field': 'chart', 'filter_redirect': '', 'force_filter': '', 'img': 'spark16', '_dataclass': '', 'title': 'Chart', '_class': '', 'table': '', 'display': 1, 'default_filter': ''}},
+     'colprops': {'chart': {'field': 'chart', 'filter_redirect': '', 'force_filter': '', 'img': 'spark16', '_dataclass': '', 'title': 'Chart', '_class': 'saves_charts', 'table': '', 'display': 1, 'default_filter': ''}},
      'volatile_filters': false,
      'child_tables': [],
      'parent_tables': ['saves'],
@@ -63,7 +63,6 @@ table_saves_charts_defaults = {
      'headers': false,
      'wsable': false,
      'pageable': false,
-     'on_change': plot_savedonuts,
      'events': [],
      'request_vars': {}
 }

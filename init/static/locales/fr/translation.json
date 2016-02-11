@@ -12,6 +12,8 @@
     "charts": {
       "services": "Services",
       "apps": "Applications",
+      "groups": "Groupes de sauvegardes",
+      "servers": "Serveurs de sauvegardes",
       "diskgroups": "Disk Groups",
       "arrays": "Baies de stockage"
     }
