@@ -443,6 +443,11 @@ function sysrep_timeline_data(o, jd)
         }
       }
 
+      // double event prevention
+      if (o.cid == item.cid) {
+        return
+      }
+
       // remember the click for link generation
       if (item) {
         o.cid = item.cid;
