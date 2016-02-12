@@ -33,98 +33,46 @@ class table_actions(HtmlTable):
                      'stderr']
         self.colprops = {
             'id': HtmlTableColumn(
-                     title='Id',
                      field='id',
-                     img='action16',
-                     display=False,
                     ),
             'form_id': HtmlTableColumn(
-                     title='Request form id',
                      field='form_id',
-                     img='wf16',
-                     display=True,
-                     _class='form_id',
                     ),
             'status': HtmlTableColumn(
-                     title='Status',
                      field='status',
-                     img='action16',
-                     display=True,
-                     _class='action_q_status',
                     ),
             'ret': HtmlTableColumn(
-                     title='Return code',
                      field='ret',
-                     img='action16',
-                     display=True,
-                     _class='action_q_ret',
                     ),
             'date_queued': HtmlTableColumn(
-                     title='Queued',
                      field='date_queued',
-                     img='time16',
-                     display=True,
-                     _class="datetime_no_age",
                     ),
             'date_dequeued': HtmlTableColumn(
-                     title='Dequeued',
                      field='date_dequeued',
-                     img='time16',
-                     display=True,
-                     _class="datetime_no_age",
                     ),
             'nodename': HtmlTableColumn(
-                     title='Nodename',
                      field='nodename',
-                     img='hw16',
-                     display=True,
-                     _class='nodename',
                     ),
             'svcname': HtmlTableColumn(
-                     title='Service',
                      field='svcname',
-                     img='svc',
-                     display=True,
-                     _class='svcname',
                     ),
             'username': HtmlTableColumn(
-                     title='User name',
                      field='username',
-                     img='guy16',
-                     display=True,
-                     _class='username',
                     ),
             'action_type': HtmlTableColumn(
-                     title='Action type',
                      field='action_type',
-                     img='action16',
-                     display=True,
                     ),
             'connect_to': HtmlTableColumn(
-                     title='Connect to',
                      field='connect_to',
-                     img='net16',
-                     display=True,
                     ),
             'command': HtmlTableColumn(
-                     title='Command',
                      field='command',
-                     img='action16',
-                     display=True,
                     ),
             'stdout': HtmlTableColumn(
-                     title='Stdout',
                      field='stdout',
-                     img='action16',
-                     display=True,
-                     _class='pre',
                     ),
             'stderr': HtmlTableColumn(
-                     title='Stderr',
                      field='stderr',
-                     img='action16',
-                     display=True,
-                     _class='pre',
                     ),
         }
         for col in self.cols:

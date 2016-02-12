@@ -3,56 +3,32 @@
 #
 filters_colprops = {
     'f_table': HtmlTableColumn(
-             title='Table',
              table='gen_filters',
              field='f_table',
-             display=True,
-             img='filter16',
-             _class='db_table_name',
             ),
     'f_field': HtmlTableColumn(
-             title='Field',
              table='gen_filters',
              field='f_field',
-             display=True,
-             img='filter16',
-             _class='db_column_name',
             ),
     'f_value': HtmlTableColumn(
-             title='Value',
              table='gen_filters',
              field='f_value',
-             display=True,
-             img='filter16',
             ),
     'f_updated': HtmlTableColumn(
-             title='Updated',
              table='gen_filters',
              field='f_updated',
-             display=True,
-             img='time16',
-             _class="datetime_no_age",
             ),
     'f_author': HtmlTableColumn(
-             title='Author',
              table='gen_filters',
              field='f_author',
-             display=True,
-             img='guy16',
             ),
     'f_op': HtmlTableColumn(
-             title='Operator',
              table='gen_filters',
              field='f_op',
-             display=True,
-             img='filter16',
             ),
     'id': HtmlTableColumn(
-             title='Id',
              table='gen_filters',
              field='id',
-             display=False,
-             img='key',
             ),
 }
 
@@ -82,74 +58,37 @@ class table_filtersets(HtmlTable):
 
         self.colprops = {
             'fset_name': HtmlTableColumn(
-                     title='Filterset',
                      field='fset_name',
-                     display=True,
-                     img='filter16',
-                     _class='fset_name',
                     ),
             'fset_stats': HtmlTableColumn(
-                     title='Compute stats',
                      field='fset_stats',
-                     display=True,
-                     img='spark16',
-                     _class='boolean',
                     ),
             'fset_updated': HtmlTableColumn(
-                     title='Fset updated',
                      field='fset_updated',
-                     display=False,
-                     img='time16',
-                     _class="datetime_no_age",
                     ),
             'fset_author': HtmlTableColumn(
-                     title='Fset author',
                      field='fset_author',
-                     display=False,
-                     img='guy16',
                     ),
             'f_log_op': HtmlTableColumn(
-                     title='Operator',
                      field='f_log_op',
-                     display=True,
-                     img='filter16',
                     ),
             'id': HtmlTableColumn(
-                     title='Id',
                      field='id',
-                     display=False,
-                     img='key',
                     ),
             'fset_id': HtmlTableColumn(
-                     title='Filterset id',
                      field='fset_id',
-                     display=False,
-                     img='key',
                     ),
             'f_id': HtmlTableColumn(
-                     title='Filter id',
                      field='f_id',
-                     display=False,
-                     img='key',
                     ),
             'f_order': HtmlTableColumn(
-                     title='Ordering',
                      field='f_order',
-                     display=False,
-                     img='filter16',
                     ),
             'encap_fset_name': HtmlTableColumn(
-                     title='Encap filterset',
                      field='encap_fset_name',
-                     display=True,
-                     img='filter16',
-                     _class='fset_name',
                     ),
             'encap_fset_id': HtmlTableColumn(
-                     title='Encap filterset id',
                      field='encap_fset_id',
-                     display=False,
-                     img='key',
                     ),
         }
         self.colprops.update(filters_colprops)

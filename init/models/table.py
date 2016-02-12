@@ -24,19 +24,9 @@ class ToolError(Exception):
     def __str__(self):
         return str(self.value)
 
-class Column(object):
-    def __init__(self, title, display=False, img='generic', _class='', _dataclass=''):
-        self.title = title
-        self.display = display
-        self.img = img
-        self._class = _class
-        self._dataclass = _dataclass
-
-class HtmlTableColumn(Column):
-    def __init__(self, title, field, table=None, display=False,
-                 img='generic', _class='', _dataclass='', filter_redirect=None,
+class HtmlTableColumn(object):
+    def __init__(self, field, table=None, filter_redirect=None,
                  default_filter=None, force_filter=None):
-        Column.__init__(self, title, display, img, _class, _dataclass)
         self.table = table
         self.field = field
         self.filter_redirect = filter_redirect
@@ -48,16 +38,11 @@ class HtmlTableColumn(Column):
 
     def as_dict(self):
         data = {
-         '_class': self._class,
-         '_dataclass': self._dataclass,
-         'title': self.title,
          'field': self.field,
          'table': self.table or "",
          'filter_redirect': self.filter_redirect or "",
          'default_filter': self.default_filter or "",
          'force_filter': self.force_filter or "",
-         'img': self.img,
-         'display': 1 if self.display else 0,
         }
         return data
 

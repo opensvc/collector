@@ -65,102 +65,57 @@ class table_saves(HtmlTable):
         self.colprops = nodes_colprops
         self.colprops.update({
             'id': HtmlTableColumn(
-                     title='Id',
                      table='saves',
                      field='id',
-                     img='key',
-                     display=False,
                     ),
             'save_server': HtmlTableColumn(
-                     title='Server',
                      table='saves',
                      field='save_server',
-                     img='save16',
-                     display=True,
-                     _class='nodename_no_os',
                     ),
             'save_id': HtmlTableColumn(
-                     title='Id',
                      table='saves',
                      field='save_id',
-                     img='save16',
-                     display=False,
                     ),
             'save_nodename': HtmlTableColumn(
-                     title='Nodename',
                      table='saves',
                      field='save_nodename',
-                     img='node16',
-                     display=True,
-                     _class='nodename',
                     ),
             'save_svcname': HtmlTableColumn(
-                     title='Service',
                      table='saves',
                      field='save_svcname',
-                     img='save16',
-                     display=True,
-                     _class='svcname',
                     ),
             'save_app': HtmlTableColumn(
-                     title='App',
                      table='saves',
                      field='save_app',
-                     img='save16',
-                     display=True,
                     ),
             'save_name': HtmlTableColumn(
-                     title='Name',
                      table='saves',
                      field='save_name',
-                     img='save16',
-                     display=True,
                     ),
             'save_group': HtmlTableColumn(
-                     title='Group',
                      table='saves',
                      field='save_group',
-                     img='save16',
-                     display=True,
                     ),
             'save_volume': HtmlTableColumn(
-                     title='Volume',
                      table='saves',
                      field='save_volume',
-                     img='save16',
-                     display=True,
                     ),
             'save_level': HtmlTableColumn(
-                     title='Level',
                      table='saves',
                      field='save_level',
-                     img='save16',
-                     display=True,
                     ),
             'save_size': HtmlTableColumn(
-                     title='Size',
                      table='saves',
                      field='save_size',
-                     img='save16',
-                     display=True,
-                     _class='size_b',
                     ),
             'save_date': HtmlTableColumn(
-                     title='Date',
                      table='saves',
                      field='save_date',
-                     img='time16',
-                     display=True,
                      default_filter=">-1d",
-                     _class="datetime_no_age",
                     ),
             'save_retention': HtmlTableColumn(
-                     title='Retention',
                      table='saves',
                      field='save_retention',
-                     img='time16',
-                     display=True,
-                     _class="datetime_no_age",
                     ),
         })
         self.colprops['save_nodename'].display = True
@@ -466,10 +421,7 @@ class table_saves_charts(HtmlTable):
         self.span = ['chart']
         self.colprops.update({
             'chart': HtmlTableColumn(
-                     title='Chart',
                      field='chart',
-                     img='spark16',
-                     display=True,
                     ),
         })
         for i in self.cols:

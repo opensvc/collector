@@ -159,29 +159,16 @@ class table_svcmon(HtmlTable):
         ]
         self.colprops = {
             'id': HtmlTableColumn(
-                     title = 'Id',
                      field='id',
-                     display = True,
-                     img = 'key',
                     ),
             'err': HtmlTableColumn(
-                     title = 'Action errors',
                      field='err',
-                     display = True,
-                     img = 'action16',
-                     _class= 'svc_action_err',
                     ),
             'app_domain': HtmlTableColumn(
-                     title='App domain',
                      field='app_domain',
-                     img='svc',
-                     display=False,
                     ),
             'app_team_ops': HtmlTableColumn(
-                     title='Ops team',
                      field='app_team_ops',
-                     img='guys16',
-                     display=False,
                     ),
         }
         self.colprops.update(svcmon_colprops)

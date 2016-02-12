@@ -13,48 +13,28 @@ class table_patches(HtmlTable):
         self.colprops = nodes_colprops
         self.colprops.update({
             'nodename': HtmlTableColumn(
-                     title='Nodename',
                      table='nodes',
                      field='nodename',
-                     img='node16',
-                     display=True,
-                     _class='nodename',
                     ),
             'patch_num': HtmlTableColumn(
-                     title='Patchnum',
                      table='patches',
                      field='patch_num',
-                     img='pkg16',
-                     display=True,
                     ),
             'patch_rev': HtmlTableColumn(
-                     title='Patchrev',
                      table='patches',
                      field='patch_rev',
-                     img='pkg16',
-                     display=True,
                     ),
             'patch_updated': HtmlTableColumn(
-                     title='Updated',
                      table='patches',
                      field='patch_updated',
-                     img='time16',
-                     display=True,
-                     _class='datetime_daily',
                     ),
             'patch_install_date': HtmlTableColumn(
-                     title='Install date',
                      table='patches',
                      field='patch_install_date',
-                     img='time16',
-                     display=True,
                     ),
             'id': HtmlTableColumn(
-                     title='Id',
                      table='patches',
                      field='id',
-                     img='pkg16',
-                     display=False,
                     ),
         })
         self.colprops['nodename'].display = True

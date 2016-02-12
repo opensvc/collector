@@ -12,49 +12,28 @@ class table_obs(HtmlTable):
         self.keys = ['id']
         self.colprops = {
             'obs_type': HtmlTableColumn(
-                     title='Type',
                      table='v_obsolescence',
                      field='obs_type',
-                     img='obs16',
-                     display=True,
-                     _class="obs_type",
                     ),
             'obs_name': HtmlTableColumn(
-                     title='Name',
                      table='v_obsolescence',
                      field='obs_name',
-                     img='obs16',
-                     display=True,
                     ),
             'obs_warn_date': HtmlTableColumn(
-                     title='Warn date',
                      table='v_obsolescence',
                      field='obs_warn_date',
-                     img='time16',
-                     display=True,
-                     _class="datetime_no_age",
                     ),
             'obs_alert_date': HtmlTableColumn(
-                     title='Alert date',
                      table='v_obsolescence',
                      field='obs_alert_date',
-                     img='time16',
-                     display=True,
-                     _class="datetime_no_age",
                     ),
             'obs_count': HtmlTableColumn(
-                     title='Count',
                      table='v_obsolescence',
                      field='obs_count',
-                     img='obs16',
-                     display=True,
-                     _class="obs_count",
                     ),
             'id': HtmlTableColumn(
-                     title='Id',
                      table='v_obsolescence',
                      field='id',
-                     img='key',
                     ),
         }
         self.ajax_col_values = 'ajax_obs_col_values'

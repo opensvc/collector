@@ -45,52 +45,28 @@ class table_replication_status(HtmlTable):
                      'table_updated']
         self.colprops = {
             'mode': HtmlTableColumn(
-                     title='Mode',
                      field='mode',
-                     img='net16',
-                     display=True,
                     ),
             'remote': HtmlTableColumn(
-                     title='Remote',
                      field='remote',
-                     img='node16',
-                     display=True,
                     ),
             'table_schema': HtmlTableColumn(
-                     title='Database',
                      field='table_schema',
-                     img='db16',
-                     display=True,
                     ),
             'table_name': HtmlTableColumn(
-                     title='Table',
                      field='table_name',
-                     img='db16',
-                     display=True,
                     ),
             'need_resync': HtmlTableColumn(
-                     title='Need resync',
                      field='need_resync',
-                     img='db16',
-                     display=True,
                     ),
             'current_cksum': HtmlTableColumn(
-                     title='Current csum',
                      field='current_cksum',
-                     img='db16',
-                     display=True,
                     ),
             'last_cksum': HtmlTableColumn(
-                     title='Last csum',
                      field='last_cksum',
-                     img='db16',
-                     display=True,
                     ),
             'table_updated': HtmlTableColumn(
-                     title='Updated',
                      field='table_updated',
-                     img='time16',
-                     display=True,
                     ),
         }
 

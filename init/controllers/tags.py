@@ -86,42 +86,24 @@ class table_tagattach(HtmlTable):
                      'created']
         self.colprops = {
             'tag_id': HtmlTableColumn(
-                     title='Tag id',
                      table='v_tags_full',
                      field='tag_id',
-                     img='tag16',
-                     display=False,
                     ),
             'tag_name': HtmlTableColumn(
-                     title='Tag name',
                      table='v_tags_full',
                      field='tag_name',
-                     img='tag16',
-                     display=True,
                     ),
             'created': HtmlTableColumn(
-                     title='Attach date',
                      table='v_tags_full',
                      field='created',
-                     img='time16',
-                     display=True,
-                     _class='datetime_no_age',
                     ),
             'nodename': HtmlTableColumn(
-                     title='Node',
                      table='v_tags_full',
                      field='nodename',
-                     img='node16',
-                     display=True,
-                     _class='nodename',
                     ),
             'svcname': HtmlTableColumn(
-                     title='Service',
                      table='v_tags_full',
                      field='svcname',
-                     img='svc',
-                     display=True,
-                     _class='svcname',
                     ),
         }
         self.dataable = True

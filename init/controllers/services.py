@@ -10,27 +10,16 @@ class table_services(HtmlTable):
         self.colprops = v_services_colprops
         self.colprops.update({
             'svc_name': HtmlTableColumn(
-                     title='Service',
                      table='services',
                      field='svc_name',
-                     img='svc',
-                     display=True,
-                     _class='svcname',
                     ),
             'svc_status_updated': HtmlTableColumn(
-                     title='Status updated',
                      table='services',
                      field='svc_status_updated',
-                     img='time16',
-                     display=True,
-                     _class='datetime_status',
                     ),
             'id': HtmlTableColumn(
-                     title='Id',
                      table='services',
                      field='id',
-                     img='pkg16',
-                     display=False,
                     ),
         })
         self.force_cols = ['svc_name', 'svc_status_updated']

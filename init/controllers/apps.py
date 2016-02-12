@@ -45,55 +45,32 @@ class table_apps(HtmlTable):
         self.span = ['id']
         self.colprops = {
             'id': HtmlTableColumn(
-                     title='Id',
                      table='v_apps',
                      field='id',
-                     img='key',
-                     display=False,
                     ),
             'app': HtmlTableColumn(
-                     title='Application code',
                      table='v_apps',
                      field='app',
-                     img='svc',
-                     display=True,
-                     _class='app',
                     ),
             'app_domain': HtmlTableColumn(
-                     title='App domain',
                      table='v_apps',
                      field='app_domain',
-                     img='svc',
-                     display=True,
                     ),
             'app_team_ops': HtmlTableColumn(
-                     title='Ops team',
                      table='v_apps',
                      field='app_team_ops',
-                     img='guys16',
-                     display=True,
                     ),
             'roles': HtmlTableColumn(
-                     title='Sysresp teams',
                      table='v_apps',
                      field='roles',
-                     img='guys16',
-                     display=True,
-                     _class="groups",
                     ),
             'responsibles': HtmlTableColumn(
-                     title='System Responsibles',
                      table='v_apps',
                      field='responsibles',
-                     img='guys16',
-                     display=True,
                     ),
             'mailto': HtmlTableColumn(
-                     title='Mailing list',
                      table='v_apps',
                      field='mailto',
-                     img='guys16',
-                     display=False,
                     ),
         }
         self.ajax_col_values = 'ajax_apps_col_values'

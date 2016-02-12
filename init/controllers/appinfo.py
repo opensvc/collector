@@ -74,58 +74,32 @@ class table_appinfo(HtmlTable):
                      'app_updated']
         self.colprops = {
             'id': HtmlTableColumn(
-                     title='Id',
                      table='appinfo',
                      field='id',
-                     img='key',
-                     display=False,
                     ),
             'app_svcname': HtmlTableColumn(
-                     title='Service',
                      table='appinfo',
                      field='app_svcname',
-                     img='svc',
-                     display=True,
-                     _class="svcname",
                     ),
             'app_nodename': HtmlTableColumn(
-                     title='Node',
                      table='appinfo',
                      field='app_nodename',
-                     img='hw16',
-                     display=True,
-                     _class="nodename",
                     ),
             'app_launcher': HtmlTableColumn(
-                     title='Launcher',
                      table='appinfo',
                      field='app_launcher',
-                     img='svc',
-                     display=True,
                     ),
             'app_key': HtmlTableColumn(
-                     title='Key',
                      table='appinfo',
                      field='app_key',
-                     img='svc',
-                     display=True,
-                     _class='appinfo_key',
                     ),
             'app_value': HtmlTableColumn(
-                     title='Value',
                      table='appinfo',
                      field='app_value',
-                     img='svc',
-                     display=True,
-                     _class='appinfo_value',
                     ),
             'app_updated': HtmlTableColumn(
-                     title='Last update',
                      table='appinfo',
                      field='app_updated',
-                     img='time16',
-                     display=True,
-                     _class='datetime_daily',
                     ),
         }
         for c in self.cols:

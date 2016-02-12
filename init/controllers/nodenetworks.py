@@ -87,126 +87,64 @@ class table_nodenetworks(HtmlTable):
         self.colprops['nodename'].display = True
         self.colprops.update({
             'id': HtmlTableColumn(
-                     title='Id',
                      field='id',
-                     img='net16',
-                     display=False,
                     ),
             'net_id': HtmlTableColumn(
-                     title='Net Id',
                      field='net_id',
-                     img='net16',
-                     display=True,
                     ),
             'net_pvid': HtmlTableColumn(
-                     title='Net VLAN id',
                      field='net_pvid',
-                     img='net16',
-                     display=True,
                     ),
             'net_begin': HtmlTableColumn(
-                     title='Net Ip range begin',
                      field='net_begin',
-                     img='net16',
-                     display=True,
                     ),
             'net_end': HtmlTableColumn(
-                     title='Net Ip range end',
                      field='net_end',
-                     img='net16',
-                     display=True,
                     ),
             'prio': HtmlTableColumn(
-                     title='Net priority',
                      field='prio',
-                     img='net16',
-                     display=True,
                     ),
             'net_gateway': HtmlTableColumn(
-                     title='Net Gateway',
                      field='net_gateway',
-                     img='net16',
-                     display=True,
                     ),
             'net_comment': HtmlTableColumn(
-                     title='Net Comment',
                      field='net_comment',
-                     img='net16',
-                     display=True,
                     ),
             'net_name': HtmlTableColumn(
-                     title='Net Name',
                      field='net_name',
-                     img='net16',
-                     display=True,
                     ),
             'net_network': HtmlTableColumn(
-                     title='Net Network',
                      field='net_network',
-                     img='net16',
-                     display=True,
                     ),
             'net_broadcast': HtmlTableColumn(
-                     title='Net Broadcast',
                      field='net_broadcast',
-                     img='net16',
-                     display=True,
                     ),
             'net_netmask': HtmlTableColumn(
-                     title='Net Netmask',
                      field='net_netmask',
-                     img='net16',
-                     display=True,
                     ),
             'net_team_responsible': HtmlTableColumn(
-                     title='Net Team Responsible',
                      field='net_team_responsible',
-                     img='guys16',
-                     display=True,
                     ),
             'mac': HtmlTableColumn(
-                     title='Mac Address',
                      field='mac',
-                     img='net16',
-                     display=True,
                     ),
             'intf': HtmlTableColumn(
-                     title='Interface',
                      field='intf',
-                     img='net16',
-                     display=True,
                     ),
             'addr_type': HtmlTableColumn(
-                     title='Ip Address Type',
                      field='addr_type',
-                     img='net16',
-                     display=True,
                     ),
             'addr': HtmlTableColumn(
-                     title='Ip Address',
                      field='addr',
-                     img='net16',
-                     display=True,
                     ),
             'mask': HtmlTableColumn(
-                     title='Netmask',
                      field='mask',
-                     img='net16',
-                     display=True,
                     ),
             'flag_deprecated': HtmlTableColumn(
-                     title='Flag, deprecated',
                      field='flag_deprecated',
-                     img='net16',
-                     display=False,
-                     _class="boolean",
                     ),
             'addr_updated': HtmlTableColumn(
-                     title='Address Update',
                      field='addr_updated',
-                     img='net16',
-                     display=True,
-                     _class="datetime_no_age",
                     ),
         })
         for c in self.cols:

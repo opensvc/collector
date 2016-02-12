@@ -23,84 +23,43 @@ class table_sanswitches(HtmlTable):
         self.span = ['sw_fabric', 'sw_name', 'sw_index']
         self.colprops.update({
             'sw_name': HtmlTableColumn(
-                     title='Switch Name',
                      field='sw_name',
-                     img='net16',
-                     display=True,
                     ),
             'sw_port': HtmlTableColumn(
-                     title='Port',
                      field='sw_port',
-                     img='net16',
-                     display=True,
                     ),
             'sw_slot': HtmlTableColumn(
-                     title='Slot',
                      field='sw_slot',
-                     img='net16',
-                     display=True,
                     ),
             'sw_portspeed': HtmlTableColumn(
-                     title='Port Speed',
                      field='sw_portspeed',
-                     img='net16',
-                     display=True,
                     ),
             'sw_portnego': HtmlTableColumn(
-                     title='Port Nego',
                      field='sw_portnego',
-                     img='net16',
-                     display=True,
-                     _class='boolean',
                     ),
             'sw_porttype': HtmlTableColumn(
-                     title='Port Type',
                      field='sw_porttype',
-                     img='net16',
-                     display=True,
                     ),
             'sw_portstate': HtmlTableColumn(
-                     title='Port State',
                      field='sw_portstate',
-                     img='net16',
-                     display=True,
                     ),
             'sw_portname': HtmlTableColumn(
-                     title='Port Name',
                      field='sw_portname',
-                     img='net16',
-                     display=True,
                     ),
             'sw_rportname': HtmlTableColumn(
-                     title='Remote Port Name',
                      field='sw_rportname',
-                     img='net16',
-                     display=True,
                     ),
             'sw_rname': HtmlTableColumn(
-                     title='Remote Name',
                      field='sw_rname',
-                     img='net16',
-                     display=True,
                     ),
             'sw_updated': HtmlTableColumn(
-                     title='Updated',
                      field='sw_updated',
-                     img='time16',
-                     display=True,
-                     _class="datetime_no_age",
                     ),
             'sw_fabric': HtmlTableColumn(
-                     title='Switch Fabric',
                      field='sw_fabric',
-                     img='net16',
-                     display=False,
                     ),
             'sw_index': HtmlTableColumn(
-                     title='Port Index',
                      field='sw_index',
-                     img='net16',
-                     display=True,
                     ),
         })
         for c in self.cols:

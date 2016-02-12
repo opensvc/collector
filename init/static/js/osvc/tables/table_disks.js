@@ -1,4 +1,4 @@
-table_charts_defaults = {
+table_disks_charts_defaults = {
      'pager': {'page': 1},
      'extrarow': false,
      'extrarow_class': "",
@@ -29,11 +29,11 @@ table_charts_defaults = {
      'request_vars': {}
 }
 
-function table_charts(divid, options) {
-  var _options = {"id": "charts"}
-  $.extend(true, _options, table_charts_defaults, options)
+function table_disks_charts(divid, options) {
+  var _options = {"id": "disks_charts"}
+  $.extend(true, _options, table_disks_charts_defaults, options)
   _options.divid = divid
-  _options.caller = "view_charts"
+  _options.caller = "view_disks"
   table_init(_options)
 }
 
@@ -80,14 +80,14 @@ function view_disks(divid, options) {
 	var o = {}
 	$("#"+divid).load("/init/static/views/disks.html", function() {
 		$(this).i18n()
-		table_charts("charts", options)
+		table_disks_charts("charts", options)
 		table_disks("disks", options)
 		$("#charts_a").bind("click", function() {
 			if (!$("#charts").is(":visible")) {
 				$(this).addClass("down16")
 				$(this).removeClass("right16")
 				$("#charts").show()
-				table_charts("charts", options)
+				table_disks_charts("charts", options)
 			} else {
 				$(this).addClass("right16")
 				$(this).removeClass("down16")

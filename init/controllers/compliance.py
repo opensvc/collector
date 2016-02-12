@@ -79,33 +79,17 @@ class table_comp_rulesets_services(HtmlTable):
         self.cols = ['svc_name', 'encap', 'ruleset_id', 'ruleset_name'] + v_services_cols + ['svc_status_updated']
         self.colprops = v_services_colprops
         self.colprops['ruleset_id'] = HtmlTableColumn(
-                     title='Ruleset id',
                      field='ruleset_id',
-                     img='key',
-                     display=True,
                     )
         self.colprops['ruleset_name'] = HtmlTableColumn(
-                     title='Ruleset',
                      field='ruleset_name',
-                     img='comp16',
-                     display=True,
                     )
         self.colprops['svc_status_updated'] = HtmlTableColumn(
-                     title='Status updated',
                      field='svc_status_updated',
-                     img='time16',
-                     display=False,
-                     _class='datetime_status',
                     )
         self.colprops['encap'] = HtmlTableColumn(
-                     title='Encap',
                      field='encap',
-                     img='svc',
-                     display=True,
-                     _class="boolean",
                     )
-        self.colprops['svc_name'].t = self
-        self.colprops['svc_name'].display = True
         for c in self.cols:
             self.colprops[c].table = 'v_comp_services'
         self.span = ['svc_name']
@@ -126,19 +110,11 @@ class table_comp_rulesets_nodes(HtmlTable):
         self.cols = ['nodename', 'ruleset_id', 'ruleset_name'] + nodes_cols
         self.colprops = nodes_colprops
         self.colprops['ruleset_id'] = HtmlTableColumn(
-                     title='Ruleset id',
                      field='ruleset_id',
-                     img='key',
-                     display=True,
                     )
         self.colprops['ruleset_name'] = HtmlTableColumn(
-                     title='Ruleset',
                      field='ruleset_name',
-                     img='comp16',
-                     display=True,
                     )
-        self.colprops['nodename'].t = self
-        self.colprops['nodename'].display = True
         for c in self.cols:
             self.colprops[c].table = 'v_comp_nodes'
         self.force_cols = ['os_name', 'ruleset_id']
@@ -187,7 +163,7 @@ def ajax_comp_rulesets_services():
     q = _where(None, 'v_comp_services', domain_perms(), 'svc_name')
     for f in t.cols:
         q = _where(q, 'v_comp_services', t.filter_parse(f), f)
-    q = apply_gen_filters(q, t.tables())
+    q = apply_gen_filters(q, 'v_comp_services')
 
     if len(request.args) == 1 and request.args[0] == 'data':
         n = db(q).select(db.v_comp_services.id.count(), cacheable=True).first()._extra[db.v_comp_services.id.count()]
@@ -215,7 +191,7 @@ def ajax_comp_rulesets_nodes():
         q &= db.v_comp_nodes.team_responsible.belongs(user_groups())
     for f in t.cols:
         q = _where(q, 'v_comp_nodes', t.filter_parse(f), f)
-    q = apply_gen_filters(q, t.tables())
+    q = apply_gen_filters(q, 'v_comp_nodes')
 
     if len(request.args) == 1 and request.args[0] == 'data':
         n = db(q).select(db.v_comp_nodes.id.count(), cacheable=True).first()._extra[db.v_comp_nodes.id.count()]
@@ -255,133 +231,76 @@ class table_comp_rulesets(HtmlTable):
                     ]
         self.colprops = {
             'var_updated': HtmlTableColumn(
-                     title='Updated',
                      field='var_updated',
                      table='v_comp_rulesets',
-                     display=True,
-                     img='comp16',
-                     _class="datetime_no_age",
                     ),
             'teams_responsible': HtmlTableColumn(
-                     title='Teams responsible',
                      field='teams_responsible',
                      table='v_comp_rulesets',
-                     display=True,
-                     img='admins16',
                     ),
             'teams_publication': HtmlTableColumn(
-                     title='Teams publication',
                      field='teams_publication',
                      table='v_comp_rulesets',
-                     display=True,
-                     img='guy16',
                     ),
             'var_author': HtmlTableColumn(
-                     title='Author',
                      field='var_author',
                      table='v_comp_rulesets',
-                     display=True,
-                     img='guy16',
                     ),
             'id': HtmlTableColumn(
-                     title='Rule id',
                      field='id',
                      table='v_comp_rulesets',
-                     display=False,
-                     img='comp16',
                     ),
             'fset_id': HtmlTableColumn(
-                     title='Filterset id',
                      field='fset_id',
                      table='v_comp_rulesets',
-                     display=False,
-                     img='filter16',
                     ),
             'ruleset_id': HtmlTableColumn(
-                     title='Ruleset id',
                      field='ruleset_id',
                      table='v_comp_rulesets',
-                     display=False,
-                     img='comp16',
                     ),
             'chain_len': HtmlTableColumn(
-                     title='Chain length',
                      field='chain_len',
                      table='v_comp_rulesets',
-                     display=False,
-                     img='comp16',
                     ),
             'chain': HtmlTableColumn(
-                     title='Chain',
                      field='chain',
                      table='v_comp_rulesets',
-                     display=False,
-                     img='comp16',
                     ),
             'encap_rset': HtmlTableColumn(
-                     title='Encapsulated ruleset',
                      field='encap_rset',
                      table='v_comp_rulesets',
-                     display=True,
-                     img='comp16',
                     ),
             'encap_rset_id': HtmlTableColumn(
-                     title='Encapsulated ruleset id',
                      field='encap_rset_id',
                      table='v_comp_rulesets',
-                     display=False,
-                     img='comp16',
                     ),
             'ruleset_name': HtmlTableColumn(
-                     title='Ruleset',
                      field='ruleset_name',
                      table='v_comp_rulesets',
-                     display=True,
-                     img='comp16',
                     ),
             'ruleset_type': HtmlTableColumn(
-                     title='Ruleset type',
                      field='ruleset_type',
                      table='v_comp_rulesets',
-                     display=True,
-                     img='comp16',
                     ),
             'ruleset_public': HtmlTableColumn(
-                     title='Ruleset public',
                      field='ruleset_public',
                      table='v_comp_rulesets',
-                     display=True,
-                     img='comp16',
-                     _class='boolean',
                     ),
             'fset_name': HtmlTableColumn(
-                     title='Filterset',
                      field='fset_name',
                      table='v_comp_rulesets',
-                     display=True,
-                     img='filter16',
-                     _class='fset_name',
                     ),
             'var_value': HtmlTableColumn(
-                     title='Value',
                      field='var_value',
                      table='v_comp_rulesets',
-                     display=True,
-                     img='comp16',
                     ),
             'var_name': HtmlTableColumn(
-                     title='Variable',
                      field='var_name',
                      table='v_comp_rulesets',
-                     display=True,
-                     img='comp16',
                     ),
             'var_class': HtmlTableColumn(
-                     title='Class',
                      field='var_class',
                      table='v_comp_rulesets',
-                     display=False,
-                     img='wf16',
                     ),
         }
         self.force_cols = ["id", "ruleset_id", "var_class", "encap_rset"]
@@ -489,55 +408,32 @@ class table_comp_moduleset(HtmlTable):
                      'modset_mod_author']
         self.colprops = {
             'modset_name': HtmlTableColumn(
-                     title='Moduleset',
                      table='v_comp_modulesets',
                      field='modset_name',
-                     display=True,
-                     img='action16',
                     ),
             'autofix': HtmlTableColumn(
-                     title='Autofix',
                      table='v_comp_modulesets',
                      field='autofix',
-                     display=True,
-                     img='actionred16',
-                     _class='boolean',
                     ),
             'modset_mod_name': HtmlTableColumn(
-                     title='Module',
                      table='v_comp_modulesets',
                      field='modset_mod_name',
-                     display=True,
-                     img='action16',
                     ),
             'modset_mod_updated': HtmlTableColumn(
-                     title='Updated',
                      table='v_comp_modulesets',
                      field='modset_mod_updated',
-                     display=True,
-                     img='time16',
-                     _class="datetime_no_age",
                     ),
             'modset_mod_author': HtmlTableColumn(
-                     title='Author',
                      table='v_comp_modulesets',
                      field='modset_mod_author',
-                     display=True,
-                     img='guy16',
                     ),
             'teams_responsible': HtmlTableColumn(
-                     title='Teams responsible',
                      table='v_comp_modulesets',
                      field='teams_responsible',
-                     display=True,
-                     img='admins16',
                     ),
             'teams_publication': HtmlTableColumn(
-                     title='Teams publication',
                      table='v_comp_modulesets',
                      field='teams_publication',
-                     display=True,
-                     img='guys16',
                     ),
         }
         self.dataable = True
@@ -604,33 +500,17 @@ class table_comp_modulesets_services(HtmlTable):
         self.cols = ['svc_name', 'encap', 'modset_id', 'modset_name'] + v_services_cols + ['svc_status_updated']
         self.colprops = v_services_colprops
         self.colprops['modset_id'] = HtmlTableColumn(
-                     title='Moduleset id',
                      field='modset_id',
-                     img='key',
-                     display=True,
                     )
         self.colprops['modset_name'] = HtmlTableColumn(
-                     title='Moduleset',
                      field='modset_name',
-                     img='actions',
-                     display=True,
                     )
         self.colprops['svc_status_updated'] = HtmlTableColumn(
-                     title='Status updated',
                      field='svc_status_updated',
-                     img='time16',
-                     display=False,
-                     _class='datetime_status',
                     )
         self.colprops['encap'] = HtmlTableColumn(
-                     title='Encap',
                      field='encap',
-                     img='svc',
-                     display=True,
-                     _class='boolean',
                     )
-        self.colprops['svc_name'].t = self
-        self.colprops['svc_name'].display = True
         for c in self.cols:
             self.colprops[c].table = 'v_comp_services'
         self.span = ['svc_name']
@@ -651,20 +531,12 @@ class table_comp_modulesets_nodes(HtmlTable):
         self.cols = ['nodename', 'modset_id', 'modset_name'] + nodes_cols
         self.colprops = nodes_colprops
         self.colprops['modset_id'] = HtmlTableColumn(
-                     title='Moduleset id',
                      field='modset_id',
-                     img='key',
-                     display=True,
                     )
         self.colprops['modset_name'] = HtmlTableColumn(
-                     title='Moduleset',
                      table='v_comp_moduleset',
                      field='modset_name',
-                     img='actions',
-                     display=True,
                     )
-        self.colprops['nodename'].t = self
-        self.colprops['nodename'].display = True
         for c in self.cols:
             self.colprops[c].table = 'v_comp_nodes'
         self.force_cols = ['os_name', 'modset_id']
@@ -689,7 +561,7 @@ def ajax_comp_modulesets_services_col_values():
         q &= db.v_comp_services.team_responsible.belongs(user_groups())
     for f in t.cols:
         q = _where(q, 'v_comp_services', t.filter_parse(f), f)
-    q = apply_gen_filters(q, t.tables())
+    q = apply_gen_filters(q, 'v_comp_services')
     t.object_list = db(q).select(o, groupby=g, orderby=o)
     return t.col_values_cloud_ungrouped(col)
 
@@ -705,7 +577,7 @@ def ajax_comp_modulesets_nodes_col_values():
         q &= db.v_comp_nodes.team_responsible.belongs(user_groups())
     for f in t.cols:
         q = _where(q, 'v_comp_nodes', t.filter_parse(f), f)
-    q = apply_gen_filters(q, t.tables())
+    q = apply_gen_filters(q, 'v_comp_nodes')
     t.object_list = db(q).select(o, groupby=g, orderby=o)
     return t.col_values_cloud_ungrouped(col)
 
@@ -719,7 +591,7 @@ def ajax_comp_modulesets_services():
     q = _where(None, 'v_comp_services', domain_perms(), 'svc_name')
     for f in t.cols:
         q = _where(q, 'v_comp_services', t.filter_parse(f), f)
-    q = apply_gen_filters(q, t.tables())
+    q = apply_gen_filters(q, 'v_comp_services')
 
     if len(request.args) == 1 and request.args[0] == 'data':
         n = db(q).select(db.v_comp_services.id.count(), cacheable=True).first()._extra[db.v_comp_services.id.count()]
@@ -747,7 +619,7 @@ def ajax_comp_modulesets_nodes():
         q &= db.v_comp_nodes.team_responsible.belongs(user_groups())
     for f in t.cols:
         q = _where(q, 'v_comp_nodes', t.filter_parse(f), f)
-    q = apply_gen_filters(q, t.tables())
+    q = apply_gen_filters(q, 'v_comp_nodes')
 
     if len(request.args) == 1 and request.args[0] == 'data':
         n = db(q).select(db.v_comp_nodes.id.count(), cacheable=True).first()._extra[db.v_comp_nodes.id.count()]
@@ -804,66 +676,35 @@ class table_comp_mod_status(HtmlTable):
                      'mod_log']
         self.colprops = {
             'mod_name': HtmlTableColumn(
-                     title='Module',
                      field='mod_name',
                      table='comp_mod_status',
-                     display=True,
-                     img='action16',
                     ),
             'total': HtmlTableColumn(
-                     title='Total',
                      field='total',
                      table='comp_mod_status',
-                     display=True,
-                     img='check16',
-                     _class='numeric',
                     ),
             'ok': HtmlTableColumn(
-                     title='Ok',
                      field='ok',
                      table='comp_mod_status',
-                     display=True,
-                     img='check16',
-                     _class='numeric',
                     ),
             'nok': HtmlTableColumn(
-                     title='Not Ok',
                      field='nok',
                      table='comp_mod_status',
-                     display=True,
-                     img='check16',
-                     _class='numeric',
                     ),
             'na': HtmlTableColumn(
-                     title='N/A',
                      field='na',
                      table='comp_mod_status',
-                     display=True,
-                     img='check16',
-                     _class='numeric',
                     ),
             'obs': HtmlTableColumn(
-                     title='Obsolete',
                      field='obs',
                      table='comp_mod_status',
-                     display=True,
-                     img='check16',
-                     _class='numeric',
                     ),
             'pct': HtmlTableColumn(
-                     title='Percent',
                      field='pct',
                      table='comp_mod_status',
-                     display=True,
-                     img='check16',
-                     _class='comp_pct',
                     ),
             'mod_log': HtmlTableColumn(
-                     title='History',
                      field='mod_log',
-                     display=True,
-                     img='log16',
-                     _class='comp_plot',
                     ),
         }
         for i in self.cols:
@@ -887,67 +728,35 @@ class table_comp_svc_status(HtmlTable):
                      "svc_log"]
         self.colprops = {
             'svc_name': HtmlTableColumn(
-                     title='Service',
                      field='svc_name',
                      table='comp_svc_status',
-                     display=True,
-                     img='svc',
-                     _class='svcname',
                     ),
             'total': HtmlTableColumn(
-                     title='Total',
                      field='total',
                      table='comp_svc_status',
-                     display=True,
-                     img='check16',
-                     _class='numeric',
                     ),
             'ok': HtmlTableColumn(
-                     title='Ok',
                      field='ok',
                      table='comp_svc_status',
-                     display=True,
-                     img='check16',
-                     _class='numeric',
                     ),
             'nok': HtmlTableColumn(
-                     title='Not Ok',
                      field='nok',
                      table='comp_svc_status',
-                     display=True,
-                     img='check16',
-                     _class='numeric',
                     ),
             'na': HtmlTableColumn(
-                     title='N/A',
                      field='na',
                      table='comp_svc_status',
-                     display=True,
-                     img='check16',
-                     _class='numeric',
                     ),
             'obs': HtmlTableColumn(
-                     title='Obsolete',
                      field='obs',
                      table='comp_svc_status',
-                     display=True,
-                     img='check16',
-                     _class='numeric',
                     ),
             'pct': HtmlTableColumn(
-                     title='Percent',
                      field='pct',
                      table='comp_svc_status',
-                     display=True,
-                     img='check16',
-                     _class='comp_pct',
                     ),
             'svc_log': HtmlTableColumn(
-                     title='History',
                      field='svc_log',
-                     display=True,
-                     img='log16',
-                     _class='comp_plot',
                     ),
         }
         for i in self.cols:
@@ -971,67 +780,35 @@ class table_comp_node_status(HtmlTable):
                      "node_log"]
         self.colprops = {
             'node_name': HtmlTableColumn(
-                     title='Node',
                      field='node_name',
                      table='comp_node_status',
-                     display=True,
-                     img='node16',
-                     _class='nodename',
                     ),
             'total': HtmlTableColumn(
-                     title='Total',
                      field='total',
                      table='comp_node_status',
-                     display=True,
-                     img='check16',
-                     _class='numeric',
                     ),
             'ok': HtmlTableColumn(
-                     title='Ok',
                      field='ok',
                      table='comp_node_status',
-                     display=True,
-                     img='check16',
-                     _class='numeric',
                     ),
             'nok': HtmlTableColumn(
-                     title='Not Ok',
                      field='nok',
                      table='comp_node_status',
-                     display=True,
-                     img='check16',
-                     _class='numeric',
                     ),
             'na': HtmlTableColumn(
-                     title='N/A',
                      field='na',
                      table='comp_node_status',
-                     display=True,
-                     img='check16',
-                     _class='numeric',
                     ),
             'obs': HtmlTableColumn(
-                     title='Obsolete',
                      field='obs',
                      table='comp_node_status',
-                     display=True,
-                     img='check16',
-                     _class='numeric',
                     ),
             'pct': HtmlTableColumn(
-                     title='Percent',
                      field='pct',
                      table='comp_node_status',
-                     display=True,
-                     img='check16',
-                     _class='comp_pct',
                     ),
             'node_log': HtmlTableColumn(
-                     title='History',
                      field='node_log',
-                     display=True,
-                     img='log16',
-                     _class='comp_plot',
                     ),
         }
         for i in self.cols:
@@ -1089,81 +866,44 @@ class table_comp_status(HtmlTable):
         self.colprops = nodes_colprops
         self.colprops.update({
             'id': HtmlTableColumn(
-                     title='id',
                      field='id',
                      table='comp_status',
-                     img='key',
-                     display=False,
                     ),
             'run_date': HtmlTableColumn(
-                     title='Run date',
                      field='run_date',
                      table='comp_status',
-                     img='time16',
-                     display=True,
-                     _class='datetime_weekly',
                     ),
             'run_nodename': HtmlTableColumn(
-                     title='Node',
                      field='run_nodename',
                      table='comp_status',
-                     img='node16',
-                     display=True,
-                     _class='nodename',
                     ),
             'run_svcname': HtmlTableColumn(
-                     title='Service',
                      field='run_svcname',
                      table='comp_status',
-                     img='svc',
-                     display=True,
-                     _class='svcname',
                     ),
             'run_action': HtmlTableColumn(
-                     title='Action',
                      field='run_action',
                      table='comp_status',
-                     img='mod16',
-                     display=True,
                     ),
             'run_module': HtmlTableColumn(
-                     title='Module',
                      field='run_module',
                      table='comp_status',
-                     img='mod16',
-                     display=True,
                     ),
             'rset_md5': HtmlTableColumn(
-                     title='Ruleset md5',
                      field='rset_md5',
                      table='comp_status',
-                     img='comp16',
-                     display=False,
-                     _class='nowrap pre rset_md5',
                     ),
             'run_status': HtmlTableColumn(
-                     title='Status',
                      field='run_status',
                      table='comp_status',
-                     img='compstatus',
-                     display=True,
-                     _class='run_status',
                     ),
             'run_status_log': HtmlTableColumn(
-                     title='History',
                      field='un_status_log',
                      table='comp_status',
-                     img='complog',
-                     display=False,
-                     _class='run_status_log',
                     ),
             'run_log': HtmlTableColumn(
-                     title='Log',
                      field='run_log',
                      table='comp_status',
-                     img='log16',
-                     display=False,
-                     _class='run_log',
                     ),
         })
         self.ajax_col_values = 'ajax_comp_status_col_values'

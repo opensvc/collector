@@ -169,89 +169,48 @@ class table_checks(HtmlTable):
                      'chk_instance']
         self.colprops = {
             'chk_nodename': HtmlTableColumn(
-                title = 'Nodename',
                 field = 'chk_nodename',
-                display = True,
                 table = 'checks_live',
-                img = 'node16',
-                _class = 'nodename',
             ),
             'chk_svcname': HtmlTableColumn(
-                title = 'Service',
                 field = 'chk_svcname',
-                display = True,
                 table = 'checks_live',
-                img = 'check16',
-                _class = 'svcname',
             ),
             'chk_type': HtmlTableColumn(
-                title = 'Type',
                 field = 'chk_type',
-                display = True,
                 table = 'checks_live',
-                img = 'check16',
-                _class = "chk_type",
             ),
             'chk_instance': HtmlTableColumn(
-                title = 'Instance',
                 field = 'chk_instance',
-                display = True,
                 table = 'checks_live',
-                img = 'check16',
-                _class = "chk_instance",
             ),
             'chk_err': HtmlTableColumn(
-                title = 'Error',
                 field = 'chk_err',
-                display = True,
                 table = 'checks_live',
-                img = 'check16'
             ),
             'chk_value': HtmlTableColumn(
-                title = 'Value',
                 field = 'chk_value',
-                display = True,
                 table = 'checks_live',
-                img = 'check16',
-                _class = 'chk_value',
             ),
             'chk_low': HtmlTableColumn(
-                title = 'Low threshold',
                 field = 'chk_low',
-                display = True,
                 table = 'checks_live',
-                img = 'check16',
-                _class = 'chk_low',
             ),
             'chk_high': HtmlTableColumn(
-                title = 'High threshold',
                 field = 'chk_high',
-                display = True,
                 table = 'checks_live',
-                img = 'check16',
-                _class = 'chk_high',
             ),
             'chk_created': HtmlTableColumn(
-                title = 'Created',
                 field = 'chk_created',
-                display = False,
                 table = 'checks_live',
-                img = 'check16'
             ),
             'chk_updated': HtmlTableColumn(
-                title = 'Last check update',
                 field = 'chk_updated',
-                display = True,
                 table = 'checks_live',
-                img = 'check16',
-                _class = 'datetime_daily',
             ),
             'chk_threshold_provider': HtmlTableColumn(
-                title = 'Threshold provider',
                 field = 'chk_threshold_provider',
-                display = True,
                 table = 'checks_live',
-                img = 'check16'
             ),
         }
         self.colprops.update(nodes_colprops)
@@ -260,18 +219,12 @@ class table_checks(HtmlTable):
 
         self.colprops.update({
             'app_domain': HtmlTableColumn(
-                     title='App domain',
                      field='app_domain',
-                     img='svc',
                      table='apps',
-                     display=False,
                     ),
             'app_team_ops': HtmlTableColumn(
-                     title='Ops team',
                      field='app_team_ops',
-                     img='guys16',
                      table='apps',
-                     display=False,
                     ),
         })
         self.cols.insert(self.cols.index('team_integ')+1, 'app_team_ops')

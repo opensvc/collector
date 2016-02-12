@@ -2358,9 +2358,9 @@ function cell_decorator_obs_type(e) {
   div = $("<div class='nowrap'>"+v+"</div>")
   $(e).append(div)
   if (v == "os") {
-      div.addClass("os16")
+      div.addClass("icon os16")
   } else if (v == "hw") {
-      div.addClass("hw16")
+      div.addClass("icon hw16")
   }
 }
 

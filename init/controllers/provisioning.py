@@ -14,56 +14,32 @@ class table_templates(HtmlTable):
         self.force_cols = ['id', 'tpl_name']
         self.colprops = {
             'id': HtmlTableColumn(
-                title = 'Id',
                 field = 'id',
-                display = False,
                 table = 'v_prov_templates',
-                img = 'key'
             ),
             'tpl_name': HtmlTableColumn(
-                title = 'Name',
                 field = 'tpl_name',
-                display = True,
                 table = 'v_prov_templates',
-                img = 'prov',
-                _class = 'prov_template',
             ),
             'tpl_command': HtmlTableColumn(
-                title = 'Command',
                 field = 'tpl_command',
-                display = True,
                 table = 'v_prov_templates',
-                img = 'action16',
-                _class='tpl_command',
             ),
             'tpl_comment': HtmlTableColumn(
-                title = 'Comment',
                 field = 'tpl_comment',
-                display = True,
                 table = 'v_prov_templates',
-                img = 'edit16'
             ),
             'tpl_created': HtmlTableColumn(
-                title = 'Created on',
                 field = 'tpl_created',
-                display = False,
                 table = 'v_prov_templates',
-                img = 'time16'
             ),
             'tpl_author': HtmlTableColumn(
-                title = 'Author',
                 field = 'tpl_author',
-                display = False,
                 table = 'v_prov_templates',
-                img = 'guy16'
             ),
             'tpl_team_responsible': HtmlTableColumn(
-                title = 'Team responsible',
                 field = 'tpl_team_responsible',
-                display = True,
                 table = 'v_prov_templates',
-                img = 'guys16',
-                _class='groups',
             ),
         }
         self.ajax_col_values = 'ajax_prov_admin_col_values'

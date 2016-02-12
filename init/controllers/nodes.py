@@ -9,11 +9,7 @@ class table_nodes(HtmlTable):
         self.keys = ["nodename"]
         self.colprops.update({
             'nodename': HtmlTableColumn(
-                     title='Nodename',
                      field='nodename',
-                     img='node16',
-                     display=True,
-                     _class='nodename',
                     ),
         })
         for c in self.cols:
@@ -21,18 +17,12 @@ class table_nodes(HtmlTable):
 
         self.colprops.update({
             'app_domain': HtmlTableColumn(
-                     title='App domain',
                      field='app_domain',
-                     img='svc',
                      table='apps',
-                     display=False,
                     ),
             'app_team_ops': HtmlTableColumn(
-                     title='Ops team',
                      field='app_team_ops',
-                     img='guys16',
                      table='apps',
-                     display=False,
                     ),
         })
         self.cols.insert(self.cols.index('team_integ')+1, 'app_team_ops')
@@ -167,26 +157,16 @@ class table_uids(HtmlTable):
         self.span = ["user_id"]
         self.colprops = {
             'user_id': HtmlTableColumn(
-                     title='User id',
                      field='user_id',
                      table='v_uids',
-                     img='guy16',
-                     display=True,
-                     _class='uid',
                     ),
             'user_id_count': HtmlTableColumn(
-                     title='User count',
                      field='user_id_count',
                      table='v_uids',
-                     img='guy16',
-                     display=True,
                     ),
             'user_name': HtmlTableColumn(
-                     title='User name',
                      field='user_name',
                      table='v_uids',
-                     img='guy16',
-                     display=True,
                     ),
         }
         self.colprops['user_id'].t = self
@@ -228,26 +208,16 @@ class table_gids(HtmlTable):
         self.span = ["group_id"]
         self.colprops = {
             'group_id': HtmlTableColumn(
-                     title='User id',
                      field='group_id',
                      table='v_gids',
-                     img='guy16',
-                     display=True,
-                     _class='gid',
                     ),
             'group_id_count': HtmlTableColumn(
-                     title='Group count',
                      field='group_id_count',
                      table='v_gids',
-                     img='guy16',
-                     display=True,
                     ),
             'group_name': HtmlTableColumn(
-                     title='Group name',
                      field='group_name',
                      table='v_gids',
-                     img='guy16',
-                     display=True,
                     ),
         }
         self.colprops['group_id'].t = self

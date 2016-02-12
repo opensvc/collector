@@ -38,62 +38,36 @@ class table_metrics(HtmlTable):
                      'metric_author']
         self.colprops = {
             'id': HtmlTableColumn(
-                title = 'Id',
                 field = 'id',
-                display = True,
                 table = 'metrics',
-                img = 'key'
             ),
             'metric_name': HtmlTableColumn(
-                title = 'Name',
                 field = 'metric_name',
-                display = True,
                 table = 'metrics',
-                img = 'prov',
-                _class='metric_name',
             ),
             'metric_sql': HtmlTableColumn(
-                title = 'SQL request',
                 field = 'metric_sql',
-                display = True,
                 table = 'metrics',
-                img = 'action16',
-                _class = 'sql',
             ),
             'metric_created': HtmlTableColumn(
-                title = 'Created on',
                 field = 'metric_created',
-                display = False,
                 table = 'metrics',
-                img = 'time16'
             ),
             'metric_author': HtmlTableColumn(
-                title = 'Author',
                 field = 'metric_author',
-                display = False,
                 table = 'metrics',
-                img = 'guy16'
             ),
             'metric_col_value_index': HtmlTableColumn(
-                title = 'Value column index',
                 field = 'metric_col_value_index',
-                display = True,
                 table = 'metrics',
-                img = 'action16'
             ),
             'metric_col_instance_index': HtmlTableColumn(
-                title = 'Instance column index',
                 field = 'metric_col_instance_index',
-                display = True,
                 table = 'metrics',
-                img = 'action16'
             ),
             'metric_col_instance_label': HtmlTableColumn(
-                title = 'Instance label',
                 field = 'metric_col_instance_label',
-                display = True,
                 table = 'metrics',
-                img = 'action16'
             ),
         }
         self.ajax_col_values = 'ajax_metrics_admin_col_values'
@@ -164,27 +138,16 @@ class table_charts(HtmlTable):
                      'chart_yaml']
         self.colprops = {
             'chart_name': HtmlTableColumn(
-                title = 'Name',
                 field = 'chart_name',
-                display = True,
                 table = 'charts',
-                img = 'spark16',
-                _class = 'chart_name',
             ),
             'chart_yaml': HtmlTableColumn(
-                title = 'Definition',
                 field = 'chart_yaml',
-                display = True,
                 table = 'charts',
-                img = 'log16',
-                _class = 'yaml',
             ),
             'id': HtmlTableColumn(
-                title = 'Id',
                 field = 'id',
-                display = True,
                 table = 'charts',
-                img = 'key'
             ),
         }
         self.ajax_col_values = 'ajax_charts_admin_col_values'
@@ -255,27 +218,16 @@ class table_reports_admin(HtmlTable):
                      'report_yaml']
         self.colprops = {
             'report_name': HtmlTableColumn(
-                title = 'Name',
                 field = 'report_name',
-                display = True,
                 table = 'reports',
-                img = 'spark16',
-                _class='report_name',
             ),
             'report_yaml': HtmlTableColumn(
-                title = 'Definition',
                 field = 'report_yaml',
-                display = True,
                 table = 'reports',
-                img = 'log16',
-                _class='yaml',
             ),
             'id': HtmlTableColumn(
-                title = 'Id',
                 field = 'id',
-                display = True,
                 table = 'reports',
-                img = 'key'
             ),
         }
         self.ajax_col_values = 'ajax_reports_admin_col_values'

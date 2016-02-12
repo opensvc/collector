@@ -80,59 +80,31 @@ class table_nodesan(HtmlTable):
         self.colprops['nodename'].display = True
         self.colprops.update({
             'id': HtmlTableColumn(
-                     title='Id',
                      field='id',
-                     img='net16',
-                     display=False,
                     ),
             'hba_id': HtmlTableColumn(
-                     title='Hba Id',
                      field='hba_id',
-                     img='net16',
-                     display=True,
                     ),
             'tgt_id': HtmlTableColumn(
-                     title='Target Id',
                      field='tgt_id',
-                     img='net16',
-                     display=True,
                     ),
             'array_name': HtmlTableColumn(
-                     title='Array Name',
                      field='array_name',
-                     img='disk16',
-                     display=True,
                     ),
             'array_model': HtmlTableColumn(
-                     title='Array Model',
                      field='array_model',
-                     img='disk16',
-                     display=True,
                     ),
             'array_cache': HtmlTableColumn(
-                     title='Array Cache',
                      field='array_cache',
-                     img='disk16',
-                     display=False,
                     ),
             'array_firmware': HtmlTableColumn(
-                     title='Array Firmware',
                      field='array_firmware',
-                     img='disk16',
-                     display=False,
                     ),
             'array_updated': HtmlTableColumn(
-                     title='Array Updated',
                      field='array_updated',
-                     img='time16',
-                     display=False,
-                     _class="datetime_no_age",
                     ),
             'array_level': HtmlTableColumn(
-                     title='Array Level',
                      field='array_level',
-                     img='disk16',
-                     display=False,
                     ),
         })
         for c in self.cols:

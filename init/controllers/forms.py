@@ -34,93 +34,52 @@ class table_workflows(HtmlTable):
                     ]
         self.colprops = {
             'form_head_id': HtmlTableColumn(
-                title = 'Head form id',
                 field = 'form_head_id',
-                display = True,
                 table = 'workflows',
-                img = 'wf16',
-                _class = 'form_id',
             ),
             'last_form_id': HtmlTableColumn(
-                title = 'Last form id',
                 field = 'last_form_id',
-                display = True,
                 table = 'workflows',
-                img = 'wf16',
-                _class = 'form_id',
             ),
             'status': HtmlTableColumn(
-                title = 'Status',
                 field = 'status',
-                display = True,
                 table = 'workflows',
-                img = 'wf16'
             ),
             'steps': HtmlTableColumn(
-                title = 'Steps',
                 field = 'steps',
-                display = True,
                 table = 'workflows',
-                img = 'wf16'
             ),
             'creator': HtmlTableColumn(
-                title = 'Creator',
                 field = 'creator',
-                display = True,
                 table = 'workflows',
-                img = 'guy16'
             ),
             'last_assignee': HtmlTableColumn(
-                title = 'Last assignee',
                 field = 'last_assignee',
-                display = True,
                 table = 'workflows',
-                img = 'guy16'
             ),
             'create_date': HtmlTableColumn(
-                title = 'Created on',
                 field = 'create_date',
-                display = True,
                 table = 'workflows',
-                img = 'time16',
-                _class="datetime_no_age",
             ),
             'last_update': HtmlTableColumn(
-                title = 'Last updated',
                 field = 'last_update',
-                display = True,
                 table = 'workflows',
-                img = 'time16',
-                _class="datetime_no_age",
             ),
             'form_name': HtmlTableColumn(
-                title = 'Name',
                 field = 'form_name',
-                display = True,
                 table = 'forms_revisions',
-                img = 'wf16'
             ),
             'last_form_name': HtmlTableColumn(
-                title = 'Last form name',
                 field = 'last_form_name',
-                display = True,
                 table = 'workflows',
-                img = 'wf16'
             ),
             'form_folder': HtmlTableColumn(
-                title = 'Folder',
                 field = 'form_folder',
-                display = True,
                 table = 'forms_revisions',
-                img = 'hd16'
             ),
             'form_yaml': HtmlTableColumn(
-                title = 'Definition',
                 field = 'form_yaml',
-                display = False,
                 table = 'forms_revisions',
-                img = 'action16',
-                _class = 'yaml'
             ),
         }
         for col in self.cols:
@@ -197,72 +156,40 @@ class table_forms(HtmlTable):
                      'form_author']
         self.colprops = {
             'id': HtmlTableColumn(
-                title = 'Id',
                 field = 'id',
-                display = False,
                 table = 'v_forms',
-                img = 'key'
             ),
             'form_name': HtmlTableColumn(
-                title = 'Name',
                 field = 'form_name',
-                display = True,
                 table = 'v_forms',
-                img = 'prov',
-                _class="form_name"
             ),
             'form_team_publication': HtmlTableColumn(
-                title = 'Team publication',
                 field = 'form_team_publication',
-                display = True,
                 table = 'v_forms',
-                img = 'guys16',
-                _class='groups'
             ),
             'form_team_responsible': HtmlTableColumn(
-                title = 'Team responsible',
                 field = 'form_team_responsible',
-                display = True,
                 table = 'v_forms',
-                img = 'guys16',
-                _class='groups'
             ),
             'form_type': HtmlTableColumn(
-                title = 'Type',
                 field = 'form_type',
-                display = True,
                 table = 'v_forms',
-                img = 'edit16'
             ),
             'form_folder': HtmlTableColumn(
-                title = 'Folder',
                 field = 'form_folder',
-                display = True,
                 table = 'v_forms',
-                img = 'hd16',
             ),
             'form_yaml': HtmlTableColumn(
-                title = 'Definition',
                 field = 'form_yaml',
-                display = True,
                 table = 'v_forms',
-                img = 'action16',
-                _class = 'yaml'
             ),
             'form_created': HtmlTableColumn(
-                title = 'Created on',
                 field = 'form_created',
-                display = False,
                 table = 'v_forms',
-                img = 'time16',
-                _class="datetime_no_age",
             ),
             'form_author': HtmlTableColumn(
-                title = 'Author',
                 field = 'form_author',
-                display = False,
                 table = 'v_forms',
-                img = 'guy16'
             ),
         }
         self.ajax_col_values = 'ajax_forms_admin_col_values'

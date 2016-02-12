@@ -17,54 +17,32 @@ class table_dns_domains(HtmlTable):
                      'account']
         self.colprops = {
             'id': HtmlTableColumn(
-                     title='Domain Id',
                      table="domains",
                      field='id',
-                     img='dns16',
-                     display=True,
                     ),
             'name': HtmlTableColumn(
-                     title='Name',
                      table="domains",
                      field='name',
-                     img='dns16',
-                     display=True,
-                     _class="dns_domain",
                     ),
             'master': HtmlTableColumn(
-                     title='Master',
                      table="domains",
                      field='master',
-                     img='dns16',
-                     display=False,
                     ),
             'last_check': HtmlTableColumn(
-                     title='Last Check',
                      table="domains",
                      field='last_check',
-                     img='time16',
-                     display=False,
                     ),
             'type': HtmlTableColumn(
-                     title='Type',
                      table="domains",
                      field='type',
-                     img='dns16',
-                     display=True,
                     ),
             'notified_serial': HtmlTableColumn(
-                     title='Notified Serial',
                      table="domains",
                      field='notified_serial',
-                     img='dns16',
-                     display=True,
                     ),
             'account': HtmlTableColumn(
-                     title='Account',
                      table="domains",
                      field='account',
-                     img='guy16',
-                     display=False,
                     ),
         }
         self.keys = ["id"]
@@ -126,62 +104,36 @@ class table_dns_records(HtmlTable):
         self.span = ["id"]
         self.colprops = {
             'id': HtmlTableColumn(
-                     title='Record Id',
                      table='records',
                      field='id',
-                     img='dns16',
-                     display=False,
                     ),
             'domain_id': HtmlTableColumn(
-                     title='Domain Id',
                      table='records',
                      field='domain_id',
-                     img='dns16',
-                     display=True,
                     ),
             'name': HtmlTableColumn(
-                     title='Name',
                      table='records',
                      field='name',
-                     img='dns16',
-                     display=True,
-                     _class='dns_record',
                     ),
             'type': HtmlTableColumn(
-                     title='Type',
                      table='records',
                      field='type',
-                     img='dns16',
-                     display=True,
-                     _class='dns_records_type',
                     ),
             'content': HtmlTableColumn(
-                     title='Content',
                      table='records',
                      field='content',
-                     img='dns16',
-                     display=True,
                     ),
             'ttl': HtmlTableColumn(
-                     title='Time to Live',
                      table='records',
                      field='ttl',
-                     img='dns16',
-                     display=True,
                     ),
             'prio': HtmlTableColumn(
-                     title='Priority',
                      table='records',
                      field='prio',
-                     img='dns16',
-                     display=True,
                     ),
             'change_date': HtmlTableColumn(
-                     title='Last change',
                      table='records',
                      field='change_date',
-                     img='time16',
-                     display=False,
                     ),
         }
         self.dataable = True
