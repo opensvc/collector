@@ -32,7 +32,8 @@ function table_action_menu_init_data(t) {
       "children": [
         {
           "selector": [],
-          "title": "action_menu.on_users",
+          "title": "action_menu.free_uids_gids",
+          "class": "icon_fixed_width db16",
           "foldable": true,
           "cols": [],
           "condition": "",
@@ -42,16 +43,7 @@ function table_action_menu_init_data(t) {
               "class": "icon_fixed_width guy16",
               "fn": "tool_free_uids",
               "min": 0
-            }
-          ]
-        },
-        {
-          "selector": [],
-          "title": "action_menu.on_groups",
-          "foldable": true,
-          "cols": [],
-          "condition": "",
-          "children": [
+            },
             {
               "title": "action_menu.free_gids",
               "class": "icon_fixed_width guys16",
@@ -63,6 +55,7 @@ function table_action_menu_init_data(t) {
         {
           "selector": ["clicked", "checked", "all"],
           "title": "action_menu.on_nodes",
+          "class": "icon_fixed_width node16",
           "foldable": true,
           "cols": ["nodename"],
           "condition": "nodename",
@@ -113,6 +106,7 @@ function table_action_menu_init_data(t) {
         {
           "selector": ["checked"],
           "title": "action_menu.on_services",
+          "class": "icon_fixed_width svc",
           "foldable": true,
           "cols": ["svcname"],
           "condition": "svcname",
@@ -134,6 +128,7 @@ function table_action_menu_init_data(t) {
         {
           "selector": ["clicked", "checked"],
           "title": "action_menu.on_nodes_and_services",
+          "class": "icon_fixed_width svc",
           "foldable": true,
           "cols": ["svcname", "nodename"],
           "condition": "svcname,nodename",
@@ -154,9 +149,189 @@ function table_action_menu_init_data(t) {
       "class": "icon hd16",
       "children": [
         {
+          "selector": [],
+          "title": "action_menu.add",
+          "class": "icon_fixed_width add16",
+          "foldable": true,
+          "cols": [],
+          "condition": "",
+          "children": [
+            {
+              "title": "action_menu.metric",
+              "class": "icon_fixed_width spark16",
+              "fn": "data_action_add_metric",
+              "privileges": ["Manager", "ReportsManager"],
+              "min": 0
+            },
+            {
+              "title": "action_menu.chart",
+              "class": "icon_fixed_width spark16",
+              "fn": "data_action_add_chart",
+              "privileges": ["Manager", "ReportsManager"],
+              "min": 0
+            },
+            {
+              "title": "action_menu.report",
+              "class": "icon_fixed_width spark16",
+              "fn": "data_action_add_report",
+              "privileges": ["Manager", "ReportsManager"],
+              "min": 0
+            },
+            {
+              "title": "action_menu.prov_template",
+              "class": "icon_fixed_width prov",
+              "fn": "data_action_add_prov_template",
+              "privileges": ["Manager", "ProvisioningManager"],
+              "min": 0
+            },
+            {
+              "title": "action_menu.form",
+              "class": "icon_fixed_width wf16",
+              "fn": "data_action_add_form",
+              "privileges": ["Manager", "FormsManager"],
+              "min": 0
+            },
+            {
+              "title": "action_menu.quota",
+              "class": "icon_fixed_width quota16",
+              "fn": "data_action_add_quota",
+              "privileges": ["Manager", "StorageManager"],
+              "min": 0
+            },
+            {
+              "title": "action_menu.app",
+              "class": "icon_fixed_width svc",
+              "fn": "data_action_add_app",
+              "privileges": ["Manager", "AppManager"],
+              "min": 0
+            },
+            {
+              "title": "action_menu.dns_domain",
+              "class": "icon_fixed_width dns16",
+              "fn": "data_action_add_dns_domain",
+              "privileges": ["Manager", "DnsManager"],
+              "min": 0
+            },
+            {
+              "title": "action_menu.dns_record",
+              "class": "icon_fixed_width dns16",
+              "fn": "data_action_add_dns_record",
+              "privileges": ["Manager", "DnsManager"],
+              "min": 0
+            },
+            {
+              "title": "action_menu.network",
+              "class": "icon_fixed_width net16",
+              "fn": "data_action_add_network",
+              "min": 0
+            },
+            {
+              "title": "action_menu.node",
+              "class": "icon_fixed_width node16",
+              "fn": "data_action_add_node",
+              "privileges": ["Manager", "NodeManager"],
+              "min": 0
+            },
+            {
+              "title": "action_menu.contextual_thresholds",
+              "class": "icon_fixed_width check16",
+              "fn": "data_action_add_contextual_thresholds",
+              "privileges": ["Manager", "CheckManager"],
+              "min": 0
+            },
+            {
+              "title": "action_menu.tag",
+              "class": "icon_fixed_width tag16",
+              "fn": "data_action_add_tag",
+              "privileges": ["Manager", "TagManager"],
+              "min": 0
+            },
+            {
+              "title": "action_menu.user",
+              "class": "icon_fixed_width guy16",
+              "fn": "data_action_add_user",
+              "privileges": ["Manager", "UserManager"],
+              "min": 0
+            },
+            {
+              "title": "action_menu.group",
+              "class": "icon_fixed_width guys16",
+              "fn": "data_action_add_group",
+              "privileges": ["Manager", "UserManager"],
+              "min": 0
+            },
+            {
+              "title": "action_menu.filterset",
+              "class": "icon_fixed_width filter16",
+              "fn": "data_action_add_filterset",
+              "privileges": ["Manager", "CompManager"],
+              "min": 0
+            }
+          ]
+        },
+        {
+          "selector": [],
+          "title": "action_menu.del",
+          "class": "icon_fixed_width del16",
+          "foldable": true,
+          "cols": [],
+          "condition": "",
+          "children": [
+            {
+              "title": "action_menu.contextual_thresholds",
+              "class": "icon_fixed_width check16",
+              "fn": "data_action_delete_contextual_thresholds",
+              "privileges": ["Manager", "CheckManager"],
+              "min": 0
+            },
+            {
+              "title": "action_menu.group",
+              "class": "icon_fixed_width guys16",
+              "fn": "data_action_del_groups",
+              "privileges": ["Manager", "UserManager"],
+              "min": 0
+            }
+          ]
+        },
+        {
+          "selector": [],
+          "title": "action_menu.import",
+          "class": "icon_fixed_width fa-upload",
+          "foldable": true,
+          "cols": [],
+          "condition": "",
+          "children": [
+            {
+              "title": "action_menu.report",
+              "class": "icon_fixed_width spark16",
+              "fn": "data_action_import_report",
+              "privileges": ["Manager", "ReportsManager"],
+              "min": 0
+            }
+          ]
+        },
+        {
+          "selector": [],
+          "title": "action_menu.refresh",
+          "class": "icon_fixed_width refresh16",
+          "foldable": true,
+          "cols": [],
+          "condition": "",
+          "children": [
+            {
+              "title": "action_menu.obsolescence_products",
+              "class": "icon_fixed_width obs16",
+              "fn": "data_action_obs_refresh",
+              "privileges": ["Manager", "ObsManager"],
+              "min": 0
+            }
+          ]
+        },
+        {
           "selector": ["clicked", "checked", "all"],
           "foldable": true,
           'title': 'action_menu.on_filters',
+          "class": "icon_fixed_width filter16",
           "table": ["filters"],
           "cols": ["id"],
           "condition": "id",
@@ -174,17 +349,11 @@ function table_action_menu_init_data(t) {
           "selector": ["clicked", "checked", "all"],
           "foldable": true,
           'title': 'action_menu.on_filtersets',
+          "class": "icon_fixed_width filter16",
           "table": ["filtersets"],
           "cols": ["fset_id"],
           "condition": "fset_id",
           "children": [
-            {
-              "title": "action_menu.add",
-              "class": "icon_fixed_width add16",
-              "fn": "data_action_add_filterset",
-              "privileges": ["Manager", "CompManager"],
-              "min": 0
-            },
             {
               "title": "action_menu.del",
               "class": "icon_fixed_width del16",
@@ -212,6 +381,7 @@ function table_action_menu_init_data(t) {
           "selector": ["clicked", "checked", "all"],
           "foldable": true,
           'title': 'action_menu.on_encap_filters',
+          "class": "icon_fixed_width filter16",
           "table": ["filtersets"],
           "cols": ["fset_id", "f_id"],
           "condition": "fset_id+f_id",
@@ -243,6 +413,7 @@ function table_action_menu_init_data(t) {
           "selector": ["clicked", "checked", "all"],
           "foldable": true,
           'title': 'action_menu.on_encap_filtersets',
+          "class": "icon_fixed_width filter16",
           "table": ["filtersets"],
           "cols": ["fset_id", "encap_fset_id"],
           "condition": "fset_id+encap_fset_id",
@@ -274,17 +445,11 @@ function table_action_menu_init_data(t) {
           "selector": ["clicked", "checked", "all"],
           "foldable": true,
           'title': 'action_menu.on_metrics',
+          "class": "icon_fixed_width spark16",
           "table": ["metrics"],
           "cols": ["id"],
           "condition": "id",
           "children": [
-            {
-              "title": "action_menu.add",
-              "class": "icon_fixed_width add16",
-              "fn": "data_action_add_metric",
-              "privileges": ["Manager", "ReportsManager"],
-              "min": 0
-            },
             {
               "title": "action_menu.del",
               "class": "icon_fixed_width del16",
@@ -298,17 +463,11 @@ function table_action_menu_init_data(t) {
           "selector": ["clicked", "checked", "all"],
           "foldable": true,
           'title': 'action_menu.on_charts',
+          "class": "icon_fixed_width spark16",
           "table": ["charts"],
           "cols": ["id"],
           "condition": "id",
           "children": [
-            {
-              "title": "action_menu.add",
-              "class": "icon_fixed_width add16",
-              "fn": "data_action_add_chart",
-              "privileges": ["Manager", "ReportsManager"],
-              "min": 0
-            },
             {
               "title": "action_menu.del",
               "class": "icon_fixed_width del16",
@@ -322,24 +481,11 @@ function table_action_menu_init_data(t) {
           "selector": ["clicked", "checked", "all"],
           "foldable": true,
           'title': 'action_menu.on_reports',
+          "class": "icon_fixed_width spark16",
           "table": ["reports"],
           "cols": ["id"],
           "condition": "id",
           "children": [
-            {
-              "title": "action_menu.import",
-              "class": "icon_fixed_width fa-upload",
-              "fn": "data_action_import_report",
-              "privileges": ["Manager", "ReportsManager"],
-              "min": 0
-            },
-            {
-              "title": "action_menu.add",
-              "class": "icon_fixed_width add16",
-              "fn": "data_action_add_report",
-              "privileges": ["Manager", "ReportsManager"],
-              "min": 0
-            },
             {
               "title": "action_menu.del",
               "class": "icon_fixed_width del16",
@@ -353,17 +499,11 @@ function table_action_menu_init_data(t) {
           "selector": ["clicked", "checked", "all"],
           "foldable": true,
           'title': 'action_menu.on_prov_templates',
+          "class": "icon_fixed_width prov",
           "table": ["templates"],
           "cols": ["id"],
           "condition": "id",
           "children": [
-            {
-              "title": "action_menu.add",
-              "class": "icon_fixed_width add16",
-              "fn": "data_action_add_prov_template",
-              "privileges": ["Manager", "ProvisioningManager"],
-              "min": 0
-            },
             {
               "title": "action_menu.del",
               "class": "icon_fixed_width del16",
@@ -391,17 +531,11 @@ function table_action_menu_init_data(t) {
           "selector": ["clicked", "checked", "all"],
           "foldable": true,
           'title': 'action_menu.on_obsolescence_settings',
+          "class": "icon_fixed_width check16",
           "table": ["obs"],
           "cols": ["id"],
           "condition": "id",
           "children": [
-            {
-              "title": "action_menu.refresh",
-              "class": "icon_fixed_width refresh16",
-              "fn": "data_action_obs_refresh",
-              "privileges": ["Manager", "ObsManager"],
-              "min": 0
-            },
             {
               "title": "action_menu.set_warn_date",
               "class": "icon_fixed_width edit16",
@@ -429,17 +563,11 @@ function table_action_menu_init_data(t) {
           "selector": ["clicked", "checked", "all"],
           "foldable": true,
           'title': 'action_menu.on_quotas',
+          "class": "icon_fixed_width quota16",
           "table": ["quota"],
           "cols": ["id"],
           "condition": "id",
           "children": [
-            {
-              "title": "action_menu.add",
-              "class": "icon_fixed_width add16",
-              "fn": "data_action_add_quota",
-              "privileges": ["Manager", "StorageManager"],
-              "min": 0
-            },
             {
               "title": "action_menu.del",
               "class": "icon_fixed_width del16",
@@ -453,17 +581,11 @@ function table_action_menu_init_data(t) {
           "selector": ["clicked", "checked", "all"],
           "foldable": true,
           'title': 'action_menu.on_apps',
+          "class": "icon_fixed_width svc",
           "table": ["apps"],
           "cols": ["id"],
           "condition": "id",
           "children": [
-            {
-              "title": "action_menu.add",
-              "class": "icon_fixed_width add16",
-              "fn": "data_action_add_app",
-              "privileges": ["Manager", "AppManager"],
-              "min": 0
-            },
             {
               "title": "action_menu.del",
               "class": "icon_fixed_width del16",
@@ -490,6 +612,7 @@ function table_action_menu_init_data(t) {
         {
           "selector": ["clicked", "checked", "all"],
           "title": "action_menu.on_compliance_status",
+          "class": "icon_fixed_width comp16",
           "foldable": true,
           "cols": ["id", "module"],
           "condition": "id+module",
@@ -505,6 +628,7 @@ function table_action_menu_init_data(t) {
         {
           "selector": ["clicked", "checked", "all"],
           "title": "action_menu.on_node_ips",
+          "class": "icon_fixed_width net16",
           "table": ["nodenetworks"],
           "foldable": true,
           "cols": ["id"],
@@ -522,17 +646,11 @@ function table_action_menu_init_data(t) {
           "selector": ["clicked", "checked", "all"],
           "foldable": true,
           'title': 'action_menu.on_dns_domains',
+          "class": "icon_fixed_width dns16",
           "table": ["dnsd"],
           "cols": ["id"],
           "condition": "id",
           "children": [
-            {
-              "title": "action_menu.add",
-              "class": "icon_fixed_width add16",
-              "fn": "data_action_add_dns_domain",
-              "privileges": ["Manager", "DnsManager"],
-              "min": 0
-            },
             {
               "title": "action_menu.del",
               "class": "icon_fixed_width del16",
@@ -553,17 +671,11 @@ function table_action_menu_init_data(t) {
           "selector": ["clicked", "checked", "all"],
           "foldable": true,
           'title': 'action_menu.on_dns_records',
+          "class": "icon_fixed_width dns16",
           "table": ["dnsr"],
           "cols": ["id"],
           "condition": "id",
           "children": [
-            {
-              "title": "action_menu.add",
-              "class": "icon_fixed_width add16",
-              "fn": "data_action_add_dns_record",
-              "privileges": ["Manager", "DnsManager"],
-              "min": 0
-            },
             {
               "title": "action_menu.del",
               "class": "icon_fixed_width del16",
@@ -576,17 +688,12 @@ function table_action_menu_init_data(t) {
         {
           "selector": ["clicked", "checked", "all"],
           "title": "action_menu.on_networks",
+          "class": "icon_fixed_width net16",
           "table": ["networks"],
           "foldable": true,
           "cols": ["id"],
           "condition": "id",
           "children": [
-            {
-              "title": "action_menu.add",
-              "class": "icon_fixed_width add16",
-              "fn": "data_action_add_network",
-              "min": 0
-            },
             {
               "title": "action_menu.delete",
               "class": "icon_fixed_width del16",
@@ -598,18 +705,12 @@ function table_action_menu_init_data(t) {
         {
           "selector": ["clicked", "checked", "all"],
           "title": "action_menu.on_forms",
+          "class": "icon_fixed_width wf16",
           "table": ["forms"],
           "foldable": true,
           "cols": ["id"],
           "condition": "id",
           "children": [
-            {
-              "title": "action_menu.add_form",
-              "class": "icon_fixed_width add16",
-              "fn": "data_action_add_form",
-              "privileges": ["Manager", "FormsManager"],
-              "min": 0
-            },
             {
               "title": "action_menu.del_form",
               "class": "icon_fixed_width del16",
@@ -651,16 +752,10 @@ function table_action_menu_init_data(t) {
           "selector": ["clicked", "checked", "all"],
           "foldable": true,
           'title': 'action_menu.on_nodes',
+          "class": "icon_fixed_width node16",
           "cols": ["nodename"],
           "condition": "nodename",
           "children": [
-            {
-              "title": "action_menu.add",
-              "class": "icon_fixed_width add16",
-              "fn": "data_action_add_node",
-              "privileges": ["Manager", "NodeManager"],
-              "min": 0
-            },
             {
               "title": "action_menu.delete",
               "class": "icon_fixed_width del16",
@@ -709,6 +804,7 @@ function table_action_menu_init_data(t) {
           "selector": ["clicked", "checked", "all"],
           "foldable": true,
           'title': 'action_menu.on_check_instances',
+          "class": "icon_fixed_width check16",
           "cols": ["nodename", "svcname", "chk_type", "chk_instance"],
           "condition": "nodename+chk_type+chk_instance,nodename+svcname+chk_type+chk_instance",
           "children": [
@@ -740,26 +836,13 @@ function table_action_menu_init_data(t) {
               "privileges": ["Manager", "CheckManager"],
               "min": 1
             },
-            {
-              "title": "action_menu.add_contextual_thresholds",
-              "class": "icon_fixed_width add16",
-              "fn": "data_action_add_contextual_thresholds",
-              "privileges": ["Manager", "CheckManager"],
-              "min": 0
-            },
-            {
-              "title": "action_menu.delete_contextual_thresholds",
-              "class": "icon_fixed_width del16",
-              "fn": "data_action_delete_contextual_thresholds",
-              "privileges": ["Manager", "CheckManager"],
-              "min": 0
-            }
           ]
         },
         {
           "selector": ["clicked", "checked", "all"],
           "foldable": true,
           'title': 'action_menu.on_nodes_modulesets',
+          "class": "icon_fixed_width modset16",
           "cols": ["nodename", "modset_id"],
           "condition": "nodename+modset_id",
           "children": [
@@ -776,6 +859,7 @@ function table_action_menu_init_data(t) {
           "selector": ["clicked", "checked", "all"],
           "foldable": true,
           'title': 'action_menu.on_queued_actions',
+          "class": "icon_fixed_width actions16",
           "cols": ["id", "command"],
           "condition": "id+command",
           "children": [
@@ -799,6 +883,7 @@ function table_action_menu_init_data(t) {
           "selector": ["clicked", "checked", "all"],
           "foldable": true,
           'title': 'action_menu.on_nodes_rulesets',
+          "class": "icon_fixed_width comp16",
           "cols": ["nodename", "ruleset_id"],
           "condition": "nodename+ruleset_id",
           "children": [
@@ -815,6 +900,7 @@ function table_action_menu_init_data(t) {
           "selector": ["clicked", "checked", "all"],
           "foldable": true,
           'title': 'action_menu.on_nodes_tags',
+          "class": "icon_fixed_width tags16",
           "cols": ["nodename", "tag_id"],
           "condition": "nodename+tag_id",
           "children": [
@@ -831,6 +917,7 @@ function table_action_menu_init_data(t) {
           "selector": ["clicked", "checked", "all"],
           "foldable": true,
           'title': 'action_menu.on_services',
+          "class": "icon_fixed_width svc",
           "cols": ["svcname", "slave"],
           "condition": "svcname+slave,svcname",
           "children": [
@@ -877,6 +964,7 @@ function table_action_menu_init_data(t) {
           "foldable": true,
           "table": ["svcmon"],
           'title': 'action_menu.on_services_instances',
+          "class": "icon_fixed_width svc",
           "cols": ["id"],
           "condition": "id",
           "children": [
@@ -892,6 +980,7 @@ function table_action_menu_init_data(t) {
           "selector": ["clicked", "checked", "all"],
           "foldable": true,
           'title': 'action_menu.on_service_actions',
+          "class": "icon_fixed_width actions16",
           "cols": ["id", "action", "ack"],
           "condition": "id+action",
           "children": [
@@ -907,6 +996,7 @@ function table_action_menu_init_data(t) {
           "selector": ["clicked", "checked", "all"],
           "foldable": true,
           'title': 'action_menu.on_services_tags',
+          "class": "icon_fixed_width tags16",
           "cols": ["svcname", "tag_id"],
           "condition": "svcname+tag_id",
           "children": [
@@ -922,6 +1012,7 @@ function table_action_menu_init_data(t) {
           "selector": ["clicked", "checked", "all"],
           "foldable": true,
           'title': 'action_menu.on_services_modulesets',
+          "class": "icon_fixed_width modset16",
           "cols": ["svcname", "modset_id", "slave"],
           "condition": "svcname+modset_id+slave",
           "children": [
@@ -937,6 +1028,7 @@ function table_action_menu_init_data(t) {
           "selector": ["clicked", "checked", "all"],
           "foldable": true,
           'title': 'action_menu.on_services_rulesets',
+          "class": "icon_fixed_width comp16",
           "cols": ["svcname", "ruleset_id", "slave"],
           "condition": "svcname+ruleset_id+slave",
           "children": [
@@ -952,17 +1044,11 @@ function table_action_menu_init_data(t) {
           "selector": ["clicked", "checked", "all"],
           "foldable": true,
           'title': 'action_menu.on_tags',
+          "class": "icon_fixed_width tags16",
           "table": ["tags"],
           "cols": ["id"],
           "condition": "id",
           "children": [
-            {
-              "title": "action_menu.add",
-              "class": "icon_fixed_width add16",
-              "fn": "data_action_add_tag",
-              "privileges": ["Manager", "TagManager"],
-              "min": 0
-            },
             {
               "title": "action_menu.del",
               "class": "icon_fixed_width del16",
@@ -975,17 +1061,11 @@ function table_action_menu_init_data(t) {
         {
           "selector": ["clicked", "checked", "all"],
           "title": "action_menu.on_users",
+          "class": "icon_fixed_width guy16",
           "foldable": true,
           "cols": ["id", "email"],
           "condition": "id+email",
           "children": [
-            {
-              "title": "action_menu.add",
-              "class": "icon_fixed_width add16",
-              "fn": "data_action_add_user",
-              "privileges": ["Manager", "UserManager"],
-              "min": 0
-            },
             {
               "title": "action_menu.del",
               "class": "icon_fixed_width del16",
@@ -1050,29 +1130,6 @@ function table_action_menu_init_data(t) {
               "min": 1
             }
           ]
-        },
-        {
-          "selector": ["clicked", "checked", "all"],
-          "title": "action_menu.on_groups",
-          "foldable": true,
-          "cols": ["id", "email"],
-          "condition": "id+email",
-          "children": [
-            {
-              "title": "action_menu.add",
-              "class": "icon_fixed_width add16",
-              "fn": "data_action_add_group",
-              "privileges": ["Manager", "UserManager"],
-              "min": 0
-            },
-            {
-              "title": "action_menu.del",
-              "class": "icon_fixed_width del16",
-              "fn": "data_action_del_groups",
-              "privileges": ["Manager", "UserManager"],
-              "min": 0
-            }
-          ]
         }
       ]
     },
@@ -1085,6 +1142,7 @@ function table_action_menu_init_data(t) {
           "selector": ["clicked", "checked", "all"],
           "foldable": true,
           'title': 'action_menu.on_nodes',
+          "class": "icon_fixed_width node16",
           "cols": ["nodename"],
           "condition": "nodename",
           "children": [
@@ -1243,6 +1301,7 @@ function table_action_menu_init_data(t) {
           "selector": ["clicked", "checked", "all"],
           "foldable": true,
           'title': 'action_menu.on_services_instances',
+          "class": "icon_fixed_width svc",
           "cols": ["svcname", "nodename"],
           "condition": "svcname+nodename",
           "children": [
@@ -1345,6 +1404,7 @@ function table_action_menu_init_data(t) {
           "selector": ["clicked", "checked", "all"],
           "foldable": true,
           'title': 'action_menu.on_resources',
+          "class": "icon_fixed_width action16",
           "cols": ["svcname", "nodename", "vmname", "rid"],
           "condition": "svcname+nodename+vmname+rid,svcname+nodename+rid",
           "children": [
@@ -1389,6 +1449,7 @@ function table_action_menu_init_data(t) {
           "selector": ["clicked", "checked", "all"],
           "foldable": true,
           'title': 'action_menu.on_modules',
+          "class": "icon_fixed_width mod16",
           "cols": ["svcname", "nodename", "module"],
           "condition": "svcname+nodename+module,nodename+module",
           "children": [
@@ -1775,7 +1836,12 @@ function table_action_menu_format_selector(t, e, selector) {
 	}
 	if (selector.title) {
 		var title = $("<span></span>")
-		title.text(i18n.t(selector.title))
+		var _title = $("<span></span>")
+		_title.text(i18n.t(selector.title))
+		if ("class" in selector) {
+			_title.addClass(selector["class"])
+		}
+		title.append(_title)
 	}
 	if (selector.selector.length == 0) {
 		// no selector, special case for tools not working on data lines
