@@ -421,6 +421,7 @@ joins = {
     'services': None,
     'dashboard': db.services.svc_name == db.dashboard.dash_svcname,
     'v_svcmon': None,
+    'v_comp_services': None,
     'checks_live': db.services.svc_name == db.checks_live.chk_svcname,
     'appinfo': db.services.svc_name == db.appinfo.app_svcname,
     'comp_log': db.services.svc_name == db.comp_log.run_svcname,
