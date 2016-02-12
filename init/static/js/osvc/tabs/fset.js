@@ -186,8 +186,12 @@ function fset_designer(divid, options) {
 	o.options = options
 	o.data = {}
 	o.fset_data = {}
+	o.filters = $.Deferred()
 
 	o.init = function() {
+		//load the filters cache
+		o.get_filters()
+
 		if (o.options.fset_id) {
 			services_osvcgetrest("/filtersets/%1/export", [o.options.fset_id], "", function(jd) {
 				o.data = jd
@@ -478,7 +482,6 @@ function fset_designer(divid, options) {
 		var input = $("<input id='f_field' class='aci oi'>")
 		var opts = []
 		var keys = fields[table]
-console.log(table, keys)
 		if (!keys) {
 			keys = []
 		}
@@ -664,15 +667,13 @@ console.log(table, keys)
 				if (xhr) {
 					xhr.abort()
 				}
-				services_osvcgetrest("/filters", "", {
-					"filters": [
-						"f_table="+div.find("input#f_table").attr("acid"),
-						"f_field="+div.find("input#f_field").attr("acid"),
-						"f_op="+div.find("input#f_op").attr("acid"),
-						"f_value="+div.find("input#f_value").attr("acid")
-					]
-				}, function(jd){
-					if (jd.data && jd.data.length > 0) {
+				$.when(o.get_filter(
+					div.find("input#f_table").attr("acid"),
+					div.find("input#f_field").attr("acid"),
+					div.find("input#f_op").attr("acid"),
+					div.find("input#f_value").attr("acid")
+				)).then(function(f){
+					if (f) {
 						div.removeClass("highlight")
 					} else {
 						div.addClass("highlight")
@@ -692,17 +693,14 @@ console.log(table, keys)
 			var e_f_value = item.find("input#f_value")
 
 			// get existing filter id or create filter
-			var f_id = null
-			services_osvcgetrest("/filters", "", {
-				"filters": [
-					"f_table="+e_f_table.attr("acid"),
-					"f_field="+e_f_field.attr("acid"),
-					"f_op="+e_f_op.attr("acid"),
-					"f_value="+e_f_value.attr("acid")
-				]
-			}, function(jd){
-				if (jd.data && jd.data.length > 0) {
-					var f_id = jd.data[0].id
+			$.when(o.get_filter(
+				e_f_table.attr("acid"),
+				e_f_field.attr("acid"),
+				e_f_op.attr("acid"),
+				e_f_value.attr("acid")
+			)).then(function(f){
+				if (f) {
+					var f_id = f.id
 					attach(f_id)
 				} else {
 					var _data = {
@@ -715,6 +713,9 @@ console.log(table, keys)
 						div.removeClass("highlight")
 						var f_id = jd.data[0].id
 						attach(f_id)
+
+						// refresh the filters cache
+						o.get_filters()
 					})
 				}
 			})
@@ -915,6 +916,47 @@ console.log(table, keys)
 			}
 		})
 
+	}
+
+	o.get_filter = function(f_table, f_field, f_op, f_value) {
+		if (typeof(f_table) === "undefined") {
+			return
+		}
+		if (typeof(f_field) === "undefined") {
+			return
+		}
+		if (typeof(f_op) === "undefined") {
+			return
+		}
+		if (typeof(f_value) === "undefined") {
+			return
+		}
+		var defer = $.Deferred()
+		$.when(o.filters).then(function(data) {
+			for (var i=0; i<data.length; i++) {
+				var d = data[i]
+				if ((d.f_table == f_table) &&
+				    (d.f_field == f_field) &&
+				    (d.f_op == f_op) &&
+				    (""+d.f_value == ""+f_value)) {
+					// found
+					console.log("filter found", d)
+					defer.resolve(d)
+					return
+				}
+			}
+			// not found
+			console.log("filter not found", f_table, f_field, f_op, f_value)
+			defer.resolve(false)
+			return
+		})
+		return defer
+	}
+
+	o.get_filters = function() {
+		services_osvcgetrest("/filters", "", {"props": "id,f_table,f_field,f_op,f_value", "limit": "0", "meta": "0"}, function(jd) {
+			o.filters.resolve(jd.data)
+		})
 	}
 
 	o.init()
