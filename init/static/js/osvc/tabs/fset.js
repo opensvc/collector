@@ -528,7 +528,7 @@ function fset_designer(divid, options) {
 			var found = false
 			for (var i=0; i<opts.length; i++) {
 				var opt = opts[i]
-				if (opt.label == current) {
+				if (opt.label.toLowerCase() == current.toLowerCase()) {
 					found = true
 					break
 				}
@@ -569,31 +569,36 @@ function fset_designer(divid, options) {
 			input.val(db_tables[current].title)
 			input.attr("acid", current)
 		}
+
+		function update_f_fields(input, value, label) {
+			input.val(label)
+			input.attr("acid", value)
+			var new_fields = o.f_field_input(value)
+			input.parents(".fset_designer_item,.fset_designer_adder").first().find("span#f_field").html(new_fields)
+		}
+
 		input.autocomplete({
 			source: opts,
 			minLength: 0,
 			focus: function(event, ui) {
 				event.preventDefault()
-				input.val(ui.item.label)
-				input.attr("acid", ui.item.value)
-				var new_fields = o.f_field_input(ui.item.value)
-				input.parents(".fset_designer_item,.fset_designer_adder").first().find("span#f_field").html(new_fields)
+				update_f_fields(input, ui.item.value, ui.item.label)
 			},
 			select: function(event, ui) {
 				event.preventDefault()
-				input.val(ui.item.label)
-				input.attr("acid", ui.item.value)
-				var new_fields = o.f_field_input(ui.item.value)
-				input.parents(".fset_designer_item,.fset_designer_adder").first().find("span#f_field").html(new_fields)
+				update_f_fields(input, ui.item.value, ui.item.label)
 			}
 		})
 		input.click(function(){
 			input.autocomplete("search")
 		})
-		input.keyup(function(){
+		input.keyup(function(event){
 			var opts = input.autocomplete("option").source
 			var current = input.val()
 			var found = false
+
+			update_f_fields(input, current, current)
+
 			for (var i=0; i<opts.length; i++) {
 				var opt = opts[i]
 				if (opt.label == current) {
@@ -929,6 +934,9 @@ function fset_designer(divid, options) {
 			return
 		}
 		if (typeof(f_value) === "undefined") {
+			return
+		}
+		if (f_value == "") {
 			return
 		}
 		var defer = $.Deferred()
