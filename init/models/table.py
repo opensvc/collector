@@ -150,16 +150,20 @@ class HtmlTable(object):
             self.pager_end = n
         self.page_len = self.pager_end - self.pager_start
 
+    def repr_val(self, s):
+        if s is None or s == "":
+            s = 'empty'
+        elif type(s) == datetime.datetime:
+            s = s.strftime("%Y-%m-%d %H:%M:%S")
+        elif type(s) == datetime.date:
+            s = s.strftime("%Y-%m-%d")
+        return s
+
     def col_values_cloud_ungrouped(self, c):
         h = {}
         for o in self.object_list:
             s = self.colprops[c].get(o)
-            if s is None or s == "":
-                s = 'empty'
-            elif type(s) == datetime.datetime:
-                s = s.strftime("%Y-%m-%d %H:%M:%S")
-            elif type(s) == datetime.date:
-                s = s.strftime("%Y-%m-%d")
+            s = self.repr_val(s)
             if s not in h:
                 h[s] = 1
             else:
@@ -324,34 +328,6 @@ class HtmlTable(object):
         return self._csv()
 
     def do_commonality(self):
-        def fancypct(p):
-            p = "%d%%"%int(p)
-            d = DIV(
-                  DIV(
-                    DIV(
-                      _style="""font-size: 0px;
-                                line-height: 0px;
-                                height: 4px;
-                                min-width: 0%%;
-                                max-width: %(p)s;
-                                width: %(p)s;
-                                background: #A6FF80;
-                             """%dict(p=p),
-                    ),
-                    _style="""text-align: left;
-                              margin: 2px auto;
-                              background: #FF7863;
-                              overflow: hidden;
-                           """,
-                  ),
-                  DIV(p),
-                  _style="""margin: auto;
-                            text-align: center;
-                            width: 100%;
-                         """,
-                ),
-            return d
-
         object_list = self.csv_object_list()
         total = len(object_list)
         data = {}
@@ -374,22 +350,10 @@ class HtmlTable(object):
             pct = 100*n//total
             if pct == 0 or n == 1:
                 continue
+            v = self.repr_val(v)
             top.append((col, v, pct))
         top.sort(lambda x, y: cmp(x[2], y[2]), reverse=True)
-
-        l = [TR(
-               TH(T("Percent")),
-               TH(T("Column")),
-               TH(T("Value")),
-            )]
-        for col, v, pct in top:
-            line = TR(
-               TD(fancypct(pct)),
-               TD(DIV(T(self.colprops[col].title), _class="icon "+self.colprops[col].img)),
-               TD(v),
-            )
-            l.append(line)
-        return TABLE(SPAN(l))
+        return json.dumps(top, use_decimal=True)
 
     def get_visible_columns(self, fmt="dal", force=[], db=db):
         visible_columns = request.vars.visible_columns.split(',')

@@ -1855,6 +1855,11 @@ function cell_decorator_boolean(e) {
 
 function cell_decorator_pct(e) {
   var v = $.data(e, "v")
+  d = _cell_decorator_pct(v)
+  $(e).html(d)
+}
+
+function _cell_decorator_pct(v) {
   var dl = $("<div><div>")
   var dr = $("<div><div>")
   var dp = $("<div><div>")
@@ -1874,7 +1879,7 @@ function cell_decorator_pct(e) {
     "background": "#FF7863",
     "overflow": "hidden"
   })
-  d.css({
+  dp.css({
     "margin": "auto",
     "text-align": "center",
     "width": "100%"
@@ -1882,7 +1887,7 @@ function cell_decorator_pct(e) {
   dp.text(v+"%")
   dr.append(dl)
   d.append([dr, dp])
-  $(e).html(d)
+  return d
 }
 
 function cell_decorator_app(e) {

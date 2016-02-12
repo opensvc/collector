@@ -1800,7 +1800,7 @@ function table_add_column_selector(t) {
     title.addClass(t.colprops[colname].img)
 
     // container
-    var _e = $("<div style='white-space:nowrap'></div>")
+    var _e = $("<div style='margin:0.3em 0;white-space:nowrap'></div>")
     _e.append(input)
     _e.append(label)
     _e.append(title)
@@ -1851,10 +1851,45 @@ function table_add_commonality(t) {
          data: data,
          context: document.body,
          success: function(msg){
-             t.e_tool_commonality_area.html(msg)
+             t.e_tool_commonality_area.html(format(msg))
          }
     })
   })
+
+  function format(msg) {
+    var data = $.parseJSON(msg)
+    var table = $("<table></table>")
+    var th = $("<tr><th data-i18n='table.pct'></th><th data-i18n='table.column'></th><th data-i18n='table.value'></th></tr>")
+    th.i18n()
+    table.append(th)
+    for (var i=0; i<data.length; i++) {
+      var d = data[i]
+      var line = $("<tr style='margin:0.3em 0'></tr>")
+
+      // pct
+      var pct = $("<td></td>")
+      pct.append(_cell_decorator_pct(d[2]))
+      line.append(pct)
+
+      // column
+      var col = $("<td></td>")
+      if (d[0] in t.colprops) {
+        col.addClass("icon_fixed_width "+t.colprops[d[0]].img)
+        col.text(i18n.t("col."+t.colprops[d[0]].title))
+      } else {
+        col.text(d[0])
+      }
+      line.append(col)
+
+      // val
+      var val = $("<td></td>")
+      val.text(d[1])
+      line.append(val)
+
+      table.append(line)
+    }
+    return table
+  }
 
   try { e.i18n() } catch(e) {}
   t.e_toolbar.prepend(e)
