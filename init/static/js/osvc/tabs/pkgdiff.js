@@ -19,24 +19,24 @@ function pkgdiff(divid, options) {
 
 	o.draw = function(data) {
 		if (data.data.length == 0) {
-			o.div.html(i18n.t("pkgdiff.no_diff"))
+			o.div.html(i18n.t("diff.no_diff"))
 			return
 		}
 
-		var t = $("<table></table>")
+		var t = $("<table class='diff_table'></table>")
 
 		// table header
 		var header1 = $("<tr></tr>")
 		header1.append($("<th></th>"))
 		header1.append($("<th></th>"))
 		header1.append($("<th></th>"))
-		header1.append($("<th style='text-align:center' colspan="+data.meta.nodenames.length+" data-i18n='pkgdiff.nodes'></th>"))
+		header1.append($("<th style='text-align:center' colspan="+data.meta.nodenames.length+" data-i18n='diff.nodes'></th>"))
 		t.append(header1)
 
 		var header2 = $("<tr></tr>")
-		header2.append($("<th data-i18n='pkgdiff.package'></th>"))
-		header2.append($("<th data-i18n='pkgdiff.arch'></th>"))
-		header2.append($("<th data-i18n='pkgdiff.type'></th>"))
+		header2.append($("<th data-i18n='diff.package'></th>"))
+		header2.append($("<th data-i18n='diff.arch'></th>"))
+		header2.append($("<th data-i18n='diff.type'></th>"))
 		for (var i=0; i<data.meta.nodenames.length; i++) {
 			header2.append($("<th>"+data.meta.nodenames[i]+"</th>"))
 		}
@@ -62,10 +62,7 @@ function pkgdiff(divid, options) {
 		for (var i=0; i<keys.length; i++) {
 			var key = keys[i]
 			var p = packages[key]
-			var l = $("<tr></tr>")
-			if (i%2 == 0) {
-				l.addClass("cell1")
-			}
+			var l = $("<tr class='diff_line'></tr>")
 			l.append($("<td>"+p.pkg_name+"</td>"))
 			l.append($("<td>"+p.pkg_arch+"</td>"))
 			l.append($("<td>"+p.pkg_type+"</td>"))
@@ -96,7 +93,7 @@ function svc_pkgdiff(divid, options) {
 	o.div.empty()
 
 	// pkgdiff at hv level
-	t = $("<h3 data-i18n='pkgdiff.title_cluster'></h3>")
+	t = $("<h3 data-i18n='diff.pkg_title_cluster'></h3>")
 	d = $("<div></div>")
 	d.uniqueId()
 	o.div.append(t)
@@ -104,7 +101,7 @@ function svc_pkgdiff(divid, options) {
 	pkgdiff(d.attr("id"), {"svcnames": o.options.svcnames})
 
 	// pkgdiff at encap level
-	t = $("<h3 data-i18n='pkgdiff.title_encap'></h3>")
+	t = $("<h3 data-i18n='diff.pkg_title_encap'></h3>")
 	d = $("<div></div>")
 	d.uniqueId()
 	o.div.append(t)
@@ -114,3 +111,215 @@ function svc_pkgdiff(divid, options) {
 	o.div.i18n()
 	return o
 }
+
+
+function servicediff(divid, options) {
+	var o = {}
+	o.divid = divid
+	o.div = $("#"+divid)
+	o.options = options
+	o.options.compared = "svc_name"
+	o.options.compared_title = "diff.services"
+	o.options.blacklist = ["svc_envfile", "id"]
+
+	o.options.get = function(callback, callback_error) {
+		var data = {
+			"meta": "0",
+			"limit": "0",
+			"filters": "svc_name ("+o.options.svcnames.join(",")+")"
+		}
+		services_osvcgetrest("R_SERVICES", "", data, callback, callback_error)
+	}
+	generic_diff(divid, options)
+}
+
+function assetdiff(divid, options) {
+	var o = {}
+	o.divid = divid
+	o.div = $("#"+divid)
+	o.options = options
+	o.options.compared = "nodename"
+	o.options.compared_title = "diff.nodes"
+	o.options.blacklist = ["id"]
+
+	o.options.get = function(callback, callback_error) {
+		var data = {
+			"meta": "0",
+			"limit": "0",
+			"filters": "nodename ("+o.options.nodenames.join(",")+")"
+		}
+		services_osvcgetrest("R_NODES", "", data, callback, callback_error)
+	}
+	generic_diff(divid, options)
+}
+
+function generic_diff(divid, options) {
+	var o = {}
+	o.divid = divid
+	o.div = $("#"+divid)
+	o.options = options
+
+	spinner_add(o.div, i18n.t("api.loading"))
+	o.options.get(
+		function(jd) {
+			spinner_add(o.div, i18n.t("api.formatting"))
+			if (jd.error) {
+				o.div.html(services_error_fmt(jd))
+				return
+			}
+			o.draw(jd.data)
+		},
+		function(xhr, stat, error) {
+			o.div.html(services_ajax_error_fmt(xhr, stat, error))
+		}
+	)
+
+	o.draw = function(data) {
+		if (data.length < 2) {
+			o.div.html(i18n.t("diff.no_diff"))
+			return
+		}
+
+		var t = $("<table class='diff_table'></table>")
+
+		// table header
+		var header1 = $("<tr></tr>")
+		header1.append($("<th></th>"))
+		header1.append($("<th style='text-align:center' colspan="+data.length+" data-i18n='"+o.options.compared_title+"'></th>"))
+		t.append(header1)
+
+		var header2 = $("<tr></tr>")
+		header2.append($("<th data-i18n='diff.property'></th>"))
+		for (var i=0; i<data.length; i++) {
+			header2.append($("<th>"+data[i][o.options.compared]+"</th>"))
+		}
+		t.append(header2)
+
+		var keys = []
+		for (prop in data[0]) {
+			keys.push(prop)
+		}
+		keys = keys.sort()
+		for (var j=0; j<keys.length; j++) {
+			prop = keys[j]
+			if (o.options.blacklist && (o.options.blacklist.indexOf(prop) >= 0)) {
+				// discard blacklisted field
+				continue
+			}
+			var ref = data[0][prop]
+			if (ref == null) {
+				ref = ""
+			}
+			for (var i=1; i<data.length; i++) {
+				var val = data[i][prop]
+				if (val == null) {
+					val = ""
+				}
+				if (val != ref) {
+					add_prop(prop)
+					break
+				}
+			}
+		}
+
+		function add_prop(prop) {
+			var l = $("<tr class='diff_line'></tr>")
+			if (prop in db_columns) {
+				_prop = db_columns[prop].title
+				_class = "icon_fixed_width "+db_columns[prop].img
+			} else {
+				_prop = prop
+				_class = "icon_fixed_width"
+			}
+			l.append($("<td class='"+_class+"'>"+_prop+"</td>"))
+			for (var i=0; i<data.length; i++) {
+				var val = data[i][prop]
+				if (typeof(val) === "undefined" || val == null) {
+					val = ""
+				}
+				l.append($("<td style='border-left:dotted 1px'>"+val+"</td>"))
+			}
+			t.append(l)
+		}
+		o.div.html(t)
+		o.div.i18n()
+	}
+	return o
+}
+
+function nodediff(divid, options) {
+	var o = {}
+	o.div = $("#"+divid)
+	o.options = options
+
+	var t
+	var d
+
+	o.div.empty()
+
+	// asset diff
+	t = $("<h2 data-i18n='diff.asset_title'></h2>")
+	d = $("<div></div>")
+	d.uniqueId()
+	o.div.append(t)
+	o.div.append(d)
+	assetdiff(d.attr("id"), {"nodenames": o.options.nodenames})
+
+	// pkg diff
+	t = $("<h2 data-i18n='diff.pkg_title'></h2>")
+	d = $("<div></div>")
+	d.uniqueId()
+	o.div.append(t)
+	o.div.append(d)
+	pkgdiff(d.attr("id"), {"nodenames": o.options.nodenames.join(",")})
+
+	// comp diff
+	t = $("<h2 data-i18n='diff.comp_title'></h2>")
+	d = $("<div></div>")
+	d.uniqueId()
+	o.div.append(t)
+	o.div.append(d)
+	sync_ajax('/init/compliance/ajax_compliance_nodediff?node='+o.options.nodenames.join(","), [], d.attr("id"), function(){})
+
+	o.div.i18n()
+	return o
+}
+
+function svcdiff(divid, options) {
+	var o = {}
+	o.div = $("#"+divid)
+	o.options = options
+
+	var t
+	var d
+
+	o.div.empty()
+
+	// asset diff
+	t = $("<h2 data-i18n='diff.services_title'></h2>")
+	d = $("<div></div>")
+	d.uniqueId()
+	o.div.append(t)
+	o.div.append(d)
+	servicediff(d.attr("id"), {"svcnames": o.options.svcnames})
+
+	// pkg diff
+	t = $("<h2 data-i18n='diff.pkg_title'></h2>")
+	d = $("<div></div>")
+	d.uniqueId()
+	o.div.append(t)
+	o.div.append(d)
+	svc_pkgdiff(d.attr("id"), {"svcnames": o.options.svcnames.join(",")})
+
+	// comp diff
+	t = $("<h2 data-i18n='diff.comp_title'></h2>")
+	d = $("<div></div>")
+	d.uniqueId()
+	o.div.append(t)
+	o.div.append(d)
+	sync_ajax('/init/compliance/ajax_compliance_svcdiff?node='+o.options.svcnames.join(","), [], d.attr("id"), function(){})
+
+	o.div.i18n()
+	return o
+}
+

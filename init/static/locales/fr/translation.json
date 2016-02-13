@@ -721,11 +721,17 @@
   "service_env": {
     "header": "Dernière mise à jour le __updated__"
   },
-  "pkgdiff": {
-    "title_encap": "Différences de paquets installés entre les noeuds encapsulés du cluster",
-    "title_cluster": "Différences de paquets installés entre les noeuds du cluster",
+  "diff": {
+    "services_title": "Différences de services",
+    "asset_title": "Différences d'assets",
+    "pkg_title": "Différences de paquets installés",
+    "comp_title": "Différences de conformité",
+    "pkg_title_encap": "Différences de paquets installés entre les noeuds encapsulés du cluster",
+    "pkg_title_cluster": "Différences de paquets installés entre les noeuds du cluster",
     "no_diff": "Auncune difference trouvée",
     "nodes": "Noeuds",
+    "services": "Services",
+    "property": "Propriété",
     "package": "Paquet",
     "version": "Version",
     "type": "Type",

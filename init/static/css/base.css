@@ -3422,6 +3422,10 @@ pre.api_doc {
 	background-color: #fafafa;
 }
 
+.diff_table > tbody > tr.diff_line:nth-child(even) {
+	background-color: #fafafa;
+}
+
 button:disabled:before {
 	color: lightgray;
 }

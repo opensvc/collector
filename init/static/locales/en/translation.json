@@ -734,11 +734,17 @@
   "service_env": {
     "header": "Last updated on __updated__"
   },
-  "pkgdiff": {
-    "title_encap": "Installed package differences in encapsulated cluster",
-    "title_cluster": "Installed package differences in cluster",
+  "diff": {
+    "services_title": "Services differences",
+    "asset_title": "Asset differences",
+    "pkg_title": "Installed package differences",
+    "comp_title": "Compliance differences",
+    "pkg_title_encap": "Installed package differences in encapsulated cluster",
+    "pkg_title_cluster": "Installed package differences in cluster",
     "no_diff": "No difference found",
     "nodes": "Nodes",
+    "services": "Services",
+    "property": "Property",
     "package": "Package",
     "version": "Version",
     "type": "Type",

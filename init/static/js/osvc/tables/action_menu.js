@@ -2310,12 +2310,12 @@ function tool_svcdiff(t, e) {
   var entry = $(e.target)
   var cache_id = entry.attr("cache_id")
   var data = t.action_menu_data_cache[cache_id]
-  var nodes = new Array()
+  var svcnames = new Array()
   for (i=0;i<data.length;i++) {
-    nodes.push(data[i]['svcname'])
+    svcnames.push(data[i]['svcname'])
   }
   t.e_overlay.show()
-  sync_ajax('/init/nodediff/ajax_svcdiff?node='+nodes.join(","), [], 'overlay', function(){})
+  svcdiff("overlay", {"svcnames": svcnames})
 }
 
 //
@@ -2345,7 +2345,7 @@ function tool_nodediff(t, e) {
     nodes.push(data[i]['nodename'])
   }
   t.e_overlay.show()
-  sync_ajax('/init/nodediff/ajax_nodediff?node='+nodes.join(","), [], 'overlay', function(){})
+  nodediff("overlay", {"nodenames": nodes})
 }
 
 //
