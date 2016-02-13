@@ -1538,14 +1538,14 @@ function table_action_menu(t, e){
 
 	// display actions only for the clicked section
 	var folders = $("#"+o.menu_id+" .action_menu_folder")
-	folders.addClass("icon right16")
+	folders.addClass("icon_fixed_width right16")
 	folders.children("ul,.action_menu_selector").hide()
 	folders.bind("click", function(e){
 		e.stopPropagation()
-		var v = $(this).children(".action_menu_selector").is(":visible")
+		var v = $(this).hasClass("down16")
 		folders.removeClass("down16")
 		folders.addClass("right16")
-		folders.children("ul,.action_menu_selector").hide()
+		folders.children("ul,.action_menu_selector").hide("blind", 300)
 		if (!v) {
 			var selector = $(this).children(".action_menu_selector")
 			selector.show()
@@ -1554,7 +1554,7 @@ function table_action_menu(t, e){
 			if (scope) {
 				$(this).children("ul[scope="+scope+"]").show()
 			} else {
-				$(this).children("ul").show()
+				$(this).children("ul").show("blind", 300)
 			}
 			$(this).removeClass("right16")
 			$(this).addClass("down16")
@@ -2075,7 +2075,7 @@ function table_action_menu_focus_on_leaf(t, entry) {
 
   // hide other actions in this selector scope
   entry.siblings().hide()
-  entry.addClass("b")
+  entry.addClass("action_menu_leaf_selected")
   entry.unbind("click")
   entry.parent("ul").parent().unbind("click")
 }
@@ -2133,7 +2133,6 @@ function table_action_menu_agent_action(t, e, confirmation) {
         table_action_menu_agent_action(t, e, true)
       })
       yes_no.insertAfter(entry)
-      $("<hr>").insertAfter(entry)
       if (s.length > 0) {
         $(s).insertAfter(entry)
       }
@@ -2189,7 +2188,7 @@ function table_action_menu_agent_action(t, e, confirmation) {
 //
 function tool_free_uids(t, e) {
   var entry = $(e.target)
-  entry.next("[name=tool]").remove()
+  table_action_menu_focus_on_leaf(t, entry)
   var div = $("<div name='tool' style='padding:0.5em'></div>")
   var title = $("<div></div>")
   var input = $("<input class='oi' id='uid_start'>")
@@ -2213,7 +2212,7 @@ function tool_free_uids(t, e) {
 //
 function tool_free_gids(t, e) {
   var entry = $(e.target)
-  entry.next("[name=tool]").remove()
+  table_action_menu_focus_on_leaf(t, entry)
   var div = $("<div name='tool' style='padding:0.5em'></div>")
   var title = $("<div></div>")
   var input = $("<input class='oi' id='gid_start'>")
@@ -2609,8 +2608,6 @@ function data_action_generic_add(t, e, options) {
   table_action_menu_focus_on_leaf(t, entry)
   var div = $("<div></div>")
   div.uniqueId()
-  div.append($("<hr>"))
-  div.css({"display": "table-caption"})
   div.insertAfter(entry)
 
   // minimal create information
@@ -2720,7 +2717,6 @@ function data_action_sync_dns_domains(t, e) {
   var data = t.action_menu_data_cache[cache_id]
   var div = $("<div></div>")
   var info = $("<div></div>")
-  div.append($("<hr>"))
   div.append(info)
   div.insertAfter(entry)
 
@@ -2763,8 +2759,6 @@ function data_action_add_dns_record(t, e) {
   table_action_menu_focus_on_leaf(t, entry)
   var div = $("<div></div>")
   div.uniqueId()
-  div.append($("<hr>"))
-  div.css({"display": "table-caption"})
   div.insertAfter(entry)
   form(div.attr("id"), {"form_name": "add_dns_record"})
 }
@@ -3382,8 +3376,6 @@ function data_action_import_report(t, e) {
   table_action_menu_focus_on_leaf(t, entry)
   var div = $("<div></div>")
   div.uniqueId()
-  div.append($("<hr>"))
-  div.css({"display": "table-caption"})
   div.insertAfter(entry)
 
   var line = $("<div class='template_form_line'></div>")
@@ -4223,7 +4215,6 @@ function agent_action_provisioning(t, e) {
   table_action_menu_focus_on_leaf(t, entry)
   var div = $("<div class='template_selector'></div>")
   var title = $("<div data-i18n='action_menu.provisioning_selector_title'></div>").i18n()
-  div.append($("<hr>"))
   div.append(title)
   div.insertAfter(entry)
 
@@ -4405,8 +4396,6 @@ function data_action_add_quota(t, e) {
   table_action_menu_focus_on_leaf(t, entry)
   var div = $("<div></div>")
   div.uniqueId()
-  div.append($("<hr>"))
-  div.css({"display": "table-caption"})
   div.insertAfter(entry)
   form(div.attr("id"), {"form_name": "add_quota"})
 }
@@ -4470,8 +4459,6 @@ function data_action_obs_set(t, e, options) {
   table_action_menu_focus_on_leaf(t, entry)
   var div = $("<div></div>")
   div.uniqueId()
-  div.append($("<hr>"))
-  div.css({"display": "table-caption"})
   div.insertAfter(entry)
 
   // minimal create information
@@ -4529,8 +4516,6 @@ function data_action_add_prov_template(t, e) {
   table_action_menu_focus_on_leaf(t, entry)
   var div = $("<div></div>")
   div.uniqueId()
-  div.append($("<hr>"))
-  div.css({"display": "table-caption"})
   div.insertAfter(entry)
 
   // minimal create information

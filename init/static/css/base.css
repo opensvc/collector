@@ -1295,12 +1295,30 @@ a.xinfo_shown span {
 }
 .action_menu ul {
 	padding: 0.5em;
+	margin: 0 0 0 0.3em;
+}
+.action_menu ul ul ul {
+	border-left: 1px dotted lightgray;
+	padding: 0.2em 1.2em;
+	margin: 0.4em 0.2em;
 }
 .action_menu li {
 	list-style: none;
+	padding: 0.3em 0;
 }
 .action_menu_leaf:hover {
 	color: cadetblue;
+	font-size: large;
+}
+.action_menu_leaf:hover:before {
+	color: cadetblue !important;
+}
+.action_menu_leaf_selected {
+	color: cadetblue;
+	font-size: large;
+}
+.action_menu_leaf_selected:before {
+	color: cadetblue !important;
 }
 
 .action_menu_selector {
