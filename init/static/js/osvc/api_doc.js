@@ -90,7 +90,7 @@ function api_doc(divid, path) {
 		td.append(div)
 
 		// format title
-		var title_span = $("<span class='wf16 highlight fa-2x'></span>")
+		var title_span = $("<span class='icon nocolor wf16 highlight fa-2x'></span>")
 		title_span.text(path+" :: "+action)
 		div.append(title_span)
 
