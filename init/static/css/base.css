@@ -1,6 +1,10 @@
 @charset "UTF-8";
 
-.ui-datepicker{
+.ui-datepicker {
+	z-index: 2000 !important;
+}
+
+.ui-menu {
 	z-index: 2000 !important;
 }
 
