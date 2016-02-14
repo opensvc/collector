@@ -1233,6 +1233,7 @@ a.xinfo_shown span {
 	-moz-border-radius: 4px;
 	-webkit-border-radius: 4px;
 	border-radius: 4px;
+	width: 100%;
 }
 .tab {
 	background: whitesmoke;
