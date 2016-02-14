@@ -267,16 +267,20 @@ class HtmlTable(object):
     def csv_object_list(self):
         if self.csv_q is None:
             return self.object_list
+        if hasattr(self, "csv_db"):
+            _db = self.csv_db
+        else:
+            _db = db
         if self.csv_left is None:
             if self.csv_orderby is None:
-                return db(self.csv_q).select(cacheable=True, limitby=(0,self.csv_limit))
+                return _db(self.csv_q).select(cacheable=True, limitby=(0,self.csv_limit))
             else:
-                return db(self.csv_q).select(cacheable=True, orderby=self.csv_orderby, limitby=(0,self.csv_limit))
+                return _db(self.csv_q).select(cacheable=True, orderby=self.csv_orderby, limitby=(0,self.csv_limit))
         else:
             if self.csv_orderby is None:
-                return db(self.csv_q).select(cacheable=True, limitby=(0,self.csv_limit), left=self.csv_left)
+                return _db(self.csv_q).select(cacheable=True, limitby=(0,self.csv_limit), left=self.csv_left)
             else:
-                return db(self.csv_q).select(cacheable=True, orderby=self.csv_orderby, limitby=(0,self.csv_limit), left=self.csv_left)
+                return _db(self.csv_q).select(cacheable=True, orderby=self.csv_orderby, limitby=(0,self.csv_limit), left=self.csv_left)
 
     def _csv(self):
         lines = [';'.join(self.cols)]

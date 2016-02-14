@@ -76,6 +76,15 @@ def ajax_dns_domains():
     for f in set(t.cols):
         q = _where(q, 'domains', t.filter_parse(f), f, db=dbdns)
 
+    if len(request.args) == 1 and request.args[0] == 'csv':
+        t.csv_q = q
+        t.csv_db = dbdns
+        t.csv_orderby = o
+        return t.csv()
+    if len(request.args) == 1 and request.args[0] == 'commonality':
+        t.csv_q = q
+        t.csv_db = dbdns
+        return t.do_commonality()
     if len(request.args) == 1 and request.args[0] == 'data':
         n = dbdns(q).count()
         limitby = (t.pager_start,t.pager_end)
@@ -143,26 +152,6 @@ class table_dns_records(HtmlTable):
         self.ajax_col_values = 'ajax_dns_records_col_values'
         self.checkboxes = True
 
-def ptr_add():
-    if request.vars.type != 'A':
-        return
-    request.vars.type = 'PTR'
-    tmp = request.vars.content
-    l = tmp.split('.')
-    l.reverse()
-    tmp = '.'.join(l)
-    tmp += ".in-addr.arpa"
-    request.vars.content = request.vars.name
-    request.vars.name = tmp
-    form = _record_form()
-    if form.accepts(request.vars):
-        response.flash = T("a and ptr recorded")
-        _log('dns.records.add',
-             'added record %(u)s',
-             dict(u=request.vars.name))
-    elif form.errors:
-        response.flash = T("errors in ptr form")
-
 @auth.requires_login()
 def ajax_dns_records_col_values():
     table_id = request.vars.table_id
@@ -185,6 +174,15 @@ def ajax_dns_records():
     for f in set(t.cols):
         q = _where(q, 'records', t.filter_parse(f), f, db=dbdns)
 
+    if len(request.args) == 1 and request.args[0] == 'csv':
+        t.csv_q = q
+        t.csv_db = dbdns
+        t.csv_orderby = o
+        return t.csv()
+    if len(request.args) == 1 and request.args[0] == 'commonality':
+        t.csv_q = q
+        t.csv_db = dbdns
+        return t.do_commonality()
     if len(request.args) == 1 and request.args[0] == 'data':
         n = dbdns(q).count()
         limitby = (t.pager_start,t.pager_end)
