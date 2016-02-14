@@ -868,7 +868,11 @@ class rest_post_reports_import(rest_post_handler):
                          continue
                      m["chart_definition"]["Metrics"][j]["metric_id"] = metric_id[metric["metric_name"]]
                      del(m["chart_definition"]["Metrics"][j]["metric_name"])
-                m["chart_yaml"] = yaml.safe_dump(m["chart_definition"], default_flow_style=False, allow_unicode=True)
+                try:
+                    m["chart_yaml"] = yaml.safe_dump(m["chart_definition"], default_flow_style=False, allow_unicode=True)
+                except Exception as e:
+                    data["error"].append("Error converting to yaml: %s, %s" % (str(m["chart_definition"]), str(e)))
+                    return data
                 del(m["chart_definition"])
                 chart_id[m["chart_name"]] = db.charts.insert(**m)
                 data["info"].append("Added chart %s" % m["chart_name"])
@@ -897,7 +901,11 @@ class rest_post_reports_import(rest_post_handler):
                              continue
                          m["report_definition"]["Sections"][j]["Charts"][k]["chart_id"] = chart_id[chart["chart_name"]]
                          del(m["report_definition"]["Sections"][j]["Charts"][k]["chart_name"])
-                    m["report_yaml"] = yaml.safe_dump(m["report_definition"], default_flow_style=False, allow_unicode=True)
+                    try:
+                        m["report_yaml"] = yaml.safe_dump(m["report_definition"], default_flow_style=False, allow_unicode=True)
+                    except Exception as e:
+                        data["error"].append("Error converting to yaml: %s, %s" % (str(m["report_definition"]), str(e)))
+                        return data
                 del(m["report_definition"])
                 db.reports.insert(**m)
                 data["info"].append("Added report %s" % m["report_name"])
