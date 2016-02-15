@@ -1141,7 +1141,7 @@ def delete_moduleset(modset_id):
          dict(modset_name=v.modset_name))
 
 @auth.requires_membership('CompManager')
-def create_ruleset(rset_name):
+def create_ruleset(rset_name, published=True):
     q = db.comp_rulesets.ruleset_name == rset_name
     rows = db(q).select(cacheable=True)
     v = rows.first()
@@ -1151,6 +1151,7 @@ def create_ruleset(rset_name):
     obj_id = db.comp_rulesets.insert(
       ruleset_name=rset_name,
       ruleset_type="explicit",
+      ruleset_public=published,
     )
     table_modified("comp_rulesets")
     add_default_teams(rset_name)

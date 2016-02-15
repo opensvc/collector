@@ -379,7 +379,7 @@ function designer(divid, options) {
 				} else {
 					msg = 'Error: ' + jqXHR.responseText
 				}
-				$.jstree.rollback(data.rlbk)
+				//$.jstree.rollback(data.rlbk)
 				$(".flash").html(msg).slideDown()
 			},
 			success: function(msg){
@@ -533,19 +533,37 @@ function designer(divid, options) {
 				var new_rel = ""
 				var new_rel_short = ""
 
-				if (parent_type == "modset") {
+				if (new_type == "module") {
+					if (parent_type != "modset") {
+						return
+					}
 					new_rel = "module"
 					new_rel_short = "mod"
-				} else if (parent_id == "moduleset_head") {
+				} else if (new_type == "modset") {
+					if ((parent_type != "modset") && (parent_id != "moduleset_head")) {
+						return
+					}
 					new_rel = "modset"
 					new_rel_short = "modset"
-				} else if (parent_id == "rset_head") {
-					new_rel = "ruleset"
+				} else if (new_type == "ruleset") {
 					new_rel_short = "rset"
-				} else if (parent_id == "filterset_head") {
+					if (parent_type != "rset_head") {
+						new_rel = "ruleset_hidden"
+					} else if (parent_id == "rset_head") {
+						new_rel = "ruleset"
+					} else {
+						return
+					}
+				} else if (new_type == "filterset") {
+					if (parent_type != "filterset_head") {
+						return
+					}
 					new_rel = "filterset"
 					new_rel_short = "fset"
-				} else if (parent_type.indexOf("ruleset") == 0) {
+				} else if (new_type == "variable") {
+					if (parent_type.indexOf("ruleset") != 0) {
+						return
+					}
 					new_rel = "variable"
 					new_rel_short = "var"
 				} else {
@@ -559,7 +577,8 @@ function designer(divid, options) {
 						"operation": "create",
 						"obj_name": new_data,
 						"obj_type": new_rel,
-						"parent_obj_id": parent_obj_id
+						"parent_obj_id": parent_obj_id,
+						"parent_type": parent_type
 					},
 					error: function(jqXHR, exception) {
 						if (jqXHR.status === 0) {
@@ -577,7 +596,7 @@ function designer(divid, options) {
 						} else {
 							msg = 'Error: ' + jqXHR.responseText
 						}
-						$.jstree.rollback(data.rlbk)
+						//$.jstree.rollback(data.rlbk)
 						$(".flash").html(msg).slideDown()
 					},
 					success: function(msg){
@@ -586,7 +605,7 @@ function designer(divid, options) {
 							return
 						}
 						if ((msg != "0") && !("obj_id" in msg)) {
-							$.jstree.rollback(data.rlbk)
+							//$.jstree.rollback(data.rlbk)
 							o.json_status(msg)
 							return
 						}
@@ -1252,7 +1271,24 @@ function designer(divid, options) {
 					o.__create(data, "module")
 				}
 			}
-
+			h["create_modset"] = {
+				"label": i18n.t("designer.add_moduleset"),
+				"icon": "fa fa-plus-square",
+				"separator_before": false,
+				"separator_after": false,
+				"action": function(data){
+					o.__create(data, "modset")
+				}
+			}
+			h["create_ruleset"] = {
+				"label": i18n.t("designer.add_ruleset"),
+				"icon": "fa fa-plus-square",
+				"separator_before": false,
+				"separator_after": false,
+				"action": function(data){
+					o.__create(data, "ruleset")
+				}
+			}
 			h["clone"] = {
 				"label": i18n.t("designer.clone"),
 				"icon": "fa fa-copy",
@@ -1280,6 +1316,15 @@ function designer(divid, options) {
 				"separator_after": false,
 				"action": function(data){
 					o.__create(data, "variable")
+				}
+			}
+			h["create_ruleset"] = {
+				"label": i18n.t("designer.add_ruleset"),
+				"icon": "fa fa-plus-square",
+				"separator_before": false,
+				"separator_after": false,
+				"action": function(data){
+					o.__create(data, "ruleset")
 				}
 			}
 			h["clone"] = {

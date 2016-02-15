@@ -5016,6 +5016,9 @@ def json_tree_action_create_moduleset(modset_name):
     modset_name = modset_name.strip()
     try:
         obj_id = create_moduleset(modset_name)
+        if request.vars.parent_obj_id:
+            if request.vars.parent_type == "modset":
+                attach_moduleset_to_moduleset(obj_id, request.vars.parent_obj_id)
     except CompError as e:
         return {"err": str(e)}
     except CompInfo as e:
@@ -5023,13 +5026,23 @@ def json_tree_action_create_moduleset(modset_name):
     return {"obj_id": obj_id}
 
 def json_tree_action_create_ruleset(rset_name):
+    if request.vars.parent_obj_id:
+        published = False
+    else:
+        published = True
     rset_name = rset_name.strip()
     try:
-        obj_id = create_ruleset(rset_name)
+        obj_id = create_ruleset(rset_name, published=published)
+        if request.vars.parent_obj_id:
+            if request.vars.parent_type == "ruleset":
+                attach_ruleset_to_ruleset(obj_id, request.vars.parent_obj_id)
+            elif request.vars.parent_type == "modset":
+                attach_ruleset_to_moduleset(obj_id, request.vars.parent_obj_id)
     except CompError as e:
         return {"err": str(e)}
     except CompInfo as e:
         return {"info": str(e)}
+
     return {"obj_id": obj_id}
 
 def json_tree_action_create_module(modset_id, modset_mod_name):
