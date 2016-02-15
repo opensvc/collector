@@ -787,7 +787,7 @@ function designer(divid, options) {
 			type: "POST",
 			url: o.url_action,
 			data: {
-				"operation": "detach_publication_group",
+				"operation": "detach_moduleset_from_moduleset",
 				"parent_obj_type": parent_node.type,
 				"parent_obj_id": parent_node.li_attr.obj_id,
 				"obj_id": node.li_attr.obj_id
@@ -1087,6 +1087,33 @@ function designer(divid, options) {
 				o.for_each_node(node.li_attr.obj_id, node.type, parent_node.li_attr.obj_id, parent_node.type, function(t, node) {
 					var tree = t.jstree()
 					tree.set_type(node.id, new_type)
+				})
+				o.json_status(msg)
+			}
+		})
+	}
+
+	o.action_detach_group_publication = function(data){
+		var tree = $.jstree.reference(data.reference)
+		var node = tree.get_node(data.reference)
+		var parent_node = tree.get_node(node.parent)
+		$.ajax({
+			async: false,
+			type: "POST",
+			url: o.url_action,
+			data: {
+				"operation": "detach_publication_group",
+				"parent_obj_type": parent_node.type,
+				"parent_obj_id": parent_node.li_attr.obj_id,
+				"obj_id": node.li_attr.obj_id
+			},
+			success: function(msg){
+				if ((msg != "0") && ("err" in msg)) {
+					return
+				}
+				o.for_each_node(node.li_attr.obj_id, node.type, parent_node.li_attr.obj_id, parent_node.type, function(t, node) {
+					var tree = t.jstree()
+					tree.delete_node(node.id)
 				})
 				o.json_status(msg)
 			}
@@ -1458,7 +1485,7 @@ function designer(divid, options) {
 				h["detach_group_publication"] = {
 					"label": i18n.t("designer.detach_publication"),
 					"icon": "fa fa-chain-broken",
-					"action": o.action_action_detach_moduleset
+					"action": o.action_detach_group_publication
 				}
 			}
 		}
