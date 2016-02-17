@@ -228,6 +228,7 @@ function table_checks(divid, options) {
 		'default_columns': ["chk_err", "chk_high", "chk_instance", "chk_low", "chk_nodename", "chk_svcname", "chk_threshold_provider", "chk_type", "chk_updated", "chk_value"],
 		'wsable': true,
 		'force_cols': [
+			'chk_nodename',
 			'os_name',
 			'chk_type',
 			'chk_instance',
