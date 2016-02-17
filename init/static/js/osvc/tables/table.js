@@ -177,6 +177,7 @@ function table_insert(t, data) {
         continue
       }
       var current = $("#"+t.id+"_f_"+c).val()
+
       if ((current != "") && (typeof current !== 'undefined')) {
         params[t.id+"_f_"+c] = current
       } else if ((typeof(t.colprops[c].force_filter) !== "undefined") && (t.colprops[c].force_filter != "")) {
@@ -2466,14 +2467,14 @@ function table_init(opts) {
 
 		var input = th.find("input")
 		var label = th.find(".col_filter_label")
-		var val
+
+		if ((c in t.colprops) && (typeof(t.colprops[c].force_filter) !== "undefined") && (t.colprops[c].force_filter != "")) {
+			val = t.colprops[c].force_filter
+		}
 
 		if (typeof(val) === "undefined") {
 			val = input.val()
 		}
-
-		// make sure the column title is visible
-		th.show()
 
 		// update val in input, and text in display area
 		if (typeof(val) === "undefined") {
@@ -2487,9 +2488,10 @@ function table_init(opts) {
 			val = t.colprops[c].default_filter
 			n = val.length
 		}
-		var _val = val
 		if (n > 20) {
-			_val = val.substring(0, 17)+"..."
+			var _val = val.substring(0, 17)+"..."
+		} else {
+			var _val = val
 		}
 		label.attr("title", val)
 		label.text(_val)
@@ -2500,6 +2502,10 @@ function table_init(opts) {
 			th.find(".clear16,.invert16").hide()
 		} else {
 			th.find(".clear16,.invert16").show()
+		}
+
+		if ((c in t.colprops) && (typeof(t.colprops[c].force_filter) !== "undefined") && (t.colprops[c].force_filter != "")) {
+			th.find(".clear16,.invert16,.filter16").hide()
 		}
 
 		// update the slim header cell colorization
