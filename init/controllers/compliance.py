@@ -93,7 +93,7 @@ class table_comp_rulesets_services(HtmlTable):
         for c in self.cols:
             self.colprops[c].table = 'v_comp_services'
         self.span = ['svc_name']
-        self.key = ['svc_name']
+        self.keys = ['svc_name', 'ruleset_id', 'encap']
         self.force_cols = ['ruleset_id', 'svc_status_updated']
         self.checkboxes = True
         self.checkbox_id_table = 'v_comp_services'
@@ -119,7 +119,7 @@ class table_comp_rulesets_nodes(HtmlTable):
             self.colprops[c].table = 'v_comp_nodes'
         self.force_cols = ['os_name', 'ruleset_id']
         self.span = ['nodename']
-        self.key = ['nodename']
+        self.keys = ['nodename', 'ruleset_id']
         self.checkboxes = True
         self.checkbox_id_table = 'v_comp_nodes'
         self.ajax_col_values = 'ajax_comp_rulesets_nodes_col_values'
@@ -514,7 +514,7 @@ class table_comp_modulesets_services(HtmlTable):
         for c in self.cols:
             self.colprops[c].table = 'v_comp_services'
         self.span = ['svc_name']
-        self.key = ['svc_name']
+        self.keys = ['svc_name', 'modset_id', 'encap']
         self.force_cols = ['modset_id', 'svc_status_updated']
         self.checkbox_id_table = 'v_comp_services'
         self.dataable = True
@@ -541,7 +541,7 @@ class table_comp_modulesets_nodes(HtmlTable):
             self.colprops[c].table = 'v_comp_nodes'
         self.force_cols = ['os_name', 'modset_id']
         self.span = ['nodename']
-        self.key = ['nodename']
+        self.keys = ['nodename', 'modset_id']
         self.checkbox_id_table = 'v_comp_nodes'
         self.dataable = True
         self.checkboxes = True
