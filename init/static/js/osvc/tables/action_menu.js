@@ -532,7 +532,7 @@ function table_action_menu_init_data(t) {
           "foldable": true,
           'title': 'action_menu.on_obsolescence_settings',
           "class": "icon_fixed_width check16",
-          "table": ["obs"],
+          "table": ["obsolescence"],
           "cols": ["id"],
           "condition": "id",
           "children": [
@@ -647,7 +647,7 @@ function table_action_menu_init_data(t) {
           "foldable": true,
           'title': 'action_menu.on_dns_domains',
           "class": "icon_fixed_width dns16",
-          "table": ["dnsd"],
+          "table": ["dns_domains"],
           "cols": ["id"],
           "condition": "id",
           "children": [
@@ -672,7 +672,7 @@ function table_action_menu_init_data(t) {
           "foldable": true,
           'title': 'action_menu.on_dns_records',
           "class": "icon_fixed_width dns16",
-          "table": ["dnsr"],
+          "table": ["dns_records"],
           "cols": ["id"],
           "condition": "id",
           "children": [
@@ -900,7 +900,7 @@ function table_action_menu_init_data(t) {
           "selector": ["clicked", "checked", "all"],
           "foldable": true,
           'title': 'action_menu.on_nodes_tags',
-          "class": "icon_fixed_width tags16",
+          "class": "icon_fixed_width tag16",
           "cols": ["nodename", "tag_id"],
           "condition": "nodename+tag_id",
           "children": [
@@ -962,7 +962,7 @@ function table_action_menu_init_data(t) {
         {
           "selector": ["clicked", "checked", "all"],
           "foldable": true,
-          "table": ["svcmon"],
+          "table": ["service_instances"],
           'title': 'action_menu.on_services_instances',
           "class": "icon_fixed_width svc",
           "cols": ["id"],
@@ -996,7 +996,7 @@ function table_action_menu_init_data(t) {
           "selector": ["clicked", "checked", "all"],
           "foldable": true,
           'title': 'action_menu.on_services_tags',
-          "class": "icon_fixed_width tags16",
+          "class": "icon_fixed_width tag16",
           "cols": ["svcname", "tag_id"],
           "condition": "svcname+tag_id",
           "children": [
@@ -1044,7 +1044,7 @@ function table_action_menu_init_data(t) {
           "selector": ["clicked", "checked", "all"],
           "foldable": true,
           'title': 'action_menu.on_tags',
-          "class": "icon_fixed_width tags16",
+          "class": "icon_fixed_width tag16",
           "table": ["tags"],
           "cols": ["id"],
           "condition": "id",
@@ -1813,7 +1813,7 @@ function table_selector_match_table(t, selector) {
 	}
 	for (var i=0; i<selector.table.length; i++) {
 		var tid = selector.table[i]
-		if (tid == t.id) {
+		if (tid == t.options.name) {
 			return true
 		}
 	}
@@ -1882,7 +1882,7 @@ function table_action_menu_format_selector(t, e, selector) {
 		s.attr("scope", scope)
 
 		// disable the scope if no data and not in natural table
-		if (data.length == 0 && (selector.table != t.id)) {
+		if (data.length == 0 && !table_selector_match_table(t, selector)) {
 			s.addClass("action_menu_selector_disabled")
 		}
 

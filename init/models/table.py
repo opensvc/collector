@@ -26,11 +26,10 @@ class ToolError(Exception):
 
 class HtmlTableColumn(object):
     def __init__(self, field, table=None, filter_redirect=None,
-                 default_filter=None, force_filter=None):
+                 force_filter=None):
         self.table = table
         self.field = field
         self.filter_redirect = filter_redirect
-        self.default_filter = default_filter
         self.force_filter = force_filter
 
     def __str__(self):
@@ -41,7 +40,6 @@ class HtmlTableColumn(object):
          'field': self.field,
          'table': self.table or "",
          'filter_redirect': self.filter_redirect or "",
-         'default_filter': self.default_filter or "",
          'force_filter': self.force_filter or "",
         }
         return data
@@ -67,8 +65,6 @@ class HtmlTable(object):
         self.upc_table = self.id
         self.last = None
         self.object_list = []
-        self.child_tables = []
-        self.parent_tables = []
 
         # to be set by children
         self.cols = []
