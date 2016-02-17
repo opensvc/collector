@@ -94,17 +94,9 @@ class table_filtersets(HtmlTable):
         self.colprops.update(filters_colprops)
         for c in self.colprops:
             self.colprops[c].table = 'v_gen_filtersets'
-        self.events = ["gen_filtersets_change",
-                       "gen_filtersets_filters_change",
-                       "gen_filters_change"]
-        self.force_cols = ["fset_id", "f_id", "encap_fset_id"]
         self.span = ['fset_name', 'fset_stats']
         self.keys = ['fset_id', 'f_id', 'encap_fset_id']
         self.ajax_col_values = ajax_filtersets_col_values
-        self.dbfilterable = False
-        self.dataable = True
-        self.wsable = True
-        self.checkboxes = True
 
 @auth.requires_login()
 def ajax_filtersets_col_values():
@@ -154,17 +146,10 @@ class table_filters(HtmlTable):
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
         self.keys = ["id"]
-        self.force_cols = ["id"]
         self.span = ["f_table", "f_field"]
         self.cols = ["id"] + filters_cols
         self.colprops = filters_colprops
         self.ajax_col_values = 'ajax_filters_col_values'
-        self.dbfilterable = False
-        self.dataable = True
-        self.wsable = True
-        self.checkboxes = True
-        self.checkbox_id = "id"
-        self.events = ["gen_filters_change"]
 
 @auth.requires_login()
 def ajax_filters_col_values():

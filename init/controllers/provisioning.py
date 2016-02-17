@@ -11,7 +11,6 @@ class table_templates(HtmlTable):
                      'tpl_author',
                      'tpl_team_responsible']
         self.keys = ['id']
-        self.force_cols = ['id', 'tpl_name']
         self.colprops = {
             'id': HtmlTableColumn(
                 field = 'id',
@@ -43,11 +42,6 @@ class table_templates(HtmlTable):
             ),
         }
         self.ajax_col_values = 'ajax_prov_admin_col_values'
-        self.events = ["prov_templates_change"]
-        self.dataable = True
-        self.wsable = True
-        self.dbfilterable = False
-        self.checkboxes = True
 
 @auth.requires_login()
 def ajax_prov_admin_col_values():

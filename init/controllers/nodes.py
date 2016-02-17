@@ -27,22 +27,6 @@ class table_nodes(HtmlTable):
         })
         self.cols.insert(self.cols.index('team_integ')+1, 'app_team_ops')
         self.cols.insert(self.cols.index('project')+1, 'app_domain')
-
-        for c in ['loc_building', 'loc_floor', 'loc_rack',
-                  'cpu_dies', 'cpu_cores', 'cpu_model', 'mem_bytes',
-                  'serial', 'team_responsible', 'host_mode', 'status']:
-            self.colprops[c].display = True
-        self.colprops['nodename'].t = self
-        self.force_cols = ['os_name']
-        self.wsable = True
-        self.dataable = True
-        self.extraline = True
-        self.checkboxes = True
-        self.checkbox_id_col = 'nodename'
-        self.checkbox_id_table = 'nodes'
-        self.dbfilterable = True
-        self.events = ["nodes_change"]
-        self.child_tables = ["uids", "gids"]
         self.ajax_col_values = 'ajax_nodes_col_values'
 
 @auth.requires_login()
@@ -169,14 +153,7 @@ class table_uids(HtmlTable):
                      table='v_uids',
                     ),
         }
-        self.colprops['user_id'].t = self
-        self.extraline = True
-        self.checkboxes = True
-        self.dbfilterable = True
         self.ajax_col_values = 'ajax_uids_col_values'
-
-    def extra_line_key(self, o):
-        return "uid_"+str(o['user_id'])
 
 def free_ids(rows, start=500):
     if len(rows) == 0:
@@ -220,14 +197,7 @@ class table_gids(HtmlTable):
                      table='v_gids',
                     ),
         }
-        self.colprops['group_id'].t = self
-        self.checkboxes = True
-        self.extraline = True
-        self.dbfilterable = True
         self.ajax_col_values = 'ajax_gids_col_values'
-
-    def extra_line_key(self, o):
-        return "gid_"+str(o['group_id'])
 
 @auth.requires_login()
 def ajax_obs_agg():
@@ -353,8 +323,6 @@ def ajax_uids_col_values():
     o = 'u.'+col
 
     mt.setup_pager(-1)
-    mt.dbfilterable = False
-    mt.filterable = True
     mt.additional_inputs = t.ajax_inputs()
 
     sql2 = """select * from (
@@ -396,8 +364,6 @@ def ajax_uids():
     where = str(q).replace("v_uids.", "u.")
 
     mt.setup_pager(-1)
-    mt.dbfilterable = False
-    mt.filterable = True
     mt.additional_inputs = t.ajax_inputs()
 
     sql2 = """select * from (
@@ -455,8 +421,6 @@ def ajax_gids_col_values():
     o = 'u.'+col
 
     mt.setup_pager(-1)
-    mt.dbfilterable = False
-    mt.filterable = True
     mt.additional_inputs = t.ajax_inputs()
 
     sql2 = """select * from (
@@ -498,8 +462,6 @@ def ajax_gids():
     where = str(q).replace("v_gids.", "u.")
 
     mt.setup_pager(-1)
-    mt.dbfilterable = False
-    mt.filterable = True
     mt.additional_inputs = t.ajax_inputs()
 
     sql2 = """select * from (

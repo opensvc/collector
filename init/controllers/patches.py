@@ -38,18 +38,9 @@ class table_patches(HtmlTable):
                     ),
         })
         self.colprops['nodename'].display = True
-        self.colprops['nodename'].t = self
-        self.force_cols = ['os_name']
-        self.dbfilterable = True
-        self.dataable = True
-        self.extraline = True
-        self.checkboxes = True
-        self.checkbox_id_col = 'id'
-        self.checkbox_id_table = 'patches'
         self.ajax_col_values = 'ajax_patches_col_values'
         self.span = ["id"]
         self.keys = ["id"]
-        self.events = ["patches_change"]
 
 @auth.requires_login()
 def ajax_patches_col_values():

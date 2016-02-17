@@ -18,9 +18,6 @@ class table_sanswitches(HtmlTable):
                       'sw_rname',
                       'sw_updated',
                      ]
-        #self.colprops = nodes_colprops
-        self.keys = ['sw_fabric', 'sw_name', 'sw_index', 'sw_rportname']
-        self.span = ['sw_fabric', 'sw_name', 'sw_index']
         self.colprops.update({
             'sw_name': HtmlTableColumn(
                      field='sw_name',
@@ -64,10 +61,7 @@ class table_sanswitches(HtmlTable):
         })
         for c in self.cols:
             self.colprops[c].table = 'v_switches'
-            self.colprops[c].t = self
-        self.extraline = True
         self.ajax_col_values = 'ajax_sanswitches_col_values'
-        self.dataable = True
         self.span = ["sw_name", "sw_index"]
         self.keys = ["sw_name", "sw_index"]
 

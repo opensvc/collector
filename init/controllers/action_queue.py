@@ -75,17 +75,9 @@ class table_actions(HtmlTable):
                      field='stderr',
                     ),
         }
-        for col in self.cols:
-            self.colprops[col].t = self
         self.keys = ["id"]
         self.span = ["id"]
-        self.dbfilterable = False
-        self.extraline = True
-        self.checkboxes = True
         self.ajax_col_values = 'ajax_actions_col_values'
-        self.dataable = True
-        self.wsable = True
-        self.events = ["action_q_change"]
 
 
 @auth.requires_login()

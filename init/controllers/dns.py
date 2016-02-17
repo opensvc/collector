@@ -47,13 +47,7 @@ class table_dns_domains(HtmlTable):
         }
         self.keys = ["id"]
         self.span = ["id"]
-        self.force_cols = ["id"]
-        self.dbfilterable = False
         self.ajax_col_values = 'ajax_dns_domains_col_values'
-        self.checkboxes = True
-        self.dataable = True
-        self.wsable = True
-        self.events = ["pdns_domains_change"]
 
 @auth.requires_login()
 def ajax_dns_domains_col_values():
@@ -108,7 +102,6 @@ class table_dns_records(HtmlTable):
                      'ttl',
                      'prio',
                      'change_date']
-        self.force_cols = ["id"]
         self.keys = ["id"]
         self.span = ["id"]
         self.colprops = {
@@ -145,12 +138,7 @@ class table_dns_records(HtmlTable):
                      field='change_date',
                     ),
         }
-        self.dataable = True
-        self.wsable = True
-        self.events = ["pdns_records_change"]
-        self.dbfilterable = False
         self.ajax_col_values = 'ajax_dns_records_col_values'
-        self.checkboxes = True
 
 @auth.requires_login()
 def ajax_dns_records_col_values():

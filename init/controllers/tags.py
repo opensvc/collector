@@ -12,17 +12,9 @@ class table_tags(HtmlTable):
         self.cols = tags_cols
         self.colprops = tags_colprops
 
-        self.dataable = True
-        self.wsable = True
-        #self.extraline = True
-        self.checkboxes = True
-        self.checkbox_id_col = 'id'
-        self.checkbox_id_table = 'tags'
         self.ajax_col_values = 'ajax_tags_col_values'
-        self.force_cols = ["id", "tag_name"]
         self.span = ["id"]
         self.keys = ["id"]
-        self.events = ["tags_change"]
 
 @auth.requires_login()
 def ajax_tags_col_values():
@@ -106,16 +98,9 @@ class table_tagattach(HtmlTable):
                      field='svcname',
                     ),
         }
-        self.dataable = True
-        #self.extraline = True
-        self.checkboxes = True
-        self.checkbox_id_col = 'ckid'
-        self.checkbox_id_table = 'v_tags_full'
         self.ajax_col_values = 'ajax_tagattach_col_values'
-        self.force_cols = ["ckid"]
         self.span = ["tag_id"]
         self.keys = ["tag_id", "nodename", "svcname"]
-        self.events = ["tags", "node_tags_change", "svc_tags_change"]
 
 
 @auth.requires_login()

@@ -52,7 +52,6 @@ class table_saves(HtmlTable):
                       'save_volume',
                       'save_date',
                       'save_retention']
-        self.force_cols = ["id", "os_name"]
         self.keys =  ['id']
         self.span = nodes_cols + [
                       'save_server',
@@ -118,18 +117,7 @@ class table_saves(HtmlTable):
                      field='save_retention',
                     ),
         })
-        self.colprops['save_nodename'].display = True
-        self.colprops['save_server'].t = self
-        self.colprops['save_nodename'].t = self
-        self.colprops['save_svcname'].t = self
-        self.extraline = True
-        self.checkbox_id_col = 'id'
-        self.checkbox_id_table = 'saves'
-        self.dataable = True
-        self.wsable = True
-        self.dbfilterable = True
         self.ajax_col_values = 'ajax_saves_col_values'
-        self.events = ["saves_change"]
 
 @auth.requires_login()
 def ajax_saves_col_values():
@@ -203,8 +191,6 @@ def ajax_saves_charts():
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
 
     nt.setup_pager(-1)
-    nt.dbfilterable = False
-    nt.filterable = True
     nt.additional_inputs = t.ajax_inputs()
 
     h_data_svc = ""
@@ -424,9 +410,4 @@ class table_saves_charts(HtmlTable):
                      field='chart',
                     ),
         })
-        for i in self.cols:
-            self.colprops[i].t = self
-        self.filterable = False
-        self.pageable = False
-        self.parent_tables = ["saves"]
 

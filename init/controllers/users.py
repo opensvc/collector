@@ -15,7 +15,6 @@ class table_users(HtmlTable):
                      'fset_name',
                      'domains',
                      'last']
-        self.force_cols = ['id']
         self.keys = ['id']
         self.span = ['id']
         self.colprops = {
@@ -64,13 +63,7 @@ class table_users(HtmlTable):
                      field='last',
                     ),
         }
-        self.colprops['domains'].t = self
         self.ajax_col_values = 'ajax_users_col_values'
-        self.dbfilterable = False
-        self.dataable = True
-        self.wsable = True
-        self.checkboxes = True
-        self.events = ["auth_user_change"]
 
 @auth.requires_login()
 def ajax_users_col_values():

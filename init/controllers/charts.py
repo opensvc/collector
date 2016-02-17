@@ -24,10 +24,8 @@ class table_metrics(HtmlTable):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
-        self.events = ["metrics_change"]
         self.span = ['id']
         self.keys = ['id']
-        self.force_cols = ['id']
         self.cols = ['id',
                      'metric_name',
                      'metric_sql',
@@ -71,12 +69,6 @@ class table_metrics(HtmlTable):
             ),
         }
         self.ajax_col_values = 'ajax_metrics_admin_col_values'
-        self.dbfilterable = True
-        self.dataable = True
-        self.wsable = True
-        self.checkboxes = True
-        self.extraline = True
-        self.events = ["metrics_change"]
 
 @auth.requires_login()
 def ajax_metrics_admin_col_values():
@@ -129,10 +121,8 @@ class table_charts(HtmlTable):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
-        self.events = ["charts_change"]
         self.span = ['id']
         self.keys = ['id']
-        self.force_cols = ['id']
         self.cols = ['id',
                      'chart_name',
                      'chart_yaml']
@@ -151,11 +141,6 @@ class table_charts(HtmlTable):
             ),
         }
         self.ajax_col_values = 'ajax_charts_admin_col_values'
-        self.dbfilterable = True
-        self.checkboxes = True
-        self.dataable = True
-        self.wsable = True
-        self.extraline = True
 
 @auth.requires_login()
 def ajax_charts_admin_col_values():
@@ -209,10 +194,8 @@ class table_reports_admin(HtmlTable):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
-        self.events = ["reports_change"]
         self.span = ['id']
         self.keys = ['id']
-        self.force_cols = ['id']
         self.cols = ['id',
                      'report_name',
                      'report_yaml']
@@ -231,11 +214,6 @@ class table_reports_admin(HtmlTable):
             ),
         }
         self.ajax_col_values = 'ajax_reports_admin_col_values'
-        self.dbfilterable = True
-        self.dataable = True
-        self.wsable = True
-        self.checkboxes = True
-        self.extraline = True
 
 @auth.requires_login()
 def ajax_reports_admin_col_values():

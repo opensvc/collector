@@ -157,12 +157,6 @@ class table_checks(HtmlTable):
                      'chk_threshold_provider',
                      'chk_created',
                      'chk_updated']
-        self.force_cols = ['os_name',
-                     'chk_type',
-                     'chk_instance',
-                     'chk_value',
-                     'chk_high',
-                     'chk_low']
         self.keys = ['chk_nodename',
                      'chk_svcname',
                      'chk_type',
@@ -215,7 +209,6 @@ class table_checks(HtmlTable):
         }
         self.colprops.update(nodes_colprops)
         self.cols += nodes_cols
-        self.events = ["checks_change"]
 
         self.colprops.update({
             'app_domain': HtmlTableColumn(
@@ -230,15 +223,7 @@ class table_checks(HtmlTable):
         self.cols.insert(self.cols.index('team_integ')+1, 'app_team_ops')
         self.cols.insert(self.cols.index('project')+1, 'app_domain')
 
-        for c in self.cols:
-            self.colprops[c].t = self
         self.ajax_col_values = 'ajax_checks_col_values'
-        self.wsable = True
-        self.dataable = True
-        self.dbfilterable = True
-        self.checkbox_id_table = 'checks_live'
-        self.checkboxes = True
-        self.extraline = True
         self.span = ['chk_nodename']
 
 @auth.requires_login()

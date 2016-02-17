@@ -70,20 +70,8 @@ class table_replication_status(HtmlTable):
                     ),
         }
 
-        self.dbfilterable = False
-        self.filterable = False
-        self.pageable = False
-        self.checkboxes = True
-        self.dataable = True
-
         self.ajax_col_values = 'ajax_replication_status_col_values'
 
-    def line_id(self, o):
-        if o is None:
-            return ""
-        return '+'.join((o.get('remote', ''),
-                         o.get('table_schema', ''),
-                         o.get('table_name', '')))
 
 @auth.requires_login()
 def ajax_replication_status():

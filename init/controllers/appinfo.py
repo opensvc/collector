@@ -64,7 +64,6 @@ class table_appinfo(HtmlTable):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
-        self.force_cols = ['id']
         self.cols = ['id',
                      'app_svcname',
                      'app_nodename',
@@ -102,16 +101,8 @@ class table_appinfo(HtmlTable):
                      field='app_updated',
                     ),
         }
-        for c in self.cols:
-            self.colprops[c].t = self
-        self.checkboxes = True
-        self.extraline = True
-        self.dbfilterable = True
-        self.dataable = True
-        self.wsable = True
         self.ajax_col_values = 'ajax_appinfo_col_values'
         self.span = ['app_svcname', 'app_nodename', 'app_launcher']
-        self.events = ["appinfo_change"]
 
 @auth.requires_login()
 def ajax_appinfo_col_values():

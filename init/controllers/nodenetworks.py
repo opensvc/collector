@@ -81,10 +81,6 @@ class table_nodenetworks(HtmlTable):
                       'net_netmask',
                       'net_team_responsible']
         self.colprops = nodes_colprops
-        self.force_cols = ['id', 'os_name']
-        for col in self.colprops:
-            self.colprops[col].display = False
-        self.colprops['nodename'].display = True
         self.colprops.update({
             'id': HtmlTableColumn(
                      field='id',
@@ -149,14 +145,6 @@ class table_nodenetworks(HtmlTable):
         })
         for c in self.cols:
             self.colprops[c].table = 'v_nodenetworks'
-            self.colprops[c].t = self
-            if self.colprops[c].field.startswith('net_') or self.colprops[c].field == "prio":
-                self.colprops[c]._dataclass = "bluer"
-        self.extraline = True
-        self.dataable = True
-        self.checkboxes = True
-        self.wsable = True
-        self.events = ["node_ip_change", "nodes_change", "networks_change"]
         self.ajax_col_values = 'ajax_nodenetworks_col_values'
         self.keys = ["nodename", "addr"]
         self.span = ["nodename"]

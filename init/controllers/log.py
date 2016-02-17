@@ -76,16 +76,9 @@ class table_log(HtmlTable):
                      field='log_email_sent',
                     ),
         }
-        self.force_cols = ["id", "log_dict", "log_fmt"]
-        self.colprops['log_nodename'].t = self
-        self.colprops['log_svcname'].t = self
-        self.dbfilterable = False
-        self.extraline = True
-        self.wsable = True
         self.keys = ["id"]
         self.span = ["id"]
         self.ajax_col_values = 'ajax_log_col_values'
-        self.special_filtered_cols = ['log_icons', 'log_evt']
 
 @auth.requires_login()
 def ajax_log_col_values():

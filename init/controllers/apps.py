@@ -33,7 +33,6 @@ class table_apps(HtmlTable):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
-        self.force_cols = ['id']
         self.cols = ['id',
                      'app',
                      'app_domain',
@@ -74,13 +73,6 @@ class table_apps(HtmlTable):
                     ),
         }
         self.ajax_col_values = 'ajax_apps_col_values'
-        #self.dbfilterable = True
-        self.checkboxes = True
-        self.dataable = True
-        self.wsable = True
-        self.checkbox_id_table = 'v_apps'
-        self.checkbox_id_col = 'id'
-        self.events = ["apps_change"]
 
 @auth.requires_login()
 def ajax_apps_col_values():

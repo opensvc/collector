@@ -16,9 +16,7 @@ class table_packages(HtmlTable):
         self.cols += nodes_cols
         self.colprops = nodes_colprops
         self.colprops.update(packages_colprops)
-        self.force_cols = ['os_name']
         self.ajax_col_values = 'ajax_packages_col_values'
-        self.force_cols = ["id", "os_name"]
         self.span = ["id"]
         self.keys = ["id"]
 

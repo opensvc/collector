@@ -140,23 +140,6 @@ class table_svcmon(HtmlTable):
             'mem_slots',
             'mem_bytes',
         ]
-        self.force_cols = [
-            'id',
-            'mon_svcname',
-            'svc_autostart',
-            'mon_guestos',
-            'mon_nodname',
-            'mon_containerstatus',
-            'mon_ipstatus',
-            'mon_fsstatus',
-            'mon_diskstatus',
-            'mon_sharestatus',
-            'mon_syncstatus',
-            'mon_appstatus',
-            'mon_hbstatus',
-            'mon_updated',
-            'os_name',
-        ]
         self.colprops = {
             'id': HtmlTableColumn(
                      field='id',
@@ -177,26 +160,11 @@ class table_svcmon(HtmlTable):
         self.colprops['svc_updated'].field = 'svc_updated'
         for i in self.cols:
             self.colprops[i].table = 'v_svcmon'
-            self.colprops[i].t = self
-        for i in ['mon_nodname', 'mon_svcname', 'svc_containertype', 'svc_app',
-                  'svc_type', 'host_mode', 'mon_overallstatus',
-                  'mon_availstatus', 'mon_syncstatus']:
-            self.colprops[i].display = True
         self.keys = ["mon_nodname", "mon_svcname", "mon_vmname"]
         self.span = ['mon_svcname'] + v_services_cols
         self.span.append('app_domain')
         self.span.append('app_team_ops')
-        self.dataable = True
-        self.wsable = True
-        self.extraline = True
-        self.extrarow = True
-        self.extrarow_class = "svcmon_links"
-        self.checkboxes = True
-        self.checkbox_id_col = 'id'
-        self.checkbox_id_table = 'v_svcmon'
         self.ajax_col_values = 'ajax_svcmon_col_values'
-        self.user_name = user_name()
-        self.events = ["svcmon_change"]
 
 @auth.requires_login()
 def ajax_svcmon_col_values():

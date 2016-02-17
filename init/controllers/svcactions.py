@@ -131,20 +131,9 @@ class table_actions(HtmlTable):
         ncols.remove('power_breaker2')
         ncols.remove('status')
         self.cols += ncols
-        for c in self.cols:
-            self.colprops[c].t = self
         self.ajax_col_values = 'ajax_actions_col_values'
-        self.extraline = True
-        self.force_cols = ['os_name', 'ack', 'acked_by', 'acked_date', 'acked_comment', 'end']
         self.span = ['pid']
-        #self.span = ['pid', 'hostname', 'svcname', 'action'] + ncols
-        self.wsable = True
-        self.dataable = True
-        self.dbfilterable = True
-        self.checkboxes = True
-        self.checkbox_id_table = 'v_svcactions'
         self.keys = ["id"]
-        self.events = ["begin_action", "end_action", "svcactions_change"]
 
 @auth.requires_login()
 def ajax_actions_col_values():

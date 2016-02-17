@@ -99,16 +99,8 @@ class table_quota(HtmlTable):
                      field='quota_used',
                     ),
         })
-        for i in self.cols:
-            self.colprops[i].t = self
-        self.extraline = True
-        self.checkboxes = True
-        self.dbfilterable = False
         self.ajax_col_values = 'ajax_quota_col_values'
-        self.dataable = True
-        self.force_cols = ["id"]
         self.keys = ["id"]
-        self.events = ["stor_array_dg_quota_change"]
 
 def update_dg_reserved():
     sql = """select dg_id, sum(v_disk_quota.quota)
@@ -178,7 +170,6 @@ class table_disks(HtmlTable):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
-        self.events = ["disks_change"]
         self.cols = ['disk_id',
                      'disk_region',
                      'disk_vendor',
@@ -215,27 +206,16 @@ class table_disks(HtmlTable):
                      'power_protect_breaker',
                      'power_breaker1',
                      'power_breaker2']
-        self.force_cols = ["os_name"]
         self.colprops.update(disk_app_colprops)
         import copy
         _nodes_colprops = copy.copy(nodes_colprops)
         for i in _nodes_colprops:
             _nodes_colprops[i].table = 'nodes'
         self.colprops.update(_nodes_colprops)
-        for i in self.cols:
-            self.colprops[i].t = self
-        self.extraline = True
-        self.checkboxes = True
-        self.checkbox_id_col = 'svcdisk_id'
-        self.checkbox_id_table = 'b_disk_app'
-        self.dbfilterable = True
-        self.wsable = True
-        self.dataable = True
         self.ajax_col_values = 'ajax_disks_col_values'
         self.keys = ['disk_id', 'disk_region', 'disk_nodename', 'disk_svcname']
         self.span = ['disk_id', 'disk_size', 'disk_alloc', 'disk_arrayid',
                      'disk_devid', 'disk_name', 'disk_raid', 'disk_group', 'array_model']
-        self.child_tables = ["charts"]
 
 @auth.requires_login()
 def ajax_disks_col_values():
@@ -317,21 +297,6 @@ class table_disk_charts(HtmlTable):
                      field='chart',
                     ),
         })
-        for i in self.cols:
-            self.colprops[i].t = self
-        self.dbfilterable = False
-        self.filterable = False
-        self.pageable = False
-        self.exportable = False
-        self.linkable = False
-        self.bookmarkable = False
-        self.commonalityable = False
-        self.refreshable = False
-        self.columnable = False
-        self.headers = False
-        self.highlight = False
-        self.dataable = True
-        self.parent_tables = ["disks"]
 
 @auth.requires_login()
 def ajax_disk_charts():
@@ -351,8 +316,6 @@ def ajax_disk_charts():
     request.vars.volatile_filters = volatile_filters
 
     nt.setup_pager(-1)
-    nt.dbfilterable = False
-    nt.filterable = True
     nt.additional_inputs = t.ajax_inputs()
 
     h_data_svc = ""

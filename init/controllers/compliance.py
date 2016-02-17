@@ -94,12 +94,7 @@ class table_comp_rulesets_services(HtmlTable):
             self.colprops[c].table = 'v_comp_services'
         self.span = ['svc_name']
         self.keys = ['svc_name', 'ruleset_id', 'encap']
-        self.force_cols = ['ruleset_id', 'svc_status_updated']
-        self.checkboxes = True
-        self.checkbox_id_table = 'v_comp_services'
         self.ajax_col_values = 'ajax_comp_rulesets_services_col_values'
-        self.dataable = True
-        self.events = ["comp_rulesets_services_change"]
 
 
 class table_comp_rulesets_nodes(HtmlTable):
@@ -117,14 +112,9 @@ class table_comp_rulesets_nodes(HtmlTable):
                     )
         for c in self.cols:
             self.colprops[c].table = 'v_comp_nodes'
-        self.force_cols = ['os_name', 'ruleset_id']
         self.span = ['nodename']
         self.keys = ['nodename', 'ruleset_id']
-        self.checkboxes = True
-        self.checkbox_id_table = 'v_comp_nodes'
         self.ajax_col_values = 'ajax_comp_rulesets_nodes_col_values'
-        self.dataable = True
-        self.events = ["comp_rulesets_nodes_change"]
 
 
 @auth.requires_login()
@@ -303,15 +293,9 @@ class table_comp_rulesets(HtmlTable):
                      table='v_comp_rulesets',
                     ),
         }
-        self.force_cols = ["id", "ruleset_id", "var_class", "encap_rset"]
-        self.colprops['var_name'].t = self
-        self.colprops['var_value'].t = self
         self.span = ['ruleset_name', 'ruleset_type', 'ruleset_public',
                      'fset_name', 'teams_responsible', 'teams_publication']
         self.ajax_col_values = 'ajax_comp_rulesets_col_values'
-        self.dbfilterable = False
-        self.dataable = True
-        self.wsable = True
 
 @auth.requires_login()
 def ajax_comp_rulesets_col_values():
@@ -436,10 +420,7 @@ class table_comp_moduleset(HtmlTable):
                      field='teams_publication',
                     ),
         }
-        self.dataable = True
-        self.wsable = True
         self.ajax_col_values = ajax_comp_moduleset_col_values
-        self.colprops['modset_mod_name'].t = self
         self.span = ['modset_name']
 
 @auth.requires_login()
@@ -515,13 +496,7 @@ class table_comp_modulesets_services(HtmlTable):
             self.colprops[c].table = 'v_comp_services'
         self.span = ['svc_name']
         self.keys = ['svc_name', 'modset_id', 'encap']
-        self.force_cols = ['modset_id', 'svc_status_updated']
-        self.checkbox_id_table = 'v_comp_services'
-        self.dataable = True
-        self.checkboxes = True
-        self.dbfilterable = False
         self.ajax_col_values = 'ajax_comp_modulesets_services_col_values'
-        self.events = ["comp_modulesets_services_change"]
 
 class table_comp_modulesets_nodes(HtmlTable):
     def __init__(self, id=None, func=None, innerhtml=None):
@@ -539,15 +514,9 @@ class table_comp_modulesets_nodes(HtmlTable):
                     )
         for c in self.cols:
             self.colprops[c].table = 'v_comp_nodes'
-        self.force_cols = ['os_name', 'modset_id']
         self.span = ['nodename']
         self.keys = ['nodename', 'modset_id']
-        self.checkbox_id_table = 'v_comp_nodes'
-        self.dataable = True
-        self.checkboxes = True
-        self.dbfilterable = False
         self.ajax_col_values = 'ajax_comp_modulesets_nodes_col_values'
-        self.events = ["comp_node_moduleset_change"]
 
 @auth.requires_login()
 def ajax_comp_modulesets_services_col_values():
@@ -707,14 +676,6 @@ class table_comp_mod_status(HtmlTable):
                      field='mod_log',
                     ),
         }
-        for i in self.cols:
-            self.colprops[i].t = self
-
-        self.extraline = True
-        self.dbfilterable = False
-
-    def extra_line_key(self, o):
-        return self.id+'_'+self.colprops['mod_name'].get(o).replace('.','_')
 
 
 class table_comp_svc_status(HtmlTable):
@@ -759,15 +720,6 @@ class table_comp_svc_status(HtmlTable):
                      field='svc_log',
                     ),
         }
-        for i in self.cols:
-            self.colprops[i].t = self
-
-        self.extraline = True
-        self.dbfilterable = False
-
-    def extra_line_key(self, o):
-        return self.id+'_'+self.colprops['svc_name'].get(o).replace('.','_')
-
 
 class table_comp_node_status(HtmlTable):
     def __init__(self, id=None, func=None, innerhtml=None):
@@ -811,14 +763,6 @@ class table_comp_node_status(HtmlTable):
                      field='node_log',
                     ),
         }
-        for i in self.cols:
-            self.colprops[i].t = self
-
-        self.extraline = True
-        self.dbfilterable = False
-
-    def extra_line_key(self, o):
-        return self.id+'_'+self.colprops['node_name'].get(o).replace('.','_')
 
 @service.json
 def json_run_status_log(nodename, module):
@@ -907,16 +851,8 @@ class table_comp_status(HtmlTable):
                     ),
         })
         self.ajax_col_values = 'ajax_comp_status_col_values'
-        self.extraline = True
-        self.wsable = True
-        self.dataable = True
-        self.child_tables = ["agg", "cms", "cns", "css"]
-        self.force_cols = ['id', 'os_name', 'run_log']
         self.keys = ["run_nodename", "run_svcname", "run_module"]
         self.span = ["run_nodename", "run_svcname", "run_module"]
-        self.checkboxes = True
-        self.checkbox_id_table = 'comp_status'
-        self.events = ["comp_status_change"]
 
 @auth.requires_login()
 def fix_module_on_node():
@@ -1288,8 +1224,6 @@ def ajax_comp_svc_status():
     where = str(q).replace("comp_svc_status.", "u.")
 
     mt.setup_pager(-1)
-    mt.dbfilterable = False
-    mt.filterable = True
     mt.additional_inputs = t.ajax_inputs()
 
     sql2 = """select * from (
@@ -1357,8 +1291,6 @@ def ajax_comp_node_status():
     where = str(q).replace("comp_node_status.", "u.")
 
     mt.setup_pager(-1)
-    mt.dbfilterable = False
-    mt.filterable = True
     mt.additional_inputs = t.ajax_inputs()
 
     sql2 = """select * from (
@@ -1600,8 +1532,6 @@ def ajax_comp_mod_status():
     where = str(q).replace("comp_mod_status.", "u.")
 
     mt.setup_pager(-1)
-    mt.dbfilterable = False
-    mt.filterable = True
     mt.additional_inputs = t.ajax_inputs()
 
     sql2 = """select * from (
@@ -1684,21 +1614,11 @@ class table_comp_log(table_comp_status):
                      'run_log',
                      'rset_md5']
         for c in self.colprops:
-            self.colprops[c].t = self
             if 'run_' in c or c == 'rset_md5':
                 self.colprops[c].table = 'comp_log'
-        self.colprops['run_date'].default_filter = '>-1d'
-
-        self.additional_tools = []
         self.ajax_col_values = 'ajax_comp_log_col_values'
-        self.checkboxes = True
-        self.checkbox_id_table = 'comp_log'
-        self.wsable = True
-        self.dataable = True
-        self.child_tables = []
         self.keys = ["run_date", "run_nodename", "run_svcname", "run_module", "run_action"]
         self.span = ["run_date", "run_nodename", "run_svcname", "run_module", "run_action"]
-        self.events = ["comp_log_change"]
 
 @auth.requires_login()
 def ajax_comp_log():

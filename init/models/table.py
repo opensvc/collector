@@ -69,7 +69,6 @@ class HtmlTable(object):
         self.object_list = []
         self.child_tables = []
         self.parent_tables = []
-        self.force_cols = []
 
         # to be set by children
         self.cols = []

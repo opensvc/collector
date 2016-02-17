@@ -37,12 +37,6 @@ class table_obs(HtmlTable):
                     ),
         }
         self.ajax_col_values = 'ajax_obs_col_values'
-        self.checkboxes = True
-        self.extraline = True
-        self.dataable = True
-        self.wsable = True
-        self.events = ["obsolescence_change"]
-        self.force_cols = ["id", "obs_type", "obs_name"]
 
 @auth.requires_login()
 def ajax_obs_col_values():

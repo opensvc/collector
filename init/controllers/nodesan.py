@@ -108,13 +108,6 @@ class table_nodesan(HtmlTable):
         })
         for c in self.cols:
             self.colprops[c].table = 'v_nodesan'
-            self.colprops[c].t = self
-            if self.colprops[c].field.startswith('array_') or self.colprops[c].field in ['tgt_id', 'hba_id']:
-                self.colprops[c]._dataclass = "bluer"
-        self.extraline = True
-        self.dataable = True
-        self.force_cols = ['id', 'os_name']
-        self.checkboxes = True
         self.ajax_col_values = 'ajax_nodesan_col_values'
 
 @auth.requires_login()

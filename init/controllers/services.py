@@ -22,21 +22,12 @@ class table_services(HtmlTable):
                      field='id',
                     ),
         })
-        self.force_cols = ['svc_name', 'svc_status_updated']
         for col in self.colprops:
             self.colprops[col].table = "services"
         self.colprops["updated"] = self.colprops["svc_updated"]
-        self.extraline = True
-        self.checkboxes = True
-        self.checkbox_id_col = 'svc_name'
-        self.checkbox_id_table = 'services'
-        self.dbfilterable = True
-        self.dataable = True
-        self.wsable = True
         self.ajax_col_values = 'ajax_services_col_values'
         self.span = ["svc_name"]
         self.keys = ["svc_name"]
-        self.events = ["services_change"]
 
 
 @auth.requires_login()

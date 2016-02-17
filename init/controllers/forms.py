@@ -82,16 +82,7 @@ class table_workflows(HtmlTable):
                 table = 'forms_revisions',
             ),
         }
-        for col in self.cols:
-            self.colprops[col].t = self
         self.ajax_col_values = 'ajax_workflows_col_values'
-        self.dbfilterable = False
-        self.dataable = True
-        self.wsable = True
-        self.checkboxes = False
-
-    def extra_line_key(self, o):
-        return o.workflows.id
 
 @auth.requires_login()
 def ajax_workflows_col_values():
@@ -141,9 +132,7 @@ class table_forms(HtmlTable):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
-        self.events = ["forms_change"]
         self.keys = ['id']
-        self.force_cols = ['id']
         self.span = ['id']
         self.cols = ['id',
                      'form_name',
@@ -193,11 +182,6 @@ class table_forms(HtmlTable):
             ),
         }
         self.ajax_col_values = 'ajax_forms_admin_col_values'
-        self.dbfilterable = False
-        self.dataable = True
-        self.wsable = True
-        self.checkboxes = True
-        self.force_cols = ["id", "form_type"]
 
 @auth.requires_login()
 def ajax_forms_admin_col_values():
