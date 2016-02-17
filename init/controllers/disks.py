@@ -232,7 +232,7 @@ class table_disks(HtmlTable):
         self.wsable = True
         self.dataable = True
         self.ajax_col_values = 'ajax_disks_col_values'
-        self.keys = ['disk_id', 'disk_region', 'disk_nodename']
+        self.keys = ['disk_id', 'disk_region', 'disk_nodename', 'disk_svcname']
         self.span = ['disk_id', 'disk_size', 'disk_alloc', 'disk_arrayid',
                      'disk_devid', 'disk_name', 'disk_raid', 'disk_group', 'array_model']
         self.child_tables = ["charts"]
