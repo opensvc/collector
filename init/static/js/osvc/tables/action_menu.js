@@ -859,7 +859,7 @@ function table_action_menu_init_data(t) {
           "selector": ["clicked", "checked", "all"],
           "foldable": true,
           'title': 'action_menu.on_queued_actions',
-          "class": "icon_fixed_width actions16",
+          "class": "icon_fixed_width actions",
           "cols": ["id", "command"],
           "condition": "id+command",
           "children": [
@@ -980,7 +980,7 @@ function table_action_menu_init_data(t) {
           "selector": ["clicked", "checked", "all"],
           "foldable": true,
           'title': 'action_menu.on_service_actions',
-          "class": "icon_fixed_width actions16",
+          "class": "icon_fixed_width actions",
           "cols": ["id", "action", "ack"],
           "condition": "id+action",
           "children": [
@@ -1701,7 +1701,7 @@ function table_action_menu_get_cols_data_all(t, e, scope, selector) {
     }
 
     var sigs = []
-    var url = t.ajax_url+"/data"
+    var url = t.options.ajax_url+"/data"
     var vars = t.prepare_request_data()
     vars["visible_columns"] = cols.join(",")
     vars[t.id+"_page"] = 1
@@ -1721,18 +1721,12 @@ function table_action_menu_get_cols_data_all(t, e, scope, selector) {
            if (typeof(lines) === "string") {
              return []
            }
-           if (t.extrarow) {
-             var _cols = ["extra"].concat(t.columns)
-           } else {
-             var _cols = t.columns
-           }
            for (i=0; i<lines.length; i++) {
              var d = {}
              var sig = ""
              for (var j=0; j<cols.length; j++) {
                col = cols[j]
-               idx = _cols.indexOf(col)
-               var val = lines[i]["cells"][idx]
+               var val = lines[i]["cells"][j]
                d[reverse_col[col]] = val
                sig += "-"+val
              }

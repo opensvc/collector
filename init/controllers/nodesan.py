@@ -74,11 +74,10 @@ class table_nodesan(HtmlTable):
         self.colprops = nodes_colprops
         self.span = ["nodename"]
         self.keys = ['hba_id', 'tgt_id']
-        for col in self.colprops:
-            self.colprops[col].display = False
-        self.colprops['node_updated'] = self.colprops['updated']
-        self.colprops['nodename'].display = True
         self.colprops.update({
+            'node_updated': HtmlTableColumn(
+                     field='node_updated',
+                    ),
             'id': HtmlTableColumn(
                      field='id',
                     ),

@@ -76,28 +76,6 @@ def json_dash_history():
 #############################################################################
 
 
-class col_dash_entry(HtmlTableColumn):
-    def get(self, o):
-        dash_dict = self.t.colprops['dash_dict'].get(o)
-        dash_fmt = self.t.colprops['dash_fmt'].get(o)
-        if dash_dict is None or len(dash_dict) == 0:
-            return ""
-        try:
-            d = json.loads(dash_dict)
-            for k in d:
-                if isinstance(d[k], str) or isinstance(d[k], unicode):
-                    d[k] = d[k].encode('utf8')
-            s = T.translate(dash_fmt, d)
-        except KeyError:
-            s = 'error parsing: %s'%dash_dict
-        except json.decoder.JSONDecodeError:
-            s = 'error loading JSON: %s'%dash_dict
-        except UnicodeEncodeError:
-            s = 'error transcoding: %s'%dash_dict
-        except TypeError:
-            s = 'type error: %s'%dash_dict
-        return s
-
 class table_dashboard(HtmlTable):
     def __init__(self, id=None, func=None, innerhtml=None):
         if id is None and 'tableid' in request.vars:
@@ -111,9 +89,9 @@ class table_dashboard(HtmlTable):
                      'dash_nodename',
                      'dash_env',
                      'dash_entry',
+                     'dash_md5',
                      'dash_created',
-                     'dash_updated',
-                     'dash_md5']
+                     'dash_updated']
         self.colprops = {
             'dash_links': HtmlTableColumn(
                      field='dummy',
@@ -138,7 +116,7 @@ class table_dashboard(HtmlTable):
                      table='dashboard',
                      field='dash_nodename',
                     ),
-            'dash_entry': col_dash_entry(
+            'dash_entry': HtmlTableColumn(
                      table='dashboard',
                      field='dummy',
                      filter_redirect='dash_dict',
@@ -168,17 +146,9 @@ class table_dashboard(HtmlTable):
                      field='id',
                     ),
         }
-        self.keys = ["dash_nodename", "dash_type", "dash_svcname", "dash_md5"]
-        #self.span = ["dash_nodename", "dash_type", "dash_svcname", "dash_md5"]
         self.span = ["id"]
+        self.keys = ["dash_nodename", "dash_type", "dash_svcname", "dash_md5"]
         self.order = ["~dash_severity", "dash_type", "dash_nodename", "dash_svcname"]
-        self.colprops['dash_svcname'].t = self
-        self.colprops['dash_nodename'].t = self
-        self.colprops['dash_links'].t = self
-        self.colprops['dash_entry'].t = self
-        self.checkbox_id_table = 'dashboard'
-        self.checkbox_id_col = 'id'
-        self.special_filtered_cols = ['dash_entry']
 
 @auth.requires_login()
 def ajax_dashboard_col_values():

@@ -3099,11 +3099,21 @@ function cell_decorator_tag_exclude(e) {
 }
 
 function cell_decorator_dash_entry(e) {
-  var v = $.data(e, "v")
-  var s = ""
-  s = "<div class='clickable'>"+v+"</div>"
-  $(e).html(s)
-  $(e).addClass("corner")
+  var line = $(e).parent(".tl")
+  var d = $.data(line.children("[col=dash_dict]")[0], "v")
+  var fmt = $.data(line.children("[col=dash_fmt]")[0], "v")
+  try {
+    d = $.parseJSON(d)
+  } catch(err) {
+    $(e).html(i18n.t("decorators.corrupted_log"))
+    return
+  }
+  for (key in d) {
+    var re = RegExp("%\\("+key+"\\)[sd]", "g")
+    fmt = fmt.replace(re, d[key])
+  }
+  $(e).html(fmt)
+  $(e).addClass("clickable corner")
   $(e).click(function(){
     if (get_selected() != "") {return}
     var line = $(e).parent(".tl")
@@ -3540,6 +3550,7 @@ function cell_decorator_appinfo_value(e) {
 function cell_decorator_saves_charts(e) {
   var v = $.data(e, "v")
   var data = $.parseJSON(v)
+  console.log(data)
   $(e).empty()
   if (data.chart_svc.data && data.chart_svc.data[0].length > 0) {
     var div = $("<div style='float:left;width:500px'></div>")

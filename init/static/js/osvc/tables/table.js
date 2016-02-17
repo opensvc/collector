@@ -64,153 +64,81 @@ function _toggle_vis(name, mode){
 	})
 }
 
-function checkEnter(e) {
-  submit_form_on_enter(e, document.svcform)
-}
-
-function submit_form_on_enter(e, form) {
-  var characterCode
-  if(e && e.which) {
-    e = e
-    characterCode = e.which
-  }else{
-    characterCode = e.keyCode
-  }
-  if (characterCode == 13) {
-    form.submit()
-    return false
-  } else {
-    return true
-  }
-}
-
-function select_all(checked, aform) {
-  var elem = aform.elements;
-  for(var i = 0; i < elem.length; i++) {
-    if (elem[i].type == 'checkbox' && elem[i].disabled == false && elem[i].name.match(/^check_/)) {
-      elem[i].checked = checked
-    }
-  }
-}
-
-function show_eid(id) {
-  if ((navigator.appName == 'Netscape')||(navigator.appName == 'Opera')) {
-    document.getElementById(id).style['display']='table-row'
-  } else {
-    document.getElementById(id).style['display']='block'
-  }
-}
-
-function hide_eid(id) {
-  document.getElementById(id).style['display']='none'
-}
-
-function toggle_filter_value_input() {
-  id = document.getElementById('addfilter').value
-  id = 'addfilter_opt'+id
-  if (document.getElementById(id).title == '') {
-    hide_eid('tr_filtervalue')
-  } else {
-    show_eid('tr_filtervalue')
-    document.getElementById('filtervalue').focus()
-  }
-}
-
-function check_toggle_vis(id, checked, col){
-    var t = osvc.tables[id]
-    var c = col.split("_c_")[1]
-    if (checked && (t.options.visible_columns.indexOf(c) < 0)) {
-      t.options.visible_columns.push(c)
-    } else {
-      t.options.visible_columns = t.options.visible_columns.filter(function(x){if (x!=c){return true}})
-    }
-    t.refresh_column_headers()
-    t.refresh_column_headers_slim()
-    t.refresh_column_filters()
-    $("#table_"+id).find('.tl>[name='+col+']').each(function(){
-         if (checked) {
-             if ($(this).attr("cell") == '1') {
-               _table_cell_decorator(id, this)
-             }
-             $(this).fadeIn('slow')
-         } else {
-             $(this).fadeOut('slow')
-         }
-    })
-}
 function keep_inside(box){
-    box_off_l = $(box).offset().left
-    box_w = $(box).width()
-    doc_w = $('body').width()
+	box_off_l = $(box).offset().left
+	box_w = $(box).width()
+	doc_w = $('body').width()
 
-    // trim the box width to fit the doc
-    if ((box_w+20)>doc_w) {
-        $(box).css("width", doc_w - 30)
-        $(box).css("overflow-x", "auto")
-        box_w = $(box).width()
-    }
-
-    // align to the right doc border
-    if (box_off_l + box_w > doc_w) {
-        $(box).offset({"left": doc_w - box_w - 20})
-        box_off_l = $(box).offset().left
-    }
-
-    // align to the left doc border
-    if (box_off_l < 0) {
-        $(box).offset({"left": 10})
-        box_off_l = $(box).offset().left
-    }
-}
-function click_toggle_vis(e, name, mode){
-    $("[name="+name+"]").each(function () {
-        if ($(this).css("display") == 'none' || $(this).css("display") == "") {
-            $(this).show()
-            keep_inside($(this))
-            register_pop_up(e, $(this))
-            $(this).find("select:visible").combobox()
-        } else {
-            $(this).hide()
-        }
-        $(this).find('input[type=text],textarea,select').filter(':visible:first').focus()
-    })
-}
-function register_pop_up(e, box){
-    if (e) {
-        // IE event does not support stopPropagation
-        if (!e.stopPropagation) {return}
-        e.stopPropagation()
-    }
-    $(document).click(function(e) {
-        e = e || event
-        var target = e.target || e.srcElement
-        if (target.id.match(/^ui-id/)) {
-		// combox box click
-		return
+	// trim the box width to fit the doc
+	if ((box_w+20)>doc_w) {
+		$(box).css("width", doc_w - 30)
+		$(box).css("overflow-x", "auto")
+		box_w = $(box).width()
 	}
-        try {
-            boxtop = box.get(0)
-        } catch(e) {
-            return
-        }
-        do {
-            if (boxtop == target) {
-                // click inside
-                return
-            }
-            target = target.parentNode
-        } while(target)
-        box.hide()
-    })
+
+	// align to the right doc border
+	if (box_off_l + box_w > doc_w) {
+		$(box).offset({"left": doc_w - box_w - 20})
+		box_off_l = $(box).offset().left
+	}
+
+	// align to the left doc border
+	if (box_off_l < 0) {
+		$(box).offset({"left": 10})
+		box_off_l = $(box).offset().left
+	}
 }
+
+function click_toggle_vis(e, name, mode){
+	$("[name="+name+"]").each(function () {
+		if ($(this).css("display") == 'none' || $(this).css("display") == "") {
+			$(this).show()
+			keep_inside($(this))
+			register_pop_up(e, $(this))
+		} else {
+			$(this).hide()
+		}
+		$(this).find('input[type=text],textarea,select').filter(':visible:first').focus()
+	})
+}
+
+function register_pop_up(e, box){
+	if (e) {
+		// IE event does not support stopPropagation
+		if (!e.stopPropagation) {return}
+		e.stopPropagation()
+	}
+	$(document).click(function(e) {
+		e = e || event
+		var target = e.target || e.srcElement
+		if (target.id.match(/^ui-id/)) {
+			// combox box click
+			return
+		}
+		try {
+			boxtop = box.get(0)
+		} catch(e) {
+			return
+		}
+		do {
+			if (boxtop == target) {
+				// click inside
+				return
+			}
+			target = target.parentNode
+		} while(target)
+		box.hide()
+	})
+}
+
 function check_all(name, checked){
-    c = document.getElementsByName(name);
-    for(i = 0; i < c.length; i++) {
-        if (c[i].type == 'checkbox' && c[i].disabled == false) {
-            c[i].checked = checked
-            c[i].value = checked
-        }
-    }
+	c = document.getElementsByName(name)
+	for(i = 0; i < c.length; i++) {
+		if (c[i].type == 'checkbox' && c[i].disabled == false) {
+			c[i].checked = checked
+			c[i].value = checked
+		}
+	}
 }
 
 function sync_ajax(url, inputs, id, f) {
@@ -248,555 +176,6 @@ function sync_ajax(url, inputs, id, f) {
          }
     })
 }
-function table_restripe_lines(id) {
-    var prev_spansum = ""
-    var cls = ["cell1", "cell2"]
-    var cl = "cell1"
-    var i = 1
-    $("#table_"+id).children().children(".tl").each(function(){
-       spansum = $(this).attr("spansum")
-       if (spansum != prev_spansum) {
-           prev_spansum = spansum
-           cl = cls[i]
-           i = 1 - i
-       }
-       if ($(this).hasClass(cl)) {
-           return
-       }
-       $(this).removeClass(cls[i]).addClass(cl)
-    })
-}
-
-function table_trim_lines(t) {
-    perpage = parseInt($("#table_"+t.id).attr("perpage")) + 2
-    lines = $("#table_"+t.id).children("tbody").children()
-    if (lines.length <= perpage) {
-        return
-    }
-    for (i=perpage; i<lines.length; i++) {
-        $(lines[i]).remove()
-    }
-    lines = null
-}
-
-function sort_table(id) {
-    keys = $("#table_"+id).attr("order").split(",")
-    table_lines = $("#table_"+id).children("tbody").children(".tl")
-    for (i=0; i<table_lines.length-1; i++) {
-        line1 = $(table_lines[i])
-        line_moved = false
-        for (j=i+1; j<table_lines.length; j++) {
-            if (line_moved) {
-                break
-            }
-            line2 = $(table_lines[j])
-            eq = 0
-            for (k=0; k<keys.length; k++) {
-                key = keys[k]
-                if (key.charAt(0) == "~") {
-                    asc = false
-                    key = key.slice(1, key.length)
-                } else {
-                    asc = true
-                }
-                cname = id+"_c_"+key
-                v1 = $.data(line1.find("[name="+cname+"]")[0], "v")
-                v2 = $.data(line2.find("[name="+cname+"]")[0], "v")
-                //if (i==0) {alert(v1+" "+ v2 + " " + asc )}
-                if (v1 == v2) {
-                    eq += 1
-                    if (eq == keys.length) {
-                        // all values equal, don't move the line
-                        line_moved = true
-                    }
-                    continue
-                }
-                try {
-                    v1 = parseFloat(v1)
-                    v2 = parseFloat(v2)
-                    cmp = (v1 < v2)
-                } catch(e) {
-                    cmp = (v1.localeCompare(v2) < 0)
-                }
-                if (asc && cmp) {
-                    if (j > i+1) {
-                        line1.insertAfter(line2)
-                    }
-                    line_moved = true
-                    break
-                } else if ((!asc) && (!cmp)) {
-                    if (j > i+1) {
-                        //line1.insertAfter(line2)
-                    }
-                    line_moved = true
-                    break
-                } else if (asc && (!cmp)) {
-                    // no need to compare more keys, the line should be lower than j
-                    break
-                } else if ((!asc) && cmp) {
-                    // no need to compare more keys, the line should be lower than j
-                    break
-                }
-            }
-        }
-        if (!line_moved && (i<table_lines.length-1)) {
-            line1.insertAfter(line2)
-        }
-    }
-    keys = null
-    table_lines = null
-    line1 = null
-    line2 = null
-    v1 = null
-    v2 = null
-    asc = null
-    cmp = null
-}
-
-function table_refresh_column_filter(t, c, val) {
-  if (!t.e_header_filters) {
-    return
-  }
-  var th = t.e_header_filters.find("th[col="+c+"]")
-  var input = th.find("input")
-  var label = th.find(".col_filter_label")
-  var val
-
-  if (typeof(val) === "undefined") {
-    val = input.val()
-  }
-
-  // make sure the column title is visible
-  th.show()
-
-  // update val in input, and text in display area
-  if (typeof(val) === "undefined") {
-    val = ""
-  }
-  if (val == "**clear**") {
-    val = ""
-  }
-  var n = val.length
-  if ((n == 0) && (t.colprops[c].default_filter != "")) {
-    val = t.colprops[c].default_filter
-    n = val.length
-  }
-  var _val = val
-  if (n > 20) {
-    _val = val.substring(0, 17)+"..."
-  }
-  label.attr("title", val)
-  label.text(_val)
-  input.val(val)
-
-  // toggle the clear and invert tools visibility
-  if (val == "") {
-    th.find(".clear16,.invert16").hide()
-  } else {
-    th.find(".clear16,.invert16").show()
-  }
-
-  // update the slim header cell colorization
-  var th = t.e_header_slim.find("[col="+c+"]")
-  th.removeClass("bgblack")
-  th.removeClass("bgred")
-  th.removeClass("bgorange")
-  var cl = ""
-  if ((val.length > 0) && (val != "**clear**")) {
-    if (!t.options.volatile_filters) {
-      th.addClass("bgred")
-    } else {
-      th.addClass("bgblack")
-    }
-  }
-}
-
-function table_add_filtered_to_visible_columns(t) {
-  $("#table_"+t.id).find("[id^="+t.id+"_f_]").each(function(){
-    var s = $(this).attr("id")
-    var col = s.split("_f_")[1]
-    var val = $(this).val()
-    if (t.e_tool_column_selector_area) {
-      // no column selector
-      if (val === "") {
-        t.e_tool_column_selector_area.find("[colname="+col+"]").removeAttr("disabled")
-        return
-      }
-      t.e_tool_column_selector_area.find("[colname="+col+"]").prop("disabled", true)
-      if (t.options.visible_columns.indexOf(col) >= 0) {
-        return
-      }
-      t.options.visible_columns.push(col)
-    }
-  })
-}
-
-function table_add_column_header_input(t, tr, c) {
-  var th = $("<th></th>")
-  //th.addClass(t.colprops[c]._class)
-  th.attr("name", t.id+"_c_"+c)
-  th.attr("col", c)
-
-  var filter_tool = $("<span class='clickable icon filter16'></span>")
-  var invert_tool = $("<span class='clickable hidden icon invert16'></span>")
-  var clear_tool = $("<span class='clickable hidden icon clear16'></span>")
-  var label = $("<span class='col_filter_label'></span>")
-  var input_float = $("<div class='white_float_input stackable' style='position:absolute'>")
-  var input = $("<input class='oi' name='fi'>")
-  var value_to_filter_tool = $("<span class='clickable icon values_to_filter'></span><br>")
-  var value_cloud = $("<span></span>")
-  var value_pie = $("<div></div>")
-  var input_id = t.id+"_f_"+c
-  var header = $("<h2 class='icon fa-bars'></h2>")
-
-  header.text(i18n.t("table.column_filter_header", {"col": i18n.t("col."+t.colprops[c].title)}))
-  value_to_filter_tool.attr("title", i18n.t("table.value_to_filter_tool_title"))
-
-  input.attr("id", input_id)
-  if (t.options.request_vars && (input_id in t.options.request_vars)) {
-    input.val(t.options.request_vars[input_id])
-  }
-  value_pie.attr("id", t.id+"_fp_"+c)
-  value_pie.css({"margin-top": "0.8em"})
-  value_cloud.attr("id", t.id+"_fc_"+c)
-  value_cloud.css({"overflow-wrap": "break-word"})
-
-  input_float.draggable({
-    "handle": ".fa-bars"
-  })
-  input_float.append(header)
-  input_float.append(input)
-  input_float.append(value_to_filter_tool)
-  input_float.append(value_pie)
-  input_float.append(value_cloud)
-  th.append(filter_tool)
-  th.append(invert_tool)
-  th.append(clear_tool)
-  th.append(label)
-  th.append(input_float)
-  tr.append(th)
-}
-
-function table_add_column_headers_input(t) {
-  if (!t.options.headers) {
-    return
-  }
-  var tr = $("<tr class='theader_filters'></tr>")
-  if (!t.options.filterable) {
-    tr.hide()
-  }
-  if (t.checkboxes) {
-    var mcb_id = t.id+"_mcb"
-    var th = $("<th></th>")
-    var input = $("<input type='checkbox' class='ocb'></input>")
-    input.attr("id", mcb_id)
-    var label = $("<label></label>")
-    label.attr("for", mcb_id)
-    input.bind("click", function() {
-      check_all(t.id+"_ck", this.checked)
-    })
-    th.append(input)
-    th.append(label)
-    tr.append(th)
-  }
-  if (t.extrarow) {
-    tr.append($("<th></th>"))
-  }
-  for (i=0; i<t.columns.length; i++) {
-    var c = t.columns[i]
-    t.add_column_header_input(tr, c)
-  }
-  t.e_table.prepend(tr)
-  t.e_header_filters = tr
-  t.bind_filter_input_events()
-}
-
-function table_add_column_header_slim(t, tr, c) {
-  var th = $("<th></th>")
-  th.addClass(t.colprops[c]._class)
-  th.attr("name", t.id+"_c_"+c)
-  th.attr("col", c)
-  tr.append(th)
-}
-
-function table_refresh_column_headers_slim(t) {
-  t.e_header_slim.remove()
-  t.add_column_headers_slim()
-}
-
-function table_add_column_headers_slim(t) {
-  var tr = $("<tr class='theader_slim'></tr>")
-  if (t.checkboxes) {
-    tr.append($("<th></th>"))
-  }
-  if (t.extrarow) {
-    tr.append($("<th></th>"))
-  }
-  for (i=0; i<t.columns.length; i++) {
-    var c = t.columns[i]
-    t.add_column_header_slim(tr, c)
-  }
-  tr.bind("click", function() {
-    t.e_header_filters.toggle()
-  })
-  t.e_table.append(tr)
-  t.e_header_slim = tr
-}
-
-function table_add_column_header(t, tr, c) {
-  var th = $("<th></th>")
-  th.addClass(t.colprops[c]._class)
-  th.attr("name", t.id+"_c_"+c)
-  th.attr("col", c)
-  th.text(i18n.t("col."+t.colprops[c].title))
-  tr.append(th)
-}
-
-function table_refresh_column_headers(t) {
-  if (!t.options.headers) {
-    return
-  }
-  t.e_header.remove()
-  t.add_column_headers()
-}
-
-function table_add_column_headers(t) {
-  if (!t.options.headers) {
-    return
-  }
-  var tr = $("<tr class='theader'></tr>")
-  if (t.checkboxes) {
-    var th = $("<th><div class='fa fa-bars clickable'></div></th>")
-    th.click(function(e){
-      table_action_menu(t, e)
-    })
-    tr.append(th)
-  }
-  if (t.extrarow) {
-    tr.append($("<th></th>"))
-  }
-  for (i=0; i<t.columns.length; i++) {
-    var c = t.columns[i]
-    t.add_column_header(tr, c)
-  }
-  t.e_table.prepend(tr)
-  t.e_header = tr
-}
-
-function table_refresh_column_filters(t) {
-  for (i=0; i<t.options.visible_columns.length; i++) {
-    var c = t.options.visible_columns[i]
-    t.refresh_column_filter(c)
-  }
-}
-
-function table_cell_fmt(t, k, v) {
-  var cl = ""
-  var n = t.id+"_c_"+k
-  var classes = []
-  if ((k == "extra") && (typeof(t.extrarow_class) !== 'undefined')) {
-    classes.push(t.extrarow_class)
-  }
-  if ((k != "extra") && (t.options.visible_columns.indexOf(k) < 0)) {
-    classes.push("hidden")
-  }
-  if (k in t.colprops) {
-    classes = classes.concat(t.colprops[k]._class.split(" "))
-    classes = classes.concat(t.colprops[k]._dataclass.split(" "))
-  }
-  if (classes.length > 0) {
-    var cs = classes.join(' ').replace(/\s+$/, '')
-    cl = " class='"+cs+"'"
-  }
-  if (v == 'empty') {
-    var text = ""
-  } else {
-    var text = v
-  }
-  var s = $("<td cell='1' col='"+k+"' name='"+n+"' "+cl+">"+text+"</td>")
-  $.data(s[0], "v", v)
-  return s
-}
-
-function table_bind_filter_selector(t) {
-  $("#table_"+t.id).find("[cell=1]").each(function(){
-    $(this).bind("mouseup", function(event) {
-      cell = $(event.target)
-      if (typeof cell.attr("cell") === 'undefined') {
-        cell = cell.parents("[cell=1]").first()
-      }
-      t.filter_selector(event, cell.attr('name'), $.data(cell[0], 'v'))
-    })
-    $(this).bind("click", function() {
-      $("#fsr"+t.id).hide()
-      $("#am_"+t.id).remove()
-    })
-  })
-}
-
-function table_bind_checkboxes(t) {
-  $("#table_"+t.id).find("[name="+t.id+"_ck]").each(function(){
-    this.value = this.checked
-    $(this).click(function(){this.value = this.checked})
-  })
-}
-
-function table_data_to_lines(t, data) {
-  var lines = $("<span></span>")
-  for (var i=0; i<data.length; i++) {
-    var line = $("<tr class='tl h' spansum='"+data[i]['spansum']+"' cksum='"+data[i]['cksum']+"'></tr>")
-    var ckid = t.id + "_ckid_" + data[i]['id']
-    if (t.checkboxes) {
-      line.append("<td name='"+t.id+"_tools' class='tools'><input class='ocb' value='"+data[i]['checked']+"' type='checkbox' id='"+ckid+"' name='"+t.id+"_ck'><label for='"+ckid+"'></label></td>")
-    }
-    if (t.extrarow) {
-      var cols = ["extra"].concat(t.columns)
-    } else {
-      var cols = t.columns
-    }
-    for (var j=0; j<cols.length; j++) {
-      var k = cols[j]
-      var v = data[i]['cells'][j]
-      var cell = table_cell_fmt(t, k, v)
-      line.append(cell)
-    }
-    lines.append(line)
-  }
-  return lines.children().detach()
-}
-
-function table_refresh(t) {
-    if (t.div.length > 0 && !t.div.is(":visible")) {
-        return
-    }
-    if (t.e_tool_refresh && t.e_tool_refresh.length > 0 && t.e_tool_refresh_spin && t.e_tool_refresh_spin.hasClass(t.spin_class)) {
-        t.need_refresh = true
-        return
-    } else {
-        t.set_refresh_spin()
-    }
-
-    var data = t.prepare_request_data()
-
-    // refresh open tabs to overlay to preserve what was in use
-    if (t.div.find(".extraline:visible").children("td").children("table").length > 0) {
-      $("#overlay").empty().hide()
-      t.div.find(".extraline").children("td").children("table").parent().each(function() {
-        var e = $("<div></div>")
-        e.attr("id", $(this).attr("id"))
-        e.append($(this).children())
-        $("#overlay").append(e)
-      })
-      $("#overlay").hide().show("scale")
-    }
-
-    data.visible_columns = t.options.visible_columns.join(',')
-    data[t.id+"_page"] = $("#"+t.id+"_page").val()
-    $.ajax({
-         type: "POST",
-         url: t.ajax_url+"/data",
-         data: data,
-         context: document.body,
-         beforeSend: function(req){
-             t.div.find(".nodataline>td").text(i18n.t("api.loading"))
-         },
-         success: function(msg){
-             // don't install the new data if nothing has changed.
-             // avoids flickering and useless client load.
-             var md5sum = md5(msg)
-             if (md5sum == t.md5sum) {
-               var msg = ""
-               console.log("refresh: data unchanged,", md5sum)
-               t.need_refresh = false
-               t.unset_refresh_spin()
-               return
-             }
-             console.log("refresh: data changed,", md5sum)
-             t.md5sum = md5sum
-
-             // disable DOM insert event trigger for perf
-             t.need_refresh = false
-             t.scroll_disable_dom()
-             $("#table_"+t.id).children().children("tr.extraline").remove()
-
-             try {
-                 var data = $.parseJSON(msg)
-                 var pager = data['pager']
-                 var lines = data['table_lines']
-             } catch(e) {
-                 t.div.html(msg)
-                 return
-             }
-
-             msg = table_data_to_lines(t, lines)
-
-             // detach old lines
-             var old_lines = $("<tbody></tbody>").append($("#table_"+t.id).children("tbody").children(".tl").detach())
-
-             // insert new lines
-             tbody = $("#table_"+t.id).children("tbody")
-             tbody.append(msg)
-
-             tbody.children(".tl").each(function(){
-               var new_line = $(this)
-               var cksum = new_line.attr("cksum")
-               var old_line = $("[cksum="+cksum+"]", old_lines)
-               if (old_line.length == 0) {
-                   // this is a new line : highlight
-                   new_line.addClass("tohighlight")
-                   return
-               } else if (old_line.length > 1) {
-                   //alert("The table key is not unique. Please contact the editor.")
-                   return
-               }
-               for (i=0; i<old_line.children().length; i++) {
-                 var new_cell = $(":nth-child("+i+")", new_line)
-                 if (!new_cell.is(":visible")) {
-                   continue
-                 }
-                 var old_cell = $(":nth-child("+i+")", old_line)
-                 if ($.data(old_cell[0], "v") == $.data(new_cell[0], "v")) {
-                   continue
-                 }
-                 new_cell.addClass("tohighlight")
-               }
-             })
-
-             old_lines.remove()
-
-             // clear mem refs
-             cksum = null
-             msg = null
-             new_cell = null
-             old_cell = null
-             new_line = null
-             old_line = null
-             old_lines = null
-
-             t.pager(pager)
-             t.add_filtered_to_visible_columns()
-             t.bind_checkboxes()
-             t.bind_filter_selector()
-             t.bind_action_menu()
-             t.restripe_lines()
-             t.hide_cells()
-             t.cell_decorator()
-             t.unset_refresh_spin()
-             t.relocate_extra_rows()
-             tbody.find("tr.tl").children("td.tohighlight").removeClass("tohighlight").effect("highlight", 1000)
-             t.set_scrollbars_position()
-             t.scroll_enable_dom()
-             t.scroll()
-
-             t.refresh_child_tables()
-             t.on_change()
-
-             if (t.need_refresh) {
-               t.e_tool_refresh.trigger("click")
-             }
-         }
-    })
-}
 
 function table_insert(t, data) {
     var params = {
@@ -819,14 +198,14 @@ function table_insert(t, data) {
       var current = $("#"+t.id+"_f_"+c).val()
       if ((current != "") && (typeof current !== 'undefined')) {
         params[t.id+"_f_"+c] = current
-      } else if (t.colprops[c].force_filter != "") {
+      } else if ((typeof(t.colprops[c].force_filter) !== "undefined") && (t.colprops[c].force_filter != "")) {
         params[t.id+"_f_"+c] = t.colprops[c].force_filter
       }
     }
-    params.visible_columns = t.options.visible_columns.join(',')
+    params.visible_columns = t.get_ordered_visible_columns().join(',')
     $.ajax({
          type: "POST",
-         url: t.ajax_url+"/data",
+         url: t.options.ajax_url+"/data",
          data: params,
          context: document.body,
          beforeSend: function(req){
@@ -844,7 +223,7 @@ function table_insert(t, data) {
                  var lines = data['table_lines']
              } catch(e) {}
 
-             msg = table_data_to_lines(t, lines)
+             msg = t.data_to_lines(lines)
 
              // replace already displayed lines
              modified = []
@@ -930,53 +309,9 @@ function table_insert(t, data) {
     })
 }
 
-//
-// used by non-rest server side tool
-// all users should migrate to direct use of the rest api from the js code
-//
-function table_ajax_submit(t, tool, additional_inputs, input_name, additional_input_name) {
-    // close dialogs
-    t.div.find(".white_float").hide()
-    t.div.find(".white_float_input").hide()
-
-    var data = {
-      "table_id": t.id,
-    }
-    data[t.id+"_page"] = t.e_header.find("#"+t.id+"_page").val()
-
-    if (additional_inputs) {
-      for (var i=0; i<additional_inputs.length; i++) {
-        var iid = additional_inputs[i]
-        data[iid] = $("#"+iid).val()
-      }
-    }
-    t.div.find("[name="+input_name+"]").each(function() {
-      data[$(this).attr("id")] = $(this).val()
-    })
-    t.div.find("[name="+additional_input_name+"]").each(function() {
-      data[$(this).attr("id")] = $(this).val()
-    })
-    t.div.find("input[id^="+t.id+"_f_]").each(function(){
-      data[$(this).attr("id")] = $(this).val()
-    })
-    data = $.extend(data, t.parent_tables_data())
-    $.ajax({
-         type: "POST",
-         url: t.ajax_url+"/"+tool,
-         data: data,
-         context: document.body,
-         beforeSend: function(req){
-	   t.set_refresh_spin()
-         },
-         success: function(msg){
-	   t.unset_refresh_spin()
-           t.refresh()
-         }
-    })
-}
 function toggle_extra(url, id, e, ncols) {
     line=$(e).parents(".tl").first()
-    if (ncols==0) {
+    if (ncols == 0) {
         ncols = line.children("[cell=1]").length
     }
     var toolbar = ""
@@ -997,38 +332,22 @@ function toggle_extra(url, id, e, ncols) {
     }
 }
 
-function refresh_action(url, id){
-    spintimer = setTimeout(function validate(){
-      ajax(url, [], 'spin_span_'+id)
-    }, 3000);
-}
-function click_action_queue(url) {
-    $("#action_queue").toggle('fast')
-    if ($("#action_queue").is(":visible")) {
-        ajax(url, [], 'action_queue')
-    }
-}
 function refresh_plot(url, rowid, id) {
-    sync_ajax(url,['begin_'+rowid, 'end_'+rowid], id, function(){})
-}
-function toggle_plot(url, rowid, id) {
-    if ($("#"+id).is(":visible")) {
-        $("#"+id).hide()
-        $("#refresh_"+id).hide()
-        $("#close_"+id).hide()
-    } else {
-        $("#"+id).show()
-        $("#refresh_"+id).show()
-        $("#close_"+id).show()
-        refresh_plot(url, rowid, id)
-    }
+	sync_ajax(url,['begin_'+rowid, 'end_'+rowid], id, function(){})
 }
 
-function table_page_submit(t, v){
-  t.div.find("#"+t.id+"_page").val(v)
-  t.refresh()
-  t.refresh_column_filters()
-};
+function toggle_plot(url, rowid, id) {
+	if ($("#"+id).is(":visible")) {
+		$("#"+id).hide()
+		$("#refresh_"+id).hide()
+		$("#close_"+id).hide()
+	} else {
+		$("#"+id).show()
+		$("#refresh_"+id).show()
+		$("#close_"+id).show()
+		refresh_plot(url, rowid, id)
+	}
+}
 
 function table_save_column_filters(t) {
   if (t.options.volatile_filters) {
@@ -1154,14 +473,14 @@ function table_format_values_pie(t, o, data) {
     var input = $(this).siblings("input")
     input.val(val)
     t.refresh()
-    t.refresh_column_filters()
+    t.refresh_column_filters_in_place()
     t.save_column_filters()
   })
 }
 
 function table_bind_filter_input_events(t) {
   var inputs = t.e_header_filters.find("input[name=fi]")
-  var url = t.ajax_url + "_col_values/"
+  var url = t.options.ajax_url + "_col_values/"
 
   // refresh column filter cloud on keyup
   inputs.bind("keyup", function(event) {
@@ -1212,7 +531,7 @@ function table_bind_filter_input_events(t) {
     if (is_enter(event)) {
       t.e_header_filters.find(".white_float_input").hide()
       t.save_column_filters()
-      t.refresh_column_filters()
+      t.refresh_column_filters_in_place()
       t.refresh()
     }
   })
@@ -1232,15 +551,15 @@ function table_bind_filter_input_events(t) {
   inputs.parent().siblings(".clear16").bind("click", function(event) {
     var c = $(this).parent().attr("col")
     var input = t.e_header_filters.find("th[col="+c+"]").find("input")
-    if ((c in t.colprops) && (t.colprops[c].force_filter != "")) {
+    if ((c in t.colprops) && (typeof(t.colprops[c].force_filter) !== "undefined") && (t.colprops[c].force_filter != "")) {
       input.val(t.colprops[c].force_filter)
-    } else if ((c in t.colprops) && (t.colprops[c].default_filter != "")) {
+    } else if ((c in t.colprops) && (typeof(t.colprops[c].default_filter) !== "undefined") && (t.colprops[c].default_filter != "")) {
       input.val(t.colprops[c].default_filter)
     } else {
       input.val("")
     }
     t.save_column_filters(c)
-    t.refresh_column_filters()
+    t.refresh_column_filters_in_place()
     t.refresh()
   })
 
@@ -1248,7 +567,7 @@ function table_bind_filter_input_events(t) {
   inputs.parent().siblings(".invert16").bind("click", function(event) {
     var c = $(this).parent().attr("col")
     t.invert_column_filter(c)
-    t.refresh_column_filters()
+    t.refresh_column_filters_in_place()
     t.refresh()
   })
 
@@ -1259,7 +578,7 @@ function table_bind_filter_input_events(t) {
     var cloud = $(this).parent().find("#"+ck)
     values_to_filter(input, cloud)
     t.save_column_filters()
-    t.refresh_column_filters()
+    t.refresh_column_filters_in_place()
     t.refresh()
   })
 
@@ -1267,34 +586,36 @@ function table_bind_filter_input_events(t) {
 }
 
 function get_pos(e) {
-  var posx = 0
-  var posy = 0
-  if (e.pageX || e.pageY) {
-      posx = e.pageX;
-      posy = e.pageY;
-  }
-  else if (e.clientX || e.clientY) {
-      posx = e.clientX + document.body.scrollLeft
-           + document.documentElement.scrollLeft;
-      posy = e.clientY + document.body.scrollTop
-           + document.documentElement.scrollTop;
-  }
-  return [posx, posy]
+	var posx = 0
+	var posy = 0
+	if (e.pageX || e.pageY) {
+		posx = e.pageX
+		posy = e.pageY
+	} else if (e.clientX || e.clientY) {
+		posx = e.clientX + document.body.scrollLeft
+			+ document.documentElement.scrollLeft;
+		posy = e.clientY + document.body.scrollTop
+			+ document.documentElement.scrollTop;
+	}
+	return [posx, posy]
 }
 
+//
+// get text selection
+//
 function get_selected() {
-    if (window.getSelection) {
-        return window.getSelection().toString();
-    } else if (document.getSelection) {
-        return document.getSelection().toString();
-    } else {
-        var selection = document.selection && document.selection.createRange();
-        if (selection.text) {
-            return selection.text.toString();
-        }
-        return "";
-    }
-    return "";
+	if (window.getSelection) {
+		return window.getSelection().toString()
+	} else if (document.getSelection) {
+		return document.getSelection().toString()
+	} else {
+		var selection = document.selection && document.selection.createRange()
+		if (selection.text) {
+			return selection.text.toString()
+		}
+		return ""
+	}
+	return ""
 }
 
 function table_filter_selector(t, e, k, v){
@@ -1340,7 +661,7 @@ function table_filter_selector(t, e, k, v){
       sel = $(this).text()
       $(".theader_filters").find("[name="+k+"]").find("input").val(sel)
       t.save_column_filters()
-      t.refresh_column_filters()
+      t.refresh_column_filters_in_place()
       t.refresh()
       $("#fsr"+t.id).hide()
     })
@@ -1590,53 +911,11 @@ function table_filter_selector(t, e, k, v){
 // Table link url popup
 //
 function get_view_url() {
-  var url = $(location).attr('href')
-  if (url.indexOf('?')>0) {
-    url=url.substring(0, url.indexOf('?'))
-  }
-  return url
-}
-
-function table_link(t) {
-  if (t.options.caller) {
-    table_link_fn(t)
-  } else {
-    table_link_href(t)
-  }
-}
-
-function table_link_fn(t) {
-  var options = t.options
-  options.volatile_filters = true
-
-  var current_fset = $("[name=fset_selector]").find("span").attr("fset_id")
-  options.fset_id = current_fset
-
-  t.e_header_filters.find("input[name=fi]").each(function(){
-    if ($(this).val().length==0) {
-      return
-    }
-    options.request_vars[$(this).attr('id')] = $(this).val()
-  })
-  osvc_create_link(t.options.caller, options);
-}
-
-function table_link_href(t) {
-  var url = get_view_url()
-  url = url.replace(/#$/, "")+"?";
-  var args = "clear_filters=true&discard_filters=true"
-
-  // fset
-  var current_fset = $("[name=fset_selector]").find("span").attr("fset_id")
-  args += "&dbfilter="+current_fset
-
-  t.e_header_filters.find("input[name=fi]").each(function(){
-    if ($(this).val().length==0) {
-      return
-    }
-    args += '&'+$(this).attr('id')+"="+encodeURIComponent($(this).val())
-  })
-  osvc_create_link(url, args);
+	var url = $(location).attr('href')
+	if (url.indexOf('?')>0) {
+		url=url.substring(0, url.indexOf('?'))
+	}
+	return url
 }
 
 function table_add_filterbox(t) {
@@ -1683,54 +962,6 @@ function table_add_filterbox(t) {
   t.div.append(s)
 }
 
-function cell_span(id, e) {
-  try {
-    var s = $(e).attr("name").split("_c_")[1]
-  } catch(e) {
-    return false
-  }
-  if (osvc.tables[id].span.indexOf(s) < 0) {
-    return false
-  }
-  var line = $(e).parent(".tl")
-  var span_id = line.attr("spansum")
-  var prev_span_id = line.prev().attr("spansum")
-  if (span_id == prev_span_id) {
-    return true
-  }
-  return false
-}
-
-function _table_cell_decorator(id, cell) {
-  if (cell_span(id, cell)) {
-    $(cell).empty()
-    return
-  }
-  var cl = $(cell).attr('class')
-  if (!cl) {
-    return
-  }
-  cl = cl.split(/\s+/)
-  for (i=0; i<cl.length; i++) {
-    var c = cl[i]
-    if (!(c in cell_decorators)) {
-      continue
-    }
-    cell_decorators[c](cell)
-  }
-}
-
-function table_cell_decorator(t) {
-  t.e_table.find("tbody > .tl").each(function(){
-    var line = $(this)
-    setTimeout(function(){
-      line.children("[cell=1]:visible").each(function(){
-        _table_cell_decorator(t.id, this)
-      })
-    }, 1)
-  })
-}
-
 
 //
 // table tool: column selector
@@ -1751,8 +982,8 @@ function table_add_column_selector(t) {
   e.append(area)
   t.e_tool_column_selector_area = area
 
-  for (var i=0; i<t.columns.length; i++) {
-    var colname = t.columns[i]
+  for (var i=0; i<t.options.columns.length; i++) {
+    var colname = t.options.columns[i]
 
     // checkbox
     var input = $("<input type='checkbox' class='ocb' />")
@@ -1771,9 +1002,19 @@ function table_add_column_selector(t) {
         "upc_field": colname,
         "upc_visible": current_state,
       }
+      if (!current_state) {
+        if (t.options.force_cols.indexOf(c) >=0 ) {
+          // don't remove forced columns
+          t.e_table.find("[col="+colname+"]").hide()
+        } else {
+          t.e_table.find("[col="+colname+"]").remove()
+        }
+	// reset the table data md5 so that toggle on-off-on a column is not interpreted
+        // as unchanged data
+        t.md5sum = null
+      }
       services_osvcpostrest("R_USERS_SELF_TABLE_SETTINGS", "", "", data, function(jd) {
-        check_toggle_vis(t.id, current_state, t.id+'_c_'+colname)
-        t.refresh()
+        t.check_toggle_vis(current_state, colname)
       },
       function(xhr, stat, error) {
         $(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
@@ -1784,9 +1025,12 @@ function table_add_column_selector(t) {
     }
 
     // filtered columns are always visible
-    if (t.e_header_filters && (t.e_header_filters.find("th[col="+colname+"]").find("input").val() != "")) {
-      input.prop("disabled", true)
-      input.prop("checked", true)
+    if (t.e_header_filters) {
+      var e_input = t.e_header_filters.find("th[col="+colname+"]").find("input")
+      if ((e_input.length > 0) && (e_input.val() != "")) {
+        input.prop("disabled", true)
+        input.prop("checked", true)
+      }
     }
 
     // label
@@ -1847,7 +1091,7 @@ function table_add_commonality(t) {
     var data = t.prepare_request_data()
     $.ajax({
          type: "POST",
-         url: t.ajax_url+"/commonality",
+         url: t.options.ajax_url+"/commonality",
          data: data,
          context: document.body,
          success: function(msg){
@@ -1925,7 +1169,7 @@ function table_add_csv(t) {
       l.push(encodeURIComponent(k)+"="+encodeURIComponent(data[k]))
     }
     var q = l.join("&")
-    var url = t.ajax_url+"/csv"
+    var url = t.options.ajax_url+"/csv"
     if (q.length > 0) {
       url += "?"+q
     }
@@ -2180,7 +1424,7 @@ function table_add_volatile(t) {
       current_state = false
     }
     t.options.volatile_filters = current_state
-    t.refresh_column_filters()
+    t.refresh_column_filters_in_place()
   })
 
   // label
@@ -2368,7 +1612,7 @@ function table_pager(t, options) {
       "perpage": new_perpage
     }
     services_osvcpostrest("R_USERS_SELF", "", "", data, function(jd) {
-      $("#"+t.id+"_page").val(Math.floor(((p_page - 1) * p_perpage) / new_perpage)+1)
+      t.page = Math.floor(((p_page - 1) * p_perpage) / new_perpage)+1
       t.refresh()
     },
     function(xhr, stat, error) {
@@ -2418,17 +1662,6 @@ function table_bind_filter_reformat(t) {
   })
 }
 
-function table_hide_cells(t) {
-  for (i=0; i<t.columns.length; i++) {
-    var c = t.columns[i]
-    if (t.options.visible_columns.indexOf(c) >= 0) {
-      continue
-    }
-    n = t.id + "_c_" + c
-    $("#table_"+t.id).find("[name="+n+"]").hide()
-  }
-}
-
 function table_unset_refresh_spin(t) {
   if (!t.e_tool_refresh_spin) {
     return
@@ -2441,29 +1674,6 @@ function table_set_refresh_spin(t) {
     return
   }
   t.e_tool_refresh_spin.addClass(t.spin_class)
-}
-
-function table_set_column_filters(t) {
-  if (t.options.volatile_filters || t.has_filter_in_request_vars()) {
-    return
-  }
-  if (!(t.id in osvc.table_filters.data)) {
-    return
-  }
-  if (!("current" in osvc.table_filters.data[t.id])) {
-    return
-  }
-  var tf = osvc.table_filters.data[t.id]["current"]
-  t.reset_column_filters()
-  for (col in tf) {
-      var f = tf[col]
-      if (col.indexOf(".") >= 0) {
-        var k = col.split('.')[1]
-      } else {
-        var k = col
-      }
-      t.refresh_column_filter(k, f)
-  }
 }
 
 function table_add_ws_handler(t) {
@@ -2528,204 +1738,192 @@ function table_format_values_cloud(t, span, data) {
     e.bind("click", function(){
       span.siblings("input").val($(this).text())
       t.refresh()
-      t.refresh_column_filters()
+      t.refresh_column_filters_in_place()
       t.save_column_filters()
     })
     span.append(e)
   }
 }
 
-function table_flash(t) {
-  if (!t.options.flash || t.options.flash.length == 0) {
-    return
-  }
-  var e = $("<span><span class='icon alert16 err fa-2x'></span><span data-i18n='table.tool_error'></span></span>")
-  e.i18n()
-  var p = $("<pre></pre>")
-  p.text(t.options.flash)
-  p.css({
-    "padding": "5px",
-    "padding-left": "20px",
-  })
-  e.append(p)
-  $(".flash").show("blind").html(e)
-}
-
 function table_init(opts) {
-  var t = {
-    'options': opts,
-    'need_refresh': false,
-    'id': opts['id'],
-    'extrarow': opts['extrarow'],
-    'extrarow_class': opts['extrarow_class'],
-    'checkboxes': opts['checkboxes'],
-    'ajax_url': opts['ajax_url'],
-    'span': opts['span'],
-    'columns': opts['columns'],
-    'colprops': opts['colprops'],
-    'child_tables': opts['child_tables'],
-    'action_menu': opts['action_menu'],
-    'spin_class': 'fa-spin',
+	var defaults = {
+		"pager": {"page": 1},
+		"extrarow": false,
+		"extrarow_class": "",
+		"flash": "",
+		"checkboxes": true,
+		"span": ["id"],
+		"force_cols": [],
+		"columns": [],
+		"colprops": {},
+		"volatile_filters": false,
+		"child_tables": [],
+		"parent_tables": [],
+		"linkable": true,
+		"filterable": true,
+		"refreshable": true,
+		"bookmarkable": true,
+		"exportable": true,
+		"columnable": true,
+		"commonalityable": true,
+		"headers": true,
+		"wsable": false,
+		"pageable": true,
+		"on_change": false,
+		"events": [],
+		"request_vars": {}
+	}
 
-    'page_submit': function(v){
-      return table_page_submit(this, v)
-    },
-    'ajax_submit': function(tool, additional_inputs, input_name, additional_input_name){
-      return table_ajax_submit(this, tool, additional_inputs, input_name, additional_input_name)
-    },
-    'column_values': function(){
-      return table_column_values(this)
-    },
-    'format_values_pie': function(span, data){
-      return table_format_values_pie(this, span, data)
-    },
-    'format_values_cloud': function(span, data){
-      return table_format_values_cloud(this, span, data)
-    },
-    'add_ws_handler': function(){
-      return table_add_ws_handler(this)
-    },
-    'hide_cells': function(){
-      return table_hide_cells(this)
-    },
-    'bind_filter_reformat': function(){
-      return table_bind_filter_reformat(this)
-    },
-    'bind_action_menu': function(){
-      return table_bind_action_menu(this)
-    },
-    'filter_selector': function(e, k, v){
-      return table_filter_selector(this, e, k, v)
-    },
-    'bind_filter_selector': function(){
-      return table_bind_filter_selector(this)
-    },
-    'bind_filter_input_events': function(){
-      return table_bind_filter_input_events(this)
-    },
-    'insert_bookmark': function(name){
-      return table_insert_bookmark(this, name)
-    },
-    'bind_checkboxes': function(){
-      return table_bind_checkboxes(this)
-    },
-    'pager': function(options){
-      return table_pager(this, options)
-    },
-    'trim_lines': function(){
-      return table_trim_lines(this)
-    },
-    'restripe_lines': function(){
-      return table_restripe_lines(opts['id'])
-    },
-    'set_refresh_spin': function(){
-      return table_set_refresh_spin(this)
-    },
-    'unset_refresh_spin': function(){
-      return table_unset_refresh_spin(this)
-    },
-    'link': function(){
-      return table_link(this)
-    },
-    'add_filterbox': function(){
-      return table_add_filterbox(this)
-    },
-    'refresh_column_filter': function(c, val){
-      return table_refresh_column_filter(this, c, val)
-    },
-    'refresh_column_filters': function(){
-      return table_refresh_column_filters(this)
-    },
-    'refresh_column_headers_slim': function(){
-      return table_refresh_column_headers_slim(this)
-    },
-    'refresh_column_headers': function(){
-      return table_refresh_column_headers(this)
-    },
-    'add_column_header': function(e, c){
-      return table_add_column_header(this, e, c)
-    },
-    'add_column_headers': function(){
-      return table_add_column_headers(this)
-    },
-    'add_column_header_slim': function(e, c){
-      return table_add_column_header_slim(this, e, c)
-    },
-    'add_column_headers_slim': function(){
-      return table_add_column_headers_slim(this)
-    },
-    'add_column_header_input': function(e, c){
-      return table_add_column_header_input(this, e, c)
-    },
-    'add_column_headers_input': function(){
-      return table_add_column_headers_input(this)
-    },
-    'add_filtered_to_visible_columns': function(){
-      return table_add_filtered_to_visible_columns(this)
-    },
-    'action_menu_param_moduleset': function(){
-      return table_action_menu_param_moduleset(this)
-    },
-    'action_menu_param_module': function(){
-      return table_action_menu_param_module(this)
-    },
-    'insert': function(data){
-      return table_insert(this, data)
-    },
-    'refresh': function(){
-      return table_refresh(this)
-    },
-    'set_column_filters': function(){
-      return table_set_column_filters(this)
-    },
-    'add_pager': function(){
-      return table_add_pager(this)
-    },
-    'add_wsswitch': function(){
-      return table_add_wsswitch(this)
-    },
-    'add_volatile': function(){
-      return table_add_volatile(this)
-    },
-    'add_refresh': function(){
-      return table_add_refresh(this)
-    },
-    'add_link': function(){
-      return table_add_link(this)
-    },
-    'add_bookmarks': function(){
-      return table_add_bookmarks(this)
-    },
-    'add_csv': function(){
-      return table_add_csv(this)
-    },
-    'add_column_selector': function(){
-      return table_add_column_selector(this)
-    },
-    'add_commonality': function(){
-      return table_add_commonality(this)
-    },
-    'save_column_filters': function(){
-      return table_save_column_filters(this)
-    },
-    'flash': function(){
-      return table_flash(this)
-    },
-    'cell_decorator': function(){
-      return table_cell_decorator(this)
-    },
-    'add_table': function(){
-      return table_add_table(this)
-    }
-  }
+	var t = {
+		'options': $.extend({}, defaults, opts),
+		'colprops': {},
+		'need_refresh': false,
+		'id': opts.id,
+		'spin_class': 'fa-spin',
+
+		'column_values': function(){
+			return table_column_values(this)
+		},
+		'format_values_pie': function(span, data){
+			return table_format_values_pie(this, span, data)
+		},
+		'format_values_cloud': function(span, data){
+			return table_format_values_cloud(this, span, data)
+		},
+		'add_ws_handler': function(){
+			return table_add_ws_handler(this)
+		},
+		'bind_filter_reformat': function(){
+			return table_bind_filter_reformat(this)
+		},
+		'bind_action_menu': function(){
+			return table_bind_action_menu(this)
+		},
+		'filter_selector': function(e, k, v){
+			return table_filter_selector(this, e, k, v)
+		},
+		'bind_filter_input_events': function(){
+			return table_bind_filter_input_events(this)
+		},
+		'insert_bookmark': function(name){
+			return table_insert_bookmark(this, name)
+		},
+		'pager': function(options){
+			return table_pager(this, options)
+		},
+		'set_refresh_spin': function(){
+			return table_set_refresh_spin(this)
+		},
+		'unset_refresh_spin': function(){
+			return table_unset_refresh_spin(this)
+		},
+		'add_filterbox': function(){
+			return table_add_filterbox(this)
+		},
+		'action_menu_param_moduleset': function(){
+			return table_action_menu_param_moduleset(this)
+		},
+		'action_menu_param_module': function(){
+			return table_action_menu_param_module(this)
+		},
+		'insert': function(data){
+			return table_insert(this, data)
+		},
+		'add_pager': function(){
+			return table_add_pager(this)
+		},
+		'add_wsswitch': function(){
+			return table_add_wsswitch(this)
+		},
+		'add_volatile': function(){
+			return table_add_volatile(this)
+		},
+		'add_refresh': function(){
+			return table_add_refresh(this)
+		},
+		'add_link': function(){
+			return table_add_link(this)
+		},
+		'add_bookmarks': function(){
+			return table_add_bookmarks(this)
+		},
+		'add_csv': function(){
+			return table_add_csv(this)
+		},
+		'add_column_selector': function(){
+			return table_add_column_selector(this)
+		},
+		'add_commonality': function(){
+			return table_add_commonality(this)
+		},
+		'save_column_filters': function(){
+			return table_save_column_filters(this)
+		},
+		'add_table': function(){
+			return table_add_table(this)
+		}
+	}
+
+	t.add_filtered_to_visible_columns = function() {
+		t.e_table.find("[id^="+t.id+"_f_]").each(function(){
+			var s = $(this).attr("id")
+			var col = s.split("_f_")[1]
+			var val = $(this).val()
+			if (t.e_tool_column_selector_area) {
+				// no column selector
+				if (val === "") {
+					t.e_tool_column_selector_area.find("[colname="+col+"]").removeAttr("disabled")
+					return
+				}
+				t.e_tool_column_selector_area.find("[colname="+col+"]").prop("disabled", true)
+				if (t.options.visible_columns.indexOf(col) >= 0) {
+					return
+				}
+				t.options.visible_columns.push(col)
+			}
+		})
+	}
+
+	t.restripe_lines = function() {
+		var prev_spansum = ""
+		var cls = ["cell1", "cell2"]
+		var cl = "cell1"
+		var i = 1
+		t.e_table.children().children(".tl").each(function(){
+			spansum = $(this).attr("spansum")
+			if (spansum != prev_spansum) {
+				prev_spansum = spansum
+				cl = cls[i]
+				i = 1 - i
+			}
+			if ($(this).hasClass(cl)) {
+				return
+			}
+			$(this).removeClass(cls[i]).addClass(cl)
+		})
+	}
+
+	t.trim_lines = function() {
+		perpage = parseInt($("#table_"+t.id).attr("perpage")) + 2
+		lines = $("#table_"+t.id).children("tbody").children()
+		if (lines.length <= perpage) {
+			return
+		}
+		for (i=perpage; i<lines.length; i++) {
+			$(lines[i]).remove()
+		}
+		lines = null
+	}
+
+
 	//
 	// table horizontal scroll
 	//
 	t.scroll_enable = function() {
-		t.div.siblings(".scroll_left").click(function(){
+		t.div.children(".scroll_left").click(function(){
 			t.e_table.parent().animate({'scrollLeft': '-='+$(window).width()}, 500, t.scroll)
 		})
-		t.div.siblings(".scroll_right").click(function(){
+		t.div.children(".scroll_right").click(function(){
 			t.e_table.parent().animate({'scrollLeft': '+='+$(window).width()}, 500, t.scroll)
 		})
 		t.e_table.parent().bind("scroll", function(){
@@ -2744,24 +1942,23 @@ function table_init(opts) {
 		t.scroll_disable_dom()
 		sticky_relocate(t.e_header, t.e_sticky_anchor)
 		t.set_scrollbars_position()
-		to=$("#table_"+t.id)
-		to_p=to.parent()
-		ww=to_p.width()
-		tw=to.width()
-		if (ww>=tw) {
-			$("#table_"+t.id+"_left").hide()
-			$("#table_"+t.id+"_right").hide()
+		var to = t.e_table
+		var to_p = to.parent()
+		var ww = to_p.width()
+		var tw = to.width()
+		if (ww >= tw) {
+			t.div.children(".scroll_left,.scroll_right").hide()
 			return
 		}
 		if (to_p.scrollLeft()>0) {
-			$("#table_"+t.id+"_left").show()
+			t.div.children(".scroll_left").show()
 		} else {
-			$("#table_"+t.id+"_left").hide()
+			t.div.children(".scroll_left").hide()
 		}
 		if (to_p.scrollLeft()+ww+1<tw) {
-			$("#table_"+t.id+"_right").show()
+			t.div.children(".scroll_right").show()
 		} else {
-			$("#table_"+t.id+"_right").hide()
+			t.div.children(".scroll_right").hide()
 		}
 		t.scroll_enable_dom()
 	}
@@ -2866,16 +2063,16 @@ function table_init(opts) {
 		})
 	}
 
-	t.reset_column_filters = function(c, val) {
+	t.reset_column_filters = function() {
 		if (!t.e_header_filters) {
 			return
 		}
 		t.e_header_filters.find("th").each(function() {
 			var input = $(this).find("input")
 			var label = $(this).find(".col_filter_label")
-			if ((c in t.colprops) && (t.colprops[c].force_filter != "")) {
+			if ((c in t.colprops) && (typeof(t.colprops[c].force_filter) !== "undefined") && (t.colprops[c].force_filter != "")) {
 				input.val(t.colprops[c].force_filter)
-			} else if ((c in t.colprops) && (t.colprops[c].default_filter != "")) {
+			} else if ((c in t.colprops) && (typeof(t.colprops[c].default_filter) !== "undefined") && (t.colprops[c].default_filter != "")) {
 				input.val(t.colprops[c].default_filter)
 			} else {
 				input.val("")
@@ -2898,11 +2095,15 @@ function table_init(opts) {
 		}
 
 		// init with default visibility defined in colprops
-		t.options.visible_columns = []
-		for (key in t.options.colprops) {
-			var d = t.options.colprops[key]
-			if (d.display) {
-				t.options.visible_columns.push(key)
+		if (t.options.default_columns) {
+			t.options.visible_columns = t.options.default_columns
+		} else {
+			t.options.visible_columns = []
+			for (key in t.colprops) {
+				var d = t.colprops[key]
+				if (d.display) {
+					t.options.visible_columns.push(key)
+				}
 			}
 		}
 
@@ -2938,16 +2139,13 @@ function table_init(opts) {
 		var toolbar = $("<div class='theader toolbar' name='toolbar'></div>")
 		var table_div = $("<div></div>")
 		var table = $("<table></table>")
-		var page = $("<input type='hidden'></input>")
 		d.attr("id", t.id)
 		t.div = d
-		page.attr("id", t.id+"_page")
-		page.val(t.options.pager.page)
+		t.page = t.options.pager.page
 		table.attr("id", "table_"+t.id)
 		table_div.append(table)
 		d.append(toolbar)
 		d.append(table_div)
-		d.append(page)
 		container.empty().append(d)
 	}
 
@@ -2959,8 +2157,8 @@ function table_init(opts) {
 	}
 
 	t.refresh_child_tables = function() {
-		for (var i=0; i<this.child_tables.length; i++) {
-			var id = this.child_tables[i]
+		for (var i=0; i<t.options.child_tables.length; i++) {
+			var id = t.options.child_tables[i]
 			if (!(id in osvc.tables)) {
 				console.log("child table not found in osvc.tables:", id)
 				continue
@@ -2980,7 +2178,7 @@ function table_init(opts) {
 			var current = $("#"+pt.id+"_f_"+c).val()
 			if ((current != "") && (typeof current !== 'undefined')) {
 				data[pt.id+"_f_"+c] = current
-			} else if (pt.colprops[c].force_filter != "") {
+			} else if ((typeof(pt.colprops[c].force_filter) !== "undefined") && (pt.colprops[c].force_filter != "")) {
 				data[pt.id+"_f_"+c] = pt.colprops[c].force_filter
 			}
 		}
@@ -3002,11 +2200,18 @@ function table_init(opts) {
 		var data = t.parent_tables_data()
 		data.table_id = t.id
 		for (c in t.colprops) {
-			var current = $("#"+t.id+"_f_"+c).val()
+			var fid = t.id+"_f_"+c
+			var input = $("#"+fid)
+			if ((input.length == 0) && (fid in t.options.request_vars)) {
+				// hidden forced column with a filter passed in request vars
+				var current = t.options.request_vars[fid]
+			} else {
+				var current = input.val()
+			}
 			if ((current != "") && (typeof current !== 'undefined')) {
-				data[t.id+"_f_"+c] = current
-			} else if (t.colprops[c].force_filter != "") {
-				data[t.id+"_f_"+c] = t.colprops[c].force_filter
+				data[fid] = current
+			} else if ((typeof(t.colprops[c].force_filter) !== "undefined") && (t.colprops[c].force_filter != "")) {
+				data[fid] = t.colprops[c].force_filter
 			}
 		}
 		return data
@@ -3024,8 +2229,671 @@ function table_init(opts) {
 		return false
 	}
 
-	t.refresh_timer = null
+	t.add_column_header_slim = function(tr, c) {
+		var th = $("<th></th>")
+		th.addClass(t.colprops[c]._class)
+		th.attr("name", t.id+"_c_"+c)
+		th.attr("col", c)
+		tr.append(th)
+	}
 
+	t.refresh_column_headers_slim = function() {
+		t.e_header_slim.empty()
+		t.add_column_headers_slim()
+	}
+
+	t.add_column_headers_slim = function() {
+		if (t.e_header_slim) {
+			var tr = t.e_header_slim
+		} else {
+			var tr = $("<tr class='theader_slim'></tr>")
+			t.e_table.append(tr)
+			t.e_header_slim = tr
+		}
+		if (t.options.checkboxes) {
+			tr.append($("<th></th>"))
+		}
+		if (t.options.extrarow) {
+			tr.append($("<th></th>"))
+		}
+		for (i=0; i<t.options.columns.length; i++) {
+			var c = t.options.columns[i]
+			if (t.options.visible_columns.indexOf(c) >= 0) {
+				t.add_column_header_slim(tr, c)
+			}
+		}
+		tr.bind("click", function() {
+			t.e_header_filters.toggle()
+		})
+	}
+
+	t.init_colprops = function() {
+		for (var i=0; i<t.options.columns.length; i++) {
+			var c = t.options.columns[i]
+			t.colprops[c] = $.extend({}, colprops[c], t.options.colprops[c])
+		}
+	}
+
+	t.cell_span = function(e) {
+		try {
+			var s = $(e).attr("name").split("_c_")[1]
+		} catch(e) {
+			return false
+		}
+		if (t.options.span.indexOf(s) < 0) {
+			return false
+		}
+		var line = $(e).parent(".tl")
+		var span_id = line.attr("spansum")
+		var prev_span_id = line.prev().attr("spansum")
+		if (span_id == prev_span_id) {
+			return true
+		}
+		return false
+	}
+
+	t._cell_decorator = function(cell) {
+		if (t.cell_span(cell)) {
+			$(cell).empty()
+			return
+		}
+		var cl = $(cell).attr('class')
+		if (!cl) {
+			return
+		}
+		cl = cl.split(/\s+/)
+		for (i=0; i<cl.length; i++) {
+			var c = cl[i]
+			if (!(c in cell_decorators)) {
+				continue
+			}
+			cell_decorators[c](cell)
+		}
+	}
+
+	t.cell_decorator = function() {
+		t.e_table.find("tbody > .tl").each(function(){
+			var line = $(this)
+			setTimeout(function(){
+				line.children("[cell=1]:visible").each(function(){
+					t._cell_decorator(this)
+				})
+			}, 1)
+		})
+	}
+
+	t.refresh_column_headers = function() {
+		if (!t.options.headers) {
+			return
+		}
+		t.e_header.empty()
+		t.add_column_headers()
+	}
+
+	t.add_column_headers = function() {
+		if (!t.options.headers) {
+			return
+		}
+		if (t.e_header) {
+			var tr = t.e_header
+		} else {
+			var tr = $("<tr class='theader'></tr>")
+			t.e_table.prepend(tr)
+			t.e_header = tr
+		}
+		if (t.options.checkboxes) {
+			var th = $("<th><div class='fa fa-bars clickable'></div></th>")
+			th.click(function(e){
+				table_action_menu(t, e)
+			})
+			tr.append(th)
+		}
+		if (t.options.extrarow) {
+			tr.append($("<th></th>"))
+		}
+		for (i=0; i<t.options.columns.length; i++) {
+			var c = t.options.columns[i]
+			if (t.options.visible_columns.indexOf(c) >= 0) {
+				t.add_column_header(tr, c)
+			}
+		}
+	}
+
+	t.add_column_header = function(tr, c) {
+		var th = $("<th></th>")
+		th.addClass(t.colprops[c]._class)
+		th.attr("name", t.id+"_c_"+c)
+		th.attr("col", c)
+		th.text(i18n.t("col."+t.colprops[c].title))
+		tr.append(th)
+	}
+
+	t.add_column_header_input = function (tr, c) {
+		var th = $("<th></th>")
+		//th.addClass(t.colprops[c]._class)
+		th.attr("name", t.id+"_c_"+c)
+		th.attr("col", c)
+
+		var filter_tool = $("<span class='clickable icon filter16'></span>")
+		var invert_tool = $("<span class='clickable hidden icon invert16'></span>")
+		var clear_tool = $("<span class='clickable hidden icon clear16'></span>")
+		var label = $("<span class='col_filter_label'></span>")
+		var input_float = $("<div class='white_float_input stackable' style='position:absolute'>")
+		var input = $("<input class='oi' name='fi'>")
+		var value_to_filter_tool = $("<span class='clickable icon values_to_filter'></span><br>")
+		var value_cloud = $("<span></span>")
+		var value_pie = $("<div></div>")
+		var input_id = t.id+"_f_"+c
+		var header = $("<h2 class='icon fa-bars'></h2>")
+
+		header.text(i18n.t("table.column_filter_header", {"col": i18n.t("col."+t.colprops[c].title)}))
+		value_to_filter_tool.attr("title", i18n.t("table.value_to_filter_tool_title"))
+
+		input.attr("id", input_id)
+		if (t.options.request_vars && (input_id in t.options.request_vars)) {
+			input.val(t.options.request_vars[input_id])
+		}
+		value_pie.attr("id", t.id+"_fp_"+c)
+		value_pie.css({"margin-top": "0.8em"})
+		value_cloud.attr("id", t.id+"_fc_"+c)
+		value_cloud.css({"overflow-wrap": "break-word"})
+
+		input_float.draggable({
+			"handle": ".fa-bars"
+		})
+		input_float.append(header)
+		input_float.append(input)
+		input_float.append(value_to_filter_tool)
+		input_float.append(value_pie)
+		input_float.append(value_cloud)
+		th.append(filter_tool)
+		th.append(invert_tool)
+		th.append(clear_tool)
+		th.append(label)
+		th.append(input_float)
+		tr.append(th)
+	}
+
+	t.add_column_headers_input = function() {
+		if (!t.options.headers) {
+			return
+		}
+		if (t.e_header_filters) {
+			var tr = t.e_header_filters
+		} else {
+			var tr = $("<tr class='theader_filters'></tr>")
+			t.e_table.prepend(tr)
+			t.e_header_filters = tr
+		}
+		if (!t.options.filterable) {
+			tr.hide()
+		}
+		if (t.options.checkboxes) {
+			var mcb_id = t.id+"_mcb"
+			var th = $("<th></th>")
+			var input = $("<input type='checkbox' class='ocb'></input>")
+			input.attr("id", mcb_id)
+			var label = $("<label></label>")
+			label.attr("for", mcb_id)
+			input.bind("click", function() {
+				check_all(t.id+"_ck", this.checked)
+			})
+			th.append(input)
+			th.append(label)
+			tr.append(th)
+		}
+		if (t.options.extrarow) {
+			tr.append($("<th></th>"))
+		}
+		for (i=0; i<t.options.columns.length; i++) {
+			var c = t.options.columns[i]
+			if (t.options.visible_columns.indexOf(c) >= 0) {
+				t.add_column_header_input(tr, c)
+			}
+		}
+		t.bind_filter_input_events()
+	}
+
+	t.refresh_column_filters = function() {
+		for (key in t.options.request_vars) {
+			if (key.match(/_f_/)) {
+				delete(t.options.request_vars[key])
+			}
+		}
+		t.e_table.find("tr.theader_filters input").each(function() {
+			var v = $(this).val()
+			if (v == "") {
+				return
+			}
+			t.options.request_vars[$(this).attr("id")] = v
+		})
+		t.e_table.find("tr.theader.stick").remove()
+		t.e_header_filters.empty()
+		t.add_column_headers_input()
+		t.refresh_column_filters_in_place()
+	}
+
+	t.refresh_column_filter = function(c, val) {
+		if (!t.e_header_filters) {
+			return
+		}
+		var th = t.e_header_filters.find("th[col="+c+"]")
+		if (th.length == 0) {
+			// a bogus col filter in db with no corresponding column
+			return
+		}
+
+		var input = th.find("input")
+		var label = th.find(".col_filter_label")
+		var val
+
+		if (typeof(val) === "undefined") {
+			val = input.val()
+		}
+
+		// make sure the column title is visible
+		th.show()
+
+		// update val in input, and text in display area
+		if (typeof(val) === "undefined") {
+			val = ""
+		}
+		if (val == "**clear**") {
+			val = ""
+		}
+		var n = val.length
+		if ((n == 0) && (typeof(t.colprops[c].default_filter) !== "undefined") && (t.colprops[c].default_filter != "")) {
+			val = t.colprops[c].default_filter
+			n = val.length
+		}
+		var _val = val
+		if (n > 20) {
+			_val = val.substring(0, 17)+"..."
+		}
+		label.attr("title", val)
+		label.text(_val)
+		input.val(val)
+
+		// toggle the clear and invert tools visibility
+		if (val == "") {
+			th.find(".clear16,.invert16").hide()
+		} else {
+			th.find(".clear16,.invert16").show()
+		}
+
+		// update the slim header cell colorization
+		var th = t.e_header_slim.find("[col="+c+"]")
+		th.removeClass("bgblack")
+		th.removeClass("bgred")
+		th.removeClass("bgorange")
+		var cl = ""
+		if ((val.length > 0) && (val != "**clear**")) {
+			if (!t.options.volatile_filters) {
+				th.addClass("bgred")
+			} else {
+				th.addClass("bgblack")
+			}
+		}
+	}
+
+	t.refresh_column_filters_in_place = function() {
+		for (i=0; i<t.options.visible_columns.length; i++) {
+			var c = t.options.visible_columns[i]
+			t.refresh_column_filter(c)
+		}
+	}
+
+	t.set_column_filters = function() {
+		if (t.options.volatile_filters || t.has_filter_in_request_vars()) {
+			return
+		}
+		if (!(t.id in osvc.table_filters.data)) {
+			return
+		}
+		if (!("current" in osvc.table_filters.data[t.id])) {
+			return
+		}
+		var tf = osvc.table_filters.data[t.id]["current"]
+		t.reset_column_filters()
+		for (col in tf) {
+			var f = tf[col]
+			if (col.indexOf(".") >= 0) {
+				var k = col.split('.')[1]
+			} else {
+				var k = col
+			}
+			t.refresh_column_filter(k, f)
+		}
+	}
+
+	t.page_submit = function(v){
+		t.page = v
+		t.refresh()
+		t.refresh_column_filters_in_place()
+	}
+
+	t.hide_cells = function() {
+		for (i=0; i<t.options.columns.length; i++) {
+			var c = t.options.columns[i]
+			if (t.options.visible_columns.indexOf(c) >= 0) {
+				continue
+			}
+			n = t.id + "_c_" + c
+			$("#table_"+t.id).find("[name="+n+"]").hide()
+		}
+	}
+
+	t.get_ordered_visible_columns = function() {
+		// return visible columns ordered like columns
+		var l = []
+		for (var i=0; i<t.options.columns.length; i++) {
+			var c = t.options.columns[i]
+			if (t.options.visible_columns.indexOf(c) < 0 &&
+			    t.options.force_cols.indexOf(c) < 0) {
+				continue
+			}
+			l.push(c)
+		}
+		return l
+	}
+
+	t.check_toggle_vis = function(checked, c) {
+		if (checked && (t.options.visible_columns.indexOf(c) < 0)) {
+			t.options.visible_columns.push(c)
+		} else {
+			t.options.visible_columns = t.options.visible_columns.filter(function(x){if (x!=c){return true}})
+		}
+		t.refresh_column_headers_slim()
+		t.refresh_column_filters()
+		t.refresh_column_headers()
+		if (checked) {
+			if (t.options.force_cols.indexOf(c) >=0 ) {
+				t.e_table.find(".tl td[col="+c+"]").show()
+			} else {
+				t.refresh()
+			}
+		}
+	}
+
+	t.bind_checkboxes = function() {
+		$("#table_"+t.id).find("[name="+t.id+"_ck]").each(function(){
+			this.value = this.checked
+			$(this).click(function(){
+				this.value = this.checked
+			})
+		})
+	}
+
+	t.bind_filter_selector = function() {
+		$("#table_"+t.id).find("[cell=1]").each(function(){
+			$(this).bind("mouseup", function(event) {
+				cell = $(event.target)
+				if (typeof cell.attr("cell") === 'undefined') {
+					cell = cell.parents("[cell=1]").first()
+				}
+				t.filter_selector(event, cell.attr('name'), $.data(cell[0], 'v'))
+			})
+			$(this).bind("click", function() {
+				$("#fsr"+t.id).hide()
+				$("#am_"+t.id).remove()
+			})
+		})
+	}
+
+	t.cell_fmt = function(k, v) {
+		var cl = ""
+		var n = t.id+"_c_"+k
+		var classes = []
+		if ((k == "extra") && (typeof(t.options.extrarow_class) !== 'undefined')) {
+			classes.push(t.options.extrarow_class)
+		}
+		if ((k != "extra") && (t.options.visible_columns.indexOf(k) < 0)) {
+			classes.push("hidden")
+		}
+		if (k in t.colprops) {
+			if (t.colprops[k]._class) {
+				classes = classes.concat(t.colprops[k]._class.split(" "))
+			}
+			if (t.colprops[k]._dataclass) {
+				classes = classes.concat(t.colprops[k]._dataclass.split(" "))
+			}
+		}
+		if (classes.length > 0) {
+			var cs = classes.join(' ').replace(/\s+$/, '')
+			cl = " class='"+cs+"'"
+		}
+		if (v == 'empty') {
+			var text = ""
+		} else {
+			var text = v
+		}
+		var s = $("<td cell='1' col='"+k+"' name='"+n+"' "+cl+">"+text+"</td>")
+		$.data(s[0], "v", v)
+		return s
+	}
+
+	t.data_to_lines = function (data) {
+		var lines = $("<span></span>")
+		for (var i=0; i<data.length; i++) {
+			var line = $("<tr class='tl h' spansum='"+data[i]['spansum']+"' cksum='"+data[i]['cksum']+"'></tr>")
+			var ckid = t.id + "_ckid_" + data[i]['cksum']
+			if (t.options.checkboxes) {
+				line.append("<td name='"+t.id+"_tools' class='tools'><input class='ocb' value='"+data[i]['checked']+"' type='checkbox' id='"+ckid+"' name='"+t.id+"_ck'><label for='"+ckid+"'></label></td>")
+			}
+			if (t.options.extrarow) {
+				var k = "extra"
+				var v = ""
+				var cell = t.cell_fmt(k, v)
+				line.append(cell)
+			}
+			var cols = t.get_ordered_visible_columns()
+			for (var j=0; j<cols.length; j++) {
+				var k = cols[j]
+				var v = data[i]['cells'][j]
+				var cell = t.cell_fmt(k, v)
+				line.append(cell)
+			}
+			lines.append(line)
+		}
+		return lines.children().detach()
+	}
+
+	t.refresh_callback = function(msg){
+		// don't install the new data if nothing has changed.
+		// avoids flickering and useless client load.
+		var md5sum = md5(msg)
+		if (md5sum == t.md5sum) {
+			var msg = ""
+			console.log("refresh: data unchanged,", md5sum)
+			t.need_refresh = false
+			t.unset_refresh_spin()
+			return
+		}
+		console.log("refresh: data changed,", md5sum)
+		t.md5sum = md5sum
+
+		// disable DOM insert event trigger for perf
+		t.need_refresh = false
+		t.scroll_disable_dom()
+		$("#table_"+t.id).children().children("tr.extraline").remove()
+
+		try {
+			var data = $.parseJSON(msg)
+			var pager = data['pager']
+			var lines = data['table_lines']
+		} catch(e) {
+			t.div.html(msg)
+			return
+		}
+
+		msg = t.data_to_lines(lines)
+
+		// detach old lines
+		var old_lines = $("<tbody></tbody>").append($("#table_"+t.id).children("tbody").children(".tl").detach())
+
+		// insert new lines
+		tbody = $("#table_"+t.id).children("tbody")
+		tbody.append(msg)
+
+		tbody.children(".tl").each(function(){
+			var new_line = $(this)
+			var cksum = new_line.attr("cksum")
+			var old_line = $("[cksum="+cksum+"]", old_lines)
+			if (old_line.length == 0) {
+				// this is a new line : highlight
+				new_line.addClass("tohighlight")
+				return
+			} else if (old_line.length > 1) {
+				//alert("The table key is not unique. Please contact the editor.")
+				return
+			}
+			for (i=0; i<old_line.children().length; i++) {
+				var new_cell = $(":nth-child("+i+")", new_line)
+				if (!new_cell.is(":visible")) {
+					continue
+				}
+				var old_cell = $(":nth-child("+i+")", old_line)
+				if ($.data(old_cell[0], "v") == $.data(new_cell[0], "v")) {
+					continue
+				}
+				new_cell.addClass("tohighlight")
+			}
+		})
+
+		old_lines.remove()
+
+		// clear mem refs
+		cksum = null
+		msg = null
+		new_cell = null
+		old_cell = null
+		new_line = null
+		old_line = null
+		old_lines = null
+
+		t.pager(pager)
+		t.add_filtered_to_visible_columns()
+		t.bind_checkboxes()
+		t.bind_filter_selector()
+		t.bind_action_menu()
+		t.restripe_lines()
+		t.hide_cells()
+		t.cell_decorator()
+		t.unset_refresh_spin()
+		t.relocate_extra_rows()
+		tbody.find("tr.tl").children("td.tohighlight").removeClass("tohighlight").effect("highlight", 1000)
+		t.set_scrollbars_position()
+		t.scroll_enable_dom()
+		t.scroll()
+
+		t.refresh_child_tables()
+		t.on_change()
+
+		if (t.need_refresh) {
+			t.e_tool_refresh.trigger("click")
+		}
+	}
+
+	t.refresh =function() {
+		if (t.div.length > 0 && !t.div.is(":visible")) {
+			return
+		}
+		if (t.e_tool_refresh && t.e_tool_refresh.length > 0 && t.e_tool_refresh_spin && t.e_tool_refresh_spin.hasClass(t.spin_class)) {
+			t.need_refresh = true
+			return
+		} else {
+			t.set_refresh_spin()
+		}
+
+		var data = t.prepare_request_data()
+
+		// refresh open tabs to overlay to preserve what was in use
+		if (t.div.find(".extraline:visible").children("td").children("table").length > 0) {
+			$("#overlay").empty().hide()
+			t.div.find(".extraline").children("td").children("table").parent().each(function() {
+				var e = $("<div></div>")
+				e.attr("id", $(this).attr("id"))
+				e.append($(this).children())
+				$("#overlay").append(e)
+			})
+			$("#overlay").hide().show("scale")
+		}
+
+		data.visible_columns = t.get_ordered_visible_columns().join(',')
+		data[t.id+"_page"] = t.page
+		$.ajax({
+			type: "POST",
+			url: t.options.ajax_url+"/data",
+			data: data,
+			context: document.body,
+			beforeSend: function(req){
+				t.div.find(".nodataline>td").text(i18n.t("api.loading"))
+			},
+			success: t.refresh_callback
+		})
+	}
+
+	t.link = function() {
+		if (t.options.caller) {
+			t.link_fn()
+		} else {
+			t.link_href()
+		}
+	}
+
+	t.link_fn = function() {
+		var options = t.options
+		options.volatile_filters = true
+
+		var current_fset = $("[name=fset_selector]").find("span").attr("fset_id")
+		options.fset_id = current_fset
+
+		t.e_header_filters.find("input[name=fi]").each(function() {
+			if ($(this).val().length==0) {
+				return
+			}
+			options.request_vars[$(this).attr('id')] = $(this).val()
+		})
+		osvc_create_link(t.options.caller, options)
+	}
+
+	t.link_href = function() {
+		var url = get_view_url()
+		url = url.replace(/#$/, "")+"?";
+		var args = "clear_filters=true&discard_filters=true"
+
+		// fset
+		var current_fset = $("[name=fset_selector]").find("span").attr("fset_id")
+		args += "&dbfilter="+current_fset
+
+		t.e_header_filters.find("input[name=fi]").each(function(){
+			if ($(this).val().length==0) {
+				return
+			}
+			args += '&'+$(this).attr('id')+"="+encodeURIComponent($(this).val())
+		})
+		osvc_create_link(url, args)
+	}
+
+	t.flash = function() {
+		if (!t.options.flash || t.options.flash.length == 0) {
+			return
+		}
+		var e = $("<span><span class='icon alert16 err fa-2x'></span><span data-i18n='table.tool_error'></span></span>")
+		e.i18n()
+		var p = $("<pre></pre>")
+		p.text(t.options.flash)
+		p.css({
+			"padding": "5px",
+			"padding-left": "20px",
+		})
+		e.append(p)
+		$(".flash").show("blind").html(e)
+	}
+
+
+	t.refresh_timer = null
+	t.init_colprops()
 	t.add_table()
 
 	// selectors cache
@@ -3033,8 +2901,6 @@ function table_init(opts) {
 	t.e_table = t.div.find("table#table_"+t.id).first()
 
 	osvc.tables[t.id] = t
-	t.div.find("select").parent().css("white-space", "nowrap")
-	t.div.find("select:visible").combobox()
 
 	t.add_overlay()
 	$.when(
@@ -3045,7 +2911,7 @@ function table_init(opts) {
 		t.add_column_headers_slim()
 		t.add_column_headers_input()
 		t.add_column_headers()
-		t.refresh_column_filters()
+		t.refresh_column_filters_in_place()
 		t.add_commonality()
 		t.add_column_selector()
 		t.add_csv()

@@ -1243,6 +1243,7 @@
     "DRP type": "Type de pra",
     "Last service update": "Mise à jour du service",
     "Status updated": "Mise à jour des états",
+    "Config updated": "Mise à jour de la conf",
     "Action errors": "Erreurs d'action",
     "Container name": "Nom du container",
     "Vcpus": "Vcpus",

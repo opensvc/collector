@@ -17,18 +17,10 @@ class table_packages(HtmlTable):
         self.colprops = nodes_colprops
         self.colprops.update(packages_colprops)
         self.force_cols = ['os_name']
-        self.colprops['nodename'].display = True
-        self.colprops['nodename'].t = self
-        self.extraline = True
-        self.checkboxes = True
-        self.checkbox_id_col = 'id'
-        self.checkbox_id_table = 'packages'
-        self.dbfilterable = True
-        self.dataable = True
         self.ajax_col_values = 'ajax_packages_col_values'
+        self.force_cols = ["id", "os_name"]
         self.span = ["id"]
         self.keys = ["id"]
-        self.events = ["packages_change"]
 
 @auth.requires_login()
 def ajax_packages_col_values():

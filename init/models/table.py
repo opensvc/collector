@@ -62,7 +62,6 @@ class HtmlTable(object):
         self.id = id
         self.innerhtml = innerhtml
         self.line_count = 0
-        self.max_live_perpage = 50
         self.id_perpage = '_'.join((self.id, 'perpage'))
         self.id_page = '_'.join((self.id, 'page'))
         self.upc_table = self.id
@@ -81,8 +80,6 @@ class HtmlTable(object):
         self.keys = []
 
         # to be set be instanciers
-        self.extrarow = False
-        self.extrarow_class = None
         self.pageable = True
         self.span = []
 
@@ -178,9 +175,7 @@ class HtmlTable(object):
                 spansum = None
 
             _l = []
-            if self.extrarow:
-                _l.append(self.format_extrarow(line))
-            for c in self.cols:
+            for c in request.vars.visible_columns.split(","):
                 v = self.colprops[c].get(line)
                 if type(v) == datetime.datetime:
                     try:
@@ -202,7 +197,6 @@ class HtmlTable(object):
                 if c in self.span:
                     spansum.update(str(v))
             l.append({
-              'id': self.line_id(line),
               'cksum': cksum.hexdigest() if cksum else '',
               'spansum': spansum.hexdigest() if spansum else '',
               'cells': _l,
@@ -210,12 +204,7 @@ class HtmlTable(object):
         return l
 
     def table_lines_data(self, n=0, html=False):
-        wsenabled = self.get_wsenabled()
-        if wsenabled == 'on' and self.perpage > self.max_live_perpage:
-            max_perpage = self.max_live_perpage
-        else:
-            max_perpage = 500
-        self.setup_pager(n, max_perpage=max_perpage)
+        self.setup_pager(n)
         fmt = "json"
         formatter = self._table_lines_data
         d = {
@@ -227,11 +216,6 @@ class HtmlTable(object):
 
     def filter_key(self, f):
         return '_'.join((self.id, 'f', f))
-
-    def line_id(self, o):
-        if o is None:
-            return ''
-        return '_'.join(map(lambda x: str(o[x]) if x in o else "", self.keys))
 
     def filter_parse(self, f):
         v = self._filter_parse(f)
@@ -247,22 +231,6 @@ class HtmlTable(object):
             v = request.vars[key]
             return v
         return ""
-
-    def format_extrarow(self, o):
-        return ""
-
-    def get_wsenabled(self):
-        if hasattr(self, "wsenabled"):
-            return self.wsenabled
-        q = db.user_prefs_columns.upc_table == self.upc_table
-        q &= db.user_prefs_columns.upc_field == "wsenabled"
-        q &= db.user_prefs_columns.upc_user_id == auth.user_id
-        row = db(q).select(db.user_prefs_columns.upc_visible, cacheable=False).first()
-        if row is None or row.upc_visible == 1:
-            self.wsenabled = 'on'
-        else:
-            self.wsenabled = ''
-        return self.wsenabled
 
     def csv_object_list(self):
         if self.csv_q is None:
@@ -344,16 +312,14 @@ class HtmlTable(object):
         top.sort(lambda x, y: cmp(x[2], y[2]), reverse=True)
         return json.dumps(top, use_decimal=True)
 
-    def get_visible_columns(self, fmt="dal", force=[], db=db):
+    def get_visible_columns(self, fmt="dal", db=db):
         visible_columns = request.vars.visible_columns.split(',')
-        visible_columns = list(set(visible_columns)|set(force)|set(self.force_cols))
         sorted_visible_columns = []
         for c in self.cols:
-            if c in visible_columns:
-                cp = self.colprops[c]
-                if cp.field not in db[cp.table]:
-                    continue
-                sorted_visible_columns.append(c)
+            cp = self.colprops[c]
+            if cp.field not in db[cp.table]:
+                continue
+            sorted_visible_columns.append(c)
         if fmt == "dal":
             for i, c in enumerate(sorted_visible_columns):
                 cp = self.colprops[c]

@@ -79,22 +79,14 @@ class table_resmon(HtmlTable):
                      table='resmon',
                      field='updated',
                     ),
+            'node_updated': HtmlTableColumn(
+                     table='nodes',
+                     field='updated',
+                    ),
         })
-        self.colprops['svcname'].t = self
-        self.colprops['nodename'].t = self
-        self.colprops['vmname'].t = self
-        self.colprops['res_status'].t = self
-        self.extraline = True
-        self.checkbox_id_col = 'id'
-        self.checkbox_id_table = 'resmon'
-        self.dbfilterable = True
         self.ajax_col_values = 'ajax_resmon_col_values'
         self.span = ['nodename', 'svcname']
-        self.keys = ['nodename', 'svcname', 'rid']
-        self.dataable = True
-        self.checkboxes = True
-        self.wsable = True
-        self.events = ["resmon_change"]
+        self.keys = ['nodename', 'svcname', 'vmname', 'rid']
 
 @auth.requires_login()
 def ajax_resmon_col_values():

@@ -38,16 +38,10 @@ class table_networks(HtmlTable):
         self.cols = networks_cols
         self.colprops = networks_colprops
 
-        self.extrarow = False
-        self.extraline = True
-        self.checkboxes = True
-        self.dbfilterable = False
-        self.dataable = True
-        self.commonalityable = True
         self.span = ["id"]
+        self.keys = ["id"]
         self.csv_limit = 30000
         self.force_cols = ['id']
-        self.events = ['networks_change']
 
         for c in self.cols:
             self.colprops[c].table = 'networks'
