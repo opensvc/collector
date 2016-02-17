@@ -3550,7 +3550,6 @@ function cell_decorator_appinfo_value(e) {
 function cell_decorator_saves_charts(e) {
   var v = $.data(e, "v")
   var data = $.parseJSON(v)
-  console.log(data)
   $(e).empty()
   if (data.chart_svc.data && data.chart_svc.data[0].length > 0) {
     var div = $("<div style='float:left;width:500px'></div>")

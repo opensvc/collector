@@ -2794,7 +2794,7 @@ function table_init(opts) {
 		}
 	}
 
-	t.refresh =function() {
+	t.refresh = function() {
 		if (t.div.length > 0 && !t.div.is(":visible")) {
 			return
 		}
