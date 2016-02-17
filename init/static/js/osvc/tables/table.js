@@ -45,25 +45,6 @@ function _invert_filter(e){
 	}
 }
 
-function toggle_vis(name){
-	_toggle_vis(name,'table-row')
-}
-
-function toggle_vis_block(name){
-	_toggle_vis(name,'block')
-}
-
-function _toggle_vis(name, mode){
-	$("[name="+name+"]").each(function(){
-		if ($(this).is(":visible")) {
-			$(this).hide()
-		} else {
-			$(this).show()
-			$(this).children("select").combobox()
-		}
-	})
-}
-
 function keep_inside(box){
 	box_off_l = $(box).offset().left
 	box_w = $(box).width()
