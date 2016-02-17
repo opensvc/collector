@@ -1296,6 +1296,7 @@ a.xinfo_shown span {
 }
 
 .action_menu {
+	position: fixed !important;
 	min-width: 25em;
 }
 .action_menu ul {
