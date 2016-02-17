@@ -110,7 +110,6 @@ class table_saves(HtmlTable):
             'save_date': HtmlTableColumn(
                      table='saves',
                      field='save_date',
-                     default_filter=">-1d",
                     ),
             'save_retention': HtmlTableColumn(
                      table='saves',

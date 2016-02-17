@@ -71,7 +71,6 @@ class table_actions(HtmlTable):
             'begin': HtmlTableColumn(
                 table = 'v_svcactions',
                 field='begin',
-                default_filter = '>-1d',
             ),
             'end': HtmlTableColumn(
                 table = 'v_svcactions',

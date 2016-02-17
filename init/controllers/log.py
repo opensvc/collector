@@ -24,7 +24,6 @@ class table_log(HtmlTable):
             'log_date': HtmlTableColumn(
                      table='log',
                      field='log_date',
-                     default_filter='>-1d',
                     ),
             'log_icons': HtmlTableColumn(
                      table='log',
