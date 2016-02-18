@@ -1516,7 +1516,13 @@ function table_action_menu(t, e){
 	var pos = get_pos(e)
 	t.div.append(am)
 	o.menu = $("#"+o.menu_id)
-	am.draggable()
+
+	var header = $("<h2 class='icon fa-bars'></h2>")
+	header.text(i18n.t("table.action_menu") + " : " + i18n.t("table.name."+t.options.name))
+	o.menu.append(header)
+	am.draggable({
+		"handle": ".fa-bars"
+	})
 	o.menu.css({"left": pos[0] - t.div.offset().left + "px", "top": pos[1] - t.div.offset().top + "px"})
 
 	// format the data as menu
