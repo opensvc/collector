@@ -2,1476 +2,1476 @@
 // install agent action menu entries definitions in the table object
 //
 function table_action_menu_init_data(t) {
-  t.action_menu_req_max = 1000
-  t.column_selectors = {
-    "svcname": "[col$=svcname],[col=svc_name]",
-    "nodename": "[col$=nodename],[col=mon_nodname][col=hostname]",
-    "rid": "[col=rid]",
-    "module": "[col=run_module]",
-    "vmname": "[col=vmname]",
-    "action": "[col=action]",
-    "id": "[col=id]",
-    "fset_id": "[col=fset_id]",
-    "encap_fset_id": "[col=encap_fset_id]",
-    "f_id": "[col=f_id]",
-    "email": "[col=email]",
-    "tag_id": "[col=tag_id]",
-    "ruleset_id": "[col=ruleset_id]",
-    "modset_id": "[col=modset_id]",
-    "slave": "[col=encap]",
-    "command": "[col=command]",
-    "chk_type": "[col=chk_type]",
-    "chk_instance": "[col=chk_instance]"
-  }
+	t.action_menu_req_max = 1000
+	t.column_selectors = {
+		"svcname": "[col$=svcname],[col=svc_name]",
+		"nodename": "[col$=nodename],[col=mon_nodname][col=hostname]",
+		"rid": "[col=rid]",
+		"module": "[col=run_module]",
+		"vmname": "[col=vmname]",
+		"action": "[col=action]",
+		"id": "[col=id]",
+		"fset_id": "[col=fset_id]",
+		"encap_fset_id": "[col=encap_fset_id]",
+		"f_id": "[col=f_id]",
+		"email": "[col=email]",
+		"tag_id": "[col=tag_id]",
+		"ruleset_id": "[col=ruleset_id]",
+		"modset_id": "[col=modset_id]",
+		"slave": "[col=encap]",
+		"command": "[col=command]",
+		"chk_type": "[col=chk_type]",
+		"chk_instance": "[col=chk_instance]"
+	}
 
-  t.action_menu_data = [
-    // section: tools
-    {
-      "title": "action_menu.tools",
-      "class": "icon spark16",
-      "children": [
-        {
-          "selector": [],
-          "title": "action_menu.free_uids_gids",
-          "class": "icon_fixed_width db16",
-          "foldable": true,
-          "cols": [],
-          "condition": "",
-          "children": [
-            {
-              "title": "action_menu.free_uids",
-              "class": "icon_fixed_width guy16",
-              "fn": "tool_free_uids",
-              "min": 0
-            },
-            {
-              "title": "action_menu.free_gids",
-              "class": "icon_fixed_width guys16",
-              "fn": "tool_free_gids",
-              "min": 0
-            }
-          ]
-        },
-        {
-          "selector": ["clicked", "checked", "all"],
-          "title": "action_menu.on_nodes",
-          "class": "icon_fixed_width node16",
-          "foldable": true,
-          "cols": ["nodename"],
-          "condition": "nodename",
-          "children": [
-            {
-              "title": "action_menu.node_diff",
-              "class": "icon_fixed_width common16",
-              "fn": "tool_nodediff",
-              "min": 2,
-              "max": 10
-            },
-            {
-              "title": "action_menu.node_sysrep",
-              "class": "icon_fixed_width log16",
-              "fn": "tool_nodesysrep",
-              "min": 1,
-              "max": 10
-            },
-            {
-              "title": "action_menu.node_sysrep_diff",
-              "class": "icon_fixed_width common16",
-              "fn": "tool_nodesysrepdiff",
-              "min": 2,
-              "max": 10
-            },
-            {
-              "title": "action_menu.node_san_topo",
-              "class": "icon_fixed_width hd16",
-              "fn": "tool_nodesantopo",
-              "min": 1,
-              "max": 50
-            },
-            {
-              "title": "action_menu.node_perf",
-              "class": "icon_fixed_width spark16",
-              "fn": "tool_grpprf",
-              "min": 1,
-              "max": 20
-            },
-            {
-              "title": "action_menu.obsolescence",
-              "class": "icon_fixed_width spark16",
-              "fn": "tool_obsolescence",
-              "min": 2
-            }
-          ]
-        },
-        {
-          "selector": ["checked"],
-          "title": "action_menu.on_services",
-          "class": "icon_fixed_width svc",
-          "foldable": true,
-          "cols": ["svcname"],
-          "condition": "svcname",
-          "children": [
-            {
-              "title": "action_menu.svc_diff",
-              "class": "icon_fixed_width common16",
-              "fn": "tool_svcdiff",
-              "min": 2
-            },
-            {
-              "title": "action_menu.services_status_log",
-              "class": "icon_fixed_width avail16",
-              "fn": "tool_services_status_log",
-              "min": 1
-            }
-          ]
-        },
-        {
-          "selector": ["clicked", "checked"],
-          "title": "action_menu.on_nodes_and_services",
-          "class": "icon_fixed_width svc",
-          "foldable": true,
-          "cols": ["svcname", "nodename"],
-          "condition": "svcname,nodename",
-          "children": [
-            {
-              "title": "action_menu.topology",
-              "class": "icon_fixed_width dia16",
-              "fn": "tool_topo",
-              "min": 1
-            }
-          ]
-        }
-      ]
-    },
-    // section: data actions
-    {
-      "title": "action_menu.data_actions",
-      "class": "icon hd16",
-      "children": [
-        {
-          "selector": [],
-          "title": "action_menu.add",
-          "class": "icon_fixed_width add16",
-          "foldable": true,
-          "cols": [],
-          "condition": "",
-          "children": [
-            {
-              "title": "action_menu.metric",
-              "class": "icon_fixed_width spark16",
-              "fn": "data_action_add_metric",
-              "privileges": ["Manager", "ReportsManager"],
-              "min": 0
-            },
-            {
-              "title": "action_menu.chart",
-              "class": "icon_fixed_width spark16",
-              "fn": "data_action_add_chart",
-              "privileges": ["Manager", "ReportsManager"],
-              "min": 0
-            },
-            {
-              "title": "action_menu.report",
-              "class": "icon_fixed_width spark16",
-              "fn": "data_action_add_report",
-              "privileges": ["Manager", "ReportsManager"],
-              "min": 0
-            },
-            {
-              "title": "action_menu.prov_template",
-              "class": "icon_fixed_width prov",
-              "fn": "data_action_add_prov_template",
-              "privileges": ["Manager", "ProvisioningManager"],
-              "min": 0
-            },
-            {
-              "title": "action_menu.form",
-              "class": "icon_fixed_width wf16",
-              "fn": "data_action_add_form",
-              "privileges": ["Manager", "FormsManager"],
-              "min": 0
-            },
-            {
-              "title": "action_menu.quota",
-              "class": "icon_fixed_width quota16",
-              "fn": "data_action_add_quota",
-              "privileges": ["Manager", "StorageManager"],
-              "min": 0
-            },
-            {
-              "title": "action_menu.app",
-              "class": "icon_fixed_width svc",
-              "fn": "data_action_add_app",
-              "privileges": ["Manager", "AppManager"],
-              "min": 0
-            },
-            {
-              "title": "action_menu.dns_domain",
-              "class": "icon_fixed_width dns16",
-              "fn": "data_action_add_dns_domain",
-              "privileges": ["Manager", "DnsManager"],
-              "min": 0
-            },
-            {
-              "title": "action_menu.dns_record",
-              "class": "icon_fixed_width dns16",
-              "fn": "data_action_add_dns_record",
-              "privileges": ["Manager", "DnsManager"],
-              "min": 0
-            },
-            {
-              "title": "action_menu.network",
-              "class": "icon_fixed_width net16",
-              "fn": "data_action_add_network",
-              "min": 0
-            },
-            {
-              "title": "action_menu.node",
-              "class": "icon_fixed_width node16",
-              "fn": "data_action_add_node",
-              "privileges": ["Manager", "NodeManager"],
-              "min": 0
-            },
-            {
-              "title": "action_menu.contextual_thresholds",
-              "class": "icon_fixed_width check16",
-              "fn": "data_action_add_contextual_thresholds",
-              "privileges": ["Manager", "CheckManager"],
-              "min": 0
-            },
-            {
-              "title": "action_menu.tag",
-              "class": "icon_fixed_width tag16",
-              "fn": "data_action_add_tag",
-              "privileges": ["Manager", "TagManager"],
-              "min": 0
-            },
-            {
-              "title": "action_menu.user",
-              "class": "icon_fixed_width guy16",
-              "fn": "data_action_add_user",
-              "privileges": ["Manager", "UserManager"],
-              "min": 0
-            },
-            {
-              "title": "action_menu.group",
-              "class": "icon_fixed_width guys16",
-              "fn": "data_action_add_group",
-              "privileges": ["Manager", "UserManager"],
-              "min": 0
-            },
-            {
-              "title": "action_menu.filterset",
-              "class": "icon_fixed_width filter16",
-              "fn": "data_action_add_filterset",
-              "privileges": ["Manager", "CompManager"],
-              "min": 0
-            }
-          ]
-        },
-        {
-          "selector": [],
-          "title": "action_menu.del",
-          "class": "icon_fixed_width del16",
-          "foldable": true,
-          "cols": [],
-          "condition": "",
-          "children": [
-            {
-              "title": "action_menu.contextual_thresholds",
-              "class": "icon_fixed_width check16",
-              "fn": "data_action_delete_contextual_thresholds",
-              "privileges": ["Manager", "CheckManager"],
-              "min": 0
-            },
-            {
-              "title": "action_menu.group",
-              "class": "icon_fixed_width guys16",
-              "fn": "data_action_del_groups",
-              "privileges": ["Manager", "UserManager"],
-              "min": 0
-            }
-          ]
-        },
-        {
-          "selector": [],
-          "title": "action_menu.import",
-          "class": "icon_fixed_width fa-upload",
-          "foldable": true,
-          "cols": [],
-          "condition": "",
-          "children": [
-            {
-              "title": "action_menu.report",
-              "class": "icon_fixed_width spark16",
-              "fn": "data_action_import_report",
-              "privileges": ["Manager", "ReportsManager"],
-              "min": 0
-            }
-          ]
-        },
-        {
-          "selector": [],
-          "title": "action_menu.refresh",
-          "class": "icon_fixed_width refresh16",
-          "foldable": true,
-          "cols": [],
-          "condition": "",
-          "children": [
-            {
-              "title": "action_menu.obsolescence_products",
-              "class": "icon_fixed_width obs16",
-              "fn": "data_action_obs_refresh",
-              "privileges": ["Manager", "ObsManager"],
-              "min": 0
-            }
-          ]
-        },
-        {
-          "selector": ["clicked", "checked", "all"],
-          "foldable": true,
-          'title': 'action_menu.on_filters',
-          "class": "icon_fixed_width filter16",
-          "table": ["filters"],
-          "cols": ["id"],
-          "condition": "id",
-          "children": [
-            {
-              "title": "action_menu.del",
-              "class": "icon_fixed_width del16",
-              "fn": "data_action_del_filters",
-              "privileges": ["Manager", "CompManager"],
-              "min": 1
-            }
-          ]
-        },
-        {
-          "selector": ["clicked", "checked", "all"],
-          "foldable": true,
-          'title': 'action_menu.on_filtersets',
-          "class": "icon_fixed_width filter16",
-          "table": ["filtersets"],
-          "cols": ["fset_id"],
-          "condition": "fset_id",
-          "children": [
-            {
-              "title": "action_menu.del",
-              "class": "icon_fixed_width del16",
-              "fn": "data_action_del_filtersets",
-              "privileges": ["Manager", "CompManager"],
-              "min": 1
-            },
-            {
-              "title": "action_menu.attach_filters",
-              "class": "icon_fixed_width attach16",
-              "fn": "data_action_attach_filters",
-              "privileges": ["Manager", "CompManager"],
-              "min": 1
-            },
-            {
-              "title": "action_menu.attach_filtersets",
-              "class": "icon_fixed_width attach16",
-              "fn": "data_action_attach_filtersets",
-              "privileges": ["Manager", "CompManager"],
-              "min": 1
-            }
-          ]
-        },
-        {
-          "selector": ["clicked", "checked", "all"],
-          "foldable": true,
-          'title': 'action_menu.on_encap_filters',
-          "class": "icon_fixed_width filter16",
-          "table": ["filtersets"],
-          "cols": ["fset_id", "f_id"],
-          "condition": "fset_id+f_id",
-          "children": [
-            {
-              "title": "action_menu.detach_filters",
-              "class": "icon_fixed_width detach16",
-              "fn": "data_action_detach_filters",
-              "privileges": ["Manager", "CompManager"],
-              "min": 1
-            },
-            {
-              "title": "action_menu.set_operator",
-              "class": "icon_fixed_width edit16",
-              "fn": "data_action_filters_set_operator",
-              "privileges": ["Manager", "CompManager"],
-              "min": 1
-            },
-            {
-              "title": "action_menu.set_order",
-              "class": "icon_fixed_width edit16",
-              "fn": "data_action_filters_set_order",
-              "privileges": ["Manager", "CompManager"],
-              "min": 1
-            }
-          ]
-        },
-        {
-          "selector": ["clicked", "checked", "all"],
-          "foldable": true,
-          'title': 'action_menu.on_encap_filtersets',
-          "class": "icon_fixed_width filter16",
-          "table": ["filtersets"],
-          "cols": ["fset_id", "encap_fset_id"],
-          "condition": "fset_id+encap_fset_id",
-          "children": [
-            {
-              "title": "action_menu.detach_filtersets",
-              "class": "icon_fixed_width detach16",
-              "fn": "data_action_detach_filtersets",
-              "privileges": ["Manager", "CompManager"],
-              "min": 1
-            },
-            {
-              "title": "action_menu.set_operator",
-              "class": "icon_fixed_width edit16",
-              "fn": "data_action_filtersets_set_operator",
-              "privileges": ["Manager", "CompManager"],
-              "min": 1
-            },
-            {
-              "title": "action_menu.set_order",
-              "class": "icon_fixed_width edit16",
-              "fn": "data_action_filtersets_set_order",
-              "privileges": ["Manager", "CompManager"],
-              "min": 1
-            }
-          ]
-        },
-        {
-          "selector": ["clicked", "checked", "all"],
-          "foldable": true,
-          'title': 'action_menu.on_metrics',
-          "class": "icon_fixed_width spark16",
-          "table": ["metrics"],
-          "cols": ["id"],
-          "condition": "id",
-          "children": [
-            {
-              "title": "action_menu.del",
-              "class": "icon_fixed_width del16",
-              "fn": "data_action_del_metrics",
-              "privileges": ["Manager", "ReportsManager"],
-              "min": 1
-            }
-          ]
-        },
-        {
-          "selector": ["clicked", "checked", "all"],
-          "foldable": true,
-          'title': 'action_menu.on_charts',
-          "class": "icon_fixed_width spark16",
-          "table": ["charts"],
-          "cols": ["id"],
-          "condition": "id",
-          "children": [
-            {
-              "title": "action_menu.del",
-              "class": "icon_fixed_width del16",
-              "fn": "data_action_del_charts",
-              "privileges": ["Manager", "ReportsManager"],
-              "min": 1
-            }
-          ]
-        },
-        {
-          "selector": ["clicked", "checked", "all"],
-          "foldable": true,
-          'title': 'action_menu.on_reports',
-          "class": "icon_fixed_width spark16",
-          "table": ["reports"],
-          "cols": ["id"],
-          "condition": "id",
-          "children": [
-            {
-              "title": "action_menu.del",
-              "class": "icon_fixed_width del16",
-              "fn": "data_action_del_reports",
-              "privileges": ["Manager", "ReportsManager"],
-              "min": 1
-            }
-          ]
-        },
-        {
-          "selector": ["clicked", "checked", "all"],
-          "foldable": true,
-          'title': 'action_menu.on_prov_templates',
-          "class": "icon_fixed_width prov",
-          "table": ["templates"],
-          "cols": ["id"],
-          "condition": "id",
-          "children": [
-            {
-              "title": "action_menu.del",
-              "class": "icon_fixed_width del16",
-              "fn": "data_action_del_prov_templates",
-              "privileges": ["Manager", "ProvisioningManager"],
-              "min": 1
-            },
-            {
-              "title": "action_menu.add_responsible",
-              "class": "icon_fixed_width add16",
-              "fn": "data_action_add_prov_templates_responsible",
-              "privileges": ["Manager", "ProvisioningManager"],
-              "min": 1
-            },
-            {
-              "title": "action_menu.del_responsible",
-              "class": "icon_fixed_width del16",
-              "fn": "data_action_del_prov_templates_responsible",
-              "privileges": ["Manager", "ProvisioningManager"],
-              "min": 1
-            }
-          ]
-        },
-        {
-          "selector": ["clicked", "checked", "all"],
-          "foldable": true,
-          'title': 'action_menu.on_obsolescence_settings',
-          "class": "icon_fixed_width check16",
-          "table": ["obsolescence"],
-          "cols": ["id"],
-          "condition": "id",
-          "children": [
-            {
-              "title": "action_menu.set_warn_date",
-              "class": "icon_fixed_width edit16",
-              "fn": "data_action_obs_set_warn_date",
-              "privileges": ["Manager", "ObsManager"],
-              "min": 1
-            },
-            {
-              "title": "action_menu.set_alert_date",
-              "class": "icon_fixed_width edit16",
-              "fn": "data_action_obs_set_alert_date",
-              "privileges": ["Manager", "ObsManager"],
-              "min": 1
-            },
-            {
-              "title": "action_menu.del",
-              "class": "icon_fixed_width del16",
-              "fn": "data_action_obs_del",
-              "privileges": ["Manager", "ObsManager"],
-              "min": 1
-            }
-          ]
-        },
-        {
-          "selector": ["clicked", "checked", "all"],
-          "foldable": true,
-          'title': 'action_menu.on_quotas',
-          "class": "icon_fixed_width quota16",
-          "table": ["quota"],
-          "cols": ["id"],
-          "condition": "id",
-          "children": [
-            {
-              "title": "action_menu.del",
-              "class": "icon_fixed_width del16",
-              "fn": "data_action_del_quotas",
-              "privileges": ["Manager", "StorageManager"],
-              "min": 1
-            }
-          ]
-        },
-        {
-          "selector": ["clicked", "checked", "all"],
-          "foldable": true,
-          'title': 'action_menu.on_apps',
-          "class": "icon_fixed_width svc",
-          "table": ["apps"],
-          "cols": ["id"],
-          "condition": "id",
-          "children": [
-            {
-              "title": "action_menu.del",
-              "class": "icon_fixed_width del16",
-              "fn": "data_action_del_apps",
-              "privileges": ["Manager", "AppManager"],
-              "min": 1
-            },
-            {
-              "title": "action_menu.add_responsible",
-              "class": "icon_fixed_width add16",
-              "fn": "data_action_add_app_responsible",
-              "privileges": ["Manager", "AppManager"],
-              "min": 1
-            },
-            {
-              "title": "action_menu.del_responsible",
-              "class": "icon_fixed_width del16",
-              "fn": "data_action_del_app_responsible",
-              "privileges": ["Manager", "AppManager"],
-              "min": 1
-            }
-          ]
-        },
-        {
-          "selector": ["clicked", "checked", "all"],
-          "title": "action_menu.on_compliance_status",
-          "class": "icon_fixed_width comp16",
-          "foldable": true,
-          "cols": ["id", "module"],
-          "condition": "id+module",
-          "children": [
-            {
-              "title": "action_menu.delete",
-              "class": "icon_fixed_width del16",
-              "fn": "data_action_delete_compliance_status",
-              "min": 1
-            }
-          ]
-        },
-        {
-          "selector": ["clicked", "checked", "all"],
-          "title": "action_menu.on_node_ips",
-          "class": "icon_fixed_width net16",
-          "table": ["nodenetworks"],
-          "foldable": true,
-          "cols": ["id"],
-          "condition": "id",
-          "children": [
-            {
-              "title": "action_menu.delete",
-              "class": "icon_fixed_width del16",
-              "fn": "data_action_delete_node_ips",
-              "min": 1
-            }
-          ]
-        },
-        {
-          "selector": ["clicked", "checked", "all"],
-          "foldable": true,
-          'title': 'action_menu.on_dns_domains',
-          "class": "icon_fixed_width dns16",
-          "table": ["dns_domains"],
-          "cols": ["id"],
-          "condition": "id",
-          "children": [
-            {
-              "title": "action_menu.del",
-              "class": "icon_fixed_width del16",
-              "fn": "data_action_del_dns_domains",
-              "privileges": ["Manager", "DnsManager"],
-              "min": 1
-            },
-            {
-              "title": "action_menu.sync_dns_domains",
-              "class": "icon_fixed_width net16",
-              "fn": "data_action_sync_dns_domains",
-              "privileges": ["Manager", "DnsManager"],
-              "min": 1
-            },
-          ]
-        },
-        {
-          "selector": ["clicked", "checked", "all"],
-          "foldable": true,
-          'title': 'action_menu.on_dns_records',
-          "class": "icon_fixed_width dns16",
-          "table": ["dns_records"],
-          "cols": ["id"],
-          "condition": "id",
-          "children": [
-            {
-              "title": "action_menu.del",
-              "class": "icon_fixed_width del16",
-              "fn": "data_action_del_dns_records",
-              "privileges": ["Manager", "DnsManager"],
-              "min": 1
-            }
-          ]
-        },
-        {
-          "selector": ["clicked", "checked", "all"],
-          "title": "action_menu.on_networks",
-          "class": "icon_fixed_width net16",
-          "table": ["networks"],
-          "foldable": true,
-          "cols": ["id"],
-          "condition": "id",
-          "children": [
-            {
-              "title": "action_menu.delete",
-              "class": "icon_fixed_width del16",
-              "fn": "data_action_delete_networks",
-              "min": 1
-            }
-          ]
-        },
-        {
-          "selector": ["clicked", "checked", "all"],
-          "title": "action_menu.on_forms",
-          "class": "icon_fixed_width wf16",
-          "table": ["forms"],
-          "foldable": true,
-          "cols": ["id"],
-          "condition": "id",
-          "children": [
-            {
-              "title": "action_menu.del_form",
-              "class": "icon_fixed_width del16",
-              "fn": "data_action_del_form",
-              "privileges": ["Manager", "FormsManager"],
-              "min": 1
-            },
-            {
-              "title": "action_menu.add_publication",
-              "class": "icon_fixed_width add16",
-              "fn": "data_action_add_form_publication",
-              "privileges": ["Manager", "FormsManager"],
-              "min": 1
-            },
-            {
-              "title": "action_menu.del_publication",
-              "class": "icon_fixed_width del16",
-              "fn": "data_action_del_form_publication",
-              "privileges": ["Manager", "FormsManager"],
-              "min": 1
-            },
-            {
-              "title": "action_menu.add_responsible",
-              "class": "icon_fixed_width add16",
-              "fn": "data_action_add_form_responsible",
-              "privileges": ["Manager", "FormsManager"],
-              "min": 1
-            },
-            {
-              "title": "action_menu.del_responsible",
-              "class": "icon_fixed_width del16",
-              "fn": "data_action_del_form_responsible",
-              "privileges": ["Manager", "FormsManager"],
-              "min": 1
-            }
-          ]
-        },
-        {
-          "selector": ["clicked", "checked", "all"],
-          "foldable": true,
-          'title': 'action_menu.on_nodes',
-          "class": "icon_fixed_width node16",
-          "cols": ["nodename"],
-          "condition": "nodename",
-          "children": [
-            {
-              "title": "action_menu.delete",
-              "class": "icon_fixed_width del16",
-              "fn": "data_action_delete_nodes",
-              "privileges": ["Manager", "NodeManager"],
-              "min": 1
-            },
-            {
-              "title": "action_menu.tag_attach",
-              "class": "icon_fixed_width tag16",
-              "fn": "data_action_nodes_tags_attach",
-              "privileges": ["Manager", "NodeManager"],
-              "min": 1
-            },
-            {
-              "title": "action_menu.modset_attach",
-              "class": "icon_fixed_width modset16",
-              "fn": "data_action_nodes_modsets_attach",
-              "privileges": ["Manager", "NodeManager"],
-              "min": 1
-            },
-            {
-              "title": "action_menu.modset_detach",
-              "class": "icon_fixed_width modset16",
-              "fn": "data_action_nodes_modsets_detach",
-              "privileges": ["Manager", "NodeManager"],
-              "min": 1
-            },
-            {
-              "title": "action_menu.ruleset_attach",
-              "class": "icon_fixed_width comp16",
-              "fn": "data_action_nodes_rulesets_attach",
-              "privileges": ["Manager", "NodeManager"],
-              "min": 1
-            },
-            {
-              "title": "action_menu.ruleset_detach",
-              "class": "icon_fixed_width comp16",
-              "fn": "data_action_nodes_rulesets_detach",
-              "privileges": ["Manager", "NodeManager"],
-              "min": 1
-            }
-          ]
-        },
-        {
-          "selector": ["clicked", "checked", "all"],
-          "foldable": true,
-          'title': 'action_menu.on_check_instances',
-          "class": "icon_fixed_width check16",
-          "cols": ["nodename", "svcname", "chk_type", "chk_instance"],
-          "condition": "nodename+chk_type+chk_instance,nodename+svcname+chk_type+chk_instance",
-          "children": [
-            {
-              "title": "action_menu.delete",
-              "class": "icon_fixed_width del16",
-              "fn": "data_action_chk_instance_delete",
-              "privileges": ["Manager", "CheckManager"],
-              "min": 1
-            },
-            {
-              "title": "action_menu.reset_thresholds",
-              "class": "icon_fixed_width fa-undo",
-              "fn": "data_action_chk_instance_reset_thresholds",
-              "privileges": ["Manager", "CheckManager"],
-              "min": 1
-            },
-            {
-              "title": "action_menu.set_low_threshold",
-              "class": "icon_fixed_width fa-angle-down",
-              "fn": "data_action_chk_instance_set_low_threshold",
-              "privileges": ["Manager", "CheckManager"],
-              "min": 1
-            },
-            {
-              "title": "action_menu.set_high_threshold",
-              "class": "icon_fixed_width fa-angle-up",
-              "fn": "data_action_chk_instance_set_high_threshold",
-              "privileges": ["Manager", "CheckManager"],
-              "min": 1
-            },
-          ]
-        },
-        {
-          "selector": ["clicked", "checked", "all"],
-          "foldable": true,
-          'title': 'action_menu.on_nodes_modulesets',
-          "class": "icon_fixed_width modset16",
-          "cols": ["nodename", "modset_id"],
-          "condition": "nodename+modset_id",
-          "children": [
-            {
-              "title": "action_menu.modset_detach",
-              "class": "icon_fixed_width del16",
-              "fn": "data_action_nodes_modsets_detach_no_selector",
-              "privileges": ["Manager", "NodeManager"],
-              "min": 1
-            },
-          ]
-        },
-        {
-          "selector": ["clicked", "checked", "all"],
-          "foldable": true,
-          'title': 'action_menu.on_queued_actions',
-          "class": "icon_fixed_width actions",
-          "cols": ["id", "command"],
-          "condition": "id+command",
-          "children": [
-            {
-              "title": "action_menu.cancel",
-              "class": "icon_fixed_width del16",
-              "fn": "data_action_action_queue_cancel",
-              "privileges": ["Manager", "NodeExec", "CompExec"],
-              "min": 1
-            },
-            {
-              "title": "action_menu.redo",
-              "class": "icon_fixed_width refresh16",
-              "fn": "data_action_action_queue_redo",
-              "privileges": ["Manager", "NodeExec", "CompExec"],
-              "min": 1
-            },
-          ]
-        },
-        {
-          "selector": ["clicked", "checked", "all"],
-          "foldable": true,
-          'title': 'action_menu.on_nodes_rulesets',
-          "class": "icon_fixed_width comp16",
-          "cols": ["nodename", "ruleset_id"],
-          "condition": "nodename+ruleset_id",
-          "children": [
-            {
-              "title": "action_menu.ruleset_detach",
-              "class": "icon_fixed_width del16",
-              "fn": "data_action_nodes_rulesets_detach_no_selector",
-              "privileges": ["Manager", "NodeManager"],
-              "min": 1
-            },
-          ]
-        },
-        {
-          "selector": ["clicked", "checked", "all"],
-          "foldable": true,
-          'title': 'action_menu.on_nodes_tags',
-          "class": "icon_fixed_width tag16",
-          "cols": ["nodename", "tag_id"],
-          "condition": "nodename+tag_id",
-          "children": [
-            {
-              "title": "action_menu.nodes_tags_detach",
-              "class": "icon_fixed_width del16",
-              "fn": "data_action_nodes_tags_detach",
-              "privileges": ["Manager", "NodeManager"],
-              "min": 1
-            },
-          ]
-        },
-        {
-          "selector": ["clicked", "checked", "all"],
-          "foldable": true,
-          'title': 'action_menu.on_services',
-          "class": "icon_fixed_width svc",
-          "cols": ["svcname", "slave"],
-          "condition": "svcname+slave,svcname",
-          "children": [
-            {
-              "title": "action_menu.delete",
-              "class": "icon_fixed_width del16",
-              "fn": "data_action_delete_svcs",
-              "min": 1
-            },
-            {
-              "title": "action_menu.tag_attach",
-              "class": "icon_fixed_width tag16",
-              "fn": "data_action_services_tags_attach",
-              "min": 1
-            },
-            {
-              "title": "action_menu.modset_attach",
-              "class": "icon_fixed_width modset16",
-              "fn": "data_action_services_modsets_attach",
-              "min": 1
-            },
-            {
-              "title": "action_menu.modset_detach",
-              "class": "icon_fixed_width modset16",
-              "fn": "data_action_services_modsets_detach",
-              "min": 1
-            },
-            {
-              "title": "action_menu.ruleset_attach",
-              "class": "icon_fixed_width comp16",
-              "fn": "data_action_services_rulesets_attach",
-              "min": 1
-            },
-            {
-              "title": "action_menu.ruleset_detach",
-              "class": "icon_fixed_width comp16",
-              "fn": "data_action_services_rulesets_detach",
-              "min": 1
-            }
-          ]
-        },
-        {
-          "selector": ["clicked", "checked", "all"],
-          "foldable": true,
-          "table": ["service_instances"],
-          'title': 'action_menu.on_services_instances',
-          "class": "icon_fixed_width svc",
-          "cols": ["id"],
-          "condition": "id",
-          "children": [
-            {
-              "title": "action_menu.delete",
-              "class": "icon_fixed_width del16",
-              "fn": "data_action_delete_svc_instances",
-              "min": 1
-            }
-          ]
-        },
-        {
-          "selector": ["clicked", "checked", "all"],
-          "foldable": true,
-          'title': 'action_menu.on_service_actions',
-          "class": "icon_fixed_width actions",
-          "cols": ["id", "action", "ack"],
-          "condition": "id+action",
-          "children": [
-            {
-              "title": "action_menu.ack",
-              "class": "icon_fixed_width check16",
-              "fn": "data_action_ack_actions",
-              "min": 1
-            }
-          ]
-        },
-        {
-          "selector": ["clicked", "checked", "all"],
-          "foldable": true,
-          'title': 'action_menu.on_services_tags',
-          "class": "icon_fixed_width tag16",
-          "cols": ["svcname", "tag_id"],
-          "condition": "svcname+tag_id",
-          "children": [
-            {
-              "title": "action_menu.services_tags_detach",
-              "class": "icon_fixed_width del16",
-              "fn": "data_action_services_tags_detach",
-              "min": 1
-            },
-          ]
-        },
-        {
-          "selector": ["clicked", "checked", "all"],
-          "foldable": true,
-          'title': 'action_menu.on_services_modulesets',
-          "class": "icon_fixed_width modset16",
-          "cols": ["svcname", "modset_id", "slave"],
-          "condition": "svcname+modset_id+slave",
-          "children": [
-            {
-              "title": "action_menu.modset_detach",
-              "class": "icon_fixed_width del16",
-              "fn": "data_action_services_modsets_detach_no_selector",
-              "min": 1
-            },
-          ]
-        },
-        {
-          "selector": ["clicked", "checked", "all"],
-          "foldable": true,
-          'title': 'action_menu.on_services_rulesets',
-          "class": "icon_fixed_width comp16",
-          "cols": ["svcname", "ruleset_id", "slave"],
-          "condition": "svcname+ruleset_id+slave",
-          "children": [
-            {
-              "title": "action_menu.ruleset_detach",
-              "class": "icon_fixed_width del16",
-              "fn": "data_action_services_rulesets_detach_no_selector",
-              "min": 1
-            },
-          ]
-        },
-        {
-          "selector": ["clicked", "checked", "all"],
-          "foldable": true,
-          'title': 'action_menu.on_tags',
-          "class": "icon_fixed_width tag16",
-          "table": ["tags"],
-          "cols": ["id"],
-          "condition": "id",
-          "children": [
-            {
-              "title": "action_menu.del",
-              "class": "icon_fixed_width del16",
-              "fn": "data_action_del_tag",
-              "privileges": ["Manager", "TagManager"],
-              "min": 1
-            }
-          ]
-        },
-        {
-          "selector": ["clicked", "checked", "all"],
-          "title": "action_menu.on_users",
-          "class": "icon_fixed_width guy16",
-          "foldable": true,
-          "cols": ["id", "email"],
-          "condition": "id+email",
-          "children": [
-            {
-              "title": "action_menu.del",
-              "class": "icon_fixed_width del16",
-              "fn": "data_action_del_user",
-              "privileges": ["Manager", "UserManager"],
-              "min": 1
-            },
-            {
-              "title": "action_menu.attach_groups",
-              "class": "icon_fixed_width attach16",
-              "fn": "data_action_user_attach_groups",
-              "privileges": ["Manager", "UserManager"],
-              "min": 1
-            },
-            {
-              "title": "action_menu.detach_groups",
-              "class": "icon_fixed_width detach16",
-              "fn": "data_action_user_detach_groups",
-              "privileges": ["Manager", "UserManager"],
-              "min": 1
-            },
-            {
-              "title": "action_menu.attach_privileges",
-              "class": "icon_fixed_width attach16",
-              "fn": "data_action_user_attach_privileges",
-              "privileges": ["Manager", "UserManager"],
-              "min": 1
-            },
-            {
-              "title": "action_menu.detach_privileges",
-              "class": "icon_fixed_width detach16",
-              "fn": "data_action_user_detach_privileges",
-              "privileges": ["Manager", "UserManager"],
-              "min": 1
-            },
-            {
-              "title": "action_menu.lock_filterset",
-              "class": "icon_fixed_width fa-lock",
-              "fn": "data_action_user_lock_filterset",
-              "privileges": ["Manager", "UserManager"],
-              "min": 1
-            },
-            {
-              "title": "action_menu.unlock_filterset",
-              "class": "icon_fixed_width fa-unlock",
-              "fn": "data_action_user_unlock_filterset",
-              "privileges": ["Manager", "UserManager"],
-              "min": 1
-            },
-            {
-              "title": "action_menu.set_filterset",
-              "class": "icon_fixed_width filter16",
-              "fn": "data_action_user_set_filterset",
-              "privileges": ["Manager", "UserManager"],
-              "min": 1
-            },
-            {
-              "title": "action_menu.set_primary_group",
-              "class": "icon_fixed_width guys16",
-              "fn": "data_action_user_set_primary_group",
-              "privileges": ["Manager", "UserManager"],
-              "min": 1
-            }
-          ]
-        }
-      ]
-    },
-    // section: agent actions
-    {
-      "title": "action_menu.agent_actions",
-      "class": "icon action16",
-      "children": [
-        {
-          "selector": ["clicked", "checked", "all"],
-          "foldable": true,
-          'title': 'action_menu.on_nodes',
-          "class": "icon_fixed_width node16",
-          "cols": ["nodename"],
-          "condition": "nodename",
-          "children": [
-            {
-              'title': 'Update node information',
-              'class': 'icon_fixed_width node16',
-              "privileges": ["Manager", "NodeManager", "NodeExec"],
-              "min": 1,
-              'action': 'pushasset'
-            },
-            {
-              'title': 'Update disks information',
-              'class': 'icon_fixed_width hd16',
-              "privileges": ["Manager", "NodeManager", "NodeExec"],
-              "min": 1,
-              'action': 'pushdisks'
-            },
-            {
-              'title': 'Update app information',
-              'class': 'icon_fixed_width svc',
-              "privileges": ["Manager", "NodeManager", "NodeExec"],
-              "min": 1,
-              'action': 'push_appinfo'
-            },
-            {
-              'title': 'Update services information',
-              'class': 'icon_fixed_width svc',
-              "privileges": ["Manager", "NodeManager", "NodeExec"],
-              "min": 1,
-              'action': 'pushservices'
-            },
-            {
-              'title': 'Update installed packages information',
-              'class': 'icon_fixed_width pkg16',
-              "privileges": ["Manager", "NodeManager", "NodeExec"],
-              "min": 1,
-              'action': 'pushpkg'
-            },
-            {
-              'title': 'Update installed patches information',
-              'class': 'icon_fixed_width pkg16',
-              "privileges": ["Manager", "NodeManager", "NodeExec"],
-              "min": 1,
-              'action': 'pushpatch'
-            },
-            {
-              'title': 'Update stats',
-              'class': 'icon_fixed_width spark16',
-              "privileges": ["Manager", "NodeManager", "NodeExec"],
-              "min": 1,
-              'action': 'pushstats'
-            },
-            {
-              'title': 'Update check values',
-              'class': 'icon_fixed_width ok',
-              "privileges": ["Manager", "NodeManager", "NodeExec", "CheckExec"],
-              "min": 1,
-              'action': 'checks'
-            },
-            {
-              'title': 'Update sysreport',
-              'class': 'icon_fixed_width log16',
-              "privileges": ["Manager", "NodeManager", "NodeExec"],
-              "min": 1,
-              'action': 'sysreport'
-            },
-            {
-              'title': 'Update compliance modules',
-              'class': 'icon_fixed_width comp16',
-              "privileges": ["Manager", "NodeManager", "NodeExec"],
-              "min": 1,
-              'action': 'updatecomp'
-            },
-            {
-              'title': 'Update opensvc agent',
-              'class': 'icon_fixed_width pkg16',
-              "privileges": ["Manager", "NodeManager", "NodeExec"],
-              "min": 1,
-              'action': 'updatepkg'
-            },
-            {
-              'title': 'Rotate root password',
-              'class': 'icon_fixed_width key',
-              "privileges": ["Manager", "NodeManager", "NodeExec"],
-              "min": 1,
-              'action': 'rotate root pw'
-            },
-            {
-              'title': 'Rescan scsi hosts',
-              'class': 'icon_fixed_width hd16',
-              "privileges": ["Manager", "NodeManager", "NodeExec"],
-              "min": 1,
-              'action': 'scanscsi'
-            },
-            {
-              'title': 'Reboot',
-              'class': 'icon_fixed_width action_restart_16',
-              "privileges": ["Manager", "NodeManager", "NodeExec"],
-              "min": 1,
-              'action': 'reboot'
-            },
-            {
-              'title': 'Reboot schedule',
-              'class': 'icon_fixed_width action_restart_16',
-              "privileges": ["Manager", "NodeManager", "NodeExec"],
-              "min": 1,
-              'action': 'schedule_reboot'
-            },
-            {
-              'title': 'Reboot unschedule',
-              'class': 'icon_fixed_width action_restart_16',
-              "privileges": ["Manager", "NodeManager", "NodeExec"],
-              "min": 1,
-              'action': 'unschedule_reboot'
-            },
-            {
-              'title': 'Shutdown',
-              'class': 'icon_fixed_width action_stop_16',
-              "privileges": ["Manager", "NodeManager", "NodeExec"],
-              "min": 1,
-              'action': 'shutdown'
-            },
-            {
-              'title': 'Wake On LAN',
-              'class': 'icon_fixed_width action_start_16',
-              "privileges": ["Manager", "NodeManager", "NodeExec"],
-              "min": 1,
-              'action': 'wol'
-            },
-            {
-              'title': 'Compliance check',
-              'class': 'icon_fixed_width comp16',
-              "privileges": ["Manager", "NodeManager", "NodeExec"],
-              "min": 1,
-              'action': 'compliance_check',
-              'params': ["module", "moduleset"]
-            },
-            {
-              'title': 'Compliance fix',
-              'class': 'icon_fixed_width comp16',
-              "privileges": ["Manager", "NodeManager", "NodeExec"],
-              "min": 1,
-              'action': 'compliance_fix',
-              'params': ["module", "moduleset"]
-            },
-            {
-              'title': 'action_menu.provisioning',
-              'class': 'icon_fixed_width prov',
-              "privileges": ["Manager", "NodeManager", "NodeExec"],
-              "min": 1,
-              'fn': 'agent_action_provisioning'
-            }
-          ]
-        },
-        {
-          "selector": ["clicked", "checked", "all"],
-          "foldable": true,
-          'title': 'action_menu.on_services_instances',
-          "class": "icon_fixed_width svc",
-          "cols": ["svcname", "nodename"],
-          "condition": "svcname+nodename",
-          "children": [
-            {
-              'title': 'Start',
-              'class': 'icon_fixed_width action_start_16',
-              "privileges": ["Manager", "NodeManager", "NodeExec"],
-              "min": 1,
-              'action': 'start'
-            },
-            {
-              'title': 'Stop',
-              'class': 'icon_fixed_width action_stop_16',
-              "privileges": ["Manager", "NodeManager", "NodeExec"],
-              "min": 1,
-              'action': 'stop'
-            },
-            {
-              'title': 'Restart',
-              'class': 'icon_fixed_width action_restart_16',
-              "privileges": ["Manager", "NodeManager", "NodeExec"],
-              "min": 1,
-              'action': 'restart'
-            },
-            {
-              'title': 'Switch',
-              'class': 'icon_fixed_width action_switch_16',
-              "privileges": ["Manager", "NodeManager", "NodeExec"],
-              "min": 1,
-              'action': 'switch'
-            },
-            {
-              'title': 'Sync all remotes',
-              'class': 'icon_fixed_width action_sync_16',
-              "privileges": ["Manager", "NodeManager", "NodeExec"],
-              "min": 1,
-              'action': 'syncall'
-            },
-            {
-              'title': 'Sync peer remotes',
-              'class': 'icon_fixed_width action_sync_16',
-              "privileges": ["Manager", "NodeManager", "NodeExec"],
-              "min": 1,
-              'action': 'syncnodes'
-            },
-            {
-              'title': 'Sync disaster recovery remotes',
-              'class': 'icon_fixed_width action_sync_16',
-              "privileges": ["Manager", "NodeManager", "NodeExec"],
-              "min": 1,
-              'action': 'syncdrp'
-            },
-            {
-              'title': 'Enable',
-              'class': 'icon_fixed_width ok',
-              "privileges": ["Manager", "NodeManager", "NodeExec"],
-              "min": 1,
-              'action': 'enable'
-            },
-            {
-              'title': 'Disable',
-              'class': 'icon_fixed_width nok',
-              "privileges": ["Manager", "NodeManager", "NodeExec"],
-              "min": 1,
-              'action': 'disable'
-            },
-            {
-              'title': 'Thaw',
-              'class': 'icon_fixed_width ok',
-              "privileges": ["Manager", "NodeManager", "NodeExec"],
-              "min": 1,
-              'action': 'thaw'
-            },
-            {
-              'title': 'Freeze',
-              'class': 'icon_fixed_width nok',
-              "privileges": ["Manager", "NodeManager", "NodeExec"],
-              "min": 1,
-              'action': 'freeze'
-            },
-            {
-              'title': 'Compliance check',
-              'class': 'icon_fixed_width comp16',
-              "privileges": ["Manager", "NodeManager", "NodeExec"],
-              "min": 1,
-              'action': 'compliance_check',
-              'params': ["module", "moduleset"]
-            },
-            {
-              'title': 'Compliance fix',
-              'class': 'icon_fixed_width comp16',
-              "privileges": ["Manager", "NodeManager", "NodeExec"],
-              "min": 1,
-              'action': 'compliance_fix',
-              'params': ["module", "moduleset"]
-            }
-          ]
-        },
-        {
-          "selector": ["clicked", "checked", "all"],
-          "foldable": true,
-          'title': 'action_menu.on_resources',
-          "class": "icon_fixed_width action16",
-          "cols": ["svcname", "nodename", "vmname", "rid"],
-          "condition": "svcname+nodename+vmname+rid,svcname+nodename+rid",
-          "children": [
-            {
-              'title': 'Start',
-              'class': 'icon_fixed_width action_start_16',
-              "privileges": ["Manager", "NodeManager", "NodeExec"],
-              "min": 1,
-              'action': 'start'
-            },
-            {
-              'title': 'Stop',
-              'class': 'icon_fixed_width action_stop_16',
-              "privileges": ["Manager", "NodeManager", "NodeExec"],
-              "min": 1,
-              'action': 'stop'
-            },
-            {
-              'title': 'Restart',
-              'class': 'icon_fixed_width action_restart_16',
-              "privileges": ["Manager", "NodeManager", "NodeExec"],
-              "min": 1,
-              'action': 'restart'
-            },
-            {
-              'title': 'Enable',
-              'class': 'icon_fixed_width ok',
-              "privileges": ["Manager", "NodeManager", "NodeExec"],
-              "min": 1,
-              'action': 'enable'
-            },
-            {
-              'title': 'Disable',
-              'class': 'icon_fixed_width nok',
-              "privileges": ["Manager", "NodeManager", "NodeExec"],
-              "min": 1,
-              'action': 'disable'
-            }
-          ]
-        },
-        {
-          "selector": ["clicked", "checked", "all"],
-          "foldable": true,
-          'title': 'action_menu.on_modules',
-          "class": "icon_fixed_width mod16",
-          "cols": ["svcname", "nodename", "module"],
-          "condition": "svcname+nodename+module,nodename+module",
-          "children": [
-            {
-              'title': 'Check',
-              'class': 'icon_fixed_width comp16',
-              "privileges": ["Manager", "NodeManager", "NodeExec", "CompExec"],
-              "min": 1,
-              'action': 'check'
-            },
-            {
-              'title': 'Fix',
-              'class': 'icon_fixed_width comp16',
-              "privileges": ["Manager", "NodeManager", "NodeExec", "CompExec"],
-              "min": 1,
-              'action': 'fix'
-            }
-          ]
-        }
-      ]
-    }
-  ]
+	t.action_menu_data = [
+		// section: tools
+		{
+			"title": "action_menu.tools",
+			"class": "icon spark16",
+			"children": [
+				{
+					"selector": [],
+					"title": "action_menu.free_uids_gids",
+					"class": "icon_fixed_width db16",
+					"foldable": true,
+					"cols": [],
+					"condition": "",
+					"children": [
+						{
+							"title": "action_menu.free_uids",
+							"class": "icon_fixed_width guy16",
+							"fn": "tool_free_uids",
+							"min": 0
+						},
+						{
+							"title": "action_menu.free_gids",
+							"class": "icon_fixed_width guys16",
+							"fn": "tool_free_gids",
+							"min": 0
+						}
+					]
+				},
+				{
+					"selector": ["clicked", "checked", "all"],
+					"title": "action_menu.on_nodes",
+					"class": "icon_fixed_width node16",
+					"foldable": true,
+					"cols": ["nodename"],
+					"condition": "nodename",
+					"children": [
+						{
+							"title": "action_menu.node_diff",
+							"class": "icon_fixed_width common16",
+							"fn": "tool_nodediff",
+							"min": 2,
+							"max": 10
+						},
+						{
+							"title": "action_menu.node_sysrep",
+							"class": "icon_fixed_width log16",
+							"fn": "tool_nodesysrep",
+							"min": 1,
+							"max": 10
+						},
+						{
+							"title": "action_menu.node_sysrep_diff",
+							"class": "icon_fixed_width common16",
+							"fn": "tool_nodesysrepdiff",
+							"min": 2,
+							"max": 10
+						},
+						{
+							"title": "action_menu.node_san_topo",
+							"class": "icon_fixed_width hd16",
+							"fn": "tool_nodesantopo",
+							"min": 1,
+							"max": 50
+						},
+						{
+							"title": "action_menu.node_perf",
+							"class": "icon_fixed_width spark16",
+							"fn": "tool_grpprf",
+							"min": 1,
+							"max": 20
+						},
+						{
+							"title": "action_menu.obsolescence",
+							"class": "icon_fixed_width spark16",
+							"fn": "tool_obsolescence",
+							"min": 2
+						}
+					]
+				},
+				{
+					"selector": ["checked"],
+					"title": "action_menu.on_services",
+					"class": "icon_fixed_width svc",
+					"foldable": true,
+					"cols": ["svcname"],
+					"condition": "svcname",
+					"children": [
+						{
+							"title": "action_menu.svc_diff",
+							"class": "icon_fixed_width common16",
+							"fn": "tool_svcdiff",
+							"min": 2
+						},
+						{
+							"title": "action_menu.services_status_log",
+							"class": "icon_fixed_width avail16",
+							"fn": "tool_services_status_log",
+							"min": 1
+						}
+					]
+				},
+				{
+					"selector": ["clicked", "checked"],
+					"title": "action_menu.on_nodes_and_services",
+					"class": "icon_fixed_width svc",
+					"foldable": true,
+					"cols": ["svcname", "nodename"],
+					"condition": "svcname,nodename",
+					"children": [
+						{
+							"title": "action_menu.topology",
+							"class": "icon_fixed_width dia16",
+							"fn": "tool_topo",
+							"min": 1
+						}
+					]
+				}
+			]
+		},
+		// section: data actions
+		{
+			"title": "action_menu.data_actions",
+			"class": "icon hd16",
+			"children": [
+				{
+					"selector": [],
+					"title": "action_menu.add",
+					"class": "icon_fixed_width add16",
+					"foldable": true,
+					"cols": [],
+					"condition": "",
+					"children": [
+						{
+							"title": "action_menu.metric",
+							"class": "icon_fixed_width spark16",
+							"fn": "data_action_add_metric",
+							"privileges": ["Manager", "ReportsManager"],
+							"min": 0
+						},
+						{
+							"title": "action_menu.chart",
+							"class": "icon_fixed_width spark16",
+							"fn": "data_action_add_chart",
+							"privileges": ["Manager", "ReportsManager"],
+							"min": 0
+						},
+						{
+							"title": "action_menu.report",
+							"class": "icon_fixed_width spark16",
+							"fn": "data_action_add_report",
+							"privileges": ["Manager", "ReportsManager"],
+							"min": 0
+						},
+						{
+							"title": "action_menu.prov_template",
+							"class": "icon_fixed_width prov",
+							"fn": "data_action_add_prov_template",
+							"privileges": ["Manager", "ProvisioningManager"],
+							"min": 0
+						},
+						{
+							"title": "action_menu.form",
+							"class": "icon_fixed_width wf16",
+							"fn": "data_action_add_form",
+							"privileges": ["Manager", "FormsManager"],
+							"min": 0
+						},
+						{
+							"title": "action_menu.quota",
+							"class": "icon_fixed_width quota16",
+							"fn": "data_action_add_quota",
+							"privileges": ["Manager", "StorageManager"],
+							"min": 0
+						},
+						{
+							"title": "action_menu.app",
+							"class": "icon_fixed_width svc",
+							"fn": "data_action_add_app",
+							"privileges": ["Manager", "AppManager"],
+							"min": 0
+						},
+						{
+							"title": "action_menu.dns_domain",
+							"class": "icon_fixed_width dns16",
+							"fn": "data_action_add_dns_domain",
+							"privileges": ["Manager", "DnsManager"],
+							"min": 0
+						},
+						{
+							"title": "action_menu.dns_record",
+							"class": "icon_fixed_width dns16",
+							"fn": "data_action_add_dns_record",
+							"privileges": ["Manager", "DnsManager"],
+							"min": 0
+						},
+						{
+							"title": "action_menu.network",
+							"class": "icon_fixed_width net16",
+							"fn": "data_action_add_network",
+							"min": 0
+						},
+						{
+							"title": "action_menu.node",
+							"class": "icon_fixed_width node16",
+							"fn": "data_action_add_node",
+							"privileges": ["Manager", "NodeManager"],
+							"min": 0
+						},
+						{
+							"title": "action_menu.contextual_thresholds",
+							"class": "icon_fixed_width check16",
+							"fn": "data_action_add_contextual_thresholds",
+							"privileges": ["Manager", "CheckManager"],
+							"min": 0
+						},
+						{
+							"title": "action_menu.tag",
+							"class": "icon_fixed_width tag16",
+							"fn": "data_action_add_tag",
+							"privileges": ["Manager", "TagManager"],
+							"min": 0
+						},
+						{
+							"title": "action_menu.user",
+							"class": "icon_fixed_width guy16",
+							"fn": "data_action_add_user",
+							"privileges": ["Manager", "UserManager"],
+							"min": 0
+						},
+						{
+							"title": "action_menu.group",
+							"class": "icon_fixed_width guys16",
+							"fn": "data_action_add_group",
+							"privileges": ["Manager", "UserManager"],
+							"min": 0
+						},
+						{
+							"title": "action_menu.filterset",
+							"class": "icon_fixed_width filter16",
+							"fn": "data_action_add_filterset",
+							"privileges": ["Manager", "CompManager"],
+							"min": 0
+						}
+					]
+				},
+				{
+					"selector": [],
+					"title": "action_menu.del",
+					"class": "icon_fixed_width del16",
+					"foldable": true,
+					"cols": [],
+					"condition": "",
+					"children": [
+						{
+							"title": "action_menu.contextual_thresholds",
+							"class": "icon_fixed_width check16",
+							"fn": "data_action_delete_contextual_thresholds",
+							"privileges": ["Manager", "CheckManager"],
+							"min": 0
+						},
+						{
+							"title": "action_menu.group",
+							"class": "icon_fixed_width guys16",
+							"fn": "data_action_del_groups",
+							"privileges": ["Manager", "UserManager"],
+							"min": 0
+						}
+					]
+				},
+				{
+					"selector": [],
+					"title": "action_menu.import",
+					"class": "icon_fixed_width fa-upload",
+					"foldable": true,
+					"cols": [],
+					"condition": "",
+					"children": [
+						{
+							"title": "action_menu.report",
+							"class": "icon_fixed_width spark16",
+							"fn": "data_action_import_report",
+							"privileges": ["Manager", "ReportsManager"],
+							"min": 0
+						}
+					]
+				},
+				{
+					"selector": [],
+					"title": "action_menu.refresh",
+					"class": "icon_fixed_width refresh16",
+					"foldable": true,
+					"cols": [],
+					"condition": "",
+					"children": [
+						{
+							"title": "action_menu.obsolescence_products",
+							"class": "icon_fixed_width obs16",
+							"fn": "data_action_obs_refresh",
+							"privileges": ["Manager", "ObsManager"],
+							"min": 0
+						}
+					]
+				},
+				{
+					"selector": ["clicked", "checked", "all"],
+					"foldable": true,
+					'title': 'action_menu.on_filters',
+					"class": "icon_fixed_width filter16",
+					"table": ["filters"],
+					"cols": ["id"],
+					"condition": "id",
+					"children": [
+						{
+							"title": "action_menu.del",
+							"class": "icon_fixed_width del16",
+							"fn": "data_action_del_filters",
+							"privileges": ["Manager", "CompManager"],
+							"min": 1
+						}
+					]
+				},
+				{
+					"selector": ["clicked", "checked", "all"],
+					"foldable": true,
+					'title': 'action_menu.on_filtersets',
+					"class": "icon_fixed_width filter16",
+					"table": ["filtersets"],
+					"cols": ["fset_id"],
+					"condition": "fset_id",
+					"children": [
+						{
+							"title": "action_menu.del",
+							"class": "icon_fixed_width del16",
+							"fn": "data_action_del_filtersets",
+							"privileges": ["Manager", "CompManager"],
+							"min": 1
+						},
+						{
+							"title": "action_menu.attach_filters",
+							"class": "icon_fixed_width attach16",
+							"fn": "data_action_attach_filters",
+							"privileges": ["Manager", "CompManager"],
+							"min": 1
+						},
+						{
+							"title": "action_menu.attach_filtersets",
+							"class": "icon_fixed_width attach16",
+							"fn": "data_action_attach_filtersets",
+							"privileges": ["Manager", "CompManager"],
+							"min": 1
+						}
+					]
+				},
+				{
+					"selector": ["clicked", "checked", "all"],
+					"foldable": true,
+					'title': 'action_menu.on_encap_filters',
+					"class": "icon_fixed_width filter16",
+					"table": ["filtersets"],
+					"cols": ["fset_id", "f_id"],
+					"condition": "fset_id+f_id",
+					"children": [
+						{
+							"title": "action_menu.detach_filters",
+							"class": "icon_fixed_width detach16",
+							"fn": "data_action_detach_filters",
+							"privileges": ["Manager", "CompManager"],
+							"min": 1
+						},
+						{
+							"title": "action_menu.set_operator",
+							"class": "icon_fixed_width edit16",
+							"fn": "data_action_filters_set_operator",
+							"privileges": ["Manager", "CompManager"],
+							"min": 1
+						},
+						{
+							"title": "action_menu.set_order",
+							"class": "icon_fixed_width edit16",
+							"fn": "data_action_filters_set_order",
+							"privileges": ["Manager", "CompManager"],
+							"min": 1
+						}
+					]
+				},
+				{
+					"selector": ["clicked", "checked", "all"],
+					"foldable": true,
+					'title': 'action_menu.on_encap_filtersets',
+					"class": "icon_fixed_width filter16",
+					"table": ["filtersets"],
+					"cols": ["fset_id", "encap_fset_id"],
+					"condition": "fset_id+encap_fset_id",
+					"children": [
+						{
+							"title": "action_menu.detach_filtersets",
+							"class": "icon_fixed_width detach16",
+							"fn": "data_action_detach_filtersets",
+							"privileges": ["Manager", "CompManager"],
+							"min": 1
+						},
+						{
+							"title": "action_menu.set_operator",
+							"class": "icon_fixed_width edit16",
+							"fn": "data_action_filtersets_set_operator",
+							"privileges": ["Manager", "CompManager"],
+							"min": 1
+						},
+						{
+							"title": "action_menu.set_order",
+							"class": "icon_fixed_width edit16",
+							"fn": "data_action_filtersets_set_order",
+							"privileges": ["Manager", "CompManager"],
+							"min": 1
+						}
+					]
+				},
+				{
+					"selector": ["clicked", "checked", "all"],
+					"foldable": true,
+					'title': 'action_menu.on_metrics',
+					"class": "icon_fixed_width spark16",
+					"table": ["metrics"],
+					"cols": ["id"],
+					"condition": "id",
+					"children": [
+						{
+							"title": "action_menu.del",
+							"class": "icon_fixed_width del16",
+							"fn": "data_action_del_metrics",
+							"privileges": ["Manager", "ReportsManager"],
+							"min": 1
+						}
+					]
+				},
+				{
+					"selector": ["clicked", "checked", "all"],
+					"foldable": true,
+					'title': 'action_menu.on_charts',
+					"class": "icon_fixed_width spark16",
+					"table": ["charts"],
+					"cols": ["id"],
+					"condition": "id",
+					"children": [
+						{
+							"title": "action_menu.del",
+							"class": "icon_fixed_width del16",
+							"fn": "data_action_del_charts",
+							"privileges": ["Manager", "ReportsManager"],
+							"min": 1
+						}
+					]
+				},
+				{
+					"selector": ["clicked", "checked", "all"],
+					"foldable": true,
+					'title': 'action_menu.on_reports',
+					"class": "icon_fixed_width spark16",
+					"table": ["reports"],
+					"cols": ["id"],
+					"condition": "id",
+					"children": [
+						{
+							"title": "action_menu.del",
+							"class": "icon_fixed_width del16",
+							"fn": "data_action_del_reports",
+							"privileges": ["Manager", "ReportsManager"],
+							"min": 1
+						}
+					]
+				},
+				{
+					"selector": ["clicked", "checked", "all"],
+					"foldable": true,
+					'title': 'action_menu.on_prov_templates',
+					"class": "icon_fixed_width prov",
+					"table": ["templates"],
+					"cols": ["id"],
+					"condition": "id",
+					"children": [
+						{
+							"title": "action_menu.del",
+							"class": "icon_fixed_width del16",
+							"fn": "data_action_del_prov_templates",
+							"privileges": ["Manager", "ProvisioningManager"],
+							"min": 1
+						},
+						{
+							"title": "action_menu.add_responsible",
+							"class": "icon_fixed_width add16",
+							"fn": "data_action_add_prov_templates_responsible",
+							"privileges": ["Manager", "ProvisioningManager"],
+							"min": 1
+						},
+						{
+							"title": "action_menu.del_responsible",
+							"class": "icon_fixed_width del16",
+							"fn": "data_action_del_prov_templates_responsible",
+							"privileges": ["Manager", "ProvisioningManager"],
+							"min": 1
+						}
+					]
+				},
+				{
+					"selector": ["clicked", "checked", "all"],
+					"foldable": true,
+					'title': 'action_menu.on_obsolescence_settings',
+					"class": "icon_fixed_width check16",
+					"table": ["obsolescence"],
+					"cols": ["id"],
+					"condition": "id",
+					"children": [
+						{
+							"title": "action_menu.set_warn_date",
+							"class": "icon_fixed_width edit16",
+							"fn": "data_action_obs_set_warn_date",
+							"privileges": ["Manager", "ObsManager"],
+							"min": 1
+						},
+						{
+							"title": "action_menu.set_alert_date",
+							"class": "icon_fixed_width edit16",
+							"fn": "data_action_obs_set_alert_date",
+							"privileges": ["Manager", "ObsManager"],
+							"min": 1
+						},
+						{
+							"title": "action_menu.del",
+							"class": "icon_fixed_width del16",
+							"fn": "data_action_obs_del",
+							"privileges": ["Manager", "ObsManager"],
+							"min": 1
+						}
+					]
+				},
+				{
+					"selector": ["clicked", "checked", "all"],
+					"foldable": true,
+					'title': 'action_menu.on_quotas',
+					"class": "icon_fixed_width quota16",
+					"table": ["quota"],
+					"cols": ["id"],
+					"condition": "id",
+					"children": [
+						{
+							"title": "action_menu.del",
+							"class": "icon_fixed_width del16",
+							"fn": "data_action_del_quotas",
+							"privileges": ["Manager", "StorageManager"],
+							"min": 1
+						}
+					]
+				},
+				{
+					"selector": ["clicked", "checked", "all"],
+					"foldable": true,
+					'title': 'action_menu.on_apps',
+					"class": "icon_fixed_width svc",
+					"table": ["apps"],
+					"cols": ["id"],
+					"condition": "id",
+					"children": [
+						{
+							"title": "action_menu.del",
+							"class": "icon_fixed_width del16",
+							"fn": "data_action_del_apps",
+							"privileges": ["Manager", "AppManager"],
+							"min": 1
+						},
+						{
+							"title": "action_menu.add_responsible",
+							"class": "icon_fixed_width add16",
+							"fn": "data_action_add_app_responsible",
+							"privileges": ["Manager", "AppManager"],
+							"min": 1
+						},
+						{
+							"title": "action_menu.del_responsible",
+							"class": "icon_fixed_width del16",
+							"fn": "data_action_del_app_responsible",
+							"privileges": ["Manager", "AppManager"],
+							"min": 1
+						}
+					]
+				},
+				{
+					"selector": ["clicked", "checked", "all"],
+					"title": "action_menu.on_compliance_status",
+					"class": "icon_fixed_width comp16",
+					"foldable": true,
+					"cols": ["id", "module"],
+					"condition": "id+module",
+					"children": [
+						{
+							"title": "action_menu.delete",
+							"class": "icon_fixed_width del16",
+							"fn": "data_action_delete_compliance_status",
+							"min": 1
+						}
+					]
+				},
+				{
+					"selector": ["clicked", "checked", "all"],
+					"title": "action_menu.on_node_ips",
+					"class": "icon_fixed_width net16",
+					"table": ["nodenetworks"],
+					"foldable": true,
+					"cols": ["id"],
+					"condition": "id",
+					"children": [
+						{
+							"title": "action_menu.delete",
+							"class": "icon_fixed_width del16",
+							"fn": "data_action_delete_node_ips",
+							"min": 1
+						}
+					]
+				},
+				{
+					"selector": ["clicked", "checked", "all"],
+					"foldable": true,
+					'title': 'action_menu.on_dns_domains',
+					"class": "icon_fixed_width dns16",
+					"table": ["dns_domains"],
+					"cols": ["id"],
+					"condition": "id",
+					"children": [
+						{
+							"title": "action_menu.del",
+							"class": "icon_fixed_width del16",
+							"fn": "data_action_del_dns_domains",
+							"privileges": ["Manager", "DnsManager"],
+							"min": 1
+						},
+						{
+							"title": "action_menu.sync_dns_domains",
+							"class": "icon_fixed_width net16",
+							"fn": "data_action_sync_dns_domains",
+							"privileges": ["Manager", "DnsManager"],
+							"min": 1
+						},
+					]
+				},
+				{
+					"selector": ["clicked", "checked", "all"],
+					"foldable": true,
+					'title': 'action_menu.on_dns_records',
+					"class": "icon_fixed_width dns16",
+					"table": ["dns_records"],
+					"cols": ["id"],
+					"condition": "id",
+					"children": [
+						{
+							"title": "action_menu.del",
+							"class": "icon_fixed_width del16",
+							"fn": "data_action_del_dns_records",
+							"privileges": ["Manager", "DnsManager"],
+							"min": 1
+						}
+					]
+				},
+				{
+					"selector": ["clicked", "checked", "all"],
+					"title": "action_menu.on_networks",
+					"class": "icon_fixed_width net16",
+					"table": ["networks"],
+					"foldable": true,
+					"cols": ["id"],
+					"condition": "id",
+					"children": [
+						{
+							"title": "action_menu.delete",
+							"class": "icon_fixed_width del16",
+							"fn": "data_action_delete_networks",
+							"min": 1
+						}
+					]
+				},
+				{
+					"selector": ["clicked", "checked", "all"],
+					"title": "action_menu.on_forms",
+					"class": "icon_fixed_width wf16",
+					"table": ["forms"],
+					"foldable": true,
+					"cols": ["id"],
+					"condition": "id",
+					"children": [
+						{
+							"title": "action_menu.del_form",
+							"class": "icon_fixed_width del16",
+							"fn": "data_action_del_form",
+							"privileges": ["Manager", "FormsManager"],
+							"min": 1
+						},
+						{
+							"title": "action_menu.add_publication",
+							"class": "icon_fixed_width add16",
+							"fn": "data_action_add_form_publication",
+							"privileges": ["Manager", "FormsManager"],
+							"min": 1
+						},
+						{
+							"title": "action_menu.del_publication",
+							"class": "icon_fixed_width del16",
+							"fn": "data_action_del_form_publication",
+							"privileges": ["Manager", "FormsManager"],
+							"min": 1
+						},
+						{
+							"title": "action_menu.add_responsible",
+							"class": "icon_fixed_width add16",
+							"fn": "data_action_add_form_responsible",
+							"privileges": ["Manager", "FormsManager"],
+							"min": 1
+						},
+						{
+							"title": "action_menu.del_responsible",
+							"class": "icon_fixed_width del16",
+							"fn": "data_action_del_form_responsible",
+							"privileges": ["Manager", "FormsManager"],
+							"min": 1
+						}
+					]
+				},
+				{
+					"selector": ["clicked", "checked", "all"],
+					"foldable": true,
+					'title': 'action_menu.on_nodes',
+					"class": "icon_fixed_width node16",
+					"cols": ["nodename"],
+					"condition": "nodename",
+					"children": [
+						{
+							"title": "action_menu.delete",
+							"class": "icon_fixed_width del16",
+							"fn": "data_action_delete_nodes",
+							"privileges": ["Manager", "NodeManager"],
+							"min": 1
+						},
+						{
+							"title": "action_menu.tag_attach",
+							"class": "icon_fixed_width tag16",
+							"fn": "data_action_nodes_tags_attach",
+							"privileges": ["Manager", "NodeManager"],
+							"min": 1
+						},
+						{
+							"title": "action_menu.modset_attach",
+							"class": "icon_fixed_width modset16",
+							"fn": "data_action_nodes_modsets_attach",
+							"privileges": ["Manager", "NodeManager"],
+							"min": 1
+						},
+						{
+							"title": "action_menu.modset_detach",
+							"class": "icon_fixed_width modset16",
+							"fn": "data_action_nodes_modsets_detach",
+							"privileges": ["Manager", "NodeManager"],
+							"min": 1
+						},
+						{
+							"title": "action_menu.ruleset_attach",
+							"class": "icon_fixed_width comp16",
+							"fn": "data_action_nodes_rulesets_attach",
+							"privileges": ["Manager", "NodeManager"],
+							"min": 1
+						},
+						{
+							"title": "action_menu.ruleset_detach",
+							"class": "icon_fixed_width comp16",
+							"fn": "data_action_nodes_rulesets_detach",
+							"privileges": ["Manager", "NodeManager"],
+							"min": 1
+						}
+					]
+				},
+				{
+					"selector": ["clicked", "checked", "all"],
+					"foldable": true,
+					'title': 'action_menu.on_check_instances',
+					"class": "icon_fixed_width check16",
+					"cols": ["nodename", "svcname", "chk_type", "chk_instance"],
+					"condition": "nodename+chk_type+chk_instance,nodename+svcname+chk_type+chk_instance",
+					"children": [
+						{
+							"title": "action_menu.delete",
+							"class": "icon_fixed_width del16",
+							"fn": "data_action_chk_instance_delete",
+							"privileges": ["Manager", "CheckManager"],
+							"min": 1
+						},
+						{
+							"title": "action_menu.reset_thresholds",
+							"class": "icon_fixed_width fa-undo",
+							"fn": "data_action_chk_instance_reset_thresholds",
+							"privileges": ["Manager", "CheckManager"],
+							"min": 1
+						},
+						{
+							"title": "action_menu.set_low_threshold",
+							"class": "icon_fixed_width fa-angle-down",
+							"fn": "data_action_chk_instance_set_low_threshold",
+							"privileges": ["Manager", "CheckManager"],
+							"min": 1
+						},
+						{
+							"title": "action_menu.set_high_threshold",
+							"class": "icon_fixed_width fa-angle-up",
+							"fn": "data_action_chk_instance_set_high_threshold",
+							"privileges": ["Manager", "CheckManager"],
+							"min": 1
+						},
+					]
+				},
+				{
+					"selector": ["clicked", "checked", "all"],
+					"foldable": true,
+					'title': 'action_menu.on_nodes_modulesets',
+					"class": "icon_fixed_width modset16",
+					"cols": ["nodename", "modset_id"],
+					"condition": "nodename+modset_id",
+					"children": [
+						{
+							"title": "action_menu.modset_detach",
+							"class": "icon_fixed_width del16",
+							"fn": "data_action_nodes_modsets_detach_no_selector",
+							"privileges": ["Manager", "NodeManager"],
+							"min": 1
+						},
+					]
+				},
+				{
+					"selector": ["clicked", "checked", "all"],
+					"foldable": true,
+					'title': 'action_menu.on_queued_actions',
+					"class": "icon_fixed_width actions",
+					"cols": ["id", "command"],
+					"condition": "id+command",
+					"children": [
+						{
+							"title": "action_menu.cancel",
+							"class": "icon_fixed_width del16",
+							"fn": "data_action_action_queue_cancel",
+							"privileges": ["Manager", "NodeExec", "CompExec"],
+							"min": 1
+						},
+						{
+							"title": "action_menu.redo",
+							"class": "icon_fixed_width refresh16",
+							"fn": "data_action_action_queue_redo",
+							"privileges": ["Manager", "NodeExec", "CompExec"],
+							"min": 1
+						},
+					]
+				},
+				{
+					"selector": ["clicked", "checked", "all"],
+					"foldable": true,
+					'title': 'action_menu.on_nodes_rulesets',
+					"class": "icon_fixed_width comp16",
+					"cols": ["nodename", "ruleset_id"],
+					"condition": "nodename+ruleset_id",
+					"children": [
+						{
+							"title": "action_menu.ruleset_detach",
+							"class": "icon_fixed_width del16",
+							"fn": "data_action_nodes_rulesets_detach_no_selector",
+							"privileges": ["Manager", "NodeManager"],
+							"min": 1
+						},
+					]
+				},
+				{
+					"selector": ["clicked", "checked", "all"],
+					"foldable": true,
+					'title': 'action_menu.on_nodes_tags',
+					"class": "icon_fixed_width tag16",
+					"cols": ["nodename", "tag_id"],
+					"condition": "nodename+tag_id",
+					"children": [
+						{
+							"title": "action_menu.nodes_tags_detach",
+							"class": "icon_fixed_width del16",
+							"fn": "data_action_nodes_tags_detach",
+							"privileges": ["Manager", "NodeManager"],
+							"min": 1
+						},
+					]
+				},
+				{
+					"selector": ["clicked", "checked", "all"],
+					"foldable": true,
+					'title': 'action_menu.on_services',
+					"class": "icon_fixed_width svc",
+					"cols": ["svcname", "slave"],
+					"condition": "svcname+slave,svcname",
+					"children": [
+						{
+							"title": "action_menu.delete",
+							"class": "icon_fixed_width del16",
+							"fn": "data_action_delete_svcs",
+							"min": 1
+						},
+						{
+							"title": "action_menu.tag_attach",
+							"class": "icon_fixed_width tag16",
+							"fn": "data_action_services_tags_attach",
+							"min": 1
+						},
+						{
+							"title": "action_menu.modset_attach",
+							"class": "icon_fixed_width modset16",
+							"fn": "data_action_services_modsets_attach",
+							"min": 1
+						},
+						{
+							"title": "action_menu.modset_detach",
+							"class": "icon_fixed_width modset16",
+							"fn": "data_action_services_modsets_detach",
+							"min": 1
+						},
+						{
+							"title": "action_menu.ruleset_attach",
+							"class": "icon_fixed_width comp16",
+							"fn": "data_action_services_rulesets_attach",
+							"min": 1
+						},
+						{
+							"title": "action_menu.ruleset_detach",
+							"class": "icon_fixed_width comp16",
+							"fn": "data_action_services_rulesets_detach",
+							"min": 1
+						}
+					]
+				},
+				{
+					"selector": ["clicked", "checked", "all"],
+					"foldable": true,
+					"table": ["service_instances"],
+					'title': 'action_menu.on_services_instances',
+					"class": "icon_fixed_width svc",
+					"cols": ["id"],
+					"condition": "id",
+					"children": [
+						{
+							"title": "action_menu.delete",
+							"class": "icon_fixed_width del16",
+							"fn": "data_action_delete_svc_instances",
+							"min": 1
+						}
+					]
+				},
+				{
+					"selector": ["clicked", "checked", "all"],
+					"foldable": true,
+					'title': 'action_menu.on_service_actions',
+					"class": "icon_fixed_width actions",
+					"cols": ["id", "action", "ack"],
+					"condition": "id+action",
+					"children": [
+						{
+							"title": "action_menu.ack",
+							"class": "icon_fixed_width check16",
+							"fn": "data_action_ack_actions",
+							"min": 1
+						}
+					]
+				},
+				{
+					"selector": ["clicked", "checked", "all"],
+					"foldable": true,
+					'title': 'action_menu.on_services_tags',
+					"class": "icon_fixed_width tag16",
+					"cols": ["svcname", "tag_id"],
+					"condition": "svcname+tag_id",
+					"children": [
+						{
+							"title": "action_menu.services_tags_detach",
+							"class": "icon_fixed_width del16",
+							"fn": "data_action_services_tags_detach",
+							"min": 1
+						},
+					]
+				},
+				{
+					"selector": ["clicked", "checked", "all"],
+					"foldable": true,
+					'title': 'action_menu.on_services_modulesets',
+					"class": "icon_fixed_width modset16",
+					"cols": ["svcname", "modset_id", "slave"],
+					"condition": "svcname+modset_id+slave",
+					"children": [
+						{
+							"title": "action_menu.modset_detach",
+							"class": "icon_fixed_width del16",
+							"fn": "data_action_services_modsets_detach_no_selector",
+							"min": 1
+						},
+					]
+				},
+				{
+					"selector": ["clicked", "checked", "all"],
+					"foldable": true,
+					'title': 'action_menu.on_services_rulesets',
+					"class": "icon_fixed_width comp16",
+					"cols": ["svcname", "ruleset_id", "slave"],
+					"condition": "svcname+ruleset_id+slave",
+					"children": [
+						{
+							"title": "action_menu.ruleset_detach",
+							"class": "icon_fixed_width del16",
+							"fn": "data_action_services_rulesets_detach_no_selector",
+							"min": 1
+						},
+					]
+				},
+				{
+					"selector": ["clicked", "checked", "all"],
+					"foldable": true,
+					'title': 'action_menu.on_tags',
+					"class": "icon_fixed_width tag16",
+					"table": ["tags"],
+					"cols": ["id"],
+					"condition": "id",
+					"children": [
+						{
+							"title": "action_menu.del",
+							"class": "icon_fixed_width del16",
+							"fn": "data_action_del_tag",
+							"privileges": ["Manager", "TagManager"],
+							"min": 1
+						}
+					]
+				},
+				{
+					"selector": ["clicked", "checked", "all"],
+					"title": "action_menu.on_users",
+					"class": "icon_fixed_width guy16",
+					"foldable": true,
+					"cols": ["id", "email"],
+					"condition": "id+email",
+					"children": [
+						{
+							"title": "action_menu.del",
+							"class": "icon_fixed_width del16",
+							"fn": "data_action_del_user",
+							"privileges": ["Manager", "UserManager"],
+							"min": 1
+						},
+						{
+							"title": "action_menu.attach_groups",
+							"class": "icon_fixed_width attach16",
+							"fn": "data_action_user_attach_groups",
+							"privileges": ["Manager", "UserManager"],
+							"min": 1
+						},
+						{
+							"title": "action_menu.detach_groups",
+							"class": "icon_fixed_width detach16",
+							"fn": "data_action_user_detach_groups",
+							"privileges": ["Manager", "UserManager"],
+							"min": 1
+						},
+						{
+							"title": "action_menu.attach_privileges",
+							"class": "icon_fixed_width attach16",
+							"fn": "data_action_user_attach_privileges",
+							"privileges": ["Manager", "UserManager"],
+							"min": 1
+						},
+						{
+							"title": "action_menu.detach_privileges",
+							"class": "icon_fixed_width detach16",
+							"fn": "data_action_user_detach_privileges",
+							"privileges": ["Manager", "UserManager"],
+							"min": 1
+						},
+						{
+							"title": "action_menu.lock_filterset",
+							"class": "icon_fixed_width fa-lock",
+							"fn": "data_action_user_lock_filterset",
+							"privileges": ["Manager", "UserManager"],
+							"min": 1
+						},
+						{
+							"title": "action_menu.unlock_filterset",
+							"class": "icon_fixed_width fa-unlock",
+							"fn": "data_action_user_unlock_filterset",
+							"privileges": ["Manager", "UserManager"],
+							"min": 1
+						},
+						{
+							"title": "action_menu.set_filterset",
+							"class": "icon_fixed_width filter16",
+							"fn": "data_action_user_set_filterset",
+							"privileges": ["Manager", "UserManager"],
+							"min": 1
+						},
+						{
+							"title": "action_menu.set_primary_group",
+							"class": "icon_fixed_width guys16",
+							"fn": "data_action_user_set_primary_group",
+							"privileges": ["Manager", "UserManager"],
+							"min": 1
+						}
+					]
+				}
+			]
+		},
+		// section: agent actions
+		{
+			"title": "action_menu.agent_actions",
+			"class": "icon action16",
+			"children": [
+				{
+					"selector": ["clicked", "checked", "all"],
+					"foldable": true,
+					'title': 'action_menu.on_nodes',
+					"class": "icon_fixed_width node16",
+					"cols": ["nodename"],
+					"condition": "nodename",
+					"children": [
+						{
+							'title': 'Update node information',
+							'class': 'icon_fixed_width node16',
+							"privileges": ["Manager", "NodeManager", "NodeExec"],
+							"min": 1,
+							'action': 'pushasset'
+						},
+						{
+							'title': 'Update disks information',
+							'class': 'icon_fixed_width hd16',
+							"privileges": ["Manager", "NodeManager", "NodeExec"],
+							"min": 1,
+							'action': 'pushdisks'
+						},
+						{
+							'title': 'Update app information',
+							'class': 'icon_fixed_width svc',
+							"privileges": ["Manager", "NodeManager", "NodeExec"],
+							"min": 1,
+							'action': 'push_appinfo'
+						},
+						{
+							'title': 'Update services information',
+							'class': 'icon_fixed_width svc',
+							"privileges": ["Manager", "NodeManager", "NodeExec"],
+							"min": 1,
+							'action': 'pushservices'
+						},
+						{
+							'title': 'Update installed packages information',
+							'class': 'icon_fixed_width pkg16',
+							"privileges": ["Manager", "NodeManager", "NodeExec"],
+							"min": 1,
+							'action': 'pushpkg'
+						},
+						{
+							'title': 'Update installed patches information',
+							'class': 'icon_fixed_width pkg16',
+							"privileges": ["Manager", "NodeManager", "NodeExec"],
+							"min": 1,
+							'action': 'pushpatch'
+						},
+						{
+							'title': 'Update stats',
+							'class': 'icon_fixed_width spark16',
+							"privileges": ["Manager", "NodeManager", "NodeExec"],
+							"min": 1,
+							'action': 'pushstats'
+						},
+						{
+							'title': 'Update check values',
+							'class': 'icon_fixed_width ok',
+							"privileges": ["Manager", "NodeManager", "NodeExec", "CheckExec"],
+							"min": 1,
+							'action': 'checks'
+						},
+						{
+							'title': 'Update sysreport',
+							'class': 'icon_fixed_width log16',
+							"privileges": ["Manager", "NodeManager", "NodeExec"],
+							"min": 1,
+							'action': 'sysreport'
+						},
+						{
+							'title': 'Update compliance modules',
+							'class': 'icon_fixed_width comp16',
+							"privileges": ["Manager", "NodeManager", "NodeExec"],
+							"min": 1,
+							'action': 'updatecomp'
+						},
+						{
+							'title': 'Update opensvc agent',
+							'class': 'icon_fixed_width pkg16',
+							"privileges": ["Manager", "NodeManager", "NodeExec"],
+							"min": 1,
+							'action': 'updatepkg'
+						},
+						{
+							'title': 'Rotate root password',
+							'class': 'icon_fixed_width key',
+							"privileges": ["Manager", "NodeManager", "NodeExec"],
+							"min": 1,
+							'action': 'rotate root pw'
+						},
+						{
+							'title': 'Rescan scsi hosts',
+							'class': 'icon_fixed_width hd16',
+							"privileges": ["Manager", "NodeManager", "NodeExec"],
+							"min": 1,
+							'action': 'scanscsi'
+						},
+						{
+							'title': 'Reboot',
+							'class': 'icon_fixed_width action_restart_16',
+							"privileges": ["Manager", "NodeManager", "NodeExec"],
+							"min": 1,
+							'action': 'reboot'
+						},
+						{
+							'title': 'Reboot schedule',
+							'class': 'icon_fixed_width action_restart_16',
+							"privileges": ["Manager", "NodeManager", "NodeExec"],
+							"min": 1,
+							'action': 'schedule_reboot'
+						},
+						{
+							'title': 'Reboot unschedule',
+							'class': 'icon_fixed_width action_restart_16',
+							"privileges": ["Manager", "NodeManager", "NodeExec"],
+							"min": 1,
+							'action': 'unschedule_reboot'
+						},
+						{
+							'title': 'Shutdown',
+							'class': 'icon_fixed_width action_stop_16',
+							"privileges": ["Manager", "NodeManager", "NodeExec"],
+							"min": 1,
+							'action': 'shutdown'
+						},
+						{
+							'title': 'Wake On LAN',
+							'class': 'icon_fixed_width action_start_16',
+							"privileges": ["Manager", "NodeManager", "NodeExec"],
+							"min": 1,
+							'action': 'wol'
+						},
+						{
+							'title': 'Compliance check',
+							'class': 'icon_fixed_width comp16',
+							"privileges": ["Manager", "NodeManager", "NodeExec"],
+							"min": 1,
+							'action': 'compliance_check',
+							'params': ["module", "moduleset"]
+						},
+						{
+							'title': 'Compliance fix',
+							'class': 'icon_fixed_width comp16',
+							"privileges": ["Manager", "NodeManager", "NodeExec"],
+							"min": 1,
+							'action': 'compliance_fix',
+							'params': ["module", "moduleset"]
+						},
+						{
+							'title': 'action_menu.provisioning',
+							'class': 'icon_fixed_width prov',
+							"privileges": ["Manager", "NodeManager", "NodeExec"],
+							"min": 1,
+							'fn': 'agent_action_provisioning'
+						}
+					]
+				},
+				{
+					"selector": ["clicked", "checked", "all"],
+					"foldable": true,
+					'title': 'action_menu.on_services_instances',
+					"class": "icon_fixed_width svc",
+					"cols": ["svcname", "nodename"],
+					"condition": "svcname+nodename",
+					"children": [
+						{
+							'title': 'Start',
+							'class': 'icon_fixed_width action_start_16',
+							"privileges": ["Manager", "NodeManager", "NodeExec"],
+							"min": 1,
+							'action': 'start'
+						},
+						{
+							'title': 'Stop',
+							'class': 'icon_fixed_width action_stop_16',
+							"privileges": ["Manager", "NodeManager", "NodeExec"],
+							"min": 1,
+							'action': 'stop'
+						},
+						{
+							'title': 'Restart',
+							'class': 'icon_fixed_width action_restart_16',
+							"privileges": ["Manager", "NodeManager", "NodeExec"],
+							"min": 1,
+							'action': 'restart'
+						},
+						{
+							'title': 'Switch',
+							'class': 'icon_fixed_width action_switch_16',
+							"privileges": ["Manager", "NodeManager", "NodeExec"],
+							"min": 1,
+							'action': 'switch'
+						},
+						{
+							'title': 'Sync all remotes',
+							'class': 'icon_fixed_width action_sync_16',
+							"privileges": ["Manager", "NodeManager", "NodeExec"],
+							"min": 1,
+							'action': 'syncall'
+						},
+						{
+							'title': 'Sync peer remotes',
+							'class': 'icon_fixed_width action_sync_16',
+							"privileges": ["Manager", "NodeManager", "NodeExec"],
+							"min": 1,
+							'action': 'syncnodes'
+						},
+						{
+							'title': 'Sync disaster recovery remotes',
+							'class': 'icon_fixed_width action_sync_16',
+							"privileges": ["Manager", "NodeManager", "NodeExec"],
+							"min": 1,
+							'action': 'syncdrp'
+						},
+						{
+							'title': 'Enable',
+							'class': 'icon_fixed_width ok',
+							"privileges": ["Manager", "NodeManager", "NodeExec"],
+							"min": 1,
+							'action': 'enable'
+						},
+						{
+							'title': 'Disable',
+							'class': 'icon_fixed_width nok',
+							"privileges": ["Manager", "NodeManager", "NodeExec"],
+							"min": 1,
+							'action': 'disable'
+						},
+						{
+							'title': 'Thaw',
+							'class': 'icon_fixed_width ok',
+							"privileges": ["Manager", "NodeManager", "NodeExec"],
+							"min": 1,
+							'action': 'thaw'
+						},
+						{
+							'title': 'Freeze',
+							'class': 'icon_fixed_width nok',
+							"privileges": ["Manager", "NodeManager", "NodeExec"],
+							"min": 1,
+							'action': 'freeze'
+						},
+						{
+							'title': 'Compliance check',
+							'class': 'icon_fixed_width comp16',
+							"privileges": ["Manager", "NodeManager", "NodeExec"],
+							"min": 1,
+							'action': 'compliance_check',
+							'params': ["module", "moduleset"]
+						},
+						{
+							'title': 'Compliance fix',
+							'class': 'icon_fixed_width comp16',
+							"privileges": ["Manager", "NodeManager", "NodeExec"],
+							"min": 1,
+							'action': 'compliance_fix',
+							'params': ["module", "moduleset"]
+						}
+					]
+				},
+				{
+					"selector": ["clicked", "checked", "all"],
+					"foldable": true,
+					'title': 'action_menu.on_resources',
+					"class": "icon_fixed_width action16",
+					"cols": ["svcname", "nodename", "vmname", "rid"],
+					"condition": "svcname+nodename+vmname+rid,svcname+nodename+rid",
+					"children": [
+						{
+							'title': 'Start',
+							'class': 'icon_fixed_width action_start_16',
+							"privileges": ["Manager", "NodeManager", "NodeExec"],
+							"min": 1,
+							'action': 'start'
+						},
+						{
+							'title': 'Stop',
+							'class': 'icon_fixed_width action_stop_16',
+							"privileges": ["Manager", "NodeManager", "NodeExec"],
+							"min": 1,
+							'action': 'stop'
+						},
+						{
+							'title': 'Restart',
+							'class': 'icon_fixed_width action_restart_16',
+							"privileges": ["Manager", "NodeManager", "NodeExec"],
+							"min": 1,
+							'action': 'restart'
+						},
+						{
+							'title': 'Enable',
+							'class': 'icon_fixed_width ok',
+							"privileges": ["Manager", "NodeManager", "NodeExec"],
+							"min": 1,
+							'action': 'enable'
+						},
+						{
+							'title': 'Disable',
+							'class': 'icon_fixed_width nok',
+							"privileges": ["Manager", "NodeManager", "NodeExec"],
+							"min": 1,
+							'action': 'disable'
+						}
+					]
+				},
+				{
+					"selector": ["clicked", "checked", "all"],
+					"foldable": true,
+					'title': 'action_menu.on_modules',
+					"class": "icon_fixed_width mod16",
+					"cols": ["svcname", "nodename", "module"],
+					"condition": "svcname+nodename+module,nodename+module",
+					"children": [
+						{
+							'title': 'Check',
+							'class': 'icon_fixed_width comp16',
+							"privileges": ["Manager", "NodeManager", "NodeExec", "CompExec"],
+							"min": 1,
+							'action': 'check'
+						},
+						{
+							'title': 'Fix',
+							'class': 'icon_fixed_width comp16',
+							"privileges": ["Manager", "NodeManager", "NodeExec", "CompExec"],
+							"min": 1,
+							'action': 'fix'
+						}
+					]
+				}
+			]
+		}
+	]
 }
 
 //
@@ -1479,21 +1479,21 @@ function table_action_menu_init_data(t) {
 // only function called at table init.
 //
 function table_bind_action_menu(t) {
-  table_action_menu_init_data(t)
+	table_action_menu_init_data(t)
 
-  $("#table_"+t.id).find("[name="+t.id+"_tools]").each(function(){
-    $(this).bind("mouseup", function(event) {
-      if (event.button == 2) {
-        // right-click => open the action menu
-        table_action_menu(t, event)
-      } else {
-        // left-click => close the action menu, the menu and the filter box
-        $("#fsr"+t.id).hide()
-        $(".menu").hide("fold")
-        $(".action_menu").hide()
-      }
-    })
-  })
+	$("#table_"+t.id).find("[name="+t.id+"_tools]").each(function(){
+		$(this).bind("mouseup", function(event) {
+			if (event.button == 2) {
+				// right-click => open the action menu
+				table_action_menu(t, event)
+			} else {
+				// left-click => close the action menu, the menu and the filter box
+				$("#fsr"+t.id).hide()
+				$(".menu").hide("fold")
+				$(".action_menu").hide()
+			}
+		})
+	})
 }
 
 //
