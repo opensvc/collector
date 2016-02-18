@@ -1517,7 +1517,7 @@ function table_action_menu(t, e){
 	t.div.append(am)
 	o.menu = $("#"+o.menu_id)
 	am.draggable()
-	o.menu.css({"left": pos[0] + "px", "top": pos[1] - $(window).scrollTop() + "px", "max-width": "50%"})
+	o.menu.css({"left": pos[0] - t.div.offset().left + "px", "top": pos[1] - t.div.offset().top + "px"})
 
 	// format the data as menu
 	var ul = $("<ul></ul>")

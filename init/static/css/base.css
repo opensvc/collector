@@ -1296,8 +1296,9 @@ a.xinfo_shown span {
 }
 
 .action_menu {
-	position: fixed !important;
 	min-width: 25em;
+	max-width: 50%;
+	position: absolute !important;
 }
 .action_menu ul {
 	padding: 0.5em;

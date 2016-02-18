@@ -644,7 +644,7 @@ function table_filter_selector(t, e, k, v){
     }
     return __sel
   }
-  $("#fsr"+t.id).css({"left": pos[0] + "px", "top": pos[1] + "px"})
+  $("#fsr"+t.id).css({"left": pos[0] - t.div.offset().left + "px", "top": pos[1] - t.div.offset().top + "px"})
   $("#fsr"+t.id).find("#fsrview").each(function(){
     $(this).text($("[name="+k+"]").find("input").val())
     $(this).unbind()
