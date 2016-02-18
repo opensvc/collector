@@ -1732,7 +1732,6 @@ function table_format_values_cloud(t, span, data) {
     t.refresh_column_filters_in_place()
     t.save_column_filters()
   }
-  console.log("done")
 }
 
 function table_init(opts) {
