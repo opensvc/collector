@@ -189,15 +189,7 @@ function table_apps(divid, options) {
 		'ajax_url': '/init/apps/ajax_apps',
 		'span': ['id'],
 		'force_cols': ['id'],
-		'columns': [
-			'id',
-			'app',
-			'app_domain',
-			'app_team_ops',
-			'roles',
-			'responsibles',
-			'mailto'
-		],
+		'columns': objcols.app,
 		'default_columns': [
 			"app",
 			"app_domain",
@@ -1354,7 +1346,7 @@ function table_packages(divid, options) {
 		"name": "packages",
 		"ajax_url": "/init/packages/ajax_packages",
 		"force_cols": ["id", "os_name"],
-		"columns": [].concat(["nodename", "id", "pkg_name", "pkg_version", "pkg_arch", "pkg_type", "sig_provider", "pkg_sig", "pkg_install_date", "pkg_updated"], objcols.node),
+		"columns": [].concat(["id", "nodename", "pkg_name", "pkg_version", "pkg_arch", "pkg_type", "sig_provider", "pkg_sig", "pkg_install_date", "pkg_updated"], objcols.node),
 		"default_columns": ["nodename", "pkg_name", "pkg_version", "pkg_arch", "pkg_type", "sig_provider", "pkg_install_date", "pkg_updated"],
 		"wsable": true,
 		"events": ["packages_change"]
@@ -1733,7 +1725,7 @@ function table_service_instances(divid, options) {
 		'extrarow': true,
 		'extrarow_class': "svcmon_links",
 		'ajax_url': '/init/default/ajax_svcmon',
-		'span': ['mon_svcname', 'svc_status', 'svc_availstatus', 'svc_app', 'svc_type', 'svc_ha', 'svc_cluster_type', 'svc_flex_min_nodes', 'svc_flex_max_nodes', 'svc_flex_cpu_low_threshold', 'svc_flex_cpu_high_threshold', 'svc_drptype', 'svc_containertype', 'svc_autostart', 'svc_nodes', 'svc_drpnode', 'svc_drpnodes', 'svc_comment', 'svc_created', 'svc_updated', 'app_domain', 'app_team_ops'],
+		'span': [].concat(['mon_svcname'], objcols.service, ['svc_updated', 'app_domain', 'app_team_ops']),
 		'columns': ['id', 'mon_svcname', 'err', 'svc_ha', 'svc_availstatus', 'svc_status', 'svc_app', 'app_domain', 'app_team_ops', 'svc_drptype', 'svc_containertype', 'svc_flex_min_nodes', 'svc_flex_max_nodes', 'svc_flex_cpu_low_threshold', 'svc_flex_cpu_high_threshold', 'svc_autostart', 'svc_nodes', 'svc_drpnode', 'svc_drpnodes', 'svc_comment', 'svc_created', 'svc_updated', 'svc_type', 'svc_cluster_type', 'mon_vmtype', 'mon_vmname', 'mon_vcpus', 'mon_vmem', 'mon_guestos', 'environnement', 'host_mode', 'mon_nodname', 'mon_availstatus', 'mon_overallstatus', 'mon_frozen', 'mon_containerstatus', 'mon_ipstatus', 'mon_fsstatus', 'mon_diskstatus', 'mon_sharestatus', 'mon_syncstatus', 'mon_appstatus', 'mon_hbstatus', 'mon_updated', 'version', 'listener_port', 'team_responsible', 'team_integ', 'team_support', 'project', 'serial', 'model', 'role', 'warranty_end', 'status', 'type', 'node_updated', 'power_supply_nb', 'power_cabinet1', 'power_cabinet2', 'power_protect', 'power_protect_breaker', 'power_breaker1', 'power_breaker2', 'loc_country', 'loc_zip', 'loc_city', 'loc_addr', 'loc_building', 'loc_floor', 'loc_room', 'loc_rack', 'os_name', 'os_release', 'os_vendor', 'os_arch', 'os_kernel', 'cpu_dies', 'cpu_cores', 'cpu_model', 'cpu_freq', 'mem_banks', 'mem_slots', 'mem_bytes'],
 		'default_columns': [
 			"err",
@@ -1850,7 +1842,7 @@ function table_services(divid, options) {
 		'ajax_url': '/init/services/ajax_services',
 		'span': ['svc_name'],
 		'force_cols': ['svc_name', 'svc_status_updated'],
-		'columns': [].concat(['svc_name'], objcols.service),
+		'columns': [].concat(['svc_name'], objcols.service, ["updated"]),
 		'default_columns': ["svc_status", "svc_name", "svc_cluster_type", "svc_availstatus", "svc_status_updated", "svc_ha", "updated"],
 		'colprops': {
 			"updated": colprops.svc_updated

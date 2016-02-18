@@ -224,9 +224,9 @@ function generic_diff(divid, options) {
 
 		function add_prop(prop) {
 			var l = $("<tr class='diff_line'></tr>")
-			if (prop in db_columns) {
-				_prop = db_columns[prop].title
-				_class = "icon_fixed_width "+db_columns[prop].img
+			if (prop in colprops) {
+				_prop = colprops[prop].title
+				_class = "icon_fixed_width "+colprops[prop].img
 			} else {
 				_prop = prop
 				_class = "icon_fixed_width"

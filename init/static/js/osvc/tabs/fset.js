@@ -277,11 +277,11 @@ function fset_designer(divid, options) {
 
 	o.render_f_field = function(data) {
 		var span = $("<span id='f_field'></span>")
-		if (data.filter.f_field in db_columns) {
+		if (data.filter.f_field in colprops) {
 			span.attr("value", data.filter.f_field)
-			span.text(db_columns[data.filter.f_field].title)
+			span.text(colprops[data.filter.f_field].title)
 			span.addClass("icon")
-			span.addClass(db_columns[data.filter.f_field].img)
+			span.addClass(colprops[data.filter.f_field].img)
 		} else {
 			span.text(data.filter.f_field)
 		}
@@ -461,22 +461,16 @@ function fset_designer(divid, options) {
 
 	o.f_field_input = function(table, current) {
 		var fields = {
-			'nodes': table_nodes_defaults.columns,
-			'services': table_services_defaults.columns,
-			'svcmon': table_service_instances_defaults.columns.filter(function(e){
-				return e.match(/^mon_/)
-			}),
-			'resmon': table_resources_defaults.columns.filter(function(e){
-				return e.match(/^res_/)
-			}),
+			'nodes': [].concat(['id', 'nodename'], objcols.node, ["updated"]),
+			'services': [].concat(['id', 'svc_name'], objcols.service, ["updated"]),
+			'svcmon': [].concat(['id', 'mon_svcname', 'mon_nodname'], objcols.service_instance),
+			'resmon': objcols.resource,
 			'b_disk_app': ["disk_devid", "disk_vendor", "svcdisk_updated", "disk_updated", "disk_raid", "disk_used", "svcdisk_id", "disk_arrayid", "disk_id", "disk_level", "disk_name", "disk_created", "disk_dg", "disk_model", "disk_local", "disk_group", "disk_size", "disk_alloc", "disk_region"],
 			'node_hba': ["hba_type", "hba_id"],
-			'apps': table_apps_defaults.columns,
+			'apps': objcols.app,
 			'v_comp_moduleset_attachments': ['modset_name'],
-			'v_tags': ['tag_name'],
-			'packages': table_packages_defaults.columns.filter(function(e){
-				return e.match(/^pkg_/)
-			})
+			'v_tags': ['id', 'tag_name'],
+			'packages': ["id", "nodename", "pkg_name", "pkg_version", "pkg_arch", "pkg_type", "sig_provider", "pkg_sig", "pkg_install_date", "pkg_updated"]
 		}
 
 		var input = $("<input id='f_field' class='aci oi'>")
@@ -488,10 +482,15 @@ function fset_designer(divid, options) {
 		keys.sort()
 		for (var i=0; i<keys.length; i++) {
 			t = keys[i]
-			if (t in db_columns) {
+			if (t in colprops) {
+				if ("field" in colprops[t]) {
+					var val = colprops[t].field
+				} else {
+					var val = t
+				}
 				opts.push({
-					"label": db_columns[t].title,
-					"cl": db_columns[t].img,
+					"label": colprops[t].title,
+					"cl": colprops[t].img,
 					"value": t
 				})
 			} else {
@@ -501,8 +500,8 @@ function fset_designer(divid, options) {
 				})
 			}
 		}
-		if (current && db_columns[current]) {
-			input.val(db_columns[current].title)
+		if (current && colprops[current]) {
+			input.val(colprops[current].title)
 			input.attr("acid", current)
 		}
 		input.autocomplete({
@@ -597,11 +596,10 @@ function fset_designer(divid, options) {
 			var current = input.val()
 			var found = false
 
-			update_f_fields(input, current, current)
-
 			for (var i=0; i<opts.length; i++) {
 				var opt = opts[i]
 				if (opt.label == current) {
+					update_f_fields(input, opt.value, opt.label)
 					found = true
 					break
 				}
