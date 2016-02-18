@@ -1285,7 +1285,12 @@ function _cell_decorator_dash_link_mac_networks(mac) {
 
 function cell_decorator_dash_link_mac_duplicate(e) {
   var line = $(e).parent(".tl")
-  var mac = $.data(line.find("[col=dash_entry]")[0], "v").split(" ")[1]
+  try {
+    var mac = $.parseJSON($.data(line.find("[col=dash_dict]")[0], "v")).mac
+  } catch(err) {
+    console.log(err)
+    return
+  }
   var s = ""
   s += _cell_decorator_dash_link_mac_networks(mac)
   $(e).html(s)
@@ -1297,8 +1302,12 @@ function cell_decorator_dash_link_obsolescence(e, t) {
   s.click(function(){
     if (get_selected() != "") {return}
     var line = $(this).parents(".tl").first()
-    var dash_entry = $.data(line.find("[col=dash_entry]")[0], "v")
-    var name = dash_entry.match(/(.*) obsolete/)[1]
+    try {
+      var name = $.parseJSON($.data(line.find("[col=dash_dict]")[0], "v")).o
+    } catch(err) {
+      console.log(err)
+      return
+    }
     table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
     span_id = $(e).parent(".tl").attr("spansum")
     id = table_id + "_x_" + span_id
