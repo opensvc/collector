@@ -1293,7 +1293,7 @@ function view_nodes(divid, options) {
 	var o = {}
 	$("#"+divid).load("/init/static/views/nodes.html", function() {
 		$(this).i18n()
-		table_nodes("nodes", options)
+		table_nodes("nodes_container", options)
 		$("#uids_a").bind("click", function() {
 			if (!$("#uids").is(":visible")) {
 				$(this).addClass("down16")

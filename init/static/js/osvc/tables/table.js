@@ -465,6 +465,7 @@ function table_bind_filter_input_events(t) {
   var url = t.options.ajax_url + "_col_values/"
 
   // refresh column filter cloud on keyup
+  var xhr = null
   inputs.bind("keyup", function(event) {
     if (is_enter(event) || is_special_key(event)) {
       return
@@ -482,21 +483,29 @@ function table_bind_filter_input_events(t) {
         t.e_header_slim.find("[col='"+col+"']").addClass("bgred")
       }
     }
+
     clearTimeout(t.refresh_timer)
     t.refresh_timer = setTimeout(function validate(){
+      if (xhr) {
+        xhr.abort()
+      }
       var data = t.prepare_request_data()
       data[input.attr('id')] = input.val()
       var dest = input.siblings("[id^="+t.id+"_fc_]")
       var pie = input.siblings("[id^="+t.id+"_fp_]")
       pie.height(0)
       _url = url + col
-      $.ajax({
+      xhr = $.ajax({
        type: "POST",
        url: _url,
        data: data,
+       sync: false,
        context: document.body,
        beforeSend: function(req){
+         t.scroll_disable_dom()
+         pie.empty()
          dest.empty()
+         t.scroll_enable_dom()
          dest.addClass("icon spinner")
        },
        success: function(msg){
@@ -1675,19 +1684,15 @@ function table_format_values_cloud(t, span, data) {
 
   var keys = []
   var max = 0
-  var min = 0
+  var min = Number.MAX_SAFE_INTEGER 
   var delta = 0
   for (key in data) {
     keys.push(key)
     n = data[key]
     if (n > max) max = n
-    min = max
-  }
-  for (key in data) {
-    n = data[key]
     if (n < min) min = n
-    delta = max - min
   }
+  delta = max - min
 
   // header
   var header = $("<h3></h3>")
@@ -1704,6 +1709,7 @@ function table_format_values_cloud(t, span, data) {
   }
 
   // candidates
+  t.scroll_disable_dom()
   for (var i=0; i<skeys.length ; i++) {
     var key = skeys[i]
     var n = data[key]
@@ -1713,18 +1719,20 @@ function table_format_values_cloud(t, span, data) {
       var size = 100
     }
 
-    e = $("<a class='h cloud_tag'></a>")
-    e.text(key)
-    e.css({"font-size": size+"%"})
+    e = $("<a class='h cloud_tag' style='font-size:"+size+"%'>"+key+"</a>")
     e.attr("title", i18n.t("table.number_of_occurence", {"count": data[key]}))
-    e.bind("click", function(){
-      span.siblings("input").val($(this).text())
-      t.refresh()
-      t.refresh_column_filters_in_place()
-      t.save_column_filters()
-    })
     span.append(e)
   }
+  t.scroll_enable_dom()
+  span.children("a").bind("click", trigger)
+
+  function trigger() {
+    span.siblings("input").val($(this).text())
+    t.refresh()
+    t.refresh_column_filters_in_place()
+    t.save_column_filters()
+  }
+  console.log("done")
 }
 
 function table_init(opts) {
@@ -1924,20 +1932,21 @@ function table_init(opts) {
 		t.scroll_disable_dom()
 		sticky_relocate(t.e_header, t.e_sticky_anchor)
 		t.set_scrollbars_position()
-		var to = t.e_table
-		var to_p = to.parent()
+		var to_p = t.e_table.parent()
 		var ww = to_p.width()
-		var tw = to.width()
+		var tw = t.e_table.width()
+		var off = to_p.scrollLeft()
 		if (ww >= tw) {
 			t.div.children(".scroll_left,.scroll_right").hide()
+			t.scroll_enable_dom()
 			return
 		}
-		if (to_p.scrollLeft()>0) {
+		if (off > 0) {
 			t.div.children(".scroll_left").show()
 		} else {
 			t.div.children(".scroll_left").hide()
 		}
-		if (to_p.scrollLeft()+ww+1<tw) {
+		if (off+ww+1 < tw) {
 			t.div.children(".scroll_right").show()
 		} else {
 			t.div.children(".scroll_right").hide()
@@ -1946,17 +1955,20 @@ function table_init(opts) {
 	}
 
 	t.scroll_enable_dom = function() {
-		t.div.parent().bind("DOMNodeInserted DOMNodeRemoved", t.scroll)
+		t.e_table.bind("DOMNodeInserted DOMNodeRemoved", t.scroll)
 	}
 
 	t.scroll_disable_dom = function() {
-		t.div.parent().unbind("DOMNodeInserted DOMNodeRemoved", t.scroll)
+		t.e_table.unbind("DOMNodeInserted DOMNodeRemoved", t.scroll)
 	}
 
 	t.set_scrollbars_position = function() {
-		t.div.parent().find(".scroll_left,.scroll_right").css({
-			"height": t.div.height(),
-			"top": t.div.offset().top
+		var e = t.div.children(".scroll_left,.scroll_right")
+		e.css({
+			"height": t.e_table.height(),
+		})
+		e.offset({
+			"top": t.e_table.offset().top
 		})
 	}
 
