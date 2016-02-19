@@ -34,7 +34,7 @@ function table_actions(divid, options) {
 		'divid': divid,
 		'ajax_url': '/init/svcactions/ajax_actions',
 		'span': ['pid'],
-		'force_cols': ['os_name', 'ack', 'acked_by', 'acked_date', 'acked_comment', 'end'],
+		'force_cols': ['id', 'os_name', 'ack', 'acked_by', 'acked_date', 'acked_comment', 'end'],
 		'columns': [].concat(['svcname', 'hostname', 'pid', 'action', 'status', 'begin', 'end', 'time', 'id', 'status_log', 'cron', 'ack', 'acked_by', 'acked_date', 'acked_comment'], objcols.node),
 		"default_columns": ["svcname", "action", "begin", "cron", "end", "hostname", "pid", "status", "status_log"],
 		"colprops": {
