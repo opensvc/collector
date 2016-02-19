@@ -291,27 +291,47 @@ function table_insert(t, data) {
     })
 }
 
+function toggle_extratable(e) {
+	var id = toggle_extraline(e)
+	var d = $("<table></table>")
+	d.uniqueId()
+	$("#"+id).empty().append(d)
+	return d.attr("id")
+}
+
+function toggle_extraline(e) {
+	return toggle_extra(null, null, e, null)
+}
+
 function toggle_extra(url, id, e, ncols) {
-    line=$(e).parents(".tl").first()
-    if (ncols == 0) {
-        ncols = line.children("[cell=1]").length
-    }
-    var toolbar = ""
-    line.children("td.tools").each(function(){
-      toolbar = "<td class='tools'></td>"
-    })
-    if (line.next().children("#"+id).attr("id")==id) {
-        line.next().remove()
-    }
-    line.after("<tr class='extraline stackable empty_on_pop'>"+toolbar+"<td id="+id+" colspan="+ncols+"></td></tr>")
-    if (url) {
-      sync_ajax(url, [], id, function(){
-        $("#"+id).removeClass("spinner")
-        $("#"+id).children().each(function(){
-          $(this).width($(window).width()-$(this).children().position().left-20)
-        })
-      })
-    }
+	var line = $(e).parents(".tl").first()
+	if (!ncols) {
+		ncols = line.children("[cell=1]").length
+	}
+	var extra = $("<tr class='extraline stackable empty_on_pop'></tr>")
+	line.children("td.tools").each(function(){
+		extra.append("<td class='tools'></td>")
+	})
+	if (line.next().children("#"+id).attr("id")==id) {
+		line.next().remove()
+	}
+	var td = $("<td colspan="+ncols+"></td>")
+	if (id) {
+		td.attr("id", id)
+	} else {
+		td.uniqueId()
+		id = td.attr("id")
+	}
+	extra.append(td)
+	extra.insertAfter(line)
+
+	// ajax load url, if specified
+	if (url) {
+		sync_ajax(url, [], id, function(){
+			$("#"+id).removeClass("spinner")
+		})
+	}
+	return id
 }
 
 function refresh_plot(url, rowid, id) {

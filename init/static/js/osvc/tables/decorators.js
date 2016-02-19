@@ -265,11 +265,7 @@ function cell_decorator_app(e) {
   $(e).html("<span class='clickable'>"+v+"</span>")
   $(e).addClass("corner")
   $(e).click(function(){
-    var line = $(this).parent(".tl")
-    table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
-    span_id = $(e).parent(".tl").attr("spansum")
-    id = table_id + "_x_" + span_id
-    toggle_extra(null, id, e, 0)
+    var id = toggle_extraline(e)
     app_tabs(id, {"app_name": v})
   })
 }
@@ -281,10 +277,7 @@ function cell_decorator_dns_domain(e) {
   $(e).click(function(){
     var line = $(this).parent(".tl")
     var domain_id = $.data(line.children("[col=id]")[0], "v")
-    table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
-    span_id = $(e).parent(".tl").attr("spansum")
-    id = table_id + "_x_" + span_id
-    toggle_extra(null, id, e, 0)
+    var id = toggle_extraline(e)
     dns_domain_tabs(id, {"domain_id": domain_id, "domain_name": v})
   })
 }
@@ -296,10 +289,7 @@ function cell_decorator_dns_record(e) {
   $(e).click(function(){
     var line = $(this).parent(".tl")
     var record_id = $.data(line.children("[col=id]")[0], "v")
-    table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
-    span_id = $(e).parent(".tl").attr("spansum")
-    id = table_id + "_x_" + span_id
-    toggle_extra(null, id, e, 0)
+    var id = toggle_extraline(e)
     dns_record_tabs(id, {"record_id": record_id, "record_name": v})
   })
 }
@@ -311,10 +301,7 @@ function cell_decorator_disk_array_dg(e) {
   $(e).click(function(){
     var line = $(this).parent(".tl")
     var array_name = $.data(line.children("[col=array_name],[col=disk_arrayid]")[0], "v")
-    table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
-    span_id = $(e).parent(".tl").attr("spansum")
-    id = table_id + "_x_" + span_id
-    toggle_extra(null, id, e, 0)
+    var id = toggle_extraline(e)
     diskgroup_tabs(id, {"array_name": array_name, "dg_name": v})
   })
 }
@@ -324,10 +311,7 @@ function cell_decorator_disk_array(e) {
   $(e).html("<span class='clickable'>"+v+"</span>")
   $(e).addClass("corner")
   $(e).click(function(){
-    table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
-    span_id = $(e).parent(".tl").attr("spansum")
-    id = table_id + "_x_" + span_id
-    toggle_extra(null, id, e, 0)
+    var id = toggle_extraline(e)
     array_tabs(id, {"array_name": v})
   })
 }
@@ -339,10 +323,7 @@ function cell_decorator_quota(e) {
   $(e).click(function(){
     var line = $(this).parent(".tl")
     var quota_id = $.data(line.children("[col=id]")[0], "v")
-    table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
-    span_id = $(e).parent(".tl").attr("spansum")
-    id = table_id + "_x_" + span_id
-    toggle_extra(null, id, e, 0)
+    var id = toggle_extraline(e)
     quota_tabs(id, {"quota_id": quota_id})
   })
 }
@@ -354,10 +335,7 @@ function cell_decorator_prov_template(e) {
   $(e).click(function(){
     var line = $(this).parent(".tl")
     var tpl_id = $.data(line.children("[col=id]")[0], "v")
-    table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
-    span_id = $(e).parent(".tl").attr("spansum")
-    id = table_id + "_x_" + span_id
-    toggle_extra(null, id, e, 0)
+    var id = toggle_extraline(e)
     prov_template_tabs(id, {"tpl_id": tpl_id, "tpl_name": v})
   })
 }
@@ -370,11 +348,7 @@ function cell_decorator_fset_name(e) {
   $(e).html("<span class='clickable'>"+v+"</span>")
   $(e).addClass("corner")
   $(e).click(function(){
-    var line = $(this).parent(".tl")
-    table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
-    span_id = $(e).parent(".tl").attr("spansum")
-    id = table_id + "_x_" + span_id
-    toggle_extra(null, id, e, 0)
+    var id = toggle_extraline(e)
     filterset_tabs(id, {"fset_name": v})
   })
 }
@@ -384,11 +358,7 @@ function cell_decorator_modset_name(e) {
   $(e).html("<span class='clickable'>"+v+"</span>")
   $(e).addClass("corner")
   $(e).click(function(){
-    var line = $(this).parent(".tl")
-    table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
-    span_id = $(e).parent(".tl").attr("spansum")
-    id = table_id + "_x_" + span_id
-    toggle_extra(null, id, e, 0)
+    var id = toggle_extraline(e)
     moduleset_tabs(id, {"modset_name": v})
   })
 }
@@ -398,11 +368,7 @@ function cell_decorator_ruleset_name(e) {
   $(e).html("<span class='clickable'>"+v+"</span>")
   $(e).addClass("corner")
   $(e).click(function(){
-    var line = $(this).parent(".tl")
-    table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
-    span_id = $(e).parent(".tl").attr("spansum")
-    id = table_id + "_x_" + span_id
-    toggle_extra(null, id, e, 0)
+    var id = toggle_extraline(e)
     ruleset_tabs(id, {"ruleset_name": v})
   })
 }
@@ -414,10 +380,7 @@ function cell_decorator_report_name(e) {
   $(e).click(function(){
     var line = $(this).parent(".tl")
     var report_id = $.data(line.children("[col=id]")[0], "v")
-    table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
-    span_id = $(e).parent(".tl").attr("spansum")
-    id = table_id + "_x_" + span_id
-    toggle_extra(null, id, e, 0)
+    var id = toggle_extraline(e)
     report_tabs(id, {"report_id": report_id, "report_name": v})
   })
 }
@@ -429,10 +392,7 @@ function cell_decorator_chart_name(e) {
   $(e).click(function(){
     var line = $(this).parent(".tl")
     var chart_id = $.data(line.children("[col=id]")[0], "v")
-    table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
-    span_id = $(e).parent(".tl").attr("spansum")
-    id = table_id + "_x_" + span_id
-    toggle_extra(null, id, e, 0)
+    var id = toggle_extraline(e)
     chart_tabs(id, {"chart_id": chart_id, "chart_name": v})
   })
 }
@@ -444,10 +404,7 @@ function cell_decorator_metric_name(e) {
   $(e).click(function(){
     var line = $(this).parent(".tl")
     var metric_id = $.data(line.children("[col=id]")[0], "v")
-    table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
-    span_id = $(e).parent(".tl").attr("spansum")
-    id = table_id + "_x_" + span_id
-    toggle_extra(null, id, e, 0)
+    var id = toggle_extraline(e)
     metric_tabs(id, {"metric_id": metric_id, "metric_name": v})
   })
 }
@@ -459,10 +416,7 @@ function cell_decorator_form_name(e) {
   $(e).click(function(){
     var line = $(this).parent(".tl")
     var form_id = $.data(line.children("[col=id]")[0], "v")
-    table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
-    span_id = $(e).parent(".tl").attr("spansum")
-    id = table_id + "_x_" + span_id
-    toggle_extra(null, id, e, 0)
+    var id = toggle_extraline(e)
     form_tabs(id, {"form_id": form_id, "form_name": v})
   })
 }
@@ -474,10 +428,7 @@ function cell_decorator_network(e) {
   $(e).click(function(){
     var line = $(this).parent(".tl")
     var net_id = $.data(line.children("[col=id]")[0], "v")
-    table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
-    span_id = $(e).parent(".tl").attr("spansum")
-    id = table_id + "_x_" + span_id
-    toggle_extra(null, id, e, 0)
+    var id = toggle_extraline(e)
     network_tabs(id, {"network_id": net_id})
   })
 }
@@ -492,14 +443,7 @@ function cell_decorator_chk_instance(e) {
     $(e).html(s)
     $(e).addClass("corner")
     $(e).click(function(){
-      table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
-      span_id = $(e).parent(".tl").attr("spansum")
-      id = table_id + "_x_" + span_id
-      var d = $("<table></table>")
-      d.uniqueId()
-      toggle_extra(null, id, e, 0)
-      $("#"+id).empty().append(d)
-      id = d.attr("id")
+      var id = toggle_extratable(e)
       var req = {}
       req[id+"_f_disk_id"] = disk_id
       table_disks(id, {"id": id, "request_vars": req, "volatile_filters": true})
@@ -702,19 +646,13 @@ function cell_decorator_svc_action_err(e) {
     $(e).empty()
     return
   }
-  var line = $(e).parent(".tl")
-  var svcname = $.data(line.children("[col=mon_svcname]")[0], "v")
   s = $("<a class='icon action16 icon-red clickable'>"+v+"</a>")
   s.click(function(){
     if (get_selected() != "") {return}
-    table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
-    span_id = $(e).parent(".tl").attr("spansum")
-    id = table_id + "_x_" + span_id
-    toggle_extra(null, id, e, 0)
-    d = $("<table></table>")
-    d.uniqueId()
-    $("#"+id).empty().append(d)
-    table_actions(d.attr("id"), {
+    var line = $(e).parent(".tl")
+    var svcname = $.data(line.children("[col=mon_svcname]")[0], "v")
+    var id = toggle_extratable(e)
+    table_actions(id, {
 	"volatile_filters": true,
 	"request_vars": {
 		"actions_f_svcname": svcname,
@@ -774,10 +712,7 @@ function _cell_decorator_nodename(e, os_icon) {
   } catch(e) {}
   $(e).click(function(){
     if (get_selected() != "") {return}
-    table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
-    span_id = $(e).parent(".tl").attr("spansum")
-    id = table_id + "_x_" + span_id
-    toggle_extra(null, id, e, 0)
+    var id = toggle_extraline(e)
     node_tabs(id, {"nodename": v})
   })
 }
@@ -795,14 +730,11 @@ function cell_decorator_groups(e) {
     s += "<span>"+g+"</span>"
   }
   $(e).html(s)
-  table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
-  span_id = $(e).parent(".tl").attr("spansum")
-  id = table_id + "_x_" + span_id
   $(e).children().each(function(){
     $(this).click(function(){
       if (get_selected() != "") {return}
       g = $(this).text()
-      toggle_extra(null, id, e, 0)
+      var id = toggle_extraline(e)
       group_tabs(id, {"group_name": g})
     })
   })
@@ -818,10 +750,7 @@ function cell_decorator_user_id(e) {
   $(e).addClass("corner")
   $(e).click(function(){
     if (get_selected() != "") {return}
-    table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
-    span_id = $(e).parent(".tl").attr("spansum")
-    id = table_id + "_x_" + span_id
-    toggle_extra(null, id, e, 0)
+    var id = toggle_extraline(e)
     user_tabs(id, {"user_id": v, "fullname": fullname})
   })
 }
@@ -835,10 +764,7 @@ function cell_decorator_username(e) {
   $(e).addClass("corner")
   $(e).click(function(){
     if (get_selected() != "") {return}
-    table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
-    span_id = $(e).parent(".tl").attr("spansum")
-    id = table_id + "_x_" + span_id
-    toggle_extra(null, id, e, 0)
+    var id = toggle_extraline(e)
     user_tabs(id, {"fullname": v})
   })
 }
@@ -853,10 +779,7 @@ function cell_decorator_svcname(e) {
   $(e).addClass("corner")
   $(e).click(function(){
     if (get_selected() != "") {return}
-    table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
-    span_id = $(e).parent(".tl").attr("spansum")
-    id = table_id + "_x_" + span_id
-    toggle_extra(null, id, e, 0)
+    var id = toggle_extraline(e)
     service_tabs(id, {"svcname": v})
   })
 }
@@ -936,14 +859,8 @@ function cell_decorator_svcmon_link_actions(e) {
     var line = $(this).parents(".tl").first()
     var svcname = $.data(line.children("[col=mon_svcname]")[0], "v")
     if (get_selected() != "") {return}
-    table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
-    span_id = $(e).parent(".tl").attr("spansum")
-    id = table_id + "_x_" + span_id
-    toggle_extra(null, id, e, 0)
-    d = $("<table></table>")
-    d.uniqueId()
-    $("#"+id).empty().append(d)
-    table_actions(d.attr("id"), {
+    var id = toggle_extratable(e)
+    table_actions(id, {
         "volatile_filters": true,
         "request_vars": {
                 "actions_f_svcname": svcname,
@@ -986,10 +903,7 @@ function cell_decorator_comp_log(e) {
   $(e).addClass("corner")
   $(e).click(function(){
     if (get_selected() != "") {return}
-    table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
-    span_id = $(e).parent(".tl").attr("spansum")
-    id = table_id + "_x_" + span_id
-    toggle_extra(null, id, e, 0)
+    var id = toggle_extraline(e)
     comp_log(id, {"module": module, "svcname": svcname, "nodename": nodename})
   })
 }
@@ -1064,11 +978,8 @@ function cell_decorator_uid(e) {
   $(e).addClass("corner")
   $(e).click(function(){
     if (get_selected() != "") {return}
-    table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
-    span_id = $(e).parent(".tl").attr("spansum")
-    id = table_id + "_x_" + span_id
     url = services_get_url() + "/init/nodes/ajax_uid_dispatch?user_id="+v
-    toggle_extra(url, id, e, 0)
+    toggle_extra(url, null, e, 0)
   })
 }
 
@@ -1085,11 +996,8 @@ function cell_decorator_gid(e) {
   $(e).addClass("corner")
   $(e).click(function(){
     if (get_selected() != "") {return}
-    table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
-    span_id = $(e).parent(".tl").attr("spansum")
-    id = table_id + "_x_" + span_id
     url = services_get_url() + "/init/nodes/ajax_gid_dispatch?group_id="+v
-    toggle_extra(url, id, e, 0)
+    toggle_extra(url, null, e, 0)
   })
 }
 
@@ -1106,11 +1014,8 @@ function cell_decorator_chk_type(e) {
   $(e).addClass("corner")
   $(e).click(function(){
     if (get_selected() != "") {return}
-    table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
-    span_id = $(e).parent(".tl").attr("spansum")
-    id = table_id + "_x_" + span_id
     url = services_get_url() + "/init/checks/ajax_chk_type_defaults/"+v
-    toggle_extra(url, id, e, 0)
+    toggle_extra(url, null, e, 0)
   })
 }
 
@@ -1123,18 +1028,12 @@ function cell_decorator_dash_link_comp_tab(e) {
   $(e).addClass("corner")
   if (svcname != "") {
     $(e).click(function(){
-      table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
-      span_id = $(e).parent(".tl").attr("spansum")
-      id = table_id + "_x_" + span_id
-      toggle_extra(null, id, e, 0)
+      var id = toggle_extraline(e)
       service_tabs(id, {"svcname": svcname, "tab": "service_tabs.compliance"})
     })
   } else if (nodename != "") {
     $(e).click(function(){
-      table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
-      span_id = $(e).parent(".tl").attr("spansum")
-      id = table_id + "_x_" + span_id
-      toggle_extra(null, id, e, 0)
+      var id = toggle_extraline(e)
       node_tabs(id, {"nodename": nodename, "tab": "node_tabs.compliance"})
     })
   }
@@ -1148,10 +1047,7 @@ function cell_decorator_dash_link_pkg_tab(e) {
   $(e).addClass("corner")
   if (svcname != "") {
     $(e).click(function(){
-      table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
-      span_id = $(e).parent(".tl").attr("spansum")
-      id = table_id + "_x_" + span_id
-      toggle_extra(null, id, e, 0)
+      var id = toggle_extraline(e)
       service_tabs(id, {"svcname": svcname, "tab": "service_tabs.pkgdiff"})
     })
   }
@@ -1166,14 +1062,8 @@ function _cell_decorator_dash_link_actions(svcname, e) {
   s = $("<a class='icon action16 clickable'></a>")
   s.click(function(){
     if (get_selected() != "") {return}
-    table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
-    span_id = $(e).parent(".tl").attr("spansum")
-    id = table_id + "_x_" + span_id
-    toggle_extra(null, id, e, 0)
-    d = $("<table></table>")
-    d.uniqueId()
-    $("#"+id).empty().append(d)
-    table_actions(d.attr("id"), {
+    var id = toggle_extratable(e)
+    table_actions(id, {
 	"volatile_filters": true,
 	"request_vars": {
 		"actions_f_svcname": svcname,
@@ -1203,14 +1093,8 @@ function cell_decorator_obs_count(e) {
     } else {
       options.request_vars.nodes_f_os_concat = obs_name
     }
-    table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
-    span_id = $(e).parent(".tl").attr("spansum")
-    id = table_id + "_x_" + span_id
-    toggle_extra(null, id, e, 0)
-    d = $("<table></table>")
-    d.uniqueId()
-    $("#"+id).empty().append(d)
-    table_nodes(d.attr("id"), options)
+    var id = toggle_extratable(e)
+    table_nodes(id, options)
   })
 }
 
@@ -1218,14 +1102,8 @@ function _cell_decorator_dash_link_action_error(svcname, e) {
   s = $("<a class='icon alert16 clickable'></a>")
   s.click(function(){
     if (get_selected() != "") {return}
-    table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
-    span_id = $(e).parent(".tl").attr("spansum")
-    id = table_id + "_x_" + span_id
-    toggle_extra(null, id, e, 0)
-    d = $("<table></table>")
-    d.uniqueId()
-    $("#"+id).empty().append(d)
-    table_actions(d.attr("id"), {
+    var id = toggle_extratable(e)
+    table_actions(id, {
 	"volatile_filters": true,
 	"request_vars": {
 		"actions_f_svcname": svcname,
@@ -1253,10 +1131,7 @@ function cell_decorator_dash_link_svcmon(e) {
   $(e).addClass("corner")
   if (svcname != "") {
     $(e).click(function(){
-      table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
-      span_id = $(e).parent(".tl").attr("spansum")
-      id = table_id + "_x_" + span_id
-      toggle_extra(null, id, e, 0)
+      var id = toggle_extraline(e)
       service_tabs(id, {"svcname": svcname, "tab": "service_tabs.status"})
     })
   }
@@ -1270,10 +1145,7 @@ function cell_decorator_dash_link_node(e) {
   $(e).addClass("corner")
   if (nodename != "") {
     $(e).click(function(){
-      table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
-      span_id = $(e).parent(".tl").attr("spansum")
-      id = table_id + "_x_" + span_id
-      toggle_extra(null, id, e, 0)
+      var id = toggle_extraline(e)
       node_tabs(id, {"nodename": nodename, "tab": "node_tabs.properties"})
     })
   }
@@ -1287,14 +1159,7 @@ function cell_decorator_dash_link_checks(e) {
   $(e).addClass("corner")
   if (nodename != "") {
     $(e).click(function(){
-      table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
-      span_id = $(e).parent(".tl").attr("spansum")
-      id = table_id + "_x_" + span_id
-      var d = $("<table></table>")
-      d.uniqueId()
-      toggle_extra(null, id, e, 0)
-      $("#"+id).empty().append(d)
-      id = d.attr("id")
+      var id = toggle_extratable(e)
       var req = {}
       req[id+"_f_chk_nodename"] = nodename
       req[id+"_f_chk_err"] = ">0"
@@ -1334,14 +1199,8 @@ function cell_decorator_dash_link_obsolescence(e, t) {
       console.log(err)
       return
     }
-    table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
-    span_id = $(e).parent(".tl").attr("spansum")
-    id = table_id + "_x_" + span_id
-    toggle_extra(null, id, e, 0)
-    d = $("<table></table>")
-    d.uniqueId()
-    $("#"+id).empty().append(d)
-    table_obsolescence(d.attr("id"), {
+    var id = toggle_extratable(e)
+    table_obsolescence(id, {
 	"volatile_filters": true,
 	"request_vars": {
 		"obs_f_obs_name": name
@@ -1418,15 +1277,8 @@ function cell_decorator_form_id(e) {
   $(e).html("<span class='icon wf16 nowrap clickable'>"+v+"</span>")
   $(e).addClass("corner")
   $(e).click(function(){
-    var line = $(this).parent(".tl")
-    table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
-    span_id = $(e).parent(".tl").attr("spansum")
-    id = table_id + "_x_" + span_id
-    toggle_extra(null, id, e, 0)
-    var table = $("<table></table>")
-    table.uniqueId()
-    $("#"+id).append(table)
-    workflow(table.attr("id"), {"form_id": v})
+    var id = toggle_extratable(e)
+    workflow(id, {"form_id": v})
   })
 }
 
@@ -1528,10 +1380,7 @@ function cell_decorator_dash_entry(e) {
     var dash_created = $.data(line.children("[col=dash_created]")[0], "v")
     var rowid = line.attr("cksum")
     url = services_get_url() + "/init/dashboard/ajax_alert_events?dash_nodename="+nodename+"&dash_svcname="+svcname+"&dash_md5="+dash_md5+"&dash_created="+dash_created+"&rowid="+rowid
-    table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
-    span_id = line.attr("spansum")
-    id = table_id + "_x_" + span_id
-    toggle_extra(url, id, this, 0)
+    toggle_extra(url, null, this, 0)
   })
 }
 
@@ -1544,10 +1393,7 @@ function cell_decorator_rset_md5(e) {
   $(e).click(function(){
     if (get_selected() != "") {return}
     url = services_get_url() + "/init/compliance/ajax_rset_md5?rset_md5="+v
-    table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
-    span_id = $(e).parent(".tl").attr("spansum")
-    id = table_id + "_x_" + span_id
-    toggle_extra(url, id, this, 0)
+    toggle_extra(url, null, this, 0)
   })
 }
 
