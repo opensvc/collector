@@ -801,7 +801,7 @@
 		"help" : "Survoler un élément pour obtenir les détails"
 	},
 	"link" : {
-		"notfound" : "Lien non trouvé.	Il peut avoir expiré, veuillez le régénérer s'il vous plaît."
+		"notfound" : "Lien non trouvé. Il peut avoir expiré, veuillez le régénérer s'il vous plaît."
 	},
 	"menu" : {
 		"navigation": "Navigation",
