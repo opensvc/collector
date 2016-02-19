@@ -1146,6 +1146,10 @@ a.xinfo_shown span {
 	border-radius:8px;
 }
 
+.movable {
+	cursor: move;
+}
+
 .panel_move {
 	-webkit-user-select: none;
 	-khtml-user-select: none;
@@ -2632,8 +2636,13 @@ a.search-link:hover {
 	white-space: nowrap;
 }
 
+.right_click_menu > table {
+	width: 100%;
+}
 .right_click_menu {
 	box-shadow: 0 0 20px 2px;
+	width: 16em;
+	word-break: break-word;
 	display: none;
 	position: absolute;
 	background: white;

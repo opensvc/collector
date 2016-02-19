@@ -1517,7 +1517,7 @@ function table_action_menu(t, e){
 	t.div.append(am)
 	o.menu = $("#"+o.menu_id)
 
-	var header = $("<h2 class='icon fa-bars'></h2>")
+	var header = $("<h2 class='icon fa-bars movable'></h2>")
 	header.text(i18n.t("table.action_menu") + " : " + i18n.t("table.name."+t.options.name))
 	o.menu.append(header)
 	am.draggable({
