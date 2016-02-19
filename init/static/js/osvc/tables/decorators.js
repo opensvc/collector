@@ -487,8 +487,24 @@ function cell_decorator_chk_instance(e) {
   var line = $(e).parent(".tl")
   var chk_type = $.data(line.children("[col=chk_type]")[0], "v")
   if (chk_type == "mpath") {
-    url = services_get_url() + "/init/disks/disks?disks_f_disk_id="+v+"&volatile_filters=true"
-    s = "<a class='icon hd16' href='"+url+"' target='_blank'>"+v+"</a>"
+    var disk_id = $.data(line.children("[col=chk_instance]")[0], "v")
+    s = "<div class='icon check16 clickable'></div>"
+    $(e).html(s)
+    $(e).addClass("corner")
+    $(e).click(function(){
+      table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
+      span_id = $(e).parent(".tl").attr("spansum")
+      id = table_id + "_x_" + span_id
+      var d = $("<table></table>")
+      d.uniqueId()
+      toggle_extra(null, id, e, 0)
+      $("#"+id).empty().append(d)
+      id = d.attr("id")
+      var req = {}
+      req[id+"_f_disk_id"] = disk_id
+      table_disks(id, {"id": id, "request_vars": req, "volatile_filters": true})
+    })
+    s = "<a class='icon hd16 nowrap'>"+v+"</a>"
     $(e).html(s)
   }
 }
@@ -1263,18 +1279,28 @@ function cell_decorator_dash_link_node(e) {
   }
 }
 
-function _cell_decorator_dash_link_checks(nodename) {
-  url = services_get_url() + "/init/checks/checks?checks_f_chk_nodename="+nodename+"&volatile_filters=true"
-  s = "<a class='icon check16 clickable' target='_blank' href='"+url+"'></a>"
-  return s
-}
-
 function cell_decorator_dash_link_checks(e) {
   var line = $(e).parent(".tl")
   var nodename = $.data(line.find("[col=dash_nodename]")[0], "v")
-  var s = ""
-  s += _cell_decorator_dash_link_checks(nodename)
+  s = "<div class='icon check16 clickable'></div>"
   $(e).html(s)
+  $(e).addClass("corner")
+  if (nodename != "") {
+    $(e).click(function(){
+      table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
+      span_id = $(e).parent(".tl").attr("spansum")
+      id = table_id + "_x_" + span_id
+      var d = $("<table></table>")
+      d.uniqueId()
+      toggle_extra(null, id, e, 0)
+      $("#"+id).empty().append(d)
+      id = d.attr("id")
+      var req = {}
+      req[id+"_f_chk_nodename"] = nodename
+      req[id+"_f_chk_err"] = ">0"
+      table_checks(id, {"id": id, "request_vars": req, "volatile_filters": true})
+    })
+  }
 }
 
 function _cell_decorator_dash_link_mac_networks(mac) {
