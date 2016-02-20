@@ -1468,7 +1468,7 @@ function status_outdated(line) {
     l = line.children("[cell=1][col=status_updated]")
   }
   if (l.length == 0) {
-    l = line.children("[cell=1][name$=_updated]")
+    l = line.children("[cell=1][col$=updated]")
   }
   if (l.length == 0) {
     return true
