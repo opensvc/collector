@@ -1333,7 +1333,7 @@ function cell_decorator_tag_exclude(e) {
         if (!is_enter(event)) {
           return
         }
-        var tag_id = $.data($(this).parents(".tl").find("[name=tags_c_id]")[0], "v")
+        var tag_id = $.data($(this).parents(".tl").find("[col=id]")[0], "v")
         var data = {
           "tag_exclude": $(this).val(),
         }

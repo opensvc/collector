@@ -670,11 +670,11 @@ function view_comp_status(divid, options) {
 }
 
 function comp_status_log_on_hover(t) {
-	t.div.find("[name$=_c_run_status]").hover(
+	t.div.find("[col=run_status]").hover(
 	function() {
 		line = $(this).parents("tr")
-		var s = line.children("[name$=_c_run_status]")
-		var e = line.children("[name$=_c_run_log]")
+		var s = line.children("[col=run_status]")
+		var e = line.children("[col=run_log]")
 		var pos = s.position()
 		e.width($(window).width()*0.8)
 		e.css({"left": pos.left - e.width() - 10 + "px", "top": pos.top+s.parent().height() + "px"})
@@ -683,7 +683,7 @@ function comp_status_log_on_hover(t) {
 		e.show()
 	},
 	function() {
-		$(this).parents("tr").children("[name$=_c_run_log]").hide()
+		$(this).parents("tr").children("[col=run_log]").hide()
 	})
 }
 

@@ -1894,7 +1894,6 @@ function table_init(opts) {
 	t.add_column_header_slim = function(tr, c) {
 		var th = $("<th></th>")
 		th.addClass(t.colprops[c]._class)
-		th.attr("name", t.id+"_c_"+c)
 		th.attr("col", c)
 		tr.append(th)
 	}
@@ -1938,8 +1937,8 @@ function table_init(opts) {
 
 	t.cell_span = function(e) {
 		try {
-			var s = $(e).attr("name").split("_c_")[1]
-		} catch(e) {
+			var s = $(e).attr("col")
+		} catch(err) {
 			return false
 		}
 		if (t.options.span.indexOf(s) < 0) {
@@ -2024,7 +2023,6 @@ function table_init(opts) {
 	t.add_column_header = function(tr, c) {
 		var th = $("<th></th>")
 		th.addClass(t.colprops[c]._class)
-		th.attr("name", t.id+"_c_"+c)
 		th.attr("col", c)
 		th.text(i18n.t("col."+t.colprops[c].title))
 		tr.append(th)
@@ -2033,7 +2031,6 @@ function table_init(opts) {
 	t.add_column_header_input = function (tr, c) {
 		var th = $("<th></th>")
 		//th.addClass(t.colprops[c]._class)
-		th.attr("name", t.id+"_c_"+c)
 		th.attr("col", c)
 
 		var filter_tool = $("<span class='clickable icon filter16'></span>")
@@ -2245,8 +2242,7 @@ function table_init(opts) {
 			if (t.options.visible_columns.indexOf(c) >= 0) {
 				continue
 			}
-			n = t.id + "_c_" + c
-			$("#table_"+t.id).find("[name="+n+"]").hide()
+			$("#table_"+t.id).find("[col="+c+"]").hide()
 		}
 	}
 
@@ -2309,7 +2305,6 @@ function table_init(opts) {
 
 	t.cell_fmt = function(k, v) {
 		var cl = ""
-		var n = t.id+"_c_"+k
 		var classes = []
 		if ((k == "extra") && (typeof(t.options.extrarow_class) !== 'undefined')) {
 			classes.push(t.options.extrarow_class)
@@ -2334,7 +2329,7 @@ function table_init(opts) {
 		} else {
 			var text = v
 		}
-		var s = $("<td cell='1' col='"+k+"' name='"+n+"' "+cl+">"+text+"</td>")
+		var s = $("<td cell='1' col='"+k+"' "+cl+">"+text+"</td>")
 		$.data(s[0], "v", v)
 		return s
 	}

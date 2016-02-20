@@ -1693,11 +1693,10 @@ function table_action_menu_get_cols_data_all(t, e, scope, selector) {
 		var reverse_col = {}
 		for (var c in t.column_selectors) {
 			var s = t.column_selectors[c]
-			var name = t.div.find("tr.theader").first().find(s).first().attr("name")
-			if (!name) {
+			var col = t.div.find("tr.theader").first().find(s).first().attr("col")
+			if (!col) {
 				continue
 			}
-			var col = name.replace(/.*_c_/, "")
 			cols.push(col)
 			reverse_col[col] = c
 		}
