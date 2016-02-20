@@ -1725,18 +1725,6 @@ function table_init(opts) {
 		sticky_relocate(t.e_header, t.e_sticky_anchor)
 	}
 
-	t.relocate_extra_rows = function() {
-		$("td[id^="+t.id+"_x_]").each(function(){
-			var cksum = $(this).attr("id").split("_x_")[1]
-			var d = $(".tl[spansum="+cksum+"]")
-			if (d.length == 0) {
-				$(this).parent().remove()
-			} else {
-				$(this).parent().insertAfter(d)
-			}
-		})
-	}
-
 	t.reset_column_filters = function() {
 		if (!t.e_header_filters) {
 			return
@@ -2459,7 +2447,6 @@ function table_init(opts) {
 		t.hide_cells()
 		t.cell_decorator()
 		t.unset_refresh_spin()
-		t.relocate_extra_rows()
 		tbody.find("tr.tl").children("td.tohighlight").removeClass("tohighlight").effect("highlight", 1000)
 		t.set_scrollbars_position()
 		t.scroll_enable_dom()
@@ -2486,7 +2473,7 @@ function table_init(opts) {
 
 		var data = t.prepare_request_data()
 
-		// refresh open tabs to overlay to preserve what was in use
+		// move open tabs to overlay to preserve what was in use
 		if (t.div.find(".extraline:visible").children("td").children("table").length > 0) {
 			$("#overlay").empty().hide()
 			t.div.find(".extraline").children("td").children("table").parent().each(function() {
