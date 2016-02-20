@@ -108,6 +108,7 @@ objcols = {
 		'nodename',
 		'vmname',
 		'rid',
+		'res_type',
 		'res_status',
 		'res_desc',
 		'res_log',
@@ -1560,6 +1561,11 @@ colprops = {
 		"_class": "boolean",
 		"img": "svc",
 		"title": "Optional"
+	},
+	"res_type": {
+		"_class": "res_stype",
+		"img": "svc",
+		"title": "Type"
 	},
 	"res_status": {
 		"_class": "status",

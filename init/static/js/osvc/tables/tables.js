@@ -1563,8 +1563,8 @@ function table_resources(divid, options) {
 		'ajax_url': '/init/resmon/ajax_resmon',
 		'span': ['nodename', 'svcname'],
 		'force_cols': ['id', 'svcname', 'nodename', 'vmname', 'rid', 'updated', 'os_name'],
-		'columns': [].concat(['svcname', 'nodename', 'vmname', 'rid', 'res_status', 'res_desc', 'res_log', 'res_monitor', 'res_disable', 'res_optional', 'updated'], objcols.node, ['node_updated']),
-		'default_columns': ['svcname', 'nodename', 'vmname', 'rid', 'res_status', 'res_desc', 'res_log', 'res_monitor', 'res_disable', 'res_optional', 'updated'],
+		'columns': [].concat(['svcname', 'nodename', 'vmname', 'rid', 'res_type', 'res_status', 'res_desc', 'res_log', 'res_monitor', 'res_disable', 'res_optional', 'updated'], objcols.node, ['node_updated']),
+		'default_columns': ['svcname', 'nodename', 'vmname', 'rid', 'res_type', 'res_status', 'res_desc', 'res_log', 'res_monitor', 'res_disable', 'res_optional', 'updated'],
 		'wsable': true,
 		'events': ['resmon_change']
 	}
@@ -1582,7 +1582,7 @@ function table_resources_node(divid, nodename) {
 		"id": id,
 		"caller": "table_resources_node",
 		"request_vars": request_vars,
-		"visible_columns": ['svcname', 'vmname', 'rid', 'res_status', 'res_desc', 'res_log', 'res_monitor', 'res_disable', 'res_optional', 'updated'],
+		"visible_columns": ['svcname', 'vmname', 'rid', 'res_type', 'res_status', 'res_desc', 'res_log', 'res_monitor', 'res_disable', 'res_optional', 'updated'],
 		"volatile_filters": true,
 		"bookmarkable": false,
 		"refreshable": false,
@@ -1605,7 +1605,7 @@ function table_resources_svc(divid, svcname) {
 		"id": id,
 		"caller": "table_resources_svc",
 		"request_vars": request_vars,
-		"visible_columns": ['nodename', 'vmname', 'rid', 'res_status', 'res_desc', 'res_log', 'res_monitor', 'res_disable', 'res_optional', 'updated'],
+		"visible_columns": ['nodename', 'vmname', 'rid', 'res_type', 'res_status', 'res_desc', 'res_log', 'res_monitor', 'res_disable', 'res_optional', 'updated'],
 		"volatile_filters": true,
 		"bookmarkable": false,
 		"refreshable": false,

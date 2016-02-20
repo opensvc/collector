@@ -17,6 +17,7 @@ class table_resmon(HtmlTable):
          'nodename',
          'vmname',
          'rid',
+         'res_type',
          'res_status',
          'res_desc',
          'res_log',
@@ -46,6 +47,10 @@ class table_resmon(HtmlTable):
             'rid': HtmlTableColumn(
                      table='resmon',
                      field='rid',
+                    ),
+            'res_type': HtmlTableColumn(
+                     table='resmon',
+                     field='res_type',
                     ),
             'res_monitor': HtmlTableColumn(
                      table='resmon',

@@ -4977,4 +4977,7 @@ alter table column_filters add key (user_id);
 
 alter table svcmon_log add key (mon_begin,mon_end);
 
+alter table resmon add column res_type varchar(16);
+
+alter table resmon add index resmon_updated (updated);
 

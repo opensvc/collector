@@ -671,7 +671,7 @@ def _resmon_clean(node, svcname, threshold):
         return
     q = db.resmon.nodename==node.strip("'")
     q &= db.resmon.svcname==svcname.strip("'")
-    q &= db.resmon.updated < threshold - datetime.timedelta(minutes=10)
+    q &= db.resmon.updated < threshold - datetime.timedelta(minutes=20)
     db(q).delete()
     db.commit()
 
