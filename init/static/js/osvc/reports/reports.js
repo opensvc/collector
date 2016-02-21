@@ -45,7 +45,7 @@ function metric(divid, options) {
 				return
 			}
 			var data = jd.data;
-			if (data.length == 0) {
+			if (!data || data.length == 0) {
 				o.table.text(i18n.t("metrics.no_data"))
 			}
 
@@ -346,6 +346,17 @@ function report(divid, options) {
 			if (section.Metrics !== undefined) {
 				for (var l=0; l<section.Metrics.length; l++) {
 					metric(section_div.attr("id"), section.Metrics[l])
+				}
+			}
+			// flat children support
+			if (section.children !== undefined) {
+				for (var l=0; l<section.children.length; l++) {
+					var child = section.children[i]
+					if ("metric_id" in child) {
+						metric(section_div.attr("id"), child)
+					} else if ("chart_id" in child) {
+						chart(section_div.attr("id"), child)
+					}
 				}
 			}
 		}
