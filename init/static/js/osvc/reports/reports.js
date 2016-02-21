@@ -5,7 +5,10 @@ function metric(divid, options) {
 
 	o.load = function load() {
 		// metric area
-		var div = $("<div class='reports_section' style='float:left;min-width:28%'></div>")
+		var div = $("<div class='reports_section'></div>")
+		if (options.width) {
+			div.css({"flex": "1 1 "+options.width})
+		}
 		o.div.append(div)
 
 		// link
@@ -91,6 +94,9 @@ function chart(divid, options) {
 	o.load = function load() {
 		// chart area
 		var div = $("<div class='reports_section'></div>")
+		if (options.width) {
+			div.css({"flex": "1 1 "+options.width})
+		}
 		o.div.append(div)
 
 		// link
@@ -318,13 +324,13 @@ function report(divid, options) {
 			var section = o.definition.Sections[i]
 
 			// section area
-			var section_div = $("<div style='clear:both;'></div>")
+			var section_div = $("<div style='display:flex;flex-flow:row wrap'></div>")
 			section_div.uniqueId()
 			o.report_div.append(section_div)
 
 			// title
 			if (section.Title !== undefined) {
-				var title_h = $("<h3 class='line' style='text-align:left;padding: 0.3em'></h3>")
+				var title_h = $("<h3 class='line' style='text-align:left;padding: 0.3em;flex:1 1 100%'></h3>")
 				var title_span = $("<span class='icon menu16'></span>")
 				title_span.text(section.Title)
 				title_h.append(title_span)
@@ -333,7 +339,7 @@ function report(divid, options) {
 
 			// desc
 			if (section.Desc !== undefined) {
-				section_div.append("<div style='padding:1em'>" + section.Desc + "</div>")
+				section_div.append("<div style='padding:1em;flex:1 1 100%'>" + section.Desc + "</div>")
 			}
 
 			// charts reports
@@ -351,7 +357,7 @@ function report(divid, options) {
 			// flat children support
 			if (section.children !== undefined) {
 				for (var l=0; l<section.children.length; l++) {
-					var child = section.children[i]
+					var child = section.children[l]
 					if ("metric_id" in child) {
 						metric(section_div.attr("id"), child)
 					} else if ("chart_id" in child) {

@@ -3335,6 +3335,7 @@ div.containertrans {
 }
 
 .reports_section {
+	min-width: 15em;
 	border-bottom-color: black;
 	border-bottom-style: solid;
 	border-left-color: #AAA;
@@ -3346,7 +3347,7 @@ div.containertrans {
 	border-width: 0;
 	color: black;
 	cursor: default;
-	margin: 2.0em;
+	margin: 1%;
 	padding: 10px;
 	vertical-align: baseline;
 	text-align: center;
@@ -3362,6 +3363,7 @@ div.containertrans {
 .reports_div {
 	background-color : #E0E1CD;
 	overflow: hidden;
+	padding: 1em;
 }
 .reports_div > div > h3.line > span {
 	background-color : #E0E1CD;
