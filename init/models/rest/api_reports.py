@@ -753,6 +753,11 @@ class rest_get_report_export(rest_get_handler):
                 if not "metric_id" in m:
                     continue
                 metric_ids.add(m.get("metric_id"))
+            for m in s.get("children", []):
+                if "metric_id" in m:
+                    metric_ids.add(m.get("metric_id"))
+                if "chart_id" in m:
+                    chart_ids.add(m.get("chart_id"))
 
         q = db.charts.id.belongs(chart_ids)
         chart_rows = db(q).select()
@@ -791,15 +796,46 @@ class rest_get_report_export(rest_get_handler):
         for i, chart in enumerate(charts_data):
             for j, metric in enumerate(chart.get("chart_definition", {}).get("Metrics", [])):
                 if "metric_id" in metric:
+                    if not metric["metric_id"] in metric_name:
+                        del charts_data[i]["chart_definition"]["Metrics"][j]
+                        continue
                     charts_data[i]["chart_definition"]["Metrics"][j]["metric_name"] = metric_name[metric["metric_id"]]
 
         for i, section in enumerate(report_data.get("report_definition", {}).get("Sections", [])):
-            for j, metric in enumerate(section.get("Metrics", [])):
-                if "metric_id" in metric:
-                    report_data["report_definition"]["Sections"][i]["Metrics"][j]["metric_name"] = metric_name[metric["metric_id"]]
-            for j, chart in enumerate(section.get("Charts", [])):
-                if "chart_id" in chart:
-                    report_data["report_definition"]["Sections"][i]["Charts"][j]["chart_name"] = chart_name[chart["chart_id"]]
+            if "children" not in report_data["report_definition"]["Sections"][i]:
+                report_data["report_definition"]["Sections"][i]["children"] = []
+
+            if "Charts" in section:
+                for j, chart in enumerate(section.get("Charts", [])):
+                    if "chart_id" in chart:
+                        if not chart["chart_id"] in chart_name:
+                            del report_data["report_definition"]["Sections"][i]["Charts"][j]
+                            continue
+                        report_data["report_definition"]["Sections"][i]["Charts"][j]["chart_name"] = chart_name[chart["chart_id"]]
+                    report_data["report_definition"]["Sections"][i]["children"].append(report_data["report_definition"]["Sections"][i]["Charts"][j])
+                del section["Charts"]
+
+            if "Metrics" in section:
+                for j, metric in enumerate(section.get("Metrics", [])):
+                    if "metric_id" in metric:
+                        if not metric["metric_id"] in metric_name:
+                            del report_data["report_definition"]["Sections"][i]["Metrics"][j]
+                            continue
+                        report_data["report_definition"]["Sections"][i]["Metrics"][j]["metric_name"] = metric_name[metric["metric_id"]]
+                    report_data["report_definition"]["Sections"][i]["children"].append(report_data["report_definition"]["Sections"][i]["Metrics"][j])
+                del section["Metrics"]
+
+            for j, child in enumerate(section.get("children", [])):
+                if "metric_id" in child:
+                    if not child["metric_id"] in metric_name:
+                        del report_data["report_definition"]["Sections"][i]["children"][j]
+                        continue
+                    report_data["report_definition"]["Sections"][i]["children"][j]["metric_name"] = metric_name[child["metric_id"]]
+                if "chart_id" in child:
+                    if not child["chart_id"] in chart_name:
+                        del report_data["report_definition"]["Sections"][i]["children"][j]
+                        continue
+                    report_data["report_definition"]["Sections"][i]["children"][j]["chart_name"] = chart_name[child["chart_id"]]
 
         return {
           "reports": [report_data],
@@ -889,18 +925,16 @@ class rest_post_reports_import(rest_post_handler):
                 if "id" in m:
                     del(m["id"])
                 for j, section in enumerate(m["report_definition"].get("Sections", [])):
-                    for k, metric in enumerate(m["report_definition"]["Sections"][j].get("Metrics", [])):
-                         if not "metric_name" in metric:
-                             data["error"].append("Missing 'metric_name' key in metric %d of section %d of report %d" % (k, j, i))
-                             continue
-                         m["report_definition"]["Sections"][j]["Metrics"][k]["metric_id"] = metric_id[metric["metric_name"]]
-                         del(m["report_definition"]["Sections"][j]["Metrics"][k]["metric_name"])
-                    for k, chart in enumerate(m["report_definition"]["Sections"][j].get("Charts", [])):
-                         if not "chart_name" in chart:
-                             data["error"].append("Missing 'chart_name' key in chart %d of section %d of report %d" % (k, j, i))
-                             continue
-                         m["report_definition"]["Sections"][j]["Charts"][k]["chart_id"] = chart_id[chart["chart_name"]]
-                         del(m["report_definition"]["Sections"][j]["Charts"][k]["chart_name"])
+                    for k, child in enumerate(m["report_definition"]["Sections"][j].get("children", [])):
+                         if "metric_name" in child:
+                             m["report_definition"]["Sections"][j]["children"][k]["metric_id"] = metric_id[child["metric_name"]]
+                             del(m["report_definition"]["Sections"][j]["children"][k]["metric_name"])
+                         elif "chart_name" in child:
+                             m["report_definition"]["Sections"][j]["children"][k]["chart_id"] = chart_id[child["chart_name"]]
+                             del(m["report_definition"]["Sections"][j]["children"][k]["chart_name"])
+                         else:
+                             data["error"].append("Missing 'metric_name' or 'chart_name' key in child %d of section %d of report %d" % (k, j, i))
+                             del(m["report_definition"]["Sections"][j]["children"][k])
                     try:
                         m["report_yaml"] = yaml.safe_dump(m["report_definition"], default_flow_style=False, allow_unicode=True)
                     except Exception as e:
