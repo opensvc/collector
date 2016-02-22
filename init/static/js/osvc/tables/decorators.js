@@ -694,7 +694,7 @@ function _cell_decorator_nodename(e, os_icon) {
     return
   }
   $(e).empty()
-  $(e).append("<div class='a nowrap'>"+v+"</div>")
+  $(e).append("<div class='a nowrap trunc20'>"+v+"</div>")
   $(e).addClass("corner")
   div = $(":first-child", e)
   if (os_icon) {
@@ -775,7 +775,7 @@ function cell_decorator_svcname(e) {
     return
   }
   $(e).empty()
-  $(e).append("<div class='a nowrap'>"+v+"</div>")
+  $(e).append("<div class='a nowrap trunc20'>"+v+"</div>")
   $(e).addClass("corner")
   $(e).click(function(){
     if (get_selected() != "") {return}

@@ -31,6 +31,12 @@ input.aci, input.aci:focus {
 	font-size:0.8em;
 }
 
+.trunc20 {
+	max-width: 20em;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
 .ellipsis {
 	text-overflow: ellipsis;
 }
