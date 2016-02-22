@@ -1481,8 +1481,8 @@ function table_init(opts) {
 		t.e_fsr.show()
 		var pos = get_pos(e)
 		t.e_fsr.css({
-			"left": pos[0] - t.div.offset().left + "px",
-			"top": pos[1] - t.div.offset().top + "px"
+			"left": pos[0] + "px",
+			"top": pos[1] + "px"
 		})
 		keep_inside(t.e_fsr[0])
 
