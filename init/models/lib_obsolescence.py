@@ -40,10 +40,10 @@ def cron_obsolescence_hw():
 
 def cron_obsolescence_os():
     sql = """insert ignore into obsolescence (obs_type, obs_name)
-             select "os", concat_ws(" ", os_name, os_vendor, os_release, os_update)
+             select "os", os_concat
              from nodes
-             where os_name!='' or os_vendor!='' or os_release!='' or os_update!=''
-             group by os_name, os_vendor, os_release, os_update
+             where os_concat!=''
+             group by os_concat
           """
     db.executesql(sql)
     db.commit()
@@ -224,14 +224,15 @@ def update_dash_obs_os_warn(obs_name=None):
                      )
               """%dict(where_obs_name=where_obs_name)
         rows = db.executesql(sql)
-        nodenames = [ repr(r[0]).lstrip("u") for r in rows if r[0] != "" and r[0] is not None]
-        sql = """delete from dashboard
-                 where
+        if len(rows) > 0:
+            nodenames = [ repr(r[0]).lstrip("u") for r in rows if r[0] != "" and r[0] is not None]
+            sql = """delete from dashboard
+                     where
                         dash_nodename in (%(nodenames)s) and
                         dash_type="os obsolescence warning"
                   """%dict(nodenames=",".join(nodenames))
-        db.executesql(sql)
-        db.commit()
+            db.executesql(sql)
+            db.commit()
     else:
         sql = """delete from dashboard
                       where
@@ -295,14 +296,15 @@ def update_dash_obs_os_alert(obs_name=None):
                      )
               """%dict(where_obs_name=where_obs_name)
         rows = db.executesql(sql)
-        nodenames = [ repr(r[0]).lstrip("u") for r in rows if r[0] != "" and r[0] is not None]
-        sql = """delete from dashboard
-                 where
+        if len(rows) > 0:
+            nodenames = [ repr(r[0]).lstrip("u") for r in rows if r[0] != "" and r[0] is not None]
+            sql = """delete from dashboard
+                     where
                         dash_nodename in (%(nodenames)s) and
                         dash_type="os obsolescence alert"
                   """%dict(nodenames=",".join(nodenames))
-        db.executesql(sql)
-        db.commit()
+            db.executesql(sql)
+            db.commit()
     else:
         sql = """delete from dashboard
                       where
