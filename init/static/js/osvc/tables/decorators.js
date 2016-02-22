@@ -1363,6 +1363,10 @@ function cell_decorator_dash_entry(e) {
   var line = $(e).parent(".tl")
   var d = $.data(line.children("[col=dash_dict]")[0], "v")
   var fmt = $.data(line.children("[col=dash_fmt]")[0], "v")
+  if (!d || d.length==0) {
+    $(e).html(fmt)
+    return
+  }
   try {
     d = $.parseJSON(d)
   } catch(err) {
