@@ -256,6 +256,10 @@ colprops = {
 		"img": "node16",
 		"title": "Asset name"
 	},
+	"asset_status": {
+		"img": "node16",
+		"title": "Status"
+	},
 	"autofix": {
 		"_class": "boolean",
 		"img": "actionred16",
