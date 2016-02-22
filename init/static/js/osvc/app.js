@@ -237,6 +237,14 @@ function app_bindings() {
       $('#search_input').focus();
     }
 
+    // 'r' for refresh
+    else if (event.which == 82 && !event.ctrlKey) {
+      event.preventDefault();
+      for (var id in osvc.tables) {
+        osvc.tables[id].refresh()
+      }
+    }
+
     // Left
     else if (event.which == 37) {
       event.preventDefault();

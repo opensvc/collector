@@ -9,7 +9,6 @@ _f = request.function
 
 menu_entries = [
   'key-f',
-  'key-l',
   'key-n',
   'key-r',
   'key-s',

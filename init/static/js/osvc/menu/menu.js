@@ -359,13 +359,6 @@ var menu_data = {
 		  "link" : ""
 		},
 		{
-		  "title" : "link",
-		  "class" : "",
-		  "id" : "key-l",
-		  "label" : "l",
-		  "link" : ""
-		},
-		{
 		  "title" : "nav",
 		  "class" : "",
 		  "id" : "key-n",
@@ -446,10 +439,9 @@ function menu(divid) {
 			{
 			    "data": {
 				"menu_entry": {
-				    "key-s": 1, 
-				    "key-r": 1, 
-				    "key-esc": 1, 
-				    "key-l": 3
+				    "key-s": 1,
+				    "key-r": 1,
+				    "key-esc": 1
 				}
 			    }
 			}
