@@ -41,7 +41,8 @@ if request.env.web2py_runtime_gae:            # if running on Google App Engine
 else:                                         # else use a normal relational database
     db = DAL('mysql://%s:%s@%s/opensvc' % (dbopensvc_user, dbopensvc_password, dbopensvc),
              driver_args={'connect_timeout': 20},
-             pool_size=0)
+             pool_size=0,
+             lazy_tables=True)
 ## if no need for session
 # session.forget()
 
@@ -77,7 +78,7 @@ def table_modified(name):
 #
 # custom auth_user table. new field: email_notifications
 #
-auth.settings.extra_fields['auth_group']= [
+auth.settings.extra_fields['auth_group'] = [
     Field('privilege','boolean'),
 ]
 
@@ -432,33 +433,6 @@ db.define_table('apps_responsibles',
     Field('app_id'),
     Field('group_id'),
     migrate=False)
-
-os_names = [
-    "Linux",
-    "HP-UX",
-    "AIX",
-    "Solaris",
-    "OpenSolaris",
-    "Windows",
-    "Irix",
-    "FreeBSD",
-    "OSX",
-    "Tru64"
-]
-
-os_vendors = [
-    "Apple",
-    "FreeBSD",
-    "Red Hat",
-    "Ubuntu",
-    "Debian",
-    "CentOS",
-    "HP",
-    "IBM",
-    "Microsoft",
-    "Suse",
-    "Oracle"
-]
 
 db.define_table('nodes',
     Field('warranty_end', 'datetime', default=request.now),
