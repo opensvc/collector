@@ -219,6 +219,11 @@ class rest_delete_checks_setting(rest_delete_handler):
              svcname=row.chk_svcname,
             )
         table_modified("checks_settings")
+        l = {
+          'event': 'checks_change',
+          'data': {'id': row.id},
+        }
+        _websocket_send(event_msg(l))
 
         q = db.checks_live.chk_nodename == row.chk_nodename
         q = db.checks_live.chk_svcname == row.chk_svcname
@@ -315,6 +320,11 @@ class rest_post_checks_setting(rest_post_handler):
              svcname=row.chk_svcname,
             )
         table_modified("checks_settings")
+        table_modified("checks_settings")
+        l = {
+          'event': 'checks_change',
+          'data': {'id': row.id},
+        }
 
         q = db.checks_live.chk_nodename == row.chk_nodename
         q = db.checks_live.chk_svcname == row.chk_svcname
@@ -391,6 +401,11 @@ class rest_post_checks_settings(rest_post_handler):
                  svcname=vars.get("chk_svcname", ""),
                 )
             table_modified("checks_settings")
+            l = {
+              'event': 'checks_change',
+              'data': {'id': row.id},
+            }
+            _websocket_send(event_msg(l))
 
             update_thresholds_batch(rows, one_source=True)
             update_dash_checks(vars.get("chk_nodename"))
