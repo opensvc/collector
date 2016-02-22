@@ -1300,8 +1300,9 @@ a.xinfo_shown span {
 }
 
 .action_menu {
-	min-width: 25em;
-	max-width: 50%;
+	min-width: 40em;
+	max-width: 90%;
+	width: auto !important;
 	position: absolute !important;
 }
 .action_menu ul {
@@ -1332,9 +1333,14 @@ a.xinfo_shown span {
 	color: cadetblue !important;
 }
 
+.action_menu_selector > div {
+	padding: 0.3em 0;
+}
+
 .action_menu_selector {
 	white-space: nowrap;
 	width: 100%;
+	padding: 0.4em 0;
 }
 .action_menu_selector > div:first-child {
 	border-top-left-radius: 4px;
@@ -3625,6 +3631,10 @@ button:disabled {
 
 .tab_display {
 	padding: 0;
+}
+
+.checklist > div {
+	padding: 0.3em 0;
 }
 
 @media screen and (max-width:960px) and (orientation: landscape) {
