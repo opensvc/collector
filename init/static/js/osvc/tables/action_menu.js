@@ -1514,7 +1514,7 @@ function table_action_menu(t, e){
 	// create and position the popup at the mouse click
 	var am = $("<div id='"+o.menu_id+"' class='white_float action_menu stackable'></div>")
 	var pos = get_pos(e)
-	t.div.append(am)
+	t.div.parent().append(am)
 	o.menu = $("#"+o.menu_id)
 
 	var header = $("<h2 class='icon fa-bars movable'></h2>")
