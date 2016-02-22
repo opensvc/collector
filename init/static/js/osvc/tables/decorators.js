@@ -788,6 +788,10 @@ function cell_decorator_log_event(e) {
   var line = $(e).parent(".tl")
   var d = $.data(line.children("[col=log_dict]")[0], "v")
   var fmt = $.data(line.children("[col=log_fmt]")[0], "v")
+  if (!d || d.length==0) {
+    $(e).html(fmt)
+    return
+  }
   try {
     d = $.parseJSON(d)
   } catch(err) {
