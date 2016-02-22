@@ -179,7 +179,7 @@ function toggle_extra(url, id, e, ncols) {
 	line.children("td.tools").each(function(){
 		extra.append("<td class='tools'></td>")
 	})
-	if (line.next().children("#"+id).attr("id")==id) {
+	if (line.next().is(".extraline")) {
 		line.next().remove()
 	}
 	var td = $("<td colspan="+ncols+"></td>")
