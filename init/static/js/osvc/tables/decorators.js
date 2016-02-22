@@ -800,7 +800,7 @@ function cell_decorator_log_event(e) {
   }
   for (key in d) {
     var re = RegExp("%\\("+key+"\\)[sd]", "g")
-    fmt = fmt.replace(re, d[key])
+    fmt = fmt.replace(re, "<b>"+d[key]+"</b>")
   }
   $(e).html(fmt)
 }
@@ -1375,7 +1375,7 @@ function cell_decorator_dash_entry(e) {
   }
   for (key in d) {
     var re = RegExp("%\\("+key+"\\)[sd]", "g")
-    fmt = fmt.replace(re, d[key])
+    fmt = fmt.replace(re, "<b>"+d[key]+"</b>")
   }
   $(e).html(fmt)
   $(e).addClass("clickable corner")
@@ -1593,8 +1593,7 @@ function cell_decorator_env(e) {
   if ($.data(e, "v") != "PRD") {
     return
   }
-  s = "<div class='b'>PRD</div>"
-  $(e).html(s)
+  $(e).addClass("highlight")
 }
 
 function cell_decorator_svc_ha(e) {
