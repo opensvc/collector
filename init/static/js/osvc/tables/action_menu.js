@@ -1564,6 +1564,8 @@ function table_action_menu(t, e){
 			}
 			$(this).removeClass("right16")
 			$(this).addClass("down16")
+		} else {
+			table_action_menu_unfocus_leaf(t, $(this))
 		}
 	})
 
@@ -2072,8 +2074,17 @@ function table_action_menu_focus_on_leaf(t, entry) {
 	// hide other actions in this selector scope
 	entry.siblings().hide()
 	entry.addClass("action_menu_leaf_selected")
-	entry.unbind("click")
-	entry.parent("ul").parent().unbind("click")
+}
+function table_action_menu_unfocus_leaf(t, folder) {
+	var entry = folder.find("li:visible")
+	entry.siblings(":not(li)").remove()
+
+	// show other choices
+	entry.parents("li:not(.action_menu_folder)").siblings().show()
+	entry.parents("li.action_menu_folder").siblings('li').show()
+	entry.siblings().show()
+
+	entry.removeClass("action_menu_leaf_selected")
 }
 
 function table_action_menu_yes_no(t, msg, callback) {
