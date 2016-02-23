@@ -313,9 +313,9 @@ class rest_post_checks_setting(rest_post_handler):
 
         db(q).update(**data)
 
-        _log('check.settings.change',
-             'change check instance settings %(data)s',
-             dict(data=beautify_change(row, data)),
+        fmt = 'change check instance settings %(data)s'
+        d = dict(data=beautify_change(row, data))
+        _log('check.settings.change', fmt, d,
              nodename=row.chk_nodename,
              svcname=row.chk_svcname,
             )
@@ -333,7 +333,9 @@ class rest_post_checks_setting(rest_post_handler):
         rows = db(q).select()
         update_thresholds_batch(rows, one_source=True)
         update_dash_checks(row.chk_nodename)
-        return rest_get_checks_setting().handler(row.id)
+        return_data = rest_get_checks_setting().handler(row.id)
+        return_data["info"] = fmt % d
+        return return_data
 
 #
 class rest_post_checks_settings(rest_post_handler):
@@ -394,9 +396,9 @@ class rest_post_checks_settings(rest_post_handler):
                 vars["chk_high"] = row.chk_high
 
             id = db.checks_settings.insert(**vars)
-            _log('check.settings.add',
-                 'add check instance settings %(data)s',
-                 dict(data=beautify_data(vars)),
+            fmt = 'add check instance settings %(data)s'
+            d = dict(data=beautify_data(vars))
+            _log('check.settings.add',fmt, d,
                  nodename=vars.get("chk_nodename"),
                  svcname=vars.get("chk_svcname", ""),
                 )
@@ -409,7 +411,9 @@ class rest_post_checks_settings(rest_post_handler):
 
             update_thresholds_batch(rows, one_source=True)
             update_dash_checks(vars.get("chk_nodename"))
-            return rest_get_checks_setting().handler(id)
+            return_data = rest_get_checks_setting().handler(id)
+            return_data["info"] = fmt % d
+            return return_data
 
         return rest_post_checks_setting().handler(row.id, **vars)
 

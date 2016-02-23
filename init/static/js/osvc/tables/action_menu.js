@@ -2979,12 +2979,18 @@ function data_action_chk_instance_set_high_threshold(t, e) {
 
 function data_action_chk_instance_set_threshold(t, e, threshold) {
 	var entry = $(e.target)
-	entry.next("[name=tool]").remove()
+	table_action_menu_focus_on_leaf(t, entry)
+	//entry.next("[name=tool]").remove()
 	var div = $("<div name='tool' style='padding:0.5em'></div>")
 	var input = $("<input class='oi'>")
 	div.append(input)
 	div.insertAfter(entry)
 	input.focus()
+
+	// result
+	var result = $("<div></div>")
+	result.css({"width": entry.width(), "padding": "0.3em"})
+	result.insertAfter(div)
 
 	input.bind("keyup", function(event) {
 		if (!is_enter(event)) {
@@ -3009,13 +3015,17 @@ function data_action_chk_instance_set_threshold(t, e, threshold) {
 			}
 			_data.push(d)
 		}
+		result.empty()
 		xhr  = services_osvcpostrest("R_CHECKS_SETTINGS", "", "", _data, function(jd) {
 			if (jd.error && (jd.error.length > 0)) {
-				$(".flash").show("blind").html(services_error_fmt(jd))
+				result.html(services_error_fmt(jd))
+			}
+			if (jd.info && (jd.info.length > 0)) {
+				result.html(services_info_fmt(jd))
 			}
 		},
 		function(xhr, stat, error) {
-			$(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
+			result.html(services_ajax_error_fmt(xhr, stat, error))
 		})
 	})
 }
