@@ -2099,13 +2099,15 @@ function table_action_menu_yes_no(t, msg, callback) {
 	e.append($("<br>"))
 	yes.bind("click", function(event){
 		event.preventDefault()
+		event.stopPropagation()
 		$(this).unbind("click")
 		$(this).prop("disabled", true)
 		callback(event)
 	})
 	no.bind("click", function(event){
-		$("#am_"+t.id).remove()
 		event.preventDefault()
+		event.stopPropagation()
+		$("#am_"+t.id).remove()
 	})
 	return e
 }
@@ -3341,6 +3343,8 @@ function data_action_ack_actions(t, e) {
 	var data = t.action_menu_data_cache[cache_id]
 	var post_data = new Array()
 
+	table_action_menu_focus_on_leaf(t, entry)
+
 	// comment textarea
 	var form = $("<form></form>")
 	var c = $("<textarea class='oi' style='width:100%;height:8em'></textarea>")
@@ -3365,20 +3369,27 @@ function data_action_ack_actions(t, e) {
 				'acked_comment': comment
 			})
 		}
+		result.empty()
 		services_osvcpostrest("R_SERVICES_ACTIONS", "", "", post_data, function(jd) {
 			if (jd.error && (jd.error.length > 0)) {
-				$(".flash").show("blind").html(services_error_fmt(jd))
+				result.html(services_error_fmt(jd))
 			}
 			if (jd.info && (jd.info.length > 0)) {
-				$(".flash").show("blind").html(services_info_fmt(jd))
+				result.html(services_info_fmt(jd))
 			}
 		},
 		function(xhr, stat, error) {
-			$(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
+			result.html(services_ajax_error_fmt(xhr, stat, error))
 		})
 	})
 	form.append(yes_no)
 	form.insertAfter(entry)
+
+	// result
+	var result = $("<div></div>")
+	result.css({"width": entry.width(), "padding": "0.3em"})
+	result.insertAfter(form)
+
 	c.focus()
 }
 
