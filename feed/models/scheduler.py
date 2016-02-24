@@ -696,7 +696,8 @@ def __resmon_update(vars, vals):
         return
     for a,b in zip(vars, vals[0]):
         h[a] = b
-    updated = h.get("updated")
+    now = datetime.datetime.now()
+    h['updated'] = now
     if 'nodename' in h and 'svcname' in h:
         nodename, vmname, vmtype = translate_encap_nodename(h['svcname'], h['nodename'])
         if nodename is not None:
@@ -713,7 +714,7 @@ def __resmon_update(vars, vals):
         if vals[idx] == "'None'":
             vals[idx] = "n/a"
     generic_insert('resmon', vars, vals)
-    _resmon_clean(h['nodename'], h['svcname'], updated)
+    _resmon_clean(h['nodename'], h['svcname'], now)
 
 def _register_disk(vars, vals, auth):
     h = {}
