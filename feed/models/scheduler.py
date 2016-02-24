@@ -714,7 +714,7 @@ def __resmon_update(vars, vals):
         if vals[idx] == "'None'":
             vals[idx] = "n/a"
     generic_insert('resmon', vars, vals)
-    _resmon_clean(h['nodename'], h['svcname'], now)
+    _resmon_clean(h['nodename'], h['svcname'])
 
 def _register_disk(vars, vals, auth):
     h = {}
