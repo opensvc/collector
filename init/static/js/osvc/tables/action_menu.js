@@ -5,7 +5,7 @@ function table_action_menu_init_data(t) {
 	t.action_menu_req_max = 1000
 	t.column_selectors = {
 		"svcname": "[col$=svcname],[col=svc_name]",
-		"nodename": "[col$=nodename],[col=mon_nodname][col=hostname]",
+		"nodename": "[col$=nodename],[col=mon_nodname],[col=hostname]",
 		"rid": "[col=rid]",
 		"module": "[col=run_module]",
 		"vmname": "[col=vmname]",
