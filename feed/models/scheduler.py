@@ -660,7 +660,7 @@ def _update_asset(vars, vals, auth):
     update_dash_node_without_maintenance_end(auth[1])
     update_dash_node_without_asset(auth[1])
 
-def _resmon_clean(node, svcname, threshold):
+def _resmon_clean(node, svcname, threshold=None):
     try:
         threshold = datetime.datetime.strptime(threshold.strip("'").split(".")[0], "%Y-%m-%d %H:%M:%S")
     except:
@@ -697,7 +697,7 @@ def __resmon_update(vars, vals):
     for a,b in zip(vars, vals[0]):
         h[a] = b
     now = datetime.datetime.now()
-    h['updated'] = now
+    now -= datetime.timedelta(microseconds=now.microsecond)
     if 'nodename' in h and 'svcname' in h:
         nodename, vmname, vmtype = translate_encap_nodename(h['svcname'], h['nodename'])
         if nodename is not None:
@@ -706,11 +706,14 @@ def __resmon_update(vars, vals):
         if 'vmname' not in h:
             h['vmname'] = ""
     idx = vars.index("res_status")
+    idx_updated = vars.index("updated")
     if type(vals[0]) == list:
         for i, v in enumerate(vals):
+            vals[i][idx_updated] = now
             if v[idx] == "'None'":
                 vals[i][idx] = "n/a"
     elif type(vals) == list:
+        vals[idx_updated] = now
         if vals[idx] == "'None'":
             vals[idx] = "n/a"
     generic_insert('resmon', vars, vals)
