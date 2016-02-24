@@ -62,7 +62,7 @@ class rest_post_services_action(rest_post_handler):
         db(q).update(**vars)
         _log('actions.change',
              'changed action %(id)s: %(data)s',
-             dict(id=str(id), data=str(vars)),
+             dict(id=str(id), data=beautify_change(row, vars)),
              nodename=row.hostname,
              svcname=row.svcname)
 
