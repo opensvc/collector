@@ -210,6 +210,14 @@ class rest_delete_service(rest_delete_handler):
         }
         _websocket_send(event_msg(l))
 
+        q = db.resmon.svcname == svcname
+        db(q).delete()
+        l = {
+          'event': 'resmon_change',
+          'data': {'a': 'b'},
+        }
+        _websocket_send(event_msg(l))
+
         return dict(info="service %s deleted" % svcname)
 
 #
