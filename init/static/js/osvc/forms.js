@@ -618,6 +618,11 @@ function form(divid, options) {
 		if (typeof(data) === "string") {
 			_data.var_value = data
 		} else {
+			for (var key in data) {
+				if (data[key] == "") {
+					delete(data[key])
+				}
+			}
 			_data.var_value = JSON.stringify(data)
 		}
 		services_osvcpostrest("R_COMPLIANCE_RULESET_VARIABLE", [o.options.rset_id, o.options.var_id], "", _data, function(jd) {
