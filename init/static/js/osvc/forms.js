@@ -537,19 +537,19 @@ function form(divid, options) {
 			}
 			if (jd.info) {
 				if (typeof(jd.info) === "string") {
-					o.result.append("<p class='icon fa-info-circle'>"+jd.info+"</p>")
+					o.result.append("<p class='pre icon fa-info-circle'>"+jd.info+"</p>")
 				} else {
 					for (var i=0; i<jd.info.length; i++) {
-						o.result.append("<p class='icon fa-info-circle'>"+jd.info[i]+"</p>")
+						o.result.append("<p class='pre icon fa-info-circle'>"+jd.info[i]+"</p>")
 					}
 				}
 			}
 			if (jd.error) {
 				if (typeof(jd.error) === "string") {
-					o.result.append("<p class='icon fa-exclamation-triangle'>"+jd.error+"</p>")
+					o.result.append("<p class='pre icon fa-exclamation-triangle'>"+jd.error+"</p>")
 				} else {
 					for (var i=0; i<jd.error.length; i++) {
-						o.result.append("<p class='icon fa-exclamation-triangle'>"+jd.error[i]+"</p>")
+						o.result.append("<p class='pre icon fa-exclamation-triangle'>"+jd.error[i]+"</p>")
 					}
 				}
 			}
