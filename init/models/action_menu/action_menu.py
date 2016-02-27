@@ -306,7 +306,7 @@ def factorize_actions(data):
     rid_h = {}
     for d in data:
         if "rid" in d and "svcname" in d and "nodename" in d:
-            if "vmname" in d:
+            if "vmname" in d and d["vmname"] != "":
                 d["nodename"] = d["vmname"]
                 del(d["vmname"])
             i = (d["svcname"], d["nodename"], d["action"])
