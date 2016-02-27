@@ -132,11 +132,6 @@ class rest_post_services(rest_post_handler):
         )
 
     def handler(self, **vars):
-        if 'svc_name' in vars:
-            svcname = vars["svc_name"]
-            del(vars["svc_name"])
-            return rest_post_service().handler(svcname, **vars)
-
         if "svc_name" not in vars:
             raise Exception("Key 'svc_name' is mandatory")
         svcname = vars.get("svc_name")
