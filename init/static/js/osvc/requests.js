@@ -116,6 +116,7 @@ function requests(divid, options) {
 	o.render_form = function(d) {
 		var div = $("<div class='formentry'></div>")
 		var div_icon = $("<div style='padding-top:1em;padding-bottom:1em'></div>")
+		var link = $("<span class='icon link16'></span>")
 		var p1 = $("<p></p>")
 		var p2 = $("<p style='font-style:italic;padding-left:1em'></p>")
 
@@ -135,6 +136,12 @@ function requests(divid, options) {
 		}
 		p2.text(d.form_definition.Desc)
 
+		link.bind("click", function(event){
+			event.stopPropagation()
+			osvc_create_link("form", {"form_name": d.form_name})
+		})
+
+		p1.prepend(link)
 		div_icon.append(p1)
 		div_icon.append(p2)
 		div.append(div_icon)
