@@ -2506,9 +2506,6 @@ a.search-link:hover {
 /*
  * table class
  */
-.tableo {
-	position: relative;
-}
 .tableo > div {
 	width: 100%;
 	overflow-x: auto;
@@ -2627,7 +2624,7 @@ a.search-link:hover {
 }
 
 .formentry:hover {
-	border: 2px solid red;
+	background-color: cadetblue;
 }
 
 .comp_pct {

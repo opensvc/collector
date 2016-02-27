@@ -83,7 +83,7 @@ function requests(divid, options) {
 
 		var div = $("<div class='formentry'></div>")
 		var div_icon = $("<div style='padding-top:1em;padding-bottom:1em'></div>")
-		var p1 = $("<p></p>")
+		var p1 = $("<p class='b'></p>")
 		var p2 = $("<p style='font-style:italic;padding-left:1em'></p>")
 
 		div.attr("folder_name", d.form_definition.FolderName)
@@ -117,7 +117,7 @@ function requests(divid, options) {
 		var div = $("<div class='formentry'></div>")
 		var div_icon = $("<div style='padding-top:1em;padding-bottom:1em'></div>")
 		var link = $("<span class='icon link16'></span>")
-		var p1 = $("<p></p>")
+		var p1 = $("<p class='b'></p>")
 		var p2 = $("<p style='font-style:italic;padding-left:1em'></p>")
 
 		div.attr("form_name", d.form_name)
