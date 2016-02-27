@@ -1311,16 +1311,16 @@ a.xinfo_shown span {
 	width: auto !important;
 	position: absolute !important;
 }
-.action_menu ul {
+.action_menu > ul {
 	padding: 0.5em;
 	margin: 0 0 0 0.3em;
 }
-.action_menu ul ul ul {
+.action_menu > ul > li > ul > li > ul {
 	border-left: 1px dotted lightgray;
 	padding: 0.2em 1.2em;
 	margin: 0.4em 0.2em;
 }
-.action_menu li {
+.action_menu li.action_menu_leaf,.action_menu li.action_menu_folder,.action_menu > ul > li {
 	list-style: none;
 	padding: 0.3em 0;
 }
