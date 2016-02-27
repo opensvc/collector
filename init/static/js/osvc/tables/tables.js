@@ -1558,7 +1558,7 @@ function table_resources(divid, options) {
 	var defaults = {
 		'name': 'resmon',
 		'divid': divid,
-		'caller': 'table_resmon',
+		'caller': 'table_resources',
 		'id': 'resmon',
 		'ajax_url': '/init/resmon/ajax_resmon',
 		'span': ['nodename', 'svcname'],
