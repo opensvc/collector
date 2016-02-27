@@ -87,6 +87,7 @@
 		"detach_filtersets": "Détacher des jeux de filtres",
 		"set_warn_date": "Changer la date d'attention",
 		"set_alert_date": "Changer la date d'alerte",
+		"service_createable": "Ce nom de service n'existe pas encore. Appuyez sur <entrée> pour le créer.",
 		"report_createable": "Ce nom de rapport n'existe pas encore. Appuyez sur <entrée> pour le créer.",
 		"chart_createable": "Ce nom de courbe n'existe pas encore. Appuyez sur <entrée> pour le créer.",
 		"metric_createable": "Ce nom de métrique n'existe pas encore. Appuyez sur <entrée> pour le créer.",

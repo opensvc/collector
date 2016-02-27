@@ -233,6 +233,13 @@ function table_action_menu_init_data(t) {
 							"min": 0
 						},
 						{
+							"title": "col.Service",
+							"class": "svc",
+							"fn": "data_action_add_service",
+							"privileges": ["Manager", "NodeManager"],
+							"min": 0
+						},
+						{
 							"title": "action_menu.contextual_thresholds",
 							"class": "check16",
 							"fn": "data_action_add_contextual_thresholds",
@@ -2650,6 +2657,9 @@ function data_action_generic_add(t, e, options) {
 	div.find("div.template_form_line input").bind("keyup", keyup_trigger)
 
 	function keyup_trigger(e) {
+		if (is_special_key(e)) {
+			return
+		}
 		clearTimeout(timer)
 		if (is_enter(e)) {
 			var data = {}
@@ -2680,6 +2690,9 @@ function data_action_generic_add(t, e, options) {
 				var inputs = div.find("div.template_form_line input")
 				for (var i=0; i<inputs.length; i++) {
 					var key = $(inputs[i]).attr("id")
+					if (options.exist_check_keys && options.exist_check_keys.indexOf(key) < 0) {
+						continue
+					}
 					var val = $(inputs[i]).val()
 					if (!val || val.match(/^\s*$/)) {
 						return
@@ -2982,6 +2995,33 @@ function data_action_add_node(t, e) {
 				"title": "action_menu.nodename",
 				"key": "nodename"
 			}
+		]
+	})
+}
+
+//
+// data action: add service
+//
+function data_action_add_service(t, e) {
+	data_action_generic_add(t, e, {
+		"request_service": "R_SERVICES",
+		"properties_tab": function(divid, data) {
+			service_tabs(divid, {
+				"svcname": data.svc_name,
+				"show_tabs": ["node_tabs.properties", "service_tabs.env"],
+			})
+		},
+		"createable_message": "action_menu.service_createable",
+		"exist_check_keys": ["svc_name"],
+		"inputs": [
+			{
+				"title": "col.Service",
+				"key": "svc_name"
+			},
+			{
+				"title": "col.App",
+				"key": "svc_app"
+			},
 		]
 	})
 }
@@ -3540,7 +3580,7 @@ function data_action_add_filterset(t, e) {
 	data_action_generic_add(t, e, {
 		"request_service": "/filtersets",
 		"properties_tab": function(divid, data) {
-			fset_properties(divid, {"fset_name": data.fset_name})
+			filterset_tabs(divid, {"fset_name": data.fset_name})
 		},
 		"createable_message": "action_menu.fset_createable",
 		"inputs": [

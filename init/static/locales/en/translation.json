@@ -86,6 +86,7 @@
 		"detach_filters": "Detach filters",
 		"attach_filtersets": "Attach filtersets",
 		"detach_filtersets": "Detach filtersets",
+		"service_createable": "This service name does not exist yet. Press <enter> to create.",
 		"report_createable": "This report name does not exist yet. Press <enter> to create.",
 		"chart_createable": "This chart name does not exist yet. Press <enter> to create.",
 		"metric_createable": "This metric name does not exist yet. Press <enter> to create.",
