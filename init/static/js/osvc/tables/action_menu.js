@@ -1547,6 +1547,13 @@ function table_action_menu(t, e){
 	folders.addClass("icon_fixed_width right16")
 	folders.children("ul,.action_menu_selector").hide()
 	folders.bind("click", function(e){
+		// the fn might have inserted children dom nodes (forms for example)
+		// we don't want a click in those children to propagate to the li
+		// click trigger, which would close the leaf
+		if (!$(e.target).is(".action_menu_folder,.action_menu_folder>span>span")) {
+			return
+		}
+
 		e.stopPropagation()
 		var v = $(this).hasClass("down16")
 		folders.removeClass("down16")

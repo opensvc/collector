@@ -53,7 +53,6 @@ function generic_selector(divid, options) {
     object.text(data[o.object_name])
     o.object_area.append(object)
     object.bind("click", function(event) {
-      event.stopPropagation()
       if (o.multi == false) {
         o.object_area.find("."+o.selected_class).removeClass(o.selected_class)
       }
