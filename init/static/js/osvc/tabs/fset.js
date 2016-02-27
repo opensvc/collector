@@ -240,6 +240,9 @@ function fset_designer(divid, options) {
 			services_osvcpostrest(service, service_parameters, "", data)
 			i++
 		})
+		// force a new render in the rendering tab
+		o.div.parents(".tab_display").first().find(".asset_tab").parent().empty()
+
 	}
 
 	o.render = function() {
@@ -742,6 +745,8 @@ function fset_designer(divid, options) {
 					data.filter = _data
 					o.render_item(item, data)
 				})
+				// force a new render in the rendering tab
+				o.div.parents(".tab_display").first().find(".asset_tab").parent().empty()
 			}
 		})
 
@@ -761,6 +766,8 @@ function fset_designer(divid, options) {
 			services_osvcdeleterest(service, service_parameters, "", "", function(){
 				div.remove()
 			})
+			// force a new render in the rendering tab
+			o.div.parents(".tab_display").first().find(".asset_tab").parent().empty()
 		})
 
 		div.find("input").first().focus()
@@ -807,6 +814,8 @@ function fset_designer(divid, options) {
 				data.filterset = e_encap_fset_id.val()
 				o.render_item(item, data)
 			})
+			// force a new render in the rendering tab
+			o.div.parents(".tab_display").first().find(".asset_tab").parent().empty()
 		})
 
 		var del = $("<span class='icon del16 highlight clickable' style='float:right'></span>")
@@ -825,6 +834,8 @@ function fset_designer(divid, options) {
 			services_osvcdeleterest(service, service_parameters, "", "", function(){
 				div.remove()
 			})
+			// force a new render in the rendering tab
+			o.div.parents(".tab_display").first().find(".asset_tab").parent().empty()
 		})
 
 		div.find("input").first().focus()
