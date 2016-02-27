@@ -48,6 +48,10 @@ function tabs(divid) {
 
 	o.add_tab = function(index) {
 		var data = o.tabs[index]
+		if (o.options.show_tabs && o.options.show_tabs.indexOf(data.title) < 0) {
+			return
+		}
+
 		var e = $("<li></li>")
 		var p = $("<p></p>")
 		p.addClass(data.title_class)
@@ -58,6 +62,9 @@ function tabs(divid) {
 
 		e.bind("click", function() {
 			for (var i=0; i<o.tabs.length; i++) {
+				if (!o.tabs[i].tab) {
+					continue
+				}
 				o.tabs[i].tab.removeClass("tab_active")
 				o.tabs[i].div.hide()
 			}
