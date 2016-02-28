@@ -563,6 +563,7 @@
 		"opensvc_agent": "agent opensvc",
 		"agent_version": "version",
 		"agent_listener_port": "port d'écoute",
+		"agent_connect_to": "addresse de connexion",
 		"host_mode": "host mode",
 		"action_type": "type d'action",
 		"uuid": "uuid",

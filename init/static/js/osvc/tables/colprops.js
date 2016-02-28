@@ -40,6 +40,7 @@ objcols = {
 		'listener_port',
 		'version',
 		'action_type',
+		'connect_to',
 		'host_mode',
 		'team_responsible',
 		'team_integ',

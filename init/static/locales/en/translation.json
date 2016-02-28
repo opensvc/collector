@@ -606,6 +606,7 @@
 		"opensvc_agent": "opensvc agent",
 		"agent_version": "agent version",
 		"agent_listener_port": "agent listener port",
+		"agent_connect_to": "agent connect-to address",
 		"host_mode": "host mode",
 		"action_type": "action type",
 		"uuid": "uuid",

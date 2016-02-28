@@ -38,6 +38,7 @@ nodes_cols = [
     'listener_port',
     'version',
     'action_type',
+    'connect_to',
     'host_mode',
     'project',
     'team_responsible',
@@ -175,6 +176,10 @@ nodes_colprops = {
             ),
     'nodename': HtmlTableColumn(
              field='nodename',
+             table = 'nodes',
+            ),
+    'connect_to': HtmlTableColumn(
+             field='connect_to',
              table = 'nodes',
             ),
     'version': HtmlTableColumn(

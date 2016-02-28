@@ -26,6 +26,11 @@ def known_ip(nodename, addr):
     return True
 
 def get_reachable_name(node):
+    q = db.nodes.nodename == node.nodename
+    row = db(q).select().first()
+    if row and row.connect_to and row.connect_to != "":
+        return row.connect_to
+
     q = db.v_nodenetworks.nodename == node.nodename
     q &= db.v_nodenetworks.mask != None
     q &= db.v_nodenetworks.mask != ""
