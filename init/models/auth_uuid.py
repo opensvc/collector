@@ -1,3 +1,17 @@
+def common_responsible(nodename=None, svcname=None, app=None):
+    q = db.nodes.nodename == nodename
+    q &= db.nodes.team_responsible == db.auth_group.role
+    if app is None:
+        q &= db.services.svc_name == svcname
+        q &= db.apps.app == db.services.svc_app
+    else:
+        q &= db.apps.app == app
+    q &= db.apps.id == db.apps_responsibles.app_id
+    q &= db.apps_responsibles.group_id == db.auth_group.id
+    if db(q).count() > 0:
+        return True
+    return False
+
 def check_auth(node, uuid):
     q = db.auth_node.nodename == node
     q &= db.auth_node.uuid == uuid

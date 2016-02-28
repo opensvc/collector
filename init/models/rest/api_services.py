@@ -44,7 +44,11 @@ class rest_get_service(rest_get_line_handler):
 
     def handler(self, svcname, **vars):
         q = db.services.svc_name == svcname
-        q = _where(q, 'services', domain_perms(), 'svc_name')
+        if auth_is_node():
+            if not common_responsible(svcname=svcname, nodename=auth.user.nodename):
+                raise Exception("the node and service must have a common responsible")
+        else:
+            q = _where(q, 'services', domain_perms(), 'svc_name')
         self.set_q(q)
         return self.prepare_data(**vars)
 
