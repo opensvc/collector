@@ -299,7 +299,7 @@ function table_init(opts) {
 		'colprops': {},
 		'need_refresh': false,
 		'id': opts.id,
-		'spin_class': 'fa-spin',
+		'spin_class': 'fa-spin highlight',
 
 		'bind_action_menu': function(){
 			return table_bind_action_menu(this)
