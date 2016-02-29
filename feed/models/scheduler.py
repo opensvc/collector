@@ -885,6 +885,91 @@ def insert_array_proxy(nodename, array_name):
     vals = [array_id, nodename]
     generic_insert('stor_array_proxy', vars, vals)
 
+def insert_gcedisks(name=None, nodename=None):
+    import glob
+    import os
+    from applications.init.modules import gcedisks
+    now = datetime.datetime.now()
+    now -= datetime.timedelta(microseconds=now.microsecond)
+
+    dir = 'applications'+str(URL(r=request,a='init',c='uploads',f='gcedisks'))
+    if name is None:
+        pattern = "*"
+    else:
+        pattern = name
+    dirs = glob.glob(os.path.join(dir, pattern))
+
+    for d in dirs:
+        print d
+        s = gcedisks.get_gcedisks(d)
+        if s is None :
+            print "error parsing data"
+            continue
+
+        # stor_array_proxy
+        if nodename is not None:
+            print " insert %s as proxy node"%nodename
+            insert_array_proxy(nodename, s.name)
+
+        # stor_array
+        vars = ['array_name', 'array_model', 'array_cache', 'array_firmware', 'array_updated']
+        vals = []
+        name = s.name
+        vals.append([s.name,
+                     "",
+                     "0",
+                     "",
+                     now])
+        generic_insert('stor_array', vars, vals)
+
+        sql = """select id from stor_array where array_name="%s" """ % s.name
+        array_id = str(db.executesql(sql)[0][0])
+
+        # stor_array_dg
+        vars = ['array_id', 'dg_name', 'dg_free', 'dg_used', 'dg_size', 'dg_updated']
+        vals = []
+        for dgname, dg in s.dg.items():
+            avail = int(dg['limit'] - dg['usage'])
+            used = int(dg['usage'])
+            total = int(dg['limit'])
+            vals.append([array_id,
+                         dgname,
+                         str(avail),
+                         str(used),
+                         str(total),
+                         now])
+        generic_insert('stor_array_dg', vars, vals)
+        sql = """delete from stor_array_dg where array_id=%s and dg_updated < date_sub(now(), interval 24 hour) """%array_id
+        db.executesql(sql)
+
+        # diskinfo
+        vars = ['disk_id',
+                'disk_arrayid',
+                'disk_name',
+                'disk_devid',
+                'disk_size',
+                'disk_alloc',
+                'disk_raid',
+                'disk_group',
+                'disk_updated']
+
+        vals = []
+        for d in s.disks:
+            vals.append([d['disk_id'],
+                         name,
+                         d['disk_name'],
+                         str(d['disk_devid']),
+                         str(d['disk_size']),
+                         str(d['disk_alloc']),
+                         d['disk_raid'],
+                         d['disk_group'],
+                         now])
+        generic_insert('diskinfo', vars, vals)
+        sql = """delete from diskinfo where disk_arrayid="%s" and disk_updated < "%s" """%(name, str(now))
+        db.executesql(sql)
+        db.commit()
+    queue_refresh_b_disk_app()
+
 def insert_freenas(name=None, nodename=None):
     import glob
     import os
