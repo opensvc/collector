@@ -3816,7 +3816,7 @@ function data_action_add_form(t, e) {
 	data_action_generic_add(t, e, {
 		"request_service": "R_FORMS",
 		"properties_tab": function(divid, data) {
-			form_properties(divid, {"form_id": data.id})
+			form_tabs(divid, {"form_id": data.id, "form_name": data.form_name})
 		},
 		"createable_message": "action_menu.form_createable",
 		"inputs": [
