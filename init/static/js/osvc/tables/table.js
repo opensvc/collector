@@ -151,7 +151,7 @@ function sync_ajax(url, inputs, id, f) {
              }
              $("#"+id).parents(".white_float").each(function(){keep_inside(this)})
              var t = osvc.tables[id]
-             if (typeof t === 'undefined') { return }
+             if (typeof t === 'undefined') { return }
              t.refresh_child_tables()
              t.on_change()
          }
