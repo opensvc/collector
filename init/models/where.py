@@ -9,8 +9,12 @@ def _where(query, table, var, field, depth=0, db=db):
 
     if query is None:
         query = (db[table].id >= 0)
-    if var is None: return query
-    if len(var) == 0: return query
+    if var is None:
+        return query
+    if len(var) == 0:
+        return query
+    if var == "%":
+        return query
 
     if '&' in var and '|' in var:
         """don't even try to guess order
