@@ -1179,7 +1179,7 @@ function table_init(opts) {
 		msg = t.cell_decorator(msg)
 
 		// detach extralines
-		var extralines = t.div.find(".extraline:visible").detach()
+		var extralines = t.e_table.children("tbody").children(".extraline:visible").detach()
 
 		// detach old lines
 		var old_lines = $("<tbody></tbody>").append($("#table_"+t.id).children("tbody").children(".tl").detach())
