@@ -750,15 +750,20 @@ function table_init(opts) {
 		}
 	}
 
-	t.cell_decorator = function() {
-		t.e_table.find("tbody > .tl").each(function(){
+	t.cell_decorator = function(lines) {
+		if (!lines) {
+			lines = t.e_table.find("tbody > .tl")
+		}
+		lines.each(function(){
 			var line = $(this)
-			setTimeout(function(){
-				line.children("[cell=1]:visible").each(function(){
+			// schedule to interleave with other tasks
+			//setTimeout(function(){
+				line.children("[cell=1]").each(function(){
 					t._cell_decorator(this)
 				})
-			}, 1)
+			//}, 1)
 		})
+		return lines
 	}
 
 	t.refresh_column_headers = function() {
@@ -1167,6 +1172,7 @@ function table_init(opts) {
 		}
 
 		msg = t.data_to_lines(lines)
+		msg = t.cell_decorator(msg)
 
 		// detach old lines
 		var old_lines = $("<tbody></tbody>").append($("#table_"+t.id).children("tbody").children(".tl").detach())
@@ -1218,7 +1224,6 @@ function table_init(opts) {
 		t.bind_action_menu()
 		t.restripe_lines()
 		t.hide_cells()
-		t.cell_decorator()
 		t.unset_refresh_spin()
 		tbody.find("tr.tl").children("td.tohighlight").removeClass("tohighlight").effect("highlight", 1000)
 		t.set_scrollbars_position()
