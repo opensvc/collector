@@ -218,11 +218,13 @@ function service_env(divid, options)
 
 	o.div = $("#"+divid)
 
-	o.div.load('/init/static/views/service_env.html', "", function() {
-		o.init()
-	})
-
 	o.init = function() {
+		o.div.load('/init/static/views/service_env.html', "", function() {
+			o._init()
+		})
+	}
+
+	o._init = function() {
 		o.header = o.div.find("p")
 		o.body = o.div.find("code")
 
@@ -234,16 +236,45 @@ function service_env(divid, options)
 			}
 			var data = jd.data[0]
 			o.header.text(i18n.t("service_env.header", {"updated": data.updated}))
-			text = data.svc_envfile.replace(/\\n\[/g, "\n\n[").replace(/\\n/g, "\n").replace(/\\t/g, "\t")
-			o.body.html(text)
+			o.text = data.svc_envfile.replace(/\\n\[/g, "\n\n[").replace(/\\n/g, "\n").replace(/\\t/g, "\t")
+			o.body.html(o.text)
 			hljs.highlightBlock(o.body[0])
 			o.body.find(".hljs-setting").css({"color": "green"}).children().css({"color": "initial"})
 		},
 		function() {
 			o.div.html(services_ajax_error_fmt(xhr, stat, error))
 		})
+
+		o.body.bind("click", function(){
+			o.body.hide()
+			var edit = $("<div name='edit'></div>")
+			var textarea = $("<textarea class='oi' style='width:97%;min-height:20em'></textarea>")
+			var button = $("<input type='button' style='margin:0.5em 0 0.5em 0'>")
+			button.attr("value", i18n.t("report_properties.save"))
+			textarea.val(o.text)
+			edit.append(textarea)
+			edit.append(button)
+			o.div.append(edit)
+			button.bind("click", function() {
+				var data = { 
+					"svc_envfile": textarea.val()
+				}
+				services_osvcpostrest("/services/%1", [o.options.svcname], "", data, function(jd) {
+					if (jd.error && (jd.error.length > 0)) {
+						$(".flash").show("blind").html(services_error_fmt(jd))
+						return
+					}
+					o.init()
+				},
+				function(xhr, stat, error) {
+					$(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
+				})
+			})
+		})
+
 	}
 
+	o.init()
 	return o
 }
 
