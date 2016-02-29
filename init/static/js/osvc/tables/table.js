@@ -1030,7 +1030,7 @@ function table_init(opts) {
 			if (t.options.visible_columns.indexOf(c) >= 0) {
 				continue
 			}
-			$("#table_"+t.id).find("[col="+c+"]").hide()
+			t.e_table.find("tbody > * > [col="+c+"]").hide()
 		}
 	}
 
@@ -1059,7 +1059,7 @@ function table_init(opts) {
 		t.refresh_column_headers()
 		if (checked) {
 			if (t.options.force_cols.indexOf(c) >=0 ) {
-				t.e_table.find(".tl td[col="+c+"]").show()
+				t.e_table.find("tbody > .tl > td[col="+c+"]").show()
 			} else {
 				t.refresh()
 			}
@@ -1539,7 +1539,7 @@ function table_init(opts) {
 			$(this).unbind()
 			$(this).bind("dblclick", function(){
 				sel = $(this).text()
-				$(".theader_filters").find("[col="+k+"]").find("input").val(sel)
+				t.e_header_filters.find("[col="+k+"]").find("input").val(sel)
 				t.save_column_filters()
 				t.refresh_column_filters_in_place()
 				t.refresh()
@@ -1550,8 +1550,8 @@ function table_init(opts) {
 				//cur = sel
 				$(this).removeClass("highlight")
 				$(this).addClass("b")
-				$(".theader_filters").find("[col="+k+"]").find("input").val(cur)
-				$(".theader_slim").find("[col="+k+"]").each(function() {
+				t.e_header_filters.find("[col="+k+"]").find("input").val(cur)
+				t.e_header_slim.find("[col="+k+"]").each(function() {
 					$(this).removeClass("bgred")
 					$(this).addClass("bgorange")
 				})
@@ -1640,7 +1640,7 @@ function table_init(opts) {
 		t.e_fsr.find("#fsrandeq").each(function(){
 			$(this).unbind()
 			$(this).bind("click", function(){
-				cur =  $(".theader_filters").find("[col="+k+"]").find("input").val()
+				cur =  t.e_header_filters.find("[col="+k+"]").find("input").val()
 				val = cur + '&' + sel
 				t.e_fsr.find("#fsrview").each(function(){
 					$(this).text(val)
@@ -1651,7 +1651,7 @@ function table_init(opts) {
 		t.e_fsr.find("#fsroreq").each(function(){
 			$(this).unbind()
 			$(this).bind("click", function(){
-				cur =  $(".theader_filters").find("[col="+k+"]").find("input").val()
+				cur =  t.e_header_filters.find("[col="+k+"]").find("input").val()
 				val = cur + '|' + sel
 				t.e_fsr.find("#fsrview").each(function(){
 					$(this).text(val)
@@ -1672,7 +1672,7 @@ function table_init(opts) {
 		t.e_fsr.find("#fsrandsup").each(function(){
 			$(this).unbind()
 			$(this).bind("click", function(){
-				cur =  $(".theader_filters").find("[col="+k+"]").find("input").val()
+				cur =  t.e_header_filters.find("[col="+k+"]").find("input").val()
 				val = cur + '&>' + sel
 				t.e_fsr.find("#fsrview").each(function(){
 					$(this).text(val)
@@ -1683,7 +1683,7 @@ function table_init(opts) {
 		t.e_fsr.find("#fsrorsup").each(function(){
 			$(this).unbind()
 			$(this).bind("click", function(){
-				cur =  $(".theader_filters").find("[col="+k+"]").find("input").val()
+				cur =  t.e_header_filters.find("[col="+k+"]").find("input").val()
 				val = cur + '|>' + sel
 				t.e_fsr.find("#fsrview").each(function(){
 					$(this).text(val)
@@ -1704,7 +1704,7 @@ function table_init(opts) {
 		t.e_fsr.find("#fsrandinf").each(function(){
 			$(this).unbind()
 			$(this).bind("click", function(){
-				cur =  $(".theader_filters").find("[col="+k+"]").find("input").val()
+				cur =  t.e_header_filters.find("[col="+k+"]").find("input").val()
 				val = cur + '&<' + sel
 				t.e_fsr.find("#fsrview").each(function(){
 					$(this).text(val)
@@ -1715,7 +1715,7 @@ function table_init(opts) {
 		t.e_fsr.find("#fsrorinf").each(function(){
 			$(this).unbind()
 			$(this).bind("click", function(){
-				cur =  $(".theader_filters").find("[col="+k+"]").find("input").val()
+				cur =  t.e_header_filters.find("[col="+k+"]").find("input").val()
 				val = cur + '|<' + sel
 				t.e_fsr.find("#fsrview").each(function(){
 					$(this).text(val)
@@ -1740,7 +1740,7 @@ function table_init(opts) {
 		t.e_fsr.find("#fsrandempty").each(function(){
 			$(this).unbind()
 			$(this).bind("click", function(){
-				cur =  $(".theader_filters").find("[col="+k+"]").find("input").val()
+				cur =  t.e_header_filters.find("[col="+k+"]").find("input").val()
 				if (t.e_fsr.find("#fsrneg").hasClass("bgred")) {
 					val = cur + '&!empty'
 				} else {
@@ -1755,7 +1755,7 @@ function table_init(opts) {
 		t.e_fsr.find("#fsrorempty").each(function(){
 			$(this).unbind()
 			$(this).bind("click", function(){
-				cur =  $(".theader_filters").find("[col="+k+"]").find("input").val()
+				cur =  t.e_header_filters.find("[col="+k+"]").find("input").val()
 				if (t.e_fsr.find("#fsrneg").hasClass("bgred")) {
 					val = cur + '|!empty'
 				} else {
@@ -2621,9 +2621,9 @@ function table_init(opts) {
 				if (!current_state) {
 					if (t.options.force_cols.indexOf(c) >=0 ) {
 						// don't remove forced columns
-						t.e_table.find("[col="+colname+"]").hide()
+						t.e_table.find("tbody > * > [col="+colname+"]").hide()
 					} else {
-						t.e_table.find("[col="+colname+"]").remove()
+						t.e_table.find("tbody > * > [col="+colname+"]").remove()
 					}
 					// reset the table data md5 so that toggle on-off-on a column is not interpreted
 					// as unchanged data
