@@ -863,8 +863,8 @@ function view_disks(divid, options) {
 	var o = {}
 	$("#"+divid).load("/init/static/views/disks.html", function() {
 		$(this).i18n()
-		table_disks_charts("charts", options)
 		table_disks("disks", options)
+		table_disks_charts("charts", options)
 		$("#charts_a").bind("click", function() {
 			if (!$("#charts").is(":visible")) {
 				$(this).addClass("down16")
