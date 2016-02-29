@@ -171,11 +171,16 @@ function toggle_extraline(e) {
 }
 
 function toggle_extra(url, id, e, ncols) {
-	var line = $(e).parents(".tl").first()
+	if ($(e).hasClass("tl")) {
+		var line = $(e)
+	} else {
+		var line = $(e).parents(".tl").first()
+	}
 	if (!ncols) {
 		ncols = line.children("[cell=1]").length
 	}
 	var extra = $("<tr class='extraline stackable empty_on_pop'></tr>")
+	extra.attr("anchor", line.attr("cksum"))
 	line.children("td.tools").each(function(){
 		extra.append("<td class='tools'></td>")
 	})
@@ -1160,7 +1165,6 @@ function table_init(opts) {
 		// disable DOM insert event trigger for perf
 		t.need_refresh = false
 		t.scroll_disable_dom()
-		$("#table_"+t.id).children().children("tr.extraline").remove()
 
 		try {
 			var data = $.parseJSON(msg)
@@ -1174,12 +1178,30 @@ function table_init(opts) {
 		msg = t.data_to_lines(lines)
 		msg = t.cell_decorator(msg)
 
+		// detach extralines
+		var extralines = t.div.find(".extraline:visible").detach()
+
 		// detach old lines
 		var old_lines = $("<tbody></tbody>").append($("#table_"+t.id).children("tbody").children(".tl").detach())
 
 		// insert new lines
 		tbody = $("#table_"+t.id).children("tbody")
 		tbody.append(msg)
+
+		// reattach extralines
+		extralines.each(function(){
+			var cksum = $(this).attr("anchor")
+			var new_line = tbody.children(".tl[cksum="+cksum+"]")
+			if (new_line.length == 0) {
+				// the extraline parent line disappeared
+				return
+			}
+			// the extraline parent line is still there in the new dataset
+			var content = $(this).children("td:last").children().detach()
+			var id = toggle_extraline(new_line.get(0))
+			$("#"+id).append(content)
+		})
+		extralines.remove()
 
 		tbody.children(".tl").each(function(){
 			var new_line = $(this)
@@ -1383,18 +1405,6 @@ function table_init(opts) {
 		}
 
 		var data = t.prepare_request_data()
-
-		// move open tabs to overlay to preserve what was in use
-		if (t.div.find(".extraline:visible").children("td").children("table").length > 0) {
-			$("#overlay").empty().hide()
-			t.div.find(".extraline").children("td").children("table").parent().each(function() {
-				var e = $("<div></div>")
-				e.attr("id", $(this).attr("id"))
-				e.append($(this).children())
-				$("#overlay").append(e)
-			})
-			$("#overlay").hide().show("scale")
-		}
 
 		data.visible_columns = t.get_ordered_visible_columns().join(',')
 		data[t.id+"_page"] = t.page
