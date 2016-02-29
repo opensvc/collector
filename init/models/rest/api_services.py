@@ -102,6 +102,7 @@ class rest_post_service(rest_post_handler):
         if svc is None:
             raise Exception("Service %s not found"%str(id))
 
+        vars["updated"] = datetime.datetime.now()
         db(q).update(**vars)
 
         fmt = "Service %(svcname)s change: %(data)s"
