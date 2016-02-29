@@ -92,15 +92,6 @@ function table_actions_node(divid, nodename) {
 		"caller": "table_actions_node",
 		"request_vars": request_vars,
 		"volatile_filters": true,
-		"bookmarkable": false,
-		"refreshable": false,
-		"linkable": false,
-		"exportable": false,
-		"pageable": false,
-		"columnable": false,
-		"commonalityable": false,
-		"filterable": false,
-		"wsable": false,
 		"visible_columns": [
 			'svcname',
 			'pid',
@@ -133,15 +124,6 @@ function table_actions_svc(divid, svcname) {
 		"caller": "table_actions_svc",
 		"request_vars": request_vars,
 		"volatile_filters": true,
-		"bookmarkable": false,
-		"refreshable": false,
-		"linkable": false,
-		"exportable": false,
-		"pageable": false,
-		"columnable": false,
-		"commonalityable": false,
-		"filterable": false,
-		"wsable": false,
 		"visible_columns": [
 			'hostname',
 			'pid',
@@ -240,20 +222,11 @@ function table_checks_node(divid, nodename) {
 	var f = id+"_f_chk_nodename"
 	var request_vars = {}
 	request_vars[f] = nodename
-	table_checks(divid, {
+	return table_checks(divid, {
 		"id": id,
 		"caller": "table_checks_node",
 		"request_vars": request_vars,
 		"volatile_filters": true,
-		"bookmarkable": false,
-		"refreshable": false,
-		"linkable": false,
-		"exportable": false,
-		"pageable": false,
-		"columnable": false,
-		"commonalityable": false,
-		"filterable": false,
-		"wsable": false,
 		"visible_columns": [
 			'chk_svcname',
 			'chk_type',
@@ -279,15 +252,6 @@ function table_checks_svc(divid, svcname) {
 		"caller": "table_checks_svc",
 		"request_vars": request_vars,
 		"volatile_filters": true,
-		"bookmarkable": false,
-		"refreshable": false,
-		"linkable": false,
-		"exportable": false,
-		"pageable": false,
-		"columnable": false,
-		"commonalityable": false,
-		"filterable": false,
-		"wsable": false,
 		"visible_columns": [
 			'chk_nodename',
 			'chk_type',
@@ -698,15 +662,6 @@ function table_comp_status_node(divid, nodename) {
 		"caller": "table_comp_status_node",
 		"request_vars": request_vars,
 		"volatile_filters": true,
-		"bookmarkable": false,
-		"refreshable": false,
-		"linkable": false,
-		"exportable": false,
-		"pageable": false,
-		"columnable": false,
-		"commonalityable": false,
-		"filterable": false,
-		"wsable": false,
 		"force_cols": ['id', 'os_name', 'run_log'],
 		"visible_columns": ['run_date', 'run_svcname', 'run_module', 'run_status']
 	})
@@ -727,15 +682,6 @@ function table_comp_status_svc(divid, svcname) {
 		"caller": "table_comp_status_svc",
 		"request_vars": request_vars,
 		"volatile_filters": true,
-		"bookmarkable": false,
-		"refreshable": false,
-		"linkable": false,
-		"exportable": false,
-		"pageable": false,
-		"columnable": false,
-		"commonalityable": false,
-		"filterable": false,
-		"wsable": false,
 		"force_cols": ['id', 'os_name', 'run_log'],
 		"visible_columns": ['run_date', 'run_nodename', 'run_module', 'run_status']
 	})
@@ -768,20 +714,12 @@ function table_dashboard_node(divid, nodename) {
 	var f = id+"_f_dash_nodename"
 	var request_vars = {}
 	request_vars[f] = nodename
-	table_dashboard(divid, {
+	return table_dashboard(divid, {
 		"id": id,
 		"caller": "table_dashboard_node",
 		"request_vars": request_vars,
 		"visible_columns": ['dash_updated', 'dash_type', 'dash_links', 'dash_entry', 'dash_env', 'dash_svcname', 'dash_severity', 'dash_created'],
 		"volatile_filters": true,
-		"bookmarkable": false,
-		"refreshable": false,
-		"linkable": false,
-		"exportable": false,
-		"pageable": false,
-		"columnable": false,
-		"commonalityable": false,
-		"filterable": false,
 		"wsable": false
 	})
 }
@@ -796,16 +734,7 @@ function table_dashboard_svc(divid, svcname) {
 		"caller": "table_dashboard_svc",
 		"request_vars": request_vars,
 		"visible_columns": ['dash_updated', 'dash_type', 'dash_links', 'dash_entry', 'dash_env', 'dash_nodename', 'dash_severity', 'dash_created'],
-		"volatile_filters": true,
-		"bookmarkable": false,
-		"refreshable": false,
-		"linkable": false,
-		"exportable": false,
-		"pageable": false,
-		"columnable": false,
-		"commonalityable": false,
-		"filterable": false,
-		"wsable": false
+		"volatile_filters": true
 	})
 }
 
@@ -1080,20 +1009,11 @@ function table_log_node(divid, nodename) {
 	var f = id+"_f_log_nodename"
 	var request_vars = {}
 	request_vars[f] = nodename
-	table_log(divid, {
+	return table_log(divid, {
 		"id": id,
 		"caller": "table_log_node",
 		"request_vars": request_vars,
-		"volatile_filters": true,
-		"bookmarkable": false,
-		"refreshable": false,
-		"linkable": false,
-		"exportable": false,
-		"pageable": false,
-		"columnable": false,
-		"commonalityable": false,
-		"filterable": false,
-		"wsable": false
+		"volatile_filters": true
 	})
 }
 
@@ -1106,16 +1026,7 @@ function table_log_svc(divid, svcname) {
 		"id": id,
 		"caller": "table_log_svc",
 		"request_vars": request_vars,
-		"volatile_filters": true,
-		"bookmarkable": false,
-		"refreshable": false,
-		"linkable": false,
-		"exportable": false,
-		"pageable": false,
-		"columnable": false,
-		"commonalityable": false,
-		"filterable": false,
-		"wsable": false
+		"volatile_filters": true
 	})
 }
 function table_networks(divid, options) {
@@ -1583,16 +1494,7 @@ function table_resources_node(divid, nodename) {
 		"caller": "table_resources_node",
 		"request_vars": request_vars,
 		"visible_columns": ['svcname', 'vmname', 'rid', 'res_type', 'res_status', 'res_desc', 'res_log', 'res_monitor', 'res_disable', 'res_optional', 'updated'],
-		"volatile_filters": true,
-		"bookmarkable": false,
-		"refreshable": false,
-		"linkable": false,
-		"exportable": false,
-		"pageable": false,
-		"columnable": false,
-		"commonalityable": false,
-		"filterable": false,
-		"wsable": false
+		"volatile_filters": true
 	})
 }
 
@@ -1606,16 +1508,7 @@ function table_resources_svc(divid, svcname) {
 		"caller": "table_resources_svc",
 		"request_vars": request_vars,
 		"visible_columns": ['nodename', 'vmname', 'rid', 'res_type', 'res_status', 'res_desc', 'res_log', 'res_monitor', 'res_disable', 'res_optional', 'updated'],
-		"volatile_filters": true,
-		"bookmarkable": false,
-		"refreshable": false,
-		"linkable": false,
-		"exportable": false,
-		"pageable": false,
-		"columnable": false,
-		"commonalityable": false,
-		"filterable": false,
-		"wsable": false
+		"volatile_filters": true
 	})
 }
 function table_sanswitches(divid, options) {
@@ -1775,20 +1668,11 @@ function table_service_instances_node(divid, nodename) {
 	var f = id+"_f_mon_nodname"
 	var request_vars = {}
 	request_vars[f] = nodename
-	table_service_instances(divid, {
+	return table_service_instances(divid, {
 		"id": id,
 		"caller": "table_service_instances_node",
 		"request_vars": request_vars,
 		"volatile_filters": true,
-		"bookmarkable": false,
-		"refreshable": false,
-		"linkable": false,
-		"exportable": false,
-		"pageable": false,
-		"columnable": false,
-		"commonalityable": false,
-		"filterable": false,
-		"wsable": false,
 		"visible_columns": [
 			'mon_svcname',
 			'svc_ha',
@@ -1812,15 +1696,6 @@ function table_service_instances_svc(divid, svcname) {
 		"caller": "table_service_instances_svc",
 		"request_vars": request_vars,
 		"volatile_filters": true,
-		"bookmarkable": false,
-		"refreshable": false,
-		"linkable": false,
-		"exportable": false,
-		"pageable": false,
-		"columnable": false,
-		"commonalityable": false,
-		"filterable": false,
-		"wsable": false,
 		"visible_columns": [
 			'svc_ha',
 			'svc_cluster_type',
