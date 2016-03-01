@@ -823,13 +823,13 @@
 			},
 			"resources" : {
 					"title" : "Ressources",
-					"text" : "état des ressources"
+					"text" : "Etat et inventaire des ressources des services"
 			},
 			"app_info" : {
 					"title" : "App Info",
 					"text" : "Dépôt des couples clé:valeur des ressources 'app' des services"
 			},
-			"nodes" :	{
+			"nodes" : {
 					"title" : "Noeuds",
 					"text" : "Infos techniques et organisationelles"
 			},
@@ -840,6 +840,10 @@
 			"actions" : {
 					"title" : "Actions",
 					"text" : "Journal des actions de service"
+			},
+			"actions queue" : {
+					"title" : "File d'attente d'actions",
+					"text" : "Actions postées pour traitement par les agents"
 			},
 			"checks" : {
 					"title" : "Sondes",
@@ -855,7 +859,7 @@
 			},
 			"networks" : {
 					"title" : "Réseau",
-					"text" : "Sous-réseaux, passerelles, vlans, ..."
+					"text" : "Référentiel des sous-réseau"
 			},
 			"node_networks" : {
 					"title" : "Réseaux des noeuds",
@@ -1003,7 +1007,7 @@
 			},
 			"o_setup" : {
 				"title" : "Seuils d'obsolescence",
-				"text" : "Définition des dates d'obsolescence des modèles de serveurs et des versions de systèmes d'exploitation"
+				"text" : "Définition des dates d'obsolescence serveurs et os"
 			},
 			"application" : {
 				"title" : "Applications",

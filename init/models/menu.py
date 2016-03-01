@@ -21,6 +21,7 @@ menu_entries = [
   'view-nodes',
   'view-tagattach',
   'view-actions',
+  'view-actions-queue',
   'view-checks',
   'view-pkg',
   'view-patch',

@@ -57,6 +57,13 @@ var menu_data = {
 		  "fn" : "table_actions"
 		},
 		{
+		  "title" : "actions queue",
+		  "class" : "actions",
+		  "id" : "view-actions-queue",
+		  "link" : "/init/action_queue/action_queue",
+		  "fn" : "table_action_queue"
+		},
+		{
 		  "title" : "checks",
 		  "class" : "check16",
 		  "id" : "view-checks",
