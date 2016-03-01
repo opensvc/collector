@@ -201,7 +201,11 @@ function node_props_init(o)
 			if (!data[key]) {
 				continue
 			}
-			o.div.find("#"+key).text(data[key])
+			if (key == "mem_bytes") {
+				o.div.find("#"+key).text(fancy_size_mb(data[key]))
+			} else {
+				o.div.find("#"+key).text(data[key])
+			}
 		}
 
 		// init sys responsible tools

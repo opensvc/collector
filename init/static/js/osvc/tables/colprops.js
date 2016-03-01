@@ -1049,6 +1049,7 @@ colprops = {
 		"title": "Memory banks"
 	},
 	"mem_bytes": {
+		"_class": "numeric size_mb",
 		"img": "mem16",
 		"title": "Memory"
 	},
@@ -2085,6 +2086,7 @@ colprops = {
 		"title": "Value"
 	},
 	"version": {
+		"_class": "nowrap",
 		"img": "svc",
 		"title": "Agent version"
 	},
