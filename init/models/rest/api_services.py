@@ -141,6 +141,12 @@ class rest_post_services(rest_post_handler):
             raise Exception("Key 'svc_name' is mandatory")
         svcname = vars.get("svc_name")
 
+        q = db.services.svc_name == svcname
+        svc = db(q).select().first()
+        if svc is not None:
+            del(vars["svc_name"])
+            return rest_post_service().handler(svcname, **vars)
+
         svc_id = db.services.insert(**vars)
 
         fmt = "Service %(svcname)s added"
@@ -153,7 +159,9 @@ class rest_post_services(rest_post_handler):
         }
         _websocket_send(event_msg(l))
 
-        return rest_get_service().handler(svcname)
+        ret = rest_get_service().handler(svcname)
+        ret["info"] = fmt % d
+        return ret
 
 #
 class rest_delete_service(rest_delete_handler):
