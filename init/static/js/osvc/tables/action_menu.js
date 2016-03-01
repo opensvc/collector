@@ -2968,7 +2968,7 @@ function data_action_add_user(t, e) {
 	data_action_generic_add(t, e, {
 		"request_service": "R_USERS",
 		"properties_tab": function(divid, data) {
-			user_properties(divid, {"user_id": data.id})
+			user_tabs(divid, {"user_id": data.id})
 		},
 		"createable_message": "action_menu.user_createable",
 		"inputs": [
@@ -3500,7 +3500,7 @@ function data_action_add_report(t, e) {
 	data_action_generic_add(t, e, {
 		"request_service": "/reports",
 		"properties_tab": function(divid, data) {
-			report_properties(divid, {"report_id": data.id})
+			report_tabs(divid, {"report_id": data.id, "report_name": data.report_name})
 		},
 		"createable_message": "action_menu.report_createable",
 		"inputs": [
@@ -3533,7 +3533,7 @@ function data_action_add_chart(t, e) {
 	data_action_generic_add(t, e, {
 		"request_service": "/reports/charts",
 		"properties_tab": function(divid, data) {
-			chart_properties(divid, {"chart_id": data.id})
+			chart_tabs(divid, {"chart_id": data.id, "chart_name": data.chart_name})
 		},
 		"createable_message": "action_menu.chart_createable",
 		"inputs": [
@@ -3750,7 +3750,7 @@ function data_action_add_metric(t, e) {
 	data_action_generic_add(t, e, {
 		"request_service": "/reports/metrics",
 		"properties_tab": function(divid, data) {
-			metric_properties(divid, {"metric_id": data.id})
+			metric_tabs(divid, {"metric_id": data.id, "metric_name": data.metric_name})
 		},
 		"createable_message": "action_menu.metric_createable",
 		"inputs": [
