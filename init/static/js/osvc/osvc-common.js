@@ -160,6 +160,11 @@ function osvc_create_link(fn, parameters, target) {
 	// Security for old link
 	fn = fn.replace("?","")
 
+	if ("divid" in parameters) {
+		// case for links to tables embedded in views
+		parameters["divid"] = "layout"
+	}
+
 	var link_id =  services_osvcpostrest("R_LINKS", "", "", {"fn": fn, "param": JSON.stringify(parameters)}, function(jd) {
 		if (jd.error) {
 			target.html(services_error_fmt(jd))
