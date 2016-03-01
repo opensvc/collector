@@ -569,6 +569,7 @@ function form(divid, options) {
 			}
 		}
 		fn(path, "", "", data, function(jd) {
+			o.result.empty()
 			if (jd.error && (jd.error.length > 0)) {
 				o.result.append("<pre>"+jd.error+"</pre>")
 			}
@@ -582,6 +583,11 @@ function form(divid, options) {
         }
 
 	o.submit_output_rest = function(output, data) {
+		if (output.Mangle) {
+			eval("var mangle="+output.Mangle)
+			data = mangle(data)
+			console.log("data after mangle", data)
+		}
 		if (typeof(data) === "string") {
 			console.log("rest output data can not be string")
 			return
