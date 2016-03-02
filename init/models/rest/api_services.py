@@ -796,3 +796,84 @@ class rest_get_service_compliance_logs(rest_get_table_handler):
         self.set_q(q)
         return self.prepare_data(**vars)
 
+#
+class rest_put_service_action_queue(rest_put_handler):
+    def __init__(self):
+        desc = [
+          "Enqueue an action that will be executed by opensvc agents on *all* service instances.",
+          "The user must be responsible for the target node or service.",
+          "The action is logged in the collector's log.",
+        ]
+        data = """
+- <property>=<value> pairs.
+- **svcname**
+. The service targeted by the action. The action is run using the
+  svcmgr opensvc agent command on the node specified by **nodename**.
+- **action**
+. The opensvc agent action to execute.
+- **module**
+. The compliance module to run **action** on.
+- **moduleset**
+. The compliance moduleset to run **action** on.
+- **rid**
+. The service resource id to limit **action** to.
+
+Each action has specific property requirements:
+
+- ``compliance_check``:green requires **nodename**, **module** or **moduleset**, optionally
+  **svcname**
+- ``compliance_fix``:green requires **nodename**, **module** or **moduleset**, optionally
+  **svcname**
+- ``start``:green requires **nodename**, **svcname**, optionally **rid**
+- ``stop``:green requires **nodename**, **svcname**, optionally **rid**
+- ``restart``:green requires **nodename**, **svcname**, optionally **rid**
+- ``syncall``:green requires **nodename**, **svcname**, optionally **rid**
+- ``syncnodes``:green requires **nodename**, **svcname**, optionally **rid**
+- ``syncdrp``:green requires **nodename**, **svcname**, optionally **rid**
+- ``enable``:green requires **nodename**, **svcname**, optionally **rid**
+- ``disable``:green requires **nodename**, **svcname**, optionally **rid**
+- ``freeze``:green requires **nodename**, **svcname**, optionally **rid**
+- ``thaw``:green requires **nodename**, **svcname**, optionally **rid**
+- ``pushasset``:green requires **nodename**
+- ``pushdisks``:green requires **nodename**
+- ``push``:green requires **nodename**
+- ``pushpkg``:green requires **nodename**
+- ``pushpatch``:green requires **nodename**
+- ``pushstats``:green requires **nodename**
+- ``checks``:green requires **nodename**
+- ``sysreport``:green requires **nodename**
+- ``updatecomp``:green requires **nodename**
+- ``updatepkg``:green requires **nodename**
+- ``rotate_root_pw``:green requires **nodename**
+- ``scanscsi``:green requires **nodename**
+- ``reboot``:green requires **nodename**
+- ``schedule_reboot``:green requires **nodename**
+- ``unschedule_reboot``:green requires **nodename**
+- ``shutdown``:green requires **nodename**
+- ``wol``:green requires **nodename**
+"""
+        examples = [
+          "# curl -u %(email)s -o- -X PUT -d action=push https://%(collector)s/init/rest/api/services/test/queue_action",
+        ]
+
+        rest_put_handler.__init__(
+          self,
+          path="/services/<svcname>/queue_action",
+          desc=desc,
+          data=data,
+          examples=examples
+        )
+
+    def handler(self, svcname, **vars):
+        q = db.svcmon.mon_svcname == svcname
+        rows = db(q).select(db.svcmon.mon_nodname)
+        n = 0
+        vars["svcname"] = svcname
+        for row in rows:
+            vars["nodename"] = row.mon_nodname
+            n += json_action_one(vars)
+        if n > 0:
+            action_q_event()
+        return dict(info="Accepted to enqueue %d actions" % n)
+
+

@@ -459,6 +459,7 @@ handlers = {
      rest_put_form(),
      rest_put_obsolescence_refresh(),
      rest_put_provisioning_template(),
+     rest_put_service_action_queue(),
   ],
 }
 
