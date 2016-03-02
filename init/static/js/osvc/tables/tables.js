@@ -500,7 +500,7 @@ function table_comp_status(divid, options) {
 		'divid': divid,
 		'id': "cs0",
 		'name': "comp_status",
-		'caller': "table_comp_status",
+		'caller': "view_comp_status",
 		'ajax_url': '/init/compliance/ajax_comp_status',
 		'span': ['run_nodename', 'run_svcname', 'run_module'],
 		'force_cols': ['id', 'os_name'],
