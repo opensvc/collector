@@ -28,7 +28,8 @@ function report_tabs(divid, options) {
 			"title_class": "icon wf16"
 		})
 		o.tabs[i].callback = function(divid) {
-			report(divid, o.options)
+			var options = $.extend({}, o.options, {"pad": true})
+			report(divid, options)
 		}
 
 		// tab definition

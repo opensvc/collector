@@ -303,7 +303,10 @@ function report(divid, options) {
 
 	o.create = function() {
 		// report area
-		o.report_div = $("<div class='reports_div'></div>");
+		o.report_div = $("<div class='reports_div'></div>")
+		if (o.options.pad) {
+			o.report_div.css({"padding": "1em"})
+		}
 		o.div.append(o.report_div)
 
 		// title
