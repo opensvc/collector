@@ -1097,6 +1097,7 @@ def json_startup_data():
       "fs",
       "share",
       "container",
+      "ip.container",
       "app",
     ]
 
@@ -1114,16 +1115,11 @@ def json_startup_data():
     ]
 
     def do_node(nodename, node_ids, node_tail, hv=None):
-        sections = {
-          "stonith": {"stonith": []},
-          "hb": {"hb": []},
-          "ip": {"ip": []},
-          "disk": {"disk": []},
-          "fs": {"fs": []},
-          "share": {"share": []},
-          "container": {"container": []},
-          "app": {"app": []},
-        }
+        sections = {}
+        for family in levels:
+          sections[family] = {}
+          sections[family][family] = []
+
         data = {
           "edges": [],
           "nodes": [],
@@ -1211,6 +1207,8 @@ def json_startup_data():
             family = s.split("#")[0]
             if family in disk_types:
                 family = "disk"
+            if t and family == "ip" and t == "docker":
+                family = "ip.container"
 
             try:
                 subset = get_scoped(s, "subset", nodename)
