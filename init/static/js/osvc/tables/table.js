@@ -718,26 +718,9 @@ function table_init(opts) {
 		}
 	}
 
-	t.cell_span = function(e) {
-		try {
-			var s = $(e).attr("col")
-		} catch(err) {
-			return false
-		}
-		if (t.options.span.indexOf(s) < 0) {
-			return false
-		}
-		var line = $(e).parent(".tl")
-		var span_id = line.attr("spansum")
-		var prev_span_id = line.prev().attr("spansum")
-		if (span_id == prev_span_id) {
-			return true
-		}
-		return false
-	}
-
-	t._cell_decorator = function(cell) {
-		if (t.cell_span(cell)) {
+	t._cell_decorator = function(cell, span) {
+                var col = $(cell).attr('col')
+		if (span && t.options.span.indexOf(col) >= 0) {
 			$(cell).empty()
 			return
 		}
@@ -759,14 +742,19 @@ function table_init(opts) {
 		if (!lines) {
 			lines = t.e_table.find("tbody > .tl")
 		}
+		var spansum1 = null
 		lines.each(function(){
 			var line = $(this)
-			// schedule to interleave with other tasks
-			//setTimeout(function(){
-				line.children("[cell=1]").each(function(){
-					t._cell_decorator(this)
-				})
-			//}, 1)
+			var spansum2 = line.attr("spansum")
+			if (spansum1 == spansum2) {
+				var span = true
+			} else {
+				var span = false
+			}
+			spansum1 = spansum2
+			line.children("[cell=1]").each(function(){
+				t._cell_decorator(this, span)
+			})
 		})
 		return lines
 	}
