@@ -365,6 +365,20 @@ function report(divid, options) {
 						metric(section_div.attr("id"), child)
 					} else if ("chart_id" in child) {
 						chart(section_div.attr("id"), child)
+					} else if ("Function" in child) {
+						var div = $("<div class='reports_section'></div>")
+						div.uniqueId()
+						if (child.width) {
+							div.css({"flex": "1 1 "+child.width})
+						}
+						section_div.append(div)
+
+						if ("Args" in child) {
+							var options = child.Args
+						} else {
+							var options = {}
+						}
+						window[child.Function](div.attr("id"), options)
 					}
 				}
 			}
