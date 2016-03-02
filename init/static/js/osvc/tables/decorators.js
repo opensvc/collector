@@ -1993,7 +1993,7 @@ function cell_decorator_rule_value(e) {
   } catch(err) {
     var data = $.data(e, "v")
   }
-  form(id, {
+  form($(e), {
     "data": data,
     "var_id": var_id,
     "rset_id": rset_id,

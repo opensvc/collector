@@ -53,7 +53,11 @@ function form(divid, options) {
 	o.fn_triggers_signs = []
 	o.fn_trigger_last = {}
 	o.cond_triggers = {}
-	o.div = $("#"+divid)
+	if (typeof divid === "string") {
+		o.div = $("#"+divid)
+	} else {
+		o.div = divid
+	}
 
 	o.load = function() {
 		if ("form_data" in o.options) {
