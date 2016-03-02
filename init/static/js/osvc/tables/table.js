@@ -296,6 +296,7 @@ function table_init(opts) {
 		"pageable": true,
 		"on_change": false,
 		"events": [],
+		"detached_decorate_cells": true,
 		"request_vars": {}
 	}
 
@@ -1164,7 +1165,9 @@ function table_init(opts) {
 		}
 
 		msg = t.data_to_lines(lines)
-		msg = t.cell_decorator(msg)
+		if (t.options.detached_decorate_cells) {
+			msg = t.cell_decorator(msg)
+		}
 
 		// detach extralines
 		var extralines = t.e_table.children("tbody").children(".extraline:visible").detach()
@@ -1175,6 +1178,10 @@ function table_init(opts) {
 		// insert new lines
 		tbody = $("#table_"+t.id).children("tbody")
 		tbody.append(msg)
+
+		if (!t.options.detached_decorate_cells) {
+			msg = t.cell_decorator(msg)
+		}
 
 		// reattach extralines
 		extralines.each(function(){
