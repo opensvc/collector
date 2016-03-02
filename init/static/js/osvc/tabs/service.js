@@ -248,7 +248,7 @@ function service_env(divid, options)
 		o.body.bind("click", function(){
 			o.body.hide()
 			var edit = $("<div name='edit'></div>")
-			var textarea = $("<textarea class='oi' style='width:97%;min-height:20em'></textarea>")
+			var textarea = $("<textarea class='oi oidefinition'></textarea>")
 			var button = $("<input type='button' style='margin:0.5em 0 0.5em 0'>")
 			button.attr("value", i18n.t("report_properties.save"))
 			textarea.val(o.text)

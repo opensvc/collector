@@ -3236,6 +3236,15 @@ textarea.link_ta_sub {
 input.oi:focus, textarea.oi:focus {
 	background-color: rgba(0,0,0,0.05);
 }
+
+textarea.oidefinition {
+	box-sizing: border-box;
+	padding: 1em;
+	font-family: monospace;
+	min-height: 30em;
+	width: 100%;
+}
+
 .constraint_violation,input.constraint_violation:focus,textarea.constraint_violation:focus {
 	background-color: #fff4f2;
 	border-color: #ddcccc;

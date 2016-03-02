@@ -162,7 +162,7 @@ function form_definition(divid, options) {
 		div.bind("click", function() {
 			div.hide()
 			var edit = $("<div name='edit'></div>")
-			var textarea = $("<textarea class='oi' style='width:97%;min-height:20em'></textarea>")
+			var textarea = $("<textarea class='oi oidefinition'></textarea>")
 			var button = $("<input type='button' style='margin:0.5em 0 0.5em 0'>")
 			button.attr("value", i18n.t("form_properties.save"))
 			if (data.form_yaml && (data.form_yaml.length > 0)) {
