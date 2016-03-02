@@ -15,7 +15,10 @@ def lib_packages_diff(nodenames=[], svcnames=[], encap=False):
     nodenames = list(set(nodenames) - set(['']))
     n = len(nodenames)
     if n < 2:
-        raise Exception(T("At least two nodes should be selected"))
+        if not encap:
+            raise Exception(T("At least two nodes should be selected"))
+        else:
+            return []
 
     if list(nodenames)[0][0] in "0123456789":
         # received node ids
