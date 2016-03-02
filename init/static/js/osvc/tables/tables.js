@@ -84,9 +84,11 @@ function table_actions_node(divid, nodename) {
 	var id = "actions_" + nodename.replace(/[\.-]/g, "_")
 	var f_hostname = id+"_f_hostname"
 	var f_begin = id+"_f_begin"
+	var f_status_log = id+"_f_status_log"
 	var request_vars = {}
 	request_vars[f_hostname] = nodename
 	request_vars[f_begin] = ">-60d"
+	request_vars[f_status_log] = "empty"
 	return table_actions(divid, {
 		"id": id,
 		"caller": "table_actions_node",
@@ -115,10 +117,12 @@ function table_actions_svc(divid, svcname) {
 	var id = "actions_" + svcname.replace(/[\.-]/g, "_")
 	var f_svcname = id+"_f_svcname"
 	var f_begin = id+"_f_begin"
+	var f_status_log = id+"_f_status_log"
 	var perpage = id+"_perpage"
 	var request_vars = {}
 	request_vars[f_svcname] = svcname
 	request_vars[f_begin] = ">-60d"
+	request_vars[f_status_log] = "empty"
 	return table_actions(divid, {
 		"id": id,
 		"caller": "table_actions_svc",
