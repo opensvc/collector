@@ -144,11 +144,13 @@ def task_send_sysreport(need_commit, deleted, nodename):
 def _begin_action(vars, vals, auth):
     i = generic_insert("SVCactions", vars, vals, nodename=auth[1], get_last_id=True)
     row = db(db.SVCactions.id==i).select().first()
-    h['svcname'] = row.svcname
-    h['hostname'] = row.hostname
-    h['action'] = row.action
-    h['begin'] = row.begin
-    h['id'] = row.id
+    h = {
+      'svcname': row.svcname,
+      'hostname': row.hostname,
+      'action': row.action,
+      'begin': row.begin.strftime("%Y-%m-%d %H:%M:%S"),
+      'id': row.id,
+    }
     _websocket_send(event_msg({
                  'event': 'begin_action',
                  'data': h
@@ -165,11 +167,11 @@ def _begin_action(vars, vals, auth):
 
 def _action_wrapper(a, vars, vals, auth):
     if a == "_end_action":
-        _end_action(vars, vals)
+        _end_action(vars, vals, auth)
     elif a == "_begin_action":
         _begin_action(vars, vals, auth)
 
-def _end_action(vars, vals):
+def _end_action(vars, vals, auth):
     upd = []
     h = {}
     for a, b in zip(vars, vals):
@@ -179,8 +181,8 @@ def _end_action(vars, vals):
     if node:
         tz = node.tz
         # convert to local time and strip microseconds
-        h['begin'] = 'convert_size("%s", "%s", @@time_zone)' % (str(h['begin'].strip("'").split('.')[0]), tz)
-        h['end'] = 'convert_size("%s", "%s", @@time_zone)' % (str(h['end'].strip("'")), tz)
+        h['begin'] = 'convert_tz("%s", "%s", @@time_zone)' % (str(h['begin'].strip("'").split('.')[0]), tz)
+        h['end'] = 'convert_tz("%s", "%s", @@time_zone)' % (str(h['end'].strip("'")), tz)
     else:
         # strip microseconds
         h['begin'] = repr(str(h['begin'].strip("'").split('.')[0]))
@@ -192,6 +194,7 @@ def _end_action(vars, vals):
     sql="""select id from SVCactions where hostname=%s and svcname=%s and begin=%s and action=%s""" %\
         (h['hostname'], h['svcname'], h['begin'], h['action'])
     ids = map(lambda x: x[0], db.executesql(sql))
+    print(sql, ids)
     if len(ids) == 0:
         return
 
