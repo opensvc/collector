@@ -479,6 +479,10 @@ function form(divid, options) {
 		o.area.empty()
 		var key_id = o.form_data.form_definition.Outputs[0].Key
 		var i = 0
+		if (!is_dict(o.options.data)) {
+			// empty data
+			o.options.data = {}
+		}
 		for (key in o.options.data) {
 			i++
 			o.options.data[key][key_id] = key
