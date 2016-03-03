@@ -10,6 +10,7 @@ objcols = {
 		'status',
 		'type',
 		'sec_zone',
+		'tz',
 		'loc_country',
 		'loc_zip',
 		'loc_city',
@@ -368,6 +369,10 @@ colprops = {
 		"_class": "_network",
 		"img": "net16",
 		"title": "Comment"
+	},
+	"tz": {
+		"img": "loc",
+		"title": "Timezone"
 	},
 	"connect_to": {
 		"img": "net16",

@@ -8,6 +8,7 @@ nodes_cols = [
     'status',
     'type',
     'sec_zone',
+    'tz',
     'loc_country',
     'loc_zip',
     'loc_city',
@@ -176,6 +177,10 @@ nodes_colprops = {
             ),
     'nodename': HtmlTableColumn(
              field='nodename',
+             table = 'nodes',
+            ),
+    'tz': HtmlTableColumn(
+             field='tz',
              table = 'nodes',
             ),
     'connect_to': HtmlTableColumn(
