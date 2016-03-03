@@ -142,18 +142,13 @@ def task_send_sysreport(need_commit, deleted, nodename):
     return 0
 
 def _begin_action(vars, vals, auth):
-    sql="""insert into SVCactions (%s) values (%s)""" % (','.join(vars), ','.join(vals))
-    db.executesql(sql)
-    i = db.executesql("SELECT LAST_INSERT_ID()")[0][0]
-    db.commit()
-    h = {}
-    for a, b in zip(vars, vals):
-        h[a] = b
-    h['svcname'] = h['svcname'].strip("'")
-    h['hostname'] = h['hostname'].strip("'")
-    h['action'] = h['action'].strip("'")
-    h['begin'] = h['begin'].strip("'").split('.')[0]
-    h['id'] = i
+    i = generic_insert("SVCactions", vars, vals, nodename=auth[1], get_last_id=True)
+    row = db(db.SVCactions.id==i).select().first()
+    h['svcname'] = row.svcname
+    h['hostname'] = row.hostname
+    h['action'] = row.action
+    h['begin'] = row.begin
+    h['id'] = row.id
     _websocket_send(event_msg({
                  'event': 'begin_action',
                  'data': h
@@ -179,11 +174,20 @@ def _end_action(vars, vals):
     h = {}
     for a, b in zip(vars, vals):
         h[a] = b
+
+    node = db(db.nodes.nodename==auth[1]).select().first()
+    if node:
+        tz = node.tz
+        # convert to local time and strip microseconds
+        h['begin'] = 'convert_size("%s", "%s", @@time_zone)' % (str(h['begin'].strip("'").split('.')[0]), tz)
+        h['end'] = 'convert_size("%s", "%s", @@time_zone)' % (str(h['end'].strip("'")), tz)
+    else:
+        # strip microseconds
+        h['begin'] = repr(str(h['begin'].strip("'").split('.')[0]))
+
+    for a, b in h.items():
         if a not in ['hostname', 'svcname', 'begin', 'action', 'hostid']:
             upd.append("%s=%s" % (a, b))
-
-    # strip microseconds
-    h['begin'] = repr(str(h['begin'].strip("'").split('.')[0]))
 
     sql="""select id from SVCactions where hostname=%s and svcname=%s and begin=%s and action=%s""" %\
         (h['hostname'], h['svcname'], h['begin'], h['action'])

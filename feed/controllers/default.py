@@ -76,12 +76,7 @@ def res_action(vars, vals, auth):
 
 @auth_uuid
 def rpc_res_action(vars, vals, auth):
-    upd = []
-    for a, b in zip(vars, vals):
-        upd.append("%s=%s" % (a, b))
-    sql="""insert into SVCactions (%s) values (%s)""" % (','.join(vars), ','.join(vals))
-    db.executesql(sql)
-    db.commit()
+    generic_insert('SVCactions', vars, vals, nodename=auth[1])
     return 0
 
 @service.xmlrpc
@@ -172,7 +167,7 @@ def res_action_batch(vars, vals, auth):
 
 @auth_uuid
 def rpc_res_action_batch(vars, vals, auth):
-    generic_insert('SVCactions', vars, vals)
+    generic_insert('SVCactions', vars, vals, nodename=auth[1])
 
 @service.xmlrpc
 def resmon_update(vars, vals, auth):
