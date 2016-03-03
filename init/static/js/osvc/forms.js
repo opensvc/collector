@@ -156,7 +156,7 @@ function form(divid, options) {
 	}
 
 	o.render_display = function() {
-		if (typeof(o.options.data) == "string") {
+		if ((typeof(o.options.data) == "string") || (typeof(o.options.data) == "number")) {
 			o.area.text(o.options.data)
 			o.area.addClass("pre")
 			return
@@ -350,7 +350,7 @@ function form(divid, options) {
 				help.attr("title", d.Help)
 			}
 			line.append(help)
-			if ((typeof(data) === "undefined") || ((typeof(data) !== "string") && !(input_key_id in data))) {
+			if ((typeof(data) === "undefined") || (is_dict(data) && !(input_key_id in data))) {
 				if (d.Default == "__user_email__") {
 					var content = _self.email
 				} else if (d.Default == "__user_primary_group__") {
@@ -364,7 +364,7 @@ function form(divid, options) {
 				} else {
 					var content = ""
 				}
-			} else if (typeof(data) === "string") {
+			} else if ((typeof(data) === "string") || (typeof(data) === "number")) {
 				var content = data
 			} else if (input_key_id in data) {
 				var content = data[input_key_id]

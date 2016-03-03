@@ -1,6 +1,13 @@
 // OpenSvc Common JS function
 // MD 08062015
 
+function is_dict(obj) {
+	if(!obj) return false;
+	if(Array.isArray(obj)) return false;
+	if(obj.constructor != Object) return false;
+	return true;
+}
+
 function is_special_key(e) {
 	var no_refresh_keys = [
 		9,  // tab
