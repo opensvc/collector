@@ -31,7 +31,10 @@ class Vnx(object):
             elif line.startswith("Revision:"):
                 self.firmware = line.split(':')[1].strip()
             elif line.startswith("SP UID:"):
-                self.ports.append(line.split(': ')[1].strip().replace(":","").lower())
+                wwn = line.split(': ')[1].strip().replace(":","").lower()
+                if len(wwn) == 32:
+                    wwn = wwn[16:]
+                self.ports.append(wwn)
             elif line.startswith("SP Memory:"):
                 try:
                     self.cache = int(line.split(':')[-1].strip())
