@@ -359,7 +359,7 @@ function form(divid, options) {
 					var content = _self.phone_work
 				} else if (d.Default == "__user_name__") {
 					var content = _self.first_name + " " + _self.last_name
-				} else if (d.Default) {
+				} else if (typeof d.Default !== "undefined") {
 					var content = d.Default
 				} else {
 					var content = ""
