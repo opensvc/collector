@@ -293,6 +293,7 @@ class table_comp_rulesets(HtmlTable):
                      table='v_comp_rulesets',
                     ),
         }
+        self.keys = ['ruleset_id', 'encap_rset_id']
         self.span = ['ruleset_name', 'ruleset_type', 'ruleset_public',
                      'fset_name', 'teams_responsible', 'teams_publication']
         self.ajax_col_values = 'ajax_comp_rulesets_col_values'
