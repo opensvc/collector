@@ -384,7 +384,9 @@ class table_comp_moduleset(HtmlTable):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
-        self.cols = ['modset_name',
+        self.keys = ['id']
+        self.cols = ['id',
+                     'modset_name',
                      'teams_responsible',
                      'teams_publication',
                      'modset_mod_name',
@@ -392,6 +394,10 @@ class table_comp_moduleset(HtmlTable):
                      'modset_mod_updated',
                      'modset_mod_author']
         self.colprops = {
+            'id': HtmlTableColumn(
+                     table='v_comp_modulesets',
+                     field='id',
+                    ),
             'modset_name': HtmlTableColumn(
                      table='v_comp_modulesets',
                      field='modset_name',
