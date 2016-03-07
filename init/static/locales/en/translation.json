@@ -766,6 +766,7 @@
 		"topology": "topology",
 		"storage": "storage",
 		"network": "network",
+		"packages": "packages",
 		"stats": "stats",
 		"wiki": "wiki",
 		"checks": "checks",

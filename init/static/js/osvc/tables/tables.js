@@ -1271,6 +1271,19 @@ function table_packages(divid, options) {
 	return table_init(_options)
 }
 
+function table_packages_node(divid, nodename) {
+	var id = "packages_" + nodename.replace(/[\.-]/g, "_")
+	var f_nodename = id+"_f_nodename"
+	var request_vars = {}
+	request_vars[f_nodename] = nodename
+	return table_packages(divid, {
+		"id": id,
+		"caller": "table_packages_node",
+		"request_vars": request_vars,
+		"volatile_filters": true
+	})
+}
+
 function table_patches(divid, options) {
 	var defaults = {
 		'id': "pathces",

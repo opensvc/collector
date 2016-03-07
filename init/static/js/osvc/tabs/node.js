@@ -128,6 +128,15 @@ function node_tabs(divid, options) {
       table_checks_node(divid, o.options.nodename)
     }
 
+    // tab packages
+    i = o.register_tab({
+      "title": "node_tabs.packages",
+      "title_class": "icon pkg16"
+    })
+    o.tabs[i].callback = function(divid) {
+	table_packages_node(divid, o.options.nodename)
+    }
+
     // tab compliance
     i = o.register_tab({
       "title": "node_tabs.compliance",

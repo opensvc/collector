@@ -753,6 +753,7 @@
 		"topology": "topologie",
 		"storage": "stockage",
 		"network": "réseau",
+		"packages": "paquets",
 		"stats": "stats",
 		"wiki": "wiki",
 		"checks": "sondes",
