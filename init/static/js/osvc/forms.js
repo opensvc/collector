@@ -364,9 +364,9 @@ function form(divid, options) {
 				} else {
 					var content = ""
 				}
-			} else if ((typeof(data) === "string") || (typeof(data) === "number")) {
+			} else if (d.var_class=="raw" && ((typeof(data) === "string") || (typeof(data) === "number"))) {
 				var content = data
-			} else if (input_key_id in data) {
+			} else if (is_dict(data) && input_key_id in data) {
 				var content = data[input_key_id]
 			} else {
 				var content = ""
