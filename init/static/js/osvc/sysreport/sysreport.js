@@ -295,7 +295,10 @@ function _sysrep_timediff(o, nodename)
     "nodename": nodename,
     "begin": params.begin ? params.begin : "begining",
     "end": params.end ? params.end : "now",
-  };
+  }
+  if ("nodes" in params) {
+    delete params["nodes"]
+  }
   var title = $("<div id='sysrep_time_diff_title' class='sectiontitle'></div>")
   title.html(i18n.t("sysrep.timeline_time_diff_title", _params));
   var detail = $("<div></div>")
