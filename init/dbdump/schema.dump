@@ -68,7 +68,7 @@ CREATE TABLE `SVCactions` (
   KEY `action` (`action`),
   KEY `end` (`end`),
   KEY `status` (`status`)
-) ENGINE=InnoDB AUTO_INCREMENT=8757368 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=8758054 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -97,7 +97,7 @@ CREATE TABLE `action_queue` (
   KEY `idx1` (`status`),
   KEY `idx_ret` (`ret`),
   KEY `idx2` (`status`,`ret`)
-) ENGINE=InnoDB AUTO_INCREMENT=80 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -141,7 +141,7 @@ CREATE TABLE `appinfo` (
   `cluster_type` varchar(10) DEFAULT '',
   PRIMARY KEY (`id`),
   KEY `appinfo_fk1` (`app_svcname`)
-) ENGINE=InnoDB AUTO_INCREMENT=1221451 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1326402 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -218,7 +218,7 @@ CREATE TABLE `apps_responsibles` (
   PRIMARY KEY (`id`),
   KEY `apps_responsibles_fk2` (`group_id`),
   KEY `apps_responsibles_fk1` (`app_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=777 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=1777 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -237,7 +237,7 @@ CREATE TABLE `auth_event` (
   `description` longtext,
   PRIMARY KEY (`id`),
   KEY `user_id__idx` (`user_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=5449 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=5464 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -255,7 +255,7 @@ CREATE TABLE `auth_filters` (
   `fil_active` tinyint(1) DEFAULT '1',
   PRIMARY KEY (`id`),
   UNIQUE KEY `index1` (`fil_uid`,`fil_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=508 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -273,7 +273,7 @@ CREATE TABLE `auth_group` (
   PRIMARY KEY (`id`),
   KEY `idx1` (`privilege`),
   KEY `idx2` (`role`(255))
-) ENGINE=InnoDB AUTO_INCREMENT=183 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=185 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -292,7 +292,7 @@ CREATE TABLE `auth_membership` (
   UNIQUE KEY `user_id` (`user_id`,`group_id`),
   KEY `user_id__idx` (`user_id`),
   KEY `group_id__idx` (`group_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=410 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=411 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -374,7 +374,7 @@ CREATE TABLE `b_action_errors` (
   `err` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `i_svcname` (`svcname`,`nodename`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -445,13 +445,12 @@ CREATE TABLE `b_disk_app` (
   `disk_alloc` int(11) DEFAULT NULL,
   `disk_created` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   `disk_updated` datetime DEFAULT NULL,
-  `disk_raid` varchar(24) CHARACTER SET latin1 DEFAULT NULL,
+  `disk_raid` varchar(128) CHARACTER SET latin1 DEFAULT NULL,
   `disk_level` int(11) NOT NULL DEFAULT '0',
   KEY `idx_disk_vendor` (`disk_vendor`),
   KEY `idx_disk_arrayid` (`disk_arrayid`),
   KEY `idx_disk_group` (`disk_group`),
-  KEY `idx_app` (`app`),
-  KEY `idx_quota` (`disk_arrayid`,`disk_group`)
+  KEY `idx_app` (`app`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -622,8 +621,9 @@ CREATE TABLE `charts` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `chart_name` varchar(100) NOT NULL,
   `chart_yaml` text,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=40 DEFAULT CHARSET=utf8;
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `chart_name` (`chart_name`)
+) ENGINE=InnoDB AUTO_INCREMENT=160 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -670,7 +670,7 @@ CREATE TABLE `checks_live` (
   KEY `idx_purge` (`chk_type`,`chk_updated`),
   KEY `idx_purge_cluster_saves` (`chk_svcname`,`chk_instance`),
   KEY `idx_chk_instance` (`chk_instance`)
-) ENGINE=InnoDB AUTO_INCREMENT=1849837247 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1850083683 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -692,7 +692,7 @@ CREATE TABLE `checks_settings` (
   `chk_instance` varchar(100) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `idx1` (`chk_nodename`,`chk_svcname`,`chk_type`,`chk_instance`)
-) ENGINE=InnoDB AUTO_INCREMENT=14516 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=14519 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -710,8 +710,9 @@ CREATE TABLE `column_filters` (
   `col_filter` text,
   `bookmark` varchar(100) DEFAULT 'current',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `idx1` (`user_id`,`col_tableid`,`col_name`,`bookmark`)
-) ENGINE=InnoDB AUTO_INCREMENT=46699 DEFAULT CHARSET=utf8;
+  UNIQUE KEY `idx1` (`user_id`,`col_tableid`,`col_name`,`bookmark`),
+  KEY `user_id` (`user_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=46791 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -736,7 +737,7 @@ CREATE TABLE `comp_log` (
   KEY `idx1` (`run_nodename`),
   KEY `idx2` (`run_action`),
   KEY `idx3` (`run_module`)
-) ENGINE=InnoDB AUTO_INCREMENT=1562 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1782 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -757,7 +758,7 @@ CREATE TABLE `comp_log_daily` (
   UNIQUE KEY `idx2` (`run_date`,`run_nodename`,`run_svcname`,`run_module`),
   KEY `idx1` (`run_nodename`),
   KEY `idx3` (`run_module`)
-) ENGINE=InnoDB AUTO_INCREMENT=409 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=519 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -794,7 +795,7 @@ CREATE TABLE `comp_moduleset` (
   `modset_updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `idx1` (`modset_name`)
-) ENGINE=InnoDB AUTO_INCREMENT=273 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=333 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -814,7 +815,7 @@ CREATE TABLE `comp_moduleset_modules` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `idx1` (`modset_mod_name`,`modset_id`),
   KEY `comp_moduleset_modules_fk1` (`modset_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=780 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=899 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -830,7 +831,7 @@ CREATE TABLE `comp_moduleset_moduleset` (
   `child_modset_id` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `index_1` (`parent_modset_id`,`child_modset_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=43 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=60 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -846,7 +847,7 @@ CREATE TABLE `comp_moduleset_ruleset` (
   `ruleset_id` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `index_1` (`modset_id`,`ruleset_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=90 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=234 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -863,7 +864,7 @@ CREATE TABLE `comp_moduleset_team_publication` (
   PRIMARY KEY (`id`),
   KEY `idx1` (`modset_id`),
   KEY `comp_moduleset_team_responsible_fk2` (`group_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=865 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=881 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -880,7 +881,7 @@ CREATE TABLE `comp_moduleset_team_responsible` (
   PRIMARY KEY (`id`),
   KEY `idx1` (`modset_id`),
   KEY `comp_moduleset_team_responsible_fk2` (`group_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=863 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1781 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -901,7 +902,7 @@ CREATE TABLE `comp_modulesets_services` (
   UNIQUE KEY `idx1` (`modset_svcname`,`modset_id`,`slave`),
   KEY `idx2` (`modset_svcname`),
   KEY `comp_modulesets_services_fk1` (`modset_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=635 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=782 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -921,7 +922,7 @@ CREATE TABLE `comp_node_moduleset` (
   UNIQUE KEY `idx1` (`modset_node`,`modset_id`),
   KEY `idx2` (`modset_node`),
   KEY `comp_node_moduleset_fk1` (`modset_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=12494 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=18128 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -958,7 +959,7 @@ CREATE TABLE `comp_ruleset_team_publication` (
   PRIMARY KEY (`id`),
   KEY `idx1` (`ruleset_id`),
   KEY `comp_ruleset_team_responsible_fk2` (`group_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3246 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=3276 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -975,7 +976,7 @@ CREATE TABLE `comp_ruleset_team_responsible` (
   PRIMARY KEY (`id`),
   KEY `idx1` (`ruleset_id`),
   KEY `comp_ruleset_team_responsible_fk2` (`group_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3241 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=4291 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -992,7 +993,7 @@ CREATE TABLE `comp_rulesets` (
   `ruleset_public` varchar(1) DEFAULT 'T',
   PRIMARY KEY (`id`),
   UNIQUE KEY `idx1` (`ruleset_name`)
-) ENGINE=InnoDB AUTO_INCREMENT=906 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=937 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1010,7 +1011,7 @@ CREATE TABLE `comp_rulesets_chains` (
   `chain` text NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `index_1` (`head_rset_id`,`tail_rset_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=1550 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1226 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1027,7 +1028,7 @@ CREATE TABLE `comp_rulesets_filtersets` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `idx1` (`ruleset_id`),
   KEY `comp_rulesets_filtersets_fk2` (`fset_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=563 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=678 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1044,7 +1045,7 @@ CREATE TABLE `comp_rulesets_nodes` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `idx1` (`ruleset_id`,`nodename`),
   KEY `idx2` (`nodename`)
-) ENGINE=InnoDB AUTO_INCREMENT=11556 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=13692 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1061,7 +1062,7 @@ CREATE TABLE `comp_rulesets_rulesets` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `comp_rulesets_rulesets_uk1` (`parent_rset_id`,`child_rset_id`),
   KEY `comp_rulesets_rulesets_fk2` (`child_rset_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=886 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=967 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1079,7 +1080,7 @@ CREATE TABLE `comp_rulesets_services` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `ruleset_id` (`ruleset_id`,`svcname`,`slave`),
   KEY `idx2` (`svcname`)
-) ENGINE=InnoDB AUTO_INCREMENT=56496 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=56615 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1099,7 +1100,7 @@ CREATE TABLE `comp_rulesets_variables` (
   `var_class` varchar(60) NOT NULL DEFAULT 'raw',
   PRIMARY KEY (`id`),
   KEY `comp_rulesets_variables_fk1` (`ruleset_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=4951 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=5519 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1115,7 +1116,7 @@ CREATE TABLE `comp_run_ruleset` (
   `rset` longblob NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `new_index` (`rset_md5`)
-) ENGINE=InnoDB AUTO_INCREMENT=435409 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=435520 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1139,7 +1140,7 @@ CREATE TABLE `comp_status` (
   UNIQUE KEY `idx1` (`run_nodename`,`run_svcname`,`run_module`),
   KEY `idx2` (`run_nodename`),
   KEY `idx3` (`run_date`)
-) ENGINE=InnoDB AUTO_INCREMENT=138 DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC;
+) ENGINE=InnoDB AUTO_INCREMENT=240 DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1186,7 +1187,7 @@ CREATE TABLE `dashboard` (
   UNIQUE KEY `idx1` (`dash_type`,`dash_svcname`,`dash_nodename`,`dash_dict_md5`),
   KEY `i_dash_nodename` (`dash_nodename`),
   KEY `i_dash_type` (`dash_type`)
-) ENGINE=InnoDB AUTO_INCREMENT=18723336 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=34978037 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
@@ -1255,7 +1256,7 @@ CREATE TABLE `dashboard_events` (
   KEY `idx1` (`dash_md5`),
   KEY `idx2` (`dash_begin`,`dash_end`),
   KEY `idx3` (`dash_md5`,`dash_nodename`,`dash_svcname`)
-) ENGINE=InnoDB AUTO_INCREMENT=10794936 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=22028214 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1291,7 +1292,7 @@ CREATE TABLE `dashboard_ref` (
   `dash_dict` varchar(200) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `idx1` (`dash_md5`)
-) ENGINE=InnoDB AUTO_INCREMENT=7688581 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=14998592 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1335,7 +1336,7 @@ CREATE TABLE `diskinfo` (
   `disk_devid` varchar(60) DEFAULT '',
   `disk_arrayid` varchar(100) DEFAULT NULL,
   `disk_updated` datetime DEFAULT NULL,
-  `disk_raid` varchar(24) DEFAULT NULL,
+  `disk_raid` varchar(128) DEFAULT NULL,
   `disk_size` int(11) DEFAULT NULL,
   `disk_group` varchar(60) DEFAULT '',
   `disk_level` int(11) NOT NULL DEFAULT '0',
@@ -1345,7 +1346,7 @@ CREATE TABLE `diskinfo` (
   `disk_created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `new_index` (`disk_id`,`disk_group`)
-) ENGINE=InnoDB AUTO_INCREMENT=23721802 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=23721842 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1466,7 +1467,7 @@ CREATE TABLE `forms` (
   `form_folder` varchar(200) DEFAULT '/',
   PRIMARY KEY (`id`),
   UNIQUE KEY `idx1` (`form_name`)
-) ENGINE=InnoDB AUTO_INCREMENT=68 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=73 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1528,7 +1529,7 @@ CREATE TABLE `forms_team_publication` (
   KEY `idx2` (`group_id`),
   CONSTRAINT `forms_team_publication_fk1` FOREIGN KEY (`form_id`) REFERENCES `forms` (`id`) ON DELETE CASCADE,
   CONSTRAINT `forms_team_publication_fk2` FOREIGN KEY (`group_id`) REFERENCES `auth_group` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=171 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=176 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1547,7 +1548,7 @@ CREATE TABLE `forms_team_responsible` (
   KEY `idx2` (`group_id`),
   CONSTRAINT `comp_forms_team_responsible_fk1` FOREIGN KEY (`form_id`) REFERENCES `forms` (`id`) ON DELETE CASCADE,
   CONSTRAINT `comp_forms_team_responsible_fk2` FOREIGN KEY (`group_id`) REFERENCES `auth_group` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=174 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=179 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1584,7 +1585,7 @@ CREATE TABLE `gen_filters` (
   `f_label` varchar(512) AS (concat(f_table,".",f_field," ", f_op," ",f_value)) PERSISTENT,
   PRIMARY KEY (`id`),
   UNIQUE KEY `idx1` (`f_cksum`)
-) ENGINE=InnoDB AUTO_INCREMENT=221 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=199 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1603,7 +1604,7 @@ CREATE TABLE `gen_filterset_check_threshold` (
   `chk_instance` varchar(60) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `idx1` (`fset_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=28 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1637,7 +1638,7 @@ CREATE TABLE `gen_filterset_user` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `idx1` (`fset_id`,`user_id`),
   KEY `gen_filterset_user_fk2` (`user_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=823 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=930 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1655,7 +1656,7 @@ CREATE TABLE `gen_filtersets` (
   `fset_stats` varchar(1) DEFAULT 'F',
   PRIMARY KEY (`id`),
   UNIQUE KEY `idx1` (`fset_name`)
-) ENGINE=InnoDB AUTO_INCREMENT=284 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=242 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1674,7 +1675,7 @@ CREATE TABLE `gen_filtersets_filters` (
   `f_order` int(11) DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `idx_fset_id` (`fset_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=547 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=578 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1724,7 +1725,7 @@ CREATE TABLE `lifecycle_os` (
   `fset_id` int(11) DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `lifecycle_os_uk1` (`lc_os_concat`,`lc_date`,`fset_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=4764059 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=4766801 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1745,7 +1746,7 @@ CREATE TABLE `links` (
   `link_access_counter` int(10) DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `idx1` (`link_md5`)
-) ENGINE=InnoDB AUTO_INCREMENT=10362561 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=10362570 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1773,7 +1774,7 @@ CREATE TABLE `log` (
   KEY `idx4` (`log_nodename`(255)),
   KEY `idx5` (`log_svcname`(255)),
   KEY `idx6` (`log_date`)
-) ENGINE=InnoDB AUTO_INCREMENT=52305 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=56409 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1794,7 +1795,7 @@ CREATE TABLE `metrics` (
   `metric_col_instance_label` varchar(100) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `idx1` (`metric_name`)
-) ENGINE=InnoDB AUTO_INCREMENT=50 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=129 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1812,8 +1813,9 @@ CREATE TABLE `metrics_log` (
   `fset_id` int(11) DEFAULT '0',
   `id` int(11) NOT NULL AUTO_INCREMENT,
   PRIMARY KEY (`id`),
-  KEY `idx1` (`date`,`metric_id`,`fset_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=837962 DEFAULT CHARSET=utf8;
+  KEY `idx1` (`date`,`metric_id`,`fset_id`),
+  KEY `idx2` (`metric_id`,`fset_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=4599226 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1894,7 +1896,7 @@ CREATE TABLE `node_groups` (
   `updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `index_1` (`nodename`,`group_name`,`group_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=16006897 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=16012082 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1912,7 +1914,7 @@ CREATE TABLE `node_hba` (
   `hba_type` varchar(5) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `index_1` (`nodename`,`hba_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=1809360 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1935,7 +1937,7 @@ CREATE TABLE `node_ip` (
   PRIMARY KEY (`id`),
   KEY `idx1` (`nodename`),
   KEY `idx2` (`addr`)
-) ENGINE=InnoDB AUTO_INCREMENT=5278752 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=5279992 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1969,7 +1971,7 @@ CREATE TABLE `node_tags` (
   `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `tag_bind` (`nodename`,`tag_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=176 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=179 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1987,7 +1989,7 @@ CREATE TABLE `node_users` (
   `updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `index_1` (`nodename`,`user_name`,`user_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=15099940 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=15102929 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2062,6 +2064,9 @@ CREATE TABLE `nodes` (
   `sec_zone` varchar(16) DEFAULT NULL,
   `last_boot` date DEFAULT NULL,
   `action_type` enum('push','pull') DEFAULT NULL,
+  `os_concat` varchar(140) AS (concat_ws(' ', os_name, os_vendor, os_release, os_update)) PERSISTENT,
+  `connect_to` varchar(128) DEFAULT NULL,
+  `tz` varchar(6) DEFAULT '+00:00',
   PRIMARY KEY (`id`),
   UNIQUE KEY `nodename_1` (`nodename`),
   KEY `idx_os_name` (`os_name`),
@@ -2070,8 +2075,9 @@ CREATE TABLE `nodes` (
   KEY `idx_os_vendor` (`os_vendor`),
   KEY `idx_team_responsible` (`team_responsible`),
   KEY `idx_model` (`model`),
-  KEY `idx_arch` (`os_arch`)
-) ENGINE=InnoDB AUTO_INCREMENT=1138187 DEFAULT CHARSET=utf8;
+  KEY `idx_arch` (`os_arch`),
+  KEY `idx_os_concat` (`os_concat`)
+) ENGINE=InnoDB AUTO_INCREMENT=1138224 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2170,7 +2176,7 @@ CREATE TABLE `obsolescence` (
   `obs_alert_date_updated` datetime NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `obs_1` (`obs_type`,`obs_name`)
-) ENGINE=InnoDB AUTO_INCREMENT=1962 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=2036 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2194,7 +2200,7 @@ CREATE TABLE `packages` (
   UNIQUE KEY `idx3` (`pkg_nodename`,`pkg_name`,`pkg_arch`,`pkg_version`,`pkg_type`),
   KEY `idx1` (`pkg_nodename`),
   KEY `idx2` (`pkg_version`)
-) ENGINE=InnoDB AUTO_INCREMENT=431620896 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=431759495 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2246,7 +2252,7 @@ CREATE TABLE `prov_template_team_responsible` (
   PRIMARY KEY (`id`),
   KEY `idx1` (`tpl_id`),
   KEY `idx2` (`group_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=24 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2264,8 +2270,8 @@ CREATE TABLE `prov_templates` (
   `tpl_author` varchar(100) NOT NULL,
   `tpl_created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  KEY `idx1` (`tpl_name`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8;
+  UNIQUE KEY `idx1` (`tpl_name`)
+) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2299,8 +2305,9 @@ CREATE TABLE `reports` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `report_name` varchar(100) NOT NULL,
   `report_yaml` text,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `report_name` (`report_name`)
+) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2340,9 +2347,11 @@ CREATE TABLE `resmon` (
   `res_monitor` varchar(1) DEFAULT NULL,
   `res_disable` varchar(1) DEFAULT NULL,
   `res_optional` varchar(1) DEFAULT NULL,
+  `res_type` varchar(16) DEFAULT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `resmon_1` (`svcname`,`nodename`,`vmname`,`rid`)
-) ENGINE=InnoDB AUTO_INCREMENT=355416 DEFAULT CHARSET=utf8;
+  UNIQUE KEY `resmon_1` (`svcname`,`nodename`,`vmname`,`rid`),
+  KEY `resmon_updated` (`updated`)
+) ENGINE=InnoDB AUTO_INCREMENT=583260 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2520,7 +2529,7 @@ CREATE TABLE `scheduler_run` (
   `duration` int(11) AS (timediff(stop_time, start_time)) PERSISTENT,
   PRIMARY KEY (`id`),
   KEY `task_id__idx` (`task_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=332342 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=523695 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2558,7 +2567,7 @@ CREATE TABLE `scheduler_task` (
   UNIQUE KEY `uuid` (`uuid`),
   KEY `idx_dispatch` (`assigned_worker_name`(255),`status`),
   KEY `idx_expire` (`status`,`stop_time`)
-) ENGINE=InnoDB AUTO_INCREMENT=162393 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=207958 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2598,7 +2607,7 @@ CREATE TABLE `scheduler_worker` (
   `worker_stats` longtext,
   PRIMARY KEY (`id`),
   UNIQUE KEY `worker_name` (`worker_name`)
-) ENGINE=InnoDB AUTO_INCREMENT=22483 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=24885 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2626,7 +2635,7 @@ CREATE TABLE `services` (
   `svc_metrocluster` varchar(10) CHARACTER SET latin1 DEFAULT NULL,
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `svc_wave` varchar(10) CHARACTER SET latin1 NOT NULL DEFAULT '3',
-  `svc_envfile` varchar(20000) CHARACTER SET latin1 DEFAULT NULL,
+  `svc_envfile` mediumtext,
   `svc_vmname` varchar(30) CHARACTER SET latin1 DEFAULT NULL,
   `updated` datetime NOT NULL,
   `svc_vcpus` float DEFAULT '0',
@@ -2648,7 +2657,7 @@ CREATE TABLE `services` (
   KEY `svc_drpnode` (`svc_drpnode`),
   KEY `idx2` (`svc_cluster_type`),
   KEY `services_svc_app` (`svc_app`)
-) ENGINE=InnoDB AUTO_INCREMENT=386899 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=390296 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2666,7 +2675,7 @@ CREATE TABLE `services_log` (
   `svc_end` datetime NOT NULL,
   PRIMARY KEY (`id`),
   KEY `idx1` (`svc_name`)
-) ENGINE=InnoDB AUTO_INCREMENT=526236 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=526240 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2705,7 +2714,7 @@ CREATE TABLE `stat_day` (
   `local_disk_size` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `stat_day_uk1` (`day`,`fset_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=80934 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=80945 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2744,7 +2753,7 @@ CREATE TABLE `stat_day_disk_app` (
   `quota` int(11) DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `new_index` (`day`,`app`)
-) ENGINE=InnoDB AUTO_INCREMENT=5875 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=6266 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2763,7 +2772,7 @@ CREATE TABLE `stat_day_disk_app_dg` (
   `quota` int(11) DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `new_index` (`day`,`app`,`dg_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=43216 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=65464 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2783,7 +2792,7 @@ CREATE TABLE `stat_day_disk_array` (
   `reserved` int(11) DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `new_index` (`day`,`array_name`)
-) ENGINE=InnoDB AUTO_INCREMENT=2025 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=2213 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2804,7 +2813,7 @@ CREATE TABLE `stat_day_disk_array_dg` (
   `reservable` int(11) DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `new_index` (`day`,`array_name`,`array_dg`)
-) ENGINE=InnoDB AUTO_INCREMENT=134481 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=134872 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2832,7 +2841,7 @@ CREATE TABLE `stat_day_svc` (
   `local_disk_size` int(11) DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `new_index` (`day`,`svcname`)
-) ENGINE=InnoDB AUTO_INCREMENT=520545 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=547785 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3949,7 +3958,7 @@ CREATE TABLE `svc_tags` (
   `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `tag_bind` (`svcname`,`tag_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3975,7 +3984,7 @@ CREATE TABLE `svcdisks` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `new_index` (`disk_id`,`disk_svcname`,`disk_nodename`,`disk_dg`) USING BTREE,
   KEY `svcdisks_k1` (`disk_nodename`,`disk_svcname`)
-) ENGINE=InnoDB AUTO_INCREMENT=16622811 DEFAULT CHARSET=utf8 COMMENT='disks used by services';
+) ENGINE=InnoDB AUTO_INCREMENT=16622851 DEFAULT CHARSET=utf8 COMMENT='disks used by services';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -4021,7 +4030,7 @@ CREATE TABLE `svcmon` (
   KEY `mon_nodname` (`mon_nodname`),
   KEY `mon_svcname` (`mon_svcname`),
   KEY `mon_vmname` (`mon_vmname`)
-) ENGINE=InnoDB AUTO_INCREMENT=318682405 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=318724438 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -4050,8 +4059,9 @@ CREATE TABLE `svcmon_log` (
   PRIMARY KEY (`id`),
   KEY `mon_svcname` (`mon_svcname`),
   KEY `mon_nodname` (`mon_nodname`),
-  KEY `mon_overallstatus` (`mon_overallstatus`)
-) ENGINE=InnoDB AUTO_INCREMENT=6471583 DEFAULT CHARSET=utf8;
+  KEY `mon_overallstatus` (`mon_overallstatus`),
+  KEY `mon_begin` (`mon_begin`,`mon_end`)
+) ENGINE=InnoDB AUTO_INCREMENT=6472713 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -4164,14 +4174,14 @@ CREATE TABLE `switches` (
   `sw_porttype` varchar(16) DEFAULT '',
   `sw_portstate` varchar(16) DEFAULT '',
   `sw_portname` varchar(16) DEFAULT '',
-  `sw_rportname` varchar(16) DEFAULT '',
+  `sw_rportname` varchar(128) DEFAULT NULL,
   `sw_updated` datetime NOT NULL,
   `sw_fabric` varchar(128) DEFAULT NULL,
   `sw_index` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `idx1` (`sw_name`,`sw_slot`,`sw_port`,`sw_rportname`),
   KEY `idx2` (`sw_portname`,`sw_rportname`)
-) ENGINE=InnoDB AUTO_INCREMENT=4766203 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -4247,7 +4257,7 @@ CREATE TABLE `table_modified` (
   `table_modified` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `index_1` (`table_name`)
-) ENGINE=InnoDB AUTO_INCREMENT=164341 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=217658 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -4264,7 +4274,7 @@ CREATE TABLE `tags` (
   `tag_exclude` varchar(128) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `tag_name` (`tag_name`)
-) ENGINE=InnoDB AUTO_INCREMENT=79 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=81 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -4361,8 +4371,9 @@ CREATE TABLE `user_prefs_columns` (
   `upc_field` varchar(30) NOT NULL,
   `upc_visible` tinyint(1) NOT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `idx1` (`upc_user_id`,`upc_table`,`upc_field`)
-) ENGINE=InnoDB AUTO_INCREMENT=355 DEFAULT CHARSET=utf8;
+  UNIQUE KEY `idx1` (`upc_user_id`,`upc_table`,`upc_field`),
+  KEY `upc_user_id` (`upc_user_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=400 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -4612,6 +4623,8 @@ SET character_set_client = utf8;
   `loc_zip` tinyint NOT NULL,
   `version` tinyint NOT NULL,
   `listener_port` tinyint NOT NULL,
+  `tz` tinyint NOT NULL,
+  `connect_to` tinyint NOT NULL,
   `team_responsible` tinyint NOT NULL,
   `team_integ` tinyint NOT NULL,
   `team_support` tinyint NOT NULL,
@@ -5079,6 +5092,8 @@ SET character_set_client = utf8;
   `loc_zip` tinyint NOT NULL,
   `version` tinyint NOT NULL,
   `listener_port` tinyint NOT NULL,
+  `tz` tinyint NOT NULL,
+  `connect_to` tinyint NOT NULL,
   `team_responsible` tinyint NOT NULL,
   `team_integ` tinyint NOT NULL,
   `team_support` tinyint NOT NULL,
@@ -5140,82 +5155,6 @@ SET character_set_client = utf8;
 SET character_set_client = @saved_cs_client;
 
 --
--- Temporary table structure for view `v_nodes`
---
-
-DROP TABLE IF EXISTS `v_nodes`;
-/*!50001 DROP VIEW IF EXISTS `v_nodes`*/;
-SET @saved_cs_client     = @@character_set_client;
-SET character_set_client = utf8;
-/*!50001 CREATE TABLE `v_nodes` (
-  `nodename` tinyint NOT NULL,
-  `fqdn` tinyint NOT NULL,
-  `loc_country` tinyint NOT NULL,
-  `loc_city` tinyint NOT NULL,
-  `loc_addr` tinyint NOT NULL,
-  `loc_building` tinyint NOT NULL,
-  `loc_floor` tinyint NOT NULL,
-  `loc_room` tinyint NOT NULL,
-  `loc_rack` tinyint NOT NULL,
-  `id` tinyint NOT NULL,
-  `cpu_freq` tinyint NOT NULL,
-  `cpu_cores` tinyint NOT NULL,
-  `cpu_dies` tinyint NOT NULL,
-  `cpu_vendor` tinyint NOT NULL,
-  `cpu_model` tinyint NOT NULL,
-  `mem_banks` tinyint NOT NULL,
-  `mem_slots` tinyint NOT NULL,
-  `mem_bytes` tinyint NOT NULL,
-  `os_name` tinyint NOT NULL,
-  `os_release` tinyint NOT NULL,
-  `os_update` tinyint NOT NULL,
-  `os_segment` tinyint NOT NULL,
-  `os_arch` tinyint NOT NULL,
-  `os_vendor` tinyint NOT NULL,
-  `os_kernel` tinyint NOT NULL,
-  `loc_zip` tinyint NOT NULL,
-  `version` tinyint NOT NULL,
-  `listener_port` tinyint NOT NULL,
-  `team_responsible` tinyint NOT NULL,
-  `team_integ` tinyint NOT NULL,
-  `team_support` tinyint NOT NULL,
-  `project` tinyint NOT NULL,
-  `serial` tinyint NOT NULL,
-  `model` tinyint NOT NULL,
-  `type` tinyint NOT NULL,
-  `warranty_end` tinyint NOT NULL,
-  `maintenance_end` tinyint NOT NULL,
-  `status` tinyint NOT NULL,
-  `role` tinyint NOT NULL,
-  `environnement` tinyint NOT NULL,
-  `host_mode` tinyint NOT NULL,
-  `power_cabinet1` tinyint NOT NULL,
-  `power_cabinet2` tinyint NOT NULL,
-  `power_supply_nb` tinyint NOT NULL,
-  `power_protect` tinyint NOT NULL,
-  `power_protect_breaker` tinyint NOT NULL,
-  `power_breaker1` tinyint NOT NULL,
-  `power_breaker2` tinyint NOT NULL,
-  `os_concat` tinyint NOT NULL,
-  `updated` tinyint NOT NULL,
-  `enclosure` tinyint NOT NULL,
-  `hw_obs_warn_date` tinyint NOT NULL,
-  `hw_obs_alert_date` tinyint NOT NULL,
-  `os_obs_warn_date` tinyint NOT NULL,
-  `os_obs_alert_date` tinyint NOT NULL,
-  `hvpool` tinyint NOT NULL,
-  `hv` tinyint NOT NULL,
-  `hvvdc` tinyint NOT NULL,
-  `enclosureslot` tinyint NOT NULL,
-  `assetname` tinyint NOT NULL,
-  `cpu_threads` tinyint NOT NULL,
-  `sec_zone` tinyint NOT NULL,
-  `last_boot` tinyint NOT NULL,
-  `action_type` tinyint NOT NULL
-) ENGINE=MyISAM */;
-SET character_set_client = @saved_cs_client;
-
---
 -- Temporary table structure for view `v_nodesan`
 --
 
@@ -5255,6 +5194,8 @@ SET character_set_client = utf8;
   `loc_zip` tinyint NOT NULL,
   `version` tinyint NOT NULL,
   `listener_port` tinyint NOT NULL,
+  `tz` tinyint NOT NULL,
+  `connect_to` tinyint NOT NULL,
   `team_responsible` tinyint NOT NULL,
   `team_integ` tinyint NOT NULL,
   `team_support` tinyint NOT NULL,
@@ -5301,6 +5242,28 @@ SET character_set_client = utf8;
 SET character_set_client = @saved_cs_client;
 
 --
+-- Temporary table structure for view `v_obsolescence`
+--
+
+DROP TABLE IF EXISTS `v_obsolescence`;
+/*!50001 DROP VIEW IF EXISTS `v_obsolescence`*/;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+/*!50001 CREATE TABLE `v_obsolescence` (
+  `id` tinyint NOT NULL,
+  `obs_type` tinyint NOT NULL,
+  `obs_name` tinyint NOT NULL,
+  `obs_warn_date` tinyint NOT NULL,
+  `obs_alert_date` tinyint NOT NULL,
+  `obs_warn_date_updated_by` tinyint NOT NULL,
+  `obs_alert_date_updated_by` tinyint NOT NULL,
+  `obs_warn_date_updated` tinyint NOT NULL,
+  `obs_alert_date_updated` tinyint NOT NULL,
+  `obs_count` tinyint NOT NULL
+) ENGINE=MyISAM */;
+SET character_set_client = @saved_cs_client;
+
+--
 -- Temporary table structure for view `v_outdated_services`
 --
 
@@ -5311,6 +5274,25 @@ SET character_set_client = utf8;
 /*!50001 CREATE TABLE `v_outdated_services` (
   `svcname` tinyint NOT NULL,
   `uptodate` tinyint NOT NULL
+) ENGINE=MyISAM */;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Temporary table structure for view `v_prov_templates`
+--
+
+DROP TABLE IF EXISTS `v_prov_templates`;
+/*!50001 DROP VIEW IF EXISTS `v_prov_templates`*/;
+SET @saved_cs_client     = @@character_set_client;
+SET character_set_client = utf8;
+/*!50001 CREATE TABLE `v_prov_templates` (
+  `id` tinyint NOT NULL,
+  `tpl_name` tinyint NOT NULL,
+  `tpl_command` tinyint NOT NULL,
+  `tpl_comment` tinyint NOT NULL,
+  `tpl_author` tinyint NOT NULL,
+  `tpl_created` tinyint NOT NULL,
+  `tpl_team_responsible` tinyint NOT NULL
 ) ENGINE=MyISAM */;
 SET character_set_client = @saved_cs_client;
 
@@ -5567,6 +5549,8 @@ SET character_set_client = utf8;
   `mon_overallstatus` tinyint NOT NULL,
   `nodename` tinyint NOT NULL,
   `listener_port` tinyint NOT NULL,
+  `tz` tinyint NOT NULL,
+  `connect_to` tinyint NOT NULL,
   `version` tinyint NOT NULL,
   `node_updated` tinyint NOT NULL,
   `loc_country` tinyint NOT NULL,
@@ -6184,7 +6168,7 @@ USE `opensvc`;
 /*!50001 SET collation_connection      = utf8_general_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
 /*!50013 DEFINER=`opensvc`@`%` SQL SECURITY DEFINER */
-/*!50001 VIEW `v_comp_nodes` AS (select `n`.`nodename` AS `nodename`,`n`.`fqdn` AS `fqdn`,`n`.`loc_country` AS `loc_country`,`n`.`loc_city` AS `loc_city`,`n`.`loc_addr` AS `loc_addr`,`n`.`loc_building` AS `loc_building`,`n`.`loc_floor` AS `loc_floor`,`n`.`loc_room` AS `loc_room`,`n`.`loc_rack` AS `loc_rack`,`n`.`id` AS `id`,`n`.`cpu_freq` AS `cpu_freq`,`n`.`cpu_cores` AS `cpu_cores`,`n`.`cpu_dies` AS `cpu_dies`,`n`.`cpu_vendor` AS `cpu_vendor`,`n`.`cpu_model` AS `cpu_model`,`n`.`mem_banks` AS `mem_banks`,`n`.`mem_slots` AS `mem_slots`,`n`.`mem_bytes` AS `mem_bytes`,`n`.`os_name` AS `os_name`,`n`.`os_release` AS `os_release`,`n`.`os_update` AS `os_update`,`n`.`os_segment` AS `os_segment`,`n`.`os_arch` AS `os_arch`,`n`.`os_vendor` AS `os_vendor`,`n`.`os_kernel` AS `os_kernel`,`n`.`loc_zip` AS `loc_zip`,`n`.`version` AS `version`,`n`.`listener_port` AS `listener_port`,`n`.`team_responsible` AS `team_responsible`,`n`.`team_integ` AS `team_integ`,`n`.`team_support` AS `team_support`,`n`.`project` AS `project`,`n`.`serial` AS `serial`,`n`.`model` AS `model`,`n`.`type` AS `type`,`n`.`warranty_end` AS `warranty_end`,`n`.`maintenance_end` AS `maintenance_end`,`n`.`status` AS `status`,`n`.`role` AS `role`,`n`.`environnement` AS `environnement`,`n`.`host_mode` AS `host_mode`,`n`.`power_cabinet1` AS `power_cabinet1`,`n`.`power_cabinet2` AS `power_cabinet2`,`n`.`power_supply_nb` AS `power_supply_nb`,`n`.`power_protect` AS `power_protect`,`n`.`power_protect_breaker` AS `power_protect_breaker`,`n`.`power_breaker1` AS `power_breaker1`,`n`.`power_breaker2` AS `power_breaker2`,`n`.`os_concat` AS `os_concat`,`n`.`updated` AS `updated`,`n`.`enclosure` AS `enclosure`,`n`.`enclosureslot` AS `enclosureslot`,`n`.`assetname` AS `assetname`,`n`.`cpu_threads` AS `cpu_threads`,`n`.`hw_obs_warn_date` AS `hw_obs_warn_date`,`n`.`hw_obs_alert_date` AS `hw_obs_alert_date`,`n`.`os_obs_warn_date` AS `os_obs_warn_date`,`n`.`os_obs_alert_date` AS `os_obs_alert_date`,`n`.`hvpool` AS `hvpool`,`n`.`hv` AS `hv`,`n`.`hvvdc` AS `hvvdc`,`n`.`sec_zone` AS `sec_zone`,`n`.`last_boot` AS `last_boot`,`n`.`action_type` AS `action_type`,`r`.`id` AS `ruleset_id`,`r`.`ruleset_name` AS `ruleset_name`,`m`.`id` AS `modset_id`,`m`.`modset_name` AS `modset_name` from ((((`v_nodes` `n` left join `comp_rulesets_nodes` `rn` on((`n`.`nodename` = `rn`.`nodename`))) left join `comp_rulesets` `r` on((`r`.`id` = `rn`.`ruleset_id`))) left join `comp_node_moduleset` `mn` on((`mn`.`modset_node` = `n`.`nodename`))) left join `comp_moduleset` `m` on((`m`.`id` = `mn`.`modset_id`)))) */;
+/*!50001 VIEW `v_comp_nodes` AS (select `n`.`nodename` AS `nodename`,`n`.`fqdn` AS `fqdn`,`n`.`loc_country` AS `loc_country`,`n`.`loc_city` AS `loc_city`,`n`.`loc_addr` AS `loc_addr`,`n`.`loc_building` AS `loc_building`,`n`.`loc_floor` AS `loc_floor`,`n`.`loc_room` AS `loc_room`,`n`.`loc_rack` AS `loc_rack`,`n`.`id` AS `id`,`n`.`cpu_freq` AS `cpu_freq`,`n`.`cpu_cores` AS `cpu_cores`,`n`.`cpu_dies` AS `cpu_dies`,`n`.`cpu_vendor` AS `cpu_vendor`,`n`.`cpu_model` AS `cpu_model`,`n`.`mem_banks` AS `mem_banks`,`n`.`mem_slots` AS `mem_slots`,`n`.`mem_bytes` AS `mem_bytes`,`n`.`os_name` AS `os_name`,`n`.`os_release` AS `os_release`,`n`.`os_update` AS `os_update`,`n`.`os_segment` AS `os_segment`,`n`.`os_arch` AS `os_arch`,`n`.`os_vendor` AS `os_vendor`,`n`.`os_kernel` AS `os_kernel`,`n`.`loc_zip` AS `loc_zip`,`n`.`version` AS `version`,`n`.`listener_port` AS `listener_port`,`n`.`tz` AS `tz`,`n`.`connect_to` AS `connect_to`,`n`.`team_responsible` AS `team_responsible`,`n`.`team_integ` AS `team_integ`,`n`.`team_support` AS `team_support`,`n`.`project` AS `project`,`n`.`serial` AS `serial`,`n`.`model` AS `model`,`n`.`type` AS `type`,`n`.`warranty_end` AS `warranty_end`,`n`.`maintenance_end` AS `maintenance_end`,`n`.`status` AS `status`,`n`.`role` AS `role`,`n`.`environnement` AS `environnement`,`n`.`host_mode` AS `host_mode`,`n`.`power_cabinet1` AS `power_cabinet1`,`n`.`power_cabinet2` AS `power_cabinet2`,`n`.`power_supply_nb` AS `power_supply_nb`,`n`.`power_protect` AS `power_protect`,`n`.`power_protect_breaker` AS `power_protect_breaker`,`n`.`power_breaker1` AS `power_breaker1`,`n`.`power_breaker2` AS `power_breaker2`,`n`.`os_concat` AS `os_concat`,`n`.`updated` AS `updated`,`n`.`enclosure` AS `enclosure`,`n`.`enclosureslot` AS `enclosureslot`,`n`.`assetname` AS `assetname`,`n`.`cpu_threads` AS `cpu_threads`,`n`.`hw_obs_warn_date` AS `hw_obs_warn_date`,`n`.`hw_obs_alert_date` AS `hw_obs_alert_date`,`n`.`os_obs_warn_date` AS `os_obs_warn_date`,`n`.`os_obs_alert_date` AS `os_obs_alert_date`,`n`.`hvpool` AS `hvpool`,`n`.`hv` AS `hv`,`n`.`hvvdc` AS `hvvdc`,`n`.`sec_zone` AS `sec_zone`,`n`.`last_boot` AS `last_boot`,`n`.`action_type` AS `action_type`,`r`.`id` AS `ruleset_id`,`r`.`ruleset_name` AS `ruleset_name`,`m`.`id` AS `modset_id`,`m`.`modset_name` AS `modset_name` from ((((`nodes` `n` left join `comp_rulesets_nodes` `rn` on((`n`.`nodename` = `rn`.`nodename`))) left join `comp_rulesets` `r` on((`r`.`id` = `rn`.`ruleset_id`))) left join `comp_node_moduleset` `mn` on((`mn`.`modset_node` = `n`.`nodename`))) left join `comp_moduleset` `m` on((`m`.`id` = `mn`.`modset_id`)))) */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
 /*!50001 SET collation_connection      = @saved_col_connection */;
@@ -6526,26 +6510,7 @@ USE `opensvc`;
 /*!50001 SET collation_connection      = utf8_general_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
 /*!50013 DEFINER=`opensvc`@`%` SQL SECURITY DEFINER */
-/*!50001 VIEW `v_nodenetworks` AS select `n`.`fqdn` AS `fqdn`,`n`.`loc_country` AS `loc_country`,`n`.`loc_city` AS `loc_city`,`n`.`loc_addr` AS `loc_addr`,`n`.`loc_building` AS `loc_building`,`n`.`loc_floor` AS `loc_floor`,`n`.`loc_room` AS `loc_room`,`n`.`loc_rack` AS `loc_rack`,`n`.`id` AS `node_id`,`n`.`cpu_freq` AS `cpu_freq`,`n`.`cpu_cores` AS `cpu_cores`,`n`.`cpu_dies` AS `cpu_dies`,`n`.`cpu_vendor` AS `cpu_vendor`,`n`.`cpu_model` AS `cpu_model`,`n`.`mem_banks` AS `mem_banks`,`n`.`mem_slots` AS `mem_slots`,`n`.`mem_bytes` AS `mem_bytes`,`n`.`os_name` AS `os_name`,`n`.`os_release` AS `os_release`,`n`.`os_update` AS `os_update`,`n`.`os_segment` AS `os_segment`,`n`.`os_arch` AS `os_arch`,`n`.`os_vendor` AS `os_vendor`,`n`.`os_kernel` AS `os_kernel`,`n`.`loc_zip` AS `loc_zip`,`n`.`version` AS `version`,`n`.`listener_port` AS `listener_port`,`n`.`team_responsible` AS `team_responsible`,`n`.`team_integ` AS `team_integ`,`n`.`team_support` AS `team_support`,`n`.`project` AS `project`,`n`.`serial` AS `serial`,`n`.`model` AS `model`,`n`.`type` AS `type`,`n`.`warranty_end` AS `warranty_end`,`n`.`maintenance_end` AS `maintenance_end`,`n`.`status` AS `status`,`n`.`role` AS `role`,`n`.`environnement` AS `environnement`,`n`.`host_mode` AS `host_mode`,`n`.`power_cabinet1` AS `power_cabinet1`,`n`.`power_cabinet2` AS `power_cabinet2`,`n`.`power_supply_nb` AS `power_supply_nb`,`n`.`power_protect` AS `power_protect`,`n`.`power_protect_breaker` AS `power_protect_breaker`,`n`.`power_breaker1` AS `power_breaker1`,`n`.`power_breaker2` AS `power_breaker2`,`n`.`os_concat` AS `os_concat`,`n`.`updated` AS `updated`,`n`.`enclosure` AS `enclosure`,`n`.`enclosureslot` AS `enclosureslot`,`n`.`assetname` AS `assetname`,`n`.`cpu_threads` AS `cpu_threads`,`n`.`hw_obs_warn_date` AS `hw_obs_warn_date`,`n`.`hw_obs_alert_date` AS `hw_obs_alert_date`,`n`.`os_obs_warn_date` AS `os_obs_warn_date`,`n`.`os_obs_alert_date` AS `os_obs_alert_date`,`n`.`hvpool` AS `hvpool`,`n`.`hv` AS `hv`,`n`.`hvvdc` AS `hvvdc`,`n`.`sec_zone` AS `sec_zone`,`n`.`last_boot` AS `last_boot`,`n`.`action_type` AS `action_type`,`ni`.`nodename` AS `nodename`,`ni`.`id` AS `id`,`ni`.`mac` AS `mac`,`ni`.`intf` AS `intf`,`ni`.`addr` AS `addr`,`ni`.`type` AS `addr_type`,`ni`.`mask` AS `mask`,`ni`.`flag_deprecated` AS `flag_deprecated`,`ni`.`updated` AS `addr_updated`,`nw`.`name` AS `net_name`,`nw`.`network` AS `net_network`,`nw`.`broadcast` AS `net_broadcast`,`nw`.`netmask` AS `net_netmask`,`nw`.`team_responsible` AS `net_team_responsible`,`nw`.`begin` AS `net_begin`,`nw`.`end` AS `net_end`,`nw`.`comment` AS `net_comment`,`nw`.`pvid` AS `net_pvid`,`nw`.`gateway` AS `net_gateway`,`nw`.`id` AS `net_id`,`nw`.`prio` AS `prio` from ((`node_ip` `ni` left join `v_nodes` `n` on((`ni`.`nodename` = `n`.`nodename`))) left join `networks` `nw` on(((inet_aton(`ni`.`addr`) >= inet_aton(`nw`.`begin`)) and (inet_aton(`ni`.`addr`) <= inet_aton(`nw`.`end`))))) */;
-/*!50001 SET character_set_client      = @saved_cs_client */;
-/*!50001 SET character_set_results     = @saved_cs_results */;
-/*!50001 SET collation_connection      = @saved_col_connection */;
-
---
--- Final view structure for view `v_nodes`
---
-
-/*!50001 DROP TABLE IF EXISTS `v_nodes`*/;
-/*!50001 DROP VIEW IF EXISTS `v_nodes`*/;
-/*!50001 SET @saved_cs_client          = @@character_set_client */;
-/*!50001 SET @saved_cs_results         = @@character_set_results */;
-/*!50001 SET @saved_col_connection     = @@collation_connection */;
-/*!50001 SET character_set_client      = utf8 */;
-/*!50001 SET character_set_results     = utf8 */;
-/*!50001 SET collation_connection      = utf8_general_ci */;
-/*!50001 CREATE ALGORITHM=UNDEFINED */
-/*!50013 DEFINER=`opensvc`@`%` SQL SECURITY DEFINER */
-/*!50001 VIEW `v_nodes` AS (select `n`.`nodename` AS `nodename`,`n`.`fqdn` AS `fqdn`,`n`.`loc_country` AS `loc_country`,`n`.`loc_city` AS `loc_city`,`n`.`loc_addr` AS `loc_addr`,`n`.`loc_building` AS `loc_building`,`n`.`loc_floor` AS `loc_floor`,`n`.`loc_room` AS `loc_room`,`n`.`loc_rack` AS `loc_rack`,`n`.`id` AS `id`,`n`.`cpu_freq` AS `cpu_freq`,`n`.`cpu_cores` AS `cpu_cores`,`n`.`cpu_dies` AS `cpu_dies`,`n`.`cpu_vendor` AS `cpu_vendor`,`n`.`cpu_model` AS `cpu_model`,`n`.`mem_banks` AS `mem_banks`,`n`.`mem_slots` AS `mem_slots`,`n`.`mem_bytes` AS `mem_bytes`,`n`.`os_name` AS `os_name`,`n`.`os_release` AS `os_release`,`n`.`os_update` AS `os_update`,`n`.`os_segment` AS `os_segment`,`n`.`os_arch` AS `os_arch`,`n`.`os_vendor` AS `os_vendor`,`n`.`os_kernel` AS `os_kernel`,`n`.`loc_zip` AS `loc_zip`,`n`.`version` AS `version`,`n`.`listener_port` AS `listener_port`,`n`.`team_responsible` AS `team_responsible`,`n`.`team_integ` AS `team_integ`,`n`.`team_support` AS `team_support`,`n`.`project` AS `project`,`n`.`serial` AS `serial`,`n`.`model` AS `model`,`n`.`type` AS `type`,`n`.`warranty_end` AS `warranty_end`,`n`.`maintenance_end` AS `maintenance_end`,`n`.`status` AS `status`,`n`.`role` AS `role`,`n`.`environnement` AS `environnement`,`n`.`host_mode` AS `host_mode`,`n`.`power_cabinet1` AS `power_cabinet1`,`n`.`power_cabinet2` AS `power_cabinet2`,`n`.`power_supply_nb` AS `power_supply_nb`,`n`.`power_protect` AS `power_protect`,`n`.`power_protect_breaker` AS `power_protect_breaker`,`n`.`power_breaker1` AS `power_breaker1`,`n`.`power_breaker2` AS `power_breaker2`,concat_ws(' ',`n`.`os_name`,`n`.`os_vendor`,`n`.`os_release`,`n`.`os_update`) AS `os_concat`,`n`.`updated` AS `updated`,`n`.`enclosure` AS `enclosure`,`n`.`hw_obs_warn_date` AS `hw_obs_warn_date`,`n`.`hw_obs_alert_date` AS `hw_obs_alert_date`,`n`.`os_obs_warn_date` AS `os_obs_warn_date`,`n`.`os_obs_alert_date` AS `os_obs_alert_date`,`n`.`hvpool` AS `hvpool`,`n`.`hv` AS `hv`,`n`.`hvvdc` AS `hvvdc`,`n`.`enclosureslot` AS `enclosureslot`,`n`.`assetname` AS `assetname`,`n`.`cpu_threads` AS `cpu_threads`,`n`.`sec_zone` AS `sec_zone`,`n`.`last_boot` AS `last_boot`,`n`.`action_type` AS `action_type` from `nodes` `n`) */;
+/*!50001 VIEW `v_nodenetworks` AS select `n`.`fqdn` AS `fqdn`,`n`.`loc_country` AS `loc_country`,`n`.`loc_city` AS `loc_city`,`n`.`loc_addr` AS `loc_addr`,`n`.`loc_building` AS `loc_building`,`n`.`loc_floor` AS `loc_floor`,`n`.`loc_room` AS `loc_room`,`n`.`loc_rack` AS `loc_rack`,`n`.`id` AS `node_id`,`n`.`cpu_freq` AS `cpu_freq`,`n`.`cpu_cores` AS `cpu_cores`,`n`.`cpu_dies` AS `cpu_dies`,`n`.`cpu_vendor` AS `cpu_vendor`,`n`.`cpu_model` AS `cpu_model`,`n`.`mem_banks` AS `mem_banks`,`n`.`mem_slots` AS `mem_slots`,`n`.`mem_bytes` AS `mem_bytes`,`n`.`os_name` AS `os_name`,`n`.`os_release` AS `os_release`,`n`.`os_update` AS `os_update`,`n`.`os_segment` AS `os_segment`,`n`.`os_arch` AS `os_arch`,`n`.`os_vendor` AS `os_vendor`,`n`.`os_kernel` AS `os_kernel`,`n`.`loc_zip` AS `loc_zip`,`n`.`version` AS `version`,`n`.`listener_port` AS `listener_port`,`n`.`tz` AS `tz`,`n`.`connect_to` AS `connect_to`,`n`.`team_responsible` AS `team_responsible`,`n`.`team_integ` AS `team_integ`,`n`.`team_support` AS `team_support`,`n`.`project` AS `project`,`n`.`serial` AS `serial`,`n`.`model` AS `model`,`n`.`type` AS `type`,`n`.`warranty_end` AS `warranty_end`,`n`.`maintenance_end` AS `maintenance_end`,`n`.`status` AS `status`,`n`.`role` AS `role`,`n`.`environnement` AS `environnement`,`n`.`host_mode` AS `host_mode`,`n`.`power_cabinet1` AS `power_cabinet1`,`n`.`power_cabinet2` AS `power_cabinet2`,`n`.`power_supply_nb` AS `power_supply_nb`,`n`.`power_protect` AS `power_protect`,`n`.`power_protect_breaker` AS `power_protect_breaker`,`n`.`power_breaker1` AS `power_breaker1`,`n`.`power_breaker2` AS `power_breaker2`,`n`.`os_concat` AS `os_concat`,`n`.`updated` AS `updated`,`n`.`enclosure` AS `enclosure`,`n`.`enclosureslot` AS `enclosureslot`,`n`.`assetname` AS `assetname`,`n`.`cpu_threads` AS `cpu_threads`,`n`.`hw_obs_warn_date` AS `hw_obs_warn_date`,`n`.`hw_obs_alert_date` AS `hw_obs_alert_date`,`n`.`os_obs_warn_date` AS `os_obs_warn_date`,`n`.`os_obs_alert_date` AS `os_obs_alert_date`,`n`.`hvpool` AS `hvpool`,`n`.`hv` AS `hv`,`n`.`hvvdc` AS `hvvdc`,`n`.`sec_zone` AS `sec_zone`,`n`.`last_boot` AS `last_boot`,`n`.`action_type` AS `action_type`,`ni`.`nodename` AS `nodename`,`ni`.`id` AS `id`,`ni`.`mac` AS `mac`,`ni`.`intf` AS `intf`,`ni`.`addr` AS `addr`,`ni`.`type` AS `addr_type`,`ni`.`mask` AS `mask`,`ni`.`flag_deprecated` AS `flag_deprecated`,`ni`.`updated` AS `addr_updated`,`nw`.`name` AS `net_name`,`nw`.`network` AS `net_network`,`nw`.`broadcast` AS `net_broadcast`,`nw`.`netmask` AS `net_netmask`,`nw`.`team_responsible` AS `net_team_responsible`,`nw`.`begin` AS `net_begin`,`nw`.`end` AS `net_end`,`nw`.`comment` AS `net_comment`,`nw`.`pvid` AS `net_pvid`,`nw`.`gateway` AS `net_gateway`,`nw`.`id` AS `net_id`,`nw`.`prio` AS `prio` from ((`node_ip` `ni` left join `nodes` `n` on((`ni`.`nodename` = `n`.`nodename`))) left join `networks` `nw` on(((inet_aton(`ni`.`addr`) >= inet_aton(`nw`.`begin`)) and (inet_aton(`ni`.`addr`) <= inet_aton(`nw`.`end`))))) */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
 /*!50001 SET collation_connection      = @saved_col_connection */;
@@ -6564,7 +6529,26 @@ USE `opensvc`;
 /*!50001 SET collation_connection      = utf8_general_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
 /*!50013 DEFINER=`opensvc`@`%` SQL SECURITY DEFINER */
-/*!50001 VIEW `v_nodesan` AS select `z`.`id` AS `id`,`z`.`tgt_id` AS `tgt_id`,`z`.`hba_id` AS `hba_id`,`z`.`nodename` AS `nodename`,`z`.`updated` AS `updated`,`n`.`fqdn` AS `fqdn`,`n`.`loc_country` AS `loc_country`,`n`.`loc_city` AS `loc_city`,`n`.`loc_addr` AS `loc_addr`,`n`.`loc_building` AS `loc_building`,`n`.`loc_floor` AS `loc_floor`,`n`.`loc_room` AS `loc_room`,`n`.`loc_rack` AS `loc_rack`,`n`.`cpu_freq` AS `cpu_freq`,`n`.`cpu_cores` AS `cpu_cores`,`n`.`cpu_dies` AS `cpu_dies`,`n`.`cpu_vendor` AS `cpu_vendor`,`n`.`cpu_model` AS `cpu_model`,`n`.`mem_banks` AS `mem_banks`,`n`.`mem_slots` AS `mem_slots`,`n`.`mem_bytes` AS `mem_bytes`,`n`.`os_name` AS `os_name`,`n`.`os_release` AS `os_release`,`n`.`os_update` AS `os_update`,`n`.`os_segment` AS `os_segment`,`n`.`os_arch` AS `os_arch`,`n`.`os_vendor` AS `os_vendor`,`n`.`os_kernel` AS `os_kernel`,`n`.`loc_zip` AS `loc_zip`,`n`.`version` AS `version`,`n`.`listener_port` AS `listener_port`,`n`.`team_responsible` AS `team_responsible`,`n`.`team_integ` AS `team_integ`,`n`.`team_support` AS `team_support`,`n`.`project` AS `project`,`n`.`serial` AS `serial`,`n`.`model` AS `model`,`n`.`type` AS `type`,`n`.`warranty_end` AS `warranty_end`,`n`.`maintenance_end` AS `maintenance_end`,`n`.`status` AS `status`,`n`.`role` AS `role`,`n`.`environnement` AS `environnement`,`n`.`host_mode` AS `host_mode`,`n`.`power_cabinet1` AS `power_cabinet1`,`n`.`power_cabinet2` AS `power_cabinet2`,`n`.`power_supply_nb` AS `power_supply_nb`,`n`.`power_protect` AS `power_protect`,`n`.`power_protect_breaker` AS `power_protect_breaker`,`n`.`power_breaker1` AS `power_breaker1`,`n`.`power_breaker2` AS `power_breaker2`,`n`.`os_concat` AS `os_concat`,`n`.`updated` AS `node_updated`,`n`.`enclosure` AS `enclosure`,`n`.`hw_obs_warn_date` AS `hw_obs_warn_date`,`n`.`hw_obs_alert_date` AS `hw_obs_alert_date`,`n`.`os_obs_warn_date` AS `os_obs_warn_date`,`n`.`os_obs_alert_date` AS `os_obs_alert_date`,`n`.`hvpool` AS `hvpool`,`n`.`hv` AS `hv`,`n`.`hvvdc` AS `hvvdc`,`n`.`enclosureslot` AS `enclosureslot`,`n`.`assetname` AS `assetname`,`n`.`cpu_threads` AS `cpu_threads`,`n`.`sec_zone` AS `sec_zone`,`n`.`last_boot` AS `last_boot`,`n`.`action_type` AS `action_type`,`a`.`array_name` AS `array_name`,`a`.`array_model` AS `array_model`,`a`.`array_cache` AS `array_cache`,`a`.`array_firmware` AS `array_firmware`,`a`.`array_updated` AS `array_updated`,`a`.`array_level` AS `array_level` from (((`stor_zone` `z` join `v_nodes` `n` on((`z`.`nodename` = `n`.`nodename`))) left join `stor_array_tgtid` `at` on((`z`.`tgt_id` = `at`.`array_tgtid`))) left join `stor_array` `a` on((`at`.`array_id` = `a`.`id`))) */;
+/*!50001 VIEW `v_nodesan` AS select `z`.`id` AS `id`,`z`.`tgt_id` AS `tgt_id`,`z`.`hba_id` AS `hba_id`,`z`.`nodename` AS `nodename`,`z`.`updated` AS `updated`,`n`.`fqdn` AS `fqdn`,`n`.`loc_country` AS `loc_country`,`n`.`loc_city` AS `loc_city`,`n`.`loc_addr` AS `loc_addr`,`n`.`loc_building` AS `loc_building`,`n`.`loc_floor` AS `loc_floor`,`n`.`loc_room` AS `loc_room`,`n`.`loc_rack` AS `loc_rack`,`n`.`cpu_freq` AS `cpu_freq`,`n`.`cpu_cores` AS `cpu_cores`,`n`.`cpu_dies` AS `cpu_dies`,`n`.`cpu_vendor` AS `cpu_vendor`,`n`.`cpu_model` AS `cpu_model`,`n`.`mem_banks` AS `mem_banks`,`n`.`mem_slots` AS `mem_slots`,`n`.`mem_bytes` AS `mem_bytes`,`n`.`os_name` AS `os_name`,`n`.`os_release` AS `os_release`,`n`.`os_update` AS `os_update`,`n`.`os_segment` AS `os_segment`,`n`.`os_arch` AS `os_arch`,`n`.`os_vendor` AS `os_vendor`,`n`.`os_kernel` AS `os_kernel`,`n`.`loc_zip` AS `loc_zip`,`n`.`version` AS `version`,`n`.`listener_port` AS `listener_port`,`n`.`tz` AS `tz`,`n`.`connect_to` AS `connect_to`,`n`.`team_responsible` AS `team_responsible`,`n`.`team_integ` AS `team_integ`,`n`.`team_support` AS `team_support`,`n`.`project` AS `project`,`n`.`serial` AS `serial`,`n`.`model` AS `model`,`n`.`type` AS `type`,`n`.`warranty_end` AS `warranty_end`,`n`.`maintenance_end` AS `maintenance_end`,`n`.`status` AS `status`,`n`.`role` AS `role`,`n`.`environnement` AS `environnement`,`n`.`host_mode` AS `host_mode`,`n`.`power_cabinet1` AS `power_cabinet1`,`n`.`power_cabinet2` AS `power_cabinet2`,`n`.`power_supply_nb` AS `power_supply_nb`,`n`.`power_protect` AS `power_protect`,`n`.`power_protect_breaker` AS `power_protect_breaker`,`n`.`power_breaker1` AS `power_breaker1`,`n`.`power_breaker2` AS `power_breaker2`,`n`.`os_concat` AS `os_concat`,`n`.`updated` AS `node_updated`,`n`.`enclosure` AS `enclosure`,`n`.`hw_obs_warn_date` AS `hw_obs_warn_date`,`n`.`hw_obs_alert_date` AS `hw_obs_alert_date`,`n`.`os_obs_warn_date` AS `os_obs_warn_date`,`n`.`os_obs_alert_date` AS `os_obs_alert_date`,`n`.`hvpool` AS `hvpool`,`n`.`hv` AS `hv`,`n`.`hvvdc` AS `hvvdc`,`n`.`enclosureslot` AS `enclosureslot`,`n`.`assetname` AS `assetname`,`n`.`cpu_threads` AS `cpu_threads`,`n`.`sec_zone` AS `sec_zone`,`n`.`last_boot` AS `last_boot`,`n`.`action_type` AS `action_type`,`a`.`array_name` AS `array_name`,`a`.`array_model` AS `array_model`,`a`.`array_cache` AS `array_cache`,`a`.`array_firmware` AS `array_firmware`,`a`.`array_updated` AS `array_updated`,`a`.`array_level` AS `array_level` from (((`stor_zone` `z` join `nodes` `n` on((`z`.`nodename` = `n`.`nodename`))) left join `stor_array_tgtid` `at` on((`z`.`tgt_id` = `at`.`array_tgtid`))) left join `stor_array` `a` on((`at`.`array_id` = `a`.`id`))) */;
+/*!50001 SET character_set_client      = @saved_cs_client */;
+/*!50001 SET character_set_results     = @saved_cs_results */;
+/*!50001 SET collation_connection      = @saved_col_connection */;
+
+--
+-- Final view structure for view `v_obsolescence`
+--
+
+/*!50001 DROP TABLE IF EXISTS `v_obsolescence`*/;
+/*!50001 DROP VIEW IF EXISTS `v_obsolescence`*/;
+/*!50001 SET @saved_cs_client          = @@character_set_client */;
+/*!50001 SET @saved_cs_results         = @@character_set_results */;
+/*!50001 SET @saved_col_connection     = @@collation_connection */;
+/*!50001 SET character_set_client      = utf8 */;
+/*!50001 SET character_set_results     = utf8 */;
+/*!50001 SET collation_connection      = utf8_general_ci */;
+/*!50001 CREATE ALGORITHM=UNDEFINED */
+/*!50013 DEFINER=`opensvc`@`%` SQL SECURITY DEFINER */
+/*!50001 VIEW `v_obsolescence` AS select `obsolescence`.`id` AS `id`,`obsolescence`.`obs_type` AS `obs_type`,`obsolescence`.`obs_name` AS `obs_name`,`obsolescence`.`obs_warn_date` AS `obs_warn_date`,`obsolescence`.`obs_alert_date` AS `obs_alert_date`,`obsolescence`.`obs_warn_date_updated_by` AS `obs_warn_date_updated_by`,`obsolescence`.`obs_alert_date_updated_by` AS `obs_alert_date_updated_by`,`obsolescence`.`obs_warn_date_updated` AS `obs_warn_date_updated`,`obsolescence`.`obs_alert_date_updated` AS `obs_alert_date_updated`,count(`nodes`.`id`) AS `obs_count` from (`obsolescence` left join `nodes` on(((convert(`obsolescence`.`obs_name` using utf8) = `nodes`.`model`) and (not((`obsolescence`.`obs_name` like '%virt%'))) and (not((`obsolescence`.`obs_name` like '%cluster%')))))) where (`obsolescence`.`obs_type` = 'hw') group by `obsolescence`.`id` union all select `obsolescence`.`id` AS `id`,`obsolescence`.`obs_type` AS `obs_type`,`obsolescence`.`obs_name` AS `obs_name`,`obsolescence`.`obs_warn_date` AS `obs_warn_date`,`obsolescence`.`obs_alert_date` AS `obs_alert_date`,`obsolescence`.`obs_warn_date_updated_by` AS `obs_warn_date_updated_by`,`obsolescence`.`obs_alert_date_updated_by` AS `obs_alert_date_updated_by`,`obsolescence`.`obs_warn_date_updated` AS `obs_warn_date_updated`,`obsolescence`.`obs_alert_date_updated` AS `obs_alert_date_updated`,count(`nodes`.`id`) AS `obs_count` from (`obsolescence` left join `nodes` on((convert(`obsolescence`.`obs_name` using utf8) = `nodes`.`os_concat`))) where (`obsolescence`.`obs_type` = 'os') group by `obsolescence`.`id` */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
 /*!50001 SET collation_connection      = @saved_col_connection */;
@@ -6584,6 +6568,25 @@ USE `opensvc`;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
 /*!50013 DEFINER=`root`@`localhost` SQL SECURITY DEFINER */
 /*!50001 VIEW `v_outdated_services` AS (select `svcmon`.`mon_svcname` AS `svcname`,sum(if((`svcmon`.`mon_updated` >= (now() - interval 15 minute)),1,0)) AS `uptodate` from `svcmon` group by `svcmon`.`mon_svcname`) */;
+/*!50001 SET character_set_client      = @saved_cs_client */;
+/*!50001 SET character_set_results     = @saved_cs_results */;
+/*!50001 SET collation_connection      = @saved_col_connection */;
+
+--
+-- Final view structure for view `v_prov_templates`
+--
+
+/*!50001 DROP TABLE IF EXISTS `v_prov_templates`*/;
+/*!50001 DROP VIEW IF EXISTS `v_prov_templates`*/;
+/*!50001 SET @saved_cs_client          = @@character_set_client */;
+/*!50001 SET @saved_cs_results         = @@character_set_results */;
+/*!50001 SET @saved_col_connection     = @@collation_connection */;
+/*!50001 SET character_set_client      = utf8 */;
+/*!50001 SET character_set_results     = utf8 */;
+/*!50001 SET collation_connection      = utf8_general_ci */;
+/*!50001 CREATE ALGORITHM=UNDEFINED */
+/*!50013 DEFINER=`opensvc`@`%` SQL SECURITY DEFINER */
+/*!50001 VIEW `v_prov_templates` AS (select `f`.`id` AS `id`,`f`.`tpl_name` AS `tpl_name`,`f`.`tpl_command` AS `tpl_command`,`f`.`tpl_comment` AS `tpl_comment`,`f`.`tpl_author` AS `tpl_author`,`f`.`tpl_created` AS `tpl_created`,group_concat(distinct `g`.`role` order by `g`.`role` ASC separator ', ') AS `tpl_team_responsible` from ((`prov_templates` `f` left join `prov_template_team_responsible` `fr` on((`f`.`id` = `fr`.`tpl_id`))) left join `auth_group` `g` on((`fr`.`group_id` = `g`.`id`))) group by `f`.`id`) */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
 /*!50001 SET collation_connection      = @saved_col_connection */;
@@ -6697,7 +6700,7 @@ USE `opensvc`;
 /*!50001 SET collation_connection      = utf8_general_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
 /*!50013 DEFINER=`opensvc`@`%` SQL SECURITY DEFINER */
-/*!50001 VIEW `v_svcmon` AS select `e`.`err` AS `err`,`s`.`svc_ha` AS `svc_ha`,`s`.`svc_cluster_type` AS `svc_cluster_type`,`s`.`svc_status` AS `svc_status`,`s`.`svc_availstatus` AS `svc_availstatus`,`s`.`svc_flex_min_nodes` AS `svc_flex_min_nodes`,`s`.`svc_flex_max_nodes` AS `svc_flex_max_nodes`,`s`.`svc_flex_cpu_low_threshold` AS `svc_flex_cpu_low_threshold`,`s`.`svc_flex_cpu_high_threshold` AS `svc_flex_cpu_high_threshold`,`m`.`mon_vmname` AS `mon_vmname`,`m`.`mon_vmtype` AS `mon_vmtype`,`m`.`mon_guestos` AS `mon_guestos`,`s`.`svc_name` AS `svc_name`,`s`.`svc_nodes` AS `svc_nodes`,`s`.`svc_drpnode` AS `svc_drpnode`,`s`.`svc_drpnodes` AS `svc_drpnodes`,`s`.`svc_drptype` AS `svc_drptype`,`s`.`svc_autostart` AS `svc_autostart`,`s`.`svc_type` AS `svc_type`,`s`.`svc_comment` AS `svc_comment`,`s`.`svc_app` AS `svc_app`,`s`.`svc_drnoaction` AS `svc_drnoaction`,`s`.`svc_created` AS `svc_created`,`s`.`updated` AS `svc_updated`,`s`.`svc_envdate` AS `svc_envdate`,`s`.`svc_containertype` AS `svc_containertype`,`s`.`svc_metrocluster` AS `svc_metrocluster`,`m`.`mon_vcpus` AS `mon_vcpus`,`m`.`mon_vmem` AS `mon_vmem`,`m`.`mon_svcname` AS `mon_svcname`,`m`.`mon_svctype` AS `mon_svctype`,`m`.`mon_drptype` AS `mon_drptype`,`m`.`mon_nodname` AS `mon_nodname`,`m`.`mon_nodtype` AS `mon_nodtype`,`m`.`mon_nodmode` AS `mon_nodmode`,`m`.`mon_ipstatus` AS `mon_ipstatus`,`m`.`mon_fsstatus` AS `mon_fsstatus`,`m`.`mon_prinodes` AS `mon_prinodes`,`m`.`mon_hostid` AS `mon_hostid`,`m`.`ID` AS `ID`,`m`.`mon_frozen` AS `mon_frozen`,`m`.`mon_frozentxt` AS `mon_frozentxt`,`m`.`mon_changed` AS `mon_changed`,`m`.`mon_updated` AS `mon_updated`,`m`.`mon_sharestatus` AS `mon_sharestatus`,`m`.`mon_diskstatus` AS `mon_diskstatus`,`m`.`mon_containerstatus` AS `mon_containerstatus`,`m`.`mon_overallstatus` AS `mon_overallstatus`,`n`.`nodename` AS `nodename`,`n`.`listener_port` AS `listener_port`,`n`.`version` AS `version`,`n`.`updated` AS `node_updated`,`n`.`loc_country` AS `loc_country`,`n`.`loc_city` AS `loc_city`,`n`.`loc_addr` AS `loc_addr`,`n`.`loc_building` AS `loc_building`,`n`.`loc_floor` AS `loc_floor`,`n`.`loc_room` AS `loc_room`,`n`.`loc_rack` AS `loc_rack`,`n`.`cpu_freq` AS `cpu_freq`,`n`.`cpu_cores` AS `cpu_cores`,`n`.`cpu_dies` AS `cpu_dies`,`n`.`cpu_vendor` AS `cpu_vendor`,`n`.`cpu_model` AS `cpu_model`,`n`.`mem_banks` AS `mem_banks`,`n`.`mem_slots` AS `mem_slots`,`n`.`mem_bytes` AS `mem_bytes`,`n`.`os_name` AS `os_name`,`n`.`os_release` AS `os_release`,`n`.`os_update` AS `os_update`,`n`.`os_segment` AS `os_segment`,`n`.`os_arch` AS `os_arch`,`n`.`os_vendor` AS `os_vendor`,`n`.`os_kernel` AS `os_kernel`,`n`.`loc_zip` AS `loc_zip`,`n`.`team_responsible` AS `team_responsible`,`n`.`team_integ` AS `team_integ`,`n`.`team_support` AS `team_support`,`n`.`project` AS `project`,`n`.`serial` AS `serial`,`n`.`model` AS `model`,`n`.`type` AS `type`,`n`.`warranty_end` AS `warranty_end`,`n`.`maintenance_end` AS `maintenance_end`,`n`.`status` AS `status`,`n`.`role` AS `role`,`n`.`environnement` AS `environnement`,`n`.`host_mode` AS `host_mode`,`n`.`power_supply_nb` AS `power_supply_nb`,`n`.`power_cabinet1` AS `power_cabinet1`,`n`.`power_cabinet2` AS `power_cabinet2`,`n`.`power_protect` AS `power_protect`,`n`.`power_protect_breaker` AS `power_protect_breaker`,`n`.`power_breaker1` AS `power_breaker1`,`n`.`power_breaker2` AS `power_breaker2`,`n`.`sec_zone` AS `sec_zone`,`n`.`last_boot` AS `last_boot`,`n`.`action_type` AS `action_type`,`m`.`mon_syncstatus` AS `mon_syncstatus`,`m`.`mon_hbstatus` AS `mon_hbstatus`,`m`.`mon_availstatus` AS `mon_availstatus`,`m`.`mon_appstatus` AS `mon_appstatus`,`ap`.`responsibles` AS `responsibles`,`ap`.`mailto` AS `mailto`,`ap`.`app_domain` AS `app_domain`,`ap`.`app_team_ops` AS `app_team_ops`,`n`.`enclosure` AS `enclosure`,`n`.`enclosureslot` AS `enclosureslot`,`n`.`assetname` AS `assetname`,`n`.`cpu_threads` AS `cpu_threads` from ((((`svcmon` `m` left join `services` `s` on((`s`.`svc_name` = `m`.`mon_svcname`))) left join `nodes` `n` on((`m`.`mon_nodname` = `n`.`nodename`))) left join `b_apps` `ap` on((`ap`.`app` = `s`.`svc_app`))) left join `b_action_errors` `e` on(((`e`.`svcname` = `s`.`svc_name`) and (`e`.`nodename` = `m`.`mon_nodname`)))) */;
+/*!50001 VIEW `v_svcmon` AS select `e`.`err` AS `err`,`s`.`svc_ha` AS `svc_ha`,`s`.`svc_cluster_type` AS `svc_cluster_type`,`s`.`svc_status` AS `svc_status`,`s`.`svc_availstatus` AS `svc_availstatus`,`s`.`svc_flex_min_nodes` AS `svc_flex_min_nodes`,`s`.`svc_flex_max_nodes` AS `svc_flex_max_nodes`,`s`.`svc_flex_cpu_low_threshold` AS `svc_flex_cpu_low_threshold`,`s`.`svc_flex_cpu_high_threshold` AS `svc_flex_cpu_high_threshold`,`m`.`mon_vmname` AS `mon_vmname`,`m`.`mon_vmtype` AS `mon_vmtype`,`m`.`mon_guestos` AS `mon_guestos`,`s`.`svc_name` AS `svc_name`,`s`.`svc_nodes` AS `svc_nodes`,`s`.`svc_drpnode` AS `svc_drpnode`,`s`.`svc_drpnodes` AS `svc_drpnodes`,`s`.`svc_drptype` AS `svc_drptype`,`s`.`svc_autostart` AS `svc_autostart`,`s`.`svc_type` AS `svc_type`,`s`.`svc_comment` AS `svc_comment`,`s`.`svc_app` AS `svc_app`,`s`.`svc_drnoaction` AS `svc_drnoaction`,`s`.`svc_created` AS `svc_created`,`s`.`updated` AS `svc_updated`,`s`.`svc_envdate` AS `svc_envdate`,`s`.`svc_containertype` AS `svc_containertype`,`s`.`svc_metrocluster` AS `svc_metrocluster`,`m`.`mon_vcpus` AS `mon_vcpus`,`m`.`mon_vmem` AS `mon_vmem`,`m`.`mon_svcname` AS `mon_svcname`,`m`.`mon_svctype` AS `mon_svctype`,`m`.`mon_drptype` AS `mon_drptype`,`m`.`mon_nodname` AS `mon_nodname`,`m`.`mon_nodtype` AS `mon_nodtype`,`m`.`mon_nodmode` AS `mon_nodmode`,`m`.`mon_ipstatus` AS `mon_ipstatus`,`m`.`mon_fsstatus` AS `mon_fsstatus`,`m`.`mon_prinodes` AS `mon_prinodes`,`m`.`mon_hostid` AS `mon_hostid`,`m`.`ID` AS `ID`,`m`.`mon_frozen` AS `mon_frozen`,`m`.`mon_frozentxt` AS `mon_frozentxt`,`m`.`mon_changed` AS `mon_changed`,`m`.`mon_updated` AS `mon_updated`,`m`.`mon_sharestatus` AS `mon_sharestatus`,`m`.`mon_diskstatus` AS `mon_diskstatus`,`m`.`mon_containerstatus` AS `mon_containerstatus`,`m`.`mon_overallstatus` AS `mon_overallstatus`,`n`.`nodename` AS `nodename`,`n`.`listener_port` AS `listener_port`,`n`.`tz` AS `tz`,`n`.`connect_to` AS `connect_to`,`n`.`version` AS `version`,`n`.`updated` AS `node_updated`,`n`.`loc_country` AS `loc_country`,`n`.`loc_city` AS `loc_city`,`n`.`loc_addr` AS `loc_addr`,`n`.`loc_building` AS `loc_building`,`n`.`loc_floor` AS `loc_floor`,`n`.`loc_room` AS `loc_room`,`n`.`loc_rack` AS `loc_rack`,`n`.`cpu_freq` AS `cpu_freq`,`n`.`cpu_cores` AS `cpu_cores`,`n`.`cpu_dies` AS `cpu_dies`,`n`.`cpu_vendor` AS `cpu_vendor`,`n`.`cpu_model` AS `cpu_model`,`n`.`mem_banks` AS `mem_banks`,`n`.`mem_slots` AS `mem_slots`,`n`.`mem_bytes` AS `mem_bytes`,`n`.`os_name` AS `os_name`,`n`.`os_release` AS `os_release`,`n`.`os_update` AS `os_update`,`n`.`os_segment` AS `os_segment`,`n`.`os_arch` AS `os_arch`,`n`.`os_vendor` AS `os_vendor`,`n`.`os_kernel` AS `os_kernel`,`n`.`loc_zip` AS `loc_zip`,`n`.`team_responsible` AS `team_responsible`,`n`.`team_integ` AS `team_integ`,`n`.`team_support` AS `team_support`,`n`.`project` AS `project`,`n`.`serial` AS `serial`,`n`.`model` AS `model`,`n`.`type` AS `type`,`n`.`warranty_end` AS `warranty_end`,`n`.`maintenance_end` AS `maintenance_end`,`n`.`status` AS `status`,`n`.`role` AS `role`,`n`.`environnement` AS `environnement`,`n`.`host_mode` AS `host_mode`,`n`.`power_supply_nb` AS `power_supply_nb`,`n`.`power_cabinet1` AS `power_cabinet1`,`n`.`power_cabinet2` AS `power_cabinet2`,`n`.`power_protect` AS `power_protect`,`n`.`power_protect_breaker` AS `power_protect_breaker`,`n`.`power_breaker1` AS `power_breaker1`,`n`.`power_breaker2` AS `power_breaker2`,`n`.`sec_zone` AS `sec_zone`,`n`.`last_boot` AS `last_boot`,`n`.`action_type` AS `action_type`,`m`.`mon_syncstatus` AS `mon_syncstatus`,`m`.`mon_hbstatus` AS `mon_hbstatus`,`m`.`mon_availstatus` AS `mon_availstatus`,`m`.`mon_appstatus` AS `mon_appstatus`,`ap`.`responsibles` AS `responsibles`,`ap`.`mailto` AS `mailto`,`ap`.`app_domain` AS `app_domain`,`ap`.`app_team_ops` AS `app_team_ops`,`n`.`enclosure` AS `enclosure`,`n`.`enclosureslot` AS `enclosureslot`,`n`.`assetname` AS `assetname`,`n`.`cpu_threads` AS `cpu_threads` from ((((`svcmon` `m` left join `services` `s` on((`s`.`svc_name` = `m`.`mon_svcname`))) left join `nodes` `n` on((`m`.`mon_nodname` = `n`.`nodename`))) left join `b_apps` `ap` on((`ap`.`app` = `s`.`svc_app`))) left join `b_action_errors` `e` on(((`e`.`svcname` = `s`.`svc_name`) and (`e`.`nodename` = `m`.`mon_nodname`)))) */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
 /*!50001 SET collation_connection      = @saved_col_connection */;
@@ -6850,4 +6853,4 @@ USE `pdns`;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2016-01-12 21:10:02
+-- Dump completed on 2016-03-08 16:53:04
