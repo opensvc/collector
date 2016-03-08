@@ -28,7 +28,7 @@ function startup(divid, options) {
 
 function startup_create_link(o) {
   var display = []
-  o.div.find("input[type=checkbox]:checked").each(function() {
+  o.div.find("input[type=checkbox][name=nodename]:checked").each(function() {
     display.push($(this).siblings("span").text())
   })
   o.options.display = display
@@ -41,6 +41,8 @@ function startup_create_link(o) {
   if (o.options.display) {
     l.push("display="+encodeURIComponent(o.options.display.join(",")))
   }
+  l.push("show_disabled="+encodeURIComponent(o.e_show_disabled.prop("checked")))
+
   url += l.join("&");
   o.link_text.empty().html(url);
   o.link_text.autogrow({vertical: true, horizontal: true});
@@ -55,6 +57,15 @@ function startup_init(o) {
     o.create_link()
     o.link_text.slideToggle().select()
   })
+
+  // show disabled
+  o.e_show_disabled = o.div.find("[name=show_disabled]")
+  o.e_show_disabled.uniqueId()
+  o.e_show_disabled.siblings("label").attr("for", o.e_show_disabled.attr("id"))
+  console.log(o.options.show_disabled)
+  if (o.options.show_disabled && (o.options.show_disabled != "false")) {
+    o.e_show_disabled.prop("checked", true)
+  }
 
   // create checkboxes
   var nodenames = []
@@ -74,7 +85,7 @@ function startup_init(o) {
       nodenames.push(nodename)
 
       //input
-      var input = $("<input type='checkbox' class='ocb'></input>")
+      var input = $("<input type='checkbox' name='nodename' class='ocb'></input>")
       input.uniqueId()
       input.css({"vertical-align": "text-bottom"})
       if (o.options.display && (o.options.display.indexOf(nodename) >= 0)) {
@@ -92,8 +103,8 @@ function startup_init(o) {
 
       // title
       var title = $("<span></span>")
-      title.addClass("hw16")
-      title.css({"padding-left": "18px", "margin-left": "0.2em"})
+      title.addClass("icon hw16")
+      title.css({"margin-left": "0.2em"})
       title.text(nodename)
 
       // container div
@@ -135,6 +146,7 @@ function startup_draw(o) {
   var data = {
     "svcnames": o.options.svcnames,
     "nodenames": o.options.display,
+    "show_disabled": o.e_show_disabled.prop("checked")
   }
   $.getJSON(url, data, function(_data){
     var eid = o.viz[0]

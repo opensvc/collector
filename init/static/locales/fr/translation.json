@@ -694,6 +694,9 @@
 		"container_stats": "container stats",
 		"compliance": "conformité"
 	},
+	"startup": {
+		"show_disabled": "afficher les désactivés"
+	},
 	"network_tabs": {
 		"segments": "segments"
 	},

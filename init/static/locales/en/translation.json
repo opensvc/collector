@@ -707,6 +707,9 @@
 		"container_stats": "container stats",
 		"compliance": "compliance"
 	},
+	"startup": {
+		"show_disabled": "show disabled"
+	},
 	"network_tabs": {
 		"segments": "segments"
 	},

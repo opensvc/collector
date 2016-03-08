@@ -783,11 +783,13 @@ def topo():
 def startup():
     svcnames = request.vars.get("svcnames", "").split(",")
     display = request.vars.get("display", "").split(",")
+    show_disabled = request.vars.get("show_disabled", "false")
 
     s = """startup("startup", %(options)s)"""%dict(
          options=str({
           "svcnames": svcnames,
           "display": display,
+          "show_disabled": show_disabled,
          })
        )
     d = DIV(
@@ -816,6 +818,12 @@ def json_startup_data():
         row = db(q).select(db.svcmon.mon_nodname).first()
         if row is not None:
             nodenames = [row.mon_nodname]
+
+    show_disabled = request.vars.get("show_disabled", False)
+    if show_disabled == "false":
+        show_disabled = False
+    else:
+        show_disabled = True
 
     data = {
       "nodes": [],
@@ -856,6 +864,7 @@ def json_startup_data():
 
     imgs = {
       (None, None): URL(r=request,c='static',f='images/action48.png'),
+      ("ip.container", None): URL(r=request,c='static',f='images/net48.png'),
       ("ip", None): URL(r=request,c='static',f='images/net48.png'),
       ("fs", None): URL(r=request,c='static',f='images/fs.png'),
       ("disk", None): URL(r=request,c='static',f='images/disk48.png'),
@@ -1032,8 +1041,11 @@ def json_startup_data():
             if subset_data["parallel"]:
                 # //-subset to resource (star-like)
                 from_node = node_ids.index((nodename, subset))
-                to_node = node_ids.index((nodename, s))
-                add_edge(from_node, to_node, nodename)
+                try:
+                    to_node = node_ids.index((nodename, s))
+                    add_edge(from_node, to_node, nodename)
+                except ValueError:
+                    pass
             else:
                 if i == 0:
                     # highlight edge to first resource of a serial subset
@@ -1048,8 +1060,11 @@ def json_startup_data():
                 _prev = add_edge(from_node, to_node, nodename, color=color)
         else:
             from_node = node_ids.index((nodename, prev))
-            to_node = node_ids.index((nodename, s))
-            prev = add_edge(from_node, to_node, nodename)
+            try:
+                to_node = node_ids.index((nodename, s))
+                prev = add_edge(from_node, to_node, nodename)
+            except ValueError:
+                pass
         return prev, _prev
 
 
@@ -1114,7 +1129,7 @@ def json_startup_data():
       "gandi",
     ]
 
-    def do_node(nodename, node_ids, node_tail, hv=None):
+    def do_node(nodename, node_ids, node_tail, hv=None, show_disabled=False):
         sections = {}
         for family in levels:
           sections[family] = {}
@@ -1219,6 +1234,8 @@ def json_startup_data():
                 sections[family][family].append(s)
 
             disabled = get_disabled(s, nodename)
+            if disabled and not show_disabled:
+                continue
             if disabled:
                 img = URL(r=request, c="static", f="images/reject48.png")
             else:
@@ -1290,14 +1307,14 @@ def json_startup_data():
 
         if hv is None:
             for container in encapnodes:
-                _nodes, _edges, node_ids, node_tail = do_node(container, node_ids, node_tail, hv=nodename)
+                _nodes, _edges, node_ids, node_tail = do_node(container, node_ids, node_tail, hv=nodename, show_disabled=show_disabled)
                 data["nodes"] += _nodes
                 data["edges"] += _edges
 
         return data["nodes"], data["edges"], node_ids, node_tail
 
     for nodename in nodenames:
-        nodes, edges, node_ids, node_tail = do_node(nodename, node_ids, node_tail)
+        nodes, edges, node_ids, node_tail = do_node(nodename, node_ids, node_tail, show_disabled=show_disabled)
         data["nodes"] += nodes
         data["edges"] += edges
 
