@@ -22,11 +22,14 @@ class GceDisks(object):
         buff = self.readfile('quotas')
         data = json.loads(buff)
         self.dg = {}
+        self.wwpn = []
         for region in data:
             dgname = region["name"]
             for quota in region["quotas"]:
                 if quota["metric"] == "DISKS_TOTAL_GB":
                     self.dg[dgname] = quota
+            i = region["selfLink"].index("/projects")
+            self.wwpn.append(region["selfLink"][i:].replace("/projects", "").replace("/regions", ""))
 
     def load_disks(self):
         buff = self.readfile('disks')
@@ -82,6 +85,7 @@ class GceDisks(object):
 
     def __str__(self):
         s = json.dumps({
+          "wwpn": self.wwpn,
           "dg": self.dg,
           "disks": self.disks
         }, indent=4)

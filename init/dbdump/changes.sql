@@ -5005,4 +5005,6 @@ drop view v_svcmon; CREATE VIEW `v_svcmon` AS select `e`.`err` AS `err`,`s`.`svc
 
 alter table services modify column svc_envfile mediumtext;
 
+alter table switches modify column sw_rportname varchar(128);
+
 

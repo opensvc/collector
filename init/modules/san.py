@@ -49,6 +49,11 @@ class Viz(object):
         for k in self.ports:
             self.ports[k] = sorted(list(self.ports[k]-set([''])), key=tonum)
 
+    def get_color(self, speed):
+        if speed in self.colors:
+            return self.colors[speed]
+        return "#000000"
+
     def html_legend(self):
         s = ""
         for i in sorted(self.colors.keys()):
@@ -164,7 +169,7 @@ digraph G {
         for link in self.data['link'].values():
             l = []
             for speed in link['speed']:
-                l.append(self.colors[speed])
+                l.append(self.get_color(speed))
             color = ':'.join(l)
             if not link['tail'] in self.index or \
                not link['tail'] in self.ports or \

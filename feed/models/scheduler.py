@@ -419,6 +419,24 @@ def _insert_generic(data, auth):
             vars.append('updated')
             for i, val in enumerate(vals):
                 vals[i].append(now)
+                print vals[i]
+                if vals[i][0] == auth[1]:
+                    # virt => add to vswitch
+                    _vars = [
+                      "sw_name",
+                      "sw_slot",
+                      "sw_port",
+                      "sw_rportname",
+                      "sw_updated"
+                    ]
+                    _vals = [[
+                      "virtual",
+                      "0",
+                      "0",
+                      auth[1],
+                      str(datetime.datetime.now())
+                    ]]
+                    generic_insert('switches', _vars, _vals)
         if 'nodename' not in vars:
             vars.append('nodename')
             for i, val in enumerate(vals):
@@ -931,6 +949,17 @@ def insert_gcedisks(name=None, nodename=None):
 
         sql = """select id from stor_array where array_name="%s" """ % s.name
         array_id = str(db.executesql(sql)[0][0])
+
+        # stor_array_tgtid
+        vars = ['array_id', 'array_tgtid']
+        vals = []
+        sw_vars = ["sw_name", "sw_slot", "sw_port", "sw_rportname", "sw_updated"]
+        sw_vals = []
+        for wwn in s.wwpn:
+            vals.append([array_id, wwn])
+            sw_vals.append(["virtual", "0", "0", wwn, str(datetime.datetime.now())])
+        generic_insert('stor_array_tgtid', vars, vals)
+        generic_insert('switches', sw_vars, sw_vals)
 
         # stor_array_dg
         vars = ['array_id', 'dg_name', 'dg_free', 'dg_used', 'dg_size', 'dg_updated']
