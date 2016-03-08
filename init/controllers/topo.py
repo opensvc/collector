@@ -564,7 +564,7 @@ class viz(object):
                 svcname = ""
             elif "services" in self.display and not svcname in self.svcnames:
                 continue
-            label = self.fmt_disk_label(arrayid, rows)
+            label = self.fmt_disk_label(nodename, svcname, arrayid, rows)
             disk_id = self.get_visnode_id("disk", label)
             if disk_id < 0:
                 disk_id = self.add_visnode("disk", label)
@@ -700,13 +700,13 @@ class viz(object):
                           label=row.mon_availstatus,
                          )
 
-    def fmt_disk_label(self, arrayid, rows):
-        label = ""
+    def fmt_disk_label(self, nodename, svcname, arrayid, rows):
+        label = "@%s\n" % nodename
         if len(rows) > 3:
             total = 0
             for row in rows:
                 total += row.disk_size
-            label = "%d disks, total %s"%(len(rows), beautify_size_mb(total))
+            label += "%d disks, total %s"%(len(rows), beautify_size_mb(total))
         else:
             for row in rows:
                 label += row.disk_id+"\t"+beautify_size_mb(row.disk_size)+"\n"
@@ -717,12 +717,12 @@ class viz(object):
             if svcname == "":
                 continue
             svcname_id = self.get_visnode_id("svc", svcname)
-            disk_id = self.get_visnode_id("disk", self.fmt_disk_label(arrayid, rows))
+            disk_id = self.get_visnode_id("disk", self.fmt_disk_label(nodename, svcname, arrayid, rows))
             self.add_edge(svcname_id, disk_id)
 
             if nodename == arrayid:
                 nodename_id = self.get_visnode_id("node", nodename)
-                disk_id = self.get_visnode_id("disk", self.fmt_disk_label(arrayid, rows))
+                disk_id = self.get_visnode_id("disk", self.fmt_disk_label(nodename, svcname, arrayid, rows))
                 self.add_edge(nodename_id, disk_id)
 
     def add_nodes_disks(self):
@@ -730,7 +730,7 @@ class viz(object):
             if svcname != "" and "services" in self.display:
                 continue
             nodename_id = self.get_visnode_id("node", nodename)
-            disk_id = self.get_visnode_id("disk", self.fmt_disk_label(arrayid, rows))
+            disk_id = self.get_visnode_id("disk", self.fmt_disk_label(nodename, svcname, arrayid, rows))
             self.add_edge(nodename_id, disk_id)
 
     def add_arrays_disks(self):
@@ -740,7 +740,7 @@ class viz(object):
             if "services" in self.display and not svcname in self.svcnames:
                 continue
             array_id = self.get_visnode_id("array", arrayid)
-            disk_id = self.get_visnode_id("disk", self.fmt_disk_label(arrayid, rows))
+            disk_id = self.get_visnode_id("disk", self.fmt_disk_label(nodename, svcname, arrayid, rows))
             self.add_edge(array_id, disk_id)
 
 @auth.requires_login()
