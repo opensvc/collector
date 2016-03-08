@@ -90,6 +90,7 @@ var action_img_h = {
   'umount': 'action_stop_16',
   'shutdown': 'action_stop_16',
   'boot': 'action_start_16',
+  'pull': 'csv',
   'start': 'action_start_16',
   'startstandby': 'action_start_16',
   'startapp': 'action_start_16',
