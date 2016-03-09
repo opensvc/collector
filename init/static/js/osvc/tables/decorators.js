@@ -858,25 +858,6 @@ function cell_decorator_dns_records_type(e) {
   $(e).html(s)
 }
 
-function cell_decorator_svcmon_link_actions(e) {
-  var s = $("<a class='icon action16 clickable'></a>")
-  s.click(function(){
-    var line = $(this).parents(".tl").first()
-    var svcname = $.data(line.children("[col=mon_svcname]")[0], "v")
-    if (get_selected() != "") {return}
-    var id = toggle_extratable(e)
-    table_actions(id, {
-        "volatile_filters": true,
-        "request_vars": {
-                "actions_f_svcname": svcname,
-                "actions_f_status_log": "empty",
-                "actions_f_begin": ">-7d"
-        }
-    })
-  })
-  return s
-}
-
 function cell_decorator_svcmon_link_frozen(e) {
   var line = $(e).parent(".tl")
   var mon_frozen = $.data(line.children("[col=mon_frozen]")[0], "v")
@@ -890,7 +871,6 @@ function cell_decorator_svcmon_link_frozen(e) {
 
 function cell_decorator_svcmon_links(e) {
   $(e).html(
-    cell_decorator_svcmon_link_actions(e),
     cell_decorator_svcmon_link_frozen(e)
   )
 }
