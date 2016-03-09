@@ -99,11 +99,22 @@ function topo_draw(o) {
   $.getJSON(url, o.options, function(_data){
     var eid = o.viz[0]
     var options = {
-      //configure: {},
+/*
+      configure: {
+        "container": o.div.find("[name=configure]")[0],
+        "filter": function (option, path) {
+          return path.indexOf('physics') !== -1;
+        }
+      },
+*/
       physics: {
         "forceAtlas2Based": {
-          "gravitationalConstant": -40,
-          "springLength": 100
+          "gravitationalConstant": -23,
+          "centralGravity": 0.005,
+          "springLength": 30,
+          "springConstant": 0.605,
+          "damping": 1,
+          "avoidOverlap": 0.5
         },
         "minVelocity": 0.75,
         "solver": "forceAtlas2Based"
