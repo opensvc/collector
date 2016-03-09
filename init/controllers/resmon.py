@@ -13,6 +13,7 @@ class table_resmon(HtmlTable):
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
         self.cols = [
+         'id',
          'svcname',
          'nodename',
          'vmname',
@@ -27,11 +28,22 @@ class table_resmon(HtmlTable):
          #'changed',
          'updated'
         ]
+        self.cols = [
+         'id',
+         'svcname',
+         'nodename',
+         'vmname',
+         'rid',
+        ]
         for col in nodes_cols:
             if col not in self.cols:
                 self.cols.append(col)
         self.colprops = nodes_colprops
         self.colprops.update({
+            'id': HtmlTableColumn(
+                     table='resmon',
+                     field='id',
+                    ),
             'svcname': HtmlTableColumn(
                      table='resmon',
                      field='svcname',

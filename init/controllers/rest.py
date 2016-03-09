@@ -314,6 +314,8 @@ handlers = {
      rest_delete_reports_metrics(),
      rest_delete_reports(),
      rest_delete_report(),
+     rest_delete_resource(),
+     rest_delete_resources(),
      rest_delete_service_instance(),
      rest_delete_service_instances(),
      rest_delete_service(),

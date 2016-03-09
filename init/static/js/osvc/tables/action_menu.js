@@ -969,8 +969,8 @@ function table_action_menu_init_data(t) {
 				{
 					"selector": ["clicked", "checked", "all"],
 					"foldable": true,
-					"table": ["service_instances"],
 					'title': 'action_menu.on_services_instances',
+					"table": ["service_instances"],
 					"class": "svc",
 					"cols": ["id"],
 					"condition": "id",
@@ -979,6 +979,23 @@ function table_action_menu_init_data(t) {
 							"title": "action_menu.delete",
 							"class": "del16",
 							"fn": "data_action_delete_svc_instances",
+							"min": 1
+						}
+					]
+				},
+				{
+					"selector": ["clicked", "checked", "all"],
+					"foldable": true,
+					"table": ["resmon"],
+					'title': 'action_menu.on_resources',
+					"class": "action16",
+					"cols": ["id"],
+					"condition": "id",
+					"children": [
+						{
+							"title": "action_menu.delete",
+							"class": "del16",
+							"fn": "data_action_delete_resources",
 							"min": 1
 						}
 					]
@@ -3359,6 +3376,20 @@ function data_action_delete_networks(t, e) {
 function data_action_delete_svc_instances(t, e) {
 	data_action_generic_delete(t, e, {
 		"request_service": "R_SERVICE_INSTANCES",
+		"request_data_entry": function(data) {
+			return {
+				'id': data['id']
+			}
+		}
+	})
+}
+
+//
+// data action: delete service resources
+//
+function data_action_delete_resources(t, e) {
+	data_action_generic_delete(t, e, {
+		"request_service": "/resources",
 		"request_data_entry": function(data) {
 			return {
 				'id': data['id']
