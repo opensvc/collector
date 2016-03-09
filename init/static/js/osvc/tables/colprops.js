@@ -175,15 +175,15 @@ colprops = {
 	},
 	"app": {
 		"_class": "app",
-		"img": "svc",
+		"img": "app",
 		"title": "App"
 	},
 	"app_domain": {
-		"img": "svc",
+		"img": "app",
 		"title": "App domain"
 	},
 	"app_id": {
-		"img": "svc",
+		"img": "key",
 		"title": "App Id"
 	},
 	"app_key": {
@@ -197,7 +197,7 @@ colprops = {
 	},
 	"app_nodename": {
 		"_class": "nodename",
-		"img": "hw16",
+		"img": "node16",
 		"title": "Node"
 	},
 	"app_svcname": {
@@ -596,7 +596,7 @@ colprops = {
 	},
 	"disk_nodename": {
 		"_class": "nodename",
-		"img": "hw16",
+		"img": "node16",
 		"title": "Nodename"
 	},
 	"disk_raid": {
@@ -1133,12 +1133,12 @@ colprops = {
 	},
 	"mon_appstatus": {
 		"_class": "status",
-		"img": "svc",
+		"img": "svcinstance",
 		"title": "App status"
 	},
 	"mon_availstatus": {
 		"_class": "availstatus",
-		"img": "svc",
+		"img": "svcinstance",
 		"title": "Availability status"
 	},
 	"mon_changed": {
@@ -1146,40 +1146,40 @@ colprops = {
 		"title": "Last status change"
 	},
 	"mon_containerpath": {
-		"img": "svc",
+		"img": "svcinstance",
 		"title": "Container path"
 	},
 	"mon_containerstatus": {
 		"_class": "status",
-		"img": "svc",
+		"img": "svcinstance",
 		"title": "Container status"
 	},
 	"mon_diskstatus": {
 		"_class": "status",
-		"img": "svc",
+		"img": "svcinstance",
 		"title": "Disk status"
 	},
 	"mon_frozen": {
-		"img": "svc",
+		"img": "svcinstance",
 		"title": "Frozen"
 	},
 	"mon_fsstatus": {
 		"_class": "status",
-		"img": "svc",
+		"img": "svcinstance",
 		"title": "Fs status"
 	},
 	"mon_guestos": {
-		"img": "svc",
+		"img": "svcinstance",
 		"title": "Guest OS"
 	},
 	"mon_hbstatus": {
 		"_class": "status",
-		"img": "svc",
+		"img": "svcinstance",
 		"title": "Hb status"
 	},
 	"mon_ipstatus": {
 		"_class": "status",
-		"img": "svc",
+		"img": "svcinstance",
 		"title": "Ip status"
 	},
 	"mon_nodname": {
@@ -1189,12 +1189,12 @@ colprops = {
 	},
 	"mon_overallstatus": {
 		"_class": "overallstatus",
-		"img": "svc",
+		"img": "svcinstance",
 		"title": "Status"
 	},
 	"mon_sharestatus": {
 		"_class": "status",
-		"img": "svc",
+		"img": "svcinstance",
 		"title": "Share status"
 	},
 	"mon_svcname": {
@@ -1209,7 +1209,7 @@ colprops = {
 	},
 	"mon_syncstatus": {
 		"_class": "status",
-		"img": "svc",
+		"img": "svcinstance",
 		"title": "Sync status"
 	},
 	"mon_updated": {
@@ -1218,20 +1218,20 @@ colprops = {
 		"title": "Last status update"
 	},
 	"mon_vcpus": {
-		"img": "svc",
+		"img": "svcinstance",
 		"title": "Vcpus"
 	},
 	"mon_vmem": {
-		"img": "svc",
+		"img": "svcinstance",
 		"title": "Vmem"
 	},
 	"mon_vmname": {
 		"_class": "nodename_no_os",
-		"img": "svc",
+		"img": "node16",
 		"title": "Container name"
 	},
 	"mon_vmtype": {
-		"img": "svc",
+		"img": "svcinstance",
 		"title": "Container type"
 	},
 	"na": {
@@ -1518,7 +1518,7 @@ colprops = {
 		"title": "Net priority"
 	},
 	"project": {
-		"img": "svc",
+		"img": "app",
 		"title": "Project"
 	},
 	"pvid": {
@@ -1551,36 +1551,36 @@ colprops = {
 		"title": "Definition"
 	},
 	"res_desc": {
-		"img": "svc",
+		"img": "resource",
 		"title": "Description"
 	},
 	"res_disable": {
 		"_class": "boolean",
-		"img": "svc",
+		"img": "resource",
 		"title": "Disable"
 	},
 	"res_log": {
-		"img": "svc",
+		"img": "resource",
 		"title": "Log"
 	},
 	"res_monitor": {
 		"_class": "boolean",
-		"img": "svc",
+		"img": "resource",
 		"title": "Monitor"
 	},
 	"res_optional": {
 		"_class": "boolean",
-		"img": "svc",
+		"img": "resource",
 		"title": "Optional"
 	},
 	"res_type": {
 		"_class": "res_stype",
-		"img": "svc",
+		"img": "resource",
 		"title": "Type"
 	},
 	"res_status": {
 		"_class": "status",
-		"img": "svc",
+		"img": "resource",
 		"title": "Status"
 	},
 	"responsibles": {
@@ -1593,7 +1593,7 @@ colprops = {
 		"title": "Return code"
 	},
 	"rid": {
-		"img": "svc",
+		"img": "resource",
 		"title": "Resource id"
 	},
 	"role": {
@@ -1704,7 +1704,7 @@ colprops = {
 	},
 	"save_server": {
 		"_class": "nodename_no_os",
-		"img": "save16",
+		"img": "node16",
 		"title": "Server"
 	},
 	"save_size": {
@@ -1714,7 +1714,7 @@ colprops = {
 	},
 	"save_svcname": {
 		"_class": "svcname",
-		"img": "save16",
+		"img": "svc",
 		"title": "Service"
 	},
 	"save_volume": {
@@ -1757,7 +1757,7 @@ colprops = {
 		"title": "Steps"
 	},
 	"svc_app": {
-		"img": "svc",
+		"img": "app",
 		"title": "App"
 	},
 	"svc_autostart": {
@@ -1788,7 +1788,7 @@ colprops = {
 	},
 	"svc_drpnode": {
 		"_class": "nodename_no_os",
-		"img": "svc",
+		"img": "node16",
 		"title": "DRP node"
 	},
 	"svc_drpnodes": {
@@ -1843,7 +1843,7 @@ colprops = {
 		"title": "Service"
 	},
 	"svc_nodes": {
-		"img": "svc",
+		"img": "node16",
 		"title": "Nodes"
 	},
 	"svc_status": {

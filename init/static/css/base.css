@@ -1968,6 +1968,21 @@ ul.login_menu ul {
 	content: '\f0c0';
 	font-family: awesome;
 }
+.app:before {
+	color: lightgreen;
+	content: '\f069';
+	font-family: awesome;
+}
+.resource:before {
+	color: lightgreen;
+	content: '\f292';
+	font-family: awesome;
+}
+.svcinstance:before {
+	color: lightgreen;
+	content: '\f042';
+	font-family: awesome;
+}
 .svc:before {
 	color: lightgreen;
 	content: '\f111';

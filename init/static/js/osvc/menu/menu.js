@@ -16,14 +16,14 @@ var menu_data = {
 		},
 		{
 		  "title" : "services_instances",
-		  "class" : "svc",
+		  "class" : "svcinstance",
 		  "id" : "view-service-instances",
 		  "link" : "/init/default/svcmon",
 		  "fn" : "table_service_instances"
 		},
 		{
 		  "title" : "resources",
-		  "class" : "svc",
+		  "class" : "resource",
 		  "id" : "view-resources",
 		  "link" : "/init/resmon/resmon",
 		  "fn" : "table_resources"
@@ -273,7 +273,7 @@ var menu_data = {
 		},
 		{
 		  "title" : "application",
-		  "class" : "svc",
+		  "class" : "app",
 		  "id" : "adm-app",
 		  "link" : "/init/apps/apps",
 		  "fn" : "table_apps"

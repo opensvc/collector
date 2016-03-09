@@ -200,7 +200,7 @@ function table_action_menu_init_data(t) {
 						},
 						{
 							"title": "action_menu.app",
-							"class": "svc",
+							"class": "app",
 							"fn": "data_action_add_app",
 							"privileges": ["Manager", "AppManager"],
 							"min": 0
@@ -588,7 +588,7 @@ function table_action_menu_init_data(t) {
 					"selector": ["clicked", "checked", "all"],
 					"foldable": true,
 					'title': 'action_menu.on_apps',
-					"class": "svc",
+					"class": "app",
 					"table": ["apps"],
 					"cols": ["id"],
 					"condition": "id",
@@ -971,7 +971,7 @@ function table_action_menu_init_data(t) {
 					"foldable": true,
 					'title': 'action_menu.on_services_instances',
 					"table": ["service_instances"],
-					"class": "svc",
+					"class": "svcinstance",
 					"cols": ["id"],
 					"condition": "id",
 					"children": [
@@ -988,7 +988,7 @@ function table_action_menu_init_data(t) {
 					"foldable": true,
 					"table": ["resmon"],
 					'title': 'action_menu.on_resources',
-					"class": "action16",
+					"class": "resource",
 					"cols": ["id"],
 					"condition": "id",
 					"children": [
@@ -1325,7 +1325,7 @@ function table_action_menu_init_data(t) {
 					"selector": ["clicked", "checked", "all"],
 					"foldable": true,
 					'title': 'action_menu.on_services_instances',
-					"class": "svc",
+					"class": "svcinstance",
 					"cols": ["svcname", "nodename"],
 					"condition": "svcname+nodename",
 					"children": [
@@ -1428,7 +1428,7 @@ function table_action_menu_init_data(t) {
 					"selector": ["clicked", "checked", "all"],
 					"foldable": true,
 					'title': 'action_menu.on_resources',
-					"class": "action16",
+					"class": "resource",
 					"cols": ["svcname", "nodename", "vmname", "rid"],
 					"condition": "svcname+nodename+vmname+rid,svcname+nodename+rid",
 					"children": [
