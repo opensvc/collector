@@ -200,7 +200,7 @@ function table_action_menu_init_data(t) {
 						},
 						{
 							"title": "action_menu.app",
-							"class": "app",
+							"class": "app16",
 							"fn": "data_action_add_app",
 							"privileges": ["Manager", "AppManager"],
 							"min": 0
@@ -588,7 +588,7 @@ function table_action_menu_init_data(t) {
 					"selector": ["clicked", "checked", "all"],
 					"foldable": true,
 					'title': 'action_menu.on_apps',
-					"class": "app",
+					"class": "app16",
 					"table": ["apps"],
 					"cols": ["id"],
 					"condition": "id",

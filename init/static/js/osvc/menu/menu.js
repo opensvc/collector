@@ -273,7 +273,7 @@ var menu_data = {
 		},
 		{
 		  "title" : "application",
-		  "class" : "app",
+		  "class" : "app16",
 		  "id" : "adm-app",
 		  "link" : "/init/apps/apps",
 		  "fn" : "table_apps"

@@ -175,11 +175,11 @@ colprops = {
 	},
 	"app": {
 		"_class": "app",
-		"img": "app",
+		"img": "app16",
 		"title": "App"
 	},
 	"app_domain": {
-		"img": "app",
+		"img": "app16",
 		"title": "App domain"
 	},
 	"app_id": {
@@ -1518,7 +1518,8 @@ colprops = {
 		"title": "Net priority"
 	},
 	"project": {
-		"img": "app",
+		"_class": "app",
+		"img": "app16",
 		"title": "Project"
 	},
 	"pvid": {
@@ -1757,7 +1758,8 @@ colprops = {
 		"title": "Steps"
 	},
 	"svc_app": {
-		"img": "app",
+		"_class": "app",
+		"img": "app16",
 		"title": "App"
 	},
 	"svc_autostart": {
