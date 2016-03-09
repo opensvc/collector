@@ -99,7 +99,15 @@ function topo_draw(o) {
   $.getJSON(url, o.options, function(_data){
     var eid = o.viz[0]
     var options = {
+      //configure: {},
       physics: {
+        "forceAtlas2Based": {
+          "gravitationalConstant": -40,
+          "springLength": 100
+        },
+        "minVelocity": 0.75,
+        "solver": "forceAtlas2Based"
+/*
         barnesHut: {
           //enabled: true,
           gravitationalConstant: -2500,
@@ -108,6 +116,7 @@ function topo_draw(o) {
           springConstant: 0.1,
           damping: 0.5
         }
+*/
       },
       clickToUse: false,
       height: _height+'px',
