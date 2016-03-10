@@ -964,14 +964,12 @@ def json_startup_data():
             if (nodename, trigger_id) not in node_ids:
                 triggers.append(trigger_id)
                 label = s + " " + t + "\n" + script
-                img = get_img("app", t)
                 d = {
                   "mass": 3,
                   "id": node_tail,
                   "label": label,
-                  "image": img,
                   "font": {"color": "grey"},
-                  "shape": "image"
+                  "group": "trigger"
                 }
                 node_ids.append((nodename, trigger_id))
                 node_tail += 1
@@ -1097,8 +1095,7 @@ def json_startup_data():
       "mass": 3,
       "id": node_tail,
       "label": svcname,
-      "image": URL(r=request,c='static',f='images/svc48o.png'),
-      "shape": "image"
+      "group": "svc"
     }
     node_tail += 1
     node_ids.append(svcname)
@@ -1155,8 +1152,7 @@ def json_startup_data():
               "mass": 3,
               "id": node_tail,
               "label": nodename,
-              "image": URL(r=request,c='static',f='images/node48.png'),
-              "shape": "image"
+              "group": "node"
             }
             node_tail += 1
             node_ids.append((nodename, nodename))
@@ -1214,13 +1210,11 @@ def json_startup_data():
                   "family": family,
                   "name": family,
                 }
-                img = URL(r=request, c="static", f="images/pkg48.png")
                 d = {
                   "mass": 3,
                   "id": node_tail,
                   "label": s,
-                  "image": img,
-                  "shape": "image"
+                  "group": "subset"
                 }
                 node_ids.append((nodename, s))
                 node_tail += 1
@@ -1270,13 +1264,17 @@ def json_startup_data():
                 fcolor = "transparent"
             """
             label = get_label(nodename, s, family, t, monitor=monitor, optional=optional)
+            if family in ("ip", "disk.scsireserv", "disk", "fs"):
+                g = family
+            else:
+                g = family.split(".")[0]
+
             if (nodename, s) not in node_ids:
                 d = {
                   "mass": 3,
                   "id": node_tail,
                   "label": label,
-                  "image": img,
-                  "shape": "image",
+                  "group": g,
                   "font": {"color": color},
                 }
                 node_ids.append((nodename, s))

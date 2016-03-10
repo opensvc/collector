@@ -698,6 +698,7 @@
 		"compliance": "conformité"
 	},
 	"startup": {
+		"title": "Séquence de démarrage du service",
 		"show_disabled": "afficher les désactivés"
 	},
 	"network_tabs": {

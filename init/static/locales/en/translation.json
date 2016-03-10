@@ -711,6 +711,7 @@
 		"compliance": "compliance"
 	},
 	"startup": {
+		"title": "Service startup sequence",
 		"show_disabled": "show disabled"
 	},
 	"network_tabs": {
