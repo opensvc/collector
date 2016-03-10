@@ -167,8 +167,8 @@ class viz(object):
 
         if "resources" in self.display:
             self.add_resources()
+            self.add_services_resources()
             if "services" in self.display and "nodes" in self.display:
-                self.add_services_resources()
                 self.add_nodes_services_resources()
 
         if "san" in self.display:
@@ -322,7 +322,7 @@ class viz(object):
     def data_resources(self):
         q = db.resmon.svcname.belongs(self.svcnames) & db.resmon.nodename.belongs(self.nodenames)
         q &= db.resmon.res_disable == 0
-        g = db.resmon.res_type | db.resmon.res_status
+        g = db.resmon.nodename | db.resmon.svcname | db.resmon.res_type | db.resmon.res_status
         rows = db(q).select(db.resmon.svcname,
                             db.resmon.nodename,
                             db.resmon.rid,
@@ -332,24 +332,27 @@ class viz(object):
                             groupby=g,
                            )
         self.rs["services_resources"] = {}
-        self.rs["services_resources_count"] = {}
+        self.rs["nodes_services_resources_count"] = {}
         self.rs["nodes_services_resources"] = {}
         for row in rows:
-            t = row.resmon.svcname
-            if t in self.rs["services_resources_count"]:
-                self.rs["services_resources_count"][t] += 1
-            else:
-                self.rs["services_resources_count"][t] = 1
-            t = (row.resmon.svcname, row.resmon.res_type)
-            if t not in self.rs["services_resources"]:
-                self.rs["services_resources"][t] = [row]
-            else:
-                self.rs["services_resources"][t] += [row]
             t = (row.resmon.nodename, row.resmon.svcname, row.resmon.res_type)
             if t not in self.rs["nodes_services_resources"]:
                 self.rs["nodes_services_resources"][t] = [row]
             else:
                 self.rs["nodes_services_resources"][t] += [row]
+
+            t = (row.resmon.nodename, row.resmon.svcname)
+            if t in self.rs["nodes_services_resources_count"]:
+                self.rs["nodes_services_resources_count"][t] += 1
+            else:
+                self.rs["nodes_services_resources_count"][t] = 1
+
+            t = (row.resmon.svcname, row.resmon.res_type)
+            if t not in self.rs["services_resources"]:
+                self.rs["services_resources"][t] = [row]
+            else:
+                self.rs["services_resources"][t] += [row]
+
 
     def add_apps(self):
         for app in self.rs['apps']:
@@ -645,11 +648,13 @@ class viz(object):
             nodename_id = self.get_visnode_id("node", nodename)
             rid = "%s.%s" % (svcname, res_type)
             res_type_id = self.get_visnode_id("resource", rid)
+            n = 0
+            for row in rows:
+                n += row._extra[db.resmon.id.count()]
             for row in rows:
                 self.add_edge(nodename_id, res_type_id,
                               color=self.status_color.get(row.resmon.res_status, "grey"),
-                              label=row.resmon.res_status,
-                              multi=True
+                              label=n,
                              )
 
     def add_services_resources(self):
@@ -660,8 +665,7 @@ class viz(object):
             for row in rows:
                 self.add_edge(svcname_id, res_type_id,
                               color=self.status_color.get(row.resmon.res_status, "grey"),
-                              label=row.resmon.res_status,
-                              multi=True
+                              label="",
                              )
 
     def add_nodes_apps(self):
@@ -698,7 +702,7 @@ class viz(object):
 
     def add_nodes_services(self):
         for (nodename, svcname), row in self.rs["nodes_services"].items():
-            if "resources" in self.display and svcname in self.rs["services_resources_count"]:
+            if "resources" in self.display and (nodename, svcname) in self.rs["nodes_services_resources_count"]:
                 continue
             nodename_id = self.get_visnode_id("node", nodename)
             svcname_id = self.get_visnode_id("svc", svcname)
