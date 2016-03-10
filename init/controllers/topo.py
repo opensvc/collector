@@ -1242,10 +1242,6 @@ def json_startup_data():
             disabled = get_disabled(s, nodename)
             if disabled and not show_disabled:
                 continue
-            if disabled:
-                img = URL(r=request, c="static", f="images/reject48.png")
-            else:
-                img = get_img(family, t)
             try:
                 res_status = resmon[nodename][s].res_status
                 color = status_color.get(res_status, "grey")
@@ -1281,6 +1277,8 @@ def json_startup_data():
                   "group": g,
                   "font": {"color": color},
                 }
+                if disabled:
+                    d["icon"] = {"color": "lightgray"}
                 node_ids.append((nodename, s))
                 node_tail += 1
                 data["nodes"].append(d)
