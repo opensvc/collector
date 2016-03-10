@@ -321,26 +321,35 @@ class viz(object):
 
     def data_resources(self):
         q = db.resmon.svcname.belongs(self.svcnames) & db.resmon.nodename.belongs(self.nodenames)
+        q &= db.resmon.res_disable == 0
+        g = db.resmon.res_type | db.resmon.res_status
         rows = db(q).select(db.resmon.svcname,
                             db.resmon.nodename,
                             db.resmon.rid,
+                            db.resmon.res_type,
                             db.resmon.res_status,
+                            db.resmon.id.count(),
+                            groupby=g,
                            )
         self.rs["services_resources"] = {}
         self.rs["services_resources_count"] = {}
         self.rs["nodes_services_resources"] = {}
         for row in rows:
-            t = row.svcname
+            t = row.resmon.svcname
             if t in self.rs["services_resources_count"]:
                 self.rs["services_resources_count"][t] += 1
             else:
                 self.rs["services_resources_count"][t] = 1
-            t = (row.svcname, row.rid)
+            t = (row.resmon.svcname, row.resmon.res_type)
             if t not in self.rs["services_resources"]:
-                self.rs["services_resources"][t] = row
-            t = (row.nodename, row.svcname, row.rid)
+                self.rs["services_resources"][t] = [row]
+            else:
+                self.rs["services_resources"][t] += [row]
+            t = (row.resmon.nodename, row.resmon.svcname, row.resmon.res_type)
             if t not in self.rs["nodes_services_resources"]:
-                self.rs["nodes_services_resources"][t] = row
+                self.rs["nodes_services_resources"][t] = [row]
+            else:
+                self.rs["nodes_services_resources"][t] += [row]
 
     def add_apps(self):
         for app in self.rs['apps']:
@@ -538,9 +547,18 @@ class viz(object):
                     break
 
     def add_resources(self):
-        for (svcname, rid), row in self.rs['services_resources'].items():
-            rid_id = self.add_visnode("resource", svcname+"."+rid)
-            self.add_visnode_node(rid_id, "resource", label=rid, mass=3)
+        for (svcname, res_type), rows in self.rs['services_resources'].items():
+            rid = "%s.%s" % (svcname, res_type)
+            n = 0
+            for row in rows:
+                n += row._extra[db.resmon.id.count()]
+            label = "%s (%d)" % (res_type, n)
+            rid_id = self.add_visnode("resource", rid)
+            if res_type in ("ip", "disk.scsireserv", "disk", "fs"):
+                t = res_type
+            else:
+                t = res_type.split(".")[0]
+            self.add_visnode_node(rid_id, t, label=label, mass=3)
 
     def add_disks(self):
         for (nodename, svcname, arrayid), rows in self.rs['disks'].items():
@@ -552,7 +570,7 @@ class viz(object):
             if disk_id < 0:
                 label = self.fmt_disk_label(nodename, svcname, arrayid, rows)
                 disk_id = self.add_visnode("disk", label, data=rows)
-                self.add_visnode_node(disk_id, "disk", label=label, mass=3)
+                self.add_visnode_node(disk_id, "disks", label=label, mass=3)
 
     def add_nodes(self):
         for nodename in self.nodenames:
@@ -623,24 +641,28 @@ class viz(object):
             self.add_visnode_node(visnode_id, "array", label=arrayid, mass=4)
 
     def add_nodes_services_resources(self):
-        for (nodename, svcname, rid), row in self.rs["nodes_services_resources"].items():
+        for (nodename, svcname, res_type), rows in self.rs["nodes_services_resources"].items():
             nodename_id = self.get_visnode_id("node", nodename)
-            rid_id = self.get_visnode_id("resource", svcname+"."+rid)
-            self.add_edge(nodename_id, rid_id,
-                          #length=1,
-                          color=self.status_color.get(row.res_status, "grey"),
-                          label=row.res_status,
-                         )
+            rid = "%s.%s" % (svcname, res_type)
+            res_type_id = self.get_visnode_id("resource", rid)
+            for row in rows:
+                self.add_edge(nodename_id, res_type_id,
+                              color=self.status_color.get(row.resmon.res_status, "grey"),
+                              label=row.resmon.res_status,
+                              multi=True
+                             )
 
     def add_services_resources(self):
-        for (svcname, rid), row in self.rs["services_resources"].items():
+        for (svcname, res_type), rows in self.rs["services_resources"].items():
             svcname_id = self.get_visnode_id("svc", svcname)
-            rid_id = self.get_visnode_id("resource", svcname+"."+rid)
-            self.add_edge(svcname_id, rid_id,
-                          #length=1,
-                          color="grey",
-                          label=row.res_status,
-                         )
+            rid = "%s.%s" % (svcname, res_type)
+            res_type_id = self.get_visnode_id("resource", rid)
+            for row in rows:
+                self.add_edge(svcname_id, res_type_id,
+                              color=self.status_color.get(row.resmon.res_status, "grey"),
+                              label=row.resmon.res_status,
+                              multi=True
+                             )
 
     def add_nodes_apps(self):
         for (nodename, app) in self.rs["nodes_apps"]:
