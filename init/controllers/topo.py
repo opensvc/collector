@@ -22,50 +22,7 @@ class viz(object):
     edge_len_base = 100
 
     def get_img(self, t, v=""):
-        if t == "node":
-            return str(URL(r=request,c='static',f='images/node48.png'))
-        elif t == "pool":
-            return str(URL(r=request,c='static',f='images/disk48.png'))
-        elif t == "disk":
-            return str(URL(r=request,c='static',f='images/disk48.png'))
-        elif t == "svc":
-            return str(URL(r=request,c='static',f='images/svc48o.png'))
-        elif t == "resource":
-            return str(URL(r=request,c='static',f='images/action48.png'))
-        elif t == "array":
-            return str(URL(r=request,c='static',f='images/array.png'))
-        elif t == "app":
-            return str(URL(r=request,c='static',f='images/pkg48.png'))
-        elif t == "env":
-            return str(URL(r=request,c='static',f='images/array.png'))
-        elif t == "countries":
-            v = v.lower()
-            if v == "france":
-                return str(URL(r=request,c='static',f='images/flags/fr.png'))
-            elif v == "united kingdom":
-                return str(URL(r=request,c='static',f='images/flags/uk.png'))
-            else:
-                return str(URL(r=request,c='static',f='images/flag16.png'))
-        elif t == "cities":
-            return str(URL(r=request,c='static',f='images/city48.png'))
-        elif t == "buildings":
-            return str(URL(r=request,c='static',f='images/building48.png'))
-        elif t == "rooms":
-            return str(URL(r=request,c='static',f='images/room48.png'))
-        elif t == "racks":
-            return str(URL(r=request,c='static',f='images/rack48.png'))
-        elif t == "enclosures":
-            return str(URL(r=request,c='static',f='images/enclosure48.jpg'))
-        elif t == "sansw":
-            return str(URL(r=request,c='static',f='images/net48.png'))
-        elif t == "hvvdcs":
-            return str(URL(r=request,c='static',f='images/hv48.png'))
-        elif t == "hvpools":
-            return str(URL(r=request,c='static',f='images/hv48.png'))
-        elif t == "hvs":
-            return str(URL(r=request,c='static',f='images/hv48.png'))
-        else:
-            return str(URL(r=request,c='static',f='images/action48.png'))
+        return
 
     def add_visnode(self, node_type, name, data=None):
         if data:
@@ -78,7 +35,7 @@ class viz(object):
                         pass
             n = cksum.hexdigest()
         else:
-            n = "_".join((node_type, name))
+            n = "_".join((node_type, name.lower()))
         if n in self.nodes:
             return -1
         else:
@@ -91,16 +48,17 @@ class viz(object):
         else:
             self.visnode_id_per_type[visnode_type] = set([visnode_id])
 
-        if image is None:
-            image = self.get_img(visnode_type)
-
         d = {
           "mass": 3,
           "id": visnode_id,
           "label": label,
-          "image": image,
-          "shape": "image"
+          "group": visnode_type
         }
+        if image is None:
+            image = self.get_img(visnode_type)
+        if image:
+            d["image"] = image
+            d["shape"] = "image"
 
         if fontColor is not None:
             d["fontColor"] = fontColor
@@ -123,7 +81,7 @@ class viz(object):
                         pass
             n = cksum.hexdigest()
         else:
-            n = "_".join((node_type, name))
+            n = "_".join((node_type, name.lower()))
         try:
             return self.nodes.index(n)
         except ValueError:
@@ -153,6 +111,9 @@ class viz(object):
            set(["countries", "cities", "buildings", "rooms", "racks", "enclosures", "hvvdcs", "hvpools", "hvs"]) & self.display != set([]):
             self.data_nodes()
             self.data_nodes_services()
+
+        if "resources" in self.display:
+            self.data_resources()
 
         # populate caches and vis data
         if "nodes" in self.display:
@@ -190,7 +151,7 @@ class viz(object):
             if "services" in self.display:
                 self.data_services_envs()
                 self.add_services_envs()
-            if "nodes" in self.display:
+            elif "nodes" in self.display:
                 self.data_nodes_envs()
                 self.add_nodes_envs()
 
@@ -200,12 +161,11 @@ class viz(object):
             if "services" in self.display:
                 self.data_services_apps()
                 self.add_services_apps()
-            if "nodes" in self.display:
+            elif "nodes" in self.display:
                 self.data_nodes_apps()
                 self.add_nodes_apps()
 
         if "resources" in self.display:
-            self.data_resources()
             self.add_resources()
             if "services" in self.display and "nodes" in self.display:
                 self.add_services_resources()
@@ -241,10 +201,10 @@ class viz(object):
 
     def data_apps(self):
         apps = set([])
-        if "nodes" in self.display:
-            apps |= set([r.project if r.project else "unknown" for r in self.rs["nodes"].values()])
         if "services" in self.display:
             apps |= set([r.svc_app if r.svc_app else "unknown" for r in self.rs["services"].values()])
+        elif "nodes" in self.display:
+            apps |= set([r.project if r.project else "unknown" for r in self.rs["nodes"].values()])
         self.rs["apps"] = apps
 
     def data_services_apps(self):
@@ -265,10 +225,10 @@ class viz(object):
 
     def data_envs(self):
         envs = set([])
-        if "nodes" in self.display:
-            envs |= set([r.environnement if r.environnement else "unknown" for r in self.rs["nodes"].values()])
         if "services" in self.display:
             envs |= set([r.svc_type if r.svc_type else "unknown" for r in self.rs["services"].values()])
+        elif "nodes" in self.display:
+            envs |= set([r.environnement if r.environnement else "unknown" for r in self.rs["nodes"].values()])
         self.rs["envs"] = envs
 
     def data_services_envs(self):
@@ -366,19 +326,21 @@ class viz(object):
                             db.resmon.rid,
                             db.resmon.res_status,
                            )
-        d = {}
+        self.rs["services_resources"] = {}
+        self.rs["services_resources_count"] = {}
+        self.rs["nodes_services_resources"] = {}
         for row in rows:
+            t = row.svcname
+            if t in self.rs["services_resources_count"]:
+                self.rs["services_resources_count"][t] += 1
+            else:
+                self.rs["services_resources_count"][t] = 1
             t = (row.svcname, row.rid)
-            if t not in d:
-                d[t] = row
-        self.rs["services_resources"] = d
-
-        d = {}
-        for row in rows:
+            if t not in self.rs["services_resources"]:
+                self.rs["services_resources"][t] = row
             t = (row.nodename, row.svcname, row.rid)
-            if t not in d:
-                d[t] = row
-        self.rs["nodes_services_resources"] = d
+            if t not in self.rs["nodes_services_resources"]:
+                self.rs["nodes_services_resources"][t] = row
 
     def add_apps(self):
         for app in self.rs['apps']:
@@ -569,7 +531,7 @@ class viz(object):
                     svcname_id = self.get_visnode_id("svc", svcname)
                     self.add_edge(
                       svcname_id, parent_id,
-                      length=2,
+                      #length=2,
                       color=self.status_color.get(_row.mon_availstatus, "grey"),
                       label=_row.mon_availstatus,
                     )
@@ -602,7 +564,7 @@ class viz(object):
         nodename_id = self.add_visnode("node", nodename)
         self.add_visnode_node(nodename_id, "node", label=label, mass=3)
 
-    def add_edge(self, from_node, to_node, color="#555555", label="", length=1, multi=False):
+    def add_edge(self, from_node, to_node, color="#555555", label="", multi=False):
         def format_label(l):
             if len(l) == 0:
                 return ""
@@ -624,7 +586,7 @@ class viz(object):
         edge = {
          "from": from_node,
          "to": to_node,
-         "length": self.edge_len_base*length,
+         #"length": self.edge_len_base*length,
          "color": color,
          "font": {"color": color},
          "label": str(label),
@@ -665,7 +627,7 @@ class viz(object):
             nodename_id = self.get_visnode_id("node", nodename)
             rid_id = self.get_visnode_id("resource", svcname+"."+rid)
             self.add_edge(nodename_id, rid_id,
-                          length=1,
+                          #length=1,
                           color=self.status_color.get(row.res_status, "grey"),
                           label=row.res_status,
                          )
@@ -675,7 +637,7 @@ class viz(object):
             svcname_id = self.get_visnode_id("svc", svcname)
             rid_id = self.get_visnode_id("resource", svcname+"."+rid)
             self.add_edge(svcname_id, rid_id,
-                          length=1,
+                          #length=1,
                           color="grey",
                           label=row.res_status,
                          )
@@ -714,10 +676,12 @@ class viz(object):
 
     def add_nodes_services(self):
         for (nodename, svcname), row in self.rs["nodes_services"].items():
+            if "resources" in self.display and svcname in self.rs["services_resources_count"]:
+                continue
             nodename_id = self.get_visnode_id("node", nodename)
             svcname_id = self.get_visnode_id("svc", svcname)
             self.add_edge(nodename_id, svcname_id,
-                          length=2,
+                          #length=2,
                           color=self.status_color.get(row.mon_availstatus, "grey"),
                           label=row.mon_availstatus,
                          )

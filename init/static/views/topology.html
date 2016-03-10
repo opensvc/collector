@@ -1,9 +1,8 @@
+<div class="icon link16 clickable fa-2x" data-i18n="topology.title">
+</div>
 <div style="display:table-row">
 	<div style="display:table-cell;vertical-align:top;text-align:left;padding:0.3em;min-width:13em">
 		<form class="checklist">
-			<div class="icon link16 clickable">
-			        <textarea class="link_ta_sub link_white hidden" readonly="readonly" style="position:absolute;"></textarea>
-			</div>
 			<div>
 				<input name="services" style="vertical-align:text-bottom" type="checkbox">
 				<label></label>
@@ -12,17 +11,17 @@
 			<div>
 				<input name="apps" style="vertical-align:text-bottom" type="checkbox">
 				<label></label>
-				<span data-i18n="topology.apps" class="icon_fixed_width svc" style="margin-left:0.2em"></span>
+				<span data-i18n="topology.apps" class="icon_fixed_width app16" style="margin-left:0.2em"></span>
 			</div>
 			<div>
 				<input name="envs" style="vertical-align:text-bottom" type="checkbox">
 				<label></label>
-				<span data-i18n="topology.environment" class="icon_fixed_width svc" style="margin-left:0.2em"></span>
+				<span data-i18n="topology.environment" class="icon_fixed_width env16" style="margin-left:0.2em"></span>
 			</div>
 			<div>
 				<input name="resources" style="vertical-align:text-bottom" type="checkbox">
 				<label></label>
-				<span data-i18n="topology.resources" class="icon_fixed_width svc" style="margin-left:0.2em"></span>
+				<span data-i18n="topology.resources" class="icon_fixed_width resource" style="margin-left:0.2em"></span>
 			</div>
 			<div>
 				<input name="nodes" style="vertical-align:text-bottom" type="checkbox">
@@ -91,8 +90,9 @@
 			</div>
 			<input style="margin-top:1em" type="submit">
 		</form>
-		<div name="configure">
-		</div>
+		<br>
+		<div name="configure_toggle" class="icon settings clickable" data-i18n='topology.configure'></div>
+		<div name="configure" class="hidden"></div>
 	</div>
 	<div id="viz" style="display: table-cell; width: 100%; height: 336px;"></div>
 </div>

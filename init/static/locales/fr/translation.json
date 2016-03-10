@@ -642,6 +642,9 @@
 		"cluster_type": "type de cluster"
 	},
 	"topology": {
+		"redraw": "Redessiner",
+		"title": "Topologie des noeuds et services",
+		"configure": "Afficher les paramètres de rendu",
 		"services": "Services",
 		"apps": "Apps",
 		"environment": "Environnements",

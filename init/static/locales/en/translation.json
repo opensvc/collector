@@ -655,6 +655,9 @@
 		"protected": "<protected content>"
 	},
 	"topology": {
+		"redraw": "Redraw",
+		"title": "Nodes and services topology",
+		"configure": "Show rendering tunables",
 		"services": "Services",
 		"apps": "Apps",
 		"environment": "Environments",
