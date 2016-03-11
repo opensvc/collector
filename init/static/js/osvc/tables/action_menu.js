@@ -1330,6 +1330,13 @@ function table_action_menu_init_data(t) {
 					"condition": "svcname+nodename",
 					"children": [
 						{
+							'title': 'Pull',
+							'class': 'fa-download',
+							"privileges": ["Manager", "NodeManager", "NodeExec"],
+							"min": 1,
+							'action': 'pull'
+						},
+						{
 							'title': 'Start',
 							'class': 'action_start_16',
 							"privileges": ["Manager", "NodeManager", "NodeExec"],

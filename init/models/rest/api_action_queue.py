@@ -88,6 +88,7 @@ Each action has specific property requirements:
 - ``thaw``:green requires **nodename**, **svcname**, optionally **rid**
 - ``pushasset``:green requires **nodename**
 - ``pushdisks``:green requires **nodename**
+- ``pull``:green requires **nodename**
 - ``push``:green requires **nodename**
 - ``pushpkg``:green requires **nodename**
 - ``pushpatch``:green requires **nodename**
