@@ -93,6 +93,12 @@ input.aci, input.aci:focus {
 	margin-right: 0.3em;
 	font-family: awesome;
 }
+.form-header-icon:before {
+	font-size: 3.5em;
+	display: inline-block;
+	float: left;
+	padding: 0 0.3em 0 0;
+}
 
 .tags {
 	min-height: 5em;
@@ -309,6 +315,9 @@ input.aci, input.aci:focus {
 	white-space: nowrap;
 }
 
+.form_group {
+	text-align: left;
+}
 .form_tool:before {
 	color: gray;
 }
@@ -1170,6 +1179,9 @@ a.xinfo_shown span {
 .movable {
 	cursor: move;
 }
+.movable:before {
+	cursor: move;
+}
 
 .panel_move {
 	-webkit-user-select: none;
@@ -1571,6 +1583,11 @@ div.sym_detail_visible {
 	-moz-border-radius: 4px;
 	-webkit-border-radius: 4px;
 	border-radius: 4px;
+}
+
+.sort_helper {
+	background-color: rgba(255,255,255,0.8);
+	box-shadow: 0 0 15px 2px;
 }
 
 .link_ta:focus {

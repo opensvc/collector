@@ -53,6 +53,7 @@ function form(divid, options) {
 	o.fn_triggers_signs = []
 	o.fn_trigger_last = {}
 	o.cond_triggers = {}
+	o.sub_forms = {}
 	if (typeof divid === "string") {
 		o.div = $("#"+divid)
 	} else {
@@ -271,7 +272,7 @@ function form(divid, options) {
 		}
 		o.area.empty()
 		for (var i=0; i<l.length; i++) {
-			if (i>0) {
+			if (i>0 && o.form_data.form_definition.Inputs.length > 1) {
 				o.area.append("<hr>")
 			}
 			o.area.append(o.render_display_normal_dict(l[i]))
@@ -300,8 +301,23 @@ function form(divid, options) {
 			}
 			line.append(label)
 			line.append(value)
-			if (input_key_id in data) {
+
+                        if (d.Type == "form") {
+				form(value, {
+					"parent_form": o,
+					"form_name": d.Form,
+					"display_mode": true,
+					"editable": false,
+					"data": data[input_key_id]
+				})
+				table.append(line)
+				continue
+			}
+
+ 			if (is_dict(data) && input_key_id in data) {
 				var content = data[input_key_id]
+			} else if (typeof data === "string") {
+				var content = data
 			} else {
 				var content = ""
 			}
@@ -364,7 +380,7 @@ function form(divid, options) {
 				} else {
 					var content = ""
 				}
-			} else if (d.var_class=="raw" && ((typeof(data) === "string") || (typeof(data) === "number"))) {
+			} else if (d.var_class=="raw" || (typeof(data) === "string") || (typeof(data) === "number")) {
 				var content = data
 			} else if (is_dict(data) && input_key_id in data) {
 				var content = data[input_key_id]
@@ -384,6 +400,8 @@ function form(divid, options) {
 				var input = o.render_text(d, content)
 			} else if (d.Type == "checklist") {
 				var input = o.render_checklist(d, content)
+			} else if (d.Type == "form") {
+				var input = o.render_sub_form(d, content)
 			} else {
 				var input = o.render_input(d, content)
 			}
@@ -403,8 +421,7 @@ function form(divid, options) {
 	}
 
 	o.render_move_group = function() {
-		var div = $("<span class='icon_fixed_width fa-bars form_tool'></span>")
-		div.text(i18n.t("forms.move_group"))
+		var div = $("<span class='icon_fixed_width fa-bars form_tool movable'></span>")
 		return div
 	}
 
@@ -447,6 +464,20 @@ function form(divid, options) {
 		})
 	}
 
+	o.init_sortable = function() {
+			o.area.sortable({
+				helper: "clone",
+				connectWith: ".form_group",
+				handle: ".fa-bars",
+				cancel: ".form_group *:not('.fa-bars')",
+				placeholder: "fset_designer_placeholder",
+				containment: "parent",
+				start: function(event, ui) {
+					ui.helper.addClass("sort_helper")
+				}
+			})
+	}
+
 	o.render_add_group = function() {
 		var div = $("<div class='icon_fixed_width add16 form_tool'></div>")
 		div.text(i18n.t("forms.add_group"))
@@ -463,14 +494,7 @@ function form(divid, options) {
 			form_group.append(remove)
 			form_group.append(new_group)
 			form_group.insertAfter(ref)
-			o.area.sortable({
-				opacity: 1,
-				connectWith: ".form_group",
-				handle: ".fa-bars",
-				cancel: ".form_group *:not('.fa-bars')",
-				placeholder: "fset_designer_placeholder",
-				containment: "parent"
-			})
+			o.init_sortable()
 		})
 	}
 
@@ -495,14 +519,7 @@ function form(divid, options) {
 		o.render_expert_toggle()
 		o.render_submit()
 		o.render_result()
-		o.area.sortable({
-			opacity: 1,
-			connectWith: ".form_group",
-			handle: ".fa-bars",
-			cancel: ".form_group *:not('.fa-bars')",
-			placeholder: "fset_designer_placeholder",
-			containment: "parent"
-		})
+		o.init_sortable()
 	}
 
 	o.render_form_dict_of_dict = function() {
@@ -533,14 +550,7 @@ function form(divid, options) {
 		o.render_expert_toggle()
 		o.render_submit()
 		o.render_result()
-		o.area.sortable({
-			opacity: 1,
-			connectWith: ".form_group",
-			handle: ".fa-bars",
-			cancel: ".form_group *:not('.fa-bars')",
-			placeholder: "fset_designer_placeholder",
-			containment: "parent"
-		})
+		o.init_sortable()
 	}
 
 	o.render_form_dict = function() {
@@ -568,6 +578,9 @@ function form(divid, options) {
 	}
 
 	o.render_result = function() {
+		if (o.options.submit == false) {
+			return
+		}
 		var result = $("<div style='padding:1em'></div>")
 		o.area.append(result)
 		o.result = result
@@ -714,6 +727,9 @@ function form(divid, options) {
 	}
 
 	o.render_submit = function() {
+		if (o.options.submit == false) {
+			return
+		}
 		var button = $("<span class='icon_fixed_width fa-save form_tool'></span")
                 o.submit_tool = button
 		button.text(i18n.t("forms.submit"))
@@ -888,6 +904,20 @@ function form(divid, options) {
 		input = $("<div class='form_input_info' style='padding:0.5em 0'><div>")
 		checklist_callback(input, d, [], d.Candidates, content)
 		return input
+	}
+	o.render_sub_form = function(d, content) {
+		if (!d.Form) {
+			return
+		}
+		var div = $("<div></div>")
+		o.sub_forms[d.Id] = form(div, {
+			"parent_form": o,
+			"form_name": d.Form,
+			"data": content,
+			"display_mode": false,
+			"submit": false
+		})
+		return div
 	}
 
 
@@ -1180,6 +1210,9 @@ function form(divid, options) {
 	o.install_constraint_triggers = function(table) {
 		for (var i=0; i<o.form_data.form_definition.Inputs.length; i++) {
 			var d = o.form_data.form_definition.Inputs[i]
+			if (d.Type == "form") {
+				return
+			}
 			var input = table.find("[iid="+d.Id+"] > [name=val]").children("div,textarea,input")
 			o.install_constraint_trigger(input, d)
 		}
@@ -1222,6 +1255,9 @@ function form(divid, options) {
 		} else {
 			o.disable_submit()
 		}
+		if (o.options.parent_form) {
+			o.options.parent_form.update_submit()
+		}
 	}
 
 	o.disable_submit = function() {
@@ -1243,6 +1279,9 @@ function form(divid, options) {
 			return
 		}
 		if (d.Type == "checklist") {
+			return
+		}
+		if (d.Type == "form") {
 			return
 		}
 		trigger(input)
@@ -1543,6 +1582,9 @@ function form(divid, options) {
 			}
 			if ((d.Type == "string or integer") || (d.Type == "size") || (d.Type == "integer")) {
 				val = convert_size(val, d.Unit)
+			}
+			if (d.Type == "form") {
+				val = o.sub_forms[d.Id].form_to_data()
 			}
 			data[input_key_id] = val
 		}
