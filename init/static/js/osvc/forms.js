@@ -218,11 +218,11 @@ function form(divid, options) {
 			} else if (typeof(data) === "string") {
 				content = data
 				if(d.Css) {
-					cell.addClass("icon")
+					cell.addClass("icon_fixed_width")
 					cell.addClass(d.Css)
 				}
 				if(d.LabelCss) {
-					cell.addClass("icon")
+					cell.addClass("icon_fixed_width")
 					cell.addClass(d.LabelCss)
 				}
 			} else if (input_key_id in data) {
@@ -291,11 +291,11 @@ function form(divid, options) {
 			var value = $("<td></td>")
 			label.text(d.DisplayModeLabel)
 			if(d.LabelCss) {
-				label.addClass("icon")
+				label.addClass("icon_fixed_width")
 				label.addClass(d.LabelCss)
 			}
 			if(d.Css) {
-				value.addClass("icon")
+				value.addClass("icon_fixed_width")
 				value.addClass(d.Css)
 			}
 			line.append(label)
@@ -340,7 +340,7 @@ function form(divid, options) {
 			}
 			label.text(d.Label)
 			if(d.LabelCss) {
-				label.addClass("icon")
+				label.addClass("icon_fixed_width")
 				label.addClass(d.LabelCss)
 			}
 			line.append(label)
@@ -402,13 +402,17 @@ function form(divid, options) {
 		return table
 	}
 
+	o.render_move_group = function() {
+		var div = $("<span class='icon_fixed_width fa-bars form_tool'></span>")
+		div.text(i18n.t("forms.move_group"))
+		return div
+	}
+
 	o.render_del_group = function() {
-		var div = $("<div class='icon del16 clickable' style='text-align:center'></div>")
+		var div = $("<span class='icon_fixed_width del16 form_tool'></span>")
 		div.text(i18n.t("forms.del_group"))
 		div.bind("click", function() {
-			$(this).prev("hr").remove()
-			$(this).next("table").remove()
-			$(this).remove()
+			$(this).parent().remove()
 		})
 		return div
 	}
@@ -424,7 +428,7 @@ function form(divid, options) {
 		if (n == 0) {
 			return
 		}
-		var div = $("<div class='icon fa-unlock clickable' style='text-align:center'></div>")
+		var div = $("<span class='icon_fixed_width fa-unlock form_tool'></span>")
 		div.text(i18n.t("forms.expert"))
 		o.area.append(div)
 		div.bind("click", function() {
@@ -444,35 +448,61 @@ function form(divid, options) {
 	}
 
 	o.render_add_group = function() {
-		var div = $("<div class='icon add16 clickable' style='text-align:center'></div>")
+		var div = $("<div class='icon_fixed_width add16 form_tool'></div>")
 		div.text(i18n.t("forms.add_group"))
+		o.area.append("<br>")
 		o.area.append(div)
 		div.bind("click", function() {
-			var ref = o.area.children("table").last()
+			var ref = o.area.children(".form_group").last()
+			var move = o.render_move_group()
 			var remove = o.render_del_group()
-			var hr = $("<hr>")
 			var data = o.table_to_dict(ref)
 			var new_group = o.render_form_group(data)
-			hr.insertAfter(ref)
-			remove.insertAfter(hr)
-			new_group.insertAfter(remove)
+			var form_group = $("<div class='form_group'></div>")
+			form_group.append(move)
+			form_group.append(remove)
+			form_group.append(new_group)
+			form_group.insertAfter(ref)
+			o.area.sortable({
+				opacity: 1,
+				connectWith: ".form_group",
+				handle: ".fa-bars",
+				cancel: ".form_group *:not('.fa-bars')",
+				placeholder: "fset_designer_placeholder",
+				containment: "parent"
+			})
 		})
 	}
 
 	o.render_form_list = function() {
 		o.area.empty()
 		if (!o.options.data || o.options.data.length == 0) {
-			o.area.append(o.render_form_group({}))
+			var form_group = $("<div class='form_group'></div>")
+			form_group.append(o.render_move_group())
+			form_group.append(o.render_del_group())
+			form_group.append(o.render_form_group({}))
+			o.area.append(form_group)
 		} else {
 			for (var i=0; i<o.options.data.length; i++) {
-				o.area.append(o.render_del_group())
-				o.area.append(o.render_form_group(o.options.data[i]))
+				var form_group = $("<div class='form_group'></div>")
+				form_group.append(o.render_move_group())
+				form_group.append(o.render_del_group())
+				form_group.append(o.render_form_group(o.options.data[i]))
+				o.area.append(form_group)
 			}
 		}
 		o.render_add_group()
 		o.render_expert_toggle()
 		o.render_submit()
 		o.render_result()
+		o.area.sortable({
+			opacity: 1,
+			connectWith: ".form_group",
+			handle: ".fa-bars",
+			cancel: ".form_group *:not('.fa-bars')",
+			placeholder: "fset_designer_placeholder",
+			containment: "parent"
+		})
 	}
 
 	o.render_form_dict_of_dict = function() {
@@ -486,17 +516,31 @@ function form(divid, options) {
 		for (key in o.options.data) {
 			i++
 			o.options.data[key][key_id] = key
-			o.area.append(o.render_del_group())
-			o.area.append(o.render_form_group(o.options.data[key]))
+			var form_group = $("<div class='form_group'></div>")
+			form_group.append(o.render_move_group())
+			form_group.append(o.render_del_group())
+			form_group.append(o.render_form_group(o.options.data[key]))
+			o.area.append(form_group)
 		}
 		if (i == 0) {
-			o.area.append(o.render_del_group())
-			o.area.append(o.render_form_group({}))
+			var form_group = $("<div class='form_group'></div>")
+			form_group.append(o.render_del_group())
+			form_group.append(o.render_move_group())
+			form_group.append(o.render_form_group({}))
+			o.area.append(form_group)
 		}
 		o.render_add_group()
 		o.render_expert_toggle()
 		o.render_submit()
 		o.render_result()
+		o.area.sortable({
+			opacity: 1,
+			connectWith: ".form_group",
+			handle: ".fa-bars",
+			cancel: ".form_group *:not('.fa-bars')",
+			placeholder: "fset_designer_placeholder",
+			containment: "parent"
+		})
 	}
 
 	o.render_form_dict = function() {
@@ -507,6 +551,7 @@ function form(divid, options) {
 	}
 
 	o.render_form = function() {
+		o.area.removeClass("pre")
 		var f = o.form_data.form_definition.Outputs[0].Format
 		if (!f || (f == "dict")) {
 			o.render_form_dict()
@@ -519,6 +564,7 @@ function form(divid, options) {
 		} else {
 			console.log("render_form: unsupported format", f) 
 		}
+		o.update_submit()
 	}
 
 	o.render_result = function() {
@@ -668,11 +714,15 @@ function form(divid, options) {
 	}
 
 	o.render_submit = function() {
-		var button = $("<input type='button' style='margin:1em'>")
-		button.attr("value", i18n.t("forms.submit"))
+		var button = $("<span class='icon_fixed_width fa-save form_tool'></span")
+                o.submit_tool = button
+		button.text(i18n.t("forms.submit"))
 		o.area.append(button)
 
 		button.bind("click", function() {
+			if (!$(this).hasClass("fa-save")) {
+				return
+			}
 			var data = o.form_to_data()
 			o.need_submit_form_data = false
 			for (var i=0; i<o.form_data.form_definition.Outputs.length; i++) {
@@ -1154,11 +1204,7 @@ function form(divid, options) {
 			} else {
 				e.removeClass("constraint_violation")
 			}
-			if (o.div.find(".constraint_violation").parents("tr:not(.hidden)").length == 0) {
-				o.div.find("input[type=button]").prop("disabled", false)
-			} else {
-				o.div.find("input[type=button]").prop("disabled", true)
-			}
+			o.update_submit()
 		}
 	}
 
@@ -1168,6 +1214,28 @@ function form(divid, options) {
 			var input = table.find("[iid="+d.Id+"] > [name=val]").children("div,textarea,input")
 			o.install_mandatory_trigger(input, d)
 		}
+	}
+
+	o.update_submit = function() {
+		if (o.div.find(".constraint_violation").parents("tr:not(.hidden)").length == 0) {
+			o.enable_submit()
+		} else {
+			o.disable_submit()
+		}
+	}
+
+	o.disable_submit = function() {
+		if (!o.submit_tool) {
+			return
+		}
+		o.submit_tool.addClass("nok").removeClass("fa-save")
+	}
+
+	o.enable_submit = function() {
+		if (!o.submit_tool) {
+			return
+		}
+		o.submit_tool.addClass("fa-save").removeClass("nok")
 	}
 
 	o.install_mandatory_trigger = function(input, d) {
@@ -1187,11 +1255,7 @@ function form(divid, options) {
 			} else {
 				e.removeClass("constraint_violation")
 			}
-			if (o.div.find(".constraint_violation").parents("tr:not(.hidden)").length == 0) {
-				o.div.find("input[type=button]").prop("disabled", false)
-			} else {
-				o.div.find("input[type=button]").prop("disabled", true)
-			}
+			o.update_submit()
 		}
 	}
 
@@ -1472,6 +1536,9 @@ function form(divid, options) {
 			var val = o.get_val(td)
 			if (d.Type == "list of string") {
 				val = val.split(",")
+			}
+			if (d.Type == "list of size") {
+				val = val.split(",")
 				val = convert_size(val)
 			}
 			if ((d.Type == "string or integer") || (d.Type == "size") || (d.Type == "integer")) {
@@ -1490,7 +1557,7 @@ function form(divid, options) {
 		var data = {}
 		var key_id = o.form_data.form_definition.Outputs[0].Key
 		var embed_key = o.form_data.form_definition.Outputs[0].EmbedKey
-		o.area.children("table").each(function(){
+		o.area.find(".form_group > table").each(function(){
 			var _data = o.table_to_dict($(this))
 			key = _data[key_id]
 			if (embed_key != true) {
@@ -1503,7 +1570,7 @@ function form(divid, options) {
 
 	o.form_to_data_list = function() {
 		var data = []
-		o.area.children("table").each(function(){
+		o.area.find(".form_group > table").each(function(){
 			var _data = o.table_to_dict($(this))
 			for (key in _data) {
 				data.push(_data[key])
@@ -1514,7 +1581,7 @@ function form(divid, options) {
 
 	o.form_to_data_list_of_dict = function() {
 		var data = []
-		o.area.children("table").each(function(){
+		o.area.find(".form_group > table").each(function(){
 			data.push(o.table_to_dict($(this)))
 		})
 		return data

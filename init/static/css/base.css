@@ -309,6 +309,21 @@ input.aci, input.aci:focus {
 	white-space: nowrap;
 }
 
+.form_tool:before {
+	color: gray;
+}
+.form_tool:hover:before {
+	color: inherit;
+}
+.form_tool:hover {
+	cursor: pointer;
+	color: inherit;
+}
+.form_tool {
+	padding: 0.3em 0.3em 0.5em 0.3em;
+	display: inline-block;
+	color: gray;
+}
 .form_instance_count {
 	float: left;
 }

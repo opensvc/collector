@@ -1653,6 +1653,7 @@
 		"edit": "Edit",
 		"add_group": "Add more",
 		"del_group": "Remove",
+		"move_group": "Move",
 		"cancel": "Cancel"
 	},
 	"requests": {

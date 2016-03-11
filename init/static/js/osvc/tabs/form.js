@@ -37,6 +37,7 @@ function form_tabs(divid, options) {
 			"title_class": "icon wf16"
 		})
 		o.tabs[i].callback = function(divid) {
+			$("#"+divid).css({"padding": "1em"})
 			form(divid, options)
 		}
 

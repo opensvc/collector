@@ -1595,6 +1595,7 @@
 		"edit": "Editer",
 		"add_group": "Ajouter",
 		"del_group": "Supprimer",
+		"move_group": "Déplacer",
 		"cancel": "Annuler"
 	},
 	"requests": {
