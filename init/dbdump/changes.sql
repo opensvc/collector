@@ -5008,3 +5008,22 @@ alter table services modify column svc_envfile mediumtext;
 alter table switches modify column sw_rportname varchar(128);
 
 
+alter table auth_group modify column role varchar(255) default null;
+
+alter table auth_group drop key idx2;
+
+alter table auth_group add unique key idx2 (role);
+
+insert ignore into auth_group (role, privilege) values ("Everybody", "F");
+
+insert ignore into auth_membership (select NULL, id, (select id from auth_group where role="Everybody"), 'F' from auth_user);
+
+drop trigger if exists user_add_evt;
+delimiter #
+create trigger user_add_evt after insert on auth_user for each row
+begin
+ insert ignore into auth_membership (user_id, group_id) values (new.id, (select(id) from auth_group where role="Everybody")) ; 
+end#
+delimiter ;
+
+
