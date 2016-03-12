@@ -377,6 +377,8 @@ function form(divid, options) {
 					var content = _self.first_name + " " + _self.last_name
 				} else if (typeof d.Default !== "undefined") {
 					var content = d.Default
+				} else if (d.Type == "form") {
+					var content = undefined
 				} else {
 					var content = ""
 				}
