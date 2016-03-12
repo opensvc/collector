@@ -520,6 +520,7 @@ function form(divid, options) {
 		o.render_add_group()
 		o.render_expert_toggle()
 		o.render_submit()
+		o.render_test()
 		o.render_result()
 		o.init_sortable()
 	}
@@ -551,6 +552,7 @@ function form(divid, options) {
 		o.render_add_group()
 		o.render_expert_toggle()
 		o.render_submit()
+		o.render_test()
 		o.render_result()
 		o.init_sortable()
 	}
@@ -559,6 +561,7 @@ function form(divid, options) {
 		o.area.empty().append(o.render_form_group(o.options.data))
 		o.render_expert_toggle()
 		o.render_submit()
+		o.render_test()
 		o.render_result()
 	}
 
@@ -583,7 +586,7 @@ function form(divid, options) {
 		if (o.options.submit == false) {
 			return
 		}
-		var result = $("<div style='padding:1em'></div>")
+		var result = $("<div style='padding:1em 0'></div>")
 		o.area.append(result)
 		o.result = result
 	}
@@ -726,6 +729,35 @@ function form(divid, options) {
 			console.log("Output " + output.Dest + " not supported client-side")
 			o.need_submit_form_data = true
 		}
+	}
+
+	o.render_test = function() {
+		if (o.options.test == false) {
+			return
+		}
+		var button = $("<span class='icon_fixed_width fa-code form_tool'></span")
+                o.test_tool = button
+		button.text(i18n.t("forms.test"))
+		o.area.append(button)
+
+		button.bind("click", function() {
+			var data = o.form_to_data()
+			var data_title = $("<h2>"+i18n.t("forms.test_title")+"</h2>")
+			var data_pre = $("<pre>"+JSON.stringify(data, null, 4)+"</pre>")
+			var render_title = $("<h2>"+i18n.t("forms.test_render_title")+"</h2>")
+			var render_div = $("<div></div>")
+			o.result.empty().append(data_title)
+					.append(data_pre)
+					.append(render_title)
+					.append(render_div)
+			hljs.highlightBlock(data_pre[0])
+			form(render_div, {
+				"form_name": o.options.form_name,
+				"display_mode": true,
+				"editable": false,
+				"data": data
+			})
+		})
 	}
 
 	o.render_submit = function() {
@@ -917,7 +949,8 @@ function form(divid, options) {
 			"form_name": d.Form,
 			"data": content,
 			"display_mode": false,
-			"submit": false
+			"submit": false,
+			"test": false
 		})
 		return div
 	}

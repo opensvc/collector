@@ -1641,6 +1641,9 @@
 		}
 	},
 	"forms": {
+		"test": "Test",
+		"test_render_title": "Data in display mode",
+		"test_title": "Data produced by the form",
 		"toggle_all": "Toggle all candidates",
 		"no_data": "No data",
 		"not_found": "not found",

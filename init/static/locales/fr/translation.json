@@ -1583,6 +1583,9 @@
 		}
 	},
 	"forms": {
+		"test": "Test",
+		"test_render_title": "Données en mode affichage",
+		"test_title": "Données générées par ce formulaire",
 		"toggle_all": "Basculer tous les candidats",
 		"not_found": "non trouvé",
 		"no_data": "Pas de données",
