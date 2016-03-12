@@ -26,10 +26,12 @@ function startup(divid, options) {
 		o.e_show_disabled = o.div.find("[name=show_disabled]")
 		o.e_show_disabled.uniqueId()
 		o.e_show_disabled.siblings("label").attr("for", o.e_show_disabled.attr("id"))
-		console.log(o.options.show_disabled)
-		if (o.options.show_disabled && (o.options.show_disabled != "false")) {
+		if (o.options.show_disabled && (o.options.show_disabled != false)) {
 			o.e_show_disabled.prop("checked", true)
 		}
+		o.e_show_disabled.bind("change", function() {
+			o.options.show_disabled = o.e_show_disabled.prop("checked")
+		})
 
 		// create checkboxes
 		var nodenames = []
@@ -52,14 +54,14 @@ function startup(divid, options) {
 				var input = $("<input type='checkbox' name='nodename' class='ocb'></input>")
 				input.uniqueId()
 				input.css({"vertical-align": "text-bottom"})
-				if (o.options.display && (o.options.display.indexOf(nodename) >= 0)) {
+				if (!o.options.display && (i == 0)) {
+					input.prop("checked", true)
+					o.options.display = [input.siblings("span").text()]
+				} else if (o.options.display.indexOf(nodename) >= 0) {
 					input.prop("checked", true)
 				} else {
 					input.prop("checked", false)
 				}
-				input.bind("change", function() {
-					o.create_link()
-				})
 
 				// ocb label
 				var label = $("<label></label>")
@@ -78,12 +80,6 @@ function startup(divid, options) {
 				d.append(title)
 
 				d.insertBefore(o.div.find("input[type=submit]"))
-			}
-			if (o.div.find("input[type=checkbox]:checked").length == 0) {
-				o.div.find("input[type=checkbox]").first().each(function(){
-					$(this).prop("checked", true)
-					o.options.display = [$(this).siblings("span").text()]
-				})
 			}
 
 			// form submit
