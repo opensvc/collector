@@ -1374,6 +1374,11 @@ def detach_group_from_ruleset(group_id, rset_id, gtype="responsible"):
          dict(rset_name=v.comp_rulesets.ruleset_name,
               gtype=gtype,
               role=w.role))
+    l = {
+      'event': 'comp_rulesets_change',
+      'data': {'ruleset_id': rset_id, 'group_id': group_id},
+    }
+    _websocket_send(event_msg(l))
 
 @auth.requires_membership('CompManager')
 def detach_group_from_moduleset(group_id, modset_id, gtype="responsible"):
@@ -1401,6 +1406,12 @@ def detach_group_from_moduleset(group_id, modset_id, gtype="responsible"):
          dict(modset_name=v.comp_moduleset.modset_name,
               gtype=gtype,
               role=w.role))
+    l = {
+      'event': 'comp_moduleset_change',
+      'data': {'modset_id': modset_id, 'group_id': group_id},
+    }
+    _websocket_send(event_msg(l))
+
 
 @auth.requires_membership('CompManager')
 def attach_ruleset_to_ruleset(rset_id, dst_rset_id):
@@ -1584,6 +1595,11 @@ def attach_group_to_ruleset(group_id, rset_id, gtype="publication"):
          dict(rset_name=v.ruleset_name,
               gtype=gtype,
               role=w.role))
+    l = {
+      'event': 'comp_rulesets_change',
+      'data': {'ruleset_id': rset_id, 'group_id': group_id},
+    }
+    _websocket_send(event_msg(l))
 
 @auth.requires_membership('CompManager')
 def attach_group_to_moduleset(group_id, modset_id, gtype="publication"):
@@ -1619,6 +1635,11 @@ def attach_group_to_moduleset(group_id, modset_id, gtype="publication"):
          dict(modset_name=v.modset_name,
               gtype=gtype,
               role=w.role))
+    l = {
+      'event': 'comp_moduleset_change',
+      'data': {'modset_id': modset_id, 'group_id': group_id},
+    }
+    _websocket_send(event_msg(l))
 
 @auth.requires_membership('CompManager')
 def attach_filterset_to_ruleset(fset_id, rset_id):

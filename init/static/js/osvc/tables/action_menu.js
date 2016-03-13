@@ -711,6 +711,96 @@ function table_action_menu_init_data(t) {
 				},
 				{
 					"selector": ["clicked", "checked", "all"],
+					"title": "action_menu.on_modulesets",
+					"class": "modset16",
+					"foldable": true,
+					"cols": ["modset_id"],
+					"condition": "modset_id",
+					"children": [
+						{
+							"title": "action_menu.del_moduleset",
+							"class": "del16",
+							"fn": "data_action_del_modulesets",
+							"privileges": ["Manager", "CompManager"],
+							"min": 1
+						},
+						{
+							"title": "action_menu.add_publication",
+							"class": "add16",
+							"fn": "data_action_add_moduleset_publication",
+							"privileges": ["Manager", "CompManager"],
+							"min": 1
+						},
+						{
+							"title": "action_menu.del_publication",
+							"class": "del16",
+							"fn": "data_action_del_moduleset_publication",
+							"privileges": ["Manager", "CompManager"],
+							"min": 1
+						},
+						{
+							"title": "action_menu.add_responsible",
+							"class": "add16",
+							"fn": "data_action_add_moduleset_responsible",
+							"privileges": ["Manager", "CompManager"],
+							"min": 1
+						},
+						{
+							"title": "action_menu.del_responsible",
+							"class": "del16",
+							"fn": "data_action_del_moduleset_responsible",
+							"privileges": ["Manager", "CompManager"],
+							"min": 1
+						}
+					]
+				},
+				{
+					"selector": ["clicked", "checked", "all"],
+					"title": "action_menu.on_rulesets",
+					"class": "rset16",
+					"foldable": true,
+					"cols": ["ruleset_id"],
+					"condition": "ruleset_id",
+					"children": [
+						{
+							"title": "action_menu.del_ruleset",
+							"class": "del16",
+							"fn": "data_action_del_rulesets",
+							"privileges": ["Manager", "CompManager"],
+							"min": 1
+						},
+						{
+							"title": "action_menu.add_publication",
+							"class": "add16",
+							"fn": "data_action_add_ruleset_publication",
+							"privileges": ["Manager", "CompManager"],
+							"min": 1
+						},
+						{
+							"title": "action_menu.del_publication",
+							"class": "del16",
+							"fn": "data_action_del_ruleset_publication",
+							"privileges": ["Manager", "CompManager"],
+							"min": 1
+						},
+						{
+							"title": "action_menu.add_responsible",
+							"class": "add16",
+							"fn": "data_action_add_ruleset_responsible",
+							"privileges": ["Manager", "CompManager"],
+							"min": 1
+						},
+						{
+							"title": "action_menu.del_responsible",
+							"class": "del16",
+							"fn": "data_action_del_ruleset_responsible",
+							"privileges": ["Manager", "CompManager"],
+							"min": 1
+						}
+					]
+				},
+				{
+					"selector": ["clicked", "checked", "all"],
 					"title": "action_menu.on_forms",
 					"class": "wf16",
 					"table": ["forms"],
@@ -3863,6 +3953,170 @@ function data_action_add_form(t, e) {
 				"key": "form_name"
 			}
 		]
+	})
+}
+
+//
+// data action: delete modulesets
+//
+function data_action_del_modulesets(t, e) {
+	data_action_generic_delete(t, e, {
+		"request_service": "/compliance/modulesets",
+		"request_data_entry": function(data) {
+			return {
+				'id': data['modset_id']
+			}
+		}
+	})
+}
+
+//
+// data action: add moduleset publication
+//
+function data_action_add_moduleset_publication(t, e) {
+	data_action_generic_selector(t, e, {
+		"requestor": services_osvcpostrest,
+		"request_service": "/compliance/modulesets_publications",
+		"selector": generic_selector_org_groups,
+		"request_data_entry": function(selected, data) {
+			return {
+				"group_id": selected,
+				"modset_id": data["modset_id"]
+			}
+		}
+	})
+}
+
+//
+// data action: del moduleset publication
+//
+function data_action_del_moduleset_publication(t, e) {
+	data_action_generic_selector(t, e, {
+		"requestor": services_osvcdeleterest,
+		"request_service": "/compliance/modulesets_publications",
+		"selector": generic_selector_org_and_private_groups,
+		"request_data_entry": function(selected, data) {
+			return {
+				"group_id": selected,
+				"modset_id": data["modset_id"]
+			}
+		}
+	})
+}
+
+//
+// data action: add moduleset responsibles
+//
+function data_action_add_moduleset_responsible(t, e) {
+	data_action_generic_selector(t, e, {
+		"requestor": services_osvcpostrest,
+		"request_service": "/compliance/modulesets_responsibles",
+		"selector": generic_selector_org_groups,
+		"request_data_entry": function(selected, data) {
+			return {
+				"group_id": selected,
+				"modset_id": data["modset_id"]
+			}
+		}
+	})
+}
+
+//
+// data action: del moduleset responsible
+//
+function data_action_del_moduleset_responsible(t, e) {
+	data_action_generic_selector(t, e, {
+		"requestor": services_osvcdeleterest,
+		"request_service": "/compliance/modulesets_responsibles",
+		"selector": generic_selector_org_and_private_groups,
+		"request_data_entry": function(selected, data) {
+			return {
+				"group_id": selected,
+				"modset_id": data["modset_id"]
+			}
+		}
+	})
+}
+
+//
+// data action: delete rulesets
+//
+function data_action_del_rulesets(t, e) {
+	data_action_generic_delete(t, e, {
+		"request_service": "/compliance/rulesets",
+		"request_data_entry": function(data) {
+			return {
+				'id': data['ruleset_id']
+			}
+		}
+	})
+}
+
+//
+// data action: add ruleset publication
+//
+function data_action_add_ruleset_publication(t, e) {
+	data_action_generic_selector(t, e, {
+		"requestor": services_osvcpostrest,
+		"request_service": "/compliance/rulesets_publications",
+		"selector": generic_selector_org_groups,
+		"request_data_entry": function(selected, data) {
+			return {
+				"group_id": selected,
+				"ruleset_id": data["ruleset_id"]
+			}
+		}
+	})
+}
+
+//
+// data action: del ruleset publication
+//
+function data_action_del_ruleset_publication(t, e) {
+	data_action_generic_selector(t, e, {
+		"requestor": services_osvcdeleterest,
+		"request_service": "/compliance/rulesets_publications",
+		"selector": generic_selector_org_and_private_groups,
+		"request_data_entry": function(selected, data) {
+			return {
+				"group_id": selected,
+				"ruleset_id": data["ruleset_id"]
+			}
+		}
+	})
+}
+
+//
+// data action: add ruleset responsibles
+//
+function data_action_add_ruleset_responsible(t, e) {
+	data_action_generic_selector(t, e, {
+		"requestor": services_osvcpostrest,
+		"request_service": "/compliance/rulesets_responsibles",
+		"selector": generic_selector_org_groups,
+		"request_data_entry": function(selected, data) {
+			return {
+				"group_id": selected,
+				"ruleset_id": data["ruleset_id"]
+			}
+		}
+	})
+}
+
+//
+// data action: del ruleset responsible
+//
+function data_action_del_ruleset_responsible(t, e) {
+	data_action_generic_selector(t, e, {
+		"requestor": services_osvcdeleterest,
+		"request_service": "/compliance/rulesets_responsibles",
+		"selector": generic_selector_org_and_private_groups,
+		"request_data_entry": function(selected, data) {
+			return {
+				"group_id": selected,
+				"ruleset_id": data["ruleset_id"]
+			}
+		}
 	})
 }
 

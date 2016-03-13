@@ -171,6 +171,32 @@ class rest_delete_compliance_status_runs(rest_delete_handler):
         return rest_delete_compliance_status_run().handler(id, **vars)
 
 #
+class rest_delete_compliance_rulesets(rest_delete_handler):
+    def __init__(self):
+        desc = [
+          "Delete rulesets.",
+          "All ruleset parent and child relations are also removed.",
+          "All ruleset nodes and services attachements are also removed.",
+          "All ruleset publication and responsible groups are also detached.",
+          "The user have the CompManager privilege.",
+          "One of the user's groups must be responsible for the ruleset.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- -X DELETE https://%(collector)s/init/rest/api/compliance/rulesets"
+        ]
+
+        rest_delete_handler.__init__(
+          self,
+          path="/compliance/rulesets",
+          tables=["comp_rulesets"],
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, **vars):
+        return rest_delete_compliance_ruleset().handler(vars["id"])
+
+#
 class rest_delete_compliance_ruleset(rest_delete_handler):
     def __init__(self):
         desc = [
@@ -227,6 +253,32 @@ class rest_post_compliance_rulesets(rest_post_handler):
         ruleset_name = vars.get("ruleset_name")
         obj_id = create_ruleset(ruleset_name)
         return rest_get_compliance_ruleset().handler(obj_id)
+
+#
+class rest_delete_compliance_modulesets(rest_delete_handler):
+    def __init__(self):
+        desc = [
+          "Delete modulesets.",
+          "All moduleset parent and child relations are also removed.",
+          "All moduleset nodes and services attachements are also removed.",
+          "All moduleset publication and responsible groups are also detached.",
+          "The user have the CompManager privilege.",
+          "One of the user's groups must be responsible for the moduleset.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- -X DELETE https://%(collector)s/init/rest/api/compliance/modulesets"
+        ]
+
+        rest_delete_handler.__init__(
+          self,
+          path="/compliance/modulesets",
+          tables=["comp_moduleset"],
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, **vars):
+        return rest_delete_compliance_moduleset().handler(vars["id"])
 
 #
 class rest_delete_compliance_moduleset(rest_delete_handler):
@@ -1379,6 +1431,24 @@ class rest_post_compliance_moduleset_modules(rest_post_handler):
 #
 # groups
 #
+class rest_post_compliance_modulesets_publications(rest_post_handler):
+    def __init__(self):
+        desc = [
+          "Attach publication groups to modulesets",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- -X POST https://%(collector)s/init/rest/api/compliance/modulesets_publications",
+        ]
+        rest_post_handler.__init__(
+          self,
+          path="/compliance/modulesets_publications",
+          desc=desc,
+          examples=examples
+        )
+
+    def handler(self, **vars):
+        return rest_post_compliance_moduleset_publication().handler(vars["modset_id"], vars["group_id"])
+
 class rest_post_compliance_moduleset_publication(rest_post_handler):
     def __init__(self):
         desc = [
@@ -1408,6 +1478,24 @@ class rest_post_compliance_moduleset_publication(rest_post_handler):
         except CompError as e:
             return dict(error=str(e))
         return dict(info="group attached")
+
+class rest_delete_compliance_modulesets_publications(rest_delete_handler):
+    def __init__(self):
+        desc = [
+          "Detach publication groups from modulesets",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- -X DELETE https://%(collector)s/init/rest/api/compliance/modulesets_publications",
+        ]
+        rest_delete_handler.__init__(
+          self,
+          path="/compliance/modulesets_publications",
+          desc=desc,
+          examples=examples
+        )
+
+    def handler(self, **vars):
+        return rest_delete_compliance_moduleset_publication().handler(vars["modset_id"], vars["group_id"])
 
 class rest_delete_compliance_moduleset_publication(rest_delete_handler):
     def __init__(self):
@@ -1439,6 +1527,24 @@ class rest_delete_compliance_moduleset_publication(rest_delete_handler):
             return dict(error=str(e))
         return dict(info="group detached")
 
+class rest_post_compliance_modulesets_responsibles(rest_post_handler):
+    def __init__(self):
+        desc = [
+          "Attach responsible groups to modulesets",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- -X POST https://%(collector)s/init/rest/api/compliance/modulesets_responsibles",
+        ]
+        rest_post_handler.__init__(
+          self,
+          path="/compliance/modulesets_responsibles",
+          desc=desc,
+          examples=examples
+        )
+
+    def handler(self, **vars):
+        return rest_post_compliance_moduleset_responsible().handler(vars["modset_id"], vars["group_id"])
+
 class rest_post_compliance_moduleset_responsible(rest_post_handler):
     def __init__(self):
         desc = [
@@ -1468,6 +1574,24 @@ class rest_post_compliance_moduleset_responsible(rest_post_handler):
         except CompError as e:
             return dict(error=str(e))
         return dict(info="group attached")
+
+class rest_delete_compliance_modulesets_responsibles(rest_delete_handler):
+    def __init__(self):
+        desc = [
+          "Detach responsible groups from modulesets",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- -X DELETE https://%(collector)s/init/rest/api/compliance/modulesets_responsibles",
+        ]
+        rest_delete_handler.__init__(
+          self,
+          path="/compliance/modulesets_responsibles",
+          desc=desc,
+          examples=examples
+        )
+
+    def handler(self, **vars):
+        return rest_delete_compliance_moduleset_responsible().handler(vars["modset_id"], vars["group_id"])
 
 class rest_delete_compliance_moduleset_responsible(rest_delete_handler):
     def __init__(self):
@@ -1499,6 +1623,24 @@ class rest_delete_compliance_moduleset_responsible(rest_delete_handler):
             return dict(error=str(e))
         return dict(info="group detached")
 
+class rest_post_compliance_rulesets_publications(rest_post_handler):
+    def __init__(self):
+        desc = [
+          "Attach publication groups to rulesets",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- -X POST https://%(collector)s/init/rest/api/compliance/rulesets_publications",
+        ]
+        rest_post_handler.__init__(
+          self,
+          path="/compliance/rulesets_publications",
+          desc=desc,
+          examples=examples
+        )
+
+    def handler(self, **vars):
+        return rest_post_compliance_ruleset_publication().handler(vars["ruleset_id"], vars["group_id"])
+
 class rest_post_compliance_ruleset_publication(rest_post_handler):
     def __init__(self):
         desc = [
@@ -1528,6 +1670,24 @@ class rest_post_compliance_ruleset_publication(rest_post_handler):
         except CompError as e:
             return dict(error=str(e))
         return dict(info="group attached")
+
+class rest_delete_compliance_rulesets_publications(rest_delete_handler):
+    def __init__(self):
+        desc = [
+          "Detach a publication groups from rulesets",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- -X DELETE https://%(collector)s/init/rest/api/compliance/rulesets_publications",
+        ]
+        rest_delete_handler.__init__(
+          self,
+          path="/compliance/rulesets_publications",
+          desc=desc,
+          examples=examples
+        )
+
+    def handler(self, **vars):
+        return rest_delete_compliance_ruleset_publication().handler(vars["ruleset_id"], vars["group_id"])
 
 class rest_delete_compliance_ruleset_publication(rest_delete_handler):
     def __init__(self):
@@ -1559,6 +1719,24 @@ class rest_delete_compliance_ruleset_publication(rest_delete_handler):
             return dict(error=str(e))
         return dict(info="group detached")
 
+class rest_post_compliance_rulesets_responsibles(rest_post_handler):
+    def __init__(self):
+        desc = [
+          "Attach responsible groups to rulesets",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- -X POST https://%(collector)s/init/rest/api/compliance/rulesets_responsibles",
+        ]
+        rest_post_handler.__init__(
+          self,
+          path="/compliance/rulesets_responsibles",
+          desc=desc,
+          examples=examples
+        )
+
+    def handler(self, **vars):
+        return rest_post_compliance_ruleset_responsible().handler(vars["ruleset_id"], vars["group_id"])
+
 class rest_post_compliance_ruleset_responsible(rest_post_handler):
     def __init__(self):
         desc = [
@@ -1588,6 +1766,24 @@ class rest_post_compliance_ruleset_responsible(rest_post_handler):
         except CompError as e:
             return dict(error=str(e))
         return dict(info="group attached")
+
+class rest_delete_compliance_rulesets_responsibles(rest_delete_handler):
+    def __init__(self):
+        desc = [
+          "Detach responsible groups from rulesets",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- -X DELETE https://%(collector)s/init/rest/api/compliance/rulesets_responsibles",
+        ]
+        rest_delete_handler.__init__(
+          self,
+          path="/compliance/rulesets_responsibles",
+          desc=desc,
+          examples=examples
+        )
+
+    def handler(self, **vars):
+        return rest_delete_compliance_ruleset_responsible().handler(vars["ruleset_id"], vars["group_id"])
 
 class rest_delete_compliance_ruleset_responsible(rest_delete_handler):
     def __init__(self):

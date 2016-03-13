@@ -386,6 +386,7 @@ class table_comp_moduleset(HtmlTable):
         HtmlTable.__init__(self, id, func, innerhtml)
         self.keys = ['id']
         self.cols = ['id',
+                     'modset_id',
                      'modset_name',
                      'teams_responsible',
                      'teams_publication',
@@ -397,6 +398,10 @@ class table_comp_moduleset(HtmlTable):
             'id': HtmlTableColumn(
                      table='v_comp_modulesets',
                      field='id',
+                    ),
+            'modset_id': HtmlTableColumn(
+                     table='v_comp_modulesets',
+                     field='modset_id',
                     ),
             'modset_name': HtmlTableColumn(
                      table='v_comp_modulesets',
