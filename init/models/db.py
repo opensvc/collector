@@ -3,7 +3,6 @@
 #########################################################################
 ## This scaffolding model makes your app work on Google App Engine too
 #########################################################################
-#from gluon.contrib.redis_cache import RedisCache
 
 import datetime
 import os
@@ -24,25 +23,32 @@ if hasattr(config, 'dbopensvc_password'):
 else:
     dbopensvc_password = 'opensvc'
 
-#if hasattr(config, 'redis_host'):
-#    redis_host = config.redis_host
-#else:
-#    redis_host = 'dbopensvc_host'
+if hasattr(config, 'redis_host'):
+    redis_host = config.redis_host
+else:
+    redis_host = dbopensvc
 
-#cache.redis = RedisCache(redis_host+":6379", db=None, debug=True)
+from gluon.contrib.redis_cache import RedisCache
+from gluon.contrib.redis_utils import RConn
+rconn = RConn(redis_host, 6379)
+cache.redis = RedisCache(rconn, debug=False)
 
-if request.env.web2py_runtime_gae:            # if running on Google App Engine
-    db = DAL('gae')                           # connect to Google BigTable
-    session.connect(request, response, db=db) # and store sessions and tickets there
+from gluon.contrib.redis_session import RedisSession
+sessiondb = RedisSession(redis_conn=rconn, session_expiry=False)
+session.connect(request, response, db=sessiondb)
+
+#if request.env.web2py_runtime_gae:            # if running on Google App Engine
+#    db = DAL('gae')                           # connect to Google BigTable
+#    session.connect(request, response, db=db) # and store sessions and tickets there
     ### or use the following lines to store sessions in Memcache
     # from gluon.contrib.memdb import MEMDB
     # from google.appengine.api.memcache import Client
     # session.connect(request, response, db=MEMDB(Client())
-else:                                         # else use a normal relational database
-    db = DAL('mysql://%s:%s@%s/opensvc' % (dbopensvc_user, dbopensvc_password, dbopensvc),
-             driver_args={'connect_timeout': 20},
-             pool_size=0,
-             lazy_tables=True)
+#else:                                         # else use a normal relational database
+db = DAL('mysql://%s:%s@%s/opensvc' % (dbopensvc_user, dbopensvc_password, dbopensvc),
+         driver_args={'connect_timeout': 20},
+         pool_size=0,
+         lazy_tables=True)
 ## if no need for session
 # session.forget()
 
@@ -2062,16 +2068,6 @@ db.define_table('v_tags_full',
     db.v_tags,
     migrate=False)
 
-db.define_table('safe_team_publication',
-    Field('file_id','integer', IS_IN_DB(db, 'safe.id')),
-    Field('group_id','integer', IS_IN_DB(db, 'auth_group.id')),
-    migrate=False)
-
-db.define_table('safe_team_responsible',
-    Field('file_id','integer', IS_IN_DB(db, 'safe.id')),
-    Field('group_id','integer', IS_IN_DB(db, 'auth_group.id')),
-    migrate=False)
-
 db.define_table('safe',
     Field('uploader','integer'),
     Field('uploaded_from','string'),
@@ -2082,6 +2078,16 @@ db.define_table('safe',
     Field('uuid','upload',
            uploadfolder=os.path.join(request.folder,"uploads/safe"),
            uploadseparate=True),
+    migrate=False)
+
+db.define_table('safe_team_publication',
+    Field('file_id','integer', IS_IN_DB(db, db.safe.id)),
+    Field('group_id','integer', IS_IN_DB(db, db.auth_group.id)),
+    migrate=False)
+
+db.define_table('safe_team_responsible',
+    Field('file_id','integer', IS_IN_DB(db, db.safe.id)),
+    Field('group_id','integer', IS_IN_DB(db, db.auth_group.id)),
     migrate=False)
 
 db.define_table('v_wiki_events',

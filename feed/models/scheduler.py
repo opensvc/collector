@@ -4220,7 +4220,5 @@ def task_dash_min():
     cron_dash_svcmon_not_updated()
     dashboard_events()
 
-
-
-from gluon.scheduler import Scheduler
-scheduler = Scheduler(db, migrate=False)
+from gluon.contrib.redis_scheduler import RScheduler
+scheduler = RScheduler(db, migrate=False, redis_conn=rconn)

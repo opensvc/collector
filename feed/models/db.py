@@ -11,6 +11,24 @@ if hasattr(config, 'dbopensvc'):
 else:
     dbopensvc = 'dbopensvc'
 
+if hasattr(config, 'dbopensvc_user'):
+    dbopensvc_user = config.dbopensvc_user
+else:
+    dbopensvc_user = 'opensvc'
+
+if hasattr(config, 'dbopensvc_password'):
+    dbopensvc_password = config.dbopensvc_password
+else:
+    dbopensvc_password = 'opensvc'
+
+if hasattr(config, 'redis_host'):
+    redis_host = config.redis_host
+else:
+    redis_host = dbopensvc
+
+from gluon.contrib.redis_utils import RConn
+rconn = RConn(redis_host, 6379)
+
 if request.env.web2py_runtime_gae:            # if running on Google App Engine
     db = DAL('gae')                           # connect to Google BigTable
     session.connect(request, response, db=db) # and store sessions and tickets there
@@ -20,7 +38,7 @@ if request.env.web2py_runtime_gae:            # if running on Google App Engine
     # session.connect(request, response, db=MEMDB(Client())
 else:                                         # else use a normal relational database
     #db = DAL('mysql://opensvc:opensvc@dbopensvc/opensvc')       # if not, use SQLite or other DB
-    db = DAL('mysql://opensvc:opensvc@%s/opensvc'%dbopensvc,
+    db = DAL('mysql://%s:%s@%s/opensvc'%(dbopensvc_user, dbopensvc_password, dbopensvc),
              driver_args={'connect_timeout': 20},
              pool_size=0,
              lazy_tables=True)

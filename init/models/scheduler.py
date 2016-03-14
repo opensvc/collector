@@ -177,5 +177,5 @@ def task_purge_checks():
     db(q).delete()
     db.commit()
 
-from gluon.scheduler import Scheduler
-scheduler = Scheduler(db, migrate=False)
+from gluon.contrib.redis_scheduler import RScheduler
+scheduler = RScheduler(db, migrate=False, redis_conn=rconn)
