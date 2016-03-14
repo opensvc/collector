@@ -192,7 +192,7 @@ function services_osvcputrest(service, uri, params, data, callback, error_callba
     var content_type = "application/x-www-form-urlencoded"
     if (Object.prototype.toString.call(data) === '[object Array]') {
       data = JSON.stringify(data)
-      content_type = "application/json"
+      content_type = "application/json; charset=utf-8"
     }
     var xhr = $.ajax(
     {
@@ -239,16 +239,12 @@ function services_osvcpostrest(service, uri, params, data, callback, error_callb
     }
     var content_type = "application/x-www-form-urlencoded"
     var data_type = null
-    if (Object.prototype.toString.call(data) === '[object Array]') {
-      data = JSON.stringify(data)
-      content_type = "application/json"
-    } else {
-      try {
-        data = $.parseJSON(data)
-        content_type = "application/json"
+    try {
+        data = JSON.stringify(data)
+        content_type = "application/json; charset=utf-8"
         data_type = "json"
-      } catch(err) {}
-    }
+    } catch(err) {}
+    console.log(data, content_type, data_type)
 
     var xhr = $.ajax(
     {
@@ -347,7 +343,7 @@ function services_osvcdeleterest(service, uri, params, data, callback, error_cal
     var content_type = "application/x-www-form-urlencoded"
     if (Object.prototype.toString.call(data) === '[object Array]') {
       data = JSON.stringify(data)
-      content_type = "application/json"
+      content_type = "application/json; charset=utf-8"
     }
     var xhr = $.ajax(
     {
