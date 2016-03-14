@@ -66,13 +66,17 @@ def cron_purge_node_hba():
     db.commit()
 
 def _cron_table_purge(table, date_col, orderby=None):
+    days = 365
     try:
         config = local_import('config', reload=True)
-        days = config.stats_retention_days
+        try:
+            days = config.stats_retention_days
+        except:
+            pass
         if table in config.retentions:
             days = config.retentions[table]
-    except:
-        days = 365
+    except Exception as e:
+        print e, "defaulting to", days
     day = now - datetime.timedelta(days=days)
 
     # sanity purge (entries dated in the future)
