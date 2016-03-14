@@ -42,23 +42,32 @@ class viz(object):
             self.nodes.append(n)
             return len(self.nodes)-1
 
+    def country_name_to_code(self, cn):
+        cn = cn.lower()
+        if cn == "france":
+            return "fr"
+        if cn == "united kingdom":
+            return "uk"
+
     def add_visnode_node(self, visnode_id, visnode_type="", label="", mass=1, image=None, fontColor=None):
         if visnode_type in self.visnode_id_per_type:
             self.visnode_id_per_type[visnode_type].add(visnode_id)
         else:
             self.visnode_id_per_type[visnode_type] = set([visnode_id])
 
+        if visnode_type == "countries":
+            v = self.country_name_to_code(label)
+            if v:
+                group = "flag-"+v
+        else:
+            group = visnode_type
+
         d = {
           "mass": 3,
           "id": visnode_id,
           "label": label,
-          "group": visnode_type
+          "group": group
         }
-        if image is None:
-            image = self.get_img(visnode_type)
-        if image:
-            d["image"] = image
-            d["shape"] = "image"
 
         if fontColor is not None:
             d["fontColor"] = fontColor
@@ -557,7 +566,7 @@ class viz(object):
                 n += row._extra[db.resmon.id.count()]
             label = "%s (%d)" % (res_type, n)
             rid_id = self.add_visnode("resource", rid)
-            if res_type in ("ip", "disk.scsireserv", "disk", "fs"):
+            if res_type in ("container.docker", "ip", "disk.scsireserv", "disk", "fs"):
                 t = res_type
             else:
                 t = res_type.split(".")[0]
@@ -1266,6 +1275,8 @@ def json_startup_data():
             label = get_label(nodename, s, family, t, monitor=monitor, optional=optional)
             if family in ("ip", "disk.scsireserv", "disk", "fs"):
                 g = family
+            elif family+'.'+t in ("container.docker"):
+                g = family+'.'+t
             else:
                 g = family.split(".")[0]
 

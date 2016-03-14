@@ -168,6 +168,7 @@ function startup(divid, options) {
 					"sync": {"shape": "icon", "icon": {"face": "FontAwesome", "code": "\uf0c5", "color": "cadetblue", "size": 50}},
 					"app": {"shape": "icon", "icon": {"face": "FontAwesome", "code": "\uf135", "color": "lightgreen", "size": 50}},
 					"container": {"shape": "icon", "icon": {"face": "FontAwesome", "code": "\uf135", "color": "cornflowerblue", "size": 50}},
+					"container.docker": {"shape": "image", "image": "/init/static/svg/docker-cornflowerblue.svg"},
 					"fs": {"shape": "icon", "icon": {"face": "FontAwesome", "code": "\uf07c", "color": "slategray", "size": 50}},
 					"hb": {"shape": "icon", "icon": {"face": "FontAwesome", "code": "\uf21e", "color": "red", "size": 50}},
 					"share": {"shape": "icon", "icon": {"face": "FontAwesome", "code": "\uf1e0", "color": "cadetblue", "size": 50}},
