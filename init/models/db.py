@@ -81,6 +81,15 @@ def table_modified(name):
     db.executesql(sql)
     db.commit()
 
+    triggers = {
+      "auth_membership": [
+         clear_cache_user_group_ids,
+         clear_cache_user_groups,
+      ]
+    }
+    for t in triggers.get(name, []):
+        t()
+
 #
 # custom auth_user table. new field: email_notifications
 #

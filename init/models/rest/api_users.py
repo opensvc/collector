@@ -378,6 +378,7 @@ class rest_delete_user(rest_delete_handler):
         # group membership
         q = db.auth_membership.user_id == row.id
         db(q).delete()
+        table_modified("auth_membership")
 
         return dict(info="User %s deleted" % row.email)
 
@@ -430,6 +431,7 @@ class rest_post_user_group(rest_post_handler):
             return dict(info="User %s is already attached to group %s" % (str(user.email), str(group.role)))
 
         db.auth_membership.insert(user_id=user_id, group_id=group_id, primary_group='F')
+        table_modified("auth_membership")
         _log('user.group.attach',
              'user %(u)s attached to group %(g)s',
              dict(u=user.email, g=group.role),
@@ -541,6 +543,7 @@ class rest_delete_user_group(rest_delete_handler):
             return dict(info="User %s is already detached from group %s" % (str(user.email), str(group.role)))
 
         db(q).delete()
+        table_modified("auth_membership")
         _log('user.group.detach',
              'user %(u)s detached from group %(g)s',
              dict(u=user.email, g=group.role),
@@ -638,6 +641,7 @@ class rest_post_user_primary_group(rest_post_handler):
           "user_id": user.id,
           "group_id": group.id,
         }, user_id=user.id, group_id=group.id, primary_group=True)
+        table_modified("auth_membership")
         _log('user.primary_group.attach',
              'user %(u)s primary group set to %(g)s',
              dict(u=user.email, g=group.role),
@@ -687,6 +691,7 @@ class rest_delete_user_primary_group(rest_delete_handler):
             return dict(info="User %s has already no primary group" % str(user.email))
 
         db(q).delete()
+        table_modified("auth_membership")
         _log('user.primary_group.detach',
              'user %(u)s primary group unset',
              dict(u=user.email),

@@ -104,15 +104,27 @@ def user_email():
         return None
     return row.email
 
+def clear_cache_user_group_ids():
+    cache.redis.clear(regex="user_groups:.*")
+
 def user_groups():
+    return cache.redis("user_groups:%d"%auth.user_id, lambda: _user_groups(), time_expire=14400)
+
+def _user_groups():
     q = db.auth_membership.user_id==auth.user_id
     q &= db.auth_membership.group_id==db.auth_group.id
     rows = db(q).select(db.auth_group.role)
     return map(lambda x: x.role, rows)
 
+def clear_cache_user_group_ids():
+    cache.redis.clear(regex="user_group_ids:.*")
+
 def user_group_ids(id=None):
     if id is None:
         id = auth.user_id
+    return cache.redis("user_group_ids:%d"%id, lambda: _user_group_ids(id), time_expire=14400)
+
+def _user_group_ids(id):
     q = db.auth_membership.user_id==id
     q &= db.auth_membership.group_id==db.auth_group.id
     rows = db(q).select(db.auth_group.id)

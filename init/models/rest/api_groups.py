@@ -441,32 +441,40 @@ class rest_delete_group(rest_delete_handler):
         # group membership
         q = db.auth_membership.group_id == row.id
         db(q).delete()
+        table_modified("auth_membership")
 
         # apps responsibles
         q = db.apps_responsibles.group_id == row.id
         db(q).delete()
+        table_modified("apps_responsibles")
 
         # forms responsibles and publication
         q = db.forms_team_responsible.group_id == row.id
         db(q).delete()
+        table_modified("forms_team_responsible")
         q = db.forms_team_publication.group_id == row.id
         db(q).delete()
+        table_modified("forms_team_publication")
 
         # modset responsibles
         q = db.comp_moduleset_team_responsible.group_id == row.id
         db(q).delete()
+        table_modified("comp_moduleset_team_responsible")
 
         # modset publications
         q = db.comp_moduleset_team_publication.group_id == row.id
         db(q).delete()
+        table_modified("comp_moduleset_team_publication")
 
         # ruleset responsibles
         q = db.comp_ruleset_team_responsible.group_id == row.id
         db(q).delete()
+        table_modified("comp_ruleset_team_responsible")
 
         # ruleset publications
         q = db.comp_ruleset_team_publication.group_id == row.id
         db(q).delete()
+        table_modified("comp_ruleset_team_publication")
 
         return dict(info="Group %s deleted" % row.role)
 
