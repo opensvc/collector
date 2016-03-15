@@ -3,7 +3,11 @@ import gluon.contrib.simplejson as json
 def beautify_data(d):
     l = []
     for key in sorted(d.keys()):
-        l.append("%s: %s" % (key, str(d[key])))
+        if type(d[key]) in (int, float):
+            val = str(d[key])
+        else:
+            val = d[key]
+        l.append("%s: %s" % (key, val))
     return ", ".join(l)
 
 def beautify_change(d1, d2):
@@ -12,7 +16,17 @@ def beautify_change(d1, d2):
         if key not in d1:
             continue
         if d1[key] != d2[key]:
-            l.append("%s: %s => %s" % (key, str(d1[key]), str(d2[key])))
+            if type(d1[key]) in (int, float):
+                val1 = str(d1[key])
+            elif type(d1[key]) == str:
+                val1 = unicode(d1[key], errors="ignore")
+            else:
+                val1 = d1[key]
+            if type(d2[key]) in (int, float):
+                val2 = str(d2[key])
+            else:
+                val2 = d2[key]
+            l.append("%s: %s => %s" % (key, val1, val2))
     return ", ".join(l)
 
 def log_events(i):
