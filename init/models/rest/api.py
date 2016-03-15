@@ -1,9 +1,5 @@
 import re
-
-try:
-    from pydal.helpers.methods import smart_query
-except:
-    from gluon.dal import smart_query
+from pydal.helpers.methods import smart_query
 
 class rest_handler(object):
     def __init__(self,
@@ -19,9 +15,11 @@ class rest_handler(object):
                  left=None,
                  groupby=None,
                  orderby=None,
+                 _cache=None,
                  desc=[], params={}, examples=[], data={}):
+        self._cache = _cache
         self.action = action
-        self.path = path.rstrip("/")
+        self.path = path
         self.tables = tables
         self.props_blacklist = props_blacklist
         self.desc = desc
@@ -40,8 +38,6 @@ class rest_handler(object):
         else:
             self.db = db
 
-        self.pattern = "^"+re.sub("\<[-\w]+\>", "[=% ><@\.\-\w]+", path)+"$"
-        self.regexp = re.compile(self.pattern)
 
     def update_parameters(self):
         self.params = copy.copy(self.init_params)
@@ -49,14 +45,19 @@ class rest_handler(object):
     def set_q(self, q):
         self.q = q
 
+    def get_pattern(self):
+        return "^"+re.sub("\<[-\w]+\>", "[=% ><@\.\-\w]+", self.path)+"$"
+
     def match(self, args):
-        return self.regexp.match(args)
+        pattern = self.get_pattern()
+        regexp = re.compile(pattern)
+        return regexp.match(args)
 
     def handle(self, *args, **vars):
         # extract args from the path
         # /a/<b>/c/<d> => [b, d]
         nargs = []
-        for i, a in enumerate(self.path.split("/")):
+        for i, a in enumerate(self.path.rstrip("/").split("/")):
             if a.startswith("<") and a.endswith(">"):
                 nargs.append(args[i-1])
         if "filters[]" in vars:
@@ -65,7 +66,26 @@ class rest_handler(object):
             else:
                 vars["filters"] = vars["filters[]"]
             del(vars["filters[]"])
-        return self.handler(*nargs, **vars)
+
+        if self._cache is None:
+            return self.handler(*nargs, **vars)
+        if self._cache is True:
+            time_expire = 14400
+        elif type(self._cache) == int:
+            time_expire = self._cache
+        key = self.get_cache_key(*nargs, **vars)
+        return cache.redis(key, lambda: self.handler(*nargs, **vars), time_expire=time_expire)
+
+    def cache_clear(self, keys):
+        for key in keys:
+            cache.redis.clear(regex="rest:.*:"+key+":.*")
+
+    def get_cache_key(self, *nargs, **vars):
+        import json
+        from hashlib import md5
+        sign = md5(json.dumps({"args": nargs, "vars": vars})).hexdigest()
+        key = "rest:%s:%s:%s" % (auth.user_id, type(self).__name__, sign)
+        return key
 
     def prepare_data(self, **vars):
         add_to_vars = [
@@ -457,6 +477,7 @@ def prepare_data(
     cols = props_to_cols(props, tables=tables, vprops=vprops, blacklist=props_blacklist, db=db)
     all_cols = props_to_cols(None, tables=tables, blacklist=props_blacklist, db=db)
     false_values = ("0", "f", "F", "False", "false", False)
+
     if meta in false_values:
         meta = False
     else:
