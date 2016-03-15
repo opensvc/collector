@@ -244,7 +244,6 @@ function services_osvcpostrest(service, uri, params, data, callback, error_callb
         content_type = "application/json; charset=utf-8"
         data_type = "json"
     } catch(err) {}
-    console.log(data, content_type, data_type)
 
     var xhr = $.ajax(
     {
