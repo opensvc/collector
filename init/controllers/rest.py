@@ -498,10 +498,10 @@ def get_delete_handlers(prefix=None):
              "rest_delete_tag_node",
              "rest_delete_tag_service",
         ],
-        "users": [
+        "users_groups": [
              "rest_delete_users_groups",
         ],
-        "users_groups": [
+        "users": [
              "rest_delete_users",
              "rest_delete_user",
              "rest_delete_user_group",
