@@ -85,6 +85,7 @@ class rest_post_form(rest_post_handler):
 
         ret = rest_get_form().handler(form.id)
         ret["info"] = fmt % d
+        self.cache_clear(["rest_get_forms"])
         return ret
 
 class rest_post_forms(rest_post_handler):
@@ -131,6 +132,7 @@ class rest_post_forms(rest_post_handler):
           'data': {'id': form_id},
         }
         _websocket_send(event_msg(l))
+        self.cache_clear(["rest_get_forms"])
 
         return rest_get_form().handler(form_id)
 
@@ -152,6 +154,7 @@ class rest_get_forms(rest_get_table_handler):
           groupby=db.forms.id,
           desc=desc,
           examples=examples,
+          _cache=True,
         )
 
     def handler(self, **vars):
@@ -260,6 +263,7 @@ class rest_delete_form_publication(rest_delete_handler):
           'data': {'id': form_id},
         }
         _websocket_send(event_msg(l))
+        self.cache_clear(["rest_get_forms"])
         return dict(info=fmt%d)
 
 class rest_delete_forms_publications(rest_delete_handler):
@@ -342,6 +346,7 @@ class rest_post_form_publication(rest_post_handler):
         }
         _websocket_send(event_msg(l))
 
+        self.cache_clear(["rest_get_forms"])
         return dict(info=fmt%d)
 
 class rest_post_forms_publications(rest_post_handler):
@@ -440,6 +445,7 @@ class rest_delete_form_responsible(rest_delete_handler):
           'data': {'id': form_id},
         }
         _websocket_send(event_msg(l))
+        self.cache_clear(["rest_get_forms"])
 
         return dict(info=fmt%d)
 
@@ -522,6 +528,7 @@ class rest_post_form_responsible(rest_post_handler):
           'data': {'id': form_id},
         }
         _websocket_send(event_msg(l))
+        self.cache_clear(["rest_get_forms"])
 
         return dict(info=fmt%d)
 
