@@ -227,6 +227,8 @@ def forms():
     o = {}
     if "form_name" in request.vars:
         o["form_name"] = request.vars.form_name
+    if "form_folder" in request.vars:
+        o["form_folder"] = request.vars.form_folder
     d = SCRIPT(
           """requests("layout", %s)""" % json.dumps(o)
     )

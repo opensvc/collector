@@ -2,7 +2,12 @@ function requests(divid, options) {
 	o = {}
 	o.options = options
 	o.div = $("#"+divid)
-	o.current_folder = []
+
+	if (o.options.form_folder) {
+		o.current_folder = o.options.form_folder.replace(/^\//, "").split("/")
+	} else {
+		o.current_folder = []
+	}
 
 	o.div.load("/init/static/views/requests.html", function() {
 		o.div.i18n()
@@ -83,6 +88,7 @@ function requests(divid, options) {
 
 		var div = $("<div class='formentry'></div>")
 		var div_icon = $("<div style='padding-top:1em;padding-bottom:1em'></div>")
+		var link = $("<span class='icon link16'></span>")
 		var p1 = $("<p class='b'></p>")
 		var p2 = $("<p style='font-style:italic;padding-left:1em'></p>")
 
@@ -95,6 +101,12 @@ function requests(divid, options) {
 		p1.text(d.form_definition.FolderLabel)
 		p2.text(d.form_definition.FolderDesc)
 
+		link.bind("click", function(event){
+			event.stopPropagation()
+			osvc_create_link("requests", {"form_folder": d.form_name})
+		})
+
+		p1.prepend(link)
 		div_icon.append(p1)
 		div_icon.append(p2)
 		div.append(div_icon)
