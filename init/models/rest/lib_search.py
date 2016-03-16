@@ -58,28 +58,12 @@ def lib_search_disk(pattern):
 
 def lib_search_app(pattern):
     t = datetime.datetime.now()
-    sql = """
-       select count(distinct app) from (
-         select distinct project as app from nodes
-         union all
-         select app from apps
-       ) t
-       where app like "%s"
-    """ % pattern
-    n = db.executesql(sql)[0][0]
-
-    sql = """
-       select distinct app from (
-         select distinct project as app from nodes
-         union all
-         select app from apps
-       ) t
-       where app like "%s"
-       order by app limit %s
-    """ % (pattern, str(max_search_result))
-    rows = db.executesql(sql)
-
-    data = [ {"app": row[0]} for row in rows ]
+    o = db.apps.app
+    q = db.apps.app.like(pattern)
+    if not "Manager" in user_groups():
+        q &= db.apps.id.belongs(user_app_ids())
+    n = db(q).count()
+    data = db(q).select(o, orderby=o, limitby=(0,max_search_result)).as_list()
     t = datetime.datetime.now() - t
     return {
       "total": n,
@@ -94,10 +78,7 @@ def lib_search_service(pattern):
     q = _where(q, 'services', domain_perms(), 'svc_name')
     q = apply_filters(q, db.services.svc_name, None)
     n = db(q).count()
-    data = db(q).select(o,
-                        orderby=o,
-                        limitby=(0,max_search_result),
-    ).as_list()
+    data = db(q).select(o, orderby=o, limitby=(0,max_search_result),).as_list()
     t = datetime.datetime.now() - t
     return {
       "total": n,
