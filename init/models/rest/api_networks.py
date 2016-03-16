@@ -36,6 +36,23 @@ def network_responsible(id):
         raise Exception("Not authorized: user is not responsible for network %s" % id)
 
 
+def get_network_id(id):
+    if type(id) not in (unicode, str):
+        return id
+    regex = re.compile("[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+")
+    if not regex.match(id):
+        return id
+    sql = """select id from networks where
+             inet_aton("%(ip)s") <= inet_aton(end) and
+             inet_aton("%(ip)s") >= inet_aton(begin)""" % dict(ip=id)
+    rows = db.executesql(sql)
+    if len(rows) == 0:
+        raise Exception("%s not found in any known network"%id)
+    if len(rows) > 1:
+        raise Exception("%s found in multiple networks"%id)
+    return rows[0][0]
+
+
 #
 class rest_get_network_nodes(rest_get_table_handler):
     def __init__(self):
@@ -85,6 +102,7 @@ class rest_get_network(rest_get_line_handler):
         )
 
     def handler(self, id, **vars):
+        id = get_network_id(id)
         q = db.networks.id == id
         self.set_q(q)
         return self.prepare_data(**vars)

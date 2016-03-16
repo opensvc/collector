@@ -762,6 +762,22 @@ tt {
 	font-family: monospace, courier;
 }
 
+.h1 {
+	padding-top: 0.5em;
+	font-size: 2em;
+}
+
+.h2 {
+	padding-top: 0.4em;
+	font-size: 1.5em;
+}
+
+.h3 {
+	padding-top: 0.3em;
+	font-size: 1.25em;
+	font-style: italic;
+}
+
 h1 {
 	padding-top: 0.5em;
 	font-size: 2em;
