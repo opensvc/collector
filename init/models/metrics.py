@@ -1,10 +1,3 @@
-from applications.init.modules import config
-
-if hasattr(config, 'dbopensvc'):
-    dbopensvc = config.dbopensvc
-else:
-    dbopensvc = 'dbopensvc'
-
 dbro = DAL('mysql://readonly:readonly@%s/opensvc' % dbopensvc)
 
 def replace_fset_sql(sql, fset_id=None):

@@ -1,24 +1,7 @@
-from applications.init.modules import config
-
-if hasattr(config, 'dbdns'):
-    dbdns = config.dbdns
-else:
-    dbdns = 'pdns'
-
-if hasattr(config, 'dbdns_host'):
-    dbdns_host = config.dbdns_host
-else:
-    dbdns_host = dbopensvc
-
-if hasattr(config, 'dbdns_user'):
-    dbdns_user = config.dbdns_user
-else:
-    dbdns_user = 'pdns'
-
-if hasattr(config, 'dbdns_password'):
-    dbdns_password = config.dbdns_password
-else:
-    dbdns_password = 'pdns'
+dbdns = config_get('dbdns', 'pdns')
+dbdns_host = config_get('dbdns_host', dbopensvc)
+dbdns_user = config_get('dbdns_user', 'pdns')
+dbdns_password = config_get('dbdns_password', 'pdns')
 
 try:
     dbdns = DAL('mysql://%s:%s@%s/%s' % (dbdns_user, dbdns_password, dbdns_host, dbdns),

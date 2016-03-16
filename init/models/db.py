@@ -6,27 +6,11 @@
 
 import datetime
 import os
-from applications.init.modules import config
 
-if hasattr(config, 'dbopensvc'):
-    dbopensvc = config.dbopensvc
-else:
-    dbopensvc = 'dbopensvc'
-
-if hasattr(config, 'dbopensvc_user'):
-    dbopensvc_user = config.dbopensvc_user
-else:
-    dbopensvc_user = 'opensvc'
-
-if hasattr(config, 'dbopensvc_password'):
-    dbopensvc_password = config.dbopensvc_password
-else:
-    dbopensvc_password = 'opensvc'
-
-if hasattr(config, 'redis_host'):
-    redis_host = config.redis_host
-else:
-    redis_host = dbopensvc
+dbopensvc = config_get('dbopensvc', 'dbopensvc')
+dbopensvc_user = config_get('dbopensvc_user', 'opensvc')
+dbopensvc_password = config_get('dbopensvc_password', 'opensvc')
+redis_host = config_get('redis_host', dbopensvc)
 
 from gluon.contrib.redis_cache import RedisCache
 from gluon.contrib.redis_utils import RConn
@@ -68,7 +52,7 @@ auth.settings.expiration=36000000
 auth.settings.allow_basic_login = True
 auth.settings.login_methods = [auth, node_auth()]
 
-if hasattr(config, "allow_register") and not config.allow_register:
+if config_get("allow_register", False):
     auth.settings.actions_disabled.append('register')
 
 #request.requires_https()

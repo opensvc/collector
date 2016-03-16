@@ -1,10 +1,6 @@
 config = local_import('config', reload=True)
 
-try:
-    remote_cmd_prepend = config.remote_cmd_prepend
-except:
-    remote_cmd_prepend = []
-
+remote_cmd_prepend = config_get("remote_cmd_prepend", [])
 ssh_cmd = ['ssh', '-o', 'StrictHostKeyChecking=no',
                   '-o', 'ForwardX11=no',
                   '-o', 'ConnectTimeout=5',
