@@ -104,7 +104,7 @@ def user_email():
         return None
     return row.email
 
-def clear_cache_user_group_ids():
+def clear_cache_user_groups():
     cache.redis.clear(regex="user_groups:.*")
 
 def user_groups():
