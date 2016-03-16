@@ -1,15 +1,18 @@
-#!/usr/bin/env python 
-# coding: utf8 
-from gluon.html import *
-from gluon.http import *
-from gluon.validators import *
-from gluon.sqlhtml import *
-# request, response, session, cache, T, db(s) 
-# must be passed and cannot be imported!
+#!/usr/bin/env python
+# coding: utf8
+
 http_host = "opensvc.mydomain.com"
 
+# refuse node register without a collector user credentials
+# default: False
+refuse_anon_register = True
+
+# allow users to create their own account
+# default: True
 allow_register = False
 
+# max billing tokens
+# default: unset, meaning unlimited
 token_quota = 150000
 billing_method = "agents"
 
