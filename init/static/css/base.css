@@ -1866,6 +1866,10 @@ ul.login_menu ul {
 	color: cadetblue;
 	content: '\f0ec';
 }
+.ip16:before {
+	color: cadetblue;
+	content: '\f124';
+}
 .down {
 	background: transparent url('../images/down16.png') no-repeat;
 	padding: 0 0 0 15px;
