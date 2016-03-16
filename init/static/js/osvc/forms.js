@@ -743,7 +743,7 @@ function form(divid, options) {
 		button.bind("click", function() {
 			var data = o.form_to_data()
 			var data_title = $("<h2>"+i18n.t("forms.test_title")+"</h2>")
-			var data_pre = $("<pre>"+JSON.stringify(data, null, 4)+"</pre>")
+			var data_pre = $("<pre style='text-align:left'>"+JSON.stringify(data, null, 4)+"</pre>")
 			var render_title = $("<h2>"+i18n.t("forms.test_render_title")+"</h2>")
 			var render_div = $("<div></div>")
 			o.result.empty().append(data_title)
