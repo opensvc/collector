@@ -882,6 +882,20 @@ function form(divid, options) {
 			mustMatch: true,
 			source: opts,
 			minLength: 0,
+			response: function( event, ui ) {
+				if(d.StrictCandidates) {
+					var v = input.val()
+					for (var i=0; i<ui.content.length; i++) {
+						if (ui.content[i].label==v) {
+							input.removeClass("constraint_violation")
+							o.update_submit()
+							return
+						}
+						input.addClass("constraint_violation")
+						o.update_submit()
+					}
+				}
+			},
 			focus: function(event, ui) {
 				$(this).prop("acid", ui.item.id)
 			},
@@ -1127,6 +1141,20 @@ function form(divid, options) {
 				mustMatch: true,
 				source: opts,
 				minLength: 0,
+				response: function( event, ui ) {
+					if(d.StrictCandidates) {
+						var v = input.val()
+						for (var i=0; i<ui.content.length; i++) {
+							if (ui.content[i].label==v) {
+								input.removeClass("constraint_violation")
+								o.update_submit()
+								return
+							}
+							input.addClass("constraint_violation")
+							o.update_submit()
+						}
+					}
+				},
 				focus: function(event, ui) {
 					$(this).prop("acid", ui.item.id)
 				},
