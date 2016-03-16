@@ -18,15 +18,21 @@ class rest_get_apps(rest_get_table_handler):
         examples = [
           "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/apps"
         ]
-        q = db.apps.id > 0
         rest_get_table_handler.__init__(
           self,
           path="/apps",
           tables=["apps"],
-          q=q,
           desc=desc,
           examples=examples,
         )
+
+    def handle(self, id, **vars):
+        if not "Manager" in user_groups():
+            q = db.apps.id.belongs(user_group_ids())
+        else:
+            q = db.apps.id > 0
+        self.set_q(q)
+        return self.prepare_data(**vars)
 
 #
 class rest_get_app(rest_get_line_handler):
@@ -50,6 +56,8 @@ class rest_get_app(rest_get_line_handler):
     def handler(self, id, **vars):
         id = lib_app_id(id)
         q = db.apps.id == id
+        if not "Manager" in user_groups():
+            q &= db.apps.id.belongs(user_group_ids())
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -96,6 +104,7 @@ class rest_post_apps(rest_post_handler):
             return dict(info="App already exists")
         response = db.apps.validate_and_insert(**vars)
         raise_on_error(response)
+        table_modified("apps")
         row = db(q).select().first()
         _log('apps.create',
              'app %(app)s created. data %(data)s',
@@ -139,6 +148,7 @@ class rest_post_app(rest_post_handler):
             raise Exception("app %s does not exist" % str(id))
         response = db(q).validate_and_update(**vars)
         raise_on_error(response)
+        table_modified("apps")
         fmt = 'app %(app)s changed: %(data)s'
         d = dict(app=row.app, data=beautify_change(row, vars))
         _log('apps.change', fmt, d)
@@ -210,8 +220,10 @@ class rest_delete_app(rest_delete_handler):
         if row is None:
             return dict(info="app code %s does not exist" % str(id))
         db(q).delete()
+        table_modified("apps")
         q = db.apps_responsibles.app_id == row.id
         db(q).delete()
+        table_modified("apps_responsibles")
         _log('apps.delete',
              'app %(app)s deleted',
              dict(app=row.app),

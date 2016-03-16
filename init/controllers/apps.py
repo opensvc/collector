@@ -93,6 +93,8 @@ def ajax_apps():
     t = table_apps(table_id, 'ajax_apps')
     o = ~db.v_apps.app
     q = db.v_apps.id > 0
+    if not "Manager" in user_groups():
+        q &= db.v_apps.id.belongs(user_app_ids())
     for f in t.cols:
         q = _where(q, 'v_apps', t.filter_parse(f), f)
 

@@ -116,6 +116,21 @@ def _user_groups():
     rows = db(q).select(db.auth_group.role)
     return map(lambda x: x.role, rows)
 
+def clear_cache_user_app_ids():
+    cache.redis.clear(regex="user_app_ids:.*")
+
+def user_app_ids(id=None):
+    if id is None:
+        id = auth.user_id
+    return cache.redis("user_app_ids:%d"%id, lambda: _user_app_ids(id), time_expire=14400)
+
+def _user_app_ids(id):
+    q = db.auth_membership.user_id==id
+    q &= db.auth_membership.group_id==db.auth_group.id
+    q &= db.apps_responsibles.group_id == db.auth_membership.group_id
+    rows = db(q).select(db.apps_responsibles.app_id)
+    return map(lambda x: x.app_id, rows)
+
 def clear_cache_user_group_ids():
     cache.redis.clear(regex="user_group_ids:.*")
 

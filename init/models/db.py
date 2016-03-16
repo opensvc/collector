@@ -82,9 +82,13 @@ def table_modified(name):
     db.commit()
 
     triggers = {
+      "apps_responsibles": [
+         clear_cache_user_app_ids,
+      ],
       "auth_membership": [
          clear_cache_user_group_ids,
          clear_cache_user_groups,
+         clear_cache_user_app_ids,
       ]
     }
     for t in triggers.get(name, []):
