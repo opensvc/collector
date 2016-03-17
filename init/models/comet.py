@@ -2,7 +2,12 @@ from gluon.contrib.websocket_messaging import websocket_send
 import json
 import hashlib
 
-dbopensvc = config_get("dbopensvc", "dbopensvc")
+from applications.init.modules import config
+
+if hasattr(config, 'dbopensvc'):
+    dbopensvc = config.dbopensvc
+else:
+    dbopensvc = 'dbopensvc'
 
 websocket_url = "http://%s:8889" % dbopensvc
 websocket_key = "magix123"
