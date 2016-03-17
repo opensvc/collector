@@ -760,6 +760,11 @@ def rpc_delete_disks(svcname, node, auth):
 
 @service.xmlrpc
 def register_node(node):
+    if config_get("refuse_anon_register", False):
+        return ["This collector refuses anonymous register. Please use 'nodemgr register --user <user>'."]
+    return _register_node(node)
+
+def _register_node(node):
     if node is None or node == '':
         return ["no node name provided"]
     q = db.auth_node.nodename == node

@@ -635,6 +635,9 @@ def get_post_handlers(prefix=None):
         "provisioning_templates_responsibles": [
              "rest_post_provisioning_templates_responsibles",
         ],
+        "register": [
+             "rest_post_register",
+        ],
         "reports": [
              "rest_post_reports_chart",
              "rest_post_reports_charts",
