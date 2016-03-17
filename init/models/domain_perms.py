@@ -18,7 +18,7 @@ def add_domain_perm(perm):
         if perm in perms_l:
             return
         new_perms = '|'.join(perms_l+[perm])
-    q1 = db.auth_membership.user_id==session.auth.user.id
+    q1 = db.auth_membership.user_id==auth.user_id
     q2 = db.domain_permissions.group_id==db.auth_membership.group_id
     rows = db(q1&q2).select(db.domain_permissions.id)
     if len(rows) == 0:
@@ -35,7 +35,7 @@ def domain_perms():
     if len(rows) == 0:
         # wildcard for collectors with no domain_permissions information
         domain_perms = None
-    q1 = db.auth_membership.user_id==session.auth.user.id
+    q1 = db.auth_membership.user_id==auth.user_id
     q2 = db.domain_permissions.group_id==db.auth_membership.group_id
     rows = db(q1&q2).select(db.domain_permissions.domains)
     if len(rows) == 0:

@@ -1158,6 +1158,7 @@
 		"services": "Services"
 	},
 	"user_properties": {
+		"username": "login",
 		"first_name": "first name",
 		"last_name": "last name",
 		"perpage": "lines per page",

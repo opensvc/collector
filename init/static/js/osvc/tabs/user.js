@@ -145,6 +145,7 @@ function user_properties(divid, options) {
 	o.options = options
 
 	o.init = function() {
+		o.info_username = o.div.find("#username");
 		o.info_first_name = o.div.find("#first_name");
 		o.info_last_name = o.div.find("#last_name");
 		o.info_perpage = o.div.find("#perpage");
@@ -238,6 +239,7 @@ function user_properties(divid, options) {
 	}
 
 	o._load_user = function(data) {
+		o.info_username.html(data.username);
 		o.info_first_name.html(data.first_name);
 		o.info_last_name.html(data.last_name);
 		o.info_perpage.html(data.perpage);

@@ -11,6 +11,7 @@ dbopensvc = config_get('dbopensvc', 'dbopensvc')
 dbopensvc_user = config_get('dbopensvc_user', 'opensvc')
 dbopensvc_password = config_get('dbopensvc_password', 'opensvc')
 redis_host = config_get('redis_host', dbopensvc)
+ldap_mode = config_get("ldap_mode", None)
 
 from gluon.contrib.redis_cache import RedisCache
 from gluon.contrib.redis_utils import RConn
@@ -46,11 +47,13 @@ db = DAL('mysql://%s:%s@%s/opensvc' % (dbopensvc_user, dbopensvc_password, dbope
 ## comment/uncomment as needed
 
 from gluon.tools import *
-auth=MyAuth(globals(),db)                      # authentication/authorization
+auth=MyAuth(globals(), db)
 auth.settings.hmac_key='sha512:7755f108-1b83-45dc-8302-54be8f3616a1'
 auth.settings.expiration=36000000
 auth.settings.allow_basic_login = True
-auth.settings.login_methods = [auth, node_auth()]
+auth.settings.remember_me_form = False
+auth.settings.login_methods = [auth]
+login_form_username = False
 
 if config_get("allow_register", False):
     auth.settings.actions_disabled.append('register')
@@ -96,9 +99,9 @@ auth.settings.extra_fields['auth_membership']= [
 
 auth.settings.extra_fields['auth_user']= [
     Field('phone_work', 'string', label=T("Work desk phone number"), length=15),
-    Field('email_notifications', 'boolean', default=True,
+    Field('email_notifications', 'boolean', default=False,
           label=T('Email notifications')),
-    Field('im_notifications', 'boolean', default=True,
+    Field('im_notifications', 'boolean', default=False,
           label=T('Instant messaging notifications')),
     Field('perpage', 'integer', default=20,
           label=T('Preferred lines per page')),
@@ -106,19 +109,48 @@ auth.settings.extra_fields['auth_user']= [
           label=T('Instant messaging protocol'), default=1,
           requires=IS_IN_DB(db, db.im_types.id, "%(im_type)s", zero=T('choose one'))),
     Field('im_username', 'string', label=T("Instant messaging user name")),
-    Field('im_log_level', 'string', label=T("Instant messaging log level"),
+    Field('im_log_level', 'string', default="critical", label=T("Instant messaging log level"),
           requires=IS_IN_SET(["debug", "info", "warning", "error", "critical"])),
-    Field('email_log_level', 'string', label=T("Email messaging log level"),
+    Field('email_log_level', 'string', default="critical", label=T("Email messaging log level"),
           requires=IS_IN_SET(["debug", "info", "warning", "error", "critical"])),
     Field('lock_filter', 'boolean', default=False,
           label=T("Lock user's session filter"),
           writable=False, readable=False),
 ]
 
-auth.define_tables(migrate=False)
+if ldap_mode:
+    login_form_username = True
+
+auth.define_tables(migrate=False, username=login_form_username)
+
+if ldap_mode:
+    from gluon.contrib.login_methods.ldap_auth import ldap_auth
+    auth.settings.actions_disabled=['register','change_password','request_reset_password','retrieve_username','profile']
+    kwargs = {}
+    kwargs["mode"] = ldap_mode
+    kwargs["db"] = db
+    kwargs["manage_user"] = True
+    kwargs["user_firstname_attrib"]='givenName'
+    kwargs["user_lastname_attrib"]='sn'
+    kwargs["server"] = config_get("ldap_server", None)
+    kwargs["base_dn"] = config_get("ldap_base_dn", None)
+    bind_dn = config_get("ldap_bind_dn", None)
+    if bind_dn:
+        kwargs["bind_dn"] = bind_dn
+    bind_pw = config_get("ldap_bind_pw", None)
+    if bind_pw:
+        kwargs["bind_pw"] = bind_pw
+    filterstr = config_get("ldap_filter", None)
+    if filterstr:
+        kwargs["filterstr"] = filterstr
+    kwargs["logging_level"] = "debug"
+    auth.settings.login_methods.append(ldap_auth(**kwargs))
+
+auth.settings.login_methods.append(node_auth())
+auth.messages.logged_in = ''
+
 #crud=Crud(globals(),db)                      # for CRUD helpers using auth
 service=Service(globals())                   # for json, xml, jsonrpc, xmlrpc, amfrpc
-auth.messages.logged_in = ''
 # crud.settings.auth=auth                      # enforces authorization on crud
 # mail.settings.login='username:password'      # your credentials or None
 # auth.settings.registration_requires_verification = True
@@ -128,8 +160,8 @@ auth.messages.logged_in = ''
 mail=Mail()
 mail.settings.server='localhost:25'
 mail.settings.sender='admin@opensvc.com'
-auth.settings.mailer=mail
 mail.settings.tls = False
+auth.settings.mailer=mail
 
 default_max_lines = 1000
 default_limitby = (0, default_max_lines)

@@ -5026,4 +5026,11 @@ begin
 end#
 delimiter ;
 
+alter table auth_user add column username varchar(128);
+
+alter table auth_user modify column im_notifications varchar(1) default 'F';
+
+alter table auth_user modify column email_notifications varchar(1) default 'F';
+
+update auth_user set username=email where username is NULL;
 

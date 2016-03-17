@@ -66,8 +66,6 @@ def node_auth():
             session.auth.last_visit = request.now
             #self.auth = auth
 
-            #db(db.nodes.nodename==node).select(db.nodes.nodename, db.nodes.team_responsible).first()
-            #session.auth.user_id = session.auth.user.nodename
             return True
         except Exception as e:
             if not auth_is_user(node):
