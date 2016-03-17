@@ -4,30 +4,15 @@
 ## This scaffolding model makes your app work on Google App Engine too
 #########################################################################
 
-from applications.init.modules import config
+dbopensvc = config_get('dbopensvc', 'dbopensvc')
+dbopensvc_user = config_get('dbopensvc_user', 'opensvc')
+dbopensvc_password = config_get('dbopensvc_password', 'opensvc')
+redis_host = config_get('redis_host', dbopensvc)
 
-if hasattr(config, 'dbopensvc'):
-    dbopensvc = config.dbopensvc
-else:
-    dbopensvc = 'dbopensvc'
-
-if hasattr(config, 'dbopensvc_user'):
-    dbopensvc_user = config.dbopensvc_user
-else:
-    dbopensvc_user = 'opensvc'
-
-if hasattr(config, 'dbopensvc_password'):
-    dbopensvc_password = config.dbopensvc_password
-else:
-    dbopensvc_password = 'opensvc'
-
-if hasattr(config, 'redis_host'):
-    redis_host = config.redis_host
-else:
-    redis_host = dbopensvc
-
+#from gluon.contrib.redis_cache import RedisCache
 from gluon.contrib.redis_utils import RConn
 rconn = RConn(redis_host, 6379)
+#cache.redis = RedisCache(rconn, debug=False)
 
 if request.env.web2py_runtime_gae:            # if running on Google App Engine
     db = DAL('gae')                           # connect to Google BigTable
