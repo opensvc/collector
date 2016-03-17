@@ -866,7 +866,7 @@
 					"title" : "Actions",
 					"text" : "Service actions log"
 			},
-			"actions queue" : {
+			"actions_queue" : {
 					"title" : "Actions Queue",
 					"text" : "Service and node actions queued on the collector for agents"
 			},

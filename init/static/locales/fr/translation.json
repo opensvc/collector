@@ -853,7 +853,7 @@
 					"title" : "Actions",
 					"text" : "Journal des actions de service"
 			},
-			"actions queue" : {
+			"actions_queue" : {
 					"title" : "File d'attente d'actions",
 					"text" : "Actions postées pour traitement par les agents"
 			},

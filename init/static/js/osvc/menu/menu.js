@@ -57,7 +57,7 @@ var menu_data = {
 		  "fn" : "table_actions"
 		},
 		{
-		  "title" : "actions queue",
+		  "title" : "actions_queue",
 		  "class" : "actions",
 		  "id" : "view-actions-queue",
 		  "link" : "/init/action_queue/action_queue",
