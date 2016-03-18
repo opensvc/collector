@@ -119,6 +119,7 @@
 		"on_tags": "Sur les tags",
 		"on_rulesets": "Sur les jeux de règles",
 		"on_modulesets": "Sur les jeux de modules",
+		"on_safe_files": "Sur les fichiers du coffre-fort",
 		"on_forms": "Sur les formulaires",
 		"add_form": "Ajouter un formulaire",
 		"del_form": "Supprimer un formulaire",
@@ -255,6 +256,7 @@
 			"column": "Filtre de la colonne __col__:"
 		},
 		"name": {
+			"safe": "Coffre-fort",
 			"action_queue": "File d'attente des actions",
 			"actions": "Actions des services",
 			"appinfo": "App info",

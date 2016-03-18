@@ -188,6 +188,33 @@ class rest_get_safe_file_download(rest_get_handler):
 #
 
 #
+class rest_post_safe_files_publications(rest_post_handler):
+    def __init__(self):
+        desc = [
+          "Share safe files with groups.",
+          "Members of the publication groups can list and download the file, and read its properties."
+          "The user must be the file uploader or be a member of the file responsible groups.",
+          "The action is logged in the collector's log.",
+          "A websocket event is sent to announce the change in the table.",
+        ]
+        examples = [
+          """# curl -u %(email)s -o- -X POST -d group_name="mygroup" https://%(collector)s/init/rest/api/safe/files_publications""",
+        ]
+        rest_post_handler.__init__(
+          self,
+          path="/safe/files_publications",
+          tables=["safe_team_publication"],
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, **vars):
+        if "file_id" not in vars:
+            raise Exception("The 'file_id' key is mandatory")
+        if "group_id" not in vars:
+            raise Exception("The 'group_id' key is mandatory")
+        return rest_post_safe_file_publication().handler(vars["file_id"], vars["group_id"])
+
 class rest_post_safe_file_publication(rest_post_handler):
     def __init__(self):
         desc = [
@@ -256,6 +283,34 @@ class rest_post_safe_file_publication(rest_post_handler):
         }
         _websocket_send(event_msg(l))
         return dict(info='File %(uuid)s published to group %(group)s.' % dict(uuid=f.uuid, group=g.role))
+
+#
+class rest_post_safe_files_responsibles(rest_post_handler):
+    def __init__(self):
+        desc = [
+          "Share safe files with groups.",
+          "Members of the responsible groups can list and download the file, and read its properties."
+          "The user must be the file uploader or be a member of the file responsible groups.",
+          "The action is logged in the collector's log.",
+          "A websocket event is sent to announce the change in the table.",
+        ]
+        examples = [
+          """# curl -u %(email)s -o- -X POST https://%(collector)s/init/rest/api/safe/files_responsibles""",
+        ]
+        rest_post_handler.__init__(
+          self,
+          path="/safe/files_responsibles",
+          tables=["safe_team_responsible"],
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, **vars):
+        if "file_id" not in vars:
+            raise Exception("The 'file_id' key is mandatory")
+        if "group_id" not in vars:
+            raise Exception("The 'group_id' key is mandatory")
+        return rest_post_safe_file_responsible().handler(vars["file_id"], vars["group_id"])
 
 #
 class rest_post_safe_file_responsible(rest_post_handler):
@@ -327,6 +382,31 @@ class rest_post_safe_file_responsible(rest_post_handler):
         _websocket_send(event_msg(l))
         return dict(info='File %(uuid)s responsability added to group %(group)s.' % dict(uuid=f.uuid, group=g.role))
 
+class rest_delete_safe_files_publications(rest_delete_handler):
+    def __init__(self):
+        desc = [
+          "Mass delete safe files publications.",
+          "The user must be the file uploader or be a member of the file responsible groups.",
+          "The action is logged in the collector's log.",
+          "A websocket event is sent to announce the change in the table.",
+        ]
+        examples = [
+          "# curl -u %(email)s -X DELETE -o- https://%(collector)s/init/rest/api/safe/files_publications"
+        ]
+        rest_delete_handler.__init__(
+          self,
+          path="/safe/files_publications",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, **vars):
+        if "file_id" not in vars:
+            raise Exception("The 'file_id' key is mandatory")
+        if "group_id" not in vars:
+            raise Exception("The 'group_id' key is mandatory")
+        return rest_delete_safe_file_publication().handler(vars["file_id"], vars["group_id"])
+
 class rest_delete_safe_file_publication(rest_delete_handler):
     def __init__(self):
         desc = [
@@ -354,6 +434,7 @@ class rest_delete_safe_file_publication(rest_delete_handler):
         except:
             q = db.safe.uuid == id
         f = db(q).select().first()
+
         if f is None:
             raise Exception("File %s not found" % id)
 
@@ -376,6 +457,32 @@ class rest_delete_safe_file_publication(rest_delete_handler):
         }
         _websocket_send(event_msg(l))
         return dict(info="file %(uuid)s unpublished to %(group)s" % dict(uuid=f.uuid, group=g.role))
+
+class rest_delete_safe_files_responsibles(rest_delete_handler):
+    def __init__(self):
+        desc = [
+          "Mass delete safe files responsibles.",
+          "The user must be the file uploader or be a member of the file responsible groups.",
+          "The action is logged in the collector's log.",
+          "A websocket event is sent to announce the change in the table.",
+        ]
+        examples = [
+          "# curl -u %(email)s -X DELETE -o- https://%(collector)s/init/rest/api/safe/files_responsibles"
+        ]
+        rest_delete_handler.__init__(
+          self,
+          path="/safe/files_responsibles",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, **vars):
+        if "file_id" not in vars:
+            raise Exception("The 'file_id' key is mandatory")
+        if "group_id" not in vars:
+            raise Exception("The 'group_id' key is mandatory")
+        return rest_delete_safe_file_responsible().handler(vars["file_id"], vars["group_id"])
+
 
 class rest_delete_safe_file_responsible(rest_delete_handler):
     def __init__(self):

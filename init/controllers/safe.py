@@ -3,6 +3,7 @@ class table_safe(HtmlTable):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
+        self.force_cols = ['id']
         self.cols = ['id',
                      'uuid',
                      'safe_name',
@@ -71,6 +72,7 @@ def ajax_safe_col_values():
     t = table_safe(table_id, 'ajax_safe')
     col = request.args[0]
     o = db[t.colprops[col].table][col]
+    q = db.v_safe.id > 0
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
     t.object_list = db(q).select(o, orderby=o)

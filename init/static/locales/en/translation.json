@@ -117,6 +117,7 @@
 		"unlock_filterset": "Unlock filterset",
 		"email": "Email address",
 		"on_tags": "On tags",
+		"on_safe_files": "On safe files",
 		"on_forms": "On forms",
 		"on_rulesets": "On rulesets",
 		"on_modulesets": "On modulesets",
@@ -255,6 +256,7 @@
 			"column": "Column __col__ filter:"
 		},
 		"name": {
+			"safe": "Safe",
 			"action_queue": "Action queue",
 			"actions": "Service actions",
 			"appinfo": "App info",

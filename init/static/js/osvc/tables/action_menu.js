@@ -801,6 +801,45 @@ function table_action_menu_init_data(t) {
 				},
 				{
 					"selector": ["clicked", "checked", "all"],
+					"title": "action_menu.on_safe_files",
+					"class": "safe16",
+					"table": ["safe"],
+					"foldable": true,
+					"cols": ["id"],
+					"condition": "id",
+					"children": [
+						{
+							"title": "action_menu.add_publication",
+							"class": "add16",
+							"fn": "data_action_add_safe_publication",
+							"privileges": ["Manager", "SafeUploader"],
+							"min": 1
+						},
+						{
+							"title": "action_menu.del_publication",
+							"class": "del16",
+							"fn": "data_action_del_safe_publication",
+							"privileges": ["Manager", "SafeUploader"],
+							"min": 1
+						},
+						{
+							"title": "action_menu.add_responsible",
+							"class": "add16",
+							"fn": "data_action_add_safe_responsible",
+							"privileges": ["Manager", "SafeUploader"],
+							"min": 1
+						},
+						{
+							"title": "action_menu.del_responsible",
+							"class": "del16",
+							"fn": "data_action_del_safe_responsible",
+							"privileges": ["Manager", "SafeUploader"],
+							"min": 1
+						}
+					]
+				},
+				{
+					"selector": ["clicked", "checked", "all"],
 					"title": "action_menu.on_forms",
 					"class": "wf16",
 					"table": ["forms"],
@@ -3048,7 +3087,8 @@ function data_action_del_groups(t, e) {
 		"requestor": services_osvcdeleterest,
 		"request_service": "R_GROUPS",
 		"selector": generic_selector_groups,
-		"request_data_entry": function(selected, data) {
+		"no_lines": true,
+		"request_data_entry": function(selected) {
 			return {
 				"id": selected
 			}
@@ -4203,6 +4243,74 @@ function data_action_del_form_responsible(t, e) {
 }
 
 //
+// data action: add safe file publication
+//
+function data_action_add_safe_publication(t, e) {
+	data_action_generic_selector(t, e, {
+		"requestor": services_osvcpostrest,
+		"request_service": "/safe/files_publications",
+		"selector": generic_selector_org_groups,
+		"request_data_entry": function(selected, data) {
+			return {
+				"group_id": selected,
+				"file_id": data["id"]
+			}
+		}
+	})
+}
+
+//
+// data action: del safe file publication
+//
+function data_action_del_safe_publication(t, e) {
+	data_action_generic_selector(t, e, {
+		"requestor": services_osvcdeleterest,
+		"request_service": "/safe/files_publications",
+		"selector": generic_selector_org_and_private_groups,
+		"request_data_entry": function(selected, data) {
+			return {
+				"group_id": selected,
+				"file_id": data["id"]
+			}
+		}
+	})
+}
+
+//
+// data action: add safe file responsibles
+//
+function data_action_add_safe_responsible(t, e) {
+	data_action_generic_selector(t, e, {
+		"requestor": services_osvcpostrest,
+		"request_service": "/safe/files_responsibles",
+		"selector": generic_selector_org_groups,
+		"request_data_entry": function(selected, data) {
+			return {
+				"group_id": selected,
+				"file_id": data["id"]
+			}
+		}
+	})
+}
+
+//
+// data action: del safe file responsible
+//
+function data_action_del_safe_responsible(t, e) {
+	data_action_generic_selector(t, e, {
+		"requestor": services_osvcdeleterest,
+		"request_service": "/safe/files_responsibles",
+		"selector": generic_selector_org_and_private_groups,
+		"request_data_entry": function(selected, data) {
+			return {
+				"group_id": selected,
+				"file_id": data["id"]
+			}
+		}
+	})
+}
+
+//
 // data action: attach tags to services
 //
 function data_action_services_tags_attach(t, e) {
@@ -4547,10 +4655,17 @@ function data_action_generic_selector(t, e, options) {
 	form.append(selector_div)
 	var selector_instance = options.selector(selector_div.attr("id"))
 	var yes_no = table_action_menu_yes_no(t, 'action_menu.submit', function(e){
-		var selected = selector_instance.get_selected()
-		for (i=0;i<data.length;i++) {
+		if (options.no_lines) {
+			var selected = selector_instance.get_selected()
 			for (j=0;j<selected.length;j++) {
-				request_data.push(options.request_data_entry(selected[j], data[i]))
+				request_data.push(options.request_data_entry(selected[j]))
+			}
+		} else {
+			var selected = selector_instance.get_selected()
+			for (i=0;i<data.length;i++) {
+				for (j=0;j<selected.length;j++) {
+					request_data.push(options.request_data_entry(selected[j], data[i]))
+				}
 			}
 		}
 		options.requestor(options.request_service, "", "", request_data, function(jd) {

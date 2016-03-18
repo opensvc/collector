@@ -1262,10 +1262,10 @@ function table_safe(divid, options) {
 		"name": "safe",
 		"ajax_url": "/init/safe/ajax_safe",
 		"force_cols": ["id"],
-		"columns": ['id', 'uuid', 'safe_name', 'size', 'md5', 'safe_team_publication', 'safe_team_publication', 'uploader', 'uploader_name', 'uploaded_from', 'uploaded_date'],
-		"default_columns": ['id', 'uuid', 'safe_name', 'size', 'md5', 'safe_team_publication', 'safe_team_publication', 'uploader_name', 'uploaded_from', 'uploaded_date'],
+		"columns": ['id', 'uuid', 'safe_name', 'size', 'md5', 'safe_team_publication', 'safe_team_responsible', 'uploader', 'uploader_name', 'uploaded_from', 'uploaded_date'],
+		"default_columns": ['id', 'uuid', 'safe_name', 'size', 'md5', 'safe_team_publication', 'safe_team_responsible', 'uploader_name', 'uploaded_from', 'uploaded_date'],
 		"wsable": true,
-		"events": ["safe_change"]
+		"events": ["safe_change", "safe_team_publication_change", "safe_team_responsible_change"]
 	}
 	var _options = $.extend({}, defaults, options)
 	return table_init(_options)
