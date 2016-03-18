@@ -124,7 +124,7 @@ if ldap_mode:
 auth.define_tables(migrate=False, username=login_form_username)
 
 if ldap_mode:
-    from gluon.contrib.login_methods.ldap_auth import ldap_auth
+    from applications.init.modules.ldap_auth import ldap_auth
     auth.settings.actions_disabled=['register','change_password','request_reset_password','retrieve_username','profile']
     kwargs = {}
     kwargs["mode"] = ldap_mode
@@ -134,6 +134,21 @@ if ldap_mode:
     kwargs["user_lastname_attrib"]='sn'
     kwargs["server"] = config_get("ldap_server", None)
     kwargs["base_dn"] = config_get("ldap_base_dn", None)
+    allowed_groups = config_get("ldap_allowed_groups", None)
+    group_dn = config_get("ldap_group_dn", None)
+    if allowed_groups and group_dn:
+        kwargs["allowed_groups"] = allowed_groups
+        kwargs["group_dn"] = group_dn
+	kwargs["group_name_attrib"] = config_get("ldap_group_name_attrib", "cn")
+	kwargs["group_member_attrib"] = config_get("ldap_group_member_attrib", "memberUid")
+	kwargs["group_filterstr"] = config_get("ldap_group_filterstr", "objectClass=*")
+	kwargs["manage_groups"] = config_get("ldap_manage_groups", False)
+	kwargs["group_mapping"] = config_get("ldap_group_mapping", {})
+	kwargs["manage_groups_callback"] = [
+          lambda: table_modified("auth_membership"),
+          lambda: table_modified("auth_group"),
+        ]
+
     bind_dn = config_get("ldap_bind_dn", None)
     if bind_dn:
         kwargs["bind_dn"] = bind_dn
