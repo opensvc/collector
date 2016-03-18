@@ -1976,6 +1976,11 @@ ul.login_menu ul {
 	padding: 0 0 0 20px;
 	min-height: 16px;
 }
+.safe16:before {
+	color: #EE5464;
+	content: '\f023';
+	font-family: awesome;
+}
 .rset16:before {
 	color: #EE5464;
 	content: '\f1b2';

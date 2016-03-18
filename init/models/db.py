@@ -2109,6 +2109,21 @@ db.define_table('safe',
            uploadseparate=True),
     migrate=False)
 
+db.define_table('v_safe',
+    Field('uploader','integer'),
+    Field('uploaded_from','string'),
+    Field('uploaded_date','datetime'),
+    Field('safe_name','string'),
+    Field('md5','string'),
+    Field('size','integer'),
+    Field('uuid','upload',
+           uploadfolder=os.path.join(request.folder,"uploads/safe"),
+           uploadseparate=True),
+    Field('uploader_name','string'),
+    Field('safe_team_responsible','string'),
+    Field('safe_team_publication','string'),
+    migrate=False)
+
 db.define_table('safe_team_publication',
     Field('file_id','integer', IS_IN_DB(db, db.safe.id)),
     Field('group_id','integer', IS_IN_DB(db, db.auth_group.id)),

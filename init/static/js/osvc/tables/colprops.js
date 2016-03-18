@@ -131,6 +131,41 @@ objcols = {
 }
 
 colprops = {
+	"safe_name": {
+		"img": "safe16",
+		"title": "Name"
+	},
+	"uuid": {
+		"img": "safe16",
+		"title": "Unique id"
+	},
+	"size": {
+		"_class": "numeric size_b",
+		"img": "safe16",
+		"title": "Size"
+	},
+	"md5": {
+		"_class": "pre",
+		"img": "safe16",
+		"title": "Checksum"
+	},
+	"uploader": {
+		"img": "key",
+		"title": "Uploader user id"
+	},
+	"uploader_name": {
+		"img": "guy16",
+		"title": "Uploader user name"
+	},
+	"uploaded_date": {
+		"_class": "datetime_no_age",
+		"img": "time16",
+		"title": "Uploaded on"
+	},
+	"uploaded_from": {
+		"img": "ip16",
+		"title": "Uploaded from"
+	},
 	"account": {
 		"img": "guy16",
 		"title": "Account"
@@ -762,6 +797,16 @@ colprops = {
 	"form_name": {
 		"img": "wf16",
 		"title": "Name"
+	},
+	"safe_team_publication": {
+		"_class": "groups",
+		"img": "guys16",
+		"title": "Team publication"
+	},
+	"safe_team_responsible": {
+		"_class": "groups",
+		"img": "guys16",
+		"title": "Team responsible"
 	},
 	"form_team_publication": {
 		"_class": "groups",

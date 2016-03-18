@@ -38,6 +38,7 @@ menu_entries = [
   'comp-modsets',
   'comp-rsets',
   'comp-designer',
+  'comp-safe',
   'comp-node-rset',
   'comp-node-modset',
   'comp-svc-rset',

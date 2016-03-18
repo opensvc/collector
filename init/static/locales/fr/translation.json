@@ -912,6 +912,10 @@
 				"title" : "Journal",
 				"text" : "Toutes les vérifications et remédiations"
 			},
+			"safe": {
+					"title": "Coffre-fort",
+					"text": "Stockage de fichiers avec contrôle d'intégrité et d'accès"
+			},
 			"modulesets" : {
 				"title" : "Jeux de modules",
 				"text" : "Vue des groupements de modules, optimisée pour la recherche"
@@ -1180,6 +1184,12 @@
 		"hidden_menu_entries": "entrées cachées du menu"
 	},
 	"col" : {
+                "Unique id": "Id unique",
+                "Checksum": "Somme de contrôle",
+                "Uploader user id": "Id l'uploader",
+                "Uploader user name": "Nom de l'uploader",
+                "Uploaded from": "Uploadé depuis",
+                "Uploaded on": "Uploadé le",
 		"Format": "Format",
 		"Dictionary": "Dictionnaire",
 		"Sent via gtalk": "Envoyé par gtalk",

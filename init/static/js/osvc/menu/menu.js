@@ -174,6 +174,13 @@ var menu_data = {
 		  "link" : "/init/compliance/comp_admin?obj_filter=opensvc"
 		},
 		{
+		  "title" : "safe",
+		  "class" : "safe16",
+		  "id" : "comp-safe",
+		  "link" : "/init/safe/safe",
+		  "fn" : "table_safe"
+		},
+		{
 		  "title" : "nrulesets",
 		  "class" : "node16",
 		  "id" : "comp-node-rset",

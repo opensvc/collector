@@ -1254,6 +1254,23 @@ function table_obsolescence(divid, options) {
 	table_init(_options)
 }
 
+function table_safe(divid, options) {
+	var defaults = {
+		"id": "safe",
+		"caller": "table_safe",
+		"divid": divid,
+		"name": "safe",
+		"ajax_url": "/init/safe/ajax_safe",
+		"force_cols": ["id"],
+		"columns": ['id', 'uuid', 'safe_name', 'size', 'md5', 'safe_team_publication', 'safe_team_publication', 'uploader', 'uploader_name', 'uploaded_from', 'uploaded_date'],
+		"default_columns": ['id', 'uuid', 'safe_name', 'size', 'md5', 'safe_team_publication', 'safe_team_publication', 'uploader_name', 'uploaded_from', 'uploaded_date'],
+		"wsable": true,
+		"events": ["safe_change"]
+	}
+	var _options = $.extend({}, defaults, options)
+	return table_init(_options)
+}
+
 function table_packages(divid, options) {
 	var defaults = {
 		"id": "packages",

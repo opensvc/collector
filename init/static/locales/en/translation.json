@@ -921,6 +921,10 @@
 				"title" : "Status",
 				"text" : "Nodes and service last configuration checks"
 			},
+			"safe" : {
+					"title" : "File Safe",
+					"text" : "Integrity controlled and RBAC conforming file store"
+			},
 			"log" : {
 				"title" : "Log",
 				"text" : "All configuration checks and fixes"
@@ -1191,6 +1195,12 @@
 		"hidden_menu_entries": "hidden menu entries"
 	},
 	"col" : {
+		"Unique id": "Unique id",
+		"Checksum": "Checksum",
+		"Uploader user id": "Uploader user id",
+		"Uploader user name": "Uploader user name",
+		"Uploaded from": "Uploaded from",
+		"Uploaded on": "Uploaded on",
 		"Format": "Format",
 		"Dictionary": "Dictionary",
 		"Sent via gtalk": "Sent via gtalk",
