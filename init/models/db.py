@@ -144,6 +144,10 @@ if ldap_mode:
 	kwargs["group_filterstr"] = config_get("ldap_group_filterstr", "objectClass=*")
 	kwargs["manage_groups"] = config_get("ldap_manage_groups", False)
 	kwargs["group_mapping"] = config_get("ldap_group_mapping", {})
+	kwargs["manage_groups_callback"] = [
+          lambda: table_modified("auth_membership"),
+          lambda: table_modified("auth_group"),
+        ]
 
     bind_dn = config_get("ldap_bind_dn", None)
     if bind_dn:

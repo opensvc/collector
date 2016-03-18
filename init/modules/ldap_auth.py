@@ -37,6 +37,7 @@ def ldap_auth(server='ldap',
               user_lastname_attrib='cn:2',
               user_mail_attrib='mail',
               manage_groups=False,
+              manage_groups_callback=[],
               db=None,
               group_dn=None,
               group_name_attrib='cn',
@@ -555,6 +556,7 @@ def ldap_auth(server='ldap',
                     db_groups_of_the_user.append(group.role)
             logging.debug('db groups of user %s: %s' % (username, str(db_groups_of_the_user)))
 
+            auth_membership_changed = False
             #
             # Delete user membership from groups where user is not anymore
             # #############################################################
@@ -562,6 +564,7 @@ def ldap_auth(server='ldap',
                 if ldap_groups_of_the_user.count(group_to_del) == 0:
                     db((db.auth_membership.user_id == db_user_id) &
                        (db.auth_membership.group_id == db_group_id[group_to_del])).delete()
+                    auth_membership_changed = True
 
             #
             # Create user membership in groups where user is not in already
@@ -573,6 +576,12 @@ def ldap_auth(server='ldap',
                     else:
                         gid = db(db.auth_group.role == group_to_add).select(db.auth_group.id).first().id
                     db.auth_membership.insert(user_id=db_user_id, group_id=gid)
+                    auth_membership_changed = True
+
+            if auth_membership_changed:
+                for callback in manage_groups_callback:
+                    callback()
+
         except:
             logger.warning("[%s] Groups are not managed successfully!" % str(username))
             import traceback
