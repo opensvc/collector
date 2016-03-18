@@ -3,6 +3,9 @@
 
 http_host = "opensvc.mydomain.com"
 
+# time between relogin, in seconds
+session_expire = 36000000
+
 # refuse node register without a collector user credentials
 # default: False
 refuse_anon_register = True
