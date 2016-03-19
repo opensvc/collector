@@ -157,13 +157,13 @@ class table_svcmon(HtmlTable):
                     ),
         }
         self.colprops.update(svcmon_colprops)
-        self.colprops.update(v_services_colprops)
+        self.colprops.update(services_colprops)
         self.colprops.update(nodes_colprops)
         self.colprops['svc_updated'].field = 'svc_updated'
         for i in self.cols:
             self.colprops[i].table = 'v_svcmon'
         self.keys = ["mon_nodname", "mon_svcname", "mon_vmname"]
-        self.span = ['mon_svcname'] + v_services_cols
+        self.span = ['mon_svcname'] + services_cols
         self.span.append('app_domain')
         self.span.append('app_team_ops')
         self.ajax_col_values = 'ajax_svcmon_col_values'

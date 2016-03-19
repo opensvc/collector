@@ -118,7 +118,7 @@ class table_actions(HtmlTable):
             cp[k].table = "v_svcactions"
         del(cp['status'])
         self.colprops.update(cp)
-        self.colprops.update(v_services_colprops)
+        self.colprops.update(services_colprops)
         ncols = nodes_cols
         ncols.remove('updated')
         ncols.remove('power_supply_nb')

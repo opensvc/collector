@@ -4,10 +4,10 @@ class table_services(HtmlTable):
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
         self.cols += ['svc_name']
-        self.cols += v_services_cols
+        self.cols += services_cols
         self.cols.remove("svc_updated")
         self.cols += ['updated', 'svc_status_updated']
-        self.colprops = v_services_colprops
+        self.colprops = services_colprops
         self.colprops.update({
             'svc_name': HtmlTableColumn(
                      table='services',

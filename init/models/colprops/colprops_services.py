@@ -1,4 +1,4 @@
-v_services_cols = [
+services_cols = [
     'svc_status',
     'svc_availstatus',
     'svc_app',
@@ -41,114 +41,106 @@ svcmon_cols = [
     'mon_hbstatus'
 ]
 
-v_services_colprops = {
+services_colprops = {
     'svc_name': HtmlTableColumn(
              field='svc_name',
-             table = 'v_services',
+             table = 'services',
             ),
     'svc_hostid': HtmlTableColumn(
              field='svc_hostid',
-             table = 'v_services',
+             table = 'services',
             ),
     'svc_wave': HtmlTableColumn(
              field='svc_wave',
-             table = 'v_services',
+             table = 'services',
             ),
     'svc_availstatus': HtmlTableColumn(
              field='svc_availstatus',
-             table = 'v_services',
+             table = 'services',
             ),
     'svc_status': HtmlTableColumn(
              field='svc_status',
-             table = 'v_services',
+             table = 'services',
             ),
     'svc_app': HtmlTableColumn(
              field='svc_app',
-             table = 'v_services',
+             table = 'services',
             ),
     'svc_ha': HtmlTableColumn(
              field='svc_ha',
-             table = 'v_services',
+             table = 'services',
             ),
     'svc_containertype': HtmlTableColumn(
              field='svc_containertype',
-             table = 'v_services',
+             table = 'services',
             ),
     'svc_type': HtmlTableColumn(
              field='svc_type',
-             table = 'v_services',
+             table = 'services',
             ),
     'svc_autostart': HtmlTableColumn(
              field='svc_autostart',
-             table = 'v_services',
+             table = 'services',
             ),
     'svc_nodes': HtmlTableColumn(
              field='svc_nodes',
-             table = 'v_services',
+             table = 'services',
             ),
     'svc_drpnode': HtmlTableColumn(
              field='svc_drpnode',
-             table = 'v_services',
+             table = 'services',
             ),
     'svc_drpnodes': HtmlTableColumn(
              field='svc_drpnodes',
-             table = 'v_services',
+             table = 'services',
             ),
     'svc_drptype': HtmlTableColumn(
              field='svc_drptype',
-             table = 'v_services',
+             table = 'services',
             ),
     'svc_comment': HtmlTableColumn(
              field='svc_comment',
-             table = 'v_services',
+             table = 'services',
             ),
     'svc_created': HtmlTableColumn(
              field='svc_created',
-             table = 'v_services',
+             table = 'services',
             ),
     'svc_updated': HtmlTableColumn(
              field='updated',
-             table = 'v_services',
+             table = 'services',
             ),
     'svc_status_updated': HtmlTableColumn(
              table='services',
              field='svc_status_updated',
             ),
-    'responsibles': HtmlTableColumn(
-             field='responsibles',
-             table = 'v_services',
-            ),
-    'mailto': HtmlTableColumn(
-             field='mailto',
-             table = 'v_services',
-            ),
     'svc_cluster_type': HtmlTableColumn(
              field='svc_cluster_type',
-             table = 'v_services',
+             table = 'services',
             ),
     'svc_flex_min_nodes': HtmlTableColumn(
              field='svc_flex_min_nodes',
-             table = 'v_services',
+             table = 'services',
             ),
     'svc_flex_max_nodes': HtmlTableColumn(
              field='svc_flex_max_nodes',
-             table = 'v_services',
+             table = 'services',
             ),
     'svc_flex_cpu_low_threshold': HtmlTableColumn(
              field='svc_flex_cpu_low_threshold',
-             table = 'v_services',
+             table = 'services',
             ),
     'svc_flex_cpu_high_threshold': HtmlTableColumn(
              field='svc_flex_cpu_high_threshold',
-             table = 'v_services',
+             table = 'services',
             ),
     'svc_envfile': HtmlTableColumn(
              field='svc_envfile',
-             table = 'v_services',
+             table = 'services',
             ),
     'svc_envdate': HtmlTableColumn(
              field='svc_envdate',
-             table = 'v_svcmon',
+             table = 'services',
             ),
 }
 

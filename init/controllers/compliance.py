@@ -76,8 +76,8 @@ class table_comp_rulesets_services(HtmlTable):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
-        self.cols = ['svc_name', 'encap', 'ruleset_id', 'ruleset_name'] + v_services_cols + ['svc_status_updated']
-        self.colprops = v_services_colprops
+        self.cols = ['svc_name', 'encap', 'ruleset_id', 'ruleset_name'] + services_cols + ['svc_status_updated']
+        self.colprops = services_colprops
         self.colprops['ruleset_id'] = HtmlTableColumn(
                      field='ruleset_id',
                     )
@@ -490,8 +490,8 @@ class table_comp_modulesets_services(HtmlTable):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
-        self.cols = ['svc_name', 'encap', 'modset_id', 'modset_name'] + v_services_cols + ['svc_status_updated']
-        self.colprops = v_services_colprops
+        self.cols = ['svc_name', 'encap', 'modset_id', 'modset_name'] + services_cols + ['svc_status_updated']
+        self.colprops = services_colprops
         self.colprops['modset_id'] = HtmlTableColumn(
                      field='modset_id',
                     )
