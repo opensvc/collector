@@ -223,6 +223,7 @@ function table_action_menu_init_data(t) {
 							"title": "action_menu.network",
 							"class": "net16",
 							"fn": "data_action_add_network",
+							"privileges": ["Manager", "NetworkManager"],
 							"min": 0
 						},
 						{
@@ -1743,7 +1744,7 @@ function table_action_menu_format_section(t, e, section) {
 	var ul = $("<ul></ul>")
 	for (var i=0; i<section.children.length; i++) {
 		var li = table_action_menu_format_selector(t, e, section.children[i])
-		if (!li || (li.html().length == 0)) {
+		if (!li || (li.children("ul").children().length == 0)) {
 			continue
 		}
 		ul.append(li)
