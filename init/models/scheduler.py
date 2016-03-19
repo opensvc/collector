@@ -130,30 +130,6 @@ def task_feed_monitor():
     db.executesql(sql)
     db.commit()
 
-def task_refresh_b_apps():
-    from warnings import filterwarnings
-    import MySQLdb
-    filterwarnings('ignore', category = MySQLdb.Warning)
-    try:
-        sql = "drop table if exists b_apps_new"
-        db.executesql(sql)
-        sql = "create table b_apps_new as select * from v_apps"
-        db.executesql(sql)
-        sql = "alter table b_apps_new add key idx1 (app)"
-        db.executesql(sql)
-        sql = "drop table if exists b_apps_old"
-        db.executesql(sql)
-        sql = "rename table b_apps to b_apps_old, b_apps_new to b_apps"
-        db.executesql(sql)
-    except:
-        sql = "drop table if exists b_apps"
-        db.executesql(sql)
-        sql = "create table b_apps as select * from v_apps"
-        db.executesql(sql)
-        sql = "alter table b_apps add key idx1 (app)"
-        db.executesql(sql)
-    db.commit()
-
 def task_unfinished_actions():
     now = datetime.datetime.now()
     tmo = now - datetime.timedelta(minutes=120)

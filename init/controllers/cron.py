@@ -16,9 +16,6 @@ def refresh_b_action_errors():
     db.executesql(sql)
     db.commit()
 
-def refresh_b_apps():
-    task_refresh_b_apps()
-
 def svc_log_update(svcname, astatus):
     q = db.services_log.svc_name == svcname
     o = ~db.services_log.id
