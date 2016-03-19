@@ -3167,10 +3167,8 @@ def cron_dash_app_without_responsible():
              dash_type="application code without responsible" and
              dash_dict in (
                select
-                 concat('{"a":"', app, '"}')
-               from v_apps
-               where
-                 roles is not NULL
+                 concat('{"a":"', a.app, '"}')
+               from apps a join apps_responsibles ar on a.id=ar.app_id
              ) or dash_dict = "" or dash_dict is NULL
           """
     db.executesql(sql)
@@ -3183,15 +3181,15 @@ def cron_dash_app_without_responsible():
                  "",
                  2,
                  "%(a)s",
-                 concat('{"a":"', app, '"}'),
+                 concat('{"a":"', a.app, '"}'),
                  now(),
-                 md5(concat('{"a":"', app, '"}')),
+                 md5(concat('{"a":"', a.app, '"}')),
                  "",
                  "",
                  now()
-               from v_apps
+               from apps a left join apps_responsibles ar on a.id=ar.app_id
                where
-                 roles is NULL
+                 ar.group_id is NULL
                on duplicate key update
                  dash_updated=now()
           """
