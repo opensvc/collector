@@ -71,11 +71,13 @@ def table_modified(name):
     triggers = {
       "apps_responsibles": [
          clear_cache_user_app_ids,
+         clear_cache_user_apps,
       ],
       "auth_membership": [
          clear_cache_user_group_ids,
          clear_cache_user_groups,
          clear_cache_user_app_ids,
+         clear_cache_user_apps,
       ]
     }
     for t in triggers.get(name, []):
@@ -555,7 +557,6 @@ db.define_table('nodes',
 
 db.define_table('v_users',
     Field('fullname'),
-    Field('domains'),
     Field('manager', 'integer'),
     Field('email'),
     Field('phone_work'),
@@ -644,12 +645,6 @@ db.define_table('svc_res_fs',
     Field('fs_mnt'),
     Field('fs_mntopt'),
     Field('fs_type'),
-    migrate=False)
-
-db.define_table('domain_permissions',
-    Field('id'),
-    Field('group_id'),
-    Field('domains'),
     migrate=False)
 
 db.define_table('resmon',

@@ -1,3 +1,36 @@
+def q_filter(query=None, svc_field=None, node_field=None, group_field=None, app_field=None, db=db):
+    q = None
+    t = None
+    if "Manager" in user_groups():
+        manager = True
+    else:
+        manager = False
+    if svc_field:
+        if not manager:
+            q = svc_field.belongs(user_services())
+        if t is None:
+            t = db[svc_field.tablename]
+    if node_field:
+        if not manager:
+            q = node_field.belongs(user_nodes())
+        if t is None:
+            t = db[node_field.tablename]
+    if app_field:
+        if not manager:
+            q = app_field.belongs(user_apps())
+        if t is None:
+            t = db[app_field.tablename]
+    if group_field:
+        if not manager:
+            q = group_field.belongs(user_groups())
+        if t is None:
+            t = db[group_field.tablename]
+    if query is None:
+        query = t.id > 0
+    if q is None:
+        return query
+    return query & q
+
 def _where(query, table, var, field, depth=0, db=db):
     if table not in db:
         return query

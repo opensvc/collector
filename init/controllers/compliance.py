@@ -124,7 +124,7 @@ def ajax_comp_rulesets_services_col_values():
     col = request.args[0]
     o = db.v_comp_services[col]
     g = db.v_comp_services.svc_name | db.v_comp_services.encap | db.v_comp_services.ruleset_name
-    q = _where(None, 'v_comp_services', domain_perms(), 'svc_name')
+    q = q_filter(app_field=db.v_comp_services.svc_app)
     for f in t.cols:
         q = _where(q, 'v_comp_services', t.filter_parse(f), f)
     t.object_list = db(q).select(o, orderby=o, groupby=g, cacheable=True)
@@ -137,7 +137,7 @@ def ajax_comp_rulesets_nodes_col_values():
     col = request.args[0]
     o = db.v_comp_nodes[col]
     g = db.v_comp_nodes.nodename | db.v_comp_nodes.ruleset_name
-    q = _where(None, 'v_comp_nodes', domain_perms(), 'nodename')
+    q = q_filter(group_field=db.v_comp_nodes.team_responsible)
     for f in t.cols:
         q = _where(q, 'v_comp_nodes', t.filter_parse(f), f)
     t.object_list = db(q).select(o, orderby=o, groupby=g, cacheable=True)
@@ -150,7 +150,7 @@ def ajax_comp_rulesets_services():
 
     o = db.v_comp_services.svc_name | db.v_comp_services.encap | db.v_comp_services.ruleset_name
     g = db.v_comp_services.svc_name | db.v_comp_services.encap | db.v_comp_services.ruleset_name
-    q = _where(None, 'v_comp_services', domain_perms(), 'svc_name')
+    q = q_filter(app_field=db.v_comp_services.svc_app)
     for f in t.cols:
         q = _where(q, 'v_comp_services', t.filter_parse(f), f)
     q = apply_gen_filters(q, 'v_comp_services')
@@ -176,7 +176,7 @@ def ajax_comp_rulesets_nodes():
 
     o = db.v_comp_nodes.nodename
     g = db.v_comp_nodes.nodename | db.v_comp_nodes.ruleset_name
-    q = _where(None, 'v_comp_nodes', domain_perms(), 'nodename')
+    q = q_filter(group_field=db.v_comp_nodes.team_responsible)
     if 'Manager' not in user_groups():
         q &= db.v_comp_nodes.team_responsible.belongs(user_groups())
     for f in t.cols:
@@ -537,7 +537,7 @@ def ajax_comp_modulesets_services_col_values():
     col = request.args[0]
     o = db.v_comp_services[col]
     g = db.v_comp_services.svc_name | db.v_comp_services.encap | db.v_comp_services.modset_name
-    q = _where(None, 'v_comp_services', domain_perms(), 'svc_name')
+    q = q_filter(app_field=db.v_comp_services.svc_app)
     if 'Manager' not in user_groups():
         q &= db.v_comp_services.team_responsible.belongs(user_groups())
     for f in t.cols:
@@ -553,7 +553,7 @@ def ajax_comp_modulesets_nodes_col_values():
     col = request.args[0]
     o = db.v_comp_nodes[col]
     g = db.v_comp_nodes.nodename | db.v_comp_nodes.modset_name
-    q = _where(None, 'v_comp_nodes', domain_perms(), 'nodename')
+    q = q_filter(group_field=db.v_comp_nodes.team_responsible)
     if 'Manager' not in user_groups():
         q &= db.v_comp_nodes.team_responsible.belongs(user_groups())
     for f in t.cols:
@@ -569,7 +569,7 @@ def ajax_comp_modulesets_services():
 
     o = db.v_comp_services.svc_name | db.v_comp_services.encap | db.v_comp_services.modset_name
     g = db.v_comp_services.svc_name | db.v_comp_services.encap | db.v_comp_services.modset_name
-    q = _where(None, 'v_comp_services', domain_perms(), 'svc_name')
+    q = q_filter(app_field=db.v_comp_services.svc_app)
     for f in t.cols:
         q = _where(q, 'v_comp_services', t.filter_parse(f), f)
     q = apply_gen_filters(q, 'v_comp_services')
@@ -595,7 +595,7 @@ def ajax_comp_modulesets_nodes():
 
     o = db.v_comp_nodes.nodename
     g = db.v_comp_nodes.nodename | db.v_comp_nodes.modset_name
-    q = _where(None, 'v_comp_nodes', domain_perms(), 'nodename')
+    q = q_filter(group_field=db.v_comp_nodes.team_responsible)
     if 'Manager' not in user_groups():
         q &= db.v_comp_nodes.team_responsible.belongs(user_groups())
     for f in t.cols:
@@ -1128,7 +1128,7 @@ def ajax_comp_log_col_values():
     t = table_comp_log(table_id, 'ajax_comp_log')
     col = request.args[0]
     o = db.comp_log[col]
-    q = _where(None, 'comp_log', domain_perms(), 'run_nodename')
+    q = q_filter(node_field=db.comp_log.run_nodename)
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
     q = apply_filters(q, db.comp_log.run_nodename)
@@ -1144,7 +1144,7 @@ def ajax_comp_status_col_values():
         o = db[t.colprops[col].table][col]
     except:
         return T("this column is not filterable")
-    q = _where(None, 'comp_status', domain_perms(), 'run_nodename')
+    q = q_filter(node_field=db.comp_log.run_nodename)
     q &= db.comp_status.run_nodename == db.nodes.nodename
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
@@ -1157,7 +1157,7 @@ def ajax_comp_status():
     table_id = request.vars.table_id
     t = table_comp_status(table_id, 'ajax_comp_status')
     o = ~db.comp_status.run_nodename
-    q = _where(None, 'comp_status', domain_perms(), 'run_nodename')
+    q = q_filter(node_field=db.comp_status.run_nodename)
     q &= db.comp_status.run_nodename == db.nodes.nodename
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
@@ -1184,7 +1184,7 @@ def json_comp_status_agg():
     table_id = request.vars.table_id
     t = table_comp_status(table_id, 'ajax_comp_status')
     o = ~db.comp_status.run_nodename
-    q = _where(None, 'comp_status', domain_perms(), 'run_nodename')
+    q = q_filter(node_field=db.comp_status.run_nodename)
     q &= db.comp_status.run_nodename == db.nodes.nodename
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
@@ -1219,7 +1219,7 @@ def ajax_comp_svc_status():
     mt = table_comp_svc_status('css', 'ajax_comp_svc_status')
 
     o = ~db.comp_status.run_svcname
-    q = _where(None, 'comp_status', domain_perms(), 'run_svcname')
+    q = q_filter(node_field=db.comp_status.run_nodename)
     #q &= db.comp_status.run_svcname == db.v_svcmon.mon_svcname
     q &= db.comp_status.run_nodename == db.nodes.nodename
     q &= (db.comp_status.run_svcname != None) & (db.comp_status.run_svcname != "")
@@ -1287,7 +1287,7 @@ def ajax_comp_node_status():
     mt = table_comp_node_status('cns', 'ajax_comp_node_status')
 
     o = ~db.comp_status.run_nodename
-    q = _where(None, 'comp_status', domain_perms(), 'run_nodename')
+    q = q_filter(node_field=db.comp_status.run_nodename)
     q &= db.comp_status.run_nodename == db.nodes.nodename
     q &= (db.comp_status.run_svcname == None) | (db.comp_status.run_svcname == "")
     for f in t.cols:
@@ -1370,7 +1370,7 @@ def ajax_svc_history():
 @service.json
 def json_svc_history():
     t = table_comp_status('cs0', 'ajax_comp_status')
-    q = _where(None, 'comp_status', domain_perms(), 'run_nodename')
+    q = q_filter(node_field=db.comp_status.run_nodename)
     q &= db.comp_status.run_nodename == db.nodes.nodename
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
@@ -1428,7 +1428,7 @@ def ajax_mod_history():
 @service.json
 def json_mod_history():
     t = table_comp_status('cs0', 'ajax_comp_status')
-    q = _where(None, 'comp_status', domain_perms(), 'run_nodename')
+    q = q_filter(node_field=db.comp_status.run_nodename)
     q &= db.comp_status.run_module == request.vars.modname
     q &= db.comp_status.run_nodename == db.nodes.nodename
     for f in t.cols:
@@ -1488,7 +1488,7 @@ def ajax_node_history():
 @service.json
 def json_node_history():
     t = table_comp_status('cs0', 'ajax_comp_status')
-    q = _where(None, 'comp_status', domain_perms(), 'run_nodename')
+    q = q_filter(node_field=db.comp_status.run_nodename)
     q &= db.comp_status.run_nodename == db.nodes.nodename
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
@@ -1529,7 +1529,7 @@ def ajax_comp_mod_status():
     mt = table_comp_mod_status('cms', 'ajax_comp_mod_status')
 
     o = ~db.comp_status.run_nodename
-    q = _where(None, 'comp_status', domain_perms(), 'run_nodename')
+    q = q_filter(node_field=db.comp_status.run_nodename)
     q &= db.comp_status.run_nodename == db.nodes.nodename
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
@@ -1639,7 +1639,7 @@ def ajax_comp_log():
 
     db.commit()
     o = ~db.comp_log.id
-    q = _where(None, 'comp_log', domain_perms(), 'run_nodename')
+    q = q_filter(node_field=db.comp_log.run_nodename)
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
     q = apply_filters(q, db.comp_log.run_nodename)

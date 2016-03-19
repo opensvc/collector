@@ -174,7 +174,7 @@ def ajax_svcmon_col_values():
     t = table_svcmon(table_id, 'ajax_svcmon')
     col = request.args[0]
     o = db.v_svcmon[col]
-    q = _where(None, 'v_svcmon', domain_perms(), 'mon_nodname')
+    q = q_filter(app_field=db.v_svcmon.svc_app)
     q = apply_filters(q, db.v_svcmon.mon_nodname, db.v_svcmon.mon_svcname)
     for f in t.cols:
         q = _where(q, 'v_svcmon', t.filter_parse(f), f)
@@ -191,7 +191,7 @@ def ajax_svcmon():
     o = db.v_svcmon.mon_svcname
     o |= db.v_svcmon.mon_nodname
 
-    q = _where(None, 'v_svcmon', domain_perms(), 'mon_svcname')
+    q = q_filter(app_field=db.v_svcmon.svc_app)
     q = apply_filters(q, db.v_svcmon.mon_nodname, db.v_svcmon.mon_svcname)
     for f in t.cols:
         q = _where(q, 'v_svcmon', t.filter_parse(f), f)

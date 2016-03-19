@@ -22,8 +22,7 @@ class rest_get_resources(rest_get_table_handler):
         )
 
     def handler(self, **vars):
-        q = db.resmon.id > 0
-        q = _where(q, 'resmon', domain_perms(), 'svcname')
+        q = q_filter(svc_field=db.resmon.svcname)
         fset_id = vars.get("fset_id")
         if fset_id:
             q = apply_filters(q, service_field=db.resmon.svcname, fset_id=fset_id)

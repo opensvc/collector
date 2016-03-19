@@ -13,7 +13,6 @@ class table_users(HtmlTable):
                      'groups',
                      'lock_filter',
                      'fset_name',
-                     'domains',
                      'last']
         self.keys = ['id']
         self.span = ['id']
@@ -41,10 +40,6 @@ class table_users(HtmlTable):
             'groups': HtmlTableColumn(
                      table='v_users',
                      field='groups',
-                    ),
-            'domains': HtmlTableColumn(
-                     table='v_users',
-                     field='domains',
                     ),
             'manager': HtmlTableColumn(
                      table='v_users',

@@ -2,13 +2,13 @@ def lib_packages_diff(nodenames=[], svcnames=[], encap=False):
     if len(svcnames) > 0:
         if encap:
             q = db.svcmon.mon_svcname.belongs(svcnames)
-            q &= _where(None, 'svcmon', domain_perms(), 'mon_nodname')
+            q = q_filter(q, svc_field=db.svcmon.mon_svcname)
             rows = db(q).select(db.svcmon.mon_vmname,
                                 groupby=db.svcmon.mon_vmname)
             nodenames = [row.mon_vmname for row in rows if row.mon_vmname != "" and row.mon_vmname is not None]
         else:
             q = db.svcmon.mon_svcname.belongs(svcnames)
-            q &= _where(None, 'svcmon', domain_perms(), 'mon_nodname')
+            q = q_filter(q, svc_field=db.svcmon.mon_svcname)
             rows = db(q).select(db.svcmon.mon_nodname)
             nodenames += [r.mon_nodname for r in rows]
 
@@ -23,13 +23,13 @@ def lib_packages_diff(nodenames=[], svcnames=[], encap=False):
     if list(nodenames)[0][0] in "0123456789":
         # received node ids
         q = db.nodes.id.belongs(nodenames)
-        q &= _where(None, 'nodes', domain_perms(), 'nodename')
+        q = q_filter(q, group_field=db.nodes.team_responsible)
         rows = db(q).select(db.nodes.nodename)
         nodenames = [r.nodename for r in rows]
     else:
         # apply domain filtering
         q = db.nodes.nodename.belongs(nodenames)
-        q &= _where(None, 'nodes', domain_perms(), 'nodename')
+        q = q_filter(q, group_field=db.nodes.team_responsible)
         rows = db(q).select(db.nodes.nodename)
         nodenames = [r.nodename for r in rows]
 

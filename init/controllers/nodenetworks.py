@@ -156,8 +156,7 @@ def ajax_nodenetworks_col_values():
     t = table_nodenetworks(table_id, 'ajax_nodenetworks')
     col = request.args[0]
     o = db.v_nodenetworks[col]
-    q = db.v_nodenetworks.id > 0
-    q = _where(q, 'v_nodenetworks', domain_perms(), 'nodename')
+    q = q_filter(group_field=db.v_nodenetworks.team_responsible)
     for f in t.cols:
         q = _where(q, 'v_nodenetworks', t.filter_parse(f), f)
     t.object_list = db(q).select(o, orderby=o)
@@ -169,8 +168,7 @@ def ajax_nodenetworks():
     t = table_nodenetworks(table_id, 'ajax_nodenetworks')
 
     o = db.v_nodenetworks.nodename|db.v_nodenetworks.intf
-    q = db.v_nodenetworks.id > 0
-    q = _where(q, 'v_nodenetworks', domain_perms(), 'nodename')
+    q = q_filter(group_field=db.v_nodenetworks.team_responsible)
     for f in t.cols:
         q = _where(q, 'v_nodenetworks', t.filter_parse(f), f)
     q = apply_filters(q, db.v_nodenetworks.nodename, None)

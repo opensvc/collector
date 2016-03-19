@@ -728,8 +728,7 @@ class rest_get_filterset_nodes(rest_get_table_handler):
         id = lib_filterset_id(id)
         if id is None:
             return dict(error="filterset not found")
-        q = db.nodes.id > 0
-        q &= _where(None, 'nodes', domain_perms(), 'nodename')
+        q = q_filter(group_field=db.nodes.team_responsible)
         q = apply_filters(q, node_field=db.nodes.nodename, fset_id=id)
         self.set_q(q)
         return self.prepare_data(**vars)
@@ -755,8 +754,7 @@ class rest_get_filterset_services(rest_get_table_handler):
         id = lib_filterset_id(id)
         if id is None:
             return dict(error="filterset not found")
-        q = db.services.id > 0
-        q &= _where(None, 'services', domain_perms(), 'svc_name')
+        q = q_filter(app_field=db.services.svc_app)
         q = apply_filters(q, service_field=db.services.svc_name, fset_id=id)
         self.set_q(q)
         return self.prepare_data(**vars)

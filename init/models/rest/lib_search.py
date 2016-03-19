@@ -41,7 +41,7 @@ def lib_search_disk(pattern):
     t = datetime.datetime.now()
     o = db.b_disk_app.disk_id
     q = _where(None, 'b_disk_app', pattern, 'disk_id')
-    q = _where(q, 'b_disk_app', domain_perms(), 'disk_nodename')
+    q = q_filter(q, app_field=db.b_disk_app.app)
     q = apply_filters(q, db.b_disk_app.disk_nodename, None)
     n = len(db(q).select(o, groupby=o))
     data = db(q).select(o,
@@ -75,7 +75,7 @@ def lib_search_service(pattern):
     t = datetime.datetime.now()
     o = db.services.svc_name
     q = _where(None, 'services', pattern, 'svc_name')
-    q = _where(q, 'services', domain_perms(), 'svc_name')
+    q = q_filter(q, app_field=db.services.svc_app)
     q = apply_filters(q, db.services.svc_name, None)
     n = db(q).count()
     data = db(q).select(o, orderby=o, limitby=(0,max_search_result),).as_list()
@@ -90,7 +90,7 @@ def lib_search_vm(pattern):
     t = datetime.datetime.now()
     o = db.svcmon.mon_vmname
     q = _where(None, 'svcmon', pattern, 'mon_vmname')
-    q = _where(q, 'svcmon', domain_perms(), 'mon_svcname')
+    q = q_filter(q, svc_field=db.svcmon.mon_svcname)
     q = apply_filters(q, db.svcmon.mon_svcname, None)
     n = db(q).count()
     data = db(q).select(o,
@@ -108,7 +108,7 @@ def lib_search_ip(pattern):
     t = datetime.datetime.now()
     o = db.node_ip.addr
     q = _where(None, 'node_ip', pattern, 'addr')
-    q = _where(q, 'node_ip', domain_perms(), 'nodename')
+    q = q_filter(q, node_field=db.node_ip.nodename)
     q = apply_filters(q, db.node_ip.nodename, None)
 
     n = db(q).count()
@@ -129,7 +129,7 @@ def lib_search_node(pattern):
     t = datetime.datetime.now()
     o = db.nodes.nodename
     q = _where(None, 'nodes', pattern, 'nodename')
-    q = _where(q, 'nodes', domain_perms(), 'nodename')
+    q = q_filter(q, group_field=db.nodes.team_responsible)
     q = apply_filters(q, db.nodes.nodename, None)
     n = db(q).count()
     data = db(q).select(o,

@@ -78,7 +78,7 @@ class rest_get_network_nodes(rest_get_table_handler):
             return dict(data=[])
         q = db.v_nodenetworks.net_network == net.network
         q &= db.v_nodenetworks.net_netmask == net.netmask
-        q &= _where(None, 'v_nodenetworks', domain_perms(), 'nodename')
+        q = q_filter(q, group_field=db.v_nodenetworks.team_responsible)
         self.set_q(q)
         return self.prepare_data(**vars)
 

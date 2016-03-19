@@ -294,12 +294,12 @@ class rest_delete_tag(rest_delete_handler):
             return dict(info="tag not found")
 
         q = db.node_tags.tag_id == tagid
-        q &= _where(None, 'node_tags', domain_perms(), 'nodename')
+        q = q_filter(q, node_field=db.node_tags.nodename)
         n = db(q).delete()
         info += ["%d node attachments deleted"%n]
 
         q = db.svc_tags.tag_id == tagid
-        q &= _where(None, 'svc_tags', domain_perms(), 'svcname')
+        q = q_filter(q, svc_field=db.svc_tags.svcname)
         n = db(q).delete()
         info += ["%d service attachments deleted"%n]
 
@@ -342,7 +342,7 @@ class rest_get_tag_nodes(rest_get_table_handler):
     def handler(self, tagid, **vars):
         q = db.node_tags.tag_id == tagid
         q &= db.node_tags.nodename == db.nodes.nodename
-        q &= _where(None, 'node_tags', domain_perms(), 'nodename')
+        q = q_filter(q, node_field=db.node_tags.nodename)
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -367,7 +367,7 @@ class rest_get_tag_services(rest_get_table_handler):
     def handler(self, tagid, **vars):
         q = db.svc_tags.tag_id == tagid
         q &= db.svc_tags.svcname == db.services.svc_name
-        q &= _where(None, 'svc_tags', domain_perms(), 'svcname')
+        q = q_filter(q, svc_field=db.svc_tags.svcname)
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -472,8 +472,7 @@ class rest_get_tags_nodes(rest_get_table_handler):
         )
 
     def handler(self, **vars):
-        q = db.node_tags.id > 0
-        q &= _where(None, 'node_tags', domain_perms(), 'nodename')
+        q = q_filter(node_field=db.node_tags.nodename)
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -549,8 +548,7 @@ class rest_get_tags_services(rest_get_table_handler):
         )
 
     def handler(self, **vars):
-        q = db.svc_tags.id > 0
-        q &= _where(None, 'svc_tags', domain_perms(), 'svcname')
+        q = q_filter(svc_field=db.svc_tags.svcname)
         self.set_q(q)
         return self.prepare_data(**vars)
 

@@ -1894,68 +1894,6 @@ function cell_decorator_users_role(e) {
   }
 }
 
-function cell_decorator_users_domain(e) {
-  var s = $.data(e, "v")
-  if (s == "empty") {
-    s = ""
-  }
-  var span = $("<span class='clickable'></span>")
-  var input = $("<input class='hidden oi'></input>")
-  var line = $(e).parent(".tl")
-  var user_id = $.data(line.children("[col=id]")[0], "v")
-
-  if (services_ismemberof(["Manager", "UserManager"])) {
-    $(e).hover(
-      function() {
-        span.addClass("editable")
-      },
-      function() {
-        span.removeClass("editable")
-      }
-    )
-  }
-  span.bind("click", function() {
-    span.hide()
-    input.show()
-    input.focus()
-    input.select()
-  })
-  input.bind("blur", function(event) {
-    span.show()
-    input.hide()
-  })
-  input.bind("keyup", function(event) {
-    if (!is_enter(event)) {
-      return
-    }
-    data = {
-      "domains": $(this).val()
-    }
-    services_osvcpostrest("R_USER_DOMAINS", [user_id], "", data, function(jd) {
-      if (!jd.data) {
-        span.html(services_error_fmt(jd))
-        span.show()
-        input.hide()
-        return
-      }
-      span.text(input.val())
-      span.show()
-      input.hide()
-    },
-    function(xhr, stat, error) {
-      span.html(services_ajax_error_fmt(xhr, stat, error))
-      span.show()
-      input.hide()
-    })
-  })
-
-  span.text(s)
-  input.val(s)
-  $(e).empty()
-  $(e).append(span)
-  $(e).append(input)
-}
-
 function cell_decorator_rule_value(e) {
   var line = $(e).parent(".tl")
   $(e).uniqueId()
@@ -2046,7 +1984,6 @@ cell_decorators = {
  "_network": cell_decorator_network,
  "boolean": cell_decorator_boolean,
  "status": cell_decorator_status,
- "users_domain": cell_decorator_users_domain,
  "users_role": cell_decorator_users_role,
  "alert_type": cell_decorator_alert_type,
  "appinfo_key": cell_decorator_appinfo_key,

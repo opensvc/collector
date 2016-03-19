@@ -157,7 +157,6 @@ function user_properties(divid, options) {
 		o.info_im_notifications = o.div.find("#im_notifications");
 		o.info_im_log_level = o.div.find("#im_log_level");
 		o.info_im_username = o.div.find("#im_username");
-		o.info_domains = o.div.find("#domains");
 		o.info_manager = o.div.find("#manager");
 		o.info_primaryg = o.div.find("#primary_group");
 		o.info_lfilter = o.div.find("#lock_filter");
@@ -267,13 +266,6 @@ function user_properties(divid, options) {
 			o.info_im_notifications.attr('class','fa toggle-off');
 		}
 
-		services_osvcgetrest("R_USER_DOMAINS", [o.options.user_id], "", function(jd) {
-			if (!jd.data || (jd.data.length == 0)) {
-				return
-			}
-			o.info_domains.text(jd.data[0].domains)
-		})
-
 		services_osvcgetrest("R_USER_FILTERSET", [o.options.user_id], "", function(jd) {
 			if (!jd.data || (jd.data.length == 0)) {
 				return
@@ -325,13 +317,6 @@ function user_properties(divid, options) {
 				"privileges": ["Manager","UserManager"],
 				"post": function(data, callback, error_callback) {
 					services_osvcpostrest("R_USER", [o.options.user_id], "", data, callback, error_callback)
-				}
-			})
-			tab_properties_generic_simple({
-				"div": o.info_domains,
-				"privileges": ["Manager","UserManager"],
-				"post": function(data, callback, error_callback) {
-					services_osvcpostrest("R_USER_DOMAINS", [o.options.user_id], "", data, callback, error_callback)
 				}
 			})
 			tab_properties_generic_autocomplete({

@@ -26,7 +26,9 @@ def json_dash_history():
             _f = f
             _t = "dashboard_events"
         q = _where(q, _t, t.filter_parse(f),  _f)
-    q &= _where(None, 'dashboard_events', domain_perms(), 'dash_svcname')|_where(None, 'dashboard_events', domain_perms(), 'dash_nodename')
+    f1 = q_filter(node_field=db.dashboard.dash_nodename)
+    f2 = q_filter(svc_field=db.dashboard.dash_svcname)
+    q &= (f1|f2)
     q = apply_filters(q, db.dashboard_events.dash_nodename, db.dashboard_events.dash_svcname)
 
     sql = """select
@@ -164,7 +166,9 @@ def ajax_dashboard_col_values():
     q = db.dashboard.id > 0
     for f in set(t.cols):
         q = _where(q, 'dashboard', t.filter_parse(f),  f if t.colprops[f].filter_redirect is None else t.colprops[f].filter_redirect)
-    q &= _where(None, 'dashboard', domain_perms(), 'dash_svcname')|_where(None, 'dashboard', domain_perms(), 'dash_nodename')
+    f1 = q_filter(node_field=db.dashboard.dash_nodename)
+    f2 = q_filter(svc_field=db.dashboard.dash_svcname)
+    q &= (f1|f2)
     q = apply_filters(q, db.dashboard.dash_nodename, db.dashboard.dash_svcname)
     t.object_list = db(q).select(*s, orderby=o)
     return t.col_values_cloud_ungrouped(col)
@@ -177,7 +181,9 @@ def ajax_dashboard():
     q = db.dashboard.id > 0
     for f in set(t.cols):
         q = _where(q, 'dashboard', t.filter_parse(f), f if t.colprops[f].filter_redirect is None else t.colprops[f].filter_redirect)
-    q &= _where(None, 'dashboard', domain_perms(), 'dash_svcname')|_where(None, 'dashboard', domain_perms(), 'dash_nodename')
+    f1 = q_filter(node_field=db.dashboard.dash_nodename)
+    f2 = q_filter(svc_field=db.dashboard.dash_svcname)
+    q &= (f1|f2)
     q = apply_filters(q, db.dashboard.dash_nodename, db.dashboard.dash_svcname)
 
     t.csv_q = q
@@ -211,7 +217,9 @@ def ajax_alert_events():
     q &= db.dashboard_events.dash_nodename == request.vars.dash_nodename
     q &= db.dashboard_events.dash_svcname == request.vars.dash_svcname
     q &= db.dashboard_events.dash_begin > limit
-    q &= _where(None, 'dashboard_events', domain_perms(), 'dash_svcname')|_where(None, 'dashboard_events', domain_perms(), 'dash_nodename')
+    f1 = q_filter(node_field=db.dashboard.dash_nodename)
+    f2 = q_filter(svc_field=db.dashboard.dash_svcname)
+    q &= (f1|f2)
     rows = db(q).select(db.dashboard_events.dash_begin,
                         db.dashboard_events.dash_end)
 

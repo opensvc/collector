@@ -18,8 +18,7 @@ class rest_get_checks(rest_get_table_handler):
         )
 
     def handler(self, **vars):
-        q = db.checks_live.id > 0
-        q &= _where(None, 'checks_live', domain_perms(), 'chk_nodename')
+        q = q_filter(node_field=db.checks_live.chk_nodename)
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -42,7 +41,7 @@ class rest_get_check(rest_get_line_handler):
 
     def handler(self, id, **vars):
         q = db.checks_live.id == id
-        q &= _where(None, 'checks_live', domain_perms(), 'chk_nodename')
+        q = q_filter(q, node_field=db.checks_live.chk_nodename)
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -69,7 +68,7 @@ class rest_delete_check(rest_delete_handler):
     def handler(self, id, **vars):
         check_privilege("CheckManager")
         q = db.checks_live.id == id
-        q = _where(q, 'checks_live', domain_perms(), 'chk_nodename')
+        q = q_filter(q, node_field=db.checks_live.chk_nodename)
         row = db(q).select().first()
         if row is None:
             raise Exception("Check instance %s does not exist" % str(id))
@@ -126,7 +125,7 @@ class rest_delete_checks(rest_delete_handler):
         if 'chk_svcname' in vars:
             q &= db.checks_live.chk_svcname == vars["chk_svcname"]
             s += vars["chk_svcname"]
-        q = _where(q, 'checks_live', domain_perms(), 'chk_nodename')
+        q = q_filter(q, node_field=db.checks_live.chk_nodename)
         row = db(q).select().first()
         if row is None:
             raise Exception("check instance %s does not exist" % s)
@@ -154,7 +153,7 @@ class rest_get_checks_settings(rest_get_table_handler):
 
     def handler(self, **vars):
         q = db.checks_settings.id > 0
-        q &= _where(None, 'checks_settings', domain_perms(), 'chk_nodename')
+        q = q_filter(q, node_field=db.checks_settings.chk_nodename)
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -177,7 +176,7 @@ class rest_get_checks_setting(rest_get_line_handler):
 
     def handler(self, id, **vars):
         q = db.checks_settings.id == id
-        q &= _where(None, 'checks_settings', domain_perms(), 'chk_nodename')
+        q = q_filter(q, node_field=db.checks_settings.chk_nodename)
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -204,7 +203,7 @@ class rest_delete_checks_setting(rest_delete_handler):
     def handler(self, id, **vars):
         check_privilege("CheckManager")
         q = db.checks_settings.id == id
-        q = _where(q, 'checks_settings', domain_perms(), 'chk_nodename')
+        q = q_filter(q, node_field=db.checks_settings.chk_nodename)
         row = db(q).select().first()
         if row is None:
             raise Exception("Check instance settings %s does not exist" % str(id))
@@ -268,7 +267,7 @@ class rest_delete_checks_settings(rest_delete_handler):
         if 'chk_svcname' in vars:
             q &= db.checks_settings.chk_svcname == vars["chk_svcname"]
             s += vars["chk_svcname"]
-        q = _where(q, 'checks_settings', domain_perms(), 'chk_nodename')
+        q = q_filter(q, node_field=db.checks_settings.chk_nodename)
         row = db(q).select().first()
         if row is None:
             raise Exception("check instance settings %s does not exist" % s)
@@ -298,7 +297,7 @@ class rest_post_checks_setting(rest_post_handler):
     def handler(self, id, **vars):
         check_privilege("CheckManager")
         q = db.checks_settings.id == id
-        q = _where(q, 'checks_settings', domain_perms(), 'chk_nodename')
+        q = q_filter(q, node_field=db.checks_settings.chk_nodename)
         row = db(q).select().first()
         if row is None:
             raise Exception("Check instance settings %s does not exist" % str(id))
@@ -373,7 +372,7 @@ class rest_post_checks_settings(rest_post_handler):
         if 'chk_svcname' in vars:
             q &= db.checks_settings.chk_svcname == vars["chk_svcname"]
             s += vars["chk_svcname"]
-        q = _where(q, 'checks_settings', domain_perms(), 'chk_nodename')
+        q = q_filter(q, node_field=db.checks_settings.chk_nodename)
         row = db(q).select().first()
         if row is None:
             if not "chk_nodename" in vars or not "chk_type" in vars or not "chk_instance" in vars:

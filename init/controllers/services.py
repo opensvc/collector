@@ -36,8 +36,7 @@ def ajax_services_col_values():
     t = table_services(table_id, 'ajax_services')
     col = request.args[0]
     o = db[t.colprops[col].table][col]
-    q = db.services.id > 0
-    q = _where(q, 'services', domain_perms(), 'svc_name')
+    q = q_filter(app_field=db.services.svc_app)
     q = apply_filters(q, None, db.services.svc_name)
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
@@ -50,8 +49,7 @@ def ajax_services():
     t = table_services(table_id, 'ajax_services')
 
     o = db.services.svc_name
-    q = db.services.id > 0
-    q = _where(q, 'services', domain_perms(), 'svc_name')
+    q = q_filter(app_field=db.services.svc_app)
     q = apply_filters(q, None, db.services.svc_name)
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)

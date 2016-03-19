@@ -112,7 +112,6 @@ var services_access_uri = {
     "R_USER_PRIMARY_GROUP_SET" : "/users/%1/primary_group/%2",
     "R_USER" : "/users/%1",
     "R_USER_DETAILS" : "/users/%1/details",
-    "R_USER_DOMAINS" : "/users/%1/domains",
     "R_USER_APPS" : "/users/%1/apps",
     "R_USER_FILTERSET" : "/users/%1/filterset",
     "R_USER_FILTERSET_SET" : "/users/%1/filterset/%2",

@@ -17,8 +17,7 @@ class rest_get_services_actions(rest_get_table_handler):
         )
 
     def handler(self, **vars):
-        q = db.SVCactions.id > 0
-        q &= _where(None, 'SVCactions', domain_perms(), 'svcname')
+        q = q_filter(svc_field=db.SVCactions.svcname)
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -123,7 +122,7 @@ class rest_get_service_actions(rest_get_table_handler):
 
     def handler(self, svcname, **vars):
         q = db.SVCactions.svcname == svcname
-        q &= _where(None, 'SVCactions', domain_perms(), 'svcname')
+        q = q_filter(q, svc_field=db.SVCactions.svcname)
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -149,7 +148,7 @@ class rest_get_service_actions_unacknowledged_errors(rest_get_table_handler):
         q = db.SVCactions.svcname == svcname
         q &= db.SVCactions.status == "err"
         q &= db.SVCactions.ack == None
-        q &= _where(None, 'SVCactions', domain_perms(), 'svcname')
+        q = q_filter(q, svc_field=db.SVCactions.svcname)
         self.set_q(q)
         return self.prepare_data(**vars)
 

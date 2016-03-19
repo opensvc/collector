@@ -673,11 +673,6 @@ colprops = {
 		"img": "dns16",
 		"title": "Domain Id"
 	},
-	"domains": {
-		"_class": "users_domain",
-		"img": "filter16",
-		"title": "Domains"
-	},
 	"email": {
 		"img": "guy16",
 		"title": "Email"

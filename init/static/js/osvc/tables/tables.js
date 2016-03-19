@@ -1813,8 +1813,8 @@ function table_users(divid, options) {
 		'ajax_url': '/init/users/ajax_users',
 		'span': ['id'],
 		'force_cols': ['id'],
-		'columns': ['manager', 'id', 'fullname', 'email', 'phone_work', 'primary_group', 'groups', 'lock_filter', 'fset_name', 'domains', 'last'],
-		'default_columns': ['manager', 'fullname', 'email', 'phone_work', 'primary_group', 'groups', 'lock_filter', 'fset_name', 'domains', 'last'],
+		'columns': ['manager', 'id', 'fullname', 'email', 'phone_work', 'primary_group', 'groups', 'lock_filter', 'fset_name', 'last'],
+		'default_columns': ['manager', 'fullname', 'email', 'phone_work', 'primary_group', 'groups', 'lock_filter', 'fset_name', 'last'],
 		'wsable': true,
 		'events': ['auth_user_change']
 	}

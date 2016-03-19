@@ -110,9 +110,8 @@ def ajax_appinfo_col_values():
     t = table_appinfo(table_id, 'ajax_appinfo')
     col = request.args[0]
     o = db.appinfo[col]
-    q = db.appinfo.id > 0
+    q = q_filter(svc_field=db.appinfo.app_svcname)
     q = apply_filters(q, None, db.appinfo.app_svcname)
-    q = _where(q, 'appinfo', domain_perms(), 'app_svcname')
 
     for f in t.cols:
         q = _where(q, 'appinfo', t.filter_parse(f), f)
@@ -125,9 +124,8 @@ def ajax_appinfo():
     t = table_appinfo(table_id, 'ajax_appinfo')
 
     o = db.appinfo.app_svcname | db.appinfo.app_nodename | db.appinfo.app_launcher | db.appinfo.app_key
-    q = db.appinfo.id > 0
+    q = q_filter(svc_field=db.appinfo.app_svcname)
     q = apply_filters(q, None, db.appinfo.app_svcname)
-    q = _where(q, 'appinfo', domain_perms(), 'app_svcname')
 
     for f in set(t.cols):
         q = _where(q, 'appinfo', t.filter_parse(f), f)

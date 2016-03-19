@@ -35,6 +35,8 @@ class rest_get_alert_event(rest_get_line_handler):
     	q &= db.dashboard_events.dash_nodename == nodename
     	q &= db.dashboard_events.dash_svcname == svcname
     	q &= db.dashboard_events.dash_begin > limit
-    	q &= _where(None, 'dashboard_events', domain_perms(), 'dash_svcname')|_where(None, 'dashboard_events', domain_perms(), 'dash_nodename')
+        f1 = q_filter(svc_field=db.dashboard_events.dash_svcname)
+        f2 = q_filter(node_field=db.dashboard_events.dash_nodename)
+        q = (f1|f2)
     	self.set_q(q)
         return self.prepare_data()

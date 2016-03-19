@@ -112,7 +112,7 @@ def ajax_resmon_col_values():
     col = request.args[0]
     o = db[t.colprops[col].table][col]
     q = db.resmon.nodename==db.nodes.nodename
-    q = _where(q, 'resmon', domain_perms(), 'nodename')
+    q = q_filter(q, node_field=db.resmon.nodename)
     q = apply_filters(q, db.resmon.nodename, db.resmon.svcname)
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
@@ -130,7 +130,7 @@ def ajax_resmon():
 
     q = db.resmon.id>0
     q &= db.resmon.nodename==db.nodes.nodename
-    q = _where(q, 'resmon', domain_perms(), 'nodename')
+    q = q_filter(q, node_field=db.resmon.nodename)
     q = apply_filters(q, db.resmon.nodename, db.resmon.svcname)
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)

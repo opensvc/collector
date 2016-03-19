@@ -124,9 +124,8 @@ def ajax_saves_col_values():
     t = table_saves(table_id, 'ajax_saves')
     col = request.args[0]
     o = db[t.colprops[col].table][col]
-    q = db.saves.id > 0
+    q = q_filter(app_field=db.saves.save_app)
     l = db.nodes.on(db.saves.save_nodename==db.nodes.nodename)
-    q = _where(q, 'saves', domain_perms(), 'save_nodename') | _where(q, 'saves', domain_perms(), 'save_svcname')
     q = apply_filters(q, db.saves.save_nodename, db.saves.save_svcname)
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
@@ -141,9 +140,8 @@ def ajax_saves():
     o = ~db.saves.save_date
     o |= db.saves.save_nodename
 
-    q = db.saves.id>0
+    q = q_filter(app_field=db.saves.save_app)
     l = db.nodes.on(db.saves.save_nodename==db.nodes.nodename)
-    q = _where(q, 'saves', domain_perms(), 'save_nodename') | _where(q, 'saves', domain_perms(), 'save_svcname')
     q = apply_filters(q, db.saves.save_nodename, db.saves.save_svcname)
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
@@ -183,8 +181,7 @@ def ajax_saves_charts():
     nt = table_saves_charts('charts', 'ajax_saves_charts')
 
     o = db.saves.id
-    q = db.saves.id>0
-    q = _where(q, 'saves', domain_perms(), 'save_nodename')
+    q = q_filter(app_field=db.saves.save_app)
     q = apply_filters(q, db.saves.save_nodename, None)
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)

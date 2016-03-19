@@ -105,7 +105,7 @@ class rest_get_node_compliance_rulesets(rest_get_table_handler):
     def handler(self, nodename, **vars):
         q = db.comp_rulesets_nodes.nodename == nodename
         q &= db.comp_rulesets_nodes.ruleset_id == db.comp_rulesets.id
-        q &= _where(None, 'comp_rulesets_nodes', domain_perms(), 'nodename')
+        q = q_filter(q, node_field=db.comp_rulesets_nodes.nodename)
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -131,7 +131,7 @@ class rest_get_node_compliance_modulesets(rest_get_table_handler):
     def handler(self, nodename, **vars):
         q = db.comp_node_moduleset.modset_node == nodename
         q &= db.comp_node_moduleset.modset_id == db.comp_moduleset.id
-        q &= _where(None, 'comp_node_moduleset', domain_perms(), 'modset_node')
+        q = q_filter(q, node_field=db.comp_node_moduleset.modset_node)
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -158,7 +158,7 @@ class rest_get_node_interfaces(rest_get_table_handler):
 
     def handler(self, nodename, **vars):
         q = db.node_ip.nodename == nodename
-        q &= _where(None, 'node_ip', domain_perms(), 'nodename')
+        q = q_filter(q, node_field=db.node_ip.nodename)
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -184,7 +184,7 @@ class rest_get_node_ips(rest_get_table_handler):
 
     def handler(self, nodename, **vars):
         q = db.v_nodenetworks.nodename == nodename
-        q &= _where(None, 'v_nodenetworks', domain_perms(), 'nodename')
+        q = q_filter(q, group_field=db.v_nodenetworks.team_responsible)
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -210,7 +210,7 @@ class rest_get_node_disks(rest_get_table_handler):
     def handler(self, nodename, **vars):
         q = db.b_disk_app.disk_nodename == nodename
         l = db.stor_array.on(db.b_disk_app.disk_arrayid == db.stor_array.array_name)
-        q &= _where(None, 'b_disk_app', domain_perms(), 'disk_nodename')
+        q = q_filter(q, app_field=db.b_disk_app.app)
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -234,7 +234,7 @@ class rest_get_node_checks(rest_get_table_handler):
 
     def handler(self, nodename, **vars):
         q = db.checks_live.chk_nodename == nodename
-        q &= _where(None, 'checks_live', domain_perms(), 'chk_nodename')
+        q = q_filter(q, node_field=db.checks_live.chk_nodename)
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -260,7 +260,7 @@ class rest_get_node_hbas(rest_get_table_handler):
 
     def handler(self, nodename, **vars):
         q = db.node_hba.nodename == nodename
-        q &= _where(None, 'node_hba', domain_perms(), 'nodename')
+        q = q_filter(q, node_field=db.node_hba.nodename)
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -285,7 +285,7 @@ class rest_get_node_services(rest_get_table_handler):
 
     def handler(self, nodename, **vars):
         q = db.svcmon.mon_nodname == nodename
-        q &= _where(None, 'svcmon', domain_perms(), 'mon_nodname')
+        q = q_filter(q, svc_field=db.svcmon.mon_svcname)
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -311,7 +311,7 @@ class rest_get_node_service(rest_get_line_handler):
     def handler(self, nodename, svcname, **vars):
         q = db.svcmon.mon_nodname == nodename
         q = db.svcmon.mon_svcname == svcname
-        q &= _where(None, 'svcmon', domain_perms(), 'mon_nodname')
+        q = q_filter(q, svc_field=db.svcmon.mon_svcname)
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -337,7 +337,9 @@ class rest_get_node_alerts(rest_get_table_handler):
 
     def handler(self, nodename, **vars):
         q = db.dashboard.dash_nodename == nodename
-        q &= _where(None, 'dashboard', domain_perms(), 'dash_nodename')
+        f1 = q_filter(svc_field=db.dashboard.svcname)
+        f2 = q_filter(node_field=db.dashboard.nodename)
+        q &= (f1|f2)
         self.set_q(q)
         data = self.prepare_data(**vars)
         return data
@@ -363,7 +365,7 @@ class rest_get_node(rest_get_line_handler):
 
     def handler(self, nodename, **vars):
         q = db.nodes.nodename == nodename
-        q &= _where(None, 'nodes', domain_perms(), 'nodename')
+        q = q_filter(q, group_field=db.nodes.team_responsible)
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -477,8 +479,7 @@ class rest_get_nodes(rest_get_table_handler):
         )
 
     def handler(self, **vars):
-        q = db.nodes.id > 0
-        q = _where(q, 'nodes', domain_perms(), 'nodename')
+        q = q_filter(group_field=db.nodes.team_responsible)
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -506,7 +507,7 @@ class rest_delete_node(rest_delete_handler):
     def handler(self, nodename, **vars):
         check_privilege("NodeManager")
         q = db.nodes.nodename == nodename
-        q = _where(q, 'nodes', domain_perms(), 'nodename')
+        q = q_filter(q, group_field=db.nodes.team_responsible)
         row = db(q).select(db.nodes.id, db.nodes.nodename).first()
         if row is None:
             raise Exception("node %s does not exist" % nodename)
@@ -621,7 +622,7 @@ class rest_delete_nodes(rest_delete_handler):
             s = str(s)
         if q is None:
             raise Exception("nodename or id key must be specified")
-        q = _where(q, 'nodes', domain_perms(), 'nodename')
+        q = q_filter(q, group_field=db.nodes.team_responsible)
         row = db(q).select(db.nodes.id, db.nodes.nodename).first()
         if row is None:
             raise Exception("node %s does not exist" % s)
@@ -749,7 +750,7 @@ class rest_get_node_compliance_status(rest_get_table_handler):
 
     def handler(self, nodename, **vars):
         q = db.comp_status.run_nodename == nodename
-        q &= _where(q, 'comp_status', domain_perms(), 'run_nodename')
+        q = q_filter(q, node_field=db.comp_status.run_nodename)
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -761,20 +762,17 @@ class rest_get_node_compliance_logs(rest_get_table_handler):
         examples = [
           "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/nodes/clementine/compliance/logs"
         ]
-        q = db.comp_log.id > 0
-        q &= _where(q, 'comp_log', domain_perms(), 'run_nodename')
         rest_get_table_handler.__init__(
           self,
           path="/nodes/<nodename>/compliance/logs",
           tables=["comp_log"],
-          q=q,
           desc=desc,
           examples=examples,
         )
 
     def handler(self, nodename, **vars):
         q = db.comp_log.run_nodename == nodename
-        q &= _where(q, 'comp_log', domain_perms(), 'run_nodename')
+        q = q_filter(q, node_field=db.comp_log.run_nodename)
         self.set_q(q)
         return self.prepare_data(**vars)
 

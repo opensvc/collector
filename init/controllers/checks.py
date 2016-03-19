@@ -231,8 +231,7 @@ def ajax_checks_col_values():
     table_id = request.vars.table_id
     t = table_checks(table_id, 'ajax_checks')
     col = request.args[0]
-    q = db.checks_live.id>0
-    q = _where(q, 'checks_live', domain_perms(), 'chk_nodename')
+    q = q_filter(node_field=db.checks_live.chk_nodename)
     q = apply_filters(q, db.checks_live.chk_nodename, None)
     q &= db.checks_live.chk_nodename==db.nodes.nodename
     j = db.apps.app == db.nodes.project
@@ -252,8 +251,7 @@ def ajax_checks():
     o = db.checks_live.chk_nodename
     o |= db.checks_live.chk_type
     o |= db.checks_live.chk_instance
-    q = db.checks_live.id>0
-    q = _where(q, 'checks_live', domain_perms(), 'chk_nodename')
+    q = q_filter(node_field=db.checks_live.chk_nodename)
     q = apply_filters(q, db.checks_live.chk_nodename, None)
     q &= db.checks_live.chk_nodename==db.nodes.nodename
     j = db.apps.app == db.nodes.project

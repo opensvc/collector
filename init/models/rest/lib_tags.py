@@ -11,7 +11,7 @@ def lib_tag_detach_node(tagid, nodename):
     tag_name = get_tag_name(tagid)
     q = db.node_tags.tag_id == tagid
     q &= db.node_tags.nodename == nodename
-    q &= _where(None, 'node_tags', domain_perms(), 'nodename')
+    q = q_filter(q, node_field=db.node_tags.nodename)
     if db(q).count() == 0:
         return dict(info="tag already detached")
     db(q).delete()
@@ -35,7 +35,7 @@ def lib_tag_detach_service(tagid, svcname):
     tag_name = get_tag_name(tagid)
     q = db.svc_tags.tag_id == tagid
     q &= db.svc_tags.svcname == svcname
-    q &= _where(None, 'svc_tags', domain_perms(), 'svcname')
+    q = q_filter(q, svc_field=db.svc_tags.svcname)
     if db(q).count() == 0:
         return dict(info="tag already detached")
     db(q).delete()
@@ -62,7 +62,7 @@ def lib_tag_attach_node(tagid, nodename):
     tag_name = get_tag_name(tagid)
     q = db.node_tags.tag_id == tagid
     q &= db.node_tags.nodename == nodename
-    q &= _where(None, 'node_tags', domain_perms(), 'nodename')
+    q = q_filter(q, node_field=db.node_tags.nodename)
     if db(q).count() == 1:
         return dict(info="tag '%s' already attached to node '%s'" % (tag_name, nodename))
     db.node_tags.insert(tag_id=tagid, nodename=nodename)
@@ -94,7 +94,7 @@ def lib_tag_attach_service(tagid, svcname):
     tag_name = get_tag_name(tagid)
     q = db.svc_tags.tag_id == tagid
     q &= db.svc_tags.svcname == svcname
-    q &= _where(None, 'svc_tags', domain_perms(), 'svcname')
+    q = q_filter(q, svc_field=db.svc_tags.svcname)
     if db(q).count() == 1:
         return dict(info="tag '%s' already attached to service '%s'" % (tag_name, nodename))
     db.svc_tags.insert(tag_id=tagid, svcname=svcname)

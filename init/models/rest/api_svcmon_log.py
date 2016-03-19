@@ -16,8 +16,7 @@ class rest_get_services_instances_status_log(rest_get_table_handler):
         )
 
     def handler(self, **vars):
-        q = db.svcmon_log.id > 0
-        q = _where(q, 'svcmon_log', domain_perms(), 'mon_svcname')
+        q = q_filter(svc_field=db.svcmon_log.mon_svcname)
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -40,8 +39,7 @@ class rest_get_services_status_log(rest_get_table_handler):
         )
 
     def handler(self, **vars):
-        q = db.services_log.id > 0
-        q = _where(q, 'services_log', domain_perms(), 'svc_name')
+        q = q_filter(svc_field=db.services_log.svc_name)
         self.set_q(q)
         return self.prepare_data(**vars)
 

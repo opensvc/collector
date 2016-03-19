@@ -123,8 +123,7 @@ def ajax_quota_col_values():
     t = table_quota(table_id, 'ajax_quota')
     col = request.args[0]
     o = db[t.colprops[col].table][col]
-    q = db.v_disk_quota.id>0
-    q = _where(q, 'v_disk_quota', domain_perms(), 'array_name')
+    q = q_filter(app_field=db.v_disk_quota.app)
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
     t.object_list = db(q).select(o, orderby=o)
@@ -138,8 +137,7 @@ def ajax_quota():
     update_dg_reserved()
 
     o = db.v_disk_quota.array_name | db.v_disk_quota.dg_name
-    q = db.v_disk_quota.array_id > 0
-    q = _where(q, 'v_disk_quota', domain_perms(), 'array_name')
+    q = q_filter(app_field=db.v_disk_quota.app)
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
 
@@ -227,7 +225,7 @@ def ajax_disks_col_values():
     q |= db.stor_array.id<0
     l1 = db.stor_array.on(db.b_disk_app.disk_arrayid == db.stor_array.array_name)
     l2 = db.nodes.on(db.b_disk_app.disk_arrayid==db.nodes.nodename)
-    q = _where(q, 'b_disk_app', domain_perms(), 'disk_nodename')
+    q = q_filter(q, app_field=db.b_disk_app.disk_app)
     q = apply_filters(q, db.b_disk_app.disk_nodename, None)
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
@@ -244,7 +242,7 @@ def ajax_disks():
     q |= db.stor_array.id<0
     l1 = db.stor_array.on(db.b_disk_app.disk_arrayid == db.stor_array.array_name)
     l2 = db.nodes.on(db.b_disk_app.disk_arrayid==db.nodes.nodename)
-    q = _where(q, 'b_disk_app', domain_perms(), 'disk_nodename')
+    q = q_filter(q, app_field=db.b_disk_app.disk_app)
     q = apply_filters(q, db.b_disk_app.disk_nodename, None)
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), t.colprops[f].field)
@@ -307,8 +305,7 @@ def ajax_disk_charts():
     request.vars.volatile_filters = None
 
     o = db.b_disk_app.disk_id
-    q = db.b_disk_app.id>0
-    q = _where(q, 'b_disk_app', domain_perms(), 'disk_nodename')
+    q = q_filter(app_field=db.b_disk_app.disk_app)
     q = apply_filters(q, db.b_disk_app.disk_nodename, None)
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)

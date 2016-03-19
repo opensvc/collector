@@ -18,8 +18,7 @@ class rest_get_ips(rest_get_table_handler):
         )
 
     def handler(self, **vars):
-        q = db.v_nodenetworks.id > 0
-        q &= _where(None, 'v_nodenetworks', domain_perms(), 'nodename')
+        q = q_filter(group_field=db.v_nodenetworks.team_responsible)
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -48,7 +47,7 @@ class rest_get_ip(rest_get_line_handler):
             q = db.v_nodenetworks.addr == id
         else:
             q = db.v_nodenetworks.id == id
-        q &= _where(None, 'v_nodenetworks', domain_perms(), 'nodename')
+        q = q_filter(q, group_field=db.v_nodenetworks.team_responsible)
         return self.prepare_data(**vars)
 
 #
@@ -95,7 +94,7 @@ class rest_delete_ip(rest_delete_handler):
     def handler(self, id, **vars):
         check_privilege("NodeManager")
         q = db.node_ip.id == id
-        q &= _where(None, 'node_ip', domain_perms(), 'nodename')
+        q = q_filter(q, node_field=db.node_ip.nodename)
         row = db(q).select().first()
         if row is None:
             raise Exception("ip %s not found" % str(id))

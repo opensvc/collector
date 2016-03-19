@@ -107,14 +107,32 @@ def user_email():
 def clear_cache_user_groups():
     cache.redis.clear(regex="user_groups:.*")
 
-def user_groups():
-    return cache.redis("user_groups:%d"%auth.user_id, lambda: _user_groups(), time_expire=14400)
+def user_groups(id=None):
+    if id is None:
+        id = auth.user_id
+    return cache.redis("user_groups:%d"%auth.user_id, lambda: _user_groups(id), time_expire=14400)
 
-def _user_groups():
-    q = db.auth_membership.user_id==auth.user_id
+def _user_groups(id):
+    q = db.auth_membership.user_id==id
     q &= db.auth_membership.group_id==db.auth_group.id
     rows = db(q).select(db.auth_group.role)
     return map(lambda x: x.role, rows)
+
+def clear_cache_user_apps():
+    cache.redis.clear(regex="user_apps:.*")
+
+def user_apps(id=None):
+    if id is None:
+        id = auth.user_id
+    return cache.redis("user_apps:%d"%id, lambda: _user_apps(id), time_expire=14400)
+
+def _user_apps(id):
+    q = db.auth_membership.user_id==id
+    q &= db.auth_membership.group_id==db.auth_group.id
+    q &= db.apps_responsibles.group_id == db.auth_membership.group_id
+    q &= db.apps_responsibles.app_id == db.apps.id
+    rows = db(q).select(db.apps.app)
+    return map(lambda x: x.app, rows)
 
 def clear_cache_user_app_ids():
     cache.redis.clear(regex="user_app_ids:.*")
@@ -160,6 +178,16 @@ def user_org_group_ids(id=None):
            """%str(id)
     rows = db.executesql(sql)
     return map(lambda r: r[0], rows)
+
+def user_nodes(id=None):
+    q = db.nodes.team_responsible.belongs(user_groups(id))
+    rows = db(q).select(db.nodes.nodename, cacheable=True)
+    return map(lambda x: x.nodename, rows)
+
+def user_services(id=None):
+    q = db.services.svc_app.belongs(user_apps(id))
+    rows = db(q).select(db.services.svc_name, cacheable=True)
+    return map(lambda x: x.svc_name, rows)
 
 def member_of(g):
     groups = user_groups()

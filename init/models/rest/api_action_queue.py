@@ -8,8 +8,7 @@ class rest_get_action_queue(rest_get_table_handler):
           "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/actions?query=status=R",
         ]
 
-        q = db.action_queue.id > 0
-        q &= _where(q, 'action_queue', domain_perms(), 'nodename')
+        q = q_filter(node_field=db.action_queue.nodename)
 
         rest_get_table_handler.__init__(
           self,
@@ -164,7 +163,7 @@ class rest_get_action_queue_one(rest_get_line_handler):
 
     def handler(self, id, **vars):
         q = db.action_queue.id == int(id)
-        q &= _where(q, 'action_queue', domain_perms(), 'nodename')
+        q = q_filter(q, node_field=db.action_queue.nodename)
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -190,7 +189,7 @@ class rest_delete_action_queue_one(rest_delete_handler):
     def handler(self, id, **vars):
         check_privilege("NodeManager")
         q = db.action_queue.id == int(id)
-        q &= _where(q, 'action_queue', domain_perms(), 'nodename')
+        q = q_filter(q, node_field=db.action_queue.nodename)
         row = db(q).select().first()
         if row is None:
             return dict(info="Action %s does not exist in action queue" % id)
@@ -239,7 +238,7 @@ class rest_post_action_queue_one(rest_post_handler):
     def handler(self, _id, **vars):
         check_privilege(["NodeExec", "CompExec"])
         q = db.action_queue.id == int(_id)
-        q &= _where(q, 'action_queue', domain_perms(), 'nodename')
+        q = q_filter(q, node_field=db.action_queue.nodename)
         row = db(q).select().first()
         if row is None:
             return dict(error="Action %s does not exist in action queue" % _id)

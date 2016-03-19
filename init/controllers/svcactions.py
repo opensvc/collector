@@ -140,7 +140,7 @@ def ajax_actions_col_values():
     t = table_actions(table_id, 'ajax_actions')
     col = request.args[0]
     o = db.v_svcactions[col]
-    q = _where(None, 'v_svcactions', domain_perms(), 'hostname')
+    q = q_filter(svc_field=db.v_svcactions.svcname)
     q = apply_filters(q, db.v_svcactions.hostname, db.v_svcactions.svcname)
     for f in t.cols:
         q = _where(q, 'v_svcactions', t.filter_parse(f), f)
@@ -155,7 +155,7 @@ def ajax_actions():
     t = table_actions(table_id, 'ajax_actions')
 
     o = ~db.v_svcactions.id
-    q = _where(None, 'v_svcactions', domain_perms(), 'hostname')
+    q = q_filter(svc_field=db.v_svcactions.svcname)
     q = apply_filters(q, db.v_svcactions.hostname, db.v_svcactions.svcname)
     for f in t.cols:
         q = _where(q, 'v_svcactions', t.filter_parse(f), f)

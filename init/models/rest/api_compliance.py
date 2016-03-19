@@ -25,8 +25,7 @@ class rest_get_compliance_logs(rest_get_table_handler):
         examples = [
           "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/compliance/logs?query=run_module=mymod"
         ]
-        q = db.comp_log.id > 0
-        q &= _where(q, 'comp_log', domain_perms(), 'run_nodename')
+        q = q_filter(node_field=db.comp_log.run_nodename)
         rest_get_table_handler.__init__(
           self,
           path="/compliance/logs",
@@ -55,7 +54,7 @@ class rest_get_compliance_log(rest_get_line_handler):
 
     def handler(self, id, **vars):
         q = db.comp_log.id == int(id)
-        q &= _where(q, 'comp_log', domain_perms(), 'run_nodename')
+        q = q_filter(q, node_field=db.comp_log.run_nodename)
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -69,8 +68,7 @@ class rest_get_compliance_status(rest_get_table_handler):
         examples = [
           "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/compliance/status?query=run_status=1 and run_module=mymod"
         ]
-        q = db.comp_status.id > 0
-        q &= _where(q, 'comp_status', domain_perms(), 'run_nodename')
+        q = q_filter(node_field=db.comp_status.run_nodename)
         rest_get_table_handler.__init__(
           self,
           path="/compliance/status",
@@ -99,7 +97,7 @@ class rest_get_compliance_status_one(rest_get_line_handler):
 
     def handler(self, id, **vars):
         q = db.comp_status.id == int(id)
-        q &= _where(q, 'comp_status', domain_perms(), 'run_nodename')
+        q = q_filter(q, node_field=db.comp_status.run_nodename)
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -125,7 +123,7 @@ class rest_delete_compliance_status_run(rest_delete_handler):
     def handler(self, id, **vars):
         check_privilege("CompExec")
         q = db.comp_status.id == int(id)
-        q &= _where(q, 'comp_status', domain_perms(), 'run_nodename')
+        q = q_filter(q, node_field=db.comp_status.run_nodename)
         row = db(q).select().first()
         if row is None:
             return dict(info="Run %s not found or you are not responsible for the node" % id)

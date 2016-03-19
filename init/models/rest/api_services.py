@@ -48,7 +48,7 @@ class rest_get_service(rest_get_line_handler):
             if not common_responsible(svcname=svcname, nodename=auth.user.nodename):
                 raise Exception("the node and service must have a common responsible")
         else:
-            q = _where(q, 'services', domain_perms(), 'svc_name')
+            q = q_filter(q, app_field=db.services.svc_app)
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -71,8 +71,7 @@ class rest_get_services(rest_get_table_handler):
         )
 
     def handler(self, **vars):
-        q = db.services.id > 0
-        q = _where(q, 'services', domain_perms(), 'svc_name')
+        q = q_filter(app_field=db.services.svc_app)
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -184,7 +183,7 @@ class rest_delete_service(rest_delete_handler):
 
     def handler(self, svcname, **vars):
         q = db.services.svc_name == svcname
-        q = _where(q, 'services', domain_perms(), 'svc_name')
+        q = q_filter(q, app_field=db.services.svc_app)
         row = db(q).select(db.services.id, db.services.svc_name).first()
         if row is None:
             raise Exception("service %s does not exist" % svcname)
@@ -258,7 +257,7 @@ class rest_delete_services(rest_delete_handler):
             s = str(s)
         if q is None:
             raise Exception("svc_name or id key must be specified")
-        q = _where(q, 'services', domain_perms(), 'svc_name')
+        q = q_filter(q, app_field=db.services.svc_app)
         row = db(q).select(db.services.id, db.services.svc_name).first()
         if row is None:
             raise Exception("service %s does not exist" % s)
@@ -283,8 +282,7 @@ class rest_get_service_instances(rest_get_table_handler):
         )
 
     def handler(self, **vars):
-        q = db.svcmon.id > 0
-        q = _where(q, 'svcmon', domain_perms(), 'mon_nodname')
+        q = q_filter(svc_field=db.svcmon.mon_svcname)
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -306,8 +304,8 @@ class rest_get_service_instance(rest_get_line_handler):
         )
 
     def handler(self, id, **vars):
-        q = db.svcmon.id == id 
-        q = _where(q, 'svcmon', domain_perms(), 'mon_nodname')
+        q = db.svcmon.id == id
+        q = q_filter(q, svc_field=db.svcmon.mon_svcname)
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -333,7 +331,7 @@ class rest_delete_service_instance(rest_delete_handler):
 
     def handler(self, id, **vars):
         q = db.svcmon.id == id
-        q = _where(q, 'svcmon', domain_perms(), 'mon_nodname')
+        q = q_filter(q, svc_field=db.svcmon.mon_svcname)
         row = db(q).select(db.svcmon.id, db.svcmon.mon_svcname, db.svcmon.mon_nodname).first()
         if row is None:
             raise Exception("service instance %s does not exist" % str(id))
@@ -398,7 +396,7 @@ class rest_delete_service_instances(rest_delete_handler):
             q = db.svcmon.id == vars["id"]
         if q is None:
             raise Exception("'mon_svcname+mon_nodname' or 'id' keys must be specified")
-        q = _where(q, 'svcmon', domain_perms(), 'mon_nodname')
+        q = q_filter(q, svc_field=db.svcmon.mon_svcname)
         svc = db(q).select(db.svcmon.id).first()
         if svc is None:
             raise Exception("service instance %s does not exist" % s)
@@ -427,7 +425,7 @@ class rest_get_service_alerts(rest_get_table_handler):
 
     def handler(self, svcname, **vars):
         q = db.dashboard.dash_svcname == svcname
-        q &= _where(None, 'dashboard', domain_perms(), 'dash_svcname')
+        q = q_filter(q, svc_field=db.dashboard.dash_svcname)
         self.set_q(q)
         data = self.prepare_data(**vars)
         return data
@@ -452,7 +450,7 @@ class rest_get_service_checks(rest_get_table_handler):
 
     def handler(self, svcname, **vars):
         q = db.checks_live.chk_svcname == svcname
-        q &= _where(None, 'checks_live', domain_perms(), 'chk_svcname')
+        q = q_filter(q, svc_field=db.checks_live.chk_svcname)
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -480,7 +478,7 @@ class rest_get_service_disks(rest_get_table_handler):
 
     def handler(self, svcname, **vars):
         q = db.b_disk_app.disk_svcname == svcname
-        q &= _where(None, 'b_disk_app', domain_perms(), 'disk_svcname')
+        q = q_filter(q, app_field=db.b_disk_app.app)
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -504,7 +502,7 @@ class rest_get_service_nodes(rest_get_table_handler):
 
     def handler(self, svcname, **vars):
         q = db.svcmon.mon_svcname == svcname
-        q = _where(q, 'svcmon', domain_perms(), 'mon_svcname')
+        q = q_filter(q, svc_field=db.svcmon.mon_svcname)
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -528,7 +526,7 @@ class rest_get_service_resources(rest_get_table_handler):
 
     def handler(self, svcname, **vars):
         q = db.resmon.svcname == svcname
-        q = _where(q, 'resmon', domain_perms(), 'svcname')
+        q = q_filter(q, svc_field=db.resmon.svcname)
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -553,7 +551,7 @@ class rest_get_service_node(rest_get_line_handler):
     def handler(self, svcname, nodename, **vars):
         q = db.svcmon.mon_svcname == svcname
         q &= db.svcmon.mon_nodname == nodename
-        q = _where(q, 'svcmon', domain_perms(), 'mon_svcname')
+        q = q_filter(q, svc_field=db.svcmon.mon_svcname)
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -578,7 +576,7 @@ class rest_get_service_node_resources(rest_get_table_handler):
     def handler(self, svcname, nodename, **vars):
         q = db.resmon.svcname == svcname
         q &= db.resmon.nodename == nodename
-        q = _where(q, 'resmon', domain_perms(), 'svcname')
+        q = q_filter(q, svc_field=db.resmon.svcname)
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -603,7 +601,7 @@ class rest_get_service_compliance_status(rest_get_table_handler):
 
     def handler(self, svcname, **vars):
         q = db.comp_status.run_svcname == svcname
-        q &= _where(q, 'comp_status', domain_perms(), 'run_nodename')
+        q = q_filter(q, svc_field=db.comp_status.run_svcname)
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -628,7 +626,7 @@ class rest_get_service_compliance_modulesets(rest_get_table_handler):
     def handler(self, svcname, **vars):
         q = db.comp_modulesets_services.modset_svcname == svcname
         q &= db.comp_modulesets_services.modset_id == db.comp_moduleset.id
-        q &= _where(None, 'comp_modulesets_services', domain_perms(), 'modset_svcname')
+        q = q_filter(q, svc_field=db.comp_modulesets_services.modset_svcname)
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -654,7 +652,7 @@ class rest_get_service_compliance_rulesets(rest_get_table_handler):
     def handler(self, svcname, **vars):
         q = db.comp_rulesets_services.svcname == svcname
         q &= db.comp_rulesets_services.ruleset_id == db.comp_rulesets.id
-        q &= _where(None, 'comp_rulesets_services', domain_perms(), 'svcname')
+        q = q_filter(q, svc_field=db.comp_rulesets_services.svcname)
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -779,20 +777,17 @@ class rest_get_service_compliance_logs(rest_get_table_handler):
         examples = [
           "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/services/mysvc/compliance/logs"
         ]
-        q = db.comp_log.id > 0
-        q &= _where(q, 'comp_log', domain_perms(), 'run_nodename')
         rest_get_table_handler.__init__(
           self,
           path="/services/<svcname>/compliance/logs",
           tables=["comp_log"],
-          q=q,
           desc=desc,
           examples=examples,
         )
 
     def handler(self, svcname, **vars):
         q = db.comp_log.run_svcname == svcname
-        q &= _where(q, 'comp_log', domain_perms(), 'run_nodename')
+        q = q_filter(q, svc_field=db.comp_log.run_svcname)
         self.set_q(q)
         return self.prepare_data(**vars)
 
