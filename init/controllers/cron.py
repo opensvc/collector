@@ -418,8 +418,10 @@ def alert_wrong_netmask():
     db.commit()
 
 def alerts_apps_without_responsible():
-    q = db.v_apps.mailto == None
-    rows = db(q).select()
+    q = db.apps.id > 0
+    q = db.apps_responsibles.group_id == None
+    l = db.apps_responsibles.on(db.apps.id==db.apps_responsibles.app_id)
+    rows = db(q).select(db.apps.app, left=l)
     apps = [r.app for r in rows]
 
     if len(apps) == 0:
