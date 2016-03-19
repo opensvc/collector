@@ -26,7 +26,7 @@ class rest_get_apps(rest_get_table_handler):
           examples=examples,
         )
 
-    def handle(self, id, **vars):
+    def handler(self, **vars):
         if not "Manager" in user_groups():
             q = db.apps.id.belongs(user_group_ids())
         else:
