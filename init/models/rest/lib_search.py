@@ -90,6 +90,7 @@ def lib_search_vm(pattern):
     t = datetime.datetime.now()
     o = db.svcmon.mon_vmname
     q = _where(None, 'svcmon', pattern, 'mon_vmname')
+    q = _where(None, 'svcmon', "!empty", 'mon_vmname')
     q = q_filter(q, svc_field=db.svcmon.mon_svcname)
     q = apply_filters(q, db.svcmon.mon_svcname, None)
     n = db(q).count()
@@ -147,12 +148,18 @@ def lib_search_user(pattern):
     t = datetime.datetime.now()
     o = db.v_users.fullname
     q = _where(None, 'v_users', pattern, 'fullname')
-    n = db(q).count()
+    if "Manager" not in user_groups():
+        q &= db.v_users.id == db.auth_membership.user_id
+        q &= db.auth_membership.group_id.belongs(user_group_ids())
+        q &= db.auth_membership.group_id == db.auth_group.id
+        q &= db.auth_group.role != "Everybody"
+    n = db(q).select(db.v_users.id.count(), groupby=db.v_users.id).first()._extra[db.v_users.id.count()]
     data = db(q).select(db.v_users.fullname,
                         db.v_users.id,
                         db.v_users.email,
                         orderby=o,
                         limitby=(0,max_search_result),
+                        groupby=db.v_users.id,
     ).as_list()
     t = datetime.datetime.now() - t
     return {
