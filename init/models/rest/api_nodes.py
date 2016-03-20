@@ -666,6 +666,14 @@ class rest_post_node(rest_post_handler):
         if row is None:
             raise Exception("node %s does not exist" % str(id))
 
+        vars["updated"] = datetime.datetime.now()
+        if "app" in vars and (
+             vars["app"] == "" or \
+             vars["app"] is None or \
+             not common_responsible(app=vars["app"], user_id=auth.user_id)
+           ):
+            vars["app"] = user_default_app()
+
         db(q).update(**vars)
         _log('node.change',
              'update properties %(data)s',
@@ -706,6 +714,13 @@ class rest_post_nodes(rest_post_handler):
         if 'nodename' not in vars:
             raise Exception("the nodename property must be set in the POST data")
         nodename = vars['nodename']
+
+        q = db.nodes.nodename == nodename
+        node = db(q).select().first()
+        if node is not None:
+            del(vars["nodename"])
+            return rest_post_node().handler(nodename, **vars)
+
         vars["updated"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         if "team_responsible" not in vars:
             vars["team_responsible"] = user_primary_group()
@@ -714,6 +729,12 @@ class rest_post_nodes(rest_post_handler):
         # rulesets and safe files it should not see
         if "team_responsible" in vars and auth_is_node():
             del(vars["team_responsible"])
+
+        if "app" not in vars or \
+           vars["app"] == "" or \
+           vars["app"] is None or \
+           not common_responsible(app=vars["app"], user_id=auth.user_id):
+            vars["app"] = user_default_app()
 
         k = dict(
           nodename=vars["nodename"],

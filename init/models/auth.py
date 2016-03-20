@@ -28,6 +28,17 @@ def svc_responsible(svcname):
     if n == 0:
         raise Exception("Not authorized: user is not responsible for service %s" % svcname)
 
+def user_default_app(id=None):
+    if id is None:
+        id = auth.user_id
+    q = db.apps_responsibles.group_id.belongs(user_group_ids())
+    q &= db.apps_responsibles.app_id == db.apps.id
+    q &= db.apps.app != ""
+    q &= db.apps.app != None
+    row = db(q).select(db.apps.app).first()
+    if row is None:
+        return
+    return row.app
 
 def user_fullname(id):
     rows = db(db.auth_user.id==id).select()
