@@ -105,7 +105,6 @@ class table_svcmon(HtmlTable):
             'team_responsible',
             'team_integ',
             'team_support',
-            'project',
             'serial',
             'model',
             'role',

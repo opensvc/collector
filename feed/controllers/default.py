@@ -1533,7 +1533,7 @@ def rpc_collector_asset(cmd, auth):
         pass
     else:
         q = db.nodes.nodename == nodename
-        j = db.nodes.project == db.apps.app
+        j = db.nodes.app == db.apps.app
         l = db.apps.on(j)
         rows = db(q).select(
           db.nodes.ALL,

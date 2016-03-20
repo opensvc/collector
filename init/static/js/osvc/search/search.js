@@ -115,9 +115,9 @@ function search_get_menu(fk)
             "title": "nodes",
             "menu_entry_id": "view-nodes",
             "class": "hw16",
-            "link": "/init/nodes/nodes?volatile_filters=true&nodes_f_project=__app__",
+            "link": "/init/nodes/nodes?volatile_filters=true&nodes_f_app=__app__",
             "fn": "view_nodes",
-            "options": {"volatile_filters": true, "request_vars": {"nodes_f_project": "__app__"}}
+            "options": {"volatile_filters": true, "request_vars": {"nodes_f_app": "__app__"}}
           },
           {
             "title": "status",

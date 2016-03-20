@@ -35,7 +35,7 @@ class table_nodenetworks(HtmlTable):
                       'team_responsible',
                       'team_integ',
                       'team_support',
-                      'project',
+                      'app',
                       'serial',
                       'model',
                       'enclosure',

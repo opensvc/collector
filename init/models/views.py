@@ -329,7 +329,7 @@ def filterset_query(row, nodes, services, i=0, nodename=None, svcname=None):
         n_services = set(map(lambda x: x.svc_name, rows)) - set([None])
 
         _qry = qry
-        _qry &= db.apps.app == db.nodes.project
+        _qry &= db.apps.app == db.nodes.app
         if nodename is not None:
             _qry &= db.nodes.nodename == nodename
         rows = db(_qry).select(db.nodes.nodename,
@@ -445,7 +445,7 @@ joins = {
     'comp_status': db.nodes.nodename == db.comp_status.run_nodename,
     'svcmon_log': db.nodes.nodename == db.svcmon_log.mon_nodname,
     'services_log': (db.svcmon.mon_svcname == db.services_log.svc_name) & (db.svcmon.mon_nodname == db.nodes.nodename),
-    'v_apps': db.nodes.project == db.v_apps.app,
+    'v_apps': db.nodes.app == db.v_apps.app,
   },
 }
 def gen_filterset_query(q, row, tables=[]):

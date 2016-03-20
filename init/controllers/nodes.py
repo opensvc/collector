@@ -26,7 +26,7 @@ class table_nodes(HtmlTable):
                     ),
         })
         self.cols.insert(self.cols.index('team_integ')+1, 'app_team_ops')
-        self.cols.insert(self.cols.index('project')+1, 'app_domain')
+        self.cols.insert(self.cols.index('app')+1, 'app_domain')
         self.ajax_col_values = 'ajax_nodes_col_values'
 
 @auth.requires_login()
@@ -79,7 +79,7 @@ def ajax_nodes_col_values():
     col = request.args[0]
     o = db[t.colprops[col].table][col]
     q = db.nodes.id > 0
-    j = db.apps.app == db.nodes.project
+    j = db.apps.app == db.nodes.app
     l = db.apps.on(j)
     q = q_filter(q, group_field=db.nodes.team_responsible)
     q = apply_filters(q, db.nodes.nodename, None)
@@ -95,7 +95,7 @@ def ajax_nodes():
 
     o = db.nodes.nodename
     q = db.nodes.id>0
-    j = db.apps.app == db.nodes.project
+    j = db.apps.app == db.nodes.app
     l = db.apps.on(j)
     q = q_filter(q, group_field=db.nodes.team_responsible)
     q = apply_filters(q, db.nodes.nodename, None)

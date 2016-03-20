@@ -47,7 +47,7 @@ objcols = {
 		'team_integ',
 		'app_team_ops',
 		'team_support',
-		'project',
+		'app',
 		'app_domain',
 		'last_boot',
 		'power_supply_nb',
@@ -1556,11 +1556,6 @@ colprops = {
 		"img": "net16",
 		"title": "Net priority"
 	},
-	"project": {
-		"_class": "app",
-		"img": "app16",
-		"title": "Project"
-	},
 	"pvid": {
 		"_class": "_network",
 		"img": "net16",
@@ -1711,7 +1706,7 @@ colprops = {
 		"title": "Service"
 	},
 	"save_app": {
-		"img": "save16",
+		"img": "app16",
 		"title": "App"
 	},
 	"save_date": {

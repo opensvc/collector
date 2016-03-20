@@ -667,6 +667,8 @@ def _update_asset(vars, vals, auth):
         del(h['enclosure'])
     if 'team_responsible' in h:
         del(h['team_responsible'])
+    if 'project' in h:
+        del(h['project'])
 
     # add obsolescence info
     os_obs_warn_date, os_obs_alert_date = get_os_obs_dates(' '.join((h['os_name'], h['os_vendor'], h['os_release'])))
@@ -1807,7 +1809,7 @@ def insert_nsr(name=None, nodename=None):
     for row in rows:
         svc_app[row[0]] = row[1]
 
-    sql = """select nodename, project from nodes"""
+    sql = """select nodename, app from nodes"""
     rows = db.executesql(sql)
     node_app = {}
     for row in rows:

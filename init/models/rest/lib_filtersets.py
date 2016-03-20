@@ -159,7 +159,7 @@ def comp_get_matching_filters(fset_ids, fset_data=None, nodename=None, svcname=N
                 where_ext += " and services.svc_name=svcmon.mon_svcname and %s = '%s'" % (svcmon_nodname_field, nodename)
                 join_table += ", svcmon"
             elif table in ("apps"):
-                where_ext += " and apps.app=nodes.project and nodes.nodename = '%s'" % nodename
+                where_ext += " and apps.app=nodes.app and nodes.nodename = '%s'" % nodename
                 join_table += ", nodes"
 
         if svcname is not None:

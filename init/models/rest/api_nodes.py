@@ -641,7 +641,7 @@ class rest_post_node(rest_post_handler):
           "A websocket event is sent to announce the change in the nodes table.",
         ]
         examples = [
-          """# curl -u %(email)s -o- -d loc_city="Zanzibar" -d project="ERP" https://%(collector)s/init/rest/api/nodes/mynode""",
+          """# curl -u %(email)s -o- -d loc_city="Zanzibar" -d app="ERP" https://%(collector)s/init/rest/api/nodes/mynode""",
         ]
         rest_post_handler.__init__(
           self,

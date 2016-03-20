@@ -225,7 +225,7 @@ def ajax_disks_col_values():
     q |= db.stor_array.id<0
     l1 = db.stor_array.on(db.b_disk_app.disk_arrayid == db.stor_array.array_name)
     l2 = db.nodes.on(db.b_disk_app.disk_arrayid==db.nodes.nodename)
-    q = q_filter(q, app_field=db.b_disk_app.disk_app)
+    q = q_filter(q, app_field=db.b_disk_app.app)
     q = apply_filters(q, db.b_disk_app.disk_nodename, None)
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
@@ -242,7 +242,7 @@ def ajax_disks():
     q |= db.stor_array.id<0
     l1 = db.stor_array.on(db.b_disk_app.disk_arrayid == db.stor_array.array_name)
     l2 = db.nodes.on(db.b_disk_app.disk_arrayid==db.nodes.nodename)
-    q = q_filter(q, app_field=db.b_disk_app.disk_app)
+    q = q_filter(q, app_field=db.b_disk_app.app)
     q = apply_filters(q, db.b_disk_app.disk_nodename, None)
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), t.colprops[f].field)
@@ -305,7 +305,7 @@ def ajax_disk_charts():
     request.vars.volatile_filters = None
 
     o = db.b_disk_app.disk_id
-    q = q_filter(app_field=db.b_disk_app.disk_app)
+    q = q_filter(app_field=db.b_disk_app.app)
     q = apply_filters(q, db.b_disk_app.disk_nodename, None)
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)

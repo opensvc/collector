@@ -221,7 +221,7 @@ class table_checks(HtmlTable):
                     ),
         })
         self.cols.insert(self.cols.index('team_integ')+1, 'app_team_ops')
-        self.cols.insert(self.cols.index('project')+1, 'app_domain')
+        self.cols.insert(self.cols.index('app')+1, 'app_domain')
 
         self.ajax_col_values = 'ajax_checks_col_values'
         self.span = ['chk_nodename']
@@ -234,7 +234,7 @@ def ajax_checks_col_values():
     q = q_filter(node_field=db.checks_live.chk_nodename)
     q = apply_filters(q, db.checks_live.chk_nodename, None)
     q &= db.checks_live.chk_nodename==db.nodes.nodename
-    j = db.apps.app == db.nodes.project
+    j = db.apps.app == db.nodes.app
     l = db.apps.on(j)
 
     o = db[t.colprops[col].table][col]
@@ -254,7 +254,7 @@ def ajax_checks():
     q = q_filter(node_field=db.checks_live.chk_nodename)
     q = apply_filters(q, db.checks_live.chk_nodename, None)
     q &= db.checks_live.chk_nodename==db.nodes.nodename
-    j = db.apps.app == db.nodes.project
+    j = db.apps.app == db.nodes.app
     l = db.apps.on(j)
 
     for f in t.cols:

@@ -41,7 +41,7 @@ nodes_cols = [
     'action_type',
     'connect_to',
     'host_mode',
-    'project',
+    'app',
     'team_responsible',
     'team_integ',
     'team_support',
@@ -247,8 +247,8 @@ nodes_colprops = {
              field='team_support',
              table = 'nodes',
             ),
-    'project': HtmlTableColumn(
-             field='project',
+    'app': HtmlTableColumn(
+             field='app',
              table = 'nodes',
             ),
     'role': HtmlTableColumn(

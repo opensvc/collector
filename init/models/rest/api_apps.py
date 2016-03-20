@@ -263,7 +263,7 @@ class rest_get_app_nodes(rest_get_table_handler):
     def handler(self, id, **vars):
         id = lib_app_id(id)
         q = db.apps.id == id
-        q &= db.nodes.project == db.apps.app
+        q &= db.nodes.app == db.apps.app
         self.set_q(q)
         return self.prepare_data(**vars)
 

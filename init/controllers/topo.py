@@ -213,7 +213,7 @@ class viz(object):
         if "services" in self.display:
             apps |= set([r.svc_app if r.svc_app else "unknown" for r in self.rs["services"].values()])
         elif "nodes" in self.display:
-            apps |= set([r.project if r.project else "unknown" for r in self.rs["nodes"].values()])
+            apps |= set([r.app if r.app else "unknown" for r in self.rs["nodes"].values()])
         self.rs["apps"] = apps
 
     def data_services_apps(self):
@@ -227,7 +227,7 @@ class viz(object):
     def data_nodes_apps(self):
         d = []
         for row in self.rs["nodes"].values():
-            t = (row.nodename, row.project if row.project else "unknown")
+            t = (row.nodename, row.app if row.app else "unknown")
             if t not in d:
                 d.append(t)
         self.rs["nodes_apps"] = d
@@ -276,7 +276,7 @@ class viz(object):
                             db.nodes.model,
                             db.nodes.os_name,
                             db.nodes.environnement,
-                            db.nodes.project,
+                            db.nodes.app,
                             db.nodes.loc_country,
                             db.nodes.loc_city,
                             db.nodes.loc_building,
