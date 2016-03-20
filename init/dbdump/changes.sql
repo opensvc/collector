@@ -5053,3 +5053,19 @@ delete from scheduler_task where function_name="task_refresh_b_apps";
 
 drop table b_apps;
 
+CREATE TABLE `apps_publications` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `group_id` int(11) NOT NULL,
+  `app_id` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `apps_publications_fk2` (`group_id`),
+  KEY `apps_publications_fk1` (`app_id`)
+);
+
+drop view v_apps;
+
+drop view v_apps_flat;
+
+CREATE VIEW `v_apps` AS (select a.*, group_concat(distinct tr.role order by tr.role separator ", ") as responsibles, group_concat(distinct tp.role order by tp.role separator ", ") as publications FROM apps a left join apps_responsibles ar on a.id=ar.app_id left join auth_group tr on ar.group_id=tr.id left join apps_publications ap on a.id=ap.app_id left join auth_group tp on ap.group_id=tp .id group by a.app);
+
+

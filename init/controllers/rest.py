@@ -80,6 +80,7 @@ def get_get_handlers(prefix=None):
              "rest_get_app_quotas",
              "rest_get_app_services",
              "rest_get_app_responsibles",
+             "rest_get_app_publications",
        ],
        "arrays": [
              "rest_get_arrays",
@@ -346,9 +347,13 @@ def get_delete_handlers(prefix=None):
              "rest_delete_apps",
              "rest_delete_app",
              "rest_delete_app_responsible",
+             "rest_delete_app_publication",
         ],
         "apps_responsibles": [
              "rest_delete_apps_responsibles",
+        ],
+        "apps_publications": [
+             "rest_delete_apps_publications",
         ],
         "arrays": [
              "rest_delete_array_diskgroup_quotas",
@@ -529,9 +534,13 @@ def get_post_handlers(prefix=None):
              "rest_post_apps",
              "rest_post_app",
              "rest_post_app_responsible",
+             "rest_post_app_publication",
         ],
         "apps_responsibles": [
              "rest_post_apps_responsibles",
+        ],
+        "apps_publications": [
+             "rest_post_apps_publications",
         ],
         "arrays": [
              "rest_post_array_diskgroup_quotas",

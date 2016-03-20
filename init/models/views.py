@@ -445,9 +445,7 @@ joins = {
     'comp_status': db.nodes.nodename == db.comp_status.run_nodename,
     'svcmon_log': db.nodes.nodename == db.svcmon_log.mon_nodname,
     'services_log': (db.svcmon.mon_svcname == db.services_log.svc_name) & (db.svcmon.mon_nodname == db.nodes.nodename),
-    'v_apps': (db.nodes.team_responsible == db.auth_group.role) & \
-              (db.auth_group.id == db.apps_responsibles.group_id) & \
-              (db.apps_responsibles.app_id) & (db.apps.id),
+    'v_apps': db.nodes.project == db.v_apps.app,
   },
 }
 def gen_filterset_query(q, row, tables=[]):

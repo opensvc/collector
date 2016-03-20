@@ -221,9 +221,15 @@ class rest_delete_app(rest_delete_handler):
             return dict(info="app code %s does not exist" % str(id))
         db(q).delete()
         table_modified("apps")
+
         q = db.apps_responsibles.app_id == row.id
         db(q).delete()
         table_modified("apps_responsibles")
+
+        q = db.apps_publications.app_id == row.id
+        db(q).delete()
+        table_modified("apps_publications")
+
         _log('apps.delete',
              'app %(app)s deleted',
              dict(app=row.app),
@@ -376,7 +382,7 @@ class rest_post_app_responsible(rest_post_handler):
         d = dict(g=group.role, u=app.app)
 
         table_modified("apps_responsibles")
-        _log('apps.group.attach', fmt, d)
+        _log('apps.responsible.add', fmt, d)
 
         l = {
           'event': 'apps_change',
@@ -455,7 +461,7 @@ class rest_delete_app_responsible(rest_delete_handler):
         d = dict(g=group.role, u=app.app)
 
         table_modified("apps_responsibles")
-        _log('apps.group.detach', fmt, d)
+        _log('apps.responsible.delete', fmt, d)
 
         l = {
           'event': 'apps_change',
@@ -487,6 +493,184 @@ class rest_get_app_responsibles(rest_get_table_handler):
         id = lib_app_id(id)
         q = db.apps_responsibles.app_id == id
         q &= db.auth_group.id == db.apps_responsibles.group_id
+        self.set_q(q)
+        return self.prepare_data(**vars)
+
+
+class rest_post_apps_publications(rest_post_handler):
+    def __init__(self):
+        desc = [
+          "Attach publication groups to application codes.",
+        ]
+        examples = [
+          "# curl -u %(email)s --header 'Content-Type: application/json' -d @/tmp/data.json -o- -X POST https://%(collector)s/init/rest/api/apps_publications",
+        ]
+        rest_post_handler.__init__(
+          self,
+          path="/apps_publications",
+          desc=desc,
+          examples=examples
+        )
+
+    def handler(self, **vars):
+        if not "app_id" in vars:
+            raise Exception("The 'app_id' key is mandatory")
+        if not "group_id" in vars:
+            raise Exception("The 'group_id' key is mandatory")
+        return rest_post_app_publication().handler(vars["app_id"], vars["group_id"])
+
+class rest_post_app_publication(rest_post_handler):
+    def __init__(self):
+        desc = [
+          "Attach a publication group to an application code.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- -X POST https://%(collector)s/init/rest/api/apps/10/publications/151",
+        ]
+        rest_post_handler.__init__(
+          self,
+          path="/apps/<id>/publications/<id>",
+          desc=desc,
+          examples=examples
+        )
+
+    def handler(self, app_id, group_id, **vars):
+        check_privilege("AppManager")
+        app_id = lib_app_id(app_id)
+        if app_id is None:
+            raise Exception("app code not found")
+        app = db(db.apps.id==app_id).select().first()
+        try:
+            group_id = int(group_id)
+        except:
+            group_id = lib_group_id(group_id)
+        if group_id is None:
+            raise Exception("group not found")
+        group = db(db.auth_group.id==group_id).select().first()
+
+        q = db.apps_publications.app_id == app_id
+        q &= db.apps_publications.group_id == group_id
+        row = db(q).select().first()
+        if row is not None:
+            raise Exception("app %s is already unpublished to group %s" % (app.app, group.role))
+
+        id = db.apps_publications.insert(app_id=app_id, group_id=group_id)
+
+        fmt = 'app %(u)s published to group %(g)s'
+        d = dict(g=group.role, u=app.app)
+
+        table_modified("apps_publications")
+        _log('apps.publication.add', fmt, d)
+
+        l = {
+          'event': 'apps_change',
+          'data': {'id': id},
+        }
+        _websocket_send(event_msg(l))
+
+        # remove dashboard alerts
+        q = db.dashboard.dash_type == "application code without publication"
+        q &= db.dashboard.dash_dict.like('%%:"%s"%%'%app.app)
+        db(q).delete()
+        table_modified("dashboard")
+
+        return dict(info=fmt % d)
+
+class rest_delete_apps_publications(rest_delete_handler):
+    def __init__(self):
+        desc = [
+          "Detach publication groups from application codes.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- --header 'Content-Type: application/json' -d @/tmp/data.json -X DELETE https://%(collector)s/init/rest/api/apps_publications",
+        ]
+        rest_delete_handler.__init__(
+          self,
+          path="/apps_publications",
+          desc=desc,
+          examples=examples
+        )
+
+    def handler(self, **vars):
+        if not "app_id" in vars:
+            raise Exception("The 'app_id' key is mandatory")
+        if not "group_id" in vars:
+            raise Exception("The 'group_id' key is mandatory")
+        return rest_delete_app_publication().handler(vars["app_id"], vars["group_id"])
+
+class rest_delete_app_publication(rest_delete_handler):
+    def __init__(self):
+        desc = [
+          "Detach a publication group from a application code.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- -X DELETE https://%(collector)s/init/rest/api/apps/10/publications/151",
+        ]
+        rest_delete_handler.__init__(
+          self,
+          path="/apps/<id>/publications/<id>",
+          desc=desc,
+          examples=examples
+        )
+
+    def handler(self, app_id, group_id, **vars):
+        check_privilege("AppManager")
+        app_id = lib_app_id(app_id)
+        if app_id is None:
+            raise Exception("app code not found")
+        app = db(db.apps.id==app_id).select().first()
+        try:
+            group_id = int(group_id)
+        except:
+            group_id = lib_group_id(group_id)
+        if group_id is None:
+            raise Exception("group not found")
+        group = db(db.auth_group.id==group_id).select().first()
+
+        q = db.apps_publications.app_id == app_id
+        q &= db.apps_publications.group_id == group_id
+        row = db(q).select().first()
+        if row is None:
+            raise Exception("app %s is already unpublished to group %s" % (app.app, group.role))
+
+        db(q).delete()
+
+        fmt = 'app %(u)s unpublished to group %(g)s'
+        d = dict(g=group.role, u=app.app)
+
+        table_modified("apps_publications")
+        _log('apps.publication.delete', fmt, d)
+
+        l = {
+          'event': 'apps_change',
+          'data': {'id': row.id},
+        }
+        _websocket_send(event_msg(l))
+
+        return dict(info=fmt % d)
+
+#
+class rest_get_app_publications(rest_get_table_handler):
+    def __init__(self):
+        desc = [
+          "List an application code publication groups."
+          "<id> can be either the proper id or the application code."
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/apps/MYAPP/publications"
+        ]
+        rest_get_table_handler.__init__(
+          self,
+          path="/apps/<id>/publications",
+          tables=["auth_group"],
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, id, **vars):
+        id = lib_app_id(id)
+        q = db.apps_publications.app_id == id
+        q &= db.auth_group.id == db.apps_publications.group_id
         self.set_q(q)
         return self.prepare_data(**vars)
 

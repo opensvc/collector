@@ -443,9 +443,14 @@ db.define_table('v_apps',
     Field('app'),
     Field('app_domain', 'string'),
     Field('app_team_ops', 'string'),
-    Field('roles'),
+    Field('publications'),
     Field('responsibles'),
-    Field('mailto'),
+    migrate=False)
+
+db.define_table('apps_publications',
+    Field('id'),
+    Field('app_id'),
+    Field('group_id'),
     migrate=False)
 
 db.define_table('apps_responsibles',

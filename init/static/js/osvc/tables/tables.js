@@ -180,7 +180,7 @@ function table_apps(divid, options) {
 			"app",
 			"app_domain",
 			"app_team_ops",
-			"roles",
+			"publications",
 			"responsibles"
 		],
 		'colprops': {

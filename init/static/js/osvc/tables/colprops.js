@@ -124,9 +124,8 @@ objcols = {
 		'app',
 		'app_domain',
 		'app_team_ops',
-		'roles',
-		'responsibles',
-		'mailto'
+		'publications',
+		'responsibles'
 	]
 }
 
@@ -1623,6 +1622,10 @@ colprops = {
 		"_class": "status",
 		"img": "resource",
 		"title": "Status"
+	},
+	"publications": {
+		"img": "guy16",
+		"title": "Publications"
 	},
 	"responsibles": {
 		"img": "guy16",

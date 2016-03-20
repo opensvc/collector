@@ -7,9 +7,9 @@ class table_apps(HtmlTable):
                      'app',
                      'app_domain',
                      'app_team_ops',
-                     'roles',
+                     'publications',
                      'responsibles',
-                     'mailto']
+                    ]
         self.keys = ['id']
         self.span = ['id']
         self.colprops = {
@@ -29,17 +29,13 @@ class table_apps(HtmlTable):
                      table='v_apps',
                      field='app_team_ops',
                     ),
-            'roles': HtmlTableColumn(
+            'publications': HtmlTableColumn(
                      table='v_apps',
-                     field='roles',
+                     field='publications',
                     ),
             'responsibles': HtmlTableColumn(
                      table='v_apps',
                      field='responsibles',
-                    ),
-            'mailto': HtmlTableColumn(
-                     table='v_apps',
-                     field='mailto',
                     ),
         }
         self.ajax_col_values = 'ajax_apps_col_values'

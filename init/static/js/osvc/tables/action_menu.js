@@ -602,6 +602,20 @@ function table_action_menu_init_data(t) {
 							"min": 1
 						},
 						{
+							"title": "action_menu.add_publication",
+							"class": "add16",
+							"fn": "data_action_add_app_publication",
+							"privileges": ["Manager", "AppManager"],
+							"min": 1
+						},
+						{
+							"title": "action_menu.del_publication",
+							"class": "del16",
+							"fn": "data_action_del_app_publication",
+							"privileges": ["Manager", "AppManager"],
+							"min": 1
+						},
+						{
 							"title": "action_menu.add_responsible",
 							"class": "add16",
 							"fn": "data_action_add_app_responsible",
@@ -2943,6 +2957,40 @@ function data_action_add_dns_record(t, e) {
 	div.uniqueId()
 	div.insertAfter(entry)
 	form(div.attr("id"), {"form_name": "add_dns_record"})
+}
+
+//
+// data action: add app publications
+//
+function data_action_add_app_publication(t, e) {
+	data_action_generic_selector(t, e, {
+		"requestor": services_osvcpostrest,
+		"request_service": "/apps_publications",
+		"selector": generic_selector_org_groups,
+		"request_data_entry": function(selected, data) {
+			return {
+				"group_id": selected,
+				"app_id": data["id"]
+			}
+		}
+	})
+}
+
+//
+// data action: del app publications
+//
+function data_action_del_app_publication(t, e) {
+	data_action_generic_selector(t, e, {
+		"requestor": services_osvcdeleterest,
+		"request_service": "/apps_publications",
+		"selector": generic_selector_org_groups,
+		"request_data_entry": function(selected, data) {
+			return {
+				"group_id": selected,
+				"app_id": data["id"]
+			}
+		}
+	})
 }
 
 //
