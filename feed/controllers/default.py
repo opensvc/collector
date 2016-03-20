@@ -1597,6 +1597,7 @@ def rpc_collector_asset(cmd, auth):
           'obsolescence, os alert date',
           'obsolescence, hw warning date',
           'obsolescence, hw alert date',
+          'app, code',
           'app, domain',
           'app, operations team',
           'updated',
@@ -1659,6 +1660,7 @@ def rpc_collector_asset(cmd, auth):
               str(row.nodes.os_obs_alert_date) if row.nodes.os_obs_alert_date is not None else "",
               str(row.nodes.hw_obs_warn_date) if row.nodes.hw_obs_warn_date is not None else "",
               str(row.nodes.hw_obs_alert_date) if row.nodes.hw_obs_alert_date is not None else "",
+              str(row.apps.app) if row.apps.app is not None else "",
               str(row.apps.app_domain) if row.apps.app_domain is not None else "",
               str(row.apps.app_team_ops) if row.apps.app_team_ops is not None else "",
               str(row.nodes.updated)
