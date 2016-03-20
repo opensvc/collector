@@ -250,6 +250,9 @@ def email_of(u):
     return rows[0][0]
 
 def auth_register_callback(form):
+    table_modified("auth_group")
+    table_modified("auth_membership")
+
     if not config_get("create_app_on_register", False):
         return
     q = db.auth_user.email == form.vars.email
@@ -259,8 +262,11 @@ def auth_register_callback(form):
     app = "user_%d_app" % user.id
 
     app_id = db.apps.insert(app=app)
+    table_modified("apps")
     db.apps_responsibles.insert(app_id=app_id, group_id=group_id)
+    table_modified("apps_responsibles")
     db.apps_publications.insert(app_id=app_id, group_id=group_id)
+    table_modified("apps_publications")
     _log("app.add",
          "app %(app)s created on user register",
          d=dict(app=app),
