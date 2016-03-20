@@ -28,7 +28,7 @@ class rest_get_apps(rest_get_table_handler):
 
     def handler(self, **vars):
         if not "Manager" in user_groups():
-            q = db.apps.id.belongs(user_group_ids())
+            q = db.apps.id.belongs(user_app_ids())
         else:
             q = db.apps.id > 0
         self.set_q(q)
@@ -57,7 +57,7 @@ class rest_get_app(rest_get_line_handler):
         id = lib_app_id(id)
         q = db.apps.id == id
         if not "Manager" in user_groups():
-            q &= db.apps.id.belongs(user_group_ids())
+            q &= db.apps.id.belongs(user_app_ids())
         self.set_q(q)
         return self.prepare_data(**vars)
 
