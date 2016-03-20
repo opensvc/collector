@@ -229,7 +229,7 @@ def rows_avg_cpu_for_nodes(nodes=[], begin=None, end=None, lower=None, higher=No
         nodes = set(nodes) & set(user_nodes())
         nodes = map(repr, nodes)
     else:
-        q = q_filter(group_field=db.nodes.team_responsible)
+        q = q_filter(app_field=db.nodes.app)
         q = apply_filters(q, db.nodes.nodename)
         nodes = [repr(r.nodename) for r in db(q).select(db.nodes.nodename)]
     nodes = 'and nodename in (%s)'%','.join(nodes)
@@ -274,7 +274,7 @@ def rows_avg_mem_for_nodes(nodes=[], begin=None, end=None, lower=None, higher=No
         nodes = set(nodes) & set(user_nodes())
         nodes = map(repr, nodes)
     else:
-        q = q_filter(group_field=db.nodes.team_responsible)
+        q = q_filter(app_field=db.nodes.app)
         q = apply_filters(q, db.nodes.nodename)
         nodes = [repr(r.nodename) for r in db(q).select(db.nodes.nodename)]
     nodes = 'and nodename in (%s)'%','.join(nodes)
@@ -315,7 +315,7 @@ def rows_avg_swp_for_nodes(nodes=[], begin=None, end=None, lower=None, higher=No
         nodes = set(nodes) & set(user_nodes())
         nodes = map(repr, nodes)
     else:
-        q = q_filter(group_field=db.nodes.team_responsible)
+        q = q_filter(app_field=db.nodes.app)
         q = apply_filters(q, db.nodes.nodename)
         nodes = [repr(r.nodename) for r in db(q).select(db.nodes.nodename)]
     nodes = 'and nodename in (%s)'%','.join(nodes)
@@ -355,7 +355,7 @@ def rows_avg_proc_for_nodes(nodes=[], begin=None, end=None, lower=None, higher=N
         nodes = set(nodes) & set(user_nodes())
         nodes = map(repr, nodes)
     else:
-        q = q_filter(group_field=db.nodes.team_responsible)
+        q = q_filter(app_field=db.nodes.app)
         q = apply_filters(q, db.nodes.nodename)
         nodes = [repr(r.nodename) for r in db(q).select(db.nodes.nodename)]
     nodes = 'and nodename in (%s)'%','.join(nodes)
@@ -398,7 +398,7 @@ def rows_avg_block_for_nodes(nodes=[], begin=None, end=None, lower=None, higher=
         nodes = set(nodes) & set(user_nodes())
         nodes = map(repr, nodes)
     else:
-        q = q_filter(group_field=db.nodes.team_responsible)
+        q = q_filter(app_field=db.nodes.app)
         q = apply_filters(q, db.nodes.nodename)
         nodes = [repr(r.nodename) for r in db(q).select(db.nodes.nodename)]
     nodes = 'and nodename in (%s)'%','.join(nodes)

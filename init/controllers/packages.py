@@ -27,7 +27,7 @@ def ajax_packages_col_values():
     col = request.args[0]
     o = db[t.colprops[col].table][col]
     q = db.packages.pkg_nodename==db.nodes.nodename
-    q = q_filter(q, group_field=db.nodes.team_responsible)
+    q = q_filter(q, app_field=db.nodes.app)
     q = apply_filters(q, db.packages.pkg_nodename, None)
     j = db.packages.pkg_sig == db.pkg_sig_provider.sig_id
     l = db.pkg_sig_provider.on(j)
@@ -46,7 +46,7 @@ def ajax_packages():
 
     q = db.packages.id>0
     q &= db.packages.pkg_nodename==db.nodes.nodename
-    q = q_filter(q, group_field=db.nodes.team_responsible)
+    q = q_filter(q, app_field=db.nodes.app)
     q = apply_filters(q, db.packages.pkg_nodename, None)
     j = db.packages.pkg_sig == db.pkg_sig_provider.sig_id
     l = db.pkg_sig_provider.on(j)

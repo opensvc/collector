@@ -23,13 +23,13 @@ def lib_packages_diff(nodenames=[], svcnames=[], encap=False):
     if list(nodenames)[0][0] in "0123456789":
         # received node ids
         q = db.nodes.id.belongs(nodenames)
-        q = q_filter(q, group_field=db.nodes.team_responsible)
+        q = q_filter(q, app_field=db.nodes.app)
         rows = db(q).select(db.nodes.nodename)
         nodenames = [r.nodename for r in rows]
     else:
         # apply domain filtering
         q = db.nodes.nodename.belongs(nodenames)
-        q = q_filter(q, group_field=db.nodes.team_responsible)
+        q = q_filter(q, app_field=db.nodes.app)
         rows = db(q).select(db.nodes.nodename)
         nodenames = [r.nodename for r in rows]
 

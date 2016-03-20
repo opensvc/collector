@@ -18,7 +18,7 @@ class rest_get_ips(rest_get_table_handler):
         )
 
     def handler(self, **vars):
-        q = q_filter(group_field=db.v_nodenetworks.team_responsible)
+        q = q_filter(app_field=db.v_nodenetworks.app)
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -47,7 +47,7 @@ class rest_get_ip(rest_get_line_handler):
             q = db.v_nodenetworks.addr == id
         else:
             q = db.v_nodenetworks.id == id
-        q = q_filter(q, group_field=db.v_nodenetworks.team_responsible)
+        q = q_filter(q, app_field=db.v_nodenetworks.app)
         return self.prepare_data(**vars)
 
 #

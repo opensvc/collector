@@ -81,7 +81,7 @@ def ajax_nodes_col_values():
     q = db.nodes.id > 0
     j = db.apps.app == db.nodes.app
     l = db.apps.on(j)
-    q = q_filter(q, group_field=db.nodes.team_responsible)
+    q = q_filter(q, app_field=db.nodes.app)
     q = apply_filters(q, db.nodes.nodename, None)
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
@@ -97,7 +97,7 @@ def ajax_nodes():
     q = db.nodes.id>0
     j = db.apps.app == db.nodes.app
     l = db.apps.on(j)
-    q = q_filter(q, group_field=db.nodes.team_responsible)
+    q = q_filter(q, app_field=db.nodes.app)
     q = apply_filters(q, db.nodes.nodename, None)
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
@@ -203,7 +203,7 @@ class table_gids(HtmlTable):
 def ajax_obs_agg():
     def get_rows(field_date):
         q = db.nodes.id>0
-        q = q_filter(q, group_field=db.nodes.team_responsible)
+        q = q_filter(q, app_field=db.nodes.app)
         q = apply_filters(q, db.nodes.nodename, None)
         if "nodes[]" in request.vars:
             q &= db.nodes.nodename.belongs(request.vars["nodes[]"])
@@ -309,7 +309,7 @@ def ajax_uids_col_values():
     t = table_nodes('nodes', 'ajax_nodes')
     mt = table_uids('uids', 'ajax_uids')
 
-    q = q_filter(group_field=db.nodes.team_responsible)
+    q = q_filter(app_field=db.nodes.app)
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
     q = apply_filters(q, db.nodes.nodename)
@@ -352,7 +352,7 @@ def ajax_uids():
     mt = table_uids('uids', 'ajax_uids')
 
     o = ~db.comp_status.run_nodename
-    q = q_filter(group_field=db.nodes.team_responsible)
+    q = q_filter(app_field=db.nodes.app)
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
     q = apply_filters(q, db.nodes.nodename)
@@ -407,7 +407,7 @@ def ajax_gids_col_values():
     t = table_nodes('nodes', 'ajax_nodes')
     mt = table_gids('gids', 'ajax_gids')
 
-    q = q_filter(group_field=db.nodes.team_responsible)
+    q = q_filter(app_field=db.nodes.app)
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
     q = apply_filters(q, db.nodes.nodename)
@@ -450,7 +450,7 @@ def ajax_gids():
     mt = table_gids('gids', 'ajax_gids')
 
     o = ~db.comp_status.run_nodename
-    q = q_filter(group_field=db.nodes.team_responsible)
+    q = q_filter(app_field=db.nodes.app)
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
     q = apply_filters(q, db.nodes.nodename)

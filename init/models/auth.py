@@ -129,6 +129,26 @@ def _user_groups(id):
     rows = db(q).select(db.auth_group.role)
     return map(lambda x: x.role, rows)
 
+def user_published_apps(id=None):
+    if id is None:
+        id = auth.user_id
+
+def clear_cache_user_published_apps():
+    cache.redis.clear(regex="user_published_apps:.*")
+
+def user_published_apps(id=None):
+    if id is None:
+        id = auth.user_id
+    return cache.redis("user_published_apps:%d"%id, lambda: _user_published_apps(id), time_expire=14400)
+
+def _user_published_apps(id=None):
+    q = db.auth_membership.user_id==id
+    q &= db.auth_membership.group_id==db.auth_group.id
+    q &= db.apps_publications.group_id == db.auth_membership.group_id
+    q &= db.apps_publications.app_id == db.apps.id
+    rows = db(q).select(db.apps.app)
+    return map(lambda x: x.app, rows)
+
 def clear_cache_user_apps():
     cache.redis.clear(regex="user_apps:.*")
 
@@ -190,10 +210,20 @@ def user_org_group_ids(id=None):
     rows = db.executesql(sql)
     return map(lambda r: r[0], rows)
 
+def user_published_nodes(id=None):
+    q = db.nodes.app.belongs(user_published_apps(id))
+    rows = db(q).select(db.nodes.nodename, cacheable=True)
+    return map(lambda x: x.nodename, rows)
+
 def user_nodes(id=None):
     q = db.nodes.team_responsible.belongs(user_groups(id))
     rows = db(q).select(db.nodes.nodename, cacheable=True)
     return map(lambda x: x.nodename, rows)
+
+def user_published_services(id=None):
+    q = db.services.svc_app.belongs(user_published_apps(id))
+    rows = db(q).select(db.services.svc_name, cacheable=True)
+    return map(lambda x: x.svc_name, rows)
 
 def user_services(id=None):
     q = db.services.svc_app.belongs(user_apps(id))

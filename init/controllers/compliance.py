@@ -137,7 +137,7 @@ def ajax_comp_rulesets_nodes_col_values():
     col = request.args[0]
     o = db.v_comp_nodes[col]
     g = db.v_comp_nodes.nodename | db.v_comp_nodes.ruleset_name
-    q = q_filter(group_field=db.v_comp_nodes.team_responsible)
+    q = q_filter(app_field=db.v_comp_nodes.app)
     for f in t.cols:
         q = _where(q, 'v_comp_nodes', t.filter_parse(f), f)
     t.object_list = db(q).select(o, orderby=o, groupby=g, cacheable=True)
@@ -176,7 +176,7 @@ def ajax_comp_rulesets_nodes():
 
     o = db.v_comp_nodes.nodename
     g = db.v_comp_nodes.nodename | db.v_comp_nodes.ruleset_name
-    q = q_filter(group_field=db.v_comp_nodes.team_responsible)
+    q = q_filter(app_field=db.v_comp_nodes.app)
     if 'Manager' not in user_groups():
         q &= db.v_comp_nodes.team_responsible.belongs(user_groups())
     for f in t.cols:
@@ -553,7 +553,7 @@ def ajax_comp_modulesets_nodes_col_values():
     col = request.args[0]
     o = db.v_comp_nodes[col]
     g = db.v_comp_nodes.nodename | db.v_comp_nodes.modset_name
-    q = q_filter(group_field=db.v_comp_nodes.team_responsible)
+    q = q_filter(app_field=db.v_comp_nodes.app)
     if 'Manager' not in user_groups():
         q &= db.v_comp_nodes.team_responsible.belongs(user_groups())
     for f in t.cols:
@@ -595,7 +595,7 @@ def ajax_comp_modulesets_nodes():
 
     o = db.v_comp_nodes.nodename
     g = db.v_comp_nodes.nodename | db.v_comp_nodes.modset_name
-    q = q_filter(group_field=db.v_comp_nodes.team_responsible)
+    q = q_filter(app_field=db.v_comp_nodes.app)
     if 'Manager' not in user_groups():
         q &= db.v_comp_nodes.team_responsible.belongs(user_groups())
     for f in t.cols:

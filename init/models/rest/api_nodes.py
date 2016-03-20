@@ -184,7 +184,7 @@ class rest_get_node_ips(rest_get_table_handler):
 
     def handler(self, nodename, **vars):
         q = db.v_nodenetworks.nodename == nodename
-        q = q_filter(q, group_field=db.v_nodenetworks.team_responsible)
+        q = q_filter(q, app_field=db.v_nodenetworks.app)
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -365,7 +365,7 @@ class rest_get_node(rest_get_line_handler):
 
     def handler(self, nodename, **vars):
         q = db.nodes.nodename == nodename
-        q = q_filter(q, group_field=db.nodes.team_responsible)
+        q = q_filter(q, app_field=db.nodes.app)
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -479,7 +479,7 @@ class rest_get_nodes(rest_get_table_handler):
         )
 
     def handler(self, **vars):
-        q = q_filter(group_field=db.nodes.team_responsible)
+        q = q_filter(app_field=db.nodes.app)
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -507,7 +507,7 @@ class rest_delete_node(rest_delete_handler):
     def handler(self, nodename, **vars):
         check_privilege("NodeManager")
         q = db.nodes.nodename == nodename
-        q = q_filter(q, group_field=db.nodes.team_responsible)
+        q = q_filter(q, app_field=db.nodes.app)
         row = db(q).select(db.nodes.id, db.nodes.nodename).first()
         if row is None:
             raise Exception("node %s does not exist" % nodename)
@@ -622,7 +622,7 @@ class rest_delete_nodes(rest_delete_handler):
             s = str(s)
         if q is None:
             raise Exception("nodename or id key must be specified")
-        q = q_filter(q, group_field=db.nodes.team_responsible)
+        q = q_filter(q, app_field=db.nodes.app)
         row = db(q).select(db.nodes.id, db.nodes.nodename).first()
         if row is None:
             raise Exception("node %s does not exist" % s)

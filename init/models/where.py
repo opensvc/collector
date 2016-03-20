@@ -7,17 +7,17 @@ def q_filter(query=None, svc_field=None, node_field=None, group_field=None, app_
         manager = False
     if svc_field:
         if not manager:
-            q = svc_field.belongs(user_services())
+            q = svc_field.belongs(user_published_services())
         if t is None:
             t = db[svc_field.tablename]
     if node_field:
         if not manager:
-            q = node_field.belongs(user_nodes())
+            q = node_field.belongs(user_published_nodes())
         if t is None:
             t = db[node_field.tablename]
     if app_field:
         if not manager:
-            q = app_field.belongs(user_apps())
+            q = app_field.belongs(user_published_apps())
         if t is None:
             t = db[app_field.tablename]
     if group_field:

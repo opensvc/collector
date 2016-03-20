@@ -129,7 +129,7 @@ def lib_search_node(pattern):
     t = datetime.datetime.now()
     o = db.nodes.nodename
     q = _where(None, 'nodes', pattern, 'nodename')
-    q = q_filter(q, group_field=db.nodes.team_responsible)
+    q = q_filter(q, app_field=db.nodes.app)
     q = apply_filters(q, db.nodes.nodename, None)
     n = db(q).count()
     data = db(q).select(o,

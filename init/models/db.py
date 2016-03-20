@@ -69,6 +69,9 @@ def table_modified(name):
     db.commit()
 
     triggers = {
+      "apps_publications": [
+         clear_cache_user_published_apps,
+      ],
       "apps_responsibles": [
          clear_cache_user_app_ids,
          clear_cache_user_apps,
