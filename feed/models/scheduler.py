@@ -293,7 +293,7 @@ def _update_service(vars, vals, auth):
     for a,b in zip(vars, vals):
         h[a] = b
     if 'svc_app' in h:
-        if h['svc_app'] is None or h['svc_app'] == "" or not common_responsible(nodename=auth[1], app=h['svc_app']):
+        if h['svc_app'] is None or h['svc_app'] == "" or not common_responsible(nodename=auth[1], app=h['svc_app'].strip("'")):
             new_app = db(db.nodes.nodename==auth[1]).select(db.nodes.app).first().app
             _log("service.change",
                  "advertized app %(app)s remapped to %(new_app)s",

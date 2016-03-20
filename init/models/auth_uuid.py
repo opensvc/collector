@@ -1,11 +1,19 @@
-def common_responsible(nodename=None, svcname=None, app=None):
-    q = db.nodes.nodename == nodename
-    q &= db.nodes.team_responsible == db.auth_group.role
-    if app is None:
+def common_responsible(nodename=None, svcname=None, app=None, user_id=None):
+    if nodename is None and svcname is None and app is None and user_id is None:
+        return False
+    q = db.auth_group.id > 0
+    if nodename:
+        q &= db.nodes.nodename == nodename
+        q &= db.nodes.app == db.apps.app
+    if svcname:
         q &= db.services.svc_name == svcname
         q &= db.apps.app == db.services.svc_app
-    else:
+    if app:
         q &= db.apps.app == app
+    if user_id and not "Manager" in user_groups():
+        q &= db.auth_membership.user_id == user_id
+        q &= db.apps_responsibles.group_id == db.auth_membership.group_id
+
     q &= db.apps.id == db.apps_responsibles.app_id
     q &= db.apps_responsibles.group_id == db.auth_group.id
     if db(q).count() > 0:

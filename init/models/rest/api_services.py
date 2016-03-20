@@ -102,6 +102,17 @@ class rest_post_service(rest_post_handler):
             raise Exception("Service %s not found"%str(id))
 
         vars["updated"] = datetime.datetime.now()
+        if "svc_app" not in vars or \
+           vars["svc_app"] == "" or \
+           vars["svc_app"] is None or \
+           not common_responsible(app=vars["svc_app"], user_id=auth.user_id):
+            _q = db.apps_responsibles.group_id.belongs(user_group_ids())
+            _q &= db.apps_responsibles.app_id == db.apps.id
+            _q &= db.apps.app != ""
+            _q &= db.apps.app != None
+            svc_app = db(_q).select(db.apps.app).first().app
+            vars["svc_app"] = svc_app
+
         db(q).update(**vars)
 
         fmt = "Service %(svcname)s change: %(data)s"

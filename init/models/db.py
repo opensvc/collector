@@ -415,18 +415,18 @@ db.define_table('v_svcmon',
 db.define_table('drpservices',
     Field('drp_svcname'),
     Field('drp_wave'),
-    Field('drp_project_id'),
+    Field('drp_project_id', 'integer'),
     primarykey=['drp_svcname'],
     migrate=False)
 
 db.define_table('drpprojects',
     Field('drp_project'),
-    Field('drp_project_id'),
+    Field('drp_project_id', 'integer'),
     primarykey=['drp_project_id'],
     migrate=False)
 
 db.define_table('apps',
-    Field('id'),
+    Field('id', 'integer'),
     Field('app', required=True),
     Field('description', 'text'),
     Field('app_domain', 'string'),
@@ -437,7 +437,7 @@ db.define_table('apps',
     migrate=False)
 
 db.define_table('v_apps',
-    Field('id'),
+    Field('id', 'integer'),
     Field('app'),
     Field('app_domain', 'string'),
     Field('app_team_ops', 'string'),
@@ -446,15 +446,15 @@ db.define_table('v_apps',
     migrate=False)
 
 db.define_table('apps_publications',
-    Field('id'),
-    Field('app_id'),
-    Field('group_id'),
+    Field('id', 'integer'),
+    Field('app_id', 'integer'),
+    Field('group_id', 'integer'),
     migrate=False)
 
 db.define_table('apps_responsibles',
-    Field('id'),
-    Field('app_id'),
-    Field('group_id'),
+    Field('id', 'integer'),
+    Field('app_id', 'integer'),
+    Field('group_id', 'integer'),
     migrate=False)
 
 db.define_table('nodes',
@@ -587,7 +587,7 @@ db.define_table('v_svcdisks',
     migrate=False)
 
 db.define_table('svc_res_sync',
-    Field('id'),
+    Field('id', 'integer'),
     Field('sync_svcname'),
     Field('sync_src'),
     Field('sync_dst'),
@@ -600,7 +600,7 @@ db.define_table('svc_res_sync',
     migrate=False)
 
 db.define_table('svc_res_ip',
-    Field('id'),
+    Field('id', 'integer'),
     Field('ip_svcname'),
     Field('ip_name'),
     Field('ip_dev'),
@@ -609,7 +609,7 @@ db.define_table('svc_res_ip',
     migrate=False)
 
 db.define_table('svc_res_fs',
-    Field('id'),
+    Field('id', 'integer'),
     Field('fs_svcname'),
     Field('fs_dev'),
     Field('fs_mnt'),
@@ -618,7 +618,7 @@ db.define_table('svc_res_fs',
     migrate=False)
 
 db.define_table('resmon',
-    Field('id'),
+    Field('id', 'integer'),
     Field('svcname'),
     Field('nodename'),
     Field('vmname'),
@@ -635,7 +635,7 @@ db.define_table('resmon',
     migrate=False)
 
 db.define_table('svcmon_log',
-    Field('id'),
+    Field('id', 'integer'),
     Field('mon_begin','datetime'),
     Field('mon_end','datetime'),
     Field('mon_svcname'),
@@ -653,7 +653,7 @@ db.define_table('svcmon_log',
     migrate=False)
 
 db.define_table('v_obsolescence',
-    Field('id'),
+    Field('id', 'integer'),
     Field('obs_type', 'string', length=30),
     Field('obs_name', 'string', length=100),
     Field('obs_warn_date', 'datetime'),
@@ -666,7 +666,7 @@ db.define_table('v_obsolescence',
     migrate=False)
 
 db.define_table('obsolescence',
-    Field('id'),
+    Field('id', 'integer'),
     Field('obs_type', 'string', length=30),
     Field('obs_name', 'string', length=100),
     Field('obs_warn_date', 'datetime'),
@@ -688,7 +688,7 @@ db.define_table('svcmon_log_ack',
     migrate=False)
 
 db.define_table('auth_filters',
-    Field('id'),
+    Field('id', 'integer'),
     Field('fil_uid', 'integer'),
     Field('fil_id', 'integer'),
     Field('fil_value', 'string', length=200),
@@ -696,7 +696,7 @@ db.define_table('auth_filters',
     migrate=False)
 
 db.define_table('filters',
-    Field('id'),
+    Field('id', 'integer'),
     Field('fil_name', 'string', length=30),
     Field('fil_column', 'string', length=30),
     Field('fil_need_value', 'boolean'),
@@ -707,7 +707,7 @@ db.define_table('filters',
     migrate=False)
 
 db.define_table('stats_fs_u',
-    Field('id'),
+    Field('id', 'integer'),
     Field('date', 'datetime'),
     Field('nodename', 'string'),
     Field('mntpt', 'string'),
@@ -716,7 +716,7 @@ db.define_table('stats_fs_u',
     migrate=False)
 
 db.define_table('stats_cpu',
-    Field('id'),
+    Field('id', 'integer'),
     Field('nodename', 'string', length=60),
     Field('cpu', 'string', length=5),
     Field('date', 'datetime'),
@@ -732,7 +732,7 @@ db.define_table('stats_cpu',
     migrate=False)
 
 db.define_table('stats_mem_u',
-    Field('id'),
+    Field('id', 'integer'),
     Field('date', 'datetime'),
     Field('nodename', 'string', length=60),
     Field('kbmemfree', 'integer'),
@@ -746,7 +746,7 @@ db.define_table('stats_mem_u',
     migrate=False)
 
 db.define_table('stats_proc',
-    Field('id'),
+    Field('id', 'integer'),
     Field('date', 'datetime'),
     Field('nodename', 'string', length=60),
     Field('runq_sz', 'integer'),
@@ -757,7 +757,7 @@ db.define_table('stats_proc',
     migrate=False)
 
 db.define_table('stats_swap',
-    Field('id'),
+    Field('id', 'integer'),
     Field('date', 'datetime'),
     Field('nodename', 'string', length=60),
     Field('kbswpfree', 'integer'),
@@ -768,7 +768,7 @@ db.define_table('stats_swap',
     migrate=False)
 
 db.define_table('stats_block',
-    Field('id'),
+    Field('id', 'integer'),
     Field('date', 'datetime'),
     Field('nodename', 'string', length=60),
     Field('tps', 'float'),
@@ -779,7 +779,7 @@ db.define_table('stats_block',
     migrate=False)
 
 db.define_table('stats_blockdev',
-    Field('id'),
+    Field('id', 'integer'),
     Field('date', 'datetime'),
     Field('nodename', 'string', length=60),
     Field('dev', 'string', length=20),
@@ -794,7 +794,7 @@ db.define_table('stats_blockdev',
     migrate=False)
 
 db.define_table('stats_netdev_err',
-    Field('id'),
+    Field('id', 'integer'),
     Field('date', 'datetime'),
     Field('nodename', 'string', length=60),
     Field('dev', 'string', length=8),
@@ -806,7 +806,7 @@ db.define_table('stats_netdev_err',
     migrate=False)
 
 db.define_table('stats_netdev',
-    Field('id'),
+    Field('id', 'integer'),
     Field('date', 'datetime'),
     Field('nodename', 'string', length=60),
     Field('dev', 'string', length=8),
@@ -817,13 +817,13 @@ db.define_table('stats_netdev',
     migrate=False)
 
 db.define_table('pkg_sig_provider',
-    Field('id'),
+    Field('id', 'integer'),
     Field('sig_id', 'string', length=16),
     Field('sig_provider', 'string', length=32),
     migrate=False)
 
 db.define_table('packages',
-    Field('id'),
+    Field('id', 'integer'),
     Field('pkg_nodename', 'string', length=60),
     Field('pkg_name', 'string', length=100),
     Field('pkg_version', 'string', length=16),
@@ -835,7 +835,7 @@ db.define_table('packages',
     migrate=False)
 
 db.define_table('patches',
-    Field('id'),
+    Field('id', 'integer'),
     Field('patch_nodename', 'string', length=60),
     Field('patch_num', 'string', length=100),
     Field('patch_rev', 'string', length=16),
@@ -844,7 +844,7 @@ db.define_table('patches',
     migrate=False)
 
 db.define_table('checks_live',
-    Field('id'),
+    Field('id', 'integer'),
     Field('chk_nodename', 'string', length=60),
     Field('chk_svcname', 'string', length=60),
     Field('chk_instance', 'string', length=60),
@@ -894,7 +894,7 @@ db.define_table('billing_agent',
     migrate=False)
 
 db.define_table('v_billing_per_os',
-    Field('id'),
+    Field('id', 'integer'),
     Field('svc_list', 'string'),
     Field('os_name', 'string'),
     Field('nb', 'integer'),
@@ -903,7 +903,7 @@ db.define_table('v_billing_per_os',
     migrate=False)
 
 db.define_table('v_billing_per_app',
-    Field('id'),
+    Field('id', 'integer'),
     Field('svc_list', 'string'),
     Field('svc_app', 'string'),
     Field('nb', 'integer'),
@@ -912,8 +912,8 @@ db.define_table('v_billing_per_app',
     migrate=False)
 
 db.define_table('lifecycle_os',
-    Field('id'),
-    Field('fset_id'),
+    Field('id', 'integer'),
+    Field('fset_id', 'integer'),
     Field('lc_os_concat', 'string'),
     Field('lc_os_vendor', 'string'),
     Field('lc_os_name', 'string'),
@@ -922,15 +922,15 @@ db.define_table('lifecycle_os',
     migrate=False)
 
 db.define_table('v_lifecycle_os_name',
-    Field('id'),
-    Field('fset_id'),
+    Field('id', 'integer'),
+    Field('fset_id', 'integer'),
     Field('lc_os_name', 'string'),
     Field('lc_count', 'integer'),
     Field('lc_date', 'date'),
     migrate=False)
 
 db.define_table('user_prefs_columns',
-    Field('id'),
+    Field('id', 'integer'),
     Field('upc_user_id', 'integer'),
     Field('upc_table', 'string'),
     Field('upc_field', 'string'),
@@ -938,7 +938,7 @@ db.define_table('user_prefs_columns',
     migrate=False)
 
 db.define_table('upc_dashboard',
-    Field('id'),
+    Field('id', 'integer'),
     Field('upc_user_id', 'integer'),
     Field('upc_dashboard', 'string'),
     migrate=False)
@@ -969,7 +969,7 @@ db.define_table('comp_moduleset',
     migrate=False)
 
 db.define_table('comp_moduleset_modules',
-    Field('modset_id','string'),
+    Field('modset_id','integer'),
     Field('modset_mod_name','string'),
     Field('modset_mod_author','string'),
     Field('modset_mod_updated','datetime'),
@@ -1152,13 +1152,13 @@ db.define_table('v_comp_rulesets',
     migrate=False)
 
 db.define_table('comp_ruleset_team_responsible',
-    Field('ruleset_id','string'),
-    Field('group_id','string'),
+    Field('ruleset_id','integer'),
+    Field('group_id','integer'),
     migrate=False)
 
 db.define_table('comp_ruleset_team_publication',
-    Field('ruleset_id','string'),
-    Field('group_id','string'),
+    Field('ruleset_id','integer'),
+    Field('group_id','integer'),
     migrate=False)
 
 db.define_table('comp_node_moduleset',
@@ -1303,13 +1303,13 @@ db.define_table('v_gen_filterset_teams_responsible',
     migrate=False)
 
 db.define_table('comp_moduleset_team_publication',
-    Field('modset_id','string'),
-    Field('group_id','string'),
+    Field('modset_id','integer'),
+    Field('group_id','integer'),
     migrate=False)
 
 db.define_table('comp_moduleset_team_responsible',
-    Field('modset_id','string'),
-    Field('group_id','string'),
+    Field('modset_id','integer'),
+    Field('group_id','integer'),
     migrate=False)
 
 db.define_table('gen_filterset_team_responsible',
@@ -1318,7 +1318,7 @@ db.define_table('gen_filterset_team_responsible',
     migrate=False)
 
 db.define_table('gen_filterset_check_threshold',
-    Field('fset_id','string'),
+    Field('fset_id','integer'),
     Field('chk_type','string'),
     Field('chk_instance','string'),
     Field('chk_low','integer'),
@@ -1326,7 +1326,7 @@ db.define_table('gen_filterset_check_threshold',
     migrate=False)
 
 db.define_table('v_gen_filterset_check_threshold',
-    Field('fset_id','string'),
+    Field('fset_id','integer'),
     Field('chk_type','string'),
     Field('chk_instance','string'),
     Field('chk_low','integer'),
@@ -1335,13 +1335,13 @@ db.define_table('v_gen_filterset_check_threshold',
     migrate=False)
 
 db.define_table('forms_team_responsible',
-    Field('form_id','string'),
-    Field('group_id','string'),
+    Field('form_id','integer'),
+    Field('group_id','integer'),
     migrate=False)
 
 db.define_table('forms_team_publication',
-    Field('form_id','string'),
-    Field('group_id','string'),
+    Field('form_id','integer'),
+    Field('group_id','integer'),
     migrate=False)
 
 db.define_table('v_forms',
@@ -1830,7 +1830,7 @@ db.define_table('v_nodenetworks',
     Field('maintenance_end', 'datetime', default=request.now),
     Field('status'),
     Field('role'),
-    Field('node_id'),
+    Field('node_id', 'integer'),
     Field('environnement'),
     Field('listener_port'),
     Field('version'),
@@ -1897,7 +1897,7 @@ db.define_table('v_nodenetworks',
     Field('mask', 'string'),
     Field('flag_deprecated', 'boolean'),
     Field('addr_updated', 'datetime'),
-    Field('net_id','string'),
+    Field('net_id','integer'),
     Field('prio','integer'),
     Field('net_name','string'),
     Field('net_network','string'),
