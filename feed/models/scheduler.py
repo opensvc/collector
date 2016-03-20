@@ -298,7 +298,7 @@ def _update_service(vars, vals, auth):
             _log("service.change",
                  "advertized app %(app)s remapped to %(new_app)s",
                  dict(
-                   app=h['svc_app'],
+                   app=h['svc_app'].strip("'"),
                    new_app=new_app,
                  ),
                  svcname=h['svc_name'].strip("'"),
