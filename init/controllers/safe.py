@@ -72,10 +72,13 @@ def ajax_safe_col_values():
     t = table_safe(table_id, 'ajax_safe')
     col = request.args[0]
     o = db[t.colprops[col].table][col]
+    g = db.v_safe.id
     q = db.v_safe.id > 0
+    q &= db.v_safe.id == db.safe_team_publication.file_id
+    q &= db.safe_team_publication.group_id.belongs(user_group_ids())
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
-    t.object_list = db(q).select(o, orderby=o)
+    t.object_list = db(q).select(o, orderby=o, groupby=g)
     return t.col_values_cloud_ungrouped(col)
 
 @auth.requires_login()
@@ -83,8 +86,11 @@ def ajax_safe():
     table_id = request.vars.table_id
     t = table_safe(table_id, 'ajax_safe')
     o = db.v_safe.safe_name
+    g = db.v_safe.id
 
     q = db.v_safe.id>0
+    q &= db.v_safe.id == db.safe_team_publication.file_id
+    q &= db.safe_team_publication.group_id.belongs(user_group_ids())
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
 
@@ -96,11 +102,12 @@ def ajax_safe():
         t.csv_q = q
         return t.do_commonality()
     if len(request.args) == 1 and request.args[0] == 'data':
-        n = db(q).count()
+        n = db(q).select(db.v_safe.id.count()).first()._extra[db.v_safe.id.count()]
         t.setup_pager(n)
         limitby = (t.pager_start,t.pager_end)
         cols = t.get_visible_columns()
-        t.object_list = db(q).select(*cols, orderby=o, limitby=limitby, cacheable=False)
+        t.object_list = db(q).select(*cols, orderby=o, limitby=limitby,
+                                     groupby=g, cacheable=False)
         return t.table_lines_data(n, html=False)
 
 
