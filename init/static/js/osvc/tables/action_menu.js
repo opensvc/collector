@@ -3220,11 +3220,7 @@ function data_action_add_service(t, e) {
 			{
 				"title": "col.Service",
 				"key": "svc_name"
-			},
-			{
-				"title": "col.App",
-				"key": "svc_app"
-			},
+			}
 		]
 	})
 }
