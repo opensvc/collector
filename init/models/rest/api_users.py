@@ -4,6 +4,8 @@ def allowed_user_ids():
     """ Return ids of the users member of the same groups than the requester.
     """
     q = db.auth_membership.group_id.belongs(user_group_ids())
+    q &= db.auth_membership.group_id == db.auth_group.id
+    q &= db.auth_group.role != "Everybody"
     rows = db(q).select(db.auth_membership.user_id)
     return [r.user_id for r in rows]
 
