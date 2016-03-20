@@ -110,6 +110,9 @@ def ajax_tagattach_col_values():
     col = request.args[0]
     o = db[t.colprops[col].table][col]
     q = db.v_tags_full.id >= 0
+    f1 = q_filter(q, node_field=db.v_tags_full.nodename)
+    f2 = q_filter(q, svc_field=db.v_tags_full.svcname)
+    q &= (f1|f2)
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
     t.object_list = db(q).select(o, orderby=o)
@@ -122,6 +125,10 @@ def ajax_tagattach():
     o = db.v_tags_full.tag_name | db.v_tags_full.nodename | db.v_tags_full.svcname
 
     q = db.v_tags_full.id >= 0
+    f1 = q_filter(q, node_field=db.v_tags_full.nodename)
+    f2 = q_filter(q, svc_field=db.v_tags_full.svcname)
+    q &= (f1|f2)
+
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
 
