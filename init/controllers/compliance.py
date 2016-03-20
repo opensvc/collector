@@ -4092,8 +4092,8 @@ def json_tree_groups():
     else:
         q = ""
 
-    sql = """ select id,role from auth_group where role not like "user_%" and privilege = "F" """ + q + """ order by role """
-    rows = db.executesql(sql, as_dict=True)
+    q = q_filter(group_field=db.auth_group.role)
+    rows = db(q).select().as_list()
     h = {}
     for row in rows:
         _data = {
