@@ -165,8 +165,8 @@ def lib_search_group(pattern):
     t = datetime.datetime.now()
     o = db.auth_group.role
     q = db.auth_group.privilege == 'F'
-    q &= ~db.auth_group.role.like("user_%")
     q = _where(q, 'auth_group', pattern, 'role')
+    q = q_filter(q, group_field=db.auth_group.role)
     n = db(q).count()
     data = db(q).select(o,
                         db.auth_group.id,
