@@ -371,7 +371,7 @@ def ajax_networks_col_values():
     t = table_networks(table_id, 'ajax_networks')
     col = request.args[0]
     o = db.networks[col]
-    q = db.networks.id > 0
+    q = q_filter(group_field=db.networks.team_responsible)
     for f in t.cols:
         q = _where(q, 'networks', t.filter_parse(f), f)
     t.object_list = db(q).select(o, orderby=o)
@@ -383,7 +383,7 @@ def ajax_networks():
     t = table_networks(table_id, 'ajax_networks')
 
     o = ~db.networks.name
-    q = db.networks.id > 0
+    q = q_filter(group_field=db.networks.team_responsible)
     for f in set(t.cols):
         q = _where(q, 'networks', t.filter_parse(f), f)
 
