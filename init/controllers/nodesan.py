@@ -116,7 +116,7 @@ def ajax_nodesan_col_values():
     t = table_nodesan(table_id, 'ajax_nodesan')
     col = request.args[0]
     o = db.v_nodesan[col]
-    q = db.v_nodesan.id > 0
+    q = q_filter(app_field=db.v_nodenetworks.app)
     for f in t.cols:
         q = _where(q, 'v_nodesan', t.filter_parse(f), f)
     t.object_list = db(q).select(o, orderby=o)
@@ -128,7 +128,7 @@ def ajax_nodesan():
     t = table_nodesan(table_id, 'ajax_nodesan')
 
     o = db.v_nodesan.nodename|db.v_nodesan.hba_id|db.v_nodesan.tgt_id
-    q = db.v_nodesan.id > 0
+    q = q_filter(app_field=db.v_nodenetworks.app)
     for f in t.cols:
         q = _where(q, 'v_nodesan', t.filter_parse(f), f)
     q = apply_filters(q, db.v_nodesan.nodename, None)
