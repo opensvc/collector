@@ -10,6 +10,10 @@ session_expire = 36000000
 # default: False
 refuse_anon_register = True
 
+# set to True if newly registered users should have a private app code
+# created, for them to register nodes and add services
+create_app_on_register = True
+
 # allow users to create their own account
 # default: True
 allow_register = False

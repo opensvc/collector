@@ -249,6 +249,23 @@ def email_of(u):
         return
     return rows[0][0]
 
+def auth_register_callback(form):
+    if not config_get("create_app_on_register", False):
+        return
+    q = db.auth_user.email == form.vars.email
+    user = db(q).select().first()
+    q = db.auth_group.role == "user_%d" % user.id
+    group_id = db(q).select().first().id
+    app = "user_%d_app" % user.id
+
+    app_id = db.apps.insert(app=app)
+    db.apps_responsibles.insert(app_id=app_id, group_id=group_id)
+    db.apps_publications.insert(app_id=app_id, group_id=group_id)
+    _log("app.add",
+         "app %(app)s created on user register",
+         d=dict(app=app),
+         user=" ".join((user.first_name, user.last_name)))
+
 class MyAuth(Auth):
     def __init__(self, environment, db = None):
         Auth.__init__(self,environment,db)

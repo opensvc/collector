@@ -53,6 +53,7 @@ auth.settings.expiration=config_get("session_expire", 36000000)
 auth.settings.allow_basic_login = True
 auth.settings.remember_me_form = False
 auth.settings.login_methods = [auth]
+auth.settings.register_onaccept = [lambda form: auth_register_callback(form)]
 login_form_username = False
 
 if config_get("allow_register", False):
