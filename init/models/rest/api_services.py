@@ -443,6 +443,29 @@ class rest_get_service_alerts(rest_get_table_handler):
 
 
 #
+class rest_get_service_appinfos(rest_get_table_handler):
+    def __init__(self):
+        desc = [
+          "List an OpenSVC service appinfo key/value pairs.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/services/mysvc/appinfo",
+        ]
+        rest_get_table_handler.__init__(
+          self,
+          path="/services/<svcname>/appinfo",
+          tables=["appinfo"],
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, svcname, **vars):
+        q = db.appinfo.app_svcname == svcname
+        q = q_filter(q, svc_field=db.appinfo.app_svcname)
+        self.set_q(q)
+        return self.prepare_data(**vars)
+
+#
 class rest_get_service_checks(rest_get_table_handler):
     def __init__(self):
         desc = [
