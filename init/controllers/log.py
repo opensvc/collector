@@ -91,6 +91,9 @@ def ajax_log_col_values():
         o = db.log[t.colprops[col].filter_redirect]
         s = [db.log.log_fmt, db.log.log_dict]
     q = db.log.id > 0
+    f1 = q_filter(q, node_field=db.log.log_nodename)
+    f2 = q_filter(q, svc_field=db.log.log_svcname)
+    q &= (f1|f2)
     for f in set(t.cols)-set(['log_evt']):
         q = _where(q, 'log', t.filter_parse(f),  f)
     q = _where(q, 'log', t.filter_parse('log_evt'),  'log_dict')
@@ -104,6 +107,9 @@ def ajax_log():
 
     o = ~db.log.log_date
     q = db.log.id > 0
+    f1 = q_filter(q, node_field=db.log.log_nodename)
+    f2 = q_filter(q, svc_field=db.log.log_svcname)
+    q &= (f1|f2)
     for f in set(t.cols):
         q = _where(q, 'log', t.filter_parse(f),  f if t.colprops[f].filter_redirect is None else t.colprops[f].filter_redirect)
 
