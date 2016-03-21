@@ -19,8 +19,7 @@ def node_responsible(nodename):
         raise Exception("Node %s does not exist" % nodename)
     if "Manager" in user_groups():
         return
-    q &= db.nodes.team_responsible == db.auth_group.role
-    q &= db.auth_group.id.belongs(user_group_ids())
+    q &= db.nodes.app.belongs(user_apps())
     n = db(q).count()
     if n != 1:
         raise Exception("Not authorized: user is not responsible for node %s" % nodename)
@@ -32,9 +31,7 @@ def svc_responsible(svcname):
         raise Exception("Service %s does not exist" % svcname)
     if "Manager" in user_groups():
         return
-    q &= db.services.svc_app == db.apps.app
-    q &= db.apps.id == db.apps_responsibles.app_id
-    db.apps_responsibles.group_id.belongs(user_group_ids())
+    q &= db.services.svc_app.belongs(user_apps())
     n = db(q).count()
     if n == 0:
         raise Exception("Not authorized: user is not responsible for service %s" % svcname)

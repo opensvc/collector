@@ -507,7 +507,7 @@ class rest_delete_node(rest_delete_handler):
     def handler(self, nodename, **vars):
         check_privilege("NodeManager")
         q = db.nodes.nodename == nodename
-        q = q_filter(q, app_field=db.nodes.app)
+        q &= db.nodes.app.belongs(user_apps())
         row = db(q).select(db.nodes.id, db.nodes.nodename).first()
         if row is None:
             raise Exception("node %s does not exist" % nodename)
@@ -622,7 +622,7 @@ class rest_delete_nodes(rest_delete_handler):
             s = str(s)
         if q is None:
             raise Exception("nodename or id key must be specified")
-        q = q_filter(q, app_field=db.nodes.app)
+        q &= db.nodes.app.belongs(user_apps())
         row = db(q).select(db.nodes.id, db.nodes.nodename).first()
         if row is None:
             raise Exception("node %s does not exist" % s)
