@@ -4093,6 +4093,7 @@ def json_tree_groups():
         q = ""
 
     q = q_filter(group_field=db.auth_group.role)
+    q &= db.auth_group.privilege == False
     rows = db(q).select().as_list()
     h = {}
     for row in rows:
