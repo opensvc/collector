@@ -16,9 +16,8 @@ def form_published(id):
     if "Manager" in user_groups():
         return
     q = db.forms.id == id
-    q1 = (db.forms.form_type == "folder") | (db.forms.form_type == "obj")
-    q2 = (db.forms.id == db.forms_team_publication.form_id) & db.forms_team_publication.group_id.belongs(user_group_ids())
-    q &= (q1 | q2)
+    q &= db.forms.id == db.forms_team_publication.form_id
+    q &= db.forms_team_publication.group_id.belongs(user_group_ids())
     form = db(q).select(db.forms.id).first()
     if form is None:
         raise Exception("Form %s not found or not published to you" % str(id))
@@ -159,9 +158,8 @@ class rest_get_forms(rest_get_table_handler):
 
     def handler(self, **vars):
         q = db.forms.id > 0
-        q1 = db.forms.form_type == "obj"
-        q2 = (db.forms.id == db.forms_team_publication.form_id) & db.forms_team_publication.group_id.belongs(user_group_ids())
-        q &= (q1 | q2)
+        q &= db.forms.id == db.forms_team_publication.form_id)
+        q &= db.forms_team_publication.group_id.belongs(user_group_ids()
         self.set_q(q)
         data = self.prepare_data(**vars)
         return data
@@ -190,9 +188,8 @@ class rest_get_form(rest_get_line_handler):
 
     def handler(self, id, **vars):
         q = db.forms.id == int(id)
-        q1 = (db.forms.form_type == "folder") | (db.forms.form_type == "obj")
-        q2 = (db.forms.id == db.forms_team_publication.form_id) & db.forms_team_publication.group_id.belongs(user_group_ids())
-        q &= (q1 | q2)
+        q &= db.forms.id == db.forms_team_publication.form_id
+        q &= db.forms_team_publication.group_id.belongs(user_group_ids())
         self.set_q(q)
         data = self.prepare_data(**vars)
         return data
