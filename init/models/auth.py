@@ -151,10 +151,6 @@ def _user_groups(id):
     rows = db(q).select(db.auth_group.role)
     return map(lambda x: x.role, rows)
 
-def user_published_apps(id=None):
-    if id is None:
-        id = auth.user_id
-
 def clear_cache_user_published_apps():
     cache.redis.clear(regex="user_published_apps:.*")
 
