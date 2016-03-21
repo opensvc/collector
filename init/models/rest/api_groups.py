@@ -301,7 +301,10 @@ class rest_post_groups(rest_post_handler):
         )
 
     def handler(self, **vars):
-        check_privilege("GroupManager")
+        if 'privilege' in vars and vars["privilege"] in ("T", True):
+            check_privilege("Manager")
+        else:
+            check_privilege("GroupManager")
         group_id = db.auth_group.insert(**vars)
         table_modified("auth_group")
 
@@ -341,7 +344,10 @@ class rest_post_group(rest_post_handler):
         )
 
     def handler(self, id, **vars):
-        check_privilege("GroupManager")
+        if 'privilege' in vars and vars["privilege"] in ("T", True):
+            check_privilege("Manager")
+        else:
+            check_privilege("GroupManager")
         try:
             id = int(id)
             q = db.auth_group.id == id
@@ -439,6 +445,7 @@ class rest_delete_group(rest_delete_handler):
             q &= db.auth_group.id > 0
         except:
             q &= db.auth_group.id.belongs(user_group_ids())
+            q &= db.auth_group.privilege == False
 
         row = db(q).select().first()
         if row is None:
