@@ -5156,3 +5156,5 @@ insert into auth_group values (NULL, "GroupManager", "", "T");
 
 insert into auth_group values (NULL, "SelfManager", "", "T");
 
+insert into auth_group values (NULL, "ContextCheckManager", "", "T");
+

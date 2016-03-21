@@ -372,11 +372,12 @@ class rest_post_checks_settings(rest_post_handler):
         if 'chk_svcname' in vars:
             q &= db.checks_settings.chk_svcname == vars["chk_svcname"]
             s += vars["chk_svcname"]
-        q = q_filter(q, node_field=db.checks_settings.chk_nodename)
         row = db(q).select().first()
         if row is None:
             if not "chk_nodename" in vars or not "chk_type" in vars or not "chk_instance" in vars:
                 raise Exception("chk_nodename+chk_type+chk_instance[+chk_svcname] must be specified")
+            check_privilege("CheckManager")
+            node_responsible(vars["chk_nodename"])
             vars["chk_changed"] = datetime.datetime.now()
             vars["chk_changed_by"] = user_name()
 
@@ -467,7 +468,7 @@ class rest_delete_checks_contextual_setting(rest_delete_handler):
     def __init__(self):
         desc = [
           "- Delete a checks contextual threshold setting.",
-          "- The user must be in the CheckManager privilege group.",
+          "- The user must be in the ContextCheckManager privilege group.",
           "- Log the deletion.",
           "- Send a websocket change event.",
         ]
@@ -482,7 +483,7 @@ class rest_delete_checks_contextual_setting(rest_delete_handler):
         )
 
     def handler(self, id, **vars):
-        check_privilege("CheckManager")
+        check_privilege("ContextCheckManager")
         q = db.v_gen_filterset_check_threshold.id == id
         row = db(q).select().first()
         if row is None:
@@ -505,7 +506,7 @@ class rest_delete_checks_contextual_settings(rest_delete_handler):
     def __init__(self):
         desc = [
           "- Delete checks contextual threshold settings.",
-          "- The user must be in the CheckManager privilege group.",
+          "- The user must be in the ContextCheckManager privilege group.",
           "- Log the deletion.",
           "- Send a websocket change event.",
         ]
@@ -530,7 +531,7 @@ class rest_post_checks_contextual_setting(rest_post_handler):
     def __init__(self):
         desc = [
           "- Modify a checks contextual threshold settings.",
-          "- The user must be in the CheckManager privilege group.",
+          "- The user must be in the ContextCheckManager privilege group.",
           "- Log the changes.",
           "- Start a background job to update the checks thresholds.",
         ]
@@ -546,6 +547,7 @@ class rest_post_checks_contextual_setting(rest_post_handler):
         )
 
     def handler(self, id, **vars):
+        check_privilege("ContextCheckManager")
         q = db.gen_filterset_check_threshold.id == id
         row = db(q).select().first()
         if row is None:
@@ -568,7 +570,7 @@ class rest_post_checks_contextual_settings(rest_post_handler):
     def __init__(self):
         desc = [
           "- Modify or add checks contextual threshold settings.",
-          "- The user must be in the CheckManager privilege group.",
+          "- The user must be in the ContextCheckManager privilege group.",
           "- Log the changes.",
           "- Start a background job to update the checks thresholds.",
         ]
@@ -600,6 +602,7 @@ class rest_post_checks_contextual_settings(rest_post_handler):
             if not "fset_id" in vars or not "chk_type" in vars or not "chk_instance" in vars or not "chk_low" in vars or not "chk_high" in vars:
                 raise Exception("fset_id+chk_type+chk_instance+chk_low+chk_high must be specified")
 
+            check_privilege("ContextCheckManager")
             id = db.gen_filterset_check_threshold.insert(**vars)
             _log('check.contextual_settings.add',
                  'add checks contextual instance settings %(data)s',
