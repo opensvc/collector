@@ -244,7 +244,7 @@ class rest_post_users(rest_post_handler):
              dict(data=str(vars)),
             )
         l = {
-          'event': 'auth_user',
+          'event': 'auth_user_change',
           'data': {'foo': 'bar'},
         }
         _websocket_send(event_msg(l))
@@ -292,7 +292,7 @@ class rest_post_user(rest_post_handler):
              d,
             )
         l = {
-          'event': 'auth_user',
+          'event': 'auth_user_change',
           'data': {'foo': 'bar'},
         }
         _websocket_send(event_msg(l))
@@ -372,7 +372,7 @@ class rest_delete_user(rest_delete_handler):
              'deleted user %(email)s',
              dict(email=row.email))
         l = {
-          'event': 'auth_user',
+          'event': 'auth_user_change',
           'data': {'foo': 'bar'},
         }
         _websocket_send(event_msg(l))
@@ -439,7 +439,7 @@ class rest_post_user_group(rest_post_handler):
              dict(u=user.email, g=group.role),
             )
         l = {
-          'event': 'auth_user',
+          'event': 'auth_user_change',
           'data': {'foo': 'bar'},
         }
         _websocket_send(event_msg(l))
@@ -551,7 +551,7 @@ class rest_delete_user_group(rest_delete_handler):
              dict(u=user.email, g=group.role),
             )
         l = {
-          'event': 'auth_user',
+          'event': 'auth_user_change',
           'data': {'foo': 'bar'},
         }
         _websocket_send(event_msg(l))
@@ -649,7 +649,7 @@ class rest_post_user_primary_group(rest_post_handler):
              dict(u=user.email, g=group.role),
             )
         l = {
-          'event': 'auth_user',
+          'event': 'auth_user_change',
           'data': {'foo': 'bar'},
         }
         _websocket_send(event_msg(l))
@@ -699,7 +699,7 @@ class rest_delete_user_primary_group(rest_delete_handler):
              dict(u=user.email),
             )
         l = {
-          'event': 'auth_user',
+          'event': 'auth_user_change',
           'data': {'foo': 'bar'},
         }
         _websocket_send(event_msg(l))
