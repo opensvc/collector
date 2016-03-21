@@ -3437,14 +3437,6 @@ div.containertrans {
 
 .reports_section {
 	min-width: 15em;
-	border-bottom-color: black;
-	border-bottom-style: solid;
-	border-left-color: #AAA;
-	border-left-style: solid;
-	border-right-color: black;
-	border-right-style: solid;
-	border-top-color: #AAA;
-	border-top-style: solid;
 	border-width: 0;
 	color: black;
 	cursor: default;
