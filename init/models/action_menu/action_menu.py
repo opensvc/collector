@@ -136,8 +136,8 @@ def fmt_svc_comp_action(node, service, action, mode, mod, action_type, connect_t
     cmd += ['compliance', action, '--'+mode, mod]
     return ' '.join(cmd)
 
-@auth.requires_membership('CompExec')
 def do_node_comp_action(nodename, action, mode, obj):
+    check_privilege("CompExec")
     if action.startswith("compliance_"):
         action = action.replace("compliance_", "")
     if mode not in ("module", "moduleset"):
@@ -146,7 +146,7 @@ def do_node_comp_action(nodename, action, mode, obj):
         raise ToolError("unsupported action")
 
     q = db.nodes.nodename == nodename
-    q &= db.nodes.team_responsible.belongs(user_groups())
+    q &= db.nodes.app.belongs(user_apps())
     node = db(q).select(db.nodes.nodename, db.nodes.os_name, db.nodes.action_type, cacheable=True).first()
 
     if node is None:
@@ -160,11 +160,12 @@ def do_node_comp_action(nodename, action, mode, obj):
     return 1
 
 def do_node_action(nodename, action=None):
+    check_privilege("NodeExec")
     if action is None or len(action) == 0:
         raise ToolError("no action specified")
 
     q = db.nodes.nodename == nodename
-    q &= db.nodes.team_responsible.belongs(user_groups())
+    q &= db.nodes.app.belongs(user_apps())
     node = db(q).select(db.nodes.nodename, db.nodes.os_name, db.nodes.action_type, cacheable=True).first()
 
     if node is None:
@@ -191,8 +192,8 @@ def do_node_wol_action(nodename):
         n += do_node_action(node, action)
     return n
 
-@auth.requires_membership('CompExec')
 def do_svc_comp_action(nodename, svcname, action, mode, obj):
+    check_privilege("CompExec")
     if action.startswith("compliance_"):
         action = action.replace("compliance_", "")
     if mode not in ("module", "moduleset"):
@@ -231,6 +232,7 @@ def do_svc_comp_action(nodename, svcname, action, mode, obj):
     return 1
 
 def do_svc_action(nodename, svcname, action, rid=None):
+    check_privilege("NodeExec")
     if action is None or len(action) == 0:
         raise ToolError("no action specified")
 

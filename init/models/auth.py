@@ -1,6 +1,17 @@
 import re
 from gluon.tools import Auth
 
+def check_privilege(privs):
+    ug = user_groups()
+    if 'Manager' in ug:
+        return
+    if type(privs) == list:
+        privs = set(privs)
+    else:
+        privs = set([privs])
+    if len(privs & set(ug)) == 0:
+        raise Exception("Not authorized: user has no %s privilege" % ", ".join(privs))
+
 def node_responsible(nodename):
     q = db.nodes.nodename == nodename
     n = db(q).count()

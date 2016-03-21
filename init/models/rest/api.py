@@ -598,17 +598,6 @@ def mangle_data(data, props=None, vprops={}, vprops_fn=None):
             del(data[i][prop])
     return data
 
-def check_privilege(privs):
-    ug = user_groups()
-    if 'Manager' in ug:
-        return
-    if type(privs) == list:
-        privs = set(privs)
-    else:
-        privs = set([privs])
-    if len(privs & set(ug)) == 0:
-        raise Exception("Not authorized: user has no %s privilege" % ", ".join(privs))
-
 def all_props(tables=[], blacklist=[], vprops={}, db=db):
     cols = props_to_cols(None, tables=tables, blacklist=blacklist, db=db)
     return cols_to_props(cols, tables=tables) + vprops.values()
