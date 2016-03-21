@@ -153,7 +153,11 @@ def lib_search_user(pattern):
         q &= db.auth_membership.group_id.belongs(user_group_ids())
         q &= db.auth_membership.group_id == db.auth_group.id
         q &= db.auth_group.role != "Everybody"
-    n = db(q).select(db.v_users.id.count(), groupby=db.v_users.id).first()._extra[db.v_users.id.count()]
+    row = db(q).select(db.v_users.id.count(), groupby=db.v_users.id).first()
+    if row is None:
+        n = 0
+    else:
+        n = row._extra[db.v_users.id.count()]
     data = db(q).select(db.v_users.fullname,
                         db.v_users.id,
                         db.v_users.email,
