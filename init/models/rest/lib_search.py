@@ -90,7 +90,7 @@ def lib_search_vm(pattern):
     t = datetime.datetime.now()
     o = db.svcmon.mon_vmname
     q = _where(None, 'svcmon', pattern, 'mon_vmname')
-    q = _where(None, 'svcmon', "!empty", 'mon_vmname')
+    q = _where(q, 'svcmon', "!empty", 'mon_vmname')
     q = q_filter(q, svc_field=db.svcmon.mon_svcname)
     q = apply_filters(q, db.svcmon.mon_svcname, None)
     n = db(q).count()
