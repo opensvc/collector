@@ -244,7 +244,7 @@ function table_action_menu_init_data(t) {
 							"title": "action_menu.contextual_thresholds",
 							"class": "check16",
 							"fn": "data_action_add_contextual_thresholds",
-							"privileges": ["Manager", "CheckManager"],
+							"privileges": ["Manager", "ContextCheckManager"],
 							"min": 0
 						},
 						{
@@ -265,7 +265,7 @@ function table_action_menu_init_data(t) {
 							"title": "action_menu.group",
 							"class": "guys16",
 							"fn": "data_action_add_group",
-							"privileges": ["Manager", "UserManager"],
+							"privileges": ["Manager", "GroupManager"],
 							"min": 0
 						},
 						{
@@ -289,14 +289,14 @@ function table_action_menu_init_data(t) {
 							"title": "action_menu.contextual_thresholds",
 							"class": "check16",
 							"fn": "data_action_delete_contextual_thresholds",
-							"privileges": ["Manager", "CheckManager"],
+							"privileges": ["Manager", "ContextCheckManager"],
 							"min": 0
 						},
 						{
 							"title": "action_menu.group",
 							"class": "guys16",
 							"fn": "data_action_del_groups",
-							"privileges": ["Manager", "UserManager"],
+							"privileges": ["Manager", "GroupManager"],
 							"min": 0
 						}
 					]
@@ -1245,56 +1245,56 @@ function table_action_menu_init_data(t) {
 							"title": "action_menu.attach_groups",
 							"class": "attach16",
 							"fn": "data_action_user_attach_groups",
-							"privileges": ["Manager", "UserManager"],
+							"privileges": ["Manager", "GroupManager"],
 							"min": 1
 						},
 						{
 							"title": "action_menu.detach_groups",
 							"class": "detach16",
 							"fn": "data_action_user_detach_groups",
-							"privileges": ["Manager", "UserManager"],
+							"privileges": ["Manager", "GroupManager"],
 							"min": 1
 						},
 						{
 							"title": "action_menu.attach_privileges",
 							"class": "attach16",
 							"fn": "data_action_user_attach_privileges",
-							"privileges": ["Manager", "UserManager"],
+							"privileges": ["Manager", "GroupManager"],
 							"min": 1
 						},
 						{
 							"title": "action_menu.detach_privileges",
 							"class": "detach16",
 							"fn": "data_action_user_detach_privileges",
-							"privileges": ["Manager", "UserManager"],
+							"privileges": ["Manager", "GroupManager"],
 							"min": 1
 						},
 						{
 							"title": "action_menu.lock_filterset",
 							"class": "fa-lock",
 							"fn": "data_action_user_lock_filterset",
-							"privileges": ["Manager", "UserManager"],
+							"privileges": ["Manager", "UserManager", "SelfManager"],
 							"min": 1
 						},
 						{
 							"title": "action_menu.unlock_filterset",
 							"class": "fa-unlock",
 							"fn": "data_action_user_unlock_filterset",
-							"privileges": ["Manager", "UserManager"],
+							"privileges": ["Manager", "UserManager", "SelfManager"],
 							"min": 1
 						},
 						{
 							"title": "action_menu.set_filterset",
 							"class": "filter16",
 							"fn": "data_action_user_set_filterset",
-							"privileges": ["Manager", "UserManager"],
+							"privileges": ["Manager", "UserManager", "SelfManager"],
 							"min": 1
 						},
 						{
 							"title": "action_menu.set_primary_group",
 							"class": "guys16",
 							"fn": "data_action_user_set_primary_group",
-							"privileges": ["Manager", "UserManager"],
+							"privileges": ["Manager", "UserManager", "SelfManager"],
 							"min": 1
 						}
 					]
