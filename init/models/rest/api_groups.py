@@ -345,6 +345,8 @@ class rest_post_group(rest_post_handler):
         row = db(q).select().first()
         if row is None:
             return dict(error="Group %s does not exist" % str(id))
+        if row.role == "Everybody":
+            raise Exception("The 'Everybody' group is immutable")
         if "id" in vars.keys():
             del(vars["id"])
         db(q).update(**vars)
@@ -426,6 +428,9 @@ class rest_delete_group(rest_delete_handler):
         row = db(q).select().first()
         if row is None:
             return dict(info="Group %s does not exists" % str(id))
+
+        if row.role == "Everybody":
+            raise Exception("The 'Everybody' group is immutable")
 
         # group
         db(q).delete()
@@ -590,6 +595,9 @@ class rest_post_group_hidden_menu_entries(rest_post_handler):
         if group is None:
             return dict(info="Group %s does not exists" % str(group_id))
 
+        if "Manager" not in user_groups() and row.role == "Everybody":
+            raise Exception("The 'Everybody' group is immutable")
+
         if group.privilege:
             raise Exception("Can not set hidden menu entries for privilege groups")
 
@@ -641,6 +649,9 @@ class rest_delete_group_hidden_menu_entries(rest_delete_handler):
         group = db(q).select().first()
         if group is None:
             return dict(info="Group %s does not exists" % str(group_id))
+
+        if "Manager" not in user_groups() and row.role == "Everybody":
+            raise Exception("The 'Everybody' group is immutable")
 
         if group.privilege:
             raise Exception("Can not set hidden menu entries for privilege groups")
