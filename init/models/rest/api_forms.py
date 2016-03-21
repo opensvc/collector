@@ -159,7 +159,7 @@ class rest_get_forms(rest_get_table_handler):
 
     def handler(self, **vars):
         q = db.forms.id > 0
-        q1 = (db.forms.form_type == "folder") | (db.forms.form_type == "obj")
+        q1 = db.forms.form_type == "obj"
         q2 = (db.forms.id == db.forms_team_publication.form_id) & db.forms_team_publication.group_id.belongs(user_group_ids())
         q &= (q1 | q2)
         self.set_q(q)
