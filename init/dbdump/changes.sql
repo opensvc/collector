@@ -5150,4 +5150,6 @@ create view v_disk_app as
                      where (svcdisks.disk_svcname = "" or svcdisks.disk_svcname is NULL)
 ;
 
+insert into auth_group values (NULL, "AppManager", "", "T");
+
 

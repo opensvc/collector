@@ -94,12 +94,18 @@ function float2int (value) {
 
 function spinner_del(e, text)
 {
+	if (!e) {
+		return
+	}
 	e.children(".spinner").remove()
 	e.children(".spinner_text").remove()
 }
 
 function spinner_add(e, text)
 {
+	if (!e) {
+		return
+	}
 	if (e.children(".spinner").length > 0) {
 		return
 	}

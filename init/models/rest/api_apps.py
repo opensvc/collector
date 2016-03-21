@@ -9,6 +9,12 @@ def lib_app_id(id):
     if row is not None:
         return row.id
 
+def app_responsible(app_id):
+    if "Manager" in user_groups():
+        return
+    if app_id not in user_app_ids():
+        raise Exception("You are not responsible for this app")
+
 #
 class rest_get_apps(rest_get_table_handler):
     def __init__(self):
@@ -101,11 +107,17 @@ class rest_post_apps(rest_post_handler):
             q &= db.apps[v] == vars[v]
         row = db(q).select().first()
         if row is not None:
-            return dict(info="App already exists")
+            return rest_post_app().handler(row.id, **vars)
         response = db.apps.validate_and_insert(**vars)
         raise_on_error(response)
         table_modified("apps")
         row = db(q).select().first()
+
+        db.apps_responsibles.insert(app_id=row.id, group_id=user_default_group_id())
+        table_modified("apps_responsibles")
+        db.apps_publications.insert(app_id=row.id, group_id=user_default_group_id())
+        table_modified("apps_publications")
+
         _log('apps.create',
              'app %(app)s created. data %(data)s',
              dict(app=row.app, data=str(vars)),
@@ -139,9 +151,11 @@ class rest_post_app(rest_post_handler):
         )
 
     def handler(self, id, **vars):
+        check_privilege("AppManager")
         id = lib_app_id(id)
         if id is None:
             return Exception("app code not found")
+        app_responsible(id)
         q = db.apps.id == id
         row = db(q).select().first()
         if row is None:
@@ -212,9 +226,11 @@ class rest_delete_app(rest_delete_handler):
         )
 
     def handler(self, id, **vars):
+        check_privilege("AppManager")
         id = lib_app_id(id)
         if id is None:
             return dict(info="app code does not exist")
+        app_responsible(id)
         q = db.apps.id == id
         row = db(q).select().first()
         if row is None:
@@ -263,6 +279,8 @@ class rest_get_app_nodes(rest_get_table_handler):
     def handler(self, id, **vars):
         id = lib_app_id(id)
         q = db.apps.id == id
+        if not "Manager" in user_groups():
+            q &= db.apps.id.belongs(user_app_ids())
         q &= db.nodes.app == db.apps.app
         self.set_q(q)
         return self.prepare_data(**vars)
@@ -289,6 +307,8 @@ class rest_get_app_quotas(rest_get_table_handler):
     def handler(self, id, **vars):
         id = lib_app_id(id)
         q = db.apps.id == id
+        if not "Manager" in user_groups():
+            q &= db.apps.id.belongs(user_app_ids())
         q &= db.v_disk_quota.app == db.apps.app
         self.set_q(q)
         return self.prepare_data(**vars)
@@ -315,6 +335,8 @@ class rest_get_app_services(rest_get_table_handler):
     def handler(self, id, **vars):
         id = lib_app_id(id)
         q = db.apps.id == id
+        if not "Manager" in user_groups():
+            q &= db.apps.id.belongs(user_app_ids())
         q &= db.services.svc_app == db.apps.app
         self.set_q(q)
         return self.prepare_data(**vars)
@@ -361,6 +383,7 @@ class rest_post_app_responsible(rest_post_handler):
         app_id = lib_app_id(app_id)
         if app_id is None:
             raise Exception("app code not found")
+        app_responsible(app_id)
         app = db(db.apps.id==app_id).select().first()
         try:
             group_id = int(group_id)
@@ -440,6 +463,7 @@ class rest_delete_app_responsible(rest_delete_handler):
         app_id = lib_app_id(app_id)
         if app_id is None:
             raise Exception("app code not found")
+        app_responsible(app_id)
         app = db(db.apps.id==app_id).select().first()
         try:
             group_id = int(group_id)
@@ -492,6 +516,8 @@ class rest_get_app_responsibles(rest_get_table_handler):
     def handler(self, id, **vars):
         id = lib_app_id(id)
         q = db.apps_responsibles.app_id == id
+        if not "Manager" in user_groups():
+            q &= db.apps_responsibles.app_id.belongs(user_app_ids())
         q &= db.auth_group.id == db.apps_responsibles.group_id
         self.set_q(q)
         return self.prepare_data(**vars)
@@ -539,6 +565,7 @@ class rest_post_app_publication(rest_post_handler):
         app_id = lib_app_id(app_id)
         if app_id is None:
             raise Exception("app code not found")
+        app_responsible(app_id)
         app = db(db.apps.id==app_id).select().first()
         try:
             group_id = int(group_id)
@@ -618,6 +645,7 @@ class rest_delete_app_publication(rest_delete_handler):
         app_id = lib_app_id(app_id)
         if app_id is None:
             raise Exception("app code not found")
+        app_responsible(app_id)
         app = db(db.apps.id==app_id).select().first()
         try:
             group_id = int(group_id)
@@ -670,6 +698,8 @@ class rest_get_app_publications(rest_get_table_handler):
     def handler(self, id, **vars):
         id = lib_app_id(id)
         q = db.apps_publications.app_id == id
+        if not "Manager" in user_groups():
+            q &= db.apps_publications.app_id.belongs(user_app_ids())
         q &= db.auth_group.id == db.apps_publications.group_id
         self.set_q(q)
         return self.prepare_data(**vars)

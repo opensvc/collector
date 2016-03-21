@@ -526,6 +526,10 @@ tab_properties_generic_list = function(options) {
 		}
 	}
 
+	if (!options.e_list) {
+		console.log("generic_list DOM element not found,", options)
+		return
+	}
 	refresh()
 	options.e_list.attr("generic_list", "")
 	options.e_list[0].generic_list = {}

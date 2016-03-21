@@ -62,7 +62,9 @@ function app_properties(divid, options) {
 		o.info_app_domain = o.div.find("#app_domain");
 		o.info_updated = o.div.find("#updated");
 		o.info_responsibles_title = o.div.find("#responsibles_title");
+		o.info_publications_title = o.div.find("#publications_title");
 		o.info_responsibles = o.div.find("#responsibles");
+		o.info_publications = o.div.find("#publications");
 		o.info_services_title = o.div.find("#services_title");
 		o.info_services = o.div.find("#services");
 		o.info_nodes_title = o.div.find("#nodes_title");
@@ -84,6 +86,16 @@ function app_properties(divid, options) {
 			o.info_updated.html(data.updated);
 			o.info_id.html(data.id);
 
+			tab_properties_generic_list({
+				"request_service": "/apps/%1/publications",
+				"request_parameters": [data.id],
+				"limit": "50",
+				"key": "role",
+				"title": "app_properties.publications",
+				"item_class": "guys16",
+				"e_title": o.info_publications_title,
+				"e_list": o.info_publications
+			})
 			tab_properties_generic_list({
 				"request_service": "R_APP_RESPONSIBLES",
 				"request_parameters": [data.id],

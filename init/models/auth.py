@@ -103,6 +103,18 @@ def user_primary_group_id():
         return None
     return rows[0][0]
 
+def user_default_group_id():
+    gid = user_primary_group_id()
+    if gid:
+        return gid
+    gid = user_private_group_id()
+    if gid:
+        return gid
+    db.auth_membership.user_id == auth.user_id
+    g = db(q).select().first()
+    if g:
+        return g.id
+
 def user_phone_work():
     q = db.auth_user.id == auth.user_id
     row = db(q).select(db.auth_user.phone_work).first()
@@ -253,10 +265,27 @@ def auth_register_callback(form):
     table_modified("auth_group")
     table_modified("auth_membership")
 
-    if not config_get("create_app_on_register", False):
-        return
     q = db.auth_user.email == form.vars.email
     user = db(q).select().first()
+
+    do_create_app_on_register(user)
+    do_membership_on_register(user)
+
+def do_membership_on_register(user):
+    groups = config_get("membership_on_register", [])
+    for group in groups:
+        g = db(db.auth_group.role==group).select(db.auth_group.id).first()
+        if g is None:
+            continue
+        db.auth_membership.insert(user_id=user.id, group_id=g.id)
+        _log("user.group.attach",
+             "user %(u)s attached to group %(g)s",
+             d=dict(u=user.email, g=g.role),
+             user=" ".join((user.first_name, user.last_name)))
+
+def do_create_app_on_register(user):
+    if not config_get("create_app_on_register", False):
+        return
     q = db.auth_group.role == "user_%d" % user.id
     group_id = db(q).select().first().id
     app = "user_%d_app" % user.id
