@@ -1220,9 +1220,7 @@ def delete_ruleset(rset_id):
 
 
 def add_default_teams(ruleset_name):
-    group_id = user_primary_group_id()
-    if group_id is None:
-        group_id = user_private_group_id()
+    group_id = user_default_group_id()
     if group_id is None:
         q = db.auth_group.role == 'Manager'
         group_id = db(q).select(cacheable=True)[0].id
@@ -1236,21 +1234,15 @@ def add_default_teams(ruleset_name):
 def add_default_team_responsible_to_filterset(name):
     q = db.gen_filtersets.fset_name == name
     fset_id = db(q).select(cacheable=True)[0].id
-    q = db.auth_membership.user_id == auth.user_id
-    q &= db.auth_membership.group_id == db.auth_group.id
-    q &= db.auth_group.role.like('user_%')
-    try:
-        group_id = db(q).select(cacheable=True)[0].auth_group.id
-    except:
+    group_id = user_default_group_id()
+    if group_id is None:
         q = db.auth_group.role == 'Manager'
         group_id = db(q).select(cacheable=True)[0].id
     db.gen_filterset_team_responsible.insert(fset_id=fset_id, group_id=group_id)
     table_modified("gen_filterset_team_responsible")
 
 def add_default_teams_to_modset(modset_name):
-    group_id = user_primary_group_id()
-    if group_id is None:
-        group_id = user_private_group_id()
+    group_id = user_default_group_id()
     if group_id is None:
         q = db.auth_group.role == 'Manager'
         group_id = db(q).select(cacheable=True)[0].id

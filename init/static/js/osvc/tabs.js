@@ -242,17 +242,12 @@ function tab_properties_generic_lists_refresh(div) {
 tab_properties_generic_autocomplete_org_group_id = function(options) {
 	options.get = function(callback) {
 		var opts = [{"value": 0, "label": ""}]
-		for (var i=0; i<_groups.length; i++) {
-			var group = _groups[i]
-			if (group.privilege) {
-				continue
+		services_osvcgetrest("/users/%1/groups", [options.user_id], {"filters": ["privilege F"], "meta": "false", "limit": "0"}, function(jd) {
+			for (var i=0; i<jd.data.length; i++) {
+				var group = jd.data[i]
+				opts.push({"value": group.id, "label": group.role})
 			}
-			var role = group.role
-			if (role.match(/^user_/)) {
-				continue
-			}
-			opts.push({"value": group.id, "label": role})
-		}
+		})
 		callback(opts)
 	}
 	tab_properties_generic_autocomplete(options)
@@ -267,9 +262,6 @@ tab_properties_generic_autocomplete_org_group = function(options) {
 				continue
 			}
 			var role = group.role
-			if (role.match(/^user_/)) {
-				continue
-			}
 			opts.push(role)
 		}
 		callback(opts)

@@ -467,9 +467,6 @@ function menu(divid) {
 			var ref_count = 0
 			for (var i=0; i<_groups.length; i++) {
 				var g = _groups[i]
-				if (g.role.indexOf("user_") == 0) {
-					continue
-				}
 				if (g.privilege == true) {
 					continue
 				}

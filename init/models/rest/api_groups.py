@@ -285,7 +285,7 @@ class rest_post_groups(rest_post_handler):
         desc = [
           "Create a group.",
           "Update groups matching the specified query.",
-          "The user must be in the UserManager privilege group.",
+          "The user must be in the GroupManager privilege group.",
           "The action is logged in the collector's log.",
           "A websocket event is sent to announce the change in the groups table.",
         ]
@@ -301,7 +301,7 @@ class rest_post_groups(rest_post_handler):
         )
 
     def handler(self, **vars):
-        check_privilege("UserManager")
+        check_privilege("GroupManager")
         group_id = db.auth_group.insert(**vars)
         table_modified("auth_group")
 
@@ -325,7 +325,7 @@ class rest_post_group(rest_post_handler):
     def __init__(self):
         desc = [
           "Modify a group properties.",
-          "The user must be in the UserManager privilege group.",
+          "The user must be in the GroupManager privilege group.",
           "The action is logged in the collector's log.",
           "A websocket event is sent to announce the change in the groups table.",
         ]
@@ -341,7 +341,7 @@ class rest_post_group(rest_post_handler):
         )
 
     def handler(self, id, **vars):
-        check_privilege("UserManager")
+        check_privilege("GroupManager")
         try:
             id = int(id)
             q = db.auth_group.id == id
@@ -382,7 +382,7 @@ class rest_delete_groups(rest_delete_handler):
         desc = [
           "Delete groups.",
           "Delete all group membership, apps/forms/rulesets/modulesets responsabilities and publications.",
-          "The user must be in the UserManager privilege group.",
+          "The user must be in the GroupManager privilege group.",
           "The action is logged in the collector's log.",
           "A websocket event is sent to announce the change in the changed tables.",
         ]
@@ -412,7 +412,7 @@ class rest_delete_group(rest_delete_handler):
         desc = [
           "Delete a group.",
           "Delete all group membership, apps/forms/rulesets/modulesets responsabilities and publications.",
-          "The user must be in the UserManager privilege group.",
+          "The user must be in the GroupManager privilege group.",
           "The action is logged in the collector's log.",
           "A websocket event is sent to announce the change in the changed tables.",
         ]
@@ -428,7 +428,7 @@ class rest_delete_group(rest_delete_handler):
         )
 
     def handler(self, id, **vars):
-        check_privilege("UserManager")
+        check_privilege("GroupManager")
         try:
             id = int(id)
             q = db.auth_group.id == id
@@ -575,7 +575,7 @@ class rest_post_group_hidden_menu_entries(rest_post_handler):
     def __init__(self):
         desc = [
           "Set menu entries as hidden for the specified group.",
-          "The user must be in the UserManager privilege group.",
+          "The user must be in the GroupManager privilege group.",
           "The action is logged in the collector's log.",
           "A websocket event is sent to announce the change in the changed tables.",
         ]
@@ -591,7 +591,7 @@ class rest_post_group_hidden_menu_entries(rest_post_handler):
         )
 
     def handler(self, group_id, **vars):
-        check_privilege("UserManager")
+        check_privilege("GroupManager")
 
         if "menu_entry" not in vars:
             raise Exception("'menu_entry' key must be set")
@@ -638,7 +638,7 @@ class rest_delete_group_hidden_menu_entries(rest_delete_handler):
     def __init__(self):
         desc = [
           "Unset menu entries as hidden for the specified group.",
-          "The user must be in the UserManager privilege group.",
+          "The user must be in the GroupManager privilege group.",
           "The action is logged in the collector's log.",
           "A websocket event is sent to announce the change in the changed tables.",
         ]
@@ -654,7 +654,7 @@ class rest_delete_group_hidden_menu_entries(rest_delete_handler):
         )
 
     def handler(self, group_id, **vars):
-        check_privilege("UserManager")
+        check_privilege("GroupManager")
 
         if "menu_entry" not in vars:
             raise Exception("'menu_entry' key must be set")

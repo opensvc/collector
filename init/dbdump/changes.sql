@@ -5152,4 +5152,7 @@ create view v_disk_app as
 
 insert into auth_group values (NULL, "AppManager", "", "T");
 
+insert into auth_group values (NULL, "GroupManager", "", "T");
+
+insert into auth_group values (NULL, "SelfManager", "", "T");
 

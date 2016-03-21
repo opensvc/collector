@@ -2685,7 +2685,7 @@ function data_action_user_set_primary_group(t, e) {
 
 	// groups autocomplete
 	var groups = []
-	services_osvcgetrest("R_GROUPS", "", {"limit": "0", "meta": "0", "orderby": "role", "filters": ["role !user_", "privilege F"]}, function(jd) {
+	services_osvcgetrest("R_GROUPS", "", {"limit": "0", "meta": "0", "orderby": "role", "filters": ["privilege F"]}, function(jd) {
 		for (var i=0; i<jd.data.length; i++) {
 			groups.push({
 				"id": jd.data[i].id,
@@ -4079,7 +4079,7 @@ function data_action_del_moduleset_publication(t, e) {
 	data_action_generic_selector(t, e, {
 		"requestor": services_osvcdeleterest,
 		"request_service": "/compliance/modulesets_publications",
-		"selector": generic_selector_org_and_private_groups,
+		"selector": generic_selector_org_groups,
 		"request_data_entry": function(selected, data) {
 			return {
 				"group_id": selected,
@@ -4113,7 +4113,7 @@ function data_action_del_moduleset_responsible(t, e) {
 	data_action_generic_selector(t, e, {
 		"requestor": services_osvcdeleterest,
 		"request_service": "/compliance/modulesets_responsibles",
-		"selector": generic_selector_org_and_private_groups,
+		"selector": generic_selector_org_groups,
 		"request_data_entry": function(selected, data) {
 			return {
 				"group_id": selected,
@@ -4161,7 +4161,7 @@ function data_action_del_ruleset_publication(t, e) {
 	data_action_generic_selector(t, e, {
 		"requestor": services_osvcdeleterest,
 		"request_service": "/compliance/rulesets_publications",
-		"selector": generic_selector_org_and_private_groups,
+		"selector": generic_selector_org_groups,
 		"request_data_entry": function(selected, data) {
 			return {
 				"group_id": selected,
@@ -4195,7 +4195,7 @@ function data_action_del_ruleset_responsible(t, e) {
 	data_action_generic_selector(t, e, {
 		"requestor": services_osvcdeleterest,
 		"request_service": "/compliance/rulesets_responsibles",
-		"selector": generic_selector_org_and_private_groups,
+		"selector": generic_selector_org_groups,
 		"request_data_entry": function(selected, data) {
 			return {
 				"group_id": selected,
@@ -4243,7 +4243,7 @@ function data_action_del_form_publication(t, e) {
 	data_action_generic_selector(t, e, {
 		"requestor": services_osvcdeleterest,
 		"request_service": "R_FORMS_PUBLICATIONS",
-		"selector": generic_selector_org_and_private_groups,
+		"selector": generic_selector_org_groups,
 		"request_data_entry": function(selected, data) {
 			return {
 				"group_id": selected,
@@ -4277,7 +4277,7 @@ function data_action_del_form_responsible(t, e) {
 	data_action_generic_selector(t, e, {
 		"requestor": services_osvcdeleterest,
 		"request_service": "R_FORMS_RESPONSIBLES",
-		"selector": generic_selector_org_and_private_groups,
+		"selector": generic_selector_org_groups,
 		"request_data_entry": function(selected, data) {
 			return {
 				"group_id": selected,
@@ -4311,7 +4311,7 @@ function data_action_del_safe_publication(t, e) {
 	data_action_generic_selector(t, e, {
 		"requestor": services_osvcdeleterest,
 		"request_service": "/safe/files_publications",
-		"selector": generic_selector_org_and_private_groups,
+		"selector": generic_selector_org_groups,
 		"request_data_entry": function(selected, data) {
 			return {
 				"group_id": selected,
@@ -4345,7 +4345,7 @@ function data_action_del_safe_responsible(t, e) {
 	data_action_generic_selector(t, e, {
 		"requestor": services_osvcdeleterest,
 		"request_service": "/safe/files_responsibles",
-		"selector": generic_selector_org_and_private_groups,
+		"selector": generic_selector_org_groups,
 		"request_data_entry": function(selected, data) {
 			return {
 				"group_id": selected,
@@ -5147,7 +5147,7 @@ function data_action_del_prov_templates_responsible(t, e) {
 	data_action_generic_selector(t, e, {
 		"requestor": services_osvcdeleterest,
 		"request_service": "/provisioning_templates_responsibles",
-		"selector": generic_selector_org_and_private_groups,
+		"selector": generic_selector_org_groups,
 		"request_data_entry": function(selected, data) {
 			return {
 				"group_id": selected,

@@ -81,7 +81,7 @@ function user_groups(divid, options) {
 			for (var i=0; i<jd.data.length; i++) {
 				o.user_groups[jd.data[i].role] = jd.data[i]
 			}
-			services_osvcgetrest("R_GROUPS", "", {"limit": "0", "meta": "0", "orderby": "role", "query": "not role starts with user_"}, function(jd) {
+			services_osvcgetrest("R_GROUPS", "", {"limit": "0", "meta": "0", "orderby": "role"}, function(jd) {
 				o.all_groups = jd.data
 				o.div.load("/init/static/views/user_groups.html", function(){
 					o.build()
@@ -285,7 +285,7 @@ function user_properties(divid, options) {
 			var current_primary = jd.data[0].role
 			o.info_primaryg.text(current_primary)
 		})
-	   	services_osvcgetrest("R_GROUPS", [o.options.user_id], {"meta": "false", "limit": "0","query": "not role starts with user_"}, function(jd) {
+		services_osvcgetrest("/users/%1/groups", [o.options.user_id], {"meta": "false", "limit": "0"}, function(jd) {
 			var data = jd.data;
 			var org_groups = {}
 			var priv_groups = {}
@@ -351,6 +351,7 @@ function user_properties(divid, options) {
 			})
 			tab_properties_generic_autocomplete_org_group_id({
 				"div": o.info_primaryg,
+				"user_id": o.options.user_id,
 				"post": function(_data, callback, error_callback) {
 					services_osvcpostrest("R_USER_PRIMARY_GROUP_SET", [o.options.user_id, _data.primary_group], "", "", callback, error_callback)
 				}

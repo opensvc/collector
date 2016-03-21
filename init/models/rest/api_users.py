@@ -256,7 +256,8 @@ class rest_post_user(rest_post_handler):
     def __init__(self):
         desc = [
           "Modify a user properties.",
-          "The user must be in the UserManager privilege group.",
+          "The user must be in the UserManager privilege group to modify tiers users properties.",
+          "The user must be in the SelfManager privilege group to modify its user properties.",
           "The action is logged in the collector's log.",
           "A websocket event is sent to announce the change in the users table.",
         ]
@@ -272,13 +273,18 @@ class rest_post_user(rest_post_handler):
         )
 
     def handler(self, id, **vars):
-        check_privilege("UserManager")
         q = user_id_q(id)
         row = db(q).select().first()
         if row is None:
             return dict(error="User %s does not exist" % str(id))
         if "id" in vars.keys():
             del(vars["id"])
+
+        if row.id != auth.user_id:
+            check_privilege("UserManager")
+        else:
+            # allow modifying our own primary group
+            check_privilege(["UserManager", "SelfManager"])
 
         if "perpage" in vars and int(vars["perpage"]) > user_max_perpage:
             raise Exception(T("perpage can not be more than %(n)d", dict(n=user_max_perpage)))
@@ -406,7 +412,7 @@ class rest_post_user_group(rest_post_handler):
         )
 
     def handler(self, user_id, group_id, **vars):
-        check_privilege("UserManager")
+        check_privilege("GroupManager")
         try:
             id = int(user_id)
             q = db.auth_user.id == user_id
@@ -421,6 +427,11 @@ class rest_post_user_group(rest_post_handler):
             q = db.auth_group.id == group_id
         except:
             q = db.auth_group.role == group_id
+        try:
+            check_privilege("Manager")
+        except:
+            q &= db.auth_group.id.belongs(user_group_ids())
+
         group = db(q).select().first()
         if group is None:
             return dict(error="Group %s does not exist" % str(group_id))
@@ -519,7 +530,7 @@ class rest_delete_user_group(rest_delete_handler):
         )
 
     def handler(self, user_id, group_id, **vars):
-        check_privilege("UserManager")
+        check_privilege("GroupManager")
         try:
             id = int(user_id)
             q = db.auth_user.id == user_id
@@ -534,6 +545,10 @@ class rest_delete_user_group(rest_delete_handler):
             q = db.auth_group.id == group_id
         except:
             q = db.auth_group.role == group_id
+        try:
+            check_privilege("Manager")
+        except:
+            q &= db.auth_group.id.belongs(user_group_ids())
         group = db(q).select().first()
         if group is None:
             return dict(error="Group %s does not exist" % str(group_id))
@@ -609,7 +624,8 @@ class rest_post_user_primary_group(rest_post_handler):
         )
 
     def handler(self, user_id, group_id, **vars):
-        check_privilege("UserManager")
+        if group_id in (0, "0"):
+            return rest_delete_user_primary_group().handler(user_id)
         try:
             id = int(user_id)
             q = db.auth_user.id == user_id
@@ -619,8 +635,14 @@ class rest_post_user_primary_group(rest_post_handler):
         if user is None:
             return dict(error="User %s does not exist" % str(user_id))
 
+        if user.id != auth.user_id:
+            check_privilege("UserManager")
+        else:
+            # allow modifying our own primary group
+            check_privilege(["UserManager", "SelfManager"])
+
         try:
-            id = int(id)
+            id = int(group_id)
             q = db.auth_group.id == group_id
         except:
             q = db.auth_group.role == group_id
@@ -676,7 +698,6 @@ class rest_delete_user_primary_group(rest_delete_handler):
         )
 
     def handler(self, user_id, **vars):
-        check_privilege("UserManager")
         try:
             id = int(user_id)
             q = db.auth_user.id == user_id
@@ -685,6 +706,12 @@ class rest_delete_user_primary_group(rest_delete_handler):
         user = db(q).select().first()
         if user is None:
             return dict(error="User %s does not exist" % str(user.email))
+
+        if user.id != auth.user_id:
+            check_privilege("UserManager")
+        else:
+            # allow modifying our own primary group
+            check_privilege(["UserManager", "SelfManager"])
 
         q = db.auth_membership.user_id == user.id
         q &= db.auth_membership.primary_group == 'T'
