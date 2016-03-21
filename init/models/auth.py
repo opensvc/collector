@@ -110,7 +110,9 @@ def user_default_group_id():
     gid = user_private_group_id()
     if gid:
         return gid
-    db.auth_membership.user_id == auth.user_id
+    q = db.auth_membership.user_id == auth.user_id
+    q &= db.auth_membership.group_id == db.auth_group.id
+    q &= db.auth_group.privilege == False
     g = db(q).select().first()
     if g:
         return g.id

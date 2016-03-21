@@ -4,7 +4,7 @@ class rest_get_groups(rest_get_table_handler):
     def __init__(self):
         desc = [
           "List existing groups.",
-          "Managers and UserManager are allowed to see all groups.",
+          "Managers are allowed to see all groups.",
           "Others can only see their groups.",
         ]
         examples = [
@@ -21,7 +21,7 @@ class rest_get_groups(rest_get_table_handler):
 
     def handler(self, **vars):
         try:
-            check_privilege("UserManager")
+            check_privilege("Manager")
             q = db.auth_group.id > 0
         except:
             q = db.auth_group.id.belongs(user_group_ids())
@@ -34,7 +34,7 @@ class rest_get_group(rest_get_line_handler):
     def __init__(self):
         desc = [
           "Display group properties.",
-          "Managers and UserManager are allowed to see all groups.",
+          "Managers are allowed to see all groups.",
           "Others can only see their groups.",
         ]
         examples = [
@@ -51,7 +51,7 @@ class rest_get_group(rest_get_line_handler):
 
     def handler(self, id, **vars):
         try:
-            check_privilege("UserManager")
+            check_privilege("Manager")
             q = db.auth_group.id > 0
         except:
             q = db.auth_group.id.belongs(user_group_ids())
@@ -70,7 +70,7 @@ class rest_get_group_apps(rest_get_table_handler):
     def __init__(self):
         desc = [
           "List apps the group is responsible for.",
-          "Managers and UserManager are allowed to see all groups.",
+          "Managers are allowed to see all groups.",
           "Others can only see their groups.",
         ]
         examples = [
@@ -87,7 +87,7 @@ class rest_get_group_apps(rest_get_table_handler):
 
     def handler(self, id, **vars):
         try:
-            check_privilege("UserManager")
+            check_privilege("Manager")
             q = db.auth_group.id > 0
         except:
             q = db.auth_group.id.belongs(user_group_ids())
@@ -106,7 +106,7 @@ class rest_get_group_nodes(rest_get_table_handler):
     def __init__(self):
         desc = [
           "List nodes the group is responsible for.",
-          "Managers and UserManager are allowed to see all groups.",
+          "Managers are allowed to see all groups.",
           "Others can only see their groups.",
         ]
         examples = [
@@ -123,7 +123,7 @@ class rest_get_group_nodes(rest_get_table_handler):
 
     def handler(self, id, **vars):
         try:
-            check_privilege("UserManager")
+            check_privilege("Manager")
             q = db.auth_group.id > 0
         except:
             q = db.auth_group.id.belongs(user_group_ids())
@@ -142,7 +142,7 @@ class rest_get_group_services(rest_get_table_handler):
     def __init__(self):
         desc = [
           "List services the group is responsible for.",
-          "Managers and UserManager are allowed to see all groups.",
+          "Managers are allowed to see all groups.",
           "Others can only see their groups.",
         ]
         examples = [
@@ -160,7 +160,7 @@ class rest_get_group_services(rest_get_table_handler):
 
     def handler(self, id, **vars):
         try:
-            check_privilege("UserManager")
+            check_privilege("Manager")
             q = db.auth_group.id > 0
         except:
             q = db.auth_group.id.belongs(user_group_ids())
@@ -243,7 +243,7 @@ class rest_get_group_users(rest_get_table_handler):
     def __init__(self):
         desc = [
           "List users member of the specified group.",
-          "Managers and UserManager are allowed to see all groups.",
+          "Managers are allowed to see all groups.",
           "Others can only see their groups.",
         ]
         examples = [
@@ -261,7 +261,7 @@ class rest_get_group_users(rest_get_table_handler):
 
     def handler(self, id, **vars):
         try:
-            check_privilege("UserManager")
+            check_privilege("Manager")
             q = db.auth_group.id > 0
         except:
             q = db.auth_group.id.belongs(user_group_ids())
@@ -302,13 +302,18 @@ class rest_post_groups(rest_post_handler):
 
     def handler(self, **vars):
         check_privilege("UserManager")
-        db.auth_group.insert(**vars)
+        group_id = db.auth_group.insert(**vars)
+        table_modified("auth_group")
+
+        db.auth_membership.insert(group_id=group_id, user_id=auth.user_id)
+        table_modified("auth_membership")
+
         _log('groups.add',
              'add group %(data)s',
              dict(data=str(vars)),
             )
         l = {
-          'event': 'auth_group',
+          'event': 'auth_group_change',
           'data': {'foo': 'bar'},
         }
         _websocket_send(event_msg(l))
@@ -342,6 +347,11 @@ class rest_post_group(rest_post_handler):
             q = db.auth_group.id == id
         except:
             q = db.auth_group.role == id
+        try:
+            check_privilege("Manager")
+            q &= db.auth_group.id > 0
+        except:
+            q &= db.auth_group.id.belongs(user_group_ids())
         row = db(q).select().first()
         if row is None:
             return dict(error="Group %s does not exist" % str(id))
@@ -357,7 +367,7 @@ class rest_post_group(rest_post_handler):
              d,
             )
         l = {
-          'event': 'auth_group',
+          'event': 'auth_group_change',
           'data': {'foo': 'bar'},
         }
         _websocket_send(event_msg(l))
@@ -424,6 +434,11 @@ class rest_delete_group(rest_delete_handler):
             q = db.auth_group.id == id
         except:
             q = db.auth_group.role == id
+        try:
+            check_privilege("Manager")
+            q &= db.auth_group.id > 0
+        except:
+            q &= db.auth_group.id.belongs(user_group_ids())
 
         row = db(q).select().first()
         if row is None:
@@ -438,7 +453,7 @@ class rest_delete_group(rest_delete_handler):
              'deleted group %(g)s',
              dict(g=row.role))
         l = {
-          'event': 'auth_group',
+          'event': 'auth_group_change',
           'data': {'foo': 'bar'},
         }
         _websocket_send(event_msg(l))
@@ -488,7 +503,7 @@ class rest_get_frontend_hidden_menu_entries(rest_get_table_handler):
     def __init__(self):
         desc = [
           "List menu entries hidden from the menu for each group.",
-          "Managers and UserManager are allowed to all hidden menu entries.",
+          "Managers are allowed to all hidden menu entries.",
           "Others can only see hidden menu entries for their groups.",
         ]
         examples = [
@@ -505,7 +520,7 @@ class rest_get_frontend_hidden_menu_entries(rest_get_table_handler):
 
     def handler(self, **vars):
         try:
-            check_privilege("UserManager")
+            check_privilege("Manager")
             q = db.group_hidden_menu_entries.id > 0
         except:
             q = db.group_hidden_menu_entries.group_id.belongs(user_group_ids())
@@ -518,7 +533,7 @@ class rest_get_group_hidden_menu_entries(rest_get_table_handler):
     def __init__(self):
         desc = [
           "List menu entries hidden from the menu for the specified group.",
-          "Managers and UserManager are allowed to all hidden menu entries.",
+          "Managers are allowed to all hidden menu entries.",
           "Others can only see hidden menu entries for their groups.",
         ]
         examples = [
@@ -549,7 +564,7 @@ class rest_get_group_hidden_menu_entries(rest_get_table_handler):
 
         q = db.group_hidden_menu_entries.group_id == group_id
         try:
-            check_privilege("UserManager")
+            check_privilege("Manager")
         except:
             q &= db.group_hidden_menu_entries.group_id.belongs(user_group_ids())
         self.set_q(q)
@@ -590,6 +605,11 @@ class rest_post_group_hidden_menu_entries(rest_post_handler):
             q = db.auth_group.id == group_id
         except:
             q = db.auth_group.role == group_id
+        try:
+            check_privilege("Manager")
+            q &= db.auth_group.id > 0
+        except:
+            q &= db.auth_group.id.belongs(user_group_ids())
 
         group = db(q).select().first()
         if group is None:
@@ -645,6 +665,11 @@ class rest_delete_group_hidden_menu_entries(rest_delete_handler):
             q = db.auth_group.id == group_id
         except:
             q = db.auth_group.role == group_id
+        try:
+            check_privilege("Manager")
+            q &= db.auth_group.id > 0
+        except:
+            q &= db.auth_group.id.belongs(user_group_ids())
 
         group = db(q).select().first()
         if group is None:
