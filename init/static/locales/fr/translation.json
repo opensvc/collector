@@ -226,6 +226,8 @@
 		"yes": "Oui"
 	},
 	"api": {
+		"call": "Appel à l'API Rest",
+		"server_side": "Tâches exécutées coté serveur",
 		"doc": {
 			"none": "Aucun",
 			"data_unique": "Unique",

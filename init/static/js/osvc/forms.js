@@ -586,7 +586,7 @@ function form(divid, options) {
 		if (o.options.submit == false) {
 			return
 		}
-		var result = $("<div style='padding:1em 0'></div>")
+		var result = $("<div style='text-align:left;padding:1em 0'></div>")
 		o.area.append(result)
 		o.result = result
 	}
@@ -602,21 +602,11 @@ function form(divid, options) {
 			_data.prev_wfid = o.options.prev_wfid
 		}
 		services_osvcputrest("R_FORM", [o.form_data.id], "", _data, function(jd) {
-			if (jd.error.length == 0) {
-				o.result.html("<div class='icon ok'>"+i18n.t("forms.success")+"</div>")
-			} else {
-				o.result.html("<div class='icon nok'>"+i18n.t("forms.error")+"</div>")
-			}
-			if (jd.info) {
-				if (typeof(jd.info) === "string") {
-					o.result.append("<p class='pre icon fa-info-circle'>"+jd.info+"</p>")
-				} else {
-					for (var i=0; i<jd.info.length; i++) {
-						o.result.append("<p class='pre icon fa-info-circle'>"+jd.info[i]+"</p>")
-					}
-				}
-			}
-			if (jd.error) {
+			var title = $("<h3></h3>")
+			title.text(i18n.t("api.server_side"))
+			o.result.append(title)
+			if (jd.error && (jd.error.length > 0)) {
+				o.result.append("<div class='icon nok'>"+i18n.t("forms.error")+"</div>")
 				if (typeof(jd.error) === "string") {
 					o.result.append("<p class='pre icon fa-exclamation-triangle'>"+jd.error+"</p>")
 				} else {
@@ -625,9 +615,19 @@ function form(divid, options) {
 					}
 				}
 			}
+			if (jd.info && (jd.info.length > 0)) {
+				o.result.append("<div class='icon ok'>"+i18n.t("forms.success")+"</div>")
+				if (typeof(jd.info) === "string") {
+					o.result.append("<p class='pre icon fa-info-circle'>"+jd.info+"</p>")
+				} else {
+					for (var i=0; i<jd.info.length; i++) {
+						o.result.append("<p class='pre icon fa-info-circle'>"+jd.info[i]+"</p>")
+					}
+				}
+			}
 		},
 		function(xhr, stat, error) {
-			o.result.html(services_ajax_error_fmt(xhr, stat, error))
+			o.result.append(services_ajax_error_fmt(xhr, stat, error))
 		})
 	}
 
@@ -641,12 +641,14 @@ function form(divid, options) {
 			}
 		}
 		fn(path, "", "", data, function(jd) {
-			o.result.empty()
+			var title = $("<h3></h3>")
+			title.text(i18n.t("api.call"))
+			o.result.append(title)
 			if (jd.error && (jd.error.length > 0)) {
-				o.result.append("<pre>"+jd.error+"</pre>")
+				o.result.append("<pre class='nok icon_fixed_width'>"+jd.error+"</pre>")
 			}
 			if (jd.info && (jd.info.length > 0)) {
-				o.result.append("<pre>"+jd.info+"</pre>")
+				o.result.append("<pre class='ok icon_fixed_width'>"+jd.info+"</pre>")
                         }
 		},
 		function(xhr, stat, error) {
