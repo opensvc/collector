@@ -3135,7 +3135,7 @@ function data_action_del_groups(t, e) {
 	data_action_generic_selector(t, e, {
 		"requestor": services_osvcdeleterest,
 		"request_service": "R_GROUPS",
-		"selector": generic_selector_groups,
+		"selector": generic_selector_org_groups,
 		"no_lines": true,
 		"request_data_entry": function(selected) {
 			return {
