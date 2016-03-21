@@ -80,6 +80,7 @@ def table_modified(name):
       "auth_membership": [
          clear_cache_user_group_ids,
          clear_cache_user_groups,
+         clear_cache_user_published_apps,
          clear_cache_user_app_ids,
          clear_cache_user_apps,
       ]
