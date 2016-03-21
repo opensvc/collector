@@ -279,17 +279,17 @@ class rest_delete_services(rest_delete_handler):
 
 
 #
-class rest_get_service_instances(rest_get_table_handler):
+class rest_get_services_instances(rest_get_table_handler):
     def __init__(self):
         desc = [
-          "List OpenSVC service instances.",
+          "List OpenSVC services instances.",
         ]
         examples = [
-          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/service_instances",
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/services_instances",
         ]
         rest_get_table_handler.__init__(
           self,
-          path="/service_instances",
+          path="/services_instances",
           tables=["svcmon"],
           desc=desc,
           examples=examples,
@@ -307,11 +307,11 @@ class rest_get_service_instance(rest_get_line_handler):
           "List a OpenSVC service instance details.",
         ]
         examples = [
-          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/service_instances/1",
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/services_instances/1",
         ]
         rest_get_line_handler.__init__(
           self,
-          path="/service_instances/<id>",
+          path="/services_instances/<id>",
           tables=["svcmon"],
           desc=desc,
           examples=examples,
@@ -334,11 +334,11 @@ class rest_delete_service_instance(rest_delete_handler):
           "- Send websocket change events on the services instances and dashboard table.",
         ]
         examples = [
-          "# curl -u %(email)s -X DELETE -o- https://%(collector)s/init/rest/api/service_instances/1",
+          "# curl -u %(email)s -X DELETE -o- https://%(collector)s/init/rest/api/services_instances/1",
         ]
         rest_delete_handler.__init__(
           self,
-          path="/service_instances/<id>",
+          path="/services_instances/<id>",
           desc=desc,
           examples=examples,
         )
@@ -381,7 +381,7 @@ class rest_delete_service_instance(rest_delete_handler):
         return dict(info='service %(svcname)s instance on node %(nodename)s deleted' % dict(svcname=row.mon_svcname, nodename=row.mon_nodname))
 
 #
-class rest_delete_service_instances(rest_delete_handler):
+class rest_delete_services_instances(rest_delete_handler):
     def __init__(self):
         desc = [
           "- Delete OpenSVC service instances.",
@@ -390,11 +390,11 @@ class rest_delete_service_instances(rest_delete_handler):
           "- Send websocket change events on services instances and dashboard tables.",
         ]
         examples = [
-          "# curl -u %(email)s -X DELETE -o- https://%(collector)s/init/rest/api/service_instances?filter[]=mon_svcname=test%%",
+          "# curl -u %(email)s -X DELETE -o- https://%(collector)s/init/rest/api/services_instances?filter[]=mon_svcname=test%%",
         ]
         rest_delete_handler.__init__(
           self,
-          path="/service_instances",
+          path="/services_instances",
           desc=desc,
           examples=examples,
         )

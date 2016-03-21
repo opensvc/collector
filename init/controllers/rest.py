@@ -245,12 +245,15 @@ def get_get_handlers(prefix=None):
              "rest_get_service_compliance_status",
              "rest_get_service_compliance_logs",
              "rest_get_service_disks",
-             "rest_get_service_instances",
              "rest_get_service_nodes",
              "rest_get_service_node",
              "rest_get_service_node_resources",
              "rest_get_service_resources",
              "rest_get_service_tags",
+       ],
+       "services_instances": [
+             "rest_get_services_instances",
+             "rest_get_service_instance",
        ],
        "services_actions": [
              "rest_get_services_actions",
@@ -473,9 +476,9 @@ def get_delete_handlers(prefix=None):
              "rest_delete_resource",
              "rest_delete_resources",
         ],
-        "service_instances": [
+        "services_instances": [
              "rest_delete_service_instance",
-             "rest_delete_service_instances",
+             "rest_delete_services_instances",
         ],
         "services": [
              "rest_delete_service",

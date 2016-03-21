@@ -83,7 +83,7 @@ var services_access_uri = {
     "R_SERVICES_ACTIONS" : "/services_actions",
     "R_SERVICE_ACTIONS" : "/services/%1/actions",
     "R_SERVICE_ACTIONS_UNACKNOWLEDGED_ERRORS" : "/services/%1/actions_unacknowledged_errors",
-    "R_SERVICE_INSTANCES" : "/service_instances",
+    "R_SERVICE_INSTANCES" : "/services_instances",
     "R_SERVICE_NODES" : "/services/%1/nodes",
     "R_SERVICE_TAGS" : "/services/%1/tags",
     "R_SERVICE_CANDIDATE_TAGS" : "/services/%1/candidate_tags",
