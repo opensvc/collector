@@ -15,6 +15,7 @@ class rest_handler(object):
                  left=None,
                  groupby=None,
                  orderby=None,
+                 allow_fset_id=False,
                  _cache=None,
                  desc=[], params={}, examples=[], data={}):
         self._cache = _cache
@@ -33,6 +34,7 @@ class rest_handler(object):
         self.left = left
         self.groupby = groupby
         self.orderby = orderby
+        self.allow_fset_id = allow_fset_id
         if dbo:
             self.db = dbo
         else:
@@ -100,6 +102,9 @@ class rest_handler(object):
           "tables",
           "db"
         ]
+
+        if "fset-id" in vars:
+            del(vars["fset-id"])
 
         if "orderby" in vars:
             cols = props_to_cols(vars["orderby"], tables=self.tables, blacklist=self.props_blacklist, db=self.db)
@@ -377,6 +382,12 @@ A property can be prefixed by '~' to activate the ascending order.
             "desc": self.fmt_props_props_desc(),
           },
         })
+        if self.allow_fset_id:
+            self.params.update({
+              "fset-id": {
+                "desc": "Filter the list using the filterset identified by fset-id."
+              }
+            })
 
     def update_data(self):
         self.data = copy.copy(self.init_data)

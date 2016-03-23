@@ -293,10 +293,14 @@ class rest_get_services_instances(rest_get_table_handler):
           tables=["svcmon"],
           desc=desc,
           examples=examples,
+          allow_fset_id=True,
         )
 
     def handler(self, **vars):
         q = q_filter(svc_field=db.svcmon.mon_svcname)
+        fset_id = vars.get("fset-id")
+        if fset_id:
+            q = apply_filters(q, service_field=db.svcmon.mon_svcname, fset_id=fset_id)
         self.set_q(q)
         return self.prepare_data(**vars)
 

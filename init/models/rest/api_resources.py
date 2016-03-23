@@ -2,11 +2,6 @@
 #
 class rest_get_resources(rest_get_table_handler):
     def __init__(self):
-        params = {
-          "fset_id": {
-             "desc": "Filter the list using the filterset identified by fset_id."
-          }
-        }
         desc = [
           "List OpenSVC services resources.",
         ]
@@ -19,11 +14,12 @@ class rest_get_resources(rest_get_table_handler):
           tables=["resmon"],
           desc=desc,
           examples=examples,
+          allow_fset_id=True,
         )
 
     def handler(self, **vars):
         q = q_filter(svc_field=db.resmon.svcname)
-        fset_id = vars.get("fset_id")
+        fset_id = vars.get("fset-id")
         if fset_id:
             q = apply_filters(q, service_field=db.resmon.svcname, fset_id=fset_id)
         self.set_q(q)
