@@ -3,6 +3,10 @@ function requests(divid, options) {
 	o.options = options
 	o.div = $("#"+divid)
 
+	if (!o.options) {
+		o.options = {}
+	}
+
 	if (o.options.form_folder) {
 		o.current_folder = o.options.form_folder.replace(/^\//, "").split("/")
 	} else {
