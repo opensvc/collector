@@ -1142,6 +1142,8 @@ def delete_moduleset(modset_id):
 
 @auth.requires_membership('CompManager')
 def create_ruleset(rset_name, published=True):
+    if rset_name is None:
+        raise Exception("The 'ruleset_name' key is mandatory")
     q = db.comp_rulesets.ruleset_name == rset_name
     rows = db(q).select(cacheable=True)
     v = rows.first()
