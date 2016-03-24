@@ -171,7 +171,7 @@ var menu_data = {
 		  "title" : "designer",
 		  "class" : "designer16",
 		  "id" : "comp-designer",
-		  "link" : "/init/compliance/comp_admin?obj_filter=opensvc"
+		  "link" : "/init/compliance/comp_admin"
 		},
 		{
 		  "title" : "safe",
