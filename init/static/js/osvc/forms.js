@@ -650,6 +650,9 @@ function form(divid, options) {
 			if (jd.info && (jd.info.length > 0)) {
 				o.result.append("<pre class='ok icon_fixed_width'>"+jd.info+"</pre>")
                         }
+			if (jd.data) {
+				o.result.append("<pre>"+JSON.stringify(jd.data, null, 4)+"</pre>")
+                        }
 		},
 		function(xhr, stat, error) {
 			return services_ajax_error_fmt(xhr, stat, error)
@@ -775,6 +778,7 @@ function form(divid, options) {
 			if (!$(this).hasClass("fa-save")) {
 				return
 			}
+			o.result.empty()
 			var data = o.form_to_data()
 			o.need_submit_form_data = false
 			for (var i=0; i<o.form_data.form_definition.Outputs.length; i++) {
