@@ -157,7 +157,7 @@ function services_getaccessurl(service) {
 	}
 }
 
-function services_osvcputrest(service, uri, params, data, callback, error_callback)
+function services_osvcputrest(service, uri, params, data, callback, error_callback, async)
 {
     url = services_getaccessurl(service)
     if (is_blank(url)) {
@@ -193,9 +193,13 @@ function services_osvcputrest(service, uri, params, data, callback, error_callba
       data = JSON.stringify(data)
       content_type = "application/json; charset=utf-8"
     }
+
+    if (async === undefined || async == null) async=true;
+
     var xhr = $.ajax(
     {
         type: "PUT",
+        async: async,
         url: url,
         contentType: content_type,
         data: data,
@@ -205,7 +209,7 @@ function services_osvcputrest(service, uri, params, data, callback, error_callba
     return xhr
 }
 
-function services_osvcpostrest(service, uri, params, data, callback, error_callback)
+function services_osvcpostrest(service, uri, params, data, callback, error_callback, async)
 {
     url = services_getaccessurl(service)
     if (is_blank(url)) {
@@ -244,10 +248,13 @@ function services_osvcpostrest(service, uri, params, data, callback, error_callb
         data_type = "json"
     } catch(err) {}
 
+    if (async === undefined || async == null) async=true;
+
     var xhr = $.ajax(
     {
         type: "POST",
         url: url,
+        async: async,
         dataType: data_type,
         contentType: content_type,
         data: data,
@@ -305,7 +312,7 @@ function services_osvcgetrest(service, uri, params, callback, error_callback, as
     return xhr
 }
 
-function services_osvcdeleterest(service, uri, params, data, callback, error_callback)
+function services_osvcdeleterest(service, uri, params, data, callback, error_callback, async)
 {
     url = services_getaccessurl(service)
     if (is_blank(url))
@@ -343,9 +350,11 @@ function services_osvcdeleterest(service, uri, params, data, callback, error_cal
       data = JSON.stringify(data)
       content_type = "application/json; charset=utf-8"
     }
+    if (async === undefined || async == null) async=true;
     var xhr = $.ajax(
     {
         type: "DELETE",
+        async: async,
         url: url,
         contentType: content_type,
         data: data,
