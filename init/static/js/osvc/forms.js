@@ -631,8 +631,7 @@ function form(divid, options) {
 		})
 	}
 
-	o.submit_output_rest_one = function(fn, output, data, result) {
-		var path = subst_refs_from_data(data, output.Function)
+	o.submit_output_rest_one = function(fn, path, output, data, result) {
 		if (output.Keys) {
 			for (key in data) {
 				if (output.Keys.indexOf(key) < 0) {
@@ -656,10 +655,11 @@ function form(divid, options) {
 		},
 		function(xhr, stat, error) {
 			return services_ajax_error_fmt(xhr, stat, error)
-		})
+		}, false)
         }
 
 	o.submit_output_rest = function(output, data) {
+		var path = subst_refs_from_data(data, output.Function)
 		if (output.Mangle) {
 			eval("var mangle="+output.Mangle)
 			data = mangle(data)
@@ -692,7 +692,7 @@ function form(divid, options) {
 		}
 		for (var i=0; i<data.length; i++) {
 			var _data = data[i]
-			o.submit_output_rest_one(fn, output, _data)
+			o.submit_output_rest_one(fn, path, output, _data)
 		}
 	}
 
