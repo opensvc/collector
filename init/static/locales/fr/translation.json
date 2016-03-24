@@ -824,7 +824,7 @@
 	"menu" : {
 		"navigation": "Navigation",
 		"views" : {
-			"title" : "Vues",
+			"title" : "Infrastructure",
 			"dashboard" : {
 					"title" : "Pilotage",
 					"text" : "Problèmes actuels sur les nœuds et services"
@@ -1012,7 +1012,7 @@
 			}
 		},
 		"administration" : {
-			"title" : "Administration",
+			"title" : "Administration du collecteur",
 			"replication" : {
 					"title" : "Replication",
 					"text" : "Current state of the collector to collector replications"

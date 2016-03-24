@@ -837,7 +837,7 @@
 	"menu" : {
 		"navigation": "Navigation",
 		"views" : {
-			"title" : "Views",
+			"title" : "Infrastructure",
 			"dashboard" : {
 					"title" : "Dashboard",
 					"text" : "Current issues on nodes and services"
@@ -1025,7 +1025,7 @@
 			}
 		},
 		"administration" : {
-			"title" : "Administration",
+			"title" : "Collector Administration",
 			"replication" : {
 					"title" : "Replication",
 					"text" : "Current state of the collector to collector replications"
