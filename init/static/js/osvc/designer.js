@@ -178,10 +178,6 @@ function designer(divid, options) {
 				val = osearch
 				search.val(val)
 			}
-			if (!val || (val == "")) {
-				val = "opensvc"
-				search.val(val)
-			}
 			var url = o.url+"?obj_filter="+encodeURIComponent(val)
 			return url
 		}
