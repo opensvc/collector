@@ -1243,14 +1243,18 @@ function form(divid, options) {
 	}
 
 	function subst_refs_from_data(data, s) {
-		var re = RegExp(/#\w+/g)
+		var re = RegExp(/#[\w\.]+/g)
 		var _s = s
 
 		do {
 			var m = re.exec(s)
 			if (m) {
 				var key = m[0].replace("#", "")
-				var val = data[key]
+				var keys = key.split(".")
+				var val = data
+				for (var i=0; i<keys.length; i++) {
+					var val = val[keys[i]]
+				}
 				var re1 = RegExp("#"+key, "g")
 				_s = _s.replace(re1, val)
 			}
