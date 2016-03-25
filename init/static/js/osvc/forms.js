@@ -641,7 +641,7 @@ function form(divid, options) {
 		}
 		fn(path, "", "", data, function(jd) {
 			var title = $("<h3></h3>")
-			title.text(i18n.t("api.call"))
+			title.text(i18n.t("api.call")+": "+output.Handler+" "+path)
 			o.result.append(title)
 			if (jd.error && (jd.error.length > 0)) {
 				o.result.append("<pre class='nok icon_fixed_width'>"+jd.error+"</pre>")
