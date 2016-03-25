@@ -249,8 +249,13 @@ class rest_post_compliance_rulesets(rest_post_handler):
 
     def handler(self, **vars):
         ruleset_name = vars.get("ruleset_name")
-        obj_id = create_ruleset(ruleset_name)
-        return rest_get_compliance_ruleset().handler(obj_id)
+        data = rest_get_compliance_ruleset().handler(ruleset_name)
+        if "data" in data and len(data["data"]) == 1:
+            del(vars["ruleset_name"])
+            return rest_post_compliance_ruleset().handler(ruleset_name, **vars)
+        else:
+            obj_id = create_ruleset(ruleset_name)
+            return rest_get_compliance_ruleset().handler(obj_id)
 
 #
 class rest_delete_compliance_modulesets(rest_delete_handler):
