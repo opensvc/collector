@@ -1090,7 +1090,7 @@ class rest_post_compliance_ruleset_variables(rest_post_handler):
         q = db.comp_rulesets_variables.ruleset_id == ruleset_id
         q &= db.comp_rulesets_variables.var_name == vars["var_name"]
         if db(q).count() > 0:
-            return dict(error="this variable name already exists")
+            return rest_post_compliance_ruleset_variable().handler(ruleset_id, db(q).select(db.comp_rulesets_variables.id).first().id, **vars)
         vars["var_updated"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         vars["var_author"] = user_name()
         vars["ruleset_id"] = ruleset_id
