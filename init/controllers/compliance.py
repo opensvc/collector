@@ -1699,7 +1699,7 @@ def _comp_get_moduleset_modules(moduleset, node):
     q &= db.comp_moduleset_modules.modset_id == db.comp_moduleset.id
     q &= db.comp_moduleset.id == db.comp_moduleset_team_publication.modset_id
     q &= db.auth_group.id == db.comp_moduleset_team_publication.group_id
-    q &= db.nodes.team_responsible == db.auth_group.role
+    q &= (db.nodes.team_responsible == db.auth_group.role)|(db.auth_group.role=="Everybody")
     q &= db.nodes.nodename == node
     rows = db(q).select(db.comp_moduleset_modules.modset_mod_name,
                         groupby=db.comp_moduleset_modules.modset_mod_name,
@@ -1880,7 +1880,7 @@ def rpc_comp_list_rulesets(pattern='%', nodename=None, auth=("", "")):
     q &= db.comp_rulesets.id == db.comp_ruleset_team_publication.ruleset_id
     if nodename != None:
         q &= db.nodes.nodename == nodename
-        q &= db.nodes.team_responsible == db.auth_group.role
+        q &= (db.nodes.team_responsible == db.auth_group.role)|(db.auth_group.role=="Everybody")
         q &= db.auth_group.id == db.comp_ruleset_team_publication.group_id
     rows = db(q).select(groupby=db.comp_rulesets.id, cacheable=True)
     return sorted([r.comp_rulesets.ruleset_name for r in rows])
@@ -1895,7 +1895,7 @@ def rpc_comp_list_modulesets(pattern='%', auth=("", "")):
     q = db.comp_moduleset.modset_name.like(pattern)
     q &= db.comp_moduleset.id == db.comp_moduleset_team_publication.modset_id
     q &= db.auth_group.id == db.comp_moduleset_team_publication.group_id
-    q &= db.nodes.team_responsible == db.auth_group.role
+    q &= (db.nodes.team_responsible == db.auth_group.role)|(db.auth_group.role=="Everybody")
     q &= db.nodes.nodename == node
     rows = db(q).select(db.comp_moduleset.modset_name,
                         groupby=db.comp_moduleset.modset_name, cacheable=True)
@@ -2064,7 +2064,7 @@ def _comp_get_svc_moduleset_ids(svcname, modulesets=[], slave=False):
     q &= db.comp_modulesets_services.slave == slave
     q &= db.comp_modulesets_services.modset_id == db.comp_moduleset.id
     q &= db.comp_moduleset.id == db.comp_moduleset_team_publication.modset_id
-    q &= db.auth_group.id == db.comp_moduleset_team_publication.group_id
+    q &= (db.auth_group.id == db.comp_moduleset_team_publication.group_id)|(db.auth_group.role=="Everybody")
     q &= db.services.svc_name == svcname
     q &= db.services.svc_app == db.apps.app
     q &= db.apps.id == db.apps_responsibles.app_id
@@ -2112,7 +2112,7 @@ def _comp_get_moduleset_ids(nodename, modulesets=[]):
     q &= db.comp_node_moduleset.modset_id == db.comp_moduleset.id
     q &= db.comp_moduleset.id == db.comp_moduleset_team_publication.modset_id
     q &= db.auth_group.id == db.comp_moduleset_team_publication.group_id
-    q &= db.nodes.team_responsible == db.auth_group.role
+    q &= (db.nodes.team_responsible == db.auth_group.role)|(db.auth_group.role=="Everybody")
     q &= db.nodes.nodename == nodename
     if len(modulesets) > 0:
         q &= db.comp_moduleset.modset_name.belongs(modulesets)
@@ -5296,6 +5296,9 @@ def json_tree_action_set_modset_group_responsible(group_id, modset_id):
     if w is None:
         return {"err": "group not found"}
 
+    if w.role == "Everybody":
+        return {"err": "Giving responsability of a moduleset to Everybody is not allowed"}
+
     q = db.comp_moduleset_team_publication.modset_id == modset_id
     q &= db.comp_moduleset_team_publication.group_id == group_id
     db(q).delete()
@@ -5358,6 +5361,9 @@ def json_tree_action_set_rset_group_responsible(group_id, rset_id):
     if w is None:
         return {"err": "group not found"}
 
+    if w.role == "Everybody":
+        return {"err": "Giving responsability of a ruleset to Everybody is not allowed"}
+
     q = db.comp_ruleset_team_publication.ruleset_id == rset_id
     q &= db.comp_ruleset_team_publication.group_id == group_id
     db(q).delete()
@@ -5388,6 +5394,9 @@ def json_tree_action_set_rset_group_publication(group_id, rset_id):
     w = rows.first()
     if w is None:
         return {"err": "group not found"}
+
+    if w.role == "Everybody" and v.ruleset_type == "contextual":
+        return {"err": "Publishing a contextual ruleset to Everybody is not allowed"}
 
     q = db.comp_ruleset_team_responsible.ruleset_id == rset_id
     q &= db.comp_ruleset_team_responsible.group_id == group_id

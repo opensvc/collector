@@ -13,6 +13,8 @@ def ruleset_responsible(id):
     return True
 
 def ruleset_publication(id):
+    if ruleset_has_everybody_publication(id):
+        return True
     ug = user_groups()
     q = db.comp_rulesets.id == id
     if 'Manager' not in ug:
@@ -37,6 +39,8 @@ def moduleset_responsible(id):
     return True
 
 def moduleset_publication(id):
+    if moduleset_has_everybody_publication(id):
+        return True
     ug = user_groups()
     q = db.comp_moduleset.id == id
     if 'Manager' not in ug:
@@ -146,7 +150,25 @@ def comp_rulesets_chains():
     generic_insert('comp_rulesets_chains', vars, vals)
     db.commit()
 
+def ruleset_has_everybody_publication(ruleset_id):
+    q = db.auth_group.role == "Everybody"
+    q &= db.auth_group.id == db.comp_ruleset_team_publication.group_id
+    q &= db.comp_ruleset_team_publication.ruleset_id == ruleset_id
+    if db(q).count() == 0:
+        return False
+    return True
+
+def moduleset_has_everybody_publication(modset_id):
+    q = db.auth_group.role == "Everybody"
+    q &= db.auth_group.id == db.comp_moduleset_team_publication.group_id
+    q &= db.comp_moduleset_team_publication.modset_id == modset_id
+    if db(q).count() == 0:
+        return False
+    return True
+
 def comp_moduleset_svc_attachable(svcname, modset_id):
+    if moduleset_has_everybody_publication(modset_id):
+        return True
     q = db.services.svc_name == svcname
     q &= db.services.svc_app == db.apps.app
     q &= db.apps.id == db.apps_responsibles.app_id
@@ -160,6 +182,8 @@ def comp_moduleset_svc_attachable(svcname, modset_id):
     return True
 
 def comp_ruleset_svc_attachable(svcname, rset_id):
+    if ruleset_has_everybody_publication(rset_id):
+        return True
     q = db.services.svc_name == svcname
     q &= db.services.svc_app == db.apps.app
     q &= db.apps.id == db.apps_responsibles.app_id
@@ -175,6 +199,8 @@ def comp_ruleset_svc_attachable(svcname, rset_id):
     return True
 
 def comp_moduleset_attachable(nodename, modset_id):
+    if moduleset_has_everybody_publication(modset_id):
+        return True
     q = db.nodes.team_responsible == db.auth_group.role
     q &= db.auth_group.id == db.comp_moduleset_team_publication.group_id
     q &= db.comp_moduleset_team_publication.modset_id == db.comp_moduleset.id
@@ -186,6 +212,8 @@ def comp_moduleset_attachable(nodename, modset_id):
     return True
 
 def comp_ruleset_attachable(nodename, ruleset_id):
+    if ruleset_has_everybody_publication(ruleset_id):
+        return True
     q = db.nodes.team_responsible == db.auth_group.role
     q &= db.auth_group.id == db.comp_ruleset_team_publication.group_id
     q &= db.comp_ruleset_team_publication.ruleset_id == db.comp_rulesets.id
@@ -1573,6 +1601,11 @@ def attach_group_to_ruleset(group_id, rset_id, gtype="publication"):
     if w is None:
         raise CompError("group not found")
 
+    if w.role == "Everybody":
+        if gtype == "publication" and v.ruleset_type == "contextual":
+            raise CompError("Publishing a contextual ruleset to Everybody is not allowed")
+        if gtype == "responsible":
+            raise CompError("Giving responsability of a ruleset to Everybody is not allowed")
     if 'Manager' not in ug and int(group_id) not in user_group_ids():
         raise CompError("you can't attach a group you are not a member of")
 
@@ -1613,6 +1646,9 @@ def attach_group_to_moduleset(group_id, modset_id, gtype="publication"):
     if w is None:
         raise CompError("group not found")
 
+    if w.role == "Everybody":
+        if gtype == "responsible":
+            raise CompError("Giving responsability of a moduleset to Everybody is not allowed")
     if 'Manager' not in ug and int(group_id) not in user_group_ids():
         raise CompError("you can't attach a group you are not a member of")
 
