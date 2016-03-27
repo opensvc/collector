@@ -1,4 +1,6 @@
 def common_responsible(nodename=None, svcname=None, app=None, user_id=None):
+    if "Manager" in user_groups():
+        return True
     if nodename is None and svcname is None and app is None and user_id is None:
         return False
     q = db.auth_group.id > 0
