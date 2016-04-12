@@ -78,11 +78,39 @@ function form(divid, options) {
 			return
 		}
 		o.mangle_form_data()
+
 		if (o.options.display_mode) {
 			o.render_display_mode()
 		} else {
 			o.render_form_mode()
 		}
+	}
+
+	o.template_data_to_dict = function(t, data) {
+                var _data = {}
+		for (var i=0; i<o.form_data.form_definition.Inputs.length; i++) {
+			var d = o.form_data.form_definition.Inputs[i]
+			var key = "%%"+d.Id.toUpperCase()+"%%"
+			var l = t.split(key)
+			if (l[0] == "") {
+				var buff = data
+			} else {
+				var regex = new RegExp("^"+l[0].replace(/%%\w+%%/g, ".*?"))
+				var buff = data.replace(regex, "")
+			}
+			if (l.length == 1) {
+				_data[d.Id] = buff
+			} else {
+				var next = l[1].split(/%%\w+%%/)[0]
+				var j = buff.indexOf(next)
+				if (j < 0) {
+					_data[d.Id] = buff
+				} else {
+					_data[d.Id] = buff.slice(0,j)
+				}
+			}
+		}
+		return _data
 	}
 
 	o.mangle_form_data = function() {
@@ -340,6 +368,11 @@ function form(divid, options) {
 	}
 
 	o.render_form_group = function(data) {
+		var t = o.form_data.form_definition.Outputs[0].Template
+                if (t) {
+			data = o.template_data_to_dict(t, data)
+		}
+
 		var table = $("<table></table>")
 		for (var i=0; i<o.form_data.form_definition.Inputs.length; i++) {
 			var d = o.form_data.form_definition.Inputs[i]
