@@ -1141,7 +1141,7 @@ function form(divid, options) {
 					"id": value,
 					"label": label
 				})
-				if (!content && (opts.length > 0)) {
+				if (!d.DisableAutoDefault && !content && (opts.length > 0)) {
 					var acid = opts[0].id
 					content = opts[0].label
 				}
@@ -1150,7 +1150,7 @@ function form(divid, options) {
 					"id": _d[args.props],
 					"label": _d[args.props]
 				})
-				if (!content && (opts.length > 0)) {
+				if (!d.DisableAutoDefault && !content && (opts.length > 0)) {
 					var acid = opts[0].id
 					content = opts[0].label
 				}
