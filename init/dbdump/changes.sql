@@ -5967,3 +5967,10 @@ alter table log drop key idx3;
 
 alter table services modify column svc_autostart varchar(60) CHARACTER SET latin1 NOT NULL default "";
 
+alter table services modify column svcname varchar(250) default NULL;
+
+alter table nodes drop key idx_pivot_os_name;
+
+alter table nodes add key idx_pivot_os_name (node_id, os_name);
+
+alter table nodes modify column nodename varchar(250) default NULL;
