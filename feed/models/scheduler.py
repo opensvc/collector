@@ -748,7 +748,8 @@ def __resmon_update(vars, vals, auth):
             vals[idx] = "n/a"
     vars, vals = replace_nodename_in_data(vars, vals, auth)
     generic_insert('resmon', vars, vals)
-    _resmon_clean(node_id, h['svc_id'])
+    if 'svc_id' in h:
+        _resmon_clean(node_id, h['svc_id'])
 
 def _register_disk(vars, vals, auth):
     h = {}
