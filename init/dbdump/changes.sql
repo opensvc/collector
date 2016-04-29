@@ -5189,6 +5189,7 @@ alter table patches drop column patch_nodename;
 
 alter table comp_rulesets_nodes add column node_id CHAR(36) character set ascii default "";
 insert into comp_rulesets_nodes select crn.* from comp_rulesets_nodes crn, nodes where nodes.nodename=crn.nodename on duplicate key update comp_rulesets_nodes.node_id=nodes.node_id;
+alter table comp_rulesets_nodes add unique key uk_comp_rulesets_nodes (`node_id`, `ruleset_id`);
 alter table comp_rulesets_nodes drop key idx2;
 alter table comp_rulesets_nodes add key k_node_id (`node_id`);
 alter table comp_rulesets_nodes drop column nodename;
@@ -5196,6 +5197,8 @@ alter table comp_rulesets_nodes drop column nodename;
 
 alter table comp_node_moduleset add column node_id CHAR(36) character set ascii default "";
 insert into comp_node_moduleset select cmn.* from comp_node_moduleset cmn, nodes where nodes.nodename=cmn.modset_node on duplicate key update comp_node_moduleset.node_id=nodes.node_id;
+alter table comp_node_moduleset drop key idx1;
+alter table comp_node_moduleset add unique key uk_comp_node_moduleset (`node_id`, `modset_id`);
 alter table comp_node_moduleset drop key idx2;
 alter table comp_node_moduleset add key k_node_id (`node_id`);
 alter table comp_node_moduleset drop column modset_node;
@@ -5298,12 +5301,14 @@ alter table stats_fs_u drop column nodename;
 alter table stats_fs_u_day add column node_id CHAR(36) character set ascii default "";
 insert into stats_fs_u_day select stats_fs_u_day.* from stats_fs_u_day, nodes where nodes.nodename=stats_fs_u_day.nodename on duplicate key update stats_fs_u_day.node_id=nodes.node_id;
 alter table stats_fs_u_day drop key index_1;
+delete from stats_fs_u_day where node_id="";
 alter table stats_fs_u_day add unique key index_1 (`date`, `mntpt`, `node_id`);
 alter table stats_fs_u_day drop column nodename;
 
 alter table stats_fs_u_hour add column node_id CHAR(36) character set ascii default "";
 insert into stats_fs_u_hour select stats_fs_u_hour.* from stats_fs_u_hour, nodes where nodes.nodename=stats_fs_u_hour.nodename on duplicate key update stats_fs_u_hour.node_id=nodes.node_id;
 alter table stats_fs_u_hour drop key index_1;
+delete from stats_fs_u_hour where node_id="";
 alter table stats_fs_u_hour add unique key index_1 (`date`, `mntpt`, `node_id`);
 alter table stats_fs_u_hour drop column nodename;
 
@@ -5313,18 +5318,21 @@ drop table stats_fs_u_month;
 alter table stats_netdev add column node_id CHAR(36) character set ascii default "";
 insert into stats_netdev select stats_netdev.* from stats_netdev, nodes where nodes.nodename=stats_netdev.nodename on duplicate key update stats_netdev.node_id=nodes.node_id;
 alter table stats_netdev drop key index_1;
+delete from stats_netdev where node_id="";
 alter table stats_netdev add unique key index_1 (`date`, `dev`, `node_id`);
 alter table stats_netdev drop column nodename;
 
 alter table stats_netdev_day add column node_id CHAR(36) character set ascii default "";
 insert into stats_netdev_day select stats_netdev_day.* from stats_netdev_day, nodes where nodes.nodename=stats_netdev_day.nodename on duplicate key update stats_netdev_day.node_id=nodes.node_id;
 alter table stats_netdev_day drop key index_1;
+delete from stats_netdev_day where node_id="";
 alter table stats_netdev_day add unique key index_1 (`date`, `dev`, `node_id`);
 alter table stats_netdev_day drop column nodename;
 
 alter table stats_netdev_hour add column node_id CHAR(36) character set ascii default "";
 insert into stats_netdev_hour select stats_netdev_hour.* from stats_netdev_hour, nodes where nodes.nodename=stats_netdev_hour.nodename on duplicate key update stats_netdev_hour.node_id=nodes.node_id;
 alter table stats_netdev_hour drop key index_1;
+delete from stats_netdev_hour where node_id="";
 alter table stats_netdev_hour add unique key index_1 (`date`, `dev`, `node_id`);
 alter table stats_netdev_hour drop column nodename;
 
@@ -5336,12 +5344,14 @@ alter table stats_netdev_err add column node_id CHAR(36) character set ascii def
 insert into stats_netdev_err select stats_netdev_err.* from stats_netdev_err, nodes where nodes.nodename=stats_netdev_err.nodename on duplicate key update stats_netdev_err.node_id=nodes.node_id;
 alter table stats_netdev_err drop key index_1;
 alter table stats_netdev_err drop key stats_netdev_err_k2;
+delete from stats_netdev_err where node_id="";
 alter table stats_netdev_err add unique key index_1 (`date`, `dev`, `node_id`);
 alter table stats_netdev_err drop column nodename;
 
 alter table stats_netdev_err_day add column node_id CHAR(36) character set ascii default "";
 insert into stats_netdev_err_day select stats_netdev_err_day.* from stats_netdev_err_day, nodes where nodes.nodename=stats_netdev_err_day.nodename on duplicate key update stats_netdev_err_day.node_id=nodes.node_id;
 alter table stats_netdev_err_day drop key index_1;
+delete from stats_netdev_err_day where node_id="";
 alter table stats_netdev_err_day drop key stats_netdev_err_k2;
 alter table stats_netdev_err_day add unique key index_1 (`date`, `dev`, `node_id`);
 alter table stats_netdev_err_day drop column nodename;
@@ -5349,6 +5359,7 @@ alter table stats_netdev_err_day drop column nodename;
 alter table stats_netdev_err_hour add column node_id CHAR(36) character set ascii default "";
 insert into stats_netdev_err_hour select stats_netdev_err_hour.* from stats_netdev_err_hour, nodes where nodes.nodename=stats_netdev_err_hour.nodename on duplicate key update stats_netdev_err_hour.node_id=nodes.node_id;
 alter table stats_netdev_err_hour drop key index_1;
+delete from stats_netdev_err_hour where node_id="";
 alter table stats_netdev_err_hour drop key stats_netdev_err_k2;
 alter table stats_netdev_err_hour add unique key index_1 (`date`, `dev`, `node_id`);
 alter table stats_netdev_err_hour drop column nodename;
@@ -5509,6 +5520,7 @@ alter table checks_live drop column chk_nodename;
 alter table checks_settings add column node_id CHAR(36) character set ascii default "";
 insert into checks_settings select checks_settings.* from checks_settings, nodes where nodes.nodename=checks_settings.chk_nodename on duplicate key update checks_settings.node_id=nodes.node_id;
 alter table checks_settings drop key idx1;
+delete from checks_settings where node_id="";
 alter table checks_settings add unique key idx1 (`node_id`,`chk_svcname`,`chk_type`,`chk_instance`);
 alter table checks_settings add key k_node_id (`node_id`);
 alter table checks_settings drop column chk_nodename;
@@ -5602,6 +5614,7 @@ alter table node_users add column node_id CHAR(36) character set ascii default "
 insert into node_users (id,node_id) (select node_users.id, nodes.id from node_users, nodes where nodes.nodename=node_users.nodename) on duplicate key update node_users.node_id=nodes.node_id;
 alter table node_users add key k_node_id (`node_id`);
 alter table node_users drop key index_1;
+delete from node_users where node_id="";
 alter table node_users add unique key index_1 (`node_id`,`user_name`,`user_id`);
 alter table node_users drop column nodename;
 
@@ -5609,6 +5622,7 @@ alter table node_groups add column node_id CHAR(36) character set ascii default 
 insert into node_groups (id,node_id) (select node_groups.id, nodes.id from node_groups, nodes where nodes.nodename=node_groups.nodename) on duplicate key update node_groups.node_id=nodes.node_id;
 alter table node_groups add key k_node_id (`node_id`);
 alter table node_groups drop key index_1;
+delete from node_groups where node_id="";
 alter table node_groups add unique key index_1 (`node_id`,`group_name`,`group_id`);
 alter table node_groups drop column nodename;
 
@@ -5616,6 +5630,7 @@ alter table comp_log_daily add column node_id CHAR(36) character set ascii defau
 insert into comp_log_daily (id,node_id) (select comp_log_daily.id, nodes.id from comp_log_daily, nodes where nodes.nodename=comp_log_daily.run_nodename) on duplicate key update comp_log_daily.node_id=nodes.node_id;
 alter table comp_log_daily add key k_node_id (`node_id`);
 alter table comp_log_daily drop key idx2;
+delete from comp_log_daily where node_id="";
 alter table comp_log_daily add unique key idx2 (`run_date`,`node_id`,`run_svcname`,`run_module`);
 alter table comp_log_daily drop column run_nodename;
 
@@ -5630,6 +5645,7 @@ drop view v_action_queue ; create view v_action_queue as select n.nodename, a.*,
 
 alter table node_pw add column node_id CHAR(36) character set ascii default "";
 insert into node_pw (id,node_id) (select node_pw.id, nodes.id from node_pw, nodes where nodes.nodename=node_pw.nodename) on duplicate key update node_pw.node_id=nodes.node_id;
+delete from node_pw where node_id="";
 alter table node_pw add unique key k_node_id (`node_id`);
 alter table node_pw drop column nodename;
 
@@ -5681,15 +5697,12 @@ insert into svcmon_log select svcmon_log.* from svcmon_log, services where servi
 alter table svcmon_log add key k_svc_id (`svc_id`);
 alter table svcmon_log drop column mon_svcname;
 
-alter table svcmon_log_ack add column node_id CHAR(36) character set ascii default "";
 alter table svcmon_log_ack add column svc_id CHAR(36) character set ascii default "";
-insert into svcmon_log_ack select svcmon_log_ack.* from svcmon_log_ack, nodes where nodes.nodename=svcmon_log_ack.mon_nodname on duplicate key update svcmon_log_ack.node_id=nodes.node_id;
 insert into svcmon_log_ack select svcmon_log_ack.* from svcmon_log_ack, services where services.svc_name=svcmon_log_ack.mon_svcname on duplicate key update svcmon_log_ack.svc_id=services.svc_id;
 alter table svcmon_log_ack drop key key_1;
-alter table svcmon_log_ack add unique key uk_svcmon_log_ack (`node_id`,`svc_id`,`mon_begin`,`mon_end`);
-alter table svcmon_log_ack add key k_node_id (`node_id`);
+delete from svcmon_log_ack where svc_id="";
+alter table svcmon_log_ack add unique key uk_svcmon_log_ack (`svc_id`,`mon_begin`,`mon_end`);
 alter table svcmon_log_ack add key k_svc_id (`svc_id`);
-alter table svcmon_log_ack drop column mon_nodname;
 alter table svcmon_log_ack drop column mon_svcname;
 
 alter table SVCactions rename to svcactions;
@@ -5951,3 +5964,6 @@ drop view v_tags; create view v_tags as select NULL as id, tags.id as tag_id, ta
 drop view v_action_queue ; create view v_action_queue as select n.nodename, s.svcname, a.*, concat(u.first_name, " ", u.last_name) as username from action_queue a left join auth_user u on a.user_id=u.id left join nodes n on a.node_id=n.node_id left join services s on a.svc_id=s.svc_id;
 
 alter table log drop key idx3;
+
+alter table services modify column svc_autostart varchar(60) CHARACTER SET latin1 NOT NULL default "";
+
