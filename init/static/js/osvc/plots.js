@@ -3289,7 +3289,7 @@ function plot_diskdonuts() {
       d = data[seriesIndex]
       i = d.lastIndexOf(" (")
       d = d.substring(0, i)
-      osvc.tables.disks.filter_submit("svcname", d)
+      osvc.tables.disks.filter_submit("svc_id", d)
     })
   })
   $("[id^=chart_ap]").each(function(){
