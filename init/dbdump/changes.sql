@@ -5989,3 +5989,21 @@ insert into svcdisks select svcdisks.* from svcdisks, services, apps where svcdi
 
 insert into svcdisks select svcdisks.* from svcdisks, nodes, apps where svcdisks.app_id is NULL and svcdisks.node_id=nodes.node_id and nodes.app=apps.app on duplicate key update svcdisks.app_id=apps.id;
 
+drop view v_disk_app_dedup;
+
+create view v_disk_app_dedup as
+                   select
+                     apps.app,
+                     max(svcdisks.disk_used) as disk_used,
+                     svcdisks.disk_size,
+                     diskinfo.disk_arrayid,
+                     diskinfo.disk_group
+                   from
+                     svcdisks, diskinfo, apps
+                   where
+                     svcdisks.disk_id=diskinfo.disk_id and
+                     svcdisks.app_id=apps.id
+                   group by svcdisks.disk_id, svcdisks.disk_region, diskinfo.disk_arrayid, diskinfo.disk_group
+;
+
+
