@@ -172,8 +172,8 @@ def ajax_dashboard_col_values():
     table_id = request.vars.table_id
     t = table_dashboard(table_id, 'ajax_dashboard')
     col = request.args[0]
-    if t.colprops[col].filter_redirect is None and col in db.dashboard:
-        o = db.dashboard[col]
+    if t.colprops[col].filter_redirect is None:
+        o = db[t.colprops[col].table][t.colprops[col].field]
         s = [o]
     else:
         o = db.dashboard[t.colprops[col].filter_redirect]
