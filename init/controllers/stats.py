@@ -175,7 +175,7 @@ def ajax_perfcmp_plot():
 @auth.requires_login()
 def rows_stats_disks_per_svc(nodes=[], begin=None, end=None, lower=None, higher=None):
     if len(nodes) > 0:
-        node_ids = set(nodes) & set(user_nodes())
+        node_ids = set(nodes) & set(user_published_nodes())
         node_ids = map(repr, node_ids)
         svc_ids = ""
     else:
@@ -184,6 +184,10 @@ def rows_stats_disks_per_svc(nodes=[], begin=None, end=None, lower=None, higher=
         node_ids = [repr(r.node_id) for r in db(q).select(db.svcmon.node_id)]
         svc_ids = [repr(r.svc_id) for r in db(q).select(db.svcmon.svc_id)]
         svc_ids = 'and v.svc_id in (%s)'%','.join(svc_ids)
+    if len(svc_ids) == 0:
+        return []
+    if len(node_ids) == 0:
+        return []
     node_ids = 'and v.node_id in (%s)'%','.join(node_ids)
 
     if begin is None or end is None:
@@ -227,12 +231,14 @@ def rows_avg_cpu_for_nodes(nodes=[], begin=None, end=None, lower=None, higher=No
     """ last day avg cpu usage per node
     """
     if len(nodes) > 0:
-        nodes = set(nodes) & set(user_nodes())
+        nodes = set(nodes) & set(user_published_nodes())
         nodes = map(repr, nodes)
     else:
         q = q_filter(app_field=db.nodes.app)
         q = apply_filters_id(q, db.nodes.node_id)
         nodes = [repr(r.node_id) for r in db(q).select(db.nodes.node_id)]
+    if len(nodes) == 0:
+        return []
     nodes = 'and s.node_id in (%s)'%','.join(nodes)
 
     if begin is None or end is None:
@@ -273,12 +279,14 @@ def rows_avg_mem_for_nodes(nodes=[], begin=None, end=None, lower=None, higher=No
     """ available mem
     """
     if len(nodes) > 0:
-        nodes = set(nodes) & set(user_nodes())
+        nodes = set(nodes) & set(user_published_nodes())
         nodes = map(repr, nodes)
     else:
         q = q_filter(app_field=db.nodes.app)
         q = apply_filters_id(q, db.nodes.node_id)
         nodes = [repr(r.node_id) for r in db(q).select(db.nodes.node_id)]
+    if len(nodes) == 0:
+        return []
     nodes = 'and s.node_id in (%s)'%','.join(nodes)
 
     if begin is None or end is None:
@@ -315,12 +323,14 @@ def rows_avg_mem_for_nodes(nodes=[], begin=None, end=None, lower=None, higher=No
 @auth.requires_login()
 def rows_avg_swp_for_nodes(nodes=[], begin=None, end=None, lower=None, higher=None):
     if len(nodes) > 0:
-        nodes = set(nodes) & set(user_nodes())
+        nodes = set(nodes) & set(user_published_nodes())
         nodes = map(repr, nodes)
     else:
         q = q_filter(app_field=db.nodes.app)
         q = apply_filters_id(q, db.nodes.node_id)
         nodes = [repr(r.node_id) for r in db(q).select(db.nodes.node_id)]
+    if len(nodes) == 0:
+        return []
     nodes = 'and s.node_id in (%s)'%','.join(nodes)
 
     if begin is None or end is None:
@@ -356,12 +366,14 @@ def rows_avg_swp_for_nodes(nodes=[], begin=None, end=None, lower=None, higher=No
 @auth.requires_login()
 def rows_avg_proc_for_nodes(nodes=[], begin=None, end=None, lower=None, higher=None):
     if len(nodes) > 0:
-        nodes = set(nodes) & set(user_nodes())
+        nodes = set(nodes) & set(user_published_nodes())
         nodes = map(repr, nodes)
     else:
         q = q_filter(app_field=db.nodes.app)
         q = apply_filters_id(q, db.nodes.node_id)
         nodes = [repr(r.node_id) for r in db(q).select(db.nodes.node_id)]
+    if len(nodes) == 0:
+        return []
     nodes = 'and s.node_id in (%s)'%','.join(nodes)
 
     if begin is None or end is None:
@@ -400,12 +412,14 @@ def rows_avg_proc_for_nodes(nodes=[], begin=None, end=None, lower=None, higher=N
 @auth.requires_login()
 def rows_avg_block_for_nodes(nodes=[], begin=None, end=None, lower=None, higher=None):
     if len(nodes) > 0:
-        nodes = set(nodes) & set(user_nodes())
+        nodes = set(nodes) & set(user_published_nodes())
         nodes = map(repr, nodes)
     else:
         q = q_filter(app_field=db.nodes.app)
         q = apply_filters_id(q, db.nodes.node_id)
         nodes = [repr(r.node_id) for r in db(q).select(db.nodes.node_id)]
+    if len(nodes) == 0:
+        return []
     nodes = 'and s.node_id in (%s)'%','.join(nodes)
 
     if begin is None or end is None:
