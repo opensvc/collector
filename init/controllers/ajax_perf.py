@@ -72,7 +72,7 @@ def perf_stats_svc_cap_cpu(node, s, e):
 @auth.requires_login()
 def perf_stats_svc_data_mem_normalize(node, s, e):
     container = request.vars.container
-    where = "svcname = '%s' and"%container
+    where = "stats_svc%(period)s.svc_id = '%(svc_id)s' and"%dict(svc_id=node_svc_id(node, container), period=get_period(s, e))
     col = 'mem'
 
     sql = """select mem_bytes from nodes
@@ -133,7 +133,7 @@ def perf_stats_svc_data_mem_normalize(node, s, e):
 @auth.requires_login()
 def perf_stats_svc_data_cpu_normalize(node, s, e):
     container = request.vars.container
-    where = "svcname = '%s' and"%container
+    where = "stats_svc%(period)s.svc_id = '%(svc_id)s' and"%dict(svc_id=node_svc_id(node, container), period=get_period(s, e))
     col = 'cpu'
 
     sql = """select if(cpu_threads is null, cpu_cores, cpu_threads)
@@ -197,12 +197,12 @@ def perf_stats_svc_data(node, s, e, col):
     if container == "None":
         where = ''
     else:
-        where = "svcname = '%s' and"%container
+        where = "services.svc_id = '%s' and"%node_svc_id(node, container)
     sql = """select
-               svcname,
+               services.svcname,
                date,
                %(col)s
-             from stats_svc%(period)s
+             from stats_svc%(period)s, services
              where
                %(where)s
                node_id="%(node)s"
@@ -464,7 +464,7 @@ def rows_blockdev(node, s, e):
       from stats_blockdev%(period)s
       where date >= "%(s)s" and
             date <= "%(e)s" and
-            node_id = %(node)s
+            node_id = "%(node)s"
       group by dev
     """%dict(node=node, s=s, e=e, period=get_period(s, e)))
 
@@ -481,7 +481,7 @@ def rows_blockdev(node, s, e):
       from stats_blockdev%(period)s
       where date >= "%(s)s" and
             date <= "%(e)s" and
-            node_id = %(node)s
+            node_id = "%(node)s"
     """%dict(
       period = get_period(s, e),
       node=node,
@@ -523,7 +523,7 @@ def rows_netdev_err(node, s, e):
       from stats_netdev_err%(period)s
       where date >= "%(s)s" and
             date <= "%(e)s" and
-            node_id = %(node)s
+            node_id = "%(node)s"
     """%dict(
          period = get_period(s, e),
          node=node,
