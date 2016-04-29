@@ -103,7 +103,7 @@ function form(divid, options) {
 			} else {
 				var next = l[1].split(/%%\w+%%/)[0]
 				var j = buff.indexOf(next)
-				if (j < 0) {
+				if (j <= 0) {
 					_data[d.Id] = buff
 				} else {
 					_data[d.Id] = buff.slice(0,j)
