@@ -83,13 +83,16 @@ function comp_log(divid, options) {
 	}
 
 	o.add_title = function() {
-		var t = $("<h3></h3>")
-		var text = o.options.module
+		var t = $("<h2 class='nowrap'></h2>")
+		var mod = $("<span class='mod16 icon_fixed_width'>"+o.options.module+"</span>")
+		t.append(mod)
 		if (o.options.svcname) {
-			text += "@"+o.options.svcname
+			var svc = $("<span class='svc icon_fixed_width' style='padding-left:1em'>"+o.options.svcname+"</span>")
+			t.append(svc)
 		}
-		text += "@"+o.options.nodename
-		t.text(text)
+		var node = $("<span class='node16 icon_fixed_width' style='padding-left:1em'></span")
+                node.append(osvc_nodename(o.options.node_id))
+		t.append(node)
 		o.div.append(t)
 	}
 

@@ -5,6 +5,7 @@ class table_nodenetworks(HtmlTable):
         HtmlTable.__init__(self, id, func, innerhtml)
         self.cols = [
                       'id',
+                      'node_id',
                       'nodename',
                       'assetname',
                       'fqdn',
@@ -85,6 +86,13 @@ class table_nodenetworks(HtmlTable):
             'id': HtmlTableColumn(
                      field='id',
                     ),
+            'nodename': HtmlTableColumn(
+                     field='nodename',
+                     table='nodes',
+                    ),
+            'node_id': HtmlTableColumn(
+                     field='node_id',
+                    ),
             'net_id': HtmlTableColumn(
                      field='net_id',
                     ),
@@ -146,8 +154,8 @@ class table_nodenetworks(HtmlTable):
         for c in self.cols:
             self.colprops[c].table = 'v_nodenetworks'
         self.ajax_col_values = 'ajax_nodenetworks_col_values'
-        self.keys = ["nodename", "addr"]
-        self.span = ["nodename"]
+        self.keys = ["node_id", "addr"]
+        self.span = ["node_id"]
         self.csv_limit = 30000
 
 @auth.requires_login()
@@ -159,6 +167,7 @@ def ajax_nodenetworks_col_values():
     q = q_filter(app_field=db.v_nodenetworks.app)
     for f in t.cols:
         q = _where(q, 'v_nodenetworks', t.filter_parse(f), f)
+    q = apply_filters_id(q, node_field=db.v_nodenetworks.node_id)
     t.object_list = db(q).select(o, orderby=o)
     return t.col_values_cloud_ungrouped(col)
 
@@ -171,7 +180,7 @@ def ajax_nodenetworks():
     q = q_filter(app_field=db.v_nodenetworks.app)
     for f in t.cols:
         q = _where(q, 'v_nodenetworks', t.filter_parse(f), f)
-    q = apply_filters(q, db.v_nodenetworks.nodename, None)
+    q = apply_filters_id(q, node_field=db.v_nodenetworks.node_id)
 
     if len(request.args) == 1 and request.args[0] == 'csv':
         t.csv_q = q

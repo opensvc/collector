@@ -16,7 +16,7 @@ class rest_get_services_instances_status_log(rest_get_table_handler):
         )
 
     def handler(self, **vars):
-        q = q_filter(svc_field=db.svcmon_log.mon_svcname)
+        q = q_filter(svc_field=db.svcmon_log.svc_id)
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -39,7 +39,7 @@ class rest_get_services_status_log(rest_get_table_handler):
         )
 
     def handler(self, **vars):
-        q = q_filter(svc_field=db.services_log.svc_name)
+        q = q_filter(svc_field=db.services_log.svc_id)
         self.set_q(q)
         return self.prepare_data(**vars)
 

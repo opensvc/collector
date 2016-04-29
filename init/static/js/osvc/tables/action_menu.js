@@ -4,8 +4,8 @@
 function table_action_menu_init_data(t) {
 	t.action_menu_req_max = 1000
 	t.column_selectors = {
-		"svcname": "[col$=svcname],[col=svc_name]",
-		"nodename": "[col$=nodename],[col=mon_nodname],[col=hostname]",
+		"svc_id": "[col=svc_id]",
+		"node_id": "[col=node_id]",
 		"rid": "[col=rid]",
 		"module": "[col=run_module]",
 		"vmname": "[col=vmname]",
@@ -57,8 +57,8 @@ function table_action_menu_init_data(t) {
 					"title": "action_menu.on_nodes",
 					"class": "node16",
 					"foldable": true,
-					"cols": ["nodename"],
-					"condition": "nodename",
+					"cols": ["node_id"],
+					"condition": "node_id",
 					"children": [
 						{
 							"title": "action_menu.node_diff",
@@ -108,8 +108,8 @@ function table_action_menu_init_data(t) {
 					"title": "action_menu.on_services",
 					"class": "svc",
 					"foldable": true,
-					"cols": ["svcname"],
-					"condition": "svcname",
+					"cols": ["svc_id"],
+					"condition": "svc_id",
 					"children": [
 						{
 							"title": "action_menu.svc_diff",
@@ -130,8 +130,8 @@ function table_action_menu_init_data(t) {
 					"title": "action_menu.on_nodes_and_services",
 					"class": "svc",
 					"foldable": true,
-					"cols": ["svcname", "nodename"],
-					"condition": "svcname,nodename",
+					"cols": ["svc_id", "node_id"],
+					"condition": "svc_id,node_id",
 					"children": [
 						{
 							"title": "action_menu.topology",
@@ -686,7 +686,7 @@ function table_action_menu_init_data(t) {
 							"fn": "data_action_sync_dns_domains",
 							"privileges": ["Manager", "DnsManager"],
 							"min": 1
-						},
+						}
 					]
 				},
 				{
@@ -904,8 +904,8 @@ function table_action_menu_init_data(t) {
 					"foldable": true,
 					'title': 'action_menu.on_nodes',
 					"class": "node16",
-					"cols": ["nodename"],
-					"condition": "nodename",
+					"cols": ["node_id"],
+					"condition": "node_id",
 					"children": [
 						{
 							"title": "action_menu.delete",
@@ -956,8 +956,8 @@ function table_action_menu_init_data(t) {
 					"foldable": true,
 					'title': 'action_menu.on_check_instances',
 					"class": "check16",
-					"cols": ["nodename", "svcname", "chk_type", "chk_instance"],
-					"condition": "nodename+chk_type+chk_instance,nodename+svcname+chk_type+chk_instance",
+					"cols": ["node_id", "svc_id", "chk_type", "chk_instance"],
+					"condition": "node_id+chk_type+chk_instance,node_id+svc_id+chk_type+chk_instance",
 					"children": [
 						{
 							"title": "action_menu.delete",
@@ -986,7 +986,7 @@ function table_action_menu_init_data(t) {
 							"fn": "data_action_chk_instance_set_high_threshold",
 							"privileges": ["Manager", "CheckManager"],
 							"min": 1
-						},
+						}
 					]
 				},
 				{
@@ -994,8 +994,8 @@ function table_action_menu_init_data(t) {
 					"foldable": true,
 					'title': 'action_menu.on_nodes_modulesets',
 					"class": "modset16",
-					"cols": ["nodename", "modset_id"],
-					"condition": "nodename+modset_id",
+					"cols": ["node_id", "modset_id"],
+					"condition": "node_id+modset_id",
 					"children": [
 						{
 							"title": "action_menu.modset_detach",
@@ -1003,7 +1003,7 @@ function table_action_menu_init_data(t) {
 							"fn": "data_action_nodes_modsets_detach_no_selector",
 							"privileges": ["Manager", "NodeManager"],
 							"min": 1
-						},
+						}
 					]
 				},
 				{
@@ -1027,7 +1027,7 @@ function table_action_menu_init_data(t) {
 							"fn": "data_action_action_queue_redo",
 							"privileges": ["Manager", "NodeExec", "CompExec"],
 							"min": 1
-						},
+						}
 					]
 				},
 				{
@@ -1035,8 +1035,8 @@ function table_action_menu_init_data(t) {
 					"foldable": true,
 					'title': 'action_menu.on_nodes_rulesets',
 					"class": "comp16",
-					"cols": ["nodename", "ruleset_id"],
-					"condition": "nodename+ruleset_id",
+					"cols": ["node_id", "ruleset_id"],
+					"condition": "node_id+ruleset_id",
 					"children": [
 						{
 							"title": "action_menu.ruleset_detach",
@@ -1044,7 +1044,7 @@ function table_action_menu_init_data(t) {
 							"fn": "data_action_nodes_rulesets_detach_no_selector",
 							"privileges": ["Manager", "NodeManager"],
 							"min": 1
-						},
+						}
 					]
 				},
 				{
@@ -1052,8 +1052,8 @@ function table_action_menu_init_data(t) {
 					"foldable": true,
 					'title': 'action_menu.on_nodes_tags',
 					"class": "tag16",
-					"cols": ["nodename", "tag_id"],
-					"condition": "nodename+tag_id",
+					"cols": ["node_id", "tag_id"],
+					"condition": "node_id+tag_id",
 					"children": [
 						{
 							"title": "action_menu.nodes_tags_detach",
@@ -1061,7 +1061,7 @@ function table_action_menu_init_data(t) {
 							"fn": "data_action_nodes_tags_detach",
 							"privileges": ["Manager", "NodeManager"],
 							"min": 1
-						},
+						}
 					]
 				},
 				{
@@ -1069,8 +1069,8 @@ function table_action_menu_init_data(t) {
 					"foldable": true,
 					'title': 'action_menu.on_services',
 					"class": "svc",
-					"cols": ["svcname", "slave"],
-					"condition": "svcname+slave,svcname",
+					"cols": ["svc_id", "slave"],
+					"condition": "svc_id+slave,svc_id",
 					"children": [
 						{
 							"title": "action_menu.delete",
@@ -1165,15 +1165,15 @@ function table_action_menu_init_data(t) {
 					"foldable": true,
 					'title': 'action_menu.on_services_tags',
 					"class": "tag16",
-					"cols": ["svcname", "tag_id"],
-					"condition": "svcname+tag_id",
+					"cols": ["svc_id", "tag_id"],
+					"condition": "svc_id+tag_id",
 					"children": [
 						{
 							"title": "action_menu.services_tags_detach",
 							"class": "del16",
 							"fn": "data_action_services_tags_detach",
 							"min": 1
-						},
+						}
 					]
 				},
 				{
@@ -1181,31 +1181,31 @@ function table_action_menu_init_data(t) {
 					"foldable": true,
 					'title': 'action_menu.on_services_modulesets',
 					"class": "modset16",
-					"cols": ["svcname", "modset_id", "slave"],
-					"condition": "svcname+modset_id+slave",
+					"cols": ["svc_id", "modset_id", "slave"],
+					"condition": "svc_id+modset_id+slave",
 					"children": [
 						{
 							"title": "action_menu.modset_detach",
 							"class": "del16",
 							"fn": "data_action_services_modsets_detach_no_selector",
 							"min": 1
-						},
+						}
 					]
 				},
 				{
 					"selector": ["clicked", "checked", "all"],
 					"foldable": true,
 					'title': 'action_menu.on_services_rulesets',
-					"class": "comp16",
-					"cols": ["svcname", "ruleset_id", "slave"],
-					"condition": "svcname+ruleset_id+slave",
+					"class": "rset16",
+					"cols": ["svc_id", "ruleset_id", "slave"],
+					"condition": "svc_id+ruleset_id+slave",
 					"children": [
 						{
 							"title": "action_menu.ruleset_detach",
 							"class": "del16",
 							"fn": "data_action_services_rulesets_detach_no_selector",
 							"min": 1
-						},
+						}
 					]
 				},
 				{
@@ -1311,8 +1311,8 @@ function table_action_menu_init_data(t) {
 					"foldable": true,
 					'title': 'action_menu.on_nodes',
 					"class": "node16",
-					"cols": ["nodename"],
-					"condition": "nodename",
+					"cols": ["node_id"],
+					"condition": "node_id",
 					"children": [
 						{
 							'title': 'Update node information',
@@ -1333,7 +1333,7 @@ function table_action_menu_init_data(t) {
 							'class': 'svc',
 							"privileges": ["Manager", "NodeManager", "NodeExec"],
 							"min": 1,
-							'action': 'push_appinfo'
+							'action': 'push_resinfo'
 						},
 						{
 							'title': 'Update services information',
@@ -1470,8 +1470,8 @@ function table_action_menu_init_data(t) {
 					"foldable": true,
 					'title': 'action_menu.on_services_instances',
 					"class": "svcinstance",
-					"cols": ["svcname", "nodename"],
-					"condition": "svcname+nodename",
+					"cols": ["svc_id", "node_id"],
+					"condition": "svc_id+node_id",
 					"children": [
 						{
 							'title': 'Pull',
@@ -1580,8 +1580,8 @@ function table_action_menu_init_data(t) {
 					"foldable": true,
 					'title': 'action_menu.on_resources',
 					"class": "resource",
-					"cols": ["svcname", "nodename", "vmname", "rid"],
-					"condition": "svcname+nodename+vmname+rid,svcname+nodename+rid",
+					"cols": ["svc_id", "node_id", "vmname", "rid"],
+					"condition": "svc_id+node_id+vmname+rid,svc_id+node_id+rid",
 					"children": [
 						{
 							'title': 'Start',
@@ -1625,8 +1625,8 @@ function table_action_menu_init_data(t) {
 					"foldable": true,
 					'title': 'action_menu.on_modules',
 					"class": "mod16",
-					"cols": ["svcname", "nodename", "module"],
-					"condition": "svcname+nodename+module,nodename+module",
+					"cols": ["svc_id", "node_id", "module"],
+					"condition": "svc_id+node_id+module,node_id+module",
 					"children": [
 						{
 							'title': 'Check',
@@ -1795,7 +1795,7 @@ function table_action_menu_condition_filter(t, condition, data) {
 					break
 				}
 				var val = data[i][cond[j][k]]
-				if ((typeof val === "undefined") || (val=="") || (val == "empty")) {
+				if ((typeof val !== "boolean") && ((typeof val === "undefined") || (val=="") || (val == "empty"))) {
 					violation = true
 					break
 				}
@@ -1822,7 +1822,7 @@ function table_action_menu_get_cols_data_clicked(t, e, scope, selector) {
 			continue
 		}
 		var val = $.data(cell[0], "v")
-		if ((typeof val === "undefined") || (val=="") || (val == "empty")) {
+		if ((typeof val !== "boolean") && ((typeof val === "undefined") || (val=="") || (val == "empty"))) {
 			continue
 		}
 		d[c] = val
@@ -1850,7 +1850,7 @@ function table_action_menu_get_cols_data_checked(t, e, scope, selector) {
 				sig += "-"
 				continue
 			}
-			if ((typeof val === "undefined") || (val=="") || (val == "empty")) {
+			if ((typeof val !== "boolean") && ((typeof val === "undefined") || (val=="") || (val == "empty"))) {
 				sig += "-"
 				continue
 			}
@@ -2428,17 +2428,17 @@ function tool_topo(t, e) {
 	var entry = $(e.target)
 	var cache_id = entry.attr("cache_id")
 	var data = t.action_menu_data_cache[cache_id]
-	var nodenames = new Array()
+	var node_ids = new Array()
 	for (i=0;i<data.length;i++) {
-		nodenames.push(data[i]['nodename'])
+		node_ids.push(data[i]['node_id'])
 	}
-	var svcnames = new Array()
+	var svc_ids = new Array()
 	for (i=0;i<data.length;i++) {
-		svcnames.push(data[i]['svcname'])
+		svc_ids.push(data[i]['svc_id'])
 	}
 	topology("overlay", {
-		"nodenames": nodenames,
-		"svcnames": svcnames,
+		"node_ids": node_ids,
+		"svc_ids": svc_ids,
 		"display": ["nodes", "services", "countries", "cities", "buildings", "rooms", "racks", "enclosures", "hvs", "hvpools", "hvvdcs"]
 	})
 	t.e_overlay.show()
@@ -2456,7 +2456,7 @@ function tool_nodesantopo(t, e) {
 	}
 	var nodes = new Array()
 	for (i=0;i<data.length;i++) {
-		nodes.push(data[i]['nodename'])
+		nodes.push(data[i]['node_id'])
 	}
 	t.e_overlay.show()
 	sync_ajax('/init/ajax_node/ajax_nodes_stor?nodes='+nodes.join(","), [], 'overlay', function(){})
@@ -2471,10 +2471,10 @@ function tool_nodesysrepdiff(t, e) {
 	var data = t.action_menu_data_cache[cache_id]
 	var nodes = new Array()
 	for (i=0;i<data.length;i++) {
-		nodes.push(data[i]['nodename'])
+		nodes.push(data[i]['node_id'])
 	}
 	t.e_overlay.show()
-	sysrepdiff("overlay", {"nodes": nodes.join(",")})
+	sysrepdiff("overlay", {"nodes": nodes})
 }
 
 //
@@ -2486,10 +2486,10 @@ function tool_nodesysrep(t, e) {
 	var data = t.action_menu_data_cache[cache_id]
 	var nodes = new Array()
 	for (i=0;i<data.length;i++) {
-		nodes.push(data[i]['nodename'])
+		nodes.push(data[i]['node_id'])
 	}
 	t.e_overlay.show()
-	sysrep("overlay", {"nodes": nodes.join(",")})
+	sysrep("overlay", {"node_id": nodes})
 }
 
 //
@@ -2499,12 +2499,12 @@ function tool_svcdiff(t, e) {
 	var entry = $(e.target)
 	var cache_id = entry.attr("cache_id")
 	var data = t.action_menu_data_cache[cache_id]
-	var svcnames = new Array()
+	var svc_ids = new Array()
 	for (i=0;i<data.length;i++) {
-		svcnames.push(data[i]['svcname'])
+		svc_ids.push(data[i]['svc_id'])
 	}
 	t.e_overlay.show()
-	svcdiff("overlay", {"svcnames": svcnames})
+	svcdiff("overlay", {"svc_ids": svc_ids})
 }
 
 //
@@ -2516,7 +2516,7 @@ function tool_services_status_log(t, e) {
 	var data = t.action_menu_data_cache[cache_id]
 	var services = new Array()
 	for (i=0;i<data.length;i++) {
-		services.push(data[i]['svcname'])
+		services.push(data[i]['svc_id'])
 	}
 	t.e_overlay.show()
 	services_status_log("overlay", {"services": services})
@@ -2531,10 +2531,10 @@ function tool_nodediff(t, e) {
 	var data = t.action_menu_data_cache[cache_id]
 	var nodes = new Array()
 	for (i=0;i<data.length;i++) {
-		nodes.push(data[i]['nodename'])
+		nodes.push(data[i]['node_id'])
 	}
 	t.e_overlay.show()
-	nodediff("overlay", {"nodenames": nodes})
+	nodediff("overlay", {"node_ids": nodes})
 }
 
 //
@@ -2549,11 +2549,11 @@ function tool_grpprf(t, e) {
 	}
 	var nodes = new Array()
 	for (i=0;i<data.length;i++) {
-		nodes.push(data[i]['nodename'])
+		nodes.push(data[i]['node_id'])
 	}
 	t.e_overlay.show()
 	node_stats("overlay", {
-		"nodename": nodes.join(","),
+		"node_id": nodes,
 		"view": "/init/static/views/nodes_stats.html",
 		"controller": "/init/stats",
 	})
@@ -2571,7 +2571,7 @@ function tool_obsolescence(t, e) {
 	}
 	var nodes = new Array()
 	for (i=0;i<data.length;i++) {
-		nodes.push(data[i]['nodename'])
+		nodes.push(data[i]['node_id'])
 	}
 	t.e_overlay.show()
 	$.ajax({
@@ -3190,7 +3190,7 @@ function data_action_add_node(t, e) {
 	data_action_generic_add(t, e, {
 		"request_service": "R_NODES",
 		"properties_tab": function(divid, data) {
-			node_properties(divid, {"nodename": data.nodename})
+			node_properties(divid, {"node_id": data.node_id})
 		},
 		"createable_message": "action_menu.node_createable",
 		"inputs": [
@@ -3210,16 +3210,16 @@ function data_action_add_service(t, e) {
 		"request_service": "R_SERVICES",
 		"properties_tab": function(divid, data) {
 			service_tabs(divid, {
-				"svcname": data.svc_name,
+				"svc_id": data.svc_id,
 				"show_tabs": ["node_tabs.properties", "service_tabs.env"],
 			})
 		},
 		"createable_message": "action_menu.service_createable",
-		"exist_check_keys": ["svc_name"],
+		"exist_check_keys": ["svcname"],
 		"inputs": [
 			{
 				"title": "col.Service",
-				"key": "svc_name"
+				"key": "svcname"
 			}
 		]
 	})
@@ -3260,8 +3260,8 @@ function data_action_chk_instance_set_threshold(t, e, threshold) {
 		var _data = new Array()
 		for (i=0;i<data.length;i++) {
 			var d = {
-				'chk_nodename': data[i]['nodename'],
-				'chk_svcname': data[i]['svcname'],
+				'node_id': data[i]['node_id'],
+				'svc_id': data[i]['svc_id'],
 				'chk_type': data[i]['chk_type'],
 				'chk_instance': data[i]['chk_instance'],
 			}
@@ -3297,8 +3297,8 @@ function data_action_chk_instance_reset_thresholds(t, e) {
 		"request_service": "R_CHECKS_SETTINGS",
 		"request_data_entry": function(data) {
 			return {
-				'chk_nodename': data['nodename'],
-				'chk_svcname': data['svcname'],
+				'node_id': data['node_id'],
+				'svc_id': data['svc_id'],
 				'chk_type': data['chk_type'],
 				'chk_instance': data['chk_instance']
 			}
@@ -3314,8 +3314,8 @@ function data_action_chk_instance_delete(t, e) {
 		"request_service": "R_CHECKS",
 		"request_data_entry": function(data) {
 			return {
-				'chk_nodename': data['nodename'],
-				'chk_svcname': data['svcname'],
+				'node_id': data['node_id'],
+				'svc_id': data['svc_id'],
 				'chk_type': data['chk_type'],
 				'chk_instance': data['chk_instance']
 			}
@@ -3479,7 +3479,7 @@ function data_action_delete_nodes(t, e) {
 		"request_service": "R_NODES",
 		"request_data_entry": function(data) {
 			return {
-				'nodename': data['nodename']
+				'node_id': data['node_id']
 			}
 		}
 	})
@@ -3493,7 +3493,7 @@ function data_action_delete_svcs(t, e) {
 		"request_service": "R_SERVICES",
 		"request_data_entry": function(data) {
 			return {
-				'svc_name': data['svcname']
+				'svc_id': data['svc_id']
 			}
 		}
 	})
@@ -4366,7 +4366,7 @@ function data_action_services_tags_attach(t, e) {
 		"request_data_entry": function(selected, data) {
 			return {
 				"tag_id": selected,
-				"svcname": data["svcname"]
+				"svc_id": data["svc_id"]
 			}
 		}
 	})
@@ -4383,7 +4383,7 @@ function data_action_nodes_tags_attach(t, e) {
 		"request_data_entry": function(selected, data) {
 			return {
 				"tag_id": selected,
-				"nodename": data["nodename"]
+				"node_id": data["node_id"]
 			}
 		}
 	})
@@ -4399,7 +4399,7 @@ function data_action_nodes_tags_detach(t, e) {
 		"request_data_entry": function(data) {
 			return {
 				'tag_id': data['tag_id'],
-				'nodename': data['nodename']
+				'node_id': data['node_id']
 			}
 		}
 	})
@@ -4415,7 +4415,7 @@ function data_action_services_tags_detach(t, e) {
 		"request_data_entry": function(data) {
 			return {
 				'tag_id': data['tag_id'],
-				'svcname': data['svcname']
+				'svc_id': data['svc_id']
 			}
 		}
 	})
@@ -4431,7 +4431,7 @@ function data_action_nodes_modsets_detach_no_selector(t, e) {
 		"request_data_entry": function(data) {
 			return {
 				'modset_id': data['modset_id'],
-				'nodename': data['nodename']
+				'node_id': data['node_id']
 			}
 		}
 	})
@@ -4447,7 +4447,7 @@ function data_action_services_modsets_detach_no_selector(t, e) {
 		"request_data_entry": function(data) {
 			return {
 				'modset_id': data['modset_id'],
-				'svcname': data['svcname'],
+				'svc_id': data['svc_id'],
 				'slave': data['slave']
 			}
 		}
@@ -4464,7 +4464,7 @@ function data_action_nodes_rulesets_detach_no_selector(t, e) {
 		"request_data_entry": function(data) {
 			return {
 				'ruleset_id': data['ruleset_id'],
-				'nodename': data['nodename']
+				'node_id': data['node_id']
 			}
 		}
 	})
@@ -4480,7 +4480,7 @@ function data_action_services_rulesets_detach_no_selector(t, e) {
 		"request_data_entry": function(data) {
 			return {
 				'ruleset_id': data['ruleset_id'],
-				'svcname': data['svcname'],
+				'svc_id': data['svc_id'],
 				'slave': data['slave']
 			}
 		}
@@ -4498,7 +4498,7 @@ function data_action_nodes_modsets_attach(t, e) {
 		"request_data_entry": function(selected, data) {
 			return {
 				"modset_id": selected,
-				"nodename": data["nodename"]
+				"node_id": data["node_id"]
 			}
 		}
 	})
@@ -4515,7 +4515,7 @@ function data_action_services_modsets_attach(t, e) {
 		"request_data_entry": function(selected, data) {
 			return {
 				"modset_id": selected,
-				"svcname": data["svcname"],
+				"svc_id": data["svc_id"],
 				"slave": data["slave"]
 			}
 		}
@@ -4533,7 +4533,7 @@ function data_action_nodes_rulesets_attach(t, e) {
 		"request_data_entry": function(selected, data) {
 			return {
 				"ruleset_id": selected,
-				"nodename": data["nodename"]
+				"node_id": data["node_id"]
 			}
 		}
 	})
@@ -4550,7 +4550,7 @@ function data_action_services_rulesets_attach(t, e) {
 		"request_data_entry": function(selected, data) {
 			return {
 				"ruleset_id": selected,
-				"svcname": data["svcname"],
+				"svc_id": data["svc_id"],
 				"slave": data["slave"]
 			}
 		}
@@ -4568,7 +4568,7 @@ function data_action_nodes_modsets_detach(t, e) {
 		"request_data_entry": function(selected, data) {
 			return {
 				"modset_id": selected,
-				"nodename": data["nodename"]
+				"node_id": data["node_id"]
 			}
 		}
 	})
@@ -4585,7 +4585,7 @@ function data_action_services_modsets_detach(t, e) {
 		"request_data_entry": function(selected, data) {
 			return {
 				"modset_id": selected,
-				"svcname": data["svcname"],
+				"svc_id": data["svc_id"],
 				"slave": data["slave"]
 			}
 		}
@@ -4603,7 +4603,7 @@ function data_action_nodes_rulesets_detach(t, e) {
 		"request_data_entry": function(selected, data) {
 			return {
 				"ruleset_id": selected,
-				"nodename": data["nodename"]
+				"node_id": data["node_id"]
 			}
 		}
 	})
@@ -4620,7 +4620,7 @@ function data_action_services_rulesets_detach(t, e) {
 		"request_data_entry": function(selected, data) {
 			return {
 				"ruleset_id": selected,
-				"svcname": data["svcname"],
+				"svc_id": data["svc_id"],
 				"slave": data["slave"]
 			}
 		}
@@ -4859,6 +4859,7 @@ function agent_action_provisioning(t, e) {
 						d[k] = input_data[k]
 					}
 					d.nodename = data[i].nodename
+					d.node_id = data[i].node_id
 					put_data.push(d)
 				}
 

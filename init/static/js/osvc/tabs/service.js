@@ -6,8 +6,9 @@ function service_tabs(divid, options) {
 	o.options = options
 	o.load(function(){
 		var i = 0
-
-		o.closetab.children("p").text(o.options.svcname)
+		var e_title = $("<span svc_id="+o.options.svc_id+"></span>")
+		o.closetab.children("p").append(e_title)
+		e_title.osvc_svcname()
 
 		// tab properties
 		i = o.register_tab({
@@ -15,7 +16,7 @@ function service_tabs(divid, options) {
 			"title_class": "icon svc"
 		})
 		o.tabs[i].callback = function(divid) {
-			service_properties(divid, {"svcname": o.options.svcname})
+			service_properties(divid, {"svc_id": o.options.svc_id})
 		}
 
 		// tab alerts
@@ -24,7 +25,7 @@ function service_tabs(divid, options) {
 			"title_class": "icon alert16"
 		})
 		o.tabs[i].callback = function(divid) {
-			table_dashboard_svc(divid, o.options.svcname)
+			table_dashboard_svc(divid, o.options.svc_id)
 		}
 
 		// tab status
@@ -33,7 +34,7 @@ function service_tabs(divid, options) {
 			"title_class": "icon svc"
 		})
 		o.tabs[i].callback = function(divid) {
-			table_service_instances_svc(divid, o.options.svcname)
+			table_service_instances_svc(divid, o.options.svc_id)
 		}
 
 		// tab resources
@@ -42,7 +43,7 @@ function service_tabs(divid, options) {
 			"title_class": "icon svc"
 		})
 		o.tabs[i].callback = function(divid) {
-			table_resources_svc(divid, o.options.svcname)
+			table_resources_svc(divid, o.options.svc_id)
 		}
 
 		// tab actions
@@ -51,7 +52,7 @@ function service_tabs(divid, options) {
 			"title_class": "icon action16"
 		})
 		o.tabs[i].callback = function(divid) {
-			table_actions_svc(divid, o.options.svcname)
+			table_actions_svc(divid, o.options.svc_id)
 		}
 
 		// tab log
@@ -60,7 +61,7 @@ function service_tabs(divid, options) {
 			"title_class": "icon log16"
 		})
 		o.tabs[i].callback = function(divid) {
-			table_log_svc(divid, o.options.svcname)
+			table_log_svc(divid, o.options.svc_id)
 		}
 
 		// tab env
@@ -69,7 +70,7 @@ function service_tabs(divid, options) {
 			"title_class": "icon file16"
 		})
 		o.tabs[i].callback = function(divid) {
-			service_env(divid, {"svcname": o.options.svcname})
+			service_env(divid, {"svc_id": o.options.svc_id})
 		}
 
 		// tab topology
@@ -79,8 +80,8 @@ function service_tabs(divid, options) {
 		})
 		o.tabs[i].callback = function(divid) {
 			topology(divid, {
-				"svcnames": [
-					o.options.svcname
+				"svc_ids": [
+					o.options.svc_id
 				],
 				"display": [
 					"nodes",
@@ -104,7 +105,7 @@ function service_tabs(divid, options) {
 			"title_class": "icon startup"
 		})
 		o.tabs[i].callback = function(divid) {
-			startup(divid, {"svcnames": [o.options.svcname]})
+			startup(divid, {"svc_ids": [o.options.svc_id]})
 		}
 
 		// tab storage
@@ -113,7 +114,7 @@ function service_tabs(divid, options) {
 			"title_class": "icon hd16"
 		})
 		o.tabs[i].callback = function(divid) {
-			sync_ajax("/init/ajax_node/ajax_svc_stor/"+divid.replace("-", "_")+"/"+encodeURIComponent(o.options.svcname), [], divid, function(){})
+			sync_ajax("/init/ajax_node/ajax_svc_stor/"+divid.replace("-", "_")+"/"+encodeURIComponent(o.options.svc_id), [], divid, function(){})
 		}
 
 		// tab stats
@@ -122,7 +123,7 @@ function service_tabs(divid, options) {
 			"title_class": "icon spark16"
 		})
 		o.tabs[i].callback = function(divid) {
-			services_osvcgetrest("R_SERVICE_NODES", [o.options.svcname], {"limit": "0", "props": "mon_nodname,mon_vmname", "meta": "0"}, function(jd) {
+			services_osvcgetrest("R_SERVICE_NODES", [o.options.svc_id], {"limit": "0", "props": "node_id,mon_vmname", "meta": "0"}, function(jd) {
 				if (jd.error) {
 					$("#"+divid).html(services_error_fmt(jd))
 					return
@@ -130,8 +131,8 @@ function service_tabs(divid, options) {
 				var nodes = []
 				for (i=0; i<jd.data.length; i++) {
 					d = jd.data[i]
-					if (d.mon_vmname && (d.mon_vmname != "")) {
-						nodes.push(d.mon_vmname+"@"+d.mon_nodname)
+					if ((d.node_id != "") && (d.mon_vmname != "")) {
+						nodes.push(d.mon_vmname+"@"+d.node_id)
 					}
 				}
 				sync_ajax("/init/stats/ajax_containerperf_plot?node="+encodeURIComponent(nodes), [], divid, function(){})
@@ -147,17 +148,17 @@ function service_tabs(divid, options) {
 			"title_class": "icon spark16"
 		})
 		o.tabs[i].callback = function(divid) {
-			services_osvcgetrest("R_SERVICE_NODES", [o.options.svcname], {"limit": "0", "props": "mon_nodname", "meta": "0"}, function(jd) {
+			services_osvcgetrest("R_SERVICE_NODES", [o.options.svc_id], {"limit": "0", "props": "node_id", "meta": "0"}, function(jd) {
 				if (jd.error) {
 					$("#"+divid).html(services_error_fmt(jd))
 					return
 				}
 				var nodenames = []
 				for (i=0; i<jd.data.length; i++) {
-					nodenames.push(jd.data[i].mon_nodname)
+					nodenames.push(jd.data[i].node_id)
 				}
 				node_stats(divid, {
-					"nodename": nodenames.join(","), 
+					"node_id": nodenames.join(","), 
 					"view": "/init/static/views/nodes_stats.html",
 					"controller": "/init/stats"
 				})
@@ -173,7 +174,7 @@ function service_tabs(divid, options) {
 			"title_class": "icon edit"
 		})
 		o.tabs[i].callback = function(divid) {
-			wiki(divid, {"nodes": o.options.svcname})
+			wiki(divid, {"nodes": o.options.svc_id})
 		}
 
 		// tab avail
@@ -182,7 +183,7 @@ function service_tabs(divid, options) {
 			"title_class": "icon avail16"
 		})
 		o.tabs[i].callback = function(divid) {
-			services_status_log(divid, {"services": [o.options.svcname], "instances": true})
+			services_status_log(divid, {"services": [o.options.svc_id], "instances": true})
 		}
 
 		// tab pkgdiff
@@ -191,7 +192,7 @@ function service_tabs(divid, options) {
 			"title_class": "icon pkg16"
 		})
 		o.tabs[i].callback = function(divid) {
-			svc_pkgdiff(divid, {"svcnames": o.options.svcname})
+			svc_pkgdiff(divid, {"svcnames": o.options.svc_id})
 		}
 
 		// tab compliance
@@ -200,7 +201,7 @@ function service_tabs(divid, options) {
 			"title_class": "icon comp16"
 		})
 		o.tabs[i].callback = function(divid) {
-			sync_ajax("/init/compliance/ajax_compliance_svc/"+encodeURIComponent(o.options.svcname), [], divid, function(){})
+			sync_ajax("/init/compliance/ajax_compliance_svc/"+encodeURIComponent(o.options.svc_id), [], divid, function(){})
 		}
 
 		o.set_tab(o.options.tab)
@@ -229,14 +230,18 @@ function service_env(divid, options)
 		o.body = o.div.find("code")
 
 		spinner_add(o.div)
-		services_osvcgetrest("R_SERVICE", [o.options.svcname], {"meta": "false", "props": "updated,svc_envfile"}, function(jd) {
+		services_osvcgetrest("R_SERVICE", [o.options.svc_id], {"meta": "false", "props": "updated,svc_envfile"}, function(jd) {
 			spinner_del(o.div)
 			if (!jd.data) {
 				o.div.html(services_error_fmt(jd))
 			}
 			var data = jd.data[0]
 			o.header.text(i18n.t("service_env.header", {"updated": data.updated}))
-			o.text = data.svc_envfile.replace(/\\n\[/g, "\n\n[").replace(/\\n/g, "\n").replace(/\\t/g, "\t")
+			if (data.svc_envfile) {
+				o.text = data.svc_envfile.replace(/\\n\[/g, "\n\n[").replace(/\\n/g, "\n").replace(/\\t/g, "\t")
+			} else {
+				o.text = ""
+			}
 			o.body.html(o.text)
 			hljs.highlightBlock(o.body[0])
 			o.body.find(".hljs-setting").css({"color": "green"}).children().css({"color": "initial"})
@@ -259,7 +264,7 @@ function service_env(divid, options)
 				var data = { 
 					"svc_envfile": textarea.val()
 				}
-				services_osvcpostrest("/services/%1", [o.options.svcname], "", data, function(jd) {
+				services_osvcpostrest("/services/%1", [o.options.svc_id], "", data, function(jd) {
 					if (jd.error && (jd.error.length > 0)) {
 						$(".flash").show("blind").html(services_error_fmt(jd))
 						return
@@ -297,7 +302,7 @@ function service_properties(divid, options)
 		// unack errors
 		o.unack_errs = o.div.find("#err")
 		spinner_add(o.unack_errs)
-		services_osvcgetrest("R_SERVICE_ACTIONS_UNACKNOWLEDGED_ERRORS", [o.options.svcname], {"meta": "true", "limit": "1"}, function(jd) {
+		services_osvcgetrest("R_SERVICE_ACTIONS_UNACKNOWLEDGED_ERRORS", [o.options.svc_id], {"meta": "true", "limit": "1"}, function(jd) {
 			spinner_del(o.unack_errs)
 			if (!jd.meta) {
 				o.unack_errs.html(services_error_fmt(jd))
@@ -308,7 +313,7 @@ function service_properties(divid, options)
 			}
 		})
 
-		services_osvcgetrest("R_SERVICE", [o.options.svcname], {"meta": "false"}, function(jd) {
+		services_osvcgetrest("R_SERVICE", [o.options.svc_id], {"meta": "false"}, function(jd) {
 			if (!jd.data) {
 				o.div.html(services_error_fmt(jd))
 			}
@@ -349,7 +354,7 @@ function service_properties(divid, options)
 			tab_properties_generic_updater({
 				"div": o.div,
 				"post": function(data, callback, error_callback) {
-					services_osvcpostrest("R_SERVICE", [o.options.svcname], "", data, callback, error_callback)
+					services_osvcpostrest("R_SERVICE", [o.options.svc_id], "", data, callback, error_callback)
 				}
 			})
 		},
@@ -360,7 +365,7 @@ function service_properties(divid, options)
 		// init tags
 		tags({
 			"tid": o.e_tags.attr("id"),
-			"svcname": o.options.svcname,
+			"svc_id": o.options.svc_id,
 		})
 	}
 

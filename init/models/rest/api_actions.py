@@ -11,13 +11,13 @@ class rest_get_services_actions(rest_get_table_handler):
         rest_get_table_handler.__init__(
           self,
           path="/services_actions",
-          tables=["SVCactions"],
+          tables=["svcactions"],
           desc=desc,
           examples=examples,
         )
 
     def handler(self, **vars):
-        q = q_filter(svc_field=db.SVCactions.svcname)
+        q = q_filter(svc_field=db.svcactions.svc_id)
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -35,20 +35,20 @@ class rest_post_services_action(rest_post_handler):
         rest_post_handler.__init__(
           self,
           path="/services_actions/<id>",
-          tables=["SVCactions"],
+          tables=["svcactions"],
           desc=desc,
           examples=examples,
         )
 
     def handler(self, id, **vars):
-        q = db.SVCactions.id == id
+        q = db.svcactions.id == id
         row = db(q).select().first()
         if row is None:
             raise Exception("log entry %s does not exist" % str(id))
-        svc_responsible(row.svcname)
+        svc_responsible(row.svc_id)
 
         # purge data of unauthorized keys
-        for c in set(db.SVCactions.fields) - set(["ack", "acked_comment"]):
+        for c in set(db.svcactions.fields) - set(["ack", "acked_comment"]):
             if c in vars:
                 del(vars[c])
 
@@ -62,18 +62,18 @@ class rest_post_services_action(rest_post_handler):
         _log('actions.change',
              'changed action %(id)s: %(data)s',
              dict(id=str(id), data=beautify_change(row, vars)),
-             nodename=row.hostname,
-             svcname=row.svcname)
+             node_id=row.node_id,
+             svc_id=row.svc_id)
 
         l = {
           'event': 'svcactions_change',
           'data': {'id': row.id},
         }
         _websocket_send(event_msg(l))
-        table_modified("SVCactions")
+        table_modified("svcactions")
 
         update_action_errors()
-        update_dash_action_errors(row.svcname, row.hostname)
+        update_dash_action_errors(row.svc_id, row.node_id)
         return dict(info="actions log entry %s successfully changed" %str(id))
 
 #
@@ -90,7 +90,7 @@ class rest_post_services_actions(rest_post_handler):
         rest_post_handler.__init__(
           self,
           path="/services_actions",
-          tables=["SVCactions"],
+          tables=["svcactions"],
           desc=desc,
           examples=examples,
         )
@@ -114,15 +114,16 @@ class rest_get_service_actions(rest_get_table_handler):
 
         rest_get_table_handler.__init__(
           self,
-          path="/services/<svcname>/actions",
-          tables=["SVCactions"],
+          path="/services/<id>/actions",
+          tables=["svcactions"],
           desc=desc,
           examples=examples,
         )
 
-    def handler(self, svcname, **vars):
-        q = db.SVCactions.svcname == svcname
-        q = q_filter(q, svc_field=db.SVCactions.svcname)
+    def handler(self, id, **vars):
+        svc_id = get_svc_id(id)
+        q = db.svcactions.svc_id == svc_id
+        q = q_filter(q, svc_field=db.svcactions.svc_id)
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -138,17 +139,18 @@ class rest_get_service_actions_unacknowledged_errors(rest_get_table_handler):
 
         rest_get_table_handler.__init__(
           self,
-          path="/services/<svcname>/actions_unacknowledged_errors",
-          tables=["SVCactions"],
+          path="/services/<id>/actions_unacknowledged_errors",
+          tables=["svcactions"],
           desc=desc,
           examples=examples,
         )
 
-    def handler(self, svcname, **vars):
-        q = db.SVCactions.svcname == svcname
-        q &= db.SVCactions.status == "err"
-        q &= db.SVCactions.ack == None
-        q = q_filter(q, svc_field=db.SVCactions.svcname)
+    def handler(self, id, **vars):
+        svc_id = get_svc_id(id)
+        q = db.svcactions.svc_id == svc_id
+        q &= db.svcactions.status == "err"
+        q &= db.svcactions.ack == None
+        q = q_filter(q, svc_field=db.svcactions.svc_id)
         self.set_q(q)
         return self.prepare_data(**vars)
 

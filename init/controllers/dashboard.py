@@ -26,10 +26,10 @@ def json_dash_history():
             _f = f
             _t = "dashboard_events"
         q = _where(q, _t, t.filter_parse(f),  _f)
-    f1 = q_filter(node_field=db.dashboard.dash_nodename)
-    f2 = q_filter(svc_field=db.dashboard.dash_svcname)
+    f1 = q_filter(node_field=db.dashboard.node_id)
+    f2 = q_filter(svc_field=db.dashboard.svc_id)
     q &= (f1|f2)
-    q = apply_filters(q, db.dashboard_events.dash_nodename, db.dashboard_events.dash_svcname)
+    q = apply_filters_id(q, db.dashboard.node_id, db.dashboard.svc_id)
 
     sql = """select
                v.begin,
@@ -39,8 +39,8 @@ def json_dash_history():
                  t.begin,
                  t.end,
                  dashboard_events.dash_md5,
-                 dashboard_events.dash_nodename,
-                 dashboard_events.dash_svcname
+                 dashboard_events.node_id,
+                 dashboard_events.svc_id
                from
                  dashboard_events
                  join (
@@ -62,8 +62,8 @@ def json_dash_history():
                  t.begin,
                  t.end,
                  dashboard_events.dash_md5,
-                 dashboard_events.dash_nodename,
-                 dashboard_events.dash_svcname
+                 dashboard_events.node_id,
+                 dashboard_events.svc_id
              ) v
              group by v.begin, v.end
     """%dict(where=str(q))
@@ -87,8 +87,11 @@ class table_dashboard(HtmlTable):
                      'dash_severity',
                      'dash_links',
                      'dash_type',
-                     'dash_svcname',
-                     'dash_nodename',
+                     'svc_id',
+                     'svcname',
+                     'node_id',
+                     'nodename',
+                     'node_app',
                      'dash_env',
                      'dash_entry',
                      'dash_md5',
@@ -110,13 +113,25 @@ class table_dashboard(HtmlTable):
                      table='dashboard',
                      field='dash_severity',
                     ),
-            'dash_svcname': HtmlTableColumn(
-                     table='dashboard',
-                     field='dash_svcname',
+            'svcname': HtmlTableColumn(
+                     table='services',
+                     field='svcname',
                     ),
-            'dash_nodename': HtmlTableColumn(
+            'svc_id': HtmlTableColumn(
                      table='dashboard',
-                     field='dash_nodename',
+                     field='svc_id',
+                    ),
+            'nodename': HtmlTableColumn(
+                     table='nodes',
+                     field='nodename',
+                    ),
+            'node_id': HtmlTableColumn(
+                     table='dashboard',
+                     field='node_id',
+                    ),
+            'node_app': HtmlTableColumn(
+                     table='nodes',
+                     field='app',
                     ),
             'dash_entry': HtmlTableColumn(
                      table='dashboard',
@@ -149,8 +164,8 @@ class table_dashboard(HtmlTable):
                     ),
         }
         self.span = ["id"]
-        self.keys = ["dash_nodename", "dash_type", "dash_svcname", "dash_md5"]
-        self.order = ["~dash_severity", "dash_type", "dash_nodename", "dash_svcname"]
+        self.keys = ["node_id", "dash_type", "svc_id", "dash_md5"]
+        self.order = ["~dash_severity", "dash_type", "nodename", "svcname"]
 
 @auth.requires_login()
 def ajax_dashboard_col_values():
@@ -164,30 +179,35 @@ def ajax_dashboard_col_values():
         o = db.dashboard[t.colprops[col].filter_redirect]
         s = [db.dashboard.dash_fmt, db.dashboard.dash_dict]
     q = db.dashboard.id > 0
+    l1 = db.nodes.on(db.dashboard.node_id==db.nodes.node_id)
+    l2 = db.services.on(db.dashboard.svc_id==db.services.svc_id)
     for f in set(t.cols):
-        q = _where(q, 'dashboard', t.filter_parse(f),  f if t.colprops[f].filter_redirect is None else t.colprops[f].filter_redirect)
-    f1 = q_filter(node_field=db.dashboard.dash_nodename)
-    f2 = q_filter(svc_field=db.dashboard.dash_svcname)
+        q = _where(q, t.colprops[f].table, t.filter_parse(f),  f if t.colprops[f].filter_redirect is None else t.colprops[f].filter_redirect)
+    f1 = q_filter(node_field=db.dashboard.node_id)
+    f2 = q_filter(svc_field=db.dashboard.svc_id)
     q &= (f1|f2)
-    q = apply_filters(q, db.dashboard.dash_nodename, db.dashboard.dash_svcname)
-    t.object_list = db(q).select(*s, orderby=o)
+    q = apply_filters_id(q, db.dashboard.node_id, db.dashboard.svc_id)
+    t.object_list = db(q).select(*s, orderby=o, left=(l1,l2))
     return t.col_values_cloud_ungrouped(col)
 
 @auth.requires_login()
 def ajax_dashboard():
     table_id = request.vars.table_id
     t = table_dashboard(table_id, 'ajax_dashboard')
-    o = ~db.dashboard.dash_severity|db.dashboard.dash_type|db.dashboard.dash_nodename|db.dashboard.dash_svcname
+    o = ~db.dashboard.dash_severity|db.dashboard.dash_type|db.nodes.nodename|db.services.svcname
     q = db.dashboard.id > 0
+    l1 = db.nodes.on(db.dashboard.node_id==db.nodes.node_id)
+    l2 = db.services.on(db.dashboard.svc_id==db.services.svc_id)
     for f in set(t.cols):
-        q = _where(q, 'dashboard', t.filter_parse(f), f if t.colprops[f].filter_redirect is None else t.colprops[f].filter_redirect)
-    f1 = q_filter(node_field=db.dashboard.dash_nodename)
-    f2 = q_filter(svc_field=db.dashboard.dash_svcname)
+        q = _where(q, t.colprops[f].table, t.filter_parse(f), f if t.colprops[f].filter_redirect is None else t.colprops[f].filter_redirect)
+    f1 = q_filter(node_field=db.dashboard.node_id)
+    f2 = q_filter(svc_field=db.dashboard.svc_id)
     q &= (f1|f2)
-    q = apply_filters(q, db.dashboard.dash_nodename, db.dashboard.dash_svcname)
+    q = apply_filters_id(q, db.dashboard.node_id, db.dashboard.svc_id)
 
     t.csv_q = q
     t.csv_orderby = o
+    t.csv_left = (l1,l2)
 
     if len(request.args) == 1 and request.args[0] == 'csv':
         return t.csv()
@@ -196,7 +216,7 @@ def ajax_dashboard():
     if len(request.args) == 1 and request.args[0] == 'data':
         n = db(q).select(db.dashboard.id.count()).first()(db.dashboard.id.count())
         limitby = (t.pager_start,t.pager_end)
-        t.object_list = db(q).select(orderby=o, cacheable=True, limitby=limitby)
+        t.object_list = db(q).select(orderby=o, cacheable=True, limitby=limitby, left=(l1,l2))
         return t.table_lines_data(n, html=False)
 
 @auth.requires_login()
@@ -214,11 +234,11 @@ def ajax_alert_events():
     session.forget(response)
     limit = datetime.datetime.now() - datetime.timedelta(days=30)
     q = db.dashboard_events.dash_md5 == request.vars.dash_md5
-    q &= db.dashboard_events.dash_nodename == request.vars.dash_nodename
-    q &= db.dashboard_events.dash_svcname == request.vars.dash_svcname
+    q &= db.dashboard_events.node_id == request.vars.node_id
+    q &= db.dashboard_events.svc_id == request.vars.svc_id
     q &= db.dashboard_events.dash_begin > limit
-    f1 = q_filter(node_field=db.dashboard.dash_nodename)
-    f2 = q_filter(svc_field=db.dashboard.dash_svcname)
+    f1 = q_filter(node_field=db.dashboard.node_id)
+    f2 = q_filter(svc_field=db.dashboard.svc_id)
     q &= (f1|f2)
     rows = db(q).select(db.dashboard_events.dash_begin,
                         db.dashboard_events.dash_end)
@@ -248,26 +268,26 @@ def ajax_alert_events():
     #     )
 
     wikipage_name = "alert"
-    if request.vars.dash_nodename is not None:
-        wikipage_name += "_"+request.vars.dash_nodename
-    if request.vars.dash_svcname is not None:
-        wikipage_name += "_"+request.vars.dash_svcname
+    if request.vars.node_id is not None:
+        wikipage_name += "_"+request.vars.node_id
+    if request.vars.svc_id is not None:
+        wikipage_name += "_"+request.vars.svc_id
     if request.vars.dash_md5 is not None:
         wikipage_name += "_"+request.vars.dash_md5
 
     s = """alert_event("%(id)s", 
         {
         "md5name" : "%(md5name)s",
-        "nodes": "%(node)s",
+        "node_id": "%(node_id)s",
         "begin_date":"%(bdate)s",
-        "svcname" : "%(svcname)s",
+        "svc_id" : "%(svc_id)s",
         });"""%dict(
                id='plot_%s'%request.vars.rowid,
                rowid=request.vars.rowid,
-               node=request.vars.dash_nodename,
+               node_id=request.vars.node_id,
                bdate=request.vars.dash_created,
                md5name=request.vars.dash_md5,
-               svcname=request.vars.dash_svcname)
+               svc_id=request.vars.svc_id)
 
     s += """wiki("%(id)s", {"nodes": "%(node)s"});"""%dict(
                id='wiki_%s'%request.vars.rowid,

@@ -36,23 +36,23 @@ def log_events(i):
     }
     _websocket_send(event_msg(l), schedule=False)
 
-def _log(action, fmt, d, user=None, svcname=None, nodename=None, level="info"):
+def _log(action, fmt, d, user=None, svc_id="", level="info", node_id=""):
     if user is None:
         user = user_name()
     if user in ("Unknown", "agent"):
-        if nodename is not None:
-            user = nodename
-        elif svcname is not None:
-            user = svcname
-    if user == "agent" and nodename is None:
-        nodename = auth.user.nodename
+        if node_id != "":
+            user = "agent"
+        elif svc_id != "":
+            user = "agent"
+    if user == "agent" and (node_id is None or node_id == ""):
+        node_id = auth.user.node_id
     db.log.insert(
       log_action=action,
       log_fmt=fmt,
       log_dict=json.dumps(d),
       log_user=user,
-      log_svcname=svcname,
-      log_nodename=nodename,
+      svc_id=svc_id,
+      node_id=node_id,
       log_level=level
     )
     i = db.executesql("SELECT LAST_INSERT_ID()")[0][0]

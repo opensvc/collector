@@ -166,10 +166,10 @@ def moduleset_has_everybody_publication(modset_id):
         return False
     return True
 
-def comp_moduleset_svc_attachable(svcname, modset_id):
+def comp_moduleset_svc_attachable(svc_id, modset_id):
     if moduleset_has_everybody_publication(modset_id):
         return True
-    q = db.services.svc_name == svcname
+    q = db.services.svc_id == svc_id
     q &= db.services.svc_app == db.apps.app
     q &= db.apps.id == db.apps_responsibles.app_id
     q &= db.apps_responsibles.group_id == db.auth_group.id
@@ -181,10 +181,10 @@ def comp_moduleset_svc_attachable(svcname, modset_id):
         return False
     return True
 
-def comp_ruleset_svc_attachable(svcname, rset_id):
+def comp_ruleset_svc_attachable(svc_id, rset_id):
     if ruleset_has_everybody_publication(rset_id):
         return True
-    q = db.services.svc_name == svcname
+    q = db.services.svc_id == svc_id
     q &= db.services.svc_app == db.apps.app
     q &= db.apps.id == db.apps_responsibles.app_id
     q &= db.apps_responsibles.group_id == db.auth_group.id
@@ -198,20 +198,20 @@ def comp_ruleset_svc_attachable(svcname, rset_id):
         return False
     return True
 
-def comp_moduleset_attachable(nodename, modset_id):
+def comp_moduleset_attachable(node_id, modset_id):
     if moduleset_has_everybody_publication(modset_id):
         return True
     q = db.nodes.team_responsible == db.auth_group.role
     q &= db.auth_group.id == db.comp_moduleset_team_publication.group_id
     q &= db.comp_moduleset_team_publication.modset_id == db.comp_moduleset.id
     q &= db.comp_moduleset.id == modset_id
-    q &= db.nodes.nodename == nodename
+    q &= db.nodes.node_id == node_id
     rows = db(q).select(db.nodes.team_responsible, cacheable=True)
     if len(rows) != 1:
         return False
     return True
 
-def comp_ruleset_attachable(nodename, ruleset_id):
+def comp_ruleset_attachable(node_id, ruleset_id):
     if ruleset_has_everybody_publication(ruleset_id):
         return True
     q = db.nodes.team_responsible == db.auth_group.role
@@ -220,29 +220,38 @@ def comp_ruleset_attachable(nodename, ruleset_id):
     q &= db.comp_rulesets.id == ruleset_id
     q &= db.comp_rulesets.ruleset_public == True
     q &= db.comp_rulesets.ruleset_type == "explicit"
-    q &= db.nodes.nodename == nodename
+    q &= db.nodes.node_id == node_id
     rows = db(q).select(cacheable=True)
     if len(rows) != 1:
         return False
     return True
 
-def comp_moduleset_attached(nodename, modset_id):
-    q = db.comp_node_moduleset.modset_node == nodename
+def comp_slave(svc_id, node_id):
+    q = db.svcmon.mon_vmname == db.nodes.nodename
+    q &= db.nodes.node_id == node_id
+    q &= db.svcmon.svc_id == svc_id
+    row = db(q).select(cacheable=True).first()
+    if row is None:
+        return False
+    return True
+
+def comp_moduleset_attached(node_id, modset_id):
+    q = db.comp_node_moduleset.node_id == node_id
     q &= db.comp_node_moduleset.modset_id == modset_id
     if len(db(q).select(db.comp_node_moduleset.id, cacheable=True)) == 0:
         return False
     return True
 
-def comp_ruleset_svc_attached(svcname, rset_id, slave):
-    q = db.comp_rulesets_services.svcname == svcname
+def comp_ruleset_svc_attached(svc_id, rset_id, slave):
+    q = db.comp_rulesets_services.svc_id == svc_id
     q &= db.comp_rulesets_services.ruleset_id == rset_id
     q &= db.comp_rulesets_services.slave == slave
     if len(db(q).select(db.comp_rulesets_services.id, cacheable=True)) == 0:
         return False
     return True
 
-def comp_moduleset_svc_attached(svcname, modset_id, slave):
-    q = db.comp_modulesets_services.modset_svcname == svcname
+def comp_moduleset_svc_attached(svc_id, modset_id, slave):
+    q = db.comp_modulesets_services.svc_id == svc_id
     q &= db.comp_modulesets_services.modset_id == modset_id
     q &= db.comp_modulesets_services.slave == slave
     if len(db(q).select(db.comp_modulesets_services.id, cacheable=True)) == 0:
@@ -256,42 +265,25 @@ def comp_ruleset_exists(ruleset):
         return None
     return rows[0].id
 
-def comp_ruleset_attached(nodename, ruleset_id):
-    q = db.comp_rulesets_nodes.nodename == nodename
+def comp_ruleset_attached(node_id, ruleset_id):
+    q = db.comp_rulesets_nodes.node_id == node_id
     q &= db.comp_rulesets_nodes.ruleset_id == ruleset_id
     if len(db(q).select(db.comp_rulesets_nodes.id, cacheable=True)) == 0:
         return False
     return True
 
-def comp_slave(svcname, nodename):
-    q = db.svcmon.mon_vmname == nodename
-    q &= db.svcmon.mon_svcname == svcname
-    row = db(q).select(cacheable=True).first()
-    if row is None:
-        return False
-    return True
-
-def has_slave(svcname):
-    q = db.svcmon.mon_svcname == svcname
-    q &= db.svcmon.mon_vmname != None
-    q &= db.svcmon.mon_vmname != ""
-    row = db(q).select(cacheable=True).first()
-    if row is None:
-        return False
-    return True
-
-def comp_attached_ruleset_id(nodename):
-    q = db.comp_rulesets_nodes.nodename == nodename
+def comp_attached_ruleset_id(node_id):
+    q = db.comp_rulesets_nodes.node_id == node_id
     rows = db(q).select(db.comp_rulesets_nodes.ruleset_id, cacheable=True)
     return [r.ruleset_id for r in rows]
 
-def comp_attached_svc_moduleset_id(svcname):
-    q = db.comp_modulesets_services.modset_svcname == svcname
+def comp_attached_svc_moduleset_id(svc_id):
+    q = db.comp_modulesets_services.svc_id == svc_id
     rows = db(q).select(db.comp_modulesets_services.modset_id, cacheable=True)
     return [r.modset_id for r in rows]
 
-def comp_attached_moduleset_id(nodename):
-    q = db.comp_node_moduleset.modset_node == nodename
+def comp_attached_moduleset_id(node_id):
+    q = db.comp_node_moduleset.node_id == node_id
     rows = db(q).select(db.comp_node_moduleset.modset_id, cacheable=True)
     return [r.modset_id for r in rows]
 
@@ -346,8 +338,8 @@ def comp_moduleset_exists(moduleset):
         return None
     return rows[0].id
 
-def comp_attached_svc_ruleset_id(svcname, slave):
-    q = db.comp_rulesets_services.svcname == svcname
+def comp_attached_svc_ruleset_id(svc_id, slave):
+    q = db.comp_rulesets_services.svc_id == svc_id
     q &= db.comp_rulesets_services.slave == slave
     rows = db(q).select(db.comp_rulesets_services.ruleset_id, cacheable=True)
     return [r.ruleset_id for r in rows]
@@ -388,36 +380,36 @@ def attach_moduleset_to_moduleset(child_modset_id, parent_modset_id):
 #
 # moduleset attachments
 #
-def lib_comp_moduleset_attach_node(nodename, modset_id):
+def lib_comp_moduleset_attach_node(node_id, modset_id):
     moduleset = comp_moduleset_name(modset_id)
     if moduleset is None:
         return dict(error="moduleset %s does not exist"%moduleset)
-    if comp_moduleset_attached(nodename, modset_id):
+    if comp_moduleset_attached(node_id, modset_id):
         return dict(info="moduleset %s is already attached to this node"%moduleset)
-    if not comp_moduleset_attachable(nodename, modset_id):
+    if not comp_moduleset_attachable(node_id, modset_id):
         return dict(error="moduleset %s is not attachable"%moduleset)
 
-    n = db.comp_node_moduleset.insert(modset_node=nodename,
+    n = db.comp_node_moduleset.insert(node_id=node_id,
                                       modset_id=modset_id)
     table_modified("comp_node_moduleset")
-    update_dash_moddiff_node(nodename)
+    update_dash_moddiff_node(node_id)
 
     if n == 0:
         return dict(error="failed to attach moduleset %s"%moduleset)
     _log('compliance.moduleset.node.attach',
          '%(moduleset)s attached to node %(node)s',
-         dict(node=nodename, moduleset=moduleset),
-         nodename=nodename,
+         dict(node=get_nodename(node_id), moduleset=moduleset),
+         node_id=node_id,
     )
     l = {
       'event': 'comp_node_moduleset_change',
-      'data': {'modset_id': modset_id},
+      'data': {'node_id': node_id, 'modset_id': modset_id},
     }
     _websocket_send(event_msg(l))
     return dict(info="moduleset %s attached"%moduleset)
 
 
-def lib_comp_moduleset_detach_node(nodename, modset_id):
+def lib_comp_moduleset_detach_node(node_id, modset_id):
     if type(modset_id) == list:
         moduleset = "all"
         if len(modset_id) == 0:
@@ -426,9 +418,9 @@ def lib_comp_moduleset_detach_node(nodename, modset_id):
         moduleset = comp_moduleset_name(modset_id)
         if moduleset is None:
             return dict(error="moduleset %s does not exist"%moduleset)
-        if not comp_moduleset_attached(nodename, modset_id):
+        if not comp_moduleset_attached(node_id, modset_id):
             return dict(info="moduleset %s is not attached to this node"%moduleset)
-    q = db.comp_node_moduleset.modset_node == nodename
+    q = db.comp_node_moduleset.node_id == node_id
     if isinstance(modset_id, list):
         q &= db.comp_node_moduleset.modset_id.belongs(modset_id)
     else:
@@ -437,12 +429,12 @@ def lib_comp_moduleset_detach_node(nodename, modset_id):
     table_modified("comp_node_moduleset")
     if n == 0:
         return dict(error="failed to detach the moduleset")
-    update_dash_moddiff_node(nodename)
+    update_dash_moddiff_node(node_id)
 
     _log('compliance.moduleset.node.detach',
          '%(moduleset)s detached from node %(node)s',
-         dict(node=nodename, moduleset=moduleset),
-         nodename=nodename,
+         dict(node=get_nodename(node_id), moduleset=moduleset),
+         node_id=node_id,
     )
     l = {
       'event': 'comp_node_moduleset_change',
@@ -452,7 +444,7 @@ def lib_comp_moduleset_detach_node(nodename, modset_id):
     return dict(info="moduleset %s detached"%moduleset)
 
 
-def lib_comp_moduleset_detach_service(svcname, modset_id, slave=False):
+def lib_comp_moduleset_detach_service(svc_id, modset_id, slave=False):
     if type(modset_id) == list:
         moduleset = "all"
         if len(modset_id) == 0:
@@ -461,9 +453,9 @@ def lib_comp_moduleset_detach_service(svcname, modset_id, slave=False):
         moduleset = comp_moduleset_name(modset_id)
         if moduleset is None:
             return dict(error="moduleset %s does not exist"%moduleset)
-        if not comp_moduleset_svc_attached(svcname, modset_id, slave):
+        if not comp_moduleset_svc_attached(svc_id, modset_id, slave):
             return dict(info="moduleset %s is not attached to this service"%moduleset)
-    q = db.comp_modulesets_services.modset_svcname == svcname
+    q = db.comp_modulesets_services.svc_id == svc_id
     q &= db.comp_modulesets_services.slave == slave
     if isinstance(modset_id, list):
         q &= db.comp_modulesets_services.modset_id.belongs(modset_id)
@@ -474,9 +466,9 @@ def lib_comp_moduleset_detach_service(svcname, modset_id, slave=False):
     if n == 0:
         return dict(error="failed to detach the moduleset")
     _log('compliance.moduleset.service.detach',
-         '%(moduleset)s detached from service %(svcname)s',
-         dict(svcname=svcname, moduleset=moduleset),
-         svcname=svcname,
+         '%(moduleset)s detached from service',
+         dict(moduleset=moduleset),
+         svc_id=svc_id,
     )
     l = {
       'event': 'comp_modulesets_services_change',
@@ -486,24 +478,24 @@ def lib_comp_moduleset_detach_service(svcname, modset_id, slave=False):
     return dict(info="moduleset %s detached"%moduleset)
 
 
-def lib_comp_moduleset_attach_service(svcname, modset_id, slave):
+def lib_comp_moduleset_attach_service(svc_id, modset_id, slave):
     moduleset = comp_moduleset_name(modset_id)
     if moduleset is None:
         return dict(error="moduleset %s does not exist"%moduleset)
-    if comp_moduleset_svc_attached(svcname, modset_id, slave):
+    if comp_moduleset_svc_attached(svc_id, modset_id, slave):
         return dict(info="moduleset %s is already attached to this service"%moduleset)
-    if not comp_moduleset_svc_attachable(svcname, modset_id):
+    if not comp_moduleset_svc_attachable(svc_id, modset_id):
         return dict(error="moduleset %s is not attachable"%moduleset)
-    n = db.comp_modulesets_services.insert(modset_svcname=svcname,
+    n = db.comp_modulesets_services.insert(svc_id=svc_id,
                                            modset_id=modset_id,
                                            slave=slave)
     table_modified("comp_modulesets_services")
     if n == 0:
         return dict(error="failed to attach moduleset %s"%moduleset)
     _log('compliance.moduleset.service.attach',
-         '%(moduleset)s attached to service %(svcname)s',
-        dict(svcname=svcname, moduleset=moduleset),
-        svcname=svcname,
+         '%(moduleset)s attached to service',
+        dict(moduleset=moduleset),
+        svc_id=svc_id,
     )
     l = {
       'event': 'comp_modulesets_services_change',
@@ -515,26 +507,26 @@ def lib_comp_moduleset_attach_service(svcname, modset_id, slave):
 #
 # ruleset attachments
 #
-def lib_comp_ruleset_attach_node(nodename, ruleset_id):
+def lib_comp_ruleset_attach_node(node_id, ruleset_id):
     ruleset = comp_ruleset_name(ruleset_id)
     if ruleset is None:
         return dict(error="ruleset %s does not exist"%ruleset)
-    if comp_ruleset_attached(nodename, ruleset_id):
+    if comp_ruleset_attached(node_id, ruleset_id):
         return dict(info="ruleset %s is already attached to this node"%ruleset)
-    if not comp_ruleset_attachable(nodename, ruleset_id):
+    if not comp_ruleset_attachable(node_id, ruleset_id):
         return dict(error="ruleset %s is not attachable"%ruleset)
 
-    n = db.comp_rulesets_nodes.insert(nodename=nodename,
+    n = db.comp_rulesets_nodes.insert(node_id=node_id,
                                       ruleset_id=ruleset_id)
     table_modified("comp_rulesets_nodes")
-    update_dash_rsetdiff_node(nodename)
+    update_dash_rsetdiff_node(node_id)
 
     if n == 0:
         return dict(error="failed to attach ruleset %s"%ruleset)
     _log('compliance.ruleset.node.attach',
          '%(ruleset)s attached to node %(node)s',
-         dict(node=nodename, ruleset=ruleset),
-         nodename=nodename,
+         dict(node=get_nodename(node_id), ruleset=ruleset),
+         node_id=node_id,
     )
     l = {
       'event': 'comp_rulesets_nodes_change',
@@ -544,7 +536,7 @@ def lib_comp_ruleset_attach_node(nodename, ruleset_id):
     return dict(info="ruleset %s attached"%ruleset)
 
 
-def lib_comp_ruleset_detach_node(nodename, ruleset_id):
+def lib_comp_ruleset_detach_node(node_id, ruleset_id):
     if type(ruleset_id) == list:
         ruleset = "all"
         if len(ruleset_id) == 0:
@@ -553,9 +545,9 @@ def lib_comp_ruleset_detach_node(nodename, ruleset_id):
         ruleset = comp_ruleset_name(ruleset_id)
         if ruleset is None:
             return dict(error="ruleset %s does not exist"%ruleset)
-        if not comp_ruleset_attached(nodename, ruleset_id):
+        if not comp_ruleset_attached(node_id, ruleset_id):
             return dict(info="ruleset %s is not attached to this node"%ruleset)
-    q = db.comp_rulesets_nodes.nodename == nodename
+    q = db.comp_rulesets_nodes.node_id == node_id
     if isinstance(ruleset_id, list):
         q &= db.comp_rulesets_nodes.ruleset_id.belongs(ruleset_id)
     else:
@@ -564,12 +556,12 @@ def lib_comp_ruleset_detach_node(nodename, ruleset_id):
     table_modified("comp_rulesets_nodes")
     if n == 0:
         return dict(error="failed to detach the ruleset")
-    update_dash_rsetdiff_node(nodename)
+    update_dash_rsetdiff_node(node_id)
 
     _log('compliance.ruleset.node.detach',
          '%(ruleset)s detached from node %(node)s',
-         dict(node=nodename, ruleset=ruleset),
-         nodename=nodename,
+         dict(node=get_nodename(node_id), ruleset=ruleset),
+         node_id=node_id,
     )
     l = {
       'event': 'comp_rulesets_nodes_change',
@@ -579,7 +571,7 @@ def lib_comp_ruleset_detach_node(nodename, ruleset_id):
     return dict(info="ruleset %s detached"%ruleset)
 
 
-def lib_comp_ruleset_detach_service(svcname, ruleset_id, slave=False):
+def lib_comp_ruleset_detach_service(svc_id, ruleset_id, slave=False):
     if type(ruleset_id) == list:
         ruleset = "all"
         if len(ruleset_id) == 0:
@@ -588,9 +580,9 @@ def lib_comp_ruleset_detach_service(svcname, ruleset_id, slave=False):
         ruleset = comp_ruleset_name(ruleset_id)
         if ruleset is None:
             return dict(error="ruleset %s does not exist"%ruleset)
-        if not comp_ruleset_svc_attached(svcname, ruleset_id, slave):
+        if not comp_ruleset_svc_attached(svc_id, ruleset_id, slave):
             return dict(info="ruleset %s is not attached to this service"%ruleset)
-    q = db.comp_rulesets_services.svcname == svcname
+    q = db.comp_rulesets_services.svc_id == svc_id
     q &= db.comp_rulesets_services.slave == slave
     if isinstance(ruleset_id, list):
         q &= db.comp_rulesets_services.ruleset_id.belongs(ruleset_id)
@@ -601,9 +593,9 @@ def lib_comp_ruleset_detach_service(svcname, ruleset_id, slave=False):
     if n == 0:
         return dict(error="failed to detach the ruleset")
     _log('compliance.ruleset.service.detach',
-         '%(ruleset)s detached from service %(svcname)s',
-         dict(svcname=svcname, ruleset=ruleset),
-         svcname=svcname,
+         '%(ruleset)s detached from service',
+         dict(ruleset=ruleset),
+         svc_id=svc_id,
     )
     l = {
       'event': 'comp_rulesets_services_change',
@@ -613,24 +605,24 @@ def lib_comp_ruleset_detach_service(svcname, ruleset_id, slave=False):
     return dict(info="ruleset %s detached"%ruleset)
 
 
-def lib_comp_ruleset_attach_service(svcname, ruleset_id, slave):
+def lib_comp_ruleset_attach_service(svc_id, ruleset_id, slave):
     ruleset = comp_ruleset_name(ruleset_id)
     if ruleset is None:
         return dict(error="ruleset %s does not exist"%ruleset)
-    if comp_ruleset_svc_attached(svcname, ruleset_id, slave):
+    if comp_ruleset_svc_attached(svc_id, ruleset_id, slave):
         return dict(info="ruleset %s is already attached to this service"%ruleset)
-    if not comp_ruleset_svc_attachable(svcname, ruleset_id):
+    if not comp_ruleset_svc_attachable(svc_id, ruleset_id):
         return dict(error="ruleset %s is not attachable"%ruleset)
-    n = db.comp_rulesets_services.insert(svcname=svcname,
+    n = db.comp_rulesets_services.insert(svc_id=svc_id,
                                            ruleset_id=ruleset_id,
                                            slave=slave)
     table_modified("comp_rulesets_services")
     if n == 0:
         return dict(error="failed to attach ruleset %s"%ruleset)
     _log('compliance.ruleset.service.attach',
-         '%(ruleset)s attached to service %(svcname)s',
-        dict(svcname=svcname, ruleset=ruleset),
-        svcname=svcname,
+         '%(ruleset)s attached to service',
+        dict(ruleset=ruleset),
+        svc_id=svc_id,
     )
     l = {
       'event': 'comp_rulesets_services_change',
@@ -2218,7 +2210,7 @@ def create_filter(f_table=None, f_field=None, f_op=None, f_value=None):
         'resmon',
         'apps',
         'node_hba',
-        'b_disk_app',
+        'diskinfo',
         'v_comp_moduleset_attachments',
         'v_tags',
         'packages',

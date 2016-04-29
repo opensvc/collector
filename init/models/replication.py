@@ -43,14 +43,14 @@ def merge_data(data, mirror=False, purge_old_col=None):
         if n > 0:
             table_modified(table)
             if table.endswith(".svcmon"):
-                idx_svcname = vars.index("mon_svcname")
-                svcnames = set([v[idx_svcname] for v in vals])
-                for svcname in svcnames:
-                    svc_status_update(svcname)
+                idx_svc_id = vars.index("svc_id")
+                svc_ids = set([v[idx_svc_id] for v in vals])
+                for svc_id in svc_ids:
+                    svc_status_update(svc_id)
 
-                idx_nodename = vars.index("mon_nodname")
-                for nodename, svcname in set([(v[idx_nodename], v[idx_svcname]) for v in vals]):
-                    update_dash_svcmon_not_updated(svcname, nodename)
+                idx_node = vars.index("node_id")
+                for node_id, svc_id in set([(v[idx_node_id], v[idx_svc_id]) for v in vals]):
+                    update_dash_svcmon_not_updated(svc_id, node_id)
 
 def get_push_remotes():
     return get_remotes("push")

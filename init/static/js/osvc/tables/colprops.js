@@ -220,36 +220,17 @@ colprops = {
 		"img": "key",
 		"title": "App Id"
 	},
-	"app_key": {
-		"_class": "appinfo_key",
+	"res_key": {
+		"_class": "resinfo_key",
 		"img": "svc",
 		"title": "Key"
-	},
-	"app_launcher": {
-		"img": "svc",
-		"title": "Launcher"
-	},
-	"app_nodename": {
-		"_class": "nodename",
-		"img": "node16",
-		"title": "Node"
-	},
-	"app_svcname": {
-		"_class": "svcname",
-		"img": "svc",
-		"title": "Service"
 	},
 	"app_team_ops": {
 		"img": "guys16",
 		"title": "Ops team"
 	},
-	"app_updated": {
-		"_class": "datetime_daily",
-		"img": "time16",
-		"title": "Last update"
-	},
-	"app_value": {
-		"_class": "appinfo_value",
+	"res_value": {
+		"_class": "resinfo_value",
 		"img": "svc",
 		"title": "Value"
 	},
@@ -496,20 +477,10 @@ colprops = {
 		"img": "alert16",
 		"title": "Signature"
 	},
-	"dash_nodename": {
-		"_class": "nodename",
-		"img": "node16",
-		"title": "Node"
-	},
 	"dash_severity": {
 		"_class": "dash_severity",
 		"img": "alert16",
 		"title": "Severity"
-	},
-	"dash_svcname": {
-		"_class": "svcname",
-		"img": "svc",
-		"title": "Service"
 	},
 	"dash_type": {
 		"_class": "alert_type",
@@ -1221,11 +1192,6 @@ colprops = {
 		"img": "svcinstance",
 		"title": "Ip status"
 	},
-	"mon_nodname": {
-		"_class": "nodename",
-		"img": "node16",
-		"title": "Node"
-	},
 	"mon_overallstatus": {
 		"_class": "overallstatus",
 		"img": "svcinstance",
@@ -1495,9 +1461,17 @@ colprops = {
 		"img": "pkg16",
 		"title": "Package"
 	},
-	"pkg_nodename": {
+	"node_app": {
+		"img": "app16",
+		"title": "Node App"
+	},
+	"node_id": {
 		"img": "node16",
-		"title": "Nodename"
+		"title": "Node Id"
+	},
+	"svc_id": {
+		"img": "svc",
+		"title": "Service Id"
 	},
 	"pkg_sig": {
 		"_class": "pre",
@@ -1685,11 +1659,6 @@ colprops = {
 		"img": "mod16",
 		"title": "Module"
 	},
-	"run_nodename": {
-		"_class": "nodename",
-		"img": "node16",
-		"title": "Node"
-	},
 	"run_status": {
 		"_class": "run_status",
 		"img": "compstatus",
@@ -1827,7 +1796,6 @@ colprops = {
 		"title": "Service creation date"
 	},
 	"svc_drpnode": {
-		"_class": "nodename_no_os",
 		"img": "node16",
 		"title": "DRP node"
 	},
@@ -1877,7 +1845,7 @@ colprops = {
 		"img": "complog",
 		"title": "History"
 	},
-	"svc_name": {
+	"svcname": {
 		"_class": "svcname",
 		"img": "svc",
 		"title": "Service"

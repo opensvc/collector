@@ -9,9 +9,9 @@ function alert_event(divid, options)
     o.divid = divid
     o.div = $("#"+divid);
     o.div.html("<span class='icon spinner'><span>");
-    o.nodes = options.nodes;
     o.begin_date = options.begin_date.replace(" ","T")+"Z"; // corrected timestamp to UC;
-    o.svcname =  options.svcname;
+    o.node_id = options.node_id;
+    o.svc_id =  options.svc_id;
     o.md5name = options.md5name;
 
     o.alert_event_load = function()
@@ -100,7 +100,7 @@ function alert_event_d3_timeline(o,result)
 
 function alert_event_load(o)
 {
-    services_osvcgetrest("R_ALERT_EVENT", "", {"md5name": o.md5name,"svcname" : o.svcname,"nodename" : o.nodes}, function(jd) {
+    services_osvcgetrest("R_ALERT_EVENT", "", {"md5name": o.md5name,"svc_id" : o.svc_id,"node_id" : o.node_id}, function(jd) {
       if (jd.data === undefined) {
         return;
       }

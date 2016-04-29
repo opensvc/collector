@@ -1,54 +1,38 @@
-def lib_packages_diff(nodenames=[], svcnames=[], encap=False):
-    if len(svcnames) > 0:
+def lib_packages_diff(node_ids=[], svc_ids=[], encap=False):
+    if len(svc_ids) > 0:
         if encap:
-            q = db.svcmon.mon_svcname.belongs(svcnames)
-            q = q_filter(q, svc_field=db.svcmon.mon_svcname)
-            rows = db(q).select(db.svcmon.mon_vmname,
-                                groupby=db.svcmon.mon_vmname)
-            nodenames = [row.mon_vmname for row in rows if row.mon_vmname != "" and row.mon_vmname is not None]
+            q = db.svcmon.svc_id.belongs(svc_ids)
+            q &= db.svcmon.mon_vmname == db.nodes.nodename
+            q &= db.svcmon.mon_vmname != ""
+            q &= db.svcmon.mon_vmname != None
+            q = q_filter(q, svc_field=db.svcmon.svc_id)
+            rows = db(q).select(db.nodes.node_id,
+                                groupby=db.nodes.node_id)
+            node_ids = [r.node_id for r in rows]
         else:
-            q = db.svcmon.mon_svcname.belongs(svcnames)
-            q = q_filter(q, svc_field=db.svcmon.mon_svcname)
-            rows = db(q).select(db.svcmon.mon_nodname)
-            nodenames += [r.mon_nodname for r in rows]
+            q = db.svcmon.svc_id.belongs(svc_ids)
+            q = q_filter(q, svc_field=db.svcmon.svc_id)
+            rows = db(q).select(db.svcmon.node_id, groupby=db.svcmon.node_id)
+            node_ids += [r.node_id for r in rows]
 
-    nodenames = list(set(nodenames) - set(['']))
-    n = len(nodenames)
+    n = len(node_ids)
     if n < 2:
         if not encap:
             raise Exception(T("At least two nodes should be selected"))
         else:
             return []
 
-    if list(nodenames)[0][0] in "0123456789":
-        # received node ids
-        q = db.nodes.id.belongs(nodenames)
-        q = q_filter(q, app_field=db.nodes.app)
-        rows = db(q).select(db.nodes.nodename)
-        nodenames = [r.nodename for r in rows]
-    else:
-        # apply domain filtering
-        q = db.nodes.nodename.belongs(nodenames)
-        q = q_filter(q, app_field=db.nodes.app)
-        rows = db(q).select(db.nodes.nodename)
-        nodenames = [r.nodename for r in rows]
-
-    nodenames = list(set(nodenames) - set(['']))
-    n = len(nodenames)
-    if n < 2:
-        raise Exception(T("At least two nodes should be selected"))
-
     sql = """
-           select p.pkg_nodename, p.pkg_name, p.pkg_version, p.pkg_arch, p.pkg_type from packages p, (
+           select p.node_id, p.pkg_name, p.pkg_version, p.pkg_arch, p.pkg_type from packages p, (
              select pkg_name, pkg_version, pkg_arch, pkg_type from (
                select
                       pkg_name,
                       pkg_version,
                       pkg_arch,
                       pkg_type,
-                      count(pkg_nodename) as c
+                      count(node_id) as c
                from packages
-               where pkg_nodename in (%(nodes)s)
+               where node_id in (%(nodes)s)
                group by pkg_name,pkg_version,pkg_arch,pkg_type
                order by pkg_name,pkg_version,pkg_arch,pkg_type
              ) as t
@@ -56,8 +40,8 @@ def lib_packages_diff(nodenames=[], svcnames=[], encap=False):
            ) u
            where
              p.pkg_name=u.pkg_name and p.pkg_version=u.pkg_version and p.pkg_arch=u.pkg_arch and p.pkg_type=u.pkg_type and
-             p.pkg_nodename in (%(nodes)s)
-          """%dict(n=n, nodes=','.join(map(repr, nodenames)))
+             p.node_id in (%(nodes)s)
+          """%dict(n=n, nodes=','.join(map(repr, node_ids)))
     rows = db.executesql(sql, as_dict=True)
 
     return rows

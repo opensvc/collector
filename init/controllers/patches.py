@@ -5,6 +5,7 @@ class table_patches(HtmlTable):
         HtmlTable.__init__(self, id, func, innerhtml)
         self.cols = ['nodename']
         self.cols += ['id',
+                      'node_id',
                       'patch_num',
                       'patch_rev',
                       'patch_install_date',
@@ -15,6 +16,10 @@ class table_patches(HtmlTable):
             'nodename': HtmlTableColumn(
                      table='nodes',
                      field='nodename',
+                    ),
+            'node_id': HtmlTableColumn(
+                     table='patches',
+                     field='node_id',
                     ),
             'patch_num': HtmlTableColumn(
                      table='patches',
@@ -48,9 +53,9 @@ def ajax_patches_col_values():
     t = table_patches(table_id, 'ajax_patches')
     col = request.args[0]
     o = db[t.colprops[col].table][col]
-    q = db.patches.patch_nodename==db.nodes.nodename
+    q = db.patches.node_id==db.nodes.node_id
     q = q_filter(q, app_field=db.nodes.app)
-    q = apply_filters(q, db.patches.patch_nodename, None)
+    q = apply_filters_id(q, node_field=db.patches.node_id)
 
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
@@ -61,14 +66,15 @@ def ajax_patches_col_values():
 def ajax_patches():
     table_id = request.vars.table_id
     t = table_patches(table_id, 'ajax_patches')
-    o = db.patches.patch_nodename
+    o = db.nodes.nodename
     o |= db.patches.patch_num
     o |= db.patches.patch_rev
+    o |= db.nodes.app
 
     q = db.patches.id>0
-    q &= db.patches.patch_nodename==db.nodes.nodename
+    q &= db.patches.node_id==db.nodes.node_id
     q = q_filter(q, app_field=db.nodes.app)
-    q = apply_filters(q, db.patches.patch_nodename, None)
+    q = apply_filters_id(q, node_field=db.patches.node_id)
 
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)

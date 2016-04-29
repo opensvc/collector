@@ -4,20 +4,20 @@ def replace_fset_sql(sql, fset_id=None):
     if fset_id is None:
         fset_id = user_fset_id()
 
-    nodenames, svcnames = filterset_encap_query_cached(fset_id)
+    node_ids, svc_ids = filterset_encap_query_cached(fset_id)
 
-    if len(svcnames) == 0:
-        svcnames = "'magic1234567890'"
+    if len(svc_ids) == 0:
+        svc_ids = "'magic1234567890'"
     else:
-        svcnames = ",".join(map(lambda x: repr(str(x)), svcnames))
+        svc_ids = ",".join(map(repr, svc_ids))
 
-    if len(nodenames) == 0:
-        nodenames = "'magic1234567890'"
+    if len(node_ids) == 0:
+        node_ids = "'magic1234567890'"
     else:
-        nodenames = ",".join(map(lambda x: repr(str(x)), nodenames))
+        node_ids = ",".join(map(repr, node_ids))
 
-    sql = sql.replace('%%fset_services%%', svcnames)
-    sql = sql.replace('%%fset_nodenames%%', nodenames)
+    sql = sql.replace('%%fset_services%%', svc_ids)
+    sql = sql.replace('%%fset_node_ids%%', node_ids)
 
     return sql
 
@@ -58,7 +58,7 @@ def _metrics_cron_fsets(m, verbose=False):
         _metrics_cron_fset(m, fset_id, verbose=verbose)
 
 def _metrics_cron(m, verbose=False):
-    if "%%fset_services%%" in m.metric_sql or "%%fset_nodenames%%" in m.metric_sql:
+    if "%%fset_services%%" in m.metric_sql or "%%fset_node_ids%%" in m.metric_sql:
         _metrics_cron_fsets(m, verbose=verbose)
         return
 

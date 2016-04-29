@@ -82,47 +82,8 @@ def user_fset_name():
         return 0
     return row.gen_filtersets.fset_name
 
-def or_apply_filters(q, node_field=None, service_field=None, fset_id=None):
-    if fset_id is None or fset_id == 0:
-        if auth.user_id is None:
-            if node_field is not None:
-                q |= node_field.like('%')
-            if service_field is not None:
-                q |= service_field.like('%')
-            return q
-        v = db.v_gen_filtersets
-        o = v.f_order
-        qry = db.gen_filterset_user.fset_id == v.fset_id
-        qry &= db.gen_filterset_user.user_id == auth.user_id
-    else:
-        qry = db.v_gen_filtersets.fset_id == fset_id
-
-    rows = db(qry).select()
-    if len(rows) == 0:
-        if node_field is not None:
-            q |= node_field.like("%")
-        if service_field is not None:
-            q |= service_field.like("%")
-        return q
-
-    nodes = set([])
-    services = set([])
-    for row in rows:
-        nodes, services = filterset_query(row, nodes, services)
-
-    n_nodes = len(nodes)
-    n_services = len(services)
-
-    if n_nodes > 0 and n_services > 0 and node_field is not None and service_field is not None:
-        q |= (node_field.belongs(nodes)) & (service_field.belongs(services))
-    elif len(nodes) > 0 and node_field is not None:
-        q |= node_field.belongs(nodes)
-    elif len(services) > 0 and service_field is not None:
-        q |= service_field.belongs(services)
-
-    return q
-
-def apply_filters(q, node_field=None, service_field=None, fset_id=None, nodename=None, svcname=None):
+def apply_filters_id(q, node_field=None, svc_field=None, fset_id=None,
+                     node_ids=None, svc_ids=None):
     if fset_id is None or fset_id == 0:
         if auth.user_id is None:
             return q
@@ -130,46 +91,46 @@ def apply_filters(q, node_field=None, service_field=None, fset_id=None, nodename
         if fset_id is None or fset_id == 0:
             return q
 
-    nodes, services = filterset_encap_query(fset_id, nodename=nodename, svcname=svcname)
+    node_ids, svc_ids = filterset_encap_query_id(fset_id, node_ids=node_ids, svc_ids=svc_ids)
 
-    n_nodes = len(nodes)
-    n_services = len(services)
+    n_nodes = len(node_ids)
+    n_services = len(svc_ids)
 
-    if n_nodes > 0 and n_services > 0 and node_field is not None and service_field is not None:
-        q &= ((node_field=="")|(node_field.belongs(nodes))) & ((service_field=="")|(service_field.belongs(services)))
+    if n_nodes > 0 and n_services > 0 and node_field is not None and svc_field is not None:
+        q &= ((node_field=="")|(node_field.belongs(node_ids))) & ((svc_field=="")|(svc_field.belongs(svc_ids)))
     elif n_nodes == 1 and node_field is not None:
-        q &= node_field == list(nodes)[0]
+        q &= node_field == list(node_ids)[0]
     elif n_nodes > 0 and node_field is not None:
-        q &= node_field.belongs(nodes)
-    elif n_services == 1 and service_field is not None:
-        q &= service_field == list(services)[0]
-    elif n_services > 0 and service_field is not None:
-        q &= service_field.belongs(services)
+        q &= node_field.belongs(node_ids)
+    elif n_services == 1 and svc_field is not None:
+        q &= svc_field == list(svc_ids)[0]
+    elif n_services > 0 and svc_field is not None:
+        q &= svc_field.belongs(svc_ids)
     elif n_nodes == 0 and node_field is not None:
-        q &= node_field == '.'
-    elif n_services == 0 and service_field is not None:
-        q &= service_field == '.'
+        q &= node_field == None
+    elif n_services == 0 and svc_field is not None:
+        q &= svc_field == None
 
     return q
 
-def current_fset_nodenames():
+def current_fset_node_ids():
     return current_fset_objects()[0]
 
-def current_fset_svcnames():
+def current_fset_svc_ids():
     return current_fset_objects()[1]
 
 def current_fset_objects():
     """
-     return the a (nodenames, svcnames) tuple of objects matching the currently
+     return the a (node_ids, svc_ids) tuple of objects matching the currently
      selected user's filterset
     """
     fset_id = user_fset_id()
-    return filterset_encap_query(fset_id)
+    return filterset_encap_query_id(fset_id)
 
-def filterset_encap_query(fset_id, f_log_op='AND', nodes=set([]), services=set([]), i=0, nodename=None, svcname=None):
+def filterset_encap_query_id(fset_id, f_log_op='AND', node_ids=set([]), svc_ids=set([]), i=0, node_id=None, svc_id=None):
     if fset_id == 0:
-        all_nodes = set([r.nodename for r in db(db.nodes.id>0).select(db.nodes.nodename, cacheable=True)])
-        all_services = set([r.svc_name for r in db(db.services.id>0).select(db.services.svc_name, cacheable=True)])
+        all_nodes = set([r.node_id for r in db(db.nodes.id>0).select(db.nodes.node_id, cacheable=True)])
+        all_services = set([r.svc_id for r in db(db.services.id>0).select(db.services.svc_id, cacheable=True)])
         return all_nodes, all_services
 
     o = db.v_gen_filtersets.f_order
@@ -182,41 +143,40 @@ def filterset_encap_query(fset_id, f_log_op='AND', nodes=set([]), services=set([
 
     for r in rows:
         if r.encap_fset_id > 0 and r.encap_fset_id not in encap_done:
-            n_nodes, n_services = filterset_encap_query(r.encap_fset_id, r.f_log_op, n_nodes, n_services, i=j, nodename=nodename, svcname=svcname)
+            n_nodes, n_services = filterset_encap_query_id(r.encap_fset_id, r.f_log_op, n_nodes, n_services, i=j, node_id=node_id, svc_id=svc_id)
             encap_done.append(r.encap_fset_id)
         else:
-            n_nodes, n_services = filterset_query(r, n_nodes, n_services, i=j, nodename=nodename, svcname=svcname)
+            n_nodes, n_services = filterset_query_id(r, n_nodes, n_services, i=j, node_id=node_id, svc_id=svc_id)
         j += 1
 
     if 'NOT' in f_log_op:
-        all_nodes = set([_r.nodename for _r in db(db.nodes.id>0).select(db.nodes.nodename, cacheable=True)])
-        all_services = set([_r.svc_name for _r in db(db.services.id>0).select(db.services.svc_name, cacheable=True)])
+        all_nodes = set([_r.node_id for _r in db(db.nodes.id>0).select(db.nodes.node_id, cacheable=True)])
+        all_services = set([_r.svc_id for _r in db(db.services.id>0).select(db.services.svc_id, cacheable=True)])
         n_nodes = all_nodes - n_nodes
         n_services = all_services - n_services
 
     if f_log_op in ('AND', 'AND NOT'):
         if i == 0:
-            nodes = n_nodes
+            node_ids = n_nodes
         else:
-            nodes &= n_nodes
+            node_ids &= n_nodes
         if i == 0:
-            services = n_services
+            svc_ids = n_services
         else:
-            services &= n_services
+            svc_ids &= n_services
     elif f_log_op in ('OR', 'OR NOT'):
         if i == 0:
-            nodes = n_nodes
+            node_ids = n_nodes
         else:
-            nodes |= n_nodes
+            node_ids |= n_nodes
         if i == 0:
-            services = n_services
+            svc_ids = n_services
         else:
-            services |= n_services
+            svc_ids |= n_services
 
-    return nodes, services
+    return node_ids, svc_ids
 
-
-def filterset_query(row, nodes, services, i=0, nodename=None, svcname=None):
+def filterset_query_id(row, nodes, services, i=0, node_id=None, svc_id=None):
     if 'v_gen_filtersets' in row:
         v = row.v_gen_filtersets
     else:
@@ -252,119 +212,111 @@ def filterset_query(row, nodes, services, i=0, nodename=None, svcname=None):
         qry = ~qry
 
     if v.f_table == 'services':
-        if svcname is not None:
-            qry &= db.services.svc_name == svcname
-        if nodename is not None:
-            qry &= db.svcmon.mon_nodname == nodename
-        rows = db(qry).select(db.services.svc_name, db.svcmon.mon_nodname,
-                              left=db.svcmon.on(db.services.svc_name==db.svcmon.mon_svcname),
+        if svc_id is not None:
+            qry &= db.services.id == svc_id
+        if node_id is not None:
+            qry &= db.svcmon.node_id == node_id
+        rows = db(qry).select(db.services.id, db.svcmon.node_id,
+                              left=db.svcmon.on(db.services.id==db.svcmon.svc_id),
                               cacheable=True)
-        n_nodes = set(map(lambda x: x.svcmon.mon_nodname, rows)) - set([None])
-        n_services = set(map(lambda x: x.services.svc_name, rows)) - set([None])
+        n_nodes = set(map(lambda x: x.svcmon.node_id, rows)) - set([None])
+        n_services = set(map(lambda x: x.services.id, rows)) - set([None])
     elif v.f_table == 'nodes':
-        if svcname is not None:
-            qry &= db.svcmon.mon_svcname == svcname
-        if nodename is not None:
-            qry &= db.nodes.nodename == nodename
-        rows = db(qry).select(db.svcmon.mon_svcname, db.nodes.nodename,
-                              left=db.svcmon.on(db.nodes.nodename==db.svcmon.mon_nodname),
+        if svc_id is not None:
+            qry &= db.svcmon.svc_id == svc_id
+        if node_id is not None:
+            qry &= db.nodes.node_id == node_id
+        rows = db(qry).select(db.svcmon.svc_id, db.nodes.node_id,
+                              left=db.svcmon.on(db.nodes.node_id==db.svcmon.node_id),
                               cacheable=True)
-        n_nodes = set(map(lambda x: x.nodes.nodename, rows)) - set([None])
-        n_services = set(map(lambda x: x.svcmon.mon_svcname, rows)) - set([None])
+        n_nodes = set(map(lambda x: x.nodes.node_id, rows)) - set([None])
+        n_services = set(map(lambda x: x.svcmon.svc_id, rows)) - set([None])
     elif v.f_table == 'packages':
-        if svcname is not None:
-            qry &= db.svcmon.mon_svcname == svcname
-        if nodename is not None:
-            qry &= db.packages.pkg_nodename == nodename
-        rows = db(qry).select(db.svcmon.mon_svcname, db.packages.pkg_nodename,
-                              left=db.svcmon.on(db.packages.pkg_nodename==db.svcmon.mon_nodname),
+        if svc_id is not None:
+            qry &= db.svcmon.svc_id == svc_id
+        if node_id is not None:
+            qry &= db.packages.node_id == node_id
+        rows = db(qry).select(db.svcmon.svc_id, db.packages.node_id,
+                              left=db.svcmon.on(db.packages.node_id==db.svcmon.node_id),
                               cacheable=True)
-        n_nodes = set(map(lambda x: x.packages.pkg_nodename, rows)) - set([None])
-        n_services = set(map(lambda x: x.svcmon.mon_svcname, rows)) - set([None])
+        n_nodes = set(map(lambda x: x.packages.node_id, rows)) - set([None])
+        n_services = set(map(lambda x: x.svcmon.svc_id, rows)) - set([None])
     elif v.f_table == 'svcmon':
-        if svcname is not None:
-            qry &= db.svcmon.mon_svcname == svcname
-        if nodename is not None:
-            qry &= db.svcmon.mon_nodname == nodename
-        rows = db(qry).select(db.svcmon.mon_nodname, db.svcmon.mon_svcname,
+        if svc_id is not None:
+            qry &= db.svcmon.svc_id == svc_id
+        if node_id is not None:
+            qry &= db.svcmon.node_id == node_id
+        rows = db(qry).select(db.svcmon.node_id, db.svcmon.svc_id,
                               cacheable=True)
-        n_nodes = set(map(lambda x: x.mon_nodname, rows)) - set([None])
-        n_services = set(map(lambda x: x.mon_svcname, rows)) - set([None])
-    elif v.f_table == 'b_disk_app':
-        if svcname is not None:
-            qry &= db.b_disk_app.disk_svcname == svcname
-        if nodename is not None:
-            qry &= db.b_disk_app.disk_nodename == nodename
-        try:
-            rows = db(qry).select(db.b_disk_app.disk_nodename,
-                                  db.b_disk_app.disk_svcname,
-                                  cacheable=True)
-        except Exception as e:
-            if "retry" in str(e):
-                rows = db(qry).select(db.b_disk_app.disk_nodename,
-                                      db.b_disk_app.disk_svcname,
-                                      cacheable=True)
-            else:
-                raise
-
-        n_nodes = set(map(lambda x: x.disk_nodename, rows)) - set([None])
-        n_services = set(map(lambda x: x.disk_svcname, rows)) - set([None])
+        n_nodes = set(map(lambda x: x.node_id, rows)) - set([None])
+        n_services = set(map(lambda x: x.svc_id, rows)) - set([None])
+    elif v.f_table == 'diskinfo':
+        if svc_id is not None:
+            qry &= db.svcdisks.svc_id == svc_id
+        if node_id is not None:
+            qry &= db.svcdisks.node_id == node_id
+        qry &= db.svcdisks.disk_id == db.diskinfo.disk_id
+        rows = db(qry).select(db.svcdisks.node_id,
+                              db.svcdisks.svc_id,
+                              cacheable=True)
+        n_nodes = set(map(lambda x: x.node_id, rows)) - set([None])
+        n_services = set(map(lambda x: x.svc_id, rows)) - set([None])
     elif v.f_table == 'node_hba':
-        if svcname is not None:
-            qry &= db.svcmon.mon_svcname == svcname
-        if nodename is not None:
-            qry &= db.node_hba.nodename == nodename
-        rows = db(qry).select(db.svcmon.mon_svcname, db.node_hba.nodename,
-                              left=db.svcmon.on(db.node_hba.nodename==db.svcmon.mon_nodname),
+        if svc_id is not None:
+            qry &= db.svcmon.svc_id == svc_id
+        if node_id is not None:
+            qry &= db.node_hba.node_id == node_id
+        rows = db(qry).select(db.svcmon.svc_id, db.node_hba.node_id,
+                              left=db.svcmon.on(db.node_hba.node_id==db.svcmon.node_id),
                               cacheable=True)
-        n_nodes = set(map(lambda x: x.node_hba.nodename, rows)) - set([None])
-        n_services = set(map(lambda x: x.svcmon.mon_svcname, rows)) - set([None])
+        n_nodes = set(map(lambda x: x.node_hba.node_id, rows)) - set([None])
+        n_services = set(map(lambda x: x.svcmon.svc_id, rows)) - set([None])
     elif v.f_table == 'apps':
         _qry = qry
         _qry &= db.apps.app == db.services.svc_app
-        if svcname is not None:
-            _qry &= db.services.svc_name == svcname
-        rows = db(_qry).select(db.services.svc_name,
+        if svc_id is not None:
+            _qry &= db.services.id == svc_id
+        rows = db(_qry).select(db.services.id,
                                cacheable=True)
-        n_services = set(map(lambda x: x.svc_name, rows)) - set([None])
+        n_services = set(map(lambda x: x.id, rows)) - set([None])
 
         _qry = qry
         _qry &= db.apps.app == db.nodes.app
-        if nodename is not None:
-            _qry &= db.nodes.nodename == nodename
-        rows = db(_qry).select(db.nodes.nodename,
+        if node_id is not None:
+            _qry &= db.nodes.node_id == node_id
+        rows = db(_qry).select(db.nodes.node_id,
                                cacheable=True)
-        n_nodes = set(map(lambda x: x.nodename, rows)) - set([None])
+        n_nodes = set(map(lambda x: x.node_id, rows)) - set([None])
     elif v.f_table == 'resmon':
-        if svcname is not None:
-            qry &= db.resmon.svcname == svcname
-        if nodename is not None:
-            qry &= db.resmon.nodename == nodename
-        rows = db(qry).select(db.resmon.nodename,
-                              db.resmon.svcname,
+        if svc_id is not None:
+            qry &= db.resmon.svc_id == svc_id
+        if node_id is not None:
+            qry &= db.resmon.node_id == node_id
+        rows = db(qry).select(db.resmon.node_id,
+                              db.resmon.svc_id,
                               cacheable=True)
-        n_nodes = set(map(lambda x: x.nodename, rows)) - set([None])
-        n_services = set(map(lambda x: x.svcname, rows)) - set([None])
+        n_nodes = set(map(lambda x: x.node_id, rows)) - set([None])
+        n_services = set(map(lambda x: x.svc_id, rows)) - set([None])
     elif v.f_table == 'v_tags':
-        if svcname is not None:
-            qry &= db.v_tags.svcname == svcname
-        if nodename is not None:
-            qry &= db.v_tags.nodename == nodename
-        rows = db(qry).select(db.v_tags.nodename,
-                              db.v_tags.svcname,
+        if svc_id is not None:
+            qry &= db.v_tags.svc_id == svc_id
+        if node_id is not None:
+            qry &= db.v_tags.node_id == node_id
+        rows = db(qry).select(db.v_tags.node_id,
+                              db.v_tags.svc_id,
                               cacheable=True)
-        n_nodes = set(map(lambda x: x.nodename, rows)) - set([None])
-        n_services = set(map(lambda x: x.svcname, rows)) - set([None])
+        n_nodes = set(map(lambda x: x.node_id, rows)) - set([None])
+        n_services = set(map(lambda x: x.svc_id, rows)) - set([None])
     elif v.f_table == 'v_comp_moduleset_attachments':
-        if svcname is not None:
-            qry &= db.v_comp_moduleset_attachments.svcname == svcname
-        if nodename is not None:
-            qry &= db.v_comp_moduleset_attachments.nodename == nodename
-        rows = db(qry).select(db.v_comp_moduleset_attachments.nodename,
-                              db.v_comp_moduleset_attachments.svcname,
+        if svc_id is not None:
+            qry &= db.v_comp_moduleset_attachments.svc_id == svc_id
+        if node_id is not None:
+            qry &= db.v_comp_moduleset_attachments.node_id == node_id
+        rows = db(qry).select(db.v_comp_moduleset_attachments.node_id,
+                              db.v_comp_moduleset_attachments.svc_id,
                               cacheable=True)
-        n_nodes = set(map(lambda x: x.nodename, rows)) - set([None])
-        n_services = set(map(lambda x: x.svcname, rows)) - set([None])
+        n_nodes = set(map(lambda x: x.node_id, rows)) - set([None])
+        n_services = set(map(lambda x: x.svc_id, rows)) - set([None])
     else:
         raise Exception(str(v))
 
@@ -402,49 +354,48 @@ def apply_gen_filters(q, tables=[]):
 joins = {
   'svcmon':{
     'svcmon': None,
-    'dashboard': (db.svcmon.mon_svcname == db.dashboard.dash_svcname) & \
-                 (db.svcmon.mon_nodname == db.dashboard.dash_nodename),
+    'dashboard': (db.svcmon.svc_id == db.dashboard.svc_id) & \
+                 (db.svcmon.node_id == db.dashboard.node_id),
     'v_svcmon': None,
-    'checks_live': (db.svcmon.mon_svcname == db.checks_live.chk_svcname) & \
-                   (db.svcmon.mon_nodname == db.checks_live.chk_nodename),
-    'comp_log': (db.svcmon.mon_svcname == db.comp_log.run_svcname) & \
-                (db.svcmon.mon_nodname == db.comp_log.run_nodename),
-    'comp_status': (db.svcmon.mon_svcname == db.comp_status.run_svcname) & \
-                   (db.svcmon.mon_nodname == db.comp_status.run_nodename),
-    'svcmon_log': (db.svcmon.mon_svcname == db.svcmon_log.mon_svcname) & \
-                  (db.svcmon.mon_nodname == db.svcmon_log.mon_nodname),
-    'services_log': db.svcmon.mon_svcname == db.services_log.svc_name,
-    'svcmon_log': (db.svcmon.mon_svcname == db.svcmon_log.mon_svcname) & \
-                  (db.svcmon.mon_nodname == db.svcmon_log.mon_nodname),
+    'checks_live': (db.svcmon.svc_id == db.checks_live.svc_id) & \
+                   (db.svcmon.node_id == db.checks_live.node_id),
+    'comp_log': (db.svcmon.svc_id == db.comp_log.svc_id) & \
+                (db.svcmon.node_id == db.comp_log.node_id),
+    'comp_status': (db.svcmon.svc_id == db.comp_status.svc_id) & \
+                   (db.svcmon.node_id == db.comp_status.node_id),
+    'svcmon_log': (db.svcmon.svc_id == db.svcmon_log.svc_id) & \
+                  (db.svcmon.node_id == db.svcmon_log.node_id),
+    'services_log': db.svcmon.svc_id == db.services_log.svc_id,
+    'svcmon_log': (db.svcmon.svc_id == db.svcmon_log.svc_id) & \
+                  (db.svcmon.node_id == db.svcmon_log.node_id),
   },
   'services':{
     'services': None,
-    'dashboard': db.services.svc_name == db.dashboard.dash_svcname,
+    'dashboard': db.services.svc_id == db.dashboard.svc_id,
     'v_svcmon': None,
     'v_comp_services': None,
-    'checks_live': db.services.svc_name == db.checks_live.chk_svcname,
-    'appinfo': db.services.svc_name == db.appinfo.app_svcname,
-    'comp_log': db.services.svc_name == db.comp_log.run_svcname,
-    'comp_status': db.services.svc_name == db.comp_status.run_svcname,
-    'svcmon_log': db.services.svc_name == db.svcmon_log.mon_svcname,
-    'services_log': db.services.svc_name == db.services_log.svc_name,
+    'checks_live': db.services.svc_id == db.checks_live.svc_id,
+    'resinfo': db.services.svc_id == db.resinfo.svc_id,
+    'comp_log': db.services.svc_id == db.comp_log.svc_id,
+    'comp_status': db.services.svc_id == db.comp_status.svc_id,
+    'svcmon_log': db.services.svc_id == db.svcmon_log.svc_id,
+    'services_log': db.services.svc_id == db.services_log.svc_id,
     'v_apps': db.services.svc_app == db.apps.app,
   },
   'nodes':{
     'nodes': None,
-    'dashboard': db.nodes.nodename == db.dashboard.dash_nodename,
-    'dashboard': db.nodes.nodename == db.dashboard.dash_nodename,
+    'dashboard': db.nodes.node_id == db.dashboard.node_id,
     'v_svcmon': None,
     'v_svcactions': None,
-    'checks_live': db.nodes.nodename == db.checks_live.chk_nodename,
-    'packages': db.nodes.nodename == db.packages.pkg_nodename,
-    'patches': db.nodes.nodename == db.patches.patch_nodename,
-    'comp_rulesets_nodes': db.nodes.nodename == db.comp_rulesets_nodes.nodename,
+    'checks_live': db.nodes.node_id == db.checks_live.node_id,
+    'packages': db.nodes.node_id == db.packages.node_id,
+    'patches': db.nodes.node_id == db.patches.node_id,
+    'comp_rulesets_nodes': db.nodes.node_id == db.comp_rulesets_nodes.node_id,
     'v_comp_nodes': None,
-    'comp_log': db.nodes.nodename == db.comp_log.run_nodename,
-    'comp_status': db.nodes.nodename == db.comp_status.run_nodename,
-    'svcmon_log': db.nodes.nodename == db.svcmon_log.mon_nodname,
-    'services_log': (db.svcmon.mon_svcname == db.services_log.svc_name) & (db.svcmon.mon_nodname == db.nodes.nodename),
+    'comp_log': db.nodes.node_id == db.comp_log.node_id,
+    'comp_status': db.nodes.node_id == db.comp_status.node_id,
+    'svcmon_log': db.nodes.node_id == db.svcmon_log.node_id,
+    'services_log': (db.svcmon.svc_id == db.services_log.svc_id) & (db.svcmon.node_id == db.nodes.node_id),
     'v_apps': db.nodes.app == db.v_apps.app,
   },
 }
@@ -540,24 +491,24 @@ def refresh_fset_cache():
 
 def _refresh_fset_cache(fset_id):
     print "refresh fset_id", fset_id
-    nodenames, svcnames = filterset_encap_query(fset_id)
+    node_ids, svc_ids = filterset_encap_query_id(fset_id)
 
     sql = "delete from fset_cache where fset_id=%d"%fset_id
     db.executesql(sql)
 
-    if len(nodenames)+len(svcnames) == 0:
+    if len(node_ids)+len(svc_ids) == 0:
         return
 
     sql = "insert into fset_cache values "
-    for nodename in nodenames:
-        sql += """(%(fset_id)d, "nodename", "%(nodename)s"),"""%dict(
+    for node_id in node_ids:
+        sql += """(%(fset_id)d, "node_id", "%(node_id)s"),"""%dict(
           fset_id=fset_id,
-          nodename=nodename,
+          node_id=node_id,
         )
-    for svcname in svcnames:
-        sql += """(%(fset_id)d, "svcname", "%(svcname)s"),"""%dict(
+    for svc_id in svc_ids:
+        sql += """(%(fset_id)d, "svc_id", "%(svc_id)d"),"""%dict(
           fset_id=fset_id,
-          svcname=svcname,
+          svc_id=svc_id,
         )
     sql = sql.rstrip(",")
     try:
@@ -568,13 +519,13 @@ def _refresh_fset_cache(fset_id):
         raise
 
 def filterset_encap_query_cached(fset_id):
-    sql = """select name from fset_cache where fset_id=%d and objtype="nodename" """%fset_id
+    sql = """select obj_id from fset_cache where fset_id=%d and obj_type="node_id" """%fset_id
     rows = db.executesql(sql)
-    nodenames = [r[0] for r in rows]
-    sql = """select name from fset_cache where fset_id=%d and objtype="svcname" """%fset_id
+    node_ids = [r[0] for r in rows]
+    sql = """select obj_id from fset_cache where fset_id=%d and obj_type="svc_id" """%fset_id
     rows = db.executesql(sql)
-    svcnames = [r[0] for r in rows]
-    return nodenames, svcnames
+    svc_ids = [r[0] for r in rows]
+    return node_ids, svc_ids
 
 
 

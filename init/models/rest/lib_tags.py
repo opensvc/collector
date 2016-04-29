@@ -6,12 +6,12 @@ def get_tag_name(tagid):
         raise Exception({"error": "tag does not exist"})
     return tag_name
 
-def lib_tag_detach_node(tagid, nodename):
-    node_responsible(nodename)
+def lib_tag_detach_node(tagid, node_id):
+    node_responsible(node_id=node_id)
     tag_name = get_tag_name(tagid)
     q = db.node_tags.tag_id == tagid
-    q &= db.node_tags.nodename == nodename
-    q = q_filter(q, node_field=db.node_tags.nodename)
+    q &= db.node_tags.node_id == node_id
+    q = q_filter(q, node_field=db.node_tags.node_id)
     if db(q).count() == 0:
         return dict(info="tag already detached")
     db(q).delete()
@@ -19,23 +19,20 @@ def lib_tag_detach_node(tagid, nodename):
     _log("node.tag",
          "tag '%(tag_name)s' detached",
          dict(tag_name=tag_name),
-         nodename=nodename)
-    import hashlib
-    hash = hashlib.md5()
-    hash.update(nodename)
+         node_id=node_id)
     l = {
       'event': 'tags',
-      'data': {'action': 'detach', 'tag_id': tagid, 'nodename': hash.hexdigest()},
+      'data': {'action': 'detach', 'tag_id': tagid, 'node_id': node_id},
     }
     _websocket_send(event_msg(l))
     return dict(info="tag detached")
 
-def lib_tag_detach_service(tagid, svcname):
-    svc_responsible(svcname)
+def lib_tag_detach_service(tagid, svc_id):
+    svc_responsible(svc_id)
     tag_name = get_tag_name(tagid)
     q = db.svc_tags.tag_id == tagid
-    q &= db.svc_tags.svcname == svcname
-    q = q_filter(q, svc_field=db.svc_tags.svcname)
+    q &= db.svc_tags.svc_id == svc_id
+    q = q_filter(q, svc_field=db.svc_tags.svc_id)
     if db(q).count() == 0:
         return dict(info="tag already detached")
     db(q).delete()
@@ -43,80 +40,71 @@ def lib_tag_detach_service(tagid, svcname):
     _log("service.tag",
          "tag '%(tag_name)s' detached",
          dict(tag_name=tag_name),
-         svcname=svcname)
-    import hashlib
-    hash = hashlib.md5()
-    hash.update(svcname)
+         svc_id=svc_id)
     l = {
       'event': 'tags',
-      'data': {'action': 'detach', 'tag_id': tagid, 'svcname': hash.hexdigest()},
+      'data': {'action': 'detach', 'tag_id': tagid, 'svc_id': svc_id},
     }
     _websocket_send(event_msg(l))
     return dict(info="tag detached")
 
 
-def lib_tag_attach_node(tagid, nodename):
-    if not nodename or len(nodename) == 0:
-        raise Exception("invalid nodename: '%s'" % str(nodename))
-    node_responsible(nodename)
+def lib_tag_attach_node(tagid, node_id):
+    if not node_id:
+        raise Exception("invalid node_id: '%s'" % str(node_id))
+    node_responsible(node_id=node_id)
     tag_name = get_tag_name(tagid)
     q = db.node_tags.tag_id == tagid
-    q &= db.node_tags.nodename == nodename
-    q = q_filter(q, node_field=db.node_tags.nodename)
+    q &= db.node_tags.node_id == node_id
+    q = q_filter(q, node_field=db.node_tags.node_id)
     if db(q).count() == 1:
-        return dict(info="tag '%s' already attached to node '%s'" % (tag_name, nodename))
-    db.node_tags.insert(tag_id=tagid, nodename=nodename)
+        return dict(info="tag '%s' already attached to node '%s'" % (tag_name, get_nodename(node_id)))
+    db.node_tags.insert(tag_id=tagid, node_id=node_id)
     table_modified("node_tags")
     _log("node.tag",
          "tag '%(tag_name)s' attached",
          dict(tag_name=tag_name),
-         nodename=nodename)
-    import hashlib
-    hash = hashlib.md5()
-    hash.update(nodename)
+         node_id=node_id)
     l = {
       'event': 'tags',
       'data': {
          'action': 'attach',
          'tag_id': tagid,
          'tag_name': tag_name,
-         'nodename': hash.hexdigest()
+         'node_id': node_id
       },
     }
     _websocket_send(event_msg(l))
-    return dict(info="tag '%s' attached to node '%s'" % (tag_name, nodename))
+    return dict(info="tag '%s' attached to node '%s'" % (tag_name, get_nodename(node_id)))
 
 
-def lib_tag_attach_service(tagid, svcname):
-    if not svcname or len(svcname) == 0:
-        raise Exception("invalid svcname: '%s'" % str(svcname))
-    svc_responsible(svcname)
+def lib_tag_attach_service(tagid, svc_id):
+    if not svc_id or len(svc_id) == 0:
+        raise Exception("invalid svc_id: '%s'" % str(svc_id))
+    svc_responsible(svc_id)
     tag_name = get_tag_name(tagid)
     q = db.svc_tags.tag_id == tagid
-    q &= db.svc_tags.svcname == svcname
-    q = q_filter(q, svc_field=db.svc_tags.svcname)
+    q &= db.svc_tags.svc_id == svc_id
+    q = q_filter(q, svc_field=db.svc_tags.svc_id)
     if db(q).count() == 1:
-        return dict(info="tag '%s' already attached to service '%s'" % (tag_name, nodename))
-    db.svc_tags.insert(tag_id=tagid, svcname=svcname)
+        return dict(info="tag '%s' already attached to service '%s'" % (tag_name, svc_id))
+    db.svc_tags.insert(tag_id=tagid, svc_id=svc_id)
     table_modified("svc_tags")
     _log("service.tag",
          "tag '%(tag_name)s' attached",
          dict(tag_name=tag_name),
-         svcname=svcname)
-    import hashlib
-    hash = hashlib.md5()
-    hash.update(svcname)
+         svc_id=svc_id)
     l = {
       'event': 'tags',
       'data': {
         'action': 'attach',
         'tag_id': tagid,
         'tag_name': tag_name,
-        'svcname': hash.hexdigest()
+        'svc_id': svc_id
       },
     }
     _websocket_send(event_msg(l))
-    return dict(info="tag '%s' attached to service '%s'" % (tag_name, svcname))
+    return dict(info="tag '%s' attached to service '%s'" % (tag_name, svc_id))
 
 
 

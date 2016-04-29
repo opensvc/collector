@@ -37,13 +37,13 @@ def ajax_containerperf_plot():
 
     sc = ""
     l = []
-    for container_name, nodename in containers:
-        did = '_'.join((rowid, nodename.replace('.','_'), container_name.replace('.','_')))
-        l.append(H3('@'.join((container_name, nodename))))
+    for container_name, node_id in containers:
+        did = '_'.join((rowid, node_id, str(container_name).replace('.','_')))
+        l.append(H3('@'.join((container_name, node_id))))
         l.append(DIV(_id=did))
         sc += """sync_ajax('%(url)s', ['%(bs)s', '%(es)s'], '%(did)s', function(){});"""%dict(
                              url=URL(r=request,c='ajax_perf',f='ajax_perf_svc_plot_short',
-                                     args=[nodename, did, container_name]),
+                                     args=[node_id, did, container_name]),
                              rowid=rowid,
                              did=did,
                              bs=bs,
@@ -175,16 +175,16 @@ def ajax_perfcmp_plot():
 @auth.requires_login()
 def rows_stats_disks_per_svc(nodes=[], begin=None, end=None, lower=None, higher=None):
     if len(nodes) > 0:
-        nodes = set(nodes) & set(user_nodes())
-        nodes = map(repr, nodes)
-        svcnames = ""
+        node_ids = set(nodes) & set(user_nodes())
+        node_ids = map(repr, node_ids)
+        svc_ids = ""
     else:
-        q = q_filter(svc_field=db.svcmon.mon_svcname)
-        q = apply_filters(q, db.svcmon.mon_nodname, db.svcmon.mon_svcname)
-        nodes = [repr(r.mon_nodname) for r in db(q).select(db.svcmon.mon_nodname)]
-        svcnames = [repr(r.mon_svcname) for r in db(q).select(db.svcmon.mon_svcname)]
-        svcnames = 'and v.mon_svcname in (%s)'%','.join(svcnames)
-    nodes = 'and v.mon_nodname in (%s)'%','.join(nodes)
+        q = q_filter(svc_field=db.svcmon.svc_id)
+        q = apply_filters_id(q, db.svcmon.node_id, db.svcmon.svc_id)
+        node_ids = [repr(r.node_id) for r in db(q).select(db.svcmon.node_id)]
+        svc_ids = [repr(r.svc_id) for r in db(q).select(db.svcmon.svc_id)]
+        svc_ids = 'and v.svc_id in (%s)'%','.join(svc_ids)
+    node_ids = 'and v.node_id in (%s)'%','.join(node_ids)
 
     if begin is None or end is None:
         now = datetime.datetime.now()
@@ -195,21 +195,22 @@ def rows_stats_disks_per_svc(nodes=[], begin=None, end=None, lower=None, higher=
                                        minutes=59-end.minute,
                                        seconds=59-end.second,
                                       )
-    sql = """select s.svcname,
+    sql = """select concat(c.svcname, " *", c.svc_app),
                     s.disk_size
-             from stat_day_svc s, svcmon v
+             from stat_day_svc s, svcmon v, services c
              where day=(select max(day)
                         from stat_day_svc
                         where day>'%(begin)s'
                               and day<='%(end)s')
                    and s.day>'%(begin)s'
                    and s.day<='%(end)s'
-                   and s.svcname=v.mon_svcname
-                   %(nodes)s
-                   %(svcnames)s
-             group by s.svcname
+                   and s.svc_id=v.svc_id
+                   and s.svc_id=c.svc_id
+                   %(node_ids)s
+                   %(svc_ids)s
+             group by s.svc_id
              order by s.disk_size
-          """%dict(begin=begin, end=end, nodes=nodes, svcnames=svcnames)
+          """%dict(begin=begin, end=end, node_ids=node_ids, svc_ids=svc_ids)
 
     if lower is not None:
         sql += ' desc limit %d'%int(lower)
@@ -230,32 +231,33 @@ def rows_avg_cpu_for_nodes(nodes=[], begin=None, end=None, lower=None, higher=No
         nodes = map(repr, nodes)
     else:
         q = q_filter(app_field=db.nodes.app)
-        q = apply_filters(q, db.nodes.nodename)
-        nodes = [repr(r.nodename) for r in db(q).select(db.nodes.nodename)]
-    nodes = 'and nodename in (%s)'%','.join(nodes)
+        q = apply_filters_id(q, db.nodes.node_id)
+        nodes = [repr(r.node_id) for r in db(q).select(db.nodes.node_id)]
+    nodes = 'and s.node_id in (%s)'%','.join(nodes)
 
     if begin is None or end is None:
         now = datetime.datetime.now()
         end = now - datetime.timedelta(days=0, microseconds=now.microsecond)
         begin = end - datetime.timedelta(days=1)
-    sql = """select nodename,
+    sql = """select concat(n.nodename, " *", n.app),
                     0,
-                    cpu,
-                    avg(usr) as avg_usr,
-                    avg(nice) as avg_nice,
-                    avg(sys) as avg_sys,
-                    avg(iowait) as avg_iowait,
-                    avg(steal) as avg_steal,
-                    avg(irq) as avg_irq,
-                    avg(soft) as avg_soft,
-                    avg(guest) as avg_guest
-             from stats_cpu%(period)s
+                    s.cpu,
+                    avg(s.usr) as avg_usr,
+                    avg(s.nice) as avg_nice,
+                    avg(s.sys) as avg_sys,
+                    avg(s.iowait) as avg_iowait,
+                    avg(s.steal) as avg_steal,
+                    avg(s.irq) as avg_irq,
+                    avg(s.soft) as avg_soft,
+                    avg(s.guest) as avg_guest
+             from stats_cpu%(period)s s, nodes n
              where cpu='all'
-               and date>'%(begin)s'
-               and date<'%(end)s'
+               and s.node_id=n.node_id
+               and s.date>'%(begin)s'
+               and s.date<'%(end)s'
                %(nodes)s
-             group by nodename
-             order by 100-avg(usr+sys)"""%dict(begin=str(begin),end=str(end),nodes=nodes, period=get_period(begin, end))
+             group by s.node_id
+             order by 100-avg(s.usr+s.sys)"""%dict(begin=str(begin),end=str(end),nodes=nodes, period=get_period(begin, end))
 
     if lower is not None:
         sql += ' desc limit %d'%int(lower)
@@ -275,26 +277,27 @@ def rows_avg_mem_for_nodes(nodes=[], begin=None, end=None, lower=None, higher=No
         nodes = map(repr, nodes)
     else:
         q = q_filter(app_field=db.nodes.app)
-        q = apply_filters(q, db.nodes.nodename)
-        nodes = [repr(r.nodename) for r in db(q).select(db.nodes.nodename)]
-    nodes = 'and nodename in (%s)'%','.join(nodes)
+        q = apply_filters_id(q, db.nodes.node_id)
+        nodes = [repr(r.node_id) for r in db(q).select(db.nodes.node_id)]
+    nodes = 'and s.node_id in (%s)'%','.join(nodes)
 
     if begin is None or end is None:
         now = datetime.datetime.now()
         end = now - datetime.timedelta(days=0, microseconds=now.microsecond)
         begin = end - datetime.timedelta(days=1)
     sql = """select * from (
-               select nodename,
-                      avg(kbmemfree+kbcached) as avail,
-                      avg(kbmemfree),
-                      avg(kbcached)
-               from stats_mem_u%(period)s
+               select concat(n.nodename, " *", n.app),
+                      avg(s.kbmemfree+s.kbcached) as avail,
+                      avg(s.kbmemfree),
+                      avg(s.kbcached)
+               from stats_mem_u%(period)s s, nodes n
                where
-                 date>'%(begin)s'
-                 and date<'%(end)s'
+                 s.node_id=n.node_id
+                 and s.date>'%(begin)s'
+                 and s.date<'%(end)s'
                  %(nodes)s
-               group by nodename
-               order by nodename, date
+               group by s.node_id
+               order by s.node_id, s.date
              ) tmp
              order by avail
           """%dict(nodes=nodes, begin=str(begin), end=str(end), period=get_period(begin, end))
@@ -316,25 +319,26 @@ def rows_avg_swp_for_nodes(nodes=[], begin=None, end=None, lower=None, higher=No
         nodes = map(repr, nodes)
     else:
         q = q_filter(app_field=db.nodes.app)
-        q = apply_filters(q, db.nodes.nodename)
-        nodes = [repr(r.nodename) for r in db(q).select(db.nodes.nodename)]
-    nodes = 'and nodename in (%s)'%','.join(nodes)
+        q = apply_filters_id(q, db.nodes.node_id)
+        nodes = [repr(r.node_id) for r in db(q).select(db.nodes.node_id)]
+    nodes = 'and s.node_id in (%s)'%','.join(nodes)
 
     if begin is None or end is None:
         now = datetime.datetime.now()
         end = now - datetime.timedelta(days=0, microseconds=now.microsecond)
         begin = end - datetime.timedelta(days=1)
     sql = """select * from (
-               select nodename,
-                      avg(kbswpfree) as avail,
-                      avg(kbswpused)
-               from stats_swap%(period)s
+               select concat(n.nodename, " *", n.app),
+                      avg(s.kbswpfree) as avail,
+                      avg(s.kbswpused)
+               from stats_swap%(period)s s, nodes n
                where
-               date>'%(begin)s'
-               and date<'%(end)s'
+                 s.node_id=n.node_id
+                 and s.date>'%(begin)s'
+                 and s.date<'%(end)s'
                %(nodes)s
-               group by nodename
-               order by nodename, date
+               group by s.node_id
+               order by s.node_id, s.date
              ) tmp
              order by avail
           """%dict(nodes=nodes, begin=str(begin), end=str(end), period=get_period(begin, end))
@@ -356,28 +360,29 @@ def rows_avg_proc_for_nodes(nodes=[], begin=None, end=None, lower=None, higher=N
         nodes = map(repr, nodes)
     else:
         q = q_filter(app_field=db.nodes.app)
-        q = apply_filters(q, db.nodes.nodename)
-        nodes = [repr(r.nodename) for r in db(q).select(db.nodes.nodename)]
-    nodes = 'and nodename in (%s)'%','.join(nodes)
+        q = apply_filters_id(q, db.nodes.node_id)
+        nodes = [repr(r.node_id) for r in db(q).select(db.nodes.node_id)]
+    nodes = 'and s.node_id in (%s)'%','.join(nodes)
 
     if begin is None or end is None:
         now = datetime.datetime.now()
         end = now - datetime.timedelta(days=0, microseconds=now.microsecond)
         begin = end - datetime.timedelta(days=1)
     sql = """select * from (
-               select nodename,
-                      avg(runq_sz),
-                      avg(plist_sz),
-                      avg(ldavg_1),
-                      avg(ldavg_5),
-                      avg(ldavg_15) as o
-               from stats_proc%(period)s
+               select concat(n.nodename, " *", n.app),
+                      avg(s.runq_sz),
+                      avg(s.plist_sz),
+                      avg(s.ldavg_1),
+                      avg(s.ldavg_5),
+                      avg(s.ldavg_15) as o
+               from stats_proc%(period)s s, nodes n
                where
-                 date>'%(begin)s'
-                 and date<'%(end)s'
+                 s.node_id=n.node_id
+                 and s.date>'%(begin)s'
+                 and s.date<'%(end)s'
                  %(nodes)s
-               group by nodename
-               order by nodename, date
+               group by s.node_id
+               order by s.node_id, s.date
              ) tmp
              order by o
           """%dict(nodes=nodes, begin=str(begin), end=str(end), period=get_period(begin, end))
@@ -399,25 +404,27 @@ def rows_avg_block_for_nodes(nodes=[], begin=None, end=None, lower=None, higher=
         nodes = map(repr, nodes)
     else:
         q = q_filter(app_field=db.nodes.app)
-        q = apply_filters(q, db.nodes.nodename)
-        nodes = [repr(r.nodename) for r in db(q).select(db.nodes.nodename)]
-    nodes = 'and nodename in (%s)'%','.join(nodes)
+        q = apply_filters_id(q, db.nodes.node_id)
+        nodes = [repr(r.node_id) for r in db(q).select(db.nodes.node_id)]
+    nodes = 'and s.node_id in (%s)'%','.join(nodes)
 
     if begin is None or end is None:
         now = datetime.datetime.now()
         end = now - datetime.timedelta(days=0, microseconds=now.microsecond)
         begin = end - datetime.timedelta(days=1)
-    sql = """select nodename,
-                    avg(rtps),
-                    avg(wtps),
-                    avg(rbps),
-                    avg(wbps)
-             from stats_block%(period)s
-             where date>'%(begin)s'
-               and date<'%(end)s'
+    sql = """select concat(n.nodename, " *", n.app),
+                    avg(s.rtps),
+                    avg(s.wtps),
+                    avg(s.rbps),
+                    avg(s.wbps)
+             from stats_block%(period)s s, nodes n
+             where
+               s.node_id=n.node_id
+               and s.date>'%(begin)s'
+               and s.date<'%(end)s'
                %(nodes)s
-             group by nodename
-             order by avg(rbps)+avg(wbps)"""%dict(begin=str(begin),end=str(end),nodes=nodes, period=get_period(begin, end))
+             group by s.node_id
+             order by avg(s.rbps)+avg(s.wbps)"""%dict(begin=str(begin),end=str(end),nodes=nodes, period=get_period(begin, end))
 
     if lower is not None:
         sql += ' desc limit %d'%int(lower)

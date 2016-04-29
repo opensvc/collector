@@ -3,7 +3,6 @@ class table_safe(HtmlTable):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
-        self.force_cols = ['id']
         self.cols = ['id',
                      'uuid',
                      'safe_name',

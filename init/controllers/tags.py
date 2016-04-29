@@ -73,7 +73,9 @@ class table_tagattach(HtmlTable):
         HtmlTable.__init__(self, id, func, innerhtml)
         self.cols = ['tag_id',
                      'tag_name',
+                     'node_id',
                      'nodename',
+                     'svc_id',
                      'svcname',
                      'created']
         self.colprops = {
@@ -89,6 +91,14 @@ class table_tagattach(HtmlTable):
                      table='v_tags_full',
                      field='created',
                     ),
+            'node_id': HtmlTableColumn(
+                     table='v_tags_full',
+                     field='node_id',
+                    ),
+            'svc_id': HtmlTableColumn(
+                     table='v_tags_full',
+                     field='svc_id',
+                    ),
             'nodename': HtmlTableColumn(
                      table='v_tags_full',
                      field='nodename',
@@ -100,7 +110,8 @@ class table_tagattach(HtmlTable):
         }
         self.ajax_col_values = 'ajax_tagattach_col_values'
         self.span = ["tag_id"]
-        self.keys = ["tag_id", "nodename", "svcname"]
+        self.force_cols = ["tag_id", "node_id", "svc_id"]
+        self.keys = ["tag_id", "node_id", "svc_id"]
 
 
 @auth.requires_login()
@@ -110,8 +121,8 @@ def ajax_tagattach_col_values():
     col = request.args[0]
     o = db[t.colprops[col].table][col]
     q = db.v_tags_full.id >= 0
-    f1 = q_filter(q, node_field=db.v_tags_full.nodename)
-    f2 = q_filter(q, svc_field=db.v_tags_full.svcname)
+    f1 = q_filter(q, node_field=db.v_tags_full.node_id)
+    f2 = q_filter(q, svc_field=db.v_tags_full.svc_id)
     q &= (f1|f2)
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
@@ -125,8 +136,8 @@ def ajax_tagattach():
     o = db.v_tags_full.tag_name | db.v_tags_full.nodename | db.v_tags_full.svcname
 
     q = db.v_tags_full.id >= 0
-    f1 = q_filter(q, node_field=db.v_tags_full.nodename)
-    f2 = q_filter(q, svc_field=db.v_tags_full.svcname)
+    f1 = q_filter(q, node_field=db.v_tags_full.node_id)
+    f2 = q_filter(q, svc_field=db.v_tags_full.svc_id)
     q &= (f1|f2)
 
     for f in t.cols:

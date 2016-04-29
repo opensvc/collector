@@ -56,7 +56,8 @@ class table_svcmon(HtmlTable):
         HtmlTable.__init__(self, id, func, innerhtml)
         self.cols = [
             'id',
-            'mon_svcname',
+            'svc_id',
+            'svcname',
             'err',
             'svc_ha',
             'svc_availstatus',
@@ -86,7 +87,8 @@ class table_svcmon(HtmlTable):
             'mon_guestos',
             'environnement',
             'host_mode',
-            'mon_nodname',
+            'node_id',
+            'nodename',
             'mon_availstatus',
             'mon_overallstatus',
             'mon_frozen',
@@ -145,6 +147,12 @@ class table_svcmon(HtmlTable):
             'id': HtmlTableColumn(
                      field='id',
                     ),
+            'svcname': HtmlTableColumn(
+                     field='svcname',
+                    ),
+            'nodename': HtmlTableColumn(
+                     field='nodename',
+                    ),
             'err': HtmlTableColumn(
                      field='err',
                     ),
@@ -161,8 +169,8 @@ class table_svcmon(HtmlTable):
         self.colprops['svc_updated'].field = 'svc_updated'
         for i in self.cols:
             self.colprops[i].table = 'v_svcmon'
-        self.keys = ["mon_nodname", "mon_svcname", "mon_vmname"]
-        self.span = ['mon_svcname'] + services_cols
+        self.keys = ["node_id", "svc_id", "mon_vmname"]
+        self.span = ['svc_id']
         self.span.append('app_domain')
         self.span.append('app_team_ops')
         self.ajax_col_values = 'ajax_svcmon_col_values'
@@ -174,7 +182,7 @@ def ajax_svcmon_col_values():
     col = request.args[0]
     o = db.v_svcmon[col]
     q = q_filter(app_field=db.v_svcmon.svc_app)
-    q = apply_filters(q, db.v_svcmon.mon_nodname, db.v_svcmon.mon_svcname)
+    q = apply_filters_id(q, db.v_svcmon.node_id, db.v_svcmon.svc_id)
     for f in t.cols:
         q = _where(q, 'v_svcmon', t.filter_parse(f), f)
     t.object_list = db(q).select(db.v_svcmon[col], orderby=o,
@@ -187,11 +195,11 @@ def ajax_svcmon():
     table_id = request.vars.table_id
     t = table_svcmon(table_id, 'ajax_svcmon')
 
-    o = db.v_svcmon.mon_svcname
-    o |= db.v_svcmon.mon_nodname
+    o = db.v_svcmon.svcname
+    o |= db.v_svcmon.nodename
 
     q = q_filter(app_field=db.v_svcmon.svc_app)
-    q = apply_filters(q, db.v_svcmon.mon_nodname, db.v_svcmon.mon_svcname)
+    q = apply_filters_id(q, db.v_svcmon.node_id, db.v_svcmon.svc_id)
     for f in t.cols:
         q = _where(q, 'v_svcmon', t.filter_parse(f), f)
 

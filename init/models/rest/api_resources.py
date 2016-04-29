@@ -6,7 +6,7 @@ class rest_get_resources(rest_get_table_handler):
           "List OpenSVC services resources.",
         ]
         examples = [
-          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/resources?props=svcname,rid&query=res_desc contains :/",
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/resources?props=svc_id,rid&query=res_desc contains :/",
         ]
         rest_get_table_handler.__init__(
           self,
@@ -18,10 +18,10 @@ class rest_get_resources(rest_get_table_handler):
         )
 
     def handler(self, **vars):
-        q = q_filter(svc_field=db.resmon.svcname)
+        q = q_filter(svc_field=db.resmon.svc_id)
         fset_id = vars.get("fset-id")
         if fset_id:
-            q = apply_filters(q, service_field=db.resmon.svcname, fset_id=fset_id)
+            q = apply_filters_id(q, svc_field=db.resmon.svc_id, fset_id=fset_id)
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -76,17 +76,17 @@ class rest_delete_resource(rest_delete_handler):
         row = db(q).select().first()
         if row is None:
             return dict(info="resource does not exist")
-        svc_responsible(row.svcname)
+        svc_responsible(row.svc_id)
         db(q).delete()
         fmt = 'resource %(rid)s of service %(svcname)s instance on node %(nodename)s deleted'
         d = {
           "rid": row.rid,
-          "nodename": row.nodename,
-          "svcname": row.svcname,
+          "nodename": get_nodename(row.node_id),
+          "svcname": get_svcname(row.svc_id),
         }
         _log('service.resource.delete', fmt, d,
-             nodename=row.nodename,
-             svcname=row.svcname,
+             node_id=row.node_id,
+             svc_id=row.svc_id,
             )
         l = {
           'event': 'resmon_change',

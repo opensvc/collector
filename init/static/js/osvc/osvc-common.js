@@ -265,6 +265,89 @@ function osvc_show_link(url, target) {
 	p.select()
 }
 
+jQuery.fn.osvc_nodename = function(options) {
+        if (!options) {
+		options = {}
+	}
+	$(this).each(function(){
+		var o = $(this)
+		var node_id = o.attr("node_id")
+		if (!node_id) {
+			return
+		}
+		services_osvcgetrest("/nodes/%1", [node_id] , {"meta": "0", "props": "nodename,app"}, function(jd) {
+			var e_nodename = $("<span class='node16 icon_fixed_width'>"+jd.data[0].nodename+"</span>")
+			var e_app = $("<span class='app16 icon_fixed_width'>"+jd.data[0].app+"</span>")
+			o.html([e_nodename, " ", e_app])
+			o.prop("title", node_id)
+			o.removeAttr("node_id")
+			o.tooltipster()
+			if (options.callback) {
+				options.callback()
+			}
+		})
+	})
+}
+
+jQuery.fn.osvc_svcname = function(options) {
+        if (!options) {
+		options = {}
+	}
+	$(this).each(function(){
+		var o = $(this)
+		var svc_id = o.attr("svc_id")
+		if (!svc_id) {
+			return
+		}
+		services_osvcgetrest("/services/%1", [svc_id] , {"meta": "0", "props": "svcname,svc_app"}, function(jd) {
+			var e_svcname = $("<span class='svc icon_fixed_width'>"+jd.data[0].svcname+"</span>")
+			var e_app = $("<span class='app16 icon_fixed_width'>"+jd.data[0].svc_app+"</span>")
+			o.html([e_svcname, " ", e_app])
+			o.prop("title", svc_id)
+			o.removeAttr("svc_id")
+			o.tooltipster()
+			if (options.callback) {
+				options.callback()
+			}
+		})
+	})
+}
+
+function osvc_nodenames(l) {
+	if (!l) {
+		return
+	}
+	if (typeof(l) === "number") {
+		return osvc_nodename(l)
+	}
+	if (typeof(l) === "string") {
+		l = l.split(",")
+	}
+	var e = $("<span></span>")
+	for (var i=0; i<l.length; i++) {
+		if (i>0) {
+			e.append(", ")
+		}
+                e.append(osvc_nodename(l[i]))
+        }
+	return e
+}
+
+function osvc_nodename(node_id) {
+	var e = $("<span>"+node_id+"</span>")
+	if (!node_id) {
+		return e
+	}
+	services_osvcgetrest("/nodes", [node_id] , {"meta": "0", "props": "nodename,app"}, function(jd) {
+		var e_nodename = $("<span>"+jd.data[0].nodename+"</span>")
+		var e_app = $("<span class='app16'>"+jd.data[0].app+"</span>")
+		e.html([e_nodename, " ", e_app])
+		e.prop("title", node_id)
+                e.tooltipster()
+	})
+	return e
+}
+
 function osvc_get_link(divid,link_id) {
 	services_osvcgetrest("R_LINK",[link_id] , "", function(jd) {
 		if (jd.data.length === 0) {

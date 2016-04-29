@@ -133,17 +133,17 @@ def task_feed_monitor():
 def task_unfinished_actions():
     now = datetime.datetime.now()
     tmo = now - datetime.timedelta(minutes=120)
-    q = (db.SVCactions.begin < tmo)
-    q &= (db.SVCactions.end==None)
-    rows = db(q).select(orderby=db.SVCactions.id)
+    q = (db.svcactions.begin < tmo)
+    q &= (db.svcactions.end==None)
+    rows = db(q).select(orderby=db.svcactions.id)
     db(q).update(status="err", end='1000-01-01 00:00:00')
     db.commit()
     for r in rows:
         _log('action.timeout', "action ids %(ids)s closed on timeout",
               dict(ids=r.id),
               user='collector',
-              svcname=r.svcname,
-              nodename=r.hostname,
+              svc_id=r.svc_id,
+              node_id=r.node_id,
               level="warning")
     return "%d actions marked timed out"%len(rows)
 

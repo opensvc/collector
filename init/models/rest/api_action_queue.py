@@ -8,7 +8,7 @@ class rest_get_action_queue(rest_get_table_handler):
           "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/actions?query=status=R",
         ]
 
-        q = q_filter(node_field=db.action_queue.nodename)
+        q = q_filter(node_field=db.action_queue.node_id)
 
         rest_get_table_handler.__init__(
           self,
@@ -54,12 +54,12 @@ class rest_put_action_queue(rest_put_handler):
         ]
         data = """
 - <property>=<value> pairs.
-- **nodename**
-. The node targeted by the action. If svcname is not specified, the
+- **node_id**
+. The node targeted by the action. If svc_id is not specified, the
   action is run using the nodemgr opensvc agent command
-- **svcname**
+- **svc_id**
 . The service targeted by the action. The action is run using the
-  svcmgr opensvc agent command on the node specified by **nodename**.
+  svcmgr opensvc agent command on the node specified by **node_id**.
 - **action**
 . The opensvc agent action to execute.
 - **module**
@@ -71,41 +71,41 @@ class rest_put_action_queue(rest_put_handler):
 
 Each action has specific property requirements:
 
-- ``compliance_check``:green requires **nodename**, **module** or **moduleset**, optionally
-  **svcname**
-- ``compliance_fix``:green requires **nodename**, **module** or **moduleset**, optionally
-  **svcname**
-- ``start``:green requires **nodename**, **svcname**, optionally **rid**
-- ``stop``:green requires **nodename**, **svcname**, optionally **rid**
-- ``restart``:green requires **nodename**, **svcname**, optionally **rid**
-- ``syncall``:green requires **nodename**, **svcname**, optionally **rid**
-- ``syncnodes``:green requires **nodename**, **svcname**, optionally **rid**
-- ``syncdrp``:green requires **nodename**, **svcname**, optionally **rid**
-- ``enable``:green requires **nodename**, **svcname**, optionally **rid**
-- ``disable``:green requires **nodename**, **svcname**, optionally **rid**
-- ``freeze``:green requires **nodename**, **svcname**, optionally **rid**
-- ``thaw``:green requires **nodename**, **svcname**, optionally **rid**
-- ``pushasset``:green requires **nodename**
-- ``pushdisks``:green requires **nodename**
-- ``pull``:green requires **nodename**
-- ``push``:green requires **nodename**
-- ``pushpkg``:green requires **nodename**
-- ``pushpatch``:green requires **nodename**
-- ``pushstats``:green requires **nodename**
-- ``checks``:green requires **nodename**
-- ``sysreport``:green requires **nodename**
-- ``updatecomp``:green requires **nodename**
-- ``updatepkg``:green requires **nodename**
-- ``rotate_root_pw``:green requires **nodename**
-- ``scanscsi``:green requires **nodename**
-- ``reboot``:green requires **nodename**
-- ``schedule_reboot``:green requires **nodename**
-- ``unschedule_reboot``:green requires **nodename**
-- ``shutdown``:green requires **nodename**
-- ``wol``:green requires **nodename**
+- ``compliance_check``:green requires **node_id**, **module** or **moduleset**, optionally
+  **svc_id**
+- ``compliance_fix``:green requires **node_id**, **module** or **moduleset**, optionally
+  **svc_id**
+- ``start``:green requires **node_id**, **svc_id**, optionally **rid**
+- ``stop``:green requires **node_id**, **svc_id**, optionally **rid**
+- ``restart``:green requires **node_id**, **svc_id**, optionally **rid**
+- ``syncall``:green requires **node_id**, **svc_id**, optionally **rid**
+- ``syncnodes``:green requires **node_id**, **svc_id**, optionally **rid**
+- ``syncdrp``:green requires **node_id**, **svc_id**, optionally **rid**
+- ``enable``:green requires **node_id**, **svc_id**, optionally **rid**
+- ``disable``:green requires **node_id**, **svc_id**, optionally **rid**
+- ``freeze``:green requires **node_id**, **svc_id**, optionally **rid**
+- ``thaw``:green requires **node_id**, **svc_id**, optionally **rid**
+- ``pushasset``:green requires **node_id**
+- ``pushdisks``:green requires **node_id**
+- ``pull``:green requires **node_id**
+- ``push``:green requires **node_id**
+- ``pushpkg``:green requires **node_id**
+- ``pushpatch``:green requires **node_id**
+- ``pushstats``:green requires **node_id**
+- ``checks``:green requires **node_id**
+- ``sysreport``:green requires **node_id**
+- ``updatecomp``:green requires **node_id**
+- ``updatepkg``:green requires **node_id**
+- ``rotate_root_pw``:green requires **node_id**
+- ``scanscsi``:green requires **node_id**
+- ``reboot``:green requires **node_id**
+- ``schedule_reboot``:green requires **node_id**
+- ``unschedule_reboot``:green requires **node_id**
+- ``shutdown``:green requires **node_id**
+- ``wol``:green requires **node_id**
 """
         examples = [
-          "# curl -u %(email)s -o- -X PUT -d nodename=clementine -d action=pushasset https://%(collector)s/init/rest/api/actions",
+          "# curl -u %(email)s -o- -X PUT -d node_id=5c977731-0562-11e6-8c70-7e9e6cf13c8a -d action=pushasset https://%(collector)s/init/rest/api/actions",
         ]
 
         rest_put_handler.__init__(
@@ -163,7 +163,7 @@ class rest_get_action_queue_one(rest_get_line_handler):
 
     def handler(self, id, **vars):
         q = db.action_queue.id == int(id)
-        q = q_filter(q, node_field=db.action_queue.nodename)
+        q = q_filter(q, node_field=db.action_queue.node_id)
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -189,16 +189,16 @@ class rest_delete_action_queue_one(rest_delete_handler):
     def handler(self, id, **vars):
         check_privilege("NodeManager")
         q = db.action_queue.id == int(id)
-        q = q_filter(q, node_field=db.action_queue.nodename)
+        q = q_filter(q, node_field=db.action_queue.node_id)
         row = db(q).select().first()
         if row is None:
             return dict(info="Action %s does not exist in action queue" % id)
-        node_responsible(row.nodename)
+        node_responsible(node_id=row.node_id)
         db(q).delete()
         _log('action_queue.delete',
              'deleted actions %(u)s',
              dict(u=row.command),
-             nodename=row.nodename)
+             node_id=row.node_id)
         l = {
           'event': 'action_queue',
           'data': {'foo': 'bar'},
@@ -238,11 +238,11 @@ class rest_post_action_queue_one(rest_post_handler):
     def handler(self, _id, **vars):
         check_privilege(["NodeExec", "CompExec"])
         q = db.action_queue.id == int(_id)
-        q = q_filter(q, node_field=db.action_queue.nodename)
+        q = q_filter(q, node_field=db.action_queue.node_id)
         row = db(q).select().first()
         if row is None:
             return dict(error="Action %s does not exist in action queue" % _id)
-        node_responsible(row.nodename)
+        node_responsible(node_id=row.node_id)
         if vars.keys() != ["status"]:
             invalid = ', '.join(sorted(set(vars.keys())-set(["status"])))
             return dict(error="Permission denied: properties not updateable: %(props)s" % dict(props=invalid))
@@ -254,8 +254,8 @@ class rest_post_action_queue_one(rest_post_handler):
         _log('action_queue.update',
              'update properties %(data)s',
              dict(data=beautify_change(row, vars)),
-             svcname=row.svcname,
-             nodename=row.nodename)
+             svc_id=row.svc_id,
+             node_id=row.node_id)
         l = {
           'event': 'action_queue',
           'data': {'foo': 'bar'},

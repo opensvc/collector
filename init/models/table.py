@@ -310,7 +310,9 @@ class HtmlTable(object):
     def get_visible_columns(self, fmt="dal", db=db):
         visible_columns = request.vars.visible_columns.split(',')
         sorted_visible_columns = []
-        for c in self.cols:
+        for c in visible_columns:
+            if c not in self.cols or c not in self.colprops:
+                continue
             cp = self.colprops[c]
             if cp.field not in db[cp.table]:
                 continue

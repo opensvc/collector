@@ -261,7 +261,7 @@
 			"safe": "Safe",
 			"action_queue": "Action queue",
 			"actions": "Service actions",
-			"appinfo": "App info",
+			"resinfo": "Resources info",
 			"apps": "Application codes",
 			"checks": "Checks",
 			"comp_log": "Compliance log",
@@ -330,10 +330,11 @@
 		"year": "__count__ year",
 		"year_plural": "__count__ years",
 		"volatile": "Volatile filters",
-		"volatile_title": "If enabled column filters are not saved server-side.",
+		"volatile_help": "If enabled column filters are not saved server-side.",
 		"live": "Live",
+		"live_help": "Toggle on/off the automatic data reload on server-side events.",
 		"link": "Link",
-		"link_title": "Share your view using this hyperlink",
+		"link_help": "Share your view with coworkers.",
 		"bookmarks": "Bookmarks",
 		"bookmarks_save": "Save current filters as bookmark",
 		"bookmarks_save_name": "Enter new bookmark name",
@@ -342,6 +343,7 @@
 		"csv": "Export to csv",
 		"columns": "Configure columns",
 		"commonality": "Commonality",
+		"commonality_help": "Display the most frequent value in each table column.",
 		"filter": "Filter: "
 	},
 	"app": {
@@ -370,12 +372,12 @@
 		"error": {
 			"no_change": "No change found."
 		},
-		"timeline_title" : "Node __node__ changes timeline",
+		"timeline_title" : "Node changes timeline",
 		"timeline_time_diff_title" : "Aggregated changes on __nodename__ between __begin__ and __end__",
 		"timeline_tree_diff_title" : "Changes",
 		"timeline_tree_file_title" : "Files",
 		"sysrepdiff" : {
-			"section_title": "__node1__ to __node2__",
+			"section_title": "Nodes collected files differences",
 			"error": {
 				"not_enough_nodes": "Not enough nodes to compare.",
 				"no_diff": "No difference found."
@@ -415,7 +417,7 @@
 			"dashboard" : "Dashboard",
 			"status" : "Status",
 			"resources" : "Resources",
-			"appinfo" : "Appinfo",
+			"resinfo" : "Resources info",
 			"actions" : "Actions",
 			"checks" : "Checks",
 			"disks" : "Disks",
@@ -593,7 +595,9 @@
 		"prio": "Connect-to priority"
 	},
 	"node_properties": {
+		"timezone": "timezone",
 		"no_uuid": "Agent not registered",
+		"id": "id",
 		"nodename": "node name",
 		"organization": "organization",
 		"team_responsible": "responsible",
@@ -854,9 +858,9 @@
 					"title" : "Resources",
 					"text" : "Service resources status"
 			},
-			"app_info" : {
-					"title" : "App Info",
-					"text" : "Service 'app' resources key:val store"
+			"res_info" : {
+					"title" : "Resources Info",
+					"text" : "Service resources key:val store"
 			},
 			"nodes" :	{
 					"title" : "Nodes",
@@ -1200,6 +1204,9 @@
 		"hidden_menu_entries": "hidden menu entries"
 	},
 	"col" : {
+		"Node Id": "Node Id",
+		"Service Id": "Service Id",
+		"Node App": "Node App",
 		"Unique id": "Unique id",
 		"Checksum": "Checksum",
 		"Uploader user id": "Uploader user id",
@@ -1611,6 +1618,7 @@
 		"Gateway": "Gateway"
 	},
 	"alert_type": {
+		"service configuration not updated": "service configuration not updated",
 		"duplicate uid": "duplicate uid",
 		"duplicate gid": "duplicate gid",
 		"compliance differences in cluster": "compliance differences in cluster",

@@ -1,38 +1,12 @@
-def pid_to_filter(pid):
-    if pid is None:
-        return ''
-    return pid.replace(',', '|')
-
-def svcactions_rss():
-    #return BEAUTIFY(request)
-    import gluon.contrib.rss2 as rss2
-    import datetime
-    d = svcactions()
-    url = request.url[:-4]
-    items = []
-    desc = 'filtering options for this feed: '
-    for key in request.vars.keys():
-        if request.vars[key] != '': desc += key+'['+request.vars[key]+'] '
-    for action in d['actions']:
-        items += [rss2.RSSItem(title="""[osvc] %s %s returned %s"""%(action.action,action.svcname,action.status),
-                      link = """http://%s%s?id==%s"""%(request.env.http_host,url,action.id),
-                      description="""<b>id:</b> %s<br><b>begin:</b> %s<br>%s"""%(action.begin,action.id,action.status_log))]
-    rss = rss2.RSS2(title="OpenSVC actions",
-                link = """http://%s%s?%s"""%(request.env.http_host,url,request.env.query_string),
-                description = desc,
-                lastBuildDate = datetime.datetime.now(),
-                items = items
-    )
-    response.headers['Content-Type']='application/rss+xml'
-    return rss2.dumps(rss)
-
 class table_actions(HtmlTable):
     def __init__(self, id=None, func=None, innerhtml=None):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
-        self.cols = ['svcname',
-                     'hostname',
+        self.cols = ['svc_id',
+                     'svcname',
+                     'node_id',
+                     'nodename',
                      'pid',
                      'action',
                      'status',
@@ -48,103 +22,102 @@ class table_actions(HtmlTable):
                      'acked_comment',
                     ]
         self.colprops = {
-            'svcname': HtmlTableColumn(
-                table = 'v_svcactions',
+            'svc_id': HtmlTableColumn(
+                table = 'svcactions',
                 field='svcname',
             ),
-            'hostname': HtmlTableColumn(
-                table = 'v_svcactions',
-                field='hostname',
+            'svcname': HtmlTableColumn(
+                table = 'services',
+                field='svcname',
+            ),
+            'node_id': HtmlTableColumn(
+                table = 'svcactions',
+                field='node_id',
+            ),
+            'nodename': HtmlTableColumn(
+                table = 'nodes',
+                field='nodename',
             ),
             'pid': HtmlTableColumn(
-                table = 'v_svcactions',
+                table = 'svcactions',
                 field='pid',
             ),
             'action': HtmlTableColumn(
-                table = 'v_svcactions',
+                table = 'svcactions',
                 field='action',
             ),
             'status': HtmlTableColumn(
-                table = 'v_svcactions',
+                table = 'svcactions',
                 field='status',
             ),
             'begin': HtmlTableColumn(
-                table = 'v_svcactions',
+                table = 'svcactions',
                 field='begin',
             ),
             'end': HtmlTableColumn(
-                table = 'v_svcactions',
+                table = 'svcactions',
                 field='end',
             ),
             'status_log': HtmlTableColumn(
-                table = 'v_svcactions',
+                table = 'svcactions',
                 field='status_log',
             ),
             'cron': HtmlTableColumn(
-                table = 'v_svcactions',
+                table = 'svcactions',
                 field='cron',
             ),
             'time': HtmlTableColumn(
-                table = 'v_svcactions',
+                table = 'svcactions',
                 field='time',
             ),
             'id': HtmlTableColumn(
-                table = 'v_svcactions',
+                table = 'svcactions',
                 field='id',
             ),
             'ack': HtmlTableColumn(
-                table = 'v_svcactions',
+                table = 'svcactions',
                 field='ack',
             ),
             'acked_comment': HtmlTableColumn(
-                table = 'v_svcactions',
+                table = 'svcactions',
                 field='acked_comment',
             ),
             'acked_by': HtmlTableColumn(
-                table = 'v_svcactions',
+                table = 'svcactions',
                 field='acked_by',
             ),
             'acked_date': HtmlTableColumn(
-                table = 'v_svcactions',
+                table = 'svcactions',
                 field='acked_date',
-            ),
-            'app': HtmlTableColumn(
-                table = 'v_svcactions',
-                field='app',
             ),
         }
         cp = nodes_colprops
-        for k in cp.keys():
-            cp[k].table = "v_svcactions"
         del(cp['status'])
         self.colprops.update(cp)
         self.colprops.update(services_colprops)
         ncols = nodes_cols
         ncols.remove('updated')
-        ncols.remove('power_supply_nb')
-        ncols.remove('power_cabinet1')
-        ncols.remove('power_cabinet2')
-        ncols.remove('power_protect')
-        ncols.remove('power_protect_breaker')
-        ncols.remove('power_breaker1')
-        ncols.remove('power_breaker2')
         ncols.remove('status')
+        self.cols += services_cols
         self.cols += ncols
         self.ajax_col_values = 'ajax_actions_col_values'
         self.span = ['pid']
         self.keys = ["id"]
+        self.force_cols = ['node_id', 'nodename', 'svc_id', 'svcname', 'os_name', 'action']
 
 @auth.requires_login()
 def ajax_actions_col_values():
     table_id = request.vars.table_id
     t = table_actions(table_id, 'ajax_actions')
     col = request.args[0]
-    o = db.v_svcactions[col]
-    q = q_filter(svc_field=db.v_svcactions.svcname)
-    q = apply_filters(q, db.v_svcactions.hostname, db.v_svcactions.svcname)
+    o = db[t.colprops[col].table][col]
+    q = db.svcactions.node_id == db.nodes.node_id
+    q &= db.svcactions.svc_id == db.services.svc_id
+    q = q_filter(q, app_field=db.services.svc_app)
+    q = apply_filters_id(q, db.svcactions.node_id, db.svcactions.svc_id)
     for f in t.cols:
-        q = _where(q, 'v_svcactions', t.filter_parse(f), f)
-    t.object_list = db(q).select(db.v_svcactions[col],
+        q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
+    t.object_list = db(q).select(db[t.colprops[col].table][col],
                                  orderby=o,
                                  limitby=(0,10000))
     return t.col_values_cloud_ungrouped(col)
@@ -154,11 +127,13 @@ def ajax_actions():
     table_id = request.vars.table_id
     t = table_actions(table_id, 'ajax_actions')
 
-    o = ~db.v_svcactions.id
-    q = q_filter(svc_field=db.v_svcactions.svcname)
-    q = apply_filters(q, db.v_svcactions.hostname, db.v_svcactions.svcname)
+    o = ~db.svcactions.id
+    q = db.svcactions.node_id == db.nodes.node_id
+    q &= db.svcactions.svc_id == db.services.svc_id
+    q = q_filter(q, app_field=db.services.svc_app)
+    q = apply_filters_id(q, db.svcactions.node_id, db.svcactions.svc_id)
     for f in t.cols:
-        q = _where(q, 'v_svcactions', t.filter_parse(f), f)
+        q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
 
     if len(request.args) == 1 and request.args[0] == 'csv':
         t.csv_q = q

@@ -94,29 +94,17 @@ def get_form_formatted_data(output, data, _d=None):
 
     return output_value
 
-def fmt_action(nodename, svcname, action, action_type="push", mod=[], modset=[]):
-    base_cmd = ['compliance', action]
+def fmt_action(node_id, svc_id, action, mod=[], modset=[]):
+    d = {
+      "node_id": node_id
+    }
+    if svc_id is not None and svc_id != "":
+        d["svc_id"] = row.comp_status.svc_id
     if len(mod) > 0:
-        base_cmd += ['--module', ','.join(mod)]
+        d["module"] = ','.join(mod)
     if len(modset) > 0:
-        base_cmd += ['--moduleset', ','.join(modset)]
-    if action_type == "pull":
-        return ' '.join(cmd)
-
-    if svcname is None or svcname == "":
-        _cmd = ["/opt/opensvc/bin/nodemgr"]
-    else:
-        _cmd = ["/opt/opensvc/bin/svcmgr", "-s", svcname]
-
-    cmd = ['ssh', '-o', 'StrictHostKeyChecking=no',
-                  '-o', 'ForwardX11=no',
-                  '-o', 'PasswordAuthentication=no',
-                  '-o', 'ConnectTimeout=5',
-#                  '-t',
-           'opensvc@'+nodename,
-           '--',
-           'sudo'] + _cmd + base_cmd
-    return ' '.join(cmd)
+        d["moduleset"] = ','.join(modset)
+    json_action_one(d)
 
 def insert_form_md5(form):
     o = md5()
@@ -142,12 +130,14 @@ def ajax_custo_form_submit(output, data):
     log = []
 
     rset_name = request.vars.rset_name
+    node_id = request.vars.node_id
+    svc_id = request.vars.svc_id
 
     # target selectors
-    if request.vars.svcname is not None:
-        rset_name = "svc."+request.vars.svcname
-    elif request.vars.nodename is not None:
-        rset_name = "node."+request.vars.nodename
+    if request.vars.svc_id is not None:
+        rset_name = "svc."+request.vars.svc_id
+    elif request.vars.node_id is not None:
+        rset_name = "node."+str(request.vars.node_id)
     elif request.vars.rset is not None:
         rset_name = request.vars.rset
 
@@ -169,37 +159,37 @@ def ajax_custo_form_submit(output, data):
     # validate privs
     groups = []
     common_groups = []
-    if request.vars.nodename is not None:
-        q = db.nodes.nodename == request.vars.nodename
+    if node_id is not None:
+        q = db.nodes.node_id == node_id
         q &= db.nodes.team_responsible == db.auth_group.role
         node = db(q).select(db.auth_group.id, cacheable=True).first()
         if node is None:
-            log.append((1, "", "Unknown specified node %(nodename)s", dict(nodename=nodename)))
+            log.append((1, "", "Unknown specified node id %(node_id)s", dict(node_id=node_id)))
             return log
         groups = [node.id]
         if len(groups) == 0:
-            log.append((1, "", "Specified node %(nodename)s has no responsible group", dict(nodename=nodename)))
+            log.append((1, "", "Specified node %(nodename)s has no responsible group", dict(nodename=get_nodename(node_id))))
             return log
         common_groups = set(user_group_ids()) & set(groups)
         if len(common_groups) == 0:
-            log.append((1, "", "You are not allowed to create or modify a ruleset for the node %(node)s", dict(nodename=nodename)))
+            log.append((1, "", "You are not allowed to create or modify a ruleset for the node %(nodename)s", dict(nodename=get_nodename(node_id))))
             return log
-    elif request.vars.svcname is not None:
-        q = db.services.svc_name == request.vars.svcname
+    elif svc_id is not None:
+        q = db.services.svc_id == svc_id
         svc = db(q).select(cacheable=True).first()
         if svc is None:
-            log.append((1, "", "Unknown specified service %(svcname)s", dict(svcname=svcname)))
+            log.append((1, "", "Unknown specified service %(svc_id)s", dict(svc_id=svc_id)))
             return log
         q &= db.services.svc_app == db.apps.app
         q &= db.apps.id == db.apps_responsibles.app_id
         rows = db(q).select(cacheable=True)
         groups = map(lambda x: x.apps_responsibles.group_id, rows)
         if len(groups) == 0:
-            log.append((1, "", "Specified service %(svcname)s has no responsible groups", dict(svcname=svcname)))
+            log.append((1, "", "Specified service %(svcname)s has no responsible groups", dict(svcname=get_svcname(svc_id))))
             return log
         common_groups = set(user_group_ids()) & set(groups)
         if len(common_groups) == 0:
-            log.append((1, "", "You are not allowed to create or modify a ruleset for the service %(svcname)s", dict(svcname=svcname)))
+            log.append((1, "", "You are not allowed to create or modify a ruleset for the service %(svcname)s", dict(svcname=get_svcname(svc_id))))
             return log
     elif request.vars.rset is not None:
         q = db.comp_rulesets.ruleset_name == request.vars.rset
@@ -328,7 +318,7 @@ def ajax_custo_form_submit(output, data):
         else:
             log.append((1, "compliance.ruleset.variable.change", "More than one variable found matching '%(var_name)s' in ruleset '%(rset_name)s'. Skip edition.", dict(var_name=var_name, rset_name=rset_name)))
 
-    if request.vars.nodename is not None or request.vars.svcname is not None:
+    if node_id is not None or svc_id is not None:
         modset_ids = []
         if 'Modulesets' in data:
             q = db.comp_moduleset.modset_name.belongs(data['Modulesets'])
@@ -343,34 +333,33 @@ def ajax_custo_form_submit(output, data):
             rows = db(q).select(db.comp_rulesets.id, cacheable=True)
             rset_ids = map(lambda x: x.id, rows) + [rset.id]
 
-        if request.vars.nodename is not None:
+        if node_id is not None:
             # check node_team_responsible_id ?
-            try:
-                log += internal_comp_attach_modulesets(node_names=[request.vars.nodename],
-                                       modset_ids=modset_ids)
-            except ToolError:
-                pass
-            try:
-                log += internal_comp_attach_rulesets(node_names=[request.vars.nodename],
-                                              ruleset_ids=rset_ids)
-            except ToolError:
-                pass
+            for _modset_id in modset_ids:
+                try:
+                    log += lib_comp_moduleset_attach_node(node_id=node_id,
+                                                          modset_id=_modset_id)
+                except ToolError:
+                    pass
+            for _rset_id in rset_ids:
+                try:
+                    log += lib_comp_ruleset_attach_node(node_id=node_id,
+                                                        rset_id=_rset_id)
+                except ToolError:
+                    pass
 
-        if request.vars.svcname is not None:
+        if svc_id is not None:
             # check svc_team_responsible_id ?
-            try:
-                log += internal_comp_attach_svc_modulesets(svc_names=[request.vars.svcname],
-                                                  modset_ids=modset_ids,
-                                                  slave=True)
-            except ToolError:
-                pass
-            try:
-                log += internal_comp_attach_svc_rulesets(svc_names=[request.vars.svcname],
-                                                ruleset_ids=rset_ids,
-                                                slave=True)
-
-            except ToolError:
-                pass
+            for _modset_id in modset_ids:
+                try:
+                    log += lib_comp_moduleset_attach_service(svc_id, _modset_ids, slave=True)
+                except ToolError:
+                    pass
+            for _rset_id in rset_ids:
+                try:
+                    log += lib_comp_ruleset_attach_service(svc_id, _rset_ids, slave=True)
+                except ToolError:
+                    pass
 
     return dict(log=log, var_id=__var_id)
 
@@ -454,7 +443,7 @@ def form_submit(form, data,
                 _d=None,
                 form_html=None,
                 var_id=None, prev_wfid=None,
-                svcname=None, nodename=None):
+                svc_id=None, node_id=None):
     log = []
     __var_id = var_id
     _scripts = {'returncode': 0}
@@ -514,8 +503,6 @@ def form_submit(form, data,
             if len(modsets) == 0:
                 log.append((1, "form.submit", "'Modulesets' must be specified in the form definition for the 'compliance fix' output", dict()))
                 continue
-            vals = []
-            vars = ['nodename', 'svcname', 'action_type', 'command', 'user_id', 'form_id']
             if __var_id is not None:
                 q = db.comp_rulesets_variables.id == __var_id
                 q &= db.comp_rulesets_variables.ruleset_id == db.comp_rulesets.id
@@ -528,67 +515,40 @@ def form_submit(form, data,
                     continue
                 rset_name = row.ruleset_name
                 if rset_name.startswith('svc.'):
-                    svcname = rset_name.replace('svc.', '')
+                    svc_id = rset_name.replace('svc.', '')
                 elif rset_name.startswith('node.'):
-                    nodename = rset_name.replace('node.', '')
+                    node_id = rset_name.replace('node.', '')
                 else:
-                    log.append((1, "form.submit", "Unable to deduce service or nodename from ruleset name %(rset_name)s", dict(rset_name=rset_name)))
+                    log.append((1, "form.submit", "Unable to deduce service or node_id from ruleset name %(rset_name)s", dict(rset_name=rset_name)))
                     continue
-            if nodename is None and svcname is None:
-                log.append((1, "form.submit", "No nodename nor svcname specified to 'compliance fix' output handler", dict()))
+            if node_id is None and svc_id is None:
+                log.append((1, "form.submit", "No node_id nor svc_id specified to 'compliance fix' output handler", dict()))
                 continue
-            nodes = [nodename]
-            if nodename is None and svcname is not None:
-                q = db.svcmon.mon_svcname == svcname
-                rows = db(q).select(db.svcmon.mon_nodname, cacheable=True)
+            nodes = [node_id]
+            if node_id is None and svc_id is not None:
+                q = db.svcmon.svc_id == svc_id
+                rows = db(q).select(db.svcmon.node_id, cacheable=True)
                 if len(rows) == 0:
-                    log.append((1, "form.submit", "No nodes found running service %(svcname)s", dict(svcname=svcname)))
+                    log.append((1, "form.submit", "No nodes found running service %(svcname)s", dict(svcname=get_svcname(svc_id))))
                     continue
-                nodes = [r.mon_nodname for r in rows]
+                nodes = [r.node_id for r in rows]
 
             _scripts['async'] = len(nodes)
             q = db.forms_store.id == record_id
             db(q).update(form_scripts=json.dumps(_scripts))
 
-            for nodename in nodes:
-                q = db.nodes.nodename == nodename
+            for node_id in nodes:
+                q = db.nodes.node_id == node_id
                 row = db(q).select(db.nodes.os_name, db.nodes.fqdn, cacheable=True).first()
                 if row is None:
-                    log.append((1, "form.submit", "No asset information found for node %(nodename)s", dict(nodename=nodename)))
+                    log.append((1, "form.submit", "No asset information found for node %(node_id)s", dict(node_id=node_id)))
                     continue
-                if row.fqdn is not None and len(row.fqdn) > 0:
-                    node = row.fqdn
-                else:
-                    node = nodename
-
-
-                if row.os_name == "Windows":
-                    action_type = "pull"
-                else:
-                    action_type = "push"
-
-                vals.append([nodename,
-                             svcname,
-                             action_type,
-                             fmt_action(node,
-                                        svcname,
-                                        "check",
-                                        action_type,
-                                        modset=modsets),
-                             str(auth.user_id),
-                             str(record_id)
-                            ])
-
-            purge_action_queue()
-            generic_insert('action_queue', vars, vals)
-            action_q_event()
+                fmt_action(node_id,
+                           svc_id,
+                           "check",
+                           action_type,
+                           modset=modsets)
             log.append((0, "form.submit", "Compliance fix commands queued for asynchronous execution on %(nodes)s", dict(nodes=', '.join(nodes))))
-
-            from subprocess import Popen
-            import sys
-            actiond = 'applications'+str(URL(r=request,c='actiond',f='actiond.py'))
-            process = Popen([sys.executable, actiond])
-            process.communicate()
         elif dest == "script":
             import os
             import subprocess

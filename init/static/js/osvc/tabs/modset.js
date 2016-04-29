@@ -94,7 +94,7 @@ function modset_properties(divid, options) {
 			"request_service": "/compliance/modulesets/%1/services",
                         "request_parameters": [data.id],
                         "limit": "0",
-                        "key": "svc_name",
+                        "key": "svcname",
                         "item_class": "svc",
                         "e_title": o.info_services_title,
                         "e_list": o.info_services

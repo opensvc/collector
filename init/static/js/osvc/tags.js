@@ -37,18 +37,18 @@ function tags(data) {
     return _tags_bind_admin_tools(this)
   }
 
-  if (("candidates" in data) && ("nodename" in data)) {
+  if (("candidates" in data) && ("node_id" in data)) {
     o.url = "R_NODE_CANDIDATE_TAGS"
-    o.url_params = [data.nodename]
-  } else if (("candidates" in data) && ("svcname" in data)) {
+    o.url_params = [data.node_id]
+  } else if (("candidates" in data) && ("svc_id" in data)) {
     o.url = "R_SERVICE_CANDIDATE_TAGS"
-    o.url_params = [data.svcname]
-  } else if ("nodename" in data) {
+    o.url_params = [data.svc_id]
+  } else if ("node_id" in data) {
     o.url = "R_NODE_TAGS"
-    o.url_params = [data.nodename]
-  } else if ("svcname" in data) {
+    o.url_params = [data.node_id]
+  } else if ("svc_id" in data) {
     o.url = "R_SERVICE_TAGS"
-    o.url_params = [data.svcname]
+    o.url_params = [data.svc_id]
   } else {
     return
   }
@@ -57,13 +57,13 @@ function tags(data) {
     tags_event_handler(o, data)
   }
 
-  if (o.data.nodename) {
-    services_osvcgetrest("R_NODE_AM_I_RESPONSIBLE", [o.data.nodename], "", function(jd) {
+  if (o.data.node_id) {
+    services_osvcgetrest("R_NODE_AM_I_RESPONSIBLE", [o.data.node_id], "", function(jd) {
       o.data.responsible = jd.data
       o.load()
     })
-  } else if (o.data.svcname) {
-    services_osvcgetrest("R_SERVICE_AM_I_RESPONSIBLE", [o.data.svcname], "", function(jd) {
+  } else if (o.data.svc_id) {
+    services_osvcgetrest("R_SERVICE_AM_I_RESPONSIBLE", [o.data.svc_id], "", function(jd) {
       o.data.responsible = jd.data
       o.load()
     })
@@ -79,12 +79,12 @@ function tags_event_handler(o, data) {
     return
   } 
   data = data.data
-  if (o.data.nodename) {
-    if (!data.nodename || (md5(o.data.nodename) != data.nodename)) {
+  if (o.data.node_id) {
+    if (!data.node_id || (o.data.node_id != data.node_id)) {
       return
     }
-  } else if (o.data.nodename) {
-    if (!data.svcname || (md5(o.data.svcname) != data.svcname)) {
+  } else if (o.data.svc_id) {
+    if (!data.svc_id || (o.data.svc_id != data.svc_id)) {
       return
     }
   }
@@ -277,10 +277,10 @@ function tags_add_candidates(o, tag, tag_name) {
    "prefix": prefix,
    "candidates": true
   }
-  if ("nodename" in o.data) {
-    data.nodename = o.data.nodename
-  } else if ("svcname" in o.data) {
-    data.svcname = o.data.svcname
+  if ("node_id" in o.data) {
+    data.node_id = o.data.node_id
+  } else if ("svc_id" in o.data) {
+    data.svc_id = o.data.svc_id
   }
   o.div.find("#"+ctid).parent().remove()
   e = $("<span><h3>"+i18n.t("tags.candidates")+"</h3><div id='"+ctid+"' class='tags'></div></span>")
@@ -333,12 +333,12 @@ function tags_attach_tag(o, tag_data) {
 }
 
 function _tags_attach_tag(o, tag_data) {
-  if ("nodename" in o.data) {
+  if ("node_id" in o.data) {
     url = "R_TAG_NODE"
-    url_params = [tag_data.id, o.data.nodename]
-  } else if ("svcname" in o.data) {
+    url_params = [tag_data.id, o.data.node_id]
+  } else if ("svc_id" in o.data) {
     url = "R_TAG_SERVICE"
-    url_params = [tag_data.id, o.data.svcname]
+    url_params = [tag_data.id, o.data.svc_id]
   } else {
     return
   }
@@ -367,12 +367,12 @@ function tags_detach_tag(o, tag) {
   o.div.info.empty()
   tag.hide()
   spinner_add(o.div.info, i18n.t("tags.detaching"))
-  if ("nodename" in o.data) {
+  if ("node_id" in o.data) {
     url = "R_TAG_NODE"
-    url_params = [tag.attr("tag_id"), o.data.nodename]
-  } else if ("svcname" in o.data) {
+    url_params = [tag.attr("tag_id"), o.data.node_id]
+  } else if ("svc_id" in o.data) {
     url = "R_TAG_SERVICE"
-    url_params = [tag.attr("tag_id"), o.data.svcname]
+    url_params = [tag.attr("tag_id"), o.data.svc_id]
   } else {
     return
   }

@@ -14,7 +14,9 @@ class table_resmon(HtmlTable):
         HtmlTable.__init__(self, id, func, innerhtml)
         self.cols = [
          'id',
+         'svc_id',
          'svcname',
+         'node_id',
          'nodename',
          'vmname',
          'rid',
@@ -25,15 +27,7 @@ class table_resmon(HtmlTable):
          'res_monitor',
          'res_disable',
          'res_optional',
-         #'changed',
          'updated'
-        ]
-        self.cols = [
-         'id',
-         'svcname',
-         'nodename',
-         'vmname',
-         'rid',
         ]
         for col in nodes_cols:
             if col not in self.cols:
@@ -44,12 +38,20 @@ class table_resmon(HtmlTable):
                      table='resmon',
                      field='id',
                     ),
-            'svcname': HtmlTableColumn(
+            'svc_id': HtmlTableColumn(
                      table='resmon',
+                     field='svc_id',
+                    ),
+            'svcname': HtmlTableColumn(
+                     table='services',
                      field='svcname',
                     ),
-            'nodename': HtmlTableColumn(
+            'node_id': HtmlTableColumn(
                      table='resmon',
+                     field='node_id',
+                    ),
+            'nodename': HtmlTableColumn(
+                     table='nodes',
                      field='nodename',
                     ),
             'vmname': HtmlTableColumn(
@@ -102,8 +104,8 @@ class table_resmon(HtmlTable):
                     ),
         })
         self.ajax_col_values = 'ajax_resmon_col_values'
-        self.span = ['nodename', 'svcname']
-        self.keys = ['nodename', 'svcname', 'vmname', 'rid']
+        self.span = ['node_id', 'svc_id']
+        self.keys = ['node_id', 'svc_id', 'vmname', 'rid']
 
 @auth.requires_login()
 def ajax_resmon_col_values():
@@ -111,9 +113,10 @@ def ajax_resmon_col_values():
     t = table_resmon(table_id, 'ajax_resmon')
     col = request.args[0]
     o = db[t.colprops[col].table][col]
-    q = db.resmon.nodename==db.nodes.nodename
-    q = q_filter(q, node_field=db.resmon.nodename)
-    q = apply_filters(q, db.resmon.nodename, db.resmon.svcname)
+    q = db.resmon.node_id==db.nodes.node_id
+    q &= db.resmon.svc_id==db.services.svc_id
+    q = q_filter(q, node_field=db.resmon.node_id)
+    q = apply_filters_id(q, db.resmon.node_id, db.resmon.svc_id)
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
     t.object_list = db(q).select(o, orderby=o)
@@ -123,15 +126,16 @@ def ajax_resmon_col_values():
 def ajax_resmon():
     table_id = request.vars.table_id
     t = table_resmon(table_id, 'ajax_resmon')
-    o = db.resmon.svcname
-    o |= db.resmon.nodename
+    o = db.services.svcname
+    o |= db.nodes.nodename
     o |= db.resmon.vmname
     o |= db.resmon.rid
 
     q = db.resmon.id>0
-    q &= db.resmon.nodename==db.nodes.nodename
-    q = q_filter(q, node_field=db.resmon.nodename)
-    q = apply_filters(q, db.resmon.nodename, db.resmon.svcname)
+    q &= db.resmon.node_id==db.nodes.node_id
+    q &= db.resmon.svc_id==db.services.svc_id
+    q = q_filter(q, node_field=db.resmon.node_id)
+    q = apply_filters_id(q, db.resmon.node_id, db.resmon.svc_id)
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
 

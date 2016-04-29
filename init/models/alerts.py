@@ -1,26 +1,25 @@
-def update_dash_compdiff(nodename):
-    nodename = nodename.strip("'")
-    q = db.svcmon.mon_nodname == nodename
+def update_dash_compdiff(node_id):
+    q = db.svcmon.node_id == node_id
     q &= db.svcmon.mon_updated > datetime.datetime.now() - datetime.timedelta(minutes=20)
-    rows = db(q).select(db.svcmon.mon_svcname, db.svcmon.mon_svctype)
-    svcnames = map(lambda x: x.mon_svcname, rows)
-    update_dash_compdiff_svc(svcnames)
+    rows = db(q).select(db.svcmon.svc_id, db.svcmon.mon_svctype)
+    svc_ids = map(lambda x: x.svc_id, rows)
+    update_dash_compdiff_svc(svc_ids)
     dashboard_events()
 
-def update_dash_compdiff_svc(svcnames):
-    if type(svcnames) != list:
-        svcnames = [svcnames]
+def update_dash_compdiff_svc(svc_ids):
+    if type(svc_ids) != list:
+        svc_ids = [svc_ids]
 
     now = datetime.datetime.now()
     now = now - datetime.timedelta(microseconds=now.microsecond)
 
-    for svcname in svcnames:
-        q = db.svcmon.mon_svcname == svcname
+    for svc_id in svc_ids:
+        q = db.svcmon.svc_id == svc_id
         q &= db.svcmon.mon_updated > datetime.datetime.now() - datetime.timedelta(minutes=1440)
-        rows = db(q).select(db.svcmon.mon_nodname,
+        rows = db(q).select(db.svcmon.node_id,
                             db.svcmon.mon_svctype,
-                            orderby=db.svcmon.mon_nodname)
-        nodes = map(lambda x: x.mon_nodname, rows)
+                            orderby=db.svcmon.node_id)
+        nodes = map(lambda x: x.node_id, rows)
         n = len(nodes)
 
         if n < 2:
@@ -31,22 +30,22 @@ def update_dash_compdiff_svc(svcnames):
         sql = """select count(t.id) from (
                    select
                      cs.id,
-                     count(cs.run_nodename) as c
+                     count(cs.node_id) as c
                    from
                      comp_status cs,
                      svcmon m
                    where
-                     (cs.run_svcname is NULL or cs.run_svcname="") and
-                     m.mon_svcname="%(svcname)s" and
-                     m.mon_nodname=cs.run_nodename
+                     (cs.svc_id is NULL or cs.svc_id="") and
+                     m.svc_id="%(svc_id)s" and
+                     m.node_id=cs.node_id
                    group by
-                     cs.run_svcname,
+                     cs.svc_id,
                      cs.run_module,
                      cs.run_status
                   ) as t
                   where
                     t.c!=%(n)s
-              """%dict(svcname=svcname, n=n)
+              """%dict(svc_id=svc_id, n=n)
 
         rows = db.executesql(sql)
 
@@ -71,8 +70,8 @@ def update_dash_compdiff_svc(svcnames):
         sql = """insert into dashboard
                  set
                    dash_type="compliance differences in cluster",
-                   dash_svcname="%(svcname)s",
-                   dash_nodename="",
+                   svc_id="%(svc_id)s",
+                   node_id="",
                    dash_severity=%(sev)d,
                    dash_fmt="%%(n)s compliance differences in cluster %%(nodes)s",
                    dash_dict='{"n": %(n)d, "nodes": "%(nodes)s"}',
@@ -82,7 +81,7 @@ def update_dash_compdiff_svc(svcnames):
                    dash_env="%(env)s"
                  on duplicate key update
                    dash_updated="%(now)s"
-              """%dict(svcname=svcname,
+              """%dict(svc_id=svc_id,
                        sev=sev,
                        now=str(now),
                        env=row.mon_svctype,
@@ -92,47 +91,47 @@ def update_dash_compdiff_svc(svcnames):
         rows = db.executesql(sql)
         db.commit()
 
-    if len(svcnames) > 0:
-        q = db.dashboard.dash_svcname.belongs(svcnames)
+    if len(svc_ids) > 0:
+        q = db.dashboard.svc_id.belongs(svc_ids)
         q &= db.dashboard.dash_type == "compliance differences in cluster"
         q &= (db.dashboard.dash_updated < now) | (db.dashboard.dash_updated == None)
         db(q).delete()
         db.commit()
 
 
-def update_dash_moddiff_node(nodename):
-    q = db.svcmon.mon_nodname == nodename
+def update_dash_moddiff_node(node_id):
+    q = db.svcmon.node_id == node_id
     q &= db.svcmon.mon_updated > now - datetime.timedelta(days=2)
-    svcnames = [r.mon_svcname for r in db(q).select(db.svcmon.mon_svcname)]
+    svc_ids = [r.svc_id for r in db(q).select(db.svcmon.svc_id)]
 
     r = []
-    for svcname in svcnames:
-        r.append(update_dash_moddiff(svcname))
+    for svc_id in svc_ids:
+        r.append(update_dash_moddiff(svc_id))
 
     dashboard_events()
     return str(r)
 
-def update_dash_moddiff(svcname):
+def update_dash_moddiff(svc_id):
 
-    def cleanup(svcname, now):
+    def cleanup(svc_id, now):
         sql = """delete from dashboard
                  where
                    dash_type="compliance moduleset attachment differences in cluster" and
-                   dash_svcname="%(svcname)s" and
+                   svc_id="%(svc_id)s" and
                    dash_updated < "%(now)s"
-              """%dict(svcname=svcname, now=str(now))
+              """%dict(svc_id=svc_id, now=str(now))
         db.executesql(sql)
         db.commit()
 
-    rows = db(db.svcmon.mon_svcname==svcname).select(orderby=db.svcmon.mon_nodname)
-    nodes = [r.mon_nodname for r in rows]
+    rows = db(db.svcmon.svc_id==svc_id).select(orderby=db.svcmon.node_id)
+    nodes = [r.node_id for r in rows]
     n = len(nodes)
 
     now = datetime.datetime.now()
     now = now - datetime.timedelta(microseconds=now.microsecond)
 
     if n < 2:
-        cleanup(svcname, now)
+        cleanup(svc_id, now)
         return
 
     if rows.first().mon_svctype == 'PRD':
@@ -162,8 +161,8 @@ def update_dash_moddiff(svcname):
                svcmon m,
                comp_moduleset ms
              where
-               m.mon_svcname="%(svcname)s" and
-               m.mon_nodname=nm.modset_node and
+               m.svc_id="%(svc_id)s" and
+               m.node_id=nm.node_id and
                nm.modset_id=ms.id
              group by
                modset_name
@@ -171,18 +170,18 @@ def update_dash_moddiff(svcname):
                modset_name
             ) t
             where t.n != %(n)d
-    """%dict(svcname=svcname, n=n)
+    """%dict(svc_id=svc_id, n=n)
     _rows = db.executesql(sql)
 
     if _rows[0][0] == 0:
-        cleanup(svcname, now)
+        cleanup(svc_id, now)
         return
 
     sql = """
            insert into dashboard set
              dash_type="compliance moduleset attachment differences in cluster",
-             dash_svcname="%(svcname)s",
-             dash_nodename="",
+             svc_id="%(svc_id)s",
+             node_id="",
              dash_severity=%(sev)d,
              dash_fmt="%%(n)d differences in cluster %%(nodes)s",
              dash_dict='{"n": %(ndiff)d, "nodes": "%(nodes)s"}',
@@ -192,48 +191,50 @@ def update_dash_moddiff(svcname):
              dash_env="%(env)s"
            on duplicate key update
              dash_updated="%(now)s"
-    """%dict(now=str(now), svcname=svcname, nodes=nodes_s, ndiff=_rows[0][0], sev=sev, env=rows.first().mon_svctype)
+    """%dict(now=str(now), svc_id=svc_id, nodes=nodes_s, ndiff=_rows[0][0], sev=sev, env=rows.first().mon_svctype)
     db.executesql(sql)
     db.commit()
 
-    cleanup(svcname, now)
-    return svcname, _rows[0][0]
+    cleanup(svc_id, now)
+    return svc_id, _rows[0][0]
 
-def update_dash_rsetdiff_node(nodename):
-    q = db.svcmon.mon_nodname == nodename
+def update_dash_rsetdiff_node(node_id):
+    q = db.svcmon.node_id == node_id
     q &= db.svcmon.mon_updated > now - datetime.timedelta(days=2)
-    svcnames = [r.mon_svcname for r in db(q).select(db.svcmon.mon_svcname)]
+    svc_ids = [r.svc_id for r in db(q).select(db.svcmon.svc_id)]
 
     r = []
-    for svcname in svcnames:
-        r.append(update_dash_rsetdiff(svcname))
+    for svc_id in svc_ids:
+        r.append(update_dash_rsetdiff(svc_id))
 
     dashboard_events()
     return str(r)
 
-def update_dash_rsetdiff(svcname):
-    rows = db(db.svcmon.mon_svcname==svcname).select(orderby=db.svcmon.mon_nodname)
-    nodes = [r.mon_nodname for r in rows]
+def update_dash_rsetdiff(svc_id):
+    q = db.svcmon.svc_id == svc_id
+    q &= db.svcmon.node_id == db.nodes.node_id
+    rows = db(q).select(orderby=db.svcmon.node_id)
+    nodes = [r.nodes.nodename for r in rows]
     n = len(nodes)
 
     now = datetime.datetime.now()
     now = now - datetime.timedelta(microseconds=now.microsecond)
 
-    def cleanup(svcname, now):
+    def cleanup(svc_id, now):
         sql = """delete from dashboard
                  where
                    dash_type="compliance ruleset attachment differences in cluster" and
-                   dash_svcname="%(svcname)s" and
+                   svc_id="%(svc_id)s" and
                    dash_updated < "%(now)s"
-              """%dict(svcname=svcname, now=str(now))
+              """%dict(svc_id=svc_id, now=str(now))
         db.executesql(sql)
         db.commit()
 
     if n < 2:
-        cleanup(svcname, now)
+        cleanup(svc_id, now)
         return
 
-    if rows.first().mon_svctype == 'PRD':
+    if rows.first().svcmon.mon_svctype == 'PRD':
         sev = 1
     else:
         sev = 0
@@ -241,7 +242,7 @@ def update_dash_rsetdiff(svcname):
     skip = 0
     trail = ""
     while True:
-        nodes_s = ','.join(nodes).replace("'", "")+trail
+        nodes_s = ','.join(nodes)+trail
         if len(nodes_s) < 50:
             break
         skip += 1
@@ -252,16 +253,16 @@ def update_dash_rsetdiff(svcname):
             select count(t.n) from
             (
              select
-               count(rn.nodename) as n,
-               group_concat(rn.nodename) as nodes,
+               count(rn.node_id) as n,
+               group_concat(rn.node_id) as nodes,
                rs.ruleset_name as ruleset
              from
                comp_rulesets_nodes rn,
                svcmon m,
                comp_rulesets rs
              where
-               m.mon_svcname="%(svcname)s" and
-               m.mon_nodname=rn.nodename and
+               m.svc_id="%(svc_id)s" and
+               m.node_id=rn.node_id and
                rn.ruleset_id=rs.id
              group by
                ruleset_name
@@ -269,18 +270,18 @@ def update_dash_rsetdiff(svcname):
                ruleset_name
             ) t
             where t.n != %(n)d
-    """%dict(svcname=svcname, n=n)
+    """%dict(svc_id=svc_id, n=n)
     _rows = db.executesql(sql)
 
     if _rows[0][0] == 0:
-        cleanup(svcname, now)
+        cleanup(svc_id, now)
         return
 
     sql = """
            insert into dashboard set
              dash_type="compliance ruleset attachment differences in cluster",
-             dash_svcname="%(svcname)s",
-             dash_nodename="",
+             svc_id="%(svc_id)s",
+             node_id="",
              dash_severity=%(sev)d,
              dash_fmt="%%(n)d differences in cluster %%(nodes)s",
              dash_dict='{"n": %(ndiff)d, "nodes": "%(nodes)s"}',
@@ -290,9 +291,9 @@ def update_dash_rsetdiff(svcname):
              dash_env="%(env)s"
            on duplicate key update
              dash_updated="%(now)s"
-    """%dict(now=str(now), svcname=svcname, nodes=nodes_s, ndiff=_rows[0][0], sev=sev, env=rows.first().mon_svctype)
+    """%dict(now=str(now), svc_id=svc_id, nodes=nodes_s, ndiff=_rows[0][0], sev=sev, env=rows.first().mon_svctype)
     db.executesql(sql)
     db.commit()
 
-    return svcname, _rows[0][0]
+    return svc_id, _rows[0][0]
 

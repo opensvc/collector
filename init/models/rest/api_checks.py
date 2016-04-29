@@ -18,7 +18,7 @@ class rest_get_checks(rest_get_table_handler):
         )
 
     def handler(self, **vars):
-        q = q_filter(node_field=db.checks_live.chk_nodename)
+        q = q_filter(node_field=db.checks_live.node_id)
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -41,7 +41,7 @@ class rest_get_check(rest_get_line_handler):
 
     def handler(self, id, **vars):
         q = db.checks_live.id == id
-        q = q_filter(q, node_field=db.checks_live.chk_nodename)
+        q = q_filter(q, node_field=db.checks_live.node_id)
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -68,19 +68,19 @@ class rest_delete_check(rest_delete_handler):
     def handler(self, id, **vars):
         check_privilege("CheckManager")
         q = db.checks_live.id == id
-        q = q_filter(q, node_field=db.checks_live.chk_nodename)
+        q = q_filter(q, node_field=db.checks_live.node_id)
         row = db(q).select().first()
         if row is None:
             raise Exception("Check instance %s does not exist" % str(id))
-        node_responsible(row.chk_nodename)
+        node_responsible(node_id=row.node_id)
 
         db(q).delete()
 
         _log('check.delete',
              'delete check instance %(data)s',
-             dict(data='-'.join((row.chk_nodename, row.chk_svcname, row.chk_type, row.chk_instance))),
-             nodename=row.chk_nodename,
-             svcname=row.chk_svcname,
+             dict(data='-'.join((row.chk_type, row.chk_instance))),
+             node_id=row.node_id,
+             svc_id=row.svc_id,
             )
         l = {
           'event': 'checks_change',
@@ -88,7 +88,7 @@ class rest_delete_check(rest_delete_handler):
         }
         _websocket_send(event_msg(l))
         table_modified("checks_live")
-        update_dash_checks(row.chk_nodename)
+        update_dash_checks(row.node_id)
 
         return dict(info="check instance %s deleted" % str(id))
 
@@ -101,7 +101,7 @@ class rest_delete_checks(rest_delete_handler):
           "- Send websocket change events.",
         ]
         examples = [
-          "# curl -u %(email)s -X DELETE -o- https://%(collector)s/init/rest/api/checks/live?filter[]=chk_nodename=test%%",
+          "# curl -u %(email)s -X DELETE -o- https://%(collector)s/init/rest/api/checks/live?filter[]=chk_type=eth%%",
         ]
         rest_delete_handler.__init__(
           self,
@@ -115,17 +115,19 @@ class rest_delete_checks(rest_delete_handler):
         if 'id' in vars:
             q = db.checks_live.id == vars["id"]
             s = vars["id"]
-        elif 'chk_nodename' in vars and 'chk_type' in vars and 'chk_instance' in vars:
-            q = db.checks_live.chk_nodename == vars["chk_nodename"]
+        elif 'node_id' in vars and 'chk_type' in vars and 'chk_instance' in vars:
+            node_id = get_node_id(vars["node_id"])
+            q = db.checks_live.node_id == node_id
             q &= db.checks_live.chk_type == vars["chk_type"]
             q &= db.checks_live.chk_instance == vars["chk_instance"]
-            s = "%s %s %s" % (vars["chk_type"], vars["chk_instance"], vars["chk_nodename"])
+            s = "%s %s %s" % (vars["chk_type"], vars["chk_instance"], get_nodename(node_id))
         else:
-            raise Exception("id key or chk_nodename+chk_type+chk_instance[+chk_svcname] must be specified")
-        if 'chk_svcname' in vars:
-            q &= db.checks_live.chk_svcname == vars["chk_svcname"]
-            s += vars["chk_svcname"]
-        q = q_filter(q, node_field=db.checks_live.chk_nodename)
+            raise Exception("id key or node_id+chk_type+chk_instance[+svc_id] must be specified")
+        if 'svc_id' in vars:
+            svc_id = get_svc_id(vars["svc_id"])
+            q &= db.checks_live.svc_id == svc_id
+            s += get_svcname(svc_id)
+        q = q_filter(q, node_field=db.checks_live.node_id)
         row = db(q).select().first()
         if row is None:
             raise Exception("check instance %s does not exist" % s)
@@ -153,7 +155,7 @@ class rest_get_checks_settings(rest_get_table_handler):
 
     def handler(self, **vars):
         q = db.checks_settings.id > 0
-        q = q_filter(q, node_field=db.checks_settings.chk_nodename)
+        q = q_filter(q, node_field=db.checks_settings.node_id)
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -176,7 +178,7 @@ class rest_get_checks_setting(rest_get_line_handler):
 
     def handler(self, id, **vars):
         q = db.checks_settings.id == id
-        q = q_filter(q, node_field=db.checks_settings.chk_nodename)
+        q = q_filter(q, node_field=db.checks_settings.node_id)
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -203,19 +205,19 @@ class rest_delete_checks_setting(rest_delete_handler):
     def handler(self, id, **vars):
         check_privilege("CheckManager")
         q = db.checks_settings.id == id
-        q = q_filter(q, node_field=db.checks_settings.chk_nodename)
+        q = q_filter(q, node_field=db.checks_settings.node_id)
         row = db(q).select().first()
         if row is None:
             raise Exception("Check instance settings %s does not exist" % str(id))
-        node_responsible(row.chk_nodename)
+        node_responsible(node_id=row.node_id)
 
         db(q).delete()
 
         _log('check.settings.delete',
              'delete check instance settings %(data)s',
-             dict(data='-'.join((row.chk_nodename, row.chk_svcname, row.chk_type, row.chk_instance))),
-             nodename=row.chk_nodename,
-             svcname=row.chk_svcname,
+             dict(data='-'.join((row.chk_type, row.chk_instance))),
+             node_id=row.node_id,
+             svc_id=row.svc_id,
             )
         table_modified("checks_settings")
         l = {
@@ -224,13 +226,13 @@ class rest_delete_checks_setting(rest_delete_handler):
         }
         _websocket_send(event_msg(l))
 
-        q = db.checks_live.chk_nodename == row.chk_nodename
-        q = db.checks_live.chk_svcname == row.chk_svcname
+        q = db.checks_live.node_id == row.node_id
+        q = db.checks_live.svc_id == row.svc_id
         q = db.checks_live.chk_type == row.chk_type
         q = db.checks_live.chk_instance == row.chk_instance
         rows = db(q).select()
         update_thresholds_batch(rows, one_source=True)
-        update_dash_checks(row.chk_nodename)
+        update_dash_checks(row.node_id)
 
         return dict(info="check instance settings %s deleted" % str(id))
 
@@ -243,7 +245,7 @@ class rest_delete_checks_settings(rest_delete_handler):
           "- Send websocket change events.",
         ]
         examples = [
-          "# curl -u %(email)s -X DELETE -o- https://%(collector)s/init/rest/api/checks/settings?filter[]=chk_nodename=test%%",
+          "# curl -u %(email)s -X DELETE -o- https://%(collector)s/init/rest/api/checks/settings?filter[]=chk_type=eth%%",
         ]
         rest_delete_handler.__init__(
           self,
@@ -257,17 +259,19 @@ class rest_delete_checks_settings(rest_delete_handler):
         if 'id' in vars:
             q = db.checks_settings.id == vars["id"]
             s = vars["id"]
-        elif 'chk_nodename' in vars and 'chk_type' in vars and 'chk_instance' in vars:
-            q = db.checks_settings.chk_nodename == vars["chk_nodename"]
+        elif 'node_id' in vars and 'chk_type' in vars and 'chk_instance' in vars:
+            node_id = get_node_id(vars["node_id"])
+            q = db.checks_settings.node_id == node_id
             q &= db.checks_settings.chk_type == vars["chk_type"]
             q &= db.checks_settings.chk_instance == vars["chk_instance"]
-            s = "%s %s %s" % (vars["chk_type"], vars["chk_instance"], vars["chk_nodename"])
+            s = "%s %s %s" % (vars["chk_type"], vars["chk_instance"], get_nodename(node_id))
         else:
-            raise Exception("id key or chk_nodename+chk_type+chk_instance[+chk_svcname] must be specified")
-        if 'chk_svcname' in vars:
-            q &= db.checks_settings.chk_svcname == vars["chk_svcname"]
-            s += vars["chk_svcname"]
-        q = q_filter(q, node_field=db.checks_settings.chk_nodename)
+            raise Exception("id key or node_id+chk_type+chk_instance[+svc_id] must be specified")
+        if 'svc_id' in vars:
+            svc_id = get_svc_id(vars["svc_id"])
+            q &= db.checks_settings.chk_svcname == svc_id
+            s += get_svcname(svc_id)
+        q = q_filter(q, node_field=db.checks_settings.node_id)
         row = db(q).select().first()
         if row is None:
             raise Exception("check instance settings %s does not exist" % s)
@@ -297,11 +301,11 @@ class rest_post_checks_setting(rest_post_handler):
     def handler(self, id, **vars):
         check_privilege("CheckManager")
         q = db.checks_settings.id == id
-        q = q_filter(q, node_field=db.checks_settings.chk_nodename)
+        q = q_filter(q, node_field=db.checks_settings.node_id)
         row = db(q).select().first()
         if row is None:
             raise Exception("Check instance settings %s does not exist" % str(id))
-        node_responsible(row.chk_nodename)
+        node_responsible(node_id=row.node_id)
 
         data = {}
         for key in vars:
@@ -315,8 +319,8 @@ class rest_post_checks_setting(rest_post_handler):
         fmt = 'change check instance settings %(data)s'
         d = dict(data=beautify_change(row, data))
         _log('check.settings.change', fmt, d,
-             nodename=row.chk_nodename,
-             svcname=row.chk_svcname,
+             node_id=row.node_id,
+             svc_id=row.svc_id,
             )
         table_modified("checks_settings")
         table_modified("checks_settings")
@@ -325,13 +329,13 @@ class rest_post_checks_setting(rest_post_handler):
           'data': {'id': row.id},
         }
 
-        q = db.checks_live.chk_nodename == row.chk_nodename
-        q = db.checks_live.chk_svcname == row.chk_svcname
+        q = db.checks_live.node_id == row.node_id
+        q = db.checks_live.svc_id == row.svc_id
         q = db.checks_live.chk_type == row.chk_type
         q = db.checks_live.chk_instance == row.chk_instance
         rows = db(q).select()
         update_thresholds_batch(rows, one_source=True)
-        update_dash_checks(row.chk_nodename)
+        update_dash_checks(row.node_id)
         return_data = rest_get_checks_setting().handler(row.id)
         return_data["info"] = fmt % d
         return return_data
@@ -347,7 +351,7 @@ class rest_post_checks_settings(rest_post_handler):
           "- Send websocket change events.",
         ]
         examples = [
-          "# curl -u %(email)s -X POST -d chk_nodename=node1 -d chk_type=eth -d chk_instance=eth0.speed -d chk_low=0 -o- https://%(collector)s/init/rest/api/checks/settings",
+          "# curl -u %(email)s -X POST -d node_id=1 -d chk_type=eth -d chk_instance=eth0.speed -d chk_low=0 -o- https://%(collector)s/init/rest/api/checks/settings",
         ]
         rest_post_handler.__init__(
           self,
@@ -362,27 +366,30 @@ class rest_post_checks_settings(rest_post_handler):
         if 'id' in vars:
             q = db.checks_settings.id == vars["id"]
             s = vars["id"]
-        elif 'chk_nodename' in vars and 'chk_type' in vars and 'chk_instance' in vars:
-            q = db.checks_settings.chk_nodename == vars["chk_nodename"]
+        elif 'node_id' in vars and 'chk_type' in vars and 'chk_instance' in vars:
+            node_id = get_node_id(vars["node_id"])
+            q = db.checks_settings.node_id == node_id
             q &= db.checks_settings.chk_type == vars["chk_type"]
             q &= db.checks_settings.chk_instance == vars["chk_instance"]
-            s = "%s %s %s" % (vars["chk_type"], vars["chk_instance"], vars["chk_nodename"])
+            s = "%s %s %s" % (vars["chk_type"], vars["chk_instance"], get_nodename(node_id))
         else:
-            raise Exception("id key or chk_nodename+chk_type+chk_instance[+chk_svcname] must be specified")
-        if 'chk_svcname' in vars:
-            q &= db.checks_settings.chk_svcname == vars["chk_svcname"]
-            s += vars["chk_svcname"]
+            raise Exception("id key or node_id+chk_type+chk_instance[+svc_id] must be specified")
+        if 'svc_id' in vars:
+            svc_id = get_svc_id(vars["svc_id"])
+            q &= db.checks_settings.svc_id == svc_id
+            s += get_svcname(svc_id)
         row = db(q).select().first()
         if row is None:
-            if not "chk_nodename" in vars or not "chk_type" in vars or not "chk_instance" in vars:
-                raise Exception("chk_nodename+chk_type+chk_instance[+chk_svcname] must be specified")
+            if not "node_id" in vars or not "chk_type" in vars or not "chk_instance" in vars:
+                raise Exception("node_id+chk_type+chk_instance[+svc_id] must be specified")
             check_privilege("CheckManager")
-            node_responsible(vars["chk_nodename"])
+            node_id = get_node_id(vars["node_id"])
+            node_responsible(node_id=node_id)
             vars["chk_changed"] = datetime.datetime.now()
             vars["chk_changed_by"] = user_name()
 
-            q = db.checks_live.chk_nodename == vars.get("chk_nodename")
-            q = db.checks_live.chk_svcname == vars.get("chk_svcname", "")
+            q = db.checks_live.node_id == node_id
+            q = db.checks_live.svc_id == svc_id
             q = db.checks_live.chk_type == vars.get("chk_type")
             q = db.checks_live.chk_instance == vars.get("chk_instance")
             rows = db(q).select()
@@ -399,8 +406,8 @@ class rest_post_checks_settings(rest_post_handler):
             fmt = 'add check instance settings %(data)s'
             d = dict(data=beautify_data(vars))
             _log('check.settings.add',fmt, d,
-                 nodename=vars.get("chk_nodename"),
-                 svcname=vars.get("chk_svcname", ""),
+                 node_id=node_id,
+                 svc_id=svc_id,
                 )
             table_modified("checks_settings")
             l = {
@@ -410,7 +417,7 @@ class rest_post_checks_settings(rest_post_handler):
             _websocket_send(event_msg(l))
 
             update_thresholds_batch(rows, one_source=True)
-            update_dash_checks(vars.get("chk_nodename"))
+            update_dash_checks(node_id)
             return_data = rest_get_checks_setting().handler(id)
             return_data["info"] = fmt % d
             return return_data

@@ -25,7 +25,7 @@ def lib_safe_check_file_publication(uuid):
         q1 = db.safe.id == db.safe_team_publication.file_id
         q1 &= db.safe_team_publication.group_id == db.auth_group.id
         q1 &= db.auth_group.role == db.nodes.team_responsible
-        q1 &= db.nodes.nodename == auth.user.nodename
+        q1 &= db.nodes.node_id == auth.user.node_id
         ok = db(q&q1).select().first()
         if ok:
             return

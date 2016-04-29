@@ -18,25 +18,27 @@ class rest_get_alert_event(rest_get_line_handler):
         )
 
     def handler(self, **vars):
-    	if 'md5name' not in vars:
-    	    raise Exception("the md5name property is mandatory")
-    	md5name = vars['md5name']
+        if 'md5name' not in vars:
+            raise Exception("the md5name property is mandatory")
+        md5name = vars['md5name']
 
-    	if 'nodename' not in vars:
-    	    raise Exception("the nodename property is mandatory")
-    	nodename = vars['nodename']
+        if 'node_id' not in vars or vars["node_id"] == "":
+            node_id = ""
+        else:
+            node_id = get_node_id(vars['node_id'])
 
-    	if 'svcname' not in vars:
-    	    raise Exception("the svcname property is mandatory")
-    	svcname = vars['svcname']
+        if 'svc_id' not in vars or vars["svc_id"] == "":
+            svc_id = ""
+        else:
+            svc_id = get_svc_id(vars['svc_id'])
 
-    	limit = datetime.datetime.now() - datetime.timedelta(days=30)
-    	q = db.dashboard_events.dash_md5 == md5name
-    	q &= db.dashboard_events.dash_nodename == nodename
-    	q &= db.dashboard_events.dash_svcname == svcname
-    	q &= db.dashboard_events.dash_begin > limit
-        f1 = q_filter(svc_field=db.dashboard_events.dash_svcname)
-        f2 = q_filter(node_field=db.dashboard_events.dash_nodename)
+        limit = datetime.datetime.now() - datetime.timedelta(days=30)
+        q = db.dashboard_events.dash_md5 == md5name
+        q &= db.dashboard_events.node_id == node_id
+        q &= db.dashboard_events.svc_id == svc_id
+        q &= db.dashboard_events.dash_begin > limit
+        f1 = q_filter(svc_field=db.dashboard_events.svc_id)
+        f2 = q_filter(node_field=db.dashboard_events.node_id)
         q = (f1|f2)
-    	self.set_q(q)
+        self.set_q(q)
         return self.prepare_data()

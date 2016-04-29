@@ -3,15 +3,19 @@ class table_services(HtmlTable):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
-        self.cols += ['svc_name']
+        self.cols = ['svc_id', 'svcname']
         self.cols += services_cols
         self.cols.remove("svc_updated")
         self.cols += ['updated', 'svc_status_updated']
         self.colprops = services_colprops
         self.colprops.update({
-            'svc_name': HtmlTableColumn(
+            'svc_id': HtmlTableColumn(
                      table='services',
-                     field='svc_name',
+                     field='svc_id',
+                    ),
+            'svcname': HtmlTableColumn(
+                     table='services',
+                     field='svcname',
                     ),
             'svc_status_updated': HtmlTableColumn(
                      table='services',
@@ -26,8 +30,8 @@ class table_services(HtmlTable):
             self.colprops[col].table = "services"
         self.colprops["updated"] = self.colprops["svc_updated"]
         self.ajax_col_values = 'ajax_services_col_values'
-        self.span = ["svc_name"]
-        self.keys = ["svc_name"]
+        self.span = ["svc_id"]
+        self.keys = ["svc_id"]
 
 
 @auth.requires_login()
@@ -37,7 +41,7 @@ def ajax_services_col_values():
     col = request.args[0]
     o = db[t.colprops[col].table][col]
     q = q_filter(app_field=db.services.svc_app)
-    q = apply_filters(q, None, db.services.svc_name)
+    q = apply_filters_id(q, svc_field=db.services.svc_id)
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
     t.object_list = db(q).select(o, orderby=o)
@@ -48,9 +52,9 @@ def ajax_services():
     table_id = request.vars.table_id
     t = table_services(table_id, 'ajax_services')
 
-    o = db.services.svc_name
+    o = db.services.svcname
     q = q_filter(app_field=db.services.svc_app)
-    q = apply_filters(q, None, db.services.svc_name)
+    q = apply_filters_id(q, svc_field=db.services.svc_id)
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
 

@@ -57,10 +57,6 @@ data = {
    'title': 'Disks',
    'batchs': [
      {
-       'url': URL(r=request, c='disks', f='refresh_b_disk_app'),
-       'comment': "Refresh the data table linking disks as viewed by the nodes with the disks as viewed by the storage arrays.",
-     },
-     {
        'url': URL(r=request, c='disks', f='purge_diskinfo'),
        'comment': "Purge the disk information table",
      },

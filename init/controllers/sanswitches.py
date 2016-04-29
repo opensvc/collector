@@ -74,7 +74,7 @@ def ajax_sanswitches_col_values():
     q = db.v_switches.id > 0
     for f in t.cols:
         q = _where(q, 'v_switches', t.filter_parse(f), f)
-    q = apply_filters(q, db.v_switches.sw_rname, None)
+    q = apply_filters_id(q, node_field=db.v_switches.sw_rname)
     t.object_list = db(q).select(o, orderby=o)
     return t.col_values_cloud_ungrouped(col)
 
@@ -87,7 +87,7 @@ def ajax_sanswitches():
     q = db.v_switches.id > 0
     for f in t.cols:
         q = _where(q, 'v_switches', t.filter_parse(f), f)
-    q = apply_filters(q, db.v_switches.sw_rname, None)
+    q = apply_filters_id(q, node_field=db.v_switches.sw_rname)
 
     if len(request.args) == 1 and request.args[0] == 'csv':
         t.csv_q = q

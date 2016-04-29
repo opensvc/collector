@@ -261,7 +261,7 @@
 			"safe": "Coffre-fort",
 			"action_queue": "File d'attente des actions",
 			"actions": "Actions des services",
-			"appinfo": "App info",
+			"resinfo": "Info de ressources",
 			"apps": "Codes applicatifs",
 			"checks": "Sondes",
 			"comp_log": "Journaux de conformité",
@@ -330,10 +330,11 @@
 		"year": "__count__ an",
 		"year_plural": "__count__ ans",
 		"volatile": "Filtres volatiles",
-		"volatile_title": "Activé, les filtres de colonne ne sont pas sauvegarde sur le serveur.",
+		"volatile_help": "Activé, les filtres de colonne ne sont pas sauvegarde sur le serveur.",
 		"live": "Live",
+		"live_help": "Active et désactive le rechargement automatique des données sur événement coté serveur.",
 		"link": "Lien",
-		"link_title": "Partagez votre vue par cet hyperlien",
+		"link_help": "Partagez votre vue avec des collaborateurs.",
 		"bookmarks": "Marque-pages",
 		"bookmarks_save": "Enregistrer les filtres actuels en marque-page",
 		"bookmarks_save_name": "Entrez le nom du nouveau marque-page",
@@ -342,6 +343,7 @@
 		"csv": "Export to csv",
 		"columns": "Colonnes",
 		"commonality": "Communité",
+		"commonality_help": "Affiche les valeurs les plus fréquentes de chaque colonne du tableau.",
 		"filter": "Filtre: "
 	},
 	"app": {
@@ -365,9 +367,16 @@
 			"title" : "Filtres",
 			"submit_button" : "Soumettre"
 		},
-		"timeline_title" : "Histogramme des changements du noeud __node__",
+		"timeline_title" : "Histogramme des changements du noeud",
 		"timeline_tree_diff_title" : "Changements",
-		"timeline_tree_file_title" : "Fichiers"
+		"timeline_tree_file_title" : "Fichiers",
+                "sysrepdiff" : {
+                        "section_title": "Différences entre les fichiers collectés sur les noeuds",
+                        "error": {
+                                "not_enough_nodes": "Pas assez de noeuds pour comparer.",
+                                "no_diff": "Aucune différence trouvée."
+                        }
+                }
 	},
 	"tags": {
 		"detaching": "Detachement du tag ...",
@@ -402,7 +411,7 @@
 			"dashboard" : "Pilotage",
 			"status" : "Etat",
 			"resources" : "Resources",
-			"appinfo" : "Appinfo",
+			"resinfo" : "Info de ressources",
 			"actions" : "Actions",
 			"checks" : "Sondes",
 			"disks" : "Disques",
@@ -550,7 +559,9 @@
 		"prio": "priorité de connexion"
 	},
 	"node_properties": {
+		"timezone": "fuseau horaire",
 		"no_uuid": "Agent non enregistré",
+		"id": "id",
 		"nodename": "nom du noeud",
 		"organization": "organisation",
 		"team_responsible": "responsable",
@@ -841,9 +852,9 @@
 					"title" : "Ressources",
 					"text" : "Etat et inventaire des ressources des services"
 			},
-			"app_info" : {
-					"title" : "App Info",
-					"text" : "Dépôt des couples clé:valeur des ressources 'app' des services"
+			"res_info" : {
+					"title" : "Info de Ressources",
+					"text" : "Dépôt des couples clé:valeur des ressources des services"
 			},
 			"nodes" : {
 					"title" : "Noeuds",
@@ -1189,6 +1200,9 @@
 		"hidden_menu_entries": "entrées cachées du menu"
 	},
 	"col" : {
+		"Node Id": "Id de noeud",
+		"Service Id": "Id de service",
+		"Node App": "App du noeud",
                 "Unique id": "Id unique",
                 "Checksum": "Somme de contrôle",
                 "Uploader user id": "Id l'uploader",
@@ -1553,6 +1567,7 @@
 		"Node name": "Noeud"
 	},
 	"alert_type": {
+		"service configuration not updated": "configuration de service non mise à jour",
 		"duplicate uid": "doublon d'uid",
 		"duplicate gid": "doublon de gid",
 		"compliance moduleset attachment differences in cluster": "différences d'attachement de jeux de modules dans le cluster",

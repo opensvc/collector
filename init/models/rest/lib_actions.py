@@ -3,26 +3,24 @@ def update_action_errors():
           """
     db.executesql(sql)
     sql = """insert into b_action_errors
-               select null, svcname, hostname, count(id)
-               from SVCactions
+               select null, svc_id, node_id, count(id)
+               from svcactions
                where
                  status = 'err' and
                  (ack <> 1 or isnull(ack)) and
                  end is not null
-               group by svcname, hostname
+               group by svc_id, node_id
           """
     db.executesql(sql)
     db.commit()
 
-def update_dash_action_errors(svc_name, nodename):
-    svc_name = svc_name.strip("'")
-    nodename = nodename.strip("'")
+def update_dash_action_errors(svc_id, node_id):
     sql = """select e.err, s.svc_type from b_action_errors e
-             join services s on e.svcname=s.svc_name
+             join services s on e.svc_id=s.svc_id
              where
-               svcname="%(svcname)s" and
-               nodename="%(nodename)s"
-          """%dict(svcname=svc_name, nodename=nodename)
+               svc_id="%(svc_id)s" and
+               node_id="%(node_id)s"
+          """%dict(svc_id=svc_id, node_id=node_id)
     rows = db.executesql(sql)
 
     if len(rows) == 1:
@@ -33,8 +31,8 @@ def update_dash_action_errors(svc_name, nodename):
         sql = """insert into dashboard
                  set
                    dash_type="action errors",
-                   dash_svcname="%(svcname)s",
-                   dash_nodename="%(nodename)s",
+                   svc_id="%(svc_id)s",
+                   node_id="%(node_id)s",
                    dash_severity=%(sev)d,
                    dash_fmt="%%(err)s action errors",
                    dash_dict='{"err": "%(err)d"}',
@@ -46,8 +44,8 @@ def update_dash_action_errors(svc_name, nodename):
                    dash_fmt="%%(err)s action errors",
                    dash_dict='{"err": "%(err)d"}',
                    dash_updated="%(now)s"
-              """%dict(svcname=svc_name,
-                       nodename=nodename,
+              """%dict(svc_id=svc_id,
+                       node_id=node_id,
                        sev=sev,
                        env=rows[0][1],
                        now=str(datetime.datetime.now()),
@@ -60,11 +58,11 @@ def update_dash_action_errors(svc_name, nodename):
                      dashboard
                    where
                      dash_type="action errors" and
-                     dash_svcname="%(svcname)s" and
-                     dash_nodename="%(nodename)s" and
+                     svc_id="%(svc_id)s" and
+                     node_id="%(node_id)s" and
                      dash_fmt="%%(err)s action errors"
-              """%dict(svcname=svc_name,
-                       nodename=nodename,
+              """%dict(svc_id=svc_id,
+                       node_id=node_id,
                   )
         rows = db.executesql(sqlws)
         if len(rows) > 0:
@@ -79,10 +77,10 @@ def update_dash_action_errors(svc_name, nodename):
         sqlws = """select dash_md5 from dashboard
                  where
                    dash_type="action errors" and
-                   dash_svcname="%(svcname)s" and
-                   dash_nodename="%(nodename)s"
-              """%dict(svcname=svc_name,
-                       nodename=nodename)
+                   svc_id="%(svc_id)s" and
+                   node_id="%(node_id)s"
+              """%dict(svc_id=svc_id,
+                       node_id=node_id)
         rows = db.executesql(sqlws)
         if len(rows) > 0:
             _websocket_send(event_msg({
@@ -94,10 +92,10 @@ def update_dash_action_errors(svc_name, nodename):
         sql = """delete from dashboard
                  where
                    dash_type="action errors" and
-                   dash_svcname="%(svcname)s" and
-                   dash_nodename="%(nodename)s"
-              """%dict(svcname=svc_name,
-                       nodename=nodename)
+                   svc_id="%(svc_id)s" and
+                   node_id="%(node_id)s"
+              """%dict(svc_id=svc_id,
+                       node_id=node_id)
         db.executesql(sql)
         db.commit()
 

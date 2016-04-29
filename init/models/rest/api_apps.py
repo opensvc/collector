@@ -120,7 +120,7 @@ class rest_post_apps(rest_post_handler):
 
         _log('apps.create',
              'app %(app)s created. data %(data)s',
-             dict(app=row.app, data=str(vars)),
+             dict(app=row.app, data=beautify_data(vars)),
             )
         l = {
           'event': 'apps_change',

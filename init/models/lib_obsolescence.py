@@ -71,7 +71,7 @@ def update_dash_obs_hw_warn(obs_name=None):
         where_obs_name = """o.obs_name = "%(obs_name)s" and"""%dict(obs_name=obs_name)
         where_dash_dict = """dash_dict like '%%"o": "%(obs_name)s"%%' and"""%dict(obs_name=obs_name)
 
-    sql = """select n.nodename from obsolescence o
+    sql = """select n.node_id from obsolescence o
                  join nodes n on
                    o.obs_name = n.model
                where
@@ -87,21 +87,21 @@ def update_dash_obs_hw_warn(obs_name=None):
                  )
           """%dict(where_obs_name=where_obs_name)
     rows = db.executesql(sql)
-    nodenames = [ repr(r[0]).lstrip("u") for r in rows if r[0] != "" and r[0] is not None]
-    sql = """delete from dashboard
-             where
-                    dash_nodename in (%(nodenames)s) and
-                    dash_type="hardware obsolescence warning"
-              """%dict(nodenames=",".join(nodenames))
-    db.executesql(sql)
-    db.commit()
+    node_ids = [ r[0] for r in rows if r[0] != 0 and r[0] is not None]
+    if len(node_ids) > 0:
+        sql = """delete from dashboard
+                 where
+                        node_id in (%(node_ids)s) and
+                        dash_type="hardware obsolescence warning"
+                  """%dict(node_ids=",".join(map(lambda x: repr(str(x)), node_ids)))
+        db.executesql(sql)
+        db.commit()
 
     sql = """insert into dashboard
                select
                  NULL,
                  "hardware obsolescence warning",
                  "",
-                 n.nodename,
                  0,
                  "%%(o)s warning since %%(a)s",
                  concat('{"a": "', o.obs_warn_date,
@@ -110,8 +110,9 @@ def update_dash_obs_hw_warn(obs_name=None):
                  now(),
                  "",
                  n.host_mode,
-                 "",
-                 now()
+                 now(),
+                 n.node_id,
+                 NULL
                from obsolescence o
                  join nodes n on
                    o.obs_name = n.model
@@ -141,7 +142,7 @@ def update_dash_obs_hw_alert(obs_name=None):
         where_obs_name = """o.obs_name = "%(obs_name)s" and"""%dict(obs_name=obs_name)
 
 
-    sql = """select n.nodename from obsolescence o
+    sql = """select n.node_id from obsolescence o
                  join nodes n on
                    o.obs_name = n.model
                where
@@ -156,14 +157,15 @@ def update_dash_obs_hw_alert(obs_name=None):
                  )
           """%dict(where_obs_name=where_obs_name)
     rows = db.executesql(sql)
-    nodenames = [ repr(r[0]).lstrip("u") for r in rows if r[0] != "" and r[0] is not None]
-    sql = """delete from dashboard
-             where
-                    dash_nodename in (%(nodenames)s) and
-                    dash_type="hardware obsolescence alert"
-              """%dict(nodenames=",".join(nodenames))
-    db.executesql(sql)
-    db.commit()
+    node_ids = [ r[0] for r in rows if r[0] != 0 and r[0] is not None]
+    if len(node_ids) > 0:
+        sql = """delete from dashboard
+                 where
+                        node_id in (%(node_ids)s) and
+                        dash_type="hardware obsolescence alert"
+                  """%dict(node_ids=",".join(map(lambda x: repr(str(x)), node_ids)))
+        db.executesql(sql)
+        db.commit()
 
 
     sql = """insert into dashboard
@@ -171,7 +173,6 @@ def update_dash_obs_hw_alert(obs_name=None):
                  NULL,
                  "hardware obsolescence alert",
                  "",
-                 n.nodename,
                  1,
                  "%%(o)s obsolete since %%(a)s",
                  concat('{"a": "', o.obs_alert_date,
@@ -180,8 +181,9 @@ def update_dash_obs_hw_alert(obs_name=None):
                  now(),
                  "",
                  n.host_mode,
-                 "",
-                 now()
+                 now(),
+                 n.node_id,
+                 NULL
                from obsolescence o
                  join nodes n on
                    o.obs_name = n.model
@@ -211,7 +213,7 @@ def update_dash_obs_os_warn(obs_name=None):
         where_obs_name = """o.obs_name = "%(obs_name)s" and"""%dict(obs_name=obs_name)
 
     if obs_name is not None:
-        sql = """select n.nodename from obsolescence o
+        sql = """select n.node_id from obsolescence o
                      join nodes n on
                        o.obs_name = n.os_concat
                    where
@@ -225,12 +227,12 @@ def update_dash_obs_os_warn(obs_name=None):
               """%dict(where_obs_name=where_obs_name)
         rows = db.executesql(sql)
         if len(rows) > 0:
-            nodenames = [ repr(r[0]).lstrip("u") for r in rows if r[0] != "" and r[0] is not None]
+            node_ids = [ r[0] for r in rows if r[0] != 0 and r[0] is not None]
             sql = """delete from dashboard
                      where
-                        dash_nodename in (%(nodenames)s) and
+                        node_id in (%(node_ids)s) and
                         dash_type="os obsolescence warning"
-                  """%dict(nodenames=",".join(nodenames))
+                  """%dict(node_ids=",".join(map(lambda x: repr(str(x)), node_ids)))
             db.executesql(sql)
             db.commit()
     else:
@@ -247,7 +249,6 @@ def update_dash_obs_os_warn(obs_name=None):
                  NULL,
                  "os obsolescence warning",
                  "",
-                 n.nodename,
                  0,
                  "%%(o)s warning since %%(a)s",
                  concat('{"a": "', o.obs_warn_date,
@@ -256,8 +257,9 @@ def update_dash_obs_os_warn(obs_name=None):
                  now(),
                  "",
                  n.host_mode,
-                 "",
-                 now()
+                 now(),
+                 n.node_id,
+                 NULL
                from obsolescence o
                  join nodes n on
                    o.obs_name = concat_ws(' ',n.os_name,n.os_vendor,n.os_release,n.os_update)
@@ -284,7 +286,7 @@ def update_dash_obs_os_alert(obs_name=None):
         where_obs_name = """o.obs_name = "%(obs_name)s" and"""%dict(obs_name=obs_name)
 
     if obs_name is not None:
-        sql = """select n.nodename from obsolescence o
+        sql = """select n.node_id from obsolescence o
                      join nodes n on
                        o.obs_name = n.os_concat
                    where
@@ -297,12 +299,12 @@ def update_dash_obs_os_alert(obs_name=None):
               """%dict(where_obs_name=where_obs_name)
         rows = db.executesql(sql)
         if len(rows) > 0:
-            nodenames = [ repr(r[0]).lstrip("u") for r in rows if r[0] != "" and r[0] is not None]
+            node_ids = [ r[0] for r in rows if r[0] != 0 and r[0] is not None]
             sql = """delete from dashboard
                      where
-                        dash_nodename in (%(nodenames)s) and
+                        node_id in (%(node_ids)s) and
                         dash_type="os obsolescence alert"
-                  """%dict(nodenames=",".join(nodenames))
+                  """%dict(node_ids=",".join(map(lambda x: repr(str(x)), node_ids)))
             db.executesql(sql)
             db.commit()
     else:
@@ -319,7 +321,6 @@ def update_dash_obs_os_alert(obs_name=None):
                  NULL,
                  "os obsolescence alert",
                  "",
-                 n.nodename,
                  1,
                  "%%(o)s obsolete since %%(a)s",
                  concat('{"a": "', o.obs_alert_date,
@@ -328,8 +329,9 @@ def update_dash_obs_os_alert(obs_name=None):
                  now(),
                  "",
                  n.host_mode,
-                 "",
-                 now()
+                 now(),
+                 n.nodename,
+                 NULL
                from obsolescence o
                  join nodes n on
                    o.obs_name = concat_ws(' ',n.os_name,n.os_vendor,n.os_release,n.os_update)
@@ -374,7 +376,7 @@ def purge_dash_obs_without():
 
     for dash_type, obs_type in data_hw:
         sql = """select d.id from dashboard d
-                 join nodes n on d.dash_nodename=n.nodename
+                 join nodes n on d.node_id=n.node_id
                  where
                    d.dash_type="%(dash_type)s" and
                    d.dash_dict != concat('{"o": "', n.model, '"}')
@@ -387,7 +389,7 @@ def purge_dash_obs_without():
 
     for dash_type, obs_type in data_os:
         sql = """select d.id from dashboard d
-                 join nodes n on d.dash_nodename=n.nodename
+                 join nodes n on d.node_id=n.node_id
                  where
                    d.dash_type="%(dash_type)s" and
                    d.dash_dict != concat('{"o": "', n.os_name, " ", n.os_vendor, " ", n.os_release, ' "}')

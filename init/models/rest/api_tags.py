@@ -30,19 +30,20 @@ class rest_get_node_tags(rest_get_table_handler):
           "List tags attached to a node.",
         ]
         examples = [
-          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/nodes/node1/tags",
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/nodes/5c977246-0562-11e6-8c70-7e9e6cf13c8a/tags",
         ]
         rest_get_table_handler.__init__(
           self,
-          path="/nodes/<nodename>/tags",
+          path="/nodes/<id>/tags",
           tables=["tags"],
           orderby=db.tags.tag_name,
           desc=desc,
           examples=examples,
         )
 
-    def handler(self, nodename, **vars):
-        q = db.node_tags.nodename == nodename
+    def handler(self, node_id, **vars):
+        node_id = get_node_id(node_id)
+        q = db.node_tags.node_id == node_id
         q &= db.node_tags.tag_id == db.tags.id
         self.set_q(q)
         return self.prepare_data(**vars)
@@ -54,19 +55,20 @@ class rest_get_node_candidate_tags(rest_get_table_handler):
           "List attachable tags for node.",
         ]
         examples = [
-          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/nodes/node1/candidate_tags",
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/nodes/5c977246-0562-11e6-8c70-7e9e6cf13c8a/candidate_tags",
         ]
         rest_get_table_handler.__init__(
           self,
-          path="/nodes/<nodename>/candidate_tags",
+          path="/nodes/<id>/candidate_tags",
           tables=["tags"],
           desc=desc,
           orderby=db.tags.tag_name,
           examples=examples,
         )
 
-    def handler(self, nodename, **vars):
-        q = db.node_tags.nodename == nodename
+    def handler(self, node_id, **vars):
+        node_id = get_node_id(node_id)
+        q = db.node_tags.node_id == node_id
         q &= db.node_tags.tag_id == db.tags.id
         rows = db(q).select(db.tags.ALL)
 
@@ -91,15 +93,16 @@ class rest_get_service_tags(rest_get_table_handler):
         ]
         rest_get_table_handler.__init__(
           self,
-          path="/services/<svcname>/tags",
+          path="/services/<id>/tags",
           tables=["tags"],
           orderby=db.tags.tag_name,
           desc=desc,
           examples=examples,
         )
 
-    def handler(self, svcname, **vars):
-        q = db.svc_tags.svcname == svcname
+    def handler(self, svc_id, **vars):
+        svc_id = get_svc_id(svc_id)
+        q = db.svc_tags.svc_id == svc_id
         q &= db.svc_tags.tag_id == db.tags.id
         self.set_q(q)
         return self.prepare_data(**vars)
@@ -115,15 +118,16 @@ class rest_get_service_candidate_tags(rest_get_table_handler):
         ]
         rest_get_table_handler.__init__(
           self,
-          path="/services/<svcname>/candidate_tags",
+          path="/services/<id>/candidate_tags",
           tables=["tags"],
           orderby=db.tags.tag_name,
           desc=desc,
           examples=examples,
         )
 
-    def handler(self, svcname, **vars):
-        q = db.svc_tags.svcname == svcname
+    def handler(self, svc_id, **vars):
+        svc_id = get_svc_id(svc_id)
+        q = db.svc_tags.svc_id == svc_id
         q &= db.svc_tags.tag_id == db.tags.id
         rows = db(q).select(db.tags.ALL)
 
@@ -294,12 +298,12 @@ class rest_delete_tag(rest_delete_handler):
             return dict(info="tag not found")
 
         q = db.node_tags.tag_id == tagid
-        q = q_filter(q, node_field=db.node_tags.nodename)
+        q = q_filter(q, node_field=db.node_tags.node_id)
         n = db(q).delete()
         info += ["%d node attachments deleted"%n]
 
         q = db.svc_tags.tag_id == tagid
-        q = q_filter(q, svc_field=db.svc_tags.svcname)
+        q = q_filter(q, svc_field=db.svc_tags.svc_id)
         n = db(q).delete()
         info += ["%d service attachments deleted"%n]
 
@@ -341,8 +345,8 @@ class rest_get_tag_nodes(rest_get_table_handler):
 
     def handler(self, tagid, **vars):
         q = db.node_tags.tag_id == tagid
-        q &= db.node_tags.nodename == db.nodes.nodename
-        q = q_filter(q, node_field=db.node_tags.nodename)
+        q &= db.node_tags.node_id == db.nodes.node_id
+        q = q_filter(q, app_field=db.nodes.app)
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -354,7 +358,7 @@ class rest_get_tag_services(rest_get_table_handler):
           "List services where tag <id> is attached.",
         ]
         examples = [
-          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/tags/1001/services?props=svc_name",
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/tags/1001/services?props=svc_id",
         ]
         rest_get_table_handler.__init__(
           self,
@@ -366,8 +370,8 @@ class rest_get_tag_services(rest_get_table_handler):
 
     def handler(self, tagid, **vars):
         q = db.svc_tags.tag_id == tagid
-        q &= db.svc_tags.svcname == db.services.svc_name
-        q = q_filter(q, svc_field=db.svc_tags.svcname)
+        q &= db.svc_tags.svc_id == db.services.svc_id
+        q = q_filter(q, svc_field=db.svc_tags.svc_id)
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -379,17 +383,17 @@ class rest_post_tag_node(rest_post_handler):
           "Attach a tag to a node",
         ]
         examples = [
-          "# curl -u %(email)s -o- -X POST https://%(collector)s/init/rest/api/tags/1001/nodes/mynode",
+          "# curl -u %(email)s -o- -X POST https://%(collector)s/init/rest/api/tags/1001/nodes/5c977246-0562-11e6-8c70-7e9e6cf13c8a",
         ]
         rest_post_handler.__init__(
           self,
-          path="/tags/<id>/nodes/<nodename>",
+          path="/tags/<id>/nodes/<id>",
           desc=desc,
           examples=examples
         )
 
-    def handler(self, tagid, nodename, **vars):
-        return lib_tag_attach_node(tagid, nodename)
+    def handler(self, tagid, node_id, **vars):
+        return lib_tag_attach_node(tagid, node_id)
 
 
 #
@@ -399,17 +403,17 @@ class rest_delete_tag_node(rest_delete_handler):
           "Detach a tag from a node.",
         ]
         examples = [
-          "# curl -u %(email)s -o- -X DELETE https://%(collector)s/init/rest/api/tags/1001/nodes/mynode",
+          "# curl -u %(email)s -o- -X DELETE https://%(collector)s/init/rest/api/tags/1001/nodes/5c977246-0562-11e6-8c70-7e9e6cf13c8a",
         ]
         rest_delete_handler.__init__(
           self,
-          path="/tags/<id>/nodes/<nodename>",
+          path="/tags/<id>/nodes/<id>",
           desc=desc,
           examples=examples,
         )
 
-    def handler(self, tagid, nodename, **vars):
-        return lib_tag_detach_node(tagid, nodename)
+    def handler(self, tagid, node_id, **vars):
+        return lib_tag_detach_node(tagid, node_id)
 
 
 
@@ -424,13 +428,14 @@ class rest_post_tag_service(rest_post_handler):
         ]
         rest_post_handler.__init__(
           self,
-          path="/tags/<id>/services/<svcname>",
+          path="/tags/<id>/services/<id>",
           desc=desc,
           examples=examples
         )
 
-    def handler(self, tagid, svcname, **vars):
-        return lib_tag_attach_service(tagid, svcname)
+    def handler(self, tagid, svc_id, **vars):
+        svc_id = get_svc_id(svc_id)
+        return lib_tag_attach_service(tagid, svc_id)
 
 #
 class rest_delete_tag_service(rest_delete_handler):
@@ -443,13 +448,14 @@ class rest_delete_tag_service(rest_delete_handler):
         ]
         rest_delete_handler.__init__(
           self,
-          path="/tags/<id>/services/<svcname>",
+          path="/tags/<id>/services/<id>",
           desc=desc,
           examples=examples,
         )
 
-    def handler(self, tagid, svcname, **vars):
-        return lib_tag_detach_service(tagid, svcname)
+    def handler(self, tagid, svc_id, **vars):
+        svc_id = get_svc_id(svc_id)
+        return lib_tag_detach_service(tagid, svc_id)
 
 
 #
@@ -472,7 +478,7 @@ class rest_get_tags_nodes(rest_get_table_handler):
         )
 
     def handler(self, **vars):
-        q = q_filter(node_field=db.node_tags.nodename)
+        q = q_filter(node_field=db.node_tags.node_id)
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -485,7 +491,7 @@ class rest_post_tags_nodes(rest_post_handler):
           "Attach tags to nodes",
         ]
         examples = [
-          "# curl -u %(email)s -o- -X POST -d nodename=mynode -d tag_id=10 https://%(collector)s/init/rest/api/tags/nodes",
+          "# curl -u %(email)s -o- -X POST -d node_id=5c977246-0562-11e6-8c70-7e9e6cf13c8a -d tag_id=10 https://%(collector)s/init/rest/api/tags/nodes",
         ]
         rest_post_handler.__init__(
           self,
@@ -496,11 +502,11 @@ class rest_post_tags_nodes(rest_post_handler):
         )
 
     def handler(self, **vars):
-        if "nodename" not in vars:
-            raise Exception("the 'nodename' key is mandatory")
+        if "node_id" not in vars:
+            raise Exception("the 'node_id' key is mandatory")
         if "tag_id" not in vars:
             raise Exception("the 'tag_id' key is mandatory")
-        return lib_tag_attach_node(vars["tag_id"], vars["nodename"])
+        return lib_tag_attach_node(vars["tag_id"], vars["node_id"])
 
 #
 # /tags/nodes :: DELETE
@@ -511,7 +517,7 @@ class rest_delete_tags_nodes(rest_delete_handler):
           "Detach tags from a nodes.",
         ]
         examples = [
-          "# curl -u %(email)s -o- -X DELETE -d nodename=mynode -d tag_id=10 https://%(collector)s/init/rest/api/tags/nodes",
+          "# curl -u %(email)s -o- -X DELETE -d node_id=5c977246-0562-11e6-8c70-7e9e6cf13c8a -d tag_id=10 https://%(collector)s/init/rest/api/tags/nodes",
         ]
         rest_delete_handler.__init__(
           self,
@@ -522,11 +528,11 @@ class rest_delete_tags_nodes(rest_delete_handler):
         )
 
     def handler(self, **vars):
-        if "nodename" not in vars:
-            raise Exception("the 'nodename' key is mandatory")
+        if "node_id" not in vars:
+            raise Exception("the 'node_id' key is mandatory")
         if "tag_id" not in vars:
             raise Exception("the 'tag_id' key is mandatory")
-        return lib_tag_detach_node(vars["tag_id"], vars["nodename"])
+        return lib_tag_detach_node(vars["tag_id"], vars["node_id"])
 
 #
 # /tags/services :: GET
@@ -548,7 +554,7 @@ class rest_get_tags_services(rest_get_table_handler):
         )
 
     def handler(self, **vars):
-        q = q_filter(svc_field=db.svc_tags.svcname)
+        q = q_filter(svc_field=db.svc_tags.svc_id)
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -561,7 +567,7 @@ class rest_post_tags_services(rest_post_handler):
           "Attach tags to services",
         ]
         examples = [
-          "# curl -u %(email)s -o- -X POST -d svcname=mysvc -d tag_id=10 https://%(collector)s/init/rest/api/tags/services",
+          "# curl -u %(email)s -o- -X POST -d svc_id=5c977246-0562-11e6-8c70-7e9e6cf13c8a -d tag_id=10 https://%(collector)s/init/rest/api/tags/services",
         ]
         rest_post_handler.__init__(
           self,
@@ -572,11 +578,11 @@ class rest_post_tags_services(rest_post_handler):
         )
 
     def handler(self, **vars):
-        if "svcname" not in vars:
-            raise Exception("the 'svcname' key is mandatory")
+        if "svc_id" not in vars:
+            raise Exception("the 'svc_id' key is mandatory")
         if "tag_id" not in vars:
             raise Exception("the 'tag_id' key is mandatory")
-        return lib_tag_attach_service(vars["tag_id"], vars["svcname"])
+        return lib_tag_attach_service(vars["tag_id"], vars["svc_id"])
 
 #
 # /tags/services :: DELETE
@@ -587,7 +593,7 @@ class rest_delete_tags_services(rest_delete_handler):
           "Detach tags from services.",
         ]
         examples = [
-          "# curl -u %(email)s -o- -X DELETE -d svcname=mysvc -d tag_id=10 https://%(collector)s/init/rest/api/tags/services",
+          "# curl -u %(email)s -o- -X DELETE -d svc_id=5c977246-0562-11e6-8c70-7e9e6cf13c8a -d tag_id=10 https://%(collector)s/init/rest/api/tags/services",
         ]
         rest_delete_handler.__init__(
           self,
@@ -598,9 +604,9 @@ class rest_delete_tags_services(rest_delete_handler):
         )
 
     def handler(self, **vars):
-        if "svcname" not in vars:
-            raise Exception("the 'svcname' key is mandatory")
+        if "svc_id" not in vars:
+            raise Exception("the 'svc_id' key is mandatory")
         if "tag_id" not in vars:
             raise Exception("the 'tag_id' key is mandatory")
-        return lib_tag_detach_service(vars["tag_id"], vars["svcname"])
+        return lib_tag_detach_service(vars["tag_id"], vars["svc_id"])
 

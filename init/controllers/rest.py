@@ -235,7 +235,7 @@ def get_get_handlers(prefix=None):
              "rest_get_service",
              "rest_get_service_actions",
              "rest_get_service_actions_unacknowledged_errors",
-             "rest_get_service_appinfos",
+             "rest_get_service_resinfos",
              "rest_get_service_alerts",
              "rest_get_service_am_i_responsible",
              "rest_get_service_candidate_tags",

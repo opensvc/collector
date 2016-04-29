@@ -19,7 +19,9 @@ class table_actions(HtmlTable):
         HtmlTable.__init__(self, id, func, innerhtml)
         self.cols = ['id',
                      'status',
+                     'node_id',
                      'nodename',
+                     'svc_id',
                      'svcname',
                      'connect_to',
                      'username',
@@ -50,8 +52,14 @@ class table_actions(HtmlTable):
             'date_dequeued': HtmlTableColumn(
                      field='date_dequeued',
                     ),
+            'node_id': HtmlTableColumn(
+                     field='node_id',
+                    ),
             'nodename': HtmlTableColumn(
                      field='nodename',
+                    ),
+            'svc_id': HtmlTableColumn(
+                     field='svc_id',
                     ),
             'svcname': HtmlTableColumn(
                      field='svcname',
@@ -86,7 +94,7 @@ def ajax_actions_col_values():
     t = table_actions(table_id, 'ajax_actions')
     col = request.args[0]
     o = db['v_action_queue'][col]
-    q = q_filter(node_field=db.v_action_queue.nodename)
+    q = q_filter(node_field=db.v_action_queue.node_id)
     for f in t.cols:
         q = _where(q, 'v_action_queue', t.filter_parse(f), f)
     t.object_list = db(q).select(o, orderby=o, cacheable=True)
@@ -97,7 +105,7 @@ def ajax_actions():
     table_id = request.vars.table_id
     t = table_actions(table_id, 'ajax_actions')
     o = ~db.v_action_queue.id
-    q = q_filter(node_field=db.v_action_queue.nodename)
+    q = q_filter(node_field=db.v_action_queue.node_id)
     for f in t.cols:
         q = _where(q, 'v_action_queue', t.filter_parse(f), f)
 

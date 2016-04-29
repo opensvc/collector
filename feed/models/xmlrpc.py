@@ -8,7 +8,7 @@ def quote_wrap(x):
         else:
             return "'F'"
     elif isinstance(x, (int, long, float, complex)):
-        return x
+        return str(x)
     elif isinstance(x, datetime.datetime):
         return "'%s'"%str(x)
     elif isinstance(x, (str, unicode)):
@@ -26,20 +26,22 @@ def quote_wrap(x):
         return "NULL"
     raise Exception("quote_wrap: unhandled type %s"%str(x.__class__))
 
-def insert_multiline(table, vars, valsl, nodename=None, get_last_id=False):
-    if nodename:
-        # convert agent time to server time
-        node = db(db.nodes.nodename==nodename).select(db.nodes.tz).first()
-        if node:
-            tz = node.tz
-            for col in ("begin", "end"):
-                try:
-                    idx = vars.index(col)
-                    for i, v in enumerate(valsl):
-                        v[idx] = 'convert_tz("%s", "%s", @@time_zone)' % (v[idx].strip("'"), tz)
-                        valsl[i] = v
-                except:
-                    pass
+def insert_multiline(table, vars, valsl, node_id=None, get_last_id=False):
+    # convert agent time to server time
+    if node_id:
+        node = db(db.nodes.node_id==node_id).select(db.nodes.tz).first()
+    else:
+        node = None
+    if node:
+        tz = node.tz
+        for col in ("begin", "end"):
+            try:
+                idx = vars.index(col)
+                for i, v in enumerate(valsl):
+                    v[idx] = 'convert_tz("%s", "%s", @@time_zone)' % (v[idx].strip("'"), tz)
+                    valsl[i] = v
+            except:
+                pass
 
     value_wrap = lambda a: "%(a)s=values(%(a)s)"%dict(a=a)
     line_wrap = lambda x: "(%(x)s)"%dict(x=','.join(map(quote_wrap, x)))
@@ -53,13 +55,13 @@ def insert_multiline(table, vars, valsl, nodename=None, get_last_id=False):
         return i
     db.commit()
 
-def generic_insert(table, vars, vals, nodename=None, get_last_id=False):
+def generic_insert(table, vars, vals, node_id=None, get_last_id=False):
     if len(vals) == 0:
         return
     elif isinstance(vals[0], list):
-        i = insert_multiline(table, vars, vals, nodename=nodename, get_last_id=get_last_id)
+        i = insert_multiline(table, vars, vals, node_id=node_id, get_last_id=get_last_id)
     else:
-        i = insert_multiline(table, vars, [vals], nodename=nodename, get_last_id=get_last_id)
+        i = insert_multiline(table, vars, [vals], node_id=node_id, get_last_id=get_last_id)
     table_modified(table)
     return i
 

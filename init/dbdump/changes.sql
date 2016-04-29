@@ -5158,3 +5158,796 @@ insert into auth_group values (NULL, "SelfManager", "", "T");
 
 insert into auth_group values (NULL, "ContextCheckManager", "", "T");
 
+###
+
+alter table nodes add column node_id CHAR(36) character set ascii default "";
+update nodes set node_id = uuid();
+alter table nodes add unique key k_node_id (node_id);
+alter table nodes drop key nodename_1;
+alter table nodes add key nodename_1 (nodename);
+
+
+alter table auth_node add column node_id CHAR(36) character set ascii default "";
+insert into auth_node (select auth_node.* from nodes, auth_node where nodes.nodename=auth_node.nodename) on duplicate key update auth_node.node_id=nodes.node_id;
+alter table auth_node drop key idx2;
+alter table auth_node add unique key k_node_id (node_id);
+
+
+alter table packages add column node_id CHAR(36) character set ascii default "";
+insert into packages (select packages.* from packages, nodes where nodes.nodename=packages.pkg_nodename) on duplicate key update packages.node_id=nodes.node_id;
+alter table packages drop key idx3;
+alter table packages add unique key idx3 (`node_id`,`pkg_name`,`pkg_arch`,`pkg_version`,`pkg_type`);
+alter table packages drop column pkg_nodename;
+
+
+alter table patches add column node_id CHAR(36) character set ascii default "";
+insert into patches select patches.* from patches, nodes where nodes.nodename=patches.patch_nodename on duplicate key update patches.node_id=nodes.node_id;
+alter table patches drop key idx3;
+alter table patches add unique key idx3 (`node_id`,`patch_num`,`patch_rev`);
+alter table patches drop column patch_nodename;
+
+
+alter table comp_rulesets_nodes add column node_id CHAR(36) character set ascii default "";
+insert into comp_rulesets_nodes select crn.* from comp_rulesets_nodes crn, nodes where nodes.nodename=crn.nodename on duplicate key update comp_rulesets_nodes.node_id=nodes.node_id;
+alter table comp_rulesets_nodes drop key idx2;
+alter table comp_rulesets_nodes add key k_node_id (`node_id`);
+alter table comp_rulesets_nodes drop column nodename;
+
+
+alter table comp_node_moduleset add column node_id CHAR(36) character set ascii default "";
+insert into comp_node_moduleset select cmn.* from comp_node_moduleset cmn, nodes where nodes.nodename=cmn.modset_node on duplicate key update comp_node_moduleset.node_id=nodes.node_id;
+alter table comp_node_moduleset drop key idx2;
+alter table comp_node_moduleset add key k_node_id (`node_id`);
+alter table comp_node_moduleset drop column modset_node;
+
+
+alter table log add column node_id CHAR(36) character set ascii default "";
+insert into log select log.* from log, nodes where nodes.nodename=log.log_nodename on duplicate key update log.node_id=nodes.node_id;
+alter table log drop key idx4;
+alter table log add key k_node_id (`node_id`);
+alter table log drop column log_nodename;
+
+alter table stats_block add column node_id CHAR(36) character set ascii default "";
+insert into stats_block select stats_block.* from stats_block, nodes where nodes.nodename=stats_block.nodename on duplicate key update stats_block.node_id=nodes.node_id;
+alter table stats_block drop key index_1;
+alter table stats_block add unique key index_1 (`date`, `node_id`);
+alter table stats_block drop column nodename;
+
+alter table stats_block_day add column node_id CHAR(36) character set ascii default "";
+insert into stats_block_day select stats_block_day.* from stats_block_day, nodes where nodes.nodename=stats_block_day.nodename on duplicate key update stats_block_day.node_id=nodes.node_id;
+alter table stats_block_day drop key index_1;
+alter table stats_block_day add unique key index_1 (`date`, `node_id`);
+alter table stats_block_day drop column nodename;
+
+alter table stats_block_hour add column node_id CHAR(36) character set ascii default "";
+insert into stats_block_hour select stats_block_hour.* from stats_block_hour, nodes where nodes.nodename=stats_block_hour.nodename on duplicate key update stats_block_hour.node_id=nodes.node_id;
+alter table stats_block_hour drop key index_1;
+alter table stats_block_hour add unique key index_1 (`date`, `node_id`);
+alter table stats_block_hour drop column nodename;
+
+drop table stats_block_month;
+
+alter table stats_blockdev add column node_id CHAR(36) character set ascii default "";
+insert into stats_blockdev select stats_blockdev.* from stats_blockdev, nodes where nodes.nodename=stats_blockdev.nodename on duplicate key update stats_blockdev.node_id=nodes.node_id;
+alter table stats_blockdev drop key index_1;
+alter table stats_blockdev add unique key index_1 (`date`, `dev`, `node_id`);
+alter table stats_blockdev drop column nodename;
+
+alter table stats_blockdev_day add column node_id CHAR(36) character set ascii default "";
+insert into stats_blockdev_day select stats_blockdev_day.* from stats_blockdev_day, nodes where nodes.nodename=stats_blockdev_day.nodename on duplicate key update stats_blockdev_day.node_id=nodes.node_id;
+alter table stats_blockdev_day drop key index_1;
+alter table stats_blockdev_day add unique key index_1 (`date`, `dev`, `node_id`);
+alter table stats_blockdev_day drop column nodename;
+
+alter table stats_blockdev_hour add column node_id CHAR(36) character set ascii default "";
+insert into stats_blockdev_hour select stats_blockdev_hour.* from stats_blockdev_hour, nodes where nodes.nodename=stats_blockdev_hour.nodename on duplicate key update stats_blockdev_hour.node_id=nodes.node_id;
+alter table stats_blockdev_hour drop key index_1;
+alter table stats_blockdev_hour add unique key index_1 (`date`, `dev`, `node_id`);
+alter table stats_blockdev_hour drop column nodename;
+
+drop table stats_blockdev_month;
+
+alter table stats_cpu add column node_id CHAR(36) character set ascii default "";
+insert into stats_cpu select stats_cpu.* from stats_cpu, nodes where nodes.nodename=stats_cpu.nodename on duplicate key update stats_cpu.node_id=nodes.node_id;
+alter table stats_cpu drop key index_1;
+alter table stats_cpu add unique key index_1 (`date`, `cpu`, `node_id`);
+alter table stats_cpu drop column nodename;
+
+alter table stats_cpu_day add column node_id CHAR(36) character set ascii default "";
+insert into stats_cpu_day select stats_cpu_day.* from stats_cpu_day, nodes where nodes.nodename=stats_cpu_day.nodename on duplicate key update stats_cpu_day.node_id=nodes.node_id;
+alter table stats_cpu_day drop key index_1;
+alter table stats_cpu_day add unique key index_1 (`date`, `cpu`, `node_id`);
+alter table stats_cpu_day drop column nodename;
+
+alter table stats_cpu_hour add column node_id CHAR(36) character set ascii default "";
+insert into stats_cpu_hour select stats_cpu_hour.* from stats_cpu_hour, nodes where nodes.nodename=stats_cpu_hour.nodename on duplicate key update stats_cpu_hour.node_id=nodes.node_id;
+alter table stats_cpu_hour drop key index_1;
+alter table stats_cpu_hour add unique key index_1 (`date`, `cpu`, `node_id`);
+alter table stats_cpu_hour drop column nodename;
+
+drop table stats_cpu_month;
+
+
+alter table stats_mem_u add column node_id CHAR(36) character set ascii default "";
+insert into stats_mem_u select stats_mem_u.* from stats_mem_u, nodes where nodes.nodename=stats_mem_u.nodename on duplicate key update stats_mem_u.node_id=nodes.node_id;
+alter table stats_mem_u drop key index_1;
+alter table stats_mem_u add unique key index_1 (`date`, `node_id`);
+alter table stats_mem_u drop column nodename;
+
+alter table stats_mem_u_day add column node_id CHAR(36) character set ascii default "";
+insert into stats_mem_u_day select stats_mem_u_day.* from stats_mem_u_day, nodes where nodes.nodename=stats_mem_u_day.nodename on duplicate key update stats_mem_u_day.node_id=nodes.node_id;
+alter table stats_mem_u_day drop key index_1;
+alter table stats_mem_u_day add unique key index_1 (`date`, `node_id`);
+alter table stats_mem_u_day drop column nodename;
+
+alter table stats_mem_u_hour add column node_id CHAR(36) character set ascii default "";
+insert into stats_mem_u_hour select stats_mem_u_hour.* from stats_mem_u_hour, nodes where nodes.nodename=stats_mem_u_hour.nodename on duplicate key update stats_mem_u_hour.node_id=nodes.node_id;
+alter table stats_mem_u_hour drop key index_1;
+alter table stats_mem_u_hour add unique key index_1 (`date`, `node_id`);
+alter table stats_mem_u_hour drop column nodename;
+
+drop table stats_mem_u_month;
+
+
+alter table stats_fs_u add column node_id CHAR(36) character set ascii default "";
+insert into stats_fs_u select stats_fs_u.* from stats_fs_u, nodes where nodes.nodename=stats_fs_u.nodename on duplicate key update stats_fs_u.node_id=nodes.node_id;
+alter table stats_fs_u drop key index_1;
+alter table stats_fs_u add unique key index_1 (`date`, `mntpt`, `node_id`);
+alter table stats_fs_u drop column nodename;
+
+alter table stats_fs_u_day add column node_id CHAR(36) character set ascii default "";
+insert into stats_fs_u_day select stats_fs_u_day.* from stats_fs_u_day, nodes where nodes.nodename=stats_fs_u_day.nodename on duplicate key update stats_fs_u_day.node_id=nodes.node_id;
+alter table stats_fs_u_day drop key index_1;
+alter table stats_fs_u_day add unique key index_1 (`date`, `mntpt`, `node_id`);
+alter table stats_fs_u_day drop column nodename;
+
+alter table stats_fs_u_hour add column node_id CHAR(36) character set ascii default "";
+insert into stats_fs_u_hour select stats_fs_u_hour.* from stats_fs_u_hour, nodes where nodes.nodename=stats_fs_u_hour.nodename on duplicate key update stats_fs_u_hour.node_id=nodes.node_id;
+alter table stats_fs_u_hour drop key index_1;
+alter table stats_fs_u_hour add unique key index_1 (`date`, `mntpt`, `node_id`);
+alter table stats_fs_u_hour drop column nodename;
+
+drop table stats_fs_u_month;
+
+
+alter table stats_netdev add column node_id CHAR(36) character set ascii default "";
+insert into stats_netdev select stats_netdev.* from stats_netdev, nodes where nodes.nodename=stats_netdev.nodename on duplicate key update stats_netdev.node_id=nodes.node_id;
+alter table stats_netdev drop key index_1;
+alter table stats_netdev add unique key index_1 (`date`, `dev`, `node_id`);
+alter table stats_netdev drop column nodename;
+
+alter table stats_netdev_day add column node_id CHAR(36) character set ascii default "";
+insert into stats_netdev_day select stats_netdev_day.* from stats_netdev_day, nodes where nodes.nodename=stats_netdev_day.nodename on duplicate key update stats_netdev_day.node_id=nodes.node_id;
+alter table stats_netdev_day drop key index_1;
+alter table stats_netdev_day add unique key index_1 (`date`, `dev`, `node_id`);
+alter table stats_netdev_day drop column nodename;
+
+alter table stats_netdev_hour add column node_id CHAR(36) character set ascii default "";
+insert into stats_netdev_hour select stats_netdev_hour.* from stats_netdev_hour, nodes where nodes.nodename=stats_netdev_hour.nodename on duplicate key update stats_netdev_hour.node_id=nodes.node_id;
+alter table stats_netdev_hour drop key index_1;
+alter table stats_netdev_hour add unique key index_1 (`date`, `dev`, `node_id`);
+alter table stats_netdev_hour drop column nodename;
+
+drop table stats_netdev_month;
+
+
+truncate stats_netdev_err;
+alter table stats_netdev_err add column node_id CHAR(36) character set ascii default "";
+insert into stats_netdev_err select stats_netdev_err.* from stats_netdev_err, nodes where nodes.nodename=stats_netdev_err.nodename on duplicate key update stats_netdev_err.node_id=nodes.node_id;
+alter table stats_netdev_err drop key index_1;
+alter table stats_netdev_err drop key stats_netdev_err_k2;
+alter table stats_netdev_err add unique key index_1 (`date`, `dev`, `node_id`);
+alter table stats_netdev_err drop column nodename;
+
+alter table stats_netdev_err_day add column node_id CHAR(36) character set ascii default "";
+insert into stats_netdev_err_day select stats_netdev_err_day.* from stats_netdev_err_day, nodes where nodes.nodename=stats_netdev_err_day.nodename on duplicate key update stats_netdev_err_day.node_id=nodes.node_id;
+alter table stats_netdev_err_day drop key index_1;
+alter table stats_netdev_err_day drop key stats_netdev_err_k2;
+alter table stats_netdev_err_day add unique key index_1 (`date`, `dev`, `node_id`);
+alter table stats_netdev_err_day drop column nodename;
+
+alter table stats_netdev_err_hour add column node_id CHAR(36) character set ascii default "";
+insert into stats_netdev_err_hour select stats_netdev_err_hour.* from stats_netdev_err_hour, nodes where nodes.nodename=stats_netdev_err_hour.nodename on duplicate key update stats_netdev_err_hour.node_id=nodes.node_id;
+alter table stats_netdev_err_hour drop key index_1;
+alter table stats_netdev_err_hour drop key stats_netdev_err_k2;
+alter table stats_netdev_err_hour add unique key index_1 (`date`, `dev`, `node_id`);
+alter table stats_netdev_err_hour drop column nodename;
+
+drop table stats_netdev_err_month;
+
+
+alter table stats_proc add column node_id CHAR(36) character set ascii default "";
+insert into stats_proc select stats_proc.* from stats_proc, nodes where nodes.nodename=stats_proc.nodename on duplicate key update stats_proc.node_id=nodes.node_id;
+alter table stats_proc drop key index_1;
+alter table stats_proc add unique key index_1 (`date`, `node_id`);
+alter table stats_proc drop column nodename;
+
+alter table stats_proc_day add column node_id CHAR(36) character set ascii default "";
+insert into stats_proc_day select stats_proc_day.* from stats_proc_day, nodes where nodes.nodename=stats_proc_day.nodename on duplicate key update stats_proc_day.node_id=nodes.node_id;
+alter table stats_proc_day drop key index_1;
+alter table stats_proc_day add unique key index_1 (`date`, `node_id`);
+alter table stats_proc_day drop column nodename;
+
+alter table stats_proc_hour add column node_id CHAR(36) character set ascii default "";
+insert into stats_proc_hour select stats_proc_hour.* from stats_proc_hour, nodes where nodes.nodename=stats_proc_hour.nodename on duplicate key update stats_proc_hour.node_id=nodes.node_id;
+alter table stats_proc_hour drop key index_1;
+alter table stats_proc_hour add unique key index_1 (`date`, `node_id`);
+alter table stats_proc_hour drop column nodename;
+
+drop table stats_proc_month;
+
+
+alter table stats_swap add column node_id CHAR(36) character set ascii default "";
+insert into stats_swap select stats_swap.* from stats_swap, nodes where nodes.nodename=stats_swap.nodename on duplicate key update stats_swap.node_id=nodes.node_id;
+alter table stats_swap drop key index_1;
+alter table stats_swap add unique key index_1 (`date`, `node_id`);
+alter table stats_swap drop column nodename;
+
+alter table stats_swap_day add column node_id CHAR(36) character set ascii default "";
+insert into stats_swap_day select stats_swap_day.* from stats_swap_day, nodes where nodes.nodename=stats_swap_day.nodename on duplicate key update stats_swap_day.node_id=nodes.node_id;
+alter table stats_swap_day drop key index_1;
+alter table stats_swap_day add unique key index_1 (`date`, `node_id`);
+alter table stats_swap_day drop column nodename;
+
+alter table stats_swap_hour add column node_id CHAR(36) character set ascii default "";
+alter table stats_swap_hour add column node_id integer not NULL default 0;
+insert into stats_swap_hour select stats_swap_hour.* from stats_swap_hour, nodes where nodes.nodename=stats_swap_hour.nodename on duplicate key update stats_swap_hour.node_id=nodes.node_id;
+alter table stats_swap_hour drop key index_1;
+alter table stats_swap_hour add unique key index_1 (`date`, `node_id`);
+alter table stats_swap_hour drop column nodename;
+
+drop table stats_swap_month;
+
+
+alter table stats_svc add column node_id CHAR(36) character set ascii default "";
+insert into stats_svc select stats_svc.* from stats_svc, nodes where nodes.nodename=stats_svc.nodename on duplicate key update stats_svc.node_id=nodes.node_id;
+alter table stats_svc drop key index_1;
+alter table stats_svc add unique key index_1 (`date`, `svcname`, `node_id`);
+alter table stats_svc drop column nodename;
+
+alter table stats_svc_day add column node_id CHAR(36) character set ascii default "";
+insert into stats_svc_day select stats_svc_day.* from stats_svc_day, nodes where nodes.nodename=stats_svc_day.nodename on duplicate key update stats_svc_day.node_id=nodes.node_id;
+alter table stats_svc_day drop key index_1;
+alter table stats_svc_day add unique key index_1 (`date`, `svcname`, `node_id`);
+alter table stats_svc_day drop column nodename;
+
+alter table stats_svc_hour add column node_id CHAR(36) character set ascii default "";
+insert into stats_svc_hour select stats_svc_hour.* from stats_svc_hour, nodes where nodes.nodename=stats_svc_hour.nodename on duplicate key update stats_svc_hour.node_id=nodes.node_id;
+alter table stats_svc_hour drop key index_1;
+alter table stats_svc_hour add unique key index_1 (`date`, `svcname`, `node_id`);
+alter table stats_svc_hour drop column nodename;
+
+drop table stats_svc_month;
+
+alter table stats_netdev drop key date;
+alter table stats_netdev_day drop key date;
+alter table stats_netdev_hour drop key date;
+
+alter table stats_netdev modify column dev varchar(32);
+alter table stats_netdev_day modify column dev varchar(32);
+alter table stats_netdev_hour modify column dev varchar(32);
+
+
+alter table svcmon add column node_id CHAR(36) character set ascii default "";
+insert into svcmon select svcmon.* from svcmon, nodes where nodes.nodename=svcmon.mon_nodname on duplicate key update svcmon.node_id=nodes.node_id;
+alter table svcmon drop key mon_svcname_5;
+alter table svcmon add unique key mon_svcname_5 (`mon_svcname`,`node_id`,`mon_vmname`);
+alter table svcmon drop column mon_nodname;
+
+alter table svcmon_log add column node_id CHAR(36) character set ascii default "";
+insert into svcmon_log select svcmon_log.* from svcmon_log, nodes where nodes.nodename=svcmon_log.mon_nodname on duplicate key update svcmon_log.node_id=nodes.node_id;
+alter table svcmon_log drop key mon_nodname;
+alter table svcmon_log add key k_node_id (`node_id`);
+alter table svcmon_log drop column mon_nodname;
+
+alter table SVCactions add column node_id CHAR(36) character set ascii default "";
+insert into SVCactions select SVCactions.* from SVCactions, nodes where nodes.nodename=SVCactions.hostname on duplicate key update SVCactions.node_id=nodes.node_id;
+alter table SVCactions drop key hostname;
+alter table SVCactions add key k_node_id (`node_id`);
+alter table SVCactions drop column hostname;
+
+
+
+drop table b_action_errors;
+
+CREATE TABLE `b_action_errors` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `svcname` varchar(60) NOT NULL,
+  `node_id` integer NOT NULL DEFAULT 0,
+  `err` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `i_svcname` (`svcname`,`node_id`)
+);
+
+drop view v_svcactions ; CREATE VIEW `v_svcactions` AS select `ac`.`cron` AS `cron`,`ac`.`time` AS `time`,`ac`.`version` AS `version`,`ac`.`svcname` AS `svcname`,`ac`.`action` AS `action`,`ac`.`status` AS `status`,`ac`.`begin` AS `begin`,`ac`.`end` AS `end`,`ac`.`hostid` AS `hostid`,`ac`.`status_log` AS `status_log`,`ac`.`pid` AS `pid`,`ac`.`ID` AS `ID`,`ac`.`ack` AS `ack`,`ac`.`alert` AS `alert`,`ac`.`acked_by` AS `acked_by`,`ac`.`acked_comment` AS `acked_comment`,`ac`.`acked_date` AS `acked_date`,`s`.`svc_ha` AS `svc_ha`,`s`.`svc_app` AS `app`,`ac`.`node_id` as node_id, `n`.`nodename` AS `nodename`,`n`.`loc_country` AS `loc_country`,`n`.`loc_city` AS `loc_city`,`n`.`loc_addr` AS `loc_addr`,`n`.`loc_building` AS `loc_building`,`n`.`loc_floor` AS `loc_floor`,`n`.`loc_room` AS `loc_room`,`n`.`loc_rack` AS `loc_rack`,`n`.`cpu_freq` AS `cpu_freq`,`n`.`cpu_cores` AS `cpu_cores`,`n`.`cpu_dies` AS `cpu_dies`,`n`.`cpu_vendor` AS `cpu_vendor`,`n`.`cpu_model` AS `cpu_model`,`n`.`mem_banks` AS `mem_banks`,`n`.`mem_slots` AS `mem_slots`,`n`.`mem_bytes` AS `mem_bytes`,`n`.`os_name` AS `os_name`,`n`.`os_release` AS `os_release`,`n`.`os_update` AS `os_update`,`n`.`os_segment` AS `os_segment`,`n`.`os_arch` AS `os_arch`,`n`.`os_vendor` AS `os_vendor`,`n`.`os_kernel` AS `os_kernel`,`n`.`loc_zip` AS `loc_zip`,`n`.`team_responsible` AS `team_responsible`,`n`.`team_integ` AS `team_integ`,`n`.`team_support` AS `team_support`,`n`.`serial` AS `serial`,`n`.`model` AS `model`,`n`.`type` AS `type`,`n`.`warranty_end` AS `warranty_end`,`n`.`maintenance_end` AS `maintenance_end`,`n`.`status` AS `asset_status`,`n`.`role` AS `role`,`n`.`environnement` AS `environnement`,`n`.`host_mode` AS `host_mode`,`n`.`power_supply_nb` AS `power_supply_nb`,`n`.`power_cabinet1` AS `power_cabinet1`,`n`.`power_cabinet2` AS `power_cabinet2`,`n`.`power_protect` AS `power_protect`,`n`.`power_protect_breaker` AS `power_protect_breaker`,`n`.`power_breaker1` AS `power_breaker1`,`n`.`power_breaker2` AS `power_breaker2` from (((`SVCactions` `ac` join `services` `s` on((`s`.`svc_name` = `ac`.`svcname`))) join `nodes` `n` on((`ac`.`node_id` = `n`.`node_id`))) left join `apps` `a` on((`a`.`app` = `s`.`svc_app`)));
+
+
+
+alter table dashboard add column node_id CHAR(36) character set ascii default "";
+insert into dashboard select dashboard.* from dashboard, nodes where nodes.nodename=dashboard.dash_nodename on duplicate key update dashboard.node_id=nodes.node_id;
+alter table dashboard drop key idx1;
+alter table dashboard add unique key idx1 (`dash_type`,`dash_svcname`,`node_id`,`dash_dict_md5`);
+alter table dashboard add key k_node_id (`node_id`);
+alter table dashboard drop column dash_nodename;
+
+alter table dashboard_events add column node_id CHAR(36) character set ascii default "";
+insert into dashboard_events select dashboard_events.* from dashboard_events, nodes where nodes.nodename=dashboard_events.dash_nodename on duplicate key update dashboard_events.node_id=nodes.node_id;
+alter table dashboard_events drop key idx3;
+alter table dashboard_events add key `idx3` (`dash_md5`,`node_id`,`dash_svcname`);
+alter table dashboard_events add key k_node_id (`node_id`);
+alter table dashboard_events drop column dash_nodename;
+
+drop trigger if exists dash_add;
+
+alter table dashboard drop column dash_md5;
+
+alter table dashboard add column dash_md5 varchar(32) as (md5(concat(dash_type, dash_fmt, dash_dict))) persistent;
+
+drop trigger if exists dash_add_evt;
+delimiter #
+create trigger dash_add_evt after insert on dashboard for each row
+begin
+ insert ignore into dashboard_ref (dash_md5, dash_fmt, dash_dict, dash_type) values (new.dash_md5, new.dash_fmt, new.dash_dict, new.dash_type) ; 
+ insert into dashboard_events (dash_md5, node_id, dash_svcname, dash_begin) values (new.dash_md5, new.node_id, new.dash_svcname, now()) ; 
+end#
+delimiter ;
+
+drop trigger if exists dash_del_evt;
+delimiter #
+create trigger dash_del_evt before delete on dashboard for each row begin update dashboard_events set dash_end=now() where dash_md5=old.dash_md5 and node_id=old.node_id and dash_svcname=old.dash_svcname and dash_end is null ; end#
+delimiter ;
+
+
+
+alter table checks_live add column node_id CHAR(36) character set ascii default "";
+insert into checks_live select checks_live.* from checks_live, nodes where nodes.nodename=checks_live.chk_nodename on duplicate key update checks_live.node_id=nodes.node_id;
+alter table checks_live drop key idx1;
+alter table checks_live add unique key idx1 (`node_id`,`chk_svcname`,`chk_type`,`chk_instance`);
+alter table checks_live add key k_node_id (`node_id`);
+alter table checks_live drop column chk_nodename;
+
+alter table checks_settings add column node_id CHAR(36) character set ascii default "";
+insert into checks_settings select checks_settings.* from checks_settings, nodes where nodes.nodename=checks_settings.chk_nodename on duplicate key update checks_settings.node_id=nodes.node_id;
+alter table checks_settings drop key idx1;
+alter table checks_settings add unique key idx1 (`node_id`,`chk_svcname`,`chk_type`,`chk_instance`);
+alter table checks_settings add key k_node_id (`node_id`);
+alter table checks_settings drop column chk_nodename;
+
+
+alter table comp_status add column node_id CHAR(36) character set ascii default "";
+insert into comp_status select comp_status.* from comp_status, nodes where nodes.nodename=comp_status.run_nodename on duplicate key update comp_status.node_id=nodes.node_id;
+alter table comp_status drop key idx1;
+alter table comp_status add unique key idx1 (`node_id`,`run_svcname`,`run_module`);
+alter table comp_status add key k_node_id (`node_id`);
+alter table comp_status drop column run_nodename;
+
+alter table comp_log add column node_id CHAR(36) character set ascii default "";
+insert into comp_log select comp_log.* from comp_log, nodes where nodes.nodename=comp_log.run_nodename on duplicate key update comp_log.node_id=nodes.node_id;
+alter table comp_log drop key idx1;
+alter table comp_log add key k_node_id (`node_id`);
+alter table comp_log drop column run_nodename;
+
+
+drop view v_svcmon; CREATE VIEW `v_svcmon` AS select `e`.`err` AS `err`,`s`.`svc_ha` AS `svc_ha`,`s`.`svc_cluster_type` AS `svc_cluster_type`,`s`.`svc_status` AS `svc_status`,`s`.`svc_availstatus` AS `svc_availstatus`,`s`.`svc_flex_min_nodes` AS `svc_flex_min_nodes`,`s`.`svc_flex_max_nodes` AS `svc_flex_max_nodes`,`s`.`svc_flex_cpu_low_threshold` AS `svc_flex_cpu_low_threshold`,`s`.`svc_flex_cpu_high_threshold` AS `svc_flex_cpu_high_threshold`,`m`.`mon_vmname` AS `mon_vmname`,`m`.`mon_vmtype` AS `mon_vmtype`,`m`.`mon_guestos` AS `mon_guestos`,`s`.`svc_name` AS `svc_name`,`s`.`svc_nodes` AS `svc_nodes`,`s`.`svc_drpnode` AS `svc_drpnode`,`s`.`svc_drpnodes` AS `svc_drpnodes`,`s`.`svc_drptype` AS `svc_drptype`,`s`.`svc_autostart` AS `svc_autostart`,`s`.`svc_type` AS `svc_type`,`s`.`svc_comment` AS `svc_comment`,`s`.`svc_app` AS `svc_app`,`s`.`svc_drnoaction` AS `svc_drnoaction`,`s`.`svc_created` AS `svc_created`,`s`.`updated` AS `svc_updated`,`s`.`svc_envdate` AS `svc_envdate`,`s`.`svc_containertype` AS `svc_containertype`,`s`.`svc_metrocluster` AS `svc_metrocluster`,`m`.`mon_vcpus` AS `mon_vcpus`,`m`.`mon_vmem` AS `mon_vmem`,`m`.`mon_svcname` AS `mon_svcname`,`m`.`mon_svctype` AS `mon_svctype`,`m`.`mon_drptype` AS `mon_drptype`,`m`.`mon_nodtype` AS `mon_nodtype`,`m`.`mon_nodmode` AS `mon_nodmode`,`m`.`mon_ipstatus` AS `mon_ipstatus`,`m`.`mon_fsstatus` AS `mon_fsstatus`,`m`.`mon_prinodes` AS `mon_prinodes`,`m`.`mon_hostid` AS `mon_hostid`,`m`.`ID` AS `ID`,`m`.`mon_frozen` AS `mon_frozen`,`m`.`mon_frozentxt` AS `mon_frozentxt`,`m`.`mon_changed` AS `mon_changed`,`m`.`mon_updated` AS `mon_updated`,`m`.`mon_sharestatus` AS `mon_sharestatus`,`m`.`mon_diskstatus` AS `mon_diskstatus`,`m`.`mon_containerstatus` AS `mon_containerstatus`,`m`.`mon_overallstatus` AS `mon_overallstatus`,m.node_id as node_id, `n`.`nodename` AS `nodename`,`n`.`listener_port` AS `listener_port`,`n`.`tz` AS `tz`, `n`.`connect_to` AS `connect_to`,`n`.`version` AS `version`,`n`.`updated` AS `node_updated`,`n`.`loc_country` AS `loc_country`,`n`.`loc_city` AS `loc_city`,`n`.`loc_addr` AS `loc_addr`,`n`.`loc_building` AS `loc_building`,`n`.`loc_floor` AS `loc_floor`,`n`.`loc_room` AS `loc_room`,`n`.`loc_rack` AS `loc_rack`,`n`.`cpu_freq` AS `cpu_freq`,`n`.`cpu_cores` AS `cpu_cores`,`n`.`cpu_dies` AS `cpu_dies`,`n`.`cpu_vendor` AS `cpu_vendor`,`n`.`cpu_model` AS `cpu_model`,`n`.`mem_banks` AS `mem_banks`,`n`.`mem_slots` AS `mem_slots`,`n`.`mem_bytes` AS `mem_bytes`,`n`.`os_name` AS `os_name`,`n`.`os_release` AS `os_release`,`n`.`os_update` AS `os_update`,`n`.`os_segment` AS `os_segment`,`n`.`os_arch` AS `os_arch`,`n`.`os_vendor` AS `os_vendor`,`n`.`os_kernel` AS `os_kernel`,`n`.`loc_zip` AS `loc_zip`,`n`.`team_responsible` AS `team_responsible`,`n`.`team_integ` AS `team_integ`,`n`.`team_support` AS `team_support`,`n`.`serial` AS `serial`,`n`.`model` AS `model`,`n`.`type` AS `type`,`n`.`warranty_end` AS `warranty_end`,`n`.`maintenance_end` AS `maintenance_end`,`n`.`status` AS `status`,`n`.`role` AS `role`,`n`.`environnement` AS `environnement`,`n`.`host_mode` AS `host_mode`,`n`.`power_supply_nb` AS `power_supply_nb`,`n`.`power_cabinet1` AS `power_cabinet1`,`n`.`power_cabinet2` AS `power_cabinet2`,`n`.`power_protect` AS `power_protect`,`n`.`power_protect_breaker` AS `power_protect_breaker`,`n`.`power_breaker1` AS `power_breaker1`,`n`.`power_breaker2` AS `power_breaker2`,n.sec_zone,n.last_boot,n.action_type,`m`.`mon_syncstatus` AS `mon_syncstatus`,`m`.`mon_hbstatus` AS `mon_hbstatus`,`m`.`mon_availstatus` AS `mon_availstatus`,`m`.`mon_appstatus` AS `mon_appstatus`,`ap`.`app_domain` AS `app_domain`,`ap`.`app_team_ops` AS `app_team_ops`,`n`.`enclosure` AS `enclosure`,`n`.`enclosureslot` AS `enclosureslot`,`n`.`assetname` AS `assetname`,`n`.`cpu_threads` AS `cpu_threads` from ((((`svcmon` `m` left join `services` `s` on((`s`.`svc_name` = `m`.`mon_svcname`))) left join `nodes` `n` on((`m`.`node_id` = `n`.`node_id`))) left join `apps` `ap` on((`ap`.`app` = `s`.`svc_app`))) left join `b_action_errors` `e` on(((`e`.`svcname` = `s`.`svc_name`) and (`e`.`node_id` = `m`.`node_id`))));
+
+
+alter table resmon add column node_id CHAR(36) character set ascii default "";
+insert into resmon select resmon.* from resmon, nodes where nodes.nodename=resmon.nodename on duplicate key update resmon.node_id=nodes.node_id;
+alter table resmon drop key resmon_1;
+alter table resmon add unique key resmon_1 (`svcname`,`node_id`,`vmname`,`rid`);
+alter table resmon add key k_node_id (`node_id`);
+alter table resmon drop column nodename;
+
+alter table appinfo add column node_id CHAR(36) character set ascii default "";
+insert into appinfo (id,node_id) (select appinfo.id, nodes.id from appinfo, nodes where nodes.nodename=appinfo.app_nodename) on duplicate key update appinfo.node_id=nodes.node_id;
+alter table appinfo drop key appinfo_1;
+alter table appinfo add key k_node_id (`node_id`);
+alter table appinfo drop column app_nodename;
+
+alter table appinfo_log add column node_id CHAR(36) character set ascii default "";
+insert into appinfo_log (id,node_id) (select appinfo_log.id, nodes.id from appinfo_log, nodes where nodes.nodename=appinfo_log.app_nodename) on duplicate key update appinfo_log.node_id=nodes.id;
+alter table appinfo_log add key k_node_id (`node_id`);
+alter table appinfo_log drop column app_nodename;
+
+alter table dashboard modify column dash_type varchar(60) not NULL default "";
+alter table dashboard modify column dash_svcname varchar(128) not NULL default "";
+
+alter table node_ip add column node_id CHAR(36) character set ascii default "";
+insert into node_ip (id,node_id) (select node_ip.id, nodes.id from node_ip, nodes where nodes.nodename=node_ip.nodename) on duplicate key update node_ip.node_id=nodes.node_id;
+alter table node_ip add key k_node_id (`node_id`);
+alter table node_ip drop column nodename;
+
+drop view v_nodenetworks; CREATE VIEW `v_nodenetworks` AS select n.nodename as nodename, `n`.`fqdn` AS `fqdn`,`n`.`loc_country` AS `loc_country`,`n`.`loc_city` AS `loc_city`,`n`.`loc_addr` AS `loc_addr`,`n`.`loc_building` AS `loc_building`,`n`.`loc_floor` AS `loc_floor`,`n`.`loc_room` AS `loc_room`,`n`.`loc_rack` AS `loc_rack`,`n`.`cpu_freq` AS `cpu_freq`,`n`.`cpu_cores` AS `cpu_cores`,`n`.`cpu_dies` AS `cpu_dies`,`n`.`cpu_vendor` AS `cpu_vendor`,`n`.`cpu_model` AS `cpu_model`,`n`.`mem_banks` AS `mem_banks`,`n`.`mem_slots` AS `mem_slots`,`n`.`mem_bytes` AS `mem_bytes`,`n`.`os_name` AS `os_name`,`n`.`os_release` AS `os_release`,`n`.`os_update` AS `os_update`,`n`.`os_segment` AS `os_segment`,`n`.`os_arch` AS `os_arch`,`n`.`os_vendor` AS `os_vendor`,`n`.`os_kernel` AS `os_kernel`,`n`.`loc_zip` AS `loc_zip`,`n`.`version` AS `version`,`n`.`listener_port` AS `listener_port`,`n`.`tz` AS `tz`, `n`.`connect_to` AS `connect_to`,`n`.`team_responsible` AS `team_responsible`,`n`.`team_integ` AS `team_integ`,`n`.`team_support` AS `team_support`,`n`.`app` AS `app`,`n`.`serial` AS `serial`,`n`.`model` AS `model`,`n`.`type` AS `type`,`n`.`warranty_end` AS `warranty_end`,`n`.`maintenance_end` AS `maintenance_end`,`n`.`status` AS `status`,`n`.`role` AS `role`,`n`.`environnement` AS `environnement`,`n`.`host_mode` AS `host_mode`,`n`.`power_cabinet1` AS `power_cabinet1`,`n`.`power_cabinet2` AS `power_cabinet2`,`n`.`power_supply_nb` AS `power_supply_nb`,`n`.`power_protect` AS `power_protect`,`n`.`power_protect_breaker` AS `power_protect_breaker`,`n`.`power_breaker1` AS `power_breaker1`,`n`.`power_breaker2` AS `power_breaker2`,`n`.`os_concat` AS `os_concat`,`n`.`updated` AS `updated`,`n`.`enclosure` AS `enclosure`,`n`.`enclosureslot` AS `enclosureslot`,`n`.`assetname` AS `assetname`,`n`.`cpu_threads` AS `cpu_threads`,`n`.`hw_obs_warn_date` AS `hw_obs_warn_date`,`n`.`hw_obs_alert_date` AS `hw_obs_alert_date`,`n`.`os_obs_warn_date` AS `os_obs_warn_date`,`n`.`os_obs_alert_date` AS `os_obs_alert_date`,`n`.`hvpool` AS `hvpool`,`n`.`hv` AS `hv`,`n`.`hvvdc` AS `hvvdc`,n.sec_zone,n.last_boot,n.action_type,`ni`.`node_id` AS `node_id`,`ni`.`id` AS `id`,`ni`.`mac` AS `mac`,`ni`.`intf` AS `intf`,`ni`.`addr` AS `addr`,`ni`.`type` AS `addr_type`,`ni`.`mask` AS `mask`, ni.flag_deprecated, `ni`.`updated` AS `addr_updated`,`nw`.`name` AS `net_name`,`nw`.`network` AS `net_network`,`nw`.`broadcast` AS `net_broadcast`,`nw`.`netmask` AS `net_netmask`,`nw`.`team_responsible` AS `net_team_responsible`,`nw`.`begin` AS `net_begin`,`nw`.`end` AS `net_end`,`nw`.`comment` AS `net_comment`,`nw`.`pvid` AS `net_pvid`,`nw`.`gateway` AS `net_gateway`,`nw`.`id` AS `net_id`, nw.prio from `node_ip` `ni` left join `nodes` `n` on `ni`.`node_id` = `n`.`node_id` left join `networks` `nw` on inet_aton(`ni`.`addr`) >= inet_aton(`nw`.`begin`) and inet_aton(`ni`.`addr`) <= inet_aton(`nw`.`end`);
+
+alter table node_tags add column node_id CHAR(36) character set ascii default "";
+insert into node_tags (id,node_id) (select node_tags.id, nodes.id from node_tags, nodes where nodes.nodename=node_tags.nodename) on duplicate key update node_tags.node_id=nodes.node_id;
+alter table node_tags drop key tag_bind;
+alter table node_tags add unique key tag_bind (`node_id`, `tag_id`);
+alter table node_tags add key k_node_id (`node_id`);
+alter table node_tags drop column nodename;
+
+drop view v_tags_full ; create view v_tags_full as select 0 as id, concat(nodes.node_id, "_null_", if(tags.id, tags.id, "null")) as ckid, tags.id as tag_id, tags.tag_name as tag_name, nodes.node_id as node_id, nodes.nodename as nodename, NULL as svcname, node_tags.created as created from nodes left join node_tags on nodes.node_id=node_tags.node_id left join tags on node_tags.tag_id=tags.id union all select 0 as id, concat("null_", services.svc_name, "_", if(tags.id, tags.id, "null")) as ckid, tags.id as tag_id, tags.tag_name as tag_name, "" as node_id, NULL as nodename, services.svc_name as svcname, svc_tags.created as created from services left join svc_tags on services.svc_name=svc_tags.svcname left join tags on svc_tags.tag_id=tags.id;
+
+drop view v_tags; create view v_tags as select NULL as id, tags.id as tag_id, tags.tag_name as tag_name, node_tags.node_id as node_id, NULL as svcname, node_tags.created as created from tags join node_tags on tags.id=node_tags.tag_id union all select NULL as id, tags.id as tag_id, tags.tag_name as tag_name, NULL as nodename, svc_tags.svcname as svcname, svc_tags.created as created from tags join svc_tags on tags.id=svc_tags.tag_id;
+
+drop view v_comp_moduleset_attachments ; create view v_comp_moduleset_attachments as select nm.node_id as node_id, NULL as svcname, ms.modset_name as modset_name from comp_node_moduleset nm join comp_moduleset ms on nm.modset_id=ms.id union all select "" as node_id, sm.modset_svcname as svcname, ms.modset_name as modset_name from comp_modulesets_services sm join comp_moduleset ms on sm.modset_id=ms.id;
+
+
+alter table node_hba add column node_id CHAR(36) character set ascii default "";
+insert into node_hba (id,node_id) (select node_hba.id, nodes.id from node_hba, nodes where nodes.nodename=node_hba.nodename) on duplicate key update node_hba.node_id=nodes.node_id;
+alter table node_hba add key k_node_id (`node_id`);
+alter table node_hba drop key index_1;
+alter table node_hba add unique key index_1 (node_id, hba_id);
+alter table node_hba drop column nodename;
+
+drop view v_switches ; create view v_switches as select s.*, nh.node_id as node_id, if(n.nodename is not null, n.nodename, if (a.array_name is not null, a.array_name, (select sw_name from switches where sw_portname=s.sw_rportname limit 1))) as sw_rname from switches s left join node_hba nh on s.sw_rportname=nh.hba_id left join nodes n on nh.node_id=n.node_id left join stor_array_tgtid at on s.sw_rportname=at.array_tgtid left join stor_array a on at.array_id=a.id;
+
+alter table stor_zone add column node_id CHAR(36) character set ascii default "";
+insert into stor_zone (id,node_id) (select stor_zone.id, nodes.id from stor_zone, nodes where nodes.nodename=stor_zone.nodename) on duplicate key update stor_zone.node_id=nodes.node_id;
+alter table stor_zone add key k_node_id (`node_id`);
+alter table stor_zone drop key index_1;
+alter table stor_zone add unique key index_1 (node_id, hba_id, tgt_id);
+alter table stor_zone drop column nodename;
+
+
+alter table stor_array_proxy add column node_id CHAR(36) character set ascii default "";
+insert into stor_array_proxy (id,node_id) (select stor_array_proxy.id, nodes.id from stor_array_proxy, nodes where nodes.nodename=stor_array_proxy.nodename) on duplicate key update stor_array_proxy.node_id=nodes.node_id;
+alter table stor_array_proxy add key k_node_id (`node_id`);
+alter table stor_array_proxy drop key index_1;
+alter table stor_array_proxy add unique key index_1 (node_id, array_id);
+alter table stor_array_proxy drop column nodename;
+
+
+alter table node_users add column node_id CHAR(36) character set ascii default "";
+insert into node_users (id,node_id) (select node_users.id, nodes.id from node_users, nodes where nodes.nodename=node_users.nodename) on duplicate key update node_users.node_id=nodes.node_id;
+alter table node_users add key k_node_id (`node_id`);
+alter table node_users drop key index_1;
+alter table node_users add unique key index_1 (`node_id`,`user_name`,`user_id`);
+alter table node_users drop column nodename;
+
+alter table node_groups add column node_id CHAR(36) character set ascii default "";
+insert into node_groups (id,node_id) (select node_groups.id, nodes.id from node_groups, nodes where nodes.nodename=node_groups.nodename) on duplicate key update node_groups.node_id=nodes.node_id;
+alter table node_groups add key k_node_id (`node_id`);
+alter table node_groups drop key index_1;
+alter table node_groups add unique key index_1 (`node_id`,`group_name`,`group_id`);
+alter table node_groups drop column nodename;
+
+alter table comp_log_daily add column node_id CHAR(36) character set ascii default "";
+insert into comp_log_daily (id,node_id) (select comp_log_daily.id, nodes.id from comp_log_daily, nodes where nodes.nodename=comp_log_daily.run_nodename) on duplicate key update comp_log_daily.node_id=nodes.node_id;
+alter table comp_log_daily add key k_node_id (`node_id`);
+alter table comp_log_daily drop key idx2;
+alter table comp_log_daily add unique key idx2 (`run_date`,`node_id`,`run_svcname`,`run_module`);
+alter table comp_log_daily drop column run_nodename;
+
+alter table action_queue add column node_id CHAR(36) character set ascii default "";
+insert into action_queue (id,node_id) (select action_queue.id, nodes.id from action_queue, nodes where nodes.nodename=action_queue.nodename) on duplicate key update action_queue.node_id=nodes.node_id;
+alter table action_queue add key k_node_id (`node_id`);
+alter table action_queue drop column nodename;
+
+
+drop view v_action_queue ; create view v_action_queue as select n.nodename, a.*, concat(u.first_name, " ", u.last_name) as username from action_queue a left join auth_user u on a.user_id=u.id left join nodes n on a.node_id=n.node_id;
+
+
+alter table node_pw add column node_id CHAR(36) character set ascii default "";
+insert into node_pw (id,node_id) (select node_pw.id, nodes.id from node_pw, nodes where nodes.nodename=node_pw.nodename) on duplicate key update node_pw.node_id=nodes.node_id;
+alter table node_pw add unique key k_node_id (`node_id`);
+alter table node_pw drop column nodename;
+
+# READ CAREFULLY
+select concat("[ -d ", nodes.nodename, " ] && mv ", nodes.nodename, " ", nodes.node_id) as run_me_in_sysreport_d from nodes;
+
+alter table svcdisks add column node_id CHAR(36) character set ascii default "";
+insert into svcdisks (id,node_id) (select svcdisks.id, nodes.id from svcdisks, nodes where nodes.nodename=svcdisks.disk_nodename) on duplicate key update svcdisks.node_id=nodes.node_id;
+alter table svcdisks drop key new_index;
+alter table svcdisks add key `idx1` (`disk_id`,`disk_svcname`,`node_id`,`disk_dg`);
+alter table svcdisks add key k_node_id (`node_id`);
+alter table svcdisks drop column disk_nodename;
+
+alter table svcdisks add column app_id integer;
+
+drop view v_disk_app;
+
+delete from scheduler_task where function_name="task_refresh_b_disk_app";
+
+drop view v_nodesan; CREATE VIEW `v_nodesan` AS select `z`.`id` AS `id`,`z`.`tgt_id` AS `tgt_id`,`z`.`hba_id` AS `hba_id`,z.node_id, `n`.`nodename` AS `nodename`,`z`.`updated` AS `updated`,`n`.`fqdn` AS `fqdn`,`n`.`loc_country` AS `loc_country`,`n`.`loc_city` AS `loc_city`,`n`.`loc_addr` AS `loc_addr`,`n`.`loc_building` AS `loc_building`,`n`.`loc_floor` AS `loc_floor`,`n`.`loc_room` AS `loc_room`,`n`.`loc_rack` AS `loc_rack`,`n`.`cpu_freq` AS `cpu_freq`,`n`.`cpu_cores` AS `cpu_cores`,`n`.`cpu_dies` AS `cpu_dies`,`n`.`cpu_vendor` AS `cpu_vendor`,`n`.`cpu_model` AS `cpu_model`,`n`.`mem_banks` AS `mem_banks`,`n`.`mem_slots` AS `mem_slots`,`n`.`mem_bytes` AS `mem_bytes`,`n`.`os_name` AS `os_name`,`n`.`os_release` AS `os_release`,`n`.`os_update` AS `os_update`,`n`.`os_segment` AS `os_segment`,`n`.`os_arch` AS `os_arch`,`n`.`os_vendor` AS `os_vendor`,`n`.`os_kernel` AS `os_kernel`,`n`.`loc_zip` AS `loc_zip`,`n`.`version` AS `version`,`n`.`listener_port` AS `listener_port`,`n`.`tz` AS `tz`, `n`.`connect_to` AS `connect_to`,`n`.`team_responsible` AS `team_responsible`,`n`.`team_integ` AS `team_integ`,`n`.`team_support` AS `team_support`,`n`.`app` AS `app`,`n`.`serial` AS `serial`,`n`.`model` AS `model`,`n`.`type` AS `type`,`n`.`warranty_end` AS `warranty_end`,`n`.`maintenance_end` AS `maintenance_end`,`n`.`status` AS `status`,`n`.`role` AS `role`,`n`.`environnement` AS `environnement`,`n`.`host_mode` AS `host_mode`,`n`.`power_cabinet1` AS `power_cabinet1`,`n`.`power_cabinet2` AS `power_cabinet2`,`n`.`power_supply_nb` AS `power_supply_nb`,`n`.`power_protect` AS `power_protect`,`n`.`power_protect_breaker` AS `power_protect_breaker`,`n`.`power_breaker1` AS `power_breaker1`,`n`.`power_breaker2` AS `power_breaker2`,`n`.`os_concat` AS `os_concat`,`n`.`updated` AS `node_updated`,`n`.`enclosure` AS `enclosure`,`n`.`hw_obs_warn_date` AS `hw_obs_warn_date`,`n`.`hw_obs_alert_date` AS `hw_obs_alert_date`,`n`.`os_obs_warn_date` AS `os_obs_warn_date`,`n`.`os_obs_alert_date` AS `os_obs_alert_date`,`n`.`hvpool` AS `hvpool`,`n`.`hv` AS `hv`,`n`.`hvvdc` AS `hvvdc`,`n`.`enclosureslot` AS `enclosureslot`,`n`.`assetname` AS `assetname`,`n`.`cpu_threads` AS `cpu_threads`,n.sec_zone,n.last_boot,n.action_type,`a`.`array_name` AS `array_name`,`a`.`array_model` AS `array_model`,`a`.`array_cache` AS `array_cache`,`a`.`array_firmware` AS `array_firmware`,`a`.`array_updated` AS `array_updated`,`a`.`array_level` AS `array_level` from (((`stor_zone` `z` join `nodes` `n` on((`z`.`node_id` = `n`.`node_id`))) left join `stor_array_tgtid` `at` on((`z`.`tgt_id` = `at`.`array_tgtid`))) left join `stor_array` `a` on((`at`.`array_id` = `a`.`id`)));
+
+
+drop view v_comp_nodes ; CREATE VIEW `v_comp_nodes` AS (select n.node_id as node_id, `n`.`nodename` AS `nodename`,`n`.`fqdn` AS `fqdn`,`n`.`loc_country` AS `loc_country`,`n`.`loc_city` AS `loc_city`,`n`.`loc_addr` AS `loc_addr`,`n`.`loc_building` AS `loc_building`,`n`.`loc_floor` AS `loc_floor`,`n`.`loc_room` AS `loc_room`,`n`.`loc_rack` AS `loc_rack`,`n`.`id` AS `id`,`n`.`cpu_freq` AS `cpu_freq`,`n`.`cpu_cores` AS `cpu_cores`,`n`.`cpu_dies` AS `cpu_dies`,`n`.`cpu_vendor` AS `cpu_vendor`,`n`.`cpu_model` AS `cpu_model`,`n`.`mem_banks` AS `mem_banks`,`n`.`mem_slots` AS `mem_slots`,`n`.`mem_bytes` AS `mem_bytes`,`n`.`os_name` AS `os_name`,`n`.`os_release` AS `os_release`,`n`.`os_update` AS `os_update`,`n`.`os_segment` AS `os_segment`,`n`.`os_arch` AS `os_arch`,`n`.`os_vendor` AS `os_vendor`,`n`.`os_kernel` AS `os_kernel`,`n`.`loc_zip` AS `loc_zip`,`n`.`version` AS `version`,`n`.`listener_port` AS `listener_port`,`n`.`tz` AS `tz`, `n`.`connect_to` AS `connect_to`,`n`.`team_responsible` AS `team_responsible`,`n`.`team_integ` AS `team_integ`,`n`.`team_support` AS `team_support`,`n`.`app` AS `app`,`n`.`serial` AS `serial`,`n`.`model` AS `model`,`n`.`type` AS `type`,`n`.`warranty_end` AS `warranty_end`,`n`.`maintenance_end` AS `maintenance_end`,`n`.`status` AS `status`,`n`.`role` AS `role`,`n`.`environnement` AS `environnement`,`n`.`host_mode` AS `host_mode`,`n`.`power_cabinet1` AS `power_cabinet1`,`n`.`power_cabinet2` AS `power_cabinet2`,`n`.`power_supply_nb` AS `power_supply_nb`,`n`.`power_protect` AS `power_protect`,`n`.`power_protect_breaker` AS `power_protect_breaker`,`n`.`power_breaker1` AS `power_breaker1`,`n`.`power_breaker2` AS `power_breaker2`,`n`.`os_concat` AS `os_concat`,`n`.`updated` AS `updated`,`n`.`enclosure` AS `enclosure`,`n`.`enclosureslot` AS `enclosureslot`,`n`.`assetname` AS `assetname`,`n`.`cpu_threads` AS `cpu_threads`,`n`.`hw_obs_warn_date` AS `hw_obs_warn_date`,`n`.`hw_obs_alert_date` AS `hw_obs_alert_date`,`n`.`os_obs_warn_date` AS `os_obs_warn_date`,`n`.`os_obs_alert_date` AS `os_obs_alert_date`,`n`.`hvpool` AS `hvpool`,`n`.`hv` AS `hv`,`n`.`hvvdc` AS `hvvdc`,n.sec_zone,n.last_boot,n.action_type, `r`.`id` AS `ruleset_id`, `r`.`ruleset_name` AS `ruleset_name`, `m`.`id` AS `modset_id`, `m`.`modset_name` AS `modset_name` from ((((`nodes` `n` left join `comp_rulesets_nodes` `rn` on((`n`.`node_id` = `rn`.`node_id`))) left join `comp_rulesets` `r` on((`r`.`id` = `rn`.`ruleset_id`))) left join `comp_node_moduleset` `mn` on((`mn`.`node_id` = `n`.`node_id`))) left join `comp_moduleset` `m` on((`m`.`id` = `mn`.`modset_id`))) );
+
+
+###
+
+alter table services add column svc_id CHAR(36) character set ascii default "";
+update services set svc_id = uuid();
+alter table services add unique key k_svc_id (svc_id);
+alter table services drop key i_svc_name;
+alter table services add key k_svc_name (svc_name);
+
+alter table services_log add column svc_id CHAR(36) character set ascii default "";
+insert into services_log select services_log.* from services_log, services where services.svc_name=services_log.svc_name on duplicate key update services_log.svc_id=services.svc_id;
+alter table services_log add key k_svc_id (`svc_id`);
+alter table services_log drop column svc_name;
+
+
+alter table svcmon add column svc_id CHAR(36) character set ascii default "";
+insert into svcmon select svcmon.* from svcmon, services where services.svc_name=svcmon.mon_svcname on duplicate key update svcmon.svc_id=services.svc_id;
+alter table svcmon drop key mon_svcname_5;
+alter table svcmon add unique key uk_svcmon (`node_id`,`svc_id`,`mon_vmname`);
+alter table svcmon add key k_svc_id (`svc_id`);
+alter table svcmon drop column mon_svcname;
+
+alter table svcmon_log add column svc_id CHAR(36) character set ascii default "";
+insert into svcmon_log select svcmon_log.* from svcmon_log, services where services.svc_name=svcmon_log.mon_svcname on duplicate key update svcmon_log.svc_id=services.svc_id;
+alter table svcmon_log add key k_svc_id (`svc_id`);
+alter table svcmon_log drop column mon_svcname;
+
+alter table svcmon_log_ack add column node_id CHAR(36) character set ascii default "";
+alter table svcmon_log_ack add column svc_id CHAR(36) character set ascii default "";
+insert into svcmon_log_ack select svcmon_log_ack.* from svcmon_log_ack, nodes where nodes.nodename=svcmon_log_ack.mon_nodname on duplicate key update svcmon_log_ack.node_id=nodes.node_id;
+insert into svcmon_log_ack select svcmon_log_ack.* from svcmon_log_ack, services where services.svc_name=svcmon_log_ack.mon_svcname on duplicate key update svcmon_log_ack.svc_id=services.svc_id;
+alter table svcmon_log_ack drop key key_1;
+alter table svcmon_log_ack add unique key uk_svcmon_log_ack (`node_id`,`svc_id`,`mon_begin`,`mon_end`);
+alter table svcmon_log_ack add key k_node_id (`node_id`);
+alter table svcmon_log_ack add key k_svc_id (`svc_id`);
+alter table svcmon_log_ack drop column mon_nodname;
+alter table svcmon_log_ack drop column mon_svcname;
+
+alter table SVCactions rename to svcactions;
+alter table svcactions change column ID id int(11) NOT NULL AUTO_INCREMENT;
+# dump
+alter table svcactions modify id int not null;
+alter table svcactions drop PRIMARY KEY;
+# trunc
+alter table svcactions modify id int not null primary key auto_increment;
+# restore
+
+alter table svcactions add column svc_id CHAR(36) character set ascii default "";
+insert into svcactions select svcactions.* from svcactions, services where services.svc_name=svcactions.svcname on duplicate key update svcactions.svc_id=services.svc_id;
+alter table svcactions add key k_svc_id (`svc_id`);
+alter table svcactions drop column svcname;
+
+alter table action_queue add column svc_id CHAR(36) character set ascii default "";
+insert into action_queue select action_queue.* from action_queue, services where services.svc_name=action_queue.svcname on duplicate key update action_queue.svc_id=services.svc_id;
+alter table action_queue add key k_svc_id (`svc_id`);
+alter table action_queue drop column svcname;
+
+alter table appinfo add column svc_id CHAR(36) character set ascii default "";
+insert into appinfo select appinfo.* from appinfo, services where services.svc_name=appinfo.app_svcname on duplicate key update appinfo.svc_id=services.svc_id;
+alter table appinfo add key k_svc_id (`svc_id`);
+alter table appinfo drop column app_svcname;
+
+alter table appinfo rename to resinfo;
+alter table resinfo change column app_launcher rid varchar(255) DEFAULT NULL;
+alter table resinfo change column app_key res_key varchar(40) DEFAULT NULL;
+alter table resinfo change column app_value res_value varchar(255) DEFAULT NULL;
+alter table resinfo change column app_updated updated timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP;
+
+
+alter table appinfo_log add column svc_id CHAR(36) character set ascii default "";
+insert into appinfo_log select appinfo_log.* from appinfo_log, services where services.svc_name=appinfo_log.app_svcname on duplicate key update appinfo_log.svc_id=services.svc_id;
+alter table appinfo_log add key k_svc_id (`svc_id`);
+alter table appinfo_log drop column app_svcname;
+
+alter table appinfo_log rename to resinfo_log;
+alter table resinfo_log change column app_launcher rid varchar(255) DEFAULT NULL;
+alter table resinfo_log change column app_key res_key varchar(40) DEFAULT NULL;
+alter table resinfo_log change column app_value res_value varchar(255) DEFAULT NULL;
+alter table resinfo_log change column app_updated updated timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP;
+
+alter table checks_live add column svc_id CHAR(36) character set ascii default "";
+insert into checks_live select checks_live.* from checks_live, services where services.svc_name=checks_live.chk_svcname on duplicate key update checks_live.svc_id=services.svc_id;
+alter table checks_live add key k_svc_id (`svc_id`);
+alter table checks_live drop key idx1;
+alter table checks_live add UNIQUE KEY `idx1` (`node_id`,`svc_id`,`chk_type`,`chk_instance`);
+alter table checks_live drop column chk_svcname;
+
+alter table checks_settings add column svc_id CHAR(36) character set ascii default "";
+insert into checks_settings select checks_settings.* from checks_settings, services where services.svc_name=checks_settings.chk_svcname on duplicate key update checks_settings.svc_id=services.svc_id;
+alter table checks_settings add key k_svc_id (`svc_id`);
+alter table checks_settings drop key idx1;
+alter table checks_settings add UNIQUE KEY `idx1` (`node_id`,`svc_id`,`chk_type`,`chk_instance`);
+alter table checks_settings drop column chk_svcname;
+
+alter table comp_log add column svc_id CHAR(36) character set ascii default "";
+insert into comp_log select comp_log.* from comp_log, services where services.svc_name=comp_log.run_svcname on duplicate key update comp_log.svc_id=services.svc_id;
+alter table comp_log add key k_svc_id (`svc_id`);
+alter table comp_log drop column run_svcname;
+
+alter table comp_log_daily add column svc_id CHAR(36) character set ascii default "";
+insert into comp_log_daily select comp_log_daily.* from comp_log_daily, services where services.svc_name=comp_log_daily.run_svcname on duplicate key update comp_log_daily.svc_id=services.svc_id;
+alter table comp_log_daily add key k_svc_id (`svc_id`);
+alter table comp_log_daily drop key idx2;
+alter table comp_log_daily add UNIQUE KEY `idx2` (`run_date`,`node_id`,`svc_id`,`run_module`);
+alter table comp_log_daily drop column run_svcname;
+
+alter table comp_status add column svc_id CHAR(36) character set ascii default "";
+insert into comp_status select comp_status.* from comp_status, services where services.svc_name=comp_status.run_svcname on duplicate key update comp_status.svc_id=services.svc_id;
+alter table comp_status drop key idx1;
+alter table comp_status add unique key uk_comp_status_1 (node_id, svc_id, run_module);
+alter table comp_status add key k_svc_id (`svc_id`);
+alter table comp_status drop column run_svcname;
+
+alter table comp_modulesets_services add column svc_id CHAR(36) character set ascii default "";
+insert into comp_modulesets_services select comp_modulesets_services.* from comp_modulesets_services, services where services.svc_name=comp_modulesets_services.modset_svcname on duplicate key update comp_modulesets_services.svc_id=services.svc_id;
+alter table comp_modulesets_services add key k_svc_id (`svc_id`);
+alter table comp_modulesets_services drop key idx1;
+# delete from comp_modulesets_services where svc_id="";
+alter table comp_modulesets_services add UNIQUE KEY `idx1` (`svc_id`,`modset_id`,`slave`);
+alter table comp_modulesets_services drop column modset_svcname;
+
+alter table comp_rulesets_services add column svc_id CHAR(36) character set ascii default "";
+insert into comp_rulesets_services select comp_rulesets_services.* from comp_rulesets_services, services where services.svc_name=comp_rulesets_services.svcname on duplicate key update comp_rulesets_services.svc_id=services.svc_id;
+alter table comp_rulesets_services add key k_svc_id (`svc_id`);
+alter table comp_rulesets_services drop key ruleset_id;
+# delete from comp_rulesets_services where svc_id="";
+alter table comp_rulesets_services add UNIQUE KEY `idx1` (`svc_id`,`ruleset_id`,`slave`);
+alter table comp_rulesets_services drop column svcname;
+
+alter table dashboard add column svc_id CHAR(36) character set ascii default "" after dash_svcname;
+insert into dashboard select dashboard.* from dashboard, services where services.svc_name=dashboard.dash_svcname on duplicate key update dashboard.svc_id=services.svc_id;
+alter table dashboard add key k_svc_id (`svc_id`);
+alter table dashboard drop key idx1;
+alter table dashboard add UNIQUE KEY `idx1` (`dash_type`,`svc_id`,`node_id`,`dash_dict_md5`);
+alter table dashboard drop column dash_svcname;
+
+alter table dashboard_events add column svc_id CHAR(36) character set ascii default "" after dash_svcname;
+insert into dashboard_events select dashboard_events.* from dashboard_events, services where services.svc_name=dashboard_events.dash_svcname on duplicate key update dashboard_events.svc_id=services.svc_id;
+alter table dashboard_events drop key idx3;
+alter table dashboard_events add key idx3 (node_id,svc_id,dash_md5);
+alter table dashboard_events add key k_svc_id (`svc_id`);
+alter table dashboard_events drop column dash_svcname;
+
+drop trigger if exists dash_add_evt;
+delimiter #
+create trigger dash_add_evt after insert on dashboard for each row
+begin
+ insert ignore into dashboard_ref (dash_md5, dash_fmt, dash_dict, dash_type) values (new.dash_md5, new.dash_fmt, new.dash_dict, new.dash_type) ;
+ insert into dashboard_events (dash_md5, node_id, svc_id, dash_begin) values (new.dash_md5, new.node_id, new.svc_id, now()) ;
+end#
+delimiter ;
+
+drop trigger if exists dash_del_evt;
+delimiter #
+create trigger dash_del_evt before delete on dashboard for each row begin update dashboard_events set dash_end=now() where dash_md5=old.dash_md5 and node_id=old.node_id and svc_id=old.svc_id and dash_end is null ; end#
+delimiter ;
+
+alter table drpservices add column svc_id CHAR(36) character set ascii default "";
+insert into drpservices select drpservices.* from drpservices, services where services.svc_name=drpservices.drp_svcname on duplicate key update drpservices.svc_id=services.svc_id;
+alter table drpservices add key k_svc_id (`svc_id`);
+alter table drpservices drop key foo;
+alter table drpservices add UNIQUE KEY `idx1` (`svc_id`,`drp_project_id`);
+alter table drpservices drop column drp_svcname;
+
+drop table fset_cache;
+CREATE TABLE `fset_cache` (
+  `fset_id` int(11) NOT NULL,
+  `obj_type` enum('svc_id','node_id') NOT NULL,
+  `obj_id` varchar(128) NOT NULL,
+  KEY `fset_id` (`fset_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+alter table log add column svc_id CHAR(36) character set ascii default "" after log_svcname;
+insert into log select log.* from log, services where services.svc_name=log.log_svcname on duplicate key update log.svc_id=services.svc_id;
+alter table log add key k_svc_id (`svc_id`);
+alter table log drop column log_svcname;
+
+alter table resmon add column svc_id CHAR(36) character set ascii default "";
+insert into resmon select resmon.* from resmon, services where services.svc_name=resmon.svcname on duplicate key update resmon.svc_id=services.svc_id;
+alter table resmon add key k_svc_id (`svc_id`);
+alter table resmon drop key resmon_1;
+alter table resmon add UNIQUE KEY `uk_resmon_1` (`svc_id`,`node_id`,`vmname`,`rid`);
+alter table resmon drop column svcname;
+
+alter table saves add column node_id CHAR(36) character set ascii default "";
+alter table saves add column svc_id CHAR(36) character set ascii default "";
+insert into saves select saves.* from saves, nodes where nodes.nodename=saves.save_nodename on duplicate key update saves.node_id=nodes.node_id;
+insert into saves select saves.* from saves, services where services.svc_name=saves.save_svcname on duplicate key update saves.svc_id=services.svc_id;
+alter table saves add key k_node_id (`node_id`);
+alter table saves add key k_svc_id (`svc_id`);
+alter table saves modify column save_resolved varchar(1) AS (not length(node_id)=36) PERSISTENT;
+alter table saves drop column save_nodename;
+alter table saves drop column save_svcname;
+
+alter table saves_last add column node_id CHAR(36) character set ascii default "";
+alter table saves_last add column svc_id CHAR(36) character set ascii default "";
+insert into saves_last select saves_last.* from saves_last, nodes where nodes.nodename=saves_last.save_nodename on duplicate key update saves_last.node_id=nodes.node_id;
+insert into saves_last select saves_last.* from saves_last, services where services.svc_name=saves_last.save_svcname on duplicate key update saves_last.svc_id=services.svc_id;
+alter table saves_last add key k_node_id (`node_id`);
+alter table saves_last add key k_svc_id (`svc_id`);
+alter table saves_last drop key idx1;
+alter table saves_last add unique key idx1 (`node_id`,`svc_id`,`save_name`);
+alter table saves_last drop key idx2;
+alter table saves_last add key idx2 (`node_id`,`svc_id`);
+alter table saves_last drop column save_nodename;
+alter table saves_last drop column save_svcname;
+
+alter table stat_day_svc add column svc_id CHAR(36) character set ascii default "";
+insert into stat_day_svc select stat_day_svc.* from stat_day_svc, services where services.svc_name=stat_day_svc.svcname on duplicate key update stat_day_svc.svc_id=services.svc_id;
+alter table stat_day_svc add key k_svc_id (`svc_id`);
+delete from stat_day_svc where svc_id="";
+alter table stat_day_svc drop key new_index;
+alter table stat_day_svc add UNIQUE KEY `uk_stat_day_svc_1` (day, svc_id);
+alter table stat_day_svc drop column svcname;
+
+alter table stats_svc add column svc_id CHAR(36) character set ascii default "";
+insert into stats_svc select stats_svc.* from stats_svc, services where services.svc_name=stats_svc.svcname on duplicate key update stats_svc.svc_id=services.svc_id;
+alter table stats_svc add key k_svc_id (`svc_id`);
+delete from stats_svc where svc_id="";
+alter table stats_svc drop key index_1;
+alter table stats_svc add UNIQUE KEY `uk_stats_svc_1` (`date`, node_id, svc_id);
+alter table stats_svc drop column svcname;
+
+alter table stats_svc_day add column svc_id CHAR(36) character set ascii default "";
+insert into stats_svc_day select stats_svc_day.* from stats_svc_day, services where services.svc_name=stats_svc_day.svcname on duplicate key update stats_svc_day.svc_id=services.svc_id;
+alter table stats_svc_day add key k_svc_id (`svc_id`);
+delete from stats_svc_day where svc_id="";
+alter table stats_svc_day drop key index_1;
+alter table stats_svc_day add UNIQUE KEY `uk_stats_svc_day_1` (`date`, node_id, svc_id);
+alter table stats_svc_day drop column svcname;
+
+alter table stats_svc_hour add column svc_id CHAR(36) character set ascii default "";
+insert into stats_svc_hour select stats_svc_hour.* from stats_svc_hour, services where services.svc_name=stats_svc_hour.svcname on duplicate key update stats_svc_hour.svc_id=services.svc_id;
+alter table stats_svc_hour add key k_svc_id (`svc_id`);
+delete from stats_svc_hour where svc_id="";
+alter table stats_svc_hour drop key index_1;
+alter table stats_svc_hour add UNIQUE KEY `uk_stats_svc_hour_1` (`date`, node_id, svc_id);
+alter table stats_svc_hour drop column svcname;
+
+alter table svc_tags add column svc_id CHAR(36) character set ascii default "";
+insert into svc_tags select svc_tags.* from svc_tags, services where services.svc_name=svc_tags.svcname on duplicate key update svc_tags.svc_id=services.svc_id;
+alter table svc_tags add key k_svc_id (`svc_id`);
+alter table svc_tags drop key tag_bind;
+alter table svc_tags add UNIQUE KEY `uk_svc_tags_1` (tag_id, svc_id);
+alter table svc_tags drop column svcname;
+
+alter table svcdisks add column svc_id CHAR(36) character set ascii default "";
+insert into svcdisks select svcdisks.* from svcdisks, services where services.svc_name=svcdisks.disk_svcname on duplicate key update svcdisks.svc_id=services.svc_id;
+alter table svcdisks add key k_svc_id (`svc_id`);
+alter table svcdisks drop key new_index;
+alter table svcdisks add UNIQUE KEY `uk_svcdisks_1` (`disk_id`,`svc_id`,`node_id`,`disk_dg`);
+alter table svcdisks drop key svcdisks_k1;
+alter table svcdisks add KEY `k_svcdisks_1` (`svc_id`,`node_id`);
+alter table svcdisks drop column disk_svcname;
+
+
+drop table b_action_errors;
+
+CREATE TABLE `b_action_errors` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `svc_id` char(36) character set ascii default "",
+  `node_id` char(36) character set ascii default "",
+  `err` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `i_svcname` (`svc_id`,`node_id`)
+);
+
+drop table svcmonchanges;
+drop table svcmon_log_ack_periodic;
+drop table svc_res_sync;
+drop table svc_res_ip;
+drop table svc_res_fs;
+drop table b_svcmon;
+drop table b_disk_app;
+drop view v_billing_per_os;
+drop view v_billing_per_app;
+drop view v_billing;
+drop view v_flex_status;
+
+alter table services change svc_name svcname varchar(60) DEFAULT NULL;
+
+drop view v_svcmon; CREATE VIEW `v_svcmon` AS select `e`.`err` AS `err`,`s`.`svc_ha` AS `svc_ha`,`s`.`svc_cluster_type` AS `svc_cluster_type`,`s`.`svc_status` AS `svc_status`,`s`.`svc_availstatus` AS `svc_availstatus`,`s`.`svc_flex_min_nodes` AS `svc_flex_min_nodes`,`s`.`svc_flex_max_nodes` AS `svc_flex_max_nodes`,`s`.`svc_flex_cpu_low_threshold` AS `svc_flex_cpu_low_threshold`,`s`.`svc_flex_cpu_high_threshold` AS `svc_flex_cpu_high_threshold`,`m`.`mon_vmname` AS `mon_vmname`,`m`.`mon_vmtype` AS `mon_vmtype`,`m`.`mon_guestos` AS `mon_guestos`,s.svc_id,`s`.`svcname` AS `svcname`,`s`.`svc_nodes` AS `svc_nodes`,`s`.`svc_drpnode` AS `svc_drpnode`,`s`.`svc_drpnodes` AS `svc_drpnodes`,`s`.`svc_drptype` AS `svc_drptype`,`s`.`svc_autostart` AS `svc_autostart`,`s`.`svc_type` AS `svc_type`,`s`.`svc_comment` AS `svc_comment`,`s`.`svc_app` AS `svc_app`,`s`.`svc_drnoaction` AS `svc_drnoaction`,`s`.`svc_created` AS `svc_created`,`s`.`updated` AS `svc_updated`,`s`.`svc_envdate` AS `svc_envdate`,`s`.`svc_containertype` AS `svc_containertype`,`s`.`svc_metrocluster` AS `svc_metrocluster`,`m`.`mon_vcpus` AS `mon_vcpus`,`m`.`mon_vmem` AS `mon_vmem`,`m`.`mon_svctype` AS `mon_svctype`,`m`.`mon_drptype` AS `mon_drptype`,`m`.`mon_nodtype` AS `mon_nodtype`,`m`.`mon_nodmode` AS `mon_nodmode`,`m`.`mon_ipstatus` AS `mon_ipstatus`,`m`.`mon_fsstatus` AS `mon_fsstatus`,`m`.`mon_prinodes` AS `mon_prinodes`,`m`.`mon_hostid` AS `mon_hostid`,`m`.`ID` AS `ID`,`m`.`mon_frozen` AS `mon_frozen`,`m`.`mon_frozentxt` AS `mon_frozentxt`,`m`.`mon_changed` AS `mon_changed`,`m`.`mon_updated` AS `mon_updated`,`m`.`mon_sharestatus` AS `mon_sharestatus`,`m`.`mon_diskstatus` AS `mon_diskstatus`,`m`.`mon_containerstatus` AS `mon_containerstatus`,`m`.`mon_overallstatus` AS `mon_overallstatus`,m.node_id as node_id, `n`.`nodename` AS `nodename`,`n`.`listener_port` AS `listener_port`,`n`.`tz` AS `tz`, `n`.`connect_to` AS `connect_to`,`n`.`version` AS `version`,`n`.`updated` AS `node_updated`,`n`.`loc_country` AS `loc_country`,`n`.`loc_city` AS `loc_city`,`n`.`loc_addr` AS `loc_addr`,`n`.`loc_building` AS `loc_building`,`n`.`loc_floor` AS `loc_floor`,`n`.`loc_room` AS `loc_room`,`n`.`loc_rack` AS `loc_rack`,`n`.`cpu_freq` AS `cpu_freq`,`n`.`cpu_cores` AS `cpu_cores`,`n`.`cpu_dies` AS `cpu_dies`,`n`.`cpu_vendor` AS `cpu_vendor`,`n`.`cpu_model` AS `cpu_model`,`n`.`mem_banks` AS `mem_banks`,`n`.`mem_slots` AS `mem_slots`,`n`.`mem_bytes` AS `mem_bytes`,`n`.`os_name` AS `os_name`,`n`.`os_release` AS `os_release`,`n`.`os_update` AS `os_update`,`n`.`os_segment` AS `os_segment`,`n`.`os_arch` AS `os_arch`,`n`.`os_vendor` AS `os_vendor`,`n`.`os_kernel` AS `os_kernel`,`n`.`loc_zip` AS `loc_zip`,`n`.`team_responsible` AS `team_responsible`,`n`.`team_integ` AS `team_integ`,`n`.`team_support` AS `team_support`,`n`.`serial` AS `serial`,`n`.`model` AS `model`,`n`.`type` AS `type`,`n`.`warranty_end` AS `warranty_end`,`n`.`maintenance_end` AS `maintenance_end`,`n`.`status` AS `status`,`n`.`role` AS `role`,`n`.`environnement` AS `environnement`,`n`.`host_mode` AS `host_mode`,`n`.`power_supply_nb` AS `power_supply_nb`,`n`.`power_cabinet1` AS `power_cabinet1`,`n`.`power_cabinet2` AS `power_cabinet2`,`n`.`power_protect` AS `power_protect`,`n`.`power_protect_breaker` AS `power_protect_breaker`,`n`.`power_breaker1` AS `power_breaker1`,`n`.`power_breaker2` AS `power_breaker2`,n.sec_zone,n.last_boot,n.action_type,`m`.`mon_syncstatus` AS `mon_syncstatus`,`m`.`mon_hbstatus` AS `mon_hbstatus`,`m`.`mon_availstatus` AS `mon_availstatus`,`m`.`mon_appstatus` AS `mon_appstatus`,`ap`.`app_domain` AS `app_domain`,`ap`.`app_team_ops` AS `app_team_ops`,`n`.`enclosure` AS `enclosure`,`n`.`enclosureslot` AS `enclosureslot`,`n`.`assetname` AS `assetname`,`n`.`cpu_threads` AS `cpu_threads` from ((((`svcmon` `m` left join `services` `s` on((`s`.`svc_id` = `m`.`svc_id`))) left join `nodes` `n` on((`m`.`node_id` = `n`.`node_id`))) left join `apps` `ap` on((`ap`.`app` = `s`.`svc_app`))) left join `b_action_errors` `e` on(((`e`.`svc_id` = `s`.`svc_id`) and (`e`.`node_id` = `m`.`node_id`))));
+
+drop view v_comp_services ; create view v_comp_services as select s.svc_status_updated, `s`.`svc_ha` AS `svc_ha`,`s`.`svc_status` AS `svc_status`,`s`.`svc_availstatus` AS `svc_availstatus`,`s`.`svc_cluster_type` AS `svc_cluster_type`,`s`.`svc_flex_min_nodes` AS `svc_flex_min_nodes`,`s`.`svc_flex_max_nodes` AS `svc_flex_max_nodes`,`s`.`svc_flex_cpu_low_threshold` AS `svc_flex_cpu_low_threshold`,`s`.`svc_flex_cpu_high_threshold` AS `svc_flex_cpu_high_threshold`,s.svc_id, `s`.`svcname` AS `svcname`,`s`.`svc_nodes` AS `svc_nodes`,`s`.`svc_drpnode` AS `svc_drpnode`,`s`.`svc_drptype` AS `svc_drptype`,`s`.`svc_autostart` AS `svc_autostart`,`s`.`svc_type` AS `svc_type`,`s`.`svc_drpnodes` AS `svc_drpnodes`,`s`.`svc_comment` AS `svc_comment`,`s`.`svc_app` AS `svc_app`,`s`.`svc_drnoaction` AS `svc_drnoaction`,`s`.`svc_created` AS `svc_created`,`s`.`updated` AS `updated`,`s`.`svc_envdate` AS `svc_envdate`,`s`.`svc_containertype` AS `svc_containertype`,`s`.`svc_metrocluster` AS `svc_metrocluster`,`s`.`id` AS `id`,`s`.`svc_wave` AS `svc_wave`,'F' AS `encap`, `r`.`id` AS `ruleset_id`, `r`.`ruleset_name` AS `ruleset_name`, `m`.`id` AS `modset_id`, `m`.`modset_name` AS `modset_name` from ((((`services` `s` left join `comp_rulesets_services` `rs1` on(((`s`.`svc_id` = `rs1`.`svc_id`) and (`rs1`.`slave` = 'F')))) left join `comp_rulesets` `r` on((`rs1`.`ruleset_id` = `r`.`id`))) left join `comp_modulesets_services` `ms` on(((`s`.`svc_id` = `ms`.`svc_id`) and (`ms`.`slave` = 'F')))) left join `comp_moduleset` `m` on((`ms`.`modset_id` = `m`.`id`))) union all select s.svc_status_updated, `s`.`svc_ha` AS `svc_ha`,`s`.`svc_status` AS `svc_status`,`s`.`svc_availstatus` AS `svc_availstatus`,`s`.`svc_cluster_type` AS `svc_cluster_type`,`s`.`svc_flex_min_nodes` AS `svc_flex_min_nodes`,`s`.`svc_flex_max_nodes` AS `svc_flex_max_nodes`,`s`.`svc_flex_cpu_low_threshold` AS `svc_flex_cpu_low_threshold`,`s`.`svc_flex_cpu_high_threshold` AS `svc_flex_cpu_high_threshold`,s.svc_id,`s`.`svcname` AS `svcname`,`s`.`svc_nodes` AS `svc_nodes`,`s`.`svc_drpnode` AS `svc_drpnode`,`s`.`svc_drptype` AS `svc_drptype`,`s`.`svc_autostart` AS `svc_autostart`,`s`.`svc_type` AS `svc_type`,`s`.`svc_drpnodes` AS `svc_drpnodes`,`s`.`svc_comment` AS `svc_comment`,`s`.`svc_app` AS `svc_app`,`s`.`svc_drnoaction` AS `svc_drnoaction`,`s`.`svc_created` AS `svc_created`,`s`.`updated` AS `updated`,`s`.`svc_envdate` AS `svc_envdate`,`s`.`svc_containertype` AS `svc_containertype`,`s`.`svc_metrocluster` AS `svc_metrocluster`,`s`.`id` AS `id`,`s`.`svc_wave` AS `svc_wave`,'T' AS `encap`, `r`.`id` AS `ruleset_id`, `r`.`ruleset_name` AS `ruleset_name`, `m`.`id` AS `modset_id`, `m`.`modset_name` AS `modset_name` from (((((`services` `s` join `svcmon` `sm` on(((`s`.`svc_id` = `sm`.`svc_id`) and (`sm`.`mon_vmname` <> '') and (`sm`.`mon_vmname` is not null)))) left join `comp_rulesets_services` `rs1` on(((`s`.`svc_id` = `rs1`.`svc_id`) and (`rs1`.`slave` = 'T')))) left join `comp_rulesets` `r` on((`rs1`.`ruleset_id` = `r`.`id`))) left join `comp_modulesets_services` `ms` on(((`s`.`svc_id` = `ms`.`svc_id`) and (`ms`.`slave` = 'T')))) left join `comp_moduleset` `m` on((`ms`.`modset_id` = `m`.`id`)));
+
+drop view v_svcactions;
+
+
+drop view v_outdated_services ; create view v_outdated_services as (select svc_id, sum(if(mon_updated >= DATE_SUB(NOW(), INTERVAL 15 MINUTE), 1, 0)) as uptodate from svcmon group by svc_id);
+
+drop view v_tags_full ; create view v_tags_full as select 0 as id, concat(nodes.node_id, "_null_", if(tags.id, tags.id, "null")) as ckid, tags.id as tag_id, tags.tag_name as tag_name, nodes.node_id as node_id, nodes.nodename as nodename, "" as svc_id, NULL as svcname, node_tags.created as created from nodes left join node_tags on nodes.node_id=node_tags.node_id left join tags on node_tags.tag_id=tags.id union all select 0 as id, concat("null_", services.svc_id, "_", if(tags.id, tags.id, "null")) as ckid, tags.id as tag_id, tags.tag_name as tag_name, "" as node_id, NULL as nodename, services.svc_id as svc_id, services.svcname as svcname, svc_tags.created as created from services left join svc_tags on services.svc_id=svc_tags.svc_id left join tags on svc_tags.tag_id=tags.id;
+
+drop view v_tags; create view v_tags as select NULL as id, tags.id as tag_id, tags.tag_name as tag_name, node_tags.node_id as node_id, "" as svc_id, node_tags.created as created from tags join node_tags on tags.id=node_tags.tag_id union all select NULL as id, tags.id as tag_id, tags.tag_name as tag_name, "" as node_id, svc_tags.svc_id as svc_id, svc_tags.created as created from tags join svc_tags on tags.id=svc_tags.tag_id;
+
+drop view v_action_queue ; create view v_action_queue as select n.nodename, s.svcname, a.*, concat(u.first_name, " ", u.last_name) as username from action_queue a left join auth_user u on a.user_id=u.id left join nodes n on a.node_id=n.node_id left join services s on a.svc_id=s.svc_id;
+
+alter table log drop key idx3;

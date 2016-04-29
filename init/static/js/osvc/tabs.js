@@ -428,12 +428,20 @@ tab_properties_generic_updater = function(options) {
 		}
 		if (!options.privileges || services_ismemberof(options.privileges)) {
 			$(this).addClass("clickable")
+			if ($(this).text() == "") {
+				$(this).addClass("editable editable-placeholder")
+			}
 			$(this).hover(
 				function() {
 					$(this).addClass("editable")
+					$(this).removeClass("editable-placeholder")
 				},
 				function() {
-					$(this).removeClass("editable")
+					if ($(this).text() == "") {
+						$(this).addClass("editable editable-placeholder")
+					} else {
+						$(this).removeClass("editable editable-placeholder")
+					}
 				}
 			)
 		}

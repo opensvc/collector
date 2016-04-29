@@ -42,8 +42,8 @@ svcmon_cols = [
 ]
 
 services_colprops = {
-    'svc_name': HtmlTableColumn(
-             field='svc_name',
+    'svcname': HtmlTableColumn(
+             field='svcname',
              table = 'services',
             ),
     'svc_hostid': HtmlTableColumn(
@@ -156,12 +156,12 @@ svcmon_colprops = {
              field='mon_containerpath',
              table = 'svcmon',
             ),
-    'mon_svcname': HtmlTableColumn(
-             field='mon_svcname',
+    'svc_id': HtmlTableColumn(
+             field='svc_id',
              table = 'svcmon',
             ),
-    'mon_nodname': HtmlTableColumn(
-             field='mon_nodname',
+    'node_id': HtmlTableColumn(
+             field='node_id',
              table = 'svcmon',
             ),
     'mon_svctype': HtmlTableColumn(

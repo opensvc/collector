@@ -16,8 +16,8 @@ def update_thresholds_batch_type(chk_type):
     q = db.checks_live.chk_type == chk_type
     rows = db(q).select(
       db.checks_live.id,
-      db.checks_live.chk_nodename,
-      db.checks_live.chk_svcname,
+      db.checks_live.node_id,
+      db.checks_live.svc_id,
       db.checks_live.chk_type,
       db.checks_live.chk_instance,
       db.checks_live.chk_value,
@@ -45,8 +45,6 @@ def update_thresholds_from_defaults(rows):
              select * from
              (select
                NULL as id,
-               t.chk_nodename as chk_nodename,
-               t.chk_svcname as chk_svcname,
                t.chk_type as chk_type,
                t.chk_updated as chk_updated,
                t.chk_value as chk_value,
@@ -55,11 +53,13 @@ def update_thresholds_from_defaults(rows):
                cd2.chk_low as chk_low,
                cd2.chk_high as chk_high,
                "defaults" as chk_threshold_provider,
-               NULL as chk_err
+               NULL as chk_err,
+               t.node_id as node_id,
+               t.svc_id as svc_id
               from (
                 select
-                  cl.chk_nodename,
-                  cl.chk_svcname,
+                  cl.node_id,
+                  cl.svc_id,
                   cl.chk_type,
                   cl.chk_updated,
                   cl.chk_value,
@@ -117,7 +117,7 @@ def update_thresholds_from_filters(rows):
 
     data = {}
     for row in rows:
-        source = (row['chk_nodename'], row['chk_svcname'])
+        source = (row['node_id'], row['svc_id'])
         if source in data:
             data[source].append(row)
         else:
@@ -131,7 +131,7 @@ def update_thresholds_from_filters(rows):
 
     rest = []
     vals = []
-    vars = ['chk_nodename', 'chk_svcname', 'chk_type', 'chk_instance', 'chk_value', 'chk_high', 'chk_low', 'chk_threshold_provider']
+    vars = ['node_id', 'svc_id', 'chk_type', 'chk_instance', 'chk_value', 'chk_high', 'chk_low', 'chk_threshold_provider']
     for source in data:
         _rest, _vals = update_thresholds_from_filters_source(data[source], source, fset_ids, _rows, fset_names=fset_names, get_vals=True)
         rest += _rest
@@ -143,8 +143,8 @@ def update_thresholds_from_filters(rows):
 def update_thresholds_from_filters_one_source(rows):
     if len(rows) == 0:
         return rows
-    nodename = rows[0]['chk_nodename']
-    svcname = rows[0]['chk_svcname']
+    node_id = rows[0]['node_id']
+    svc_id = rows[0]['svc_id']
 
     ids = map(lambda x: str(x['id']), rows)
     ids = ','.join(ids)
@@ -171,14 +171,14 @@ def update_thresholds_from_filters_one_source(rows):
              group by cf.id"""%dict(ids=ids)
     _rows = db.executesql(sql, as_dict=True)
     fset_ids = set(map(lambda x: (x['fset_id'], x['fset_name']), _rows))
-    rest = update_thresholds_from_filters_source(rows, (nodename, svcname), fset_ids, _rows)
+    rest = update_thresholds_from_filters_source(rows, (node_id, svc_id), fset_ids, _rows)
     return rest
 
 def update_thresholds_from_filters_source(rows, source, fset_ids, _rows, fset_names=None, get_vals=False):
-    nodename, svcname = source
+    node_id, svc_id = source
 
-    # filter out those not matching the nodename/svcname
-    matching_fset_ids = comp_get_matching_fset_ids(fset_ids, nodename=nodename, svcname=svcname)
+    # filter out those not matching the node_id/svc_id
+    matching_fset_ids = comp_get_matching_fset_ids(fset_ids, node_id=node_id, svc_id=svc_id)
 
     if len(matching_fset_ids) == 0:
         if get_vals:
@@ -202,15 +202,15 @@ def update_thresholds_from_filters_source(rows, source, fset_ids, _rows, fset_na
 
     # prepare thresholds insert/update request
     rest = []
-    vars = ['chk_nodename', 'chk_svcname', 'chk_type', 'chk_instance', 'chk_value', 'chk_high', 'chk_low', 'chk_threshold_provider']
+    vars = ['node_id', 'svc_id', 'chk_type', 'chk_instance', 'chk_value', 'chk_high', 'chk_low', 'chk_threshold_provider']
     vals = []
     for row in rows:
         i = row['chk_type'], row['chk_instance']
         if i not in fsets:
             rest.append(row)
             continue
-        vals.append([row['chk_nodename'],
-                     row['chk_svcname'],
+        vals.append([row['node_id'],
+                     row['svc_id'],
                      row['chk_type'],
                      row['chk_instance'],
                      str(row['chk_value']),
@@ -231,12 +231,12 @@ def update_thresholds_from_settings(rows):
              select * from (
                select
                 id,
-                chk_nodename,
-                chk_svcname,
+                node_id,
+                svc_id,
                 chk_type,
                 chk_value,
                 chk_instance,
-                (select chk_low from checks_settings cs where cs.chk_nodename=cl.chk_nodename and cs.chk_type=cl.chk_type and cs.chk_instance=cl.chk_instance limit 1) as chk_low
+                (select chk_low from checks_settings cs where cs.node_id=cl.node_id and cs.chk_type=cl.chk_type and cs.chk_instance=cl.chk_instance limit 1) as chk_low
                from checks_live cl
                where
                 id in (%(ids)s)
@@ -246,8 +246,8 @@ def update_thresholds_from_settings(rows):
     rest = db.executesql(sql, as_dict=True)
 
     sql = """insert into checks_live  (
-               chk_nodename,
-               chk_svcname,
+               node_id,
+               svc_id,
                chk_type,
                chk_updated,
                chk_value,
@@ -259,15 +259,15 @@ def update_thresholds_from_settings(rows):
              )
              select * from (
                select
-                chk_nodename,
-                chk_svcname,
+                node_id,
+                svc_id,
                 chk_type,
                 chk_updated,
                 chk_value,
                 chk_created,
                 chk_instance,
-                (select chk_low from checks_settings cs where cs.chk_nodename=cl.chk_nodename and cs.chk_type=cl.chk_type and cs.chk_instance=cl.chk_instance limit 1) as chk_low,
-                (select chk_high from checks_settings cs where cs.chk_nodename=cl.chk_nodename and cs.chk_type=cl.chk_type and cs.chk_instance=cl.chk_instance limit 1) as chk_high,
+                (select chk_low from checks_settings cs where cs.node_id=cl.node_id and cs.chk_type=cl.chk_type and cs.chk_instance=cl.chk_instance limit 1) as chk_low,
+                (select chk_high from checks_settings cs where cs.node_id=cl.node_id and cs.chk_type=cl.chk_type and cs.chk_instance=cl.chk_instance limit 1) as chk_high,
                 "settings" as chk_threshold_provider
                from checks_live cl
                where
@@ -286,22 +286,16 @@ def update_thresholds_from_settings(rows):
 def b_update_thresholds_batch():
     update_thresholds_batch()
 
-def update_dash_checks_nodes(nodenames):
-    for nodename in nodenames:
-        update_dash_checks(nodename)
+def update_dash_checks_nodes(node_ids):
+    for node_id in node_ids:
+        update_dash_checks(node_id)
 
-def update_dash_checks(nodename):
-    nodename = nodename.strip("'")
+def update_dash_checks(node_id):
     now = datetime.datetime.now()
     now = now - datetime.timedelta(microseconds=now.microsecond)
-    sql = """select host_mode from nodes
-             where
-               nodename="%(nodename)s"
-          """%dict(nodename=nodename)
-    rows = db.executesql(sql)
-
-    env = rows[0][0]
-    if len(rows) == 1 and env == 'PRD':
+    q = db.nodes.node_id == node_id
+    env = db(q).select().first().host_mode
+    if env == 'PRD':
         sev = 3
     else:
         sev = 2
@@ -310,8 +304,7 @@ def update_dash_checks(nodename):
                select
                  NULL,
                  "check out of bounds",
-                 t.svcname,
-                 t.nodename,
+                 t.svc_id,
                  %(sev)d,
                  "%%(ctype)s:%%(inst)s check value %%(val)d. %%(ttype)s thresholds: %%(min)d - %%(max)d",
                  concat('{"ctype": "', t.ctype,
@@ -330,12 +323,13 @@ def update_dash_checks(nodename):
                         ', "max": ', t.max,
                         '}')),
                  "%(env)s",
-                 "",
-                 "%(now)s"
+                 "%(now)s",
+                 t.node_id,
+                 NULL
                from (
                  select
-                   chk_svcname as svcname,
-                   chk_nodename as nodename,
+                   svc_id as svc_id,
+                   node_id as node_id,
                    chk_type as ctype,
                    chk_instance as inst,
                    chk_threshold_provider as ttype,
@@ -344,7 +338,7 @@ def update_dash_checks(nodename):
                    chk_high as max
                  from checks_live
                  where
-                   chk_nodename = "%(nodename)s" and
+                   node_id = "%(node_id)s" and
                    chk_updated >= date_sub(now(), interval 1 day) and
                    (
                      chk_value < chk_low or
@@ -353,7 +347,7 @@ def update_dash_checks(nodename):
                ) t
                on duplicate key update
                  dash_updated="%(now)s"
-          """%dict(nodename=nodename,
+          """%dict(node_id=node_id,
                    sev=sev,
                    env=env,
                    now=str(now),
@@ -363,10 +357,10 @@ def update_dash_checks(nodename):
 
     sql = """delete from dashboard
                where
-                 dash_nodename = "%(nodename)s" and
+                 node_id = "%(node_id)s" and
                  dash_type = "check out of bounds" and
                  dash_updated < "%(now)s"
-          """%dict(nodename=nodename, now=str(now))
+          """%dict(node_id=node_id, now=str(now))
     n = db.executesql(sql)
     if n > 0:
         table_modified("dashboard")

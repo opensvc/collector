@@ -1,7 +1,7 @@
 packages_colprops = {
-    'pkg_nodename': HtmlTableColumn(
+    'node_id': HtmlTableColumn(
              table='packages',
-             field='pkg_nodename',
+             field='node_id',
             ),
     'pkg_name': HtmlTableColumn(
              table='packages',

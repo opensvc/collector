@@ -125,7 +125,7 @@ function form(divid, options) {
 			if (d.Candidates == "__service_selector__") {
 				console.log("mangle form definition: swich __node_selector__ to rest GET /users/self/services")
 				o.form_data.form_definition.Inputs[i].Function = "/users/self/services"
-				o.form_data.form_definition.Inputs[i].Args = ["props = svc_name", "meta = 0", "limit = 0"]
+				o.form_data.form_definition.Inputs[i].Args = ["props = svcname", "meta = 0", "limit = 0"]
 				o.form_data.form_definition.Inputs[i].Candidates = null
 			}
 			if (d.Default == "__user_primary_group__") {
@@ -161,7 +161,7 @@ function form(divid, options) {
 			return ""
 		}
 		var a = $("<a class='icon edit16' style='position:absolute;top:2px;right:2px;z-index:400'></a>")
-		a.attr("title", i18n.t("forms.edit"))
+		a.attr("title", i18n.t("forms.edit")).tooltipster()
 		a.bind("click", function(){
 			$(this).siblings("a.nok").show()
 			$(this).hide()
@@ -175,7 +175,7 @@ function form(divid, options) {
 			return ""
 		}
 		var a = $("<a class='icon nok' style='display:none;position:absolute;top:2px;right:2px;z-index:400'></a>")
-		a.attr("title", i18n.t("forms.cancel"))
+		a.attr("title", i18n.t("forms.cancel")).tooltipster()
 		a.bind("click", function(){
 			$(this).siblings("a.edit16").show()
 			$(this).hide()
@@ -396,7 +396,7 @@ function form(divid, options) {
 			line.append(value)
 			if (d.Help) {
 				var help = $("<td class='icon help'></td>")
-				help.attr("title", d.Help)
+				help.attr("title", d.Help).tooltipster()
 			}
 			line.append(help)
 			if ((typeof(data) === "undefined") || (is_dict(data) && !(input_key_id in data))) {

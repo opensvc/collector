@@ -6,8 +6,8 @@ function table_action_queue(divid, options) {
 		'name': 'action_queue',
 		'ajax_url': '/init/action_queue/ajax_actions',
 		'span': ['id'],
-		'force_cols': ['id'],
-		'columns': ['id', 'status', 'nodename', 'svcname', 'connect_to', 'username', 'form_id', 'action_type', 'date_queued', 'date_dequeued', 'ret', 'command', 'stdout', 'stderr'],
+		'force_cols': ['id', 'svc_id', 'node_id'],
+		'columns': ['id', 'status', 'node_id', 'nodename', 'svc_id', 'svcname', 'connect_to', 'username', 'form_id', 'action_type', 'date_queued', 'date_dequeued', 'ret', 'command', 'stdout', 'stderr'],
 		'default_columns': ['status', 'nodename', 'svcname', 'connect_to', 'username', 'form_id', 'action_type', 'date_queued', 'date_dequeued', 'ret', 'command'],
 		'colprops': {
 			"action_type": {"img": "action16"},
@@ -34,9 +34,9 @@ function table_actions(divid, options) {
 		'divid': divid,
 		'ajax_url': '/init/svcactions/ajax_actions',
 		'span': ['pid'],
-		'force_cols': ['id', 'os_name', 'ack', 'acked_by', 'acked_date', 'acked_comment', 'end'],
-		'columns': ['svcname', 'hostname', 'pid', 'action', 'status', 'begin', 'end', 'time', 'id', 'status_log', 'cron', 'ack', 'acked_by', 'acked_date', 'acked_comment', 'assetname', 'fqdn', 'serial', 'model', 'environnement', 'role', 'asset_status', 'type', 'sec_zone', 'tz', 'loc_country', 'loc_zip', 'loc_city', 'loc_addr', 'loc_building', 'loc_floor', 'loc_room', 'loc_rack', 'enclosure', 'enclosureslot', 'hvvdc', 'hvpool', 'hv', 'os_name', 'os_release', 'os_vendor', 'os_arch', 'os_kernel', 'os_concat', 'cpu_dies', 'cpu_cores', 'cpu_threads', 'cpu_model', 'cpu_freq', 'mem_banks', 'mem_slots', 'mem_bytes', 'listener_port', 'version', 'action_type', 'connect_to', 'host_mode', 'team_responsible', 'team_integ', 'app_team_ops', 'team_support', 'app_domain', 'last_boot', 'power_supply_nb', 'power_cabinet1', 'power_cabinet2', 'power_protect', 'power_protect_breaker', 'power_breaker1', 'power_breaker2', 'warranty_end', 'maintenance_end', 'os_obs_warn_date', 'os_obs_alert_date', 'hw_obs_warn_date', 'hw_obs_alert_date'],
-		"default_columns": ["svcname", "action", "begin", "cron", "end", "hostname", "pid", "status", "status_log"],
+		'force_cols': ['id', 'svc_id', 'node_id', 'os_name', 'ack', 'acked_by', 'acked_date', 'acked_comment', 'end'],
+		'columns': ['svc_id', 'svcname', 'node_id', 'nodename', 'pid', 'action', 'status', 'begin', 'end', 'time', 'id', 'status_log', 'cron', 'ack', 'acked_by', 'acked_date', 'acked_comment', 'assetname', 'fqdn', 'serial', 'model', 'environnement', 'role', 'asset_status', 'type', 'sec_zone', 'tz', 'loc_country', 'loc_zip', 'loc_city', 'loc_addr', 'loc_building', 'loc_floor', 'loc_room', 'loc_rack', 'enclosure', 'enclosureslot', 'hvvdc', 'hvpool', 'hv', 'os_name', 'os_release', 'os_vendor', 'os_arch', 'os_kernel', 'os_concat', 'cpu_dies', 'cpu_cores', 'cpu_threads', 'cpu_model', 'cpu_freq', 'mem_banks', 'mem_slots', 'mem_bytes', 'listener_port', 'version', 'action_type', 'connect_to', 'host_mode', 'team_responsible', 'team_integ', 'app_team_ops', 'team_support', 'app_domain', 'last_boot', 'power_supply_nb', 'power_cabinet1', 'power_cabinet2', 'power_protect', 'power_protect_breaker', 'power_breaker1', 'power_breaker2', 'warranty_end', 'maintenance_end', 'os_obs_warn_date', 'os_obs_alert_date', 'hw_obs_warn_date', 'hw_obs_alert_date'],
+		"default_columns": ["svcname", "action", "begin", "cron", "end", "nodename", "pid", "status", "status_log"],
 		"colprops": {
 			"begin": {
 				"_class": "datetime_no_age",
@@ -80,13 +80,13 @@ function table_actions(divid, options) {
 	return table_init(_options)
 }
 
-function table_actions_node(divid, nodename) {
-	var id = "actions_" + nodename.replace(/[\.-]/g, "_")
-	var f_hostname = id+"_f_hostname"
+function table_actions_node(divid, node_id) {
+	var id = "actions_" + node_id
+	var f_node_id = id+"_f_node_id"
 	var f_begin = id+"_f_begin"
 	var f_status_log = id+"_f_status_log"
 	var request_vars = {}
-	request_vars[f_hostname] = nodename
+	request_vars[f_node_id] = node_id
 	request_vars[f_begin] = ">-60d"
 	request_vars[f_status_log] = "empty"
 	return table_actions(divid, {
@@ -113,14 +113,14 @@ function table_actions_node(divid, nodename) {
 	})
 }
 
-function table_actions_svc(divid, svcname) {
-	var id = "actions_" + svcname.replace(/[\.-]/g, "_")
-	var f_svcname = id+"_f_svcname"
+function table_actions_svc(divid, svc_id) {
+	var id = "actions_" + svc_id.replace(/-/g, "")
+	var f_svc_id = id+"_f_svc_id"
 	var f_begin = id+"_f_begin"
 	var f_status_log = id+"_f_status_log"
 	var perpage = id+"_perpage"
 	var request_vars = {}
-	request_vars[f_svcname] = svcname
+	request_vars[f_svc_id] = svc_id
 	request_vars[f_begin] = ">-60d"
 	request_vars[f_status_log] = "empty"
 	return table_actions(divid, {
@@ -129,7 +129,7 @@ function table_actions_svc(divid, svcname) {
 		"request_vars": request_vars,
 		"volatile_filters": true,
 		"visible_columns": [
-			'hostname',
+			'nodename',
 			'pid',
 			'action',
 			'status',
@@ -147,19 +147,19 @@ function table_actions_svc(divid, svcname) {
 	})
 }
 
-function table_appinfo(divid, options) {
+function table_resinfo(divid, options) {
 	var defaults = {
 		'divid': divid,
-		'id': "appinfo",
-		'caller': "table_appinfo",
-		'name': "appinfo",
-		'ajax_url': '/init/appinfo/ajax_appinfo',
-		'span': ['app_svcname', 'app_nodename', 'app_launcher'],
-		'columns': ['id', 'app_svcname', 'app_nodename', 'app_launcher', 'app_key', 'app_value', 'app_updated'],
-		'default_columns': ['app_svcname', 'app_nodename', 'app_launcher', 'app_key', 'app_value', 'app_updated'],
-		'force_cols': ['id'],
+		'id': "resinfo",
+		'caller': "table_resinfo",
+		'name': "resinfo",
+		'ajax_url': '/init/resinfo/ajax_resinfo',
+		'span': ['svc_id', 'node_id', 'rid'],
+		'columns': ['id', 'svc_id', 'svcname', 'node_id', 'nodename', 'rid', 'res_key', 'res_value', 'updated'],
+		'default_columns': ['svcname', 'nodename', 'rid', 'res_key', 'res_value', 'updated'],
+		'force_cols': ['id', 'svc_id', 'node_id'],
 		'wsable': true,
-		'events': ['appinfo_change']
+		'events': ['resinfo_change']
 	}
 
 	var _options = $.extend({}, defaults, options)
@@ -201,12 +201,15 @@ function table_checks(divid, options) {
 		'caller': 'table_checks',
 		'name': 'checks',
 		'ajax_url': '/init/checks/ajax_checks',
-		'span': ['chk_nodename'],
-		'columns': ['chk_nodename', 'chk_svcname', 'chk_type', 'chk_instance', 'chk_value', 'chk_low', 'chk_high', 'chk_err', 'chk_threshold_provider', 'chk_created', 'chk_updated', 'assetname', 'fqdn', 'serial', 'model', 'environnement', 'role', 'status', 'type', 'sec_zone', 'tz', 'loc_country', 'loc_zip', 'loc_city', 'loc_addr', 'loc_building', 'loc_floor', 'loc_room', 'loc_rack', 'enclosure', 'enclosureslot', 'hvvdc', 'hvpool', 'hv', 'os_name', 'os_release', 'os_vendor', 'os_arch', 'os_kernel', 'cpu_dies', 'cpu_cores', 'cpu_threads', 'cpu_model', 'cpu_freq', 'mem_banks', 'mem_slots', 'mem_bytes', 'listener_port', 'version', 'action_type', 'connect_to', 'host_mode', 'team_responsible', 'team_integ', 'app_team_ops', 'team_support', 'app', 'app_domain', 'last_boot', 'power_supply_nb', 'power_cabinet1', 'power_cabinet2', 'power_protect', 'power_protect_breaker', 'power_breaker1', 'power_breaker2', 'warranty_end', 'maintenance_end', 'os_obs_warn_date', 'os_obs_alert_date', 'hw_obs_warn_date', 'hw_obs_alert_date', 'updated'],
-		'default_columns': ["chk_err", "chk_high", "chk_instance", "chk_low", "chk_nodename", "chk_svcname", "chk_threshold_provider", "chk_type", "chk_updated", "chk_value"],
+		'span': ['node_id'],
+		'columns': ['node_id', 'nodename', 'svc_id', 'svcname', 'chk_type', 'chk_instance', 'chk_value', 'chk_low', 'chk_high', 'chk_err', 'chk_threshold_provider', 'chk_created', 'chk_updated', 'assetname', 'fqdn', 'serial', 'model', 'environnement', 'role', 'status', 'type', 'sec_zone', 'tz', 'loc_country', 'loc_zip', 'loc_city', 'loc_addr', 'loc_building', 'loc_floor', 'loc_room', 'loc_rack', 'enclosure', 'enclosureslot', 'hvvdc', 'hvpool', 'hv', 'os_name', 'os_release', 'os_vendor', 'os_arch', 'os_kernel', 'cpu_dies', 'cpu_cores', 'cpu_threads', 'cpu_model', 'cpu_freq', 'mem_banks', 'mem_slots', 'mem_bytes', 'listener_port', 'version', 'action_type', 'connect_to', 'host_mode', 'team_responsible', 'team_integ', 'app_team_ops', 'team_support', 'app', 'app_domain', 'last_boot', 'power_supply_nb', 'power_cabinet1', 'power_cabinet2', 'power_protect', 'power_protect_breaker', 'power_breaker1', 'power_breaker2', 'warranty_end', 'maintenance_end', 'os_obs_warn_date', 'os_obs_alert_date', 'hw_obs_warn_date', 'hw_obs_alert_date', 'updated'],
+		'default_columns': ["chk_err", "chk_high", "chk_instance", "chk_low", "nodename", "svcname", "chk_threshold_provider", "chk_type", "chk_updated", "chk_value"],
 		'wsable': true,
 		'force_cols': [
-			'chk_nodename',
+			'svc_id',
+			'svcname',
+			'node_id',
+			'nodename',
 			'os_name',
 			'chk_type',
 			'chk_instance',
@@ -221,18 +224,18 @@ function table_checks(divid, options) {
 	return table_init(_options)
 }
 
-function table_checks_node(divid, nodename) {
-	var id = "checks_" + nodename.replace(/[\.-]/g, "_")
-	var f = id+"_f_chk_nodename"
+function table_checks_node(divid, node_id) {
+	var id = "checks_" + node_id
+	var f = id+"_f_node_id"
 	var request_vars = {}
-	request_vars[f] = nodename
+	request_vars[f] = node_id
 	return table_checks(divid, {
 		"id": id,
 		"caller": "table_checks_node",
 		"request_vars": request_vars,
 		"volatile_filters": true,
 		"visible_columns": [
-			'chk_svcname',
+			'svcname',
 			'chk_type',
 			'chk_instance',
 			'chk_value',
@@ -246,11 +249,11 @@ function table_checks_node(divid, nodename) {
 	})
 }
 
-function table_checks_svc(divid, svcname) {
-	var id = "checks_" + svcname.replace(/[\.-]/g, "_")
-	var f = id+"_f_chk_svcname"
+function table_checks_svc(divid, svc_id) {
+	var id = "checks_" + svc_id.replace(/-/g, "")
+	var f = id+"_f_svc_id"
 	var request_vars = {}
-	request_vars[f] = svcname
+	request_vars[f] = svc_id
 	table_checks(divid, {
 		"id": id,
 		"caller": "table_checks_svc",
@@ -278,9 +281,9 @@ function table_comp_rulesets_nodes(divid, options) {
 		'name': "comp_rulesets_nodes",
 		'divid': divid,
 		'ajax_url': '/init/compliance/ajax_comp_rulesets_nodes',
-		'span': ['nodename'],
-		'force_cols': ['os_name', 'ruleset_id'],
-		'columns': ['nodename', 'ruleset_id', 'ruleset_name', 'assetname', 'fqdn', 'serial', 'model', 'environnement', 'role', 'status', 'type', 'sec_zone', 'tz', 'loc_country', 'loc_zip', 'loc_city', 'loc_addr', 'loc_building', 'loc_floor', 'loc_room', 'loc_rack', 'enclosure', 'enclosureslot', 'hvvdc', 'hvpool', 'hv', 'os_name', 'os_release', 'os_vendor', 'os_arch', 'os_kernel', 'cpu_dies', 'cpu_cores', 'cpu_threads', 'cpu_model', 'cpu_freq', 'mem_banks', 'mem_slots', 'mem_bytes', 'listener_port', 'version', 'action_type', 'connect_to', 'host_mode', 'team_responsible', 'team_integ', 'team_support', 'app', 'last_boot', 'power_supply_nb', 'power_cabinet1', 'power_cabinet2', 'power_protect', 'power_protect_breaker', 'power_breaker1', 'power_breaker2', 'warranty_end', 'maintenance_end', 'os_obs_warn_date', 'os_obs_alert_date', 'hw_obs_warn_date', 'hw_obs_alert_date', 'updated'],
+		'span': ['node_id'],
+		'force_cols': ['os_name', 'node_id', 'ruleset_id'],
+		'columns': ['node_id', 'nodename', 'ruleset_id', 'ruleset_name', 'assetname', 'fqdn', 'serial', 'model', 'environnement', 'role', 'status', 'type', 'sec_zone', 'tz', 'loc_country', 'loc_zip', 'loc_city', 'loc_addr', 'loc_building', 'loc_floor', 'loc_room', 'loc_rack', 'enclosure', 'enclosureslot', 'hvvdc', 'hvpool', 'hv', 'os_name', 'os_release', 'os_vendor', 'os_arch', 'os_kernel', 'cpu_dies', 'cpu_cores', 'cpu_threads', 'cpu_model', 'cpu_freq', 'mem_banks', 'mem_slots', 'mem_bytes', 'listener_port', 'version', 'action_type', 'connect_to', 'host_mode', 'team_responsible', 'team_integ', 'team_support', 'app', 'last_boot', 'power_supply_nb', 'power_cabinet1', 'power_cabinet2', 'power_protect', 'power_protect_breaker', 'power_breaker1', 'power_breaker2', 'warranty_end', 'maintenance_end', 'os_obs_warn_date', 'os_obs_alert_date', 'hw_obs_warn_date', 'hw_obs_alert_date', 'updated'],
 		'default_columns': ["nodename", "ruleset_name"],
 		'colprops': {
 			"ruleset_id": {"img": "key"}
@@ -310,9 +313,9 @@ function table_comp_modulesets_nodes(divid, options) {
 		'caller': "table_comp_modulesets_nodes",
 		'divid': divid,
 		'ajax_url': '/init/compliance/ajax_comp_modulesets_nodes',
-		'span': ['nodename'],
-		'force_cols': ['os_name', 'modset_id'],
-		'columns': ['nodename', 'modset_id', 'modset_name', 'assetname', 'fqdn', 'serial', 'model', 'environnement', 'role', 'status', 'type', 'sec_zone', 'tz', 'loc_country', 'loc_zip', 'loc_city', 'loc_addr', 'loc_building', 'loc_floor', 'loc_room', 'loc_rack', 'enclosure', 'enclosureslot', 'hvvdc', 'hvpool', 'hv', 'os_name', 'os_release', 'os_vendor', 'os_arch', 'os_kernel', 'cpu_dies', 'cpu_cores', 'cpu_threads', 'cpu_model', 'cpu_freq', 'mem_banks', 'mem_slots', 'mem_bytes', 'listener_port', 'version', 'action_type', 'connect_to', 'host_mode', 'team_responsible', 'team_integ', 'team_support', 'app', 'last_boot', 'power_supply_nb', 'power_cabinet1', 'power_cabinet2', 'power_protect', 'power_protect_breaker', 'power_breaker1', 'power_breaker2', 'warranty_end', 'maintenance_end', 'os_obs_warn_date', 'os_obs_alert_date', 'hw_obs_warn_date', 'hw_obs_alert_date', 'updated'],
+		'span': ['node_id'],
+		'force_cols': ['node_id', 'os_name', 'modset_id'],
+		'columns': ['node_id', 'nodename', 'modset_id', 'modset_name', 'assetname', 'fqdn', 'serial', 'model', 'environnement', 'role', 'status', 'type', 'sec_zone', 'tz', 'loc_country', 'loc_zip', 'loc_city', 'loc_addr', 'loc_building', 'loc_floor', 'loc_room', 'loc_rack', 'enclosure', 'enclosureslot', 'hvvdc', 'hvpool', 'hv', 'os_name', 'os_release', 'os_vendor', 'os_arch', 'os_kernel', 'cpu_dies', 'cpu_cores', 'cpu_threads', 'cpu_model', 'cpu_freq', 'mem_banks', 'mem_slots', 'mem_bytes', 'listener_port', 'version', 'action_type', 'connect_to', 'host_mode', 'team_responsible', 'team_integ', 'team_support', 'app', 'last_boot', 'power_supply_nb', 'power_cabinet1', 'power_cabinet2', 'power_protect', 'power_protect_breaker', 'power_breaker1', 'power_breaker2', 'warranty_end', 'maintenance_end', 'os_obs_warn_date', 'os_obs_alert_date', 'hw_obs_warn_date', 'hw_obs_alert_date', 'updated'],
 		'default_columns': ["nodename", "modset_name"],
 		'wsable': false,
 		'events': ['comp_node_moduleset_change']
@@ -339,10 +342,10 @@ function table_comp_rulesets_services(divid, options) {
 		'caller': "table_comp_rulesets_services",
 		'divid': divid,
 		'ajax_url': '/init/compliance/ajax_comp_rulesets_services',
-		'span': ['svc_name'],
-		'force_cols': ['svc_name', 'encap', 'ruleset_id', 'svc_status_updated'],
-		'columns': ['svc_name', 'encap', 'ruleset_id', 'ruleset_name', 'svc_status', 'svc_availstatus', 'svc_app', 'svc_type', 'svc_ha', 'svc_cluster_type', 'svc_flex_min_nodes', 'svc_flex_max_nodes', 'svc_flex_cpu_low_threshold', 'svc_flex_cpu_high_threshold', 'svc_drptype', 'svc_containertype', 'svc_autostart', 'svc_nodes', 'svc_drpnode', 'svc_drpnodes', 'svc_comment', 'svc_created', 'svc_updated', 'svc_status_updated'],
-		'default_columns': ["svc_name", "encap", "ruleset_name"],
+		'span': ['svc_id'],
+		'force_cols': ['svc_id', 'svcname', 'encap', 'ruleset_id', 'svc_status_updated'],
+		'columns': ['svc_id', 'svcname', 'encap', 'ruleset_id', 'ruleset_name', 'svc_status', 'svc_availstatus', 'svc_app', 'svc_type', 'svc_ha', 'svc_cluster_type', 'svc_flex_min_nodes', 'svc_flex_max_nodes', 'svc_flex_cpu_low_threshold', 'svc_flex_cpu_high_threshold', 'svc_drptype', 'svc_containertype', 'svc_autostart', 'svc_nodes', 'svc_drpnode', 'svc_drpnodes', 'svc_comment', 'svc_created', 'svc_updated', 'svc_status_updated'],
+		'default_columns': ["svcname", "encap", "ruleset_name"],
 		'colprops': {
 			"ruleset_id": {"img": "key"}
 		},
@@ -371,10 +374,10 @@ function table_comp_modulesets_services(divid, options) {
 		'caller': "table_comp_modulesets_services",
 		'name': "comp_modulesets_services",
 		'ajax_url': '/init/compliance/ajax_comp_modulesets_services',
-		'span': ['svc_name'],
-		'force_cols': ['svc_name', 'encap', 'modset_id', 'svc_status_updated'],
-		'columns': ['svc_name', 'encap', 'modset_id', 'modset_name', 'svc_status', 'svc_availstatus', 'svc_app', 'svc_type', 'svc_ha', 'svc_cluster_type', 'svc_flex_min_nodes', 'svc_flex_max_nodes', 'svc_flex_cpu_low_threshold', 'svc_flex_cpu_high_threshold', 'svc_drptype', 'svc_containertype', 'svc_autostart', 'svc_nodes', 'svc_drpnode', 'svc_drpnodes', 'svc_comment', 'svc_created', 'svc_updated', 'svc_status_updated'],
-		'default_columns': ["svc_name", "encap", "modset_name"],
+		'span': ['svc_id'],
+		'force_cols': ['svc_id', 'svcname', 'encap', 'modset_id', 'svc_status_updated'],
+		'columns': ['svc_id', 'svcname', 'encap', 'modset_id', 'modset_name', 'svc_status', 'svc_availstatus', 'svc_app', 'svc_type', 'svc_ha', 'svc_cluster_type', 'svc_flex_min_nodes', 'svc_flex_max_nodes', 'svc_flex_cpu_low_threshold', 'svc_flex_cpu_high_threshold', 'svc_drptype', 'svc_containertype', 'svc_autostart', 'svc_nodes', 'svc_drpnode', 'svc_drpnodes', 'svc_comment', 'svc_created', 'svc_updated', 'svc_status_updated'],
+		'default_columns': ["svcname", "encap", "modset_name"],
 		'wsable': false,
 		'events': ['comp_modulesets_services_change']
 	}
@@ -399,9 +402,10 @@ function table_comp_log(divid, options) {
 		'caller': "table_comp_log",
 		'name': "comp_log",
 		'ajax_url': '/init/compliance/ajax_comp_log',
-		'span': ['run_date', 'run_nodename', 'run_svcname', 'run_module', 'run_action'],
-		'columns': ['run_date', 'run_nodename', 'run_svcname', 'run_module', 'run_action', 'run_status', 'run_log', 'rset_md5'],
-		'default_columns': ["run_action", "run_date", "run_module", "run_nodename", "run_status", "run_svcname"],
+		'span': ['run_date', 'node_id', 'svc_id', 'run_module', 'run_action'],
+		'force_cols': ['svc_id', 'node_id', 'run_date', 'run_module'],
+		'columns': ['run_date', 'node_id', 'nodename', 'svc_id', 'svcname', 'run_module', 'run_action', 'run_status', 'run_log', 'rset_md5'],
+		'default_columns': ["run_action", "run_date", "run_module", "nodename", "run_status", "svcname"],
 		'colprops': {
 			"run_date": {"default_filter": ">-1d"}
 		},
@@ -473,9 +477,10 @@ function table_comp_node_status(divid, options) {
 		'name': "comp_node_status",
 		'checkboxes': false,
 		'ajax_url': '/init/compliance/ajax_comp_node_status',
-		'span': ['node_name'],
-		'columns': ['node_name', 'total', 'ok', 'nok', 'na', 'obs', 'pct', 'node_log'],
-		'default_columns': ['node_name', 'total', 'ok', 'nok', 'na', 'obs', 'pct', 'node_log'],
+		'span': ['node_id'],
+		'columns': ['node_id', 'nodename', 'total', 'ok', 'nok', 'na', 'obs', 'pct', 'node_log'],
+		'default_columns': ['nodename', 'total', 'ok', 'nok', 'na', 'obs', 'pct', 'node_log'],
+		'force_cols': ['node_id', 'nodename', 'pct', 'node_log'],
 		'parent_tables': ['cs0']
 	}
 	var _options = $.extend({}, defaults, options)
@@ -490,9 +495,10 @@ function table_comp_service_status(divid, options) {
 		'id': "css",
 		'checkboxes': false,
 		'ajax_url': '/init/compliance/ajax_comp_svc_status',
-		'span': ['svc_name'],
-		'columns': ['svc_name', 'total', 'ok', 'nok', 'na', 'obs', 'pct', 'svc_log'],
-		'default_columns': ['svc_name', 'total', 'ok', 'nok', 'na', 'obs', 'pct', 'svc_log'],
+		'span': ['svc_id'],
+		'columns': ['svc_id', 'svcname', 'total', 'ok', 'nok', 'na', 'obs', 'pct', 'svc_log'],
+		'default_columns': ['svcname', 'total', 'ok', 'nok', 'na', 'obs', 'pct', 'svc_log'],
+		'force_cols': ['svcname', 'svc_id', 'pct', 'svc_log'],
 		'parent_tables': ['cs0']
 	}
 	var _options = $.extend({}, defaults, options)
@@ -506,10 +512,10 @@ function table_comp_status(divid, options) {
 		'name': "comp_status",
 		'caller': "view_comp_status",
 		'ajax_url': '/init/compliance/ajax_comp_status',
-		'span': ['run_nodename', 'run_svcname', 'run_module'],
-		'force_cols': ['id', 'os_name'],
-		'columns': ['id', 'run_date', 'run_nodename', 'run_svcname', 'run_module', 'run_status', 'run_status_log', 'rset_md5', 'run_log', 'assetname', 'fqdn', 'serial', 'model', 'environnement', 'role', 'status', 'type', 'sec_zone', 'tz', 'loc_country', 'loc_zip', 'loc_city', 'loc_addr', 'loc_building', 'loc_floor', 'loc_room', 'loc_rack', 'enclosure', 'enclosureslot', 'hvvdc', 'hvpool', 'hv', 'os_name', 'os_release', 'os_vendor', 'os_arch', 'os_kernel', 'cpu_dies', 'cpu_cores', 'cpu_threads', 'cpu_model', 'cpu_freq', 'mem_banks', 'mem_slots', 'mem_bytes', 'listener_port', 'version', 'action_type', 'connect_to', 'host_mode', 'team_responsible', 'team_integ', 'team_support', 'app', 'last_boot', 'power_supply_nb', 'power_cabinet1', 'power_cabinet2', 'power_protect', 'power_protect_breaker', 'power_breaker1', 'power_breaker2', 'warranty_end', 'maintenance_end', 'os_obs_warn_date', 'os_obs_alert_date', 'hw_obs_warn_date', 'hw_obs_alert_date', 'updated'],
-		'default_columns': ["run_date", "run_module", "run_nodename", "run_status", "run_svcname"],
+		'span': ['node_id', 'svc_id', 'run_module'],
+		'force_cols': ['id', 'node_id', 'svc_id', 'os_name', 'run_module'],
+		'columns': ['id', 'run_date', 'node_id', 'nodename', 'svc_id', 'svcname', 'run_module', 'run_status', 'run_status_log', 'rset_md5', 'run_log', 'assetname', 'fqdn', 'serial', 'model', 'environnement', 'role', 'status', 'type', 'sec_zone', 'tz', 'loc_country', 'loc_zip', 'loc_city', 'loc_addr', 'loc_building', 'loc_floor', 'loc_room', 'loc_rack', 'enclosure', 'enclosureslot', 'hvvdc', 'hvpool', 'hv', 'os_name', 'os_release', 'os_vendor', 'os_arch', 'os_kernel', 'cpu_dies', 'cpu_cores', 'cpu_threads', 'cpu_model', 'cpu_freq', 'mem_banks', 'mem_slots', 'mem_bytes', 'listener_port', 'version', 'action_type', 'connect_to', 'host_mode', 'team_responsible', 'team_integ', 'team_support', 'app', 'last_boot', 'power_supply_nb', 'power_cabinet1', 'power_cabinet2', 'power_protect', 'power_protect_breaker', 'power_breaker1', 'power_breaker2', 'warranty_end', 'maintenance_end', 'os_obs_warn_date', 'os_obs_alert_date', 'hw_obs_warn_date', 'hw_obs_alert_date', 'updated'],
+		'default_columns': ["run_date", "run_module", "nodename", "run_status", "svcname"],
 		'child_tables': ['cms', 'cns', 'css'],
 		'wsable': true,
 		'events': ['comp_status_change']
@@ -655,11 +661,11 @@ function comp_status_log_on_hover(t) {
 	})
 }
 
-function table_comp_status_node(divid, nodename) {
-	var id = "cs_node_" + nodename.replace(/[\.-]/g, "_")
-	var f = id+"_f_run_nodename"
+function table_comp_status_node(divid, node_id) {
+	var id = "cs_node_" + node_id
+	var f = id+"_f_node_id"
 	var request_vars = {}
-	request_vars[f] = nodename
+	request_vars[f] = node_id
 
 	t = table_comp_status(divid, {
 		"id": id,
@@ -667,7 +673,7 @@ function table_comp_status_node(divid, nodename) {
 		"request_vars": request_vars,
 		"volatile_filters": true,
 		"force_cols": ['id', 'os_name', 'run_log'],
-		"visible_columns": ['run_date', 'run_svcname', 'run_module', 'run_status']
+		"visible_columns": ['run_date', 'svcname', 'run_module', 'run_status']
 	})
 	t.on_change = function() {
 		comp_status_log_on_hover(t)
@@ -675,19 +681,19 @@ function table_comp_status_node(divid, nodename) {
 	return t
 }
 
-function table_comp_status_svc(divid, svcname) {
-	var id = "cs_svc_" + svcname.replace(/[\.-]/g, "_")
-	var f = id+"_f_run_svcname"
+function table_comp_status_svc(divid, svc_id) {
+	var id = "cs_svc_" + svc_id.replace(/-/g, "")
+	var f = id+"_f_svc_id"
 	var request_vars = {}
-	request_vars[f] = svcname
+	request_vars[f] = svc_id
 
 	t = table_comp_status(divid, {
 		"id": id,
 		"caller": "table_comp_status_svc",
 		"request_vars": request_vars,
 		"volatile_filters": true,
-		"force_cols": ['id', 'os_name', 'run_log'],
-		"visible_columns": ['run_date', 'run_nodename', 'run_module', 'run_status']
+		"force_cols": ['id', 'node_id', 'os_name', 'run_log'],
+		"visible_columns": ['run_date', 'nodename', 'run_module', 'run_status']
 	})
 	t.on_change = function() {
 		comp_status_log_on_hover(t)
@@ -703,9 +709,9 @@ function table_dashboard(divid, options) {
 		'id': 'dashboard',
 		'name': 'dashboard',
 		'ajax_url': '/init/dashboard/ajax_dashboard',
-		'columns': ['id', 'dash_severity', 'dash_links', 'dash_type', 'dash_svcname', 'dash_nodename', 'dash_env', 'dash_entry', 'dash_md5', 'dash_created', 'dash_updated', 'dash_dict', 'dash_fmt'],
-		'force_cols': ['id', 'dash_svcname', 'dash_nodename', 'dash_type', 'dash_created', 'dash_dict', 'dash_fmt', 'dash_md5'],
-		'default_columns': ['dash_updated', 'dash_env', 'dash_type', 'dash_nodename', 'dash_links', 'dash_severity', 'dash_created', 'dash_svcname', 'dash_entry'],
+		'columns': ['id', 'dash_severity', 'dash_links', 'dash_type', 'svc_id', 'svcname', 'node_id', 'nodename', 'node_app', 'dash_env', 'dash_entry', 'dash_md5', 'dash_created', 'dash_updated', 'dash_dict', 'dash_fmt'],
+		'force_cols': ['id', 'svc_id', 'svcname', 'node_id', 'nodename', 'dash_type', 'dash_created', 'dash_dict', 'dash_fmt', 'dash_md5'],
+		'default_columns': ['dash_updated', 'dash_env', 'dash_type', 'nodename', 'dash_links', 'dash_severity', 'dash_created', 'svcname', 'dash_entry'],
 		'wsable': true,
 		'events': ['dashboard_change']
 	}
@@ -713,31 +719,31 @@ function table_dashboard(divid, options) {
 	return table_init(_options)
 }
 
-function table_dashboard_node(divid, nodename) {
-	var id = "dashboard_" + nodename.replace(/[\.-]/g, "_")
-	var f = id+"_f_dash_nodename"
+function table_dashboard_node(divid, node_id) {
+	var id = "dashboard_" + node_id.replace(/-/g, "")
+	var f = id+"_f_node_id"
 	var request_vars = {}
-	request_vars[f] = nodename
+	request_vars[f] = node_id
 	return table_dashboard(divid, {
 		"id": id,
 		"caller": "table_dashboard_node",
 		"request_vars": request_vars,
-		"visible_columns": ['dash_updated', 'dash_type', 'dash_links', 'dash_entry', 'dash_env', 'dash_svcname', 'dash_severity', 'dash_created'],
+		"visible_columns": ['dash_updated', 'dash_type', 'dash_links', 'dash_entry', 'dash_env', 'svcname', 'dash_severity', 'dash_created'],
 		"volatile_filters": true,
 		"wsable": false
 	})
 }
 
-function table_dashboard_svc(divid, svcname) {
-	var id = "dashboard_" + svcname.replace(/[\.-]/g, "_")
-	var f = id+"_f_dash_svcname"
+function table_dashboard_svc(divid, svc_id) {
+	var id = "dashboard_" + svc_id.replace(/-/g, "")
+	var f = id+"_f_svc_id"
 	var request_vars = {}
-	request_vars[f] = svcname
+	request_vars[f] = svc_id
 	table_dashboard(divid, {
 		"id": id,
 		"caller": "table_dashboard_svc",
 		"request_vars": request_vars,
-		"visible_columns": ['dash_updated', 'dash_type', 'dash_links', 'dash_entry', 'dash_env', 'dash_nodename', 'dash_severity', 'dash_created'],
+		"visible_columns": ['dash_updated', 'dash_type', 'dash_links', 'dash_entry', 'dash_env', 'nodename', 'dash_severity', 'dash_created'],
 		"volatile_filters": true
 	})
 }
@@ -782,10 +788,10 @@ function table_disks(divid, options) {
 		'name': "disks",
 		'ajax_url': '/init/disks/ajax_disks',
 		'span': ['disk_id', 'disk_size', 'disk_alloc', 'disk_arrayid', 'disk_devid', 'disk_name', 'disk_raid', 'disk_group', 'array_model'],
-		'force_cols': ['id', 'os_name'],
-		'columns': ['disk_id', 'disk_region', 'disk_vendor', 'disk_model', 'app', 'disk_nodename', 'disk_svcname', 'disk_local', 'disk_dg', 'svcdisk_updated', 'disk_used', 'disk_size', 'disk_alloc', 'disk_name', 'disk_devid', 'disk_raid', 'disk_group', 'disk_arrayid', 'disk_level', 'array_model', 'disk_created', 'disk_updated', 'tz', 'loc_country', 'loc_zip', 'loc_city', 'loc_addr', 'loc_building', 'loc_floor', 'loc_room', 'loc_rack', 'power_supply_nb', 'power_cabinet1', 'power_cabinet2', 'power_protect', 'power_protect_breaker', 'power_breaker1', 'power_breaker2'],
-		'default_columns': ["app", "array_model", "disk_alloc", "disk_arrayid", "disk_created", "disk_devid", "disk_dg", "disk_group", "disk_id", "disk_level", "disk_local", "disk_model", "disk_name", "disk_nodename", "disk_raid", "disk_size", "disk_svcname", "disk_updated", "disk_used", "disk_vendor", "svcdisk_updated"],
-		'child_tables': ['charts'],
+		'force_cols': ['id', 'node_id', 'svc_id', 'os_name'],
+		'columns': ['disk_id', 'disk_region', 'disk_vendor', 'disk_model', 'app', 'node_id', 'nodename', 'svc_id', 'svcname', 'disk_local', 'disk_dg', 'svcdisk_updated', 'disk_used', 'disk_size', 'disk_alloc', 'disk_name', 'disk_devid', 'disk_raid', 'disk_group', 'disk_arrayid', 'disk_level', 'array_model', 'disk_created', 'disk_updated', 'tz', 'loc_country', 'loc_zip', 'loc_city', 'loc_addr', 'loc_building', 'loc_floor', 'loc_room', 'loc_rack', 'power_supply_nb', 'power_cabinet1', 'power_cabinet2', 'power_protect', 'power_protect_breaker', 'power_breaker1', 'power_breaker2'],
+		'default_columns': ["app", "array_model", "disk_alloc", "disk_arrayid", "disk_created", "disk_devid", "disk_dg", "disk_group", "disk_id", "disk_level", "disk_local", "disk_model", "disk_name", "nodename", "disk_raid", "disk_size", "svcname", "disk_updated", "disk_used", "disk_vendor", "svcdisk_updated"],
+		'child_tables': ['disks_charts'],
 		'wsable': true,
 		'events': ['disks_change']
 	}
@@ -991,9 +997,9 @@ function table_log(divid, options) {
 		'checkboxes': false,
 		'ajax_url': '/init/log/ajax_log',
 		'span': ['id'],
-		'force_cols': ['id', 'log_fmt', 'log_dict'],
-		'default_columns': ['log_date', 'log_icons', 'log_level', 'log_svcname', 'log_nodename', 'log_user', 'log_action', 'log_evt'],
-		'columns': ['id', 'log_date', 'log_icons', 'log_level', 'log_svcname', 'log_nodename', 'log_user', 'log_action', 'log_evt', 'log_fmt', 'log_dict', 'log_gtalk_sent', 'log_email_sent'],
+		'force_cols': ['id', 'node_id', 'svc_id', 'log_fmt', 'log_dict'],
+		'default_columns': ['log_date', 'log_icons', 'log_level', 'svcname', 'nodename', 'log_user', 'log_action', 'log_evt'],
+		'columns': ['id', 'log_date', 'log_icons', 'log_level', 'svc_id', 'svcname', 'node_id', 'nodename', 'log_user', 'log_action', 'log_evt', 'log_fmt', 'log_dict', 'log_gtalk_sent', 'log_email_sent'],
 		'wsable': true
 	}
 	var _options = $.extend({}, defaults, options)
@@ -1009,11 +1015,11 @@ function table_log(divid, options) {
 	return table_init(_options)
 }
 
-function table_log_node(divid, nodename) {
-	var id = "log_" + nodename.replace(/[\.-]/g, "_")
-	var f = id+"_f_log_nodename"
+function table_log_node(divid, node_id) {
+	var id = "log_" + node_id
+	var f = id+"_f_node_id"
 	var request_vars = {}
-	request_vars[f] = nodename
+	request_vars[f] = node_id
 	return table_log(divid, {
 		"id": id,
 		"caller": "table_log_node",
@@ -1022,11 +1028,11 @@ function table_log_node(divid, nodename) {
 	})
 }
 
-function table_log_svc(divid, svcname) {
-	var id = "log_" + svcname.replace(/[\.-]/g, "_")
-	var f = id+"_f_log_svcname"
+function table_log_svc(divid, svc_id) {
+	var id = "log_" + svc_id.replace(/-/g, "")
+	var f = id+"_f_svc_id"
 	var request_vars = {}
-	request_vars[f] = svcname
+	request_vars[f] = svc_id
 	table_log(divid, {
 		"id": id,
 		"caller": "table_log_svc",
@@ -1059,10 +1065,10 @@ function table_nodenetworks(divid, options) {
 		'id': "nodenetworks",
 		'name': "nodenetworks",
 		'ajax_url': '/init/nodenetworks/ajax_nodenetworks',
-		'span': ['nodename'],
-		'force_cols': ['id', 'os_name'],
+		'span': ['node_id'],
+		'force_cols': ['id', 'node_id', 'os_name'],
 		'columns': [].concat(
-			['id', 'nodename'],
+			['id', 'node_id', 'nodename'],
 			objcols.node,
 			['updated', 'mac', 'intf', 'addr_type', 'addr', 'mask', 'flag_deprecated', 'addr_updated', 'net_name', 'net_network', 'net_broadcast', 'net_comment', 'net_gateway', 'net_begin', 'net_end', 'prio', 'net_pvid', 'net_netmask', 'net_team_responsible']
 		),
@@ -1124,9 +1130,9 @@ function table_nodesan(divid, options) {
 		'id': "nodesan",
 		'name': "nodesan",
 		'ajax_url': '/init/nodesan/ajax_nodesan',
-		'span': ['nodename'],
-		'force_cols': ['id', 'os_name'],
-		'columns': [].concat(['id', 'nodename'], objcols.node, ['node_updated', 'hba_id', 'tgt_id', 'array_name', 'array_model', 'array_cache', 'array_firmware', 'array_updated', 'array_level']),
+		'span': ['node_id'],
+		'force_cols': ['id', 'node_id', 'os_name'],
+		'columns': [].concat(['id', 'node_id', 'nodename'], objcols.node, ['node_updated', 'hba_id', 'tgt_id', 'array_name', 'array_model', 'array_cache', 'array_firmware', 'array_updated', 'array_level']),
 		'default_columns': ["array_model", "array_name", "hba_id", "nodename", "tgt_id"],
 		'colprops': {
 			"array_name": {
@@ -1180,9 +1186,8 @@ function table_nodes(divid, options) {
 		'id': "nodes",
 		'name': "nodes",
 		'ajax_url': '/init/nodes/ajax_nodes',
-		'span': ['nodename'],
-		'force_cols': ['os_name'],
-		'columns': [].concat(['id', 'nodename'], objcols.node, ["updated"]),
+		'force_cols': ['node_id', 'os_name'],
+		'columns': [].concat(['node_id', 'nodename'], objcols.node, ["updated"]),
 		'default_columns': [
 			"cpu_cores",
 			"cpu_dies",
@@ -1278,8 +1283,8 @@ function table_packages(divid, options) {
 		"divid": divid,
 		"name": "packages",
 		"ajax_url": "/init/packages/ajax_packages",
-		"force_cols": ["id", "os_name"],
-		"columns": [].concat(["id", "nodename", "pkg_name", "pkg_version", "pkg_arch", "pkg_type", "sig_provider", "pkg_sig", "pkg_install_date", "pkg_updated"], objcols.node),
+		"force_cols": ["id", "node_id", "os_name"],
+		"columns": [].concat(["id", "node_id", "nodename", "pkg_name", "pkg_version", "pkg_arch", "pkg_type", "sig_provider", "pkg_sig", "pkg_install_date", "pkg_updated"], objcols.node),
 		"default_columns": ["nodename", "pkg_name", "pkg_version", "pkg_arch", "pkg_type", "sig_provider", "pkg_install_date", "pkg_updated"],
 		"wsable": true,
 		"events": ["packages_change"]
@@ -1288,11 +1293,11 @@ function table_packages(divid, options) {
 	return table_init(_options)
 }
 
-function table_packages_node(divid, nodename) {
-	var id = "packages_" + nodename.replace(/[\.-]/g, "_")
-	var f_nodename = id+"_f_nodename"
+function table_packages_node(divid, node_id) {
+	var id = "packages_" + node_id
+	var f_node_id = id+"_f_node_id"
 	var request_vars = {}
-	request_vars[f_nodename] = nodename
+	request_vars[f_node_id] = node_id
 	return table_packages(divid, {
 		"id": id,
 		"caller": "table_packages_node",
@@ -1309,9 +1314,9 @@ function table_patches(divid, options) {
 		'name': "patches",
 		'ajax_url': '/init/patches/ajax_patches',
 		'span': ['id'],
-		'force_cols': ['os_name'],
-		'columns': [].concat(['nodename', 'id', 'patch_num', 'patch_rev', 'patch_install_date', 'patch_updated'], objcols.node),
-		'default_columns': ['nodename', 'id', 'patch_num', 'patch_rev', 'patch_install_date', 'patch_updated'],
+		'force_cols': ['os_name', 'node_id'],
+		'columns': [].concat(['id', 'node_id', 'nodename', 'patch_num', 'patch_rev', 'patch_install_date', 'patch_updated'], objcols.node),
+		'default_columns': ['nodename', 'patch_num', 'patch_rev', 'patch_install_date', 'patch_updated'],
 		'wsable': false,
 		'events': ['patches_change']
 	}
@@ -1507,9 +1512,9 @@ function table_resources(divid, options) {
 		'caller': 'table_resources',
 		'id': 'resmon',
 		'ajax_url': '/init/resmon/ajax_resmon',
-		'span': ['nodename', 'svcname'],
-		'force_cols': ['id', 'svcname', 'nodename', 'vmname', 'rid', 'updated', 'os_name'],
-		'columns': [].concat(['id', 'svcname', 'nodename', 'vmname', 'rid', 'res_type', 'res_status', 'res_desc', 'res_log', 'res_monitor', 'res_disable', 'res_optional', 'updated'], objcols.node, ['node_updated']),
+		'span': ['node_id', 'svc_id'],
+		'force_cols': ['id', 'svc_id', 'svcname', 'node_id', 'vmname', 'rid', 'updated', 'os_name'],
+		'columns': [].concat(['id', 'svc_id', 'svcname', 'node_id', 'nodename', 'vmname', 'rid', 'res_type', 'res_status', 'res_desc', 'res_log', 'res_monitor', 'res_disable', 'res_optional', 'updated'], objcols.node, ['node_updated']),
 		'default_columns': ['svcname', 'nodename', 'vmname', 'rid', 'res_type', 'res_status', 'res_desc', 'res_log', 'res_monitor', 'res_disable', 'res_optional', 'updated'],
 		'wsable': true,
 		'events': ['resmon_change']
@@ -1519,11 +1524,11 @@ function table_resources(divid, options) {
 	return table_init(_options)
 }
 
-function table_resources_node(divid, nodename) {
-	var id = "resmon_" + nodename.replace(/[\.-]/g, "_")
-	var f = id+"_f_nodename"
+function table_resources_node(divid, node_id) {
+	var id = "resmon_" + node_id
+	var f = id+"_f_node_id"
 	var request_vars = {}
-	request_vars[f] = nodename
+	request_vars[f] = node_id
 	return table_resources(divid, {
 		"id": id,
 		"caller": "table_resources_node",
@@ -1533,11 +1538,11 @@ function table_resources_node(divid, nodename) {
 	})
 }
 
-function table_resources_svc(divid, svcname) {
-	var id = "resmon_" + svcname.replace(/[\.-]/g, "_")
-	var f = id+"_f_svcname"
+function table_resources_svc(divid, svc_id) {
+	var id = "resmon_" + svc_id.replace(/-/g, "")
+	var f = id+"_f_svc_id"
 	var request_vars = {}
-	request_vars[f] = svcname
+	request_vars[f] = svc_id
 	return table_resources(divid, {
 		"id": id,
 		"caller": "table_resources_svc",
@@ -1570,11 +1575,11 @@ function table_saves(divid, options) {
 		'caller': "view_saves",
 		'name': "saves",
 		'ajax_url': '/init/saves/ajax_saves',
-		'span': ['save_nodename', 'save_svcname'],
-		'force_cols': ['id', 'os_name'],
-		'columns': [].concat(['id', 'save_server', 'save_id', 'save_app', 'save_nodename', 'save_svcname', 'save_name', 'save_group', 'save_level', 'save_size', 'save_volume', 'save_date', 'save_retention'], objcols.node),
-		'default_columns': ['save_server', 'save_app', 'save_nodename', 'save_svcname', 'save_name', 'save_group', 'save_level', 'save_size', 'save_volume', 'save_date', 'save_retention'],
-		'child_tables': ['charts'],
+		'span': ['node_id', 'svc_id'],
+		'force_cols': ['id', 'node_id', 'svc_id', 'os_name'],
+		'columns': [].concat(['id', 'save_server', 'save_id', 'save_app', 'node_id', 'nodename', 'svc_id', 'svcname', 'save_name', 'save_group', 'save_level', 'save_size', 'save_volume', 'save_date', 'save_retention'], objcols.node),
+		'default_columns': ['save_server', 'save_app', 'nodename', 'svcname', 'save_name', 'save_group', 'save_level', 'save_size', 'save_volume', 'save_date', 'save_retention'],
+		'child_tables': ['saves_charts'],
 		'wsable': true,
 		'events': ['saves_change']
 	}
@@ -1654,17 +1659,18 @@ function table_service_instances(divid, options) {
 		'extrarow': true,
 		'extrarow_class': "svcmon_links",
 		'ajax_url': '/init/default/ajax_svcmon',
-		'span': [].concat(['extra', 'mon_svcname'], objcols.service, ['svc_updated', 'app_domain', 'app_team_ops']),
-		'columns': ['id', 'mon_svcname', 'err', 'svc_ha', 'svc_availstatus', 'svc_status', 'svc_app', 'app_domain', 'app_team_ops', 'svc_drptype', 'svc_containertype', 'svc_flex_min_nodes', 'svc_flex_max_nodes', 'svc_flex_cpu_low_threshold', 'svc_flex_cpu_high_threshold', 'svc_autostart', 'svc_nodes', 'svc_drpnode', 'svc_drpnodes', 'svc_comment', 'svc_created', 'svc_updated', 'svc_type', 'svc_cluster_type', 'mon_vmtype', 'mon_vmname', 'mon_vcpus', 'mon_vmem', 'mon_guestos', 'environnement', 'host_mode', 'mon_nodname', 'mon_availstatus', 'mon_overallstatus', 'mon_frozen', 'mon_containerstatus', 'mon_ipstatus', 'mon_fsstatus', 'mon_diskstatus', 'mon_sharestatus', 'mon_syncstatus', 'mon_appstatus', 'mon_hbstatus', 'mon_updated', 'version', 'listener_port', 'connect_to', 'team_responsible', 'team_integ', 'team_support', 'serial', 'model', 'role', 'warranty_end', 'status', 'type', 'node_updated', 'power_supply_nb', 'power_cabinet1', 'power_cabinet2', 'power_protect', 'power_protect_breaker', 'power_breaker1', 'power_breaker2', 'tz', 'loc_country', 'loc_zip', 'loc_city', 'loc_addr', 'loc_building', 'loc_floor', 'loc_room', 'loc_rack', 'os_name', 'os_release', 'os_vendor', 'os_arch', 'os_kernel', 'cpu_dies', 'cpu_cores', 'cpu_model', 'cpu_freq', 'mem_banks', 'mem_slots', 'mem_bytes'],
+		'span': ['svc_id'],
+		'columns': ['id', 'svc_id', 'svcname', 'err', 'svc_ha', 'svc_availstatus', 'svc_status', 'svc_app', 'app_domain', 'app_team_ops', 'svc_drptype', 'svc_containertype', 'svc_flex_min_nodes', 'svc_flex_max_nodes', 'svc_flex_cpu_low_threshold', 'svc_flex_cpu_high_threshold', 'svc_autostart', 'svc_nodes', 'svc_drpnode', 'svc_drpnodes', 'svc_comment', 'svc_created', 'svc_updated', 'svc_type', 'svc_cluster_type', 'mon_vmtype', 'mon_vmname', 'mon_vcpus', 'mon_vmem', 'mon_guestos', 'environnement', 'host_mode', 'node_id', 'nodename', 'mon_availstatus', 'mon_overallstatus', 'mon_frozen', 'mon_containerstatus', 'mon_ipstatus', 'mon_fsstatus', 'mon_diskstatus', 'mon_sharestatus', 'mon_syncstatus', 'mon_appstatus', 'mon_hbstatus', 'mon_updated', 'version', 'listener_port', 'connect_to', 'team_responsible', 'team_integ', 'team_support', 'serial', 'model', 'role', 'warranty_end', 'status', 'type', 'node_updated', 'power_supply_nb', 'power_cabinet1', 'power_cabinet2', 'power_protect', 'power_protect_breaker', 'power_breaker1', 'power_breaker2', 'tz', 'loc_country', 'loc_zip', 'loc_city', 'loc_addr', 'loc_building', 'loc_floor', 'loc_room', 'loc_rack', 'os_name', 'os_release', 'os_vendor', 'os_arch', 'os_kernel', 'cpu_dies', 'cpu_cores', 'cpu_model', 'cpu_freq', 'mem_banks', 'mem_slots', 'mem_bytes'],
 		'default_columns': [
 			"err",
 			"host_mode",
 			"mon_availstatus",
 			"mon_overallstatus",
-			"mon_svcname",
+			"svcname",
 			"mon_updated",
 			"mon_vmname",
 			"mon_vmtype",
+			"nodename",
 			"svc_app",
 			"svc_availstatus",
 			"svc_cluster_type",
@@ -1675,11 +1681,11 @@ function table_service_instances(divid, options) {
 		],
 		'force_cols': [
 			'id',
-			'mon_svcname',
+			'svc_id',
 			'mon_frozen',
 			'svc_autostart',
 			'mon_guestos',
-			'mon_nodname',
+			'node_id',
 			'mon_containerstatus',
 			'mon_ipstatus',
 			'mon_fsstatus',
@@ -1699,18 +1705,18 @@ function table_service_instances(divid, options) {
 	return table_init(_options)
 }
 
-function table_service_instances_node(divid, nodename) {
-	var id = "svcmon_" + nodename.replace(/[\.-]/g, "_")
-	var f = id+"_f_mon_nodname"
+function table_service_instances_node(divid, node_id) {
+	var id = "svcmon_" + node_id
+	var f = id+"_f_node_id"
 	var request_vars = {}
-	request_vars[f] = nodename
+	request_vars[f] = node_id
 	return table_service_instances(divid, {
 		"id": id,
 		"caller": "table_service_instances_node",
 		"request_vars": request_vars,
 		"volatile_filters": true,
 		"visible_columns": [
-			'mon_svcname',
+			'svcname',
 			'svc_ha',
 			'svc_cluster_type',
 			'mon_vmtype',
@@ -1722,11 +1728,11 @@ function table_service_instances_node(divid, nodename) {
 	})
 }
 
-function table_service_instances_svc(divid, svcname) {
-	var id = "svcmon_" + svcname.replace(/[\.-]/g, "_")
-	var f = id+"_f_mon_svcname"
+function table_service_instances_svc(divid, svc_id) {
+	var id = "svcmon_" + svc_id.replace(/-/g, "")
+	var f = id+"_f_svc_id"
 	var request_vars = {}
-	request_vars[f] = svcname
+	request_vars[f] = svc_id
 	table_service_instances(divid, {
 		"id": id,
 		"caller": "table_service_instances_svc",
@@ -1735,7 +1741,7 @@ function table_service_instances_svc(divid, svcname) {
 		"visible_columns": [
 			'svc_ha',
 			'svc_cluster_type',
-			'mon_nodname',
+			'nodename',
 			'mon_vmtype',
 			'mon_vmname',
 			'mon_availstatus',
@@ -1751,10 +1757,10 @@ function table_services(divid, options) {
 		'name': 'services',
 		'id': 'services',
 		'ajax_url': '/init/services/ajax_services',
-		'span': ['svc_name'],
-		'force_cols': ['svc_name', 'svc_status_updated'],
-		'columns': [].concat(['svc_name'], objcols.service, ["updated"]),
-		'default_columns': ["svc_status", "svc_name", "svc_cluster_type", "svc_availstatus", "svc_status_updated", "svc_ha", "updated"],
+		'span': ['svc_id'],
+		'force_cols': ['svc_id', 'svcname', 'svc_status_updated'],
+		'columns': [].concat(['svc_id', 'svcname'], objcols.service, ["updated"]),
+		'default_columns': ["svc_status", "svcname", "svc_cluster_type", "svc_availstatus", "svc_status_updated", "svc_ha", "updated"],
 		'colprops': {
 			"updated": colprops.svc_updated
 		},
@@ -1774,8 +1780,9 @@ function table_tagattach(divid, options) {
 		'divid': divid,
 		'ajax_url': '/init/tags/ajax_tagattach',
 		'span': ['tag_id'],
-		'force_cols': ['ckid'],
-		'columns': ['tag_id', 'tag_name', 'nodename', 'svcname', 'created'],
+		'force_cols': ['ckid', 'node_id'],
+		'columns': ['tag_id', 'tag_name', 'node_id', 'nodename', 'svc_id', 'svcname', 'created'],
+		'force_cols': ['tag_id', 'node_id', 'svc_id'],
 		'default_columns': ['tag_name', 'nodename', 'svcname', 'created'],
 		'wsable': true,
 		'events': ['tags', 'node_tags_change', 'svc_tags_change']

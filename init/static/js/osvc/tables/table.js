@@ -823,7 +823,7 @@ function table_init(opts) {
 		var header = $("<h2 class='icon fa-bars'></h2>")
 
 		header.text(i18n.t("table.column_filter_header", {"col": i18n.t("col."+t.colprops[c].title)}))
-		value_to_filter_tool.attr("title", i18n.t("table.value_to_filter_tool_title"))
+		value_to_filter_tool.attr("title", i18n.t("table.value_to_filter_tool_title")).tooltipster()
 
 		input.attr("id", input_id)
 		if (t.options.request_vars && (input_id in t.options.request_vars)) {
@@ -909,6 +909,11 @@ function table_init(opts) {
 		t.refresh_column_filters_in_place()
 	}
 
+	t.filter_submit = function(c, val) {
+		t.refresh_column_filter(c, val)
+		t.refresh()
+	}
+
 	t.refresh_column_filter = function(c, val) {
 		if (!t.e_header_filters) {
 			return
@@ -944,10 +949,12 @@ function table_init(opts) {
 		}
 		if (n > 20) {
 			var _val = val.substring(0, 17)+"..."
+			label.attr("title", val).tooltipster()
 		} else {
 			var _val = val
+			label.attr("title", "")
+			try { label.tooltipster("destroy") } catch(e) {}
 		}
-		label.attr("title", val)
 		label.text(_val)
 		input.val(val)
 
@@ -1907,13 +1914,12 @@ function table_init(opts) {
 			}
 			if ( ! attr.match(/nodename/gi) &&
 			     ! attr.match(/svcname/gi) &&
-			     ! attr.match(/svc_name/gi) &&
+			     ! attr.match(/fqdn/gi) &&
 			     ! attr.match(/assetname/gi) &&
-			     ! attr.match(/mon_nodname/gi) &&
-			     ! attr.match(/disk_nodename/gi) &&
+			     ! attr.match(/svc_id/gi) &&
+			     ! attr.match(/node_id/gi) &&
 			     ! attr.match(/disk_id/gi) &&
 			     ! attr.match(/disk_svcname/gi) &&
-			     ! attr.match(/save_nodename/gi) &&
 			     ! attr.match(/save_svcname/gi)
 			) {return}
 			$(this).bind("change keyup input", function(){
@@ -1972,7 +1978,7 @@ function table_init(opts) {
 			}
 
 			e = $("<a class='h cloud_tag' style='font-size:"+size+"%'>"+key+"</a>")
-			e.attr("title", i18n.t("table.number_of_occurence", {"count": data[key]}))
+			e.attr("title", i18n.t("table.number_of_occurence", {"count": data[key]})).tooltipster()
 			span.append(e)
 		}
 		t.scroll_enable_dom()
@@ -2188,7 +2194,8 @@ function table_init(opts) {
 			return
 		}
 		var e = $("<div class='floatw clickable' name='tool_link'></div>")
-		var span = $("<span class='icon link16' title='table.link_title' data-i18n='table.link'></span>")
+		var span = $("<span class='icon link16' data-i18n='table.link'></span>")
+		span.attr("title", i18n.t("table.link_help")).tooltipster()
 		e.append(span)
 		try { e.i18n() } catch(e) {}
 
@@ -2317,6 +2324,7 @@ function table_init(opts) {
 
 		// title
 		var title = $("<span data-i18n='table.live' style='padding-left:0.3em;'></span>")
+		title.attr("title", i18n.t("table.live_help")).tooltipster()
 
 		// container
 		var e = $("<span class='floatw'></span>")
@@ -2368,7 +2376,7 @@ function table_init(opts) {
 		// title
 		var title = $("<span style='padding-left:0.3em'></span>")
 		title.text(i18n.t("table.volatile"))
-		title.attr("title", i18n.t("table.volatile_title"))
+		title.attr("title", i18n.t("table.volatile_help")).tooltipster()
 
 		// container
 		var e = $("<span class='floatw'></span>")
@@ -2391,6 +2399,7 @@ function table_init(opts) {
 		t.e_tool_commonality = e
 
 		var span = $("<span class='icon common16' data-i18n='table.commonality'></span>")
+		span.attr("title", i18n.t("table.commonality_help")).tooltipster()
 		e.append(span)
 
 		var area = $("<div class='white_float hidden stackable'></div>")

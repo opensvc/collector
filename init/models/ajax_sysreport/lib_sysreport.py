@@ -73,16 +73,16 @@ def beautify_fpath(fpath):
 
     return fpath.replace('//', '/')
 
-def is_sysresponsible(nodenames):
+def is_sysresponsible(node_ids):
     # managers are allowed
     ug = set(user_groups())
     if "Manager" in ug:
         return True
 
     # compute user and nodes groups intersection
-    if type(nodenames) in (str, unicode):
-        nodenames = [nodenames]
-    q = db.nodes.nodename.belongs(nodenames)
+    if type(node_ids) not in  (list, set):
+        node_ids = [node_ids]
+    q = db.nodes.node_id.belongs(node_ids)
     g = set([r.team_responsible for r in db(q).select(db.nodes.team_responsible)])
     if g < ug:
         return True
@@ -90,7 +90,7 @@ def is_sysresponsible(nodenames):
     return False
 
 @auth.requires_login()
-def sysrep_allow(nodenames, fpath):
+def sysrep_allow(node_ids, fpath):
     q = db.sysrep_allow.group_id.belongs(user_group_ids())
     rows = db(q).select(db.sysrep_allow.fset_id, db.sysrep_allow.pattern)
     for row in rows:
@@ -99,24 +99,23 @@ def sysrep_allow(nodenames, fpath):
         pattern = re.compile(row.pattern)
         if not pattern.match(fpath):
             continue
-        _nodenames, _svcnames = filterset_encap_query(row.fset_id)
-        if len(set(nodenames) & _nodenames) != len(nodenames):
+        _node_ids, _svc_ids = filterset_encap_query_id(row.fset_id)
+        if len(set(node_ids) & _node_ids) != len(node_ids):
             continue
         return True
     return False
 
-def lib_get_sysreport(nodename, path=None, begin=None, end=None):
-    nodes = nodename.split(",")
-    data = sysreport.sysreport().timeline(nodes, path=encode_fpath(path), begin=begin, end=end)
+def lib_get_sysreport(node_ids, path=None, begin=None, end=None):
+    data = sysreport.sysreport().timeline(node_ids, path=encode_fpath(path), begin=begin, end=end)
     for i, d in enumerate(data):
         for j, fpath in enumerate(d["stat"]):
             data[i]["stat"][j] = beautify_fpath(fpath)
     return data
 
-def lib_get_sysreport_timediff(nodename, path=None, begin=None, end=None):
-    sysresponsible = is_sysresponsible(nodename)
+def lib_get_sysreport_timediff(node_id, path=None, begin=None, end=None):
+    sysresponsible = is_sysresponsible(node_id)
     data = sysreport.sysreport().show_data(None,
-                                           nodename,
+                                           node_id,
                                            path=encode_fpath(path),
                                            begin=begin,
                                            end=end
@@ -133,7 +132,7 @@ def lib_get_sysreport_timediff(nodename, path=None, begin=None, end=None):
             content_type = "file"
         if sec_pattern.match(k):
             secure = True
-            if not sysresponsible and not sysrep_allow([nodename], k):
+            if not sysresponsible and not sysrep_allow([node_id], k):
                 diff = T("You are not allowed to view this change")
         else:
             secure = False
@@ -146,9 +145,9 @@ def lib_get_sysreport_timediff(nodename, path=None, begin=None, end=None):
 
     return data
 
-def lib_get_sysreport_commit(nodename, cid, path=None):
-    sysresponsible = is_sysresponsible(nodename)
-    data = sysreport.sysreport().show_data(cid, nodename, path=encode_fpath(path),
+def lib_get_sysreport_commit(node_id, cid, path=None):
+    sysresponsible = is_sysresponsible(node_id)
+    data = sysreport.sysreport().show_data(cid, node_id, path=encode_fpath(path),
                                           )
     for k, d in data['stat'].items():
         del(data['stat'][k])
@@ -162,7 +161,7 @@ def lib_get_sysreport_commit(nodename, cid, path=None):
             content_type = "file"
         if sec_pattern.match(k):
             secure = True
-            if not sysresponsible and not sysrep_allow([nodename], k):
+            if not sysresponsible and not sysrep_allow([node_id], k):
                 diff = T("You are not allowed to view this change")
         else:
             secure = False
@@ -175,9 +174,9 @@ def lib_get_sysreport_commit(nodename, cid, path=None):
 
     return data
 
-def lib_get_sysreport_commit_tree(nodename, cid, path=None):
-    sysresponsible = is_sysresponsible(nodename)
-    data = sysreport.sysreport().lstree_data(cid, nodename, path=encode_fpath(path))
+def lib_get_sysreport_commit_tree(node_id, cid, path=None):
+    sysresponsible = is_sysresponsible(node_id)
+    data = sysreport.sysreport().lstree_data(cid, node_id, path=encode_fpath(path))
     sec_pattern = get_pattern_secure()
     for i, d in enumerate(data):
         if d["fpath"].startswith("cmd/"):
@@ -191,24 +190,24 @@ def lib_get_sysreport_commit_tree(nodename, cid, path=None):
         data[i]["fpath"] = beautify_fpath(d["fpath"])
     return data
 
-def lib_get_sysreport_commit_tree_file(nodename, cid, oid):
-    sysresponsible = is_sysresponsible(nodename)
-    data = sysreport.sysreport().lstree_data(cid, nodename)
+def lib_get_sysreport_commit_tree_file(node_id, cid, oid):
+    sysresponsible = is_sysresponsible(node_id)
+    data = sysreport.sysreport().lstree_data(cid, node_id)
     sec_pattern = get_pattern_secure()
     for d in data:
         if d["oid"] != oid:
             continue
         if not sec_pattern.match(d["fpath"]):
             break
-        if not sysresponsible and not sysrep_allow([nodename], k):
+        if not sysresponsible and not sysrep_allow([node_id], k):
             return {
               "oid": oid,
               "content": T("You are not allowed to view this file content"),
             }
-    data = sysreport.sysreport().show_file_unvalidated(cid, oid, nodename)
+    data = sysreport.sysreport().show_file_unvalidated(cid, oid, node_id)
     return data
 
-def lib_get_sysreport_nodediff(nodes, path=None, ignore_blanks=False):
+def lib_get_sysreport_nodediff(node_ids, path=None, ignore_blanks=False):
     import os
     import subprocess
     import fnmatch
@@ -220,21 +219,21 @@ def lib_get_sysreport_nodediff(nodes, path=None, ignore_blanks=False):
         os.chdir(sysrep_d)
     except:
         raise Exception("path %s does not exist on the collector" % sysrep_d)
-    if not os.path.exists(nodes[0]):
+    if not os.path.exists(node_ids[0]):
         os.chdir(cwd)
-        raise Exception("node %s has no sysreport"%nodes[0])
-    if not os.path.exists(nodes[1]):
+        raise Exception("node %s has no sysreport"%node_ids[0])
+    if not os.path.exists(node_ids[1]):
         os.chdir(cwd)
-        return Exception("node %s has no sysreport"%nodes[1])
+        return Exception("node %s has no sysreport"%node_ids[1])
 
     cmd = ["diff", "-urN", "--exclude=.git"]
     if ignore_blanks:
         cmd += ["-Bb"]
-    cmd += [nodes[0], nodes[1]]
+    cmd += [node_ids[0], node_ids[1]]
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=None)
     out, err = p.communicate()
 
-    sysresponsible = is_sysresponsible(nodes[0]) & is_sysresponsible(nodes[1])
+    sysresponsible = is_sysresponsible(node_ids[0]) & is_sysresponsible(node_ids[1])
 
     # load secure patterns
     sec_pattern = get_pattern_secure()

@@ -42,26 +42,6 @@ def call():
 #
 #########
 @service.xmlrpc
-def delete_services(hostid=None, auth=("", "")):
-    return rpc_delete_services(hostid=None, auth=("", ""))
-
-@auth_uuid
-def rpc_delete_services(hostid=None, auth=("", "")):
-    if hostid is None:
-        return 0
-    db(db.services.svc_hostid==hostid).delete()
-    db.commit()
-    return 0
-
-@service.xmlrpc
-def delete_service_list(hostid=None, svcnames=[], auth=("", "")):
-    return rpc_delete_service_list(hostid=None, svcnames=[], auth=("", ""))
-
-@auth_uuid
-def rpc_delete_service_list(hostid=None, svcnames=[], auth=("", "")):
-    return
-
-@service.xmlrpc
 def begin_action(vars, vals, auth):
     return rpc_begin_action(vars, vals, auth)
 
@@ -76,7 +56,9 @@ def res_action(vars, vals, auth):
 
 @auth_uuid
 def rpc_res_action(vars, vals, auth):
-    generic_insert('SVCactions', vars, vals, nodename=auth[1])
+    vars, vals = replace_nodename_in_data(vars, vals, auth)
+    vars, vals = replace_svcname_in_data(vars, vals, auth)
+    generic_insert('svcactions', vars, vals, node_id=auth_to_node_id(auth))
     return 0
 
 @service.xmlrpc
@@ -90,22 +72,38 @@ def rpc_end_action(vars, vals, auth):
 
 @service.xmlrpc
 def update_appinfo(vars, vals, auth):
-    return rpc_update_appinfo(vars, vals, auth)
+    # compat with old agents
+    return rpc_update_resinfo(vars, vals, auth)
+
+@service.xmlrpc
+def update_resinfo(vars, vals, auth):
+    return rpc_update_resinfo(vars, vals, auth)
 
 @auth_uuid
-def rpc_update_appinfo(vars, vals, auth):
+def rpc_update_resinfo(vars, vals, auth):
     if len(vals) == 0:
         return
     h = {}
+    vars, vals = replace_nodename_in_data(vars, vals, auth, fieldname="app_nodename")
+    vars, vals = replace_svcname_in_data(vars, vals, auth, fieldname="app_svcname")
+    for i, v in enumerate(vars):
+        if v == "app_launcher":
+            vars[i] = "rid"
+        elif v == "app_key":
+            vars[i] = "res_key"
+        elif v == "app_value":
+            vars[i] = "res_value"
+        elif v == "app_updated":
+            vars[i] = "updated"
     for a,b in zip(vars, vals[0]):
         h[a] = b
     if "cluster_type" in h and "flex" in h["cluster_type"]:
-        db.executesql("delete from appinfo where app_svcname='%s' and app_nodename='%s'"%(h['app_svcname'], h['app_nodename']))
+        db.executesql("""delete from resinfo where svc_id='%s' and node_id="%s" """%(h["svc_id"], h["node_id"]))
     else:
-        db.executesql("delete from appinfo where app_svcname='%s'"%h['app_svcname'])
-    generic_insert('appinfo', vars, vals)
+        db.executesql("delete from resinfo where svc_id='%s'"%h["svc_id"])
+    generic_insert('resinfo', vars, vals)
 
-    i = vars.index('app_value')
+    i = vars.index('res_value')
     vals_log = []
     for _vals in vals:
         try:
@@ -115,7 +113,7 @@ def rpc_update_appinfo(vars, vals, auth):
             pass
 
     if len(vals_log) > 0:
-        generic_insert('appinfo_log', vars, vals_log)
+        generic_insert('resinfo_log', vars, vals_log)
 
 @service.xmlrpc
 def update_service(vars, vals, auth):
@@ -132,7 +130,7 @@ def push_checks(vars, vals, auth):
 
 @auth_uuid
 def rpc_push_checks(vars, vals, auth):
-    scheduler.queue_task("_push_checks", [vars, vals],
+    scheduler.queue_task("_push_checks", [vars, vals, auth],
                          group_name="_push_checks")
 
 @service.xmlrpc
@@ -167,7 +165,9 @@ def res_action_batch(vars, vals, auth):
 
 @auth_uuid
 def rpc_res_action_batch(vars, vals, auth):
-    generic_insert('SVCactions', vars, vals, nodename=auth[1])
+    vars, vals = replace_nodename_in_data(vars, vals, auth, fieldname="hostname")
+    vars, vals = replace_svcname_in_data(vars, vals, auth)
+    generic_insert('svcactions', vars, vals, node_id=auth_to_node_id(auth))
 
 @service.xmlrpc
 def resmon_update(vars, vals, auth):
@@ -194,35 +194,33 @@ def register_disks(vars, vals, auth):
 
 @auth_uuid
 def rpc_register_disks(vars, vals, auth):
+    node_id = auth_to_node_id(auth)
     now = datetime.datetime.now()
     now -= datetime.timedelta(microseconds=now.microsecond)
 
     for v in vals:
         _register_disk(vars, v, auth)
 
-    nodename = auth[1].strip("'")
-
     # purge svcdisks
     sql = """ delete from svcdisks
               where
-                disk_nodename = "%(nodename)s" and
+                node_id = "%(node_id)s" and
                 disk_updated < "%(now)s"
-          """ % dict(nodename=nodename, now=now)
+          """ % dict(node_id=node_id, now=now)
     db.executesql(sql)
 
     # purge diskinfo stubs
     sql = """ delete from diskinfo
               where
-                (disk_arrayid = "%(nodename)s" or
+                (disk_arrayid = "%(node_id)s" or
                  disk_arrayid = "" or
                  disk_arrayid = "None" or
                  disk_arrayid is NULL) and
                 disk_updated < "%(now)s"
-          """ % dict(nodename=nodename, now=now)
+          """ % dict(node_id=node_id, now=now)
     db.executesql(sql)
 
     db.commit()
-    queue_refresh_b_disk_app()
 
 @service.xmlrpc
 def register_disk_blacklist(vars, vals, auth):
@@ -249,9 +247,9 @@ def rpc_register_diskinfo(vars, vals, auth):
     if len(vals) == 0:
         return
 
+    node_id = auth_to_node_id(auth)
     now = datetime.datetime.now()
     now -= datetime.timedelta(microseconds=now.microsecond)
-    nodename = auth[1]
     vars.append("disk_updated")
     vars.append("disk_level")
 
@@ -276,7 +274,7 @@ def rpc_register_diskinfo(vars, vals, auth):
     db.executesql(sql)
 
     # register cluster as array
-    node = db(db.nodes.nodename==nodename).select().first()
+    node = db(db.nodes.node_id==node_id).select().first()
     if node is not None:
         array_cache = node.mem_bytes
         array_firmware = " ".join((node.os_name, node.os_vendor, node.os_release, node.os_kernel))
@@ -335,6 +333,7 @@ def insert_stats_fs_u(vars, vals, auth):
 
 @auth_uuid
 def rpc_insert_stats_fs_u(vars, vals, auth):
+    vars, vals = replace_nodename_in_data(vars, vals, auth)
     generic_insert('stats_fs_u', vars, vals)
 
 @service.xmlrpc
@@ -343,6 +342,7 @@ def insert_stats_cpu(vars, vals, auth):
 
 @auth_uuid
 def rpc_insert_stats_cpu(vars, vals, auth):
+    vars, vals = replace_nodename_in_data(vars, vals, auth)
     generic_insert('stats_cpu', vars, vals)
 
 @service.xmlrpc
@@ -351,6 +351,7 @@ def insert_stats_mem_u(vars, vals, auth):
 
 @auth_uuid
 def rpc_insert_stats_mem_u(vars, vals, auth):
+    vars, vals = replace_nodename_in_data(vars, vals, auth)
     generic_insert('stats_mem_u', vars, vals)
 
 @service.xmlrpc
@@ -359,6 +360,7 @@ def insert_stats_proc(vars, vals, auth):
 
 @auth_uuid
 def rpc_insert_stats_proc(vars, vals, auth):
+    vars, vals = replace_nodename_in_data(vars, vals, auth)
     generic_insert('stats_proc', vars, vals)
 
 @service.xmlrpc
@@ -367,6 +369,7 @@ def insert_stats_swap(vars, vals, auth):
 
 @auth_uuid
 def rpc_insert_stats_swap(vars, vals, auth):
+    vars, vals = replace_nodename_in_data(vars, vals, auth)
     generic_insert('stats_swap', vars, vals)
 
 @service.xmlrpc
@@ -375,6 +378,7 @@ def insert_stats_block(vars, vals, auth):
 
 @auth_uuid
 def rpc_insert_stats_block(vars, vals, auth):
+    vars, vals = replace_nodename_in_data(vars, vals, auth)
     generic_insert('stats_block', vars, vals)
 
 @service.xmlrpc
@@ -383,6 +387,7 @@ def insert_stats_blockdev(vars, vals, auth):
 
 @auth_uuid
 def rpc_insert_stats_blockdev(vars, vals, auth):
+    vars, vals = replace_nodename_in_data(vars, vals, auth)
     generic_insert('stats_blockdev', vars, vals)
 
 @service.xmlrpc
@@ -391,6 +396,7 @@ def insert_stats_netdev(vars, vals, auth):
 
 @auth_uuid
 def rpc_insert_stats_netdev(vars, vals, auth):
+    vars, vals = replace_nodename_in_data(vars, vals, auth)
     generic_insert('stats_netdev', vars, vals)
 
 @service.xmlrpc
@@ -399,19 +405,25 @@ def insert_stats_netdev_err(vars, vals, auth):
 
 @auth_uuid
 def rpc_insert_stats_netdev_err(vars, vals, auth):
+    vars, vals = replace_nodename_in_data(vars, vals, auth)
     generic_insert('stats_netdev_err', vars, vals)
 
-def get_vcpus(nodename, vmname):
+def get_vcpus(node_id, vmname):
+    q = db.nodes.node_id == node_id
+    try:
+        nodename = db(q).select(db.nodes.nodename).first().nodename
+    except:
+        return
     if nodename == vmname:
-        return None
+        return
 
     sql = """select mon_vcpus from svcmon where
-               mon_nodname = "%s" and
-               mon_vmname = "%s" """%(nodename, vmname)
+               node_id = "%s" and
+               mon_vmname = "%s" """%(node_id, vmname)
     try:
         return db.executesql(sql)[0][0]
     except:
-        return 1
+        return
 
 @service.xmlrpc
 def insert_stats(data, auth):
@@ -421,6 +433,7 @@ def insert_stats(data, auth):
 def rpc_insert_stats(data, auth):
     import cPickle
     h = cPickle.loads(data)
+    node_id = auth_to_node_id(auth)
     for stat in h:
         vars, vals = h[stat]
         if stat == "svc" and "cap_cpu" not in vars and len(vals) > 0:
@@ -434,15 +447,22 @@ def rpc_insert_stats(data, auth):
                 if vmname in cache:
                     vcpus = cache[vmname]
                 else:
-                    vcpus = str(get_vcpus(auth[1], vmname))
+                    vcpus = str(get_vcpus(node_id, vmname))
                     cache[vmname] = vcpus
                 vals[i].append(vcpus)
+        vars, vals = replace_nodename_in_data(vars, vals, auth)
         max = 10000
         while len(vals) > max:
-            generic_insert('stats_'+stat, vars, vals[:max])
+            try:
+                generic_insert('stats_'+stat, vars, vals[:max])
+            except Exception as e:
+                raise Exception("%s: %s" % (stat, str(e)))
             vals = vals[max:]
-        generic_insert('stats_'+stat, vars, vals)
-    scheduler.queue_task("update_dash_netdev_errors" , [auth[1]],
+        try:
+            generic_insert('stats_'+stat, vars, vals)
+        except Exception as e:
+            raise Exception("%s: %s" % (stat, str(e)))
+    scheduler.queue_task("update_dash_netdev_errors" , [node_id],
                          group_name="update_dash_netdev_errors", timeout=120)
 
 @service.xmlrpc
@@ -648,15 +668,15 @@ def send_sysreport(fname, binary, deleted, auth):
 def rpc_send_sysreport(fname, binary, deleted, auth):
     need_commit = False
     sysreport_d = os.path.join(os.path.dirname(__file__), "..", "..", "init", 'uploads', 'sysreport')
-    nodename = auth[1]
+    node_id = auth_to_node_id(auth)
 
     if not os.path.exists(sysreport_d):
         os.makedirs(sysreport_d)
 
-    need_commit |= send_sysreport_delete(deleted, sysreport_d, nodename)
-    need_commit |= send_sysreport_archive(fname, binary, sysreport_d, nodename)
+    need_commit |= send_sysreport_delete(deleted, sysreport_d, node_id)
+    need_commit |= send_sysreport_archive(fname, binary, sysreport_d, node_id)
 
-    scheduler.queue_task("task_send_sysreport", [need_commit, deleted, nodename],
+    scheduler.queue_task("task_send_sysreport", [need_commit, deleted, node_id],
                          group_name="_insert_generic", timeout=240)
 
 def insert_gcediskss():
@@ -709,54 +729,23 @@ def insert_syms():
 
 @service.xmlrpc
 def delete_pkg(node, auth):
-    return rpc_delete_pkg(node, auth)
-
-@auth_uuid
-def rpc_delete_pkg(node, auth):
     pass
 
 @service.xmlrpc
 def delete_patch(node, auth):
-    return rpc_delete_patch(node, auth)
-
-@auth_uuid
-def rpc_delete_patch(node, auth):
     pass
 
 @service.xmlrpc
 def delete_syncs(svcname, auth):
-    return rpc_delete_syncs(svcname, auth)
-
-@auth_uuid
-def rpc_delete_syncs(svcname, auth):
     pass
 
 @service.xmlrpc
 def delete_ips(svcname, node, auth):
-    return rpc_delete_ips(svcname, node, auth)
-
-@auth_uuid
-def rpc_delete_ips(svcname, node, auth):
     pass
 
 @service.xmlrpc
 def delete_fss(svcname, auth):
-    return rpc_delete_fss(svcname, auth)
-
-@auth_uuid
-def rpc_delete_fss(svcname, auth):
     pass
-
-@service.xmlrpc
-def delete_disks(svcname, node, auth):
-    return rpc_delete_disks(svcname, node, auth)
-
-@auth_uuid
-def rpc_delete_disks(svcname, node, auth):
-    if svcname is None or svcname == '':
-        return 0
-    db((db.svcdisks.disk_svcname==svcname)&(db.svcdisks.disk_nodename==node)).delete()
-    db.commit()
 
 @service.xmlrpc
 def register_node(node):
@@ -765,11 +754,15 @@ def register_node(node):
     return _register_node(node)
 
 def _register_node(node):
+    # anonymous register: don't allow nodename conflicts
     if node is None or node == '':
         return ["no node name provided"]
-    q = db.auth_node.nodename == node
-    rows = db(q).select()
-    if len(rows) != 0:
+    q = db.nodes.nodename == node
+    row = db(q).select().first()
+    if row is None:
+        node_id = get_new_node_id()
+        db.nodes.insert(nodename=node, node_id=node_id)
+    else:
         _log("node.register",
              "node '%(node)s' double registration attempt",
              dict(node=node),
@@ -778,12 +771,12 @@ def _register_node(node):
         return ["already registered"]
     import uuid
     u = str(uuid.uuid4())
-    db.auth_node.insert(nodename=node, uuid=u)
+    db.auth_node.insert(nodename=node, uuid=u, node_id=node_id)
     db.commit()
     _log("node.register",
-         "node '%(node)s' registered",
-         dict(node=node),
-         nodename=node)
+         "node '%(node)s' registered with id %(node_id)s",
+         dict(node=node, node_id=node_id),
+         node_id=node_id)
     return u
 
 @service.xmlrpc
@@ -838,14 +831,15 @@ def collector_show_tags(cmd, auth):
 @auth_uuid
 def rpc_collector_show_tags(cmd, auth):
     d = {}
+    node_id = auth_to_node_id(auth)
     if "svcname" in cmd:
         svcname = cmd["svcname"]
-        q = db.svc_tags.svcname == svcname
+        svc_id = node_svc_id(node_id, svcname)
+        q = db.svc_tags.svc_id == svc_id
         q &= db.svc_tags.tag_id == db.tags.id
         rows = db(q).select(db.tags.tag_name, orderby=db.tags.tag_name)
     else:
-        nodename = auth[1]
-        q = db.node_tags.nodename == nodename
+        q = db.node_tags.node_id == node_id
         q &= db.node_tags.tag_id == db.tags.id
         rows = db(q).select(db.tags.tag_name, orderby=db.tags.tag_name)
     if len(rows) == 0:
@@ -859,7 +853,6 @@ def collector_create_tag(data, auth):
 
 @auth_uuid
 def rpc_collector_create_tag(data, auth):
-    nodename = auth[1]
     tag_name = data.get('tag_name')
     tag_exclude = data.get('tag_exclude')
     if tag_name is None:
@@ -879,13 +872,13 @@ def rpc_collector_create_tag(data, auth):
     )
     return {"ret": 0, "msg": "tag successfully created"}
 
-def tag_allowed(nodename=None, svcname=None, tag_name=None):
-    if nodename is None and svcname is None:
+def tag_allowed(node_id=None, svc_id=None, tag_name=None):
+    if node_id is None and svcname is None:
         return False
     if tag_name is None:
         return False
-    if nodename:
-        q = db.node_tags.nodename == nodename
+    if node_id:
+        q = db.node_tags.node_id == node_id
         q &= db.node_tags.tag_id == db.tags.id
         q &= db.tags.tag_exclude != None
         rows = db(q).select(db.tags.tag_exclude,
@@ -924,40 +917,42 @@ def rpc_collector_tag(data, auth):
 
     if "svcname" in data:
         svcname = data["svcname"]
-        if not tag_allowed(svcname=svcname, tag_name=tag_name):
+        node_id = auth_to_node_id(auth)
+        svc_id = node_svc_id(node_id, svcname)
+        if not tag_allowed(svc_id=svc_id, tag_name=tag_name):
             return {"ret": 1, "msg": "tag incompatible with other attached tags."}
-        q = db.svc_tags.svcname == svcname
+        q = db.svc_tags.svc_id == svc_id
         q &= db.svc_tags.tag_id == tag_id
         rows = db(q).select()
         if len(rows) > 0:
             return {"ret": 0, "msg": "tag is already attached"}
 
         db.svc_tags.insert(
-           svcname=svcname,
+           svc_id=svc_id,
            tag_id=tag_id
         )
         _log("service.tag",
              "tag '%(tag_name)s' attached",
              dict(tag_name=tag_name),
-             svcname=svcname)
+             svc_id=svc_id)
     else:
-        nodename = auth[1]
-        if not tag_allowed(nodename=nodename, tag_name=tag_name):
+        node_id = auth_to_node_id(auth)
+        if not tag_allowed(node_id=node_id, tag_name=tag_name):
             return {"ret": 1, "msg": "tag incompatible with other attached tags."}
-        q = db.node_tags.nodename == auth[1]
+        q = db.node_tags.node_id == node_id
         q &= db.node_tags.tag_id == tag_id
         rows = db(q).select()
         if len(rows) > 0:
             return {"ret": 0, "msg": "tag is already attached"}
 
         db.node_tags.insert(
-           nodename=auth[1],
+           node_id=node_id,
            tag_id=tag_id
         )
         _log("node.tag",
              "tag '%(tag_name)s' attached",
              dict(tag_name=tag_name),
-             nodename=auth[1])
+             node_id=node_id)
     return {"ret": 0, "msg": "tag successfully attached"}
 
 @service.xmlrpc
@@ -977,7 +972,9 @@ def rpc_collector_untag(data, auth):
 
     if "svcname" in data:
         svcname = data["svcname"]
-        q = db.svc_tags.svcname == svcname
+        node_id = auth_to_node_id(auth)
+        svc_id = node_svc_id(node_id, svcname)
+        q = db.svc_tags.svc_id == svc_id
         q &= db.svc_tags.tag_id == tag_id
         rows = db(q).select()
         if len(rows) == 0:
@@ -987,10 +984,10 @@ def rpc_collector_untag(data, auth):
         _log("service.tag",
              "tag '%(tag_name)s' detached",
              dict(tag_name=tag_name),
-             svcname=svcname)
+             svc_id=svc_id)
     else:
-        nodename = auth[1]
-        q = db.node_tags.nodename == nodename
+        node_id = auth_to_node_id(auth)
+        q = db.node_tags.node_id == node_id
         q &= db.node_tags.tag_id == tag_id
         rows = db(q).select()
         if len(rows) == 0:
@@ -1000,7 +997,7 @@ def rpc_collector_untag(data, auth):
         _log("node.tag",
              "tag '%(tag_name)s' detached",
              dict(tag_name=tag_name),
-             nodename=nodename)
+             node_id=node_id)
     return {"ret": 0, "msg": "tag successfully detached"}
 
 
@@ -1011,16 +1008,14 @@ def collector_update_root_pw(data, auth):
 
 @auth_uuid
 def rpc_collector_update_root_pw(data, auth):
-    nodename = auth[1]
+    node_id = auth_to_node_id(auth)
+    if node_id is None:
+        return {"ret": 1, "msg": "This node is not registered."}
+
     pw = data.get('pw')
     if pw is None:
-        return {"ret": 1, "msg": "misformatted data"}
-    sql = """select uuid from auth_node where nodename="%(nodename)s"
-          """ % dict(nodename=nodename)
-    rows = db.executesql(sql)
-    if len(rows) == 0:
-        return {"ret": 1, "msg": "node is not registered"}
-    uuid = rows[0][0]
+        return {"ret": 1, "msg": "Malformatted data."}
+    uuid = auth[0]
 
     #config = local_import('config', reload=True)
     from applications.init.modules import config
@@ -1030,12 +1025,12 @@ def rpc_collector_update_root_pw(data, auth):
         salt = "tlas"
 
     sql = """insert into node_pw set
-              nodename="%(nodename)s",
+              node_id="%(node_id)s",
               pw=aes_encrypt("%(pw)s", "%(uuid)s")
              on duplicate key update
               pw=aes_encrypt("%(pw)s", "%(uuid)s"),
               updated=now()
-          """ % dict(nodename=nodename, pw=pw, uuid=uuid+salt)
+          """ % dict(node_id=node_id, pw=pw, uuid=uuid+salt)
     db.executesql(sql)
     table_modified("node_pw")
     return {"ret": 0, "msg": "password updated succesfully"}
@@ -1047,16 +1042,19 @@ def collector_ack_action(cmd, auth):
 @auth_uuid
 def rpc_collector_ack_action(cmd, auth):
     d = {}
-    nodename = auth[1]
+    node_id = auth_to_node_id(auth)
+    nodename = get_nodename(node_id)
     d["acked_date"] = datetime.datetime.now()
 
     if "svcname" in cmd:
-        q = db.SVCactions.svcname == cmd["svcname"]
-        q &= db.SVCactions.hostname == nodename
+        svcname = cmd["svcname"]
+        svc_id = node_svc_id(node_id, svcname)
+        q = db.svcactions.svc_id == svc_id
+        q &= db.svcactions.node_id == node_id
         n = db(q).count()
         if n == 0:
             return {"ret": 1, "msg": "this node is not owner of %s"%svcname}
-        d["svcname"] = cmd["svcname"]
+        d["svc_id"] = svc_id
 
     if "id" not in cmd:
         return {"ret": 1, "msg": "no action id specified"}
@@ -1071,20 +1069,20 @@ def rpc_collector_ack_action(cmd, auth):
     else:
         d["acked_by"] = cmd["author"]
 
-    q = db.SVCactions.status == "err"
+    q = db.svcactions.status == "err"
 
-    q1 = db.SVCactions.id == cmd['id']
+    q1 = db.svcactions.id == cmd['id']
     rows = db(q1).select()
 
     if len(rows) == 0:
         q &= q1
     else:
         if rows[0].status_log is None or rows[0].status_log == "":
-            q &= db.SVCactions.hostname == rows[0].hostname
-            q &= db.SVCactions.svcname == rows[0].svcname
-            q &= ((db.SVCactions.pid.belongs(rows[0].pid.split(',')))|(db.SVCactions.id==rows[0].id))
-            q &= db.SVCactions.begin >= rows[0].begin
-            q &= db.SVCactions.end <= rows[0].end
+            q &= db.svcactions.node_id == node_id
+            q &= db.svcactions.svc_id == rows[0].svc_id
+            q &= ((db.svcactions.pid.belongs(rows[0].pid.split(',')))|(db.svcactions.id==rows[0].id))
+            q &= db.svcactions.begin >= rows[0].begin
+            q &= db.svcactions.end <= rows[0].end
         else:
             q &= q1
 
@@ -1097,8 +1095,8 @@ def rpc_collector_ack_action(cmd, auth):
                  acked_by=d["acked_by"])
     db.commit()
 
-    update_action_errors(rows[0].svcname, nodename)
-    update_dash_action_errors(rows[0].svcname, nodename)
+    update_action_errors(rows[0].svc_id, node_id)
+    update_dash_action_errors(rows[0].svc_id, node_id)
 
     return {"ret": 0, "msg": ""}
 
@@ -1109,18 +1107,20 @@ def collector_ack_unavailability(cmd, auth):
 @auth_uuid
 def rpc_collector_ack_unavailability(cmd, auth):
     d = {}
-    nodename = auth[1]
+    node_id = auth_to_node_id(auth)
+    nodename = get_nodename(node_id)
     d["mon_acked_on"] = datetime.datetime.now()
 
     if "svcname" not in cmd:
         return {"ret": 1, "msg": "svcname not found in command block"}
     else:
-        q = db.svcmon.mon_svcname == cmd["svcname"]
-        q &= db.svcmon.mon_nodname == nodename
+        svc_id = node_svc_id(node_id, cmd["svcname"])
+        q = db.svcmon.svc_id == svc_id
+        q &= db.svcmon.node_id == node_id
         n = db(q).count()
         if n == 0:
-            return {"ret": 1, "msg": "this node is not owner of %s"%svcname}
-        d["mon_svcname"] = cmd["svcname"]
+            return {"ret": 1, "msg": "this node is not owner of %s"%cmd["svcname"]}
+        d["svc_id"] = svc_id
 
     if "begin" not in cmd:
         d["mon_begin"] = d["mon_acked_on"]
@@ -1165,19 +1165,20 @@ def collector_list_unavailability_ack(cmd, auth):
 @auth_uuid
 def rpc_collector_list_unavailability_ack(cmd, auth):
     d = {}
-    nodename = auth[1]
+    node_id = auth_to_node_id(auth)
     d["mon_acked_on"] = datetime.datetime.now()
 
     if "svcname" not in cmd:
         return {"ret": 1, "msg": "svcname not found in command block"}
     else:
-        q = db.svcmon.mon_svcname == cmd["svcname"]
-        q &= db.svcmon.mon_nodname == nodename
+        svc_id = node_svc_id(node_id, cmd["svcname"])
+        q = db.svcmon.svc_id == svc_id
+        q &= db.svcmon.node_id == node_id
         n = db(q).count()
         if n == 0:
-            return {"ret": 1, "msg": "this node is not owner of %s"%svcname}
+            return {"ret": 1, "msg": "this node is not owner of %s"%cmd["svcname"]}
 
-    q = db.svcmon_log_ack.mon_svcname == cmd["svcname"]
+    q = db.svcmon_log_ack.svc_id == svc_id
 
     if "begin" not in cmd:
         b = datetime.datetime.now() - datetime.timedelta(days=7)
@@ -1223,32 +1224,33 @@ def collector_show_actions(cmd, auth):
 @auth_uuid
 def rpc_collector_show_actions(cmd, auth):
     d = {}
-    nodename = auth[1]
+    node_id = auth_to_node_id(auth)
 
     if "svcname" in cmd:
-        q = db.svcmon.mon_svcname == cmd["svcname"]
-        q &= db.svcmon.mon_nodname == nodename
+        svc_id = node_svc_id(node_id, cmd["svcname"])
+        q = db.svcmon.svc_id == svc_id
+        q &= db.svcmon.node_id == node_id
         n = db(q).count()
         if n == 0:
-            return {"ret": 1, "msg": "this node is not owner of %s"%svcname}
+            return {"ret": 1, "msg": "this node is not owner of %s"%cmd["svcname"]}
 
     if "svcname" in cmd:
-        q = db.SVCactions.svcname == cmd["svcname"]
+        q = db.svcactions.svc_id == svc_id
     else:
-        q = db.SVCactions.hostname == nodename
+        q = db.svcactions.node_id == node_id
 
     if "id" in cmd:
-        q1 = db.SVCactions.id == cmd['id']
+        q1 = db.svcactions.id == cmd['id']
         rows = db(q1).select()
         if len(rows) == 0:
             q &= q1
         else:
             if rows[0].status_log is None or rows[0].status_log == "":
-                q &= db.SVCactions.hostname == rows[0].hostname
-                q &= db.SVCactions.svcname == rows[0].svcname
-                q &= ((db.SVCactions.pid.belongs(rows[0].pid.split(',')))|(db.SVCactions.id==rows[0].id))
-                q &= db.SVCactions.begin >= rows[0].begin
-                q &= db.SVCactions.end <= rows[0].end
+                q &= db.svcactions.node_id == node_id
+                q &= db.svcactions.svc_id == rows[0].svc_id
+                q &= ((db.svcactions.pid.belongs(rows[0].pid.split(',')))|(db.svcactions.id==rows[0].id))
+                q &= db.svcactions.begin >= rows[0].begin
+                q &= db.svcactions.end <= rows[0].end
             else:
                 q &= q1
     else:
@@ -1258,7 +1260,7 @@ def rpc_collector_show_actions(cmd, auth):
             b = str_to_datetime(cmd["begin"])
             if b is None:
                 return {"ret": 1, "msg": "could not parse --begin as a date"}
-        q &= db.SVCactions.end >= b
+        q &= db.svcactions.end >= b
 
         if "end" not in cmd:
             e = datetime.datetime.now()
@@ -1266,17 +1268,19 @@ def rpc_collector_show_actions(cmd, auth):
             e = str_to_datetime(cmd["end"])
             if e is None:
                 return {"ret": 1, "msg": "could not parse --end as a date"}
-        q &= db.SVCactions.begin <= e
+        q &= db.svcactions.begin <= e
+    q &= db.nodes.node_id == db.svcactions.node_id
+    q &= db.services.svc_id == db.svcactions.svc_id
 
-    rows = db(q).select(db.SVCactions.id,
-                        db.SVCactions.hostname,
-                        db.SVCactions.svcname,
-                        db.SVCactions.begin,
-                        db.SVCactions.action,
-                        db.SVCactions.status,
-                        db.SVCactions.ack,
-                        db.SVCactions.status_log,
-                        orderby=db.SVCactions.id
+    rows = db(q).select(db.svcactions.id,
+                        db.nodes.nodename,
+                        db.services.svcname,
+                        db.svcactions.begin,
+                        db.svcactions.action,
+                        db.svcactions.status,
+                        db.svcactions.ack,
+                        db.svcactions.status_log,
+                        orderby=db.svcactions.id
                        )
     data = [["action id",
              "node name",
@@ -1287,14 +1291,14 @@ def rpc_collector_show_actions(cmd, auth):
              "acknowledged",
              "log"]]
     for row in rows:
-        data.append([str(row.id),
-                     str(row.hostname),
-                     str(row.svcname),
-                     str(row.begin),
-                     str(row.action),
-                     str(row.status),
-                     str(row.ack),
-                     str(row.status_log)])
+        data.append([str(row.svcactions.id),
+                     str(row.nodes.nodename),
+                     str(row.services.svcname),
+                     str(row.svcactions.begin),
+                     str(row.svcactions.action),
+                     str(row.svcactions.status),
+                     str(row.svcactions.ack),
+                     str(row.svcactions.status_log)])
     return {"ret": 0, "msg": "", "data":data}
 
 @service.xmlrpc
@@ -1303,10 +1307,10 @@ def collector_update_action_queue(data, auth):
 
 @auth_uuid
 def rpc_collector_update_action_queue(data, auth):
-    nodename = auth[1]
+    node_id = auth_to_node_id(auth)
     for id, ret, out, err in data:
         q = db.action_queue.id == id
-        q &= db.action_queue.nodename == nodename
+        q &= db.action_queue.node_id == node_id
         db(q).update(stdout=out, stderr=err, ret=ret, status="T", date_dequeued=datetime.datetime.now())
     action_q_event()
     table_modified("action_queue")
@@ -1317,7 +1321,8 @@ def collector_get_action_queue(nodename, auth):
 
 @auth_uuid
 def rpc_collector_get_action_queue(nodename, auth):
-    q = db.action_queue.nodename == nodename
+    node_id = auth_to_node_id(auth)
+    q = db.action_queue.node_id == node_id
     q &= db.action_queue.action_type == "pull"
     q &= db.action_queue.status == "W"
     sql = db(q)._select()
@@ -1334,20 +1339,21 @@ def collector_list_actions(cmd, auth):
 @auth_uuid
 def rpc_collector_list_actions(cmd, auth):
     d = {}
-    nodename = auth[1]
+    node_id = auth_to_node_id(auth)
     d["mon_acked_on"] = datetime.datetime.now()
 
     if "svcname" in cmd:
-        q = db.svcmon.mon_svcname == cmd["svcname"]
-        q &= db.svcmon.mon_nodname == nodename
+        svc_id = node_svc_id(node_id, cmd["svcname"])
+        q = db.svcmon.svc_id == svc_id
+        q &= db.svcmon.node_id == node_id
         n = db(q).count()
         if n == 0:
-            return {"ret": 1, "msg": "this node is not owner of %s"%svcname}
+            return {"ret": 1, "msg": "this node is not owner of %s"%cmd["svcname"]}
 
     if "svcname" in cmd:
-        q = db.SVCactions.svcname == cmd["svcname"]
+        q = db.svcactions.svc_id == svc_id
     else:
-        q = db.SVCactions.hostname == nodename
+        q = db.svcactions.node_id == node_id
 
     if "begin" not in cmd:
         b = datetime.datetime.now() - datetime.timedelta(days=7)
@@ -1355,7 +1361,7 @@ def rpc_collector_list_actions(cmd, auth):
         b = str_to_datetime(cmd["begin"])
         if b is None:
             return {"ret": 1, "msg": "could not parse --begin as a date"}
-    q &= db.SVCactions.end >= b
+    q &= db.svcactions.end >= b
 
     if "end" not in cmd:
         e = datetime.datetime.now()
@@ -1363,40 +1369,43 @@ def rpc_collector_list_actions(cmd, auth):
         e = str_to_datetime(cmd["end"])
         if e is None:
             return {"ret": 1, "msg": "could not parse --end as a date"}
-    q &= db.SVCactions.begin <= e
+    q &= db.svcactions.begin <= e
 
-    q &= (db.SVCactions.status_log == "") | (db.SVCactions.status_log == None)
-    rows = db(q).select(db.SVCactions.id,
-                        db.SVCactions.hostname,
-                        db.SVCactions.svcname,
-                        db.SVCactions.begin,
-                        db.SVCactions.end,
-                        db.SVCactions.action,
-                        db.SVCactions.status,
-                        db.SVCactions.ack,
-                        db.SVCactions.cron
+    #q &= (db.svcactions.status_log == "") | (db.svcactions.status_log == None)
+    q &= db.nodes.node_id == db.svcactions.node_id
+    q &= db.services.svc_id == db.svcactions.svc_id
+    rows = db(q).select(db.svcactions.id,
+                        db.nodes.nodename,
+                        db.services.svcname,
+                        db.svcactions.begin,
+                        db.svcactions.end,
+                        db.svcactions.action,
+                        db.svcactions.status,
+                        db.svcactions.ack,
+                        db.svcactions.cron,
+                        db.svcactions.status_log,
                        )
     header = ['action id',
-              'node name',
-              'service name',
+              'node',
+              'service',
               'begin',
-              'end',
               'action',
               'status',
               'acknowledged',
-              'scheduled']
+              'scheduled',
+              'log']
     data = [header]
     for row in rows:
         data.append([
-          str(row.id),
-          str(row.hostname),
-          str(row.svcname),
-          str(row.begin),
-          str(row.end),
-          str(row.action),
-          str(row.status),
-          str(row.ack),
-          str(row.cron)
+          str(row.svcactions.id),
+          str(row.nodes.nodename),
+          str(row.services.svcname),
+          str(row.svcactions.begin),
+          str(row.svcactions.action),
+          str(row.svcactions.status),
+          str(row.svcactions.ack),
+          str(row.svcactions.cron),
+          str(row.svcactions.status_log),
         ])
 
     return {"ret": 0, "msg": "", "data":data}
@@ -1408,28 +1417,32 @@ def collector_status(cmd, auth):
 @auth_uuid
 def rpc_collector_status(cmd, auth):
     d = {}
-    nodename = auth[1]
+    node_id = auth_to_node_id(auth)
+    q = db.nodes.node_id == node_id
+    nodename = db(q).select(db.nodes.nodename).first().nodename
 
     if "svcname" in cmd:
-        q = db.svcmon.mon_svcname == cmd["svcname"]
-        q &= (db.svcmon.mon_nodname == nodename) | (db.svcmon.mon_vmname == nodename)
+        svc_id = node_svc_id(node_id, cmd["svcname"])
+        q = db.svcmon.svc_id == svc_id
+        q &= (db.svcmon.node_id == node_id) | (db.svcmon.mon_vmname == nodename)
         n = db(q).count()
         if n == 0:
             return {"ret": 1, "msg": "this node is not owner of %s"%cmd["svcname"]}
 
-    o = db.svcmon.mon_svcname
-    q = db.svcmon.mon_nodname == db.nodes.nodename
+    o = db.services.svcname
+    q = db.svcmon.node_id == db.nodes.node_id
+    q &= db.svcmon.svc_id == db.services.svc_id
     if "svcname" in cmd:
-        q &= db.svcmon.mon_svcname == cmd["svcname"]
+        q &= db.svcmon.svc_id == svc_id
     else:
-        rows = db(db.svcmon.mon_nodname==nodename).select(db.svcmon.mon_svcname)
-        svcs = map(lambda x: x.mon_svcname, rows)
-        if len(svcs) > 0:
-            q &= db.svcmon.mon_svcname.belongs(svcs)
+        rows = db(db.svcmon.node_id==node_id).select(db.svcmon.svc_id)
+        svc_ids = map(lambda x: x.svc_id, rows)
+        if len(svc_ids) > 0:
+            q &= db.svcmon.svc_id.belongs(svc_ids)
         else:
             q &= db.svcmon.id < 0
-    rows = db(q).select(db.svcmon.mon_nodname,
-                        db.svcmon.mon_svcname,
+    rows = db(q).select(db.nodes.nodename,
+                        db.services.svcname,
                         db.nodes.host_mode,
                         db.svcmon.mon_availstatus,
                         db.svcmon.mon_overallstatus,
@@ -1437,8 +1450,8 @@ def rpc_collector_status(cmd, auth):
                         orderby=o,
                         limitby=(0,100)
                        )
-    header = ['node name',
-              'service instance',
+    header = ['node',
+              'service',
               'host mode',
               'availability status',
               'overall status',
@@ -1446,8 +1459,8 @@ def rpc_collector_status(cmd, auth):
     data = [header]
     for row in rows:
         data.append([
-          str(row.svcmon.mon_nodname),
-          str(row.svcmon.mon_svcname),
+          str(row.nodes.nodename),
+          str(row.services.svcname),
           str(row.nodes.host_mode),
           str(row.svcmon.mon_availstatus),
           str(row.svcmon.mon_overallstatus),
@@ -1462,14 +1475,15 @@ def collector_networks(cmd, auth):
 
 @auth_uuid
 def rpc_collector_networks(cmd, auth):
-    nodename = auth[1]
+    node_id = auth_to_node_id(auth)
 
     if "svcname" in cmd:
-        q = db.svcmon.mon_svcname == cmd["svcname"]
-        q &= db.svcmon.mon_nodname == nodename
+        svc_id = node_svc_id(node_id, cmd["svcname"])
+        q = db.svcmon.svc_id == svc_id
+        q &= db.svcmon.node_id == node_id
         n = db(q).count()
         if n == 0:
-            return {"ret": 1, "msg": "this node is not owner of %s"%svcname}
+            return {"ret": 1, "msg": "this node is not owner of %s"%cmd["svcname"]}
 
     if "svcname" in cmd:
         data = []
@@ -1489,9 +1503,10 @@ def rpc_collector_networks(cmd, auth):
                    networks.end
                  from node_ip, networks
                  where
-                   node_ip.nodename = "%(nodename)s" and
+                   node_ip.node_id = "%(node_id)s" and
                    inet_aton(node_ip.addr) >= inet_aton(begin) and
-                   inet_aton(node_ip.addr)  <= inet_aton(end)""" % dict(nodename=nodename)
+                   inet_aton(node_ip.addr)  <= inet_aton(end)
+        """ % dict(node_id=node_id)
         rows = db.executesql(sql)
         header = [
           'ip',
@@ -1520,19 +1535,20 @@ def collector_asset(cmd, auth):
 @auth_uuid
 def rpc_collector_asset(cmd, auth):
     d = {}
-    nodename = auth[1]
+    node_id = auth_to_node_id(auth)
 
     if "svcname" in cmd:
-        q = db.svcmon.mon_svcname == cmd["svcname"]
-        q &= db.svcmon.mon_nodname == nodename
+        svc_id = node_svc_id(node_id, cmd["svcname"])
+        q = db.svcmon.svc_id == svc_id
+        q &= db.svcmon.node_id == node_id
         n = db(q).count()
         if n == 0:
-            return {"ret": 1, "msg": "this node is not owner of %s"%svcname}
+            return {"ret": 1, "msg": "this node is not owner of %s"%cmd["svcname"]}
 
     if "svcname" in cmd:
         pass
     else:
-        q = db.nodes.nodename == nodename
+        q = db.nodes.node_id == node_id
         j = db.nodes.app == db.apps.app
         l = db.apps.on(j)
         rows = db(q).select(
@@ -1542,7 +1558,8 @@ def rpc_collector_asset(cmd, auth):
         )
 
         header = [
-          'node',
+          'node id',
+          'node name',
           'fqdn',
           'asset name',
           'security zone',
@@ -1605,6 +1622,7 @@ def rpc_collector_asset(cmd, auth):
         data = [header]
         for row in rows:
             data.append([
+              str(row.nodes.id),
               str(row.nodes.nodename),
               str(row.nodes.fqdn),
               str(row.nodes.assetname),
@@ -1676,21 +1694,26 @@ def collector_checks(cmd, auth):
 @auth_uuid
 def rpc_collector_checks(cmd, auth):
     d = {}
-    nodename = auth[1]
+    node_id = auth_to_node_id(auth)
 
     if "svcname" in cmd:
-        q = db.svcmon.mon_svcname == cmd["svcname"]
-        q &= db.svcmon.mon_nodname == nodename
+        svc_id = node_svc_id(node_id, cmd["svcname"])
+        q = db.svcmon.svc_id == svc_id
+        q &= db.svcmon.node_id == node_id
         n = db(q).count()
         if n == 0:
-            return {"ret": 1, "msg": "this node is not owner of %s"%svcname}
+            return {"ret": 1, "msg": "this node is not owner of %s"%cmd["svcname"]}
 
     if "svcname" in cmd:
-        q = db.checks_live.chk_svcname == cmd["svcname"]
+        q = db.checks_live.svc_id == svc_id
     else:
-        q = db.checks_live.chk_nodename == nodename
+        q = db.checks_live.node_id == node_id
 
-    rows = db(q).select(db.checks_live.chk_svcname,
+    l1 = db.nodes.on(db.checks_live.node_id==db.nodes.node_id)
+    l2 = db.services.on(db.checks_live.svc_id==db.services.svc_id)
+
+    rows = db(q).select(db.nodes.nodename,
+                        db.services.svcname,
                         db.checks_live.chk_instance,
                         db.checks_live.chk_type,
                         db.checks_live.chk_value,
@@ -1698,9 +1721,11 @@ def rpc_collector_checks(cmd, auth):
                         db.checks_live.chk_high,
                         db.checks_live.chk_threshold_provider,
                         db.checks_live.chk_updated,
-                        limitby=(0,1000)
+                        limitby=(0,1000),
+                        left=(l1,l2),
                        )
-    header = ['service',
+    header = ['node',
+              'service',
               'instance',
               'type',
               'value',
@@ -1711,14 +1736,15 @@ def rpc_collector_checks(cmd, auth):
     data = [header]
     for row in rows:
         data.append([
-          str(row.chk_svcname),
-          str(row.chk_instance),
-          str(row.chk_type),
-          str(row.chk_value),
-          str(row.chk_low),
-          str(row.chk_high),
-          str(row.chk_threshold_provider),
-          str(row.chk_updated)
+          str(row.nodes.nodename),
+          str(row.services.svcname),
+          str(row.checks_live.chk_instance),
+          str(row.checks_live.chk_type),
+          str(row.checks_live.chk_value),
+          str(row.checks_live.chk_low),
+          str(row.checks_live.chk_high),
+          str(row.checks_live.chk_threshold_provider),
+          str(row.checks_live.chk_updated)
         ])
     return {"ret": 0, "msg": "", "data":data}
 
@@ -1729,32 +1755,50 @@ def collector_alerts(cmd, auth):
 @auth_uuid
 def rpc_collector_alerts(cmd, auth):
     d = {}
-    nodename = auth[1]
+    node_id = auth_to_node_id(auth)
 
     if "svcname" in cmd:
-        q = db.svcmon.mon_svcname == cmd["svcname"]
-        q &= db.svcmon.mon_nodname == nodename
+        svc_id = node_svc_id(node_id, cmd["svcname"])
+        q = db.svcmon.svc_id == svc_id
+        q &= db.svcmon.node_id == node_id
         n = db(q).count()
         if n == 0:
-            return {"ret": 1, "msg": "this node is not owner of %s"%svcname}
+            return {"ret": 1, "msg": "this node is not owner of %s"%cmd["svcname"]}
 
     if "svcname" in cmd:
-        where = "where dash_svcname='%s'"%cmd["svcname"]
+        q = db.dashboard.svc_id == svc_id
     else:
-        where = "where dash_nodename='%s'"%nodename
+        q = db.dashboard.node_id == node_id
 
-    labels = ["dash_severity", "dash_type", "dash_created", "dash_fmt", "dash_dict", "dash_nodename", "dash_svcname"]
-    sql = """select %s from dashboard %s order by dash_severity desc limit 0,1000"""%(','.join(labels), where)
-    rows = db.executesql(sql)
+    l1 = db.nodes.on(db.nodes.node_id==db.dashboard.node_id)
+    l2 = db.services.on(db.services.svc_id==db.dashboard.svc_id)
+
+    rows = db(q).select(
+      db.dashboard.dash_severity,
+      db.dashboard.dash_type,
+      db.dashboard.dash_created,
+      db.dashboard.dash_fmt,
+      db.dashboard.dash_dict,
+      db.services.svcname,
+      db.nodes.nodename,
+      left=(l1,l2),
+    )
     data = [["severity", "type", "node", "service", "alert", "created"]]
     for row in rows:
-        fmt = row[3]
+        fmt = row.dashboard.dash_fmt
         try:
-            d = json.loads(row[4])
-            alert = fmt%d
+            d = json.loads(row.dashboard.dash_dict)
+            alert = fmt % d
         except:
             alert = ""
-        data += [[str(row[0]), str(row[1]), row[5], row[6], alert, str(row[2])]]
+        data += [[
+          str(row.dashboard.dash_severity),
+          str(row.dashboard.dash_type),
+          row.nodes.nodename,
+          row.services.svcname,
+          alert,
+          str(row.dashboard.dash_created)
+        ]]
     return {"ret": 0, "msg": "", "data":data}
 
 @service.xmlrpc
@@ -1764,19 +1808,20 @@ def collector_events(cmd, auth):
 @auth_uuid
 def rpc_collector_events(cmd, auth):
     d = {}
-    nodename = auth[1]
+    node_id = auth_to_node_id(auth)
 
     if "svcname" in cmd:
-        q = db.svcmon.mon_svcname == cmd["svcname"]
-        q &= db.svcmon.mon_nodname == nodename
+        svc_id = node_svc_id(node_id, cmd["svcname"])
+        q = db.svcmon.svc_id == svc_id
+        q &= db.svcmon.node_id == node_id
         n = db(q).count()
         if n == 0:
-            return {"ret": 1, "msg": "this node is not owner of %s"%svcname}
+            return {"ret": 1, "msg": "this node is not owner of %s"%cmd["svcname"]}
 
     if "svcname" in cmd:
-        where = "where log_svcname='%s'"%cmd["svcname"]
+        q = db.log.svc_id == svc_id
     else:
-        where = "where log_nodename='%s'"%nodename
+        q = db.log.node_id == node_id
 
     if "begin" not in cmd:
         b = datetime.datetime.now() - datetime.timedelta(days=7)
@@ -1784,7 +1829,7 @@ def rpc_collector_events(cmd, auth):
         b = str_to_datetime(cmd["begin"])
         if b is None:
             return {"ret": 1, "msg": "could not parse --begin as a date"}
-    where += """ and log_date >= "%s" """%str(b)
+    q &= db.log.log_date >= b
 
     if "end" not in cmd:
         e = datetime.datetime.now()
@@ -1792,21 +1837,38 @@ def rpc_collector_events(cmd, auth):
         e = str_to_datetime(cmd["end"])
         if e is None:
             return {"ret": 1, "msg": "could not parse --end as a date"}
-    where += """ and log_date <= "%s" """%str(e)
+    q &= db.log.log_date <= e
 
-    labels = ["log_date", "log_nodename", "log_svcname", "log_level", "log_action", "log_fmt", "log_dict"]
-    sql = """select %s from log %s order by log_date limit 0,1000"""%(','.join(labels), where)
-    rows = db.executesql(sql)
+    l1 = db.nodes.on(db.log.node_id==db.nodes.node_id)
+    l2 = db.services.on(db.log.svc_id==db.services.svc_id)
+    rows = db(q).select(
+      db.log.log_date,
+      db.nodes.nodename,
+      db.services.svcname,
+      db.log.log_level,
+      db.log.log_action,
+      db.log.log_fmt,
+      db.log.log_dict,
+      left=l,
+      limitby=(0,1000),
+    )
     data = [["date", "node", "service", "level", "action", "event"]]
     for row in rows:
-        fmt = row[5]
+        fmt = row.log.log_fmt
         try:
-            d = json.loads(row[6])
+            d = json.loads(row.log.log_dict)
             msg = fmt%d
         except:
             msg = ""
-        data += [[str(row[0]), str(row[1]), str(row[2]), str(row[3]), str(row[4]), msg]]
-    return {"ret": 0, "msg": "", "data":data}
+        data += [[
+          str(row.log.log_date),
+          str(row.nodes.nodename),
+          str(row.services.svcname),
+          str(row.log.log_level),
+          str(row.log.log_action),
+          msg
+        ]]
+    return {"ret": 0, "msg": "", "data": data}
 
 @service.xmlrpc
 def collector_service_status(cmd, auth):
@@ -1815,12 +1877,13 @@ def collector_service_status(cmd, auth):
 @auth_uuid
 def rpc_collector_service_status(cmd, auth):
     d = {}
-    svcname = cmd["svcname"]
-    q = db.services.svc_name == svcname
+    node_id = auth_to_node_id(auth)
+    svc_id = node_svc_id(node_id, cmd["svcname"])
+    q = db.services.svc_id == svc_id
     row = db(q).select(db.services.svc_availstatus).first()
     if row is None:
-        return {"ret": 1, "msg": "service not found %s"%svcname}
-    d[svcname] = {"availstatus": row. svc_availstatus}
+        return {"ret": 1, "msg": "service not found %s"%cmd["svcname"]}
+    d[cmd["svcname"]] = {"availstatus": row.svc_availstatus}
     return {"ret": 0, "msg": "", "data": d}
 
 @service.xmlrpc
@@ -1830,48 +1893,55 @@ def collector_disks(cmd, auth):
 @auth_uuid
 def rpc_collector_disks(cmd, auth):
     d = {}
-    nodename = auth[1]
+    node_id = auth_to_node_id(auth)
 
     if "svcname" in cmd:
-        q = db.svcmon.mon_svcname == cmd["svcname"]
-        q &= db.svcmon.mon_nodname == nodename
+        svc_id = node_svc_id(node_id, cmd["svcname"])
+        q = db.svcmon.svc_id == svc_id
+        q &= db.svcmon.node_id == node_id
         n = db(q).count()
         if n == 0:
-            return {"ret": 1, "msg": "this node is not owner of %s"%svcname}
+            return {"ret": 1, "msg": "this node is not owner of %s"%cmd["svcname"]}
 
     if "svcname" in cmd:
-        q = db.b_disk_app.disk_svcname == cmd["svcname"]
+        q = db.svcdisks.svc_id == svc_id
     else:
-        q = db.b_disk_app.disk_nodename == nodename
+        q = db.svcdisks.node_id == node_id
+    l1 = db.diskinfo.on(db.svcdisks.disk_id==db.diskinfo.disk_id)
+    l2 = db.nodes.on(db.nodes.node_id==db.svcdisks.node_id)
+    l3 = db.services.on(db.services.svc_id==db.svcdisks.svc_id)
 
-    o = db.b_disk_app.disk_id | db.b_disk_app.disk_svcname | db.b_disk_app.disk_nodename
-    rows = db(q).select(db.b_disk_app.disk_nodename,
-                        db.b_disk_app.disk_svcname,
-                        db.b_disk_app.disk_id,
-                        db.b_disk_app.disk_size,
-                        db.b_disk_app.disk_alloc,
-                        db.b_disk_app.disk_devid,
-                        db.b_disk_app.disk_name,
-                        db.b_disk_app.disk_raid,
-                        db.b_disk_app.disk_arrayid,
-                        db.b_disk_app.disk_group
-                       )
+    o = db.svcdisks.disk_id | db.services.svcname | db.nodes.nodename
+    rows = db(q).select(
+        db.nodes.nodename,
+        db.services.svcname,
+        db.svcdisks.disk_id,
+        db.svcdisks.disk_size,
+        db.diskinfo.disk_alloc,
+        db.diskinfo.disk_devid,
+        db.diskinfo.disk_name,
+        db.diskinfo.disk_raid,
+        db.diskinfo.disk_arrayid,
+        db.diskinfo.disk_group,
+        left=(l1,l2,l3),
+    )
 
     labels = ["node name", "service name", "wwid", "size", "allocated",
               "array device id", "array device name", "raid",
               "array id", "array disk group"]
     data = [labels]
     for row in rows:
-        data += [[str(row.disk_nodename),
-                  str(row.disk_svcname),
-                  str(row.disk_id),
-                  str(row.disk_size),
-                  str(row.disk_alloc),
-                  str(row.disk_devid),
-                  str(row.disk_name),
-                  str(row.disk_raid),
-                  str(row.disk_arrayid),
-                  str(row.disk_group)]]
+        data += [[
+                  str(row.nodes.nodename),
+                  str(row.services.svcname),
+                  str(row.svcdisks.disk_id),
+                  str(row.diskinfo.disk_size),
+                  str(row.diskinfo.disk_alloc),
+                  str(row.diskinfo.disk_devid),
+                  str(row.diskinfo.disk_name),
+                  str(row.diskinfo.disk_raid),
+                  str(row.diskinfo.disk_arrayid),
+                  str(row.diskinfo.disk_group)]]
     return {"ret": 0, "msg": "", "data":data}
 
 @service.xmlrpc
@@ -1880,21 +1950,7 @@ def collector_list_nodes(cmd, auth):
 
 @auth_uuid
 def rpc_collector_list_nodes(cmd, auth):
-    d = {}
-    nodename = auth[1]
-    if "fset" not in cmd:
-        return {"ret": 1, "msg": "fset not specified"}
-    fset = cmd['fset']
-    q = db.gen_filtersets.fset_name == fset
-    row = db(q).select().first()
-    if row is None:
-        return {"ret": 1, "msg": "filterset not found"}
-    fset_id = row.id
-    q = db.nodes.id > 0
-    q = apply_filters(q, fset_id, db.nodes.nodename, None)
-    rows = db(q).select(db.nodes.nodename, orderby=db.nodes.nodename)
-    nodes = [r.nodename.lower() for r in rows]
-    return {"ret": 0, "msg": "", "data": nodes}
+    return {"ret": 1, "msg": "This feature is no longer supported. Please use the collector Rest API."}
 
 @service.xmlrpc
 def collector_list_services(cmd, auth):
@@ -1902,23 +1958,7 @@ def collector_list_services(cmd, auth):
 
 @auth_uuid
 def rpc_collector_list_services(cmd, auth):
-    d = {}
-    nodename = auth[1]
-    if "fset" not in cmd:
-        return {"ret": 1, "msg": "fset not specified"}
-    fset = cmd['fset']
-    q = db.gen_filtersets.fset_name == fset
-    row = db(q).select().first()
-    if row is None:
-        return {"ret": 1, "msg": "filterset not found"}
-    fset_id = row.id
-    q = db.svcmon.mon_nodname == db.nodes.nodename
-    q = apply_filters(q, fset_id, db.svcmon.mon_nodname, db.svcmon.mon_svcname)
-    rows = db(q).select(db.svcmon.mon_svcname,
-                        orderby=db.svcmon.mon_svcname,
-                        groupby=db.svcmon.mon_svcname)
-    services = [r.mon_svcname.lower() for r in rows]
-    return {"ret": 0, "msg": "", "data": services}
+    return {"ret": 1, "msg": "This feature is no longer supported. Please use the collector Rest API."}
 
 @service.xmlrpc
 def collector_list_filtersets(cmd, auth):

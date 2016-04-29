@@ -105,7 +105,7 @@ function fset_properties(divid, options) {
 			"request_service": "/filtersets/%1/services",
 			"request_parameters": [data.id],
 			"limit": "0",
-			"key": "svc_name",
+			"key": "svcname",
 			"item_class": "svc",
 			"e_title": o.info_services_title,
 			"e_list": o.info_services
@@ -464,16 +464,17 @@ function fset_designer(divid, options) {
 
 	o.f_field_input = function(table, current) {
 		var fields = {
-			'nodes': [].concat(['id', 'nodename'], objcols.node, ["updated"]),
-			'services': [].concat(['id', 'svc_name'], objcols.service, ["updated"]),
-			'svcmon': [].concat(['id', 'mon_svcname', 'mon_nodname'], objcols.service_instance),
+			'nodes': [].concat(['id', 'nodename', 'node_id'], objcols.node, ["updated"]),
+			'services': [].concat(['id', 'svc_id', 'svcname'], objcols.service, ["updated"]),
+			'svcmon': [].concat(['id', 'svc_id', 'node_id'], objcols.service_instance),
 			'resmon': objcols.resource,
-			'b_disk_app': ["disk_devid", "disk_vendor", "svcdisk_updated", "disk_updated", "disk_raid", "disk_used", "svcdisk_id", "disk_arrayid", "disk_id", "disk_level", "disk_name", "disk_created", "disk_dg", "disk_model", "disk_local", "disk_group", "disk_size", "disk_alloc", "disk_region"],
+			'svcdisks': ["disk_vendor", "disk_updated", "disk_used", "id", "disk_id", "disk_dg", "disk_model", "disk_local", "disk_region"],
+			'diskinfo': ["disk_devid", "disk_vendor", "disk_updated", "disk_raid", "disk_arrayid", "disk_id", "disk_level", "disk_name", "disk_created", "disk_group", "disk_size", "disk_alloc"],
 			'node_hba': ["hba_type", "hba_id"],
 			'apps': objcols.app,
 			'v_comp_moduleset_attachments': ['modset_name'],
 			'v_tags': ['id', 'tag_name'],
-			'packages': ["id", "nodename", "pkg_name", "pkg_version", "pkg_arch", "pkg_type", "sig_provider", "pkg_sig", "pkg_install_date", "pkg_updated"]
+			'packages': ["id", "node_id", "pkg_name", "pkg_version", "pkg_arch", "pkg_type", "sig_provider", "pkg_sig", "pkg_install_date", "pkg_updated"]
 		}
 
 		var input = $("<input id='f_field' class='aci oi'>")

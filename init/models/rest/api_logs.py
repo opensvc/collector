@@ -16,7 +16,7 @@ class rest_get_logs(rest_get_table_handler):
           "List events in the collector log.",
         ]
         examples = [
-          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/logs?query=log_nodename contains clem"
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/logs"
         ]
 
         o = ~db.log.id

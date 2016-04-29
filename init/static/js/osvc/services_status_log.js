@@ -36,12 +36,12 @@ function services_status_log(divid, options) {
 		var opts = {
 			"meta": "false",
 			"limit": 200,
-			"props": "id,mon_svcname,mon_nodname,mon_begin,mon_end,mon_availstatus",
+			"props": "id,svc_id,node_id,mon_begin,mon_end,mon_availstatus",
 			"orderby": "~id",
 			"filters": []
 		}
 		if (options && options.services) {
-			opts.filters.push("mon_svcname ("+options.services.join(",")+")")
+			opts.filters.push("svc_id ("+options.services.join(",")+")")
 		}
 		if (options && options.begin) {
 			opts.filters.push("mon_begin >"+options.begin)
@@ -62,7 +62,7 @@ function services_status_log(divid, options) {
 			"filters": []
 		}
 		if (options && options.services) {
-			opts.filters.push("svc_name ("+options.services.join(",")+")")
+			opts.filters.push("svc_id ("+options.services.join(",")+")")
 		}
 		if (options && options.begin) {
 			opts.filters.push("svc_begin >"+options.begin)
@@ -81,17 +81,19 @@ function services_status_log(divid, options) {
 		var groups = []
 		for (var i=0; i<data.length; i++) {
 			var d = data[i]
-			var group = d.mon_svcname+'@'+d.mon_nodname
-			if (groupids.indexOf(group) < 0) {
-				groupids.push(group)
+			var group_id = d.svc_id+"@"+d.node_id
+			if (groupids.indexOf(group_id) < 0) {
+				var group_content = "<span node_id="+d.node_id+">"+d.node_id+"</span>"
+				groupids.push(group_id)
 				groups.push({
-					"id": group
+					"id": group_id,
+					"content": group_content
 				})
 			}
 			_data.push({
 				"start": d.mon_begin,
 				"end": d.mon_end,
-				"group": group,
+				"group": group_id,
 				"range_id": d.id,
 				"status": d.mon_availstatus,
 				"title": d.mon_availstatus,
@@ -113,16 +115,18 @@ function services_status_log(divid, options) {
 		var groups = []
 		for (var i=0; i<data.length; i++) {
 			var d = data[i]
-			if (groupids.indexOf(d.svc_name) < 0) {
-				groupids.push(d.svc_name)
+			if (groupids.indexOf(d.svc_id) < 0) {
+				groupids.push(d.svc_id)
+				var group_content = "<span class='icon_fixed_width svc' svc_id="+d.svc_id+">"+d.svc_id+"</span>"
 				groups.push({
-					"id": d.svc_name
+					"id": d.svc_id,
+					"content": group_content
 				})
 			}
 			_data.push({
 				"start": d.svc_begin,
 				"end": d.svc_end,
-				"group": d.svc_name,
+				"group": d.svc_id,
 				"range_id": d.id,
 				"status": d.svc_availstatus,
 				"title": d.svc_availstatus,
@@ -140,6 +144,14 @@ function services_status_log(divid, options) {
 
 	o.init_timeline = function() {
 		o.timeline = new vis.Timeline(o.div[0], o.data, o.groups, options)
+		o.timeline.on("change", function() {
+			o.div.find("[node_id]").osvc_nodename({
+				callback: function(){o.timeline.redraw()}
+			})
+			o.div.find("[svc_id]").osvc_svcname({
+				callback: function(){o.timeline.redraw()}
+			})
+		})
 	}
 
 	o.init = function() {

@@ -29,11 +29,11 @@ var menu_data = {
 		  "fn" : "table_resources"
 		},
 		{
-		  "title" : "app_info",
-		  "class" : "svc",
-		  "id" : "view-appinfo",
-		  "link" : "/init/appinfo/appinfo",
-		  "fn" : "table_appinfo"
+		  "title" : "res_info",
+		  "class" : "resource",
+		  "id" : "view-resinfo",
+		  "link" : "/init/resinfo/resinfo",
+		  "fn" : "table_resinfo"
 		},
 		{
 		  "title" : "nodes",

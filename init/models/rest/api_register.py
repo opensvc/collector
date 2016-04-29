@@ -20,35 +20,45 @@ class rest_post_register(rest_post_handler):
         if nodename is None:
             raise Exception("The 'nodename' key is mandatory")
 
+        app = vars.get("app")
+        if app is None or app == "None":
+            app = user_default_app()
+        elif not app in user_apps():
+            return Exception("You are not responsible for the '%s' app" % app)
+
         q = db.nodes.nodename == nodename
-        row = db(q).select(db.nodes.nodename, db.nodes.team_responsible).first()
+        q &= db.nodes.app == app
+        row = db(q).select(db.nodes.node_id, db.nodes.nodename, db.nodes.app).first()
         if not row is None:
-            if not row.team_responsible in user_groups():
-                return dict(error="node already exist and you are not responsible for it")
+            node_id = row.node_id
         else:
-            tr = user_primary_group()
-            if tr is None:
-                tr = user_private_group_id()
-            db.nodes.insert(nodename=nodename, team_responsible=tr)
+            tr = user_default_group()
+            node_id = get_new_node_id()
+            db.nodes.insert(
+              nodename=nodename,
+              team_responsible=tr,
+              app=app,
+              node_id=node_id
+            )
             table_modified("nodes")
 
-        q = db.auth_node.nodename == nodename
+        q = db.auth_node.node_id == node_id
         rows = db(q).select()
         if len(rows) != 0:
             _log("node.register",
-                 "node '%(node)s' double registration attempt",
+                 "node %(node)s double registration attempt",
                  dict(node=nodename),
-                 nodename=nodename,
+                 node_id=node_id,
                  level="warning")
             raise Exception("already registered")
         import uuid
         u = str(uuid.uuid4())
-        db.auth_node.insert(nodename=nodename, uuid=u)
+        db.auth_node.insert(nodename=nodename, uuid=u, node_id=node_id)
         table_modified("auth_node")
         db.commit()
         _log("node.register",
-             "node '%(node)s' registered",
-             dict(node=nodename),
-             nodename=nodename)
+             "node %(node)s registered",
+             dict(node=node_id),
+             node_id=node_id)
         return dict(data={"uuid": u})
 

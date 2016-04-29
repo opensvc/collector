@@ -106,7 +106,7 @@ function group_properties(divid, options) {
 				"request_service": "R_GROUP_SERVICES",
 				"request_parameters": [data.id],
 				"limit": 50,
-				"key": "svc_name",
+				"key": "svcname",
 				"item_class": "svc",
 				"e_title": o.info_services_title,
 				"e_list": o.info_services

@@ -3,11 +3,14 @@ class table_nodes(HtmlTable):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
-        self.cols = ['id', 'nodename']+nodes_cols
+        self.cols = ['node_id', 'nodename']+nodes_cols
         self.colprops = nodes_colprops
         self.span = ["nodename"]
         self.keys = ["nodename"]
         self.colprops.update({
+            'node_id': HtmlTableColumn(
+                     field='node_id',
+                    ),
             'nodename': HtmlTableColumn(
                      field='nodename',
                     ),
@@ -82,7 +85,7 @@ def ajax_nodes_col_values():
     j = db.apps.app == db.nodes.app
     l = db.apps.on(j)
     q = q_filter(q, app_field=db.nodes.app)
-    q = apply_filters(q, db.nodes.nodename, None)
+    q = apply_filters_id(q, db.nodes.node_id, None)
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
     t.object_list = db(q).select(o, orderby=o, left=l)
@@ -98,7 +101,7 @@ def ajax_nodes():
     j = db.apps.app == db.nodes.app
     l = db.apps.on(j)
     q = q_filter(q, app_field=db.nodes.app)
-    q = apply_filters(q, db.nodes.nodename, None)
+    q = apply_filters_id(q, db.nodes.node_id)
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
 
@@ -204,9 +207,9 @@ def ajax_obs_agg():
     def get_rows(field_date):
         q = db.nodes.id>0
         q = q_filter(q, app_field=db.nodes.app)
-        q = apply_filters(q, db.nodes.nodename, None)
+        q = apply_filters_id(q, db.nodes.node_id)
         if "nodes[]" in request.vars:
-            q &= db.nodes.nodename.belongs(request.vars["nodes[]"])
+            q &= db.nodes.node_id.belongs(request.vars["nodes[]"])
         return db(q).select(db.nodes.id.count(),
                             db.nodes[field_date],
                             groupby=db.nodes[field_date],
@@ -239,17 +242,6 @@ def ajax_obs_agg():
     h['os_alert_chart_data'] = get_data('os_obs_alert_date')
 
     return DIV(
-             STYLE("""
-.chartcontainer {
-  float:left;
-  width:45%;
-  min-width:350px;
-  padding:10px;
-  padding-left:30px;
-  padding-right:30px
-}
-
-             """),
              DIV(
                H3(T("Hardware obsolescence warnings roadmap")),
                DIV(
@@ -312,8 +304,8 @@ def ajax_uids_col_values():
     q = q_filter(app_field=db.nodes.app)
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
-    q = apply_filters(q, db.nodes.nodename)
-    sql1 = db(q)._select(db.nodes.nodename).rstrip(';')
+    q = apply_filters_id(q, node_field=db.nodes.node_id)
+    sql1 = db(q)._select(db.nodes.node_id).rstrip(';')
 
     q = db.v_uids.id > 0
     for f in mt.cols:
@@ -333,7 +325,7 @@ def ajax_uids_col_values():
                   group_concat(distinct node_users.user_name order by node_users.user_name separator ',') as user_name
                 from node_users
                 where
-                  node_users.nodename in (%(sql)s)
+                  node_users.node_id in (%(sql)s)
                 group by node_users.user_id
               ) u
               where %(where)s
@@ -351,12 +343,12 @@ def ajax_uids():
     t = table_nodes('nodes', 'ajax_nodes')
     mt = table_uids('uids', 'ajax_uids')
 
-    o = ~db.comp_status.run_nodename
+    o = ~db.nodes.id
     q = q_filter(app_field=db.nodes.app)
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
-    q = apply_filters(q, db.nodes.nodename)
-    sql1 = db(q)._select(db.nodes.nodename).rstrip(';')
+    q = apply_filters_id(q, db.nodes.node_id)
+    sql1 = db(q)._select(db.nodes.node_id).rstrip(';')
 
     q = db.v_uids.id > 0
     for f in mt.cols:
@@ -374,7 +366,7 @@ def ajax_uids():
                   group_concat(distinct node_users.user_name order by node_users.user_name separator ',') as user_name
                 from node_users
                 where
-                  node_users.nodename in (%(sql)s)
+                  node_users.node_id in (%(sql)s)
                 group by node_users.user_id
               ) u
               where %(where)s
@@ -410,8 +402,8 @@ def ajax_gids_col_values():
     q = q_filter(app_field=db.nodes.app)
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
-    q = apply_filters(q, db.nodes.nodename)
-    sql1 = db(q)._select(db.nodes.nodename).rstrip(';')
+    q = apply_filters_id(q, db.nodes.node_id)
+    sql1 = db(q)._select(db.nodes.node_id).rstrip(';')
 
     q = db.v_gids.id > 0
     for f in mt.cols:
@@ -431,7 +423,7 @@ def ajax_gids_col_values():
                   group_concat(distinct node_groups.group_name order by node_groups.group_name separator ',') as group_name
                 from node_groups
                 where
-                  node_groups.nodename in (%(sql)s)
+                  node_groups.node_id in (%(sql)s)
                 group by node_groups.group_id
               ) u
               where %(where)s
@@ -449,12 +441,12 @@ def ajax_gids():
     t = table_nodes('nodes', 'ajax_nodes')
     mt = table_gids('gids', 'ajax_gids')
 
-    o = ~db.comp_status.run_nodename
+    o = ~db.nodes.id
     q = q_filter(app_field=db.nodes.app)
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
-    q = apply_filters(q, db.nodes.nodename)
-    sql1 = db(q)._select(db.nodes.nodename).rstrip(';')
+    q = apply_filters_id(q, db.nodes.node_id)
+    sql1 = db(q)._select(db.nodes.node_id).rstrip(';')
 
     q = db.v_gids.id > 0
     for f in mt.cols:
@@ -472,7 +464,7 @@ def ajax_gids():
                   group_concat(distinct node_groups.group_name order by node_groups.group_name separator ',') as group_name
                 from node_groups
                 where
-                  node_groups.nodename in (%(sql)s)
+                  node_groups.node_id in (%(sql)s)
                 group by node_groups.group_id
               ) u
               where %(where)s
@@ -503,72 +495,72 @@ def ajax_gids():
 #
 # Dashboard updates
 #
-def delete_dash_node_without_asset(nodename):
+def delete_dash_node_without_asset(node_id):
     sql = """delete from dashboard
                where
-                 dash_nodename="%(nodename)s" and
+                 node_id="%(node_id)s" and
                  dash_type = "node without asset information"
-          """%dict(nodename=nodename)
+          """%dict(node_id=node_id)
     rows = db.executesql(sql)
     db.commit()
 
-def update_dash_node_beyond_maintenance_end(nodename):
+def update_dash_node_beyond_maintenance_end(node_id):
     sql = """delete from dashboard
                where
-                 dash_nodename in (
-                   select nodename
+                 node_id in (
+                   select node_id
                    from nodes
                    where
-                     nodename="%(nodename)s" and
+                     id="%(node_id)s" and
                      maintenance_end is not NULL and
                      maintenance_end != "0000-00-00 00:00:00" and
                      maintenance_end > now()
                  ) and
                  dash_type = "node maintenance expired"
-          """%dict(nodename=nodename)
+          """%dict(node_id=node_id)
     rows = db.executesql(sql)
     db.commit()
 
-def update_dash_node_near_maintenance_end(nodename):
+def update_dash_node_near_maintenance_end(node_id):
     sql = """delete from dashboard
                where
-                 dash_nodename in (
-                   select nodename
+                 node_id in (
+                   select node_id
                    from nodes
                    where
-                     nodename="%(nodename)s" and
+                     id="%(node_id)s" and
                      maintenance_end is not NULL and
                      maintenance_end != "0000-00-00 00:00:00" and
                      maintenance_end < now() and
                      maintenance_end > date_sub(now(), interval 30 day)
                  ) and
                  dash_type = "node maintenance expired"
-          """%dict(nodename=nodename)
+          """%dict(node_id=node_id)
     rows = db.executesql(sql)
     db.commit()
 
-def update_dash_node_without_maintenance_end(nodename):
+def update_dash_node_without_maintenance_end(node_id):
     sql = """delete from dashboard
                where
-                 dash_nodename in (
-                   select nodename
+                 node_id in (
+                   select node_id
                    from nodes
                    where
-                     nodename="%(nodename)s" and
+                     id="%(node_id)s" and
                      maintenance_end != "0000-00-00 00:00:00" and
                      maintenance_end is not NULL
                  ) and
                  dash_type = "node without maintenance end date"
-          """%dict(nodename=nodename)
+          """%dict(node_id=node_id)
     rows = db.executesql(sql)
     db.commit()
 
-def delete_dash_node_not_updated(nodename):
+def delete_dash_node_not_updated(node_id):
     sql = """delete from dashboard
                where
-                 dash_nodename = "%(nodename)s" and
+                 node_id = "%(node_id)s" and
                  dash_type = "node information not updated"
-          """%dict(nodename=nodename)
+          """%dict(node_id=node_id)
     rows = db.executesql(sql)
     db.commit()
 
@@ -576,13 +568,14 @@ def delete_dash_node_not_updated(nodename):
 def ajax_uid_dispatch():
     uid = request.vars.user_id
     sql = """select
-               user_name,
-               count(id) as n,
-               group_concat(nodename order by nodename separator ", ") as nodes
-             from node_users
+               node_users.user_name,
+               count(node_users.id) as n,
+               group_concat(nodes.nodename order by nodes.nodename separator ", ") as nodes
+             from node_users, nodes
              where
-               user_id = %(uid)s
-             group by user_name"""%dict(
+               node_users.user_id = %(uid)s and
+               node_users.node_id = nodes.node_id
+             group by node_users.user_name"""%dict(
             uid=uid,
           )
     rows = db.executesql(sql, as_dict=True)
@@ -605,13 +598,14 @@ def ajax_uid_dispatch():
 def ajax_gid_dispatch():
     gid = request.vars.group_id
     sql = """select
-               group_name,
-               count(id) as n,
-               group_concat(nodename order by nodename separator ", ") as nodes
-             from node_groups
+               node_groups.group_name,
+               count(node_groups.id) as n,
+               group_concat(nodes.nodename order by nodes.nodename separator ", ") as nodes
+             from node_groups, nodes
              where
-               group_id = %(gid)s
-             group by group_name"""%dict(
+               group_id = %(gid)s and
+               node_groups.node_id = nodes.node_id
+             group by node_groups.group_name"""%dict(
             gid=gid,
           )
     rows = db.executesql(sql, as_dict=True)

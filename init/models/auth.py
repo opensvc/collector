@@ -1,6 +1,60 @@
 import re
 from gluon.tools import Auth
 
+def get_node(node_id):
+    q = db.nodes.node_id == node_id
+    return db(q).select().first()
+
+def get_nodename(node_id):
+    node = get_node(node_id)
+    if node is None:
+        s = str(node_id)
+    else:
+        s = node.nodename + " in app " + node.app
+    return s
+
+def get_node_id(s):
+    node = get_node(s)
+    if node:
+        return node.node_id
+    q = db.nodes.nodename == s
+    q = q_filter(q, app_field=db.nodes.app)
+    nodes = db(q).select(db.nodes.node_id)
+    if len(nodes) > 1:
+        raise Exception("Multiple nodes match the '%s' nodename. Use a node id." % s)
+    node = nodes.first()
+    if node is None:
+        raise KeyError("Node '%s' not found" % s)
+    return node.node_id
+
+def get_svc(svc_id):
+    q = db.services.svc_id == svc_id
+    return db(q).select().first()
+
+def get_svcname(svc_id):
+    svc = get_svc(svc_id)
+    if svc is None:
+        s = str(svc_id)
+    elif svc.svc_app:
+        s = svc.svcname + " in app " + svc.svc_app
+    else:
+        s = svc.svcname + " in no app"
+    return s
+
+def get_svc_id(s):
+    svc = get_svc(s)
+    if svc:
+        return svc.svc_id
+    q = db.services.svcname == s
+    q = q_filter(q, app_field=db.services.svc_app)
+    svcs = db(q).select(db.services.svc_id)
+    if len(svcs) > 1:
+        raise Exception("Multiple services match the '%s' svcname. Use a service id." % s)
+    svc = svcs.first()
+    if svc is None:
+        raise KeyError("Service '%s' not found" % s)
+    return svc.svc_id
+
 def check_privilege(privs):
     ug = user_groups()
     if 'Manager' in ug:
@@ -12,29 +66,33 @@ def check_privilege(privs):
     if len(privs & set(ug)) == 0:
         raise Exception("Not authorized: user has no %s privilege" % ", ".join(privs))
 
-def node_responsible(nodename):
-    q = db.nodes.nodename == nodename
+def node_responsible(node_id=None):
+    if node_id is None:
+        raise Exception("node_responsible() must have a not None node_id parameter")
+    q = db.nodes.node_id == node_id
     n = db(q).count()
     if n == 0:
-        raise Exception("Node %s does not exist" % nodename)
+        raise Exception("Node %s does not exist" % node_id)
     if "Manager" in user_groups():
         return
     q &= db.nodes.app.belongs(user_apps())
     n = db(q).count()
-    if n != 1:
-        raise Exception("Not authorized: user is not responsible for node %s" % nodename)
+    if n == 0:
+        raise Exception("Not authorized: user is not responsible for node %s" % node_id)
 
-def svc_responsible(svcname):
-    q = db.services.svc_name == svcname
+def svc_responsible(svc_id=None):
+    if svc_id is None:
+        raise Exception("svc_responsible() must have a not None svc_id parameter")
+    q = db.services.svc_id == svc_id
     n = db(q).count()
     if n == 0:
-        raise Exception("Service %s does not exist" % svcname)
+        raise Exception("Service %s does not exist" % svc_id)
     if "Manager" in user_groups():
         return
     q &= db.services.svc_app.belongs(user_apps())
     n = db(q).count()
     if n == 0:
-        raise Exception("Not authorized: user is not responsible for service %s" % svcname)
+        raise Exception("Not authorized: user is not responsible for service %s" % svc_id)
 
 def user_default_app(id=None):
     if id is None:
@@ -43,7 +101,7 @@ def user_default_app(id=None):
     q &= db.apps_responsibles.app_id == db.apps.id
     q &= db.apps.app != ""
     q &= db.apps.app != None
-    row = db(q).select(db.apps.app).first()
+    row = db(q).select(db.apps.app, orderby=db.apps.app).first()
     if row is None:
         return
     return row.app
@@ -110,6 +168,10 @@ def user_primary_group_id():
     if len(rows) != 1:
         return None
     return rows[0][0]
+
+def user_default_group():
+    gid = user_default_group_id()
+    return db.auth_group[gid].role
 
 def user_default_group_id():
     gid = user_primary_group_id()
@@ -230,23 +292,23 @@ def user_org_group_ids(id=None):
 
 def user_published_nodes(id=None):
     q = db.nodes.app.belongs(user_published_apps(id))
-    rows = db(q).select(db.nodes.nodename, cacheable=True)
-    return map(lambda x: x.nodename, rows)
+    rows = db(q).select(db.nodes.node_id, cacheable=True)
+    return map(lambda x: x.node_id, rows)
 
 def user_nodes(id=None):
     q = db.nodes.team_responsible.belongs(user_groups(id))
-    rows = db(q).select(db.nodes.nodename, cacheable=True)
-    return map(lambda x: x.nodename, rows)
+    rows = db(q).select(db.nodes.node_id, cacheable=True)
+    return map(lambda x: x.node_id, rows)
 
 def user_published_services(id=None):
     q = db.services.svc_app.belongs(user_published_apps(id))
-    rows = db(q).select(db.services.svc_name, cacheable=True)
-    return map(lambda x: x.svc_name, rows)
+    rows = db(q).select(db.services.svc_id, cacheable=True)
+    return map(lambda x: x.svc_id, rows)
 
 def user_services(id=None):
     q = db.services.svc_app.belongs(user_apps(id))
-    rows = db(q).select(db.services.svc_name, cacheable=True)
-    return map(lambda x: x.svc_name, rows)
+    rows = db(q).select(db.services.svc_id, cacheable=True)
+    return map(lambda x: x.svc_id, rows)
 
 def member_of(g):
     groups = user_groups()
@@ -280,7 +342,7 @@ def auth_register_callback(form):
 def do_membership_on_register(user):
     groups = config_get("membership_on_register", [])
     for group in groups:
-        g = db(db.auth_group.role==group).select(db.auth_group.id).first()
+        g = db(db.auth_group.role==group).select(db.auth_group.id, db.auth_group.role).first()
         if g is None:
             continue
         db.auth_membership.insert(user_id=user.id, group_id=g.id)
@@ -353,6 +415,7 @@ class MyAuth(Auth):
             self.user.id = -1
             self.user.email = "root@"+username
             self.user.nodename = username
+            self.user.node_id = auth_to_node_id([password, username])
             self.user.first_name = username
             self.user.last_name = username
         return r

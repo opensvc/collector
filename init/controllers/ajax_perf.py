@@ -10,7 +10,7 @@ def call():
 
 @auth.requires_login()
 def perf_stats_netdev_one(node, s, e, dev):
-    q = db.stats_netdev.nodename == node
+    q = db.stats_netdev.node_id == node
     q &= db.stats_netdev.date > s
     q &= db.stats_netdev.date < e
     q &= db.stats_netdev.dev == dev
@@ -77,7 +77,7 @@ def perf_stats_svc_data_mem_normalize(node, s, e):
 
     sql = """select mem_bytes from nodes
              where
-               nodename="%(node)s"
+               node_id="%(node)s"
           """%dict(node=node)
     mem = db.executesql(sql)[0][0]
 
@@ -88,7 +88,7 @@ def perf_stats_svc_data_mem_normalize(node, s, e):
              from stats_svc%(period)s
              where
                %(where)s
-               nodename="%(node)s"
+               node_id="%(node)s"
                and date>"%(s)s"
                and date<"%(e)s"
              union
@@ -99,7 +99,7 @@ def perf_stats_svc_data_mem_normalize(node, s, e):
              from stats_svc%(period)s
              where
                %(where)s
-               nodename="%(node)s"
+               node_id="%(node)s"
                and date>"%(s)s"
                and date<"%(e)s"
           """%dict(mem=mem, where=where,s=s,e=e,node=node,col=col, period=get_period(s, e))
@@ -138,7 +138,7 @@ def perf_stats_svc_data_cpu_normalize(node, s, e):
 
     sql = """select if(cpu_threads is null, cpu_cores, cpu_threads)
              from nodes
-             where nodename="%(node)s"
+             where node_id="%(node)s"
           """%dict(node=node)
     cpus = db.executesql(sql)[0][0]
 
@@ -149,7 +149,7 @@ def perf_stats_svc_data_cpu_normalize(node, s, e):
              from stats_svc%(period)s
              where
                %(where)s
-               nodename="%(node)s"
+               node_id="%(node)s"
                and date>"%(s)s"
                and date<"%(e)s"
              union
@@ -160,7 +160,7 @@ def perf_stats_svc_data_cpu_normalize(node, s, e):
              from stats_svc%(period)s
              where
                %(where)s
-               nodename="%(node)s"
+               node_id="%(node)s"
                and date>"%(s)s"
                and date<"%(e)s"
           """%dict(cpus=cpus, where=where,s=s,e=e,node=node,col=col, period=get_period(s, e))
@@ -205,7 +205,7 @@ def perf_stats_svc_data(node, s, e, col):
              from stats_svc%(period)s
              where
                %(where)s
-               nodename="%(node)s"
+               node_id="%(node)s"
                and date>"%(s)s"
                and date<"%(e)s"
              order by date
@@ -322,7 +322,7 @@ def rows_cpu(node, s, e):
              where date>='%(s)s'
                and date<='%(e)s'
                and cpu='ALL'
-               and nodename='%(n)s'
+               and node_id="%(n)s"
           """%dict(
                 period = get_period(s, e),
                 s = s,
@@ -343,7 +343,7 @@ def rows_proc(node, s, e):
              from stats_proc%(period)s
              where date>='%(s)s'
                and date<='%(e)s'
-               and nodename='%(n)s'
+               and node_id="%(n)s"
           """%dict(
                 period = get_period(s, e),
                 s = s,
@@ -364,7 +364,7 @@ def rows_swap(node, s, e):
              from stats_swap%(period)s
              where date>='%(s)s'
                and date<='%(e)s'
-               and nodename='%(n)s'
+               and node_id="%(n)s"
           """%dict(
                 period = get_period(s, e),
                 s = s,
@@ -384,7 +384,7 @@ def rows_block(node, s, e):
              from stats_block%(period)s
              where date>='%(s)s'
                and date<='%(e)s'
-               and nodename='%(n)s'
+               and node_id="%(n)s"
           """%dict(
                 period = get_period(s, e),
                 s = s,
@@ -411,7 +411,7 @@ def rows_mem(node, s, e):
              from stats_mem_u%(period)s
              where date>='%(s)s'
                and date<='%(e)s'
-               and nodename='%(n)s'
+               and node_id="%(n)s"
           """%dict(
                 period = get_period(s, e),
                 s = s,
@@ -430,7 +430,7 @@ def rows_fs_u(node, s, e):
              from stats_fs_u%(period)s
              where date>='%(s)s'
                and date<='%(e)s'
-               and nodename='%(n)s'
+               and node_id="%(n)s"
           """%dict(
                 period = get_period(s, e),
                 s = s,
@@ -464,7 +464,7 @@ def rows_blockdev(node, s, e):
       from stats_blockdev%(period)s
       where date >= "%(s)s" and
             date <= "%(e)s" and
-            nodename = "%(node)s"
+            node_id = %(node)s
       group by dev
     """%dict(node=node, s=s, e=e, period=get_period(s, e)))
 
@@ -481,7 +481,7 @@ def rows_blockdev(node, s, e):
       from stats_blockdev%(period)s
       where date >= "%(s)s" and
             date <= "%(e)s" and
-            nodename = "%(node)s"
+            node_id = %(node)s
     """%dict(
       period = get_period(s, e),
       node=node,
@@ -500,7 +500,7 @@ def rows_netdev(node, s, e):
              from stats_netdev%(period)s
              where date>='%(s)s'
                and date<='%(e)s'
-               and nodename='%(n)s'
+               and node_id="%(n)s"
           """%dict(
                 period = get_period(s, e),
                 s = s,
@@ -523,7 +523,7 @@ def rows_netdev_err(node, s, e):
       from stats_netdev_err%(period)s
       where date >= "%(s)s" and
             date <= "%(e)s" and
-            nodename = "%(node)s"
+            node_id = %(node)s
     """%dict(
          period = get_period(s, e),
          node=node,
@@ -801,7 +801,7 @@ def json_mem():
     rows = rows_mem(node, begin, end)
     memtotal = None
     if len(rows) > 0 and (rows[0][3] is None or int(rows[0][3]) == 0):
-        q = db.nodes.nodename == node
+        q = db.nodes.node_id == node
         asset = db(q).select(db.nodes.mem_bytes, cacheable=True).first()
         if asset is not None:
             memtotal = asset.mem_bytes * 1024

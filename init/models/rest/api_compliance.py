@@ -1,5 +1,3 @@
-import json
-
 def moduleset_id_q(id):
     try:
         id = int(id)
@@ -25,7 +23,7 @@ class rest_get_compliance_logs(rest_get_table_handler):
         examples = [
           "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/compliance/logs?query=run_module=mymod"
         ]
-        q = q_filter(node_field=db.comp_log.run_nodename)
+        q = q_filter(node_field=db.comp_log.node_id)
         rest_get_table_handler.__init__(
           self,
           path="/compliance/logs",
@@ -54,7 +52,7 @@ class rest_get_compliance_log(rest_get_line_handler):
 
     def handler(self, id, **vars):
         q = db.comp_log.id == int(id)
-        q = q_filter(q, node_field=db.comp_log.run_nodename)
+        q = q_filter(q, node_field=db.comp_log.node_id)
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -68,7 +66,7 @@ class rest_get_compliance_status(rest_get_table_handler):
         examples = [
           "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/compliance/status?query=run_status=1 and run_module=mymod"
         ]
-        q = q_filter(node_field=db.comp_status.run_nodename)
+        q = q_filter(node_field=db.comp_status.node_id)
         rest_get_table_handler.__init__(
           self,
           path="/compliance/status",
@@ -97,7 +95,7 @@ class rest_get_compliance_status_one(rest_get_line_handler):
 
     def handler(self, id, **vars):
         q = db.comp_status.id == int(id)
-        q = q_filter(q, node_field=db.comp_status.run_nodename)
+        q = q_filter(q, node_field=db.comp_status.node_id)
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -123,24 +121,26 @@ class rest_delete_compliance_status_run(rest_delete_handler):
     def handler(self, id, **vars):
         check_privilege("CompExec")
         q = db.comp_status.id == int(id)
-        q = q_filter(q, node_field=db.comp_status.run_nodename)
+        q = q_filter(q, node_field=db.comp_status.node_id)
         row = db(q).select().first()
         if row is None:
             return dict(info="Run %s not found or you are not responsible for the node" % id)
-        node_responsible(row.run_nodename)
+        node_responsible(node_id=row.node_id)
         db(q).delete()
-        _log('compliance.status.delete',
-             'deleted run %(u)s',
-             dict(u="-".join((row.run_module, row.run_nodename, row.run_svcname if row.run_svcname else ""))),
-             nodename=row.run_nodename,
-             svcname=row.run_svcname,
+        fmt = 'deleted run module %(module)s on %(target)s'
+        d = {"module": row.run_module, "target": "node "+get_nodename(row.node_id)}
+        if row.svc_id:
+            target = "service "+get_svcname(row.svc_id)+" on "+d["target"]
+        _log('compliance.status.delete', fmt, d,
+             node_id=row.node_id,
+             svc_id=row.svc_id,
         )
         l = {
           'event': 'comp_status_change',
           'data': {'a': 'b'},
         }
         _websocket_send(event_msg(l))
-        update_dash_compdiff(row.run_nodename)
+        update_dash_compdiff(row.node_id)
         return dict(info="Run %s deleted" % id)
 
 #
@@ -151,7 +151,7 @@ class rest_delete_compliance_status_runs(rest_delete_handler):
           "Requires the CompExec privilege and node ownership.",
         ]
         examples = [
-          """# curl -u %(email)s -o- -X DELETE "https://%(collector)s/init/rest/api/compliance/status?filters[]=run_nodename node1" """
+          """# curl -u %(email)s -o- -X DELETE "https://%(collector)s/init/rest/api/compliance/status?filters[]=run_status 1" """
         ]
 
         rest_delete_handler.__init__(
@@ -591,12 +591,12 @@ class rest_get_compliance_ruleset_usage(rest_get_handler):
         #
         q = db.comp_rulesets_nodes.ruleset_id == rset.id
         rows = db(q).select(cacheable=False)
-        data["nodes"] = [ r.nodename for r in rows ]
+        data["nodes"] = [ get_nodename(r.node_id) for r in rows ]
 
         #
         q = db.comp_rulesets_services.ruleset_id == rset.id
         rows = db(q).select(cacheable=False)
-        data["services"] = [ r.svcname for r in rows ]
+        data["services"] = [ get_svcname(r.svc_id) for r in rows ]
 
         return dict(data=data)
 
@@ -1123,7 +1123,7 @@ class rest_get_compliance_moduleset_services(rest_get_table_handler):
           path="/compliance/modulesets/<id>/services",
           tables=["services"],
           desc=desc,
-          groupby=db.services.svc_name,
+          groupby=db.services.svc_id,
           examples=examples
         )
 
@@ -1137,7 +1137,7 @@ class rest_get_compliance_moduleset_services(rest_get_table_handler):
         if not moduleset_publication(modset_id):
             return dict(error="you are not member of one of the moduleset publication groups")
         q = db.comp_modulesets_services.modset_id == modset_id
-        q &= db.comp_modulesets_services.modset_svcname == db.services.svc_name
+        q &= db.comp_modulesets_services.svc_id == db.services.svc_id
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -1209,7 +1209,7 @@ class rest_get_compliance_moduleset_nodes(rest_get_table_handler):
         if not moduleset_publication(modset_id):
             return dict(error="you are not member of one of the moduleset publication groups")
         q = db.comp_node_moduleset.modset_id == modset_id
-        q &= db.comp_node_moduleset.modset_node == db.nodes.nodename
+        q &= db.comp_node_moduleset.node_id == db.nodes.node_id
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -2027,7 +2027,7 @@ class rest_post_compliance_modulesets_nodes(rest_post_handler):
           "Attach a moduleset to a node",
         ]
         examples = [
-          "# curl -u %(email)s -o--d modset_id=100 -d nodename=mynode -X POST https://%(collector)s/init/rest/api/compliance/modulesets_nodes",
+          "# curl -u %(email)s -o--d modset_id=100 -d node_id=5c977731-0562-11e6-8c70-7e9e6cf13c8a -X POST https://%(collector)s/init/rest/api/compliance/modulesets_nodes",
         ]
         rest_post_handler.__init__(
           self,
@@ -2037,15 +2037,15 @@ class rest_post_compliance_modulesets_nodes(rest_post_handler):
         )
 
     def handler(self, **vars):
-        if "nodename" not in vars:
-            raise Exception("'nodename' must be specified")
+        if "node_id" not in vars:
+            raise Exception("'node_id' must be specified")
         if "modset_id" in vars:
             modset_id = vars["modset_id"]
         elif "modset_name" in vars:
             modset_id = comp_moduleset_id(vars["modset_name"])
         else:
             raise Exception("Either 'modset_id' or 'modset_name' must be specified")
-        return rest_post_node_compliance_moduleset().handler(vars["nodename"], modset_id)
+        return rest_post_node_compliance_moduleset().handler(vars["node_id"], modset_id)
 
 class rest_post_compliance_rulesets_nodes(rest_post_handler):
     def __init__(self):
@@ -2053,7 +2053,7 @@ class rest_post_compliance_rulesets_nodes(rest_post_handler):
           "Attach a ruleset to a node",
         ]
         examples = [
-          "# curl -u %(email)s -o--d ruleset_id=100 -d nodename=mynode -X POST https://%(collector)s/init/rest/api/compliance/rulesets_nodes",
+          "# curl -u %(email)s -o--d ruleset_id=100 -d node_id=5c977731-0562-11e6-8c70-7e9e6cf13c8a -X POST https://%(collector)s/init/rest/api/compliance/rulesets_nodes",
         ]
         rest_post_handler.__init__(
           self,
@@ -2063,15 +2063,15 @@ class rest_post_compliance_rulesets_nodes(rest_post_handler):
         )
 
     def handler(self, **vars):
-        if "nodename" not in vars:
-            raise Exception("'nodename' must be specified")
+        if "node_id" not in vars:
+            raise Exception("'node_id' must be specified")
         if "ruleset_id" in vars:
             ruleset_id = vars["ruleset_id"]
         elif "ruleset_name" in vars:
             ruleset_id = comp_ruleset_id(vars["ruleset_name"])
         else:
             raise Exception("Either 'ruleset_id' or 'ruleset_name' must be specified")
-        return rest_post_node_compliance_ruleset().handler(vars["nodename"], ruleset_id)
+        return rest_post_node_compliance_ruleset().handler(vars["node_id"], ruleset_id)
 
 class rest_post_compliance_modulesets_services(rest_post_handler):
     def __init__(self):
@@ -2079,7 +2079,7 @@ class rest_post_compliance_modulesets_services(rest_post_handler):
           "Attach a moduleset to a service",
         ]
         examples = [
-          "# curl -u %(email)s -o--d modset_id=100 -d svcname=mysvc -d slave=true -X POST https://%(collector)s/init/rest/api/compliance/modulesets_services",
+          "# curl -u %(email)s -o -d modset_id=100 -d svc_id=fac92480-0845-11e6-b512-a6ccb094f992 -d slave=true -X POST https://%(collector)s/init/rest/api/compliance/modulesets_services",
         ]
         rest_post_handler.__init__(
           self,
@@ -2089,19 +2089,19 @@ class rest_post_compliance_modulesets_services(rest_post_handler):
         )
 
     def handler(self, **vars):
-        if "svcname" not in vars:
-            raise Exception("'nodename' must be specified")
-        svcname = vars["svcname"]
-        del(vars["svcname"])
+        if "svc_id" not in vars:
+            raise Exception("'svc_id' must be specified")
+        svc_id = vars["svc_id"]
+        del(vars["svc_id"])
         if "modset_id" in vars:
             modset_id = vars["modset_id"]
             del(vars["modset_id"])
-        if "modset_name" in vars:
+        elif "modset_name" in vars:
             modset_id = comp_moduleset_id(vars["modset_name"])
             del(vars["modset_name"])
         else:
             raise Exception("Either 'modset_id' or 'modset_name' must be specified")
-        return rest_post_service_compliance_moduleset().handler(svcname, modset_id, **vars)
+        return rest_post_service_compliance_moduleset().handler(svc_id, modset_id, **vars)
 
 class rest_post_compliance_rulesets_services(rest_post_handler):
     def __init__(self):
@@ -2109,7 +2109,7 @@ class rest_post_compliance_rulesets_services(rest_post_handler):
           "Attach a ruleset to a service",
         ]
         examples = [
-          "# curl -u %(email)s -o--d ruleset_id=100 -d svcname=mysvc -d encap=true -X POST https://%(collector)s/init/rest/api/compliance/rulesets_services",
+          "# curl -u %(email)s -o--d ruleset_id=100 -d svc_id=fac92480-0845-11e6-b512-a6ccb094f992 -d encap=true -X POST https://%(collector)s/init/rest/api/compliance/rulesets_services",
         ]
         rest_post_handler.__init__(
           self,
@@ -2119,10 +2119,10 @@ class rest_post_compliance_rulesets_services(rest_post_handler):
         )
 
     def handler(self, **vars):
-        if "svcname" not in vars:
-            raise Exception("'nodename' must be specified")
-        svcname = vars["svcname"]
-        del(vars["svcname"])
+        if "svc_id" not in vars:
+            raise Exception("'svc_id' must be specified")
+        svc_id = vars["svc_id"]
+        del(vars["svc_id"])
 
         if "ruleset_id" in vars:
             ruleset_id = vars["ruleset_id"]
@@ -2133,7 +2133,7 @@ class rest_post_compliance_rulesets_services(rest_post_handler):
         else:
             raise Exception("Either 'ruleset_id' or 'ruleset_name' must be specified")
 
-        return rest_post_service_compliance_ruleset().handler(svcname, ruleset_id, **vars)
+        return rest_post_service_compliance_ruleset().handler(svc_id, ruleset_id, **vars)
 
 class rest_delete_compliance_modulesets_nodes(rest_delete_handler):
     def __init__(self):
@@ -2141,7 +2141,7 @@ class rest_delete_compliance_modulesets_nodes(rest_delete_handler):
           "Attach a moduleset to a node",
         ]
         examples = [
-          "# curl -u %(email)s -o--d modset_id=100 -d nodename=mynode -X DELETE https://%(collector)s/init/rest/api/compliance/modulesets_nodes",
+          "# curl -u %(email)s -o--d modset_id=100 -d node_id=5c977731-0562-11e6-8c70-7e9e6cf13c8a -X DELETE https://%(collector)s/init/rest/api/compliance/modulesets_nodes",
         ]
         rest_delete_handler.__init__(
           self,
@@ -2151,15 +2151,15 @@ class rest_delete_compliance_modulesets_nodes(rest_delete_handler):
         )
 
     def handler(self, **vars):
-        if "nodename" not in vars:
-            raise Exception("'nodename' must be specified")
+        if "node_id" not in vars:
+            raise Exception("'node_id' must be specified")
         if "modset_id" in vars:
             modset_id = vars["modset_id"]
-        if "modset_name" in vars:
+        elif "modset_name" in vars:
             modset_id = comp_moduleset_id(vars["modset_name"])
         else:
             raise Exception("Either 'modset_id' or 'modset_name' must be specified")
-        return rest_delete_node_compliance_moduleset().handler(vars["nodename"], modset_id)
+        return rest_delete_node_compliance_moduleset().handler(vars["node_id"], modset_id)
 
 class rest_delete_compliance_rulesets_nodes(rest_delete_handler):
     def __init__(self):
@@ -2167,7 +2167,7 @@ class rest_delete_compliance_rulesets_nodes(rest_delete_handler):
           "Attach a ruleset to a node",
         ]
         examples = [
-          "# curl -u %(email)s -o--d ruleset_id=100 -d nodename=mynode -X DELETE https://%(collector)s/init/rest/api/compliance/rulesets_nodes",
+          "# curl -u %(email)s -o--d ruleset_id=100 -d node_id=5c977731-0562-11e6-8c70-7e9e6cf13c8a -X DELETE https://%(collector)s/init/rest/api/compliance/rulesets_nodes",
         ]
         rest_delete_handler.__init__(
           self,
@@ -2177,15 +2177,15 @@ class rest_delete_compliance_rulesets_nodes(rest_delete_handler):
         )
 
     def handler(self, **vars):
-        if "nodename" not in vars:
-            raise Exception("'nodename' must be specified")
+        if "node_id" not in vars:
+            raise Exception("'node_id' must be specified")
         if "ruleset_id" in vars:
             ruleset_id = vars["ruleset_id"]
         elif "ruleset_name" in vars:
             ruleset_id = comp_ruleset_id(vars["ruleset_name"])
         else:
             raise Exception("Either 'ruleset_id' or 'ruleset_name' must be specified")
-        return rest_delete_node_compliance_ruleset().handler(vars["nodename"], ruleset_id)
+        return rest_delete_node_compliance_ruleset().handler(vars["node_id"], ruleset_id)
 
 class rest_delete_compliance_modulesets_services(rest_delete_handler):
     def __init__(self):
@@ -2193,7 +2193,7 @@ class rest_delete_compliance_modulesets_services(rest_delete_handler):
           "Attach a moduleset to a service",
         ]
         examples = [
-          "# curl -u %(email)s -o--d modset_id=100 -d svcname=mysvc -d slave=true -X DELETE https://%(collector)s/init/rest/api/compliance/modulesets_services",
+          "# curl -u %(email)s -o--d modset_id=100 -d svc_id=fac92480-0845-11e6-b512-a6ccb094f992 -d slave=true -X DELETE https://%(collector)s/init/rest/api/compliance/modulesets_services",
         ]
         rest_delete_handler.__init__(
           self,
@@ -2203,19 +2203,19 @@ class rest_delete_compliance_modulesets_services(rest_delete_handler):
         )
 
     def handler(self, **vars):
-        if "svcname" not in vars:
-            raise Exception("'nodename' must be specified")
-        svcname = vars["svcname"]
-        del(vars["svcname"])
+        if "svc_id" not in vars:
+            raise Exception("'svc_id' must be specified")
+        svc_id = vars["svc_id"]
+        del(vars["svc_id"])
         if "modset_id" in vars:
             modset_id = vars["modset_id"]
             del(vars["modset_id"])
-        if "modset_name" in vars:
+        elif "modset_name" in vars:
             modset_id = comp_moduleset_id(vars["modset_name"])
             del(vars["modset_name"])
         else:
             raise Exception("Either 'modset_id' or 'modset_name' must be specified")
-        return rest_delete_service_compliance_moduleset().handler(svcname, modset_id, **vars)
+        return rest_delete_service_compliance_moduleset().handler(svc_id, modset_id, **vars)
 
 class rest_delete_compliance_rulesets_services(rest_delete_handler):
     def __init__(self):
@@ -2223,7 +2223,7 @@ class rest_delete_compliance_rulesets_services(rest_delete_handler):
           "Attach a ruleset to a service",
         ]
         examples = [
-          "# curl -u %(email)s -o--d ruleset_id=100 -d svcname=mysvc -d encap=true -X DELETE https://%(collector)s/init/rest/api/compliance/rulesets_services",
+          "# curl -u %(email)s -o--d ruleset_id=100 -d svc_id=fac92480-0845-11e6-b512-a6ccb094f992 -d encap=true -X DELETE https://%(collector)s/init/rest/api/compliance/rulesets_services",
         ]
         rest_delete_handler.__init__(
           self,
@@ -2233,10 +2233,10 @@ class rest_delete_compliance_rulesets_services(rest_delete_handler):
         )
 
     def handler(self, **vars):
-        if "svcname" not in vars:
-            raise Exception("'nodename' must be specified")
-        svcname = vars["svcname"]
-        del(vars["svcname"])
+        if "svc_id" not in vars:
+            raise Exception("'svc_id' must be specified")
+        svc_id = vars["svc_id"]
+        del(vars["svc_id"])
         if "ruleset_id" in vars:
             ruleset_id = vars["ruleset_id"]
             del(vars["ruleset_id"])
@@ -2245,6 +2245,6 @@ class rest_delete_compliance_rulesets_services(rest_delete_handler):
             del(vars["ruleset_name"])
         else:
             raise Exception("Either 'ruleset_id' or 'ruleset_name' must be specified")
-        return rest_delete_service_compliance_ruleset().handler(svcname, ruleset_id, **vars)
+        return rest_delete_service_compliance_ruleset().handler(svc_id, ruleset_id, **vars)
 
 

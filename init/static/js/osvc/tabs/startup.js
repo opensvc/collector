@@ -34,30 +34,30 @@ function startup(divid, options) {
 		})
 
 		// create checkboxes
-		var nodenames = []
+		var node_ids = []
 		services_osvcgetrest("R_SERVICE_INSTANCES", "", {
 			"limit": "0",
 			"meta": "0",
-			"query": "mon_svcname in " + o.options.svcnames.join(","),
-			"props": "mon_nodname"
+			"query": "svc_id in " + o.options.svc_ids.join(","),
+			"props": "node_id"
 		}, function(jd) {
 			var data = jd.data
 			for (var i=0; i<data.length; i++) {
-				var nodename = data[i].mon_nodname
-				if (nodenames.indexOf(nodename) >= 0) {
+				var node_id = data[i].node_id
+				if (node_ids.indexOf(node_id) >= 0) {
 					// already done
 					continue
 				}
-				nodenames.push(nodename)
+				node_ids.push(node_id)
 
 				//input
-				var input = $("<input type='checkbox' name='nodename' class='ocb'></input>")
+				var input = $("<input type='checkbox' name='node_id' class='ocb'></input>")
 				input.uniqueId()
 				input.css({"vertical-align": "text-bottom"})
 				if (!o.options.display && (i == 0)) {
 					input.prop("checked", true)
 					o.options.display = [input.siblings("span").text()]
-				} else if (o.options.display.indexOf(nodename) >= 0) {
+				} else if (o.options.display.indexOf(node_id) >= 0) {
 					input.prop("checked", true)
 				} else {
 					input.prop("checked", false)
@@ -71,10 +71,10 @@ function startup(divid, options) {
 				var title = $("<span></span>")
 				title.addClass("icon hw16")
 				title.css({"margin-left": "0.2em"})
-				title.text(nodename)
+				title.html(osvc_nodename(node_id))
 
 				// container div
-				var d = $("<div></div>")
+				var d = $("<div class='nowrap'></div>")
 				d.append(input)
 				d.append(label)
 				d.append(title)
@@ -103,7 +103,7 @@ function startup(divid, options) {
 
 	o.create_link = function(){
 		var display = []
-			o.div.find("input[type=checkbox][name=nodename]:checked").each(function() {
+			o.div.find("input[type=checkbox][name=node_id]:checked").each(function() {
 			display.push($(this).siblings("span").text())
 		})
 		o.options.display = display
@@ -118,8 +118,8 @@ function startup(divid, options) {
 			o.viz.height(_height)
 		}
 		var data = {
-			"svcnames": o.options.svcnames,
-			"nodenames": o.options.display,
+			"svc_ids": o.options.svc_ids,
+			"node_ids": o.options.display,
 			"show_disabled": o.e_show_disabled.prop("checked")
 		}
 		$.getJSON(url, data, function(_data){

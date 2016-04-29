@@ -146,8 +146,10 @@ class table_checks(HtmlTable):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
-        self.cols = ['chk_nodename',
-                     'chk_svcname',
+        self.cols = ['node_id',
+                     'nodename',
+                     'svc_id',
+                     'svcname',
                      'chk_type',
                      'chk_instance',
                      'chk_value',
@@ -157,18 +159,26 @@ class table_checks(HtmlTable):
                      'chk_threshold_provider',
                      'chk_created',
                      'chk_updated']
-        self.keys = ['chk_nodename',
-                     'chk_svcname',
+        self.keys = ['node_id',
+                     'svc_id',
                      'chk_type',
                      'chk_instance']
         self.colprops = {
-            'chk_nodename': HtmlTableColumn(
-                field = 'chk_nodename',
+            'svc_id': HtmlTableColumn(
+                field = 'svc_id',
                 table = 'checks_live',
             ),
-            'chk_svcname': HtmlTableColumn(
-                field = 'chk_svcname',
+            'node_id': HtmlTableColumn(
+                field = 'node_id',
                 table = 'checks_live',
+            ),
+            'nodename': HtmlTableColumn(
+                field = 'nodename',
+                table = 'nodes',
+            ),
+            'svcname': HtmlTableColumn(
+                field = 'svcname',
+                table = 'services',
             ),
             'chk_type': HtmlTableColumn(
                 field = 'chk_type',
@@ -224,23 +234,24 @@ class table_checks(HtmlTable):
         self.cols.insert(self.cols.index('app')+1, 'app_domain')
 
         self.ajax_col_values = 'ajax_checks_col_values'
-        self.span = ['chk_nodename']
+        self.span = ['node_id']
 
 @auth.requires_login()
 def ajax_checks_col_values():
     table_id = request.vars.table_id
     t = table_checks(table_id, 'ajax_checks')
     col = request.args[0]
-    q = q_filter(node_field=db.checks_live.chk_nodename)
-    q = apply_filters(q, db.checks_live.chk_nodename, None)
-    q &= db.checks_live.chk_nodename==db.nodes.nodename
+    q = q_filter(node_field=db.checks_live.node_id)
+    q = apply_filters_id(q, db.checks_live.node_id, None)
+    q &= db.checks_live.node_id==db.nodes.node_id
     j = db.apps.app == db.nodes.app
-    l = db.apps.on(j)
+    l1 = db.apps.on(j)
+    l2 = db.services.on(db.checks_live.svc_id==db.services.svc_id)
 
     o = db[t.colprops[col].table][col]
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
-    t.object_list = db(q).select(o, orderby=o, left=l)
+    t.object_list = db(q).select(o, orderby=o, left=(l1,l2))
     return t.col_values_cloud_ungrouped(col)
 
 @auth.requires_login()
@@ -248,14 +259,15 @@ def ajax_checks():
     table_id = request.vars.table_id
     t = table_checks(table_id, 'ajax_checks')
 
-    o = db.checks_live.chk_nodename
+    o = db.nodes.nodename
     o |= db.checks_live.chk_type
     o |= db.checks_live.chk_instance
-    q = q_filter(node_field=db.checks_live.chk_nodename)
-    q = apply_filters(q, db.checks_live.chk_nodename, None)
-    q &= db.checks_live.chk_nodename==db.nodes.nodename
+    q = q_filter(node_field=db.checks_live.node_id)
+    q = apply_filters_id(q, db.checks_live.node_id)
+    q &= db.checks_live.node_id==db.nodes.node_id
     j = db.apps.app == db.nodes.app
-    l = db.apps.on(j)
+    l1 = db.apps.on(j)
+    l2 = db.services.on(db.checks_live.svc_id==db.services.svc_id)
 
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
@@ -264,17 +276,17 @@ def ajax_checks():
         t.csv_q = q
         t.csv_orderby = o
         t.csv_limit = 15000
-        t.csv_left = l
+        t.csv_left = (l1,l2)
         return t.csv()
     if len(request.args) == 1 and request.args[0] == 'commonality':
         t.csv_q = q
-        t.csv_left = l
+        t.csv_left = (l1,l2)
         return t.do_commonality()
     if len(request.args) == 1 and request.args[0] == 'data':
-        n = db(q).select(db.checks_live.id.count(), left=l).first()(db.checks_live.id.count())
+        n = db(q).select(db.checks_live.id.count(), left=(l1,l2)).first()(db.checks_live.id.count())
         limitby = (t.pager_start,t.pager_end)
         cols = t.get_visible_columns()
-        t.object_list = db(q).select(*cols, limitby=limitby, orderby=o, cacheable=False, left=l)
+        t.object_list = db(q).select(*cols, limitby=limitby, orderby=o, cacheable=False, left=(l1,l2))
         return t.table_lines_data(n, html=False)
 
 @auth.requires_login()

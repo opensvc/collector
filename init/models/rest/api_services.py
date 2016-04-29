@@ -16,13 +16,14 @@ class rest_get_service_am_i_responsible(rest_get_handler):
         ]
         rest_get_handler.__init__(
           self,
-          path="/services/<svcname>/am_i_responsible",
+          path="/services/<id>/am_i_responsible",
           desc=desc,
           examples=examples,
         )
 
-    def handler(self, svcname, **vars):
-        svc_responsible(svcname)
+    def handler(self, id, **vars):
+        svc_id = get_svc_id(id)
+        svc_responsible(svc_id)
         return dict(data=True)
 
 #
@@ -36,16 +37,17 @@ class rest_get_service(rest_get_line_handler):
         ]
         rest_get_line_handler.__init__(
           self,
-          path="/services/<svcname>",
+          path="/services/<id>",
           tables=["services"],
           desc=desc,
           examples=examples,
         )
 
-    def handler(self, svcname, **vars):
-        q = db.services.svc_name == svcname
+    def handler(self, id, **vars):
+        svc_id = get_svc_id(id)
+        q = db.services.svc_id == svc_id
         if auth_is_node():
-            if not common_responsible(svcname=svcname, nodename=auth.user.nodename):
+            if not common_responsible(svc_id=svc_id, node_id=auth.user.node_id):
                 raise Exception("the node and service must have a common responsible")
         else:
             q = q_filter(q, app_field=db.services.svc_app)
@@ -60,7 +62,7 @@ class rest_get_services(rest_get_table_handler):
           "List OpenSVC services.",
         ]
         examples = [
-          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/services?props=svc_name,app",
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/services?props=svcname,app",
         ]
         rest_get_table_handler.__init__(
           self,
@@ -93,10 +95,11 @@ class rest_post_service(rest_post_handler):
           examples=examples,
         )
 
-    def handler(self, svcname, **vars):
-        svc_responsible(svcname)
+    def handler(self, id, **vars):
+        svc_id = get_svc_id(id)
+        svc_responsible(svc_id)
 
-        q = db.services.svc_name == svcname
+        q = db.services.svc_id == svc_id
         svc = db(q).select().first()
         if svc is None:
             raise Exception("Service %s not found"%str(id))
@@ -111,8 +114,8 @@ class rest_post_service(rest_post_handler):
 
         db(q).update(**vars)
 
-        fmt = "Service %(svcname)s change: %(data)s"
-        d = dict(svcname=svc.svc_name, data=beautify_change(svc, vars))
+        fmt = "Service %(svc_id)s change: %(data)s"
+        d = dict(svc_id=svc.svc_id, data=beautify_change(svc, vars))
 
         _log('service.change', fmt, d)
         l = {
@@ -121,7 +124,7 @@ class rest_post_service(rest_post_handler):
         }
         _websocket_send(event_msg(l))
 
-        ret = rest_get_service().handler(svc.svc_name)
+        ret = rest_get_service().handler(svc.svc_id)
         ret["info"] = fmt % d
         return ret
 
@@ -131,7 +134,7 @@ class rest_post_services(rest_post_handler):
           "Modify or create services",
         ]
         examples = [
-          "# curl -u %(email)s -X POST -d svc_name=test -o- https://%(collector)s/init/rest/api/services"
+          "# curl -u %(email)s -X POST -d svcname=test -o- https://%(collector)s/init/rest/api/services"
         ]
 
         rest_post_handler.__init__(
@@ -143,16 +146,22 @@ class rest_post_services(rest_post_handler):
         )
 
     def handler(self, **vars):
-        if "svc_name" not in vars:
-            raise Exception("Key 'svc_name' is mandatory")
-        svcname = vars.get("svc_name")
+        try:
+            if "svc_id" in vars:
+                svc_id = vars.get("svc_id")
+            elif "svcname" in vars:
+                svc_id = get_svc_id(vars.get("svcname"))
+            else:
+                raise Exception("Either the 'svc_id' or 'svcname' key is mandatory")
+            q = db.services.svc_id == svc_id
+            svc = db(q).select().first()
+            if svc is not None:
+                return rest_post_service().handler(svc_id, **vars)
+        except KeyError:
+            pass
 
-        q = db.services.svc_name == svcname
-        svc = db(q).select().first()
-        if svc is not None:
-            del(vars["svc_name"])
-            return rest_post_service().handler(svcname, **vars)
-
+        svc_id = get_new_svc_id()
+        vars["svc_id"] = svc_id
         vars["updated"] = datetime.datetime.now()
         if "svc_app" not in vars or \
            vars["svc_app"] == "" or \
@@ -160,10 +169,10 @@ class rest_post_services(rest_post_handler):
            not common_responsible(app=vars["svc_app"], user_id=auth.user_id):
             vars["svc_app"] = user_default_app()
 
-        svc_id = db.services.insert(**vars)
+        db.services.insert(**vars)
 
-        fmt = "Service %(svcname)s added"
-        d = dict(svcname=svcname)
+        fmt = "Service %(data)s added"
+        d = dict(data=beautify_data(vars))
 
         _log('service.add', fmt, d)
         l = {
@@ -172,7 +181,7 @@ class rest_post_services(rest_post_handler):
         }
         _websocket_send(event_msg(l))
 
-        ret = rest_get_service().handler(svcname)
+        ret = rest_get_service().handler(svc_id)
         ret["info"] = fmt % d
         return ret
 
@@ -190,18 +199,20 @@ class rest_delete_service(rest_delete_handler):
         ]
         rest_delete_handler.__init__(
           self,
-          path="/services/<svcname>",
+          path="/services/<id>",
           desc=desc,
           examples=examples,
         )
 
-    def handler(self, svcname, **vars):
-        q = db.services.svc_name == svcname
+    def handler(self, id, **vars):
+        svc_id = get_svc_id(id)
+        q = db.services.svc_id == svc_id
         q = q_filter(q, app_field=db.services.svc_app)
-        row = db(q).select(db.services.id, db.services.svc_name).first()
+        row = db(q).select(db.services.svc_id).first()
         if row is None:
-            raise Exception("service %s does not exist" % svcname)
-        svc_responsible(row.svc_name)
+            raise Exception("service %s does not exist" % svc_id)
+        svc_responsible(row.svc_id)
+        svcname = get_svcname(svc_id)
 
         db(q).delete()
 
@@ -211,31 +222,31 @@ class rest_delete_service(rest_delete_handler):
             )
         l = {
           'event': 'services_change',
-          'data': {'id': row.id},
+          'data': {'svc_id': svc_id},
         }
         _websocket_send(event_msg(l))
 
-        q = db.svcmon.mon_svcname == svcname
+        q = db.svcmon.svc_id == svc_id
         db(q).delete()
         l = {
           'event': 'svcmon_change',
-          'data': {'a': 'b'},
+          'data': {'svc_id': svc_id},
         }
         _websocket_send(event_msg(l))
 
-        q = db.dashboard.dash_svcname == svcname
+        q = db.dashboard.svc_id == svc_id
         db(q).delete()
         l = {
           'event': 'dashboard_change',
-          'data': {'a': 'b'},
+          'data': {'svc_id': svc_id},
         }
         _websocket_send(event_msg(l))
 
-        q = db.resmon.svcname == svcname
+        q = db.resmon.svc_id == svc_id
         db(q).delete()
         l = {
           'event': 'resmon_change',
-          'data': {'a': 'b'},
+          'data': {'svc_id': svc_id},
         }
         _websocket_send(event_msg(l))
 
@@ -251,7 +262,7 @@ class rest_delete_services(rest_delete_handler):
           "- Send websocket change events on services, services instances and dashboard tables.",
         ]
         examples = [
-          "# curl -u %(email)s -X DELETE -o- https://%(collector)s/init/rest/api/services?filter[]=svc_name=test%%",
+          "# curl -u %(email)s -X DELETE -o- https://%(collector)s/init/rest/api/services?filter[]=svcname=test%%",
         ]
         rest_delete_handler.__init__(
           self,
@@ -262,20 +273,17 @@ class rest_delete_services(rest_delete_handler):
 
     def handler(self, **vars):
         q = None
-        if 'svc_name' in vars:
-            s = vars["svc_name"]
-            q = db.services.svc_name == s
-        if 'id' in vars:
-            s = vars["id"]
-            q = db.services.svc_name == vars["id"]
-            s = str(s)
+        if 'svc_id' in vars:
+            s = vars["svc_id"]
+            q = db.services.svc_id == s
         if q is None:
-            raise Exception("svc_name or id key must be specified")
+            raise Exception("The 'svc_id' key must be specified")
         q = q_filter(q, app_field=db.services.svc_app)
-        row = db(q).select(db.services.id, db.services.svc_name).first()
+        row = db(q).select(db.services.svc_id).first()
         if row is None:
+            svcname = get_svcname(row.svc_id)
             raise Exception("service %s does not exist" % s)
-        return rest_delete_service().handler(row.svc_name)
+        return rest_delete_service().handler(row.svc_id)
 
 
 #
@@ -297,10 +305,10 @@ class rest_get_services_instances(rest_get_table_handler):
         )
 
     def handler(self, **vars):
-        q = q_filter(svc_field=db.svcmon.mon_svcname)
+        q = q_filter(svc_field=db.svcmon.svc_id)
         fset_id = vars.get("fset-id")
         if fset_id:
-            q = apply_filters(q, service_field=db.svcmon.mon_svcname, fset_id=fset_id)
+            q = apply_filters_id(q, svc_field=db.svcmon.svc_id, fset_id=fset_id)
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -322,8 +330,9 @@ class rest_get_service_instance(rest_get_line_handler):
         )
 
     def handler(self, id, **vars):
-        q = db.svcmon.id == id
-        q = q_filter(q, svc_field=db.svcmon.mon_svcname)
+        svc_id = get_svc_id(id)
+        q = db.svcmon.svc_id == svc_id
+        q = q_filter(q, svc_field=db.svcmon.svc_id)
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -349,40 +358,43 @@ class rest_delete_service_instance(rest_delete_handler):
 
     def handler(self, id, **vars):
         q = db.svcmon.id == id
-        q = q_filter(q, svc_field=db.svcmon.mon_svcname)
-        row = db(q).select(db.svcmon.id, db.svcmon.mon_svcname, db.svcmon.mon_nodname).first()
+        q = q_filter(q, svc_field=db.svcmon.svc_id)
+        row = db(q).select(db.svcmon.id, db.svcmon.svc_id, db.svcmon.node_id).first()
         if row is None:
             raise Exception("service instance %s does not exist" % str(id))
 
+        nodename = get_nodename(row.node_id)
+        svcname = get_svcname(row.svc_id)
+
         # allow anybody to remove a service instance with no service entry in
         # the service
-        q2 = db.services.svc_name == row.mon_svcname
+        q2 = db.services.svc_id == row.svc_id
         n = db(q2).count()
         if n > 0:
-            svc_responsible(row.mon_svcname)
+            svc_responsible(row.svc_id)
 
         db(q).delete()
 
-        _log('service_instance.delete',
-             'delete service %(svcname)s instance on node %(nodename)s',
-             dict(svcname=row.mon_svcname, nodename=row.mon_nodname),
-            )
+        fmt = 'delete service %(svcname)s instance on node %(nodename)s'
+        d = dict(svcname=svcname, nodename=nodename)
+
+        _log('service_instance.delete', fmt, d, node_id=row.node_id, svc_id=row.svc_id)
         l = {
           'event': 'svcmon_change',
           'data': {'id': row.id},
         }
         _websocket_send(event_msg(l))
 
-        q = db.dashboard.dash_svcname == row.mon_svcname
-        q = db.dashboard.dash_nodename == row.mon_nodname
+        q = db.dashboard.svc_id == row.svc_id
+        q = db.dashboard.node_id == row.node_id
         db(q).delete()
         l = {
           'event': 'dashboard_change',
-          'data': {'a': 'b'},
+          'data': {'id': row.id},
         }
         _websocket_send(event_msg(l))
 
-        return dict(info='service %(svcname)s instance on node %(nodename)s deleted' % dict(svcname=row.mon_svcname, nodename=row.mon_nodname))
+        return dict(info=fmt%d)
 
 #
 class rest_delete_services_instances(rest_delete_handler):
@@ -394,7 +406,7 @@ class rest_delete_services_instances(rest_delete_handler):
           "- Send websocket change events on services instances and dashboard tables.",
         ]
         examples = [
-          "# curl -u %(email)s -X DELETE -o- https://%(collector)s/init/rest/api/services_instances?filter[]=mon_svcname=test%%",
+          "# curl -u %(email)s -X DELETE -o- https://%(collector)s/init/rest/api/services_instances?filter[]=svc_id=52%%",
         ]
         rest_delete_handler.__init__(
           self,
@@ -405,16 +417,16 @@ class rest_delete_services_instances(rest_delete_handler):
 
     def handler(self, **vars):
         q = None
-        if 'mon_svcname' in vars and 'mon_nodname' in vars:
-            q = db.svcmon.mon_svcname == vars["mon_svcname"]
-            q &= db.svcmon.mon_nodname == vars["mon_nodname"]
-            s = vars["mon_svcname"] + "@" + vars["mon_nodname"]
+        if 'svc_id' in vars and 'node_id' in vars:
+            q = db.svcmon.svc_id == vars["svc_id"]
+            q &= db.svcmon.node_id == vars["node_id"]
+            s = get_svcname(vars["svc_id"]) + " @ " + get_nodename(vars["node_id"])
         if 'id' in vars:
             s = vars["id"]
             q = db.svcmon.id == vars["id"]
         if q is None:
-            raise Exception("'mon_svcname+mon_nodname' or 'id' keys must be specified")
-        q = q_filter(q, svc_field=db.svcmon.mon_svcname)
+            raise Exception("'svc_id+node_id' or 'id' keys must be specified")
+        q = q_filter(q, svc_field=db.svcmon.svc_id)
         svc = db(q).select(db.svcmon.id).first()
         if svc is None:
             raise Exception("service instance %s does not exist" % s)
@@ -433,7 +445,7 @@ class rest_get_service_alerts(rest_get_table_handler):
         ]
         rest_get_table_handler.__init__(
           self,
-          path="/services/<svcname>/alerts",
+          path="/services/<id>/alerts",
           tables=["dashboard"],
           vprops={"alert": ["dash_fmt", "dash_dict"]},
           vprops_fn=mangle_alerts,
@@ -441,34 +453,36 @@ class rest_get_service_alerts(rest_get_table_handler):
           examples=examples,
         )
 
-    def handler(self, svcname, **vars):
-        q = db.dashboard.dash_svcname == svcname
-        q = q_filter(q, svc_field=db.dashboard.dash_svcname)
+    def handler(self, svc_id, **vars):
+        svc_id = get_svc_id(svc_id)
+        q = db.dashboard.svc_id == svc_id
+        q = q_filter(q, svc_field=db.dashboard.svc_id)
         self.set_q(q)
         data = self.prepare_data(**vars)
         return data
 
 
 #
-class rest_get_service_appinfos(rest_get_table_handler):
+class rest_get_service_resinfos(rest_get_table_handler):
     def __init__(self):
         desc = [
-          "List an OpenSVC service appinfo key/value pairs.",
+          "List an OpenSVC service resources info key/value pairs.",
         ]
         examples = [
-          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/services/mysvc/appinfo",
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/services/mysvc/resinfo",
         ]
         rest_get_table_handler.__init__(
           self,
-          path="/services/<svcname>/appinfo",
-          tables=["appinfo"],
+          path="/services/<id>/resinfo",
+          tables=["resinfo"],
           desc=desc,
           examples=examples,
         )
 
-    def handler(self, svcname, **vars):
-        q = db.appinfo.app_svcname == svcname
-        q = q_filter(q, svc_field=db.appinfo.app_svcname)
+    def handler(self, id, **vars):
+        svc_id = get_svc_id(id)
+        q = db.resinfo.svc_id == svc_id
+        q = q_filter(q, svc_field=db.resinfo.svc_id)
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -483,15 +497,16 @@ class rest_get_service_checks(rest_get_table_handler):
         ]
         rest_get_table_handler.__init__(
           self,
-          path="/services/<svcname>/checks",
+          path="/services/<id>/checks",
           tables=["checks_live"],
           desc=desc,
           examples=examples,
         )
 
-    def handler(self, svcname, **vars):
-        q = db.checks_live.chk_svcname == svcname
-        q = q_filter(q, svc_field=db.checks_live.chk_svcname)
+    def handler(self, svc_id, **vars):
+        svc_id = get_svc_id(svc_id)
+        q = db.checks_live.svc_id == svc_id
+        q = q_filter(q, svc_field=db.checks_live.svc_id)
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -505,21 +520,22 @@ class rest_get_service_disks(rest_get_table_handler):
         ]
         examples = [
           "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/services/mysvc/disks",
-          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/services/mysvc/disks?props=b_disk_app.disk_svcname,disk_nodename,b_disk_app.disk_id,stor_array.array_name",
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/services/mysvc/disks?props=svcdisks.svc_id,svcdisks.node_id,svcdisks.disk_id,stor_array.array_name",
         ]
         rest_get_table_handler.__init__(
           self,
-          path="/services/<svcname>/disks",
-          tables=["stor_array", "b_disk_app"],
-          left=db.stor_array.on(db.b_disk_app.disk_arrayid == db.stor_array.array_name),
-          count_prop="b_disk_app.id",
+          path="/services/<id>/disks",
+          tables=["stor_array", "diskinfo", "svcdisks"],
+          left=(db.diskinfo.on(db.svcdisks.disk_id==db.diskinfo.disk_id), db.stor_array.on(db.diskinfo.disk_arrayid == db.stor_array.array_name)),
+          count_prop="svcdisks.id",
           desc=desc,
           examples=examples,
         )
 
-    def handler(self, svcname, **vars):
-        q = db.b_disk_app.disk_svcname == svcname
-        q = q_filter(q, app_field=db.b_disk_app.app)
+    def handler(self, svc_id, **vars):
+        svc_id = get_svc_id(svc_id)
+        q = db.svcdisks.svc_id == svc_id
+        q = q_filter(q, svc_field=db.svcdisks.svc_id)
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -531,19 +547,20 @@ class rest_get_service_nodes(rest_get_table_handler):
           "List an OpenSVC service instance status on each of its nodes.",
         ]
         examples = [
-          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/services/mysvc/nodes?props=mon_svcname,mon_availstatus",
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/services/mysvc/nodes?props=svc_id,mon_availstatus",
         ]
         rest_get_table_handler.__init__(
           self,
-          path="/services/<svcname>/nodes",
+          path="/services/<id>/nodes",
           tables=["svcmon"],
           desc=desc,
           examples=examples,
         )
 
-    def handler(self, svcname, **vars):
-        q = db.svcmon.mon_svcname == svcname
-        q = q_filter(q, svc_field=db.svcmon.mon_svcname)
+    def handler(self, id, **vars):
+        svc_id = get_svc_id(id)
+        q = db.svcmon.svc_id == svc_id
+        q = q_filter(q, svc_field=db.svcmon.svc_id)
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -555,19 +572,20 @@ class rest_get_service_resources(rest_get_table_handler):
           "Display service resources on all nodes.",
         ]
         examples = [
-          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/services/mysvc/resources?props=nodename,rid,res_status",
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/services/mysvc/resources?props=node_id,rid,res_status",
         ]
         rest_get_table_handler.__init__(
           self,
-          path="/services/<svcname>/resources",
+          path="/services/<id>/resources",
           tables=["resmon"],
           desc=desc,
           examples=examples,
         )
 
-    def handler(self, svcname, **vars):
-        q = db.resmon.svcname == svcname
-        q = q_filter(q, svc_field=db.resmon.svcname)
+    def handler(self, svc_id, **vars):
+        svc_id = get_svc_id(svc_id)
+        q = db.resmon.svc_id == svc_id
+        q = q_filter(q, svc_field=db.resmon.svc_id)
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -579,20 +597,22 @@ class rest_get_service_node(rest_get_line_handler):
           "Display service instance status on the specified node.",
         ]
         examples = [
-          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/services/mysvc/nodes/mynode?props=mon_svcname,mon_availstatus",
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/services/mysvc/nodes/mynode?props=svc_id,mon_availstatus",
         ]
         rest_get_line_handler.__init__(
           self,
-          path="/services/<svcname>/nodes/<nodename>",
+          path="/services/<id>/nodes/<id>",
           tables=["svcmon"],
           desc=desc,
           examples=examples,
         )
 
-    def handler(self, svcname, nodename, **vars):
-        q = db.svcmon.mon_svcname == svcname
-        q &= db.svcmon.mon_nodname == nodename
-        q = q_filter(q, svc_field=db.svcmon.mon_svcname)
+    def handler(self, svc_id, node_id, **vars):
+        svc_id = get_svc_id(svc_id)
+        node_id = get_ndoe_id(node_id)
+        q = db.svcmon.svc_id == svc_id
+        q &= db.svcmon.node_id == node_id
+        q = q_filter(q, svc_field=db.svcmon.svc_id)
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -608,16 +628,18 @@ class rest_get_service_node_resources(rest_get_table_handler):
         ]
         rest_get_table_handler.__init__(
           self,
-          path="/services/<svcname>/nodes/<nodename>/resources",
+          path="/services/<id>/nodes/<id>/resources",
           tables=["resmon"],
           desc=desc,
           examples=examples,
         )
 
-    def handler(self, svcname, nodename, **vars):
-        q = db.resmon.svcname == svcname
-        q &= db.resmon.nodename == nodename
-        q = q_filter(q, svc_field=db.resmon.svcname)
+    def handler(self, svc_id, node_id, **vars):
+        node_id = get_node_id(node_id)
+        svc_id = get_svc_id(svc_id)
+        q = db.resmon.svc_id == svc_id
+        q &= db.resmon.node_id == node_id
+        q = q_filter(q, svc_field=db.resmon.svc_id)
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -634,15 +656,16 @@ class rest_get_service_compliance_status(rest_get_table_handler):
         ]
         rest_get_table_handler.__init__(
           self,
-          path="/services/<svcname>/compliance/status",
+          path="/services/<id>/compliance/status",
           tables=["comp_status"],
           desc=desc,
           examples=examples,
         )
 
-    def handler(self, svcname, **vars):
-        q = db.comp_status.run_svcname == svcname
-        q = q_filter(q, svc_field=db.comp_status.run_svcname)
+    def handler(self, svc_id, **vars):
+        svc_id = get_svc_id(svc_id)
+        q = db.comp_status.svc_id == svc_id
+        q = q_filter(q, svc_field=db.comp_status.svc_id)
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -658,16 +681,17 @@ class rest_get_service_compliance_modulesets(rest_get_table_handler):
 
         rest_get_table_handler.__init__(
           self,
-          path="/services/<svcname>/compliance/modulesets",
+          path="/services/<id>/compliance/modulesets",
           tables=["comp_moduleset"],
           desc=desc,
           examples=examples,
         )
 
-    def handler(self, svcname, **vars):
-        q = db.comp_modulesets_services.modset_svcname == svcname
+    def handler(self, svc_id, **vars):
+        svc_id = get_svc_id(svc_id)
+        q = db.comp_modulesets_services.svc_id == svc_id
         q &= db.comp_modulesets_services.modset_id == db.comp_moduleset.id
-        q = q_filter(q, svc_field=db.comp_modulesets_services.modset_svcname)
+        q = q_filter(q, svc_field=db.comp_modulesets_services.svc_id)
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -684,16 +708,17 @@ class rest_get_service_compliance_rulesets(rest_get_table_handler):
 
         rest_get_table_handler.__init__(
           self,
-          path="/services/<svcname>/compliance/rulesets",
+          path="/services/<id>/compliance/rulesets",
           tables=["comp_rulesets"],
           desc=desc,
           examples=examples,
         )
 
-    def handler(self, svcname, **vars):
-        q = db.comp_rulesets_services.svcname == svcname
+    def handler(self, svc_id, **vars):
+        svc_id = get_svc_id(svc_id)
+        q = db.comp_rulesets_services.svc_id == svc_id
         q &= db.comp_rulesets_services.ruleset_id == db.comp_rulesets.id
-        q = q_filter(q, svc_field=db.comp_rulesets_services.svcname)
+        q = q_filter(q, svc_field=db.comp_rulesets_services.svc_id)
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -715,16 +740,17 @@ class rest_delete_service_compliance_ruleset(rest_delete_handler):
         ]
         rest_delete_handler.__init__(
           self,
-          path="/services/<svcname>/compliance/rulesets/<id>",
+          path="/services/<id>/compliance/rulesets/<id>",
           desc=desc,
           params=params,
           examples=examples
         )
 
-    def handler(self, svcname, rset_id, **vars):
-        svc_responsible(svcname)
+    def handler(self, svc_id, rset_id, **vars):
+        svc_id = get_svc_id(svc_id)
+        svc_responsible(svc_id)
         slave = get_slave(vars)
-        return lib_comp_ruleset_detach_service(svcname, rset_id, slave)
+        return lib_comp_ruleset_detach_service(svc_id, rset_id, slave)
 
 #
 class rest_post_service_compliance_ruleset(rest_post_handler):
@@ -743,16 +769,17 @@ class rest_post_service_compliance_ruleset(rest_post_handler):
         ]
         rest_post_handler.__init__(
           self,
-          path="/services/<svcname>/compliance/rulesets/<id>",
+          path="/services/<id>/compliance/rulesets/<id>",
           desc=desc,
           params=params,
           examples=examples
         )
 
-    def handler(self, svcname, rset_id, **vars):
-        svc_responsible(svcname)
+    def handler(self, svc_id, rset_id, **vars):
+        svc_id = get_svc_id(svc_id)
+        svc_responsible(svc_id)
         slave = get_slave(vars)
-        return lib_comp_ruleset_attach_service(svcname, rset_id, slave)
+        return lib_comp_ruleset_attach_service(svc_id, rset_id, slave)
 
 #
 class rest_delete_service_compliance_moduleset(rest_delete_handler):
@@ -771,16 +798,17 @@ class rest_delete_service_compliance_moduleset(rest_delete_handler):
         ]
         rest_delete_handler.__init__(
           self,
-          path="/services/<svcname>/compliance/modulesets/<id>",
+          path="/services/<id>/compliance/modulesets/<id>",
           desc=desc,
           params=params,
           examples=examples
         )
 
-    def handler(self, svcname, modset_id, **vars):
-        svc_responsible(svcname)
+    def handler(self, svc_id, modset_id, **vars):
+        svc_id = get_svc_id(svc_id)
+        svc_responsible(svc_id)
         slave = get_slave(vars)
-        return lib_comp_moduleset_detach_service(svcname, modset_id, slave)
+        return lib_comp_moduleset_detach_service(svc_id, modset_id, slave)
 
 #
 class rest_post_service_compliance_moduleset(rest_post_handler):
@@ -799,16 +827,17 @@ class rest_post_service_compliance_moduleset(rest_post_handler):
         ]
         rest_post_handler.__init__(
           self,
-          path="/services/<svcname>/compliance/modulesets/<id>",
+          path="/services/<id>/compliance/modulesets/<id>",
           desc=desc,
           params=params,
           examples=examples
         )
 
-    def handler(self, svcname, modset_id, **vars):
-        svc_responsible(svcname)
+    def handler(self, svc_id, modset_id, **vars):
+        svc_id = get_svc_id(svc_id)
+        svc_responsible(svc_id)
         slave = get_slave(vars)
-        return lib_comp_moduleset_attach_service(svcname, modset_id, slave)
+        return lib_comp_moduleset_attach_service(svc_id, modset_id, slave)
 
 class rest_get_service_compliance_logs(rest_get_table_handler):
     def __init__(self):
@@ -820,15 +849,16 @@ class rest_get_service_compliance_logs(rest_get_table_handler):
         ]
         rest_get_table_handler.__init__(
           self,
-          path="/services/<svcname>/compliance/logs",
+          path="/services/<id>/compliance/logs",
           tables=["comp_log"],
           desc=desc,
           examples=examples,
         )
 
-    def handler(self, svcname, **vars):
-        q = db.comp_log.run_svcname == svcname
-        q = q_filter(q, svc_field=db.comp_log.run_svcname)
+    def handler(self, svc_id, **vars):
+        svc_id = get_svc_id(svc_id)
+        q = db.comp_log.svc_id == svc_id
+        q = q_filter(q, svc_field=db.comp_log.svc_id)
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -842,9 +872,9 @@ class rest_put_service_action_queue(rest_put_handler):
         ]
         data = """
 - <property>=<value> pairs.
-- **svcname**
+- **svc_id**
 . The service targeted by the action. The action is run using the
-  svcmgr opensvc agent command on the node specified by **nodename**.
+  svcmgr opensvc agent command on the node specified by **node_id**.
 - **action**
 . The opensvc agent action to execute.
 - **module**
@@ -856,37 +886,37 @@ class rest_put_service_action_queue(rest_put_handler):
 
 Each action has specific property requirements:
 
-- ``compliance_check``:green requires **nodename**, **module** or **moduleset**, optionally
-  **svcname**
-- ``compliance_fix``:green requires **nodename**, **module** or **moduleset**, optionally
-  **svcname**
-- ``start``:green requires **nodename**, **svcname**, optionally **rid**
-- ``stop``:green requires **nodename**, **svcname**, optionally **rid**
-- ``restart``:green requires **nodename**, **svcname**, optionally **rid**
-- ``syncall``:green requires **nodename**, **svcname**, optionally **rid**
-- ``syncnodes``:green requires **nodename**, **svcname**, optionally **rid**
-- ``syncdrp``:green requires **nodename**, **svcname**, optionally **rid**
-- ``enable``:green requires **nodename**, **svcname**, optionally **rid**
-- ``disable``:green requires **nodename**, **svcname**, optionally **rid**
-- ``freeze``:green requires **nodename**, **svcname**, optionally **rid**
-- ``thaw``:green requires **nodename**, **svcname**, optionally **rid**
-- ``pushasset``:green requires **nodename**
-- ``pushdisks``:green requires **nodename**
-- ``push``:green requires **nodename**
-- ``pushpkg``:green requires **nodename**
-- ``pushpatch``:green requires **nodename**
-- ``pushstats``:green requires **nodename**
-- ``checks``:green requires **nodename**
-- ``sysreport``:green requires **nodename**
-- ``updatecomp``:green requires **nodename**
-- ``updatepkg``:green requires **nodename**
-- ``rotate_root_pw``:green requires **nodename**
-- ``scanscsi``:green requires **nodename**
-- ``reboot``:green requires **nodename**
-- ``schedule_reboot``:green requires **nodename**
-- ``unschedule_reboot``:green requires **nodename**
-- ``shutdown``:green requires **nodename**
-- ``wol``:green requires **nodename**
+- ``compliance_check``:green requires **node_id**, **module** or **moduleset**, optionally
+  **svc_id**
+- ``compliance_fix``:green requires **node_id**, **module** or **moduleset**, optionally
+  **svc_id**
+- ``start``:green requires **node_id**, **svc_id**, optionally **rid**
+- ``stop``:green requires **node_id**, **svc_id**, optionally **rid**
+- ``restart``:green requires **node_id**, **svc_id**, optionally **rid**
+- ``syncall``:green requires **node_id**, **svc_id**, optionally **rid**
+- ``syncnodes``:green requires **node_id**, **svc_id**, optionally **rid**
+- ``syncdrp``:green requires **node_id**, **svc_id**, optionally **rid**
+- ``enable``:green requires **node_id**, **svc_id**, optionally **rid**
+- ``disable``:green requires **node_id**, **svc_id**, optionally **rid**
+- ``freeze``:green requires **node_id**, **svc_id**, optionally **rid**
+- ``thaw``:green requires **node_id**, **svc_id**, optionally **rid**
+- ``pushasset``:green requires **node_id**
+- ``pushdisks``:green requires **node_id**
+- ``push``:green requires **node_id**
+- ``pushpkg``:green requires **node_id**
+- ``pushpatch``:green requires **node_id**
+- ``pushstats``:green requires **node_id**
+- ``checks``:green requires **node_id**
+- ``sysreport``:green requires **node_id**
+- ``updatecomp``:green requires **node_id**
+- ``updatepkg``:green requires **node_id**
+- ``rotate_root_pw``:green requires **node_id**
+- ``scanscsi``:green requires **node_id**
+- ``reboot``:green requires **node_id**
+- ``schedule_reboot``:green requires **node_id**
+- ``unschedule_reboot``:green requires **node_id**
+- ``shutdown``:green requires **node_id**
+- ``wol``:green requires **node_id**
 """
         examples = [
           "# curl -u %(email)s -o- -X PUT -d action=push https://%(collector)s/init/rest/api/services/test/queue_action",
@@ -894,19 +924,20 @@ Each action has specific property requirements:
 
         rest_put_handler.__init__(
           self,
-          path="/services/<svcname>/queue_action",
+          path="/services/<id>/queue_action",
           desc=desc,
           data=data,
           examples=examples
         )
 
-    def handler(self, svcname, **vars):
-        q = db.svcmon.mon_svcname == svcname
-        rows = db(q).select(db.svcmon.mon_nodname)
+    def handler(self, svc_id, **vars):
+        svc_id = get_svc_id(svc_id)
+        q = db.svcmon.svc_id == svc_id
+        rows = db(q).select(db.svcmon.node_id)
         n = 0
-        vars["svcname"] = svcname
+        vars["svc_id"] = svc_id
         for row in rows:
-            vars["nodename"] = row.mon_nodname
+            vars["node_id"] = row.node_id
             n += json_action_one(vars)
         if n > 0:
             action_q_event()

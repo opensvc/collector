@@ -261,33 +261,32 @@ def workflows_pending_tiers_action_load():
 # deprecated in favor of the rest api
 #
 @auth.requires_login()
-def _get_node_portnames(nodename):
+def _get_node_portnames(node_id):
     q = db.nodes.team_responsible.belongs(user_groups())
-    q &= db.node_hba.nodename == db.nodes.nodename
-    q &= db.node_hba.nodename == nodename
+    q &= db.node_hba.node_id == node_id
     rows = db(q).select(db.node_hba.hba_id,
                         orderby=db.node_hba.hba_id,
                         groupby=db.node_hba.hba_id)
     return [r.hba_id for r in rows]
 
 @service.json
-def json_node_portnames(nodename):
-    return _get_node_portnames(nodename)
+def json_node_portnames(node_id):
+    return _get_node_portnames(node_id)
 
 @auth.requires_login()
-def _get_service_portnames(svcname, nodename=None, loc_city=None):
+def _get_service_portnames(svc_id, node_id=None, loc_city=None):
     q = db.apps_responsibles.group_id.belongs(user_group_ids())
     q &= db.apps_responsibles.app_id == db.apps.id
     q &= db.apps.app == db.services.svc_app
-    q &= db.svcmon.mon_svcname == db.services.svc_name
-    q &= db.services.svc_name == svcname
-    q &= db.node_hba.nodename == db.svcmon.mon_nodname
+    q &= db.svcmon.svc_id == db.services.svc_id
+    q &= db.services.svc_id == svc_id
+    q &= db.node_hba.node_id == db.svcmon.node_id
 
-    if nodename is not None:
-        q &= db.node_hba.nodename == nodename
+    if node_id is not None:
+        q &= db.node_hba.node_id == node_id
 
     if loc_city is not None:
-        q &= db.svcmon.mon_nodname == db.nodes.nodename
+        q &= db.svcmon.node_id == db.nodes.node_id
         q &= db.nodes.loc_city == loc_city
 
     rows = db(q).select(db.node_hba.hba_id,
@@ -297,51 +296,51 @@ def _get_service_portnames(svcname, nodename=None, loc_city=None):
     return [r.hba_id for r in rows]
 
 @service.json
-def json_service_portnames(svcname, nodename=None, loc_city=None):
-    return _get_service_portnames(svcname, nodename, loc_city)
+def json_service_portnames(svc_id, node_id=None, loc_city=None):
+    return _get_service_portnames(svc_id, node_id, loc_city)
 
 @auth.requires_login()
-def _get_service_nodes(svcname, loc_city=None):
+def _get_service_nodes(svc_id, loc_city=None):
     q = db.apps_responsibles.group_id.belongs(user_group_ids())
     q &= db.apps_responsibles.app_id == db.apps.id
     q &= db.apps.app == db.services.svc_app
-    q &= db.svcmon.mon_svcname == db.services.svc_name
-    q &= db.svcmon.mon_svcname == svcname
+    q &= db.svcmon.svc_id == db.services.svc_id
+    q &= db.svcmon.svc_id == svc_id
 
     if loc_city is not None:
-        q &= db.svcmon.mon_nodname == db.nodes.nodename
+        q &= db.svcmon.node_id == db.nodes.node_id
         q &= db.nodes.loc_city == loc_city
 
-    rows = db(q).select(db.svcmon.mon_nodname,
-                        orderby=db.svcmon.mon_nodname,
-                        groupby=db.svcmon.mon_nodname)
-    return [r.mon_nodname for r in rows]
+    rows = db(q).select(db.svcmon.node_id,
+                        orderby=db.svcmon.node_id,
+                        groupby=db.svcmon.node_id)
+    return [r.node_id for r in rows]
 
 @service.json
-def json_service_nodes(svcname, loc_city=None):
-    return _get_service_nodes(svcname, loc_city)
+def json_service_nodes(svc_id, loc_city=None):
+    return _get_service_nodes(svc_id, loc_city)
 
 @auth.requires_login()
-def _get_service_loc_city(svcname):
+def _get_service_loc_city(svc_id):
     q = db.apps_responsibles.group_id.belongs(user_group_ids())
     q &= db.apps_responsibles.app_id == db.apps.id
     q &= db.apps.app == db.services.svc_app
-    q &= db.svcmon.mon_svcname == db.services.svc_name
-    q &= db.svcmon.mon_svcname == svcname
-    q &= db.svcmon.mon_nodname == db.nodes.nodename
+    q &= db.svcmon.svc_id == db.services.svc_id
+    q &= db.svcmon.svc_id == svc_id
+    q &= db.svcmon.node_id == db.nodes.node_id
     rows = db(q).select(db.nodes.loc_city,
                         orderby=db.nodes.loc_city,
                         groupby=db.nodes.loc_city)
     return [r.loc_city for r in rows]
 
 @service.json
-def json_service_loc_city(svcname):
-    return _get_service_loc_city(svcname)
+def json_service_loc_city(svc_id):
+    return _get_service_loc_city(svc_id)
 
 @auth.requires_login()
-def _get_node_generic(nodename, col):
+def _get_node_generic(node_id, col):
     q = db.nodes.team_responsible.belongs(user_groups())
-    q &= db.nodes.nodename == nodename
+    q &= db.nodes.node_id == node_id
     node = db(q).select().first()
     if node is not None:
         if node[col] is None:
@@ -349,7 +348,7 @@ def _get_node_generic(nodename, col):
         else:
             return node[col]
     q = db.nodes.team_responsible.belongs(user_groups())
-    q &= db.nodes.nodename == nodename.split('.')[0]
+    q &= db.nodes.node_id == node_id
     node = db(q).select().first()
     if node is not None:
         if node[col] is None:
@@ -359,32 +358,32 @@ def _get_node_generic(nodename, col):
     return T("node not found")
 
 @service.json
-def json_node_sec_zone(nodename):
-    val = _get_node_generic(nodename, "sec_zone")
+def json_node_sec_zone(node_id):
+    val = _get_node_generic(node_id, "sec_zone")
     if val is None:
         val = ""
     return val
 
 @service.json
-def json_node_environnement(nodename):
-    return _get_node_generic(nodename, "environnement")
+def json_node_environnement(node_id):
+    return _get_node_generic(node_id, "environnement")
 
 @service.json
-def json_node_os_concat(nodename):
-    return _get_node_generic(nodename, "os_concat")
+def json_node_os_concat(node_id):
+    return _get_node_generic(node_id, "os_concat")
 
 @service.json
-def json_node_loc_city(nodename):
-    return _get_node_generic(nodename, "loc_city")
+def json_node_loc_city(node_id):
+    return _get_node_generic(node_id, "loc_city")
 
 @service.json
-def json_node_team_responsible(nodename):
-    return _get_node_generic(nodename, "team_responsible")
+def json_node_team_responsible(node_id):
+    return _get_node_generic(node_id, "team_responsible")
 
 @service.json
-def json_node_macs(nodename):
-    q = db.nodes.nodename.belongs((nodename, nodename.split('.')[0]))
-    q &= db.node_ip.nodename == db.nodes.nodename
+def json_node_macs(node_id):
+    q = db.nodes.node_id == node_id
+    q &= db.node_ip.node_id == db.nodes.node_id
     q &= ~db.node_ip.intf.belongs(["lo", "lo0"])
     q &= ~db.node_ip.intf.like("veth%")
     q &= ~db.node_ip.intf.like("docker%")
@@ -398,7 +397,7 @@ def json_node_macs(nodename):
 
 @service.json
 def json_mac_ipv4(mac):
-    q = db.node_ip.nodename == db.nodes.nodename
+    q = db.node_ip.node_id == db.nodes.node_id
     q &= db.node_ip.mac == mac
     q &= db.node_ip.type == "ipv4"
     row = db(q).select(db.node_ip.addr,

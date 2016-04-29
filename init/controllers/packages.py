@@ -5,6 +5,7 @@ class table_packages(HtmlTable):
         HtmlTable.__init__(self, id, func, innerhtml)
         self.cols = ['nodename']
         self.cols += ['id',
+                      'node_id',
                       'pkg_name',
                       'pkg_version',
                       'pkg_arch',
@@ -26,9 +27,9 @@ def ajax_packages_col_values():
     t = table_packages(table_id, 'ajax_packages')
     col = request.args[0]
     o = db[t.colprops[col].table][col]
-    q = db.packages.pkg_nodename==db.nodes.nodename
+    q = db.packages.node_id==db.nodes.node_id
     q = q_filter(q, app_field=db.nodes.app)
-    q = apply_filters(q, db.packages.pkg_nodename, None)
+    q = apply_filters_id(q, node_field=db.nodes.node_id)
     j = db.packages.pkg_sig == db.pkg_sig_provider.sig_id
     l = db.pkg_sig_provider.on(j)
     for f in t.cols:
@@ -40,14 +41,15 @@ def ajax_packages_col_values():
 def ajax_packages():
     table_id = request.vars.table_id
     t = table_packages(table_id, 'ajax_packages')
-    o = db.packages.pkg_nodename
+    o = db.nodes.nodename
     o |= db.packages.pkg_name
     o |= db.packages.pkg_arch
+    o |= db.nodes.app
 
     q = db.packages.id>0
-    q &= db.packages.pkg_nodename==db.nodes.nodename
+    q &= db.packages.node_id==db.nodes.node_id
     q = q_filter(q, app_field=db.nodes.app)
-    q = apply_filters(q, db.packages.pkg_nodename, None)
+    q = apply_filters_id(q, node_field=db.nodes.node_id)
     j = db.packages.pkg_sig == db.pkg_sig_provider.sig_id
     l = db.pkg_sig_provider.on(j)
     for f in t.cols:

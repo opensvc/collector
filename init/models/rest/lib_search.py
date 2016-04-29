@@ -4,6 +4,11 @@ def lib_search_form(pattern):
     t = datetime.datetime.now()
     o = db.forms.form_name
     q = db.forms.form_name.like(pattern)
+    try:
+        id = int(pattern.strip("%"))
+        q |= db.forms.id == id
+    except:
+        pass
     q &= db.forms.id == db.forms_team_publication.form_id
     q &= db.forms_team_publication.group_id.belongs(user_group_ids())
     n = db(q).count()
@@ -24,6 +29,11 @@ def lib_search_fset(pattern):
     t = datetime.datetime.now()
     o = db.gen_filtersets.fset_name
     q = _where(None, 'gen_filtersets', pattern, 'fset_name')
+    try:
+        id = int(pattern.strip("%"))
+        q |= db.gen_filtersets.id == id
+    except:
+        pass
     n = db(q).count()
     data = db(q).select(db.gen_filtersets.id,
                         o,
@@ -39,10 +49,10 @@ def lib_search_fset(pattern):
 
 def lib_search_disk(pattern):
     t = datetime.datetime.now()
-    o = db.b_disk_app.disk_id
-    q = _where(None, 'b_disk_app', pattern, 'disk_id')
-    q = q_filter(q, app_field=db.b_disk_app.app)
-    q = apply_filters(q, db.b_disk_app.disk_nodename, None)
+    o = db.svcdisks.disk_id
+    q = _where(None, 'svcdisks', pattern, 'disk_id')
+    q = q_filter(q, node_field=db.svcdisks.node_id)
+    q = apply_filters_id(q, db.svcdisks.node_id)
     n = len(db(q).select(o, groupby=o))
     data = db(q).select(o,
                         orderby=o,
@@ -60,6 +70,11 @@ def lib_search_app(pattern):
     t = datetime.datetime.now()
     o = db.apps.app
     q = db.apps.app.like(pattern)
+    try:
+        id = int(pattern.strip("%"))
+        q |= db.apps.id == id
+    except:
+        pass
     if not "Manager" in user_groups():
         q &= db.apps.id.belongs(user_app_ids())
     n = db(q).count()
@@ -73,12 +88,13 @@ def lib_search_app(pattern):
 
 def lib_search_service(pattern):
     t = datetime.datetime.now()
-    o = db.services.svc_name
-    q = _where(None, 'services', pattern, 'svc_name')
+    o = db.services.svcname
+    q = _where(None, 'services', pattern, 'svcname')
+    q |= _where(None, 'services', pattern, 'svc_id')
     q = q_filter(q, app_field=db.services.svc_app)
-    q = apply_filters(q, db.services.svc_name, None)
+    q = apply_filters_id(q, db.services.svc_id, None)
     n = db(q).count()
-    data = db(q).select(o, orderby=o, limitby=(0,max_search_result),).as_list()
+    data = db(q).select(o, db.services.svc_id, db.services.svc_app, orderby=o, limitby=(0,max_search_result),).as_list()
     t = datetime.datetime.now() - t
     return {
       "total": n,
@@ -91,8 +107,8 @@ def lib_search_vm(pattern):
     o = db.svcmon.mon_vmname
     q = _where(None, 'svcmon', pattern, 'mon_vmname')
     q = _where(q, 'svcmon', "!empty", 'mon_vmname')
-    q = q_filter(q, svc_field=db.svcmon.mon_svcname)
-    q = apply_filters(q, db.svcmon.mon_svcname, None)
+    q = q_filter(q, svc_field=db.svcmon.svc_id)
+    q = apply_filters_id(q, db.svcmon.svc_id, None)
     n = db(q).count()
     data = db(q).select(o,
                         orderby=o,
@@ -109,12 +125,15 @@ def lib_search_ip(pattern):
     t = datetime.datetime.now()
     o = db.node_ip.addr
     q = _where(None, 'node_ip', pattern, 'addr')
-    q = q_filter(q, node_field=db.node_ip.nodename)
-    q = apply_filters(q, db.node_ip.nodename, None)
+    q &= db.node_ip.node_id == db.nodes.id
+    q = q_filter(q, app_field=db.nodes.app)
+    q = apply_filters_id(q, db.node_ip.node_id, None)
 
     n = db(q).count()
     data = db(q).select(o,
-                        db.node_ip.nodename,
+                        db.nodes.node_id,
+                        db.nodes.nodename,
+                        db.nodes.app,
                         orderby=o,
                         limitby=(0,max_search_result),
     ).as_list()
@@ -130,10 +149,13 @@ def lib_search_node(pattern):
     t = datetime.datetime.now()
     o = db.nodes.nodename
     q = _where(None, 'nodes', pattern, 'nodename')
+    q |= _where(None, 'nodes', pattern, 'node_id')
     q = q_filter(q, app_field=db.nodes.app)
-    q = apply_filters(q, db.nodes.nodename, None)
+    q = apply_filters_id(q, db.nodes.node_id, None)
     n = db(q).count()
     data = db(q).select(o,
+                        db.nodes.node_id,
+                        db.nodes.app,
                         orderby=o,
                         limitby=(0,max_search_result),
     ).as_list()
@@ -148,6 +170,11 @@ def lib_search_user(pattern):
     t = datetime.datetime.now()
     o = db.v_users.fullname
     q = _where(None, 'v_users', pattern, 'fullname')
+    try:
+        id = int(pattern.strip("%"))
+        q |= db.v_users.id == id
+    except:
+        pass
     if "Manager" not in user_groups():
         q &= db.v_users.id == db.auth_membership.user_id
         q &= db.auth_membership.group_id.belongs(user_group_ids())
@@ -177,6 +204,11 @@ def lib_search_group(pattern):
     o = db.auth_group.role
     q = db.auth_group.privilege == 'F'
     q = _where(q, 'auth_group', pattern, 'role')
+    try:
+        id = int(pattern.strip("%"))
+        q |= db.auth_group.id == id
+    except:
+        pass
     q = q_filter(q, group_field=db.auth_group.role)
     n = db(q).count()
     data = db(q).select(o,

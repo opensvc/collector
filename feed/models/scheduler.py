@@ -3,36 +3,12 @@
 import datetime
 import hashlib
 import os
+import copy
 
-def is_exe(fpath):
-    """Returns True if file path is executable, False otherwize
-    does not follow symlink
-    """
-    return os.path.exists(fpath) and os.access(fpath, os.X_OK)
-
-def which(program):
-    def ext_candidates(fpath):
-        yield fpath
-        for ext in os.environ.get("PATHEXT", "").split(os.pathsep):
-            yield fpath + ext
-
-    fpath, fname = os.path.split(program)
-    if fpath:
-        if os.path.isfile(program) and is_exe(program):
-            return program
-    else:
-        for path in os.environ["PATH"].split(os.pathsep):
-            exe_file = os.path.join(path, program)
-            for candidate in ext_candidates(exe_file):
-                if is_exe(candidate):
-                    return candidate
-
-    return None
-
-def send_sysreport_delete(deleted, sysreport_d, nodename):
+def send_sysreport_delete(deleted, sysreport_d, node_id):
     if len(deleted) == 0:
         return False
-    node_d = os.path.join(sysreport_d, nodename)
+    node_d = os.path.join(sysreport_d, node_id)
     for fpath in deleted:
         if fpath.startswith("/"):
             fpath = "file" + fpath
@@ -41,7 +17,7 @@ def send_sysreport_delete(deleted, sysreport_d, nodename):
         os.unlink(fpath)
     return True
 
-def send_sysreport_archive(fname, binary, sysreport_d, nodename):
+def send_sysreport_archive(fname, binary, sysreport_d, node_id):
     if fname == "":
         return False
 
@@ -88,6 +64,7 @@ def send_sysreport_archive(fname, binary, sysreport_d, nodename):
              'type': '0'
             }
             """
+            member.name = node_id+member.name[member.name.index("/"):]
             mi = member.get_info("utf-8", "ignore")
             mp = os.path.join(sysreport_d, mi['name'])
             if os.path.exists(mp):
@@ -130,9 +107,9 @@ def git_commit(git_d):
 
     return 0
 
-def task_send_sysreport(need_commit, deleted, nodename):
+def task_send_sysreport(need_commit, deleted, node_id):
     sysreport_d = os.path.join(os.path.dirname(__file__), "..", "..", "..", "init", 'uploads', 'sysreport')
-    git_d = os.path.join(sysreport_d, nodename, ".git")
+    git_d = os.path.join(sysreport_d, node_id, ".git")
 
     if not need_commit:
         print "commit not needed"
@@ -142,11 +119,14 @@ def task_send_sysreport(need_commit, deleted, nodename):
     return 0
 
 def _begin_action(vars, vals, auth):
-    i = generic_insert("SVCactions", vars, vals, nodename=auth[1], get_last_id=True)
-    row = db(db.SVCactions.id==i).select().first()
+    node_id = auth_to_node_id(auth)
+    vars, vals = replace_nodename_in_data(vars, vals, auth, fieldname="hostname")
+    vars, vals = replace_svcname_in_data(vars, vals, auth, fieldname="svcname")
+    i = generic_insert("svcactions", vars, vals, node_id=node_id, get_last_id=True)
+    row = db(db.svcactions.id==i).select().first()
     h = {
-      'svcname': row.svcname,
-      'hostname': row.hostname,
+      'svc_id': row.svc_id,
+      'node_id': row.node_id,
       'action': row.action,
       'begin': row.begin.strftime("%Y-%m-%d %H:%M:%S"),
       'id': row.id,
@@ -157,12 +137,10 @@ def _begin_action(vars, vals, auth):
                 }), schedule=False)
     if 'cron' not in h or h['cron'] == '0':
         _log("service.action",
-             "action '%(a)s' on %(svc)s@%(node)s",
-             dict(a=h['action'],
-                  svc=h['svcname'],
-                  node=h['hostname']),
-             svcname=h['svcname'],
-             nodename=h['hostname'])
+             "initialized service action %(a)s",
+             dict(a=h['action']),
+             svc_id=row.svc_id,
+             node_id=node_id)
     return 0
 
 def _action_wrapper(a, vars, vals, auth):
@@ -177,7 +155,12 @@ def _end_action(vars, vals, auth):
     for a, b in zip(vars, vals):
         h[a] = b
 
-    node = db(db.nodes.nodename==auth[1]).select().first()
+    vars, vals = replace_nodename_in_data(vars, vals, auth)
+    node_id = auth_to_node_id(auth)
+    svc_id = node_svc_id(node_id, h["svcname"])
+    vars, vals = replace_svcname_in_data(vars, vals, auth)
+
+    node = db(db.nodes.node_id==node_id).select().first()
     if node:
         tz = node.tz
         # convert to local time and strip microseconds
@@ -188,27 +171,26 @@ def _end_action(vars, vals, auth):
         h['begin'] = repr(str(h['begin'].strip("'").split('.')[0]))
 
     for a, b in h.items():
-        if a not in ['hostname', 'svcname', 'begin', 'action', 'hostid']:
+        if a not in ['hostname', 'node_id', 'svc_id', 'svcname', 'begin', 'action', 'hostid']:
             upd.append("%s=%s" % (a, b))
 
-    sql="""select id from SVCactions where hostname=%s and svcname=%s and begin=%s and action=%s""" %\
-        (h['hostname'], h['svcname'], h['begin'], h['action'])
+    sql="""select id from svcactions where node_id="%s" and svc_id="%s" and begin=%s and action=%s""" %\
+        (node_id, svc_id, h['begin'], h['action'])
     ids = map(lambda x: x[0], db.executesql(sql))
-    print(sql, ids)
     if len(ids) == 0:
         return
 
-    sql="""update SVCactions set %s where id in (%s)""" %\
+    sql="""update svcactions set %s where id in (%s)""" %\
         (','.join(upd), ','.join(map(str, ids)))
+    print(sql)
     db.executesql(sql)
     db.commit()
 
-    sql = """select * from SVCactions where id in (%s)""" %\
+    sql = """select * from svcactions where id in (%s)""" %\
           ','.join(map(str, ids))
     h = db.executesql(sql, as_dict=True)[0]
     h['begin'] = h['begin'].strftime("%Y-%m-%d %H:%M:%S")
     h['end'] = h['end'].strftime("%Y-%m-%d %H:%M:%S")
-    h['id'] = h['ID']
 
     _websocket_send(event_msg({
              'event': 'end_action',
@@ -217,58 +199,55 @@ def _end_action(vars, vals, auth):
 
     if h['action'] in ('start', 'startcontainer') and \
        h['status'] == 'ok':
-        update_virtual_asset(h['hostname'], h['svcname'])
+        update_virtual_asset(node_id, svc_id)
     if h['status'] == 'err':
-        update_action_errors(h['svcname'], h['hostname'])
-        update_dash_action_errors(h['svcname'], h['hostname'])
+        update_action_errors(svc_id, node_id)
+        update_dash_action_errors(svc_id, node_id)
         _log("service.action",
-             "action '%(a)s' error on %(svc)s@%(node)s",
-             dict(a=h['action'],
-                  svc=h['svcname'],
-                  node=h['hostname']),
-             svcname=h['svcname'],
-             nodename=h['hostname'],
+             "action '%(a)s' error",
+             dict(a=h['action']),
+             svc_id=svc_id,
+             node_id=node_id,
              level="error")
     return 0
 
-def update_action_errors(svcname, nodename):
-    svcname = svcname.strip("'")
-    nodename = nodename.strip("'")
-    sql = """select count(id) from SVCactions a
+def update_action_errors(svc_id, node_id):
+    sql = """select count(id) from svcactions a
              where
-               a.svcname = "%(svcname)s" and
-               a.hostname = "%(nodename)s" and
+               a.svc_id = "%(svc_id)s" and
+               a.node_id = "%(node_id)s" and
                a.status = "err" and
                ((a.ack <> 1) or isnull(a.ack)) and
                a.begin > date_sub(now(), interval 2 day)
-    """%dict(svcname=svcname, nodename=nodename)
+    """%dict(svc_id=svc_id, node_id=node_id)
     err = db.executesql(sql)[0][0]
 
     if err == 0:
          sql = """delete from b_action_errors
                   where
-                    svcname = "%(svcname)s" and
-                    nodename = "%(nodename)s"
-         """%dict(svcname=svcname, nodename=nodename)
+                    svc_id = "%(svc_id)s" and
+                    node_id = "%(node_id)s"
+         """%dict(svc_id=svc_id, node_id=node_id)
     else:
         sql = """insert into b_action_errors
                  set
-                   svcname="%(svcname)s",
-                   nodename="%(nodename)s",
+                   svc_id="%(svc_id)s",
+                   node_id="%(node_id)s",
                    err=%(err)d
                  on duplicate key update
                    err=%(err)d
-              """%dict(svcname=svcname, nodename=nodename, err=err)
+              """%dict(svc_id=svc_id, node_id=node_id, err=err)
     db.executesql(sql)
     db.commit()
 
-def update_virtual_asset(nodename, svcname):
-    q = db.svcmon.mon_svcname == svcname
-    q &= db.svcmon.mon_nodname == nodename
-    svc = db(q).select(db.svcmon.mon_vmname).first()
+def update_virtual_asset(node_id, svc_id):
+    q = db.svcmon.svc_id == svc_id
+    q &= db.svcmon.node_id == node_id
+    q &= db.svcmon.svc_id == db.services.svc_id
+    svc = db(q).select(db.svcmon.mon_vmname, db.services.svc_app).first()
     if svc is None:
         return
-    q = db.nodes.nodename == nodename
+    q = db.nodes.node_id == node_id
     node = db(q).select(cacheable=True).first()
     if node is None:
         return
@@ -280,29 +259,37 @@ def update_virtual_asset(nodename, svcname):
     for f in fields:
         sql += "%s='%s',"%(f, node[f])
     sql = sql.rstrip(',')
-    sql += "where nodename='%s'"%svc.mon_vmname
+    sql += "where nodename='%s'"%svc.svcmon.mon_vmname
+    sql += " and app in ('%(app1)s', '%(app2)s')" % dict(app1=svc.services.svc_app, app2=node.app)
     db.executesql(sql)
 
 def _update_service(vars, vals, auth):
-    if 'svc_hostid' not in vars:
-        return
     if 'updated' not in vars:
         vars += ['updated']
         vals += [datetime.datetime.now()]
+    node_id = auth_to_node_id(auth)
     h = {}
     for a,b in zip(vars, vals):
         h[a] = b
+    if "svc_name" in h:
+        # agent compat
+        h["svcname"] = h["svc_name"]
+        del(h["svc_name"])
+    svcname = h["svcname"].strip("'")
+    svc_id = node_svc_id(node_id, svcname)
+    h["svc_id"] = svc_id
     if 'svc_app' in h:
-        if h['svc_app'] is None or h['svc_app'] == "" or not common_responsible(nodename=auth[1], app=h['svc_app'].strip("'")):
-            new_app = db(db.nodes.nodename==auth[1]).select(db.nodes.app).first().app
+        if h['svc_app'] is None or h['svc_app'] == "" or not common_responsible(node_id=node_id, app=h['svc_app'].strip("'")):
+            q = db.nodes.node_id == node_id
+            new_app = db(q).select().first().app
             _log("service.change",
                  "advertized app %(app)s remapped to %(new_app)s",
                  dict(
                    app=h['svc_app'].strip("'"),
                    new_app=new_app,
                  ),
-                 svcname=h['svc_name'].strip("'"),
-                 nodename=auth[1],
+                 svc_id=svc_id,
+                 node_id=node_id,
                  level="warning")
             h['svc_app'] = new_app
     if 'svc_version' in h:
@@ -310,33 +297,33 @@ def _update_service(vars, vals, auth):
     if 'svc_drnoaction' in h:
         if h['svc_drnoaction'] == 'False': h['svc_drnoaction'] = 'F'
         elif h['svc_drnoaction'] == 'True': h['svc_drnoaction'] = 'T'
-    vars = []
-    vals = []
-    for var, val in h.items():
-        if var not in ('svc_vmname', 'svc_guestos', 'svc_vcpus', 'svc_vmem', 'svc_containerpath'):
-            vars.append(var)
-            vals.append(val)
-    generic_insert('services', vars, vals)
+    for var in ('svc_vmname', 'svc_guestos', 'svc_vcpus', 'svc_vmem', 'svc_containerpath'):
+       if var in h:
+            del(h[var])
+    generic_insert('services', h.keys(), h.values())
     db.commit()
     _websocket_send(event_msg({
                      'event': 'services_change',
-                     'data': {'a': 'b'}
+                     'data': {'svc_id': svc_id}
                     }))
 
-    update_dash_service_not_updated(h['svc_name'].strip("'"))
-    nodename, vmname, vmtype = translate_encap_nodename(h['svc_name'], auth[1])
-    if nodename is not None:
+    update_dash_service_not_updated(svc_id)
+    _node_id, vmname, vmtype = translate_encap_nodename(svc_id, node_id)
+    if _node_id is not None and node_id != _node_id:
         return
+    h = {}
+    for a,b in zip(vars, vals):
+        h[a] = b
     if 'svc_vmname' in h:
-        vars = ['mon_svcname',
-                'mon_nodname',
+        vars = ['svc_id',
+                'node_id',
                 'mon_vmname',
                 'mon_guestos',
                 'mon_vcpus',
                 'mon_vmem',
                 'mon_containerpath']
-        vals = [h['svc_name'],
-                auth[1],
+        vals = [svc_id,
+                _node_id,
                 h['svc_vmname'],
                 h['svc_guestos'] if 'svc_guestos' in h else '',
                 h['svc_vcpus'] if 'svc_vcpus' in h else '0',
@@ -345,9 +332,8 @@ def _update_service(vars, vals, auth):
                ]
         generic_insert('svcmon', vars, vals)
 
-def _push_checks(vars, vals):
+def _push_checks(vars, vals, auth):
     """
-        chk_nodename
         chk_svcname
         chk_type
         chk_instance
@@ -356,42 +342,45 @@ def _push_checks(vars, vals):
     """
 
     n = len(vals)
+    node_id = auth_to_node_id(auth)
+    vars, vals = replace_nodename_in_data(vars, vals, auth, fieldname="chk_nodename")
+    vars, vals = replace_svcnames_in_data(vars, vals, auth, fieldname="chk_svcname")
 
     # purge old checks
     if n > 0:
-        nodename = vals[0][0]
         where = ""
         for v in vals:
              where += """ and not (chk_type="%(chk_type)s" and chk_instance="%(chk_instance)s") """%dict(chk_type=v[2], chk_instance=v[3])
         sql = """delete from checks_live
                  where
-                   chk_nodename="%(nodename)s" and
+                   node_id="%(node_id)s" and
                    chk_type not in ("netdev_err", "save")
                    %(where)s
-              """%dict(nodename=nodename, where=where)
+              """%dict(node_id=node_id, where=where)
         db.executesql(sql)
         db.commit()
 
         # for checks coming from vservice, update the svcname field
-        svcname = vals[0][1]
-        if svcname == "":
-            q = db.svcmon.mon_vmname == nodename
-            row = db(q).select(db.svcmon.mon_svcname, limitby=(0,1)).first()
+        svc_id_idx = vars.index("svc_id")
+        svc_id = vals[0][svc_id_idx]
+        if svc_id == "":
+            q = db.svcmon.mon_vmname == auth[1]
+            row = db(q).select(db.svcmon.svc_id, limitby=(0,1)).first()
             if row is not None:
-                svcname = row.mon_svcname
+                svc_id = row.svc_id
                 for i, val in enumerate(vals):
-                    vals[i][1] = svcname
+                    vals[i][svc_id_idx] = svc_id
     else:
         return
 
-     # insert new checks
+    # insert new checks
     while len(vals) > 100:
         generic_insert('checks_live', vars, vals[:100])
         vals = vals[100:]
     generic_insert('checks_live', vars, vals)
     db.commit()
 
-    q = db.checks_live.chk_nodename==nodename
+    q = db.checks_live.node_id == node_id
     q &= db.checks_live.chk_type != "netdev_err"
     q &= db.checks_live.chk_type != "save"
     rows = db(q).select()
@@ -400,17 +389,18 @@ def _push_checks(vars, vals):
 
     # update dashboard alerts
     if n > 0:
-        update_dash_checks(nodename)
+        update_dash_checks(node_id)
 
         _websocket_send(event_msg({
                      'event': 'checks_change',
                      'data': {
-                       'chk_nodename': nodename,
+                       'node_id': node_id,
                      }
                     }))
 
 def _insert_generic(data, auth):
     now = datetime.datetime.now()
+    node_id = auth_to_node_id(auth)
     if type(data) != dict:
         return
     if 'hba' in data:
@@ -419,8 +409,9 @@ def _insert_generic(data, auth):
             vars.append('updated')
             for i, val in enumerate(vals):
                 vals[i].append(now)
-        sql = """delete from node_hba where nodename="%s" """%auth[1]
+        sql = """delete from node_hba where node_id="%s" """%node_id
         db.executesql(sql)
+        vars, vals = replace_nodename_in_data(vars, vals, auth)
         generic_insert('node_hba', vars, vals)
         _websocket_send(event_msg({
                  'event': 'node_hba_change',
@@ -449,17 +440,18 @@ def _insert_generic(data, auth):
                       auth[1],
                       str(datetime.datetime.now())
                     ]]
+                    _vars, _vals = replace_nodename_in_data(_vars, _vals, auth)
                     generic_insert('switches', _vars, _vals)
-        if 'nodename' not in vars:
-            vars.append('nodename')
+        if 'nodename' not in vars and 'node_id' not in vars:
+            vars.append('node_id')
             for i, val in enumerate(vals):
-                vals[i].append(auth[1])
-        sql = """delete from stor_zone where nodename="%s" """%auth[1]
+                vals[i].append(node_id)
+        sql = """delete from stor_zone where node_id="%s" """%node_id
         db.executesql(sql)
         generic_insert('stor_zone', vars, vals)
         _websocket_send(event_msg({
                  'event': 'stor_zone_change',
-                 'data': {'f': 'b'}
+                 'data': {'node_id': node_id}
                 }))
     if 'lan' in data:
         vars, vals = data['lan']
@@ -467,10 +459,7 @@ def _insert_generic(data, auth):
             vars.append('updated')
             for i, val in enumerate(vals):
                 vals[i].append(now)
-        if 'nodename' not in vars:
-            vars.append('nodename')
-            for i, val in enumerate(vals):
-                vals[i].append(auth[1])
+        vars, vals = replace_nodename_in_data(vars, vals, auth)
 
         # ip addr returns 802.11q intf names with a @<base intf> suffix. remove it.
         idx_intf = vars.index("intf")
@@ -506,12 +495,12 @@ def _insert_generic(data, auth):
             if val[i] in ip_blist:
                 continue
             _vals.append(val)
-        sql = """delete from node_ip where nodename="%s" """%auth[1]
+        sql = """delete from node_ip where node_id="%s" """%node_id
         db.executesql(sql)
         generic_insert('node_ip', vars, _vals)
         _websocket_send(event_msg({
                  'event': 'node_ip_change',
-                 'data': {'f': 'b'}
+                 'data': {'node_id': node_id}
                 }))
     if 'uids' in data:
         vars, vals = data['uids']
@@ -519,17 +508,14 @@ def _insert_generic(data, auth):
             vars.append('updated')
             for i, val in enumerate(vals):
                 vals[i].append(now)
-        if 'nodename' not in vars:
-            vars.append('nodename')
-            for i, val in enumerate(vals):
-                vals[i].append(auth[1])
-        sql = """delete from node_users where nodename="%s" """%auth[1]
+        vars, vals = replace_nodename_in_data(vars, vals, auth)
+        sql = """delete from node_users where node_id="%s" """%node_id
         db.executesql(sql)
         generic_insert('node_users', vars, vals)
-        node_users_alerts(auth[1])
+        node_users_alerts(node_id)
         _websocket_send(event_msg({
                  'event': 'node_users_change',
-                 'data': {'f': 'b'}
+                 'data': {'node_id': node_id}
                 }))
     if 'gids' in data:
         vars, vals = data['gids']
@@ -537,110 +523,107 @@ def _insert_generic(data, auth):
             vars.append('updated')
             for i, val in enumerate(vals):
                 vals[i].append(now)
-        if 'nodename' not in vars:
-            vars.append('nodename')
-            for i, val in enumerate(vals):
-                vals[i].append(auth[1])
-        sql = """delete from node_groups where nodename="%s" """%auth[1]
+        vars, vals = replace_nodename_in_data(vars, vals, auth)
+        sql = """delete from node_groups where node_id="%s" """%node_id
         db.executesql(sql)
         generic_insert('node_groups', vars, vals)
         _websocket_send(event_msg({
                  'event': 'node_groups_change',
-                 'data': {'f': 'b'}
+                 'data': {'node_id': node_id}
                 }))
-        node_groups_alerts(auth[1])
+        node_groups_alerts(node_id)
 
     db.commit()
 
-def node_users_alerts(nodename):
+def node_users_alerts(node_id):
     sql = """insert into dashboard
              select
                  NULL,
                  "duplicate uid",
                  NULL,
-                 "%(nodename)s",
                  if(t.host_mode="PRD", 1, 0),
                  "uid %%(uid)s is used by users %%(usernames)s",
                  concat('{"uid": ', t.user_id, ', "usernames": "', t.usernames, '"}'),
                  now(),
                  NULL,
                  t.host_mode,
-                 NULL,
-                 now()
+                 now(),
+                 "%(node_id)s",
+                 NULL
                from (
                  select
                    *,
-                   (select host_mode from nodes where nodename="%(nodename)s") as host_mode
+                   (select host_mode from nodes where node_id="%(node_id)s") as host_mode
                  from (
                    select
-                     nodename,
+                     node_id,
                      user_id,
                      group_concat(user_name) as usernames,
                      count(id) as n
                    from node_users
-                   where nodename="%(nodename)s"
-                   group by nodename, user_id
+                   where node_id="%(node_id)s"
+                   group by node_id, user_id
                  ) u
                  where u.n > 1
                ) t
                on duplicate key update
                dash_updated=now()
-               """ % dict(nodename=nodename)
+               """ % dict(node_id=node_id)
     n = db.executesql(sql)
     db.commit()
 
     # purge old alerts
     sql = """delete from dashboard where
-               dash_nodename="%(nodename)s" and
+               node_id="%(node_id)s" and
                dash_type="duplicate uid" and
                dash_updated < date_sub(now(), interval 20 second)
-          """ % dict(nodename=nodename)
+          """ % dict(node_id=node_id)
     n = db.executesql(sql)
     db.commit()
 
-def node_groups_alerts(nodename):
+def node_groups_alerts(node_id):
     sql = """insert into dashboard
              select
                  NULL,
                  "duplicate gid",
                  NULL,
-                 "%(nodename)s",
                  if(t.host_mode="PRD", 1, 0),
                  "gid %%(gid)s is used by users %%(groupnames)s",
                  concat('{"gid": ', t.group_id, ', "groupnames": "', t.groupnames, '"}'),
                  now(),
                  NULL,
                  t.host_mode,
-                 NULL,
-                 now()
+                 now(),
+                 "%(node_id)s",
+                 NULL
                from (
                  select
                    *,
-                   (select host_mode from nodes where nodename="%(nodename)s") as host_mode
+                   (select host_mode from nodes where node_id="%(node_id)s") as host_mode
                  from (
                    select
-                     nodename,
+                     node_id,
                      group_id,
                      group_concat(group_name) as groupnames,
                      count(id) as n
                    from node_groups
-                   where nodename="%(nodename)s"
-                   group by nodename, group_id
+                   where node_id="%(node_id)s"
+                   group by node_id, group_id
                  ) u
                  where u.n > 1
                ) t
                on duplicate key update
                dash_updated=now()
-               """ % dict(nodename=nodename)
+               """ % dict(node_id=node_id)
     n = db.executesql(sql)
     db.commit()
 
     # purge old alerts
     sql = """delete from dashboard where
-               dash_nodename="%(nodename)s" and
+               node_id="%(node_id)s" and
                dash_type="duplicate gid" and
                dash_updated < date_sub(now(), interval 20 second)
-          """ % dict(nodename=nodename)
+          """ % dict(node_id=node_id)
     n = db.executesql(sql)
     db.commit()
     dashboard_events()
@@ -665,6 +648,9 @@ def get_hw_obs_dates(obs_name):
     return o.obs_warn_date, o.obs_alert_date
 
 def _update_asset(vars, vals, auth):
+    node_id = auth_to_node_id(auth)
+    vars.append("node_id")
+    vals.append(node_id)
     h = {}
     for a,b in zip(vars, vals):
         h[a] = b
@@ -696,21 +682,21 @@ def _update_asset(vars, vals, auth):
                  'event': 'nodes_change',
                  'data': {'f': 'b'}
                 }))
-    update_dash_node_not_updated(auth[1])
-    update_dash_node_without_maintenance_end(auth[1])
-    update_dash_node_without_asset(auth[1])
+    update_dash_node_not_updated(node_id)
+    update_dash_node_without_maintenance_end(node_id)
+    update_dash_node_without_asset(node_id)
 
-def _resmon_clean(node, svcname, threshold=None):
+def _resmon_clean(node_id, svc_id, threshold=None):
     try:
         threshold = datetime.datetime.strptime(threshold.strip("'").split(".")[0], "%Y-%m-%d %H:%M:%S")
     except:
         threshold = datetime.datetime.now()
-    if node is None or node == '':
+    if node_id is None or node_id == '':
         return
-    if svcname is None or svcname == '':
+    if svc_id is None or svcname == '':
         return
-    q = db.resmon.nodename==node.strip("'")
-    q &= db.resmon.svcname==svcname.strip("'")
+    q = db.resmon.node_id==node_id
+    q &= db.resmon.svc_id==svc_id
     q &= db.resmon.updated < threshold - datetime.timedelta(minutes=20)
     db(q).delete()
     db.commit()
@@ -719,10 +705,10 @@ def _resmon_update(vars, vals, auth):
     if len(vals) == 0:
         return
     if type(vals[0]) in (str, unicode):
-        __resmon_update(vars, vals)
+        __resmon_update(vars, vals, auth)
     else:
         for v in vals:
-            __resmon_update(vars, v)
+            __resmon_update(vars, v, auth)
     _websocket_send(event_msg({
                  'event': 'resmon_change',
                  'data': {
@@ -730,19 +716,23 @@ def _resmon_update(vars, vals, auth):
                  },
                 }))
 
-def __resmon_update(vars, vals):
+def __resmon_update(vars, vals, auth):
     h = {}
     if len(vals) == 0:
         return
+    node_id = auth_to_node_id(auth)
+    vars, vals = replace_svcname_in_data(copy.copy(vars), vals, auth)
     for a,b in zip(vars, vals[0]):
         h[a] = b
     now = datetime.datetime.now()
     now -= datetime.timedelta(microseconds=now.microsecond)
-    if 'nodename' in h and 'svcname' in h:
-        nodename, vmname, vmtype = translate_encap_nodename(h['svcname'], h['nodename'])
-        if nodename is not None:
+    if 'svc_id' in h:
+        node_id, vmname, vmtype = translate_encap_nodename(h['svc_id'], node_id)
+        if "node_id" in h:
+            del(h["node_id"])
+        if node_id is not None:
             h['vmname'] = vmname
-            h['nodename'] = nodename
+            h['node_id'] = node_id
         if 'vmname' not in h:
             h['vmname'] = ""
     idx = vars.index("res_status")
@@ -756,11 +746,14 @@ def __resmon_update(vars, vals):
         vals[idx_updated] = now
         if vals[idx] == "'None'":
             vals[idx] = "n/a"
+    vars, vals = replace_nodename_in_data(vars, vals, auth)
     generic_insert('resmon', vars, vals)
-    _resmon_clean(h['nodename'], h['svcname'])
+    _resmon_clean(node_id, h['svc_id'])
 
 def _register_disk(vars, vals, auth):
     h = {}
+    node_id = auth_to_node_id(auth)
+
     now = datetime.datetime.now()
     now -= datetime.timedelta(microseconds=now.microsecond)
     for a,b in zip(vars, vals):
@@ -768,16 +761,26 @@ def _register_disk(vars, vals, auth):
 
     disk_id = h["disk_id"].strip("'")
     disk_svcname = h["disk_svcname"].strip("'")
-    disk_nodename = h["disk_nodename"].strip("'")
     disk_model = h['disk_model'].strip("'")
+    q = db.nodes.node_id == node_id
+    disk_nodename = db(q).select().first().nodename
 
-    if len(disk_svcname) == 0:
+    svc_id = node_svc_id(node_id, disk_svcname)
+    h["svc_id"] = svc_id
+    del(h["disk_svcname"])
+
+    if disk_id.startswith(disk_nodename+"."):
+        disk_id = disk_id.replace(disk_nodename+".", node_id+".")
+        h["disk_id"] = disk_id
+
+    if len(svc_id) == 0:
         # if no service name is provided and the node is actually
         # a service encpasulated vm, add the encapsulating svcname
-        q = db.svcmon.mon_vmname == disk_nodename
-        row = db(q).select(cacheable=True).first()
+        q = db.svcmon.mon_vmname == db.nodes.nodename
+        q &= db.nodes.node_id == node_id
+        row = db(q).select(db.svcmon.svc_id, cacheable=True).first()
         if row is not None:
-            h["disk_svcname"] = repr(row.mon_svcname)
+            h["svc_id"] = repr(row.svc_id)
 
     # don't register blacklisted disks (might be VM disks, already accounted)
     #n = db(db.disk_blacklist.disk_id==disk_id).count()
@@ -816,32 +819,29 @@ def _register_disk(vars, vals, auth):
     if n > 0:
         # diskinfo exists. is it a local or remote disk
         disk = disks.first()
-        if disk.disk_arrayid == disk_nodename or \
+        if disk.disk_arrayid == node_id or \
            disk.disk_arrayid is None or \
+           disk.disk_arrayid == "NULL" or \
            len(disk.disk_arrayid) == 0:
             # diskinfo registered as a stub for a local disk
             h['disk_local'] = 'T'
 
             if n == 1:
                 # update diskinfo timestamp
-                if disk.disk_arrayid is None:
-                    array_id = 'NULL'
-                else:
-                    array_id = disk.disk_arrayid
                 vars = ['disk_id', 'disk_arrayid', 'disk_updated']
-                vals = [repr(disk_id), array_id, h['disk_updated']]
+                vals = [repr(disk_id), node_id, h['disk_updated']]
                 generic_insert('diskinfo', vars, vals)
         else:
             # diskinfo registered by a array parser or an hv pushdisks
             h['disk_local'] = 'F'
 
-    if disk_id.startswith(disk_nodename+'.') and n == 0:
+    if disk_id.startswith(node_id+'.') and n == 0:
         h['disk_local'] = 'T'
         vars = ['disk_id', 'disk_arrayid', 'disk_devid', 'disk_size',
                 'disk_updated']
         vals = [repr(disk_id),
-                h['disk_nodename'],
-                repr(disk_id.split('.')[-1]),
+                repr(node_id),
+                repr(disk_id.replace(node_id+'.', '')),
                 h['disk_size'],
                 h['disk_updated']]
         generic_insert('diskinfo', vars, vals)
@@ -857,24 +857,22 @@ def _register_disk(vars, vals, auth):
                  where
                    disk_id="%s" and
                    (disk_arrayid = "" or disk_arrayid is NULL)
-              """%(h['disk_nodename'].strip("'"), disk_id)
+              """%(node_id, disk_id)
         db.executesql(sql)
         db.commit()
 
-    try:
-        generic_insert('svcdisks', h.keys(), h.values())
-    except:
-        # the foreign key on svcdisk may prevent insertion if svcmon is not yet
-        # populated
-        pass
-    purge_old_disks(h, now)
+    vars, vals = replace_nodename_in_data(h.keys(), h.values(), auth, fieldname="disk_nodename")
+    vars, vals = add_app_id_in_data(vars, vals)
+    generic_insert('svcdisks', vars, vals)
+    purge_old_disks(node_id, now)
 
-def purge_old_disks(h, now):
-    if 'disk_nodename' in h and h['disk_nodename'] is not None and h['disk_nodename'] != '':
-        q = db.svcdisks.disk_nodename==h['disk_nodename']
-        q &= db.svcdisks.disk_updated<now
-        db(q).delete()
-        db.commit()
+def purge_old_disks(node_id, now):
+    if node_id is None or node_id == "":
+        return
+    q = db.svcdisks.node_id == node_id
+    q &= db.svcdisks.disk_updated < now
+    db(q).delete()
+    db.commit()
 
 def _insert_pkg(vars, vals, auth):
     now = datetime.datetime.now()
@@ -882,22 +880,23 @@ def _insert_pkg(vars, vals, auth):
         vars.append("pkg_updated")
         for i, val in enumerate(vals):
             vals[i].append(str(now))
+    vars, vals = replace_nodename_in_data(vars, vals, auth, fieldname="pkg_nodename")
+    node_id = auth_to_node_id(auth)
     threshold = now - datetime.timedelta(minutes=1)
     generic_insert('packages', vars, vals)
-    nodename = auth[1].strip("'")
-    delete_old_pkg(threshold, nodename)
+    delete_old_pkg(threshold, node_id)
     table_modified("packages")
-    update_dash_pkgdiff(nodename)
+    update_dash_pkgdiff(node_id)
 
-def delete_old_pkg(threshold, nodename):
-    q = db.packages.pkg_nodename == nodename
+def delete_old_pkg(threshold, node_id):
+    q = db.packages.node_id == node_id
     q &= db.packages.pkg_updated < threshold
     db.commit()
     db(q).delete()
     db.commit()
 
-def delete_old_patches(threshold, nodename):
-    q = db.patches.patch_nodename == nodename
+def delete_old_patches(threshold, node_id):
+    q = db.patches.node_id == node_id
     q &= db.patches.patch_updated < threshold
     db.commit()
     db(q).delete()
@@ -908,24 +907,29 @@ def _insert_patch(vars, vals, auth):
     vars.append("patch_updated")
     for i, val in enumerate(vals):
         vals[i].append(str(now))
+
+    vars, vals = replace_nodename_in_data(vars, vals, auth, fieldname="patch_nodename")
+    node_id = auth_to_node_id(auth)
     threshold = now - datetime.timedelta(minutes=1)
     generic_insert('patches', vars, vals)
-    nodename = auth[1].strip("'")
     table_modified("patches")
-    delete_old_patches(threshold, nodename)
+    delete_old_patches(threshold, node_id)
 
-def insert_array_proxy(nodename, array_name):
+def insert_array_proxy(node_id, array_name):
+    if node_id is None:
+        return
+    print " insert %s as proxy node"%node_id
     sql = """select id from stor_array where array_name="%s" """%array_name
     rows = db.executesql(sql)
     if len(rows) == 0:
         return
     array_id = str(rows[0][0])
 
-    vars = ['array_id', 'nodename']
-    vals = [array_id, nodename]
+    vars = ['array_id', 'node_id']
+    vals = [array_id, node_id]
     generic_insert('stor_array_proxy', vars, vals)
 
-def insert_gcedisks(name=None, nodename=None):
+def insert_gcedisks(name=None, node_id=None):
     import glob
     import os
     from applications.init.modules import gcedisks
@@ -947,9 +951,7 @@ def insert_gcedisks(name=None, nodename=None):
             continue
 
         # stor_array_proxy
-        if nodename is not None:
-            print " insert %s as proxy node"%nodename
-            insert_array_proxy(nodename, s.name)
+        insert_array_proxy(node_id, s.name)
 
         # stor_array
         vars = ['array_name', 'array_model', 'array_cache', 'array_firmware', 'array_updated']
@@ -1019,9 +1021,8 @@ def insert_gcedisks(name=None, nodename=None):
         sql = """delete from diskinfo where disk_arrayid="%s" and disk_updated < "%s" """%(name, str(now))
         db.executesql(sql)
         db.commit()
-    queue_refresh_b_disk_app()
 
-def insert_freenas(name=None, nodename=None):
+def insert_freenas(name=None, node_id=None):
     import glob
     import os
     from applications.init.modules import freenas
@@ -1043,9 +1044,7 @@ def insert_freenas(name=None, nodename=None):
             continue
 
         # stor_array_proxy
-        if nodename is not None:
-            print " insert %s as proxy node"%nodename
-            insert_array_proxy(nodename, s.name)
+        insert_array_proxy(node_id, s.name)
 
         # stor_array
         vars = ['array_name', 'array_model', 'array_cache', 'array_firmware', 'array_updated']
@@ -1130,9 +1129,8 @@ def insert_freenas(name=None, nodename=None):
         sql = """delete from diskinfo where disk_arrayid="%s" and disk_updated < "%s" """%(name, str(now))
         db.executesql(sql)
         db.commit()
-    queue_refresh_b_disk_app()
 
-def insert_dcs(name=None, nodename=None):
+def insert_dcs(name=None, node_id=None):
     import glob
     import os
     from applications.init.modules import dcs
@@ -1154,9 +1152,7 @@ def insert_dcs(name=None, nodename=None):
             continue
 
         # stor_array_proxy
-        if nodename is not None:
-            print " insert %s as proxy node"%nodename
-            insert_array_proxy(nodename, s.sg['caption'])
+        insert_array_proxy(node_id, s.sg['caption'])
 
         # stor_array
         vars = ['array_name', 'array_model', 'array_cache', 'array_firmware', 'array_updated']
@@ -1223,9 +1219,8 @@ def insert_dcs(name=None, nodename=None):
         generic_insert('diskinfo', vars, vals)
         sql = """delete from diskinfo where disk_arrayid="%s" and disk_updated < "%s" """%(name, str(now))
         db.executesql(sql)
-    queue_refresh_b_disk_app()
 
-def insert_hds(name=None, nodename=None):
+def insert_hds(name=None, node_id=None):
     import glob
     import os
     from applications.init.modules import hds
@@ -1241,6 +1236,10 @@ def insert_hds(name=None, nodename=None):
 
     for d in dirs:
         s = hds.get_hds(d)
+
+        # stor_array_proxy
+        insert_array_proxy(node_id, s.name)
+
         if s is not None:
             # stor_array
             vars = ['array_name', 'array_model', 'array_cache', 'array_firmware', 'array_updated']
@@ -1316,9 +1315,8 @@ def insert_hds(name=None, nodename=None):
             generic_insert('diskinfo', vars, vals)
             sql = """delete from diskinfo where disk_arrayid="%s" and disk_updated < "%s" """%(s.name, str(now))
             db.executesql(sql)
-    queue_refresh_b_disk_app()
 
-def insert_centera(name=None, nodename=None):
+def insert_centera(name=None, node_id=None):
     import glob
     import os
     from applications.init.modules import centera
@@ -1332,11 +1330,17 @@ def insert_centera(name=None, nodename=None):
         pattern = name
     dirs = glob.glob(os.path.join(dir, pattern))
 
-    nodenames = set([r.nodename for r in db(db.nodes.id>0).select(db.nodes.nodename)])
+    node_id = {}
+    for row in db(db.nodes.id>0).select(db.nodes.node_id, db.nodes.nodename):
+        node_id[row.nodename] = row.node_id
 
     for d in dirs:
         print d
         s = centera.get_centera(d)
+
+        # stor_array_proxy
+        insert_array_proxy(node_id, s.name)
+
         if s is not None:
             # stor_array
             print s.name, "insert array info"
@@ -1399,7 +1403,7 @@ def insert_centera(name=None, nodename=None):
             print s.name, "insert svcdisk info"
             vars = ['disk_id',
                     'disk_svcname',
-                    'disk_nodename',
+                    'node_id',
                     'disk_size',
                     'disk_vendor',
                     'disk_model',
@@ -1410,10 +1414,10 @@ def insert_centera(name=None, nodename=None):
                     'disk_region']
             vals = []
             for d in s.pool:
-                for h in set(d["hostnames"]) & nodenames:
+                for h in set(d["hostnames"]) & node_id.keys():
                     vals.append(['.'.join((s.name, d['name'])),
                                  "",
-                                 h,
+                                 node_id[h],
                                  str(d['size']),
                                  "EMC",
                                  "Centera",
@@ -1425,9 +1429,8 @@ def insert_centera(name=None, nodename=None):
             generic_insert('svcdisks', vars, vals)
             sql = """delete from svcdisks where disk_model="Centera" and disk_dg="%s" and disk_updated < "%s" """%(s.name, str(now))
             db.executesql(sql)
-    queue_refresh_b_disk_app()
 
-def insert_emcvnx(name=None, nodename=None):
+def insert_emcvnx(name=None, node_id=None):
     import glob
     import os
     from applications.init.modules import emcvnx
@@ -1444,6 +1447,10 @@ def insert_emcvnx(name=None, nodename=None):
     for d in dirs:
         print d
         s = emcvnx.get_vnx(d)
+
+        # stor_array_proxy
+        insert_array_proxy(node_id, s.name)
+
         if s is not None:
             # stor_array
             print s.name, "insert array info"
@@ -1505,9 +1512,8 @@ def insert_emcvnx(name=None, nodename=None):
             generic_insert('diskinfo', vars, vals)
             sql = """delete from diskinfo where disk_arrayid="%s" and disk_updated < "%s" """%(s.name, str(now))
             db.executesql(sql)
-    queue_refresh_b_disk_app()
 
-def insert_necism(name=None, nodename=None):
+def insert_necism(name=None, node_id=None):
     import glob
     import os
     from applications.init.modules import necism
@@ -1523,6 +1529,10 @@ def insert_necism(name=None, nodename=None):
 
     for d in dirs:
         s = necism.get_necism(d)
+
+        # stor_array_proxy
+        insert_array_proxy(node_id, s.name)
+
         if s is not None:
             # stor_array
             vars = ['array_name', 'array_model', 'array_cache', 'array_firmware', 'array_updated']
@@ -1578,9 +1588,8 @@ def insert_necism(name=None, nodename=None):
             generic_insert('diskinfo', vars, vals)
             sql = """delete from diskinfo where disk_arrayid="%s" and disk_updated < "%s" """%(s.name, str(now))
             db.executesql(sql)
-    queue_refresh_b_disk_app()
 
-def insert_brocade(name=None, nodename=None):
+def insert_brocade(name=None, node_id=None):
     import glob
     import os
     from applications.init.modules import brocade
@@ -1691,7 +1700,7 @@ def insert_brocade(name=None, nodename=None):
         sql = """delete from switches where sw_name="%s" and sw_updated < "%s" """%(s.name, str(now))
         db.executesql(sql)
 
-def insert_vioserver(name=None, nodename=None):
+def insert_vioserver(name=None, node_id=None):
     import glob
     import os
     from applications.init.modules import vioserver
@@ -1754,21 +1763,30 @@ def insert_vioserver(name=None, nodename=None):
                 'disk_used',
                 'disk_vendor',
                 'disk_model',
-                'disk_nodename']
+                'node_id']
         vals = []
+        node_id = get_array_node_id(s.array_name)
         for d in s.pdisk.values():
             vals.append([d['wwid'],
                          d['size'],
                          d['size'],
                          d['vendor'],
                          d['model'],
-                         s.array_name])
+                         node_id])
         generic_insert('svcdisks', vars, vals)
         sql = """delete from svcdisks where disk_nodename="%s" and disk_updated < "%s" """%(s.array_name, str(now))
         db.executesql(sql)
-    queue_refresh_b_disk_app()
 
-def insert_nsr(name=None, nodename=None):
+def get_array_node_id(array_name, array_type=None):
+    q = db.nodes.nodename == name
+    node = db(q).select(db.nodes.node_id)
+    if node:
+        return node.node_id
+    node_id = get_new_node_id()
+    db.nodes.insert(nodename=array_name, type="storage", node_id=node_id)
+    return node_id
+
+def insert_nsr(name=None, node_id=None):
     import glob
     import os
     import socket
@@ -1785,14 +1803,14 @@ def insert_nsr(name=None, nodename=None):
 
 
     # load node ip cache
-    sql = "select nodename, addr from node_ip"
+    sql = "select node_id, addr from node_ip"
     rows = db.executesql(sql)
     node_ip = {}
     for row in rows:
         node_ip[row[1]] = row[0]
 
     # load svc ip cache
-    sql = """select svcname, res_desc from resmon where rid like "%ip#%" """
+    sql = """select svc_id, res_desc from resmon where rid like "%ip#%" """
     rows = db.executesql(sql)
     svc_ip = {}
     for row in rows:
@@ -1805,7 +1823,7 @@ def insert_nsr(name=None, nodename=None):
             continue
 
     # load svc mnt cache
-    sql = """select svcname, nodename, res_desc from resmon where rid like "%fs#%" """
+    sql = """select svc_id, node_id, res_desc from resmon where rid like "%fs#%" """
     rows = db.executesql(sql)
     svc_mnt = {}
     for row in rows:
@@ -1816,13 +1834,13 @@ def insert_nsr(name=None, nodename=None):
             continue
 
     # load app cache
-    sql = """select svc_name, svc_app from services"""
+    sql = """select svc_id, svc_app from services"""
     rows = db.executesql(sql)
     svc_app = {}
     for row in rows:
         svc_app[row[0]] = row[1]
 
-    sql = """select nodename, app from nodes"""
+    sql = """select node_id, app from nodes"""
     rows = db.executesql(sql)
     node_app = {}
     for row in rows:
@@ -1832,7 +1850,7 @@ def insert_nsr(name=None, nodename=None):
         server = os.path.basename(d)
         fpath = os.path.join(d, "mminfo")
 
-        vars = ['save_server', 'save_nodename', 'save_svcname', 'save_name',
+        vars = ['save_server', 'node_id', 'svc_id', 'save_name',
                 'save_group', 'save_size', 'save_date', 'save_retention',
                 'save_volume', 'save_level', 'save_id', 'save_app']
         vals = []
@@ -1859,19 +1877,19 @@ def insert_nsr(name=None, nodename=None):
                 # account twice the size.
                 continue
             if l[0] in node_ip:
-                nodename = node_ip[l[0]]
+                node_id = node_ip[l[0]]
             else:
-                nodename = l[0]
+                node_id = l[0]
             if l[0] in svc_ip:
-                svcname = svc_ip[l[0]]
-            elif (nodename, l[1]) in svc_mnt:
-                svcname = svc_mnt[(nodename, l[1])]
+                svc_id = svc_ip[l[0]]
+            elif (node_id, l[1]) in svc_mnt:
+                svc_id = svc_mnt[(node_id, l[1])]
             else:
-                svcname = ''
-            if svcname != '' and svcname in svc_app:
-                app = svc_app[svcname]
-            elif nodename in node_app:
-                app = node_app[nodename]
+                svc_id = ''
+            if svc_id != '' and svc_id in svc_app:
+                app = svc_app[svc_id]
+            elif node_id in node_app:
+                app = node_app[node_id]
             else:
                 app = ''
 	    try:
@@ -1882,7 +1900,7 @@ def insert_nsr(name=None, nodename=None):
 	        l[5] = datetime.datetime.strptime(l[5], "%m/%d/%y %H:%M:%S")
 	    except:
 	        pass
-            vals.append([server, nodename, svcname]+l[1:]+[app])
+            vals.append([server, node_id, svc_id]+l[1:]+[app])
             i += 1
             if i > 300:
                 i = 0
@@ -2008,7 +2026,7 @@ def update_save_checks():
                  group by chk_svcname,chk_instance
                ) t
                join services s on
-                 t.chk_svcname = s.svc_name and
+                 t.svc_id = s.svc_id and
                  s.svc_cluster_type="failover"
                where t.n>1
              ) u on
@@ -2038,7 +2056,7 @@ def update_save_checks():
                  having count(id)>1
                ) t
                join services s on
-                 t.chk_svcname = s.svc_name and
+                 t.svc_id = s.svc_id and
                  s.svc_cluster_type="failover"
              )
           """%dict(now=now2)
@@ -2046,7 +2064,7 @@ def update_save_checks():
     db.executesql(sql)
     db.commit()
 
-def insert_netapp(name=None, nodename=None):
+def insert_netapp(name=None, node_id=None):
     import glob
     import os
     from applications.init.modules import netapp
@@ -2062,6 +2080,10 @@ def insert_netapp(name=None, nodename=None):
 
     for d in dirs:
         s = netapp.get_netapp(d)
+
+        # stor_array_proxy
+        insert_array_proxy(node_id, s.array_name)
+
         if s is not None:
             # stor_array
             vars = ['array_name', 'array_model', 'array_cache', 'array_firmware', 'array_updated']
@@ -2121,9 +2143,8 @@ def insert_netapp(name=None, nodename=None):
             generic_insert('diskinfo', vars, vals)
             sql = """delete from diskinfo where disk_arrayid="%s" and disk_updated < "%s" """%(s.array_name, str(now))
             db.executesql(sql)
-    queue_refresh_b_disk_app()
 
-def insert_hp3par(name=None, nodename=None):
+def insert_hp3par(name=None, node_id=None):
     import glob
     import os
     from applications.init.modules import hp3par
@@ -2140,6 +2161,10 @@ def insert_hp3par(name=None, nodename=None):
 
     for d in dirs:
         s = hp3par.get_hp3par(d)
+
+        # stor_array_proxy
+        insert_array_proxy(node_id, s.name)
+
         if s is not None:
             # stor_array
             vars = ['array_name', 'array_model', 'array_cache', 'array_firmware', 'array_updated']
@@ -2204,9 +2229,8 @@ def insert_hp3par(name=None, nodename=None):
             generic_insert('diskinfo', vars, vals)
             sql = """delete from diskinfo where disk_arrayid="%s" and disk_updated < "%s" """%(s.name, str(now))
             db.executesql(sql)
-    queue_refresh_b_disk_app()
 
-def insert_ibmds(name=None, nodename=None):
+def insert_ibmds(name=None, node_id=None):
     import glob
     import os
     from applications.init.modules import ibmds
@@ -2222,6 +2246,10 @@ def insert_ibmds(name=None, nodename=None):
 
     for d in dirs:
         s = ibmds.get_ibmds(d)
+
+        # stor_array_proxy
+        insert_array_proxy(node_id, s.si['ID'])
+
         if s is not None:
             # stor_array
             vars = ['array_name', 'array_model', 'array_cache', 'array_firmware', 'array_updated']
@@ -2281,9 +2309,8 @@ def insert_ibmds(name=None, nodename=None):
             sql = """delete from diskinfo where disk_arrayid="%s" and disk_updated < "%s" """%(s.si['ID'], str(now))
             db.executesql(sql)
             db.commit()
-    queue_refresh_b_disk_app()
 
-def insert_ibmsvc(name=None, nodename=None):
+def insert_ibmsvc(name=None, node_id=None):
     import glob
     import os
     from applications.init.modules import ibmsvc
@@ -2299,6 +2326,10 @@ def insert_ibmsvc(name=None, nodename=None):
 
     for d in dirs:
         s = ibmsvc.get_ibmsvc(d)
+
+        # stor_array_proxy
+        insert_array_proxy(node_id, s.array_name)
+
         if s is not None:
             # stor_array
             vars = ['array_name', 'array_model', 'array_cache', 'array_firmware', 'array_updated']
@@ -2354,9 +2385,8 @@ def insert_ibmsvc(name=None, nodename=None):
             generic_insert('diskinfo', vars, vals)
             sql = """delete from diskinfo where disk_arrayid="%s" and disk_updated < "%s" """%(s.array_name, str(now))
             db.executesql(sql)
-    queue_refresh_b_disk_app()
 
-def insert_eva(name=None, nodename=None):
+def insert_eva(name=None, node_id=None):
     import glob
     import os
     from applications.init.modules import eva
@@ -2373,6 +2403,10 @@ def insert_eva(name=None, nodename=None):
 
     for d in dirs:
         s = eva.get_eva(d)
+
+        # stor_array_proxy
+        insert_array_proxy(node_id, s.name)
+
         if s is not None:
             # stor_array
             vars = ['array_name', 'array_model', 'array_cache', 'array_firmware', 'array_updated']
@@ -2432,9 +2466,8 @@ def insert_eva(name=None, nodename=None):
             generic_insert('diskinfo', vars, vals)
             sql = """delete from diskinfo where disk_arrayid="%s" and disk_updated < "%s" """%(s.name, str(now))
             db.executesql(sql)
-    queue_refresh_b_disk_app()
 
-def insert_sym(symid=None, nodename=None):
+def insert_sym(symid=None, node_id=None):
     import glob
     import os
     from applications.init.modules import symmetrix
@@ -2451,6 +2484,10 @@ def insert_sym(symid=None, nodename=None):
 
     for d in sym_dirs:
         s = symmetrix.get_sym(d)
+
+        # stor_array_proxy
+        insert_array_proxy(node_id, s.info['symid'])
+
         if s is not None:
             # stor_array
             s.get_sym_info()
@@ -2522,7 +2559,6 @@ def insert_sym(symid=None, nodename=None):
             db.executesql(sql)
 
             del(s)
-    queue_refresh_b_disk_app()
 
 def _svcmon_update_combo(g_vars, g_vals, r_vars, r_vals, auth):
     _svcmon_update(g_vars, g_vals, auth)
@@ -2535,12 +2571,12 @@ def _svcmon_update(vars, vals, auth):
         for v in vals:
             _svcmon_update(vars, v, auth)
     else:
-        __svcmon_update(vars, vals)
+        __svcmon_update(vars, vals, auth)
 
     _websocket_send(event_msg({
                  'event': 'svcmon_change',
                  'data': {
-                   'mon_nodname': auth[1],
+                   'f': 'b',
                  },
                 }))
     dashboard_events()
@@ -2611,8 +2647,8 @@ def compute_availstatus(h):
         s = 'stdby up'
     return s
 
-def svc_log_update(svcname, astatus):
-    q = db.services_log.svc_name == svcname
+def svc_log_update(svc_id, astatus):
+    q = db.services_log.svc_id == svc_id
     o = ~db.services_log.id
     rows = db(q).select(orderby=o, limitby=(0,1))
     end = datetime.datetime.now()
@@ -2624,22 +2660,23 @@ def svc_log_update(svcname, astatus):
             db(q).update(svc_end=end)
             db.commit()
         else:
-            db.services_log.insert(svc_name=svcname,
+            db.services_log.insert(svc_id=svc_id,
                                    svc_begin=prev.svc_end,
                                    svc_end=end,
                                    svc_availstatus=astatus)
             db.commit()
     else:
-        db.services_log.insert(svc_name=svcname,
+        db.services_log.insert(svc_id=svc_id,
                                svc_begin=end,
                                svc_end=end,
                                svc_availstatus=astatus)
         db.commit()
 
-def translate_encap_nodename(svcname, nodename):
-    q = (db.svcmon.mon_vmname == nodename) | (db.svcmon.mon_vmname == nodename.split('.')[0])
-    q &= db.svcmon.mon_svcname == svcname
-    rows = db(q).select(db.svcmon.mon_nodname,
+def translate_encap_nodename(svc_id, node_id):
+    q = db.svcmon.mon_vmname == db.nodes.nodename
+    q &= db.nodes.node_id == node_id
+    q &= db.svcmon.svc_id == svc_id
+    rows = db(q).select(db.svcmon.node_id,
                         db.svcmon.mon_vmname,
                         db.svcmon.mon_vmtype,
                         db.svcmon.mon_containerstatus)
@@ -2650,78 +2687,99 @@ def translate_encap_nodename(svcname, nodename):
 
     for row in rows:
         if row.mon_containerstatus in ('up', 'stdby up', 'n/a'):
-            return row.mon_nodname, row.mon_vmname, row.mon_vmtype
+            return row.node_id, row.mon_vmname, row.mon_vmtype
 
     row = rows.first()
-    return row.mon_nodname, row.mon_vmname, row.mon_vmtype
+    return row.node_id, row.mon_vmname, row.mon_vmtype
 
-def __svcmon_update(vars, vals):
-    # don't trust the server's time
+def __svcmon_update(vars, vals, auth):
+    # fix agent formatted dataset bug
+    if len(vars) == len(vals) - 1:
+        del(vals[-1])
+
+    node_id = auth_to_node_id(auth)
+    vars, vals = replace_svcname_in_data(copy.copy(vars), vals, auth, fieldname="mon_svcname")
+    vars, vals = replace_nodename_in_data(vars, vals, auth, fieldname="mon_nodname")
+
     h = {}
     for a,b in zip(vars, vals):
-        if a == 'mon_updated':
-            continue
         h[a] = b
 
-    nodename, vmname, vmtype = translate_encap_nodename(h['mon_svcname'], h['mon_nodname'])
+    # set the collector update timestamp
+    now = datetime.datetime.now()
+    h['mon_updated'] = now
 
-    if 'mon_containerpath' in h and nodename is None:
+    if 'mon_containerpath' in h and "mon_frozen" not in h:
         # update container info only
-        generic_insert('svcmon', vars, vals)
+        generic_insert('svcmon', h.keys(), h.values())
         return
 
     if 'mon_vmname' not in h:
         # COMPAT: old mono-container agent. fetch vmname from svcmon.
-        q = db.svcmon.mon_svcname == h['mon_svcname']
-        q &= db.svcmon.mon_nodname == h['mon_nodname']
+        q = db.svcmon.svc_id == h['svc_id']
+        q &= db.svcmon.node_id == node_id
         q &= db.svcmon.mon_vmname != None
         q &= db.svcmon.mon_vmname != ""
         row = db(q).select(db.svcmon.mon_vmname).first()
         if row is not None:
             h['mon_vmname'] = row.mon_vmname
-        q = db.services.svc_name == h['mon_svcname']
+        q = db.services.svc_id == h['svc_id']
         row = db(q).select(db.services.svc_containertype).first()
         if row is not None:
             h['mon_vmtype'] = row.svc_containertype
 
-    if nodename is not None:
+    # mangle datasets received from the encap node
+    _node_id, vmname, vmtype = translate_encap_nodename(h['svc_id'], node_id)
+    if _node_id is not None and _node_id != "" and node_id != _node_id:
         h['mon_vmname'] = vmname
         h['mon_vmtype'] = vmtype
-        h['mon_nodname'] = nodename
+        h['node_id'] = _node_id
 
+    # set the hv field of container nodes
     if 'mon_vmname' in h and h['mon_vmname'] is not None and len(h['mon_vmname']) > 0:
         q = db.nodes.nodename == h['mon_vmname']
-        db(q).update(hv=h['mon_nodname'])
+        q &= db.nodes.app.belongs(node_responsibles_apps(node_id))
+        db(q).update(hv=get_node(node_id).nodename)
 
-    now = datetime.datetime.now()
-    tmo = now - datetime.timedelta(minutes=15)
-    h['mon_updated'] = now
+    # compat with old agent
     if 'mon_hbstatus' not in h:
         h['mon_hbstatus'] = 'undef'
     if 'mon_sharestatus' not in h:
         h['mon_sharestatus'] = 'undef'
     if 'mon_availstatus' not in h:
         h['mon_availstatus'] = compute_availstatus(h)
-    generic_insert('svcmon', h.keys(), h.values())
-    svc_status_update(h['mon_svcname'])
-    update_dash_service_frozen(h['mon_svcname'], h['mon_nodname'], h['mon_svctype'], h['mon_frozen'])
-    update_dash_service_not_on_primary(h['mon_svcname'], h['mon_nodname'], h['mon_svctype'], h['mon_availstatus'])
-    update_dash_svcmon_not_updated(h['mon_svcname'], h['mon_nodname'])
 
-    sql = """select svc_cluster_type from services where svc_name="%s" """ % h['mon_svcname']
+    generic_insert('svcmon', h.keys(), h.values())
+
+    # dashboard janitoring
+    svc_status_update(h['svc_id'])
+    if "mon_svctype" in h:
+        svctype = h['mon_svctype']
+    else:
+        svctype = db(db.services.svc_id==h['svc_id']).select(db.services.svc_type).first().svc_type
+
+    update_dash_service_frozen(h['svc_id'], node_id, svctype, h['mon_frozen'])
+    update_dash_service_not_on_primary(h['svc_id'], node_id, svctype, h['mon_availstatus'])
+    update_dash_svcmon_not_updated(h['svc_id'], node_id)
+
+    sql = """select svc_cluster_type from services where svc_id="%s" """ % h['svc_id']
     rows = db.executesql(sql, as_dict=True)
     if len(rows) > 0 and rows[0]['svc_cluster_type'] == 'flex':
-        update_dash_flex_instances_started(h['mon_svcname'])
-        update_dash_flex_cpu(h['mon_svcname'])
+        update_dash_flex_instances_started(h['svc_id'])
+        update_dash_flex_cpu(h['svc_id'])
 
-    query = db.svcmon_log.mon_svcname==h['mon_svcname']
-    query &= db.svcmon_log.mon_nodname==h['mon_nodname']
+    # service instance status history janitoring
+    tmo = now - datetime.timedelta(minutes=15)
+
+    query = db.svcmon_log.svc_id==h['svc_id']
+    query &= db.svcmon_log.node_id==node_id
     last = db(query).select(orderby=~db.svcmon_log.id, limitby=(0,1))
+
     if len(last) == 0:
         _vars = ['mon_begin',
                  'mon_end',
-                 'mon_svcname',
-                 'mon_nodname',
+                 'svc_id',
+                 'node_id',
                  'mon_overallstatus',
                  'mon_availstatus',
                  'mon_ipstatus',
@@ -2734,8 +2792,8 @@ def __svcmon_update(vars, vals):
                  'mon_hbstatus']
         _vals = [h['mon_updated'],
                  h['mon_updated'],
-                 h['mon_svcname'],
-                 h['mon_nodname'],
+                 h['svc_id'],
+                 h['node_id'],
                  h['mon_overallstatus'],
                  h['mon_availstatus'],
                  h['mon_ipstatus'],
@@ -2752,22 +2810,20 @@ def __svcmon_update(vars, vals):
         else:
             level = "info"
         _log("service.status",
-             "service '%(svc)s' state initialized on '%(node)s': avail(%(a1)s=>%(a2)s) overall(%(o1)s=>%(o2)s)",
+             "service state initialized: avail(%(a1)s=>%(a2)s) overall(%(o1)s=>%(o2)s)",
              dict(
-               svc=h['mon_svcname'],
-               node=h['mon_nodname'],
                a1="none",
                a2=h['mon_availstatus'],
                o1="none",
                o2=h['mon_overallstatus']),
-             svcname=h['mon_svcname'],
-             nodename=h['mon_nodname'],
+             svc_id=h['svc_id'],
+             node_id=node_id,
              level=level)
     elif last[0].mon_end < tmo:
         _vars = ['mon_begin',
                  'mon_end',
-                 'mon_svcname',
-                 'mon_nodname',
+                 'svc_id',
+                 'node_id',
                  'mon_overallstatus',
                  'mon_availstatus',
                  'mon_ipstatus',
@@ -2780,8 +2836,8 @@ def __svcmon_update(vars, vals):
                  'mon_hbstatus']
         _vals = [last[0].mon_end,
                  h['mon_updated'],
-                 h['mon_svcname'],
-                 h['mon_nodname'],
+                 h['svc_id'],
+                 node_id,
                  "undef",
                  "undef",
                  "undef",
@@ -2795,8 +2851,8 @@ def __svcmon_update(vars, vals):
         generic_insert('svcmon_log', _vars, _vals)
         _vars = ['mon_begin',
                  'mon_end',
-                 'mon_svcname',
-                 'mon_nodname',
+                 'svc_id',
+                 'node_id',
                  'mon_overallstatus',
                  'mon_availstatus',
                  'mon_ipstatus',
@@ -2809,8 +2865,8 @@ def __svcmon_update(vars, vals):
                  'mon_hbstatus']
         _vals = [h['mon_updated'],
                  h['mon_updated'],
-                 h['mon_svcname'],
-                 h['mon_nodname'],
+                 h['svc_id'],
+                 node_id,
                  h['mon_overallstatus'],
                  h['mon_availstatus'],
                  h['mon_ipstatus'],
@@ -2827,23 +2883,21 @@ def __svcmon_update(vars, vals):
         else:
             level = "info"
         _log("service.status",
-             "service '%(svc)s' state changed on '%(node)s': avail(%(a1)s=>%(a2)s) overall(%(o1)s=>%(o2)s)",
+             "service state changed: avail(%(a1)s=>%(a2)s) overall(%(o1)s=>%(o2)s)",
              dict(
-               svc=h['mon_svcname'],
-               node=h['mon_nodname'],
                a1="undef",
                a2=h['mon_availstatus'],
                o1="undef",
                o2=h['mon_overallstatus']),
-             svcname=h['mon_svcname'],
-             nodename=h['mon_nodname'],
+             svc_id=h['svc_id'],
+             node_id=node_id,
              level=level)
     elif h['mon_overallstatus'] != last[0].mon_overallstatus or \
          h['mon_availstatus'] != last[0].mon_availstatus:
         _vars = ['mon_begin',
                  'mon_end',
-                 'mon_svcname',
-                 'mon_nodname',
+                 'svc_id',
+                 'node_id',
                  'mon_overallstatus',
                  'mon_availstatus',
                  'mon_ipstatus',
@@ -2856,8 +2910,8 @@ def __svcmon_update(vars, vals):
                  'mon_hbstatus']
         _vals = [h['mon_updated'],
                  h['mon_updated'],
-                 h['mon_svcname'],
-                 h['mon_nodname'],
+                 h['svc_id'],
+                 node_id,
                  h['mon_overallstatus'],
                  h['mon_availstatus'],
                  h['mon_ipstatus'],
@@ -2876,16 +2930,14 @@ def __svcmon_update(vars, vals):
         else:
             level = "info"
         _log("service.status",
-             "service '%(svc)s' state changed on '%(node)s': avail(%(a1)s=>%(a2)s) overall(%(o1)s=>%(o2)s)",
+             "service state changed: avail(%(a1)s=>%(a2)s) overall(%(o1)s=>%(o2)s)",
              dict(
-               svc=h['mon_svcname'],
-               node=h['mon_nodname'],
                a1=last[0].mon_availstatus,
                a2=h['mon_availstatus'],
                o1=last[0].mon_overallstatus,
                o2=h['mon_overallstatus']),
-             svcname=h['mon_svcname'],
-             nodename=h['mon_nodname'],
+             svc_id=h['svc_id'],
+             node_id=node_id,
              level=level)
     else:
         db(db.svcmon_log.id==last[0].id).update(mon_end=h['mon_updated'])
@@ -2904,16 +2956,16 @@ def cron_dash_service_not_updated():
                select
                  NULL,
                  "service configuration not updated",
-                 svc_name,
-                 "",
-                 0,
+                 svc_id,
+                 if(svc_type="PRD", 1, 0),
                  "",
                  "",
                  updated,
                  "",
                  svc_type,
+                 now(),
                  "",
-                 now()
+                 NULL
                from services
                where updated < date_sub(now(), interval 25 hour)
                on duplicate key update
@@ -2926,11 +2978,11 @@ def cron_dash_svcmon_not_updated():
     sql = """select dashboard.id
              from dashboard
              left join svcmon on
-               dashboard.dash_svcname=svcmon.mon_svcname and
-               dashboard.dash_nodename=svcmon.mon_nodname
+               dashboard.svc_id=svcmon.svc_id and
+               dashboard.node_id=svcmon.node_id
              where
-               dashboard.dash_svcname!="" and
-               dashboard.dash_nodename != "" and
+               dashboard.svc_id!="" and
+               dashboard.node_id!="" and
                svcmon.id is NULL"""
     rows = db.executesql(sql)
     ids = map(lambda x: "'%d'"%x[0], rows)
@@ -2946,16 +2998,16 @@ def cron_dash_svcmon_not_updated():
                select
                  NULL,
                  "service status not updated",
-                 mon_svcname,
-                 mon_nodname,
+                 svc_id,
                  if(mon_svctype="PRD", 1, 0),
                  "",
                  "",
                  mon_updated,
                  "",
                  mon_svctype,
-                 "",
-                 now()
+                 now(),
+                 node_id,
+                 NULL
                from svcmon
                where mon_updated < date_sub(now(), interval 16 minute)
                on duplicate key update
@@ -2970,15 +3022,15 @@ def cron_dash_node_not_updated():
                  NULL,
                  "node information not updated",
                  "",
-                 nodename,
                  0,
                  "",
                  "",
                  updated,
                  "",
                  host_mode,
-                 "",
-                 now()
+                 now(),
+                 node_id,
+                 NULL
                from nodes
                where updated < date_sub(now(), interval 25 hour)
                on duplicate key update
@@ -2993,19 +3045,19 @@ def cron_dash_node_without_asset():
                  NULL,
                  "node without asset information",
                  "",
-                 mon_nodname,
                  0,
                  "",
                  "",
                  now(),
                  "",
                  mon_svctype,
-                 "",
-                 now()
+                 now(),
+                 node_id,
+                 NULL
                from svcmon
                where
-                 mon_nodname not in (
-                   select nodename from nodes
+                 node_id not in (
+                   select node_id from nodes
                  )
                on duplicate key update
                  dash_updated=now()
@@ -3022,15 +3074,15 @@ def cron_dash_node_beyond_maintenance_date():
                  NULL,
                  "node maintenance expired",
                  "",
-                 nodename,
                  1,
                  "",
                  "",
                  "%(now)s",
                  "",
                  host_mode,
-                 "",
-                 "%(now)s"
+                 "%(now)s",
+                 node_id,
+                 NULL
                from nodes
                where
                  maintenance_end is not NULL and
@@ -3057,15 +3109,15 @@ def cron_dash_node_near_maintenance_date():
                  NULL,
                  "node close to maintenance end",
                  "",
-                 nodename,
                  0,
                  "",
                  "",
                  now(),
                  "",
                  host_mode,
-                 "",
-                 now()
+                 now(),
+                 node_id,
+                 NULL
                from nodes
                where
                  maintenance_end is not NULL and
@@ -3085,15 +3137,15 @@ def cron_dash_node_without_maintenance_date():
                  NULL,
                  "node without maintenance end date",
                  "",
-                 nodename,
                  0,
                  "",
                  "",
                  now(),
                  "",
                  host_mode,
-                 "",
-                 now()
+                 now(),
+                 node_id,
+                 NULL
                from nodes
                where
                  (warranty_end is NULL or
@@ -3114,8 +3166,8 @@ def cron_dash_checks_not_updated():
     sql = """delete from dashboard
              where
                dash_type="check value not updated"
-               and dash_nodename not in (
-                 select distinct chk_nodename from checks_live
+               and node_id not in (
+                 select distinct node_id from checks_live
                )
           """
     rows = db.executesql(sql)
@@ -3129,7 +3181,7 @@ def cron_dash_checks_not_updated():
                  '", "val": ', c.chk_value,
                  ', "min": ', c.chk_low,
                  ', "max": ', c.chk_high, '}'))
-               and d.dash_nodename=c.chk_nodename
+               and d.node_id=c.node_id
              where
                d.dash_type="check out of bounds"
                and c.id is NULL
@@ -3143,7 +3195,7 @@ def cron_dash_checks_not_updated():
     sql = """select d.id from dashboard d
              left join checks_live c on
                d.dash_dict_md5=md5(concat('{"i":"', c.chk_instance, '", "t":"', c.chk_type, '"}'))
-               and d.dash_nodename=c.chk_nodename
+               and d.node_id=c.node_id
              where
                d.dash_type="check value not updated"
                and c.id is NULL
@@ -3159,17 +3211,17 @@ def cron_dash_checks_not_updated():
                  NULL,
                  "check value not updated",
                  "",
-                 c.chk_nodename,
                  if(n.host_mode="PRD", 1, 0),
                  "%(t)s:%(i)s",
                  concat('{"i":"', chk_instance, '", "t":"', chk_type, '"}'),
                  chk_updated,
                  md5(concat('{"i":"', chk_instance, '", "t":"', chk_type, '"}')),
                  n.host_mode,
-                 "",
-                 now()
+                 now(),
+                 c.node_id,
+                 NULL
                from checks_live c
-                 join nodes n on c.chk_nodename=n.nodename
+                 join nodes n on c.node_id=n.node_id
                where
                  chk_updated < date_sub(now(), interval 1 day)
                on duplicate key update
@@ -3193,15 +3245,15 @@ def cron_dash_app_without_responsible():
                  NULL,
                  "application code without responsible",
                  "",
-                 "",
                  2,
                  "%(a)s",
                  concat('{"a":"', a.app, '"}'),
                  now(),
                  md5(concat('{"a":"', a.app, '"}')),
                  "",
+                 now(),
                  "",
-                 now()
+                 NULL
                from apps a left join apps_responsibles ar on a.id=ar.app_id
                where
                  ar.group_id is NULL
@@ -3213,9 +3265,9 @@ def cron_dash_app_without_responsible():
 
 def cron_dash_purge():
     sql = """delete from dashboard where
-              dash_svcname != "" and
-              dash_svcname not in (
-                select distinct mon_svcname from svcmon
+              svc_id != "" and
+              svc_id not in (
+                select distinct svc_id from svcmon
               )
           """
     db.executesql(sql)
@@ -3254,15 +3306,15 @@ def cron_dash_obs_without(t, a):
                  NULL,
                  "%(tl)s obsolescence %(al)s date not set",
                  "",
-                 n.nodename,
                  0,
                  "%(t)s: %%(o)s",
                  concat('{"o": "', o.obs_name, '"}'),
                  now(),
                  md5(concat('{"o": "', o.obs_name, '"}')),
                  "",
-                 "",
-                 now()
+                 now(),
+                 n.node_id,
+                 NULL
                from obsolescence o
                  join nodes n on
                    o.obs_name = n.model or
@@ -3288,7 +3340,6 @@ def cron_dash_obs_os_alert():
                  NULL,
                  "os obsolescence alert",
                  "",
-                 n.nodename,
                  1,
                  "%(o)s obsolete since %(a)s",
                  concat('{"a": "', o.obs_alert_date,
@@ -3297,8 +3348,9 @@ def cron_dash_obs_os_alert():
                  now(),
                  "",
                  "",
-                 "",
-                 now()
+                 now(),
+                 n.node_id,
+                 NULL
                from obsolescence o
                  join nodes n on
                    o.obs_name = concat_ws(' ',n.os_name,n.os_vendor,n.os_release,n.os_update)
@@ -3319,7 +3371,6 @@ def cron_dash_obs_os_warn():
                  NULL,
                  "os obsolescence warning",
                  "",
-                 n.nodename,
                  0,
                  "%(o)s warning since %(a)s",
                  concat('{"a": "', o.obs_warn_date,
@@ -3328,8 +3379,9 @@ def cron_dash_obs_os_warn():
                  now(),
                  "",
                  "",
-                 "",
-                 now()
+                 now(),
+                 n.node_id,
+                 NULL
                from obsolescence o
                  join nodes n on
                    o.obs_name = concat_ws(' ',n.os_name,n.os_vendor,n.os_release,n.os_update)
@@ -3351,7 +3403,6 @@ def cron_dash_obs_hw_alert():
                  NULL,
                  "hardware obsolescence warning",
                  "",
-                 n.nodename,
                  1,
                  "%(o)s obsolete since %(a)s",
                  concat('{"a": "', o.obs_alert_date,
@@ -3360,8 +3411,9 @@ def cron_dash_obs_hw_alert():
                  now(),
                  "",
                  "",
-                 "",
-                 now()
+                 now(),
+                 n.node_id,
+                 NULL
                from obsolescence o
                  join nodes n on
                    o.obs_name = n.model
@@ -3385,7 +3437,6 @@ def cron_dash_obs_hw_warn():
                  NULL,
                  "hardware obsolescence warning",
                  "",
-                 n.nodename,
                  0,
                  "%(o)s warning since %(a)s",
                  concat('{"a": "', o.obs_warn_date,
@@ -3394,8 +3445,9 @@ def cron_dash_obs_hw_warn():
                  now(),
                  "",
                  "",
-                 "",
-                 now()
+                 now(),
+                 n.node_id,
+                 NULL
                from obsolescence o
                  join nodes n on
                    o.obs_name = n.model
@@ -3429,66 +3481,66 @@ def cron_dash_action_errors_cleanup():
 #
 #   Used by xmlrpc processors for event based dashboard alerts
 #
-def update_dash_node_beyond_maintenance_end(nodename):
+def update_dash_node_beyond_maintenance_end(node_id):
     sql = """delete from dashboard
                where
-                 dash_nodename in (
-                   select nodename
+                 node_id in (
+                   select node_id
                    from nodes
                    where
-                     nodename="%(nodename)s" and
+                     node_id="%(node_id)s" and
                      maintenance_end is not NULL and
                      maintenance_end != "0000-00-00 00:00:00" and
                      maintenance_end < now()
                  ) and
                  dash_type = "node maintenance expired"
-          """%dict(nodename=nodename)
+          """%dict(node_id=node_id)
     rows = db.executesql(sql)
     db.commit()
     dashboard_events()
 
-def update_dash_node_near_maintenance_end(nodename):
+def update_dash_node_near_maintenance_end(node_id):
     sql = """delete from dashboard
                where
-                 dash_nodename in (
-                   select nodename
+                 node_id in (
+                   select node_id
                    from nodes
                    where
-                     nodename="%(nodename)s" and
+                     node_id="%(node_id)s" and
                      maintenance_end is not NULL and
                      maintenance_end != "0000-00-00 00:00:00" and
                      maintenance_end > now() and
                      maintenance_end < date_sub(now(), interval 30 day)
                  ) and
                  dash_type = "node maintenance expired"
-          """%dict(nodename=nodename)
+          """%dict(node_id=node_id)
     rows = db.executesql(sql)
     db.commit()
     dashboard_events()
 
-def update_dash_node_without_asset(nodename):
+def update_dash_node_without_asset(node_id):
     sql = """delete from dashboard
                where
-                 dash_nodename in (
-                   select nodename
+                 node_id in (
+                   select node_id
                    from nodes
                    where
-                     nodename="%(nodename)s"
+                     node_id="%(node_id)s"
                  ) and
                  dash_type = "node without asset information"
-          """%dict(nodename=nodename)
+          """%dict(node_id=node_id)
     rows = db.executesql(sql)
     db.commit()
     dashboard_events()
 
-def update_dash_node_without_maintenance_end(nodename):
+def update_dash_node_without_maintenance_end(node_id):
     sql = """delete from dashboard
                where
-                 dash_nodename in (
-                   select nodename
+                 node_id in (
+                   select node_id
                    from nodes
                    where
-                     nodename="%(nodename)s" and
+                     node_id="%(node_id)s" and
                      ((maintenance_end != "0000-00-00 00:00:00" and
                        maintenance_end is not NULL) or
                        model like "%%virt%%" or
@@ -3496,49 +3548,49 @@ def update_dash_node_without_maintenance_end(nodename):
                        model like "%%KVM%%")
                  ) and
                  dash_type = "node without maintenance end date"
-          """%dict(nodename=nodename)
+          """%dict(node_id=node_id)
     rows = db.executesql(sql)
     db.commit()
     dashboard_events()
 
-def update_dash_service_not_updated(svcname):
+def update_dash_service_not_updated(svc_id):
     sql = """delete from dashboard
                where
-                 dash_svcname = "%(svcname)s" and
+                 svc_id = "%(svc_id)s" and
                  dash_type = "service configuration not updated"
-          """%dict(svcname=svcname)
+          """%dict(svc_id=svc_id)
     rows = db.executesql(sql)
     db.commit()
     dashboard_events()
 
-def update_dash_node_not_updated(nodename):
+def update_dash_node_not_updated(node_id):
     sql = """delete from dashboard
                where
-                 dash_nodename = "%(nodename)s" and
+                 node_id = "%(node_id)s" and
                  dash_type = "node information not updated"
-          """%dict(nodename=nodename)
+          """%dict(node_id=node_id)
     rows = db.executesql(sql)
     db.commit()
     dashboard_events()
 
-def update_dash_pkgdiff(nodename):
-    nodename = nodename.strip("'")
+def update_dash_pkgdiff(node_id):
     now = datetime.datetime.now()
     now = now - datetime.timedelta(microseconds=now.microsecond)
 
-    q = db.svcmon.mon_nodname == nodename
+    q = db.nodes.node_id == db.svcmon.node_id
     q &= db.svcmon.mon_updated > datetime.datetime.now() - datetime.timedelta(minutes=20)
-    rows = db(q).select(db.svcmon.mon_svcname, db.svcmon.mon_svctype)
-    svcnames = map(lambda x: x.mon_svcname, rows)
+    rows = db(q).select(db.svcmon.svc_id, db.svcmon.mon_svctype)
+    svc_ids = map(lambda x: x.svc_id, rows)
 
     for row in rows:
-        svcname = row.mon_svcname
+        svc_id = row.svc_id
 
-        q = db.svcmon.mon_svcname == svcname
+        q = db.svcmon.svc_id == svc_id
+        q &= db.svcmon.node_id == db.nodes.node_id
         q &= db.svcmon.mon_updated > datetime.datetime.now() - datetime.timedelta(minutes=20)
-        nodes = map(lambda x: repr(x.mon_nodname),
-                    db(q).select(db.svcmon.mon_nodname,
-                                 orderby=db.svcmon.mon_nodname))
+        nodes = db(q).select(db.nodes.node_id, db.nodes.nodename, orderby=db.nodes.nodename)
+        node_ids = map(lambda x: str(x.node_id), nodes)
+        nodenames = map(lambda x: str(x.nodename), nodes)
         n = len(nodes)
 
         if n < 2:
@@ -3547,10 +3599,10 @@ def update_dash_pkgdiff(nodename):
         sql = """select count(id) from (
                    select
                      id,
-                     count(pkg_nodename) as c
+                     count(node_id) as c
                    from packages
                    where
-                     pkg_nodename in (%(nodes)s)
+                     node_id in (%(node_ids)s)
                    group by
                      pkg_name,
                      pkg_version,
@@ -3559,7 +3611,7 @@ def update_dash_pkgdiff(nodename):
                   ) as t
                   where
                     t.c!=%(n)s
-              """%dict(nodes=','.join(nodes), n=n)
+              """%dict(node_ids=','.join(map(lambda x: repr(x), node_ids)), n=n)
 
         rows = db.executesql(sql)
 
@@ -3574,7 +3626,7 @@ def update_dash_pkgdiff(nodename):
         skip = 0
         trail = ""
         while True:
-            nodes_s = ','.join(nodes).replace("'", "")+trail
+            nodes_s = ','.join(nodenames)+trail
             if len(nodes_s) < 50:
                 break
             skip += 1
@@ -3584,8 +3636,8 @@ def update_dash_pkgdiff(nodename):
         sql = """insert into dashboard
                  set
                    dash_type="package differences in cluster",
-                   dash_svcname="%(svcname)s",
-                   dash_nodename="",
+                   svc_id="%(svc_id)s",
+                   node_id="",
                    dash_severity=%(sev)d,
                    dash_fmt="%%(n)s package differences in cluster %%(nodes)s",
                    dash_dict='{"n": %(n)d, "nodes": "%(nodes)s"}',
@@ -3595,7 +3647,7 @@ def update_dash_pkgdiff(nodename):
                    dash_env="%(env)s"
                  on duplicate key update
                    dash_updated="%(now)s"
-              """%dict(svcname=svcname,
+              """%dict(svc_id=svc_id,
                        now=str(now),
                        sev=sev,
                        env=row.mon_svctype,
@@ -3606,21 +3658,21 @@ def update_dash_pkgdiff(nodename):
         db.commit()
 
     # clean old
-    q = db.dashboard.dash_svcname.belongs(svcnames)
+    q = db.dashboard.svc_id.belongs(svc_ids)
     q &= db.dashboard.dash_type == "package differences in cluster"
     q &= db.dashboard.dash_updated < now
     db(q).delete()
     db.commit()
     dashboard_events()
 
-def update_dash_flex_cpu(svcname):
+def update_dash_flex_cpu(svc_id):
     now = datetime.datetime.now()
     now = now - datetime.timedelta(microseconds=now.microsecond)
 
     sql = """select svc_type from services
              where
-               svc_name="%(svcname)s"
-          """%dict(svcname=svcname)
+               svc_id="%(svc_id)s"
+          """%dict(svc_id=svc_id)
     rows = db.executesql(sql)
 
     if len(rows) == 0:
@@ -3634,8 +3686,7 @@ def update_dash_flex_cpu(svcname):
                select
                  NULL,
                  "flex error",
-                 "%(svcname)s",
-                 "",
+                 "%(svc_id)s",
                  %(sev)d,
                  "%%(n)d average cpu usage. thresholds: %%(cmin)d - %%(cmax)d",
                  concat('{"n": ', round(t.cpu),
@@ -3648,8 +3699,9 @@ def update_dash_flex_cpu(svcname):
                         ', "cmax": ', t.svc_flex_cpu_high_threshold,
                         '}')),
                  "%(env)s",
+                 now(),
                  "",
-                 now()
+                 NULL
                from (
                  select *
                  from (
@@ -3661,7 +3713,7 @@ def update_dash_flex_cpu(svcname):
                      count(1)
                     from svcmon c
                     where
-                     c.mon_svcname = "%(svcname)s" and
+                     c.svc_id = "%(svc_id)s" and
                      c.mon_availstatus = 'up'
                    ) AS up,
                    (
@@ -3669,16 +3721,16 @@ def update_dash_flex_cpu(svcname):
                      (100 - c.idle)
                     from stats_cpu c join svcmon m
                     where
-                     c.nodename = m.mon_nodname and
-                     m.mon_svcname = "%(svcname)s" and
+                     c.node_id = m.node_id and
+                     m.svc_id = "%(svc_id)s" and
                      c.date > (now() + interval -(15) minute) and
                      c.cpu = 'all' and
                      m.mon_overallstatus = 'up'
-                    group by m.mon_svcname
+                    group by m.svc_id
                    ) AS cpu
                   from v_svcmon p
                   where
-                   p.mon_svcname="%(svcname)s"
+                   p.svc_id="%(svc_id)s"
                  ) w
                  where
                    w.up > 0 and
@@ -3695,7 +3747,7 @@ def update_dash_flex_cpu(svcname):
                ) t
                on duplicate key update
                  dash_updated=now()
-          """%dict(svcname=svcname,
+          """%dict(svc_id=svc_id,
                    sev=sev,
                    env=rows[0][0],
                   )
@@ -3704,23 +3756,23 @@ def update_dash_flex_cpu(svcname):
 
     sql = """delete from dashboard
                where
-                 dash_svcname = "%(svcname)s" and
+                 svc_id = "%(svc_id)s" and
                  dash_type = "flex error" and
                  dash_updated < "%(now)s" and
                  dash_fmt like "%%average cpu usage%%"
-          """%dict(svcname=svcname, now=str(now))
+          """%dict(svc_id=svc_id, now=str(now))
     rows = db.executesql(sql)
     db.commit()
 
     dashboard_events()
 
-def update_dash_flex_instances_started(svcname):
+def update_dash_flex_instances_started(svc_id):
     now = datetime.datetime.now()
     now = now - datetime.timedelta(microseconds=now.microsecond)
     sql = """select svc_type from services
              where
-               svc_name="%(svcname)s"
-          """%dict(svcname=svcname)
+               svc_id="%(svc_id)s"
+          """%dict(svc_id=svc_id)
     rows = db.executesql(sql)
 
     if len(rows) == 1 and rows[0][0] == 'PRD':
@@ -3734,8 +3786,7 @@ def update_dash_flex_instances_started(svcname):
                select
                  NULL,
                  "flex error",
-                 "%(svcname)s",
-                 "",
+                 "%(svc_id)s",
                  %(sev)d,
                  "%%(n)d instances started. thresholds: %%(smin)d - %%(smax)d",
                  concat('{"n": ', t.up,
@@ -3748,8 +3799,9 @@ def update_dash_flex_instances_started(svcname):
                         ', "smax": ', t.svc_flex_max_nodes,
                         '}')),
                  "%(env)s",
+                 now(),
                  "",
-                 now()
+                 NULL
                from (
                  select *
                  from (
@@ -3761,12 +3813,12 @@ def update_dash_flex_instances_started(svcname):
                      count(1)
                     from svcmon c
                     where
-                     c.mon_svcname = "%(svcname)s" and
+                     c.svc_id = "%(svc_id)s" and
                      c.mon_availstatus = 'up'
                    ) AS up
                   from v_svcmon p
                   where
-                   p.mon_svcname="%(svcname)s"
+                   p.svc_id="%(svc_id)s"
                  ) w
                  where
                    ((
@@ -3780,7 +3832,7 @@ def update_dash_flex_instances_started(svcname):
                ) t
                on duplicate key update
                  dash_updated=now()
-          """%dict(svcname=svcname,
+          """%dict(svc_id=svc_id,
                    sev=sev,
                    env=rows[0][0],
                   )
@@ -3789,11 +3841,11 @@ def update_dash_flex_instances_started(svcname):
 
     sql = """delete from dashboard
                where
-                 dash_svcname = "%(svcname)s" and
+                 svc_id = "%(svc_id)s" and
                  dash_type = "flex error" and
                  dash_updated < "%(now)s" and
                  dash_fmt like "%%instances started%%"
-          """%dict(svcname=svcname, now=str(now))
+          """%dict(svc_id=svc_id, now=str(now))
     rows = db.executesql(sql)
     db.commit()
 
@@ -3807,8 +3859,7 @@ def update_dash_checks_all():
                select
                  NULL,
                  "check out of bounds",
-                 t.svcname,
-                 t.nodename,
+                 t.svc_id,
                  if (t.host_mode="PRD", 3, 2),
                  "%%(ctype)s:%%(inst)s check value %%(val)d. %%(ttype)s thresholds: %%(min)d - %%(max)d",
                  concat('{"ctype": "', t.ctype,
@@ -3827,12 +3878,13 @@ def update_dash_checks_all():
                         ', "max": ', t.max,
                         '}')),
                  t.host_mode,
-                 "",
-                 "%(now)s"
+                 "%(now)s",
+                 t.node_id,
+                 NULL
                from (
                  select
-                   c.chk_svcname as svcname,
-                   c.chk_nodename as nodename,
+                   c.svc_id as svc_id,
+                   c.node_id as node_id,
                    c.chk_type as ctype,
                    c.chk_instance as inst,
                    c.chk_threshold_provider as ttype,
@@ -3840,7 +3892,7 @@ def update_dash_checks_all():
                    c.chk_low as min,
                    c.chk_high as max,
                    n.host_mode
-                 from checks_live c left join nodes n on c.chk_nodename=n.nodename
+                 from checks_live c left join nodes n on c.node_id=n.node_id
                  where
                    c.chk_updated >= date_sub(now(), interval 1 day) and
                    (
@@ -3869,23 +3921,16 @@ def update_dash_checks_all():
     db.commit()
     dashboard_events()
 
-def update_dash_checks(nodename):
-    nodename = nodename.strip("'")
-    sql = """select host_mode from nodes
-             where
-               nodename="%(nodename)s"
-          """%dict(nodename=nodename)
-    rows = db.executesql(sql)
-
-    if len(rows) == 0:
-        sev = 2
+def update_dash_checks(node_id):
+    try:
+        q = db.nodes.node_id == node_id
+        host_mode = db(q).select().first().host_mode
+    except:
         host_mode = 'TST'
-    elif len(rows) == 1 and rows[0][0] == 'PRD':
+    if host_mode == 'PRD':
         sev = 3
-        host_mode = rows[0][0]
     else:
         sev = 2
-        host_mode = rows[0][0]
 
     now = datetime.datetime.now()
     now = now - datetime.timedelta(microseconds=now.microsecond)
@@ -3894,8 +3939,7 @@ def update_dash_checks(nodename):
                select
                  NULL,
                  "check out of bounds",
-                 t.svcname,
-                 t.nodename,
+                 t.svc_id,
                  %(sev)d,
                  "%%(ctype)s:%%(inst)s check value %%(val)d. %%(ttype)s thresholds: %%(min)d - %%(max)d",
                  concat('{"ctype": "', t.ctype,
@@ -3914,12 +3958,13 @@ def update_dash_checks(nodename):
                         ', "max": ', t.max,
                         '}')),
                  "%(env)s",
-                 "",
-                 "%(now)s"
+                 "%(now)s",
+                 t.node_id,
+                 NULL
                from (
                  select
-                   chk_svcname as svcname,
-                   chk_nodename as nodename,
+                   svc_id as svc_id,
+                   node_id as node_id,
                    chk_type as ctype,
                    chk_instance as inst,
                    chk_threshold_provider as ttype,
@@ -3928,7 +3973,7 @@ def update_dash_checks(nodename):
                    chk_high as max
                  from checks_live
                  where
-                   chk_nodename = "%(nodename)s" and
+                   node_id = "%(node_id)s" and
                    chk_updated >= date_sub(now(), interval 1 day) and
                    (
                      chk_value < chk_low or
@@ -3937,7 +3982,7 @@ def update_dash_checks(nodename):
                ) t
                on duplicate key update
                  dash_updated="%(now)s"
-          """%dict(nodename=nodename,
+          """%dict(node_id=node_id,
                    sev=sev,
                    env=host_mode,
                    now=str(now),
@@ -3947,7 +3992,7 @@ def update_dash_checks(nodename):
 
     sql = """delete from dashboard
                where
-                 dash_nodename = "%(nodename)s" and
+                 node_id = "%(node_id)s" and
                  (
                    (
                      dash_type = "check out of bounds" and
@@ -3955,31 +4000,30 @@ def update_dash_checks(nodename):
                    ) or
                    dash_type = "check value not updated"
                  )
-          """%dict(nodename=nodename, now=str(now))
+          """%dict(node_id=node_id, now=str(now))
 
     rows = db.executesql(sql)
     db.commit()
     dashboard_events()
 
-def update_dash_netdev_errors(nodename):
-    nodename = nodename.strip("'")
+def update_dash_netdev_errors(node_id):
     now = datetime.datetime.now()
     now -= datetime.timedelta(microseconds=now.microsecond)
     sql = """select dev, sum(rxerrps+txerrps+collps+rxdropps+rxdropps) as errs
                from stats_netdev_err_hour
                where
-                 nodename = "%(nodename)s" and
+                 node_id = "%(node_id)s" and
                  date > date_sub(now(), interval 1 day)
                group by dev
-          """%dict(nodename=nodename)
+          """%dict(node_id=node_id)
     rows = db.executesql(sql, as_dict=True)
 
     if len(rows) == 0:
         sql = """delete from checks_live
                  where
-                  chk_nodename="%(nodename)s" and
+                  node_id="%(node_id)s" and
                   chk_type = "netdev_err"
-              """
+              """ % dict(node_id=node_id)
         db.executesql(sql)
         return
 
@@ -3987,19 +4031,19 @@ def update_dash_netdev_errors(nodename):
         sql = """insert into checks_live
                  set
                    chk_type="netdev_err",
-                   chk_svcname="",
-                   chk_nodename="%(nodename)s",
+                   svc_id="",
+                   node_id="%(node_id)s",
                    chk_value=%(errs)d,
                    chk_updated="%(now)s",
                    chk_instance="%(dev)s"
                  on duplicate key update
                    chk_type="netdev_err",
-                   chk_svcname="",
-                   chk_nodename="%(nodename)s",
+                   svc_id="",
+                   node_id="%(node_id)s",
                    chk_value=%(errs)d,
                    chk_updated="%(now)s",
                    chk_instance="%(dev)s"
-              """%dict(nodename=nodename,
+              """%dict(node_id=node_id,
                        now=now,
                        dev=row['dev'],
                        errs=int(row['errs']))
@@ -4009,30 +4053,28 @@ def update_dash_netdev_errors(nodename):
              where
                chk_type="netdev_err" and
                chk_updated < "%(now)s" and
-               chk_nodename="%(nodename)s"
-          """%dict(nodename=nodename,
+               node_id="%(node_id)s"
+          """%dict(node_id=node_id,
                    now=now,
                   )
     db.executesql(sql)
     db.commit()
 
-    q = db.checks_live.chk_nodename == nodename
+    q = db.checks_live.node_id == node_id
     q &= db.checks_live.chk_type == "netdev_err"
     checks = db(q).select()
     update_thresholds_batch(checks, one_source=True)
 
-    update_dash_checks(nodename)
+    update_dash_checks(node_id)
 
 
-def update_dash_action_errors(svc_name, nodename):
-    svc_name = svc_name.strip("'")
-    nodename = nodename.strip("'")
+def update_dash_action_errors(svc_id, node_id):
     sql = """select e.err, s.svc_type from b_action_errors e
-             join services s on e.svcname=s.svc_name
+             join services s on e.svc_id=s.svc_id
              where
-               svcname="%(svcname)s" and
-               nodename="%(nodename)s"
-          """%dict(svcname=svc_name, nodename=nodename)
+               svc_id="%(svc_id)s" and
+               node_id="%(node_id)s"
+          """%dict(svc_id=svc_id, node_id=node_id)
     rows = db.executesql(sql)
 
     if len(rows) == 1:
@@ -4043,8 +4085,8 @@ def update_dash_action_errors(svc_name, nodename):
         sql = """insert into dashboard
                  set
                    dash_type="action errors",
-                   dash_svcname="%(svcname)s",
-                   dash_nodename="%(nodename)s",
+                   svc_id="%(svc_id)s",
+                   node_id="%(node_id)s",
                    dash_severity=%(sev)d,
                    dash_fmt="%%(err)s action errors",
                    dash_dict='{"err": "%(err)d"}',
@@ -4057,8 +4099,8 @@ def update_dash_action_errors(svc_name, nodename):
                    dash_dict='{"err": "%(err)d"}',
                    dash_updated=now(),
                    dash_env="%(env)s"
-              """%dict(svcname=svc_name,
-                       nodename=nodename,
+              """%dict(svc_id=svc_id,
+                       node_id=node_id,
                        sev=sev,
                        env=rows[0][1],
                        err=rows[0][0])
@@ -4070,11 +4112,11 @@ def update_dash_action_errors(svc_name, nodename):
                      dashboard
                    where
                      dash_type="action errors" and
-                     dash_svcname="%(svcname)s" and
-                     dash_nodename="%(nodename)s" and
+                     svc_id="%(svc_id)s" and
+                     node_id="%(node_id)s" and
                      dash_fmt="%%(err)s action errors"
-              """%dict(svcname=svc_name,
-                       nodename=nodename,
+              """%dict(svc_id=svc_id,
+                       node_id=node_id,
                   )
         rows = db.executesql(sqlws)
         if len(rows) > 0:
@@ -4089,10 +4131,10 @@ def update_dash_action_errors(svc_name, nodename):
         sqlws = """select dash_md5 from dashboard
                  where
                    dash_type="action errors" and
-                   dash_svcname="%(svcname)s" and
-                   dash_nodename="%(nodename)s"
-              """%dict(svcname=svc_name,
-                       nodename=nodename)
+                   svc_id="%(svc_id)s" and
+                   node_id="%(node_id)s"
+              """%dict(svc_id=svc_id,
+                       node_id=node_id)
         rows = db.executesql(sqlws)
         if len(rows) > 0:
             _websocket_send(event_msg({
@@ -4104,14 +4146,14 @@ def update_dash_action_errors(svc_name, nodename):
         sql = """delete from dashboard
                  where
                    dash_type="action errors" and
-                   dash_svcname="%(svcname)s" and
-                   dash_nodename="%(nodename)s"
-              """%dict(svcname=svc_name,
-                       nodename=nodename)
+                   svc_id="%(svc_id)s" and
+                   node_id="%(node_id)s"
+              """%dict(svc_id=svc_id,
+                       node_id=node_id)
         db.executesql(sql)
         db.commit()
 
-def update_dash_service_frozen(svc_name, nodename, svc_type, frozen):
+def update_dash_service_frozen(svc_id, node_id, svc_type, frozen):
     if svc_type == 'PRD':
         sev = 2
     else:
@@ -4120,16 +4162,16 @@ def update_dash_service_frozen(svc_name, nodename, svc_type, frozen):
         sql = """delete from dashboard
                  where
                    dash_type="service frozen" and
-                   dash_nodename="%(nodename)s" and
-                   dash_svcname="%(svcname)s"
-              """%dict(svcname=svc_name, nodename=nodename)
+                   node_id="%(node_id)s" and
+                   svc_id="%(svc_id)s"
+              """%dict(svc_id=svc_id, node_id=node_id)
         db.commit()
     else:
         sql = """insert into dashboard
                  set
                    dash_type="service frozen",
-                   dash_svcname="%(svcname)s",
-                   dash_nodename="%(nodename)s",
+                   svc_id="%(svc_id)s",
+                   node_id="%(node_id)s",
                    dash_severity=%(sev)d,
                    dash_fmt="",
                    dash_dict="",
@@ -4141,8 +4183,8 @@ def update_dash_service_frozen(svc_name, nodename, svc_type, frozen):
                    dash_fmt="",
                    dash_updated=now(),
                    dash_env="%(env)s"
-              """%dict(svcname=svc_name,
-                       nodename=nodename,
+              """%dict(svc_id=svc_id,
+                       node_id=node_id,
                        sev=sev,
                        env=svc_type,
                       )
@@ -4150,38 +4192,43 @@ def update_dash_service_frozen(svc_name, nodename, svc_type, frozen):
     db.commit()
     # dashboard_events() called from __svcmon_update
 
-def update_dash_service_not_on_primary(svc_name, nodename, svc_type, availstatus):
+def update_dash_service_not_on_primary(svc_id, node_id, svc_type, availstatus):
     if svc_type == 'PRD':
         sev = 1
     else:
         sev = 0
 
-    q = db.services.svc_name == svc_name
-    rows = db(q).select(db.services.svc_autostart,
+    q = db.services.svc_id == svc_id
+    q &= db.services.svc_cluster_type == "failover"
+    q &= db.services.svc_id == db.svcmon.svc_id
+    q &= db.svcmon.node_id == node_id
+    q &= db.svcmon.node_id == db.nodes.node_id
+    rows = db(q).select(db.nodes.nodename,
+                        db.services.svc_autostart,
                         db.services.svc_availstatus)
 
     if len(rows) == 0:
         return
 
-    if rows[0].svc_autostart != nodename or \
+    if rows[0].services.svc_autostart != rows[0].nodes.nodename or \
        availstatus == "up" or \
-       rows[0].svc_availstatus != "up" or \
-       rows[0].svc_autostart is None or \
-       rows[0].svc_autostart == "":
+       rows[0].services.svc_availstatus != "up" or \
+       rows[0].services.svc_autostart is None or \
+       rows[0].services.svc_autostart == "":
         sql = """delete from dashboard
                  where
                    dash_type="service not started on primary node" and
-                   dash_nodename="%(nodename)s" and
-                   dash_svcname="%(svcname)s"
-              """%dict(svcname=svc_name, nodename=nodename)
+                   node_id="%(node_id)s" and
+                   svc_id="%(svc_id)s"
+              """%dict(svc_id=svc_id, node_id=node_id)
         db.executesql(sql)
         return
 
     sql = """insert into dashboard
              set
                dash_type="service not started on primary node",
-               dash_svcname="%(svcname)s",
-               dash_nodename="%(nodename)s",
+               svc_id="%(svc_id)s",
+               node_id="%(node_id)s",
                dash_severity=%(sev)d,
                dash_fmt="",
                dash_dict="",
@@ -4194,8 +4241,8 @@ def update_dash_service_not_on_primary(svc_name, nodename, svc_type, availstatus
                dash_updated=now(),
                dash_env="%(env)s"
 
-          """%dict(svcname=svc_name,
-                   nodename=nodename,
+          """%dict(svc_id=svc_id,
+                   node_id=node_id,
                    sev=sev,
                    env=svc_type,
                   )

@@ -95,11 +95,11 @@ def print_fset_data(data):
         print fset_id
         recurse_print_fset(data[fset_id])
 
-def comp_get_matching_filters(fset_ids, fset_data=None, nodename=None, svcname=None, slave=False):
+def comp_get_matching_filters(fset_ids, fset_data=None, node_id=None, svc_id=None, slave=False):
     sql_l = []
 
-    if svcname == "":
-        svcname = None
+    if svc_id == "":
+        svc_id = None
 
     if fset_data is None:
         fset_data = comp_get_fset_data()
@@ -126,73 +126,65 @@ def comp_get_matching_filters(fset_ids, fset_data=None, nodename=None, svcname=N
         where_ext = ""
         join_table = ""
 
-        if slave:
-            svcmon_nodname_field = "svcmon.mon_vmname"
-        else:
-            svcmon_nodname_field = "svcmon.mon_nodname"
-
-        if nodename is not None:
-            if table in ("nodes", 'node_hba', "b_disk_app", "svcdisks", "svcmon", "svcmon_log", "resmon"):
-                if table in ("nodes", 'node_hba', "resmon"):
-                    _field = "nodename"
-                elif table in ("b_disk_app", "svcdisks"):
-                    _field = "disk_nodename"
-                elif table in ("svcmon", "svcmon_log"):
-                    _field = "mon_nodname"
-                else:
-                    print "unknown table", table
-                    return sql_l
-                where_ext += " and %s.%s = '%s'" % (table, _field, nodename)
-            elif table == "v_comp_moduleset_attachments" and svcname is None:
-                _field = "nodename"
-                where_ext += " and %s.%s = '%s'" % (table, _field, nodename)
-            elif table == "v_tags" and svcname is None:
-                _field = "nodename"
-                where_ext += " and %s.%s = '%s'" % (table, _field, nodename)
-            elif table == "packages" and svcname is None:
-                _field = "pkg_nodename"
-                where_ext += " and %s.%s = '%s'" % (table, _field, nodename)
-            elif table == "patches" and svcname is None:
-                _field = "patch_nodename"
-                where_ext += " and %s.%s = '%s'" % (table, _field, nodename)
-            elif table in ("services"):
-                where_ext += " and services.svc_name=svcmon.mon_svcname and %s = '%s'" % (svcmon_nodname_field, nodename)
-                join_table += ", svcmon"
-            elif table in ("apps"):
-                where_ext += " and apps.app=nodes.app and nodes.nodename = '%s'" % nodename
+        if node_id is not None:
+            if table == "nodes":
+                where_ext += """ and nodes.node_id = "%s" """ % (node_id)
+            elif table in (
+              "node_hba",
+              "node_ip"
+            ):
                 join_table += ", nodes"
-
-        if svcname is not None:
-            if table in ("services", "b_disk_app", "svcdisks", "svcmon",
-                         "svcmon_log", "v_comp_moduleset_attachments",
-                         "v_tags", "resmon"):
-                if table in ("services"):
-                    _field = "svc_name"
-                elif table in ("b_disk_app", "svcdisks"):
-                    _field = "disk_svcname"
-                elif table in ("svcmon", "svcmon_log"):
-                    _field = "mon_svcname"
-                elif table in ("v_comp_moduleset_attachments", "v_tags", "resmon"):
-                    _field = "svcname"
+                where_ext += """ and %s.node_id = "%s" """ % (table, node_id)
+            elif table in ("diskinfo"):
+                join_table += ", nodes, svcdisks"
+                where_ext += """ and svcdisks.node_id=nodes.node_id and nodes.node_id="%s" and svcdisks.disk_id=diskinfo.disk_id""" % node_id
+            elif svc_id is None and table in (
+              "v_comp_moduleset_attachments",
+              "v_tags",
+              "packages",
+              "patches",
+              "svcdisks",
+              "svcmon",
+              "svcmon_log",
+              "resmon",
+              "resinfo"
+            ):
+                join_table += ", nodes"
+                where_ext += """ and %s.node_id="%s" """ % (table, node_id)
+            elif table in ("services"):
+                if slave:
+                    where_ext += """ and services.svc_id=svcmon.svc_id and nodes.node_id="%s" and node.nodename=svcmon.mon_vmname """ % node_id
                 else:
-                    print "unknown table", table
-                    return sql_l
-                where_ext += " and %s = '%s'" % (_field, svcname)
+                    where_ext += """ and services.svc_id=svcmon.svc_id and svcmon.node_id="%s" """ % node_id
+                join_table += ", svcmon, nodes"
+            elif table in ("apps"):
+                where_ext += """ and apps.app=nodes.app and nodes.node_id="%s" """ % node_id
+                join_table += ", nodes"
+            else:
+                print "unknown table", table
+                return sql_l
+
+        if svc_id is not None:
+            if table in ("services", "svcdisks", "svcmon", "svcmon_log", "v_comp_moduleset_attachments", "v_tags", "resmon"):
+                where_ext += " and %s.svc_id = '%s'" % (table, svc_id)
             elif table in ("nodes", "packages", "patches", "node_hba"):
                 if table == "nodes":
-                    where_ext += " and nodes.nodename=%s and svcmon.mon_svcname = '%s'" % (svcmon_nodname_field, svcname)
+                    where_ext += " and nodes.node_id=svcmon.node_id and svcmon.svc_id = '%s'" % svc_id
                     join_table += ", svcmon"
                 elif table == "packages":
-                    where_ext += " and packages.pkg_nodename=%s and svcmon.mon_svcname = '%s'" % (svcmon_nodname_field, svcname)
-                    join_table += ", svcmon"
+                    where_ext += " and packages.node_id=svcmon.node_id and svcmon.svc_id = '%s'" % svc_id
+                    join_table += ", svcmon, nodes"
                 elif table == "patches":
-                    where_ext += " and patches.patch_nodename=%s and svcmon.mon_svcname = '%s'" % (svcmon_nodname_field, svcname)
-                    join_table += ", svcmon"
+                    where_ext += " and patches.node_id=svcmon.node_id and svcmon.svc_id = '%s'" % svc_id
+                    join_table += ", svcmon, nodes"
                 elif table == "node_hba":
-                    where_ext += " and node_hba.nodename=%s and svcmon.mon_svcname = '%s'" % (svcmon_nodname_field, svcname)
+                    where_ext += " and node_hba.node_id=svcmon.node_id and svcmon.svc_id = '%s'" % svc_id
                     join_table += ", svcmon"
+            elif table == "diskinfo":
+                where_ext += " and diskinfo.disk_id=svcdisks.disk_id and svcdisks.svc_id='%s'" % svc_id
+                join_table += ", svcdisks"
             elif table == "apps":
-                where_ext += " and apps.app=services.svc_app and services.svc_name='%s'" % svcname
+                where_ext += " and apps.app=services.svc_app and services.svc_id='%s'" % svc_id
                 join_table += ", services"
 
 
@@ -234,11 +226,14 @@ def comp_get_matching_filters(fset_ids, fset_data=None, nodename=None, svcname=N
     matching_filters = set(matching_filters) - set([0])
     return matching_filters
 
-def comp_get_matching_fset_ids(fset_ids=None, nodename=None, svcname=None, slave=False):
+def comp_get_matching_fset_ids(fset_ids=None, node_id=None, svc_id=None, slave=False):
     if fset_ids is None:
-        fset_ids = comp_get_rulesets_fset_ids(nodename=nodename, svcname=svcname)
+        fset_ids = comp_get_rulesets_fset_ids(node_id=node_id, svc_id=svc_id)
     fset_data = comp_get_fset_data()
-    matching_filters = comp_get_matching_filters(fset_ids, fset_data, nodename=nodename, svcname=svcname, slave=slave)
+    matching_filters = comp_get_matching_filters(
+      fset_ids, fset_data,
+      node_id=node_id, svc_id=svc_id, slave=slave
+    )
     matching_fsets = []
 
     def recurse_match(data, depth=0, match=None):

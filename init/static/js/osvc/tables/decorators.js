@@ -33,10 +33,16 @@ var db_tables = {
     "name": "services",
     "title": "services"
   },
-  "b_disk_app": {
+  "diskinfo": {
     "cl": "hd16",
     "hide": false,
-    "name": "b_disk_app",
+    "name": "diskinfo",
+    "title": "disks"
+  },
+  "svcdisks": {
+    "cl": "hd16",
+    "hide": false,
+    "name": "svcdisks",
     "title": "disks"
   },
   "nodes": {
@@ -191,12 +197,11 @@ var img_h = {
 }
 
 function cell_decorator_log_icons(e) {
-  var v = $.data(e, "v")
   var line = $(e).parent(".tl")
   var action = $.data(line.children("[col=log_action]")[0], "v")
   var l = action.split(".")
   var span = $("<span></span>")
-  span.attr("title", v)
+  span.attr("title", action).tooltipster()
   for (var i=0; i<l.length; i++) {
     var w = l[i]
     if (!(w in img_h)) {
@@ -220,7 +225,7 @@ function cell_decorator_boolean(e) {
   } else {
     var cl = "fa toggle-off"
   }
-  s = "<span class='"+cl+"' title='"+v+"'></span>"
+  s = $("<span class='"+cl+"' title='"+v+"'></span>").tooltipster()
   $(e).html(s)
 }
 
@@ -505,8 +510,8 @@ function cell_decorator_action_pid(e) {
   $(e).html(s)
   $(e).bind('click', function(){
     var line = $(e).parent(".tl")
-    var hostname = $.data(line.children("[col=hostname]")[0], "v")
-    var svcname = $.data(line.children("[col=svcname]")[0], "v")
+    var node_id = $.data(line.children("[col=node_id]")[0], "v")
+    var svc_id = $.data(line.children("[col=svc_id]")[0], "v")
     var begin = $.data(line.children("[col=begin]")[0], "v")
     var end = $.data(line.children("[col=end]")[0], "v")
 
@@ -518,7 +523,7 @@ function cell_decorator_action_pid(e) {
     var d = new Date(+new Date(_end) + 1000*60*60*24)
     end = print_date(d)
 
-    url = services_get_url() + "/init/svcactions/svcactions?actions_f_svcname="+svcname+"&actions_f_hostname="+hostname+"&actions_f_pid="+v+"&actions_f_begin=>"+begin+"&actions_f_end=<"+end+"&volatile_filters=true"
+    url = services_get_url() + "/init/svcactions/svcactions?actions_f_svc_id="+svc_id+"&actions_f_node_id="+node_id+"&actions_f_pid="+v+"&actions_f_begin=>"+begin+"&actions_f_end=<"+end+"&volatile_filters=true"
 
     $(this).children("a").attr("href", url)
     $(this).children("a").attr("target", "_blank")
@@ -651,12 +656,12 @@ function cell_decorator_svc_action_err(e) {
   s.click(function(){
     if (get_selected() != "") {return}
     var line = $(e).parent(".tl")
-    var svcname = $.data(line.children("[col=mon_svcname]")[0], "v")
+    var svc_id = $.data(line.children("[col=svc_id]")[0], "v")
     var id = toggle_extratable(e)
     table_actions(id, {
 	"volatile_filters": true,
 	"request_vars": {
-		"actions_f_svcname": svcname,
+		"actions_f_svc_id": svc_id,
 		"actions_f_status": "err",
 		"actions_f_ack": "!1|empty",
 		"actions_f_begin": ">-300d"
@@ -691,6 +696,8 @@ function cell_decorator_obs_type(e) {
 
 function _cell_decorator_nodename(e, os_icon) {
   var v = $.data(e, "v")
+  var line = $(e).parent(".tl")
+  var node_id = $.data(line.children("[col=node_id]")[0], "v")
   if ((v=="") || (v=="empty")) {
     return
   }
@@ -714,7 +721,7 @@ function _cell_decorator_nodename(e, os_icon) {
   $(e).click(function(){
     if (get_selected() != "") {return}
     var id = toggle_extraline(e)
-    node_tabs(id, {"nodename": v})
+    node_tabs(id, {"nodename": v, "node_id": node_id})
   })
 }
 
@@ -772,7 +779,9 @@ function cell_decorator_username(e) {
 
 function cell_decorator_svcname(e) {
   var v = $.data(e, "v")
-  if ((v=="") || (v=="empty")) {
+  var line = $(e).parent(".tl")
+  var svc_id = $.data(line.children("[col=svc_id]")[0], "v")
+  if ((svc_id=="") || (svc_id=="empty")) {
     return
   }
   $(e).empty()
@@ -781,7 +790,7 @@ function cell_decorator_svcname(e) {
   $(e).click(function(){
     if (get_selected() != "") {return}
     var id = toggle_extraline(e)
-    service_tabs(id, {"svcname": v})
+    service_tabs(id, {"svc_id": svc_id})
   })
 }
 
@@ -878,8 +887,8 @@ function cell_decorator_svcmon_links(e) {
 function cell_decorator_comp_log(e) {
   var line = $(e).parent(".tl")
   var module = $.data(line.find("[col=run_module]")[0], "v")
-  var svcname = $.data(line.find("[col=run_svcname]")[0], "v")
-  var nodename = $.data(line.find("[col=run_nodename]")[0], "v")
+  var svc_id = $.data(line.find("[col=svc_id]")[0], "v")
+  var node_id = $.data(line.find("[col=node_id]")[0], "v")
   $(e).empty()
   $(e).append("<div class='icon spark16'></div>")
   div = $(":first-child", e)
@@ -889,7 +898,7 @@ function cell_decorator_comp_log(e) {
   $(e).click(function(){
     if (get_selected() != "") {return}
     var id = toggle_extraline(e)
-    comp_log(id, {"module": module, "svcname": svcname, "nodename": nodename})
+    comp_log(id, {"module": module, "svc_id": svc_id, "node_id": node_id})
   })
 }
 
@@ -914,7 +923,7 @@ function cell_decorator_comp_mod_log(e) {
 
 function cell_decorator_comp_node_log(e) {
   var line = $(e).parent(".tl")
-  var nodename = $.data(line.find("[col=node_name]")[0], "v")
+  var node_id = $.data(line.find("[col=node_id]")[0], "v")
   $(e).empty()
   $(e).append("<div class='icon spark16'></div>")
   div = $(":first-child", e)
@@ -926,14 +935,14 @@ function cell_decorator_comp_node_log(e) {
     table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
     span_id = $(e).parent(".tl").attr("spansum")
     id = table_id + "_x_" + span_id
-    url = services_get_url() + "/init/compliance/ajax_node_history?nodename="+nodename+"&rowid="+id
+    url = services_get_url() + "/init/compliance/ajax_node_history?node_id="+node_id+"&rowid="+id
     toggle_extra(url, id, e, 0)
   })
 }
 
 function cell_decorator_comp_svc_log(e) {
   var line = $(e).parent(".tl")
-  var svcname = $.data(line.find("[col=svc_name]")[0], "v")
+  var svc_id = $.data(line.find("[col=svc_id]")[0], "v")
   $(e).empty()
   $(e).append("<div class='icon spark16'></div>")
   div = $(":first-child", e)
@@ -945,7 +954,7 @@ function cell_decorator_comp_svc_log(e) {
     table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
     span_id = $(e).parent(".tl").attr("spansum")
     id = table_id + "_x_" + span_id
-    url = services_get_url() + "/init/compliance/ajax_svc_history?svcname="+svcname+"&rowid="+id
+    url = services_get_url() + "/init/compliance/ajax_svc_history?svc_id="+svc_id+"&rowid="+id
     toggle_extra(url, id, e, 0)
   })
 }
@@ -1006,34 +1015,34 @@ function cell_decorator_chk_type(e) {
 
 function cell_decorator_dash_link_comp_tab(e) {
   var line = $(e).parent(".tl")
-  var svcname = $.data(line.find("[col=dash_svcname]")[0], "v")
-  var nodename = $.data(line.find("[col=dash_nodename]")[0], "v")
+  var svc_id = $.data(line.find("[col=svc_id]")[0], "v")
+  var node_id = $.data(line.find("[col=node_id]")[0], "v")
   s = "<div class='icon comp16 clickable'></div>"
   $(e).html(s)
   $(e).addClass("corner")
-  if (svcname != "") {
+  if (svc_id != "") {
     $(e).click(function(){
       var id = toggle_extraline(e)
-      service_tabs(id, {"svcname": svcname, "tab": "service_tabs.compliance"})
+      service_tabs(id, {"svc_id": svc_id, "tab": "service_tabs.compliance"})
     })
-  } else if (nodename != "") {
+  } else if (node_id != "") {
     $(e).click(function(){
       var id = toggle_extraline(e)
-      node_tabs(id, {"nodename": nodename, "tab": "node_tabs.compliance"})
+      node_tabs(id, {"node_id": node_id, "tab": "node_tabs.compliance"})
     })
   }
 }
 
 function cell_decorator_dash_link_pkg_tab(e) {
   var line = $(e).parent(".tl")
-  var svcname = $.data(line.find("[col=dash_svcname]")[0], "v")
+  var svc_id = $.data(line.find("[col=svc_id]")[0], "v")
   s = "<div class='icon pkg16 clickable'></div>"
   $(e).html(s)
   $(e).addClass("corner")
-  if (svcname != "") {
+  if (svc_id != "") {
     $(e).click(function(){
       var id = toggle_extraline(e)
-      service_tabs(id, {"svcname": svcname, "tab": "service_tabs.pkgdiff"})
+      service_tabs(id, {"svc_id": svc_id, "tab": "service_tabs.pkgdiff"})
     })
   }
 }
@@ -1043,7 +1052,7 @@ function cell_decorator_dash_link_feed_queue(e) {
   $(e).html(s)
 }
 
-function _cell_decorator_dash_link_actions(svcname, e) {
+function _cell_decorator_dash_link_actions(svc_id, e) {
   s = $("<a class='icon action16 clickable'></a>")
   s.click(function(){
     if (get_selected() != "") {return}
@@ -1051,7 +1060,7 @@ function _cell_decorator_dash_link_actions(svcname, e) {
     table_actions(id, {
 	"volatile_filters": true,
 	"request_vars": {
-		"actions_f_svcname": svcname,
+		"actions_f_svc_id": svc_id,
 		"actions_f_begin": ">-7d"
 	}
     })
@@ -1083,7 +1092,7 @@ function cell_decorator_obs_count(e) {
   })
 }
 
-function _cell_decorator_dash_link_action_error(svcname, e) {
+function _cell_decorator_dash_link_action_error(svc_id, e) {
   s = $("<a class='icon alert16 clickable'></a>")
   s.click(function(){
     if (get_selected() != "") {return}
@@ -1091,7 +1100,7 @@ function _cell_decorator_dash_link_action_error(svcname, e) {
     table_actions(id, {
 	"volatile_filters": true,
 	"request_vars": {
-		"actions_f_svcname": svcname,
+		"actions_f_svc_id": svc_id,
 		"actions_f_status": "err",
 		"actions_f_ack": "!1|empty",
 		"actions_f_begin": ">-30d"
@@ -1103,50 +1112,50 @@ function _cell_decorator_dash_link_action_error(svcname, e) {
 
 function cell_decorator_dash_link_action_error(e) {
   var line = $(e).parent(".tl")
-  var svcname = $.data(line.find("[col=dash_svcname]")[0], "v")
-  $(e).append(_cell_decorator_dash_link_action_error(svcname, e))
-  $(e).append(_cell_decorator_dash_link_actions(svcname, e))
+  var svc_id = $.data(line.find("[col=svc_id]")[0], "v")
+  $(e).append(_cell_decorator_dash_link_action_error(svc_id, e))
+  $(e).append(_cell_decorator_dash_link_actions(svc_id, e))
 }
 
 function cell_decorator_dash_link_svcmon(e) {
   var line = $(e).parent(".tl")
-  var svcname = $.data(line.find("[col=dash_svcname]")[0], "v")
+  var svc_id = $.data(line.find("[col=svc_id]")[0], "v")
   s = "<div class='icon svc clickable'></div>"
   $(e).html(s)
   $(e).addClass("corner")
-  if (svcname != "") {
+  if (svc_id != "") {
     $(e).click(function(){
       var id = toggle_extraline(e)
-      service_tabs(id, {"svcname": svcname, "tab": "service_tabs.status"})
+      service_tabs(id, {"svc_id": svc_id, "tab": "service_tabs.status"})
     })
   }
 }
 
 function cell_decorator_dash_link_node(e) {
   var line = $(e).parent(".tl")
-  var nodename = $.data(line.find("[col=dash_nodename]")[0], "v")
+  var node_id = $.data(line.find("[col=node_id]")[0], "v")
   s = "<div class='icon node16 clickable'></div>"
   $(e).html(s)
   $(e).addClass("corner")
-  if (nodename != "") {
+  if (node_id != "") {
     $(e).click(function(){
       var id = toggle_extraline(e)
-      node_tabs(id, {"nodename": nodename, "tab": "node_tabs.properties"})
+      node_tabs(id, {"node_id": node_id, "tab": "node_tabs.properties"})
     })
   }
 }
 
 function cell_decorator_dash_link_checks(e) {
   var line = $(e).parent(".tl")
-  var nodename = $.data(line.find("[col=dash_nodename]")[0], "v")
+  var node_id = $.data(line.find("[col=node_id]")[0], "v")
   s = "<div class='icon check16 clickable'></div>"
   $(e).html(s)
   $(e).addClass("corner")
-  if (nodename != "") {
+  if (node_id != "") {
     $(e).click(function(){
       var id = toggle_extratable(e)
       var req = {}
-      req[id+"_f_chk_nodename"] = nodename
+      req[id+"_f_node_id"] = node_id
       req[id+"_f_chk_err"] = ">0"
       table_checks(id, {"id": id, "request_vars": req, "volatile_filters": true})
     })
@@ -1254,7 +1263,8 @@ function cell_decorator_dash_severity(e) {
   } else {
       l.push("alertblack")
   }
-  $(e).html("<div class='icon "+l.join(" ")+"' title='"+v+"'></div>")
+  var content = $("<div class='icon "+l.join(" ")+"' title='"+v+"'></div>").tooltipster()
+  $(e).html(content)
 }
 
 function cell_decorator_form_id(e) {
@@ -1363,12 +1373,12 @@ function cell_decorator_dash_entry(e) {
   $(e).click(function(){
     if (get_selected() != "") {return}
     var line = $(e).parent(".tl")
-    var nodename = $.data(line.children("[col=dash_nodename]")[0], "v")
-    var svcname = $.data(line.children("[col=dash_svcname]")[0], "v")
+    var node_id = $.data(line.children("[col=node_id]")[0], "v")
+    var svc_id = $.data(line.children("[col=svc_id]")[0], "v")
     var dash_md5 = $.data(line.children("[col=dash_md5]")[0], "v")
     var dash_created = $.data(line.children("[col=dash_created]")[0], "v")
     var rowid = line.attr("cksum")
-    url = services_get_url() + "/init/dashboard/ajax_alert_events?dash_nodename="+nodename+"&dash_svcname="+svcname+"&dash_md5="+dash_md5+"&dash_created="+dash_created+"&rowid="+rowid
+    url = services_get_url() + "/init/dashboard/ajax_alert_events?node_id="+node_id+"&svc_id="+svc_id+"&dash_md5="+dash_md5+"&dash_created="+dash_created+"&rowid="+rowid
     toggle_extra(url, null, this, 0)
   })
 }
@@ -1561,7 +1571,8 @@ function cell_decorator_datetime(e) {
   if (max_age && (delta > max_age)) {
     cl += " icon-red"
   }
-  $(e).html("<div class='"+cl+"' style='color:"+color+"' title='"+s+"'>"+text+"</div>")
+  var content = $("<div class='"+cl+"' style='color:"+color+"' title='"+s+"'>"+text+"</div>").tooltipster()
+  $(e).html(content)
 }
 
 function cell_decorator_date(e) {
@@ -1749,7 +1760,7 @@ function cell_decorator_yaml(e) {
   $(e).html(_e)
 }
 
-function cell_decorator_appinfo_key(e) {
+function cell_decorator_resinfo_key(e) {
   var s = $.data(e, "v")
   var _e = $("<div class='boxed_small'></div>")
   _e.text(s)
@@ -1761,7 +1772,7 @@ function cell_decorator_appinfo_key(e) {
   $(e).html(_e)
 }
 
-function cell_decorator_appinfo_value(e) {
+function cell_decorator_resinfo_value(e) {
   var s = $.data(e, "v")
   var _e = $("<span></span>")
   _e.text(s)
@@ -1773,12 +1784,12 @@ function cell_decorator_appinfo_value(e) {
       var span_id = line.attr("spansum")
       var table_id = $(e).parents("table").attr("id").replace(/^table_/, '')
       var id = table_id + "_x_" + span_id
-      var params = "svcname="+encodeURIComponent($.data(line.children("[col=app_svcname]")[0], "v"))
-      params += "&nodename="+encodeURIComponent($.data(line.children("[col=app_nodename]")[0], "v"))
-      params += "&launcher="+encodeURIComponent($.data(line.children("[col=app_launcher]")[0], "v"))
-      params += "&key="+encodeURIComponent($.data(line.children("[col=app_key]")[0], "v"))
+      var params = "svc_id="+encodeURIComponent($.data(line.children("[col=svc_id]")[0], "v"))
+      params += "&node_id="+encodeURIComponent($.data(line.children("[col=node_id]")[0], "v"))
+      params += "&rid="+encodeURIComponent($.data(line.children("[col=rid]")[0], "v"))
+      params += "&key="+encodeURIComponent($.data(line.children("[col=res_key]")[0], "v"))
       params += "&rowid="+encodeURIComponent(id)
-      var url = services_get_url() + "/init/appinfo/ajax_appinfo_log?" + params
+      var url = services_get_url() + "/init/resinfo/ajax_resinfo_log?" + params
  
       toggle_extra(url, id, e, 0)
     })
@@ -1986,8 +1997,8 @@ cell_decorators = {
  "status": cell_decorator_status,
  "users_role": cell_decorator_users_role,
  "alert_type": cell_decorator_alert_type,
- "appinfo_key": cell_decorator_appinfo_key,
- "appinfo_value": cell_decorator_appinfo_value,
+ "resinfo_key": cell_decorator_resinfo_key,
+ "resinfo_value": cell_decorator_resinfo_value,
  "log_icons": cell_decorator_log_icons,
  "app": cell_decorator_app,
  "obs_type": cell_decorator_obs_type,

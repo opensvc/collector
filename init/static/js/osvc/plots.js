@@ -2831,7 +2831,7 @@ function stat_os(url, id) {
     });
 }
 
-function stats_appinfo(url, id) {
+function stats_resinfo(url, id) {
     $.jqplot.config.enablePlugins = true;
     $.getJSON(url, function(data) {
         max = 0
@@ -3225,7 +3225,7 @@ function plot_savedonuts() {
       d = data[seriesIndex]
       i = d.lastIndexOf(" (")
       d = d.substring(0, i)
-      filter_submit("saves", "saves_f_save_app", d)
+      osvc.tables.saves.filter_submit("app", d)
     })
   })
   $("[id^=chart_group]").each(function(){
@@ -3234,7 +3234,7 @@ function plot_savedonuts() {
       d = data[seriesIndex]
       i = d.lastIndexOf(" (")
       d = d.substring(0, i)
-      filter_submit("saves", "saves_f_save_group", d)
+      osvc.tables.saves.filter_submit("save_group", d)
     })
   })
   $("[id^=chart_server]").each(function(){
@@ -3244,7 +3244,7 @@ function plot_savedonuts() {
       var reg = new RegExp(" \(.*\)", "g");
       d = d.replace(reg, "")
       $("#saves_f_save_server").val(d)
-      filter_submit("saves", "saves_f_save_server", d)
+      osvc.tables.saves.filter_submit("save_server", d)
     })
   })
 }
@@ -3289,7 +3289,7 @@ function plot_diskdonuts() {
       d = data[seriesIndex]
       i = d.lastIndexOf(" (")
       d = d.substring(0, i)
-      filter_submit("disks", "disks_f_disk_svcname", d)
+      osvc.tables.disks.filter_submit("svcname", d)
     })
   })
   $("[id^=chart_ap]").each(function(){
@@ -3298,7 +3298,7 @@ function plot_diskdonuts() {
       d = data[seriesIndex]
       i = d.lastIndexOf(" (")
       d = d.substring(0, i)
-      filter_submit("disks", "disks_f_app", d)
+      osvc.tables.disks.filter_submit("app", d)
     })
   })
   $("[id^=chart_dg]").each(function(){
@@ -3307,7 +3307,7 @@ function plot_diskdonuts() {
       d = data[seriesIndex]
       d = d.replace(/\w+ /, "")
       d = d.replace(/ \(.*\)/, "")
-      filter_submit("disks", "disks_f_disk_group", d)
+      osvc.tables.disks.filter_submit("disk_group", d)
     })
   })
   $("[id^=chart_ar]").each(function(){
@@ -3316,7 +3316,7 @@ function plot_diskdonuts() {
       d = data[seriesIndex]
       var reg = new RegExp(" \(.*\)", "g");
       d = d.replace(reg, "")
-      filter_submit("disks", "disks_f_disk_arrayid", d)
+      osvc.tables.disks.filter_submit("disk_arrayid", d)
     })
   })
 }

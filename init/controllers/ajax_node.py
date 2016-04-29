@@ -3,8 +3,8 @@ def test_sandata():
     print json.dumps(d, indent=4, separators=(',', ': '))
 
 class sandata(object):
-    def __init__(self, nodenames):
-        self.nodenames = nodenames
+    def __init__(self, node_ids):
+        self.node_ids = node_ids
         self.n_server = 0
         self.n_array = 0
         self.n_switch = 0
@@ -17,8 +17,8 @@ class sandata(object):
         self.valid_switch = set([])
         self.relcache = {}
 
-    def get_endpoints(self, nodename):
-        q = db.node_hba.nodename == nodename
+    def get_endpoints(self, node_id):
+        q = db.node_hba.node_id == node_id
         l1 = db.stor_zone.on(db.node_hba.hba_id==db.stor_zone.hba_id)
         l2 = db.stor_array_tgtid.on(db.stor_zone.tgt_id==db.stor_array_tgtid.array_tgtid)
         l3 = db.stor_array.on(db.stor_array_tgtid.array_id==db.stor_array.id)
@@ -138,16 +138,16 @@ class sandata(object):
 
     def main(self):
         self.cache_relations()
-        for nodename in self.nodenames:
+        for node_id in self.node_ids:
             id = 's%d'%self.n_server
             self.n_server += 1
             s = {
                  'id': id,
-                 'label': nodename,
+                 'label': get_nodename(node_id),
                 }
-            self.d['server'][nodename] = s
+            self.d['server'][node_id] = s
 
-            endpoints = self.get_endpoints(nodename)
+            endpoints = self.get_endpoints(node_id)
             self.array_ports = {}
             for sp, ap, an in endpoints:
                 if an not in self.d['array']:
@@ -159,7 +159,7 @@ class sandata(object):
                 self.array_ports[ap] = an
 
             for sp, ap, an in endpoints:
-                self.recurse_relations(sp, None, (nodename, sp, ap, an))
+                self.recurse_relations(sp, None, (node_id, sp, ap, an))
 
         # purge unused switches
         import copy
@@ -176,7 +176,7 @@ class sandata(object):
 @auth.requires_login()
 def ajax_node_stor():
     id = request.args[0]
-    nodename = request.args[1]
+    node_id = request.args[1]
 
     # storage adapters
     sql = """
@@ -197,10 +197,10 @@ def ajax_node_stor():
         left join san_zone_alias on node_hba.hba_id=san_zone_alias.port
         left join san_zone on node_hba.hba_id=san_zone.port
       where
-        node_hba.nodename = "%s"
+        node_hba.node_id = "%s"
       group by node_hba.hba_id
       order by node_hba.hba_id
-    """%nodename
+    """%str(node_id)
     hbas = db.executesql(sql)
     _hbas = [TR(
                TH("hba id"),
@@ -277,10 +277,10 @@ def ajax_node_stor():
         left join stor_array_tgtid on stor_zone.tgt_id=stor_array_tgtid.array_tgtid
         left join stor_array on stor_array_tgtid.array_id=stor_array.id
       where
-        stor_zone.nodename = "%s"
+        stor_zone.node_id = "%s"
       group by stor_zone.hba_id, stor_zone.tgt_id
       order by stor_zone.hba_id, stor_zone.tgt_id
-    """%nodename
+    """%str(node_id)
     tgts = db.executesql(sql)
     _tgts = [TR(
                TH("hba id"),
@@ -339,13 +339,17 @@ def ajax_node_stor():
                      ))
 
     # node disk list
-    q = db.svcdisks.disk_nodename == nodename
+    q = db.svcdisks.node_id == node_id
     q &= (db.diskinfo.disk_group != "virtual")|(db.diskinfo.disk_group==None)
     q &= (db.stor_array.array_model != "vdisk provider")|(db.stor_array.array_model==None)
     l1 = db.diskinfo.on(db.svcdisks.disk_id==db.diskinfo.disk_id)
     l2 = db.stor_array.on(db.diskinfo.disk_arrayid==db.stor_array.array_name)
-    disks = db(q).select(db.svcdisks.ALL, db.diskinfo.ALL, db.stor_array.ALL,
-                         cacheable=True, left=(l1,l2),
+    l3 = db.services.on(db.svcdisks.svc_id==db.services.svc_id)
+    disks = db(q).select(db.svcdisks.ALL,
+                         db.diskinfo.ALL,
+                         db.stor_array.ALL,
+                         db.services.svcname,
+                         cacheable=True, left=(l1,l2,l3),
                          orderby=db.svcdisks.disk_id)
     _disks = [TR(
           TH("wwid"),
@@ -359,7 +363,7 @@ def ajax_node_stor():
         _disks.append(TR(
           TD(disk.svcdisks.disk_id),
           TD(disk.svcdisks.disk_used, T('MB')),
-          TD(disk.svcdisks.disk_svcname),
+          TD(disk.services.svcname),
           TD(disk.stor_array.array_model),
           TD(disk.diskinfo.disk_arrayid),
           TD(disk.diskinfo.disk_group),
@@ -386,7 +390,7 @@ def ajax_node_stor():
       ),
       SCRIPT(
         """sync_ajax("%(url)s", [], "%(id)s", function(){})""" % dict(
-          url = URL(c='ajax_node', f='ajax_node_stor_sanviz', args=[nodename]),
+          url = URL(c='ajax_node', f='ajax_node_stor_sanviz', args=[node_id]),
           id = "sanviz"+id,
         ),
       ),
@@ -404,12 +408,12 @@ def ajax_node_stor():
 
 @auth.requires_login()
 def ajax_node_stor_sanviz():
-    nodename = request.args[0]
+    node_id = request.args[0]
     from applications.init.modules import san
     import tempfile
     import os
     vizdir = os.path.join(os.getcwd(), 'applications', 'init', 'static')
-    d = sandata([nodename]).main()
+    d = sandata([node_id]).main()
     o = san.Viz(d)
     f = tempfile.NamedTemporaryFile(dir=vizdir, prefix='tempviz')
     sanviz = f.name
@@ -455,7 +459,7 @@ def ajax_nodes_stor():
 @auth.requires_login()
 def ajax_svc_stor():
     id = request.args[0]
-    svcname = request.args[1]
+    svc_id = request.args[1]
 
     # storage adapters
     sql = """
@@ -470,18 +474,19 @@ def ajax_svc_stor():
         san_zone_alias.alias,
         group_concat(san_zone.zone order by san_zone.zone separator ', '),
         switches.sw_index,
-        svcmon.mon_nodname
+        nodes.nodename
       from
         svcmon
-        left join node_hba on svcmon.mon_nodname=node_hba.nodename
+        join nodes on svcmon.node_id=nodes.node_id
+        left join node_hba on svcmon.node_id=node_hba.node_id
         left join switches on node_hba.hba_id=switches.sw_rportname
         left join san_zone_alias on node_hba.hba_id=san_zone_alias.port
         left join san_zone on node_hba.hba_id=san_zone.port
       where
-        svcmon.mon_svcname = "%s"
+        svcmon.svc_id = "%s"
       group by node_hba.hba_id
       order by node_hba.hba_id
-    """%svcname
+    """%svc_id
     hbas = db.executesql(sql)
     _hbas = [TR(
                TH("nodename"),
@@ -554,20 +559,21 @@ def ajax_svc_stor():
         count(san_zone.zone) as c,
         stor_array.array_name,
         switches.sw_index,
-        svcmon.mon_nodname
+        nodes.nodename
       from
         svcmon
-        left join stor_zone on svcmon.mon_nodname=stor_zone.nodename
+        join nodes on svcmon.node_id = nodes.node_id
+        left join stor_zone on svcmon.node_id=stor_zone.node_id
         left join switches on stor_zone.tgt_id=switches.sw_rportname
         left join san_zone_alias on stor_zone.tgt_id=san_zone_alias.port
         left join san_zone on stor_zone.tgt_id=san_zone.port and san_zone.zone in (select zone from san_zone where port=stor_zone.hba_id)
         left join stor_array_tgtid on stor_zone.tgt_id=stor_array_tgtid.array_tgtid
         left join stor_array on stor_array_tgtid.array_id=stor_array.id
       where
-        svcmon.mon_svcname = "%s"
+        svcmon.svc_id = "%s"
       group by stor_zone.hba_id, stor_zone.tgt_id
-      order by svcmon.mon_nodname, stor_zone.hba_id, stor_zone.tgt_id
-    """%svcname
+      order by nodes.nodename, stor_zone.hba_id, stor_zone.tgt_id
+    """%svc_id
     tgts = db.executesql(sql)
     _tgts = [TR(
                TH("nodename"),
@@ -630,7 +636,7 @@ def ajax_svc_stor():
                      ))
 
     # node disk list
-    q = db.svcdisks.disk_svcname == svcname
+    q = db.svcdisks.svc_id == svc_id
     q &= (db.diskinfo.disk_group != "virtual")|(db.diskinfo.disk_group==None)
     q &= (db.stor_array.array_model != "vdisk provider")|(db.stor_array.array_model==None)
     l1 = db.diskinfo.on(db.svcdisks.disk_id==db.diskinfo.disk_id)
@@ -650,7 +656,7 @@ def ajax_svc_stor():
         _disks.append(TR(
           TD(disk.svcdisks.disk_id),
           TD(disk.svcdisks.disk_used, T('MB')),
-          TD(disk.svcdisks.disk_nodename),
+          TD(get_nodename(disk.svcdisks.node_id)),
           TD(disk.stor_array.array_model),
           TD(disk.diskinfo.disk_arrayid),
           TD(disk.diskinfo.disk_group),
@@ -677,7 +683,7 @@ def ajax_svc_stor():
       ),
       SCRIPT(
         """sync_ajax("%(url)s", [], "%(id)s", function(){})""" % dict(
-          url = URL(c='ajax_node', f='ajax_svc_stor_sanviz', args=[svcname]),
+          url = URL(c='ajax_node', f='ajax_svc_stor_sanviz', args=[svc_id]),
           id = "sanviz"+id,
         ),
       ),
@@ -695,16 +701,16 @@ def ajax_svc_stor():
 
 @auth.requires_login()
 def ajax_svc_stor_sanviz():
-    svcname = request.args[0]
+    svc_id = request.args[0]
 
-    q = db.svcmon.mon_svcname == svcname
-    rows = db(q).select(db.svcmon.mon_nodname, cacheable=True)
+    q = db.svcmon.svc_id == svc_id
+    rows = db(q).select(db.svcmon.node_id, cacheable=True)
 
     from applications.init.modules import san
     import tempfile
     import os
     vizdir = os.path.join(os.getcwd(), 'applications', 'init', 'static')
-    d = sandata([r.mon_nodname for r in rows]).main()
+    d = sandata([r.node_id for r in rows]).main()
     o = san.Viz(d)
     f = tempfile.NamedTemporaryFile(dir=vizdir, prefix='tempviz')
     sanviz = f.name

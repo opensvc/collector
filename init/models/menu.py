@@ -17,7 +17,7 @@ menu_entries = [
   'view-services',
   'view-service-instances',
   'view-resources',
-  'view-appinfo',
+  'view-resinfo',
   'view-nodes',
   'view-tagattach',
   'view-actions',

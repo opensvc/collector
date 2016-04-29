@@ -5,6 +5,10 @@ def prov_template_responsible(tpl_id):
     if db(q).count() == 0:
         raise Exception("You are not allowed to do this operation on the provisioning template %s" % str(tpl_id))
 
+def lib_provisioning_templates_add_default_team_responsible(tpl_id):
+    group_id = user_default_group_id()
+    db.prov_template_team_responsible.insert(tpl_id=tpl_id, group_id=group_id)
+
 class rest_get_provisioning_templates(rest_get_table_handler):
     def __init__(self):
         desc = [
@@ -59,11 +63,11 @@ class rest_put_provisioning_template(rest_put_handler):
         data = """
 - **depends on the template definition**
 . The information the template expects, marked as %(key>)s in its definition.
-. The 'nodename' and 'svcname' are mandatory, even if not present in the form
+. The 'node_id' and 'svc_id' are mandatory, even if not present in the form
 definition.
 """
         examples = [
-          """# curl -u %(email)s -d data='{"nodename": "mynode", "svcname": "mysvc"}' -X PUT -o- https://%(collector)s/init/rest/api/provisioning_templates/10"""
+          """# curl -u %(email)s -d node_id=5c977246-0562-11e6-8c70-7e9e6cf13c8a -d svc_id=fac92362-0845-11e6-b512-a6ccb094f992 -d data='{"nodename": "mynode", "svcname": "mysvc"}' -X PUT -o- https://%(collector)s/init/rest/api/provisioning_templates/10"""
         ]
 
         rest_put_handler.__init__(
@@ -82,15 +86,20 @@ definition.
 
         import re
         command = provisioning_template.tpl_command
-        for k, v in vars.items():
+        if "data" in vars:
+            import json
+            data = json.loads(vars["data"])
+        else:
+            data = vars
+        for k, v in data.items():
             v = str(v)
             command = re.sub('%\('+k+'\)s', v, command)
 
         # remove the '/opt/opensvc/bin/svcmgr -s svcname ' prefix
         command = re.sub('^.*create ', 'create ', command)
 
-        n = do_svc_action(vars["nodename"],
-                          vars["svcname"],
+        n = do_svc_action(vars["node_id"],
+                          vars["svc_id"],
                           command)
 
         if n == 1:

@@ -7,7 +7,7 @@ class rest_get_node_sysreport(rest_get_handler):
           "Display node file changes timeline for files tracked by sysreport.",
         ]
         examples = [
-          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/nodes/clementine/sysreport",
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/nodes/1/sysreport",
         ]
         params = {
           "path": {
@@ -23,14 +23,15 @@ class rest_get_node_sysreport(rest_get_handler):
 
         rest_get_handler.__init__(
           self,
-          path="/nodes/<nodename>/sysreport",
+          path="/nodes/<id>/sysreport",
           desc=desc,
           params=params,
           examples=examples,
         )
 
-    def handler(self, nodename, **vars):
-        return dict(data=lib_get_sysreport(nodename, **vars))
+    def handler(self, node_id, **vars):
+        node_id = get_node_id(node_id)
+        return dict(data=lib_get_sysreport([node_id], **vars))
 
 #
 class rest_get_sysreport_timeline(rest_get_handler):
@@ -39,7 +40,7 @@ class rest_get_sysreport_timeline(rest_get_handler):
           "Display multiple nodes file changes timeline for files tracked by sysreport.",
         ]
         examples = [
-          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/sysreport?nodes=node1,node2",
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/sysreport?nodes=1,2",
         ]
         params = {
           "path": {
@@ -62,11 +63,17 @@ class rest_get_sysreport_timeline(rest_get_handler):
         )
 
     def handler(self, **vars):
-        nodes = vars.get("nodes")
-        if nodes is None:
-            raise Exception("The nodes parameter is mandatory")
-        else:
+        if "nodes" in vars:
+            nodes = vars.get("nodes")
             del(vars["nodes"])
+        elif "nodes[]" in vars:
+            nodes = vars.get("nodes[]")
+            del(vars["nodes[]"])
+        else:
+            raise Exception("The nodes parameter is mandatory")
+        if type(nodes) != list:
+            nodes = nodes.split(",")
+        nodes = map(lambda x: get_node_id(x), nodes)
         return dict(data=lib_get_sysreport(nodes, **vars))
 
 #
@@ -76,7 +83,7 @@ class rest_get_node_sysreport_commit(rest_get_handler):
           "Display node detailled changes detected at a specified date, expressed as a commit id, on files tracked by sysreport.",
         ]
         examples = [
-          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/nodes/clementine/sysreport/903e92e2b80a3504d862888e48b2430ae15136f0",
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/nodes/1/sysreport/903e92e2b80a3504d862888e48b2430ae15136f0",
         ]
         params = {
           "path": {
@@ -86,14 +93,15 @@ class rest_get_node_sysreport_commit(rest_get_handler):
 
         rest_get_handler.__init__(
           self,
-          path="/nodes/<nodename>/sysreport/<cid>",
+          path="/nodes/<id>/sysreport/<cid>",
           desc=desc,
           params=params,
           examples=examples,
         )
 
-    def handler(self, nodename, cid, **vars):
-        return dict(data=lib_get_sysreport_commit(nodename, cid, **vars))
+    def handler(self, node_id, cid, **vars):
+        node_id = get_node_id(node_id)
+        return dict(data=lib_get_sysreport_commit(node_id, cid, **vars))
 
 #
 class rest_get_node_sysreport_commit_tree(rest_get_handler):
@@ -102,7 +110,7 @@ class rest_get_node_sysreport_commit_tree(rest_get_handler):
           "Display node tracked file tree at a specific date, expressed as a commit id.",
         ]
         examples = [
-          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/nodes/clementine/sysreport/903e92e2b80a3504d862888e48b2430ae15136f0/tree",
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/nodes/1/sysreport/903e92e2b80a3504d862888e48b2430ae15136f0/tree",
         ]
         params = {
           "path": {
@@ -112,34 +120,36 @@ class rest_get_node_sysreport_commit_tree(rest_get_handler):
 
         rest_get_handler.__init__(
           self,
-          path="/nodes/<nodename>/sysreport/<cid>/tree",
+          path="/nodes/<id>/sysreport/<cid>/tree",
           desc=desc,
           params=params,
           examples=examples,
         )
 
-    def handler(self, nodename, cid, **vars):
-        return dict(data=lib_get_sysreport_commit_tree(nodename, cid, **vars))
+    def handler(self, node_id, cid, **vars):
+        node_id = get_node_id(node_id)
+        return dict(data=lib_get_sysreport_commit_tree(node_id, cid, **vars))
 
 #
 class rest_get_node_sysreport_commit_tree_file(rest_get_handler):
     def __init__(self):
         desc = [
-          "Display a node specific file content at a specific date, expressed as a commit id. The file is identified by its id, as reported in the /node/<nodename>sysreport/<cid>/tree output",
+          "Display a node specific file content at a specific date, expressed as a commit id. The file is identified by its id, as reported in the /node/<id>sysreport/<cid>/tree output",
         ]
         examples = [
-          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/nodes/clementine/sysreport/903e92e2b80a3504d862888e48b2430ae15136f0/tree/c5bc459a691a0eab9b8c93b7f31e5a8d73c409ad",
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/nodes/1/sysreport/903e92e2b80a3504d862888e48b2430ae15136f0/tree/c5bc459a691a0eab9b8c93b7f31e5a8d73c409ad",
         ]
 
         rest_get_handler.__init__(
           self,
-          path="/nodes/<nodename>/sysreport/<cid>/tree/<oid>",
+          path="/nodes/<id>/sysreport/<cid>/tree/<oid>",
           desc=desc,
           examples=examples,
         )
 
-    def handler(self, nodename, cid, oid, **vars):
-        return dict(data=lib_get_sysreport_commit_tree_file(nodename, cid, oid, **vars))
+    def handler(self, node_id, cid, oid, **vars):
+        node_id = get_node_id(node_id)
+        return dict(data=lib_get_sysreport_commit_tree_file(node_id, cid, oid, **vars))
 
 #
 class rest_get_node_sysreport_timediff(rest_get_handler):
@@ -148,7 +158,7 @@ class rest_get_node_sysreport_timediff(rest_get_handler):
           "Display changes between begin and end dates as a single diff per file tracked by sysreport.",
         ]
         examples = [
-          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/nodes/clementine/sysreport/timediff?begin=2015-01-01 00:00:00",
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/nodes/1/sysreport/timediff?begin=2015-01-01 00:00:00",
         ]
         params = {
           "path": {
@@ -164,14 +174,15 @@ class rest_get_node_sysreport_timediff(rest_get_handler):
 
         rest_get_handler.__init__(
           self,
-          path="/nodes/<nodename>/sysreport/timediff",
+          path="/nodes/<id>/sysreport/timediff",
           desc=desc,
           params=params,
           examples=examples,
         )
 
-    def handler(self, nodename, **vars):
-        return dict(data=lib_get_sysreport_timediff(nodename, **vars))
+    def handler(self, node_id, **vars):
+        node_id = get_node_id(node_id)
+        return dict(data=lib_get_sysreport_timediff(node_id, **vars))
 
 
 #
@@ -181,11 +192,11 @@ class rest_get_sysreport_nodediff(rest_get_handler):
           "Display differences in files tracked by sysreport at the same path on multiple nodes.",
         ]
         examples = [
-          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/nodes/clementine/sysreport/nodediff?path=.*resolv.*",
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/sysreport/nodediff?nodes=1,2&path=.*resolv.*",
         ]
         params = {
           "nodes": {
-            "desc": "The comma-separated list of node names to compare.",
+            "desc": "The comma-separated list of node ids to compare.",
           },
           "path": {
             "desc": "A path glob to limit the sysreport extract to.",
@@ -204,10 +215,16 @@ class rest_get_sysreport_nodediff(rest_get_handler):
         )
 
     def handler(self, **vars):
-        if "nodes" not in vars:
+        if "nodes" in vars:
+            nodes = vars["nodes"].split(",")
+            del(vars["nodes"])
+        elif "nodes[]" in vars:
+            nodes = vars["nodes[]"]
+            del(vars["nodes[]"])
+        else:
             raise Exception(T("The nodes parameter is mandatory"))
-        nodes = vars["nodes"].split(",")
-        del(vars["nodes"])
+
+        nodes = map(lambda x: get_node_id(x), nodes)
 
         if "ignore_blanks" in vars and vars["ignore_blanks"] in ("True", "true", True, "y", "Y", "yes", "Yes", "1"):
             vars["ignore_blanks"] = True

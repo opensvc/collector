@@ -61,9 +61,9 @@ function search_get_menu(fk)
             "title": "users",
             "menu_entry_id": "adm-usr",
             "class": "guys16",
-            "link": "/init/users/users?volatile_filters=true&users_f_fullname=__fullname__",
+            "link": "/init/users/users?volatile_filters=true&users_f_id=__id__",
             "fn": "table_users",
-            "options": {"volatile_filters": true, "request_vars": {"users_f_fullname": "__fullname__"}}
+            "options": {"volatile_filters": true, "request_vars": {"users_f_id": "__id__"}}
           },
           {
             "title": "logs",
@@ -73,14 +73,6 @@ function search_get_menu(fk)
             "fn": "table_log",
             "options": {"volatile_filters": true, "request_vars": {"log_f_log_user": "__fullname__"}}
           },
-          {
-            "title": "apps",
-            "menu_entry_id": "adm-app",
-            "class": "svc",
-            "link": "/init/apps/apps?volatile_filters=true&apps_f_responsibles=%__fullname__%",
-            "fn": "table_apps",
-            "options": {"volatile_filters": true, "request_vars": {"apps_f_responsibles": "%__fullname__%"}}
-          }
         ]
     },
     "safe_files": {
@@ -158,7 +150,7 @@ function search_get_menu(fk)
         ]
     },
     "ips": {
-        "title": "__addr__@__nodename__",
+        "title": "__node_ip.addr__@__nodes.nodename__  *__nodes.app__",
         "menu_entry_id": "view-node-net",
         "class": "net16 fa-2x search-section-icon",
         "subclass": "meta_username",
@@ -167,81 +159,81 @@ function search_get_menu(fk)
             "title": "nodes",
             "menu_entry_id": "view-nodes",
             "class": "hw16",
-            "link": "/init/nodes/nodes?volatile_filters=true&nodes_f_nodename=__nodename__",
+            "link": "/init/nodes/nodes?volatile_filters=true&nodes_f_node_id=__nodes.node_id__",
             "fn": "view_nodes",
-            "options": {"volatile_filters": true, "request_vars": {"nodes_f_nodename": "__nodename__"}}
+            "options": {"volatile_filters": true, "request_vars": {"nodes_f_node_id": "__nodes.node_id__"}}
           },
           {
             "title": "dashboard",
             "menu_entry_id": "view-dashboard",
             "class": "alert16",
-            "link": "/init/dashboard/index?volatile_filters=true&dashboard_f_dash_nodename=__nodename__",
+            "link": "/init/dashboard/index?volatile_filters=true&dashboard_f_node_id=__nodes.node_id__",
             "fn": "table_dashboard",
-            "options": {"volatile_filters": true, "request_vars": {"dashboard_f_dash_nodename": "__nodename__"}}
+            "options": {"volatile_filters": true, "request_vars": {"dashboard_f_node_id": "__nodes.node_id__"}}
           },
           {
             "title": "services",
             "menu_entry_id": "view-services",
             "class": "svc",
-            "link": "/init/default/svcmon?volatile_filters=true&svcmon_f_mon_nodname=__nodename__",
+            "link": "/init/default/svcmon?volatile_filters=true&svcmon_f_node_id=__nodes.node_id__",
             "fn": "table_service_instances",
-            "options": {"volatile_filters": true, "request_vars": {"svcmon_f_mon_nodname": "__nodename__"}}
+            "options": {"volatile_filters": true, "request_vars": {"svcmon_f_node_id": "__nodes.node_id__"}}
           },
           {
             "title": "resources",
             "menu_entry_id": "view-resources",
             "class": "svc",
-            "link": "/init/resmon/resmon?volatile_filters=true&resmon_f_nodename=__nodename__",
+            "link": "/init/resmon/resmon?volatile_filters=true&resmon_f_node_id=__nodes.node_id__",
             "fn": "table_resources",
-            "options": {"volatile_filters": true, "request_vars": {"resmon_f_nodename": "__nodename__"}}
+            "options": {"volatile_filters": true, "request_vars": {"resmon_f_node_id": "__nodes.node_id__"}}
           },
           {
-            "title": "appinfo",
-            "menu_entry_id": "view-appinfo",
+            "title": "resinfo",
+            "menu_entry_id": "view-resinfo",
             "class": "svc",
-            "link": "/init/appinfo/appinfo?volatile_filters=true&appinfo_f_app_nodename=__nodename__",
-            "fn": "table_appinfo",
-            "options": {"volatile_filters": true, "request_vars": {"appinfo_f_app_nodename": "__nodename__"}}
+            "link": "/init/resinfo/resinfo?volatile_filters=true&resinfo_f_node_id=__nodes.node_id__",
+            "fn": "table_resinfo",
+            "options": {"volatile_filters": true, "request_vars": {"resinfo_f_node_id": "__nodes.node_id__"}}
           },
           {
             "title": "actions",
             "menu_entry_id": "view-actions",
             "class": "action16",
-            "link": "/init/svcactions/svcactions?volatile_filters=true&actions_f_hostname=__nodename__",
+            "link": "/init/svcactions/svcactions?volatile_filters=true&actions_f_node_id=__nodes.node_id__",
             "fn": "table_actions",
-            "options": {"volatile_filters": true, "request_vars": {"actions_f_hostname": "__nodename__"}}
+            "options": {"volatile_filters": true, "request_vars": {"actions_f_node_id": "__nodes.node_id__"}}
           },
           {
             "title": "checks",
             "menu_entry_id": "view-checks",
             "class": "check16",
-            "link": "/init/checks/checks?volatile_filters=true&checks_f_chk_nodename=__nodename__",
+            "link": "/init/checks/checks?volatile_filters=true&checks_f_node_id=__nodes.node_id__",
             "fn": "table_checks",
-            "options": {"volatile_filters": true, "request_vars": {"checks_f_chk_nodename": "__nodename__"}}
+            "options": {"volatile_filters": true, "request_vars": {"checks_f_node_id": "__nodes.node_id__"}}
           },
           {
             "title": "packages",
             "menu_entry_id": "view-pkg",
             "class": "pkg16",
-            "link": "/init/packages/packages?volatile_filters=true&packages_f_nodename=__nodename__",
+            "link": "/init/packages/packages?volatile_filters=true&packages_f_node_id=__nodes.node_id__",
             "fn": "table_packages",
-            "options": {"volatile_filters": true, "request_vars": {"packages_f_nodename": "__nodename__"}}
+            "options": {"volatile_filters": true, "request_vars": {"packages_f_node_id": "__nodes.node_id__"}}
           },
           {
             "title": "network",
             "menu_entry_id": "view-net",
             "class": "net16",
-            "link": "/init/nodenetworks/nodenetworks?volatile_filters=true&nodenetworks_f_nodename=__nodename__",
+            "link": "/init/nodenetworks/nodenetworks?volatile_filters=true&nodenetworks_f_node_id=__nodes.node_id__",
             "fn": "table_nodenetworks",
-            "options": {"volatile_filters": true, "request_vars": {"nodenetworks_f_nodename": "__nodename__"}}
+            "options": {"volatile_filters": true, "request_vars": {"nodenetworks_f_node_id": "__nodes.node_id__"}}
           },
           {
             "title": "san",
             "menu_entry_id": "view-san",
             "class": "net16",
-            "link": "/init/nodesan/nodesan?volatile_filters=true&nodesan_f_nodename=__nodename__",
+            "link": "/init/nodesan/nodesan?volatile_filters=true&nodesan_f_node_id=__nodes.node_id__",
             "fn": "table_nodesan",
-            "options": {"volatile_filters": true, "request_vars": {"nodesan_f_nodename": "__nodename__"}}
+            "options": {"volatile_filters": true, "request_vars": {"nodesan_f_node_id": "__nodes.node_id__"}}
           },
           {
             "title": "disks",
@@ -261,25 +253,25 @@ function search_get_menu(fk)
             "title": "compliance_status",
             "menu_entry_id": "comp-status",
             "class": "comp16",
-            "link": "/init/compliance/comp_status?volatile_filters=true&cs0_f_run_nodename=__nodename__",
+            "link": "/init/compliance/comp_status?volatile_filters=true&cs0_f_node_id=__nodes.node_id__",
             "fn": "view_comp_status",
-            "options": {"volatile_filters": true, "request_vars": {"cs0_f_run_nodename": "__nodename__"}}
+            "options": {"volatile_filters": true, "request_vars": {"cs0_f_node_id": "__nodes.node_id__"}}
           },
           {
             "title": "compliance_log",
             "menu_entry_id": "comp-log",
             "class": "log16",
-            "link": "/init/compliance/comp_log?volatile_filters=true&comp_log_f_run_nodename=__nodename__",
+            "link": "/init/compliance/comp_log?volatile_filters=true&comp_log_f_node_id=__nodes.node_id__",
             "fn": "table_comp_log",
-            "options": {"volatile_filters": true, "request_vars": {"comp_log_f_run_nodename": "__nodename__"}}
+            "options": {"volatile_filters": true, "request_vars": {"comp_log_f_node_id": "__nodes.node_id__"}}
           },
           {
             "title": "logs",
             "menu_entry_id": "adm-log",
             "class": "log16",
-            "link": "/init/log/log?volatile_filters=true&log_f_log_nodename=__nodename__",
+            "link": "/init/log/log?volatile_filters=true&log_f_node_id=__nodes.node_id__",
             "fn": "table_log",
-            "options": {"volatile_filters": true, "request_vars": {"log_f_nodename": "__nodename__"}}
+            "options": {"volatile_filters": true, "request_vars": {"log_f_node_id": "__nodes.node_id__"}}
           }
         ],
         "special_header_links" : [
@@ -335,8 +327,8 @@ function search_get_menu(fk)
         ]
     },
     "services": {
-        "tab" : 'service_tabs("__rowid__", {"svcname": "__svc_name__"})',
-        "title": "__svc_name__",
+        "tab" : 'service_tabs("__rowid__", {"svc_id": "__svc_id__"})',
+        "title": "__svcname__  *__svc_app__",
         "menu_entry_id": "view-services",
         "class": "svc fa-2x search-section-icon",
         "subclass": "meta_svcname clickable",
@@ -345,99 +337,99 @@ function search_get_menu(fk)
             "title": "dashboard",
             "menu_entry_id": "view-dashboard",
             "class": "alert16",
-            "link": "/init/dashboard/index?volatile_filters=true&dashboard_f_dash_svcname=__svc_name__",
+            "link": "/init/dashboard/index?volatile_filters=true&dashboard_f_svc_id=__svc_id__",
             "fn": "table_dashboard",
-            "options": {"volatile_filters": true, "request_vars": {"dashboard_f_dash_svcname": "__svc_name__"}}
+            "options": {"volatile_filters": true, "request_vars": {"dashboard_f_svc_id": "__svc_id__"}}
           },
           {
             "title": "status",
             "menu_entry_id": "view-service-instances",
             "class": "alert16",
-            "link": "/init/default/svcmon?volatile_filters=true&svcmon_f_mon_svcname=__svc_name__",
+            "link": "/init/default/svcmon?volatile_filters=true&svcmon_f_svc_id=__svc_id__",
             "fn": "table_service_instances",
-            "options": {"volatile_filters": true, "request_vars": {"svcmon_f_mon_svcname": "__svc_name__"}}
+            "options": {"volatile_filters": true, "request_vars": {"svcmon_f_svc_id": "__svc_id__"}}
           },
           {
             "title": "resources",
             "menu_entry_id": "view-resources",
             "class": "svc",
-            "link": "/init/resmon/resmon?volatile_filters=true&resmon_f_svcname=__svc_name__",
+            "link": "/init/resmon/resmon?volatile_filters=true&resmon_f_svc_id=__svc_id__",
             "fn": "table_resources",
-            "options": {"volatile_filters": true, "request_vars": {"resmon_f_svcname": "__svc_name__"}}
+            "options": {"volatile_filters": true, "request_vars": {"resmon_f_svc_id": "__svc_id__"}}
           },
           {
-            "title": "appinfo",
-            "menu_entry_id": "view-appinfo",
+            "title": "resinfo",
+            "menu_entry_id": "view-resinfo",
             "class": "alert16",
-            "link": "/init/appinfo/appinfo?volatile_filters=true&appinfo_f_app_svcname=__svc_name__",
-            "fn": "table_appinfo",
-            "options": {"volatile_filters": true, "request_vars": {"appinfo_f_app_svcname": "__svc_name__"}}
+            "link": "/init/resinfo/resinfo?volatile_filters=true&resinfo_f_svc_id=__svc_id__",
+            "fn": "table_resinfo",
+            "options": {"volatile_filters": true, "request_vars": {"resinfo_f_svc_id": "__svc_id__"}}
           },
           {
             "title": "actions",
             "menu_entry_id": "view-actions",
             "class": "action16",
-            "link": "/init/svcactions/svcactions?volatile_filters=true&actions_f_svcname=__svc_name__",
+            "link": "/init/svcactions/svcactions?volatile_filters=true&actions_f_svc_id=__svc_id__",
             "fn": "table_actions",
-            "options": {"volatile_filters": true, "request_vars": {"actions_f_svcname": "__svc_name__"}}
+            "options": {"volatile_filters": true, "request_vars": {"actions_f_svc_id": "__svc_id__"}}
           },
           {
             "title": "checks",
             "menu_entry_id": "view-checks",
             "class": "check16",
-            "link": "/init/checks/checks?volatile_filters=true&checks_f_chk_svcname=__svc_name__",
+            "link": "/init/checks/checks?volatile_filters=true&checks_f_svc_id=__svc_id__",
             "fn": "table_checks",
-            "options": {"volatile_filters": true, "request_vars": {"checks_f_chk_svcname": "__svc_name__"}}
+            "options": {"volatile_filters": true, "request_vars": {"checks_f_svc_id": "__svc_id__"}}
           },
           {
             "title": "disks",
             "menu_entry_id": "view-disks",
             "class": "hd16",
-            "link": "/init/disks/disks?volatile_filters=true&disks_f_disk_svcname=__svc_name__"
+            "link": "/init/disks/disks?volatile_filters=true&disks_f_svc_id=__svc_id__"
           },
           {
             "title": "saves",
             "menu_entry_id": "view-saves",
             "class": "cd16",
-            "link": "/init/saves/saves?volatile_filters=true&saves_f_save_svcname=__svc_name__",
+            "link": "/init/saves/saves?volatile_filters=true&saves_f_svc_id=__svc_id__",
             "fn": "view_saves",
-            "options": {"volatile_filters": true, "request_vars": {"saves_f_save_svcname": "__svc_name__"}}
+            "options": {"volatile_filters": true, "request_vars": {"saves_f_svc_id": "__svc_id__"}}
           },
           {
             "title": "compliance_status",
             "menu_entry_id": "comp-status",
             "class": "comp16",
-            "link": "/init/compliance/comp_status?volatile_filters=true&cs0_f_run_svcname=__svc_name__",
+            "link": "/init/compliance/comp_status?volatile_filters=true&cs0_f_svc_id=__svc_id__",
             "fn": "view_comp_status",
-            "options": {"volatile_filters": true, "request_vars": {"cs0_f_run_svcname": "__svc_name__"}}
+            "options": {"volatile_filters": true, "request_vars": {"cs0_f_svc_id": "__svc_id__"}}
           },
           {
             "title": "compliance_log",
             "menu_entry_id": "comp-log",
             "class": "log16",
-            "link": "/init/compliance/comp_log?volatile_filters=true&comp_log_f_run_svcname=__svc_name__",
+            "link": "/init/compliance/comp_log?volatile_filters=true&comp_log_f_svc_id=__svc_id__",
             "fn": "table_comp_log",
-            "options": {"volatile_filters": true, "request_vars": {"comp_log_f_run_svcname": "__svc_name__"}}
+            "options": {"volatile_filters": true, "request_vars": {"comp_log_f_svc_id": "__svc_id__"}}
           },
           {
             "title": "availability",
             "menu_entry_id": "stat-avail",
             "class": "avail16",
-            "link": "/init/svcmon_log/svcmon_log?volatile_filters=true&svcmon_log_f_svc_name=__svc_name__"
+            "link": "/init/svcmon_log/svcmon_log?volatile_filters=true&svcmon_log_f_svc_id=__svc_id__"
           },
           {
             "title": "logs",
             "menu_entry_id": "adm-log",
             "class": "log16",
-            "link": "/init/log/log?volatile_filters=true&log_f_log_svcname=__svc_name__",
+            "link": "/init/log/log?volatile_filters=true&log_f_svc_id=__svc_id__",
             "fn": "table_log",
-            "options": {"volatile_filters": true, "request_vars": {"log_f_svcname": "__svc_name__"}}
+            "options": {"volatile_filters": true, "request_vars": {"log_f_svc_id": "__svc_id__"}}
           }
         ]
     },
     "nodes": {
-        "tab" : 'node_tabs("__rowid__", {"nodename": "__nodename__"})',
-        "title": "__nodename__",
+        "tab" : 'node_tabs("__rowid__", {"node_id": "__node_id__"})',
+        "title": "__nodename__  *__app__",
         "menu_entry_id": "view-nodes",
         "class": "node16 fa-2x search-section-icon",
         "subclass": "meta_nodename clickable",
@@ -446,81 +438,81 @@ function search_get_menu(fk)
             "title": "nodes",
             "menu_entry_id": "view-nodes",
             "class": "hw16",
-            "link": "/init/nodes/nodes?volatile_filters=true&nodes_f_nodename=__nodename__",
+            "link": "/init/nodes/nodes?volatile_filters=true&nodes_f_node_id=__node_id__",
             "fn": "view_nodes",
-            "options": {"volatile_filters": true, "request_vars": {"nodes_f_nodename": "__nodename__"}}
+            "options": {"volatile_filters": true, "request_vars": {"nodes_f_node_id": "__node_id__"}}
           },
           {
             "title": "dashboard",
             "menu_entry_id": "view-dashboard",
             "class": "alert16",
-            "link": "/init/dashboard/index?volatile_filters=true&dashboard_f_dash_nodename=__nodename__",
+            "link": "/init/dashboard/index?volatile_filters=true&dashboard_f_node_id=__node_id__",
             "fn": "table_dashboard",
-            "options": {"volatile_filters": true, "request_vars": {"dashboard_f_dash_nodename": "__nodename__"}}
+            "options": {"volatile_filters": true, "request_vars": {"dashboard_f_node_id": "__node_id__"}}
           },
           {
             "title": "services",
             "menu_entry_id": "view-service-instances",
             "class": "svc",
-            "link": "/init/default/svcmon?volatile_filters=true&svcmon_f_mon_nodname=__nodename__",
+            "link": "/init/default/svcmon?volatile_filters=true&svcmon_f_node_id=__node_id__",
             "fn": "table_service_instances",
-            "options": {"volatile_filters": true, "request_vars": {"svcmon_f_mon_nodname": "__nodename__"}}
+            "options": {"volatile_filters": true, "request_vars": {"svcmon_f_node_id": "__node_id__"}}
           },
           {
             "title": "resources",
             "menu_entry_id": "view-resources",
             "class": "svc",
-            "link": "/init/resmon/resmon?volatile_filters=true&resmon_f_nodename=__nodename__",
+            "link": "/init/resmon/resmon?volatile_filters=true&resmon_f_node_id=__node_id__",
             "fn": "table_resources",
-            "options": {"volatile_filters": true, "request_vars": {"resmon_f_nodename": "__nodename__"}}
+            "options": {"volatile_filters": true, "request_vars": {"resmon_f_node_id": "__node_id__"}}
           },
           {
-            "title": "appinfo",
-            "menu_entry_id": "view-appinfo",
+            "title": "resinfo",
+            "menu_entry_id": "view-resinfo",
             "class": "svc",
-            "link": "/init/appinfo/appinfo?volatile_filters=true&appinfo_f_app_nodename=__nodename__",
-            "fn": "table_appinfo",
-            "options": {"volatile_filters": true, "request_vars": {"appinfo_f_app_nodename": "__nodename__"}}
+            "link": "/init/resinfo/resinfo?volatile_filters=true&resinfo_f_node_id=__node_id__",
+            "fn": "table_resinfo",
+            "options": {"volatile_filters": true, "request_vars": {"resinfo_f_node_id": "__node_id__"}}
           },
           {
             "title": "actions",
             "menu_entry_id": "view-actions",
             "class": "action16",
-            "link": "/init/svcactions/svcactions?volatile_filters=true&actions_f_hostname=__nodename__",
+            "link": "/init/svcactions/svcactions?volatile_filters=true&actions_f_node_id=__node_id__",
             "fn": "table_actions",
-            "options": {"volatile_filters": true, "request_vars": {"actions_f_hostname": "__nodename__"}}
+            "options": {"volatile_filters": true, "request_vars": {"actions_f_node_id": "__node_id__"}}
           },
           {
             "title": "checks",
             "menu_entry_id": "view-checks",
             "class": "check16",
-            "link": "/init/checks/checks?volatile_filters=true&checks_f_chk_nodename=__nodename__",
+            "link": "/init/checks/checks?volatile_filters=true&checks_f_node_id=__node_id__",
             "fn": "table_checks",
-            "options": {"volatile_filters": true, "request_vars": {"checks_f_chk_nodename": "__nodename__"}}
+            "options": {"volatile_filters": true, "request_vars": {"checks_f_node_id": "__node_id__"}}
           },
           {
             "title": "packages",
             "menu_entry_id": "view-pkg",
             "class": "pkg16",
-            "link": "/init/packages/packages?volatile_filters=true&packages_f_nodename=__nodename__",
+            "link": "/init/packages/packages?volatile_filters=true&packages_f_node_id=__node_id__",
             "fn": "table_packages",
-            "options": {"volatile_filters": true, "request_vars": {"packages_f_nodename": "__nodename__"}}
+            "options": {"volatile_filters": true, "request_vars": {"packages_f_node_id": "__node_id__"}}
           },
           {
             "title": "network",
             "menu_entry_id": "view-net",
             "class": "net16",
-            "link": "/init/nodenetworks/nodenetworks?volatile_filters=true&nodenetworks_f_nodename=__nodename__",
+            "link": "/init/nodenetworks/nodenetworks?volatile_filters=true&nodenetworks_f_node_id=__node_id__",
             "fn": "table_nodenetworks",
-            "options": {"volatile_filters": true, "request_vars": {"nodenetworks_f_nodename": "__nodename__"}}
+            "options": {"volatile_filters": true, "request_vars": {"nodenetworks_f_node_id": "__node_id__"}}
           },
           {
             "title": "san",
             "menu_entry_id": "view-san",
             "class": "net16",
-            "link": "/init/nodesan/nodesan?volatile_filters=true&nodesan_f_nodename=__nodename__",
+            "link": "/init/nodesan/nodesan?volatile_filters=true&nodesan_f_node_id=__node_id__",
             "fn": "table_nodesan",
-            "options": {"volatile_filters": true, "request_vars": {"nodesan_f_nodename": "__nodename__"}}
+            "options": {"volatile_filters": true, "request_vars": {"nodesan_f_node_id": "__node_id__"}}
           },
           {
             "title": "disks",
@@ -540,25 +532,25 @@ function search_get_menu(fk)
             "title": "compliance_status",
             "menu_entry_id": "comp-status",
             "class": "comp16",
-            "link": "/init/compliance/comp_status?volatile_filters=true&cs0_f_run_nodename=__nodename__",
+            "link": "/init/compliance/comp_status?volatile_filters=true&cs0_f_node_id=__node_id__",
             "fn": "view_comp_status",
-            "options": {"volatile_filters": true, "request_vars": {"cs0_f_run_nodename": "__nodename__"}}
+            "options": {"volatile_filters": true, "request_vars": {"cs0_f_node_id": "__node_id__"}}
           },
           {
             "title": "compliance_log",
             "menu_entry_id": "comp-log",
             "class": "log16",
-            "link": "/init/compliance/comp_log?volatile_filters=true&comp_log_f_run_nodename=__nodename__",
+            "link": "/init/compliance/comp_log?volatile_filters=true&comp_log_f_node_id=__node_id__",
             "fn": "table_comp_log",
-            "options": {"volatile_filters": true, "request_vars": {"comp_log_f_run_nodename": "__nodename__"}}
+            "options": {"volatile_filters": true, "request_vars": {"comp_log_f_node_id": "__node_id__"}}
           },
           {
             "title": "logs",
             "menu_entry_id": "adm-log",
             "class": "log16",
-            "link": "/init/log/log?volatile_filters=true&log_f_log_nodename=__nodename__",
+            "link": "/init/log/log?volatile_filters=true&log_f_log_node_id=__node_id__",
             "fn": "table_log",
-            "options": {"volatile_filters": true, "request_vars": {"log_f_nodename": "__nodename__"}}
+            "options": {"volatile_filters": true, "request_vars": {"log_f_node_id": "__node_id__"}}
           }
         ]
     },
@@ -600,6 +592,27 @@ function search_get_menu(fk)
   return menu[fk]
 }
 
+function search_get_val(data, key) {
+	var l = key.split(".")
+	var val = data
+	for (var i=0; i<l.length; i++) {
+		val = val[l[i]]
+	}
+	return val
+}
+
+function search_subst_keys(s, data, key) {
+	if (is_dict(data[key])) {
+		for (subkey in data[key]) {
+			var _key = key+"."+subkey
+			s = s.replace("__"+_key+"__", search_get_val(data, _key))
+		}
+	} else {
+		s = s.replace("__"+key+"__", search_get_val(data, key))
+	}
+	return s
+}
+
 function search_build_result_row(label, first, res, count) {
   var section_data = search_get_menu(label)
 
@@ -626,7 +639,7 @@ function search_build_result_row(label, first, res, count) {
     // substitute key in the title format
     var title = section_data.title
     for (key in res) {
-      title = title.replace("__"+key+"__", res[key])
+      title = search_subst_keys(title, res, key)
       p_title.text(title)
     }
     p_title.addClass(section_data.subclass)
@@ -649,7 +662,7 @@ function search_build_result_row(label, first, res, count) {
       // substitute the keys in the defined tab action
       tab = tab.replace("__rowid__", rowid)
       for (key in res) {
-        tab = tab.replace("__"+key+"__", res[key])
+        tab = search_subst_keys(tab, res, key)
       }
 
       if (tab[0] == "/") {
@@ -689,10 +702,10 @@ function search_build_result_row(label, first, res, count) {
       var link_data = $.data($(this)[0], "link_data")
       var url = link_data.link
       for (key in res) {
-        url = url.replace("__"+key+"__", res[key])
+        url = search_subst_keys(url, res, key)
       }
       // leftover (the first==1 case)
-      url = url.replace(/__\w+__/, title)
+      url = url.replace(/__[\.\w]+__/, title)
 
       e.preventDefault()
       if (link_data.options) {
@@ -701,9 +714,9 @@ function search_build_result_row(label, first, res, count) {
             continue
           }
           for (key in res) {
-            link_data.options[opt] = link_data.options[opt].replace("__"+key+"__", res[key])
+            link_data.options[opt] = search_subst_keys(link_data.options[opt], res, key)
           }
-          link_data.options[opt] = link_data.options[opt].replace(/__\w+__/, title)
+          link_data.options[opt] = link_data.options[opt].replace(/__[\.\w]+__/, title)
         }
       }
       if (link_data.options && link_data.options.request_vars) {
@@ -712,9 +725,9 @@ function search_build_result_row(label, first, res, count) {
             continue
           }
           for (key in res) {
-            link_data.options.request_vars[opt] = link_data.options.request_vars[opt].replace("__"+key+"__", res[key])
+            link_data.options.request_vars[opt] = search_subst_keys(link_data.options.request_vars[opt], res, key)
           }
-          link_data.options.request_vars[opt] = link_data.options.request_vars[opt].replace(/__\w+__/, title)
+          link_data.options.request_vars[opt] = link_data.options.request_vars[opt].replace(/__[\.\w]+__/, title)
         }
       }
 

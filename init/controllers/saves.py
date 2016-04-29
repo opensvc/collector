@@ -43,8 +43,10 @@ class table_saves(HtmlTable):
                       'save_server',
                       'save_id',
                       'save_app',
-                      'save_nodename',
-                      'save_svcname',
+                      'node_id',
+                      'nodename',
+                      'svc_id',
+                      'svcname',
                       'save_name',
                       'save_group',
                       'save_level',
@@ -56,8 +58,8 @@ class table_saves(HtmlTable):
         self.span = nodes_cols + [
                       'save_server',
                       'save_app',
-                      'save_nodename',
-                      'save_svcname']
+                      'node_id',
+                      'svc_id']
         self.child_tables = ["charts"]
 
         self.cols += nodes_cols
@@ -75,13 +77,21 @@ class table_saves(HtmlTable):
                      table='saves',
                      field='save_id',
                     ),
-            'save_nodename': HtmlTableColumn(
+            'node_id': HtmlTableColumn(
                      table='saves',
-                     field='save_nodename',
+                     field='node_id',
                     ),
-            'save_svcname': HtmlTableColumn(
+            'svc_id': HtmlTableColumn(
                      table='saves',
-                     field='save_svcname',
+                     field='svc_id',
+                    ),
+            'nodename': HtmlTableColumn(
+                     table='nodes',
+                     field='nodename',
+                    ),
+            'svcname': HtmlTableColumn(
+                     table='services',
+                     field='svcname',
                     ),
             'save_app': HtmlTableColumn(
                      table='saves',
@@ -125,11 +135,12 @@ def ajax_saves_col_values():
     col = request.args[0]
     o = db[t.colprops[col].table][col]
     q = q_filter(app_field=db.saves.save_app)
-    l = db.nodes.on(db.saves.save_nodename==db.nodes.nodename)
-    q = apply_filters(q, db.saves.save_nodename, db.saves.save_svcname)
+    l1 = db.nodes.on(db.saves.node_id==db.nodes.node_id)
+    l2 = db.services.on(db.saves.svc_id==db.services.svc_id)
+    q = apply_filters_id(q, db.saves.node_id, db.saves.svc_id)
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
-    t.object_list = db(q).select(o, orderby=o, left=l, cacheable=True)
+    t.object_list = db(q).select(o, orderby=o, left=(l1,l2), cacheable=True)
     return t.col_values_cloud_ungrouped(col)
 
 @auth.requires_login()
@@ -138,31 +149,32 @@ def ajax_saves():
     t = table_saves(table_id, 'ajax_saves')
 
     o = ~db.saves.save_date
-    o |= db.saves.save_nodename
+    o |= db.nodes.nodename
 
     q = q_filter(app_field=db.saves.save_app)
-    l = db.nodes.on(db.saves.save_nodename==db.nodes.nodename)
-    q = apply_filters(q, db.saves.save_nodename, db.saves.save_svcname)
+    l1 = db.nodes.on(db.saves.node_id==db.nodes.node_id)
+    l2 = db.services.on(db.saves.svc_id==db.services.svc_id)
+    q = apply_filters_id(q, db.saves.node_id, db.saves.svc_id)
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
 
     if len(request.args) == 1 and request.args[0] == 'data':
-        n = db(q).select(db.saves.id.count(), left=l).first()(db.saves.id.count())
+        n = db(q).select(db.saves.id.count(), left=(l1,l2)).first()(db.saves.id.count())
         t.setup_pager(n)
         limitby = (t.pager_start,t.pager_end)
         cols = t.get_visible_columns()
-        t.object_list = db(q).select(*cols, orderby=o, limitby=limitby, cacheable=True, left=l)
+        t.object_list = db(q).select(*cols, orderby=o, limitby=limitby, cacheable=True, left=(l1,l2))
         return t.table_lines_data(n, html=False)
 
     if len(request.args) == 1 and request.args[0] == 'csv':
         t.csv_q = q
         t.csv_orderby = o
-        t.csv_left = l
+        t.csv_left = (l1,l2)
         return t.csv()
 
     if len(request.args) == 1 and request.args[0] == 'commonality':
         t.csv_q = q
-        t.csv_left = l
+        t.csv_left = (l1,l2)
         return t.do_commonality()
 
 @auth.requires_login()
@@ -182,7 +194,7 @@ def ajax_saves_charts():
 
     o = db.saves.id
     q = q_filter(app_field=db.saves.save_app)
-    q = apply_filters(q, db.saves.save_nodename, None)
+    q = apply_filters_id(q, node_field=db.saves.node_id)
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
 
@@ -199,7 +211,7 @@ def ajax_saves_charts():
              from
                saves
                left join nodes on
-               saves.save_nodename = nodes.nodename
+               saves.node_id = nodes.node_id
              where
                %(q)s
           """%dict(q=q)
@@ -211,12 +223,12 @@ def ajax_saves_charts():
                    sum(t.size)
                  from (
                    select
-                     if(saves.save_svcname != "", saves.save_svcname, saves.save_nodename) as obj,
+                     if(saves.svc_id != "", saves.svc_id, saves.node_id) as obj,
                      saves.save_size as size
                    from
                      saves
                      left join nodes on
-                     saves.save_nodename = nodes.nodename
+                     saves.node_id = nodes.node_id
                    where
                      %(q)s
                  ) t
@@ -265,7 +277,7 @@ def ajax_saves_charts():
                  from
                    saves
                    left join nodes on
-                   saves.save_nodename = nodes.nodename
+                   saves.node_id = nodes.node_id
                  where
                    %(q)s
                  group by saves.save_app
@@ -303,7 +315,7 @@ def ajax_saves_charts():
 
     sql = """select distinct(saves.save_server) from
                saves left join nodes on
-               save_nodename = nodes.nodename
+               saves.node_id = nodes.node_id
              where
                %(q)s"""%dict(q=q)
     n_servers = len(db.executesql(sql))
@@ -315,7 +327,7 @@ def ajax_saves_charts():
                  from
                    saves
                    left join nodes on
-                   saves.save_nodename = nodes.nodename
+                   saves.node_id = nodes.node_id
                  where
                    %(q)s
                  group by saves.save_group
@@ -351,7 +363,7 @@ def ajax_saves_charts():
                  from
                    saves
                    left join nodes on
-                   saves.save_nodename = nodes.nodename
+                   saves.node_id = nodes.node_id
                  where
                    %(q)s
                  group by saves.save_server

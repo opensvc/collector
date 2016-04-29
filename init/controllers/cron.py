@@ -3,21 +3,21 @@ def refresh_b_action_errors():
     db.executesql(sql)
     db.commit()
     sql = """insert into b_action_errors
-               select NULL, m.mon_svcname, m.mon_nodname, count(a.id)
+               select NULL, m.svc_id, m.node_id, count(a.id)
                from svcmon m
-                 left join SVCactions a
-                 on m.mon_svcname=a.svcname and m.mon_nodname=a.hostname
+                 left join svcactions a
+                 on m.svc_id=a.svc_id and m.node_id=a.node_id
                where
                  a.status='err'
                  and (a.ack=0 or isnull(a.ack))
                  and a.end is not NULL
-               group by m.mon_svcname, m.mon_nodname
+               group by m.svc_id, m.node_id
           """
     db.executesql(sql)
     db.commit()
 
-def svc_log_update(svcname, astatus):
-    q = db.services_log.svc_name == svcname
+def svc_log_update(svc_id, astatus):
+    q = db.services_log.svc_id == svc_id
     o = ~db.services_log.id
     rows = db(q).select(orderby=o, limitby=(0,1))
     end = datetime.datetime.now()
@@ -28,12 +28,12 @@ def svc_log_update(svcname, astatus):
             q = db.services_log.id == id
             db(q).update(svc_end=end)
         else:
-            db.services_log.insert(svc_name=svcname,
+            db.services_log.insert(svc_id=svc_id,
                                    svc_begin=prev.svc_end,
                                    svc_end=end,
                                    svc_availstatus=astatus)
     else:
-        db.services_log.insert(svc_name=svcname,
+        db.services_log.insert(svc_id=svc_id,
                                svc_begin=end,
                                svc_end=end,
                                svc_availstatus=astatus)
@@ -42,20 +42,21 @@ def cron_scrub_svcstatus():
     """ Mark undef the services with 0 instance updating their status
     """
     q = db.v_outdated_services.uptodate == 0
-    svcs = [r.svcname for r in db(q).select(db.v_outdated_services.svcname)]
-    q = db.services.svc_name.belongs(svcs)
-    if len(svcs) > 0:
+    svc_ids = [r.svc_id for r in db(q).select(db.v_outdated_services.svc_id)]
+    q = db.services.svc_id.belongs(svc_ids)
+    if len(svc_ids) > 0:
         q &= (db.services.svc_status != 'undef') | (db.services.svc_availstatus != 'undef')
-        svcs_new = [r.svc_name for r in db(q).select(db.services.svc_name)]
+        svc_ids_new = [r.svc_id for r in db(q).select(db.services.svc_id)]
         db(q).update(svc_status="undef", svc_availstatus="undef")
-        for svcname in svcs_new:
+        for svc_id in svc_ids_new:
             _log("service.status",
                  "service '%(svc)s' has zero live instance. Status flagged 'undef'",
-                 dict(svc=svcname),
-                 svcname=svcname,
+                 dict(svc=get_svcname(svc_id)),
+                 user="scheduler",
+                 svc_id=svc_id,
                  level="error")
-    for svcname in svcs:
-        svc_log_update(svcname, "undef")
+    for svc_id in svc_ids:
+        svc_log_update(svc_id, "undef")
 
 def cron_purge_node_hba():
     sql = """delete from node_hba where updated < date_sub(now(), interval 1 week)"""
@@ -158,8 +159,8 @@ def cron_purge_expiry():
               ('comp_log_daily', 'run_date', 'id'),
               ('svcmon_log', 'mon_end', 'id'),
               ('services_log', 'svc_end', 'id'),
-              ('appinfo_log', 'app_updated', 'id'),
-              ('SVCactions', 'begin', 'id'),
+              ('resinfo_log', 'updated', 'id'),
+              ('svcactions', 'begin', 'id'),
               ('dashboard_events', 'dash_end', None),
               ('packages', 'pkg_updated', None),
               ('patches', 'patch_updated', None),
@@ -223,10 +224,11 @@ def cron_stat_day_disk_app_dg():
                t.app,
                t.disk_used,
                dgq.quota
-             from v_disks_app t
-             join apps ap on ap.app=t.app
-             join stor_array ar on ar.array_name=t.disk_arrayid
-             join stor_array_dg dg on ar.id=dg.array_id and dg.dg_name=t.disk_group
+             from diskinfo di
+             join svcdisks sd on di.disk_id=sd.disk_id
+             join apps ap on ap.id=sd.app_id
+             join stor_array ar on ar.array_name=di.disk_arrayid
+             join stor_array_dg dg on ar.id=dg.array_id and dg.dg_name=di.disk_group
              left join stor_array_dg_quota dgq on ap.id=dgq.app_id and dg.id=dgq.dg_id
           """
     rows = db.executesql(sql)
@@ -325,17 +327,18 @@ def cron_stat_day_svc():
     begin = datetime.datetime(year=when.year, month=when.month, day=when.day, hour=0, minute=0, second=0)
     end = begin + datetime.timedelta(days=1, seconds=-1)
 
-    rows = db(db.services.id>0).select(db.services.svc_name, groupby=db.services.svc_name)
+    rows = db(db.services.id>0).select(db.services.svc_id,
+                                       groupby=db.services.svc_id)
 
     for row in rows:
-        svc = row.svc_name
-        pairs = ["nb_action=(select count(distinct id) from SVCactions where begin>'%s' and begin<'%s' and hostname='%s')"%(begin, end, svc)]
-        pairs += ["nb_action_err=(select count(distinct id) from SVCactions where begin>'%s' and begin<'%s' and status='err' and hostname='%s')"%(begin, end, svc)]
-        pairs += ["nb_action_warn=(select count(distinct id) from SVCactions where begin>'%s' and begin<'%s' and status='warn' and hostname='%s')"%(begin, end, svc)]
-        pairs += ["nb_action_ok=(select count(distinct id) from SVCactions where begin>'%s' and begin<'%s' and status='ok' and hostname='%s')"%(begin, end, svc)]
-        pairs += ["disk_size=(select if(sum(t.disk_size) is NULL, 0, sum(t.disk_size)) from (select distinct s.disk_id, s.disk_size from svcdisks s where s.disk_svcname='%s' and s.disk_local='F') t)"%svc]
-        pairs += ["local_disk_size=(select if(sum(t.disk_size) is NULL, 0, sum(t.disk_size)) from (select distinct s.disk_id, s.disk_size from svcdisks s where s.disk_svcname='%s' and s.disk_local='T') t)"%svc]
-        sql = "insert into stat_day_svc set day='%(end)s', svcname='%(svc)s', %(pairs)s on duplicate key update %(pairs)s"%dict(end=end, svc=svc, pairs=','.join(pairs))
+        svc_id = row.svc_id
+        pairs = ["nb_action=(select count(distinct id) from svcactions where begin>'%s' and begin<'%s' and svc_id='%s')"%(begin, end, svc_id)]
+        pairs += ["nb_action_err=(select count(distinct id) from svcactions where begin>'%s' and begin<'%s' and status='err' and svc_id='%s')"%(begin, end, svc_id)]
+        pairs += ["nb_action_warn=(select count(distinct id) from svcactions where begin>'%s' and begin<'%s' and status='warn' and svc_id='%s')"%(begin, end, svc_id)]
+        pairs += ["nb_action_ok=(select count(distinct id) from svcactions where begin>'%s' and begin<'%s' and status='ok' and svc_id='%s')"%(begin, end, svc_id)]
+        pairs += ["disk_size=(select if(sum(t.disk_size) is NULL, 0, sum(t.disk_size)) from (select distinct s.disk_id, s.disk_size from svcdisks s where s.svc_id='%s' and s.disk_local='F') t)"%svc_id]
+        pairs += ["local_disk_size=(select if(sum(t.disk_size) is NULL, 0, sum(t.disk_size)) from (select distinct s.disk_id, s.disk_size from svcdisks s where s.svc_id='%s' and s.disk_local='T') t)"%svc_id]
+        sql = "insert into stat_day_svc set day='%(end)s', svc_id='%(svc_id)s', %(pairs)s on duplicate key update %(pairs)s"%dict(end=end, svc_id=svc_id, pairs=','.join(pairs))
         #raise Exception(sql)
         db.executesql(sql)
     db.commit()
@@ -361,7 +364,7 @@ def cron_scrub_checks():
 
 def alert_wrong_netmask():
     sql = """select
-               nodename,
+               node_id,
                host_mode,
                addr,
                mask,
@@ -383,8 +386,8 @@ def alert_wrong_netmask():
         sql = """insert into dashboard
                  set
                    dash_type="netmask misconfigured",
-                   dash_svcname="",
-                   dash_nodename="%(nodename)s",
+                   svc_id="",
+                   node_id="%(node_id)s",
                    dash_severity=%(sev)d,
                    dash_fmt="%%(addr)s configured with mask %%(mask)s instead of %%(net_netmask)s",
                    dash_dict='{"addr": "%(addr)s", "mask": "%(mask)s", "net_netmask": "%(net_netmask)s"}',
@@ -397,7 +400,7 @@ def alert_wrong_netmask():
                    dash_dict='{"addr": "%(addr)s", "mask": "%(mask)s", "net_netmask": "%(net_netmask)s"}',
                    dash_updated=now()
               """%dict(
-                       nodename=row.get('nodename', ''),
+                       node_id=row.get('node_id', ''),
                        mask=str(row.get('mask', '')),
                        net_netmask=str(row.get('net_netmask', '')),
                        sev=sev,
@@ -425,8 +428,11 @@ def alerts_apps_without_responsible():
         return
 
     _log("app",
-         "applications with no declared responsibles '%(app)s'",
-         dict(app=', '.join(apps)),level="warning")
+         "applications with no declared responsibles %(app)s",
+         dict(app=', '.join(apps)),
+         user="scheduler",
+         level="warning"
+    )
 
 def alerts_services_not_updated():
     """ Alert if service is not updated for 48h
@@ -436,16 +442,16 @@ def alerts_services_not_updated():
              into log
                select NULL,
                       "service.config",
-                      "feed",
+                      "scheduler",
                       "service config not updated for more than %(age)d days (%%(date)s)",
                       concat('{"date": "', updated, '"}'),
                       now(),
-                      svc_name,
-                      NULL,
+                      svc_id,
                       0,
                       0,
-                      md5(concat("service.config.notupdated",svc_name,updated)),
-                      "warning"
+                      md5(concat("service.config.notupdated",svcname,updated)),
+                      "warning",
+                      NULL
                from services
                where updated<date_sub(now(), interval %(age)d day)"""%dict(age=age)
     return db.executesql(sql)
@@ -459,16 +465,16 @@ def alerts_svcmon_not_updated():
              into log
                select NULL,
                       "service.status",
-                      "feed",
+                      "scheduler",
                       "service status not updated for more than %(age)dh (%%(date)s)",
                       concat('{"date": "', mon_updated, '"}'),
                       now(),
-                      mon_svcname,
-                      mon_nodname,
+                      svc_id,
                       0,
                       0,
-                      md5(concat("service.status.notupdated",mon_nodname,mon_svcname,mon_updated)),
-                      "warning"
+                      md5(concat("service.status.notupdated",node_id,svc_id,mon_updated)),
+                      "warning",
+                      node_id
                from svcmon
                where mon_updated<date_sub(now(), interval %(age)d hour)"""%dict(age=age)
     n = db.executesql(sql)
@@ -479,8 +485,8 @@ def refresh_dash_action_errors():
     sql = """delete from dashboard
              where
                dash_type like "%action err%" and
-               (dash_svcname, dash_nodename) not in (
-                 select svcname, nodename
+               (svc_id, node_id) not in (
+                 select svc_id, node_id
                  from b_action_errors
                )"""
     db.executesql(sql)
@@ -490,12 +496,12 @@ def update_dash_action_errors():
     sql = """select
                e.err,
                s.svc_type,
-               e.svcname,
-               e.nodename,
+               e.svc_id,
+               e.node_id,
                s.svc_type
              from
                b_action_errors e
-             join services s on e.svcname=s.svc_name
+             join services s on e.svc_id=s.svc_id
           """
     rows = db.executesql(sql)
 
@@ -507,8 +513,8 @@ def update_dash_action_errors():
         sql = """insert into dashboard
                  set
                    dash_type="action errors",
-                   dash_svcname="%(svcname)s",
-                   dash_nodename="%(nodename)s",
+                   svc_id="%(svc_id)s",
+                   node_id="%(node_id)s",
                    dash_severity=%(sev)d,
                    dash_fmt="%%(err)s action errors",
                    dash_dict='{"err": "%(err)d"}',
@@ -520,8 +526,8 @@ def update_dash_action_errors():
                    dash_fmt="%%(err)s action errors",
                    dash_dict='{"err": "%(err)d"}',
                    dash_updated=now()
-              """%dict(svcname=row[2],
-                       nodename=row[3],
+              """%dict(svc_id=row[2],
+                       node_id=row[3],
                        sev=sev,
                        env=row[4],
                        err=row[0])
@@ -536,7 +542,7 @@ def alerts_failed_actions_not_acked():
         and alerts generated should be sent as soon as possible.
     """
     age = 1
-    sql = """select id, svcname, hostname from SVCactions where
+    sql = """select id, svc_id, node_id from svcactions where
                  status="err" and
                  (ack=0 or ack is NULL) and
                  begin>date_sub(now(), interval 7 day) and
@@ -551,17 +557,17 @@ def alerts_failed_actions_not_acked():
              into log
                select NULL,
                       "service.action.notacked",
-                      "feed",
+                      "scheduler",
                       "unacknowledged failed action '%%(action)s' at '%%(begin)s'",
                       concat('{"action": "', action, '", "begin": "', begin, '"}'),
                       now(),
-                      svcname,
-                      hostname,
+                      svc_id,
                       0,
                       0,
-                      md5(concat("service.action.notacked",hostname,svcname,begin)),
-                      "warning"
-               from SVCactions
+                      md5(concat("service.action.notacked",node_id,svc_id,begin)),
+                      "warning",
+                      node_id
+               from svcactions
                where
                  id in (%(ids)s)"""%dict(ids=','.join(ids))
     db.executesql(sql)
@@ -572,7 +578,7 @@ def alerts_failed_actions_not_acked():
 
     """ Ack all actions we sent an alert for
     """
-    sql = """update SVCactions set
+    sql = """update svcactions set
                ack=1,
                acked_date="%(date)s",
                acked_comment="Automatically acknowledged",
@@ -604,12 +610,12 @@ def purge_stor_array():
 
 def update_dg_quota():
     sql = """insert ignore into stor_array_dg_quota
-             select NULL, dg.id, ap.id, NULL
+             select NULL, dg.id, sd.app_id, NULL
              from
-               v_disks_app v
-               join stor_array ar on (v.disk_arrayid=ar.array_name)
-               join stor_array_dg dg on (v.disk_group=dg.dg_name and dg.array_id=ar.id)
-               join apps ap on v.app=ap.app
+               svcdisks sd
+               join diskinfo di on sd.disk_id=di.disk_id
+               join stor_array ar on (di.disk_arrayid=ar.array_name)
+               join stor_array_dg dg on (di.disk_group=dg.dg_name and dg.array_id=ar.id)
           """
     db.executesql(sql)
     db.commit()
@@ -617,8 +623,8 @@ def update_dg_quota():
 def purge_comp_rulesets_services():
     sql = """delete from comp_rulesets_services
              where
-               svcname not in (
-                 select distinct mon_svcname from svcmon
+               svc_id not in (
+                 select distinct svc_id from svcmon
                )
           """
     db.executesql(sql)
@@ -627,8 +633,8 @@ def purge_comp_rulesets_services():
 def purge_comp_rulesets_nodes():
     sql = """delete from comp_rulesets_nodes
              where
-               nodename not in (
-                select nodename from nodes
+               node_id not in (
+                select node_id from nodes
                )
           """
     db.executesql(sql)
@@ -637,8 +643,8 @@ def purge_comp_rulesets_nodes():
 def purge_comp_modulesets_services():
     sql = """delete from comp_modulesets_services
              where
-               modset_svcname not in (
-                 select distinct mon_svcname from svcmon
+               svc_id not in (
+                 select distinct svc_id from svcmon
                )
           """
     db.executesql(sql)
@@ -647,8 +653,8 @@ def purge_comp_modulesets_services():
 def purge_comp_modulesets_nodes():
     sql = """delete from comp_node_moduleset
              where
-               modset_node not in (
-                select nodename from nodes
+               node_id not in (
+                select node_id from nodes
                )
           """
     db.executesql(sql)
@@ -670,11 +676,9 @@ def purge_comp_status():
     #
     sql = """delete from comp_status
              where
-               run_svcname != "" and
-               concat(run_nodename, run_svcname) not in (
-                 select concat(mon_nodname, mon_svcname) from svcmon
-                 union all
-                 select concat(mon_vmname, mon_svcname) from svcmon
+               svc_id != "" and
+               svc_id not in (
+                 select distinct svc_id from svcmon
                )
            """
     db.executesql(sql)
@@ -685,8 +689,8 @@ def purge_comp_status():
     #
     sql = """delete from comp_status
              where
-               run_nodename not in (
-                 select distinct nodename from nodes
+               node_id not in (
+                 select distinct node_id from nodes
                )
     """
     db.executesql(sql)
@@ -713,14 +717,13 @@ def purge_comp_status():
     sql = """delete from comp_status
              where
                run_date<date_sub(now(), interval 7 day) and
-               run_svcname="" and
+               svc_id="" and
                run_module not in (
                  select modset_mod_name
                  from comp_moduleset_modules
                  where modset_id in (
                    select modset_id
                    from comp_node_moduleset
-                   where modset_node=run_nodename
                  )
                )
     """
@@ -734,14 +737,13 @@ def purge_comp_status():
     sql = """delete from comp_status
              where
                run_date<date_sub(now(), interval 7 day) and
-               run_svcname!="" and
+               svc_id != "" and
                run_module not in (
                  select modset_mod_name
                  from comp_moduleset_modules
                  where modset_id in (
                    select modset_id
                    from comp_modulesets_services
-                   where modset_svcname=run_svcname
                  )
                )
     """
@@ -750,20 +752,18 @@ def purge_comp_status():
 
 
 def purge_alerts_on_nodes_without_asset():
-    l = db.nodes.on(db.dashboard.dash_nodename==db.nodes.nodename)
-    q = db.dashboard.dash_nodename is not None
-    q &= db.dashboard.dash_nodename != ""
-    q &= db.nodes.nodename == None
+    l = db.nodes.on(db.dashboard.node_id==db.nodes.node_id)
+    q = db.dashboard.node_id != ""
+    q &= db.nodes.node_id == None
     ids = map(lambda x: x.id, db(q).select(db.dashboard.id, left=l))
     if len(ids) > 0:
         q = db.dashboard.id.belongs(ids)
         db(q).delete()
         db.commit()
 
-    l = db.services.on(db.dashboard.dash_svcname==db.services.svc_name)
-    q = db.dashboard.dash_svcname is not None
-    q &= db.dashboard.dash_svcname != ""
-    q &= db.services.svc_name == None
+    l = db.services.on(db.dashboard.svc_id==db.services.svc_id)
+    q = db.dashboard.svc_id != ""
+    q &= db.services.svc_id == None
     ids = map(lambda x: x.id, db(q).select(db.dashboard.id, left=l))
     if len(ids) > 0:
         q = db.dashboard.id.belongs(ids)
@@ -777,24 +777,43 @@ def cron_purge_packages():
     db.commit()
 
 def cron_alerts_daily():
+    print "alerts_apps_without_responsible"
     alerts_apps_without_responsible()
+    print "alerts_services_not_updated"
     alerts_services_not_updated()
+    print "alerts_failed_actions_not_acked"
     alerts_failed_actions_not_acked()
+    print "refresh_b_action_errors"
     refresh_b_action_errors()
+    print "refresh_dash_action_errors"
     refresh_dash_action_errors()
+    print "purge_svcdisks"
     purge_svcdisks()
+    print "purge_diskinfo"
     purge_diskinfo()
+    print "purge_stor_array"
     purge_stor_array()
+    print "update_dg_quota"
     update_dg_quota()
+    print "purge_alerts_on_nodes_without_asset"
     purge_alerts_on_nodes_without_asset()
+    print "cron_resmon_purge"
     cron_resmon_purge()
+    print "cron_purge_node_hba"
     cron_purge_node_hba()
+    print "cron_purge_packages"
     cron_purge_packages()
+    print "cron_mac_dup"
     cron_mac_dup()
+    print "purge_comp_status"
     purge_comp_status()
+    print "purge_comp_modulesets_nodes"
     purge_comp_modulesets_nodes()
+    print "purge_comp_rulesets_nodes"
     purge_comp_rulesets_nodes()
+    print "purge_comp_modulesets_services"
     purge_comp_modulesets_services()
+    print "purge_comp_rulesets_services"
     purge_comp_rulesets_services()
 
 def cron_alerts_hourly():
@@ -812,24 +831,24 @@ def cron_resmon_purge():
 def cron_mac_dup():
     sql = """select * from (
               select
-               count(mac) as n,
-               group_concat(nodename order by nodename),
-               mac
+               count(t.mac) as n,
+               group_concat(t.node_id order by t.node_id),
+               t.mac
               from (
-               select node_ip.nodename,mac from node_ip
-               join nodes on nodes.nodename=node_ip.nodename
+               select node_ip.node_id,node_ip.mac from node_ip
+               join nodes on nodes.node_id=node_ip.node_id
                where
-                intf not like "%:%" and
-                intf not like "usbecm%" and
-                intf not like "docker%" and
-                mac!="00:00:00:00:00:00" and
-                mac!="0:0:0:0:0:0" and
-                mac!="0" and
+                node_ip.intf not like "%:%" and
+                node_ip.intf not like "usbecm%" and
+                node_ip.intf not like "docker%" and
+                node_ip.mac!="00:00:00:00:00:00" and
+                node_ip.mac!="0:0:0:0:0:0" and
+                node_ip.mac!="0" and
                 node_ip.updated > date_sub(now(), interval 1 day)
-               group by mac, nodename
+               group by mac, node_id
               ) t
-              group by mac) v
-              where n>1"""
+              group by t.mac) v
+              where v.n>1"""
 
     rows = db.executesql(sql)
 
@@ -846,8 +865,8 @@ def cron_mac_dup():
     now = datetime.datetime.now()
     now = now - datetime.timedelta(microseconds=now.microsecond)
     for row in rows:
-        for node in row[1].split(','):
-            q = db.nodes.nodename == node
+        for node_id in row[1].split(','):
+            q = db.nodes.node_id == node_id
             node_entry = db(q).select(db.nodes.host_mode).first()
             if node_entry is None:
                 return
@@ -859,8 +878,8 @@ def cron_mac_dup():
                      set
                        dash_type="mac duplicate",
                        dash_severity=%(severity)d,
-                       dash_nodename="%(node)s",
-                       dash_svcname="",
+                       node_id="%(node_id)s",
+                       svc_id="",
                        dash_fmt="mac %%(mac)s reported by nodes %%(nodes)s",
                        dash_dict='{"mac": "%(mac)s", "nodes": "%(nodes)s"}',
                        dash_created="%(now)s",
@@ -873,8 +892,8 @@ def cron_mac_dup():
                        dash_updated="%(now)s"
                   """%dict(severity=severity,
                            environment=environment,
-                           node=node,
-                           nodes=row[1],
+                           node_id=node_id,
+                           nodes=', '.join(map(lambda x: get_nodename(x), row[1])),
                            mac=row[2],
                            now=str(now))
             db.executesql(sql)
@@ -946,7 +965,7 @@ def cron_update_virtual_asset():
        n2.power_breaker2=n.power_breaker2,
        n2.enclosure=n.enclosure
       where
-       m.mon_nodname=n.nodename and
+       m.node_id=n.node_id and
        m.mon_vmname=n2.nodename and
        m.mon_vmtype in ('ldom', 'hpvm', 'kvm', 'xen', 'vbox', 'ovm', 'esx', 'zone', 'lxc', 'jail', 'vz', 'srp') and
        m.mon_containerstatus in ("up", "stdby up", "warn")
@@ -1006,18 +1025,18 @@ def _perf_proc(begin, end, period):
     sql = """insert ignore into stats_proc_%(period)s
              select
                %(period_sql)s as d,
-               nodename,
                runq_sz,
                plist_sz,
                ldavg_1,
                ldavg_5,
-               ldavg_15
+               ldavg_15,
+               node_id
              from stats_proc%(prev_period)s
              where
                date>='%(begin)s' and
                date<='%(end)s'
              group by
-               nodename, d"""%dict(
+               node_id, d"""%dict(
       prev_period=prev_period(period),
       period_sql=period_sql(period),
       period=period,
@@ -1030,16 +1049,16 @@ def _perf_fs_u(begin, end, period):
     sql = """insert ignore into stats_fs_u_%(period)s
              select
                %(period_sql)s as d,
-               nodename,
                mntpt,
                avg(size),
-               avg(used)
+               avg(used),
+               node_id
              from stats_fs_u%(prev_period)s
              where
                date>='%(begin)s' and
                date<='%(end)s'
              group by
-               nodename, mntpt, d""" % dict(
+               node_id, mntpt, d""" % dict(
       prev_period=prev_period(period),
       period_sql=period_sql(period),
       period=period,
@@ -1063,14 +1082,14 @@ def _perf_cpu(begin, end, period):
                avg(guest),
                avg(gnice),
                avg(idle),
-               nodename
+               node_id
              from stats_cpu%(prev_period)s
              where
                date>='%(begin)s' and
                date<='%(end)s' and
                cpu='ALL'
              group by
-               nodename, d""" % dict(
+               node_id, d""" % dict(
       prev_period=prev_period(period),
       period_sql=period_sql(period),
       period=period,
@@ -1081,19 +1100,20 @@ def _perf_cpu(begin, end, period):
 
 def _perf_block(begin, end, period):
     sql = """insert ignore into stats_block_%(period)s
-             select nodename,
+             select 
                     %(period_sql)s as d,
                     avg(tps),
                     avg(rtps),
                     avg(wtps),
                     avg(rbps),
-                    avg(wbps)
+                    avg(wbps),
+                    node_id
              from stats_block%(prev_period)s
              where
                date>='%(begin)s' and
                date<='%(end)s'
              group by
-               nodename, d"""%dict(
+               node_id, d"""%dict(
       prev_period=prev_period(period),
       period_sql=period_sql(period),
       period=period,
@@ -1105,7 +1125,6 @@ def _perf_block(begin, end, period):
 def _perf_mem_u(begin, end, period):
     sql = """insert ignore into stats_mem_u_%(period)s
              select
-               nodename,
                avg(kbmemfree),
                avg(kbmemused),
                avg(pct_memused),
@@ -1117,13 +1136,14 @@ def _perf_mem_u(begin, end, period):
                avg(kbmemsys),
                avg(kbactive),
                avg(kbinact),
-               avg(kbdirty)
+               avg(kbdirty),
+               node_id
              from stats_mem_u%(prev_period)s
              where
                date>='%(begin)s' and
                date<='%(end)s'
              group by
-               nodename, d"""%dict(
+               node_id, d"""%dict(
       prev_period=prev_period(period),
       period_sql=period_sql(period),
       period=period,
@@ -1136,7 +1156,6 @@ def _perf_blockdev(begin, end, period):
     sql = """insert ignore into stats_blockdev_%(period)s
              select
                %(period_sql)s as d,
-               nodename,
                dev,
                avg(tps),
                avg(rsecps),
@@ -1145,13 +1164,14 @@ def _perf_blockdev(begin, end, period):
                avg(avgqu_sz),
                avg(await),
                avg(svctm),
-               avg(pct_util)
+               avg(pct_util),
+               node_id
              from stats_blockdev%(prev_period)s
              where
                date>='%(begin)s' and
                date<='%(end)s'
              group by
-               nodename, dev, d"""%dict(
+               node_id, dev, d"""%dict(
       prev_period=prev_period(period),
       period_sql=period_sql(period),
       period=period,
@@ -1163,19 +1183,19 @@ def _perf_blockdev(begin, end, period):
 def _perf_netdev(begin, end, period):
     sql = """insert ignore into stats_netdev_%(period)s
              select
-               nodename,
                %(period_sql)s as d,
                dev,
                avg(rxkBps),
                avg(txkBps),
                avg(rxpckps),
-               avg(txpckps)
+               avg(txpckps),
+               node_id
              from stats_netdev%(prev_period)s
              where
                date>='%(begin)s' and
                date<='%(end)s'
              group by
-               nodename, dev, d"""%dict(
+               node_id, dev, d"""%dict(
       prev_period=prev_period(period),
       period_sql=period_sql(period),
       period=period,
@@ -1187,20 +1207,20 @@ def _perf_netdev(begin, end, period):
 def _perf_netdev_err(begin, end, period):
     sql = """insert ignore into stats_netdev_err_%(period)s
              select
-               nodename,
                %(period_sql)s as d,
                avg(rxerrps),
                avg(txerrps),
                avg(collps),
                avg(rxdropps),
                avg(txdropps),
-               dev
+               dev,
+               node_id
              from stats_netdev_err%(prev_period)s
              where
                date>='%(begin)s' and
                date<='%(end)s'
              group by
-               nodename, dev, d"""%dict(
+               node_id, dev, d"""%dict(
       prev_period=prev_period(period),
       period_sql=period_sql(period),
       period=period,
@@ -1212,19 +1232,19 @@ def _perf_netdev_err(begin, end, period):
 def _perf_swap(begin, end, period):
     sql = """insert ignore into stats_swap_%(period)s
              select
-               nodename,
                %(period_sql)s as d,
                avg(kbswpfree),
                avg(kbswpused),
                avg(pct_swpused),
                avg(kbswpcad),
-               avg(pct_swpcad)
+               avg(pct_swpcad),
+               node_id
              from stats_swap%(prev_period)s
              where
                date>='%(begin)s' and
                date<='%(end)s'
              group by
-               nodename, d"""%dict(
+               node_id, d"""%dict(
       prev_period=prev_period(period),
       period_sql=period_sql(period),
       period=period,
@@ -1237,7 +1257,7 @@ def _perf_svc(begin, end, period):
     sql = """insert ignore into stats_svc_%(period)s
              select
                %(period_sql)s as d,
-               svcname,
+               svc_id,
                avg(swap),
                avg(rss),
                avg(cap),
@@ -1248,14 +1268,14 @@ def _perf_svc(begin, end, period):
                avg(nproc),
                avg(mem),
                avg(cpu),
-               nodename,
-               avg(cap_cpu)
+               avg(cap_cpu),
+               node_id
              from stats_svc%(prev_period)s
              where
                date>='%(begin)s' and
                date<='%(end)s'
              group by
-               nodename, svcname, d"""%dict(
+               node_id, svc_id, d"""%dict(
       prev_period=prev_period(period),
       period_sql=period_sql(period),
       period=period,

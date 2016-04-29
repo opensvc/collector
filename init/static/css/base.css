@@ -111,7 +111,7 @@ input.aci, input.aci:focus {
 
 .asset_tab > div {
 	padding: 1em;
-	width: 28em;
+	width: 31em;
 	display: inline-block;
 }
 
@@ -1422,6 +1422,15 @@ a.xinfo_shown span {
 }
 
 .details_row {
+}
+
+.chartcontainer {
+	float:left;
+	width:45%;
+	min-width:350px;
+	padding:10px;
+	padding-left:30px;
+	padding-right:30px
 }
 
 div.float {
@@ -3307,6 +3316,9 @@ textarea.link_ta_sub {
 
 .del16_allow:before {
 	content: '\f146';
+}
+.editable-placeholder:after {
+	color: #dddddd;
 }
 .editable:after {
 	content: '\f040';

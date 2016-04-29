@@ -1,15 +1,15 @@
-def update_dash_svcmon_not_updated(svcname, nodename):
+def update_dash_svcmon_not_updated(svc_id, node_id):
     sql = """delete from dashboard
                where
-                 dash_svcname = "%(svcname)s" and
-                 dash_nodename = "%(nodename)s" and
+                 svc_id = "%(svc_id)s" and
+                 node_id = "%(node_id)s" and
                  dash_type = "service status not updated"
-          """%dict(svcname=svcname, nodename=nodename)
+          """%dict(svc_id=svc_id, node_id=node_id)
     rows = db.executesql(sql)
     db.commit()
     # dashboard_events() called from __svcmon_update
 
-def update_dash_service_available_but_degraded(svc_name, svc_type, svc_availstatus, svc_status):
+def update_dash_service_available_but_degraded(svc_id, svc_type, svc_availstatus, svc_status):
     if svc_type == 'PRD':
         sev = 3
     else:
@@ -18,8 +18,7 @@ def update_dash_service_available_but_degraded(svc_name, svc_type, svc_availstat
         sql = """insert into dashboard
                  set
                    dash_type="service available but degraded",
-                   dash_svcname="%(svcname)s",
-                   dash_nodename="",
+                   svc_id="%(svc_id)s",
                    dash_severity=%(sev)d,
                    dash_fmt="current overall status: %%(s)s",
                    dash_dict='{"s": "%(status)s"}',
@@ -32,7 +31,7 @@ def update_dash_service_available_but_degraded(svc_name, svc_type, svc_availstat
                    dash_dict='{"s": "%(status)s"}',
                    dash_updated=now(),
                    dash_env="%(env)s"
-              """%dict(svcname=svc_name,
+              """%dict(svc_id=svc_id,
                        sev=sev,
                        env=svc_type,
                        status=svc_status)
@@ -42,13 +41,13 @@ def update_dash_service_available_but_degraded(svc_name, svc_type, svc_availstat
         sql = """delete from dashboard
                  where
                    dash_type="service available but degraded" and
-                   dash_svcname="%s"
-              """%svc_name
+                   svc_id="%s"
+              """%svc_id
         db.executesql(sql)
         db.commit()
     # dashboard_events() called from __svcmon_update
 
-def update_dash_service_unavailable(svc_name, svc_type, svc_availstatus):
+def update_dash_service_unavailable(svc_id, svc_type, svc_availstatus):
     if svc_type == 'PRD':
         sev = 4
     else:
@@ -57,24 +56,24 @@ def update_dash_service_unavailable(svc_name, svc_type, svc_availstatus):
         sql = """delete from dashboard
                  where
                    dash_type="service unavailable" and
-                   dash_svcname="%s"
-              """%svc_name
+                   svc_id="%s"
+              """%svc_id
         db.executesql(sql)
         db.commit()
     else:
         sql = """select count(id) from svcmon_log_ack
                  where
-                   mon_svcname="%s" and
+                   svc_id="%s" and
                    mon_begin <= now() and
                    mon_end >= now()
-              """%(svc_name)
+              """%(svc_id)
         n = db.executesql(sql)[0][0]
         if n > 0:
             sql = """delete from dashboard
                      where
                        dash_type="service unavailable" and
-                       dash_svcname="%s"
-                  """%(svc_name)
+                       svc_id="%s"
+                  """%(svc_id)
             db.executesql(sql)
             db.commit()
             return
@@ -82,21 +81,20 @@ def update_dash_service_unavailable(svc_name, svc_type, svc_availstatus):
         sql = """insert into dashboard
                  set
                    dash_type="service unavailable",
-                   dash_svcname="%(svcname)s",
-                   dash_nodename="",
+                   svc_id="%(svc_id)s",
                    dash_severity=%(sev)d,
                    dash_fmt="current availability status: %%(s)s",
-                   dash_dict='{"s": "%(status)s", "svcname": "%(svcname)s"}',
+                   dash_dict='{"s": "%(status)s"}',
                    dash_created=now(),
                    dash_updated=now(),
                    dash_env="%(env)s"
                  on duplicate key update
                    dash_severity=%(sev)d,
                    dash_fmt="current availability status: %%(s)s",
-                   dash_dict='{"s": "%(status)s", "svcname": "%(svcname)s"}',
+                   dash_dict='{"s": "%(status)s"}',
                    dash_updated=now(),
                    dash_env="%(env)s"
-              """%dict(svcname=svc_name,
+              """%dict(svc_id=svc_id,
                        sev=sev,
                        env=svc_type,
                        status=svc_availstatus)
@@ -104,11 +102,11 @@ def update_dash_service_unavailable(svc_name, svc_type, svc_availstatus):
         db.commit()
     # dashboard_events() called from __svcmon_update
 
-def svc_status_update(svcname):
+def svc_status_update(svc_id):
     """ avail and overall status can be:
         up, down, stdby up, stdby down, warn, undef
     """
-    q = db.svcmon.mon_svcname == svcname
+    q = db.svcmon.svc_id == svc_id
     rows = db(q).select(db.svcmon.mon_overallstatus,
                         db.svcmon.mon_availstatus,
                         db.svcmon.mon_updated,
@@ -160,7 +158,7 @@ def svc_status_update(svcname):
         ostatus = 'undef'
 
     try:
-        svc_log_update(svcname, astatus)
+        svc_log_update(svc_id, astatus)
     except NameError:
         pass
     try:
@@ -168,14 +166,14 @@ def svc_status_update(svcname):
     except:
         svctype = 'TST'
 
-    db(db.services.svc_name==svcname).update(
+    db(db.services.svc_id==svc_id).update(
       svc_status=ostatus,
       svc_availstatus=astatus,
       svc_status_updated=datetime.datetime.now(),
     )
     db.commit()
 
-    update_dash_service_unavailable(svcname, svctype, astatus)
-    update_dash_service_available_but_degraded(svcname, svctype, astatus, ostatus)
+    update_dash_service_unavailable(svc_id, svctype, astatus)
+    update_dash_service_available_but_degraded(svc_id, svctype, astatus, ostatus)
 
 

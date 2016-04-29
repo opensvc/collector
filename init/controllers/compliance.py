@@ -76,8 +76,11 @@ class table_comp_rulesets_services(HtmlTable):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
-        self.cols = ['svc_name', 'encap', 'ruleset_id', 'ruleset_name'] + services_cols + ['svc_status_updated']
+        self.cols = ['svc_id', 'svcname', 'encap', 'ruleset_id', 'ruleset_name'] + services_cols + ['svc_status_updated']
         self.colprops = services_colprops
+        self.colprops['svc_id'] = HtmlTableColumn(
+                     field='svc_id',
+                    )
         self.colprops['ruleset_id'] = HtmlTableColumn(
                      field='ruleset_id',
                     )
@@ -92,8 +95,8 @@ class table_comp_rulesets_services(HtmlTable):
                     )
         for c in self.cols:
             self.colprops[c].table = 'v_comp_services'
-        self.span = ['svc_name']
-        self.keys = ['svc_name', 'ruleset_id', 'encap']
+        self.span = ['svc_id']
+        self.keys = ['svc_id', 'ruleset_id', 'encap']
         self.ajax_col_values = 'ajax_comp_rulesets_services_col_values'
 
 
@@ -102,18 +105,21 @@ class table_comp_rulesets_nodes(HtmlTable):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
-        self.cols = ['nodename', 'ruleset_id', 'ruleset_name'] + nodes_cols
+        self.cols = ['node_id', 'nodename', 'ruleset_id', 'ruleset_name'] + nodes_cols
         self.colprops = nodes_colprops
         self.colprops['ruleset_id'] = HtmlTableColumn(
                      field='ruleset_id',
+                    )
+        self.colprops['node_id'] = HtmlTableColumn(
+                     field='node_id',
                     )
         self.colprops['ruleset_name'] = HtmlTableColumn(
                      field='ruleset_name',
                     )
         for c in self.cols:
             self.colprops[c].table = 'v_comp_nodes'
-        self.span = ['nodename']
-        self.keys = ['nodename', 'ruleset_id']
+        self.span = ['node_id']
+        self.keys = ['node_id', 'ruleset_id']
         self.ajax_col_values = 'ajax_comp_rulesets_nodes_col_values'
 
 
@@ -123,7 +129,7 @@ def ajax_comp_rulesets_services_col_values():
     t = table_comp_rulesets_services(table_id, 'ajax_comp_rulesets_services')
     col = request.args[0]
     o = db.v_comp_services[col]
-    g = db.v_comp_services.svc_name | db.v_comp_services.encap | db.v_comp_services.ruleset_name
+    g = db.v_comp_services.svcname | db.v_comp_services.encap | db.v_comp_services.ruleset_name
     q = q_filter(app_field=db.v_comp_services.svc_app)
     for f in t.cols:
         q = _where(q, 'v_comp_services', t.filter_parse(f), f)
@@ -148,8 +154,8 @@ def ajax_comp_rulesets_services():
     table_id = request.vars.table_id
     t = table_comp_rulesets_services(table_id, 'ajax_comp_rulesets_services')
 
-    o = db.v_comp_services.svc_name | db.v_comp_services.encap | db.v_comp_services.ruleset_name
-    g = db.v_comp_services.svc_name | db.v_comp_services.encap | db.v_comp_services.ruleset_name
+    o = db.v_comp_services.svcname | db.v_comp_services.encap | db.v_comp_services.ruleset_name
+    g = db.v_comp_services.svcname | db.v_comp_services.encap | db.v_comp_services.ruleset_name
     q = q_filter(app_field=db.v_comp_services.svc_app)
     for f in t.cols:
         q = _where(q, 'v_comp_services', t.filter_parse(f), f)
@@ -490,8 +496,11 @@ class table_comp_modulesets_services(HtmlTable):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
-        self.cols = ['svc_name', 'encap', 'modset_id', 'modset_name'] + services_cols + ['svc_status_updated']
+        self.cols = ['svc_id', 'svcname', 'encap', 'modset_id', 'modset_name'] + services_cols + ['svc_status_updated']
         self.colprops = services_colprops
+        self.colprops['svc_id'] = HtmlTableColumn(
+                     field='svc_id',
+                    )
         self.colprops['modset_id'] = HtmlTableColumn(
                      field='modset_id',
                     )
@@ -506,8 +515,8 @@ class table_comp_modulesets_services(HtmlTable):
                     )
         for c in self.cols:
             self.colprops[c].table = 'v_comp_services'
-        self.span = ['svc_name']
-        self.keys = ['svc_name', 'modset_id', 'encap']
+        self.span = ['svc_id']
+        self.keys = ['svc_id', 'modset_id', 'encap']
         self.ajax_col_values = 'ajax_comp_modulesets_services_col_values'
 
 class table_comp_modulesets_nodes(HtmlTable):
@@ -515,10 +524,13 @@ class table_comp_modulesets_nodes(HtmlTable):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
-        self.cols = ['nodename', 'modset_id', 'modset_name'] + nodes_cols
+        self.cols = ['node_id', 'nodename', 'modset_id', 'modset_name'] + nodes_cols
         self.colprops = nodes_colprops
         self.colprops['modset_id'] = HtmlTableColumn(
                      field='modset_id',
+                    )
+        self.colprops['node_id'] = HtmlTableColumn(
+                     field='node_id',
                     )
         self.colprops['modset_name'] = HtmlTableColumn(
                      table='v_comp_moduleset',
@@ -526,7 +538,7 @@ class table_comp_modulesets_nodes(HtmlTable):
                     )
         for c in self.cols:
             self.colprops[c].table = 'v_comp_nodes'
-        self.span = ['nodename']
+        self.span = ['node_id']
         self.keys = ['nodename', 'modset_id']
         self.ajax_col_values = 'ajax_comp_modulesets_nodes_col_values'
 
@@ -536,7 +548,7 @@ def ajax_comp_modulesets_services_col_values():
     t = table_comp_modulesets_services(table_id, 'ajax_comp_modulesets_services')
     col = request.args[0]
     o = db.v_comp_services[col]
-    g = db.v_comp_services.svc_name | db.v_comp_services.encap | db.v_comp_services.modset_name
+    g = db.v_comp_services.svcname | db.v_comp_services.encap | db.v_comp_services.modset_name
     q = q_filter(app_field=db.v_comp_services.svc_app)
     if 'Manager' not in user_groups():
         q &= db.v_comp_services.team_responsible.belongs(user_groups())
@@ -567,8 +579,8 @@ def ajax_comp_modulesets_services():
     table_id = request.vars.table_id
     t = table_comp_modulesets_services(table_id, 'ajax_comp_modulesets_services')
 
-    o = db.v_comp_services.svc_name | db.v_comp_services.encap | db.v_comp_services.modset_name
-    g = db.v_comp_services.svc_name | db.v_comp_services.encap | db.v_comp_services.modset_name
+    o = db.v_comp_services.svcname | db.v_comp_services.encap | db.v_comp_services.modset_name
+    g = db.v_comp_services.svcname | db.v_comp_services.encap | db.v_comp_services.modset_name
     q = q_filter(app_field=db.v_comp_services.svc_app)
     for f in t.cols:
         q = _where(q, 'v_comp_services', t.filter_parse(f), f)
@@ -695,13 +707,16 @@ class table_comp_svc_status(HtmlTable):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
-        self.keys = ['svc_name']
-        self.span = ['svc_name']
-        self.cols = ['svc_name', 'total', 'ok', 'nok', 'na', 'obs', 'pct',
-                     "svc_log"]
+        self.keys = ['svc_id']
+        self.span = ['svc_id']
+        self.cols = ['svc_id', 'svcname', 'total', 'ok', 'nok', 'na', 'obs', 'pct', "svc_log"]
         self.colprops = {
-            'svc_name': HtmlTableColumn(
-                     field='svc_name',
+            'svc_id': HtmlTableColumn(
+                     field='svc_id',
+                     table='comp_svc_status',
+                    ),
+            'svcname': HtmlTableColumn(
+                     field='svcname',
                      table='comp_svc_status',
                     ),
             'total': HtmlTableColumn(
@@ -738,13 +753,16 @@ class table_comp_node_status(HtmlTable):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
-        self.keys = ['node_name']
-        self.span = ['node_name']
-        self.cols = ['node_name', 'total', 'ok', 'nok', 'na', 'obs', 'pct',
-                     "node_log"]
+        self.keys = ['node_id', 'nodename']
+        self.span = ['node_id']
+        self.cols = ['node_id', 'nodename', 'total', 'ok', 'nok', 'na', 'obs', 'pct', "node_log"]
         self.colprops = {
-            'node_name': HtmlTableColumn(
-                     field='node_name',
+            'node_id': HtmlTableColumn(
+                     field='node_id',
+                     table='comp_node_status',
+                    ),
+            'nodename': HtmlTableColumn(
+                     field='nodename',
                      table='comp_node_status',
                     ),
             'total': HtmlTableColumn(
@@ -777,10 +795,10 @@ class table_comp_node_status(HtmlTable):
         }
 
 @service.json
-def json_run_status_log(nodename, module):
+def json_run_status_log(node_id, module):
     c = db.comp_log.run_status
     o = db.comp_log.run_date
-    q = db.comp_log.run_nodename == nodename
+    q = db.comp_log.node_id == node_id
     q &= db.comp_log.run_action == 'check'
     q &= db.comp_log.run_module == module
     q &= db.comp_log.run_date > datetime.datetime.now() - datetime.timedelta(days=90)
@@ -792,15 +810,15 @@ def json_run_status_log(nodename, module):
     data = map(lambda x: enc(x), data)
     return data
 
-def spark_id(nodename, module):
+def spark_id(node_id, module):
     module = module.replace('.', '_')
     module = module.replace('-', '_')
-    return 'rh_%s_%s'%(nodename, module)
+    return 'rh_%s_%s'%(node_id, module)
 
-def spark_url(nodename, module):
+def spark_url(node_id, module):
     return URL(r=request,
                f='call/json/json_run_status_log/%(node)s/%(module)s'%dict(
-                 node=nodename,
+                 node=node_id,
                  module=module)
            )
 
@@ -811,8 +829,10 @@ class table_comp_status(HtmlTable):
         HtmlTable.__init__(self, id, func, innerhtml)
         self.cols = ['id',
                      'run_date',
-                     'run_nodename',
-                     'run_svcname',
+                     'node_id',
+                     'nodename',
+                     'svc_id',
+                     'svcname',
                      'run_module',
                      'run_status',
                      'run_status_log',
@@ -829,13 +849,21 @@ class table_comp_status(HtmlTable):
                      field='run_date',
                      table='comp_status',
                     ),
-            'run_nodename': HtmlTableColumn(
-                     field='run_nodename',
+            'nodename': HtmlTableColumn(
+                     field='nodename',
+                     table='nodes',
+                    ),
+            'node_id': HtmlTableColumn(
+                     field='node_id',
                      table='comp_status',
                     ),
-            'run_svcname': HtmlTableColumn(
-                     field='run_svcname',
+            'svc_id': HtmlTableColumn(
+                     field='svc_id',
                      table='comp_status',
+                    ),
+            'svcname': HtmlTableColumn(
+                     field='svcname',
+                     table='services',
                     ),
             'run_action': HtmlTableColumn(
                      field='run_action',
@@ -863,17 +891,17 @@ class table_comp_status(HtmlTable):
                     ),
         })
         self.ajax_col_values = 'ajax_comp_status_col_values'
-        self.keys = ["run_nodename", "run_svcname", "run_module"]
-        self.span = ["run_nodename", "run_svcname", "run_module"]
+        self.keys = ["node_id", "svc_id", "run_module"]
+        self.span = ["node_id", "svc_id", "run_module"]
 
 @auth.requires_login()
 def fix_module_on_node():
-    nodename = request.args[0]
+    node_id = request.args[0]
     module = request.args[1]
     ug = user_groups()
-    q = db.comp_status.run_nodename == nodename
+    q = db.comp_status.node_id == node_id
     q &= db.comp_status.run_module == module
-    q &= db.comp_status.run_nodename == db.nodes.nodename
+    q &= db.comp_status.node_id == db.nodes.node_id
     q &= (db.nodes.team_responsible.belongs(ug)) | (db.nodes.team_integ.belongs(ug))
     row = db(q).select(db.comp_status.id).first()
     if row is None:
@@ -889,76 +917,24 @@ def do_action(ids, action=None):
         raise ToolError("no target to execute %s on"%action)
 
     q = db.comp_status.id.belongs(ids)
-    q &= db.comp_status.run_nodename == db.nodes.nodename
+    q &= db.comp_status.node_id == db.nodes.node_id
     q &= (db.nodes.team_responsible.belongs(user_groups())) | \
          (db.nodes.team_integ.belongs(user_groups()))
     rows = db(q).select(db.nodes.os_name,
+                        db.nodes.action_type,
                         db.nodes.fqdn,
-                        db.comp_status.run_nodename,
-                        db.comp_status.run_svcname,
+                        db.comp_status.node_id,
+                        db.comp_status.svc_id,
                         db.comp_status.run_module)
 
-    vals = []
-    vars = ['nodename', 'svcname', 'action_type', 'command', 'user_id']
-    tolog_node = []
-    tolog_svc = []
-
     for row in rows:
-        if row.nodes.os_name == "Windows":
-            action_type = "pull"
-        else:
-            action_type = "push"
-
-        if row.nodes.fqdn is not None and len(row.nodes.fqdn) > 0:
-            node = row.nodes.fqdn
-        else:
-            node = row.comp_status.run_nodename
-
-
-        if row.comp_status.run_svcname is None or row.comp_status.run_svcname == "":
-            tolog_node.append([row.comp_status.run_nodename,
-                               row.comp_status.run_module])
-        else:
-            tolog_svc.append([row.comp_status.run_svcname,
-                              row.comp_status.run_module])
-
-        vals.append([row.comp_status.run_nodename,
-                     row.comp_status.run_svcname,
-                     action_type,
-                     fmt_action(node,
-                                row.comp_status.run_svcname,
-                                action,
-                                action_type,
-                                mod=[row.comp_status.run_module]),
-                     str(auth.user_id)
-                    ])
-
-    purge_action_queue()
-    generic_insert('action_queue', vars, vals)
-
-    from subprocess import Popen
-    import sys
-    actiond = 'applications'+str(URL(r=request,c='actiond',f='actiond.py'))
-    process = Popen([sys.executable, actiond])
-    process.communicate()
-
-    if len(tolog_node) > 0:
-        tolog_node_s = ', '.join(map(lambda x: "%s:%s"%(x[0], x[1]), tolog_node))
-        _log('node.action', 'run compliance %(a)s of %(s)s', dict(
-              a=action,
-              s=tolog_node_s))
-    if len(tolog_svc) > 0:
-        tolog_svc_s = ', '.join(map(lambda x: "%s:%s"%(x[0], x[1]), tolog_svc))
-        _log('service.action', 'run compliance %(a)s of %(s)s', dict(
-              a=action,
-              s=tolog_svc_s))
-    if len(vals) > 0:
-        l = {
-          'event': 'action_q_change',
-          'data': action_queue_ws_data(),
+        d = {
+          "node_id": row.comp_status.node_id,
+          "module": row.comp_status.run_module,
         }
-        _websocket_send(event_msg(l))
-
+        if row.comp_status.svc_id != "":
+            d["svc_id"] = row.comp_status.svc_id
+        json_action_one(d)
 
 @auth.requires_membership('CompManager')
 def var_name_set():
@@ -1128,11 +1104,13 @@ def ajax_comp_log_col_values():
     t = table_comp_log(table_id, 'ajax_comp_log')
     col = request.args[0]
     o = db.comp_log[col]
-    q = q_filter(node_field=db.comp_log.run_nodename)
+    q = db.comp_log.node_id == db.nodes.node_id
+    q = q_filter(q, node_field=db.comp_log.node_id)
+    l = db.services.on(db.comp_log.svc_id==db.services.svc_id)
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
-    q = apply_filters(q, db.comp_log.run_nodename)
-    t.object_list = db(q).select(o, orderby=o)
+    q = apply_filters_id(q, db.comp_log.node_id)
+    t.object_list = db(q).select(o, orderby=o, left=l)
     return t.col_values_cloud_ungrouped(col)
 
 @auth.requires_login()
@@ -1144,38 +1122,42 @@ def ajax_comp_status_col_values():
         o = db[t.colprops[col].table][col]
     except:
         return T("this column is not filterable")
-    q = q_filter(node_field=db.comp_log.run_nodename)
-    q &= db.comp_status.run_nodename == db.nodes.nodename
+    q = db.comp_status.node_id == db.nodes.node_id
+    l = db.services.on(db.comp_status.svc_id==db.services.svc_id)
+    q = q_filter(q, node_field=db.comp_log.node_id)
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
-    q = apply_filters(q, db.comp_status.run_nodename)
-    t.object_list = db(q).select(o, orderby=o, cacheable=True)
+    q = apply_filters_id(q, db.comp_status.node_id)
+    t.object_list = db(q).select(o, orderby=o, left=l, cacheable=True)
     return t.col_values_cloud_ungrouped(col)
 
 @auth.requires_login()
 def ajax_comp_status():
     table_id = request.vars.table_id
     t = table_comp_status(table_id, 'ajax_comp_status')
-    o = ~db.comp_status.run_nodename
-    q = q_filter(node_field=db.comp_status.run_nodename)
-    q &= db.comp_status.run_nodename == db.nodes.nodename
+    o = db.nodes.nodename
+    q = q_filter(node_field=db.comp_status.node_id)
+    q &= db.comp_status.node_id == db.nodes.node_id
+    l = db.services.on(db.comp_status.svc_id==db.services.svc_id)
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
-    q = apply_filters(q, db.comp_status.run_nodename)
+    q = apply_filters_id(q, db.comp_status.node_id)
 
 
     if len(request.args) == 1 and request.args[0] == 'csv':
         t.csv_q = q
         t.csv_orderby = o
+        t.csv_left = l
         return t.csv()
     if len(request.args) == 1 and request.args[0] == 'commonality':
         t.csv_q = q
+        t.csv_left = l
         return t.do_commonality()
     if len(request.args) == 1 and request.args[0] == 'data':
-        n = db(q).select(db.comp_status.id.count(), cacheable=True).first()._extra[db.comp_status.id.count()]
+        n = db(q).select(db.comp_status.id.count(), left=l, cacheable=True).first()._extra[db.comp_status.id.count()]
         limitby = (t.pager_start,t.pager_end)
         cols = t.get_visible_columns()
-        t.object_list = db(q).select(*cols, limitby=limitby, orderby=o, cacheable=False)
+        t.object_list = db(q).select(*cols, limitby=limitby, orderby=o, left=l, cacheable=False)
         return t.table_lines_data(n, html=False)
 
 @service.json
@@ -1183,12 +1165,12 @@ def ajax_comp_status():
 def json_comp_status_agg():
     table_id = request.vars.table_id
     t = table_comp_status(table_id, 'ajax_comp_status')
-    o = ~db.comp_status.run_nodename
-    q = q_filter(node_field=db.comp_status.run_nodename)
-    q &= db.comp_status.run_nodename == db.nodes.nodename
+    o = db.nodes.nodename
+    q = q_filter(node_field=db.comp_status.node_id)
+    q &= db.comp_status.node_id == db.nodes.node_id
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
-    q = apply_filters(q, db.comp_status.run_nodename)
+    q = apply_filters_id(q, db.comp_status.node_id)
 
     q_obs = q & (db.comp_status.run_date < now - datetime.timedelta(days=7))
     q_nok = q & (db.comp_status.run_date > now - datetime.timedelta(days=7)) & (db.comp_status.run_status == 1)
@@ -1218,14 +1200,14 @@ def ajax_comp_svc_status():
     t = table_comp_status('cs0', 'ajax_comp_status')
     mt = table_comp_svc_status('css', 'ajax_comp_svc_status')
 
-    o = ~db.comp_status.run_svcname
-    q = q_filter(node_field=db.comp_status.run_nodename)
-    #q &= db.comp_status.run_svcname == db.v_svcmon.mon_svcname
-    q &= db.comp_status.run_nodename == db.nodes.nodename
-    q &= (db.comp_status.run_svcname != None) & (db.comp_status.run_svcname != "")
+    o = db.services.svcname
+    q = q_filter(node_field=db.comp_status.node_id)
+    q &= db.comp_status.node_id == db.nodes.node_id
+    q &= db.comp_status.svc_id == db.services.svc_id
+    q &= db.comp_status.svc_id != ""
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
-    q = apply_filters(q, db.comp_status.run_nodename)
+    q = apply_filters_id(q, db.comp_status.node_id)
     sql1 = db(q)._select().rstrip(';').replace('v_svcmon.id, ','').replace('comp_status.id>0 AND', '')
     regex = re.compile("SELECT .* FROM")
     sql1 = regex.sub('', sql1)
@@ -1240,7 +1222,8 @@ def ajax_comp_svc_status():
 
     sql2 = """select * from (
                 select t.id,
-                     t.run_svcname as svc_name,
+                     t.svc_id as svc_id,
+                     t.svcname as svcname,
                      t.ok+t.nok+t.na+t.obs as total,
                      t.ok,
                      t.nok,
@@ -1248,14 +1231,15 @@ def ajax_comp_svc_status():
                      t.obs,
                      floor((t.ok+t.na)*100/(t.ok+t.nok+t.na+t.obs)) as pct
                 from (select comp_status.id,
-                           run_svcname,
+                           comp_status.svc_id,
+                           services.svcname,
                            sum(if(run_date>="%(d)s" and run_status=0, 1, 0)) as ok,
                            sum(if(run_date>="%(d)s" and run_status=1, 1, 0)) as nok,
                            sum(if(run_date>="%(d)s" and run_status=2, 1, 0)) as na,
                            sum(if(run_date<"%(d)s", 1, 0)) as obs
-                    from %(sql)s and comp_status.run_nodename=nodes.nodename group by run_svcname) t) u
+                    from %(sql)s and comp_status.svc_id=services.svc_id group by svc_id) t) u
               where %(where)s
-              order by pct, total desc, svc_name
+              order by pct, total desc, svcname
               limit %(limit)d
               offset %(offset)d"""%dict(
                 sql=sql1,
@@ -1267,13 +1251,14 @@ def ajax_comp_svc_status():
 
     rows = db.executesql(sql2)
 
-    mt.object_list = map(lambda x: {'svc_name': x[1],
-                                    'total':x[2],
-                                    'ok':x[3],
-                                    'nok': x[4],
-                                    'na': x[5],
-                                    'obs': x[6],
-                                    'pct':x[7]},
+    mt.object_list = map(lambda x: {'svc_id': x[1],
+                                    'svcname': x[2],
+                                    'total':x[3],
+                                    'ok':x[4],
+                                    'nok': x[5],
+                                    'na': x[6],
+                                    'obs': x[7],
+                                    'pct':x[8]},
                           rows)
 
     if len(request.args) == 1 and request.args[0] == 'csv':
@@ -1286,13 +1271,12 @@ def ajax_comp_node_status():
     t = table_comp_status('cs0', 'ajax_comp_status')
     mt = table_comp_node_status('cns', 'ajax_comp_node_status')
 
-    o = ~db.comp_status.run_nodename
-    q = q_filter(node_field=db.comp_status.run_nodename)
-    q &= db.comp_status.run_nodename == db.nodes.nodename
-    q &= (db.comp_status.run_svcname == None) | (db.comp_status.run_svcname == "")
+    q = q_filter(node_field=db.comp_status.node_id)
+    q &= db.comp_status.node_id == db.nodes.node_id
+    q &= db.comp_status.svc_id == ""
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
-    q = apply_filters(q, db.comp_status.run_nodename)
+    q = apply_filters_id(q, db.comp_status.node_id)
     sql1 = db(q)._select().rstrip(';').replace('nodes.id, ','').replace('comp_status.id>0 AND', '')
     regex = re.compile("SELECT .* FROM")
     sql1 = regex.sub('', sql1)
@@ -1307,7 +1291,8 @@ def ajax_comp_node_status():
 
     sql2 = """select * from (
                 select t.id,
-                     t.run_nodename as node_name,
+                     t.node_id,
+                     t.nodename,
                      t.ok+t.nok+t.na+t.obs as total,
                      t.ok,
                      t.nok,
@@ -1315,14 +1300,15 @@ def ajax_comp_node_status():
                      t.obs,
                      floor((t.ok+t.na)*100/(t.ok+t.nok+t.na+t.obs)) as pct
                 from (select comp_status.id,
-                           run_nodename,
-                           sum(if(run_date>="%(d)s" and run_status=0, 1, 0)) as ok,
-                           sum(if(run_date>="%(d)s" and run_status=1, 1, 0)) as nok,
-                           sum(if(run_date>="%(d)s" and run_status=2, 1, 0)) as na,
-                           sum(if(run_date<"%(d)s", 1, 0)) as obs
-                    from %(sql)s group by run_nodename) t) u
+                           comp_status.node_id,
+                           nodes.nodename,
+                           sum(if(comp_status.run_date>="%(d)s" and comp_status.run_status=0, 1, 0)) as ok,
+                           sum(if(comp_status.run_date>="%(d)s" and comp_status.run_status=1, 1, 0)) as nok,
+                           sum(if(comp_status.run_date>="%(d)s" and comp_status.run_status=2, 1, 0)) as na,
+                           sum(if(comp_status.run_date<"%(d)s", 1, 0)) as obs
+                    from %(sql)s group by comp_status.node_id) t) u
               where %(where)s
-              order by pct, total desc, node_name
+              order by pct, total desc, nodename
               limit %(limit)d
               offset %(offset)d"""%dict(
                 sql=sql1,
@@ -1334,13 +1320,14 @@ def ajax_comp_node_status():
 
     rows = db.executesql(sql2)
 
-    mt.object_list = map(lambda x: {'node_name': x[1],
-                                    'total':x[2],
-                                    'ok':x[3],
-                                    'nok': x[4],
-                                    'na': x[5],
-                                    'obs': x[6],
-                                    'pct':x[7]},
+    mt.object_list = map(lambda x: {'node_id': x[1],
+                                    'nodename': x[2],
+                                    'total':x[3],
+                                    'ok':x[4],
+                                    'nok': x[5],
+                                    'na': x[6],
+                                    'obs': x[7],
+                                    'pct':x[8]},
                           rows)
 
     if len(request.args) == 1 and request.args[0] == 'csv':
@@ -1359,7 +1346,7 @@ def ajax_svc_history():
           ),
           SCRIPT(
             "comp_history('%(url)s', '%(id)s');"%dict(
-               url=URL(r=request, f='call/json/json_svc_history', vars={'svcname': request.vars.svcname}),
+               url=URL(r=request, f='call/json/json_svc_history', vars={'svc_id': request.vars.svc_id}),
                id=id_chart,
             ),
             _name=id+'_to_eval'
@@ -1370,11 +1357,11 @@ def ajax_svc_history():
 @service.json
 def json_svc_history():
     t = table_comp_status('cs0', 'ajax_comp_status')
-    q = q_filter(node_field=db.comp_status.run_nodename)
-    q &= db.comp_status.run_nodename == db.nodes.nodename
+    q = q_filter(node_field=db.comp_status.node_id)
+    q &= db.comp_status.node_id == db.nodes.node_id
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
-    q = apply_filters(q, db.comp_status.run_nodename)
+    q = apply_filters_id(q, db.comp_status.node_id)
     _sql = db(q)._select(db.comp_status.run_module)
     _sql = _sql.rstrip(';')
 
@@ -1389,13 +1376,13 @@ def json_svc_history():
                     if(run_status=0, 1, 0) as ok,
                     if(run_status=1, 1, 0) as nok,
                     if(run_status=2, 1, 0) as na
-                from comp_log
-                where run_svcname="%(svcname)s" and
+                from comp_log_daily
+                where svc_id="%(svc_id)s" and
                     run_date>date_sub(now(), interval 1 year) and
                     run_module in (%(_sql)s)
               ) t
               group by t.run_date
-             """%dict(svcname=request.vars.svcname, _sql=_sql)
+             """%dict(svc_id=request.vars.svc_id, _sql=_sql)
     ok = []
     nok = []
     na = []
@@ -1428,13 +1415,13 @@ def ajax_mod_history():
 @service.json
 def json_mod_history():
     t = table_comp_status('cs0', 'ajax_comp_status')
-    q = q_filter(node_field=db.comp_status.run_nodename)
+    q = q_filter(node_field=db.comp_status.node_id)
     q &= db.comp_status.run_module == request.vars.modname
-    q &= db.comp_status.run_nodename == db.nodes.nodename
+    q &= db.comp_status.node_id == db.nodes.node_id
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
-    q = apply_filters(q, db.comp_status.run_nodename)
-    _sql = db(q)._select(db.comp_status.run_nodename)
+    q = apply_filters_id(q, db.comp_status.node_id)
+    _sql = db(q)._select(db.comp_status.node_id)
     _sql = _sql.rstrip(';')
     #nodes = ','.join(map(lambda x: repr(str(x)), [r[0] for r in db.executesql(_sql)]))
 
@@ -1452,7 +1439,7 @@ def json_mod_history():
                 from comp_log_daily
                 where run_module="%(mod)s" and
                     run_date>date_sub(now(), interval 1 year) and
-                    run_nodename in (%(_sql)s)
+                    node_id in (%(_sql)s)
               ) t
               group by t.run_date
              """%dict(mod=request.vars.modname, _sql=_sql)
@@ -1477,7 +1464,7 @@ def ajax_node_history():
           ),
           SCRIPT(
             "comp_history('%(url)s', '%(id)s');"%dict(
-               url=URL(r=request, f='call/json/json_node_history', vars={'nodename': request.vars.nodename}),
+               url=URL(r=request, f='call/json/json_node_history', vars={'node_id': request.vars.node_id}),
                id=id_chart,
             ),
             _name=id+'_to_eval'
@@ -1488,11 +1475,11 @@ def ajax_node_history():
 @service.json
 def json_node_history():
     t = table_comp_status('cs0', 'ajax_comp_status')
-    q = q_filter(node_field=db.comp_status.run_nodename)
-    q &= db.comp_status.run_nodename == db.nodes.nodename
+    q = q_filter(node_field=db.comp_status.node_id)
+    q &= db.comp_status.node_id == db.nodes.node_id
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
-    q = apply_filters(q, db.comp_status.run_nodename)
+    q = apply_filters_id(q, db.comp_status.node_id)
     _sql = db(q)._select(db.comp_status.run_module)
     _sql = _sql.rstrip(';')
 
@@ -1508,12 +1495,12 @@ def json_node_history():
                     if(run_status=1, 1, 0) as nok,
                     if(run_status=2, 1, 0) as na
                 from comp_log_daily
-                where run_nodename="%(node)s" and
+                where node_id="%(node)s" and
                     run_date>date_sub(now(), interval 1 year) and
                     run_module in (%(_sql)s)
               ) t
               group by t.run_date
-             """%dict(node=request.vars.nodename, _sql=_sql)
+             """%dict(node=request.vars.node_id, _sql=_sql)
     ok = []
     nok = []
     na = []
@@ -1528,12 +1515,12 @@ def ajax_comp_mod_status():
     t = table_comp_status('cs0', 'ajax_comp_status')
     mt = table_comp_mod_status('cms', 'ajax_comp_mod_status')
 
-    o = ~db.comp_status.run_nodename
-    q = q_filter(node_field=db.comp_status.run_nodename)
-    q &= db.comp_status.run_nodename == db.nodes.nodename
+    o = ~db.nodes.nodename
+    q = q_filter(node_field=db.comp_status.node_id)
+    q &= db.comp_status.node_id == db.nodes.node_id
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
-    q = apply_filters(q, db.comp_status.run_nodename)
+    q = apply_filters_id(q, db.comp_status.node_id)
     sql1 = db(q)._select().rstrip(';').replace('nodes.id, ','').replace('comp_status.id>0 AND', '')
     regex = re.compile("SELECT .* FROM")
     sql1 = regex.sub('', sql1)
@@ -1618,8 +1605,10 @@ class table_comp_log(table_comp_status):
             id = request.vars.tableid
         table_comp_status.__init__(self, id, 'ajax_comp_log', innerhtml)
         self.cols = ['run_date',
-                     'run_nodename',
-                     'run_svcname',
+                     'node_id',
+                     'nodename',
+                     'svc_id',
+                     'svcname',
                      'run_module',
                      'run_action',
                      'run_status',
@@ -1629,8 +1618,8 @@ class table_comp_log(table_comp_status):
             if 'run_' in c or c == 'rset_md5':
                 self.colprops[c].table = 'comp_log'
         self.ajax_col_values = 'ajax_comp_log_col_values'
-        self.keys = ["run_date", "run_nodename", "run_svcname", "run_module", "run_action"]
-        self.span = ["run_date", "run_nodename", "run_svcname", "run_module", "run_action"]
+        self.keys = ["run_date", "node_id", "svc_id", "run_module", "run_action"]
+        self.span = ["run_date", "node_id", "svc_id", "run_module", "run_action"]
 
 @auth.requires_login()
 def ajax_comp_log():
@@ -1639,27 +1628,31 @@ def ajax_comp_log():
 
     db.commit()
     o = ~db.comp_log.id
-    q = q_filter(node_field=db.comp_log.run_nodename)
+    q = q_filter(node_field=db.comp_log.node_id)
+    q &= db.comp_log.node_id == db.nodes.node_id
+    l = db.services.on(db.comp_log.svc_id==db.services.svc_id)
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
-    q = apply_filters(q, db.comp_log.run_nodename)
+    q = apply_filters_id(q, db.comp_log.node_id)
 
     if len(request.args) == 1 and request.args[0] == 'csv':
         t.csv_q = q
         t.csv_orderby = o
+        t.csv_left = l
         return t.csv()
     if len(request.args) == 1 and request.args[0] == 'commonality':
         t.csv_q = q
+        t.csv_left = l
         return t.do_commonality()
     if len(request.args) == 1 and request.args[0] == 'data':
         if request.vars.volatile_filters is None:
             limitby = (t.pager_start,t.pager_end)
         else:
             limitby = (0, 500)
-        n = db(q).count()
+        n = db(q).select(db.comp_log.id.count(), left=l, cacheable=True).first()._extra[db.comp_log.id.count()]
         t.setup_pager(n)
         cols = t.get_visible_columns()
-        t.object_list = db(q).select(*cols, limitby=limitby, orderby=o, cacheable=False)
+        t.object_list = db(q).select(*cols, limitby=limitby, orderby=o, left=l, cacheable=False)
         return t.table_lines_data(n, html=False)
 
 @auth.requires_login()
@@ -1685,9 +1678,10 @@ def comp_get_moduleset_modules(moduleset, auth):
 
 @auth_uuid
 def rpc_comp_get_moduleset_modules(moduleset, auth):
-    return _comp_get_moduleset_modules(moduleset, auth[1])
+    node_id = auth_to_node_id(auth)
+    return _comp_get_moduleset_modules(moduleset, node_id)
 
-def _comp_get_moduleset_modules(moduleset, node):
+def _comp_get_moduleset_modules(moduleset, node_id):
     if isinstance(moduleset, list):
         if len(moduleset) == 0:
             return []
@@ -1700,13 +1694,13 @@ def _comp_get_moduleset_modules(moduleset, node):
     q &= db.comp_moduleset.id == db.comp_moduleset_team_publication.modset_id
     q &= db.auth_group.id == db.comp_moduleset_team_publication.group_id
     q &= (db.nodes.team_responsible == db.auth_group.role)|(db.auth_group.role=="Everybody")
-    q &= db.nodes.nodename == node
+    q &= db.nodes.node_id == node_id
     rows = db(q).select(db.comp_moduleset_modules.modset_mod_name,
                         groupby=db.comp_moduleset_modules.modset_mod_name,
                         cacheable=True)
     return [r.modset_mod_name for r in rows]
 
-def _comp_get_moduleset_svc_modules(moduleset, svcname):
+def _comp_get_moduleset_svc_modules(moduleset, svc_id):
     if isinstance(moduleset, list):
         if len(moduleset) == 0:
             return []
@@ -1721,7 +1715,7 @@ def _comp_get_moduleset_svc_modules(moduleset, svcname):
     q &= db.apps_responsibles.group_id == db.auth_group.id
     q &= db.apps_responsibles.app_id == db.apps.id
     q &= db.apps.app == db.services.svc_app
-    q &= db.services.svc_name == svcname
+    q &= db.services.svc_id == svc_id
     rows = db(q).select(db.comp_moduleset_modules.modset_mod_name,
                         groupby=db.comp_moduleset_modules.modset_mod_name,
                         cacheable=True)
@@ -1749,8 +1743,10 @@ def rpc_comp_attach_svc_ruleset(svcname, ruleset, auth):
     if len(ruleset) == 0:
         return dict(status=False, msg="no ruleset specified"%ruleset)
     rset_id = comp_ruleset_id(ruleset)
-    slave = comp_slave(svcname, auth[1])
-    d = lib_comp_ruleset_attach_service(svcname, rset_id, slave)
+    node_id = auth_to_node_id(auth)
+    svc_id = node_svc_id(node_id, svcname)
+    slave = comp_slave(svc_id, node_id)
+    d = lib_comp_ruleset_attach_service(svc_id, rset_id, slave)
     return mangle_lib_result(d)
 
 @service.xmlrpc
@@ -1762,8 +1758,10 @@ def rpc_comp_attach_svc_moduleset(svcname, moduleset, auth):
     if len(moduleset) == 0:
         return dict(status=False, msg="no moduleset specified"%moduleset)
     modset_id = comp_moduleset_id(moduleset)
-    slave = comp_slave(svcname, auth[1])
-    d = lib_comp_moduleset_attach_service(svcname, modset_id, slave)
+    node_id = auth_to_node_id(auth)
+    svc_id = node_svc_id(node_id, svcname)
+    slave = comp_slave(svc_id, node_id)
+    d = lib_comp_moduleset_attach_service(svc_id, modset_id, slave)
     return mangle_lib_result(d)
 
 @service.xmlrpc
@@ -1775,7 +1773,8 @@ def rpc_comp_attach_moduleset(nodename, moduleset, auth):
     if len(moduleset) == 0:
         return dict(status=False, msg="no moduleset specified"%moduleset)
     modset_id = comp_moduleset_id(moduleset)
-    d = lib_comp_moduleset_attach_node(nodename, modset_id)
+    node_id = auth_to_node_id(auth)
+    d = lib_comp_moduleset_attach_node(node_id, modset_id)
     return mangle_lib_result(d)
 
 @service.xmlrpc
@@ -1786,16 +1785,18 @@ def comp_detach_svc_ruleset(svcname, ruleset, auth):
 def rpc_comp_detach_svc_ruleset(svcname, ruleset, auth):
     if len(ruleset) == 0:
         return dict(status=False, msg="no ruleset specified"%ruleset)
-    slave = comp_slave(svcname, auth[1])
+    node_id = auth_to_node_id(auth)
+    svc_id = node_svc_id(node_id, svcname)
+    slave = comp_slave(svc_id, node_id)
     if ruleset == 'all':
-        ruleset_id = comp_attached_svc_ruleset_id(svcname, slave)
+        ruleset_id = comp_attached_svc_ruleset_id(svc_id, slave)
     else:
         ruleset_id = comp_ruleset_id(ruleset)
     if ruleset_id is None:
         return dict(status=True, msg="ruleset %s does not exist"%ruleset)
     elif ruleset == 'all' and len(ruleset_id) == 0:
         return dict(status=True, msg="this service has no ruleset attached")
-    d = lib_comp_ruleset_detach_service(svcname, ruleset_id, slave)
+    d = lib_comp_ruleset_detach_service(svc_id, ruleset_id, slave)
     return mangle_lib_result(d)
 
 @service.xmlrpc
@@ -1806,16 +1807,18 @@ def comp_detach_svc_moduleset(svcname, moduleset, auth):
 def rpc_comp_detach_svc_moduleset(svcname, moduleset, auth):
     if len(moduleset) == 0:
         return dict(status=False, msg="no moduleset specified"%moduleset)
+    node_id = auth_to_node_id(auth)
+    svc_id = node_svc_id(node_id, svcname)
+    slave = comp_slave(svc_id, node_id)
     if moduleset == 'all':
-        modset_id = comp_attached_svc_moduleset_id(svcname)
+        modset_id = comp_attached_svc_moduleset_id(svc_id)
     else:
         modset_id = comp_moduleset_id(moduleset)
-    slave = comp_slave(svcname, auth[1])
     if modset_id is None:
         return dict(status=True, msg="moduleset %s does not exist"%moduleset)
     elif moduleset == 'all' and len(modset_id) == 0:
         return dict(status=True, msg="this service has no moduleset attached")
-    d = lib_comp_moduleset_detach_service(svcname, modset_id, slave)
+    d = lib_comp_moduleset_detach_service(svc_id, modset_id, slave)
     return mangle_lib_result(d)
 
 @service.xmlrpc
@@ -1826,15 +1829,16 @@ def comp_detach_moduleset(nodename, moduleset, auth):
 def rpc_comp_detach_moduleset(nodename, moduleset, auth):
     if len(moduleset) == 0:
         return dict(status=False, msg="no moduleset specified"%moduleset)
+    node_id = auth_to_node_id(auth)
     if moduleset == 'all':
-        modset_id = comp_attached_moduleset_id(nodename)
+        modset_id = comp_attached_moduleset_id(node_id)
     else:
         modset_id = comp_moduleset_id(moduleset)
     if modset_id is None:
         return dict(status=True, msg="moduleset %s does not exist"%moduleset)
     elif moduleset == 'all' and len(modset_id) == 0:
         return dict(status=True, msg="this node has no moduleset attached")
-    d = lib_comp_moduleset_detach_node(nodename, modset_id)
+    d = lib_comp_moduleset_detach_node(node_id, modset_id)
     return mangle_lib_result(d)
 
 @service.xmlrpc
@@ -1846,7 +1850,8 @@ def rpc_comp_attach_ruleset(nodename, ruleset, auth):
     if len(ruleset) == 0:
         return dict(status=False, msg="no ruleset specified"%ruleset)
     ruleset_id = comp_ruleset_id(ruleset)
-    d = lib_comp_ruleset_attach_node(nodename, ruleset_id)
+    node_id = auth_to_node_id(auth)
+    d = lib_comp_ruleset_attach_node(node_id, ruleset_id)
     return mangle_lib_result(d)
 
 @service.xmlrpc
@@ -1857,15 +1862,16 @@ def comp_detach_ruleset(nodename, ruleset, auth):
 def rpc_comp_detach_ruleset(nodename, ruleset, auth):
     if len(ruleset) == 0:
         return dict(status=False, msg="no ruleset specified"%ruleset)
+    node_id = auth_to_node_id(auth)
     if ruleset == 'all':
-        ruleset_id = comp_attached_ruleset_id(nodename)
+        ruleset_id = comp_attached_ruleset_id(node_id)
     else:
         ruleset_id = comp_ruleset_id(ruleset)
     if ruleset_id is None:
         return dict(status=False, msg="ruleset %s does not exist"%ruleset)
     elif ruleset == 'all' and len(ruleset_id) == 0:
         return dict(status=True, msg="this node has no ruleset attached")
-    d = lib_comp_ruleset_detach_node(nodename, ruleset_id)
+    d = lib_comp_ruleset_detach_node(node_id, ruleset_id)
     return mangle_lib_result(d)
 
 @service.xmlrpc
@@ -1874,12 +1880,13 @@ def comp_list_rulesets(pattern='%', nodename=None, auth=("", "")):
 
 @auth_uuid
 def rpc_comp_list_rulesets(pattern='%', nodename=None, auth=("", "")):
+    node_id = auth_to_node_id(auth)
     q = db.comp_rulesets.ruleset_name.like(pattern)
     q &= db.comp_rulesets.ruleset_type == 'explicit'
     q &= db.comp_rulesets.ruleset_public == True
     q &= db.comp_rulesets.id == db.comp_ruleset_team_publication.ruleset_id
-    if nodename != None:
-        q &= db.nodes.nodename == nodename
+    if node_id != None:
+        q &= db.nodes.node_id == node_id
         q &= (db.nodes.team_responsible == db.auth_group.role)|(db.auth_group.role=="Everybody")
         q &= db.auth_group.id == db.comp_ruleset_team_publication.group_id
     rows = db(q).select(groupby=db.comp_rulesets.id, cacheable=True)
@@ -1891,12 +1898,12 @@ def comp_list_modulesets(pattern='%', auth=("", "")):
 
 @auth_uuid
 def rpc_comp_list_modulesets(pattern='%', auth=("", "")):
-    node = auth[1]
+    node_id = auth_to_node_id(auth)
     q = db.comp_moduleset.modset_name.like(pattern)
     q &= db.comp_moduleset.id == db.comp_moduleset_team_publication.modset_id
     q &= db.auth_group.id == db.comp_moduleset_team_publication.group_id
     q &= (db.nodes.team_responsible == db.auth_group.role)|(db.auth_group.role=="Everybody")
-    q &= db.nodes.nodename == node
+    q &= db.nodes.node_id == node_id
     rows = db(q).select(db.comp_moduleset.modset_name,
                         groupby=db.comp_moduleset.modset_name, cacheable=True)
     return sorted([r.modset_name for r in rows])
@@ -1907,10 +1914,11 @@ def comp_show_status(svcname="", pattern='%', auth=("", "")):
 
 @auth_uuid
 def rpc_comp_show_status(svcname="", pattern='%', auth=("", "")):
-    node = auth[1]
+    node_id = auth_to_node_id(auth)
+    svc_id = node_svc_id(node_id, svcname)
     q = db.comp_status.run_module.like(pattern)
-    q &= db.comp_status.run_nodename == node
-    q &= db.comp_status.run_svcname == svcname
+    q &= db.comp_status.node_id == node_id
+    q &= db.comp_status.svc_id == svc_id
     rows = db(q).select(orderby=db.comp_status.run_module, cacheable=True)
     l = [('module', 'status', 'date', 'log')]
     for row in rows:
@@ -1926,8 +1934,10 @@ def comp_get_svc_moduleset(svcname, auth):
 
 @auth_uuid
 def rpc_comp_get_svc_moduleset(svcname, auth):
-    slave = comp_slave(svcname, auth[1])
-    return _comp_get_svc_moduleset(svcname, slave=slave)
+    node_id = auth_to_node_id(auth)
+    svc_id = node_svc_id(node_id, svcname)
+    slave = comp_slave(svc_id, node_id)
+    return _comp_get_svc_moduleset(svc_id, slave=slave)
 
 @service.xmlrpc
 def comp_get_svc_data(nodename, svcname, modulesets, auth):
@@ -1935,7 +1945,9 @@ def comp_get_svc_data(nodename, svcname, modulesets, auth):
 
 @auth_uuid
 def rpc_comp_get_svc_data(nodename, svcname, modulesets, auth):
-    return _comp_get_svc_data(nodename, svcname, modulesets)
+    node_id = auth_to_node_id(auth)
+    svc_id = node_svc_id(node_id, svcname)
+    return _comp_get_svc_data(node_id, svc_id, modulesets)
 
 @service.xmlrpc
 def comp_get_data(nodename, modulesets, auth):
@@ -1943,49 +1955,52 @@ def comp_get_data(nodename, modulesets, auth):
 
 @auth_uuid
 def rpc_comp_get_data(nodename, modulesets, auth):
-    return _comp_get_data(nodename, modulesets=modulesets)
+    node_id = auth_to_node_id(auth)
+    return _comp_get_data(node_id, modulesets=modulesets)
 
-def _comp_get_data(nodename, modulesets=[]):
+def _comp_get_data(node_id, modulesets=[]):
     return {
-      'modulesets': _comp_get_moduleset_data(nodename, modulesets=modulesets),
-      'rulesets': _comp_get_ruleset(nodename),
+      'modulesets': _comp_get_moduleset_data(node_id, modulesets=modulesets),
+      'rulesets': _comp_get_ruleset(node_id),
       'modset_rset_relations': get_modset_rset_relations_s(),
       'modset_relations': get_modset_relations_s(),
     }
 
-def _comp_get_svc_data(nodename, svcname, modulesets=[]):
-    slave = comp_slave(svcname, nodename)
+def _comp_get_svc_data(node_id, svc_id, modulesets=[]):
+    slave = comp_slave(svc_id, node_id)
     return {
-      'modulesets': _comp_get_svc_moduleset_data(svcname, modulesets=modulesets, slave=slave),
-      'rulesets': _comp_get_svc_ruleset(svcname, nodename, slave=slave),
+      'modulesets': _comp_get_svc_moduleset_data(svc_id, modulesets=modulesets, slave=slave),
+      'rulesets': _comp_get_svc_ruleset(svc_id, node_id, slave=slave),
       'modset_rset_relations': get_modset_rset_relations_s(),
       'modset_relations': get_modset_relations_s(),
     }
 
 def test_comp_get_data():
-    d = _comp_get_data("clementine")
+    d = _comp_get_data(1137921)
     print d
 
 def test_comp_get_svc_ruleset():
-    return _comp_get_svc_ruleset("unxdevweb01", "clementine")
+    return _comp_get_svc_ruleset("unxdevweb01", 1137921)
 
 @service.xmlrpc
 def comp_get_moduleset_data(nodename, auth):
-    return rpc_comp_get_moduleset_data(nodename, auth)
+    node_id = auth_to_node_id(auth)
+    return rpc_comp_get_moduleset_data(node_id, auth)
 
 @auth_uuid
-def rpc_comp_get_moduleset_data(nodename, auth):
-    return _comp_get_moduleset_data(nodename)
+def rpc_comp_get_moduleset_data(node_id, auth):
+    return _comp_get_moduleset_data(node_id)
 
 @service.xmlrpc
 def comp_get_data_moduleset(nodename, auth):
-    return rpc_comp_get_data_moduleset(nodename, auth)
+    node_id = auth_to_node_id(auth)
+    return rpc_comp_get_data_moduleset(node_id, auth)
 
 @auth_uuid
-def rpc_comp_get_data_moduleset(nodename, auth):
+def rpc_comp_get_data_moduleset(node_id, auth):
     return {
-      'root_modulesets': _comp_get_moduleset_names(nodename),
-      'modulesets': _comp_get_moduleset_data(nodename),
+      'root_modulesets': _comp_get_moduleset_names(node_id),
+      'modulesets': _comp_get_moduleset_data(node_id),
       'modset_relations': get_modset_relations_s(),
     }
 
@@ -1995,10 +2010,12 @@ def comp_get_svc_data_moduleset(svcname, auth):
 
 @auth_uuid
 def rpc_comp_get_svc_data_moduleset(svcname, auth):
-    slave = comp_slave(svcname, auth[1])
+    node_id = auth_to_node_id(auth)
+    svc_id = node_svc_id(node_id, svcname)
+    slave = comp_slave(svc_id, node_id)
     return {
-      'root_modulesets': _comp_get_svc_moduleset_names(svcname, slave=slave),
-      'modulesets': _comp_get_svc_moduleset_data(svcname, slave=slave),
+      'root_modulesets': _comp_get_svc_moduleset_names(svc_id, slave=slave),
+      'modulesets': _comp_get_svc_moduleset_data(svc_id, slave=slave),
       'modset_relations': get_modset_relations_s(),
     }
 
@@ -2008,8 +2025,10 @@ def comp_get_svc_moduleset_data(svcname, auth):
 
 @auth_uuid
 def rpc_comp_get_svc_moduleset_data(svcname, auth):
-    slave = comp_slave(svcname, auth[1])
-    return _comp_get_svc_moduleset_data(svcname, slave=slave)
+    node_id = auth_to_node_id(auth)
+    svc_id = node_svc_id(node_id, svcname)
+    slave = comp_slave(svc_id, node_id)
+    return _comp_get_svc_moduleset_data(svc_id, slave=slave)
 
 @auth.requires_membership('NodeExec')
 @service.json
@@ -2039,33 +2058,34 @@ def _comp_get_all_module():
 
 @service.xmlrpc
 def comp_get_moduleset(nodename, auth):
-    return rpc_comp_get_moduleset(nodename, auth)
+    return rpc_comp_get_moduleset(auth)
 
 @auth_uuid
-def rpc_comp_get_moduleset(nodename, auth):
-    return _comp_get_moduleset(nodename)
+def rpc_comp_get_moduleset(auth):
+    node_id = auth_to_node_id(auth)
+    return _comp_get_moduleset(node_id)
 
-def _comp_get_svc_moduleset_ids_with_children(svcname, modulesets=[], slave=False):
-    modset_ids = _comp_get_svc_moduleset_ids(svcname, modulesets=modulesets, slave=slave)
+def _comp_get_svc_moduleset_ids_with_children(svc_id, modulesets=[], slave=False):
+    modset_ids = _comp_get_svc_moduleset_ids(svc_id, modulesets=modulesets, slave=slave)
     modset_tree_nodes = get_modset_tree_nodes(modset_ids)
     modset_ids = set(modset_tree_nodes.keys())
     for l in modset_tree_nodes.values():
         modset_ids |= set(l)
     return modset_ids
 
-def _comp_get_svc_moduleset(svcname, modulesets=[], slave=False):
-    modset_ids = _comp_get_svc_moduleset_ids(svcname, modulesets=modulesets, slave=slave)
+def _comp_get_svc_moduleset(svc_id, modulesets=[], slave=False):
+    modset_ids = _comp_get_svc_moduleset_ids(svc_id, modulesets=modulesets, slave=slave)
     q = db.comp_moduleset.id.belongs(modset_ids)
     rows = db(q).select(db.comp_moduleset.modset_name, cacheable=True)
     return [r.modset_name for r in rows]
 
-def _comp_get_svc_moduleset_ids(svcname, modulesets=[], slave=False):
-    q = db.comp_modulesets_services.modset_svcname == svcname
+def _comp_get_svc_moduleset_ids(svc_id, modulesets=[], slave=False):
+    q = db.comp_modulesets_services.svc_id == svc_id
     q &= db.comp_modulesets_services.slave == slave
     q &= db.comp_modulesets_services.modset_id == db.comp_moduleset.id
     q &= db.comp_moduleset.id == db.comp_moduleset_team_publication.modset_id
     q &= (db.auth_group.id == db.comp_moduleset_team_publication.group_id)|(db.auth_group.role=="Everybody")
-    q &= db.services.svc_name == svcname
+    q &= db.services.svc_id == svc_id
     q &= db.services.svc_app == db.apps.app
     q &= db.apps.id == db.apps_responsibles.app_id
     q &= db.apps_responsibles.group_id == db.auth_group.id
@@ -2075,13 +2095,13 @@ def _comp_get_svc_moduleset_ids(svcname, modulesets=[], slave=False):
     modset_ids = [r.id for r in rows]
     return modset_ids
 
-def _comp_get_svc_moduleset_names(svcname, modulesets=[], slave=False):
-    modset_ids = _comp_get_svc_moduleset_ids(svcname, modulesets=modulesets, slave=slave)
+def _comp_get_svc_moduleset_names(svc_id, modulesets=[], slave=False):
+    modset_ids = _comp_get_svc_moduleset_ids(svc_id, modulesets=modulesets, slave=slave)
     modset_names = get_modset_names(modset_ids)
     return modset_names.values()
 
-def _comp_get_svc_moduleset_data(svcname, modulesets=[], slave=False):
-    modset_ids = _comp_get_svc_moduleset_ids_with_children(svcname, modulesets=modulesets, slave=slave)
+def _comp_get_svc_moduleset_data(svc_id, modulesets=[], slave=False):
+    modset_ids = _comp_get_svc_moduleset_ids_with_children(svc_id, modulesets=modulesets, slave=slave)
     modset_tree_nodes = get_modset_tree_nodes(modset_ids)
     modset_ids = set(modset_tree_nodes.keys())
     for l in modset_tree_nodes.values():
@@ -2107,34 +2127,34 @@ def _comp_get_svc_moduleset_data(svcname, modulesets=[], slave=False):
             ))
     return d
 
-def _comp_get_moduleset_ids(nodename, modulesets=[]):
-    q = db.comp_node_moduleset.modset_node == nodename
+def _comp_get_moduleset_ids(node_id, modulesets=[]):
+    q = db.comp_node_moduleset.node_id == node_id
     q &= db.comp_node_moduleset.modset_id == db.comp_moduleset.id
     q &= db.comp_moduleset.id == db.comp_moduleset_team_publication.modset_id
     q &= db.auth_group.id == db.comp_moduleset_team_publication.group_id
     q &= (db.nodes.team_responsible == db.auth_group.role)|(db.auth_group.role=="Everybody")
-    q &= db.nodes.nodename == nodename
+    q &= db.nodes.node_id == node_id
     if len(modulesets) > 0:
         q &= db.comp_moduleset.modset_name.belongs(modulesets)
     rows = db(q).select(db.comp_moduleset.id, groupby=db.comp_moduleset.id, cacheable=True)
     modset_ids = [r.id for r in rows]
     return modset_ids
 
-def _comp_get_moduleset_names(nodename, modulesets=[]):
-    modset_ids = _comp_get_moduleset_ids(nodename, modulesets=modulesets)
+def _comp_get_moduleset_names(node_id, modulesets=[]):
+    modset_ids = _comp_get_moduleset_ids(node_id, modulesets=modulesets)
     modset_names = get_modset_names(modset_ids)
     return modset_names.values()
 
-def _comp_get_moduleset_ids_with_children(nodename, modulesets=[]):
-    modset_ids = _comp_get_moduleset_ids(nodename, modulesets=modulesets)
+def _comp_get_moduleset_ids_with_children(node_id, modulesets=[]):
+    modset_ids = _comp_get_moduleset_ids(node_id, modulesets=modulesets)
     modset_tree_nodes = get_modset_tree_nodes(modset_ids)
     modset_ids = set(modset_tree_nodes.keys())
     for l in modset_tree_nodes.values():
         modset_ids |= set(l)
     return modset_ids
 
-def _comp_get_moduleset_data(nodename, modulesets=[]):
-    modset_ids = _comp_get_moduleset_ids_with_children(nodename, modulesets=modulesets)
+def _comp_get_moduleset_data(node_id, modulesets=[]):
+    modset_ids = _comp_get_moduleset_ids_with_children(node_id, modulesets=modulesets)
     q = db.comp_moduleset.id.belongs(modset_ids)
     l = db.comp_moduleset_modules.modset_id == db.comp_moduleset.id
     g = db.comp_moduleset_modules.modset_id|db.comp_moduleset_modules.id
@@ -2157,8 +2177,8 @@ def _comp_get_moduleset_data(nodename, modulesets=[]):
 
     return d
 
-def _comp_get_moduleset(nodename):
-    modset_ids = _comp_get_moduleset_ids_with_children(nodename)
+def _comp_get_moduleset(node_id):
+    modset_ids = _comp_get_moduleset_ids_with_children(node_id)
     q = db.comp_moduleset.id.belongs(modset_ids)
     rows = db(q).select(db.comp_moduleset.modset_name, cacheable=True)
     return [r.modset_name for r in rows]
@@ -2169,6 +2189,9 @@ def comp_log_action(vars, vals, auth):
 
 @auth_uuid
 def rpc_comp_log_action(vars, vals, auth):
+    node_id = auth_to_node_id(auth)
+    vars, vals = replace_nodename_in_data(vars, vals, auth, fieldname="run_nodename")
+    vars, vals = replace_svcname_in_data(vars, vals, auth, fieldname="run_svcname")
     now = datetime.datetime.now()
     for i, (a, b) in enumerate(zip(vars, vals)):
         if a == 'run_action':
@@ -2185,15 +2208,15 @@ def rpc_comp_log_action(vars, vals, auth):
     if action == 'check':
         generic_insert('comp_status', vars, vals)
 
-    update_dash_compdiff(auth[1])
+    update_dash_compdiff(node_id)
     l = {
       'event': 'comp_status_change',
-      'data': {'foo': 'bar'},
+      'data': {'node_id': node_id},
     }
     _websocket_send(event_msg(l))
     l = {
       'event': 'comp_log_change',
-      'data': {'foo': 'bar'},
+      'data': {'node_id': node_id},
     }
     _websocket_send(event_msg(l))
 
@@ -2206,6 +2229,9 @@ def comp_log_actions(vars, vals, auth):
 def rpc_comp_log_actions(vars, vals, auth):
     if len(vals) == 0:
         return
+    node_id = auth_to_node_id(auth)
+    vars, vals = replace_nodename_in_data(vars, vals, auth, fieldname="run_nodename")
+    vars, vals = replace_svcname_in_data(vars, vals, auth, fieldname="run_svcname")
     now = datetime.datetime.now()
     vars.append('run_date')
     check_vals = []
@@ -2229,15 +2255,15 @@ def rpc_comp_log_actions(vars, vals, auth):
         generic_insert('comp_status', vars, check_vals)
     l = {
       'event': 'comp_status_change',
-      'data': {'foo': 'bar'},
+      'data': {'node_id': node_id},
     }
     _websocket_send(event_msg(l))
     l = {
       'event': 'comp_log_change',
-      'data': {'foo': 'bar'},
+      'data': {'node_id': node_id},
     }
     _websocket_send(event_msg(l))
-    update_dash_compdiff(auth[1])
+    update_dash_compdiff(node_id)
 
     # update comp_log_daily for faster charting
     l = []
@@ -2261,14 +2287,15 @@ def comp_format_filter(q):
     s = s.replace('nodes.id>0 AND ','')
     return s
 
-def comp_get_svcmon_ruleset(svcname, nodename):
-    q = db.svcmon.mon_svcname == svcname
-    q &= db.svcmon.mon_nodname == nodename
+def comp_get_svcmon_ruleset(svc_id, node_id):
+    q = db.svcmon.svc_id == svc_id
+    q &= db.svcmon.node_id == node_id
     q &= db.svcmon.mon_updated > now - datetime.timedelta(minutes=15)
     row = db(q).select(cacheable=True).first()
     if row is None:
-        q = db.svcmon.mon_svcname == svcname
-        q &= db.svcmon.mon_vmname == nodename
+        q = db.svcmon.svc_id == svc_id
+        q &= db.svcmon.mon_vmname == db.nodes.nodename
+        q &= db.nodes.node_id == node_id
         q &= db.svcmon.mon_containerstatus == "up"
         row = db(q).select(cacheable=True).first()
     if row is None:
@@ -2281,8 +2308,8 @@ def comp_get_svcmon_ruleset(svcname, nodename):
         ruleset['vars'].append(('svcmon.'+f, val))
     return {'osvc_svcmon':ruleset}
 
-def comp_get_service_ruleset(svcname):
-    q = db.services.svc_name == svcname
+def comp_get_service_ruleset(svc_id):
+    q = db.services.svc_id == svc_id
     rows = db(q).select(cacheable=True)
     if len(rows) != 1:
         return {}
@@ -2294,8 +2321,8 @@ def comp_get_service_ruleset(svcname):
         ruleset['vars'].append(('services.'+f, val))
     return {'osvc_service':ruleset}
 
-def comp_get_node_ruleset(nodename):
-    q = db.nodes.nodename == nodename
+def comp_get_node_ruleset(node_id):
+    q = db.nodes.node_id == node_id
     rows = db(q).select(cacheable=True)
     if len(rows) != 1:
         return {}
@@ -2309,7 +2336,7 @@ def comp_get_node_ruleset(nodename):
         ruleset['vars'].append(('nodes.'+f, val))
     return {'osvc_node':ruleset}
 
-def comp_get_rulesets_fset_ids(rset_ids=None, nodename=None, svcname=None):
+def comp_get_rulesets_fset_ids(rset_ids=None, node_id=None, svc_id=None):
     if rset_ids is None:
         q = db.comp_rulesets_filtersets.ruleset_id>0
     else:
@@ -2318,7 +2345,7 @@ def comp_get_rulesets_fset_ids(rset_ids=None, nodename=None, svcname=None):
     q &= db.comp_rulesets.id == db.comp_rulesets_filtersets.ruleset_id
     q &= db.comp_rulesets_filtersets.fset_id == db.gen_filtersets.id
 
-    if nodename is None:
+    if node_id is None:
         raise
 
     q &= db.comp_rulesets.id == db.comp_rulesets_chains.tail_rset_id
@@ -2332,7 +2359,7 @@ def comp_get_rulesets_fset_ids(rset_ids=None, nodename=None, svcname=None):
 
     fset_ids = [r.comp_rulesets_filtersets.fset_id for r in rows]
 
-    if svcname is None:
+    if svc_id == "":
         q = db.v_gen_filtersets.fset_id.belongs(fset_ids)
         q &= db.v_gen_filtersets.f_table.belongs(['services', 'svcmon'])
         f_rows = db(q).select(db.v_gen_filtersets.fset_id,
@@ -2340,7 +2367,7 @@ def comp_get_rulesets_fset_ids(rset_ids=None, nodename=None, svcname=None):
         fsets_with_svc_tables = [r.fset_id for r in f_rows]
 
     for row in rows:
-        if svcname is None and row.comp_rulesets_filtersets.fset_id in fsets_with_svc_tables:
+        if svc_id == "" and row.comp_rulesets_filtersets.fset_id in fsets_with_svc_tables:
             # for node compliance, discard fsets services related
             continue
 
@@ -2446,8 +2473,8 @@ def rpc_comp_get_ruleset_md5(rset_md5, auth):
         return
     return ruleset
 
-def svc_team_responsible_id(svcname):
-    q = db.services.svc_name == svcname
+def svc_team_responsible_id(svc_id):
+    q = db.services.svc_id == svc_id
     q &= db.services.svc_app == db.apps.app
     q &= db.apps.id == db.apps_responsibles.app_id
     q &= db.apps_responsibles.group_id == db.auth_group.id
@@ -2455,8 +2482,8 @@ def svc_team_responsible_id(svcname):
                         cacheable=True)
     return map(lambda x: x['id'], rows)
 
-def node_team_responsible_id(nodename):
-    q = db.nodes.nodename == nodename
+def node_team_responsible_id(node_id):
+    q = db.nodes.node_id == node_id
     q &= db.nodes.team_responsible == db.auth_group.role
     rows = db(q).select(db.auth_group.id, cacheable=True)
     if len(rows) != 1:
@@ -2465,11 +2492,12 @@ def node_team_responsible_id(nodename):
 
 @service.xmlrpc
 def comp_get_ruleset(nodename, auth):
-    return rpc_comp_get_ruleset(nodename, auth)
+    return rpc_comp_get_ruleset(auth)
 
 @auth_uuid
-def rpc_comp_get_ruleset(nodename, auth):
-    return _comp_get_ruleset(nodename)
+def rpc_comp_get_ruleset(auth):
+    node_id = auth_to_node_id(auth)
+    return _comp_get_ruleset(node_id)
 
 @service.xmlrpc
 def comp_get_svc_ruleset(svcname, auth):
@@ -2477,14 +2505,14 @@ def comp_get_svc_ruleset(svcname, auth):
 
 @auth_uuid
 def rpc_comp_get_svc_ruleset(svcname, auth):
-    ruleset = _comp_get_svc_ruleset(svcname, auth[1])
-    ruleset.update(comp_get_svcmon_ruleset(svcname, auth[1]))
-    ruleset.update(comp_get_node_ruleset(auth[1]))
+    node_id = auth_to_node_id(auth)
+    svc_id = node_svc_id(node_id, svcname)
+    ruleset = _comp_get_svc_ruleset(svc_id, node_id)
     ruleset = _comp_remove_dup_vars(ruleset)
     insert_run_rset(ruleset)
     return ruleset
 
-def comp_contextual_rulesets(nodename, svcname=None, slave=False, matching_fsets=None, fset_ids=None, rset_relations=None, rset_names=None):
+def comp_contextual_rulesets(node_id, svc_id=None, slave=False, matching_fsets=None, fset_ids=None, rset_relations=None, rset_names=None):
     ruleset = {}
 
     q = db.comp_rulesets.ruleset_public == True
@@ -2492,10 +2520,10 @@ def comp_contextual_rulesets(nodename, svcname=None, slave=False, matching_fsets
     public_rsets = [r.id for r in rows]
 
     # attached to the node through modulesets
-    if svcname is not None:
-        modset_ids = _comp_get_svc_moduleset_ids_with_children(svcname, slave=slave)
-    elif nodename is not None:
-        modset_ids = _comp_get_moduleset_ids_with_children(nodename)
+    if svc_id is not None:
+        modset_ids = _comp_get_svc_moduleset_ids_with_children(svc_id, slave=slave)
+    elif node_id is not None:
+        modset_ids = _comp_get_moduleset_ids_with_children(node_id)
     q = db.comp_moduleset_ruleset.modset_id.belongs(modset_ids)
     q &= db.comp_moduleset_ruleset.ruleset_id == db.comp_rulesets.id
     q &= db.comp_rulesets.ruleset_type == "contextual"
@@ -2513,27 +2541,27 @@ def comp_contextual_rulesets(nodename, svcname=None, slave=False, matching_fsets
             ruleset.update(comp_ruleset_vars(rset_id, qr=fset_name, matching_fsets=matching_fsets, rset_relations=rset_relations, rset_names=rset_names))
     return ruleset
 
-def _comp_get_svc_ruleset(svcname, nodename, slave=None):
+def _comp_get_svc_ruleset(svc_id, node_id, slave=None):
     if slave is None:
-        slave = comp_slave(svcname, nodename)
+        slave = comp_slave(svc_id, node_id)
 
     rset_relations = get_rset_relations()
     rset_names = get_rset_names()
 
     # initialize ruleset with service variables
-    ruleset = comp_get_service_ruleset(svcname)
+    ruleset = comp_get_service_ruleset(svc_id)
 
     # initialize ruleset with asset variables
-    ruleset.update(comp_get_node_ruleset(nodename))
+    ruleset.update(comp_get_node_ruleset(node_id))
 
     # initialize ruleset with svcmon variables
-    ruleset.update(comp_get_svcmon_ruleset(svcname, nodename))
+    ruleset.update(comp_get_svcmon_ruleset(svc_id, node_id))
 
     # add contextual rulesets variables
-    l = comp_get_rulesets_fset_ids(svcname=svcname, nodename=nodename)
-    matching_fsets = comp_get_matching_fset_ids(fset_ids=l, nodename=nodename, svcname=svcname, slave=slave)
-    ruleset.update(comp_contextual_rulesets(nodename=nodename,
-                                            svcname=svcname,
+    l = comp_get_rulesets_fset_ids(svc_id=svc_id, node_id=node_id)
+    matching_fsets = comp_get_matching_fset_ids(fset_ids=l, node_id=node_id, svc_id=svc_id, slave=slave)
+    ruleset.update(comp_contextual_rulesets(node_id=node_id,
+                                            svc_id=svc_id,
                                             slave=slave,
                                             matching_fsets=matching_fsets,
                                             fset_ids=l,
@@ -2541,7 +2569,7 @@ def _comp_get_svc_ruleset(svcname, nodename, slave=None):
                                             rset_names=rset_names))
 
     # add explicit rulesets variables
-    rset_ids, rset_ids_via_modset = _comp_get_explicit_svc_ruleset_ids(svcname, slave=slave)
+    rset_ids, rset_ids_via_modset = _comp_get_explicit_svc_ruleset_ids(svc_id, slave=slave)
     for rset_id in rset_ids:
         ruleset.update(comp_ruleset_vars(rset_id,
                                          matching_fsets=matching_fsets,
@@ -2589,15 +2617,15 @@ def _comp_remove_dup_vars(ruleset):
                 l[var] = [(rset, i, ruleset[rset]['vars'][i][1])]
     return ruleset
 
-def _comp_get_explicit_svc_ruleset_ids(svcname, slave=False):
+def _comp_get_explicit_svc_ruleset_ids(svc_id, slave=False):
     # attached to the node directly
-    q = db.comp_rulesets_services.svcname == svcname
+    q = db.comp_rulesets_services.svc_id == svc_id
     q &= db.comp_rulesets_services.slave == slave
     rows = db(q).select(db.comp_rulesets_services.ruleset_id, cacheable=True)
     rset_ids = [r.ruleset_id for r in rows]
 
     # attached to the node through modulesets
-    modset_ids = _comp_get_svc_moduleset_ids_with_children(svcname, slave=slave)
+    modset_ids = _comp_get_svc_moduleset_ids_with_children(svc_id, slave=slave)
     q = db.comp_moduleset_ruleset.modset_id.belongs(modset_ids)
     q &= db.comp_moduleset_ruleset.ruleset_id == db.comp_rulesets.id
     q &= db.comp_rulesets.ruleset_type == "explicit"
@@ -2606,16 +2634,16 @@ def _comp_get_explicit_svc_ruleset_ids(svcname, slave=False):
 
     return rset_ids, rset_ids_via_modset
 
-def _comp_get_explicit_ruleset_ids(nodename):
+def _comp_get_explicit_ruleset_ids(node_id):
     # attached to the node directly
-    q = db.comp_rulesets_nodes.nodename == nodename
+    q = db.comp_rulesets_nodes.node_id == node_id
     rows = db(q).select(db.comp_rulesets_nodes.ruleset_id,
                         orderby=db.comp_rulesets_nodes.ruleset_id,
                         cacheable=True)
     rset_ids = [r.ruleset_id for r in rows]
 
     # attached to the node through modulesets
-    modset_ids = _comp_get_moduleset_ids_with_children(nodename)
+    modset_ids = _comp_get_moduleset_ids_with_children(node_id)
     q = db.comp_moduleset_ruleset.modset_id.belongs(modset_ids)
     q &= db.comp_moduleset_ruleset.ruleset_id == db.comp_rulesets.id
     q &= db.comp_rulesets.ruleset_type == "explicit"
@@ -2624,24 +2652,24 @@ def _comp_get_explicit_ruleset_ids(nodename):
 
     return rset_ids, rset_ids_via_modset
 
-def _comp_get_ruleset(nodename):
+def _comp_get_ruleset(node_id):
     # initialize ruleset with asset variables
-    ruleset = comp_get_node_ruleset(nodename)
+    ruleset = comp_get_node_ruleset(node_id)
 
     rset_relations = get_rset_relations()
     rset_names = get_rset_names()
 
     # add contextual rulesets variables
-    l = comp_get_rulesets_fset_ids(nodename=nodename)
-    matching_fsets = comp_get_matching_fset_ids(fset_ids=l, nodename=nodename)
-    ruleset.update(comp_contextual_rulesets(nodename=nodename,
+    l = comp_get_rulesets_fset_ids(node_id=node_id)
+    matching_fsets = comp_get_matching_fset_ids(fset_ids=l, node_id=node_id)
+    ruleset.update(comp_contextual_rulesets(node_id=node_id,
                                             matching_fsets=matching_fsets,
                                             fset_ids=l,
                                             rset_relations=rset_relations,
                                             rset_names=rset_names))
 
     # add explicit rulesets variables
-    rset_ids, rset_ids_via_modset = _comp_get_explicit_ruleset_ids(nodename)
+    rset_ids, rset_ids_via_modset = _comp_get_explicit_ruleset_ids(node_id)
     for rset_id in rset_ids:
         ruleset.update(comp_ruleset_vars(rset_id,
                                          matching_fsets=matching_fsets,
@@ -2725,10 +2753,10 @@ def beautify_moduleset(mset, modulesets, modset_relations):
         )
     return u
 
-def beautify_svc_modulesets(svcname):
+def beautify_svc_modulesets(svc_id):
     def level(slave):
-        root_modulesets = _comp_get_svc_moduleset_names(svcname, slave=slave)
-        modulesets = _comp_get_svc_moduleset_data(svcname, slave=slave)
+        root_modulesets = _comp_get_svc_moduleset_names(svc_id, slave=slave)
+        modulesets = _comp_get_svc_moduleset_data(svc_id, slave=slave)
         modset_relations = get_modset_relations_s()
         l = []
         for mset in root_modulesets:
@@ -2750,9 +2778,9 @@ def beautify_svc_modulesets(svcname):
 
     return SPAN(d)
 
-def beautify_modulesets(node):
-    root_modulesets = _comp_get_moduleset_names(node)
-    modulesets = _comp_get_moduleset_data(node)
+def beautify_modulesets(node_id):
+    root_modulesets = _comp_get_moduleset_names(node_id)
+    modulesets = _comp_get_moduleset_data(node_id)
     modset_relations = get_modset_relations_s()
 
     l = []
@@ -2760,20 +2788,20 @@ def beautify_modulesets(node):
         l.append(beautify_moduleset(mset, modulesets=modulesets, modset_relations=modset_relations))
     return SPAN(l, _class='xset')
 
-def svc_comp_status(svcname):
-    tid = 'scs_'+svcname.replace('-','_').replace('.','_')
+def svc_comp_status(svc_id):
+    tid = 'scs_'+svc_id.replace('-','_')
     return DIV(
             SCRIPT(
-              """table_comp_status_svc("%s", "%s")""" % (tid, svcname),
+              """table_comp_status_svc("%s", "%s")""" % (tid, svc_id),
             ),
             _id=tid,
           )
 
-def node_comp_status(node):
-    tid = 'ncs_'+node.replace('-','_').replace('.','_')
+def node_comp_status(node_id):
+    tid = 'ncs_'+node_id
     return DIV(
             SCRIPT(
-              """table_comp_status_node("%s", "%s")""" % (tid, node),
+              """table_comp_status_node("%s", "%s")""" % (tid, node_id),
             ),
             _id=tid,
           )
@@ -2796,28 +2824,29 @@ def ajax_rset_md5():
 @auth.requires_login()
 def ajax_compliance_svc():
     session.forget(response)
-    svcname = request.args[0]
+    svc_id = request.args[0]
 
     d = []
-    q = db.svcmon.mon_svcname==svcname
+    q = db.svcmon.svc_id==svc_id
     q &= db.svcmon.mon_updated > now - datetime.timedelta(days=1)
-    rows = db(q).select(db.svcmon.mon_nodname, db.svcmon.mon_vmname,
+    q &= db.svcmon.mon_vmname == db.nodes.nodename
+    rows = db(q).select(db.svcmon.node_id, db.nodes.node_id,
                         cacheable=True)
-    vnodes = set([r.mon_vmname for r in rows if r.mon_vmname is not None and r.mon_vmname != ""])
-    nodes = set([r.mon_nodname for r in rows]) - vnodes
+    vnodes = set([r.nodes.node_id for r in rows if r.nodes.node_id is not None])
+    nodes = set([r.svcmon.node_id for r in rows]) - vnodes
 
     vnodes = sorted(list(vnodes))
     nodes = sorted(list(nodes))
 
     def _one(node, slave=False):
-        did = 'nrs_'+svcname.replace('.','').replace('-','')+'_'+node.replace('.','').replace('-','')
-        n_rsets = _comp_get_svc_ruleset(svcname, node)
-        n_rsets.update(comp_get_svcmon_ruleset(svcname, node))
+        did = 'nrs_'+svc_id.replace('-','')+'_'+node.replace('.','').replace('-','')
+        n_rsets = _comp_get_svc_ruleset(svc_id, node)
+        n_rsets.update(comp_get_svcmon_ruleset(svc_id, node))
         n_rsets.update(comp_get_node_ruleset(node))
         if slave:
-            title = svcname + ' on slave node ', node
+            title = get_svc(svc_id).svcname + ' on slave node ', get_node(node).nodename
         else:
-            title = svcname + ' on node ', node
+            title = get_svc(svc_id).svcname + ' on node ', get_node(node).nodename
         d.append(DIV(
                    B(title),
                    _onclick="""$("#%s").toggle();$(this).toggleClass("down16").toggleClass("right16")"""%did,
@@ -2836,15 +2865,15 @@ def ajax_compliance_svc():
     for vnode in vnodes:
         _one(vnode, slave=True)
 
-    did = 'srs_'+svcname.replace('.','').replace('-','')
+    did = 'srs_'+svc_id.replace('-','')
     d = SPAN(
           H3(T('Status')),
-          svc_comp_status(svcname),
+          svc_comp_status(svc_id),
           H3(T('Modulesets')),
-          beautify_svc_modulesets(svcname),
+          beautify_svc_modulesets(svc_id),
           H3(T('Rulesets')),
           SPAN(d),
-          SPAN(show_diff(svcname)),
+          SPAN(show_diff(svc_id)),
         )
     return d
 
@@ -2875,22 +2904,22 @@ def ajax_compliance_nodediff():
 
 @auth.requires_login()
 def ajax_compliance_svcdiff():
-    svcnames = request.vars.node.split(',')
+    svc_ids = request.vars.node.split(',')
     l = []
-    compdiff_svc = show_services_compdiff_svc(svcnames)
-    compdiff_svc_encap = show_services_compdiff_svc(svcnames,encap=True)
-    compdiff = show_services_compdiff(svcnames)
-    compdiff_encap = show_services_compdiff(svcnames, encap=True)
+    compdiff_svc = show_services_compdiff_svc(svc_ids)
+    compdiff_svc_encap = show_services_compdiff_svc(svc_ids,encap=True)
+    compdiff = show_services_compdiff(svc_ids)
+    compdiff_encap = show_services_compdiff(svc_ids, encap=True)
 
-    moddiff_svc = show_services_moddiff_svc(svcnames)
-    moddiff_svc_encap = show_services_moddiff_svc(svcnames, encap=True)
-    moddiff = show_services_moddiff(svcnames)
-    moddiff_encap = show_services_moddiff(svcnames, encap=True)
+    moddiff_svc = show_services_moddiff_svc(svc_ids)
+    moddiff_svc_encap = show_services_moddiff_svc(svc_ids, encap=True)
+    moddiff = show_services_moddiff(svc_ids)
+    moddiff_encap = show_services_moddiff(svc_ids, encap=True)
 
-    rsetdiff_svc = show_services_rsetdiff_svc(svcnames)
-    rsetdiff_svc_encap = show_services_rsetdiff_svc(svcnames, encap=True)
-    rsetdiff = show_services_rsetdiff(svcnames)
-    rsetdiff_encap = show_services_rsetdiff(svcnames, encap=True)
+    rsetdiff_svc = show_services_rsetdiff_svc(svc_ids)
+    rsetdiff_svc_encap = show_services_rsetdiff_svc(svc_ids, encap=True)
+    rsetdiff = show_services_rsetdiff(svc_ids)
+    rsetdiff_encap = show_services_rsetdiff(svc_ids, encap=True)
 
     if compdiff_svc is not None or \
        compdiff_svc_encap is not None or \
@@ -2968,14 +2997,14 @@ def ajax_compliance_svcdiff():
 
     return SPAN(l)
 
-def show_diff(svcname):
+def show_diff(svc_id):
     l = []
-    compdiff = show_compdiff(svcname)
-    compdiff_encap = show_compdiff(svcname, encap=True)
-    moddiff = show_moddiff(svcname)
-    moddiff_encap = show_moddiff(svcname, encap=True)
-    rsetdiff = show_rsetdiff(svcname)
-    rsetdiff_encap = show_rsetdiff(svcname, encap=True)
+    compdiff = show_compdiff(svc_id)
+    compdiff_encap = show_compdiff(svc_id, encap=True)
+    moddiff = show_moddiff(svc_id)
+    moddiff_encap = show_moddiff(svc_id, encap=True)
+    rsetdiff = show_rsetdiff(svc_id)
+    rsetdiff_encap = show_rsetdiff(svc_id, encap=True)
 
     if compdiff is not None or moddiff is not None or rsetdiff is not None or \
        compdiff_encap is not None or moddiff_encap is not None or rsetdiff_encap is not None:
@@ -3016,13 +3045,13 @@ def show_diff(svcname):
 @auth.requires_login()
 def ajax_compliance_node():
     session.forget(response)
-    node = request.args[0]
-    rsets = _comp_get_ruleset(node)
+    node_id = request.args[0]
+    rsets = _comp_get_ruleset(node_id)
     d = SPAN(
           H3(T('Status')),
-          node_comp_status(node),
+          node_comp_status(node_id),
           H3(T('Modulesets')),
-          beautify_modulesets(node),
+          beautify_modulesets(node_id),
           H3(T('Rulesets')),
           beautify_rulesets(rsets),
         )
@@ -3036,95 +3065,17 @@ def register_node(node):
 
 
 #
-# CVE batch
-#
-def run_cve():
-    q = db.comp_rulesets_variables.var_class == 'cve'
-    rows = db(q).select(db.comp_rulesets_variables.var_name,
-                        db.comp_rulesets_variables.var_value,
-                        cacheable=True)
-    for row in rows:
-        run_cve_one(row)
-
-def run_cve_one(row):
-    try:
-        cve = json.loads(row['var_value'])
-    except:
-        return
-    cve['name'] = row['var_name']
-
-    def on_packages(cve):
-        sql = """select distinct pkg_nodename
-                 from packages
-                 where
-                   pkg_updated > DATE_SUB(NOW(), INTERVAL 2 DAY) and
-                   pkg_name="%s" and
-                   greatest(pkg_version, "%s")=pkg_version and
-                   least(pkg_version, "%s")=pkg_version
-              """%(cve['product'], cve['minver'], cve['maxver'])
-        rows = db.executesql(sql)
-        if len(rows) == 0:
-            return []
-        return map(lambda x: x[0], rows)
-
-    nodes = on_packages(cve)
-    if len(nodes) > 0:
-        where = "where nodename in (%s)"%','.join(map(lambda x: '"'+x+'"', nodes))
-        sql = """insert into comp_status
-                   select
-                     NULL,
-                     nodename,
-                     "%(cve_name)s",
-                     1,
-                     "",
-                     "%(now)s",
-                     "cve",
-                     "check"
-                   from nodes
-                   %(where)s
-                   on duplicate key update
-                     run_status=1,
-                     run_date="%(now)s"
-              """%dict(where=where, cve_name=cve['name'], now=now)
-        db.executesql(sql)
-        db.commit()
-        table_modified("comp_status")
-
-    if len(nodes) > 0:
-        where = "where nodename not in (%s)"%','.join(map(lambda x: '"'+x+'"', nodes))
-    else:
-        where = ""
-    sql = """insert into comp_status
-               select
-                 NULL,
-                 nodename,
-                 "%(cve_name)s",
-                 0,
-                 "",
-                 "%(now)s",
-                 "cve",
-                 "check"
-               from nodes
-               %(where)s
-               on duplicate key update
-                 run_status=0,
-                 run_date="%(now)s"
-          """%dict(where=where, cve_name=cve['name'], now=now)
-    db.executesql(sql)
-    db.commit()
-    table_modified("comp_status")
-
-
-#
 # Dashboard alerts
 #
 def cron_dash_comp():
     cron_dash_moddiff()
     cron_dash_rsetdiff()
 
-def show_nodes_compdiff(nodes):
-    nodes = list(set(nodes))
-    nodes.sort()
+def show_nodes_compdiff(node_ids):
+    node_ids = list(set(node_ids))
+    q = db.nodes.node_id.belongs(node_ids)
+    rows = db(q).select(db.nodes.nodename, orderby=db.nodes.nodename)
+    nodes = [r.nodename for r in rows]
     n = len(nodes)
 
     if n < 2:
@@ -3132,14 +3083,16 @@ def show_nodes_compdiff(nodes):
 
     sql = """select t.* from (
                select
-                 count(distinct cs.run_nodename) as c,
+                 count(distinct cs.node_id) as c,
                  cs.run_module,
-                 cs.run_nodename,
+                 n.nodename,
                  cs.run_status
                from
-                 comp_status cs
+                 comp_status cs,
+                 nodes n
                where
-                 cs.run_nodename in (%(nodes)s)
+                 cs.node_id = n.node_id and
+                 cs.node_id in (%(node_ids)s)
                group by
                  cs.run_module,
                  cs.run_status
@@ -3148,9 +3101,9 @@ def show_nodes_compdiff(nodes):
                 t.c!=%(n)s
               order by
                 t.run_module,
-                t.run_nodename,
+                t.nodename,
                 t.run_status
-              """%dict(nodes=','.join(map(lambda x: repr(str(x)), nodes)), n=n)
+              """%dict(node_ids=','.join(map(lambda x: repr(x), node_ids)), n=n)
 
     _rows = db.executesql(sql)
     if len(_rows) == 0:
@@ -3159,20 +3112,22 @@ def show_nodes_compdiff(nodes):
     mods = [r[1] for r in _rows]
 
     sql = """select
-               cs.run_nodename,
+               n.nodename,
                cs.run_module,
                cs.run_status,
                cs.run_log,
                cs.run_date
              from
-               comp_status cs
+               comp_status cs,
+               nodes n
              where
+               cs.node_id = n.node_id and
                cs.run_module in (%(mods)s) and
-               cs.run_nodename in (%(nodes)s)
+               cs.node_id in (%(node_ids)s)
              order by
                cs.run_module,
-               cs.run_nodename
-         """%dict(nodes=','.join(map(lambda x: repr(x), nodes)), mods=','.join(map(lambda x: repr(str(x)), mods)))
+               n.nodename
+         """%dict(node_ids=','.join(map(lambda x: repr(x), node_ids)), mods=','.join(map(lambda x: repr(str(x)), mods)))
     _rows = db.executesql(sql)
 
     if len(_rows) == 0:
@@ -3180,34 +3135,37 @@ def show_nodes_compdiff(nodes):
 
     return _show_compdiff(nodes, n, _rows)
 
-def show_services_compdiff_svc(svcnames, encap=False):
-    svcnames = list(set(svcnames))
-    svcnames.sort()
-    n = len(svcnames)
+def show_services_compdiff_svc(svc_ids, encap=False):
+    svc_ids = list(set(svc_ids))
+    svc_ids.sort()
+    n = len(svc_ids)
 
     if n < 2:
         return
 
     if encap:
         sql = """select
-                   concat(mon_svcname, '@', mon_vmname)
-                 from svcmon
+                   concat(s.svcname, '@', m.mon_vmname)
+                 from svcmon m, services s
                  where
-                   mon_vmname is not null and
-                   mon_vmname != "" and
-                   mon_svcname in (%(svcnames)s)
+                   m.svc_id = s.svc_id and
+                   m.mon_vmname is not null and
+                   m.mon_vmname != "" and
+                   m.svc_id in (%(svc_ids)s)
                  group by
-                   mon_svcname, mon_vmname
-              """ % dict(svcnames=','.join(map(lambda x: repr(x), svcnames)))
+                   m.svc_id, m.mon_vmname
+              """ % dict(svc_ids=','.join(map(lambda x: repr(x), svc_ids)))
     else:
         sql = """select
-                   concat(mon_svcname, '@', mon_nodname)
-                 from svcmon
+                   concat(s.svcname, '@', n.nodename)
+                 from svcmon m, nodes n, services s
                  where
-                   mon_svcname in (%(svcnames)s)
+                   m.node_id = n.node_id and
+                   m.svc_id = s.svc_id and
+                   m.svc_id in (%(svc_ids)s)
                  group by
-                   mon_svcname, mon_nodname
-              """ % dict(svcnames=','.join(map(lambda x: repr(x), svcnames)))
+                   m.svc_id, m.node_id
+              """ % dict(svc_ids=','.join(map(lambda x: repr(x), svc_ids)))
 
     _rows = db.executesql(sql)
     objs = list(set([r[0] for r in _rows]))
@@ -3220,17 +3178,18 @@ def show_services_compdiff_svc(svcnames, encap=False):
                select
                  count(distinct u.obj) as c,
                  u.run_module,
-                 u.run_svcname,
+                 u.svc_id,
                  u.run_status
                from (
                  select
-                   concat(cs.run_svcname, '@', cs.run_nodename) as obj,
+                   concat(cs.svc_id, '@', n.nodename) as obj,
                    cs.run_module,
-                   cs.run_svcname,
+                   cs.svc_id,
                    cs.run_status
-                 from comp_status cs
+                 from comp_status cs, nodes n
                  where
-                   concat(cs.run_svcname, '@', cs.run_nodename) in (%(objs)s)
+                   cs.node_id = n.node_id and
+                   concat(cs.svc_id, '@', cs.node_id) in (%(objs)s)
                ) u
                group by
                  u.run_module,
@@ -3240,7 +3199,7 @@ def show_services_compdiff_svc(svcnames, encap=False):
                 t.c!=%(n)s
               order by
                 t.run_module,
-                t.run_svcname,
+                t.svc_id,
                 t.run_status
               """%dict(objs=','.join(map(lambda x: repr(str(x)), objs)), n=n)
 
@@ -3251,20 +3210,22 @@ def show_services_compdiff_svc(svcnames, encap=False):
     mods = [r[1] for r in _rows]
 
     sql = """select
-               concat(cs.run_svcname, '@', cs.run_nodename),
+               concat(s.svcname, '@', n.nodename),
                cs.run_module,
                cs.run_status,
                cs.run_log,
                cs.run_date
              from
-               comp_status cs
+               comp_status cs, nodes n, services s
              where
+               cs.node_id = n.node_id and
+               cs.svc_id = s.svc_id and
                cs.run_module in (%(mods)s) and
-               concat(cs.run_svcname, '@', cs.run_nodename) in (%(objs)s)
+               concat(cs.svc_id, '@', cs.node_id) in (%(objs)s)
              order by
                cs.run_module,
-               cs.run_svcname,
-               cs.run_nodename
+               cs.svc_id,
+               n.nodename
          """%dict(objs=','.join(map(lambda x: repr(str(x)), objs)), mods=','.join(map(lambda x: repr(str(x)), mods)))
     _rows = db.executesql(sql)
 
@@ -3273,33 +3234,32 @@ def show_services_compdiff_svc(svcnames, encap=False):
 
     return _show_compdiff(objs, n, _rows, "Service@Node")
 
-def show_services_compdiff(svcnames, encap=False):
-    rows = db(db.svcmon.mon_svcname.belongs(svcnames)).select(cacheable=True)
+def show_services_compdiff(svc_ids, encap=False):
+    q = db.svcmon.svc_id.belongs(svc_ids)
+    q = q_filter(q, svc_field=db.svcmon.svc_id)
+    l = db.nodes.on(db.svcmon.mon_vmname==db.nodes.node_id)
+    rows = db(q).select(left=l, cacheable=True)
     if encap:
-        nodes = [r.mon_vmname for r in rows if r.mon_vmname != "" and r.mon_vmname is not None]
-        f = "mon_vmname"
+        node_ids = [r.nodes.node_id for r in rows if r.nodes.node_id is not None]
     else:
-        nodes = [r.mon_nodname for r in rows]
-        f = "mon_nodname"
-    nodes = list(set(nodes))
-    nodes.sort()
-    n = len(nodes)
+        node_ids = [r.svcmon.node_id for r in rows]
+    node_ids = list(set(node_ids))
+    node_ids.sort()
+    n = len(node_ids)
 
     if n < 2:
         return
 
     sql = """select t.* from (
                select
-                 count(distinct cs.run_nodename) as c,
+                 count(distinct cs.node_id) as c,
                  cs.run_module,
-                 cs.run_nodename,
+                 cs.node_id,
                  cs.run_status
                from
-                 comp_status cs,
-                 svcmon m
+                 comp_status cs
                where
-                 m.mon_svcname in (%(svcnames)s) and
-                 m.%(f)s=cs.run_nodename
+                 cs.node_id in (%(node_ids)s)
                group by
                  cs.run_module,
                  cs.run_status
@@ -3308,9 +3268,9 @@ def show_services_compdiff(svcnames, encap=False):
                 t.c!=%(n)s
               order by
                 t.run_module,
-                t.run_nodename,
+                t.node_id,
                 t.run_status
-              """%dict(svcnames=','.join(map(lambda x: repr(x), svcnames)), n=n, f=f)
+              """%dict(node_ids=','.join(map(repr, node_ids)), n=n)
 
     _rows = db.executesql(sql)
     if len(_rows) == 0:
@@ -3319,22 +3279,24 @@ def show_services_compdiff(svcnames, encap=False):
     mods = [r[1] for r in _rows]
 
     sql = """select
-               cs.run_nodename,
+               n.nodename,
                cs.run_module,
                cs.run_status,
                cs.run_log,
                cs.run_date
              from
                comp_status cs,
-               svcmon m
+               svcmon m,
+               nodes n
              where
                cs.run_module in (%(mods)s) and
-               m.mon_svcname in (%(svcnames)s) and
-               m.%(f)s=cs.run_nodename
+               m.svc_id in (%(svc_ids)s) and
+               m.%(f)s=cs.node_id and
+               m.node_id=n.node_id
              order by
                cs.run_module,
-               cs.run_nodename
-         """%dict(svcnames=','.join(map(lambda x: repr(x), svcnames)), mods=','.join(map(lambda x: repr(str(x)), mods)), f=f)
+               n.nodename
+         """%dict(svc_ids=','.join(map(lambda x: repr(x), svc_ids)), mods=','.join(map(lambda x: repr(str(x)), mods)), f=f)
     _rows = db.executesql(sql)
 
     if len(_rows) == 0:
@@ -3342,34 +3304,34 @@ def show_services_compdiff(svcnames, encap=False):
 
     return _show_compdiff(nodes, n, _rows)
 
-def show_compdiff(svcname, encap=False):
-    rows = db(db.svcmon.mon_svcname==svcname).select(cacheable=True)
+def show_compdiff(svc_id, encap=False):
+    q = db.svcmon.svc_id==svc_id
+    q = q_filter(q, svc_field=db.svcmon.svc_id)
+    l = db.nodes.on(db.svcmon.mon_vmname==db.nodes.node_id)
+    rows = db(q).select(left=l, cacheable=True)
     if encap:
-        nodes = [r.mon_vmname for r in rows if r.mon_vmname != "" and r.mon_vmname is not None]
-        f = "mon_vmname"
+        node_ids = [r.nodes.node_id for r in rows if r.nodes.node_id is not None]
     else:
-        nodes = [r.mon_nodname for r in rows]
-        f = "mon_nodname"
-    nodes = list(set(nodes))
-    nodes.sort()
-    n = len(nodes)
+        node_ids = [r.svcmon.node_id for r in rows]
+    node_ids = list(set(node_ids))
+    node_ids.sort()
+    n = len(node_ids)
 
     if n < 2:
         return
 
     sql = """select t.* from (
                select
-                 count(distinct cs.run_nodename) as c,
+                 count(distinct cs.node_id) as c,
                  cs.run_module,
-                 cs.run_nodename,
+                 cs.node_id,
                  cs.run_status
                from
-                 comp_status cs,
-                 svcmon m
+                 comp_status cs
                where
-                 (cs.run_svcname is NULL or cs.run_svcname="") and
-                 m.mon_svcname="%(svcname)s" and
-                 m.%(f)s=cs.run_nodename
+                 (cs.node_id="" or cs.svc_id="") and
+                 cs.svc_id="%(svc_id)s" and
+                 cs.node_id in (%(node_ids)s)
                group by
                  cs.run_module,
                  cs.run_status
@@ -3378,9 +3340,9 @@ def show_compdiff(svcname, encap=False):
                 t.c!=%(n)s
               order by
                 t.run_module,
-                t.run_nodename,
+                t.node_id,
                 t.run_status
-              """%dict(svcname=svcname, n=n, f=f)
+              """%dict(svc_id=svc_id, n=n, node_ids=','.join(map(repr, node_ids)))
 
     _rows = db.executesql(sql)
     if len(_rows) == 0:
@@ -3389,23 +3351,25 @@ def show_compdiff(svcname, encap=False):
     mods = [r[1] for r in _rows]
 
     sql = """select
-               cs.run_nodename,
+               n.nodename,
                cs.run_module,
                cs.run_status,
                cs.run_log,
                cs.run_date
              from
-               comp_status cs,
-               svcmon m
+               comp_status cs, nodes n
              where
-               (cs.run_svcname is NULL or cs.run_svcname="") and
+               cs.node_id = n.node_id and
+               (cs.svc_id="" or cs.svc_id="") and
                cs.run_module in (%(mods)s) and
-               m.mon_svcname="%(svcname)s" and
-               m.%(f)s=cs.run_nodename
+               cs.svc_id="%(svc_id)s" and
+               cs.node_id in (%(node_ids)s)
              order by
                cs.run_module,
-               cs.run_nodename
-         """%dict(svcname=svcname, mods=','.join(map(lambda x: repr(str(x)), mods)), f=f)
+               cs.node_id
+         """%dict(svc_id=svc_id,
+                  mods=','.join(map(lambda x: repr(str(x)), mods)),
+                  node_ids=','.join(map(repr, node_ids)))
     _rows = db.executesql(sql)
 
     if len(_rows) == 0:
@@ -3486,11 +3450,11 @@ def _show_compdiff(nodes, n, _rows, objtype="Nodes"):
 
 def cron_dash_moddiff():
     q = db.services.updated > now - datetime.timedelta(days=2)
-    svcnames = [r.svc_name for r in db(q).select(db.services.svc_name, cacheable=True)]
+    svc_ids = [r.svc_id for r in db(q).select(db.services.svc_id, cacheable=True)]
 
     r = []
-    for svcname in svcnames:
-        r.append(update_dash_moddiff(svcname))
+    for svc_id in svc_ids:
+        r.append(update_dash_moddiff(svc_id))
 
     return str(r)
 
@@ -3506,14 +3470,14 @@ def show_nodes_moddiff(nodes):
             select t.* from
             (
              select
-               count(distinct nm.modset_node) as n,
-               group_concat(distinct nm.modset_node) as nodes,
+               count(distinct nm.node_id) as n,
+               group_concat(distinct nm.node_id) as nodes,
                ms.modset_name as modset
              from
                comp_node_moduleset nm,
                comp_moduleset ms
              where
-               nm.modset_node in (%(nodes)s) and
+               nm.node_id in (%(nodes)s) and
                nm.modset_id=ms.id
              group by
                modset_name
@@ -3525,14 +3489,14 @@ def show_nodes_moddiff(nodes):
     _rows = db.executesql(sql)
     return _show_moddiff(nodes, n, _rows)
 
-def show_services_moddiff_svc(svcnames, encap=False):
+def show_services_moddiff_svc(svc_ids, encap=False):
     if encap:
         slave = 'T'
     else:
         slave = 'F'
-    svcnames = list(set(svcnames))
-    svcnames.sort()
-    n = len(svcnames)
+    svc_ids = list(set(svc_ids))
+    svc_ids.sort()
+    n = len(svc_ids)
 
     if n < 2:
         return
@@ -3541,14 +3505,14 @@ def show_services_moddiff_svc(svcnames, encap=False):
             select t.* from
             (
              select
-               count(distinct ms.modset_svcname) as n,
-               group_concat(distinct ms.modset_svcname) as services,
+               count(distinct ms.svc_id) as n,
+               group_concat(distinct ms.svc_id) as services,
                m.modset_name as modset
              from
                comp_modulesets_services ms,
                comp_moduleset m
              where
-               ms.modset_svcname in (%(svcnames)s) and
+               ms.svc_id in (%(svc_ids)s) and
                ms.slave="%(slave)s" and
                ms.modset_id=m.id
              group by
@@ -3557,21 +3521,22 @@ def show_services_moddiff_svc(svcnames, encap=False):
                modset_name
             ) t
             where t.n != %(n)d
-    """%dict(svcnames=','.join(map(lambda x: repr(x), svcnames)), n=n, slave=slave)
+    """%dict(svc_ids=','.join(map(lambda x: repr(x), svc_ids)), n=n, slave=slave)
     _rows = db.executesql(sql)
-    return _show_moddiff(svcnames, n, _rows, "Services")
+    return _show_moddiff(svc_ids, n, _rows, "Services")
 
-def show_services_moddiff(svcnames, encap=False):
-    rows = db(db.svcmon.mon_svcname.belongs(svcnames)).select(cacheable=True)
+def show_services_moddiff(svc_ids, encap=False):
+    q = db.svcmon.svc_id.belongs(svc_ids)
+    q = q_filter(q, svc_field=db.svcmon.svc_id)
+    l = db.nodes.on(db.svcmon.mon_vmname==db.nodes.node_id)
+    rows = db(q).select(left=l, cacheable=True)
     if encap:
-        nodes = [r.mon_vmname for r in rows if r.mon_vmname != "" and r.mon_vmname is not None]
-        f = "mon_vmname"
+        node_ids = [r.nodes.node_id for r in rows if r.nodes.node_id is not None]
     else:
-        nodes = [r.mon_nodname for r in rows]
-        f = "mon_nodname"
-    nodes = list(set(nodes))
-    nodes.sort()
-    n = len(nodes)
+        node_ids = [r.svcmon.node_id for r in rows]
+    node_ids = list(set(node_ids))
+    node_ids.sort()
+    n = len(node_ids)
 
     if n < 2:
         return
@@ -3580,16 +3545,14 @@ def show_services_moddiff(svcnames, encap=False):
             select t.* from
             (
              select
-               count(distinct nm.modset_node) as n,
-               group_concat(distinct nm.modset_node) as nodes,
+               count(distinct nm.node_id) as n,
+               group_concat(distinct nm.node_id) as nodes,
                ms.modset_name as modset
              from
                comp_node_moduleset nm,
-               svcmon m,
                comp_moduleset ms
              where
-               m.mon_svcname in (%(svcnames)s) and
-               m.%(f)s=nm.modset_node and
+               nm.node_id in (%(node_ids)s) and
                nm.modset_id=ms.id
              group by
                modset_name
@@ -3597,21 +3560,22 @@ def show_services_moddiff(svcnames, encap=False):
                modset_name
             ) t
             where t.n != %(n)d
-    """%dict(svcnames=','.join(map(lambda x: repr(x), svcnames)), n=n, f=f)
+    """%dict(node_ids=','.join(map(repr, node_ids)), n=n)
     _rows = db.executesql(sql)
     return _show_moddiff(nodes, n, _rows)
 
-def show_moddiff(svcname, encap=False):
-    rows = db(db.svcmon.mon_svcname==svcname).select(cacheable=True)
+def show_moddiff(svc_id, encap=False):
+    q = db.svcmon.svc_id==svc_id
+    q = q_filter(q, svc_field=db.svcmon.svc_id)
+    l = db.nodes.on(db.svcmon.mon_vmname==db.nodes.node_id)
+    rows = db(q).select(left=l, cacheable=True)
     if encap:
-        nodes = [r.mon_vmname for r in rows if r.mon_vmname != "" and r.mon_vmname is not None]
-        f = "mon_vmname"
+        node_ids = [r.nodes.node_id for r in rows if r.nodes.node_id is not None]
     else:
-        nodes = [r.mon_nodname for r in rows]
-        f = "mon_nodname"
-    nodes = list(set(nodes))
-    nodes.sort()
-    n = len(nodes)
+        node_ids = [r.svcmon.node_id for r in rows]
+    node_ids = list(set(node_ids))
+    node_ids.sort()
+    n = len(node_ids)
 
     if n < 2:
         return
@@ -3620,16 +3584,14 @@ def show_moddiff(svcname, encap=False):
             select t.* from
             (
              select
-               count(distinct nm.modset_node) as n,
-               group_concat(distinct nm.modset_node) as nodes,
+               count(distinct nm.node_id) as n,
+               group_concat(distinct nm.node_id) as nodes,
                ms.modset_name as modset
              from
                comp_node_moduleset nm,
-               svcmon m,
                comp_moduleset ms
              where
-               m.mon_svcname="%(svcname)s" and
-               m.%(f)s=nm.modset_node and
+               nm.node_id in (%(node_ids)s) and
                nm.modset_id=ms.id
              group by
                modset_name
@@ -3637,11 +3599,11 @@ def show_moddiff(svcname, encap=False):
                modset_name
             ) t
             where t.n != %(n)d
-    """%dict(svcname=svcname, n=n, f=f)
+    """%dict(node_ids=','.join(map(repr, node_ids)), n=n)
     _rows = db.executesql(sql)
-    return _show_moddiff(nodes, n, _rows)
+    return _show_moddiff(node_ids, n, _rows)
 
-def _show_moddiff(nodes, n, _rows, objtype="Nodes"):
+def _show_moddiff(node_ids, n, _rows, objtype="Nodes"):
 
     if len(_rows) == 0:
         return
@@ -3654,9 +3616,13 @@ def _show_moddiff(nodes, n, _rows, objtype="Nodes"):
 
     def fmt_header2():
         h = [TH(T("Moduleset"))]
-        for node in nodes:
+        for node_id in node_ids:
+            if objtype == "Nodes":
+                name = get_node(node_id).nodename
+            else:
+                name = get_svc(node_id).svcname
             h.append(TH(
-              node.split('.')[0],
+              name,
               _style="text-align:center",
             ))
         return TR(h)
@@ -3664,8 +3630,8 @@ def _show_moddiff(nodes, n, _rows, objtype="Nodes"):
     def fmt_line(row, bg):
         h = [TD(row[2])]
         l = row[1].split(',')
-        for node in nodes:
-            if node in l:
+        for node_id in node_ids:
+            if node_id in l:
                 h.append(TD(
                   IMG(_src=URL(r=request,c='static',f='images/attach16.png')),
                   _style="text-align:center",
@@ -3692,17 +3658,20 @@ def _show_moddiff(nodes, n, _rows, objtype="Nodes"):
 #
 def cron_dash_rsetdiff():
     q = db.services.updated > now - datetime.timedelta(days=2)
-    svcnames = [r.svc_name for r in db(q).select(db.services.svc_name, cacheable=True)]
+    svc_ids = [r.svc_id for r in db(q).select(db.services.svc_id, cacheable=True)]
 
     r = []
-    for svcname in svcnames:
-        r.append(update_dash_rsetdiff(svcname))
+    for svc_id in svc_ids:
+        r.append(update_dash_rsetdiff(svc_id))
 
     return str(r)
 
 def show_nodes_rsetdiff(nodes):
     nodes = list(set(nodes))
-    nodes.sort()
+    q = db.nodes.nodename.belongs(nodes)
+    q = q_filter(q, app_field=db.nodes.app)
+    rows = db(q).select(db.nodes.nodename, orderby=db.nodes.nodename)
+    nodes = [r.nodename for r in rows]
     n = len(nodes)
 
     if n < 2:
@@ -3712,15 +3681,17 @@ def show_nodes_rsetdiff(nodes):
             select t.* from
             (
              select
-               count(distinct rn.nodename) as n,
-               group_concat(distinct rn.nodename) as nodes,
+               count(distinct n.nodename) as n,
+               group_concat(distinct n.nodename) as nodes,
                rs.ruleset_name as ruleset
              from
+               nodes n,
                comp_rulesets_nodes rn,
                comp_rulesets rs
              where
                rn.nodename in (%(nodes)s) and
-               rn.ruleset_id=rs.id
+               rn.ruleset_id=rs.id and
+               rn.node_id=nodes.node_id
              group by
                ruleset_name
              order by
@@ -3732,10 +3703,10 @@ def show_nodes_rsetdiff(nodes):
 
     return _show_rsetdiff(nodes, n, _rows)
 
-def show_services_rsetdiff_svc(svcnames, encap=False):
-    svcnames = list(set(svcnames))
-    svcnames.sort()
-    n = len(svcnames)
+def show_services_rsetdiff_svc(svc_ids, encap=False):
+    svc_ids = list(set(svc_ids))
+    svc_ids.sort()
+    n = len(svc_ids)
     if encap:
         slave = 'T'
     else:
@@ -3748,14 +3719,14 @@ def show_services_rsetdiff_svc(svcnames, encap=False):
             select t.* from
             (
              select
-               count(distinct rss.svcname) as n,
-               group_concat(distinct rss.svcname) as services,
+               count(distinct rss.svc_id) as n,
+               group_concat(distinct rss.svc_id) as services,
                rs.ruleset_name as ruleset
              from
                comp_rulesets_services rss,
                comp_rulesets rs
              where
-               rss.svcname in (%(svcnames)s) and
+               rss.svc_id in (%(svc_ids)s) and
                rss.slave="%(slave)s" and
                rss.ruleset_id=rs.id
              group by
@@ -3764,22 +3735,23 @@ def show_services_rsetdiff_svc(svcnames, encap=False):
                ruleset_name
             ) t
             where t.n != %(n)d
-    """%dict(svcnames=','.join(map(lambda x: repr(x), svcnames)), n=n, slave=slave)
+    """%dict(svc_ids=','.join(map(lambda x: repr(x), svc_ids)), n=n, slave=slave)
     _rows = db.executesql(sql)
 
-    return _show_rsetdiff(svcnames, n, _rows, "Services")
+    return _show_rsetdiff(svc_ids, n, _rows, "Services")
 
-def show_services_rsetdiff(svcnames, encap=False):
-    rows = db(db.svcmon.mon_svcname.belongs(svcnames)).select(cacheable=True)
+def show_services_rsetdiff(svc_ids, encap=False):
+    q = db.svcmon.svc_id.belongs(svc_ids)
+    q = q_filter(q, svc_field=db.svcmon.svc_id)
+    l = db.nodes.on(db.svcmon.mon_vmname==db.nodes.node_id)
+    rows = db(q).select(left=l, cacheable=True)
     if encap:
-        nodes = [r.mon_vmname for r in rows if r.mon_vmname != "" and r.mon_vmname is not None]
-        f = "mon_vmname"
+        node_ids = [r.nodes.node_id for r in rows if r.nodes.node_id is not None]
     else:
-        nodes = [r.mon_nodname for r in rows]
-        f = "mon_nodname"
-    nodes = list(set(nodes))
-    nodes.sort()
-    n = len(nodes)
+        node_ids = [r.svcmon.node_id for r in rows]
+    node_ids = list(set(node_ids))
+    node_ids.sort()
+    n = len(node_ids)
 
     if n < 2:
         return
@@ -3788,16 +3760,14 @@ def show_services_rsetdiff(svcnames, encap=False):
             select t.* from
             (
              select
-               count(distinct rn.nodename) as n,
-               group_concat(distinct rn.nodename) as nodes,
+               count(distinct n.nodename) as n,
+               group_concat(distinct n.nodename) as nodes,
                rs.ruleset_name as ruleset
              from
                comp_rulesets_nodes rn,
-               svcmon m,
                comp_rulesets rs
              where
-               m.mon_svcname in (%(svcnames)s) and
-               m.%(f)s=rn.nodename and
+               rn.node_id in (%(node_ids)s) and
                rn.ruleset_id=rs.id
              group by
                ruleset_name
@@ -3805,23 +3775,24 @@ def show_services_rsetdiff(svcnames, encap=False):
                ruleset_name
             ) t
             where t.n != %(n)d
-    """%dict(svcnames=','.join(map(lambda x: repr(x), svcnames)), n=n, f=f)
+    """%dict(node_ids=','.join(map(repr, node_ids)), n=n)
     _rows = db.executesql(sql)
 
     return _show_rsetdiff(nodes, n, _rows)
 
 
-def show_rsetdiff(svcname, encap=False):
-    rows = db(db.svcmon.mon_svcname==svcname).select(cacheable=True)
+def show_rsetdiff(svc_id, encap=False):
+    q = db.svcmon.svc_id==svc_id
+    q = q_filter(q, svc_field=db.svcmon.svc_id)
+    l = db.nodes.on(db.svcmon.mon_vmname==db.nodes.node_id)
+    rows = db(q).select(left=l, cacheable=True)
     if encap:
-        nodes = [r.mon_vmname for r in rows if r.mon_vmname != "" and r.mon_vmname is not None]
-        f = "mon_vmname"
+        node_ids = [r.nodes.node_id for r in rows if r.nodes.node_id is not None]
     else:
-        nodes = [r.mon_nodname for r in rows]
-        f = "mon_nodname"
-    nodes = list(set(nodes))
-    nodes.sort()
-    n = len(nodes)
+        node_ids = [r.svcmon.node_id for r in rows]
+    node_ids = list(set(node_ids))
+    node_ids.sort()
+    n = len(node_ids)
 
     if n < 2:
         return
@@ -3830,29 +3801,27 @@ def show_rsetdiff(svcname, encap=False):
             select t.* from
             (
              select
-               count(distinct rn.nodename) as n,
-               group_concat(distinct rn.nodename) as nodes,
+               count(distinct rn.node_id) as n,
+               group_concat(distinct rn.node_id) as nodes,
                rs.ruleset_name as ruleset
              from
                comp_rulesets_nodes rn,
-               svcmon m,
                comp_rulesets rs
              where
-               m.mon_svcname="%(svcname)s" and
-               m.%(f)s=rn.nodename and
-               rn.ruleset_id=rs.id
+               rn.ruleset_id=rs.id and
+               rn.node_id in (%(node_ids)s)
              group by
                ruleset_name
              order by
                ruleset_name
             ) t
             where t.n != %(n)d
-    """%dict(svcname=svcname, n=n, f=f)
+    """%dict(node_ids=','.join(map(repr, node_ids)), n=n)
     _rows = db.executesql(sql)
 
-    return _show_rsetdiff(nodes, n, _rows)
+    return _show_rsetdiff(node_ids, n, _rows)
 
-def _show_rsetdiff(nodes, n, _rows, objtype="Nodes"):
+def _show_rsetdiff(node_ids, n, _rows, objtype="Nodes"):
     if len(_rows) == 0:
         return
 
@@ -3864,9 +3833,13 @@ def _show_rsetdiff(nodes, n, _rows, objtype="Nodes"):
 
     def fmt_header2():
         h = [TH(T("Ruleset"))]
-        for node in nodes:
+        for node_id in node_ids:
+            if objtype=="Nodes":
+                name = get_node(node_id).nodename
+            else:
+                name = get_svc(node_id).svcname
             h.append(TH(
-              node.split('.')[0],
+              name,
               _style="text-align:center",
             ))
         return TR(h)
@@ -3874,8 +3847,8 @@ def _show_rsetdiff(nodes, n, _rows, objtype="Nodes"):
     def fmt_line(row, bg):
         h = [TD(row[2])]
         l = row[1].split(',')
-        for node in nodes:
-            if node in l:
+        for node_id in node_ids:
+            if node_id in l:
                 h.append(TD(
                   IMG(_src=URL(r=request,c='static',f='images/attach16.png')),
                   _style="text-align:center",

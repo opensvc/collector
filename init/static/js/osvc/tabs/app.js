@@ -110,7 +110,7 @@ function app_properties(divid, options) {
 				"request_service": "R_APP_SERVICES",
 				"request_parameters": [data.id],
 				"limit": "50",
-				"key": "svc_name",
+				"key": "svcname",
 				"title": "app_properties.services",
 				"item_class": "svc",
 				"e_title": o.info_services_title,

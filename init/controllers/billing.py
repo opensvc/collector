@@ -176,8 +176,8 @@ def billing_data():
     if not agents_billing_method:
         # nodes with services
         q = db.svcmon.id > 0
-        rows = db(q).select(db.svcmon.mon_nodname, groupby=db.svcmon.mon_nodname)
-        data['agents_with_svc'] = [r.mon_nodname for r in rows]
+        rows = db(q).select(db.svcmon.node_id, groupby=db.svcmon.node_id)
+        data['agents_with_svc'] = [r.node_id for r in rows]
     else:
         data['agents_with_svc'] = []
 
@@ -185,65 +185,67 @@ def billing_data():
     # nodes with opensvc and no services
     q = db.nodes.version != None
     q &= db.nodes.updated > datetime.datetime.now()-datetime.timedelta(days=7)
-    rows = db(q).select(db.nodes.nodename)
-    data['agents_with_agent'] = [r.nodename for r in rows]
+    rows = db(q).select(db.nodes.node_id)
+    data['agents_with_agent'] = [r.node_id for r in rows]
     data['agents_without_svc'] = set(data['agents_with_agent']) - set(data['agents_with_svc'])
 
     #
     q = db.nodes.host_mode == 'PRD'
     if len(data['agents_without_svc']) > 0:
-        q &= db.nodes.nodename.belongs(data['agents_without_svc'])
-    q = apply_filters(q, db.nodes.nodename, None)
-    rows = db(q).select(db.nodes.nodename, db.nodes.os_name)
+        q &= db.nodes.node_id.belongs(data['agents_without_svc'])
+    q = apply_filters_id(q, db.nodes.node_id, None)
+    rows = db(q).select(db.nodes.node_id, db.nodes.os_name)
     agents_without_svc_prd = {}
     for row in rows:
         if row.os_name not in agents_without_svc_prd:
-            agents_without_svc_prd[row.os_name] = [row.nodename]
+            agents_without_svc_prd[row.os_name] = [row.node_id]
         else:
-            agents_without_svc_prd[row.os_name] += [row.nodename]
+            agents_without_svc_prd[row.os_name] += [row.node_id]
     data['agents_without_svc_prd'] = agents_without_svc_prd
 
     #
     q = db.nodes.host_mode != 'PRD'
     if len(data['agents_without_svc']) > 0:
-        q &= db.nodes.nodename.belongs(data['agents_without_svc'])
-    q = apply_filters(q, db.nodes.nodename, None)
-    rows = db(q).select(db.nodes.nodename, db.nodes.os_name)
+        q &= db.nodes.node_id.belongs(data['agents_without_svc'])
+    q = apply_filters_id(q, db.nodes.node_id, None)
+    rows = db(q).select(db.nodes.node_id, db.nodes.os_name)
     agents_without_svc_nonprd = {}
     for row in rows:
         if row.os_name not in agents_without_svc_nonprd:
-            agents_without_svc_nonprd[row.os_name] = [row.nodename]
+            agents_without_svc_nonprd[row.os_name] = [row.node_id]
         else:
-            agents_without_svc_nonprd[row.os_name] += [row.nodename]
+            agents_without_svc_nonprd[row.os_name] += [row.node_id]
     data['agents_without_svc_nonprd'] = agents_without_svc_nonprd
 
 
     # prd svc
     q = db.services.svc_type == 'PRD'
-    q &= db.svcmon.mon_svcname == db.services.svc_name
-    q &= db.svcmon.mon_nodname == db.nodes.nodename
-    q = apply_filters(q, db.svcmon.mon_nodname, db.svcmon.mon_svcname)
-    rows = db(q).select(db.svcmon.mon_svcname, db.nodes.os_name, groupby=db.services.svc_name)
+    q &= db.svcmon.svc_id == db.services.svc_id
+    q &= db.svcmon.node_id == db.nodes.node_id
+    q = apply_filters_id(q, db.svcmon.node_id, db.svcmon.svc_id)
+    rows = db(q).select(db.svcmon.svc_id, db.nodes.os_name,
+                        groupby=db.services.svc_id)
     svc_prd = {}
     for row in rows:
         if row.nodes.os_name not in svc_prd:
-            svc_prd[row.nodes.os_name] = [row.svcmon.mon_svcname]
+            svc_prd[row.nodes.os_name] = [row.svcmon.svc_id]
         else:
-            svc_prd[row.nodes.os_name] += [row.svcmon.mon_svcname]
+            svc_prd[row.nodes.os_name] += [row.svcmon.svc_id]
     data['svc_prd'] = svc_prd
 
     # !prd svc
     q = db.services.svc_type != 'PRD'
-    q &= db.svcmon.mon_svcname == db.services.svc_name
-    q &= db.svcmon.mon_nodname == db.nodes.nodename
-    q = apply_filters(q, db.svcmon.mon_nodname, db.svcmon.mon_svcname)
-    rows = db(q).select(db.svcmon.mon_svcname, db.nodes.os_name, groupby=db.services.svc_name)
+    q &= db.svcmon.svc_id == db.services.svc_id
+    q &= db.svcmon.node_id == db.nodes.node_id
+    q = apply_filters_id(q, db.svcmon.node_id, db.svcmon.svc_id)
+    rows = db(q).select(db.svcmon.svc_id, db.nodes.os_name,
+                        groupby=db.services.svc_id)
     svc_nonprd = {}
     for row in rows:
         if row.nodes.os_name not in svc_nonprd:
-            svc_nonprd[row.nodes.os_name] = [row.svcmon.mon_svcname]
+            svc_nonprd[row.nodes.os_name] = [row.svcmon.svc_id]
         else:
-            svc_nonprd[row.nodes.os_name] += [row.svcmon.mon_svcname]
+            svc_nonprd[row.nodes.os_name] += [row.svcmon.svc_id]
     data['svc_nonprd'] = svc_nonprd
 
     # fill the blanks and compute total counts

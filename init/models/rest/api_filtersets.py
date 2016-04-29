@@ -729,7 +729,7 @@ class rest_get_filterset_nodes(rest_get_table_handler):
         if id is None:
             return dict(error="filterset not found")
         q = q_filter(app_field=db.nodes.app)
-        q = apply_filters(q, node_field=db.nodes.nodename, fset_id=id)
+        q = apply_filters_id(q, node_field=db.nodes.node_id, fset_id=id)
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -755,7 +755,7 @@ class rest_get_filterset_services(rest_get_table_handler):
         if id is None:
             return dict(error="filterset not found")
         q = q_filter(app_field=db.services.svc_app)
-        q = apply_filters(q, service_field=db.services.svc_name, fset_id=id)
+        q = apply_filters_id(q, svc_field=db.services.svc_id, fset_id=id)
         self.set_q(q)
         return self.prepare_data(**vars)
 
