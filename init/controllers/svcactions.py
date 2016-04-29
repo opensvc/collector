@@ -24,7 +24,7 @@ class table_actions(HtmlTable):
         self.colprops = {
             'svc_id': HtmlTableColumn(
                 table = 'svcactions',
-                field='svcname',
+                field='svc_id',
             ),
             'svcname': HtmlTableColumn(
                 table = 'services',
