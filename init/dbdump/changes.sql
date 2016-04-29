@@ -5983,3 +5983,9 @@ alter table resinfo_log add key k_updated (updated);
 
 alter table comp_log_daily add key k_run_date (run_date);
 
+insert into diskinfo select diskinfo.* from diskinfo,nodes where diskinfo.disk_arrayid=nodes.nodename on duplicate key update diskinfo.disk_arrayid=nodes.node_id;
+
+insert into svcdisks select svcdisks.* from svcdisks, services, apps where svcdisks.app_id is NULL and svcdisks.svc_id=services.svc_id and services.svc_app=apps.app on duplicate key update svcdisks.app_id=apps.id;
+
+insert into svcdisks select svcdisks.* from svcdisks, nodes, apps where svcdisks.app_id is NULL and svcdisks.node_id=nodes.node_id and nodes.app=apps.app on duplicate key update svcdisks.app_id=apps.id;
+
