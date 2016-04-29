@@ -2623,7 +2623,7 @@ function table_init(opts) {
 					"upc_visible": current_state,
 				}
 				if (!current_state) {
-					if (t.options.force_cols.indexOf(c) >=0 ) {
+					if (t.options.force_cols.indexOf(colname) >=0 ) {
 						// don't remove forced columns
 						t.e_table.find("tbody > * > [col="+colname+"]").hide()
 					} else {
