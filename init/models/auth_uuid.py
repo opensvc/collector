@@ -1,4 +1,6 @@
 def node_svc_id(node_id, svcname):
+    if svcname is None:
+        return ""
     svcname = svcname.strip("'")
     if svcname == "" or svcname is None:
         return ""
