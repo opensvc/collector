@@ -78,6 +78,9 @@ class table_nodesan(HtmlTable):
             'node_updated': HtmlTableColumn(
                      field='node_updated',
                     ),
+            'node_id': HtmlTableColumn(
+                     field='node_id',
+                    ),
             'id': HtmlTableColumn(
                      field='id',
                     ),
