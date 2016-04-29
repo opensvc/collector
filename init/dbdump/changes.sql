@@ -5974,3 +5974,12 @@ alter table nodes drop key idx_pivot_os_name;
 alter table nodes add key idx_pivot_os_name (node_id, os_name);
 
 alter table nodes modify column nodename varchar(250) default NULL;
+
+alter table services_log add key k_svc_end (svc_end);
+
+alter table svcmon_log add key k_mon_end (mon_end);
+
+alter table resinfo_log add key k_updated (updated);
+
+alter table comp_log_daily add key k_run_date (run_date);
+
