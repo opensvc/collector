@@ -3,7 +3,11 @@ function sysrep(divid, options) {
 
 	// store parameters
 	o.divid = divid
-	o.nodes = options.node_id
+	if (Array.isArray(options.node_id)) {
+		o.nodes = options.node_id
+	} else {
+		o.nodes = [options.node_id]
+	}
 	o.begin = options.begin
 	o.end = options.end
 	o.path = options.path
