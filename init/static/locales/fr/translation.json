@@ -638,7 +638,7 @@
 		"yes": "oui",
 		"no": "non",
 		"comment": "commentaire",
-		"primary node": "noeud primaire",
+		"primary_node": "noeud primaire",
 		"nodes": "noeuds",
 		"resources": "ressources",
 		"vcpus": "vcpus",

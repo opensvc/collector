@@ -558,7 +558,7 @@
 		"yes": "yes",
 		"no": "no",
 		"comment": "comment",
-		"primary node": "primary node",
+		"primary_node": "primary node",
 		"nodes": "nodes",
 		"resources": "resources",
 		"vcpus": "vcpus",
