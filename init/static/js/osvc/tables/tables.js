@@ -154,7 +154,7 @@ function table_resinfo(divid, options) {
 		'caller': "table_resinfo",
 		'name': "resinfo",
 		'ajax_url': '/init/resinfo/ajax_resinfo',
-		'span': ['svc_id', 'node_id', 'rid'],
+		'span': ['svc_id', 'svcname', 'node_id', 'nodename', 'rid'],
 		'columns': ['id', 'svc_id', 'svcname', 'node_id', 'nodename', 'rid', 'res_key', 'res_value', 'updated'],
 		'default_columns': ['svcname', 'nodename', 'rid', 'res_key', 'res_value', 'updated'],
 		'force_cols': ['id', 'svc_id', 'node_id'],
