@@ -8,7 +8,7 @@ def lib_packages_diff(node_ids=[], svc_ids=[], encap=False):
             q = q_filter(q, svc_field=db.svcmon.svc_id)
             rows = db(q).select(db.nodes.node_id,
                                 groupby=db.nodes.node_id)
-            node_ids = [r.node_id for r in rows]
+            node_ids += [r.node_id for r in rows]
         else:
             q = db.svcmon.svc_id.belongs(svc_ids)
             q = q_filter(q, svc_field=db.svcmon.svc_id)

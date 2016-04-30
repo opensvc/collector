@@ -28,10 +28,25 @@ class rest_get_packages_diff(rest_get_handler):
         )
 
     def handler(self, **vars):
-        node_ids = vars.get("node_ids", "").split(",")
-        svc_ids = vars.get("svc_ids", "").split(",")
+        if "node_ids" in vars:
+            node_ids = vars.get("node_ids", "").split(",")
+        elif "nodes_ids[]" in vars:
+            node_ids = vars.get("node_ids[]", [])
+            if not type(node_ids) == list:
+                node_ids = [node_ids]
+        else:
+            node_ids = []
+
+        if "svc_ids" in vars:
+            svc_ids = vars.get("svc_ids", "").split(",")
+        elif "svc_ids[]" in vars:
+            svc_ids = vars.get("svc_ids[]", [])
+            if not type(svc_ids) == list:
+                svc_ids = [svc_ids]
+        else:
+            svc_ids = []
+
         encap = vars.get("encap", False)
         data = lib_packages_diff(node_ids=node_ids, svc_ids=svc_ids, encap=encap)
-        nodenames = sorted(list(set([ r["node_id"] for r in data ])))
         return dict(data=data, meta={"node_ids": node_ids})
 

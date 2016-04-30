@@ -192,7 +192,7 @@ function service_tabs(divid, options) {
 			"title_class": "icon pkg16"
 		})
 		o.tabs[i].callback = function(divid) {
-			svc_pkgdiff(divid, {"svcnames": o.options.svc_id})
+			svc_pkgdiff(divid, {"svc_ids": o.options.svc_id})
 		}
 
 		// tab compliance
