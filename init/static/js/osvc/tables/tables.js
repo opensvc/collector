@@ -166,6 +166,22 @@ function table_resinfo(divid, options) {
 	return table_init(_options)
 }
 
+function table_resinfo_svc(divid, svc_id) {
+	var id = "resinfo_" + svc_id.replace(/-/g, "")
+	var f_svc_id = id+"_f_svc_id"
+	var perpage = id+"_perpage"
+	var request_vars = {}
+	request_vars[f_svc_id] = svc_id
+	request_vars["perpage"] = 0
+	return table_resinfo(divid, {
+		"id": id,
+		"caller": "table_resinfo_svc",
+		"request_vars": request_vars,
+		"volatile_filters": true
+	})
+}
+
+
 function table_apps(divid, options) {
 	var defaults = {
 		'divid': divid,

@@ -708,8 +708,9 @@
 		"netdev_err": "Network devices errors"
 	},
 	"service_tabs": {
-		"status": "status",
-		"resources": "resources",
+		"status": "instances status",
+		"resources": "resources status",
+		"resinfo": "resources info",
 		"actions": "actions",
 		"log": "log",
 		"env": "env",

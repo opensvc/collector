@@ -40,10 +40,19 @@ function service_tabs(divid, options) {
 		// tab resources
 		i = o.register_tab({
 			"title": "service_tabs.resources",
-			"title_class": "icon svc"
+			"title_class": "icon resource"
 		})
 		o.tabs[i].callback = function(divid) {
 			table_resources_svc(divid, o.options.svc_id)
+		}
+
+		// tab resources info
+		i = o.register_tab({
+			"title": "service_tabs.resinfo",
+			"title_class": "icon resource"
+		})
+		o.tabs[i].callback = function(divid) {
+			table_resinfo_svc(divid, o.options.svc_id)
 		}
 
 		// tab actions

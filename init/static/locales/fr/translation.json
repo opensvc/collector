@@ -702,8 +702,9 @@
 		"netdev_err": "Erreurs des interfaces réseau"
 	},
 	"service_tabs": {
-		"status": "états",
-		"resources": "ressources",
+		"status": "instances, état",
+		"resources": "ressources, état",
+		"resinfo": "ressources, info",
 		"actions": "actions",
 		"log": "journal",
 		"env": "env",
