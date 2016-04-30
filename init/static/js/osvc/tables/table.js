@@ -1118,13 +1118,46 @@ function table_init(opts) {
 		return s
 	}
 
+	t.last_checkbox_clicked = null
+
+	t.checkbox_click = function(e) {
+		var ref_id = $(e.target).attr("id")
+		if (e.shiftKey && t.last_checkbox_clicked) {
+			var cbs = t.div.find("input[name="+t.id+"_ck]")
+			var start = -1
+			var end = -1
+			for (var i=0; i<cbs.length; i++) {
+				var cb = $(cbs[i])
+				if ((cb.attr("id")!=ref_id) && (cb.attr("id")!=t.last_checkbox_clicked)) {
+					continue
+				}
+				if (start < 0) {
+					start = i
+				} else {
+					end = i
+				}
+			}
+			// at least one checkbox between start and end
+			for (var i=start+1; i<end; i++) {
+				var cb = $(cbs[i])
+				cb.prop("checked", !cb.prop("checked"))
+			}
+		}
+		t.last_checkbox_clicked = ref_id
+	}
+
 	t.data_to_lines = function (data) {
 		var lines = $("<span></span>")
 		for (var i=0; i<data.length; i++) {
 			var line = $("<tr class='tl h' spansum='"+data[i]['spansum']+"' cksum='"+data[i]['cksum']+"'></tr>")
 			var ckid = t.id + "_ckid_" + data[i]['cksum']
 			if (t.options.checkboxes) {
-				line.append("<td name='"+t.id+"_tools' class='tools'><input class='ocb' value='"+data[i]['checked']+"' type='checkbox' id='"+ckid+"' name='"+t.id+"_ck'><label for='"+ckid+"'></label></td>")
+				var cb = $("<input class='ocb' value='"+data[i]['checked']+"' type='checkbox' id='"+ckid+"' name='"+t.id+"_ck'>")
+				var label = $("<label for='"+ckid+"'></label>")
+				var td = $("<td name='"+t.id+"_tools' class='tools'></td>")
+				td.append([cb, label])
+				line.append(td)
+				cb.bind("click", t.checkbox_click)
 			}
 			if (t.options.extrarow) {
 				var k = "extra"

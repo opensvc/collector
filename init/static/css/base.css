@@ -301,6 +301,13 @@ input.aci, input.aci:focus {
 	height: 2em;
 }
 
+.tools > label {
+	user-select: none; /* CSS3 (little to no support) */
+	-ms-user-select: none; /* IE 10+ */
+	-moz-user-select: none; /* Gecko (Firefox) */
+	-webkit-user-select: none; /* Webkit (Safari, Chrome) */
+}
+
 .tools {
 	background: rgb(95, 158, 160);
 	cursor: context-menu;
