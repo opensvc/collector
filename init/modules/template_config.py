@@ -3,6 +3,12 @@
 
 http_host = "opensvc.mydomain.com"
 
+# mail sending configuration
+mail_server = "localhost:25"
+mail_sender = "admin@opensvc.com"
+mail_tls = False
+mail.settings.login = 'username:password'
+
 # time between relogin, in seconds
 session_expire = 36000000
 

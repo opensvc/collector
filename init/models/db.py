@@ -179,11 +179,17 @@ service=Service(globals())                   # for json, xml, jsonrpc, xmlrpc, a
 # auth.settings.registration_requires_approval = True
 # auth.messages.verify_email = \
 #  'Click on the link http://.../user/verify_email/%(key)s to verify your email'
+mail_server = config_get("mail_server", "localhost:25")
+mail_sender = config_get("mail_sender", "admin@opensvc.com")
+mail_login = config_get("mail_login", None)
+mail_tls = config_get("mail_tls", False)
+
 mail=Mail()
-mail.settings.server='localhost:25'
-mail.settings.sender='admin@opensvc.com'
-mail.settings.tls = False
-auth.settings.mailer=mail
+mail.settings.server = mail_server
+mail.settings.sender = mail_sender
+mail.settings.login = mail_login
+mail.settings.tls = mail_tls
+auth.settings.mailer = mail
 
 default_max_lines = 1000
 default_limitby = (0, default_max_lines)
