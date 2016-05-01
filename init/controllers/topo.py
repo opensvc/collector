@@ -48,6 +48,10 @@ class viz(object):
             return "fr"
         if cn == "united kingdom":
             return "uk"
+        if cn == "canada":
+            return "ca"
+        if cn == "luxembourg":
+            return "lu"
 
     def add_visnode_node(self, visnode_id, visnode_type="", label="", mass=1, image=None, fontColor=None):
         if visnode_type in self.visnode_id_per_type:
@@ -55,12 +59,11 @@ class viz(object):
         else:
             self.visnode_id_per_type[visnode_type] = set([visnode_id])
 
+        group = visnode_type
         if visnode_type == "countries":
             v = self.country_name_to_code(label)
             if v:
                 group = "flag-"+v
-        else:
-            group = visnode_type
 
         d = {
           "mass": 3,
