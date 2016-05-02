@@ -100,8 +100,8 @@ def ajax_log_col_values():
     t = table_log(table_id, 'ajax_log')
     col = request.args[0]
     if t.colprops[col].filter_redirect is None:
-        o = db.log[col]
-        s = [db.log[col]]
+        o = db[t.colprops[col].table][t.colprops[col].field]
+        s = [db[t.colprops[col].table][t.colprops[col].field]]
     else:
         o = db.log[t.colprops[col].filter_redirect]
         s = [db.log.log_fmt, db.log.log_dict]
@@ -130,7 +130,7 @@ def ajax_log():
     f2 = q_filter(q, app_field=db.services.svc_app)
     q &= (f1|f2)
     for f in set(t.cols):
-        q = _where(q, 'log', t.filter_parse(f),  f if t.colprops[f].filter_redirect is None else t.colprops[f].filter_redirect)
+        q = _where(q, t.colprops[f].table, t.filter_parse(f),  f if t.colprops[f].filter_redirect is None else t.colprops[f].filter_redirect)
 
     if len(request.args) == 1 and request.args[0] == 'csv':
         t.csv_q = q
