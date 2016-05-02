@@ -206,16 +206,14 @@ def do_svc_comp_action(node_id, svc_id, action, mode, obj):
         return 0
 
     # filter out services we are not responsible for
-    sql = """select m.os_name
-             from v_svcmon m
-             join apps a on m.svc_app=a.app
+    sql = """select s.svc_id
+             from services s
+             join apps a on s.svc_app=a.app
              join apps_responsibles ar on a.id=ar.app_id
              join auth_group g on ar.group_id=g.id and g.id in (%(gids)s)
              where
-               m.svc_id="%(svc_id)s" and
-               node_id="%(node_id)s" or mon_vmname="%(nodename)s")
-             group by m.node_id, m.svc_id
-          """%dict(nodename=node.nodename, node_id=node_id,
+               s.svc_id="%(svc_id)s"
+          """%dict(node_id=node_id,
                    svc_id=svc_id,
                    gids=",".join(map(lambda x: str(x), user_group_ids())))
     rows = db.executesql(sql, as_dict=True)
@@ -242,15 +240,13 @@ def do_svc_action(node_id, svc_id, action, rid=None):
 
     if not action.startswith("create"):
         # filter out services we are not responsible for
-        sql = """select m.node_id, m.svc_id
-                 from v_svcmon m
-                 join apps a on m.svc_app=a.app
+        sql = """select s.svc_id
+                 from services s
+                 join apps a on s.svc_app=a.app
                  join apps_responsibles ar on a.id=ar.app_id
                  join auth_group g on ar.group_id=g.id and g.id in (%(gids)s)
                  where
-                   m.svc_id="%(svc_id)s" and
-                   (node_id="%(node_id)s" or mon_vmname=(select nodes.nodename from nodes,svcmon where svcmon.mon_vmname=nodes.nodename and nodes.node_id="%(node_id)s"))
-                 group by m.node_id, m.svc_id
+                   s.svc_id="%(svc_id)s"
               """%dict(node_id=node_id,
                        svc_id=svc_id,
                        gids=",".join(map(lambda x: str(x), user_group_ids())))
@@ -260,6 +256,8 @@ def do_svc_action(node_id, svc_id, action, rid=None):
 
     # filter out nodes we are not responsible for
     q = db.nodes.node_id == node_id
+    if action.startswith("create"):
+        q &= db.nodes.app.belongs(user_apps())
     node = db(q).select(db.nodes.node_id, db.nodes.nodename, db.nodes.os_name, db.nodes.action_type, cacheable=True).first()
     if node is None:
         return 0
