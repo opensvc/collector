@@ -23,6 +23,7 @@ function tabs(divid) {
 
 		// empty tabs on click closetab
 		o.closetab.bind("click", function() {
+                        $(this).parents(".extraline").first().remove(); // Remove extraline
 			o.div.parent().remove(); // Remove extraline
 			o.div.remove();
 		})
