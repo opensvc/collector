@@ -279,7 +279,7 @@ def _update_service(vars, vals, auth):
     svc_id = node_svc_id(node_id, svcname)
     h["svc_id"] = svc_id
     if 'svc_app' in h:
-        if h['svc_app'] is None or h['svc_app'] == "" or not common_responsible(node_id=node_id, app=h['svc_app'].strip("'")):
+        if h['svc_app'] is None or h['svc_app'].strip("'") == "" or not common_responsible(node_id=node_id, app=h['svc_app'].strip("'")):
             q = db.nodes.node_id == node_id
             new_app = db(q).select().first().app
             _log("service.change",
@@ -4073,8 +4073,8 @@ def update_dash_action_errors(svc_id, node_id):
     sql = """select e.err, s.svc_type from b_action_errors e
              join services s on e.svc_id=s.svc_id
              where
-               svc_id="%(svc_id)s" and
-               node_id="%(node_id)s"
+               e.svc_id="%(svc_id)s" and
+               e.node_id="%(node_id)s"
           """%dict(svc_id=svc_id, node_id=node_id)
     rows = db.executesql(sql)
 
