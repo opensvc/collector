@@ -46,7 +46,10 @@ def get_svc_id(s):
     if svc:
         return svc.svc_id
     q = db.services.svcname == s
-    q = q_filter(q, app_field=db.services.svc_app)
+    if auth_is_node():
+        q &= db.services.svc_app.belongs(node_responsibles_apps(auth.user.node_id))
+    else:
+        q = q_filter(q, app_field=db.services.svc_app)
     svcs = db(q).select(db.services.svc_id)
     if len(svcs) > 1:
         raise Exception("Multiple services match the '%s' svcname. Use a service id." % s)
