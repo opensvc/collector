@@ -254,11 +254,11 @@ def get_im_queued_node(q):
                l.log_dict,
                u.im_username,
                l.id,
-               l.log_nodename,
+               n.nodename,
                "",
                l.log_level
              from log l
-               join nodes n on l.log_nodename=n.nodename
+               join nodes n on l.node_id=n.node_id
                join auth_group g on n.team_responsible=g.role
                join auth_membership am on am.group_id=g.id
                join auth_user u on am.user_id=u.id
@@ -266,8 +266,8 @@ def get_im_queued_node(q):
                u.im_notifications = 'T' and
                u.im_username is not NULL and
                u.im_log_level+0 <= l.log_level+0 and
-               l.log_svcname is NULL and
-               l.log_nodename is not NULL and
+               l.svc_id = "" and
+               l.node_id != "" and
                l.log_date > date_sub(now(), interval 1 day) and
                l.log_gtalk_sent=0
              group by l.id, u.id
@@ -329,8 +329,8 @@ def get_im_queued_manager(q):
                   u.im_notifications = 'T') t
              where
                t.im_log_level+0 <= l.log_level+0 and
-               l.log_svcname is NULL and
-               l.log_nodename is NULL and
+               l.svc_id = "" and
+               l.node_id = "" and
                l.log_date > date_sub(now(), interval 1 day) and
                l.log_gtalk_sent=0
              group by l.id, t.im_username
@@ -379,20 +379,21 @@ def get_im_queued_svc(q):
                l.log_dict,
                u.im_username,
                l.id,
-               l.log_nodename,
-               l.log_svcname,
+               n.nodename,
+               s.svcname,
                l.log_level
              from log l
-               join services s on l.log_svcname=s.svc_name
+               join services s on l.svc_id=s.svc_id
                join apps a on s.svc_app=a.app
                join apps_responsibles ar on a.id=ar.app_id
                join auth_membership am on ar.group_id=am.group_id
                join auth_user u on am.user_id=u.id
+               left join nodes n on l.node_id=n.node_id
              where
                u.im_log_level+0 <= l.log_level+0 and
                u.im_notifications = 'T' and
                u.im_username is not NULL and
-               l.log_svcname is not NULL and
+               l.svc_id != "" and
                l.log_date > date_sub(now(), interval 1 day) and
                l.log_gtalk_sent=0
              group by l.id, u.id
@@ -466,11 +467,11 @@ def get_email_queued_node(q):
                l.log_dict,
                u.email,
                l.id,
-               l.log_nodename,
+               n.nodename,
                "",
                l.log_level
              from log l
-               join nodes n on l.log_nodename=n.nodename
+               join nodes n on l.node_id=n.node_id
                join auth_group g on n.team_responsible=g.role
                join auth_membership am on am.group_id=g.id
                join auth_user u on am.user_id=u.id
@@ -478,8 +479,8 @@ def get_email_queued_node(q):
                u.email_log_level+0 <= l.log_level+0 and
                u.email_notifications = 'T' and
                u.email is not NULL and
-               l.log_svcname is NULL and
-               l.log_nodename is not NULL and
+               l.svc_id = "" and
+               l.node_id != "" and
                l.log_date > date_sub(now(), interval 1 day) and
                l.log_email_sent=0
              group by l.id, u.id
@@ -541,8 +542,8 @@ def get_email_queued_manager(q):
                   u.email_notifications = 'T') t
              where
                t.email_log_level+0 <= l.log_level+0 and
-               l.log_svcname is NULL and
-               l.log_nodename is NULL and
+               l.svc_id = "" and
+               l.node_id = "" and
                l.log_date > date_sub(now(), interval 1 day) and
                l.log_email_sent=0
              group by l.id, t.email
@@ -591,20 +592,21 @@ def get_email_queued_svc(q):
                l.log_dict,
                u.email,
                l.id,
-               l.log_nodename,
-               l.log_svcname,
+               n.nodename,
+               s.svcname,
                l.log_level
              from log l
-               join services s on l.log_svcname=s.svc_name
+               join services s on l.svc_id=s.svc_id
                join apps a on s.svc_app=a.app
                join apps_responsibles ar on a.id=ar.app_id
                join auth_membership am on ar.group_id=am.group_id
                join auth_user u on am.user_id=u.id
+               left join nodes n on l.node_id=n.node_id
              where
                u.email_log_level+0 <= l.log_level+0 and
                u.email_notifications = 'T' and
                u.email is not NULL and
-               l.log_svcname is not NULL and
+               l.svc_id != "" and
                l.log_date > date_sub(now(), interval 1 day) and
                l.log_email_sent=0
              group by l.id, u.id
