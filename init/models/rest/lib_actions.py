@@ -18,8 +18,8 @@ def update_dash_action_errors(svc_id, node_id):
     sql = """select e.err, s.svc_type from b_action_errors e
              join services s on e.svc_id=s.svc_id
              where
-               svc_id="%(svc_id)s" and
-               node_id="%(node_id)s"
+               e.svc_id="%(svc_id)s" and
+               e.node_id="%(node_id)s"
           """%dict(svc_id=svc_id, node_id=node_id)
     rows = db.executesql(sql)
 
