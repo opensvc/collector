@@ -114,7 +114,7 @@ def get_queued():
     if conn is None:
         return []
     cursor = conn.cursor()
-    cursor.execute("SELECT a.id, a.command, a.action_type, a.connect_to, n.fqdn, n.listener_port, a.form_id FROM action_queue a join nodes n on a.nodename=n.nodename where a.status='W'")
+    cursor.execute("SELECT a.id, a.command, a.action_type, a.connect_to, n.fqdn, n.listener_port, a.form_id FROM action_queue a join nodes n on a.node_id=n.node_id where a.status='W'")
     cmds = []
     ids = []
     invalid_ids = []
