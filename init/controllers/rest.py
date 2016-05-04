@@ -577,6 +577,7 @@ def get_post_handlers(prefix=None):
              "rest_post_compliance_ruleset_ruleset",
              "rest_post_compliance_ruleset_variable",
              "rest_post_compliance_ruleset_variables",
+             "rest_post_compliance_rulesets_variables",
              "rest_post_compliance_rulesets_nodes",
              "rest_post_compliance_rulesets_services",
              "rest_post_compliance_rulesets",

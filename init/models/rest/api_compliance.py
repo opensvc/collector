@@ -1055,6 +1055,39 @@ class rest_post_compliance_ruleset_variable(rest_post_handler):
         return rest_get_compliance_ruleset_variable().handler(ruleset_id, var_id)
 
 #
+class rest_post_compliance_rulesets_variables(rest_post_handler):
+    def __init__(self):
+        desc = [
+          "Create a variable in a ruleset",
+          "The user must be responsible for the ruleset.",
+          "The user must be in the CompManager privilege group.",
+          "The updated timestamp is automatically updated.",
+          "The action is logged in the collector's log.",
+        ]
+        examples = [
+          """# curl -u %(email)s -o- -d ruleset_id=10 -d var_name=foo https://%(collector)s/init/rest/api/compliance/rulesets_variables""",
+        ]
+        rest_post_handler.__init__(
+          self,
+          path="/compliance/rulesets_variables",
+          tables=["comp_rulesets_variables"],
+          desc=desc,
+          examples=examples
+        )
+
+    def handler(self, **vars):
+        check_privilege("CompManager")
+        if "ruleset_id" in vars:
+            ruleset_id = int(vars["ruleset_id"])
+            del(vars["ruleset_id"])
+        elif "ruleset_name" in vars:
+            ruleset_id = comp_ruleset_id(vars["ruleset_name"])
+            del(vars["ruleset_name"])
+        else:
+            raise Exception("The 'ruleset_id' or 'ruleset_name' is mandatory")
+        return rest_post_compliance_ruleset_variables().handler(ruleset_id, **vars)
+
+#
 class rest_post_compliance_ruleset_variables(rest_post_handler):
     def __init__(self):
         desc = [
