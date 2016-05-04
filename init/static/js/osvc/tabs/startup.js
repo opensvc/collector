@@ -56,7 +56,7 @@ function startup(divid, options) {
 				input.css({"vertical-align": "text-bottom"})
 				if (!o.options.display && (i == 0)) {
 					input.prop("checked", true)
-					o.options.display = [input.siblings("span").text()]
+					o.options.display = [input.siblings("span").attr("node_id")]
 				} else if (o.options.display.indexOf(node_id) >= 0) {
 					input.prop("checked", true)
 				} else {
@@ -69,15 +69,15 @@ function startup(divid, options) {
 
 				// title
 				var title = $("<span></span>")
-				title.addClass("icon hw16")
+				title.attr("node_id", node_id)
 				title.css({"margin-left": "0.2em"})
-				title.html(osvc_nodename(node_id))
 
 				// container div
 				var d = $("<div class='nowrap'></div>")
 				d.append(input)
 				d.append(label)
 				d.append(title)
+				title.osvc_nodename()
 
 				d.insertBefore(o.div.find("input[type=submit]"))
 			}
@@ -88,7 +88,7 @@ function startup(divid, options) {
 				o.config.empty()
 				o.options.display = []
 				$(this).find("input:checked").each(function () {
-					o.options.display.push($(this).siblings("span").text())
+					o.options.display.push($(this).siblings("span").attr("node_id"))
 				})
 				o.draw()
 			})
@@ -104,7 +104,7 @@ function startup(divid, options) {
 	o.create_link = function(){
 		var display = []
 			o.div.find("input[type=checkbox][name=node_id]:checked").each(function() {
-			display.push($(this).siblings("span").text())
+			display.push($(this).siblings("span").attr("node_id"))
 		})
 		o.options.display = display
 		osvc_create_link("startup", o.options)

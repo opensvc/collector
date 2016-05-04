@@ -271,6 +271,9 @@ jQuery.fn.osvc_nodename = function(options) {
 	}
 	$(this).each(function(){
 		var o = $(this)
+		if (o.is("[rendered]")) {
+			return
+		}
 		var node_id = o.attr("node_id")
 		if (!node_id) {
 			return
@@ -280,7 +283,7 @@ jQuery.fn.osvc_nodename = function(options) {
 			var e_app = $("<span class='app16 icon_fixed_width'>"+jd.data[0].app+"</span>")
 			o.html([e_nodename, " ", e_app])
 			o.prop("title", node_id)
-			o.removeAttr("node_id")
+			o.attr("rendered", "")
 			o.tooltipster()
 			if (options.callback) {
 				options.callback()
@@ -295,6 +298,9 @@ jQuery.fn.osvc_svcname = function(options) {
 	}
 	$(this).each(function(){
 		var o = $(this)
+		if (o.is("[rendered]")) {
+			return
+		}
 		var svc_id = o.attr("svc_id")
 		if (!svc_id) {
 			return
@@ -304,7 +310,7 @@ jQuery.fn.osvc_svcname = function(options) {
 			var e_app = $("<span class='app16 icon_fixed_width'>"+jd.data[0].svc_app+"</span>")
 			o.html([e_svcname, " ", e_app])
 			o.prop("title", svc_id)
-			o.removeAttr("svc_id")
+			o.attr("rendered", "")
 			o.tooltipster()
 			if (options.callback) {
 				options.callback()

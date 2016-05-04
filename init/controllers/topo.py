@@ -1347,7 +1347,12 @@ def json_startup_data():
 
         if hv is None:
             for container in encapnodes:
-                _nodes, _edges, vis_node_ids, node_tail = do_node(container, vis_node_ids, node_tail, hv=node_id, show_disabled=show_disabled)
+                q = db.nodes.nodename == container
+                q &= db.nodes.app.belongs(node_responsibles_apps(node_id))
+                container_node = db(q).select().first()
+                if container_node is None:
+                    continue
+                _nodes, _edges, vis_node_ids, node_tail = do_node(container_node.node_id, vis_node_ids, node_tail, hv=node_id, show_disabled=show_disabled)
                 data["nodes"] += _nodes
                 data["edges"] += _edges
 
