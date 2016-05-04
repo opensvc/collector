@@ -93,6 +93,7 @@ class table_actions(HtmlTable):
         }
         cp = nodes_colprops
         del(cp['status'])
+        del(cp['id'])
         self.colprops.update(cp)
         self.colprops.update(services_colprops)
         ncols = nodes_cols
