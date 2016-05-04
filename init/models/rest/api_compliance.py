@@ -1040,15 +1040,16 @@ class rest_post_compliance_ruleset_variable(rest_post_handler):
             return dict(error="variable not found")
         q = db.comp_rulesets_variables.ruleset_id == ruleset_id
         q &= db.comp_rulesets_variables.id == var_id
-        if db(q).count() == 0:
-            return dict(error="this variable name already exists")
+        row = db(q).select().first()
+        if row is None:
+            return dict(error="this variable does not exists")
         vars["var_updated"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         vars["var_author"] = user_name()
         vars["ruleset_id"] = ruleset_id
         db(q).update(**vars)
         _log('compliance.ruleset.variable.change',
              'changed properties %(data)s',
-             dict(data=str(vars)),
+             dict(data=beautify_change(row, vars)),
         )
         l = {
           'event': 'comp_rulesets_variables_change',
@@ -1133,7 +1134,7 @@ class rest_post_compliance_ruleset_variables(rest_post_handler):
         obj_id = db.comp_rulesets_variables.insert(**vars)
         _log('compliance.ruleset.variable.create',
              'properties %(data)s',
-             dict(data=str(vars)),
+             dict(data=beautify_data(vars)),
         )
         l = {
           'event': 'comp_rulesets_variables_change',
