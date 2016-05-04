@@ -49,6 +49,7 @@ function forms() {
 function form(divid, options) {
 	var o = {}
 	o.options = options
+	o.results = {}
 	o.fn_triggers = {}
 	o.fn_triggers_signs = []
 	o.fn_trigger_last = {}
@@ -685,6 +686,10 @@ function form(divid, options) {
 			if (jd.data) {
 				o.result.append("<pre>"+JSON.stringify(jd.data, null, 4)+"</pre>")
                         }
+			if (output.Id) {
+				// store the result for other outputs benefits
+				o.results[output.Id] = jd.data
+			}
 		},
 		function(xhr, stat, error) {
 			return services_ajax_error_fmt(xhr, stat, error)
@@ -695,7 +700,7 @@ function form(divid, options) {
 		var path = subst_refs_from_data(data, output.Function)
 		if (output.Mangle) {
 			eval("var mangle="+output.Mangle)
-			data = mangle(data)
+			data = mangle(data, o.results)
 			console.log("data after mangle", data)
 		}
 		if (typeof(data) === "string") {
@@ -814,6 +819,7 @@ function form(divid, options) {
 			o.result.empty()
 			var data = o.form_to_data()
 			o.need_submit_form_data = false
+			o.results = {}
 			for (var i=0; i<o.form_data.form_definition.Outputs.length; i++) {
 				var output = o.form_data.form_definition.Outputs[i]
 				o.submit_output(output, data)
