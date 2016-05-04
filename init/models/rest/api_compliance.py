@@ -252,6 +252,9 @@ class rest_post_compliance_rulesets(rest_post_handler):
         data = rest_get_compliance_ruleset().handler(ruleset_name)
         if "data" in data and len(data["data"]) == 1:
             del(vars["ruleset_name"])
+            if len(vars) == 0:
+                data["info"] = "No fields to update"
+                return data
             return rest_post_compliance_ruleset().handler(ruleset_name, **vars)
         else:
             obj_id = create_ruleset(ruleset_name)
