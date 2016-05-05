@@ -1,7 +1,7 @@
-function tags(data) {
+function tags(options) {
 	var o = {}
-	o.div = $("#"+data.tid)
-	o.data = data
+	o.div = $("#"+options.tid)
+	o.options = options
 
 	o.load = function() {
 		// init error display zone
@@ -17,8 +17,8 @@ function tags(data) {
 			"limit": "0",
 			"props": "id,tag_name"
 		}
-		if ("prefix" in o.data) {
-			options["query"] = "tag_name starts with " + o.data.prefix
+		if ("prefix" in o.options) {
+			options["query"] = "tag_name starts with " + o.options.prefix
 		}
 		services_osvcgetrest(o.url, o.url_params, options, function(_data) {
 			spinner_del(o.div.info)
@@ -27,14 +27,14 @@ function tags(data) {
 				return
 			}
 			_data = _data.data
-			if ((_data.length == 0) && o.data.candidates) {
+			if ((_data.length == 0) && o.options.candidates) {
 				o.div.info.text(i18n.t("tags.no_candidates"))
 			}
 			d = $("<div name='tag_container'></div>")
 			for (i=0; i<_data.length; i++) {
 				d.append(o.add_tag(_data[i]), " ")
 			}
-			if (o.data.responsible && o.data.candidates != true) {
+			if (o.options.responsible && o.options.candidates != true) {
 				d.append(o.add_add_tag())
 				d.append(o.add_del_tag())
 			}
@@ -49,7 +49,7 @@ function tags(data) {
 	}
 
 	o.add_tag = function(tag_data) {
-		if (o.data.candidates == true) {
+		if (o.options.candidates == true) {
 			cl = "icon tag tag_candidate"
 		} else {
 			cl = "icon tag tag_attached"
@@ -57,18 +57,18 @@ function tags(data) {
 		s = "<span tag_id='"+tag_data.id+"' class='"+cl+"'>"+tag_data.tag_name+" </span>"
 		e = $(s)
 		e.bind("mouseover", function(){
-			if (o.data.responsible && o.data.candidates != true) {
+			if (o.options.responsible && o.options.candidates != true) {
 				$(this).addClass("tag_drag")
 			}
 		})
 		e.bind("mouseout", function(){
-			if (o.data.responsible && o.data.candidates != true) {
+			if (o.options.responsible && o.options.candidates != true) {
 				$(this).removeClass("tag_drag")
 			}
 		})
 		e.bind("click", function(event){
 			event.stopPropagation()
-			if (!o.data.responsible) {
+			if (!o.options.responsible) {
 				return
 			}
 			if ($(this).hasClass("tag_candidate")) {
@@ -85,14 +85,14 @@ function tags(data) {
 		return e
 	}
 
-	o.del_tag = function(data) {
+	o.del_tag = function(tag_data) {
 		o.div.find("[tag_id="+tag_data.tag_id+"].tag").hide("fade", function(){
 			$(this).remove()
 		})
 	}
 
 	o.add_add_tag = function() {
-		if (o.data.candidates) {
+		if (o.options.candidates) {
 			return
 		}
 		e = $("<span class='icon tag_add'></span>")
@@ -118,7 +118,7 @@ function tags(data) {
 	}
 
 	o.add_del_tag = function() {
-		if (o.data.candidates) {
+		if (o.options.candidates) {
 			return
 		}
 		e = $("<span class='icon tag_del'></span>")
@@ -144,32 +144,32 @@ function tags(data) {
 		prefix = encodeURIComponent(prefix)
 
 		// 1st candidates exec: init a new tag object
-		ctid = o.data.tid+"c"
-		data = {
+		ctid = o.options.tid+"c"
+		options = {
 			"tid": ctid,
-			"responsible": o.data.responsible,
+			"responsible": o.options.responsible,
 			"parent_object": o,
 			"prefix": prefix,
 			"candidates": true
 		}
-		if ("node_id" in o.data) {
-			data.node_id = o.data.node_id
-		} else if ("svc_id" in o.data) {
-			data.svc_id = o.data.svc_id
+		if ("node_id" in o.options) {
+			options.node_id = o.options.node_id
+		} else if ("svc_id" in o.options) {
+			options.svc_id = o.options.svc_id
 		}
 		o.div.find("#"+ctid).parent().remove()
 		e = $("<span><h3>"+i18n.t("tags.candidates")+"</h3><div id='"+ctid+"' class='tags'></div></span>")
 		o.div.append(e)
-		o.candidates = tags(data)
+		o.candidates = tags(options)
 	}
 
 	o._attach_tag = function(tag_data) {
-		if ("node_id" in o.data) {
+		if ("node_id" in o.options) {
 			url = "R_TAG_NODE"
-			url_params = [tag_data.id, o.data.node_id]
-		} else if ("svc_id" in o.data) {
+			url_params = [tag_data.id, o.options.node_id]
+		} else if ("svc_id" in o.options) {
 			url = "R_TAG_SERVICE"
-			url_params = [tag_data.id, o.data.svc_id]
+			url_params = [tag_data.id, o.options.svc_id]
 		} else {
 			return
 		}
@@ -182,9 +182,9 @@ function tags(data) {
 				return
 			}
 			// refresh tags
-			if (o.data.parent_object) {
+			if (o.options.parent_object) {
 				o.div.parent().remove()
-				o.data.parent_object.load()
+				o.options.parent_object.load()
 			} else {
 				o.load()
 			}
@@ -232,12 +232,12 @@ function tags(data) {
 		o.div.info.empty()
 		tag.hide()
 		spinner_add(o.div.info, i18n.t("tags.detaching"))
-		if ("node_id" in o.data) {
+		if ("node_id" in o.options) {
 			url = "R_TAG_NODE"
-			url_params = [tag.attr("tag_id"), o.data.node_id]
-		} else if ("svc_id" in o.data) {
+			url_params = [tag.attr("tag_id"), o.options.node_id]
+		} else if ("svc_id" in o.options) {
 			url = "R_TAG_SERVICE"
-			url_params = [tag.attr("tag_id"), o.data.svc_id]
+			url_params = [tag.attr("tag_id"), o.options.svc_id]
 		} else {
 			return
 		}
@@ -258,7 +258,7 @@ function tags(data) {
 
 	o.bind_admin_tools = function() {
 		// show tag admin tools to responsibles and managers
-		if (o.data.responsible) {
+		if (o.options.responsible) {
 			o._bind_admin_tools()
 			return
 		}
@@ -278,19 +278,19 @@ function tags(data) {
 	}
 
 	o.event_handler = function(data) {
-		if (o.data.candidates == true) {
+		if (o.options.candidates == true) {
 			return
 		}
 		if (!("data" in data)) {
 			return
 		} 
 		data = data.data
-		if (o.data.node_id) {
-			if (!data.node_id || (o.data.node_id != data.node_id)) {
+		if (o.options.node_id) {
+			if (!data.node_id || (o.options.node_id != data.node_id)) {
 				return
 			}
-		} else if (o.data.svc_id) {
-			if (!data.svc_id || (o.data.svc_id != data.svc_id)) {
+		} else if (o.options.svc_id) {
+			if (!data.svc_id || (o.options.svc_id != data.svc_id)) {
 				return
 			}
 		}
@@ -305,7 +305,7 @@ function tags(data) {
 				"id": data.tag_id,
 				"tag_name": data.tag_name
 			}))
-		} else if (data["action"] == "detach") {
+		} else if (data.action == "detach") {
 			o.del_tag({
 				"tag_id": data.tag_id,
 			})
@@ -323,34 +323,34 @@ function tags(data) {
 	}
 
 
-	if (("candidates" in data) && ("node_id" in data)) {
+	if (("candidates" in options) && ("node_id" in options)) {
 		o.url = "R_NODE_CANDIDATE_TAGS"
-		o.url_params = [data.node_id]
-	} else if (("candidates" in data) && ("svc_id" in data)) {
+		o.url_params = [options.node_id]
+	} else if (("candidates" in options) && ("svc_id" in options)) {
 		o.url = "R_SERVICE_CANDIDATE_TAGS"
-		o.url_params = [data.svc_id]
-	} else if ("node_id" in data) {
+		o.url_params = [options.svc_id]
+	} else if ("node_id" in options) {
 		o.url = "R_NODE_TAGS"
-		o.url_params = [data.node_id]
-	} else if ("svc_id" in data) {
+		o.url_params = [options.node_id]
+	} else if ("svc_id" in options) {
 		o.url = "R_SERVICE_TAGS"
-		o.url_params = [data.svc_id]
+		o.url_params = [options.svc_id]
 	} else {
 		return
 	}
 
-	wsh["tags_"+o.data.tid] = function(data) {
+	wsh["tags_"+o.options.tid] = function(data) {
 		o.event_handler(data)
 	}
 
-	if (o.data.node_id) {
-		services_osvcgetrest("R_NODE_AM_I_RESPONSIBLE", [o.data.node_id], "", function(jd) {
-			o.data.responsible = jd.data
+	if (o.options.node_id) {
+		services_osvcgetrest("R_NODE_AM_I_RESPONSIBLE", [o.options.node_id], "", function(jd) {
+			o.options.responsible = jd.data
 			o.load()
 		})
-	} else if (o.data.svc_id) {
-		services_osvcgetrest("R_SERVICE_AM_I_RESPONSIBLE", [o.data.svc_id], "", function(jd) {
-			o.data.responsible = jd.data
+	} else if (o.options.svc_id) {
+		services_osvcgetrest("R_SERVICE_AM_I_RESPONSIBLE", [o.options.svc_id], "", function(jd) {
+			o.options.responsible = jd.data
 			o.load()
 		})
 	}
