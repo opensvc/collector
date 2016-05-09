@@ -777,6 +777,21 @@ function cell_decorator_username(e) {
   })
 }
 
+function cell_decorator_safe_file(e) {
+  var uuid = $.data(e, "v")
+  if ((uuid=="") || (uuid=="empty")) {
+    return
+  }
+  $(e).empty()
+  $(e).append("<div class='a nowrap trunc20'>"+uuid+"</div>")
+  $(e).addClass("corner")
+  $(e).click(function(){
+    if (get_selected() != "") {return}
+    var id = toggle_extraline(e)
+    safe_file_tabs(id, {"uuid": uuid})
+  })
+}
+
 function cell_decorator_svcname(e) {
   var v = $.data(e, "v")
   var line = $(e).parent(".tl")
@@ -1965,6 +1980,7 @@ cell_decorators = {
  "user_id": cell_decorator_user_id,
  "username": cell_decorator_username,
  "groups": cell_decorator_groups,
+ "safe_file": cell_decorator_safe_file,
  "nodename": cell_decorator_nodename,
  "nodename_no_os": cell_decorator_nodename_no_os,
  "svc_action_err": cell_decorator_svc_action_err,

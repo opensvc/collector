@@ -135,6 +135,7 @@ colprops = {
 		"title": "Name"
 	},
 	"uuid": {
+		"_class": "safe_file",
 		"img": "safe16",
 		"title": "Unique id"
 	},

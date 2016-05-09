@@ -18,8 +18,44 @@ function safe_file_tabs(divid, options) {
 			safe_file_properties(divid, o.options)
 		}
 
+		// tab content
+		i = o.register_tab({
+			"title": "safe_file_tabs.content",
+			"title_class": "icon log16"
+		})
+		o.tabs[i].callback = function(divid) {
+			safe_file_content(divid, o.options)
+		}
+
 		o.set_tab(o.options.tab)
 	})
+	return o
+}
+
+function safe_file_content(divid, options) {
+	var o = {}
+
+	// store parameters
+	o.divid = divid
+	o.div = $("#"+divid)
+	o.options = options
+
+	o.init = function() {
+		o.div.css({"padding": "1em"})
+		spinner_add(o.div)
+		services_osvcgetrest("/safe/%1/preview", [o.options.uuid], "", function(jd) {
+			spinner_del(o.div)
+			if (jd.error) {
+				o.div.text(jd.error)
+			} else {
+				o.div.addClass("pre")
+				o.div.text(jd.data)
+			}
+		})
+	}
+
+	o.init()
+
 	return o
 }
 
@@ -55,6 +91,7 @@ function safe_file_properties(divid, options) {
 	o._load_form = function(data) {
 		o.info_name.html(data.name)
 		o.info_uuid.html(data.uuid)
+		o.info_uuid.attr("title", data.uuid).tooltipster()
 		o.info_md5.html(data.md5)
 		o.info_size.html(fancy_size_b(data.size))
 		o.info_uploader.html(data.uploader)
