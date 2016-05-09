@@ -73,11 +73,12 @@ def ajax_safe_col_values():
     o = db[t.colprops[col].table][col]
     g = db.v_safe.id
     q = db.v_safe.id > 0
-    q &= db.v_safe.id == db.safe_team_publication.file_id
-    q &= db.safe_team_publication.group_id.belongs(user_group_ids())
+    l = db.safe_team_publication.on(db.v_safe.id == db.safe_team_publication.file_id)
+    if "Manager" not in user_groups():
+        q &= db.safe_team_publication.group_id.belongs(user_group_ids())
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
-    t.object_list = db(q).select(o, orderby=o, groupby=g)
+    t.object_list = db(q).select(o, orderby=o, groupby=g, left=l)
     return t.col_values_cloud_ungrouped(col)
 
 @auth.requires_login()
@@ -88,17 +89,22 @@ def ajax_safe():
     g = db.v_safe.id
 
     q = db.v_safe.id>0
-    q &= db.v_safe.id == db.safe_team_publication.file_id
-    q &= db.safe_team_publication.group_id.belongs(user_group_ids())
+    l = db.safe_team_publication.on(db.v_safe.id == db.safe_team_publication.file_id)
+    if "Manager" not in user_groups():
+        q &= db.safe_team_publication.group_id.belongs(user_group_ids())
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
 
     if len(request.args) == 1 and request.args[0] == 'csv':
         t.csv_q = q
+        t.csv_left = l
+        t.csv_groupby = g
         t.csv_orderby = o
         return t.csv()
     if len(request.args) == 1 and request.args[0] == 'commonality':
         t.csv_q = q
+        t.csv_left = l
+        t.csv_groupby = g
         return t.do_commonality()
     if len(request.args) == 1 and request.args[0] == 'data':
         n = db(q).select(db.v_safe.id.count()).first()._extra[db.v_safe.id.count()]
@@ -106,7 +112,7 @@ def ajax_safe():
         limitby = (t.pager_start,t.pager_end)
         cols = t.get_visible_columns()
         t.object_list = db(q).select(*cols, orderby=o, limitby=limitby,
-                                     groupby=g, cacheable=False)
+                                     groupby=g, left=l, cacheable=False)
         return t.table_lines_data(n, html=False)
 
 
