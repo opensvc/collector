@@ -110,3 +110,24 @@ def lib_safe_download(uuid):
     response.headers['Content-Type'] = c.contenttype(filename)
     response.headers['Content-Disposition'] = "attachment; filename=%s" % filename
     return s.getvalue()
+
+def lib_safe_preview(uuid):
+    lib_safe_check_file_publication(uuid)
+
+    import contenttype as c
+
+    filename, file = db.safe.uuid.retrieve(uuid)
+
+    md5 = lib_safe_md5(file)
+    meta_md5 = db(db.safe.uuid==uuid).select().first().md5
+    if md5 != meta_md5:
+        raise Exception("the file is compromised: current md5 = %s, expected md5 = %s" % (md5, meta_md5))
+
+    data = {}
+    data['content_type'] = c.contenttype(filename)
+    if "text/plain" not in data['content_type']:
+        raise Exception("The file content is not plain text")
+    data["data"] = file.read()
+    return data
+
+

@@ -184,6 +184,31 @@ class rest_get_safe_file_download(rest_get_handler):
         return data
 
 #
+class rest_get_safe_file_preview(rest_get_handler):
+    def __init__(self):
+        desc = [
+          "Preview a file in the collector safe.",
+        ]
+        examples = [
+          """# curl -u %(email)s https://%(collector)s/init/rest/api/safe/1/preview""",
+        ]
+        rest_get_handler.__init__(
+          self,
+          path="/safe/<id>/preview",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, id, **vars):
+        try:
+            id = int(id)
+            uuid = db.safe[id].uuid
+        except:
+            uuid = str(id)
+        data = lib_safe_preview(uuid)
+        return data
+
+#
 # ACL management
 #
 
