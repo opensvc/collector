@@ -1,6 +1,14 @@
 function search_get_menu(fk)
 {
   var menu = {
+    "modulesets": {
+        "tab" : 'moduleset_tabs("__rowid__", {"modset_id": "__id__", "modset_name": "__modset_name__"})',
+        "title": "__modset_name__",
+        "menu_entry_id": "comp-modulesets",
+        "class": "modset16 fa-2x search-section-icon",
+        "subclass": "meta_moduleset clickable",
+        "links": []
+    },
     "rulesets": {
         "tab" : 'ruleset_tabs("__rowid__", {"ruleset_id": "__id__", "ruleset_name": "__ruleset_name__"})',
         "title": "__ruleset_name__",

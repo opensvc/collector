@@ -54,6 +54,8 @@ function modset_properties(divid, options) {
 		o.info_services_title = o.div.find("#services_title")
 		o.info_modulesets = o.div.find("#modulesets")
 		o.info_modulesets_title = o.div.find("#modulesets_title")
+		o.info_publications = o.div.find("#publications")
+		o.info_responsibles = o.div.find("#responsibles")
 		o.load_form()
 	}
 
@@ -104,6 +106,14 @@ function modset_properties(divid, options) {
 			"post": function(_data, callback, error_callback) {
 				services_osvcpostrest("/compliance/modulesets/%1", [data.id], "", _data, callback, error_callback)
 			}
+		})
+		modset_publications({
+			"tid": o.info_publications,
+			"modset_id": data.id
+		})
+		modset_responsibles({
+			"tid": o.info_responsibles,
+			"modset_id": data.id
 		})
 	}
 

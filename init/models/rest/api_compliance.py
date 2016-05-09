@@ -2284,7 +2284,6 @@ class rest_delete_compliance_rulesets_services(rest_delete_handler):
             raise Exception("Either 'ruleset_id' or 'ruleset_name' must be specified")
         return rest_delete_service_compliance_ruleset().handler(svc_id, ruleset_id, **vars)
 
-
 #
 class rest_get_compliance_ruleset_am_i_responsible(rest_get_handler):
     def __init__(self):
@@ -2355,5 +2354,78 @@ class rest_get_compliance_ruleset_responsibles(rest_get_table_handler):
         q &= ruleset_id_q(id)
         self.set_q(q)
         return self.prepare_data(**vars)
+
+
+#
+class rest_get_compliance_moduleset_am_i_responsible(rest_get_handler):
+    def __init__(self):
+        desc = [
+          "- return true if the requester is responsible for this moduleset.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/compliance/modulesets/1/am_i_responsible",
+        ]
+        rest_get_handler.__init__(
+          self,
+          path="/compliance/modulesets/<id>/am_i_responsible",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, modset_id, **vars):
+        return dict(data=moduleset_responsible(modset_id))
+
+#
+class rest_get_compliance_moduleset_publications(rest_get_table_handler):
+    def __init__(self):
+        desc = [
+          "List groups the moduleset is published to.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/compliance/modulesets/1/publications"
+        ]
+
+        rest_get_table_handler.__init__(
+          self,
+          path="/compliance/modulesets/<id>/publications",
+          tables=["auth_group"],
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, id, **vars):
+        q = db.auth_group.id.belongs(user_group_ids())
+        q &= db.comp_moduleset_team_publication.group_id == db.auth_group.id
+        q &= db.comp_moduleset_team_publication.modset_id == db.comp_moduleset.id
+        q &= moduleset_id_q(id)
+        self.set_q(q)
+        return self.prepare_data(**vars)
+
+#
+class rest_get_compliance_moduleset_responsibles(rest_get_table_handler):
+    def __init__(self):
+        desc = [
+          "List groups responsible for the moduleset.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/compliance/modulesets/1/responsibles"
+        ]
+
+        rest_get_table_handler.__init__(
+          self,
+          path="/compliance/modulesets/<id>/responsibles",
+          tables=["auth_group"],
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, id, **vars):
+        q = db.auth_group.id.belongs(user_group_ids())
+        q &= db.comp_moduleset_team_responsible.group_id == db.auth_group.id
+        q &= db.comp_moduleset_team_responsible.modset_id == db.comp_moduleset.id
+        q &= moduleset_id_q(id)
+        self.set_q(q)
+        return self.prepare_data(**vars)
+
 
 

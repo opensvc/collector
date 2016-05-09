@@ -58,6 +58,8 @@ class rest_get_search(rest_get_handler):
             data["metrics"] = lib_search_metric(substring)
         if otype is None or otype == "report":
             data["reports"] = lib_search_report(substring)
+        if otype is None or otype == "modset":
+            data["modulesets"] = lib_search_modulesets(substring)
         if otype is None or otype == "rset":
             data["rulesets"] = lib_search_rulesets(substring)
         return dict(data=data)

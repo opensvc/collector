@@ -391,6 +391,7 @@
 	"search": {
 		"nothing_found" : "Aucun résultat ne répond au critère de recherche.",
 		"menu_header" : {
+			"title_modulesets" : "Jeux de modules",
 			"title_rulesets" : "Jeux de règles",
 			"title_metrics" : "Métriques",
 			"title_charts" : "Courbes",
@@ -512,6 +513,8 @@
 		"export": "export"
 	},
 	"modset_properties": {
+		"publications": "Publications",
+		"responsibles": "Responsables",
 		"nodes": "Attaché aux noeuds",
 		"services": "Attaché aux services",
 		"modules": "Modules",

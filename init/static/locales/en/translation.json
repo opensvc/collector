@@ -397,6 +397,7 @@
 	"search": {
 		"nothing_found" : "No entry found matching filter",
 		"menu_header" : {
+			"title_modulesets" : "Modulesets",
 			"title_rulesets" : "Rulesets",
 			"title_metrics" : "Metrics",
 			"title_charts" : "Charts",
@@ -518,6 +519,8 @@
 		"export": "export"
 	},
 	"modset_properties": {
+		"publications": "Publications",
+		"responsibles": "Responsibles",
 		"nodes": "Attached to nodes",
 		"services": "Attached to services",
 		"modules": "Modules",
