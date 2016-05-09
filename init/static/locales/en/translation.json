@@ -787,6 +787,10 @@
 		"request": "request",
 		"properties": "properties"
 	},
+	"safe_file_tabs": {
+		"properties": "properties",
+		"content": "content"
+	},
 	"form_tabs": {
 		"request": "request",
 		"properties": "properties",
@@ -1161,6 +1165,19 @@
 		"register_text" : "Create a new user",
 		"lost_title" : "Lost Password",
 		"lost_text" : "Send a new password by email"
+	},
+	"safe_file_properties": {
+		"publications": "Publications",
+		"responsibles": "Responsibles",
+		"base": "Base",
+		"upload": "Upload",
+		"uuid": "uuid",
+		"size": "size",
+		"md5": "checksum",
+		"name": "name",
+		"uploader": "uploader",
+		"uploaded_from": "uploaded from",
+		"uploaded_date": "uploaded date"
 	},
 	"app_properties": {
 		"properties": "Properties",

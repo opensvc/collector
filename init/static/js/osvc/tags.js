@@ -626,3 +626,62 @@ function modset_publications(options) {
 }
 
 
+function safe_file_responsibles(options) {
+	options.tag_name = "role"
+	options.get_tags = function(prefix, callback, callback_err) {
+		services_osvcgetrest("/safe/%1/responsibles", [options.uuid], {
+			"props": "id," + options.tag_name,
+			"limit": "0",
+			"meta": "false"
+		}, callback, callback_err)
+	}
+	options.get_candidates = function(prefix, callback, callback_err) {
+		services_osvcgetrest("/groups", "", {
+			"props": "id," + options.tag_name,
+			"limit": "0",
+			"meta": "false",
+			"filters": ["privilege F", options.tag_name+" "+prefix+"%"]
+		}, callback, callback_err)
+	}
+	options.attach = function(tag_data, callback, callback_err) {
+		services_osvcpostrest("/safe/%1/responsibles/%2", [options.uuid, tag_data.id], "", "", callback, callback_err)
+	}
+	options.detach = function(tag, callback, callback_err) {
+		services_osvcdeleterest("/safe/%1/responsibles/%2", [options.uuid, tag.attr("tag_id")], "", "", callback, callback_err)
+	}
+	options.am_i_responsible = function(callback) {
+		services_osvcgetrest("/safe/%1/am_i_responsible", [options.uuid], "", callback)
+	}
+	return tags(options)
+}
+
+function safe_file_publications(options) {
+	options.tag_name = "role"
+	options.get_tags = function(prefix, callback, callback_err) {
+		services_osvcgetrest("/safe/%1/publications", [options.uuid], {
+			"props": "id," + options.tag_name,
+			"limit": "0",
+			"meta": "false"
+		}, callback, callback_err)
+	}
+	options.get_candidates = function(prefix, callback, callback_err) {
+		services_osvcgetrest("/groups", "", {
+			"props": "id," + options.tag_name,
+			"limit": "0",
+			"meta": "false",
+			"filters": ["privilege F", options.tag_name+" "+prefix+"%"]
+		}, callback, callback_err)
+	}
+	options.attach = function(tag_data, callback, callback_err) {
+		services_osvcpostrest("/safe/%1/publications/%2", [options.uuid, tag_data.id], "", "", callback, callback_err)
+	}
+	options.detach = function(tag, callback, callback_err) {
+		services_osvcdeleterest("/safe/%1/publications/%2", [options.uuid, tag.attr("tag_id")], "", "", callback, callback_err)
+	}
+	options.am_i_responsible = function(callback) {
+		services_osvcgetrest("/safe/%1/am_i_responsible", [options.uuid], "", callback)
+	}
+	return tags(options)
+}
+
+

@@ -404,15 +404,19 @@ class rest_get_compliance_modulesets(rest_get_table_handler):
           self,
           path="/compliance/modulesets",
           tables=["comp_moduleset"],
+          left=(
+            db.comp_moduleset_team_publication.on(db.comp_moduleset_team_publication.modset_id==db.comp_moduleset.id),
+            db.auth_group.on(db.comp_moduleset_team_publication.group_id==db.auth_group.id),
+          ),
           groupby=db.comp_moduleset.id,
           desc=desc,
           examples=examples,
         )
 
     def handler(self, **vars):
-        q = db.auth_group.id.belongs(user_group_ids())
-        q &= db.comp_moduleset_team_publication.group_id == db.auth_group.id
-        q &= db.comp_moduleset_team_publication.modset_id == db.comp_moduleset.id
+        q = db.comp_moduleset.id > 0
+        if "Manager" not in user_groups():
+            q &= db.auth_group.id.belongs(user_group_ids())
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -431,16 +435,19 @@ class rest_get_compliance_moduleset(rest_get_line_handler):
           self,
           path="/compliance/modulesets/<id>",
           tables=["comp_moduleset"],
+          left=(
+            db.comp_moduleset_team_publication.on(db.comp_moduleset_team_publication.modset_id==db.comp_moduleset.id),
+            db.auth_group.on(db.comp_moduleset_team_publication.group_id==db.auth_group.id),
+          ),
           groupby=db.comp_moduleset.id,
           desc=desc,
           examples=examples,
         )
 
     def handler(self, id, **vars):
-        q = db.auth_group.id.belongs(user_group_ids())
-        q &= moduleset_id_q(id)
-        q &= db.comp_moduleset_team_publication.group_id == db.auth_group.id
-        q &= db.comp_moduleset_team_publication.modset_id == db.comp_moduleset.id
+        q = moduleset_id_q(id)
+        if "Manager" not in user_groups():
+            q &= db.auth_group.id.belongs(user_group_ids())
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -488,10 +495,11 @@ class rest_get_compliance_modulesets_export(rest_get_handler):
         )
 
     def handler(self, **vars):
-        q = db.auth_group.id.belongs(user_group_ids())
-        q &= db.comp_moduleset.id > 0
+        q = db.comp_moduleset.id > 0
         q &= db.comp_moduleset_team_publication.group_id == db.auth_group.id
         q &= db.comp_moduleset_team_publication.modset_id == db.comp_moduleset.id
+        if "Manager" not in user_groups():
+            q &= db.auth_group.id.belongs(user_group_ids())
         ids = [r.id for r in db(q).select(db.comp_moduleset.id)]
         return _export_modulesets(ids)
 
@@ -510,15 +518,19 @@ class rest_get_compliance_rulesets(rest_get_table_handler):
           self,
           path="/compliance/rulesets",
           tables=["comp_rulesets"],
+          left=(
+            db.comp_ruleset_team_publication.on(db.comp_ruleset_team_publication.ruleset_id==db.comp_rulesets.id),
+            db.auth_group.on(db.comp_ruleset_team_publication.group_id==db.auth_group.id),
+          ),
           groupby=db.comp_rulesets.id,
           desc=desc,
           examples=examples,
         )
 
     def handler(self, **vars):
-        q = db.auth_group.id.belongs(user_group_ids())
-        q &= db.comp_ruleset_team_publication.group_id == db.auth_group.id
-        q &= db.comp_ruleset_team_publication.ruleset_id == db.comp_rulesets.id
+        q = db.comp_rulesets.id > 0
+        if "Manager" not in user_groups():
+            q &= db.auth_group.id.belongs(user_group_ids())
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -536,16 +548,19 @@ class rest_get_compliance_ruleset(rest_get_line_handler):
           self,
           path="/compliance/rulesets/<id>",
           tables=["comp_rulesets"],
+          left=(
+            db.comp_ruleset_team_publication.on(db.comp_ruleset_team_publication.ruleset_id==db.comp_rulesets.id),
+            db.auth_group.on(db.comp_ruleset_team_publication.group_id==db.auth_group.id),
+          ),
           groupby=db.comp_rulesets.id,
           desc=desc,
           examples=examples,
         )
 
     def handler(self, id, **vars):
-        q = db.auth_group.id.belongs(user_group_ids())
-        q &= ruleset_id_q(id)
-        q &= db.comp_ruleset_team_publication.group_id == db.auth_group.id
-        q &= db.comp_ruleset_team_publication.ruleset_id == db.comp_rulesets.id
+        q = ruleset_id_q(id)
+        if "Manager" not in user_groups():
+            q &= db.auth_group.id.belongs(user_group_ids())
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -646,10 +661,11 @@ class rest_get_compliance_rulesets_export(rest_get_handler):
         )
 
     def handler(self, **vars):
-        q = db.auth_group.id.belongs(user_group_ids())
-        q &= db.comp_rulesets.id > 0
+        q = db.comp_rulesets.id > 0
         q &= db.comp_ruleset_team_publication.group_id == db.auth_group.id
         q &= db.comp_ruleset_team_publication.ruleset_id == db.comp_rulesets.id
+        if "Manager" not in user_groups():
+            q &= db.auth_group.id.belongs(user_group_ids())
         ids = [r.id for r in db(q).select(db.comp_rulesets.id)]
         return _export_rulesets(ids)
 
@@ -2322,10 +2338,11 @@ class rest_get_compliance_ruleset_publications(rest_get_table_handler):
         )
 
     def handler(self, id, **vars):
-        q = db.auth_group.id.belongs(user_group_ids())
-        q &= db.comp_ruleset_team_publication.group_id == db.auth_group.id
+        q = db.comp_ruleset_team_publication.group_id == db.auth_group.id
         q &= db.comp_ruleset_team_publication.ruleset_id == db.comp_rulesets.id
         q &= ruleset_id_q(id)
+        if "Manager" not in user_groups():
+            q &= db.auth_group.id.belongs(user_group_ids())
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -2348,10 +2365,11 @@ class rest_get_compliance_ruleset_responsibles(rest_get_table_handler):
         )
 
     def handler(self, id, **vars):
-        q = db.auth_group.id.belongs(user_group_ids())
-        q &= db.comp_ruleset_team_responsible.group_id == db.auth_group.id
+        q = db.comp_ruleset_team_responsible.group_id == db.auth_group.id
         q &= db.comp_ruleset_team_responsible.ruleset_id == db.comp_rulesets.id
         q &= ruleset_id_q(id)
+        if "Manager" not in user_groups():
+            q &= db.auth_group.id.belongs(user_group_ids())
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -2394,10 +2412,11 @@ class rest_get_compliance_moduleset_publications(rest_get_table_handler):
         )
 
     def handler(self, id, **vars):
-        q = db.auth_group.id.belongs(user_group_ids())
-        q &= db.comp_moduleset_team_publication.group_id == db.auth_group.id
+        q = db.comp_moduleset_team_publication.group_id == db.auth_group.id
         q &= db.comp_moduleset_team_publication.modset_id == db.comp_moduleset.id
         q &= moduleset_id_q(id)
+        if "Manager" not in user_groups():
+            q &= db.auth_group.id.belongs(user_group_ids())
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -2420,10 +2439,11 @@ class rest_get_compliance_moduleset_responsibles(rest_get_table_handler):
         )
 
     def handler(self, id, **vars):
-        q = db.auth_group.id.belongs(user_group_ids())
-        q &= db.comp_moduleset_team_responsible.group_id == db.auth_group.id
+        q = db.comp_moduleset_team_responsible.group_id == db.auth_group.id
         q &= db.comp_moduleset_team_responsible.modset_id == db.comp_moduleset.id
         q &= moduleset_id_q(id)
+        if "Manager" not in user_groups():
+            q &= db.auth_group.id.belongs(user_group_ids())
         self.set_q(q)
         return self.prepare_data(**vars)
 

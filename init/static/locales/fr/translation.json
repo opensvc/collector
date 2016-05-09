@@ -781,6 +781,10 @@
 		"request": "request",
 		"properties": "properties"
 	},
+	"safe_file_tabs": {
+		"properties": "propriétés",
+		"content": "contenu"
+	},
 	"form_tabs": {
 		"request": "demande",
 		"properties": "propriétés",
@@ -1157,6 +1161,19 @@
 		"register_text" : "Créer un nouvel utilisateur",
 		"lost_title" : "Mot de passe perdu",
 		"lost_text" : "Envoyer un nouveau mot de passe par mèl"
+	},
+	"safe_file_properties": {
+		"publications": "Publications",
+		"responsibles": "Responsables",
+		"base": "Base",
+		"Upload": "Chargement",
+		"uuid": "uuid",
+		"size": "taille",
+		"md5": "somme de contrôle",
+		"name": "nom",
+		"uploader": "uploader",
+		"uploaded_from": "chargé depuis",
+		"uploaded_date": "chargé le"
 	},
 	"app_properties": {
 		"properties": "Propriétés",

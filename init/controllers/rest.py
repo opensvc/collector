@@ -322,6 +322,7 @@ def get_get_handlers(prefix=None):
        "safe": [
              "rest_get_safe",
              "rest_get_safe_file",
+             "rest_get_safe_file_am_i_responsible",
              "rest_get_safe_file_download",
              "rest_get_safe_file_publications",
              "rest_get_safe_file_responsibles",

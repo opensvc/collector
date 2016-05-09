@@ -592,4 +592,27 @@ class rest_get_safe_file_responsibles(rest_get_table_handler):
         self.set_q(q)
         return self.prepare_data(**vars)
 
+#
+class rest_get_safe_file_am_i_responsible(rest_get_handler):
+    def __init__(self):
+        desc = [
+          "- return true if the requester is responsible for this safe file.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/safe/1/am_i_responsible",
+        ]
+        rest_get_handler.__init__(
+          self,
+          path="/safe/<id>/am_i_responsible",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, id, **vars):
+        try:
+            lib_safe_check_file_responsible(id)
+            return dict(data=True)
+        except:
+            return dict(data=False)
+
 

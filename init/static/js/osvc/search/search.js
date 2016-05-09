@@ -92,10 +92,11 @@ function search_get_menu(fk)
         ]
     },
     "safe_files": {
+        "tab" : 'safe_file_tabs("__rowid__", {"uuid": "__uuid__", "name": "__name__"})',
         "title": "__name__ (__uuid__)",
         "menu_entry_id": "view-safe",
         "class": "pkg16 fa-2x search-section-icon",
-        "subclass": "meta_file",
+        "subclass": "meta_safe_file",
         "links" : []
     },
     "disks": {
