@@ -435,6 +435,15 @@
 			"nodes_net" : "Réseau de noeuds"
 		}
 	},
+	"ruleset_properties": {
+		"base": "Base",
+		"publications": "Publications",
+		"responsibles": "Responsables",
+		"id": "Id",
+		"type": "Type",
+		"name": "Nom",
+		"public": "Public"
+	},
 	"dns_domain_properties": {
 		"base": "Base",
 		"dates": "Dates",
@@ -740,8 +749,9 @@
 		"public": "Publié: __public__"
 	},
 	"ruleset_tabs": {
+		"properties": "propriétés",
 		"export": "export",
-		"ruleset": "jeu de règles"
+		"content": "content"
 	},
 	"dns_domain_tabs": {
 		"properties": "propriétés",

@@ -26,12 +26,23 @@ function ruleset_tabs(divid, options) {
 
 		// tab properties
 		i = o.register_tab({
-			"title": "ruleset_tabs.ruleset",
-			"title_class": "icon pkg16"
+			"title": "ruleset_properties.base",
+			"title_class": "icon rset16"
 		})
 		o.tabs[i].callback = function(divid) {
 			ruleset_properties(divid, o.options)
 		}
+
+		// tab content
+		i = o.register_tab({
+			"title": "ruleset_tabs.content",
+			"title_class": "icon rset16"
+		})
+		o.tabs[i].callback = function(divid) {
+			ruleset_content(divid, o.options)
+		}
+
+		// tab export
 		i = o.register_tab({
 			"title": "ruleset_tabs.export",
 			"title_class": "icon log16"
@@ -66,7 +77,7 @@ function ruleset_export(divid, options) {
 	})
 }
 
-function ruleset_properties(divid, options) {
+function ruleset_content(divid, options) {
 	var o = {}
 	o.options = options
 	o.div = $("#"+divid)
@@ -243,3 +254,74 @@ function ruleset_properties(divid, options) {
 		}
 	}
 }
+
+function ruleset_properties(divid, options) {
+	var o = {}
+
+	// store parameters
+	o.divid = divid
+	o.div = $("#"+divid)
+	o.options = options
+
+	o.init = function() {
+		o.info_id = o.div.find("#id")
+		o.info_ruleset_name = o.div.find("#ruleset_name")
+		o.info_ruleset_type = o.div.find("#ruleset_type")
+		o.info_ruleset_public = o.div.find("#ruleset_public")
+		o.info_publications = o.div.find("#publications")
+		o.info_responsibles = o.div.find("#responsibles")
+		o.info_publications_title = o.div.find("#publications_title")
+		o.info_responsibles_title = o.div.find("#responsibles_title")
+		o.load_ruleset()
+	}
+
+	o.load_ruleset = function() {
+		services_osvcgetrest("/compliance/rulesets/%1", [o.options.ruleset_id], "", function(jd) {
+			o._load_ruleset(jd.data[0])
+		})
+	}
+
+	o._load_ruleset = function(data) {
+		o.info_id.html(data.id)
+		o.info_ruleset_name.html(data.ruleset_name)
+		o.info_ruleset_type.html(data.ruleset_type)
+		o.info_ruleset_public.html(data.ruleset_public)
+
+		tab_properties_generic_updater({
+			"div": o.div,
+			"privileges": ["FormsManager", "Manager"],
+			"post": function(data, callback, error_callback) {
+				services_osvcpostrest("/compliance/rulesets/%1", [o.options.ruleset_id], "", data, callback, error_callback)
+			}
+		})
+		tab_properties_generic_autocomplete({
+			"div": o.info_ruleset_type,
+			"privileges": ["CompManager", "Manager"],
+			"post": function(_data, callback, error_callback) {
+				services_osvcpostrest("/compliance/rulesets/%1", [data.id], "", _data, callback, error_callback)
+			},
+			"get": function(callback) {
+				var data = ["contextual", "explicit"]
+				callback(data)
+			}
+		})
+		ruleset_publications({
+			"tid": o.info_publications,
+			"ruleset_id": data.id
+		})
+		ruleset_responsibles({
+			"tid": o.info_responsibles,
+			"ruleset_id": data.id
+		})
+
+	}
+
+	o.div.load("/init/static/views/ruleset_properties.html", function() {
+		o.div.i18n()
+		o.init()
+	})
+
+	return o
+}
+
+

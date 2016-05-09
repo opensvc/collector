@@ -509,4 +509,62 @@ function form_publications(options) {
 	return tags(options)
 }
 
+function ruleset_responsibles(options) {
+	options.tag_name = "role"
+	options.get_tags = function(prefix, callback, callback_err) {
+		services_osvcgetrest("/compliance/rulesets/%1/responsibles", [options.ruleset_id], {
+			"props": "id," + options.tag_name,
+			"limit": "0",
+			"meta": "false"
+		}, callback, callback_err)
+	}
+	options.get_candidates = function(prefix, callback, callback_err) {
+		services_osvcgetrest("/groups", "", {
+			"props": "id," + options.tag_name,
+			"limit": "0",
+			"meta": "false",
+			"filters": ["privilege F", options.tag_name+" "+prefix+"%"]
+		}, callback, callback_err)
+	}
+	options.attach = function(tag_data, callback, callback_err) {
+		services_osvcpostrest("/compliance/rulesets/%1/responsibles/%2", [options.ruleset_id, tag_data.id], "", "", callback, callback_err)
+	}
+	options.detach = function(tag, callback, callback_err) {
+		services_osvcdeleterest("/compliance/rulesets/%1/responsibles/%2", [options.ruleset_id, tag.attr("tag_id")], "", "", callback, callback_err)
+	}
+	options.am_i_responsible = function(callback) {
+		services_osvcgetrest("/compliance/rulesets/%1/am_i_responsible", [options.ruleset_id], "", callback)
+	}
+	return tags(options)
+}
+
+function ruleset_publications(options) {
+	options.tag_name = "role"
+	options.get_tags = function(prefix, callback, callback_err) {
+		services_osvcgetrest("/compliance/rulesets/%1/publications", [options.ruleset_id], {
+			"props": "id," + options.tag_name,
+			"limit": "0",
+			"meta": "false"
+		}, callback, callback_err)
+	}
+	options.get_candidates = function(prefix, callback, callback_err) {
+		services_osvcgetrest("/groups", "", {
+			"props": "id," + options.tag_name,
+			"limit": "0",
+			"meta": "false",
+			"filters": ["privilege F", options.tag_name+" "+prefix+"%"]
+		}, callback, callback_err)
+	}
+	options.attach = function(tag_data, callback, callback_err) {
+		services_osvcpostrest("/compliance/rulesets/%1/publications/%2", [options.ruleset_id, tag_data.id], "", "", callback, callback_err)
+	}
+	options.detach = function(tag, callback, callback_err) {
+		services_osvcdeleterest("/compliance/rulesets/%1/publications/%2", [options.ruleset_id, tag.attr("tag_id")], "", "", callback, callback_err)
+	}
+	options.am_i_responsible = function(callback) {
+		services_osvcgetrest("/compliance/rulesets/%1/am_i_responsible", [options.ruleset_id], "", callback)
+	}
+	return tags(options)
+}
+
 

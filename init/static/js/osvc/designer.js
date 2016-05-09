@@ -124,7 +124,7 @@ function designer(divid, options) {
 		var div = $("<div class='white_float' style='overflow:auto;position:relative;padding:0px'></div>")
 		div.uniqueId()
 		o.e_info.empty().append(div)
-		ruleset_tabs(div.attr("id"), {"ruleset_id": rset_id, "ruleset_name": rset_name})
+		ruleset_tabs(div.attr("id"), {"ruleset_id": rset_id, "ruleset_name": rset_name, "tab": "ruleset_tabs.content"})
 	}
 
 	o.show_fset = function(node) {

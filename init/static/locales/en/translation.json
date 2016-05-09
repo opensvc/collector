@@ -441,6 +441,15 @@
 			"nodes_net" : "Nodes net"
 		}
 	},
+	"ruleset_properties": {
+		"base": "Base",
+		"publications": "Publications",
+		"responsibles": "Responsibles",
+		"id": "Id",
+		"type": "Type",
+		"name": "Name",
+		"public": "Public"
+	},
 	"dns_domain_properties": {
 		"base": "Base",
 		"dates": "Dates",
@@ -746,8 +755,9 @@
 		"public": "Published: __public__"
 	},
 	"ruleset_tabs": {
+		"properties": "properties",
 		"export": "export",
-		"ruleset": "ruleset"
+		"content": "content"
 	},
 	"dns_domain_tabs": {
 		"properties": "properties",
