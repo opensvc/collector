@@ -22,7 +22,6 @@ def form_published(id):
     if form is None:
         raise Exception("Form %s not found or not published to you" % str(id))
 
-
 def mangle_form_data(data):
     for i, row in enumerate(data):
         try:
@@ -311,24 +310,16 @@ class rest_post_form_publication(rest_post_handler):
     def handler(self, form_id, group_id, **vars):
         check_privilege("FormsManager")
         form_responsible(form_id)
+        group = lib_org_group(group_id)
 
-        try:
-            id = int(group_id)
-            q = db.auth_group.id == group_id
-        except:
-            q = db.auth_group.role == group_id
-        group = db(q).select().first()
-        if group is None:
-            raise Exception("Group %s does not exist" % str(group_id))
-
-        fmt = "Form %(form_id)s published to group %(group_id)s"
-        d = dict(form_id=str(form_id), group_id=str(group_id))
+        fmt = "Form %(form_id)s published to group %(role)s"
+        d = dict(form_id=str(form_id), role=str(group.role))
 
         q = db.forms_team_publication.form_id == form_id
         q &= db.forms_team_publication.group_id == group.id
         row = db(q).select().first()
         if row is not None:
-            return dict(info="Form %(form_id)s already published to group %(group_id)s" % d)
+            return dict(info="Form %(form_id)s already published to group %(role)s" % d)
 
         db.forms_team_publication.insert(form_id=form_id, group_id=group.id)
 
@@ -494,24 +485,16 @@ class rest_post_form_responsible(rest_post_handler):
     def handler(self, form_id, group_id, **vars):
         check_privilege("FormsManager")
         form_responsible(form_id)
+        group = lib_org_group(group_id)
 
-        try:
-            id = int(group_id)
-            q = db.auth_group.id == group_id
-        except:
-            q = db.auth_group.role == group_id
-        group = db(q).select().first()
-        if group is None:
-            raise Exception("Group %s does not exist" % str(group_id))
-
-        fmt = "Form %(form_id)s responsability to group %(group_id)s added"
-        d = dict(form_id=str(form_id), group_id=str(group_id))
+        fmt = "Form %(form_id)s responsability to group %(role)s added"
+        d = dict(form_id=str(form_id), role=str(group.role))
 
         q = db.forms_team_responsible.form_id == form_id
         q &= db.forms_team_responsible.group_id == group.id
         row = db(q).select().first()
         if row is not None:
-            return dict(info="Form %(form_id)s responsability to group %(group_id)s already added" % d)
+            return dict(info="Form %(form_id)s responsability to group %(role)s already added" % d)
 
         db.forms_team_responsible.insert(form_id=form_id, group_id=group.id)
 
@@ -681,5 +664,28 @@ class rest_delete_forms(rest_delete_handler):
         form_id = vars["id"]
         del(vars["id"])
         return rest_delete_form().handler(form_id, **vars)
+
+#
+class rest_get_form_am_i_responsible(rest_get_handler):
+    def __init__(self):
+        desc = [
+          "- return true if the requester is responsible for this form.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/forms/1/am_i_responsible",
+        ]
+        rest_get_handler.__init__(
+          self,
+          path="/forms/<id>/am_i_responsible",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, form_id, **vars):
+        try:
+            form_responsible(form_id)
+            return dict(data=True)
+        except:
+            return dict(data=False)
 
 

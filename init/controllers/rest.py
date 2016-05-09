@@ -76,6 +76,7 @@ def get_get_handlers(prefix=None):
        "apps": [
              "rest_get_apps",
              "rest_get_app",
+             "rest_get_app_am_i_responsible",
              "rest_get_app_nodes",
              "rest_get_app_quotas",
              "rest_get_app_services",
@@ -150,6 +151,7 @@ def get_get_handlers(prefix=None):
              "rest_get_form",
              "rest_get_form_publications",
              "rest_get_form_responsibles",
+             "rest_get_form_am_i_responsible",
        ],
        "frontend": [
              "rest_get_frontend_hidden_menu_entries",

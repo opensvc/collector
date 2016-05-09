@@ -1,3 +1,17 @@
+def lib_org_group(s):
+    q = db.auth_group.id == s
+    q |= db.auth_group.role == s
+    if "Manager" not in user_groups():
+        q &= db.auth_group.id.belongs(user_group_ids())
+    rows = db(q).select()
+    if len(rows) > 1:
+        raise Exception("Ambiguous group id: %s" % str(s))
+    if len(rows) == 0:
+        raise Exception("Group not found: %s" % str(s))
+    g = rows.first()
+    if g.privilege:
+        raise Exception("Operation not allowed on privilege group: %s" % str(g.role))
+    return g
 
 #
 class rest_get_groups(rest_get_table_handler):

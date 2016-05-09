@@ -16,6 +16,30 @@ def app_responsible(app_id):
         raise Exception("You are not responsible for this app")
 
 #
+class rest_get_app_am_i_responsible(rest_get_handler):
+    def __init__(self):
+        desc = [
+          "- return true if the requester is responsible for this application code.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/apps/1/am_i_responsible",
+        ]
+        rest_get_handler.__init__(
+          self,
+          path="/apps/<id>/am_i_responsible",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, app_id, **vars):
+        app_id = lib_app_id(app_id)
+        try:
+            app_responsible(app_id)
+            return dict(data=True)
+        except:
+            return dict(data=False)
+
+#
 class rest_get_apps(rest_get_table_handler):
     def __init__(self):
         desc = [
@@ -385,13 +409,7 @@ class rest_post_app_responsible(rest_post_handler):
             raise Exception("app code not found")
         app_responsible(app_id)
         app = db(db.apps.id==app_id).select().first()
-        try:
-            group_id = int(group_id)
-        except:
-            group_id = lib_group_id(group_id)
-        if group_id is None:
-            raise Exception("group not found")
-        group = db(db.auth_group.id==group_id).select().first()
+        group = lib_org_group(group_id)
 
         q = db.apps_responsibles.app_id == app_id
         q &= db.apps_responsibles.group_id == group_id
@@ -567,13 +585,7 @@ class rest_post_app_publication(rest_post_handler):
             raise Exception("app code not found")
         app_responsible(app_id)
         app = db(db.apps.id==app_id).select().first()
-        try:
-            group_id = int(group_id)
-        except:
-            group_id = lib_group_id(group_id)
-        if group_id is None:
-            raise Exception("group not found")
-        group = db(db.auth_group.id==group_id).select().first()
+        group = lib_org_group(group_id)
 
         q = db.apps_publications.app_id == app_id
         q &= db.apps_publications.group_id == group_id
