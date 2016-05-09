@@ -372,7 +372,7 @@ function service_properties(divid, options)
 		})
 
 		// init tags
-		tags({
+		service_tags({
 			"tid": o.e_tags.attr("id"),
 			"svc_id": o.options.svc_id,
 		})

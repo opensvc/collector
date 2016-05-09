@@ -1,7 +1,17 @@
 function tags(options) {
 	var o = {}
-	o.div = $("#"+options.tid)
 	o.options = options
+
+	try {
+		// element id
+		o.div = $("#"+options.tid)
+	} catch(e) {
+		// jquery object
+		o.div = options.tid
+		o.div.uniqueId()
+		o.options.tid = o.div.attr("id")
+	}
+	o.div.css({"min-height": "1em"})
 
 	o.load = function() {
 		// init error display zone
@@ -12,15 +22,7 @@ function tags(options) {
 		}
 		o.div.info.empty()
 		spinner_add(o.div.info)
-		options = {
-			"meta": "false",
-			"limit": "0",
-			"props": "id,tag_name"
-		}
-		if ("prefix" in o.options) {
-			options["query"] = "tag_name starts with " + o.options.prefix
-		}
-		services_osvcgetrest(o.url, o.url_params, options, function(_data) {
+		o.get(o.options.prefix, function(_data) {
 			spinner_del(o.div.info)
 			if (_data.error) {
 				o.div.info.html(services_error_fmt(_data))
@@ -28,7 +30,12 @@ function tags(options) {
 			}
 			_data = _data.data
 			if ((_data.length == 0) && o.options.candidates) {
-				o.div.info.text(i18n.t("tags.no_candidates"))
+				if (o.options.create) {
+					var msg = "tags.no_candidates_create"
+				} else {
+					var msg = "tags.no_candidates"
+				}
+				o.div.info.text(i18n.t(msg))
 			}
 			d = $("<div name='tag_container'></div>")
 			for (i=0; i<_data.length; i++) {
@@ -54,7 +61,7 @@ function tags(options) {
 		} else {
 			cl = "icon tag tag_attached"
 		}
-		s = "<span tag_id='"+tag_data.id+"' class='"+cl+"'>"+tag_data.tag_name+" </span>"
+		s = "<span tag_id='"+tag_data.id+"' class='"+cl+"'>"+tag_data[o.options.tag_name]+" </span>"
 		e = $(s)
 		e.bind("mouseover", function(){
 			if (o.options.responsible && o.options.candidates != true) {
@@ -145,18 +152,12 @@ function tags(options) {
 
 		// 1st candidates exec: init a new tag object
 		ctid = o.options.tid+"c"
-		options = {
+		options = $.extend({}, o.options, {
 			"tid": ctid,
-			"responsible": o.options.responsible,
 			"parent_object": o,
 			"prefix": prefix,
 			"candidates": true
-		}
-		if ("node_id" in o.options) {
-			options.node_id = o.options.node_id
-		} else if ("svc_id" in o.options) {
-			options.svc_id = o.options.svc_id
-		}
+		})
 		o.div.find("#"+ctid).parent().remove()
 		e = $("<span><h3>"+i18n.t("tags.candidates")+"</h3><div id='"+ctid+"' class='tags'></div></span>")
 		o.div.append(e)
@@ -164,18 +165,9 @@ function tags(options) {
 	}
 
 	o._attach_tag = function(tag_data) {
-		if ("node_id" in o.options) {
-			url = "R_TAG_NODE"
-			url_params = [tag_data.id, o.options.node_id]
-		} else if ("svc_id" in o.options) {
-			url = "R_TAG_SERVICE"
-			url_params = [tag_data.id, o.options.svc_id]
-		} else {
-			return
-		}
 		o.div.info.empty()
 		spinner_add(o.div.info, i18n.t("tags.attaching"))
-		services_osvcpostrest(url, url_params, "", "", function(jd) {
+		o.options.attach(tag_data, function(jd) {
 			spinner_del(o.div.info)
 			if (jd.error) {
 				o.div.info.html(services_error_fmt(jd))
@@ -194,34 +186,39 @@ function tags(options) {
 		})
 	}
 
+	o.create_and_attach_tag = function(tag_data) {
+		o.div.info.empty()
+		o.candidates.div.parent().remove()
+		o.options.get_candidates(tag_data.tag_name, function(jd) {
+			if (!jd.data || (jd.data.length == 0)) {
+				// tag does not exist yet ... create
+				spinner_add(o.div.info, i18n.t("tags.creating"))
+				o.options.create(tag_data, function(jd) {
+					spinner_del(o.div.info)
+					if (jd.error) {
+						o.div.info.html(services_error_fmt(jd))
+						return
+					}
+					o._attach_tag(jd.data)
+				},
+				function(xhr, stat, error) {
+					o.div.info.html(services_ajax_error_fmt(xhr, stat, error))
+				})
+			} else {
+				// tag elready exists
+				o._attach_tag(jd.data[0])
+			}
+		},
+		function(xhr, stat, error) {
+			o.div.info.html(services_ajax_error_fmt(xhr, stat, error))
+		})
+	}
+
 	o.attach_tag = function(tag_data) {
 		if (!tag_data.id) {
 			// from <enter> in add tag
-			o.div.info.empty()
-			o.candidates.div.parent().remove()
-			services_osvcgetrest("R_TAGS", "", {"meta": "false", "query": "tag_name="+tag_data.tag_name}, function(jd) {
-				if (!jd.data || (jd.data.length == 0)) {
-					// tag does not exist yet ... create
-					spinner_add(o.div.info, i18n.t("tags.creating"))
-					services_osvcpostrest("R_TAGS", "", "", tag_data, function(jd) {
-						spinner_del(o.div.info)
-						if (jd.error) {
-							o.div.info.html(services_error_fmt(jd))
-							return
-						}
-						o._attach_tag(jd.data)
-					},
-					function(xhr, stat, error) {
-						o.div.info.html(services_ajax_error_fmt(xhr, stat, error))
-					})
-				} else {
-					// tag elready exists
-					o._attach_tag(jd.data[0])
-				}
-			},
-			function(xhr, stat, error) {
-				o.div.info.html(services_ajax_error_fmt(xhr, stat, error))
-			})
+			o.create_and_attach_tag(tag_data)
+
 		} else {
 			// from click on a candidate
 			o._attach_tag(tag_data)
@@ -232,16 +229,7 @@ function tags(options) {
 		o.div.info.empty()
 		tag.hide()
 		spinner_add(o.div.info, i18n.t("tags.detaching"))
-		if ("node_id" in o.options) {
-			url = "R_TAG_NODE"
-			url_params = [tag.attr("tag_id"), o.options.node_id]
-		} else if ("svc_id" in o.options) {
-			url = "R_TAG_SERVICE"
-			url_params = [tag.attr("tag_id"), o.options.svc_id]
-		} else {
-			return
-		}
-		services_osvcdeleterest(url, url_params, "", "", function(jd) {
+		o.options.detach(tag, function(jd) {
 			spinner_del(o.div.info)
 			if (jd.error) {
 				o.div.info.html(services_error_fmt(jd))
@@ -269,10 +257,10 @@ function tags(options) {
 	o._bind_admin_tools = function() {
 		o.div.hover(
 			function(){
-				o.div.find(".tag_add,.tag_del").fadeIn()
+				o.div.find(".tag_add,.tag_del").show()
 			},
 			function(){
-				o.div.find(".tag_add,.tag_del").fadeOut()
+				o.div.find(".tag_add,.tag_del").hide()
 			}
 		)
 	}
@@ -303,7 +291,7 @@ function tags(options) {
 			}
 			o.div.children("div").first().prepend(o.add_tag({
 				"id": data.tag_id,
-				"tag_name": data.tag_name
+				"tag_name": data[o.options.tag_name]
 			}))
 		} else if (data.action == "detach") {
 			o.del_tag({
@@ -322,39 +310,203 @@ function tags(options) {
 		o.attach_tag({"tag_name": tag_name})
 	}
 
-
-	if (("candidates" in options) && ("node_id" in options)) {
-		o.url = "R_NODE_CANDIDATE_TAGS"
-		o.url_params = [options.node_id]
-	} else if (("candidates" in options) && ("svc_id" in options)) {
-		o.url = "R_SERVICE_CANDIDATE_TAGS"
-		o.url_params = [options.svc_id]
-	} else if ("node_id" in options) {
-		o.url = "R_NODE_TAGS"
-		o.url_params = [options.node_id]
-	} else if ("svc_id" in options) {
-		o.url = "R_SERVICE_TAGS"
-		o.url_params = [options.svc_id]
-	} else {
-		return
+	o.get = function(prefix, callback, callback_err) {
+		if ("candidates" in o.options) {
+			return o.options.get_candidates(prefix, callback, callback_err)
+		} else {
+			return o.options.get_tags(prefix, callback, callback_err)
+		}
 	}
 
 	wsh["tags_"+o.options.tid] = function(data) {
 		o.event_handler(data)
 	}
 
-	if (o.options.node_id) {
-		services_osvcgetrest("R_NODE_AM_I_RESPONSIBLE", [o.options.node_id], "", function(jd) {
-			o.options.responsible = jd.data
-			o.load()
-		})
-	} else if (o.options.svc_id) {
-		services_osvcgetrest("R_SERVICE_AM_I_RESPONSIBLE", [o.options.svc_id], "", function(jd) {
-			o.options.responsible = jd.data
-			o.load()
-		})
-	}
+	o.options.am_i_responsible(function(jd){
+		o.options.responsible = jd.data
+		o.load()
+	})
 	return o
+}
+
+function node_tags(options) {
+	options.tag_name = "tag_name"
+	options.get_tags = function(prefix, callback, callback_err) {
+		services_osvcgetrest("R_NODE_TAGS", [options.node_id], {
+			"props": "id," + options.tag_name,
+			"limit": "0",
+			"meta": "false"
+		}, callback, callback_err)
+	}
+	options.get_candidates = function(prefix, callback, callback_err) {
+		services_osvcgetrest("R_NODE_CANDIDATE_TAGS", [options.node_id], {
+			"props": "id," + options.tag_name,
+			"limit": "0",
+			"meta": "false",
+			"filters": [options.tag_name+" "+prefix+"%"]
+		}, callback, callback_err)
+	}
+	options.create = function(tag_data, callback, callback_err) {
+		services_osvcpostrest("R_TAGS", "", "", tag_data, callback, callback_err)
+	}
+	options.attach = function(tag_data, callback, callback_err) {
+		services_osvcpostrest("R_TAG_NODE", [tag_data.id, options.node_id], "", "", callback, callback_err)
+	}
+	options.detach = function(tag, callback, callback_err) {
+		services_osvcdeleterest("R_TAG_NODE", [tag.attr("tag_id"), options.node_id], "", "", callback, callback_err)
+	}
+	options.am_i_responsible = function(callback) {
+		services_osvcgetrest("R_NODE_AM_I_RESPONSIBLE", [options.node_id], "", callback)
+	}
+	return tags(options)
+}
+
+function service_tags(options) {
+	options.tag_name = "tag_name"
+	options.get_tags = function(prefix, callback, callback_err) {
+		services_osvcgetrest("R_SERVICE_TAGS", [options.svc_id], {
+			"props": "id," + options.tag_name,
+			"limit": "0",
+			"meta": "false"
+		}, callback, callback_err)
+	}
+	options.get_candidates = function(prefix, callback, callback_err) {
+		services_osvcgetrest("R_SERVICE_CANDIDATE_TAGS", [options.svc_id], {
+			"props": "id," + options.tag_name,
+			"limit": "0",
+			"meta": "false",
+			"filters": [options.tag_name+" "+prefix+"%"]
+		}, callback, callback_err)
+	}
+	options.create = function(tag_data, callback, callback_err) {
+		services_osvcpostrest("R_TAGS", "", "", tag_data, callback, callback_err)
+	}
+	options.attach = function(tag_data, callback, callback_err) {
+		services_osvcpostrest("R_TAG_SERVICE", [tag_data.id, options.svc_id], "", "", callback, callback_err)
+	}
+	options.detach = function(tag, callback, callback_err) {
+		services_osvcdeleterest("R_TAG_SERVICE", [tag.attr("tag_id"), options.svc_id], "", "", callback, callback_err)
+	}
+	options.am_i_responsible = function(callback) {
+		services_osvcgetrest("R_SERVICE_AM_I_RESPONSIBLE", [options.svc_id], "", callback)
+	}
+	return tags(options)
+}
+
+function app_responsibles(options) {
+	options.tag_name = "role"
+	options.get_tags = function(prefix, callback, callback_err) {
+		services_osvcgetrest("/apps/%1/responsibles", [options.app_id], {
+			"props": "id," + options.tag_name,
+			"limit": "0",
+			"meta": "false"
+		}, callback, callback_err)
+	}
+	options.get_candidates = function(prefix, callback, callback_err) {
+		services_osvcgetrest("/groups", "", {
+			"props": "id," + options.tag_name,
+			"limit": "0",
+			"meta": "false",
+			"filters": ["privilege F", options.tag_name+" "+prefix+"%"]
+		}, callback, callback_err)
+	}
+	options.attach = function(tag_data, callback, callback_err) {
+		services_osvcpostrest("R_APP_RESPONSIBLE", [options.app_id, tag_data.id], "", "", callback, callback_err)
+	}
+	options.detach = function(tag, callback, callback_err) {
+		services_osvcdeleterest("R_APP_RESPONSIBLE", [options.app_id, tag.attr("tag_id")], "", "", callback, callback_err)
+	}
+	options.am_i_responsible = function(callback) {
+		services_osvcgetrest("R_APP_AM_I_RESPONSIBLE", [options.app_id], "", callback)
+	}
+	return tags(options)
+}
+
+function app_publications(options) {
+	options.tag_name = "role"
+	options.get_tags = function(prefix, callback, callback_err) {
+		services_osvcgetrest("/apps/%1/publications", [options.app_id], {
+			"props": "id," + options.tag_name,
+			"limit": "0",
+			"meta": "false"
+		}, callback, callback_err)
+	}
+	options.get_candidates = function(prefix, callback, callback_err) {
+		services_osvcgetrest("/groups", "", {
+			"props": "id," + options.tag_name,
+			"limit": "0",
+			"meta": "false",
+			"filters": ["privilege F", options.tag_name+" "+prefix+"%"]
+		}, callback, callback_err)
+	}
+	options.attach = function(tag_data, callback, callback_err) {
+		services_osvcpostrest("R_APP_PUBLICATION", [options.app_id, tag_data.id], "", "", callback, callback_err)
+	}
+	options.detach = function(tag, callback, callback_err) {
+		services_osvcdeleterest("R_APP_PUBLICATION", [options.app_id, tag.attr("tag_id")], "", "", callback, callback_err)
+	}
+	options.am_i_responsible = function(callback) {
+		services_osvcgetrest("R_APP_AM_I_RESPONSIBLE", [options.app_id], "", callback)
+	}
+	return tags(options)
+}
+
+function form_responsibles(options) {
+	options.tag_name = "role"
+	options.get_tags = function(prefix, callback, callback_err) {
+		services_osvcgetrest("/forms/%1/responsibles", [options.form_id], {
+			"props": "id," + options.tag_name,
+			"limit": "0",
+			"meta": "false"
+		}, callback, callback_err)
+	}
+	options.get_candidates = function(prefix, callback, callback_err) {
+		services_osvcgetrest("/groups", "", {
+			"props": "id," + options.tag_name,
+			"limit": "0",
+			"meta": "false",
+			"filters": ["privilege F", options.tag_name+" "+prefix+"%"]
+		}, callback, callback_err)
+	}
+	options.attach = function(tag_data, callback, callback_err) {
+		services_osvcpostrest("R_FORM_RESPONSIBLE", [options.form_id, tag_data.id], "", "", callback, callback_err)
+	}
+	options.detach = function(tag, callback, callback_err) {
+		services_osvcdeleterest("R_FORM_RESPONSIBLE", [options.form_id, tag.attr("tag_id")], "", "", callback, callback_err)
+	}
+	options.am_i_responsible = function(callback) {
+		services_osvcgetrest("R_FORM_AM_I_RESPONSIBLE", [options.form_id], "", callback)
+	}
+	return tags(options)
+}
+
+function form_publications(options) {
+	options.tag_name = "role"
+	options.get_tags = function(prefix, callback, callback_err) {
+		services_osvcgetrest("/forms/%1/publications", [options.form_id], {
+			"props": "id," + options.tag_name,
+			"limit": "0",
+			"meta": "false"
+		}, callback, callback_err)
+	}
+	options.get_candidates = function(prefix, callback, callback_err) {
+		services_osvcgetrest("/groups", "", {
+			"props": "id," + options.tag_name,
+			"limit": "0",
+			"meta": "false",
+			"filters": ["privilege F", options.tag_name+" "+prefix+"%"]
+		}, callback, callback_err)
+	}
+	options.attach = function(tag_data, callback, callback_err) {
+		services_osvcpostrest("R_FORM_PUBLICATION", [options.form_id, tag_data.id], "", "", callback, callback_err)
+	}
+	options.detach = function(tag, callback, callback_err) {
+		services_osvcdeleterest("R_FORM_PUBLICATION", [options.form_id, tag.attr("tag_id")], "", "", callback, callback_err)
+	}
+	options.am_i_responsible = function(callback) {
+		services_osvcgetrest("R_FORM_AM_I_RESPONSIBLE", [options.form_id], "", callback)
+	}
+	return tags(options)
 }
 
 

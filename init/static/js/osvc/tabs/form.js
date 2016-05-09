@@ -100,23 +100,13 @@ function form_properties(divid, options) {
 				callback(data)
 			}
 		})
-		tab_properties_generic_list({
-			"request_service": "R_FORM_PUBLICATIONS",
-			"request_parameters": [data.id],
-			"limit": "50",
-			"key": "role",
-			"item_class": "guys16",
-			"e_title": o.info_publications_title,
-			"e_list": o.info_publications
+		form_publications({
+			"tid": o.info_publications,
+			"form_id": data.id
 		})
-		tab_properties_generic_list({
-			"request_service": "R_FORM_RESPONSIBLES",
-			"request_parameters": [data.id],
-			"limit": "50",
-			"key": "role",
-			"item_class": "guys16",
-			"e_title": o.info_responsibles_title,
-			"e_list": o.info_responsibles
+		form_responsibles({
+			"tid": o.info_responsibles,
+			"form_id": data.id
 		})
 
 	}

@@ -379,13 +379,14 @@
                 }
 	},
 	"tags": {
-		"detaching": "Detachement du tag ...",
-		"attaching": "Attachement du tag ...",
-		"creating": "Création du tag ...",
-		"add": "Ajouter un tag",
-		"del": "Déposer ici pour détacher un tag",
-		"candidates": "Tags candidats",
-		"no_candidates": "Pas de candidats trouvés. Appuyer sur <entrée> pour créer ce nouveau tag et l'attacher."
+		"detaching": "Detachement ...",
+		"attaching": "Attachement ...",
+		"creating": "Création ...",
+		"add": "Ajouter",
+		"del": "Déposer ici pour détacher",
+		"candidates": "Candidats",
+		"no_candidates_create": "Pas de candidats trouvés. Appuyer sur <entrée> pour créer et attacher.",
+		"no_candidates": "Pas de candidats trouvés."
 	},
 	"search": {
 		"nothing_found" : "Aucun résultat ne répond au critère de recherche.",

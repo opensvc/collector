@@ -210,7 +210,7 @@ function node_properties(divid, options)
 		}
 
 		// init tags
-		tags({
+		node_tags({
 			"tid": o.e_tags.attr("id"),
 			"node_id": o.options.node_id,
 			"responsible": o.options.responsible

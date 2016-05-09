@@ -86,25 +86,13 @@ function app_properties(divid, options) {
 			o.info_updated.html(data.updated);
 			o.info_id.html(data.id);
 
-			tab_properties_generic_list({
-				"request_service": "/apps/%1/publications",
-				"request_parameters": [data.id],
-				"limit": "50",
-				"key": "role",
-				"title": "app_properties.publications",
-				"item_class": "guys16",
-				"e_title": o.info_publications_title,
-				"e_list": o.info_publications
+			app_publications({
+				"tid": o.info_publications,
+				"app_id": data.id
 			})
-			tab_properties_generic_list({
-				"request_service": "R_APP_RESPONSIBLES",
-				"request_parameters": [data.id],
-				"limit": "50",
-				"key": "role",
-				"title": "app_properties.responsibles",
-				"item_class": "guys16",
-				"e_title": o.info_responsibles_title,
-				"e_list": o.info_responsibles
+			app_responsibles({
+				"tid": o.info_responsibles,
+				"app_id": data.id
 			})
 			tab_properties_generic_list({
 				"request_service": "R_APP_SERVICES",

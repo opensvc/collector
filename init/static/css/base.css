@@ -416,13 +416,12 @@ img {
 
 .tag_input {
 	border: 0;
-	background-color:#cdcdcd;
+	background-color:#5d5d5d;
 	width:5em;
 }
 .tag_input:focus {
-	background-color:#cdcdcd;
+	background-color:#5d5d5d;
 }
-
 .tag_del:before {
 	content: '\f146';
 }
@@ -439,20 +438,20 @@ img {
 	-moz-border-radius:4px;
 	-webkit-border-radius:4px;
 	border-radius:4px;
-	background-color:#cdcdcd;
+	background-color:#5d5d5d;
 	overflow:hidden;
 	cursor: pointer;
 	white-space: nowrap;
 }
-
 .tag_del_active {
-	background-color:darkgray;
+	background-color:#5d9d5d;
 }
-
 .tag_del_hover {
 	background-color:#EE5464;
 }
-
+.tag_add:before {
+	content: '\f0fe';
+}
 .tag_add {
 	white-space: nowrap;
 	line-height: 1.7em;
@@ -465,28 +464,46 @@ img {
 	-moz-border-radius:4px;
 	-webkit-border-radius:4px;
 	border-radius:4px;
-	background-color:#cdcdcd;
+	background-color:#5d5d5d;
 	padding: 0.1em 20px 0.1em 20px;
 	overflow:hidden;
-	cursor: pointer;
-}
-
-.tag_attached {
-	background-color:#008099;
-}
-.tag_candidate {
-	background-color:#cdcdcd;
 	cursor: pointer;
 }
 .tag_create, .tag_create:focus {
 	background-color:#EE5464;
 }
-
 .tag_drag {
 	background-image:url('../images/drag10.png');
 	background-position: 5px 4px;
 	background-repeat:no-repeat;
-	cursor: pointer;
+	cursor: move;
+}
+.tag:before {
+	color: white;
+}
+.tag {
+	white-space: nowrap;
+	line-height: 1.7em;
+	margin: 0.1em;
+	font-weight: bold;
+	font-size: 85%;
+	text-align: center;
+	color: white;
+	-moz-border-radius:4px;
+	-webkit-border-radius:4px;
+	border-radius:4px;
+	padding: 0.1em 20px 0.1em 20px;
+	overflow:hidden;
+}
+.tag:hover {
+	cursor: move;
+}
+.tag_attached {
+	background-color:#008099;
+}
+.tag_candidate {
+	background-color:#5d5d5d;
+	cursor: pointer !important;
 }
 
 .boxed_small {
@@ -3694,28 +3711,6 @@ button:disabled {
 
 .nocolor:before {
 	color: inherit;
-}
-
-.tag:before {
-	color: white;
-}
-.tag {
-	white-space: nowrap;
-	line-height: 1.7em;
-	margin: 0.1em;
-	font-weight: bold;
-	font-size: 85%;
-	text-align: center;
-	color: white;
-	-moz-border-radius:4px;
-	-webkit-border-radius:4px;
-	border-radius:4px;
-	padding: 0.1em 20px 0.1em 20px;
-	overflow:hidden;
-}
-
-.tag:hover {
-	cursor: pointer;
 }
 
 .fset_designer_item {

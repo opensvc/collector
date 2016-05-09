@@ -385,13 +385,14 @@
 		}
 	},
 	"tags": {
-		"detaching": "Detaching tag ...",
-		"attaching": "Attaching tag ...",
-		"creating": "Creating tag ...",
-		"add": "Add tag",
-		"del": "Drop here to remove tag",
-		"candidates": "Candidate tags",
-		"no_candidates": "No candidates found. Press <enter> to create and attach the new tag."
+		"detaching": "Detaching ...",
+		"attaching": "Attaching ...",
+		"creating": "Creating ...",
+		"add": "Add",
+		"del": "Drop here to remove",
+		"candidates": "Candidates",
+		"no_candidates_create": "No candidates found. Press <enter> to create and attach.",
+		"no_candidates": "No candidates found."
 	},
 	"search": {
 		"nothing_found" : "No entry found matching filter",
