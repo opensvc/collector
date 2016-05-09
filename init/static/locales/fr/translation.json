@@ -391,6 +391,7 @@
 	"search": {
 		"nothing_found" : "Aucun résultat ne répond au critère de recherche.",
 		"menu_header" : {
+			"title_rulesets" : "Jeux de règles",
 			"title_metrics" : "Métriques",
 			"title_charts" : "Courbes",
 			"title_reports" : "Rapports",

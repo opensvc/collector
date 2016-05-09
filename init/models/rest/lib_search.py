@@ -295,3 +295,20 @@ def lib_search_report(pattern):
       "elapsed": "%f" % (t.seconds + 1. * t.microseconds / 1000000),
     }
 
+def lib_search_rulesets(pattern):
+    t = datetime.datetime.now()
+    o = db.comp_rulesets.ruleset_name
+    q = db.comp_rulesets.ruleset_name.like(pattern)
+    n = db(q).count()
+    data = db(q).select(o,
+                        db.comp_rulesets.id,
+                        orderby=o,
+                        limitby=(0,max_search_result),
+    ).as_list()
+    t = datetime.datetime.now() - t
+    return {
+      "total": n,
+      "data": data,
+      "elapsed": "%f" % (t.seconds + 1. * t.microseconds / 1000000),
+    }
+

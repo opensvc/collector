@@ -1,6 +1,14 @@
 function search_get_menu(fk)
 {
   var menu = {
+    "rulesets": {
+        "tab" : 'ruleset_tabs("__rowid__", {"ruleset_id": "__id__", "ruleset_name": "__ruleset_name__"})',
+        "title": "__ruleset_name__",
+        "menu_entry_id": "comp-rulesets",
+        "class": "rset16 fa-2x search-section-icon",
+        "subclass": "meta_ruleset clickable",
+        "links": []
+    },
     "reports": {
         "tab" : 'report_tabs("__rowid__", {"report_id": "__id__", "report_name": "__report_name__"})',
         "title": "__report_name__",
@@ -837,7 +845,8 @@ function search(divid) {
 		"form: add_",
 		"report: lifecycle",
 		"chart: disk",
-		"metric: lifecycle"
+		"metric: lifecycle",
+		"rset: test"
 	]
 
 	o.router = function router(delay) {
