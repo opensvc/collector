@@ -250,6 +250,15 @@ class rest_post_users(rest_post_handler):
           'data': {'foo': 'bar'},
         }
         _websocket_send(event_msg(l))
+
+        user = db.auth_user(obj_id)
+        if auth.settings.create_user_groups:
+            group_id = auth.add_group(auth.settings.create_user_groups % user)
+            auth.add_membership(group_id, user.id)
+
+        do_create_app_on_register(user)
+        do_membership_on_register(user)
+
         return rest_get_user().handler(obj_id)
 
 
