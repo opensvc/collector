@@ -239,9 +239,11 @@ class rest_post_users(rest_post_handler):
             raise Exception(T("perpage can not be more than %(n)d", dict(n=user_max_perpage)))
 
         obj_id = db.auth_user.insert(**vars)
+        if "password" in vars:
+            vars["password"] = "xxxxx"
         _log('user.create',
              'add user %(data)s',
-             dict(data=str(vars)),
+             dict(data=beautify_data(vars)),
             )
         l = {
           'event': 'auth_user_change',
