@@ -10,7 +10,7 @@ def node_svc_id(node_id, svcname):
     q &= db.apps_responsibles.group_id.belongs(node_responsibles(node_id))
     rows = db(q).select(db.services.svc_id, groupby=db.services.svc_id)
     if len(rows) > 1:
-        raise Exception("multiple services found matching the service name '%(svcname)s' in the node '%(node_id)s' responsability zone: %(svc_ids)s" % dict(
+        raise Exception("multiple services found matching the service name '%(svcname)s' in the node '%(node_id)s' responsibility zone: %(svc_ids)s" % dict(
           svcname=svcname,
           node_id=node_id,
           svc_ids=', '.join([r.svc_id for r in rows]),

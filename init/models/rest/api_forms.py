@@ -414,12 +414,12 @@ class rest_delete_form_responsible(rest_delete_handler):
         q = db.forms_team_responsible.form_id == form_id
         q &= db.forms_team_responsible.group_id == group_id
 
-        fmt = "Form %(form_id)s responsability to group %(group_id)s removed"
+        fmt = "Form %(form_id)s responsibility to group %(group_id)s removed"
         d = dict(form_id=str(form_id), group_id=str(group_id))
 
         row = db(q).select().first()
         if row is None:
-            return dict(info="Form %(form_id)s responsability to group %(group_id)s already removed" % d)
+            return dict(info="Form %(form_id)s responsibility to group %(group_id)s already removed" % d)
 
         db(q).delete()
 
@@ -487,14 +487,14 @@ class rest_post_form_responsible(rest_post_handler):
         form_responsible(form_id)
         group = lib_org_group(group_id)
 
-        fmt = "Form %(form_id)s responsability to group %(role)s added"
+        fmt = "Form %(form_id)s responsibility to group %(role)s added"
         d = dict(form_id=str(form_id), role=str(group.role))
 
         q = db.forms_team_responsible.form_id == form_id
         q &= db.forms_team_responsible.group_id == group.id
         row = db(q).select().first()
         if row is not None:
-            return dict(info="Form %(form_id)s responsability to group %(role)s already added" % d)
+            return dict(info="Form %(form_id)s responsibility to group %(role)s already added" % d)
 
         db.forms_team_responsible.insert(form_id=form_id, group_id=group.id)
 

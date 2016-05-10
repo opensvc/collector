@@ -397,7 +397,7 @@ class rest_post_safe_file_responsible(rest_post_handler):
         raise_on_error(response)
         row = db(q).select().first()
         _log('safe.responsible.create',
-             'file %(uuid)s responsability added to group %(group)s.',
+             'file %(uuid)s responsibility added to group %(group)s.',
              dict(uuid=f.uuid, group=g.role)
             )
         l = {
@@ -405,7 +405,7 @@ class rest_post_safe_file_responsible(rest_post_handler):
           'data': {'foo': 'bar'},
         }
         _websocket_send(event_msg(l))
-        return dict(info='File %(uuid)s responsability added to group %(group)s.' % dict(uuid=f.uuid, group=g.role))
+        return dict(info='File %(uuid)s responsibility added to group %(group)s.' % dict(uuid=f.uuid, group=g.role))
 
 class rest_delete_safe_files_publications(rest_delete_handler):
     def __init__(self):
@@ -549,7 +549,7 @@ class rest_delete_safe_file_responsible(rest_delete_handler):
 
         db(q).delete()
         _log('safe.responsible.delete',
-             'file %(uuid)s responsability to %(group)s removed',
+             'file %(uuid)s responsibility to %(group)s removed',
              dict(uuid=f.uuid, group=g.role),
             )
         l = {
@@ -557,7 +557,7 @@ class rest_delete_safe_file_responsible(rest_delete_handler):
           'data': {'foo': 'bar'},
         }
         _websocket_send(event_msg(l))
-        return dict(info="file %(uuid)s responsability to %(group)s removed" % dict(uuid=f.uuid, group=g.role))
+        return dict(info="file %(uuid)s responsibility to %(group)s removed" % dict(uuid=f.uuid, group=g.role))
 
 #
 class rest_get_safe_file_publications(rest_get_table_handler):

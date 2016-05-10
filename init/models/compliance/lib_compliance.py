@@ -1597,7 +1597,7 @@ def attach_group_to_ruleset(group_id, rset_id, gtype="publication"):
         if gtype == "publication" and v.ruleset_type == "contextual":
             raise CompError("Publishing a contextual ruleset to Everybody is not allowed")
         if gtype == "responsible":
-            raise CompError("Giving responsability of a ruleset to Everybody is not allowed")
+            raise CompError("Giving responsibility of a ruleset to Everybody is not allowed")
     if 'Manager' not in ug and int(group_id) not in user_group_ids():
         raise CompError("you can't attach a group you are not a member of")
 
@@ -1640,7 +1640,7 @@ def attach_group_to_moduleset(group_id, modset_id, gtype="publication"):
 
     if w.role == "Everybody":
         if gtype == "responsible":
-            raise CompError("Giving responsability of a moduleset to Everybody is not allowed")
+            raise CompError("Giving responsibility of a moduleset to Everybody is not allowed")
     if 'Manager' not in ug and int(group_id) not in user_group_ids():
         raise CompError("you can't attach a group you are not a member of")
 

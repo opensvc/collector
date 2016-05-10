@@ -5270,7 +5270,7 @@ def json_tree_action_set_modset_group_responsible(group_id, modset_id):
         return {"err": "group not found"}
 
     if w.role == "Everybody":
-        return {"err": "Giving responsability of a moduleset to Everybody is not allowed"}
+        return {"err": "Giving responsibility of a moduleset to Everybody is not allowed"}
 
     q = db.comp_moduleset_team_publication.modset_id == modset_id
     q &= db.comp_moduleset_team_publication.group_id == group_id
@@ -5335,7 +5335,7 @@ def json_tree_action_set_rset_group_responsible(group_id, rset_id):
         return {"err": "group not found"}
 
     if w.role == "Everybody":
-        return {"err": "Giving responsability of a ruleset to Everybody is not allowed"}
+        return {"err": "Giving responsibility of a ruleset to Everybody is not allowed"}
 
     q = db.comp_ruleset_team_publication.ruleset_id == rset_id
     q &= db.comp_ruleset_team_publication.group_id == group_id

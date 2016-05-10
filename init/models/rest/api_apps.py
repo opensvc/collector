@@ -419,7 +419,7 @@ class rest_post_app_responsible(rest_post_handler):
 
         id = db.apps_responsibles.insert(app_id=app_id, group_id=group_id)
 
-        fmt = 'attached group %(g)s to app %(u)s'
+        fmt = 'app %(u)s responsibility given to group %(g)s'
         d = dict(g=group.role, u=app.app)
 
         table_modified("apps_responsibles")
@@ -499,7 +499,7 @@ class rest_delete_app_responsible(rest_delete_handler):
 
         db(q).delete()
 
-        fmt = 'detached group %(g)s from app %(u)s'
+        fmt = 'app %(u)s responsibility revoked for group %(g)s'
         d = dict(g=group.role, u=app.app)
 
         table_modified("apps_responsibles")
