@@ -56,6 +56,7 @@ class rest_handler(object):
         return regexp.match(args)
 
     def handle(self, *args, **vars):
+        response.headers["Content-Type"] = "application/json"
         # extract args from the path
         # /a/<b>/c/<d> => [b, d]
         nargs = []
@@ -207,8 +208,12 @@ class rest_post_handler(rest_handler):
         rest_handler.__init__(self, **vars)
 
     def handle(self, *args, **vars):
+        response.headers["Content-Type"] = "application/json"
         if request.env.http_content_type and "application/json" in request.env.http_content_type:
-            data = json.loads(request.body.read())
+            try:
+                data = json.loads(request.body.read())
+            except:
+                return rest_handler.handle(self, *args, **vars)
             if type(data) == list:
                 return self.handle_list(data, args, vars)
             elif type(data) == dict:
@@ -268,8 +273,12 @@ class rest_put_handler(rest_handler):
         rest_handler.__init__(self, **vars)
 
     def handle(self, *args, **vars):
+        response.headers["Content-Type"] = "application/json"
         if request.env.http_content_type and "application/json" in request.env.http_content_type:
-            data = json.loads(request.body.read())
+            try:
+                data = json.loads(request.body.read())
+            except:
+                return rest_handler.handle(self, *args, **vars)
             if type(data) == list:
                 return self.handle_list(data, args, vars)
             elif type(data) == dict:
@@ -287,8 +296,12 @@ class rest_delete_handler(rest_handler):
         rest_handler.__init__(self, **vars)
 
     def handle(self, *args, **vars):
+        response.headers["Content-Type"] = "application/json"
         if request.env.http_content_type and "application/json" in request.env.http_content_type:
-            data = json.loads(request.body.read())
+            try:
+                data = json.loads(request.body.read())
+            except:
+                return rest_handler.handle(self, *args, **vars)
             if type(data) == list:
                 return self.handle_list(data, args, vars)
             elif type(data) == dict:
