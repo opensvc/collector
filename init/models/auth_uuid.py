@@ -148,7 +148,7 @@ def node_auth():
     return node_login_aux
 
 def auth_is_user(email):
-    if db(db.auth_user.email==email).select().first() is None:
+    if db(db.auth_user.email==email).select(db.auth_user.id).first() is None:
         return False
     return True
 
