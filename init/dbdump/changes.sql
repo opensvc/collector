@@ -6006,4 +6006,9 @@ create view v_disk_app_dedup as
                    group by svcdisks.disk_id, svcdisks.disk_region, diskinfo.disk_arrayid, diskinfo.disk_group
 ;
 
+insert into auth_permission set group_id=(select id from auth_group where role = "Manager"), name="impersonate", table_name="auth_user", record_id=0;
+
+insert ignore into auth_group (role, privilege) values ("Impersonate", "T");
+
+insert into auth_permission set group_id=(select id from auth_group where role = "Impersonate"), name="impersonate", table_name="auth_user", record_id=0;
 
