@@ -9,7 +9,7 @@ def json(value, default=custom_json):
 
 try:
     response.write(json(response._vars),escape=False)
-    response.headers['Content-Type']='text/json'
+    response.headers['Content-Type']='application/json'
 except Exception as e:
     raise HTTP(405,'no json: %s'%str(e))
 pass
