@@ -101,22 +101,30 @@ function app_properties(divid, options) {
 				"request_parameters": [data.id],
 				"limit": "50",
 				"key": "svcname",
+				"id": "svc_id",
 				"title": "app_properties.services",
 				"bgcolor": "seagreen",
 				"e_title": o.info_services_title,
 				"e_list": o.info_services,
-				"lowercase": true
+				"lowercase": true,
+				"ondblclick": function(divid, data) {
+					service_tabs(divid, {"svc_id": data.id})
+				}
 			})
 			tab_properties_generic_list({
 				"request_service": "R_APP_NODES",
 				"request_parameters": [data.id],
 				"limit": "50",
 				"key": "nodename",
+				"id": "node_id",
 				"title": "app_properties.nodes",
 				"bgcolor": "aqua",
 				"e_title": o.info_nodes_title,
 				"e_list": o.info_nodes,
-				"lowercase": true
+				"lowercase": true,
+				"ondblclick": function(divid, data) {
+					node_tabs(divid, {"node_id": data.id})
+				}
 			})
 			tab_properties_generic_updater({
 				"div": o.div,

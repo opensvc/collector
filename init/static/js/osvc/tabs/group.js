@@ -50,21 +50,22 @@ function group_properties(divid, options) {
 
 	// store parameters
 	o.divid = divid
-	o.div = $("#"+divid);
+	o.div = $("#"+divid)
 	o.options = options
 
 	o.init = function() {
-		o.info_id = o.div.find("#id");
-		o.info_description = o.div.find("#description");
-		o.info_privilege = o.div.find("#privilege");
-		o.info_users_title = o.div.find("#users_title");
-		o.info_users = o.div.find("#users");
-		o.info_nodes_title = o.div.find("#nodes_title");
-		o.info_nodes = o.div.find("#nodes");
-		o.info_apps_title = o.div.find("#apps_title");
-		o.info_apps = o.div.find("#apps");
-		o.info_services_title = o.div.find("#services_title");
-		o.info_services = o.div.find("#services");
+		o.info_id = o.div.find("#id")
+		o.info_role = o.div.find("#role")
+		o.info_description = o.div.find("#description")
+		o.info_privilege = o.div.find("#privilege")
+		o.info_users_title = o.div.find("#users_title")
+		o.info_users = o.div.find("#users")
+		o.info_nodes_title = o.div.find("#nodes_title")
+		o.info_nodes = o.div.find("#nodes")
+		o.info_apps_title = o.div.find("#apps_title")
+		o.info_apps = o.div.find("#apps")
+		o.info_services_title = o.div.find("#services_title")
+		o.info_services = o.div.find("#services")
 
 		o.load_group()
 	}
@@ -75,8 +76,9 @@ function group_properties(divid, options) {
 				return
 			}
 			var data = jd.data[0]
-			o.info_description.html(data.description);
-			o.info_id.html(data.id);
+			o.info_role.html(data.role)
+			o.info_description.html(data.description)
+			o.info_id.html(data.id)
 
 			tab_properties_generic_boolean({
 				"div": o.info_privilege,
@@ -98,41 +100,62 @@ function group_properties(divid, options) {
 				},
 				"limit": 50,
 				"key": "nodename",
+				"id": "node_id",
 				"bgcolor": "aqua",
 				"e_title": o.info_nodes_title,
-				"e_list": o.info_nodes
+				"e_list": o.info_nodes,
+				"ondblclick": function(divid, data) {
+					node_tabs(divid, {"node_id": data.id})
+				}
 			})
 			tab_properties_generic_list({
 				"request_service": "R_GROUP_SERVICES",
 				"request_parameters": [data.id],
 				"limit": 50,
 				"key": "svcname",
+				"id": "svc_id",
 				"bgcolor": "seagreen",
 				"e_title": o.info_services_title,
-				"e_list": o.info_services
+				"e_list": o.info_services,
+				"ondblclick": function(divid, data) {
+					service_tabs(divid, {"svc_id": data.id})
+				}
 			})
 			tab_properties_generic_list({
 				"request_service": "R_GROUP_USERS",
 				"request_parameters": [data.id],
 				"request_data": {
-					"props": "first_name,last_name"
+					"props": "id,first_name,last_name"
 				},
 				"limit": 50,
 				"key": function(data) {
-					return data.first_name + " " + data.last_name
+					var s = data.first_name + " " + data.last_name
+					if (s == " ") {
+						s = data.email
+					}
+					return s
 				},
+				"id": "id",
 				"bgcolor": "salmon",
 				"e_title": o.info_users_title,
-				"e_list": o.info_users
+				"e_list": o.info_users,
+				"ondblclick": function(divid, data) {
+					user_tabs(divid, {"user_id": data.id, "fullname": data.name})
+				}
+
 			})
 			tab_properties_generic_list({
 				"request_service": "R_GROUP_APPS",
 				"request_parameters": [data.id],
 				"limit": 50,
 				"key": "app",
+				"id": "id",
 				"bgcolor": "deeppink",
 				"e_title": o.info_apps_title,
-				"e_list": o.info_apps
+				"e_list": o.info_apps,
+				"ondblclick": function(divid, data) {
+					app_tabs(divid, {"app_id": data.id, "app_name": data.name})
+				}
 			})
 		})
 

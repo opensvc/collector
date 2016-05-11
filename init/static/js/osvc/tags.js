@@ -89,6 +89,16 @@ function tags(options) {
 				return
 			}
 		})
+		e.bind("dblclick", function(event){
+			if (!o.options.ondblclick) {
+				return
+			}
+			var e = $("<div class='searchtab' style='box-sizing:border-box'><div>")
+			e.uniqueId()
+			var uid = e.attr("id")
+			$(".flash").empty().append(e).show("fold")
+			o.options.ondblclick(uid, {"name": $(this).text(), "id": $(this).attr("tag_id")})
+		})
 		e.draggable({
 			"containment": o.div,
 			"opacity": 0.9,
@@ -439,6 +449,9 @@ function app_responsibles(options) {
 	options.am_i_responsible = function(callback) {
 		services_osvcgetrest("R_APP_AM_I_RESPONSIBLE", [options.app_id], "", callback)
 	}
+	options.ondblclick = function(divid, data) {
+		group_tabs(divid, {"group_id": data.id, "group_name": data.name})
+	}
 	return tags(options)
 }
 
@@ -469,6 +482,9 @@ function app_publications(options) {
 	}
 	options.am_i_responsible = function(callback) {
 		services_osvcgetrest("R_APP_AM_I_RESPONSIBLE", [options.app_id], "", callback)
+	}
+	options.ondblclick = function(divid, data) {
+		group_tabs(divid, {"group_id": data.id, "group_name": data.name})
 	}
 	return tags(options)
 }
@@ -501,6 +517,9 @@ function form_responsibles(options) {
 	options.am_i_responsible = function(callback) {
 		services_osvcgetrest("R_FORM_AM_I_RESPONSIBLE", [options.form_id], "", callback)
 	}
+	options.ondblclick = function(divid, data) {
+		group_tabs(divid, {"group_id": data.id, "group_name": data.name})
+	}
 	return tags(options)
 }
 
@@ -531,6 +550,9 @@ function form_publications(options) {
 	}
 	options.am_i_responsible = function(callback) {
 		services_osvcgetrest("R_FORM_AM_I_RESPONSIBLE", [options.form_id], "", callback)
+	}
+	options.ondblclick = function(divid, data) {
+		group_tabs(divid, {"group_id": data.id, "group_name": data.name})
 	}
 	return tags(options)
 }
@@ -563,6 +585,9 @@ function ruleset_responsibles(options) {
 	options.am_i_responsible = function(callback) {
 		services_osvcgetrest("/compliance/rulesets/%1/am_i_responsible", [options.ruleset_id], "", callback)
 	}
+	options.ondblclick = function(divid, data) {
+		group_tabs(divid, {"group_id": data.id, "group_name": data.name})
+	}
 	return tags(options)
 }
 
@@ -593,6 +618,77 @@ function ruleset_publications(options) {
 	}
 	options.am_i_responsible = function(callback) {
 		services_osvcgetrest("/compliance/rulesets/%1/am_i_responsible", [options.ruleset_id], "", callback)
+	}
+	options.ondblclick = function(divid, data) {
+		group_tabs(divid, {"group_id": data.id, "group_name": data.name})
+	}
+	return tags(options)
+}
+
+function prov_template_responsibles(options) {
+	options.tag_name = "role"
+	options.bgcolor = "salmon"
+	options.get_tags = function(fval, callback, callback_err) {
+		services_osvcgetrest("/provisioning_templates/%1/responsibles", [options.tpl_id], {
+			"orderby": options.tag_name,
+			"props": "id," + options.tag_name,
+			"limit": "0"
+		}, callback, callback_err)
+	}
+	options.get_candidates = function(fval, callback, callback_err) {
+		services_osvcgetrest("/groups", "", {
+			"orderby": options.tag_name,
+			"props": "id," + options.tag_name,
+			"limit": "0",
+			"meta": "false",
+			"filters": ["privilege F", options.tag_name+" "+fval]
+		}, callback, callback_err)
+	}
+	options.attach = function(tag_data, callback, callback_err) {
+		services_osvcpostrest("/provisioning_templates/%1/responsibles/%2", [options.tpl_id, tag_data.id], "", "", callback, callback_err)
+	}
+	options.detach = function(tag, callback, callback_err) {
+		services_osvcdeleterest("/provisioning_templates/%1/responsibles/%2", [options.tpl_id, tag.attr("tag_id")], "", "", callback, callback_err)
+	}
+	options.am_i_responsible = function(callback) {
+		services_osvcgetrest("/provisioning_templates/%1/am_i_responsible", [options.tpl_id], "", callback)
+	}
+	options.ondblclick = function(divid, data) {
+		group_tabs(divid, {"group_id": data.id, "group_name": data.name})
+	}
+	return tags(options)
+}
+
+function prov_template_publications(options) {
+	options.tag_name = "role"
+	options.bgcolor = "salmon"
+	options.get_tags = function(fval, callback, callback_err) {
+		services_osvcgetrest("/provisioning_templates/%1/publications", [options.tpl_id], {
+			"orderby": options.tag_name,
+			"props": "id," + options.tag_name,
+			"limit": "0"
+		}, callback, callback_err)
+	}
+	options.get_candidates = function(fval, callback, callback_err) {
+		services_osvcgetrest("/groups", "", {
+			"orderby": options.tag_name,
+			"props": "id," + options.tag_name,
+			"limit": "0",
+			"meta": "false",
+			"filters": ["privilege F", options.tag_name+" "+fval]
+		}, callback, callback_err)
+	}
+	options.attach = function(tag_data, callback, callback_err) {
+		services_osvcpostrest("/provisioning_templates/%1/publications/%2", [options.tpl_id, tag_data.id], "", "", callback, callback_err)
+	}
+	options.detach = function(tag, callback, callback_err) {
+		services_osvcdeleterest("/provisioning_templates/%1/publications/%2", [options.tpl_id, tag.attr("tag_id")], "", "", callback, callback_err)
+	}
+	options.am_i_responsible = function(callback) {
+		services_osvcgetrest("/provisioning_templates/%1/am_i_responsible", [options.tpl_id], "", callback)
+	}
+	options.ondblclick = function(divid, data) {
+		group_tabs(divid, {"group_id": data.id, "group_name": data.name})
 	}
 	return tags(options)
 }
@@ -625,6 +721,9 @@ function modset_responsibles(options) {
 	options.am_i_responsible = function(callback) {
 		services_osvcgetrest("/compliance/modulesets/%1/am_i_responsible", [options.modset_id], "", callback)
 	}
+	options.ondblclick = function(divid, data) {
+		group_tabs(divid, {"group_id": data.id, "group_name": data.name})
+	}
 	return tags(options)
 }
 
@@ -655,6 +754,9 @@ function modset_publications(options) {
 	}
 	options.am_i_responsible = function(callback) {
 		services_osvcgetrest("/compliance/modulesets/%1/am_i_responsible", [options.modset_id], "", callback)
+	}
+	options.ondblclick = function(divid, data) {
+		group_tabs(divid, {"group_id": data.id, "group_name": data.name})
 	}
 	return tags(options)
 }
@@ -688,6 +790,9 @@ function safe_file_responsibles(options) {
 	options.am_i_responsible = function(callback) {
 		services_osvcgetrest("/safe/%1/am_i_responsible", [options.uuid], "", callback)
 	}
+	options.ondblclick = function(divid, data) {
+		group_tabs(divid, {"group_id": data.id, "group_name": data.name})
+	}
 	return tags(options)
 }
 
@@ -718,6 +823,9 @@ function safe_file_publications(options) {
 	}
 	options.am_i_responsible = function(callback) {
 		services_osvcgetrest("/safe/%1/am_i_responsible", [options.uuid], "", callback)
+	}
+	options.ondblclick = function(divid, data) {
+		group_tabs(divid, {"group_id": data.id, "group_name": data.name})
 	}
 	return tags(options)
 }
@@ -755,6 +863,9 @@ function user_org_membership(options) {
 		}
 		callback({"data": true})
 	}
+	options.ondblclick = function(divid, data) {
+		group_tabs(divid, {"group_id": data.id, "group_name": data.name})
+	}
 	return tags(options)
 }
 
@@ -790,6 +901,9 @@ function user_priv_membership(options) {
 			return
 		}
 		callback({"data": true})
+	}
+	options.ondblclick = function(divid, data) {
+		group_tabs(divid, {"group_id": data.id, "group_name": data.name})
 	}
 	return tags(options)
 }

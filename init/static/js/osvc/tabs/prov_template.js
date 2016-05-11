@@ -78,16 +78,14 @@ function prov_template_properties(divid, options) {
 				services_osvcpostrest("/provisioning_templates/%1", [o.options.tpl_id], "", data, callback, error_callback)
 			}
 		})
-		tab_properties_generic_list({
-			"request_service": "/provisioning_templates/%1/responsibles",
-			"request_parameters": [o.options.tpl_id],
-			"limit": "50",
-			"key": "role",
-			"item_class": "guys16",
-			"e_title": o.info_responsibles_title,
-			"e_list": o.info_responsibles
+		prov_template_publications({
+			"tid": o.info_publications,
+			"tpl_id": data.id
 		})
-
+		prov_template_responsibles({
+			"tid": o.info_responsibles,
+			"tpl_id": data.id
+		})
 	}
 
 	o.div.load("/init/static/views/prov_template_properties.html", function() {

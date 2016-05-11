@@ -2046,6 +2046,11 @@ colprops = {
 		"img": "guys16",
 		"title": "Team responsible"
 	},
+	"tpl_team_publication": {
+		"_class": "groups",
+		"img": "guys16",
+		"title": "Team publication"
+	},
 	"ttl": {
 		"img": "dns16",
 		"title": "Time to Live"

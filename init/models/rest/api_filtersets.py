@@ -114,15 +114,17 @@ class rest_get_filterset_usage(rest_get_handler):
         q = db.gen_filtersets_filters.encap_fset_id == fset.id
         q &= db.gen_filtersets.id == db.gen_filtersets_filters.fset_id
         o = db.gen_filtersets.fset_name
-        rows = db(q).select(o, orderby=o, groupby=o, cacheable=False)
-        data["filtersets"] = [ r.fset_name for r in rows ]
+        i = db.gen_filtersets.id
+        rows = db(q).select(o, i, orderby=o, groupby=o, cacheable=False)
+        data["filtersets"] = [ {"fset_name": r.fset_name, "id": r.id} for r in rows ]
 
         #
         q = db.comp_rulesets_filtersets.fset_id == fset.id
         q &= db.comp_rulesets_filtersets.ruleset_id == db.comp_rulesets.id
         o = db.comp_rulesets.ruleset_name
-        rows = db(q).select(o, orderby=o, cacheable=False)
-        data["rulesets"] = [ r.ruleset_name for r in rows ]
+        i = db.comp_rulesets.id
+        rows = db(q).select(o, i, orderby=o, cacheable=False)
+        data["rulesets"] = [ {"ruleset_name": r.ruleset_name, "id": r.id} for r in rows ]
 
         #
         q = db.gen_filterset_check_threshold.fset_id == fset.id

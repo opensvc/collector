@@ -201,22 +201,31 @@ function user_properties(divid, options) {
 			"request_parameters": [data.id],
 			"limit": "0",
 			"key": "app",
+			"id": "id",
 			"bgcolor": "deeppink",
 			"title": "user_properties.resp_apps",
 			"e_title": o.info_resp_apps_title,
 			"e_list": o.info_resp_apps,
-			"lowercase": false
+			"lowercase": false,
+			"ondblclick": function(divid, data) {
+				app_tabs(divid, {"app_id": data.id, "app_name": data.name})
+			}
+
 		})
 		tab_properties_generic_list({
 			"request_service": "R_USER_APPS_PUBLICATION",
 			"request_parameters": [data.id],
 			"limit": "0",
 			"key": "app",
+			"id": "id",
 			"bgcolor": "deeppink",
 			"title": "user_properties.visible_apps",
 			"e_title": o.info_visible_apps_title,
 			"e_list": o.info_visible_apps,
-			"lowercase": false
+			"lowercase": false,
+			"ondblclick": function(divid, data) {
+				app_tabs(divid, {"app_id": data.id, "app_name": data.name})
+			}
 		})
 
 		services_osvcgetrest("R_USER_FILTERSET", [o.options.user_id], "", function(jd) {

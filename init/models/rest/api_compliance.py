@@ -597,24 +597,24 @@ class rest_get_compliance_ruleset_usage(rest_get_handler):
         #
         q = db.comp_moduleset_ruleset.ruleset_id == rset.id
         q &= db.comp_moduleset_ruleset.modset_id == db.comp_moduleset.id
-        rows = db(q).select(db.comp_moduleset.modset_name, cacheable=False)
-        data["modulesets"] = [ r.modset_name for r in rows ]
+        rows = db(q).select(db.comp_moduleset.modset_name, db.comp_moduleset.id, cacheable=False)
+        data["modulesets"] = [ {"modset_name": r.modset_name, "id": r.id} for r in rows ]
 
         #
         q = db.comp_rulesets_rulesets.child_rset_id == rset.id
         q &= db.comp_rulesets_rulesets.parent_rset_id == db.comp_rulesets.id
-        rows = db(q).select(db.comp_rulesets.ruleset_name, cacheable=False)
-        data["rulesets"] = [ r.ruleset_name for r in rows ]
+        rows = db(q).select(db.comp_rulesets.ruleset_name, db.comp_rulesets.id, cacheable=False)
+        data["rulesets"] = [ {"ruleset_name": r.ruleset_name, "id": r.id} for r in rows ]
 
         #
         q = db.comp_rulesets_nodes.ruleset_id == rset.id
         rows = db(q).select(cacheable=False)
-        data["nodes"] = [ get_nodename(r.node_id) for r in rows ]
+        data["nodes"] = [ {"node_id": r.node_id, "nodename": r.nodename} for r in rows ]
 
         #
         q = db.comp_rulesets_services.ruleset_id == rset.id
         rows = db(q).select(cacheable=False)
-        data["services"] = [ get_svcname(r.svc_id) for r in rows ]
+        data["services"] = [ {"svc_id": r.svc_id, "svcname": r.svcname} for r in rows ]
 
         return dict(data=data)
 
@@ -1227,8 +1227,9 @@ class rest_get_compliance_moduleset_usage(rest_get_handler):
         q = db.comp_moduleset_moduleset.child_modset_id == modset_id
         q &= db.comp_moduleset.id == db.comp_moduleset_moduleset.parent_modset_id
         o = db.comp_moduleset.modset_name
-        rows = db(q).select(o, orderby=o, cacheable=False)
-        data["modulesets"] = [ r.modset_name for r in rows ]
+        i = db.comp_moduleset.id
+        rows = db(q).select(o, i, orderby=o, cacheable=False)
+        data["modulesets"] = [ {"modset_name": r.modset_name, "id": r.id} for r in rows ]
 
         return dict(data=data)
 

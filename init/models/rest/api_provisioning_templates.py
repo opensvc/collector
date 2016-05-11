@@ -23,11 +23,15 @@ class rest_get_provisioning_templates(rest_get_table_handler):
           path="/provisioning_templates",
           tables=["prov_templates"],
           desc=desc,
+          left=db.prov_template_team_publication.on(db.prov_templates.id==db.prov_template_team_publication.tpl_id),
+          groupby=db.prov_templates.id,
           examples=examples,
         )
 
     def handler(self, **vars):
         q = db.prov_templates.id > 0
+        if "Manager" not in user_groups():
+            q &= db.prov_template_team_publication.group_id.belongs(user_group_ids())
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -45,12 +49,16 @@ class rest_get_provisioning_template(rest_get_line_handler):
           self,
           path="/provisioning_templates/<id>",
           tables=["prov_templates"],
+          left=db.prov_template_team_publication.on(db.prov_templates.id==db.prov_template_team_publication.tpl_id),
+          groupby=db.prov_templates.id,
           desc=desc,
           examples=examples,
         )
 
     def handler(self, id, **vars):
         q = db.prov_templates.id == int(id)
+        if "Manager" not in user_groups():
+            q &= db.prov_template_team_publication.group_id.belongs(user_group_ids())
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -443,5 +451,209 @@ class rest_post_provisioning_templates_responsibles(rest_post_handler):
 
         return rest_post_provisioning_template_responsible().handler(tpl_id, group_id, **vars)
 
+
+class rest_get_provisioning_template_publications(rest_get_table_handler):
+    def __init__(self):
+        desc = [
+          "List groups publication for the provisioning template.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/provisioning_template/1/publications"
+        ]
+
+        rest_get_table_handler.__init__(
+          self,
+          path="/provisioning_templates/<id>/publications",
+          tables=["auth_group"],
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, id, **vars):
+        #prov_template_published(id)
+        q = db.prov_template_team_publication.tpl_id == id
+        q &= db.prov_template_team_publication.group_id == db.auth_group.id
+        self.set_q(q)
+        data = self.prepare_data(**vars)
+        return data
+
+class rest_delete_provisioning_template_publication(rest_delete_handler):
+    def __init__(self):
+        desc = [
+          "Remove a provisioning template publication group",
+        ]
+        examples = [
+          "# curl -u %(email)s -X DELETE -o- https://%(collector)s/init/rest/api/provisioning_templates/1/publications/2"
+        ]
+
+        rest_delete_handler.__init__(
+          self,
+          path="/provisioning_templates/<id>/publications/<group>",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, tpl_id, group_id, **vars):
+        check_privilege("ProvisioningManager")
+        prov_template_responsible(tpl_id)
+        q = db.prov_template_team_publication.tpl_id == tpl_id
+        q &= db.prov_template_team_publication.group_id == group_id
+
+        fmt = "Form %(tpl_id)s publication to group %(group_id)s removed"
+        d = dict(tpl_id=str(tpl_id), group_id=str(group_id))
+
+        row = db(q).select().first()
+        if row is None:
+            return dict(info="Form %(tpl_id)s publication to group %(group_id)s already removed" % d)
+
+        db(q).delete()
+
+        _log(
+          'provisioning_template.publication.delete',
+          fmt,
+          d
+        )
+        l = {
+          'event': 'prov_template_publication_change',
+          'data': {'id': tpl_id},
+        }
+        _websocket_send(event_msg(l))
+
+        return dict(info=fmt%d)
+
+class rest_delete_provisioning_templates_publications(rest_delete_handler):
+    def __init__(self):
+        desc = [
+          "Remove publication groups from provisioning templates",
+        ]
+        examples = [
+          """# curl -u %(email)s -X DELETE -o- https://%(collector)s/init/rest/api/provisioning_templates_publications?filters[]="tpl_id 1" """
+        ]
+
+        rest_delete_handler.__init__(
+          self,
+          path="/provisioning_templates_publications",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, **vars):
+        if not "tpl_id" in vars:
+            raise Exception("The 'tpl_id' key is mandatory")
+        tpl_id = vars.get("tpl_id")
+        del(vars["tpl_id"])
+
+        if not "group_id" in vars:
+            raise Exception("The 'group_id' key is mandatory")
+        group_id = vars.get("group_id")
+        del(vars["group_id"])
+
+        return rest_delete_provisioning_template_publication().handler(tpl_id, group_id, **vars)
+
+class rest_post_provisioning_template_publication(rest_post_handler):
+    def __init__(self):
+        desc = [
+          "Add a provisioning template publication group",
+        ]
+        examples = [
+          "# curl -u %(email)s -X POST -o- https://%(collector)s/init/rest/api/provisioning_templates/1/publications/2"
+        ]
+
+        rest_post_handler.__init__(
+          self,
+          path="/provisioning_templates/<id>/publications/<group>",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, tpl_id, group_id, **vars):
+        check_privilege("ProvisioningManager")
+        prov_template_responsible(tpl_id)
+
+        try:
+            id = int(group_id)
+            q = db.auth_group.id == group_id
+        except:
+            q = db.auth_group.role == group_id
+        group = db(q).select().first()
+        if group is None:
+            raise Exception("Group %s does not exist" % str(group_id))
+
+        fmt = "Form %(tpl_id)s publication to group %(group_id)s added"
+        d = dict(tpl_id=str(tpl_id), group_id=str(group_id))
+
+        q = db.prov_template_team_publication.tpl_id == tpl_id
+        q &= db.prov_template_team_publication.group_id == group.id
+        row = db(q).select().first()
+        if row is not None:
+            return dict(info="Form %(tpl_id)s publication to group %(group_id)s already added" % d)
+
+        db.prov_template_team_publication.insert(tpl_id=tpl_id, group_id=group.id)
+
+        _log(
+          'provisioning_template.publication.add',
+          fmt,
+          d
+        )
+        l = {
+          'event': 'prov_template_publication_change',
+          'data': {'id': tpl_id},
+        }
+        _websocket_send(event_msg(l))
+
+        return dict(info=fmt%d)
+
+class rest_post_provisioning_templates_publications(rest_post_handler):
+    def __init__(self):
+        desc = [
+          "Add publication groups to provisioning templates",
+        ]
+        examples = [
+          "# curl -u %(email)s --header 'Content-Type: application/json' -d @/tmp/data.json -X POST -o- https://%(collector)s/init/rest/api/provisioning_templates_publications"
+        ]
+
+        rest_post_handler.__init__(
+          self,
+          path="/provisioning_templates_publications",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, **vars):
+        if not "tpl_id" in vars:
+            raise Exception("The 'tpl_id' key is mandatory")
+        tpl_id = vars.get("tpl_id")
+        del(vars["tpl_id"])
+
+        if not "group_id" in vars:
+            raise Exception("The 'group_id' key is mandatory")
+        group_id = vars.get("group_id")
+        del(vars["group_id"])
+
+        return rest_post_provisioning_template_publication().handler(tpl_id, group_id, **vars)
+
+
+#
+class rest_get_provisioning_template_am_i_responsible(rest_get_handler):
+    def __init__(self):
+        desc = [
+          "- return true if the requester is responsible for this provisioning template.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/provisioning_templates/1/am_i_responsible",
+        ]
+        rest_get_handler.__init__(
+          self,
+          path="/provisioning_templates/<id>/am_i_responsible",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, id, **vars):
+        try:
+            prov_template_responsible(id)
+            return dict(data=True)
+        except:
+            return dict(data=False)
 
 

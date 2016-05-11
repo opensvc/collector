@@ -473,8 +473,15 @@ tab_properties_generic_list = function(options) {
 	if (options.limit) {
 		options.request_data.limit = options.limit
 	}
-	if (options.key && !options.request_data.props) {
-		options.request_data.props = options.key
+	if (!options.request_data.props) {
+		var props = []
+		if (options.key) {
+			props.push(options.key)
+		}
+		if (options.id) {
+			props.push(options.id)
+		}
+		options.request_data.props = props.join(",")
 	}
 	if (options.data) {
 		render(options.data, options.data.length, options.data.length)
@@ -522,7 +529,24 @@ tab_properties_generic_list = function(options) {
 				val.toLowerCase()
 			}
 			e.text(val)
+			if (options.id) {
+				e.attr("tag_id", data[i][options.id])
+			}
 			options.e_list.append(e)
+			e.bind("dblclick", function(event){
+				if (!options.ondblclick) {
+					return
+				}
+				var e = $("<div class='searchtab' style='box-sizing:border-box'><div>")
+				e.uniqueId()
+				var uid = e.attr("id")
+				$(".flash").empty().append(e).show("fold")
+				options.ondblclick(uid, {
+					"name": $(this).text(),
+					"id": $(this).attr("tag_id")
+				})
+			})
+
 		}
 		if (total > n) {
 			var e = $("<span></span>")

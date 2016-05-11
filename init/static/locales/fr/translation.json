@@ -1191,6 +1191,7 @@
 		"nodes": "Noeuds"
 	},
 	"group_properties": {
+		"name": "Nom",
 		"properties": "propriétés",
 		"description": "description",
 		"id": "id",

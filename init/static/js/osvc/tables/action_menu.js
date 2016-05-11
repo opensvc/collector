@@ -520,6 +520,20 @@ function table_action_menu_init_data(t) {
 							"min": 1
 						},
 						{
+							"title": "action_menu.add_publication",
+							"class": "add16",
+							"fn": "data_action_add_prov_templates_publication",
+							"privileges": ["Manager", "ProvisioningManager"],
+							"min": 1
+						},
+						{
+							"title": "action_menu.del_publication",
+							"class": "del16",
+							"fn": "data_action_del_prov_templates_publication",
+							"privileges": ["Manager", "ProvisioningManager"],
+							"min": 1
+						},
+						{
 							"title": "action_menu.add_responsible",
 							"class": "add16",
 							"fn": "data_action_add_prov_templates_responsible",
@@ -5148,6 +5162,40 @@ function data_action_del_prov_templates_responsible(t, e) {
 	data_action_generic_selector(t, e, {
 		"requestor": services_osvcdeleterest,
 		"request_service": "/provisioning_templates_responsibles",
+		"selector": generic_selector_org_groups,
+		"request_data_entry": function(selected, data) {
+			return {
+				"group_id": selected,
+				"tpl_id": data["id"]
+			}
+		}
+	})
+}
+
+//
+// data action: add provisioning templates publications
+//
+function data_action_add_prov_templates_publication(t, e) {
+	data_action_generic_selector(t, e, {
+		"requestor": services_osvcpostrest,
+		"request_service": "/provisioning_templates_publications",
+		"selector": generic_selector_org_groups,
+		"request_data_entry": function(selected, data) {
+			return {
+				"group_id": selected,
+				"tpl_id": data["id"]
+			}
+		}
+	})
+}
+
+//
+// data action: del provisioning templates publications
+//
+function data_action_del_prov_templates_publication(t, e) {
+	data_action_generic_selector(t, e, {
+		"requestor": services_osvcdeleterest,
+		"request_service": "/provisioning_templates_publications",
 		"selector": generic_selector_org_groups,
 		"request_data_entry": function(selected, data) {
 			return {

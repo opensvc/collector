@@ -9,7 +9,8 @@ class table_templates(HtmlTable):
                      'tpl_comment',
                      'tpl_created',
                      'tpl_author',
-                     'tpl_team_responsible']
+                     'tpl_team_responsible',
+                     'tpl_team_publication']
         self.keys = ['id']
         self.colprops = {
             'id': HtmlTableColumn(
@@ -38,6 +39,10 @@ class table_templates(HtmlTable):
             ),
             'tpl_team_responsible': HtmlTableColumn(
                 field = 'tpl_team_responsible',
+                table = 'v_prov_templates',
+            ),
+            'tpl_team_publication': HtmlTableColumn(
+                field = 'tpl_team_publication',
                 table = 'v_prov_templates',
             ),
         }

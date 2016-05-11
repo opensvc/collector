@@ -231,7 +231,9 @@ def get_get_handlers(prefix=None):
        "provisioning_templates": [
              "rest_get_provisioning_templates",
              "rest_get_provisioning_template",
+             "rest_get_provisioning_template_am_i_responsible",
              "rest_get_provisioning_template_responsibles",
+             "rest_get_provisioning_template_publications",
        ],
        "resources": [
              "rest_get_resources",
@@ -472,6 +474,10 @@ def get_delete_handlers(prefix=None):
              "rest_delete_provisioning_templates",
              "rest_delete_provisioning_template",
              "rest_delete_provisioning_template_responsible",
+             "rest_delete_provisioning_template_publication",
+        ],
+        "provisioning_templates_publications": [
+             "rest_delete_provisioning_templates_publications",
         ],
         "provisioning_templates_responsibles": [
              "rest_delete_provisioning_templates_responsibles",
@@ -658,6 +664,10 @@ def get_post_handlers(prefix=None):
              "rest_post_provisioning_templates",
              "rest_post_provisioning_template",
              "rest_post_provisioning_template_responsible",
+             "rest_post_provisioning_template_publication",
+        ],
+        "provisioning_templates_publications": [
+             "rest_post_provisioning_templates_publications",
         ],
         "provisioning_templates_responsibles": [
              "rest_post_provisioning_templates_responsibles",

@@ -97,18 +97,26 @@ function fset_properties(divid, options) {
 			"request_parameters": [data.id],
 			"limit": "0",
 			"key": "nodename",
+			"id": "node_id",
 			"bgcolor": "aqua",
 			"e_title": o.info_nodes_title,
-			"e_list": o.info_nodes
+			"e_list": o.info_nodes,
+			"ondblclick": function(divid, data) {
+				node_tabs(divid, {"node_id": data.id})
+			}
 		})
 		tab_properties_generic_list({
 			"request_service": "/filtersets/%1/services",
 			"request_parameters": [data.id],
 			"limit": "0",
 			"key": "svcname",
+			"id": "svc_id",
 			"bgcolor": "seagreen",
 			"e_title": o.info_services_title,
-			"e_list": o.info_services
+			"e_list": o.info_services,
+			"ondblclick": function(divid, data) {
+				service_tabs(divid, {"svc_id": data.id})
+			}
 		})
 
 	}
@@ -117,15 +125,25 @@ function fset_properties(divid, options) {
 		services_osvcgetrest("/filtersets/%1/usage", [o.data.id], "", function(jd) {
 			tab_properties_generic_list({
 				"data": jd.data.filtersets,
+				"key": "fset_name",
+				"id": "id",
 				"bgcolor": "black",
 				"e_title": o.info_filtersets_title,
-				"e_list": o.info_filtersets
+				"e_list": o.info_filtersets,
+				"ondblclick": function(divid, data) {
+					filterset_tabs(divid, {"fset_id": data.id, "fset_name": data.name})
+				}
 			})
 			tab_properties_generic_list({
 				"data": jd.data.rulesets,
+				"key": "ruleset_name",
+				"id": "id",
 				"bgcolor": "#EE5464",
 				"e_title": o.info_rulesets_title,
-				"e_list": o.info_rulesets
+				"e_list": o.info_rulesets,
+				"ondblclick": function(divid, data) {
+					ruleset_tabs(divid, {"ruleset_id": data.id, "ruleset_name": data.name})
+				}
 			})
 			tab_properties_generic_list({
 				"data": jd.data.thresholds,

@@ -1195,6 +1195,7 @@
 		"nodes": "Nodes"
 	},
 	"group_properties": {
+		"name": "Name",
 		"properties": "Properties",
 		"description": "description",
 		"id": "id",

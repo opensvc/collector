@@ -354,10 +354,15 @@ function service_properties(divid, options)
 				"request_parameters": function(){return [o.div.find("#svc_app").text()]},
 				"limit": "0",
 				"key": "role",
+				"id": "id",
 				"bgcolor": "salmon",
 				"depends": ["svc_app"],
 				"e_title": o.responsibles_title,
-				"e_list": o.responsibles
+				"e_list": o.responsibles,
+				"ondblclick": function(divid, data) {
+					group_tabs(divid, {"group_id": data.id, "group_name": data.name})
+				}
+
 			})
 
 			tab_properties_generic_updater({

@@ -79,27 +79,37 @@ function modset_properties(divid, options) {
                         "request_parameters": [data.id],
                         "limit": "0",
                         "key": "modset_mod_name",
+                        "id": "id",
                         "bgcolor": "#EE5464",
                         "e_title": o.info_modules_title,
                         "e_list": o.info_modules
+
                 })
 		tab_properties_generic_list({
 			"request_service": "/compliance/modulesets/%1/nodes",
                         "request_parameters": [data.id],
                         "limit": "0",
                         "key": "nodename",
+                        "id": "node_id",
                         "bgcolor": "aqua",
                         "e_title": o.info_nodes_title,
-                        "e_list": o.info_nodes
+                        "e_list": o.info_nodes,
+			"ondblclick": function(divid, data) {
+				node_tabs(divid, {"node_id": data.id})
+			}
                 })
 		tab_properties_generic_list({
 			"request_service": "/compliance/modulesets/%1/services",
                         "request_parameters": [data.id],
                         "limit": "0",
                         "key": "svcname",
+                        "id": "svc_id",
                         "bgcolor": "seagreen",
                         "e_title": o.info_services_title,
-                        "e_list": o.info_services
+                        "e_list": o.info_services,
+			"ondblclick": function(divid, data) {
+				service_tabs(divid, {"svc_id": data.id})
+			}
                 })
 		tab_properties_generic_updater({
 			"div": o.div,
@@ -121,9 +131,14 @@ function modset_properties(divid, options) {
 		services_osvcgetrest("/compliance/modulesets/%1/usage", [o.data.id], "", function(jd) {
 			tab_properties_generic_list({
 				"data": jd.data.modulesets,
+				"key": "modset_name",
+				"id": "id",
 				"bgcolor": "#EE5464",
 				"e_title": o.info_modulesets_title,
-				"e_list": o.info_modulesets
+				"e_list": o.info_modulesets,
+				"ondblclick": function(divid, data) {
+					moduleset_tabs(divid, {"modset_id": data.id, "modset_name": data.name})
+				}
 			})
 		})
 	}

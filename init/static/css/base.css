@@ -956,6 +956,7 @@ div.error {
 	max-height: 90%;
 	background: #2d2d2d;
 	box-shadow: black -0px 10px 20px;
+	box-sizing: border-box;
 	padding-right: 16px;
 	overflow-y: scroll;
 }
@@ -3109,6 +3110,7 @@ a.jqplot-image-container-close {
 	-moz-border-radius: 4px;
 	-webkit-border-radius: 4px;
 	margin: 20px 0;
+	padding-bottom: 4px;
 }
 .searchtab > table {
 	width: 100%;
