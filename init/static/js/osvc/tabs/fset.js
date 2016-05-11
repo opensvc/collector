@@ -97,7 +97,7 @@ function fset_properties(divid, options) {
 			"request_parameters": [data.id],
 			"limit": "0",
 			"key": "nodename",
-			"item_class": "node16",
+			"bgcolor": "aqua",
 			"e_title": o.info_nodes_title,
 			"e_list": o.info_nodes
 		})
@@ -106,7 +106,7 @@ function fset_properties(divid, options) {
 			"request_parameters": [data.id],
 			"limit": "0",
 			"key": "svcname",
-			"item_class": "svc",
+			"bgcolor": "seagreen",
 			"e_title": o.info_services_title,
 			"e_list": o.info_services
 		})
@@ -117,19 +117,19 @@ function fset_properties(divid, options) {
 		services_osvcgetrest("/filtersets/%1/usage", [o.data.id], "", function(jd) {
 			tab_properties_generic_list({
 				"data": jd.data.filtersets,
-				"item_class": "svc",
+				"bgcolor": "black",
 				"e_title": o.info_filtersets_title,
 				"e_list": o.info_filtersets
 			})
 			tab_properties_generic_list({
 				"data": jd.data.rulesets,
-				"item_class": "comp16",
+				"bgcolor": "#EE5464",
 				"e_title": o.info_rulesets_title,
 				"e_list": o.info_rulesets
 			})
 			tab_properties_generic_list({
 				"data": jd.data.thresholds,
-				"item_class": "check16",
+				"bgcolor": "green",
 				"e_title": o.info_thresholds_title,
 				"e_list": o.info_thresholds
 			})

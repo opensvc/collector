@@ -104,6 +104,11 @@ input.aci, input.aci:focus {
 	min-height: 5em;
 }
 
+.tag_container {
+	display: flex;
+	flex-wrap: wrap;
+}
+
 .asset_tab {
 	display: flex;
 	flex-wrap: wrap;
@@ -426,7 +431,7 @@ img {
 	content: '\f146';
 }
 .tag_del {
-	padding: 0.1em 20px 0.1em 20px;
+	padding: 0 20px 0 20px;
 	min-height: 16px;
 	line-height: 1.7em;
 	margin: 0.1em;
@@ -465,7 +470,7 @@ img {
 	-webkit-border-radius:4px;
 	border-radius:4px;
 	background-color:#5d5d5d;
-	padding: 0.1em 20px 0.1em 20px;
+	padding: 0 20px 0 20px;
 	overflow:hidden;
 	cursor: pointer;
 }
@@ -473,10 +478,6 @@ img {
 	background-color:#EE5464;
 }
 .tag_drag {
-	background-image:url('../images/drag10.png');
-	background-position: 5px 4px;
-	background-repeat:no-repeat;
-	cursor: move;
 }
 .tag:before {
 	color: white;
@@ -492,7 +493,7 @@ img {
 	-moz-border-radius:4px;
 	-webkit-border-radius:4px;
 	border-radius:4px;
-	padding: 0.1em 20px 0.1em 20px;
+	padding: 0 20px 0 20px;
 	overflow:hidden;
 }
 .tag:hover {
@@ -1835,7 +1836,7 @@ ul.login_menu ul {
 	content: '\f0c1';
 }
 .prov:before {
-	color: lightgreen;
+	color: seagreen;
 	content: '\f0d0';
 }
 .lock:before {
@@ -2057,7 +2058,7 @@ ul.login_menu ul {
 	color: gold;
 }
 .guy16:before {
-	color: pink;
+	color: salmon;
 	content: '\f007';
 	font-family: awesome;
 }
@@ -2066,8 +2067,18 @@ ul.login_menu ul {
 	font-family: awesome;
 	color: gold;
 }
+.privilege16:before {
+	color: goldenrod;
+	content: '\f0a3';
+	font-family: awesome;
+}
+.resp16:before {
+	color: goldenrod;
+	content: '\f0c0';
+	font-family: awesome;
+}
 .guys16:before {
-	color: pink;
+	color: salmon;
 	content: '\f0c0';
 	font-family: awesome;
 }
@@ -2077,22 +2088,22 @@ ul.login_menu ul {
 	font-family: awesome;
 }
 .env16:before {
-	color: lightgreen;
+	color: seagreen;
 	content: '\f24d';
 	font-family: awesome;
 }
 .resource:before {
-	color: lightgreen;
+	color: seagreen;
 	content: '\f292';
 	font-family: awesome;
 }
 .svcinstance:before {
-	color: lightgreen;
+	color: seagreen;
 	content: '\f042';
 	font-family: awesome;
 }
 .svc:before {
-	color: lightgreen;
+	color: seagreen;
 	content: '\f111';
 	font-family: awesome;
 }
@@ -2183,7 +2194,7 @@ ul.login_menu ul {
 	font-family: awesome;
 }
 .action16:before {
-	color: lightgreen;
+	color: seagreen;
 	content: '\f013';
 	font-family: awesome;
 }
@@ -2223,7 +2234,7 @@ ul.login_menu ul {
 	font-family: awesome;
 }
 .avail16:before {
-	color: lightgreen;
+	color: seagreen;
 	content: '\f21e';
 	font-family: awesome;
 }
@@ -2246,7 +2257,7 @@ ul.login_menu ul {
 	font-family: awesome;
 }
 .actions:before {
-	color: lightgreen;
+	color: seagreen;
 	content: '\f085';
 	font-family: awesome;
 }

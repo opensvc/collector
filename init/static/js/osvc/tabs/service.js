@@ -354,7 +354,7 @@ function service_properties(divid, options)
 				"request_parameters": function(){return [o.div.find("#svc_app").text()]},
 				"limit": "0",
 				"key": "role",
-				"item_class": "guys16",
+				"bgcolor": "salmon",
 				"depends": ["svc_app"],
 				"e_title": o.responsibles_title,
 				"e_list": o.responsibles

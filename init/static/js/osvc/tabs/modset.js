@@ -79,7 +79,7 @@ function modset_properties(divid, options) {
                         "request_parameters": [data.id],
                         "limit": "0",
                         "key": "modset_mod_name",
-                        "item_class": "mod16",
+                        "bgcolor": "#EE5464",
                         "e_title": o.info_modules_title,
                         "e_list": o.info_modules
                 })
@@ -88,7 +88,7 @@ function modset_properties(divid, options) {
                         "request_parameters": [data.id],
                         "limit": "0",
                         "key": "nodename",
-                        "item_class": "node16",
+                        "bgcolor": "aqua",
                         "e_title": o.info_nodes_title,
                         "e_list": o.info_nodes
                 })
@@ -97,7 +97,7 @@ function modset_properties(divid, options) {
                         "request_parameters": [data.id],
                         "limit": "0",
                         "key": "svcname",
-                        "item_class": "svc",
+                        "bgcolor": "seagreen",
                         "e_title": o.info_services_title,
                         "e_list": o.info_services
                 })
@@ -121,7 +121,7 @@ function modset_properties(divid, options) {
 		services_osvcgetrest("/compliance/modulesets/%1/usage", [o.data.id], "", function(jd) {
 			tab_properties_generic_list({
 				"data": jd.data.modulesets,
-				"item_class": "modset16",
+				"bgcolor": "#EE5464",
 				"e_title": o.info_modulesets_title,
 				"e_list": o.info_modulesets
 			})

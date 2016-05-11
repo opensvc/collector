@@ -490,6 +490,7 @@
 		"id": "Id"
 	},
 	"metric_properties": {
+		"creation": "Creation",
 		"base": "Base",
 		"dates": "Dates",
 		"metric_name": "Name",

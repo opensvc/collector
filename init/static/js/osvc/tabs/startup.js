@@ -166,7 +166,7 @@ function startup(divid, options) {
 					"trigger": {"shape": "icon", "icon": {"face": "FontAwesome", "code": "\uf121", "color": "black", "size": 40}},
 					"subset": {"shape": "icon", "icon": {"face": "FontAwesome", "code": "\uf1b3", "color": "#CC9966", "size": 50}},
 					"sync": {"shape": "icon", "icon": {"face": "FontAwesome", "code": "\uf0c5", "color": "cadetblue", "size": 50}},
-					"app": {"shape": "icon", "icon": {"face": "FontAwesome", "code": "\uf135", "color": "lightgreen", "size": 50}},
+					"app": {"shape": "icon", "icon": {"face": "FontAwesome", "code": "\uf135", "color": "seagreen", "size": 50}},
 					"container": {"shape": "icon", "icon": {"face": "FontAwesome", "code": "\uf135", "color": "cornflowerblue", "size": 50}},
 					"container.docker": {"shape": "image", "image": "/init/static/svg/docker-cornflowerblue.svg"},
 					"fs": {"shape": "icon", "icon": {"face": "FontAwesome", "code": "\uf07c", "color": "slategray", "size": 50}},
@@ -177,8 +177,8 @@ function startup(divid, options) {
 					"disk.scsireserv": {"shape": "icon", "icon": {"face": "FontAwesome", "code": "\uf023", "color": "#dddd66", "size": 50}},
 					"ip": {"shape": "icon", "icon": {"face": "FontAwesome", "code": "\uf124", "color": "cadetblue", "size": 50}},
 					"node": {"shape": "icon", "icon": {"face": "FontAwesome", "code": "\uf233", "color": "aqua", "size": 50}},
-					"resource": {"shape": "icon", "icon": {"face": "FontAwesome", "code": "\uf292", "color": "lightgreen", "size": 75}},
-					"svc": {"shape": "icon", "icon": {"face": "FontAwesome", "code": "\uf111", "color": "lightgreen", "size": 100}}
+					"resource": {"shape": "icon", "icon": {"face": "FontAwesome", "code": "\uf292", "color": "seagreen", "size": 75}},
+					"svc": {"shape": "icon", "icon": {"face": "FontAwesome", "code": "\uf111", "color": "seagreen", "size": 100}}
 				}
 
 			}

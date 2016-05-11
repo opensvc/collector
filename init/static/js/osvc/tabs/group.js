@@ -98,7 +98,7 @@ function group_properties(divid, options) {
 				},
 				"limit": 50,
 				"key": "nodename",
-				"item_class": "node16",
+				"bgcolor": "aqua",
 				"e_title": o.info_nodes_title,
 				"e_list": o.info_nodes
 			})
@@ -107,7 +107,7 @@ function group_properties(divid, options) {
 				"request_parameters": [data.id],
 				"limit": 50,
 				"key": "svcname",
-				"item_class": "svc",
+				"bgcolor": "seagreen",
 				"e_title": o.info_services_title,
 				"e_list": o.info_services
 			})
@@ -121,7 +121,7 @@ function group_properties(divid, options) {
 				"key": function(data) {
 					return data.first_name + " " + data.last_name
 				},
-				"item_class": "guy16",
+				"bgcolor": "salmon",
 				"e_title": o.info_users_title,
 				"e_list": o.info_users
 			})
@@ -130,7 +130,7 @@ function group_properties(divid, options) {
 				"request_parameters": [data.id],
 				"limit": 50,
 				"key": "app",
-				"item_class": "svc",
+				"bgcolor": "deeppink",
 				"e_title": o.info_apps_title,
 				"e_list": o.info_apps
 			})

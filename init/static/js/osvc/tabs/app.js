@@ -87,10 +87,12 @@ function app_properties(divid, options) {
 			o.info_id.html(data.id);
 
 			app_publications({
+				"bgcolor": "salmon",
 				"tid": o.info_publications,
 				"app_id": data.id
 			})
 			app_responsibles({
+				"bgcolor": "salmon",
 				"tid": o.info_responsibles,
 				"app_id": data.id
 			})
@@ -100,7 +102,7 @@ function app_properties(divid, options) {
 				"limit": "50",
 				"key": "svcname",
 				"title": "app_properties.services",
-				"item_class": "svc",
+				"bgcolor": "seagreen",
 				"e_title": o.info_services_title,
 				"e_list": o.info_services,
 				"lowercase": true
@@ -111,7 +113,7 @@ function app_properties(divid, options) {
 				"limit": "50",
 				"key": "nodename",
 				"title": "app_properties.nodes",
-				"item_class": "node16",
+				"bgcolor": "aqua",
 				"e_title": o.info_nodes_title,
 				"e_list": o.info_nodes,
 				"lowercase": true

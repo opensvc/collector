@@ -498,11 +498,15 @@ tab_properties_generic_list = function(options) {
 	}
 
 	function render(data, n, total) {
+		options.e_list.addClass("tag_container")
 		var title = options.e_title.text().replace(/\s*\([0-9]+\)\s*/, "")
 		options.e_title.text(title + " ("+total+")")
 		options.e_list.empty()
 		for (var i=0; i<data.length; i++) {
 			var e = $("<span></span>")
+			if (options.bgcolor) {
+				e.css({"background-color": options.bgcolor})
+			}
 			e.addClass(options.item_class)
 			e.addClass("icon tag tag_attached")
 			if (options.key) {

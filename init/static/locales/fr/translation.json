@@ -484,6 +484,7 @@
 		"id": "Id"
 	},
 	"metric_properties": {
+		"creation": "Création",
 		"base": "Base",
 		"dates": "Dates",
 		"metric_name": "Nom",
