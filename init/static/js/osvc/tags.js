@@ -22,11 +22,14 @@ function tags(options) {
 		}
 		o.div.info.empty()
 		spinner_add(o.div.info)
-		o.get(o.options.prefix, function(_data) {
+		o.get(o.options.fval, function(_data) {
 			spinner_del(o.div.info)
 			if (_data.error) {
 				o.div.info.html(services_error_fmt(_data))
 				return
+			}
+			if (o.options.title && o.options.e_title && _data.meta) {
+				o.options.e_title.text(i18n.t(o.options.title) + " (" + _data.meta.total + ")")
 			}
 			_data = _data.data
 			if ((_data.length == 0) && o.options.candidates) {
@@ -143,19 +146,26 @@ function tags(options) {
 	}
 
 	o.add_candidates = function(tag, tag_name) {
-		prefix = o.div.find(".tag_input").val()
-		if (prefix.length == 0) {
-			prefix = "%"
+		fval = o.div.find(".tag_input").val()
+		if (fval.length == 0) {
+			fval = '%'
+		} else {
+			fval = fval.replace(/\//, "_")
+			fval = encodeURIComponent(fval)
+			if (fval[0] != '%') {
+				fval = '%' + fval
+			}
+			if (fval[fval.length-1] != '%') {
+				fval = fval + '%'
+			}
 		}
-		prefix = prefix.replace(/\//, "_")
-		prefix = encodeURIComponent(prefix)
 
 		// 1st candidates exec: init a new tag object
 		ctid = o.options.tid+"c"
 		options = $.extend({}, o.options, {
 			"tid": ctid,
 			"parent_object": o,
-			"prefix": prefix,
+			"fval": fval,
 			"candidates": true
 		})
 		o.div.find("#"+ctid).parent().remove()
@@ -310,11 +320,11 @@ function tags(options) {
 		o.attach_tag({"tag_name": tag_name})
 	}
 
-	o.get = function(prefix, callback, callback_err) {
+	o.get = function(fval, callback, callback_err) {
 		if ("candidates" in o.options) {
-			return o.options.get_candidates(prefix, callback, callback_err)
+			return o.options.get_candidates(fval, callback, callback_err)
 		} else {
-			return o.options.get_tags(prefix, callback, callback_err)
+			return o.options.get_tags(fval, callback, callback_err)
 		}
 	}
 
@@ -331,19 +341,20 @@ function tags(options) {
 
 function node_tags(options) {
 	options.tag_name = "tag_name"
-	options.get_tags = function(prefix, callback, callback_err) {
+	options.get_tags = function(fval, callback, callback_err) {
 		services_osvcgetrest("R_NODE_TAGS", [options.node_id], {
+			"orderby": options.tag_name,
 			"props": "id," + options.tag_name,
-			"limit": "0",
-			"meta": "false"
+			"limit": "0"
 		}, callback, callback_err)
 	}
-	options.get_candidates = function(prefix, callback, callback_err) {
+	options.get_candidates = function(fval, callback, callback_err) {
 		services_osvcgetrest("R_NODE_CANDIDATE_TAGS", [options.node_id], {
+			"orderby": options.tag_name,
 			"props": "id," + options.tag_name,
 			"limit": "0",
 			"meta": "false",
-			"filters": [options.tag_name+" "+prefix+"%"]
+			"filters": [options.tag_name+" "+fval]
 		}, callback, callback_err)
 	}
 	options.create = function(tag_data, callback, callback_err) {
@@ -363,19 +374,20 @@ function node_tags(options) {
 
 function service_tags(options) {
 	options.tag_name = "tag_name"
-	options.get_tags = function(prefix, callback, callback_err) {
+	options.get_tags = function(fval, callback, callback_err) {
 		services_osvcgetrest("R_SERVICE_TAGS", [options.svc_id], {
+			"orderby": options.tag_name,
 			"props": "id," + options.tag_name,
-			"limit": "0",
-			"meta": "false"
+			"limit": "0"
 		}, callback, callback_err)
 	}
-	options.get_candidates = function(prefix, callback, callback_err) {
+	options.get_candidates = function(fval, callback, callback_err) {
 		services_osvcgetrest("R_SERVICE_CANDIDATE_TAGS", [options.svc_id], {
+			"orderby": options.tag_name,
 			"props": "id," + options.tag_name,
 			"limit": "0",
 			"meta": "false",
-			"filters": [options.tag_name+" "+prefix+"%"]
+			"filters": [options.tag_name+" "+fval]
 		}, callback, callback_err)
 	}
 	options.create = function(tag_data, callback, callback_err) {
@@ -395,19 +407,20 @@ function service_tags(options) {
 
 function app_responsibles(options) {
 	options.tag_name = "role"
-	options.get_tags = function(prefix, callback, callback_err) {
+	options.get_tags = function(fval, callback, callback_err) {
 		services_osvcgetrest("/apps/%1/responsibles", [options.app_id], {
+			"orderby": options.tag_name,
 			"props": "id," + options.tag_name,
-			"limit": "0",
-			"meta": "false"
+			"limit": "0"
 		}, callback, callback_err)
 	}
-	options.get_candidates = function(prefix, callback, callback_err) {
+	options.get_candidates = function(fval, callback, callback_err) {
 		services_osvcgetrest("/groups", "", {
+			"orderby": options.tag_name,
 			"props": "id," + options.tag_name,
 			"limit": "0",
 			"meta": "false",
-			"filters": ["privilege F", options.tag_name+" "+prefix+"%"]
+			"filters": ["privilege F", options.tag_name+" "+fval]
 		}, callback, callback_err)
 	}
 	options.attach = function(tag_data, callback, callback_err) {
@@ -424,19 +437,20 @@ function app_responsibles(options) {
 
 function app_publications(options) {
 	options.tag_name = "role"
-	options.get_tags = function(prefix, callback, callback_err) {
+	options.get_tags = function(fval, callback, callback_err) {
 		services_osvcgetrest("/apps/%1/publications", [options.app_id], {
+			"orderby": options.tag_name,
 			"props": "id," + options.tag_name,
-			"limit": "0",
-			"meta": "false"
+			"limit": "0"
 		}, callback, callback_err)
 	}
-	options.get_candidates = function(prefix, callback, callback_err) {
+	options.get_candidates = function(fval, callback, callback_err) {
 		services_osvcgetrest("/groups", "", {
+			"orderby": options.tag_name,
 			"props": "id," + options.tag_name,
 			"limit": "0",
 			"meta": "false",
-			"filters": ["privilege F", options.tag_name+" "+prefix+"%"]
+			"filters": ["privilege F", options.tag_name+" "+fval]
 		}, callback, callback_err)
 	}
 	options.attach = function(tag_data, callback, callback_err) {
@@ -453,19 +467,20 @@ function app_publications(options) {
 
 function form_responsibles(options) {
 	options.tag_name = "role"
-	options.get_tags = function(prefix, callback, callback_err) {
+	options.get_tags = function(fval, callback, callback_err) {
 		services_osvcgetrest("/forms/%1/responsibles", [options.form_id], {
+			"orderby": options.tag_name,
 			"props": "id," + options.tag_name,
-			"limit": "0",
-			"meta": "false"
+			"limit": "0"
 		}, callback, callback_err)
 	}
-	options.get_candidates = function(prefix, callback, callback_err) {
+	options.get_candidates = function(fval, callback, callback_err) {
 		services_osvcgetrest("/groups", "", {
+			"orderby": options.tag_name,
 			"props": "id," + options.tag_name,
 			"limit": "0",
 			"meta": "false",
-			"filters": ["privilege F", options.tag_name+" "+prefix+"%"]
+			"filters": ["privilege F", options.tag_name+" "+fval]
 		}, callback, callback_err)
 	}
 	options.attach = function(tag_data, callback, callback_err) {
@@ -482,19 +497,20 @@ function form_responsibles(options) {
 
 function form_publications(options) {
 	options.tag_name = "role"
-	options.get_tags = function(prefix, callback, callback_err) {
+	options.get_tags = function(fval, callback, callback_err) {
 		services_osvcgetrest("/forms/%1/publications", [options.form_id], {
+			"orderby": options.tag_name,
 			"props": "id," + options.tag_name,
-			"limit": "0",
-			"meta": "false"
+			"limit": "0"
 		}, callback, callback_err)
 	}
-	options.get_candidates = function(prefix, callback, callback_err) {
+	options.get_candidates = function(fval, callback, callback_err) {
 		services_osvcgetrest("/groups", "", {
+			"orderby": options.tag_name,
 			"props": "id," + options.tag_name,
 			"limit": "0",
 			"meta": "false",
-			"filters": ["privilege F", options.tag_name+" "+prefix+"%"]
+			"filters": ["privilege F", options.tag_name+" "+fval]
 		}, callback, callback_err)
 	}
 	options.attach = function(tag_data, callback, callback_err) {
@@ -511,19 +527,20 @@ function form_publications(options) {
 
 function ruleset_responsibles(options) {
 	options.tag_name = "role"
-	options.get_tags = function(prefix, callback, callback_err) {
+	options.get_tags = function(fval, callback, callback_err) {
 		services_osvcgetrest("/compliance/rulesets/%1/responsibles", [options.ruleset_id], {
+			"orderby": options.tag_name,
 			"props": "id," + options.tag_name,
-			"limit": "0",
-			"meta": "false"
+			"limit": "0"
 		}, callback, callback_err)
 	}
-	options.get_candidates = function(prefix, callback, callback_err) {
+	options.get_candidates = function(fval, callback, callback_err) {
 		services_osvcgetrest("/groups", "", {
+			"orderby": options.tag_name,
 			"props": "id," + options.tag_name,
 			"limit": "0",
 			"meta": "false",
-			"filters": ["privilege F", options.tag_name+" "+prefix+"%"]
+			"filters": ["privilege F", options.tag_name+" "+fval]
 		}, callback, callback_err)
 	}
 	options.attach = function(tag_data, callback, callback_err) {
@@ -540,19 +557,20 @@ function ruleset_responsibles(options) {
 
 function ruleset_publications(options) {
 	options.tag_name = "role"
-	options.get_tags = function(prefix, callback, callback_err) {
+	options.get_tags = function(fval, callback, callback_err) {
 		services_osvcgetrest("/compliance/rulesets/%1/publications", [options.ruleset_id], {
+			"orderby": options.tag_name,
 			"props": "id," + options.tag_name,
-			"limit": "0",
-			"meta": "false"
+			"limit": "0"
 		}, callback, callback_err)
 	}
-	options.get_candidates = function(prefix, callback, callback_err) {
+	options.get_candidates = function(fval, callback, callback_err) {
 		services_osvcgetrest("/groups", "", {
+			"orderby": options.tag_name,
 			"props": "id," + options.tag_name,
 			"limit": "0",
 			"meta": "false",
-			"filters": ["privilege F", options.tag_name+" "+prefix+"%"]
+			"filters": ["privilege F", options.tag_name+" "+fval]
 		}, callback, callback_err)
 	}
 	options.attach = function(tag_data, callback, callback_err) {
@@ -569,19 +587,20 @@ function ruleset_publications(options) {
 
 function modset_responsibles(options) {
 	options.tag_name = "role"
-	options.get_tags = function(prefix, callback, callback_err) {
+	options.get_tags = function(fval, callback, callback_err) {
 		services_osvcgetrest("/compliance/modulesets/%1/responsibles", [options.modset_id], {
+			"orderby": options.tag_name,
 			"props": "id," + options.tag_name,
-			"limit": "0",
-			"meta": "false"
+			"limit": "0"
 		}, callback, callback_err)
 	}
-	options.get_candidates = function(prefix, callback, callback_err) {
+	options.get_candidates = function(fval, callback, callback_err) {
 		services_osvcgetrest("/groups", "", {
+			"orderby": options.tag_name,
 			"props": "id," + options.tag_name,
 			"limit": "0",
 			"meta": "false",
-			"filters": ["privilege F", options.tag_name+" "+prefix+"%"]
+			"filters": ["privilege F", options.tag_name+" "+fval]
 		}, callback, callback_err)
 	}
 	options.attach = function(tag_data, callback, callback_err) {
@@ -598,19 +617,20 @@ function modset_responsibles(options) {
 
 function modset_publications(options) {
 	options.tag_name = "role"
-	options.get_tags = function(prefix, callback, callback_err) {
+	options.get_tags = function(fval, callback, callback_err) {
 		services_osvcgetrest("/compliance/modulesets/%1/publications", [options.modset_id], {
+			"orderby": options.tag_name,
 			"props": "id," + options.tag_name,
-			"limit": "0",
-			"meta": "false"
+			"limit": "0"
 		}, callback, callback_err)
 	}
-	options.get_candidates = function(prefix, callback, callback_err) {
+	options.get_candidates = function(fval, callback, callback_err) {
 		services_osvcgetrest("/groups", "", {
+			"orderby": options.tag_name,
 			"props": "id," + options.tag_name,
 			"limit": "0",
 			"meta": "false",
-			"filters": ["privilege F", options.tag_name+" "+prefix+"%"]
+			"filters": ["privilege F", options.tag_name+" "+fval]
 		}, callback, callback_err)
 	}
 	options.attach = function(tag_data, callback, callback_err) {
@@ -628,19 +648,20 @@ function modset_publications(options) {
 
 function safe_file_responsibles(options) {
 	options.tag_name = "role"
-	options.get_tags = function(prefix, callback, callback_err) {
+	options.get_tags = function(fval, callback, callback_err) {
 		services_osvcgetrest("/safe/%1/responsibles", [options.uuid], {
+			"orderby": options.tag_name,
 			"props": "id," + options.tag_name,
-			"limit": "0",
-			"meta": "false"
+			"limit": "0"
 		}, callback, callback_err)
 	}
-	options.get_candidates = function(prefix, callback, callback_err) {
+	options.get_candidates = function(fval, callback, callback_err) {
 		services_osvcgetrest("/groups", "", {
+			"orderby": options.tag_name,
 			"props": "id," + options.tag_name,
 			"limit": "0",
 			"meta": "false",
-			"filters": ["privilege F", options.tag_name+" "+prefix+"%"]
+			"filters": ["privilege F", options.tag_name+" "+fval]
 		}, callback, callback_err)
 	}
 	options.attach = function(tag_data, callback, callback_err) {
@@ -657,19 +678,20 @@ function safe_file_responsibles(options) {
 
 function safe_file_publications(options) {
 	options.tag_name = "role"
-	options.get_tags = function(prefix, callback, callback_err) {
+	options.get_tags = function(fval, callback, callback_err) {
 		services_osvcgetrest("/safe/%1/publications", [options.uuid], {
+			"orderby": options.tag_name,
 			"props": "id," + options.tag_name,
-			"limit": "0",
-			"meta": "false"
+			"limit": "0"
 		}, callback, callback_err)
 	}
-	options.get_candidates = function(prefix, callback, callback_err) {
+	options.get_candidates = function(fval, callback, callback_err) {
 		services_osvcgetrest("/groups", "", {
+			"orderby": options.tag_name,
 			"props": "id," + options.tag_name,
 			"limit": "0",
 			"meta": "false",
-			"filters": ["privilege F", options.tag_name+" "+prefix+"%"]
+			"filters": ["privilege F", options.tag_name+" "+fval]
 		}, callback, callback_err)
 	}
 	options.attach = function(tag_data, callback, callback_err) {
@@ -680,6 +702,76 @@ function safe_file_publications(options) {
 	}
 	options.am_i_responsible = function(callback) {
 		services_osvcgetrest("/safe/%1/am_i_responsible", [options.uuid], "", callback)
+	}
+	return tags(options)
+}
+
+function user_org_membership(options) {
+	options.tag_name = "role"
+	options.get_tags = function(fval, callback, callback_err) {
+		services_osvcgetrest("/users/%1/groups", [options.user_id], {
+			"orderby": options.tag_name,
+			"props": "id," + options.tag_name,
+			"limit": "0",
+			"filters": ["privilege F"],
+		}, callback, callback_err)
+	}
+	options.get_candidates = function(fval, callback, callback_err) {
+		services_osvcgetrest("/groups", "", {
+			"orderby": options.tag_name,
+			"props": "id," + options.tag_name,
+			"limit": "0",
+			"meta": "false",
+			"filters": ["privilege F", options.tag_name+" "+fval]
+		}, callback, callback_err)
+	}
+	options.attach = function(tag_data, callback, callback_err) {
+		services_osvcpostrest("/users/%1/groups/%2", [options.user_id, tag_data.id], "", "", callback, callback_err)
+	}
+	options.detach = function(tag, callback, callback_err) {
+		services_osvcdeleterest("/users/%1/groups/%2", [options.user_id, tag.attr("tag_id")], "", "", callback, callback_err)
+	}
+	options.am_i_responsible = function(callback) {
+		if (!services_ismemberof("Manager", "UserManager") && ! (services_ismemberof("SelfManager") && (options.user_id==osvc._self.id))) {
+			callback({"data": false})
+			return
+		}
+		callback({"data": true})
+	}
+	return tags(options)
+}
+
+function user_priv_membership(options) {
+	options.tag_name = "role"
+	options.get_tags = function(fval, callback, callback_err) {
+		services_osvcgetrest("/users/%1/groups", [options.user_id], {
+			"orderby": options.tag_name,
+			"props": "id," + options.tag_name,
+			"limit": "0",
+			"filters": ["privilege T"],
+		}, callback, callback_err)
+	}
+	options.get_candidates = function(fval, callback, callback_err) {
+		services_osvcgetrest("/groups", "", {
+			"orderby": options.tag_name,
+			"props": "id," + options.tag_name,
+			"limit": "0",
+			"meta": "false",
+			"filters": ["privilege T", options.tag_name+" "+fval]
+		}, callback, callback_err)
+	}
+	options.attach = function(tag_data, callback, callback_err) {
+		services_osvcpostrest("/users/%1/groups/%2", [options.user_id, tag_data.id], "", "", callback, callback_err)
+	}
+	options.detach = function(tag, callback, callback_err) {
+		services_osvcdeleterest("/users/%1/groups/%2", [options.user_id, tag.attr("tag_id")], "", "", callback, callback_err)
+	}
+	options.am_i_responsible = function(callback) {
+		if (!services_ismemberof("Manager", "UserManager") && ! (services_ismemberof("SelfManager") && (options.user_id==osvc._self.id))) {
+			callback({"data": false})
+			return
+		}
+		callback({"data": true})
 	}
 	return tags(options)
 }
