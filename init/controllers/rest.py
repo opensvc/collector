@@ -297,7 +297,8 @@ def get_get_handlers(prefix=None):
        "users": [
              "rest_get_users",
              "rest_get_user",
-             "rest_get_user_apps",
+             "rest_get_user_apps_publication",
+             "rest_get_user_apps_responsible",
              "rest_get_user_nodes",
              "rest_get_user_services",
              "rest_get_user_groups",

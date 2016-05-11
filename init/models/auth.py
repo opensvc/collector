@@ -58,6 +58,14 @@ def get_svc_id(s):
         raise KeyError("Service '%s' not found" % s)
     return svc.svc_id
 
+def check_quota_app():
+    quota_app = db.auth_user(auth.user_id).quota_app
+    if quota_app is None or quota_app == 0:
+        return
+    if len(user_app_ids()) < quota_app:
+        return
+    raise Exception("app quota exceeded")
+
 def check_privilege(privs):
     ug = user_groups()
     if 'Manager' in ug:
@@ -339,8 +347,14 @@ def auth_register_callback(form):
     q = db.auth_user.email == form.vars.email
     user = db(q).select().first()
 
+    set_quota_app_on_register(user)
     do_create_app_on_register(user)
     do_membership_on_register(user)
+
+def set_quota_app_on_register(user):
+    quota_app = config_get("default_quota_app", None)
+    q = db.auth_user.id == user.id
+    db(q).update(quota_app=quota_app)
 
 def do_membership_on_register(user):
     groups = config_get("membership_on_register", [])

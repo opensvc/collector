@@ -77,6 +77,7 @@ describe('Create a new user and impersonate', function() {
 			.post("/init/rest/api/users")
 			.send({
 				"email": mocha_user,
+				"quota_app": 1,
 				"first_name": "mocha",
 				"last_name": "mocha"
 			})
@@ -111,6 +112,24 @@ describe('Create a new user and impersonate', function() {
 			.send({"user_id": mocha_user_id})
 			.end(function(err, res){
 				res.status.should.be.equal(200)
+				done()
+			})
+		})
+	})
+})
+describe('Non Manager user management', function() {
+	describe('Set the mocha user app quota', function () {
+		it('Should fail because not a QuotaManager member', function(done) {
+			request
+			.post("/init/rest/api/users/"+mocha_user_id)
+			.send({
+				"quota_app": 2
+			})
+			.end(function(err, res){
+				res.status.should.be.equal(200)
+				res.body.should.have.property("error")
+				res.body.should.not.have.property("info")
+				res.body.error.should.match(/No fields to update/)
 				done()
 			})
 		})
@@ -196,6 +215,22 @@ describe('Application code management', function() {
 				res.status.should.be.equal(200)
 				res.body.should.not.have.property("error")
 				res.body.should.have.property("info")
+				done()
+			})
+		})
+	})
+	describe('Create another app', function () {
+		it('Should fail because of exceeded app quota', function(done) {
+			request
+			.post("/init/rest/api/apps")
+			.send({
+				"app": "MOCHA2"
+			})
+			.end(function(err, res){
+				res.status.should.be.equal(200)
+				res.body.should.have.property("error")
+				res.body.should.not.have.property("info")
+				res.body.error.should.match(/quota exceeded/)
 				done()
 			})
 		})

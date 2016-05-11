@@ -124,6 +124,7 @@ class rest_post_apps(rest_post_handler):
             return rest_post_app(app_id, **vars)
 
         check_privilege("AppManager")
+        check_quota_app()
         if len(vars) == 0 or "app" not in vars:
             raise Exception("Insufficient data")
         q = db.apps.id > 0

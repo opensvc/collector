@@ -6010,5 +6010,10 @@ insert into auth_permission set group_id=(select id from auth_group where role =
 
 insert ignore into auth_group (role, privilege) values ("Impersonate", "T");
 
+insert ignore into auth_group (role, privilege) values ("QuotaManager", "T");
+
 insert into auth_permission set group_id=(select id from auth_group where role = "Impersonate"), name="impersonate", table_name="auth_user", record_id=0;
+
+alter table auth_user add column quota_app integer default NULL;
+
 

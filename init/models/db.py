@@ -105,6 +105,8 @@ auth.settings.extra_fields['auth_membership']= [
 ]
 
 auth.settings.extra_fields['auth_user']= [
+    Field('quota_app', 'integer', default=False,
+          label=T('Maximum number of applications the user can be responsible of')),
     Field('phone_work', 'string', label=T("Work desk phone number"), length=15),
     Field('email_notifications', 'boolean', default=False,
           label=T('Email notifications')),

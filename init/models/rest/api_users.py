@@ -84,20 +84,18 @@ class rest_get_user(rest_get_line_handler):
         return self.prepare_data(**vars)
 
 #
-class rest_get_user_apps(rest_get_table_handler):
+class rest_get_user_apps_responsible(rest_get_table_handler):
     def __init__(self):
         desc = [
           "List apps the user is responsible for.",
-          "Managers and UserManager are allowed to see all users' information.",
-          "Others can only see information for users in their organisational groups.",
         ]
         examples = [
-          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/users/%(email)s/apps",
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/users/%(email)s/apps/responsible",
         ]
 
         rest_get_table_handler.__init__(
           self,
-          path="/users/<id>/apps",
+          path="/users/<id>/apps/responsible",
           tables=["apps"],
           desc=desc,
           groupby=db.apps.id,
@@ -113,6 +111,33 @@ class rest_get_user_apps(rest_get_table_handler):
         self.set_q(q)
         return self.prepare_data(**vars)
 
+#
+class rest_get_user_apps_publication(rest_get_table_handler):
+    def __init__(self):
+        desc = [
+          "List apps visible to the user.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/users/%(email)s/apps/publication",
+        ]
+
+        rest_get_table_handler.__init__(
+          self,
+          path="/users/<id>/apps/publication",
+          tables=["apps"],
+          desc=desc,
+          groupby=db.apps.id,
+          examples=examples,
+        )
+
+    def handler(self, id, **vars):
+        q = allowed_user_ids_q()
+        q &= user_id_q(id)
+        q &= db.apps_publications.group_id == db.auth_membership.group_id
+        q &= db.auth_membership.user_id == db.auth_user.id
+        q &= db.apps.id == db.apps_publications.app_id
+        self.set_q(q)
+        return self.prepare_data(**vars)
 
 #
 class rest_get_user_nodes(rest_get_table_handler):
@@ -238,6 +263,12 @@ class rest_post_users(rest_post_handler):
         if "perpage" in vars and int(vars["perpage"]) > user_max_perpage:
             raise Exception(T("perpage can not be more than %(n)d", dict(n=user_max_perpage)))
 
+        if "quota_app" in vars:
+            try:
+                check_privilege("QuotaManager")
+            except:
+                del(vars["quota_app"])
+
         obj_id = db.auth_user.insert(**vars)
         if "password" in vars:
             vars["password"] = "xxxxx"
@@ -256,6 +287,7 @@ class rest_post_users(rest_post_handler):
             group_id = auth.add_group(auth.settings.create_user_groups % user)
             auth.add_membership(group_id, user.id)
 
+        set_quota_app_on_register(user)
         do_create_app_on_register(user)
         do_membership_on_register(user)
 
@@ -299,6 +331,12 @@ class rest_post_user(rest_post_handler):
 
         if "perpage" in vars and int(vars["perpage"]) > user_max_perpage:
             raise Exception(T("perpage can not be more than %(n)d", dict(n=user_max_perpage)))
+
+        if "quota_app" in vars:
+            try:
+                check_privilege("QuotaManager")
+            except:
+                del(vars["quota_app"])
 
         db(q).update(**vars)
         l = []

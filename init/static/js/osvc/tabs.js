@@ -289,7 +289,7 @@ tab_properties_generic_autocomplete_app_id = function(options) {
 
 tab_properties_generic_autocomplete_user_app = function(options) {
 	options.get = function(callback) {
-		services_osvcgetrest("R_USER_APPS", [_self.id], {"props": "app", "meta": "false", "limit": "0"}, function(jd) {
+		services_osvcgetrest("R_USER_APPS_RESPONSIBLE", [_self.id], {"props": "app", "meta": "false", "limit": "0"}, function(jd) {
 			var opts = []
 			for (var i=0; i<jd.data.length; i++) {
 				var app = jd.data[i].app

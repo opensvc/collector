@@ -36,13 +36,6 @@ function user_tabs(divid, options) {
     o.tabs[i].callback = function(divid) {
       user_properties(divid, o.options)
     }
-    i = o.register_tab({
-      "title": "user_tabs.groups",
-      "title_class": "icon guys16"
-    })
-    o.tabs[i].callback = function(divid) {
-      user_groups(divid, o.options)
-    }
 
     o.set_tab(o.options.tab)
   }
@@ -50,117 +43,40 @@ function user_tabs(divid, options) {
 }
 
 
-
-function user_groups(divid, options) {
-	var o = {}
-
-	// store parameters
-	o.divid = divid
-	o.div = $("#"+divid);
-	o.options = options
-
-	o.set_group = function(group_id) {
-		services_osvcpostrest("R_USER_GROUP", [o.options.user_id, group_id], "", "", function(jd) {
-			if (jd.error) {
-				return
-			}
-		},function() {})
-	}
-
-	o.unset_group = function(group_id) {
-		services_osvcdeleterest("R_USER_GROUP", [o.options.user_id, group_id], "", "", function(jd) {
-			if (jd.error) {
-				return
-			}
-		},function() {})
-	}
-
-	o.init = function() {
-		services_osvcgetrest("R_USER_GROUPS", [o.options.user_id], {"limit": "0", "meta": "0"}, function(jd) {
-			o.user_groups = {}
-			for (var i=0; i<jd.data.length; i++) {
-				o.user_groups[jd.data[i].role] = jd.data[i]
-			}
-			services_osvcgetrest("R_GROUPS", "", {"limit": "0", "meta": "0", "orderby": "role"}, function(jd) {
-				o.all_groups = jd.data
-				o.div.load("/init/static/views/user_groups.html", function(){
-					o.build()
-				})
-			}, function() {})
-		}, function() {})
-	}
-
-	o.build = function() {
-		o.div.i18n()
-		o.org = o.div.find("#org")
-		o.priv = o.div.find("#priv")
-		for (var i=0; i<o.all_groups.length; i++) {
-			d = o.all_groups[i]
-			o.add_group(d)
-		}
-	}
-
-	o.add_group = function(data) {
-		var div = $("<div class='clickable'></div>")
-		var input = $("<input type='checkbox' class='ocb'>")
-		var label = $("<label for='checkbox'>")
-		var title = $("<div></div>")
-		input.attr("id", data.id)
-		label.attr("for", data.id)
-		title.text(d.role)
-		div.append(input)
-		div.append(label)
-		div.append(title)
-
-		if (data.privilege) {
-			o.priv.append(div)
-		} else {
-			o.org.append(div)
-		}
-
-		if (data.role in o.user_groups) {
-			div.children("input").prop("checked", true)
-		}
-
-		// Bind action on group tab
-		input.bind("click", function () {
-			if ($(this).is(":checked")) {
-				o.set_group($(this).attr("id"))
-			} else {
-				o.unset_group($(this).attr("id"))
-			}
-		})
-	}
-
-	o.init()
-	return o
-}
-
 function user_properties(divid, options) {
 	var o = {}
 
 	// store parameters
 	o.divid = divid
-	o.div = $("#"+divid);
+	o.div = $("#"+divid)
 	o.options = options
 
 	o.init = function() {
-		o.info_username = o.div.find("#username");
-		o.info_first_name = o.div.find("#first_name");
-		o.info_last_name = o.div.find("#last_name");
-		o.info_perpage = o.div.find("#perpage");
-		o.info_email = o.div.find("#email");
-		o.info_phone_work = o.div.find("#phone_work");
-		o.info_email_log_level = o.div.find("#email_log_level");
-		o.info_email_notifications = o.div.find("#email_notifications");
-		o.info_im_type = o.div.find("#im_type");
-		o.info_im_notifications = o.div.find("#im_notifications");
-		o.info_im_log_level = o.div.find("#im_log_level");
-		o.info_im_username = o.div.find("#im_username");
-		o.info_manager = o.div.find("#manager");
-		o.info_primaryg = o.div.find("#primary_group");
-		o.info_lfilter = o.div.find("#lock_filter");
-		o.info_filterset = o.div.find("#filterset");
+		o.info_username = o.div.find("#username")
+		o.info_first_name = o.div.find("#first_name")
+		o.info_last_name = o.div.find("#last_name")
+		o.info_perpage = o.div.find("#perpage")
+		o.info_email = o.div.find("#email")
+		o.info_phone_work = o.div.find("#phone_work")
+		o.info_email_log_level = o.div.find("#email_log_level")
+		o.info_email_notifications = o.div.find("#email_notifications")
+		o.info_im_type = o.div.find("#im_type")
+		o.info_im_notifications = o.div.find("#im_notifications")
+		o.info_im_log_level = o.div.find("#im_log_level")
+		o.info_im_username = o.div.find("#im_username")
+		o.info_manager = o.div.find("#manager")
+		o.info_primaryg = o.div.find("#primary_group")
+		o.info_quota_app = o.div.find("#quota_app")
+		o.info_lfilter = o.div.find("#lock_filter")
+		o.info_filterset = o.div.find("#filterset")
+		o.info_org_groups_title = o.div.find("#org_groups_title")
+		o.info_priv_groups_title = o.div.find("#priv_groups_title")
+		o.info_org_groups = o.div.find("#org_groups")
+		o.info_priv_groups = o.div.find("#priv_groups")
+		o.info_resp_apps_title = o.div.find("#resp_apps_title")
+		o.info_visible_apps_title = o.div.find("#visible_apps_title")
+		o.info_resp_apps = o.div.find("#resp_apps")
+		o.info_visible_apps = o.div.find("#visible_apps")
 
 		o.load_user()
 		o.load_fset()
@@ -238,33 +154,68 @@ function user_properties(divid, options) {
 	}
 
 	o._load_user = function(data) {
-		o.info_username.html(data.username);
-		o.info_first_name.html(data.first_name);
-		o.info_last_name.html(data.last_name);
-		o.info_perpage.html(data.perpage);
-		o.info_email.html(data.email);
-		o.info_phone_work.html(data.phone_work);
-		o.info_email_log_level.html(data.email_log_level);
-		o.info_im_type.html(data.im_type);
-		o.info_im_username.html(data.im_username);
-		o.info_im_log_level.html(data.im_log_level);
+		o.info_username.html(data.username)
+		o.info_first_name.html(data.first_name)
+		o.info_last_name.html(data.last_name)
+		o.info_perpage.html(data.perpage)
+		o.info_email.html(data.email)
+		o.info_phone_work.html(data.phone_work)
+		o.info_email_log_level.html(data.email_log_level)
+		o.info_im_type.html(data.im_type)
+		o.info_im_username.html(data.im_username)
+		o.info_im_log_level.html(data.im_log_level)
+		o.info_quota_app.html(data.quota_app)
 
 		// lock filter
 		if (data.lock_filter == true) {
-			o.info_lfilter.attr('class', 'fa toggle-on');
+			o.info_lfilter.attr('class', 'fa toggle-on')
 		} else {
-			o.info_lfilter.attr('class','fa toggle-off');
+			o.info_lfilter.attr('class','fa toggle-off')
 		}
 		if (data.email_notifications == true) {
-			o.info_email_notifications.attr('class', 'fa toggle-on');
+			o.info_email_notifications.attr('class', 'fa toggle-on')
 		} else {
-			o.info_email_notifications.attr('class','fa toggle-off');
+			o.info_email_notifications.attr('class','fa toggle-off')
 		}
 		if (data.im_notifications == true) {
-			o.info_im_notifications.attr('class', 'fa toggle-on');
+			o.info_im_notifications.attr('class', 'fa toggle-on')
 		} else {
-			o.info_im_notifications.attr('class','fa toggle-off');
+			o.info_im_notifications.attr('class','fa toggle-off')
 		}
+
+		user_org_membership({
+			"tid": o.info_org_groups,
+			"user_id": data.id,
+			"title": "user_properties.org_groups",
+			"e_title": o.info_org_groups_title
+		})
+		user_priv_membership({
+			"tid": o.info_priv_groups,
+			"user_id": data.id,
+			"title": "user_properties.priv_groups",
+			"e_title": o.info_priv_groups_title
+		})
+
+		tab_properties_generic_list({
+			"request_service": "R_USER_APPS_RESPONSIBLE",
+			"request_parameters": [data.id],
+			"limit": "0",
+			"key": "app",
+			"title": "user_properties.resp_apps",
+			"e_title": o.info_resp_apps_title,
+			"e_list": o.info_resp_apps,
+			"lowercase": false
+		})
+		tab_properties_generic_list({
+			"request_service": "R_USER_APPS_PUBLICATION",
+			"request_parameters": [data.id],
+			"limit": "0",
+			"key": "app",
+			"title": "user_properties.visible_apps",
+			"e_title": o.info_visible_apps_title,
+			"e_list": o.info_visible_apps,
+			"lowercase": false
+		})
 
 		services_osvcgetrest("R_USER_FILTERSET", [o.options.user_id], "", function(jd) {
 			if (!jd.data || (jd.data.length == 0)) {
@@ -286,7 +237,7 @@ function user_properties(divid, options) {
 			o.info_primaryg.text(current_primary)
 		})
 		services_osvcgetrest("/users/%1/groups", [o.options.user_id], {"meta": "false", "limit": "0"}, function(jd) {
-			var data = jd.data;
+			var data = jd.data
 			var org_groups = {}
 			var priv_groups = {}
 
@@ -301,9 +252,9 @@ function user_properties(divid, options) {
 
 			// manager
 			if ("Manager" in priv_groups) {
-				o.info_manager.attr('class', 'fa toggle-on');
+				o.info_manager.attr('class', 'fa toggle-on')
 			} else {
-				o.info_manager.attr('class', 'fa toggle-off');
+				o.info_manager.attr('class', 'fa toggle-off')
 			}
 
 			tab_properties_generic_updater({
