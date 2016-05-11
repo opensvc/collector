@@ -287,7 +287,7 @@ var menu_data = {
 		},
 		{
 		  "title" : "batchs",
-		  "class" : "actions",
+		  "class" : "batchs16",
 		  "id" : "adm-batchs",
 		  "link" : "/init/batchs/batchs",
 		  "secure" : ["Manager"]

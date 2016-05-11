@@ -1969,6 +1969,9 @@ ul.login_menu ul {
 	color: #EE5464;
 	content: '\f1da';
 }
+.batchs16:before {
+	content: '\f085';
+}
 .log16:before {
 	content: '\f1da';
 }
@@ -2069,7 +2072,7 @@ ul.login_menu ul {
 	font-family: awesome;
 }
 .app16:before {
-	color: lightgreen;
+	color: deeppink;
 	content: '\f069';
 	font-family: awesome;
 }
