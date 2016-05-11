@@ -91,7 +91,7 @@ function topology(divid, options) {
 				},
 				"groups": {
 					"sync": {"shape": "icon", "icon": {"face": "FontAwesome", "code": "\uf0c5", "color": "lightgreen", "size": 50}},
-					"app": {"shape": "icon", "icon": {"face": "FontAwesome", "code": "\uf135", "color": "lightgreen", "size": 50}},
+					"app": {"shape": "icon", "icon": {"face": "FontAwesome", "code": "\uf135", "color": "deeppink", "size": 50}},
 					"container": {"shape": "icon", "icon": {"face": "FontAwesome", "code": "\uf135", "color": "lightgreen", "size": 50}},
 					"container.docker": {"shape": "image", "image": "/init/static/svg/docker-lightgreen.svg"},
 					"fs": {"shape": "icon", "icon": {"face": "FontAwesome", "code": "\uf07c", "color": "lightgreen", "size": 50}},
@@ -105,7 +105,7 @@ function topology(divid, options) {
 					"ip": {"shape": "icon", "icon": {"face": "FontAwesome", "code": "\uf124", "color": "lightgreen", "size": 50}},
 					"sansw": {"shape": "icon", "icon": {"face": "FontAwesome", "code": "\uf0ec", "color": "cadetblue", "size": 50}},
 					"node": {"shape": "icon", "icon": {"face": "FontAwesome", "code": "\uf233", "color": "aqua", "size": 50}},
-					"apps": {"shape": "icon", "icon": {"face": "FontAwesome", "code": "\uf069", "color": "lightgreen", "size": 100}},
+					"apps": {"shape": "icon", "icon": {"face": "FontAwesome", "code": "\uf069", "color": "deeppink", "size": 100}},
 					"countries": {"shape": "icon", "icon": {"face": "FontAwesome", "code": "\uf041", "color": "aqua", "size": 110}},
 					"flag-ad": {"shape": "image", "image": "/init/static/svg/flags/ad.svg"},
 					"flag-ae": {"shape": "image", "image": "/init/static/svg/flags/ae.svg"},
