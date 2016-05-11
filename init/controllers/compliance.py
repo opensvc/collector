@@ -3291,18 +3291,18 @@ def show_services_compdiff(svc_ids, encap=False):
              where
                cs.run_module in (%(mods)s) and
                m.svc_id in (%(svc_ids)s) and
-               m.%(f)s=cs.node_id and
+               m.node_id=cs.node_id and
                m.node_id=n.node_id
              order by
                cs.run_module,
                n.nodename
-         """%dict(svc_ids=','.join(map(lambda x: repr(x), svc_ids)), mods=','.join(map(lambda x: repr(str(x)), mods)), f=f)
+         """%dict(svc_ids=','.join(map(lambda x: repr(x), svc_ids)), mods=','.join(map(lambda x: repr(str(x)), mods)))
     _rows = db.executesql(sql)
 
     if len(_rows) == 0:
         return
 
-    return _show_compdiff(nodes, n, _rows)
+    return _show_compdiff(node_ids, n, _rows)
 
 def show_compdiff(svc_id, encap=False):
     q = db.svcmon.svc_id==svc_id
@@ -3395,7 +3395,7 @@ def _show_compdiff(nodes, n, _rows, objtype="Nodes"):
         h = [TH(T("Module"))]
         for node in nodes:
             h.append(TH(
-              node.split('.')[0],
+              get_node(node).nodename,
               _style="text-align:center",
             ))
         return TR(h)
@@ -3562,7 +3562,7 @@ def show_services_moddiff(svc_ids, encap=False):
             where t.n != %(n)d
     """%dict(node_ids=','.join(map(repr, node_ids)), n=n)
     _rows = db.executesql(sql)
-    return _show_moddiff(nodes, n, _rows)
+    return _show_moddiff(node_ids, n, _rows)
 
 def show_moddiff(svc_id, encap=False):
     q = db.svcmon.svc_id==svc_id
@@ -3760,8 +3760,8 @@ def show_services_rsetdiff(svc_ids, encap=False):
             select t.* from
             (
              select
-               count(distinct n.nodename) as n,
-               group_concat(distinct n.nodename) as nodes,
+               count(distinct rn.node_id) as n,
+               group_concat(distinct rn.node_id) as nodes,
                rs.ruleset_name as ruleset
              from
                comp_rulesets_nodes rn,
@@ -3778,7 +3778,7 @@ def show_services_rsetdiff(svc_ids, encap=False):
     """%dict(node_ids=','.join(map(repr, node_ids)), n=n)
     _rows = db.executesql(sql)
 
-    return _show_rsetdiff(nodes, n, _rows)
+    return _show_rsetdiff(node_ids, n, _rows)
 
 
 def show_rsetdiff(svc_id, encap=False):
