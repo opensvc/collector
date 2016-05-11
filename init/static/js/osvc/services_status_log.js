@@ -117,7 +117,7 @@ function services_status_log(divid, options) {
 			var d = data[i]
 			if (groupids.indexOf(d.svc_id) < 0) {
 				groupids.push(d.svc_id)
-				var group_content = "<span class='icon_fixed_width svc' svc_id="+d.svc_id+">"+d.svc_id+"</span>"
+				var group_content = "<span svc_id="+d.svc_id+">"+d.svc_id+"</span>"
 				groups.push({
 					"id": d.svc_id,
 					"content": group_content
