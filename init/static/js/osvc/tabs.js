@@ -502,7 +502,7 @@ tab_properties_generic_list = function(options) {
 		options.e_title.text(title + " ("+total+")")
 		options.e_list.empty()
 		for (var i=0; i<data.length; i++) {
-			var e = $("<span style='display:inline-block;padding:0 0.2em'></span>")
+			var e = $("<span></span>")
 			e.addClass(options.item_class)
 			e.addClass("icon tag tag_attached")
 			if (options.key) {
