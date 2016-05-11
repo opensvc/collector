@@ -3394,8 +3394,13 @@ def _show_compdiff(nodes, n, _rows, objtype="Nodes"):
     def fmt_header2():
         h = [TH(T("Module"))]
         for node in nodes:
+            _node = get_node(node)
+            if _node:
+                nodename = _node.nodename
+            else:
+                nodename = node
             h.append(TH(
-              get_node(node).nodename,
+              nodename,
               _style="text-align:center",
             ))
         return TR(h)
