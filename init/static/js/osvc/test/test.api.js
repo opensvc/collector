@@ -12,6 +12,7 @@ var mocha_app_id = null
 var mocha_users = null
 
 var api = null
+var priv_groups_h = {}
 
 describe('API description', function() {
 	it('Returns the api description', function(done) {
@@ -133,6 +134,7 @@ describe('Privilege Groups', function() {
 			priv_groups = []
 			for (var i=0; i<res.body.data.length; i++) {
 				priv_groups.push(res.body.data[i].role)
+				priv_groups_h[res.body.data[i].role] = res.body.data[i].id
 			}
 			done()
 		})
@@ -264,6 +266,19 @@ describe('Test scenario', function() {
 					res.body.should.have.property("error")
 					res.body.should.not.have.property("info")
 					res.body.error.should.match(/No fields to update/)
+					done()
+				})
+			})
+		})
+		describe('Try to get the Manager privilege', function () {
+			it('Should fail because not a Manager member', function(done) {
+				request
+				.post("/init/rest/api/users/"+mocha_user_id+"/groups/"+priv_groups_h["Manager"])
+				.end(function(err, res){
+					res.status.should.be.equal(200)
+					res.body.should.have.property("error")
+					res.body.should.not.have.property("info")
+					res.body.error.should.match(/not exist/)
 					done()
 				})
 			})
