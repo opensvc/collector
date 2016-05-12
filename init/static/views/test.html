@@ -5,6 +5,7 @@
   <title>Mocha</title>
   <meta name='viewport' content='width=device-width, initial-scale=1.0'>
   <link href='/init/static/js/mocha-2.2.5/mocha.css' rel='stylesheet' />
+  <link rel="shortcut icon" href='/init/static/favicon.ico' />
 </head>
 <body>
   <div id='mocha'></div>
@@ -14,7 +15,10 @@
   <script src="/init/static/js/mocha-clean-0.4.0/index.js"></script>
   <script>window.onerror=function(msg,url,line){document.getElementById('mocha').innerHTML+='<h1>'+msg+'</'+'h1>'+'<h2>'+url+':'+line+'</'+'h2>';return false}</script>
   <script>
-    mocha.setup('bdd');
+    mocha.setup({
+     ui: "bdd",
+     //bail: true
+    });
     mocha.traceIgnores = ['mocha.js', 'chai.js'];
   </script>
   <!-- what to test: -->
