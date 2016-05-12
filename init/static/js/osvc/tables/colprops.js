@@ -164,6 +164,10 @@ colprops = {
 		"img": "ip16",
 		"title": "Uploaded from"
 	},
+	"quota_app": {
+		"img": "quota16",
+		"title": "quota_app"
+	},
 	"account": {
 		"img": "guy16",
 		"title": "Account"

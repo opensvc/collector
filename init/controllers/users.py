@@ -13,6 +13,7 @@ class table_users(HtmlTable):
                      'groups',
                      'lock_filter',
                      'fset_name',
+                     'quota_app',
                      'last']
         self.keys = ['id']
         self.span = ['id']
@@ -48,6 +49,10 @@ class table_users(HtmlTable):
             'lock_filter': HtmlTableColumn(
                      table='v_users',
                      field='lock_filter',
+                    ),
+            'quota_app': HtmlTableColumn(
+                     table='v_users',
+                     field='quota_app',
                     ),
             'fset_name': HtmlTableColumn(
                      table='v_users',

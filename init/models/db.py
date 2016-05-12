@@ -494,6 +494,7 @@ db.define_table('v_users',
     Field('groups'),
     Field('lock_filter'),
     Field('fset_name'),
+    Field('quota_app'),
     migrate=False)
 
 db.define_table('disk_blacklist',

@@ -1603,6 +1603,7 @@
 		"Command": "Commande",
 		"Stdout": "Stdout",
 		"Stderr": "Stderr",
+		"quota_app": "App Quota",
 		"Flag, deprecated": "Flag, déprécié",
 		"Node name": "Noeud"
 	},

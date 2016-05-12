@@ -1654,6 +1654,7 @@
 		"Command": "Command",
 		"Stdout": "Stdout",
 		"Stderr": "Stderr",
+		"quota_app": "App Quota",
 		"Flag, deprecated": "Flag, deprecated",
 		"Gateway": "Gateway"
 	},
