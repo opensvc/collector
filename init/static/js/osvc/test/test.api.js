@@ -8,6 +8,7 @@ var impersonate_group_id = null
 var everybody_group_id = null
 var mocha_user = "mocha@opensvc.com"
 var mocha_user_id = null
+var mocha_group_id = null
 var mocha_app_id = null
 var mocha_users = null
 
@@ -62,7 +63,7 @@ describe('Scheduler tasks', function() {
 		.get("/init/rest/api/scheduler/tasks")
 		.query({
 			"props": "function_name",
-			"filters": ["repeats 0"],
+			"filters": "repeats 0",
 			"meta": "0",
 			"limit": "0"
 		})
@@ -121,7 +122,7 @@ describe('Privilege Groups', function() {
 		.get("/init/rest/api/groups")
 		.query({
 			"props": "id,role",
-			"filters": ["privilege T"],
+			"filters": "privilege T",
 			"meta": "0",
 			"limit": "0"
 		})
@@ -172,7 +173,7 @@ describe('Test scenario', function() {
 				request
 				.get("/init/rest/api/groups")
 				.query({
-					"filters": ["role Impersonate"],
+					"filters": "role Impersonate",
 					"props": "id",
 					"meta": "0",
 					"limit": "0"
@@ -192,7 +193,7 @@ describe('Test scenario', function() {
 				request
 				.get("/init/rest/api/groups")
 				.query({
-					"filters": ["role Everybody"],
+					"filters": "role Everybody",
 					"props": "id",
 					"meta": "0",
 					"limit": "0"
@@ -214,8 +215,7 @@ describe('Test scenario', function() {
 				.send({
 					"email": mocha_user,
 					"quota_app": 1,
-					"first_name": "mocha",
-					"last_name": "mocha"
+					"first_name": "mocha"
 				})
 				.end(function(err, res){
 					res.status.should.be.equal(200)
@@ -223,6 +223,53 @@ describe('Test scenario', function() {
 					res.body.data.length.should.be.greaterThan(0)
 					res.body.data[0].should.have.property("id")
 					mocha_user_id = res.body.data[0].id
+					done()
+				})
+			})
+		})
+		describe('Get the mocha user private group id', function () {
+			it('Returns an array of 1 group', function(done) {
+				request
+				.get("/init/rest/api/users/"+mocha_user_id+"/groups")
+				.query({
+					"props": "id,role",
+					"meta": "0",
+					"limit": "0"
+				})
+				.query({"filters[]": "privilege F"})
+				.query({"filters[]": "role !Everybody"})
+				.end(function(err, res){
+					res.status.should.be.equal(200)
+					res.body.data.should.be.a("array")
+					res.body.data.length.should.equal(1)
+					res.body.data[0].should.have.property("id")
+					mocha_group_id = res.body.data[0].id
+					done()
+				})
+			})
+		})
+		describe('Set the ProvisioningManager privilege to mocha user', function () {
+			it('Returns no error and attached in info', function(done) {
+				request
+				.post("/init/rest/api/users/"+mocha_user_id+"/groups/"+priv_groups_h["ProvisioningManager"])
+				.end(function(err, res){
+					res.status.should.be.equal(200)
+					res.body.should.not.have.property("error")
+					res.body.should.have.property("info")
+					res.body.info.should.match(/attached/)
+					done()
+				})
+			})
+		})
+		describe('Set the FormsManager privilege to mocha user', function () {
+			it('Returns no error and attached in info', function(done) {
+				request
+				.post("/init/rest/api/users/"+mocha_user_id+"/groups/"+priv_groups_h["FormsManager"])
+				.end(function(err, res){
+					res.status.should.be.equal(200)
+					res.body.should.not.have.property("error")
+					res.body.should.have.property("info")
+					res.body.info.should.match(/attached/)
 					done()
 				})
 			})
@@ -284,13 +331,72 @@ describe('Test scenario', function() {
 			})
 		})
 	})
+	describe('Forms management', function() {
+		var form_id = null
+		describe('Create a form', function () {
+			it('Returns the created form structure in data[0]', function(done) {
+				request
+				.post("/init/rest/api/forms")
+				.send({
+					"form_name": "mocha form"
+				})
+				.end(function(err, res){
+					res.status.should.be.equal(200)
+					res.body.data.should.be.a("array")
+					res.body.data.length.should.equal(1)
+					res.body.data[0].should.have.property("form_name")
+					res.body.data[0].form_name.should.be.equal("mocha form")
+					res.body.data[0].should.have.property("id")
+					form_id = res.body.data[0].id
+					done()
+				})
+			})
+		})
+		describe('Get form publications', function () {
+			it('Should return only the mocha private group', function(done) {
+				request
+				.get("/init/rest/api/forms/"+form_id+"/publications")
+				.end(function(err, res){
+					res.status.should.be.equal(200)
+					res.body.data.length.should.equal(1)
+					res.body.data[0].id.should.equal(mocha_group_id)
+					done()
+				})
+			})
+		})
+		describe('Get form responsibles', function () {
+			it('Should return only the mocha private group', function(done) {
+				request
+				.get("/init/rest/api/forms/"+form_id+"/responsibles")
+				.end(function(err, res){
+					res.status.should.be.equal(200)
+					res.body.data.length.should.equal(1)
+					res.body.data[0].id.should.equal(mocha_group_id)
+					done()
+				})
+			})
+		})
+		describe('Delete the form', function () {
+			it('Returns no error and deleted in info', function(done) {
+				request
+				.del("/init/rest/api/forms/"+form_id)
+				.end(function(err, res){
+					res.status.should.be.equal(200)
+					res.body.should.not.have.property("error")
+					res.body.should.have.property("info")
+					res.body.info.should.match(/deleted/)
+					done()
+				})
+			})
+		})
+	})
 	describe('Application code management', function() {
 		describe('Get mocha user private apps', function () {
 			it('Returns 1 app', function(done) {
 				request
 				.get("/init/rest/api/apps")
 				.query({
-					"filters": ["app user_"+mocha_user_id+"_app"]
+					"filters": "app user_"+mocha_user_id+"_app"
 				})
 				.end(function(err, res){
 					res.status.should.be.equal(200)
@@ -429,7 +535,7 @@ describe('Test scenario', function() {
 				request
 				.get("/init/rest/api/users")
 				.query({
-					"filters": ["email mocha@opensvc.com"],
+					"filters": "email mocha@opensvc.com",
 					"props": "id",
 					"meta": "0",
 					"limit": "0"
