@@ -136,22 +136,20 @@ class rest_post_apps(rest_post_handler):
         response = db.apps.validate_and_insert(**vars)
         raise_on_error(response)
         table_modified("apps")
+        ws_send('apps_change')
         row = db(q).select().first()
 
         db.apps_responsibles.insert(app_id=row.id, group_id=user_default_group_id())
         table_modified("apps_responsibles")
+        ws_send('apps_responsibles_change')
         db.apps_publications.insert(app_id=row.id, group_id=user_default_group_id())
         table_modified("apps_publications")
+        ws_send('apps_publications_change')
 
         _log('apps.create',
              'app %(app)s created. data %(data)s',
              dict(app=row.app, data=beautify_data(vars)),
             )
-        l = {
-          'event': 'apps_change',
-          'data': {'foo': 'bar'},
-        }
-        _websocket_send(event_msg(l))
         return rest_get_app().handler(row.app)
 
 
@@ -191,11 +189,7 @@ class rest_post_app(rest_post_handler):
         fmt = 'app %(app)s changed: %(data)s'
         d = dict(app=row.app, data=beautify_change(row, vars))
         _log('apps.change', fmt, d)
-        l = {
-          'event': 'apps_change',
-          'data': {'id': row.id},
-        }
-        _websocket_send(event_msg(l))
+        ws_send('apps_change', {'id': row.id})
         ret = rest_get_app().handler(row.id)
         ret["info"] = fmt % d
         return ret
@@ -262,24 +256,22 @@ class rest_delete_app(rest_delete_handler):
             return dict(info="app code %s does not exist" % str(id))
         db(q).delete()
         table_modified("apps")
+        ws_send('apps_change', {'id': row.id})
 
         q = db.apps_responsibles.app_id == row.id
         db(q).delete()
         table_modified("apps_responsibles")
+        ws_send('apps_responsible_change')
 
         q = db.apps_publications.app_id == row.id
         db(q).delete()
         table_modified("apps_publications")
+        ws_send('apps_publications_change')
 
         _log('apps.delete',
              'app %(app)s deleted',
              dict(app=row.app),
             )
-        l = {
-          'event': 'apps_change',
-          'data': {'foo': 'bar'},
-        }
-        _websocket_send(event_msg(l))
         return dict(info="app %(app)s deleted" % dict(app=row.app))
 
 
@@ -426,11 +418,7 @@ class rest_post_app_responsible(rest_post_handler):
         table_modified("apps_responsibles")
         _log('apps.responsible.add', fmt, d)
 
-        l = {
-          'event': 'apps_change',
-          'data': {'id': id},
-        }
-        _websocket_send(event_msg(l))
+        ws_send('apps_responsibles_change', {'id': id})
 
         # remove dashboard alerts
         q = db.dashboard.dash_type == "application code without responsible"
@@ -506,11 +494,7 @@ class rest_delete_app_responsible(rest_delete_handler):
         table_modified("apps_responsibles")
         _log('apps.responsible.delete', fmt, d)
 
-        l = {
-          'event': 'apps_change',
-          'data': {'id': row.id},
-        }
-        _websocket_send(event_msg(l))
+        ws_send('apps_responsibles_change', {'id': row.id})
 
         return dict(info=fmt % d)
 
@@ -602,11 +586,7 @@ class rest_post_app_publication(rest_post_handler):
         table_modified("apps_publications")
         _log('apps.publication.add', fmt, d)
 
-        l = {
-          'event': 'apps_change',
-          'data': {'id': id},
-        }
-        _websocket_send(event_msg(l))
+        ws_send('apps_publications_change', {'id': id})
 
         # remove dashboard alerts
         q = db.dashboard.dash_type == "application code without publication"
@@ -682,11 +662,7 @@ class rest_delete_app_publication(rest_delete_handler):
         table_modified("apps_publications")
         _log('apps.publication.delete', fmt, d)
 
-        l = {
-          'event': 'apps_change',
-          'data': {'id': row.id},
-        }
-        _websocket_send(event_msg(l))
+        ws_send('apps_publications_change', {'id': row.id})
 
         return dict(info=fmt % d)
 

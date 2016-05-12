@@ -203,7 +203,7 @@ function table_apps(divid, options) {
 			"app": {"title": "Application code"}
 		},
 		'wsable': true,
-		'events': ['apps_change']
+		'events': ['apps_change', 'apps_publications_change', 'apps_responsibles_change']
 	}
 
 	var _options = $.extend({}, defaults, options)

@@ -295,34 +295,18 @@ function tags(options) {
 		if (o.options.candidates == true) {
 			return
 		}
-		if (!("data" in data)) {
-			return
-		} 
-		data = data.data
-		if (o.options.node_id) {
-			if (!data.node_id || (o.options.node_id != data.node_id)) {
-				return
-			}
-		} else if (o.options.svc_id) {
-			if (!data.svc_id || (o.options.svc_id != data.svc_id)) {
-				return
-			}
+		if (o.options.event_handler) {
+			// custom event handler
+			o.options.event_handler(o, data)
 		}
-		if (!("action" in data)) {
-			return
-		}
-		if (data["action"] == "attach") {
-			if (o.div.find("[tag_id="+data.tag_id+"]").length > 0) {
-				return
+		if (o.options.events) {
+			// simple reload tags action
+			for (var i=0; i<o.options.events.length; i++) {
+				if (o.options.events[i] == data.event) {
+					o.load()
+					return
+				}
 			}
-			o.div.children("div").first().prepend(o.add_tag({
-				"id": data.tag_id,
-				"tag_name": data[o.options.tag_name]
-			}))
-		} else if (data.action == "detach") {
-			o.del_tag({
-				"tag_id": data.tag_id,
-			})
 		}
 	}
 
@@ -355,6 +339,7 @@ function tags(options) {
 	return o
 }
 
+
 function node_tags(options) {
 	options.tag_name = "tag_name"
 	options.get_tags = function(fval, callback, callback_err) {
@@ -385,6 +370,33 @@ function node_tags(options) {
 	options.am_i_responsible = function(callback) {
 		services_osvcgetrest("R_NODE_AM_I_RESPONSIBLE", [options.node_id], "", callback)
 	}
+	options.event_handler = function(o, data) {
+		if (!("data" in data)) {
+			return
+		} 
+		data = data.data
+		if (!data.node_id || (o.options.node_id != data.node_id)) {
+			return
+		}
+		if (!("action" in data)) {
+			return
+		}
+		if (data["action"] == "attach") {
+			if (o.div.find("[tag_id="+data.tag_id+"]").length > 0) {
+				return
+			}
+			o.div.children("div").first().prepend(o.add_tag({
+				"id": data.tag_id,
+				"tag_name": data[o.options.tag_name]
+			}))
+		} else if (data.action == "detach") {
+			o.del_tag({
+				"tag_id": data.tag_id,
+			})
+		}
+	}
+
+
 	return tags(options)
 }
 
@@ -418,6 +430,32 @@ function service_tags(options) {
 	options.am_i_responsible = function(callback) {
 		services_osvcgetrest("R_SERVICE_AM_I_RESPONSIBLE", [options.svc_id], "", callback)
 	}
+	options.event_handler = function(data, o) {
+		if (!("data" in data)) {
+			return
+		} 
+		data = data.data
+		if (!data.svc_id || (o.options.svc_id != data.svc_id)) {
+			return
+		}
+		if (!("action" in data)) {
+			return
+		}
+		if (data["action"] == "attach") {
+			if (o.div.find("[tag_id="+data.tag_id+"]").length > 0) {
+				return
+			}
+			o.div.children("div").first().prepend(o.add_tag({
+				"id": data.tag_id,
+				"tag_name": data[o.options.tag_name]
+			}))
+		} else if (data.action == "detach") {
+			o.del_tag({
+				"tag_id": data.tag_id,
+			})
+		}
+	}
+
 	return tags(options)
 }
 
@@ -452,6 +490,7 @@ function app_responsibles(options) {
 	options.ondblclick = function(divid, data) {
 		group_tabs(divid, {"group_id": data.id, "group_name": data.name})
 	}
+	options.events = ["auth_group_change", "apps_responsibles_change"]
 	return tags(options)
 }
 
@@ -486,6 +525,7 @@ function app_publications(options) {
 	options.ondblclick = function(divid, data) {
 		group_tabs(divid, {"group_id": data.id, "group_name": data.name})
 	}
+	options.events = ["auth_group_change", "apps_publications_change"]
 	return tags(options)
 }
 
@@ -520,6 +560,7 @@ function form_responsibles(options) {
 	options.ondblclick = function(divid, data) {
 		group_tabs(divid, {"group_id": data.id, "group_name": data.name})
 	}
+	options.events = ["auth_group_change", "forms_team_responsible_change"]
 	return tags(options)
 }
 
@@ -554,6 +595,7 @@ function form_publications(options) {
 	options.ondblclick = function(divid, data) {
 		group_tabs(divid, {"group_id": data.id, "group_name": data.name})
 	}
+	options.events = ["auth_group_change", "forms_team_publication_change"]
 	return tags(options)
 }
 
@@ -588,6 +630,7 @@ function ruleset_responsibles(options) {
 	options.ondblclick = function(divid, data) {
 		group_tabs(divid, {"group_id": data.id, "group_name": data.name})
 	}
+	options.events = ["auth_group_change", "comp_rulesets_change"]
 	return tags(options)
 }
 
@@ -622,6 +665,7 @@ function ruleset_publications(options) {
 	options.ondblclick = function(divid, data) {
 		group_tabs(divid, {"group_id": data.id, "group_name": data.name})
 	}
+	options.events = ["auth_group_change", "comp_ruleset_change"]
 	return tags(options)
 }
 
@@ -656,6 +700,7 @@ function prov_template_responsibles(options) {
 	options.ondblclick = function(divid, data) {
 		group_tabs(divid, {"group_id": data.id, "group_name": data.name})
 	}
+	options.events = ["auth_group_change", "prov_template_responsible_change"]
 	return tags(options)
 }
 
@@ -690,6 +735,7 @@ function prov_template_publications(options) {
 	options.ondblclick = function(divid, data) {
 		group_tabs(divid, {"group_id": data.id, "group_name": data.name})
 	}
+	options.events = ["auth_group_change", "prov_template_publication_change"]
 	return tags(options)
 }
 
@@ -724,6 +770,7 @@ function modset_responsibles(options) {
 	options.ondblclick = function(divid, data) {
 		group_tabs(divid, {"group_id": data.id, "group_name": data.name})
 	}
+	options.events = ["auth_group_change", "comp_moduleset_change"]
 	return tags(options)
 }
 
@@ -758,6 +805,7 @@ function modset_publications(options) {
 	options.ondblclick = function(divid, data) {
 		group_tabs(divid, {"group_id": data.id, "group_name": data.name})
 	}
+	options.events = ["auth_group_change", "comp_moduleset_change"]
 	return tags(options)
 }
 
@@ -793,6 +841,7 @@ function safe_file_responsibles(options) {
 	options.ondblclick = function(divid, data) {
 		group_tabs(divid, {"group_id": data.id, "group_name": data.name})
 	}
+	options.events = ["auth_group_change", "safe_team_responsible_change"]
 	return tags(options)
 }
 
@@ -827,6 +876,7 @@ function safe_file_publications(options) {
 	options.ondblclick = function(divid, data) {
 		group_tabs(divid, {"group_id": data.id, "group_name": data.name})
 	}
+	options.events = ["auth_group_change", "safe_team_publication_change"]
 	return tags(options)
 }
 
@@ -866,6 +916,7 @@ function user_org_membership(options) {
 	options.ondblclick = function(divid, data) {
 		group_tabs(divid, {"group_id": data.id, "group_name": data.name})
 	}
+	options.events = ["auth_group_change", "auth_membership_change"]
 	return tags(options)
 }
 
@@ -905,6 +956,7 @@ function user_priv_membership(options) {
 	options.ondblclick = function(divid, data) {
 		group_tabs(divid, {"group_id": data.id, "group_name": data.name})
 	}
+	options.events = ["auth_group_change", "auth_membership_change"]
 	return tags(options)
 }
 

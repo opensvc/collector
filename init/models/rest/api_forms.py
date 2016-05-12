@@ -75,11 +75,7 @@ class rest_post_form(rest_post_handler):
         d = dict(form_name=form.form_name, data=beautify_change(form, vars))
 
         _log('form.change', fmt, d)
-        l = {
-          'event': 'forms_change',
-          'data': {'id': form.id},
-        }
-        _websocket_send(event_msg(l))
+        ws_send('forms_change', {'id': form.id})
 
         ret = rest_get_form().handler(form.id)
         ret["info"] = fmt % d
@@ -114,22 +110,18 @@ class rest_post_forms(rest_post_handler):
         vars["form_author"] = user_name()
 
         form_id = db.forms.insert(**vars)
+        ws_send('forms_change', {'id': form_id})
+
         lib_forms_add_default_team_responsible(form_name)
+        ws_send('forms_team_responsible_change', {'form_id': form_id})
+
         lib_forms_add_default_team_publication(form_name)
+        ws_send('forms_team_publication_change', {'form_id': form_id})
 
         fmt = "Form %(form_name)s added"
         d = dict(form_name=form_name)
 
-        _log(
-          'form.add',
-          fmt,
-          d
-        )
-        l = {
-          'event': 'forms_change',
-          'data': {'id': form_id},
-        }
-        _websocket_send(event_msg(l))
+        _log('form.add', fmt, d)
         self.cache_clear(["rest_get_forms"])
 
         return rest_get_form().handler(form_id)
@@ -249,16 +241,8 @@ class rest_delete_form_publication(rest_delete_handler):
 
         db(q).delete()
 
-        _log(
-          'form.publication.delete',
-          fmt,
-          d
-        )
-        l = {
-          'event': 'forms_change',
-          'data': {'id': form_id},
-        }
-        _websocket_send(event_msg(l))
+        _log('form.publication.delete', fmt, d)
+        ws_send('forms_team_publication_change', {'form_id': form_id, 'group_id': group_id})
         self.cache_clear(["rest_get_forms"])
         return dict(info=fmt%d)
 
@@ -323,16 +307,8 @@ class rest_post_form_publication(rest_post_handler):
 
         db.forms_team_publication.insert(form_id=form_id, group_id=group.id)
 
-        _log(
-          'form.publication.add',
-          fmt,
-          d
-        )
-        l = {
-          'event': 'forms_change',
-          'data': {'id': form_id},
-        }
-        _websocket_send(event_msg(l))
+        _log('form.publication.add', fmt, d)
+        ws_send('forms_team_publication_change', {'form_id': form_id, 'group_id': group.id})
 
         self.cache_clear(["rest_get_forms"])
         return dict(info=fmt%d)
@@ -423,16 +399,8 @@ class rest_delete_form_responsible(rest_delete_handler):
 
         db(q).delete()
 
-        _log(
-          'form.responsible.delete',
-          fmt,
-          d
-        )
-        l = {
-          'event': 'forms_change',
-          'data': {'id': form_id},
-        }
-        _websocket_send(event_msg(l))
+        _log('form.responsible.delete', fmt, d)
+        ws_send('forms_team_responsible_change', {'form_id': form_id, 'group_id': group_id})
         self.cache_clear(["rest_get_forms"])
 
         return dict(info=fmt%d)
@@ -498,16 +466,8 @@ class rest_post_form_responsible(rest_post_handler):
 
         db.forms_team_responsible.insert(form_id=form_id, group_id=group.id)
 
-        _log(
-          'form.responsible.add',
-          fmt,
-          d
-        )
-        l = {
-          'event': 'forms_change',
-          'data': {'id': form_id},
-        }
-        _websocket_send(event_msg(l))
+        _log('form.responsible.add', fmt, d)
+        ws_send('forms_team_responsible_change', {'form_id': form_id, 'group_id': group.id})
         self.cache_clear(["rest_get_forms"])
 
         return dict(info=fmt%d)
@@ -623,21 +583,20 @@ class rest_delete_form(rest_delete_handler):
             raise Exception("Form %s not found"%str(id))
 
         form_id = db(q).delete()
+        ws_send('forms_change', {'id': id})
 
         q = db.forms_team_publication.form_id == id
         db(q).delete()
+        ws_send('forms_team_publication_change', {'form_id': id})
+
         q = db.forms_team_responsible.form_id == id
         db(q).delete()
+        ws_send('forms_team_responsible_change', {'form_id': id})
 
         fmt = "Form %(form_name)s deleted"
         d = dict(form_name=row.form_name)
 
         _log('form.del', fmt, d)
-        l = {
-          'event': 'forms_change',
-          'data': {'id': row.id},
-        }
-        _websocket_send(event_msg(l))
 
         return dict(info=fmt%d)
 
