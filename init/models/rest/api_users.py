@@ -269,6 +269,12 @@ class rest_post_users(rest_post_handler):
             except:
                 del(vars["quota_app"])
 
+        if "quota_org_group" in vars:
+            try:
+                check_privilege("QuotaManager")
+            except:
+                del(vars["quota_org_group"])
+
         obj_id = db.auth_user.insert(**vars)
         if "password" in vars:
             vars["password"] = "xxxxx"
@@ -284,6 +290,7 @@ class rest_post_users(rest_post_handler):
             auth.add_membership(group_id, user.id)
 
         set_quota_app_on_register(user)
+        set_quota_org_group_on_register(user)
         do_create_app_on_register(user)
         do_membership_on_register(user)
 
@@ -333,6 +340,12 @@ class rest_post_user(rest_post_handler):
                 check_privilege("QuotaManager")
             except:
                 del(vars["quota_app"])
+
+        if "quota_org_group" in vars:
+            try:
+                check_privilege("QuotaManager")
+            except:
+                del(vars["quota_org_group"])
 
         db(q).update(**vars)
         l = []

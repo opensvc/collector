@@ -319,21 +319,29 @@ class rest_post_groups(rest_post_handler):
             check_privilege("Manager")
         else:
             check_privilege("GroupManager")
+
+        if 'id' in vars:
+            q = db.auth_group.id == vars["id"]
+        elif 'role' in vars:
+            q = db.auth_group.role == vars["role"]
+        group = db(q).select().first()
+        if group:
+            return rest_post_group().handler(group.id, **vars)
+
+        check_quota_org_group()
+
         group_id = db.auth_group.insert(**vars)
+        ws_send("auth_group_change")
         table_modified("auth_group")
 
         db.auth_membership.insert(group_id=group_id, user_id=auth.user_id)
         table_modified("auth_membership")
+        ws_send("auth_membership_change")
 
         _log('groups.add',
              'add group %(data)s',
-             dict(data=str(vars)),
+             dict(data=beautify_data(vars)),
             )
-        l = {
-          'event': 'auth_group_change',
-          'data': {'foo': 'bar'},
-        }
-        _websocket_send(event_msg(l))
         return rest_get_group().handler(vars["role"])
 
 
@@ -382,15 +390,8 @@ class rest_post_group(rest_post_handler):
         db(q).update(**vars)
         fmt = "change group %(role)s: %(data)s"
         d = dict(role=row.role, data=beautify_change(row, vars))
-        _log('groups.change',
-             fmt,
-             d,
-            )
-        l = {
-          'event': 'auth_group_change',
-          'data': {'foo': 'bar'},
-        }
-        _websocket_send(event_msg(l))
+        _log('groups.change', fmt, d)
+        ws_send("auth_group_change")
         ret = rest_get_group().handler(row.id)
         ret["info"] = fmt % d
         return ret
@@ -473,49 +474,53 @@ class rest_delete_group(rest_delete_handler):
         _log('groups.delete',
              'deleted group %(g)s',
              dict(g=row.role))
-        l = {
-          'event': 'auth_group_change',
-          'data': {'foo': 'bar'},
-        }
-        _websocket_send(event_msg(l))
+        ws_send("auth_group_change")
 
         # group membership
         q = db.auth_membership.group_id == row.id
         db(q).delete()
         table_modified("auth_membership")
+        ws_send("auth_membership_change")
 
         # apps responsibles
         q = db.apps_responsibles.group_id == row.id
         db(q).delete()
         table_modified("apps_responsibles")
+        ws_send("apps_responsible_change")
 
         # forms responsibles and publication
         q = db.forms_team_responsible.group_id == row.id
         db(q).delete()
         table_modified("forms_team_responsible")
+        ws_send("forms_team_responsible_change")
         q = db.forms_team_publication.group_id == row.id
         db(q).delete()
         table_modified("forms_team_publication")
+        ws_send("forms_team_publication_change")
 
         # modset responsibles
         q = db.comp_moduleset_team_responsible.group_id == row.id
         db(q).delete()
         table_modified("comp_moduleset_team_responsible")
+        ws_send("comp_moduleset_team_responsible_change")
 
         # modset publications
         q = db.comp_moduleset_team_publication.group_id == row.id
         db(q).delete()
         table_modified("comp_moduleset_team_publication")
+        ws_send("comp_moduleset_team_publication_change")
 
         # ruleset responsibles
         q = db.comp_ruleset_team_responsible.group_id == row.id
         db(q).delete()
         table_modified("comp_ruleset_team_responsible")
+        ws_send("comp_ruleset_team_responsible_change")
 
         # ruleset publications
         q = db.comp_ruleset_team_publication.group_id == row.id
         db(q).delete()
         table_modified("comp_ruleset_team_publication")
+        ws_send("comp_ruleset_team_publication_change")
 
         return dict(info="Group %s deleted" % row.role)
 

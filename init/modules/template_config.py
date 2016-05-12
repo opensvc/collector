@@ -78,6 +78,7 @@ token_quota = 150000
 
 # default user quota
 default_quota_app = 1
+default_quota_org_group = 3
 
 
 billing_method = "agents"

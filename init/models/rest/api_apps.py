@@ -124,7 +124,6 @@ class rest_post_apps(rest_post_handler):
             return rest_post_app(app_id, **vars)
 
         check_privilege("AppManager")
-        check_quota_app()
         if len(vars) == 0 or "app" not in vars:
             raise Exception("Insufficient data")
         q = db.apps.id > 0
@@ -133,6 +132,7 @@ class rest_post_apps(rest_post_handler):
         row = db(q).select().first()
         if row is not None:
             return rest_post_app().handler(row.id, **vars)
+        check_quota_app()
         response = db.apps.validate_and_insert(**vars)
         raise_on_error(response)
         table_modified("apps")

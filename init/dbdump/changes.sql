@@ -6014,7 +6014,6 @@ insert ignore into auth_group (role, privilege) values ("QuotaManager", "T");
 
 insert into auth_permission set group_id=(select id from auth_group where role = "Impersonate"), name="impersonate", table_name="auth_user", record_id=0;
 
-alter table auth_user add column quota_app integer default NULL;
 
 
 CREATE TABLE `prov_template_team_publication` (
@@ -6028,6 +6027,8 @@ CREATE TABLE `prov_template_team_publication` (
 
 drop view v_prov_templates; create view v_prov_templates as (select `f`.*, group_concat(distinct `gr`.`role` order by `gr`.`role` ASC separator ', ') AS `tpl_team_responsible`, group_concat(distinct `gp`.`role` order by `gp`.`role` ASC separator ', ') AS `tpl_team_publication` from `prov_templates` `f` left join `prov_template_team_responsible` `fr` on `f`.`id` = `fr`.`tpl_id` left join `prov_template_team_publication` `fp` on `f`.`id` = `fp`.`tpl_id` left join `auth_group` `gr` on `fr`.`group_id` = `gr`.`id` left join `auth_group` `gp` on `fp`.`group_id` = `gp`.`id` group by `f`.`id`);
 
-drop view v_users ; CREATE VIEW `v_users` AS (select (select `e`.`time_stamp` AS `time_stamp` from `auth_event` `e` where (`e`.`user_id` = `u`.`id`) order by `e`.`time_stamp` desc limit 1) AS `last`,`u`.`id` AS `id`,concat_ws(' ',`u`.`first_name`,`u`.`last_name`) AS `fullname`,u.quota_app as quota_app, `u`.`email` AS `email`,sum((select count(0) AS `count(*)` from `auth_group` `gg` where ((`gg`.`role` = 'Manager') and (`gg`.`id` = `g`.`id`)))) AS `manager`,group_concat(`g`.`role` order by `g`.`role` separator ', ') AS `groups`,`gg`.`role` AS `primary_group`,`u`.`lock_filter` AS `lock_filter`,`fs`.`fset_name` AS `fset_name`,`u`.`phone_work` AS `phone_work` from (((((((`auth_user` `u` left join `auth_membership` `mm` on(((`u`.`id` = `mm`.`user_id`) and (`mm`.`primary_group` = 'T')))) left join `auth_group` `gg` on((`mm`.`group_id` = `gg`.`id`))) left join `auth_membership` `m` on((`u`.`id` = `m`.`user_id`))) left join `auth_group` `g` on(((`m`.`group_id` = `g`.`id`) and (not((`g`.`role` like 'user_%')))))) ) left join `gen_filterset_user` `fsu` on((`fsu`.`user_id` = `u`.`id`))) left join `gen_filtersets` `fs` on((`fs`.`id` = `fsu`.`fset_id`))) group by `u`.`id`);
+alter table auth_user add column quota_app integer default NULL;
+alter table auth_user add column quota_org_group integer default NULL;
 
+drop view v_users ; CREATE VIEW `v_users` AS (select (select `e`.`time_stamp` AS `time_stamp` from `auth_event` `e` where (`e`.`user_id` = `u`.`id`) order by `e`.`time_stamp` desc limit 1) AS `last`,`u`.`id` AS `id`,concat_ws(' ',`u`.`first_name`,`u`.`last_name`) AS `fullname`,u.quota_org_group as quota_org_group,u.quota_app as quota_app, `u`.`email` AS `email`,sum((select count(0) AS `count(*)` from `auth_group` `gg` where ((`gg`.`role` = 'Manager') and (`gg`.`id` = `g`.`id`)))) AS `manager`,group_concat(`g`.`role` order by `g`.`role` separator ', ') AS `groups`,`gg`.`role` AS `primary_group`,`u`.`lock_filter` AS `lock_filter`,`fs`.`fset_name` AS `fset_name`,`u`.`phone_work` AS `phone_work` from (((((((`auth_user` `u` left join `auth_membership` `mm` on(((`u`.`id` = `mm`.`user_id`) and (`mm`.`primary_group` = 'T')))) left join `auth_group` `gg` on((`mm`.`group_id` = `gg`.`id`))) left join `auth_membership` `m` on((`u`.`id` = `m`.`user_id`))) left join `auth_group` `g` on(((`m`.`group_id` = `g`.`id`) and (not((`g`.`role` like 'user_%')))))) ) left join `gen_filterset_user` `fsu` on((`fsu`.`user_id` = `u`.`id`))) left join `gen_filtersets` `fs` on((`fs`.`id` = `fsu`.`fset_id`))) group by `u`.`id`);
 

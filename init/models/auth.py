@@ -58,6 +58,14 @@ def get_svc_id(s):
         raise KeyError("Service '%s' not found" % s)
     return svc.svc_id
 
+def check_quota_org_group():
+    quota_org_group = db.auth_user(auth.user_id).quota_org_group
+    if quota_org_group is None or quota_org_group == 0:
+        return
+    if len(user_org_group_ids()) < quota_org_group:
+        return
+    raise Exception("org group quota exceeded")
+
 def check_quota_app():
     quota_app = db.auth_user(auth.user_id).quota_app
     if quota_app is None or quota_app == 0:
@@ -295,8 +303,7 @@ def user_org_group_ids(id=None):
               am.group_id=g.id and
               am.user_id=%s and
               g.privilege='F' and
-              g.role != 'UnaffectedProjects' and
-              not g.role like 'user_%%'
+              g.role != 'UnaffectedProjects'
            """%str(id)
     rows = db.executesql(sql)
     return map(lambda r: r[0], rows)
@@ -348,8 +355,14 @@ def auth_register_callback(form):
     user = db(q).select().first()
 
     set_quota_app_on_register(user)
+    set_quota_org_group_on_register(user)
     do_create_app_on_register(user)
     do_membership_on_register(user)
+
+def set_quota_org_group_on_register(user):
+    quota_org_group = config_get("default_quota_org_group", None)
+    q = db.auth_user.id == user.id
+    db(q).update(quota_org_group=quota_org_group)
 
 def set_quota_app_on_register(user):
     quota_app = config_get("default_quota_app", None)

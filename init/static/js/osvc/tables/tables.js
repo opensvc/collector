@@ -1836,7 +1836,7 @@ function table_users(divid, options) {
 		'ajax_url': '/init/users/ajax_users',
 		'span': ['id'],
 		'force_cols': ['id'],
-		'columns': ['manager', 'id', 'fullname', 'email', 'phone_work', 'primary_group', 'groups', 'lock_filter', 'fset_name', 'quota_app', 'last'],
+		'columns': ['manager', 'id', 'fullname', 'email', 'phone_work', 'primary_group', 'groups', 'lock_filter', 'fset_name', 'quota_app', 'quota_org_group', 'last'],
 		'default_columns': ['manager', 'fullname', 'email', 'primary_group', 'groups', 'lock_filter', 'fset_name', 'last'],
 		'wsable': true,
 		'events': ['auth_user_change', 'auth_membership_change']

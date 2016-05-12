@@ -105,6 +105,8 @@ auth.settings.extra_fields['auth_membership']= [
 ]
 
 auth.settings.extra_fields['auth_user']= [
+    Field('quota_org_group', 'integer', default=False,
+          label=T('Maximum number of organizational groups the user can be member of')),
     Field('quota_app', 'integer', default=False,
           label=T('Maximum number of applications the user can be responsible of')),
     Field('phone_work', 'string', label=T("Work desk phone number"), length=15),
@@ -495,6 +497,7 @@ db.define_table('v_users',
     Field('lock_filter'),
     Field('fset_name'),
     Field('quota_app'),
+    Field('quota_org_group'),
     migrate=False)
 
 db.define_table('disk_blacklist',

@@ -1211,6 +1211,7 @@
 		"resp_apps": "Applications, responsible",
 		"visible_apps": "Applications, visible",
 		"quota_app": "app quota",
+		"quota_org_group": "org group quota",
 		"username": "login",
 		"first_name": "first name",
 		"last_name": "last name",
@@ -1655,6 +1656,7 @@
 		"Stdout": "Stdout",
 		"Stderr": "Stderr",
 		"quota_app": "App Quota",
+		"quota_org_group": "Org Group Quota",
 		"Flag, deprecated": "Flag, deprecated",
 		"Gateway": "Gateway"
 	},

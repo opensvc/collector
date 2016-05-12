@@ -215,6 +215,7 @@ describe('Test scenario', function() {
 				.send({
 					"email": mocha_user,
 					"quota_app": 1,
+					"quota_org_group": 3,
 					"first_name": "mocha"
 				})
 				.end(function(err, res){
@@ -301,12 +302,30 @@ describe('Test scenario', function() {
 		})
 	})
 	describe('Non Manager user management', function() {
+		var additional_mocha_group_id = null
+
 		describe('Set the mocha user app quota', function () {
 			it('Should fail because not a QuotaManager member', function(done) {
 				request
 				.post("/init/rest/api/users/"+mocha_user_id)
 				.send({
 					"quota_app": 2
+				})
+				.end(function(err, res){
+					res.status.should.be.equal(200)
+					res.body.should.have.property("error")
+					res.body.should.not.have.property("info")
+					res.body.error.should.match(/No fields to update/)
+					done()
+				})
+			})
+		})
+		describe('Set the mocha user org group quota', function () {
+			it('Should fail because not a QuotaManager member', function(done) {
+				request
+				.post("/init/rest/api/users/"+mocha_user_id)
+				.send({
+					"quota_org_group": 3
 				})
 				.end(function(err, res){
 					res.status.should.be.equal(200)
@@ -326,6 +345,53 @@ describe('Test scenario', function() {
 					res.body.should.have.property("error")
 					res.body.should.not.have.property("info")
 					res.body.error.should.match(/not exist/)
+					done()
+				})
+			})
+		})
+		describe('Create a group', function () {
+			it('Should succeed', function(done) {
+				request
+				.post("/init/rest/api/groups")
+				.send({
+					"role": "Mocha group 1",
+					"privilege": "F"
+				})
+				.end(function(err, res){
+					res.status.should.be.equal(200)
+					res.body.data.should.be.a("array")
+					res.body.data.length.should.equal(1)
+					additional_mocha_group_id = res.body.data[0].id
+					done()
+				})
+			})
+		})
+		describe('Create a second group', function () {
+			it('Should fail because of quota exceeded', function(done) {
+				request
+				.post("/init/rest/api/groups")
+				.send({
+					"role": "Mocha group 2",
+					"privilege": "F"
+				})
+				.end(function(err, res){
+					res.status.should.be.equal(200)
+					res.body.should.have.property("error")
+					res.body.should.not.have.property("info")
+					res.body.error.should.match(/quota/)
+					done()
+				})
+			})
+		})
+		describe('Delete a group', function () {
+			it('Returns no error and deleted in info', function(done) {
+				request
+				.del("/init/rest/api/groups/"+additional_mocha_group_id)
+				.end(function(err, res){
+					res.status.should.be.equal(200)
+					res.body.should.not.have.property("error")
+					res.body.should.have.property("info")
+					res.body.info.should.match(/deleted/)
 					done()
 				})
 			})

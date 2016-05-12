@@ -1207,6 +1207,7 @@
 		"resp_apps": "Applications, responsable",
 		"visible_apps": "Applications, visibles",
 		"quota_app": "quota d'applis",
+		"quota_org_group": "quota de groupes orga",
 		"username": "login",
 		"first_name": "prénom",
 		"last_name": "nom de famille",
@@ -1603,7 +1604,8 @@
 		"Command": "Commande",
 		"Stdout": "Stdout",
 		"Stderr": "Stderr",
-		"quota_app": "App Quota",
+		"quota_app": "Quota d'applis",
+		"quota_org_group": " Quota de groupes orga",
 		"Flag, deprecated": "Flag, déprécié",
 		"Node name": "Noeud"
 	},
