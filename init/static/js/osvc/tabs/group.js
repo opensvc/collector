@@ -76,13 +76,14 @@ function group_properties(divid, options) {
 				return
 			}
 			var data = jd.data[0]
+			o.info_privilege.html(data.privilege)
 			o.info_role.html(data.role)
 			o.info_description.html(data.description)
 			o.info_id.html(data.id)
 
 			tab_properties_generic_boolean({
 				"div": o.info_privilege,
-				"privileges": ["Manager", "UsersManager"],
+				"privileges": ["Manager"],
 				"post": function(_data, callback, error_callback) {
 					services_osvcpostrest("R_GROUP", [data.id], "", _data, callback, error_callback)
 				}

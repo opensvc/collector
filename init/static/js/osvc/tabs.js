@@ -320,6 +320,7 @@ tab_properties_generic_autocomplete_user_app = function(options) {
 }
 
 tab_properties_generic_boolean = function(options) {
+console.log(options.div.text())
 	if (options.div.text() == "true") {
 		options.div.attr('class', 'fa toggle-on');
 	} else {
