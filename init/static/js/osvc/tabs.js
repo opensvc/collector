@@ -17,9 +17,26 @@ function tabs(divid) {
 	}
 
 	o.init = function() {
+		o.e_tabs = o.div.children().first()
 		o.closetab = o.div.find(".closetab")
 		o.tabs_ul = o.closetab.parent()
 		o.display = o.div.find(".tab_display")
+
+		// set a tab identifer to help find peers
+		var tab_id = null
+		for (key in o.options) {
+			if (key.indexOf("_id") >= 1) {
+				var tab_id = key + "_" + o.options[key]
+			}
+		}
+		if (!tab_id) {
+			for (key in o.options) {
+				if (key.indexOf("_name") >= 1) {
+					var tab_id = key + "_" + md5(o.options[key])
+				}
+			}
+		}
+		o.e_tabs.attr("tab_id", tab_id)
 
 		// empty tabs on click closetab
 		o.closetab.bind("click", function() {
@@ -217,7 +234,8 @@ tab_properties_generic_autocomplete = function(options) {
 
 function tab_properties_generic_update_peers(div) {
 	var val = div.text()
-	$("[upd]#"+div.attr("id")).each(function(){
+	tab_id = div.parents("[tab_id]").first().attr("tab_id")
+	$("[tab_id="+tab_id+"]").find("[upd]#"+div.attr("id")).each(function(){
 		if ($(this)[0] == div[0]) {
 			return
 		}
