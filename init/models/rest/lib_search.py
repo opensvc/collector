@@ -170,6 +170,7 @@ def lib_search_user(pattern):
     t = datetime.datetime.now()
     o = db.v_users.fullname
     q = _where(None, 'v_users', pattern, 'fullname')
+    q |= _where(None, 'v_users', pattern, 'email')
     try:
         id = int(pattern.strip("%"))
         q |= db.v_users.id == id
