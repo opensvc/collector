@@ -484,15 +484,15 @@ function fset_designer(divid, options) {
 		var fields = {
 			'nodes': [].concat(['id', 'nodename', 'node_id'], objcols.node, ["updated"]),
 			'services': [].concat(['id', 'svc_id', 'svcname'], objcols.service, ["updated"]),
-			'svcmon': [].concat(['id', 'svc_id', 'node_id'], objcols.service_instance),
+			'svcmon': [].concat(["id"], objcols.service_instance),
 			'resmon': objcols.resource,
-			'svcdisks': ["disk_vendor", "disk_updated", "disk_used", "id", "disk_id", "disk_dg", "disk_model", "disk_local", "disk_region"],
-			'diskinfo': ["disk_devid", "disk_vendor", "disk_updated", "disk_raid", "disk_arrayid", "disk_id", "disk_level", "disk_name", "disk_created", "disk_group", "disk_size", "disk_alloc"],
-			'node_hba': ["hba_type", "hba_id"],
+			'svcdisks': ["id", "disk_vendor", "disk_updated", "disk_used", "disk_id", "disk_dg", "disk_model", "disk_local", "disk_region"],
+			'diskinfo': ["id", "disk_devid", "disk_vendor", "disk_updated", "disk_raid", "disk_arrayid", "disk_id", "disk_level", "disk_name", "disk_created", "disk_group", "disk_size", "disk_alloc"],
+			'node_hba': ["id", "hba_type", "hba_id"],
 			'apps': objcols.app,
 			'v_comp_moduleset_attachments': ['modset_name'],
-			'v_tags': ['id', 'tag_name'],
-			'packages': ["id", "node_id", "pkg_name", "pkg_version", "pkg_arch", "pkg_type", "sig_provider", "pkg_sig", "pkg_install_date", "pkg_updated"]
+			'v_tags': ["id", "tag_name"],
+			'packages': ["id", "pkg_name", "pkg_version", "pkg_arch", "pkg_type", "sig_provider", "pkg_sig", "pkg_install_date", "pkg_updated"]
 		}
 
 		var input = $("<input id='f_field' class='aci oi'>")

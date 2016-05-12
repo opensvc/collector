@@ -2211,6 +2211,7 @@ def create_filter(f_table=None, f_field=None, f_op=None, f_value=None):
         'apps',
         'node_hba',
         'diskinfo',
+        'svcdisks',
         'v_comp_moduleset_attachments',
         'v_tags',
         'packages',

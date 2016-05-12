@@ -106,8 +106,6 @@ objcols = {
 	],
 	"resource": [
 		'id',
-		'svcname',
-		'nodename',
 		'vmname',
 		'rid',
 		'res_type',

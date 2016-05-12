@@ -43,7 +43,7 @@ var db_tables = {
     "cl": "hd16",
     "hide": false,
     "name": "svcdisks",
-    "title": "disks"
+    "title": "svcdisks"
   },
   "nodes": {
     "cl": "node16",
