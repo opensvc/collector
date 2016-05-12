@@ -276,11 +276,7 @@ class rest_post_users(rest_post_handler):
              'add user %(data)s',
              dict(data=beautify_data(vars)),
             )
-        l = {
-          'event': 'auth_user_change',
-          'data': {'foo': 'bar'},
-        }
-        _websocket_send(event_msg(l))
+        ws_send("auth_user_change")
 
         user = db.auth_user(obj_id)
         if auth.settings.create_user_groups:
@@ -342,15 +338,8 @@ class rest_post_user(rest_post_handler):
         l = []
         fmt = "change user %(email)s: %(data)s"
         d = dict(email=row.email, data=beautify_change(row, vars))
-        _log('user.change',
-             fmt,
-             d,
-            )
-        l = {
-          'event': 'auth_user_change',
-          'data': {'foo': 'bar'},
-        }
-        _websocket_send(event_msg(l))
+        _log('user.change', fmt, d)
+        ws_send("auth_user_change")
         ret = rest_get_user().handler(row.id)
         ret["info"] = fmt % d
         return ret
@@ -426,16 +415,13 @@ class rest_delete_user(rest_delete_handler):
         _log('user.delete',
              'deleted user %(email)s',
              dict(email=row.email))
-        l = {
-          'event': 'auth_user_change',
-          'data': {'foo': 'bar'},
-        }
-        _websocket_send(event_msg(l))
+        ws_send("auth_user_change")
 
         # group membership
         q = db.auth_membership.user_id == row.id
         db(q).delete()
         table_modified("auth_membership")
+        ws_send("auth_membership_change")
 
         return dict(info="User %s deleted" % row.email)
 
@@ -498,11 +484,7 @@ class rest_post_user_group(rest_post_handler):
              'user %(u)s attached to group %(g)s',
              dict(u=user.email, g=group.role),
             )
-        l = {
-          'event': 'auth_user_change',
-          'data': {'foo': 'bar'},
-        }
-        _websocket_send(event_msg(l))
+        ws_send("auth_membership_change")
         return dict(info="User %s attached to group %s" % (str(user.email), str(group.role)))
 
 
@@ -614,11 +596,7 @@ class rest_delete_user_group(rest_delete_handler):
              'user %(u)s detached from group %(g)s',
              dict(u=user.email, g=group.role),
             )
-        l = {
-          'event': 'auth_user_change',
-          'data': {'foo': 'bar'},
-        }
-        _websocket_send(event_msg(l))
+        ws_send("auth_membership_change")
         return dict(info="User %s detached from group %s" % (str(user.email), str(group.role)))
 
 
@@ -719,11 +697,7 @@ class rest_post_user_primary_group(rest_post_handler):
              'user %(u)s primary group set to %(g)s',
              dict(u=user.email, g=group.role),
             )
-        l = {
-          'event': 'auth_user_change',
-          'data': {'foo': 'bar'},
-        }
-        _websocket_send(event_msg(l))
+        ws_send("auth_membership_change")
         return dict(info="User %s primary group set to %s" % (str(user.email), str(group.role)))
 
 
@@ -774,11 +748,7 @@ class rest_delete_user_primary_group(rest_delete_handler):
              'user %(u)s primary group unset',
              dict(u=user.email),
             )
-        l = {
-          'event': 'auth_user_change',
-          'data': {'foo': 'bar'},
-        }
-        _websocket_send(event_msg(l))
+        ws_send("auth_membership_change")
         return dict(info="User %s primary group unset" % str(user.email))
 
 

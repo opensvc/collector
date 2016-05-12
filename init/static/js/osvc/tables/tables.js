@@ -1839,7 +1839,7 @@ function table_users(divid, options) {
 		'columns': ['manager', 'id', 'fullname', 'email', 'phone_work', 'primary_group', 'groups', 'lock_filter', 'fset_name', 'last'],
 		'default_columns': ['manager', 'fullname', 'email', 'phone_work', 'primary_group', 'groups', 'lock_filter', 'fset_name', 'last'],
 		'wsable': true,
-		'events': ['auth_user_change']
+		'events': ['auth_user_change', 'auth_membership_change']
 	}
 
 	var _options = $.extend({}, defaults, options)
