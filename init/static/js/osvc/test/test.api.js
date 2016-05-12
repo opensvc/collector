@@ -376,6 +376,58 @@ describe('Test scenario', function() {
 				})
 			})
 		})
+		describe('Publish the form to Everybody', function () {
+			it('Returns no error and published in info', function(done) {
+				request
+				.post("/init/rest/api/forms/"+form_id+"/publications/"+everybody_group_id)
+				.end(function(err, res){
+					res.status.should.be.equal(200)
+					res.body.should.not.have.property("error")
+					res.body.should.have.property("info")
+					res.body.info.should.match(/published/)
+					done()
+				})
+			})
+		})
+		describe('Unpublish the form to Everybody', function () {
+			it('Returns no error and unpublished in info', function(done) {
+				request
+				.del("/init/rest/api/forms/"+form_id+"/publications/"+everybody_group_id)
+				.end(function(err, res){
+					res.status.should.be.equal(200)
+					res.body.should.not.have.property("error")
+					res.body.should.have.property("info")
+					res.body.info.should.match(/unpublished/)
+					done()
+				})
+			})
+		})
+		describe('Give responsibility of the form to Everybody', function () {
+			it('Returns no error and added in info', function(done) {
+				request
+				.post("/init/rest/api/forms/"+form_id+"/responsibles/"+everybody_group_id)
+				.end(function(err, res){
+					res.status.should.be.equal(200)
+					res.body.should.not.have.property("error")
+					res.body.should.have.property("info")
+					res.body.info.should.match(/added/)
+					done()
+				})
+			})
+		})
+		describe('Revoke responsibility of the form to Everybody', function () {
+			it('Returns no error and removed in info', function(done) {
+				request
+				.del("/init/rest/api/forms/"+form_id+"/responsibles/"+everybody_group_id)
+				.end(function(err, res){
+					res.status.should.be.equal(200)
+					res.body.should.not.have.property("error")
+					res.body.should.have.property("info")
+					res.body.info.should.match(/removed/)
+					done()
+				})
+			})
+		})
 		describe('Delete the form', function () {
 			it('Returns no error and deleted in info', function(done) {
 				request
