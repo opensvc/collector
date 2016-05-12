@@ -1,17 +1,48 @@
 #!/usr/bin/env python
 # coding: utf8
 
+# connection to the database
+dbopensvc = "dbopensvc"
+dbopensvc_user = "opensvc"
+dbopensvc_password = "opensvc"
+
+# pdns database
+dbdns = "pdns"
+dbdns_host = "dbopensvc"
+dbdns_user = "opensvc"
+dbdns_password = "opensvc"
+
+# connection to the redis
+redis_host = "dbopensvc"
+
+# ldap / ad
+ldap_mode = "ad"
+ldap_server = "ad.my.corp"
+ldap_base_dn = ""
+ldap_allowed_groups = []
+ldap_group_dn = ""
+ldap_group_name_attrib= "cn"
+ldap_group_member_attrib = "memberUid"
+ldap_group_filterstr = "objectClass=*"
+ldap_manage_groups = False
+ldap_group_mapping = {
+  "adgrp": ["CheckExec", "CompExec"]
+}
+ldap_bind_dn = ""
+ldap_bind_pw = ""
+ldap_filter = ""
+
 http_host = "opensvc.mydomain.com"
 
 # websocket
-websocket_url = "http://dbopennsvc:8889"
+websocket_url = "http://dbopensvc:8889"
 websocket_key = "magix123"
 
 # mail sending configuration
 mail_server = "localhost:25"
 mail_sender = "admin@opensvc.com"
 mail_tls = False
-mail.settings.login = 'username:password'
+mail_login = 'username:password'
 
 # time between relogin, in seconds
 session_expire = 36000000
@@ -19,6 +50,19 @@ session_expire = 36000000
 # refuse node register without a collector user credentials
 # default: False
 refuse_anon_register = True
+
+# groups to attach to a newly registered user
+membership_on_register = [
+ "AppManager",
+ "GroupManager",
+ "SelfManager",
+ "NodeManager",
+ "NodeExec",
+ "CompExec",
+ "CheckExec",
+ "CheckRefresh",
+ "CheckManager",
+]
 
 # set to True if newly registered users should have a private app code
 # created, for them to register nodes and add services
@@ -31,6 +75,11 @@ allow_register = False
 # max billing tokens
 # default: unset, meaning unlimited
 token_quota = 150000
+
+# default user quota
+default_quota_app = 1
+
+
 billing_method = "agents"
 
 
@@ -66,7 +115,28 @@ sansymphony_v_mirrored_pool = {
   },
 }
 
+# default number of days before stats data purge
 stats_retention_days = 367
+
+# per table retention. takes precedence over stats_retention_days
+retentions = {
+ 'metrics_log': 1600,
+ 'stats_cpu': 31,
+ 'stats_swap': 31,
+ 'stats_netdev': 31,
+ 'stats_blockdev': 31,
+ 'stats_block': 31,
+ 'stats_mem_u': 31,
+ 'stats_netdev_err': 31,
+ 'stats_proc': 31,
+ 'stats_svc': 31,
+ 'stats_fs_u': 31,
+ 'comp_log': 365,
+ 'appinfo_log': 365,
+ 'SVCactions': 365,
+ 'services_log': 700,
+ 'dashboard_events': 165,
+}
 
 
 #
