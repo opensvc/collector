@@ -349,7 +349,24 @@ describe('Test scenario', function() {
 				})
 			})
 		})
-		describe('Create a group', function () {
+		describe('Create a privilege group', function () {
+			it('Should fail because only Manager can do that', function(done) {
+				request
+				.post("/init/rest/api/groups")
+				.send({
+					"role": "Mocha priv group",
+					"privilege": "T"
+				})
+				.end(function(err, res){
+					res.status.should.be.equal(200)
+					res.body.should.have.property("error")
+					res.body.should.not.have.property("info")
+					res.body.error.should.match(/no Manager privilege/)
+					done()
+				})
+			})
+		})
+		describe('Create an org group', function () {
 			it('Should succeed', function(done) {
 				request
 				.post("/init/rest/api/groups")
@@ -366,7 +383,7 @@ describe('Test scenario', function() {
 				})
 			})
 		})
-		describe('Create a second group', function () {
+		describe('Create a second org group', function () {
 			it('Should fail because of quota exceeded', function(done) {
 				request
 				.post("/init/rest/api/groups")
@@ -383,7 +400,7 @@ describe('Test scenario', function() {
 				})
 			})
 		})
-		describe('Delete a group', function () {
+		describe('Delete our org group', function () {
 			it('Returns no error and deleted in info', function(done) {
 				request
 				.del("/init/rest/api/groups/"+additional_mocha_group_id)
