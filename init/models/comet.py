@@ -2,15 +2,9 @@ from gluon.contrib.websocket_messaging import websocket_send
 import json
 import hashlib
 
-from applications.init.modules import config
-
-if hasattr(config, 'dbopensvc'):
-    dbopensvc = config.dbopensvc
-else:
-    dbopensvc = 'dbopensvc'
-
-websocket_url = "http://%s:8889" % dbopensvc
-websocket_key = "magix123"
+dbopensvc = config_get("dbopensvc", "dbopensvc")
+websocket_url = config_get("websocket_url", "http://%s:8889" % dbopensvc)
+websocket_key = config_get("websocket_key", "magix123")
 
 def event_msg(data):
     uuid = hashlib.md5()
@@ -54,3 +48,11 @@ def __websocket_send(msg, group="generic"):
 
 def ___websocket_send(msg, group="generic"):
     websocket_send(websocket_url, msg, websocket_key, group)
+
+def ws_send(event, data={"a": "b"}):
+    l = {
+      'event': event,
+      'data': data,
+    }
+    _websocket_send(event_msg(l))
+

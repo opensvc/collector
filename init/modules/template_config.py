@@ -3,6 +3,10 @@
 
 http_host = "opensvc.mydomain.com"
 
+# websocket
+websocket_url = "http://dbopennsvc:8889"
+websocket_key = "magix123"
+
 # mail sending configuration
 mail_server = "localhost:25"
 mail_sender = "admin@opensvc.com"
