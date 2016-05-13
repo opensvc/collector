@@ -3114,17 +3114,8 @@ function obsplot(o) {
   _jqplot_extra(o, p)
 }
 
-function jqplot_img(){
-    if (!$.jqplot.use_excanvas) {
-        $('div.jqplot-target').each(function(){
-            _jqplot_img(this)
-        })
-    }
-}
-
 function _jqplot_extra(e, p){
 	_jqplot_resize(e, p);
-	_jqplot_img(e);
 }
 
 function _jqplot_resize(e, p){
@@ -3134,53 +3125,6 @@ function _jqplot_resize(e, p){
           e.height('90%');
 	  p.replot( { resetAxes: false } );
 	});
-}
-
-function _jqplot_img(e){
-            return;
-            var outerDiv = $('<div></div>');
-            var header = $('<div></div>');
-            var div = $('<div></div>');
-
-            outerDiv.append(header);
-            outerDiv.append(div);
-
-            outerDiv.addClass('jqplot-image-container');
-            header.addClass('jqplot-image-container-header');
-            div.addClass('jqplot-image-container-content');
-
-            header.html('Right Click to Save Image As...');
-
-            var close = $('<a>');
-            close.addClass('jqplot-image-container-close');
-            close.html('Close');
-            close.click(function() {
-                $(this).parents('div.jqplot-image-container').hide();
-            })
-            header.append(close);
-
-            $(e).after(outerDiv);
-            outerDiv.hide();
-
-            outerDiv = header = div = close = null;
-
-            if (!$.jqplot._noToImageButton) {
-                var btn = $(document.createElement('button'));
-                btn.text('View Plot Image');
-                btn.addClass('jqplot-image-button');
-                btn.bind('click', {chart: $(e)}, function(evt) {
-                    var imgelem = evt.data.chart.jqplotToImageElem();
-                    var div = $(e).nextAll('div.jqplot-image-container').first();
-                    div.children('div.jqplot-image-container-content').empty();
-                    div.children('div.jqplot-image-container-content').append(imgelem);
-                    div.show();
-                    div = null;
-                });
-
-                $(e).append(btn);
-                //btn.after('<br />');
-                btn = null;
-            }
 }
 
 function savedonut(o) {
