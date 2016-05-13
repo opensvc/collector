@@ -85,11 +85,18 @@ def _cron_table_purge(table, date_col, orderby=None):
 
     if orderby is None:
         orderby = date_col
+
+    if table == "dashboard_events":
+        where = " and not dash_end is NULL"
+    else:
+        where = ""
+
     sql = """select %(date_col)s from %(table)s where
                %(date_col)s is not null and
                %(date_col)s > 0
+               %(where)s
              order by %(orderby)s limit 1
-          """ % dict(table=table,date_col=date_col,orderby=orderby)
+          """ % dict(table=table,date_col=date_col,orderby=orderby,where=where)
     try:
         oldest = db.executesql(sql)[0][0]
     except:
@@ -111,8 +118,10 @@ def _cron_table_purge(table, date_col, orderby=None):
                    %(date_col)s is not null and
                    %(date_col)s > 0 and
                    %(date_col)s < "%(threshold)s"
+                   %(where)s
               """ % dict(
                 table=table,
+                where=where,
                 date_col=date_col,
                 threshold=str(_day)
               )
