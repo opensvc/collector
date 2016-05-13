@@ -48,7 +48,7 @@ function sysrep(divid, options) {
 			o.time_diff.hide()
 			return
 		}
-		nodes = o.nodes.split(",")
+		nodes = o.nodes
 		if (nodes.length == 0) {
 			o.time_diff.hide()
 			return
@@ -62,9 +62,8 @@ function sysrep(divid, options) {
 	o._sysrep_timediff = function(node_id){
 		var params = o.sysrep_getparams()
 		_params = {
-			"node_id": node_id,
-			"begin": params.begin ? params.begin : "begining",
-			"end": params.end ? params.end : "now",
+			"begin": params.begin ? params.begin : i18n.t("sysrep.begining"),
+			"end": params.end ? params.end : i18n.t("sysrep.now"),
 		}
 		if ("nodes" in params) {
 			delete params["nodes"]
@@ -99,6 +98,7 @@ function sysrep(divid, options) {
 		// Handle max lines
 		var max_fpath = 5
 		for (i=0; i<data.length; i++) {
+			data[i].start = moment.tz(data[i].start, osvc.server_timezone)
 			if (data[i].stat.length > max_fpath) {
 				var lastline = data[i].stat.length - max_fpath
 				data[i].stat = data[i].stat.slice(0, max_fpath)
@@ -527,11 +527,13 @@ function sysrep_getparams(o) {
 	}
 	fval = o.filter_begin.val()
 	if (fval && (fval != "")) {
-		data["begin"] = fval
+		m = moment(fval).tz(osvc.server_timezone)
+		data["begin"] = m.format(m._f)
 	}
 	fval = o.filter_end.val()
 	if (fval && (fval != "")) {
-		data["end"] = fval
+		m = moment(fval).tz(osvc.server_timezone)
+		data["end"] = m.format(m._f)
 	}
 	if (o.filter_ignore_blanks.is(":checked")) {
 		data["ignore_blanks"] = true

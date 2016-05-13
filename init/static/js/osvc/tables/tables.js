@@ -46,7 +46,7 @@ function table_actions(divid, options) {
 				"title": "Begin"
 			},
 			"end": {
-				"_class": "action_end",
+				"_class": "datetime_no_age",
 				"_dataclass": "",
 				"img": "time16",
 				"title": "End"

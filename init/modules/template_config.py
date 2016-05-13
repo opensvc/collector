@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 # coding: utf8
 
+# server timezone
+server_timezone = "Europe/Madrid"
+
 # connection to the database
 dbopensvc = "dbopensvc"
 dbopensvc_user = "opensvc"

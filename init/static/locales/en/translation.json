@@ -350,33 +350,35 @@
 		"name": "collector"
 	},
 	"sysrep": {
-		"admin_title"	: "Sysreports administration",
-		"secure_title" : "Secure Patterns",
-		"allow_title"	: "Authorizations",
-		"secure_add_button" : "Add secure pattern",
-		"submit_button" : "Submit",
-		"allow_add_button" : "Add authorization",
-		"allow_input_pattern" : "pattern",
-		"allow_input_group" : "group",
-		"allow_input_filterset" : "filterset",
-		"allow_read_sentence" : "Group __group__ can read secured files matching __pattern__ from nodes matching the filterset __filterset__",
-		"filter" : {
-			"begin_date" : "Begin date",
-			"end_date" : "End date",
-			"ignore_blanks" : "Ignore blanks",
-			"filter" : "Path (glob)",
-			"regexp" : "Path (regexp)",
-			"title" : "Filters",
-			"submit_button" : "Submit"
+		"now": "now",
+		"begining": "begining",
+		"admin_title": "Sysreports administration",
+		"secure_title": "Secure Patterns",
+		"allow_title": "Authorizations",
+		"secure_add_button": "Add secure pattern",
+		"submit_button": "Submit",
+		"allow_add_button": "Add authorization",
+		"allow_input_pattern": "pattern",
+		"allow_input_group": "group",
+		"allow_input_filterset": "filterset",
+		"allow_read_sentence": "Group __group__ can read secured files matching __pattern__ from nodes matching the filterset __filterset__",
+		"filter": {
+			"begin_date": "Begin date",
+			"end_date": "End date",
+			"ignore_blanks": "Ignore blanks",
+			"filter": "Path (glob)",
+			"regexp": "Path (regexp)",
+			"title": "Filters",
+			"submit_button": "Submit"
 		},
 		"error": {
 			"no_change": "No change found."
 		},
-		"timeline_title" : "Node changes timeline",
-		"timeline_time_diff_title" : "Aggregated changes on __nodename__ between __begin__ and __end__",
-		"timeline_tree_diff_title" : "Changes",
-		"timeline_tree_file_title" : "Files",
-		"sysrepdiff" : {
+		"timeline_title": "Node changes timeline",
+		"timeline_time_diff_title": "Aggregated changes between __begin__ and __end__",
+		"timeline_tree_diff_title": "Changes",
+		"timeline_tree_file_title": "Files",
+		"sysrepdiff": {
 			"section_title": "Nodes collected files differences",
 			"error": {
 				"not_enough_nodes": "Not enough nodes to compare.",
@@ -395,52 +397,52 @@
 		"no_candidates": "No candidates found."
 	},
 	"search": {
-		"nothing_found" : "No entry found matching filter",
-		"menu_header" : {
-			"title_modulesets" : "Modulesets",
-			"title_rulesets" : "Rulesets",
-			"title_metrics" : "Metrics",
-			"title_charts" : "Charts",
-			"title_reports" : "Reports",
-			"title_forms" : "Forms",
-			"title_safe_files" : "Safe files",
-			"title_disks" : "Disks",
-			"title_services" : "Services",
-			"title_nodes" : "Nodes",
-			"title_users" : "Users",
-			"title_apps" : "Applications",
-			"title_filtersets" : "Filterset",
-			"title_ips" : "IP adresses",
-			"title_groups" : "Groups",
-			"title_vms" : "Virtuals machines"
+		"nothing_found": "No entry found matching filter",
+		"menu_header": {
+			"title_modulesets": "Modulesets",
+			"title_rulesets": "Rulesets",
+			"title_metrics": "Metrics",
+			"title_charts": "Charts",
+			"title_reports": "Reports",
+			"title_forms": "Forms",
+			"title_safe_files": "Safe files",
+			"title_disks": "Disks",
+			"title_services": "Services",
+			"title_nodes": "Nodes",
+			"title_users": "Users",
+			"title_apps": "Applications",
+			"title_filtersets": "Filterset",
+			"title_ips": "IP adresses",
+			"title_groups": "Groups",
+			"title_vms": "Virtuals machines"
 		},
-		"menu_link" : {
-			"request" : "Request",
-			"forms" : "Forms",
-			"dashboard" : "Dashboard",
-			"status" : "Status",
-			"resources" : "Resources",
-			"resinfo" : "Resources info",
-			"actions" : "Actions",
-			"checks" : "Checks",
-			"disks" : "Disks",
-			"disk_info" : "Disks",
-			"saves" : "Saves",
-			"compliance_status" : "Compliance status",
-			"compliance_log" : "Compliance log",
-			"availability" : "Availability",
-			"logs" : "Logs",
-			"nodes" : "Nodes",
-			"services" : "Services",
-			"network" : "Network",
-			"packages" : "Packages",
-			"san" : "San",
-			"apps" : "Applications",
-			"app" : "Application",
-			"users" : "Users",
-			"filterset" : "Filterset",
-			"designer" : "Designer",
-			"nodes_net" : "Nodes net"
+		"menu_link": {
+			"request": "Request",
+			"forms": "Forms",
+			"dashboard": "Dashboard",
+			"status": "Status",
+			"resources": "Resources",
+			"resinfo": "Resources info",
+			"actions": "Actions",
+			"checks": "Checks",
+			"disks": "Disks",
+			"disk_info": "Disks",
+			"saves": "Saves",
+			"compliance_status": "Compliance status",
+			"compliance_log": "Compliance log",
+			"availability": "Availability",
+			"logs": "Logs",
+			"nodes": "Nodes",
+			"services": "Services",
+			"network": "Network",
+			"packages": "Packages",
+			"san": "San",
+			"apps": "Applications",
+			"app": "Application",
+			"users": "Users",
+			"filterset": "Filterset",
+			"designer": "Designer",
+			"nodes_net": "Nodes net"
 		}
 	},
 	"ruleset_properties": {
@@ -813,19 +815,19 @@
 		"compliance": "compliance",
 		"sysreport": "sysreport"
 	},
-	"network" : {
-		"ipv4_u" : "ipv4 unicast",
-		"ipv4_m" : "ipv4 multicast",
-		"ipv6_u" : "ipv6 unicast",
-		"ipv6_m" : "ipv6 multicast"
+	"network": {
+		"ipv4_u": "ipv4 unicast",
+		"ipv4_m": "ipv4 multicast",
+		"ipv6_u": "ipv6 unicast",
+		"ipv6_m": "ipv6 multicast"
 	},
-	"wiki" : {
-		"tab_show_title" : "Wiki",
-		"tab_show_edit" : "Edit",
-		"tab_edit_save" : "Save",
-		"tab_edit_insert_sig" : "Insert signature and timestamp",
-		"tab_edit_help" : "Help",
-		"last_table_title" : "Last __number__ result(s)"
+	"wiki": {
+		"tab_show_title": "Wiki",
+		"tab_show_edit": "Edit",
+		"tab_edit_save": "Save",
+		"tab_edit_insert_sig": "Insert signature and timestamp",
+		"tab_edit_help": "Help",
+		"last_table_title": "Last __number__ result(s)"
 	},
 	"service_env": {
 		"header": "Last updated on __updated__"
@@ -849,323 +851,323 @@
 	"fset_selector": {
 		"none": "none"
 	},
-	"alert_event" : {
-		"days" : "days",
+	"alert_event": {
+		"days": "days",
 		"label": "Alert from",
-		"to" : "to",
-		"tonow" : "to now",
-		"help" : "hover on a range to display details"
+		"to": "to",
+		"tonow": "to now",
+		"help": "hover on a range to display details"
 	},
-	"link" : {
-		"notfound" : "Link not found.It may have expired , please re generate it."
+	"link": {
+		"notfound": "Link not found.It may have expired , please re generate it."
 	},
-	"menu" : {
+	"menu": {
 		"navigation": "Navigation",
-		"views" : {
-			"title" : "Infrastructure",
-			"dashboard" : {
-					"title" : "Dashboard",
-					"text" : "Current issues on nodes and services"
+		"views": {
+			"title": "Infrastructure",
+			"dashboard": {
+					"title": "Dashboard",
+					"text": "Current issues on nodes and services"
 			},
-			"services" : {
-				"title" : "Services",
-				"text" : "Services information and status"
+			"services": {
+				"title": "Services",
+				"text": "Services information and status"
 			},
-			"services_instances" : {
-					"title" : "Services Instances",
-					"text" : "Service instances status"
+			"services_instances": {
+					"title": "Services Instances",
+					"text": "Service instances status"
 			},
-			"resources" : {
-					"title" : "Resources",
-					"text" : "Service resources status"
+			"resources": {
+					"title": "Resources",
+					"text": "Service resources status"
 			},
-			"res_info" : {
-					"title" : "Resources Info",
-					"text" : "Service resources key:val store"
+			"res_info": {
+					"title": "Resources Info",
+					"text": "Service resources key:val store"
 			},
-			"nodes" :	{
-					"title" : "Nodes",
-					"text" : "Technical and organizational info"
+			"nodes":	{
+					"title": "Nodes",
+					"text": "Technical and organizational info"
 			},
-			"tag_attachments" : {
-					"title" : "Tag Attachments",
-					"text" : "Tags attached to nodes and services"
+			"tag_attachments": {
+					"title": "Tag Attachments",
+					"text": "Tags attached to nodes and services"
 			},
-			"actions" : {
-					"title" : "Actions",
-					"text" : "Service actions log"
+			"actions": {
+					"title": "Actions",
+					"text": "Service actions log"
 			},
-			"actions_queue" : {
-					"title" : "Actions Queue",
-					"text" : "Service and node actions queued on the collector for agents"
+			"actions_queue": {
+					"title": "Actions Queue",
+					"text": "Service and node actions queued on the collector for agents"
 			},
-			"checks" : {
-					"title" : "Checks",
-					"text" : "Nodes health monitoring"
+			"checks": {
+					"title": "Checks",
+					"text": "Nodes health monitoring"
 			},
-			"packages" : {
-					"title" : "Packages",
-					"text" : "All packages installed on nodes"
+			"packages": {
+					"title": "Packages",
+					"text": "All packages installed on nodes"
 			},
-			"patches" : {
-					"title" : "Patches",
-					"text" : "All patches installed on nodes"
+			"patches": {
+					"title": "Patches",
+					"text": "All patches installed on nodes"
 			},
-			"networks" : {
-					"title" : "Networks",
-					"text" : "Known subnets, gateways, vlans, ..."
+			"networks": {
+					"title": "Networks",
+					"text": "Known subnets, gateways, vlans, ..."
 			},
-			"node_networks" : {
-					"title" : "Node Networks",
-					"text" : "Node ips with their network information"
+			"node_networks": {
+					"title": "Node Networks",
+					"text": "Node ips with their network information"
 			},
-			"node_san" : {
-					"title" : "Node SAN",
-					"text" : "Node SAN ports with their fabric information"
+			"node_san": {
+					"title": "Node SAN",
+					"text": "Node SAN ports with their fabric information"
 			},
-			"san_switches" : {
-					"title" : "SAN switches",
-					"text" : "Ports id, state, remote ports"
+			"san_switches": {
+					"title": "SAN switches",
+					"text": "Ports id, state, remote ports"
 			},
-			"dns" : {
-					"title" : "Domain Name Service",
-					"text" : "Internal dns zones and records"
+			"dns": {
+					"title": "Domain Name Service",
+					"text": "Internal dns zones and records"
 			},
-			"saves" : {
-					"title" : "Saves",
-					"text" : "Backup servers aggregated index"
+			"saves": {
+					"title": "Saves",
+					"text": "Backup servers aggregated index"
 			},
-			"disks" : {
-					"title" : "Disks",
-					"text" : "All known disks with their array information"
+			"disks": {
+					"title": "Disks",
+					"text": "All known disks with their array information"
 			},
-			"disks_quotas" : {
-					"title" : "Disks quotas",
-					"text" : "Per application and diskgroup disk provisioning size limits"
+			"disks_quotas": {
+					"title": "Disks quotas",
+					"text": "Per application and diskgroup disk provisioning size limits"
 			}
 	},
-	"compliance" : {
-			"title" : "Compliance",
-			"statut" : {
-				"title" : "Status",
-				"text" : "Nodes and service last configuration checks"
+	"compliance": {
+			"title": "Compliance",
+			"statut": {
+				"title": "Status",
+				"text": "Nodes and service last configuration checks"
 			},
-			"safe" : {
-					"title" : "File Safe",
-					"text" : "Integrity controlled and RBAC conforming file store"
+			"safe": {
+					"title": "File Safe",
+					"text": "Integrity controlled and RBAC conforming file store"
 			},
-			"log" : {
-				"title" : "Log",
-				"text" : "All configuration checks and fixes"
+			"log": {
+				"title": "Log",
+				"text": "All configuration checks and fixes"
 			},
-			"modulesets" : {
-				"title" : "Modulesets",
-				"text" : "Search-optimized modules grouping view"
+			"modulesets": {
+				"title": "Modulesets",
+				"text": "Search-optimized modules grouping view"
 			},
-			"rulesets" : {
-				"title" : "Rulesets",
-				"text" : "Search-optimized target configurations view"
+			"rulesets": {
+				"title": "Rulesets",
+				"text": "Search-optimized target configurations view"
 			},
-			"designer" : {
-				"title" : "Designer",
-				"text" : "Creation-optimized configuration targets tool"
+			"designer": {
+				"title": "Designer",
+				"text": "Creation-optimized configuration targets tool"
 			},
-			"nrulesets" : {
-				"title" : "Node rulesets",
-				"text" : "Mass attach and detach tool"
+			"nrulesets": {
+				"title": "Node rulesets",
+				"text": "Mass attach and detach tool"
 			},
-			"srulesets" : {
-				"title" : "Service rulesets",
-				"text" : "Mass attach and detach tool"
+			"srulesets": {
+				"title": "Service rulesets",
+				"text": "Mass attach and detach tool"
 			},
-			"service_modulesets" : {
-				"title" : "Service modulesets",
-				"text" : "Mass attach and detach tool"
+			"service_modulesets": {
+				"title": "Service modulesets",
+				"text": "Mass attach and detach tool"
 			},
-			"node_modulesets" : {
-				"title" : "Node modulesets",
-				"text" : "Mass attach and detach tool"
+			"node_modulesets": {
+				"title": "Node modulesets",
+				"text": "Mass attach and detach tool"
 			}
 		},
-		"statistic" : {
-			"title" : "Statistics",
-			"reports" : {
-				"title" : "Reports",
-				"text" : "User-defined reports"
+		"statistic": {
+			"title": "Statistics",
+			"reports": {
+				"title": "Reports",
+				"text": "User-defined reports"
 			},
-			"site" : {
-				"title" : "Site",
-				"text" : "Pre-defined site report"
+			"site": {
+				"title": "Site",
+				"text": "Pre-defined site report"
 			},
-			"compare" : {
-				"title" : "Compare",
-				"text" : "Compare node and service subsets evolution"
+			"compare": {
+				"title": "Compare",
+				"text": "Compare node and service subsets evolution"
 			},
-			"scheduler_stats" : {
-				"title" : "Scheduler stats",
-				"text" : "Scheduled and fed tasks throughput"
+			"scheduler_stats": {
+				"title": "Scheduler stats",
+				"text": "Scheduled and fed tasks throughput"
 			},
-			"os_lc" : {
-				"title" : "Os lifecycle",
-				"text" : "Operating systems dispatch evolution"
+			"os_lc": {
+				"title": "Os lifecycle",
+				"text": "Operating systems dispatch evolution"
 			},
-			"availability" : {
-				"title" : "Availability",
-				"text" : "Service outage timelines"
+			"availability": {
+				"title": "Availability",
+				"text": "Service outage timelines"
 			},
-			"n_rulesets" : {
-				"title" : "Node rulesets",
-				"text" : "Mass attach and detach tool"
+			"n_rulesets": {
+				"title": "Node rulesets",
+				"text": "Mass attach and detach tool"
 			},
-			"s_rulesets" : {
-				"title" : "Service rulesets",
-				"text" : "Mass attach and detach tool"
+			"s_rulesets": {
+				"title": "Service rulesets",
+				"text": "Mass attach and detach tool"
 			},
-			"s_modulesets" : {
-				"title" : "Service modulesets",
-				"text" : "Mass attach and detach tool"
+			"s_modulesets": {
+				"title": "Service modulesets",
+				"text": "Mass attach and detach tool"
 			},
-			"n_modulesets" : {
-				"title" : "Node modulesets",
-				"text" : "Mass attach and detach tool"
+			"n_modulesets": {
+				"title": "Node modulesets",
+				"text": "Mass attach and detach tool"
 			}
 		},
 		"requests": {
-			"title" : "Requests",
+			"title": "Requests",
 			"new_request": {
-				"title" : "New request",
-				"text" : "Start a new workflow or orchestration"
+				"title": "New request",
+				"text": "Start a new workflow or orchestration"
 			},
 			"a_t_m_t": {
-				"title" : "Assigned to my team",
-				"text" : "Workflows waiting for action from my team"
+				"title": "Assigned to my team",
+				"text": "Workflows waiting for action from my team"
 			},
 			"p_t_a": {
-				"title" : "Pending tiers action",
-				"text" : "Workflows started by my team waiting action from a tier"
+				"title": "Pending tiers action",
+				"text": "Workflows started by my team waiting action from a tier"
 			},
-			"all_requests" : {
-				"title" : "All requests",
-				"text" : "Workflow and orchestration history"
+			"all_requests": {
+				"title": "All requests",
+				"text": "Workflow and orchestration history"
 			}
 		},
-		"administration" : {
-			"title" : "Collector Administration",
-			"replication" : {
-					"title" : "Replication",
-					"text" : "Current state of the collector to collector replications"
+		"administration": {
+			"title": "Collector Administration",
+			"replication": {
+					"title": "Replication",
+					"text": "Current state of the collector to collector replications"
 			},
-			"users" : {
-				"title" : "Users",
-				"text" : "Users and group administration"
+			"users": {
+				"title": "Users",
+				"text": "Users and group administration"
 			},
-			"log" : {
-				"title" : "Log",
-				"text" : "Collector events log"
+			"log": {
+				"title": "Log",
+				"text": "Collector events log"
 			},
-			"o_setup" : {
-				"title" : "Obsolescence setup",
-				"text" : "Set server models and os releases obsolescence dates"
+			"o_setup": {
+				"title": "Obsolescence setup",
+				"text": "Set server models and os releases obsolescence dates"
 			},
-			"application" : {
-				"title" : "Applications",
-				"text" : "Application codes assigned to nodes and services"
+			"application": {
+				"title": "Applications",
+				"text": "Application codes assigned to nodes and services"
 			},
-			"drpplan" : {
-				"title" : "Drplan",
-				"text" : "Designer for disaster recovery plans"
+			"drpplan": {
+				"title": "Drplan",
+				"text": "Designer for disaster recovery plans"
 			},
-			"batchs" : {
-				"title" : "Batchs",
-				"text" : "Collector janitoring batchs",
-				"link" : "/init/batchs/batchs"
+			"batchs": {
+				"title": "Batchs",
+				"text": "Collector janitoring batchs",
+				"link": "/init/batchs/batchs"
 			},
-			"billing" : {
-				"title" : "Billing",
-				"text" : "Licensing tokens count and dispatch",
-				"link" : "/init/billing/billing"
+			"billing": {
+				"title": "Billing",
+				"text": "Licensing tokens count and dispatch",
+				"link": "/init/billing/billing"
 			},
-			"prov" : {
-				"title" : "Provisioning",
-				"text" : "Create service provisioning templates"
+			"prov": {
+				"title": "Provisioning",
+				"text": "Create service provisioning templates"
 			},
-			"filters" : {
-				"title" : "Filters",
-				"text" : "Manage filters, components of filtersets"
+			"filters": {
+				"title": "Filters",
+				"text": "Manage filters, components of filtersets"
 			},
-			"filtersets" : {
-				"title" : "Filtersets",
-				"text" : "Manage filtersets"
+			"filtersets": {
+				"title": "Filtersets",
+				"text": "Manage filtersets"
 			},
-			"forms" : {
-				"title" : "Forms",
-				"text" : "Design new workflows and orchestrations"
+			"forms": {
+				"title": "Forms",
+				"text": "Design new workflows and orchestrations"
 			},
-			"metrics" : {
-				"title" : "Metrics",
-				"text" : "Design sql requests to embed in charts"
+			"metrics": {
+				"title": "Metrics",
+				"text": "Design sql requests to embed in charts"
 			},
-			"charts" : {
-				"title" : "Charts",
-				"text" : "Design charts to embed in reports"
+			"charts": {
+				"title": "Charts",
+				"text": "Design charts to embed in reports"
 			},
-			"reports" : {
-				"title" : "Reports",
-				"text" : "Design custom reports"
+			"reports": {
+				"title": "Reports",
+				"text": "Design custom reports"
 			},
-			"tags" : {
-				"title" : "Tags",
-				"text" : "Manage tag properties"
+			"tags": {
+				"title": "Tags",
+				"text": "Manage tag properties"
 			}
 		},
-		"shortcuts" : {
-			"title" : "Shortcuts",
-			"filter_sel" : {
-				"title" : "Filter selector",
-				"text" : "Switch the filter applied to all displayed data"
+		"shortcuts": {
+			"title": "Shortcuts",
+			"filter_sel": {
+				"title": "Filter selector",
+				"text": "Switch the filter applied to all displayed data"
 			},
-			"link" : {
-				"title" : "Link",
-				"text" : "Show url to share your filters"
+			"link": {
+				"title": "Link",
+				"text": "Show url to share your filters"
 			},
-			"nav" : {
-				"title" : "Navigation",
-				"text" : "Open the navigation menu"
+			"nav": {
+				"title": "Navigation",
+				"text": "Open the navigation menu"
 			},
-			"refresh" : {
-				"title" : "Refresh",
-				"text" : "Reload table data"
+			"refresh": {
+				"title": "Refresh",
+				"text": "Reload table data"
 			},
-			"search" : {
-				"title" : "Search",
-				"text" : "Focus the global search tool"
+			"search": {
+				"title": "Search",
+				"text": "Focus the global search tool"
 			},
-			"unfocus" : {
-				"title" : "Unfocus",
-				"text" : "Close pop-ups and menus"
+			"unfocus": {
+				"title": "Unfocus",
+				"text": "Close pop-ups and menus"
 			},
-			"rest_api" : {
-				"title" : "Rest API",
-				"text" : "Documentation"
+			"rest_api": {
+				"title": "Rest API",
+				"text": "Documentation"
 			}
 		}
 	},
-	"login" : {
-		"title" : "User Action",
-		"logout_title" : "Logout",
-		"logout_text" : "Reconnect as another user",
-		"edit_title" : "Edit Profile",
-		"edit_text" : "User name, alerting levels...",
+	"login": {
+		"title": "User Action",
+		"logout_title": "Logout",
+		"logout_text": "Reconnect as another user",
+		"edit_title": "Edit Profile",
+		"edit_text": "User name, alerting levels...",
 		"change_title": "Change Password",
-		"change_text" : "You need to know your current password"
+		"change_text": "You need to know your current password"
 	},
-	"notlogin" : {
-		"top_title" : "Help",
-		"title" : "User Action",
-		"register_title" : "Register",
-		"register_text" : "Create a new user",
-		"lost_title" : "Lost Password",
-		"lost_text" : "Send a new password by email"
+	"notlogin": {
+		"top_title": "Help",
+		"title": "User Action",
+		"register_title": "Register",
+		"register_text": "Create a new user",
+		"lost_title": "Lost Password",
+		"lost_text": "Send a new password by email"
 	},
 	"safe_file_properties": {
 		"publications": "Publications",
@@ -1244,7 +1246,7 @@
 	"group_tabs": {
 		"hidden_menu_entries": "hidden menu entries"
 	},
-	"col" : {
+	"col": {
 		"Node Id": "Node Id",
 		"Service Id": "Service Id",
 		"Node App": "Node App",

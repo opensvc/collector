@@ -91,8 +91,8 @@ function services_status_log(divid, options) {
 				})
 			}
 			_data.push({
-				"start": d.mon_begin,
-				"end": d.mon_end,
+				"start": moment.tz(d.mon_begin, osvc.server_timezone),
+				"end": moment.tz(d.mon_end, osvc.server_timezone),
 				"group": group_id,
 				"range_id": d.id,
 				"status": d.mon_availstatus,
@@ -124,8 +124,8 @@ function services_status_log(divid, options) {
 				})
 			}
 			_data.push({
-				"start": d.svc_begin,
-				"end": d.svc_end,
+				"start": moment.tz(d.svc_begin, osvc.server_timezone),
+				"end": moment.tz(d.svc_end, osvc.server_timezone),
 				"group": d.svc_id,
 				"range_id": d.id,
 				"status": d.svc_availstatus,

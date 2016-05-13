@@ -366,8 +366,9 @@ function services_feed_self_and_group() {
 		_self = dataself.data[0]
 		osvc.user_loaded.resolve(true)
 	})
-	services_osvcgetrest("/users/self/groups", "", {"meta": "false", "limit": "0"}, function(datagroup) {
+	services_osvcgetrest("/users/self/groups", "", {"limit": "0"}, function(datagroup) {
 		_groups = datagroup.data;
+		osvc.server_timezone = datagroup.meta.server_timezone
 		osvc.user_groups_loaded.resolve(true)
 	})
 }

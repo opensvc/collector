@@ -350,6 +350,8 @@
 		"name": "collector"
 	},
 	"sysrep": {
+		"now": "maintenant",
+		"begining": "début",
 		"admin_title"	: "Administrations des SysReports",
 		"secure_title" : "Protections",
 		"allow_title"	: "Habilitations",
@@ -370,6 +372,10 @@
 		"timeline_title" : "Histogramme des changements du noeud",
 		"timeline_tree_diff_title" : "Changements",
 		"timeline_tree_file_title" : "Fichiers",
+		"timeline_time_diff_title" : "Changements aggrégés entre le __begin__ et __end__",
+		"error": {
+			"no_change": "Aucun changement trouvé."
+		},
                 "sysrepdiff" : {
                         "section_title": "Différences entre les fichiers collectés sur les noeuds",
                         "error": {

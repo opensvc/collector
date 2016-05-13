@@ -1455,10 +1455,9 @@ function datetime_age(s) {
   if (!s || (s == 'empty')) {
     return
   }
-  s = s.replace(/ /, "T")+"Z"
-  var d = new Date(s)
-  var now = new Date()
-  var delta = (now.getTime() - d.getTime())/60000 - now.getTimezoneOffset()
+  var d = moment.tz(s, osvc.server_timezone)
+  var now = moment()
+  var delta = (d - now)/60000
   return delta
 }
 

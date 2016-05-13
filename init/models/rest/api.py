@@ -596,6 +596,7 @@ def prepare_data(
                  limit=limit,
                  total=total,
                  count=len(data),
+                 server_timezone=config_get("server_timezone", "Europe/Paris"),
                )
         d = dict(data=data, meta=meta)
     else:
