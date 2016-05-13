@@ -1457,7 +1457,7 @@ function datetime_age(s) {
   }
   var d = moment.tz(s, osvc.server_timezone)
   var now = moment()
-  var delta = (d - now)/60000
+  var delta = (now -d)/60000
   return delta
 }
 
@@ -1535,7 +1535,14 @@ function cell_decorator_datetime(e) {
     $(e).html()
     return
   }
+  var content = delta_format(delta, s, max_age)
+  if ($(e).text() == content.text()) {
+    return
+  }
+  $(e).html(content)
+}
 
+function delta_format(delta, s, max_age) {
   if (delta > 0) {
     var prefix = "-"
     var round = Math.ceil
@@ -1577,16 +1584,17 @@ function cell_decorator_datetime(e) {
     var color = "#666666"
   }
 
-  if ($(e).text() == text) {
-    return
-  }
   cl += " nowrap"
 
   if (max_age && (delta > max_age)) {
     cl += " icon-red"
   }
-  var content = $("<div class='"+cl+"' style='color:"+color+"' title='"+s+"'>"+text+"</div>").tooltipster()
-  $(e).html(content)
+
+  if (!s) {
+    s = ""
+  }
+
+  return $("<div class='"+cl+"' style='color:"+color+"' title='"+s+"'>"+text+"</div>").tooltipster()
 }
 
 function cell_decorator_date(e) {
