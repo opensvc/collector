@@ -225,6 +225,8 @@ function node_properties(divid, options)
 			}
 			if (key == "mem_bytes") {
 				o.div.find("#"+key).text(fancy_size_mb(data[key]))
+			} else if ((key="updated")||(key=="maintenance_end")||(key=="warranty_end")) {
+				o.div.find("#"+key).text(osvc_date(data[key]))
 			} else {
 				o.div.find("#"+key).text(data[key])
 			}
@@ -536,8 +538,10 @@ function node_stats_refresh_container_group(o, group) {
   var groupname = group.attr("group")
   var url = o.options.controller+"/call/json/json_"+groupname
   url += "?node=" + o.options.node_id
-  url += "&b=" + o.begin.val()
-  url += "&e=" + o.end.val()
+  var b = moment(o.begin.val()).tz(osvc.server_timezone)
+  var e = moment(o.end.val()).tz(osvc.server_timezone)
+  url += "&b=" + b.format(b._f)
+  url += "&e=" + e.format(e._f)
 
   fn = window["stats_"+groupname]
   fn(url, uid)

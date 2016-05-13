@@ -341,6 +341,8 @@ function service_properties(divid, options)
 			} else {
 				o.div.find("#svc_ha").text(i18n.t("service_properties.no"))
 			}
+			o.div.find("#svc_created").text(osvc_date(data.svc_created))
+			o.div.find("#updated").text(osvc_date(data.updated))
 
 			// status
 			o.decorator_status(o.div.find("#svc_status"), data.svc_status_updated)

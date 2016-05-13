@@ -77,7 +77,7 @@ function network_properties(divid, options) {
 		o.info_begin.html(data.begin)
 		o.info_end.html(data.end)
 		o.info_broadcast.html(data.broadcast)
-		o.info_updated.html(data.updated)
+		o.info_updated.html(osvc_date(data.updated))
 
 		tab_properties_generic_updater({
 			"div": o.div,

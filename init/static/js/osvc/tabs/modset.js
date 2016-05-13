@@ -70,7 +70,7 @@ function modset_properties(divid, options) {
 		o.info_id.html(data.id)
 		o.info_modset_name.html(data.modset_name)
 		o.info_modset_author.html(data.modset_author)
-		o.info_modset_updated.html(data.modset_updated)
+		o.info_modset_updated.html(osvc_date(data.modset_updated))
 
 		o.load_usage()
 

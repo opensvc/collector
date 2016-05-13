@@ -65,7 +65,7 @@ function metric_properties(divid, options) {
 		o.info_id.html(data.id)
 		o.info_metric_name.html(data.metric_name)
 		o.info_metric_author.html(data.metric_author)
-		o.info_metric_created.html(data.metric_created)
+		o.info_metric_created.html(osvc_date(data.metric_created))
 		o.info_metric_col_instance_label.html(data.metric_col_instance_label)
 		o.info_metric_col_value_index.html(data.metric_col_value_index)
 		o.info_metric_col_instance_index.html(data.metric_col_instance_index)

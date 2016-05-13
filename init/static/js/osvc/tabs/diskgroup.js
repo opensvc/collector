@@ -87,7 +87,7 @@ function diskgroup_properties(divid, options) {
 	o._load_diskgroup = function() {
 		o.info_id.html(o.data.id)
 		o.info_dg_name.html(o.data.dg_name)
-		o.info_dg_updated.html(o.data.dg_updated)
+		o.info_dg_updated.html(osvc_date(o.data.dg_updated))
 		$.data(o.info_dg_free, "v", o.data.dg_free)
 		$.data(o.info_dg_size, "v", o.data.dg_size)
 		$.data(o.info_dg_used, "v", o.data.dg_used)

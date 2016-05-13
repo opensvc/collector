@@ -81,7 +81,7 @@ function fset_properties(divid, options) {
 		o.info_fset_name.html(data.fset_name)
 		o.info_fset_stats.html(data.fset_stats)
 		o.info_fset_author.html(data.fset_author)
-		o.info_fset_updated.html(data.fset_updated)
+		o.info_fset_updated.html(osvc_date(data.fset_updated))
 
 		o.load_usage()
 

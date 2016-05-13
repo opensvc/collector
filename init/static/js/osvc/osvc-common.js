@@ -1,5 +1,11 @@
-// OpenSvc Common JS function
-// MD 08062015
+function osvc_date(s) {
+	try {
+		var m = moment.tz(s, osvc.server_timezone).tz(osvc.client_timezone)
+	} catch(e) {
+		return s
+	}
+	return m.format(m._f)
+}
 
 function is_dict(obj) {
 	if(!obj) return false;
