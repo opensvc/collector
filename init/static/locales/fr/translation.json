@@ -947,7 +947,7 @@
 	"compliance" : {
 			"title" : "Conformité",
 			"statut" : {
-				"title" : "état de conformité",
+				"title" : "État de conformité",
 				"text" : "Dernière analyse des sondes de conformité sur les noeuds et services"
 			},
 			"log" : {
@@ -1121,7 +1121,7 @@
 		"shortcuts" : {
 			"title" : "Raccourcis",
 			"filter_sel" : {
-				"title" : "Filter selector",
+				"title" : "Choix du filtre de session",
 				"text" : "Choisir les filtres afféctés aux données affichés"
 			},
 			"link" : {

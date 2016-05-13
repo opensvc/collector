@@ -29,11 +29,13 @@ function comp_log(divid, options) {
 			"orderby": "~id",
 			"filters": []
 		}
-		if (options && options.svcname) {
-			opts.filters.push("run_svcname "+options.svcname)
+		if (options && options.svc_id) {
+			opts.filters.push("svc_id "+options.svc_id)
+		} else {
+			opts.filters.push("svc_id empty")
 		}
-		if (options && options.nodename) {
-			opts.filters.push("run_nodename "+options.nodename)
+		if (options && options.node_id) {
+			opts.filters.push("node_id "+options.node_id)
 		}
 		if (options && options.module) {
 			opts.filters.push("run_module "+options.module)
@@ -63,7 +65,7 @@ function comp_log(divid, options) {
 				})
 			}
 			_data.push({
-				"start": d.run_date,
+				"start": moment.tz(d.run_date, osvc.server_timezone),
 				"group": group,
 				"title": d.run_log,
 				"content": "",
@@ -86,13 +88,15 @@ function comp_log(divid, options) {
 		var t = $("<h2 class='nowrap'></h2>")
 		var mod = $("<span class='mod16 icon_fixed_width'>"+o.options.module+"</span>")
 		t.append(mod)
-		if (o.options.svcname) {
-			var svc = $("<span class='svc icon_fixed_width' style='padding-left:1em'>"+o.options.svcname+"</span>")
+		if (o.options.svc_id) {
+			var svc = $("<span svc_id='"+o.options.svc_id+"' style='padding-left:1em'></span>")
 			t.append(svc)
+			svc.osvc_svcname()
 		}
-		var node = $("<span class='node16 icon_fixed_width' style='padding-left:1em'></span")
-                node.append(osvc_nodename(o.options.node_id))
+		var node = $("<span node_id='"+o.options.node_id+"' style='padding-left:1em'></span")
+                node.append(node)
 		t.append(node)
+		node.osvc_nodename()
 		o.div.append(t)
 	}
 
