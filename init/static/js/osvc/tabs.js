@@ -399,6 +399,10 @@ tab_properties_generic_simple = function(options) {
 			input.blur()
 			var data = {}
 			var val = input.val()
+			if (updater == "datetime") {
+				var m = moment(val).tz(osvc.server_timezone)
+				val = m.format(m._f)
+			}
 			if (updater == "size_mb") {
 				val = Math.ceil(convert_size(val) / 1024 / 1024)
 			}
