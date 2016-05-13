@@ -140,23 +140,6 @@ String.prototype.beginsWith = function (string) {
 	return(this.indexOf(string) === 0);
 }
 
-function str_from_datetime(date) {
-	var d = (date+'').split(' ');
-	return [d[3], d[1], d[2], d[4]].join(' ');
-}
-
-function js_utc_date_from_str(str_date) {
-	return new Date(str_date.replace(" ","T")+"Z");
-}
-
-function diff_date(d1,d2) {
-	var date1 = new Date(d1)
-	var date2 = new Date(d2)
-	var timeDiff = Math.abs(date2.getTime() - date1.getTime())
-	var diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24))
-	return diffDays
-}
-
 function link(divid, options) {
 	var link_id = options.link_id
 	$("#"+divid).load("/init/" + link_id, options, function() {})

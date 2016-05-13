@@ -67,7 +67,7 @@ function comp_log(divid, options) {
 			_data.push({
 				"start": moment.tz(d.run_date, osvc.server_timezone),
 				"group": group,
-				"title": d.run_log,
+				"title": d.run_log.replace(/\n/g, "<br>").replace(/ERR:/g, "<span class='highlight'>ERR:</span>"),
 				"content": "",
 				"className": "box-"+o.colors[d.run_status]
 			})
@@ -82,6 +82,9 @@ function comp_log(divid, options) {
 
 	o.init_timeline = function() {
 		o.timeline = new vis.Timeline(o.timeline_div[0], o.data, o.groups, options)
+		o.timeline.on("change", function() {
+			o.div.find("[title]").tooltipster({contentAsHTML: true})
+		})
 	}
 
 	o.add_title = function() {

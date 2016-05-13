@@ -151,6 +151,7 @@ function services_status_log(divid, options) {
 			o.div.find("[svc_id]").osvc_svcname({
 				callback: function(){o.timeline.redraw()}
 			})
+			o.div.find("[title]").tooltipster()
 		})
 	}
 

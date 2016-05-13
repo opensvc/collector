@@ -64,6 +64,10 @@ function alert_event(divid, options) {
 
 	o.init_timeline = function() {
 		o.timeline = new vis.Timeline(o.div[0], o.data, o.timeline_options)
+		o.timeline.on("change", function() {
+			o.div.find("[title]").tooltipster()
+		})
+
 	}
 
 	o.init = function() {
