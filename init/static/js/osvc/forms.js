@@ -1473,6 +1473,10 @@ function form(divid, options) {
 				input.prop("acid", data.autocomplete.options.source[0].id)
 				input.change()
 			}
+		} else if (d.Type == "string" && d.Default) {
+			input.val(d.Default)
+			input.prop("acid", d.Default)
+			input.change()
 		}
 	}
 
