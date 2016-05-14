@@ -79,19 +79,26 @@ function tabs(divid) {
 		data.tab = e
 
 		e.bind("click", function() {
+			var current_tab_active = null
 			for (var i=0; i<o.tabs.length; i++) {
 				if (!o.tabs[i].tab) {
 					continue
 				}
-				o.tabs[i].tab.removeClass("tab_active")
-				o.tabs[i].div.hide()
+				if (!o.tabs[i].tab.hasClass("tab_active")) {
+					continue
+				}
+				current_tab_active = o.tabs[i]
+				current_tab_active.tab.removeClass("tab_active")
+				current_tab_active.tab.removeAttr("title").tooltipster('destroy')
+				current_tab_active.div.hide()
 			}
 			data.tab.addClass("tab_active")
+			data.tab.attr("title", i18n.t("tabs.click_to_reload")).tooltipster()
 			data.div.show()
-			if (!data.div.is(":empty")) {
-				return
+			if (data.div.is(":empty") || (current_tab_active.divid == data.divid)) {
+				// interpret a click on the active tab as a wish to reload
+				data.callback(data.divid)
 			}
-			data.callback(data.divid)
 		})
 	}
 

@@ -1750,5 +1750,8 @@
 	"scheduler_stats": {
 		"feed_task_status": "Feed tasks status",
 		"feed_task_functions": "Feed tasks functions"
+	},
+	"tabs": {
+		"click_to_reload": "Clicking the active tab forces a reload of its content"
 	}
 }

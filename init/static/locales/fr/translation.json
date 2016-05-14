@@ -1703,5 +1703,8 @@
 	"scheduler_stats": {
 		"feed_task_status": "Etat des tâches insérées",
 		"feed_task_functions": "Fonction des tâches insérées"
+	},
+	"tabs": {
+		"click_to_reload": "Cliquer la tab active force le rafraîchissement de son contenu"
 	}
 }
