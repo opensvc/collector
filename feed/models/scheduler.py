@@ -1959,6 +1959,7 @@ def update_save_checks():
                  chk_type="fs_u" and
                  chk_instance not like "/run/%" and
                  chk_instance like "/%" and
+                 chk_instance not like "%docker%aufs%" and
                  chk_instance not in ("/run", "/dev/shm", "/tmp", "/var/lib/xenstored", "/var/adm/crash", "/var/adm/ras/livedump")
                ) t
                left join saves_last on
@@ -1991,6 +1992,7 @@ def update_save_checks():
                saves_last.save_resolved=1 and
                saves_last.chk_instance not like "/run/%" and
                saves_last.chk_instance like "/%" and
+               saves_last.chk_instance not like "%docker%aufs%" and
                saves_last.chk_instance not in ("/run", "/dev/shm", "/tmp", "/var/lib/xenstored", "/var/adm/crash", "/var/adm/ras/livedump")
            on duplicate key update
              chk_updated=now(),
