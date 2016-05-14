@@ -1360,7 +1360,7 @@ colprops = {
 		"title": "Obsolete"
 	},
 	"obs_alert_date": {
-		"_class": "datetime_no_age",
+		"_class": "date_future",
 		"img": "time16",
 		"title": "Alert date"
 	},
@@ -1379,7 +1379,7 @@ colprops = {
 		"title": "Type"
 	},
 	"obs_warn_date": {
-		"_class": "datetime_no_age",
+		"_class": "date_future",
 		"img": "time16",
 		"title": "Warn date"
 	},

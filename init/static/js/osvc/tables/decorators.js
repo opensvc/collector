@@ -1504,6 +1504,7 @@ function cell_decorator_datetime_no_age(e) {
 }
 
 function cell_decorator_date_future(e) {
+  $(e).attr("max_age", 0)
   cell_decorator_datetime(e)
 }
 
@@ -1586,7 +1587,7 @@ function delta_format(delta, s, max_age) {
 
   cl += " nowrap"
 
-  if (max_age && (delta > max_age)) {
+  if (prefix == "-" && max_age && (delta > max_age)) {
     cl += " icon-red"
   }
 
