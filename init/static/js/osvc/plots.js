@@ -662,10 +662,20 @@ function comp_history(url, id) {
     });
 }
 
+function mangle_data(data) {
+	for (var i=0; i<data.length; i++) {
+		for (var j=0; j<data[i].length; j++) {
+			data[i][j][0] = osvc_date(data[i][j][0])
+		}
+	}
+	return data
+}
+
 function stats_cpu(url, id) {
     $.jqplot.config.enablePlugins = true;
     $.getJSON(url, function(data) {
         $("#"+id+"_u").width("600px")
+        data = mangle_data(data)
 	p = $.jqplot(id+"_u", data, {
             cursor:{zoom:true, showTooltip:true},
 	    stackSeries: true,
@@ -722,6 +732,7 @@ function stats_cpu(url, id) {
 function stats_proc(url, id) {
     $.jqplot.config.enablePlugins = true;
     $.getJSON(url, function(data) {
+        data = mangle_data(data)
 	p = $.jqplot(id+'_runq_sz', [data[0]], {
             cursor:{zoom:true, showTooltip:true},
             title: {
@@ -965,6 +976,7 @@ function stats_svc(url, id, title, unit) {
 function stats_mem(url, id) {
     $.jqplot.config.enablePlugins = true;
     $.getJSON(url, function(data) {
+        data = mangle_data(data)
 
         max = 0
         for (i=0; i<data[1].length; i++) {
@@ -1077,6 +1089,7 @@ function stats_mem(url, id) {
 function stats_swap(url, id) {
     $.jqplot.config.enablePlugins = true;
     $.getJSON(url, function(data) {
+        data = mangle_data(data)
 
         max = 0
         for (i=0; i<data[1].length; i++) {
@@ -1184,6 +1197,7 @@ function stats_swap(url, id) {
 function stats_block(url, id) {
     $.jqplot.config.enablePlugins = true;
     $.getJSON(url, function(data) {
+        data = mangle_data(data)
         max = 0
         for (i=0; i<data[0].length; i++) {
             max = Math.max(max, (data[0][i][1]))
@@ -1392,7 +1406,10 @@ function stats_blockdev(url, id) {
     $.jqplot.config.enablePlugins = true;
     $.getJSON(url, function(_data) {
         colors = [ "#4bb2c5", "#4bb2c5", "#EAA228", "#EAA228", "#c5b47f", "#c5b47f", "#579575", "#579575", "#839557", "#839557", "#958c12", "#958c12", "#953579", "#953579", "#4b5de4", "#4b5de4", "#d8b83f", "#d8b83f", "#ff5800", "#ff5800", "#0085cc", "#0085cc", "#c747a3", "#c747a3", "#cddf54", "#cddf54", "#FBD178", "#FBD178", "#26B4E3", "#26B4E3", "#bd70c7", "#bd70c7"]
+        _data.begin = osvc_date(_data.begin)
+        _data.end = osvc_date(_data.end)
         data = _data['time']['secps']['data']
+        data = mangle_data(data)
         labels = _data['time']['secps']['labels']
         max_secps = 0
         for (i=0; i<data.length; i++) {
@@ -1456,6 +1473,7 @@ function stats_blockdev(url, id) {
         _jqplot_extra($('#'+id+'_secps_time'), p)
 
         data = _data['time']['pct_util']['data']
+        data = mangle_data(data)
         labels = _data['time']['pct_util']['labels']
         max_pct_util = 0
         for (i=0; i<data.length; i++) {
@@ -1519,6 +1537,7 @@ function stats_blockdev(url, id) {
         _jqplot_extra($('#'+id+'_pct_util_time'), p)
 
         data = _data['time']['tps']['data']
+        data = mangle_data(data)
         labels = _data['time']['tps']['labels']
         max_tps = 0
         for (i=0; i<data.length; i++) {
@@ -1582,6 +1601,7 @@ function stats_blockdev(url, id) {
         _jqplot_extra($('#'+id+'_tps_time'), p)
 
         data = _data['time']['await']['data']
+        data = mangle_data(data)
         labels = _data['time']['await']['labels']
         max_await = 0
         for (i=0; i<data.length; i++) {
@@ -1645,6 +1665,7 @@ function stats_blockdev(url, id) {
         _jqplot_extra($('#'+id+'_await_time'), p)
 
         data = _data['time']['svctm']['data']
+        data = mangle_data(data)
         labels = _data['time']['svctm']['labels']
         max_svctm = 0
         for (i=0; i<data.length; i++) {
@@ -1708,6 +1729,7 @@ function stats_blockdev(url, id) {
         _jqplot_extra($('#'+id+'_svctm_time'), p)
 
         data = _data['time']['avgrq_sz']['data']
+        data = mangle_data(data)
         labels = _data['time']['avgrq_sz']['labels']
         max_avgrq_sz = 0
         for (i=0; i<data.length; i++) {
@@ -2091,6 +2113,7 @@ function stats_netdev_err(url, id) {
 
         labels = errps[0]
         data = errps[1]
+        data = mangle_data(data)
         max = 0
         for (i=0; i<data.length; i++) {
           for (j=0; j<data[i].length; j++) {
@@ -2153,6 +2176,7 @@ function stats_netdev_err(url, id) {
 
         labels = collps[0]
         data = collps[1]
+        data = mangle_data(data)
         max = 0
         for (i=0; i<data.length; i++) {
           for (j=0; j<data[i].length; j++) {
@@ -2215,6 +2239,7 @@ function stats_netdev_err(url, id) {
 
         labels = dropps[0]
         data = dropps[1]
+        data = mangle_data(data)
         max = 0
         for (i=0; i<data.length; i++) {
           for (j=0; j<data[i].length; j++) {
@@ -2369,6 +2394,7 @@ function stats_netdev(url, id) {
 
         labels = bw[0]
         data = bw[1]
+        data = mangle_data(data)
         max = 0
         for (i=0; i<data.length; i++) {
           for (j=0; j<data[i].length; j++) {
@@ -2432,6 +2458,7 @@ function stats_netdev(url, id) {
 
         labels = pk[0]
         data = pk[1]
+        data = mangle_data(data)
         max = 0
         for (i=0; i<data.length; i++) {
           for (j=0; j<data[i].length; j++) {
@@ -2719,6 +2746,7 @@ function best_unit_mb(max, iunit) {
 function stats_fs(url, id) {
     $.jqplot.config.enablePlugins = true;
     $.getJSON(url, function(data) {
+        data[1] = mangle_data(data[1])
         labels = new Array()
         for (i=0;i<data[0].length;i++){
             labels.push({'label': data[0][i]})
@@ -2771,66 +2799,6 @@ function stats_fs(url, id) {
         _jqplot_extra($('#'+id+'_u'), p)
     });
 }
-function stat_os(url, id) {
-    $.jqplot.config.enablePlugins = true;
-    $.getJSON(url, function(data) {
-        $("#"+id).width("600px")
-        //plot_width(id, data[0])
-        labels = new Array()
-        for (i=0;i<data[0].length;i++){
-            labels.push({'label': data[0][i]})
-        }
-        h = labels.length
-        h = Math.max(24*h, 300)
-        $('#'+id).height(h+'px')
-        if (id == 'stat_os_name') {
-             title = ''
-        } else {
-             title = id.replace('stat_os_','')
-        }
-	p = $.jqplot(id, data[1], {
-            cursor:{zoom:true, showTooltip:true},
-	    stackSeries: true,
-            title: {
-                text: title
-            },
-            legend: {
-                renderer: $.jqplot.EnhancedLegendRenderer,
-                show: true,
-                location: 'ne',
-                placement: "outside"
-            },
-            gridPadding: {
-                right:90
-            },
-	    grid: {
-                borderWidth: 0.5,
-                shadowOffset: 1.0,
-                shadowWidth: 2
-            },
-	    seriesDefaults: {
-                breakOnNull : true,
-                fill: true,
-                shadowAngle: 135,
-                shadowOffset: 1.0,
-                shadowWidth: 2
-            },
-	    series: labels,
-	    axes: {
-		xaxis: {
-		    renderer: $.jqplot.DateAxisRenderer, 
-		    tickOptions:{formatString:'%F'}
-		}, 
-		yaxis: {
-		    min: 0,
-		    tickOptions:{formatString:'%i'}
-		}
-	    }
-	});
-        _jqplot_extra($('#'+id), p)
-    });
-}
-
 function stats_resinfo(url, id) {
     $.jqplot.config.enablePlugins = true;
     $.getJSON(url, function(data) {
