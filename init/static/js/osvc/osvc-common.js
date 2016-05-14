@@ -2,6 +2,7 @@ function osvc_date(s) {
 	try {
 		var m = moment.tz(s, osvc.server_timezone).tz(osvc.client_timezone)
 	} catch(e) {
+		console.log(e)
 		return s
 	}
 	return m.format(m._f)
