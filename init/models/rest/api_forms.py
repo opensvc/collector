@@ -583,7 +583,7 @@ class rest_delete_form(rest_delete_handler):
             raise Exception("Form %s not found"%str(id))
 
         form_id = db(q).delete()
-        ws_send('forms_change', {'id': id})
+        ws_send('forms_delete', {'id': id})
 
         q = db.forms_team_publication.form_id == id
         db(q).delete()

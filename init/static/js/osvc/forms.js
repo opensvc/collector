@@ -22,13 +22,49 @@ function forms() {
 		})
 	}
 
+	o.change_form = function(id) {
+		services_osvcgetrest("R_FORM", [id], "", function(jd) {
+			var d = jd.data[0]
+			o.delete_form(id)
+			console.log("add form", d.form_name, "to the form cache")
+			o.data[d.form_name] = d
+			if (!(d.form_folder in o.folders)) {
+				o.folders[d.form_folder] = []
+			}
+			o.folders[d.form_folder].push(d.form_name)
+			console.log("add form", d.form_name, "to the form folder", d.form_folder, "cache")
+		})
+	}
+
+	o.delete_form = function(id) {
+		for (var form_name in o.data) {
+			if (o.data[form_name].id == id) {
+				var form_folder = o.data[form_name].form_folder
+				console.log("delete form", form_name, "from cache")
+				delete(o.data[form_name])
+
+				// remove from the folder cache
+				var idx = o.folders[form_folder].indexOf(form_name)
+				if (idx >= 0) {
+					console.log("delete form", form_name, "from folder", form_folder, "cache, found at index", idx)
+					o.folders[form_folder].splice(idx)
+				}
+			}
+		}
+	}
+
 	o.event_handler = function(data) {
 		if (!data.event) {
 			return
 		}
+		if (data.event == "forms_delete") {
+			console.log("form delete event:", data.data.id)
+			o.delete_form(data.data.id)
+			return
+		}
 		if (data.event == "forms_change") {
-			console.log("refresh forms cache on change event")
-			o.load()
+			console.log("form change event", data.data.id)
+			o.change_form(data.data.id)
 			return
 		}
 	}

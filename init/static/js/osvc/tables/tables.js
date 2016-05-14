@@ -997,7 +997,7 @@ function table_forms(divid, options) {
 			"form_name": {"_class": "form_name"},
 		},
 		'wsable': true,
-		'events': ['forms_change'],
+		'events': ['forms_change', 'forms_delete', 'forms_team_responsible_change', 'forms_team_publication_change'],
 		'request_vars': {}
 	}
 	var _options = $.extend({}, defaults, options)
