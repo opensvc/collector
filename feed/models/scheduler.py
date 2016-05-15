@@ -3233,13 +3233,25 @@ def cron_dash_checks_not_updated():
     db.commit()
 
 def cron_dash_app_without_responsible():
+    # purge alerts for app that now have a responsible
     sql = """delete from dashboard where
              dash_type="application code without responsible" and
-             dash_dict in (
+             (dash_dict in (
                select
                  concat('{"a":"', a.app, '"}')
                from apps a join apps_responsibles ar on a.id=ar.app_id
-             ) or dash_dict = "" or dash_dict is NULL
+             ) or dash_dict = "" or dash_dict is NULL)
+          """
+    db.executesql(sql)
+
+    # purge alerts for deleted app codes
+    sql = """delete from dashboard where
+             dash_type="application code without responsible" and
+             dash_dict not in (
+               select
+                 concat('{"a":"', a.app, '"}')
+               from apps a
+             )
           """
     db.executesql(sql)
 
@@ -3264,6 +3276,7 @@ def cron_dash_app_without_responsible():
                  dash_updated=now()
           """
     db.executesql(sql)
+    ws_send("dashboard_change")
     db.commit()
 
 def cron_dash_purge():

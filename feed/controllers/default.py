@@ -1996,3 +1996,8 @@ def rpc_sysreport_lstree(auth):
     tree_data = sysreport.sysreport().lstree_data("HEAD", auth[1])
     return map(lambda d: d['fpath'], tree_data)
 
+def test_task_dash_hourly():
+    task_dash_hourly()
+
+def test_cron_dash_app_without_responsible():
+    cron_dash_app_without_responsible()
