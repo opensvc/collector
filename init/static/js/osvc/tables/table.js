@@ -2159,7 +2159,7 @@ function table_init(opts) {
 					xhr.abort()
 				}
 				var data = t.prepare_request_data()
-				data[input.attr('id')] = input.val()
+				//data[input.attr('id')] = input.val()
 				var dest = input.siblings("[id^="+t.id+"_fc_]")
 				var pie = input.siblings("[id^="+t.id+"_fp_]")
 				pie.height(0)
@@ -2179,6 +2179,9 @@ function table_init(opts) {
 					},
 					success: function(msg){
 						var data = $.parseJSON(msg)
+						if (t.colprops[col]._class.match(/datetime/)) {
+							data = t.convert_cloud_dates(data)
+						}
 						t.format_values_cloud(dest, data)
 						t.format_values_pie(pie, data)
 					}
@@ -2243,6 +2246,14 @@ function table_init(opts) {
 		})
 
 		t.bind_filter_reformat()
+	}
+
+	t.convert_cloud_dates = function(data) {
+		var _data = {}
+		for (var d in data) {
+			_data[osvc_date_from_collector(d)] = data[d]
+		}
+		return _data
 	}
 
 	//
