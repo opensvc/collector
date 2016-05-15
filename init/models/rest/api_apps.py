@@ -425,6 +425,7 @@ class rest_post_app_responsible(rest_post_handler):
         q &= db.dashboard.dash_dict.like('%%:"%s"%%'%app.app)
         db(q).delete()
         table_modified("dashboard")
+        ws_send('dashboard_change')
 
         return dict(info=fmt % d)
 

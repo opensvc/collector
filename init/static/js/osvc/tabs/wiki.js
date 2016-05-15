@@ -102,7 +102,7 @@ function wiki_load(o)
 
       for (i=0; i<result.length; i++)
       {
-          var line = "<tr><td>" + osvc_date(result[i].saved_on) + "</td><td>"+ result[i].email +"</td></tr>";
+          var line = "<tr><td>" + osvc_date_from_collector(result[i].saved_on) + "</td><td>"+ result[i].email +"</td></tr>";
           o.wiki_table_last_changes.append(line);
       }
       o.wiki_tab_titles.html(i18n.t("wiki.last_table_title",{"number" : i}));

@@ -83,7 +83,7 @@ function app_properties(divid, options) {
 			o.info_app_team_ops.html(data.app_team_ops);
 			o.info_app_domain.html(data.app_domain);
 			o.info_app.html(data.app);
-			o.info_updated.html(osvc_date(data.updated));
+			o.info_updated.html(osvc_date_from_collector(data.updated));
 			o.info_id.html(data.id);
 
 			app_publications({

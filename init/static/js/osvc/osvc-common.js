@@ -1,6 +1,16 @@
-function osvc_date(s) {
+function osvc_date_from_collector(s) {
 	try {
 		var m = moment.tz(s, osvc.server_timezone).tz(osvc.client_timezone)
+	} catch(e) {
+		console.log(e)
+		return s
+	}
+	return m.format(m._f)
+}
+
+function osvc_date_to_collector(s) {
+	try {
+		var m = moment.tz(s, osvc.client_timezone).tz(osvc.server_timezone)
 	} catch(e) {
 		console.log(e)
 		return s

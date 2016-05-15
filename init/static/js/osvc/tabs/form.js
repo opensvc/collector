@@ -80,7 +80,7 @@ function form_properties(divid, options) {
 		o.info_form_type.html(data.form_type)
 		o.info_form_folder.html(data.form_folder)
 		o.info_form_author.html(data.form_author)
-		o.info_form_created.html(osvc_date(data.form_created))
+		o.info_form_created.html(osvc_date_from_collector(data.form_created))
 
 		tab_properties_generic_updater({
 			"div": o.div,

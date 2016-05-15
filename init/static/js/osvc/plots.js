@@ -665,7 +665,7 @@ function comp_history(url, id) {
 function mangle_data(data) {
 	for (var i=0; i<data.length; i++) {
 		for (var j=0; j<data[i].length; j++) {
-			data[i][j][0] = osvc_date(data[i][j][0])
+			data[i][j][0] = osvc_date_from_collector(data[i][j][0])
 		}
 	}
 	return data
@@ -1406,8 +1406,8 @@ function stats_blockdev(url, id) {
     $.jqplot.config.enablePlugins = true;
     $.getJSON(url, function(_data) {
         colors = [ "#4bb2c5", "#4bb2c5", "#EAA228", "#EAA228", "#c5b47f", "#c5b47f", "#579575", "#579575", "#839557", "#839557", "#958c12", "#958c12", "#953579", "#953579", "#4b5de4", "#4b5de4", "#d8b83f", "#d8b83f", "#ff5800", "#ff5800", "#0085cc", "#0085cc", "#c747a3", "#c747a3", "#cddf54", "#cddf54", "#FBD178", "#FBD178", "#26B4E3", "#26B4E3", "#bd70c7", "#bd70c7"]
-        _data.begin = osvc_date(_data.begin)
-        _data.end = osvc_date(_data.end)
+        _data.begin = osvc_date_from_collector(_data.begin)
+        _data.end = osvc_date_from_collector(_data.end)
         data = _data['time']['secps']['data']
         data = mangle_data(data)
         labels = _data['time']['secps']['labels']

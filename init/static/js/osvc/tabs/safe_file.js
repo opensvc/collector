@@ -96,7 +96,7 @@ function safe_file_properties(divid, options) {
 		o.info_size.html(fancy_size_b(data.size))
 		o.info_uploader.html(data.uploader)
 		o.info_uploaded_from.html(data.uploaded_from)
-		o.info_uploaded_date.html(osvc_date(data.uploaded_date))
+		o.info_uploaded_date.html(osvc_date_from_collector(data.uploaded_date))
 
 		tab_properties_generic_updater({
 			"div": o.div,

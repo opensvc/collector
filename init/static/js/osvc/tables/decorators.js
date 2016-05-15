@@ -1595,7 +1595,7 @@ function delta_format(delta, s, max_age) {
     s = ""
   }
 
-  return $("<div class='"+cl+"' style='color:"+color+"' title='"+s+"'>"+text+"</div>").tooltipster()
+  return $("<div class='"+cl+"' style='color:"+color+"' title='"+osvc_date_from_collector(s)+"'>"+text+"</div>").tooltipster()
 }
 
 function cell_decorator_date(e) {

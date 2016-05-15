@@ -659,8 +659,34 @@ function table_init(opts) {
 			} else if ((typeof(t.colprops[c].force_filter) !== "undefined") && (t.colprops[c].force_filter != "")) {
 				data[fid] = t.colprops[c].force_filter
 			}
+			if (data[fid] && (t.colprops[c]._class.indexOf("datetime") >= 0)) {
+				data[fid] = t.convert_dates_in_filter(data[fid])
+			}
 		}
 		return data
+	}
+
+	t.convert_dates_in_filter = function(s) {
+		function convert_date(s) {
+			if (s.match(/[mdhsMyY]/)) {
+				// must be a delta filter => no conversion needed
+				return s
+			}
+			var l = s.match(/([!<>=]*)(.*)/)
+			// ">2016-01".match(/([!<>=]*)(.*)/) returns [">2016-01", ">", "2016-01"]
+			return l[1] + osvc_date_to_collector(l[2])
+		}
+
+		var l = s.split("&")
+		for (var i=0; i<l.length; i++) {
+			_l = l[i].split("|")
+			for (var j=0; j<_l.length; j++) {
+				_l[j] = convert_date(_l[j])
+			}
+			l[i] = _l.join("|")
+		}
+		return l.join("&")
+
 	}
 
 	t.has_filter_in_request_vars = function() {

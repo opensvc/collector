@@ -69,7 +69,7 @@ function prov_template_properties(divid, options) {
 		o.info_tpl_name.html(data.tpl_name)
 		o.info_tpl_comment.html(data.tpl_comment)
 		o.info_tpl_author.html(data.tpl_author)
-		o.info_tpl_created.html(osvc_date(data.tpl_created))
+		o.info_tpl_created.html(osvc_date_from_collector(data.tpl_created))
 
 		tab_properties_generic_updater({
 			"div": o.div,

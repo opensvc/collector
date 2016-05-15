@@ -226,7 +226,7 @@ function node_properties(divid, options)
 			if (key == "mem_bytes") {
 				o.div.find("#"+key).text(fancy_size_mb(data[key]))
 			} else if ((key=="updated")||(key=="maintenance_end")||(key=="warranty_end")) {
-				o.div.find("#"+key).text(osvc_date(data[key]))
+				o.div.find("#"+key).text(osvc_date_from_collector(data[key]))
 			} else {
 				o.div.find("#"+key).text(data[key])
 			}
