@@ -53,7 +53,7 @@ function alert_event(divid, options) {
 			_data.push({
 				"start": _start,
 				"end": _end,
-				"title": delta_format(d).text(),
+				"title": delta_properties(d).text,
 				"content": "&nbsp;",
 				"className": "box-red"
 			})

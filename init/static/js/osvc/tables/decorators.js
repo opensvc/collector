@@ -1369,24 +1369,22 @@ function cell_decorator_dash_entry(e) {
   var line = $(e).parent(".tl")
   var d = $.data(line.children("[col=dash_dict]")[0], "v")
   var fmt = $.data(line.children("[col=dash_fmt]")[0], "v")
-  if (!d || d.length==0) {
-    $(e).html(fmt)
-    return
-  }
-  try {
-    d = $.parseJSON(d)
-  } catch(err) {
-    $(e).html(i18n.t("decorators.corrupted_log"))
-    return
-  }
-  for (key in d) {
-    var re = RegExp("%\\("+key+"\\)[sd]", "g")
-    fmt = fmt.replace(re, "<b>"+d[key]+"</b>")
+  if (d && d.length>0) {
+    try {
+      d = $.parseJSON(d)
+      for (key in d) {
+        var re = RegExp("%\\("+key+"\\)[sd]", "g")
+        fmt = fmt.replace(re, "<b>"+d[key]+"</b>")
+      }
+    } catch(err) {
+      $(e).html(i18n.t("decorators.corrupted_log"))
+      return
+    }
   }
   $(e).html(fmt)
   $(e).addClass("clickable corner")
   $(e).click(function(){
-    if (get_selected() != "") {return}
+    //if (get_selected() != "") {return}
     var line = $(e).parent(".tl")
     var node_id = $.data(line.children("[col=node_id]")[0], "v")
     var svc_id = $.data(line.children("[col=svc_id]")[0], "v")
@@ -1529,21 +1527,33 @@ function cell_decorator_datetime_weekly(e) {
 
 function cell_decorator_datetime(e) {
   var s = $.data(e, "v")
-  var max_age = $(e).attr("max_age")
+  var je = $(e)
+  var max_age = je.attr("max_age")
   var delta = datetime_age(s)
 
   if (!delta) {
-    $(e).html()
+    je.html()
     return
   }
-  var content = delta_format(delta, s, max_age)
-  if ($(e).text() == content.text()) {
+  var props = delta_properties(delta, s, max_age)
+  if (je.text() == props.text) {
     return
   }
-  $(e).html(content)
+  if (je.children().length) {
+    // already decorated, just update properties
+    var div = je.children()
+    div.text(props.text)
+    div.css({"color": props.color})
+    if (!div.hasClass(props.cl)) {
+      div.removeClass().addClass(props.cl)
+    }
+    return
+  }
+  var content = $("<div class='"+props.cl+"' style='color:"+props.color+"' title='"+props.client_date+"'>"+props.text+"</div>").tooltipster()
+  je.html(content)
 }
 
-function delta_format(delta, s, max_age) {
+function delta_properties(delta, s, max_age) {
   if (delta > 0) {
     var prefix = "-"
     var round = Math.ceil
@@ -1595,7 +1605,13 @@ function delta_format(delta, s, max_age) {
     s = ""
   }
 
-  return $("<div class='"+cl+"' style='color:"+color+"' title='"+osvc_date_from_collector(s)+"'>"+text+"</div>").tooltipster()
+  return {
+    cl: cl,
+    color: color,
+    server_date: s,
+    client_date: osvc_date_from_collector(s),
+    text: text
+  }
 }
 
 function cell_decorator_date(e) {
