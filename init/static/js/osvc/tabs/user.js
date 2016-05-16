@@ -9,7 +9,7 @@ function user_tabs(divid, options) {
     var i = 0
 
     if (!("user_id" in o.options) && ("fullname" in o.options)) {
-      services_osvcgetrest("R_SEARCH", "", {"substring": o.options.fullname}, function(jd) {
+      services_osvcgetrest("R_SEARCH", "", {"substring": o.options.fullname, "in": "user"}, function(jd) {
         var users = jd.data.users.data
         for (var i=0; i<users.length; i++) {
           var user = users[i]
