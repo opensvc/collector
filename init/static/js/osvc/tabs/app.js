@@ -25,7 +25,7 @@ function app_tabs(divid, options) {
     // tab properties
     i = o.register_tab({
       "title": "node_tabs.properties",
-      "title_class": "icon svc"
+      "title_class": "icon app16"
     })
     o.tabs[i].callback = function(divid) {
       app_properties(divid, o.options)
