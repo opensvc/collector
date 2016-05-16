@@ -1,3 +1,39 @@
+function alert_info(divid, options) {
+	var o = {}
+
+	// store parameters
+	o.divid = divid
+	o.div = $("#"+divid)
+	o.options = options
+
+	o.wiki_page_name = function() {
+		var s = "alert"
+		if (o.options.node_id) {
+ 		       s += "_" + o.options.node_id
+		} else if (o.options.node_id) {
+ 		       s += "_" + o.options.svc_id
+		}
+		if (o.options.dash_md5) {
+ 		       s += "_" + o.options.dash_md5
+		}
+		return s
+	}
+
+	o.div.load('/init/static/views/alert_info.html', "", function() {
+		o.div.i18n()
+		o.e_timeline = o.div.find("[name=timeline]")
+		o.e_wiki = o.div.find("[name=wiki]")
+		o.e_timeline.uniqueId()
+		o.e_wiki.uniqueId()
+
+		alert_event(o.e_timeline.attr("id"), o.options)
+		wiki(o.e_wiki.attr("id"), {
+			"nodes": o.wiki_page_name()
+		})
+	})
+	return o
+}
+
 function alert_event(divid, options) {
 	var o = {}
 
@@ -19,7 +55,7 @@ function alert_event(divid, options) {
 	o.load = function() {
 		spinner_add(o.div)
 		var _params = {
-			"filters": ["dash_md5 "+o.options.md5name],
+			"filters": ["dash_md5 "+o.options.dash_md5],
 		}
 		if (o.options.node_id && o.options.node_id != "") {
 			_params.filters.push("node_id "+o.options.node_id)

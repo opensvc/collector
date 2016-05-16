@@ -1384,15 +1384,15 @@ function cell_decorator_dash_entry(e) {
   $(e).html(fmt)
   $(e).addClass("clickable corner")
   $(e).click(function(){
-    //if (get_selected() != "") {return}
     var line = $(e).parent(".tl")
-    var node_id = $.data(line.children("[col=node_id]")[0], "v")
-    var svc_id = $.data(line.children("[col=svc_id]")[0], "v")
-    var dash_md5 = $.data(line.children("[col=dash_md5]")[0], "v")
-    var dash_created = $.data(line.children("[col=dash_created]")[0], "v")
-    var rowid = line.attr("cksum")
-    url = services_get_url() + "/init/dashboard/ajax_alert_events?node_id="+node_id+"&svc_id="+svc_id+"&dash_md5="+dash_md5+"&dash_created="+dash_created+"&rowid="+rowid
-    toggle_extra(url, null, this, 0)
+    var options = {
+      "node_id": $.data(line.children("[col=node_id]")[0], "v"),
+      "svc_id": $.data(line.children("[col=svc_id]")[0], "v"),
+      "dash_md5": $.data(line.children("[col=dash_md5]")[0], "v"),
+      "dash_created": $.data(line.children("[col=dash_created]")[0], "v")
+    }
+    var id = toggle_extraline(e)
+    alert_info(id, options)
   })
 }
 

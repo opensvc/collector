@@ -1,4 +1,7 @@
 {
+	"alert_info": {
+		"timeline": "Alert timeline"
+	},
 	"layout": {
 		"search": "Global search"
 	},
