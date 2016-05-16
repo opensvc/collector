@@ -108,7 +108,7 @@ def auth_uuid(fn):
             _log('node.auth',
                  'node authentication error: %(e)s',
                  dict(e=str(e)),
-                 node_id=auth_to_node_id(kwargs['auth']),
+                 node_id=auth_to_node_id((uuid, node)),
                  user="feed",
                  level="warning")
             raise
