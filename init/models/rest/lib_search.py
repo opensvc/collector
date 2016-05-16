@@ -90,7 +90,7 @@ def lib_search_service(pattern):
     t = datetime.datetime.now()
     o = db.services.svcname
     q = _where(None, 'services', pattern, 'svcname')
-    q |= _where(None, 'services', pattern, 'svc_id')
+    q |= _where(None, 'services', pattern.decode("utf8").encode("ascii", errors="ignore"), 'svc_id')
     q = q_filter(q, app_field=db.services.svc_app)
     q = apply_filters_id(q, db.services.svc_id, None)
     n = db(q).count()
@@ -149,7 +149,7 @@ def lib_search_node(pattern):
     t = datetime.datetime.now()
     o = db.nodes.nodename
     q = _where(None, 'nodes', pattern, 'nodename')
-    q |= _where(None, 'nodes', pattern, 'node_id')
+    q |= _where(None, 'nodes', pattern.decode("utf8").encode("ascii", errors="ignore"), 'node_id')
     q = q_filter(q, app_field=db.nodes.app)
     q = apply_filters_id(q, db.nodes.node_id, None)
     n = db(q).count()
