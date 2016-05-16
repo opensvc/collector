@@ -352,13 +352,13 @@ class viz(object):
         self.rs["nodes_services_resources_count"] = {}
         self.rs["nodes_services_resources"] = {}
         for row in rows:
-            t = (row.nodes.nodename, row.resmon.svc_id, row.resmon.res_type)
+            t = (row.resmon.node_id, row.resmon.svc_id, row.resmon.res_type)
             if t not in self.rs["nodes_services_resources"]:
                 self.rs["nodes_services_resources"][t] = [row]
             else:
                 self.rs["nodes_services_resources"][t] += [row]
 
-            t = (row.nodes.nodename, row.resmon.svc_id)
+            t = (row.resmon.node_id, row.resmon.svc_id)
             if t in self.rs["nodes_services_resources_count"]:
                 self.rs["nodes_services_resources_count"][t] += 1
             else:
@@ -569,6 +569,8 @@ class viz(object):
 
     def add_resources(self):
         for (svc_id, res_type), rows in self.rs['services_resources'].items():
+            if res_type is None:
+                continue
             svc = get_svc(svc_id)
             rid = "%s.%s" % (svc.svc_id, res_type)
             n = 0
@@ -661,15 +663,15 @@ class viz(object):
             self.add_visnode_node(visnode_id, "array", label=arrayid, mass=4)
 
     def add_nodes_services_resources(self):
-        for (nodename, svc_id, res_type), rows in self.rs["nodes_services_resources"].items():
-            nodename_id = self.get_visnode_id("node", nodename)
+        for (node_id, svc_id, res_type), rows in self.rs["nodes_services_resources"].items():
+            vnode_id = self.get_visnode_id("node", node_id)
             rid = "%s.%s" % (svc_id, res_type)
             res_type_id = self.get_visnode_id("resource", rid)
             n = 0
             for row in rows:
                 n += row._extra[db.resmon.id.count()]
             for row in rows:
-                self.add_edge(nodename_id, res_type_id,
+                self.add_edge(vnode_id, res_type_id,
                               color=self.status_color.get(row.resmon.res_status, "grey"),
                               label=n,
                              )
@@ -718,12 +720,12 @@ class viz(object):
                          )
 
     def add_nodes_services(self):
-        for (nodename, svc_id), row in self.rs["nodes_services"].items():
-            if "resources" in self.display and (nodename, svc_id) in self.rs["nodes_services_resources_count"]:
+        for (node_id, svc_id), row in self.rs["nodes_services"].items():
+            if "resources" in self.display and (node_id, svc_id) in self.rs["nodes_services_resources_count"]:
                 continue
-            nodename_id = self.get_visnode_id("node", nodename)
-            svcname_id = self.get_visnode_id("svc", svc_id)
-            self.add_edge(nodename_id, svcname_id,
+            vnode_id = self.get_visnode_id("node", node_id)
+            vsvc_id = self.get_visnode_id("svc", svc_id)
+            self.add_edge(vnode_id, vsvc_id,
                           #length=2,
                           color=self.status_color.get(row.svcmon.mon_availstatus, "grey"),
                           label=row.svcmon.mon_availstatus,

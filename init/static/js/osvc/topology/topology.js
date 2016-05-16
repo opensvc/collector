@@ -91,7 +91,7 @@ function topology(divid, options) {
 				},
 				"groups": {
 					"sync": {"shape": "icon", "icon": {"face": "FontAwesome", "code": "\uf0c5", "color": "seagreen", "size": 50}},
-					"app": {"shape": "icon", "icon": {"face": "FontAwesome", "code": "\uf135", "color": "deeppink", "size": 50}},
+					"app": {"shape": "icon", "icon": {"face": "FontAwesome", "code": "\uf135", "color": "seagreen", "size": 50}},
 					"container": {"shape": "icon", "icon": {"face": "FontAwesome", "code": "\uf135", "color": "seagreen", "size": 50}},
 					"container.docker": {"shape": "image", "image": "/init/static/svg/docker-seagreen.svg"},
 					"fs": {"shape": "icon", "icon": {"face": "FontAwesome", "code": "\uf07c", "color": "seagreen", "size": 50}},
