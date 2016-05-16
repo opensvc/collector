@@ -659,7 +659,7 @@ function table_init(opts) {
 			} else if ((typeof(t.colprops[c].force_filter) !== "undefined") && (t.colprops[c].force_filter != "")) {
 				data[fid] = t.colprops[c].force_filter
 			}
-			if (data[fid] && (t.colprops[c]._class.indexOf("datetime") >= 0)) {
+			if (data[fid] && t.colprops[c]._class && (t.colprops[c]._class.indexOf("datetime") >= 0)) {
 				data[fid] = t.convert_dates_in_filter(data[fid])
 			}
 		}
