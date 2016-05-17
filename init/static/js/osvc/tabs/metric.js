@@ -70,6 +70,33 @@ function metric_properties(divid, options) {
 		o.info_metric_col_value_index.html(data.metric_col_value_index)
 		o.info_metric_col_instance_index.html(data.metric_col_instance_index)
 
+		var am_data = [
+			{
+				"title": "action_menu.data_actions",
+				"class": "hd16",
+				"children": [
+					{
+						"selector": ["tab"],
+						"foldable": false,
+						"cols": [],
+						"children": [
+							{
+								"title": "action_menu.del",
+								"class": "del16",
+								"fn": "data_action_del_metrics",
+								"privileges": ["Manager", "ReportsManager"]
+							}
+						]
+					}
+				]
+			}
+		]
+		tab_tools({
+			"div": o.div.find("#tools"),
+			"data": {"id": data.id},
+			"am_data": am_data
+		})
+
 		tab_properties_generic_updater({
 			"div": o.div,
 			//"privileges": ["ReportsManager", "Manager"],

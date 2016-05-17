@@ -75,6 +75,40 @@ function dns_domain_properties(divid, options) {
 		o.info_notified_serial.html(data.notified_serial)
 		o.info_master.html(data.master)
 
+		var am_data = [
+			{
+				"title": "action_menu.data_actions",
+				"class": "hd16",
+				"children": [
+					{
+						"selector": ["tab"],
+						"foldable": false,
+						"cols": [],
+						"children": [
+							{
+								"title": "action_menu.del",
+								"class": "del16",
+								"fn": "data_action_del_dns_domains",
+								"privileges": ["Manager", "DnsManager"]
+							},
+							{
+								"title": "action_menu.sync_dns_domains",
+								"class": "net16",
+								"fn": "data_action_sync_dns_domains",
+								"privileges": ["Manager", "DnsManager"]
+							}
+
+						]
+					}
+				]
+			}
+		]
+		tab_tools({
+			"div": o.div.find("#tools"),
+			"data": {"id": data.id},
+			"am_data": am_data
+		})
+
 		tab_properties_generic_updater({
 			"div": o.div,
 			"privileges": ["DnsManager", "Manager"],

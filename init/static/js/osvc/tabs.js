@@ -327,7 +327,6 @@ tab_properties_generic_autocomplete_user_app = function(options) {
 }
 
 tab_properties_generic_boolean = function(options) {
-console.log(options.div.text())
 	if (options.div.text() == "true") {
 		options.div.attr('class', 'fa toggle-on');
 	} else {
@@ -596,4 +595,13 @@ tab_properties_generic_list = function(options) {
 	options.e_list[0].generic_list.refresh = refresh
 }
 
+function tab_tools(options) {
+	var o = {}
+	o.menu = options.div
+	o.data = options.data
+	o.action_menu_data = options.am_data
+	o.open_event = {}
+	format_action_menu(o, o)
+	return o
+}
 

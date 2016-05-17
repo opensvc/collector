@@ -82,6 +82,33 @@ function form_properties(divid, options) {
 		o.info_form_author.html(data.form_author)
 		o.info_form_created.html(osvc_date_from_collector(data.form_created))
 
+		var am_data = [
+			{
+				"title": "action_menu.data_actions",
+				"class": "hd16",
+				"children": [
+					{
+						"selector": ["tab"],
+						"foldable": false,
+						"cols": [],
+						"children": [
+							{
+								"title": "action_menu.del",
+								"class": "del16",
+								"fn": "data_action_del_form",
+								"privileges": ["Manager", "FormsManager"]
+							}
+						]
+					}
+				]
+			}
+		]
+		tab_tools({
+			"div": o.div.find("#tools"),
+			"data": {"id": data.id},
+			"am_data": am_data
+		})
+
 		tab_properties_generic_updater({
 			"div": o.div,
 			"privileges": ["FormsManager", "Manager"],

@@ -83,6 +83,33 @@ function fset_properties(divid, options) {
 		o.info_fset_author.html(data.fset_author)
 		o.info_fset_updated.html(osvc_date_from_collector(data.fset_updated))
 
+		var am_data = [
+			{
+				"title": "action_menu.data_actions",
+				"class": "hd16",
+				"children": [
+					{
+						"selector": ["tab"],
+						"foldable": false,
+						"cols": [],
+						"children": [
+							{
+								"title": "action_menu.del",
+								"class": "del16",
+								"fn": "data_action_del_filtersets",
+								"privileges": ["Manager", "CompManager"]
+							}
+						]
+					}
+				]
+			}
+		]
+		tab_tools({
+			"div": o.div.find("#tools"),
+			"data": {"fset_id": data.id},
+			"am_data": am_data
+		})
+
 		o.load_usage()
 
 		tab_properties_generic_updater({
@@ -649,7 +676,7 @@ function fset_designer(divid, options) {
 
 	o.render_new_filter = function(div, data) {
 		if (!data) {
-			data = {filter: {}}
+			var data = {filter: {}}
 		}
 		div.empty()
 		var handle = $("<span class='fa fa-bars clickable'></span>")
@@ -794,7 +821,7 @@ function fset_designer(divid, options) {
 
 	o.render_new_filterset = function(div, data) {
 		if (!data) {
-			data = {}
+			var data = {}
 		}
 		div.empty()
 		var handle = $("<span class='fa fa-bars clickable'></span>")

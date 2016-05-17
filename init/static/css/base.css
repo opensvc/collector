@@ -1,5 +1,16 @@
 @charset "UTF-8";
 
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+::-webkit-scrollbar-thumb {
+    background-color: rgba(160,160,160,0.7);
+}
+::-webkit-scrollbar-track {
+    background-color: transparent;
+}
+
 .ui-datepicker {
 	z-index: 2000 !important;
 }
@@ -1379,6 +1390,9 @@ a.xinfo_shown span {
 }
 
 .action_menu {
+}
+
+.action_menu_popup {
 	min-width: 40em;
 	max-width: 90%;
 	width: auto !important;
@@ -1393,7 +1407,7 @@ a.xinfo_shown span {
 	padding: 0.2em 1.2em;
 	margin: 0.4em 0.2em;
 }
-.action_menu li.action_menu_leaf,.action_menu li.action_menu_folder,.action_menu > ul > li {
+.action_menu li.action_menu_leaf,.action_menu li.action_menu_folder,.action_menu > ul > li,.action_menu > ul > li > ul {
 	list-style: none;
 	padding: 0.3em 0;
 }

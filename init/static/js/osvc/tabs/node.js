@@ -239,6 +239,48 @@ function node_properties(divid, options)
 				if (!o.options.responsible) {
 					return
 				}
+				var am_data = [
+					{
+						"title": "action_menu.data_actions",
+						"class": "hd16",
+						"children": [
+							{
+								"selector": ["tab"],
+								"foldable": false,
+								"cols": [],
+								"children": [
+									{
+										"title": "action_menu.del",
+										"class": "del16",
+										"fn": "data_action_delete_nodes",
+										"privileges": ["Manager", "NodeManager"]
+									}
+								]
+							}
+						]
+					},
+					{
+						"title": "action_menu.agent_actions",
+						"class": "action16",
+						"children": [
+							{
+								"title": "action_menu.toggle_display",
+								"class": "fa-eye",
+								"selector": ["tab"],
+								"foldable": true,
+								"cols": [],
+								"children": am_node_agent_leafs
+							}
+						]
+					}
+
+				]
+				tab_tools({
+					"div": o.div.find("#tools"),
+					"data": {"node_id": data.node_id},
+					"am_data": am_data
+				})
+
 				o.responsible_init()
 			})
 		}

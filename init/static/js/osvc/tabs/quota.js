@@ -91,6 +91,33 @@ function quota_properties(divid, options) {
 			cell_decorator_size_mb(o.info_dg_used)
 			cell_decorator_size_mb(o.info_dg_reserved)
 
+			var am_data = [
+				{
+					"title": "action_menu.data_actions",
+					"class": "hd16",
+					"children": [
+						{
+							"selector": ["tab"],
+							"foldable": false,
+							"cols": [],
+							"children": [
+								{
+									"title": "action_menu.del",
+									"class": "del16",
+									"fn": "data_action_del_quotas",
+									"privileges": ["Manager", "StorageManager"]
+								}
+							]
+						}
+					]
+				}
+			]
+			tab_tools({
+				"div": o.div.find("#tools"),
+				"data": {"id": data.id},
+				"am_data": am_data
+			})
+
 			services_osvcgetrest("R_ARRAY", [jd.data[0].array_id], "", function(jd) {
 				o.info_array_name.html(jd.data[0].array_name)
 				o.info_array_model.html(jd.data[0].array_model)

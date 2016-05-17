@@ -60,6 +60,7 @@
 		"import": "Import"
 	},
 	"action_menu": {
+		"toggle_display": "Déplier / Replier",
 		"metric": "Metrique",
 		"chart": "Courbe",
 		"report": "Rapport",
@@ -1708,6 +1709,7 @@
 		"feed_task_functions": "Fonction des tâches insérées"
 	},
 	"tabs": {
+		"tools": "Outils",
 		"click_to_reload": "Cliquer la tab active force le rafraîchissement de son contenu"
 	}
 }

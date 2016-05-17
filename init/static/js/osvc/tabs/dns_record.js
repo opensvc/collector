@@ -78,6 +78,33 @@ function dns_record_properties(divid, options) {
 		o.info_ttl.html(data.ttl)
 		o.info_change_date.html(data.change_date)
 
+		var am_data = [
+			{
+				"title": "action_menu.data_actions",
+				"class": "hd16",
+				"children": [
+					{
+						"selector": ["tab"],
+						"foldable": false,
+						"cols": [],
+						"children": [
+							{
+								"title": "action_menu.del",
+								"class": "del16",
+								"fn": "data_action_del_dns_records",
+								"privileges": ["Manager", "DnsManager"]
+							}
+						]
+					}
+				]
+			}
+		]
+		tab_tools({
+			"div": o.div.find("#tools"),
+			"data": {"id": data.id},
+			"am_data": am_data
+		})
+
 		services_osvcgetrest("R_DNS_DOMAIN", [data.domain_id], "", function(jd) {
 			o.info_domain.html(jd.data[0].name)
 		})

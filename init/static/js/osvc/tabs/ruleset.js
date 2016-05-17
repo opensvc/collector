@@ -287,6 +287,33 @@ function ruleset_properties(divid, options) {
 		o.info_ruleset_type.html(data.ruleset_type)
 		o.info_ruleset_public.html(data.ruleset_public)
 
+		var am_data = [
+			{
+				"title": "action_menu.data_actions",
+				"class": "hd16",
+				"children": [
+					{
+						"selector": ["tab"],
+						"foldable": false,
+						"cols": [],
+						"children": [
+							{
+								"title": "action_menu.del",
+								"class": "del16",
+								"fn": "data_action_del_rulesets",
+								"privileges": ["Manager", "CompManager"]
+							}
+						]
+					}
+				]
+			}
+		]
+		tab_tools({
+			"div": o.div.find("#tools"),
+			"data": {"ruleset_id": data.id},
+			"am_data": am_data
+		})
+
 		tab_properties_generic_updater({
 			"div": o.div,
 			"privileges": ["FormsManager", "Manager"],

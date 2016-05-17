@@ -1,6 +1,158 @@
 //
 // install agent action menu entries definitions in the table object
 //
+am_node_agent_leafs = [
+	{
+		'title': 'Update node information',
+		'class': 'node16',
+		"privileges": ["Manager", "NodeManager", "NodeExec"],
+		"min": 1,
+		'action': 'pushasset'
+	},
+	{
+		'title': 'Update disks information',
+		'class': 'hd16',
+		"privileges": ["Manager", "NodeManager", "NodeExec"],
+		"min": 1,
+		'action': 'pushdisks'
+	},
+	{
+		'title': 'Update app information',
+		'class': 'svc',
+		"privileges": ["Manager", "NodeManager", "NodeExec"],
+		"min": 1,
+		'action': 'push_resinfo'
+	},
+	{
+		'title': 'Update services information',
+		'class': 'svc',
+		"privileges": ["Manager", "NodeManager", "NodeExec"],
+		"min": 1,
+		'action': 'pushservices'
+	},
+	{
+		'title': 'Update installed packages information',
+		'class': 'pkg16',
+		"privileges": ["Manager", "NodeManager", "NodeExec"],
+		"min": 1,
+		'action': 'pushpkg'
+	},
+	{
+		'title': 'Update installed patches information',
+		'class': 'pkg16',
+		"privileges": ["Manager", "NodeManager", "NodeExec"],
+		"min": 1,
+		'action': 'pushpatch'
+	},
+	{
+		'title': 'Update stats',
+		'class': 'spark16',
+		"privileges": ["Manager", "NodeManager", "NodeExec"],
+		"min": 1,
+		'action': 'pushstats'
+	},
+	{
+		'title': 'Update check values',
+		'class': 'ok',
+		"privileges": ["Manager", "NodeManager", "NodeExec", "CheckExec"],
+		"min": 1,
+		'action': 'checks'
+	},
+	{
+		'title': 'Update sysreport',
+		'class': 'log16',
+		"privileges": ["Manager", "NodeManager", "NodeExec"],
+		"min": 1,
+		'action': 'sysreport'
+	},
+	{
+		'title': 'Update compliance modules',
+		'class': 'comp16',
+		"privileges": ["Manager", "NodeManager", "NodeExec"],
+		"min": 1,
+		'action': 'updatecomp'
+	},
+	{
+		'title': 'Update opensvc agent',
+		'class': 'pkg16',
+		"privileges": ["Manager", "NodeManager", "NodeExec"],
+		"min": 1,
+		'action': 'updatepkg'
+	},
+	{
+		'title': 'Rotate root password',
+		'class': 'key',
+		"privileges": ["Manager", "NodeManager", "NodeExec"],
+		"min": 1,
+		'action': 'rotate root pw'
+	},
+	{
+		'title': 'Rescan scsi hosts',
+		'class': 'hd16',
+		"privileges": ["Manager", "NodeManager", "NodeExec"],
+		"min": 1,
+		'action': 'scanscsi'
+	},
+	{
+		'title': 'Reboot',
+		'class': 'action_restart_16',
+		"privileges": ["Manager", "NodeManager", "NodeExec"],
+		"min": 1,
+		'action': 'reboot'
+	},
+	{
+		'title': 'Reboot schedule',
+		'class': 'action_restart_16',
+		"privileges": ["Manager", "NodeManager", "NodeExec"],
+		"min": 1,
+		'action': 'schedule_reboot'
+	},
+	{
+		'title': 'Reboot unschedule',
+		'class': 'action_restart_16',
+		"privileges": ["Manager", "NodeManager", "NodeExec"],
+		"min": 1,
+		'action': 'unschedule_reboot'
+	},
+	{
+		'title': 'Shutdown',
+		'class': 'action_stop_16',
+		"privileges": ["Manager", "NodeManager", "NodeExec"],
+		"min": 1,
+		'action': 'shutdown'
+	},
+	{
+		'title': 'Wake On LAN',
+		'class': 'action_start_16',
+		"privileges": ["Manager", "NodeManager", "NodeExec"],
+		"min": 1,
+		'action': 'wol'
+	},
+	{
+		'title': 'Compliance check',
+		'class': 'comp16',
+		"privileges": ["Manager", "NodeManager", "NodeExec"],
+		"min": 1,
+		'action': 'compliance_check',
+		'params': ["module", "moduleset"]
+	},
+	{
+		'title': 'Compliance fix',
+		'class': 'comp16',
+		"privileges": ["Manager", "NodeManager", "NodeExec"],
+		"min": 1,
+		'action': 'compliance_fix',
+		'params': ["module", "moduleset"]
+	},
+	{
+		'title': 'action_menu.provisioning',
+		'class': 'prov',
+		"privileges": ["Manager", "NodeManager", "NodeExec"],
+		"min": 1,
+		'fn': 'agent_action_provisioning'
+	}
+]
+
 function table_action_menu_init_data(t) {
 	t.action_menu_req_max = 1000
 	t.column_selectors = {
@@ -734,6 +886,7 @@ function table_action_menu_init_data(t) {
 							"title": "action_menu.delete",
 							"class": "del16",
 							"fn": "data_action_delete_networks",
+							"privileges": ["Manager", "NetworkManager"],
 							"min": 1
 						}
 					]
@@ -1327,157 +1480,7 @@ function table_action_menu_init_data(t) {
 					"class": "node16",
 					"cols": ["node_id"],
 					"condition": "node_id",
-					"children": [
-						{
-							'title': 'Update node information',
-							'class': 'node16',
-							"privileges": ["Manager", "NodeManager", "NodeExec"],
-							"min": 1,
-							'action': 'pushasset'
-						},
-						{
-							'title': 'Update disks information',
-							'class': 'hd16',
-							"privileges": ["Manager", "NodeManager", "NodeExec"],
-							"min": 1,
-							'action': 'pushdisks'
-						},
-						{
-							'title': 'Update app information',
-							'class': 'svc',
-							"privileges": ["Manager", "NodeManager", "NodeExec"],
-							"min": 1,
-							'action': 'push_resinfo'
-						},
-						{
-							'title': 'Update services information',
-							'class': 'svc',
-							"privileges": ["Manager", "NodeManager", "NodeExec"],
-							"min": 1,
-							'action': 'pushservices'
-						},
-						{
-							'title': 'Update installed packages information',
-							'class': 'pkg16',
-							"privileges": ["Manager", "NodeManager", "NodeExec"],
-							"min": 1,
-							'action': 'pushpkg'
-						},
-						{
-							'title': 'Update installed patches information',
-							'class': 'pkg16',
-							"privileges": ["Manager", "NodeManager", "NodeExec"],
-							"min": 1,
-							'action': 'pushpatch'
-						},
-						{
-							'title': 'Update stats',
-							'class': 'spark16',
-							"privileges": ["Manager", "NodeManager", "NodeExec"],
-							"min": 1,
-							'action': 'pushstats'
-						},
-						{
-							'title': 'Update check values',
-							'class': 'ok',
-							"privileges": ["Manager", "NodeManager", "NodeExec", "CheckExec"],
-							"min": 1,
-							'action': 'checks'
-						},
-						{
-							'title': 'Update sysreport',
-							'class': 'log16',
-							"privileges": ["Manager", "NodeManager", "NodeExec"],
-							"min": 1,
-							'action': 'sysreport'
-						},
-						{
-							'title': 'Update compliance modules',
-							'class': 'comp16',
-							"privileges": ["Manager", "NodeManager", "NodeExec"],
-							"min": 1,
-							'action': 'updatecomp'
-						},
-						{
-							'title': 'Update opensvc agent',
-							'class': 'pkg16',
-							"privileges": ["Manager", "NodeManager", "NodeExec"],
-							"min": 1,
-							'action': 'updatepkg'
-						},
-						{
-							'title': 'Rotate root password',
-							'class': 'key',
-							"privileges": ["Manager", "NodeManager", "NodeExec"],
-							"min": 1,
-							'action': 'rotate root pw'
-						},
-						{
-							'title': 'Rescan scsi hosts',
-							'class': 'hd16',
-							"privileges": ["Manager", "NodeManager", "NodeExec"],
-							"min": 1,
-							'action': 'scanscsi'
-						},
-						{
-							'title': 'Reboot',
-							'class': 'action_restart_16',
-							"privileges": ["Manager", "NodeManager", "NodeExec"],
-							"min": 1,
-							'action': 'reboot'
-						},
-						{
-							'title': 'Reboot schedule',
-							'class': 'action_restart_16',
-							"privileges": ["Manager", "NodeManager", "NodeExec"],
-							"min": 1,
-							'action': 'schedule_reboot'
-						},
-						{
-							'title': 'Reboot unschedule',
-							'class': 'action_restart_16',
-							"privileges": ["Manager", "NodeManager", "NodeExec"],
-							"min": 1,
-							'action': 'unschedule_reboot'
-						},
-						{
-							'title': 'Shutdown',
-							'class': 'action_stop_16',
-							"privileges": ["Manager", "NodeManager", "NodeExec"],
-							"min": 1,
-							'action': 'shutdown'
-						},
-						{
-							'title': 'Wake On LAN',
-							'class': 'action_start_16',
-							"privileges": ["Manager", "NodeManager", "NodeExec"],
-							"min": 1,
-							'action': 'wol'
-						},
-						{
-							'title': 'Compliance check',
-							'class': 'comp16',
-							"privileges": ["Manager", "NodeManager", "NodeExec"],
-							"min": 1,
-							'action': 'compliance_check',
-							'params': ["module", "moduleset"]
-						},
-						{
-							'title': 'Compliance fix',
-							'class': 'comp16',
-							"privileges": ["Manager", "NodeManager", "NodeExec"],
-							"min": 1,
-							'action': 'compliance_fix',
-							'params': ["module", "moduleset"]
-						},
-						{
-							'title': 'action_menu.provisioning',
-							'class': 'prov',
-							"privileges": ["Manager", "NodeManager", "NodeExec"],
-							"min": 1,
-							'fn': 'agent_action_provisioning'
-						}
-					]
+					"children": am_node_agent_leafs
 				},
 				{
 					"selector": ["clicked", "checked", "all"],
@@ -1679,7 +1682,7 @@ function table_bind_action_menu(t) {
 				// left-click => close the action menu, the menu and the filter box
 				$("#fsr"+t.id).hide()
 				$(".menu").hide("fold")
-				$(".action_menu").hide()
+				$(".action_menu_popup").hide()
 			}
 		})
 	})
@@ -1701,7 +1704,7 @@ function table_action_menu(t, e){
 	t.action_menu_data_cache = {}
 
 	// create and position the popup at the mouse click
-	var am = $("<div id='"+o.menu_id+"' class='white_float action_menu stackable'></div>")
+	var am = $("<div id='"+o.menu_id+"' class='white_float action_menu action_menu_popup stackable'></div>")
 	var pos = get_pos(e)
 	t.div.parent().append(am)
 	o.menu = $("#"+o.menu_id)
@@ -1710,14 +1713,20 @@ function table_action_menu(t, e){
 	var header = $("<h2 class='icon fa-bars movable'></h2>")
 	header.text(i18n.t("table.action_menu") + " : " + i18n.t("table.name."+t.options.name))
 	o.menu.append(header)
-	am.draggable({
+	o.menu.draggable({
 		"handle": ".fa-bars"
 	})
+	o.open_event = e
+	
+	format_action_menu(t, o)
+	return o
+}
 
+function format_action_menu(t, o){
 	// format the data as menu
 	var ul = $("<ul></ul>")
 	for (var i=0; i<t.action_menu_data.length; i++) {
-		var li = table_action_menu_format_section(t, e, t.action_menu_data[i])
+		var li = table_action_menu_format_section(t, o.open_event, t.action_menu_data[i])
 		if (li.html().length == 0) {
 			continue
 		}
@@ -1726,13 +1735,13 @@ function table_action_menu(t, e){
 
 	// empty menu banner
 	if (ul.html().length == 0) {
-		am.append("<span class='alert16 icon'>"+i18n.t("action_menu.no_action")+"</span>")
+		o.menu.append("<span class='alert16 icon'>"+i18n.t("action_menu.no_action")+"</span>")
 		return
 	}
-	am.append(ul)
+	o.menu.append(ul)
 
 	// display actions only for the clicked section
-	var folders = $("#"+o.menu_id+" .action_menu_folder")
+	var folders = o.menu.find(".action_menu_folder")
 	folders.addClass("icon_fixed_width right16")
 	folders.children("ul,.action_menu_selector").hide()
 	folders.bind("click", function(e){
@@ -1781,8 +1790,8 @@ function table_action_menu_format_section(t, e, section) {
 	if (ul.children().length == 0) {
 		return content
 	}
-	var title = $("<h3 class='line'><span></span></h3>")
-	title.children().text(i18n.t(section.title)).addClass("icon "+section.class)
+	var title = $("<h3></h3>")
+	title.text(i18n.t(section.title)).addClass("icon "+section.class)
 	content.append(title)
 	content.append(ul)
 
@@ -1974,6 +1983,8 @@ function table_action_menu_get_cols_data(t, e, scope, selector) {
 		return table_action_menu_get_cols_data_checked(t, e, scope, selector)
 	} else if (scope == "all") {
 		return table_action_menu_get_cols_data_all(t, e, scope, selector)
+	} else if (scope == "tab") {
+		return [t.data]
 	}
 	return []
 }
@@ -2050,6 +2061,10 @@ function table_action_menu_format_selector(t, e, selector) {
 		return content
 	}
 	var e_selector = $("<div class='action_menu_selector'></div>")
+
+	if (!t.action_menu_data_cache) {
+		t.action_menu_data_cache = {}
+	}
 
 	for (var i=0; i<selector.selector.length; i++) {
 		var scope = selector.selector[i]
@@ -2165,6 +2180,9 @@ function table_action_menu_format_selector(t, e, selector) {
 		}
 	}
 
+	if ((selector.selector.length == 1) && (selector.selector[0] == "tab")) {
+		e_selector.remove()
+	}
 	return content
 }
 
@@ -3134,6 +3152,20 @@ function data_action_user_unlock_filterset(t, e) {
 function data_action_del_user(t, e) {
 	data_action_generic_delete(t, e, {
 		"request_service": "R_USERS",
+		"request_data_entry": function(data) {
+			return {
+				'id': data['id']
+			}
+		}
+	})
+}
+
+//
+// data action: delete group
+//
+function data_action_del_group(t, e) {
+	data_action_generic_delete(t, e, {
+		"request_service": "R_GROUPS",
 		"request_data_entry": function(data) {
 			return {
 				'id': data['id']

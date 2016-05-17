@@ -52,6 +52,7 @@ function user_properties(divid, options) {
 	o.options = options
 
 	o.init = function() {
+		o.info_id = o.div.find("#id")
 		o.info_username = o.div.find("#username")
 		o.info_first_name = o.div.find("#first_name")
 		o.info_last_name = o.div.find("#last_name")
@@ -78,6 +79,7 @@ function user_properties(divid, options) {
 		o.info_visible_apps_title = o.div.find("#visible_apps_title")
 		o.info_resp_apps = o.div.find("#resp_apps")
 		o.info_visible_apps = o.div.find("#visible_apps")
+		o.info_tools = o.div.find("#tools")
 
 		o.load_user()
 		o.load_fset()
@@ -155,6 +157,7 @@ function user_properties(divid, options) {
 	}
 
 	o._load_user = function(data) {
+		o.info_id.html(data.id)
 		o.info_username.html(data.username)
 		o.info_first_name.html(data.first_name)
 		o.info_last_name.html(data.last_name)
@@ -167,13 +170,36 @@ function user_properties(divid, options) {
 		o.info_im_log_level.html(data.im_log_level)
 		o.info_quota_app.html(data.quota_app)
 		o.info_quota_org_group.html(data.quota_org_group)
+		o.info_lfilter.text(data.lock_filter)
 
-		// lock filter
-		if (data.lock_filter == true) {
-			o.info_lfilter.attr('class', 'fa toggle-on')
-		} else {
-			o.info_lfilter.attr('class','fa toggle-off')
-		}
+		var am_data = [
+			{
+				"title": "action_menu.data_actions",
+				"class": "hd16",
+				"children": [
+					{
+						"selector": ["tab"],
+						"foldable": false,
+						"cols": [],
+						"children": [
+							{
+								"title": "action_menu.del",
+								"class": "del16",
+								"fn": "data_action_del_user",
+								"privileges": ["Manager", "UserManager"]
+							}
+						]
+					}
+				]
+			}
+
+		]
+		tab_tools({
+			"div": o.info_tools,
+			"data": {"id": data.id},
+			"am_data": am_data
+		})
+
 		if (data.email_notifications == true) {
 			o.info_email_notifications.attr('class', 'fa toggle-on')
 		} else {

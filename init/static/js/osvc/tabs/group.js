@@ -81,6 +81,33 @@ function group_properties(divid, options) {
 			o.info_description.html(data.description)
 			o.info_id.html(data.id)
 
+			var am_data = [
+				{
+					"title": "action_menu.data_actions",
+					"class": "hd16",
+					"children": [
+						{
+							"selector": ["tab"],
+							"foldable": false,
+							"cols": [],
+							"children": [
+								{
+									"title": "action_menu.del",
+									"class": "del16",
+									"fn": "data_action_del_group",
+									"privileges": ["Manager", "GroupManager"]
+								}
+							]
+						}
+					]
+				}
+			]
+			tab_tools({
+				"div": o.div.find("#tools"),
+				"data": {"id": data.id},
+				"am_data": am_data
+			})
+
 			tab_properties_generic_boolean({
 				"div": o.info_privilege,
 				"privileges": ["Manager"],

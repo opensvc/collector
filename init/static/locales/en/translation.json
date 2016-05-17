@@ -60,6 +60,7 @@
 		"import": "Import"
 	},
 	"action_menu": {
+		"toggle_display": "Fold / Unfold",
 		"metric": "Metric",
 		"chart": "Chart",
 		"report": "Report",
@@ -1755,6 +1756,7 @@
 		"feed_task_functions": "Feed tasks functions"
 	},
 	"tabs": {
+		"tools": "Tools",
 		"click_to_reload": "Clicking the active tab forces a reload of its content"
 	}
 }
