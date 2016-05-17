@@ -47,7 +47,7 @@ class viz(object):
         if cn == "france":
             return "fr"
         if cn == "united kingdom":
-            return "uk"
+            return "gb"
         if cn == "canada":
             return "ca"
         if cn == "luxembourg":
