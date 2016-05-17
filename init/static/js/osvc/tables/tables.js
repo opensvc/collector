@@ -688,7 +688,7 @@ function table_comp_status_node(divid, node_id) {
 		"caller": "table_comp_status_node",
 		"request_vars": request_vars,
 		"volatile_filters": true,
-		"force_cols": ['id', 'os_name', 'run_log'],
+		"force_cols": ['id', 'node_id', 'svc_id', 'os_name', 'run_log'],
 		"visible_columns": ['run_date', 'svcname', 'run_module', 'run_status']
 	})
 	t.on_change = function() {
@@ -708,7 +708,7 @@ function table_comp_status_svc(divid, svc_id) {
 		"caller": "table_comp_status_svc",
 		"request_vars": request_vars,
 		"volatile_filters": true,
-		"force_cols": ['id', 'node_id', 'os_name', 'run_log'],
+		"force_cols": ['id', 'node_id', 'svc_id', 'os_name', 'run_log'],
 		"visible_columns": ['run_date', 'nodename', 'run_module', 'run_status']
 	})
 	t.on_change = function() {
