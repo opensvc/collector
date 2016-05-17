@@ -89,15 +89,17 @@ def enqueue_svc_comp_action(node, svc, action, mode, mod):
     vals = [node.node_id, svc, action_type, command, str(auth.user_id), connect_to]
     generic_insert('action_queue', vars, vals)
 
-def fmt_svc_action(node, svc, action, action_type, rid=None, connect_to=None):
+def fmt_svc_action(node, svc_id, action, action_type, rid=None, connect_to=None):
     action = action.replace('"', '\"').replace("'", "\'")
     if connect_to is None:
         connect_to = get_reachable_name(node)
+    q = db.services.svc_id == svc_id
+    svc = db(q).select().first()
     if action_type == "pull":
         cmd = []
     else:
         cmd = get_ssh_cmd(node) + ['opensvc@'+connect_to, '--'] + remote_cmd_prepend
-        cmd += ['sudo', '/opt/opensvc/bin/svcmgr', '--service', svc]
+        cmd += ['sudo', '/opt/opensvc/bin/svcmgr', '--service', svc.svcname]
     cmd += [action]
     if rid is not None:
         cmd += ["--rid", rid]
@@ -125,14 +127,16 @@ def fmt_node_action(node, action, action_type, connect_to=None):
     cmd += [action]
     return ' '.join(cmd)
 
-def fmt_svc_comp_action(node, service, action, mode, mod, action_type, connect_to=None):
+def fmt_svc_comp_action(node, svc_id, action, mode, mod, action_type, connect_to=None):
     if connect_to is None:
         connect_to = get_reachable_name(node)
+    q = db.services.svc_id == svc_id
+    svc = db(q).select().first()
     if action_type == "pull":
         cmd = []
     else:
         cmd = get_ssh_cmd(node) + ['opensvc@'+connect_to, '--'] + remote_cmd_prepend
-        cmd += ['sudo', '/opt/opensvc/bin/svcmgr', '-s', service]
+        cmd += ['sudo', '/opt/opensvc/bin/svcmgr', '--service', svc.svcname]
     cmd += ['compliance', action, '--'+mode, mod]
     return ' '.join(cmd)
 
