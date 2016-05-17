@@ -344,6 +344,33 @@ function service_properties(divid, options)
 			o.div.find("#svc_created").text(osvc_date_from_collector(data.svc_created))
 			o.div.find("#updated").text(osvc_date_from_collector(data.updated))
 
+			// tools
+			var am_data = [
+				{
+					"title": "action_menu.data_actions",
+					"class": "hd16",
+					"children": [
+						{
+							"selector": ["tab"],
+							"foldable": false,
+							"cols": [],
+							"children": [
+								{
+									"title": "action_menu.del",
+									"class": "del16",
+									"fn": "data_action_delete_svcs"
+								}
+							]
+						}
+					]
+				}
+			]
+			tab_tools({
+				"div": o.div.find("#tools"),
+				"data": {"svc_id": data.svc_id},
+				"am_data": am_data
+			})
+
 			// status
 			o.decorator_status(o.div.find("#svc_status"), data.svc_status_updated)
 			o.decorator_status(o.div.find("#svc_availstatus"), data.svc_status_updated)
