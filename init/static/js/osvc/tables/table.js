@@ -374,10 +374,10 @@ function table_init(opts) {
 	// table horizontal scroll
 	//
 	t.scroll_enable = function() {
-		t.div.children(".scroll_left").click(function(){
+		t.scroll_left.click(function(){
 			t.e_table.parent().animate({'scrollLeft': '-='+$(window).width()}, 500, t.scroll)
 		})
-		t.div.children(".scroll_right").click(function(){
+		t.scroll_right.click(function(){
 			t.e_table.parent().animate({'scrollLeft': '+='+$(window).width()}, 500, t.scroll)
 		})
 		t.e_table.parent().bind("scroll", function(){
@@ -395,25 +395,25 @@ function table_init(opts) {
 	t.scroll = function() {
 		t.scroll_disable_dom()
 		sticky_relocate(t.e_header, t.e_sticky_anchor)
-		t.set_scrollbars_position()
 		var to_p = t.e_table.parent()
 		var ww = to_p.width()
 		var tw = t.e_table.width()
 		var off = to_p.scrollLeft()
 		if (ww >= tw) {
-			t.div.children(".scroll_left,.scroll_right").hide()
+			t.scroll_left.hide()
+			t.scroll_right.hide()
 			t.scroll_enable_dom()
 			return
 		}
 		if (off > 0) {
-			t.div.children(".scroll_left").show()
+			t.scroll_left.show()
 		} else {
-			t.div.children(".scroll_left").hide()
+			t.scroll_left.hide()
 		}
 		if (off+ww+1 < tw) {
-			t.div.children(".scroll_right").show()
+			t.scroll_right.show()
 		} else {
-			t.div.children(".scroll_right").hide()
+			t.scroll_right.hide()
 		}
 		t.scroll_enable_dom()
 	}
@@ -424,16 +424,6 @@ function table_init(opts) {
 
 	t.scroll_disable_dom = function() {
 		t.e_table.unbind("DOMNodeInserted DOMNodeRemoved", t.scroll)
-	}
-
-	t.set_scrollbars_position = function() {
-		var e = t.div.children(".scroll_left,.scroll_right")
-		e.css({
-			"height": t.e_table.height(),
-		})
-		e.offset({
-			"top": t.e_table.offset().top
-		})
 	}
 
 	t.add_overlay = function() {
@@ -476,11 +466,10 @@ function table_init(opts) {
 	}
 
 	t.add_scrollers = function() {
-		var s = ""
-		s = "<div id='table_"+t.id+"_left' class='scroll_left'>&nbsp</div>"
-		$("#"+t.id).prepend(s)
-		s = "<div id='table_"+t.id+"_right' class='scroll_right'>&nbsp</div>"
-		$("#"+t.id).append(s)
+		t.scroll_left = $("<div id='table_"+t.id+"_left' class='scroll_left'>&nbsp</div>")
+		$("#table_"+t.id).prepend(t.scroll_left)
+		t.scroll_right = $("<div id='table_"+t.id+"_right' class='scroll_right'>&nbsp</div>")
+		$("#table_"+t.id).append(t.scroll_right)
 	}
 
 	//
@@ -583,15 +572,17 @@ function table_init(opts) {
 		var container = $("#"+t.options.divid)
 		var d = $("<div class='tableo'></div>")
 		var toolbar = $("<div class='theader toolbar' name='toolbar'></div>")
+		var table_scroll_zone = $("<div class='table_scroll_zone'></div>")
 		var table_div = $("<div></div>")
 		var table = $("<table></table>")
 		d.attr("id", t.id)
 		t.div = d
 		t.page = t.options.pager.page
 		table.attr("id", "table_"+t.id)
+		table_scroll_zone.append(table_div)
 		table_div.append(table)
 		d.append(toolbar)
-		d.append(table_div)
+		d.append(table_scroll_zone)
 		container.empty().append(d)
 	}
 
@@ -1309,7 +1300,6 @@ function table_init(opts) {
 		t.hide_cells()
 		t.unset_refresh_spin()
 		tbody.find("tr.tl").children("td.tohighlight").removeClass("tohighlight").effect("highlight", 1000)
-		t.set_scrollbars_position()
 		t.scroll_enable_dom()
 		t.scroll()
 
@@ -1435,7 +1425,6 @@ function table_init(opts) {
 				})
 
 				t.unset_refresh_spin()
-				t.set_scrollbars_position()
 				t.scroll_enable_dom()
 				t.scroll()
 

@@ -286,6 +286,7 @@
 'Assigned to me': 'Assignés à moi',
 'Assigned to my team': 'Assignées à mon équipe',
 'Async commands scheduled. Waiting results.': 'Commandes asynchrones planifiées. En attente des résultats.',
+'At least two nodes should be selected': 'At least two nodes should be selected',
 'Attach': 'Attacher',
 'attach %(gtype)s group %(role)s to moduleset %(modset_name)s': 'attach %(gtype)s group %(role)s to moduleset %(modset_name)s',
 'attach %(gtype)s group %(role)s to ruleset %(rset_name)s publications': 'attach %(gtype)s group %(role)s to ruleset %(rset_name)s publications',

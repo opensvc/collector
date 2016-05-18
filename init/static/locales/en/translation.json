@@ -294,6 +294,7 @@
 			"nodes": "Nodes",
 			"nodesan": "Nodes SAN",
 			"obsolescence": "Obsolescence settings",
+			"packages": "Packages",
 			"patches": "Patches",
 			"quota": "Disks quotas",
 			"replication": "Collector replication",

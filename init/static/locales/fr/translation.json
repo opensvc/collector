@@ -294,6 +294,7 @@
 			"nodes": "Noeuds",
 			"nodesan": "SAN des noeuds",
 			"obsolescence": "Paramètres d'obsolescence",
+			"packages": "Paquets",
 			"patches": "Patches",
 			"quota": "Quotas disques",
 			"replication": "Replication de collecteurs",
@@ -437,7 +438,7 @@
 			"nodes" : "Noeuds",
 			"services" : "Services",
 			"network" : "Réseau",
-			"packages" : "Packages",
+			"packages" : "Paquets",
 			"san" : "San",
 			"apps" : "Applications",
 			"app" : "Application",
@@ -908,7 +909,7 @@
 					"text" : "Etats des sondes de santé des noeuds"
 			},
 			"packages" : {
-					"title" : "Paquetages",
+					"title" : "Paquets",
 					"text" : "Tous les paquets installés sur les noeuds"
 			},
 			"patches" : {

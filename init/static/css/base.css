@@ -280,6 +280,17 @@ input.aci, input.aci:focus {
 	width: 10em;
 }
 
+.table_scroll_zone {
+	position: relative;
+}
+.table_scroll_zone > div {
+	width: 100%;
+	overflow-x: auto;
+}
+.table_scroll_zone > div > table {
+	width: 100%;
+}
+
 .scroll_left {
 	width:1em !important;
 	position:absolute;
@@ -965,7 +976,7 @@ div.error {
 	width: 100%;
 	max-height: 90%;
 	background: #2d2d2d;
-	box-shadow: black -0px 10px 20px;
+	box-shadow: black -0px 20px 25px;
 	box-sizing: border-box;
 	overflow-y: scroll;
 }
@@ -974,6 +985,9 @@ div.error {
 	font-size: 1.1em;
 	clear: both;
 	border-top:1px solid #2f2f2f;
+}
+table.tabs {
+	table-layout: fixed;
 }
 .searchtab > table.tabs > tbody > tr:first-child {
 	background-color: #2d2d2d;
@@ -2661,10 +2675,6 @@ a.search-link:hover {
 	overflow-x: auto;
 	overflow-y: hidden;
 }
-.tableo > div > table {
-	width: 100%;
-}
-
 .tableo a:hover {
 	cursor: pointer;
 }
