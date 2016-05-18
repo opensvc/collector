@@ -1,14 +1,14 @@
 @charset "UTF-8";
 
 ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+	width: 6px;
+	height: 6px;
 }
 ::-webkit-scrollbar-thumb {
-    background-color: rgba(160,160,160,0.7);
+	background-color: rgba(160,160,160,0.7);
 }
 ::-webkit-scrollbar-track {
-    background-color: transparent;
+	background-color: transparent;
 }
 
 .ui-datepicker {
@@ -900,8 +900,7 @@ textarea[readonly] {
 html {
 	font-size: 10pt;
 	font-family: "opensans";
-	color: #333333;
-	background: url('../images/background.gif') repeat-x #3A3A3A;
+	background-color: #2d2d2d; 
 }
 
 .flash {
@@ -960,7 +959,7 @@ div.error {
 	left: 0;
 	top: 0;
 	display: none;
-	margin-top: 1.8em;
+	margin-top: 2em;
 	position: fixed;
 	z-index: 1001;
 	width: 100%;
@@ -968,7 +967,6 @@ div.error {
 	background: #2d2d2d;
 	box-shadow: black -0px 10px 20px;
 	box-sizing: border-box;
-	padding-right: 16px;
 	overflow-y: scroll;
 }
 .menu_section {
@@ -976,6 +974,9 @@ div.error {
 	font-size: 1.1em;
 	clear: both;
 	border-top:1px solid #2f2f2f;
+}
+.searchtab > table.tabs > tbody > tr:first-child {
+	background-color: #2d2d2d;
 }
 .menu_entry {
 	padding: 1em;
