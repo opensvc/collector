@@ -15,7 +15,7 @@ function metric(divid, options) {
 		var title_h = $("<h3></h3>")
 		var title_link = $("<span class='clickable icon link16'>&nbsp;</span>")
 		title_link.bind("click", function() {  
-			osvc_create_link("metric", o.options)
+			osvc_create_link("metric", o.options, "link.metric")
 		})
 		title_h.append(title_link)
 		div.append(title_h)
@@ -103,7 +103,7 @@ function chart(divid, options) {
 		var title_link = $("<span class='clickable icon link16'></span>")
 		var title_h = $("<h3></h3>")
 		title_link.bind("click", function() {  
-			osvc_create_link("chart", o.options)
+			osvc_create_link("chart", o.options, "link.chart")
 		})
 		title_h.append(title_link)
 		div.append(title_h)
@@ -318,7 +318,7 @@ function report(divid, options) {
 
 		// bind the report link click
 		title_link.bind("click", function() { 
-			osvc_create_link("report", {"report_id" : o.options.report_id })
+			osvc_create_link("report", {"report_id" : o.options.report_id }, "link.report")
 		})
  	}
 

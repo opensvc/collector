@@ -864,7 +864,17 @@
 		"help": "hover on a range to display details"
 	},
 	"link": {
-		"notfound": "Link not found.It may have expired , please re generate it."
+		"notfound": "Link not found.It may have expired , please re generate it.",
+		"sysreport": "Sysreport",
+		"sysrepdiff": "Sysreport differences",
+		"topology": "Topology",
+		"startup": "Service startup sequence",
+		"request": "Request form",
+		"request_folder": "Request forms folder",
+		"metric": "Metric",
+		"chart": "Chart",
+		"report": "Report",
+		"designer": "Compliance Designer"
 	},
 	"menu": {
 		"navigation": "Navigation",
@@ -950,8 +960,8 @@
 					"title": "Disks quotas",
 					"text": "Per application and diskgroup disk provisioning size limits"
 			}
-	},
-	"compliance": {
+		},
+		"compliance": {
 			"title": "Compliance",
 			"statut": {
 				"title": "Status",

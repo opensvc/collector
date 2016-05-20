@@ -232,7 +232,7 @@ function sysrep(divid, options) {
 		return sysrep_getparams(this)
 	}
 	o.sysrep_createlink = function(){
-		return osvc_create_link("sysrep", options)
+		return osvc_create_link("sysrep", options, "link.sysreport")
 	}
 	o.sysrep_on_change_filters = function(){
 		o.sysrep_timeline()
@@ -760,7 +760,7 @@ function sysrepdiff(divid, options)
 		return o.sysrep_diff()
 	}
 	o.sysrep_createlink = function(){
-		return osvc_create_link("sysrepdiff", options)
+		return osvc_create_link("sysrepdiff", options, "link.sysrepdiff")
 	}
 	o.sysrep_admin_secure = function(){
 		return sysrep_admin_secure(this)

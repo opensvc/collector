@@ -53,7 +53,7 @@ function topology(divid, options) {
 			}
 		})
 		o.options.display = display
-		osvc_create_link("topology", o.options)
+		osvc_create_link("topology", o.options, "link.topology")
 	}
 
 	o.draw = function() {

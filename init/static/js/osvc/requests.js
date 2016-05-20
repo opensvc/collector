@@ -107,7 +107,7 @@ function requests(divid, options) {
 
 		link.bind("click", function(event){
 			event.stopPropagation()
-			osvc_create_link("requests", {"form_folder": d.form_name})
+			osvc_create_link("requests", {"form_folder": d.form_name}, "link.request_folder")
 		})
 
 		p1.prepend(link)
@@ -154,7 +154,7 @@ function requests(divid, options) {
 
 		link.bind("click", function(event){
 			event.stopPropagation()
-			osvc_create_link("form", {"form_name": d.form_name})
+			osvc_create_link("form", {"form_name": d.form_name}, "link.request")
 		})
 
 		p1.prepend(link)

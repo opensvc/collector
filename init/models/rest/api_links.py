@@ -80,19 +80,20 @@ class rest_post_link(rest_post_handler):
 
         #Check if md5 already exist
         if not db(db.links.link_md5==md5id).select():
+            id = db.links.insert(
+                link_function=fn,
+                link_title=vars.get("title", ""),
+                link_title_args=vars.get("title_args", "{}"),
+                link_parameters=param,
+                link_creation_user_id=auth.user.id,
+                link_creation_date=request.now,
+                link_last_consultation_date=request.now,
+                link_md5=md5id,
+                link_access_counter=0
+            )
 
-          id = db.links.insert(
-              link_function=fn,
-              link_parameters=vars.get("param", ""),
-              link_creation_user_id=auth.user.id,
-              link_creation_date=request.now,
-              link_last_consultation_date=request.now,
-              link_md5=md5id,
-              link_access_counter=0
-          )
-
-          _log('link.add',
-               "link '%(link_md5)s' created",
-               dict(link_md5=md5id),
-          )
+            _log('link.add',
+                "link '%(link_md5)s' created",
+                dict(link_md5=md5id),
+            )
         return dict(link_id="%(link_id)s" % dict(link_id=md5id))

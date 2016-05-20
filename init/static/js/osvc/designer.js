@@ -251,7 +251,7 @@ function designer(divid, options) {
 		url = url.replace(re, "");
 		args = "obj_filter="+encodeURIComponent($("#casearch").val())
 		args += "&obj_filter2="+encodeURIComponent($("#casearch2").val())
-		osvc_create_link(url, args);
+		osvc_create_link(url, args, "link.designer");
 	}
 	o.set_log_op_entry = function(label, obj_type, node) {
 		return designer_set_log_op_entry(o, label, obj_type, node)

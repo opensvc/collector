@@ -1,6 +1,10 @@
 //
 // column filter tool: distinct values to filtering string
 //
+function link_title_table(options) {
+	return i18n.t("col.Table") + " " + "<span class='icon_fixed_width "+options.icon+"'>"+i18n.t("table.name."+options.name)+"</span>"
+}
+
 function values_to_filter(input, cloud){
 	l = []
 	var reg = new RegExp("[ ]+$", "g");
@@ -1490,7 +1494,7 @@ function table_init(opts) {
 			}
 			options.request_vars[$(this).attr('id')] = $(this).val()
 		})
-		osvc_create_link(t.options.caller, options)
+		osvc_create_link(t.options.caller, options, "link_title_table", {"icon": t.options.icon, "name": t.options.name})
 	}
 
 	t.link_href = function() {
@@ -1508,7 +1512,7 @@ function table_init(opts) {
 			}
 			args += '&'+$(this).attr('id')+"="+encodeURIComponent($(this).val())
 		})
-		osvc_create_link(url, args)
+		osvc_create_link(url, args, "link_title_table", {"name": t.options.name})
 	}
 
 	t.filter_selector = function(e, k, v) {

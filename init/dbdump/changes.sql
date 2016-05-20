@@ -6035,3 +6035,7 @@ drop view v_users ; CREATE VIEW `v_users` AS (select (select `e`.`time_stamp` AS
 alter table checks_settings modify column chk_instance varchar(180);
 alter table checks_live modify column chk_instance varchar(180);
 
+alter table links add column link_title varchar(255);
+alter table links add column link_title_args varchar(255);
+alter table links modify column link_creation_user_id integer;
+

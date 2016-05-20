@@ -107,7 +107,7 @@ function startup(divid, options) {
 			display.push($(this).siblings("span").attr("node_id"))
 		})
 		o.options.display = display
-		osvc_create_link("startup", o.options)
+		osvc_create_link("startup", o.options, "link.startup")
 	}
 
 	o.draw = function() {

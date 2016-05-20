@@ -162,20 +162,29 @@ function link(divid, options) {
 	$("#"+divid).load("/init/" + link_id, options, function() {})
 }
 
-function osvc_create_link(fn, parameters) {
+function osvc_create_link(fn, parameters, title, title_args) {
 	if (!parameters) {
 		parameters = {}
+	}
+
+	if (!title_args) {
+		title_args = {}
 	}
 
 	// Security for old link
 	fn = fn.replace("?","")
 
-	if ("divid" in parameters) {
+	if (is_dict(parameters) && ("divid" in parameters)) {
 		// case for links to tables embedded in views
 		parameters["divid"] = "layout"
 	}
 
-	var link_id =  services_osvcpostrest("R_LINKS", "", "", {"fn": fn, "param": JSON.stringify(parameters)}, function(jd) {
+	var link_id =  services_osvcpostrest("R_LINKS", "", "", {
+		"fn": fn,
+		"title": title,
+		"title_args": JSON.stringify(title_args),
+		"param": JSON.stringify(parameters)
+	}, function(jd) {
 		if (jd.error) {
 			osvc.flash.error(services_error_fmt(jd))
 			return
@@ -190,7 +199,7 @@ function osvc_create_link(fn, parameters) {
 		} else {
 			url += "&js=true"
 		}
-		osvc_show_link(url)
+		osvc_show_link(url, title, title_args)
 	},
 	function(xhr, stat, error) {
 		osvc.flash.error(services_ajax_error_fmt(xhr, stat, error))
@@ -306,15 +315,27 @@ function flash() {
 	return o
 }
 
-function osvc_show_link(url) {
+function osvc_show_link(url, title, title_args) {
 	// header
 	var e = $("<div></div>")
 
-	var title = $("<div class='icon attach16 fa-2x' data-i18n='api.link'></div>")
-	e.append(title)
+	var header = $("<div class='icon attach16 fa-2x' data-i18n='api.link'></div>")
+	e.append(header)
 
-	var subtitle = $("<div style='color:lightgray' data-i18n='api.link_text'></div>")
-	e.append(subtitle)
+	var subheader = $("<div style='color:lightgray' data-i18n='api.link_text'></div>")
+	e.append(subheader)
+
+	if (title && (title != "")) {
+		var e_title = $("<h2></h2>")
+		if (title in window) {
+			var s = window[title](title_args)
+		} else {
+			var s = i18n.t(title, title_args)
+		}
+		e_title.html(s)
+		e_title.css({"padding": "1em 0 0 0"})
+		e.append(e_title)
+	}
 
 	// link display area
 	p = $("<textarea style='width:100%' class='clickable'></textarea>")
@@ -323,10 +344,10 @@ function osvc_show_link(url) {
 		"width": "100%",
 		"background": "rgba(0,0,0,0)",
 		"border": "rgba(0,0,0,0)",
-		"padding": "2em 0 0 0",
+		"padding": "1em 0 0 0",
 	})
 	p.bind("click", function() {
-		send_link($(this).val())
+		window.open($(this).val(), '_blank')
 	})
 
 	e.i18n()

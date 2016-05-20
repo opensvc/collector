@@ -1,6 +1,7 @@
 function table_action_queue(divid, options) {
 	var defaults = {
 		'divid': divid,
+		'icon': "action16",
 		'caller': 'table_action_queue',
 		'id': 'action_queue',
 		'name': 'action_queue',
@@ -29,6 +30,7 @@ function table_action_queue(divid, options) {
 function table_actions(divid, options) {
 	var defaults = {
 		'name': 'actions',
+		'icon': "actions",
 		'id': 'actions',
 		'caller': 'table_actions',
 		'divid': divid,
@@ -150,6 +152,7 @@ function table_actions_svc(divid, svc_id) {
 function table_resinfo(divid, options) {
 	var defaults = {
 		'divid': divid,
+		'icon': "res16",
 		'id': "resinfo",
 		'caller': "table_resinfo",
 		'name': "resinfo",
@@ -188,6 +191,7 @@ function table_apps(divid, options) {
 		'id': "apps",
 		'caller': "table_apps",
 		'name': "apps",
+		'icon': "app16",
 		'ajax_url': '/init/apps/ajax_apps',
 		'span': ['id'],
 		'force_cols': ['id'],
@@ -216,6 +220,7 @@ function table_checks(divid, options) {
 		'id': 'checks',
 		'caller': 'table_checks',
 		'name': 'checks',
+		'icon': "check16",
 		'ajax_url': '/init/checks/ajax_checks',
 		'span': ['node_id'],
 		'columns': ['node_id', 'nodename', 'svc_id', 'svcname', 'chk_type', 'chk_instance', 'chk_value', 'chk_low', 'chk_high', 'chk_err', 'chk_threshold_provider', 'chk_created', 'chk_updated', 'assetname', 'fqdn', 'serial', 'model', 'environnement', 'role', 'status', 'type', 'sec_zone', 'tz', 'loc_country', 'loc_zip', 'loc_city', 'loc_addr', 'loc_building', 'loc_floor', 'loc_room', 'loc_rack', 'enclosure', 'enclosureslot', 'hvvdc', 'hvpool', 'hv', 'os_name', 'os_release', 'os_vendor', 'os_arch', 'os_kernel', 'cpu_dies', 'cpu_cores', 'cpu_threads', 'cpu_model', 'cpu_freq', 'mem_banks', 'mem_slots', 'mem_bytes', 'listener_port', 'version', 'action_type', 'connect_to', 'host_mode', 'team_responsible', 'team_integ', 'app_team_ops', 'team_support', 'app', 'app_domain', 'last_boot', 'power_supply_nb', 'power_cabinet1', 'power_cabinet2', 'power_protect', 'power_protect_breaker', 'power_breaker1', 'power_breaker2', 'warranty_end', 'maintenance_end', 'os_obs_warn_date', 'os_obs_alert_date', 'hw_obs_warn_date', 'hw_obs_alert_date', 'updated'],
@@ -295,6 +300,7 @@ function table_comp_rulesets_nodes(divid, options) {
 		'id': "crn",
 		'caller': "table_comp_rulesets_nodes",
 		'name': "comp_rulesets_nodes",
+		'icon': "node16",
 		'divid': divid,
 		'ajax_url': '/init/compliance/ajax_comp_rulesets_nodes',
 		'span': ['node_id'],
@@ -325,6 +331,7 @@ function table_comp_rulesets_nodes(divid, options) {
 function table_comp_modulesets_nodes(divid, options) {
 	var defaults = {
 		'name': "comp_modulesets_nodes",
+		'icon': "node16",
 		'id': "cmn",
 		'caller': "table_comp_modulesets_nodes",
 		'divid': divid,
@@ -354,6 +361,7 @@ function table_comp_modulesets_nodes(divid, options) {
 function table_comp_rulesets_services(divid, options) {
 	defaults = {
 		'name': "comp_rulesets_services",
+		'icon': "svc",
 		'id': "crs",
 		'caller': "table_comp_rulesets_services",
 		'divid': divid,
@@ -389,6 +397,7 @@ function table_comp_modulesets_services(divid, options) {
 		'divid': divid,
 		'caller': "table_comp_modulesets_services",
 		'name': "comp_modulesets_services",
+		'icon': "svc",
 		'ajax_url': '/init/compliance/ajax_comp_modulesets_services',
 		'span': ['svc_id'],
 		'force_cols': ['svc_id', 'svcname', 'encap', 'modset_id', 'svc_status_updated'],
@@ -417,6 +426,7 @@ function table_comp_log(divid, options) {
 		'id': "comp_log",
 		'caller': "table_comp_log",
 		'name': "comp_log",
+		'icon': "complog",
 		'ajax_url': '/init/compliance/ajax_comp_log',
 		'span': [],
 		'force_cols': ['svc_id', 'node_id', 'run_date', 'run_module'],
@@ -438,6 +448,7 @@ function table_comp_modules(divid, options) {
 		'id': "comp_modules",
 		'caller': "table_comp_modules",
 		'name': "comp_modules",
+		'icon': "modset16",
 		'ajax_url': '/init/compliance/ajax_comp_moduleset',
 		'span': ['modset_name'],
 		'force_cols': ["id", "modset_id"],
@@ -454,6 +465,7 @@ function table_comp_rules(divid, options) {
 	var defaults = {
 		'id': "cr0",
 		'name': "comp_rulesets",
+		'icon': "rset16",
 		'caller': "table_comp_rules",
 		'divid': divid,
 		'ajax_url': '/init/compliance/ajax_comp_rulesets',
@@ -473,6 +485,7 @@ function table_comp_module_status(divid, options) {
 		'divid': divid,
 		'id': "cms",
 		'name': "comp_module_status",
+		'icon': "modset16",
 		'caller': "table_comp_module_status",
 		'checkboxes': false,
 		'ajax_url': '/init/compliance/ajax_comp_mod_status',
@@ -491,6 +504,7 @@ function table_comp_node_status(divid, options) {
 		'divid': divid,
 		'caller': "table_comp_node_status",
 		'name': "comp_node_status",
+		'icon': "node16",
 		'checkboxes': false,
 		'ajax_url': '/init/compliance/ajax_comp_node_status',
 		'span': ['node_id'],
@@ -507,6 +521,7 @@ function table_comp_service_status(divid, options) {
 	var defaults = {
 		'divid': divid,
 		'name': "comp_service_status",
+		'icon': "svc",
 		'caller': "table_comp_service_status",
 		'id': "css",
 		'checkboxes': false,
@@ -526,6 +541,7 @@ function table_comp_status(divid, options) {
 		'divid': divid,
 		'id': "cs0",
 		'name': "comp_status",
+		'icon': "compstatus",
 		'caller': "view_comp_status",
 		'ajax_url': '/init/compliance/ajax_comp_status',
 		'span': [],
@@ -724,6 +740,7 @@ function table_dashboard(divid, options) {
 		'caller': 'table_dashboard',
 		'id': 'dashboard',
 		'name': 'dashboard',
+		'icon': "alert16",
 		'ajax_url': '/init/dashboard/ajax_dashboard',
 		'columns': ['id', 'dash_severity', 'dash_links', 'dash_type', 'svc_id', 'svcname', 'node_id', 'nodename', 'node_app', 'dash_env', 'dash_entry', 'dash_md5', 'dash_created', 'dash_updated', 'dash_dict', 'dash_fmt'],
 		'force_cols': ['id', 'svc_id', 'svcname', 'node_id', 'nodename', 'dash_type', 'dash_created', 'dash_dict', 'dash_fmt', 'dash_md5'],
@@ -771,6 +788,7 @@ function table_disks_charts(divid, options) {
 		'caller': "view_disks",
 		'detached_decorate_cells': false,
 		'name': "disks_charts",
+		'icon': "hd16",
 		'checkboxes': false,
 		'ajax_url': '/init/disks/ajax_disk_charts',
 		'span': ['chart'],
@@ -802,6 +820,7 @@ function table_disks(divid, options) {
 		'caller': "view_disks",
 		'id': "disks",
 		'name': "disks",
+		'icon': "hd16",
 		'ajax_url': '/init/disks/ajax_disks',
 		'span': ['disk_id', 'disk_size', 'disk_alloc', 'disk_arrayid', 'disk_devid', 'disk_name', 'disk_raid', 'disk_group', 'array_model'],
 		'force_cols': ['id', 'node_id', 'svc_id', 'os_name'],
@@ -842,6 +861,7 @@ function table_dns_records(divid, options) {
 		'id': "dnsr",
 		'caller': "table_dns_records",
 		'name': "dns_records",
+		'icon': "dns16",
 		'ajax_url': '/init/dns/ajax_dns_records',
 		'span': ['id'],
 		'force_cols': ['id'],
@@ -902,6 +922,7 @@ function table_dns_domains(divid, options) {
 		'caller': "table_dns_domains",
 		'id': "dnsd",
 		'name': "dns_domains",
+		'icon': "dns16",
 		'ajax_url': '/init/dns/ajax_dns_domains',
 		'span': ['id'],
 		'force_cols': ['id'],
@@ -943,6 +964,7 @@ function table_filtersets(divid, options) {
 		'id': "filtersets",
 		'caller': "table_filtersets",
 		'name': "filtersets",
+		'icon': "filter16",
 		'checkboxes': true,
 		'ajax_url': '/init/filtersets/ajax_filtersets',
 		'span': ['fset_name', 'fset_stats'],
@@ -963,6 +985,7 @@ function table_filters(divid, options) {
 		'id': "table_filters",
 		'id': "filters",
 		'name': "filters",
+		'icon': "filter16",
 		'ajax_url': '/init/filtersets/ajax_filters',
 		'span': ['f_table', 'f_field'],
 		'force_cols': ['id'],
@@ -988,6 +1011,7 @@ function table_forms(divid, options) {
 		'caller': "table_forms",
 		'id': "forms",
 		'name': "forms",
+		'icon': "wf16",
 		'ajax_url': '/init/forms/ajax_forms_admin',
 		'span': ['id'],
 		'force_cols': ['id', 'form_type'],
@@ -1010,6 +1034,7 @@ function table_log(divid, options) {
 		'id': "log",
 		'caller': "table_log",
 		'name': "log",
+		'icon': "log16",
 		'checkboxes': false,
 		'ajax_url': '/init/log/ajax_log',
 		'span': ['id'],
@@ -1062,6 +1087,7 @@ function table_networks(divid, options) {
 		'caller': "table_networks",
 		'id': "networks",
 		'name': "networks",
+		'icon': "net16",
 		'ajax_url': '/init/networks/ajax_networks',
 		'span': ['id'],
 		'force_cols': ['id'],
@@ -1080,6 +1106,7 @@ function table_nodenetworks(divid, options) {
 		'caller': "table_nodenetworks",
 		'id': "nodenetworks",
 		'name': "nodenetworks",
+		'icon': "net16",
 		'ajax_url': '/init/nodenetworks/ajax_nodenetworks',
 		'span': ['node_id', 'nodename'],
 		'force_cols': ['id', 'node_id', 'os_name'],
@@ -1145,6 +1172,7 @@ function table_nodesan(divid, options) {
 		'caller': "table_nodesan",
 		'id': "nodesan",
 		'name': "nodesan",
+		'icon': "net16",
 		'ajax_url': '/init/nodesan/ajax_nodesan',
 		'span': ['node_id', 'nodename'],
 		'force_cols': ['id', 'node_id', 'os_name'],
@@ -1169,6 +1197,7 @@ function table_uids(divid, options) {
 		'caller': "view_nodes",
 		'id': "uids",
 		'name': "uids",
+		'icon': "guy16",
 		'ajax_url': '/init/nodes/ajax_uids',
 		'span': ['user_id'],
 		'columns': ['user_id', 'user_id_count', 'user_name'],
@@ -1185,6 +1214,7 @@ function table_gids(divid, options) {
 		'id': "gids",
 		'caller': "view_nodes",
 		'name': "gids",
+		'icon': "guys16",
 		'ajax_url': '/init/nodes/ajax_gids',
 		'span': ['group_id'],
 		'columns': ['group_id', 'group_id_count', 'group_name'],
@@ -1201,6 +1231,7 @@ function table_nodes(divid, options) {
 		'caller': "view_nodes",
 		'id': "nodes",
 		'name': "nodes",
+		'icon': "node16",
 		'ajax_url': '/init/nodes/ajax_nodes',
 		'force_cols': ['node_id', 'os_name'],
 		'columns': [].concat(['node_id', 'nodename'], objcols.node, ["updated"]),
@@ -1264,6 +1295,7 @@ function table_obsolescence(divid, options) {
 		'caller': "table_obsolescence",
 		'id': 'obs',
 		'name': "obsolescence",
+		'icon': "obs16",
 		'ajax_url': '/init/obsolescence/ajax_obs',
 		'force_cols': ['id', 'obs_type', 'obs_name'],
 		'columns': ['id', 'obs_count', 'obs_type', 'obs_name', 'obs_warn_date', 'obs_alert_date'],
@@ -1328,6 +1360,7 @@ function table_patches(divid, options) {
 		'divid': divid,
 		'caller': "table_patches",
 		'name': "patches",
+		'icon': "patch",
 		'ajax_url': '/init/patches/ajax_patches',
 		'span': ['id'],
 		'force_cols': ['os_name', 'node_id'],
@@ -1346,6 +1379,7 @@ function table_prov_templates(divid, options) {
 		'divid': divid,
 		'caller': "table_prov_templates",
 		'name': "templates",
+		'icon': "prov16",
 		'ajax_url': '/init/provisioning/ajax_prov_admin',
 		'span': [],
 		'force_cols': ['id', 'tpl_name'],
@@ -1360,17 +1394,18 @@ function table_prov_templates(divid, options) {
 
 function table_quota(divid, options) {
 	var defaults = {
-	     'id': "quota",
-	     'divid': divid,
-	     'caller': "table_quota",
-	     'name': "quota",
-	     'ajax_url': '/init/disks/ajax_quota',
-	     'span': ['array_name', 'dg_name', 'app'],
-	     'force_cols': ['id'],
-	     'columns': ['id', 'array_name', 'array_model', 'dg_name', 'dg_size', 'dg_reserved', 'dg_reservable', 'dg_used', 'dg_free', 'app', 'quota', 'quota_used'],
-	     'default_columns': ['array_name', 'array_model', 'dg_name', 'dg_size', 'dg_reserved', 'dg_reservable', 'dg_used', 'dg_free', 'app', 'quota', 'quota_used'],
-	     'wsable': true,
-	     'events': ['stor_array_dg_quota_change']
+		'id': "quota",
+		'divid': divid,
+		'caller': "table_quota",
+		'name': "quota",
+		'icon': "quota16",
+		'ajax_url': '/init/disks/ajax_quota',
+		'span': ['array_name', 'dg_name', 'app'],
+		'force_cols': ['id'],
+		'columns': ['id', 'array_name', 'array_model', 'dg_name', 'dg_size', 'dg_reserved', 'dg_reservable', 'dg_used', 'dg_free', 'app', 'quota', 'quota_used'],
+		'default_columns': ['array_name', 'array_model', 'dg_name', 'dg_size', 'dg_reserved', 'dg_reservable', 'dg_used', 'dg_free', 'app', 'quota', 'quota_used'],
+		'wsable': true,
+		'events': ['stor_array_dg_quota_change']
 	}
 
 	var _options = $.extend({}, defaults, options)
@@ -1448,15 +1483,16 @@ function table_quota_array_dg(divid, array_name, dg_name) {
 
 function table_replication(divid, options) {
 	var defaults = {
-	     'caller': "table_replication",
-	     'divid': divid,
-	     'id': "replication",
-	     'name': "replication",
-	     'ajax_url': '/init/replication/ajax_replication_status',
-	     'span': [],
-	     'force_cols': [],
-	     'columns': ['mode', 'remote', 'table_schema', 'table_name', 'need_resync', 'current_cksum', 'last_cksum', 'table_updated'],
-	     'default_columns': ['mode', 'remote', 'table_schema', 'table_name', 'need_resync', 'current_cksum', 'last_cksum', 'table_updated']
+		'caller': "table_replication",
+		'divid': divid,
+		'id': "replication",
+		'name': "replication",
+		'icon': "net16",
+		'ajax_url': '/init/replication/ajax_replication_status',
+		'span': [],
+		'force_cols': [],
+		'columns': ['mode', 'remote', 'table_schema', 'table_name', 'need_resync', 'current_cksum', 'last_cksum', 'table_updated'],
+		'default_columns': ['mode', 'remote', 'table_schema', 'table_name', 'need_resync', 'current_cksum', 'last_cksum', 'table_updated']
 	}
 
 	var _options = $.extend({}, defaults, options)
@@ -1469,6 +1505,7 @@ function table_metrics(divid, options) {
 		'divid': divid,
 		'id': "metrics",
 		'name': "metrics",
+		'icon': "spark16",
 		'ajax_url': '/init/charts/ajax_metrics_admin',
 		'span': ['id'],
 		'force_cols': ['id'],
@@ -1488,6 +1525,7 @@ function table_charts(divid, options) {
 		'divid': divid,
 		'id': "charts",
 		'name': "charts",
+		'icon': "spark16",
 		'ajax_url': '/init/charts/ajax_charts_admin',
 		'span': ['id'],
 		'force_cols': ['id'],
@@ -1507,6 +1545,7 @@ function table_reports(divid, options) {
 		'divid': divid,
 		'id': "reports",
 		'name': "reports",
+		'icon': "spark16",
 		'ajax_url': '/init/charts/ajax_reports_admin',
 		'span': ['id'],
 		'force_cols': ['id'],
@@ -1524,6 +1563,7 @@ function table_reports(divid, options) {
 function table_resources(divid, options) {
 	var defaults = {
 		'name': 'resmon',
+		'icon': "res16",
 		'divid': divid,
 		'caller': 'table_resources',
 		'id': 'resmon',
@@ -1573,6 +1613,7 @@ function table_sanswitches(divid, options) {
 		'divid': divid,
 		'caller': "table_sanswitches",
 		'name': "sanswitches",
+		'icon': "net16",
 		'checkboxes': false,
 		'ajax_url': '/init/sanswitches/ajax_sanswitches',
 		'span': ['sw_name', 'sw_index'],
@@ -1590,6 +1631,7 @@ function table_saves(divid, options) {
 		'divid': divid,
 		'caller': "view_saves",
 		'name': "saves",
+		'icon': "save16",
 		'ajax_url': '/init/saves/ajax_saves',
 		'span': ['node_id', 'nodename', 'svc_id', 'svcname'],
 		'force_cols': ['id', 'node_id', 'svc_id', 'os_name'],
@@ -1611,6 +1653,7 @@ function table_saves_charts(divid, options) {
 		'caller': "view_saves",
 		'detached_decorate_cells': false,
 		'name': "saves_charts",
+		'icon': "spark16",
 		'checkboxes': false,
 		'ajax_url': '/init/saves/ajax_saves_charts',
 		'span': ['chart'],
@@ -1672,6 +1715,7 @@ function table_service_instances(divid, options) {
 		'id': 'svcmon',
 		'divid': divid,
 		'name': 'service_instances',
+		'icon': "svcinstance",
 		'extrarow': true,
 		'extrarow_class': "svcmon_links",
 		'ajax_url': '/init/default/ajax_svcmon',
@@ -1771,6 +1815,7 @@ function table_services(divid, options) {
 		'caller': 'table_services',
 		'divid': divid,
 		'name': 'services',
+		'icon': "svc",
 		'id': 'services',
 		'ajax_url': '/init/services/ajax_services',
 		'span': ['svc_id'],
@@ -1792,6 +1837,7 @@ function table_tagattach(divid, options) {
 	var defaults = {
 		'id': 'tagattach',
 		'name': 'tagattach',
+		'icon': "tag16",
 		'caller': 'table_tagattach',
 		'divid': divid,
 		'ajax_url': '/init/tags/ajax_tagattach',
@@ -1811,6 +1857,7 @@ function table_tagattach(divid, options) {
 function table_tags(divid, options) {
 	var defaults = {
 		'name': "tags",
+		'icon': "tag16",
 		'id': "tags",
 		'divid': divid,
 		'caller': "table_tags",
@@ -1830,6 +1877,7 @@ function table_tags(divid, options) {
 function table_users(divid, options) {
 	var defaults = {
 		'name': "users",
+		'icon': "guy16",
 		'id': "users",
 		'caller': "table_users",
 		'divid': divid,
@@ -1849,6 +1897,7 @@ function table_users(divid, options) {
 function table_workflows(divid, options) {
 	var defaults = {
 		'name': "workflows",
+		'icon': "wf16",
 		'id': "workflows",
 		'caller': "table_workflows",
 		'divid': divid,
