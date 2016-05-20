@@ -37,6 +37,7 @@ function app_start() {
 	osvc.table_settings = table_settings()
 	osvc.table_filters = table_column_filters()
 	osvc.forms = forms()
+	osvc.flash = flash()
 
 	// Check if IE and version < 10
 	for (i=6; i< 10; i++) {
@@ -229,7 +230,7 @@ function app_bindings() {
 		else if (event.which == 78) {
 			event.preventDefault()
 			$(".header").find(".menu").hide()
-			$(".header").find(".menu16").parents("ul").first().siblings(".menu").show("fold", function(){
+			$(".header").find(".menu16").parents("ul").first().siblings(".menu").slideDown(function(){
 				filter_menu()
 			})
 			$(".header").find(".menu_selected").removeClass("menu_selected")

@@ -867,7 +867,7 @@ function search(divid) {
 		} else {
 			// close the search result panel if no search keyword
 			if ($("#search_input").val() == "") {
-				$("#search_result").hide("fold")
+				$("#search_result").slideUp()
 			} else {
 				clearTimeout(o.timer)
 				o.timer = setTimeout(search_search, delay)

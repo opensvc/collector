@@ -240,6 +240,11 @@ input.aci, input.aci:focus {
 	background-image: none;
 }
 
+.corner-top:hover {
+	background-image: url('../images/cornertop8.png');
+	background-position: 0 0;
+	background-repeat: no-repeat;
+}
 .corner:hover {
 	background-image: url('../images/corner8.png');
 	background-position: 0 100%;
@@ -298,7 +303,6 @@ input.aci, input.aci:focus {
 	top:0;
 	height:100%;
 	content: ' ';
-	z-index:1000;
 	display:none;
 	background: -webkit-gradient(left, rgba(100, 100, 100, 0.5), rgba(100, 100, 100, 0));
 	background: -webkit-linear-gradient(left, rgba(100, 100, 100, 0.5), rgba(100, 100, 100, 0));
@@ -314,7 +318,6 @@ input.aci, input.aci:focus {
 	top:0;
 	height:100%;
 	content: ' ';
-	z-index:1000;
 	display:none;
 	background: -webkit-gradient(left, rgba(100, 100, 100, 0), rgba(100, 100, 100, 0.5));
 	background: -webkit-linear-gradient(left, rgba(100, 100, 100, 0), rgba(100, 100, 100, 0.5));
@@ -502,7 +505,7 @@ img {
 .tag_drag {
 }
 .tag:before {
-	color: white;
+	color: whitesmoke !important;
 }
 .tag {
 	white-space: nowrap;
@@ -511,7 +514,7 @@ img {
 	font-weight: bold;
 	font-size: 85%;
 	text-align: center;
-	color: white;
+	color: whitesmoke;
 	-moz-border-radius:4px;
 	-webkit-border-radius:4px;
 	border-radius:4px;
@@ -968,9 +971,8 @@ div.error {
 }
 .menu {
 	left: 0;
-	top: 0;
+	top: 2em;
 	display: none;
-	margin-top: 2em;
 	position: fixed;
 	z-index: 1001;
 	width: 100%;

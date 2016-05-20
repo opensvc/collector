@@ -30,10 +30,10 @@ function login(divid) {
 
 function login_clicked(o) {
 	if (o.login_div.is(":visible")) {
-		o.login_div.hide("fold")
+		o.login_div.slideUp()
 	} else {
 		$(".header").find(".menu").hide()
-		o.login_div.show("fold")
+		o.login_div.slideDown()
 	}
 }
 

@@ -93,11 +93,20 @@ function tags(options) {
 			if (!o.options.ondblclick) {
 				return
 			}
-			var e = $("<div class='searchtab' style='box-sizing:border-box'><div>")
-			e.uniqueId()
-			var uid = e.attr("id")
-			$(".flash").empty().append(e).show("fold")
-			o.options.ondblclick(uid, {"name": $(this).text(), "id": $(this).attr("tag_id")})
+			var options = {
+				"name": $(this).text(),
+				"id": $(this).attr("tag_id"),
+			}
+			var flash_id = o.options.tag_name+"-"+$(this).attr("tag_id")
+			osvc.flash.show({
+				id: flash_id,
+				text: $(this).text(),
+				bgcolor: o.options.bgcolor,
+				cl: "icon "+o.options.icon,
+				fn: function(id){
+					o.options.ondblclick(id, options)
+				}
+			})
 		})
 		e.draggable({
 			"containment": o.div,
@@ -462,6 +471,7 @@ function service_tags(options) {
 function app_responsibles(options) {
 	options.tag_name = "role"
 	options.bgcolor = "salmon"
+	options.icon = "guys16"
 	options.get_tags = function(fval, callback, callback_err) {
 		services_osvcgetrest("/apps/%1/responsibles", [options.app_id], {
 			"orderby": options.tag_name,
@@ -497,6 +507,7 @@ function app_responsibles(options) {
 function app_publications(options) {
 	options.tag_name = "role"
 	options.bgcolor = "salmon"
+	options.icon = "guys16"
 	options.get_tags = function(fval, callback, callback_err) {
 		services_osvcgetrest("/apps/%1/publications", [options.app_id], {
 			"orderby": options.tag_name,
@@ -532,6 +543,7 @@ function app_publications(options) {
 function form_responsibles(options) {
 	options.tag_name = "role"
 	options.bgcolor = "salmon"
+	options.icon = "guys16"
 	options.get_tags = function(fval, callback, callback_err) {
 		services_osvcgetrest("/forms/%1/responsibles", [options.form_id], {
 			"orderby": options.tag_name,
@@ -567,6 +579,7 @@ function form_responsibles(options) {
 function form_publications(options) {
 	options.tag_name = "role"
 	options.bgcolor = "salmon"
+	options.icon = "guys16"
 	options.get_tags = function(fval, callback, callback_err) {
 		services_osvcgetrest("/forms/%1/publications", [options.form_id], {
 			"orderby": options.tag_name,
@@ -602,6 +615,7 @@ function form_publications(options) {
 function ruleset_responsibles(options) {
 	options.tag_name = "role"
 	options.bgcolor = "salmon"
+	options.icon = "guys16"
 	options.get_tags = function(fval, callback, callback_err) {
 		services_osvcgetrest("/compliance/rulesets/%1/responsibles", [options.ruleset_id], {
 			"orderby": options.tag_name,
@@ -637,6 +651,7 @@ function ruleset_responsibles(options) {
 function ruleset_publications(options) {
 	options.tag_name = "role"
 	options.bgcolor = "salmon"
+	options.icon = "guys16"
 	options.get_tags = function(fval, callback, callback_err) {
 		services_osvcgetrest("/compliance/rulesets/%1/publications", [options.ruleset_id], {
 			"orderby": options.tag_name,
@@ -672,6 +687,7 @@ function ruleset_publications(options) {
 function prov_template_responsibles(options) {
 	options.tag_name = "role"
 	options.bgcolor = "salmon"
+	options.icon = "guys16"
 	options.get_tags = function(fval, callback, callback_err) {
 		services_osvcgetrest("/provisioning_templates/%1/responsibles", [options.tpl_id], {
 			"orderby": options.tag_name,
@@ -707,6 +723,7 @@ function prov_template_responsibles(options) {
 function prov_template_publications(options) {
 	options.tag_name = "role"
 	options.bgcolor = "salmon"
+	options.icon = "guys16"
 	options.get_tags = function(fval, callback, callback_err) {
 		services_osvcgetrest("/provisioning_templates/%1/publications", [options.tpl_id], {
 			"orderby": options.tag_name,
@@ -742,6 +759,7 @@ function prov_template_publications(options) {
 function modset_responsibles(options) {
 	options.tag_name = "role"
 	options.bgcolor = "salmon"
+	options.icon = "guys16"
 	options.get_tags = function(fval, callback, callback_err) {
 		services_osvcgetrest("/compliance/modulesets/%1/responsibles", [options.modset_id], {
 			"orderby": options.tag_name,
@@ -777,6 +795,7 @@ function modset_responsibles(options) {
 function modset_publications(options) {
 	options.tag_name = "role"
 	options.bgcolor = "salmon"
+	options.icon = "guys16"
 	options.get_tags = function(fval, callback, callback_err) {
 		services_osvcgetrest("/compliance/modulesets/%1/publications", [options.modset_id], {
 			"orderby": options.tag_name,
@@ -813,6 +832,7 @@ function modset_publications(options) {
 function safe_file_responsibles(options) {
 	options.tag_name = "role"
 	options.bgcolor = "salmon"
+	options.icon = "guys16"
 	options.get_tags = function(fval, callback, callback_err) {
 		services_osvcgetrest("/safe/%1/responsibles", [options.uuid], {
 			"orderby": options.tag_name,
@@ -848,6 +868,7 @@ function safe_file_responsibles(options) {
 function safe_file_publications(options) {
 	options.tag_name = "role"
 	options.bgcolor = "salmon"
+	options.icon = "guys16"
 	options.get_tags = function(fval, callback, callback_err) {
 		services_osvcgetrest("/safe/%1/publications", [options.uuid], {
 			"orderby": options.tag_name,
@@ -883,6 +904,7 @@ function safe_file_publications(options) {
 function user_org_membership(options) {
 	options.tag_name = "role"
 	options.bgcolor = "salmon"
+	options.icon = "guys16"
 	options.get_tags = function(fval, callback, callback_err) {
 		services_osvcgetrest("/users/%1/groups", [options.user_id], {
 			"orderby": options.tag_name,
@@ -923,6 +945,7 @@ function user_org_membership(options) {
 function user_priv_membership(options) {
 	options.tag_name = "role"
 	options.bgcolor = "goldenrod"
+	options.icon = "privilege16"
 	options.get_tags = function(fval, callback, callback_err) {
 		services_osvcgetrest("/users/%1/groups", [options.user_id], {
 			"orderby": options.tag_name,
@@ -954,6 +977,7 @@ function user_priv_membership(options) {
 		callback({"data": true})
 	}
 	options.ondblclick = function(divid, data) {
+		console.log(divid,data)
 		group_tabs(divid, {"group_id": data.id, "group_name": data.name})
 	}
 	options.events = ["auth_group_change", "auth_membership_change"]

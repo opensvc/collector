@@ -160,13 +160,13 @@ function metric_request(divid, options) {
 				}
 				services_osvcpostrest("/reports/metrics/%1", [o.options.metric_id], "", data, function(jd) {
 					if (jd.error && (jd.error.length > 0)) {
-						$(".flash").show("blind").html(services_error_fmt(jd))
+						osvc.flash.error(services_error_fmt(jd))
 						return
 					}
 					o.init()
 				},
 				function(xhr, stat, error) {
-					$(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
+					osvc.flash.error(services_ajax_error_fmt(xhr, stat, error))
 				})
 			})
 		})

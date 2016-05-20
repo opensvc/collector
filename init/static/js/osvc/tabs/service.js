@@ -275,13 +275,13 @@ function service_env(divid, options)
 				}
 				services_osvcpostrest("/services/%1", [o.options.svc_id], "", data, function(jd) {
 					if (jd.error && (jd.error.length > 0)) {
-						$(".flash").show("blind").html(services_error_fmt(jd))
+						osvc.flash.error(services_error_fmt(jd))
 						return
 					}
 					o.init()
 				},
 				function(xhr, stat, error) {
-					$(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
+					osvc.flash.error(services_ajax_error_fmt(xhr, stat, error))
 				})
 			})
 		})
@@ -383,6 +383,7 @@ function service_properties(divid, options)
 				"request_parameters": function(){return [o.div.find("#svc_app").text()]},
 				"limit": "0",
 				"key": "role",
+				"item_class": "icon guys16",
 				"id": "id",
 				"bgcolor": "salmon",
 				"depends": ["svc_app"],

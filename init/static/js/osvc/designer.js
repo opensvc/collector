@@ -295,7 +295,7 @@ function designer(divid, options) {
 				} else {
 					msg = 'Error: ' + jqXHR.responseText
 				}
-				$(".flash").html(msg).slideDown()
+				osvc.flash.error(msg)
 			},
 			success: function(msg){
 				if (msg != "0") {
@@ -376,7 +376,7 @@ function designer(divid, options) {
 					msg = 'Error: ' + jqXHR.responseText
 				}
 				//$.jstree.rollback(data.rlbk)
-				$(".flash").html(msg).slideDown()
+				osvc.flash.error(msg)
 			},
 			success: function(msg){
 				try {
@@ -488,7 +488,7 @@ function designer(divid, options) {
 					} else {
 						msg = 'Error: ' + jqXHR.responseText
 					}
-					$(".flash").html(msg).slideDown()
+					osvc.flash.error(msg)
 				},
 				success: function(msg){
 					if (msg != "0") {
@@ -593,7 +593,7 @@ function designer(divid, options) {
 							msg = 'Error: ' + jqXHR.responseText
 						}
 						//$.jstree.rollback(data.rlbk)
-						$(".flash").html(msg).slideDown()
+						osvc.flash.error(msg)
 					},
 					success: function(msg){
 						if (msg == "0") {
@@ -661,7 +661,6 @@ function designer(divid, options) {
 
 	o.json_status = function(msg) {
 		if ((msg == 0) || (msg == "0")) {
-			$(".flash").html("")
 			return
 		}
 		if (!msg) {
@@ -673,7 +672,7 @@ function designer(divid, options) {
 		} else {
 			s = ""
 		}
-		$(".flash").html(s).slideDown()
+		osvc.flash.error(s)
 	}
 
 	o.jstree_check_callback = function(operation, node, parent_node, position, more) {

@@ -128,6 +128,7 @@ function group_properties(divid, options) {
 				},
 				"limit": 50,
 				"key": "nodename",
+				"item_class": "icon node16",
 				"id": "node_id",
 				"bgcolor": "aqua",
 				"e_title": o.info_nodes_title,
@@ -141,6 +142,7 @@ function group_properties(divid, options) {
 				"request_parameters": [data.id],
 				"limit": 50,
 				"key": "svcname",
+				"item_class": "icon svc",
 				"id": "svc_id",
 				"bgcolor": "seagreen",
 				"e_title": o.info_services_title,
@@ -156,6 +158,10 @@ function group_properties(divid, options) {
 					"props": "id,first_name,last_name"
 				},
 				"limit": 50,
+				"flash_id": function(e){
+					return "user-" + e.text()
+				},
+				"item_class": "icon guy16",
 				"key": function(data) {
 					var s = data.first_name + " " + data.last_name
 					if (s == " ") {
@@ -177,6 +183,7 @@ function group_properties(divid, options) {
 				"request_parameters": [data.id],
 				"limit": 50,
 				"key": "app",
+				"item_class": "icon app16",
 				"id": "id",
 				"bgcolor": "deeppink",
 				"e_title": o.info_apps_title,
@@ -210,7 +217,7 @@ function group_hidden_menu_entries(divid, options) {
 		}
 		services_osvcpostrest("R_GROUP_HIDDEN_MENU_ENTRIES", [o.options.group_id], "", data, function(jd) {
 			if (jd.error && (jd.error.length > 0)) {
-				$(".flash").show("blind").html(services_error_fmt(jd))
+				osvc.flash.error(services_error_fmt(jd))
 			}
 			
 		})
@@ -222,7 +229,7 @@ function group_hidden_menu_entries(divid, options) {
 		}
 		services_osvcdeleterest("R_GROUP_HIDDEN_MENU_ENTRIES", [o.options.group_id], "", data, function(jd) {
 			if (jd.error && (jd.error.length > 0)) {
-				$(".flash").show("blind").html(services_error_fmt(jd))
+				osvc.flash.error(services_error_fmt(jd))
 			}
 		})
 	}
@@ -234,7 +241,7 @@ function group_hidden_menu_entries(divid, options) {
 		}
 		services_osvcgetrest("R_GROUP_HIDDEN_MENU_ENTRIES", [o.options.group_id], params, function(jd) {
 			if (jd.error && (jd.error.length > 0)) {
-				$(".flash").show("blind").html(services_error_fmt(jd))
+				osvc.flash.error(services_error_fmt(jd))
 			}
 			o.hidden = []
 			for (i=0; i<jd.data.length; i++) {

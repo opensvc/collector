@@ -269,10 +269,15 @@ function _cell_decorator_pct(v) {
 function cell_decorator_app(e) {
   var v = $.data(e, "v")
   $(e).html("<span class='clickable'>"+v+"</span>")
-  $(e).addClass("corner")
+  $(e).addClass("corner-top")
   $(e).click(function(){
-    var id = toggle_extraline(e)
-    app_tabs(id, {"app_name": v})
+    osvc.flash.show({
+      id: "app-"+v,
+      cl: "icon app16",
+      text: v,
+      bgcolor: "deeppink",
+      fn: function(id){app_tabs(id, {"app_name": v})}
+    })
   })
 }
 
@@ -703,7 +708,7 @@ function _cell_decorator_nodename(e, os_icon) {
   }
   $(e).empty()
   $(e).append("<div class='a nowrap trunc20'>"+v+"</div>")
-  $(e).addClass("corner")
+  $(e).addClass("corner-top")
   div = $(":first-child", e)
   if (os_icon) {
     try {
@@ -720,8 +725,13 @@ function _cell_decorator_nodename(e, os_icon) {
   } catch(e) {}
   $(e).click(function(){
     if (get_selected() != "") {return}
-    var id = toggle_extraline(e)
-    node_tabs(id, {"nodename": v, "node_id": node_id})
+    osvc.flash.show({
+      id: "nodename-"+node_id,
+      text: v,
+      cl: "icon node16",
+      bgcolor: "aqua",
+      fn: function(id){node_tabs(id, {"node_id": node_id})}
+    })
   })
 }
 
@@ -730,7 +740,7 @@ function cell_decorator_groups(e) {
   if ((v=="") || (v=="empty")) {
     return
   }
-  $(e).addClass("corner")
+  $(e).addClass("corner-top")
   l = v.split(', ')
   s = ""
   for (i=0; i<l.length; i++) {
@@ -742,8 +752,13 @@ function cell_decorator_groups(e) {
     $(this).click(function(){
       if (get_selected() != "") {return}
       g = $(this).text()
-      var id = toggle_extraline(e)
-      group_tabs(id, {"group_name": g})
+      osvc.flash.show({
+        id: "role-"+g,
+        text: v,
+        cl: "icon guys16",
+        bgcolor: "salmon",
+        fn: function(id){group_tabs(id, {"group_name": g})}
+      })
     })
   })
 }
@@ -755,11 +770,16 @@ function cell_decorator_user_id(e) {
   }
   var line = $(e).parent(".tl")
   var fullname = $.data(line.children("[col=fullname]")[0], "v")
-  $(e).addClass("corner")
+  $(e).addClass("corner-top")
   $(e).click(function(){
     if (get_selected() != "") {return}
-    var id = toggle_extraline(e)
-    user_tabs(id, {"user_id": v, "fullname": fullname})
+    osvc.flash.show({
+      id: "user-"+fullname,
+      text: v, 
+      cl: "icon guy16",
+      bgcolor: "salmon",
+      fn: function(id){user_tabs(id, {"user_id": v, "fullname": fullname})}
+    })
   })
 }
 
@@ -769,11 +789,16 @@ function cell_decorator_username(e) {
     return
   }
   var line = $(e).parent(".tl")
-  $(e).addClass("corner")
+  $(e).addClass("corner-top")
   $(e).click(function(){
     if (get_selected() != "") {return}
-    var id = toggle_extraline(e)
-    user_tabs(id, {"fullname": v})
+    osvc.flash.show({
+      id: "user-"+v,
+      text: v, 
+      cl: "icon guy16",
+      bgcolor: "salmon",
+      fn: function(id){user_tabs(id, {"fullname": v})}
+    })
   })
 }
 
@@ -801,11 +826,16 @@ function cell_decorator_svcname(e) {
   }
   $(e).empty()
   $(e).append("<div class='a nowrap trunc20'>"+v+"</div>")
-  $(e).addClass("corner")
+  $(e).addClass("corner-top")
   $(e).click(function(){
     if (get_selected() != "") {return}
-    var id = toggle_extraline(e)
-    service_tabs(id, {"svc_id": svc_id})
+    osvc.flash.show({
+      id: "svcname-"+svc_id,
+      text: v,
+      cl: "icon svc",
+      bgcolor: "seagreen",
+      fn: function(id){service_tabs(id, {"svc_id": svc_id})}
+    })
   })
 }
 
@@ -1350,13 +1380,13 @@ function cell_decorator_tag_exclude(e) {
         var _i = $(this)
         services_osvcpostrest("R_TAG", [tag_id], "", data, function(jd) {
           if (jd.error && (jd.error.length > 0)) {
-            $(".flash").show("blind").html(services_error_fmt(jd))
+            osvc.flash.error(services_error_fmt(jd))
             return
           }
           _i.parent().html(data.tag_exclude)
         },
         function(xhr, stat, error) {
-          $(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
+          osvc.flash.info(services_ajax_error_fmt(xhr, stat, error))
         })
       })
       $(e).empty().append(i)

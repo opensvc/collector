@@ -15,7 +15,7 @@ function topology(divid, options) {
 
 		// toggle config
 		o.toggle_config.bind("click", function() {
-			o.config.show("fold")
+			o.config.slideDown()
 			o.toggle_config.hide()
 		})
 

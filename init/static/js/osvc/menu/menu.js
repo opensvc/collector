@@ -461,7 +461,7 @@ function menu(divid) {
 			}
 			*/
 			if (jd.error && (jd.error.length > 0)) {
-				$(".flash").show("blind").html(services_error_fmt(jd))
+				osvc.flash.error(services_error_fmt(jd))
 			}
 			osvc.hidden_menu_entries = []
 			var ref_count = 0
@@ -527,11 +527,11 @@ function menu(divid) {
 
 	o.clicked = function() {
 		if (!o.menu_div.is(":visible")) {
-			$(".header").find(".menu").hide()
-			o.menu_div.stop().show("fold", function(){filter_menu()})
+			$(".header").find(".menu").slideUp()
+			o.menu_div.stop().slideDown(function(){filter_menu()})
 			$("#search_input").val("").focus()
 		} else {
-			o.menu_div.stop().hide("fold")
+			o.menu_div.stop().slideUp()
 		}
 	}
 
@@ -551,7 +551,7 @@ function menu(divid) {
 				  return
 				}
 				o.set_title(title)
-				o.menu_div.hide("fold");
+				o.menu_div.slideUp();
 				$("#search_input").val("").blur()
 				app_load_href(href, fn)
 			})

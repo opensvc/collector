@@ -158,7 +158,7 @@ function chart_definition(divid, options) {
 				}
 				services_osvcpostrest("/reports/charts/%1", [o.options.chart_id], "", data, function(jd) {
 					if (jd.error && (jd.error.length > 0)) {
-						$(".flash").show("blind").html(services_error_fmt(jd))
+						osvc.flash.error(services_error_fmt(jd))
 						return
 					}
 					o.init()
@@ -168,7 +168,7 @@ function chart_definition(divid, options) {
 
 				},
 				function(xhr, stat, error) {
-					$(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
+					osvc.flash.error(services_ajax_error_fmt(xhr, stat, error))
 				})
 			})
 		})

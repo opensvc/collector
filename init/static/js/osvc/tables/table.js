@@ -275,7 +275,6 @@ function table_init(opts) {
 		"pager": {"page": 1},
 		"extrarow": false,
 		"extrarow_class": "",
-		"flash": "",
 		"checkboxes": true,
 		"span": ["id"],
 		"force_cols": [],
@@ -1512,22 +1511,6 @@ function table_init(opts) {
 		osvc_create_link(url, args)
 	}
 
-	t.flash = function() {
-		if (!t.options.flash || t.options.flash.length == 0) {
-			return
-		}
-		var e = $("<span><span class='icon alert16 err fa-2x'></span><span data-i18n='table.tool_error'></span></span>")
-		e.i18n()
-		var p = $("<pre></pre>")
-		p.text(t.options.flash)
-		p.css({
-			"padding": "5px",
-			"padding-left": "20px",
-		})
-		e.append(p)
-		$(".flash").show("blind").html(e)
-	}
-
 	t.filter_selector = function(e, k, v) {
 		if(e.button != 2) {
 			return
@@ -1900,21 +1883,21 @@ function table_init(opts) {
 		if (data.length > 0) {
 			services_osvcpostrest("R_USERS_SELF_TABLE_FILTERS", "", "", data, function(jd) {
 				if (jd.error && (jd.error.length > 0)) {
-					$(".flash").show("blind").html(services_error_fmt(jd))
+					osvc.flash.error(services_error_fmt(jd))
 				}
 			},
 			function(xhr, stat, error) {
-				$(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
+				osvc.flash.error(services_ajax_error_fmt(xhr, stat, error))
 			})
 		}
 		if (del_data.length > 0) {
 			services_osvcdeleterest("R_USERS_SELF_TABLE_FILTERS", "", "", del_data, function(jd) {
 				if (jd.error && (jd.error.length > 0)) {
-					$(".flash").show("blind").html(services_error_fmt(jd))
+					osvc.flash.error(services_error_fmt(jd))
 				}
 			},
 			function(xhr, stat, error) {
-				$(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
+				osvc.flash.error(services_ajax_error_fmt(xhr, stat, error))
 			})
 		}
 	}
@@ -2373,7 +2356,7 @@ function table_init(opts) {
 				}
 			},
 			function(xhr, stat, error) {
-				$(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
+				osvc.flash.error(services_ajax_error_fmt(xhr, stat, error))
 			})
 		})
 
@@ -2504,7 +2487,7 @@ function table_init(opts) {
 				// column
 				var col = $("<td></td>")
 				if (d[0] in t.colprops) {
-					col.addClass("icon_fixed_width "+t.colprops[d[0]].img)
+					col.addClass("nowrap icon_fixed_width "+t.colprops[d[0]].img)
 					col.text(i18n.t("col."+t.colprops[d[0]].title))
 				} else {
 					col.text(d[0])
@@ -2637,7 +2620,7 @@ function table_init(opts) {
 				t.refresh()
 			},
 			function(xhr, stat, error) {
-				$(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
+				osvc.flash.error(services_ajax_error_fmt(xhr, stat, error))
 			})
 		})
 	}
@@ -2696,7 +2679,7 @@ function table_init(opts) {
 					t.check_toggle_vis(current_state, colname)
 				},
 				function(xhr, stat, error) {
-					$(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
+					osvc.flash.error(services_ajax_error_fmt(xhr, stat, error))
 				})
 			})
 			if (t.options.visible_columns.indexOf(colname) >= 0) {
@@ -2821,7 +2804,7 @@ function table_init(opts) {
 			}
 			services_osvcpostrest("R_USERS_SELF_TABLE_FILTERS_SAVE_BOOKMARK", "", "", data, function(jd) {
 				if (jd.error) {
-					$(".flash").show("blind").html(services_error_fmt(jd))
+					osvc.flash.error(services_error_fmt(jd))
 					return
 				}
 				t.insert_bookmark(name)
@@ -2829,7 +2812,7 @@ function table_init(opts) {
 				t.e_tool_bookmarks_save.show()
 			},
 			function(xhr, stat, error) {
-				$(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
+				osvc.flash.error(services_ajax_error_fmt(xhr, stat, error))
 			})
 		})
 
@@ -2858,13 +2841,13 @@ function table_init(opts) {
 			}
 			services_osvcdeleterest("R_USERS_SELF_TABLE_FILTERS", "", "", data, function(jd) {
 				if (jd.error) {
-					$(".flash").show("blind").html(services_error_fmt(jd))
+					osvc.flash.error(services_error_fmt(jd))
 					return
 				}
 				line.hide("blind", function(){line.remove()})
 			},
 			function(xhr, stat, error) {
-				$(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
+				osvc.flash.error(services_ajax_error_fmt(xhr, stat, error))
 			})
 		})
 
@@ -2877,7 +2860,7 @@ function table_init(opts) {
 			}
 			services_osvcpostrest("R_USERS_SELF_TABLE_FILTERS_LOAD_BOOKMARK", "", "", data, function(jd) {
 				if (jd.error) {
-					$(".flash").show("blind").html(services_error_fmt(jd))
+					osvc.flash.error(services_error_fmt(jd))
 					return
 				}
 
@@ -2897,7 +2880,7 @@ function table_init(opts) {
 				t.refresh()
 			},
 			function(xhr, stat, error) {
-				$(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
+				osvc.flash.error(services_ajax_error_fmt(xhr, stat, error))
 			})
 		})
 	}
@@ -2939,7 +2922,6 @@ function table_init(opts) {
 		t.scroll_enable()
 		t.stick()
 		t.add_ws_handler()
-		t.flash()
 		t.set_column_filters()
 		t.refresh()
 	})

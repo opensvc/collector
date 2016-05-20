@@ -162,10 +162,7 @@ function link(divid, options) {
 	$("#"+divid).load("/init/" + link_id, options, function() {})
 }
 
-function osvc_create_link(fn, parameters, target) {
-	if (!target) {
-		target = $(".flash")
-	}
+function osvc_create_link(fn, parameters) {
 	if (!parameters) {
 		parameters = {}
 	}
@@ -180,7 +177,7 @@ function osvc_create_link(fn, parameters, target) {
 
 	var link_id =  services_osvcpostrest("R_LINKS", "", "", {"fn": fn, "param": JSON.stringify(parameters)}, function(jd) {
 		if (jd.error) {
-			target.html(services_error_fmt(jd))
+			osvc.flash.error(services_error_fmt(jd))
 			return
 		}
 		var link_id = jd.link_id
@@ -193,47 +190,123 @@ function osvc_create_link(fn, parameters, target) {
 		} else {
 			url += "&js=true"
 		}
-
-		// header
-		var e = $("<div></div>")
-
-		var title = $("<div class='icon attach16 fa-2x' data-i18n='api.link'></div>")
-		e.append(title)
-
-		var subtitle = $("<div style='color:lightgray' data-i18n='api.link_text'></div>")
-		e.append(subtitle)
-
-		// link display area
-		p = $("<textarea style='width:100%' class='clickable'></textarea>")
-		p.val(url)
-		p.css({
-			"width": "100%",
-			"background": "rgba(0,0,0,0)",
-			"border": "rgba(0,0,0,0)",
-			"padding": "2em 0 0 0"
-		})
-		p.select()
-		p.bind("click", function() {
-			send_link($(this).val())
-		})
-
-		e.i18n()
-		e.append(p)
-
-		target.empty().append(e)
-		p.autogrow()
-
-		osvc_show_link(url, target)
+		osvc_show_link(url)
 	},
 	function(xhr, stat, error) {
-		$(".flash").show("fold").html(services_ajax_error_fmt(xhr, stat, error))
+		osvc.flash.error(services_ajax_error_fmt(xhr, stat, error))
 	})
 }
 
-function osvc_show_link(url, target) {
-	if (!target) {
-		target = $(".flash")
+function flash() {
+	var o = {}
+	o.div = $(".flash")
+	o.barel_len = 10
+	o.barel = []
+	o.barel_id = {}
+	o.e_barel = $("<div class='tag_container'></div>")
+	o.e_show = $("<div id='flashtab' style='margin-top:20px'></div>")
+
+	$(".header").addClass("clickable").bind("click", function(e) {
+		if (!$(e.target).hasClass("header")) {
+			// exit if the click is in a header descendant
+			e.stopPropagation()
+			return
+		}
+		o.div.slideToggle()
+	})
+
+	o.init = function() {
+		o.div.show()
+		o.div.html([o.e_barel, o.e_show])
 	}
+
+	o.find_id = function(id) {
+		for (var i=0; i<o.barel.length; i++) {
+			if (!o.barel[i].id) {
+				continue
+			}
+			if (o.barel[i].id == id) {
+				return i
+			}
+		}
+		return -1
+	}
+
+	o.push = function(data) {
+		if (data.id) {
+			var i = o.find_id(data.id)
+			if (i>=0) {
+				o.barel.splice(i, 1)
+			}
+		}
+		data.date = new Date()
+		o.barel.push(data)
+		if (o.barel.length > o.barel_len) {
+			o.barel = o.barel.splice(0)
+		}
+	}
+
+	o.render_barel_entry = function(data) {
+		var d = $("<span class='tag'></span>")
+		o.e_barel.append(d)
+		d.text(data.text)
+		d.attr("title", data.date).tooltipster()
+		if (data.bgcolor) {
+			d.css({"background-color": data.bgcolor})
+		}
+		if (data.cl) {
+			d.addClass(data.cl)
+		}
+		d.bind("click", function() {
+			o.show_entry(data)
+		})
+	}
+
+	o.render_barel = function() {
+		o.e_barel.empty()
+		for (var i=0; i<o.barel.length; i++) {
+			o.render_barel_entry(o.barel[i])
+		}
+	}
+
+	o.show_entry = function(data) {
+		if (data.fn) {
+			o.e_show.addClass("searchtab")
+			data.fn("flashtab")
+		} else if (data.content) {
+			o.e_show.removeClass("searchtab").html(data.content)
+		}
+	}
+
+	o.info = function(content) {
+		o.show({
+			"content": content,
+			"bgcolor": "slategray",
+			"cl": "icon fa-info-circle",
+			"text": "Info"
+		})
+	}
+
+	o.error = function(content) {
+		o.show({
+			"content": content,
+			"bgcolor": "red",
+			"cl": "icon alert16",
+			"text": "Error"
+		})
+	}
+
+	o.show = function(data) {
+		o.push(data)
+		o.init()
+		o.render_barel()
+		o.show_entry(data)
+	}
+
+	return o
+}
+
+function osvc_show_link(url) {
 	// header
 	var e = $("<div></div>")
 
@@ -259,9 +332,15 @@ function osvc_show_link(url, target) {
 	e.i18n()
 	e.append(p)
 
-	target.empty().append(e).show("fold")
+	osvc.flash.show({
+		"id": url,
+		"bgcolor": "slategray",
+		"cl": "icon link16",
+		"text": i18n.t("api.link"),
+		"content": e
+	})
 
-	p.autogrow();
+	p.autogrow()
 	p.select()
 }
 

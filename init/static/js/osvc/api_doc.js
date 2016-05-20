@@ -21,13 +21,13 @@ function api_doc(divid, path) {
 	o.get = function() {
 		services_osvcgetrest("R_API", "", "", function(jd) {
 			if (jd.error) {
-				$(".flash").show("blind").html(services_error_fmt(jd))
+				osvc.flash.error(services_error_fmt(jd))
 				return
 			}
 			o.format(jd.data)
 		},
 		function(xhr, stat, error) {
-			$(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
+			osvc.flash.error(services_ajax_error_fmt(xhr, stat, error))
 		})
 	}
 

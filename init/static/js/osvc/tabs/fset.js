@@ -124,6 +124,7 @@ function fset_properties(divid, options) {
 			"request_parameters": [data.id],
 			"limit": "0",
 			"key": "nodename",
+			"item_class": "icon node16",
 			"id": "node_id",
 			"bgcolor": "aqua",
 			"e_title": o.info_nodes_title,
@@ -137,6 +138,7 @@ function fset_properties(divid, options) {
 			"request_parameters": [data.id],
 			"limit": "0",
 			"key": "svcname",
+			"item_class": "icon svc",
 			"id": "svc_id",
 			"bgcolor": "seagreen",
 			"e_title": o.info_services_title,
@@ -153,6 +155,7 @@ function fset_properties(divid, options) {
 			tab_properties_generic_list({
 				"data": jd.data.filtersets,
 				"key": "fset_name",
+				"item_class": "icon fset16",
 				"id": "id",
 				"bgcolor": "black",
 				"e_title": o.info_filtersets_title,
@@ -164,6 +167,7 @@ function fset_properties(divid, options) {
 			tab_properties_generic_list({
 				"data": jd.data.rulesets,
 				"key": "ruleset_name",
+				"item_class": "icon rset16",
 				"id": "id",
 				"bgcolor": "#EE5464",
 				"e_title": o.info_rulesets_title,
@@ -175,6 +179,7 @@ function fset_properties(divid, options) {
 			tab_properties_generic_list({
 				"data": jd.data.thresholds,
 				"bgcolor": "green",
+				"item_class": "icon check16",
 				"e_title": o.info_thresholds_title,
 				"e_list": o.info_thresholds
 			})

@@ -22,7 +22,7 @@ function fset_selector(divid, callback) {
 			o.span.attr("fset_id", fset_id)
 			o.div.bind("click", function() {
 				if (!o.area.is(":visible")) {
-					o.area.show("fold")
+					o.area.slideDown()
 					$("#search_input").focus()
 					o.load_area()
 				}

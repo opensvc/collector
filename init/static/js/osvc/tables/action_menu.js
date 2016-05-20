@@ -1681,7 +1681,7 @@ function table_bind_action_menu(t) {
 			} else {
 				// left-click => close the action menu, the menu and the filter box
 				$("#fsr"+t.id).hide()
-				$(".menu").hide("fold")
+				$(".menu").slideUp()
 				$(".action_menu_popup").hide()
 			}
 		})
@@ -2215,7 +2215,7 @@ function table_action_menu_status(msg){
 	if (msg.factorized>0) {
 		s = "factorized: "+msg.factorized+", "+s
 	}
-	$(".flash").html(s).show("blind")
+	osvc.flash.info(s)
 }
 
 //
@@ -2958,7 +2958,7 @@ function data_action_sync_dns_domains(t, e) {
 			}
 		},
 		function(xhr, stat, error) {
-			$(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
+			osvc.flash.error(services_ajax_error_fmt(xhr, stat, error))
 		})
 	}
 }
@@ -3108,14 +3108,14 @@ function data_action_user_lock_filterset(t, e) {
 	}
 	services_osvcpostrest("R_USERS", "", "", _data, function(jd) {
 		if (jd.error && (jd.error.length > 0)) {
-			$(".flash").show("blind").html(services_error_fmt(jd))
+			osvc.flash.error(services_error_fmt(jd))
 		}
 		if (jd.info && (jd.info.length > 0)) {
-			$(".flash").show("blind").html(services_info_fmt(jd))
+			osvc.flash.info(services_info_fmt(jd))
 		}
 	},
 	function(xhr, stat, error) {
-		$(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
+		osvc.flash.error(services_ajax_error_fmt(xhr, stat, error))
 	})
 }
 
@@ -3135,14 +3135,14 @@ function data_action_user_unlock_filterset(t, e) {
 	}
 	services_osvcpostrest("R_USERS", "", "", _data, function(jd) {
 		if (jd.error && (jd.error.length > 0)) {
-			$(".flash").show("blind").html(services_error_fmt(jd))
+			osvc.flash.error(services_error_fmt(jd))
 		}
 		if (jd.info && (jd.info.length > 0)) {
-			$(".flash").show("blind").html(services_info_fmt(jd))
+			osvc.flash.info(services_info_fmt(jd))
 		}
 	},
 	function(xhr, stat, error) {
-		$(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
+		osvc.flash.error(services_ajax_error_fmt(xhr, stat, error))
 	})
 }
 
@@ -3479,14 +3479,14 @@ function data_action_action_queue_cancel(t, e) {
 	}
 	services_osvcpostrest("R_ACTIONS", "", "", _data, function(jd) {
 		if (jd.error && (jd.error.length > 0)) {
-			$(".flash").show("blind").html(services_error_fmt(jd))
+			osvc.flash.error(services_error_fmt(jd))
 		}
 		if (jd.info && (jd.info.length > 0)) {
-			$(".flash").show("blind").html(services_info_fmt(jd))
+			osvc.flash.info(services_info_fmt(jd))
 		}
 	},
 	function(xhr, stat, error) {
-		$(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
+		osvc.flash.error(services_ajax_error_fmt(xhr, stat, error))
 	})
 }
 
@@ -3506,14 +3506,14 @@ function data_action_action_queue_redo(t, e) {
 	}
 	services_osvcpostrest("R_ACTIONS", "", "", _data, function(jd) {
 		if (jd.error && (jd.error.length > 0)) {
-			$(".flash").show("blind").html(services_error_fmt(jd))
+			osvc.flash.error(services_error_fmt(jd))
 		}
 		if (jd.info && (jd.info.length > 0)) {
-			$(".flash").show("blind").html(services_info_fmt(jd))
+			osvc.flash.info(services_info_fmt(jd))
 		}
 	},
 	function(xhr, stat, error) {
-		$(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
+		osvc.flash.error(services_ajax_error_fmt(xhr, stat, error))
 	})
 }
 
@@ -4794,7 +4794,7 @@ function agent_action_provisioning(t, e) {
 	services_osvcgetrest("R_PROVISIONING_TEMPLATES", "", "", function(jd) {
 		spinner_del(div)
 		if (jd.error && (jd.error.length > 0)) {
-			$(".flash").show("blind").html(services_error_fmt(jd))
+			osvc.flash.error(services_error_fmt(jd))
 		}
 		if (jd.data.length == 0) {
 			div.append($("<div data-i18n='action_menu.provisioning_selector_empty'></div>").i18n())
@@ -4915,14 +4915,14 @@ function agent_action_provisioning(t, e) {
 				// put the provisioning action in queue
 				services_osvcputrest("R_PROVISIONING_TEMPLATE", [tpl_id], "", put_data, function(jd) {
 					if (jd.error && (jd.error.length > 0)) {
-						$(".flash").show("blind").html(services_error_fmt(jd))
+						osvc.flash.error(services_error_fmt(jd))
 					}
 					if (jd.info && (jd.info.length > 0)) {
-						$(".flash").show("blind").html(services_info_fmt(jd))
+						osvc.flash.info(services_info_fmt(jd))
 					}
 				},
 				function(xhr, stat, error) {
-					$(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
+					osvc.flash.error(services_ajax_error_fmt(xhr, stat, error))
 				})
 			})
 
@@ -4939,7 +4939,7 @@ function agent_action_provisioning(t, e) {
 	},
 	function(xhr, stat, error) {
 		spinner_del(div)
-		$(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
+		osvc.flash.error(services_ajax_error_fmt(xhr, stat, error))
 	})
 
 }
@@ -4981,14 +4981,14 @@ function data_action_obs_refresh(t, e) {
 	table_action_menu_focus_on_leaf(t, entry)
 	services_osvcputrest("/obsolescence/refresh", "", "", "", function(jd) {
 		if (jd.error && (jd.error.length > 0)) {
-			$(".flash").show("blind").html(services_error_fmt(jd))
+			osvc.flash.error(services_error_fmt(jd))
 		}
 		if (jd.info && (jd.info.length > 0)) {
-			$(".flash").show("blind").html(services_info_fmt(jd))
+			osvc.flash.info(services_info_fmt(jd))
 		}
 	},
 	function(xhr, stat, error) {
-		$(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
+		osvc.flash.error(services_ajax_error_fmt(xhr, stat, error))
 	})
 }
 

@@ -41,8 +41,14 @@ function tabs(divid) {
 		// empty tabs on click closetab
 		o.closetab.bind("click", function() {
                         $(this).parents(".extraline").first().remove(); // Remove extraline
-			o.div.parent().remove(); // Remove extraline
-			o.div.remove();
+			o.div.parent().each(function(){
+				if ($(this).hasClass("flash")) {
+					o.div.empty().removeClass("searchtab")
+					return
+				}
+				$(this).remove()
+				o.div.remove()
+			})
 		})
 	}
 
@@ -224,7 +230,7 @@ tab_properties_generic_autocomplete = function(options) {
 			}
 			options.post(data, function(jd) {
 				if (jd.error && (jd.error.length > 0)) {
-					$(".flash").show("blind").html(services_error_fmt(jd))
+					osvc.flash.error(services_error_fmt(jd))
 					return
 				}
 				e.prev().text(input.val()).show()
@@ -233,7 +239,7 @@ tab_properties_generic_autocomplete = function(options) {
 				tab_properties_generic_lists_refresh(options.div)
 			},
 			function(xhr, stat, error) {
-				$(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
+				osvc.flash.error(services_ajax_error_fmt(xhr, stat, error))
 			})
 		})
 	})
@@ -415,7 +421,7 @@ tab_properties_generic_simple = function(options) {
 			data[input.attr("pid")] = val
 			options.post(data, function(jd) {
 				if (jd.error && (jd.error.length > 0)) {
-					$(".flash").show("blind").html(services_error_fmt(jd))
+					osvc.flash.error(services_error_fmt(jd))
 					return
 				}
 				e.hide()
@@ -430,7 +436,7 @@ tab_properties_generic_simple = function(options) {
 				tab_properties_generic_lists_refresh(options.div)
 			},
 			function(xhr, stat, error) {
-				$(".flash").show("blind").html(services_ajax_error_fmt(xhr, stat, error))
+				osvc.flash.error(services_ajax_error_fmt(xhr, stat, error))
 			})
 		})
 		if (updater == "date") {
@@ -543,7 +549,9 @@ tab_properties_generic_list = function(options) {
 			if (options.bgcolor) {
 				e.css({"background-color": options.bgcolor})
 			}
-			e.addClass(options.item_class)
+			if (options.use_item_class) {
+				e.addClass(options.item_class)
+			}
 			e.addClass("icon tag tag_attached")
 			if (options.key) {
 				if (typeof(options.key) === "string") {
@@ -566,13 +574,23 @@ tab_properties_generic_list = function(options) {
 				if (!options.ondblclick) {
 					return
 				}
-				var e = $("<div class='searchtab' style='box-sizing:border-box'><div>")
-				e.uniqueId()
-				var uid = e.attr("id")
-				$(".flash").empty().append(e).show("fold")
-				options.ondblclick(uid, {
+				var opts = {
 					"name": $(this).text(),
 					"id": $(this).attr("tag_id")
+				}
+				if (options.flash_id) {
+					var flash_id = options.flash_id($(this))
+				} else {
+					var flash_id = options.key + "-" + $(this).attr("tag_id")
+				}
+				osvc.flash.show({
+					"id": flash_id,
+					"text": $(this).text(),
+					"cl": options.item_class,
+					"bgcolor": options.bgcolor,
+					"fn": function(id) {
+						options.ondblclick(id, opts)
+					}
 				})
 			})
 
