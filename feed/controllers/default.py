@@ -102,6 +102,7 @@ def rpc_update_resinfo(vars, vals, auth):
     else:
         db.executesql("delete from resinfo where svc_id='%s'"%h["svc_id"])
     generic_insert('resinfo', vars, vals)
+    ws_send("resinfo_change")
 
     i = vars.index('res_value')
     vals_log = []
