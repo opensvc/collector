@@ -157,7 +157,7 @@ function fset_properties(divid, options) {
 				"key": "fset_name",
 				"item_class": "icon fset16",
 				"id": "id",
-				"bgcolor": "black",
+				"bgcolor": "slategray",
 				"e_title": o.info_filtersets_title,
 				"e_list": o.info_filtersets,
 				"ondblclick": function(divid, data) {

@@ -230,7 +230,7 @@ function app_bindings() {
 		else if (event.which == 78) {
 			event.preventDefault()
 			$(".header").find(".menu").hide()
-			$(".header").find(".menu16").parents("ul").first().siblings(".menu").slideDown(function(){
+			osvc.menu.menu_div.slideDown(function(){
 				filter_menu()
 			})
 			$(".header").find(".menu_selected").removeClass("menu_selected")

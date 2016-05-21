@@ -174,14 +174,6 @@ input.aci, input.aci:focus {
 	margin-left: 0;
 }
 
-.groups > span {
-	padding: 0.2em 0.5em 0.2em 0;
-	cursor: pointer;
-}
-.groups > span:hover {
-	color: cadetblue;
-}
-
 .panselector10 {
 	max-height: 10em;
 	overflow-y: scroll;
@@ -518,7 +510,7 @@ img {
 	-moz-border-radius:4px;
 	-webkit-border-radius:4px;
 	border-radius:4px;
-	padding: 0 20px 0 20px;
+	padding: 0 10px 0 10px;
 	overflow:hidden;
 }
 .tag:hover {
@@ -2723,6 +2715,10 @@ a.search-link:hover {
 	display: inline-block;
 }
 
+.link:hover {
+	cursor: pointer;
+	color: #EE5464;
+}
 .toola:hover {
 	text-decoration: underline;
 }

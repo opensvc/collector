@@ -340,47 +340,51 @@ function cell_decorator_quota(e) {
 }
 
 function cell_decorator_prov_template(e) {
-  var v = $.data(e, "v")
-  $(e).html("<span class='clickable'>"+v+"</span>")
-  $(e).addClass("corner")
-  $(e).click(function(){
-    var line = $(this).parent(".tl")
-    var tpl_id = $.data(line.children("[col=id]")[0], "v")
-    var id = toggle_extraline(e)
-    prov_template_tabs(id, {"tpl_id": tpl_id, "tpl_name": v})
-  })
+	var v = $.data(e, "v")
+	var line = $(e).parent(".tl")
+	var tpl_id = $.data(line.children("[col=id]")[0], "v")
+	$(e).html("<span class='clickable'>"+v+"</span>")
+	$(e).addClass("corner-top")
+	$(e).osvc_prov_template({"event": "click", "tpl_id": tpl_id})
 }
 
 function cell_decorator_fset_name(e) {
-  var v = $.data(e, "v")
-  if (v == "empty") {
-    return
-  }
-  $(e).html("<span class='clickable'>"+v+"</span>")
-  $(e).addClass("corner")
-  $(e).click(function(){
-    var id = toggle_extraline(e)
-    filterset_tabs(id, {"fset_name": v})
-  })
+	var v = $.data(e, "v")
+		if (v == "empty") {
+		return
+	}
+	$(e)
+		.addClass("corner-top")
+		.osvc_filterset({"event": "click"})
 }
 
 function cell_decorator_modset_name(e) {
   var v = $.data(e, "v")
   $(e).html("<span class='clickable'>"+v+"</span>")
-  $(e).addClass("corner")
+  $(e).addClass("corner-top")
   $(e).click(function(){
-    var id = toggle_extraline(e)
-    moduleset_tabs(id, {"modset_name": v})
+    osvc.flash.show({
+      id: "modset-"+v,
+      text: v, 
+      cl: "icon modset16",
+      bgcolor: "#EE5464",
+      fn: function(id){moduleset_tabs(id, {"modset_name": v})}
+    })
   })
 }
 
 function cell_decorator_ruleset_name(e) {
   var v = $.data(e, "v")
   $(e).html("<span class='clickable'>"+v+"</span>")
-  $(e).addClass("corner")
+  $(e).addClass("corner-top")
   $(e).click(function(){
-    var id = toggle_extraline(e)
-    ruleset_tabs(id, {"ruleset_name": v})
+    osvc.flash.show({
+      id: "rset-"+v,
+      text: v, 
+      cl: "icon rset16",
+      bgcolor: "#EE5464",
+      fn: function(id){ruleset_tabs(id, {"ruleset_name": v})}
+    })
   })
 }
 
@@ -736,31 +740,24 @@ function _cell_decorator_nodename(e, os_icon) {
 }
 
 function cell_decorator_groups(e) {
-  var v = $.data(e, "v")
-  if ((v=="") || (v=="empty")) {
-    return
-  }
-  $(e).addClass("corner-top")
-  l = v.split(', ')
-  s = ""
-  for (i=0; i<l.length; i++) {
-    g = l[i]
-    s += "<span>"+g+"</span>"
-  }
-  $(e).html(s)
-  $(e).children().each(function(){
-    $(this).click(function(){
-      if (get_selected() != "") {return}
-      g = $(this).text()
-      osvc.flash.show({
-        id: "role-"+g,
-        text: v,
-        cl: "icon guys16",
-        bgcolor: "salmon",
-        fn: function(id){group_tabs(id, {"group_name": g})}
-      })
-    })
-  })
+	var v = $.data(e, "v")
+	if ((v=="") || (v=="empty")) {
+		return
+	}
+	l = v.split(', ')
+	s = ""
+	for (i=0; i<l.length; i++) {
+		g = l[i]
+		s += "<span>"+g+"</span> "
+	}
+	$(e)
+		.addClass("corner-top")
+		.html(s)
+		.children().osvc_org_group({
+			"event": "click",
+			"tag": false,
+			"show_icon": false
+		})
 }
 
 function cell_decorator_user_id(e) {

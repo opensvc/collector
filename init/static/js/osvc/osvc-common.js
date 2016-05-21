@@ -365,6 +365,119 @@ function osvc_show_link(url, title, title_args) {
 	p.select()
 }
 
+function osvc_jq_decorator(e, options) {
+        if (!options.options) {
+		options.options = {}
+	}
+        if (!("show_icon" in options.options)) {
+		options.options.show_icon = true
+	}
+        if (!("event" in options.options)) {
+		options.options.event = "dblclick"
+	}
+        if (!("tag" in options.options)) {
+		options.options.tag = true
+	}
+	$(e).each(function(){
+		var o = $(this)
+		if (o.is("[rendered]")) {
+			return
+		}
+		if (options.options[options.attr]) {
+			var id = options.options[options.attr]
+		} else {
+			var id = o.attr(options.attr)
+		}
+		var name = o.text()
+		var opts = {}
+		if (id) {
+			opts[options.attr] = id
+		} else if (name) {
+			opts[options.name] = name
+		} else {
+			return
+		}
+		var e = $("<span>"+name+"</span>")
+		if (options.options.tag) {
+			e.addClass("tag")
+			e.css({"background-color": options.bgcolor})
+		} else {
+			e.addClass("link")
+		}
+		if (options.options.show_icon) {
+			e.addClass("icon "+options.icon)
+		}
+		o.html(e)
+		e.bind(options.options.event, function() {
+			osvc.flash.show({
+				"id": options.flash_id_prefix+name,
+				"text": name,
+				"cl": "icon "+options.icon,
+				"bgcolor": options.bgcolor,
+				"fn": function(id) {
+					options.fn(id, opts)
+				}
+			})
+		})
+	})
+}
+
+jQuery.fn.osvc_filterset = function(options) {
+	osvc_jq_decorator(this, {
+		"options": options,
+		"name": "fset_name",
+		"attr": "fset_id",
+		"icon": "filter16",
+		"bgcolor": "slategray",
+		"flash_id_prefix": "fset-",
+		"fn": function(id, opts) {
+			filterset_tabs(id, opts)
+		}
+	})
+}
+
+jQuery.fn.osvc_app = function(options) {
+	osvc_jq_decorator(this, {
+		"options": options,
+		"name": "app_name",
+		"attr": "app_id",
+		"icon": "app16",
+		"bgcolor": "deeppink",
+		"flash_id_prefix": "app-",
+		"fn": function(id, opts) {
+			app_tabs(id, opts)
+		}
+	})
+}
+
+jQuery.fn.osvc_org_group = function(options) {
+	osvc_jq_decorator(this, {
+		"options": options,
+		"name": "group_name",
+		"attr": "group_id",
+		"icon": "guys16",
+		"bgcolor": "salmon",
+		"flash_id_prefix": "role-",
+		"fn": function(id, opts) {
+			group_tabs(id, opts)
+		}
+	})
+}
+
+jQuery.fn.osvc_prov_template = function(options) {
+	osvc_jq_decorator(this, {
+		"options": options,
+		"name": "tpl_name",
+		"attr": "tpl_id",
+		"icon": "prov",
+		"bgcolor": "seagreen",
+		"flash_id_prefix": "tpl-",
+		"fn": function(id, opts) {
+			prov_template_tabs(id, opts)
+		}
+	})
+}
+
 jQuery.fn.osvc_nodename = function(options) {
         if (!options) {
 		options = {}

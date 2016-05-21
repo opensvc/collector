@@ -131,18 +131,22 @@ function ruleset_content(divid, options) {
 		var data = {
 			"modulesets": {
 				"title": "ruleset_tab.usage_modulesets",
+				"name": "modset_name",
 				"cl": "action16"
 			},
 			"rulesets": {
 				"title": "ruleset_tab.usage_rulesets",
+				"name": "ruleset_name",
 				"cl": "pkg16"
 			},
 			"nodes": {
 				"title": "ruleset_tab.usage_nodes",
+				"name": "nodename",
 				"cl": "node16"
 			},
 			"services": {
 				"title": "ruleset_tab.usage_services",
+				"name": "svcname",
 				"cl": "svc"
 			}
 		}
@@ -164,7 +168,7 @@ function ruleset_content(divid, options) {
 
 				for (var j=0; j<l.length; j++) {
 					var e = $("<span class='icon'></span>")
-					e.text(l[j])
+					e.text(l[j][data[key].name])
 					e.addClass(data[key].cl)
 					div.append(e)
 				}
@@ -193,7 +197,10 @@ function ruleset_content(divid, options) {
 		o.area.append(p2)
 
 		if (rset.ruleset_type == "contextual") {
-			p3.text(i18n.t("ruleset_tab.filterset", {"name": rset.fset_name}))
+			p3.text(i18n.t("ruleset_tab.filterset"))
+			var e_fset = $("<span>"+rset.fset_name+"</span>")
+			p3.append(e_fset)
+			e_fset.osvc_filterset()
 			o.area.append(p3)
 		}
 

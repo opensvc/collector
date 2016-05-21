@@ -762,7 +762,7 @@
 		"usage_nodes": "Attached to nodes (__n__)",
 		"usage_services": "Attached to services (__n__)",
 		"variables_title": "Variables (__n__)",
-		"filterset": "Filterset: __name__",
+		"filterset": "Filterset: ",
 		"type": "Type: __type__",
 		"public": "Published: __public__"
 	},

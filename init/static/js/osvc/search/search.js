@@ -859,8 +859,7 @@ function search(divid) {
 	]
 
 	o.router = function router(delay) {
-		var menu = $(".header").find(".menu16").parents("ul").first().siblings(".menu")
-		if (menu.is(":visible")) {
+		if (osvc.menu.menu_div.is(":visible")) {
 			filter_menu(null)
 		} else if ($(".header [name=fset_selector_entries]").is(":visible")) {
 			filter_fset_selector(null)

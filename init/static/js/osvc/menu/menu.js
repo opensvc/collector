@@ -486,8 +486,8 @@ function menu(divid) {
 	o.init = function() {
 		var timer;
 
-		o.menu_div = $("#menu_menu")
-		o.menu_clickable = $("#menu_top > ul")
+		o.menu_div = o.div.find("#menu_menu")
+		o.menu_clickable = o.div.find("#menu_top > ul")
 
 		o.load_sections(o)
 		o.set_title_from_href()

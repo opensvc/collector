@@ -1600,11 +1600,13 @@ colprops = {
 		"title": "Status"
 	},
 	"publications": {
-		"img": "guy16",
+		"_class": "groups",
+		"img": "guys16",
 		"title": "Publications"
 	},
 	"responsibles": {
-		"img": "guy16",
+		"_class": "groups",
+		"img": "guys16",
 		"title": "Responsibles"
 	},
 	"ret": {

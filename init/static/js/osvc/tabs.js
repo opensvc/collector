@@ -145,6 +145,9 @@ tab_properties_generic_autocomplete = function(options) {
 		return
 	}
 	options.div.bind("click", function() {
+		if ($(event.target).hasClass("tag")) {
+			return
+		}
 		var updater = $(this).attr("upd")
 		var e = $("<td></td>")
 		var form = $("<form></form>")
@@ -233,7 +236,17 @@ tab_properties_generic_autocomplete = function(options) {
 					osvc.flash.error(services_error_fmt(jd))
 					return
 				}
+				var upd = e.prev().attr("upd")
 				e.prev().text(input.val()).show()
+				if (upd == "org_group") {
+					e.prev().osvc_org_group()
+				} else if ((upd == "org_group_id") || (upd == "primary_group")) {
+					e.prev().osvc_org_group({"group_id": e.attr("acid")})
+				} else if (upd == "app") {
+					e.prev().osvc_app()
+				} else if (upd == "user_app") {
+					e.prev().osvc_app()
+				}
 				input.blur()
 				tab_properties_generic_update_peers(options.div)
 				tab_properties_generic_lists_refresh(options.div)
@@ -482,6 +495,17 @@ tab_properties_generic_updater = function(options) {
 			)
 		}
 		var updater = $(this).attr("upd")
+		if (updater == "org_group") {
+			$(this).osvc_org_group()
+		} else if ((updater == "org_group_id") || (updater == "primary_group")) {
+console.log($(this))
+			$(this).osvc_org_group({"group_id": e.attr("acid")})
+		} else if (updater == "app") {
+			$(this).osvc_app()
+		} else if (updater == "user_app") {
+			$(this).osvc_app()
+		}
+
 		if ((updater == "string") || (updater == "text") || (updater == "integer") || (updater == "date") || (updater == "datetime") || (updater == "size_mb")) {
 			tab_properties_generic_simple($.extend({}, options, {"div": $(this)}))
 		} else if (updater == "boolean") {
