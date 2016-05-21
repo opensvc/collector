@@ -676,20 +676,11 @@ function view_comp_status(divid, options) {
 }
 
 function comp_status_log_on_hover(t) {
-	t.div.find("[col=run_status]").hover(
-	function() {
+	t.div.find("[col=run_status]").each(function() {
 		line = $(this).parents("tr")
 		var s = line.children("[col=run_status]")
 		var e = line.children("[col=run_log]")
-		var pos = s.position()
-		e.width($(window).width()*0.8)
-		e.css({"left": pos.left - e.width() - 10 + "px", "top": pos.top+s.parent().height() + "px"})
-		e.addClass("white_float")
-		cell_decorator_run_log(e)
-		e.show()
-	},
-	function() {
-		$(this).parents("tr").children("[col=run_log]").hide()
+		$(this).attr("title", e.html()).tooltipster({contentAsHTML: true})
 	})
 }
 
