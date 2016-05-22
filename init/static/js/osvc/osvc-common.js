@@ -290,7 +290,7 @@ function flash() {
 	o.info = function(content) {
 		o.show({
 			"content": content,
-			"bgcolor": "slategray",
+			"bgcolor": osvc.colors.info,
 			"cl": "icon fa-info-circle",
 			"text": "Info"
 		})
@@ -299,7 +299,7 @@ function flash() {
 	o.error = function(content) {
 		o.show({
 			"content": content,
-			"bgcolor": "red",
+			"bgcolor": osvc.colors.error,
 			"cl": "icon alert16",
 			"text": "Error"
 		})
@@ -355,7 +355,7 @@ function osvc_show_link(url, title, title_args) {
 
 	osvc.flash.show({
 		"id": url,
-		"bgcolor": "slategray",
+		"bgcolor": osvc.colors.link,
 		"cl": "icon link16",
 		"text": i18n.t("api.link"),
 		"content": e
@@ -428,7 +428,7 @@ jQuery.fn.osvc_filterset = function(options) {
 		"name": "fset_name",
 		"attr": "fset_id",
 		"icon": "filter16",
-		"bgcolor": "slategray",
+		"bgcolor": osvc.colors.fset,
 		"flash_id_prefix": "fset-",
 		"fn": function(id, opts) {
 			filterset_tabs(id, opts)
@@ -442,7 +442,7 @@ jQuery.fn.osvc_app = function(options) {
 		"name": "app_name",
 		"attr": "app_id",
 		"icon": "app16",
-		"bgcolor": "deeppink",
+		"bgcolor": osvc.colors.app,
 		"flash_id_prefix": "app-",
 		"fn": function(id, opts) {
 			app_tabs(id, opts)
@@ -456,7 +456,7 @@ jQuery.fn.osvc_org_group = function(options) {
 		"name": "group_name",
 		"attr": "group_id",
 		"icon": "guys16",
-		"bgcolor": "salmon",
+		"bgcolor": osvc.colors.org,
 		"flash_id_prefix": "role-",
 		"fn": function(id, opts) {
 			group_tabs(id, opts)
@@ -470,7 +470,7 @@ jQuery.fn.osvc_prov_template = function(options) {
 		"name": "tpl_name",
 		"attr": "tpl_id",
 		"icon": "prov",
-		"bgcolor": "seagreen",
+		"bgcolor": osvc.colors.svc,
 		"flash_id_prefix": "tpl-",
 		"fn": function(id, opts) {
 			prov_template_tabs(id, opts)

@@ -126,7 +126,7 @@ function fset_properties(divid, options) {
 			"key": "nodename",
 			"item_class": "icon node16",
 			"id": "node_id",
-			"bgcolor": "aqua",
+			"bgcolor": osvc.colors.node,
 			"e_title": o.info_nodes_title,
 			"e_list": o.info_nodes,
 			"ondblclick": function(divid, data) {
@@ -140,7 +140,7 @@ function fset_properties(divid, options) {
 			"key": "svcname",
 			"item_class": "icon svc",
 			"id": "svc_id",
-			"bgcolor": "seagreen",
+			"bgcolor": osvc.colors.svc,
 			"e_title": o.info_services_title,
 			"e_list": o.info_services,
 			"ondblclick": function(divid, data) {
@@ -157,7 +157,7 @@ function fset_properties(divid, options) {
 				"key": "fset_name",
 				"item_class": "icon fset16",
 				"id": "id",
-				"bgcolor": "slategray",
+				"bgcolor": osvc.colors.fset,
 				"e_title": o.info_filtersets_title,
 				"e_list": o.info_filtersets,
 				"ondblclick": function(divid, data) {
@@ -169,7 +169,7 @@ function fset_properties(divid, options) {
 				"key": "ruleset_name",
 				"item_class": "icon rset16",
 				"id": "id",
-				"bgcolor": "#EE5464",
+				"bgcolor": osvc.colors.comp,
 				"e_title": o.info_rulesets_title,
 				"e_list": o.info_rulesets,
 				"ondblclick": function(divid, data) {
@@ -178,7 +178,7 @@ function fset_properties(divid, options) {
 			})
 			tab_properties_generic_list({
 				"data": jd.data.thresholds,
-				"bgcolor": "green",
+				"bgcolor": osvc.colors.check,
 				"item_class": "icon check16",
 				"e_title": o.info_thresholds_title,
 				"e_list": o.info_thresholds

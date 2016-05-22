@@ -275,7 +275,7 @@ function cell_decorator_app(e) {
       id: "app-"+v,
       cl: "icon app16",
       text: v,
-      bgcolor: "deeppink",
+      bgcolor: osvc.colors.app,
       fn: function(id){app_tabs(id, {"app_name": v})}
     })
   })
@@ -367,7 +367,7 @@ function cell_decorator_modset_name(e) {
       id: "modset-"+v,
       text: v, 
       cl: "icon modset16",
-      bgcolor: "#EE5464",
+      bgcolor: osvc.colors.comp,
       fn: function(id){moduleset_tabs(id, {"modset_name": v})}
     })
   })
@@ -382,7 +382,7 @@ function cell_decorator_ruleset_name(e) {
       id: "rset-"+v,
       text: v, 
       cl: "icon rset16",
-      bgcolor: "#EE5464",
+      bgcolor: osvc.colors.comp,
       fn: function(id){ruleset_tabs(id, {"ruleset_name": v})}
     })
   })
@@ -733,7 +733,7 @@ function _cell_decorator_nodename(e, os_icon) {
       id: "nodename-"+node_id,
       text: v,
       cl: "icon node16",
-      bgcolor: "aqua",
+      bgcolor: osvc.colors.node,
       fn: function(id){node_tabs(id, {"node_id": node_id})}
     })
   })
@@ -774,7 +774,7 @@ function cell_decorator_user_id(e) {
       id: "user-"+fullname,
       text: v, 
       cl: "icon guy16",
-      bgcolor: "salmon",
+      bgcolor: osvc.colors.org,
       fn: function(id){user_tabs(id, {"user_id": v, "fullname": fullname})}
     })
   })
@@ -793,7 +793,7 @@ function cell_decorator_username(e) {
       id: "user-"+v,
       text: v, 
       cl: "icon guy16",
-      bgcolor: "salmon",
+      bgcolor: osvc.colors.org,
       fn: function(id){user_tabs(id, {"fullname": v})}
     })
   })
@@ -830,7 +830,7 @@ function cell_decorator_svcname(e) {
       id: "svcname-"+svc_id,
       text: v,
       cl: "icon svc",
-      bgcolor: "seagreen",
+      bgcolor: osvc.colors.svc,
       fn: function(id){service_tabs(id, {"svc_id": svc_id})}
     })
   })

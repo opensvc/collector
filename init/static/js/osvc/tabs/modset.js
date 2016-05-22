@@ -108,7 +108,7 @@ function modset_properties(divid, options) {
                         "key": "modset_mod_name",
 			"item_class": "icon mod16",
                         "id": "id",
-                        "bgcolor": "#EE5464",
+                        "bgcolor": osvc.colors.comp,
                         "e_title": o.info_modules_title,
                         "e_list": o.info_modules
 
@@ -120,7 +120,7 @@ function modset_properties(divid, options) {
                         "key": "nodename",
 			"item_class": "icon node16",
                         "id": "node_id",
-                        "bgcolor": "aqua",
+                        "bgcolor": osvc.colors.node,
                         "e_title": o.info_nodes_title,
                         "e_list": o.info_nodes,
 			"ondblclick": function(divid, data) {
@@ -134,7 +134,7 @@ function modset_properties(divid, options) {
                         "key": "svcname",
 			"item_class": "icon svc",
                         "id": "svc_id",
-                        "bgcolor": "seagreen",
+                        "bgcolor": osvc.colors.svc,
                         "e_title": o.info_services_title,
                         "e_list": o.info_services,
 			"ondblclick": function(divid, data) {
@@ -164,7 +164,7 @@ function modset_properties(divid, options) {
 				"key": "modset_name",
 				"item_class": "icon modset16",
 				"id": "id",
-				"bgcolor": "#EE5464",
+				"bgcolor": osvc.colors.comp,
 				"e_title": o.info_modulesets_title,
 				"e_list": o.info_modulesets,
 				"ondblclick": function(divid, data) {

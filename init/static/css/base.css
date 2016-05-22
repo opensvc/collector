@@ -1972,7 +1972,7 @@ ul.login_menu ul {
 	content: '\f12e';
 }
 .hv16:before {
-	color: aqua;
+	color: cornflowerblue;
 	content: '\f0c2';
 }
 .db16:before {
@@ -2008,7 +2008,7 @@ ul.login_menu ul {
 	content: '\f02b';
 }
 .cpu16:before {
-	color: aqua;
+	color: cornflowerblue;
 	content: '\f0c8';
 }
 .na:before {
@@ -2017,22 +2017,22 @@ ul.login_menu ul {
 	color: lightgray;
 }
 .hw16:before {
-	color: aqua;
+	color: cornflowerblue;
 	content: '\f0c8';
 	font-family: awesome;
 }
 .mem16:before {
-	color: aqua;
+	color: cornflowerblue;
 	content: '\f0c8';
 	font-family: awesome;
 }
 .obs16:before {
-	color: aqua;
+	color: cornflowerblue;
 	content: '\f1b8';
 	font-family: awesome;
 }
 .os16:before {
-	color: aqua;
+	color: cornflowerblue;
 	content: '\f268';
 	font-family: awesome;
 }
@@ -2146,7 +2146,7 @@ ul.login_menu ul {
 	color: red;
 }
 .node16:before {
-	color: aqua;
+	color: cornflowerblue;
 	content: '\f233';
 	font-family: awesome;
 }
@@ -2235,7 +2235,7 @@ ul.login_menu ul {
 	font-family: awesome;
 }
 .pwr:before {
-	color: aqua;
+	color: cornflowerblue;
 	content: '\f0e7';
 	font-family: awesome;
 }
@@ -2249,7 +2249,7 @@ ul.login_menu ul {
 	font-family: awesome;
 }
 .loc:before {
-	color: aqua;
+	color: cornflowerblue;
 	content: '\f041';
 	font-family: awesome;
 }

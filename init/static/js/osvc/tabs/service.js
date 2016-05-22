@@ -385,7 +385,7 @@ function service_properties(divid, options)
 				"key": "role",
 				"item_class": "icon guys16",
 				"id": "id",
-				"bgcolor": "salmon",
+				"bgcolor": osvc.colors.org,
 				"depends": ["svc_app"],
 				"e_title": o.responsibles_title,
 				"e_list": o.responsibles,

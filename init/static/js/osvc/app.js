@@ -6,7 +6,28 @@ var osvc = {
 	'table_filters_loaded': $.Deferred(),
 	'forms_loaded': $.Deferred(),
 	'i18n_started': $.Deferred(),
-	'app_started': $.Deferred()
+	'app_started': $.Deferred(),
+	'colors': {
+		'node': 'cornflowerblue',
+		'svc': 'seagreen',
+		'alert': 'orange',
+		'tag': 'darkcyan',
+		'pkg': '#cc9966',
+		'net': 'cadetblue',
+		'chk': 'green',
+		'form': 'palevioletred',
+		'stats': 'sandybrown',
+		'org': 'salmon',
+		'error': 'red',
+		'dns': 'aquamarine',
+		'priv': 'goldenrod',
+		'info': 'slategray',
+		'link': 'slategray',
+		'fset': 'slategray',
+		'disk': '#dd6666',
+		'comp': '#ee5464',
+		'app': 'deeppink'
+	}
 }
 
 var _badIE=0

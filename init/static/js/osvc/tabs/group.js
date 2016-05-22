@@ -130,7 +130,7 @@ function group_properties(divid, options) {
 				"key": "nodename",
 				"item_class": "icon node16",
 				"id": "node_id",
-				"bgcolor": "aqua",
+				"bgcolor": osvc.colors.node,
 				"e_title": o.info_nodes_title,
 				"e_list": o.info_nodes,
 				"ondblclick": function(divid, data) {
@@ -144,7 +144,7 @@ function group_properties(divid, options) {
 				"key": "svcname",
 				"item_class": "icon svc",
 				"id": "svc_id",
-				"bgcolor": "seagreen",
+				"bgcolor": osvc.colors.svc,
 				"e_title": o.info_services_title,
 				"e_list": o.info_services,
 				"ondblclick": function(divid, data) {
@@ -170,7 +170,7 @@ function group_properties(divid, options) {
 					return s
 				},
 				"id": "id",
-				"bgcolor": "salmon",
+				"bgcolor": osvc.colors.org,
 				"e_title": o.info_users_title,
 				"e_list": o.info_users,
 				"ondblclick": function(divid, data) {
@@ -185,7 +185,7 @@ function group_properties(divid, options) {
 				"key": "app",
 				"item_class": "icon app16",
 				"id": "id",
-				"bgcolor": "deeppink",
+				"bgcolor": osvc.colors.app,
 				"e_title": o.info_apps_title,
 				"e_list": o.info_apps,
 				"ondblclick": function(divid, data) {

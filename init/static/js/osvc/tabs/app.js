@@ -114,12 +114,12 @@ function app_properties(divid, options) {
 			})
 
 			app_publications({
-				"bgcolor": "salmon",
+				"bgcolor": osvc.colors.org,
 				"tid": o.info_publications,
 				"app_id": data.id
 			})
 			app_responsibles({
-				"bgcolor": "salmon",
+				"bgcolor": osvc.colors.org,
 				"tid": o.info_responsibles,
 				"app_id": data.id
 			})
@@ -131,7 +131,7 @@ function app_properties(divid, options) {
 				"item_class": "icon svc",
 				"id": "svc_id",
 				"title": "app_properties.services",
-				"bgcolor": "seagreen",
+				"bgcolor": osvc.colors.svc,
 				"e_title": o.info_services_title,
 				"e_list": o.info_services,
 				"lowercase": true,
@@ -147,7 +147,7 @@ function app_properties(divid, options) {
 				"item_class": "icon node16",
 				"id": "node_id",
 				"title": "app_properties.nodes",
-				"bgcolor": "aqua",
+				"bgcolor": osvc.colors.node,
 				"e_title": o.info_nodes_title,
 				"e_list": o.info_nodes,
 				"lowercase": true,
