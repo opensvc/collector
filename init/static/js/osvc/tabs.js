@@ -22,6 +22,12 @@ function tabs(divid) {
 		o.tabs_ul = o.closetab.parent()
 		o.display = o.div.find(".tab_display")
 
+		o.closetab
+		.css({"background-color": o.options.bgcolor})
+		.addClass("icon "+o.options.icon)
+		.attr("title", i18n.t("tabs.close"))
+		.tooltipster()
+
 		// set a tab identifer to help find peers
 		var tab_id = null
 		for (key in o.options) {
@@ -77,10 +83,8 @@ function tabs(divid) {
 		}
 
 		var e = $("<li></li>")
-		var p = $("<p></p>")
-		p.addClass(data.title_class)
-		p.text(i18n.t(data.title))
-		e.append(p)
+		.addClass(data.title_class)
+		.text(i18n.t(data.title))
 		o.tabs_ul.append(e)
 		data.tab = e
 

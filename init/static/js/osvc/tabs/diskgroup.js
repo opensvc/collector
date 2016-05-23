@@ -4,6 +4,8 @@
 function diskgroup_tabs(divid, options) {
   var o = tabs(divid)
   o.options = options
+  o.options.bgcolor = osvc.colors.disk
+  o.options.icon = "hd16"
 
   o.load(function() {
     services_osvcgetrest("R_ARRAY_DISKGROUP", [o.options.array_name, o.options.dg_name], {"meta": "0"}, function(jd) {
@@ -14,7 +16,7 @@ function diskgroup_tabs(divid, options) {
 
   o._load = function() {
     var title = o.data.dg_name
-    o.closetab.children("p").text(title)
+    o.closetab.text(title)
 
     // tab properties
     i = o.register_tab({

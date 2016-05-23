@@ -1,9 +1,8 @@
-//
-// report
-//
 function report_tabs(divid, options) {
 	var o = tabs(divid)
 	o.options = options
+	o.options.bgcolor = osvc.colors.stats
+	o.options.icon = "spark16"
 
 	o.load(function() {
 		if (o.options.report_name) {
@@ -11,7 +10,7 @@ function report_tabs(divid, options) {
 		} else {
 			var title = o.options.report_id
 		}
-		o.closetab.children("p").text(title)
+		o.closetab.text(title)
 
 		// tab properties
 		i = o.register_tab({

@@ -4,6 +4,8 @@
 function group_tabs(divid, options) {
   var o = tabs(divid)
   o.options = options
+  o.options.bgcolor = osvc.colors.org
+  o.options.icon = "guys16"
 
   o.load(function(){
     var i = 0
@@ -20,7 +22,7 @@ function group_tabs(divid, options) {
   })
 
   o._load = function() {
-    o.closetab.children("p").text(o.options.group_name ? o.options.group_name : o.options.group_id)
+    o.closetab.text(o.options.group_name ? o.options.group_name : o.options.group_id)
 
     // tab properties
     i = o.register_tab({

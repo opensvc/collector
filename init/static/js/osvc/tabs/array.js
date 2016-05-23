@@ -4,6 +4,8 @@
 function array_tabs(divid, options) {
   var o = tabs(divid)
   o.options = options
+  o.options.bgcolor = osvc.color.disk
+  o.options.icon = "hd16"
 
   o.load(function() {
     services_osvcgetrest("R_ARRAY", [o.options.array_name], {"meta": "0"}, function(jd) {
@@ -14,7 +16,7 @@ function array_tabs(divid, options) {
 
   o._load = function() {
     var title = o.data.array_name
-    o.closetab.children("p").text(title)
+    o.closetab.text(title)
 
     // tab properties
     i = o.register_tab({

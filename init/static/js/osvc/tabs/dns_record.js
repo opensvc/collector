@@ -4,6 +4,8 @@
 function dns_record_tabs(divid, options) {
   var o = tabs(divid)
   o.options = options
+  o.options.bgcolor = osvc.colors.dns
+  o.options.icon = "dns16"
 
   o.load(function() {
     services_osvcgetrest("R_DNS_RECORD", [o.options.record_id], {"meta": "0"}, function(jd) {
@@ -14,7 +16,7 @@ function dns_record_tabs(divid, options) {
 
   o._load = function() {
     var title = o.data.name
-    o.closetab.children("p").text(title)
+    o.closetab.text(title)
 
     // tab properties
     i = o.register_tab({

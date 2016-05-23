@@ -1,43 +1,42 @@
-//
-// quotas
-//
 function quota_tabs(divid, options) {
-  var o = tabs(divid)
-  o.options = options
+	var o = tabs(divid)
+	o.options = options
+	o.options.bgcolor = osvc.colors.disk
+	o.options.icon = "quota16"
 
-  o.load(function() {
-    var title = o.options.quota_id
-    o.closetab.children("p").text(title)
+	o.load(function() {
+		var title = o.options.quota_id
+		o.closetab.text(title)
 
-    // tab properties
-    i = o.register_tab({
-      "title": "node_tabs.properties",
-      "title_class": "icon quota16"
-    })
-    o.tabs[i].callback = function(divid) {
-      quota_properties(divid, o.options)
-    }
+		// tab properties
+		i = o.register_tab({
+			"title": "node_tabs.properties",
+			"title_class": "icon quota16"
+		})
+		o.tabs[i].callback = function(divid) {
+			quota_properties(divid, o.options)
+		}
 
-    // tab usage
-    i = o.register_tab({
-      "title": "node_tabs.stats",
-      "title_class": "icon spark16"
-    })
-    o.tabs[i].callback = function(divid) {
-      services_osvcgetrest("R_ARRAY_DISKGROUP_QUOTA", [0, 0, o.options.quota_id], {"meta": "0"}, function(jd) {
-        $.ajax({
-          "url": "/init/disks/ajax_app",
-          "type": "POST",
-          "success": function(msg) {$("#"+divid).html(msg)},
-          "data": {"app_id": jd.data[0].app_id, "dg_id": jd.data[0].dg_id, "rowid": divid}
-        })
-      })
-    }
+		// tab usage
+		i = o.register_tab({
+			"title": "node_tabs.stats",
+			"title_class": "icon spark16"
+		})
+		o.tabs[i].callback = function(divid) {
+			services_osvcgetrest("R_ARRAY_DISKGROUP_QUOTA", [0, 0, o.options.quota_id], {"meta": "0"}, function(jd) {
+				$.ajax({
+					"url": "/init/disks/ajax_app",
+					"type": "POST",
+					"success": function(msg) {$("#"+divid).html(msg)},
+					"data": {"app_id": jd.data[0].app_id, "dg_id": jd.data[0].dg_id, "rowid": divid}
+				})
+			})
+		}
 
-    o.set_tab(o.options.tab)
-  })
+		o.set_tab(o.options.tab)
+	})
 
-  return o
+	return o
 }
 
 function quota_properties(divid, options) {

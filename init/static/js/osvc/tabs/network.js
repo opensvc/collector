@@ -2,33 +2,34 @@
 // network
 //
 function network_tabs(divid, options) {
-  var o = tabs(divid)
-  o.options = options
+	var o = tabs(divid)
+	o.options = options
+	o.options.bgcolor = osvc.colors.net
+	o.options.icon = "net16"
 
-  o.load(function() {
-    o.closetab.children("p").text(o.options.network_id)
+	o.load(function() {
+		o.closetab.text(o.options.network_id)
 
-    // tab properties
-    i = o.register_tab({
-      "title": "node_tabs.properties",
-      "title_class": "icon net16"
-    })
-    o.tabs[i].callback = function(divid) {
-      network_properties(divid, o.options)
-    }
-    i = o.register_tab({
-      "title": "network_tabs.segments",
-      "title_class": "icon net16"
-    })
-    o.tabs[i].callback = function(divid) {
-      sync_ajax("/init/networks/segments/"+o.options.network_id, [], divid, function(){})
-    }
+		// tab properties
+		i = o.register_tab({
+			"title": "node_tabs.properties",
+			"title_class": "icon net16"
+		})
+		o.tabs[i].callback = function(divid) {
+			network_properties(divid, o.options)
+		}
+		i = o.register_tab({
+			"title": "network_tabs.segments",
+			"title_class": "icon net16"
+		})
+		o.tabs[i].callback = function(divid) {
+			sync_ajax("/init/networks/segments/"+o.options.network_id, [], divid, function(){})
+		}
 
-    o.set_tab(o.options.tab)
-  })
-  return o
+		o.set_tab(o.options.tab)
+	})
+	return o
 }
-
 
 function network_properties(divid, options) {
 	var o = {}

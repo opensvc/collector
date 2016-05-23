@@ -4,6 +4,8 @@
 function chart_tabs(divid, options) {
 	var o = tabs(divid)
 	o.options = options
+	o.options.bgcolor = osvc.colors.stats
+	o.options.icon = "spark16"
 
 	o.load(function() {
 		if (o.options.chart_name) {
@@ -11,7 +13,7 @@ function chart_tabs(divid, options) {
 		} else {
 			var title = o.options.chart_id
 		}
-		o.closetab.children("p").text(title)
+		o.closetab.text(title)
 
 		// tab properties
 		i = o.register_tab({

@@ -2,35 +2,37 @@
 // moduleset
 //
 function moduleset_tabs(divid, options) {
-  var o = tabs(divid)
-  o.options = options
+	var o = tabs(divid)
+	o.options = options
+	o.options.icon = "modset16"
+	o.options.bgcolor = osvc.colors.comp
 
-  o.load(function() {
-    var title = o.options.modset_name
-    o.closetab.children("p").text(title)
+	o.load(function() {
+		var title = o.options.modset_name
+		o.closetab.text(title)
 
-    // tab properties
-    i = o.register_tab({
-      "title": "node_tabs.properties",
-      "title_class": "icon modset16"
-    })
-    o.tabs[i].callback = function(divid) {
-      modset_properties(divid, o.options)
-    }
+		// tab properties
+		i = o.register_tab({
+			"title": "node_tabs.properties",
+			"title_class": "icon modset16"
+		})
+		o.tabs[i].callback = function(divid) {
+			modset_properties(divid, o.options)
+		}
 
-    // tab quotas
-    i = o.register_tab({
-      "title": "modset_tabs.export",
-      "title_class": "icon log16"
-    })
-    o.tabs[i].callback = function(divid) {
-      modset_export(divid, o.options)
-    }
+		// tab quotas
+		i = o.register_tab({
+			"title": "modset_tabs.export",
+			"title_class": "icon log16"
+		})
+		o.tabs[i].callback = function(divid) {
+			modset_export(divid, o.options)
+		}
 
-    o.set_tab(o.options.tab)
-  })
+		o.set_tab(o.options.tab)
+	})
 
-  return o
+	return o
 }
 
 function modset_properties(divid, options) {

@@ -2,47 +2,49 @@
 // app
 //
 function app_tabs(divid, options) {
-  var o = tabs(divid)
-  o.options = options
+	var o = tabs(divid)
+	o.options = options
+	o.options.bgcolor = osvc.colors.app
+	o.options.icon = "app16"
 
-  o.load(function(){
-    var i = 0
+	o.load(function(){
+		var i = 0
 
-    if (!("app_id" in o.options) && ("app_name" in o.options)) {
-      services_osvcgetrest("R_APPS", "", {"filters": ["app "+o.options.app_name]}, function(jd) {
-        var app = jd.data[0]
-        o.options.app_id = app.id
-        o._load()
-      })
-    } else {
-      o._load()
-    }
-  })
+		if (!("app_id" in o.options) && ("app_name" in o.options)) {
+			services_osvcgetrest("R_APPS", "", {"filters": ["app "+o.options.app_name]}, function(jd) {
+				var app = jd.data[0]
+				o.options.app_id = app.id
+				o._load()
+			})
+		} else {
+			o._load()
+		}
+	})
 
-  o._load = function() {
-    o.closetab.children("p").text(o.options.app_name ? o.options.app_name : o.options.app_id)
+	o._load = function() {
+		o.closetab.text(o.options.app_name ? o.options.app_name : o.options.app_id)
 
-    // tab properties
-    i = o.register_tab({
-      "title": "node_tabs.properties",
-      "title_class": "icon app16"
-    })
-    o.tabs[i].callback = function(divid) {
-      app_properties(divid, o.options)
-    }
+		// tab properties
+		i = o.register_tab({
+			"title": "node_tabs.properties",
+			"title_class": "icon app16"
+		})
+		o.tabs[i].callback = function(divid) {
+			app_properties(divid, o.options)
+		}
 
-    // tab quotas
-    i = o.register_tab({
-      "title": "array_tabs.quotas",
-      "title_class": "icon quota16"
-    })
-    o.tabs[i].callback = function(divid) {
-      table_quota_app(divid, o.options.app_name)
-    }
+		// tab quotas
+		i = o.register_tab({
+			"title": "array_tabs.quotas",
+			"title_class": "icon quota16"
+		})
+		o.tabs[i].callback = function(divid) {
+			table_quota_app(divid, o.options.app_name)
+		}
 
-    o.set_tab(o.options.tab)
-  }
-  return o
+		o.set_tab(o.options.tab)
+	}
+	return o
 }
 
 

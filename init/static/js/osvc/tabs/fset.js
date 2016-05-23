@@ -4,10 +4,12 @@
 function filterset_tabs(divid, options) {
 	var o = tabs(divid)
 	o.options = options
+	o.options.bgcolor = osvc.colors.fset
+	o.options.icon = "filter16"
 
 	o.load(function() {
 		var title = o.options.fset_name
-		o.closetab.children("p").text(title)
+		o.closetab.text(title)
 
 		// tab properties
 		i = o.register_tab({

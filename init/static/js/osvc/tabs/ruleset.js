@@ -1,9 +1,8 @@
-//
-// ruleset
-//
 function ruleset_tabs(divid, options) {
 	var o = tabs(divid)
 	o.options = options
+	o.options.bgcolor = osvc.colors.comp
+	o.options.icon = "rset16"
 
 	o.load(function() {
 		if (!("ruleset_id" in o.options)) {
@@ -22,7 +21,7 @@ function ruleset_tabs(divid, options) {
 		} else {
 			var title = o.options.ruleset_id
 		}
-		o.closetab.children("p").text(title)
+		o.closetab.text(title)
 
 		// tab properties
 		i = o.register_tab({

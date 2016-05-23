@@ -2,44 +2,46 @@
 // user
 //
 function user_tabs(divid, options) {
-  var o = tabs(divid)
-  o.options = options
+	var o = tabs(divid)
+	o.options = options
+	o.options.bgcolor = osvc.colors.org
+	o.options.icon = "guy16"
 
-  o.load(function(){
-    var i = 0
+	o.load(function(){
+		var i = 0
 
-    if (!("user_id" in o.options) && ("fullname" in o.options)) {
-      services_osvcgetrest("R_SEARCH", "", {"substring": o.options.fullname, "in": "user"}, function(jd) {
-        var users = jd.data.users.data
-        for (var i=0; i<users.length; i++) {
-          var user = users[i]
-          if (user.fullname == o.options.fullname) {
-            o.options.user_id = user.id
-            break
-          }
-        }
-        o._load()
-      })
-    } else {
-      o._load()
-    }
-  })
+		if (!("user_id" in o.options) && ("fullname" in o.options)) {
+			services_osvcgetrest("R_SEARCH", "", {"substring": o.options.fullname, "in": "user"}, function(jd) {
+				var users = jd.data.users.data
+				for (var i=0; i<users.length; i++) {
+					var user = users[i]
+					if (user.fullname == o.options.fullname) {
+						o.options.user_id = user.id
+						break
+					}
+				}
+				o._load()
+			})
+		} else {
+			o._load()
+		}
+	})
 
-  o._load = function() {
-    o.closetab.children("p").text(o.options.fullname ? o.options.fullname : o.options.user_id)
+	o._load = function() {
+		o.closetab.text(o.options.fullname ? o.options.fullname : o.options.user_id)
 
-    // tab properties
-    i = o.register_tab({
-      "title": "node_tabs.properties",
-      "title_class": "icon guy16"
-    })
-    o.tabs[i].callback = function(divid) {
-      user_properties(divid, o.options)
-    }
+		// tab properties
+		i = o.register_tab({
+			"title": "node_tabs.properties",
+			"title_class": "icon guy16"
+		})
+		o.tabs[i].callback = function(divid) {
+			user_properties(divid, o.options)
+		}
 
-    o.set_tab(o.options.tab)
-  }
-  return o
+		o.set_tab(o.options.tab)
+	}
+	return o
 }
 
 

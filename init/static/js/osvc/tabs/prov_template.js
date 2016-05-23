@@ -1,39 +1,38 @@
-//
-// prov template
-//
 function prov_template_tabs(divid, options) {
-  var o = tabs(divid)
-  o.options = options
+	var o = tabs(divid)
+	o.options = options
+	o.options.bgcolor = osvc.colors.svc
+	o.options.icon = "prov"
 
-  o.load(function() {
-    if (o.options.tpl_name) {
-      var title = o.options.tpl_name
-    } else {
-      var title = o.options.tpl_id
-    }
-    o.closetab.children("p").text(title)
+	o.load(function() {
+		if (o.options.tpl_name) {
+			var title = o.options.tpl_name
+		} else {
+			var title = o.options.tpl_id
+		}
+		o.closetab.text(title)
 
-    // tab properties
-    i = o.register_tab({
-      "title": "form_tabs.properties",
-      "title_class": "icon prov"
-    })
-    o.tabs[i].callback = function(divid) {
-      prov_template_properties(divid, o.options)
-    }
+		// tab properties
+		i = o.register_tab({
+			"title": "form_tabs.properties",
+			"title_class": "icon prov"
+		})
+		o.tabs[i].callback = function(divid) {
+			prov_template_properties(divid, o.options)
+		}
 
-    // tab definition
-    i = o.register_tab({
-      "title": "form_tabs.definition",
-      "title_class": "icon edit16"
-    })
-    o.tabs[i].callback = function(divid) {
-      prov_template_definition(divid, o.options)
-    }
+		// tab definition
+		i = o.register_tab({
+			"title": "form_tabs.definition",
+			"title_class": "icon edit16"
+		})
+		o.tabs[i].callback = function(divid) {
+			prov_template_definition(divid, o.options)
+		}
 
-    o.set_tab(o.options.tab)
-  })
-  return o
+		o.set_tab(o.options.tab)
+	})
+	return o
 }
 
 

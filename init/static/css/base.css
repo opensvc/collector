@@ -1394,8 +1394,14 @@ a.xinfo_shown span {
 }
 .tab .closetab {
 	background-color: #2D2D2D;
-	color:white;
+	color:whitesmoke;
 	border: none;
+}
+.closetab:before {
+	color: whitesmoke !important;
+}
+.closetab > span > span:before {
+	color: whitesmoke !important;
 }
 
 .action_menu {

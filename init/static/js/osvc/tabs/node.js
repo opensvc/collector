@@ -1,9 +1,8 @@
-//
-// node
-//
 function node_tabs(divid, options) {
 	var o = tabs(divid)
 	o.options = options
+	o.options.bgcolor = osvc.colors.node
+	o.options.icon = "node16"
 	if (!o.options.node_id) {
 		return
 	}
@@ -17,7 +16,7 @@ function node_tabs(divid, options) {
 		var i = 0
 
 		// tab properties
-		o.closetab.children("p").text(o.options.node_data.nodename)
+		o.closetab.text(o.options.node_data.nodename)
 		i = o.register_tab({
 			"title": "node_tabs.properties",
 			"title_class": "icon node16"

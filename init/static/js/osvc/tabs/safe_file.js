@@ -1,13 +1,12 @@
-//
-// form
-//
 function safe_file_tabs(divid, options) {
 	var o = tabs(divid)
 	o.options = options
+	o.options.bgcolor = osvc.colors.comp
+	o.options.icon = "safe16"
 
 	o.load(function() {
 		var title = o.options.uuid
-		o.closetab.children("p").text(title)
+		o.closetab.text(title)
 
 		// tab properties
 		i = o.register_tab({

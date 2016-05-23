@@ -4,10 +4,12 @@
 function service_tabs(divid, options) {
 	var o = tabs(divid)
 	o.options = options
+	o.options.bgcolor = osvc.colors.svc
+
 	o.load(function(){
 		var i = 0
 		var e_title = $("<span svc_id="+o.options.svc_id+"></span>")
-		o.closetab.children("p").append(e_title)
+		o.closetab.append(e_title)
 		e_title.osvc_svcname()
 
 		// tab properties
