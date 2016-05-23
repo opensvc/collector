@@ -139,7 +139,7 @@ function metric_request(divid, options) {
 		} else {
 			var text = i18n.t("metric_properties.no_request")
 		}
-		$.data(div, "v", text)
+		$.data(div[0], "v", text)
 		cell_decorator_sql(div)
 
 		div.bind("click", function() {

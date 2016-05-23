@@ -739,13 +739,13 @@ function table_init(opts) {
 		}
 	}
 
-	t._cell_decorator = function(cell, span) {
-                var col = $(cell).attr('col')
+	t._cell_decorator = function(cell, span, line) {
+                var col = cell.attr('col')
 		if (span && t.options.span.indexOf(col) >= 0) {
-			$(cell).empty()
+			cell.empty()
 			return
 		}
-		var cl = $(cell).attr('class')
+		var cl = cell.attr('class')
 		if (!cl) {
 			return
 		}
@@ -755,7 +755,7 @@ function table_init(opts) {
 			if (!(c in cell_decorators)) {
 				continue
 			}
-			cell_decorators[c](cell)
+			cell_decorators[c](cell, line)
 		}
 	}
 
@@ -774,7 +774,7 @@ function table_init(opts) {
 			}
 			spansum1 = spansum2
 			line.children("[cell=1]").each(function(){
-				t._cell_decorator(this, span)
+				t._cell_decorator($(this), span, line)
 			})
 		})
 		return lines

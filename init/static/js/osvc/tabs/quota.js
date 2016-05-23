@@ -72,7 +72,7 @@ function quota_properties(divid, options) {
 
 	o._load_quota = function() {
 		o.info_id.html(o.data.id)
-		$.data(o.info_quota, "v", o.data.quota)
+		$.data(o.info_quota[0], "v", o.data.quota)
 		cell_decorator_size_mb(o.info_quota)
 
 		services_osvcgetrest("R_APP", [o.data.app_id], "", function(jd) {
@@ -82,10 +82,10 @@ function quota_properties(divid, options) {
 		services_osvcgetrest("R_ARRAY_DISKGROUP", [0, o.data.dg_id], "", function(jd) {
 			o.info_dg_name.html(jd.data[0].dg_name)
 
-			$.data(o.info_dg_free, "v", jd.data[0].dg_free)
-			$.data(o.info_dg_size, "v", jd.data[0].dg_size)
-			$.data(o.info_dg_used, "v", jd.data[0].dg_used)
-			$.data(o.info_dg_reserved, "v", jd.data[0].dg_reserved)
+			$.data(o.info_dg_free[0], "v", jd.data[0].dg_free)
+			$.data(o.info_dg_size[0], "v", jd.data[0].dg_size)
+			$.data(o.info_dg_used[0], "v", jd.data[0].dg_used)
+			$.data(o.info_dg_reserved[0], "v", jd.data[0].dg_reserved)
 			cell_decorator_size_mb(o.info_dg_free)
 			cell_decorator_size_mb(o.info_dg_size)
 			cell_decorator_size_mb(o.info_dg_used)
@@ -114,7 +114,7 @@ function quota_properties(divid, options) {
 			]
 			tab_tools({
 				"div": o.div.find("#tools"),
-				"data": {"id": data.id},
+				"data": {"id": o.data.id},
 				"am_data": am_data
 			})
 

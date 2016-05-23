@@ -147,7 +147,7 @@ function report_definition(divid, options) {
 		} else {
 			var text = i18n.t("report_properties.no_yaml")
 		}
-		$.data(div, "v", text)
+		$.data(div[0], "v", text)
 		cell_decorator_yaml(div)
 
 		div.bind("click", function() {

@@ -88,7 +88,7 @@ function array_properties(divid, options) {
 		o.info_array_firmware.html(o.data.array_firmware)
 		o.info_array_level.html(o.data.array_level)
 		o.info_array_updated.html(osvc_date_from_collector(o.data.array_updated))
-		$.data(o.info_array_cache, "v", o.data.array_cache)
+		$.data(o.info_array_cache[0], "v", o.data.array_cache)
 		cell_decorator_size_mb(o.info_array_cache)
 	}
 

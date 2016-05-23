@@ -440,7 +440,7 @@ tab_properties_generic_simple = function(options) {
 				e.hide()
 				var cell = e.prev()
 				if (updater == "size_mb") {
-					$.data(cell, "v", val)
+					$.data(cell[0], "v", val)
 					cell_decorator_size_mb(cell)
 				} else {
 					cell.text(val).show()

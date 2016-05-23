@@ -147,7 +147,7 @@ function prov_template_definition(divid, options) {
 		} else {
 			var text = i18n.t("prov_template_properties.no_command")
 		}
-		$.data(div, "v", text)
+		$.data(div[0], "v", text)
 		cell_decorator_tpl_command(div)
 
 		div.bind("click", function() {

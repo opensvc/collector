@@ -440,12 +440,12 @@ function app_datetime_decorators() {
 			osvc.datetime_decorators_running = true
 			for (var key in data) {
 				$("."+key).each(function() {
-					cell_decorators[key](this)
+					cell_decorators[key]($(this))
 				})
 			}
 			osvc.datetime_decorators_running = false
-		} catch(e) {
-			console.log(e)
+		} catch(err) {
+			console.log(err)
 			osvc.datetime_decorators_running = false
 		}
 	}, 5000)
