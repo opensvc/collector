@@ -58,13 +58,71 @@ function app_start() {
 		paths: {
 			"vis": "vis/dist/vis.min",
 			"jquery": "jquery",
+			"jqplot-base": "jqplot/jquery.jqplot.min",
+			"jqplot-plugins": "jqplot/plugins",
+			"jqplot-plugins-highlighter": "jqplot/plugins/jqplot.highlighter.min",
+			"jqplot-plugins-canvasTextRenderer": "jqplot/plugins/jqplot.canvasTextRenderer.min",
+			"jqplot-plugins-canvasAxisTickRenderer": "jqplot/plugins/jqplot.canvasAxisTickRenderer.min",
+			"jqplot-plugins-categoryAxisRenderer": "jqplot/plugins/jqplot.categoryAxisRenderer.min",
+			"jqplot-plugins-dateAxisRenderer": "jqplot/plugins/jqplot.dateAxisRenderer.min",
+			"jqplot-plugins-barRenderer": "jqplot/plugins/jqplot.barRenderer.min",
+			"jqplot-plugins-ohlcRenderer": "jqplot/plugins/jqplot.ohlcRenderer.min",
+			"jqplot-plugins-cursor": "jqplot/plugins/jqplot.cursor.min",
+			"jqplot-plugins-enhancedLegendRenderer": "jqplot/plugins/jqplot.enhancedLegendRenderer.min",
+			"jqplot-plugins-pieRenderer": "jqplot/plugins/jqplot.pieRenderer.min",
+			"jqplot-plugins-donutRenderer": "jqplot/plugins/jqplot.donutRenderer.min",
 			"jstree": "jstree/jstree.min",
 			"hljs": "highlight/highlight.pack"
 		},
 		shim: {
-			"jstree": {
-				//deps: ["jquery", "jqueryui", "jquery.hotkeys", "jquery.cookie"],
-				exports: "jQuery.fn.jstree"
+			"jqplot-plugins-highlighter": {
+				deps: ["jqplot-base"]
+			},
+			"jqplot-plugins-canvasTextRenderer": {
+				deps: ["jqplot-base"]
+			},
+			"jqplot-plugins-canvasAxisTickRenderer": {
+				deps: ["jqplot-base"]
+			},
+			"jqplot-plugins-categoryAxisRenderer": {
+				deps: ["jqplot-base"]
+			},
+			"jqplot-plugins-dateAxisRenderer": {
+				deps: ["jqplot-base"]
+			},
+			"jqplot-plugins-barRenderer": {
+				deps: ["jqplot-base"]
+			},
+			"jqplot-plugins-ohlcRenderer": {
+				deps: ["jqplot-base"]
+			},
+			"jqplot-plugins-cursor": {
+				deps: ["jqplot-base"]
+			},
+			"jqplot-plugins-enhancedLegendRenderer": {
+				deps: ["jqplot-base"]
+			},
+			"jqplot-plugins-pieRenderer": {
+				deps: ["jqplot-base"]
+			},
+			"jqplot-plugins-donutRenderer": {
+				deps: ["jqplot-base"]
+			},
+			"jqplot": {
+				deps: [
+					"jqplot-base",
+					"jqplot-plugins-highlighter",
+					"jqplot-plugins-canvasTextRenderer",
+					"jqplot-plugins-canvasAxisTickRenderer",
+					"jqplot-plugins-categoryAxisRenderer",
+					"jqplot-plugins-dateAxisRenderer",
+					"jqplot-plugins-barRenderer",
+					"jqplot-plugins-ohlcRenderer",
+					"jqplot-plugins-cursor",
+					"jqplot-plugins-enhancedLegendRenderer",
+					"jqplot-plugins-pieRenderer",
+					"jqplot-plugins-donutRenderer"
+				]
 			}
 		}
 	})
@@ -817,6 +875,30 @@ function app_properties(divid, options) {
 function app_tabs(divid, options) {
 	require(["osvc/tabs/app"], function() {
 		app_tabs(divid, options)
+	})
+}
+
+function metric(divid, options) {
+	require(["osvc/reports/reports"], function() {
+		metric(divid, options)
+	})
+}
+
+function chart(divid, options) {
+	require(["osvc/reports/reports"], function() {
+		chart(divid, options)
+	})
+}
+
+function report(divid, options) {
+	require(["osvc/reports/reports"], function() {
+		report(divid, options)
+	})
+}
+
+function reports(divid, options) {
+	require(["osvc/reports/reports"], function() {
+		reports(divid, options)
 	})
 }
 

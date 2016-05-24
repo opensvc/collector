@@ -1,4 +1,6 @@
+
 function comp_status_plot(url, id) {
+  require(["jqplot"], function(){
     if (!$("#"+id).is(":visible")) {
         return
     }
@@ -53,9 +55,11 @@ function comp_status_plot(url, id) {
 		}
 	    }
 	});
-    });
+    })
+  })
 }
 function avail_plot(id, data) {
+  require(["jqplot"], function(){
     $.jqplot.config.enablePlugins = true;
         document.getElementById(id).style['height'] = '50px'
 	$.jqplot(id, data, {
@@ -112,6 +116,7 @@ function avail_plot(id, data) {
 		}
 	    }
 	})
+  })
 }
 
 function plot_height(id, data) {
@@ -135,6 +140,7 @@ function plot_width(id, data) {
 }
 
 function stats_avg_cpu_for_nodes(url, id) {
+  require(["jqplot"], function(){
     $.jqplot.config.enablePlugins = true;
     $.getJSON(url, function(data) {
         if (data[0].length == 0) { return }
@@ -189,8 +195,10 @@ function stats_avg_cpu_for_nodes(url, id) {
 	});
         _jqplot_extra($('#'+id), p)
     });
+  })
 }
 function stats_avg_swp_for_nodes(url, id) {
+  require(["jqplot"], function(){
     $.jqplot.config.enablePlugins = true;
     $.getJSON(url, function(data) {
         if (data[0].length == 0) { return }
@@ -249,8 +257,10 @@ function stats_avg_swp_for_nodes(url, id) {
 	});
         _jqplot_extra($('#'+id), p)
     });
+  })
 }
 function stats_avg_mem_for_nodes(url, id) {
+  require(["jqplot"], function(){
     $.jqplot.config.enablePlugins = true;
     $.getJSON(url, function(data) {
         if (data[0].length == 0) { return }
@@ -309,8 +319,10 @@ function stats_avg_mem_for_nodes(url, id) {
 	});
         _jqplot_extra($('#'+id), p)
     });
+  })
 }
 function stats_avg_block_for_nodes(url, id) {
+  require(["jqplot"], function(){
     $.jqplot.config.enablePlugins = true;
     $.getJSON(url, function(data) {
         if (data[0].length == 0) { return }
@@ -425,8 +437,10 @@ function stats_avg_block_for_nodes(url, id) {
 	});
         _jqplot_extra($('#'+id+'_bps'), p)
     });
+  })
 }
 function stats_disk_for_svc(url, id) {
+  require(["jqplot"], function(){
     $.jqplot.config.enablePlugins = true;
     $.getJSON(url, function(data) {
         if (data[0].length == 0) { return }
@@ -483,8 +497,10 @@ function stats_disk_for_svc(url, id) {
 	});
         _jqplot_extra($('#'+id), p)
     });
+  })
 }
 function stats_avg_proc_for_nodes(url, id) {
+  require(["jqplot"], function(){
     $.jqplot.config.enablePlugins = true;
     $.getJSON(url, function(data) {
         if (data[0].length == 0) { return }
@@ -574,8 +590,10 @@ function stats_avg_proc_for_nodes(url, id) {
 	});
         _jqplot_extra($('#'+id+'_plist_sz'), p)
     });
+  })
 }
 function dash_history(url, id) {
+  require(["jqplot"], function(){
     $.jqplot.config.enablePlugins = true;
     $.getJSON(url, function(data) {
         //$('#'+id).height('300px')
@@ -614,8 +632,10 @@ function dash_history(url, id) {
         });
         _jqplot_extra($('#'+id), p)
     });
+  })
 }
 function comp_history(url, id) {
+  require(["jqplot"], function(){
     $.jqplot.config.enablePlugins = true;
     $.getJSON(url, function(data) {
         //$('#'+id).height('300px')
@@ -659,7 +679,8 @@ function comp_history(url, id) {
             }
         });
         _jqplot_extra($('#'+id), p)
-    });
+    })
+  })
 }
 
 function mangle_data(data) {
@@ -672,6 +693,7 @@ function mangle_data(data) {
 }
 
 function stats_cpu(url, id) {
+  require(["jqplot"], function(){
     $.jqplot.config.enablePlugins = true;
     $.getJSON(url, function(data) {
         $("#"+id+"_u").width("600px")
@@ -728,8 +750,10 @@ function stats_cpu(url, id) {
 	});
         _jqplot_extra($('#'+id+'_u'), p)
     });
+  })
 }
 function stats_proc(url, id) {
+  require(["jqplot"], function(){
     $.jqplot.config.enablePlugins = true;
     $.getJSON(url, function(data) {
         data = mangle_data(data)
@@ -865,6 +889,7 @@ function stats_proc(url, id) {
 	});
         _jqplot_extra($('#'+id+'_loadavg'), p)
     });
+  })
 }
 function stats_svc_cpu(url, id) {
     stats_svc(url, id, "cpu usage", "%")
@@ -900,6 +925,7 @@ function stats_svc_cap_cpu(url, id) {
     stats_svc(url, id, "cpu cap", "")
 }
 function stats_svc(url, id, title, unit) {
+  require(["jqplot"], function(){
     if(typeof(unit)==='undefined') {
         unit = "MB"
     }
@@ -972,8 +998,10 @@ function stats_svc(url, id, title, unit) {
 	});
         _jqplot_extra($('#'+id), p)
     });
+  })
 }
 function stats_mem(url, id) {
+  require(["jqplot"], function(){
     $.jqplot.config.enablePlugins = true;
     $.getJSON(url, function(data) {
         data = mangle_data(data)
@@ -1085,8 +1113,10 @@ function stats_mem(url, id) {
         _jqplot_extra($('#'+id+'_pct'), p)
 
     });
+  })
 }
 function stats_swap(url, id) {
+  require(["jqplot"], function(){
     $.jqplot.config.enablePlugins = true;
     $.getJSON(url, function(data) {
         data = mangle_data(data)
@@ -1193,8 +1223,10 @@ function stats_swap(url, id) {
 	});
         _jqplot_extra($('#'+id+'_pct'), p)
     });
+  })
 }
 function stats_block(url, id) {
+  require(["jqplot"], function(){
     $.jqplot.config.enablePlugins = true;
     $.getJSON(url, function(data) {
         data = mangle_data(data)
@@ -1310,8 +1342,10 @@ function stats_block(url, id) {
 	});
         _jqplot_extra($('#'+id+'_bps'), p)
     });
+  })
 }
 function stats_trend_mem(url, id) {
+  require(["jqplot"], function(){
     $.jqplot.config.enablePlugins = true;
     $.getJSON(url, function(data) {
 	p = $.jqplot(id, [data], {
@@ -1355,8 +1389,10 @@ function stats_trend_mem(url, id) {
 	});
         _jqplot_extra($('#'+id), p)
     });
+  })
 }
 function stats_trend_cpu(url, id) {
+  require(["jqplot"], function(){
     $.jqplot.config.enablePlugins = true;
     $.getJSON(url, function(data) {
 	p = $.jqplot(id, [data], {
@@ -1401,8 +1437,10 @@ function stats_trend_cpu(url, id) {
 	});
         _jqplot_extra($('#'+id), p)
     });
+  })
 }
 function stats_blockdev(url, id) {
+  require(["jqplot"], function(){
     $.jqplot.config.enablePlugins = true;
     $.getJSON(url, function(_data) {
         colors = [ "#4bb2c5", "#4bb2c5", "#EAA228", "#EAA228", "#c5b47f", "#c5b47f", "#579575", "#579575", "#839557", "#839557", "#958c12", "#958c12", "#953579", "#953579", "#4b5de4", "#4b5de4", "#d8b83f", "#d8b83f", "#ff5800", "#ff5800", "#0085cc", "#0085cc", "#c747a3", "#c747a3", "#cddf54", "#cddf54", "#FBD178", "#FBD178", "#26B4E3", "#26B4E3", "#bd70c7", "#bd70c7"]
@@ -2102,8 +2140,10 @@ function stats_blockdev(url, id) {
 	});
         _jqplot_extra($('#'+id+'_tm'), p)
     });
+  })
 }
 function stats_netdev_err(url, id) {
+  require(["jqplot"], function(){
     $.jqplot.config.enablePlugins = true;
     $.getJSON(url, function(_data) {
         errps = _data[0]
@@ -2300,8 +2340,10 @@ function stats_netdev_err(url, id) {
 	});
         _jqplot_extra($('#'+id+'_dropps'), p)
     });
+  })
 }
 function stats_netdev_avg(url, id) {
+  require(["jqplot"], function(){
     $.jqplot.config.enablePlugins = true;
     $.getJSON(url, function(data) {
         plot_width_x(id+'_kBps', data[0])
@@ -2384,8 +2426,10 @@ function stats_netdev_avg(url, id) {
 	});
         _jqplot_extra($('#'+id+'_pckps'), p)
     });
+  })
 }
 function stats_netdev(url, id) {
+  require(["jqplot"], function(){
     $.jqplot.config.enablePlugins = true;
     $.getJSON(url, function(_data) {
         bw = _data[0]
@@ -2520,6 +2564,7 @@ function stats_netdev(url, id) {
 	});
         _jqplot_extra($('#'+id+'_pckps'), p)
     });
+  })
 }
 function convert_size(val, target_unit) {
 	if (val == "") {
@@ -2744,6 +2789,7 @@ function best_unit_mb(max, iunit) {
     return {'unit': unit, 'div': div/idiv, 'fmt': fmt}
 }
 function stats_fs(url, id) {
+  require(["jqplot"], function(){
     $.jqplot.config.enablePlugins = true;
     $.getJSON(url, function(data) {
         data[1] = mangle_data(data[1])
@@ -2798,8 +2844,10 @@ function stats_fs(url, id) {
   	});
         _jqplot_extra($('#'+id+'_u'), p)
     });
+  })
 }
 function stats_resinfo(url, id) {
+  require(["jqplot"], function(){
     $.jqplot.config.enablePlugins = true;
     $.getJSON(url, function(data) {
         max = 0
@@ -2848,8 +2896,10 @@ function stats_resinfo(url, id) {
 	});
         _jqplot_extra($('#'+id), p)
     });
+  })
 }
 function stats_disk_array(url, id) {
+  require(["jqplot"], function(){
     $.getJSON(url, function(data) {
         max = 0
         for (i=0; i<data.length; i++) {
@@ -2905,8 +2955,10 @@ function stats_disk_array(url, id) {
 	});
         _jqplot_extra($('#'+id), p)
     });
+  })
 }
 function stats_disk_app(url, id) {
+  require(["jqplot"], function(){
     $.getJSON(url, function(data) {
         max = 0
         for (i=0; i<data.length; i++) {
@@ -2958,8 +3010,10 @@ function stats_disk_app(url, id) {
 	});
         _jqplot_extra($('#'+id), p)
     });
+  })
 }
 function charts_plot(url, id) {
+  require(["jqplot"], function(){
     $.jqplot.config.enablePlugins = true
     $.getJSON(url, function(dd) {
         data = dd['data']
@@ -3036,8 +3090,10 @@ function charts_plot(url, id) {
 	});
         _jqplot_extra($('#'+id), p)
     });
+  })
 }
 function obsplot(o) {
+  require(["jqplot"], function(){
   var data = $.parseJSON(o.html())
   o.html("")
   if (data[0].length < 1) {
@@ -3080,6 +3136,7 @@ function obsplot(o) {
   }
   p = $.jqplot(o.attr('id'), data, options)
   _jqplot_extra(o, p)
+  })
 }
 
 function _jqplot_extra(e, p){
@@ -3096,6 +3153,7 @@ function _jqplot_resize(e, p){
 }
 
 function savedonut(o) {
+  require(["jqplot"], function(){
   try{
   var d = $.parseJSON(o.html())
   var total = fancy_size_mb(d['total'])
@@ -3125,6 +3183,7 @@ function savedonut(o) {
         }
   )
   } catch(e) {}
+  })
 }
 
 function plot_savedonuts() {
@@ -3162,6 +3221,7 @@ function plot_savedonuts() {
 }
 
 function diskdonut(o) {
+  require(["jqplot"], function(){
   try{
   var d = $.parseJSON(o.html())
   var total = fancy_size_mb(d['total'])
@@ -3192,6 +3252,7 @@ function diskdonut(o) {
         }
   );
   } catch(e) {}
+  })
 }
 
 function plot_diskdonuts() {

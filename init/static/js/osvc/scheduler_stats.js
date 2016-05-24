@@ -135,14 +135,16 @@ function scheduler_stats(divid) {
 		} catch (e) { }
 	}
 
-	o.div.load("/init/static/views/scheduler_stats.html", function() {
-		o.div.i18n()
-		o.e_feed_task_status = $("[name=feed_task_status]")
-		o.e_feed_task_status.uniqueId()
-		o.e_feed_task_functions = $("[name=feed_task_functions]")
-		o.e_feed_task_functions.uniqueId()
+	require(["jqplot"], function() {
+		o.div.load("/init/static/views/scheduler_stats.html", function() {
+			o.div.i18n()
+			o.e_feed_task_status = $("[name=feed_task_status]")
+			o.e_feed_task_status.uniqueId()
+			o.e_feed_task_functions = $("[name=feed_task_functions]")
+			o.e_feed_task_functions.uniqueId()
 
-		o.refresh()
+			o.refresh()
+		})
 	})
 
 	return o

@@ -47,12 +47,12 @@ function metric(divid, options) {
 				osvc.flash.error(services_error_fmt(jd))
 				return
 			}
-			var data = jd.data;
+			var data = jd.data
 			if (!data || data.length == 0) {
 				o.table.text(i18n.t("metrics.no_data"))
 			}
 
-			var objname = [];
+			var objname = []
 
 			// table header
 			var header = $("<tr></tr>")
@@ -126,7 +126,7 @@ function chart(divid, options) {
 		div.append(plot_div)
 
 		// chart
-		o.plot(plot_div.attr("id"));
+		o.plot(plot_div.attr("id"))
 
 	}
 
@@ -209,7 +209,7 @@ function chart(divid, options) {
 			}
 
 			var series_list = Object.keys(series_data).map(function (key) {
-				return series_data[key];
+				return series_data[key]
 			})
 
 			if (Object.keys(keys).length > 1) {
@@ -293,7 +293,10 @@ function chart(divid, options) {
 			}
 		})
 	}
-	o.load()
+
+	require(["jqplot"], function(){
+		o.load()
+	})
 }
 
 function report(divid, options) {
@@ -407,104 +410,85 @@ function reports(divid, options)
 	o.divid = divid
 	o.div = $("#"+divid)
   
-	o.current_reports = 0;
+	o.current_reports = 0
 
 	o.init = function init() {
-		return reports_init(o)
+		o.div_reports_header = o.div.find("#reports_header")
+		o.div_reports_data = o.div.find("#reports_data")
+		o.ql_link = o.div.find("#reports_ql_link")
+		o.reports_select = o.div_reports_header.find("#reports_select")
+
+		o.div_reports_data.bind("click", function () {
+			o.reports_select.animate({ left: "-13em" }, 300, "linear")
+		})
+
+		o.reports_select.hover(function() {
+			o.reports_select.animate({ left: "0" }, 300, "linear")
+		},
+		function() {
+			o.reports_select.animate({ left: "-13em" }, 300, "linear")
+		})
+		o.reports_select.bind("click", function() {
+			o.reports_select.animate({ left: "0" }, 300, "linear")
+		})
+		o.load()
 	}
+
 	o.load = function load() {
-		return reports_load(o)
+		// Init Select Report
+		services_osvcgetrest("R_GET_REPORTS", "", {"meta": "false", "limit": "0"}, function(jd) {
+			if (jd.error && (jd.error.length > 0)) {
+				osvc.flash.error(services_error_fmt(jd))
+				return
+			}
+			var data = jd.data
+			if (data.length == 0) {
+				return
+			}
+			o.build_selection(data)
+			o.load_selected(data[0].id)
+			o.select_report(data[0].id); 
+		})
 	}
+
 	o.select_report = function select_report(report_id) {
-		return reports_set_selected(o, report_id);
+		o.current_reports = report_id
+		o.reports_select.find(".report_button_div_active").removeClass("report_button_div_active")
+		o.reports_select.find("[report_id="+o.current_reports+"]").addClass("report_button_div_active")
 	}
+
 	o.refresh = function refresh(report_id) {
-		return reports_refresh(o, report_id);
+		o.div_reports_data.empty()
+		o.load_selected(report_id)
+		o.select_report(report_id)
 	}
+
 	o.build_selection = function build_selection(data) {
-		return reports_build_selection(o, data);
+		var sect_div = $("<div style='clear:both'></div>")
+		o.reports_select.empty()
+		o.reports_select.append(sect_div)
+
+		for (var i=0; i<data.length; i++) {
+			var faccess = $("<div class='report_button_div'></div>")
+			faccess.attr("report_id", data[i].id)
+			faccess.text(data[i].report_name)
+			faccess.bind("click", function(event) {
+				var report_id = $(this).attr("report_id")
+				o.refresh(report_id)
+			})
+			sect_div.append(faccess)
+		}
 	}
+
 	o.load_selected = function(report_id) {
-		return reports_load_selected(o, report_id)
+		o.report_id = report_id
+		report("reports_data", {"report_id": report_id})
 	}
 
 	o.div.load("/init/static/views/reports.html", function() {
 		o.init()
 	})
-	return o;
+
+	return o
 }
-
-function reports_init(o) {
-	o.div_reports_header = o.div.find("#reports_header");
-	o.div_reports_data = o.div.find("#reports_data");
-	o.ql_link = o.div.find("#reports_ql_link");
-	o.reports_select = o.div_reports_header.find("#reports_select");
-
-	o.div_reports_data.bind("click", function () {
-		o.reports_select.animate({ left: "-13em" }, 300, "linear");
-	})
-
-	o.reports_select.hover(function() {
-		o.reports_select.animate({ left: "0" }, 300, "linear");
-	},
-	function() {
-		o.reports_select.animate({ left: "-13em" }, 300, "linear");
-	})
-	o.reports_select.bind("click", function() {
-		o.reports_select.animate({ left: "0" }, 300, "linear");
-	})
-	o.load();
-}
-
-function reports_load(o) {  
-	// Init Select Report
-	services_osvcgetrest("R_GET_REPORTS", "", {"meta": "false", "limit": "0"}, function(jd) {
-		if (jd.error && (jd.error.length > 0)) {
-			osvc.flash.error(services_error_fmt(jd))
-			return
-		}
-		var data = jd.data;
-		if (data.length == 0) {
-			return
-		}
-		o.build_selection(data);
-		o.load_selected(data[0].id);
-		o.select_report(data[0].id); 
-	})
-}
-
-function reports_build_selection(o, data) {
-	var sect_div = $("<div style='clear:both'></div>")
-	o.reports_select.empty()
-	o.reports_select.append(sect_div)
-
-	for (var i=0; i<data.length; i++) {
-		var faccess = $("<div class='report_button_div'></div>")
-		faccess.attr("report_id", data[i].id)
-		faccess.text(data[i].report_name)
-		faccess.bind("click", function(event) {
-			var report_id = $(this).attr("report_id");
-			o.refresh(report_id)
-		})
-		sect_div.append(faccess)
-	}
-}
-
-function reports_set_selected(o, report_id) {
-	o.current_reports = report_id
-	o.reports_select.find(".report_button_div_active").removeClass("report_button_div_active")
-	o.reports_select.find("[report_id="+o.current_reports+"]").addClass("report_button_div_active")
-}
-
-function reports_refresh(o, report_id) {
-	o.div_reports_data.empty();
-	o.load_selected(report_id);
-	o.select_report(report_id);
-}
-
-function reports_load_selected(o, report_id) {
-	o.report_id = report_id
-	report("reports_data", {"report_id": report_id})
-}
-
 

@@ -2028,6 +2028,10 @@ function table_init(opts) {
 	}
 
 	t.format_values_pie = function(o, data) {
+		require(["jqplot"], function() {t._format_values_pie(o, data)})
+	}
+
+	t._format_values_pie = function(o, data) {
 		o.empty()
 
 		// avoid ploting too difuse datasets and single pie dataset
