@@ -383,19 +383,22 @@ function osvc_jq_decorator(e, options) {
 		if (o.is("[rendered]")) {
 			return
 		}
+		var opts = {}
 		if (options.options[options.attr]) {
 			var id = options.options[options.attr]
 		} else {
 			var id = o.attr(options.attr)
 		}
-		var name = o.text()
-		var opts = {}
+		if (options.options[options.name]) {
+			var name = options.options[options.name]
+		} else {
+			var name = o.text()
+		}
 		if (id) {
 			opts[options.attr] = id
-		} else if (name) {
+		}
+		if (name) {
 			opts[options.name] = name
-		} else {
-			return
 		}
 		var e = $("<span>"+name+"</span>")
 		if (options.options.tag) {
@@ -419,6 +422,62 @@ function osvc_jq_decorator(e, options) {
 				}
 			})
 		})
+	})
+}
+
+jQuery.fn.osvc_form = function(options) {
+	osvc_jq_decorator(this, {
+		"options": options,
+		"name": "form_name",
+		"attr": "form_id",
+		"icon": "wf16",
+		"bgcolor": osvc.colors.form,
+		"flash_id_prefix": "form-",
+		"fn": function(id, opts) {
+			form_tabs(id, opts)
+		}
+	})
+}
+
+jQuery.fn.osvc_report = function(options) {
+	osvc_jq_decorator(this, {
+		"options": options,
+		"name": "report_name",
+		"attr": "report_id",
+		"icon": "spark16",
+		"bgcolor": osvc.colors.stats,
+		"flash_id_prefix": "report-",
+		"fn": function(id, opts) {
+			report_tabs(id, opts)
+		}
+	})
+}
+
+jQuery.fn.osvc_chart = function(options) {
+	osvc_jq_decorator(this, {
+		"options": options,
+		"name": "chart_name",
+		"attr": "chart_id",
+		"icon": "spark16",
+		"bgcolor": osvc.colors.stats,
+		"flash_id_prefix": "chart-",
+		"fn": function(id, opts) {
+			chart_tabs(id, opts)
+		}
+	})
+}
+
+jQuery.fn.osvc_metric = function(options) {
+	osvc_jq_decorator(this, {
+		"options": options,
+		"name": "metric_name",
+		"attr": "metric_id",
+		"icon": "spark16",
+		"bgcolor": osvc.colors.stats,
+		"flash_id_prefix": "metric-",
+		"fn": function(id, opts) {
+			metric_tabs(id, opts)
+		}
 	})
 }
 

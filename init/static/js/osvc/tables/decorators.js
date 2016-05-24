@@ -344,9 +344,8 @@ function cell_decorator_prov_template(e, line) {
 	var v = $.data(e[0], "v")
 	var tpl_id = $.data(line.children("[col=id]")[0], "v")
 	e
-	.html("<span class='clickable'>"+v+"</span>")
 	.addClass("corner-top")
-	.osvc_prov_template({"event": "click", "tpl_id": tpl_id})
+	.osvc_prov_template({"tag": false, "event": "click", "tpl_id": tpl_id})
 }
 
 function cell_decorator_fset_name(e, line) {
@@ -356,7 +355,7 @@ function cell_decorator_fset_name(e, line) {
 	}
 	e
 	.addClass("corner-top")
-	.osvc_filterset({"event": "click"})
+	.osvc_filterset({"tag": false, "event": "click"})
 }
 
 function cell_decorator_modset_name(e, line) {
@@ -393,61 +392,50 @@ function cell_decorator_ruleset_name(e, line) {
 
 function cell_decorator_report_name(e, line) {
 	var v = $.data(e[0], "v")
+	var form_id = $.data(line.children("[col=id]")[0], "v")
 	e
-	.html("<span class='clickable'>"+v+"</span>")
-	.addClass("corner")
-	.click(function(){
-		var report_id = $.data(line.children("[col=id]")[0], "v")
-		var id = toggle_extraline(e)
-		report_tabs(id, {"report_id": report_id, "report_name": v})
-	})
+	.addClass("corner-top")
+	.osvc_report({"tag": false, "event": "click", "report_id": report_id, "report_name": v})
 }
 
 function cell_decorator_chart_name(e, line) {
 	var v = $.data(e[0], "v")
+	var chart_id = $.data(line.children("[col=id]")[0], "v")
 	e
-	.html("<span class='clickable'>"+v+"</span>")
-	.addClass("corner")
-	.click(function(){
-		var chart_id = $.data(line.children("[col=id]")[0], "v")
-		var id = toggle_extraline(e)
-		chart_tabs(id, {"chart_id": chart_id, "chart_name": v})
-	})
+	.addClass("corner-top")
+	.osvc_chart({"tag": false, "event": "click", "chart_id": chart_id, "chart_name": v})
 }
 
 function cell_decorator_metric_name(e, line) {
 	var v = $.data(e[0], "v")
+	var metric_id = $.data(line.children("[col=id]")[0], "v")
 	e
-	.html("<span class='clickable'>"+v+"</span>")
-	.addClass("corner")
-	.click(function(){
-		var metric_id = $.data(line.children("[col=id]")[0], "v")
-		var id = toggle_extraline(e)
-		metric_tabs(id, {"metric_id": metric_id, "metric_name": v})
-	})
+	.addClass("corner-top")
+	.osvc_metric({"tag": false, "event": "click", "metric_id": metric_id, "metric_name": v})
 }
 
 function cell_decorator_form_name(e, line) {
 	var v = $.data(e[0], "v")
+	var form_id = $.data(line.children("[col=id]")[0], "v")
 	e
-	.html("<span class='clickable'>"+v+"</span>")
-	.addClass("corner")
-	.click(function(){
-		var form_id = $.data(line.children("[col=id]")[0], "v")
-		var id = toggle_extraline(e)
-		form_tabs(id, {"form_id": form_id, "form_name": v})
-	})
+	.addClass("corner-top")
+	.osvc_form({"tag": false, "event": "click", "form_id": form_id, "form_name": v})
 }
 
 function cell_decorator_network(e, line) {
 	var v = $.data(e[0], "v")
 	e
 	.html("<span class='clickable'>"+v+"</span>")
-	.addClass("corner")
+	.addClass("corner-top")
 	.click(function(){
 		var net_id = $.data(line.children("[col=id]")[0], "v")
-		var id = toggle_extraline(e)
-		network_tabs(id, {"network_id": net_id})
+		osvc.flash.show({
+			id: "net-"+net_id,
+			text: v, 
+			cl: "icon net16",
+			bgcolor: osvc.colors.net,
+			fn: function(id){network_tabs(id, {"network_id": net_id})}
+		})
 	})
 }
 
