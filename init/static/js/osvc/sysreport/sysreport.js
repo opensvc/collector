@@ -139,53 +139,56 @@ function sysrep(divid, options) {
 		if (groupids.length == 1) {
 			groups = null
 		}
-		o.timeline = new vis.Timeline(container, data, groups, options)
-		o.timeline.on("change", function() {
-			o.div.find("[node_id]").osvc_nodename({
-				callback: function(){o.timeline.redraw()}
-			})
-		})
 
 		if (!o.timeline_graph.is(':visible')) {
 			o.timeline_graph.slideToggle()
 		}
 
-		o.timeline.on('select', function (properties) {
-			var item_id = properties.items[0]
-			var item = null
-			for (i=0; i<data.length; i++) {
-				if (data[i]['id'] == item_id) {
-					item = data[i]
-					break
+		require(["vis"], function(vis) {
+			o.timeline = new vis.Timeline(container, data, groups, options)
+			o.timeline.on("change", function() {
+				o.div.find("[node_id]").osvc_nodename({
+					callback: function(){o.timeline.redraw()}
+				})
+			})
+
+			o.timeline.on('select', function (properties) {
+				var item_id = properties.items[0]
+				var item = null
+				for (i=0; i<data.length; i++) {
+					if (data[i]['id'] == item_id) {
+						item = data[i]
+						break
+					}
+				}
+
+				// double event prevention
+				if (item && (o.cid == item.cid)) {
+					return
+				}
+
+				// remember the click for link generation
+				if (item) {
+					o.cid = item.cid
+				} else {
+					delete o.cid
+				}
+
+				o.sysreport_timeline_on_select(item)
+			})
+
+			// if a cid is selected, simulate a click on the cid box to
+			// display diff and file tree for the commit
+			if (o.cid) {
+				for (i=0; i<data.length; i++) {
+					if (data[i]['cid'] == o.cid) {
+						o.timeline.setSelection(data[i]['id'])
+						o.sysreport_timeline_on_select(data[i])
+						break
+					}
 				}
 			}
-
-			// double event prevention
-			if (item && (o.cid == item.cid)) {
-				return
-			}
-
-			// remember the click for link generation
-			if (item) {
-				o.cid = item.cid
-			} else {
-				delete o.cid
-			}
-
-			o.sysreport_timeline_on_select(item)
 		})
-
-		// if a cid is selected, simulate a click on the cid box to
-		// display diff and file tree for the commit
-		if (o.cid) {
-			for (i=0; i<data.length; i++) {
-				if (data[i]['cid'] == o.cid) {
-					o.timeline.setSelection(data[i]['id'])
-					o.sysreport_timeline_on_select(data[i])
-					break
-				}
-			}
-		}
 		o.sysrep_timediff()
 	}
 	o.sysrep_timediff_data = function(jd, node_id, detail){
@@ -208,8 +211,11 @@ function sysrep(divid, options) {
 			e.addClass("clickable")
 			e.addClass(highlight_cl)
 			e.bind("click", function() {
-				$(this).next().slideToggle()
-				hljs.highlightBlock($(this).next()[0])
+				var je = $(this).next()
+				je.slideToggle()
+				require(["hljs"], function(hljs) {
+					hljs.highlightBlock(je[0])
+				})
 			})
 			e.text(d)
 
@@ -326,8 +332,11 @@ function sysrep(divid, options) {
 					e.addClass("highlight")
 				}
 				e.bind("click", function(){
-					$(this).next().slideToggle()
-					hljs.highlightBlock($(this).next()[0])
+					var je = $(this).next()
+					je.slideToggle()
+					require(["hljs"], function(hljs) {
+						hljs.highlightBlock(je[0])
+					})
 				})
 				e.html(d+"<pre>"+stat+"</pre>")
 
@@ -735,8 +744,11 @@ function sysrepdiff(divid, options)
 			e.addClass("clickable")
 			e.addClass(highlight_cl)
 			e.bind("click", function() {
-				$(this).next().slideToggle()
-				hljs.highlightBlock($(this).next()[0])
+				var je = $(this).next()
+				je.slideToggle()
+				require(["hljs"], function(hljs) {
+					hljs.highlightBlock(je[0])
+				})
 			})
 			e.text(d.path)
 

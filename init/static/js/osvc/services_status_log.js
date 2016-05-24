@@ -143,15 +143,17 @@ function services_status_log(divid, options) {
 	}
 
 	o.init_timeline = function() {
-		o.timeline = new vis.Timeline(o.div[0], o.data, o.groups, options)
-		o.timeline.on("change", function() {
-			o.div.find("[node_id]").osvc_nodename({
-				callback: function(){o.timeline.redraw()}
+		require(["vis"], function(vis) {
+			o.timeline = new vis.Timeline(o.div[0], o.data, o.groups, options)
+			o.timeline.on("change", function() {
+				o.div.find("[node_id]").osvc_nodename({
+					callback: function(){o.timeline.redraw()}
+				})
+				o.div.find("[svc_id]").osvc_svcname({
+					callback: function(){o.timeline.redraw()}
+				})
+				o.div.find("[title]").tooltipster()
 			})
-			o.div.find("[svc_id]").osvc_svcname({
-				callback: function(){o.timeline.redraw()}
-			})
-			o.div.find("[title]").tooltipster()
 		})
 	}
 

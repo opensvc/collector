@@ -53,6 +53,21 @@ function i18n_init(callback) {
 }
 
 function app_start() {
+	require.config({
+		baseUrl: '/init/static/js',
+		paths: {
+			"vis": "vis/dist/vis.min",
+			"jquery": "jquery",
+			"jstree": "jstree/jstree.min",
+			"hljs": "highlight/highlight.pack"
+		},
+		shim: {
+			"jstree": {
+				//deps: ["jquery", "jqueryui", "jquery.hotkeys", "jquery.cookie"],
+				exports: "jQuery.fn.jstree"
+			}
+		}
+	})
 	i18n_init()
 	services_feed_self_and_group()
 	osvc.table_settings = table_settings()
@@ -450,3 +465,359 @@ function app_datetime_decorators() {
 		}
 	}, 5000)
 }
+
+function designer(divid, options) {
+	require(["osvc/designer"], function() {
+		designer(divid, options)
+	})
+}
+
+function topology(divid, options) {
+	require(["osvc/topology/topology"], function() {
+		topology(divid, options)
+	})
+}
+
+function startup(divid, options) {
+	require(["osvc/tabs/startup"], function() {
+		startup(divid, options)
+	})
+}
+
+function alert_info(divid, options) {
+	require(["osvc/tabs/alert_event"], function() {
+		alert_info(divid, options)
+	})
+}
+
+function wiki(divid, options) {
+	require(["osvc/tabs/wiki"], function() {
+		wiki(divid, options)
+	})
+}
+
+function filterset_tabs(divid, options) {
+	require(["osvc/tabs/fset"], function() {
+		filterset_tabs(divid, options)
+	})
+}
+
+function requests(divid, options) {
+	require(["osvc/requests"], function() {
+		requests(divid, options)
+	})
+}
+
+function workflow(divid, options) {
+	require(["osvc/requests"], function() {
+		workflow(divid, options)
+	})
+}
+
+function comp_log(divid, options) {
+	require(["osvc/comp_log"], function() {
+		comp_log(divid, options)
+	})
+}
+
+function services_status_log(divid, options) {
+	require(["osvc/services_status_log"], function() {
+		services_status_log(divid, options)
+	})
+}
+
+function sysrep(divid, options) {
+	require(["osvc/sysreport/sysreport"], function() {
+		sysrep(divid, options)
+	})
+}
+
+function sysrepdiff(divid, options) {
+	require(["osvc/sysreport/sysreport"], function() {
+		sysrepdiff(divid, options)
+	})
+}
+
+function api_doc(divid, options) {
+	require(["osvc/api_doc"], function() {
+		api_doc(divid, options)
+	})
+}
+
+function scheduler_stats(divid, options) {
+	require(["osvc/scheduler_stats"], function() {
+		scheduler_stats(divid, options)
+	})
+}
+
+function form_tabs(divid, options) {
+	require(["osvc/tabs/form"], function() {
+		form_tabs(divid, options)
+	})
+}
+
+function form_properties(divid, options) {
+	require(["osvc/tabs/form"], function() {
+		form_properties(divid, options)
+	})
+}
+
+function form_definition(divid, options) {
+	require(["osvc/tabs/form"], function() {
+		form_definition(divid, options)
+	})
+}
+
+function safe_file_tabs(divid, options) {
+	require(["osvc/tabs/safe_file"], function() {
+		safe_file_tabs(divid, options)
+	})
+}
+
+function safe_file_content(divid, options) {
+	require(["osvc/tabs/safe_file"], function() {
+		safe_file_content(divid, options)
+	})
+}
+
+function safe_file_properties(divid, options) {
+	require(["osvc/tabs/safe_file"], function() {
+		safe_file_properties(divid, options)
+	})
+}
+
+function metric_properties(divid, options) {
+	require(["osvc/tabs/metric"], function() {
+		metric_properties(divid, options)
+	})
+}
+
+function metric_request(divid, options) {
+	require(["osvc/tabs/metric"], function() {
+		metric_request(divid, options)
+	})
+}
+
+function metric_tabs(divid, options) {
+	require(["osvc/tabs/metric"], function() {
+		metric_tabs(divid, options)
+	})
+}
+
+function chart_properties(divid, options) {
+	require(["osvc/tabs/chart"], function() {
+		chart_properties(divid, options)
+	})
+}
+
+function chart_definition(divid, options) {
+	require(["osvc/tabs/chart"], function() {
+		chart_definition(divid, options)
+	})
+}
+
+function chart_tabs(divid, options) {
+	require(["osvc/tabs/chart"], function() {
+		chart_tabs(divid, options)
+	})
+}
+
+function report_properties(divid, options) {
+	require(["osvc/tabs/report"], function() {
+		report_properties(divid, options)
+	})
+}
+
+function report_definition(divid, options) {
+	require(["osvc/tabs/report"], function() {
+		report_definition(divid, options)
+	})
+}
+
+function report_tabs(divid, options) {
+	require(["osvc/tabs/report"], function() {
+		report_tabs(divid, options)
+	})
+}
+
+function report_export(divid, options) {
+	require(["osvc/tabs/report"], function() {
+		report_export(divid, options)
+	})
+}
+
+function moduleset_tabs(divid, options) {
+	require(["osvc/tabs/modset"], function() {
+		moduleset_tabs(divid, options)
+	})
+}
+
+function modset_export(divid, options) {
+	require(["osvc/tabs/modset"], function() {
+		modset_export(divid, options)
+	})
+}
+
+function modset_properties(divid, options) {
+	require(["osvc/tabs/modset"], function() {
+		modset_properties(divid, options)
+	})
+}
+
+function prov_template_properties(divid, options) {
+	require(["osvc/tabs/prov_template"], function() {
+		prov_template_properties(divid, options)
+	})
+}
+
+function prov_template_definition(divid, options) {
+	require(["osvc/tabs/prov_template"], function() {
+		prov_template_definition(divid, options)
+	})
+}
+
+function prov_template_tabs(divid, options) {
+	require(["osvc/tabs/prov_template"], function() {
+		prov_template_tabs(divid, options)
+	})
+}
+
+function quota_properties(divid, options) {
+	require(["osvc/tabs/quota"], function() {
+		quota_properties(divid, options)
+	})
+}
+
+function quota_tabs(divid, options) {
+	require(["osvc/tabs/quota"], function() {
+		quota_tabs(divid, options)
+	})
+}
+
+function array_properties(divid, options) {
+	require(["osvc/tabs/array"], function() {
+		array_properties(divid, options)
+	})
+}
+
+function array_tabs(divid, options) {
+	require(["osvc/tabs/array"], function() {
+		array_tabs(divid, options)
+	})
+}
+
+function diskgroup_properties(divid, options) {
+	require(["osvc/tabs/diskgroup"], function() {
+		diskgroup_properties(divid, options)
+	})
+}
+
+function diskgroup_tabs(divid, options) {
+	require(["osvc/tabs/diskgroup"], function() {
+		diskgroup_tabs(divid, options)
+	})
+}
+
+function dns_record_properties(divid, options) {
+	require(["osvc/tabs/dns_record"], function() {
+		dns_record_properties(divid, options)
+	})
+}
+
+function dns_record_tabs(divid, options) {
+	require(["osvc/tabs/dns_record"], function() {
+		dns_record_tabs(divid, options)
+	})
+}
+
+function dns_domain_properties(divid, options) {
+	require(["osvc/tabs/dns_domain"], function() {
+		dns_domain_properties(divid, options)
+	})
+}
+
+function dns_domain_tabs(divid, options) {
+	require(["osvc/tabs/dns_domain"], function() {
+		dns_domain_tabs(divid, options)
+	})
+}
+
+function ruleset_tabs(divid, options) {
+	require(["osvc/tabs/ruleset"], function() {
+		ruleset_tabs(divid, options)
+	})
+}
+
+function ruleset_content(divid, options) {
+	require(["osvc/tabs/ruleset"], function() {
+		ruleset_content(divid, options)
+	})
+}
+
+function ruleset_properties(divid, options) {
+	require(["osvc/tabs/ruleset"], function() {
+		ruleset_properties(divid, options)
+	})
+}
+
+function ruleset_export(divid, options) {
+	require(["osvc/tabs/ruleset"], function() {
+		ruleset_export(divid, options)
+	})
+}
+
+function network_properties(divid, options) {
+	require(["osvc/tabs/network"], function() {
+		network_properties(divid, options)
+	})
+}
+
+function network_tabs(divid, options) {
+	require(["osvc/tabs/network"], function() {
+		network_tabs(divid, options)
+	})
+}
+
+function group_properties(divid, options) {
+	require(["osvc/tabs/group"], function() {
+		group_properties(divid, options)
+	})
+}
+
+function group_tabs(divid, options) {
+	require(["osvc/tabs/group"], function() {
+		group_tabs(divid, options)
+	})
+}
+
+function group_hidden_menu_entries(divid, options) {
+	require(["osvc/tabs/group"], function() {
+		group_hidden_menu_entries(divid, options)
+	})
+}
+
+function user_properties(divid, options) {
+	require(["osvc/tabs/user"], function() {
+		user_properties(divid, options)
+	})
+}
+
+function user_tabs(divid, options) {
+	require(["osvc/tabs/user"], function() {
+		user_tabs(divid, options)
+	})
+}
+
+function app_properties(divid, options) {
+	require(["osvc/tabs/app"], function() {
+		app_properties(divid, options)
+	})
+}
+
+function app_tabs(divid, options) {
+	require(["osvc/tabs/app"], function() {
+		app_tabs(divid, options)
+	})
+}
+
+

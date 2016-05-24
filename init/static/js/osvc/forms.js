@@ -829,7 +829,9 @@ function form(divid, options) {
 					.append(data_pre)
 					.append(render_title)
 					.append(render_div)
-			hljs.highlightBlock(data_pre[0])
+			require(["hljs"], function(hljs) {
+				hljs.highlightBlock(data_pre[0])
+			})
 			form(render_div, {
 				"form_name": o.options.form_name,
 				"display_mode": true,

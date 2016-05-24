@@ -81,9 +81,11 @@ function comp_log(divid, options) {
 	}
 
 	o.init_timeline = function() {
-		o.timeline = new vis.Timeline(o.timeline_div[0], o.data, o.groups, options)
-		o.timeline.on("change", function() {
-			o.div.find("[title]").tooltipster({contentAsHTML: true})
+		require(["vis"], function(vis) {
+			o.timeline = new vis.Timeline(o.timeline_div[0], o.data, o.groups, options)
+			o.timeline.on("change", function() {
+				o.div.find("[title]").tooltipster({contentAsHTML: true})
+			})
 		})
 	}
 

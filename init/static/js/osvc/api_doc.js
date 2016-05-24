@@ -270,7 +270,9 @@ function api_doc(divid, path) {
 	}
 
 	$.when(osvc.app_started).then(function(){
-		o.init()
+		require(["markdown-converter"], function() {
+			o.init()
+		})
 	})
 
 	return o

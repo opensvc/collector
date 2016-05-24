@@ -338,7 +338,7 @@ function osvc_show_link(url, title, title_args) {
 	}
 
 	// link display area
-	p = $("<textarea style='width:100%' class='clickable'></textarea>")
+	var p = $("<textarea style='width:100%' class='clickable'></textarea>")
 	p.val(url)
 	p.css({
 		"width": "100%",
@@ -361,7 +361,9 @@ function osvc_show_link(url, title, title_args) {
 		"content": e
 	})
 
-	p.autogrow()
+	require(["jquery.ns-autogrow.coffee"], function() {
+		p.autogrow()
+	})
 	p.select()
 }
 

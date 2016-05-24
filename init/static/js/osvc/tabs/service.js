@@ -254,7 +254,9 @@ function service_env(divid, options)
 				o.text = ""
 			}
 			o.body.html(o.text)
-			hljs.highlightBlock(o.body[0])
+			require(["hljs"], function(hljs) {
+				hljs.highlightBlock(o.body[0])
+			})
 			o.body.find(".hljs-setting").css({"color": "green"}).children().css({"color": "initial"})
 		},
 		function() {

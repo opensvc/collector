@@ -390,7 +390,9 @@ function topology(divid, options) {
 					}
 				}
 			}
-			var network = new vis.Network(eid, _data, options)
+			require(["vis"], function(vis) {
+				var network = new vis.Network(eid, _data, options)
+			})
 		})
 	}
 
