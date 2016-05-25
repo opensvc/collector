@@ -18,8 +18,7 @@ function values_to_filter(input, cloud){
 	input.val(v)
 }
 
-function _invert_filter(e){
-	var v = e.val()
+function _invert_filter(v){
 	var reg = new RegExp("[|]+", "g");
 	var l = v.split(reg);
         if (l.length > 1) {
@@ -31,8 +30,7 @@ function _invert_filter(e){
 			}
 		}
 		v = l.join("&")
-		e.val(v)
-		return
+		return v
 	} else {
 		var reg = new RegExp("[&]+", "g");
 		var l = v.split(reg);
@@ -44,8 +42,7 @@ function _invert_filter(e){
 			}
 		}
 		v = l.join("|")
-		e.val(v)
-		return
+		return v
 	}
 }
 
@@ -322,23 +319,20 @@ function table_init(opts) {
 	}
 
 	t.add_filtered_to_visible_columns = function() {
-		t.e_table.find("[id^="+t.id+"_f_]").each(function(){
-			var s = $(this).attr("id")
-			var col = s.split("_f_")[1]
-			var val = $(this).val()
+		for (col in t.colprops) {
+			var val = t.colprops[col].current_filter
 			if (t.e_tool_column_selector_area) {
-				// no column selector
-				if (val === "") {
+				if ((typeof val === "undefined") || (val == "")) {
 					t.e_tool_column_selector_area.find("[colname="+col+"]").removeAttr("disabled")
-					return
+					continue
 				}
 				t.e_tool_column_selector_area.find("[colname="+col+"]").prop("disabled", true)
 				if (t.options.visible_columns.indexOf(col) >= 0) {
-					return
+					continue
 				}
 				t.options.visible_columns.push(col)
 			}
-		})
+		}
 	}
 
 	t.restripe_lines = function() {
@@ -479,8 +473,11 @@ function table_init(opts) {
 	// column filter tool: invert column filter
 	//
 	t.invert_column_filter = function(c) {
-		var input = t.e_header_filters.find("th[col="+c+"]").find("input")
-		_invert_filter(input)
+		var val = t.colprops[c].current_filter
+		if (typeof val === "undefined") {
+			return
+		}
+		t.colprops[c].current_filter = _invert_filter(val)
 		t.save_column_filters()
 	}
 
@@ -615,7 +612,7 @@ function table_init(opts) {
 		var pt = osvc.tables[ptid]
 		var data = {}
 		for (c in pt.colprops) {
-			var current = $("#"+pt.id+"_f_"+c).val()
+			var current = pt.colprops[c].current_filter
 			if ((current != "") && (typeof current !== 'undefined')) {
 				data[pt.id+"_f_"+c] = current
 			} else if ((typeof(pt.colprops[c].force_filter) !== "undefined") && (pt.colprops[c].force_filter != "")) {
@@ -641,13 +638,7 @@ function table_init(opts) {
 		data.table_id = t.id
 		for (c in t.colprops) {
 			var fid = t.id+"_f_"+c
-			var input = $("#"+fid)
-			if ((input.length == 0) && (fid in t.options.request_vars)) {
-				// hidden forced column with a filter passed in request vars
-				var current = t.options.request_vars[fid]
-			} else {
-				var current = input.val()
-			}
+			var current = t.colprops[c].current_filter
 			if ((current != "") && (typeof current !== 'undefined')) {
 				data[fid] = current
 			} else if ((typeof(t.colprops[c].force_filter) !== "undefined") && (t.colprops[c].force_filter != "")) {
@@ -825,6 +816,127 @@ function table_init(opts) {
 		tr.append(th)
 	}
 
+	t.add_column_header_input_float = function (c) {
+		if (t.e_filter) {
+			t.e_filter.remove()
+		}
+		var input_float = $("<div class='white_float_input stackable' style='width:auto;position:absolute'>")
+		input_float.draggable({
+			"handle": ".fa-bars"
+		})
+		var header = $("<h2 class='icon fa-bars'></h2>")
+		var input = $("<input class='oi' name='fi'>")
+		var value_to_filter_tool = $("<span class='clickable icon values_to_filter'></span><br>")
+		var value_pie = $("<div></div>")
+		var value_cloud = $("<span></span>")
+
+		var input_id = t.id+"_f_"+c
+		if (t.options.request_vars && (input_id in t.options.request_vars)) {
+			input.val(t.options.request_vars[input_id])
+		} else if (typeof t.colprops[c].current_filter !== "undefined") {
+			input.val(t.colprops[c].current_filter)
+		}
+		input.attr("id", input_id)
+		header.text(i18n.t("table.column_filter_header", {"col": i18n.t("col."+t.colprops[c].title)}))
+		value_to_filter_tool.attr("title", i18n.t("table.value_to_filter_tool_title")).tooltipster()
+		value_pie.attr("id", t.id+"_fp_"+c)
+		value_pie.css({"margin-top": "0.8em"})
+		value_cloud.attr("id", t.id+"_fc_"+c)
+		value_cloud.css({"overflow-wrap": "break-word"})
+
+		input_float.append(header)
+		input_float.append(input)
+		input_float.append(value_to_filter_tool)
+		input_float.append(value_pie)
+		input_float.append(value_cloud)
+
+		t.e_filter = input_float
+		t.div.append(input_float)
+
+		var url = t.options.ajax_url + "_col_values/"
+
+		// refresh column filter cloud on keyup
+		var xhr = null
+		input.bind("keyup", function(event) {
+			var input = $(this)
+			var col = c
+			t.colprops[c].current_filter = input.val()
+
+			if (is_enter(event) || is_special_key(event)) {
+				return
+			}
+
+			// handle slim header colorization
+			var current_filter = t.e_header_filters.find("[col="+c+"] > .col_filter_label").attr("title")
+			if (current_filter != input.val()) {
+				t.e_header_slim.find("[col='"+col+"']").removeClass("bgred").addClass("bgorange")
+			} else {
+				t.e_header_slim.find("[col='"+col+"']").removeClass("bgorange")
+				if (input.val() != "") {
+					t.e_header_slim.find("[col='"+col+"']").addClass("bgred")
+				}
+			}
+
+			clearTimeout(t.refresh_timer)
+			t.refresh_timer = setTimeout(function validate(){
+				if (xhr) {
+					xhr.abort()
+				}
+				var data = t.prepare_request_data()
+				//data[input.attr('id')] = input.val()
+				var dest = input.siblings("[id^="+t.id+"_fc_]")
+				var pie = input.siblings("[id^="+t.id+"_fp_]")
+				pie.height(0)
+				_url = url + col
+				xhr = $.ajax({
+					type: "POST",
+					url: _url,
+					data: data,
+					sync: false,
+					context: document.body,
+					beforeSend: function(req){
+						t.scroll_disable_dom()
+						pie.empty()
+						dest.empty()
+						t.scroll_enable_dom()
+						dest.addClass("icon spinner")
+					},
+					success: function(msg){
+						var data = $.parseJSON(msg)
+						if (t.colprops[col] && t.colprops[col]._class.match(/datetime/)) {
+							data = t.convert_cloud_dates(data)
+						}
+						t.format_values_cloud(dest, data, col)
+						t.format_values_pie(pie, data, col)
+					}
+				})
+			}, 1000)
+		})
+
+		// validate column filter on <enter> keypress
+		input.bind("keypress", function(event) {
+			if (is_enter(event)) {
+				t.e_filter.remove()
+				t.save_column_filters()
+				t.refresh_column_filters_in_place()
+				t.refresh()
+			}
+		})
+
+		// values to column filter click
+		input.siblings(".values_to_filter").bind("click", function(event) {
+			var input = $(this).parent().find("input")
+			var ck = input.attr("id").replace("_f_", "_fc_")
+			var cloud = $(this).parent().find("#"+ck)
+			values_to_filter(input, cloud)
+			t.colprops[c].current_filter = input.val()
+			t.save_column_filters()
+			t.refresh_column_filters_in_place()
+			t.refresh()
+		})
+
+	}
+
 	t.add_column_header_input = function (tr, c) {
 		var th = $("<th></th>")
 		//th.addClass(t.colprops[c]._class)
@@ -834,39 +946,11 @@ function table_init(opts) {
 		var invert_tool = $("<span class='clickable hidden icon invert16'></span>")
 		var clear_tool = $("<span class='clickable hidden icon clear16'></span>")
 		var label = $("<span class='col_filter_label'></span>")
-		var input_float = $("<div class='white_float_input stackable' style='position:absolute'>")
-		var input = $("<input class='oi' name='fi'>")
-		var value_to_filter_tool = $("<span class='clickable icon values_to_filter'></span><br>")
-		var value_cloud = $("<span></span>")
-		var value_pie = $("<div></div>")
-		var input_id = t.id+"_f_"+c
-		var header = $("<h2 class='icon fa-bars'></h2>")
 
-		header.text(i18n.t("table.column_filter_header", {"col": i18n.t("col."+t.colprops[c].title)}))
-		value_to_filter_tool.attr("title", i18n.t("table.value_to_filter_tool_title")).tooltipster()
-
-		input.attr("id", input_id)
-		if (t.options.request_vars && (input_id in t.options.request_vars)) {
-			input.val(t.options.request_vars[input_id])
-		}
-		value_pie.attr("id", t.id+"_fp_"+c)
-		value_pie.css({"margin-top": "0.8em"})
-		value_cloud.attr("id", t.id+"_fc_"+c)
-		value_cloud.css({"overflow-wrap": "break-word"})
-
-		input_float.draggable({
-			"handle": ".fa-bars"
-		})
-		input_float.append(header)
-		input_float.append(input)
-		input_float.append(value_to_filter_tool)
-		input_float.append(value_pie)
-		input_float.append(value_cloud)
 		th.append(filter_tool)
 		th.append(invert_tool)
 		th.append(clear_tool)
 		th.append(label)
-		th.append(input_float)
 		tr.append(th)
 	}
 
@@ -911,18 +995,6 @@ function table_init(opts) {
 	}
 
 	t.refresh_column_filters = function() {
-		for (key in t.options.request_vars) {
-			if (key.match(/_f_/)) {
-				delete(t.options.request_vars[key])
-			}
-		}
-		t.e_table.find("tr.theader_filters input").each(function() {
-			var v = $(this).val()
-			if (v == "") {
-				return
-			}
-			t.options.request_vars[$(this).attr("id")] = v
-		})
 		t.e_table.find("tr.theader.stick").remove()
 		t.e_header_filters.empty()
 		t.add_column_headers_input()
@@ -944,7 +1016,6 @@ function table_init(opts) {
 			return
 		}
 
-		var input = th.find("input")
 		var label = th.find(".col_filter_label")
 
 		if ((c in t.colprops) && (typeof(t.colprops[c].force_filter) !== "undefined") && (t.colprops[c].force_filter != "")) {
@@ -952,14 +1023,13 @@ function table_init(opts) {
 		}
 
 		if (typeof(val) === "undefined") {
-			val = input.val()
+			val = t.colprops[c].current_filter
+		} else {
+			t.colprops[c].current_filter = val
 		}
 
-		// update val in input, and text in display area
+		// update text in display area
 		if (typeof(val) === "undefined") {
-			val = ""
-		}
-		if (val == "**clear**") {
 			val = ""
 		}
 		var n = val.length
@@ -976,7 +1046,6 @@ function table_init(opts) {
 			try { label.tooltipster("destroy") } catch(e) {}
 		}
 		label.text(_val)
-		input.val(val)
 
 		// toggle the clear and invert tools visibility
 		if (val == "") {
@@ -995,7 +1064,7 @@ function table_init(opts) {
 		th.removeClass("bgred")
 		th.removeClass("bgorange")
 		var cl = ""
-		if ((val.length > 0) && (val != "**clear**")) {
+		if (val.length > 0) {
 			if (!t.options.volatile_filters) {
 				th.addClass("bgred")
 			} else {
@@ -1320,9 +1389,9 @@ function table_init(opts) {
 		}
 		for (i=0; i<data.length; i++) {
 			try {
-				key=data[i]["key"]
-				val=data[i]["val"]
-				op=data[i]["op"]
+				var key = data[i]["key"]
+				var val = data[i]["val"]
+				var op = data[i]["op"]
 				params[t.id+"_f_"+key] = op+val
 			} catch(e) {
 				return
@@ -1332,7 +1401,7 @@ function table_init(opts) {
 			if (c == key) {
 				continue
 			}
-			var current = $("#"+t.id+"_f_"+c).val()
+			var current = t.colprops[c].current_filter
 
 			if ((current != "") && (typeof current !== 'undefined')) {
 				params[t.id+"_f_"+c] = current
@@ -1485,15 +1554,18 @@ function table_init(opts) {
 		var options = t.options
 		options.volatile_filters = true
 
+		// fset
 		var current_fset = $("[name=fset_selector]").find("span").attr("fset_id")
 		options.fset_id = current_fset
 
-		t.e_header_filters.find("input[name=fi]").each(function() {
-			if ($(this).val().length==0) {
-				return
+		// col filters
+		for (c in t.colprops) {
+			var val = t.colprops[c].current_filter
+			if ((val == "") || (typeof val === "undefined")) {
+				continue
 			}
-			options.request_vars[$(this).attr('id')] = $(this).val()
-		})
+			options.request_vars[t.id+'_f_'+c] = val
+		}
 		osvc_create_link(t.options.caller, options, "link_title_table", {"icon": t.options.icon, "name": t.options.name})
 	}
 
@@ -1506,13 +1578,25 @@ function table_init(opts) {
 		var current_fset = $("[name=fset_selector]").find("span").attr("fset_id")
 		args += "&dbfilter="+current_fset
 
-		t.e_header_filters.find("input[name=fi]").each(function(){
-			if ($(this).val().length==0) {
-				return
+		// col filters
+		for (c in t.colprops) {
+			var val = t.colprops[c].current_filter
+			if ((val == "") || (typeof val === "undefined")) {
+				continue
 			}
-			args += '&'+$(this).attr('id')+"="+encodeURIComponent($(this).val())
-		})
+			args += '&'+t.id+"_"+c+"="+encodeURIComponent(val)
+		}
 		osvc_create_link(url, args, "link_title_table", {"name": t.options.name})
+	}
+
+	t.position_on_pointer = function(event, e) {
+		var pos = $(event.target).position()
+		var szpos = t.div.children(".table_scroll_zone").position()
+		e.css({
+			"left": pos.left + szpos.left + "px",
+			"top": pos.top + szpos.top + $(event.target).height() + "px"
+		})
+		keep_inside(e[0])
 	}
 
 	t.filter_selector = function(e, k, v) {
@@ -1531,12 +1615,7 @@ function table_init(opts) {
 	  
 		// position the tool
 		t.e_fsr.show()
-		var pos = get_pos(e)
-		t.e_fsr.css({
-			"left": pos[0] + "px",
-			"top": pos[1] + "px"
-		})
-		keep_inside(t.e_fsr[0])
+		t.position_on_pointer(e, t.e_fsr)
 
 		// reset selected toggles
 		t.e_fsr.find(".bgred").each(function(){
@@ -1572,11 +1651,11 @@ function table_init(opts) {
 		}
 
 		t.e_fsr.find("#fsrview").each(function() {
-			$(this).text($("[col="+k+"]").find("input").val())
+			$(this).text(t.colprops[k].current_filter)
 			$(this).unbind()
 			$(this).bind("dblclick", function(){
 				sel = $(this).text()
-				t.e_header_filters.find("[col="+k+"]").find("input").val(sel)
+				t.colprops[k].current_filter = sel
 				t.save_column_filters()
 				t.refresh_column_filters_in_place()
 				t.refresh()
@@ -1587,7 +1666,7 @@ function table_init(opts) {
 				//cur = sel
 				$(this).removeClass("highlight")
 				$(this).addClass("b")
-				t.e_header_filters.find("[col="+k+"]").find("input").val(cur)
+				t.colprops[k].current_filter = cur
 				t.e_header_slim.find("[col="+k+"]").each(function() {
 					$(this).removeClass("bgred")
 					$(this).addClass("bgorange")
@@ -1598,8 +1677,8 @@ function table_init(opts) {
 			$(this).unbind()
 			$(this).bind("click", function(){
 				t.e_fsr.find("#fsrview").each(function(){
-					$(this).text("")
-					$(this).addClass("highlight")
+					$(this).text(t.colprops[k].current_filter)
+					$(this).removeClass("highlight")
 				})
 			})
 		})
@@ -1607,7 +1686,7 @@ function table_init(opts) {
 			$(this).unbind()
 			$(this).bind("click", function(){
 				t.e_fsr.find("#fsrview").each(function(){
-					$(this).text("**clear**")
+					$(this).text("")
 					$(this).addClass("highlight")
 				})
 			})
@@ -1677,7 +1756,7 @@ function table_init(opts) {
 		t.e_fsr.find("#fsrandeq").each(function(){
 			$(this).unbind()
 			$(this).bind("click", function(){
-				cur =  t.e_header_filters.find("[col="+k+"]").find("input").val()
+				cur =  t.colprops[k].current_filter
 				val = cur + '&' + sel
 				t.e_fsr.find("#fsrview").each(function(){
 					$(this).text(val)
@@ -1688,7 +1767,7 @@ function table_init(opts) {
 		t.e_fsr.find("#fsroreq").each(function(){
 			$(this).unbind()
 			$(this).bind("click", function(){
-				cur =  t.e_header_filters.find("[col="+k+"]").find("input").val()
+				cur =  t.colprops[k].current_filter
 				val = cur + '|' + sel
 				t.e_fsr.find("#fsrview").each(function(){
 					$(this).text(val)
@@ -1709,7 +1788,7 @@ function table_init(opts) {
 		t.e_fsr.find("#fsrandsup").each(function(){
 			$(this).unbind()
 			$(this).bind("click", function(){
-				cur =  t.e_header_filters.find("[col="+k+"]").find("input").val()
+				cur =  t.colprops[k].current_filter
 				val = cur + '&>' + sel
 				t.e_fsr.find("#fsrview").each(function(){
 					$(this).text(val)
@@ -1720,7 +1799,7 @@ function table_init(opts) {
 		t.e_fsr.find("#fsrorsup").each(function(){
 			$(this).unbind()
 			$(this).bind("click", function(){
-				cur =  t.e_header_filters.find("[col="+k+"]").find("input").val()
+				cur =  t.colprops[k].current_filter
 				val = cur + '|>' + sel
 				t.e_fsr.find("#fsrview").each(function(){
 					$(this).text(val)
@@ -1741,7 +1820,7 @@ function table_init(opts) {
 		t.e_fsr.find("#fsrandinf").each(function(){
 			$(this).unbind()
 			$(this).bind("click", function(){
-				cur =  t.e_header_filters.find("[col="+k+"]").find("input").val()
+				cur =  t.colprops[k].current_filter
 				val = cur + '&<' + sel
 				t.e_fsr.find("#fsrview").each(function(){
 					$(this).text(val)
@@ -1752,7 +1831,7 @@ function table_init(opts) {
 		t.e_fsr.find("#fsrorinf").each(function(){
 			$(this).unbind()
 			$(this).bind("click", function(){
-				cur =  t.e_header_filters.find("[col="+k+"]").find("input").val()
+				cur =  t.colprops[k].current_filter
 				val = cur + '|<' + sel
 				t.e_fsr.find("#fsrview").each(function(){
 					$(this).text(val)
@@ -1777,7 +1856,7 @@ function table_init(opts) {
 		t.e_fsr.find("#fsrandempty").each(function(){
 			$(this).unbind()
 			$(this).bind("click", function(){
-				cur =  t.e_header_filters.find("[col="+k+"]").find("input").val()
+				cur =  t.colprops[k].current_filter
 				if (t.e_fsr.find("#fsrneg").hasClass("bgred")) {
 					val = cur + '&!empty'
 				} else {
@@ -1792,7 +1871,7 @@ function table_init(opts) {
 		t.e_fsr.find("#fsrorempty").each(function(){
 			$(this).unbind()
 			$(this).bind("click", function(){
-				cur =  t.e_header_filters.find("[col="+k+"]").find("input").val()
+				cur =  t.colprops[k].current_filter
 				if (t.e_fsr.find("#fsrneg").hasClass("bgred")) {
 					val = cur + '|!empty'
 				} else {
@@ -1862,14 +1941,14 @@ function table_init(opts) {
 		var data = []
 		var del_data = []
 
-		t.e_header_filters.find("input[name=fi]").each(function(){
-			var val = $(this).val()
-			if (val != "") {
+		for (c in t.colprops) {
+			var val = t.colprops[c].current_filter
+			if (val != "" && (typeof val !== "undefined")) {
 				// filter value to save
 				var d = {
 					'bookmark': 'current',
 					'col_tableid': t.id,
-					'col_name': $(this).parents("th").first().attr("col"),
+					'col_name': c,
 					'col_filter': val
 				}
 				data.push(d)
@@ -1878,11 +1957,11 @@ function table_init(opts) {
 				var d = {
 					'bookmark': 'current',
 					'col_tableid': t.id,
-					'col_name': $(this).parents("th").first().attr("col")
+					'col_name': c
 				}
 				del_data.push(d)
 			}
-		})
+		}
 
 		if (data.length > 0) {
 			services_osvcpostrest("R_USERS_SELF_TABLE_FILTERS", "", "", data, function(jd) {
@@ -1972,7 +2051,7 @@ function table_init(opts) {
 		})
 	}
 
-	t.format_values_cloud = function(span, data) {
+	t.format_values_cloud = function(span, data, col) {
 		span.removeClass("spinner")
 
 		var keys = []
@@ -2021,17 +2100,18 @@ function table_init(opts) {
 
 		function trigger() {
 			span.siblings("input").val($(this).text())
+			t.colprops[col].current_filter = $(this).text()
 			t.refresh()
 			t.refresh_column_filters_in_place()
 			t.save_column_filters()
 		}
 	}
 
-	t.format_values_pie = function(o, data) {
-		require(["jqplot"], function() {t._format_values_pie(o, data)})
+	t.format_values_pie = function(o, data, col) {
+		require(["jqplot"], function() {t._format_values_pie(o, data, col)})
 	}
 
-	t._format_values_pie = function(o, data) {
+	t._format_values_pie = function(o, data, col) {
 		o.empty()
 
 		// avoid ploting too difuse datasets and single pie dataset
@@ -2103,6 +2183,7 @@ function table_init(opts) {
 			var val = data[0]
 			var input = $(this).siblings("input")
 			input.val(val)
+			t.colprops[col].current_filter = val
 			t.refresh()
 			t.refresh_column_filters_in_place()
 			t.save_column_filters()
@@ -2110,96 +2191,25 @@ function table_init(opts) {
 	}
 
 	t.bind_filter_input_events = function() {
-		var inputs = t.e_header_filters.find("input[name=fi]")
-		var url = t.options.ajax_url + "_col_values/"
-
-		// refresh column filter cloud on keyup
-		var xhr = null
-		inputs.bind("keyup", function(event) {
-			if (is_enter(event) || is_special_key(event)) {
-				return
-			}
-			var input = $(this)
-			var col = input.attr('id').split('_f_')[1]
-
-			// handle slim header colorization
-			current_filter = input.parents("th").first().find(".col_filter_label").attr("title")
-			if (current_filter != input.val()) {
-				t.e_header_slim.find("[col='"+col+"']").removeClass("bgred").addClass("bgorange")
-			} else {
-				t.e_header_slim.find("[col='"+col+"']").removeClass("bgorange")
-				if (input.val() != "") {
-					t.e_header_slim.find("[col='"+col+"']").addClass("bgred")
-				}
-			}
-
-			clearTimeout(t.refresh_timer)
-			t.refresh_timer = setTimeout(function validate(){
-				if (xhr) {
-					xhr.abort()
-				}
-				var data = t.prepare_request_data()
-				//data[input.attr('id')] = input.val()
-				var dest = input.siblings("[id^="+t.id+"_fc_]")
-				var pie = input.siblings("[id^="+t.id+"_fp_]")
-				pie.height(0)
-				_url = url + col
-				xhr = $.ajax({
-					type: "POST",
-					url: _url,
-					data: data,
-					sync: false,
-					context: document.body,
-					beforeSend: function(req){
-						t.scroll_disable_dom()
-						pie.empty()
-						dest.empty()
-						t.scroll_enable_dom()
-						dest.addClass("icon spinner")
-					},
-					success: function(msg){
-						var data = $.parseJSON(msg)
-						if (t.colprops[col]._class.match(/datetime/)) {
-							data = t.convert_cloud_dates(data)
-						}
-						t.format_values_cloud(dest, data)
-						t.format_values_pie(pie, data)
-					}
-				})
-			}, 1000)
-		})
-
-		// validate column filter on <enter> keypress
-		inputs.bind("keypress", function(event) {
-			if (is_enter(event)) {
-				t.e_header_filters.find(".white_float_input").hide()
-				t.save_column_filters()
-				t.refresh_column_filters_in_place()
-				t.refresh()
-			}
-		})
-
 		// open filter input on filter icon click
-		inputs.parent().siblings(".filter16").bind("click", function(event) {
-			var e = $(this).siblings(".white_float_input")
-			e.toggle()
-			if (e.is(":visible")) {
-				keep_inside(e)
-				register_pop_up(event, $(e))
-				e.find("input").focus().trigger("keyup")
-			}
+		t.e_header_filters.find("th > .filter16").bind("click", function(event) {
+			var c = $(this).parent().attr("col")
+			t.add_column_header_input_float(c)
+			t.e_filter.show()
+			t.position_on_pointer(event, t.e_filter)
+			register_pop_up(event, t.e_filter)
+			t.e_filter.find("input").focus().trigger("keyup")
 		})
 
 		// clear column filter click
-		inputs.parent().siblings(".clear16").bind("click", function(event) {
+		t.e_header_filters.find("th > .clear16").bind("click", function(event) {
 			var c = $(this).parent().attr("col")
-			var input = t.e_header_filters.find("th[col="+c+"]").find("input")
 			if ((c in t.colprops) && (typeof(t.colprops[c].force_filter) !== "undefined") && (t.colprops[c].force_filter != "")) {
-				input.val(t.colprops[c].force_filter)
+				t.colprops[c].current_filter = t.colprops[c].force_filter
 			} else if ((c in t.colprops) && (typeof(t.colprops[c].default_filter) !== "undefined") && (t.colprops[c].default_filter != "")) {
-				input.val(t.colprops[c].default_filter)
+				t.colprops[c].current_filter = t.colprops[c].default_filter
 			} else {
-				input.val("")
+				t.colprops[c].current_filter = ""
 			}
 			t.save_column_filters(c)
 			t.refresh_column_filters_in_place()
@@ -2207,20 +2217,9 @@ function table_init(opts) {
 		})
 
 		// invert column filter click
-		inputs.parent().siblings(".invert16").bind("click", function(event) {
+		t.e_header_filters.find("th > .invert16").bind("click", function(event) {
 			var c = $(this).parent().attr("col")
 			t.invert_column_filter(c)
-			t.refresh_column_filters_in_place()
-			t.refresh()
-		})
-
-		// values to column filter click
-		inputs.siblings(".values_to_filter").bind("click", function(event) {
-			var input = $(this).parent().find("input")
-			var ck = input.attr("id").replace("_f_", "_fc_")
-			var cloud = $(this).parent().find("#"+ck)
-			values_to_filter(input, cloud)
-			t.save_column_filters()
 			t.refresh_column_filters_in_place()
 			t.refresh()
 		})
@@ -2696,8 +2695,8 @@ function table_init(opts) {
 
 			// filtered columns are always visible
 			if (t.e_header_filters) {
-				var e_input = t.e_header_filters.find("th[col="+colname+"]").find("input")
-				if ((e_input.length > 0) && (e_input.val() != "")) {
+				var val = t.colprops[colname].current_filter
+				if ((val != "") && (typeof val !== "undefined")) {
 					input.prop("disabled", true)
 					input.prop("checked", true)
 				}
@@ -2827,6 +2826,19 @@ function table_init(opts) {
 		t.e_toolbar.prepend(e)
 	}
 
+	t.init_current_filters = function() {
+		if (!t.options.request_vars) {
+			return
+		}
+		for (key in t.options.request_vars) {
+			var c = key.split("_f_")[1]
+			if (!(c in t.colprops)) {
+				continue
+			}
+                        t.colprops[c].current_filter = t.options.request_vars[key]
+		}
+	}
+
 	t.insert_bookmark = function(name) {
 		// remove the "no_bookmarks" msg
 		if (t.e_tool_bookmarks_listarea.find("p").length == 0) {
@@ -2910,6 +2922,7 @@ function table_init(opts) {
 		osvc.table_filters_loaded
 	).then(function(){
 		t.get_visible_columns()
+		t.init_current_filters()
 		t.add_column_headers_slim()
 		t.add_column_headers_input()
 		t.add_column_headers()

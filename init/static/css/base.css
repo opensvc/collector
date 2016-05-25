@@ -2670,6 +2670,9 @@ a.search-link:hover {
 /*
  * table class
  */
+.tableo {
+	position: relative;
+}
 .tableo > div {
 	width: 100%;
 	overflow-x: auto;
@@ -3411,6 +3414,7 @@ textarea.oidefinition {
 	font-family: monospace;
 	min-height: 30em;
 	width: 100%;
+	position: relative;
 }
 
 .constraint_violation,input.constraint_violation:focus,textarea.constraint_violation:focus {
