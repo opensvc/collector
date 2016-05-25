@@ -662,17 +662,20 @@ function osvc_editor(divid, options) {
 
 	o.init = function() {
 		var textarea = $("<div class='oi oidefinition' style='height:30em'></div>")
-		var button = $("<input type='button' style='margin:0.5em 0 0.5em 0'>")
+		var button = $("<button class='button_div icon fa-save' style='margin:0.5em 0 0.5em 0.5em'></button>")
 		textarea.uniqueId()
-		button.attr("value", i18n.t("form_properties.save"))
+		button.text(i18n.t("form_properties.save"))
 		textarea.text(o.options.text)
 		o.div.append(textarea)
 		o.editor = ace.edit(textarea.attr("id"))
 		o.editor.setReadOnly(true)
-		var YamlMode = ace.require("ace/mode/yaml").Mode
 		var vim = ace.require("ace/keyboard/vim").handler
-		o.editor.session.setMode(new YamlMode())
 		o.editor.setKeyboardHandler(vim)
+		if (!o.options.mode) {
+			o.options.mode = "yaml"
+		}
+		var mode = ace.require("ace/mode/"+o.options.mode).Mode
+		o.editor.session.setMode(new mode())
 		o.editor.focus()
 		var VimApi = ace.require("ace/keyboard/vim").CodeMirror.Vim
 		VimApi.defineEx("write", "w", function(cm, input) {

@@ -263,6 +263,7 @@ function service_env(divid, options)
 		}
 		o.editor = osvc_editor(o.body, {
 			"text": text,
+			"mode": "ini",
 			"obj_type": "services",
 			"obj_id": o.options.svc_id,
 			"save": o.save

@@ -76,6 +76,7 @@ function app_start() {
 			"ace-plugins": "ace",
 			"ace-plugins-keybinding-vim": "ace/keybinding-vim",
 			"ace-plugins-mode-yaml": "ace/mode-yaml",
+			"ace-plugins-mode-ini": "ace/mode-ini",
 			"hljs": "highlight/highlight.pack"
 		},
 		shim: {
@@ -85,11 +86,15 @@ function app_start() {
 			"ace-plugins-mode-yaml": {
 				deps: ["ace-base"]
 			},
+			"ace-plugins-mode-ini": {
+				deps: ["ace-base"]
+			},
 			"ace": {
 				deps: [
 					"ace-base",
 					"ace-plugins-keybinding-vim",
-					"ace-plugins-mode-yaml"
+					"ace-plugins-mode-yaml",
+					"ace-plugins-mode-ini"
 				]
 			},
 			"jqplot-plugins-highlighter": {
