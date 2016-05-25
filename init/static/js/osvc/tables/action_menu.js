@@ -1681,7 +1681,6 @@ function table_bind_action_menu(t) {
 			} else {
 				// left-click => close the action menu, the menu and the filter box
 				$("#fsr"+t.id).hide()
-				$(".menu").slideUp()
 				$(".action_menu_popup").hide()
 			}
 		})
