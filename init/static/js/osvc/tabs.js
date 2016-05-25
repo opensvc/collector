@@ -651,3 +651,53 @@ function tab_tools(options) {
 	return o
 }
 
+function osvc_editor(divid, options) {
+	var o = {}
+	o.options = options
+	if (divid.length) {
+		o.div = divid
+	} else {
+		o.div = $("#"+divid)
+	}
+
+	o.init = function() {
+		var textarea = $("<div class='oi oidefinition' style='height:30em'></div>")
+		var button = $("<input type='button' style='margin:0.5em 0 0.5em 0'>")
+		textarea.uniqueId()
+		button.attr("value", i18n.t("form_properties.save"))
+		textarea.text(o.options.text)
+		o.div.append(textarea)
+		o.editor = ace.edit(textarea.attr("id"))
+		o.editor.setReadOnly(true)
+		var YamlMode = ace.require("ace/mode/yaml").Mode
+		var vim = ace.require("ace/keyboard/vim").handler
+		o.editor.session.setMode(new YamlMode())
+		o.editor.setKeyboardHandler(vim)
+		o.editor.focus()
+		var VimApi = ace.require("ace/keyboard/vim").CodeMirror.Vim
+		VimApi.defineEx("write", "w", function(cm, input) {
+			o.options.save(o.editor.getValue())
+		})      
+		button.bind("click", function() {
+			o.options.save(o.editor.getValue())
+		})      
+		if (o.options.privileges && services_ismemberof(o.options.privileges)) {
+			o.editor.setReadOnly(false)
+			o.div.append(button)
+		}
+		if (o.options.obj_type && o.options.obj_id) {
+			services_osvcgetrest("/"+o.options.obj_type+"/%1/am_i_responsible", [o.options.obj_id], "", function(jd) {
+				if (jd.data) {
+					o.editor.setReadOnly(false)
+					o.div.append(button)
+				}
+			})
+		}
+	}
+
+	require(["ace"], function() {
+		o.init()
+	})
+	return o
+}
+

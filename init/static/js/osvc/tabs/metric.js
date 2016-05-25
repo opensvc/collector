@@ -139,40 +139,31 @@ function metric_request(divid, options) {
 		if (data.metric_sql && (data.metric_sql.length > 0)) {
 			var text = data.metric_sql
 		} else {
-			var text = i18n.t("metric_properties.no_request")
+			var text = ""
 		}
-		$.data(div[0], "v", text)
-		cell_decorator_sql(div)
-
-		div.bind("click", function() {
-			div.hide()
-			var edit = $("<div name='edit'></div>")
-			var textarea = $("<textarea class='oi oidefinition'></textarea>")
-			var button = $("<input type='button' style='margin:0.5em 0 0.5em 0'>")
-			button.attr("value", i18n.t("metric_properties.save"))
-			if (data.metric_sql && (data.metric_sql.length > 0)) {
-				textarea.val(div.text())
-			}
-			edit.append(textarea)
-			edit.append(button)
-			o.div.append(edit)
-			button.bind("click", function() {
-				var data = {
-					"metric_sql": textarea.val()
-				}
-				services_osvcpostrest("/reports/metrics/%1", [o.options.metric_id], "", data, function(jd) {
-					if (jd.error && (jd.error.length > 0)) {
-						osvc.flash.error(services_error_fmt(jd))
-						return
-					}
-					o.init()
-				},
-				function(xhr, stat, error) {
-					osvc.flash.error(services_ajax_error_fmt(xhr, stat, error))
-				})
-			})
+		o.editor = osvc_editor(div, {
+			"text": text,
+			"privileges": ["Manager", "ReportsManager"],
+			"save": o.save
 		})
 	}
+
+	o.save = function(text) {
+		var data = {
+			"metric_sql": text
+		}
+		services_osvcpostrest("/reports/metrics/%1", [o.options.metric_id], "", data, function(jd) {
+			if (jd.error && (jd.error.length > 0)) {
+				osvc.flash.error(services_error_fmt(jd))
+				return
+			}
+			o.init()
+		},
+		function(xhr, stat, error) {
+			osvc.flash.error(services_ajax_error_fmt(xhr, stat, error))
+		})
+	}
+
 	o.test = function(data) {
 		var div = $("<div style='padding:1em'></div>")
 		div.uniqueId()

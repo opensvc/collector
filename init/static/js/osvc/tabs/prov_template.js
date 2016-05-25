@@ -144,38 +144,29 @@ function prov_template_definition(divid, options) {
 		if (data.tpl_command && (data.tpl_command.length > 0)) {
 			var text = data.tpl_command
 		} else {
-			var text = i18n.t("prov_template_properties.no_command")
+			var text = ""
 		}
-		$.data(div[0], "v", text)
-		cell_decorator_tpl_command(div)
+		o.editor = osvc_editor(div, {
+			"text": text,
+			"obj_type": "provisioning_templates",
+			"obj_id": o.options.tpl_id,
+			"save": o.save
+		})
+	}
 
-		div.bind("click", function() {
-			div.hide()
-			var edit = $("<div name='edit'></div>")
-			var textarea = $("<textarea class='oi oidefinition'></textarea>")
-			var button = $("<input type='button' style='margin:0.5em 0 0.5em 0'>")
-			button.attr("value", i18n.t("prov_template_properties.save"))
-			if (data.tpl_command && (data.tpl_command.length > 0)) {
-				textarea.val(div.text())
+	o.save = function(text) {
+		var data = {
+			"tpl_command": text
+		}
+		services_osvcpostrest("/provisioning_templates/%1", [o.options.tpl_id], "", data, function(jd) {
+			if (jd.error && (jd.error.length > 0)) {
+				osvc.flash.error(services_error_fmt(jd))
+				return
 			}
-			edit.append(textarea)
-			edit.append(button)
-			o.div.append(edit)
-			button.bind("click", function() {
-				var data = {
-					"tpl_command": textarea.val()
-				}
-				services_osvcpostrest("/provisioning_templates/%1", [o.options.tpl_id], "", data, function(jd) {
-					if (jd.error && (jd.error.length > 0)) {
-						osvc.flash.error(services_error_fmt(jd))
-						return
-					}
-					o.init()
-				},
-				function(xhr, stat, error) {
-					osvc.flash.error(services_ajax_error_fmt(xhr, stat, error))
-				})
-			})
+			o.init()
+		},
+		function(xhr, stat, error) {
+			osvc.flash.error(services_ajax_error_fmt(xhr, stat, error))
 		})
 	}
 

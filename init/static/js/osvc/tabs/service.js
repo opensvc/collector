@@ -248,48 +248,41 @@ function service_env(divid, options)
 			}
 			var data = jd.data[0]
 			o.header.text(i18n.t("service_env.header", {"updated": data.updated}))
-			if (data.svc_envfile) {
-				o.text = data.svc_envfile.replace(/\\n\[/g, "\n\n[").replace(/\\n/g, "\n").replace(/\\t/g, "\t")
-			} else {
-				o.text = ""
-			}
-			o.body.html(o.text)
-			require(["hljs"], function(hljs) {
-				hljs.highlightBlock(o.body[0])
-			})
-			o.body.find(".hljs-setting").css({"color": "green"}).children().css({"color": "initial"})
+			o.load(data)
 		},
 		function() {
 			o.div.html(services_ajax_error_fmt(xhr, stat, error))
 		})
+	}
 
-		o.body.bind("click", function(){
-			o.body.hide()
-			var edit = $("<div name='edit'></div>")
-			var textarea = $("<textarea class='oi oidefinition'></textarea>")
-			var button = $("<input type='button' style='margin:0.5em 0 0.5em 0'>")
-			button.attr("value", i18n.t("report_properties.save"))
-			textarea.val(o.text)
-			edit.append(textarea)
-			edit.append(button)
-			o.div.append(edit)
-			button.bind("click", function() {
-				var data = { 
-					"svc_envfile": textarea.val()
-				}
-				services_osvcpostrest("/services/%1", [o.options.svc_id], "", data, function(jd) {
-					if (jd.error && (jd.error.length > 0)) {
-						osvc.flash.error(services_error_fmt(jd))
-						return
-					}
-					o.init()
-				},
-				function(xhr, stat, error) {
-					osvc.flash.error(services_ajax_error_fmt(xhr, stat, error))
-				})
-			})
+	o.load = function(data) {
+		if (data.svc_envfile && (data.svc_envfile.length > 0)) {
+			var text = data.svc_envfile.replace(/\\n\[/g, "\n\n[").replace(/\\n/g, "\n").replace(/\\t/g, "\t")
+		} else {
+			var text = ""
+		}
+		o.editor = osvc_editor(o.body, {
+			"text": text,
+			"obj_type": "services",
+			"obj_id": o.options.svc_id,
+			"save": o.save
 		})
+	}
 
+	o.save = function(text) {
+		var data = { 
+			"svc_envfile": text
+		}
+		services_osvcpostrest("/services/%1", [o.options.svc_id], "", data, function(jd) {
+			if (jd.error && (jd.error.length > 0)) {
+				osvc.flash.error(services_error_fmt(jd))
+				return
+			}
+			o.init()
+		},
+		function(xhr, stat, error) {
+			osvc.flash.error(services_ajax_error_fmt(xhr, stat, error))
+		})
 	}
 
 	o.init()

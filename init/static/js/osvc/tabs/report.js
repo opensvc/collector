@@ -144,41 +144,31 @@ function report_definition(divid, options) {
 		if (data.report_yaml && (data.report_yaml.length > 0)) {
 			var text = data.report_yaml
 		} else {
-			var text = i18n.t("report_properties.no_yaml")
+			var text = ""
 		}
-		$.data(div[0], "v", text)
-		cell_decorator_yaml(div)
+		o.editor = osvc_editor(div, {
+			"text": text,
+			"privileges": ["Manager", "ReportsManager"],
+			"save": o.save
+		})
+	}
 
-		div.bind("click", function() {
-			div.hide()
-			var edit = $("<div name='edit'></div>")
-			var textarea = $("<textarea class='oi oidefinition'></textarea>")
-			var button = $("<input type='button' style='margin:0.5em 0 0.5em 0'>")
-			button.attr("value", i18n.t("report_properties.save"))
-			if (data.report_yaml && (data.report_yaml.length > 0)) {
-				textarea.val(div.text())
+	o.save = function(text) {
+		var data = {
+			"report_yaml": text
+		}
+		services_osvcpostrest("/reports/%1", [o.options.report_id], "", data, function(jd) {
+			if (jd.error && (jd.error.length > 0)) {
+				osvc.flash.error(services_error_fmt(jd))
+				return
 			}
-			edit.append(textarea)
-			edit.append(button)
-			o.div.append(edit)
-			button.bind("click", function() {
-				var data = {
-					"report_yaml": textarea.val()
-				}
-				services_osvcpostrest("/reports/%1", [o.options.report_id], "", data, function(jd) {
-					if (jd.error && (jd.error.length > 0)) {
-						osvc.flash.error(services_error_fmt(jd))
-						return
-					}
-					o.init()
+			o.init()
 
-					// force a new render in the rendering tab
-					o.div.parents(".tab_display").first().find(".reports_div").parent().empty()
-				},
-				function(xhr, stat, error) {
-					osvc.flash.error(services_ajax_error_fmt(xhr, stat, error))
-				})
-			})
+			// force a new render in the rendering tab
+			o.div.parents(".tab_display").first().find(".reports_div").parent().empty()
+		},
+		function(xhr, stat, error) {
+			osvc.flash.error(services_ajax_error_fmt(xhr, stat, error))
 		})
 	}
 

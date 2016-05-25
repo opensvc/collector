@@ -72,9 +72,26 @@ function app_start() {
 			"jqplot-plugins-pieRenderer": "jqplot/plugins/jqplot.pieRenderer.min",
 			"jqplot-plugins-donutRenderer": "jqplot/plugins/jqplot.donutRenderer.min",
 			"jstree": "jstree/jstree.min",
+			"ace-base": "ace/ace",
+			"ace-plugins": "ace",
+			"ace-plugins-keybinding-vim": "ace/keybinding-vim",
+			"ace-plugins-mode-yaml": "ace/mode-yaml",
 			"hljs": "highlight/highlight.pack"
 		},
 		shim: {
+			"ace-plugins-keybinding-vim": {
+				deps: ["ace-base"]
+			},
+			"ace-plugins-mode-yaml": {
+				deps: ["ace-base"]
+			},
+			"ace": {
+				deps: [
+					"ace-base",
+					"ace-plugins-keybinding-vim",
+					"ace-plugins-mode-yaml"
+				]
+			},
 			"jqplot-plugins-highlighter": {
 				deps: ["jqplot-base"]
 			},

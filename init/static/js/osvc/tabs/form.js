@@ -174,45 +174,38 @@ function form_definition(divid, options) {
 		if (data.form_yaml && (data.form_yaml.length > 0)) {
 			var text = data.form_yaml
 		} else {
-			var text = i18n.t("form_properties.no_yaml")
+			var text = ""
 		}
-		$.data(div[0], "v", text)
-		cell_decorator_yaml(div)
-
-		div.bind("click", function() {
-			div.hide()
-			var edit = $("<div name='edit'></div>")
-			var textarea = $("<textarea class='oi oidefinition'></textarea>")
-			var button = $("<input type='button' style='margin:0.5em 0 0.5em 0'>")
-			button.attr("value", i18n.t("form_properties.save"))
-			if (data.form_yaml && (data.form_yaml.length > 0)) {
-				textarea.val(div.text())
-			}
-			edit.append(textarea)
-			edit.append(button)
-			o.div.append(edit)
-			button.bind("click", function() {
-				var data = {
-					"form_yaml": textarea.val()
-				}
-				services_osvcpostrest("R_FORM", [o.options.form_id], "", data, function(jd) {
-					if (jd.error && (jd.error.length > 0)) {
-						osvc.flash.error(services_error_fmt(jd))
-						return
-					}
-					o.init()
-
-					// force a new render in the rendering tab
-					o.div.parents(".tab_display").first().find("[name=form_area]").parent().empty()
-				},
-				function(xhr, stat, error) {
-					osvc.flash.error(services_ajax_error_fmt(xhr, stat, error))
-				})
-			})
+		o.editor = osvc_editor(div, {
+			"text": text,
+			"obj_type": "forms",
+			"obj_id": o.options.form_id,
+			"save": o.save
 		})
 	}
 
-	o.init()
+	o.save = function(text) {
+		var data = {
+			"form_yaml": text
+		}
+		services_osvcpostrest("R_FORM", [o.options.form_id], "", data, function(jd) {
+			if (jd.error && (jd.error.length > 0)) {
+				osvc.flash.error(services_error_fmt(jd))
+				return
+			}
+			o.init()
+
+			// force a new render in the rendering tab
+			o.div.parents(".tab_display").first().find("[name=form_area]").parent().empty()
+		},
+		function(xhr, stat, error) {
+			osvc.flash.error(services_ajax_error_fmt(xhr, stat, error))
+		})
+	}
+
+	require(["ace"], function() {
+		o.init()
+	})
 
 	return o
 }

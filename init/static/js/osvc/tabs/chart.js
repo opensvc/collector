@@ -137,42 +137,32 @@ function chart_definition(divid, options) {
 		if (data.chart_yaml && (data.chart_yaml.length > 0)) {
 			var text = data.chart_yaml
 		} else {
-			var text = i18n.t("chart_properties.no_yaml")
+			var text = ""
 		}
-		$.data(div[0], "v", text)
-		cell_decorator_yaml(div)
+		o.editor = osvc_editor(div, {
+			"text": text,
+			"privileges": ["Manager", "ReportsManager"],
+			"save": o.save
+		})
+	}
 
-		div.bind("click", function() {
-			div.hide()
-			var edit = $("<div name='edit'></div>")
-			var textarea = $("<textarea class='oi oidefinition'></textarea>")
-			var button = $("<input type='button' style='margin:0.5em 0 0.5em 0'>")
-			button.attr("value", i18n.t("chart_properties.save"))
-			if (data.chart_yaml && (data.chart_yaml.length > 0)) {
-				textarea.val(div.text())
+	o.save = function(text) {
+	var data = {
+			"chart_yaml": text
+		}
+		services_osvcpostrest("/reports/charts/%1", [o.options.chart_id], "", data, function(jd) {
+			if (jd.error && (jd.error.length > 0)) {
+				osvc.flash.error(services_error_fmt(jd))
+				return
 			}
-			edit.append(textarea)
-			edit.append(button)
-			o.div.append(edit)
-			button.bind("click", function() {
-				var data = {
-					"chart_yaml": textarea.val()
-				}
-				services_osvcpostrest("/reports/charts/%1", [o.options.chart_id], "", data, function(jd) {
-					if (jd.error && (jd.error.length > 0)) {
-						osvc.flash.error(services_error_fmt(jd))
-						return
-					}
-					o.init()
+			o.init()
 
-					// force a new render in the rendering tab
-					o.div.parents(".tab_display").first().find(".reports_section").parent().empty()
+			// force a new render in the rendering tab
+			o.div.parents(".tab_display").first().find(".reports_section").parent().empty()
 
-				},
-				function(xhr, stat, error) {
-					osvc.flash.error(services_ajax_error_fmt(xhr, stat, error))
-				})
-			})
+		},
+		function(xhr, stat, error) {
+			osvc.flash.error(services_ajax_error_fmt(xhr, stat, error))
 		})
 	}
 
