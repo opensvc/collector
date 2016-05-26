@@ -279,6 +279,7 @@ function table_init(opts) {
 		"checkboxes": true,
 		"span": ["id"],
 		"force_cols": [],
+		"hide_cols": [],
 		"columns": [],
 		"colprops": {},
 		"volatile_filters": false,
@@ -320,17 +321,25 @@ function table_init(opts) {
 
 	t.add_filtered_to_visible_columns = function() {
 		for (col in t.colprops) {
+			if (t.options.hide_cols.indexOf(col) >= 0) {
+				if (t.e_tool_column_selector_area) {
+					t.e_tool_column_selector_area.find("[colname="+col+"]").prop("disabled", true).prop("checked", false)
+				}
+				continue
+			}
 			var val = t.colprops[col].current_filter
-			if (t.e_tool_column_selector_area) {
-				if ((typeof val === "undefined") || (val == "")) {
-					t.e_tool_column_selector_area.find("[colname="+col+"]").removeAttr("disabled")
-					continue
-				}
-				t.e_tool_column_selector_area.find("[colname="+col+"]").prop("disabled", true)
-				if (t.options.visible_columns.indexOf(col) >= 0) {
-					continue
-				}
+			if ((typeof val === "undefined") || (val == "")) {
+				continue
+			}
+			if (t.options.visible_columns.indexOf(col) < 0) {
 				t.options.visible_columns.push(col)
+				if (t.e_tool_column_selector_area) {
+					t.e_tool_column_selector_area.find("[colname="+col+"]").prop("disabled", true)
+				}
+			} else {
+				if (t.e_tool_column_selector_area) {
+					t.e_tool_column_selector_area.find("[colname="+col+"]").removeAttr("disabled")
+				}
 			}
 		}
 	}
@@ -2923,6 +2932,7 @@ function table_init(opts) {
 	).then(function(){
 		t.get_visible_columns()
 		t.init_current_filters()
+		t.add_filtered_to_visible_columns()
 		t.add_column_headers_slim()
 		t.add_column_headers_input()
 		t.add_column_headers()
@@ -2936,7 +2946,6 @@ function table_init(opts) {
 		t.add_wsswitch()
 		t.add_volatile()
 		t.add_pager()
-		t.add_filtered_to_visible_columns()
 		t.hide_cells()
 		t.add_filterbox()
 		t.add_scrollers()

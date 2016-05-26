@@ -96,6 +96,7 @@ function table_actions_node(divid, node_id) {
 		"caller": "table_actions_node",
 		"request_vars": request_vars,
 		"volatile_filters": true,
+		"hide_cols": ['node_id'],
 		"visible_columns": [
 			'svcname',
 			'pid',
@@ -130,6 +131,7 @@ function table_actions_svc(divid, svc_id) {
 		"caller": "table_actions_svc",
 		"request_vars": request_vars,
 		"volatile_filters": true,
+		"hide_cols": ['svc_id'],
 		"visible_columns": [
 			'nodename',
 			'pid',
@@ -179,6 +181,7 @@ function table_resinfo_svc(divid, svc_id) {
 	return table_resinfo(divid, {
 		"id": id,
 		"caller": "table_resinfo_svc",
+		"hide_cols": ['svc_id'],
 		"request_vars": request_vars,
 		"volatile_filters": true
 	})
@@ -255,6 +258,7 @@ function table_checks_node(divid, node_id) {
 		"caller": "table_checks_node",
 		"request_vars": request_vars,
 		"volatile_filters": true,
+		"hide_cols": ['node_id'],
 		"visible_columns": [
 			'svcname',
 			'chk_type',
@@ -280,6 +284,7 @@ function table_checks_svc(divid, svc_id) {
 		"caller": "table_checks_svc",
 		"request_vars": request_vars,
 		"volatile_filters": true,
+		"hide_cols": ['svc_id'],
 		"visible_columns": [
 			'chk_nodename',
 			'chk_type',
@@ -695,6 +700,7 @@ function table_comp_status_node(divid, node_id) {
 		"caller": "table_comp_status_node",
 		"request_vars": request_vars,
 		"volatile_filters": true,
+		"hide_cols": ['node_id'],
 		"force_cols": ['id', 'node_id', 'svc_id', 'os_name', 'run_log'],
 		"visible_columns": ['run_date', 'svcname', 'run_module', 'run_status']
 	})
@@ -715,6 +721,7 @@ function table_comp_status_svc(divid, svc_id) {
 		"caller": "table_comp_status_svc",
 		"request_vars": request_vars,
 		"volatile_filters": true,
+		"hide_cols": ['svc_id'],
 		"force_cols": ['id', 'node_id', 'svc_id', 'os_name', 'run_log'],
 		"visible_columns": ['run_date', 'nodename', 'run_module', 'run_status']
 	})
@@ -752,6 +759,7 @@ function table_dashboard_node(divid, node_id) {
 		"id": id,
 		"caller": "table_dashboard_node",
 		"request_vars": request_vars,
+		"hide_cols": ['node_id'],
 		"visible_columns": ['dash_updated', 'dash_type', 'dash_links', 'dash_entry', 'dash_env', 'svcname', 'dash_severity', 'dash_created'],
 		"volatile_filters": true,
 		"wsable": false
@@ -767,6 +775,7 @@ function table_dashboard_svc(divid, svc_id) {
 		"id": id,
 		"caller": "table_dashboard_svc",
 		"request_vars": request_vars,
+		"hide_cols": ['svc_id'],
 		"visible_columns": ['dash_updated', 'dash_type', 'dash_links', 'dash_entry', 'dash_env', 'nodename', 'dash_severity', 'dash_created'],
 		"volatile_filters": true
 	})
@@ -1055,6 +1064,7 @@ function table_log_node(divid, node_id) {
 	return table_log(divid, {
 		"id": id,
 		"caller": "table_log_node",
+		"hide_cols": ['node_id'],
 		"request_vars": request_vars,
 		"volatile_filters": true
 	})
@@ -1068,6 +1078,7 @@ function table_log_svc(divid, svc_id) {
 	table_log(divid, {
 		"id": id,
 		"caller": "table_log_svc",
+		"hide_cols": ['svc_id'],
 		"request_vars": request_vars,
 		"volatile_filters": true
 	})
@@ -1340,6 +1351,7 @@ function table_packages_node(divid, node_id) {
 	return table_packages(divid, {
 		"id": id,
 		"caller": "table_packages_node",
+		"hide_cols": ['node_id'],
 		"request_vars": request_vars,
 		"volatile_filters": true
 	})
@@ -1580,6 +1592,7 @@ function table_resources_node(divid, node_id) {
 		"id": id,
 		"caller": "table_resources_node",
 		"request_vars": request_vars,
+		"hide_cols": ['node_id'],
 		"visible_columns": ['svcname', 'vmname', 'rid', 'res_type', 'res_status', 'res_desc', 'res_log', 'res_monitor', 'res_disable', 'res_optional', 'updated'],
 		"volatile_filters": true
 	})
@@ -1594,6 +1607,7 @@ function table_resources_svc(divid, svc_id) {
 		"id": id,
 		"caller": "table_resources_svc",
 		"request_vars": request_vars,
+		"hide_cols": ['svc_id'],
 		"visible_columns": ['nodename', 'vmname', 'rid', 'res_type', 'res_status', 'res_desc', 'res_log', 'res_monitor', 'res_disable', 'res_optional', 'updated'],
 		"volatile_filters": true
 	})
@@ -1766,6 +1780,7 @@ function table_service_instances_node(divid, node_id) {
 		"caller": "table_service_instances_node",
 		"request_vars": request_vars,
 		"volatile_filters": true,
+		"hide_cols": ['node_id'],
 		"visible_columns": [
 			'svcname',
 			'svc_ha',
@@ -1789,6 +1804,7 @@ function table_service_instances_svc(divid, svc_id) {
 		"caller": "table_service_instances_svc",
 		"request_vars": request_vars,
 		"volatile_filters": true,
+		"hide_cols": ['svc_id'],
 		"visible_columns": [
 			'svc_ha',
 			'svc_cluster_type',
