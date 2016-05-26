@@ -396,6 +396,9 @@ function osvc_jq_decorator(e, options) {
 		} else {
 			var name = o.text()
 		}
+		if (!id && (!name || name == "")) {
+			return
+		}
 		if (id) {
 			opts[options.attr] = id
 		}
