@@ -506,7 +506,7 @@ def _refresh_fset_cache(fset_id):
           node_id=node_id,
         )
     for svc_id in svc_ids:
-        sql += """(%(fset_id)d, "svc_id", "%(svc_id)d"),"""%dict(
+        sql += """(%(fset_id)d, "svc_id", "%(svc_id)s"),"""%dict(
           fset_id=fset_id,
           svc_id=svc_id,
         )

@@ -632,6 +632,7 @@ function cell_decorator_svc_action_err(e, line) {
 		var id = toggle_extratable(e)
 		table_actions(id, {
 			"volatile_filters": true,
+			"hide_cols": ["svc_id"],
 			"request_vars": {
 				"actions_f_svc_id": svc_id,
 				"actions_f_status": "err",
@@ -1066,6 +1067,7 @@ function _cell_decorator_dash_link_actions(svc_id, e) {
 		var id = toggle_extratable(e)
 		table_actions(id, {
 			"volatile_filters": true,
+			"hide_cols": ["svc_id"],
 			"request_vars": {
 				"actions_f_svc_id": svc_id,
 				"actions_f_begin": ">-7d"
@@ -1109,6 +1111,7 @@ function _cell_decorator_dash_link_action_error(svc_id, e) {
 		var id = toggle_extratable(e)
 		table_actions(id, {
 			"volatile_filters": true,
+			"hide_cols": ["svc_id"],
 			"request_vars": {
 				"actions_f_svc_id": svc_id,
 				"actions_f_status": "err",
@@ -1164,7 +1167,12 @@ function cell_decorator_dash_link_checks(e, line) {
 			var req = {}
 			req[id+"_f_node_id"] = node_id
 			req[id+"_f_chk_err"] = ">0"
-			table_checks(id, {"id": id, "request_vars": req, "volatile_filters": true})
+			table_checks(id, {
+				"id": id,
+				"request_vars": req,
+				"hide_cols": ["node_id"],
+				"volatile_filters": true
+			})
 		})
 	}
 }

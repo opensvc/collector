@@ -47,8 +47,7 @@ def begin_action(vars, vals, auth):
 
 @auth_uuid
 def rpc_begin_action(vars, vals, auth):
-    scheduler.queue_task("_action_wrapper", ["_begin_action", vars, vals, auth],
-                         group_name="actions")
+    rconn.rpush("osvc:q:svcactions", json.dumps(["_begin_action", vars, vals, auth]))
 
 @service.xmlrpc
 def res_action(vars, vals, auth):
@@ -67,8 +66,7 @@ def end_action(vars, vals, auth):
 
 @auth_uuid
 def rpc_end_action(vars, vals, auth):
-    scheduler.queue_task("_action_wrapper", ["_end_action", vars, vals, auth],
-                         group_name="actions")
+    rconn.rpush("osvc:q:svcactions", json.dumps(["_end_action", vars, vals, auth]))
 
 @service.xmlrpc
 def update_appinfo(vars, vals, auth):
@@ -122,8 +120,7 @@ def update_service(vars, vals, auth):
 
 @auth_uuid
 def rpc_update_service(vars, vals, auth):
-    scheduler.queue_task("_update_service", [vars, vals, auth],
-                         group_name="_update_service")
+    rconn.rpush("osvc:q:svcconf", json.dumps([vars, vals, auth]))
 
 @service.xmlrpc
 def push_checks(vars, vals, auth):
@@ -131,8 +128,7 @@ def push_checks(vars, vals, auth):
 
 @auth_uuid
 def rpc_push_checks(vars, vals, auth):
-    scheduler.queue_task("_push_checks", [vars, vals, auth],
-                         group_name="_push_checks")
+    rconn.rpush("osvc:q:checks", json.dumps([vars, vals, auth]))
 
 @service.xmlrpc
 def insert_generic(data, auth):
@@ -140,8 +136,7 @@ def insert_generic(data, auth):
 
 @auth_uuid
 def rpc_insert_generic(data, auth):
-    scheduler.queue_task("_insert_generic", [data, auth],
-                         group_name="_insert_generic")
+    rconn.rpush("osvc:q:generic", json.dumps([data, auth]))
 
 @service.xmlrpc
 def update_asset(vars, vals, auth):
@@ -149,8 +144,7 @@ def update_asset(vars, vals, auth):
 
 @auth_uuid
 def rpc_update_asset(vars, vals, auth):
-    scheduler.queue_task("_update_asset", [vars, vals, auth],
-                         group_name="_update_asset")
+    rconn.rpush("osvc:q:asset", json.dumps([vars, vals, auth]))
 
 @service.xmlrpc
 def update_asset_sync(vars, vals, auth):
@@ -184,10 +178,25 @@ def svcmon_update_combo(g_vars, g_vals, r_vars, r_vals, auth):
 
 @auth_uuid
 def rpc_svcmon_update_combo(g_vars, g_vals, r_vars, r_vals, auth):
-    scheduler.queue_task("_svcmon_update_combo",
-                         [g_vars, g_vals, r_vars, r_vals, auth],
-                         group_name="_svcmon_update_combo",
-                         immediate=True)
+    rconn.rpush("osvc:q:svcmon", json.dumps([g_vars, g_vals, r_vars, r_vals, auth]))
+
+def test_sched():
+    s = """[["mon_svcname", "mon_svctype", "mon_nodname", "mon_vmname", "mon_vmtype", "mon_nodtype", "mon_ipstatus", "mon_diskstatus", "mon_syncstatus", "mon_hbstatus", "mon_containerstatus", "mon_fsstatus", "mon_sharestatus", "mon_appstatus", "mon_availstatus", "mon_overallstatus", "mon_updated", "mon_prinodes", "mon_frozen"], [[["collector", "DEV", "clementine", "", "docker", "DEV", "up", "n/a", "n/a", "n/a", "up", "n/a", "n/a", "n/a", "up", "up", "2016-05-27 07:40:29.127541", "clementine", "0"]]], ["svcname", "nodename", "vmname", "rid", "res_type", "res_desc", "res_status", "res_monitor", "res_optional", "res_disable", "updated", "res_log"], [[["'collector'", "'clementine'", "", "'container#0'", "'container.docker'", "'collector.container.0@ubuntu:14.10'", "'up'", "0", "0", "0", "'2016-05-27 07:40:29.127541'", ""], ["'collector'", "'clementine'", "", "'container#1'", "'container.docker'", "'collector.container.1@opensvc/collector_db:build5'", "'up'", "0", "0", "0", "'2016-05-27 07:40:29.127541'", ""], ["'collector'", "'clementine'", "", "'container#2'", "'container.docker'", "'collector.container.2@opensvc/collector_nginx:build1'", "'up'", "0", "0", "0", "'2016-05-27 07:40:29.127541'", ""], ["'collector'", "'clementine'", "", "'container#3'", "'container.docker'", "'collector.container.3@opensvc/collector_redis:build1'", "'up'", "0", "0", "0", "'2016-05-27 07:40:29.127541'", ""], ["'collector'", "'clementine'", "", "'container#4'", "'container.docker'", "'collector.container.4@opensvc/collector_web2py:build8'", "'up'", "0", "0", "0", "'2016-05-27 07:40:29.127541'", ""], ["'collector'", "'clementine'", "", "'ip#0'", "'ip'", "'10.0.3.3@lxcbr0@2d2dd2da46c25fd728ec020957a50be7a5c9d0cad67efd35cc845f3a94655622'", "'up'", "0", "0", "0", "'2016-05-27 07:40:29.127541'", ""], ["'collector'", "'clementine'", "", "'sync#1'", "'sync.rsync'", "'rsync /unxdevweb/apps/ to nodes'", "'None'", "0", "0", "1", "'2016-05-27 07:40:29.127541'", ""], ["'collector'", "'clementine'", "", "'sync#2'", "'sync.s3'", "'s3 backup'", "'None'", "0", "0", "1", "'2016-05-27 07:40:29.127541'", ""], ["'collector'", "'clementine'", "", "'sync#0'", "'sync.docker'", "'docker img sync to nodes'", "'None'", "0", "0", "1", "'2016-05-27 07:40:29.127541'", ""]]], ["d446fee3-328d-4493-9db9-b1118600eee8", "clementine"]]"""
+    for i in range(1000):
+        rconn.rpush("osvc:q:svcmon", s)
+
+    s = """[["chk_nodename", "chk_svcname", "chk_type", "chk_instance", "chk_value", "chk_updated"], [["clementine", "", "fs_u", "/dev", "0", "2016-05-29 18:53:59.173156"], ["clementine", "", "fs_u", "/", "37", "2016-05-29 18:53:59.173156"], ["clementine", "", "fs_u", "/boot", "72", "2016-05-29 18:53:59.173156"], ["clementine", "", "fs_u", "/boot/efi", "1", "2016-05-29 18:53:59.173156"], ["clementine", "", "fs_u", "/opt/opensvc/var/collector_docker_data_dir/aufs/mnt/2d2dd2da46c25fd728ec020957a50be7a5c9d0cad67efd35cc845f3a94655622", "37", "2016-05-29 18:53:59.173156"], ["clementine", "", "fs_u", "/opt/opensvc/var/collector_docker_data_dir/aufs/mnt/468422df1da19c092b7ac56d0ac2cd58d81902a76e5a76637e50fa86a6933df8", "37", "2016-05-29 18:53:59.173156"], ["clementine", "", "fs_u", "/opt/opensvc/var/collector_docker_data_dir/aufs/mnt/45bbdec90c96812b8cbe5b9292cdd26f1250f2eff302fcc0396b57e05c4a0369", "37", "2016-05-29 18:53:59.173156"], ["clementine", "", "fs_u", "/opt/opensvc/var/collector_docker_data_dir/aufs/mnt/fb5160838b1cc64e5e57d09903cb78dff4b097fc14e62554af26b466dbb7b2f2", "37", "2016-05-29 18:53:59.173156"], ["clementine", "", "fs_u", "/opt/opensvc/var/collector_docker_data_dir/aufs/mnt/3c66df033247306bbd4525d78fe5da71b67d057cabaaf94b0e0574c239eee4e2", "37", "2016-05-29 18:53:59.173156"], ["clementine", "", "fs_i", "/dev", "1", "2016-05-29 18:53:59.173156"], ["clementine", "", "fs_i", "/", "3", "2016-05-29 18:53:59.173156"], ["clementine", "", "fs_i", "/boot", "1", "2016-05-29 18:53:59.173156"], ["clementine", "", "fs_i", "/opt/opensvc/var/collector_docker_data_dir/aufs/mnt/2d2dd2da46c25fd728ec020957a50be7a5c9d0cad67efd35cc845f3a94655622", "3", "2016-05-29 18:53:59.173156"], ["clementine", "", "fs_i", "/opt/opensvc/var/collector_docker_data_dir/aufs/mnt/468422df1da19c092b7ac56d0ac2cd58d81902a76e5a76637e50fa86a6933df8", "3", "2016-05-29 18:53:59.173156"], ["clementine", "", "fs_i", "/opt/opensvc/var/collector_docker_data_dir/aufs/mnt/45bbdec90c96812b8cbe5b9292cdd26f1250f2eff302fcc0396b57e05c4a0369", "3", "2016-05-29 18:53:59.173156"], ["clementine", "", "fs_i", "/opt/opensvc/var/collector_docker_data_dir/aufs/mnt/fb5160838b1cc64e5e57d09903cb78dff4b097fc14e62554af26b466dbb7b2f2", "3", "2016-05-29 18:53:59.173156"], ["clementine", "", "fs_i", "/opt/opensvc/var/collector_docker_data_dir/aufs/mnt/3c66df033247306bbd4525d78fe5da71b67d057cabaaf94b0e0574c239eee4e2", "3", "2016-05-29 18:53:59.173156"], ["clementine", "testmd", "vg_u", "testmd", "14", "2016-05-29 18:53:59.173156"], ["clementine", "", "vg_u", "ubuntu-vg", "99", "2016-05-29 18:53:59.173156"]], ["d446fee3-328d-4493-9db9-b1118600eee8", "clementine"]]"""
+    for i in range(1000):
+        rconn.rpush("osvc:q:checks", s)
+
+    s = """[["loc_city", "mem_banks", "sec_zone", "mem_bytes", "os_kernel", "cpu_dies", "cpu_cores", "host_mode", "serial", "enclosure", "os_vendor", "cpu_freq", "tz", "os_arch", "version", "os_name", "mem_slots", "nodename", "cpu_model", "last_boot", "cpu_threads", "listener_port", "fqdn", "os_release", "model"], ["aubervillier", "2", "d\\u00e4mz\\u00e9", "3863", "4.4.0-22-generic", "1", "2", "DEV", "1005661700762", "Unknown", "Ubuntu", "1616", "+02:00", "x86_64", "1.7-10269", "Linux", "4", "clementine", "Intel(R) Core(TM) i5-4200U CPU @ 1.60GHz", "2016-05-19", "4", "1215", "clementine", "16.04", "20266"], ["d446fee3-328d-4493-9db9-b1118600eee8", "clementine"]]"""
+    for i in range(1000):
+        rconn.rpush("osvc:q:asset", s)
+
+    s = """[["svc_hostid", "svc_name", "svc_cluster_type", "svc_flex_min_nodes", "svc_flex_max_nodes", "svc_flex_cpu_low_threshold", "svc_flex_cpu_high_threshold", "svc_type", "svc_nodes", "svc_drpnode", "svc_drpnodes", "svc_comment", "svc_drptype", "svc_autostart", "svc_app", "svc_containertype", "svc_envfile", "svc_drnoaction", "svc_ha"], ["\'78599105757308\'", "\'testmd\'", "\'flex\'", "1", "1", "10", "90", "\'DEV\'", "\'nuc clementine\'", "\'\'", "\'\'", "\'\'", "\'\'", "\'\'", "\'OpenSVC\'", "\'hosted\'", "\'[DEFAULT]\\\\napp = OpenSVC\\\\nservice_type = DEV\\\\nnodes = clementine nuc\\\\nflex_primary = clementine\\\\nmon_schedule = @1\\\\ndisable = False\\\\nrollback = false\\\\ncreate_pg = true\\\\npg_cpu_quota = -1\\\\npg_cpus = 1-2\\\\npg_mem_limit = 3MB\\\\npg_mem_oom_control = 1\\\\nflex_primary = clementine\\\\ncluster_type = flex\\\\n[ip#0]\\\\ndisable = true\\\\ndisable@flex_primary = false\\\\nipname = 128.1.11.1\\\\nnetmask = 32\\\\nipdev = lo\\\\n[subset#disk:g1]\\\\nparallel = false\\\\n[subset#disk:g2]\\\\nparallel = false\\\\n[subset#disk:g3]\\\\nparallel = false\\\\n[subset#app:ga1]\\\\npg_cpu_quota = 10%@all\\\\n[subset#app:ga2]\\\\npg_cpu_quota = 50%\\\\n[disk#05]\\\\nsize = 11mib\\\\ntype = loop\\\\nfile = /opt/testmd/dd6\\\\nsubset = g3\\\\n[disk#04]\\\\ntype = loop\\\\nfile = /opt/testmd/dd5\\\\nsubset = g3\\\\n[disk#03]\\\\ntags = tag1 tag2\\\\ntype = loop\\\\nfile = /opt/testmd/dd4\\\\nsubset = g2\\\\n[disk#02]\\\\ntags = tag1 tag3\\\\ntype = loop\\\\nfile = /opt/testmd/dd3\\\\nsubset = g2\\\\n[disk#01]\\\\ntype = loop\\\\nfile = /opt/testmd/dd2\\\\nsubset = g1\\\\n[disk#00]\\\\ntype = loop\\\\nfile = /opt/testmd/dd1\\\\nsubset = g1\\\\n[disk#10pr]\\\\noptional = true\\\\nrestart = 1\\\\nmonitor = true\\\\ntags = foo\\\\n[disk#10]\\\\ntype = md\\\\nuuid@clementine = b742617b:d8a76908:5ec4db5e:5e4d920b\\\\nsubset = g1\\\\nscsireserv = true\\\\ntags = bar\\\\n[disk#11]\\\\ntype = md\\\\nuuid = c4f79d3d:64d4f8df:8b2d28eb:65997b84\\\\nsubset = g2\\\\n[disk#12]\\\\ntype = md\\\\nuuid = e6a6703e:3919c7e9:fe47185f:6e9d777a\\\\nsubset = g3\\\\npost_start = /bin/true\\\\n[disk#30]\\\\ntype = lvm\\\\nvgname = testmd\\\\nsubset = g3\\\\npre_start = /bin/true\\\\npost_start = kpartx -a /dev/testmd/testmd\\\\n[app#0]\\\\nscript = /bin/true\\\\nstart = 50\\\\nstop = 50\\\\n[disk#100]\\\\ntype = raw\\\\ncreate_char_devices = false\\\\ndevs = /dev/loop0:/opt/testmd/dev/user/disk100.0\\\\n /dev/loop1:/opt/testmd/dev/user/disk100.1\\\\nuser = cvaroqui\\\\ngroup = cvaroqui\\\\nperm = 644\\\\n[disk#101]\\\\ntype = raw\\\\ndevs = /dev/loop2:/opt/testmd/dev/user/disk100.2\\\\n /dev/loop3:/opt/testmd/dev/user/disk100.3\\\\nuser = cvaroqui\\\\ngroup = cvaroqui\\\\nperm = 644\\\\n[disk#102]\\\\ntype = raw\\\\ncreate_char_devices = false\\\\ndevs = /dev/loop4\\\\nuser = cvaroqui\\\\ngroup = cvaroqui\\\\nperm = 644\\\\n[disk#103]\\\\ntype = raw\\\\ndevs = /dev/loop5\\\\nuser = cvaroqui\\\\ngroup = cvaroqui\\\\nperm = 644\\\\n\'", "False", "1"], ["d446fee3-328d-4493-9db9-b1118600eee8", "clementine"]]"""
+    for i in range(1000):
+        rconn.rpush("osvc:q:svcconf", s)
+
 
 @service.xmlrpc
 def register_disks(vars, vals, auth):
@@ -463,8 +472,7 @@ def rpc_insert_stats(data, auth):
             generic_insert('stats_'+stat, vars, vals)
         except Exception as e:
             raise Exception("%s: %s" % (stat, str(e)))
-    scheduler.queue_task("update_dash_netdev_errors" , [node_id],
-                         group_name="update_dash_netdev_errors", timeout=120)
+    rconn.rpush("osvc:q:update_dash_netdev_errors", json.dumps([node_id]))
 
 @service.xmlrpc
 def insert_pkg(vars, vals, auth):
@@ -472,8 +480,7 @@ def insert_pkg(vars, vals, auth):
 
 @auth_uuid
 def rpc_insert_pkg(vars, vals, auth):
-    scheduler.queue_task("_insert_pkg", [vars, vals, auth],
-                         group_name="_insert_pkg", timeout=120)
+    rconn.rpush("osvc:q:packages", json.dumps([vars, vals, auth]))
 
 @service.xmlrpc
 def insert_patch(vars, vals, auth):
@@ -481,8 +488,7 @@ def insert_patch(vars, vals, auth):
 
 @auth_uuid
 def rpc_insert_patch(vars, vals, auth):
-    scheduler.queue_task("_insert_patch", [vars, vals, auth],
-                         group_name="_insert_patch", timeout=120)
+    rconn.rpush("osvc:q:patches", json.dumps([vars, vals, auth]))
 
 @service.xmlrpc
 def update_hds(symid, vars, vals, auth):
@@ -643,7 +649,7 @@ def update_array_xml(arrayid, vars, vals, auth, subdir, fn):
         return
 
     #fn(arrayid)
-    scheduler.queue_task(fn.__name__, [arrayid, auth[1]], group_name=fn.__name__, timeout=600)
+    rconn.rpush("osvc:q:storage", json.dumps([fn.__name__, arrayid, auth[1]]))
 
     # stor_array_proxy
     insert_array_proxy(auth[1], arrayid)
@@ -677,8 +683,7 @@ def rpc_send_sysreport(fname, binary, deleted, auth):
     need_commit |= send_sysreport_delete(deleted, sysreport_d, node_id)
     need_commit |= send_sysreport_archive(fname, binary, sysreport_d, node_id)
 
-    scheduler.queue_task("task_send_sysreport", [need_commit, deleted, node_id],
-                         group_name="_insert_generic", timeout=240)
+    rconn.rpush("osvc:q:sysreport", json.dumps([need_commit, deleted, node_id]))
 
 def insert_gcediskss():
     return insert_gcedisks()
@@ -786,8 +791,7 @@ def svcmon_update(vars, vals, auth):
 
 @auth_uuid
 def rpc_svcmon_update(vars, vals, auth):
-    scheduler.queue_task("_svcmon_update", [vars, vals, auth],
-                         group_name="_svcmon_update_combo")
+    rconn.rpush("osvc:q:svcmon_update", json.dumps([vars, vals, auth]))
 
 
 #
@@ -2003,3 +2007,13 @@ def test_task_dash_hourly():
 
 def test_cron_dash_app_without_responsible():
     cron_dash_app_without_responsible()
+
+def scheduler_cleanup():
+    """
+      Delete scheduler keys in redis.
+      Used by the scheduler launcher script.
+    """
+    l = rconn.keys("w2p:rsched:*")
+    print "Delete the web2py scheduler redis keys:\n" + "\n ".join(l)
+    rconn.delete(l)
+

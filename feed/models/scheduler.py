@@ -314,6 +314,8 @@ def _update_service(vars, vals, auth):
     h = {}
     for a,b in zip(vars, vals):
         h[a] = b
+
+    # redirect old agent container info to svcmon
     if 'svc_vmname' in h:
         vars = ['svc_id',
                 'node_id',
@@ -2563,19 +2565,123 @@ def insert_sym(symid=None, node_id=None):
 
             del(s)
 
+def task_rq_storage(tmo=5):
+    i = 0
+    l = None
+    while i<500:
+        try:
+            i += 1
+            l = rconn.blpop("osvc:q:storage", tmo)
+            if l is None:
+                break
+            args = json.loads(l[1])
+            fn = args.pop(0)
+            globals()[fn](*args)
+        except Exception as e:
+            print e
+            print l
+    import os
+    os.kill(os.getpid(), 9)
+
+def task_rq_dashboard(tmo=5):
+    i = 0
+    l = None
+    while i<500:
+        try:
+            i += 1
+            l = rconn.blpop(["osvc:q:update_dash_netdev_errors"], tmo)
+            if l is None:
+                break
+            args = json.loads(l[1])
+            if l[0] == "osvc:q:update_dash_netdev_errors":
+                update_dash_netdev_errors(*args)
+        except Exception as e:
+            print e
+            print l
+    import os
+    os.kill(os.getpid(), 9)
+
+def task_rq_generic(tmo=5):
+    i = 0
+    l = None
+    while i<500:
+        try:
+            i += 1
+            l = rconn.blpop(["osvc:q:svcmon_update", "osvc:q:sysreport", "osvc:q:patches", "osvc:q:packages", "osvc:q:asset", "osvc:q:generic", "osvc:q:checks", "osvc:q:svcconf"], tmo)
+            if l is None:
+                break
+            args = json.loads(l[1])
+            if l[0] == "osvc:q:svcconf":
+                _update_service(*args)
+            elif l[0] == "osvc:q:checks":
+                _push_checks(*args)
+            elif l[0] == "osvc:q:generic":
+                _insert_generic(*args)
+            elif l[0] == "osvc:q:asset":
+                _update_asset(*args)
+            elif l[0] == "osvc:q:packages":
+                _insert_pkg(*args)
+            elif l[0] == "osvc:q:patches":
+                _insert_patch(*args)
+            elif l[0] == "osvc:q:sysreport":
+                task_send_sysreport(*args)
+            elif l[0] == "osvc:q:svcmon_update":
+                _svcmon_update(*args)
+        except Exception as e:
+            print e
+            print l
+    import os
+    os.kill(os.getpid(), 9)
+
+def task_rq_svcactions(tmo=5):
+    i = 0
+    l = None
+    while i<500:
+        try:
+            i += 1
+            l = rconn.blpop("osvc:q:svcactions", tmo)
+            if l is None:
+                break
+            args = json.loads(l[1])
+            _action_wrapper(*args)
+        except Exception as e:
+            print e
+            print l
+    import os
+    os.kill(os.getpid(), 9)
+
+def task_rq_svcmon(tmo=5):
+    i = 0
+    l = None
+    while i<500:
+        try:
+            i += 1
+            l = rconn.blpop("osvc:q:svcmon", tmo)
+            if l is None:
+                break
+            args = json.loads(l[1])
+            _svcmon_update_combo(*args)
+        except Exception as e:
+            print e
+            print l
+    import os
+    os.kill(os.getpid(), 9)
+
 def _svcmon_update_combo(g_vars, g_vals, r_vars, r_vals, auth):
     _svcmon_update(g_vars, g_vals, auth)
     _resmon_update(r_vars, r_vals, auth)
 
-def _svcmon_update(vars, vals, auth):
+def unfold_svcmon_update(vars, vals, auth):
     if len(vals) == 0:
         return
     if isinstance(vals[0], list):
         for v in vals:
-            _svcmon_update(vars, v, auth)
+            unfold_svcmon_update(vars, v, auth)
     else:
         __svcmon_update(vars, vals, auth)
 
+def _svcmon_update(vars, vals, auth):
+    unfold_svcmon_update(vars, vals, auth)
     _websocket_send(event_msg({
                  'event': 'svcmon_change',
                  'data': {
@@ -2651,20 +2757,19 @@ def compute_availstatus(h):
     return s
 
 def svc_log_update(svc_id, astatus):
-    q = db.services_log.svc_id == svc_id
-    o = ~db.services_log.id
-    rows = db(q).select(orderby=o, limitby=(0,1))
+    sql = """select id, svc_availstatus, svc_end from services_log
+             order by id desc limit 1 """
+    rows = db.executesql(sql)
     end = datetime.datetime.now()
     if len(rows) == 1:
         prev = rows[0]
-        if prev.svc_availstatus == astatus:
-            id = prev.id
-            q = db.services_log.id == id
-            db(q).update(svc_end=end)
+        if prev[1] == astatus:
+            sql = """update services_log set svc_end="%s" where id=%d""" % (end, prev[0])
+            db.executesql(sql)
             db.commit()
         else:
             db.services_log.insert(svc_id=svc_id,
-                                   svc_begin=prev.svc_end,
+                                   svc_begin=prev[2],
                                    svc_end=end,
                                    svc_availstatus=astatus)
             db.commit()
@@ -2696,6 +2801,8 @@ def translate_encap_nodename(svc_id, node_id):
     return row.node_id, row.mon_vmname, row.mon_vmtype
 
 def __svcmon_update(vars, vals, auth):
+    _now = datetime.datetime.now()
+
     # fix agent formatted dataset bug
     if len(vars) == len(vals) - 1:
         del(vals[-1])
@@ -2704,18 +2811,29 @@ def __svcmon_update(vars, vals, auth):
     vars, vals = replace_svcname_in_data(copy.copy(vars), vals, auth, fieldname="mon_svcname")
     vars, vals = replace_nodename_in_data(vars, vals, auth, fieldname="mon_nodname")
 
+    print datetime.datetime.now() - _now, "mangle"
+    _now = datetime.datetime.now()
+
     h = {}
     for a,b in zip(vars, vals):
         h[a] = b
+    print datetime.datetime.now() - _now, "gen hashed data"
+    _now = datetime.datetime.now()
 
     # set the collector update timestamp
     now = datetime.datetime.now()
     h['mon_updated'] = now
 
+    if 'mon_nodtype' in h:
+        del(h['mon_nodtype'])
+    if 'mon_prinodes' in h:
+        del(h['mon_prinodes'])
     if 'mon_containerpath' in h and "mon_frozen" not in h:
         # update container info only
         generic_insert('svcmon', h.keys(), h.values())
         return
+    print datetime.datetime.now() - _now, "update container info only"
+    _now = datetime.datetime.now()
 
     if 'mon_vmname' not in h:
         # COMPAT: old mono-container agent. fetch vmname from svcmon.
@@ -2730,6 +2848,8 @@ def __svcmon_update(vars, vals, auth):
         row = db(q).select(db.services.svc_containertype).first()
         if row is not None:
             h['mon_vmtype'] = row.svc_containertype
+    print datetime.datetime.now() - _now, "COMPAT: old mono-container agent. fetch vmname from svcmon."
+    _now = datetime.datetime.now()
 
     # mangle datasets received from the encap node
     _node_id, vmname, vmtype = translate_encap_nodename(h['svc_id'], node_id)
@@ -2737,12 +2857,16 @@ def __svcmon_update(vars, vals, auth):
         h['mon_vmname'] = vmname
         h['mon_vmtype'] = vmtype
         h['node_id'] = _node_id
+    print datetime.datetime.now() - _now, "mangle datasets received from the encap node"
+    _now = datetime.datetime.now()
 
     # set the hv field of container nodes
     if 'mon_vmname' in h and h['mon_vmname'] is not None and len(h['mon_vmname']) > 0:
         q = db.nodes.nodename == h['mon_vmname']
         q &= db.nodes.app.belongs(node_responsibles_apps(node_id))
         db(q).update(hv=get_node(node_id).nodename)
+    print datetime.datetime.now() - _now, "set the hv field of container nodes"
+    _now = datetime.datetime.now()
 
     # compat with old agent
     if 'mon_hbstatus' not in h:
@@ -2753,32 +2877,55 @@ def __svcmon_update(vars, vals, auth):
         h['mon_availstatus'] = compute_availstatus(h)
 
     generic_insert('svcmon', h.keys(), h.values())
+    print datetime.datetime.now() - _now, "insert"
+    _now = datetime.datetime.now()
 
     # dashboard janitoring
     svc_status_update(h['svc_id'])
+
+    print datetime.datetime.now() - _now, "svc_status_update"
+    _now = datetime.datetime.now()
     if "mon_svctype" in h:
         svctype = h['mon_svctype']
     else:
         svctype = db(db.services.svc_id==h['svc_id']).select(db.services.svc_type).first().svc_type
+    print datetime.datetime.now() - _now, "get svctype"
+    _now = datetime.datetime.now()
 
     update_dash_service_frozen(h['svc_id'], node_id, svctype, h['mon_frozen'])
+    print datetime.datetime.now() - _now, "update_dash_service_frozen"
+    _now = datetime.datetime.now()
     update_dash_service_not_on_primary(h['svc_id'], node_id, svctype, h['mon_availstatus'])
+    print datetime.datetime.now() - _now, "update_dash_service_not_on_primary"
+    _now = datetime.datetime.now()
     update_dash_svcmon_not_updated(h['svc_id'], node_id)
+    print datetime.datetime.now() - _now, "update_dash_svcmon_not_updated"
+    _now = datetime.datetime.now()
 
     sql = """select svc_cluster_type from services where svc_id="%s" """ % h['svc_id']
     rows = db.executesql(sql, as_dict=True)
     if len(rows) > 0 and rows[0]['svc_cluster_type'] == 'flex':
         update_dash_flex_instances_started(h['svc_id'])
         update_dash_flex_cpu(h['svc_id'])
+    print datetime.datetime.now() - _now, "flex janitoring"
+    _now = datetime.datetime.now()
 
     # service instance status history janitoring
     tmo = now - datetime.timedelta(minutes=15)
 
-    query = db.svcmon_log.svc_id==h['svc_id']
-    query &= db.svcmon_log.node_id==node_id
-    last = db(query).select(orderby=~db.svcmon_log.id, limitby=(0,1))
+    sql = """select * from svcmon_log where
+               svc_id="%(svc_id)s" and
+               node_id="%(node_id)s"
+             order by id desc limit 1""" % dict(svc_id=h["svc_id"], node_id=node_id)
+    rows = db.executesql(sql, as_dict=True)
+    print datetime.datetime.now() - _now, "get last"
+    _now = datetime.datetime.now()
+    if len(rows) == 0:
+        last = None
+    else:
+        last = rows[0]
 
-    if len(last) == 0:
+    if last is None:
         _vars = ['mon_begin',
                  'mon_end',
                  'svc_id',
@@ -2822,7 +2969,7 @@ def __svcmon_update(vars, vals, auth):
              svc_id=h['svc_id'],
              node_id=node_id,
              level=level)
-    elif last[0].mon_end < tmo:
+    elif last["mon_end"] < tmo:
         _vars = ['mon_begin',
                  'mon_end',
                  'svc_id',
@@ -2837,7 +2984,7 @@ def __svcmon_update(vars, vals, auth):
                  'mon_appstatus',
                  'mon_syncstatus',
                  'mon_hbstatus']
-        _vals = [last[0].mon_end,
+        _vals = [last["mon_end"],
                  h['mon_updated'],
                  h['svc_id'],
                  node_id,
@@ -2895,8 +3042,8 @@ def __svcmon_update(vars, vals, auth):
              svc_id=h['svc_id'],
              node_id=node_id,
              level=level)
-    elif h['mon_overallstatus'] != last[0].mon_overallstatus or \
-         h['mon_availstatus'] != last[0].mon_availstatus:
+    elif h['mon_overallstatus'] != last["mon_overallstatus"] or \
+         h['mon_availstatus'] != last["mon_availstatus"]:
         _vars = ['mon_begin',
                  'mon_end',
                  'svc_id',
@@ -2926,7 +3073,7 @@ def __svcmon_update(vars, vals, auth):
                  h['mon_syncstatus'],
                  h['mon_hbstatus']]
         generic_insert('svcmon_log', _vars, _vals)
-        db(db.svcmon_log.id==last[0].id).update(mon_end=h['mon_updated'])
+        db.executesql("""update svcmon_log set mon_end=now() where id=%d"""%last["id"])
         db.commit()
         if h['mon_overallstatus'] == 'warn':
             level = "warning"
@@ -2935,16 +3082,17 @@ def __svcmon_update(vars, vals, auth):
         _log("service.status",
              "service state changed: avail(%(a1)s=>%(a2)s) overall(%(o1)s=>%(o2)s)",
              dict(
-               a1=last[0].mon_availstatus,
+               a1=last["mon_availstatus"],
                a2=h['mon_availstatus'],
-               o1=last[0].mon_overallstatus,
+               o1=last["mon_overallstatus"],
                o2=h['mon_overallstatus']),
              svc_id=h['svc_id'],
              node_id=node_id,
              level=level)
     else:
-        db(db.svcmon_log.id==last[0].id).update(mon_end=h['mon_updated'])
+        db.executesql("""update svcmon_log set mon_end=now() where id=%d"""%last["id"])
         db.commit()
+    print datetime.datetime.now() - _now, "update svcmon_log"
 
 
 
@@ -4181,7 +4329,6 @@ def update_dash_service_frozen(svc_id, node_id, svc_type, frozen):
                    node_id="%(node_id)s" and
                    svc_id="%(svc_id)s"
               """%dict(svc_id=svc_id, node_id=node_id)
-        db.commit()
     else:
         sql = """insert into dashboard
                  set
@@ -4214,23 +4361,30 @@ def update_dash_service_not_on_primary(svc_id, node_id, svc_type, availstatus):
     else:
         sev = 0
 
-    q = db.services.svc_id == svc_id
-    q &= db.services.svc_cluster_type == "failover"
-    q &= db.services.svc_id == db.svcmon.svc_id
-    q &= db.svcmon.node_id == node_id
-    q &= db.svcmon.node_id == db.nodes.node_id
-    rows = db(q).select(db.nodes.nodename,
-                        db.services.svc_autostart,
-                        db.services.svc_availstatus)
+    sql = """ select
+                n.nodename as nodename,
+                s.svc_autostart as svc_autostart,
+                s.svc_availstatus as svc_availstatus
+              from nodes n, services s, svcmon m where
+                s.svc_id="%(svc_id)s" and
+                s.svc_cluster_type="failover" and
+                s.svc_id=m.svc_id and
+                m.node_id=n.node_id and
+                n.node_id="%(node_id)s"
+          """ % dict(
+                  svc_id=svc_id,
+                  node_id=node_id,
+                )
+    rows = db.executesql(sql, as_dict=True)
 
     if len(rows) == 0:
         return
 
-    if rows[0].services.svc_autostart != rows[0].nodes.nodename or \
+    if rows[0]["svc_autostart"] != rows[0]["nodename"] or \
        availstatus == "up" or \
-       rows[0].services.svc_availstatus != "up" or \
-       rows[0].services.svc_autostart is None or \
-       rows[0].services.svc_autostart == "":
+       rows[0]["svc_availstatus"] != "up" or \
+       rows[0]["svc_autostart"] is None or \
+       rows[0]["svc_autostart"] == "":
         sql = """delete from dashboard
                  where
                    dash_type="service not started on primary node" and
@@ -4295,6 +4449,7 @@ def task_dash_min():
     # ~1/min
     cron_dash_svcmon_not_updated()
     dashboard_events()
+
 
 from gluon.contrib.redis_scheduler import RScheduler
 scheduler = RScheduler(db, migrate=False, redis_conn=rconn)

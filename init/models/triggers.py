@@ -106,16 +106,12 @@ def svc_status_update(svc_id):
     """ avail and overall status can be:
         up, down, stdby up, stdby down, warn, undef
     """
-    q = db.svcmon.svc_id == svc_id
-    rows = db(q).select(db.svcmon.mon_overallstatus,
-                        db.svcmon.mon_availstatus,
-                        db.svcmon.mon_updated,
-                        db.svcmon.mon_svctype,
-                        db.svcmon.mon_frozen)
+    sql = """select mon_overallstatus, mon_availstatus, mon_updated, mon_svctype from svcmon where svc_id="%s" """ % svc_id
+    rows = db.executesql(sql, as_dict=True)
 
     tlim = datetime.datetime.now() - datetime.timedelta(minutes=15)
-    ostatus_l = [r.mon_overallstatus for r in rows if r.mon_updated is not None and r.mon_updated > tlim]
-    astatus_l = [r.mon_availstatus for r in rows if r.mon_updated is not None and r.mon_updated > tlim]
+    ostatus_l = [r["mon_overallstatus"] for r in rows if r["mon_updated"] is not None and r["mon_updated"] > tlim]
+    astatus_l = [r["mon_availstatus"] for r in rows if r["mon_updated"] is not None and r["mon_updated"] > tlim]
     n_trusted_nodes = len(ostatus_l)
     n_nodes = len(rows)
     ostatus_l = set(ostatus_l)
@@ -162,18 +158,24 @@ def svc_status_update(svc_id):
     except NameError:
         pass
     try:
-        svctype = rows[0].mon_svctype
+        svctype = rows[0]["mon_svctype"]
     except:
         svctype = 'TST'
 
-    db(db.services.svc_id==svc_id).update(
+    sql = """update services set
+                svc_status="%(svc_status)s",
+                svc_availstatus="%(svc_availstatus)s",
+                svc_status_updated=NOW()
+             where svc_id="%(svc_id)s" """% dict(
+      svc_id=svc_id,
       svc_status=ostatus,
       svc_availstatus=astatus,
-      svc_status_updated=datetime.datetime.now(),
     )
+    db.executesql(sql)
     db.commit()
 
     update_dash_service_unavailable(svc_id, svctype, astatus)
     update_dash_service_available_but_degraded(svc_id, svctype, astatus, ostatus)
+
 
 

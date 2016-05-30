@@ -297,6 +297,7 @@ function table_init(opts) {
 		"pageable": true,
 		"on_change": false,
 		"events": [],
+		"delay": 2000,
 		"detached_decorate_cells": true,
 		"request_vars": {}
 	}
@@ -305,6 +306,7 @@ function table_init(opts) {
 		'options': $.extend({}, defaults, opts),
 		'colprops': {},
 		'need_refresh': false,
+		'delay_refresh': false,
 		'id': opts.id,
 		'spin_class': 'fa-spin highlight',
 
@@ -1528,7 +1530,7 @@ function table_init(opts) {
 		if (t.div.length > 0 && !t.div.is(":visible")) {
 			return
 		}
-		if (t.e_tool_refresh && t.e_tool_refresh.length > 0 && t.e_tool_refresh_spin && t.e_tool_refresh_spin.hasClass(t.spin_class)) {
+		if (t.delay_refresh || (t.e_tool_refresh && t.e_tool_refresh.length > 0 && t.e_tool_refresh_spin && t.e_tool_refresh_spin.hasClass(t.spin_class))) {
 			t.need_refresh = true
 			return
 		} else {
@@ -1999,6 +2001,15 @@ function table_init(opts) {
 			return
 		}
 		t.e_tool_refresh_spin.removeClass(t.spin_class)
+		t.delay_refresh = true
+		t.e_tool_refresh_spin.addClass("grayed")
+		setTimeout(function(){
+			t.delay_refresh = false
+			t.e_tool_refresh_spin.removeClass("grayed")
+			if (t.need_refresh) {
+				t.refresh()
+			}
+		}, t.options.delay)
 	}
 
 	t.set_refresh_spin = function() {
@@ -2014,9 +2025,10 @@ function table_init(opts) {
 		}
 		console.log("register table", t.id, t.options.events.join(","), "event handler")
 		wsh[t.id] = function(data) {
-			if (t.options.events.indexOf(data["event"]) >= 0) {
-				t.refresh()
+			if (t.options.events.indexOf(data["event"]) < 0) {
+				return
 			}
+			t.refresh()
 		}
 	}
 

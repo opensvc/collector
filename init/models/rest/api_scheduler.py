@@ -144,54 +144,14 @@ class rest_get_scheduler_stats(rest_get_handler):
 
     def handler(self, **vars):
         data = {
-          "feed": {
-            "status": {},
-            "functions": {},
-            "functions_status": {},
+          "queue": {
           },
         }
 
-        q = db.scheduler_task.repeats > 0
-        o = db.scheduler_task.function_name | db.scheduler_task.status
-        rows = db(q).select(db.scheduler_task.function_name,
-                            db.scheduler_task.status,
-                            db.scheduler_task.id.count(),
-                            groupby=o, orderby=o)
-        for row in rows:
-            n = row._extra[db.scheduler_task.id.count()]
-            fn = row.scheduler_task.function_name
-            status = row.scheduler_task.status
-
-            if not fn in data["feed"]["functions"]:
-                data["feed"]["functions"][fn] = {"count": n}
-            else:
-                data["feed"]["functions"][fn]["count"] += n
-
-            if not fn in data["feed"]["status"]:
-                data["feed"]["status"][status] = {"count": n}
-            else:
-                data["feed"]["status"][status]["count"] += n
-
-            if not fn in data["feed"]["functions_status"]:
-                data["feed"]["functions_status"][fn] = {}
-            data["feed"]["functions_status"][fn][status] = n
-
-        q = db.v_scheduler_run.id > 0
-        o = db.v_scheduler_run.function_name
-        rows = db(q).select(db.v_scheduler_run.function_name,
-                            db.v_scheduler_run.duration.min(),
-                            db.v_scheduler_run.duration.max(),
-                            db.v_scheduler_run.duration.avg(),
-                            db.v_scheduler_run.id.count(),
-                            groupby=o, orderby=o)
-        for row in rows:
-            fn = row.v_scheduler_run.function_name
-
-            if not fn in data["feed"]["functions"]:
-                data["feed"]["functions"][fn] = {}
-            data["feed"]["functions"][fn]["min_duration"] = row._extra[db.v_scheduler_run.duration.min()]
-            data["feed"]["functions"][fn]["max_duration"] = row._extra[db.v_scheduler_run.duration.max()]
-            data["feed"]["functions"][fn]["avg_duration"] = row._extra[db.v_scheduler_run.duration.avg()]
+        for rq in redis_queues:
+             data["queue"][rq] = {
+                 "count": rconn.llen(redis_queue_prefix+rq)
+             }
 
         return data
 

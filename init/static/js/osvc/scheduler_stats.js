@@ -1,15 +1,13 @@
 function scheduler_stats(divid) {
 	var o = {}
 	o.div = $("#"+divid)
-	o.feed_task_status_data = {}
-	o.feed_task_functions_data = {}
+	o.queue_data = {}
 
 	o.refresh = function() {
 		services_osvcgetrest("R_SCHEDULER_STATS", "", "", function(jd) {
-			o.load_feed_task_status(jd)
-			o.load_feed_task_functions(jd)
+			o.load_queue(jd)
 
-			if (o.div.find("[name=feed_task_status]").length == 0) {
+			if (o.div.find("[name=queue]").length == 0) {
 				// stop refreshing if the user nav'ed out
 				return
 			}
@@ -59,34 +57,34 @@ function scheduler_stats(divid) {
 		}
 	}
 
-	o.load_feed_task_functions = function(data) {
+	o.load_queue = function(data) {
 		var now = new Date()
-		if (o.plot_feed_task_functions) {
-			o.plot_feed_task_functions.destroy()
+		if (o.plot_queue) {
+			o.plot_queue.destroy()
 		}
-		for (key in data.feed.functions) {
-			if (!(key in o.feed_task_functions_data)) {
-				o.feed_task_functions_data[key] = []
+		for (key in data.queue) {
+			if (!(key in o.queue_data)) {
+				o.queue_data[key] = []
 			}
 		}
-		for (key in o.feed_task_functions_data) {
-			if (key in data.feed.functions) {
-				var val = data.feed.functions[key].count
+		for (key in o.queue_data) {
+			if (key in data.queue) {
+				var val = data.queue[key].count
 			} else {
 				var val = 0
 			}
-			o.feed_task_functions_data[key].push([now, val])
+			o.queue_data[key].push([now, val])
 
 			// don't store too many history to not fill up the client ram
-			if (o.feed_task_functions_data[key].length > 600) {
-				o.feed_task_functions_data[key].shift()
+			if (o.queue_data[key].length > 600) {
+				o.queue_data[key].shift()
 			}
 		}
 		var series = []
 		var data = []
-		for (key in o.feed_task_functions_data) {
+		for (key in o.queue_data) {
 			series.push({"label": key})
-			data.push(o.feed_task_functions_data[key])
+			data.push(o.queue_data[key])
 		}
 
 		$.jqplot.config.enablePlugins = true
@@ -94,54 +92,15 @@ function scheduler_stats(divid) {
 		options.seriesDefaults.fill = false
 		options.stackSeries = false
 		try {
-			o.plot_feed_task_functions = $.jqplot(o.e_feed_task_functions.attr("id"), data, options)
-		} catch (e) { }
-	}
-
-	o.load_feed_task_status = function(data) {
-		var now = new Date()
-		if (o.plot_feed_task_status) {
-			o.plot_feed_task_status.destroy()
-		}
-		for (key in data.feed.status) {
-			if (!(key in o.feed_task_status_data)) {
-				o.feed_task_status_data[key] = []
-			}
-		}
-		for (key in o.feed_task_status_data) {
-			if (key in data.feed.status) {
-				var val = data.feed.status[key].count
-			} else {
-				var val = 0
-			}
-			o.feed_task_status_data[key].push([now, val])
-
-			// don't store too many history to not fill up the client ram
-			if (o.feed_task_status_data[key].length > 600) {
-				o.feed_task_status_data[key].shift()
-			}
-		}
-		var series = []
-		var data = []
-		for (key in o.feed_task_status_data) {
-			series.push({"label": key})
-			data.push(o.feed_task_status_data[key])
-		}
-
-		$.jqplot.config.enablePlugins = true
-		var options = o.plot_options(series)
-		try {
-			o.plot_feed_task_status = $.jqplot(o.e_feed_task_status.attr("id"), data, options)
+			o.plot_queue = $.jqplot(o.e_queue.attr("id"), data, options)
 		} catch (e) { }
 	}
 
 	require(["jqplot"], function() {
 		o.div.load("/init/static/views/scheduler_stats.html", function() {
 			o.div.i18n()
-			o.e_feed_task_status = $("[name=feed_task_status]")
-			o.e_feed_task_status.uniqueId()
-			o.e_feed_task_functions = $("[name=feed_task_functions]")
-			o.e_feed_task_functions.uniqueId()
+			o.e_queue = $("[name=queue]")
+			o.e_queue.uniqueId()
 
 			o.refresh()
 		})

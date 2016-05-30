@@ -54,7 +54,7 @@ def task_purge_feed():
     sql = """
       delete from scheduler_run
       where
-        status = "COMPLETED" and
+        status in ("COMPLETED", "STOPPED") and
         stop_time < date_sub(now(), interval 10 minute)
     """
     db.executesql(sql)

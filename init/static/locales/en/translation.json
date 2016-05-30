@@ -1763,8 +1763,7 @@
 		"choose_form": "Choose a request form"
 	},
 	"scheduler_stats": {
-		"feed_task_status": "Feed tasks status",
-		"feed_task_functions": "Feed tasks functions"
+		"queue": "Feed queues usage"
 	},
 	"tabs": {
 		"close": "Click to close",
