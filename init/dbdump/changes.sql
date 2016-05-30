@@ -6057,3 +6057,12 @@ alter table services drop column svc_vmem;
 alter table services drop column svc_vmname;
 alter table services drop column svc_guestos;
 
+INSERT INTO `scheduler_task` VALUES (13627,'a5ee6f20-707f-4ac5-8311-26abe27a2b08','[]','{}','T','2016-05-27 18:17:46','2016-05-30 09:30:35',NULL,0,-1,1,600,0,372,10098,'2016-05-30 09:30:34','F','svcmon_1','task_rq_svcmon','QUEUED','svcmon_1','feed/default','2d2dd2da46c2#26181'),(13941,'9cd4da51-00f3-43a0-b597-ab5ad0e6b355','[]','{}','T','2016-05-28 18:26:08','2016-05-30 09:30:35',NULL,0,-1,1,600,0,0,9083,'2016-05-30 09:30:34','F','svcmon_2','task_rq_svcmon','QUEUED','svcmon_2','feed/default','2d2dd2da46c2#26183'),(13942,'54e1b280-238b-4d8e-8fc7-96fb72b9a503','[]','{}','T','2016-05-28 18:27:35','2016-05-30 09:30:35',NULL,0,-1,1,600,0,0,9119,'2016-05-30 09:30:34','F','svcactions','task_rq_svcactions','QUEUED','svcactions','feed/default','2d2dd2da46c2#26191'),(13943,'44e5195b-c601-42a5-ab5f-32c178269947','[]','{}','T','2016-05-28 18:28:46','2016-05-30 09:30:35',NULL,0,-1,1,600,0,0,9106,'2016-05-30 09:30:34','F','generic_1','task_rq_generic','QUEUED','generic_1','feed/default','2d2dd2da46c2#26185'),(13944,'53dcff90-51ef-4d64-a7f6-1d4de549778f','[]','{}','T','2016-05-28 18:29:55','2016-05-30 09:30:35',NULL,0,-1,1,600,0,0,9104,'2016-05-30 09:30:34','F','generic_2','task_rq_generic','QUEUED','generic_2','feed/default','2d2dd2da46c2#26187'),(13945,'6ac23999-9e5c-48a2-8902-b3a83a99cf5e','[]','{}','T','2016-05-28 18:30:27','2016-05-30 09:30:35',NULL,0,-1,1,600,0,0,9119,'2016-05-30 09:30:34','F','dashboard','task_rq_dashboard','QUEUED','dashboard','feed/default','2d2dd2da46c2#26189'),(13946,'216b8770-1015-4228-b37b-fa0dfb4167ca','[]','{}','T','2016-05-28 18:40:49','2016-05-30 09:30:39',NULL,0,-1,20,600,0,0,4560,'2016-05-30 09:30:19','F','storage','task_rq_storage','QUEUED','storage','feed/default','2d2dd2da46c2#26175');
+
+
+drop view v_comp_module_status_current_week;
+
+drop view v_comp_status_weekly;
+
+drop view v_comp_node_status_current_week;
+
