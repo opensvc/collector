@@ -130,7 +130,7 @@ function form(divid, options) {
 			var key = "%%"+d.Id.toUpperCase()+"%%"
 			var l = t.split(key)
 			if (l[0] == "") {
-				var buff = data
+				var buff = data+""
 			} else {
 				var regex = new RegExp("^"+l[0].replace(/%%\w+%%/g, ".*?"))
 				var buff = data.replace(regex, "")
