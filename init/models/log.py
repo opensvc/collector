@@ -34,7 +34,7 @@ def log_events(i):
       'event': 'log_change',
       'data': {'id': i},
     }
-    _websocket_send(event_msg(l), schedule=False)
+    _websocket_send(event_msg(l))
 
 def _log(action, fmt, d, user=None, svc_id="", level="info", node_id=""):
     if user is None:
