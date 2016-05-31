@@ -24,10 +24,10 @@
 }
 
 input.aci, input.aci:focus {
-	background-image: url("/init/static/images/down16.png");
+	background-image: url("/init/static/images/search.png");
 	background-repeat: no-repeat;
 	background-position: right;
-	background-size: 8px;
+	background-size: 12px;
 	background-origin: content-box;
 }
 
@@ -2536,6 +2536,8 @@ a.search-link:hover {
 }
 .searchidle > input {
 	background: white url('../images/search.png') no-repeat;
+	background-size: 14px;
+	background-position-y: 2px;
 }
 .searchidle > input:focus {
 	background: rgb(255, 248, 239) url('../images/search.png') no-repeat;
