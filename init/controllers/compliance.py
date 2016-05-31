@@ -2829,11 +2829,12 @@ def ajax_compliance_svc():
     d = []
     q = db.svcmon.svc_id==svc_id
     q &= db.svcmon.mon_updated > now - datetime.timedelta(days=1)
+    rows = db(q).select(db.svcmon.node_id, cacheable=True)
+    nodes = set([r.node_id for r in rows])
+
     q &= db.svcmon.mon_vmname == db.nodes.nodename
-    rows = db(q).select(db.svcmon.node_id, db.nodes.node_id,
-                        cacheable=True)
-    vnodes = set([r.nodes.node_id for r in rows if r.nodes.node_id is not None])
-    nodes = set([r.svcmon.node_id for r in rows]) - vnodes
+    rows = db(q).select(db.nodes.node_id, cacheable=True)
+    vnodes = set([r.node_id for r in rows if r.node_id is not None])
 
     vnodes = sorted(list(vnodes))
     nodes = sorted(list(nodes))
