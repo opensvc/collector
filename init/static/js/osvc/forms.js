@@ -1517,6 +1517,8 @@ function form(divid, options) {
 			var op = "!="
 		} else if (d.Condition.match(/==/)) {
 			var op = "=="
+		} else if (d.Condition.match(/NOT IN/)) {
+			var op = "NOT IN"
 		} else if (d.Condition.match(/IN/)) {
 			var op = "IN"
 		} else {
@@ -1556,6 +1558,13 @@ function form(divid, options) {
 					// foo == bar
 					return false
 				}
+			} else if (c.op == "NOT IN") {
+				var l = c.ref.split(",")
+				if (l.indexOf(val) >= 0) {
+					return false
+				} else {
+					return true
+				}
 			} else if (c.op == "IN") {
 				var l = c.ref.split(",")
 				if (l.indexOf(val) >= 0) {
@@ -1581,6 +1590,8 @@ function form(divid, options) {
 					// empty == foo
 					return false
 				}
+			} else if (c.op == "NOT IN") {
+				return false
 			} else if (c.op == "IN") {
 				return false
 			}
