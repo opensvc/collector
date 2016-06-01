@@ -352,6 +352,15 @@ function form(divid, options) {
 			if (d.Hidden == true) {
 				continue
 			}
+			if (d.Condition) {
+				var c = o.parse_condition(d)
+				var val = data[c.id]
+				var ret = o.eval_condition(c, val)
+				console.log("render condition:", input_key_id, "->", d.Id, ":", d.Condition, "=>", ret)
+				if (!ret) {
+					continue
+				}
+			}
 			var line = $("<tr></tr>")
 			var label = $("<td style='white-space:nowrap'></td>")
 			var value = $("<td></td>")
@@ -551,7 +560,7 @@ function form(divid, options) {
 	}
 
 	o.render_add_group = function() {
-		var div = $("<div class='icon_fixed_width add16 form_tool'></div>")
+		var div = $("<button class='icon_fixed_width add16 button_div'>")
 		div.text(i18n.t("forms.add_group"))
 		o.area.append("<br>")
 		o.area.append(div)
@@ -814,7 +823,7 @@ function form(divid, options) {
 		if (o.options.test == false) {
 			return
 		}
-		var button = $("<span class='icon_fixed_width fa-code form_tool'></span")
+		var button = $("<button class='icon_fixed_width fa-code button_div'>")
                 o.test_tool = button
 		button.text(i18n.t("forms.test"))
 		o.area.append(button)
@@ -845,7 +854,7 @@ function form(divid, options) {
 		if (o.options.submit == false) {
 			return
 		}
-		var button = $("<span class='icon_fixed_width fa-save form_tool'></span")
+		var button = $("<button class='icon_fixed_width fa-save button_div'>")
                 o.submit_tool = button
 		button.text(i18n.t("forms.submit"))
 		o.area.append(button)
@@ -1492,63 +1501,79 @@ function form(divid, options) {
 		})
 		function trigger(input, initial) {
 			var val = o.get_val(input.parent())
-			var tr = input.parents("table").first().find("[iid="+d.Id+"]")
-
-			if (d.Condition.match(/!=/)) {
-				var eq = false
-				var ref = d.Condition.split("!=")[1]
-			} else if (d.Condition.match(/==/)) {
-				var eq = true
-				var ref = d.Condition.split("==")[1]
+			var c = o.parse_condition(d)
+			var ret = o.eval_condition(c, val)
+			console.log("condition:", key, "->", d.Id, d.Condition, "=>", ret)
+			if (ret) {
+				o.show_input(table, d)
 			} else {
-				console.log(d.Id, "unsupported condition operator:", d.Condition)
+				o.hide_input(table, d, initial)
 			}
+		}
+	}
 
-			// strip
-			ref = ref.replace(/^\s+/, "").replace(/\s+$/, "")
+	o.parse_condition = function(d) {
+		if (d.Condition.match(/!=/)) {
+			var eq = false
+			var op = "!="
+			var ref = d.Condition.split("!=")[1]
+			var id = d.Condition.split("!=")[0]
+		} else if (d.Condition.match(/==/)) {
+			var eq = true
+			var op = "=="
+			var ref = d.Condition.split("==")[1]
+			var id = d.Condition.split("==")[0]
+		} else {
+			console.log(d.Id, "unsupported condition operator:", d.Condition)
+		}
 
-			console.log("condition:", key, "->", d.Id, val, eq, ref)
-			if (val != "") {
-				if (!eq) {
-					if (ref == "empty") {
-						// foo != empty
-						o.show_input(table, d)
-					} else if (val != ref) {
-						// foo != bar
-						o.show_input(table, d)
-					} else {
-						// foo != foo
-						o.hide_input(table, d, initial)
-					}
+		// strip
+		id = id.replace(/^\s+/, "").replace(/\s+$/, "").replace(/^#/, "")
+		ref = ref.replace(/^\s+/, "").replace(/\s+$/, "")
+		return {"id": id, "op": op, "eq": eq, "ref": ref}
+	}
+
+	o.eval_condition = function(c, val) {
+		if (val != "") {
+			if (!c.eq) {
+				if (c.ref == "empty") {
+					// foo != empty
+					return true
+				} else if (val != c.ref) {
+					// foo != bar
+					return true
 				} else {
-					if (ref == "empty") {
-						// foo == empty
-						o.hide_input(table, d, initial)
-					} else if (val == ref) {
-						// foo == foo
-						o.show_input(table, d)
-					} else {
-						// foo == bar
-						o.hide_input(table, d, initial)
-					}
+					// foo != foo
+					return false
 				}
 			} else {
-				if (!eq) {
-					if (ref == "empty") {
-						// empty != empty
-						o.hide_input(table, d, initial)
-					} else {
-						// empty != foo
-						o.show_input(table, d)
-					}
+				if (c.ref == "empty") {
+					// foo == empty
+					return false
+				} else if (val == c.ref) {
+					// foo == foo
+					return true
 				} else {
-					if (ref == "empty") {
-						// empty == empty
-						o.show_input(table, d)
-					} else {
-						// empty == foo
-						o.hide_input(table, d, initial)
-					}
+					// foo == bar
+					return false
+				}
+			}
+		} else {
+			if (!c.eq) {
+				if (c.ref == "empty") {
+					// empty != empty
+					return false
+				} else {
+					// empty != foo
+					return true
+				}
+			} else {
+				if (c.ref == "empty") {
+					// empty == empty
+					return true
+				} else {
+					// empty == foo
+					return false
 				}
 			}
 		}
@@ -1723,6 +1748,9 @@ function form(divid, options) {
 				continue
 			}
 			var td = table.find("tr[iid="+d.Id+"] > [name=val]")
+			if (!td.is(":visible")) {
+				continue
+			}
 			if (td.length == 0) {
 				continue
 			}
