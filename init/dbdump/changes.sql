@@ -6067,3 +6067,8 @@ drop view v_comp_status_weekly;
 drop view v_comp_node_status_current_week;
 
 drop view v_comp_moduleset_attachments ; create view v_comp_moduleset_attachments as select nm.node_id as node_id, NULL as svc_id, ms.modset_name as modset_name from comp_node_moduleset nm join comp_moduleset ms on nm.modset_id=ms.id union all select "" as node_id, sm.svc_id as svc_id, ms.modset_name as modset_name from comp_modulesets_services sm join comp_moduleset ms on sm.modset_id=ms.id;
+
+drop view v_svc_group_status;
+drop view v_svcdisks;
+
+
