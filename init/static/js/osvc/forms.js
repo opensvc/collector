@@ -1514,28 +1514,27 @@ function form(divid, options) {
 
 	o.parse_condition = function(d) {
 		if (d.Condition.match(/!=/)) {
-			var eq = false
 			var op = "!="
-			var ref = d.Condition.split("!=")[1]
-			var id = d.Condition.split("!=")[0]
 		} else if (d.Condition.match(/==/)) {
-			var eq = true
 			var op = "=="
-			var ref = d.Condition.split("==")[1]
-			var id = d.Condition.split("==")[0]
+		} else if (d.Condition.match(/IN/)) {
+			var op = "IN"
 		} else {
 			console.log(d.Id, "unsupported condition operator:", d.Condition)
 		}
 
+		var ref = d.Condition.split(op)[1]
+		var id = d.Condition.split(op)[0]
+
 		// strip
 		id = id.replace(/^\s+/, "").replace(/\s+$/, "").replace(/^#/, "")
 		ref = ref.replace(/^\s+/, "").replace(/\s+$/, "")
-		return {"id": id, "op": op, "eq": eq, "ref": ref}
+		return {"id": id, "op": op, "ref": ref}
 	}
 
 	o.eval_condition = function(c, val) {
 		if (val != "") {
-			if (!c.eq) {
+			if (c.op == "!=") {
 				if (c.ref == "empty") {
 					// foo != empty
 					return true
@@ -1546,7 +1545,7 @@ function form(divid, options) {
 					// foo != foo
 					return false
 				}
-			} else {
+			} else if (c.op == "==") {
 				if (c.ref == "empty") {
 					// foo == empty
 					return false
@@ -1557,9 +1556,16 @@ function form(divid, options) {
 					// foo == bar
 					return false
 				}
+			} else if (c.op == "IN") {
+				var l = c.ref.split(",")
+				if (l.indexOf(val) >= 0) {
+					return true
+				} else {
+					return false
+				}
 			}
 		} else {
-			if (!c.eq) {
+			if (c.op == "!=") {
 				if (c.ref == "empty") {
 					// empty != empty
 					return false
@@ -1567,7 +1573,7 @@ function form(divid, options) {
 					// empty != foo
 					return true
 				}
-			} else {
+			} else if (c.op == "==") {
 				if (c.ref == "empty") {
 					// empty == empty
 					return true
@@ -1575,6 +1581,8 @@ function form(divid, options) {
 					// empty == foo
 					return false
 				}
+			} else if (c.op == "IN") {
+				return false
 			}
 		}
 	}
