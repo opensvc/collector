@@ -236,6 +236,7 @@ function form(divid, options) {
 
 	o.render_display_digest_header = function() {
 		var line = $("<tr></tr>")
+		var keys_done = []
 		for (var i=0; i<o.form_data.form_definition.Inputs.length; i++) {
 			var d = o.form_data.form_definition.Inputs[i]
 			if (d.Hidden == true) {
@@ -243,6 +244,13 @@ function form(divid, options) {
 			}
 			if (d.DisplayInDigest == false) {
 				continue
+			}
+			if (d.Key) {
+				// avoid rendering multiple columns for the same input key
+				if (keys_done.indexOf(d.Key) >=0) {
+					continue
+				}
+				keys_done.push(d.Key)
 			}
 			var cell = $("<th></th>")
 			cell.text(d.DisplayModeLabel)
@@ -274,6 +282,15 @@ function form(divid, options) {
 			}
 			if (d.DisplayInDigest == false) {
 				continue
+			}
+			if (d.Condition) {
+				var c = o.parse_condition(d)
+				var val = data[c.id]
+				var ret = o.eval_condition(c, val)
+				console.log("render condition:", input_key_id, "->", d.Id, ":", d.Condition, "=>", ret)
+				if (!ret) {
+					continue
+				}
 			}
 			var cell = $("<td></td>")
 			var content = ""
