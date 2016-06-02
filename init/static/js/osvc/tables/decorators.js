@@ -1522,6 +1522,10 @@ function cell_decorator_datetime_weekly(e, line) {
 
 function cell_decorator_datetime(e, line) {
 	var s = $.data(e[0], "v")
+	if (s == "1000-01-01 00:00:00") {
+		e.empty()
+		return
+	}
 	var max_age = e.attr("max_age")
 	var delta = datetime_age(s)
 
