@@ -350,7 +350,7 @@ def cron_stat_day_svc():
         sql = "insert into stat_day_svc set day='%(end)s', svc_id='%(svc_id)s', %(pairs)s on duplicate key update %(pairs)s"%dict(end=end, svc_id=svc_id, pairs=','.join(pairs))
         #raise Exception(sql)
         db.executesql(sql)
-    db.commit()
+        db.commit()
     return dict(sql=sql)
 
 
