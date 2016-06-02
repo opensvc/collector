@@ -2010,10 +2010,17 @@ def test_cron_dash_app_without_responsible():
 
 def scheduler_cleanup():
     """
-      Delete scheduler keys in redis.
+      - Delete scheduler keys in redis.
+      - Set the tasks status to QUEUED.
+
       Used by the scheduler launcher script.
     """
     l = rconn.keys("w2p:rsched:*")
     print "Delete the web2py scheduler redis keys:\n" + "\n ".join(l)
     rconn.delete(l)
+
+    print "Set the web2py scheduler tasks status to QUEUED"
+    sql = """ update scheduler_task set status="QUEUED" """
+    db.executesql(sql)
+    db.commit()
 
