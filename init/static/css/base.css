@@ -3419,6 +3419,8 @@ textarea.oidefinition {
 	position: relative;
 }
 
+.candidates_violation,input.candidates_violation:focus,textarea.candidates_violation:focus,
+.mandatory_violation,input.mandatory_violation:focus,textarea.mandatory_violation:focus,
 .constraint_violation,input.constraint_violation:focus,textarea.constraint_violation:focus {
 	background-color: #fff4f2;
 	border-color: #ddcccc;

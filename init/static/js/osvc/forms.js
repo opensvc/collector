@@ -996,11 +996,11 @@ function form(divid, options) {
 					var v = input.val()
 					for (var i=0; i<ui.content.length; i++) {
 						if (ui.content[i].label==v) {
-							input.removeClass("constraint_violation")
+							input.removeClass("candidates_violation")
 							o.update_submit()
 							return
 						}
-						input.addClass("constraint_violation")
+						input.addClass("candidates_violation")
 						o.update_submit()
 					}
 				}
@@ -1010,6 +1010,7 @@ function form(divid, options) {
 			},
 			select: function(event, ui) {
 				$(this).prop("acid", ui.item.id)
+				input.removeClass("candidates_violation")
 				$(this).change()
 			}
 		})
@@ -1255,11 +1256,11 @@ function form(divid, options) {
 						var v = input.val()
 						for (var i=0; i<ui.content.length; i++) {
 							if (ui.content[i].label==v) {
-								input.removeClass("constraint_violation")
+								input.removeClass("candidates_violation")
 								o.update_submit()
 								return
 							}
-							input.addClass("constraint_violation")
+							input.addClass("candidates_violation")
 							o.update_submit()
 						}
 					}
@@ -1269,6 +1270,7 @@ function form(divid, options) {
 				},
 				select: function(event, ui) {
 					$(this).prop("acid", ui.item.id)
+					input.removeClass("candidates_violation")
 					$(this).change()
 				}
 			})
@@ -1426,7 +1428,7 @@ function form(divid, options) {
 	}
 
 	o.update_submit = function() {
-		if (o.div.find(".constraint_violation").parents("tr:not(.hidden)").length == 0) {
+		if (o.div.find(".constraint_violation,.mandatory_violation,.candidates_violation").parents("tr[iid]:not(.hidden)").length == 0) {
 			o.enable_submit()
 		} else {
 			o.disable_submit()
@@ -1466,9 +1468,9 @@ function form(divid, options) {
 		})
 		function trigger(e) {
 			if (e.val() == "") {
-				e.addClass("constraint_violation")
+				e.addClass("mandatory_violation")
 			} else {
-				e.removeClass("constraint_violation")
+				e.removeClass("mandatory_violation")
 			}
 			o.update_submit()
 		}
