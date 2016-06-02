@@ -153,8 +153,8 @@ def update_dash_moddiff(svc_id):
             select count(t.n) from
             (
              select
-               count(nm.modset_node) as n,
-               group_concat(nm.modset_node) as nodes,
+               count(nm.node_id) as n,
+               group_concat(nm.node_id) as nodes,
                ms.modset_name as modset
              from
                comp_node_moduleset nm,
