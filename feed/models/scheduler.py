@@ -3692,7 +3692,7 @@ def update_dash_pkgdiff(node_id):
             if len(nodes_s) < 50:
                 break
             skip += 1
-            nodes = nodes[:-1]
+            nodenames = nodenames[:-1]
             trail = ", ... (+%d)"%skip
 
         sql = """insert into dashboard
