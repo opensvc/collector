@@ -185,26 +185,31 @@ def filterset_query_id(row, nodes, services, i=0, node_id=None, svc_id=None):
     if v.f_table is None or v.f_field is None:
         return nodes, services
 
+    try:
+        field = db[v.f_table][v.f_field]
+    except:
+        return nodes, services
+
     if v.f_op == '=':
-        qry = db[v.f_table][v.f_field] == v.f_value
+        qry = field == v.f_value
     elif v.f_op == '!=':
-        qry = db[v.f_table][v.f_field] != v.f_value
+        qry = field != v.f_value
     elif v.f_op == 'LIKE':
-        qry = db[v.f_table][v.f_field].like(v.f_value)
+        qry = field.like(v.f_value)
     elif v.f_op == 'NOT LIKE':
-        qry = ~db[v.f_table][v.f_field].like(v.f_value)
+        qry = ~field.like(v.f_value)
     elif v.f_op == 'IN':
-        qry = db[v.f_table][v.f_field].belongs(v.f_value.split(','))
+        qry = field.belongs(v.f_value.split(','))
     elif v.f_op == 'NOT IN':
-        qry = ~db[v.f_table][v.f_field].belongs(v.f_value.split(','))
+        qry = ~field.belongs(v.f_value.split(','))
     elif v.f_op == '>=':
-        qry = db[v.f_table][v.f_field] >= v.f_value
+        qry = field >= v.f_value
     elif v.f_op == '>':
-        qry = db[v.f_table][v.f_field] > v.f_value
+        qry = field > v.f_value
     elif v.f_op == '<=':
-        qry = db[v.f_table][v.f_field] <= v.f_value
+        qry = field <= v.f_value
     elif v.f_op == '<':
-        qry = db[v.f_table][v.f_field] < v.f_value
+        qry = field < v.f_value
     else:
         return nodes, services
 
