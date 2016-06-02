@@ -335,23 +335,38 @@ def cron_stat_day_svc():
         when = datetime.datetime.now()
     begin = datetime.datetime(year=when.year, month=when.month, day=when.day, hour=0, minute=0, second=0)
     end = begin + datetime.timedelta(days=1, seconds=-1)
+    day_s = begin.strftime("%Y-%m-%d")
 
-    rows = db(db.services.id>0).select(db.services.svc_id,
-                                       groupby=db.services.svc_id)
+    sql = """insert into stat_day_svc (svc_id, day, nb_action_err) select s.svc_id, "%(day)s", count(a.id) from services s left join svcactions a on s.svc_id=a.svc_id and a.begin>'%(begin)s' and a.begin<'%(end)s' and a.status='err' group by s.svc_id on duplicate key update nb_action_err=values(nb_action_err)""" % dict(day=day_s, begin=str(begin), end=str(end))
+    print sql
+    db.executesql(sql)
+    db.commit()
 
-    for row in rows:
-        svc_id = row.svc_id
-        pairs = ["nb_action=(select count(distinct id) from svcactions where begin>'%s' and begin<'%s' and svc_id='%s')"%(begin, end, svc_id)]
-        pairs += ["nb_action_err=(select count(distinct id) from svcactions where begin>'%s' and begin<'%s' and status='err' and svc_id='%s')"%(begin, end, svc_id)]
-        pairs += ["nb_action_warn=(select count(distinct id) from svcactions where begin>'%s' and begin<'%s' and status='warn' and svc_id='%s')"%(begin, end, svc_id)]
-        pairs += ["nb_action_ok=(select count(distinct id) from svcactions where begin>'%s' and begin<'%s' and status='ok' and svc_id='%s')"%(begin, end, svc_id)]
-        pairs += ["disk_size=(select if(sum(t.disk_size) is NULL, 0, sum(t.disk_size)) from (select distinct s.disk_id, s.disk_size from svcdisks s where s.svc_id='%s' and s.disk_local='F') t)"%svc_id]
-        pairs += ["local_disk_size=(select if(sum(t.disk_size) is NULL, 0, sum(t.disk_size)) from (select distinct s.disk_id, s.disk_size from svcdisks s where s.svc_id='%s' and s.disk_local='T') t)"%svc_id]
-        sql = "insert into stat_day_svc set day='%(end)s', svc_id='%(svc_id)s', %(pairs)s on duplicate key update %(pairs)s"%dict(end=end, svc_id=svc_id, pairs=','.join(pairs))
-        #raise Exception(sql)
-        db.executesql(sql)
-        db.commit()
-    return dict(sql=sql)
+    sql = """insert into stat_day_svc (svc_id, day, nb_action_warn) select s.svc_id, "%(day)s", count(a.id) from services s left join svcactions a on s.svc_id=a.svc_id and a.begin>'%(begin)s' and a.begin<'%(end)s' and a.status='warn' group by s.svc_id on duplicate key update nb_action_warn=values(nb_action_warn)""" % dict(day=day_s, begin=str(begin), end=str(end))
+    print sql
+    db.executesql(sql)
+    db.commit()
+
+    sql = """insert into stat_day_svc (svc_id, day, nb_action_ok) select s.svc_id, "%(day)s", count(a.id) from services s left join svcactions a on s.svc_id=a.svc_id and a.begin>'%(begin)s' and a.begin<'%(end)s' and a.status='ok' group by s.svc_id on duplicate key update nb_action_ok=values(nb_action_ok)""" % dict(day=day_s, begin=str(begin), end=str(end))
+    print sql
+    db.executesql(sql)
+    db.commit()
+
+    sql = """insert into stat_day_svc (svc_id, day, nb_action) select s.svc_id, "%(day)s", count(a.id) from services s left join svcactions a on s.svc_id=a.svc_id and a.begin>'%(begin)s' and a.begin<'%(end)s' group by s.svc_id on duplicate key update nb_action=values(nb_action)""" % dict(day=day_s, begin=str(begin), end=str(end))
+    print sql
+    db.executesql(sql)
+    db.commit()
+
+    sql = """insert into stat_day_svc (svc_id, day, disk_size) select s.svc_id, "%(day)s", if(sum(d.disk_size) is NULL, 0, sum(d.disk_size)) from services s left join svcdisks d on s.svc_id=d.svc_id and d.disk_local='F' group by s.svc_id on duplicate key update disk_size=values(disk_size)""" % dict(day=day_s)
+    print sql
+    db.executesql(sql)
+    db.commit()
+
+    sql = """insert into stat_day_svc (svc_id, day, local_disk_size) select s.svc_id, "%(day)s", if(sum(d.disk_size) is NULL, 0, sum(d.disk_size)) from services s left join svcdisks d on s.svc_id=d.svc_id and d.disk_local='T' group by s.svc_id on duplicate key update local_disk_size=values(local_disk_size)""" % dict(day=day_s)
+    print sql
+    db.executesql(sql)
+    db.commit()
+
 
 
 #
