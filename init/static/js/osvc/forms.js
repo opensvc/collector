@@ -1851,8 +1851,7 @@ function form(divid, options) {
 
 	$.when(
 		osvc.forms_loaded,
-		osvc.user_loaded,
-		osvc.user_groups_loaded
+		osvc.user_loaded
 	).then(function() {
 		o.load()
 	})

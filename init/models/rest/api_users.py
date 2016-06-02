@@ -58,6 +58,35 @@ class rest_get_users(rest_get_table_handler):
 
 
 #
+class rest_get_user_dump(rest_get_handler):
+    def __init__(self):
+        desc = [
+          "Display aggregate user information.",
+          "Managers and UserManager are allowed to see all users.",
+          "Others can only see users in their organisational groups.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/users/self/dump",
+        ]
+        rest_get_handler.__init__(
+          self,
+          path="/users/<id>/dump",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, id, **vars):
+        return {
+            "server_timezone": config_get("server_timezone", "Europe/Paris"),
+            "user": rest_get_user().handler(id)["data"],
+            "groups": rest_get_user_groups().handler(id, limit=0)["data"],
+            "filterset": rest_get_user_filterset().handler(id, meta=0)["data"],
+            "hidden_menu_entries_stats": rest_get_user_hidden_menu_entries().handler(id, stats="menu_entry", props="menu_entry", limit=0, meta=0)["data"],
+            "table_filters": rest_get_user_table_filters().handler(id, limit=0, meta=0)["data"],
+            "table_settings": rest_get_user_table_settings().handler(id, limit=0, meta=0)["data"],
+        }
+
+#
 class rest_get_user(rest_get_line_handler):
     def __init__(self):
         desc = [

@@ -9,24 +9,22 @@ function fset_selector(divid, callback) {
 
 	o.load_span = function() {
 		spinner_add(o.div)
-		services_osvcgetrest("R_USERS_SELF_FILTERSET", "", "", function(jd) {
-			spinner_del(o.div)
-			if (jd.data.length == 1) {
-				var fset_name = jd.data[0].fset_name
-				var fset_id = jd.data[0].id
-			} else {
-				var fset_name = i18n.t("fset_selector.none")
-				var fset_id = -1
+		spinner_del(o.div)
+		if (osvc.filterset.length == 1) {
+			var fset_name = osvc.filterset[0].fset_name
+			var fset_id = osvc.filterset[0].id
+		} else {
+			var fset_name = i18n.t("fset_selector.none")
+			var fset_id = -1
+		}
+		o.span.text(fset_name)
+		o.span.attr("fset_id", fset_id)
+		o.div.bind("click", function() {
+			if (!o.area.is(":visible")) {
+				o.area.slideDown()
+				$("#search_input").focus()
+				o.load_area()
 			}
-			o.span.text(fset_name)
-			o.span.attr("fset_id", fset_id)
-			o.div.bind("click", function() {
-				if (!o.area.is(":visible")) {
-					o.area.slideDown()
-					$("#search_input").focus()
-					o.load_area()
-				}
-			})
 		})
 		return o
 	}

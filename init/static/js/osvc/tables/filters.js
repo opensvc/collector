@@ -12,25 +12,28 @@ function table_column_filters() {
 	var o = {}
 
 	o.load = function() {
-		o.data = {}
 		var data = {
 			"limit": "0",
 			"meta": "0",
 			"props": "bookmark,col_name,col_tableid,col_filter"
 		}
 		services_osvcgetrest("R_USERS_SELF_TABLE_FILTERS", "", data, function(jd) {
-			for (var i=0; i<jd.data.length; i++) {
-				var d = jd.data[i]
-				if (!(d.col_tableid in o.data)) {
-					o.data[d.col_tableid] = {}
-				}
-				if (!(d.bookmark in o.data[d.col_tableid])) {
-					o.data[d.col_tableid][d.bookmark] = {}
-				}
-				o.data[d.col_tableid][d.bookmark][d.col_name] = d.col_filter
-			}
-			osvc.table_filters_loaded.resolve(true)
+			o.store_data(jd.data)
 		})
+	}
+
+	o.store_data = function(data) {
+		o.data = {}
+		for (var i=0; i<data.length; i++) {
+			var d = data[i]
+			if (!(d.col_tableid in o.data)) {
+				o.data[d.col_tableid] = {}
+			}
+			if (!(d.bookmark in o.data[d.col_tableid])) {
+				o.data[d.col_tableid][d.bookmark] = {}
+			}
+			o.data[d.col_tableid][d.bookmark][d.col_name] = d.col_filter
+		}
 	}
 
 	o.event_handler = function(data) {
@@ -46,8 +49,6 @@ function table_column_filters() {
 			return
 		}
 	}
-
-	o.load()
 
 	wsh["table_filters"] = function(data) {
 		o.event_handler(data)

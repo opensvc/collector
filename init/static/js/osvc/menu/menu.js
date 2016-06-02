@@ -443,44 +443,40 @@ function menu(divid) {
 
 	o.div.load("/init/static/views/menu.html", function() {
 		o.div.i18n()
-		params = {
-			"stats": "menu_entry",
-			"props": "menu_entry",
-			"limit": "0"
-		}
-		services_osvcgetrest("R_USER_HIDDEN_MENU_ENTRIES", ["self"], params, function(jd) {
-			/*
-			{
-			    "data": {
-				"menu_entry": {
-				    "key-s": 1,
-				    "key-r": 1,
-				    "key-esc": 1
-				}
-			    }
-			}
-			*/
-			if (jd.error && (jd.error.length > 0)) {
-				osvc.flash.error(services_error_fmt(jd))
-			}
-			osvc.hidden_menu_entries = []
-			var ref_count = 0
-			for (var i=0; i<_groups.length; i++) {
-				var g = _groups[i]
-				if (g.privilege == true) {
-					continue
-				}
-				ref_count++
-			}
-			for (key in jd.data.menu_entry) {
-				if (jd.data.menu_entry[key] == ref_count) {
-					osvc.hidden_menu_entries.push(key)
-				}
-			}
-			console.log("hidden menu entries:", osvc.hidden_menu_entries)
+		$.when(osvc.user_loaded).then(function(){
+			o.store_data(osvc.hidden_menu_entries_stats)
 			o.init()
 		})
 	})
+
+	o.store_data = function(data) {
+		/*
+		{
+		    "data": {
+			"menu_entry": {
+			    "key-s": 1,
+			    "key-r": 1,
+			    "key-esc": 1
+			}
+		    }
+		}
+		*/
+		osvc.hidden_menu_entries = []
+		var ref_count = 0
+		for (var i=0; i<_groups.length; i++) {
+			var g = _groups[i]
+			if (g.privilege == true) {
+				continue
+			}
+			ref_count++
+		}
+		for (key in data.menu_entry) {
+			if (data.menu_entry[key] == ref_count) {
+				osvc.hidden_menu_entries.push(key)
+			}
+		}
+		console.log("hidden menu entries:", osvc.hidden_menu_entries)
+	}
 
 
 	o.init = function() {

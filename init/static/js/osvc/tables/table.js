@@ -2939,8 +2939,7 @@ function table_init(opts) {
 
 	t.add_overlay()
 	$.when(
-		osvc.table_settings_loaded,
-		osvc.table_filters_loaded
+		osvc.user_loaded
 	).then(function(){
 		t.get_visible_columns()
 		t.init_current_filters()

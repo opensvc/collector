@@ -361,16 +361,19 @@ function services_osvcdeleterest(service, uri, params, data, callback, error_cal
 	return xhr
 }
 
-function services_feed_self_and_group() {
-	services_osvcgetrest("R_USERS_SELF", "", "", function(dataself) {
-		_self = dataself.data[0]
-		osvc.user_loaded.resolve(true)
-	})
-	services_osvcgetrest("/users/self/groups", "", {"limit": "0"}, function(datagroup) {
-		_groups = datagroup.data;
-		osvc.server_timezone = datagroup.meta.server_timezone
+function load_user() {
+	services_osvcgetrest("/users/self/dump", "", "", function(jd) {
+		_self = jd.user[0]
+		_groups = jd.groups
+		osvc.server_timezone = jd.server_timezone
 		osvc.client_timezone = moment.tz.guess()
-		osvc.user_groups_loaded.resolve(true)
+		osvc.table_settings = table_settings()
+		osvc.table_settings.store_data(jd.table_settings)
+		osvc.table_filters = table_column_filters()
+		osvc.table_filters.store_data(jd.table_filters)
+		osvc.hidden_menu_entries_stats = jd.hidden_menu_entries_stats
+		osvc.filterset = jd.filterset
+		osvc.user_loaded.resolve(true)
 	})
 }
 
