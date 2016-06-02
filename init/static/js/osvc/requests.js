@@ -20,9 +20,11 @@ function requests(divid, options) {
 		o.e_target = o.div.find("#forms_target")
 		o.e_inputs = o.div.find("#forms_inputs")
 
-		$.when(osvc.forms_loaded).then(function(){
-			o.init_search()
-			o.init_list()
+		require(["osvc/forms"], function(){
+			$.when(osvc.forms_loaded).then(function(){
+				o.init_search()
+				o.init_list()
+			})
 		})
 	})
 
@@ -250,8 +252,10 @@ function workflow(divid, options) {
 		o.e_next = o.div.find("[name=next_steps]")
 		o.e_next_form = o.div.find("[name=next_form]")
 
-		$.when(osvc.forms_loaded).then(function() {
-			o.init()
+		require(["osvc/forms"], function(){
+			$.when(osvc.forms_loaded).then(function() {
+				o.init()
+			})
 		})
 	})
 

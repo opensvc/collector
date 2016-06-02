@@ -1859,3 +1859,6 @@ function form(divid, options) {
 	return o
 }
 
+// this file is loaded through require()
+// init forms object upon load
+osvc.forms = forms()

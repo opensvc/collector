@@ -152,7 +152,6 @@ function app_start() {
 	services_feed_self_and_group()
 	osvc.table_settings = table_settings()
 	osvc.table_filters = table_column_filters()
-	osvc.forms = forms()
 	osvc.flash = flash()
 
 	// Check if IE and version < 10
@@ -921,6 +920,18 @@ function report(divid, options) {
 function reports(divid, options) {
 	require(["osvc/reports/reports"], function() {
 		reports(divid, options)
+	})
+}
+
+function form(divid, options) {
+	require(["osvc/forms"], function() {
+		form(divid, options)
+	})
+}
+
+function forms() {
+	require(["osvc/forms"], function() {
+		forms()
 	})
 }
 
