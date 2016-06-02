@@ -131,9 +131,15 @@ class HtmlTable(object):
         if s is None or s == "":
             s = 'empty'
         elif type(s) == datetime.datetime:
-            s = s.strftime("%Y-%m-%d %H:%M:%S")
+            try:
+                s = s.strftime("%Y-%m-%d %H:%M:%S")
+            except ValueError:
+                s = ""
         elif type(s) == datetime.date:
-            s = s.strftime("%Y-%m-%d")
+            try:
+                s = s.strftime("%Y-%m-%d")
+            except ValueError:
+                s = ""
         return s
 
     def col_values_cloud_ungrouped(self, c):
