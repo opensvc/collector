@@ -97,7 +97,6 @@ function fset_selector(divid, callback) {
 
 	o.container = function() {
 		var e = $("<a class='icon filter16' name='fset_selector'></a>")
-		e.text(i18n.t('table.filter'))
 
 		var span_selector = $("<span class='clickable'></span>")
 		span_selector.uniqueId()

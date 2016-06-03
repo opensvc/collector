@@ -399,10 +399,8 @@ input.aci, input.aci:focus {
 }
 
 .header_logo {
-	float: right;
-	top: 5px;
-	position: relative;
 	padding-right: 1em;
+	white-space: nowrap;
 }
 .header_logo a {
 	color: lightgray;
@@ -1053,12 +1051,17 @@ div.menu_box {
 }
 
 .header {
+	display: flex;
 	background: #2d2d2d;
 	color: white;
 	width: 100%;
 	position: fixed;
 	z-index: 2000;
 	height: 2em;
+}
+.header > div {
+	color: lightgray;
+	align-self: center;
 }
 .header option {
 	color: initial;
@@ -1098,7 +1101,6 @@ ul.web2py-menu > li {
 }
 
 ul.web2py-menu {
-	margin: 0.2em 0 0 0;
 	padding: 0;
 	white-space: nowrap;
 }
@@ -2531,8 +2533,7 @@ a.search-link:hover {
 	color: gray;
 }
 .search {
-	float: right;
-	padding:0.2em;
+	padding-right:0.2em;
 }
 .searchidle > input {
 	background: white url('../images/search.png') no-repeat;
@@ -2558,8 +2559,6 @@ a.search-link:hover {
 	border-radius: 4px;
 	outline: none;
 	-webkit-appearance: none;
-	position: relative;
-	top: 1px;
 }
 .search > * > menu_section > table {
 	padding-bottom: 0.4em;
@@ -3794,6 +3793,10 @@ button:disabled {
 .checklist > div {
 	padding: 0.3em 0;
 }
+.menu_flash {
+	flex: 1 1;
+	cursor: pointer;
+}
 
 @media screen and (max-width:960px) and (orientation: landscape) {
 	body {
@@ -3824,16 +3827,15 @@ button:disabled {
 	.sym_headers {
 		display: none;
 	}
-	.menu_top > ul > li > a > div:before {
-		font-size: 12pt;
+	.hide_text_on_small:before {
+		margin-right: 0;
+		font-size: 10pt;
 	}
-	.menu_top > ul > li > a > div {
-		font-size: 0;
+	.hide_text_on_small:after {
+		font-size: 10pt;
+		content: '\00a0';
 	}
-	.header_logo > a:before {
-		font-size: 12pt;
-	}
-	.header_logo > a{
+	.hide_text_on_small {
 		font-size: 0;
 	}
 	.search > input {

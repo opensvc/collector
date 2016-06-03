@@ -215,12 +215,7 @@ function flash() {
 	o.e_barel = $("<div class='tag_container'></div>")
 	o.e_show = $("<div id='flashtab' style='margin-top:20px'></div>")
 
-	$(".header").addClass("clickable").bind("click", function(e) {
-		if (!$(e.target).hasClass("header")) {
-			// exit if the click is in a header descendant
-			e.stopPropagation()
-			return
-		}
+	$(".menu_flash").bind("click", function(e) {
 		o.div.slideToggle()
 	})
 

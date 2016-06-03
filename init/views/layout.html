@@ -1,37 +1,37 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="{{=T.accepted_language or 'en'}}">
-  <head>
-    <title>{{=response.title or request.application}}</title>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />     
-    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=yes" />
-    {{include 'web2py_ajax.html'}}
-    <link rel="SHORTCUT ICON" href="{{=URL(r=request,c='static',f='favicon.ico')}}">
-  </head>
-  <body>
-    {{if 'MSIE 6' in request.env.http_user_agent:}}
-    {{=redirect(URL(r=request, c='unsupported', f='index'))}}
-    {{pass}}
-    <div class=header>
-      <!-- search tool-->
-      <span id="layout_search_tool"></span>
-      <div class='header_logo action_q_widget'><a class='icon action16 nocolor' onclick="app_load_href('/init/action_queue/action_queue', 'table_action_queue')"></a></div>
-      <div id="fset_selector" class='header_logo'></div>
-      <div class='header_logo'>
-        {{=A((response.title or request.application), _href="http://www.opensvc.com", _class="icon www16", _target="_blank")}}
-      </div>
-      <span id="login_location"></span>
-      <span id="menu_location"></span>
-      <div class="menu flash stackable">{{=response.flash or ''}}</div>
-    </div>
-    <div class="layout" id="layout">
-        <div align=center>{{include}}</div>
-    </div>
-    <div class=footer>
-      <div align="center">
-        {{=T('Copyright')}} &copy; 2016 - OpenSVC -
-        {{=T('Powered by')}} <a href="http://www.web2py.com" style="color:silver">web2py</a>
-      </div>
-    </div>
-    <script> app_start() </script>
-  </body>
+	<head>
+		<title>{{=response.title or request.application}}</title>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />     
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=yes" />
+		{{include 'web2py_ajax.html'}}
+		<link rel="SHORTCUT ICON" href="{{=URL(r=request,c='static',f='favicon.ico')}}">
+	</head>
+	<body>
+		{{if 'MSIE 6' in request.env.http_user_agent:}}
+		{{=redirect(URL(r=request, c='unsupported', f='index'))}}
+		{{pass}}
+		<div class="header">
+			<div id="login_location"></div>
+			<div id="menu_location"></div>
+			<div class="menu_flash">&nbsp;</div>
+			<div class="header_logo"> {{=A((response.title or request.application), _href="http://www.opensvc.com", _class="icon www16 hide_text_on_small", _target="_blank")}} </div>
+			<div class="header_logo" id="fset_selector"></div>
+			<div class='header_logo action_q_widget'>
+				<a class='icon action16 nocolor' onclick="app_load_href('/init/action_queue/action_queue', 'table_action_queue')"></a>
+			</div>
+			<div id="layout_search_tool"></div>
+			<div class="menu flash stackable">{{=response.flash or ''}}</div>
+		</div>
+		<div class="layout" id="layout">
+			<div align=center>{{include}}</div>
+		</div>
+		<div class=footer>
+			<div align="center">
+				{{=T('Copyright')}} &copy; 2016 - OpenSVC -
+				{{=T('Powered by')}} <a href="http://www.web2py.com" style="color:silver">web2py</a>
+			</div>
+		</div>
+		<script> app_start() </script>
+	</body>
 </html>

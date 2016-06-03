@@ -6075,3 +6075,7 @@ drop view v_svcmon_clusters;
 
 drop view v_wiki_events; CREATE VIEW `v_wiki_events` AS (select `s`.`id` AS `id`,`s`.`name` AS `name`,`s`.`title` AS `title`,`s`.`saved_on` AS `saved_on`,`s`.`change_note` AS `change_note`, `s`.`body` AS `body` ,`a`.`email` AS `email` from (`wiki_pages` `s` left join `auth_user` `a` on(`s`.`author` = `a`.`id`)));
 
+alter table node_users add key k_purge (node_id, updated);
+alter table node_groups add key k_purge (node_id, updated);
+alter table dashboard_event add key k_purge_future (dash_end);
+
