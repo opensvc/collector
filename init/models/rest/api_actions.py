@@ -42,7 +42,12 @@ class rest_post_services_action(rest_post_handler):
 
     def handler(self, id, **vars):
         q = db.svcactions.id == id
-        row = db(q).select().first()
+        row = db(q).select(
+          db.svcactions.id,
+          db.svcactions.node_id,
+          db.svcactions.svc_id,
+          db.svcactions.status,
+        ).first()
         if row is None:
             raise Exception("log entry %s does not exist" % str(id))
         svc_responsible(row.svc_id)
@@ -72,7 +77,7 @@ class rest_post_services_action(rest_post_handler):
         _websocket_send(event_msg(l))
         table_modified("svcactions")
 
-        update_action_errors()
+        update_instance_action_errors(row.svc_id, row.node_id)
         update_dash_action_errors(row.svc_id, row.node_id)
         return dict(info="actions log entry %s successfully changed" %str(id))
 

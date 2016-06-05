@@ -14,6 +14,33 @@ def update_action_errors():
     db.executesql(sql)
     db.commit()
 
+def update_instance_action_errors(svc_id, node_id):
+    sql = """select count(id) from svcactions
+             where
+               node_id = "%(node_id)s" and
+               svc_id = "%(svc_id)s" and
+               status = 'err' and
+               (ack <> 1 or isnull(ack)) and
+               end is not null
+             group by svc_id, node_id
+          """ % dict(node_id=node_id, svc_id=svc_id)
+    rows = db.executesql(sql)
+    if len(rows) == 0:
+        sql = """delete from b_action_errors where
+                 node_id = "%(node_id)s" and
+                 svc_id = "%(svc_id)s"
+              """ % dict(node_id=node_id, svc_id=svc_id)
+    else:
+        sql = """insert into b_action_errors set
+                   node_id = "%(node_id)s",
+                   svc_id = "%(svc_id)s",
+                   err = %(n)d
+                 on duplicate key update
+                   err = %(n)d
+              """ % dict(node_id=node_id, svc_id=svc_id, n=rows[0][0])
+    db.executesql(sql)
+    db.commit()
+
 def update_dash_action_errors(svc_id, node_id):
     sql = """select e.err, s.svc_type from b_action_errors e
              join services s on e.svc_id=s.svc_id
