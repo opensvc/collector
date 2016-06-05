@@ -1118,9 +1118,8 @@ def json_startup_data():
     if config.has_option("DEFAULT", "drpnodes"):
         drpnodes = config.get("DEFAULT", "drpnodes").split()
     if config.has_option("DEFAULT", "drpnode"):
-        drpnode = config.get("DEFAULT", "drpnode").split()[0]
-        if drpnode not in drpnodes:
-            drpnodes.append(drpnode)
+        drpnode = config.get("DEFAULT", "drpnode").split()
+        drpnodes = list(set(drpnode) | set(drpnodes))
     encapnodes = []
     if config.has_option("DEFAULT", "encapnodes"):
         encapnodes = config.get("DEFAULT", "encapnodes").split()
