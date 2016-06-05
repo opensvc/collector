@@ -569,7 +569,6 @@ def alerts_failed_actions_not_acked():
     sql = """select id, svc_id, node_id from svcactions where
                  status="err" and
                  (ack=0 or ack is NULL) and
-                 begin>date_sub(now(), interval 7 day) and
                  begin<date_sub(now(), interval %(age)d day)"""%dict(age=age)
     rows = db.executesql(sql)
     ids = map(lambda x: str(x[0]), rows)
