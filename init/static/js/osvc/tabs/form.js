@@ -125,7 +125,7 @@ function form_properties(divid, options) {
 				services_osvcpostrest("R_FORM", [data.id], "", _data, callback, error_callback)
 			},
 			"get": function(callback) {
-				var data = ["custo", "folder", "generic", "obj"]
+				var data = ["generic", "obj", "folder"]
 				callback(data)
 			}
 		})
