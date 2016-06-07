@@ -2028,76 +2028,62 @@ def scheduler_cleanup():
     db.executesql(sql)
     db.commit()
 
-def task_rq_storage():
-    l = None
-    while True:
-        try:
-            l = rconn.blpop("osvc:q:storage")
-            args = json.loads(l[1])
-            fn = args.pop(0)
-            globals()[fn](*args)
-        except Exception as e:
-            print e
-            print l
+def _task_rq_storage(*args):
+    fn = args.pop(0)
+    globals()[fn](*args)
 
-def task_rq_dashboard():
-    l = None
-    while True:
-        try:
-            l = rconn.blpop(["osvc:q:update_dash_netdev_errors"])
-            args = json.loads(l[1])
-            if l[0] == "osvc:q:update_dash_netdev_errors":
-                update_dash_netdev_errors(*args)
-        except Exception as e:
-            print e
-            print l
+def task_rq_storage():
+    task_rq("osvc:q:storage", _task_rq_storage)
+
+def _task_rq_generic(*args):
+    if l[0] == "osvc:q:svcconf":
+        _update_service(*args)
+    elif l[0] == "osvc:q:checks":
+        _push_checks(*args)
+    elif l[0] == "osvc:q:generic":
+        _insert_generic(*args)
+    elif l[0] == "osvc:q:asset":
+        _update_asset(*args)
+    elif l[0] == "osvc:q:packages":
+        _insert_pkg(*args)
+    elif l[0] == "osvc:q:patches":
+        _insert_patch(*args)
+    elif l[0] == "osvc:q:sysreport":
+        task_send_sysreport(*args)
+    elif l[0] == "osvc:q:svcmon_update":
+        _svcmon_update(*args)
 
 def task_rq_generic():
-    l = None
-    while True:
-        try:
-            l = rconn.blpop(["osvc:q:svcmon_update", "osvc:q:sysreport", "osvc:q:patches", "osvc:q:packages", "osvc:q:asset", "osvc:q:generic", "osvc:q:checks", "osvc:q:svcconf"])
-            args = json.loads(l[1])
-            if l[0] == "osvc:q:svcconf":
-                _update_service(*args)
-            elif l[0] == "osvc:q:checks":
-                _push_checks(*args)
-            elif l[0] == "osvc:q:generic":
-                _insert_generic(*args)
-            elif l[0] == "osvc:q:asset":
-                _update_asset(*args)
-            elif l[0] == "osvc:q:packages":
-                _insert_pkg(*args)
-            elif l[0] == "osvc:q:patches":
-                _insert_patch(*args)
-            elif l[0] == "osvc:q:sysreport":
-                task_send_sysreport(*args)
-            elif l[0] == "osvc:q:svcmon_update":
-                _svcmon_update(*args)
-        except Exception as e:
-            print e
-            print l
+    task_rq(["osvc:q:svcmon_update", "osvc:q:sysreport", "osvc:q:patches", "osvc:q:packages", "osvc:q:asset", "osvc:q:generic", "osvc:q:checks", "osvc:q:svcconf"], _task_rq_generic)
+
+def task_rq_dashboard():
+    task_rq("osvc:q:update_dash_netdev_errors", update_dash_netdev_errors)
 
 def task_rq_svcactions():
-    l = None
-    while True:
-        try:
-            l = rconn.blpop("osvc:q:svcactions")
-            args = json.loads(l[1])
-            _action_wrapper(*args)
-        except Exception as e:
-            print e
-            print l
+    task_rq("osvc:q:svcactions", _action_wrapper)
 
 def task_rq_svcmon():
+    task_rq("osvc:q:svcmon", _svcmon_update_combo)
+
+def task_rq(rqueues, fn):
     l = None
     while True:
         try:
-            l = rconn.blpop("osvc:q:svcmon")
+            l = rconn.blpop(rqueues)
             args = json.loads(l[1])
-            _svcmon_update_combo(*args)
+            fn(*args)
+            db.commit()
+        except KeyboardInterrupt:
+            print "keyboard interrupt"
+            break
         except Exception as e:
-            print e
-            print l
+            if "server has gone away" in str(e) or "Lost connection" in str(e):
+                print "reconnect db"
+                db._adapter.close()
+                db._adapter.reconnect()
+                fn(*args)
+            else:
+                print e
+                print l
 
 

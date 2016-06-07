@@ -711,12 +711,7 @@ def _resmon_update(vars, vals, auth):
     else:
         for v in vals:
             __resmon_update(vars, v, auth)
-    _websocket_send(event_msg({
-                 'event': 'resmon_change',
-                 'data': {
-                   'foo': 'bar',
-                 },
-                }))
+    ws_send('resmon_change')
 
 def __resmon_update(vars, vals, auth):
     h = {}
@@ -2580,12 +2575,7 @@ def unfold_svcmon_update(vars, vals, auth):
 
 def _svcmon_update(vars, vals, auth):
     unfold_svcmon_update(vars, vals, auth)
-    _websocket_send(event_msg({
-                 'event': 'svcmon_change',
-                 'data': {
-                   'f': 'b',
-                 },
-                }))
+    ws_send('svcmon_change')
     dashboard_events()
 
 def compute_availstatus(h):
