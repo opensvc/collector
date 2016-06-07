@@ -231,7 +231,7 @@
 	},
 	"api": {
 		"call": "Rest API call",
-		"server_side": "Service side tasks",
+		"server_side": "Server side tasks",
 		"doc": {
 			"none": "None",
 			"data_unique": "Unique",
