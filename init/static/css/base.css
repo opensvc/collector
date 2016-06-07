@@ -3794,6 +3794,7 @@ button:disabled {
 
 .tab_display {
 	padding: 0;
+	overflow-x: auto;
 }
 
 .checklist > div {
