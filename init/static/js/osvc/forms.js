@@ -171,6 +171,15 @@ function form(divid, options) {
 				o.form_data.form_definition.Inputs[i].Args = ["props = role"]
 				o.form_data.form_definition.Inputs[i].Default = null
 			}
+			if (d.Default == "__user_name__") {
+				o.form_data.form_definition.Inputs[i].Default = _self.first_name + " " + _self.last_name
+			}
+			if (d.Default == "__user_phone_work__") {
+				o.form_data.form_definition.Inputs[i].Default = _self.phone_work
+			}
+			if (d.Default == "__user_email__") {
+				o.form_data.form_definition.Inputs[i].Default = _self.email
+			}
 		}
 	}
 
@@ -699,25 +708,24 @@ function form(divid, options) {
 		}
 		services_osvcputrest("R_FORM", [o.form_data.id], "", _data, function(jd) {
 			var title = $("<h3></h3>")
-			title.text(i18n.t("api.server_side"))
 			o.result.append(title)
 			if (jd.error && (jd.error.length > 0)) {
-				o.result.append("<div class='icon nok'>"+i18n.t("forms.error")+"</div>")
+				title.append("<div class='icon nok'>"+i18n.t("forms.error")+"</div>")
 				if (typeof(jd.error) === "string") {
-					o.result.append("<p class='pre icon fa-exclamation-triangle'>"+jd.error+"</p>")
+					o.result.append("<p class='pre icon fa-exclamation-triangle' style='padding:0.5em'>"+jd.error+"</p>")
 				} else {
 					for (var i=0; i<jd.error.length; i++) {
-						o.result.append("<p class='pre icon fa-exclamation-triangle'>"+jd.error[i]+"</p>")
+						o.result.append("<p class='pre icon fa-exclamation-triangle' style='padding:0.5em'>"+jd.error[i]+"</p>")
 					}
 				}
 			}
 			if (jd.info && (jd.info.length > 0)) {
-				o.result.append("<div class='icon ok'>"+i18n.t("forms.success")+"</div>")
+				title.append("<div class='icon ok'>"+i18n.t("forms.success")+"</div>")
 				if (typeof(jd.info) === "string") {
-					o.result.append("<p class='pre icon fa-info-circle'>"+jd.info+"</p>")
+					o.result.append("<p class='pre icon fa-info-circle' style='padding:0.5em'>"+jd.info+"</p>")
 				} else {
 					for (var i=0; i<jd.info.length; i++) {
-						o.result.append("<p class='pre icon fa-info-circle'>"+jd.info[i]+"</p>")
+						o.result.append("<p class='pre icon fa-info-circle' style='padding:0.5em'>"+jd.info[i]+"</p>")
 					}
 				}
 			}
@@ -725,75 +733,6 @@ function form(divid, options) {
 		function(xhr, stat, error) {
 			o.result.append(services_ajax_error_fmt(xhr, stat, error))
 		})
-	}
-
-	o.submit_output_rest_one = function(fn, path, output, data, result) {
-		if (output.Keys) {
-			for (key in data) {
-				if (output.Keys.indexOf(key) < 0) {
-					delete(data[key])
-				}
-			}
-		}
-		fn(path, "", "", data, function(jd) {
-			var title = $("<h3></h3>")
-			title.text(i18n.t("api.call")+": "+output.Handler+" "+path)
-			o.result.append(title)
-			if (jd.error && (jd.error.length > 0)) {
-				o.result.append("<pre class='nok icon_fixed_width'>"+jd.error+"</pre>")
-			}
-			if (jd.info && (jd.info.length > 0)) {
-				o.result.append("<pre class='ok icon_fixed_width'>"+jd.info+"</pre>")
-                        }
-			if (jd.data) {
-				o.result.append("<pre>"+JSON.stringify(jd.data, null, 4)+"</pre>")
-                        }
-			if (output.Id) {
-				// store the result for other outputs benefits
-				o.results[output.Id] = jd.data
-			}
-		},
-		function(xhr, stat, error) {
-			return services_ajax_error_fmt(xhr, stat, error)
-		}, false)
-        }
-
-	o.submit_output_rest = function(output, data) {
-		var path = subst_refs_from_data(data, output.Function)
-		if (output.Mangle) {
-			eval("var mangle="+output.Mangle)
-			data = mangle(data, o.results)
-			console.log("data after mangle", data)
-		}
-		if (typeof(data) === "string") {
-			console.log("rest output data can not be string")
-			return
-		}
-		if (!output.Function) {
-			console.log("rest output must have a Function defined (rest api path relative to /init/rest/api)")
-			return
-		}
-		if (!output.Handler) {
-			console.log("rest output must have a Handler defined (PUT, POST or DELETE)")
-			return
-		}
-		if (output.Handler == "POST") {
-			var fn = services_osvcpostrest
-		} else if (output.Handler == "DELETE") {
-			var fn = services_osvcdeleterest
-		} else if (output.Handler == "PUT") {
-			var fn = services_osvcputrest
-		} else {
-			console.log("rest output must have a Handler defined (PUT, POST or DELETE)")
-			return
-		}
-		if (!(data instanceof Array)) {
-			data = [data]
-		}
-		for (var i=0; i<data.length; i++) {
-			var _data = data[i]
-			o.submit_output_rest_one(fn, path, output, _data)
-		}
 	}
 
 	o.submit_output_compliance = function(data) {
@@ -828,8 +767,6 @@ function form(divid, options) {
 	o.submit_output = function(output, data) {
 		if (output.Dest == "compliance variable") {
 			o.submit_output_compliance(data)
-		} else if (output.Dest == "rest") {
-			o.submit_output_rest(output, data)
 		} else {
 			console.log("Output " + output.Dest + " not supported client-side")
 			o.need_submit_form_data = true

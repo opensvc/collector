@@ -1,18 +1,17 @@
 
-def ordered_outputs(data):
+def ordered_outputs(form_definition):
     l = []
     h = {}
 
     dest_order = [
      'db',
-     'compliance variable',
      'script',
+     'rest',
      'workflow',
-     'compliance fix',
      'mail',
     ]
 
-    for output in data.get('Outputs', []):
+    for output in form_definition.get('Outputs', []):
         dest = output.get('Dest')
         if dest not in h:
             h[dest] = [output]
@@ -27,12 +26,12 @@ def ordered_outputs(data):
 
     return l
 
-def get_form_formatted_data_o(output, data, _d=None):
+def get_form_formatted_data_o(output, form_definition, _d=None):
     if _d is not None:
         return _d
     raise Exception("get_form_formatted_data_o: no form data")
 
-def check_output_condition(output, form, data, _d=None):
+def check_output_condition(output, form, form_definition, _d=None):
     cond = output.get('Condition', 'none')
     if cond == 'none':
         return True
@@ -57,7 +56,7 @@ def check_output_condition(output, form, data, _d=None):
                 raise Exception("input id %s is not present in submitted data : %s"%(var, str(o)))
         return var, val
 
-    o = get_form_formatted_data_o(output, data, _d)
+    o = get_form_formatted_data_o(output, form_definition, _d)
 
     if "==" in cond:
         var, val = get_var_val("==")
@@ -86,25 +85,13 @@ def check_output_condition(output, form, data, _d=None):
 
     raise Exception("operator is not supported in output condition %s"%cond)
 
-def get_form_formatted_data(output, data, _d=None):
-    output_value = get_form_formatted_data_o(output, data, _d)
+def get_form_formatted_data(output, form_definition, _d=None):
+    output_value = get_form_formatted_data_o(output, form_definition, _d)
 
     if output.get('Type') == "json":
         output_value = json.dumps(output_value)
 
     return output_value
-
-def fmt_action(node_id, svc_id, action, mod=[], modset=[]):
-    d = {
-      "node_id": node_id
-    }
-    if svc_id is not None and svc_id != "":
-        d["svc_id"] = row.comp_status.svc_id
-    if len(mod) > 0:
-        d["module"] = ','.join(mod)
-    if len(modset) > 0:
-        d["moduleset"] = ','.join(modset)
-    json_action_one(d)
 
 def insert_form_md5(form):
     o = md5()
@@ -125,245 +112,7 @@ def insert_form_md5(form):
     table_modified("forms_revisions")
     return form_md5
 
-def ajax_custo_form_submit(output, data):
-    # logging buffer
-    log = []
-
-    rset_name = request.vars.rset_name
-    node_id = request.vars.node_id
-    svc_id = request.vars.svc_id
-
-    # target selectors
-    if request.vars.svc_id is not None:
-        rset_name = "svc."+request.vars.svc_id
-    elif request.vars.node_id is not None:
-        rset_name = "node."+str(request.vars.node_id)
-    elif request.vars.rset is not None:
-        rset_name = request.vars.rset
-
-    if request.vars.var_id is not None:
-        q = db.comp_rulesets_variables.id == request.vars.var_id
-        q &= db.comp_rulesets_variables.ruleset_id == db.comp_rulesets.id
-        var = db(q).select(cacheable=True).first()
-        if var is None:
-            log.append((1, "", "Specified variable not found (id=%(id)s)", dict(id=request.vars.var_id)))
-            return log
-        var_name = var.comp_rulesets_variables.var_name
-        var_class = var.comp_rulesets_variables.var_class
-        rset_name = var.comp_rulesets.ruleset_name
-
-    if rset_name is None:
-        log.append((1, "", "No ruleset name specified. Skip compliance variable creation", dict()))
-        return dict(log=log, err="break")
-
-    # validate privs
-    groups = []
-    common_groups = []
-    if node_id is not None:
-        q = db.nodes.node_id == node_id
-        q &= db.nodes.team_responsible == db.auth_group.role
-        node = db(q).select(db.auth_group.id, cacheable=True).first()
-        if node is None:
-            log.append((1, "", "Unknown specified node id %(node_id)s", dict(node_id=node_id)))
-            return log
-        groups = [node.id]
-        if len(groups) == 0:
-            log.append((1, "", "Specified node %(nodename)s has no responsible group", dict(nodename=get_nodename(node_id))))
-            return log
-        common_groups = set(user_group_ids()) & set(groups)
-        if len(common_groups) == 0:
-            log.append((1, "", "You are not allowed to create or modify a ruleset for the node %(nodename)s", dict(nodename=get_nodename(node_id))))
-            return log
-    elif svc_id is not None:
-        q = db.services.svc_id == svc_id
-        svc = db(q).select(cacheable=True).first()
-        if svc is None:
-            log.append((1, "", "Unknown specified service %(svc_id)s", dict(svc_id=svc_id)))
-            return log
-        q &= db.services.svc_app == db.apps.app
-        q &= db.apps.id == db.apps_responsibles.app_id
-        rows = db(q).select(cacheable=True)
-        groups = map(lambda x: x.apps_responsibles.group_id, rows)
-        if len(groups) == 0:
-            log.append((1, "", "Specified service %(svcname)s has no responsible groups", dict(svcname=get_svcname(svc_id))))
-            return log
-        common_groups = set(user_group_ids()) & set(groups)
-        if len(common_groups) == 0:
-            log.append((1, "", "You are not allowed to create or modify a ruleset for the service %(svcname)s", dict(svcname=get_svcname(svc_id))))
-            return log
-    elif request.vars.rset is not None:
-        q = db.comp_rulesets.ruleset_name == request.vars.rset
-        rset = db(q).select(cacheable=True).first()
-        if rset is None:
-            log.append((1, "", "Unknown specified ruleset %(rset)s", dict(rset=request.vars.rset)))
-            return log
-        q &= db.comp_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
-        q &= db.comp_ruleset_team_responsible.group_id == db.auth_group.id
-        rows = db(q).select(cacheable=True)
-        groups = map(lambda x: x.auth_group.id, rows)
-        common_groups = set(user_group_ids()) & set(groups)
-        if len(common_groups) == 0:
-            log.append((1, "", "You are not allowed to create or modify the ruleset %(rset)s", dict(rset=rset_name)))
-            return log
-
-    # create ruleset
-    q = db.comp_rulesets.ruleset_name == rset_name
-    rset = db(q).select(cacheable=True).first()
-    if rset is None:
-        db.comp_rulesets.insert(ruleset_name=rset_name,
-                                ruleset_type="explicit",
-                                ruleset_public="T")
-        table_modified("comp_rulesets")
-        log.append((0, "compliance.ruleset.add", "Added explicit published ruleset '%(rset_name)s'", dict(rset_name=rset_name)))
-        rset = db(q).select(cacheable=True).first()
-        for gid in common_groups:
-            db.comp_ruleset_team_responsible.insert(
-              ruleset_id=rset.id,
-              group_id=gid
-            )
-            db.comp_ruleset_team_publication.insert(
-              ruleset_id=rset.id,
-              group_id=gid
-            )
-            table_modified("comp_ruleset_team_responsible")
-            log.append((0, "compliance.ruleset.group.attach", "Added group %(gid)d to ruleset '%(rset_name)s' responsibles", dict(gid=gid, rset_name=rset_name)))
-            table_modified("comp_ruleset_team_publication")
-            log.append((0, "compliance.ruleset.group.attach", "Added group %(gid)d to ruleset '%(rset_name)s' publication", dict(gid=gid, rset_name=rset_name)))
-    if rset is None:
-        log.append((1, "", "error fetching %(rset_name)s ruleset", dict(rset_name=rset_name)))
-        return log
-
-    if request.vars.var_id is None:
-        if 'Class' in output:
-            var_class = output['Class']
-        else:
-            var_class = 'raw'
-
-        if request.vars.var_name is not None:
-            var_name_prefix = request.vars.var_name
-        elif 'Prefix' in output:
-            var_name_prefix = output['Prefix']
-        else:
-            var_name_prefix = '_'.join((output.get('Class', 'noclass'), str(rset.id), ''))
-            #log.append((1, "", "No variable name specified.", dict()))
-            #return log
-
-        q = db.comp_rulesets_variables.ruleset_id == rset.id
-        q &= db.comp_rulesets_variables.var_name.like(var_name_prefix+'%')
-        var_name_suffixes = map(lambda x: x.var_name.replace(var_name_prefix, ''), db(q).select(cacheable=True))
-        i = 0
-        while True:
-            _i = str(i)
-            if _i not in var_name_suffixes: break
-            i += 1
-        var_name = var_name_prefix + _i
-    try:
-        var_value = get_form_formatted_data(output, data)
-    except Exception, e:
-        log.append((1, "compliance.ruleset.variable.change", str(e), dict()))
-        return log
-
-    q = db.comp_rulesets_variables.ruleset_id == rset.id
-    q &= db.comp_rulesets_variables.var_name == var_name
-    n = db(q).count()
-
-    if n == 0 and request.vars.var_id is not None:
-        log.append((1, "compliance.ruleset.variable.change", "%(var_class)s' variable '%(var_name)s' does not exist in ruleset %(rset_name)s or invalid attempt to edit a variable in a parent ruleset", dict(var_class=var_class, var_name=var_name, rset_name=rset_name)))
-        return log
-
-    q &= db.comp_rulesets_variables.var_value == var_value
-    n = db(q).count()
-    __var_id = request.vars.var_id
-
-    if n > 0:
-        log.append((1, "compliance.ruleset.variable.add", "'%(var_class)s' variable '%(var_name)s' already exists with the same value in the ruleset '%(rset_name)s': cancel", dict(var_class=var_class, var_name=var_name, rset_name=rset_name)))
-    else:
-        q = db.comp_rulesets_variables.ruleset_id == rset.id
-        q &= db.comp_rulesets_variables.var_name == var_name
-        # ownership check
-        var_rows = db(q).select(cacheable=True)
-        n = len(var_rows)
-        owned = True
-        if "Manager" not in user_groups():
-            q1 = db.comp_ruleset_team_responsible.ruleset_id == rset.id
-            q1 &= db.comp_ruleset_team_responsible.group_id.belongs(user_group_ids())
-            if db(q&q1).count() == 0:
-                owned = False
-        if n == 0:
-            __var_id = db.comp_rulesets_variables.insert(
-              ruleset_id=rset.id,
-              var_name=var_name,
-              var_value=var_value,
-              var_class=var_class,
-              var_author=user_name(),
-              var_updated=datetime.datetime.now(),
-            )
-            table_modified("comp_rulesets_variables")
-            log.append((0, "compliance.ruleset.variable.add", "Added '%(var_class)s' variable '%(var_name)s' to ruleset '%(rset_name)s' with value:\n%(var_value)s", dict(var_class=var_class, var_name=var_name, rset_name=rset_name, var_value=var_value)))
-        elif not owned:
-            if n == 1:
-                log.append((1, "compliance.ruleset.variable.change", "Change '%(var_class)s' variable '%(var_name)s' in ruleset '%(rset_name)s' aborted: not owner", dict(var_class=var_class, var_name=var_name, rset_name=rset_name)))
-            else:
-                log.append((1, "compliance.ruleset.variable.add", "Add '%(var_class)s' variable '%(var_name)s' in ruleset '%(rset_name)s' aborted: not owner", dict(var_class=var_class, var_name=var_name, rset_name=rset_name)))
-        elif n == 1:
-            __var_id = var_rows.first().id
-            db(q).update(
-              var_value=var_value,
-              var_class=var_class,
-              var_author=user_name(),
-              var_updated=datetime.datetime.now(),
-            )
-            table_modified("comp_rulesets_variables")
-            log.append((0, "compliance.ruleset.variable.change", "Modified '%(var_class)s' variable '%(var_name)s' in ruleset '%(rset_name)s' with value:\n%(var_value)s", dict(var_class=var_class, var_name=var_name, rset_name=rset_name, var_value=var_value)))
-        else:
-            log.append((1, "compliance.ruleset.variable.change", "More than one variable found matching '%(var_name)s' in ruleset '%(rset_name)s'. Skip edition.", dict(var_name=var_name, rset_name=rset_name)))
-
-    if node_id is not None or svc_id is not None:
-        modset_ids = []
-        if 'Modulesets' in data:
-            q = db.comp_moduleset.modset_name.belongs(data['Modulesets'])
-            rows = db(q).select(db.comp_moduleset.id, cacheable=True)
-            modset_ids = map(lambda x: x.id, rows)
-
-        rset_ids = []
-        if 'Rulesets' in data:
-            q = db.comp_rulesets.ruleset_name.belongs(data['Rulesets'])
-            q &= db.comp_rulesets.ruleset_type == "explicit"
-            q &= db.comp_rulesets.ruleset_public == True
-            rows = db(q).select(db.comp_rulesets.id, cacheable=True)
-            rset_ids = map(lambda x: x.id, rows) + [rset.id]
-
-        if node_id is not None:
-            # check node_team_responsible_id ?
-            for _modset_id in modset_ids:
-                try:
-                    log += lib_comp_moduleset_attach_node(node_id=node_id,
-                                                          modset_id=_modset_id)
-                except ToolError:
-                    pass
-            for _rset_id in rset_ids:
-                try:
-                    log += lib_comp_ruleset_attach_node(node_id=node_id,
-                                                        rset_id=_rset_id)
-                except ToolError:
-                    pass
-
-        if svc_id is not None:
-            # check svc_team_responsible_id ?
-            for _modset_id in modset_ids:
-                try:
-                    log += lib_comp_moduleset_attach_service(svc_id, _modset_ids, slave=True)
-                except ToolError:
-                    pass
-            for _rset_id in rset_ids:
-                try:
-                    log += lib_comp_ruleset_attach_service(svc_id, _rset_ids, slave=True)
-                except ToolError:
-                    pass
-
-    return dict(log=log, var_id=__var_id)
-
-def mail_form(output, data, form, to=None, record_id=None, _d=None, form_html=None):
+def output_mail(output, form_definition, form, to=None, record_id=None, _d=None, form_html=None):
     if type(to) in (str, unicode):
         to = [to]
 
@@ -383,10 +132,10 @@ def mail_form(output, data, form, to=None, record_id=None, _d=None, form_html=No
     if len(to) == 0:
         return [(1, "form.submit", "No mail destination", dict())]
 
-    label = data.get('Label', form.form_name)
+    label = form_definition.get('Label', form.form_name)
     title = label
     try:
-        d = get_form_formatted_data_o(output, data, _d)
+        d = get_form_formatted_data_o(output, form_definition, _d)
     except Exception, e:
         return [(1, "form.submit", str(e), dict())]
     try:
@@ -439,364 +188,417 @@ def mail_form(output, data, form, to=None, record_id=None, _d=None, form_html=No
     _to = str(', '.join(to))
     return [(0, "form.submit", "Mail sent to %(to)s on form %(form_name)s submission." , dict(to=_to, form_name=form.form_name))]
 
-def form_submit(form, data,
-                _d=None,
-                form_html=None,
-                var_id=None, prev_wfid=None,
-                svc_id=None, node_id=None):
+def output_workflow(output, form_definition, form, _d=None, form_html=None, prev_wfid=None, _scripts=None):
     log = []
-    __var_id = var_id
-    _scripts = {'returncode': 0}
-    for output in data.get('Outputs', []):
+    d = get_form_formatted_data(output, form_definition, _d)
+
+    form_md5 = insert_form_md5(form)
+
+    if output.get('Scripts') is not None:
+        if _scripts['returncode'] == 0:
+            script_defs = output['Scripts'].get('Success')
+        else:
+            script_defs = output['Scripts'].get('Error')
+
+        if 'async' in _scripts:
+            next_forms = ['to be determined']
+            form_assignee = None
+        elif script_defs is None:
+            next_forms = None
+            form_assignee = None
+        else:
+            next_forms = script_defs.get('NextForms')
+            form_assignee = script_defs.get('NextAssignee')
+    else:
+        next_forms = output.get('NextForms')
+        form_assignee = output.get('NextAssignee')
+
+    if next_forms is None or len(next_forms) == 0:
+        next_id = 0
+        status = "closed"
+    else:
+        next_id = None
+        status = "pending"
+
+    now = datetime.datetime.now()
+
+    if prev_wfid is not None and prev_wfid != 'None':
+        # workflow continuation
+        q = db.forms_store.id == prev_wfid
+        prev_wf = db(q).select(cacheable=True).first()
+        if prev_wf.form_next_id is not None:
+            log.append((0, "form.store",
+                        "This step is already completed (id=%(id)d)",
+                        dict(id=prev_wf.id)))
+            return log
+
+        if form_assignee is None:
+            form_assignee = user_primary_group()
+        if form_assignee is None:
+            form_assignee = prev_wf.form_submitter
+        if form_assignee is None:
+            form_assignee = user_name()
+
+        head_id = int(prev_wfid)
+        max_iter = 100
+        iter = 0
+        while iter < max_iter:
+            iter += 1
+            q = db.forms_store.id == head_id
+            row = db(q).select(cacheable=True).first()
+            if row is None:
+                break
+            if row.form_prev_id is None:
+                head = row
+                break
+            head_id = row.form_prev_id
+
+        record_id = db.forms_store.insert(
+          form_md5=form_md5,
+          form_submitter=user_name(),
+          form_assignee=form_assignee,
+          form_submit_date=now,
+          form_prev_id=prev_wfid,
+          form_next_id=next_id,
+          form_head_id=head_id,
+          form_data=d,
+          form_scripts=json.dumps(_scripts),
+        )
+        table_modified("forms_store")
+        if record_id is not None:
+            q = db.forms_store.id == prev_wfid
+            db(q).update(form_next_id=record_id)
+        if next_id != 0:
+            log.append((0, "form.store", "Workflow %(head_id)d step %(form_name)s added with id %(id)d",
+                        dict(form_name=form.form_name, head_id=head_id, id=record_id)))
+        else:
+            log.append((0, "form.store", "Workflow %(head_id)d closed on last step %(form_name)s with id %(id)d",
+                        dict(form_name=form.form_name, head_id=head_id, id=record_id)))
+        q = db.workflows.form_head_id == head_id
+        wfrow = db(q).select(cacheable=True).first()
+        if wfrow is None:
+            # should not happen ... recreate the workflow
+            db.workflows.insert(
+              status=status,
+              form_md5=form_md5,
+              steps=iter+1,
+              last_assignee=form_assignee,
+              last_update=now,
+              last_form_id=record_id,
+              last_form_name=form.form_name,
+              form_head_id=head_id,
+              creator=head.form_submitter,
+              create_date=head.form_submit_date,
+            )
+        else:
+            db(q).update(
+              status=status,
+              steps=iter+1,
+              last_assignee=form_assignee,
+              last_form_id=record_id,
+              last_form_name=form.form_name,
+              last_update=now,
+            )
+        table_modified("workflows")
+    else:
+        # new workflow
+        if form_assignee is None:
+            form_assignee = user_primary_group()
+            if form_assignee is None:
+                form_assignee = user_name()
+        record_id = db.forms_store.insert(
+          form_md5=form_md5,
+          form_submitter=user_name(),
+          form_assignee=form_assignee,
+          form_submit_date=datetime.datetime.now(),
+          form_data=d,
+          form_scripts=json.dumps(_scripts),
+        )
+        table_modified("forms_store")
+        if record_id is not None:
+            q = db.forms_store.id == record_id
+            db(q).update(form_head_id=record_id)
+        log.append((0, "form.store", "New workflow %(form_name)s created with id %(id)d", dict(form_name=form.form_name, id=record_id)))
+
+        db.workflows.insert(
+          status=status,
+          form_md5=form_md5,
+          steps=1,
+          last_assignee=form_assignee,
+          last_update=now,
+          last_form_id=record_id,
+          last_form_name=form.form_name,
+          form_head_id=record_id,
+          creator=user_name(),
+          create_date=now,
+        )
+        table_modified("workflows")
+
+    if next_id != 0 and output.get('Mail', False):
+        log += output_mail(output, form_definition, form, to=form_assignee, record_id=record_id, _d=_d, form_html=form_html)
+
+    db.commit()
+    return log
+
+def output_db(output, form_definition, _d=None):
+    log = []
+    output['Type'] = 'object'
+    output['Format'] = 'dict'
+    d = get_form_formatted_data(output, form_definition, _d)
+    if 'Table' not in output:
+        log.append((1, "form.submit", "Table must be set in db type Output", dict()))
+        return log
+    table = output['Table']
+    if table not in db:
+        log.append((1, "form.submit", "Table %(t)s not found", dict(t=table)))
+        return log
+
+    # purge keys not present in table as columns
+    keys = d.keys()
+    for key in keys:
+        if key not in db[table]:
+            del(d[key])
+
+    try:
+        db[table].insert(**d)
+        table_modified(table)
+        log.append((0, "form.submit", "Data inserted in database table", dict()))
+    except Exception, e:
+        log.append((1, "form.submit", "Data insertion in database table error: %(err)s", dict(err=str(e))))
+    return log
+
+
+def output_rest(output, form_definition, _d=None, _results=None):
+    import re
+    import gluon.contrib.simplejson as sjson
+
+    log = []
+    d = get_form_formatted_data(output, form_definition, _d)
+    action = output.get("Handler")
+    url = output.get("Function")
+    mangler = output.get("Mangle")
+    output_id = output.get("Id")
+
+    if url is None:
+        raise Exception("Function must be defined in a rest output")
+    if action not in ("GET", "POST", "DELETE", "PUT"):
+        raise Exception("Handler must be set to either GET, POST, DELETE or PUT in a rest output")
+
+    def get_val(d, v):
+        """
+          Return the nested dict key value for key formatted as a.b.c
+          Example:
+            >>> d = {
+              "a": {
+                "b": {
+                  "c": "foo"
+                }
+              }
+            }
+            >>> get_val(d, "a.b.c")
+            foo
+        """
+        if type(c) == str:
+            v = v.split(".")
+        for key in v:
+            if key not in d:
+                raise ValueError
+            if len(v) == 1:
+                return d[key]
+            return get_val(d[key], v[1:])
+
+    def mangle(mangler, _d):
+        """
+          Run the mangler script in a nodejs vm
+        """
+        import tempfile
+        f = tempfile.NamedTemporaryFile()
+        fname = f.name
+        s = """var mangle = %(mangler)s; var out = mangle(%(data)s, %(results)s); console.log(JSON.stringify(out));""" % dict(
+          mangler=mangler,
+          data=sjson.dumps(_d, default=datetime.datetime.isoformat),
+          results=sjson.dumps(_results, default=datetime.datetime.isoformat),
+        )
+        f.write(s)
+        f.flush()
+        nodejs = config_get("nodejs", "/usr/bin/nodejs")
+        vm2 = config_get("vm2", "/usr/local/bin/vm2")
+        cmd = [nodejs, vm2, fname]
+        import subprocess
+        p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        out, err = p.communicate()
+        f.close()
+        l = [ line for line in out.split("\n") if "[vm] " not in line and line != ""]
+        if len(l) == 0:
+            raise Exception(out)
+        return json.loads('\n'.join(l))
+
+    # prepare the rest url
+    for s in re.findall("#[\.\w]+", url):
+        k = s.lstrip("#")
+        val = get_val(_d, k)
+        url = url.replace(s, val)
+
+    # mangle the form data if a mangler is defined
+    if mangler is None:
+        vars = _d
+    else:
+        vars = mangle(mangler, _d)
+
+    if type(vars) == str:
+        raise Exception("The mangler must not return a str")
+
+
+    # find the rest handler and execute the call
+    handler = get_handler(action, url)
+
+    try:
+        if type(vars) == list:
+            jd = handler.handle_list(vars, url, {})
+        else:
+            jd = handler.handle(url, **vars)
+        if output_id and "data" in jd:
+            _results[output_id] = jd["data"]
+        log.append((
+          0,
+          "form.submit",
+          "Processing rest %(action)s %(url)s\nrequest data:\n%(data)s\nresult:\n%(result)s",
+          dict(
+            action=action,
+            url=url,
+            data=sjson.dumps(vars, indent=4, default=datetime.datetime.isoformat),
+            result=sjson.dumps(jd["data"] if "data" in jd else jd, indent=4, default=datetime.datetime.isoformat),
+          )
+        ))
+    except Exception as e:
+        log.append((
+          1,
+          "form.submit",
+          "Processing rest %(action)s %(url)s\nrequest data:\n%(data)s\nerror:\n%(result)s",
+          dict(
+            action=action,
+            url=url,
+            data=sjson.dumps(vars, indent=4, default=datetime.datetime.isoformat),
+            result=str(e),
+          )
+        ))
+    return log, _results
+
+def output_script(output, form_definition, _d=None, _scripts=None):
+    import os
+    import subprocess
+    log = []
+    d = get_form_formatted_data(output, form_definition, _d)
+    path = output.get('Path')
+    if path is None:
+        log.append((1, "form.submit", "Path must be set in script type Output", dict()))
+        _scripts['returncode'] += 1
+        _scripts[path] = {
+          'path': path,
+          'returncode': 1,
+          'stdout': "",
+          'stderr': "Path must be set in script type Output",
+        }
+        return log, _scripts
+    if not os.path.exists(path):
+        log.append((1, "form.submit", "Script %(path)s does not exists", dict(path=path)))
+        _scripts['returncode'] += 1
+        _scripts[path] = {
+          'path': path,
+          'returncode': 1,
+          'stdout': "",
+          'stderr': "Script %(path)s does not exists"%dict(path=path),
+        }
+        return log, _scripts
+    try:
+        p = subprocess.Popen([path, d], stdout=subprocess.PIPE,
+                                        stderr=subprocess.PIPE)
+        out, err = p.communicate()
+    except Exception as e:
+        log.append((1, "form.submit", "Script %(path)s execution error: %(err)s", dict(path=path, err=str(e))))
+        _scripts['returncode'] += 1
+        _scripts[path] = {
+          'path': path,
+          'returncode': 1,
+          'stdout': "",
+          'stderr': "Script %(path)s execution error: %(err)s" % dict(path=path, err=str(e))
+        }
+        return log, _scripts
+
+    _scripts['returncode'] += p.returncode
+    _scripts[path] = {
+      'path': path,
+      'returncode': p.returncode,
+      'stdout': out,
+      'stderr': err,
+    }
+    msg = out
+    if len(err) > 0:
+        msg += err
+    if p.returncode != 0:
+        log.append((1, "form.submit", "Script %(path)s returned with error:\n%(err)s", dict(path=path, err=msg)))
+        return log, _scripts
+    log.append((0, "form.submit", "Script %(path)s returned on success:\n%(out)s", dict(path=path, out=msg)))
+    return log, _scripts
+
+def workflow_continuation(form_definition, prev_wfid):
+    for output in form_definition.get('Outputs', []):
         if output.get('Dest') == 'workflow':
             if prev_wfid is not None and prev_wfid != 'None':
                 # workflow continuation
                 q = db.forms_store.id == prev_wfid
                 prev_wf = db(q).select(cacheable=True).first()
                 if prev_wf.form_next_id is not None:
-                    log.append((1, "form.store",  "This step is already completed (id=%(id)d)", dict(id=prev_wf.id)))
-                    return log
+                    return True
+    return False
 
-    record_id = None
-    for output in ordered_outputs(data):
+def form_submit(form, form_definition, _d=None, form_html=None, prev_wfid=None):
+    """
+      Used by the PUT /forms/<id> handler to perform the server-side outputs
+    """
+    log = []
+    _restcalls = {}
+    _scripts = {'returncode': 0}
+
+    if workflow_continuation(form_definition, prev_wfid):
+        log.append((1, "form.store",  "This step is already completed (id=%(id)d)", dict(id=prev_wf.id)))
+        return log
+
+    for output in ordered_outputs(form_definition):
         try:
-            chkcond = check_output_condition(output, form, data, _d)
+            chkcond = check_output_condition(output, form, form_definition, _d)
         except Exception as e:
             log.append((1, "form.submit", str(e), dict()))
             continue
+
         if not chkcond:
             continue
+
         dest = output.get('Dest')
-        if dest == "db":
-            output['Type'] = 'object'
-            output['Format'] = 'dict'
-            try:
-                d = get_form_formatted_data(output, data, _d)
-            except Exception, e:
-                log.append((1, "form.submit", str(e), dict()))
-                break
-            if 'Table' not in output:
-                log.append((1, "form.submit", "Table must be set in db type Output", dict()))
-                continue
-            table = output['Table']
-            if table not in db:
-                log.append((1, "form.submit", "Table %(t)s not found", dict(t=table)))
-                continue
 
-            # purge keys not present in table as columns
-            keys = d.keys()
-            for key in keys:
-                if key not in db[table]:
-                    del(d[key])
-
-            try:
-                db[table].insert(**d)
-                table_modified(table)
-                log.append((0, "form.submit", "Data inserted in database table", dict()))
-            except Exception, e:
-                log.append((1, "form.submit", "Data insertion in database table error: %(err)s", dict(err=str(e))))
-        elif dest == "compliance fix":
-            if record_id is None:
-                log.append((1, "form.submit", "Can not execute the 'compliance fix' without a valid workflow", dict()))
-                continue
-            modsets = data.get("Modulesets", [])
-            if len(modsets) == 0:
-                log.append((1, "form.submit", "'Modulesets' must be specified in the form definition for the 'compliance fix' output", dict()))
-                continue
-            if __var_id is not None:
-                q = db.comp_rulesets_variables.id == __var_id
-                q &= db.comp_rulesets_variables.ruleset_id == db.comp_rulesets.id
-                if "Manager" not in user_groups():
-                    q &= db.comp_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
-                    q &= db.comp_ruleset_team_responsible.group_id.belongs(user_group_ids())
-                row = db(q).select(db.comp_rulesets.ruleset_name, cacheable=True).first()
-                if row is None:
-                    log.append((1, "form.submit", "Unable to retrieve compliance variable %(var_id)s ruleset name", dict(var_id=__var_id)))
-                    continue
-                rset_name = row.ruleset_name
-                if rset_name.startswith('svc.'):
-                    svc_id = rset_name.replace('svc.', '')
-                elif rset_name.startswith('node.'):
-                    node_id = rset_name.replace('node.', '')
-                else:
-                    log.append((1, "form.submit", "Unable to deduce service or node_id from ruleset name %(rset_name)s", dict(rset_name=rset_name)))
-                    continue
-            if node_id is None and svc_id is None:
-                log.append((1, "form.submit", "No node_id nor svc_id specified to 'compliance fix' output handler", dict()))
-                continue
-            nodes = [node_id]
-            if node_id is None and svc_id is not None:
-                q = db.svcmon.svc_id == svc_id
-                rows = db(q).select(db.svcmon.node_id, cacheable=True)
-                if len(rows) == 0:
-                    log.append((1, "form.submit", "No nodes found running service %(svcname)s", dict(svcname=get_svcname(svc_id))))
-                    continue
-                nodes = [r.node_id for r in rows]
-
-            _scripts['async'] = len(nodes)
-            q = db.forms_store.id == record_id
-            db(q).update(form_scripts=json.dumps(_scripts))
-
-            for node_id in nodes:
-                q = db.nodes.node_id == node_id
-                row = db(q).select(db.nodes.os_name, db.nodes.fqdn, cacheable=True).first()
-                if row is None:
-                    log.append((1, "form.submit", "No asset information found for node %(node_id)s", dict(node_id=node_id)))
-                    continue
-                fmt_action(node_id,
-                           svc_id,
-                           "check",
-                           action_type,
-                           modset=modsets)
-            log.append((0, "form.submit", "Compliance fix commands queued for asynchronous execution on %(nodes)s", dict(nodes=', '.join(nodes))))
-        elif dest == "script":
-            import os
-            import subprocess
-            try:
-                d = get_form_formatted_data(output, data, _d)
-            except Exception, e:
-                log.append((1, "form.submit", str(e), dict()))
-                break
-            path = output.get('Path')
-            if path is None:
-                log.append((1, "form.submit", "Path must be set in script type Output", dict()))
-                _scripts['returncode'] += 1
-                _scripts[path] = {
-                  'path': path,
-                  'returncode': 1,
-                  'stdout': "",
-                  'stderr': "Path must be set in script type Output",
-                }
-                continue
-            if not os.path.exists(path):
-                log.append((1, "form.submit", "Script %(path)s does not exists", dict(path=path)))
-                _scripts['returncode'] += 1
-                _scripts[path] = {
-                  'path': path,
-                  'returncode': 1,
-                  'stdout': "",
-                  'stderr': "Script %(path)s does not exists"%dict(path=path),
-                }
-                continue
-            try:
-                p = subprocess.Popen([path, d], stdout=subprocess.PIPE,
-                                                stderr=subprocess.PIPE)
-                out, err = p.communicate()
-            except Exception as e:
-                log.append((1, "form.submit", "Script %(path)s execution error: %(err)s", dict(path=path, err=str(e))))
-                _scripts['returncode'] += 1
-                _scripts[path] = {
-                  'path': path,
-                  'returncode': 1,
-                  'stdout': "",
-                  'stderr': "Script %(path)s execution error: %(err)s" % dict(path=path, err=str(e))
-                }
-                continue
-
-            _scripts['returncode'] += p.returncode
-            _scripts[path] = {
-              'path': path,
-              'returncode': p.returncode,
-              'stdout': out,
-              'stderr': err,
-            }
-            msg = out
-            if len(err) > 0:
-                msg += err
-            if p.returncode != 0:
-                log.append((1, "form.submit", "Script %(path)s returned with error:\n%(err)s", dict(path=path, err=msg)))
-                continue
-            log.append((0, "form.submit", "Script %(path)s returned on success:\n%(out)s", dict(path=path, out=msg)))
-        elif dest == "mail":
-            log += mail_form(output, data, form, _d=_d, form_html=form_html)
-        elif dest == "workflow":
-            try:
-                d = get_form_formatted_data(output, data, _d)
-            except Exception, e:
-                log.append((1, "form.submit", str(e), dict()))
-                break
-
-            form_md5 = insert_form_md5(form)
-
-            if output.get('Scripts') is not None:
-                if _scripts['returncode'] == 0:
-                    script_defs = output['Scripts'].get('Success')
-                else:
-                    script_defs = output['Scripts'].get('Error')
-
-                if 'async' in _scripts:
-                    next_forms = ['to be determined']
-                    form_assignee = None
-                elif script_defs is None:
-                    next_forms = None
-                    form_assignee = None
-                else:
-                    next_forms = script_defs.get('NextForms')
-                    form_assignee = script_defs.get('NextAssignee')
-            else:
-                next_forms = output.get('NextForms')
-                form_assignee = output.get('NextAssignee')
-
-            if next_forms is None or len(next_forms) == 0:
-                next_id = 0
-                status = "closed"
-            else:
-                next_id = None
-                status = "pending"
-
-            now = datetime.datetime.now()
-
-            if prev_wfid is not None and prev_wfid != 'None':
-                # workflow continuation
-                q = db.forms_store.id == prev_wfid
-                prev_wf = db(q).select(cacheable=True).first()
-                if prev_wf.form_next_id is not None:
-                    log.append((0, "form.store",
-                                "This step is already completed (id=%(id)d)",
-                                dict(id=prev_wf.id)))
-                    continue
-
-                if form_assignee is None:
-                    form_assignee = user_primary_group()
-                if form_assignee is None:
-                    form_assignee = prev_wf.form_submitter
-                if form_assignee is None:
-                    form_assignee = user_name()
-
-                head_id = int(prev_wfid)
-                max_iter = 100
-                iter = 0
-                while iter < max_iter:
-                    iter += 1
-                    q = db.forms_store.id == head_id
-                    row = db(q).select(cacheable=True).first()
-                    if row is None:
-                        break
-                    if row.form_prev_id is None:
-                        head = row
-                        break
-                    head_id = row.form_prev_id
-
-                record_id = db.forms_store.insert(
-                  form_md5=form_md5,
-                  form_submitter=user_name(),
-                  form_assignee=form_assignee,
-                  form_submit_date=now,
-                  form_prev_id=prev_wfid,
-                  form_next_id=next_id,
-                  form_head_id=head_id,
-                  form_data=d,
-                  form_scripts=json.dumps(_scripts),
-                  form_var_id=__var_id,
-                )
-                table_modified("forms_store")
-                if record_id is not None:
-                    q = db.forms_store.id == prev_wfid
-                    db(q).update(form_next_id=record_id)
-                if next_id != 0:
-                    log.append((0, "form.store", "Workflow %(head_id)d step %(form_name)s added with id %(id)d",
-                                dict(form_name=form.form_name, head_id=head_id, id=record_id)))
-                else:
-                    log.append((0, "form.store", "Workflow %(head_id)d closed on last step %(form_name)s with id %(id)d",
-                                dict(form_name=form.form_name, head_id=head_id, id=record_id)))
-                q = db.workflows.form_head_id == head_id
-                wfrow = db(q).select(cacheable=True).first()
-                if wfrow is None:
-                    # should not happen ... recreate the workflow
-                    db.workflows.insert(
-                      status=status,
-                      form_md5=form_md5,
-                      steps=iter+1,
-                      last_assignee=form_assignee,
-                      last_update=now,
-                      last_form_id=record_id,
-                      last_form_name=form.form_name,
-                      form_head_id=head_id,
-                      creator=head.form_submitter,
-                      create_date=head.form_submit_date,
-                    )
-                else:
-                    db(q).update(
-                      status=status,
-                      steps=iter+1,
-                      last_assignee=form_assignee,
-                      last_form_id=record_id,
-                      last_form_name=form.form_name,
-                      last_update=now,
-                    )
-                table_modified("workflows")
-            else:
-                # new workflow
-                if form_assignee is None:
-                    form_assignee = user_primary_group()
-                    if form_assignee is None:
-                        form_assignee = user_name()
-                record_id = db.forms_store.insert(
-                  form_md5=form_md5,
-                  form_submitter=user_name(),
-                  form_assignee=form_assignee,
-                  form_submit_date=datetime.datetime.now(),
-                  form_data=d,
-                  form_scripts=json.dumps(_scripts),
-                  form_var_id=__var_id,
-                )
-                table_modified("forms_store")
-                if record_id is not None:
-                    q = db.forms_store.id == record_id
-                    db(q).update(form_head_id=record_id)
-                log.append((0, "form.store", "New workflow %(form_name)s created with id %(id)d", dict(form_name=form.form_name, id=record_id)))
-
-                db.workflows.insert(
-                  status=status,
-                  form_md5=form_md5,
-                  steps=1,
-                  last_assignee=form_assignee,
-                  last_update=now,
-                  last_form_id=record_id,
-                  last_form_name=form.form_name,
-                  form_head_id=record_id,
-                  creator=user_name(),
-                  create_date=now,
-                )
-                table_modified("workflows")
-
-            if next_id != 0 and output.get('Mail', False):
-                log += mail_form(output, data, form, to=form_assignee, record_id=record_id, _d=_d, form_html=form_html)
-
-            db.commit()
-
-        elif dest == "compliance variable":
-            r = ajax_custo_form_submit(output, data)
-            if type(r) == dict:
-                __log = r.get("log")
-                __err = r.get("err")
-                __var_id = r.get("var_id")
-            else:
-                __log = r
-                __err = None
-                __var_id = var_id
-            log += __log
-            if __err == "break":
-                break
-
-        elif dest == "compliance variable delete":
-            if __var_id is not None:
-                q = db.comp_rulesets_variables.id == __var_id
-                skip = False
-                if "Manager" not in user_groups():
-                    q1 = db.comp_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
-                    q1 &= db.comp_ruleset_team_responsible.group_id.belongs(user_group_ids())
-                    if db(q&q1).count() == 0:
-                        skip = True
-                if not skip:
-                    db(q).delete()
-                    table_modified("comp_rulesets_variables")
-                    log.append((0, "", "Compliance variable %(id)s deleted", dict(id=__var_id)))
-                else:
-                    log.append((0, "", "Compliance variable %(id)s not deleted: not owner", dict(id=__var_id)))
+        try:
+            if dest == "db":
+                log += output_db(output, form_definition, _d=_d)
+            elif dest == "script":
+                ret_log, _scripts = output_script(output, form_definition, _d, _scripts)
+                log += ret_log
+            elif dest == "rest":
+                ret_log, _restcalls = output_rest(output, form_definition, _d, _restcalls)
+                log += ret_log
+            elif dest == "mail":
+                log += output_mail(output, form_definition, form, _d=_d, form_html=form_html)
+            elif dest == "workflow":
+                log += output_workflow(output, form_definition, form, _d=_d, form_html=form_html, prev_wfid=prev_wfid, _scripts=_scripts)
+        except Exception, e:
+            log.append((1, "form.submit", str(e), dict()))
+            break
 
     for ret, action, fmt, d in log:
-        _log(action, fmt, d)
+        if ret == 0:
+            level = "info"
+        else:
+            level = "error"
+        _log(action, fmt, d, level=level)
 
     return log
 

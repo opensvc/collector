@@ -83,9 +83,12 @@ token_quota = 150000
 default_quota_app = 1
 default_quota_org_group = 3
 
-
+# billing tunables
 billing_method = "agents"
 
+# callouts
+nodejs = "/usr/bin/nodejs"
+vm2 = "/usr/local/bin/vm2"
 
 #
 # DataCore SAN symphony config
