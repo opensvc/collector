@@ -98,6 +98,14 @@ function sysrep(divid, options) {
 		// Handle max lines
 		var max_fpath = 5
 		for (i=0; i<data.length; i++) {
+			if (!("summary" in data[i])) {
+				// git-filter allows to purge a file from the history.
+				// In this case, some commits might end up empty. We don't
+				// want to display those.
+				data.splice(i, 1)
+				i -= 1
+				continue
+			}
 			data[i].start = moment.tz(data[i].start, osvc.server_timezone)
 			if (data[i].stat.length > max_fpath) {
 				var lastline = data[i].stat.length - max_fpath
@@ -110,6 +118,7 @@ function sysrep(divid, options) {
 			}
 			data[i].stat = data[i].stat.slice(0, 1)
 		}
+
 
 		// Configuration for the Timeline
 		var options = {
