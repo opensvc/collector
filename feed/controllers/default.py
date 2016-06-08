@@ -886,12 +886,14 @@ def tag_allowed(node_id=None, svc_id=None, tag_name=None):
         q = db.node_tags.node_id == node_id
         q &= db.node_tags.tag_id == db.tags.id
         q &= db.tags.tag_exclude != None
+        q &= db.tags.tag_exclude != ""
         rows = db(q).select(db.tags.tag_exclude,
                             groupby=db.tags.tag_exclude)
     elif svcname:
         q = db.svc_tags.svcname == svcname
         q &= db.svc_tags.tag_id == db.tags.id
         q &= db.tags.tag_exclude != None
+        q &= db.tags.tag_exclude != ""
         rows = db(q).select(db.tags.tag_exclude,
                             groupby=db.tags.tag_exclude)
     if len(rows) == 0:

@@ -6,6 +6,36 @@ def get_tag_name(tagid):
         raise Exception({"error": "tag does not exist"})
     return tag_name
 
+def tag_allowed(node_id=None, svc_id=None, tag_name=None):
+    if node_id is None and svcname is None:
+        return False
+    if tag_name is None:
+        return False
+    if node_id:
+        q = db.node_tags.node_id == node_id
+        q &= db.node_tags.tag_id == db.tags.id
+        q &= db.tags.tag_exclude != None
+        q &= db.tags.tag_exclude != ""
+        rows = db(q).select(db.tags.tag_exclude,
+                            groupby=db.tags.tag_exclude)
+    elif svcname:
+        q = db.svc_tags.svcname == svcname
+        q &= db.svc_tags.tag_id == db.tags.id
+        q &= db.tags.tag_exclude != None
+        q &= db.tags.tag_exclude != ""
+        rows = db(q).select(db.tags.tag_exclude,
+                            groupby=db.tags.tag_exclude)
+    if len(rows) == 0:
+        return True
+
+    pattern = '|'.join([r.tag_exclude for r in rows])
+    q = db.tags.tag_name == tag_name
+    qx = _where(None, "tags", pattern, "tag_name")
+    q &= ~qx
+    if db(q).count() == 0:
+        return False
+    return True
+
 def lib_tag_detach_node(tagid, node_id):
     node_responsible(node_id=node_id)
     tag_name = get_tag_name(tagid)
@@ -59,6 +89,9 @@ def lib_tag_attach_node(tagid, node_id):
     q = q_filter(q, node_field=db.node_tags.node_id)
     if db(q).count() == 1:
         return dict(info="tag '%s' already attached to node '%s'" % (tag_name, get_nodename(node_id)))
+    if not tag_allowed(tag_name=tag_name, node_id=node_id):
+        return dict(error="tag '%s' is not compatible with other tags attached to node '%s'" % (tag_name, get_nodename(node_id)))
+
     db.node_tags.insert(tag_id=tagid, node_id=node_id)
     table_modified("node_tags")
     _log("node.tag",
@@ -88,6 +121,8 @@ def lib_tag_attach_service(tagid, svc_id):
     q = q_filter(q, svc_field=db.svc_tags.svc_id)
     if db(q).count() == 1:
         return dict(info="tag '%s' already attached to service '%s'" % (tag_name, svc_id))
+    if not tag_allowed(tag_name=tag_name, svc_id=svc_id):
+        return dict(error="tag '%s' is not compatible with other tags attached to node '%s'" % (tag_name, get_nodename(node_id)))
     db.svc_tags.insert(tag_id=tagid, svc_id=svc_id)
     table_modified("svc_tags")
     _log("service.tag",
