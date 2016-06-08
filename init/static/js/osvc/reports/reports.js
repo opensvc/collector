@@ -485,7 +485,7 @@ function reports(divid, options)
 		report("reports_data", {"report_id": report_id})
 	}
 
-	o.div.load("/init/static/views/reports.html", function() {
+	o.div.load("/init/static/views/reports.html?v="+osvc.code_rev, function() {
 		o.init()
 	})
 

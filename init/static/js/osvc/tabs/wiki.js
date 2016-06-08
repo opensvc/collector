@@ -137,7 +137,7 @@ function wiki(divid, options) {
 		o.wiki_load()
 	}
 
-	o.div.load('/init/static/views/wiki.html', "", function() {
+	o.div.load('/init/static/views/wiki.html?v='+osvc.code_rev, function() {
 		o.init()
 		o.div.i18n()
 	})

@@ -94,7 +94,7 @@ function array_properties(divid, options) {
 		cell_decorator_size_mb(o.info_array_cache)
 	}
 
-	o.div.load("/init/static/views/array_properties.html", function() {
+	o.div.load("/init/static/views/array_properties.html?v="+osvc.code_rev, function() {
 		o.div.i18n()
 		o.init()
 	})

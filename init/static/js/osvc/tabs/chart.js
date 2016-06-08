@@ -107,7 +107,7 @@ function chart_properties(divid, options) {
 		})
 	}
 
-	o.div.load("/init/static/views/chart_properties.html", function() {
+	o.div.load("/init/static/views/chart_properties.html?v="+osvc.code_rev, function() {
 		o.div.i18n()
 		o.init()
 	})

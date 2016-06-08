@@ -13,7 +13,7 @@ function requests(divid, options) {
 		o.current_folder = []
 	}
 
-	o.div.load("/init/static/views/requests.html", function() {
+	o.div.load("/init/static/views/requests.html?v="+osvc.code_rev, function() {
 		o.div.i18n()
 		o.e_search = o.div.find("#form_search")
 		o.e_list = o.div.find("#forms_list")
@@ -244,7 +244,7 @@ function workflow(divid, options) {
 	o.options = options
 	o.div = $("#"+divid)
 
-	o.div.load("/init/static/views/workflow.html", function() {
+	o.div.load("/init/static/views/workflow.html?v="+osvc.code_rev, function() {
 		o.div.i18n()
 		o.e_form = o.div.find("[name=form]")
 		o.e_form_next = o.div.find("[name=form_next]")

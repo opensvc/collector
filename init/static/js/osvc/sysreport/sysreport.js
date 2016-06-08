@@ -398,7 +398,7 @@ function sysrep(divid, options) {
 			}
 		})
 	}
-	o.div.load('/init/static/views/sysreport.html', "", function() {
+	o.div.load('/init/static/views/sysreport.html?v='+osvc.code_rev, function() {
 		o.sysrep_init()
 		o.sysrep_timeline()
 	})
@@ -795,7 +795,7 @@ function sysrepdiff(divid, options)
 	o.sysrep_admin_allow_handle = function(tid, func){
 		return sysrep_admin_allow_handle(this, tid, func)
 	}
-	o.div.load('/init/static/views/sysreport_diff.html', "", function() {
+	o.div.load('/init/static/views/sysreport_diff.html?v='+osvc.code_rev, function() {
 		o.sysrep_init()
 		o.sysrep_diff()
 	})

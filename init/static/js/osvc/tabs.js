@@ -10,7 +10,7 @@ function tabs(divid) {
 	o.tabs = []
 
 	o.load = function(callback) {
-		o.div.load('/init/static/views/tabs.html', "", function() {
+		o.div.load('/init/static/views/tabs.html?v='+osvc.code_rev, "", function() {
 			o.init()
 			callback(o)
 		})

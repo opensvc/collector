@@ -168,7 +168,7 @@ function app_properties(divid, options) {
 		})
 	}
 
-	o.div.load("/init/static/views/app_properties.html", function() {
+	o.div.load("/init/static/views/app_properties.html?v="+osvc.code_rev, function() {
 		o.div.i18n()
 		o.init()
 	})

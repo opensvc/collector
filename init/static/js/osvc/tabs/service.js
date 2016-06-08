@@ -231,7 +231,7 @@ function service_env(divid, options)
 	o.div = $("#"+divid)
 
 	o.init = function() {
-		o.div.load('/init/static/views/service_env.html', "", function() {
+		o.div.load('/init/static/views/service_env.html?v='+osvc.code_rev, function() {
 			o._init()
 		})
 	}
@@ -432,7 +432,7 @@ function service_properties(divid, options)
 		e.html("<div class='status_icon icon nowrap icon-"+t[c]+"'>"+v+"</div>")
 	}
 
-	o.div.load('/init/static/views/service_properties.html', "", function() {
+	o.div.load('/init/static/views/service_properties.html?v='+osvc.code_rev, function() {
 		o.div = o.div.children()
 		o.div.uniqueId()
 		o.init()

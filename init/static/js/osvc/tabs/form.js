@@ -140,7 +140,7 @@ function form_properties(divid, options) {
 
 	}
 
-	o.div.load("/init/static/views/form_properties.html", function() {
+	o.div.load("/init/static/views/form_properties.html?v="+osvc.code_rev, function() {
 		o.div.i18n()
 		o.init()
 	})

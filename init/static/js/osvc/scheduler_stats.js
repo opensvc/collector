@@ -97,7 +97,7 @@ function scheduler_stats(divid) {
 	}
 
 	require(["jqplot"], function() {
-		o.div.load("/init/static/views/scheduler_stats.html", function() {
+		o.div.load("/init/static/views/scheduler_stats.html?v="+osvc.code_rev, function() {
 			o.div.i18n()
 			o.e_queue = $("[name=queue]")
 			o.e_queue.uniqueId()

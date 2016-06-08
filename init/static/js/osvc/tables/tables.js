@@ -634,7 +634,7 @@ function comp_status_agg(divid, options) {
 
 function view_comp_status(divid, options) {
 	var o = {}
-	$("#"+divid).load("/init/static/views/comp_status.html", function() {
+	$("#"+divid).load("/init/static/views/comp_status.html?v="+osvc.code_rev, function() {
 		$(this).i18n()
 		var t = table_comp_status("cs0", options)
 		t.options.on_change = function() {
@@ -836,7 +836,7 @@ function table_disks(divid, options) {
 
 function view_disks(divid, options) {
 	var o = {}
-	$("#"+divid).load("/init/static/views/disks.html", function() {
+	$("#"+divid).load("/init/static/views/disks.html?v="+osvc.code_rev, function() {
 		$(this).i18n()
 		table_disks("disks", options)
 		table_disks_charts("charts", options)
@@ -951,7 +951,7 @@ function table_dns_domains(divid, options) {
 
 function view_dns(divid, options) {
 	var o = {}
-	$("#"+divid).load("/init/static/views/dns.html", function() {
+	$("#"+divid).load("/init/static/views/dns.html?v="+osvc.code_rev, function() {
 		$(this).i18n()
 		table_dns_domains("dnsddiv", options)
 		table_dns_records("dnsrdiv", options)
@@ -1261,7 +1261,7 @@ function table_nodes(divid, options) {
 
 function view_nodes(divid, options) {
 	var o = {}
-	$("#"+divid).load("/init/static/views/nodes.html", function() {
+	$("#"+divid).load("/init/static/views/nodes.html?v="+osvc.code_rev, function() {
 		$(this).i18n()
 		table_nodes("nodes_container", options)
 		$("#uids_a").bind("click", function() {
@@ -1694,7 +1694,7 @@ function view_saves(divid, options) {
 	o.divid = divid
 	o.div = $("#"+divid)
 
-	o.div.load("/init/static/views/saves.html", function() {
+	o.div.load("/init/static/views/saves.html?v="+osvc.code_rev, function() {
 		o.div.i18n()
 		table_saves("saves_div", options)
 		table_saves_charts("stats_div", options)

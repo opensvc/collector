@@ -365,6 +365,7 @@ function load_user() {
 	services_osvcgetrest("/users/self/dump", "", "", function(jd) {
 		_self = jd.user[0]
 		_groups = jd.groups
+		osvc.code_rev = jd.code_rev
 		osvc.server_timezone = jd.server_timezone
 		osvc.client_timezone = moment.tz.guess()
 		osvc.table_settings = table_settings()

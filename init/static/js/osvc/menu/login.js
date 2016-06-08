@@ -6,7 +6,7 @@ function login(divid) {
 	o.divid = divid
 	o.div = $("#"+divid)
 
-	o.div.load("/init/static/views/login.html", function() {
+	o.div.load("/init/static/views/login.html?v="+osvc.code_rev, function() {
 		o.init()
 		o.login_menu_top.show()
 	})
@@ -47,7 +47,7 @@ function nlogin(divid) {
 	o.div = $("#" + divid)
  
 	i18n_init(function () {
-		o.div.load("/init/static/views/login.html", function() {
+		o.div.load("/init/static/views/login.html?v="+osvc.code_rev, function() {
 			o.div.nlogin_div = $("#login_menu_top_not")
 			o.div.login_clickable = $("#login_help")
 			o.login_div = $("#login_not_login")

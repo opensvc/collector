@@ -19,7 +19,7 @@ function alert_info(divid, options) {
 		return s
 	}
 
-	o.div.load('/init/static/views/alert_info.html', "", function() {
+	o.div.load('/init/static/views/alert_info.html?v='+osvc.code_rev, function() {
 		o.div.i18n()
 		o.e_timeline = o.div.find("[name=timeline]")
 		o.e_wiki = o.div.find("[name=wiki]")

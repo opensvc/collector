@@ -874,7 +874,7 @@ function search(divid) {
 		}
 	}
 
-	o.div.load("/init/static/views/search.html", function() {
+	o.div.load("/init/static/views/search.html?v="+osvc.code_rev, function() {
 		o.init()
 	})
 

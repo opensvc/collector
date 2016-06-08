@@ -49,9 +49,10 @@ function i18n_init(callback) {
 	})
 }
 
-function app_start() {
+function init_requirejs() {
 	require.config({
 		baseUrl: '/init/static/js',
+		urlArgs: 'v='+osvc.code_rev,
 		paths: {
 			"vis": "vis/dist/vis.min",
 			"jquery": "jquery",
@@ -145,8 +146,11 @@ function app_start() {
 			}
 		}
 	})
-	i18n_init()
+}
+
+function app_start() {
 	load_user()
+	i18n_init()
 	osvc.flash = flash()
 
 	// Check if IE and version < 10
@@ -162,6 +166,7 @@ function app_start() {
 		osvc.i18n_started,
 		osvc.user_loaded
 	).then(function() {
+		init_requirejs()
 		osvc.menu = menu("menu_location")
 		osvc.login = login("login_location")
 		osvc.search = search("layout_search_tool")

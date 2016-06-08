@@ -396,7 +396,7 @@ function topology(divid, options) {
 		})
 	}
 
-	o.div.load('/init/static/views/topology.html', "", function() {
+	o.div.load('/init/static/views/topology.html?v='+osvc.code_rev, function() {
 		o.div.i18n()
 		o.viz = o.div.find("#viz")
 		o.link = o.div.find(".link16")

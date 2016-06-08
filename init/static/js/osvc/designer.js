@@ -1715,7 +1715,7 @@ function designer(divid, options) {
 
 
 
-	o.div.load('/init/static/views/designer.html', "", function() {
+	o.div.load('/init/static/views/designer.html?v='+osvc.code_rev, function() {
 		o.init()
 	})
 	return o

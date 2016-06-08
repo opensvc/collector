@@ -77,6 +77,7 @@ class rest_get_user_dump(rest_get_handler):
 
     def handler(self, id, **vars):
         return {
+            "code_rev": code_rev,
             "server_timezone": config_get("server_timezone", "Europe/Paris"),
             "user": rest_get_user().handler(id)["data"],
             "groups": rest_get_user_groups().handler(id, limit=0)["data"],

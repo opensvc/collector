@@ -356,7 +356,7 @@ function node_properties(divid, options)
 		})
 	}
 
-	o.div.load('/init/static/views/node_properties.html', "", function() {
+	o.div.load('/init/static/views/node_properties.html?v='+osvc.code_rev, function() {
 		o.div = o.div.children()
 		o.div.uniqueId()
 		o.init()
@@ -679,7 +679,7 @@ function ips(divid, options)
 		o.ips_load()
 	}
 
-	o.div.load('/init/static/views/network.html', "", function() {
+	o.div.load('/init/static/views/network.html?v='+osvc.code_rev, function() {
 		o.ips_init()
 	})
 

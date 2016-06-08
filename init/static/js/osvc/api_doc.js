@@ -12,7 +12,7 @@ function api_doc(divid, path) {
 	]
 
 	o.init = function() {
-		o.div.load("/init/static/views/api_doc.html", "", function(){
+		o.div.load("/init/static/views/api_doc.html?v="+osvc.code_rev, function(){
 			o.div.i18n()
 			o.substitute_wildcards()
 			o.get()

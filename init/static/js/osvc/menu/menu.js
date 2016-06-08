@@ -441,7 +441,7 @@ function menu(divid) {
 	}
 
 
-	o.div.load("/init/static/views/menu.html", function() {
+	o.div.load("/init/static/views/menu.html?v="+osvc.code_rev, function() {
 		o.div.i18n()
 		$.when(osvc.user_loaded).then(function(){
 			o.store_data(osvc.hidden_menu_entries_stats)

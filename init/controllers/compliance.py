@@ -4325,7 +4325,7 @@ def comp_admin():
                         orderby=db.forms.form_name)
     var_class_names = [row.form_name for row in rows]
 
-    js = """ designer("designer", %(options)s) """ % dict(
+    js = """ $.when(osvc.app_started).then(function(){designer("designer", %(options)s)}) """ % dict(
       options = str({
         "search": request.vars.obj_filter if request.vars.obj_filter else "",
         "search2": request.vars.obj_filter2 if request.vars.obj_filter2 else "",
