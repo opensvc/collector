@@ -188,18 +188,27 @@ function form_definition(divid, options) {
 		var data = {
 			"form_yaml": text
 		}
+		var result = o.div.find("[name=result]")
+		if (result.length == 0) {
+			result = $("<div name='result'></div>")
+			o.div.children().append(result)
+		}
+		result.empty().show()
+		spinner_add(result)
 		services_osvcpostrest("R_FORM", [o.options.form_id], "", data, function(jd) {
+			spinner_del(result)
 			if (jd.error && (jd.error.length > 0)) {
-				osvc.flash.error(services_error_fmt(jd))
+				result.html(services_error_fmt(jd))
 				return
 			}
-			o.init()
+			result.html("<div data-i18n='forms.success' class='ok'></div>").i18n()
+			result.fadeOut(2000)
 
 			// force a new render in the rendering tab
 			o.div.parents(".tab_display").first().find("[name=form_area]").parent().empty()
 		},
 		function(xhr, stat, error) {
-			osvc.flash.error(services_ajax_error_fmt(xhr, stat, error))
+			result.html(services_ajax_error_fmt(xhr, stat, error))
 		})
 	}
 
