@@ -818,6 +818,12 @@
 		"compliance": "compliance",
 		"sysreport": "sysreport"
 	},
+	"sysreport": {
+		"show_authorizations" : "Afficher les autorisations",
+		"show_filters" : "Afficher les outils de filtrage",
+		"hide_authorizations" : "Masquer les autorisations",
+		"hide_filters" : "Masquer les outils de filtrage"
+	},
 	"network" : {
 		"ipv4_u" : "ipv4 unicast",
 		"ipv4_m" : "ipv4 multicast",
@@ -862,6 +868,7 @@
 		"help" : "Survoler un élément pour obtenir les détails"
 	},
 	"link" : {
+		"node_tabs" : "Tabs de noeud",
 		"notfound" : "Lien non trouvé. Il peut avoir expiré, veuillez le régénérer s'il vous plaît.",
 		"sysreport": "Sysreport",
 		"sysrepdiff": "Différences entre sysreports",

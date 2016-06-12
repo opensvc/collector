@@ -3,6 +3,10 @@ function node_tabs(divid, options) {
 	o.options = options
 	o.options.bgcolor = osvc.colors.node
 	o.options.icon = "node16"
+	o.link = {
+		"fn": "node_tabs",
+		"title": "link.node_tabs",
+	}
 	if (!o.options.node_id) {
 		return
 	}
@@ -94,7 +98,15 @@ function node_tabs(divid, options) {
 			"title_class": "icon hd16"
 		})
 		o.tabs[i].callback = function(divid) {
-			sync_ajax("/init/ajax_node/ajax_node_stor/"+divid.replace("-", "_")+"/"+encodeURIComponent(o.options.node_id), [], divid, function(){})
+			sync_ajax("/init/ajax_node/ajax_node_stor/"+divid.replace("-", "_")+"/"+encodeURIComponent(o.options.node_id), [], divid, function(){
+				osvc_tools($("#"+divid), {
+					"link": {
+						"fn": "/init/ajax_node/ajax_node_stor",
+						"parameters": divid.replace("-", "_")+"/"+encodeURIComponent(o.options.node_id),
+						"title": "node_tabs.storage"
+					}
+				})
+			})
 		}
 
 		// tab network
@@ -152,7 +164,15 @@ function node_tabs(divid, options) {
 			"title_class": "icon comp16"
 		})
 		o.tabs[i].callback = function(divid) {
-			sync_ajax("/init/compliance/ajax_compliance_node/"+encodeURIComponent(o.options.node_id), [], divid, function(){})
+			sync_ajax("/init/compliance/ajax_compliance_node/"+encodeURIComponent(o.options.node_id), [], divid, function(){
+				osvc_tools($("#"+divid), {
+					"link": {
+						"fn": "/init/compliance/ajax_compliance_node",
+						"parameters": encodeURIComponent(o.options.node_id),
+						"title": "node_tabs.compliance"
+					}
+				})
+			})
 		}
 
 		// tab sysreport
@@ -176,11 +196,22 @@ function node_properties(divid, options)
 
 	// store parameters
 	o.options = options
+	o.link = {
+		"fn": "node_properties",
+		"title": "link.node_properties"
+	}
 
 	o.div = $("#"+divid)
 
 	o.init = function(){
 		o.div.i18n()
+		osvc_tools($("#"+divid), {
+			"link": {
+				"fn": o.link.fn,
+				"parameters": o.options,
+				"title": o.link.title
+			}
+		})
 		o.e_tags = o.div.find(".tags")
 		o.e_tags.uniqueId()
 
@@ -369,6 +400,10 @@ function node_stats(divid, options) {
 	o.divid = divid
 	o.div = $("#"+divid)
 	o.options = options
+	o.link = {
+		"fn": "node_stats",
+		"title": "link.node_stats"
+	}
 
 	o.init = function() {
 		return node_stats_init(o)
@@ -405,57 +440,64 @@ function node_stats(divid, options) {
 }
 
 function node_stats_init(o) {
-  o.div.i18n()
+	o.div.i18n()
+	osvc_tools(o.div, {
+		"link": {
+			"fn": o.link.fn,
+			"parameters": o.options,
+			"title": o.link.title
+		}
+	})
 
-  // init date inputs
-  o.begin = o.div.find("input[name=begin]")
-  o.end = o.div.find("input[name=end]")
+	// init date inputs
+	o.begin = o.div.find("input[name=begin]")
+	o.end = o.div.find("input[name=end]")
 
-  o.begin.datetimepicker({dateFormat:'yy-mm-dd'})
-  o.end.datetimepicker({dateFormat:'yy-mm-dd'})
-  o.begin.prev().attr("title", i18n.t("node_stats.begin")).tooltipster()
-  o.end.next().attr("title", i18n.t("node_stats.end")).tooltipster()
+	o.begin.datetimepicker({dateFormat:'yy-mm-dd'})
+	o.end.datetimepicker({dateFormat:'yy-mm-dd'})
+	o.begin.prev().attr("title", i18n.t("node_stats.begin")).tooltipster()
+	o.end.next().attr("title", i18n.t("node_stats.end")).tooltipster()
 
-  o.dates_set_now()
+	o.dates_set_now()
 
-  // init buttons
-  o.btn_now = o.div.find("input[name=now]")
-  o.btn_last_day = o.div.find("input[name=last_day]")
-  o.btn_last_week = o.div.find("input[name=last_week]")
-  o.btn_last_month = o.div.find("input[name=last_month]")
-  o.btn_last_year = o.div.find("input[name=last_year]")
+	// init buttons
+	o.btn_now = o.div.find("input[name=now]")
+	o.btn_last_day = o.div.find("input[name=last_day]")
+	o.btn_last_week = o.div.find("input[name=last_week]")
+	o.btn_last_month = o.div.find("input[name=last_month]")
+	o.btn_last_year = o.div.find("input[name=last_year]")
 
-  o.btn_now.attr("value", i18n.t("node_stats.now"))
-  o.btn_last_day.attr("value", i18n.t("node_stats.last_day"))
-  o.btn_last_week.attr("value", i18n.t("node_stats.last_week"))
-  o.btn_last_month.attr("value", i18n.t("node_stats.last_month"))
-  o.btn_last_year.attr("value", i18n.t("node_stats.last_year"))
+	o.btn_now.attr("value", i18n.t("node_stats.now"))
+	o.btn_last_day.attr("value", i18n.t("node_stats.last_day"))
+	o.btn_last_week.attr("value", i18n.t("node_stats.last_week"))
+	o.btn_last_month.attr("value", i18n.t("node_stats.last_month"))
+	o.btn_last_year.attr("value", i18n.t("node_stats.last_year"))
 
-  o.btn_now.bind("click", function() {
-    o.dates_set_now()
-    o.refresh_container_groups()
-  })
-  o.btn_last_day.bind("click", function() {
-    o.dates_set_last_day()
-    o.refresh_container_groups()
-  })
-  o.btn_last_week.bind("click", function() {
-    o.dates_set_last_week()
-    o.refresh_container_groups()
-  })
-  o.btn_last_month.bind("click", function() {
-    o.dates_set_last_month()
-    o.refresh_container_groups()
-  })
-  o.btn_last_year.bind("click", function() {
-    o.dates_set_last_year()
-    o.refresh_container_groups()
-  })
+	o.btn_now.bind("click", function() {
+		o.dates_set_now()
+		o.refresh_container_groups()
+	})
+	o.btn_last_day.bind("click", function() {
+		o.dates_set_last_day()
+		o.refresh_container_groups()
+	})
+	o.btn_last_week.bind("click", function() {
+		o.dates_set_last_week()
+		o.refresh_container_groups()
+	})
+	o.btn_last_month.bind("click", function() {
+		o.dates_set_last_month()
+		o.refresh_container_groups()
+	})
+	o.btn_last_year.bind("click", function() {
+		o.dates_set_last_year()
+		o.refresh_container_groups()
+	})
 
-  // init containers
-  o.div.find(".container").each(function() {
-    o.init_container($(this))
-  })
+	// init containers
+	o.div.find(".container").each(function() {
+		o.init_container($(this))
+	})
 }
 
 function node_stats_dates_set_now(o) {
@@ -591,6 +633,11 @@ function node_stats_refresh_container_group(o, group) {
 function ips(divid, options)
 {
 	var o = {}
+	o.options = options
+	o.link = {
+		"fn": "ips",
+		"title": "link.ips"
+	}
 
 	// store parameters
 	o.divid = divid
@@ -599,6 +646,13 @@ function ips(divid, options)
 	o.node_id = options.node_id
 
 	o.ips_load = function() {
+		osvc_tools(o.div, {
+			"link": {
+				"fn": o.link.fn,
+				"parameters": o.options,
+				"title": o.link.title
+			}
+		})
 		var th = "<tr><th>mac</th><th style='width:7em'>interface</th><th>type</th><th style='width:20em'>addr</th><th style='width:7em'>mask</th><th style='width:10em'>net name</th><th style='width:10em'>net comment</th><th style='width:4em'>net pvid</th><th>net base</th><th style='width:7em'>net gateway</th><th style='width:5em'>net prio</th><th style='width:7em'>net begin</th><th style='width:7em'>net end</th></tr>"
 
 		services_osvcgetrest("R_IPS", [o.node_id],"", function(jd) {

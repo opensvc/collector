@@ -69,7 +69,17 @@ class rest_post_link(rest_post_handler):
             raise Exception("the fn property is mandatory")
         fn = vars['fn']
 
-        param = vars.get("param", "")
+        param = vars.get("param")
+        if param:
+            param = json.dumps(param)
+        else:
+            param = ""
+
+        title_args = vars.get("title_args")
+        if param:
+            title_args = json.dumps(title_args)
+        else:
+            title_args = ""
 
         import hashlib
         hash = hashlib.md5()
@@ -83,7 +93,7 @@ class rest_post_link(rest_post_handler):
             id = db.links.insert(
                 link_function=fn,
                 link_title=vars.get("title", ""),
-                link_title_args=vars.get("title_args", "{}"),
+                link_title_args=title_args,
                 link_parameters=param,
                 link_creation_user_id=auth.user.id,
                 link_creation_date=request.now,

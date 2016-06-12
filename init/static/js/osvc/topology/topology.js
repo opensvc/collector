@@ -3,15 +3,22 @@ function topology(divid, options) {
 	o.divid = divid
 	o.options = options
 	o.div = $("#"+o.divid)
+	o.link = {
+		"fn": "topology",
+		"title": "link.topology"
+	}
 
 	o.init = function() {
+		osvc_tools(o.div, {
+			"link": {
+				"fn": o.link.fn,
+				"parameters": o.options,
+				"title": o.link.title
+			}
+		})
+
 		// button
 		o.button.attr("value", i18n.t("topology.redraw"))
-
-		// link
-		o.link.bind("click", function() {
-			o.create_link()
-		})
 
 		// toggle config
 		o.toggle_config.bind("click", function() {
@@ -34,6 +41,7 @@ function topology(divid, options) {
 
 		// form submit
 		o.div.find("form").bind("submit", function(event) {
+			o.update_options()
 			event.preventDefault()
 			o.config.empty()
 			o.options.display = []
@@ -45,7 +53,7 @@ function topology(divid, options) {
 		o.draw()
 	}
 
-	o.create_link = function() {
+	o.update_options = function() {
 		var display = []
 		o.div.find("input[type=checkbox]").each(function() {
 			if ($(this).is(":checked")) {
@@ -53,14 +61,17 @@ function topology(divid, options) {
 			}
 		})
 		o.options.display = display
-		osvc_create_link("topology", o.options, "link.topology")
 	}
 
 	o.draw = function() {
 		var i = 0
 		url = $(location).attr("origin") + "/init/topo/call/json/json_topo_data"
 		if (o.viz.parents(".overlay").length == 0) {
-			_height = $(window).height()-$(".header").outerHeight()-16
+			_height = $(window).height()
+					-$(".header").outerHeight()
+					-$(".footer").outerHeight()
+					-o.e_title.outerHeight()
+					-24
 			o.viz.height(_height)
 		}
 		$.getJSON(url, o.options, function(_data){
@@ -399,10 +410,10 @@ function topology(divid, options) {
 	o.div.load('/init/static/views/topology.html?v='+osvc.code_rev, function() {
 		o.div.i18n()
 		o.viz = o.div.find("#viz")
-		o.link = o.div.find(".link16")
-		o.button = o.div.find("input[type=submit]")
+		o.button = o.div.find("button[name=submit]")
 		o.toggle_config = o.div.find("[name=configure_toggle]")
 		o.config = o.div.find("[name=configure]")
+		o.e_title = o.div.find("[name=title]")
 		o.init()
 	})
 }

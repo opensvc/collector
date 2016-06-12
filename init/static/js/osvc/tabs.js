@@ -22,6 +22,15 @@ function tabs(divid) {
 		o.tabs_ul = o.closetab.parent()
 		o.display = o.div.find(".tab_display")
 
+		osvc_tools(o.e_tabs, {
+			"close": true,
+			"link": {
+				"fn": o.link ? o.link.fn : null,
+				"parameters": o.options,
+				"title": o.link ? o.link.title : null,
+			}
+		})
+
 		o.closetab
 		.css({"background-color": o.options.bgcolor})
 		.addClass("icon "+o.options.icon)
@@ -43,19 +52,6 @@ function tabs(divid) {
 			}
 		}
 		o.e_tabs.attr("tab_id", tab_id)
-
-		// empty tabs on click closetab
-		o.closetab.bind("click", function() {
-                        $(this).parents(".extraline").first().remove(); // Remove extraline
-			o.div.parent().each(function(){
-				if ($(this).hasClass("flash")) {
-					o.div.empty().removeClass("searchtab")
-					return
-				}
-				$(this).remove()
-				o.div.remove()
-			})
-		})
 	}
 
 	o.register_tab = function(data) {

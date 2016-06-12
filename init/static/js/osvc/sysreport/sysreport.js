@@ -1,5 +1,10 @@
 function sysrep(divid, options) {
 	var o = {}
+	o.options = options
+	o.link = {
+		"fn": "sysrep",
+		"title": "link.sysreport",
+	}
 
 	// store parameters
 	o.divid = divid
@@ -246,9 +251,6 @@ function sysrep(divid, options) {
 	o.sysrep_getparams = function(){
 		return sysrep_getparams(this)
 	}
-	o.sysrep_createlink = function(){
-		return osvc_create_link("sysrep", options, "link.sysreport")
-	}
 	o.sysrep_on_change_filters = function(){
 		o.sysrep_timeline()
 	}
@@ -450,8 +452,12 @@ function sysrep_init(o)
 	o.filter_begin.datetimepicker({dateFormat:'yy-mm-dd'})
 	o.filter_end.datetimepicker({dateFormat:'yy-mm-dd'})
 
-	o.ql_link.bind("click", function() { 
-		o.sysrep_createlink()
+	osvc_tools(o.div, {
+		"link": {
+			"fn": o.link.fn,
+			"parameters": o.options,
+			"title": o.link.title
+		}
 	})
 
 	o.ql_filter.on("click", function() {
@@ -658,6 +664,11 @@ function sysrep_admin_allow_handle(o, tid, func) {
 function sysrepdiff(divid, options)
 {
 	var o = {}
+	o.options = options
+	o.link = {
+		"fn": "sysrepdiff",
+		"title": "link.sysrepdiff",
+	}
 
 	// store parameters
 	o.divid = divid
@@ -779,9 +790,6 @@ function sysrepdiff(divid, options)
 	}
 	o.sysrep_on_change_filters = function(){
 		return o.sysrep_diff()
-	}
-	o.sysrep_createlink = function(){
-		return osvc_create_link("sysrepdiff", options, "link.sysrepdiff")
 	}
 	o.sysrep_admin_secure = function(){
 		return sysrep_admin_secure(this)

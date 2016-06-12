@@ -182,8 +182,8 @@ function osvc_create_link(fn, parameters, title, title_args) {
 	var link_id =  services_osvcpostrest("R_LINKS", "", "", {
 		"fn": fn,
 		"title": title,
-		"title_args": JSON.stringify(title_args),
-		"param": JSON.stringify(parameters)
+		"title_args": title_args,
+		"param": parameters
 	}, function(jd) {
 		if (jd.error) {
 			osvc.flash.error(services_error_fmt(jd))
@@ -305,6 +305,13 @@ function flash() {
 		o.init()
 		o.render_barel()
 		o.show_entry(data)
+	}
+
+	o.open = function() {
+		o.div.slideDown()
+	}
+	o.close = function() {
+		o.div.slideUp()
 	}
 
 	return o
@@ -699,3 +706,96 @@ function is_numeric(n) {
 function IE(v) {
 	return RegExp('msie' + (!isNaN(v)?('\\s'+v):''), 'i').test(navigator.userAgent);
 }
+
+function closer(e, tools, options) {
+	var o = {}
+	if (!options.close) {
+		return o
+	}
+	o.tool = $("<div class='fa-times linker'></div>")
+	tools.append(o.tool)
+	o.tool.bind("click", function() {
+		// Remove extraline
+		e.parents(".extraline").first().remove()
+
+		e.parent().parent().each(function() {
+			if ($(this).hasClass("flash")) {
+				// Tabs in flash zone
+				e.empty()
+				e.parent().removeClass("searchtab")
+				return
+			}
+		})
+		if (e.parent().hasClass("searchtab")) {
+			// Tabs in search result
+			e.parent().hide()
+		}
+		e.remove()
+	})
+	return o
+}
+
+function linker(e, tools, options) {
+	var o = {}
+	if (!options.link) {
+		return o
+	}
+	if (!options.link.fn) {
+		return o
+	}
+	o.tool = $("<div class='fa-link linker'></div>")
+	tools.append(o.tool)
+	o.tool.bind("click", function() {
+		osvc_create_link(options.link.fn, options.link.parameters, options.link.title, options.link.title_args)
+	})
+	return o
+}
+
+function fullscreener(e, tools) {
+	var o = {}
+	o.dom_prev = e.prev()
+	o.dom_parent = e.parent()
+	o.backup = null
+	o.tool = $("<div class='fa-expand'></div>")
+	tools.append(o.tool)
+	o.tool.bind("click", function() {
+		if (o.tool.hasClass("fa-expand")) {
+			if (e.parents(".flash").length == 1) {
+				o.from_flash = true
+				osvc.flash.close()
+			}
+			e.detach()
+			o.backup = $(".layout").children().detach()
+			$(".layout").append(e)
+			o.tool.removeClass("fa-expand").addClass("fa-compress")
+		} else {
+			if (o.from_flash) {
+				o.from_flash = false
+				osvc.flash.open()
+			}
+			e.detach()
+			$(".layout").append(o.backup)
+			if (o.dom_prev.length == 1) {
+				e.insertAfter(o.dom_prev)
+			} else {
+				o.dom_parent.prepend(e)
+			}
+			o.tool.removeClass("fa-compress").addClass("fa-expand")
+			o.backup = null
+		}
+	})
+	return o
+}
+
+function osvc_tools(e, options) {
+	var o = {}
+	o.tools = $("<div class='otools'></div>")
+	e.css({"position": "relative"})
+	e.addClass("otooled")
+	e.append(o.tools)
+	o.linker = linker(e, o.tools, options)
+	o.fullscreener = fullscreener(e, o.tools)
+	o.closer = closer(e, o.tools, options)
+	return o
+}
+

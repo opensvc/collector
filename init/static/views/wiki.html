@@ -1,64 +1,61 @@
-<div id='wiki'>
-  <div id="wiki_tab_show" style="float:left;width:600px">
-    <div id="wiki_tab_show_title" class="sub_sectiontitle" data-i18n="wiki.tab_show_title"></div>
-    <div id="wiki_show_result" class="containertrans"></div>
-    <div id="wiki_edit" style="clear:both;padding-top:10px">
-      <button id="wiki_edit_button" class="button_div" data-i18n="wiki.tab_show_edit"></button>
-    </div>
-  </div>
-  <div id="wiki_tab_insert" style="float:left;display:None;">
-    <div id="wiki_tab_insert_title" class="sub_sectiontitle" data-i18n="wiki.tab_show_title"></div>
-    <div>
-      <textarea style="border-radius:8px" cols="70" id="wiki_tab_ins" rows="10" type="text"></textarea>
-    </div>
-    <div id="wiki_editor" style="clear:both;padding-top:10px">
-      <button id="wiki_save_button" class="button_div" data-i18n="wiki.tab_edit_save"></button>
-      <button id="wiki_help_button" class="button_div" data-i18n="wiki.tab_edit_help"></button>
-      <button id="wiki_insert_button" class="button_div" data-i18n="wiki.tab_edit_insert_sig"></button>
-      <span id="wiki_messages" style="color:#FF0000"></span>
-    <div id="wiki_syntax" class="hidden">
-      <h2>Headers:</h2>
-      <pre>Section Header
-  ==============
+<div id='wiki' style="padding:1em">
+	<h1 id="wiki_tab_show_title" data-i18n="wiki.tab_show_title"></h1>
+	<div style="display:flex;flex-wrap:wrap">
+		<div id="wiki_tab_show" style="flex:2 1 40em;padding:0.5em">
+			<div id="wiki_show_result" class="containertrans"></div>
+			<div id="wiki_edit" style="clear:both;padding-top:10px">
+				<button id="wiki_edit_button" class="button_div" data-i18n="wiki.tab_show_edit"></button>
+			</div>
+		</div>
+		<div id="wiki_tab_insert" style="flex:2 1;display:none;padding:0.5em">
+			<textarea style="border-radius:8px" cols="70" id="wiki_tab_ins" rows="10" type="text"></textarea>
+			<div id="wiki_editor" style="clear:both;padding-top:10px">
+				<button id="wiki_save_button" class="button_div" data-i18n="wiki.tab_edit_save"></button>
+				<button id="wiki_help_button" class="button_div" data-i18n="wiki.tab_edit_help"></button>
+				<button id="wiki_insert_button" class="button_div" data-i18n="wiki.tab_edit_insert_sig"></button>
+				<span id="wiki_messages" style="color:#FF0000"></span>
+				<div id="wiki_syntax" class="hidden">
+					<h2>Headers:</h2>
+					<pre>Section Header
+==============
 
-  Subsection Header
-  -----------------</pre>
-      <h2>Lists:</h2>
-      <pre>- A bullet list item
-    - Second item
+Subsection Header
+-----------------</pre>
+					<h2>Lists:</h2>
+					<pre>- A bullet list item
+- Second item
 
-      - A sub item
+- A sub item
 
-    - Third item
-    1) An enumerated list item
+- Third item
+1) An enumerated list item
 
-    2) Second item
+2) Second item
 
-       a) Sub item
+a) Sub item
 
-          i) Sub-sub item
+  i) Sub-sub item
 
-    3) Third item
-    #) Another enumerated list item
+3) Third item
+#) Another enumerated list item
 
-    #) Second item</pre>
-      <h2>Named links:</h2>
-      <pre>A sentence with links to Wikipedia_ and the `Linux kernel archive`_.
+#) Second item</pre>
+					<h2>Named links:</h2>
+					<pre>A sentence with links to Wikipedia_ and the `Linux kernel archive`_.
 
-    .. _Wikipedia: http://www.wikipedia.org/
-    .. _Linux kernel archive: http://www.kernel.org/</pre>
-      <h2>Anonymous links:</h2>
-      <pre>Another sentence with an `anonymous link to the Python website`__.
+.. _Wikipedia: http://www.wikipedia.org/
+.. _Linux kernel archive: http://www.kernel.org/</pre>
+					<h2>Anonymous links:</h2>
+					<pre>Another sentence with an `anonymous link to the Python website`__.
 
-    __ http://www.python.org/
-      </pre>
-    </div>
-  </div>
-  </div>
-  <div id="wiki_tab_last_updated" style="float:left;padding-left:20px">
-    <div id="wiki_tab_title" class="sub_sectiontitle"></div>
-    <table id="wiki_table_last_changes" style="padding-top:10px">
-    </table>
-  </div>
-  <br>
+__ http://www.python.org/
+					</pre>
+				</div>
+			</div>
+		</div>
+		<div id="wiki_tab_last_updated" style="flex:1 1;padding:0.5em">
+			<h2 id="wiki_tab_title"></h2>
+			<table id="wiki_table_last_changes" style="padding-top:10px"></table>
+		</div>
+	</div>
 </div>

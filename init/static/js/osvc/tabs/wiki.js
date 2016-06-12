@@ -1,11 +1,16 @@
 function wiki(divid, options) {
 	var o = {}
+	o.options = options
 
 	// store parameters
 	o.divid = divid
 
 	o.div = $("#"+divid)
 	o.nodes = options.nodes
+	o.link = {
+		"fn": "wiki",
+		"title": "link.wiki"
+	}
 
 	o.wiki_insert_sign = function(){
 		jQuery.fn.extend({
@@ -82,7 +87,7 @@ function wiki(divid, options) {
 			o.wiki_table_last_changes.empty()
 
 			for (i=0; i<result.length; i++) {
-				var line = "<tr><td>" + osvc_date_from_collector(result[i].saved_on) + "</td><td>"+ result[i].email +"</td></tr>"
+				var line = "<tr><td class='datetime'>" + osvc_date_from_collector(result[i].saved_on) + "</td><td>"+ result[i].email +"</td></tr>"
 				o.wiki_table_last_changes.append(line)
 			}
 			o.wiki_tab_titles.html(i18n.t("wiki.last_table_title", {"number" : i}))
@@ -97,6 +102,14 @@ function wiki(divid, options) {
 	}
 
 	o.init = function() {
+		osvc_tools(o.div, {
+			"link": {
+				"fn": o.link.fn,
+				"parameters": o.options,
+				"title": o.link.title
+			}
+		})
+
 		o.wiki_table_last_changes = o.div.find("#wiki_table_last_changes")
 		o.wiki_save_button = o.div.find("#wiki_save_button")
 		o.wiki_help_button = o.div.find("#wiki_help_button")
