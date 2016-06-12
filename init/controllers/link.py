@@ -3,7 +3,7 @@ def link():
     link_id = request.vars.link_id;
 
     link_div = DIV(
-      SCRIPT("""osvc_get_link("link", "%(link_id)s");""" % dict(link_id=link_id)),
+      SCRIPT("""$.when(osvc.app_started).then(function(){ osvc_get_link("link", "%(link_id)s")})""" % dict(link_id=link_id)),
       _id="link",
       _style="text-align:left",
     )
