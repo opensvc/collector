@@ -307,6 +307,8 @@ function app_bindings() {
 			if ($('#search_input').is(":focus")) {
 				$(".header").find(".menu_selected").removeClass("menu_selected")
 				$(".header").find(".menu_entry:visible").first().addClass("menu_selected")
+				$("#search_input").blur()
+				event.preventDefault()
 			}
 		}
 
