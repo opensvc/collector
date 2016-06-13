@@ -79,9 +79,9 @@ class rest_get_user_dump(rest_get_handler):
         try:
             if dev_mode:
                 import uuid
-                code_rev = str(uuid.uuid4())
+                _code_rev = str(uuid.uuid4())
         except:
-                pass
+                _code_rev = code_rev
         return {
             "code_rev": code_rev,
             "server_timezone": config_get("server_timezone", "Europe/Paris"),
