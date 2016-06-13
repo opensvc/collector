@@ -2,46 +2,50 @@
 // dns records
 //
 function dns_record_tabs(divid, options) {
-  var o = tabs(divid)
-  o.options = options
-  o.options.bgcolor = osvc.colors.dns
-  o.options.icon = "dns16"
+	var o = tabs(divid)
+	o.options = options
+	o.options.bgcolor = osvc.colors.dns
+	o.options.icon = "dns16"
+	o.link = {
+		"fn": arguments.callee.name,
+		"title": "link."+arguments.callee.name
+	}
 
-  o.load(function() {
-    services_osvcgetrest("R_DNS_RECORD", [o.options.record_id], {"meta": "0"}, function(jd) {
-      o.data = jd.data[0]
-      o._load()
-    })
-  })
+	o.load(function() {
+		services_osvcgetrest("R_DNS_RECORD", [o.options.record_id], {"meta": "0"}, function(jd) {
+			o.data = jd.data[0]
+			o._load()
+		})
+	})
 
-  o._load = function() {
-    var title = o.data.name
-    o.closetab.text(title)
+	o._load = function() {
+		var title = o.data.name
+		o.closetab.text(title)
 
-    // tab properties
-    i = o.register_tab({
-      "title": "dns_record_tabs.properties",
-      "title_class": "icon dns16"
-    })
-    o.tabs[i].callback = function(divid) {
-      dns_record_properties(divid, o.options)
-    }
+		// tab properties
+		i = o.register_tab({
+			"title": "dns_record_tabs.properties",
+			"title_class": "icon dns16"
+		})
+		o.tabs[i].callback = function(divid) {
+			dns_record_properties(divid, o.options)
+		}
 
-    if ((typeof(o.data.type) === "string") && (o.data.type.length > 0) && (o.data.type[0] == "A")) {
-      // tab alerts
-      i = o.register_tab({
-        "title": "dns_record_tabs.nodes",
-        "title_class": "icon node16"
-      })
-      o.tabs[i].callback = function(divid) {
-        table_nodenetworks_addr(divid, o.data.content)
-      }
-    }
+		if ((typeof(o.data.type) === "string") && (o.data.type.length > 0) && (o.data.type[0] == "A")) {
+			// tab alerts
+			i = o.register_tab({
+				"title": "dns_record_tabs.nodes",
+				"title_class": "icon node16"
+			})
+			o.tabs[i].callback = function(divid) {
+				table_nodenetworks_addr(divid, o.data.content)
+			}
+		}
 
-    o.set_tab(o.options.tab)
-  }
+		o.set_tab(o.options.tab)
+	}
 
-  return o
+	return o
 }
 
 function dns_record_properties(divid, options) {
@@ -51,6 +55,11 @@ function dns_record_properties(divid, options) {
 	o.divid = divid
 	o.div = $("#"+divid)
 	o.options = options
+	o.link = {
+		"fn": arguments.callee.name,
+		"parameters": o.options,
+		"title": "link."+arguments.callee.name
+	}
 
 	o.init = function() {
 		o.info_id = o.div.find("#id")
@@ -79,6 +88,9 @@ function dns_record_properties(divid, options) {
 		o.info_prio.html(data.prio)
 		o.info_ttl.html(data.ttl)
 		o.info_change_date.html(data.change_date)
+		osvc_tools(o.div, {
+			"link": o.link
+		})
 
 		var am_data = [
 			{

@@ -6,6 +6,10 @@ function moduleset_tabs(divid, options) {
 	o.options = options
 	o.options.icon = "modset16"
 	o.options.bgcolor = osvc.colors.comp
+	o.link = {
+		"fn": arguments.callee.name,
+		"title": "link."+arguments.callee.name
+	}
 
 	o.load(function() {
 		var title = o.options.modset_name
@@ -42,8 +46,19 @@ function modset_properties(divid, options) {
 	o.divid = divid
 	o.div = $("#"+divid)
 	o.options = options
+	o.link = {
+		"fn": arguments.callee.name,
+		"title": "link."+arguments.callee.name
+	}
 
 	o.init = function() {
+		osvc_tools(o.div, {
+			"link": {
+				"fn": o.link.fn,
+				"parameters": o.options,
+				"title": o.link.title
+			}
+		})
 		o.info_id = o.div.find("#id")
 		o.info_modset_name = o.div.find("#modset_name")
 		o.info_modset_author = o.div.find("#modset_author")
@@ -192,9 +207,18 @@ function modset_export(divid, options) {
 	o.divid = divid
 	o.div = $("#"+divid)
 	o.options = options
+	o.link = {
+		"fn": arguments.callee.name,
+		"title": "link."+arguments.callee.name
+	}
 
 	o.init = function() {
 		o.load_export()
+	}
+
+	o.resize = function() {
+		var max_height = max_child_height(o.div)
+		o.textarea.outerHeight(max_height)
 	}
 
 	o.load_export = function() {
@@ -208,10 +232,19 @@ function modset_export(divid, options) {
 	}
 
 	o._load_export = function(data) {
-		div = $("<textarea class='export_data'>")
-		div.prop("disabled", true)
-		o.div.html(div)
-		div.text(JSON.stringify(data, null, 4))
+		o.textarea = $("<textarea class='export_data'>")
+		o.textarea.prop("disabled", true)
+		o.div.html(o.textarea)
+		o.textarea.text(JSON.stringify(data, null, 4))
+		o.resize()
+		osvc_tools(o.div, {
+			"resize": o.resize,
+			"link": {
+				"fn": o.link.fn,
+				"parameters": o.options,
+				"title": o.link.title
+			}
+		})
 	}
 
 	o.init()

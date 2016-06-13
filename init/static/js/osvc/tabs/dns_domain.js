@@ -2,44 +2,47 @@
 // dns domains
 //
 function dns_domain_tabs(divid, options) {
-  var o = tabs(divid)
-  o.options = options
-  o.options.bgcolor = osvc.colors.dns
-  o.options.icon = "dns16"
+	var o = tabs(divid)
+	o.options = options
+	o.options.bgcolor = osvc.colors.dns
+	o.options.icon = "dns16"
+	o.link = {
+		"fn": arguments.callee.name,
+		"title": "link."+arguments.callee.name
+	}
 
-  o.load(function() {
-    services_osvcgetrest("R_DNS_DOMAIN", [o.options.domain_id], {"meta": "0"}, function(jd) {
-      o.data = jd.data[0]
-      o._load()
-    })
-  })
+	o.load(function() {
+		services_osvcgetrest("R_DNS_DOMAIN", [o.options.domain_id], {"meta": "0"}, function(jd) {
+			o.data = jd.data[0]
+			o._load()
+		})
+	})
 
-  o._load = function() {
-    var title = o.data.name
-    o.closetab.text(title)
+	o._load = function() {
+		var title = o.data.name
+		o.closetab.text(title)
 
-    // tab properties
-    i = o.register_tab({
-      "title": "dns_domain_tabs.properties",
-      "title_class": "icon dns16"
-    })
-    o.tabs[i].callback = function(divid) {
-      dns_domain_properties(divid, o.options)
-    }
+		// tab properties
+		i = o.register_tab({
+			"title": "dns_domain_tabs.properties",
+			"title_class": "icon dns16"
+		})
+		o.tabs[i].callback = function(divid) {
+			dns_domain_properties(divid, o.options)
+		}
 
-    // tab records
-    i = o.register_tab({
-      "title": "dns_domain_tabs.records",
-      "title_class": "icon dns16"
-    })
-    o.tabs[i].callback = function(divid) {
-      table_dns_records_domain_id(divid, o.options.domain_id)
-    }
+		// tab records
+		i = o.register_tab({
+			"title": "dns_domain_tabs.records",
+			"title_class": "icon dns16"
+		})
+		o.tabs[i].callback = function(divid) {
+			table_dns_records_domain_id(divid, o.options.domain_id)
+		}
+		o.set_tab(o.options.tab)
+	}
 
-    o.set_tab(o.options.tab)
-  }
-
-  return o
+	return o
 }
 
 function dns_domain_properties(divid, options) {
@@ -49,8 +52,16 @@ function dns_domain_properties(divid, options) {
 	o.divid = divid
 	o.div = $("#"+divid)
 	o.options = options
+	o.link = {
+		"fn": arguments.callee.name,
+		"parameters": o.options,
+		"title": "link."+arguments.callee.name
+	}
 
 	o.init = function() {
+		osvc_tools(o.div, {
+			"link": o.link
+		})
 		o.info_id = o.div.find("#id")
 		o.info_name = o.div.find("#name")
 		o.info_type = o.div.find("#type")

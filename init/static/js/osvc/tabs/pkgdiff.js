@@ -3,6 +3,11 @@ function pkgdiff(divid, options) {
 	o.divid = divid
 	o.div = $("#"+divid)
 	o.options = options
+	o.link = {
+		"fn": arguments.callee.name,
+		"parameters": o.options,
+		"title": "link."+arguments.callee.name
+	}
 
 	spinner_add(o.div, i18n.t("api.loading"))
 	services_osvcgetrest("R_PACKAGES_DIFF", "", o.options, function(jd) {
@@ -80,6 +85,9 @@ function pkgdiff(divid, options) {
 		}
 		o.div.html(t)
 		o.div.i18n()
+		osvc_tools(o.div, {
+			"link": o.link
+		})
 	}
 	return o
 }
@@ -88,11 +96,19 @@ function svc_pkgdiff(divid, options) {
 	var o = {}
 	o.div = $("#"+divid)
 	o.options = options
+	o.link = {
+		"fn": arguments.callee.name,
+		"parameters": o.options,
+		"title": "link."+arguments.callee.name
+	}
 
 	var t
 	var d
 
 	o.div.empty()
+	osvc_tools(o.div, {
+		"link": o.link
+	})
 
 	// pkgdiff at hv level
 	t = $("<h3 data-i18n='diff.pkg_title_cluster'></h3>")
@@ -260,11 +276,19 @@ function nodediff(divid, options) {
 	var o = {}
 	o.div = $("#"+divid)
 	o.options = options
+	o.link = {
+		"fn": arguments.callee.name,
+		"parameters": o.options,
+		"title": "link."+arguments.callee.name
+	}
 
 	var t
 	var d
 
 	o.div.empty()
+	osvc_tools(o.div, {
+		"link": o.link
+	})
 
 	// asset diff
 	t = $("<h2 data-i18n='diff.asset_title'></h2>")
@@ -298,11 +322,19 @@ function svcdiff(divid, options) {
 	var o = {}
 	o.div = $("#"+divid)
 	o.options = options
+	o.link = {
+		"fn": arguments.callee.name,
+		"parameters": o.options,
+		"title": "link."+arguments.callee.name
+	}
 
 	var t
 	var d
 
 	o.div.empty()
+	osvc_tools(o.div, {
+		"link": o.link
+	})
 
 	// asset diff
 	t = $("<h2 data-i18n='diff.services_title'></h2>")

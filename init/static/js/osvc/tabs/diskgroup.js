@@ -2,58 +2,60 @@
 // disk group
 //
 function diskgroup_tabs(divid, options) {
-  var o = tabs(divid)
-  o.options = options
-  o.options.bgcolor = osvc.colors.disk
-  o.options.icon = "hd16"
+	var o = tabs(divid)
+	o.options = options
+	o.options.bgcolor = osvc.colors.disk
+	o.options.icon = "hd16"
+	o.link = {
+		"fn": arguments.callee.name,
+		"title": "link."+arguments.callee.name
+	}
 
-  o.load(function() {
-    services_osvcgetrest("R_ARRAY_DISKGROUP", [o.options.array_name, o.options.dg_name], {"meta": "0"}, function(jd) {
-      o.data = jd.data[0]
-      o._load()
-    })
-  })
+	o.load(function() {
+		services_osvcgetrest("R_ARRAY_DISKGROUP", [o.options.array_name, o.options.dg_name], {"meta": "0"}, function(jd) {
+			o.data = jd.data[0]
+			o._load()
+		})
+	})
 
-  o._load = function() {
-    var title = o.data.dg_name
-    o.closetab.text(title)
+	o._load = function() {
+		var title = o.data.dg_name
+		o.closetab.text(title)
 
-    // tab properties
-    i = o.register_tab({
-      "title": "node_tabs.properties",
-      "title_class": "icon hd16"
-    })
-    o.tabs[i].callback = function(divid) {
-      diskgroup_properties(divid, {"dg_id": o.data.id})
-    }
+		// tab properties
+		i = o.register_tab({
+			"title": "node_tabs.properties",
+			"title_class": "icon hd16"
+		})
+		o.tabs[i].callback = function(divid) {
+			diskgroup_properties(divid, {"dg_id": o.data.id})
+		}
 
-    // tab quotas
-    i = o.register_tab({
-      "title": "array_tabs.quotas",
-      "title_class": "icon quota16"
-    })
-    o.tabs[i].callback = function(divid) {
-      table_quota_array_dg(divid, o.options.array_name, o.options.dg_name)
-    }
+		// tab quotas
+		i = o.register_tab({
+			"title": "array_tabs.quotas",
+			"title_class": "icon quota16"
+		})
+		o.tabs[i].callback = function(divid) {
+			table_quota_array_dg(divid, o.options.array_name, o.options.dg_name)
+		}
 
-    // tab usage
-    i = o.register_tab({
-      "title": "node_tabs.stats",
-      "title_class": "icon spark16"
-    })
-    o.tabs[i].callback = function(divid) {
-      $.ajax({
-        "url": "/init/disks/ajax_array_dg",
-        "type": "POST",
-        "success": function(msg) {$("#"+divid).html(msg)},
-        "data": {"array": o.options.array_name, "dg": o.data.dg_name, "rowid": divid}
-      })
-    }
-
-    o.set_tab(o.options.tab)
-  }
-
-  return o
+		// tab usage
+		i = o.register_tab({
+			"title": "node_tabs.stats",
+			"title_class": "icon spark16"
+		})
+		o.tabs[i].callback = function(divid) {
+			$.ajax({
+				"url": "/init/disks/ajax_array_dg",
+				"type": "POST",
+				"success": function(msg) {$("#"+divid).html(msg)},
+				"data": {"array": o.options.array_name, "dg": o.data.dg_name, "rowid": divid}
+			})
+		}
+		o.set_tab(o.options.tab)
+	}
+	return o
 }
 
 function diskgroup_properties(divid, options) {
@@ -63,8 +65,16 @@ function diskgroup_properties(divid, options) {
 	o.divid = divid
 	o.div = $("#"+divid)
 	o.options = options
+	o.link = {
+		"fn": arguments.callee.name,
+		"parameters": o.options,
+		"title": "link."+arguments.callee.name
+	}
 
 	o.init = function() {
+		osvc_tools(o.div, {
+			"link": o.link
+		})
 		o.info_id = o.div.find("#id")
 		o.info_dg_name = o.div.find("#dg_name")
 		o.info_dg_name = o.div.find("#dg_name")

@@ -2,49 +2,52 @@
 // group
 //
 function group_tabs(divid, options) {
-  var o = tabs(divid)
-  o.options = options
-  o.options.bgcolor = osvc.colors.org
-  o.options.icon = "guys16"
+	var o = tabs(divid)
+	o.options = options
+	o.options.bgcolor = osvc.colors.org
+	o.options.icon = "guys16"
+	o.link = {
+		"fn": arguments.callee.name,
+		"title": "link."+arguments.callee.name
+	}
 
-  o.load(function(){
-    var i = 0
+	o.load(function(){
+		var i = 0
+		if (!("group_id" in o.options) && ("group_name" in o.options)) {
+			services_osvcgetrest("R_GROUPS", "", {"filters": ["role "+o.options.group_name]}, function(jd) {
+				var group = jd.data[0]
+				o.options.group_id = group.id
+				o._load()
+			})
+		} else {
+			o._load()
+		}
+	})
 
-    if (!("group_id" in o.options) && ("group_name" in o.options)) {
-      services_osvcgetrest("R_GROUPS", "", {"filters": ["role "+o.options.group_name]}, function(jd) {
-        var group = jd.data[0]
-        o.options.group_id = group.id
-        o._load()
-      })
-    } else {
-      o._load()
-    }
-  })
+	o._load = function() {
+		o.closetab.text(o.options.group_name ? o.options.group_name : o.options.group_id)
 
-  o._load = function() {
-    o.closetab.text(o.options.group_name ? o.options.group_name : o.options.group_id)
+		// tab properties
+		i = o.register_tab({
+			"title": "node_tabs.properties",
+			"title_class": "icon guys16"
+		})
+		o.tabs[i].callback = function(divid) {
+			group_properties(divid, o.options)
+		}
 
-    // tab properties
-    i = o.register_tab({
-      "title": "node_tabs.properties",
-      "title_class": "icon guys16"
-    })
-    o.tabs[i].callback = function(divid) {
-      group_properties(divid, o.options)
-    }
+		// tab hidden menu entries
+		i = o.register_tab({
+			"title": "group_tabs.hidden_menu_entries",
+			"title_class": "icon menu16"
+		})
+		o.tabs[i].callback = function(divid) {
+			group_hidden_menu_entries(divid, o.options)
+		}
 
-    // tab hidden menu entries
-    i = o.register_tab({
-      "title": "group_tabs.hidden_menu_entries",
-      "title_class": "icon menu16"
-    })
-    o.tabs[i].callback = function(divid) {
-      group_hidden_menu_entries(divid, o.options)
-    }
-
-    o.set_tab(o.options.tab)
-  }
-  return o
+		o.set_tab(o.options.tab)
+	}
+	return o
 }
 
 function group_properties(divid, options) {
@@ -54,8 +57,16 @@ function group_properties(divid, options) {
 	o.divid = divid
 	o.div = $("#"+divid)
 	o.options = options
+	o.link = {
+		"fn": arguments.callee.name,
+		"parameters": o.options,
+		"title": "link."+arguments.callee.name
+	}
 
 	o.init = function() {
+		osvc_tools(o.div, {
+			"link": o.link
+		})
 		o.info_id = o.div.find("#id")
 		o.info_role = o.div.find("#role")
 		o.info_description = o.div.find("#description")
@@ -212,6 +223,11 @@ function group_hidden_menu_entries(divid, options) {
 	var o = {}
 	o.options = options
 	o.div = $("#"+divid)
+	o.link = {
+		"fn": arguments.callee.name,
+		"parameters": o.options,
+		"title": "link."+arguments.callee.name
+	}
 
 	o.set = function(id) {
 		var data = {
@@ -304,6 +320,9 @@ function group_hidden_menu_entries(divid, options) {
 		}
 		o.div.empty()
 		o.div.append(area)
+		osvc_tools(o.div, {
+			"link": o.link
+		})
 	}
 
 	o.get(function() {

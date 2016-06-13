@@ -5,6 +5,10 @@ function service_tabs(divid, options) {
 	var o = tabs(divid)
 	o.options = options
 	o.options.bgcolor = osvc.colors.svc
+	o.link = {
+		"fn": arguments.callee.name,
+		"title": "link."+arguments.callee.name
+	}
 
 	o.load(function(){
 		var i = 0
@@ -125,7 +129,15 @@ function service_tabs(divid, options) {
 			"title_class": "icon hd16"
 		})
 		o.tabs[i].callback = function(divid) {
-			sync_ajax("/init/ajax_node/ajax_svc_stor/"+divid.replace("-", "_")+"/"+encodeURIComponent(o.options.svc_id), [], divid, function(){})
+			sync_ajax("/init/ajax_node/ajax_svc_stor/"+divid.replace("-", "_")+"/"+encodeURIComponent(o.options.svc_id), [], divid, function(){
+				osvc_tools($("#"+divid), {
+					"link": {
+						"fn": "/init/ajax_node/ajax_svc_stor",
+						"parameters": divid.replace("-", "_")+"/"+encodeURIComponent(o.options.svc_id),
+						"title": "link.svc_storage"
+					}
+				})
+			})
 		}
 
 		// tab stats
@@ -146,7 +158,15 @@ function service_tabs(divid, options) {
 						nodes.push(d.mon_vmname+"@"+d.node_id)
 					}
 				}
-				sync_ajax("/init/stats/ajax_containerperf_plot?node="+encodeURIComponent(nodes), [], divid, function(){})
+				sync_ajax("/init/stats/ajax_containerperf_plot?node="+encodeURIComponent(nodes), [], divid, function(){
+					osvc_tools($("#"+divid), {
+						"link": {
+							"fn": "/init/stats/ajax_containerperf_plot",
+							"parameters": "nodes="+divid.replace("-", "_")+"/"+encodeURIComponent(o.options.svc_id),
+							"title": "link.svc_containerperf"
+						}
+					})
+				})
 			},
 			function(xhr, stat, error) {
 				$("#"+divid).html(services_ajax_error_fmt(xhr, stat, error))
@@ -212,7 +232,15 @@ function service_tabs(divid, options) {
 			"title_class": "icon comp16"
 		})
 		o.tabs[i].callback = function(divid) {
-			sync_ajax("/init/compliance/ajax_compliance_svc/"+encodeURIComponent(o.options.svc_id), [], divid, function(){})
+			sync_ajax("/init/compliance/ajax_compliance_svc/"+encodeURIComponent(o.options.svc_id), [], divid, function(){
+				osvc_tools($("#"+divid), {
+					"link": {
+						"fn": "/init/compliance/ajax_compliance_svc",
+						"parameters": encodeURIComponent(o.options.svc_id),
+						"title": "link.svc_containerperf"
+					}
+				})
+			})
 		}
 
 		o.set_tab(o.options.tab)
@@ -229,6 +257,11 @@ function service_env(divid, options)
 	o.options = options
 
 	o.div = $("#"+divid)
+	o.link = {
+		"fn": arguments.callee.name,
+		"parameters": o.options,
+		"title": "link."+arguments.callee.name
+	}
 
 	o.init = function() {
 		o.div.load('/init/static/views/service_env.html?v='+osvc.code_rev, function() {
@@ -236,9 +269,34 @@ function service_env(divid, options)
 		})
 	}
 
+	o.resize = function() {
+		var div = o.body.children().first()
+		var button = o.body.find("button")
+		var max_height = max_child_height(o.div)
+			- o.body.css("padding-top").replace(/px/,"")
+			- o.body.css("padding-bottom").replace(/px/,"")
+			- o.header.outerHeight()
+		if (button.length > 0) {
+			max_height = max_height
+				 - button.height()
+				 - button.css("margin-top").replace(/px/,"")
+				 - button.css("margin-bottom").replace(/px/,"")
+		}
+		div.outerHeight(max_height)
+		o.editor.editor.resize()
+	}
+
 	o._init = function() {
+		osvc_tools(o.div, {
+			"resize": o.resize,
+			"link": {
+				"fn": o.link.fn,
+				"parameters": o.options,
+				"title": o.link.title
+			}
+		})
 		o.header = o.div.find("p")
-		o.body = o.div.find("code")
+		o.body = o.div.find("[name=content]")
 
 		spinner_add(o.div)
 		services_osvcgetrest("R_SERVICE", [o.options.svc_id], {"meta": "false", "props": "updated,svc_envfile"}, function(jd) {
@@ -266,7 +324,8 @@ function service_env(divid, options)
 			"mode": "ini",
 			"obj_type": "services",
 			"obj_id": o.options.svc_id,
-			"save": o.save
+			"save": o.save,
+			"callback": o.resize
 		})
 	}
 
@@ -299,8 +358,20 @@ function service_properties(divid, options)
 	o.options = options
 
 	o.div = $("#"+divid)
+	o.link = {
+		"fn": arguments.callee.name,
+		"parameters": o.options,
+		"title": "link."+arguments.callee.name
+	}
 
 	o.init = function(){
+		osvc_tools(o.div, {
+			"link": {
+				"fn": o.link.fn,
+				"parameters": o.options,
+				"title": o.link.title
+			}
+		})
 		o.div.i18n();
 		o.e_tags = o.div.find(".tags")
 		o.e_tags.uniqueId()

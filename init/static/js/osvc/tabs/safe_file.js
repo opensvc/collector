@@ -3,6 +3,10 @@ function safe_file_tabs(divid, options) {
 	o.options = options
 	o.options.bgcolor = osvc.colors.comp
 	o.options.icon = "safe16"
+	o.link = {
+		"fn": arguments.callee.name,
+		"title": "link."+arguments.callee.name
+	}
 
 	o.load(function() {
 		var title = o.options.uuid
@@ -38,9 +42,13 @@ function safe_file_content(divid, options) {
 	o.divid = divid
 	o.div = $("#"+divid)
 	o.options = options
-
+	o.link = {
+		"fn": arguments.callee.name,
+		"parameters": o.options,
+		"title": "link."+arguments.callee.name
+	}
 	o.init = function() {
-		o.div.css({"padding": "1em"})
+		o.div.css({"padding": "1em", "box-sizing": "border-box"})
 		spinner_add(o.div)
 		services_osvcgetrest("/safe/%1/preview", [o.options.uuid], "", function(jd) {
 			spinner_del(o.div)
@@ -50,6 +58,9 @@ function safe_file_content(divid, options) {
 				o.div.addClass("pre")
 				o.div.text(jd.data)
 			}
+			osvc_tools(o.div, {
+				"link": o.link
+			})
 		})
 	}
 
@@ -65,8 +76,16 @@ function safe_file_properties(divid, options) {
 	o.divid = divid
 	o.div = $("#"+divid)
 	o.options = options
+	o.link = {
+		"fn": arguments.callee.name,
+		"parameters": o.options,
+		"title": "link."+arguments.callee.name
+	}
 
 	o.init = function() {
+		osvc_tools(o.div, {
+			"link": o.link
+		})
 		o.info_name = o.div.find("#name")
 		o.info_uuid = o.div.find("#uuid")
 		o.info_md5 = o.div.find("#md5")

@@ -1337,7 +1337,7 @@ a.xinfo_shown span {
 .extraline > td:last-child {
 	padding: 0.8em;
 }
-.extraline > td > table {
+.extraline > td > table, .extraline > td:last-child > div {
 	box-shadow: 0 0 20px 2px;
 	-moz-border-radius: 4px;
 	-webkit-border-radius: 4px;
@@ -1929,7 +1929,7 @@ ul.login_menu ul {
 	content: '\f110';
 }
 .dns16:before {
-	color: aquamarine;
+	color: turquoise;
 	content: '\f0e1';
 }
 .repl16:before {
@@ -3667,6 +3667,7 @@ button:disabled {
 }
 
 .group_hidden_menu {
+	padding: 1em;
 	width: 100%;
 	text-align: left;
 	display: inline-block;
@@ -3813,6 +3814,8 @@ button:disabled {
 	cursor: pointer;
 	display: none !important;
 	padding: initial !important;
+	width: initial !important;
+	z-index: 1;
 }
 .otooled:hover > .otools {
 	display: block !important;

@@ -642,7 +642,11 @@ function osvc_get_link(divid,link_id) {
 			return
 		}
 		var result = jd.data
-		var param = JSON.parse(result[0].link_parameters)
+		if (result[0].link_parameters == "") {
+			var param = {}
+		} else {
+			var param = JSON.parse(result[0].link_parameters)
+		}
 		var link = result[0].link_function
 
 		if (link.beginsWith("https://")) {
@@ -751,7 +755,20 @@ function linker(e, tools, options) {
 	return o
 }
 
-function fullscreener(e, tools) {
+function get_layout_max_height() {
+	return $(window).height()-$(".header").height()-$(".footer").height()-1
+}
+
+function max_child_height(div) {
+	var max_height = get_layout_max_height()
+	if (div.parent().hasClass("layout") || div.parent().parent().hasClass("layout")) {
+		return max_height
+	} else {
+		return max_height*0.75
+	}
+}
+
+function fullscreener(e, tools, resize) {
 	var o = {}
 	o.dom_prev = e.prev()
 	o.dom_parent = e.parent()
@@ -764,14 +781,25 @@ function fullscreener(e, tools) {
 				o.from_flash = true
 				osvc.flash.close()
 			}
+			if (e.parents("#search_result").length == 1) {
+				o.from_search = true
+				$("#search_result").slideUp()
+			}
 			e.detach()
 			o.backup = $(".layout").children().detach()
 			$(".layout").append(e)
 			o.tool.removeClass("fa-expand").addClass("fa-compress")
+			if (resize) {
+				resize()
+			}
 		} else {
 			if (o.from_flash) {
 				o.from_flash = false
 				osvc.flash.open()
+			}
+			if (o.from_search) {
+				o.from_search = false
+				$("#search_result").slideDown()
 			}
 			e.detach()
 			$(".layout").append(o.backup)
@@ -782,6 +810,9 @@ function fullscreener(e, tools) {
 			}
 			o.tool.removeClass("fa-compress").addClass("fa-expand")
 			o.backup = null
+			if (resize) {
+				resize()
+			}
 		}
 	})
 	return o
@@ -794,7 +825,7 @@ function osvc_tools(e, options) {
 	e.addClass("otooled")
 	e.append(o.tools)
 	o.linker = linker(e, o.tools, options)
-	o.fullscreener = fullscreener(e, o.tools)
+	o.fullscreener = fullscreener(e, o.tools, options.resize)
 	o.closer = closer(e, o.tools, options)
 	return o
 }

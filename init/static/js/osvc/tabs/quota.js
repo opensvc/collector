@@ -3,6 +3,10 @@ function quota_tabs(divid, options) {
 	o.options = options
 	o.options.bgcolor = osvc.colors.disk
 	o.options.icon = "quota16"
+	o.link = {
+		"fn": arguments.callee.name,
+		"title": "link."+arguments.callee.name
+	}
 
 	o.load(function() {
 		var title = o.options.quota_id
@@ -46,8 +50,16 @@ function quota_properties(divid, options) {
 	o.divid = divid
 	o.div = $("#"+divid)
 	o.options = options
+	o.link = {
+		"fn": arguments.callee.name,
+		"parameters": o.options,
+		"title": "link."+arguments.callee.name
+	}
 
 	o.init = function() {
+		osvc_tools(o.div, {
+			"link": o.link
+		})
 		o.info_id = o.div.find("#id")
 		o.info_array_name = o.div.find("#array_name")
 		o.info_array_model = o.div.find("#array_model")

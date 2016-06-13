@@ -3,6 +3,10 @@ function ruleset_tabs(divid, options) {
 	o.options = options
 	o.options.bgcolor = osvc.colors.comp
 	o.options.icon = "rset16"
+	o.link = {
+		"fn": arguments.callee.name,
+		"title": "link."+arguments.callee.name
+	}
 
 	o.load(function() {
 		if (!("ruleset_id" in o.options)) {
@@ -60,16 +64,32 @@ function ruleset_export(divid, options) {
 	var o = {}
 	o.options = options
 	o.div = $("#"+divid)
+	o.link = {
+		"fn": arguments.callee.name,
+		"parameters": o.options,
+		"title": "link."+arguments.callee.name
+	}
+
+	o.resize = function() {
+		var max_height = max_child_height(o.div)
+		o.textarea.outerHeight(max_height)
+	}
+
 	spinner_add(o.div)
 	services_osvcgetrest("R_COMPLIANCE_RULESET_EXPORT", [o.options.ruleset_id], "", function(jd) {
 		if (!jd && jd.error) {
 			o.div.html(services_error_fmt(jd))
 			return
 		}
-		div = $("<textarea class='export_data'>")
-		div.prop("disabled", true)
-		div.text(JSON.stringify(jd, null, 4))
-		o.div.html(div)
+		o.textarea = $("<textarea class='export_data'>")
+		o.textarea.prop("disabled", true)
+		o.textarea.text(JSON.stringify(jd, null, 4))
+		o.div.html(o.textarea)
+		o.resize()
+		osvc_tools(o.div, {
+			"resize": o.resize,
+			"link": o.link
+		})
 	},
 	function() {
 		o.div.html(services_ajax_error_fmt(xhr, stat, error))
@@ -80,6 +100,11 @@ function ruleset_content(divid, options) {
 	var o = {}
 	o.options = options
 	o.div = $("#"+divid)
+	o.link = {
+		"fn": arguments.callee.name,
+		"parameters": o.options,
+		"title": "link."+arguments.callee.name
+	}
 	o.rulesets = {}
 	var head = {}
 	services_osvcgetrest("R_COMPLIANCE_RULESET_EXPORT", [o.options.ruleset_id], "", function(jd) {
@@ -103,6 +128,9 @@ function ruleset_content(divid, options) {
 		o.area = div
 		o.div.append(div)
 		o.render(head)
+		osvc_tools(o.div, {
+			"link": o.link
+		})
 	},
 	function() {
 		o.div.html(services_ajax_error_fmt(xhr, stat, error))
@@ -268,8 +296,16 @@ function ruleset_properties(divid, options) {
 	o.divid = divid
 	o.div = $("#"+divid)
 	o.options = options
+	o.link = {
+		"fn": arguments.callee.name,
+		"parameters": o.options,
+		"title": "link."+arguments.callee.name
+	}
 
 	o.init = function() {
+		osvc_tools(o.div, {
+			"link": o.link
+		})
 		o.info_id = o.div.find("#id")
 		o.info_ruleset_name = o.div.find("#ruleset_name")
 		o.info_ruleset_type = o.div.find("#ruleset_type")

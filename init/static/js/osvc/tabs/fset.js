@@ -6,6 +6,10 @@ function filterset_tabs(divid, options) {
 	o.options = options
 	o.options.bgcolor = osvc.colors.fset
 	o.options.icon = "filter16"
+	o.link = {
+		"fn": arguments.callee.name,
+		"title": "link."+arguments.callee.name
+	}
 
 	o.load(function() {
 		var title = o.options.fset_name
@@ -51,8 +55,16 @@ function fset_properties(divid, options) {
 	o.divid = divid
 	o.div = $("#"+divid)
 	o.options = options
+	o.link = {
+		"fn": arguments.callee.name,
+		"parameters": o.options,
+		"title": "link."+arguments.callee.name
+	}
 
 	o.init = function() {
+		osvc_tools(o.div, {
+			"link": o.link
+		})
 		o.info_id = o.div.find("#id")
 		o.info_fset_name = o.div.find("#fset_name")
 		o.info_fset_stats = o.div.find("#fset_stats")
@@ -204,6 +216,11 @@ function fset_export(divid, options) {
 	o.divid = divid
 	o.div = $("#"+divid)
 	o.options = options
+	o.link = {
+		"fn": arguments.callee.name,
+		"parameters": o.options,
+		"title": "link."+arguments.callee.name
+	}
 
 	o.init = function() {
 		o.load_export()
@@ -219,11 +236,21 @@ function fset_export(divid, options) {
 		})
 	}
 
+	o.resize = function() {
+		var max_height = max_child_height(o.div)
+		o.textarea.outerHeight(max_height)
+	}
+
 	o._load_export = function(data) {
-		var div = $("<textarea class='export_data'>")
-		div.prop("disabled", true)
-		div.text(JSON.stringify(data, null, 4))
-		o.div.html(div)
+		o.textarea = $("<textarea class='export_data'>")
+		o.textarea.prop("disabled", true)
+		o.textarea.text(JSON.stringify(data, null, 4))
+		o.div.html(o.textarea)
+		o.resize()
+		osvc_tools(o.div, {
+			"resize": o.resize,
+			"link": o.link
+		})
 	}
 
 	o.init()
@@ -239,6 +266,11 @@ function fset_designer(divid, options) {
 	o.data = {}
 	o.fset_data = {}
 	o.filters = $.Deferred()
+	o.link = {
+		"fn": arguments.callee.name,
+		"parameters": o.options,
+		"title": "link."+arguments.callee.name
+	}
 
 	o.init = function() {
 		//load the filters cache
@@ -299,7 +331,10 @@ function fset_designer(divid, options) {
 
 	o.render = function() {
 		o.div.empty()
-		o.area = $("<div></div>")
+		osvc_tools(o.div, {
+			"link": o.link
+		})
+		o.area = $("<div style='padding:1em'></div>")
 		o.div.append(o.area)
 
 		for (var i=0; i<o.fset_data.filters.length; i++) {

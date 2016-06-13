@@ -16,7 +16,7 @@ var osvc = {
 		'stats': 'sandybrown',
 		'org': 'salmon',
 		'error': 'red',
-		'dns': 'aquamarine',
+		'dns': 'turquoise',
 		'priv': 'goldenrod',
 		'info': 'slategray',
 		'link': 'slategray',
@@ -577,6 +577,24 @@ function wiki(divid, options) {
 function filterset_tabs(divid, options) {
 	require(["osvc/tabs/fset"], function() {
 		filterset_tabs(divid, options)
+	})
+}
+
+function fset_properties(divid, options) {
+	require(["osvc/tabs/fset"], function() {
+		fset_properties(divid, options)
+	})
+}
+
+function fset_export(divid, options) {
+	require(["osvc/tabs/fset"], function() {
+		fset_export(divid, options)
+	})
+}
+
+function fset_designer(divid, options) {
+	require(["osvc/tabs/fset"], function() {
+		fset_designer(divid, options)
 	})
 }
 

@@ -6,6 +6,10 @@ function app_tabs(divid, options) {
 	o.options = options
 	o.options.bgcolor = osvc.colors.app
 	o.options.icon = "app16"
+	o.link = {
+		"fn": arguments.callee.name,
+		"title": "link."+arguments.callee.name
+	}
 
 	o.load(function(){
 		var i = 0
@@ -55,6 +59,11 @@ function app_properties(divid, options) {
 	o.divid = divid
 	o.div = $("#"+divid);
 	o.options = options
+	o.link = {
+		"fn": arguments.callee.name,
+		"parameters": o.options,
+		"title": "link."+arguments.callee.name
+	}
 
 	o.init = function() {
 		o.info_id = o.div.find("#id");
@@ -72,6 +81,9 @@ function app_properties(divid, options) {
 		o.info_nodes_title = o.div.find("#nodes_title");
 		o.info_nodes = o.div.find("#nodes");
 
+		osvc_tools(o.div, {
+			"link": o.link
+		})
 		o.load_app()
 	}
 

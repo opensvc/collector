@@ -6,6 +6,10 @@ function user_tabs(divid, options) {
 	o.options = options
 	o.options.bgcolor = osvc.colors.org
 	o.options.icon = "guy16"
+	o.link = {
+		"fn": arguments.callee.name,
+		"title": "link."+arguments.callee.name
+	}
 
 	o.load(function(){
 		var i = 0
@@ -52,8 +56,16 @@ function user_properties(divid, options) {
 	o.divid = divid
 	o.div = $("#"+divid)
 	o.options = options
+	o.link = {
+		"fn": arguments.callee.name,
+		"parameters": o.options,
+		"title": "link."+arguments.callee.name
+	}
 
 	o.init = function() {
+		osvc_tools(o.div, {
+			"link": o.link
+		})
 		o.info_id = o.div.find("#id")
 		o.info_username = o.div.find("#username")
 		o.info_first_name = o.div.find("#first_name")

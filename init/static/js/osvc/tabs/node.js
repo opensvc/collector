@@ -4,8 +4,8 @@ function node_tabs(divid, options) {
 	o.options.bgcolor = osvc.colors.node
 	o.options.icon = "node16"
 	o.link = {
-		"fn": "node_tabs",
-		"title": "link.node_tabs",
+		"fn": arguments.callee.name,
+		"title": "link."+arguments.callee.name
 	}
 	if (!o.options.node_id) {
 		return
@@ -197,20 +197,17 @@ function node_properties(divid, options)
 	// store parameters
 	o.options = options
 	o.link = {
-		"fn": "node_properties",
-		"title": "link.node_properties"
+		"fn": arguments.callee.name,
+		"parameters": o.options,
+		"title": "link."+arguments.callee.name
 	}
 
 	o.div = $("#"+divid)
 
 	o.init = function(){
 		o.div.i18n()
-		osvc_tools($("#"+divid), {
-			"link": {
-				"fn": o.link.fn,
-				"parameters": o.options,
-				"title": o.link.title
-			}
+		osvc_tools(o.div, {
+			"link": o.link
 		})
 		o.e_tags = o.div.find(".tags")
 		o.e_tags.uniqueId()
@@ -401,8 +398,9 @@ function node_stats(divid, options) {
 	o.div = $("#"+divid)
 	o.options = options
 	o.link = {
-		"fn": "node_stats",
-		"title": "link.node_stats"
+		"fn": arguments.callee.name,
+		"parameters": o.options,
+		"title": "link."+arguments.callee.name
 	}
 
 	o.init = function() {
@@ -442,11 +440,7 @@ function node_stats(divid, options) {
 function node_stats_init(o) {
 	o.div.i18n()
 	osvc_tools(o.div, {
-		"link": {
-			"fn": o.link.fn,
-			"parameters": o.options,
-			"title": o.link.title
-		}
+		"link": o.link
 	})
 
 	// init date inputs
@@ -635,8 +629,9 @@ function ips(divid, options)
 	var o = {}
 	o.options = options
 	o.link = {
-		"fn": "ips",
-		"title": "link.ips"
+		"fn": arguments.callee.name,
+		"parameters": o.options,
+		"title": "link."+arguments.callee.name
 	}
 
 	// store parameters
@@ -647,11 +642,7 @@ function ips(divid, options)
 
 	o.ips_load = function() {
 		osvc_tools(o.div, {
-			"link": {
-				"fn": o.link.fn,
-				"parameters": o.options,
-				"title": o.link.title
-			}
+			"link": o.link
 		})
 		var th = "<tr><th>mac</th><th style='width:7em'>interface</th><th>type</th><th style='width:20em'>addr</th><th style='width:7em'>mask</th><th style='width:10em'>net name</th><th style='width:10em'>net comment</th><th style='width:4em'>net pvid</th><th>net base</th><th style='width:7em'>net gateway</th><th style='width:5em'>net prio</th><th style='width:7em'>net begin</th><th style='width:7em'>net end</th></tr>"
 

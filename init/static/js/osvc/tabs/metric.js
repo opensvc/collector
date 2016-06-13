@@ -6,6 +6,10 @@ function metric_tabs(divid, options) {
 	o.options = options
 	o.options.bgcolor = osvc.colors.stats
 	o.options.icon = "spark16"
+	o.link = {
+		"fn": arguments.callee.name,
+		"title": "link."+arguments.callee.name
+	}
 
 	o.load(function() {
 		if (o.options.metric_name) {
@@ -45,6 +49,11 @@ function metric_properties(divid, options) {
 	o.divid = divid
 	o.div = $("#"+divid)
 	o.options = options
+	o.link = {
+		"fn": arguments.callee.name,
+		"parameters": o.options,
+		"title": "link."+arguments.callee.name
+	}
 
 	o.init = function() {
 		o.info_id = o.div.find("#id")
@@ -64,6 +73,9 @@ function metric_properties(divid, options) {
 	}
 
 	o._load = function(data) {
+		osvc_tools(o.div, {
+			"link": o.link
+		})
 		o.info_id.html(data.id)
 		o.info_metric_name.html(data.metric_name)
 		o.info_metric_author.html(data.metric_author)
@@ -124,6 +136,11 @@ function metric_request(divid, options) {
 	o.divid = divid
 	o.div = $("#"+divid)
 	o.options = options
+	o.link = {
+		"fn": arguments.callee.name,
+		"parameters": o.options,
+		"title": "link."+arguments.callee.name
+	}
 
 	o.init = function() {
 		o.div.empty()
@@ -134,18 +151,44 @@ function metric_request(divid, options) {
 	}
 
 	o.load = function(data) {
-		var div = $("<div style='padding:1em'></div>")
-		o.div.append(div)
+		osvc_tools(o.div, {
+			"resize": o.resize,
+			"link": o.link
+		})
+		o.editor_div = $("<div style='padding:1em'></div>")
+		o.div.append(o.editor_div)
 		if (data.metric_sql && (data.metric_sql.length > 0)) {
 			var text = data.metric_sql
 		} else {
 			var text = ""
 		}
-		o.editor = osvc_editor(div, {
+		o.editor = osvc_editor(o.editor_div, {
 			"text": text,
 			"privileges": ["Manager", "ReportsManager"],
-			"save": o.save
+			"save": o.save,
+			"callback": o.resize
 		})
+	}
+
+	o.resize = function() {
+		var div = o.editor_div.children().first()
+		var button = o.editor_div.find("button")
+		var max_height = max_child_height(o.div)
+			 - o.div.css("padding-top").replace(/px/,"")
+			 - o.div.css("padding-bottom").replace(/px/,"")
+		o.div.outerHeight(max_height)
+		if (button.length > 0) {
+			max_height = max_height
+				 - button.height()
+				 - button.css("margin-top").replace(/px/,"")
+				 - button.css("margin-bottom").replace(/px/,"")
+		}
+
+		// leave half the space for the request result
+		max_height /= 2
+		div.outerHeight(max_height)
+
+		o.editor.editor.resize()
 	}
 
 	o.save = function(text) {

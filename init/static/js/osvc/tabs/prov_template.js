@@ -3,6 +3,10 @@ function prov_template_tabs(divid, options) {
 	o.options = options
 	o.options.bgcolor = osvc.colors.svc
 	o.options.icon = "prov"
+	o.link = {
+		"fn": arguments.callee.name,
+		"title": "link."+arguments.callee.name
+	}
 
 	o.load(function() {
 		if (o.options.tpl_name) {
@@ -43,8 +47,16 @@ function prov_template_properties(divid, options) {
 	o.divid = divid
 	o.div = $("#"+divid)
 	o.options = options
+	o.link = {
+		"fn": arguments.callee.name,
+		"parameters": o.options,
+		"title": "link."+arguments.callee.name
+	}
 
 	o.init = function() {
+		osvc_tools(o.div, {
+			"link": o.link
+		})
 		o.info_id = o.div.find("#id")
 		o.info_tpl_name = o.div.find("#tpl_name")
 		o.info_tpl_comment = o.div.find("#tpl_comment")
@@ -130,6 +142,11 @@ function prov_template_definition(divid, options) {
 	o.divid = divid
 	o.div = $("#"+divid)
 	o.options = options
+	o.link = {
+		"fn": arguments.callee.name,
+		"parameters": o.options,
+		"title": "link."+arguments.callee.name
+	}
 
 	o.init = function() {
 		o.div.empty()
@@ -138,19 +155,40 @@ function prov_template_definition(divid, options) {
 		})
 	}
 
+	o.resize = function() {
+		var div = o.editor_div.children().first()
+		var button = o.editor_div.find("button")
+		var max_height = max_child_height(o.div)
+			 - o.editor_div.css("padding-top").replace(/px/,"")
+			 - o.editor_div.css("padding-bottom").replace(/px/,"")
+		if (button.length > 0) {
+			max_height = max_height
+				 - button.height()
+				 - button.css("margin-top").replace(/px/,"")
+				 - button.css("margin-bottom").replace(/px/,"")
+		}
+		div.outerHeight(max_height)
+		o.editor.editor.resize()
+	}
+
 	o.load = function(data) {
-		var div = $("<div style='padding:1em'></div>")
-		o.div.append(div)
+		o.editor_div = $("<div style='padding:1em'></div>")
+		o.div.append(o.editor_div)
 		if (data.tpl_command && (data.tpl_command.length > 0)) {
 			var text = data.tpl_command
 		} else {
 			var text = ""
 		}
-		o.editor = osvc_editor(div, {
+		o.editor = osvc_editor(o.editor_div, {
 			"text": text,
 			"obj_type": "provisioning_templates",
 			"obj_id": o.options.tpl_id,
-			"save": o.save
+			"save": o.save,
+			"callback": o.resize
+		})
+		osvc_tools(o.div, {
+			"resize": o.resize,
+			"link": o.link
 		})
 	}
 

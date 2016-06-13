@@ -8,8 +8,8 @@ function wiki(divid, options) {
 	o.div = $("#"+divid)
 	o.nodes = options.nodes
 	o.link = {
-		"fn": "wiki",
-		"title": "link.wiki"
+		"fn": arguments.callee.name,
+		"title": "link."+arguments.callee.name
 	}
 
 	o.wiki_insert_sign = function(){

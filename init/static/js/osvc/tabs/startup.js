@@ -6,15 +6,22 @@ function startup(divid, options) {
 	o.divid = divid
 	o.options = options
 	o.div = $("#"+o.divid)
+	o.link = {
+		"fn": arguments.callee.name,
+		"title": "link."+arguments.callee.name
+	}
 
 	o.init = function() {
+		osvc_tools(o.div, {
+			"link": {
+				"fn": o.link.fn,
+				"parameters": o.options,
+				"title": o.link.title
+			}
+		})
+
 		// button
 		o.button.attr("value", i18n.t("topology.redraw"))
-
-		// link
-		o.link.bind("click", function() {
-			o.create_link()
-		})
 
 		// toggle config
 		o.toggle_config.bind("click", function() {
@@ -86,6 +93,7 @@ function startup(divid, options) {
 			o.div.find("form").bind("submit", function(event) {
 				event.preventDefault()
 				o.config.empty()
+				o.update_options()
 				o.options.display = []
 				$(this).find("input:checked").each(function () {
 					o.options.display.push($(this).siblings("span").attr("node_id"))
@@ -101,13 +109,12 @@ function startup(divid, options) {
 		o.draw = function() {
 	}
 
-	o.create_link = function(){
+	o.update_options = function(){
 		var display = []
 			o.div.find("input[type=checkbox][name=node_id]:checked").each(function() {
 			display.push($(this).siblings("span").attr("node_id"))
 		})
 		o.options.display = display
-		osvc_create_link("startup", o.options, "link.startup")
 	}
 
 	o.draw = function() {
@@ -191,7 +198,6 @@ function startup(divid, options) {
 	o.div.load('/init/static/views/startup.html?v='+osvc.code_rev, function() {
 		o.div.i18n()
 		o.viz = o.div.find("#viz")
-		o.link = o.div.find(".link16")
 		o.button = o.div.find("input[type=submit]")
 		o.toggle_config = o.div.find("[name=configure_toggle]")
 		o.config = o.div.find("[name=configure]")

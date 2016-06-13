@@ -6,6 +6,10 @@ function form_tabs(divid, options) {
 	o.options = options
 	o.options.bgcolor = osvc.colors.form
 	o.options.icon = "wf16"
+	o.link = {
+		"fn": arguments.callee.name,
+		"title": "link."+arguments.callee.name
+	}
 
 	o.load(function() {
 		if (o.options.form_name) {
@@ -55,8 +59,16 @@ function form_properties(divid, options) {
 	o.divid = divid
 	o.div = $("#"+divid)
 	o.options = options
+	o.link = {
+		"fn": arguments.callee.name,
+		"parameters": o.options,
+		"title": "link."+arguments.callee.name
+	}
 
 	o.init = function() {
+		osvc_tools(o.div, {
+			"link": o.link
+		})
 		o.info_id = o.div.find("#id")
 		o.info_form_name = o.div.find("#form_name")
 		o.info_form_type = o.div.find("#form_type")
@@ -156,9 +168,30 @@ function form_definition(divid, options) {
 	o.divid = divid
 	o.div = $("#"+divid)
 	o.options = options
+	o.link = {
+		"fn": arguments.callee.name,
+		"parameters": o.options,
+		"title": "link."+arguments.callee.name
+	}
 
 	o.init = function() {
 		o.load_form()
+	}
+
+	o.resize = function() {
+		var div = o.editor_div.children().first()
+		var button = o.editor_div.find("button")
+		var max_height = max_child_height(o.div)
+			 - o.editor_div.css("padding-top").replace(/px/,"")
+			 - o.editor_div.css("padding-bottom").replace(/px/,"")
+		if (button.length > 0) {
+			max_height = max_height
+				 - button.height()
+				 - button.css("margin-top").replace(/px/,"")
+				 - button.css("margin-bottom").replace(/px/,"")
+		}
+		div.outerHeight(max_height)
+		o.editor.editor.resize()
 	}
 
 	o.load_form = function() {
@@ -169,18 +202,23 @@ function form_definition(divid, options) {
 	}
 
 	o._load_form = function(data) {
-		var div = $("<div style='padding:1em'></div>")
-		o.div.append(div)
+		o.editor_div = $("<div style='padding:1em'></div>")
+		o.div.append(o.editor_div)
 		if (data.form_yaml && (data.form_yaml.length > 0)) {
 			var text = data.form_yaml
 		} else {
 			var text = ""
 		}
-		o.editor = osvc_editor(div, {
+		o.editor = osvc_editor(o.editor_div, {
 			"text": text,
 			"obj_type": "forms",
 			"obj_id": o.options.form_id,
-			"save": o.save
+			"save": o.save,
+			"callback": o.resize
+		})
+		osvc_tools(o.div, {
+			"resize": o.resize,
+			"link": o.link
 		})
 	}
 

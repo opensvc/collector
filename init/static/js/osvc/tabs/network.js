@@ -6,6 +6,11 @@ function network_tabs(divid, options) {
 	o.options = options
 	o.options.bgcolor = osvc.colors.net
 	o.options.icon = "net16"
+	o.link = {
+		"fn": arguments.callee.name,
+		"parameters": o.options,
+		"title": "link."+arguments.callee.name
+	}
 
 	o.load(function() {
 		o.closetab.text(o.options.network_id)
@@ -38,8 +43,16 @@ function network_properties(divid, options) {
 	o.divid = divid
 	o.div = $("#"+divid)
 	o.options = options
+	o.link = {
+		"fn": arguments.callee.name,
+		"parameters": o.options,
+		"title": "link."+arguments.callee.name
+	}
 
 	o.init = function() {
+		osvc_tools(o.div, {
+			"link": o.link
+		})
 		// updateable
 		o.info_pvid = o.div.find("#pvid")
 		o.info_network = o.div.find("#network")

@@ -657,7 +657,7 @@ function osvc_editor(divid, options) {
 	}
 
 	o.init = function() {
-		var textarea = $("<div class='oi oidefinition' style='height:30em'></div>")
+		var textarea = $("<div class='oi oidefinition' style='min-height:30em'></div>")
 		var button = $("<button class='button_div icon fa-save' style='margin:0.5em 0 0.5em 0.5em'></button>")
 		textarea.uniqueId()
 		button.text(i18n.t("form_properties.save"))
@@ -691,6 +691,9 @@ function osvc_editor(divid, options) {
 					o.div.append(button)
 				}
 			})
+		}
+		if (o.options.callback) {
+			o.options.callback()
 		}
 	}
 

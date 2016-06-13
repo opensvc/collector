@@ -5,6 +5,11 @@ function alert_info(divid, options) {
 	o.divid = divid
 	o.div = $("#"+divid)
 	o.options = options
+	o.link = {
+		"fn": arguments.callee.name,
+		"parameters": o.options,
+		"title": "link."+arguments.callee.name
+	}
 
 	o.wiki_page_name = function() {
 		var s = "alert"
@@ -25,6 +30,10 @@ function alert_info(divid, options) {
 		o.e_wiki = o.div.find("[name=wiki]")
 		o.e_timeline.uniqueId()
 		o.e_wiki.uniqueId()
+
+		osvc_tools(o.div.children(), {
+			"link": o.link
+		})
 
 		alert_event(o.e_timeline.attr("id"), o.options)
 		wiki(o.e_wiki.attr("id"), {

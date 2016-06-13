@@ -2,58 +2,62 @@
 // array
 //
 function array_tabs(divid, options) {
-  var o = tabs(divid)
-  o.options = options
-  o.options.bgcolor = osvc.color.disk
-  o.options.icon = "hd16"
+	var o = tabs(divid)
+	o.options = options
+	o.options.bgcolor = osvc.colors.disk
+	o.options.icon = "hd16"
+	o.link = {
+		"fn": arguments.callee.name,
+		"title": "link."+arguments.callee.name
+	}
 
-  o.load(function() {
-    services_osvcgetrest("R_ARRAY", [o.options.array_name], {"meta": "0"}, function(jd) {
-      o.data = jd.data[0]
-      o._load()
-    })
-  })
+	o.load(function() {
+		services_osvcgetrest("R_ARRAY", [o.options.array_name], {"meta": "0"}, function(jd) {
+			o.data = jd.data[0]
+			o._load()
+		})
+	})
 
-  o._load = function() {
-    var title = o.data.array_name
-    o.closetab.text(title)
+	o._load = function() {
+		var title = o.data.array_name
+		o.closetab.text(title)
 
-    // tab properties
-    i = o.register_tab({
-      "title": "node_tabs.properties",
-      "title_class": "icon hd16"
-    })
-    o.tabs[i].callback = function(divid) {
-      array_properties(divid, {"array_id": o.data.id})
-    }
+		// tab properties
+		i = o.register_tab({
+			"title": "node_tabs.properties",
+			"title_class": "icon hd16"
+		})
+		o.tabs[i].callback = function(divid) {
+			array_properties(divid, {"array_id": o.data.id})
+		}
 
-    // tab quotas
-    i = o.register_tab({
-      "title": "array_tabs.quotas",
-      "title_class": "icon quota16"
-    })
-    o.tabs[i].callback = function(divid) {
-      table_quota_array(divid, o.data.array_name)
-    }
+		// tab quotas
+		i = o.register_tab({
+			"title": "array_tabs.quotas",
+			"title_class": "icon quota16"
+		})
+		o.tabs[i].callback = function(divid) {
+			table_quota_array(divid, o.data.array_name)
+		}
 
-    // tab usage
-    i = o.register_tab({
-      "title": "node_tabs.stats",
-      "title_class": "icon spark16"
-    })
-    o.tabs[i].callback = function(divid) {
-      $.ajax({
-        "url": "/init/disks/ajax_array",
-        "type": "POST",
-        "success": function(msg) {$("#"+divid).html(msg)},
-        "data": {"array": o.data.array_name, "rowid": divid}
-      })
-    }
+		// tab usage
+		i = o.register_tab({
+			"title": "node_tabs.stats",
+			"title_class": "icon spark16"
+		})
+		o.tabs[i].callback = function(divid) {
+			$.ajax({
+				"url": "/init/disks/ajax_array",
+				"type": "POST",
+				"success": function(msg) {$("#"+divid).html(msg)},
+				"data": {"array": o.data.array_name, "rowid": divid}
+			})
+		}
 
-    o.set_tab(o.options.tab)
-  }
+		o.set_tab(o.options.tab)
+	}
 
-  return o
+	return o
 }
 
 
@@ -64,8 +68,16 @@ function array_properties(divid, options) {
 	o.divid = divid
 	o.div = $("#"+divid)
 	o.options = options
+	o.link = {
+		"fn": arguments.callee.name,
+		"parameters": o.options,
+		"title": "link."+arguments.callee.name
+	}
 
 	o.init = function() {
+		osvc_tools(o.div, {
+			"link": o.link
+		})
 		o.info_id = o.div.find("#id")
 		o.info_array_name = o.div.find("#array_name")
 		o.info_array_model = o.div.find("#array_model")
