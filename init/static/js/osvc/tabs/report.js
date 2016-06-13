@@ -9,12 +9,29 @@ function report_tabs(divid, options) {
 	}
 
 	o.load(function() {
-		if (o.options.report_name) {
-			var title = o.options.report_name
-		} else {
-			var title = o.options.report_id
+		if (o.options.report_name && o.options.report_id) {
+			o._load()
+		} else if (o.options.report_id) {
+			services_osvcgetrest("/reports/%1", [o.options.report_id], "", function(jd) {
+				o.options.report_data = jd.data[0]
+				o.options.report_name = o.options.report_data.report_name
+				o._load(jd.data[0])
+			})
+		} else if (o.options.report_name) {
+			services_osvcgetrest("/reports", "", {"filters": ["report_name "+o.options.report_name]}, function(jd) {
+				o.options.report_data = jd.data[0]
+				o.options.report_id = o.options.report_data.id
+				o._load(jd.data[0])
+			})
 		}
-		o.closetab.text(title)
+	})
+
+	o._load = function() {
+		o.link.title_args = {
+			"name": "<span style='color:"+osvc.colors.stats+"' class='spark16 icon'>"+o.options.report_name+"</span>"
+		}
+
+		o.closetab.text(o.options.report_name)
 
 		// tab properties
 		i = o.register_tab({
@@ -54,7 +71,7 @@ function report_tabs(divid, options) {
 		}
 
 		o.set_tab(o.options.tab)
-	})
+	}
 	return o
 }
 
@@ -68,25 +85,31 @@ function report_properties(divid, options) {
 	o.link = {
 		"fn": arguments.callee.name,
 		"parameters": o.options,
-		"title": "link."+arguments.callee.name
+		"title": "link."+arguments.callee.name,
 	}
 
 	o.init = function() {
-		osvc_tools(o.div, {
-			"link": o.link
-		})
 		o.info_id = o.div.find("#id")
 		o.info_report_name = o.div.find("#report_name")
 		o.load()
 	}
 
 	o.load= function() {
-		services_osvcgetrest("/reports/%1", [o.options.report_id], "", function(jd) {
-			o._load(jd.data[0])
-		})
+		if (o.options.report_data) {
+			o._load(o.options.report_data)
+		} else {
+			services_osvcgetrest("/reports/%1", [o.options.report_id], "", function(jd) {
+				o._load(jd.data[0])
+			})
+		}
 	}
 
 	o._load= function(data) {
+		o.link.title_args = {"name": "<span style='color:"+osvc.colors.stats+"' class='spark16 icon'>"+o.options.report_name+"</span>"}
+		osvc_tools(o.div, {
+			"link": o.link
+		})
+
 		o.info_id.html(data.id)
 		o.info_report_name.html(data.report_name)
 
@@ -145,7 +168,8 @@ function report_definition(divid, options) {
 	o.link = {
 		"fn": arguments.callee.name,
 		"parameters": o.options,
-		"title": "link."+arguments.callee.name
+		"title": "link."+arguments.callee.name,
+		"title_args": {"name": "<span style='color:"+osvc.colors.stats+"' class='spark16 icon'>"+o.options.report_name+"</span>"}
 	}
 
 	o.init = function() {
@@ -224,7 +248,8 @@ function report_export(divid, options) {
 	o.link = {
 		"fn": arguments.callee.name,
 		"parameters": o.options,
-		"title": "link."+arguments.callee.name
+		"title": "link."+arguments.callee.name,
+		"title_args": {"name": "<span style='color:"+osvc.colors.stats+"' class='spark16 icon'>"+o.options.report_name+"</span>"}
 	}
 
 	o.resize = function() {

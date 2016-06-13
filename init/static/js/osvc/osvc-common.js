@@ -716,7 +716,7 @@ function closer(e, tools, options) {
 	if (!options.close) {
 		return o
 	}
-	o.tool = $("<div class='fa-times linker'></div>")
+	o.tool = $("<div class='fa fa-times linker'></div>")
 	tools.append(o.tool)
 	o.tool.bind("click", function() {
 		// Remove extraline
@@ -747,7 +747,7 @@ function linker(e, tools, options) {
 	if (!options.link.fn) {
 		return o
 	}
-	o.tool = $("<div class='fa-link linker'></div>")
+	o.tool = $("<div class='fa fa-link linker'></div>")
 	tools.append(o.tool)
 	o.tool.bind("click", function() {
 		osvc_create_link(options.link.fn, options.link.parameters, options.link.title, options.link.title_args)
@@ -773,7 +773,7 @@ function fullscreener(e, tools, resize) {
 	o.dom_prev = e.prev()
 	o.dom_parent = e.parent()
 	o.backup = null
-	o.tool = $("<div class='fa-expand'></div>")
+	o.tool = $("<div class='fa fa-expand'></div>")
 	tools.append(o.tool)
 	o.tool.bind("click", function() {
 		if (o.tool.hasClass("fa-expand")) {

@@ -13,6 +13,15 @@ function tabs(divid) {
 		o.div.load('/init/static/views/tabs.html?v='+osvc.code_rev, "", function() {
 			o.init()
 			callback(o)
+			osvc_tools(o.e_tabs, {
+				"close": true,
+				"link": {
+					"fn": o.link ? o.link.fn : null,
+					"parameters": o.options,
+					"title": o.link ? o.link.title : null,
+					"title_args": o.link ? o.link.title_args : null
+				}
+			})
 		})
 	}
 
@@ -21,15 +30,6 @@ function tabs(divid) {
 		o.closetab = o.div.find(".closetab")
 		o.tabs_ul = o.closetab.parent()
 		o.display = o.div.find(".tab_display")
-
-		osvc_tools(o.e_tabs, {
-			"close": true,
-			"link": {
-				"fn": o.link ? o.link.fn : null,
-				"parameters": o.options,
-				"title": o.link ? o.link.title : null,
-			}
-		})
 
 		o.closetab
 		.css({"background-color": o.options.bgcolor})

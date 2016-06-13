@@ -870,6 +870,10 @@
 		"help": "hover on a range to display details"
 	},
 	"link": {
+		"report_tabs": "Report __name__ tabs",
+		"report_properties": "Report __name__ properties",
+		"report_definition": "Report __name__ definition",
+		"report_export": "Report __name__ export",
 		"node_tabs": "Node tabs",
 		"notfound": "Link not found.It may have expired , please re generate it.",
 		"sysreport": "Sysreport",

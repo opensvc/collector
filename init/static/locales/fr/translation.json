@@ -868,6 +868,10 @@
 		"help" : "Survoler un élément pour obtenir les détails"
 	},
 	"link" : {
+		"report_tabs": "Tabs du rapport __name__",
+		"report_properties": "Proriétés du rapport __name__",
+		"report_definition": "Définition du rapport __name__",
+		"report_export": "Export du rapport __name__",
 		"node_tabs" : "Tabs de noeud",
 		"notfound" : "Lien non trouvé. Il peut avoir expiré, veuillez le régénérer s'il vous plaît.",
 		"sysreport": "Sysreport",

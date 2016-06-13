@@ -3809,8 +3809,8 @@ button:disabled {
 }
 .otools {
 	position: absolute;
-	top: 0;
-	right: 0;
+	top: 2px;
+	right: 6px;
 	cursor: pointer;
 	display: none !important;
 	padding: initial !important;
