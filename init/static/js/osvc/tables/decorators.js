@@ -392,7 +392,7 @@ function cell_decorator_ruleset_name(e, line) {
 
 function cell_decorator_report_name(e, line) {
 	var v = $.data(e[0], "v")
-	var form_id = $.data(line.children("[col=id]")[0], "v")
+	var report_id = $.data(line.children("[col=id]")[0], "v")
 	e
 	.addClass("corner-top")
 	.osvc_report({"tag": false, "event": "click", "report_id": report_id, "report_name": v})
