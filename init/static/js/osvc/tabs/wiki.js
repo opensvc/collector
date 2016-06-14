@@ -9,7 +9,13 @@ function wiki(divid, options) {
 	o.nodes = options.nodes
 	o.link = {
 		"fn": arguments.callee.name,
-		"title": "link."+arguments.callee.name
+		"parameters": o.options,
+		"title": "format_title",
+		"title_args": {
+			"fn": o.options.type+"_wiki",
+			"type": o.options.type,
+			"id": o.options.nodes
+		}
 	}
 
 	o.wiki_insert_sign = function(){
@@ -103,11 +109,7 @@ function wiki(divid, options) {
 
 	o.init = function() {
 		osvc_tools(o.div, {
-			"link": {
-				"fn": o.link.fn,
-				"parameters": o.options,
-				"title": o.link.title
-			}
+			"link": o.link
 		})
 
 		o.wiki_table_last_changes = o.div.find("#wiki_table_last_changes")

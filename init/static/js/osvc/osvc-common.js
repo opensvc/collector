@@ -317,6 +317,21 @@ function flash() {
 	return o
 }
 
+function osvc_render_title(e_title, title, title_args) {
+	if (title && (title != "")) {
+		if (title == "format_title") {
+			title_args.element = e_title
+			format_title(title_args)
+		} else if (title in window) {
+			var s = window[title](title_args)
+			e_title.html(s)
+		} else {
+			var s = i18n.t(title, title_args)
+			e_title.html(s)
+		}
+	}
+}
+
 function osvc_show_link(url, title, title_args) {
 	// header
 	var e = $("<div></div>")
@@ -327,17 +342,10 @@ function osvc_show_link(url, title, title_args) {
 	var subheader = $("<div style='color:lightgray' data-i18n='api.link_text'></div>")
 	e.append(subheader)
 
-	if (title && (title != "")) {
-		var e_title = $("<h2></h2>")
-		if (title in window) {
-			var s = window[title](title_args)
-		} else {
-			var s = i18n.t(title, title_args)
-		}
-		e_title.html(s)
-		e_title.css({"padding": "1em 0 0 0"})
-		e.append(e_title)
-	}
+	var e_title = $("<h2></h2>")
+	e_title.css({"padding": "1em 0 0 0"})
+	e.append(e_title)
+	osvc_render_title(e_title, title, title_args)
 
 	// link display area
 	var p = $("<textarea style='width:100%' class='clickable'></textarea>")
@@ -647,11 +655,26 @@ function osvc_get_link(divid,link_id) {
 		} else {
 			var param = JSON.parse(result[0].link_parameters)
 		}
+		if (result[0].link_title_args == "") {
+			var title_args = {}
+		} else {
+			var title_args = JSON.parse(result[0].link_title_args)
+		}
 		var link = result[0].link_function
 
-		if (link.beginsWith("https://")) {
+		var e_title = $("<span></span>")
+		osvc_render_title(e_title, result[0].link_title, title_args) 
+		if (e_title.text().length > 0) {
+			osvc.menu.menu_clickable.find(".menu16").text("").append(e_title)
+		}
+
+		if (link.beginsWith("https://") || link.beginsWith("/")) {
 			// ajax link
-			app_load_href(link+"?"+param)
+			if (param.indexOf("=") > 0) {
+				app_load_href(link+"?"+param, null, {"loadable_href": true})
+			} else {
+				app_load_href(link+"/"+param, null, {"loadable_href": true})
+			}
 		} else {
 			// js function link
 			var fn = window[link]
@@ -747,6 +770,9 @@ function linker(e, tools, options) {
 	if (!options.link.fn) {
 		return o
 	}
+	if (options.link.title_args && !options.link.title_args.fn) {
+		options.link.title_args.fn = options.link.fn
+	}
 	o.tool = $("<div class='fa fa-link linker'></div>")
 	tools.append(o.tool)
 	o.tool.bind("click", function() {
@@ -822,11 +848,70 @@ function osvc_tools(e, options) {
 	var o = {}
 	o.tools = $("<div class='otools'></div>")
 	e.css({"position": "relative"})
+	if (e.hasClass("layout")) {
+		// add the layout padding for the header
+		o.tools.css({"top": o.tools.position().top+$(".header").height()+"px"})
+	}
 	e.addClass("otooled")
 	e.append(o.tools)
 	o.linker = linker(e, o.tools, options)
 	o.fullscreener = fullscreener(e, o.tools, options.resize)
 	o.closer = closer(e, o.tools, options)
 	return o
+}
+
+//
+// Format link and tab titles
+//
+// Options:
+//   - type: the object type, known as a osvc.colors, osvc.icons key
+//   - name: if passed the object name. requested if not passed
+//   - id: the object id used to request 'name' if 'name' is not passed
+//   - element: the jquery selector to place the title in
+//
+function format_title(options) {
+	var o = {}
+	o.options = options
+
+	o.render = function() {
+		var color = osvc.colors[o.options.type]
+		var icon = osvc.icons[o.options.type]
+		o.options.element.html(i18n.t("link."+o.options.fn, {"name": "<span style='color:"+color+"' class='"+icon+" icon'>"+o.options.name+"</span>"}))
+	}
+
+	if ("name" in options) {
+		o.render()
+	}
+
+	if (options.type == "node") {
+		services_osvcgetrest("R_NODE", [o.options.id], {"props": "nodename", "meta": "false", "limit": 1}, function(jd) {
+			o.options.name = jd.data[0].nodename
+			o.render()
+		})
+	}
+	else if (options.type == "service") {
+		services_osvcgetrest("R_SERVICE", [o.options.id], {"props": "svcname", "meta": "false", "limit": 1}, function(jd) {
+			o.options.name = jd.data[0].svcname
+			o.render()
+		})
+	}
+	else if (options.type == "report") {
+		services_osvcgetrest("/reports/%1", [o.options.id], {"props": "report_name", "meta": "false", "limit": 1}, function(jd) {
+			o.options.name = jd.data[0].report_name
+			o.render()
+		})
+	}
+	else if (options.type == "chart") {
+		services_osvcgetrest("/reports/charts/%1", [o.options.id], {"props": "chart_name", "meta": "false", "limit": 1}, function(jd) {
+			o.options.name = jd.data[0].chart_name
+			o.render()
+		})
+	}
+	else if (options.type == "metric") {
+		services_osvcgetrest("/reports/metrics/%1", [o.options.id], {"props": "metric_name", "meta": "false", "limit": 1}, function(jd) {
+			o.options.name = jd.data[0].metric_name
+			o.render()
+		})
+	}
 }
 

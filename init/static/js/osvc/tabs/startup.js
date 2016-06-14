@@ -8,16 +8,18 @@ function startup(divid, options) {
 	o.div = $("#"+o.divid)
 	o.link = {
 		"fn": arguments.callee.name,
-		"title": "link."+arguments.callee.name
+		"parameters": o.options,
+		"title": "format_title",
+		"title_args": {
+			"fn": "service_startup",
+			"type": "service",
+			"id": options.svc_ids[0]
+		}
 	}
 
 	o.init = function() {
 		osvc_tools(o.div, {
-			"link": {
-				"fn": o.link.fn,
-				"parameters": o.options,
-				"title": o.link.title
-			}
+			"link": o.link
 		})
 
 		// button
@@ -104,9 +106,6 @@ function startup(divid, options) {
 			o.draw()
 		})
 
-		}
-
-		o.draw = function() {
 	}
 
 	o.update_options = function(){

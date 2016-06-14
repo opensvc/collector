@@ -2,10 +2,15 @@ function report_tabs(divid, options) {
 	var o = tabs(divid)
 	o.options = options
 	o.options.bgcolor = osvc.colors.stats
-	o.options.icon = "spark16"
+	o.options.icon = osvc.icons.report
 	o.link = {
 		"fn": arguments.callee.name,
-		"title": "link."+arguments.callee.name
+		"title": "link."+arguments.callee.name,
+		"title": "format_title",
+		"title_args": {
+			"id": o.options.report_id,
+			"type": "report"
+		}
 	}
 
 	o.load(function() {
@@ -27,10 +32,7 @@ function report_tabs(divid, options) {
 	})
 
 	o._load = function() {
-		o.link.title_args = {
-			"name": "<span style='color:"+osvc.colors.stats+"' class='spark16 icon'>"+o.options.report_name+"</span>"
-		}
-
+		o.link.title_args.name = o.options.report_name
 		o.closetab.text(o.options.report_name)
 
 		// tab properties
@@ -85,7 +87,11 @@ function report_properties(divid, options) {
 	o.link = {
 		"fn": arguments.callee.name,
 		"parameters": o.options,
-		"title": "link."+arguments.callee.name,
+		"title": "format_title",
+		"title_args": {
+			"id": o.options.report_id,
+			"type": "report"
+		}
 	}
 
 	o.init = function() {
@@ -105,7 +111,7 @@ function report_properties(divid, options) {
 	}
 
 	o._load= function(data) {
-		o.link.title_args = {"name": "<span style='color:"+osvc.colors.stats+"' class='spark16 icon'>"+o.options.report_name+"</span>"}
+		o.link.title_args.name = data.report_name
 		osvc_tools(o.div, {
 			"link": o.link
 		})
@@ -168,8 +174,11 @@ function report_definition(divid, options) {
 	o.link = {
 		"fn": arguments.callee.name,
 		"parameters": o.options,
-		"title": "link."+arguments.callee.name,
-		"title_args": {"name": "<span style='color:"+osvc.colors.stats+"' class='spark16 icon'>"+o.options.report_name+"</span>"}
+		"title": "format_title",
+		"title_args": {
+			"id": o.options.report_id,
+			"type": "report"
+		}
 	}
 
 	o.init = function() {
@@ -248,8 +257,11 @@ function report_export(divid, options) {
 	o.link = {
 		"fn": arguments.callee.name,
 		"parameters": o.options,
-		"title": "link."+arguments.callee.name,
-		"title_args": {"name": "<span style='color:"+osvc.colors.stats+"' class='spark16 icon'>"+o.options.report_name+"</span>"}
+		"title": "format_title",
+		"title_args": {
+			"id": o.options.report_id,
+			"type": "report"
+		}
 	}
 
 	o.resize = function() {

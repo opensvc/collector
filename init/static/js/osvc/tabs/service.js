@@ -7,7 +7,11 @@ function service_tabs(divid, options) {
 	o.options.bgcolor = osvc.colors.svc
 	o.link = {
 		"fn": arguments.callee.name,
-		"title": "link."+arguments.callee.name
+		"title": "format_title",
+		"title_args": {
+			"type": "service",
+			"id": o.options.svc_id
+		}
 	}
 
 	o.load(function(){
@@ -134,7 +138,12 @@ function service_tabs(divid, options) {
 					"link": {
 						"fn": "/init/ajax_node/ajax_svc_stor",
 						"parameters": divid.replace("-", "_")+"/"+encodeURIComponent(o.options.svc_id),
-						"title": "link.svc_storage"
+						"title": "format_title",
+						"title_args": {
+							"fn": "service_storage",
+							"id": o.options.svc_id,
+							"type": "service"
+						}
 					}
 				})
 			})
@@ -162,8 +171,13 @@ function service_tabs(divid, options) {
 					osvc_tools($("#"+divid), {
 						"link": {
 							"fn": "/init/stats/ajax_containerperf_plot",
-							"parameters": "nodes="+divid.replace("-", "_")+"/"+encodeURIComponent(o.options.svc_id),
-							"title": "link.svc_containerperf"
+							"parameters": "nodes="+encodeURIComponent(nodes),
+							"title": "format_title",
+							"title_args": {
+								"fn": "service_containerperf",
+								"id": o.options.svc_id,
+								"type": "service"
+							}
 						}
 					})
 				})
@@ -237,7 +251,12 @@ function service_tabs(divid, options) {
 					"link": {
 						"fn": "/init/compliance/ajax_compliance_svc",
 						"parameters": encodeURIComponent(o.options.svc_id),
-						"title": "link.svc_containerperf"
+						"title": "format_title",
+						"title_args": {
+							"fn": "service_compliance",
+							"id": o.options.svc_id,
+							"type": "service"
+						}
 					}
 				})
 			})
@@ -260,7 +279,11 @@ function service_env(divid, options)
 	o.link = {
 		"fn": arguments.callee.name,
 		"parameters": o.options,
-		"title": "link."+arguments.callee.name
+		"title": "format_title",
+		"title_args": {
+			"type": "service",
+			"id": o.options.svc_id
+		}
 	}
 
 	o.init = function() {
@@ -289,11 +312,7 @@ function service_env(divid, options)
 	o._init = function() {
 		osvc_tools(o.div, {
 			"resize": o.resize,
-			"link": {
-				"fn": o.link.fn,
-				"parameters": o.options,
-				"title": o.link.title
-			}
+			"link": o.link
 		})
 		o.header = o.div.find("p")
 		o.body = o.div.find("[name=content]")
@@ -361,16 +380,16 @@ function service_properties(divid, options)
 	o.link = {
 		"fn": arguments.callee.name,
 		"parameters": o.options,
-		"title": "link."+arguments.callee.name
+		"title": "format_title",
+		"title_args": {
+			"type": "service",
+			"id": o.options.svc_id
+		}
 	}
 
 	o.init = function(){
 		osvc_tools(o.div, {
-			"link": {
-				"fn": o.link.fn,
-				"parameters": o.options,
-				"title": o.link.title
-			}
+			"link": o.link
 		})
 		o.div.i18n();
 		o.e_tags = o.div.find(".tags")

@@ -4,9 +4,33 @@ var osvc = {
 	'forms_loaded': $.Deferred(),
 	'i18n_started': $.Deferred(),
 	'app_started': $.Deferred(),
+	'icons': {
+		'node': 'node16',
+		'svc': 'svc',
+		'service': 'svc',
+		'alert': 'alert16',
+		'tag': 'tag16',
+		'pkg': 'pkg16',
+		'net': 'net16',
+		'chk': 'check16',
+		'form': 'wf16',
+		'report': 'spark16',
+		'chart': 'spark16',
+		'metric': 'spark16',
+		'org': 'group16',
+		'dns': 'dns16',
+		'priv': 'privilege16',
+		'link': 'link16',
+		'fset': 'fset16',
+		'disk': 'hd16',
+		'rset': 'rset16',
+		'modset': 'modset16',
+		'app': 'app16'
+	},
 	'colors': {
 		'node': 'cornflowerblue',
 		'svc': 'seagreen',
+		'service': 'seagreen',
 		'alert': 'orange',
 		'tag': 'darkcyan',
 		'pkg': '#cc9966',
@@ -14,6 +38,9 @@ var osvc = {
 		'chk': 'green',
 		'form': 'palevioletred',
 		'stats': 'sandybrown',
+		'report': 'sandybrown',
+		'metric': 'sandybrown',
+		'chart': 'sandybrown',
 		'org': 'salmon',
 		'error': 'red',
 		'dns': 'turquoise',
@@ -187,23 +214,26 @@ function app_load_href(href, fn, options, fn_options) {
 
 	// loadable co-functions ends with '_load'
 	var _href
-
-	if (href.match(/:\/\//)) {
-		// full url
-		var fn_idx = 5
+	if (options.loadable_href) {
+		_href = href
 	} else {
-		// relative url
-		var fn_idx = 3
+		if (href.match(/:\/\//)) {
+			// full url
+			var fn_idx = 5
+		} else {
+			// relative url
+			var fn_idx = 3
+		}
+
+		// http:, , host:port, app, ctrl, fn, arg0, arg1, ... lastarg?key=val,key=val
+		var l = href.split("?")
+		var v = l[0].split("/")
+
+		v[fn_idx] += "_load"
+
+		l[0] = v.join("/")
+		_href = l.join("?")
 	}
-
-	// http:, , host:port, app, ctrl, fn, arg0, arg1, ... lastarg?key=val,key=val
-	var l = href.split("?")
-	var v = l[0].split("/")
-
-	v[fn_idx] += "_load"
-
-	l[0] = v.join("/")
-	_href = l.join("?")
 
 	// update browser url and history
 	if (!_badIE && !options.disable_pushstate) {

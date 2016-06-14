@@ -5,7 +5,11 @@ function node_tabs(divid, options) {
 	o.options.icon = "node16"
 	o.link = {
 		"fn": arguments.callee.name,
-		"title": "link."+arguments.callee.name
+		"title": "format_title",
+		"title_args": {
+			"type": "node",
+			"id": o.options.node_id
+		}
 	}
 	if (!o.options.node_id) {
 		return
@@ -13,6 +17,7 @@ function node_tabs(divid, options) {
 	o.load(function(){
 		services_osvcgetrest("R_NODE", [o.options.node_id], {"meta": "false", "limit": 1}, function(jd) {
 			o.options.node_data = jd.data[0]
+			o.link.title_args.name = o.options.node_data.nodename
 			o._load()
 		})
 	})
@@ -103,7 +108,12 @@ function node_tabs(divid, options) {
 					"link": {
 						"fn": "/init/ajax_node/ajax_node_stor",
 						"parameters": divid.replace("-", "_")+"/"+encodeURIComponent(o.options.node_id),
-						"title": "node_tabs.storage"
+						"title": "format_title",
+						"title_args": {
+							"type": "node",
+							"id": o.options.node_id,
+							"fn": "node_storage"
+						}
 					}
 				})
 			})
@@ -137,7 +147,7 @@ function node_tabs(divid, options) {
 			"title_class": "icon edit"
 		})
 		o.tabs[i].callback = function(divid) {
-			wiki(divid, {"nodes": o.options.node_id})
+			wiki(divid, {"nodes": o.options.node_id, "type": "node"})
 		}
 
 		// tab checks
@@ -169,7 +179,12 @@ function node_tabs(divid, options) {
 					"link": {
 						"fn": "/init/compliance/ajax_compliance_node",
 						"parameters": encodeURIComponent(o.options.node_id),
-						"title": "node_tabs.compliance"
+						"title": "format_title",
+						"title_args": {
+							"type": "node",
+							"id": o.options.node_id,
+							"fn": "node_compliance"
+						}
 					}
 				})
 			})
@@ -199,16 +214,17 @@ function node_properties(divid, options)
 	o.link = {
 		"fn": arguments.callee.name,
 		"parameters": o.options,
-		"title": "link."+arguments.callee.name
+		"title": "format_title",
+		"title_args": {
+			"type": "node",
+			"id": o.options.node_id
+		}
 	}
 
 	o.div = $("#"+divid)
 
 	o.init = function(){
 		o.div.i18n()
-		osvc_tools(o.div, {
-			"link": o.link
-		})
 		o.e_tags = o.div.find(".tags")
 		o.e_tags.uniqueId()
 
@@ -245,6 +261,11 @@ function node_properties(divid, options)
 	}
 
 	o.render = function(data) {
+		o.link.title_args.name = data.nodename
+		osvc_tools(o.div, {
+			"link": o.link
+		})
+
 		var key
 		for (key in data) {
 			if (!data[key]) {
@@ -400,7 +421,11 @@ function node_stats(divid, options) {
 	o.link = {
 		"fn": arguments.callee.name,
 		"parameters": o.options,
-		"title": "link."+arguments.callee.name
+		"title": "format_title",
+		"title_args": {
+			"type": "node",
+			"id": o.options.node_id
+		}
 	}
 
 	o.init = function() {
@@ -631,7 +656,11 @@ function ips(divid, options)
 	o.link = {
 		"fn": arguments.callee.name,
 		"parameters": o.options,
-		"title": "link."+arguments.callee.name
+		"title": "format_title",
+		"title_args": {
+			"type": "node",
+			"id": o.options.node_id
+		}
 	}
 
 	// store parameters

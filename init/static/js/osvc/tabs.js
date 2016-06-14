@@ -13,14 +13,12 @@ function tabs(divid) {
 		o.div.load('/init/static/views/tabs.html?v='+osvc.code_rev, "", function() {
 			o.init()
 			callback(o)
+			if (o.link) {
+				o.link.parameters = o.options
+			}
 			osvc_tools(o.e_tabs, {
 				"close": true,
-				"link": {
-					"fn": o.link ? o.link.fn : null,
-					"parameters": o.options,
-					"title": o.link ? o.link.title : null,
-					"title_args": o.link ? o.link.title_args : null
-				}
+				"link": o.link
 			})
 		})
 	}

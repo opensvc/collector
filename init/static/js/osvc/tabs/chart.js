@@ -5,18 +5,37 @@ function chart_tabs(divid, options) {
 	var o = tabs(divid)
 	o.options = options
 	o.options.bgcolor = osvc.colors.stats
-	o.options.icon = "spark16"
+	o.options.icon = osvc.icons.chart
 	o.link = {
 		"fn": arguments.callee.name,
-		"title": "link."+arguments.callee.name
+		"title": "format_title",
+		"title_args": {
+			"type": "chart",
+			"id": o.options.chart_id
+		}
 	}
 
 	o.load(function() {
-		if (o.options.chart_name) {
-			var title = o.options.chart_name
-		} else {
-			var title = o.options.chart_id
+		if (o.options.chart_name && o.options.chart_id) {
+			o._load()
+		} else if (o.options.report_id) {
+			services_osvcgetrest("/reports/charts/%1", [o.options.report_id], "", function(jd) {
+				o.options.chart_data = jd.data[0]
+				o.options.chart_name = o.options.chart_data.chart_name
+				o._load(jd.data[0])
+			})
+		} else if (o.options.report_name) {
+			services_osvcgetrest("/reports/charts", "", {"filters": ["chart_name "+o.options.chart_name]}, function(jd) {
+				o.options.chart_data = jd.data[0]
+				o.options.chart_id = o.options.chart_data.id
+				o._load(jd.data[0])
+			})
 		}
+	})
+
+	o._load = function(data) {
+		var title = o.options.chart_name
+		o.link.title_args.name = o.options.chart_name
 		o.closetab.text(title)
 
 		// tab properties
@@ -47,7 +66,7 @@ function chart_tabs(divid, options) {
 		}
 
 		o.set_tab(o.options.tab)
-	})
+	}
 	return o
 }
 
@@ -61,25 +80,34 @@ function chart_properties(divid, options) {
 	o.link = {
 		"fn": arguments.callee.name,
 		"parameters": o.options,
-		"title": "link."+arguments.callee.name
+		"title": "format_title",
+		"title_args": {
+			"id": o.options.chart_id,
+			"type": "chart"
+		}
 	}
 
 	o.init = function() {
-		osvc_tools(o.div, {
-			"link": o.link
-		})
 		o.info_id = o.div.find("#id")
 		o.info_chart_name = o.div.find("#chart_name")
 		o.load()
 	}
 
 	o.load= function() {
-		services_osvcgetrest("/reports/charts/%1", [o.options.chart_id], "", function(jd) {
-			o._load(jd.data[0])
-		})
+                if (o.options.chart_data) {
+                        o._load(o.options.chart_data)
+                } else {
+			services_osvcgetrest("/reports/charts/%1", [o.options.chart_id], "", function(jd) {
+				o._load(jd.data[0])
+			})
+		}
 	}
 
 	o._load= function(data) {
+		o.link.title_args.name = data.chart_name
+		osvc_tools(o.div, {
+			"link": o.link
+		})
 		o.info_id.html(data.id)
 		o.info_chart_name.html(data.chart_name)
 
@@ -138,7 +166,11 @@ function chart_definition(divid, options) {
 	o.link = {
 		"fn": arguments.callee.name,
 		"parameters": o.options,
-		"title": "link."+arguments.callee.name
+		"title": "format_title",
+		"title_args": {
+			"id": o.options.chart_id,
+			"type": "chart"
+		}
 	}
 
 	o.init = function() {
