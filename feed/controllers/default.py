@@ -2035,44 +2035,45 @@ def _task_rq_storage(*args):
     globals()[fn](*args)
 
 def task_rq_storage():
-    task_rq("osvc:q:storage", _task_rq_storage)
+    task_rq("osvc:q:storage", lambda q: _task_rq_storage)
 
-def _task_rq_generic(*args):
-    if l[0] == "osvc:q:svcconf":
-        _update_service(*args)
-    elif l[0] == "osvc:q:checks":
-        _push_checks(*args)
-    elif l[0] == "osvc:q:generic":
-        _insert_generic(*args)
-    elif l[0] == "osvc:q:asset":
-        _update_asset(*args)
-    elif l[0] == "osvc:q:packages":
-        _insert_pkg(*args)
-    elif l[0] == "osvc:q:patches":
-        _insert_patch(*args)
-    elif l[0] == "osvc:q:sysreport":
-        task_send_sysreport(*args)
-    elif l[0] == "osvc:q:svcmon_update":
-        _svcmon_update(*args)
+def _task_rq_generic(q):
+    if q == "osvc:q:svcconf":
+        return _update_service
+    elif q == "osvc:q:checks":
+        return _push_checks
+    elif q == "osvc:q:generic":
+        return _insert_generic
+    elif q == "osvc:q:asset":
+        return _update_asset
+    elif q == "osvc:q:packages":
+        return _insert_pkg
+    elif q == "osvc:q:patches":
+        return _insert_patch
+    elif q == "osvc:q:sysreport":
+        return task_send_sysreport
+    elif q == "osvc:q:svcmon_update":
+        return _svcmon_update
 
 def task_rq_generic():
-    task_rq(["osvc:q:svcmon_update", "osvc:q:sysreport", "osvc:q:patches", "osvc:q:packages", "osvc:q:asset", "osvc:q:generic", "osvc:q:checks", "osvc:q:svcconf"], _task_rq_generic)
+    task_rq(["osvc:q:svcmon_update", "osvc:q:sysreport", "osvc:q:patches", "osvc:q:packages", "osvc:q:asset", "osvc:q:generic", "osvc:q:checks", "osvc:q:svcconf"], lambda q: _task_rq_generic(q))
 
 def task_rq_dashboard():
-    task_rq("osvc:q:update_dash_netdev_errors", update_dash_netdev_errors)
+    task_rq("osvc:q:update_dash_netdev_errors", lambda q: update_dash_netdev_errors)
 
 def task_rq_svcactions():
-    task_rq("osvc:q:svcactions", _action_wrapper)
+    task_rq("osvc:q:svcactions", lambda q: _action_wrapper)
 
 def task_rq_svcmon():
-    task_rq("osvc:q:svcmon", _svcmon_update_combo)
+    task_rq("osvc:q:svcmon", lambda q: _svcmon_update_combo)
 
-def task_rq(rqueues, fn):
+def task_rq(rqueues, getfn):
     l = None
     while True:
         try:
             l = rconn.blpop(rqueues)
             args = json.loads(l[1])
+            fn = getfn(l[0])
             fn(*args)
             db.commit()
         except KeyboardInterrupt:
