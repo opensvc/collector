@@ -5,28 +5,42 @@ function app_tabs(divid, options) {
 	var o = tabs(divid)
 	o.options = options
 	o.options.bgcolor = osvc.colors.app
-	o.options.icon = "app16"
+	o.options.icon = osvc.icons.app
 	o.link = {
 		"fn": arguments.callee.name,
-		"title": "link."+arguments.callee.name
+		"parameters": o.options,
+		"title": "format_title",
+		"title_args": {
+			"type": "app"
+		}
 	}
 
 	o.load(function(){
 		var i = 0
 
-		if (!("app_id" in o.options) && ("app_name" in o.options)) {
+		if (("app_id" in o.options) && ("app_name" in o.options)) {
+			o._load()
+		} else if ("app_name" in o.options) {
 			services_osvcgetrest("R_APPS", "", {"filters": ["app "+o.options.app_name]}, function(jd) {
-				var app = jd.data[0]
-				o.options.app_id = app.id
+				o.options.app_data = jd.data[0]
+				o.options.app_id = o.options.app_data.id
+				o.link.title_args.name = o.options.app_name
+				o.link.title_args.id = o.options.app_data.id
 				o._load()
 			})
-		} else {
-			o._load()
+		} else if ("app_id" in o.options) {
+			services_osvcgetrest("R_APP", [o.options.app_id], "", function(jd) {
+				o.options.app_data = jd.data[0]
+				o.options.app_name = o.options.app_data.app
+				o.link.title_args.name = o.options.app_data.app
+				o.link.title_args.id = o.options.app_id
+				o._load()
+			})
 		}
 	})
 
 	o._load = function() {
-		o.closetab.text(o.options.app_name ? o.options.app_name : o.options.app_id)
+		o.closetab.text(o.options.app_name)
 
 		// tab properties
 		i = o.register_tab({
@@ -54,7 +68,7 @@ function app_tabs(divid, options) {
 
 function app_properties(divid, options) {
 	var o = {}
-
+console.log(options)
 	// store parameters
 	o.divid = divid
 	o.div = $("#"+divid);
@@ -62,7 +76,10 @@ function app_properties(divid, options) {
 	o.link = {
 		"fn": arguments.callee.name,
 		"parameters": o.options,
-		"title": "link."+arguments.callee.name
+		"title": "format_title",
+		"title_args": {
+			"type": "app",
+		}
 	}
 
 	o.init = function() {
@@ -81,102 +98,110 @@ function app_properties(divid, options) {
 		o.info_nodes_title = o.div.find("#nodes_title");
 		o.info_nodes = o.div.find("#nodes");
 
+		o.load()
+	}
+
+	o.load = function() {
+		if (o.options.app_data) {
+			o._load(o.options.app_data)
+		} else {
+			services_osvcgetrest("R_APP", [o.options.app_id], "", function(jd) {
+				if (!jd.data || (jd.data.length == 0)) {
+					return
+				}
+				o._load(jd.data[0])
+			})
+		}
+	}
+
+	o._load = function(data) {
+		o.link.title_args.id = data.id
+		o.link.title_args.name = data.app
 		osvc_tools(o.div, {
 			"link": o.link
 		})
-		o.load_app()
-	}
+		o.info_description.html(data.description);
+		o.info_app_team_ops.html(data.app_team_ops);
+		o.info_app_domain.html(data.app_domain);
+		o.info_app.html(data.app);
+		o.info_updated.html(osvc_date_from_collector(data.updated));
+		o.info_id.html(data.id);
 
-	o.load_app = function() {
-		services_osvcgetrest("R_APP", [o.options.app_id], "", function(jd) {
-			if (!jd.data || (jd.data.length == 0)) {
-				return
+		var am_data = [
+			{
+				"title": "action_menu.data_actions",
+				"class": "hd16",
+				"children": [
+					{
+						"selector": ["tab"],
+						"foldable": false,
+						"cols": [],
+						"children": [
+							{
+								"title": "action_menu.del",
+								"class": "del16",
+								"fn": "data_action_del_apps",
+								"privileges": ["Manager", "AppManager"]
+							}
+						]
+					}
+				]
 			}
-			var data = jd.data[0]
-			o.info_description.html(data.description);
-			o.info_app_team_ops.html(data.app_team_ops);
-			o.info_app_domain.html(data.app_domain);
-			o.info_app.html(data.app);
-			o.info_updated.html(osvc_date_from_collector(data.updated));
-			o.info_id.html(data.id);
+		]
+		tab_tools({
+			"div": o.div.find("#tools"),
+			"data": {"id": data.id},
+			"am_data": am_data
+		})
 
-			var am_data = [
-				{
-					"title": "action_menu.data_actions",
-					"class": "hd16",
-					"children": [
-						{
-							"selector": ["tab"],
-							"foldable": false,
-							"cols": [],
-							"children": [
-								{
-									"title": "action_menu.del",
-									"class": "del16",
-									"fn": "data_action_del_apps",
-									"privileges": ["Manager", "AppManager"]
-								}
-							]
-						}
-					]
-				}
-			]
-			tab_tools({
-				"div": o.div.find("#tools"),
-				"data": {"id": data.id},
-				"am_data": am_data
-			})
-
-			app_publications({
-				"bgcolor": osvc.colors.org,
-				"tid": o.info_publications,
-				"app_id": data.id
-			})
-			app_responsibles({
-				"bgcolor": osvc.colors.org,
-				"tid": o.info_responsibles,
-				"app_id": data.id
-			})
-			tab_properties_generic_list({
-				"request_service": "R_APP_SERVICES",
-				"request_parameters": [data.id],
-				"limit": "50",
-				"key": "svcname",
-				"item_class": "icon svc",
-				"id": "svc_id",
-				"title": "app_properties.services",
-				"bgcolor": osvc.colors.svc,
-				"e_title": o.info_services_title,
-				"e_list": o.info_services,
-				"lowercase": true,
-				"ondblclick": function(divid, data) {
-					service_tabs(divid, {"svc_id": data.id})
-				}
-			})
-			tab_properties_generic_list({
-				"request_service": "R_APP_NODES",
-				"request_parameters": [data.id],
-				"limit": "50",
-				"key": "nodename",
-				"item_class": "icon node16",
-				"id": "node_id",
-				"title": "app_properties.nodes",
-				"bgcolor": osvc.colors.node,
-				"e_title": o.info_nodes_title,
-				"e_list": o.info_nodes,
-				"lowercase": true,
-				"ondblclick": function(divid, data) {
-					node_tabs(divid, {"node_id": data.id})
-				}
-			})
-			tab_properties_generic_updater({
-				"div": o.div,
-				"privileges": ["AppManager", "Manager"],
-				"post": function(_data, callback, error_callback) {
-					services_osvcpostrest("R_APP", [data.id], "", _data, callback, error_callback)
-				}
-			})
-
+		app_publications({
+			"bgcolor": osvc.colors.org,
+			"tid": o.info_publications,
+			"app_id": data.id
+		})
+		app_responsibles({
+			"bgcolor": osvc.colors.org,
+			"tid": o.info_responsibles,
+			"app_id": data.id
+		})
+		tab_properties_generic_list({
+			"request_service": "R_APP_SERVICES",
+			"request_parameters": [data.id],
+			"limit": "50",
+			"key": "svcname",
+			"item_class": "icon svc",
+			"id": "svc_id",
+			"title": "app_properties.services",
+			"bgcolor": osvc.colors.svc,
+			"e_title": o.info_services_title,
+			"e_list": o.info_services,
+			"lowercase": true,
+			"ondblclick": function(divid, data) {
+				service_tabs(divid, {"svc_id": data.id})
+			}
+		})
+		tab_properties_generic_list({
+			"request_service": "R_APP_NODES",
+			"request_parameters": [data.id],
+			"limit": "50",
+			"key": "nodename",
+			"item_class": "icon node16",
+			"id": "node_id",
+			"title": "app_properties.nodes",
+			"bgcolor": osvc.colors.node,
+			"e_title": o.info_nodes_title,
+			"e_list": o.info_nodes,
+			"lowercase": true,
+			"ondblclick": function(divid, data) {
+				node_tabs(divid, {"node_id": data.id})
+			}
+		})
+		tab_properties_generic_updater({
+			"div": o.div,
+			"privileges": ["AppManager", "Manager"],
+			"post": function(_data, callback, error_callback) {
+				services_osvcpostrest("R_APP", [data.id], "", _data, callback, error_callback)
+			}
 		})
 	}
 

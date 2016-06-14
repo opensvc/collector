@@ -913,5 +913,11 @@ function format_title(options) {
 			o.render()
 		})
 	}
+	else if (options.type == "app") {
+		services_osvcgetrest("/apps/%1", [o.options.id], {"props": "app", "meta": "false", "limit": 1}, function(jd) {
+			o.options.name = jd.data[0].app
+			o.render()
+		})
+	}
 }
 

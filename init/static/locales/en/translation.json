@@ -870,6 +870,8 @@
 		"help": "hover on a range to display details"
 	},
 	"link": {
+		"app_properties": "Application __name__ properties",
+		"app_tabs": "Application __name__ tabs",
 		"metric_tabs": "Metric __name__ tabs",
 		"metric_properties": "Metric __name__ properties",
 		"metric_request": "Metric __name__ definition",

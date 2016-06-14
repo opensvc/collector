@@ -868,6 +868,8 @@
 		"help" : "Survoler un élément pour obtenir les détails"
 	},
 	"link" : {
+		"app_properties": "Propriétés de l'application __name__",
+		"app_tabs": "Tabs de l'application __name__",
 		"metric_tabs": "Tabs de la métrique __name__",
 		"metric_properties": "Proriétés de la métrique __name__",
 		"metric_request": "Définition de la métrique __name__",
