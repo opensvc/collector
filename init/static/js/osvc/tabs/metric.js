@@ -8,16 +8,35 @@ function metric_tabs(divid, options) {
 	o.options.icon = "spark16"
 	o.link = {
 		"fn": arguments.callee.name,
-		"title": "link."+arguments.callee.name
+		"title": "format_title",
+		"title_args": {
+			"type": "metric",
+			"id": o.options.metric_id
+		}
 	}
 
 	o.load(function() {
-		if (o.options.metric_name) {
-			var title = o.options.metric_name
-		} else {
-			var title = o.options.metric_id
+		if (o.options.metric_name && o.options.metric_id) {
+			o._load()
+		} else if (o.options.report_id) {
+			services_osvcgetrest("/reports/metrics/%1", [o.options.report_id], "", function(jd) {
+				o.options.metric_data = jd.data[0]
+				o.options.metric_name = o.options.metric_data.metric_name
+				o._load(jd.data[0])
+			})
+		} else if (o.options.report_name) {
+			services_osvcgetrest("/reports/metrics", "", {"filters": ["metric_name "+o.options.metric_name]}, function(jd) {
+				o.options.metric_data = jd.data[0]
+				o.options.metric_id = o.options.metric_data.id
+				o._load(jd.data[0])
+			})
 		}
+	})
+
+	o._load = function() {
+		var title = o.options.metric_name
 		o.closetab.text(title)
+		o.link.title_args.name = o.options.metric_name
 
 		// tab properties
 		i = o.register_tab({
@@ -38,7 +57,7 @@ function metric_tabs(divid, options) {
 		}
 
 		o.set_tab(o.options.tab)
-	})
+	}
 	return o
 }
 
@@ -52,7 +71,11 @@ function metric_properties(divid, options) {
 	o.link = {
 		"fn": arguments.callee.name,
 		"parameters": o.options,
-		"title": "link."+arguments.callee.name
+		"title": "format_title",
+		"title_args": {
+			"type": "metric",
+			"id": o.options.metric_id
+		}
 	}
 
 	o.init = function() {
@@ -73,6 +96,7 @@ function metric_properties(divid, options) {
 	}
 
 	o._load = function(data) {
+		o.link.title_args.name = data.metric_name
 		osvc_tools(o.div, {
 			"link": o.link
 		})
@@ -139,7 +163,11 @@ function metric_request(divid, options) {
 	o.link = {
 		"fn": arguments.callee.name,
 		"parameters": o.options,
-		"title": "link."+arguments.callee.name
+		"title": "format_title",
+		"title_args": {
+			"type": "metric",
+			"id": o.options.metric_id
+		}
 	}
 
 	o.init = function() {

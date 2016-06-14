@@ -872,7 +872,7 @@
 	"link": {
 		"metric_tabs": "Metric __name__ tabs",
 		"metric_properties": "Metric __name__ properties",
-		"metric_definition": "Metric __name__ definition",
+		"metric_request": "Metric __name__ definition",
 		"chart_tabs": "Chart __name__ tabs",
 		"chart_properties": "Chart __name__ properties",
 		"chart_definition": "Chart __name__ definition",

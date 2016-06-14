@@ -870,7 +870,7 @@
 	"link" : {
 		"metric_tabs": "Tabs de la métrique __name__",
 		"metric_properties": "Proriétés de la métrique __name__",
-		"metric_definition": "Définition de la métrique __name__",
+		"metric_request": "Définition de la métrique __name__",
 		"chart_tabs": "Tabs de la courbe __name__",
 		"chart_properties": "Proriétés de la courbe __name__",
 		"chart_definition": "Définition de la courbe __name__",
