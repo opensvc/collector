@@ -868,6 +868,10 @@
 		"help" : "Survoler un élément pour obtenir les détails"
 	},
 	"link" : {
+		"fset_designer": "Designer du jeu de filtres __name__",
+		"fset_export": "Export du jeu de filtres __name__",
+		"fset_properties": "Propriétés du jeu de filtres __name__",
+		"filterset_tabs": "Tabs du jeu de filtres __name__",
 		"app_properties": "Propriétés de l'application __name__",
 		"app_tabs": "Tabs de l'application __name__",
 		"metric_tabs": "Tabs de la métrique __name__",

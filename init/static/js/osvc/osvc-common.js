@@ -919,5 +919,11 @@ function format_title(options) {
 			o.render()
 		})
 	}
+	else if (options.type == "fset") {
+		services_osvcgetrest("/filtersets/%1", [o.options.id], {"props": "fset_name", "meta": "false", "limit": 1}, function(jd) {
+			o.options.name = jd.data[0].fset_name
+			o.render()
+		})
+	}
 }
 

@@ -8,10 +8,38 @@ function filterset_tabs(divid, options) {
 	o.options.icon = "filter16"
 	o.link = {
 		"fn": arguments.callee.name,
-		"title": "link."+arguments.callee.name
+		"title": "format_title",
+		"title_args": {
+			"type": "fset"
+		}
 	}
 
-	o.load(function() {
+	o.load(function(){
+		var i = 0
+
+		if (("fset_id" in o.options) && ("fset_name" in o.options)) {
+			o._load()
+		} else if ("fset_name" in o.options) {
+			services_osvcgetrest("R_FILTERSETS", "", {"filters": ["fset_name "+o.options.fset_name]}, function(jd) {
+				o.options.fset_data = jd.data[0]
+				o.options.fset_id = o.options.fset_data.id
+				o.link.title_args.name = o.options.fset_name
+				o.link.title_args.id = o.options.fset_data.id
+				o._load()
+			})
+		} else if ("fset_id" in o.options) {
+			services_osvcgetrest("R_FILTERSET", [o.options.fset_id], "", function(jd) {
+				o.options.fset_data = jd.data[0]
+				o.options.fset_name = o.options.fset_data.fset
+				o.link.title_args.name = o.options.fset_data.fset
+				o.link.title_args.id = o.options.fset_id
+				o._load()
+			})
+		}
+	})
+
+
+	o._load = function() {
 		var title = o.options.fset_name
 		o.closetab.text(title)
 
@@ -43,7 +71,7 @@ function filterset_tabs(divid, options) {
 		}
 
 		o.set_tab(o.options.tab)
-	})
+	}
 
 	return o
 }
@@ -58,13 +86,13 @@ function fset_properties(divid, options) {
 	o.link = {
 		"fn": arguments.callee.name,
 		"parameters": o.options,
-		"title": "link."+arguments.callee.name
+		"title": "format_title",
+		"title_args": {
+			"type": "fset"
+		}
 	}
 
 	o.init = function() {
-		osvc_tools(o.div, {
-			"link": o.link
-		})
 		o.info_id = o.div.find("#id")
 		o.info_fset_name = o.div.find("#fset_name")
 		o.info_fset_stats = o.div.find("#fset_stats")
@@ -84,13 +112,27 @@ function fset_properties(divid, options) {
 	}
 
 	o.load_form = function() {
-		services_osvcgetrest("R_FILTERSETS", "", {"meta": "0", "filters": ["fset_name "+o.options.fset_name]}, function(jd) {
-			o.data = jd.data[0]
-			o._load_form(jd.data[0])
-		})
+		if (o.options.fset_data) {
+			o._load_form(o.options.fset_data)
+		} else if ("fset_id" in o.options) {
+			services_osvcgetrest("R_FILTERSET", [o.options.fset_id], "", function(jd) {
+				o.options.fset_data = jd.data[0]
+				o._load_form(jd.data[0])
+			})
+		} else {
+			services_osvcgetrest("R_FILTERSETS", "", {"meta": "0", "filters": ["fset_name "+o.options.fset_name]}, function(jd) {
+				o.options.fset_data = jd.data[0]
+				o._load_form(jd.data[0])
+			})
+		}
 	}
 
 	o._load_form = function(data) {
+		o.link.title_args.name = data.fset_name
+		o.link.title_args.id = data.id
+		osvc_tools(o.div, {
+			"link": o.link
+		})
 		o.info_id.html(data.id)
 		o.info_fset_name.html(data.fset_name)
 		o.info_fset_stats.html(data.fset_stats)
@@ -165,7 +207,7 @@ function fset_properties(divid, options) {
 	}
 
 	o.load_usage = function() {
-		services_osvcgetrest("/filtersets/%1/usage", [o.data.id], "", function(jd) {
+		services_osvcgetrest("/filtersets/%1/usage", [o.options.fset_data.id], "", function(jd) {
 			tab_properties_generic_list({
 				"data": jd.data.filtersets,
 				"key": "fset_name",
@@ -219,7 +261,10 @@ function fset_export(divid, options) {
 	o.link = {
 		"fn": arguments.callee.name,
 		"parameters": o.options,
-		"title": "link."+arguments.callee.name
+		"title": "format_title",
+		"title_args": {
+			"type": "fset"
+		}
 	}
 
 	o.init = function() {
@@ -228,12 +273,21 @@ function fset_export(divid, options) {
 
 	o.load_export = function() {
 		o.div.empty()
+		if (!o.options.fset_id) {
+			o.options.fset_id = o.get_fset_id(o.options.fset_name)
+		}
 		spinner_add(o.div)
-		services_osvcgetrest("R_FILTERSETS", "", {"filters": ["fset_name "+o.options.fset_name]}, function(jd) {
-			services_osvcgetrest("/filtersets/%1/export", [jd.data[0].id], "", function(jd) {
-				o._load_export(jd)
-			})
+		services_osvcgetrest("/filtersets/%1/export", [o.options.fset_id], "", function(jd) {
+			o._load_export(jd)
 		})
+	}
+
+	o.get_fset_id = function(fset_name) {
+		for (var i=0; i<osvc.fset_selector.get_data.length; i++) {
+			if (osvc.fset_selector.get_data[i].fset_name == fset_name) {
+				return osvc.fset_selector.get_data[i].id
+			}
+		}
 	}
 
 	o.resize = function() {
@@ -247,6 +301,8 @@ function fset_export(divid, options) {
 		o.textarea.text(JSON.stringify(data, null, 4))
 		o.div.html(o.textarea)
 		o.resize()
+		o.link.title_args.name = o.options.fset_name
+		o.link.title_args.id = o.options.fset_id
 		osvc_tools(o.div, {
 			"resize": o.resize,
 			"link": o.link
@@ -269,21 +325,20 @@ function fset_designer(divid, options) {
 	o.link = {
 		"fn": arguments.callee.name,
 		"parameters": o.options,
-		"title": "link."+arguments.callee.name
+		"title": "format_title",
+		"title_args": {
+			"type": "fset"
+		}
 	}
 
 	o.init = function() {
 		//load the filters cache
 		o.get_filters()
 
-		if (o.options.fset_id) {
-			services_osvcgetrest("/filtersets/%1/export", [o.options.fset_id], "", function(jd) {
-				o.data = jd
-				o.get_fset_data(o.options.fset_id)
-				o.render()
-			})
-		} else if (o.options.fset_name) {
+		if (!o.options.fset_id) {
 			o.options.fset_id = o.get_fset_id(o.options.fset_name)
+		}
+		if (o.options.fset_id) {
 			services_osvcgetrest("/filtersets/%1/export", [o.options.fset_id], "", function(jd) {
 				o.data = jd
 				o.get_fset_data(o.options.fset_id)
@@ -331,9 +386,6 @@ function fset_designer(divid, options) {
 
 	o.render = function() {
 		o.div.empty()
-		osvc_tools(o.div, {
-			"link": o.link
-		})
 		o.area = $("<div style='padding:1em'></div>")
 		o.div.append(o.area)
 
@@ -348,6 +400,12 @@ function fset_designer(divid, options) {
 			cancel: ".fset_designer_item *:not('.fa-bars')",
 			placeholder: "fset_designer_placeholder",
 			update: o.save_orders
+		})
+
+		o.link.title_args.id = o.options.fset_id
+		o.link.title_args.name = o.options.fset_name
+		osvc_tools(o.div, {
+			"link": o.link
 		})
 	}
 

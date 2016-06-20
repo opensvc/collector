@@ -43,6 +43,7 @@ var services_access_uri = {
 	"R_DNS_DOMAIN_SYNC" : "/dns/domains/%1/sync",
 	"R_DNS_DOMAINS" : "/dns/domains",
 	"R_FILTERSETS" : "/filtersets",
+	"R_FILTERSET" : "/filtersets/%1",
 	"R_FORM" : "/forms/%1",
 	"R_FORM_PUBLICATION" : "/forms/%1/publications/%2",
 	"R_FORM_RESPONSIBLE" : "/forms/%1/responsibles/%2",
