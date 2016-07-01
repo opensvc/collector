@@ -18,7 +18,7 @@ class Hp3par(object):
     def readfile(self, fname):
         fpath = os.path.join(self.dir, fname)
         with open(fpath, 'r') as f:
-            data = json.loads(f.read())
+            data = json.load(f)
         return data
 
     def __str__(self):
