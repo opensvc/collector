@@ -1217,6 +1217,7 @@ def insert_dcs(name=None, node_id=None):
         generic_insert('diskinfo', vars, vals)
         sql = """delete from diskinfo where disk_arrayid="%s" and disk_updated < "%s" """%(name, str(now))
         db.executesql(sql)
+        db.commit()
 
 def insert_hds(name=None, node_id=None):
     import glob
@@ -1313,6 +1314,7 @@ def insert_hds(name=None, node_id=None):
             generic_insert('diskinfo', vars, vals)
             sql = """delete from diskinfo where disk_arrayid="%s" and disk_updated < "%s" """%(s.name, str(now))
             db.executesql(sql)
+            db.commit()
 
 def insert_centera(name=None, node_id=None):
     import glob
@@ -1427,6 +1429,7 @@ def insert_centera(name=None, node_id=None):
             generic_insert('svcdisks', vars, vals)
             sql = """delete from svcdisks where disk_model="Centera" and disk_dg="%s" and disk_updated < "%s" """%(s.name, str(now))
             db.executesql(sql)
+            db.commit()
 
 def insert_emcvnx(name=None, node_id=None):
     import glob
@@ -1510,6 +1513,7 @@ def insert_emcvnx(name=None, node_id=None):
             generic_insert('diskinfo', vars, vals)
             sql = """delete from diskinfo where disk_arrayid="%s" and disk_updated < "%s" """%(s.name, str(now))
             db.executesql(sql)
+            db.commit()
 
 def insert_necism(name=None, node_id=None):
     import glob
@@ -1586,6 +1590,7 @@ def insert_necism(name=None, node_id=None):
             generic_insert('diskinfo', vars, vals)
             sql = """delete from diskinfo where disk_arrayid="%s" and disk_updated < "%s" """%(s.name, str(now))
             db.executesql(sql)
+            db.commit()
 
 def insert_brocade(name=None, node_id=None):
     import glob
@@ -1697,6 +1702,7 @@ def insert_brocade(name=None, node_id=None):
         generic_insert('switches', vars, vals)
         sql = """delete from switches where sw_name="%s" and sw_updated < "%s" """%(s.name, str(now))
         db.executesql(sql)
+        db.commit()
 
 def insert_vioserver(name=None, node_id=None):
     import glob
@@ -1774,6 +1780,7 @@ def insert_vioserver(name=None, node_id=None):
         generic_insert('svcdisks', vars, vals)
         sql = """delete from svcdisks where disk_nodename="%s" and disk_updated < "%s" """%(s.array_name, str(now))
         db.executesql(sql)
+        db.commit()
 
 def get_array_node_id(array_name, array_type=None):
     q = db.nodes.nodename == name
@@ -2143,6 +2150,7 @@ def insert_netapp(name=None, node_id=None):
             generic_insert('diskinfo', vars, vals)
             sql = """delete from diskinfo where disk_arrayid="%s" and disk_updated < "%s" """%(s.array_name, str(now))
             db.executesql(sql)
+            db.commit()
 
 def insert_hp3par(name=None, node_id=None):
     import glob
@@ -2229,6 +2237,7 @@ def insert_hp3par(name=None, node_id=None):
             generic_insert('diskinfo', vars, vals)
             sql = """delete from diskinfo where disk_arrayid="%s" and disk_updated < "%s" """%(s.name, str(now))
             db.executesql(sql)
+            db.commit()
 
 def insert_ibmds(name=None, node_id=None):
     import glob
@@ -2385,6 +2394,7 @@ def insert_ibmsvc(name=None, node_id=None):
             generic_insert('diskinfo', vars, vals)
             sql = """delete from diskinfo where disk_arrayid="%s" and disk_updated < "%s" """%(s.array_name, str(now))
             db.executesql(sql)
+            db.commit()
 
 def insert_eva(name=None, node_id=None):
     import glob
@@ -2466,6 +2476,7 @@ def insert_eva(name=None, node_id=None):
             generic_insert('diskinfo', vars, vals)
             sql = """delete from diskinfo where disk_arrayid="%s" and disk_updated < "%s" """%(s.name, str(now))
             db.executesql(sql)
+            db.commit()
 
 def insert_sym(symid=None, node_id=None):
     import glob
@@ -2557,6 +2568,7 @@ def insert_sym(symid=None, node_id=None):
             del(s.dev)
             sql = """delete from diskinfo where disk_arrayid="%s" and disk_updated < "%s" """%(s.info['symid'], str(now))
             db.executesql(sql)
+            db.commit()
 
             del(s)
 
