@@ -397,6 +397,7 @@ def ajax_networks():
         return t.do_commonality()
     if len(request.args) == 1 and request.args[0] == 'data':
         n = db(q).count()
+        t.setup_pager(n)
         limitby = (t.pager_start,t.pager_end)
         cols = t.get_visible_columns()
         t.object_list = db(q).select(*cols, orderby=o, limitby=limitby, cacheable=True)
