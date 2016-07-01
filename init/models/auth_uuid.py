@@ -15,8 +15,26 @@ def node_svc_id(node_id, svcname):
           node_id=node_id,
           svc_ids=', '.join([r.svc_id for r in rows]),
         ))
+
+    if len(rows) == 1:
+        return rows.first().svc_id
+
+    #
+    # no service was found in the node's responsability zone.
+    # if we already have a service instance on the node, fetch the svc_id from there,
+    # as a svcname can be found twice on the same node
+    #
+    q = db.svcmon.node_id == node_id
+    q &= db.svcmon.svc_id == db.services.svc_id
+    q &= db.services.svcname == svcname
+    rows = db(q).select(db.services.svc_id)
+
+    if len(rows) >= 1:
+        return rows.first().svc_id
+
     if len(rows) == 0:
         return create_svc(node_id, svcname)
+
     return rows.first().svc_id
 
 def create_svc(node_id, svcname):
