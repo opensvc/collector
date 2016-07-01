@@ -32,8 +32,6 @@ function tabs(divid) {
 		o.closetab
 		.css({"background-color": o.options.bgcolor})
 		.addClass("icon "+o.options.icon)
-		.attr("title", i18n.t("tabs.close"))
-		.tooltipster()
 
 		// set a tab identifer to help find peers
 		var tab_id = null
