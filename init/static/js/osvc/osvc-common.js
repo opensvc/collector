@@ -741,6 +741,8 @@ function closer(e, tools, options) {
 	}
 	o.tool = $("<div class='fa fa-times linker'></div>")
 	tools.append(o.tool)
+	//o.tool.attr("title", i18n.t("tabs.close")).tooltipster()
+
 	o.tool.bind("click", function() {
 		// Remove extraline
 		e.parents(".extraline").first().remove()

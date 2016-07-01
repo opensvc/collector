@@ -119,7 +119,7 @@ def ajax_resinfo_col_values():
     table_id = request.vars.table_id
     t = table_resinfo(table_id, 'ajax_resinfo')
     col = request.args[0]
-    o = db.resinfo[col]
+    o = db[t.colprops[col].table][col]
     q = db.resinfo.node_id == db.nodes.node_id
     q &= db.resinfo.svc_id == db.services.svc_id
     q = q_filter(q, svc_field=db.resinfo.svc_id)
