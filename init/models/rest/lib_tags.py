@@ -7,7 +7,7 @@ def get_tag_name(tagid):
     return tag_name
 
 def tag_allowed(node_id=None, svc_id=None, tag_name=None):
-    if node_id is None and svcname is None:
+    if node_id is None and svc_id is None:
         return False
     if tag_name is None:
         return False
@@ -18,8 +18,8 @@ def tag_allowed(node_id=None, svc_id=None, tag_name=None):
         q &= db.tags.tag_exclude != ""
         rows = db(q).select(db.tags.tag_exclude,
                             groupby=db.tags.tag_exclude)
-    elif svcname:
-        q = db.svc_tags.svcname == svcname
+    elif svc_id:
+        q = db.svc_tags.svc_id == svc_id
         q &= db.svc_tags.tag_id == db.tags.id
         q &= db.tags.tag_exclude != None
         q &= db.tags.tag_exclude != ""
