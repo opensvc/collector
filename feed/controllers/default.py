@@ -649,7 +649,8 @@ def update_array_xml(arrayid, vars, vals, auth, subdir, fn):
         return
 
     #fn(arrayid)
-    rconn.rpush("osvc:q:storage", json.dumps([fn.__name__, arrayid, auth[1]]))
+    node_id = auth_to_node_id(auth)
+    rconn.rpush("osvc:q:storage", json.dumps([fn.__name__, arrayid, node_id]))
 
     # stor_array_proxy
     insert_array_proxy(auth[1], arrayid)
@@ -2031,6 +2032,7 @@ def scheduler_cleanup():
     db.commit()
 
 def _task_rq_storage(*args):
+    args = list(args)
     fn = args.pop(0)
     globals()[fn](*args)
 
@@ -2088,5 +2090,4 @@ def task_rq(rqueues, getfn):
             else:
                 print e
                 print l
-
 
