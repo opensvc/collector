@@ -1286,8 +1286,13 @@ function cell_decorator_form_id(e, line) {
 	.html("<span class='icon wf16 nowrap clickable'>"+v+"</span>")
 	.addClass("corner")
 	.click(function(){
-		var id = toggle_extratable(e)
-		workflow(id, {"form_id": v})
+		osvc.flash.show({
+			id: "wf-"+v,
+			cl: "icon wf16",
+			text: v,
+			bgcolor: osvc.colors.form,
+			fn: function(id){workflow_tabs(id, {"form_id": v, "tab": "workflow_tabs.steps"})}
+		})
 	})
 }
 

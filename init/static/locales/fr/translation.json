@@ -521,6 +521,25 @@
 		"author": "Auteur",
 		"creation_date": "Date de création"
 	},
+	"workflow_tabs": {
+		"derive_text": "Dériver un nouveau worflow à partir du formulaire de tête de ce workflow, en utilisant les valeurs saisies comme valeurs initiales dans le nouveau workflow.",
+		"derive": "dériver",
+		"steps": "étapes"
+	},
+	"workflow_properties": {
+		"workflow": "Workflow",
+		"head": "Tête",
+		"tail": "Queue",
+		"id": "Id",
+		"steps": "Nombre d'étapes",
+		"status": "Etat",
+		"form_head_id": "Id de formulaire dans le dépôt",
+		"creator": "Soumis par",
+		"create_date": "Soumis le",
+		"last_form_id": "Id de formulaire dans le dépôt",
+		"last_assignee": "Assigné à",
+		"last_update": "Dernière modification"
+	},
 	"modset_tabs": {
 		"export": "export"
 	},
@@ -860,20 +879,24 @@
 	"fset_selector": {
 		"none": "aucun"
 	},
-	"alert_event" : {
-		"days" : "jours",
+	"alert_event": {
+		"days": "jours",
 		"label": "Alerte du",
-		"to" : "au",
-		"tonow" : "à maintenant",
-		"help" : "Survoler un élément pour obtenir les détails"
+		"to": "au",
+		"tonow": "à maintenant",
+		"help": "Survoler un élément pour obtenir les détails"
 	},
-	"link" : {
+	"link": {
 		"fset_designer": "Designer du jeu de filtres __name__",
 		"fset_export": "Export du jeu de filtres __name__",
 		"fset_properties": "Propriétés du jeu de filtres __name__",
 		"filterset_tabs": "Tabs du jeu de filtres __name__",
 		"app_properties": "Propriétés de l'application __name__",
 		"app_tabs": "Tabs de l'application __name__",
+		"workflow_tabs": "Tabs du workflow __name__",
+		"workflow_properties": "Propriétés du workflow __name__",
+		"workflow": "Etapes du workflow __name__",
+		"workflow_derive": "Dériver le workflow __name__",
 		"metric_tabs": "Tabs de la métrique __name__",
 		"metric_properties": "Proriétés de la métrique __name__",
 		"metric_request": "Définition de la métrique __name__",

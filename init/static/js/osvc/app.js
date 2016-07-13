@@ -900,6 +900,18 @@ function network_properties(divid, options) {
 	})
 }
 
+function workflow_tabs(divid, options) {
+	require(["osvc/tabs/workflow"], function() {
+		workflow_tabs(divid, options)
+	})
+}
+
+function workflow_derive(divid, options) {
+	require(["osvc/tabs/workflow"], function() {
+		workflow_derive(divid, options)
+	})
+}
+
 function network_tabs(divid, options) {
 	require(["osvc/tabs/network"], function() {
 		network_tabs(divid, options)

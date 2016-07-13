@@ -122,9 +122,11 @@ def get_get_handlers(prefix=None):
              "rest_get_filterset_nodes",
              "rest_get_filterset_services",
        ],
-       "forms": [
+       "forms_revisions": [
              "rest_get_forms_revisions",
              "rest_get_forms_revision",
+       ],
+       "forms": [
              "rest_get_forms",
              "rest_get_form",
              "rest_get_form_publications",
@@ -256,6 +258,7 @@ def get_get_handlers(prefix=None):
              "rest_get_scheduler_worker",
        ],
        "forms_store": [
+             "rest_get_store_form_dump",
              "rest_get_store_forms",
              "rest_get_store_form",
        ],
@@ -318,6 +321,7 @@ def get_get_handlers(prefix=None):
        "workflows": [
              "rest_get_workflow",
              "rest_get_workflows",
+             "rest_get_workflow_dump",
        ]
     }
     if prefix:

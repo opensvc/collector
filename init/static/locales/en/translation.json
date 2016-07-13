@@ -523,6 +523,25 @@
 		"author": "Author",
 		"creation_date": "Creation date"
 	},
+	"workflow_tabs": {
+		"derive_text": "Derive a new workflow from this workflow head form, using the submitted data as initial values in the new workflow.",
+		"derive": "derive",
+		"steps": "steps"
+	},
+	"workflow_properties": {
+		"workflow": "Workflow",
+		"head": "Head",
+		"tail": "Tail",
+		"id": "Id",
+		"steps": "Number of steps",
+		"status": "Status",
+		"form_head_id": "Stored form id",
+		"creator": "Submitted by",
+		"create_date": "Submit date",
+		"last_form_id": "Stored form id",
+		"last_assignee": "Assigned to",
+		"last_update": "Last update"
+	},
 	"modset_tabs": {
 		"export": "export"
 	},
@@ -876,6 +895,10 @@
 		"filterset_tabs": "Filterset __name__ tabs",
 		"app_properties": "Application __name__ properties",
 		"app_tabs": "Application __name__ tabs",
+		"workflow_tabs": "Workflow __name__ tabs",
+		"workflow_properties": "Workflow __name__ properties",
+		"workflow": "Workflow __name__ steps",
+		"workflow_derive": "Derive from Workflow __name__",
 		"metric_tabs": "Metric __name__ tabs",
 		"metric_properties": "Metric __name__ properties",
 		"metric_request": "Metric __name__ definition",

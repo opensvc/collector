@@ -243,6 +243,15 @@ function workflow(divid, options) {
 	o.divid = divid
 	o.options = options
 	o.div = $("#"+divid)
+	o.link = {
+		"fn": arguments.callee.name,
+		"parameters": o.options,
+		"title": "format_title",
+		"title_args": {
+			"type": "form",
+			"id": o.options.workflow_id
+		}
+	}
 
 	o.div.load("/init/static/views/workflow.html?v="+osvc.code_rev, function() {
 		o.div.i18n()
@@ -264,6 +273,7 @@ function workflow(divid, options) {
 			o.stored_form = jd.data[0]
 			services_osvcgetrest("R_STORE_FORMS", "", {"meta": 0, "filters": ["form_head_id "+o.stored_form.form_head_id]}, function(jd) {
 				o.workflow_stored_forms = jd.data
+				o.link.title_args.name = o.options.workflow_id+"/"+o.workflow_stored_forms[0].form_name
 				o.render()
 			})
 		})
@@ -271,6 +281,9 @@ function workflow(divid, options) {
 	}
 
 	o.render = function() {
+		osvc_tools(o.div, {
+			"link": o.link
+		})
 		for (var i=0; i<o.workflow_stored_forms.length; i++) {
 			if (i>0) {
 				var arrow = $("<div class='icon fa-angle-double-down'></div>")
