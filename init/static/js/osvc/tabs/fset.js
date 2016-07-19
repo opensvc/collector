@@ -28,16 +28,19 @@ function filterset_tabs(divid, options) {
 				o._load()
 			})
 		} else if ("fset_id" in o.options) {
-			services_osvcgetrest("R_FILTERSET", [o.options.fset_id], "", function(jd) {
-				o.options.fset_data = jd.data[0]
-				o.options.fset_name = o.options.fset_data.fset
-				o.link.title_args.name = o.options.fset_data.fset
-				o.link.title_args.id = o.options.fset_id
-				o._load()
-			})
+			o.load_from_fset_id(o._load)
 		}
 	})
 
+	o.load_from_fset_id = function(callback) {
+		services_osvcgetrest("R_FILTERSET", [o.options.fset_id], "", function(jd) {
+			o.options.fset_data = jd.data[0]
+			o.options.fset_name = o.options.fset_data.fset_name
+			o.link.title_args.name = o.options.fset_data.fset_name
+			o.link.title_args.id = o.options.fset_id
+			callback()
+		})
+	}
 
 	o._load = function() {
 		var title = o.options.fset_name
@@ -71,6 +74,24 @@ function filterset_tabs(divid, options) {
 		}
 
 		o.set_tab(o.options.tab)
+	}
+
+	o.event_handler = function(data) {
+		if (data.event == "gen_filtersets_change") {
+			if (data.data.fset_id != o.options.id) {
+				return
+			}
+			o.load_from_fset_id(function(){
+				o.load_from_fset_id(function(){
+					var title = o.options.fset_name
+					o.closetab.text(title)
+				})
+			})
+		}
+	}
+
+	wsh["fset_"+o.options.fset_id] = function(data) {
+		o.event_handler(data)
 	}
 
 	return o
