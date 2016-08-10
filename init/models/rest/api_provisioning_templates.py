@@ -103,7 +103,7 @@ definition.
             v = str(v)
             command = re.sub('%\('+k+'\)s', v, command)
 
-        # remove the '/opt/opensvc/bin/svcmgr -s svcname ' prefix
+        # remove the 'svcmgr -s svcname ' prefix
         command = re.sub('^.*create ', 'create ', command)
 
         n = do_svc_action(vars["node_id"],

@@ -99,7 +99,7 @@ def fmt_svc_action(node, svc_id, action, action_type, rid=None, connect_to=None)
         cmd = []
     else:
         cmd = get_ssh_cmd(node) + ['opensvc@'+connect_to, '--'] + remote_cmd_prepend
-        cmd += ['sudo', '/opt/opensvc/bin/svcmgr', '--service', svc.svcname]
+        cmd += ['sudo', 'svcmgr', '--service', svc.svcname]
     cmd += [action]
     if rid is not None:
         cmd += ["--rid", rid]
@@ -112,7 +112,7 @@ def fmt_node_comp_action(node, action, mode, mod, action_type, connect_to=None):
         cmd = []
     else:
         cmd = get_ssh_cmd(node) + ['opensvc@'+connect_to, '--'] + remote_cmd_prepend
-        cmd += ['sudo', '/opt/opensvc/bin/nodemgr']
+        cmd += ['sudo', 'nodemgr']
     cmd += ['compliance', action, '--'+mode, mod]
     return ' '.join(cmd)
 
@@ -123,7 +123,7 @@ def fmt_node_action(node, action, action_type, connect_to=None):
         cmd = []
     else:
         cmd = get_ssh_cmd(node) + ['opensvc@'+connect_to, '--'] + remote_cmd_prepend
-        cmd += ['sudo', '/opt/opensvc/bin/nodemgr']
+        cmd += ['sudo', 'nodemgr']
     cmd += [action]
     return ' '.join(cmd)
 
@@ -136,7 +136,7 @@ def fmt_svc_comp_action(node, svc_id, action, mode, mod, action_type, connect_to
         cmd = []
     else:
         cmd = get_ssh_cmd(node) + ['opensvc@'+connect_to, '--'] + remote_cmd_prepend
-        cmd += ['sudo', '/opt/opensvc/bin/svcmgr', '--service', svc.svcname]
+        cmd += ['sudo', 'svcmgr', '--service', svc.svcname]
     cmd += ['compliance', action, '--'+mode, mod]
     return ' '.join(cmd)
 
