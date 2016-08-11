@@ -24,7 +24,7 @@ class rest_post_register(rest_post_handler):
         if app is None or app == "None":
             app = user_default_app()
         elif not app in user_apps():
-            return Exception("You are not responsible for the '%s' app" % app)
+            raise Exception("You are not responsible for the '%s' app" % app)
 
         q = db.nodes.nodename == nodename
         q &= db.nodes.app == app
