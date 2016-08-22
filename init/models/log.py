@@ -45,7 +45,10 @@ def _log(action, fmt, d, user=None, svc_id="", level="info", node_id=""):
         elif svc_id != "":
             user = "agent"
     if user == "agent" and (node_id is None or node_id == ""):
-        node_id = auth.user.node_id
+        try:
+            node_id = auth.user.node_id
+        except:
+            pass
     db.log.insert(
       log_action=action,
       log_fmt=fmt,
