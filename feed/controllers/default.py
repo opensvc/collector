@@ -2086,7 +2086,11 @@ def task_rq(rqueues, getfn):
                 print "reconnect db"
                 db._adapter.close()
                 db._adapter.reconnect()
-                fn(*args)
+                try:
+                    fn(*args)
+                except Exception as _e:
+                    print _e
+                    print l
             else:
                 print e
                 print l
