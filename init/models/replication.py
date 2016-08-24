@@ -42,6 +42,9 @@ def merge_data(data, mirror=False, purge_old_col=None):
         generic_insert(table, vars, vals)
         if n > 0:
             table_modified(table)
+            ws_ev = table.split(".")[-1] + "_change"
+            ws_send(ws_ev)
+            print " + websocket", repr(ws_ev), "event sent"
             if table.endswith(".svcmon"):
                 idx_svc_id = vars.index("svc_id")
                 svc_ids = set([v[idx_svc_id] for v in vals])
