@@ -48,7 +48,7 @@ def merge_data(data, mirror=False, purge_old_col=None):
                 for svc_id in svc_ids:
                     svc_status_update(svc_id)
 
-                idx_node = vars.index("node_id")
+                idx_node_id = vars.index("node_id")
                 for node_id, svc_id in set([(v[idx_node_id], v[idx_svc_id]) for v in vals]):
                     update_dash_svcmon_not_updated(svc_id, node_id)
 
