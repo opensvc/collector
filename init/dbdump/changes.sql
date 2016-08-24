@@ -6081,3 +6081,5 @@ alter table dashboard_event add key k_purge_future (dash_end);
 
 alter table forms_team_responsible drop foreign key comp_forms_team_responsible_fk1;
 alter table forms_team_responsible drop foreign key comp_forms_team_responsible_fk2;
+alter table forms_team_publication drop foreign key forms_team_publication_fk1;
+alter table forms_team_publication drop foreign key forms_team_publication_fk2;
