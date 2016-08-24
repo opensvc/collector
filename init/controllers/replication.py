@@ -77,7 +77,7 @@ class table_replication_status(HtmlTable):
 def ajax_replication_status():
     table_id = request.vars.table_id
     t = table_replication_status(table_id, 'ajax_replication_status')
-    t.object_list = table_status()
+    t.object_list = table_status().values()
     n = len(t.object_list)
     if len(request.args) == 1 and request.args[0] == 'csv':
         return t.csv()

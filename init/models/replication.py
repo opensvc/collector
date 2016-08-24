@@ -251,8 +251,10 @@ def get_table_status(e, d_current, d_last, mode):
     l = e.split(".")
     if len(l) > 2:
         fullname = ".".join(l[-2:])
+        remote = e.replace("."+fullname, "")
     else:
         fullname = e
+        remote = ""
     if fullname in d_current:
         _data.update(d_current[fullname])
     else:
@@ -262,7 +264,7 @@ def get_table_status(e, d_current, d_last, mode):
         _data.update(d_last[e])
     else:
         _data.update({
-         'remote': e.split(".")[0],
+         'remote': remote,
          'mode': mode,
          'last_cksum': None,
          'table_updated': None,
