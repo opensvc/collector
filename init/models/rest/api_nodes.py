@@ -711,6 +711,7 @@ class rest_post_node(rest_post_handler):
           'event': 'nodes_change',
           'data': {'node_id': node_id},
         }
+        table_modified("nodes")
         _websocket_send(event_msg(l))
         return rest_get_node().handler(node_id, props=','.join(["node_id", "nodename", "app", "updated"]+vars.keys()))
 
@@ -784,6 +785,7 @@ class rest_post_nodes(rest_post_handler):
           'event': 'nodes_change',
           'data': {'node_id': node_id},
         }
+        table_modified("nodes")
         _websocket_send(event_msg(l))
         return rest_get_node().handler(node_id)
 
