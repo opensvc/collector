@@ -70,6 +70,7 @@ class rest_post_form(rest_post_handler):
             form_yaml = yaml.load(vars["form_yaml"])
 
         form_id = db(q).update(**vars)
+        table_modified("forms")
 
         fmt = "Form %(form_name)s change: %(data)s"
         d = dict(form_name=form.form_name, data=beautify_change(form, vars))
@@ -111,6 +112,7 @@ class rest_post_forms(rest_post_handler):
 
         form_id = db.forms.insert(**vars)
         ws_send('forms_change', {'id': form_id})
+        table_modified("forms")
 
         lib_forms_add_default_team_responsible(form_name)
         ws_send('forms_team_responsible_change', {'form_id': form_id})
@@ -241,6 +243,7 @@ class rest_delete_form_publication(rest_delete_handler):
 
         db(q).delete()
 
+        table_modified("forms_team_publication")
         _log('form.publication.delete', fmt, d)
         ws_send('forms_team_publication_change', {'form_id': form_id, 'group_id': group_id})
         self.cache_clear(["rest_get_forms"])
@@ -307,6 +310,7 @@ class rest_post_form_publication(rest_post_handler):
 
         db.forms_team_publication.insert(form_id=form_id, group_id=group.id)
 
+        table_modified("forms_team_publication")
         _log('form.publication.add', fmt, d)
         ws_send('forms_team_publication_change', {'form_id': form_id, 'group_id': group.id})
 
@@ -399,6 +403,7 @@ class rest_delete_form_responsible(rest_delete_handler):
 
         db(q).delete()
 
+        table_modified("forms_team_responsible")
         _log('form.responsible.delete', fmt, d)
         ws_send('forms_team_responsible_change', {'form_id': form_id, 'group_id': group_id})
         self.cache_clear(["rest_get_forms"])
@@ -466,6 +471,7 @@ class rest_post_form_responsible(rest_post_handler):
 
         db.forms_team_responsible.insert(form_id=form_id, group_id=group.id)
 
+        table_modified("forms_team_responsible")
         _log('form.responsible.add', fmt, d)
         ws_send('forms_team_responsible_change', {'form_id': form_id, 'group_id': group.id})
         self.cache_clear(["rest_get_forms"])
@@ -583,6 +589,7 @@ class rest_delete_form(rest_delete_handler):
             raise Exception("Form %s not found"%str(id))
 
         form_id = db(q).delete()
+        table_modified("forms")
         ws_send('forms_delete', {'id': id})
 
         q = db.forms_team_publication.form_id == id
