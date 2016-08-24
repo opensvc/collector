@@ -63,7 +63,11 @@ def enqueue_node_action(node, action):
     command = fmt_node_action(node, action, action_type, connect_to=connect_to)
     vars = ['node_id', 'svc_id', 'action_type', 'command', 'user_id', 'connect_to']
     vals = [node.node_id, "", action_type, command, str(auth.user_id), connect_to]
-    generic_insert('action_queue', vars, vals)
+    if node.collector != "" and node.collector is not None:
+        data = {"opensvc.action_queue": (vars, vals)}
+        rpc_push(node.collector, data, mirror=False)
+    else:
+        generic_insert('action_queue', vars, vals)
 
 def enqueue_node_comp_action(node, action, mode, mod):
     action_type = get_action_type(node)
@@ -71,7 +75,11 @@ def enqueue_node_comp_action(node, action, mode, mod):
     command = fmt_node_comp_action(node, action, mode, mod, action_type, connect_to=connect_to)
     vars = ['node_id', 'svc_id', 'action_type', 'command', 'user_id', 'connect_to']
     vals = [node.node_id, "", action_type, command, str(auth.user_id), connect_to]
-    generic_insert('action_queue', vars, vals)
+    if node.collector != "" and node.collector is not None:
+        data = {"opensvc.action_queue": (vars, vals)}
+        rpc_push(node.collector, data, mirror=False)
+    else:
+        generic_insert('action_queue', vars, vals)
 
 def enqueue_svc_action(node, svc, action, rid=None):
     action_type = get_action_type(node)
@@ -79,7 +87,11 @@ def enqueue_svc_action(node, svc, action, rid=None):
     command = fmt_svc_action(node, svc, action, action_type, rid=rid, connect_to=connect_to)
     vars = ['node_id', 'svc_id', 'action_type', 'command', 'user_id', 'connect_to']
     vals = [node.node_id, svc, action_type, command, str(auth.user_id), connect_to]
-    generic_insert('action_queue', vars, vals)
+    if node.collector != "" and node.collector is not None:
+        data = {"opensvc.action_queue": (vars, vals)}
+        rpc_push(node.collector, data, mirror=False)
+    else:
+        generic_insert('action_queue', vars, vals)
 
 def enqueue_svc_comp_action(node, svc, action, mode, mod):
     action_type = get_action_type(node)
@@ -87,7 +99,11 @@ def enqueue_svc_comp_action(node, svc, action, mode, mod):
     command = fmt_svc_comp_action(node, svc, action, mode, mod, action_type, connect_to=connect_to)
     vars = ['node_id', 'svc_id', 'action_type', 'command', 'user_id', 'connect_to']
     vals = [node.node_id, svc, action_type, command, str(auth.user_id), connect_to]
-    generic_insert('action_queue', vars, vals)
+    if node.collector != "" and node.collector is not None:
+        data = {"opensvc.action_queue": (vars, vals)}
+        rpc_push(node.collector, data, mirror=False)
+    else:
+        generic_insert('action_queue', vars, vals)
 
 def fmt_svc_action(node, svc_id, action, action_type, rid=None, connect_to=None):
     action = action.replace('"', '\"').replace("'", "\'")
@@ -151,7 +167,14 @@ def do_node_comp_action(node_id, action, mode, obj):
 
     q = db.nodes.node_id == node_id
     q &= db.nodes.app.belongs(user_apps())
-    node = db(q).select(db.nodes.node_id, db.nodes.nodename, db.nodes.os_name, db.nodes.action_type, cacheable=True).first()
+    node = db(q).select(
+      db.nodes.node_id,
+      db.nodes.nodename,
+      db.nodes.os_name,
+      db.nodes.action_type,
+      db.nodes.collector,
+      cacheable=True
+    ).first()
 
     if node is None:
         return 0
@@ -170,7 +193,14 @@ def do_node_action(node_id, action=None):
 
     q = db.nodes.node_id == node_id
     q &= db.nodes.app.belongs(user_apps())
-    node = db(q).select(db.nodes.node_id, db.nodes.nodename, db.nodes.os_name, db.nodes.action_type, cacheable=True).first()
+    node = db(q).select(
+      db.nodes.node_id,
+      db.nodes.nodename,
+      db.nodes.os_name,
+      db.nodes.action_type,
+      db.nodes.collector,
+      cacheable=True
+    ).first()
 
     if node is None:
         return 0
@@ -262,7 +292,14 @@ def do_svc_action(node_id, svc_id, action, rid=None):
     q = db.nodes.node_id == node_id
     if action.startswith("create"):
         q &= db.nodes.app.belongs(user_apps())
-    node = db(q).select(db.nodes.node_id, db.nodes.nodename, db.nodes.os_name, db.nodes.action_type, cacheable=True).first()
+    node = db(q).select(
+      db.nodes.node_id,
+      db.nodes.nodename,
+      db.nodes.os_name,
+      db.nodes.action_type,
+      db.nodes.collector,
+      cacheable=True
+    ).first()
     if node is None:
         return 0
 
