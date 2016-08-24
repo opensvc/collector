@@ -39,6 +39,7 @@ nodes_cols = [
     'listener_port',
     'version',
     'action_type',
+    'collector',
     'connect_to',
     'host_mode',
     'app',
@@ -181,6 +182,10 @@ nodes_colprops = {
             ),
     'tz': HtmlTableColumn(
              field='tz',
+             table = 'nodes',
+            ),
+    'collector': HtmlTableColumn(
+             field='collector',
              table = 'nodes',
             ),
     'connect_to': HtmlTableColumn(

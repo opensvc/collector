@@ -418,6 +418,12 @@ def pull_all_table_from_remote(host, ts, force=False):
         for i, row in enumerate(rows):
             rows[i] = list(row)
 
+        if t["name"] == "nodes" and "collector" in columns:
+            idx = columns.index("collector")
+            for i, row in enumerate(rows):
+                rows[i][idx] = host["remote"]
+            print " + set collector=%s" % host["remote"]
+
         data[fullname] = (columns, rows)
 
         purge_old_col = t.get('purge_old_col')

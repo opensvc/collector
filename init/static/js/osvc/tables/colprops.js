@@ -41,6 +41,7 @@ objcols = {
 		'listener_port',
 		'version',
 		'action_type',
+		'collector',
 		'connect_to',
 		'host_mode',
 		'team_responsible',
@@ -2116,6 +2117,10 @@ colprops = {
 		"_class": "nowrap",
 		"img": "svc",
 		"title": "Agent version"
+	},
+	"collector": {
+		"img": "svc",
+		"title": "Collector"
 	},
 	"vmname": {
 		"_class": "nodename_no_os",

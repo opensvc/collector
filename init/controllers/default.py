@@ -103,6 +103,7 @@ class table_svcmon(HtmlTable):
             'mon_updated',
             'version',
             'listener_port',
+            'collector',
             'connect_to',
             'team_responsible',
             'team_integ',
