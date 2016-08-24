@@ -6079,3 +6079,5 @@ alter table node_users add key k_purge (node_id, updated);
 alter table node_groups add key k_purge (node_id, updated);
 alter table dashboard_event add key k_purge_future (dash_end);
 
+alter table forms_team_responsible drop foreign key comp_forms_team_responsible_fk1;
+alter table forms_team_responsible drop foreign key comp_forms_team_responsible_fk2;

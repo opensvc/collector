@@ -248,7 +248,11 @@ def push_table_status():
 
 def get_table_status(e, d_current, d_last, mode):
     _data = {}
-    fullname = e[e.index('.')+1:]
+    l = e.split(".")
+    if len(l) > 2:
+        fullname = ".".join(l[-2:])
+    else:
+        fullname = e
     if fullname in d_current:
         _data.update(d_current[fullname])
     else:
@@ -362,9 +366,12 @@ def pull_all_table_from_remote(host, ts, force=False):
 
         print "PULL", rfullname
 
+        if rfullname not in ts:
+            print " ERROR: rfullname %s not in received table_status keys: %s" % (rfullname, str(ts))
+            continue
         d = ts.get(rfullname)
         if d is None:
-            print " ERROR: no rfullname in table_status entry. %s" % str(ts.keys())
+            print " ERROR: rfullname %s received table_status data is None" % rfullname
             continue
 
         need_resync = d.get('need_resync')
