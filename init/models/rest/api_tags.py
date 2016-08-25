@@ -403,7 +403,7 @@ class rest_post_tag_node(rest_post_handler):
           path="/tags/<id>/nodes/<id>",
           desc=desc,
           examples=examples,
-          relay=True,
+          #relay=True,
         )
 
     def get_node_id(*args, **vars):
