@@ -319,6 +319,7 @@ class rest_post_users(rest_post_handler):
              dict(data=beautify_data(vars)),
             )
         ws_send("auth_user_change")
+        table_modified("auth_user")
 
         user = db.auth_user(obj_id)
         if auth.settings.create_user_groups:
@@ -389,6 +390,7 @@ class rest_post_user(rest_post_handler):
         d = dict(email=row.email, data=beautify_change(row, vars))
         _log('user.change', fmt, d)
         ws_send("auth_user_change")
+        table_modified("auth_user")
         ret = rest_get_user().handler(row.id)
         ret["info"] = fmt % d
         return ret
@@ -534,6 +536,7 @@ class rest_post_user_group(rest_post_handler):
              dict(u=user.email, g=group.role),
             )
         ws_send("auth_membership_change")
+        table_modified("auth_membership")
         return dict(info="User %s attached to group %s" % (str(user.email), str(group.role)))
 
 
@@ -747,6 +750,7 @@ class rest_post_user_primary_group(rest_post_handler):
              dict(u=user.email, g=group.role),
             )
         ws_send("auth_membership_change")
+        table_modified("auth_membership")
         return dict(info="User %s primary group set to %s" % (str(user.email), str(group.role)))
 
 
@@ -897,6 +901,7 @@ class rest_post_user_filterset(rest_post_handler):
           },
         }
         _websocket_send(event_msg(l))
+        table_modified("gen_filterset_user")
         return dict(info="User %s filterset set to %s" % (str(user.email), str(fset.fset_name)))
 
 #
@@ -950,6 +955,7 @@ class rest_delete_user_filterset(rest_delete_handler):
           },
         }
         _websocket_send(event_msg(l))
+        table_modified("gen_filterset_user")
         return dict(info="User %s filterset unset" % str(user.email))
 
 #
@@ -1046,6 +1052,7 @@ class rest_post_user_table_settings(rest_post_handler):
           },
         }
         _websocket_send(event_msg(l))
+        table_modified("user_prefs_columns")
         return rest_get_user_table_settings().handler(id, **qvars)
 
 #
@@ -1147,6 +1154,7 @@ class rest_post_user_table_filters(rest_post_handler):
           },
         }
         _websocket_send(event_msg(l))
+        table_modified("column_filters")
         return rest_get_user_table_filters().handler(id, **qvars)
 
 #
@@ -1200,6 +1208,7 @@ class rest_delete_user_table_filters(rest_delete_handler):
           },
         }
         _websocket_send(event_msg(l))
+        table_modified("column_filters")
         return dict(info=T("column filters deleted"))
 
 #
@@ -1290,6 +1299,7 @@ class rest_post_user_table_filters_load_bookmark(rest_post_handler):
           },
         }
         _websocket_send(event_msg(l))
+        table_modified("column_filters")
         return rest_get_user_table_filters().handler(id, **qvars)
 
 #
@@ -1380,6 +1390,7 @@ class rest_post_user_table_filters_save_bookmark(rest_post_handler):
           },
         }
         _websocket_send(event_msg(l))
+        table_modified("column_filters")
         return rest_get_user_table_filters().handler(id, **qvars)
 
 #
