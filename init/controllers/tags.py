@@ -13,8 +13,8 @@ class table_tags(HtmlTable):
         self.colprops = tags_colprops
 
         self.ajax_col_values = 'ajax_tags_col_values'
-        self.span = ["id"]
-        self.keys = ["id"]
+        self.span = ["tag_id"]
+        self.keys = ["tag_id"]
 
 @auth.requires_login()
 def ajax_tags_col_values():

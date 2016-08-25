@@ -1,5 +1,5 @@
 tags_cols = [
-  'id',
+  'tag_id',
   'tag_name',
   'tag_exclude',
   'tag_created',
@@ -18,9 +18,9 @@ tags_colprops = {
              table='tags',
              field='tag_exclude',
             ),
-    'id': HtmlTableColumn(
+    'tag_id': HtmlTableColumn(
              table='tags',
-             field='id',
+             field='tag_id',
             ),
 }
 

@@ -1871,7 +1871,7 @@ function table_tags(divid, options) {
 		'ajax_url': '/init/tags/ajax_tags',
 		'span': ['id'],
 		'force_cols': ['id', 'tag_name'],
-		'columns': ['id', 'tag_name', 'tag_exclude', 'tag_created'],
+		'columns': ['tag_id', 'tag_name', 'tag_exclude', 'tag_created'],
 		'default_columns': ['tag_name', 'tag_exclude', 'tag_created'],
 		'wsable': true,
 		'events': ['tags_change']
