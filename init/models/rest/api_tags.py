@@ -44,7 +44,7 @@ class rest_get_node_tags(rest_get_table_handler):
     def handler(self, node_id, **vars):
         node_id = get_node_id(node_id)
         q = db.node_tags.node_id == node_id
-        q &= db.node_tags.tag_id == db.tags.id
+        q &= db.node_tags.tag_id == db.tags.tag_id
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -69,7 +69,7 @@ class rest_get_node_candidate_tags(rest_get_table_handler):
     def handler(self, node_id, **vars):
         node_id = get_node_id(node_id)
         q = db.node_tags.node_id == node_id
-        q &= db.node_tags.tag_id == db.tags.id
+        q &= db.node_tags.tag_id == db.tags.tag_id
         rows = db(q).select(db.tags.ALL)
 
         ids = set([r.id for r in rows])
@@ -103,7 +103,7 @@ class rest_get_service_tags(rest_get_table_handler):
     def handler(self, svc_id, **vars):
         svc_id = get_svc_id(svc_id)
         q = db.svc_tags.svc_id == svc_id
-        q &= db.svc_tags.tag_id == db.tags.id
+        q &= db.svc_tags.tag_id == db.tags.tag_id
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -128,7 +128,7 @@ class rest_get_service_candidate_tags(rest_get_table_handler):
     def handler(self, svc_id, **vars):
         svc_id = get_svc_id(svc_id)
         q = db.svc_tags.svc_id == svc_id
-        q &= db.svc_tags.tag_id == db.tags.id
+        q &= db.svc_tags.tag_id == db.tags.tag_id
         rows = db(q).select(db.tags.ALL)
 
         ids = set([r.id for r in rows])
@@ -174,11 +174,8 @@ class rest_post_tag(rest_post_handler):
              'change tag %(tag_name)s: %(data)s',
              dict(tag_name=row.tag_name, data=beautify_change(row, vars)),
             )
-        l = {
-          'event': 'tags',
-          'data': {'foo': 'bar'},
-        }
-        _websocket_send(event_msg(l))
+        table_modified("tags")
+        ws_send("tags_change")
         return rest_get_tag().handler(row.id)
 
 
@@ -217,6 +214,8 @@ class rest_post_tags(rest_post_handler):
              "tag '%(tag_name)s' created",
              dict(tag_name=data.tag_name),
             )
+        table_modified("tags")
+        ws_send("tags_change")
         return dict(info="tag created", data=data)
 
 
@@ -301,11 +300,15 @@ class rest_delete_tag(rest_delete_handler):
         q = q_filter(q, node_field=db.node_tags.node_id)
         n = db(q).delete()
         info += ["%d node attachments deleted"%n]
+        table_modified("node_tags")
+        ws_send("node_tags_change")
 
         q = db.svc_tags.tag_id == tagid
         q = q_filter(q, svc_field=db.svc_tags.svc_id)
         n = db(q).delete()
         info += ["%d service attachments deleted"%n]
+        table_modified("svc_tags")
+        ws_send("svc_tags_change")
 
         q = db.node_tags.tag_id == tagid
         n = db(q).count()
@@ -318,6 +321,8 @@ class rest_delete_tag(rest_delete_handler):
         q = db.tags.id == tagid
         n = db(q).delete()
         info += ["%d tag deleted"%n]
+        table_modified("tags")
+        ws_send("tags_change")
 
         _log('tag.delete',
              "tag '%(tag_name)s' deleted",

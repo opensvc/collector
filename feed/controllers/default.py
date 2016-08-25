@@ -842,11 +842,11 @@ def rpc_collector_show_tags(cmd, auth):
         svcname = cmd["svcname"]
         svc_id = node_svc_id(node_id, svcname)
         q = db.svc_tags.svc_id == svc_id
-        q &= db.svc_tags.tag_id == db.tags.id
+        q &= db.svc_tags.tag_id == db.tags.tag_id
         rows = db(q).select(db.tags.tag_name, orderby=db.tags.tag_name)
     else:
         q = db.node_tags.node_id == node_id
-        q &= db.node_tags.tag_id == db.tags.id
+        q &= db.node_tags.tag_id == db.tags.tag_id
         rows = db(q).select(db.tags.tag_name, orderby=db.tags.tag_name)
     if len(rows) == 0:
         return {"ret": 1, "msg": "no tags found"}
@@ -876,6 +876,8 @@ def rpc_collector_create_tag(data, auth):
          "tag '%(tag_name)s' created",
          dict(tag_name=tag_name)
     )
+    ws_send("tags_change")
+    table_modified("tags")
     return {"ret": 0, "msg": "tag successfully created"}
 
 def tag_allowed(node_id=None, svc_id=None, tag_name=None):
@@ -885,14 +887,14 @@ def tag_allowed(node_id=None, svc_id=None, tag_name=None):
         return False
     if node_id:
         q = db.node_tags.node_id == node_id
-        q &= db.node_tags.tag_id == db.tags.id
+        q &= db.node_tags.tag_id == db.tags.tag_id
         q &= db.tags.tag_exclude != None
         q &= db.tags.tag_exclude != ""
         rows = db(q).select(db.tags.tag_exclude,
                             groupby=db.tags.tag_exclude)
     elif svcname:
         q = db.svc_tags.svcname == svcname
-        q &= db.svc_tags.tag_id == db.tags.id
+        q &= db.svc_tags.tag_id == db.tags.tag_id
         q &= db.tags.tag_exclude != None
         q &= db.tags.tag_exclude != ""
         rows = db(q).select(db.tags.tag_exclude,
@@ -920,8 +922,8 @@ def rpc_collector_tag(data, auth):
     q = db.tags.tag_name == tag_name
     rows = db(q).select()
     if len(rows) == 0:
-        return {"ret": 1, "msg": "tag does not exist. create it first."}
-    tag_id = rows.first().id
+        return {"ret": 1, "msg": "tag does not exist. you have to create it first."}
+    tag = rows.first()
 
     if "svcname" in data:
         svcname = data["svcname"]
@@ -930,37 +932,41 @@ def rpc_collector_tag(data, auth):
         if not tag_allowed(svc_id=svc_id, tag_name=tag_name):
             return {"ret": 1, "msg": "tag incompatible with other attached tags."}
         q = db.svc_tags.svc_id == svc_id
-        q &= db.svc_tags.tag_id == tag_id
+        q &= db.svc_tags.tag_id == tag.tag_id
         rows = db(q).select()
         if len(rows) > 0:
             return {"ret": 0, "msg": "tag is already attached"}
 
         db.svc_tags.insert(
            svc_id=svc_id,
-           tag_id=tag_id
+           tag_id=tag.tag_id
         )
         _log("service.tag",
              "tag '%(tag_name)s' attached",
              dict(tag_name=tag_name),
              svc_id=svc_id)
+        ws_send("tags",  {'action': 'attach', 'tag_name': tag_name, 'tag_id': tag.id, 'svc_id': svc_id})
+        table_modified("svc_tags")
     else:
         node_id = auth_to_node_id(auth)
         if not tag_allowed(node_id=node_id, tag_name=tag_name):
             return {"ret": 1, "msg": "tag incompatible with other attached tags."}
         q = db.node_tags.node_id == node_id
-        q &= db.node_tags.tag_id == tag_id
+        q &= db.node_tags.tag_id == tag.tag_id
         rows = db(q).select()
         if len(rows) > 0:
             return {"ret": 0, "msg": "tag is already attached"}
 
         db.node_tags.insert(
            node_id=node_id,
-           tag_id=tag_id
+           tag_id=tag.tag_id
         )
         _log("node.tag",
              "tag '%(tag_name)s' attached",
              dict(tag_name=tag_name),
              node_id=node_id)
+        ws_send("tags",  {'action': 'attach', 'tag_name': tag_name, 'tag_id': tag.id, 'node_id': node_id})
+        table_modified("node_tags")
     return {"ret": 0, "msg": "tag successfully attached"}
 
 @service.xmlrpc
@@ -976,14 +982,14 @@ def rpc_collector_untag(data, auth):
     rows = db(q).select()
     if len(rows) == 0:
         return {"ret": 1, "msg": "tag does not exist"}
-    tag_id = rows.first().id
+    tag = rows.first()
 
     if "svcname" in data:
         svcname = data["svcname"]
         node_id = auth_to_node_id(auth)
         svc_id = node_svc_id(node_id, svcname)
         q = db.svc_tags.svc_id == svc_id
-        q &= db.svc_tags.tag_id == tag_id
+        q &= db.svc_tags.tag_id == tag.tag_id
         rows = db(q).select()
         if len(rows) == 0:
             return {"ret": 0, "msg": "tag is already detached"}
@@ -993,10 +999,12 @@ def rpc_collector_untag(data, auth):
              "tag '%(tag_name)s' detached",
              dict(tag_name=tag_name),
              svc_id=svc_id)
+        ws_send("tags",  {'action': 'detach', 'tag_id': tag.id, 'svc_id': svc_id})
+        table_modified("svc_tags")
     else:
         node_id = auth_to_node_id(auth)
         q = db.node_tags.node_id == node_id
-        q &= db.node_tags.tag_id == tag_id
+        q &= db.node_tags.tag_id == tag.tag_id
         rows = db(q).select()
         if len(rows) == 0:
             return {"ret": 0, "msg": "tag is already detached"}
@@ -1006,6 +1014,8 @@ def rpc_collector_untag(data, auth):
              "tag '%(tag_name)s' detached",
              dict(tag_name=tag_name),
              node_id=node_id)
+        ws_send("tags",  {'action': 'detach', 'tag_id': tag.id, 'node_id': node_id})
+        table_modified("node_tags")
     return {"ret": 0, "msg": "tag successfully detached"}
 
 

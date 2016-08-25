@@ -723,26 +723,27 @@ db.define_table('stor_array',
 
 db.define_table('tags',
     Field('tag_name','string'),
+    Field('tag_id','string'),
     Field('tag_exclude','string'),
     Field('tag_created','datetime'),
     migrate=False)
 
 db.define_table('node_tags',
     Field('node_id', 'string', length=36),
-    Field('tag_id','integer'),
+    Field('tag_id','string'),
     Field('created','datetime'),
     migrate=False)
 
 db.define_table('svc_tags',
     Field('svc_id', 'string', length=36),
-    Field('tag_id','integer'),
+    Field('tag_id','string'),
     Field('created','datetime'),
     migrate=False)
 
 db.define_table('v_tags',
     Field('node_id', 'string', length=36),
     Field('svc_id', 'string', length=36),
-    Field('tag_id','integer'),
+    Field('tag_id','string'),
     Field('tag_name','string'),
     Field('created','datetime'),
     migrate=False)
