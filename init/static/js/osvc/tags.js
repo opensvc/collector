@@ -64,7 +64,7 @@ function tags(options) {
 		} else {
 			cl = "icon tag tag_attached"
 		}
-		s = "<span tag_id='"+tag_data.id+"' class='"+cl+"'>"+tag_data[o.options.tag_name]+" </span>"
+		s = "<span tag_id='"+tag_data[o.options.id]+"' class='"+cl+"'>"+tag_data[o.options.tag_name]+" </span>"
 		e = $(s)
 		if (o.options.bgcolor) {
 			e.css({"background-color": o.options.bgcolor})
@@ -118,7 +118,7 @@ function tags(options) {
 	}
 
 	o.del_tag = function(tag_data) {
-		o.div.find("[tag_id="+tag_data.tag_id+"].tag").hide("fade", function(){
+		o.div.find("[tag_id="+tag_data[o.options.id]+"].tag").hide("fade", function(){
 			$(this).remove()
 		})
 	}
@@ -224,7 +224,7 @@ function tags(options) {
 	o.create_and_attach_tag = function(tag_data) {
 		o.div.info.empty()
 		o.candidates.div.parent().remove()
-		o.options.get_candidates(tag_data.tag_name, function(jd) {
+		o.options.get_candidates(tag_data[o.options.tag_name], function(jd) {
 			if (!jd.data || (jd.data.length == 0)) {
 				// tag does not exist yet ... create
 				spinner_add(o.div.info, i18n.t("tags.creating"))
@@ -250,7 +250,7 @@ function tags(options) {
 	}
 
 	o.attach_tag = function(tag_data) {
-		if (!tag_data.id) {
+		if (!tag_data[o.options.id]) {
 			// from <enter> in add tag
 			o.create_and_attach_tag(tag_data)
 
@@ -351,17 +351,18 @@ function tags(options) {
 
 function node_tags(options) {
 	options.tag_name = "tag_name"
+	options.id = "tag_id"
 	options.get_tags = function(fval, callback, callback_err) {
 		services_osvcgetrest("R_NODE_TAGS", [options.node_id], {
 			"orderby": options.tag_name,
-			"props": "id," + options.tag_name,
+			"props": "tag_id," + options.tag_name,
 			"limit": "0"
 		}, callback, callback_err)
 	}
 	options.get_candidates = function(fval, callback, callback_err) {
 		services_osvcgetrest("R_NODE_CANDIDATE_TAGS", [options.node_id], {
 			"orderby": options.tag_name,
-			"props": "id," + options.tag_name,
+			"props": "tag_id," + options.tag_name,
 			"limit": "0",
 			"meta": "false",
 			"filters": [options.tag_name+" "+fval]
@@ -371,7 +372,7 @@ function node_tags(options) {
 		services_osvcpostrest("R_TAGS", "", "", tag_data, callback, callback_err)
 	}
 	options.attach = function(tag_data, callback, callback_err) {
-		services_osvcpostrest("R_TAG_NODE", [tag_data.id, options.node_id], "", "", callback, callback_err)
+		services_osvcpostrest("R_TAG_NODE", [tag_data.tag_id, options.node_id], "", "", callback, callback_err)
 	}
 	options.detach = function(tag, callback, callback_err) {
 		services_osvcdeleterest("R_TAG_NODE", [tag.attr("tag_id"), options.node_id], "", "", callback, callback_err)
@@ -411,17 +412,18 @@ function node_tags(options) {
 
 function service_tags(options) {
 	options.tag_name = "tag_name"
+	options.id = "tag_id"
 	options.get_tags = function(fval, callback, callback_err) {
 		services_osvcgetrest("R_SERVICE_TAGS", [options.svc_id], {
 			"orderby": options.tag_name,
-			"props": "id," + options.tag_name,
+			"props": "tag_id," + options.tag_name,
 			"limit": "0"
 		}, callback, callback_err)
 	}
 	options.get_candidates = function(fval, callback, callback_err) {
 		services_osvcgetrest("R_SERVICE_CANDIDATE_TAGS", [options.svc_id], {
 			"orderby": options.tag_name,
-			"props": "id," + options.tag_name,
+			"props": "tag_id," + options.tag_name,
 			"limit": "0",
 			"meta": "false",
 			"filters": [options.tag_name+" "+fval]
@@ -431,7 +433,7 @@ function service_tags(options) {
 		services_osvcpostrest("R_TAGS", "", "", tag_data, callback, callback_err)
 	}
 	options.attach = function(tag_data, callback, callback_err) {
-		services_osvcpostrest("R_TAG_SERVICE", [tag_data.id, options.svc_id], "", "", callback, callback_err)
+		services_osvcpostrest("R_TAG_SERVICE", [tag_data.tag_id, options.svc_id], "", "", callback, callback_err)
 	}
 	options.detach = function(tag, callback, callback_err) {
 		services_osvcdeleterest("R_TAG_SERVICE", [tag.attr("tag_id"), options.svc_id], "", "", callback, callback_err)
@@ -470,6 +472,7 @@ function service_tags(options) {
 
 function app_responsibles(options) {
 	options.tag_name = "role"
+	options.id = "id"
 	options.bgcolor = osvc.colors.org
 	options.icon = "guys16"
 	options.get_tags = function(fval, callback, callback_err) {
@@ -506,6 +509,7 @@ function app_responsibles(options) {
 
 function app_publications(options) {
 	options.tag_name = "role"
+	options.id = "id"
 	options.bgcolor = osvc.colors.org
 	options.icon = "guys16"
 	options.get_tags = function(fval, callback, callback_err) {
@@ -542,6 +546,7 @@ function app_publications(options) {
 
 function form_responsibles(options) {
 	options.tag_name = "role"
+	options.id = "id"
 	options.bgcolor = osvc.colors.org
 	options.icon = "guys16"
 	options.get_tags = function(fval, callback, callback_err) {
@@ -578,6 +583,7 @@ function form_responsibles(options) {
 
 function form_publications(options) {
 	options.tag_name = "role"
+	options.id = "id"
 	options.bgcolor = osvc.colors.org
 	options.icon = "guys16"
 	options.get_tags = function(fval, callback, callback_err) {
@@ -614,6 +620,7 @@ function form_publications(options) {
 
 function ruleset_responsibles(options) {
 	options.tag_name = "role"
+	options.id = "id"
 	options.bgcolor = osvc.colors.org
 	options.icon = "guys16"
 	options.get_tags = function(fval, callback, callback_err) {
@@ -650,6 +657,7 @@ function ruleset_responsibles(options) {
 
 function ruleset_publications(options) {
 	options.tag_name = "role"
+	options.id = "id"
 	options.bgcolor = osvc.colors.org
 	options.icon = "guys16"
 	options.get_tags = function(fval, callback, callback_err) {
@@ -686,6 +694,7 @@ function ruleset_publications(options) {
 
 function prov_template_responsibles(options) {
 	options.tag_name = "role"
+	options.id = "id"
 	options.bgcolor = osvc.colors.org
 	options.icon = "guys16"
 	options.get_tags = function(fval, callback, callback_err) {
@@ -722,6 +731,7 @@ function prov_template_responsibles(options) {
 
 function prov_template_publications(options) {
 	options.tag_name = "role"
+	options.id = "id"
 	options.bgcolor = osvc.colors.org
 	options.icon = "guys16"
 	options.get_tags = function(fval, callback, callback_err) {
@@ -758,6 +768,7 @@ function prov_template_publications(options) {
 
 function modset_responsibles(options) {
 	options.tag_name = "role"
+	options.id = "id"
 	options.bgcolor = osvc.colors.org
 	options.icon = "guys16"
 	options.get_tags = function(fval, callback, callback_err) {
@@ -794,6 +805,7 @@ function modset_responsibles(options) {
 
 function modset_publications(options) {
 	options.tag_name = "role"
+	options.id = "id"
 	options.bgcolor = osvc.colors.org
 	options.icon = "guys16"
 	options.get_tags = function(fval, callback, callback_err) {
@@ -831,6 +843,7 @@ function modset_publications(options) {
 
 function safe_file_responsibles(options) {
 	options.tag_name = "role"
+	options.id = "id"
 	options.bgcolor = osvc.colors.org
 	options.icon = "guys16"
 	options.get_tags = function(fval, callback, callback_err) {
@@ -867,6 +880,7 @@ function safe_file_responsibles(options) {
 
 function safe_file_publications(options) {
 	options.tag_name = "role"
+	options.id = "id"
 	options.bgcolor = osvc.colors.org
 	options.icon = "guys16"
 	options.get_tags = function(fval, callback, callback_err) {
@@ -903,6 +917,7 @@ function safe_file_publications(options) {
 
 function user_org_membership(options) {
 	options.tag_name = "role"
+	options.id = "id"
 	options.bgcolor = osvc.colors.org
 	options.icon = "guys16"
 	options.get_tags = function(fval, callback, callback_err) {
@@ -944,6 +959,7 @@ function user_org_membership(options) {
 
 function user_priv_membership(options) {
 	options.tag_name = "role"
+	options.id = "id"
 	options.bgcolor = osvc.colors.priv
 	options.icon = "privilege16"
 	options.get_tags = function(fval, callback, callback_err) {
