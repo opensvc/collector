@@ -1,6 +1,49 @@
 import re
 from pydal.helpers.methods import smart_query
 
+def markup_result(result, markup):
+    for p in ("info", "error"):
+        if p in result:
+            if type(result[p]) == list:
+                for i, s in enumerate(result[p]):
+                    result[p][i] = "%s: %s" % (markup, s)
+            else:
+                result[p] = "%s: %s" % (markup, result[p])
+    return result
+
+def merge_results(result, _result):
+    if "ret" not in result:
+        if "ret" not in _result:
+            pass
+        else:
+            result["ret"] = _result["ret"]
+    else:
+        if "ret" not in _result:
+            pass
+        else:
+            result["ret"] += _result["ret"]
+    for p in ("info", "error"):
+        if p not in result:
+            if p not in _result:
+                continue
+            else:
+                result[p] = _result[p]
+        else:
+            if p not in _result:
+                continue
+            else:
+                if result[p] != list:
+                    result[p] = [result[p]]
+                if _result[p] != list:
+                    _result[p] = [_result[p]]
+                result[p] += _result[p]
+    for p in _result:
+        if p in ("info", "error", "ret"):
+            continue
+        if p not in result:
+            result[p] = _result[p]
+    return result
+
 def get_handlers(action=None, prefix=None):
     if action == "GET":
         return get_get_handlers(prefix=prefix)
@@ -768,6 +811,7 @@ class rest_handler(object):
                  left=None,
                  groupby=None,
                  orderby=None,
+                 replication=["local"],
                  allow_fset_id=False,
                  _cache=None,
                  desc=[], params={}, examples=[], data={}):
@@ -787,6 +831,7 @@ class rest_handler(object):
         self.left = left
         self.groupby = groupby
         self.orderby = orderby
+        self.replication = replication
         self.allow_fset_id = allow_fset_id
         if dbo:
             self.db = dbo
@@ -808,7 +853,72 @@ class rest_handler(object):
         regexp = re.compile(pattern)
         return regexp.match(args)
 
+    def replication_relay(self, collector, data):
+        p = get_proxy(collector, controller="rest")
+        try:
+            ret = p.relay_rest_request(auth.user_id, self.action, self.path, data)
+            ret = markup_result(ret, collector)
+            return ret
+        except Exception as e:
+            return {"ret": 1, "error": "remote collector %s raised %s" % (collector, str(e))}
+
+    def replication_pull(self, collectors):
+        for collector in collectors:
+            pull_all_table_from_remote(collector)
+
+    def get_svc_collectors(self, svc_id):
+        q = db.svcmon.svc_id == svc_id
+        q &= db.svcmon.node_id == db.nodes.node_id
+        rows = db(q).select(db.nodes.collector, groupby=db.nodes.collector)
+        return [r.collector for r in rows if r.collector is not None]
+
+    def get_node_collectors(self, node_id):
+        q = db.nodes.node_id == node_id
+        node = db(q).select(db.nodes.collector).first()
+        if node is None:
+            return []
+        if node.collector is None:
+            return []
+        return [node.collector]
+
+    def get_collectors(self, *args, **vars):
+        if "node_id" in vars:
+            return self.get_node_collectors(get_node_id(vars["node_id"]))
+        if "nodes" in args:
+            idx = args.index("nodes")
+            if len(args) > idx+1:
+                return self.get_node_collectors(get_node_id(args[idx+1]))
+        if "svc_id" in vars:
+            return self.get_svc_collectors(get_svc_id(vars["svc_id"]))
+        if "services" in args:
+            idx = args.index("services")
+            if len(args) > idx+1:
+                return self.get_svc_collectors(get_svc_id(args[idx+1]))
+        return []
+
     def handle(self, *args, **vars):
+        if "local" not in self.replication and "relay" not in self.replication:
+             return {"ret": 1, "error": "both local and remote handler skipped"}
+
+        result = {}
+
+        if "pull" in self.replication or "relay" in self.replication:
+            collectors = self.get_collectors(*args, **vars)
+
+        for repl_action in self.replication:
+            if repl_action == "relay":
+                for collector in collectors:
+                    _result = self.replication_relay(collector, [args, vars])
+                    result = merge_results(result, _result)
+            elif repl_action == "pull":
+                self.replication_pull(collectors)
+            elif repl_action == "local":
+                _result = self.handle_local(*args, **vars)
+                result = merge_results(result, _result)
+
+        return result
+
+    def handle_local(self, *args, **vars):
         response.headers["Content-Type"] = "application/json"
         # extract args from the path
         # /a/<b>/c/<d> => [b, d]

@@ -403,11 +403,8 @@ class rest_post_tag_node(rest_post_handler):
           path="/tags/<id>/nodes/<id>",
           desc=desc,
           examples=examples,
-          #relay=True,
+          replication=["relay", "local"],
         )
-
-    def get_node_id(*args, **vars):
-        return get_node_id(args[4])
 
     def handler(self, tag_id, node_id, **vars):
         return lib_tag_attach_node(tag_id, node_id)
@@ -427,6 +424,7 @@ class rest_delete_tag_node(rest_delete_handler):
           path="/tags/<id>/nodes/<id>",
           desc=desc,
           examples=examples,
+          replication=["relay", "local"],
         )
 
     def handler(self, tag_id, node_id, **vars):
@@ -447,7 +445,8 @@ class rest_post_tag_service(rest_post_handler):
           self,
           path="/tags/<id>/services/<id>",
           desc=desc,
-          examples=examples
+          examples=examples,
+          replication=["relay", "local"],
         )
 
     def handler(self, tag_id, svc_id, **vars):
@@ -468,6 +467,7 @@ class rest_delete_tag_service(rest_delete_handler):
           path="/tags/<id>/services/<id>",
           desc=desc,
           examples=examples,
+          replication=["relay", "local"],
         )
 
     def handler(self, tag_id, svc_id, **vars):
@@ -516,7 +516,8 @@ class rest_post_tags_nodes(rest_post_handler):
           path="/tags/nodes",
           tables=["node_tags"],
           desc=desc,
-          examples=examples
+          examples=examples,
+          replication=["relay", "local"],
         )
 
     def handler(self, **vars):
@@ -543,6 +544,7 @@ class rest_delete_tags_nodes(rest_delete_handler):
           tables=["node_tags"],
           desc=desc,
           examples=examples,
+          replication=["relay", "local"],
         )
 
     def handler(self, **vars):
@@ -593,7 +595,8 @@ class rest_post_tags_services(rest_post_handler):
           path="/tags/services",
           tables=["svc_tags"],
           desc=desc,
-          examples=examples
+          examples=examples,
+          replication=["relay", "local"],
         )
 
     def handler(self, **vars):
@@ -620,6 +623,7 @@ class rest_delete_tags_services(rest_delete_handler):
           tables=["svc_tags"],
           desc=desc,
           examples=examples,
+          replication=["relay", "local"],
         )
 
     def handler(self, **vars):

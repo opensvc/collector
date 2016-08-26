@@ -1,7 +1,7 @@
 try:
-    cf = local_import('replication_config', reload=True)
+    replication_config_mod = local_import('replication_config', reload=True)
 except:
-    cf = None
+    replication_config_mod = None
 
 #
 # Core routines
@@ -62,10 +62,10 @@ def get_pull_remotes():
     return get_remotes("pull")
 
 def get_remotes(mode):
-    if cf is None:
+    if replication_config_mod is None:
         return []
     remotes = set([])
-    push_data = cf.repl_config.get(mode, [])
+    push_data = replication_config_mod.repl_config.get(mode, [])
     if push_data is None or type(push_data) != list:
         return []
     for host in push_data:
@@ -82,10 +82,10 @@ def get_push_remote_tables(remote=None):
     return get_remote_tables("push", remote=remote)
 
 def get_remote_tables(mode, remote=None):
-    if cf is None:
+    if replication_config_mod is None:
         return []
     tables = set([])
-    push_data = cf.repl_config.get(mode, [])
+    push_data = replication_config_mod.repl_config.get(mode, [])
     if push_data is None or type(push_data) != list:
         return []
 
@@ -115,10 +115,10 @@ def get_pull_tables():
     return get_tables("pull")
 
 def get_tables(mode):
-    if cf is None:
+    if replication_config_mod is None:
         return []
     tables = set([])
-    data = cf.repl_config.get(mode, [])
+    data = replication_config_mod.repl_config.get(mode, [])
     if data is None or type(data) != list:
         return []
 
@@ -284,9 +284,9 @@ def get_table_status(e, d_current, d_last, mode):
     return _data
 
 def get_creds(remote):
-    if cf is None:
+    if replication_config_mod is None:
         return None, None
-    push_data = cf.repl_config.get("push", []) + cf.repl_config.get("pull", [])
+    push_data = replication_config_mod.repl_config.get("push", []) + replication_config_mod.repl_config.get("pull", [])
     for d in push_data:
         _remote = d.get('remote')
         if _remote != remote:
@@ -294,7 +294,7 @@ def get_creds(remote):
         return d.get('user'), d.get('password')
     return None, None
 
-def get_proxy(remote):
+def get_proxy(remote, controller="replication"):
     user, password = get_creds(remote)
     import xmlrpclib
     try:
@@ -303,8 +303,8 @@ def get_proxy(remote):
     except:
         pass
     xmlrpclib.Marshaller.dispatch[type(0L)] = lambda _, v, w: w("<value><i8>%d</i8></value>" % v)
-    p = xmlrpclib.ServerProxy("https://%s:%s@%s/init/replication/call/xmlrpc" %
-                               (user, password, remote), allow_none=True)
+    p = xmlrpclib.ServerProxy("https://%s:%s@%s/init/%s/call/xmlrpc" %
+                               (user, password, remote, controller), allow_none=True)
     return p
 
 def rpc_pull(remote, sql):
@@ -339,12 +339,12 @@ def get_table_columns(schema, name):
     return columns
 
 def pull_all_table_from_all_remote(force=False):
-    if cf is None:
+    if replication_config_mod is None:
         return
     start = datetime.datetime.now()
     ts = pull_table_status()
 
-    pull_data = cf.repl_config.get("pull", [])
+    pull_data = replication_config_mod.repl_config.get("pull", [])
     if pull_data is None or type(pull_data) != list:
         return
 
@@ -355,7 +355,12 @@ def pull_all_table_from_all_remote(force=False):
             print e
         remote = host.get("remote")
 
-def pull_all_table_from_remote(host, ts, force=False):
+def pull_all_table_from_remote(host, ts=None, force=False):
+    if ts is None:
+        ts = pull_table_status()
+    if type(host) != dict:
+        host = [d for d in replication_config_mod.repl_config.get("pull", []) if d["remote"] == host][0]
+
     remote = host.get("remote")
     if remote is None:
         return
@@ -440,12 +445,12 @@ def pull_all_table_from_remote(host, ts, force=False):
             raise
 
 def push_all_table_to_all_remote(force=False):
-    if cf is None:
+    if replication_config_mod is None:
         return
     start = datetime.datetime.now()
     ts = push_table_status()
 
-    push_data = cf.repl_config.get("push", [])
+    push_data = replication_config_mod.repl_config.get("push", [])
     if push_data is None or type(push_data) != list:
         return
 
