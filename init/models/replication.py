@@ -303,8 +303,7 @@ def get_proxy(remote, controller="replication"):
     except:
         pass
     xmlrpclib.Marshaller.dispatch[type(0L)] = lambda _, v, w: w("<value><i8>%d</i8></value>" % v)
-    p = xmlrpclib.ServerProxy("https://%s:%s@%s/init/%s/call/xmlrpc" %
-                               (user, password, remote, controller), allow_none=True)
+    p = xmlrpclib.ServerProxy("https://%s:%s@%s/init/%s/call/xmlrpc" % (user, password, remote, controller), allow_none=True, use_datetime=True)
     return p
 
 def rpc_pull(remote, sql):

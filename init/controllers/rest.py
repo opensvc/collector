@@ -2,6 +2,14 @@ def call():
     session.forget()
     return service()
 
+@service.xmlrpc
+@auth.requires_membership('ReplicationManager')
+def relay_rest_request(user_id, action, path, data):
+    auth.impersonate(user_id=user_id)
+    handler = get_handler(action, path)
+    args, vars = data
+    return handler.handle(*args, **vars)
+
 class rest_get_api(rest_get_handler):
     def __init__(self):
         desc = [
