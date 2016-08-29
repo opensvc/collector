@@ -266,6 +266,16 @@ def filterset_query_id(row, nodes, services, i=0, node_id=None, svc_id=None):
                               cacheable=True)
         n_nodes = set(map(lambda x: x.node_id, rows)) - set([None])
         n_services = set(map(lambda x: x.svc_id, rows)) - set([None])
+    elif v.f_table == 'svcdisks':
+        if svc_id is not None:
+            qry &= db.svcdisks.svc_id == svc_id
+        if node_id is not None:
+            qry &= db.svcdisks.node_id == node_id
+        rows = db(qry).select(db.svcdisks.node_id,
+                              db.svcdisks.svc_id,
+                              cacheable=True)
+        n_nodes = set(map(lambda x: x.node_id, rows)) - set([None])
+        n_services = set(map(lambda x: x.svc_id, rows)) - set([None])
     elif v.f_table == 'node_hba':
         if svc_id is not None:
             qry &= db.svcmon.svc_id == svc_id
