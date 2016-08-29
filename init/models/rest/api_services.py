@@ -93,6 +93,7 @@ class rest_post_service(rest_post_handler):
           tables=["services"],
           desc=desc,
           examples=examples,
+          replication=["relay", "local"],
         )
 
     def handler(self, id, **vars):
@@ -143,6 +144,7 @@ class rest_post_services(rest_post_handler):
           tables=["services"],
           desc=desc,
           examples=examples,
+          replication=["relay", "local"],
         )
 
     def handler(self, **vars):
@@ -202,6 +204,7 @@ class rest_delete_service(rest_delete_handler):
           path="/services/<id>",
           desc=desc,
           examples=examples,
+          replication=["relay", "local"],
         )
 
     def handler(self, id, **vars):
@@ -269,6 +272,7 @@ class rest_delete_services(rest_delete_handler):
           path="/services",
           desc=desc,
           examples=examples,
+          replication=["relay", "local"],
         )
 
     def handler(self, **vars):
@@ -354,6 +358,7 @@ class rest_delete_service_instance(rest_delete_handler):
           path="/services_instances/<id>",
           desc=desc,
           examples=examples,
+          replication=["relay", "local"],
         )
 
     def handler(self, id, **vars):
@@ -413,6 +418,7 @@ class rest_delete_services_instances(rest_delete_handler):
           path="/services_instances",
           desc=desc,
           examples=examples,
+          replication=["relay", "local"],
         )
 
     def handler(self, **vars):
@@ -743,7 +749,8 @@ class rest_delete_service_compliance_ruleset(rest_delete_handler):
           path="/services/<id>/compliance/rulesets/<id>",
           desc=desc,
           params=params,
-          examples=examples
+          examples=examples,
+          replication=["relay", "local"],
         )
 
     def handler(self, svc_id, rset_id, **vars):
@@ -772,7 +779,8 @@ class rest_post_service_compliance_ruleset(rest_post_handler):
           path="/services/<id>/compliance/rulesets/<id>",
           desc=desc,
           params=params,
-          examples=examples
+          examples=examples,
+          replication=["relay", "local"],
         )
 
     def handler(self, svc_id, rset_id, **vars):
@@ -801,7 +809,8 @@ class rest_delete_service_compliance_moduleset(rest_delete_handler):
           path="/services/<id>/compliance/modulesets/<id>",
           desc=desc,
           params=params,
-          examples=examples
+          examples=examples,
+          replication=["relay", "local"],
         )
 
     def handler(self, svc_id, modset_id, **vars):
@@ -830,7 +839,8 @@ class rest_post_service_compliance_moduleset(rest_post_handler):
           path="/services/<id>/compliance/modulesets/<id>",
           desc=desc,
           params=params,
-          examples=examples
+          examples=examples,
+          replication=["relay", "local"],
         )
 
     def handler(self, svc_id, modset_id, **vars):

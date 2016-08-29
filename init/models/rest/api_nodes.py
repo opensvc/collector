@@ -14,7 +14,8 @@ class rest_delete_node_compliance_ruleset(rest_delete_handler):
           self,
           path="/nodes/<id>/compliance/rulesets/<id>",
           desc=desc,
-          examples=examples
+          examples=examples,
+          replication=["relay", "local"],
         )
 
     def handler(self, node_id, rset_id, **vars):
@@ -36,7 +37,8 @@ class rest_post_node_compliance_ruleset(rest_post_handler):
           self,
           path="/nodes/<id>/compliance/rulesets/<id>",
           desc=desc,
-          examples=examples
+          examples=examples,
+          replication=["relay", "local"],
         )
 
     def handler(self, node_id, rset_id, **vars):
@@ -58,7 +60,8 @@ class rest_delete_node_compliance_moduleset(rest_delete_handler):
           self,
           path="/nodes/<id>/compliance/modulesets/<id>",
           desc=desc,
-          examples=examples
+          examples=examples,
+          replication=["relay", "local"],
         )
 
     def handler(self, node_id, modset_id, **vars):
@@ -80,7 +83,8 @@ class rest_post_node_compliance_moduleset(rest_post_handler):
           self,
           path="/nodes/<id>/compliance/modulesets/<id>",
           desc=desc,
-          examples=examples
+          examples=examples,
+          replication=["relay", "local"],
         )
 
     def handler(self, node_id, modset_id, **vars):
@@ -519,6 +523,7 @@ class rest_delete_node(rest_delete_handler):
           path="/nodes/<id>",
           desc=desc,
           examples=examples,
+          replication=["relay", "local"],
         )
 
     def handler(self, node_id, **vars):
@@ -644,6 +649,7 @@ class rest_delete_nodes(rest_delete_handler):
           path="/nodes",
           desc=desc,
           examples=examples,
+          replication=["relay", "local"],
         )
 
     def handler(self, **vars):
@@ -672,7 +678,8 @@ class rest_post_node(rest_post_handler):
           path="/nodes/<id>",
           tables=["nodes"],
           desc=desc,
-          examples=examples
+          examples=examples,
+          replication=["relay", "local"],
         )
 
     def handler(self, node_id, **vars):
@@ -735,7 +742,8 @@ class rest_post_nodes(rest_post_handler):
           path="/nodes",
           tables=["nodes"],
           desc=desc,
-          examples=examples
+          examples=examples,
+          replication=["relay", "local"],
         )
 
     def handler(self, **vars):
