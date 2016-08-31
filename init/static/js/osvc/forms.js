@@ -929,6 +929,9 @@ function form(divid, options) {
 			source: opts,
 			minLength: 0,
 			response: function( event, ui ) {
+				if (ui.content.length == 1) {
+					$(this).prop("acid", ui.content[0].id)
+				}
 				if(d.StrictCandidates) {
 					var v = input.val()
 					for (var i=0; i<ui.content.length; i++) {
@@ -1189,7 +1192,10 @@ function form(divid, options) {
 				source: opts,
 				minLength: 0,
 				response: function( event, ui ) {
-					if(d.StrictCandidates) {
+					if (ui.content.length == 1) {
+						$(this).prop("acid", ui.content[0].id)
+					}
+					if (d.StrictCandidates) {
 						var v = input.val()
 						for (var i=0; i<ui.content.length; i++) {
 							if (ui.content[i].label==v) {
