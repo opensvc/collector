@@ -1,22 +1,30 @@
 def q_filter(query=None, svc_field=None, node_field=None, group_field=None, app_field=None, db=db):
     q = None
     t = None
-    if "Manager" in user_groups():
+    if not auth_is_node() and "Manager" in user_groups():
         manager = True
     else:
         manager = False
     if svc_field:
-        if not manager:
+        if auth_is_node():
+            node_svc_ids = [r.svc_id for r in db(db.svcmon.node_id==auth.user.node_id).select()]
+            q = svc_field.belongs(node_svc_ids)
+        elif not manager:
             q = svc_field.belongs(user_published_services())
         if t is None:
             t = db[svc_field.tablename]
     if node_field:
-        if not manager:
+        if auth_is_node():
+            q = node_field == auth.user.node_id
+        elif not manager:
             q = node_field.belongs(user_published_nodes())
         if t is None:
             t = db[node_field.tablename]
     if app_field:
-        if not manager:
+        if auth_is_node():
+            node_app = db(db.nodes.node_id==auth.user.node_id).select().first().app
+            q = app_field == node_app
+        elif not manager:
             q = app_field.belongs(user_published_apps())
         if t is None:
             t = db[app_field.tablename]
