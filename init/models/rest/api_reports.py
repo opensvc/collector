@@ -662,7 +662,7 @@ class rest_get_reports_metric_samples(rest_get_handler):
             sql_req = sql_req.replace("%%fset_node_ids%%", ','.join(map(lambda x: repr(str(x)), node_ids)))
             sql_req = sql_req.replace("%%fset_svc_ids%%", ','.join(map(lambda x: repr(str(x)), svc_ids)))
         try:
-            rows = db.executesql(sql_req, as_dict = True)
+            rows = db.executesql(sql_req, as_ordered_dict=True)
         except:
             rows  = []
 
