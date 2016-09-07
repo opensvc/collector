@@ -22,8 +22,8 @@ def q_filter(query=None, svc_field=None, node_field=None, group_field=None, app_
             t = db[node_field.tablename]
     if app_field:
         if auth_is_node():
-            node_app = db(db.nodes.node_id==auth.user.node_id).select().first().app
-            q = app_field == node_app
+            node_apps = node_responsibles_apps(auth.user.node_id)
+            q = app_field.belongs(node_apps)
         elif not manager:
             q = app_field.belongs(user_published_apps())
         if t is None:
