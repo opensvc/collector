@@ -10,6 +10,7 @@
 import datetime, time
 import re
 import os
+import logging
 
 def user():
     """
@@ -2080,6 +2081,8 @@ def task_rq_svcmon():
     task_rq("osvc:q:svcmon", lambda q: _svcmon_update_combo)
 
 def task_rq(rqueues, getfn):
+    import traceback
+    log = logging.getLogger("web2py.app.feed.task_rq")
     l = None
     while True:
         try:
@@ -2089,19 +2092,19 @@ def task_rq(rqueues, getfn):
             fn(*args)
             db.commit()
         except KeyboardInterrupt:
-            print "keyboard interrupt"
+            log.info("keyboard interrupt")
             break
         except Exception as e:
             if "server has gone away" in str(e) or "Lost connection" in str(e):
-                print "reconnect db"
+                log.info("reconnect db")
                 db._adapter.close()
                 db._adapter.reconnect()
                 try:
                     fn(*args)
                 except Exception as _e:
-                    print _e
-                    print l
+                    log.error(_e, exc_info=True)
+                    log.error(str(l))
             else:
-                print e
-                print l
+                log.error(e, exc_info=True)
+                log.error(str(l))
 
