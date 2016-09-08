@@ -597,6 +597,31 @@ class rest_get_service_resources(rest_get_table_handler):
 
 
 #
+class rest_get_service_resources_logs(rest_get_table_handler):
+    def __init__(self):
+        desc = [
+          "Display a service resources state changes on all nodes.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/services/mysvc/resources_logs",
+        ]
+        rest_get_table_handler.__init__(
+          self,
+          path="/services/<id>/resources_logs",
+          tables=["resmon_log"],
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, svc_id, **vars):
+        svc_id = get_svc_id(svc_id)
+        q = db.resmon_log.svc_id == svc_id
+        q = q_filter(q, svc_field=db.resmon_log.svc_id)
+        self.set_q(q)
+        return self.prepare_data(**vars)
+
+
+#
 class rest_get_service_node(rest_get_line_handler):
     def __init__(self):
         desc = [
@@ -646,6 +671,32 @@ class rest_get_service_node_resources(rest_get_table_handler):
         q = db.resmon.svc_id == svc_id
         q &= db.resmon.node_id == node_id
         q = q_filter(q, svc_field=db.resmon.svc_id)
+        self.set_q(q)
+        return self.prepare_data(**vars)
+
+#
+class rest_get_service_node_resources_logs(rest_get_table_handler):
+    def __init__(self):
+        desc = [
+          "Display a service instance resources state changes on the specified node.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/services/mysvc/nodes/mynode/resources_logs",
+        ]
+        rest_get_table_handler.__init__(
+          self,
+          path="/services/<id>/nodes/<id>/resources_logs",
+          tables=["resmon_log"],
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, svc_id, node_id, **vars):
+        node_id = get_node_id(node_id)
+        svc_id = get_svc_id(svc_id)
+        q = db.resmon_log.svc_id == svc_id
+        q &= db.resmon_log.node_id == node_id
+        q = q_filter(q, svc_field=db.resmon_log.svc_id)
         self.set_q(q)
         return self.prepare_data(**vars)
 

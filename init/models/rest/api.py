@@ -275,7 +275,9 @@ def get_get_handlers(prefix=None):
              "rest_get_service_nodes",
              "rest_get_service_node",
              "rest_get_service_node_resources",
+             "rest_get_service_node_resources_logs",
              "rest_get_service_resources",
+             "rest_get_service_resources_logs",
              "rest_get_service_tags",
        ],
        "services_instances": [
@@ -846,7 +848,7 @@ class rest_handler(object):
         self.q = q
 
     def get_pattern(self):
-        return "^"+re.sub("\<[-\w]+\>", "[=% ><@\.\-\w]+", self.path)+"$"
+        return "^"+re.sub("\<[-\w]+\>", "[\#\:=% ><@\.\-\w]+", self.path)+"$"
 
     def match(self, args):
         pattern = self.get_pattern()

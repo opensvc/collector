@@ -61,7 +61,7 @@ def rest_router(action, args, vars):
     except Exception as e:
         return dict(error=str(e))
     response.status = 404
-    return dict(error="Unsupported api url")
+    return dict(error="Unsupported api url: %s %s" % (action, str(args)))
 
 
 @request.restful()
