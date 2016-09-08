@@ -6114,4 +6114,17 @@ drop view v_tags_full ; create view v_tags_full as select 0 as id, concat(nodes.
 
 drop view v_tags; create view v_tags as select NULL as id, tags.tag_id as tag_id, tags.tag_name as tag_name, node_tags.node_id as node_id, "" as svc_id, node_tags.created as created from tags join node_tags on tags.tag_id=node_tags.tag_id union all select NULL as id, tags.tag_id as tag_id, tags.tag_name as tag_name, "" as node_id, svc_tags.svc_id as svc_id, svc_tags.created as created from tags join svc_tags on tags.tag_id=svc_tags.tag_id;
 
+# 2016-09-08
+
+CREATE TABLE `resmon_log` (
+  `id` integer  NOT NULL AUTO_INCREMENT,
+  `node_id` char(36) NOT NULL,
+  `svc_id` char(36) NOT NULL,
+  `rid` varchar(255) NOT NULL,
+  `res_status` varchar(10) NOT NULL,
+  `res_begin` datetime NOT NULL,
+  `res_end` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx1` (`node_id`, `svc_id`, `rid`)
+);
 

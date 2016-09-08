@@ -695,7 +695,7 @@ def _resmon_clean(node_id, svc_id, threshold=None):
         threshold = datetime.datetime.now()
     if node_id is None or node_id == '':
         return
-    if svc_id is None or svcname == '':
+    if svc_id is None or svc_id == '':
         return
     q = db.resmon.node_id==node_id
     q &= db.resmon.svc_id==svc_id
@@ -710,7 +710,7 @@ def _resmon_update(vars, vals, auth):
         __resmon_update(vars, vals, auth)
     else:
         for v in vals:
-            __resmon_update(vars, v, auth)
+            _resmon_update(vars, v, auth)
     ws_send('resmon_change')
 
 def __resmon_update(vars, vals, auth):
@@ -719,34 +719,31 @@ def __resmon_update(vars, vals, auth):
         return
     node_id = auth_to_node_id(auth)
     vars, vals = replace_svcname_in_data(copy.copy(vars), vals, auth)
-    for a,b in zip(vars, vals[0]):
+    for a,b in zip(vars, vals):
         h[a] = b
     now = datetime.datetime.now()
     now -= datetime.timedelta(microseconds=now.microsecond)
-    if 'svc_id' in h:
-        node_id, vmname, vmtype = translate_encap_nodename(h['svc_id'], node_id)
-        if "node_id" in h:
-            del(h["node_id"])
-        if node_id is not None:
-            h['vmname'] = vmname
-            h['node_id'] = node_id
-        if 'vmname' not in h:
-            h['vmname'] = ""
-    idx = vars.index("res_status")
-    idx_updated = vars.index("updated")
-    if type(vals[0]) == list:
-        for i, v in enumerate(vals):
-            vals[i][idx_updated] = now
-            if v[idx] == "'None'":
-                vals[i][idx] = "n/a"
-    elif type(vals) == list:
-        vals[idx_updated] = now
-        if vals[idx] == "'None'":
-            vals[idx] = "n/a"
-    vars, vals = replace_nodename_in_data(vars, vals, auth)
-    generic_insert('resmon', vars, vals)
-    if 'svc_id' in h:
-        _resmon_clean(node_id, h['svc_id'])
+    if 'svc_id' not in h:
+        return
+
+    _node_id, vmname, vmtype = translate_encap_nodename(h['svc_id'], node_id)
+    if _node_id is not None:
+        h['vmname'] = vmname
+        h['node_id'] = _node_id
+    else:
+        h['node_id'] = node_id
+    if 'vmname' not in h:
+        h['vmname'] = ""
+    if 'nodename' in h:
+        del(h['nodename'])
+
+    h['updated'] = now
+    if h['res_status'] == "'None'":
+        h['res_status'] = "n/a"
+
+    generic_insert('resmon', h.keys(), h.values())
+    resmon_log_update(h['node_id'], h['svc_id'], h['rid'], h['res_status'])
+    _resmon_clean(h['node_id'], h['svc_id'])
 
 def _register_disk(vars, vals, auth):
     h = {}
@@ -2655,30 +2652,6 @@ def compute_availstatus(h):
     elif s == 'stdby up with down':
         s = 'stdby up'
     return s
-
-def svc_log_update(svc_id, astatus):
-    sql = """select id, svc_availstatus, svc_end from services_log
-             order by id desc limit 1 """
-    rows = db.executesql(sql)
-    end = datetime.datetime.now()
-    if len(rows) == 1:
-        prev = rows[0]
-        if prev[1] == astatus:
-            sql = """update services_log set svc_end="%s" where id=%d""" % (end, prev[0])
-            db.executesql(sql)
-            db.commit()
-        else:
-            db.services_log.insert(svc_id=svc_id,
-                                   svc_begin=prev[2],
-                                   svc_end=end,
-                                   svc_availstatus=astatus)
-            db.commit()
-    else:
-        db.services_log.insert(svc_id=svc_id,
-                               svc_begin=end,
-                               svc_end=end,
-                               svc_availstatus=astatus)
-        db.commit()
 
 def translate_encap_nodename(svc_id, node_id):
     q = db.svcmon.mon_vmname == db.nodes.nodename

@@ -16,28 +16,6 @@ def refresh_b_action_errors():
     db.executesql(sql)
     db.commit()
 
-def svc_log_update(svc_id, astatus):
-    q = db.services_log.svc_id == svc_id
-    o = ~db.services_log.id
-    rows = db(q).select(orderby=o, limitby=(0,1))
-    end = datetime.datetime.now()
-    if len(rows) == 1:
-        prev = rows[0]
-        if prev.svc_availstatus == astatus:
-            id = prev.id
-            q = db.services_log.id == id
-            db(q).update(svc_end=end)
-        else:
-            db.services_log.insert(svc_id=svc_id,
-                                   svc_begin=prev.svc_end,
-                                   svc_end=end,
-                                   svc_availstatus=astatus)
-    else:
-        db.services_log.insert(svc_id=svc_id,
-                               svc_begin=end,
-                               svc_end=end,
-                               svc_availstatus=astatus)
-
 def cron_scrub_svcstatus():
     """ Mark undef the services with 0 instance updating their status
     """
@@ -57,6 +35,13 @@ def cron_scrub_svcstatus():
                  level="error")
     for svc_id in svc_ids:
         svc_log_update(svc_id, "undef")
+
+def cron_scrub_resstatus():
+    limit = datetime.datetime.now() - datetime.timedelta(minutes=15)
+    q = db.resmon.updated < limit
+    rows = db(q).select(db.resmon.node_id, db.resmon.svc_id, db.resmon.rid)
+    for row in rows:
+        resmon_log_update(row.node_id, row.svc_id, row.rid, "undef")
 
 def cron_purge_node_hba():
     sql = """delete from node_hba where updated < date_sub(now(), interval 1 week)"""
@@ -168,6 +153,7 @@ def cron_purge_expiry():
               ('comp_log_daily', 'run_date', None),
               ('svcmon_log', 'mon_end', None),
               ('services_log', 'svc_end', None),
+              ('resmon_log', 'res_end', None),
               ('resinfo_log', 'updated', None),
               ('svcactions', 'begin', 'id'),
               ('dashboard_events', 'dash_end', None),
