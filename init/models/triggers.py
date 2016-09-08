@@ -4,19 +4,15 @@ def svc_log_update(svc_id, astatus):
              order by id desc limit 1 """ % svc_id
     rows = db.executesql(sql)
     end = datetime.datetime.now()
+    change = False
     if len(rows) == 1:
         prev = rows[0]
-        if prev[1] == astatus:
-            sql = """update services_log set svc_end="%s" where id=%d""" % (end, prev[0])
-            db.executesql(sql)
-            db.commit()
-        else:
-            db.services_log.insert(svc_id=svc_id,
-                                   svc_begin=prev[2],
-                                   svc_end=end,
-                                   svc_availstatus=astatus)
-            db.commit()
-    else:
+        sql = """update services_log set svc_end="%s" where id=%d""" % (end, prev[0])
+        db.executesql(sql)
+        db.commit()
+        if prev[1] != astatus:
+            change = True
+    if len(rows) == 0 or change:
         db.services_log.insert(svc_id=svc_id,
                                svc_begin=end,
                                svc_end=end,
@@ -31,20 +27,15 @@ def resmon_log_update(node_id, svc_id, rid, astatus):
              order by id desc limit 1 """ % (node_id, svc_id, rid)
     rows = db.executesql(sql)
     end = datetime.datetime.now()
+    change = False
     if len(rows) == 1:
         prev = rows[0]
+        sql = """update resmon_log set res_end="%s" where id=%d""" % (end, prev[0])
+        db.executesql(sql)
+        db.commit()
         if prev[1] == astatus:
-            sql = """update resmon_log set res_end="%s" where id=%d""" % (end, prev[0])
-            db.executesql(sql)
-            db.commit()
-        else:
-            db.resmon_log.insert(svc_id=svc_id,
-                                 node_id=node_id,
-                                 rid=rid,
-                                 res_begin=prev[2],
-                                 res_end=end,
-                                 res_status=astatus)
-    else:
+            change = True
+    if len(rows) == 0 or change:
         db.resmon_log.insert(svc_id=svc_id,
                              node_id=node_id,
                              rid=rid,
