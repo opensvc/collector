@@ -16,6 +16,10 @@ def refresh_b_action_errors():
     db.executesql(sql)
     db.commit()
 
+def cron_scrub():
+    cron_scrub_svcstatus()
+    cron_scrub_resstatus()
+
 def cron_scrub_svcstatus():
     """ Mark undef the services with 0 instance updating their status
     """
@@ -42,6 +46,12 @@ def cron_scrub_resstatus():
     rows = db(q).select(db.resmon.node_id, db.resmon.svc_id, db.resmon.rid)
     for row in rows:
         resmon_log_update(row.node_id, row.svc_id, row.rid, "undef")
+
+def cron_scrub_checks():
+    thres = now - datetime.timedelta(days=2)
+    q = db.checks_live.chk_updated < thres
+    return db(q).delete()
+
 
 def cron_purge_node_hba():
     sql = """delete from node_hba where updated < date_sub(now(), interval 1 week)"""
@@ -361,11 +371,6 @@ def cron_stat_day_svc():
 #######
 def cron_unfinished_actions():
     return task_unfinished_actions()
-
-def cron_scrub_checks():
-    thres = now - datetime.timedelta(days=2)
-    q = db.checks_live.chk_updated < thres
-    return db(q).delete()
 
 #
 # Alerts and purges

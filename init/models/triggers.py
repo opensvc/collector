@@ -7,7 +7,6 @@ def svc_log_update(svc_id, astatus):
     if len(rows) == 1:
         prev = rows[0]
         if prev[1] == astatus:
-            logger.error("""update services_log set svc_end="%s" where id=%d""" % (end, prev[0]))
             sql = """update services_log set svc_end="%s" where id=%d""" % (end, prev[0])
             db.executesql(sql)
             db.commit()

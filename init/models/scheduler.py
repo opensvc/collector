@@ -10,6 +10,9 @@ def task_perf():
 def task_stats():
     LOAD('cron', 'cron_stats')
 
+def task_scrub():
+    LOAD('cron', 'cron_scrub')
+
 def task_alerts_daily():
     LOAD('cron', 'cron_alerts_daily')
 

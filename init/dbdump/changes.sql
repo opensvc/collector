@@ -6128,3 +6128,4 @@ CREATE TABLE `resmon_log` (
   KEY `idx1` (`node_id`, `svc_id`, `rid`)
 );
 
+INSERT INTO `scheduler_task` VALUES (NULL,UUID(),'[]','{}','T',NOW(),NOW(),NULL,0,-1,60,60,0,0,0,NULL,'F','janitor','task_scrub','QUEUED','task_scrub','init/appadmin',NULL);
