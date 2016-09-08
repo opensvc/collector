@@ -5,6 +5,7 @@ def svc_log_update(svc_id, astatus):
     rows = db.executesql(sql)
     end = datetime.datetime.now()
     change = False
+    changed = False
     if len(rows) == 1:
         prev = rows[0]
         sql = """update services_log set svc_end="%s" where id=%d""" % (end, prev[0])
@@ -12,12 +13,16 @@ def svc_log_update(svc_id, astatus):
         db.commit()
         if prev[1] != astatus:
             change = True
+        changed = True
     if len(rows) == 0 or change:
         db.services_log.insert(svc_id=svc_id,
                                svc_begin=end,
                                svc_end=end,
                                svc_availstatus=astatus)
         db.commit()
+        changed = True
+    if changed:
+        table_modified("services_log")
 
 def resmon_log_update(node_id, svc_id, rid, astatus):
     rid = rid.strip("'")
@@ -35,6 +40,7 @@ def resmon_log_update(node_id, svc_id, rid, astatus):
         db.commit()
         if prev[1] == astatus:
             change = True
+        changed = True
     if len(rows) == 0 or change:
         db.resmon_log.insert(svc_id=svc_id,
                              node_id=node_id,
@@ -42,6 +48,9 @@ def resmon_log_update(node_id, svc_id, rid, astatus):
                              res_begin=end,
                              res_end=end,
                              res_status=astatus)
+        changed = True
+    if changed:
+        table_modified("resmon_log")
 
 def update_dash_svcmon_not_updated(svc_id, node_id):
     sql = """delete from dashboard
