@@ -615,7 +615,7 @@ class rest_get_service_node(rest_get_line_handler):
 
     def handler(self, svc_id, node_id, **vars):
         svc_id = get_svc_id(svc_id)
-        node_id = get_ndoe_id(node_id)
+        node_id = get_node_id(node_id)
         q = db.svcmon.svc_id == svc_id
         q &= db.svcmon.node_id == node_id
         q = q_filter(q, svc_field=db.svcmon.svc_id)
