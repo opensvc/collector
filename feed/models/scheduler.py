@@ -2948,6 +2948,7 @@ def __svcmon_update(vars, vals, auth):
         generic_insert('svcmon_log', _vars, _vals)
         db.executesql("""update svcmon_log set mon_end=now() where id=%d"""%last["id"])
         db.commit()
+        table_modified("svcmon_log")
         if h['mon_overallstatus'] == 'warn':
             level = "warning"
         else:
@@ -2965,6 +2966,7 @@ def __svcmon_update(vars, vals, auth):
     else:
         db.executesql("""update svcmon_log set mon_end=now() where id=%d"""%last["id"])
         db.commit()
+        table_modified("svcmon_log")
     print datetime.datetime.now() - _now, "update svcmon_log"
 
 
