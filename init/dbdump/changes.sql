@@ -6129,3 +6129,9 @@ CREATE TABLE `resmon_log` (
 );
 
 INSERT INTO `scheduler_task` VALUES (NULL,UUID(),'[]','{}','T',NOW(),NOW(),NULL,0,-1,60,60,0,0,0,NULL,'F','janitor','task_scrub','QUEUED','task_scrub','init/appadmin',NULL);
+
+alter table resinfo modify `rid` varchar(255) DEFAULT '';
+alter table resinfo modify `res_key` varchar(40) DEFAULT '';
+#truncate resinfo;
+alter table resinfo add unique key uk (node_id, svc_id, rid, res_key);
+

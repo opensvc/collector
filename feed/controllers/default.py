@@ -80,6 +80,8 @@ def update_resinfo(vars, vals, auth):
 
 @auth_uuid
 def rpc_update_resinfo(vars, vals, auth):
+    now = datetime.datetime.now()
+    now -= datetime.timedelta(microseconds=now.microsecond)
     if len(vals) == 0:
         return
     h = {}
@@ -96,11 +98,11 @@ def rpc_update_resinfo(vars, vals, auth):
             vars[i] = "updated"
     for a,b in zip(vars, vals[0]):
         h[a] = b
-    if "cluster_type" in h and "flex" in h["cluster_type"]:
-        db.executesql("""delete from resinfo where svc_id='%s' and node_id="%s" """%(h["svc_id"], h["node_id"]))
-    else:
-        db.executesql("delete from resinfo where svc_id='%s'"%h["svc_id"])
     generic_insert('resinfo', vars, vals)
+    if "cluster_type" in h and "flex" in h["cluster_type"]:
+        db.executesql("""delete from resinfo where svc_id='%s' and node_id="%s" and updated<'%s' """%(h["svc_id"], h["node_id"], str(now)))
+    else:
+        db.executesql("""delete from resinfo where svc_id='%s' and updated<'%s' """%(h["svc_id"], str(now)))
     ws_send("resinfo_change")
 
     i = vars.index('res_value')
