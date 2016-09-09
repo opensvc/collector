@@ -254,6 +254,9 @@ def get_get_handlers(prefix=None):
        "resources": [
              "rest_get_resources",
        ],
+       "resources_logs": [
+             "rest_get_resources_logs",
+       ],
        "search": [
              "rest_get_search",
        ],
