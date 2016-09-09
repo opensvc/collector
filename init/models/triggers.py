@@ -14,7 +14,7 @@ def svc_log_update(svc_id, astatus):
         if prev[1] != astatus:
             change = True
         changed = True
-    if len(rows) == 0 or change:
+    if len(rows) != 0 or change:
         db.services_log.insert(svc_id=svc_id,
                                svc_begin=end,
                                svc_end=end,
@@ -38,7 +38,7 @@ def resmon_log_update(node_id, svc_id, rid, astatus):
         sql = """update resmon_log set res_end="%s" where id=%d""" % (end, prev[0])
         db.executesql(sql)
         db.commit()
-        if prev[1] == astatus:
+        if prev[1] != astatus:
             change = True
         changed = True
     if len(rows) == 0 or change:
@@ -48,6 +48,7 @@ def resmon_log_update(node_id, svc_id, rid, astatus):
                              res_begin=end,
                              res_end=end,
                              res_status=astatus)
+        db.commit()
         changed = True
     if changed:
         table_modified("resmon_log")
