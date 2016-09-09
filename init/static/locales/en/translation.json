@@ -1,4 +1,8 @@
 {
+	"avail_tab": {
+		"show resources": "Show resources",
+		"hide resources": "Hide resources"
+	},
 	"alert_info": {
 		"timeline": "Alert timeline"
 	},
