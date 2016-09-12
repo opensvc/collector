@@ -85,7 +85,7 @@ class table_svcmon(HtmlTable):
             'mon_vcpus',
             'mon_vmem',
             'mon_guestos',
-            'environnement',
+            'asset_env',
             'host_mode',
             'node_id',
             'nodename',

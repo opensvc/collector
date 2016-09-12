@@ -239,7 +239,7 @@ class viz(object):
         if "services" in self.display:
             envs |= set([r.svc_type if r.svc_type else "unknown" for r in self.rs["services"].values()])
         elif "nodes" in self.display:
-            envs |= set([r.environnement if r.environnement else "unknown" for r in self.rs["nodes"].values()])
+            envs |= set([r.asset_env if r.asset_env else "unknown" for r in self.rs["nodes"].values()])
         self.rs["envs"] = envs
 
     def data_services_envs(self):
@@ -253,7 +253,7 @@ class viz(object):
     def data_nodes_envs(self):
         d = []
         for row in self.rs["nodes"].values():
-            t = (row.nodename, row.environnement if row.environnement else "unknown")
+            t = (row.nodename, row.asset_env if row.asset_env else "unknown")
             if t not in d:
                 d.append(t)
         self.rs["nodes_envs"] = d
@@ -277,7 +277,7 @@ class viz(object):
         rows = db(q).select(db.nodes.nodename,
                             db.nodes.model,
                             db.nodes.os_name,
-                            db.nodes.environnement,
+                            db.nodes.asset_env,
                             db.nodes.app,
                             db.nodes.loc_country,
                             db.nodes.loc_city,

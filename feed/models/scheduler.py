@@ -658,11 +658,13 @@ def _update_asset(vars, vals, auth):
         h[a] = b
     now = datetime.datetime.now()
     h['updated'] = now
-    if 'environnement' in h and 'host_mode' not in h:
-        h['host_mode'] = h['environnement']
+    if 'environnement' in h:
+        if 'asset_env' not in h:
+            h['asset_env'] = h['environnement']
         del(h['environnement'])
     if 'environment' in h:
-        h['environnement'] = h['environment']
+        if 'asset_env' not in h:
+            h['asset_env'] = h['environment']
         del(h['environment'])
     if 'enclosure' in h and h['enclosure'] == 'Unknown':
         del(h['enclosure'])

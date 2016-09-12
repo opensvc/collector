@@ -675,7 +675,7 @@
 		"sec_zone": "zone de sécurité",
 		"status": "état",
 		"role": "rôle",
-		"env": "env",
+		"asset_env": "env de l'asset",
 		"root_pwd": "mdp root",
 		"retrieve_root_password": "récupérer le mot de passe root",
 		"protected": "<contenu protégé>"
@@ -1454,6 +1454,7 @@
 		"Links": "Liens",
 		"Node": "Noeud",
 		"Env": "Env",
+		"Asset env": "Env de l'asset",
 		"Alert": "Alerte",
 		"Alert id": "Id d'alerte",
 		"Begin date": "Date de début",

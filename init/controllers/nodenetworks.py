@@ -46,7 +46,7 @@ class table_nodenetworks(HtmlTable):
                       'hv',
                       'role',
                       'host_mode',
-                      'environnement',
+                      'asset_env',
                       'status',
                       'type',
                       'warranty_end',

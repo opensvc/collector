@@ -3,7 +3,7 @@ nodes_cols = [
     'fqdn',
     'serial',
     'model',
-    'environnement',
+    'asset_env',
     'role',
     'status',
     'type',
@@ -264,8 +264,8 @@ nodes_colprops = {
              field='host_mode',
              table = 'nodes',
             ),
-    'environnement': HtmlTableColumn(
-             field='environnement',
+    'asset_env': HtmlTableColumn(
+             field='asset_env',
              table = 'nodes',
             ),
     'warranty_end': HtmlTableColumn(

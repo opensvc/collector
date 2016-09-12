@@ -5,7 +5,7 @@ objcols = {
 		'fqdn',
 		'serial',
 		'model',
-		'environnement',
+		'asset_env',
 		'role',
 		'status',
 		'type',
@@ -690,10 +690,10 @@ colprops = {
 		"img": "net16",
 		"title": "Ip range end"
 	},
-	"environnement": {
+	"asset_env": {
 		"_class": "env",
 		"img": "env16",
-		"title": "Env"
+		"title": "Asset env"
 	},
 	"err": {
 		"_class": "svc_action_err",

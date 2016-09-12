@@ -365,8 +365,8 @@ def json_node_sec_zone(node_id):
     return val
 
 @service.json
-def json_node_environnement(node_id):
-    return _get_node_generic(node_id, "environnement")
+def json_node_asset_env(node_id):
+    return _get_node_generic(node_id, "asset_env")
 
 @service.json
 def json_node_os_concat(node_id):
