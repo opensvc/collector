@@ -134,12 +134,12 @@ services_colprops = {
              field='svc_flex_cpu_high_threshold',
              table = 'services',
             ),
-    'svc_envfile': HtmlTableColumn(
-             field='svc_envfile',
+    'svc_config': HtmlTableColumn(
+             field='svc_config',
              table = 'services',
             ),
-    'svc_envdate': HtmlTableColumn(
-             field='svc_envdate',
+    'svc_config_updated': HtmlTableColumn(
+             field='svc_config_updated',
              table = 'services',
             ),
 }

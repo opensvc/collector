@@ -1817,13 +1817,13 @@ colprops = {
 		"img": "svc",
 		"title": "DRP type"
 	},
-	"svc_envdate": {
+	"svc_config_updated": {
 		"img": "time16",
-		"title": "Env file date"
+		"title": "Config file updated"
 	},
-	"svc_envfile": {
+	"svc_config": {
 		"img": "svc",
-		"title": "Env file"
+		"title": "Config file"
 	},
 	"svc_flex_cpu_high_threshold": {
 		"img": "spark16",

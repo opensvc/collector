@@ -138,7 +138,7 @@ function servicediff(divid, options) {
 	o.options = options
 	o.options.compared = "svc_id"
 	o.options.compared_title = "diff.services"
-	o.options.blacklist = ["svc_envfile", "id"]
+	o.options.blacklist = ["svc_config", "id"]
 
 	o.options.get = function(callback, callback_error) {
 		var data = {

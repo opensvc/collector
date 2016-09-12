@@ -875,7 +875,7 @@ def json_startup_data():
 
     svc_id = svc_ids[0]
     q = db.services.svc_id.belongs(svc_ids)
-    env = db(q).select(db.services.svc_envfile).first().svc_envfile
+    env = db(q).select(db.services.svc_config).first().svc_config
     if env is None:
         return data
 

@@ -318,7 +318,7 @@ function service_env(divid, options)
 		o.body = o.div.find("[name=content]")
 
 		spinner_add(o.div)
-		services_osvcgetrest("R_SERVICE", [o.options.svc_id], {"meta": "false", "props": "updated,svc_envfile"}, function(jd) {
+		services_osvcgetrest("R_SERVICE", [o.options.svc_id], {"meta": "false", "props": "updated,svc_config"}, function(jd) {
 			spinner_del(o.div)
 			if (!jd.data) {
 				o.div.html(services_error_fmt(jd))
@@ -333,8 +333,8 @@ function service_env(divid, options)
 	}
 
 	o.load = function(data) {
-		if (data.svc_envfile && (data.svc_envfile.length > 0)) {
-			var text = data.svc_envfile.replace(/\\n\[/g, "\n\n[").replace(/\\n/g, "\n").replace(/\\t/g, "\t")
+		if (data.svc_config && (data.svc_config.length > 0)) {
+			var text = data.svc_config.replace(/\\n\[/g, "\n\n[").replace(/\\n/g, "\n").replace(/\\t/g, "\t")
 		} else {
 			var text = ""
 		}
@@ -350,7 +350,7 @@ function service_env(divid, options)
 
 	o.save = function(text) {
 		var data = { 
-			"svc_envfile": text
+			"svc_config": text
 		}
 		services_osvcpostrest("/services/%1", [o.options.svc_id], "", data, function(jd) {
 			if (jd.error && (jd.error.length > 0)) {
