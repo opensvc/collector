@@ -1568,7 +1568,7 @@ def rpc_collector_asset(cmd, auth):
             return {"ret": 1, "msg": "this node is not owner of %s"%cmd["svcname"]}
 
     if "svcname" in cmd:
-        pass
+        data = []
     else:
         q = db.nodes.node_id == node_id
         j = db.nodes.app == db.apps.app
