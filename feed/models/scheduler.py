@@ -292,6 +292,9 @@ def _update_service(vars, vals, auth):
                  node_id=node_id,
                  level="warning")
             h['svc_app'] = new_app
+    if 'svc_type' in h:
+        h['env'] = h['svc_type']
+        del(h['svc_type'])
     if 'svc_version' in h:
         del(h['svc_version'])
     if 'svc_drnoaction' in h:
