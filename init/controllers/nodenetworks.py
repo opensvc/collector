@@ -45,7 +45,7 @@ class table_nodenetworks(HtmlTable):
                       'hvpool',
                       'hv',
                       'role',
-                      'host_mode',
+                      'env',
                       'asset_env',
                       'status',
                       'type',

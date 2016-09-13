@@ -543,19 +543,19 @@ def node_users_alerts(node_id):
                  NULL,
                  "duplicate uid",
                  NULL,
-                 if(t.host_mode="PRD", 1, 0),
+                 if(t.env="PRD", 1, 0),
                  "uid %%(uid)s is used by users %%(usernames)s",
                  concat('{"uid": ', t.user_id, ', "usernames": "', t.usernames, '"}'),
                  now(),
                  NULL,
-                 t.host_mode,
+                 t.env,
                  now(),
                  "%(node_id)s",
                  NULL
                from (
                  select
                    *,
-                   (select host_mode from nodes where node_id="%(node_id)s") as host_mode
+                   (select env from nodes where node_id="%(node_id)s") as env
                  from (
                    select
                      node_id,
@@ -589,19 +589,19 @@ def node_groups_alerts(node_id):
                  NULL,
                  "duplicate gid",
                  NULL,
-                 if(t.host_mode="PRD", 1, 0),
+                 if(t.env="PRD", 1, 0),
                  "gid %%(gid)s is used by users %%(groupnames)s",
                  concat('{"gid": ', t.group_id, ', "groupnames": "', t.groupnames, '"}'),
                  now(),
                  NULL,
-                 t.host_mode,
+                 t.env,
                  now(),
                  "%(node_id)s",
                  NULL
                from (
                  select
                    *,
-                   (select host_mode from nodes where node_id="%(node_id)s") as host_mode
+                   (select env from nodes where node_id="%(node_id)s") as env
                  from (
                    select
                      node_id,
@@ -658,6 +658,9 @@ def _update_asset(vars, vals, auth):
         h[a] = b
     now = datetime.datetime.now()
     h['updated'] = now
+    if 'host_mode' in h:
+        h['env'] = h['host_mode']
+        del(h['host_mode'])
     if 'environnement' in h:
         if 'asset_env' not in h:
             h['asset_env'] = h['environnement']
@@ -3055,7 +3058,7 @@ def cron_dash_node_not_updated():
                  "",
                  updated,
                  "",
-                 host_mode,
+                 env,
                  now(),
                  node_id,
                  NULL
@@ -3107,7 +3110,7 @@ def cron_dash_node_beyond_maintenance_date():
                  "",
                  "%(now)s",
                  "",
-                 host_mode,
+                 env,
                  "%(now)s",
                  node_id,
                  NULL
@@ -3142,7 +3145,7 @@ def cron_dash_node_near_maintenance_date():
                  "",
                  now(),
                  "",
-                 host_mode,
+                 env,
                  now(),
                  node_id,
                  NULL
@@ -3170,7 +3173,7 @@ def cron_dash_node_without_maintenance_date():
                  "",
                  now(),
                  "",
-                 host_mode,
+                 env,
                  now(),
                  node_id,
                  NULL
@@ -3239,12 +3242,12 @@ def cron_dash_checks_not_updated():
                  NULL,
                  "check value not updated",
                  "",
-                 if(n.host_mode="PRD", 1, 0),
+                 if(n.env="PRD", 1, 0),
                  "%(t)s:%(i)s",
                  concat('{"i":"', chk_instance, '", "t":"', chk_type, '"}'),
                  chk_updated,
                  md5(concat('{"i":"', chk_instance, '", "t":"', chk_type, '"}')),
-                 n.host_mode,
+                 n.env,
                  now(),
                  c.node_id,
                  NULL
@@ -3901,7 +3904,7 @@ def update_dash_checks_all():
                  NULL,
                  "check out of bounds",
                  t.svc_id,
-                 if (t.host_mode="PRD", 3, 2),
+                 if (t.env="PRD", 3, 2),
                  "%%(ctype)s:%%(inst)s check value %%(val)d. %%(ttype)s thresholds: %%(min)d - %%(max)d",
                  concat('{"ctype": "', t.ctype,
                         '", "inst": "', t.inst,
@@ -3918,7 +3921,7 @@ def update_dash_checks_all():
                         ', "min": ', t.min,
                         ', "max": ', t.max,
                         '}')),
-                 t.host_mode,
+                 t.env,
                  "%(now)s",
                  t.node_id,
                  NULL
@@ -3932,7 +3935,7 @@ def update_dash_checks_all():
                    c.chk_value as val,
                    c.chk_low as min,
                    c.chk_high as max,
-                   n.host_mode
+                   n.env
                  from checks_live c left join nodes n on c.node_id=n.node_id
                  where
                    c.chk_updated >= date_sub(now(), interval 1 day) and
@@ -3965,10 +3968,10 @@ def update_dash_checks_all():
 def update_dash_checks(node_id):
     try:
         q = db.nodes.node_id == node_id
-        host_mode = db(q).select().first().host_mode
+        env = db(q).select().first().env
     except:
-        host_mode = 'TST'
-    if host_mode == 'PRD':
+        env = 'TST'
+    if env == 'PRD':
         sev = 3
     else:
         sev = 2
@@ -4025,7 +4028,7 @@ def update_dash_checks(node_id):
                  dash_updated="%(now)s"
           """%dict(node_id=node_id,
                    sev=sev,
-                   env=host_mode,
+                   env=env,
                    now=str(now),
                   )
     db.executesql(sql)

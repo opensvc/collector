@@ -380,7 +380,7 @@ def cron_unfinished_actions():
 def alert_wrong_netmask():
     sql = """select
                node_id,
-               host_mode,
+               env,
                addr,
                mask,
                net_netmask,
@@ -394,7 +394,7 @@ def alert_wrong_netmask():
     rows = db.executesql(sql, as_dict=True)
 
     for row in rows:
-        if row.get('host_mode') == 'PRD':
+        if row.get('env') == 'PRD':
             sev = 4
         else:
             sev = 3
@@ -407,7 +407,7 @@ def alert_wrong_netmask():
                    dash_fmt="%%(addr)s configured with mask %%(mask)s instead of %%(net_netmask)s",
                    dash_dict='{"addr": "%(addr)s", "mask": "%(mask)s", "net_netmask": "%(net_netmask)s"}',
                    dash_created=now(),
-                   dash_env="%(host_mode)s",
+                   dash_env="%(env)s",
                    dash_updated=now()
                  on duplicate key update
                    dash_severity=%(sev)d,
@@ -419,7 +419,7 @@ def alert_wrong_netmask():
                        mask=str(row.get('mask', '')),
                        net_netmask=str(row.get('net_netmask', '')),
                        sev=sev,
-                       host_mode=row.get('host_mode', ''),
+                       env=row.get('env', ''),
                        addr=row.get('addr', ''))
         db.executesql(sql)
         db.commit()
@@ -881,10 +881,10 @@ def cron_mac_dup():
     for row in rows:
         for node_id in row[1].split(','):
             q = db.nodes.node_id == node_id
-            node_entry = db(q).select(db.nodes.host_mode).first()
+            node_entry = db(q).select(db.nodes.env).first()
             if node_entry is None:
                 return
-            environment = node_entry.host_mode
+            environment = node_entry.env
             severity = 3
             if environment == "PRD":
                 severity += 1

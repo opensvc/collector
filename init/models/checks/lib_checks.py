@@ -294,7 +294,7 @@ def update_dash_checks(node_id):
     now = datetime.datetime.now()
     now = now - datetime.timedelta(microseconds=now.microsecond)
     q = db.nodes.node_id == node_id
-    env = db(q).select().first().host_mode
+    env = db(q).select().first().env
     if env == 'PRD':
         sev = 3
     else:

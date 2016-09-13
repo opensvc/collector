@@ -43,7 +43,7 @@ objcols = {
 		'action_type',
 		'collector',
 		'connect_to',
-		'host_mode',
+		'env',
 		'team_responsible',
 		'team_integ',
 		'app_team_ops',
@@ -864,10 +864,10 @@ colprops = {
 		"img": "hd16",
 		"title": "Hba type"
 	},
-	"host_mode": {
+	"env": {
 		"_class": "env",
 		"img": "env16",
-		"title": "Host Mode"
+		"title": "Env"
 	},
 	"hostname": {
 		"_class": "nodename",

@@ -192,7 +192,7 @@ def test_sched():
     for i in range(1000):
         rconn.rpush("osvc:q:checks", s)
 
-    s = """[["loc_city", "mem_banks", "sec_zone", "mem_bytes", "os_kernel", "cpu_dies", "cpu_cores", "host_mode", "serial", "enclosure", "os_vendor", "cpu_freq", "tz", "os_arch", "version", "os_name", "mem_slots", "nodename", "cpu_model", "last_boot", "cpu_threads", "listener_port", "fqdn", "os_release", "model"], ["aubervillier", "2", "d\\u00e4mz\\u00e9", "3863", "4.4.0-22-generic", "1", "2", "DEV", "1005661700762", "Unknown", "Ubuntu", "1616", "+02:00", "x86_64", "1.7-10269", "Linux", "4", "clementine", "Intel(R) Core(TM) i5-4200U CPU @ 1.60GHz", "2016-05-19", "4", "1215", "clementine", "16.04", "20266"], ["d446fee3-328d-4493-9db9-b1118600eee8", "clementine"]]"""
+    s = """[["loc_city", "mem_banks", "sec_zone", "mem_bytes", "os_kernel", "cpu_dies", "cpu_cores", "env", "serial", "enclosure", "os_vendor", "cpu_freq", "tz", "os_arch", "version", "os_name", "mem_slots", "nodename", "cpu_model", "last_boot", "cpu_threads", "listener_port", "fqdn", "os_release", "model"], ["aubervillier", "2", "d\\u00e4mz\\u00e9", "3863", "4.4.0-22-generic", "1", "2", "DEV", "1005661700762", "Unknown", "Ubuntu", "1616", "+02:00", "x86_64", "1.7-10269", "Linux", "4", "clementine", "Intel(R) Core(TM) i5-4200U CPU @ 1.60GHz", "2016-05-19", "4", "1215", "clementine", "16.04", "20266"], ["d446fee3-328d-4493-9db9-b1118600eee8", "clementine"]]"""
     for i in range(1000):
         rconn.rpush("osvc:q:asset", s)
 
@@ -1465,7 +1465,7 @@ def rpc_collector_status(cmd, auth):
             q &= db.svcmon.id < 0
     rows = db(q).select(db.nodes.nodename,
                         db.services.svcname,
-                        db.nodes.host_mode,
+                        db.nodes.env,
                         db.svcmon.mon_availstatus,
                         db.svcmon.mon_overallstatus,
                         db.svcmon.mon_updated,
@@ -1474,7 +1474,7 @@ def rpc_collector_status(cmd, auth):
                        )
     header = ['node',
               'service',
-              'host mode',
+              'env',
               'availability status',
               'overall status',
               'status last update']
@@ -1483,7 +1483,7 @@ def rpc_collector_status(cmd, auth):
         data.append([
           str(row.nodes.nodename),
           str(row.services.svcname),
-          str(row.nodes.host_mode),
+          str(row.nodes.env),
           str(row.svcmon.mon_availstatus),
           str(row.svcmon.mon_overallstatus),
           str(row.svcmon.mon_updated)
@@ -1620,7 +1620,7 @@ def rpc_collector_asset(cmd, auth):
           'server, team responsible',
           'server, team support',
           'server, team integration',
-          'server, host mode',
+          'server, env',
           'server, asset env',
           'server, type',
           'server, role',
@@ -1684,7 +1684,7 @@ def rpc_collector_asset(cmd, auth):
               str(row.nodes.team_responsible),
               str(row.nodes.team_support),
               str(row.nodes.team_integ),
-              str(row.nodes.host_mode),
+              str(row.nodes.env),
               str(row.nodes.asset_env),
               str(row.nodes.type),
               str(row.nodes.role),
