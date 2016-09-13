@@ -510,10 +510,9 @@ def refresh_dash_action_errors():
 def update_dash_action_errors():
     sql = """select
                e.err,
-               s.svc_type,
+               s.env,
                e.svc_id,
-               e.node_id,
-               s.svc_type
+               e.node_id
              from
                b_action_errors e
              join services s on e.svc_id=s.svc_id
@@ -544,7 +543,7 @@ def update_dash_action_errors():
               """%dict(svc_id=row[2],
                        node_id=row[3],
                        sev=sev,
-                       env=row[4],
+                       env=row[1],
                        err=row[0])
         db.executesql(sql)
         db.commit()

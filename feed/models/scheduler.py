@@ -2766,7 +2766,7 @@ def __svcmon_update(vars, vals, auth):
     if "mon_svctype" in h:
         svctype = h['mon_svctype']
     else:
-        svctype = db(db.services.svc_id==h['svc_id']).select(db.services.svc_type).first().svc_type
+        svctype = db(db.services.svc_id==h['svc_id']).select(db.services.env).first().env
     print datetime.datetime.now() - _now, "get svctype"
     _now = datetime.datetime.now()
 
@@ -2988,12 +2988,12 @@ def cron_dash_service_not_updated():
                  NULL,
                  "service configuration not updated",
                  svc_id,
-                 if(svc_type="PRD", 1, 0),
+                 if(env="PRD", 1, 0),
                  "",
                  "",
                  updated,
                  "",
-                 svc_type,
+                 env,
                  now(),
                  "",
                  NULL
@@ -3713,7 +3713,7 @@ def update_dash_flex_cpu(svc_id):
     now = datetime.datetime.now()
     now = now - datetime.timedelta(microseconds=now.microsecond)
 
-    sql = """select svc_type from services
+    sql = """select env from services
              where
                svc_id="%(svc_id)s"
           """%dict(svc_id=svc_id)
@@ -3813,7 +3813,7 @@ def update_dash_flex_cpu(svc_id):
 def update_dash_flex_instances_started(svc_id):
     now = datetime.datetime.now()
     now = now - datetime.timedelta(microseconds=now.microsecond)
-    sql = """select svc_type from services
+    sql = """select env from services
              where
                svc_id="%(svc_id)s"
           """%dict(svc_id=svc_id)
@@ -4113,7 +4113,7 @@ def update_dash_netdev_errors(node_id):
 
 
 def update_dash_action_errors(svc_id, node_id):
-    sql = """select e.err, s.svc_type from b_action_errors e
+    sql = """select e.err, s.env from b_action_errors e
              join services s on e.svc_id=s.svc_id
              where
                e.svc_id="%(svc_id)s" and
@@ -4197,8 +4197,8 @@ def update_dash_action_errors(svc_id, node_id):
         db.executesql(sql)
         db.commit()
 
-def update_dash_service_frozen(svc_id, node_id, svc_type, frozen):
-    if svc_type == 'PRD':
+def update_dash_service_frozen(svc_id, node_id, env, frozen):
+    if env == 'PRD':
         sev = 2
     else:
         sev = 1
@@ -4229,14 +4229,14 @@ def update_dash_service_frozen(svc_id, node_id, svc_type, frozen):
               """%dict(svc_id=svc_id,
                        node_id=node_id,
                        sev=sev,
-                       env=svc_type,
+                       env=env,
                       )
     db.executesql(sql)
     db.commit()
     # dashboard_events() called from __svcmon_update
 
-def update_dash_service_not_on_primary(svc_id, node_id, svc_type, availstatus):
-    if svc_type == 'PRD':
+def update_dash_service_not_on_primary(svc_id, node_id, env, availstatus):
+    if env == 'PRD':
         sev = 1
     else:
         sev = 0
@@ -4294,7 +4294,7 @@ def update_dash_service_not_on_primary(svc_id, node_id, svc_type, availstatus):
           """%dict(svc_id=svc_id,
                    node_id=node_id,
                    sev=sev,
-                   env=svc_type,
+                   env=env,
                   )
     db.executesql(sql)
     db.commit()

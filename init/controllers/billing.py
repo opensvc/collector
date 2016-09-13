@@ -219,7 +219,7 @@ def billing_data():
 
 
     # prd svc
-    q = db.services.svc_type == 'PRD'
+    q = db.services.env == 'PRD'
     q &= db.svcmon.svc_id == db.services.svc_id
     q &= db.svcmon.node_id == db.nodes.node_id
     q = apply_filters_id(q, db.svcmon.node_id, db.svcmon.svc_id)
@@ -234,7 +234,7 @@ def billing_data():
     data['svc_prd'] = svc_prd
 
     # !prd svc
-    q = db.services.svc_type != 'PRD'
+    q = db.services.env != 'PRD'
     q &= db.svcmon.svc_id == db.services.svc_id
     q &= db.svcmon.node_id == db.nodes.node_id
     q = apply_filters_id(q, db.svcmon.node_id, db.svcmon.svc_id)

@@ -64,8 +64,8 @@ def update_dash_svcmon_not_updated(svc_id, node_id):
     db.commit()
     # dashboard_events() called from __svcmon_update
 
-def update_dash_service_available_but_degraded(svc_id, svc_type, svc_availstatus, svc_status):
-    if svc_type == 'PRD':
+def update_dash_service_available_but_degraded(svc_id, env, svc_availstatus, svc_status):
+    if env == 'PRD':
         sev = 3
     else:
         sev = 2
@@ -88,7 +88,7 @@ def update_dash_service_available_but_degraded(svc_id, svc_type, svc_availstatus
                    dash_env="%(env)s"
               """%dict(svc_id=svc_id,
                        sev=sev,
-                       env=svc_type,
+                       env=env,
                        status=svc_status)
         db.executesql(sql)
         db.commit()
@@ -102,8 +102,8 @@ def update_dash_service_available_but_degraded(svc_id, svc_type, svc_availstatus
         db.commit()
     # dashboard_events() called from __svcmon_update
 
-def update_dash_service_unavailable(svc_id, svc_type, svc_availstatus):
-    if svc_type == 'PRD':
+def update_dash_service_unavailable(svc_id, env, svc_availstatus):
+    if env == 'PRD':
         sev = 4
     else:
         sev = 3
@@ -151,7 +151,7 @@ def update_dash_service_unavailable(svc_id, svc_type, svc_availstatus):
                    dash_env="%(env)s"
               """%dict(svc_id=svc_id,
                        sev=sev,
-                       env=svc_type,
+                       env=env,
                        status=svc_availstatus)
         db.executesql(sql)
         db.commit()

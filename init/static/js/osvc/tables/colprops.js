@@ -69,7 +69,7 @@ objcols = {
 		'svc_status',
 		'svc_availstatus',
 		'svc_app',
-		'svc_type',
+		'env',
 		'svc_ha',
 		'svc_cluster_type',
 		'svc_flex_min_nodes',
@@ -1874,10 +1874,15 @@ colprops = {
 		"img": "time16",
 		"title": "Status updated"
 	},
-	"svc_type": {
+	"svc_env": {
 		"_class": "env",
 		"img": "env16",
-		"title": "Service type"
+		"title": "Service env"
+	},
+	"env": {
+		"_class": "env",
+		"img": "env16",
+		"title": "Env"
 	},
 	"svc_updated": {
 		"_class": "datetime_daily",

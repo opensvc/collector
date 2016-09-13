@@ -2,7 +2,7 @@ services_cols = [
     'svc_status',
     'svc_availstatus',
     'svc_app',
-    'svc_type',
+    'env',
     'svc_ha',
     'svc_cluster_type',
     'svc_flex_min_nodes',
@@ -74,8 +74,8 @@ services_colprops = {
              field='svc_containertype',
              table = 'services',
             ),
-    'svc_type': HtmlTableColumn(
-             field='svc_type',
+    'env': HtmlTableColumn(
+             field='env',
              table = 'services',
             ),
     'svc_autostart': HtmlTableColumn(
@@ -147,6 +147,10 @@ services_colprops = {
 v_svcmon_colprops = {
     'err': HtmlTableColumn(
              field='err',
+             table = 'v_svcmon',
+            ),
+    'svc_env': HtmlTableColumn(
+             field='svc_env',
              table = 'v_svcmon',
             ),
 }
