@@ -1467,6 +1467,7 @@
 		"Service availability status": "Etat de disponibilité",
 		"App": "App",
 		"Service env": "Env du service",
+		"Node env": "Env du noeud",
 		"Flex cpu low threshold": "Flex cpu, seuil bas",
 		"Nodes": "Noeuds",
 		"DRP node": "Noeud de pra",

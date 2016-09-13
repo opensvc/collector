@@ -86,7 +86,7 @@ class table_svcmon(HtmlTable):
             'mon_vmem',
             'mon_guestos',
             'asset_env',
-            'env',
+            'node_env',
             'node_id',
             'nodename',
             'mon_availstatus',
@@ -167,6 +167,7 @@ class table_svcmon(HtmlTable):
         self.colprops.update(svcmon_colprops)
         self.colprops.update(services_colprops)
         self.colprops.update(nodes_colprops)
+        self.colprops['node_env'] = self.colprops['env']
         self.colprops['svc_env'] = self.colprops['env']
         self.colprops['svc_updated'].field = 'svc_updated'
         for i in self.cols:

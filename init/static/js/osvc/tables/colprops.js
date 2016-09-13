@@ -1879,6 +1879,11 @@ colprops = {
 		"img": "env16",
 		"title": "Service env"
 	},
+	"node_env": {
+		"_class": "env",
+		"img": "env16",
+		"title": "Node env"
+	},
 	"env": {
 		"_class": "env",
 		"img": "env16",

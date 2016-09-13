@@ -1409,6 +1409,7 @@
 		"Last boot": "Last boot",
 		"Guest OS": "Guest OS",
 		"Service env": "Service env",
+		"Node env": "Node env",
 		"Address": "Address",
 		"Last change": "Last change",
 		"Moduleset name": "Moduleset name",
