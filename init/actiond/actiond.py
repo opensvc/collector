@@ -45,6 +45,11 @@ try:
 except:
     dbopensvc = "dbopensvc"
 
+try:
+    dbopensvc_password = config.dbopensvc_password
+except:
+    dbopensvc_password = "opensvc"
+
 lockfile = __file__+'.lock'
 N_THREAD = 50
 
@@ -305,7 +310,7 @@ def get_conn():
     try:
         conn = MySQLdb.connect(host=dbopensvc,
                                user="opensvc",
-                               passwd="opensvc",
+                               passwd=dbopensvc_password,
                                db="opensvc")
     except MySQLdb.Error, e:
         print "Error %d: %s" % (e.args[0], e.args[1])
