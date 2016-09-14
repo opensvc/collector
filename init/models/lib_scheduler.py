@@ -129,7 +129,7 @@ def replace_svcname_in_data(vars, vals, auth, fieldname="svcname"):
             for i, l in enumerate(vals):
                 del(vals[i][idx])
     except Exception as e:
-        print e
+        return vars, vals
     node_id = auth_to_node_id(auth)
     svc_id = node_svc_id(node_id, svcname)
     if svc_id is None:
