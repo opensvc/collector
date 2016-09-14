@@ -469,7 +469,7 @@ colprops = {
 	},
 	"dash_env": {
 		"_class": "env",
-		"img": "env16",
+		"img": "node_env16",
 		"title": "Env"
 	},
 	"dash_fmt": {
@@ -692,7 +692,7 @@ colprops = {
 	},
 	"asset_env": {
 		"_class": "env",
-		"img": "env16",
+		"img": "node_env16",
 		"title": "Asset env"
 	},
 	"err": {
@@ -1212,7 +1212,7 @@ colprops = {
 	},
 	"mon_svctype": {
 		"_class": "env",
-		"img": "env16",
+		"img": "svc_env16",
 		"title": "Service type"
 	},
 	"mon_syncstatus": {
@@ -1871,12 +1871,12 @@ colprops = {
 	},
 	"svc_env": {
 		"_class": "env",
-		"img": "env16",
+		"img": "svc_env16",
 		"title": "Service env"
 	},
 	"node_env": {
 		"_class": "env",
-		"img": "env16",
+		"img": "node_env16",
 		"title": "Node env"
 	},
 	"svc_updated": {

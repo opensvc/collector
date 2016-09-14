@@ -2116,7 +2116,12 @@ ul.login_menu ul {
 	content: '\f069';
 	font-family: awesome;
 }
-.env16:before {
+.node_env16:before {
+	color: cornflowerblue;
+	content: '\f24d';
+	font-family: awesome;
+}
+.svc_env16:before {
 	color: seagreen;
 	content: '\f24d';
 	font-family: awesome;
