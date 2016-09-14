@@ -1,6 +1,14 @@
 import re
 from pydal.helpers.methods import smart_query
 
+deprecated_columns = {
+  "services.svc_envfile": "services.svc_config",
+  "services.svc_envdate": "services.svc_config_updated",
+  "services.svc_type": "services.svc_env",
+  "nodes.host_mode": "nodes.node_env",
+  "nodes.environnement": "nodes.asset_env",
+}
+
 def markup_result(result, markup):
     for p in ("info", "error"):
         if p in result:
@@ -976,7 +984,7 @@ class rest_handler(object):
             del(vars["fset-id"])
 
         if "orderby" in vars:
-            cols = props_to_cols(vars["orderby"], tables=self.tables, blacklist=self.props_blacklist, db=self.db)
+            cols, translations = props_to_cols(vars["orderby"], tables=self.tables, blacklist=self.props_blacklist, db=self.db)
             if len(cols) == 0:
                 pass
             else:
@@ -1033,7 +1041,7 @@ class rest_handler(object):
             }
 
     def fmt_props_props_desc(self):
-        cols = props_to_cols(None, tables=self.tables, blacklist=self.props_blacklist, db=self.db)
+        cols, translations = props_to_cols(None, tables=self.tables, blacklist=self.props_blacklist, db=self.db)
         props = cols_to_props(cols, self.tables)
         s = """
 A list of properties to include in each data dictionnary.
@@ -1366,8 +1374,8 @@ def prepare_data(
      offset=0,
      limit=20,
      total=None):
-    cols = props_to_cols(props, tables=tables, vprops=vprops, blacklist=props_blacklist, db=db)
-    all_cols = props_to_cols(None, tables=tables, blacklist=props_blacklist, db=db)
+    all_cols, translations = props_to_cols(None, tables=tables, blacklist=props_blacklist, db=db)
+    cols, translations = props_to_cols(props, tables=tables, vprops=vprops, blacklist=props_blacklist, db=db)
     false_values = ("0", "f", "F", "False", "false", False)
 
     if meta in false_values:
@@ -1438,6 +1446,19 @@ def prepare_data(
 
     data = mangle_data(data, props=props, vprops=vprops, vprops_fn=vprops_fn)
 
+    # reverve to deprecated column name
+    if len(translations) > 0:
+        for orig, translated in translations:
+            short_orig = orig.split(".")[-1]
+            short_translated = translated.split(".")[-1]
+            for i, d in enumerate(data):
+                if short_translated in data[i]:
+                    data[i][short_orig] = data[i][short_translated]
+                    del(data[i][short_translated])
+                else:
+                    data[i][orig] = data[i][translated]
+                    del(data[i][translated])
+
     if stats:
         return data_stats(cols, data)
     if commonality:
@@ -1492,7 +1513,7 @@ def mangle_data(data, props=None, vprops={}, vprops_fn=None):
     return data
 
 def all_props(tables=[], blacklist=[], vprops={}, db=db):
-    cols = props_to_cols(None, tables=tables, blacklist=blacklist, db=db)
+    cols, translations = props_to_cols(None, tables=tables, blacklist=blacklist, db=db)
     return cols_to_props(cols, tables=tables) + vprops.values()
 
 def props_to_cols(props, tables=[], vprops={}, blacklist=[], db=db):
@@ -1502,11 +1523,12 @@ def props_to_cols(props, tables=[], vprops={}, blacklist=[], db=db):
             bl = [f.split(".")[-1] for f in blacklist if f.startswith(table+".") or "." not in f]
             for p in set(db[table].fields) - set(bl):
                 cols.append(db[table][p])
-        return cols
+        return cols, []
     cols = []
     props = set(props.split(",")) - set(vprops.keys())
     for _vprops in vprops.values():
         props |= set(_vprops)
+    translations = []
     for p in props:
         if p[0] == "~":
             desc = True
@@ -1516,11 +1538,26 @@ def props_to_cols(props, tables=[], vprops={}, blacklist=[], db=db):
         v = p.split(".")
         if len(v) == 1 and len(tables) == 1:
             v = [tables[0], p]
-        col = db[v[0]][v[1]]
+
+        # deprecated columns translation
+        fullp = '.'.join(v)
+        translated = False
+        while fullp in deprecated_columns:
+            fullp = deprecated_columns[fullp]
+            translated = True
+        if translated:
+            translations.append(('.'.join(v), fullp))
+            v = fullp.split(".")
+
+        try:
+            col = db[v[0]][v[1]]
+        except Exception as e:
+            raise Exception("prop %s does not exist for %s" % (v[1], v[0]))
+
         if desc:
             col = ~col
         cols.append(col)
-    return cols
+    return cols, translations
 
 def cols_to_props(cols, tables):
     if len(tables) > 1:
