@@ -190,7 +190,7 @@ def billing_data():
     data['agents_without_svc'] = set(data['agents_with_agent']) - set(data['agents_with_svc'])
 
     #
-    q = db.nodes.env == 'PRD'
+    q = db.nodes.node_env == 'PRD'
     if len(data['agents_without_svc']) > 0:
         q &= db.nodes.node_id.belongs(data['agents_without_svc'])
     q = apply_filters_id(q, db.nodes.node_id, None)
@@ -204,7 +204,7 @@ def billing_data():
     data['agents_without_svc_prd'] = agents_without_svc_prd
 
     #
-    q = db.nodes.env != 'PRD'
+    q = db.nodes.node_env != 'PRD'
     if len(data['agents_without_svc']) > 0:
         q &= db.nodes.node_id.belongs(data['agents_without_svc'])
     q = apply_filters_id(q, db.nodes.node_id, None)
@@ -219,7 +219,7 @@ def billing_data():
 
 
     # prd svc
-    q = db.services.env == 'PRD'
+    q = db.services.svc_env == 'PRD'
     q &= db.svcmon.svc_id == db.services.svc_id
     q &= db.svcmon.node_id == db.nodes.node_id
     q = apply_filters_id(q, db.svcmon.node_id, db.svcmon.svc_id)
@@ -234,7 +234,7 @@ def billing_data():
     data['svc_prd'] = svc_prd
 
     # !prd svc
-    q = db.services.env != 'PRD'
+    q = db.services.svc_env != 'PRD'
     q &= db.svcmon.svc_id == db.services.svc_id
     q &= db.svcmon.node_id == db.nodes.node_id
     q = apply_filters_id(q, db.svcmon.node_id, db.svcmon.svc_id)

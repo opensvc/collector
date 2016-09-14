@@ -42,7 +42,7 @@ def update_instance_action_errors(svc_id, node_id):
     db.commit()
 
 def update_dash_action_errors(svc_id, node_id):
-    sql = """select e.err, s.env from b_action_errors e
+    sql = """select e.err, s.svc_env from b_action_errors e
              join services s on e.svc_id=s.svc_id
              where
                e.svc_id="%(svc_id)s" and

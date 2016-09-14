@@ -213,9 +213,9 @@ def svc_status_update(svc_id):
     except NameError:
         pass
     try:
-        svctype = rows[0]["mon_svctype"]
+        svc_env = rows[0]["mon_svctype"]
     except:
-        svctype = 'TST'
+        svc_env = 'TST'
 
     sql = """update services set
                 svc_status="%(svc_status)s",
@@ -229,8 +229,8 @@ def svc_status_update(svc_id):
     db.executesql(sql)
     db.commit()
 
-    update_dash_service_unavailable(svc_id, svctype, astatus)
-    update_dash_service_available_but_degraded(svc_id, svctype, astatus, ostatus)
+    update_dash_service_unavailable(svc_id, svc_env, astatus)
+    update_dash_service_available_but_degraded(svc_id, svc_env, astatus, ostatus)
 
 
 

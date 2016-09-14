@@ -293,7 +293,7 @@ def _update_service(vars, vals, auth):
                  level="warning")
             h['svc_app'] = new_app
     if 'svc_type' in h:
-        h['env'] = h['svc_type']
+        h['svc_env'] = h['svc_type']
         del(h['svc_type'])
     if 'svc_version' in h:
         del(h['svc_version'])
@@ -546,19 +546,19 @@ def node_users_alerts(node_id):
                  NULL,
                  "duplicate uid",
                  NULL,
-                 if(t.env="PRD", 1, 0),
+                 if(t.node_env="PRD", 1, 0),
                  "uid %%(uid)s is used by users %%(usernames)s",
                  concat('{"uid": ', t.user_id, ', "usernames": "', t.usernames, '"}'),
                  now(),
                  NULL,
-                 t.env,
+                 t.node_env,
                  now(),
                  "%(node_id)s",
                  NULL
                from (
                  select
                    *,
-                   (select env from nodes where node_id="%(node_id)s") as env
+                   (select node_env from nodes where node_id="%(node_id)s") as node_env
                  from (
                    select
                      node_id,
@@ -592,19 +592,19 @@ def node_groups_alerts(node_id):
                  NULL,
                  "duplicate gid",
                  NULL,
-                 if(t.env="PRD", 1, 0),
+                 if(t.node_env="PRD", 1, 0),
                  "gid %%(gid)s is used by users %%(groupnames)s",
                  concat('{"gid": ', t.group_id, ', "groupnames": "', t.groupnames, '"}'),
                  now(),
                  NULL,
-                 t.env,
+                 t.node_env,
                  now(),
                  "%(node_id)s",
                  NULL
                from (
                  select
                    *,
-                   (select env from nodes where node_id="%(node_id)s") as env
+                   (select node_env from nodes where node_id="%(node_id)s") as node_env
                  from (
                    select
                      node_id,
@@ -662,21 +662,26 @@ def _update_asset(vars, vals, auth):
     now = datetime.datetime.now()
     h['updated'] = now
     if 'host_mode' in h:
-        h['env'] = h['host_mode']
+        # compat
+        h['node_env'] = h['host_mode']
         del(h['host_mode'])
     if 'environnement' in h:
+        # compat
         if 'asset_env' not in h:
             h['asset_env'] = h['environnement']
         del(h['environnement'])
     if 'environment' in h:
+        # compat
         if 'asset_env' not in h:
             h['asset_env'] = h['environment']
         del(h['environment'])
     if 'enclosure' in h and h['enclosure'] == 'Unknown':
         del(h['enclosure'])
     if 'team_responsible' in h:
+        # security model
         del(h['team_responsible'])
     if 'project' in h:
+        # security model
         del(h['project'])
 
     # add obsolescence info
@@ -2767,16 +2772,16 @@ def __svcmon_update(vars, vals, auth):
     print datetime.datetime.now() - _now, "svc_status_update"
     _now = datetime.datetime.now()
     if "mon_svctype" in h:
-        svctype = h['mon_svctype']
+        svc_env = h['mon_svctype']
     else:
-        svctype = db(db.services.svc_id==h['svc_id']).select(db.services.env).first().env
-    print datetime.datetime.now() - _now, "get svctype"
+        svc_env = db(db.services.svc_id==h['svc_id']).select(db.services.svc_env).first().svc_env
+    print datetime.datetime.now() - _now, "get svc_env"
     _now = datetime.datetime.now()
 
-    update_dash_service_frozen(h['svc_id'], node_id, svctype, h['mon_frozen'])
+    update_dash_service_frozen(h['svc_id'], node_id, svc_env, h['mon_frozen'])
     print datetime.datetime.now() - _now, "update_dash_service_frozen"
     _now = datetime.datetime.now()
-    update_dash_service_not_on_primary(h['svc_id'], node_id, svctype, h['mon_availstatus'])
+    update_dash_service_not_on_primary(h['svc_id'], node_id, svc_env, h['mon_availstatus'])
     print datetime.datetime.now() - _now, "update_dash_service_not_on_primary"
     _now = datetime.datetime.now()
     update_dash_svcmon_not_updated(h['svc_id'], node_id)
@@ -2991,12 +2996,12 @@ def cron_dash_service_not_updated():
                  NULL,
                  "service configuration not updated",
                  svc_id,
-                 if(env="PRD", 1, 0),
+                 if(svc_env="PRD", 1, 0),
                  "",
                  "",
                  updated,
                  "",
-                 env,
+                 svc_env,
                  now(),
                  "",
                  NULL
@@ -3061,7 +3066,7 @@ def cron_dash_node_not_updated():
                  "",
                  updated,
                  "",
-                 env,
+                 node_env,
                  now(),
                  node_id,
                  NULL
@@ -3113,7 +3118,7 @@ def cron_dash_node_beyond_maintenance_date():
                  "",
                  "%(now)s",
                  "",
-                 env,
+                 node_env,
                  "%(now)s",
                  node_id,
                  NULL
@@ -3148,7 +3153,7 @@ def cron_dash_node_near_maintenance_date():
                  "",
                  now(),
                  "",
-                 env,
+                 node_env,
                  now(),
                  node_id,
                  NULL
@@ -3176,7 +3181,7 @@ def cron_dash_node_without_maintenance_date():
                  "",
                  now(),
                  "",
-                 env,
+                 node_env,
                  now(),
                  node_id,
                  NULL
@@ -3245,12 +3250,12 @@ def cron_dash_checks_not_updated():
                  NULL,
                  "check value not updated",
                  "",
-                 if(n.env="PRD", 1, 0),
+                 if(n.node_env="PRD", 1, 0),
                  "%(t)s:%(i)s",
                  concat('{"i":"', chk_instance, '", "t":"', chk_type, '"}'),
                  chk_updated,
                  md5(concat('{"i":"', chk_instance, '", "t":"', chk_type, '"}')),
-                 n.env,
+                 n.node_env,
                  now(),
                  c.node_id,
                  NULL
@@ -3716,7 +3721,7 @@ def update_dash_flex_cpu(svc_id):
     now = datetime.datetime.now()
     now = now - datetime.timedelta(microseconds=now.microsecond)
 
-    sql = """select env from services
+    sql = """select svc_env from services
              where
                svc_id="%(svc_id)s"
           """%dict(svc_id=svc_id)
@@ -3816,7 +3821,7 @@ def update_dash_flex_cpu(svc_id):
 def update_dash_flex_instances_started(svc_id):
     now = datetime.datetime.now()
     now = now - datetime.timedelta(microseconds=now.microsecond)
-    sql = """select env from services
+    sql = """select svc_env from services
              where
                svc_id="%(svc_id)s"
           """%dict(svc_id=svc_id)
@@ -3907,7 +3912,7 @@ def update_dash_checks_all():
                  NULL,
                  "check out of bounds",
                  t.svc_id,
-                 if (t.env="PRD", 3, 2),
+                 if (t.node_env="PRD", 3, 2),
                  "%%(ctype)s:%%(inst)s check value %%(val)d. %%(ttype)s thresholds: %%(min)d - %%(max)d",
                  concat('{"ctype": "', t.ctype,
                         '", "inst": "', t.inst,
@@ -3924,7 +3929,7 @@ def update_dash_checks_all():
                         ', "min": ', t.min,
                         ', "max": ', t.max,
                         '}')),
-                 t.env,
+                 t.node_env,
                  "%(now)s",
                  t.node_id,
                  NULL
@@ -3938,7 +3943,7 @@ def update_dash_checks_all():
                    c.chk_value as val,
                    c.chk_low as min,
                    c.chk_high as max,
-                   n.env
+                   n.node_env
                  from checks_live c left join nodes n on c.node_id=n.node_id
                  where
                    c.chk_updated >= date_sub(now(), interval 1 day) and
@@ -3971,7 +3976,7 @@ def update_dash_checks_all():
 def update_dash_checks(node_id):
     try:
         q = db.nodes.node_id == node_id
-        env = db(q).select().first().env
+        env = db(q).select().first().node_env
     except:
         env = 'TST'
     if env == 'PRD':
@@ -4116,7 +4121,7 @@ def update_dash_netdev_errors(node_id):
 
 
 def update_dash_action_errors(svc_id, node_id):
-    sql = """select e.err, s.env from b_action_errors e
+    sql = """select e.err, s.svc_env from b_action_errors e
              join services s on e.svc_id=s.svc_id
              where
                e.svc_id="%(svc_id)s" and

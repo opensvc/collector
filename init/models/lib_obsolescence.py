@@ -109,7 +109,7 @@ def update_dash_obs_hw_warn(obs_name=None):
                         '"}'),
                  now(),
                  "",
-                 n.env,
+                 n.node_env,
                  now(),
                  n.node_id,
                  NULL
@@ -180,7 +180,7 @@ def update_dash_obs_hw_alert(obs_name=None):
                         '"}'),
                  now(),
                  "",
-                 n.env,
+                 n.node_env,
                  now(),
                  n.node_id,
                  NULL
@@ -256,7 +256,7 @@ def update_dash_obs_os_warn(obs_name=None):
                         '"}'),
                  now(),
                  "",
-                 n.env,
+                 n.node_env,
                  now(),
                  n.node_id,
                  NULL
@@ -328,7 +328,7 @@ def update_dash_obs_os_alert(obs_name=None):
                         '"}'),
                  now(),
                  "",
-                 n.env,
+                 n.node_env,
                  now(),
                  n.nodename,
                  NULL

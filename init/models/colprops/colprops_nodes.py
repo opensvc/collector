@@ -41,7 +41,7 @@ nodes_cols = [
     'action_type',
     'collector',
     'connect_to',
-    'env',
+    'node_env',
     'app',
     'team_responsible',
     'team_integ',
@@ -260,8 +260,8 @@ nodes_colprops = {
              field='role',
              table = 'nodes',
             ),
-    'env': HtmlTableColumn(
-             field='env',
+    'node_env': HtmlTableColumn(
+             field='node_env',
              table = 'nodes',
             ),
     'asset_env': HtmlTableColumn(

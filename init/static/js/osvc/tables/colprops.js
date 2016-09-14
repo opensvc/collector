@@ -43,7 +43,7 @@ objcols = {
 		'action_type',
 		'collector',
 		'connect_to',
-		'env',
+		'node_env',
 		'team_responsible',
 		'team_integ',
 		'app_team_ops',
@@ -69,7 +69,7 @@ objcols = {
 		'svc_status',
 		'svc_availstatus',
 		'svc_app',
-		'env',
+		'svc_env',
 		'svc_ha',
 		'svc_cluster_type',
 		'svc_flex_min_nodes',
@@ -863,11 +863,6 @@ colprops = {
 	"hba_type": {
 		"img": "hd16",
 		"title": "Hba type"
-	},
-	"env": {
-		"_class": "env",
-		"img": "env16",
-		"title": "Env"
 	},
 	"hostname": {
 		"_class": "nodename",
@@ -1883,11 +1878,6 @@ colprops = {
 		"_class": "env",
 		"img": "env16",
 		"title": "Node env"
-	},
-	"env": {
-		"_class": "env",
-		"img": "env16",
-		"title": "Env"
 	},
 	"svc_updated": {
 		"_class": "datetime_daily",

@@ -83,9 +83,9 @@ function service_tabs(divid, options) {
 			table_log_svc(divid, o.options.svc_id)
 		}
 
-		// tab env
+		// tab config
 		i = o.register_tab({
-			"title": "service_tabs.env",
+			"title": "service_tabs.config",
 			"title_class": "icon file16"
 		})
 		o.tabs[i].callback = function(divid) {

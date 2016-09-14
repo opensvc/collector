@@ -237,7 +237,7 @@ class viz(object):
     def data_envs(self):
         envs = set([])
         if "services" in self.display:
-            envs |= set([r.env if r.env else "unknown" for r in self.rs["services"].values()])
+            envs |= set([r.svc_env if r.svc_env else "unknown" for r in self.rs["services"].values()])
         elif "nodes" in self.display:
             envs |= set([r.asset_env if r.asset_env else "unknown" for r in self.rs["nodes"].values()])
         self.rs["envs"] = envs
@@ -245,7 +245,7 @@ class viz(object):
     def data_services_envs(self):
         d = []
         for row in self.rs["services"].values():
-            t = (row.svc_id, row.env if row.env else "unknown")
+            t = (row.svc_id, row.svc_env if row.svc_env else "unknown")
             if t not in d:
                 d.append(t)
         self.rs["services_envs"] = d
@@ -262,7 +262,7 @@ class viz(object):
         q = db.services.svc_id.belongs(self.svc_ids)
         rows = db(q).select(db.services.svc_id,
                             db.services.svc_availstatus,
-                            db.services.env,
+                            db.services.svc_env,
                             db.services.svc_app,
                            )
         d = {}
@@ -875,8 +875,8 @@ def json_startup_data():
 
     svc_id = svc_ids[0]
     q = db.services.svc_id.belongs(svc_ids)
-    env = db(q).select(db.services.svc_config).first().svc_config
-    if env is None:
+    config = db(q).select(db.services.svc_config).first().svc_config
+    if config is None:
         return data
 
     q = db.resmon.svc_id == svc_id
@@ -896,8 +896,8 @@ def json_startup_data():
     import os
     import StringIO
     import ConfigParser
-    env = env.replace("\\n", "\n")
-    buf = StringIO.StringIO(env)
+    config = config.replace("\\n", "\n")
+    buf = StringIO.StringIO(config)
     config = ConfigParser.RawConfigParser()
     config.readfp(buf)
 

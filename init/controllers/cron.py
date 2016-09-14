@@ -380,7 +380,7 @@ def cron_unfinished_actions():
 def alert_wrong_netmask():
     sql = """select
                node_id,
-               env,
+               node_env,
                addr,
                mask,
                net_netmask,
@@ -394,7 +394,7 @@ def alert_wrong_netmask():
     rows = db.executesql(sql, as_dict=True)
 
     for row in rows:
-        if row.get('env') == 'PRD':
+        if row.get('node_env') == 'PRD':
             sev = 4
         else:
             sev = 3
@@ -419,7 +419,7 @@ def alert_wrong_netmask():
                        mask=str(row.get('mask', '')),
                        net_netmask=str(row.get('net_netmask', '')),
                        sev=sev,
-                       env=row.get('env', ''),
+                       env=row.get('node_env', ''),
                        addr=row.get('addr', ''))
         db.executesql(sql)
         db.commit()
@@ -510,7 +510,7 @@ def refresh_dash_action_errors():
 def update_dash_action_errors():
     sql = """select
                e.err,
-               s.env,
+               s.svc_env,
                e.svc_id,
                e.node_id
              from
@@ -880,10 +880,10 @@ def cron_mac_dup():
     for row in rows:
         for node_id in row[1].split(','):
             q = db.nodes.node_id == node_id
-            node_entry = db(q).select(db.nodes.env).first()
+            node_entry = db(q).select(db.nodes.node_env).first()
             if node_entry is None:
                 return
-            environment = node_entry.env
+            environment = node_entry.node_env
             severity = 3
             if environment == "PRD":
                 severity += 1

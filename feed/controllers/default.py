@@ -192,11 +192,11 @@ def test_sched():
     for i in range(1000):
         rconn.rpush("osvc:q:checks", s)
 
-    s = """[["loc_city", "mem_banks", "sec_zone", "mem_bytes", "os_kernel", "cpu_dies", "cpu_cores", "env", "serial", "enclosure", "os_vendor", "cpu_freq", "tz", "os_arch", "version", "os_name", "mem_slots", "nodename", "cpu_model", "last_boot", "cpu_threads", "listener_port", "fqdn", "os_release", "model"], ["aubervillier", "2", "d\\u00e4mz\\u00e9", "3863", "4.4.0-22-generic", "1", "2", "DEV", "1005661700762", "Unknown", "Ubuntu", "1616", "+02:00", "x86_64", "1.7-10269", "Linux", "4", "clementine", "Intel(R) Core(TM) i5-4200U CPU @ 1.60GHz", "2016-05-19", "4", "1215", "clementine", "16.04", "20266"], ["d446fee3-328d-4493-9db9-b1118600eee8", "clementine"]]"""
+    s = """[["loc_city", "mem_banks", "sec_zone", "mem_bytes", "os_kernel", "cpu_dies", "cpu_cores", "node_env", "serial", "enclosure", "os_vendor", "cpu_freq", "tz", "os_arch", "version", "os_name", "mem_slots", "nodename", "cpu_model", "last_boot", "cpu_threads", "listener_port", "fqdn", "os_release", "model"], ["aubervillier", "2", "d\\u00e4mz\\u00e9", "3863", "4.4.0-22-generic", "1", "2", "DEV", "1005661700762", "Unknown", "Ubuntu", "1616", "+02:00", "x86_64", "1.7-10269", "Linux", "4", "clementine", "Intel(R) Core(TM) i5-4200U CPU @ 1.60GHz", "2016-05-19", "4", "1215", "clementine", "16.04", "20266"], ["d446fee3-328d-4493-9db9-b1118600eee8", "clementine"]]"""
     for i in range(1000):
         rconn.rpush("osvc:q:asset", s)
 
-    s = """[["svc_hostid", "svc_name", "svc_cluster_type", "svc_flex_min_nodes", "svc_flex_max_nodes", "svc_flex_cpu_low_threshold", "svc_flex_cpu_high_threshold", "env", "svc_nodes", "svc_drpnode", "svc_drpnodes", "svc_comment", "svc_drptype", "svc_autostart", "svc_app", "svc_containertype", "svc_config", "svc_drnoaction", "svc_ha"], ["\'78599105757308\'", "\'testmd\'", "\'flex\'", "1", "1", "10", "90", "\'DEV\'", "\'nuc clementine\'", "\'\'", "\'\'", "\'\'", "\'\'", "\'\'", "\'OpenSVC\'", "\'hosted\'", "\'[DEFAULT]\\\\napp = OpenSVC\\\\nservice_type = DEV\\\\nnodes = clementine nuc\\\\nflex_primary = clementine\\\\nmon_schedule = @1\\\\ndisable = False\\\\nrollback = false\\\\ncreate_pg = true\\\\npg_cpu_quota = -1\\\\npg_cpus = 1-2\\\\npg_mem_limit = 3MB\\\\npg_mem_oom_control = 1\\\\nflex_primary = clementine\\\\ncluster_type = flex\\\\n[ip#0]\\\\ndisable = true\\\\ndisable@flex_primary = false\\\\nipname = 128.1.11.1\\\\nnetmask = 32\\\\nipdev = lo\\\\n[subset#disk:g1]\\\\nparallel = false\\\\n[subset#disk:g2]\\\\nparallel = false\\\\n[subset#disk:g3]\\\\nparallel = false\\\\n[subset#app:ga1]\\\\npg_cpu_quota = 10%@all\\\\n[subset#app:ga2]\\\\npg_cpu_quota = 50%\\\\n[disk#05]\\\\nsize = 11mib\\\\ntype = loop\\\\nfile = /opt/testmd/dd6\\\\nsubset = g3\\\\n[disk#04]\\\\ntype = loop\\\\nfile = /opt/testmd/dd5\\\\nsubset = g3\\\\n[disk#03]\\\\ntags = tag1 tag2\\\\ntype = loop\\\\nfile = /opt/testmd/dd4\\\\nsubset = g2\\\\n[disk#02]\\\\ntags = tag1 tag3\\\\ntype = loop\\\\nfile = /opt/testmd/dd3\\\\nsubset = g2\\\\n[disk#01]\\\\ntype = loop\\\\nfile = /opt/testmd/dd2\\\\nsubset = g1\\\\n[disk#00]\\\\ntype = loop\\\\nfile = /opt/testmd/dd1\\\\nsubset = g1\\\\n[disk#10pr]\\\\noptional = true\\\\nrestart = 1\\\\nmonitor = true\\\\ntags = foo\\\\n[disk#10]\\\\ntype = md\\\\nuuid@clementine = b742617b:d8a76908:5ec4db5e:5e4d920b\\\\nsubset = g1\\\\nscsireserv = true\\\\ntags = bar\\\\n[disk#11]\\\\ntype = md\\\\nuuid = c4f79d3d:64d4f8df:8b2d28eb:65997b84\\\\nsubset = g2\\\\n[disk#12]\\\\ntype = md\\\\nuuid = e6a6703e:3919c7e9:fe47185f:6e9d777a\\\\nsubset = g3\\\\npost_start = /bin/true\\\\n[disk#30]\\\\ntype = lvm\\\\nvgname = testmd\\\\nsubset = g3\\\\npre_start = /bin/true\\\\npost_start = kpartx -a /dev/testmd/testmd\\\\n[app#0]\\\\nscript = /bin/true\\\\nstart = 50\\\\nstop = 50\\\\n[disk#100]\\\\ntype = raw\\\\ncreate_char_devices = false\\\\ndevs = /dev/loop0:/opt/testmd/dev/user/disk100.0\\\\n /dev/loop1:/opt/testmd/dev/user/disk100.1\\\\nuser = cvaroqui\\\\ngroup = cvaroqui\\\\nperm = 644\\\\n[disk#101]\\\\ntype = raw\\\\ndevs = /dev/loop2:/opt/testmd/dev/user/disk100.2\\\\n /dev/loop3:/opt/testmd/dev/user/disk100.3\\\\nuser = cvaroqui\\\\ngroup = cvaroqui\\\\nperm = 644\\\\n[disk#102]\\\\ntype = raw\\\\ncreate_char_devices = false\\\\ndevs = /dev/loop4\\\\nuser = cvaroqui\\\\ngroup = cvaroqui\\\\nperm = 644\\\\n[disk#103]\\\\ntype = raw\\\\ndevs = /dev/loop5\\\\nuser = cvaroqui\\\\ngroup = cvaroqui\\\\nperm = 644\\\\n\'", "False", "1"], ["d446fee3-328d-4493-9db9-b1118600eee8", "clementine"]]"""
+    s = """[["svc_hostid", "svc_name", "svc_cluster_type", "svc_flex_min_nodes", "svc_flex_max_nodes", "svc_flex_cpu_low_threshold", "svc_flex_cpu_high_threshold", "svc_env", "svc_nodes", "svc_drpnode", "svc_drpnodes", "svc_comment", "svc_drptype", "svc_autostart", "svc_app", "svc_containertype", "svc_config", "svc_drnoaction", "svc_ha"], ["\'78599105757308\'", "\'testmd\'", "\'flex\'", "1", "1", "10", "90", "\'DEV\'", "\'nuc clementine\'", "\'\'", "\'\'", "\'\'", "\'\'", "\'\'", "\'OpenSVC\'", "\'hosted\'", "\'[DEFAULT]\\\\napp = OpenSVC\\\\nservice_type = DEV\\\\nnodes = clementine nuc\\\\nflex_primary = clementine\\\\nmon_schedule = @1\\\\ndisable = False\\\\nrollback = false\\\\ncreate_pg = true\\\\npg_cpu_quota = -1\\\\npg_cpus = 1-2\\\\npg_mem_limit = 3MB\\\\npg_mem_oom_control = 1\\\\nflex_primary = clementine\\\\ncluster_type = flex\\\\n[ip#0]\\\\ndisable = true\\\\ndisable@flex_primary = false\\\\nipname = 128.1.11.1\\\\nnetmask = 32\\\\nipdev = lo\\\\n[subset#disk:g1]\\\\nparallel = false\\\\n[subset#disk:g2]\\\\nparallel = false\\\\n[subset#disk:g3]\\\\nparallel = false\\\\n[subset#app:ga1]\\\\npg_cpu_quota = 10%@all\\\\n[subset#app:ga2]\\\\npg_cpu_quota = 50%\\\\n[disk#05]\\\\nsize = 11mib\\\\ntype = loop\\\\nfile = /opt/testmd/dd6\\\\nsubset = g3\\\\n[disk#04]\\\\ntype = loop\\\\nfile = /opt/testmd/dd5\\\\nsubset = g3\\\\n[disk#03]\\\\ntags = tag1 tag2\\\\ntype = loop\\\\nfile = /opt/testmd/dd4\\\\nsubset = g2\\\\n[disk#02]\\\\ntags = tag1 tag3\\\\ntype = loop\\\\nfile = /opt/testmd/dd3\\\\nsubset = g2\\\\n[disk#01]\\\\ntype = loop\\\\nfile = /opt/testmd/dd2\\\\nsubset = g1\\\\n[disk#00]\\\\ntype = loop\\\\nfile = /opt/testmd/dd1\\\\nsubset = g1\\\\n[disk#10pr]\\\\noptional = true\\\\nrestart = 1\\\\nmonitor = true\\\\ntags = foo\\\\n[disk#10]\\\\ntype = md\\\\nuuid@clementine = b742617b:d8a76908:5ec4db5e:5e4d920b\\\\nsubset = g1\\\\nscsireserv = true\\\\ntags = bar\\\\n[disk#11]\\\\ntype = md\\\\nuuid = c4f79d3d:64d4f8df:8b2d28eb:65997b84\\\\nsubset = g2\\\\n[disk#12]\\\\ntype = md\\\\nuuid = e6a6703e:3919c7e9:fe47185f:6e9d777a\\\\nsubset = g3\\\\npost_start = /bin/true\\\\n[disk#30]\\\\ntype = lvm\\\\nvgname = testmd\\\\nsubset = g3\\\\npre_start = /bin/true\\\\npost_start = kpartx -a /dev/testmd/testmd\\\\n[app#0]\\\\nscript = /bin/true\\\\nstart = 50\\\\nstop = 50\\\\n[disk#100]\\\\ntype = raw\\\\ncreate_char_devices = false\\\\ndevs = /dev/loop0:/opt/testmd/dev/user/disk100.0\\\\n /dev/loop1:/opt/testmd/dev/user/disk100.1\\\\nuser = cvaroqui\\\\ngroup = cvaroqui\\\\nperm = 644\\\\n[disk#101]\\\\ntype = raw\\\\ndevs = /dev/loop2:/opt/testmd/dev/user/disk100.2\\\\n /dev/loop3:/opt/testmd/dev/user/disk100.3\\\\nuser = cvaroqui\\\\ngroup = cvaroqui\\\\nperm = 644\\\\n[disk#102]\\\\ntype = raw\\\\ncreate_char_devices = false\\\\ndevs = /dev/loop4\\\\nuser = cvaroqui\\\\ngroup = cvaroqui\\\\nperm = 644\\\\n[disk#103]\\\\ntype = raw\\\\ndevs = /dev/loop5\\\\nuser = cvaroqui\\\\ngroup = cvaroqui\\\\nperm = 644\\\\n\'", "False", "1"], ["d446fee3-328d-4493-9db9-b1118600eee8", "clementine"]]"""
     for i in range(1000):
         rconn.rpush("osvc:q:svcconf", s)
 
@@ -1465,7 +1465,7 @@ def rpc_collector_status(cmd, auth):
             q &= db.svcmon.id < 0
     rows = db(q).select(db.nodes.nodename,
                         db.services.svcname,
-                        db.nodes.env,
+                        db.nodes.node_env,
                         db.svcmon.mon_availstatus,
                         db.svcmon.mon_overallstatus,
                         db.svcmon.mon_updated,
@@ -1474,7 +1474,7 @@ def rpc_collector_status(cmd, auth):
                        )
     header = ['node',
               'service',
-              'env',
+              'node env',
               'availability status',
               'overall status',
               'status last update']
@@ -1483,7 +1483,7 @@ def rpc_collector_status(cmd, auth):
         data.append([
           str(row.nodes.nodename),
           str(row.services.svcname),
-          str(row.nodes.env),
+          str(row.nodes.node_env),
           str(row.svcmon.mon_availstatus),
           str(row.svcmon.mon_overallstatus),
           str(row.svcmon.mon_updated)
@@ -1620,7 +1620,7 @@ def rpc_collector_asset(cmd, auth):
           'server, team responsible',
           'server, team support',
           'server, team integration',
-          'server, env',
+          'server, node env',
           'server, asset env',
           'server, type',
           'server, role',
@@ -1684,7 +1684,7 @@ def rpc_collector_asset(cmd, auth):
               str(row.nodes.team_responsible),
               str(row.nodes.team_support),
               str(row.nodes.team_integ),
-              str(row.nodes.env),
+              str(row.nodes.node_env),
               str(row.nodes.asset_env),
               str(row.nodes.type),
               str(row.nodes.role),

@@ -44,7 +44,7 @@ class table_nodesan(HtmlTable):
                       'hvpool',
                       'hv',
                       'role',
-                      'env',
+                      'node_env',
                       'asset_env',
                       'status',
                       'type',
