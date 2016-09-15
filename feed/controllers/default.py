@@ -2097,6 +2097,7 @@ def task_rq(rqueues, getfn):
             log.info("keyboard interrupt")
             break
         except Exception as e:
+            db.commit()
             if "server has gone away" in str(e) or "Lost connection" in str(e):
                 log.info("reconnect db")
                 db._adapter.close()

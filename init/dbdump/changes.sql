@@ -6179,3 +6179,5 @@ drop view v_comp_services ; create view v_comp_services as select s.svc_status_u
 
 update column_filters set col_name="dash_entry" where col_name like "dashboard.dummy";
 
+alter table checks_live drop key idx_purge_cluster_saves;
+
