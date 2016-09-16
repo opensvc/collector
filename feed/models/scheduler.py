@@ -4077,6 +4077,7 @@ def update_dash_netdev_errors(node_id):
                   chk_type = "netdev_err"
               """ % dict(node_id=node_id)
         db.executesql(sql)
+        db.commit()
         return
 
     for row in rows:
@@ -4100,6 +4101,7 @@ def update_dash_netdev_errors(node_id):
                        dev=row['dev'],
                        errs=int(row['errs']))
         db.executesql(sql)
+        db.commit()
 
     sql = """delete from checks_live
              where
