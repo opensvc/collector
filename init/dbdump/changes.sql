@@ -6181,6 +6181,6 @@ update column_filters set col_name="dash_entry" where col_name like "dashboard.d
 
 alter table checks_live drop key idx_purge_cluster_saves;
 
-alter table checks_live drop key idx_purge (chk_type);
+alter table checks_live drop key idx_purge;
 alter table checks_live add key k_chk_type (chk_type);
 
