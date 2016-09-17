@@ -1957,14 +1957,14 @@ def rpc_collector_disks(cmd, auth):
                   str(row.nodes.nodename),
                   str(row.services.svcname),
                   str(row.svcdisks.disk_id),
-                  str(row.diskinfo.disk_size),
+                  str(row.svcdisks.disk_size),
                   str(row.diskinfo.disk_alloc),
                   str(row.diskinfo.disk_devid),
                   str(row.diskinfo.disk_name),
                   str(row.diskinfo.disk_raid),
                   str(row.diskinfo.disk_arrayid),
                   str(row.diskinfo.disk_group)]]
-    return {"ret": 0, "msg": "", "data":data}
+    return {"ret": 0, "msg": "", "data": data}
 
 @service.xmlrpc
 def collector_list_nodes(cmd, auth):
