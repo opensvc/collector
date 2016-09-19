@@ -275,6 +275,10 @@ def _update_service(vars, vals, auth):
         # agent compat
         h["svcname"] = h["svc_name"]
         del(h["svc_name"])
+    if "svc_envfile" in h:
+        # agent compat
+        h["svc_config"] = h["svc_envfile"]
+        del(h["svc_envfile"])
     svcname = h["svcname"].strip("'")
     svc_id = node_svc_id(node_id, svcname)
     h["svc_id"] = svc_id
