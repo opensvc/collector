@@ -773,10 +773,15 @@ def _register_node(node):
         node_id = get_new_node_id()
         db.nodes.insert(nodename=node, node_id=node_id)
     else:
+        node_id = row.node_id
+
+    q = db.auth_node.node_id == node_id
+    row = db(q).select().first()
+    if row is not None:
         _log("node.register",
              "node '%(node)s' double registration attempt",
              dict(node=node),
-             nodename=node,
+             node_id=node_id,
              level="warning")
         return ["already registered"]
     import uuid
