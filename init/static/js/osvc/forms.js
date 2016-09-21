@@ -1093,13 +1093,8 @@ function form(divid, options) {
 			} else if (("Format" in d) && ("Value" in d)) {
 				var label = d.Format
 				var value = d.Value
-				var props = args.props.split(",")
-				for (var j=0; j<props.length; j++) {
-					var prop = props[j]
-					var re = RegExp("#"+prop, "g")
-					label = label.replace(re, _d[prop])
-					value = value.replace(re, _d[prop])
-				}
+				label = subst_refs_from_data(_d, label)
+				value = subst_refs_from_data(_d, value)
 			}
 			var line = $("<div style='padding:0.2em'></div>")
 			var cb = $("<input type='checkbox' class='ocb'>")
@@ -1141,13 +1136,8 @@ function form(divid, options) {
 			} else if (("Format" in d) && ("Value" in d)) {
 				var label = d.Format
 				var value = d.Value
-				var props = args.props.split(",")
-				for (var j=0; j<props.length; j++) {
-					var prop = props[j]
-					var re = RegExp("#"+prop, "g")
-					label = label.replace(re, _d[prop])
-					value = value.replace(re, _d[prop])
-				}
+				label = subst_refs_from_data(_d, label)
+				value = subst_refs_from_data(_d, value)
 				opts.push({
 					"id": value,
 					"label": label
@@ -1157,9 +1147,11 @@ function form(divid, options) {
 					content = opts[0].label
 				}
 			} else {
+				var prop = args.props.split(",")[0]
+				var value = subst_refs_from_data(_d, "#"+prop)
 				opts.push({
-					"id": _d[args.props],
-					"label": _d[args.props]
+					"id": value,
+					"label": value
 				})
 				if (!d.DisableAutoDefault && !content && (opts.length > 0)) {
 					var acid = opts[0].id

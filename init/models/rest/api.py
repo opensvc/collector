@@ -1374,6 +1374,42 @@ def prepare_data(
      offset=0,
      limit=20,
      total=None):
+
+    validated_props = []
+    if left is None:
+        left = []
+    else:
+        left = list(left)
+
+    if props is not None:
+        for i, prop in enumerate(props.split(",")):
+            if "." in prop:
+                t, c = prop.split(".")
+            elif prop in vprops:
+                validated_props.append(prop)
+                continue
+            else:
+                validated_props.append(tables[0]+"."+prop)
+                continue
+            if t in tables:
+                validated_props.append(prop)
+                continue
+            if t == "nodes":
+                for table in tables:
+                    if "node_id" in db[table].fields:
+                        left.append(db.nodes.on(db.nodes.node_id==db[table].node_id))
+                        tables.append("nodes")
+                        validated_props.append(prop)
+                        break
+            elif t == "services":
+                for table in tables:
+                    if "svc_id" in db[table].fields:
+                        left.append(db.services.on(db.services.svc_id==db[table].svc_id))
+                        tables.append("services")
+                        validated_props.append(prop)
+                        break
+        props = ",".join(validated_props)
+
     all_cols, translations = props_to_cols(None, tables=tables, blacklist=props_blacklist, db=db)
     cols, translations = props_to_cols(props, tables=tables, vprops=vprops, blacklist=props_blacklist, db=db)
     false_values = ("0", "f", "F", "False", "false", False)

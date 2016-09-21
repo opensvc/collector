@@ -1,4 +1,5 @@
 import gluon.contrib.simplejson as json
+import logging
 
 def get_node(node_id):
     q = db.nodes.node_id == node_id
@@ -32,6 +33,29 @@ def log_events(i):
 def _log(action, fmt, d, user=None, svc_id=None, node_id=None, level="info"):
     if user is None:
         user = 'agent'
+
+    logger = logging.getLogger("web2py.app.feed.log")
+    logger.setLevel(logging.DEBUG)
+    if level == "info":
+        _logger = logger.info
+    elif level == "warning":
+        _logger = logger.warning
+    elif level == "error":
+        _logger = logger.error
+    else:
+        _logger = None
+    if _logger:
+         s = ""
+         if user:
+             s += "user[%s] " % user
+         if node_id != "":
+             s += "node[%s] " % node_id
+         if svc_id != "":
+             s += "svc[%s] " % svc_id
+         s += "action[%s] " % str(action)
+         s += fmt % d
+         _logger(s)
+
     db.log.insert(
       log_action=action,
       log_fmt=fmt,
