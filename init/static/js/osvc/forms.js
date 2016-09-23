@@ -1308,7 +1308,8 @@ function form(divid, options) {
 	}
 
 	function subst_refs(input, s) {
-		var data = o.form_to_data()
+		var table = input.parents("table").first()
+		var data = o.table_to_dict(table)
 		return subst_refs_from_data(data, s)
 	}
 
