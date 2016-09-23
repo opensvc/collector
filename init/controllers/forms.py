@@ -230,7 +230,7 @@ def forms():
     if "form_folder" in request.vars:
         o["form_folder"] = request.vars.form_folder
     d = SCRIPT(
-          """requests("layout", %s)""" % json.dumps(o)
+          """$.when(osvc.app_started).then(function(){requests("layout", %s)})""" % json.dumps(o)
     )
     return dict(table=d)
 

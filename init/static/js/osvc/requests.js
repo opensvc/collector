@@ -20,6 +20,11 @@ function requests(divid, options) {
 		o.e_target = o.div.find("#forms_target")
 		o.e_inputs = o.div.find("#forms_inputs")
 
+		if (o.options.locked == true) {
+			o.e_search.parent().hide()
+			o.div.find("h1").first().hide()
+		}
+
 		require(["osvc/forms"], function(){
 			$.when(osvc.forms_loaded).then(function(){
 				o.init_search()
@@ -171,12 +176,18 @@ function requests(divid, options) {
 				"FolderLabel": i18n.t("requests.current_folder"),
 				"FolderDesc": get_current_folder(),
 			}
-			o.render_folder({"form_definition": d}).insertBefore($(this))
+			if (o.options.locked != true) {
+				o.render_folder({"form_definition": d}).insertBefore($(this))
+			}
 			o.e_inputs.empty().show()
 			form("forms_inputs", {
 				"form_name": div.attr("form_name")
 			})
 		})
+
+		if (o.options.locked == true) {
+			div.click()
+		}
 
 		return div
 	}

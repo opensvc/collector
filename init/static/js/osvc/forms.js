@@ -1140,23 +1140,22 @@ function form(divid, options) {
 				value = subst_refs_from_data(_d, value)
 				opts.push({
 					"id": value,
-					"label": label
+					"label": label,
+					"option_data": _d
 				})
-				if (!d.DisableAutoDefault && !content && (opts.length > 0)) {
-					var acid = opts[0].id
-					content = opts[0].label
-				}
 			} else {
 				var prop = args.props.split(",")[0]
 				var value = subst_refs_from_data(_d, "#"+prop)
 				opts.push({
 					"id": value,
-					"label": value
+					"label": value,
+					"option_data": _d
 				})
-				if (!d.DisableAutoDefault && !content && (opts.length > 0)) {
-					var acid = opts[0].id
-					content = opts[0].label
-				}
+			}
+			if (!d.DisableAutoDefault && !content && (opts.length > 0)) {
+				var acid = opts[0].id
+				content = opts[0].label
+				var option_data = opts[0].option_data
 			}
 		}
 
@@ -1179,6 +1178,7 @@ function form(divid, options) {
 			try { input.autocomplete("destroy") } catch(e) {}
 			input.val("")
 			input.removeProp("acid")
+			input.removeProp("option_data")
 			input.autocomplete({
 				mustMatch: true,
 				source: opts,
@@ -1186,6 +1186,7 @@ function form(divid, options) {
 				response: function( event, ui ) {
 					if (ui.content.length == 1) {
 						$(this).prop("acid", ui.content[0].id)
+						$(this).prop("option_data", ui.content[0].option_data)
 					}
 					if (d.StrictCandidates) {
 						var v = input.val()
@@ -1202,9 +1203,11 @@ function form(divid, options) {
 				},
 				focus: function(event, ui) {
 					$(this).prop("acid", ui.item.id)
+					$(this).prop("option_data", ui.item.option_data)
 				},
 				select: function(event, ui) {
 					$(this).prop("acid", ui.item.id)
+					$(this).prop("option_data", ui.item.option_data)
 					input.removeClass("candidates_violation")
 					$(this).change()
 				}
@@ -1212,6 +1215,7 @@ function form(divid, options) {
 			input.bind("keyup", function(event) {
 				if ($(this).val() == "") {
 					$(this).removeProp("acid")
+					$(this).removeProp("option_data")
 					$(this).change()
 				}
 			})
@@ -1223,6 +1227,7 @@ function form(divid, options) {
 		}
 		if (content && (content.length > 0)) {
 			input.prop("acid", acid)
+			input.prop("option_data", option_data)
 			input.val(content)
 		}
 		input.change()
@@ -1303,21 +1308,8 @@ function form(divid, options) {
 	}
 
 	function subst_refs(input, s) {
-		var table = input.parents("table").first()
-		var re = RegExp(/#\w+/g)
-		var _s = s
-
-		do {
-			var m = re.exec(s)
-			if (m) {
-				var key = m[0].replace("#", "")
-				var td = table.find("tr[iid="+key+"] td[name=val]")
-				var val = o.get_val(td)
-				var re1 = RegExp("#"+key, "g")
-				_s = _s.replace(re1, val)
-			}
-		} while (m)
-		return _s
+		var data = o.form_to_data()
+		return subst_refs_from_data(data, s)
 	}
 
 	o.install_constraint_triggers = function(table) {
@@ -1607,6 +1599,7 @@ function form(divid, options) {
 				var m = re.exec(s)
 				if (m) {
 					var key = m[0].replace("#", "")
+					key = o.resolve_key(key)
 					var sign = key + "-" + d.Id
 					if (o.fn_triggers_signs.indexOf(sign) >= 0) {
 						continue
@@ -1625,6 +1618,27 @@ function form(divid, options) {
 		for (var i=0; i<d.Args.length; i++) {
 			parse(d.Args[i])
 		}
+	}
+
+	o.resolve_key = function(key) {
+		for (var i=0; i<o.form_data.form_definition.Inputs.length; i++) {
+			d = o.form_data.form_definition.Inputs[i]
+			if (d.Id == key) {
+				return key
+			}
+			if (!d.Keys) {
+				continue
+			}
+			for (var j=0; j<d.Keys.length; j++) {
+				var key_def = d.Keys[j]
+				var l = key_def.split("=")
+				var keyname = l[0].replace(/^\s+/, "").replace(/\s+$/, "")
+				if (keyname == key) {
+					return d.Id
+				}
+			}
+		}
+		return key
 	}
 
 	function prepare_args(input, l) {
@@ -1697,6 +1711,11 @@ function form(divid, options) {
 		return val
 	}
 
+	o.get_option_data = function(td) {
+		var input = td.find("input,textarea,div")
+		return input.prop("option_data")
+	}
+
 	o.form_to_data_template = function(t) {
 		var data = t
 		for (var i=0; i<o.form_data.form_definition.Inputs.length; i++) {
@@ -1742,6 +1761,19 @@ function form(divid, options) {
 				val = o.sub_forms[d.Id].form_to_data()
 			}
 			data[input_key_id] = val
+
+			if (d.Keys) {
+				var option_data = o.get_option_data(td)
+				if (option_data) {
+					for (var j=0; j<d.Keys.length; j++) {
+						var key_def = d.Keys[j]
+						var l = key_def.split("=")
+						var keyname = l[0].replace(/^\s+/, "").replace(/\s+$/, "")
+						var keyval = l[1].replace(/^\s+/, "").replace(/\s+$/, "")
+						data[keyname] = subst_refs_from_data(option_data, keyval)
+					}
+				}
+			}
 		}
 		return data
 	}

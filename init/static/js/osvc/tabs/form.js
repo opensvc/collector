@@ -44,7 +44,10 @@ function form_tabs(divid, options) {
 		})
 		o.tabs[i].callback = function(divid) {
 			$("#"+divid).css({"padding": "1em"})
-			form(divid, options)
+			requests(divid, {
+				"form_name": o.options.form_name,
+				"locked": true
+			})
 		}
 
 		o.set_tab(o.options.tab)
