@@ -291,8 +291,7 @@ class rest_get_node_services(rest_get_table_handler):
         rest_get_table_handler.__init__(
           self,
           path="/nodes/<id>/services",
-          tables=["svcmon", "services"],
-          left=db.services.on(db.svcmon.svc_id == db.services.svc_id),
+          tables=["svcmon"],
           desc=desc,
           examples=examples,
         )
