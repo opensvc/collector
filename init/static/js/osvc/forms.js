@@ -469,6 +469,8 @@ function form(divid, options) {
 			if (d.Help) {
 				var help = $("<td class='icon help'></td>")
 				help.attr("title", d.Help).tooltipster()
+			} else {
+				var help = $("<td></td>")
 			}
 			line.append(help)
 			if ((typeof(data) === "undefined") || (is_dict(data) && !(input_key_id in data))) {
