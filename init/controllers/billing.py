@@ -29,6 +29,26 @@ def name_fmt(a, b):
     b = b.replace('-','_')
     return '_'.join((a, b))
 
+def o_fmt(o, k, data):
+    if k.startswith("svc"):
+        t = "services"
+        fmt = lambda d: SPAN(
+          SPAN(d.svcname, _class="icon svc"),
+          " ",
+          SPAN(d.svc_app, _class="icon app16"),
+          _title=o
+        )
+    else:
+        t = "nodes"
+        fmt = lambda d: SPAN(
+          SPAN(d.nodename, _class="icon node16"),
+          " ",
+          SPAN(d.app, _class="icon app16"),
+          _title=o
+        )
+    o_data = data[t][o]
+    return fmt(o_data)
+
 def num_fmt(n, k, os, token, _class=""):
     return A(
              n if token[k][os]>0 else '',
@@ -136,8 +156,10 @@ def billing_fmt():
             if len(data[k][os]) == 0:
                 continue
             l = []
-            for o in data[k][os]:
-                l.append(SPAN(o.lower()+" "))
+            for i, o in enumerate(data[k][os]):
+                if i > 0:
+                    l.append(", ")
+                l.append(SPAN(o_fmt(o, k, data)))
             details.append(SPAN(
               A(_name=name_fmt(k,os)),
               H2(headings[k]+" : "+os),
@@ -167,6 +189,20 @@ def billing_data():
     data = {}
     billing = {}
     token = {}
+
+    # node id caches
+    q = db.nodes.id > 0
+    rows = db(q).select(db.nodes.node_id, db.nodes.nodename, db.nodes.app)
+    data["nodes"] = {}
+    for row in rows:
+        data["nodes"][row.node_id] = row
+
+    # svc id cache
+    q = db.services.id > 0
+    rows = db(q).select(db.services.svc_id, db.services.svcname, db.services.svc_app)
+    data["services"] = {}
+    for row in rows:
+        data["services"][row.svc_id] = row
 
     # get effective os list
     q = db.nodes.os_name != ""
