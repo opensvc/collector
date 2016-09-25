@@ -2710,6 +2710,9 @@ def __svcmon_update(vars, vals, auth):
     print datetime.datetime.now() - _now, "gen hashed data"
     _now = datetime.datetime.now()
 
+    if h["node_id"] is None:
+        return
+
     # set the collector update timestamp
     now = datetime.datetime.now()
     h['mon_updated'] = now
@@ -2749,6 +2752,9 @@ def __svcmon_update(vars, vals, auth):
         h['node_id'] = _node_id
     print datetime.datetime.now() - _now, "mangle datasets received from the encap node"
     _now = datetime.datetime.now()
+
+    if h["node_id"] is None:
+        return
 
     # set the hv field of container nodes
     if 'mon_vmname' in h and h['mon_vmname'] is not None and len(h['mon_vmname']) > 0:
