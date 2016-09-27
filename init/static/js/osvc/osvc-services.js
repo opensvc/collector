@@ -178,7 +178,7 @@ function services_osvcputrest(service, uri, params, data, callback, error_callba
 		params = {}
 	}
 	for(var i=0; i<uri.length; i++) {
-		url = url.replace("%"+(i+1), uri[i])
+		url = url.replace("%"+(i+1), uri[i].replace("/", "(slash)"))
 	}
 
 	var isobj=0;
@@ -228,7 +228,7 @@ function services_osvcpostrest(service, uri, params, data, callback, error_callb
 		params = {}
 	}
 	for(var i=0; i<uri.length; i++) {
-		url = url.replace("%"+(i+1), uri[i])
+		url = url.replace("%"+(i+1), uri[i].replace("/", "(slash)"))
 	}
 
 	var isobj = 0
@@ -288,7 +288,7 @@ function services_osvcgetrest(service, uri, params, callback, error_callback, as
 		params = {}
 	}
 	for(i=0; i<uri.length; i++) {
-		url = url.replace("%"+(i+1), uri[i])
+		url = url.replace("%"+(i+1), uri[i].replace("/", "(slash)"))
 	}
 
 	if (async === undefined || async == null) async=true;
@@ -326,7 +326,7 @@ function services_osvcdeleterest(service, uri, params, data, callback, error_cal
 		params = {}
 	}
 	for(i=0; i<uri.length; i++) {
-		url = url.replace("%"+(i+1), uri[i])
+		url = url.replace("%"+(i+1), uri[i].replace("/", "(slash)"))
 	}
 
 	var isobj=0;

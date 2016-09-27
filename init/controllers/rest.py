@@ -52,6 +52,8 @@ def rest_router(action, args, vars):
     # we need it for fqdn nodenames and svcname though.
     request.raw_args = request.raw_args.replace("(percent)", "%")
     args = request.raw_args.split('/')
+    for i, arg in enumerate(args):
+        args[i] = arg.replace("(slash)", "/")
     if args[0] == "":
         return rest_get_api().handle(*args, **vars)
     try:
