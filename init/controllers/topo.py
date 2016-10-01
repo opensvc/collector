@@ -46,12 +46,16 @@ class viz(object):
         cn = cn.lower()
         if cn == "france":
             return "fr"
-        if cn == "united kingdom":
+        elif cn == "united kingdom":
             return "gb"
-        if cn == "canada":
+        elif cn == "canada":
             return "ca"
-        if cn == "luxembourg":
+        elif cn == "luxembourg":
             return "lu"
+        elif cn == "espagne":
+            return "es"
+        elif len(cn) == 2:
+            return cn
 
     def add_visnode_node(self, visnode_id, visnode_type="", label="", mass=1, image=None, fontColor=None):
         if visnode_type in self.visnode_id_per_type:
