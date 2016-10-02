@@ -2567,6 +2567,9 @@ function stats_netdev(url, id) {
   })
 }
 function convert_size(val, target_unit) {
+	if (!val.match(/^\s*[0-9]*[\.]{0,1}[0-9]*\s*[kmgtpe]{0,1}[i]{0,1}[b]{0,1}$/i)) {
+		return val
+	}
 	if (val == "") {
 		return 0
 	}
