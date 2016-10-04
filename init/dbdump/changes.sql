@@ -6184,3 +6184,4 @@ alter table checks_live drop key idx_purge_cluster_saves;
 alter table checks_live drop key idx_purge;
 alter table checks_live add key k_chk_type (chk_type);
 
+alter table links modify link_title_args text;
