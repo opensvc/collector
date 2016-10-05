@@ -892,6 +892,7 @@
 		"help": "Survoler un élément pour obtenir les détails"
 	},
 	"link": {
+		"nodediff": "Différences entre noeuds",
 		"fset_designer": "Designer du jeu de filtres __name__",
 		"fset_export": "Export du jeu de filtres __name__",
 		"fset_properties": "Propriétés du jeu de filtres __name__",

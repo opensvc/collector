@@ -894,6 +894,7 @@
 		"help": "hover on a range to display details"
 	},
 	"link": {
+		"nodediff": "Nodes differences",
 		"fset_designer": "Filterset __name__ designer",
 		"fset_export": "Filterset __name__ export",
 		"fset_properties": "Filterset __name__ properties",
