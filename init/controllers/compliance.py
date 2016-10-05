@@ -3117,7 +3117,8 @@ def show_nodes_compdiff(node_ids):
                cs.run_module,
                cs.run_status,
                cs.run_log,
-               cs.run_date
+               cs.run_date,
+               cs.node_id
              from
                comp_status cs,
                nodes n
@@ -3215,7 +3216,8 @@ def show_services_compdiff_svc(svc_ids, encap=False):
                cs.run_module,
                cs.run_status,
                cs.run_log,
-               cs.run_date
+               cs.run_date,
+               cs.node_id
              from
                comp_status cs, nodes n, services s
              where
@@ -3284,7 +3286,8 @@ def show_services_compdiff(svc_ids, encap=False):
                cs.run_module,
                cs.run_status,
                cs.run_log,
-               cs.run_date
+               cs.run_date,
+               cs.node_id
              from
                comp_status cs,
                svcmon m,
@@ -3356,7 +3359,8 @@ def show_compdiff(svc_id, encap=False):
                cs.run_module,
                cs.run_status,
                cs.run_log,
-               cs.run_date
+               cs.run_date,
+               cs.node_id
              from
                comp_status cs, nodes n
              where
@@ -3384,7 +3388,7 @@ def _show_compdiff(nodes, n, _rows, objtype="Nodes"):
         module = row[1]
         if module not in data:
             data[module] = {}
-        data[module][row[0]] = row
+        data[module][row[5]] = row
 
     def fmt_header1():
         return TR(
