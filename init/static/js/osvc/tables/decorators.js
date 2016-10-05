@@ -1021,6 +1021,23 @@ function cell_decorator_chk_type(e, line) {
 	})
 }
 
+function cell_decorator_dash_link_comp_svcdiff(e, line) {
+	var svc_id = $.data(line.find("[col=svc_id]")[0], "v")
+	s = "<div class='icon comp16 clickable'></div>"
+	e
+	.html(s)
+	.addClass("corner")
+	e.click(function(){
+		var id = toggle_extraline(e)
+		t = $("<h2 data-i18n='diff.comp_title'></h2>")
+		d = $("<div></div>")
+		d.uniqueId()
+		$("#"+id).append(t)
+		$("#"+id).append(d)
+		sync_ajax('/init/compliance/ajax_compliance_svcdiff?node='+svc_id, [], d.attr("id"), function(){})
+	})
+}
+
 function cell_decorator_dash_link_comp_tab(e, line) {
 	var svc_id = $.data(line.find("[col=svc_id]")[0], "v")
 	var node_id = $.data(line.find("[col=node_id]")[0], "v")
@@ -1247,7 +1264,7 @@ function cell_decorator_dash_links(e, line) {
 	} else if (dash_type.indexOf("obsolescence") >= 0) {
 		cell_decorator_dash_link_obsolescence(e, line)
 	} else if (dash_type.indexOf("comp") == 0) {
-		cell_decorator_dash_link_comp_tab(e, line)
+		cell_decorator_dash_link_comp_svcdiff(e, line)
 	} else if (dash_type.indexOf("package") == 0) {
 		cell_decorator_dash_link_pkg_tab(e, line)
 	}
