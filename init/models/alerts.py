@@ -25,10 +25,12 @@ def update_dash_compdiff_svc(svc_ids):
         if n < 2:
             continue
 
-        sql = """select count(t.id) from (
+        sql = """
                    select
                      cs.id,
-                     count(cs.node_id) as c
+                     count(cs.node_id) as c,
+                     cs.run_module,
+                     cs.run_status
                    from
                      comp_status cs,
                      svcmon m
@@ -40,14 +42,27 @@ def update_dash_compdiff_svc(svc_ids):
                      cs.svc_id,
                      cs.run_module,
                      cs.run_status
-                  ) as t
-                  where
-                    t.c!=%(n)s
               """%dict(svc_id=svc_id, n=n)
 
         rows = db.executesql(sql)
 
-        if rows[0][0] == 0:
+        h = {}
+        for row in rows:
+            if row[2] not in h:
+                h[row[2]] = {}
+            h[row[2]][row[3]] = row[1]
+            
+        pb = 0
+        for mod, d in h.items():
+            if len(d) == 1:
+                # all ok or all err is not a pb
+                continue
+            if len(d) == 2 and 2 in d:
+                # n/a + ok or nok is not a pb
+                continue
+            pb += 1
+
+        if pb == 0:
             continue
 
         q = db.services.svc_id == svc_id
@@ -85,18 +100,21 @@ def update_dash_compdiff_svc(svc_ids):
                        sev=sev,
                        now=str(now),
                        env=svc.svc_env,
-                       n=rows[0][0],
+                       n=pb,
                        nodes=nodes_s)
 
         rows = db.executesql(sql)
         db.commit()
+        ws_send("dashboard_change")
 
     if len(svc_ids) > 0:
         q = db.dashboard.svc_id.belongs(svc_ids)
         q &= db.dashboard.dash_type == "compliance differences in cluster"
         q &= (db.dashboard.dash_updated < now) | (db.dashboard.dash_updated == None)
-        db(q).delete()
+        n = db(q).delete()
         db.commit()
+        if n > 0:
+            ws_send("dashboard_change")
 
 
 def update_dash_moddiff_node(node_id):
