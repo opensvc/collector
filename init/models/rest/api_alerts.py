@@ -65,3 +65,39 @@ class rest_get_alert(rest_get_line_handler):
         data["data"] = mangle_alerts(data["data"])
         return data
 
+#
+class rest_delete_alert(rest_delete_handler):
+    def __init__(self):
+        desc = [
+          "Delete an alert",
+        ]
+        examples = [
+          "# curl -u %(email)s -X DELETE -o- https://%(collector)s/init/rest/api/alerts/1"
+        ]
+
+        rest_delete_handler.__init__(
+          self,
+          path="/alerts/<id>",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, id, **vars):
+        check_privilege("Manager")
+
+        q = db.dashboard.id == id
+        row = db(q).select().first()
+        if row is None:
+            raise Exception("Alert %s not found"%str(id))
+
+        db(q).delete()
+        table_modified("dashboard")
+        ws_send('dashboard_change', {'id': id})
+
+        fmt = "Alert %(id)s deleted"
+        d = dict(id=str(id))
+
+        _log('alert.del', fmt, d)
+
+        return dict(info=fmt%d)
+
