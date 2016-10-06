@@ -13,6 +13,7 @@ menu_entries = [
   'key-r',
   'key-s',
   'key-esc',
+  'help-apî',
   'view-dashboard',
   'view-services',
   'view-service-instances',
@@ -62,7 +63,8 @@ menu_entries = [
   'adm-metrics',
   'adm-charts',
   'adm-reports',
-  'adm-tags'
+  'adm-tags',
+  'adm-replication'
 ]
 
 
