@@ -15,17 +15,15 @@ def update_dash_compdiff_svc(svc_ids):
 
     for svc_id in svc_ids:
         q = db.svcmon.svc_id == svc_id
+        q &= db.svcmon.node_id == db.nodes.node_id
         q &= db.svcmon.mon_updated > datetime.datetime.now() - datetime.timedelta(minutes=1440)
-        rows = db(q).select(db.svcmon.node_id,
-                            db.svcmon.mon_svctype,
-                            orderby=db.svcmon.node_id)
-        nodes = map(lambda x: x.node_id, rows)
+        rows = db(q).select(db.nodes.nodename,
+                            orderby=db.nodes.nodename)
+        nodes = map(lambda x: x.nodename, rows)
         n = len(nodes)
 
         if n < 2:
             continue
-
-        row = rows[0]
 
         sql = """select count(t.id) from (
                    select
@@ -52,7 +50,9 @@ def update_dash_compdiff_svc(svc_ids):
         if rows[0][0] == 0:
             continue
 
-        if row.mon_svctype == 'PRD':
+        q = db.services.svc_id == svc_id
+        svc = db(q).select(db.services.svc_env).first()
+        if svc and svc.svc_env == 'PRD':
             sev = 1
         else:
             sev = 0
@@ -84,7 +84,7 @@ def update_dash_compdiff_svc(svc_ids):
               """%dict(svc_id=svc_id,
                        sev=sev,
                        now=str(now),
-                       env=row.mon_svctype,
+                       env=svc.svc_env,
                        n=rows[0][0],
                        nodes=nodes_s)
 
