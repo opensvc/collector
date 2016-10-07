@@ -85,8 +85,16 @@ def rpc_update_resinfo(vars, vals, auth):
     if len(vals) == 0:
         return
     h = {}
-    vars, vals = replace_nodename_in_data(vars, vals, auth, fieldname="app_nodename")
-    vars, vals = replace_svcname_in_data(vars, vals, auth, fieldname="app_svcname")
+    if "app_nodename" in vars:
+        node_k = "app_nodename"
+    else:
+        node_k = "res_nodename"
+    if "app_svcname" in vars:
+        svc_k = "app_svcname"
+    else:
+        svc_k = "res_svcname"
+    vars, vals = replace_nodename_in_data(vars, vals, auth, fieldname=node_k)
+    vars, vals = replace_svcname_in_data(vars, vals, auth, fieldname=svc_k)
     for i, v in enumerate(vars):
         if v == "app_launcher":
             vars[i] = "rid"
