@@ -720,30 +720,58 @@ def _resmon_clean(node_id, svc_id, threshold=None):
     db(q).delete()
     db.commit()
 
-def _resmon_update(vars, vals, auth):
+def _resmon_update(vars, vals, auth, cache=None):
     if len(vals) == 0:
         return
+    if cache is None:
+        head = True
+        cache = {
+          "node_id": auth_to_node_id(auth),
+          "svc_id": set([]),
+          "translate": {},
+          "vals": [],
+        }
+    else:
+        head = False
     if type(vals[0]) in (str, unicode):
-        __resmon_update(vars, vals, auth)
+        cache = __resmon_update(vars, vals, auth, cache=cache)
     else:
         for v in vals:
-            _resmon_update(vars, v, auth)
-    ws_send('resmon_change')
+            cache = _resmon_update(vars, v, auth, cache=cache)
+    if head:
+        for svc_id in cache["svc_id"]:
+            _resmon_clean(cache['node_id'], svc_id)
+        if "vars" in cache:
+            print "insert resmon"
+            generic_insert('resmon', cache["vars"], cache["vals"])
+        if "resmon_log_changed" in cache:
+            db.commit()
+            table_modified("resmon_log")
+        ws_send('resmon_change')
+    return cache
 
-def __resmon_update(vars, vals, auth):
+def __resmon_update(vars, vals, auth, cache=cache):
+    node_id = cache["node_id"]
+    _now = datetime.datetime.now()
     h = {}
     if len(vals) == 0:
-        return
-    node_id = auth_to_node_id(auth)
+        return cache
     vars, vals = replace_svcname_in_data(copy.copy(vars), vals, auth)
     for a,b in zip(vars, vals):
         h[a] = b
     now = datetime.datetime.now()
     now -= datetime.timedelta(microseconds=now.microsecond)
     if 'svc_id' not in h:
-        return
+        return cache
 
-    _node_id, vmname, vmtype = translate_encap_nodename(h['svc_id'], node_id)
+    cache["svc_id"].add(h["svc_id"])
+
+    if (h['svc_id'], node_id) in cache["translate"]:
+        _node_id, vmname, vmtype = cache["translate"][(h['svc_id'], node_id)]
+    else:
+        _node_id, vmname, vmtype = translate_encap_nodename(h['svc_id'], node_id)
+        cache["translate"][(h['svc_id'], node_id)] = _node_id, vmname, vmtype
+
     if _node_id is not None:
         h['vmname'] = vmname
         h['node_id'] = _node_id
@@ -758,9 +786,12 @@ def __resmon_update(vars, vals, auth):
     if h['res_status'] == "'None'":
         h['res_status'] = "n/a"
 
-    generic_insert('resmon', h.keys(), h.values())
-    resmon_log_update(h['node_id'], h['svc_id'], h['rid'], h['res_status'])
-    _resmon_clean(h['node_id'], h['svc_id'])
+    if "vars" not in cache:
+        cache["vars"] = h.keys()
+    cache["vals"].append(h.values())
+    cache["resmon_log_changed"] = resmon_log_update(h['node_id'], h['svc_id'], h['rid'], h['res_status'], deferred=True)
+    print datetime.datetime.now() - _now, "__resmon_update", h['rid']
+    return cache
 
 def _register_disk(vars, vals, auth):
     h = {}

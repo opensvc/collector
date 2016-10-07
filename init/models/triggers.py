@@ -24,7 +24,7 @@ def svc_log_update(svc_id, astatus):
     if changed:
         table_modified("services_log")
 
-def resmon_log_update(node_id, svc_id, rid, astatus):
+def resmon_log_update(node_id, svc_id, rid, astatus, deferred=False):
     rid = rid.strip("'")
     astatus = astatus.strip("'")
     sql = """select id, res_status, res_end from resmon_log
@@ -37,7 +37,6 @@ def resmon_log_update(node_id, svc_id, rid, astatus):
         prev = rows[0]
         sql = """update resmon_log set res_end="%s" where id=%d""" % (end, prev[0])
         db.executesql(sql)
-        db.commit()
         if prev[1] != astatus:
             change = True
         changed = True
@@ -48,10 +47,11 @@ def resmon_log_update(node_id, svc_id, rid, astatus):
                              res_begin=end,
                              res_end=end,
                              res_status=astatus)
-        db.commit()
         changed = True
-    if changed:
+    if changed and not deferred:
+        db.commit()
         table_modified("resmon_log")
+    return changed
 
 def update_dash_svcmon_not_updated(svc_id, node_id):
     sql = """delete from dashboard
