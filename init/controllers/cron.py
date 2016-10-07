@@ -333,32 +333,32 @@ def cron_stat_day_svc():
     end = begin + datetime.timedelta(days=1, seconds=-1)
     day_s = begin.strftime("%Y-%m-%d")
 
-    sql = """insert into stat_day_svc (svc_id, day, nb_action_err) select s.svc_id, "%(day)s", count(a.id) from services s left join svcactions a on s.svc_id=a.svc_id and a.begin>'%(begin)s' and a.begin<'%(end)s' and a.status='err' group by s.svc_id on duplicate key update nb_action_err=values(nb_action_err)""" % dict(day=day_s, begin=str(begin), end=str(end))
+    sql = """insert into stat_day_svc (svc_id, day, nb_action_err) select a.svc_id, "%(day)s", count(a.id) from svcactions a where a.begin>'%(begin)s' and a.begin<'%(end)s' and a.status='err' group by a.svc_id on duplicate key update nb_action_err=values(nb_action_err)""" % dict(day=day_s, begin=str(begin), end=str(end))
     print sql
     db.executesql(sql)
     db.commit()
 
-    sql = """insert into stat_day_svc (svc_id, day, nb_action_warn) select s.svc_id, "%(day)s", count(a.id) from services s left join svcactions a on s.svc_id=a.svc_id and a.begin>'%(begin)s' and a.begin<'%(end)s' and a.status='warn' group by s.svc_id on duplicate key update nb_action_warn=values(nb_action_warn)""" % dict(day=day_s, begin=str(begin), end=str(end))
+    sql = """insert into stat_day_svc (svc_id, day, nb_action_warn) select a.svc_id, "%(day)s", count(a.id) from svcactions a where a.begin>'%(begin)s' and a.begin<'%(end)s' and a.status='warn' group by a.svc_id on duplicate key update nb_action_warn=values(nb_action_warn)""" % dict(day=day_s, begin=str(begin), end=str(end))
     print sql
     db.executesql(sql)
     db.commit()
 
-    sql = """insert into stat_day_svc (svc_id, day, nb_action_ok) select s.svc_id, "%(day)s", count(a.id) from services s left join svcactions a on s.svc_id=a.svc_id and a.begin>'%(begin)s' and a.begin<'%(end)s' and a.status='ok' group by s.svc_id on duplicate key update nb_action_ok=values(nb_action_ok)""" % dict(day=day_s, begin=str(begin), end=str(end))
+    sql = """insert into stat_day_svc (svc_id, day, nb_action_ok) select a.svc_id, "%(day)s", count(a.id) from svcactions a where a.begin>'%(begin)s' and a.begin<'%(end)s' and a.status='ok' group by a.svc_id on duplicate key update nb_action_ok=values(nb_action_ok)""" % dict(day=day_s, begin=str(begin), end=str(end))
     print sql
     db.executesql(sql)
     db.commit()
 
-    sql = """insert into stat_day_svc (svc_id, day, nb_action) select s.svc_id, "%(day)s", count(a.id) from services s left join svcactions a on s.svc_id=a.svc_id and a.begin>'%(begin)s' and a.begin<'%(end)s' group by s.svc_id on duplicate key update nb_action=values(nb_action)""" % dict(day=day_s, begin=str(begin), end=str(end))
+    sql = """insert into stat_day_svc (svc_id, day, nb_action) select a.svc_id, "%(day)s", count(a.id) from svcactions a where a.begin>'%(begin)s' and a.begin<'%(end)s' group by a.svc_id on duplicate key update nb_action=values(nb_action)""" % dict(day=day_s, begin=str(begin), end=str(end))
     print sql
     db.executesql(sql)
     db.commit()
 
-    sql = """insert into stat_day_svc (svc_id, day, disk_size) select s.svc_id, "%(day)s", if(sum(d.disk_size) is NULL, 0, sum(d.disk_size)) from services s left join svcdisks d on s.svc_id=d.svc_id and d.disk_local='F' group by s.svc_id on duplicate key update disk_size=values(disk_size)""" % dict(day=day_s)
+    sql = """insert into stat_day_svc (svc_id, day, disk_size) select d.svc_id, "%(day)s", if(sum(d.disk_size) is NULL, 0, sum(d.disk_size)) from svcdisks d where d.disk_local='F' group by d.svc_id on duplicate key update disk_size=values(disk_size)""" % dict(day=day_s)
     print sql
     db.executesql(sql)
     db.commit()
 
-    sql = """insert into stat_day_svc (svc_id, day, local_disk_size) select s.svc_id, "%(day)s", if(sum(d.disk_size) is NULL, 0, sum(d.disk_size)) from services s left join svcdisks d on s.svc_id=d.svc_id and d.disk_local='T' group by s.svc_id on duplicate key update local_disk_size=values(local_disk_size)""" % dict(day=day_s)
+    sql = """insert into stat_day_svc (svc_id, day, local_disk_size) select d.svc_id, "%(day)s", if(sum(d.disk_size) is NULL, 0, sum(d.disk_size)) from svcdisks d where d.disk_local='T' group by d.svc_id on duplicate key update local_disk_size=values(local_disk_size)""" % dict(day=day_s)
     print sql
     db.executesql(sql)
     db.commit()
