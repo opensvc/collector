@@ -95,6 +95,7 @@ def rpc_update_resinfo(vars, vals, auth):
         svc_k = "res_svcname"
     vars, vals = replace_nodename_in_data(vars, vals, auth, fieldname=node_k)
     vars, vals = replace_svcname_in_data(vars, vals, auth, fieldname=svc_k)
+    updated_idx = None
     for i, v in enumerate(vars):
         if v == "app_launcher":
             vars[i] = "rid"
@@ -103,7 +104,13 @@ def rpc_update_resinfo(vars, vals, auth):
         elif v == "app_value":
             vars[i] = "res_value"
         elif v == "app_updated":
+            updated_idx = i
             vars[i] = "updated"
+    if not updated_idx:
+        vars.append("updated")
+        updated_idx = len(vars) - 1
+    for i, v in enumerate(vals):
+        vals[i].append(now)
     for a,b in zip(vars, vals[0]):
         h[a] = b
     generic_insert('resinfo', vars, vals)
