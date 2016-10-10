@@ -80,21 +80,20 @@ def common_responsible(node_id=None, svc_id=None, app=None, user_id=None):
     if node_id is None and svc_id is None and app is None and user_id is None:
         return False
     q = db.auth_group.id > 0
+    l = []
     if node_id:
-        q &= db.nodes.node_id == node_id
-        q &= db.nodes.app == db.apps.app
+        l.append(""" select ar.group_id from nodes n, apps a, apps_responsibles ar where n.app=a.app and n.node_id="%(node_id)s" and ar.app_id=a.id """ % dict(node_id=node_id))
     if svc_id:
-        q &= db.services.svc_id == svc_id
-        q &= db.apps.app == db.services.svc_app
+        l.append(""" select ar.group_id from services s, apps a, apps_responsibles ar where s.svc_app=a.app and s.svc_id="%(svc_id)s" and ar.app_id=a.id """ % dict(svc_id=svc_id))
     if app:
-        q &= db.apps.app == app
+        l.append(""" select ar.group_id from apps a, apps_responsibles ar where a.app="%(app)s" and ar.app_id=a.id  """ % dict(app=app))
     if user_id and not "Manager" in user_groups():
-        q &= db.auth_membership.user_id == user_id
-        q &= db.apps_responsibles.group_id == db.auth_membership.group_id
+        l.append(""" select am.group_id from auth_membership am where am.user_id=%(user_id)d  """ % dict(user_id=user_id))
+    sub = " union all ".join(l)
+    sql = """ select * from (select count(t.group_id) as c from (%(sub)s) as t group by t.group_id) u where u.c=%(n)d """ % dict(sub=sub, n=len(l))
+    rows = db.executesql(sql)
 
-    q &= db.apps.id == db.apps_responsibles.app_id
-    q &= db.apps_responsibles.group_id == db.auth_group.id
-    if db(q).count() > 0:
+    if len(rows) > 0:
         return True
     return False
 
