@@ -996,25 +996,6 @@ db.define_table('comp_moduleset_ruleset',
     Field('ruleset_id','integer'),
     migrate=False)
 
-comp_var_types = (
- 'authkey',
- 'crontabentry',
- 'etcsystem',
- 'file',
- 'fileinc',
- 'fileprop',
- 'fs',
- 'group',
- 'nodeconf',
- 'package',
- 'process',
- 'user',
- 'raw',
- 'rc',
- 'symlink',
- 'vuln'
-)
-
 db.define_table('comp_rulesets_filtersets',
     Field('ruleset_id','integer', requires=IS_NOT_EMPTY()),
     Field('fset_id','integer', requires=IS_NOT_EMPTY()),
