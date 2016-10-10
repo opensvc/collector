@@ -627,6 +627,15 @@ class rest_delete_node(rest_delete_handler):
         _websocket_send(event_msg(l))
         table_modified("stor_zone")
 
+        q = db.auth_node.node_id == node_id
+        db(q).delete()
+        l = {
+          'event': 'auth_node',
+          'data': {'node_id': node_id},
+        }
+        _websocket_send(event_msg(l))
+        table_modified("auth_node")
+
         return dict(info=fmt%d)
 
 
