@@ -146,7 +146,7 @@ var services_access_uri = {
 
 function encode_uri_key(key) {
 	try {
-		key.replace("/", "(slash)")
+		key = key.replace("/", "(slash)")
 	} catch(e) {}
 	return key
 }
