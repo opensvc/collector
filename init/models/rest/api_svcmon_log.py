@@ -10,13 +10,13 @@ class rest_get_services_instances_status_log(rest_get_table_handler):
         rest_get_table_handler.__init__(
           self,
           path="/services_instances_status_log",
-          tables=["svcmon_log"],
+          tables=["v_svcmon_log"],
           desc=desc,
           examples=examples,
         )
 
     def handler(self, **vars):
-        q = q_filter(svc_field=db.svcmon_log.svc_id)
+        q = q_filter(svc_field=db.v_svcmon_log.svc_id)
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -33,13 +33,13 @@ class rest_get_services_status_log(rest_get_table_handler):
         rest_get_table_handler.__init__(
           self,
           path="/services_status_log",
-          tables=["services_log"],
+          tables=["v_services_log"],
           desc=desc,
           examples=examples,
         )
 
     def handler(self, **vars):
-        q = q_filter(svc_field=db.services_log.svc_id)
+        q = q_filter(svc_field=db.v_services_log.svc_id)
         self.set_q(q)
         return self.prepare_data(**vars)
 

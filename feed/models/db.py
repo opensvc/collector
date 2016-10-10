@@ -614,6 +614,10 @@ db.define_table('services_log',
     Field('svc_end', 'datetime'),
     migrate=False)
 
+db.define_table('services_log_last',
+    db.services_log,
+    migrate=False)
+
 db.define_table('resmon_log',
     Field('node_id', 'string', length=36),
     Field('svc_id', 'string', length=36),
@@ -621,6 +625,10 @@ db.define_table('resmon_log',
     Field('res_status', 'string'),
     Field('res_begin', 'datetime'),
     Field('res_end', 'datetime'),
+    migrate=False)
+
+db.define_table('resmon_log_last',
+    db.resmon_log,
     migrate=False)
 
 db.define_table('auth_node',

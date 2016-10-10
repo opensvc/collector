@@ -928,7 +928,6 @@ def _insert_pkg(vars, vals, auth):
     threshold = now - datetime.timedelta(minutes=1)
     generic_insert('packages', vars, vals)
     delete_old_pkg(threshold, node_id)
-    table_modified("packages")
     update_dash_pkgdiff(node_id)
 
 def delete_old_pkg(threshold, node_id):
@@ -955,7 +954,6 @@ def _insert_patch(vars, vals, auth):
     node_id = auth_to_node_id(auth)
     threshold = now - datetime.timedelta(minutes=1)
     generic_insert('patches', vars, vals)
-    table_modified("patches")
     delete_old_patches(threshold, node_id)
 
 def insert_array_proxy(node_id, array_name):
@@ -2840,10 +2838,10 @@ def __svcmon_update(vars, vals, auth):
     # service instance status history janitoring
     tmo = now - datetime.timedelta(minutes=15)
 
-    sql = """select * from svcmon_log where
+    sql = """select * from svcmon_log_last where
                svc_id="%(svc_id)s" and
                node_id="%(node_id)s"
-             order by id desc limit 1""" % dict(svc_id=h["svc_id"], node_id=node_id)
+          """ % dict(svc_id=h["svc_id"], node_id=node_id)
     rows = db.executesql(sql, as_dict=True)
     print datetime.datetime.now() - _now, "get last"
     _now = datetime.datetime.now()
@@ -2881,7 +2879,7 @@ def __svcmon_update(vars, vals, auth):
                  h['mon_appstatus'],
                  h['mon_syncstatus'],
                  h['mon_hbstatus']]
-        generic_insert('svcmon_log', _vars, _vals)
+        generic_insert('svcmon_log_last', _vars, _vals)
         if h['mon_overallstatus'] == 'warn':
             level = "warning"
         else:
@@ -2954,7 +2952,7 @@ def __svcmon_update(vars, vals, auth):
                  h['mon_appstatus'],
                  h['mon_hbstatus'],
                  h['mon_syncstatus']]
-        generic_insert('svcmon_log', _vars, _vals)
+        generic_insert('svcmon_log_last', _vars, _vals)
         if h['mon_overallstatus'] == 'warn':
             level = "warning"
         else:
@@ -2985,6 +2983,21 @@ def __svcmon_update(vars, vals, auth):
                  'mon_appstatus',
                  'mon_syncstatus',
                  'mon_hbstatus']
+        _vals = [last['mon_begin'],
+                 now,
+                 last['svc_id'],
+                 node_id,
+                 last['mon_overallstatus'],
+                 last['mon_availstatus'],
+                 last['mon_ipstatus'],
+                 last['mon_fsstatus'],
+                 last['mon_diskstatus'],
+                 last['mon_sharestatus'],
+                 last['mon_containerstatus'],
+                 last['mon_appstatus'],
+                 last['mon_syncstatus'],
+                 last['mon_hbstatus']]
+        generic_insert('svcmon_log', _vars, _vals)
         _vals = [h['mon_updated'],
                  h['mon_updated'],
                  h['svc_id'],
@@ -2999,10 +3012,7 @@ def __svcmon_update(vars, vals, auth):
                  h['mon_appstatus'],
                  h['mon_syncstatus'],
                  h['mon_hbstatus']]
-        generic_insert('svcmon_log', _vars, _vals)
-        db.executesql("""update svcmon_log set mon_end=now() where id=%d"""%last["id"])
-        db.commit()
-        table_modified("svcmon_log")
+        generic_insert('svcmon_log_last', _vars, _vals)
         if h['mon_overallstatus'] == 'warn':
             level = "warning"
         else:
@@ -3018,9 +3028,9 @@ def __svcmon_update(vars, vals, auth):
              node_id=node_id,
              level=level)
     else:
-        db.executesql("""update svcmon_log set mon_end=now() where id=%d"""%last["id"])
+        db.executesql("""update svcmon_log_last set mon_end=now() where id=%d"""%last["id"])
         db.commit()
-        table_modified("svcmon_log")
+        table_modified("svcmon_log_last")
     print datetime.datetime.now() - _now, "update svcmon_log"
 
 

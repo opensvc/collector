@@ -145,7 +145,7 @@ def comp_get_matching_filters(fset_ids, fset_data=None, node_id=None, svc_id=Non
               "patches",
               "svcdisks",
               "svcmon",
-              "svcmon_log",
+              "v_svcmon_log",
               "resmon",
               "resinfo"
             ):
@@ -165,7 +165,7 @@ def comp_get_matching_filters(fset_ids, fset_data=None, node_id=None, svc_id=Non
                 return sql_l
 
         if svc_id is not None:
-            if table in ("services", "svcdisks", "svcmon", "svcmon_log", "v_comp_moduleset_attachments", "v_tags", "resmon"):
+            if table in ("services", "svcdisks", "svcmon", "v_svcmon_log", "v_comp_moduleset_attachments", "v_tags", "resmon"):
                 where_ext += " and %s.svc_id = '%s'" % (table, svc_id)
             elif table in ("nodes", "packages", "patches", "node_hba"):
                 if table == "nodes":

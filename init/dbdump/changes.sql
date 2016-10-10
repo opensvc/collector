@@ -6185,3 +6185,19 @@ alter table checks_live drop key idx_purge;
 alter table checks_live add key k_chk_type (chk_type);
 
 alter table links modify link_title_args text;
+
+# 2016-10-10
+create table resmon_log_last like resmon_log;
+create table svcmon_log_last like svcmon_log;
+create table services_log_last like services_log;
+
+alter table svcmon_log_last add unique key uk (node_id, svc_id);
+alter table resmon_log_last add unique key uk (node_id, svc_id, rid);
+alter table services_log_last add unique key uk (svc_id);
+
+create view v_resmon_log as select * from resmon_log union all select * from resmon_log_last;
+create view v_svcmon_log as select * from svcmon_log union all select * from svcmon_log_last;
+create view v_services_log as select * from services_log union all select * from services_log_last;
+
+alter table resmon_log modify column res_status enum('up','down','warn','n/a','undef','stdby up','stdby down') default "undef";
+alter table resmon_log_last modify column res_status enum('up','down','warn','n/a','undef','stdby up','stdby down') default "undef";

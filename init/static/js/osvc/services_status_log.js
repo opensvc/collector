@@ -34,7 +34,7 @@ function services_status_log(divid, options) {
 			"meta": "false",
 			"limit": 200,
 			"props": "id,rid,svc_id,node_id,res_begin,res_end,res_status",
-			"orderby": "~id",
+			"orderby": "~res_begin",
 			"filters": []
 		}
 
@@ -67,7 +67,7 @@ function services_status_log(divid, options) {
 			"meta": "false",
 			"limit": 200,
 			"props": "id,svc_id,node_id,mon_begin,mon_end,mon_availstatus",
-			"orderby": "~id",
+			"orderby": "~mon_begin",
 			"filters": []
 		}
 		if (options && options.services) {
@@ -88,7 +88,7 @@ function services_status_log(divid, options) {
 		var opts = {
 			"meta": "false",
 			"limit": 200,
-			"orderby": "~id",
+			"orderby": "~svc_begin",
 			"filters": []
 		}
 		if (options && options.services) {

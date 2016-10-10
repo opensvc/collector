@@ -380,9 +380,14 @@ joins = {
                    (db.svcmon.node_id == db.comp_status.node_id),
     'svcmon_log': (db.svcmon.svc_id == db.svcmon_log.svc_id) & \
                   (db.svcmon.node_id == db.svcmon_log.node_id),
+    'v_svcmon_log': (db.svcmon.svc_id == db.v_svcmon_log.svc_id) & \
+                  (db.svcmon.node_id == db.v_svcmon_log.node_id),
     'services_log': db.svcmon.svc_id == db.services_log.svc_id,
-    'svcmon_log': (db.svcmon.svc_id == db.svcmon_log.svc_id) & \
-                  (db.svcmon.node_id == db.svcmon_log.node_id),
+    'v_services_log': db.svcmon.svc_id == db.v_services_log.svc_id,
+    'resmon_log': (db.svcmon.svc_id == db.resmon_log.svc_id) & \
+                  (db.svcmon.node_id == db.resmon_log.node_id),
+    'v_resmon_log': (db.svcmon.svc_id == db.v_resmon_log.svc_id) & \
+                  (db.svcmon.node_id == db.v_resmon_log.node_id),
   },
   'services':{
     'services': None,
@@ -393,8 +398,12 @@ joins = {
     'resinfo': db.services.svc_id == db.resinfo.svc_id,
     'comp_log': db.services.svc_id == db.comp_log.svc_id,
     'comp_status': db.services.svc_id == db.comp_status.svc_id,
+    'resmon_log': db.services.svc_id == db.resmon_log.svc_id,
+    'v_resmon_log': db.services.svc_id == db.v_resmon_log.svc_id,
     'svcmon_log': db.services.svc_id == db.svcmon_log.svc_id,
+    'v_svcmon_log': db.services.svc_id == db.v_svcmon_log.svc_id,
     'services_log': db.services.svc_id == db.services_log.svc_id,
+    'v_services_log': db.services.svc_id == db.v_services_log.svc_id,
     'v_apps': db.services.svc_app == db.apps.app,
   },
   'nodes':{
@@ -409,8 +418,12 @@ joins = {
     'v_comp_nodes': None,
     'comp_log': db.nodes.node_id == db.comp_log.node_id,
     'comp_status': db.nodes.node_id == db.comp_status.node_id,
+    'resmon_log': db.nodes.node_id == db.resmon_log.node_id,
+    'v_resmon_log': db.nodes.node_id == db.v_resmon_log.node_id,
     'svcmon_log': db.nodes.node_id == db.svcmon_log.node_id,
+    'v_svcmon_log': db.nodes.node_id == db.v_svcmon_log.node_id,
     'services_log': (db.svcmon.svc_id == db.services_log.svc_id) & (db.svcmon.node_id == db.nodes.node_id),
+    'v_services_log': (db.svcmon.svc_id == db.v_services_log.svc_id) & (db.svcmon.node_id == db.nodes.node_id),
     'v_apps': db.nodes.app == db.v_apps.app,
   },
 }

@@ -1,52 +1,68 @@
-def svc_log_update(svc_id, astatus):
-    sql = """select id, svc_availstatus, svc_end from services_log
+def svc_log_update(svc_id, astatus, deferred=False):
+    sql = """select id, svc_availstatus, svc_end, svc_begin from services_log_last
              where svc_id="%s"
-             order by id desc limit 1 """ % svc_id
+          """ % svc_id
     rows = db.executesql(sql)
     end = datetime.datetime.now()
     change = False
     changed = False
     if len(rows) == 1:
         prev = rows[0]
-        sql = """update services_log set svc_end="%s" where id=%d""" % (end, prev[0])
-        db.executesql(sql)
-        db.commit()
-        if prev[1] != astatus:
+        if prev[1] == astatus:
+            sql = """update services_log_last set svc_end="%s" where id=%d""" % (end, prev[0])
+            db.executesql(sql)
+        else:
+            db.services_log.insert(svc_id=svc_id,
+                                   svc_begin=prev[3],
+                                   svc_end=end,
+                                   svc_availstatus=prev[1])
             change = True
         changed = True
-    if len(rows) != 0 or change:
-        db.services_log.insert(svc_id=svc_id,
-                               svc_begin=end,
-                               svc_end=end,
-                               svc_availstatus=astatus)
-        db.commit()
+    if len(rows) == 0 or change:
+        db.services_log_last.update_or_insert({"svc_id": svc_id},
+                                              svc_id=svc_id,
+                                              svc_begin=end,
+                                              svc_end=end,
+                                              svc_availstatus=astatus)
         changed = True
-    if changed:
+    if changed and not deferred:
+        db.commit()
         table_modified("services_log")
+    return changed
 
 def resmon_log_update(node_id, svc_id, rid, astatus, deferred=False):
     rid = rid.strip("'")
     astatus = astatus.strip("'")
-    sql = """select id, res_status, res_end from resmon_log
+    sql = """select id, res_status, res_end, res_begin from resmon_log_last
              where node_id="%s" and svc_id="%s" and rid="%s"
-             order by id desc limit 1 """ % (node_id, svc_id, rid)
+          """ % (node_id, svc_id, rid)
     rows = db.executesql(sql)
     end = datetime.datetime.now()
     change = False
     if len(rows) == 1:
         prev = rows[0]
-        sql = """update resmon_log set res_end="%s" where id=%d""" % (end, prev[0])
-        db.executesql(sql)
-        if prev[1] != astatus:
+        if prev[1] == astatus:
+            sql = """update resmon_log_last set res_end="%s" where id=%d""" % (end, prev[0])
+            db.executesql(sql)
+        else:
+            db.resmon_log.insert(svc_id=svc_id,
+                                 node_id=node_id,
+                                 rid=rid,
+                                 res_begin=prev[3],
+                                 res_end=end,
+                                 res_status=prev[1])
             change = True
         changed = True
     if len(rows) == 0 or change:
-        db.resmon_log.insert(svc_id=svc_id,
-                             node_id=node_id,
-                             rid=rid,
-                             res_begin=end,
-                             res_end=end,
-                             res_status=astatus)
+        db.resmon_log_last.update_or_insert({"svc_id": svc_id,
+                                             "node_id": node_id,
+                                             "rid": rid},
+                                            svc_id=svc_id,
+                                            node_id=node_id,
+                                            rid=rid,
+                                            res_begin=end,
+                                            res_end=end,
+                                            res_status=astatus)
         changed = True
     if changed and not deferred:
         db.commit()
@@ -209,7 +225,7 @@ def svc_status_update(svc_id):
         ostatus = 'undef'
 
     try:
-        svc_log_update(svc_id, astatus)
+        services_log_changed = svc_log_update(svc_id, astatus, deferred=True)
     except NameError:
         pass
     try:
@@ -228,6 +244,8 @@ def svc_status_update(svc_id):
     )
     db.executesql(sql)
     db.commit()
+    if services_log_changed:
+        table_modified("services_log")
 
     update_dash_service_unavailable(svc_id, svc_env, astatus)
     update_dash_service_available_but_degraded(svc_id, svc_env, astatus, ostatus)

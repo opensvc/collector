@@ -11,13 +11,13 @@ class rest_get_resources_logs(rest_get_table_handler):
         rest_get_table_handler.__init__(
           self,
           path="/resources_logs",
-          tables=["resmon_log"],
+          tables=["v_resmon_log"],
           desc=desc,
           examples=examples,
         )
 
     def handler(self, **vars):
-        q = q_filter(svc_field=db.resmon_log.svc_id)
+        q = q_filter(svc_field=db.v_resmon_log.svc_id)
         self.set_q(q)
         return self.prepare_data(**vars)
 
