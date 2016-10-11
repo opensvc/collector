@@ -608,13 +608,15 @@ class rest_get_compliance_ruleset_usage(rest_get_handler):
 
         #
         q = db.comp_rulesets_nodes.ruleset_id == rset.id
-        rows = db(q).select(cacheable=False)
-        data["nodes"] = [ {"node_id": r.node_id, "nodename": r.nodename} for r in rows ]
+        q &= db.comp_rulesets_nodes.node_id == db.nodes.node_id
+        rows = db(q).select(db.comp_rulesets_nodes.node_id, db.nodes.nodename, cacheable=False)
+        data["nodes"] = [ {"node_id": r.comp_rulesets_nodes.node_id, "nodename": r.nodes.nodename} for r in rows ]
 
         #
         q = db.comp_rulesets_services.ruleset_id == rset.id
-        rows = db(q).select(cacheable=False)
-        data["services"] = [ {"svc_id": r.svc_id, "svcname": r.svcname} for r in rows ]
+        q &= db.comp_rulesets_services.svc_id == db.services.svc_id
+        rows = db(q).select(db.comp_rulesets_services.svc_id, db.services.svcname, cacheable=False)
+        data["services"] = [ {"svc_id": r.comp_rulesets_services.svc_id, "svcname": r.services.svcname} for r in rows ]
 
         return dict(data=data)
 
