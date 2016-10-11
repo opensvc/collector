@@ -1,9 +1,7 @@
 
 def get_slave(vars):
     slave = vars.get("slave", False)
-    if slave in ("true", "True", "T"):
-        return True
-    return False
+    return convert_bool(slave)
 
 #
 class rest_get_service_am_i_responsible(rest_get_handler):
@@ -732,6 +730,11 @@ class rest_get_service_compliance_candidate_modulesets(rest_get_table_handler):
         desc = [
           "List compliance modulesets attachable to the service.",
         ]
+        params = {
+          "slave": {
+             "desc": "If set to true, list attachable to the encapsulated service."
+          }
+        }
         examples = [
           "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/services/mysvc/compliance/candidate_modulesets",
         ]
@@ -748,7 +751,13 @@ class rest_get_service_compliance_candidate_modulesets(rest_get_table_handler):
     def handler(self, svc_id, **vars):
         svc_id = get_svc_id(svc_id)
 
+        if "slave" in vars:
+            slave = convert_bool(vars.get("slave"))
+            del(vars["slave"])
+        else:
+            slave = False
         q = db.comp_modulesets_services.svc_id == svc_id
+        q &= db.comp_modulesets_services.slave == slave
         attached = [r.modset_id for r in db(q).select(db.comp_modulesets_services.modset_id)]
 
         q = db.comp_moduleset.id == db.comp_moduleset_team_publication.modset_id
@@ -770,6 +779,11 @@ class rest_get_service_compliance_modulesets(rest_get_table_handler):
         desc = [
           "List compliance modulesets attached to the service.",
         ]
+        params = {
+          "slave": {
+             "desc": "If set to true, list attachable to the encapsulated service."
+          }
+        }
         examples = [
           "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/services/mysvc/compliance/modulesets",
         ]
@@ -783,8 +797,14 @@ class rest_get_service_compliance_modulesets(rest_get_table_handler):
         )
 
     def handler(self, svc_id, **vars):
+        if "slave" in vars:
+            slave = convert_bool(vars.get("slave"))
+            del(vars["slave"])
+        else:
+            slave = False
         svc_id = get_svc_id(svc_id)
         q = db.comp_modulesets_services.svc_id == svc_id
+        q &= db.comp_modulesets_services.slave == slave
         q &= db.comp_modulesets_services.modset_id == db.comp_moduleset.id
         q = q_filter(q, svc_field=db.comp_modulesets_services.svc_id)
         self.set_q(q)
@@ -797,6 +817,11 @@ class rest_get_service_compliance_candidate_rulesets(rest_get_table_handler):
         desc = [
           "List compliance rulesets attachable to the service.",
         ]
+        params = {
+          "slave": {
+             "desc": "If set to true, list attachable to the encapsulated service."
+          }
+        }
         examples = [
           "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/services/mysvc/compliance/candidate_rulesets",
         ]
@@ -813,7 +838,13 @@ class rest_get_service_compliance_candidate_rulesets(rest_get_table_handler):
     def handler(self, svc_id, **vars):
         svc_id = get_svc_id(svc_id)
 
+        if "slave" in vars:
+            slave = convert_bool(vars.get("slave"))
+            del(vars["slave"])
+        else:
+            slave = False
         q = db.comp_rulesets_services.svc_id == svc_id
+        q &= db.comp_rulesets_services.slave == slave
         attached = [r.ruleset_id for r in db(q).select(db.comp_rulesets_services.ruleset_id)]
 
         q = db.comp_rulesets.ruleset_type == 'explicit'
@@ -837,6 +868,11 @@ class rest_get_service_compliance_rulesets(rest_get_table_handler):
         desc = [
           "List compliance rulesets attached to the service.",
         ]
+        params = {
+          "slave": {
+             "desc": "If set to true, list attachable to the encapsulated service."
+          }
+        }
         examples = [
           "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/services/mysvc/compliance/rulesets",
         ]
@@ -850,8 +886,14 @@ class rest_get_service_compliance_rulesets(rest_get_table_handler):
         )
 
     def handler(self, svc_id, **vars):
+        if "slave" in vars:
+            slave = convert_bool(vars.get("slave"))
+            del(vars["slave"])
+        else:
+            slave = False
         svc_id = get_svc_id(svc_id)
         q = db.comp_rulesets_services.svc_id == svc_id
+        q &= db.comp_rulesets_services.slave == slave
         q &= db.comp_rulesets_services.ruleset_id == db.comp_rulesets.id
         q = q_filter(q, svc_field=db.comp_rulesets_services.svc_id)
         self.set_q(q)

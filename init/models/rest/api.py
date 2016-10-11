@@ -9,6 +9,12 @@ deprecated_columns = {
   "nodes.environnement": "nodes.asset_env",
 }
 
+def convert_bool(v):
+    if v in ("True", "true", True, "y", "Y", "yes", "Yes", "1"):
+        return True
+    else:
+        return False
+
 def markup_result(result, markup):
     for p in ("info", "error"):
         if p in result:
