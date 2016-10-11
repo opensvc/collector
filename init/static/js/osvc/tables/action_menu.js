@@ -2078,10 +2078,7 @@ function table_action_menu_format_selector(t, e, selector) {
 		}
 
 		// compute selected cursor
-		cache_id = ""
-		for (var j=0; j<selector.cols.length; j++) {
-			cache_id += '-'+selector.cols[j]
-		}
+		cache_id = selector.condition
 		cache_id += '-'+scope
 		if (cache_id in t.action_menu_data_cache) {
 			var data = t.action_menu_data_cache[cache_id]
