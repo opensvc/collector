@@ -557,21 +557,33 @@ function service_compliance(divid, options) {
                         "e_title": o.div.find("#rulesets_title")
                 })
 
-                service_modulesets({
-                        "tid": o.div.find("#encap_modulesets"),
-                        "svc_id": o.options.svc_id,
-                        "slave": true,
-                        "title": "service_compliance.encap_modulesets",
-                        "e_title": o.div.find("#encap_modulesets_title")
-                })
+		services_osvcgetrest("/services/%1/resinfo", [o.options.svc_id], {
+			"limit": "1",
+			"meta": "0",
+			"filters": ["res_key tags", "res_value %encap%"]
+		}, function(jd) {
+			if (jd.data.length == 0) {
+				return
+			}
 
-                service_rulesets({
-                        "tid": o.div.find("#encap_rulesets"),
-                        "svc_id": o.options.svc_id,
-                        "slave": true,
-                        "title": "service_compliance.encap_rulesets",
-                        "e_title": o.div.find("#encap_rulesets_title")
-                })
+			o.div.find("#encap_modulesets").show()
+			service_modulesets({
+				"tid": o.div.find("#encap_modulesets"),
+				"svc_id": o.options.svc_id,
+				"slave": true,
+				"title": "service_compliance.encap_modulesets",
+				"e_title": o.div.find("#encap_modulesets_title")
+			})
+
+			o.div.find("#encap_rulesets").show()
+			service_rulesets({
+				"tid": o.div.find("#encap_rulesets"),
+				"svc_id": o.options.svc_id,
+				"slave": true,
+				"title": "service_compliance.encap_rulesets",
+				"e_title": o.div.find("#encap_rulesets_title")
+			})
+		})
 
                 o.e_svcdiff = o.div.find("[name=svcdiff]")
                 o.e_svcdiff.uniqueId()
