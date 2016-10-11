@@ -525,7 +525,7 @@ function service_compliance(divid, options) {
                 "parameters": o.options,
                 "title": "format_title",
                 "title_args": {
-                        "type": "svc",
+                        "type": "service",
                         "id": o.options.svc_id
                 }
         }
