@@ -639,6 +639,15 @@
 		"end": "end",
 		"prio": "Connect-to priority"
 	},
+	"node_compliance": {
+		"status": "Status",
+		"modulesets": "Modulesets",
+		"rulesets": "Rulesets"
+	},
+	"service_compliance": {
+		"encap_modulesets": "Encapsulated service modulesets",
+		"encap_rulesets": "Encapsulated service rulesets"
+	},
 	"node_properties": {
 		"timezone": "timezone",
 		"no_uuid": "Agent not registered",

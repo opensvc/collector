@@ -174,20 +174,7 @@ function node_tabs(divid, options) {
 			"title_class": "icon comp16"
 		})
 		o.tabs[i].callback = function(divid) {
-			sync_ajax("/init/compliance/ajax_compliance_node/"+encodeURIComponent(o.options.node_id), [], divid, function(){
-				osvc_tools($("#"+divid), {
-					"link": {
-						"fn": "/init/compliance/ajax_compliance_node",
-						"parameters": encodeURIComponent(o.options.node_id),
-						"title": "format_title",
-						"title_args": {
-							"type": "node",
-							"id": o.options.node_id,
-							"fn": "node_compliance"
-						}
-					}
-				})
-			})
+			node_compliance(divid, o.options)
 		}
 
 		// tab sysreport
@@ -761,4 +748,48 @@ function ips(divid, options)
 
 function ips_load(o)
 {
+}
+
+function node_compliance(divid, options) {
+	var o = {}
+	o.options = options
+	o.link = {
+		"fn": arguments.callee.name,
+		"parameters": o.options,
+		"title": "format_title",
+		"title_args": {
+			"type": "node",
+			"id": o.options.node_id
+		}
+	}
+
+	// store parameters
+	o.divid = divid
+	o.div = $("#"+divid)
+
+	o.init = function() {
+		o.e_status = o.div.find("[name=status]")
+		o.e_status.uniqueId()
+		table_comp_status_node(o.e_status.attr("id"), o.options.node_id)
+
+                node_modulesets({
+                        "tid": o.div.find("#modulesets"),
+                        "node_id": o.options.node_id,
+                        "title": "node_compliance.modulesets",
+                        "e_title": o.div.find("#modulesets_title")
+                })
+
+                node_rulesets({
+                        "tid": o.div.find("#rulesets"),
+                        "node_id": o.options.node_id,
+                        "title": "node_compliance.rulesets",
+                        "e_title": o.div.find("#rulesets_title")
+                })
+
+	}
+
+	o.div.load('/init/static/views/node_compliance.html?v='+osvc.code_rev, function() {
+		o.div.i18n()
+		o.init()
+	})
 }

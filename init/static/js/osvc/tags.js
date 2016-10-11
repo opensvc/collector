@@ -225,7 +225,7 @@ function tags(options) {
 		o.div.info.empty()
 		o.candidates.div.parent().remove()
 		o.options.get_candidates(tag_data[o.options.tag_name], function(jd) {
-			if (!jd.data || (jd.data.length == 0)) {
+			if (o.options.create && (!jd.data || (jd.data.length == 0))) {
 				// tag does not exist yet ... create
 				spinner_add(o.div.info, i18n.t("tags.creating"))
 				o.options.create(tag_data, function(jd) {
@@ -239,9 +239,11 @@ function tags(options) {
 				function(xhr, stat, error) {
 					o.div.info.html(services_ajax_error_fmt(xhr, stat, error))
 				})
-			} else {
+			} else if (jd.data && (jd.data.length == 1)) {
 				// tag elready exists
 				o._attach_tag(jd.data[0])
+			} else {
+				console.log("no candidate found")
 			}
 		},
 		function(xhr, stat, error) {
@@ -997,6 +999,184 @@ function user_priv_membership(options) {
 		group_tabs(divid, {"group_id": data.id, "group_name": data.name})
 	}
 	options.events = ["auth_group_change", "auth_membership_change"]
+	return tags(options)
+}
+
+function node_modulesets(options) {
+	options.tag_name = "modset_name"
+	options.id = "id"
+	options.bgcolor = osvc.colors.comp
+	options.icon = osvc.icons.modset
+	options.get_tags = function(fval, callback, callback_err) {
+		services_osvcgetrest("/nodes/%1/compliance/modulesets", [options.node_id], {
+			"orderby": options.tag_name,
+			"props": "id," + options.tag_name,
+			"limit": "0",
+			"meta": "false",
+		}, callback, callback_err)
+	}
+	options.get_candidates = function(fval, callback, callback_err) {
+		services_osvcgetrest("/nodes/%1/compliance/candidate_modulesets", [options.node_id], {
+			"orderby": options.tag_name,
+			"props": "id," + options.tag_name,
+			"limit": "0",
+			"meta": "false",
+			"filters": [options.tag_name+" "+fval]
+		}, callback, callback_err)
+	}
+	options.attach = function(tag_data, callback, callback_err) {
+		services_osvcpostrest("/nodes/%1/compliance/modulesets/%2", [options.node_id, tag_data.id], "", "", callback, callback_err)
+	}
+	options.detach = function(tag, callback, callback_err) {
+		services_osvcdeleterest("/nodes/%1/compliance/modulesets/%2", [options.node_id, tag.attr("tag_id")], "", "", callback, callback_err)
+	}
+	options.am_i_responsible = function(callback) {
+		if (!services_ismemberof("Manager", "CompExec")) {
+			callback({"data": false})
+			return
+		}
+		services_osvcgetrest("/nodes/%1/am_i_responsible", [options.node_id], "", callback)
+	}
+	options.ondblclick = function(divid, data) {
+		moduleset_tabs(divid, {"modset_id": data.id, "modset_name": data.name})
+	}
+	options.events = ["comp_node_moduleset_change", "comp_moduleset_change"]
+	return tags(options)
+}
+
+function node_rulesets(options) {
+	options.tag_name = "ruleset_name"
+	options.id = "id"
+	options.bgcolor = osvc.colors.comp
+	options.icon = osvc.icons.rset
+	options.get_tags = function(fval, callback, callback_err) {
+		services_osvcgetrest("/nodes/%1/compliance/rulesets", [options.node_id], {
+			"orderby": options.tag_name,
+			"props": "id," + options.tag_name,
+			"limit": "0",
+			"meta": "false",
+		}, callback, callback_err)
+	}
+	options.get_candidates = function(fval, callback, callback_err) {
+		services_osvcgetrest("/nodes/%1/compliance/candidate_rulesets", [options.node_id], {
+			"orderby": options.tag_name,
+			"props": "id," + options.tag_name,
+			"limit": "0",
+			"meta": "false",
+			"filters": [options.tag_name+" "+fval]
+		}, callback, callback_err)
+	}
+	options.attach = function(tag_data, callback, callback_err) {
+		services_osvcpostrest("/nodes/%1/compliance/rulesets/%2", [options.node_id, tag_data.id], "", "", callback, callback_err)
+	}
+	options.detach = function(tag, callback, callback_err) {
+		services_osvcdeleterest("/nodes/%1/compliance/rulesets/%2", [options.node_id, tag.attr("tag_id")], "", "", callback, callback_err)
+	}
+	options.am_i_responsible = function(callback) {
+		if (!services_ismemberof("Manager", "CompExec")) {
+			callback({"data": false})
+			return
+		}
+		services_osvcgetrest("/nodes/%1/am_i_responsible", [options.node_id], "", callback)
+	}
+	options.ondblclick = function(divid, data) {
+		ruleset_tabs(divid, {"ruleset_id": data.id, "ruleset_name": data.name})
+	}
+	options.events = ["comp_rulesets_nodes_change", "comp_rulesets_change"]
+	return tags(options)
+}
+
+function service_modulesets(options) {
+	options.tag_name = "modset_name"
+	options.id = "id"
+	options.bgcolor = osvc.colors.comp
+	options.icon = osvc.icons.modset
+        if (typeof(options.slave) === "undefined") {
+		options.slave = false
+	}
+	options.get_tags = function(fval, callback, callback_err) {
+		services_osvcgetrest("/services/%1/compliance/modulesets", [options.svc_id], {
+			"orderby": options.tag_name,
+			"props": "id," + options.tag_name,
+			"limit": "0",
+			"meta": "false",
+			"slave": options.slave
+		}, callback, callback_err)
+	}
+	options.get_candidates = function(fval, callback, callback_err) {
+		services_osvcgetrest("/services/%1/compliance/candidate_modulesets", [options.svc_id], {
+			"orderby": options.tag_name,
+			"props": "id," + options.tag_name,
+			"limit": "0",
+			"meta": "false",
+			"slave": options.slave,
+			"filters": [options.tag_name+" "+fval]
+		}, callback, callback_err)
+	}
+	options.attach = function(tag_data, callback, callback_err) {
+		services_osvcpostrest("/services/%1/compliance/modulesets/%2", [options.svc_id, tag_data.id], "", {"slave": options.slave}, callback, callback_err)
+	}
+	options.detach = function(tag, callback, callback_err) {
+		services_osvcdeleterest("/services/%1/compliance/modulesets/%2", [options.svc_id, tag.attr("tag_id")], "", {"slave": options.slave}, callback, callback_err)
+	}
+	options.am_i_responsible = function(callback) {
+		if (!services_ismemberof("Manager", "CompExec")) {
+			callback({"data": false})
+			return
+		}
+		services_osvcgetrest("/services/%1/am_i_responsible", [options.svc_id], "", callback)
+	}
+	options.ondblclick = function(divid, data) {
+		moduleset_tabs(divid, {"modset_id": data.id, "modset_name": data.name})
+	}
+	options.events = ["comp_modulesets_services_change", "comp_moduleset_change"]
+	return tags(options)
+}
+
+function service_rulesets(options) {
+	options.tag_name = "ruleset_name"
+	options.id = "id"
+	options.bgcolor = osvc.colors.comp
+	options.icon = osvc.icons.rset
+        if (typeof(options.slave) === "undefined") {
+		options.slave = false
+	}
+	options.get_tags = function(fval, callback, callback_err) {
+		services_osvcgetrest("/services/%1/compliance/rulesets", [options.svc_id], {
+			"orderby": options.tag_name,
+			"props": "id," + options.tag_name,
+			"limit": "0",
+			"meta": "false",
+			"slave": options.slave
+		}, callback, callback_err)
+	}
+	options.get_candidates = function(fval, callback, callback_err) {
+		services_osvcgetrest("/services/%1/compliance/candidate_rulesets", [options.svc_id], {
+			"orderby": options.tag_name,
+			"props": "id," + options.tag_name,
+			"limit": "0",
+			"meta": "false",
+			"slave": options.slave,
+			"filters": [options.tag_name+" "+fval]
+		}, callback, callback_err)
+	}
+	options.attach = function(tag_data, callback, callback_err) {
+		services_osvcpostrest("/services/%1/compliance/rulesets/%2", [options.svc_id, tag_data.id], "", {"slave": options.slave}, callback, callback_err)
+	}
+	options.detach = function(tag, callback, callback_err) {
+		services_osvcdeleterest("/services/%1/compliance/rulesets/%2", [options.svc_id, tag.attr("tag_id")], "", {"slave": options.slave}, callback, callback_err)
+	}
+	options.am_i_responsible = function(callback) {
+		if (!services_ismemberof("Manager", "CompExec")) {
+			callback({"data": false})
+			return
+		}
+		services_osvcgetrest("/services/%1/am_i_responsible", [options.svc_id], "", callback)
+	}
+	options.ondblclick = function(divid, data) {
+		ruleset_tabs(divid, {"ruleset_id": data.id, "ruleset_name": data.name})
+	}
+	options.events = ["comp_rulesets_services_change", "comp_rulesets_change"]
 	return tags(options)
 }
 

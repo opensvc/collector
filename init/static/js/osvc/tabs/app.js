@@ -68,7 +68,6 @@ function app_tabs(divid, options) {
 
 function app_properties(divid, options) {
 	var o = {}
-console.log(options)
 	// store parameters
 	o.divid = divid
 	o.div = $("#"+divid);

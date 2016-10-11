@@ -246,20 +246,7 @@ function service_tabs(divid, options) {
 			"title_class": "icon comp16"
 		})
 		o.tabs[i].callback = function(divid) {
-			sync_ajax("/init/compliance/ajax_compliance_svc/"+encodeURIComponent(o.options.svc_id), [], divid, function(){
-				osvc_tools($("#"+divid), {
-					"link": {
-						"fn": "/init/compliance/ajax_compliance_svc",
-						"parameters": encodeURIComponent(o.options.svc_id),
-						"title": "format_title",
-						"title_args": {
-							"fn": "service_compliance",
-							"id": o.options.svc_id,
-							"type": "service"
-						}
-					}
-				})
-			})
+			service_compliance(divid, options)
 		}
 
 		o.set_tab(o.options.tab)
@@ -530,4 +517,66 @@ function service_properties(divid, options)
 	return o
 }
 
+function service_compliance(divid, options) {
+        var o = {}
+        o.options = options
+        o.link = {
+                "fn": arguments.callee.name,
+                "parameters": o.options,
+                "title": "format_title",
+                "title_args": {
+                        "type": "svc",
+                        "id": o.options.svc_id
+                }
+        }
+
+        // store parameters
+        o.divid = divid
+        o.div = $("#"+divid)
+
+        o.init = function() {
+                o.e_status = o.div.find("[name=status]")
+                o.e_status.uniqueId()
+                table_comp_status_svc(o.e_status.attr("id"), o.options.svc_id)
+
+                service_modulesets({
+                        "tid": o.div.find("#modulesets"),
+                        "svc_id": o.options.svc_id,
+                        "title": "node_compliance.modulesets",
+                        "e_title": o.div.find("#modulesets_title")
+                })
+
+                service_rulesets({
+                        "tid": o.div.find("#rulesets"),
+                        "svc_id": o.options.svc_id,
+                        "title": "node_compliance.rulesets",
+                        "e_title": o.div.find("#rulesets_title")
+                })
+
+                service_modulesets({
+                        "tid": o.div.find("#encap_modulesets"),
+                        "svc_id": o.options.svc_id,
+                        "slave": true,
+                        "title": "service_compliance.encap_modulesets",
+                        "e_title": o.div.find("#encap_modulesets_title")
+                })
+
+                service_rulesets({
+                        "tid": o.div.find("#encap_rulesets"),
+                        "svc_id": o.options.svc_id,
+                        "slave": true,
+                        "title": "service_compliance.encap_rulesets",
+                        "e_title": o.div.find("#encap_rulesets_title")
+                })
+
+                o.e_svcdiff = o.div.find("[name=svcdiff]")
+                o.e_svcdiff.uniqueId()
+		sync_ajax('/init/compliance/ajax_compliance_svcdiff?node='+o.options.svc_id, [], o.e_svcdiff.attr("id"), function(){})
+        }
+
+        o.div.load('/init/static/views/service_compliance.html?v='+osvc.code_rev, function() {
+                o.div.i18n()
+                o.init()
+        })
+}
 

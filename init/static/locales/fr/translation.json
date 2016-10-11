@@ -607,6 +607,15 @@
 		"end": "fin",
 		"prio": "priorité de connexion"
 	},
+	"node_compliance": {
+		"status": "Etat",
+		"modulesets": "Jeux de modules",
+		"rulesets": "Jeux de règles"
+	},
+	"service_compliance": {
+		"encap_modulesets": "Jeux de modules du service encapsulé",
+		"encap_rulesets": "Jeux de règles du service encapsulé"
+	},
 	"node_properties": {
 		"timezone": "fuseau horaire",
 		"no_uuid": "Agent non enregistré",

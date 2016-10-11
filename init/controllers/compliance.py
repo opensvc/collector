@@ -2731,81 +2731,6 @@ def beautify_rulesets(rsets):
         l.append(beautify_ruleset(rsets[rset]))
     return SPAN(l, _class='xset')
 
-def beautify_moduleset(mset, modulesets, modset_relations):
-    ml = []
-    mods = map(lambda x: x[0], modulesets.get(mset, []))
-    modsets = modset_relations.get(mset, [])
-    children = map(lambda x: beautify_moduleset(x, modulesets, modset_relations), modsets)
-    if len(children) > 0:
-        c = SPAN(children)
-    else:
-        c = SPAN()
-
-    for m in mods:
-        ml.append(LI(m, _class="modname"))
-
-    u = UL(
-          LI(
-            mset,
-            UL(ml),
-            c,
-          ),
-        )
-    return u
-
-def beautify_svc_modulesets(svc_id):
-    def level(slave):
-        root_modulesets = _comp_get_svc_moduleset_names(svc_id, slave=slave)
-        modulesets = _comp_get_svc_moduleset_data(svc_id, slave=slave)
-        modset_relations = get_modset_relations_s()
-        l = []
-        for mset in root_modulesets:
-            l.append(beautify_moduleset(mset, modulesets=modulesets, modset_relations=modset_relations))
-        return l
-
-    d = []
-
-    slave = False
-    l = level(slave)
-    if len(l) > 0:
-        d.append(SPAN(l, _class="xset"))
-
-    slave = True
-    l = level(slave)
-    if len(l) > 0:
-        d.append(H3(T('Modulesets (slave)')))
-        d.append(SPAN(l, _class="xset"))
-
-    return SPAN(d)
-
-def beautify_modulesets(node_id):
-    root_modulesets = _comp_get_moduleset_names(node_id)
-    modulesets = _comp_get_moduleset_data(node_id)
-    modset_relations = get_modset_relations_s()
-
-    l = []
-    for mset in root_modulesets:
-        l.append(beautify_moduleset(mset, modulesets=modulesets, modset_relations=modset_relations))
-    return SPAN(l, _class='xset')
-
-def svc_comp_status(svc_id):
-    tid = 'scs_'+svc_id.replace('-','_')
-    return DIV(
-            SCRIPT(
-              """table_comp_status_svc("%s", "%s")""" % (tid, svc_id),
-            ),
-            _id=tid,
-          )
-
-def node_comp_status(node_id):
-    tid = 'ncs_'+node_id
-    return DIV(
-            SCRIPT(
-              """table_comp_status_node("%s", "%s")""" % (tid, node_id),
-            ),
-            _id=tid,
-          )
-
 @auth.requires_login()
 def ajax_rset_md5():
     session.forget(response)
@@ -2818,63 +2743,6 @@ def ajax_rset_md5():
     d = SPAN(
           H3(T('Ruleset %(rset_md5)s',dict(rset_md5=rset_md5))),
           beautify_rulesets(rsets),
-        )
-    return d
-
-@auth.requires_login()
-def ajax_compliance_svc():
-    session.forget(response)
-    svc_id = request.args[0]
-
-    d = []
-    q = db.svcmon.svc_id==svc_id
-    q &= db.svcmon.mon_updated > now - datetime.timedelta(days=1)
-    rows = db(q).select(db.svcmon.node_id, cacheable=True)
-    nodes = set([r.node_id for r in rows])
-
-    q &= db.svcmon.mon_vmname == db.nodes.nodename
-    rows = db(q).select(db.nodes.node_id, cacheable=True)
-    vnodes = set([r.node_id for r in rows if r.node_id is not None])
-
-    vnodes = sorted(list(vnodes))
-    nodes = sorted(list(nodes))
-
-    def _one(node, slave=False):
-        did = 'nrs_'+svc_id.replace('-','')+'_'+node.replace('.','').replace('-','')
-        n_rsets = _comp_get_svc_ruleset(svc_id, node)
-        n_rsets.update(comp_get_svcmon_ruleset(svc_id, node))
-        n_rsets.update(comp_get_node_ruleset(node))
-        if slave:
-            title = get_svc(svc_id).svcname + ' on slave node ', get_node(node).nodename
-        else:
-            title = get_svc(svc_id).svcname + ' on node ', get_node(node).nodename
-        d.append(DIV(
-                   B(title),
-                   _onclick="""$("#%s").toggle();$(this).toggleClass("down16").toggleClass("right16")"""%did,
-                   _class="clickable icon right16",
-                )
-        )
-        d.append(DIV(
-                   beautify_rulesets(n_rsets),
-                   _style="display:none",
-                   _id=did,
-                 )
-        )
-
-    for node in nodes:
-        _one(node)
-    for vnode in vnodes:
-        _one(vnode, slave=True)
-
-    did = 'srs_'+svc_id.replace('-','')
-    d = SPAN(
-          H3(T('Status')),
-          svc_comp_status(svc_id),
-          H3(T('Modulesets')),
-          beautify_svc_modulesets(svc_id),
-          H3(T('Rulesets')),
-          SPAN(d),
-          SPAN(show_diff(svc_id)),
         )
     return d
 
@@ -2921,20 +2789,6 @@ def ajax_compliance_svcdiff():
     rsetdiff_svc_encap = show_services_rsetdiff_svc(svc_ids, encap=True)
     rsetdiff = show_services_rsetdiff(svc_ids)
     rsetdiff_encap = show_services_rsetdiff(svc_ids, encap=True)
-
-    if compdiff_svc is not None or \
-       compdiff_svc_encap is not None or \
-       compdiff is not None or \
-       compdiff_encap is not None or \
-       moddiff_svc is not None or \
-       moddiff_svc_encap is not None or \
-       moddiff is not None or \
-       moddiff_encap is not None or \
-       rsetdiff_svc is not None or \
-       rsetdiff_svc_encap is not None or \
-       rsetdiff is not None or \
-       rsetdiff_encap is not None:
-        l.append(HR())
 
     if compdiff_svc is not None:
         l.append(SPAN(
@@ -3042,21 +2896,6 @@ def show_diff(svc_id):
           rsetdiff_encap))
 
     return l
-
-@auth.requires_login()
-def ajax_compliance_node():
-    session.forget(response)
-    node_id = request.args[0]
-    rsets = _comp_get_ruleset(node_id)
-    d = SPAN(
-          H3(T('Status')),
-          node_comp_status(node_id),
-          H3(T('Modulesets')),
-          beautify_modulesets(node_id),
-          H3(T('Rulesets')),
-          beautify_rulesets(rsets),
-        )
-    return d
 
 @service.xmlrpc
 def register_node(node):
