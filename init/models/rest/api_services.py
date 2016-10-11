@@ -727,6 +727,44 @@ class rest_get_service_compliance_status(rest_get_table_handler):
         return self.prepare_data(**vars)
 
 #
+class rest_get_service_compliance_candidate_modulesets(rest_get_table_handler):
+    def __init__(self):
+        desc = [
+          "List compliance modulesets attachable to the service.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/services/mysvc/compliance/candidate_modulesets",
+        ]
+
+        rest_get_table_handler.__init__(
+          self,
+          path="/services/<id>/compliance/candidate_modulesets",
+          tables=["comp_moduleset"],
+          groupby=db.comp_moduleset.id,
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, svc_id, **vars):
+        svc_id = get_svc_id(svc_id)
+
+        q = db.comp_modulesets_services.svc_id == svc_id
+        attached = [r.modset_id for r in db(q).select(db.comp_modulesets_services.modset_id)]
+
+        q = db.comp_moduleset.id == db.comp_moduleset_team_publication.modset_id
+        q &= db.auth_group.id == db.comp_moduleset_team_publication.group_id
+        q &= (db.apps_responsibles.group_id == db.auth_group.id)|(db.auth_group.role=="Everybody")
+        q &= db.services.svc_id == svc_id
+        q &= db.services.svc_app == db.apps.app
+        q &= db.apps.id == db.apps_responsibles.app_id
+        q &= ~db.comp_moduleset.id.belongs(attached)
+        q = q_filter(q, svc_field=db.comp_modulesets_services.svc_id)
+
+        self.set_q(q)
+        return self.prepare_data(**vars)
+
+
+#
 class rest_get_service_compliance_modulesets(rest_get_table_handler):
     def __init__(self):
         desc = [
@@ -749,6 +787,46 @@ class rest_get_service_compliance_modulesets(rest_get_table_handler):
         q = db.comp_modulesets_services.svc_id == svc_id
         q &= db.comp_modulesets_services.modset_id == db.comp_moduleset.id
         q = q_filter(q, svc_field=db.comp_modulesets_services.svc_id)
+        self.set_q(q)
+        return self.prepare_data(**vars)
+
+
+#
+class rest_get_service_compliance_candidate_rulesets(rest_get_table_handler):
+    def __init__(self):
+        desc = [
+          "List compliance rulesets attachable to the service.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/services/mysvc/compliance/candidate_rulesets",
+        ]
+
+        rest_get_table_handler.__init__(
+          self,
+          path="/services/<id>/compliance/candidate_rulesets",
+          tables=["comp_rulesets"],
+          groupby=db.comp_rulesets.id,
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, svc_id, **vars):
+        svc_id = get_svc_id(svc_id)
+
+        q = db.comp_rulesets_services.svc_id == svc_id
+        attached = [r.ruleset_id for r in db(q).select(db.comp_rulesets_services.ruleset_id)]
+
+        q = db.comp_rulesets.ruleset_type == 'explicit'
+        q &= db.comp_rulesets.ruleset_public == True
+        q &= db.comp_rulesets.id == db.comp_ruleset_team_publication.ruleset_id
+        q &= db.auth_group.id == db.comp_ruleset_team_publication.group_id
+        q &= (db.apps_responsibles.group_id == db.auth_group.id)|(db.auth_group.role=="Everybody")
+        q &= db.services.svc_id == svc_id
+        q &= db.services.svc_app == db.apps.app
+        q &= db.apps.id == db.apps_responsibles.app_id
+        q &= ~db.comp_rulesets.id.belongs(attached)
+        q = q_filter(q, svc_field=db.comp_rulesets_services.svc_id)
+
         self.set_q(q)
         return self.prepare_data(**vars)
 
