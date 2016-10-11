@@ -768,6 +768,10 @@ function node_compliance(divid, options) {
 	o.div = $("#"+divid)
 
 	o.init = function() {
+                osvc_tools(o.div, {
+                        "link": o.link
+                })
+
 		o.e_status = o.div.find("[name=status]")
 		o.e_status.uniqueId()
 		table_comp_status_node(o.e_status.attr("id"), o.options.node_id)
