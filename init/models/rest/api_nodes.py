@@ -141,7 +141,7 @@ class rest_get_node_compliance_modulesets(rest_get_table_handler):
         node_id = get_node_id(node_id)
         q = db.comp_node_moduleset.node_id == node_id
         q &= db.comp_node_moduleset.modset_id == db.comp_moduleset.id
-        q = q_filter(q, node_field=db.comp_node_moduleset.modset_node)
+        q = q_filter(q, node_field=db.comp_node_moduleset.node_id)
         self.set_q(q)
         return self.prepare_data(**vars)
 
