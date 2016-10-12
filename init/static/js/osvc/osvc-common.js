@@ -211,18 +211,14 @@ function flash() {
 	o.div = $(".flash")
 	o.barel_len = 10
 	o.barel = []
-	o.barel_id = {}
 	o.e_barel = $("<div class='tag_container'></div>")
-	o.e_show = $("<div id='flashtab' style='margin-top:20px'></div>")
+	o.e_show = $("<div style='margin-top:20px'></div>")
+	o.div.html([o.e_barel, o.e_show])
+	o.div.css({"display": "none"})
 
 	$(".menu_flash").bind("click", function(e) {
 		o.div.slideToggle()
 	})
-
-	o.init = function() {
-		o.div.show()
-		o.div.html([o.e_barel, o.e_show])
-	}
 
 	o.find_id = function(id) {
 		for (var i=0; i<o.barel.length; i++) {
@@ -240,12 +236,14 @@ function flash() {
 		if (data.id) {
 			var i = o.find_id(data.id)
 			if (i>=0) {
+				o.e_show.find("#"+data.id).remove()
 				o.barel.splice(i, 1)
 			}
 		}
 		data.date = new Date()
 		o.barel.push(data)
 		if (o.barel.length > o.barel_len) {
+			o.e_show.find("#"+o.barel[0].id).remove()
 			o.barel = o.barel.splice(0)
 		}
 	}
@@ -274,11 +272,20 @@ function flash() {
 	}
 
 	o.show_entry = function(data) {
-		if (data.fn) {
-			o.e_show.addClass("searchtab")
-			data.fn("flashtab")
-		} else if (data.content) {
-			o.e_show.removeClass("searchtab").html(data.content)
+		o.e_show.children().hide()
+		var e = o.e_show.children("span#"+data.id)
+		if (e.length == 1) {
+			e.show()
+		} else {
+			e = $("<span></span>")
+			e.attr("id", data.id)
+			o.e_show.append(e)
+			if (data.fn) {
+				e.addClass("searchtab")
+				data.fn(data.id)
+			} else if (data.content) {
+				e.html(data.content)
+			}
 		}
 	}
 
@@ -301,8 +308,8 @@ function flash() {
 	}
 
 	o.show = function(data) {
+		o.open()
 		o.push(data)
-		o.init()
 		o.render_barel()
 		o.show_entry(data)
 	}

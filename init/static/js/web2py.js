@@ -65,10 +65,7 @@ function web2py_event_handlers() {
       eval(decodeURIComponent(command));
     }
     if(flash) {
-      jQuery('.flash')
-            .html(decodeURIComponent(flash))
-            .append('<span id="closeflash">&times;</span>')
-            .slideDown();
+      osvc.flash.info(decodeURIComponent(flash))
     }
   });
 
@@ -82,9 +79,9 @@ function web2py_event_handlers() {
 };
 
 jQuery(function() {
-   var flash = jQuery('.flash');
-   flash.hide();
-   if(flash.html()) flash.append('<span id="closeflash">&times;</span>').slideDown();
+   //var flash = jQuery('.flash');
+   //flash.hide();
+   //if(flash.html()) flash.append('<span id="closeflash">&times;</span>').slideDown();
    web2py_ajax_init(document);
    web2py_event_handlers();
 });
