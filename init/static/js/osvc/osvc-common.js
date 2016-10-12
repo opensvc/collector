@@ -524,6 +524,33 @@ jQuery.fn.osvc_ruleset = function(options) {
 	})
 }
 
+jQuery.fn.osvc_module = function(options) {
+	osvc_jq_decorator(this, {
+		"options": options,
+		"name": "modset_mod_name",
+		"attr": "id",
+		"icon": osvc.icons.module,
+		"bgcolor": osvc.colors.comp,
+		"flash_id_prefix": "module-",
+		"fn": function(id, opts) {
+		}
+	})
+}
+
+jQuery.fn.osvc_moduleset = function(options) {
+	osvc_jq_decorator(this, {
+		"options": options,
+		"name": "modset_name",
+		"attr": "modset_id",
+		"icon": osvc.icons.modset,
+		"bgcolor": osvc.colors.comp,
+		"flash_id_prefix": "modset-",
+		"fn": function(id, opts) {
+			moduleset_tabs(id, opts)
+		}
+	})
+}
+
 jQuery.fn.osvc_app = function(options) {
 	osvc_jq_decorator(this, {
 		"options": options,

@@ -11,7 +11,18 @@ function moduleset_tabs(divid, options) {
 		"title": "link."+arguments.callee.name
 	}
 
-	o.load(function() {
+        o.load(function() {
+                if (!("modset_id" in o.options)) {
+                        services_osvcgetrest("/compliance/modulesets", "", {"meta": "0", "filters": ["modset_name "+o.options.modset_name]}, function(jd) {
+                                o.options.modset_id = jd.data[0].id
+                                o._load()
+                        })
+                } else {
+                        o._load()
+                }
+        })
+
+	o._load = function() {
 		var title = o.options.modset_name
 		o.closetab.text(title)
 
@@ -24,7 +35,16 @@ function moduleset_tabs(divid, options) {
 			modset_properties(divid, o.options)
 		}
 
-		// tab quotas
+                // tab content
+                i = o.register_tab({
+                        "title": "ruleset_tabs.content",
+                        "title_class": "icon modset16"
+                })
+                o.tabs[i].callback = function(divid) {
+                        modset_content(divid, o.options)
+                }
+
+		// tab export
 		i = o.register_tab({
 			"title": "modset_tabs.export",
 			"title_class": "icon log16"
@@ -34,7 +54,7 @@ function moduleset_tabs(divid, options) {
 		}
 
 		o.set_tab(o.options.tab)
-	})
+	}
 
 	return o
 }
@@ -63,8 +83,6 @@ function modset_properties(divid, options) {
 		o.info_modset_name = o.div.find("#modset_name")
 		o.info_modset_author = o.div.find("#modset_author")
 		o.info_modset_updated = o.div.find("#modset_updated")
-		o.info_modules = o.div.find("#modules")
-		o.info_modules_title = o.div.find("#modules_title")
 		o.info_nodes = o.div.find("#nodes")
 		o.info_nodes_title = o.div.find("#nodes_title")
 		o.info_services = o.div.find("#services")
@@ -117,19 +135,6 @@ function modset_properties(divid, options) {
 			"data": {"modset_id": data.id},
 			"am_data": am_data
 		})
-
-		tab_properties_generic_list({
-			"request_service": "/compliance/modulesets/%1/modules",
-                        "request_parameters": [data.id],
-                        "limit": "0",
-                        "key": "modset_mod_name",
-			"item_class": "icon mod16",
-                        "id": "id",
-                        "bgcolor": osvc.colors.comp,
-                        "e_title": o.info_modules_title,
-                        "e_list": o.info_modules
-
-                })
                 moduleset_nodes({
                         "tid": o.info_nodes,
                         "modset_id": data.id,
@@ -181,6 +186,130 @@ function modset_properties(divid, options) {
 	})
 
 	return o
+}
+
+function modset_content(divid, options) {
+	var o = {}
+	o.options = options
+	o.div = $("#"+divid)
+	o.link = {
+		"fn": arguments.callee.name,
+		"parameters": o.options,
+		"title": "link."+arguments.callee.name
+	}
+	o.modulesets = {}
+	o.rulesets = {}
+	o.modulesets_done = []
+	o.rulesets_done = []
+	var head = {}
+	services_osvcgetrest("/compliance/modulesets/%1/export", [o.options.modset_id], "", function(jd) {
+		if (!jd && jd.error) {
+			o.div.html(services_error_fmt(jd))
+			return
+		}
+		o.data = jd
+		for (var i=0; i<jd.modulesets.length; i++) {
+			var modset = jd.modulesets[i]
+			o.modulesets[modset.modset_name] = modset
+			if (o.options.modset_name && (o.options.modset_name == modset.modset_name)) {
+				head = modset
+				continue
+			}
+			if (o.options.modset_id && (o.options.modset_id == modset.id)) {
+				head = modset
+				continue
+			}
+		}
+		for (var i=0; i<jd.rulesets.length; i++) {
+			var ruleset = jd.rulesets[i]
+			o.rulesets[ruleset.ruleset_name] = ruleset
+		}
+		var div = $("<div style='padding:1em'></div>")
+		o.area = div
+		o.div.append(div)
+		o.render(head)
+		osvc_tools(o.div, {
+			"link": o.link
+		})
+	},
+	function() {
+		o.div.html(services_ajax_error_fmt(xhr, stat, error))
+	})
+
+	o.render_ruleset = function(ruleset_name, chain) {
+		var level = chain.length
+		chain = [].concat(chain, [ruleset_name])
+		var sig = chain.join(",")
+		var div = $("<div></div>")
+		if (o.rulesets_done.indexOf(sig) >= 0) {
+			console.log("loop detected:", sig)
+			return div
+		} else {
+			o.rulesets_done.push(sig)
+		}
+		var ruleset= o.rulesets[ruleset_name]
+		var indent = $("<span></span>")
+		indent.css({"width": 2*level+"em", "display": "inline-block"})
+		div.append(indent)
+		var e = $("<span style='font-size:1.2em'></span>")
+		e.text(ruleset_name)
+		e.osvc_ruleset()
+		div.append(e)
+
+		for (i=0; i<ruleset["rulesets"].length; i++) {
+			div.append(o.render_ruleset(ruleset["rulesets"][i], chain))
+		}
+		return div
+	}
+
+	o.render_moduleset = function(modset, chain) {
+		var level = chain.length
+		chain = [].concat(chain, [modset.modset_name])
+		var sig = chain.join(",")
+		var div = $("<div></div>")
+		if (o.modulesets_done.indexOf(chain) >= 0) {
+			console.log("loop detected:", sig)
+			return div
+		} else {
+			o.modulesets_done.push(sig)
+		}
+		var indent = $("<span></span>")
+		indent.css({"width": 2*level+"em", "display": "inline-block"})
+		div.append(indent)
+		var e = $("<span style='font-size:1.2em'></span>")
+		e.text(modset.modset_name)
+		e.osvc_moduleset()
+		div.append(e)
+
+		level += 1
+
+		for (var j=0; j<modset.modules.length; j++) {
+			var module = modset.modules[j]
+			div.append("<br>")
+			var indent = $("<span></span>")
+			indent.css({"width": 2*level+"em", "display": "inline-block"})
+			div.append(indent)
+			var e = $("<span style='font-size:1.2em'></span>")
+			var text = module.modset_mod_name
+			if (module.autofix) {
+				text += " ("+i18n.t("designer.autofix")+")"
+			}
+			e.text(text)
+			e.osvc_module()
+			div.append(e)
+		}
+		for (var j=0; j<modset.rulesets.length; j++) {
+			div.append(o.render_ruleset(modset.rulesets[j], chain))
+		}
+		for (var i=0; i<modset.modulesets.length; i++) {
+			div.append(o.render_moduleset(o.modulesets[modset.modulesets[i]], chain))
+		}
+		return div
+	}
+
+	o.render = function(modset) {
+		o.area.append(o.render_moduleset(modset, []))
+	}
 }
 
 

@@ -25,6 +25,7 @@ var osvc = {
 		'disk': 'hd16',
 		'rset': 'rset16',
 		'modset': 'modset16',
+		'module': 'mod16',
 		'app': 'app16'
 	},
 	'colors': {
