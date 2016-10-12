@@ -1162,6 +1162,108 @@ class rest_post_compliance_ruleset_variables(rest_post_handler):
         return rest_get_compliance_ruleset_variable().handler(ruleset_id, obj_id)
 
 #
+# rulesets/<id>/services
+#
+class rest_get_compliance_ruleset_services(rest_get_table_handler):
+    def __init__(self):
+        desc = [
+          "Display services attached to a ruleset.",
+          "The user must be member of one of the ruleset publication groups.",
+        ]
+        params = {
+          "slave": {
+             "desc": "If set to true, list attachable encapsulated service."
+          }
+        }
+        examples = [
+          """# curl -u %(email)s -o- https://%(collector)s/init/rest/api/compliance/rulesets/10/services""",
+        ]
+        rest_get_table_handler.__init__(
+          self,
+          path="/compliance/rulesets/<id>/services",
+          tables=["services"],
+          desc=desc,
+          groupby=db.services.svc_id,
+          examples=examples
+        )
+
+    def handler(self, ruleset_id, **vars):
+        try:
+            ruleset_id = int(ruleset_id)
+        except:
+            ruleset_id = comp_ruleset_id(ruleset_id)
+        if ruleset_id is None:
+            return dict(error="ruleset not found")
+        if not ruleset_publication(ruleset_id):
+            return dict(error="you are not member of one of the ruleset publication groups")
+
+        if "slave" in vars:
+            slave = convert_bool(vars.get("slave"))
+            del(vars["slave"])
+        else:
+            slave = False
+
+        q = db.comp_rulesets_services.ruleset_id == ruleset_id
+        q &= db.comp_rulesets_services.svc_id == db.services.svc_id
+        q &= db.comp_rulesets_services.slave == slave
+        q = q_filter(q, svc_field=db.services.svc_id)
+        self.set_q(q)
+        return self.prepare_data(**vars)
+
+class rest_get_compliance_ruleset_candidate_services(rest_get_table_handler):
+    def __init__(self):
+        desc = [
+          "Display services attachable to a ruleset.",
+          "The user must be member of one of the ruleset publication groups.",
+        ]
+        params = {
+          "slave": {
+             "desc": "If set to true, list attachable encapsulated service."
+          }
+        }
+        examples = [
+          """# curl -u %(email)s -o- https://%(collector)s/init/rest/api/compliance/rulesets/10/candidate_services""",
+        ]
+        rest_get_table_handler.__init__(
+          self,
+          path="/compliance/rulesets/<id>/candidate_services",
+          tables=["services"],
+          desc=desc,
+          groupby=db.services.svc_id,
+          examples=examples
+        )
+
+    def handler(self, ruleset_id, **vars):
+        try:
+            ruleset_id = int(ruleset_id)
+        except:
+            ruleset_id = comp_ruleset_id(ruleset_id)
+        if ruleset_id is None:
+            return dict(error="ruleset not found")
+        if not ruleset_publication(ruleset_id):
+            return dict(error="you are not member of one of the ruleset publication groups")
+
+        if "slave" in vars:
+            slave = convert_bool(vars.get("slave"))
+            del(vars["slave"])
+        else:
+            slave = False
+
+        q = db.comp_rulesets_services.ruleset_id == ruleset_id
+        q &= db.comp_rulesets_services.svc_id == db.services.svc_id
+        q &= db.comp_rulesets_services.slave == slave
+        attached = [r.svc_id for r in db(q).select(db.services.svc_id)]
+
+        q = db.comp_ruleset_team_publication.ruleset_id == ruleset_id
+        q &= db.comp_ruleset_team_publication.group_id == db.apps_responsibles.group_id
+        q &= db.apps_responsibles.app_id == db.apps.id
+        q &= db.apps.app == db.services.svc_app
+        q &= ~db.services.svc_id.belongs(attached)
+        q = q_filter(q, svc_field=db.services.svc_id)
+        self.set_q(q)
+        return self.prepare_data(**vars)
+
+#
 # modulesets/<id>/services
 #
 class rest_get_compliance_moduleset_services(rest_get_table_handler):
@@ -1170,6 +1272,11 @@ class rest_get_compliance_moduleset_services(rest_get_table_handler):
           "Display services attached to a moduleset.",
           "The user must be member of one of the moduleset publication groups.",
         ]
+        params = {
+          "slave": {
+             "desc": "If set to true, list attachable encapsulated service."
+          }
+        }
         examples = [
           """# curl -u %(email)s -o- https://%(collector)s/init/rest/api/compliance/modulesets/10/services""",
         ]
@@ -1191,8 +1298,70 @@ class rest_get_compliance_moduleset_services(rest_get_table_handler):
             return dict(error="moduleset not found")
         if not moduleset_publication(modset_id):
             return dict(error="you are not member of one of the moduleset publication groups")
+
+        if "slave" in vars:
+            slave = convert_bool(vars.get("slave"))
+            del(vars["slave"])
+        else:
+            slave = False
+
         q = db.comp_modulesets_services.modset_id == modset_id
         q &= db.comp_modulesets_services.svc_id == db.services.svc_id
+        q &= db.comp_modulesets_services.slave == db.services.slave
+        q = q_filter(q, svc_field=db.services.svc_id)
+        self.set_q(q)
+        return self.prepare_data(**vars)
+
+class rest_get_compliance_moduleset_candidate_services(rest_get_table_handler):
+    def __init__(self):
+        desc = [
+          "Display services attachable to a moduleset.",
+          "The user must be member of one of the moduleset publication groups.",
+        ]
+        params = {
+          "slave": {
+             "desc": "If set to true, list attachable encapsulated service."
+          }
+        }
+        examples = [
+          """# curl -u %(email)s -o- https://%(collector)s/init/rest/api/compliance/modulesets/10/candidate_services""",
+        ]
+        rest_get_table_handler.__init__(
+          self,
+          path="/compliance/modulesets/<id>/candidate_services",
+          tables=["services"],
+          desc=desc,
+          groupby=db.services.svc_id,
+          examples=examples
+        )
+
+    def handler(self, modset_id, **vars):
+        try:
+            modset_id = int(modset_id)
+        except:
+            modset_id = comp_moduleset_id(modset_id)
+        if modset_id is None:
+            return dict(error="moduleset not found")
+        if not moduleset_publication(modset_id):
+            return dict(error="you are not member of one of the moduleset publication groups")
+
+        if "slave" in vars:
+            slave = convert_bool(vars.get("slave"))
+            del(vars["slave"])
+        else:
+            slave = False
+
+        q = db.comp_modulesets_services.modset_id == modset_id
+        q &= db.comp_modulesets_services.svc_id == db.services.svc_id
+        q &= db.comp_modulesets_services.slave == slave
+        attached = [r.svc_id for r in db(q).select(db.services.svc_id)]
+
+        q = db.comp_moduleset_team_publication.modset_id == modset_id
+        q &= db.comp_moduleset_team_publication.group_id == db.apps_responsibles.group_id
+        q &= db.apps_responsibles.app_id == db.apps.id
+        q &= db.apps.app == db.services.svc_app
+        q &= ~db.services.svc_id.belongs(attached)
+        q = q_filter(q, svc_field=db.services.svc_id)
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -1266,6 +1435,120 @@ class rest_get_compliance_moduleset_nodes(rest_get_table_handler):
             return dict(error="you are not member of one of the moduleset publication groups")
         q = db.comp_node_moduleset.modset_id == modset_id
         q &= db.comp_node_moduleset.node_id == db.nodes.node_id
+        q = q_filter(q, node_field=db.nodes.node_id)
+        self.set_q(q)
+        return self.prepare_data(**vars)
+
+class rest_get_compliance_moduleset_candidate_nodes(rest_get_table_handler):
+    def __init__(self):
+        desc = [
+          "Display nodes attachable to a moduleset.",
+          "The user must be member of one of the moduleset publication groups.",
+        ]
+        examples = [
+          """# curl -u %(email)s -o- https://%(collector)s/init/rest/api/compliance/modulesets/10/candidate_nodes""",
+        ]
+        rest_get_table_handler.__init__(
+          self,
+          path="/compliance/modulesets/<id>/candidate_nodes",
+          tables=["nodes"],
+          groupby=db.nodes.id,
+          desc=desc,
+          examples=examples
+        )
+
+    def handler(self, modset_id, **vars):
+        try:
+            modset_id = int(modset_id)
+        except:
+            modset_id = comp_moduleset_id(modset_id)
+        if modset_id is None:
+            return dict(error="moduleset not found")
+        if not moduleset_publication(modset_id):
+            return dict(error="you are not member of one of the moduleset publication groups")
+        q = db.comp_node_moduleset.modset_id == modset_id
+        q &= db.comp_node_moduleset.node_id == db.nodes.node_id
+        attached = [r.node_id for r in db(q).select()]
+
+        q = db.nodes.team_responsible == db.auth_group.role
+        q &= db.auth_group.id == db.comp_moduleset_team_publication.group_id
+        q &= db.comp_moduleset_team_publication.modset_id == modset_id
+        q &= ~db.nodes.node_id.belongs(attached)
+        q = q_filter(q, node_field=db.nodes.node_id)
+        self.set_q(q)
+        return self.prepare_data(**vars)
+
+#
+# rulesets/<id>/nodes
+#
+class rest_get_compliance_ruleset_nodes(rest_get_table_handler):
+    def __init__(self):
+        desc = [
+          "Display nodes attached to a ruleset.",
+          "The user must be member of one of the ruleset publication groups.",
+        ]
+        examples = [
+          """# curl -u %(email)s -o- https://%(collector)s/init/rest/api/compliance/rulesets/10/nodes""",
+        ]
+        rest_get_table_handler.__init__(
+          self,
+          path="/compliance/rulesets/<id>/nodes",
+          tables=["nodes"],
+          desc=desc,
+          examples=examples
+        )
+
+    def handler(self, ruleset_id, **vars):
+        try:
+            ruleset_id = int(ruleset_id)
+        except:
+            ruleset_id = comp_ruleset_id(ruleset_id)
+        if ruleset_id is None:
+            return dict(error="ruleset not found")
+        if not ruleset_publication(ruleset_id):
+            return dict(error="you are not member of one of the ruleset publication groups")
+        q = db.comp_rulesets_nodes.ruleset_id == ruleset_id
+        q &= db.comp_rulesets_nodes.node_id == db.nodes.node_id
+        q = q_filter(q, node_field=db.nodes.node_id)
+        self.set_q(q)
+        return self.prepare_data(**vars)
+
+class rest_get_compliance_ruleset_candidate_nodes(rest_get_table_handler):
+    def __init__(self):
+        desc = [
+          "Display nodes attachable to a ruleset.",
+          "The user must be member of one of the ruleset publication groups.",
+        ]
+        examples = [
+          """# curl -u %(email)s -o- https://%(collector)s/init/rest/api/compliance/rulesets/10/candidate_nodes""",
+        ]
+        rest_get_table_handler.__init__(
+          self,
+          path="/compliance/rulesets/<id>/candidate_nodes",
+          tables=["nodes"],
+          groupby=db.nodes.id,
+          desc=desc,
+          examples=examples
+        )
+
+    def handler(self, ruleset_id, **vars):
+        try:
+            ruleset_id = int(ruleset_id)
+        except:
+            ruleset_id = comp_ruleset_id(ruleset_id)
+        if ruleset_id is None:
+            return dict(error="ruleset not found")
+        if not ruleset_publication(ruleset_id):
+            return dict(error="you are not member of one of the ruleset publication groups")
+        q = db.comp_rulesets_nodes.ruleset_id == ruleset_id
+        q &= db.comp_rulesets_nodes.node_id == db.nodes.node_id
+        attached = [r.node_id for r in db(q).select(db.nodes.node_id)]
+
+        q = db.nodes.team_responsible == db.auth_group.role
+        q &= db.auth_group.id == db.comp_ruleset_team_publication.group_id
+        q &= db.comp_ruleset_team_publication.ruleset_id == ruleset_id
+        q &= ~db.nodes.node_id.belongs(attached)
+        q = q_filter(q, node_field=db.nodes.node_id)
         self.set_q(q)
         return self.prepare_data(**vars)
 
