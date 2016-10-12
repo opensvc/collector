@@ -6201,3 +6201,10 @@ create view v_services_log as select * from services_log union all select * from
 
 alter table resmon_log modify column res_status enum('up','down','warn','n/a','undef','stdby up','stdby down') default "undef";
 alter table resmon_log_last modify column res_status enum('up','down','warn','n/a','undef','stdby up','stdby down') default "undef";
+
+alter table comp_rulesets_nodes drop key idx1;
+alter table comp_rulesets_nodes add unique key uk (ruleset_id, node_id);
+alter table comp_node_moduleset drop key idx1;
+alter table comp_node_moduleset add unique key uk (modset_id, node_id);
+alter table comp_rulesets_services add unique key (ruleset_id, svc_id, slave);
+
