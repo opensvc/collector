@@ -510,6 +510,20 @@ jQuery.fn.osvc_filterset = function(options) {
 	})
 }
 
+jQuery.fn.osvc_ruleset = function(options) {
+	osvc_jq_decorator(this, {
+		"options": options,
+		"name": "ruleset_name",
+		"attr": "ruleset_id",
+		"icon": osvc.icons.rset,
+		"bgcolor": osvc.colors.comp,
+		"flash_id_prefix": "rset-",
+		"fn": function(id, opts) {
+			ruleset_tabs(id, opts)
+		}
+	})
+}
+
 jQuery.fn.osvc_app = function(options) {
 	osvc_jq_decorator(this, {
 		"options": options,
