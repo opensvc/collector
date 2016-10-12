@@ -130,33 +130,17 @@ function modset_properties(divid, options) {
                         "e_list": o.info_modules
 
                 })
-		tab_properties_generic_list({
-			"request_service": "/compliance/modulesets/%1/nodes",
-                        "request_parameters": [data.id],
-                        "limit": "0",
-                        "key": "nodename",
-			"item_class": "icon node16",
-                        "id": "node_id",
-                        "bgcolor": osvc.colors.node,
-                        "e_title": o.info_nodes_title,
-                        "e_list": o.info_nodes,
-			"ondblclick": function(divid, data) {
-				node_tabs(divid, {"node_id": data.id})
-			}
+                moduleset_nodes({
+                        "tid": o.info_nodes,
+                        "modset_id": data.id,
+                        "title": "ruleset_properties.nodes",
+                        "e_title": o.info_nodes_title
                 })
-		tab_properties_generic_list({
-			"request_service": "/compliance/modulesets/%1/services",
-                        "request_parameters": [data.id],
-                        "limit": "0",
-                        "key": "svcname",
-			"item_class": "icon svc",
-                        "id": "svc_id",
-                        "bgcolor": osvc.colors.svc,
-                        "e_title": o.info_services_title,
-                        "e_list": o.info_services,
-			"ondblclick": function(divid, data) {
-				service_tabs(divid, {"svc_id": data.id})
-			}
+                moduleset_services({
+                        "tid": o.info_services,
+                        "modset_id": data.id,
+                        "title": "ruleset_properties.services",
+                        "e_title": o.info_services_title
                 })
 		tab_properties_generic_updater({
 			"div": o.div,
