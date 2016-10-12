@@ -1180,4 +1180,90 @@ function service_rulesets(options) {
 	return tags(options)
 }
 
+function ruleset_nodes(options) {
+	options.tag_name = "nodename"
+	options.id = "node_id"
+	options.bgcolor = osvc.colors.node
+	options.icon = osvc.icons.node
+	options.get_tags = function(fval, callback, callback_err) {
+		services_osvcgetrest("/compliance/rulesets/%1/nodes", [options.ruleset_id], {
+			"orderby": options.tag_name,
+			"props": "node_id," + options.tag_name,
+			"limit": "0",
+			"meta": "false"
+		}, callback, callback_err)
+	}
+	options.get_candidates = function(fval, callback, callback_err) {
+		services_osvcgetrest("/compliance/rulesets/%1/candidate_nodes", [options.ruleset_id], {
+			"orderby": options.tag_name,
+			"props": "node_id," + options.tag_name,
+			"limit": "0",
+			"meta": "false",
+			"filters": [options.tag_name+" "+fval]
+		}, callback, callback_err)
+	}
+	options.attach = function(tag_data, callback, callback_err) {
+		services_osvcpostrest("/nodes/%1/compliance/rulesets/%2", [tag_data.node_id, options.ruleset_id], "", "", callback, callback_err)
+	}
+	options.detach = function(tag, callback, callback_err) {
+		services_osvcdeleterest("/nodes/%1/compliance/rulesets/%2", [tag.attr("tag_id"), options.ruleset_id], "", "", callback, callback_err)
+	}
+	options.am_i_responsible = function(callback) {
+		if (!services_ismemberof("Manager", "CompExec")) {
+			callback({"data": false})
+			return
+		}
+		callback({"data": true})
+	}
+	options.ondblclick = function(divid, data) {
+		node_tabs(divid, {"node_id": data.id, "nodename": data.name})
+	}
+	options.events = ["comp_rulesets_nodes_change", "comp_rulesets_change"]
+	return tags(options)
+}
+
+function ruleset_services(options) {
+	options.tag_name = "svcname"
+	options.id = "svc_id"
+	options.bgcolor = osvc.colors.svc
+	options.icon = osvc.icons.svc
+	options.get_tags = function(fval, callback, callback_err) {
+		services_osvcgetrest("/compliance/rulesets/%1/services", [options.ruleset_id], {
+			"orderby": options.tag_name,
+			"props": "svc_id," + options.tag_name,
+			"limit": "0",
+			"meta": "false",
+			"slave": options.slave
+		}, callback, callback_err)
+	}
+	options.get_candidates = function(fval, callback, callback_err) {
+		services_osvcgetrest("/compliance/rulesets/%1/candidate_services", [options.ruleset_id], {
+			"orderby": options.tag_name,
+			"props": "svc_id," + options.tag_name,
+			"limit": "0",
+			"meta": "false",
+			"slave": options.slave,
+			"filters": [options.tag_name+" "+fval]
+		}, callback, callback_err)
+	}
+	options.attach = function(tag_data, callback, callback_err) {
+		services_osvcpostrest("/services/%1/compliance/rulesets/%2", [tag_data.svc_id, options.ruleset_id], "", {"slave": options.slave}, callback, callback_err)
+	}
+	options.detach = function(tag, callback, callback_err) {
+		services_osvcdeleterest("/services/%1/compliance/rulesets/%2", [tag.attr("tag_id"), options.ruleset_id], "", {"slave": options.slave}, callback, callback_err)
+	}
+	options.am_i_responsible = function(callback) {
+		if (!services_ismemberof("Manager", "CompExec")) {
+			callback({"data": false})
+			return
+		}
+		callback({"data": true})
+	}
+	options.ondblclick = function(divid, data) {
+		service_tabs(divid, {"svc_id": data.id, "svcname": data.name})
+	}
+	options.events = ["comp_rulesets_services_change", "comp_rulesets_change"]
+	return tags(options)
+}
+
 

@@ -456,6 +456,9 @@
 		"base": "Base",
 		"publications": "Publications",
 		"responsibles": "Responsables",
+		"nodes": "Attaché aux noeuds",
+		"services": "Attaché aux services",
+		"encap_services": "Attaché aux services encapsulés",
 		"id": "Id",
 		"type": "Type",
 		"name": "Nom",
@@ -792,7 +795,7 @@
 		"usage_rulesets": "Encapsulé dans les jeux de règles (__n__)",
 		"usage_nodes": "Attaché aux noeuds (__n__)",
 		"usage_services": "Attaché aux services (__n__)",
-		"variables_title": "Variables (__n__)",
+		"variables_title": "Variables: __n__",
 		"filterset": "Jeu de filtres: ",
 		"type": "Type: __type__",
 		"public": "Publié: __public__"

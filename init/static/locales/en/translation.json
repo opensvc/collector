@@ -458,6 +458,9 @@
 		"base": "Base",
 		"publications": "Publications",
 		"responsibles": "Responsibles",
+		"nodes": "Attached to nodes",
+		"services": "Attached to services",
+		"encap_services": "Attached to encapsulated services",
 		"id": "Id",
 		"type": "Type",
 		"name": "Name",
@@ -794,7 +797,7 @@
 		"usage_rulesets": "Encapsulated in rulesets (__n__)",
 		"usage_nodes": "Attached to nodes (__n__)",
 		"usage_services": "Attached to services (__n__)",
-		"variables_title": "Variables (__n__)",
+		"variables_title": "Variables: __n__",
 		"filterset": "Filterset: ",
 		"type": "Type: __type__",
 		"public": "Published: __public__"

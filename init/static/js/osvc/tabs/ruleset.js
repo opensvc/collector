@@ -144,66 +144,15 @@ function ruleset_content(divid, options) {
 				div.append("<br>")
 				div.append("<span class='icon fa-arrow-right'></span>")
 			}
-			var e = $("<span style='font-size:1.2em' class='icon pkg16'></span>")
+			var e = $("<span style='opacity:0.5;font-size:1.2em'></span>")
 			e.text(rset.ruleset_name)
+			e.osvc_ruleset()
 			if (i == chain.length-1) {
-				e.addClass("highlight")
+				e.css({"opacity": 1})
 			}
 			div.append(e)
 		}
 		return div
-	}
-
-	o.render_usage = function(ruleset_id, div) {
-		var data = {
-			"modulesets": {
-				"title": "ruleset_tab.usage_modulesets",
-				"name": "modset_name",
-				"cl": "action16"
-			},
-			"rulesets": {
-				"title": "ruleset_tab.usage_rulesets",
-				"name": "ruleset_name",
-				"cl": "pkg16"
-			},
-			"nodes": {
-				"title": "ruleset_tab.usage_nodes",
-				"name": "nodename",
-				"cl": "node16"
-			},
-			"services": {
-				"title": "ruleset_tab.usage_services",
-				"name": "svcname",
-				"cl": "svc"
-			}
-		}
-		services_osvcgetrest("R_COMPLIANCE_RULESET_USAGE", [ruleset_id], "", function(jd) {
-			if (!jd && jd.error) {
-				div.html(services_error_fmt(jd))
-				return
-			}
-			for (key in data) {
-				var l = jd.data[key]
-				if (l.length == 0) {
-					continue
-				}
-				var title = $("<h3 class='line'></h3>")
-				var title_span = $("<span></span>")
-				title_span.text(i18n.t(data[key].title, {"n": l.length}))
-				title.append(title_span)
-				div.append(title)
-
-				for (var j=0; j<l.length; j++) {
-					var e = $("<span class='icon'></span>")
-					e.text(l[j][data[key].name])
-					e.addClass(data[key].cl)
-					div.append(e)
-				}
-			}
-		},
-		function() {
-			div.html(services_ajax_error_fmt(xhr, stat, error))
-		})
 	}
 
 	o.render = function(rset, chain) {
@@ -212,11 +161,9 @@ function ruleset_content(divid, options) {
 		var p3 = $("<p></p>")
 
 		if (!chain) {
-			chain = [rset]
-		} else {
-			chain.push(rset)
+			var chain = []
 		}
-		o.area.append(o.render_title(chain))
+		o.area.append(o.render_title([].concat(chain, [rset])))
 
 		p1.text(i18n.t("ruleset_tab.type", {"type": rset.ruleset_type}))
 		p2.text(i18n.t("ruleset_tab.public", {"public": rset.ruleset_public}))
@@ -231,16 +178,6 @@ function ruleset_content(divid, options) {
 			o.area.append(p3)
 		}
 
-		var usage = $("<div></div>")
-		o.area.append(usage)
-		o.render_usage(rset.id, usage)
-
-		var variables_title = $("<h3 class='line'></h3>")
-		var variables_title_span = $("<span></span>")
-		variables_title_span.text(i18n.t("ruleset_tab.variables_title", {"n": rset.variables.length}))
-		variables_title.append(variables_title_span)
-		o.area.append(variables_title)
-
 		for (var i=0; i<rset.variables.length; i++) {
 			var variable = rset.variables[i]
 			try {
@@ -248,7 +185,7 @@ function ruleset_content(divid, options) {
 			} catch(e) {
 				var data = variable.var_value
 			}
-			var variable_name = $("<h3></h3>")
+			var variable_name = $("<h3 class='b'></h3>")
 			variable_name.text(variable.var_name)
 			o.area.append(variable_name)
 
@@ -284,7 +221,7 @@ function ruleset_content(divid, options) {
 			return
 		}
 		for (var i=0; i<rset.rulesets.length; i++) {
-			o.render(o.rulesets[rset.rulesets[i]], chain)
+			o.render(o.rulesets[rset.rulesets[i]], [].concat(chain, [rset]))
 		}
 	}
 }
@@ -314,6 +251,10 @@ function ruleset_properties(divid, options) {
 		o.info_responsibles = o.div.find("#responsibles")
 		o.info_publications_title = o.div.find("#publications_title")
 		o.info_responsibles_title = o.div.find("#responsibles_title")
+		o.info_modulesets = o.div.find("#modulesets")
+		o.info_modulesets_title = o.div.find("#modulesets_title")
+		o.info_rulesets = o.div.find("#rulesets")
+		o.info_rulesets_title = o.div.find("#rulesets_title")
 		o.load_ruleset()
 	}
 
@@ -383,7 +324,55 @@ function ruleset_properties(divid, options) {
 			"ruleset_id": data.id
 		})
 
-	}
+                ruleset_nodes({
+                        "tid": o.div.find("#nodes"),
+                        "ruleset_id": data.id,
+                        "title": "ruleset_properties.nodes",
+                        "e_title": o.div.find("#nodes_title")
+                })
+
+                ruleset_services({
+                        "tid": o.div.find("#services"),
+                        "ruleset_id": data.id,
+                        "title": "ruleset_properties.services",
+                        "e_title": o.div.find("#services_title")
+                })
+
+                ruleset_services({
+                        "tid": o.div.find("#encap_services"),
+                        "ruleset_id": data.id,
+                        "slave": true,
+                        "title": "ruleset_properties.encap_services",
+                        "e_title": o.div.find("#encap_services_title")
+                })
+
+                services_osvcgetrest("/compliance/rulesets/%1/usage", [data.id], "", function(jd) {
+                        tab_properties_generic_list({
+                                "data": jd.data.modulesets,
+                                "key": "modset_name",
+                                "item_class": "icon modset16",
+                                "id": "id",
+                                "bgcolor": osvc.colors.comp,
+                                "e_title": o.info_modulesets_title,
+                                "e_list": o.info_modulesets,
+                                "ondblclick": function(divid, data) {
+                                        moduleset_tabs(divid, {"modset_id": data.id, "modset_name": data.name})
+                                }
+                        })
+                        tab_properties_generic_list({
+                                "data": jd.data.rulesets,
+                                "key": "ruleset_name",
+                                "item_class": "icon rset16",
+                                "id": "id",
+                                "bgcolor": osvc.colors.comp,
+                                "e_title": o.info_rulesets_title,
+                                "e_list": o.info_rulesets,
+                                "ondblclick": function(divid, data) {
+                                        ruleset_tabs(divid, {"ruleset_id": data.id, "ruleset_name": data.name})
+                                }
+                        })
+                })
+        }
 
 	o.div.load("/init/static/views/ruleset_properties.html?v="+osvc.code_rev, function() {
 		o.div.i18n()
