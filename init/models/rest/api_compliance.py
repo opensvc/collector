@@ -1307,7 +1307,7 @@ class rest_get_compliance_moduleset_services(rest_get_table_handler):
 
         q = db.comp_modulesets_services.modset_id == modset_id
         q &= db.comp_modulesets_services.svc_id == db.services.svc_id
-        q &= db.comp_modulesets_services.slave == db.services.slave
+        q &= db.comp_modulesets_services.slave == slave
         q = q_filter(q, svc_field=db.services.svc_id)
         self.set_q(q)
         return self.prepare_data(**vars)
@@ -1468,7 +1468,7 @@ class rest_get_compliance_moduleset_candidate_nodes(rest_get_table_handler):
             return dict(error="you are not member of one of the moduleset publication groups")
         q = db.comp_node_moduleset.modset_id == modset_id
         q &= db.comp_node_moduleset.node_id == db.nodes.node_id
-        attached = [r.node_id for r in db(q).select()]
+        attached = [r.node_id for r in db(q).select(db.nodes.node_id)]
 
         q = db.nodes.team_responsible == db.auth_group.role
         q &= db.auth_group.id == db.comp_moduleset_team_publication.group_id
