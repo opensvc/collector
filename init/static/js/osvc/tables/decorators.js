@@ -694,7 +694,7 @@ function _cell_decorator_nodename(e, os_icon, line) {
 			return
 		}
 		osvc.flash.show({
-			id: "nodename-"+node_id,
+			id: "node-"+node_id,
 			text: v,
 			cl: "icon node16",
 			bgcolor: osvc.colors.node,
@@ -798,7 +798,7 @@ function cell_decorator_svcname(e, line) {
 			return
 		}
 		osvc.flash.show({
-			id: "svcname-"+svc_id,
+			id: "svc-"+svc_id,
 			text: v,
 			cl: "icon svc",
 			bgcolor: osvc.colors.svc,

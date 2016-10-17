@@ -97,7 +97,12 @@ function tags(options) {
 				"name": $(this).text(),
 				"id": $(this).attr("tag_id"),
 			}
-			var flash_id = o.options.tag_name+"-"+$(this).attr("tag_id")
+			if (o.options.flash_id_prefix) {
+				var flash_id_prefix = o.options.flash_id_prefix
+			} else {
+				var flash_id_prefix = o.options.tag_name
+			}
+			var flash_id = flash_id_prefix+"-"+$(this).attr("tag_id")
 			osvc.flash.show({
 				id: flash_id,
 				text: $(this).text(),
@@ -354,6 +359,7 @@ function tags(options) {
 function node_tags(options) {
 	options.tag_name = "tag_name"
 	options.id = "tag_id"
+	options.flash_id_prefix = "node"
 	options.get_tags = function(fval, callback, callback_err) {
 		services_osvcgetrest("R_NODE_TAGS", [options.node_id], {
 			"orderby": options.tag_name,
@@ -414,6 +420,7 @@ function node_tags(options) {
 
 function service_tags(options) {
 	options.tag_name = "tag_name"
+	options.flash_id_prefix = "svc"
 	options.id = "tag_id"
 	options.get_tags = function(fval, callback, callback_err) {
 		services_osvcgetrest("R_SERVICE_TAGS", [options.svc_id], {
@@ -474,6 +481,7 @@ function service_tags(options) {
 
 function app_responsibles(options) {
 	options.tag_name = "role"
+	options.flash_id_prefix = "group"
 	options.id = "id"
 	options.bgcolor = osvc.colors.org
 	options.icon = "guys16"
@@ -511,6 +519,7 @@ function app_responsibles(options) {
 
 function app_publications(options) {
 	options.tag_name = "role"
+	options.flash_id_prefix = "group"
 	options.id = "id"
 	options.bgcolor = osvc.colors.org
 	options.icon = "guys16"
@@ -548,6 +557,7 @@ function app_publications(options) {
 
 function form_responsibles(options) {
 	options.tag_name = "role"
+	options.flash_id_prefix = "group"
 	options.id = "id"
 	options.bgcolor = osvc.colors.org
 	options.icon = "guys16"
@@ -585,6 +595,7 @@ function form_responsibles(options) {
 
 function form_publications(options) {
 	options.tag_name = "role"
+	options.flash_id_prefix = "group"
 	options.id = "id"
 	options.bgcolor = osvc.colors.org
 	options.icon = "guys16"
@@ -622,6 +633,7 @@ function form_publications(options) {
 
 function ruleset_responsibles(options) {
 	options.tag_name = "role"
+	options.flash_id_prefix = "group"
 	options.id = "id"
 	options.bgcolor = osvc.colors.org
 	options.icon = "guys16"
@@ -659,6 +671,7 @@ function ruleset_responsibles(options) {
 
 function ruleset_publications(options) {
 	options.tag_name = "role"
+	options.flash_id_prefix = "group"
 	options.id = "id"
 	options.bgcolor = osvc.colors.org
 	options.icon = "guys16"
@@ -696,6 +709,7 @@ function ruleset_publications(options) {
 
 function prov_template_responsibles(options) {
 	options.tag_name = "role"
+	options.flash_id_prefix = "group"
 	options.id = "id"
 	options.bgcolor = osvc.colors.org
 	options.icon = "guys16"
@@ -733,6 +747,7 @@ function prov_template_responsibles(options) {
 
 function prov_template_publications(options) {
 	options.tag_name = "role"
+	options.flash_id_prefix = "group"
 	options.id = "id"
 	options.bgcolor = osvc.colors.org
 	options.icon = "guys16"
@@ -770,6 +785,7 @@ function prov_template_publications(options) {
 
 function modset_responsibles(options) {
 	options.tag_name = "role"
+	options.flash_id_prefix = "group"
 	options.id = "id"
 	options.bgcolor = osvc.colors.org
 	options.icon = "guys16"
@@ -807,6 +823,7 @@ function modset_responsibles(options) {
 
 function modset_publications(options) {
 	options.tag_name = "role"
+	options.flash_id_prefix = "group"
 	options.id = "id"
 	options.bgcolor = osvc.colors.org
 	options.icon = "guys16"
@@ -845,6 +862,7 @@ function modset_publications(options) {
 
 function safe_file_responsibles(options) {
 	options.tag_name = "role"
+	options.flash_id_prefix = "group"
 	options.id = "id"
 	options.bgcolor = osvc.colors.org
 	options.icon = "guys16"
@@ -882,6 +900,7 @@ function safe_file_responsibles(options) {
 
 function safe_file_publications(options) {
 	options.tag_name = "role"
+	options.flash_id_prefix = "group"
 	options.id = "id"
 	options.bgcolor = osvc.colors.org
 	options.icon = "guys16"
@@ -919,6 +938,7 @@ function safe_file_publications(options) {
 
 function user_org_membership(options) {
 	options.tag_name = "role"
+	options.flash_id_prefix = "group"
 	options.id = "id"
 	options.bgcolor = osvc.colors.org
 	options.icon = "guys16"
@@ -961,6 +981,7 @@ function user_org_membership(options) {
 
 function user_priv_membership(options) {
 	options.tag_name = "role"
+	options.flash_id_prefix = "group"
 	options.id = "id"
 	options.bgcolor = osvc.colors.priv
 	options.icon = "privilege16"
@@ -1004,6 +1025,7 @@ function user_priv_membership(options) {
 
 function node_modulesets(options) {
 	options.tag_name = "modset_name"
+	options.flash_id_prefix = "modset"
 	options.id = "id"
 	options.bgcolor = osvc.colors.comp
 	options.icon = osvc.icons.modset
@@ -1046,6 +1068,7 @@ function node_modulesets(options) {
 
 function node_rulesets(options) {
 	options.tag_name = "ruleset_name"
+	options.flash_id_prefix = "rset"
 	options.id = "id"
 	options.bgcolor = osvc.colors.comp
 	options.icon = osvc.icons.rset
@@ -1088,6 +1111,7 @@ function node_rulesets(options) {
 
 function service_modulesets(options) {
 	options.tag_name = "modset_name"
+	options.flash_id_prefix = "modset"
 	options.id = "id"
 	options.bgcolor = osvc.colors.comp
 	options.icon = osvc.icons.modset
@@ -1135,6 +1159,7 @@ function service_modulesets(options) {
 
 function service_rulesets(options) {
 	options.tag_name = "ruleset_name"
+	options.flash_id_prefix = "rset"
 	options.id = "id"
 	options.bgcolor = osvc.colors.comp
 	options.icon = osvc.icons.rset
@@ -1182,6 +1207,7 @@ function service_rulesets(options) {
 
 function ruleset_nodes(options) {
 	options.tag_name = "nodename"
+	options.flash_id_prefix = "node"
 	options.id = "node_id"
 	options.bgcolor = osvc.colors.node
 	options.icon = osvc.icons.node
@@ -1224,6 +1250,7 @@ function ruleset_nodes(options) {
 
 function ruleset_services(options) {
 	options.tag_name = "svcname"
+	options.flash_id_prefix = "svc"
 	options.id = "svc_id"
 	options.bgcolor = osvc.colors.svc
 	options.icon = osvc.icons.svc
@@ -1268,6 +1295,7 @@ function ruleset_services(options) {
 
 function moduleset_nodes(options) {
 	options.tag_name = "nodename"
+	options.flash_id_prefix = "node"
 	options.id = "node_id"
 	options.bgcolor = osvc.colors.node
 	options.icon = osvc.icons.node
@@ -1310,6 +1338,7 @@ function moduleset_nodes(options) {
 
 function moduleset_services(options) {
 	options.tag_name = "svcname"
+	options.flash_id_prefix = "svc"
 	options.id = "svc_id"
 	options.bgcolor = osvc.colors.svc
 	options.icon = osvc.icons.svc

@@ -2,48 +2,72 @@ function search_get_menu(fk)
 {
   var menu = {
     "modulesets": {
-        "tab" : 'moduleset_tabs("__rowid__", {"modset_id": "__id__", "modset_name": "__modset_name__"})',
+        "tab" : function(id, res){moduleset_tabs(id, {"modset_id": res.id, "modset_name": res.modset_name})},
+        "type": "modset",
+        "color": "comp",
+        "id": "id",
         "title": "__modset_name__",
+        "short_title": "__modset_name__",
         "menu_entry_id": "comp-modulesets",
         "class": "modset16 fa-2x search-section-icon",
         "subclass": "meta_moduleset clickable",
         "links": []
     },
     "rulesets": {
-        "tab" : 'ruleset_tabs("__rowid__", {"ruleset_id": "__id__", "ruleset_name": "__ruleset_name__"})',
+        "tab" : function(id, res){ruleset_tabs(id, {"ruleset_id": res.id, "ruleset_name": res.ruleset_name})},
+        "type": "rset",
+        "color": "comp",
+        "id": "id",
         "title": "__ruleset_name__",
+        "short_title": "__ruleset_name__",
         "menu_entry_id": "comp-rulesets",
         "class": "rset16 fa-2x search-section-icon",
         "subclass": "meta_ruleset clickable",
         "links": []
     },
     "reports": {
-        "tab" : 'report_tabs("__rowid__", {"report_id": "__id__", "report_name": "__report_name__"})',
+        "tab" : function(id, res){report_tabs(id, {"report_id": res.id, "report_name": res.report_name})},
+        "type": "report",
+        "color": "report",
+        "id": "id",
         "title": "__report_name__",
+        "short_title": "report_name",
         "menu_entry_id": "adm-reports",
         "class": "spark16 fa-2x search-section-icon",
         "subclass": "meta_report clickable",
         "links": []
     },
     "charts": {
-        "tab" : 'chart_tabs("__rowid__", {"chart_id": "__id__", "chart_name": "__chart_name__"})',
+        "tab" : function(id, res){chart_tabs(id, {"chart_id": res.id, "chart_name": res.chart_name})},
+        "type": "chart",
+        "color": "chart",
+        "id": "id",
         "title": "__chart_name__",
+        "short_title": "__chart_name__",
         "menu_entry_id": "adm-charts",
         "class": "spark16 fa-2x search-section-icon",
         "subclass": "meta_chart clickable",
         "links": []
     },
     "metrics": {
-        "tab" : 'metric_tabs("__rowid__", {"metric_id": "__id__", "metric_name": "__metric_name__"})',
+        "tab" : function(id, res){metric_tabs(id, {"metric_id": res.id, "metric_name": res.metric_name})},
+        "type": "metric",
+        "color": "metric",
+        "id": "id",
         "title": "__metric_name__",
+        "short_title": "__metric_name__",
         "menu_entry_id": "adm-metrics",
         "class": "spark16 fa-2x search-section-icon",
         "subclass": "meta_metric clickable",
         "links": []
     },
     "forms": {
-        "tab" : 'form_tabs("__rowid__", {"form_id": "__id__", "form_name": "__form_name__"})',
+        "tab" : function(id, res){form_tabs(id, {"form_id": res.id, "form_name": res.form_name})},
+        "type": "form",
+        "color": "form",
+        "id": "id",
         "title": "__form_name__",
+        "short_title": "__form_name__",
         "menu_entry_id": "adm-forms",
         "class": "wf16 fa-2x search-section-icon",
         "subclass": "meta_form clickable",
@@ -67,8 +91,12 @@ function search_get_menu(fk)
         ]
     },
     "users": {
-        "tab" : 'user_tabs("__rowid__", {"user_id": "__id__", "fullname": "__fullname__"})',
+        "tab" : function(id, res){user_tabs(id, {"user_id": res.id, "fullname": res.fullname})},
+        "type": "user",
+        "color": "org",
+        "id": "id",
         "title": "__fullname__ <__email__>",
+        "short_title": "__fullname__",
         "menu_entry_id": "adm-usr",
         "class": "guy16 fa-2x search-section-icon",
         "subclass": "meta_username clickable",
@@ -92,8 +120,12 @@ function search_get_menu(fk)
         ]
     },
     "safe_files": {
-        "tab" : 'safe_file_tabs("__rowid__", {"uuid": "__uuid__", "name": "__name__"})',
+        "tab" : function(id, res){safe_file_tabs(id, {"uuid": res.uuid, "name": res.name})},
+        "type": "safe",
+        "color": "comp",
+        "id": "uuid",
         "title": "__name__ (__uuid__)",
+        "short_title": "__name__ (__uuid__)",
         "menu_entry_id": "view-safe",
         "class": "safe16 fa-2x search-section-icon",
         "subclass": "meta_safe_file",
@@ -101,6 +133,9 @@ function search_get_menu(fk)
     },
     "disks": {
         "title": "__disk_id__",
+        "short_title": "__disk_id__",
+        "type": "disk",
+        "color": "disk",
         "menu_entry_id": "view-disks",
         "class": "hd16 fa-2x search-section-icon",
         "subclass": "meta_app",
@@ -114,8 +149,12 @@ function search_get_menu(fk)
         ]
     },
     "apps": {
+        "id": "app",
         "title": "__app__",
-        "tab" : 'app_tabs("__rowid__", {"app_name": "__app__"})',
+        "short_title": "__app__",
+        "type": "app",
+        "color": "app",
+        "tab" : function(id, res){app_tabs(id, {"app_name": res.app})},
         "menu_entry_id": "view-dummy",
         "class": "app16 fa-2x search-section-icon",
         "subclass": "meta_app clickable",
@@ -168,6 +207,9 @@ function search_get_menu(fk)
     },
     "ips": {
         "title": "__node_ip.addr__@__nodes.nodename__  *__nodes.app__",
+        "short_title": "__node_ip.addr__@__nodes.nodename__",
+        "type": "ip",
+        "color": "net",
         "menu_entry_id": "view-node-net",
         "class": "net16 fa-2x search-section-icon",
         "subclass": "meta_username",
@@ -303,8 +345,12 @@ function search_get_menu(fk)
         ]
     },
     "groups": {
-        "tab" : 'group_tabs("__rowid__", {"group_id": "__id__", "group_name": "__role__"})',
+        "tab" : function(id, res){group_tabs(id, {"group_id": res.id, "group_name": res.role})},
+        "type": "group",
+        "color": "org",
+        "id": "id",
         "title": "__role__",
+        "short_title": "__role__",
         "menu_entry_id": "adm-usr",
         "class": "guys16 fa-2x search-section-icon",
         "subclass": "meta_username clickable",
@@ -344,8 +390,12 @@ function search_get_menu(fk)
         ]
     },
     "services": {
-        "tab" : 'service_tabs("__rowid__", {"svc_id": "__svc_id__"})',
+        "tab" : function(id, res){service_tabs(id, {"svc_id": res.svc_id})},
+        "type": "svc",
+        "color": "svc",
+        "id": "svc_id",
         "title": "__svcname__  *__svc_app__",
+        "short_title": "__svcname__",
         "menu_entry_id": "view-services",
         "class": "svc fa-2x search-section-icon",
         "subclass": "meta_svcname clickable",
@@ -445,8 +495,12 @@ function search_get_menu(fk)
         ]
     },
     "nodes": {
-        "tab" : 'node_tabs("__rowid__", {"node_id": "__node_id__"})',
+        "tab" : function(id, res){node_tabs(id, {"node_id": res.node_id})},
+        "type": "node",
+        "color": "node",
+        "id": "node_id",
         "title": "__nodename__  *__app__",
+        "short_title": "__nodename__",
         "menu_entry_id": "view-nodes",
         "class": "node16 fa-2x search-section-icon",
         "subclass": "meta_nodename clickable",
@@ -572,8 +626,12 @@ function search_get_menu(fk)
         ]
     },
     "filtersets": {
-        "tab" : 'filterset_tabs("__rowid__", {"fset_name": "__fset_name__"})',
+        "tab" : function(id, res){filterset_tabs(id, {"fset_name": res.fset_name})},
+        "type": "fset",
+        "color": "fset",
+        "id": "fset_name",
         "title": "__fset_name__",
+        "short_title": "__fset_name__",
         "menu_entry_id": "adm-filters",
         "class": "filter16 fa-2x search-section-icon",
         "subclass": "meta_username clickable",
@@ -589,8 +647,11 @@ function search_get_menu(fk)
         ]
     },
     "vms": {
-        "tab" : 'node_tabs("__rowid__", {"nodename": "__mon_vmname__"})',
+        "tab" : function(id, res){node_tabs(id, {"nodename": res.mon_vmname})},
+        "type": "node",
+        "color": "node",
         "title": "__mon_vmname__",
+        "short_title": "__mon_vmname__",
         "menu_entry_id": "view-nodes",
         "class": "hv16 fa-2x search-section-icon",
         "subclass": "meta_nodename",
@@ -631,208 +692,201 @@ function search_subst_keys(s, data, key) {
 }
 
 function search_build_result_row(label, first, res, count) {
-  var section_data = search_get_menu(label)
+	var section_data = search_get_menu(label)
 
-  // init result row, set icon cell
-  var row_group = $("<div></div>")
-  var row = $("<tr></tr>")
-  row_group.append(row)
-  var cell_icon = $("<td class='icon'></td>")
-  cell_icon.addClass(section_data.class)
-  row.append(cell_icon)
+	// init result row, set icon cell
+	var row_group = $("<div></div>")
+	var row = $("<tr></tr>")
+	row_group.append(row)
+	var cell_icon = $("<td class='icon'></td>")
+	cell_icon.addClass(section_data.class)
+	row.append(cell_icon)
 
-  // title cell
-  cell_result = $("<td></td>")
-  p_title = $("<p></p>")
-  cell_result.append(p_title)
-  row.append(cell_result)
+	// title cell
+	cell_result = $("<td></td>")
+	p_title = $("<p></p>")
+	cell_result.append(p_title)
+	row.append(cell_result)
 
-  if (first==1) {
-    // first header with %___%
-    var val = $('#search_input').val()
-    var title = "%" + search_parse_input(val).substring + "%"
-    p_title.text(title)
-  } else {
-    // substitute key in the title format
-    var title = section_data.title
-    for (key in res) {
-      title = search_subst_keys(title, res, key)
-      p_title.text(title)
-    }
-    p_title.addClass(section_data.subclass)
+	if (first==1) {
+		// first header with %___%
+		var val = $('#search_input').val()
+		var title = "%" + search_parse_input(val).substring + "%"
+		p_title.text(title)
+	} else {
+		// substitute key in the title format
+		var title = section_data.title
+		for (key in res) {
+			title = search_subst_keys(title, res, key)
+			p_title.text(title)
+		}
+		p_title.addClass(section_data.subclass)
 
-    var tab = section_data.tab
-    if (tab) {
-      // create a div to host the result tab
-      tab_tr = $("<tr></tr>")
-      tab_td = $("<td colspan='2'></td>")
-      tab_div = $("<div class='stackable searchtab hidden'></div>")
-      tab_tr.append(tab_td)
-      tab_td.append(tab_div)
-      tab_div.uniqueId()
-      row_group.append(tab_tr)
+		var short_title = section_data.short_title
+		for (key in res) {
+			short_title = search_subst_keys(short_title, res, key)
+		}
 
-      // mangle extra id to satisfy tabs code constraints
-      var rowid = tab_div.attr("id").replace(/[ \/\.-]/g, '_')
-      tab_div.attr("id", rowid)
+		var tab = section_data.tab
+		if (tab) {
+			if (tab[0] == "/") {
+				// tab action: load ajax content
+				var url = services_get_url() + tab
+				var fn = "sync_ajax('"+url+"', [], '"+rowid+"', function() {})"
+			} else {
+				// tab action: execute a function
+				var fn = tab
+			}
+			p_title.bind("click", function(){
+				osvc.flash.show({
+					id: section_data.type+"-"+res[section_data.id],
+					cl: "icon "+section_data.class.replace(/fa-2x/, "").replace(/search-section-icon/, ""),
+					text: short_title,
+					bgcolor: osvc.colors[section_data.color],
+					fn: function(id){fn(id, res)}
+				})
+			})
+		}
+	}
 
-      // substitute the keys in the defined tab action
-      tab = tab.replace("__rowid__", rowid)
-      for (key in res) {
-        tab = search_subst_keys(tab, res, key)
-      }
+	// add links to views
+	if (first==1 && section_data.special_header_links != undefined) {
+		// special condition for first element if present
+		links = section_data.special_header_links
+	} else {
+		links = section_data.links
+	}
 
-      if (tab[0] == "/") {
-        // tab action: load ajax content
-        var url = services_get_url() + tab
-        var fn = "sync_ajax('"+url+"', [], '"+rowid+"', function() {})"
-      } else {
-        // tab action: execute a function
-        var fn = tab
-      }
-      fn = '$("#'+ rowid + '").show();' + fn
-      p_title.attr("onclick", fn)
-    }
-  }
+	for(j=0; j<links.length; j++) {
+		var link_data = links[j]
+		if (osvc.hidden_menu_entries.indexOf(link_data.menu_entry_id) >= 0) {
+			continue
+		}
+		var a_link = $("<a class='search-link'></a>")
+		$.data(a_link[0], "link_data", link_data)
+		a_link.addClass(link_data.class)
+		a_link.addClass("nocolor icon")
+		a_link.text(i18n.t("search.menu_link."+ link_data.title))
+		cell_result.append(a_link)
 
-  // add links to views
-  if (first==1 && section_data.special_header_links != undefined) {
-    // special condition for first element if present
-    links = section_data.special_header_links
-  } else {
-    links = section_data.links
-  }
+		a_link.bind("click", function(e) {
+			var link_data = $.data($(this)[0], "link_data")
+			var url = link_data.link
+			for (key in res) {
+				url = search_subst_keys(url, res, key)
+			}
+			// leftover (the first==1 case)
+			url = url.replace(/__[\.\w]+__/, title)
 
-  for(j=0; j<links.length; j++) {
-    var link_data = links[j]
-    if (osvc.hidden_menu_entries.indexOf(link_data.menu_entry_id) >= 0) {
-      continue
-    }
-    var a_link = $("<a class='search-link'></a>")
-    $.data(a_link[0], "link_data", link_data)
-    a_link.addClass(link_data.class)
-    a_link.addClass("nocolor icon")
-    a_link.text(i18n.t("search.menu_link."+ link_data.title))
-    cell_result.append(a_link)
+			e.preventDefault()
+			if (link_data.options) {
+				for (opt in link_data.options) {
+					if (typeof(link_data.options[opt]) !== "string") {
+						continue
+					}
+					for (key in res) {
+						link_data.options[opt] = search_subst_keys(link_data.options[opt], res, key)
+					}
+					link_data.options[opt] = link_data.options[opt].replace(/__[\.\w]+__/, title)
+				}
+			}
+			if (link_data.options && link_data.options.request_vars) {
+				for (opt in link_data.options.request_vars) {
+					if (typeof(link_data.options.request_vars[opt]) !== "string") {
+						continue
+					}
+					for (key in res) {
+						link_data.options.request_vars[opt] = search_subst_keys(link_data.options.request_vars[opt], res, key)
+					}
+					link_data.options.request_vars[opt] = link_data.options.request_vars[opt].replace(/__[\.\w]+__/, title)
+				}
+			}
 
-    a_link.bind("click", function(e) {
-      var link_data = $.data($(this)[0], "link_data")
-      var url = link_data.link
-      for (key in res) {
-        url = search_subst_keys(url, res, key)
-      }
-      // leftover (the first==1 case)
-      url = url.replace(/__[\.\w]+__/, title)
+			if (e.ctrlKey) {
+				window.open(url, "_blank")
+				return
+			}
 
-      e.preventDefault()
-      if (link_data.options) {
-        for (opt in link_data.options) {
-          if (typeof(link_data.options[opt]) !== "string") {
-            continue
-          }
-          for (key in res) {
-            link_data.options[opt] = search_subst_keys(link_data.options[opt], res, key)
-          }
-          link_data.options[opt] = link_data.options[opt].replace(/__[\.\w]+__/, title)
-        }
-      }
-      if (link_data.options && link_data.options.request_vars) {
-        for (opt in link_data.options.request_vars) {
-          if (typeof(link_data.options.request_vars[opt]) !== "string") {
-            continue
-          }
-          for (key in res) {
-            link_data.options.request_vars[opt] = search_subst_keys(link_data.options.request_vars[opt], res, key)
-          }
-          link_data.options.request_vars[opt] = link_data.options.request_vars[opt].replace(/__[\.\w]+__/, title)
-        }
-      }
-
-      if (e.ctrlKey) {
-        window.open(url, "_blank")
-        return
-      }
-
-      $("#search_input").val("").blur()
-      $("#search_result").empty().hide()
-      app_load_href(url, link_data.fn, {}, link_data.options)
-    })
-  }
-  return row_group.children()
+			$("#search_input").val("").blur()
+			$("#search_result").empty().hide()
+			app_load_href(url, link_data.fn, {}, link_data.options)
+		})
+	}
+	return row_group.children()
 }
 
 function search_build_result_view(label, resultset) {
-  var section_data = search_get_menu(label)
-  if (osvc.hidden_menu_entries.indexOf(section_data.menu_entry_id) >= 0) {
-    return
-  }
-  var section_div = $("<div class='menu_section'></div>")
-  section_div.attr("id", label)
-  section_div.text(i18n.t("search.menu_header.title_"+label) + " (" + resultset.total +")")
-  var table = $("<table id='search_result_table' style='width:100%'></table>")
-  section_div.append(table)
+	var section_data = search_get_menu(label)
+	if (osvc.hidden_menu_entries.indexOf(section_data.menu_entry_id) >= 0) {
+		return
+	}
+	var section_div = $("<div class='menu_section'></div>")
+	section_div.attr("id", label)
+	section_div.text(i18n.t("search.menu_header.title_"+label) + " (" + resultset.total +")")
+	var table = $("<table id='search_result_table' style='width:100%'></table>")
+	section_div.append(table)
 
-  // Init global row
-  table.append(search_build_result_row(label, 1, ""))
+	// Init global row
+	table.append(search_build_result_row(label, 1, ""))
 
-  for (i=0; i<resultset.data.length; i++) {
-    table.append(search_build_result_row(label, 0, resultset.data[i], i))
-  }
-  return section_div
+	for (i=0; i<resultset.data.length; i++) {
+		table.append(search_build_result_row(label, 0, resultset.data[i], i))
+	}
+	return section_div
 }
 
 function search_parse_input(search_query) {
-  var data = {}
-  if (search_query.match(/^\w+:\s+/)) {
-    data["substring"] = search_query.replace(/^\w+:\s+/, "")
-    data["in"] = search_query.match(/^\w+:\s+/)[0].replace(/:\s+$/, "")
-  } else {
-    data["substring"] = search_query
-  }
-  return data
+	var data = {}
+	if (search_query.match(/^\w+:\s+/)) {
+		data["substring"] = search_query.replace(/^\w+:\s+/, "")
+		data["in"] = search_query.match(/^\w+:\s+/)[0].replace(/:\s+$/, "")
+	} else {
+		data["substring"] = search_query
+	}
+	return data
 }
 
 function search_search() {
-  var count=0
-  var search_query = $('#search_input').val()
+	var count=0
+	var search_query = $('#search_input').val()
 
-  if (search_query == "") {
-    return
-  }
+	if (search_query == "") {
+		return
+	}
 
-  var data = search_parse_input(search_query)
+	var data = search_parse_input(search_query)
 
-  $("#search_div").removeClass("searchidle")
-  $("#search_div").addClass("searching")
+	$("#search_div").removeClass("searchidle")
+	$("#search_div").addClass("searching")
 
-  $("#search_result").empty()
+	$("#search_result").empty()
 
-  services_osvcgetrest("R_SEARCH", "", data, function(jd) {
-      var result = jd.data
-      for (d in result) {
-        if (result[d].data.length>0 && search_get_menu(d) !== undefined) {
-          response = search_build_result_view(d, result[d])
-          $("#search_result").append(response)
-          count += result[d].data.length
-        }
-      }
+	services_osvcgetrest("R_SEARCH", "", data, function(jd) {
+		var result = jd.data
+		for (d in result) {
+			if (result[d].data.length>0 && search_get_menu(d) !== undefined) {
+				response = search_build_result_view(d, result[d])
+				$("#search_result").append(response)
+				count += result[d].data.length
+			}
+		}
 
-      if (count == 0) {
-        var div = "<div class='menu_entry meta_not_found'><a><div class='question48'>"+i18n.t("search.nothing_found")+"</div></a></div>"
-        $("#search_result").append(div)
-      } else if (count == 1) {
-        $('#search_result_table tr:first').remove()
-        var td = $('#search_title_click0')
-        td.trigger("click")
-      }
+		if (count == 0) {
+			var div = "<div class='menu_entry meta_not_found'><a><div class='question48'>"+i18n.t("search.nothing_found")+"</div></a></div>"
+			$("#search_result").append(div)
+		} else if (count == 1) {
+			$('#search_result_table tr:first').remove()
+			var td = $('#search_title_click0')
+			td.trigger("click")
+		}
 
-      if (!$("#search_result").is(':visible')) {
-        toggle('search_result')
-      }
-      $("#search_div").removeClass("searching")
-      $("#search_div").addClass("searchidle")
-      search_highlight($("#search_result"), data.substring)
-  })
+		if (!$("#search_result").is(':visible')) {
+			toggle('search_result')
+		}
+		$("#search_div").removeClass("searching")
+		$("#search_div").addClass("searchidle")
+		search_highlight($("#search_result"), data.substring)
+	})
 }
 
 function search(divid) {
@@ -910,108 +964,108 @@ function search(divid) {
 
 
 function filter_menu(event) {
-  var menu = $("#menu_menu")
-  var text = $(".search").find("input").val()
+	var menu = $("#menu_menu")
+	var text = $(".search").find("input").val()
 
-  var reg = new RegExp(text, "i")
-  menu.find(".menu_entry").each(function(){
-    if ($(this).text().match(reg)) {
-      $(this).show()
-      $(this).parents(".menu_section").first().show()
-    } else {
-      $(this).hide()
-    }
-  })
-  menu.find(".menu_section").each(function(){
-    if ($(this).children("a").text().match(reg)) {
-      $(this).find(".menu_entry").show()
-      $(this).show()
-    }
-    n = $(this).find(".menu_entry:visible").length
-    if (n == 0) {
-      $(this).hide()
-    }
-  })
-  var entries = menu.find(".menu_entry:visible")
-  if (is_enter(event)) {
-    if (menu.is(":visible") && (entries.length == 1)) {
-      entries.effect("highlight")
-      window.location = entries.attr("link")
-    }
-  }
-  if (entries.length==0) {
-    menu.append("<div class='menu_entry meta_not_found'><a><div class='question48'>"+i18n.t("search.nothing_found")+"</div></a></div>")
-  } else {
-    menu.find(".meta_not_found").remove()
-  }
-  search_highlight(menu, text)
+	var reg = new RegExp(text, "i")
+	menu.find(".menu_entry").each(function(){
+		if ($(this).text().match(reg)) {
+			$(this).show()
+			$(this).parents(".menu_section").first().show()
+		} else {
+			$(this).hide()
+		}
+	})
+	menu.find(".menu_section").each(function(){
+		if ($(this).children("a").text().match(reg)) {
+			$(this).find(".menu_entry").show()
+			$(this).show()
+		}
+		n = $(this).find(".menu_entry:visible").length
+		if (n == 0) {
+			$(this).hide()
+		}
+	})
+	var entries = menu.find(".menu_entry:visible")
+	if (is_enter(event)) {
+		if (menu.is(":visible") && (entries.length == 1)) {
+			entries.effect("highlight")
+			window.location = entries.attr("link")
+		}
+	}
+	if (entries.length==0) {
+		menu.append("<div class='menu_entry meta_not_found'><a><div class='question48'>"+i18n.t("search.nothing_found")+"</div></a></div>")
+	} else {
+		menu.find(".meta_not_found").remove()
+	}
+	search_highlight(menu, text)
 }
 
 function filter_fset_selector(event) {
-  var div = $(".header [name=fset_selector_entries]")
-  if (!div.is("[ready]")) {
-    var timer = setTimeout(function(){filter_fset_selector(event)}, 500)
-    return
-  }
-  var text = $(".search").find("input").val()
-  var reg = new RegExp(text, "i")
-  div.find(".menu_entry").each(function(){
-    if ($(this).find("[name=title]").text().match(reg)) {
-      $(this).show()
-    } else {
-      $(this).hide()
-    }
-  })
-  var entries = div.find(".menu_entry:visible")
-  if (entries.length==0) {
-    div.append("<div class='menu_entry meta_not_found'><a><div class='question48'>"+i18n.t("search.nothing_found")+"</div></a></div>")
-  } else {
-    div.find(".meta_not_found").remove()
-  }
-  search_highlight(div, text)
+	var div = $(".header [name=fset_selector_entries]")
+	if (!div.is("[ready]")) {
+		var timer = setTimeout(function(){filter_fset_selector(event)}, 500)
+		return
+	}
+	var text = $(".search").find("input").val()
+	var reg = new RegExp(text, "i")
+	div.find(".menu_entry").each(function(){
+		if ($(this).find("[name=title]").text().match(reg)) {
+			$(this).show()
+		} else {
+			$(this).hide()
+		}
+	})
+	var entries = div.find(".menu_entry:visible")
+	if (entries.length==0) {
+		div.append("<div class='menu_entry meta_not_found'><a><div class='question48'>"+i18n.t("search.nothing_found")+"</div></a></div>")
+	} else {
+		div.find(".meta_not_found").remove()
+	}
+	search_highlight(div, text)
 }
 
 function search_highlight(e, s) {
-  // keep track of original texts
-  if (e.children("[name=orig]").length == 0) {
-    var cache = $("<div name='orig'></div>")
-    cache.css({"display": "none"})
-    e.find("*").each(function() {
-      var clone = $(this).clone()
-      clone.children().remove()
-      if (clone.text().match(/^$/)) {
-        return
-      }
-      var cache_entry = $("<div></div>")
-      cache_entry.uniqueId()
-      var id = cache_entry.attr("id")
-      $(this).attr("highlight_id", id)
-      cache_entry.html(clone.html())
-      cache.append(cache_entry)
-    })
-    e.append(cache)
-  }
+	// keep track of original texts
+	if (e.children("[name=orig]").length == 0) {
+		var cache = $("<div name='orig'></div>")
+		cache.css({"display": "none"})
+		e.find("*").each(function() {
+			var clone = $(this).clone()
+			clone.children().remove()
+			if (clone.text().match(/^$/)) {
+				return
+			}
+			var cache_entry = $("<div></div>")
+			cache_entry.uniqueId()
+			var id = cache_entry.attr("id")
+			$(this).attr("highlight_id", id)
+			cache_entry.html(clone.html())
+			cache.append(cache_entry)
+		})
+		e.append(cache)
+	}
 
-  var regexp = new RegExp(s, 'ig')
+	var regexp = new RegExp(s, 'ig')
 
-  e.children("[name=orig]").children().each(function(){
-    // restore orig
-    var id = $(this).attr("id")
-    var tgt = e.find("[highlight_id="+id+"]")
-    tgt.find("[name=highlighted]").remove()
-    var children = tgt.children().detach()
+	e.children("[name=orig]").children().each(function(){
+		// restore orig
+		var id = $(this).attr("id")
+		var tgt = e.find("[highlight_id="+id+"]")
+		tgt.find("[name=highlighted]").remove()
+		var children = tgt.children().detach()
 
-    tgt.empty()
-    tgt.text($(this).text())
+		tgt.empty()
+		tgt.text($(this).text())
 
-    if ((s != "") && $(this).text().match(regexp)) {
-      var highlighted = $("<span name='highlighted'></span>")
-      highlighted.html($(this).text().replace("<", "&lt;").replace(">", "&gt;").replace(regexp, function(x) {
-        return '<span class="highlight_light">' + x + '</span>'
-      }))
-      tgt.text("")
-      tgt.prepend(highlighted)
-    }
-    tgt.append(children)
-  })
+		if ((s != "") && $(this).text().match(regexp)) {
+			var highlighted = $("<span name='highlighted'></span>")
+			highlighted.html($(this).text().replace("<", "&lt;").replace(">", "&gt;").replace(regexp, function(x) {
+				return '<span class="highlight_light">' + x + '</span>'
+			}))
+			tgt.text("")
+			tgt.prepend(highlighted)
+		}
+		tgt.append(children)
+	})
 }

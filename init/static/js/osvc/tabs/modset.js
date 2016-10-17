@@ -170,6 +170,7 @@ function modset_properties(divid, options) {
 				"key": "modset_name",
 				"item_class": "icon modset16",
 				"id": "id",
+				"flash_id_prefix": "modset",
 				"bgcolor": osvc.colors.comp,
 				"e_title": o.info_modulesets_title,
 				"e_list": o.info_modulesets,

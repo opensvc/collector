@@ -579,7 +579,7 @@ jQuery.fn.osvc_org_group = function(options) {
 		"attr": "group_id",
 		"icon": "guys16",
 		"bgcolor": osvc.colors.org,
-		"flash_id_prefix": "role-",
+		"flash_id_prefix": "group-",
 		"fn": function(id, opts) {
 			group_tabs(id, opts)
 		}

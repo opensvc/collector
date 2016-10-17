@@ -460,6 +460,7 @@ function service_properties(divid, options)
 				"key": "role",
 				"item_class": "icon guys16",
 				"id": "id",
+				"flash_id_prefix": "group",
 				"bgcolor": osvc.colors.org,
 				"depends": ["svc_app"],
 				"e_title": o.responsibles_title,

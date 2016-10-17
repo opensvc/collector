@@ -600,6 +600,8 @@ tab_properties_generic_list = function(options) {
 				}
 				if (options.flash_id) {
 					var flash_id = options.flash_id($(this))
+				} else if (options.flash_id_prefix) {
+					var flash_id = options.flash_id_prefix + "-" + $(this).attr("tag_id")
 				} else {
 					var flash_id = options.key + "-" + $(this).attr("tag_id")
 				}
