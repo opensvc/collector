@@ -532,7 +532,7 @@ class rest_get_node_root_password(rest_get_handler):
         except Exception as e:
             salt = "tlas"
 
-        node = get_node(node_id)
+        node = db(db.auth_node.node_id==node_id).select().first()
         if node is None:
             raise Exception(T("node not found"))
         node_uuid = node.uuid
