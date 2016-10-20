@@ -220,7 +220,12 @@ function flash() {
 		o.div.slideToggle()
 	})
 
+	o.sanitize_id = function(id) {
+		return id.replace(/\./g, "-")
+	}
+
 	o.find_id = function(id) {
+		id = o.sanitize_id(id)
 		for (var i=0; i<o.barel.length; i++) {
 			if (!o.barel[i].id) {
 				continue
@@ -233,6 +238,7 @@ function flash() {
 	}
 
 	o.push = function(data) {
+		data.id = o.sanitize_id(data.id)
 		if (data.id) {
 			var i = o.find_id(data.id)
 			if (i>=0) {
