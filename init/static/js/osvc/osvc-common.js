@@ -221,7 +221,7 @@ function flash() {
 	})
 
 	o.sanitize_id = function(id) {
-		return id.replace(/\./g, "-")
+		return id.replace(/[\.\s]/g, "-")
 	}
 
 	o.find_id = function(id) {
