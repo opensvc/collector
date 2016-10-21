@@ -221,6 +221,7 @@ function flash() {
 	})
 
 	o.sanitize_id = function(id) {
+		id = "" + id
 		return id.replace(/[\.\s]/g, "-")
 	}
 
