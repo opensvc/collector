@@ -1300,6 +1300,7 @@
 		"services": "Services"
 	},
 	"user_properties": {
+		"id": "Id",
 		"org_groups": "Organizational groups",
 		"priv_groups": "Privilege groups",
 		"resp_apps": "Applications, responsible",
