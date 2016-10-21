@@ -226,6 +226,8 @@ function node_properties(divid, options)
 		// fill the view with values from /nodes/<id>
 		if (o.options.node_data) {
 			o.render(o.options.node_data)
+			// purge the cache for subsequent reloads
+			o.options.node_data = null
 		} else {
 			services_osvcgetrest("R_NODE", [o.options.node_id], {"meta": "false"}, function(jd) {
 				if (!jd.data) {
