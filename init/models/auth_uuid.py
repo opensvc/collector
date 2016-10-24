@@ -113,19 +113,30 @@ def auth_uuid(fn):
     def new(*args, **kwargs):
         try:
             if 'auth' in kwargs:
-                uuid, node = kwargs['auth']
+                uuid, agent = kwargs['auth']
             else:
-                uuid, node = args[-1]
+                uuid, agent = args[-1]
         except:
             raise Exception("no authentication data found in the request")
 
+        if "@" in agent:
+            svcname, nodename = agent.split("@")
+            node_id = auth_to_node_id((uuid, nodename))
+            svc_id = node_svc_id(node_id, svcname)
+        else:
+            nodename = agent
+            svcname = None
+            node_id = auth_to_node_id((uuid, nodename))
+            svc_id = None
+
         try:
-            check_auth(node, uuid)
+            check_auth(nodename, uuid)
         except Exception as e:
             _log('node.auth',
                  'node authentication error: %(e)s',
                  dict(e=str(e)),
-                 node_id=auth_to_node_id((uuid, node)),
+                 node_id=node_id,
+                 svc_id=svc_id,
                  user="feed",
                  level="warning")
             raise
@@ -138,29 +149,42 @@ def node_auth():
     auth.settings.login_methods.append(node_auth())
     """
 
-    def node_login_aux(node, uuid):
+    def node_login_aux(agent, uuid):
+        if "@" in agent:
+            svcname, nodename = agent.split("@")
+            node_id = auth_to_node_id((uuid, nodename))
+            svc_id = node_svc_id(node_id, svcname)
+        else:
+            nodename = agent
+            svcname = None
+            node_id = auth_to_node_id((uuid, nodename))
+            svc_id = None
+
         try:
-            check_auth(node, uuid)
+            check_auth(nodename, uuid)
             from gluon.storage import Storage
             user = Storage()
             user.id = -1
-            user.nodename = node
-            user.node_id = auth_to_node_id([uuid, node])
+            user.nodename = nodename
+            user.svcname = svcname
+            user.node_id = node_id
+            user.svc_id = svc_id
 
             session.auth = Storage()
             session.auth.user = user
             session.auth.last_visit = request.now
-            #self.auth = auth
-
             return True
         except Exception as e:
-            if not auth_is_user(node):
-                _log('node.auth',
-                     'node authentication error: %(e)s',
-                     dict(e=str(e)),
-                     node_id=auth_to_node_id([uuid, node]),
-                     user="feed",
-                     level="warning")
+            if not auth_is_user(agent):
+                _log(
+                  'node.auth',
+                  'node authentication error: %(e)s',
+                  dict(e=str(e)),
+                  node_id=node_id,
+                  svc_id=svc_id,
+                  user="feed",
+                  level="warning"
+                )
             return False
     return node_login_aux
 

@@ -443,9 +443,20 @@ class MyAuth(Auth):
             from gluon.storage import Storage
             self.user = Storage()
             self.user.id = -1
-            self.user.email = "root@"+username
-            self.user.nodename = username
-            self.user.node_id = auth_to_node_id([password, username])
-            self.user.first_name = username
-            self.user.last_name = username
+            if "@" in username:
+                svcname, nodename = username.split("@")
+                node_id = auth_to_node_id([password, nodename])
+                svc_id = node_svc_id(node_id, svcname)
+            else:
+                nodename = username
+                svcname = None
+                node_id = auth_to_node_id([password, nodename])
+                svc_id = None
+
+            self.user.email = "root@"+nodename
+            self.user.nodename = nodename
+            self.user.node_id = node_id
+            self.user.svc_id = svc_id
+            self.user.first_name = svcname
+            self.user.last_name = nodename
         return r
