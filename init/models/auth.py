@@ -10,7 +10,7 @@ def get_nodename(node_id):
     if node is None:
         s = str(node_id)
     else:
-        s = node.nodename + " in app " + node.app
+        s = node.nodename + " in app " + str(node.app)
     return s
 
 def get_node_id(s):
