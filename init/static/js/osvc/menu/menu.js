@@ -119,6 +119,12 @@ var menu_data = {
 		  "link" : "/init/dns/dns"
 		},
 		{
+		  "title" : "docker",
+		  "class" : "docker_registry16",
+		  "id" : "view-docker",
+		  "link" : "/init/registry/registries"
+		},
+		{
 		  "title" : "saves",
 		  "class" : "save16",
 		  "id" : "view-saves",

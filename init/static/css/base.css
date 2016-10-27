@@ -1834,6 +1834,14 @@ ul.login_menu ul {
 	padding: 0 0 0 20px;
 	min-height: 16px;
 }
+.docker_repository16:before {
+	color: #27b8e8;
+	content: '\f04d';
+}
+.docker_registry16:before {
+	color: #27b8e8;
+	content: '\f009';
+}
 .key:before {
 	content: '\f084';
 }
@@ -2007,6 +2015,10 @@ ul.login_menu ul {
 }
 .bill16:before {
 	content: '\f0d6';
+}
+.dockertag16:before {
+	color: #27b8e8;
+	content: '\f02b';
 }
 .tag16:before {
 	color: darkcyan;
@@ -2279,6 +2291,10 @@ ul.login_menu ul {
 .keyboard:before {
 	content: '\f11c';
 	font-family: awesome;
+}
+.dockertags16:before {
+	color: #27b8e8;
+	content: '\f02c';
 }
 .fa-tags:before {
 	color: darkcyan;

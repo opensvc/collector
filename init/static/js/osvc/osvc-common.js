@@ -442,7 +442,7 @@ function osvc_jq_decorator(e, options) {
 		o.html(e)
 		e.bind(options.options.event, function() {
 			osvc.flash.show({
-				"id": options.flash_id_prefix+name,
+				"id": options.flash_id_prefix+id,
 				"text": name,
 				"cl": "icon "+options.icon,
 				"bgcolor": options.bgcolor,
@@ -451,6 +451,34 @@ function osvc_jq_decorator(e, options) {
 				}
 			})
 		})
+	})
+}
+
+jQuery.fn.osvc_docker_repository = function(options) {
+	osvc_jq_decorator(this, {
+		"options": options,
+		"name": "repository_name",
+		"attr": "repository_id",
+		"icon": "docker_repository16",
+		"bgcolor": osvc.colors.docker,
+		"flash_id_prefix": "docker-repository-",
+		"fn": function(id, opts) {
+			docker_repository_tabs(id, opts)
+		}
+	})
+}
+
+jQuery.fn.osvc_docker_registry = function(options) {
+	osvc_jq_decorator(this, {
+		"options": options,
+		"name": "registry_service",
+		"attr": "registry_id",
+		"icon": "docker_registry16",
+		"bgcolor": osvc.colors.docker,
+		"flash_id_prefix": "docker-registry-",
+		"fn": function(id, opts) {
+			docker_registry_tabs(id, opts)
+		}
 	})
 }
 

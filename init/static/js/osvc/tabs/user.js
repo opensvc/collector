@@ -4,7 +4,7 @@
 function user_tabs(divid, options) {
 	var o = tabs(divid)
 	o.options = options
-	o.options.bgcolor = osvc.colors.org
+	o.options.bgcolor = osvc.colors.user
 	o.options.icon = "guy16"
 	o.link = {
 		"fn": arguments.callee.name,

@@ -129,6 +129,60 @@ objcols = {
 }
 
 colprops = {
+	"registry_id": {
+		"field": "id",
+		"table": "docker_registries",
+		"img": "key",
+		"title": "Registry id"
+	},
+	"registry_service": {
+		"_class": "docker_registry",
+		"field": "service",
+		"table": "docker_registries",
+		"img": "docker_registry16",
+		"title": "Registry service"
+	},
+	"registry_updated": {
+		"field": "updated",
+		"table": "docker_registries",
+		"_class": "datetime_status",
+		"img": "time16",
+		"title": "Registry updated"
+	},
+	"registry_created": {
+		"field": "created",
+		"table": "docker_registries",
+		"_class": "datetime_no_age",
+		"img": "time16",
+		"title": "Registry created"
+	},
+	"repository_id": {
+		"field": "id",
+		"table": "docker_repositories",
+		"img": "key",
+		"title": "Repository id"
+	},
+	"repository_name": {
+		"_class": "docker_repository",
+		"field": "repository",
+		"table": "docker_repositories",
+		"img": "docker_repository16",
+		"title": "Repository name"
+	},
+	"repository_updated": {
+		"field": "updated",
+		"table": "docker_repositories",
+		"_class": "datetime_status",
+		"img": "time16",
+		"title": "Repository updated"
+	},
+	"repository_created": {
+		"field": "created",
+		"table": "docker_repositories",
+		"_class": "datetime_no_age",
+		"img": "time16",
+		"title": "Repository created"
+	},
 	"safe_name": {
 		"img": "safe16",
 		"title": "Name"

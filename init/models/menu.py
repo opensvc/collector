@@ -31,6 +31,7 @@ menu_entries = [
   'view-node-san',
   'view-san',
   'view-dns',
+  'view-docker',
   'view-saves',
   'view-disks',
   'view-disks-quotas',

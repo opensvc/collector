@@ -60,10 +60,14 @@ def rest_router(action, args, vars):
         for handler in get_handlers(action, args[0]):
             if handler.match("/"+request.raw_args):
                 return handler.handle(*args, **vars)
-    except Exception as e:
-        err = str(e)
-        if len(err) == 0:
-            err = str(type(e))
+    except:
+        import sys
+        import traceback
+        e = sys.exc_info()
+        if e[0] in (Exception, ):
+            err = str(e[1])
+        else:
+            err = traceback.format_exc()
         return dict(error=err)
     response.status = 404
     return dict(error="Unsupported api url: %s %s" % (action, str(args)))

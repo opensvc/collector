@@ -65,6 +65,7 @@
 	},
 	"action_menu": {
 		"toggle_display": "Fold / Unfold",
+		"docker_registry": "Docker registry",
 		"metric": "Metric",
 		"chart": "Chart",
 		"report": "Report",
@@ -94,6 +95,7 @@
 		"detach_filters": "Detach filters",
 		"attach_filtersets": "Attach filtersets",
 		"detach_filtersets": "Detach filtersets",
+		"docker_registry_createable": "This docker registry service does not exist yet. Press <enter> to create.",
 		"service_createable": "This service name does not exist yet. Press <enter> to create.",
 		"report_createable": "This report name does not exist yet. Press <enter> to create.",
 		"chart_createable": "This chart name does not exist yet. Press <enter> to create.",
@@ -266,6 +268,7 @@
 			"column": "Column __col__ filter:"
 		},
 		"name": {
+			"registries": "Docker registries",
 			"safe": "Safe",
 			"action_queue": "Action queue",
 			"actions": "Service actions",
@@ -529,6 +532,18 @@
 		"creation": "Creation",
 		"author": "Author",
 		"creation_date": "Creation date"
+	},
+	"docker_properties": {
+		"pullers": "pullers",
+		"pushers": "pushers",
+		"url": "Url",
+		"insecure": "Insecure",
+		"service": "Service",
+		"repository": "repository",
+		"registry": "registry"
+	},
+	"docker_repository_tabs": {
+		"tags": "tags"
 	},
 	"workflow_tabs": {
 		"derive_text": "Derive a new workflow from this workflow head form, using the submitted data as initial values in the new workflow.",
@@ -957,6 +972,10 @@
 		"navigation": "Navigation",
 		"views": {
 			"title": "Infrastructure",
+			"docker": {
+					"title": "Docker registries",
+					"text": "Repositories and tags in each private registries"
+			},
 			"dashboard": {
 					"title": "Dashboard",
 					"text": "Current issues on nodes and services"
@@ -1340,6 +1359,18 @@
 		"hidden_menu_entries": "hidden menu entries"
 	},
 	"col": {
+		"Registry id": "Registry Id",
+		"Registry service": "Registry service",
+		"Registry updated": "Registry updated",
+		"Registry created": "Registry created",
+		"Repository id": "Repository Id",
+		"Repository name": "Repository name",
+		"Repository updated": "Repository updated",
+		"Repository created": "Repository created",
+		"Tag id": "Tag Id",
+		"Registry service": "Registry service",
+		"Registry updated": "Registry updated",
+		"Registry created": "Registry created",
 		"Node Id": "Node Id",
 		"Service Id": "Service Id",
 		"Node App": "Node App",
@@ -1553,6 +1584,7 @@
 		"Patchrev": "Patchrev",
 		"Filterset": "Filterset",
 		"Tag created": "Tag created",
+		"Tag updated": "Tag updated",
 		"Ip range begin": "Ip range begin",
 		"Created": "Created",
 		"Server": "Server",

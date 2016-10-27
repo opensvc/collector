@@ -39,6 +39,8 @@ def node_svc_id(node_id, svcname):
 
 def create_svc(node_id, svcname):
     node = get_node(node_id)
+    if node is None:
+        return
     data = {
       "svcname": svcname,
       "svc_app": node.app,

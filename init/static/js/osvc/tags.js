@@ -1381,4 +1381,80 @@ function moduleset_services(options) {
 	return tags(options)
 }
 
+function docker_registry_responsibles(options) {
+	options.tag_name = "role"
+	options.flash_id_prefix = "group"
+	options.id = "id"
+	options.bgcolor = osvc.colors.org
+	options.icon = "guys16"
+	options.get_tags = function(fval, callback, callback_err) {
+		services_osvcgetrest("/docker/registries/%1/responsibles", [options.registry_id], {
+			"orderby": options.tag_name,
+			"props": "id," + options.tag_name,
+			"limit": "0"
+		}, callback, callback_err)
+	}
+	options.get_candidates = function(fval, callback, callback_err) {
+		services_osvcgetrest("/groups", "", {
+			"orderby": options.tag_name,
+			"props": "id," + options.tag_name,
+			"limit": "0",
+			"meta": "false",
+			"filters": ["privilege F", options.tag_name+" "+fval]
+		}, callback, callback_err)
+	}
+	options.attach = function(tag_data, callback, callback_err) {
+		services_osvcpostrest("/docker/registries/%1/responsibles/%2", [options.registry_id, tag_data.id], "", "", callback, callback_err)
+	}
+	options.detach = function(tag, callback, callback_err) {
+		services_osvcdeleterest("/docker/registries/%1/responsibles/%2", [options.registry_id, tag.attr("tag_id")], "", "", callback, callback_err)
+	}
+	options.am_i_responsible = function(callback) {
+		services_osvcgetrest("/docker/registries/%1/am_i_responsible", [options.registry_id], "", callback)
+	}
+	options.ondblclick = function(divid, data) {
+		group_tabs(divid, {"group_id": data.id, "group_name": data.name})
+	}
+	options.events = ["auth_group_change", "docker_registries_responsibles_change"]
+	return tags(options)
+}
+
+function docker_registry_publications(options) {
+	options.tag_name = "role"
+	options.flash_id_prefix = "group"
+	options.id = "id"
+	options.bgcolor = osvc.colors.org
+	options.icon = "guys16"
+	options.get_tags = function(fval, callback, callback_err) {
+		services_osvcgetrest("/docker/registries/%1/publications", [options.registry_id], {
+			"orderby": options.tag_name,
+			"props": "id," + options.tag_name,
+			"limit": "0"
+		}, callback, callback_err)
+	}
+	options.get_candidates = function(fval, callback, callback_err) {
+		services_osvcgetrest("/groups", "", {
+			"orderby": options.tag_name,
+			"props": "id," + options.tag_name,
+			"limit": "0",
+			"meta": "false",
+			"filters": ["privilege F", options.tag_name+" "+fval]
+		}, callback, callback_err)
+	}
+	options.attach = function(tag_data, callback, callback_err) {
+		services_osvcpostrest("/docker/registries/%1/publications/%2", [options.registry_id, tag_data.id], "", "", callback, callback_err)
+	}
+	options.detach = function(tag, callback, callback_err) {
+		services_osvcdeleterest("/docker/registries/%1/publications/%2", [options.registry_id, tag.attr("tag_id")], "", "", callback, callback_err)
+	}
+	options.am_i_responsible = function(callback) {
+		services_osvcgetrest("/docker/registries/%1/am_i_responsible", [options.registry_id], "", callback)
+	}
+	options.ondblclick = function(divid, data) {
+		group_tabs(divid, {"group_id": data.id, "group_name": data.name})
+	}
+	options.events = ["auth_group_change", "docker_registries_publications_change"]
+	return tags(options)
+}
+
 

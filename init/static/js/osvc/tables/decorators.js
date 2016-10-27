@@ -422,6 +422,22 @@ function cell_decorator_form_name(e, line) {
 	.osvc_form({"tag": false, "event": "click", "form_id": form_id, "form_name": v})
 }
 
+function cell_decorator_docker_repository(e, line) {
+	var v = $.data(e[0], "v")
+	var repository_id = $.data(line.children("[col=repository_id]")[0], "v")
+	e
+	.addClass("corner-top")
+	.osvc_docker_repository({"tag": false, "event": "click", "repository_id": repository_id, "repository_name": v})
+}
+
+function cell_decorator_docker_registry(e, line) {
+	var v = $.data(e[0], "v")
+	var registry_id = $.data(line.children("[col=registry_id]")[0], "v")
+	e
+	.addClass("corner-top")
+	.osvc_docker_registry({"tag": false, "event": "click", "registry_id": registry_id, "registry_service": v})
+}
+
 function cell_decorator_network(e, line) {
 	var v = $.data(e[0], "v")
 	e
@@ -740,7 +756,7 @@ function cell_decorator_user_id(e, line) {
 			id: "user-"+fullname,
 			text: v, 
 			cl: "icon guy16",
-			bgcolor: osvc.colors.org,
+			bgcolor: osvc.colors.user,
 			fn: function(id){user_tabs(id, {"user_id": v, "fullname": fullname})}
 		})
 	})
@@ -761,7 +777,7 @@ function cell_decorator_username(e, line) {
 			id: "user-"+v,
 			text: v, 
 			cl: "icon guy16",
-			bgcolor: osvc.colors.org,
+			bgcolor: osvc.colors.user,
 			fn: function(id){user_tabs(id, {"fullname": v})}
 		})
 	})
@@ -2040,6 +2056,8 @@ cell_decorators = {
 	"metric_name": cell_decorator_metric_name,
 	"dns_records_type": cell_decorator_dns_records_type,
 	"tag_exclude": cell_decorator_tag_exclude,
+	"docker_repository": cell_decorator_docker_repository,
+	"docker_registry": cell_decorator_docker_registry,
 	"form_name": cell_decorator_form_name,
 	"quota": cell_decorator_quota,
 	"dns_record": cell_decorator_dns_record,

@@ -6208,3 +6208,67 @@ alter table comp_node_moduleset drop key idx1;
 alter table comp_node_moduleset add unique key uk (modset_id, node_id);
 alter table comp_rulesets_services add unique key (ruleset_id, svc_id, slave);
 
+CREATE TABLE  docker_registries (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `service` varchar(128) NOT NULL,
+  `url` varchar(255) NOT NULL,
+  `insecure` varchar(1) NOT NULL DEFAULT 'F',
+  `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_url` (`url`),
+  UNIQUE KEY `uk_service` (`service`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE  docker_repositories (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `registry_id` integer NOT NULL,
+  `repository` varchar(255) NOT NULL,
+  `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk` (`registry_id`,`repository`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE  docker_tags (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `registry_id` integer NOT NULL,
+  `repository_id` integer NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `user_id` integer NOT NULL,
+  `node_id` integer NOT NULL,
+  `svc_id` integer NOT NULL,
+  `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk` (`registry_id`,`repository_id`, `name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `docker_registries_publications` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `group_id` int(11) NOT NULL,
+  `registry_id` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `k_group_id` (`group_id`),
+  KEY `k_registry_id` (`registry_id`),
+  UNIQUE KEY uk (`group_id`, `registry_id`)
+);
+
+CREATE TABLE `docker_registries_responsibles` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `group_id` int(11) NOT NULL,
+  `registry_id` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `k_group_id` (`group_id`),
+  KEY `k_registry_id` (`registry_id`),
+  UNIQUE KEY uk (`group_id`, `registry_id`)
+);
+
+alter table forms_revisions drop key idx1;
+
+alter table forms_revisions add unique  k_form_md5 (form_md5);
+
+insert ignore into auth_group (role, privilege) values ("DockerRegistriesPusher", "T");
+insert ignore into auth_group (role, privilege) values ("DockerRegistriesPuller", "T");
+insert ignore into auth_group (role, privilege) values ("DockerRegistriesManager", "T");
+

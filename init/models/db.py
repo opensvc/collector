@@ -2037,3 +2037,40 @@ db.define_table('v_scheduler_run',
     Field('worker_name','string'),
     migrate=False)
 
+db.define_table('docker_registries',
+    Field('service', 'string', length=128),
+    Field('url', 'string', length=256),
+    Field('insecure', 'boolean'),
+    Field('updated', "datetime"),
+    Field('created', "datetime"),
+    migrate=False)
+
+db.define_table('docker_repositories',
+    Field('registry_id', 'integer'),
+    Field('repository', 'string', length=255),
+    Field('updated', "datetime"),
+    Field('created', "datetime"),
+    migrate=False)
+
+db.define_table('docker_tags',
+    Field('registry_id', 'integer'),
+    Field('repository_id', 'integer'),
+    Field('name', 'string', length=255),
+    Field('user_id', 'integer'),
+    Field('node_id', 'integer'),
+    Field('svc_id', 'integer'),
+    Field('updated', "datetime"),
+    Field('created', "datetime"),
+    migrate=False)
+
+db.define_table('docker_registries_publications',
+    Field('group_id', 'integer'),
+    Field('registry_id', 'integer'),
+    migrate=False)
+
+db.define_table('docker_registries_responsibles',
+    Field('group_id', 'integer'),
+    Field('registry_id', 'integer'),
+    migrate=False)
+
+

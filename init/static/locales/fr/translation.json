@@ -65,7 +65,8 @@
 	},
 	"action_menu": {
 		"toggle_display": "Déplier / Replier",
-		"metric": "Metrique",
+		"docker_registry": "Registre docker",
+		"metric": "Métrique",
 		"chart": "Courbe",
 		"report": "Rapport",
 		"prov_template": "Modèle de provisioning",
@@ -95,6 +96,7 @@
 		"detach_filtersets": "Détacher des jeux de filtres",
 		"set_warn_date": "Changer la date d'attention",
 		"set_alert_date": "Changer la date d'alerte",
+		"docker_registry_createable": "Ce service registre docker n'existe pas encore. Appuyez sur <entrée> pour le créer.",
 		"service_createable": "Ce nom de service n'existe pas encore. Appuyez sur <entrée> pour le créer.",
 		"report_createable": "Ce nom de rapport n'existe pas encore. Appuyez sur <entrée> pour le créer.",
 		"chart_createable": "Ce nom de courbe n'existe pas encore. Appuyez sur <entrée> pour le créer.",
@@ -266,6 +268,7 @@
 			"column": "Filtre de la colonne __col__:"
 		},
 		"name": {
+			"registries": "Registres docker",
 			"safe": "Coffre-fort",
 			"action_queue": "File d'attente des actions",
 			"actions": "Actions des services",
@@ -527,6 +530,18 @@
 		"creation": "Création",
 		"author": "Auteur",
 		"creation_date": "Date de création"
+	},
+	"docker_properties": {
+		"pullers": "pullers",
+		"pushers": "pushers",
+		"url": "Url",
+		"insecure": "Non-sécurisée",
+		"service": "Service",
+		"repository": "dépôt",
+		"registry": "registre"
+	},
+	"docker_repository_tabs": {
+		"tags": "tags"
 	},
 	"workflow_tabs": {
 		"derive_text": "Dériver un nouveau worflow à partir du formulaire de tête de ce workflow, en utilisant les valeurs saisies comme valeurs initiales dans le nouveau workflow.",
@@ -955,6 +970,10 @@
 		"navigation": "Navigation",
 		"views" : {
 			"title" : "Infrastructure",
+			"docker": {
+					"title": "Registres Docker",
+					"text": "Dépots et tags dans les registres privés"
+			},
 			"dashboard" : {
 					"title" : "Pilotage",
 					"text" : "Problèmes actuels sur les nœuds et services"
@@ -1339,8 +1358,17 @@
 	"group_tabs": {
 		"hidden_menu_entries": "entrées cachées du menu"
 	},
-	"col" : {
-		"Node Id": "Id de noeud",
+	"col": {
+		"Registry id": "Id du registre",
+		"Registry service": "Service du registre",
+		"Registry updated": "Mise à jour du registre",
+		"Registry created": "Création du registre",
+		"Repository id": "Id du dépôt",
+		"Repository name": "Nom du dépôt",
+		"Repository updated": "Mise à jour du dépôt",
+		"Repository created": "Création du dépôt",
+		"Tag id": "Id du tag",
+ 		"Node Id": "Id de noeud",
 		"Service Id": "Id de service",
 		"Node App": "App du noeud",
                 "Unique id": "Id unique",

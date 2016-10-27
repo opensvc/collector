@@ -494,7 +494,6 @@ tab_properties_generic_updater = function(options) {
 		if (updater == "org_group") {
 			$(this).osvc_org_group()
 		} else if ((updater == "org_group_id") || (updater == "primary_group")) {
-console.log($(this))
 			$(this).osvc_org_group({"group_id": e.attr("acid")})
 		} else if (updater == "app") {
 			$(this).osvc_app()
@@ -542,6 +541,14 @@ tab_properties_generic_list = function(options) {
 		render(options.data, options.data.length, options.data.length)
 		return
 	}
+	options.tag_ids = []
+
+	function clear() {
+		for (i=0; i<options.tags_ids; i++) {
+			options.e_list.children("[tag_id="+options.tags_ids[i]+"]").remove()
+		}
+		options.tag_ids = []
+	}
 
 	function refresh() {
 		if (typeof(options.request_parameters) === "function") {
@@ -563,7 +570,7 @@ tab_properties_generic_list = function(options) {
 		options.e_list.addClass("tag_container")
 		var title = options.e_title.text().replace(/\s*\([0-9]+\)\s*/, "")
 		options.e_title.text(title + " ("+total+")")
-		options.e_list.empty()
+		clear()
 		for (var i=0; i<data.length; i++) {
 			var e = $("<span></span>")
 			if (options.bgcolor) {
@@ -590,6 +597,7 @@ tab_properties_generic_list = function(options) {
 				e.attr("tag_id", data[i][options.id])
 			}
 			options.e_list.append(e)
+			options.tag_ids.push(data[i][options.id])
 			e.bind("dblclick", function(event){
 				if (!options.ondblclick) {
 					return

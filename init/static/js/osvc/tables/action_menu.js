@@ -426,6 +426,13 @@ function table_action_menu_init_data(t) {
 							"fn": "data_action_add_filterset",
 							"privileges": ["Manager", "CompManager"],
 							"min": 0
+						},
+						{
+							"title": "action_menu.docker_registry",
+							"class": "docker_registry16",
+							"fn": "data_action_add_docker_registry",
+							"privileges": ["Manager", "DockerRegistriesManager"],
+							"min": 0
 						}
 					]
 				},
@@ -1462,6 +1469,22 @@ function table_action_menu_init_data(t) {
 							"class": "guys16",
 							"fn": "data_action_user_set_primary_group",
 							"privileges": ["Manager", "UserManager", "SelfManager"],
+							"min": 1
+						}
+					]
+				},
+				{
+					"selector": ["clicked", "checked", "all"],
+					"title": "action_menu.on_docker_registries",
+					"class": "docker_registry16",
+					"foldable": true,
+					"cols": ["registry_id"],
+					"condition": "registry_id",
+					"children": [
+						{
+							"title": "action_menu.delete",
+							"class": "del16",
+							"fn": "data_action_delete_docker_registry",
 							"min": 1
 						}
 					]
@@ -3513,6 +3536,20 @@ function data_action_action_queue_redo(t, e) {
 }
 
 //
+// data action: delete docker registry
+//
+function data_action_delete_docker_registry(t, e) {
+	data_action_generic_delete(t, e, {
+		"request_service": "/docker/registries",
+		"request_data_entry": function(data) {
+			return {
+				'id': data['id']
+			}
+		}
+	})
+}
+
+//
 // data action: delete nodes
 //
 function data_action_delete_nodes(t, e) {
@@ -3841,6 +3878,25 @@ function data_action_add_filterset(t, e) {
 			{
 				"title": "fset_properties.name",
 				"key": "fset_name"
+			}
+		]
+	})
+}
+
+//
+// data action: add docker registry
+//
+function data_action_add_docker_registry(t, e) {
+	data_action_generic_add(t, e, {
+		"request_service": "/docker/registries",
+		"properties_tab": function(divid, data) {
+			docker_registry_tabs(divid, {"registry_service": data.service})
+		},
+		"createable_message": "action_menu.docker_registry_createable",
+		"inputs": [
+			{
+				"title": "docker_properties.service",
+				"key": "service"
 			}
 		]
 	})

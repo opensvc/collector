@@ -1,3 +1,79 @@
+function table_registries(divid, options) {
+	var defaults = {
+		'divid': divid,
+		'icon': "docker16",
+		'caller': 'table_registries',
+		'id': 'registries',
+		'name': 'registries',
+		'ajax_url': '/init/registry/ajax_registries',
+		'span': ['repository_id'],
+		'force_cols': ['id', 'registry_id', 'repository_id', 'tag_id'],
+		'columns': ['registry_id', 'registry_service', 'registry_updated', 'registry_created', 'repository_id', 'repository_name', 'repository_updated', 'repository_created', 'tag_id', 'tag_name', 'tag_updated', 'tag_created'],
+		'default_columns': ['registry_service', 'repository_name', 'tag_name', 'tag_updated', 'tag_created'],
+		'colprops': {
+			"tag_id": {
+				"table": "docker_tags",
+				"field": "id",
+				"img": "key",
+				"title": "Tag id"
+			},
+			"tag_name": {
+				"table": "docker_tags",
+				"field": "name",
+				"img": "dockertag16",
+				"title": "Tag name"
+			},
+			"tag_updated": {
+				"_class": "datetime_status",
+				"table": "docker_tags",
+				"field": "updated",
+				"img": "time16",
+				"title": "Tag updated"
+			},
+			"tag_created": {
+				"_class": "datetime_no_age",
+				"table": "docker_tags",
+				"field": "created",
+				"img": "time16",
+				"title": "Tag created"
+			}
+		},
+		'wsable': true,
+		'events': ['docker_tags_change']
+	}
+
+	var _options = $.extend({}, defaults, options)
+	return table_init(_options)
+}
+
+function table_registries_repo(divid, repository_id) {
+	var id = "docker_repository_" + repository_id
+	var f_repository_id = repository_id+"_f_repository_id"
+	var request_vars = {}
+	request_vars[f_repository_id] = repository_id
+	return table_registries(divid, {
+		"id": id,
+		"caller": "table_registries_repo",
+		"request_vars": request_vars,
+		"volatile_filters": true,
+		"hide_cols": ['repository_id', 'repository_name']
+	})
+}
+
+function table_registries_registry(divid, registry_id) {
+	var id = "docker_registry_" + registry_id
+	var f_registry_id = registry_id+"_f_registry_id"
+	var request_vars = {}
+	request_vars[f_registry_id] = registry_id
+	return table_registries(divid, {
+		"id": id,
+		"caller": "table_registries_registry",
+		"request_vars": request_vars,
+		"volatile_filters": true,
+		"hide_cols": ['registry_id', 'registry_service']
+	})
+}
+
 function table_action_queue(divid, options) {
 	var defaults = {
 		'divid': divid,

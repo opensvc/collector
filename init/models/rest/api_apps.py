@@ -261,7 +261,7 @@ class rest_delete_app(rest_delete_handler):
         q = db.apps_responsibles.app_id == row.id
         db(q).delete()
         table_modified("apps_responsibles")
-        ws_send('apps_responsible_change')
+        ws_send('apps_responsibles_change')
 
         q = db.apps_publications.app_id == row.id
         db(q).delete()

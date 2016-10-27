@@ -1,6 +1,12 @@
 import datetime
 import xmlrpclib
 
+def chunker(lst, length):
+    i = -1
+    for i in range(len(lst) // length):
+        yield lst[i*length:(i+1)*length]
+    yield lst[(i+1)*length:]
+
 def value_wrap(a):
     return "%(a)s=values(%(a)s)"%dict(a=a)
 

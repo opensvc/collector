@@ -185,7 +185,7 @@ function group_properties(divid, options) {
 					return s
 				},
 				"id": "id",
-				"bgcolor": osvc.colors.org,
+				"bgcolor": osvc.colors.user,
 				"e_title": o.info_users_title,
 				"e_list": o.info_users,
 				"ondblclick": function(divid, data) {

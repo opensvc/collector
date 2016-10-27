@@ -5,6 +5,8 @@ var osvc = {
 	'i18n_started': $.Deferred(),
 	'app_started': $.Deferred(),
 	'icons': {
+		'docker_repository': 'docker_repository16',
+		'docker_registry': 'docker_registry16',
 		'node': 'node16',
 		'svc': 'svc',
 		'service': 'svc',
@@ -29,6 +31,7 @@ var osvc = {
 		'app': 'app16'
 	},
 	'colors': {
+		'docker': '#27b8e8',
 		'node': 'cornflowerblue',
 		'svc': 'seagreen',
 		'service': 'seagreen',
@@ -43,6 +46,7 @@ var osvc = {
 		'metric': 'sandybrown',
 		'chart': 'sandybrown',
 		'org': 'salmon',
+		'user': '#FAA272',
 		'error': 'red',
 		'dns': 'turquoise',
 		'priv': 'goldenrod',
@@ -676,6 +680,30 @@ function api_doc(divid, options) {
 function scheduler_stats(divid, options) {
 	require(["osvc/scheduler_stats"], function() {
 		scheduler_stats(divid, options)
+	})
+}
+
+function docker_registry_tabs(divid, options) {
+	require(["osvc/tabs/docker_registry"], function() {
+		docker_registry_tabs(divid, options)
+	})
+}
+
+function docker_registry_properties(divid, options) {
+	require(["osvc/tabs/docker_registry"], function() {
+		docker_registry_properties(divid, options)
+	})
+}
+
+function docker_repository_tabs(divid, options) {
+	require(["osvc/tabs/docker_repository"], function() {
+		docker_repository_tabs(divid, options)
+	})
+}
+
+function docker_repository_properties(divid, options) {
+	require(["osvc/tabs/docker_repository"], function() {
+		docker_repository_properties(divid, options)
 	})
 }
 
