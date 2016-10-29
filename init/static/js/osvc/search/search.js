@@ -625,6 +625,48 @@ function search_get_menu(fk)
           }
         ]
     },
+    "docker_registries": {
+        "tab" : function(id, res){docker_registry_tabs(id, {"registry_name": res.service, "registry_id": res.id})},
+        "type": "docker_registry",
+        "color": "docker",
+        "id": "id",
+        "title": "__service__",
+        "short_title": "__service__",
+        "menu_entry_id": "view-registries",
+        "class": "docker_registry16 fa-2x search-section-icon",
+        "subclass": "meta_docker_repository clickable",
+        "links" : [
+          {
+            "title": "registries",
+            "menu_entry_id": "view-registries",
+            "class": "docker_registries16",
+            "link": "/init/registry/registries?volatile_filters=true&registries_f_registry_service=__service__",
+            "fn": "table_registries",
+            "options": {"volatile_filters": true, "request_vars": {"registries_f_registry_service": "__service__"}}
+          }
+        ]
+    },
+    "docker_repositories": {
+        "tab" : function(id, res){docker_repository_tabs(id, {"repository_name": res.repository, "repository_id": res.id})},
+        "type": "docker_repository",
+        "color": "docker",
+        "id": "id",
+        "title": "__repository__",
+        "short_title": "__repository__",
+        "menu_entry_id": "view-registries",
+        "class": "docker_repository16 fa-2x search-section-icon",
+        "subclass": "meta_docker_repository clickable",
+        "links" : [
+          {
+            "title": "registries",
+            "menu_entry_id": "view-registries",
+            "class": "docker_registries16",
+            "link": "/init/registry/registries?volatile_filters=true&registries_f_repository_name=__repository__",
+            "fn": "table_registries",
+            "options": {"volatile_filters": true, "request_vars": {"registries_f_repository_name": "__repository__"}}
+          }
+        ]
+    },
     "filtersets": {
         "tab" : function(id, res){filterset_tabs(id, {"fset_name": res.fset_name})},
         "type": "fset",

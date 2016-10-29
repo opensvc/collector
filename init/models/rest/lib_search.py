@@ -337,3 +337,44 @@ def lib_search_rulesets(pattern):
     }
 
 
+def lib_search_docker_registries(pattern):
+    t = datetime.datetime.now()
+    o = db.docker_registries.service
+    q = db.docker_registries.service.like(pattern)
+    q |= db.docker_registries.url.like(pattern)
+    if "Manager" not in user_groups():
+        q &= db.docker_registries_publications.registry_id == db.docker_registries.id
+        q &= db.docker_registries_publications.group_id.belongs(user_group_ids())
+    n = db(q).count()
+    data = db(q).select(o,
+                        db.docker_registries.id,
+                        orderby=o,
+                        limitby=(0,max_search_result),
+    ).as_list()
+    t = datetime.datetime.now() - t
+    return {
+      "total": n,
+      "data": data,
+      "elapsed": "%f" % (t.seconds + 1. * t.microseconds / 1000000),
+    }
+
+def lib_search_docker_repositories(pattern):
+    t = datetime.datetime.now()
+    o = db.docker_repositories.repository
+    q = db.docker_repositories.repository.like(pattern)
+    if "Manager" not in user_groups():
+         q &= docker_repositories_acls_query()
+    n = db(q).count()
+    data = db(q).select(o,
+                        db.docker_repositories.id,
+                        orderby=o,
+                        limitby=(0,max_search_result),
+    ).as_list()
+    t = datetime.datetime.now() - t
+    return {
+      "total": n,
+      "data": data,
+      "elapsed": "%f" % (t.seconds + 1. * t.microseconds / 1000000),
+    }
+
+

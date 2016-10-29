@@ -1484,7 +1484,25 @@ function table_action_menu_init_data(t) {
 						{
 							"title": "action_menu.delete",
 							"class": "del16",
-							"fn": "data_action_delete_docker_registry",
+							"fn": "data_action_delete_docker_registries",
+							"privileges": ["Manager", "DockerRegistriesManager"],
+							"min": 1
+						}
+					]
+				},
+				{
+					"selector": ["clicked", "checked", "all"],
+					"title": "action_menu.on_docker_tags",
+					"class": "dockertags16",
+					"foldable": true,
+					"cols": ["tag_id"],
+					"condition": "tag_id",
+					"children": [
+						{
+							"title": "action_menu.delete",
+							"class": "del16",
+							"fn": "data_action_delete_docker_tags",
+							"privileges": ["Manager", "DockerRegistriesManager"],
 							"min": 1
 						}
 					]
@@ -3536,11 +3554,25 @@ function data_action_action_queue_redo(t, e) {
 }
 
 //
-// data action: delete docker registry
+// data action: delete docker registries
 //
-function data_action_delete_docker_registry(t, e) {
+function data_action_delete_docker_registries(t, e) {
 	data_action_generic_delete(t, e, {
 		"request_service": "/docker/registries",
+		"request_data_entry": function(data) {
+			return {
+				'id': data['id']
+			}
+		}
+	})
+}
+
+//
+// data action: delete docker tags
+//
+function data_action_delete_docker_tags(t, e) {
+	data_action_generic_delete(t, e, {
+		"request_service": "/docker/tags",
 		"request_data_entry": function(data) {
 			return {
 				'id': data['id']

@@ -1,14 +1,3 @@
-def lib_docker_registry_id(id):
-    try:
-        id = int(id)
-        return id
-    except:
-        q = db.docker_registries.service == id
-        row = db(q).select().first()
-        if row is not None:
-            return row.id
-    raise Exception("docker registry %s does not exist" % str(id))
-
 def docker_registry_responsible(id):
     if "Manager" in user_groups():
         return
@@ -36,14 +25,6 @@ def docker_registry_published(id):
     registry = db(q).select(db.docker_registries.id).first()
     if registry is None:
         raise Exception("Registry %s not found or not published to you" % str(id))
-
-def get_docker_repository(id):
-        q = db.docker_repositories.id == int(id)
-        q &= docker_repositories_acls_query()
-        r = db(q).select().first()
-        if r is None:
-            raise Exception("repository %s not found" % str(id))
-        return r
 
 class rest_get_docker_repositories(rest_get_table_handler):
     def __init__(self):
@@ -956,7 +937,7 @@ class rest_delete_docker_registries(rest_delete_handler):
           "A websocket event is sent to announce the change in the table.",
         ]
         examples = [
-          """# curl -u %(email)s -o- -X DELETE https://%(collector)s/init/rest/api/docker/registries/1""",
+          """# curl -u %(email)s -o- -X DELETE https://%(collector)s/init/rest/api/docker/registries""",
         ]
         rest_delete_handler.__init__(
           self,
@@ -1032,6 +1013,73 @@ class rest_delete_docker_registry(rest_delete_handler):
              dict(s=row.service),
             )
         return dict(info="docker registry %(s)s deleted" % dict(s=row.service))
+
+
+class rest_delete_docker_tags(rest_delete_handler):
+    def __init__(self):
+        desc = [
+          "Delete docker repository tags from the registry and the collector.",
+          "The user must be in the DockerRegistriesManager privilege group.",
+          "The user must be in a publication group of the docker registry.",
+          "The user have acl allowing push on the repository.",
+          "The action is logged in the collector's log.",
+          "A websocket event is sent to announce the change in the table.",
+        ]
+        examples = [
+          """# curl -u %(email)s -o- -X DELETE https://%(collector)s/init/rest/api/docker/tags""",
+        ]
+        rest_delete_handler.__init__(
+          self,
+          path="/docker/tags",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, **vars):
+        if "id" in vars:
+            tag_id = vars["id"]
+        else:
+            raise Exception("The 'id' key is mandatory")
+        return rest_delete_docker_tag().handler(tag_id)
+
+#
+class rest_delete_docker_tag(rest_delete_handler):
+    def __init__(self):
+        desc = [
+          "Delete a docker repository tag from the registry and the collector.",
+          "The user must be in the DockerRegistriesManager privilege group.",
+          "The user must be in a responsible group of the docker registry.",
+          "The action is logged in the collector's log.",
+          "A websocket event is sent to announce the change in the table.",
+        ]
+        examples = [
+          """# curl -u %(email)s -o- -X DELETE https://%(collector)s/init/rest/api/docker/tags/1""",
+        ]
+        rest_delete_handler.__init__(
+          self,
+          path="/docker/tags/<id>",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, id, **vars):
+        check_privilege("DockerRegistriesManager")
+
+        q = db.docker_tags.id == int(id)
+        tag = db(q).select().first()
+        if tag is None:
+            raise Exception("tag '%s' does not exist" % str(id))
+
+        docker_registry_responsible(tag.registry_id)
+        repository = get_docker_repository(tag.repository_id)
+
+        docker_delete_tag(registry.id, repository.id, tag.name)
+        ws_send('docker_tags_change')
+        _log('docker.tags.delete',
+             'docker tag %(s)s deleted',
+             dict(s=str(id)),
+            )
+        return dict(info="docker tag %(s)s deleted" % dict(s=str(id)))
 
 
 

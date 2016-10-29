@@ -224,6 +224,8 @@ def clear_cache_user_groups():
 def user_groups(id=None):
     if id is None:
         id = auth.user_id
+    if id is None:
+        return []
     return cache.redis("user_groups:%d"%auth.user_id, lambda: _user_groups(id), time_expire=14400)
 
 def _user_groups(id):

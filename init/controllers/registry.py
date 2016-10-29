@@ -9,9 +9,6 @@ key_f = config_get("registry_jwt_key", "/opt/web2py/applications/init/private/ss
 crt_f = config_get("registry_jwt_crt", "/opt/web2py/applications/init/private/ssl/server.crt")
 issuer = config_get("registry_jwt_issuer", "opensvc")
 
-logger = logging.getLogger("web2py.app.init.token")
-logger.setLevel(logging.DEBUG)
-
 #
 # token manager
 #
@@ -20,20 +17,6 @@ def token():
     scope = request.vars.scope
     service = request.vars.service
     return json.dumps({"token": _token(scope, service)})
-
-def _token(scope, service):
-    if scope is None:
-        # docker login
-        logger.info("docker login. "+str(request.vars))
-    else:
-        logger.info("docker auth. "+str(request.vars))
-        scope = parse_scope(scope)
-
-    payload = create_payload(scope, service)
-    key = load_key()
-    token = jwt.encode(payload, key, algorithm='RS256', headers={"kid": keyid()})
-    load_pubkey()
-    return token
 
 def keyid():
     import hashlib
@@ -92,7 +75,7 @@ def create_payload(scope, service):
         vscope = validated_scope(scope, service)
         if vscope:
             data["access"] = [vscope]
-    logger.debug("token payload: "+str(data))
+    token_logger.debug("token payload: "+str(data))
     return data
 
 #
@@ -105,7 +88,7 @@ def validated_scope(scope, service):
     q = db.docker_registries.service == service
     registry = db(q).select().first()
     if registry is None:
-        logger.error("unknown registry '%s'" % service)
+        token_logger.error("unknown registry '%s'" % service)
         scope["actions"] = []
         return scope
     registry_id = registry.id
@@ -115,7 +98,7 @@ def validated_scope(scope, service):
     # the registry
     #
     if auth.user is None:
-        logger.info("allow '*' on all to the collector")
+        token_logger.info("allow '*' on all to the collector")
         return scope
 
     group_ids = user_group_ids()
@@ -126,7 +109,7 @@ def validated_scope(scope, service):
     q = db.docker_registries_publications.group_id.belongs(group_ids)
     q &= db.docker_registries_publications.registry_id == registry_id
     if db(q).count() == 0:
-        logger.info("disallow 'push,pull' for account '%s' on repo %s:%s (no registry publication)" % (request.vars.get("account", ""), service, scope["name"]))
+        token_logger.info("disallow 'push,pull' for account '%s' on repo %s:%s (no registry publication)" % (request.vars.get("account", ""), service, scope["name"]))
         scope["actions"] = []
         return scope
 
@@ -141,7 +124,7 @@ def validated_scope(scope, service):
         q = db.docker_registries_responsibles.group_id.belongs(group_ids)
         q &= db.docker_registries_responsibles.registry_id == registry_id
         if db(q).count() == 0:
-            logger.info("disallow 'push' for account '%s' on repo %s:%s (not registry responsible)" % (request.vars.get("account", ""), service, scope["name"]))
+            token_logger.info("disallow 'push' for account '%s' on repo %s:%s (not registry responsible)" % (request.vars.get("account", ""), service, scope["name"]))
             scope["actions"] -= set(["push"])
 
     groups = user_groups()
@@ -151,7 +134,7 @@ def validated_scope(scope, service):
     # users. services bypass this filter.
     #
     if hasattr(auth.user, "id") and "DockerRegistriesPuller" not in groups:
-        logger.info("disallow 'pull' for account '%s' on repo %s:%s (not DockerRegistriesPuller)" % (request.vars.get("account", ""), service, scope["name"]))
+        token_logger.info("disallow 'pull' for account '%s' on repo %s:%s (not DockerRegistriesPuller)" % (request.vars.get("account", ""), service, scope["name"]))
         scope["actions"] -= set(["pull"])
 
     #
@@ -159,29 +142,29 @@ def validated_scope(scope, service):
     # users. services are never allowed to push.
     #
     if not hasattr(auth.user, "id"):
-        logger.info("disallow 'push' for account '%s' on repo %s:%s (service requestor)" % (request.vars.get("account", ""), service, scope["name"]))
+        token_logger.info("disallow 'push' for account '%s' on repo %s:%s (service requestor)" % (request.vars.get("account", ""), service, scope["name"]))
         scope["actions"] -= set(["push"])
     if "DockerRegistriesPusher" not in groups:
-        logger.info("disallow 'push' for account '%s' on repo %s:%s (not DockerRegistriesPusher)" % (request.vars.get("account", ""), service, scope["name"]))
+        token_logger.info("disallow 'push' for account '%s' on repo %s:%s (not DockerRegistriesPusher)" % (request.vars.get("account", ""), service, scope["name"]))
         scope["actions"] -= set(["push"])
 
     if hasattr(auth.user, "id") and scope["name"].startswith("users/%d/" % auth.user.id):
-        logger.info("no more acl filters on repo %s (personnal)" % scope["name"])
+        token_logger.info("no more acl filters on repo %s (personnal)" % scope["name"])
         return scope
 
     elif hasattr(auth.user, "username") and scope["name"].startswith("users/%s/" % auth.user.username):
-        logger.info("no more acl filters on repo %s (personnal)" % scope["name"])
+        token_logger.info("no more acl filters on repo %s (personnal)" % scope["name"])
         return scope
 
     elif scope["name"].startswith("groups/"):
         for gid in group_ids:
             if scope["name"].startswith("groups/%d/" % gid):
-                logger.info("no more acl filters on repo %s (group)" % scope["name"])
+                token_logger.info("no more acl filters on repo %s (group)" % scope["name"])
                 return scope
 
         for group in groups:
             if scope["name"].lower().startswith("groups/%s/" % group.lower()):
-                logger.info("no more acl filters on repo %s (group)" % scope["name"])
+                token_logger.info("no more acl filters on repo %s (group)" % scope["name"])
                 return scope
 
     elif scope["name"].startswith("apps/"):
@@ -192,11 +175,11 @@ def validated_scope(scope, service):
         apps = db(q).select()
         for app in apps:
             if scope["name"].startswith("apps/%d/" % app.apps.id):
-                logger.info("allow 'pull' on repo %s (app publication)" % scope["name"])
+                token_logger.info("allow 'pull' on repo %s (app publication)" % scope["name"])
                 vactions.add("pull")
                 break
             if scope["name"].lower().startswith("apps/%s/" % app.apps.app.lower()):
-                logger.info("allow 'pull' on repo %s (app publication)" % scope["name"])
+                token_logger.info("allow 'pull' on repo %s (app publication)" % scope["name"])
                 vactions.add("pull")
                 break
 
@@ -205,11 +188,11 @@ def validated_scope(scope, service):
         apps = db(q).select()
         for app in apps:
             if scope["name"].startswith("apps/%d/" % app.apps.id):
-                logger.info("allow 'push,pull' on app repo %s (app responsible)" % scope["name"])
+                token_logger.info("allow 'push,pull' on app repo %s (app responsible)" % scope["name"])
                 vactions |= set(["push", "pull"])
                 break
             if scope["name"].lower().startswith("apps/%s/" % app.apps.app.lower()):
-                logger.info("allow 'push,pull' on repo %s (app responsible)" % scope["name"])
+                token_logger.info("allow 'push,pull' on repo %s (app responsible)" % scope["name"])
                 vactions |= set(["push", "pull"])
                 break
 
@@ -218,15 +201,10 @@ def validated_scope(scope, service):
     return scope
 
 
+
 #
 # Registry discovery
 #
-def manager_token(service, repo=None):
-    if repo is None:
-        return _token("registry:catalog:*", service)
-    else:
-        return _token("repository:%s:*" % repo, service)
-
 def discover_registries():
     q = db.docker_registries.id > 0
     registries = db(q).select()
@@ -234,7 +212,7 @@ def discover_registries():
          try:
              discover_registry(registry)
          except Exception as e:
-             logger.error("registry %s discover failed: %s" % (registry.service, str(e)))
+             token_logger.error("registry '%s' discover failed: %s" % (registry.service, str(e)))
 
 def discover_registry(registry):
     __token = manager_token(registry.service)
@@ -246,7 +224,7 @@ def discover_registry(registry):
       verify=verify,
       headers={"Authorization": "Bearer "+__token}
     )
-    logger.info(r.content)
+    token_logger.info(r.content)
 
     # insert or update repos
     data = json.loads(r.content)
@@ -278,7 +256,7 @@ def discover_repository_tags(registry, repo):
       verify=verify,
       headers={"Authorization": "Bearer "+__token}
     )
-    logger.info(r.content)
+    token_logger.info(r.content)
     data = json.loads(r.content)
     vars = ["registry_id", "repository_id", "name", "updated"]
     vals = []
@@ -294,6 +272,24 @@ def discover_repository_tags(registry, repo):
     db(q).delete()
     db.commit()
 
+def get_tag_digest(registry, repo, tag, __token=None):
+    if __token is None:
+        __token = manager_token(registry.service, repo=repo.repository)
+
+    verify = not registry.insecure
+    r = requests.head(
+      registry.url+"/v2/%s/manifests/%s" % (repo.repository, tag),
+      verify=verify,
+      headers={
+        "Authorization": "Bearer "+__token,
+        "Accept": "application/vnd.docker.distribution.manifest.v2+json",
+      }
+    )
+    return r.headers["Docker-Content-Digest"]
+
+
+def test_del():
+    docker_delete_tag(1, 9, "latest")
 
 #
 # view

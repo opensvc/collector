@@ -1,13 +1,13 @@
 function table_registries(divid, options) {
 	var defaults = {
 		'divid': divid,
-		'icon': "docker16",
+		'icon': "dockertags16",
 		'caller': 'table_registries',
 		'id': 'registries',
 		'name': 'registries',
 		'ajax_url': '/init/registry/ajax_registries',
 		'span': ['repository_id'],
-		'force_cols': ['id', 'registry_id', 'repository_id', 'tag_id'],
+		'force_cols': ['registry_id', 'repository_id', 'tag_id'],
 		'columns': ['registry_id', 'registry_service', 'registry_updated', 'registry_created', 'repository_id', 'repository_name', 'repository_updated', 'repository_created', 'tag_id', 'tag_name', 'tag_updated', 'tag_created'],
 		'default_columns': ['registry_service', 'repository_name', 'tag_name', 'tag_updated', 'tag_created'],
 		'colprops': {

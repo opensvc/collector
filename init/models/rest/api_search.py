@@ -62,5 +62,8 @@ class rest_get_search(rest_get_handler):
             data["modulesets"] = lib_search_modulesets(substring)
         if otype is None or otype == "rset":
             data["rulesets"] = lib_search_rulesets(substring)
+        if otype is None or otype == "docker":
+            data["docker_registries"] = lib_search_docker_registries(substring)
+            data["docker_repositories"] = lib_search_docker_repositories(substring)
         return dict(data=data)
 

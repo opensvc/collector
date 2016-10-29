@@ -481,6 +481,8 @@ def get_delete_handlers(prefix=None):
              "rest_delete_compliance_status_runs",
         ],
         "docker": [
+             "rest_delete_docker_tags",
+             "rest_delete_docker_tag",
              "rest_delete_docker_registries",
              "rest_delete_docker_registry",
              "rest_delete_docker_registries_publications",
