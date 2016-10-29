@@ -1073,7 +1073,7 @@ class rest_delete_docker_tag(rest_delete_handler):
         docker_registry_responsible(tag.registry_id)
         repository = get_docker_repository(tag.repository_id)
 
-        docker_delete_tag(registry.id, repository.id, tag.name)
+        docker_delete_tag(tag.registry_id, repository.id, tag.name)
         ws_send('docker_tags_change')
         _log('docker.tags.delete',
              'docker tag %(s)s deleted',

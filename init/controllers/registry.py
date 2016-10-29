@@ -1,13 +1,11 @@
 import gluon.contrib.simplejson as json
-import logging
-import jwt
 import datetime
 import requests
 from gluon.storage import Storage
 
-key_f = config_get("registry_jwt_key", "/opt/web2py/applications/init/private/ssl/server.key")
-crt_f = config_get("registry_jwt_crt", "/opt/web2py/applications/init/private/ssl/server.crt")
-issuer = config_get("registry_jwt_issuer", "opensvc")
+def call():
+    session.forget(response)
+    return service()
 
 #
 # token manager
@@ -17,189 +15,6 @@ def token():
     scope = request.vars.scope
     service = request.vars.service
     return json.dumps({"token": _token(scope, service)})
-
-def keyid():
-    import hashlib
-    import base64
-    s = load_pubkey()
-    xd = hashlib.sha256(s).digest()[:30]
-    xd = base64.b32encode(xd)
-    for i in range(11):
-        ses = 48-4*(i+1)
-        xd = xd[:ses] + ":" + xd[ses:]
-    return xd
-
-def load_pubkey():
-    from cryptography.x509 import load_pem_x509_certificate
-    from cryptography.hazmat.backends import default_backend
-    from cryptography.hazmat.primitives import serialization
-
-    with open(crt_f ,'r') as f:
-        buff = f.read()
-
-    cert_obj = load_pem_x509_certificate(buff, default_backend())
-    public_key = cert_obj.public_key()
-
-    return public_key.public_bytes(serialization.Encoding.DER,
-                                   serialization.PublicFormat.SubjectPublicKeyInfo)
-
-def load_key():
-    with open(key_f ,'r') as f:
-        buff = f.read()
-
-    return buff
-
-def parse_scope(s):
-    l = s.split(":")
-    data = {}
-    if len(l) == 4:
-        data["type"] = l[0]
-        data["name"] = l[1] + ":" + l[2]
-        data["actions"] = l[3].split(",")
-    elif len(l) == 3:
-        data["type"] = l[0]
-        data["name"] = l[1]
-        data["actions"] = l[2].split(",")
-    else:
-        return
-    return data
-
-def create_payload(scope, service):
-    data = {
-      "iss": issuer,
-      "aud": service,
-      "iat": datetime.datetime.utcnow(),
-      "exp": datetime.datetime.utcnow() + datetime.timedelta(seconds=900),
-    }
-    if scope:
-        vscope = validated_scope(scope, service)
-        if vscope:
-            data["access"] = [vscope]
-    token_logger.debug("token payload: "+str(data))
-    return data
-
-#
-# acl validation
-#
-def validated_scope(scope, service):
-    #
-    # refuse to serve token for registries we don't known about
-    #
-    q = db.docker_registries.service == service
-    registry = db(q).select().first()
-    if registry is None:
-        token_logger.error("unknown registry '%s'" % service)
-        scope["actions"] = []
-        return scope
-    registry_id = registry.id
-
-    #
-    # tokens asked by the collector for its internal use have all privileges on
-    # the registry
-    #
-    if auth.user is None:
-        token_logger.info("allow '*' on all to the collector")
-        return scope
-
-    group_ids = user_group_ids()
-
-    #
-    # No registry publication to any of the requester groups disallows push and pull
-    #
-    q = db.docker_registries_publications.group_id.belongs(group_ids)
-    q &= db.docker_registries_publications.registry_id == registry_id
-    if db(q).count() == 0:
-        token_logger.info("disallow 'push,pull' for account '%s' on repo %s:%s (no registry publication)" % (request.vars.get("account", ""), service, scope["name"]))
-        scope["actions"] = []
-        return scope
-
-    #
-    # No registry responsibility to any of the requester groups disallows push
-    # on repo not starting with apps/ groups/ and users/
-    #
-    if scope["name"].count("/") > 1 and ( \
-       scope["name"].startswith("apps/") or \
-       scope["name"].startswith("groups/") or \
-       scope["name"].startswith("users/")):
-        q = db.docker_registries_responsibles.group_id.belongs(group_ids)
-        q &= db.docker_registries_responsibles.registry_id == registry_id
-        if db(q).count() == 0:
-            token_logger.info("disallow 'push' for account '%s' on repo %s:%s (not registry responsible)" % (request.vars.get("account", ""), service, scope["name"]))
-            scope["actions"] -= set(["push"])
-
-    groups = user_groups()
-
-    #
-    # pulling requires the DockerRegistriesPuller privilege for individual
-    # users. services bypass this filter.
-    #
-    if hasattr(auth.user, "id") and "DockerRegistriesPuller" not in groups:
-        token_logger.info("disallow 'pull' for account '%s' on repo %s:%s (not DockerRegistriesPuller)" % (request.vars.get("account", ""), service, scope["name"]))
-        scope["actions"] -= set(["pull"])
-
-    #
-    # pushing requires the DockerRegistriesPusher privilege for individual
-    # users. services are never allowed to push.
-    #
-    if not hasattr(auth.user, "id"):
-        token_logger.info("disallow 'push' for account '%s' on repo %s:%s (service requestor)" % (request.vars.get("account", ""), service, scope["name"]))
-        scope["actions"] -= set(["push"])
-    if "DockerRegistriesPusher" not in groups:
-        token_logger.info("disallow 'push' for account '%s' on repo %s:%s (not DockerRegistriesPusher)" % (request.vars.get("account", ""), service, scope["name"]))
-        scope["actions"] -= set(["push"])
-
-    if hasattr(auth.user, "id") and scope["name"].startswith("users/%d/" % auth.user.id):
-        token_logger.info("no more acl filters on repo %s (personnal)" % scope["name"])
-        return scope
-
-    elif hasattr(auth.user, "username") and scope["name"].startswith("users/%s/" % auth.user.username):
-        token_logger.info("no more acl filters on repo %s (personnal)" % scope["name"])
-        return scope
-
-    elif scope["name"].startswith("groups/"):
-        for gid in group_ids:
-            if scope["name"].startswith("groups/%d/" % gid):
-                token_logger.info("no more acl filters on repo %s (group)" % scope["name"])
-                return scope
-
-        for group in groups:
-            if scope["name"].lower().startswith("groups/%s/" % group.lower()):
-                token_logger.info("no more acl filters on repo %s (group)" % scope["name"])
-                return scope
-
-    elif scope["name"].startswith("apps/"):
-        vactions = set([])
-
-        q = db.apps_publications.group_id.belongs(group_ids)
-        q &= db.apps_publications.app_id == db.apps.id
-        apps = db(q).select()
-        for app in apps:
-            if scope["name"].startswith("apps/%d/" % app.apps.id):
-                token_logger.info("allow 'pull' on repo %s (app publication)" % scope["name"])
-                vactions.add("pull")
-                break
-            if scope["name"].lower().startswith("apps/%s/" % app.apps.app.lower()):
-                token_logger.info("allow 'pull' on repo %s (app publication)" % scope["name"])
-                vactions.add("pull")
-                break
-
-        q = db.apps_responsibles.group_id.belongs(group_ids)
-        q &= db.apps_responsibles.app_id == db.apps.id
-        apps = db(q).select()
-        for app in apps:
-            if scope["name"].startswith("apps/%d/" % app.apps.id):
-                token_logger.info("allow 'push,pull' on app repo %s (app responsible)" % scope["name"])
-                vactions |= set(["push", "pull"])
-                break
-            if scope["name"].lower().startswith("apps/%s/" % app.apps.app.lower()):
-                token_logger.info("allow 'push,pull' on repo %s (app responsible)" % scope["name"])
-                vactions |= set(["push", "pull"])
-                break
-
-        scope["actions"] = list(set(scope["actions"]) & vactions)
-
-    return scope
-
 
 
 #
@@ -272,24 +87,16 @@ def discover_repository_tags(registry, repo):
     db(q).delete()
     db.commit()
 
-def get_tag_digest(registry, repo, tag, __token=None):
-    if __token is None:
-        __token = manager_token(registry.service, repo=repo.repository)
-
-    verify = not registry.insecure
-    r = requests.head(
-      registry.url+"/v2/%s/manifests/%s" % (repo.repository, tag),
-      verify=verify,
-      headers={
-        "Authorization": "Bearer "+__token,
-        "Accept": "application/vnd.docker.distribution.manifest.v2+json",
-      }
-    )
-    return r.headers["Docker-Content-Digest"]
 
 
-def test_del():
-    docker_delete_tag(1, 9, "latest")
+#
+# events
+#
+@service.jsonrpc
+def events():
+    token_logger.info(str(request.vars))
+    return {}
+
 
 #
 # view
@@ -422,4 +229,5 @@ def registries():
 
 def registries_load():
     return registries()["table"]
+
 

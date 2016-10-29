@@ -172,6 +172,7 @@ function table_action_menu_init_data(t) {
 		"modset_id": "[col=modset_id]",
 		"slave": "[col=encap]",
 		"command": "[col=command]",
+		"registry_id": "[col=registry_id]",
 		"chk_type": "[col=chk_type]",
 		"chk_instance": "[col=chk_instance]"
 	}
@@ -1495,8 +1496,8 @@ function table_action_menu_init_data(t) {
 					"title": "action_menu.on_docker_tags",
 					"class": "dockertags16",
 					"foldable": true,
-					"cols": ["tag_id"],
-					"condition": "tag_id",
+					"cols": ["registry_id", "tag_id"],
+					"condition": "registry_id+tag_id",
 					"children": [
 						{
 							"title": "action_menu.delete",
@@ -3561,7 +3562,7 @@ function data_action_delete_docker_registries(t, e) {
 		"request_service": "/docker/registries",
 		"request_data_entry": function(data) {
 			return {
-				'id': data['id']
+				'id': data['registry_id']
 			}
 		}
 	})
@@ -3575,7 +3576,7 @@ function data_action_delete_docker_tags(t, e) {
 		"request_service": "/docker/tags",
 		"request_data_entry": function(data) {
 			return {
-				'id': data['id']
+				'id': data['tag_id']
 			}
 		}
 	})
