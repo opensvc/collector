@@ -536,6 +536,10 @@
 		"creation_date": "Creation date"
 	},
 	"docker_properties": {
+		"description": "Description",
+		"stars": "Stars",
+		"automated": "Automated",
+		"official": "Official",
 		"pullers": "pullers",
 		"pushers": "pushers",
 		"url": "Url",

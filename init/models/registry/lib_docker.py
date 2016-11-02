@@ -65,6 +65,17 @@ def create_payload(scope, service):
     token_logger.debug("token payload: "+str(data))
     return data
 
+def lib_docker_repository_id(id):
+    try:
+        id = int(id)
+        return id
+    except:
+        q = db.docker_repositories.repository == id
+        row = db(q).select().first()
+        if row is not None:
+            return row.id
+    raise Exception("docker repository '%s' does not exist" % str(id))
+
 def lib_docker_registry_id(id):
     try:
         id = int(id)
@@ -95,13 +106,15 @@ def get_docker_registry(id):
         raise Exception("docker registry '%s' not found" % str(id))
     return r
 
-def docker_repositories_acls_query():
+def docker_repositories_acls_query(action="pull"):
     if "Manager" in user_groups():
         q_acls = db.docker_repositories.id > 0
         return q_acls
 
-    acls = ["^users/%d/"%auth.user_id]
-    if hasattr(auth.user, "username"):
+    acls = []
+    if hasattr(auth.user, "id") and auth.user.id > 0:
+        acls.append("^users/%d/"%auth.user_id)
+    if hasattr(auth.user, "username") and auth.user.username:
         acls.append("^users/%s/"%auth.user.username)
     for gid in user_group_ids():
         acls.append("^groups/%d/"%gid)
@@ -113,6 +126,9 @@ def docker_repositories_acls_query():
     for app in user_apps():
         app = app.lower()
         acls.append("^apps/%s/"%app)
+
+    if len(acls) == 0:
+        return db.docker_repositories.id < 0
 
     q_acls = None
     for chunk in chunker(acls, 20):

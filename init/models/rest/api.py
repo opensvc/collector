@@ -683,6 +683,7 @@ def get_post_handlers(prefix=None):
         "docker": [
              "rest_post_docker_registries",
              "rest_post_docker_registry",
+             "rest_post_docker_repository",
              "rest_post_docker_registries_publications",
              "rest_post_docker_registries_responsibles",
              "rest_post_docker_registry_publication",

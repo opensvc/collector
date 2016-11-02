@@ -6269,3 +6269,9 @@ insert ignore into auth_group (role, privilege) values ("DockerRegistriesPusher"
 insert ignore into auth_group (role, privilege) values ("DockerRegistriesPuller", "T");
 insert ignore into auth_group (role, privilege) values ("DockerRegistriesManager", "T");
 
+alter table docker_repositories add column description varchar(255) default "";
+alter table docker_repositories add column stars integer default 0;
+alter table docker_repositories add column automated varchar(1) default "F";
+alter table docker_repositories add column official varchar(1) default "F";
+
+

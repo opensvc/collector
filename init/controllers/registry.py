@@ -92,10 +92,55 @@ def discover_repository_tags(registry, repo):
 #
 # events
 #
-@service.jsonrpc
+@service.json
 def events():
     token_logger.info(str(request.vars))
     return {}
+
+
+#
+# search
+#
+@service.json
+@auth.requires_login()
+def search():
+    """
+      [
+        {
+            "description": "",
+            "is_official": false,
+            "is_automated": false,
+            "name": "wma55/u1210sshd",
+            "star_count": 0
+        },
+        ...
+      ]
+    """
+    token_logger.info(str(auth.user))
+    if "q" in request.vars:
+        s = request.vars.q
+    else:
+        s = None
+
+    q = db.docker_repositories.repository.like("%"+s+"%")
+    q &= docker_repositories_acls_query()
+    rows = db(q).select()
+
+    data = {
+      "query": s,
+      "num_results": len(rows),
+      "results": [],
+    }
+
+    for r in rows:
+        data["results"].append({
+            "description": r.description,
+            "is_official": r.official,
+            "is_automated": r.automated,
+            "name": r.repository,
+            "star_count": r.stars
+        })
+    return data
 
 
 #

@@ -2050,6 +2050,10 @@ db.define_table('docker_repositories',
     Field('repository', 'string', length=255),
     Field('updated', "datetime"),
     Field('created', "datetime"),
+    Field('automated', 'boolean'),
+    Field('official', 'boolean'),
+    Field('stars', 'integer'),
+    Field('description', 'string', length=255),
     migrate=False)
 
 db.define_table('docker_tags',

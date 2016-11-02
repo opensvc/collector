@@ -925,6 +925,58 @@ class rest_post_docker_registry(rest_post_handler):
         ret["info"] = fmt % d
         return ret
 
+#
+class rest_post_docker_repository(rest_post_handler):
+    def __init__(self):
+        desc = [
+          "Change a docker repository properties.",
+          "The user must be in the DockerRegistriesPusher privilege group.",
+          "The user must be responsible for the docker repository.",
+          "The action is logged in the collector's log.",
+          "A websocket event is sent to announce the change in the table.",
+          "The id, repository, created and updated fields are not updateable.",
+        ]
+        examples = [
+          """# curl -u %(email)s -o- -X POST -d insecure="T" https://%(collector)s/init/rest/api/docker/repositories/1""",
+        ]
+        rest_post_handler.__init__(
+          self,
+          path="/docker/repositories/<id>",
+          tables=["docker_repositories"],
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, id, **vars):
+        check_privilege("DockerRegistriesPusher")
+        id = lib_docker_repository_id(id)
+        q = db.docker_repositories.id == id
+        row = db(q).select().first()
+        if row is None:
+            raise Exception("repository '%s' does not exist" % str(id))
+        q &= docker_repositories_acls_query()
+        row = db(q).select().first()
+        if row is None:
+            raise Exception("you not allowed to modify repository '%s'" % str(id))
+        if "id" in vars:
+            del(vars["id"])
+        if "repository" in vars:
+            del(vars["repository"])
+        if "created" in vars:
+            del(vars["created"])
+        if "updated" in vars:
+            del(vars["updated"])
+        response = db(q).validate_and_update(**vars)
+        raise_on_error(response)
+        table_modified("docker_repositories")
+        fmt = 'repository %(s)s changed: %(data)s'
+        d = dict(s=row.repository, data=beautify_change(row, vars))
+        _log('docker.repositories.change', fmt, d)
+        ws_send('docker_repositories_change', {'id': row.id})
+        ret = rest_get_docker_repository().handler(row.id)
+        ret["info"] = fmt % d
+        return ret
+
 class rest_delete_docker_registries(rest_delete_handler):
     def __init__(self):
         desc = [

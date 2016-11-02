@@ -258,13 +258,24 @@ def user_apps(id=None):
         id = auth.user_id
     return cache.redis("user_apps:%d"%id, lambda: _user_apps(id), time_expire=14400)
 
-def _user_apps(id):
-    q = db.auth_membership.user_id==id
-    q &= db.auth_membership.group_id==db.auth_group.id
-    q &= db.apps_responsibles.group_id == db.auth_membership.group_id
-    q &= db.apps_responsibles.app_id == db.apps.id
-    rows = db(q).select(db.apps.app)
-    return map(lambda x: x.app, rows)
+def _user_apps(id=None):
+    if hasattr(auth.user, "svc_id"):
+        q = db.services.svc_id == auth.user.svc_id
+        rows = db(q).select(db.services.svc_app)
+        return map(lambda x: x.svc_app, rows)
+    elif hasattr(auth.user, "node_id"):
+        q = db.nodes.node_id == auth.user.node_id
+        rows = db(q).select(db.nodes.app)
+        return map(lambda x: x.app, rows)
+    else:
+        if id is None:
+            id = auth.user.id
+        q = db.auth_membership.user_id==id
+        q &= db.auth_membership.group_id==db.auth_group.id
+        q &= db.apps_responsibles.group_id == db.auth_membership.group_id
+        q &= db.apps_responsibles.app_id == db.apps.id
+        rows = db(q).select(db.apps.app)
+        return map(lambda x: x.app, rows)
 
 def clear_cache_user_app_ids():
     cache.redis.clear(regex="user_app_ids:.*")
@@ -274,12 +285,25 @@ def user_app_ids(id=None):
         id = auth.user_id
     return cache.redis("user_app_ids:%d"%id, lambda: _user_app_ids(id), time_expire=14400)
 
-def _user_app_ids(id):
-    q = db.auth_membership.user_id==id
-    q &= db.auth_membership.group_id==db.auth_group.id
-    q &= db.apps_responsibles.group_id == db.auth_membership.group_id
-    rows = db(q).select(db.apps_responsibles.app_id)
-    return map(lambda x: x.app_id, rows)
+def _user_app_ids(id=None):
+    if hasattr(auth.user, "svc_id"):
+        q = db.services.svc_id == auth.user.svc_id
+        q &= db.services.svc_app == db.apps.app
+        rows = db(q).select(db.apps.id)
+        return map(lambda x: x.id, rows)
+    elif hasattr(auth.user, "node_id"):
+        q = db.nodes.node_id == auth.user.node_id
+        q &= db.nodes.app == db.apps.app
+        rows = db(q).select(db.apps.id)
+        return map(lambda x: x.id, rows)
+    else:
+        if id is None:
+            id = auth.user.id
+        q = db.auth_membership.user_id==id
+        q &= db.auth_membership.group_id==db.auth_group.id
+        q &= db.apps_responsibles.group_id == db.auth_membership.group_id
+        rows = db(q).select(db.apps_responsibles.app_id)
+        return map(lambda x: x.app_id, rows)
 
 def clear_cache_user_group_ids():
     cache.redis.clear(regex="user_group_ids:.*")

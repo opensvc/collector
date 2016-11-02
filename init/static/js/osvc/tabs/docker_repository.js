@@ -22,6 +22,10 @@ function docker_repository_tabs(divid, options) {
 			o._load()
 		} else if ("repository_id" in o.options) {
 			services_osvcgetrest("/docker/repositories/%1", [o.options.repository_id], "", function(jd) {
+				if (jd.error) {
+					osvc.flash.error(jd.error)
+					return
+				}
 				o.options.data = jd.data[0]
 				o.options.repository_name = o.options.data.repository
 				o.link.title_args.name = o.options.data.repository
@@ -80,6 +84,10 @@ function docker_repository_properties(divid, options) {
 		o.info_repository_name = o.div.find("#repository")
 		o.info_repository_updated = o.div.find("#repository_updated")
 		o.info_repository_created = o.div.find("#repository_created")
+		o.info_repository_description = o.div.find("#description")
+		o.info_repository_stars = o.div.find("#stars")
+		o.info_repository_automated = o.div.find("#automated")
+		o.info_repository_official = o.div.find("#official")
 		o.info_pushers = o.div.find("#pushers")
 		o.info_pullers = o.div.find("#pullers")
 
@@ -92,6 +100,10 @@ function docker_repository_properties(divid, options) {
 			o.options.data = null
 		} else {
 			services_osvcgetrest("/docker/repositories/%1", [o.options.repository_id], "", function(jd) {
+				if (jd.error) {
+					osvc.flash.error(jd.error)
+					return
+				}
 				if (!jd.data || (jd.data.length == 0)) {
 					return
 				}
@@ -108,6 +120,8 @@ function docker_repository_properties(divid, options) {
 		})
 		o.info_repository_id.html(data.id)
 		o.info_repository_name.html(data.repository)
+		o.info_repository_description.html(data.description)
+		o.info_repository_stars.html(data.stars)
 		o.info_repository_updated.html(osvc_date_from_collector(data.updated))
 		o.info_repository_created.html(osvc_date_from_collector(data.created))
 
