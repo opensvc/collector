@@ -305,6 +305,13 @@ def _user_app_ids(id=None):
         rows = db(q).select(db.apps_responsibles.app_id)
         return map(lambda x: x.app_id, rows)
 
+def everybody_group_id():
+    q = db.auth_group.role == "Everybody"
+    r = db(q).select(db.auth_group.id).first()
+    if r is None:
+        return
+    return r.id
+
 def clear_cache_user_group_ids():
     cache.redis.clear(regex="user_group_ids:.*")
 
@@ -314,10 +321,23 @@ def user_group_ids(id=None):
     return cache.redis("user_group_ids:%d"%id, lambda: _user_group_ids(id), time_expire=14400)
 
 def _user_group_ids(id):
-    q = db.auth_membership.user_id==id
-    q &= db.auth_membership.group_id==db.auth_group.id
-    rows = db(q).select(db.auth_group.id)
-    return map(lambda x: x.id, rows)
+    if hasattr(auth.user, "svc_id"):
+        q = db.services.svc_id == auth.user.svc_id
+        q &= db.services.svc_app == db.apps.app
+        q &= db.apps_publications.app_id == db.apps.id
+        rows = db(q).select(db.apps_publications.group_id)
+        return map(lambda x: x.group_id, rows) + [everybody_group_id()]
+    elif hasattr(auth.user, "node_id"):
+        q = db.nodes.node_id == auth.user.node_id
+        q &= db.nodes.app == db.apps.app
+        q &= db.apps_publications.app_id == db.apps.id
+        rows = db(q).select(db.apps_publications.group_id)
+        return map(lambda x: x.group_id, rows) + [everybody_group_id()]
+    else:
+        q = db.auth_membership.user_id==id
+        q &= db.auth_membership.group_id==db.auth_group.id
+        rows = db(q).select(db.auth_group.id)
+        return map(lambda x: x.id, rows)
 
 def user_org_group_ids(id=None):
     if id is None:

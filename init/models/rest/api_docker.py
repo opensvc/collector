@@ -954,7 +954,7 @@ class rest_post_docker_repository(rest_post_handler):
         row = db(q).select().first()
         if row is None:
             raise Exception("repository '%s' does not exist" % str(id))
-        q &= docker_repositories_acls_query()
+        q &= docker_repositories_acls_query(action="push")
         row = db(q).select().first()
         if row is None:
             raise Exception("you not allowed to modify repository '%s'" % str(id))

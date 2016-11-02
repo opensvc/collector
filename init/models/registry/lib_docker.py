@@ -111,6 +111,13 @@ def docker_repositories_acls_query(action="pull"):
         q_acls = db.docker_repositories.id > 0
         return q_acls
 
+    group_ids = user_group_ids()
+    q = db.docker_registries_publications.group_id.belongs(group_ids)
+    published_registry_ids = [r.registry_id for r in db(q).select()]
+    if len(published_registry_ids) == 0:
+        return db.docker_repositories.id < 0
+    q_published = db.docker_repositories.registry_id.belongs(published_registry_ids)
+
     acls = []
     if hasattr(auth.user, "id") and auth.user.id > 0:
         acls.append("^users/%d/"%auth.user_id)
@@ -127,6 +134,9 @@ def docker_repositories_acls_query(action="pull"):
         app = app.lower()
         acls.append("^apps/%s/"%app)
 
+    if action == "pull":
+        acls.append("^(?!(users|groups|apps)/)")
+
     if len(acls) == 0:
         return db.docker_repositories.id < 0
 
@@ -137,7 +147,7 @@ def docker_repositories_acls_query(action="pull"):
         else:
             q_acls |= db.docker_repositories.repository.regexp("|".join(chunk))
 
-    return q_acls
+    return q_published & q_acls
 
 def _token(scope, service):
     if scope is None:
