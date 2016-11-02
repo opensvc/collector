@@ -76,6 +76,9 @@ def discover_repository_tags(registry, repo):
     vars = ["registry_id", "repository_id", "name", "updated"]
     vals = []
     now = datetime.datetime.now()
+    if "tags" not in data:
+        print(data)
+        return
     for tag in data["tags"]:
         vals.append([registry.id, repo.id, tag, now])
     generic_insert("docker_tags", vars, vals)
