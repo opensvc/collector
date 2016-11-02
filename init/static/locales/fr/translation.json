@@ -411,6 +411,8 @@
 	"search": {
 		"nothing_found" : "Aucun résultat ne répond au critère de recherche.",
 		"menu_header" : {
+			"title_docker_registries": "Registres docker",
+			"title_docker_repositories": "Dépôts docker",
 			"title_modulesets" : "Jeux de modules",
 			"title_rulesets" : "Jeux de règles",
 			"title_metrics" : "Métriques",
@@ -429,6 +431,7 @@
 			"title_vms" : "Machines virtuelles"
 		},
 		"menu_link" : {
+			"registries" : "Registres",
 			"request" : "Requête",
 			"forms" : "Formulaires",
 			"dashboard" : "Pilotage",

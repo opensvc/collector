@@ -639,7 +639,7 @@ function search_get_menu(fk)
           {
             "title": "registries",
             "menu_entry_id": "view-registries",
-            "class": "docker_registries16",
+            "class": "docker_registry16",
             "link": "/init/registry/registries?volatile_filters=true&registries_f_registry_service=__service__",
             "fn": "table_registries",
             "options": {"volatile_filters": true, "request_vars": {"registries_f_registry_service": "__service__"}}

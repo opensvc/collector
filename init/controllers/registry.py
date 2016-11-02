@@ -94,7 +94,7 @@ def discover_repository_tags(registry, repo):
 #
 @service.json
 def events():
-    token_logger.info(str(request.vars))
+    token_logger.info(str(request))
     return {}
 
 

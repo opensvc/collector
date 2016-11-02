@@ -413,6 +413,8 @@
 	"search": {
 		"nothing_found": "No entry found matching filter",
 		"menu_header": {
+			"title_docker_registries": "Docker registries",
+			"title_docker_repositories": "Docker repositories",
 			"title_modulesets": "Modulesets",
 			"title_rulesets": "Rulesets",
 			"title_metrics": "Metrics",
@@ -431,6 +433,7 @@
 			"title_vms": "Virtuals machines"
 		},
 		"menu_link": {
+			"registries" : "Registries",
 			"request": "Request",
 			"forms": "Forms",
 			"dashboard": "Dashboard",
