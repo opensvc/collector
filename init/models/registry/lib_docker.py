@@ -271,7 +271,7 @@ def validated_scope(scope, service):
     # pulling requires the DockerRegistriesPuller privilege for individual
     # users. services bypass this filter.
     #
-    if hasattr(auth.user, "id") and "DockerRegistriesPuller" not in groups:
+    if not hasattr(auth.user, "svc_id") and hasattr(auth.user, "id") and "DockerRegistriesPuller" not in groups:
         token_logger.info("disallow 'pull' for account '%s' on repo %s:%s (not DockerRegistriesPuller)" % (request.vars.get("account", ""), service, scope["name"]))
         scope["actions"] -= set(["pull"])
 
