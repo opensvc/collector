@@ -97,8 +97,112 @@ def discover_repository_tags(registry, repo):
 #
 @service.json
 def events():
-    token_logger.info(str(request))
-    return {}
+    try:
+        buff = request.body.read()
+        data = json.loads(buff)
+    except:
+        token_logger.info("invalid event: %s" % buff)
+        return
+    """
+    {
+      'events': [
+        {
+          'target': {
+            'repository': 'busybox',
+            'url': 'https://registry.opensvc.com/v2/busybox/manifests/sha256:600e8faca833451845cd067418227fdabb9649625e59dc2d242ee5c5d88e127e',
+            'mediaType': 'application/vnd.docker.distribution.manifest.v1+prettyjws',
+            'length': 2084,
+            'tag': '4',
+            'digest': 'sha256:600e8faca833451845cd067418227fdabb9649625e59dc2d242ee5c5d88e127e',
+            'size': 2084
+          },
+          'timestamp': '2016-11-03T10:19:27.741896359+01:00',
+          'request': {
+            'method': 'PUT',
+            'host': 'registry.opensvc.com',
+            'useragent': 'docker/1.8.3 go/go1.4.2 git-commit/f4bf5c7 kernel/4.4.0-22-generic os/linux arch/amd64',
+            'id': '3c4ba54f-a686-4e4c-b771-c2c3f9219dfb',
+            'addr': '82.233.48.227'
+          },
+          'actor': {},
+          'source': {
+            'instanceID': '1852d889-f0bc-42bf-a5d5-acf1d9627413',
+            'addr': 'd8c052e942a7:5000'
+          },
+          'action': 'push',
+          'id': '47d188d6-e1a9-4c9c-8149-462362f573dc'
+        }
+      ]
+    }
+    """
+    if "events" not in data:
+        return
+    for event in data["events"]:
+        do_event(event)
+
+    return
+
+def get_registry_from_url(url):
+    try:
+        s = "/".join(url.split("/")[:3])
+    except:
+        token_logger.info("malformed url in event: %s" % url)
+        return
+    q = db.docker_registries.url == s 
+    q |= db.docker_registries.url == s+"/"
+    return db(q).select().first()
+
+def do_event(event):
+    if "action" not in event:
+        token_logger.info("no action in event: %s" % str(event))
+        return
+
+    token_logger.info(event)
+    if event["action"] == "push":
+        do_push_event(event)
+
+def do_push_event(event):
+    url = event["target"]["url"]
+    registry = get_registry_from_url(url)
+    if registry is None:
+        token_logger.info("unknown registry: %s" % url)
+        return
+
+    tag = event["target"]["tag"]
+    repo = event["target"]["repository"]
+
+    token_logger.info("update or insert repository '%s' in registry '%s'" % (repo, registry.service))
+    db.docker_repositories.update_or_insert(
+      {"registry_id": registry.id, "repository": repo},
+      registry_id=registry.id,
+      repository=repo,
+      updated=datetime.datetime.now()
+    )
+
+    q = db.docker_repositories.repository == repo
+    q &= db.docker_repositories.registry_id == registry.id
+    repository = db(q).select().first()
+
+    if repository is None:
+        token_logger.info("repository not found '%s' in registry '%s'" % (repo, registry.service))
+        return
+
+    token_logger.info("update or insert repository tag '%s:%s' in registry '%s'" % (repository.repository, tag, registry.service))
+    db.docker_tags.update_or_insert(
+      {"registry_id": registry.id, "repository_id": repository.id, "name": tag},
+      registry_id=registry.id,
+      repository_id=repository.id,
+      name=tag,
+      updated=datetime.datetime.now()
+    )
+    table_modified("docker_tags")
+    _log('docker.push',
+         'image %(repo)s:%(tag)s pushed to registry %(service)s',
+         dict(repo=repo, tag=tag, service=registry.service),
+         user=""
+    )
+    ws_send('docker_tags_change')
+
 
 
 #
