@@ -178,8 +178,21 @@ class rest_get_docker_repository_pullers_services(rest_get_table_handler):
         elif r.repository.startswith("groups/") and r.repository.count("/") > 1:
             s = r.repository.split("/")[1]
             return rest_get_group_services().handler(s, **vars)
-        else:
+        elif r.repository.startswith("users/") and r.repository.count("/") > 1:
             q = db.services.id < 0
+            self.set_q(q)
+            return self.prepare_data(**vars)
+        else:
+            q = db.auth_group.role == "Everybody"
+            q &= db.auth_group.id == db.docker_registries_publications.group_id
+            if db(q).count() > 0:
+                db.services.id > 0
+                self.set_q(q)
+                return self.prepare_data(**vars)
+            q = db.services.svc_app == db.apps.app
+            q &= db.apps_publications.app_id == db.apps.id
+            q &= db.apps_publications.group_id == db.docker_registries_publications.group_id
+            q &= db.docker_registries_publications.registry_id == r.registry_id
             self.set_q(q)
             return self.prepare_data(**vars)
 
@@ -214,7 +227,7 @@ class rest_get_docker_repository_pullers_groups(rest_get_table_handler):
             self.set_q(q)
             return self.prepare_data(**vars)
         else:
-            q = db.auth_group.role == "DockerRegistriesPuller"
+            q = db.auth_group.id < 0
             self.set_q(q)
             return self.prepare_data(**vars)
 
@@ -282,7 +295,14 @@ class rest_get_docker_repository_pullers_users(rest_get_table_handler):
             self.set_q(q)
             return self.prepare_data(**vars)
         else:
-            q = db.auth_user.id < 0
+            q = db.auth_group.role == "DockerRegistriesPuller"
+            q &= db.auth_membership.group_id == db.auth_group.id
+            pullers = [row.user_id for row in db(q).select(db.auth_membership.user_id)]
+
+            q = db.docker_registries_publications.registry_id == r.registry_id
+            q &= db.docker_registries_publications.group_id == db.auth_membership.group_id
+            q &= db.auth_membership.user_id == db.auth_user.id
+            q &= db.auth_user.id.belongs(pullers)
             self.set_q(q)
             return self.prepare_data(**vars)
 
@@ -369,7 +389,7 @@ class rest_get_docker_repository_pushers_groups(rest_get_table_handler):
             s = r.repository.split("/")[1]
             return rest_get_group().handler(s, **vars)
         else:
-            q = db.auth_group.role == "DockerRegistriesPusher"
+            q = db.auth_group.id < 0
             self.set_q(q)
             return self.prepare_data(**vars)
 
@@ -437,7 +457,14 @@ class rest_get_docker_repository_pushers_users(rest_get_table_handler):
             self.set_q(q)
             return self.prepare_data(**vars)
         else:
-            q = db.auth_user.id < 0
+            q = db.auth_group.role == "DockerRegistriesPusher"
+            q &= db.auth_membership.group_id == db.auth_group.id
+            pushers = [row.user_id for row in db(q).select(db.auth_membership.user_id)]
+
+            q = db.docker_registries_responsibles.registry_id == r.registry_id
+            q &= db.docker_registries_responsibles.group_id == db.auth_membership.group_id
+            q &= db.auth_membership.user_id == db.auth_user.id
+            q &= db.auth_user.id.belongs(pushers)
             self.set_q(q)
             return self.prepare_data(**vars)
 
