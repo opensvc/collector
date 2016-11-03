@@ -2041,6 +2041,7 @@ db.define_table('docker_registries',
     Field('service', 'string', length=128),
     Field('url', 'string', length=256),
     Field('insecure', 'boolean'),
+    Field('restricted', 'boolean'),
     Field('updated', "datetime"),
     Field('created', "datetime"),
     migrate=False)

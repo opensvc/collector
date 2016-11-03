@@ -112,11 +112,27 @@ def docker_repositories_acls_query(action="pull"):
         return q_acls
 
     group_ids = user_group_ids()
-    q = db.docker_registries_publications.group_id.belongs(group_ids)
-    published_registry_ids = [r.registry_id for r in db(q).select()]
-    if len(published_registry_ids) == 0:
-        return db.docker_repositories.id < 0
-    q_published = db.docker_repositories.registry_id.belongs(published_registry_ids)
+    if action == "push":
+        q = db.docker_registries.restricted == False
+        q &= db.docker_registries_publications.registry_id == db.docker_registries.id
+        q &= db.docker_registries_publications.group_id.belongs(group_ids)
+        allowed_unrestricted_registry_ids = [r.id for r in db(q).select(db.docker_registries.id)]
+
+        q = db.docker_registries.restricted == True
+        q &= db.docker_registries_responsibles.registry_id == db.docker_registries.id
+        q &= db.docker_registries_responsibles.group_id.belongs(group_ids)
+        allowed_restricted_registry_ids = [r.id for r in db(q).select(db.docker_registries.id)]
+
+        allowed_registry_ids = allowed_restricted_registry_ids + allowed_unrestricted_registry_ids
+        if len(allowed_registry_ids) == 0:
+            return db.docker_repositories.id < 0
+        q_published = db.docker_repositories.registry_id.belongs(allowed_registry_ids)
+    else:
+        q = db.docker_registries_publications.group_id.belongs(group_ids)
+        published_registry_ids = [r.registry_id for r in db(q).select()]
+        if len(published_registry_ids) == 0:
+            return db.docker_repositories.id < 0
+        q_published = db.docker_repositories.registry_id.belongs(published_registry_ids)
 
     acls = []
     if hasattr(auth.user, "id") and auth.user.id > 0:
@@ -212,6 +228,7 @@ def validated_scope(scope, service):
         return scope
 
     group_ids = user_group_ids()
+    scope["actions"] = set(scope["actions"])
 
     #
     # No registry publication to any of the requester groups disallows push and pull
@@ -225,9 +242,20 @@ def validated_scope(scope, service):
 
     #
     # No registry responsibility to any of the requester groups disallows push
+    # on restricted registries
+    #
+    if registry.restricted:
+        q = db.docker_registries_responsibles.group_id.belongs(group_ids)
+        q &= db.docker_registries_responsibles.registry_id == registry_id
+        if db(q).count() == 0:
+            token_logger.info("disallow 'push' for account '%s' on repo %s:%s (not restricted registry responsible)" % (request.vars.get("account", ""), service, scope["name"]))
+            scope["actions"] -= set(["push"])
+
+    #
+    # No registry responsibility to any of the requester groups disallows push
     # on repo not starting with apps/ groups/ and users/
     #
-    if scope["name"].count("/") > 1 and ( \
+    if scope["name"].count("/") == 0 or not ( \
        scope["name"].startswith("apps/") or \
        scope["name"].startswith("groups/") or \
        scope["name"].startswith("users/")):
@@ -260,21 +288,25 @@ def validated_scope(scope, service):
 
     if hasattr(auth.user, "id") and scope["name"].startswith("users/%d/" % auth.user.id):
         token_logger.info("no more acl filters on repo %s (personnal)" % scope["name"])
+        scope["actions"] = list(scope["actions"])
         return scope
 
     elif hasattr(auth.user, "username") and scope["name"].startswith("users/%s/" % auth.user.username):
         token_logger.info("no more acl filters on repo %s (personnal)" % scope["name"])
+        scope["actions"] = list(scope["actions"])
         return scope
 
     elif scope["name"].startswith("groups/"):
         for gid in group_ids:
             if scope["name"].startswith("groups/%d/" % gid):
                 token_logger.info("no more acl filters on repo %s (group)" % scope["name"])
+                scope["actions"] = list(scope["actions"])
                 return scope
 
         for group in groups:
             if scope["name"].lower().startswith("groups/%s/" % group.lower()):
                 token_logger.info("no more acl filters on repo %s (group)" % scope["name"])
+                scope["actions"] = list(scope["actions"])
                 return scope
 
     elif scope["name"].startswith("apps/"):
@@ -306,7 +338,7 @@ def validated_scope(scope, service):
                 vactions |= set(["push", "pull"])
                 break
 
-        scope["actions"] = list(set(scope["actions"]) & vactions)
+        scope["actions"] = list(scope["actions"] & vactions)
 
     return scope
 

@@ -547,6 +547,7 @@
 		"pushers": "pushers",
 		"url": "Url",
 		"insecure": "Insecure",
+		"restricted": "Restricted",
 		"service": "Service",
 		"repository": "repository",
 		"registry": "registry"

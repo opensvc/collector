@@ -6276,4 +6276,5 @@ alter table docker_repositories add column official varchar(1) default "F";
 
 INSERT INTO `scheduler_task` VALUES (NULL,UUID(),'[]','{}','T',NOW(),NOW(),NULL,0,-1,120,120,0,0,0,NULL,'F','janitor','discover_registry','QUEUED','task_docker_discover_registry','init/appadmin',NULL);
 
+alter table docker_registries add column restricted varchar(1) not null default "T";
 

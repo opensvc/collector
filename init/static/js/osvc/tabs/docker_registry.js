@@ -84,6 +84,7 @@ function docker_registry_properties(divid, options) {
 		o.info_registry_service = o.div.find("#service")
 		o.info_registry_url = o.div.find("#url")
 		o.info_registry_insecure = o.div.find("#insecure")
+		o.info_registry_restricted = o.div.find("#restricted")
 		o.info_registry_updated = o.div.find("#registry_updated")
 		o.info_registry_created = o.div.find("#registry_created")
 		o.info_publications = o.div.find("#publications")
@@ -116,6 +117,7 @@ function docker_registry_properties(divid, options) {
 		o.info_registry_service.html(data.service)
 		o.info_registry_url.html(data.url)
 		o.info_registry_insecure.html(data.insecure)
+		o.info_registry_restricted.html(data.restricted)
 		o.info_registry_updated.html(osvc_date_from_collector(data.updated))
 		o.info_registry_created.html(osvc_date_from_collector(data.created))
 
