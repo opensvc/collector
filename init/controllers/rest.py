@@ -70,7 +70,7 @@ def rest_router(action, args, vars):
             err = traceback.format_exc()
         return dict(error=err)
     response.status = 404
-    return dict(error="Unsupported api url: %s %s" % (action, str(args)))
+    return dict(error="Unsupported api url: %s /%s" % (action, str(request.raw_args)))
 
 
 @request.restful()
