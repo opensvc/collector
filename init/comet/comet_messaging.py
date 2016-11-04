@@ -126,6 +126,9 @@ class TokenHandler(tornado.web.RequestHandler):
         return 'false'
 
 class DistributeHandler(tornado.websocket.WebSocketHandler):
+    def check_origin(self, origin):
+        return True
+
     def open(self,params):
         group,token,name = params.split('/')+[None,None]
         self.group = group or 'default'
