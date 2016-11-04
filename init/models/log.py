@@ -31,7 +31,7 @@ def beautify_change(d1, d2):
     return ", ".join(l)
 
 def log_events(i):
-    ws_sent('log_change', {'id': i})
+    ws_send('log_change', {'id': i})
 
 def _log(action, fmt, d, user=None, svc_id="", level="info", node_id=""):
     if user is None:
