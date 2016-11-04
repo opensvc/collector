@@ -2209,16 +2209,8 @@ def rpc_comp_log_action(vars, vals, auth):
         generic_insert('comp_status', vars, vals)
 
     update_dash_compdiff(node_id)
-    l = {
-      'event': 'comp_status_change',
-      'data': {'node_id': node_id},
-    }
-    _websocket_send(event_msg(l))
-    l = {
-      'event': 'comp_log_change',
-      'data': {'node_id': node_id},
-    }
-    _websocket_send(event_msg(l))
+    ws_send('comp_status_change', {'node_id': node_id})
+    ws_send('comp_log_change', {'node_id': node_id})
 
 
 @service.xmlrpc
@@ -2253,16 +2245,8 @@ def rpc_comp_log_actions(vars, vals, auth):
     generic_insert('comp_log', vars, vals)
     if len(check_vals) > 0:
         generic_insert('comp_status', vars, check_vals)
-    l = {
-      'event': 'comp_status_change',
-      'data': {'node_id': node_id},
-    }
-    _websocket_send(event_msg(l))
-    l = {
-      'event': 'comp_log_change',
-      'data': {'node_id': node_id},
-    }
-    _websocket_send(event_msg(l))
+    ws_send('comp_status_change', {'node_id': node_id})
+    ws_send('comp_log_change', {'node_id': node_id})
     update_dash_compdiff(node_id)
 
     # update comp_log_daily for faster charting

@@ -124,21 +124,17 @@ def _begin_action(vars, vals, auth):
     vars, vals = replace_svcname_in_data(vars, vals, auth, fieldname="svcname")
     i = generic_insert("svcactions", vars, vals, node_id=node_id, get_last_id=True)
     row = db(db.svcactions.id==i).select().first()
-    h = {
+    ws_send('begin_action', {
       'svc_id': row.svc_id,
       'node_id': row.node_id,
       'action': row.action,
       'begin': row.begin.strftime("%Y-%m-%d %H:%M:%S"),
       'id': row.id,
-    }
-    _websocket_send(event_msg({
-                 'event': 'begin_action',
-                 'data': h
-                }))
-    if 'cron' not in h or h['cron'] == '0':
+    })
+    if row.cron == 0:
         _log("service.action",
              "initialized service action %(a)s",
-             dict(a=h['action']),
+             dict(a=row.action),
              svc_id=row.svc_id,
              node_id=node_id)
     return 0
@@ -192,10 +188,7 @@ def _end_action(vars, vals, auth):
     h['begin'] = h['begin'].strftime("%Y-%m-%d %H:%M:%S")
     h['end'] = h['end'].strftime("%Y-%m-%d %H:%M:%S")
 
-    _websocket_send(event_msg({
-             'event': 'end_action',
-             'data': h
-            }))
+    ws_send('end_action', h)
 
     if h['action'] in ('start', 'startcontainer') and \
        h['status'] == 'ok':
@@ -309,10 +302,7 @@ def _update_service(vars, vals, auth):
             del(h[var])
     generic_insert('services', h.keys(), h.values())
     db.commit()
-    _websocket_send(event_msg({
-                     'event': 'services_change',
-                     'data': {'svc_id': svc_id}
-                    }))
+    ws_send('services_change', {'svc_id': svc_id})
 
     update_dash_service_not_updated(svc_id)
     _node_id, vmname, vmtype = translate_encap_nodename(svc_id, node_id)
@@ -399,13 +389,7 @@ def _push_checks(vars, vals, auth):
     # update dashboard alerts
     if n > 0:
         update_dash_checks(node_id)
-
-        _websocket_send(event_msg({
-                     'event': 'checks_change',
-                     'data': {
-                       'node_id': node_id,
-                     }
-                    }))
+        ws_send('checks_change', {'node_id': node_id})
 
 def _insert_generic(data, auth):
     now = datetime.datetime.now()
@@ -422,10 +406,7 @@ def _insert_generic(data, auth):
         db.executesql(sql)
         vars, vals = replace_nodename_in_data(vars, vals, auth)
         generic_insert('node_hba', vars, vals)
-        _websocket_send(event_msg({
-                 'event': 'node_hba_change',
-                 'data': {'f': 'b'}
-                }))
+        ws_send('node_hba_change')
     if 'targets' in data:
         vars, vals = data['targets']
         if 'updated' not in vars:
@@ -458,10 +439,7 @@ def _insert_generic(data, auth):
         sql = """delete from stor_zone where node_id="%s" """%node_id
         db.executesql(sql)
         generic_insert('stor_zone', vars, vals)
-        _websocket_send(event_msg({
-                 'event': 'stor_zone_change',
-                 'data': {'node_id': node_id}
-                }))
+        ws_send('stor_zone_change',{'node_id': node_id})
     if 'lan' in data:
         vars, vals = data['lan']
         if 'updated' not in vars:
@@ -507,10 +485,7 @@ def _insert_generic(data, auth):
         sql = """delete from node_ip where node_id="%s" """%node_id
         db.executesql(sql)
         generic_insert('node_ip', vars, _vals)
-        _websocket_send(event_msg({
-                 'event': 'node_ip_change',
-                 'data': {'node_id': node_id}
-                }))
+        ws_send('node_ip_change', {'node_id': node_id})
     if 'uids' in data:
         vars, vals = data['uids']
         if 'updated' not in vars:
@@ -522,10 +497,7 @@ def _insert_generic(data, auth):
         db.executesql(sql)
         generic_insert('node_users', vars, vals)
         node_users_alerts(node_id)
-        _websocket_send(event_msg({
-                 'event': 'node_users_change',
-                 'data': {'node_id': node_id}
-                }))
+        ws_send('node_users_change', {'node_id': node_id})
     if 'gids' in data:
         vars, vals = data['gids']
         if 'updated' not in vars:
@@ -536,10 +508,7 @@ def _insert_generic(data, auth):
         sql = """delete from node_groups where node_id="%s" """%node_id
         db.executesql(sql)
         generic_insert('node_groups', vars, vals)
-        _websocket_send(event_msg({
-                 'event': 'node_groups_change',
-                 'data': {'node_id': node_id}
-                }))
+        ws_send('node_groups_change', {'node_id': node_id})
         node_groups_alerts(node_id)
 
     db.commit()
@@ -697,10 +666,7 @@ def _update_asset(vars, vals, auth):
     h['hw_obs_alert_date'] = hw_obs_alert_date
 
     generic_insert('nodes', h.keys(), h.values())
-    _websocket_send(event_msg({
-                 'event': 'nodes_change',
-                 'data': {'f': 'b'}
-                }))
+    ws_send('nodes_change')
     update_dash_node_not_updated(node_id)
     update_dash_node_without_maintenance_end(node_id)
     update_dash_node_without_asset(node_id)
@@ -4225,12 +4191,7 @@ def update_dash_action_errors(svc_id, node_id):
                   )
         rows = db.executesql(sqlws)
         if len(rows) > 0:
-            _websocket_send(event_msg({
-              'event': 'dash_change',
-              'data': {
-                'dash_md5': rows[0][0],
-              }
-            }))
+            ws_send('dash_change', {'dash_md5': rows[0][0]})
 
     else:
         sqlws = """select dash_md5 from dashboard
@@ -4242,12 +4203,7 @@ def update_dash_action_errors(svc_id, node_id):
                        node_id=node_id)
         rows = db.executesql(sqlws)
         if len(rows) > 0:
-            _websocket_send(event_msg({
-              'event': 'dash_delete',
-              'data': {
-                'dash_md5': rows[0][0],
-              }
-            }))
+            ws_send('dash_delete', {'dash_md5': rows[0][0]})
         sql = """delete from dashboard
                  where
                    dash_type="action errors" and

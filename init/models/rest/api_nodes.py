@@ -611,101 +611,57 @@ class rest_delete_node(rest_delete_handler):
         fmt = 'delete node %(data)s'
         d = dict(data=nodename)
         _log('node.delete', fmt, d, node_id=node_id)
-        l = {
-          'event': 'nodes_change',
-          'data': {'node_id': node_id},
-        }
-        _websocket_send(event_msg(l))
+        ws_send('nodes_change', {'node_id': node_id})
         table_modified("nodes")
 
         q = db.svcmon.node_id == node_id
         db(q).delete()
-        l = {
-          'event': 'svcmon_change',
-          'data': {'node_id': node_id},
-        }
-        _websocket_send(event_msg(l))
+        ws_send('svcmon_change', {'node_id': node_id})
         table_modified("svcmon")
 
         q = db.dashboard.node_id == node_id
         db(q).delete()
-        l = {
-          'event': 'dashboard_change',
-          'data': {'node_id': node_id},
-        }
-        _websocket_send(event_msg(l))
+        ws_send('dashboard_change', {'node_id': node_id})
         table_modified("dashboard")
 
         q = db.checks_live.node_id == node_id
         db(q).delete()
-        l = {
-          'event': 'checks_change',
-          'data': {'node_id': node_id},
-        }
-        _websocket_send(event_msg(l))
+        ws_send('checks_change', {'node_id': node_id})
         table_modified("checks_live")
 
         q = db.packages.node_id == node_id
         db(q).delete()
-        l = {
-          'event': 'packages_change',
-          'data': {'node_id': node_id},
-        }
-        _websocket_send(event_msg(l))
+        ws_send('packages_change', {'node_id': node_id})
         table_modified("packages")
 
         q = db.patches.node_id == node_id
         db(q).delete()
-        l = {
-          'event': 'patches_change',
-          'data': {'node_id': node_id},
-        }
-        _websocket_send(event_msg(l))
+        ws_send('patches_change', {'node_id': node_id})
         table_modified("patches")
 
         q = db.node_tags.node_id == node_id
         db(q).delete()
-        l = {
-          'event': 'node_tags_change',
-          'data': {'node_id': node_id},
-        }
-        _websocket_send(event_msg(l))
+        ws_send('node_tags_change', {'node_id': node_id})
         table_modified("node_tags")
 
         q = db.node_ip.node_id == node_id
         db(q).delete()
-        l = {
-          'event': 'node_ip_change',
-          'data': {'node_id': node_id},
-        }
-        _websocket_send(event_msg(l))
+        ws_send('node_ip_change', {'node_id': node_id})
         table_modified("node_ip")
 
         q = db.node_hba.node_id == node_id
         db(q).delete()
-        l = {
-          'event': 'node_hba_change',
-          'data': {'node_id': node_id},
-        }
-        _websocket_send(event_msg(l))
+        ws_send('node_hba_change', {'node_id': node_id})
         table_modified("node_hba")
 
         q = db.stor_zone.node_id == node_id
         db(q).delete()
-        l = {
-          'event': 'stor_zone_change',
-          'data': {'node_id': node_id},
-        }
-        _websocket_send(event_msg(l))
+        ws_send('stor_zone_change', {'node_id': node_id})
         table_modified("stor_zone")
 
         q = db.auth_node.node_id == node_id
         db(q).delete()
-        l = {
-          'event': 'auth_node',
-          'data': {'node_id': node_id},
-        }
-        _websocket_send(event_msg(l))
+        ws_send('auth_node', {'node_id': node_id})
         table_modified("auth_node")
 
         return dict(info=fmt%d)
@@ -793,12 +749,7 @@ class rest_post_node(rest_post_handler):
              'update properties %(data)s',
              dict(data=beautify_change(row, vars)),
              node_id=node_id)
-        l = {
-          'event': 'nodes_change',
-          'data': {'node_id': node_id},
-        }
-        table_modified("nodes")
-        _websocket_send(event_msg(l))
+        ws_send('nodes_change', {'node_id': node_id})
         return rest_get_node().handler(node_id, props=','.join(["node_id", "nodename", "app", "updated"]+vars.keys()))
 
 
@@ -868,12 +819,7 @@ class rest_post_nodes(rest_post_handler):
              'create properties %(data)s',
              dict(data=beautify_data(vars)),
              node_id=node_id)
-        l = {
-          'event': 'nodes_change',
-          'data': {'node_id': node_id},
-        }
-        table_modified("nodes")
-        _websocket_send(event_msg(l))
+        ws_send('nodes_change', {'node_id': node_id})
         return rest_get_node().handler(node_id)
 
 

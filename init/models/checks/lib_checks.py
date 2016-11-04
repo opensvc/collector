@@ -6,11 +6,7 @@ def update_thresholds_batch(rows=None, one_source=False):
         update_thresholds_rows_one_source(rows)
     else:
         update_thresholds_rows(rows)
-    l = {
-      'event': 'checks_change',
-      'data': {'a': 'b'},
-    }
-    _websocket_send(event_msg(l))
+    ws_send('checks_change')
 
 def update_thresholds_batch_type(chk_type):
     q = db.checks_live.chk_type == chk_type

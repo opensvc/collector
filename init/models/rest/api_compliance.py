@@ -135,11 +135,7 @@ class rest_delete_compliance_status_run(rest_delete_handler):
              node_id=row.node_id,
              svc_id=row.svc_id,
         )
-        l = {
-          'event': 'comp_status_change',
-          'data': {'a': 'b'},
-        }
-        _websocket_send(event_msg(l))
+        ws_send('comp_status_change')
         update_dash_compdiff(row.node_id)
         return dict(info="Run %s deleted" % id)
 
@@ -383,11 +379,7 @@ class rest_post_compliance_moduleset(rest_post_handler):
              'update properties %(data)s',
              dict(data=str(vars)),
         )
-        l = {
-          'event': 'comp_moduleset_change',
-          'data': {'foo': 'bar'},
-        }
-        _websocket_send(event_msg(l))
+        ws_send('comp_moduleset_change')
         return rest_get_compliance_moduleset().handler(id, props=','.join(["modset_name"]+vars.keys()))
 
 #
@@ -901,11 +893,7 @@ class rest_post_compliance_ruleset(rest_post_handler):
              'update properties %(data)s',
              dict(data=str(vars)),
         )
-        l = {
-          'event': 'comp_rulesets_change',
-          'data': {'foo': 'bar'},
-        }
-        _websocket_send(event_msg(l))
+        ws_send('comp_rulesets_change')
         return rest_get_compliance_ruleset().handler(id, props=','.join(["ruleset_name"]+vars.keys()))
 
 
@@ -1069,11 +1057,7 @@ class rest_post_compliance_ruleset_variable(rest_post_handler):
              'changed properties %(data)s',
              dict(data=beautify_change(row, vars)),
         )
-        l = {
-          'event': 'comp_rulesets_variables_change',
-          'data': {'foo': 'bar'},
-        }
-        _websocket_send(event_msg(l))
+        ws_send('comp_rulesets_variables_change')
         return rest_get_compliance_ruleset_variable().handler(ruleset_id, var_id)
 
 #
@@ -1154,11 +1138,7 @@ class rest_post_compliance_ruleset_variables(rest_post_handler):
              'properties %(data)s',
              dict(data=beautify_data(vars)),
         )
-        l = {
-          'event': 'comp_rulesets_variables_change',
-          'data': {'foo': 'bar'},
-        }
-        _websocket_send(event_msg(l))
+        ws_send('comp_rulesets_variables_change')
         return rest_get_compliance_ruleset_variable().handler(ruleset_id, obj_id)
 
 #
@@ -1711,11 +1691,7 @@ class rest_post_compliance_moduleset_module(rest_post_handler):
              'changed properties %(data)s',
              dict(data=str(vars)),
         )
-        l = {
-          'event': 'comp_moduleset_modules_change',
-          'data': {'foo': 'bar'},
-        }
-        _websocket_send(event_msg(l))
+        ws_send('comp_moduleset_modules_change')
         return rest_get_compliance_moduleset_module().handler(modset_id, mod_id)
 
 #
@@ -1763,11 +1739,7 @@ class rest_post_compliance_moduleset_modules(rest_post_handler):
              'properties %(data)s',
              dict(data=str(vars)),
         )
-        l = {
-          'event': 'comp_moduleset_modules_change',
-          'data': {'foo': 'bar'},
-        }
-        _websocket_send(event_msg(l))
+        ws_send('comp_moduleset_modules_change')
         return rest_get_compliance_moduleset_module().handler(modset_id, obj_id)
 
 #

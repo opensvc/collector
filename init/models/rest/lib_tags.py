@@ -50,11 +50,7 @@ def lib_tag_detach_node(tag_id, node_id):
          "tag '%(tag_name)s' detached",
          dict(tag_name=tag_name),
          node_id=node_id)
-    l = {
-      'event': 'tags',
-      'data': {'action': 'detach', 'tag_id': tag_id, 'node_id': node_id},
-    }
-    _websocket_send(event_msg(l))
+    ws_send('tags', {'action': 'detach', 'tag_id': tag_id, 'node_id': node_id})
     return dict(info="tag detached")
 
 def lib_tag_detach_service(tag_id, svc_id):
@@ -71,11 +67,7 @@ def lib_tag_detach_service(tag_id, svc_id):
          "tag '%(tag_name)s' detached",
          dict(tag_name=tag_name),
          svc_id=svc_id)
-    l = {
-      'event': 'tags',
-      'data': {'action': 'detach', 'tag_id': tag_id, 'svc_id': svc_id},
-    }
-    _websocket_send(event_msg(l))
+    ws_send('tags', {'action': 'detach', 'tag_id': tag_id, 'svc_id': svc_id})
     return dict(info="tag detached")
 
 
@@ -98,16 +90,12 @@ def lib_tag_attach_node(tag_id, node_id):
          "tag '%(tag_name)s' attached",
          dict(tag_name=tag_name),
          node_id=node_id)
-    l = {
-      'event': 'tags',
-      'data': {
+    ws_send('tags', {
          'action': 'attach',
          'tag_id': tag_id,
          'tag_name': tag_name,
          'node_id': node_id
-      },
-    }
-    _websocket_send(event_msg(l))
+    })
     return dict(info="tag '%s' attached to node '%s'" % (tag_name, get_nodename(node_id)))
 
 
@@ -129,16 +117,12 @@ def lib_tag_attach_service(tag_id, svc_id):
          "tag '%(tag_name)s' attached",
          dict(tag_name=tag_name),
          svc_id=svc_id)
-    l = {
-      'event': 'tags',
-      'data': {
+    ws_send('tags', {
         'action': 'attach',
         'tag_id': tag_id,
         'tag_name': tag_name,
         'svc_id': svc_id
-      },
-    }
-    _websocket_send(event_msg(l))
+    })
     return dict(info="tag '%s' attached to service '%s'" % (tag_name, svc_id))
 
 

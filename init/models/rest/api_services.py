@@ -117,11 +117,7 @@ class rest_post_service(rest_post_handler):
         d = dict(svc_id=svc.svc_id, data=beautify_change(svc, vars))
 
         _log('service.change', fmt, d)
-        l = {
-          'event': 'services_change',
-          'data': {'id': svc.id},
-        }
-        _websocket_send(event_msg(l))
+        ws_send('services_change', {'id': svc.id})
 
         ret = rest_get_service().handler(svc.svc_id)
         ret["info"] = fmt % d
@@ -175,11 +171,7 @@ class rest_post_services(rest_post_handler):
         d = dict(data=beautify_data(vars))
 
         _log('service.add', fmt, d)
-        l = {
-          'event': 'services_change',
-          'data': {'id': svc_id},
-        }
-        _websocket_send(event_msg(l))
+        ws_send('services_change', {'id': svc.id})
 
         ret = rest_get_service().handler(svc_id)
         ret["info"] = fmt % d
@@ -221,35 +213,19 @@ class rest_delete_service(rest_delete_handler):
              'delete service %(data)s',
              dict(data=svcname),
             )
-        l = {
-          'event': 'services_change',
-          'data': {'svc_id': svc_id},
-        }
-        _websocket_send(event_msg(l))
+        ws_send('services_change', {'svc_id': svc_id})
 
         q = db.svcmon.svc_id == svc_id
         db(q).delete()
-        l = {
-          'event': 'svcmon_change',
-          'data': {'svc_id': svc_id},
-        }
-        _websocket_send(event_msg(l))
+        ws_send('svcmon_change', {'svc_id': svc_id})
 
         q = db.dashboard.svc_id == svc_id
         db(q).delete()
-        l = {
-          'event': 'dashboard_change',
-          'data': {'svc_id': svc_id},
-        }
-        _websocket_send(event_msg(l))
+        ws_send('dashboard_change', {'svc_id': svc_id})
 
         q = db.resmon.svc_id == svc_id
         db(q).delete()
-        l = {
-          'event': 'resmon_change',
-          'data': {'svc_id': svc_id},
-        }
-        _websocket_send(event_msg(l))
+        ws_send('resmon_change', {'svc_id': svc_id})
 
         return dict(info="service %s deleted" % svcname)
 
@@ -382,20 +358,12 @@ class rest_delete_service_instance(rest_delete_handler):
         d = dict(svcname=svcname, nodename=nodename)
 
         _log('service_instance.delete', fmt, d, node_id=row.node_id, svc_id=row.svc_id)
-        l = {
-          'event': 'svcmon_change',
-          'data': {'id': row.id},
-        }
-        _websocket_send(event_msg(l))
+        ws_send('svcmon_change', {'id': row.id})
 
         q = db.dashboard.svc_id == row.svc_id
         q = db.dashboard.node_id == row.node_id
         db(q).delete()
-        l = {
-          'event': 'dashboard_change',
-          'data': {'id': row.id},
-        }
-        _websocket_send(event_msg(l))
+        ws_send('dashboard_change', {'id': row.id})
 
         return dict(info=fmt%d)
 

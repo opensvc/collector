@@ -31,11 +31,7 @@ class rest_delete_report(rest_delete_handler):
         d = dict(report_name=report.report_name)
 
         _log('report.del', fmt, d)
-        l = {
-          'event': 'reports_change',
-          'data': {'id': report.id},
-        }
-        _websocket_send(event_msg(l))
+        ws_send('reports_change', {'id': report.id})
 
         return dict(info=fmt%d)
 
@@ -103,11 +99,7 @@ class rest_post_reports(rest_post_handler):
         d = dict(report_name=report_name)
 
         _log('report.add', fmt, d)
-        l = {
-          'event': 'reports_change',
-          'data': {'id': report_id},
-        }
-        _websocket_send(event_msg(l))
+        ws_send('reports_change', {'id': report_id})
 
         return rest_get_report().handler(report_id)
 
@@ -146,11 +138,7 @@ class rest_post_report(rest_post_handler):
         d = dict(report_name=report.report_name, data=beautify_change(report, vars))
 
         _log('report.change', fmt, d)
-        l = {
-          'event': 'reports_change',
-          'data': {'id': report.id},
-        }
-        _websocket_send(event_msg(l))
+        ws_send('reports_change', {'id': report.id})
 
         ret = rest_get_report().handler(report.id)
         ret["info"] = fmt % d
@@ -232,11 +220,7 @@ class rest_delete_reports_chart(rest_delete_handler):
         d = dict(chart_name=chart.chart_name)
 
         _log('chart.del', fmt, d)
-        l = {
-          'event': 'charts_change',
-          'data': {'id': chart.id},
-        }
-        _websocket_send(event_msg(l))
+        ws_send('charts_change', {'id': chart.id})
 
         return dict(info=fmt%d)
 
@@ -304,11 +288,7 @@ class rest_post_reports_charts(rest_post_handler):
         d = dict(chart_name=chart_name)
 
         _log('chart.add', fmt, d)
-        l = {
-          'event': 'charts_change',
-          'data': {'id': chart_id},
-        }
-        _websocket_send(event_msg(l))
+        ws_send('charts_change', {'id': chart_id})
 
         return rest_get_reports_chart().handler(chart_id)
 
@@ -347,11 +327,7 @@ class rest_post_reports_chart(rest_post_handler):
         d = dict(chart_name=chart.chart_name, data=beautify_change(chart, vars))
 
         _log('chart.change', fmt, d)
-        l = {
-          'event': 'charts_change',
-          'data': {'id': chart.id},
-        }
-        _websocket_send(event_msg(l))
+        ws_send('charts_change', {'id': chart.id})
 
         ret = rest_get_reports_chart().handler(chart.id)
         ret["info"] = fmt % d
@@ -433,11 +409,7 @@ class rest_delete_reports_metric(rest_delete_handler):
         d = dict(metric_name=metric.metric_name)
 
         _log('metric.del', fmt, d)
-        l = {
-          'event': 'metrics_change',
-          'data': {'id': metric.id},
-        }
-        _websocket_send(event_msg(l))
+        ws_send('metrics_change', {'id': metric.id})
 
         return dict(info=fmt%d)
 
@@ -505,11 +477,7 @@ class rest_post_reports_metrics(rest_post_handler):
         d = dict(metric_name=metric_name)
 
         _log('metric.add', fmt, d)
-        l = {
-          'event': 'metrics_change',
-          'data': {'id': metric_id},
-        }
-        _websocket_send(event_msg(l))
+        ws_send('metrics_change', {'id': metric_id})
 
         return rest_get_reports_metric().handler(metric_id)
 
@@ -548,11 +516,7 @@ class rest_post_reports_metric(rest_post_handler):
         d = dict(metric_name=metric.metric_name, data=beautify_change(metric, vars))
 
         _log('metric.change', fmt, d)
-        l = {
-          'event': 'metrics_change',
-          'data': {'id': metric.id},
-        }
-        _websocket_send(event_msg(l))
+        ws_send('metrics_change', {'id': metric.id})
 
         ret = rest_get_reports_metric().handler(metric.id)
         ret["info"] = fmt % d

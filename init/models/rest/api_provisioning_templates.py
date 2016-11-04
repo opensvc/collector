@@ -150,11 +150,7 @@ class rest_post_provisioning_template(rest_post_handler):
         d = dict(tpl_name=tpl.tpl_name, data=beautify_change(tpl, vars))
 
         _log('provisioning_template.change', fmt, d)
-        l = {
-          'event': 'prov_templates_change',
-          'data': {'id': tpl.id},
-        }
-        _websocket_send(event_msg(l))
+        ws_send('prov_templates_change', {'id': tpl.id})
 
         ret = rest_get_provisioning_template().handler(tpl.id)
         ret["info"] = fmt % d
@@ -200,11 +196,7 @@ class rest_post_provisioning_templates(rest_post_handler):
         d = dict(tpl_name=tpl_name)
 
         _log('provisioning_template.add', fmt, d)
-        l = {
-          'event': 'prov_templates_change',
-          'data': {'id': tpl_id},
-        }
-        _websocket_send(event_msg(l))
+        ws_send('prov_templates_change', {'id': tpl_id})
 
         return rest_get_provisioning_template().handler(tpl_id)
 
@@ -239,11 +231,7 @@ class rest_delete_provisioning_template(rest_delete_handler):
         d = dict(tpl_name=tpl.tpl_name)
 
         _log('provisioning_template.del', fmt, d)
-        l = {
-          'event': 'prov_templates_change',
-          'data': {'id': tpl.id},
-        }
-        _websocket_send(event_msg(l))
+        ws_send('prov_templates_change', {'id': tpl.id})
 
         return dict(info=fmt%d)
 
@@ -332,11 +320,7 @@ class rest_delete_provisioning_template_responsible(rest_delete_handler):
           fmt,
           d
         )
-        l = {
-          'event': 'prov_template_responsible_change',
-          'data': {'id': tpl_id},
-        }
-        _websocket_send(event_msg(l))
+        ws_send('prov_template_responsible_change', {'id': tpl_id})
 
         return dict(info=fmt%d)
 
@@ -414,11 +398,7 @@ class rest_post_provisioning_template_responsible(rest_post_handler):
           fmt,
           d
         )
-        l = {
-          'event': 'prov_template_responsible_change',
-          'data': {'id': tpl_id},
-        }
-        _websocket_send(event_msg(l))
+        ws_send('prov_template_responsible_change', {'id': tpl_id})
 
         return dict(info=fmt%d)
 
@@ -513,11 +493,7 @@ class rest_delete_provisioning_template_publication(rest_delete_handler):
           fmt,
           d
         )
-        l = {
-          'event': 'prov_template_publication_change',
-          'data': {'id': tpl_id},
-        }
-        _websocket_send(event_msg(l))
+        ws_send('prov_template_publication_change', {'id': tpl_id})
 
         return dict(info=fmt%d)
 
@@ -595,11 +571,7 @@ class rest_post_provisioning_template_publication(rest_post_handler):
           fmt,
           d
         )
-        l = {
-          'event': 'prov_template_publication_change',
-          'data': {'id': tpl_id},
-        }
-        _websocket_send(event_msg(l))
+        ws_send('prov_template_publication_change', {'id': tpl_id})
 
         return dict(info=fmt%d)
 

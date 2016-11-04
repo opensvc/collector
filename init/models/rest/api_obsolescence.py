@@ -59,11 +59,7 @@ class rest_post_obsolescence_setting(rest_post_handler):
         d = dict(obs_name=setting.obs_name, obs_type=setting.obs_type, data=beautify_change(setting, vars))
 
         _log('obsolescence.setting.change', fmt, d)
-        l = {
-          'event': 'obsolescence_change',
-          'data': {'id': id},
-        }
-        _websocket_send(event_msg(l))
+        ws_send("obsolescence_change", {'id': id})
 
         ret = rest_get_obsolescence_setting().handler(id)
         ret["info"] = fmt % d
@@ -174,11 +170,7 @@ class rest_delete_obsolescence_setting(rest_delete_handler):
         db(q).delete()
 
         _log('obsolescence.setting.delete', fmt, d)
-        l = {
-          'event': 'obsolescence_change',
-          'data': {'id': id},
-        }
-        _websocket_send(event_msg(l))
+        ws_send("obsolescence_change", {'id': id})
         return dict(info=fmt%d)
 
 class rest_delete_obsolescence_settings(rest_delete_handler):
@@ -231,11 +223,7 @@ class rest_put_obsolescence_refresh(rest_put_handler):
         cron_obsolescence_hw()
         purge_dash_obs_without()
         update_nodes_fields()
-        l = {
-          'event': 'obsolescence_change',
-          'data': {'f': "b"},
-        }
-        _websocket_send(event_msg(l))
+        ws_send("obsolescence_change")
         return dict(info="Obsolescence settings refreshed")
 
 

@@ -70,11 +70,7 @@ class rest_post_services_action(rest_post_handler):
              node_id=row.node_id,
              svc_id=row.svc_id)
 
-        l = {
-          'event': 'svcactions_change',
-          'data': {'id': row.id},
-        }
-        _websocket_send(event_msg(l))
+        ws_send('svcactions_change', {'id': row.id})
         table_modified("svcactions")
 
         update_instance_action_errors(row.svc_id, row.node_id)

@@ -50,11 +50,7 @@ class rest_post_safe_file(rest_post_handler):
           'file %(id)s properties changed: %(changes)s.',
           dict(uuid=current.uuid, changes=changes),
         )
-        l = {
-          'event': 'safe_change',
-          'data': {'foo': 'bar'},
-        }
-        _websocket_send(event_msg(l))
+        ws_send('safe_change')
         return rest_get_safe_file().handler(id)
 
 #
@@ -89,11 +85,7 @@ class rest_post_safe_upload(rest_post_handler):
           'file %(uuid)s uploaded.',
           dict(uuid=data.get("uuid", "")),
         )
-        l = {
-          'event': 'safe_change',
-          'data': {'foo': 'bar'},
-        }
-        _websocket_send(event_msg(l))
+        ws_send('safe_change')
         return {"data": data}
 
 #
@@ -302,11 +294,7 @@ class rest_post_safe_file_publication(rest_post_handler):
              'file %(uuid)s published to group %(group)s.',
              dict(uuid=f.uuid, group=g.role)
             )
-        l = {
-          'event': 'safe_team_publication_change',
-          'data': {'foo': 'bar'},
-        }
-        _websocket_send(event_msg(l))
+        ws_send('safe_team_publication_change')
         return dict(info='File %(uuid)s published to group %(group)s.' % dict(uuid=f.uuid, group=g.role))
 
 #
@@ -400,11 +388,7 @@ class rest_post_safe_file_responsible(rest_post_handler):
              'file %(uuid)s responsibility added to group %(group)s.',
              dict(uuid=f.uuid, group=g.role)
             )
-        l = {
-          'event': 'safe_team_responsible_change',
-          'data': {'foo': 'bar'},
-        }
-        _websocket_send(event_msg(l))
+        ws_send('safe_team_responsible_change')
         return dict(info='File %(uuid)s responsibility added to group %(group)s.' % dict(uuid=f.uuid, group=g.role))
 
 class rest_delete_safe_files_publications(rest_delete_handler):
@@ -476,11 +460,7 @@ class rest_delete_safe_file_publication(rest_delete_handler):
              'file %(uuid)s unpublished to %(group)s',
              dict(uuid=f.uuid, group=g.role),
             )
-        l = {
-          'event': 'safe_team_publication_change',
-          'data': {'foo': 'bar'},
-        }
-        _websocket_send(event_msg(l))
+        ws_send('safe_team_publication_change')
         return dict(info="file %(uuid)s unpublished to %(group)s" % dict(uuid=f.uuid, group=g.role))
 
 class rest_delete_safe_files_responsibles(rest_delete_handler):
@@ -552,11 +532,7 @@ class rest_delete_safe_file_responsible(rest_delete_handler):
              'file %(uuid)s responsibility to %(group)s removed',
              dict(uuid=f.uuid, group=g.role),
             )
-        l = {
-          'event': 'safe_team_responsible_change',
-          'data': {'foo': 'bar'},
-        }
-        _websocket_send(event_msg(l))
+        ws_send('safe_team_responsible_change')
         return dict(info="file %(uuid)s responsibility to %(group)s removed" % dict(uuid=f.uuid, group=g.role))
 
 #

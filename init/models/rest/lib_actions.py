@@ -93,12 +93,7 @@ def update_dash_action_errors(svc_id, node_id):
                   )
         rows = db.executesql(sqlws)
         if len(rows) > 0:
-            _websocket_send(event_msg({
-              'event': 'dash_change',
-              'data': {
-                'dash_md5': rows[0][0],
-              }
-            }))
+            ws_send('dash_change', {'dash_md5': rows[0][0]})
 
     else:
         sqlws = """select dash_md5 from dashboard
@@ -110,12 +105,7 @@ def update_dash_action_errors(svc_id, node_id):
                        node_id=node_id)
         rows = db.executesql(sqlws)
         if len(rows) > 0:
-            _websocket_send(event_msg({
-              'event': 'dash_delete',
-              'data': {
-                'dash_md5': rows[0][0],
-              }
-            }))
+            ws_send('dash_delete', {'dash_md5': rows[0][0]})
         sql = """delete from dashboard
                  where
                    dash_type="action errors" and

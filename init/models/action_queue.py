@@ -9,11 +9,7 @@ def action_queue_ws_data():
     return data
 
 def action_q_event():
-    l = {
-      'event': 'action_q_change',
-      'data': action_queue_ws_data(),
-    }
-    _websocket_send(event_msg(l))
+    ws_send('action_q_change', action_queue_ws_data())
 
 def purge_action_queue():
     now = datetime.datetime.now()

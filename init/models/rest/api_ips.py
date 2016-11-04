@@ -107,11 +107,7 @@ class rest_delete_ip(rest_delete_handler):
         fmt = "ip %(addr)s on node %(nodename)s deleted"
         d = dict(addr=row.addr, nodename=row.nodename)
         _log("node.ip.delete", fmt, d, nodename=row.nodename)
-        l = {
-          'event': 'node_ip_change',
-          'data': {'id': row.id},
-        }
-        _websocket_send(event_msg(l))
+        ws_send('node_ip_change', {'id': row.id})
 
         return dict(info=fmt%d)
 

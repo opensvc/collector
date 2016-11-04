@@ -211,11 +211,7 @@ class rest_post_array_diskgroup_quota(rest_post_handler):
         d = dict(quota=str(vars.get("quota", "")), app=app.app, dg=dg.dg_name, data=beautify_change(quota, vars))
 
         _log('quota.change', fmt, d)
-        l = {
-          'event': 'stor_array_dg_quota_change',
-          'data': {'id': quota.id},
-        }
-        _websocket_send(event_msg(l))
+        ws_send('stor_array_dg_quota_change', {'id': quota.id})
         table_modified("stor_array_dg_quota")
 
         ret = rest_get_array_diskgroup_quota().handler(array_id, dg_id, quota_id)
@@ -272,11 +268,7 @@ class rest_post_array_diskgroup_quotas(rest_post_handler):
         d = dict(quota=str(vars.get("quota", "")), app=app.app, dg=dg.dg_name)
 
         _log('quota.add', fmt, d)
-        l = {
-          'event': 'stor_array_dg_quota_change',
-          'data': {'id': id},
-        }
-        _websocket_send(event_msg(l))
+        ws_send('stor_array_dg_quota_change', {'id': id})
         table_modified("stor_array_dg_quota")
 
         ret = rest_get_array_diskgroup_quota().handler(array_id, dg_id, id)
@@ -340,11 +332,7 @@ class rest_delete_array_diskgroup_quota(rest_delete_handler):
         d = dict(quota=str(quota.quota), app=str(app.app), dg=str(dg.dg_name))
 
         _log('quota.del', fmt, d)
-        l = {
-          'event': 'stor_array_dg_quota_change',
-          'data': {'id': quota.id},
-        }
-        _websocket_send(event_msg(l))
+        ws_send('stor_array_dg_quota_change', {'id': quota.id})
         table_modified("stor_array_dg_quota")
 
         ret = {}

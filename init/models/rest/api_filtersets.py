@@ -255,11 +255,7 @@ class rest_post_filterset(rest_post_handler):
              'change filterset %(data)s',
              dict(data=', '.join(l)),
             )
-        l = {
-          'event': 'gen_filtersets_change',
-          'data': {'id': row.id},
-        }
-        _websocket_send(event_msg(l))
+        ws_send('gen_filtersets_change', {'id': row.id})
         return rest_get_filterset().handler(row.id)
 
 #
@@ -702,11 +698,7 @@ class rest_post_filter(rest_post_handler):
              'change filter %(data)s',
              dict(data=', '.join(l)),
             )
-        l = {
-          'event': 'gen_filters_change',
-          'data': {'foo': 'bar'},
-        }
-        _websocket_send(event_msg(l))
+        ws_send('gen_filters_change')
         return rest_get_filter().handler(row.id)
 
 #

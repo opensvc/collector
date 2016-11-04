@@ -400,11 +400,7 @@ class rest_post_network(rest_post_handler):
              'update properties %(data)s',
              dict(data=str(vars)),
             )
-        l = {
-          'event': 'networks_change',
-          'data': {'foo': 'bar'},
-        }
-        _websocket_send(event_msg(l))
+        ws_send('networks_change')
         return rest_get_network().handler(id, props=','.join(["id","updated"]+vars.keys()))
 
 
@@ -549,11 +545,7 @@ class rest_post_network_segment(rest_post_handler):
              'update properties %(data)s of segment %(seg_id)s',
              dict(data=str(vars), seg_id=seg_id),
             )
-        l = {
-          'event': 'network_segments_change',
-          'data': {'foo': 'bar'},
-        }
-        _websocket_send(event_msg(l))
+        ws_send('network_segments_change')
         return rest_get_network().handler(id, props=','.join(["id"]+vars.keys()))
 
 
@@ -590,11 +582,7 @@ class rest_post_networks(rest_post_handler):
              'create properties %(data)s',
              dict(data=str(vars))
             )
-        l = {
-          'event': 'networks_change',
-          'data': {'foo': 'bar'},
-        }
-        _websocket_send(event_msg(l))
+        ws_send('networks_change')
         return rest_get_network().handler(id, props=','.join(["id","updated"]+vars.keys()))
 
 
@@ -630,11 +618,7 @@ class rest_delete_network(rest_delete_handler):
              '%(network)s/%(netmask)s',
              dict(network=net.network, netmask=net.netmask),
             )
-        l = {
-          'event': 'networks_change',
-          'data': {'foo': 'bar'},
-        }
-        _websocket_send(event_msg(l))
+        ws_send('networks_change')
         return dict(info="Network %s deleted" % id)
 
 #

@@ -199,11 +199,7 @@ class rest_delete_action_queue_one(rest_delete_handler):
              'deleted actions %(u)s',
              dict(u=row.command),
              node_id=row.node_id)
-        l = {
-          'event': 'action_queue',
-          'data': {'foo': 'bar'},
-        }
-        _websocket_send(event_msg(l))
+        ws_send('action_queue')
         action_q_event()
         return dict(info="Action %s deleted" % id)
 
@@ -256,11 +252,7 @@ class rest_post_action_queue_one(rest_post_handler):
              dict(data=beautify_change(row, vars)),
              svc_id=row.svc_id,
              node_id=row.node_id)
-        l = {
-          'event': 'action_queue',
-          'data': {'foo': 'bar'},
-        }
-        _websocket_send(event_msg(l))
+        ws_send('action_queue')
         action_q_event()
         return rest_get_action_queue_one().handler(_id)
 

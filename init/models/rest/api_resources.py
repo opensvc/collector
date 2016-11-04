@@ -111,11 +111,7 @@ class rest_delete_resource(rest_delete_handler):
              node_id=row.node_id,
              svc_id=row.svc_id,
             )
-        l = {
-          'event': 'resmon_change',
-          'data': {'id': id},
-        }
-        _websocket_send(event_msg(l))
+        ws_send('resmon_change', {'id': id})
         return dict(info=fmt%d)
 
 

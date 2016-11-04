@@ -318,11 +318,7 @@ class rest_delete_sysreport_secure_pattern(rest_delete_handler):
              'secure pattern %(s)s deleted',
              dict(s=row.pattern),
             )
-        l = {
-          'event': 'sysrep_secure_change',
-          'data': {'foo': 'bar'},
-        }
-        _websocket_send(event_msg(l))
+        ws_send('sysrep_secure_change')
         return dict(info=T("secure pattern %(s)s deleted" % dict(s=row.pattern)))
 
 #
@@ -364,11 +360,7 @@ class rest_post_sysreport_secure_patterns(rest_post_handler):
              'pattern %(s)s created.',
              dict(s=row.pattern),
             )
-        l = {
-          'event': 'sysrep_secure_change',
-          'data': {'foo': 'bar'},
-        }
-        _websocket_send(event_msg(l))
+        ws_send('sysrep_secure_change')
         return rest_get_sysreport_secure_pattern().handler(row.id)
 
 
@@ -466,11 +458,7 @@ class rest_delete_sysreport_authorization(rest_delete_handler):
              'authorization %(s)s deleted',
              dict(s=s),
             )
-        l = {
-          'event': 'sysrep_allow_change',
-          'data': {'foo': 'bar'},
-        }
-        _websocket_send(event_msg(l))
+        ws_send('sysrep_allow_change')
         return dict(info=T("authorization %(s)s deleted" % dict(s=s)))
 
 #
@@ -567,11 +555,7 @@ class rest_post_sysreport_authorizations(rest_post_handler):
              'authorization %(s)s created.',
              dict(s=s)
             )
-        l = {
-          'event': 'sysrep_allow_change',
-          'data': {'foo': 'bar'},
-        }
-        _websocket_send(event_msg(l))
+        ws_send('sysrep_allow_change')
         return rest_get_sysreport_authorization().handler(row.id)
 
 

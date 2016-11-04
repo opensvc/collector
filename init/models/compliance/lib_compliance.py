@@ -401,11 +401,7 @@ def lib_comp_moduleset_attach_node(node_id, modset_id):
          dict(node=get_nodename(node_id), moduleset=moduleset),
          node_id=node_id,
     )
-    l = {
-      'event': 'comp_node_moduleset_change',
-      'data': {'node_id': node_id, 'modset_id': modset_id},
-    }
-    _websocket_send(event_msg(l))
+    ws_send('comp_node_moduleset_change', {'node_id': node_id, 'modset_id': modset_id})
     return dict(info="moduleset %s attached"%moduleset)
 
 
@@ -436,11 +432,7 @@ def lib_comp_moduleset_detach_node(node_id, modset_id):
          dict(node=get_nodename(node_id), moduleset=moduleset),
          node_id=node_id,
     )
-    l = {
-      'event': 'comp_node_moduleset_change',
-      'data': {'modset_id': modset_id},
-    }
-    _websocket_send(event_msg(l))
+    ws_send('comp_node_moduleset_change', {'modset_id': modset_id})
     return dict(info="moduleset %s detached"%moduleset)
 
 
@@ -470,11 +462,7 @@ def lib_comp_moduleset_detach_service(svc_id, modset_id, slave=False):
          dict(moduleset=moduleset),
          svc_id=svc_id,
     )
-    l = {
-      'event': 'comp_modulesets_services_change',
-      'data': {'modset_id': modset_id},
-    }
-    _websocket_send(event_msg(l))
+    ws_send('comp_modulesets_services_change', {'modset_id': modset_id})
     return dict(info="moduleset %s detached"%moduleset)
 
 
@@ -497,11 +485,7 @@ def lib_comp_moduleset_attach_service(svc_id, modset_id, slave):
         dict(moduleset=moduleset),
         svc_id=svc_id,
     )
-    l = {
-      'event': 'comp_modulesets_services_change',
-      'data': {'modset_id': modset_id},
-    }
-    _websocket_send(event_msg(l))
+    ws_send('comp_modulesets_services_change', {'modset_id': modset_id})
     return dict(info="moduleset %s attached"%moduleset)
 
 #
@@ -528,11 +512,7 @@ def lib_comp_ruleset_attach_node(node_id, ruleset_id):
          dict(node=get_nodename(node_id), ruleset=ruleset),
          node_id=node_id,
     )
-    l = {
-      'event': 'comp_rulesets_nodes_change',
-      'data': {'ruleset_id': ruleset_id},
-    }
-    _websocket_send(event_msg(l))
+    ws_send('comp_rulesets_nodes_change', {'ruleset_id': ruleset_id})
     return dict(info="ruleset %s attached"%ruleset)
 
 
@@ -563,11 +543,7 @@ def lib_comp_ruleset_detach_node(node_id, ruleset_id):
          dict(node=get_nodename(node_id), ruleset=ruleset),
          node_id=node_id,
     )
-    l = {
-      'event': 'comp_rulesets_nodes_change',
-      'data': {'ruleset_id': ruleset_id},
-    }
-    _websocket_send(event_msg(l))
+    ws_send('comp_rulesets_nodes_change', {'ruleset_id': ruleset_id})
     return dict(info="ruleset %s detached"%ruleset)
 
 
@@ -597,11 +573,7 @@ def lib_comp_ruleset_detach_service(svc_id, ruleset_id, slave=False):
          dict(ruleset=ruleset),
          svc_id=svc_id,
     )
-    l = {
-      'event': 'comp_rulesets_services_change',
-      'data': {'ruleset_id': ruleset_id},
-    }
-    _websocket_send(event_msg(l))
+    ws_send('comp_rulesets_services_change', {'ruleset_id': ruleset_id})
     return dict(info="ruleset %s detached"%ruleset)
 
 
@@ -624,11 +596,7 @@ def lib_comp_ruleset_attach_service(svc_id, ruleset_id, slave):
         dict(ruleset=ruleset),
         svc_id=svc_id,
     )
-    l = {
-      'event': 'comp_rulesets_services_change',
-      'data': {'ruleset_id': ruleset_id},
-    }
-    _websocket_send(event_msg(l))
+    ws_send('comp_rulesets_services_change', {'ruleset_id': ruleset_id})
     return dict(info="ruleset %s attached"%ruleset)
 
 def get_modset_tree_nodes(modset_ids=None):
@@ -1388,11 +1356,7 @@ def detach_group_from_ruleset(group_id, rset_id, gtype="responsible"):
          dict(rset_name=v.comp_rulesets.ruleset_name,
               gtype=gtype,
               role=w.role))
-    l = {
-      'event': 'comp_rulesets_change',
-      'data': {'ruleset_id': rset_id, 'group_id': group_id},
-    }
-    _websocket_send(event_msg(l))
+    ws_send('comp_rulesets_change', {'ruleset_id': rset_id, 'group_id': group_id})
 
 @auth.requires_membership('CompManager')
 def detach_group_from_moduleset(group_id, modset_id, gtype="responsible"):
@@ -1420,11 +1384,7 @@ def detach_group_from_moduleset(group_id, modset_id, gtype="responsible"):
          dict(modset_name=v.comp_moduleset.modset_name,
               gtype=gtype,
               role=w.role))
-    l = {
-      'event': 'comp_moduleset_change',
-      'data': {'modset_id': modset_id, 'group_id': group_id},
-    }
-    _websocket_send(event_msg(l))
+    ws_send('comp_moduleset_change',{'modset_id': modset_id, 'group_id': group_id})
 
 
 @auth.requires_membership('CompManager')
@@ -1614,11 +1574,7 @@ def attach_group_to_ruleset(group_id, rset_id, gtype="publication"):
          dict(rset_name=v.ruleset_name,
               gtype=gtype,
               role=w.role))
-    l = {
-      'event': 'comp_rulesets_change',
-      'data': {'ruleset_id': rset_id, 'group_id': group_id},
-    }
-    _websocket_send(event_msg(l))
+    ws_send('comp_rulesets_change', {'ruleset_id': rset_id, 'group_id': group_id})
 
 @auth.requires_membership('CompManager')
 def attach_group_to_moduleset(group_id, modset_id, gtype="publication"):
@@ -1657,11 +1613,7 @@ def attach_group_to_moduleset(group_id, modset_id, gtype="publication"):
          dict(modset_name=v.modset_name,
               gtype=gtype,
               role=w.role))
-    l = {
-      'event': 'comp_moduleset_change',
-      'data': {'modset_id': modset_id, 'group_id': group_id},
-    }
-    _websocket_send(event_msg(l))
+    ws_send('comp_moduleset_change',{'modset_id': modset_id, 'group_id': group_id})
 
 @auth.requires_membership('CompManager')
 def attach_filterset_to_ruleset(fset_id, rset_id):
@@ -1942,11 +1894,7 @@ def create_filterset(fset_name=None, fset_stats="F"):
     _log('filterset.create',
          'added filterset %(name)s',
          dict(name=fset_name))
-    l = {
-      'event': 'gen_filtersets_change',
-      'data': {'id': obj_id},
-    }
-    _websocket_send(event_msg(l))
+    ws_send('gen_filtersets_change', {'id': obj_id})
     return obj_id
 
 @auth.requires_membership('CompManager')
@@ -2000,11 +1948,7 @@ def delete_filterset(fset_id):
     _log('filterset.delete',
          'deleted filterset %(fset_name)s',
          dict(fset_name=v.fset_name))
-    l = {
-      'event': 'gen_filtersets_change',
-      'data': {'id': fset_id},
-    }
-    _websocket_send(event_msg(l))
+    ws_send('gen_filtersets_change', {'id': fset_id})
     raise CompInfo("filterset deleted")
 
 @auth.requires_membership('CompManager')
@@ -2032,11 +1976,7 @@ def detach_filterset_from_filterset(fset_id, parent_fset_id):
          'detach filterset %(fset_name)s from filterset %(parent_fset_name)s',
          dict(fset_name=w.fset_name,
               parent_fset_name=v.fset_name))
-    l = {
-      'event': 'gen_filtersets_filters_change',
-      'data': {'parent_fset_id': parent_fset_id, 'fset_id': fset_id},
-    }
-    _websocket_send(event_msg(l))
+    ws_send('gen_filtersets_filters_change', {'parent_fset_id': parent_fset_id, 'fset_id': fset_id})
     raise CompInfo("filterset detached")
 
 @auth.requires_membership('CompManager')
@@ -2064,11 +2004,7 @@ def detach_filter_from_filterset(f_id, fset_id):
          'detach filter %(f_name)s from filterset %(fset_name)s',
          dict(fset_name=v.fset_name,
               f_name=w.f_table+'.'+w.f_field+' '+w.f_op+' '+w.f_value))
-    l = {
-      'event': 'gen_filtersets_filters_change',
-      'data': {'f_id': f_id, 'fset_id': fset_id},
-    }
-    _websocket_send(event_msg(l))
+    ws_send('gen_filtersets_filters_change', {'f_id': f_id, 'fset_id': fset_id})
     raise CompInfo("filter detached")
 
 @auth.requires_membership('CompManager')
@@ -2118,11 +2054,7 @@ def attach_filterset_to_filterset(fset_id, dst_fset_id, **vars):
          'attach filterset %(fset_name)s to filterset %(dst_fset_name)s',
          dict(dst_fset_name=v.fset_name,
               fset_name=w.fset_name))
-    l = {
-      'event': 'gen_filtersets_filters_change',
-      'data': {'parent_fset_id': dst_fset_id, 'fset_id': fset_id},
-    }
-    _websocket_send(event_msg(l))
+    ws_send('gen_filtersets_filters_change', {'parent_fset_id': dst_fset_id, 'fset_id': fset_id})
     raise CompInfo("filterset attached")
 
 @auth.requires_membership('CompManager')
@@ -2168,11 +2100,7 @@ def attach_filter_to_filterset(f_id, fset_id, **vars):
          'attach filter %(f_name)s to filterset %(fset_name)s',
          dict(fset_name=w.fset_name,
               f_name=v.f_table+'.'+v.f_field+' '+v.f_op+' '+v.f_value))
-    l = {
-      'event': 'gen_filtersets_filters_change',
-      'data': {'f_id': f_id, 'fset_id': fset_id},
-    }
-    _websocket_send(event_msg(l))
+    ws_send('gen_filtersets_filters_change', {'f_id': f_id, 'fset_id': fset_id})
     raise CompInfo("filter %s attached to filterset %s" % (str(f_id), str(fset_id)))
 
 @auth.requires_membership('CompManager')
@@ -2194,11 +2122,7 @@ def delete_filter(f_id):
     _log('filter.delete',
          'deleted filter %(t)s.%(f)s %(o)s %(val)s',
          dict(t=v.f_table, f=v.f_field, o=v.f_op, val=v.f_value))
-    l = {
-      'event': 'gen_filters_change',
-      'data': {'id': f_id},
-    }
-    _websocket_send(event_msg(l))
+    ws_send('gen_filters_change', {'id': f_id})
     raise CompInfo("filterset deleted")
 
 @auth.requires_membership('CompManager')
@@ -2260,11 +2184,7 @@ def create_filter(f_table=None, f_field=None, f_op=None, f_value=None):
     _log('filter.create',
          'added filter %(t)s.%(f)s %(o)s %(val)s',
          dict(t=f_table, f=f_field, o=f_op, val=f_value))
-    l = {
-      'event': 'gen_filters_change',
-      'data': {'id': obj_id},
-    }
-    _websocket_send(event_msg(l))
+    ws_send('gen_filters_change', {'id': obj_id})
 
     return obj_id
 

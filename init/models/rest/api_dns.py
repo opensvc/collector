@@ -107,11 +107,7 @@ class rest_put_dns_domain_sync(rest_put_handler):
         d = dict(new=new, dname=dname)
 
         _log('dns.domain.sync', fmt, d)
-        l = {
-          'event': 'pdns_records_change',
-          'data': {'foo': 'bar'},
-        }
-        _websocket_send(event_msg(l))
+        ws_send('pdns_records_change')
         return dict(info=fmt%d)
 
 #
@@ -272,11 +268,7 @@ class rest_post_dns_domains(rest_post_handler):
              'record %(name)s %(type)s created. data %(data)s',
              dict(name=row.name, type=row.type, data=str(vars)),
             )
-        l = {
-          'event': 'pdns_domains_change',
-          'data': {'foo': 'bar'},
-        }
-        _websocket_send(event_msg(l))
+        ws_send('pdns_domains_change')
         return rest_get_dns_domain().handler(row.id)
 
 
@@ -313,11 +305,7 @@ class rest_post_dns_domain(rest_post_handler):
              'record %(name)s %(type)s changed. data %(data)s',
              dict(name=row.name, type=row.type, data=str(vars)),
             )
-        l = {
-          'event': 'pdns_domains_change',
-          'data': {'foo': 'bar'},
-        }
-        _websocket_send(event_msg(l))
+        ws_send('pdns_domains_change')
         return rest_get_dns_domain().handler(domain_id)
 
 
@@ -362,11 +350,7 @@ class rest_post_dns_records(rest_post_handler):
         fmt = 'record %(name)s %(type)s %(content)s created in domain %(domain)s'
         d = dict(name=row.name, type=row.type, content=row.content, domain=str(row.domain_id))
         _log('dns.records.create', fmt, d)
-        l = {
-          'event': 'pdns_records_change',
-          'data': {'foo': 'bar'},
-        }
-        _websocket_send(event_msg(l))
+        ws_send('pdns_records_change')
         ret = rest_get_dns_record().handler(row.id)
         ret["info"] = fmt % d
         return ret
@@ -408,11 +392,7 @@ class rest_post_dns_record(rest_post_handler):
              'record %(name)s %(type)s %(content)s changed. data %(data)s',
              dict(name=row.name, type=row.type, content=row.content, data=str(vars)),
             )
-        l = {
-          'event': 'pdns_records_change',
-          'data': {'foo': 'bar'},
-        }
-        _websocket_send(event_msg(l))
+        ws_send('pdns_records_change')
         return rest_get_dns_record().handler(record_id)
 
 
@@ -478,16 +458,8 @@ class rest_delete_dns_domain(rest_delete_handler):
              'record %(name)s %(type)s deleted',
              dict(name=row.name, type=row.type),
             )
-        l = {
-          'event': 'pdns_domains_change',
-          'data': {'foo': 'bar'},
-        }
-        _websocket_send(event_msg(l))
-        l = {
-          'event': 'pdns_records_change',
-          'data': {'foo': 'bar'},
-        }
-        _websocket_send(event_msg(l))
+        ws_send('pdns_domains_change')
+        ws_send('pdns_records_change')
         return dict(info="Domain %s %s deleted" % (row.name, row.type))
 
 #
@@ -548,10 +520,6 @@ class rest_delete_dns_record(rest_delete_handler):
              'record %(name)s %(type)s %(content)s deleted',
              dict(name=row.name, type=row.type, content=row.content),
             )
-        l = {
-          'event': 'pdns_records_change',
-          'data': {'foo': 'bar'},
-        }
-        _websocket_send(event_msg(l))
+        ws_send('pdns_records_change')
         return dict(info="Record %s %s %s deleted" % (row.name, row.type, row.content))
 

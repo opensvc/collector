@@ -24,11 +24,7 @@ def beautify_data(d):
     return ", ".join(l)
 
 def log_events(i):
-    l = {
-      'event': 'log_change',
-      'data': {'id': i},
-    }
-    _websocket_send(event_msg(l))
+    ws_send('log_change', {'id': i})
 
 def _log(action, fmt, d, user=None, svc_id=None, node_id=None, level="info"):
     if user is None:

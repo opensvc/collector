@@ -892,15 +892,11 @@ class rest_post_user_filterset(rest_post_handler):
              'user %(u)s filterset set to %(g)s',
              dict(u=user.email, g=fset.fset_name),
             )
-        l = {
-          'event': 'gen_filterset_user_change',
-          'data': {
+        ws_send("gen_filterset_user_change", {
             'user_id': user.id,
             'fset_id': fset.id,
             'fset_name': fset.fset_name,
-          },
-        }
-        _websocket_send(event_msg(l))
+        })
         table_modified("gen_filterset_user")
         return dict(info="User %s filterset set to %s" % (str(user.email), str(fset.fset_name)))
 
@@ -948,13 +944,7 @@ class rest_delete_user_filterset(rest_delete_handler):
              'user %(u)s filterset unset',
              dict(u=user.email),
             )
-        l = {
-          'event': 'gen_filterset_user_delete',
-          'data': {
-            'user_id': user.id,
-          },
-        }
-        _websocket_send(event_msg(l))
+        ws_send('gen_filterset_user_delete', {'user_id': user.id})
         table_modified("gen_filterset_user")
         return dict(info="User %s filterset unset" % str(user.email))
 
@@ -1045,13 +1035,7 @@ class rest_post_user_table_settings(rest_post_handler):
           meta="0",
           query="upc_table=%s and upc_field=%s" % (vars["upc_table"], vars["upc_field"])
         )
-        l = {
-          'event': 'user_prefs_columns_change',
-          'data': {
-            'user_id': user.id,
-          },
-        }
-        _websocket_send(event_msg(l))
+        ws_send('user_prefs_columns_change', {'user_id': user.id})
         table_modified("user_prefs_columns")
         return rest_get_user_table_settings().handler(id, **qvars)
 
@@ -1147,13 +1131,7 @@ class rest_post_user_table_filters(rest_post_handler):
           meta="0",
           query="col_tableid=%s and col_name=%s and bookmark=%s" % (vars["col_tableid"], vars["col_name"], vars["bookmark"])
         )
-        l = {
-          'event': 'column_filters_change',
-          'data': {
-            'user_id': user.id,
-          },
-        }
-        _websocket_send(event_msg(l))
+        ws_send('column_filters_change', {'user_id': user.id})
         table_modified("column_filters")
         return rest_get_user_table_filters().handler(id, **qvars)
 
@@ -1201,13 +1179,7 @@ class rest_delete_user_table_filters(rest_delete_handler):
             q &= db.column_filters.bookmark == vars["bookmark"]
 
         db(q).delete()
-        l = {
-          'event': 'column_filters_change',
-          'data': {
-            'user_id': user.id,
-          },
-        }
-        _websocket_send(event_msg(l))
+        ws_send('column_filters_change', {'user_id': user.id})
         table_modified("column_filters")
         return dict(info=T("column filters deleted"))
 
@@ -1292,13 +1264,7 @@ class rest_post_user_table_filters_load_bookmark(rest_post_handler):
           meta="0",
           query="col_tableid=%s and bookmark=current" % (vars["col_tableid"])
         )
-        l = {
-          'event': 'column_filters_change',
-          'data': {
-            'user_id': user.id,
-          },
-        }
-        _websocket_send(event_msg(l))
+        ws_send('column_filters_change', {'user_id': user.id})
         table_modified("column_filters")
         return rest_get_user_table_filters().handler(id, **qvars)
 
@@ -1383,13 +1349,7 @@ class rest_post_user_table_filters_save_bookmark(rest_post_handler):
           meta="0",
           query="col_tableid=%s and bookmark=current" % (vars["col_tableid"])
         )
-        l = {
-          'event': 'column_filters_change',
-          'data': {
-            'user_id': user.id,
-          },
-        }
-        _websocket_send(event_msg(l))
+        ws_send('column_filters_change', {'user_id': user.id})
         table_modified("column_filters")
         return rest_get_user_table_filters().handler(id, **qvars)
 
