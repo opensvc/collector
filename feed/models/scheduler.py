@@ -688,7 +688,7 @@ def _resmon_clean(node_id, svc_id, threshold=None):
 
 def _resmon_update(vars, vals, auth, cache=None):
     if len(vals) == 0:
-        return
+        return cache
     if cache is None:
         head = True
         cache = {
