@@ -148,7 +148,7 @@ function docker_repository_properties(divid, options) {
 							{
 								"title": "action_menu.del",
 								"class": "del16",
-								"fn": "data_action_del_docker_repository",
+								"fn": "data_action_delete_docker_repositories",
 								"privileges": ["Manager", "DockerRegistriesManager"]
 							}
 						]
@@ -158,7 +158,7 @@ function docker_repository_properties(divid, options) {
 		]
 		tab_tools({
 			"div": o.div.find("#tools"),
-			"data": {"id": data.id},
+			"data": {"repository_id": data.id},
 			"am_data": am_data
 		})
 

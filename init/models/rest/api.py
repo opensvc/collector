@@ -485,6 +485,8 @@ def get_delete_handlers(prefix=None):
              "rest_delete_docker_tag",
              "rest_delete_docker_registries",
              "rest_delete_docker_registry",
+             "rest_delete_docker_repositories",
+             "rest_delete_docker_repository",
              "rest_delete_docker_registries_publications",
              "rest_delete_docker_registries_responsibles",
              "rest_delete_docker_registry_publication",

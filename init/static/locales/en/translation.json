@@ -112,6 +112,7 @@
 		"on_prov_templates": "On provisioning templates",
 		"on_obsolescence_settings": "On obsolescence settings",
 		"on_docker_registries": "On docker registries",
+		"on_docker_repositories": "On docker repositories",
 		"on_docker_tags": "On docker tags",
 		"on_dns_domains": "On dns domains",
 		"sync_dns_domains": "Increment SOA serial",

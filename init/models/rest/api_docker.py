@@ -1154,11 +1154,76 @@ class rest_delete_docker_tag(rest_delete_handler):
 
         docker_delete_tag(tag.registry_id, repository.id, tag.name)
         ws_send('docker_tags_change')
-        _log('docker.tags.delete',
-             'docker tag %(s)s deleted',
-             dict(s=str(id)),
-            )
         return dict(info="docker tag %(s)s deleted" % dict(s=str(id)))
+
+
+class rest_delete_docker_repositories(rest_delete_handler):
+    def __init__(self):
+        desc = [
+          "Delete docker repositories and their tags from the registry and the collector.",
+          "The user must be in the DockerRegistriesManager privilege group.",
+          "The user must be in a publication group of the docker registry.",
+          "The user have acl allowing push on the repository.",
+          "The action is logged in the collector's log.",
+          "A websocket event is sent to announce the change in the table.",
+        ]
+        examples = [
+          """# curl -u %(email)s -o- -X DELETE https://%(collector)s/init/rest/api/docker/repositories""",
+        ]
+        rest_delete_handler.__init__(
+          self,
+          path="/docker/repositories",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, **vars):
+        if "id" in vars:
+            repository_id = vars["id"]
+        else:
+            raise Exception("The 'id' key is mandatory")
+        return rest_delete_docker_repository().handler(repository_id)
+
+#
+class rest_delete_docker_repository(rest_delete_handler):
+    def __init__(self):
+        desc = [
+          "Delete a docker repository and all its tags from the registry and the collector.",
+          "The user must be in the DockerRegistriesManager privilege group.",
+          "The user must be in a responsible group of the docker registry.",
+          "The action is logged in the collector's log.",
+          "A websocket event is sent to announce the change in the table.",
+        ]
+        examples = [
+          """# curl -u %(email)s -o- -X DELETE https://%(collector)s/init/rest/api/docker/repositories/1""",
+        ]
+        rest_delete_handler.__init__(
+          self,
+          path="/docker/repositories/<id>",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, id, **vars):
+        check_privilege("DockerRegistriesManager")
+
+        q = db.docker_repositories.id == int(id)
+        repository = db(q).select().first()
+        if repository is None:
+            raise Exception("repository '%s' does not exist" % str(id))
+
+        docker_registry_responsible(repository.registry_id)
+
+        q = db.docker_tags.repository_id == repository.id
+        q &= db.docker_tags.registry_id == repository.registry_id
+        tags = db(q).select()
+        for tag in tags:
+            docker_delete_tag(tag.registry_id, tag.repository_id, tag.name)
+
+        docker_delete_repository(repository.id)
+
+        ws_send('docker_repositories_change')
+        return dict(info="docker repository %(s)s deleted" % dict(s=str(id)))
 
 
 

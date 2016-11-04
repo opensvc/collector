@@ -173,6 +173,7 @@ function table_action_menu_init_data(t) {
 		"slave": "[col=encap]",
 		"command": "[col=command]",
 		"registry_id": "[col=registry_id]",
+		"repository_id": "[col=repository_id]",
 		"chk_type": "[col=chk_type]",
 		"chk_instance": "[col=chk_instance]"
 	}
@@ -1476,23 +1477,6 @@ function table_action_menu_init_data(t) {
 				},
 				{
 					"selector": ["clicked", "checked", "all"],
-					"title": "action_menu.on_docker_registries",
-					"class": "docker_registry16",
-					"foldable": true,
-					"cols": ["registry_id"],
-					"condition": "registry_id",
-					"children": [
-						{
-							"title": "action_menu.delete",
-							"class": "del16",
-							"fn": "data_action_delete_docker_registries",
-							"privileges": ["Manager", "DockerRegistriesManager"],
-							"min": 1
-						}
-					]
-				},
-				{
-					"selector": ["clicked", "checked", "all"],
 					"title": "action_menu.on_docker_tags",
 					"class": "dockertags16",
 					"foldable": true,
@@ -1503,6 +1487,40 @@ function table_action_menu_init_data(t) {
 							"title": "action_menu.delete",
 							"class": "del16",
 							"fn": "data_action_delete_docker_tags",
+							"privileges": ["Manager", "DockerRegistriesManager"],
+							"min": 1
+						}
+					]
+				},
+				{
+					"selector": ["clicked", "checked", "all"],
+					"title": "action_menu.on_docker_repositories",
+					"class": "docker_repository16",
+					"foldable": true,
+					"cols": ["repository_id"],
+					"condition": "repository_id",
+					"children": [
+						{
+							"title": "action_menu.delete",
+							"class": "del16",
+							"fn": "data_action_delete_docker_repositories",
+							"privileges": ["Manager", "DockerRegistriesManager"],
+							"min": 1
+						}
+					]
+				},
+				{
+					"selector": ["clicked", "checked", "all"],
+					"title": "action_menu.on_docker_registries",
+					"class": "docker_registry16",
+					"foldable": true,
+					"cols": ["registry_id"],
+					"condition": "registry_id",
+					"children": [
+						{
+							"title": "action_menu.delete",
+							"class": "del16",
+							"fn": "data_action_delete_docker_registries",
 							"privileges": ["Manager", "DockerRegistriesManager"],
 							"min": 1
 						}
@@ -3563,6 +3581,20 @@ function data_action_delete_docker_registries(t, e) {
 		"request_data_entry": function(data) {
 			return {
 				'id': data['registry_id']
+			}
+		}
+	})
+}
+
+//
+// data action: delete docker tags
+//
+function data_action_delete_docker_repositories(t, e) {
+	data_action_generic_delete(t, e, {
+		"request_service": "/docker/repositories",
+		"request_data_entry": function(data) {
+			return {
+				'id': data['repository_id']
 			}
 		}
 	})

@@ -370,9 +370,24 @@ def docker_delete_tag(registry_id, repo_id, tag, __token=None):
 
     ws_send('docker_tags_change')
     _log(
-      'docker.tags.delete',
-      'docker tag %(s)s deleted',
-      dict(s=tag),
+      "docker.tags.delete",
+      "docker tag '%(r)s:%(s)s' deleted from registry '%(service)s'",
+      dict(r=repo.repository, s=tag, service=registry.service),
+    )
+
+def docker_delete_repository(repo_id):
+    repo = get_docker_repository(repo_id, acl=False)
+    registry = get_docker_registry(repo.registry_id)
+
+    q = db.docker_repositories.id == repo_id
+    db(q).delete()
+    db.commit()
+
+    ws_send('docker_repositories_change')
+    _log(
+      "docker.repositories.delete",
+      "docker repository '%(s)s' deleted from registry '%(service)s'",
+      dict(s=repo.repository, service=registry.service),
     )
 
 

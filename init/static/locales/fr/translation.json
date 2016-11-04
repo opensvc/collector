@@ -114,6 +114,7 @@
 		"on_obsolescence_settings": "Sur les paramètres d'obsolescence",
 		"on_quotas": "Sut les quotas",
 		"on_docker_registries": "Sur les registres docker",
+		"on_docker_repositories": "Sur les dépôts docker",
 		"on_docker_tags": "Sur les tags docker",
 		"on_dns_domains": "Sur les domaines dns",
 		"sync_dns_domains": "Incrémenter le numéro de série du SOA",

@@ -76,7 +76,7 @@ def discover_repository_tags(registry, repo):
     vars = ["registry_id", "repository_id", "name", "updated"]
     vals = []
     now = datetime.datetime.now()
-    if "tags" not in data:
+    if "tags" not in data or data["tags"] is None:
         print(data)
         return
     for tag in data["tags"]:
