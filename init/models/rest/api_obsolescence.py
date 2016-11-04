@@ -31,11 +31,13 @@ class rest_post_obsolescence_setting(rest_post_handler):
         if "obs_type" in vars:
             raise Exception("The 'obs_name' key is not allowed")
 
+        user = user_name()
+
         if "obs_warn_date" in vars:
-            vars["obs_warn_date_updated_by"] = user_name()
+            vars["obs_warn_date_updated_by"] = user
             vars["obs_warn_date_updated"] = datetime.datetime.now()
         if "obs_alert_date" in vars:
-            vars["obs_alert_date_updated_by"] = user_name()
+            vars["obs_alert_date_updated_by"] = user
             vars["obs_alert_date_updated"] = datetime.datetime.now()
 
         db(q).update(**vars)

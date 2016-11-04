@@ -6,8 +6,13 @@ def user_name():
         return 'Unknown'
     if auth_is_node():
         return 'agent'
-    return ' '.join([session.auth.user.first_name,
+    user = ' '.join([session.auth.user.first_name,
                      session.auth.user.last_name])
+    try:
+        user = user.decode("utf8")
+    except:
+        pass
+    return user
 
 def delta_to_date(s):
     if len(s) == 0:

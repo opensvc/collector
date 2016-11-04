@@ -46,10 +46,6 @@ def _log(action, fmt, d, user=None, svc_id="", level="info", node_id=""):
             node_id = auth.user.node_id
         except:
             pass
-    try:
-        user = user.decode("utf8")
-    except:
-        pass
 
     logger = logging.getLogger("web2py.app.init.log")
     logger.setLevel(logging.DEBUG)
