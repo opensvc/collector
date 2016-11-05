@@ -6278,3 +6278,7 @@ INSERT INTO `scheduler_task` VALUES (NULL,UUID(),'[]','{}','T',NOW(),NOW(),NULL,
 
 alter table docker_registries add column restricted varchar(1) not null default "T";
 
+alter table fset_cache modify column obj_id char(36) CHARACTER SET ascii DEFAULT '';
+
+grant select on opensvc.svcactions to 'readonly'@'%';
+

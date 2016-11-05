@@ -554,10 +554,10 @@ def _refresh_fset_cache(fset_id):
 def filterset_encap_query_cached(fset_id):
     sql = """select obj_id from fset_cache where fset_id=%d and obj_type="node_id" """%fset_id
     rows = db.executesql(sql)
-    node_ids = [r[0] for r in rows]
+    node_ids = [str(r[0]) for r in rows]
     sql = """select obj_id from fset_cache where fset_id=%d and obj_type="svc_id" """%fset_id
     rows = db.executesql(sql)
-    svc_ids = [r[0] for r in rows]
+    svc_ids = [str(r[0]) for r in rows]
     return node_ids, svc_ids
 
 

@@ -9,14 +9,14 @@ def replace_fset_sql(sql, fset_id=None):
     if len(svc_ids) == 0:
         svc_ids = "'magic1234567890'"
     else:
-        svc_ids = ",".join(map(repr, svc_ids))
+        svc_ids = ",".join(map(lambda x: str(repr(x)), svc_ids))
 
     if len(node_ids) == 0:
         node_ids = "'magic1234567890'"
     else:
-        node_ids = ",".join(map(repr, node_ids))
+        node_ids = ",".join(map(lambda x: repr(str(x)), node_ids))
 
-    sql = sql.replace('%%fset_services%%', svc_ids)
+    sql = sql.replace('%%fset_svc_ids%%', svc_ids)
     sql = sql.replace('%%fset_node_ids%%', node_ids)
 
     return sql
@@ -58,7 +58,7 @@ def _metrics_cron_fsets(m, verbose=False):
         _metrics_cron_fset(m, fset_id, verbose=verbose)
 
 def _metrics_cron(m, verbose=False):
-    if "%%fset_services%%" in m.metric_sql or "%%fset_node_ids%%" in m.metric_sql:
+    if "%%fset_svc_ids%%" in m.metric_sql or "%%fset_node_ids%%" in m.metric_sql:
         _metrics_cron_fsets(m, verbose=verbose)
         return
 
