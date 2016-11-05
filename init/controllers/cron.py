@@ -106,22 +106,32 @@ def _cron_table_purge(table, date_col, orderby=None):
         return
     delta = day - oldest
     print "%d days to purge in table %s" % (delta.days, table)
+    import time
     for i in range(delta.days):
         _day = oldest + datetime.timedelta(days=i)
-        print " purge table %s till %s" % (table, str(_day))
-        sql = """delete from %(table)s where
-                   %(date_col)s is not null and
-                   %(date_col)s > 0 and
-                   %(date_col)s < "%(threshold)s"
-                   %(where)s
-              """ % dict(
-                table=table,
-                where=where,
-                date_col=date_col,
-                threshold=str(_day)
-              )
-        db.executesql(sql)
-        db.commit()
+        count = 0
+        while True:
+            print " purge table %s till %s (%d)" % (table, str(_day), count)
+            sql = """delete from %(table)s where
+                           %(date_col)s is not null and
+                       %(date_col)s > 0 and
+                       %(date_col)s < "%(threshold)s"
+                       %(where)s
+                       limit 1000
+                  """ % dict(
+                    table=table,
+                    where=where,
+                    date_col=date_col,
+                    threshold=str(_day)
+                  )
+            db.executesql(sql)
+            sql = """select row_count()"""
+            rows = db.executesql(sql)
+            db.commit()
+            count += rows[0][0]
+            if rows[0][0] == 0:
+                break
+            time.sleep(0.1)
     db.commit()
 
 def cron_purge_expiry():
@@ -226,8 +236,8 @@ def cron_stat_day_disk_app_dg():
                NULL,
                NOW(),
                dg.id,
-               t.app,
-               t.disk_used,
+               ap.app,
+               sd.disk_used,
                dgq.quota
              from diskinfo di
              join svcdisks sd on di.disk_id=sd.disk_id
