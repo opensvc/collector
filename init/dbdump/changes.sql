@@ -6274,7 +6274,7 @@ alter table docker_repositories add column stars integer default 0;
 alter table docker_repositories add column automated varchar(1) default "F";
 alter table docker_repositories add column official varchar(1) default "F";
 
-INSERT INTO `scheduler_task` VALUES (NULL,UUID(),'[]','{}','T',NOW(),NOW(),NULL,0,-1,120,120,0,0,0,NULL,'F','janitor','discover_registry','QUEUED','task_docker_discover_registry','init/appadmin',NULL);
+INSERT INTO `scheduler_task` VALUES (NULL,UUID(),'[]','{}','T',NOW(),NOW(),NULL,0,-1,120,120,0,0,0,NULL,'F','janitor','task_docker_discover_registries','QUEUED','task_docker_discover_registries','init/appadmin',NULL);
 
 alter table docker_registries add column restricted varchar(1) not null default "T";
 

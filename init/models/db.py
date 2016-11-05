@@ -570,6 +570,10 @@ db.define_table('svcmon_log',
     Field('mon_appstatus'),
     migrate=False)
 
+db.define_table('svcmon_log_last',
+    db.svcmon_log,
+    migrate=False)
+
 db.define_table('v_svcmon_log',
     db.svcmon_log,
     migrate=False)
@@ -1169,6 +1173,10 @@ db.define_table('services_log',
     Field('svc_end', 'datetime'),
     migrate=False)
 
+db.define_table('services_log_last',
+    db.services_log,
+    migrate=False)
+
 db.define_table('v_services_log',
     db.services_log,
     migrate=False)
@@ -1180,6 +1188,10 @@ db.define_table('resmon_log',
     Field('res_status', 'string'),
     Field('res_begin', 'datetime'),
     Field('res_end', 'datetime'),
+    migrate=False)
+
+db.define_table('resmon_log_last',
+    db.resmon_log,
     migrate=False)
 
 db.define_table('v_resmon_log',

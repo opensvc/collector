@@ -1,3 +1,6 @@
+def task_docker_discover_registries():
+    LOAD('registry', 'discover_registries')
+
 def task_dash_comp():
     LOAD('compliance', 'cron_dash_comp')
 
