@@ -11,7 +11,9 @@ function docker_repository_tabs(divid, options) {
 		"parameters": o.options,
 		"title": "format_title",
 		"title_args": {
-			"type": "docker_repository"
+			"type": "docker_repository",
+			"name": o.options.repository_name,
+			"id": o.options.repository_id
 		}
 	}
 
@@ -71,7 +73,7 @@ function docker_repository_properties(divid, options) {
 		"parameters": o.options,
 		"title": "format_title",
 		"title_args": {
-			"type": "docker_repository",
+			"type": "docker_repository"
 		}
 	}
 

@@ -1025,5 +1025,17 @@ function format_title(options) {
 			o.render()
 		})
 	}
+	else if (options.type == "docker_registry") {
+		services_osvcgetrest("/docker/registries/%1", [o.options.id], {"props": "service", "meta": "false", "limit": 1}, function(jd) {
+			o.options.name = jd.data[0].service
+			o.render()
+		})
+	}
+	else if (options.type == "docker_repository") {
+		services_osvcgetrest("/docker/repositories/%1", [o.options.id], {"props": "repository", "meta": "false", "limit": 1}, function(jd) {
+			o.options.name = jd.data[0].repository
+			o.render()
+		})
+	}
 }
 

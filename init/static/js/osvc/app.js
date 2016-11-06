@@ -31,6 +31,8 @@ var osvc = {
 		'app': 'app16'
 	},
 	'colors': {
+		'docker_repository': '#27b8e8',
+		'docker_registry': '#27b8e8',
 		'docker': '#27b8e8',
 		'node': 'cornflowerblue',
 		'svc': 'seagreen',
