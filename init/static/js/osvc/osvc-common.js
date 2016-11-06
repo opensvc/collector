@@ -334,12 +334,15 @@ function flash() {
 function osvc_render_title(e_title, title, title_args) {
 	if (title && (title != "")) {
 		if (title == "format_title") {
+			console.log("format title generic:", e_title, title_args)
 			title_args.element = e_title
 			format_title(title_args)
 		} else if (title in window) {
+			console.log("format title with fn:", title, title_args)
 			var s = window[title](title_args)
 			e_title.html(s)
 		} else {
+			console.log("format title i18n key:", title, title_args)
 			var s = i18n.t(title, title_args)
 			e_title.html(s)
 		}
@@ -378,7 +381,7 @@ function osvc_show_link(url, title, title_args) {
 	e.append(p)
 
 	osvc.flash.show({
-		"id": url,
+		"id": md5(url),
 		"bgcolor": osvc.colors.link,
 		"cl": "icon link16",
 		"text": i18n.t("api.link"),
@@ -995,6 +998,18 @@ function format_title(options) {
 	else if (options.type == "metric") {
 		services_osvcgetrest("/reports/metrics/%1", [o.options.id], {"props": "metric_name", "meta": "false", "limit": 1}, function(jd) {
 			o.options.name = jd.data[0].metric_name
+			o.render()
+		})
+	}
+	else if (options.type == "ruleset") {
+		services_osvcgetrest("/compliance/rulesets/%1", [o.options.id], {"props": "ruleset_name", "meta": "false", "limit": 1}, function(jd) {
+			o.options.name = jd.data[0].ruleset_name
+			o.render()
+		})
+	}
+	else if (options.type == "moduleset") {
+		services_osvcgetrest("/compliance/modulesets/%1", [o.options.id], {"props": "modset_name", "meta": "false", "limit": 1}, function(jd) {
+			o.options.name = jd.data[0].modset_name
 			o.render()
 		})
 	}

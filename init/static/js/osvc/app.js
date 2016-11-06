@@ -55,6 +55,8 @@ var osvc = {
 		'fset': 'slategray',
 		'disk': '#dd6666',
 		'comp': '#ee5464',
+		'ruleset': '#ee5464',
+		'moduleset': '#ee5464',
 		'app': 'deeppink'
 	}
 }

@@ -5,13 +5,20 @@ function ruleset_tabs(divid, options) {
 	o.options.icon = "rset16"
 	o.link = {
 		"fn": arguments.callee.name,
-		"title": "link."+arguments.callee.name
+                "parameters": o.options,
+                "title": "format_title",
+                "title_args": {
+                        "type": "ruleset",
+                        "name": o.options.ruleset_name
+                }
+
 	}
 
 	o.load(function() {
 		if (!("ruleset_id" in o.options)) {
 			services_osvcgetrest("/compliance/rulesets", "", {"meta": "0", "filters": ["ruleset_name "+o.options.ruleset_name]}, function(jd) {
 				o.options.ruleset_id = jd.data[0].id
+				o.link.title_args.id = jd.data[0].id
 				o._load()
 			})
 		} else {
@@ -67,7 +74,12 @@ function ruleset_export(divid, options) {
 	o.link = {
 		"fn": arguments.callee.name,
 		"parameters": o.options,
-		"title": "link."+arguments.callee.name
+		"title": "format_title",
+                "title_args": {
+                        "type": "ruleset",
+                        "id": o.options.ruleset_id,
+                        "name": o.options.ruleset_name
+                }
 	}
 
 	o.resize = function() {
@@ -103,7 +115,12 @@ function ruleset_content(divid, options) {
 	o.link = {
 		"fn": arguments.callee.name,
 		"parameters": o.options,
-		"title": "link."+arguments.callee.name
+		"title": "format_title",
+                "title_args": {
+                        "type": "ruleset",
+                        "id": o.options.ruleset_id,
+                        "name": o.options.ruleset_name
+                }
 	}
 	o.rulesets = {}
 	var head = {}
@@ -236,7 +253,12 @@ function ruleset_properties(divid, options) {
 	o.link = {
 		"fn": arguments.callee.name,
 		"parameters": o.options,
-		"title": "link."+arguments.callee.name
+		"title": "format_title",
+                "title_args": {
+                        "type": "ruleset",
+                        "id": o.options.ruleset_id,
+                        "name": o.options.ruleset_name
+                }
 	}
 
 	o.init = function() {

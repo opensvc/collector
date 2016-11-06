@@ -8,13 +8,18 @@ function moduleset_tabs(divid, options) {
 	o.options.bgcolor = osvc.colors.comp
 	o.link = {
 		"fn": arguments.callee.name,
-		"title": "link."+arguments.callee.name
+                "title": "format_title",
+                "title_args": {
+                        "type": "moduleset",
+                        "name": o.options.modset_name
+		}
 	}
 
         o.load(function() {
                 if (!("modset_id" in o.options)) {
                         services_osvcgetrest("/compliance/modulesets", "", {"meta": "0", "filters": ["modset_name "+o.options.modset_name]}, function(jd) {
                                 o.options.modset_id = jd.data[0].id
+				o.link.title_args.id = jd.data[0].id
                                 o._load()
                         })
                 } else {
@@ -68,16 +73,18 @@ function modset_properties(divid, options) {
 	o.options = options
 	o.link = {
 		"fn": arguments.callee.name,
-		"title": "link."+arguments.callee.name
+		"parameters": o.options,
+                "title": "format_title",
+                "title_args": {
+                        "type": "moduleset",
+                        "id": o.options.modset_id,
+                        "name": o.options.modset_name
+		}
 	}
 
 	o.init = function() {
 		osvc_tools(o.div, {
-			"link": {
-				"fn": o.link.fn,
-				"parameters": o.options,
-				"title": o.link.title
-			}
+			"link": o.link
 		})
 		o.info_id = o.div.find("#id")
 		o.info_modset_name = o.div.find("#modset_name")
@@ -196,7 +203,12 @@ function modset_content(divid, options) {
 	o.link = {
 		"fn": arguments.callee.name,
 		"parameters": o.options,
-		"title": "link."+arguments.callee.name
+                "title": "format_title",
+                "title_args": {
+                        "type": "moduleset",
+                        "id": o.options.modset_id,
+                        "name": o.options.modset_name
+		}
 	}
 	o.modulesets = {}
 	o.rulesets = {}
@@ -323,7 +335,13 @@ function modset_export(divid, options) {
 	o.options = options
 	o.link = {
 		"fn": arguments.callee.name,
-		"title": "link."+arguments.callee.name
+		"parameters": o.options,
+                "title": "format_title",
+                "title_args": {
+                        "type": "moduleset",
+                        "id": o.options.modset_id,
+                        "name": o.options.modset_name
+		}
 	}
 
 	o.init = function() {
@@ -353,11 +371,7 @@ function modset_export(divid, options) {
 		o.resize()
 		osvc_tools(o.div, {
 			"resize": o.resize,
-			"link": {
-				"fn": o.link.fn,
-				"parameters": o.options,
-				"title": o.link.title
-			}
+			"link": o.link
 		})
 	}
 
