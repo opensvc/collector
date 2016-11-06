@@ -26,7 +26,9 @@ var osvc = {
 		'fset': 'fset16',
 		'disk': 'hd16',
 		'rset': 'rset16',
+		'ruleset': 'rset16',
 		'modset': 'modset16',
+		'moduleset': 'modset16',
 		'module': 'mod16',
 		'app': 'app16'
 	},
