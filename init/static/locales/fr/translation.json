@@ -1769,6 +1769,7 @@
 		"service configuration not updated": "configuration de service non mise à jour",
 		"duplicate uid": "doublon d'uid",
 		"duplicate gid": "doublon de gid",
+		"mac duplicate": "doublon d'addresse mac",
 		"compliance moduleset attachment differences in cluster": "différences d'attachement de jeux de modules dans le cluster",
 		"compliance ruleset attachment differences in cluster": "différences d'attachement de jeux de règles dans le cluster",
 		"compliance differences in cluster": "différences de conformité dans le cluster",

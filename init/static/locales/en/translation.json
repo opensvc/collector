@@ -1817,6 +1817,7 @@
 		"service configuration not updated": "service configuration not updated",
 		"duplicate uid": "duplicate uid",
 		"duplicate gid": "duplicate gid",
+		"mac duplicate": "mac duplicate",
 		"compliance differences in cluster": "compliance differences in cluster",
 		"compliance moduleset attachment differences in cluster": "compliance moduleset attachment differences in cluster",
 		"compliance ruleset attachment differences in cluster": "compliance ruleset attachment differences in cluster",
