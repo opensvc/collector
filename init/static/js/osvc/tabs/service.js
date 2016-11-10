@@ -155,7 +155,7 @@ function service_tabs(divid, options) {
 			"title_class": "icon spark16"
 		})
 		o.tabs[i].callback = function(divid) {
-			services_osvcgetrest("R_SERVICE_NODES", [o.options.svc_id], {"limit": "0", "props": "node_id,mon_vmname", "meta": "0"}, function(jd) {
+			services_osvcgetrest("R_SERVICE_NODES", [o.options.svc_id], {"filters": ["mon_vmname !empty"], "limit": "0", "props": "node_id,mon_vmname", "meta": "0"}, function(jd) {
 				if (jd.error) {
 					$("#"+divid).html(services_error_fmt(jd))
 					return

@@ -22,6 +22,9 @@ def ajax_containerperf_plot():
     bs = ''
     es = ''
     rowid = request.vars.rowid
+    if rowid is None:
+        import uuid
+        rowid = str(uuid.uuid4())
 
     for v in request.vars:
        if 'begin' in v:
