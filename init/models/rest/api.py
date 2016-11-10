@@ -1,5 +1,5 @@
 import re
-from pydal.helpers.methods import smart_query
+import pydal
 
 deprecated_columns = {
   "services.svc_envfile": "services.svc_config",
@@ -1436,8 +1436,12 @@ def prepare_data(
     validated_props = []
     if left is None:
         left = []
+    elif type(left) == pydal.objects.Expression:
+        left = [left]
+    elif type(left) == list:
+        pass
     else:
-        left = list(left)
+        raise Exception("invalid 'left' parameter type: %s" % type(left))
 
     if props is not None:
         for i, prop in enumerate(props.split(",")):
@@ -1500,7 +1504,7 @@ def prepare_data(
             q = _where(q, t, f_val, f_col, db=db)
         if query:
             try:
-                q &= smart_query(all_cols, query)
+                q &= pydal.helpers.methods.smart_query(all_cols, query)
             except Exception as e:
                 raise Exception(T("smart query error for '%(s)s': %(err)s", dict(s=str(query), err=str(e))))
         if meta:
