@@ -390,7 +390,7 @@ tab_properties_generic_simple = function(options) {
 		event.stopPropagation()
 		if ($(this).siblings().find("form").length > 0) {
 			$(this).siblings().show()
-			$(this).siblings().find("input[type=text]:visible,select").focus()
+			$(this).siblings().find("input[type=text]:visible,select,textarea").focus()
 			$(this).hide()
 			return
 		}
@@ -408,7 +408,12 @@ tab_properties_generic_simple = function(options) {
 		input.uniqueId() // for date picker
 		input.attr("pid", options.div.attr("id"))
 		input.val(options.div.text())
-		input.bind("blur", function(){
+		input.bind("blur", function(ev){
+			var a = $(":active").last()
+			if ($(ev.target).parents("td")[0] == a.parents("td")[0]) {
+				input.focus()
+				return
+			}
 			$(this).parents("td").first().siblings("td").show()
 			$(this).parents("td").first().hide()
 		})
