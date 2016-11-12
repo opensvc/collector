@@ -89,7 +89,7 @@ function service_tabs(divid, options) {
 			"title_class": "icon file16"
 		})
 		o.tabs[i].callback = function(divid) {
-			service_env(divid, {"svc_id": o.options.svc_id})
+			service_config(divid, {"svc_id": o.options.svc_id})
 		}
 
 		// tab topology
@@ -255,7 +255,7 @@ function service_tabs(divid, options) {
 }
 
 
-function service_env(divid, options)
+function service_config(divid, options)
 {
 	var o = {}
 
@@ -274,7 +274,7 @@ function service_env(divid, options)
 	}
 
 	o.init = function() {
-		o.div.load('/init/static/views/service_env.html?v='+osvc.code_rev, function() {
+		o.div.load('/init/static/views/service_config.html?v='+osvc.code_rev, function() {
 			o._init()
 		})
 	}
@@ -311,7 +311,7 @@ function service_env(divid, options)
 				o.div.html(services_error_fmt(jd))
 			}
 			var data = jd.data[0]
-			o.header.text(i18n.t("service_env.header", {"updated": data.updated}))
+			o.header.text(i18n.t("service_config.header", {"updated": data.updated}))
 			o.load(data)
 		},
 		function() {

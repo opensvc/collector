@@ -150,7 +150,7 @@ function prov_template_definition(divid, options) {
 
 	o.init = function() {
 		o.div.empty()
-		services_osvcgetrest("/provisioning_templates/%1", [o.options.tpl_id], {"props": "tpl_command"}, function(jd) {
+		services_osvcgetrest("/provisioning_templates/%1", [o.options.tpl_id], {"props": "tpl_definition"}, function(jd) {
 			o.load(jd.data[0])
 		})
 	}
@@ -174,13 +174,14 @@ function prov_template_definition(divid, options) {
 	o.load = function(data) {
 		o.editor_div = $("<div style='padding:1em'></div>")
 		o.div.append(o.editor_div)
-		if (data.tpl_command && (data.tpl_command.length > 0)) {
-			var text = data.tpl_command
+		if (data.tpl_definition && (data.tpl_definition.length > 0)) {
+			var text = data.tpl_definition
 		} else {
 			var text = ""
 		}
 		o.editor = osvc_editor(o.editor_div, {
 			"text": text,
+			"mode": "ini",
 			"obj_type": "provisioning_templates",
 			"obj_id": o.options.tpl_id,
 			"save": o.save,
@@ -194,7 +195,7 @@ function prov_template_definition(divid, options) {
 
 	o.save = function(text) {
 		var data = {
-			"tpl_command": text
+			"tpl_definition": text
 		}
 		services_osvcpostrest("/provisioning_templates/%1", [o.options.tpl_id], "", data, function(jd) {
 			if (jd.error && (jd.error.length > 0)) {

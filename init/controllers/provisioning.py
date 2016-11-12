@@ -5,7 +5,7 @@ class table_templates(HtmlTable):
         HtmlTable.__init__(self, id, func, innerhtml)
         self.cols = ['id',
                      'tpl_name',
-                     'tpl_command',
+                     'tpl_definition',
                      'tpl_comment',
                      'tpl_created',
                      'tpl_author',
@@ -21,8 +21,8 @@ class table_templates(HtmlTable):
                 field = 'tpl_name',
                 table = 'v_prov_templates',
             ),
-            'tpl_command': HtmlTableColumn(
-                field = 'tpl_command',
+            'tpl_definition': HtmlTableColumn(
+                field = 'tpl_definition',
                 table = 'v_prov_templates',
             ),
             'tpl_comment': HtmlTableColumn(

@@ -171,7 +171,7 @@ class rest_post_services(rest_post_handler):
         d = dict(data=beautify_data(vars))
 
         _log('service.add', fmt, d)
-        ws_send('services_change', {'id': svc.id})
+        ws_send('services_change', {'id': svc_id})
 
         ret = rest_get_service().handler(svc_id)
         ret["info"] = fmt % d

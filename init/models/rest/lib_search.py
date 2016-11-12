@@ -1,5 +1,30 @@
 max_search_result = 10
 
+def lib_search_prov_templates(pattern):
+    t = datetime.datetime.now()
+    o = db.prov_templates.tpl_name
+    q = db.prov_templates.tpl_name.like(pattern)
+    try:
+        id = int(pattern.strip("%"))
+        q |= db.prov_templates.id == id
+    except:
+        pass
+    q &= db.prov_templates.id == db.prov_template_team_publication.tpl_id
+    q &= db.prov_template_team_publication.group_id.belongs(user_group_ids())
+    n = db(q).count()
+    data = db(q).select(db.prov_templates.tpl_name,
+                        db.prov_templates.id,
+                        groupby=o,
+                        orderby=o,
+                        limitby=(0,max_search_result)
+    ).as_list()
+    t = datetime.datetime.now() - t
+    return {
+      "total": n,
+      "data": data,
+      "elapsed": "%f" % (t.seconds + 1. * t.microseconds / 1000000),
+    }
+
 def lib_search_form(pattern):
     t = datetime.datetime.now()
     o = db.forms.form_name

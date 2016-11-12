@@ -2086,10 +2086,10 @@ colprops = {
 		"img": "guy16",
 		"title": "Author"
 	},
-	"tpl_command": {
-		"_class": "tpl_command",
+	"tpl_definition": {
+		"_class": "tpl_definition",
 		"img": "action16",
-		"title": "Command"
+		"title": "Definition"
 	},
 	"tpl_comment": {
 		"img": "edit16",

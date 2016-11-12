@@ -667,6 +667,18 @@ function search_get_menu(fk)
           }
         ]
     },
+    "prov_templates": {
+        "tab" : function(id, res){prov_template_tabs(id, {"tpl_id": res.id, "tpl_name": res.tpl_name})},
+        "type": "prov_template",
+        "color": "svc",
+        "id": "id",
+        "title": "__tpl_name__",
+        "short_title": "__tpl_name__",
+        "menu_entry_id": "view-prov",
+        "class": "prov fa-2x search-section-icon",
+        "subclass": "meta_prov_template clickable",
+        "links" : []
+    },
     "filtersets": {
         "tab" : function(id, res){filterset_tabs(id, {"fset_name": res.fset_name})},
         "type": "fset",

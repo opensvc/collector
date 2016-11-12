@@ -1,3 +1,21 @@
+def prov_template_id(tpl_id):
+    try:
+        q = db.prov_templates.id == int(tpl_id)
+        t = db(q).select(db.prov_templates.id).first()
+    except:
+        q = db.prov_templates.tpl_name == tpl_id
+        t = db(q).select(db.prov_templates.id).first()
+    if t is None:
+        raise Exception("provisioning template %s not found" % str(tpl_id))
+    return t.id
+
+def prov_template_published(tpl_id):
+    if 'Manager' in user_groups():
+        return
+    q = db.prov_template_team_publication.group_id.belongs(user_group_ids())
+    if db(q).count() == 0:
+        raise Exception("You are not allowed to access the provisioning template %s" % str(tpl_id))
+
 def prov_template_responsible(tpl_id):
     if 'Manager' in user_groups():
         return
@@ -8,6 +26,10 @@ def prov_template_responsible(tpl_id):
 def lib_provisioning_templates_add_default_team_responsible(tpl_id):
     group_id = user_default_group_id()
     db.prov_template_team_responsible.insert(tpl_id=tpl_id, group_id=group_id)
+
+def lib_provisioning_templates_add_default_team_publication(tpl_id):
+    group_id = user_default_group_id()
+    db.prov_template_team_publication.insert(tpl_id=tpl_id, group_id=group_id)
 
 class rest_get_provisioning_templates(rest_get_table_handler):
     def __init__(self):
@@ -55,8 +77,9 @@ class rest_get_provisioning_template(rest_get_line_handler):
           examples=examples,
         )
 
-    def handler(self, id, **vars):
-        q = db.prov_templates.id == int(id)
+    def handler(self, tpl_id, **vars):
+        tpl_id = prov_template_id(tpl_id)
+        q = db.prov_templates.id == tpl_id
         if "Manager" not in user_groups():
             q &= db.prov_template_team_publication.group_id.belongs(user_group_ids())
         self.set_q(q)
@@ -66,16 +89,15 @@ class rest_get_provisioning_template(rest_get_line_handler):
 class rest_put_provisioning_template(rest_put_handler):
     def __init__(self):
         desc = [
-          "Submit provisioning_template <id>.",
+          "Enqueue a service provisioning command based on the template <id>.",
         ]
         data = """
 - **depends on the template definition**
-. The information the template expects, marked as %(key>)s in its definition.
-. The 'node_id' and 'svc_id' are mandatory, even if not present in the form
-definition.
+. The information the template expects, ie the env section keys.
+. The 'node_id' and 'svcname' are mandatory, even if not present in the form definition.
 """
         examples = [
-          """# curl -u %(email)s -d node_id=5c977246-0562-11e6-8c70-7e9e6cf13c8a -d svc_id=fac92362-0845-11e6-b512-a6ccb094f992 -d data='{"nodename": "mynode", "svcname": "mysvc"}' -X PUT -o- https://%(collector)s/init/rest/api/provisioning_templates/10"""
+          """# curl -u %(email)s -d node_id=5c977246-0562-11e6-8c70-7e9e6cf13c8a -d svcname=newsvc -d foo=bar -X PUT -o- https://%(collector)s/init/rest/api/provisioning_templates/10"""
         ]
 
         rest_put_handler.__init__(
@@ -86,34 +108,33 @@ definition.
           examples=examples,
         )
 
-    def handler(self, id, **vars):
-        q = db.prov_templates.id == id
+    def handler(self, tpl_id, **vars):
+        tpl_id = prov_template_id(tpl_id)
+        q = db.prov_templates.id == tpl_id
         provisioning_template = db(q).select(db.prov_templates.ALL).first()
         if provisioning_template is None:
             return dict("error", "the requested provisioning template does not exist or you don't have permission to use it")
 
-        import re
-        command = provisioning_template.tpl_command
-        if "data" in vars:
-            import json
-            data = json.loads(vars["data"])
-        else:
-            data = vars
-        for k, v in data.items():
-            v = str(v)
-            command = re.sub('%\('+k+'\)s', v, command)
+        definition = provisioning_template.tpl_definition
+        data = rest_post_services().handler(
+          svcname=vars["svcname"],
+          svc_config=definition
+        )
 
-        # remove the 'svcmgr -s svcname ' prefix
-        command = re.sub('^.*create ', 'create ', command)
+        svc = data["data"][0]
 
-        n = do_svc_action(vars["node_id"],
-                          vars["svc_id"],
-                          command)
+        command = 'create --provision --template %d' % provisioning_template.id
+        for k, v in vars.items():
+            if k in ("svcname", "node_id"):
+                continue
+            command += ' --env %s="%s"' % (k, v)
 
-        if n == 1:
-            return dict(info="provisioning command queued")
+        n = do_svc_action(vars["node_id"], svc["svc_id"], command)
+        if n == 0:
+            return dict(error="service provision command enqueue refused")
 
-        return dict(info="provisioning command refused")
+        return dict(info="service provision command queued")
+
 
 class rest_post_provisioning_template(rest_post_handler):
     def __init__(self):
@@ -132,17 +153,18 @@ class rest_post_provisioning_template(rest_post_handler):
           examples=examples,
         )
 
-    def handler(self, id, **vars):
+    def handler(self, tpl_id, **vars):
         check_privilege("ProvisioningManager")
-        prov_template_responsible(id)
+        tpl_id = prov_template_id(tpl_id)
+        prov_template_responsible(tpl_id)
 
         if "id" in vars:
             del(vars["id"])
 
-        q = db.prov_templates.id == id
+        q = db.prov_templates.id == tpl_id
         tpl = db(q).select().first()
         if tpl is None:
-            raise Exception("Provisioning template %s not found"%str(id))
+            raise Exception("Provisioning template %s not found"%str(tpl_id))
 
         tpl_id = db(q).update(**vars)
 
@@ -190,7 +212,7 @@ class rest_post_provisioning_templates(rest_post_handler):
 
         tpl_id = db.prov_templates.insert(**vars)
         lib_provisioning_templates_add_default_team_responsible(tpl_id)
-        #lib_provisioning_templates_add_default_team_publication(tpl_id)
+        lib_provisioning_templates_add_default_team_publication(tpl_id)
 
         fmt = "Provisioning template %(tpl_name)s added"
         d = dict(tpl_name=tpl_name)
@@ -216,16 +238,17 @@ class rest_delete_provisioning_template(rest_delete_handler):
           examples=examples,
         )
 
-    def handler(self, id, **vars):
+    def handler(self, tpl_id, **vars):
         check_privilege("ProvisioningManager")
-        prov_template_responsible(id)
+        tpl_id = prov_template_id(tpl_id)
+        prov_template_responsible(tpl_id)
 
-        q = db.prov_templates.id == id
+        q = db.prov_templates.id == tpl_id
         tpl = db(q).select().first()
         if tpl is None:
-            raise Exception("Provisioning template %s not found"%str(id))
+            raise Exception("Provisioning template %s not found"%str(tpl_id))
 
-        tpl_id = db(q).delete()
+        db(q).delete()
 
         fmt = "Provisioning template %(tpl_name)s deleted"
         d = dict(tpl_name=tpl.tpl_name)
@@ -276,9 +299,10 @@ class rest_get_provisioning_template_responsibles(rest_get_table_handler):
           examples=examples,
         )
 
-    def handler(self, id, **vars):
-        #prov_template_published(id)
-        q = db.prov_template_team_responsible.tpl_id == id
+    def handler(self, tpl_id, **vars):
+        tpl_id = prov_template_id(tpl_id)
+        prov_template_published(tpl_id)
+        q = db.prov_template_team_responsible.tpl_id == tpl_id
         q &= db.prov_template_team_responsible.group_id == db.auth_group.id
         self.set_q(q)
         data = self.prepare_data(**vars)
@@ -302,6 +326,7 @@ class rest_delete_provisioning_template_responsible(rest_delete_handler):
 
     def handler(self, tpl_id, group_id, **vars):
         check_privilege("ProvisioningManager")
+        tpl_id = prov_template_id(tpl_id)
         prov_template_responsible(tpl_id)
         q = db.prov_template_team_responsible.tpl_id == tpl_id
         q &= db.prov_template_team_responsible.group_id == group_id
@@ -371,6 +396,7 @@ class rest_post_provisioning_template_responsible(rest_post_handler):
 
     def handler(self, tpl_id, group_id, **vars):
         check_privilege("ProvisioningManager")
+        tpl_id = prov_template_id(tpl_id)
         prov_template_responsible(tpl_id)
 
         try:
@@ -449,9 +475,10 @@ class rest_get_provisioning_template_publications(rest_get_table_handler):
           examples=examples,
         )
 
-    def handler(self, id, **vars):
-        #prov_template_published(id)
-        q = db.prov_template_team_publication.tpl_id == id
+    def handler(self, tpl_id, **vars):
+        prov_template_published(tpl_id)
+        tpl_id = prov_template_id(tpl_id)
+        q = db.prov_template_team_publication.tpl_id == tpl_id
         q &= db.prov_template_team_publication.group_id == db.auth_group.id
         self.set_q(q)
         data = self.prepare_data(**vars)
@@ -475,6 +502,7 @@ class rest_delete_provisioning_template_publication(rest_delete_handler):
 
     def handler(self, tpl_id, group_id, **vars):
         check_privilege("ProvisioningManager")
+        tpl_id = prov_template_id(tpl_id)
         prov_template_responsible(tpl_id)
         q = db.prov_template_team_publication.tpl_id == tpl_id
         q &= db.prov_template_team_publication.group_id == group_id
@@ -544,6 +572,7 @@ class rest_post_provisioning_template_publication(rest_post_handler):
 
     def handler(self, tpl_id, group_id, **vars):
         check_privilege("ProvisioningManager")
+        tpl_id = prov_template_id(tpl_id)
         prov_template_responsible(tpl_id)
 
         try:
@@ -621,9 +650,10 @@ class rest_get_provisioning_template_am_i_responsible(rest_get_handler):
           examples=examples,
         )
 
-    def handler(self, id, **vars):
+    def handler(self, tpl_id, **vars):
         try:
-            prov_template_responsible(id)
+            tpl_id = prov_template_id(tpl_id)
+            prov_template_responsible(tpl_id)
             return dict(data=True)
         except:
             return dict(data=False)

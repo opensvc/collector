@@ -414,6 +414,7 @@
 	"search": {
 		"nothing_found": "No entry found matching filter",
 		"menu_header": {
+			"title_prov_templates": "Provisioning templates",
 			"title_docker_registries": "Docker registries",
 			"title_docker_repositories": "Docker repositories",
 			"title_modulesets": "Modulesets",
@@ -902,7 +903,7 @@
 		"tab_edit_help": "Help",
 		"last_table_title": "Last __number__ result(s)"
 	},
-	"service_env": {
+	"service_config": {
 		"header": "Last updated on __updated__"
 	},
 	"diff": {
@@ -979,7 +980,7 @@
 		"service_containerperf": "Service __name__ nodes statistics",
 		"service_storage": "Service __name__ storage",
 		"service_properties": "Service __name__ properties",
-		"service_env": "Service __name__ configuration",
+		"service_config": "Service __name__ configuration",
 		"service_startup": "Service __name__ startup sequence",
 		"service_tabs": "Service __name__ tabs",
 		"notfound": "Link not found.It may have expired , please re generate it.",

@@ -412,6 +412,7 @@
 	"search": {
 		"nothing_found" : "Aucun résultat ne répond au critère de recherche.",
 		"menu_header" : {
+			"title_prov_templates": "Modèles de provisioning",
 			"title_docker_registries": "Registres docker",
 			"title_docker_repositories": "Dépôts docker",
 			"title_modulesets" : "Jeux de modules",
@@ -900,7 +901,7 @@
 		"tab_edit_help" : "Aide",
 		"last_table_title" : "__number__ dernier(s) enregistrement(s)"
 	},
-	"service_env": {
+	"service_config": {
 		"header": "Dernière mise à jour le __updated__"
 	},
 	"diff": {
@@ -977,7 +978,7 @@
 		"service_containerperf": "Statistiques des noeuds du service __name__",
 		"service_storage": "Stockage du service __name__",
 		"service_properties" : "Propriétés du service __name__",
-		"service_env" : "Configuration du service __name__",
+		"service_config" : "Configuration du service __name__",
 		"service_startup": "Séquence de démarrage du service __name__",
 		"service_tabs" : "Tabs du service __name__",
 		"notfound" : "Lien non trouvé. Il peut avoir expiré, veuillez le régénérer s'il vous plaît.",

@@ -1797,22 +1797,32 @@ function cell_decorator_alert_type(e, line) {
 	e.html(i18n.t("alert_type."+s))
 }
 
-function cell_decorator_tpl_command(e, line) {
+function cell_decorator_tpl_definition(e, line) {
 	var s = $.data(e[0], "v")
+	_e = decorator_tpl_definition(s)
+	e.html(_e)
+}
+
+function decorator_tpl_definition(s) {
 	var _e = $("<pre></pre>")
-	s = s.replace(/--provision/g, "<br><span class=syntax_blue>  --provision</span>")
-	s = s.replace(/--resource/g, "<br><span class=syntax_blue>  --resource</span>")
-	s = s.replace(/{/g, "{<br>      ")
-	s = s.replace(/\",/g, "\",<br>     ")
-	s = s.replace(/}/g, "<br>    }")
-	s = s.replace(/(\(\w+\)s)/gi, function(x) {
+	// sections
+	s = s.replace(/(\[[#:\w]+\])/gi, function(x) {
 		return '<span class=syntax_red>'+x+'</span>'
 	})
-	s = s.replace(/("\w+":)/gi, function(x) {
+	// env references
+	s = s.replace(/({env\.\w+})/gi, function(x) {
+		return '<span class="b syntax_green">'+x+'</span>'
+	})
+	// references
+	s = s.replace(/({[\.\w]+})/gi, function(x) {
 		return '<span class=syntax_green>'+x+'</span>'
 	})
+	// options
+	s = s.replace(/\n\s*(\w+\s*=)/gi, function(x) {
+		return '<span class=syntax_blue>'+x+'</span>'
+	})
 	_e.html(s)
-	e.html(_e)
+	return _e
 }
 
 function cell_decorator_yaml(e, line) {
@@ -2076,7 +2086,7 @@ cell_decorators = {
 	"uid": cell_decorator_uid,
 	"gid": cell_decorator_gid,
 	"pct": cell_decorator_pct,
-	"tpl_command": cell_decorator_tpl_command,
+	"tpl_definition": cell_decorator_tpl_definition,
 	"prov_template": cell_decorator_prov_template,
 	"fset_name": cell_decorator_fset_name,
 	"disks_charts": cell_decorator_disks_charts,

@@ -4935,71 +4935,58 @@ function agent_action_provisioning(t, e) {
 			tpl_form = $("<form></form>")
 			tpl_form.hide()
 
-			// get keys from the template command
-			var keys = []
-			var re = RegExp(/%\((\w+)\)s/g)
-			do {
-				var m = re.exec(d.tpl_command)
-				if (m) {
-					var key = m[1]
-					if (keys.indexOf(key) < 0) {
-						keys.push(key)
-					}
-				}
-			} while (m)
+			// display the beautified template definition
+			var display_beautified = $("<div class='template_beautified' name='beautified'><div>")
+			display_beautified.html(decorator_tpl_definition(d.tpl_definition))
+			tpl_form.append(display_beautified)
+			tpl_form.append("<br>")
 
-			// for each key add a text input to the form
-			for (var j=0; j<keys.length; j++) {
-				var key = keys[j]
-				if (key == "nodename") {
+			// get keys from the template definition
+			var keys = {"svcname": ""}
+			var lines = d.tpl_definition.split("\n")
+			var inb = false
+			for (var j=0; j<lines.length; j++) {
+				var line = lines[j].trim()
+				if (line == "[env]") {
+					inb = true
 					continue
 				}
+				if (!inb) {
+					continue
+				}
+				if (line.match(/^\s*\[.+\]\s*$/)) {
+					if (line == "[env]") {
+						continue
+					}
+					inb = false
+					continue
+				}
+
+				var k = line.indexOf("=")
+				if (k < 0) {
+					continue
+				}
+				var key = line.slice(0, k).trim()
+				if (key == "") {
+					continue
+				}
+				var val = line.slice(k+1, line.length).trim()
+				keys[key] = val
+			}
+
+			// for each key add a text input to the form
+			for (key in keys) {
+				var val = keys[key]
 				var line = $("<div class='template_form_line'></div>")
 				var title = $("<div></div>")
 				title.text(key)
 				var input = $("<input class='oi'></input>")
 				input.attr("key", key)
+				input.val(val)
 				line.append(title)
 				line.append(input)
 				tpl_form.append(line)
 			}
-
-			// keyup in the form inputs subst and beautifies the command
-			// in the display_beautified div
-			tpl_form.find("input").bind("keyup", function(ev) {
-				var form = $(this).parents("form").first()
-				var command = form.find("[name=command]").text()
-				var display_beautified = form.find("[name=beautified]")
-				form.find("input").each(function(){
-					var val = $(this).val()
-					var key = $(this).attr("key")
-					var re = new RegExp("%\\(" + key + "\\)s", "g")
-					if (val == "") {
-						return
-					}
-					command = command.replace(re, "<span class=syntax_red>"+val+"</span>")
-				})
-				command = command.replace(/--provision/g, "<br>&nbsp;&nbsp;<span class=syntax_blue>--provision</span>")
-				command = command.replace(/--resource/g, "<br>&nbsp;&nbsp;<span class=syntax_blue>--resource</span>")
-				command = command.replace(/{/g, "{<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;")
-				command = command.replace(/\",/g, "\",<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;")
-				command = command.replace(/}/g, "<br>&nbsp;&nbsp;&nbsp;&nbsp;}")
-				command = command.replace(/%\(\w+\)s/g, function(x) {
-					return "<span class=syntax_red>" + x + "</span>"
-				})
-				command = command.replace(/("\w+":)/g, function(x) {
-					return "<span class=syntax_green>" + x + "</span>"
-				})
-				display_beautified.html("<tt>"+command+"</tt>")
-			})
-
-			// add a command display zone
-			var display =$("<div name='command'><div>")
-			display.text(d.tpl_command)
-			display.hide()
-			tpl_form.append(display)
-			var display_beautified = $("<div class='template_beautified' name='beautified'><div>")
-			tpl_form.append(display_beautified)
 
 			// add submit/cancel buttons
 			var yes_no = table_action_menu_yes_no(t, 'action_menu.provisioning_submit', function(e){
