@@ -153,7 +153,7 @@ def comp_get_matching_filters(fset_ids, fset_data=None, node_id=None, svc_id=Non
                 where_ext += """ and %s.node_id="%s" """ % (table, node_id)
             elif table in ("services"):
                 if slave:
-                    where_ext += """ and services.svc_id=svcmon.svc_id and nodes.node_id="%s" and node.nodename=svcmon.mon_vmname """ % node_id
+                    where_ext += """ and services.svc_id=svcmon.svc_id and nodes.node_id="%s" and nodes.nodename=svcmon.mon_vmname """ % node_id
                 else:
                     where_ext += """ and services.svc_id=svcmon.svc_id and svcmon.node_id="%s" """ % node_id
                 join_table += ", svcmon, nodes"
