@@ -2084,11 +2084,13 @@ def _comp_get_svc_moduleset_ids(svc_id, modulesets=[], slave=False):
     q &= db.comp_modulesets_services.slave == slave
     q &= db.comp_modulesets_services.modset_id == db.comp_moduleset.id
     q &= db.comp_moduleset.id == db.comp_moduleset_team_publication.modset_id
-    q &= (db.auth_group.id == db.comp_moduleset_team_publication.group_id)|(db.auth_group.role=="Everybody")
-    q &= db.services.svc_id == svc_id
-    q &= db.services.svc_app == db.apps.app
-    q &= db.apps.id == db.apps_responsibles.app_id
-    q &= db.apps_responsibles.group_id == db.auth_group.id
+    q &= db.auth_group.id == db.comp_moduleset_team_publication.group_id
+    q1 = db.auth_group.role == "Everybody"
+    q2 = db.services.svc_id == svc_id
+    q2 &= db.services.svc_app == db.apps.app
+    q2 &= db.apps.id == db.apps_responsibles.app_id
+    q2 &= db.apps_responsibles.group_id == db.auth_group.id
+    q &= (q1 | q2)
     if len(modulesets) > 0:
         q &= db.comp_moduleset.modset_name.belongs(modulesets)
     rows = db(q).select(db.comp_moduleset.id, groupby=db.comp_moduleset.id, cacheable=True)
