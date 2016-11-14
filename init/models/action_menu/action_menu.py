@@ -353,7 +353,7 @@ def factorize_actions(data):
     for d in data:
         if "rid" in d and "svc_id" in d and "node_id" in d:
             if "vmname" in d and d["vmname"] != "":
-                d["node_id"] = db(db.nodes.nodename==d["vmname"]).select().first().id
+                d["node_id"] = db(db.nodes.nodename==d["vmname"]).select().first().node_id
                 del(d["vmname"])
             i = (d["svc_id"], d["node_id"], d["action"])
             if i in rid_h:
