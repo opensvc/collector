@@ -319,8 +319,14 @@ input.aci, input.aci:focus {
 	cursor: pointer;
 }
 
-.tl {
+tr.tl {
+	border-width: 1px 0 1px 0;
+	border-style: solid;
+	border-color: rgba(220, 220, 220, 0.1);
 	height: 2em;
+}
+.h:hover {
+	border-color: rgba(220, 220, 220, 0.5);
 }
 
 .tools > label {
@@ -633,17 +639,16 @@ img {
 	background: white;
 }
 
-.tl_checked {
+.tl_checked.cell1 {
 	background-color: rgb(237, 232, 212);
+}
+.tl_checked.cell2 {
+	background-color: rgb(232, 225, 212);
 }
 
 .pie_hover {
 	background-color: #d8eee7;
 }
-.h:hover {
-	background-color: #E4EFEB;
-}
-
 .boxed_status {
 	width: 4em;
 }
@@ -1409,6 +1414,9 @@ a.xinfo_shown span {
 
 .action_menu {
 	padding: 0.5em;
+}
+
+.table_scroll_zone > .action_menu {
 	background: #e0e1cd;
 }
 

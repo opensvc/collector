@@ -1247,6 +1247,7 @@ function table_init(opts) {
 		t.highlighed_checked_lines()
 	}
 	t.highlighed_checked_lines = function() {
+		table_action_menu(t, event)
 		t.div.find("input[name="+t.id+"_ck]").each(function(){
 			if ($(this).is(":checked")) {
 				$(this).parents("tr").first().addClass("tl_checked")
