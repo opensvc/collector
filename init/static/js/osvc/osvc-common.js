@@ -804,9 +804,9 @@ function sticky_relocate(e, anchor, onstick) {
 		}
 
 		// adjust left position
-		var left = e.scrollParent().scrollLeft()
+		var left = e.parents("table").first().parent().position().left - e.scrollParent().scrollLeft()
 
-		e.next(".stick").css({"left": -left})
+		e.next(".stick").css({"left": left})
 	} else {
 		try {e.next('.stick').remove()} catch(err) {}
 	}

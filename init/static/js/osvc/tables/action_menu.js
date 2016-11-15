@@ -182,7 +182,7 @@ function table_action_menu_init_data(t) {
 		// section: tools
 		{
 			"title": "action_menu.tools",
-			"class": "spark16",
+			//"class": "spark16",
 			"children": [
 				{
 					"selector": [],
@@ -300,7 +300,7 @@ function table_action_menu_init_data(t) {
 		// section: data actions
 		{
 			"title": "action_menu.data_actions",
-			"class": "hd16",
+			//"class": "hd16",
 			"children": [
 				{
 					"selector": [],
@@ -1531,7 +1531,7 @@ function table_action_menu_init_data(t) {
 		// section: agent actions
 		{
 			"title": "action_menu.agent_actions",
-			"class": "action16",
+			//"class": "action16",
 			"children": [
 				{
 					"selector": ["clicked", "checked", "all"],
@@ -1740,8 +1740,10 @@ function table_bind_action_menu(t) {
 				table_action_menu(t, event)
 			} else {
 				// left-click => close the action menu, the menu and the filter box
+				var shiftClick = jQuery.Event("click")
+				shiftClick.shiftKey = event.shiftKey
+				$(event.target).find("input").trigger(shiftClick)
 				$("#fsr"+t.id).hide()
-				$(".action_menu_popup").hide()
 			}
 		})
 	})
@@ -1763,17 +1765,13 @@ function table_action_menu(t, e){
 	t.action_menu_data_cache = {}
 
 	// create and position the popup at the mouse click
-	var am = $("<div id='"+o.menu_id+"' class='white_float action_menu action_menu_popup stackable'></div>")
-	t.div.append(am)
+	var am = $("<div id='"+o.menu_id+"' class='action_menu action_menu_popup stackable'></div>")
+	t.div.children(".table_scroll_zone").prepend(am)
 	o.menu = $("#"+o.menu_id)
-	t.position_on_pointer(e, o.menu)
 
-	var header = $("<h2 class='icon fa-bars movable'></h2>")
-	header.text(i18n.t("table.action_menu") + " : " + i18n.t("table.name."+t.options.name))
+	var header = $("<h2></h2>")
+	header.text(i18n.t("table.name."+t.options.name))
 	o.menu.append(header)
-	o.menu.draggable({
-		"handle": ".fa-bars"
-	})
 	o.open_event = e
 	
 	format_action_menu(t, o)
@@ -2277,16 +2275,8 @@ function table_action_menu_status(msg){
 // animation to highlight a post in the action_q
 //
 function table_action_menu_click_animation(t) {
-	var src = $("#am_"+t.id)
-	var dest = $(".header").find(".action_q_widget")
-	var destp = dest.position()
-	src.animate({
-		top: destp.top,
-		left: destp.left,
-		opacity: "toggle",
-		height: ["toggle", "swing"],
-		width: ["toggle", "swing"]
-	}, 1500, function(){dest.parent().effect("highlight")})
+	dest = $(".header").find(".action_q_widget")
+	dest.effect("highlight")
 }
 
 //
@@ -2372,11 +2362,12 @@ function table_action_menu_yes_no(t, msg, callback) {
 		$(this).unbind("click")
 		$(this).prop("disabled", true)
 		callback(event)
+		e.remove()
 	})
 	no.bind("click", function(event){
 		event.preventDefault()
 		event.stopPropagation()
-		$("#am_"+t.id).remove()
+		e.remove()
 	})
 	return e
 }

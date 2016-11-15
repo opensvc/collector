@@ -278,9 +278,10 @@ input.aci, input.aci:focus {
 }
 
 .table_scroll_zone {
+	display: flex;
 	position: relative;
 }
-.table_scroll_zone > div {
+.table_scroll_zone > div:last-child {
 	width: 100%;
 	overflow-x: auto;
 }
@@ -291,7 +292,6 @@ input.aci, input.aci:focus {
 .scroll_left {
 	width:1em !important;
 	position:absolute;
-	left:0;
 	top:0;
 	height:100%;
 	content: ' ';
@@ -331,7 +331,7 @@ input.aci, input.aci:focus {
 }
 
 .tools {
-	background: rgb(95, 158, 160);
+	background: rgb(237, 232, 212);
 	cursor: context-menu;
 	width: 16px;
 }
@@ -633,11 +633,15 @@ img {
 	background: white;
 }
 
+.tl_checked {
+	background-color: rgb(237, 232, 212);
+}
+
 .pie_hover {
 	background-color: #d8eee7;
 }
 .h:hover {
-	background-color: #d8eee7;
+	background-color: #E4EFEB;
 }
 
 .boxed_status {
@@ -1404,13 +1408,13 @@ a.xinfo_shown span {
 }
 
 .action_menu {
+	padding: 0.5em;
+	background: #e0e1cd;
 }
 
 .action_menu_popup {
-	min-width: 40em;
-	max-width: 90%;
-	width: auto !important;
-	position: absolute !important;
+	min-width: 21em;
+	max-width: 50%;
 }
 .action_menu > ul {
 	padding: 0.5em;
@@ -1426,11 +1430,7 @@ a.xinfo_shown span {
 	padding: 0.3em 0;
 }
 .action_menu_leaf:hover {
-	color: cadetblue;
-	font-size: large;
-}
-.action_menu_leaf:hover:before {
-	color: cadetblue !important;
+	background: rgba(0, 0, 0, 0.1);
 }
 .action_menu_leaf_selected {
 	color: cadetblue;
@@ -1461,9 +1461,9 @@ a.xinfo_shown span {
 	overflow: hidden;
 	white-space: nowrap;
 	display: inline-block;
-	width: 33%;
+	width: 50%;
 	text-align: center;
-	background: lightgray;
+	background: transparent;
 	margin: 0.5px;
 	box-shadow: inset 0 0px 1px rgba(0,0,0,0.5);
 }

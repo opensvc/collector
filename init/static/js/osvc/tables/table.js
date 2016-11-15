@@ -988,6 +988,7 @@ function table_init(opts) {
 			label.attr("for", mcb_id)
 			input.bind("click", function() {
 				check_all(t.id+"_ck", this.checked)
+				t.highlighed_checked_lines()
 			})
 			th.append(input)
 			th.append(label)
@@ -1182,7 +1183,6 @@ function table_init(opts) {
 			})
 			$(this).bind("click", function() {
 				t.e_fsr.hide()
-				$("#am_"+t.id).remove()
 			})
 		})
 	}
@@ -1244,6 +1244,16 @@ function table_init(opts) {
 			}
 		}
 		t.last_checkbox_clicked = ref_id
+		t.highlighed_checked_lines()
+	}
+	t.highlighed_checked_lines = function() {
+		t.div.find("input[name="+t.id+"_ck]").each(function(){
+			if ($(this).is(":checked")) {
+				$(this).parents("tr").first().addClass("tl_checked")
+			} else {
+				$(this).parents("tr").first().removeClass("tl_checked")
+			}
+		})
 	}
 
 	t.data_to_lines = function (data) {
@@ -1614,7 +1624,6 @@ function table_init(opts) {
 		if(e.button != 2) {
 			return
 		}
-		$("#am_"+t.id).remove()
 
 		// update the column name
 		t.e_fsr.find("[name=colname]").remove()
