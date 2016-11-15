@@ -511,7 +511,7 @@ def update_dash_node_beyond_maintenance_end(node_id):
                    select node_id
                    from nodes
                    where
-                     id="%(node_id)s" and
+                     node_id="%(node_id)s" and
                      maintenance_end is not NULL and
                      maintenance_end != "0000-00-00 00:00:00" and
                      maintenance_end > now()
@@ -528,7 +528,7 @@ def update_dash_node_near_maintenance_end(node_id):
                    select node_id
                    from nodes
                    where
-                     id="%(node_id)s" and
+                     node_id="%(node_id)s" and
                      maintenance_end is not NULL and
                      maintenance_end != "0000-00-00 00:00:00" and
                      maintenance_end < now() and
@@ -546,7 +546,7 @@ def update_dash_node_without_maintenance_end(node_id):
                    select node_id
                    from nodes
                    where
-                     id="%(node_id)s" and
+                     node_id="%(node_id)s" and
                      maintenance_end != "0000-00-00 00:00:00" and
                      maintenance_end is not NULL
                  ) and
