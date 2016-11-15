@@ -73,7 +73,7 @@ function web2py_event_handlers() {
     doc.off('click', '.flash')
       switch(xhr.status){
         case 500:
-          osvc.flash.error(ajax_error_500).slideDown(); 
+          osvc.flash.error(ajax_error_500)
       }
   });
 };

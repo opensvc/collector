@@ -434,45 +434,6 @@ function table_init(opts) {
 		t.e_table.unbind("DOMNodeInserted DOMNodeRemoved", t.scroll)
 	}
 
-	t.add_overlay = function() {
-		if ($("#overlay").length > 0) {
-			t.e_overlay = $("#overlay")
-			return
-		}
-		var e = $("<div class='white_float hidden stackable empty_on_pop' id='overlay'></div>")
-		$("body").append(e)
-
-		$(window).resize(function(){
-			t.resize_overlay()
-		})
-		e.bind("DOMSubtreeModified", t.resize_overlay)
-		t.e_overlay = e
-	}
-
-	t.resize_overlay = function() {
-		if ($("#overlay:visible").length == 0) {
-			return
-		}
-		t._resize_overlay()
-		$("#overlay").find("img").one("load", function(){
-			t._resize_overlay()
-		})
-	}
-
-	t._resize_overlay = function() {
-		e = $("#overlay")
-		e.unbind("DOMSubtreeModified", t.resize_overlay)
-		e.css({
-			'overflow': 'auto',
-			'position': 'fixed',
-			'height': $(window).height()-60,
-			'width': $(window).width()-60,
-			'top': ($(window).height()-e.height())/2,
-			'left': ($(window).width()-e.width())/2
-		})
-		e.bind("DOMSubtreeModified", t.resize_overlay)
-	}
-
 	t.add_scrollers = function() {
 		t.scroll_left = $("<div id='table_"+t.id+"_left' class='scroll_left'>&nbsp</div>")
 		$("#table_"+t.id).prepend(t.scroll_left)
@@ -2949,7 +2910,6 @@ function table_init(opts) {
 
 	osvc.tables[t.id] = t
 
-	t.add_overlay()
 	$.when(
 		osvc.user_loaded
 	).then(function(){

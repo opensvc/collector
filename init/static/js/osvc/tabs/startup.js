@@ -119,10 +119,8 @@ function startup(divid, options) {
 	o.draw = function() {
 		var i = 0
 		url = $(location).attr("origin") + "/init/topo/call/json/json_startup_data"
-		if (o.viz.parents(".overlay").length == 0) {
-			_height = $(window).height()-$(".header").outerHeight()-16
-			o.viz.height(_height)
-		}
+		_height = $(window).height()-$(".header").outerHeight()-16
+		o.viz.height(_height)
 		var data = {
 			"svc_ids": o.options.svc_ids,
 			"node_ids": o.options.display,

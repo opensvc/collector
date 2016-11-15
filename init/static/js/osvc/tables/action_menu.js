@@ -2551,8 +2551,18 @@ function tool_nodesantopo(t, e) {
 	for (i=0;i<data.length;i++) {
 		nodes.push(data[i]['node_id'])
 	}
-	t.e_overlay.show()
-	sync_ajax('/init/ajax_node/ajax_nodes_stor?nodes='+nodes.join(","), [], 'overlay', function(){})
+	osvc.flash.show({
+		id: "nodesantopo-"+nodes.join(""),
+		cl: "icon hd16",
+		text: i18n.t("action_menu.node_san_topo"),
+		bgcolor: osvc.colors.link,
+		fn: function(id){
+			var d = $("<div style='padding:1em;overflow-y:auto'><div>")
+			$("#"+id).html(d)
+			d.uniqueId()
+			sync_ajax('/init/ajax_node/ajax_nodes_stor?nodes='+nodes.join(","), [], d.attr("id"), function(){})
+		}
+	})
 }
 
 //
@@ -2566,8 +2576,18 @@ function tool_nodesysrepdiff(t, e) {
 	for (i=0;i<data.length;i++) {
 		nodes.push(data[i]['node_id'])
 	}
-	t.e_overlay.show()
-	sysrepdiff("overlay", {"nodes": nodes})
+	osvc.flash.show({
+		id: "sysrepdiff-"+nodes.join(""),
+		cl: "icon common16",
+		text: i18n.t("action_menu.node_sysrep_diff"),
+		bgcolor: osvc.colors.link,
+		fn: function(id){
+			var d = $("<div><div>")
+			$("#"+id).html(d)
+			d.uniqueId()
+			sysrepdiff(d.attr("id"), {"nodes": nodes})
+		}
+	})
 }
 
 //
@@ -2581,8 +2601,18 @@ function tool_nodesysrep(t, e) {
 	for (i=0;i<data.length;i++) {
 		nodes.push(data[i]['node_id'])
 	}
-	t.e_overlay.show()
-	sysrep("overlay", {"node_id": nodes})
+	osvc.flash.show({
+		id: "sysrep-"+nodes.join(""),
+		cl: "icon log16",
+		text: i18n.t("action_menu.node_sysrep"),
+		bgcolor: osvc.colors.link,
+		fn: function(id){
+			var d = $("<div><div>")
+			$("#"+id).html(d)
+			d.uniqueId()
+			sysrep(d.attr("id"), {"nodes": nodes})
+		}
+	})
 }
 
 //
@@ -2596,8 +2626,18 @@ function tool_svcdiff(t, e) {
 	for (i=0;i<data.length;i++) {
 		svc_ids.push(data[i]['svc_id'])
 	}
-	t.e_overlay.show()
-	svcdiff("overlay", {"svc_ids": svc_ids})
+	osvc.flash.show({
+		id: "svcdiff-"+svc_ids.join(""),
+		cl: "icon common16",
+		text: i18n.t("action_menu.svc_diff"),
+		bgcolor: osvc.colors.link,
+		fn: function(id){
+			var d = $("<div style='padding:1em;overflow-y:auto'><div>")
+			$("#"+id).html(d)
+			d.uniqueId()
+			svcdiff(d.attr("id"), {"svc_ids": svc_ids})
+		}
+	})
 }
 
 //
@@ -2611,8 +2651,18 @@ function tool_services_status_log(t, e) {
 	for (i=0;i<data.length;i++) {
 		services.push(data[i]['svc_id'])
 	}
-	t.e_overlay.show()
-	services_status_log("overlay", {"services": services})
+	osvc.flash.show({
+		id: "services_status_log-"+services.join(""),
+		cl: "icon avail16",
+		text: i18n.t("action_menu.services_status_log"),
+		bgcolor: osvc.colors.link,
+		fn: function(id){
+			var d = $("<div style='padding:1em;overflow-y:auto'><div>")
+			$("#"+id).html(d)
+			d.uniqueId()
+			services_status_log(d.attr("id"), {"services": services})
+		}
+	})
 }
 
 //
@@ -2626,8 +2676,18 @@ function tool_nodediff(t, e) {
 	for (i=0;i<data.length;i++) {
 		nodes.push(data[i]['node_id'])
 	}
-	t.e_overlay.show()
-	nodediff("overlay", {"node_ids": nodes})
+	osvc.flash.show({
+		id: "nodediff-"+nodes.join(""),
+		cl: "icon common16",
+		text: i18n.t("action_menu.node_diff"),
+		bgcolor: osvc.colors.link,
+		fn: function(id){
+			var d = $("<div style='padding:1em;overflow-y:auto'><div>")
+			$("#"+id).html(d)
+			d.uniqueId()
+			nodediff(d.attr("id"), {"node_ids": nodes})
+		}
+	})
 }
 
 //
@@ -2644,11 +2704,21 @@ function tool_grpprf(t, e) {
 	for (i=0;i<data.length;i++) {
 		nodes.push(data[i]['node_id'])
 	}
-	t.e_overlay.show()
-	node_stats("overlay", {
-		"node_id": nodes,
-		"view": "/init/static/views/nodes_stats.html",
-		"controller": "/init/stats",
+	osvc.flash.show({
+		id: "grpprf-"+nodes.join(""),
+		cl: "icon spark16",
+		text: i18n.t("action_menu.node_perf"),
+		bgcolor: osvc.colors.link,
+		fn: function(id){
+			var d = $("<div style='padding:1em;overflow-y:auto'><div>")
+			$("#"+id).html(d)
+			d.uniqueId()
+			node_stats(nodediff, {
+				"node_id": nodes,
+				"view": "/init/static/views/nodes_stats.html",
+				"controller": "/init/stats",
+			})
+		}
 	})
 }
 
@@ -2666,13 +2736,23 @@ function tool_obsolescence(t, e) {
 	for (i=0;i<data.length;i++) {
 		nodes.push(data[i]['node_id'])
 	}
-	t.e_overlay.show()
-	$.ajax({
-		type: "POST",
-		url: services_get_url() + "/init/nodes/ajax_obs_agg",
-		data: {"nodes": nodes},
-		success: function(msg){
-			$("#overlay").html(msg)
+	osvc.flash.show({
+		id: "obsolescence-"+nodes.join(""),
+		cl: "icon obs16",
+		text: i18n.t("action_menu.obsolescence"),
+		bgcolor: osvc.colors.link,
+		fn: function(id){
+			var d = $("<div><div>")
+			$("#"+id).html(d)
+			d.uniqueId()
+			$.ajax({
+				type: "POST",
+				url: services_get_url() + "/init/nodes/ajax_obs_agg",
+				data: {"nodes": nodes},
+				success: function(msg){
+					d.html(msg)
+				}
+			})
 		}
 	})
 }

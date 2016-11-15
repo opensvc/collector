@@ -66,14 +66,12 @@ function topology(divid, options) {
 	o.draw = function() {
 		var i = 0
 		url = $(location).attr("origin") + "/init/topo/call/json/json_topo_data"
-		if (o.viz.parents(".overlay").length == 0) {
-			_height = $(window).height()
-					-$(".header").outerHeight()
-					-$(".footer").outerHeight()
-					-o.e_title.outerHeight()
-					-24
-			o.viz.height(_height)
-		}
+		_height = $(window).height()
+				-$(".header").outerHeight()
+				-$(".footer").outerHeight()
+				-o.e_title.outerHeight()
+				-24
+		o.viz.height(_height)
 		$.getJSON(url, o.options, function(_data){
 			var eid = o.viz[0]
 			var blacklist = ["timestep", "damping", "minVelocity", "maxVelocity"]

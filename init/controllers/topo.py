@@ -1219,7 +1219,7 @@ def json_startup_data():
             edge_ids.append((from_node, to_node))
 
         for s in config.sections():
-            if "sync#" in s:
+            if "sync#" in s or s == "env":
                 continue
 
             try:
