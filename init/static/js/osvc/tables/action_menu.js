@@ -1766,6 +1766,11 @@ function table_action_menu(t, e){
 
 	// create and position the popup at the mouse click
 	var am = $("<div id='"+o.menu_id+"' class='action_menu action_menu_popup stackable'></div>")
+	var closer = $("<div class='fa fa-times clickable link'></div>")
+	closer.bind("click", function(){
+		am.remove()
+	})
+        am.append(closer)
 	t.div.children(".table_scroll_zone").prepend(am)
 	o.menu = $("#"+o.menu_id)
 
@@ -2514,12 +2519,19 @@ function tool_topo(t, e) {
 	for (i=0;i<data.length;i++) {
 		svc_ids.push(data[i]['svc_id'])
 	}
-	topology("overlay", {
-		"node_ids": node_ids,
-		"svc_ids": svc_ids,
-		"display": ["nodes", "services", "countries", "cities", "buildings", "rooms", "racks", "enclosures", "hvs", "hvpools", "hvvdcs"]
+	osvc.flash.show({
+		id: "topo-"+cache_id,
+		cl: "icon dia16",
+		text: i18n.t("action_menu.topology"),
+		bgcolor: osvc.colors.link,
+		fn: function(id){
+			topology(id, {
+				"node_ids": node_ids,
+				"svc_ids": svc_ids,
+				"display": ["nodes", "services", "countries", "cities", "buildings", "rooms", "racks", "enclosures", "hvs", "hvpools", "hvvdcs"]
+			})
+		}
 	})
-	t.e_overlay.show()
 }
 
 //
