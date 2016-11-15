@@ -2520,12 +2520,15 @@ function tool_topo(t, e) {
 		svc_ids.push(data[i]['svc_id'])
 	}
 	osvc.flash.show({
-		id: "topo-"+cache_id,
+		id: "topo-"+node_ids.join("")+svc_ids.join(""),
 		cl: "icon dia16",
 		text: i18n.t("action_menu.topology"),
 		bgcolor: osvc.colors.link,
 		fn: function(id){
-			topology(id, {
+			var d = $("<div><div>")
+			$("#"+id).html(d)
+			d.uniqueId()
+			topology(d.attr("id"), {
 				"node_ids": node_ids,
 				"svc_ids": svc_ids,
 				"display": ["nodes", "services", "countries", "cities", "buildings", "rooms", "racks", "enclosures", "hvs", "hvpools", "hvvdcs"]

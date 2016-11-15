@@ -3174,6 +3174,11 @@ a.jqplot-image-container-close {
 	margin: 20px 0;
 	padding-bottom: 4px;
 }
+.searchtab > div {
+    background: white;
+    color: initial;
+    border-radius: 6px;
+}
 .searchtab > table {
 	width: 100%;
 }
