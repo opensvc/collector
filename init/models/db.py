@@ -105,9 +105,11 @@ auth.settings.extra_fields['auth_membership']= [
 ]
 
 auth.settings.extra_fields['auth_user']= [
-    Field('quota_org_group', 'integer', default=False,
+    Field('quota_org_group', 'integer', default=1,
+          requires=IS_INT_IN_RANGE(minimum=0), writable=False,
           label=T('Maximum number of organizational groups the user can be member of')),
-    Field('quota_app', 'integer', default=False,
+    Field('quota_app', 'integer', default=1, writable=False,
+          requires=IS_INT_IN_RANGE(minimum=0),
           label=T('Maximum number of applications the user can be responsible of')),
     Field('phone_work', 'string', label=T("Work desk phone number"), length=15),
     Field('email_notifications', 'boolean', default=False,

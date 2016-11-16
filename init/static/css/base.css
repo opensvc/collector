@@ -724,7 +724,7 @@ body, table, tr, td, th, thead, tfoot, label, h1, h2, h3, h4, h5, h6, p, ul, li,
 
 select {
 	border: 1px solid #dddddd;
-	background: rgba(0,0,0,0);
+	background: rgba(255,255,255,0.8);
 	overflow: hidden;
 	color: black;
 }
@@ -3267,7 +3267,7 @@ div.searchtab {
 	font-weight: normal;
 }
 .template_selector input + label > div {
-	background: lightgrey;
+	background: rgba(0, 0, 0, 0.1);
 }
 .template_selector input:checked + label > div {
 	background: cadetblue;
