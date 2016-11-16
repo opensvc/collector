@@ -281,6 +281,10 @@ input.aci, input.aci:focus {
 	display: flex;
 	position: relative;
 }
+.table_scroll_zone > div:first-child {
+	flex-shrink: 0;
+}
+
 .table_scroll_zone > div:last-child {
 	width: 100%;
 	overflow-x: auto;
@@ -647,7 +651,7 @@ img {
 }
 
 .pie_hover {
-	background-color: #d8eee7;
+	background-color: rgba(0, 0, 0, 0.1);
 }
 .boxed_status {
 	width: 4em;
@@ -1304,7 +1308,6 @@ a.xinfo_shown span {
 }
 
 .cloud_tag {
-	margin: 0.5em;
 }
 
 .cloud {
@@ -1421,9 +1424,9 @@ a.xinfo_shown span {
 }
 
 .action_menu_popup {
-	min-width: 16em;
+	overflow-x: auto;
+	min-width: 20em;
 	max-width: 75%;
-	width: 30em;
 }
 .action_menu > ul {
 	padding: 0.5em;

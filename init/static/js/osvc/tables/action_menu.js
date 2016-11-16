@@ -1756,29 +1756,16 @@ function table_action_menu(t, e){
 	o = {}
 	o.menu_id = "am_"+t.id
 	o.menu = $("#"+o.menu_id)
-
-	// drop the previous action menu
-	o.menu.remove()
+	o.open_event = e
 
 	// purge the caches
 	t.action_menu_req_cache = null
 	t.action_menu_data_cache = {}
 
-	// create and position the popup at the mouse click
-	var am = $("<div id='"+o.menu_id+"' class='action_menu action_menu_popup stackable'></div>")
-	var closer = $("<div class='fa fa-times clickable link'></div>")
-	closer.bind("click", function(){
-		am.remove()
-	})
-        am.append(closer)
-	t.div.children(".table_scroll_zone").prepend(am)
-	o.menu = $("#"+o.menu_id)
+	// create the menu sidepanel
+	o.menu = t.get_sidepanel()
 
-	var header = $("<h2></h2>")
-	header.text(i18n.t("table.name."+t.options.name))
-	o.menu.append(header)
-	o.open_event = e
-	
+	// populate the action menu
 	format_action_menu(t, o)
 	return o
 }

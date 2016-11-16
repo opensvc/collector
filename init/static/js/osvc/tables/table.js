@@ -71,48 +71,6 @@ function keep_inside(box){
 	}
 }
 
-function click_toggle_vis(e, name, mode){
-	$("[name="+name+"]").each(function () {
-		if ($(this).css("display") == 'none' || $(this).css("display") == "") {
-			$(this).show()
-			keep_inside($(this))
-			register_pop_up(e, $(this))
-		} else {
-			$(this).hide()
-		}
-		$(this).find('input[type=text],textarea,select').filter(':visible:first').focus()
-	})
-}
-
-function register_pop_up(e, box){
-	if (e) {
-		// IE event does not support stopPropagation
-		if (!e.stopPropagation) {return}
-		e.stopPropagation()
-	}
-	$(document).click(function(e) {
-		e = e || event
-		var target = e.target || e.srcElement
-		if (target.id.match(/^ui-id/)) {
-			// combox box click
-			return
-		}
-		try {
-			boxtop = box.get(0)
-		} catch(e) {
-			return
-		}
-		do {
-			if (boxtop == target) {
-				// click inside
-				return
-			}
-			target = target.parentNode
-		} while(target)
-		box.hide()
-	})
-}
-
 function check_all(name, checked){
 	c = document.getElementsByName(name)
 	for(i = 0; i < c.length; i++) {
@@ -150,7 +108,6 @@ function sync_ajax(url, inputs, id, f) {
              if (f) {
                f()
              }
-             $("#"+id).parents(".white_float").each(function(){keep_inside(this)})
              var t = osvc.tables[id]
              if (typeof t === 'undefined') { return }
              t.refresh_child_tables()
@@ -792,11 +749,9 @@ function table_init(opts) {
 		if (t.e_filter) {
 			t.e_filter.remove()
 		}
-		var input_float = $("<div class='white_float_input stackable' style='width:auto;position:absolute'>")
-		input_float.draggable({
-			"handle": ".fa-bars"
-		})
-		var header = $("<h2 class='icon fa-bars'></h2>")
+		var sidepanel = t.get_sidepanel()
+		var input_float = $("<div style='width:21em'></div>")
+		var header = $("<h2 class='icon filter16'></h2>")
 		var input = $("<input class='oi' name='fi'>")
 		var value_to_filter_tool = $("<span class='clickable icon values_to_filter'></span><br>")
 		var value_pie = $("<div></div>")
@@ -823,7 +778,7 @@ function table_init(opts) {
 		input_float.append(value_cloud)
 
 		t.e_filter = input_float
-		t.div.append(input_float)
+		sidepanel.append(input_float)
 
 		var url = t.options.ajax_url + "_col_values/"
 
@@ -2087,7 +2042,7 @@ function table_init(opts) {
 
 			e = $("<a class='h cloud_tag' style='font-size:"+size+"%'>"+key+"</a>")
 			e.attr("title", i18n.t("table.number_of_occurence", {"count": data[key]})).tooltipster()
-			span.append(e)
+			span.append([e, "&nbsp;&nbsp;"])
 		}
 		t.scroll_enable_dom()
 		span.children("a").bind("click", trigger)
@@ -2191,7 +2146,6 @@ function table_init(opts) {
 			t.add_column_header_input_float(c)
 			t.e_filter.show()
 			t.position_on_pointer(event, t.e_filter)
-			register_pop_up(event, t.e_filter)
 			t.e_filter.find("input").focus().trigger("keyup")
 		})
 
@@ -2445,18 +2399,14 @@ function table_init(opts) {
 		span.attr("title", i18n.t("table.commonality_help")).tooltipster()
 		e.append(span)
 
-		var area = $("<div class='white_float hidden stackable'></div>")
-		area.uniqueId()
-		e.append(area)
-		t.e_tool_commonality_area = area
 
 		e.bind("click", function(event) {
-			if (t.e_tool_commonality_area.is(":visible")) {
-				t.e_tool_commonality_area.hide()
-				return
-			}
-			click_toggle_vis(event, t.e_tool_commonality_area.attr("id"), 'block')
-			t.e_tool_commonality_area.empty()
+			var sidepanel = t.get_sidepanel()
+			var area = $("<div></div>")
+			area.uniqueId()
+			sidepanel.append(area)
+			t.e_tool_commonality_area = area
+
 			spinner_add(t.e_tool_commonality_area)
 			var data = t.prepare_request_data()
 			$.ajax({
@@ -2639,10 +2589,20 @@ function table_init(opts) {
 
 		var span = $("<span class='icon columns' data-i18n='table.columns'></span>")
 		e.append(span)
+		t.e_toolbar.prepend(e)
+
 		try { e.i18n() } catch(e) {}
 
-		var area = $("<div class='hidden white_float stackable'></div>")
-		e.append(area)
+		// bindings
+		e.bind("click", function() {
+			t.show_column_selector()
+		})
+	}
+
+	t.show_column_selector = function() {
+		var sidepanel = t.get_sidepanel()
+		var area = $("<div style='width:21em'></div>")
+		sidepanel.append(area)
 		t.e_tool_column_selector_area = area
 
 		for (var i=0; i<t.options.columns.length; i++) {
@@ -2701,7 +2661,7 @@ function table_init(opts) {
 			label.attr("for", input.attr("id"))
 
 			// title
-			var title = $("<span style='padding-left:0.3em;'></span>")
+			var title = $("<span style='padding-left:1em;'></span>")
 			title.text(i18n.t("col."+t.colprops[colname].title))
 			title.addClass("icon_fixed_width")
 			title.addClass(t.colprops[colname].img)
@@ -2715,13 +2675,7 @@ function table_init(opts) {
 			area.append(_e)
 		}
 
-		// bindings
-		e.bind("click", function() {
-			t.e_tool_column_selector_area.toggle()
-		})
-
-		try { e.i18n() } catch(e) {}
-		t.e_toolbar.prepend(e)
+		try { area.i18n() } catch(e) {}
 	}
 
 	//
@@ -2736,9 +2690,20 @@ function table_init(opts) {
 
 		var span = $("<span class='icon bookmark16' data-i18n='table.bookmarks'></span>")
 		e.append(span)
+		try { e.i18n() } catch(err) {}
+		t.e_toolbar.prepend(e)
+		t.e_tool_bookmarks = e
 
-		var area = $("<div class='white_float hidden stackable'></div>")
-		e.append(area)
+		// bindings
+		span.bind("click", function() {
+			t.show_bookmarks()
+		})
+	}
+
+	t.show_bookmarks = function() {
+		var sidepanel = t.get_sidepanel()
+		var area = $("<div></div>")
+		sidepanel.append(area)
 
 		var save = $("<a class='icon add16' data-i18n='table.bookmarks_save'></a>")
 		area.append(save)
@@ -2775,17 +2740,11 @@ function table_init(opts) {
 			t.insert_bookmark(name)
 		}
 
-		try { e.i18n() } catch(e) {}
-		t.e_tool_bookmarks = e
+		try { area.i18n() } catch(err) {}
 		t.e_tool_bookmarks_area = area
 		t.e_tool_bookmarks_save = save
 		t.e_tool_bookmarks_save_name = save_name
 		t.e_tool_bookmarks_save_name_input = save_name_input
-
-		// bindings
-		span.bind("click", function() {
-			area.toggle()
-		})
 
 		save.bind("click", function() {
 			var now = new Date()
@@ -2816,8 +2775,6 @@ function table_init(opts) {
 				osvc.flash.error(services_ajax_error_fmt(xhr, stat, error))
 			})
 		})
-
-		t.e_toolbar.prepend(e)
 	}
 
 	t.init_current_filters = function() {
@@ -2831,6 +2788,30 @@ function table_init(opts) {
 			}
                         t.colprops[c].current_filter = t.options.request_vars[key]
 		}
+	}
+
+	t.get_sidepanel = function() {
+		// flush the sidepanel if it already exists
+		var am = $("#am_"+t.id)
+		am.remove()
+
+		// create a new side panel
+		var am = $("<div id='am_"+t.id+"' class='action_menu action_menu_popup stackable'></div>")
+
+		// add a close button
+		var closer = $("<div class='fa fa-times clickable link'></div>")
+		closer.bind("click", function(){
+			am.remove()
+		})
+		am.append(closer)
+		t.div.children(".table_scroll_zone").prepend(am)
+
+		// add the table title
+		var header = $("<h2 style='padding-bottom:0.4em'></h2>")
+		header.text(i18n.t("table.name."+t.options.name))
+		am.append(header)
+
+		return am
 	}
 
 	t.insert_bookmark = function(name) {
