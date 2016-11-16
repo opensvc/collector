@@ -92,6 +92,7 @@ function init_requirejs() {
 		baseUrl: '/init/static/js',
 		urlArgs: 'v='+osvc.code_rev,
 		paths: {
+			"jsyaml": "js-yaml.min",
 			"vis": "vis/dist/vis.min",
 			"jquery": "jquery",
 			"jqplot-base": "jqplot/jquery.jqplot.min",

@@ -264,7 +264,9 @@
 		"info": "Returned information",
 		"error": "The collector request returned an error.",
 		"link": "Link",
-		"link_text": "This link target is stored in the collector database. You can share it with collaborators so they can see the same information, granted they have equivalent privileges."
+		"link_text": "You can share this link with collaborators so they can see the specific information you selected, granted they have the required privileges.",
+		"report_snippet": "Report definition code snippet",
+		"report_snippet_desc": "The paragraph below contains the definition to add to a report definition to embed the widget pointed by this link as a report section."
 	},
 	"table": {
 		"fsr": {

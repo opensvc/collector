@@ -199,7 +199,7 @@ function osvc_create_link(fn, parameters, title, title_args) {
 		} else {
 			url += "&js=true"
 		}
-		osvc_show_link(url, title, title_args)
+		osvc_show_link(url, title, title_args, fn, parameters)
 	},
 	function(xhr, stat, error) {
 		osvc.flash.error(services_ajax_error_fmt(xhr, stat, error))
@@ -349,35 +349,25 @@ function osvc_render_title(e_title, title, title_args) {
 	}
 }
 
-function osvc_show_link(url, title, title_args) {
+function osvc_show_link(url, title, title_args, fn, parameters) {
 	// header
 	var e = $("<div></div>")
 
-	var header = $("<div class='icon attach16 fa-2x' data-i18n='api.link'></div>")
+	var header = $("<div class='icon attach16 fa-2x'></div>")
 	e.append(header)
 
 	var subheader = $("<div style='color:lightgray' data-i18n='api.link_text'></div>")
 	e.append(subheader)
 
-	var e_title = $("<h2></h2>")
-	e_title.css({"padding": "1em 0 0 0"})
-	e.append(e_title)
-	osvc_render_title(e_title, title, title_args)
+	osvc_render_title(header, title, title_args)
 
 	// link display area
-	var p = $("<textarea style='width:100%' class='clickable'></textarea>")
+	var p = $("<textarea class='clickable'></textarea>")
 	p.val(url)
-	p.css({
-		"width": "100%",
-		"background": "rgba(0,0,0,0)",
-		"border": "rgba(0,0,0,0)",
-		"padding": "1em 0 0 0",
-	})
 	p.bind("click", function() {
 		window.open($(this).val(), '_blank')
 	})
 
-	e.i18n()
 	e.append(p)
 
 	osvc.flash.show({
@@ -388,10 +378,33 @@ function osvc_show_link(url, title, title_args) {
 		"content": e
 	})
 
-	require(["jquery.ns-autogrow.coffee"], function() {
-		p.autogrow()
-	})
 	p.select()
+
+	// report snippet
+	var report_header = $("<div class='icon spark16 fa-2x' data-i18n='api.report_snippet'></div>")
+	var report_subheader = $("<div style='color:lightgray' data-i18n='api.report_snippet_desc'></div>")
+	var snippet = $("<textarea style='height:15em'></textarea>")
+	e.append([report_header, report_subheader, snippet])
+
+	var data = [{
+		"Desc": "",
+		"Title": header.text(),
+		"width": "100%",
+		"Function": fn,
+		"Args": parameters
+	}]
+	require(["jsyaml"], function(jsyaml){
+		snippet.text(jsyaml.dump(data))
+	})
+	e.children("textarea").css({
+		"width": "100%",
+		"background": "rgba(0,0,0,0)",
+		"border": "rgba(0,0,0,0)",
+		"padding": "1em 0 0 0",
+	})
+
+	// translate
+	e.i18n()
 }
 
 function osvc_jq_decorator(e, options) {
