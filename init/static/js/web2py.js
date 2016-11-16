@@ -42,13 +42,6 @@ function web2py_ajax_init(target) {
 
 function web2py_event_handlers() {
   var doc = jQuery(document)
-  doc.on('click', '.flash', function(e){
-    if (!$(e.target).is(".flash")) return
-    var t=jQuery(this)
-    if (t.css('top')=='0px') t.slideUp('slow')
-    else t.fadeOut()
-    e.preventDefault()
-  })
   doc.on('keyup', 'input.integer', function(){this.value=this.value.reverse().replace(/[^0-9\-]|\-(?=.)/g,'').reverse();});
   doc.on('keyup', 'input.double, input.decimal', function(){this.value=this.value.reverse().replace(/[^0-9\-\.,]|[\-](?=.)|[\.,](?=[0-9]*[\.,])/g,'').reverse();});
   var confirm_message = (typeof w2p_ajax_confirm_message != 'undefined') ? w2p_ajax_confirm_message : "Are you sure you want to delete this object?";
