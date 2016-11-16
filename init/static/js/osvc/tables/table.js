@@ -764,6 +764,9 @@ function table_init(opts) {
 		}
 		if (t.options.checkboxes) {
 			var th = $("<th><div class='fa fa-bars movable'></div></th>")
+			th.click(function(e){
+				table_action_menu(t, e)
+			})
 			tr.append(th)
 		}
 		if (t.options.extrarow) {
