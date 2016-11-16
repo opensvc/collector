@@ -1421,8 +1421,9 @@ a.xinfo_shown span {
 }
 
 .action_menu_popup {
-	min-width: 21em;
-	max-width: 50%;
+	min-width: 16em;
+	max-width: 75%;
+	width: 30em;
 }
 .action_menu > ul {
 	padding: 0.5em;
