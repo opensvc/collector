@@ -2678,6 +2678,12 @@ a.search-link:hover {
 	text-decoration: underline;
 	opacity: 0.5;
 }
+.tag_kill:before {
+	content: '\f1f8' !important
+}
+.tag_kill {
+	background-color: #EE5464 !important;
+}
 .highlight {
 	color: #EE5464;
 	font-weight: bold;

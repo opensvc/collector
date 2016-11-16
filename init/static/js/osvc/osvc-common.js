@@ -219,6 +219,23 @@ function flash() {
 	$(".menu_flash").bind("click", function(e) {
 		o.div.slideToggle()
 	})
+	$(".menu_flash").droppable({
+		accept: ".tag",
+		activeClass: "tag_del_active",
+		hoverClass: "tag_del_hover",
+		activate: function(event, ui) {
+			ui.helper.css({"z-index": 2002})
+		},
+		over: function(event, ui) {
+			ui.draggable.addClass("tag_kill")
+		},
+		out: function(event, ui) {
+			ui.draggable.removeClass("tag_kill")
+		},
+		drop: function(event, ui) {
+			o.drop_barel_entry(ui)
+		}
+	})
 
 	o.sanitize_id = function(id) {
 		id = "" + id
@@ -240,6 +257,8 @@ function flash() {
 
 	o.push = function(data) {
 		data.id = o.sanitize_id(data.id)
+
+		// drop redundant barel entry
 		if (data.id) {
 			var i = o.find_id(data.id)
 			if (i>=0) {
@@ -247,17 +266,34 @@ function flash() {
 				o.barel.splice(i, 1)
 			}
 		}
+
+		// rpush the new entry
 		data.date = new Date()
 		o.barel.push(data)
+
+		// ltrim the barel to its max length
 		if (o.barel.length > o.barel_len) {
 			o.e_show.find("#"+o.barel[0].id).remove()
 			o.barel = o.barel.splice(0)
 		}
 	}
 
+	o.drop_barel_entry = function(ui) {
+		var id = ui.draggable.attr("barel_id")
+		o.delete_barel_entry(id)
+	}
+
+	o.delete_barel_entry = function(id) {
+		var i = o.find_id(id)
+		o.barel.splice(i, 1)
+		o.e_barel.find("[barel_id="+id+"]").remove()
+		o.e_show.find("#"+id).remove()
+	}
+
 	o.render_barel_entry = function(data) {
 		var d = $("<span class='tag'></span>")
 		o.e_barel.append(d)
+		d.attr("barel_id", data.id)
 		d.text(data.text)
 		d.attr("title", data.date).tooltipster()
 		if (data.bgcolor) {
@@ -269,6 +305,11 @@ function flash() {
 		d.bind("click", function() {
 			o.show_entry(data)
 		})
+		d.draggable({
+			"opacity": 0.9,
+			"revert": true,
+			"stack": ".tag",
+		})
 	}
 
 	o.render_barel = function() {
@@ -278,21 +319,25 @@ function flash() {
 		}
 	}
 
+	o.create_entry = function(data) {
+		var e = $("<span></span>")
+		e.attr("id", data.id)
+		o.e_show.append(e)
+		if (data.fn) {
+			e.addClass("searchtab")
+			data.fn(data.id)
+		} else if (data.content) {
+			e.html(data.content)
+		}
+	}
+
 	o.show_entry = function(data) {
 		o.e_show.children().hide()
 		var e = o.e_show.children("span#"+data.id)
 		if (e.length == 1) {
 			e.show()
 		} else {
-			e = $("<span></span>")
-			e.attr("id", data.id)
-			o.e_show.append(e)
-			if (data.fn) {
-				e.addClass("searchtab")
-				data.fn(data.id)
-			} else if (data.content) {
-				e.html(data.content)
-			}
+			o.create_entry(data)
 		}
 	}
 
