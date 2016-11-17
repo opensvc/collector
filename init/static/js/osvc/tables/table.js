@@ -843,7 +843,6 @@ function table_init(opts) {
 		// validate column filter on <enter> keypress
 		input.bind("keypress", function(event) {
 			if (is_enter(event)) {
-				t.e_filter.remove()
 				t.save_column_filters()
 				t.refresh_column_filters_in_place()
 				t.refresh()
