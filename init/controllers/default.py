@@ -25,6 +25,10 @@ def user():
     try:
         form = auth()
         return dict(form=form)
+    except HTTP as e:
+        if str(e) == "500":
+            return dict(form=str(e))
+        raise
     except Exception as e:
         return dict(form=str(e))
 
