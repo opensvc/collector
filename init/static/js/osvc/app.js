@@ -349,6 +349,7 @@ function app_bindings() {
 			if ($('#search_input').is(":focus")) {
 				$(".header").find(".menu_selected").removeClass("menu_selected")
 				$(".header").find(".menu_entry:visible").first().addClass("menu_selected")
+				$(".header").find(".search_entry").first().addClass("menu_selected")
 				$("#search_input").blur()
 				event.preventDefault()
 			}
@@ -407,7 +408,7 @@ function app_bindings() {
 		// Left
 		else if (event.which == 37) {
 			event.preventDefault()
-			var entries = $(".header").find(".menu_entry:visible")
+			var entries = $(".header").find(".menu_entry:visible,.search_entry")
 			var selected = entries.filter(".menu_selected")
 			if ((selected.length > 0) && (entries.length > 1)) {
 				var selected_index = entries.index(selected)
@@ -425,7 +426,7 @@ function app_bindings() {
 		// Up
 		else if (event.which == 38) {
 			event.preventDefault()
-			var entries = $(".header").find(".menu_entry:visible")
+			var entries = $(".header").find(".menu_entry:visible,.search_entry")
 			var selected = entries.filter(".menu_selected")
 			if ((selected.length > 0) && (entries.length > 0)) {
 				var selected_index = entries.index(selected)
@@ -458,7 +459,7 @@ function app_bindings() {
 		// Right
 		else if (event.which == 39) {
 			event.preventDefault()
-			var entries = $(".header").find(".menu_entry:visible")
+			var entries = $(".header").find(".menu_entry:visible,.search_entry")
 			var selected = entries.filter(".menu_selected")
 			if ((selected.length > 0) && (entries.length > 1)) {
 				var selected_index = entries.index(selected)
@@ -476,7 +477,7 @@ function app_bindings() {
 		// Down
 		else if (event.which == 40) {
 			event.preventDefault()
-			var entries = $(".header").find(".menu_entry:visible")
+			var entries = $(".header").find(".menu_entry:visible,.search_entry")
 			var selected = entries.filter(".menu_selected")
 			if ((selected.length > 0) && (entries.length > 0)) {
 				var selected_index = entries.index(selected)
@@ -524,7 +525,11 @@ function app_bindings() {
 
 				e = jQuery.Event("click")
 				e.ctrlKey = event.ctrlKey
-				$(this).trigger(e)
+				if ($(this).is(".clickable")) {
+					$(this).trigger(e)
+				} else {
+					$(this).find(".clickable").first().trigger(e)
+				}
 			})
 		}
 

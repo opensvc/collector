@@ -769,6 +769,7 @@ function search_build_result_row(label, first, res, count) {
 		p_title.text(title)
 	} else {
 		// substitute key in the title format
+		row.addClass("search_entry")
 		var title = section_data.title
 		for (key in res) {
 			title = search_subst_keys(title, res, key)
