@@ -340,6 +340,7 @@ def validated_scope(scope, service):
 
         scope["actions"] = list(scope["actions"] & vactions)
 
+    scope["actions"] = list(scope["actions"])
     return scope
 
 def docker_delete_tag(registry_id, repo_id, tag, __token=None):
