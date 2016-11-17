@@ -22,7 +22,11 @@ def user():
         @auth.requires_permission('read','table name',record_id)
     to decorate functions that need access control
     """
-    return dict(form=auth())
+    try:
+        form = auth()
+        return dict(form=form)
+    except Exception as e:
+        return dict(form=str(e))
 
 def user_load():
     if request.args[0] != "profile":

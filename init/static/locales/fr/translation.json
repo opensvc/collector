@@ -1303,6 +1303,8 @@
 	{
 		"top_title" : "Aide",
 		"title" : "Actions pour l'utilisateur",
+		"login_title" : "Identification",
+		"login_text" : "En utilisant un compte existant",
 		"register_title" : "Enregistrement",
 		"register_text" : "Créer un nouvel utilisateur",
 		"lost_title" : "Mot de passe perdu",

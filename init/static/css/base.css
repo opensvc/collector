@@ -1860,6 +1860,9 @@ ul.login_menu ul {
 .key:before {
 	content: '\f084';
 }
+.login16:before {
+	content: '\f090';
+}
 .logout:before {
 	content: '\f011';
 }

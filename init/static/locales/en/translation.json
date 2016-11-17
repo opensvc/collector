@@ -1303,6 +1303,8 @@
 	"notlogin": {
 		"top_title": "Help",
 		"title": "User Action",
+		"login_title": "Login",
+		"login_text": "Using an existing account",
 		"register_title": "Register",
 		"register_text": "Create a new user",
 		"lost_title": "Lost Password",
