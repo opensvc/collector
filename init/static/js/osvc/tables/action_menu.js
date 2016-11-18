@@ -1765,12 +1765,28 @@ function table_action_menu(t, e){
 	// create the menu sidepanel
 	o.menu = t.get_sidepanel()
 
+	// add the search tool
+	format_search(t, o)
+
 	// populate the action menu
 	format_action_menu(t, o)
 	return o
 }
 
-function format_action_menu(t, o){
+function format_search(t, o) {
+	o.e_search = $("<input class='oi'>")
+	o.menu.append(o.e_search)
+	o.e_search.focus()
+	o.e_search.bind("keyup", function(event) {
+		o.search = o.e_search.val().toLowerCase()
+		format_action_menu(t, o)
+	})
+}
+
+function format_action_menu(t, o) {
+	// purge previously displayed actions
+	o.e_search.nextAll().remove()
+
 	// format the data as menu
 	var ul = $("<ul></ul>")
 	for (var i=0; i<t.action_menu_data.length; i++) {
@@ -1783,7 +1799,7 @@ function format_action_menu(t, o){
 
 	// empty menu banner
 	if (ul.html().length == 0) {
-		o.menu.append("<span class='alert16 icon'>"+i18n.t("action_menu.no_action")+"</span>")
+		o.menu.append("<div style='padding-top:1em' class='alert16 icon'>"+i18n.t("action_menu.no_action")+"</div>")
 		return
 	}
 	o.menu.append(ul)
@@ -1828,7 +1844,7 @@ function format_action_menu(t, o){
 function table_action_menu_format_section(t, e, section) {
 	var ul = $("<ul></ul>")
 	for (var i=0; i<section.children.length; i++) {
-		var li = table_action_menu_format_selector(t, e, section.children[i])
+		var li = table_action_menu_format_selector(t, o, e, section.children[i])
 		if (!li || (li.children("ul").children().length == 0)) {
 			continue
 		}
@@ -2037,7 +2053,7 @@ function table_action_menu_get_cols_data(t, e, scope, selector) {
 	return []
 }
 
-function table_prepare_scope_action_list(t, e, selector, scope, data, cache_id) {
+function table_prepare_scope_action_list(t, o, e, selector, scope, data, cache_id) {
 	var ul = $("<ul></ul>")
 	ul.attr("scope", scope)
 	for (var j=0; j<selector.children.length; j++) {
@@ -2050,6 +2066,9 @@ function table_prepare_scope_action_list(t, e, selector, scope, data, cache_id) 
 		}
 		var li = table_action_menu_format_leaf(t, e, leaf)
 		if (!li) {
+			continue
+		}
+		if (o.search && ! li.text().toLowerCase().match(o.search)) {
 			continue
 		}
 		if (cache_id) {
@@ -2082,12 +2101,12 @@ function table_selector_match_table(t, selector) {
 	return false
 }
 
-function table_action_menu_format_selector(t, e, selector) {
+function table_action_menu_format_selector(t, o, e, selector) {
 	if (!table_selector_match_table(t, selector)) {
 		return
 	}
 	var content = $("<li></li>")
-	if (selector.foldable) {
+	if (selector.foldable && ((o.search == "") || (typeof(o.search) === "undefined"))) {
 		content.addClass("action_menu_folder")
 	}
 	if (selector.title) {
@@ -2101,7 +2120,7 @@ function table_action_menu_format_selector(t, e, selector) {
 	}
 	if (selector.selector.length == 0) {
 		// no selector, special case for tools not working on data lines
-		var ul = table_prepare_scope_action_list(t, e, selector)
+		var ul = table_prepare_scope_action_list(t, o, e, selector)
 		if (ul.length > 0) {
 			content.prepend(ul)
 			content.prepend(title)
@@ -2138,7 +2157,7 @@ function table_action_menu_format_selector(t, e, selector) {
 		}
 
 		// prepare action list for scope
-		var ul = table_prepare_scope_action_list(t, e, selector, scope, data, cache_id)
+		var ul = table_prepare_scope_action_list(t, o, e, selector, scope, data, cache_id)
 
 		// prepare the selector scope button
 		var s = $("<div class='ellipsis'></div>")
