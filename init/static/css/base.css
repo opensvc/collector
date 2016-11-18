@@ -146,6 +146,7 @@ input.aci, input.aci:focus {
 	padding-bottom: 0.2em;
 	margin-bottom: 0.2em;
 	border-bottom: 1px solid rgba(0,0,0,0.2);
+	text-transform: capitalize;
 }
 .line :before {
 	font-style: normal;
@@ -3857,6 +3858,15 @@ button:disabled {
 .otooled:hover > .otools {
 	display: block !important;
 }
+
+.template_form_line > div {
+	font-weight: bold;
+}
+.template_beautified > pre {
+	max-height: 30em;
+	overflow-y: auto;
+}
+
 
 @media screen and (max-width:960px) and (orientation: landscape) {
 	body {

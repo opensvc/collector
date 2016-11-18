@@ -6286,3 +6286,5 @@ alter table prov_templates change column tpl_command tpl_definition text NOT NUL
 
 drop view v_prov_templates; create view v_prov_templates as (select `f`.*, group_concat(distinct `gr`.`role` order by `gr`.`role` ASC separator ', ') AS `tpl_team_responsible`, group_concat(distinct `gp`.`role` order by `gp`.`role` ASC separator ', ') AS `tpl_team_publication` from `prov_templates` `f` left join `prov_template_team_responsible` `fr` on `f`.`id` = `fr`.`tpl_id` left join `prov_template_team_publication` `fp` on `f`.`id` = `fp`.`tpl_id` left join `auth_group` `gr` on `fr`.`group_id` = `gr`.`id` left join `auth_group` `gp` on `fp`.`group_id` = `gp`.`id` group by `f`.`id`);
 
+alter table prov_templates modify column tpl_definition mediumtext;
+
