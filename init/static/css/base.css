@@ -939,7 +939,7 @@ div.error {
 	background: #1f1f1f;
 }
 .menu_selected {
-	background: #3f3f3f;
+	background: rgba(100,100,100,0.2);
 }
 .menu_entry:hover {
 	background: #252525;

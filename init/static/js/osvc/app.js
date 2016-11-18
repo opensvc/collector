@@ -334,6 +334,7 @@ function app_bindings() {
 		if (event.altKey) {
 			return
 		}
+		var tgt = $(event.target)
 
 		// ESC closes pop-ups and blur inputs
 		if ( event.which == 27 ) {
@@ -346,11 +347,17 @@ function app_bindings() {
 
 		// 'TAB' from search input focuses the first visible menu_entry
 		if (event.which == 9) {
-			if ($('#search_input').is(":focus")) {
+			if (tgt.is('#search_input')) {
 				$(".header").find(".menu_selected").removeClass("menu_selected")
 				$(".header").find(".menu_entry:visible").first().addClass("menu_selected")
 				$(".header").find(".search_entry").first().addClass("menu_selected")
 				$("#search_input").blur()
+				event.preventDefault()
+			}
+			if (tgt.is("#amsearch")) {
+				tgt.parent().find(".menu_selected").addClass("menu_selected")
+				tgt.parent().find(".search_entry").first().addClass("menu_selected")
+				tgt.blur()
 				event.preventDefault()
 			}
 		}
@@ -426,7 +433,7 @@ function app_bindings() {
 		// Up
 		else if (event.which == 38) {
 			event.preventDefault()
-			var entries = $(".header").find(".menu_entry:visible,.search_entry")
+			var entries = $(".header,.action_menu").find(".menu_entry:visible,.search_entry")
 			var selected = entries.filter(".menu_selected")
 			if ((selected.length > 0) && (entries.length > 0)) {
 				var selected_index = entries.index(selected)
@@ -477,7 +484,7 @@ function app_bindings() {
 		// Down
 		else if (event.which == 40) {
 			event.preventDefault()
-			var entries = $(".header").find(".menu_entry:visible,.search_entry")
+			var entries = $(".header,.action_menu").find(".menu_entry:visible,.search_entry")
 			var selected = entries.filter(".menu_selected")
 			if ((selected.length > 0) && (entries.length > 0)) {
 				var selected_index = entries.index(selected)
@@ -519,7 +526,7 @@ function app_bindings() {
 
 		// 'Enter' from a menu entry does a click
 		else if (is_enter(event)) {
-			$(".header").find(".menu_selected:visible").each(function(){
+			$(".header,.action_menu").find(".menu_selected:visible").each(function(){
 				event.preventDefault()
 				$(this).effect("highlight")
 

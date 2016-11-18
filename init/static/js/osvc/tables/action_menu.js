@@ -1774,7 +1774,7 @@ function table_action_menu(t, e){
 }
 
 function format_search(t, o) {
-	o.e_search = $("<input class='oi'>")
+	o.e_search = $("<input class='oi' id='amsearch'>")
 	o.menu.append(o.e_search)
 	o.e_search.focus()
 	o.e_search.bind("keyup", function(event) {
@@ -2251,7 +2251,7 @@ function table_action_menu_format_selector(t, o, e, selector) {
 }
 
 function table_action_menu_format_leaf(t, e, leaf) {
-	var li = $("<li class='action_menu_leaf clickable'></li>")
+	var li = $("<li class='action_menu_leaf clickable search_entry'></li>")
 	if (leaf.privileges && !services_ismemberof(leaf.privileges)) {
 		return
 	}
