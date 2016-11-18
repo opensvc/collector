@@ -144,27 +144,14 @@ input.aci, input.aci:focus {
 	position: relative;
 	z-index: 1;
 	padding-bottom: 0.2em;
-	border-bottom: none;
+	margin-bottom: 0.2em;
+	border-bottom: 1px solid rgba(0,0,0,0.2);
 }
 .line :before {
 	font-style: normal;
 }
 
-.line:before {
-	border-top: 1px solid;
-	border-color: gray;
-	content: "";
-	margin: 0 auto;
-	position: absolute;
-	top: 50%;
-	left: 0;
-	right: 0;
-	bottom: 0;
-	width: 95%;
-	z-index: -1;
-}
 .line > span {
-	background: #fff;
 	padding-right: 0.5em;
 	margin-left: 0;
 }
