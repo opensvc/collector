@@ -1685,7 +1685,7 @@ db.define_table('metrics_log',
     Field('metric_id', 'integer'),
     Field('fset_id', 'integer'),
     Field('value', 'float'),
-    Field('date', 'datetime'),
+    Field('date', 'date'),
     Field('instance', 'string'),
     migrate=False)
 

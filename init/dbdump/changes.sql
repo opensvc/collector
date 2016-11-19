@@ -6288,3 +6288,6 @@ drop view v_prov_templates; create view v_prov_templates as (select `f`.*, group
 
 alter table prov_templates modify column tpl_definition mediumtext;
 
+alter table metrics_log modify column date date; 
+
+

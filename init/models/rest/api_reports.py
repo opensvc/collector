@@ -669,11 +669,6 @@ class rest_get_reports_chart_samples(rest_get_table_handler):
         q = db.metrics_log.metric_id.belongs(metric_ids)
         q &= db.metrics_log.fset_id == fset_id
 
-        n = db(q).count()
-        if n > 500:
-            skip = n // 500
-            q &= (db.metrics_log.date.day() % skip) == 0
-
         self.set_q(q)
         data = self.prepare_data(**vars)
         data["chart_definition"] = definition
