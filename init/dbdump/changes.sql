@@ -6290,4 +6290,6 @@ alter table prov_templates modify column tpl_definition mediumtext;
 
 alter table metrics_log modify column date date; 
 
+alter table auth_user add column quota_docker_registries integer;
+
 
