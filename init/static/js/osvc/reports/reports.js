@@ -132,7 +132,7 @@ function chart(divid, options) {
 
 	o.plot = function(id) {
 		$.jqplot.config.enablePlugins = true
-		services_osvcgetrest("R_GET_REPORT_CHART_SAMPLES", [o.options.chart_id], {"meta": "false", "limit": "2000"}, function(jd) {
+		services_osvcgetrest("R_GET_REPORT_CHART_SAMPLES", [o.options.chart_id], {"props": "metric_id,instance,value,date", "meta": "false", "limit": "2000"}, function(jd) {
 			if (jd.error && (jd.error.length > 0)) {
 				osvc.flash.error(services_error_fmt(jd))
 				return
