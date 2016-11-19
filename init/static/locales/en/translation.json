@@ -1356,6 +1356,7 @@
 		"visible_apps": "Applications, visible",
 		"quota_app": "app quota",
 		"quota_org_group": "org group quota",
+		"quota_docker_registries": "docker registries quota",
 		"username": "login",
 		"first_name": "first name",
 		"last_name": "last name",

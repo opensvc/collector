@@ -105,6 +105,9 @@ auth.settings.extra_fields['auth_membership']= [
 ]
 
 auth.settings.extra_fields['auth_user']= [
+    Field('quota_docker_registries', 'integer', default=1,
+          requires=IS_INT_IN_RANGE(minimum=0), writable=False,
+          label=T('Maximum number of docker registries the user can be responsible of')),
     Field('quota_org_group', 'integer', default=1,
           requires=IS_INT_IN_RANGE(minimum=0), writable=False,
           label=T('Maximum number of organizational groups the user can be member of')),

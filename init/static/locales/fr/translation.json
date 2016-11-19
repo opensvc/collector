@@ -1356,6 +1356,7 @@
 		"visible_apps": "Applications, visibles",
 		"quota_app": "quota d'applis",
 		"quota_org_group": "quota de groupes orga",
+		"quota_docker_registries": "quota de registres docker",
 		"username": "login",
 		"first_name": "prénom",
 		"last_name": "nom de famille",

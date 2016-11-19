@@ -58,6 +58,14 @@ def get_svc_id(s):
         raise KeyError("Service '%s' not found" % s)
     return svc.svc_id
 
+def check_quota_docker_registries():
+    quota_docker_registries = db.auth_user(auth.user_id).quota_docker_registries
+    if quota_docker_registries is None or quota_docker_registries == 0:
+        return
+    if len(user_docker_registry_ids()) < quota_docker_registries:
+        return
+    raise Exception("docker registries quota exceeded")
+
 def check_quota_org_group():
     quota_org_group = db.auth_user(auth.user_id).quota_org_group
     if quota_org_group is None or quota_org_group == 0:
@@ -339,6 +347,13 @@ def _user_group_ids(id):
         rows = db(q).select(db.auth_group.id)
         return map(lambda x: x.id, rows)
 
+def user_docker_registry_ids(id=None):
+    q = db.auth_membership.user_id == id
+    q &= db.docker_registries_responsibles.group_id == db.auth_membership.group_id
+    q &= db.docker_registries_responsibles.registry_id == db.docker_registries.id
+    rows = db(q).select(db.auth_membership.group_id, cacheable=True)
+    return map(lambda x: x.group_id, rows)
+
 def user_org_group_ids(id=None):
     if id is None:
         id = auth.user_id
@@ -400,10 +415,16 @@ def auth_register_callback(form):
     q = db.auth_user.email == form.vars.email
     user = db(q).select().first()
 
+    set_quota_docker_registries_on_register(user)
     set_quota_app_on_register(user)
     set_quota_org_group_on_register(user)
     do_create_app_on_register(user)
     do_membership_on_register(user)
+
+def set_quota_docker_registries_on_register(user):
+    quota_docker_registries = config_get("default_quota_docker_registries", None)
+    q = db.auth_user.id == user.id
+    db(q).update(quota_docker_registries=quota_docker_registries)
 
 def set_quota_org_group_on_register(user):
     quota_org_group = config_get("default_quota_org_group", None)

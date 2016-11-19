@@ -299,6 +299,12 @@ class rest_post_users(rest_post_handler):
         if "perpage" in vars and int(vars["perpage"]) > user_max_perpage:
             raise Exception(T("perpage can not be more than %(n)d", dict(n=user_max_perpage)))
 
+        if "quota_docker_registries" in vars:
+            try:
+                check_privilege("QuotaManager")
+            except:
+                del(vars["quota_docker_registries"])
+
         if "quota_app" in vars:
             try:
                 check_privilege("QuotaManager")
@@ -328,6 +334,7 @@ class rest_post_users(rest_post_handler):
 
         set_quota_app_on_register(user)
         set_quota_org_group_on_register(user)
+        set_quota_docker_registries_on_register(user)
         do_create_app_on_register(user)
         do_membership_on_register(user)
 
@@ -371,6 +378,12 @@ class rest_post_user(rest_post_handler):
 
         if "perpage" in vars and int(vars["perpage"]) > user_max_perpage:
             raise Exception(T("perpage can not be more than %(n)d", dict(n=user_max_perpage)))
+
+        if "quota_docker_registries" in vars:
+            try:
+                check_privilege("QuotaManager")
+            except:
+                del(vars["quota_docker_registries"])
 
         if "quota_app" in vars:
             try:

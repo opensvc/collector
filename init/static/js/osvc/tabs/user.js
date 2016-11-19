@@ -83,6 +83,7 @@ function user_properties(divid, options) {
 		o.info_primaryg = o.div.find("#primary_group")
 		o.info_quota_app = o.div.find("#quota_app")
 		o.info_quota_org_group = o.div.find("#quota_org_group")
+		o.info_quota_docker_registries = o.div.find("#quota_docker_registries")
 		o.info_lfilter = o.div.find("#lock_filter")
 		o.info_filterset = o.div.find("#filterset")
 		o.info_org_groups_title = o.div.find("#org_groups_title")
@@ -184,6 +185,7 @@ function user_properties(divid, options) {
 		o.info_im_log_level.html(data.im_log_level)
 		o.info_quota_app.html(data.quota_app)
 		o.info_quota_org_group.html(data.quota_org_group)
+		o.info_quota_docker_registries.html(data.quota_docker_registries)
 		o.info_lfilter.text(data.lock_filter)
 
 		var am_data = [

@@ -1784,6 +1784,10 @@ function format_search(t, o) {
 }
 
 function format_action_menu(t, o) {
+	if (!o.e_search) {
+		return
+	}
+
 	// purge previously displayed actions
 	o.e_search.nextAll().remove()
 

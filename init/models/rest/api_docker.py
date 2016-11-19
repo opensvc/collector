@@ -892,7 +892,7 @@ class rest_post_docker_registries(rest_post_handler):
         row = db(q).select().first()
         if row is not None:
             return rest_post_docker_registry().handler(row.id, **vars)
-        #check_quota_docker_registries()
+        check_quota_docker_registries()
         response = db.docker_registries.validate_and_insert(**vars)
         raise_on_error(response)
         table_modified("docker_registries")
