@@ -90,6 +90,7 @@ function chart(divid, options) {
 	var o = {}
 	o.options = options
 	o.div = $("#"+divid)
+	var dfd = $.Deferred()
 
 	o.load = function load() {
 		// chart area
@@ -133,6 +134,7 @@ function chart(divid, options) {
 	o.plot = function(id) {
 		$.jqplot.config.enablePlugins = true
 		services_osvcgetrest("R_GET_REPORT_CHART_SAMPLES", [o.options.chart_id], {"props": "metric_id,instance,value,date", "meta": "false", "limit": "2000"}, function(jd) {
+			dfd.resolve()
 			if (jd.error && (jd.error.length > 0)) {
 				osvc.flash.error(services_error_fmt(jd))
 				return
@@ -297,6 +299,7 @@ function chart(divid, options) {
 	require(["jqplot"], function(){
 		o.load()
 	})
+	return dfd
 }
 
 function report(divid, options) {
@@ -326,6 +329,7 @@ function report(divid, options) {
  	}
 
 	o.load_sections = function() {
+		var dfd = $.Deferred().resolve()
 		for(var i=0; i<o.definition.Sections.length; i++) {
 			var section = o.definition.Sections[i]
 
@@ -350,24 +354,27 @@ function report(divid, options) {
 
 			// charts reports
 			if (section.Charts !== undefined) {
-				for(var l=0; l<section.Charts.length; l++) {
-					chart(section_div.attr("id"), section.Charts[l])
-				}
+				section.Charts.forEach(function(data){
+					dfd = dfd.then(function(){
+						return chart(section_div.attr("id"), data)
+					})
+				})
 			}
 			// metrics reports
 			if (section.Metrics !== undefined) {
-				for (var l=0; l<section.Metrics.length; l++) {
-					metric(section_div.attr("id"), section.Metrics[l])
-				}
+				section.Metrics.forEach(function(data){
+					metric(section_div.attr("id"), data)
+				})
 			}
 			// flat children support
 			if (section.children !== undefined) {
-				for (var l=0; l<section.children.length; l++) {
-					var child = section.children[l]
+				section.children.forEach(function(child){
 					if ("metric_id" in child) {
 						metric(section_div.attr("id"), child)
 					} else if ("chart_id" in child) {
-						chart(section_div.attr("id"), child)
+						dfd = dfd.then(function(){
+							return chart(section_div.attr("id"), child)
+						})
 					} else if ("Function" in child) {
 						var div = $("<div class='reports_section'></div>")
 						div.uniqueId()
@@ -383,7 +390,7 @@ function report(divid, options) {
 						}
 						window[child.Function](div.attr("id"), options)
 					}
-				}
+				})
 			}
 		}
 	}
