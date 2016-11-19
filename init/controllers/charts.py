@@ -259,7 +259,7 @@ def reports_admin_load():
 @auth.requires_login()
 def reports():
     t = SCRIPT(
-          """reports("layout")""",
+          """$.when(osvc.app_started).then(function(){reports("layout")})""",
         )
     return dict(table=t)
 
