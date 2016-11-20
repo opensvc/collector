@@ -8,8 +8,8 @@ function table_registries(divid, options) {
 		'ajax_url': '/init/registry/ajax_registries',
 		'span': ['repository_id'],
 		'force_cols': ['registry_id', 'repository_id', 'tag_id'],
-		'columns': ['registry_id', 'registry_service', 'registry_updated', 'registry_created', 'repository_id', 'repository_name', 'repository_updated', 'repository_created', 'tag_id', 'tag_name', 'tag_updated', 'tag_created'],
-		'default_columns': ['registry_service', 'repository_name', 'tag_name', 'tag_updated', 'tag_created'],
+		'columns': ['registry_id', 'registry_service', 'registry_updated', 'registry_created', 'repository_id', 'repository_name', 'repository_updated', 'repository_created', 'tag_id', 'tag_name', 'tag_config_size', 'tag_config_digest', 'tag_updated', 'tag_created'],
+		'default_columns': ['registry_service', 'repository_name', 'tag_name', 'tag_config_size', 'tag_updated', 'tag_created'],
 		'colprops': {
 			"tag_id": {
 				"table": "docker_tags",
@@ -22,6 +22,18 @@ function table_registries(divid, options) {
 				"field": "name",
 				"img": "dockertag16",
 				"title": "Tag name"
+			},
+			"tag_config_digest": {
+				"table": "docker_tags",
+				"field": "config_digest",
+				"img": "dockertag16",
+				"title": "Tag digest"
+			},
+			"tag_config_size": {
+				"table": "docker_tags",
+				"field": "config_size",
+				"img": "dockertag16",
+				"title": "Tag size"
 			},
 			"tag_updated": {
 				"_class": "datetime_status",

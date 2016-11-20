@@ -182,6 +182,23 @@ def _token(scope, service):
     load_pubkey()
     return token
 
+def get_manifest(registry, repo, tag, __token=None):
+    if __token is None:
+        __token = manager_token(registry.service, repo=repo.repository)
+
+    verify = not registry.insecure
+    import requests
+    r = requests.get(
+      registry.url+"/v2/%s/manifests/%s" % (repo.repository, tag),
+      verify=verify,
+      headers={
+        "Authorization": "Bearer "+__token,
+        "Accept": "application/vnd.docker.distribution.manifest.v2+json",
+      }
+    )
+    data = json.loads(r.content)
+    return data
+
 def get_tag_digest(registry, repo, tag, __token=None):
     if __token is None:
         __token = manager_token(registry.service, repo=repo.repository)

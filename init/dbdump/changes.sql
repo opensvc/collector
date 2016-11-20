@@ -6292,4 +6292,7 @@ alter table metrics_log modify column date date;
 
 alter table auth_user add column quota_docker_registries integer;
 
+alter table docker_tags add column config_digest char(72) default "";                                                                                         
+
+alter table docker_tags add column config_size integer;
 

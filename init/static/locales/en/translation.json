@@ -1399,6 +1399,8 @@
 		"Repository updated": "Repository updated",
 		"Repository created": "Repository created",
 		"Tag id": "Tag Id",
+		"Tag size": "Tag Size",
+		"Tag digest": "Tag Digest",
 		"Registry service": "Registry service",
 		"Registry updated": "Registry updated",
 		"Registry created": "Registry created",

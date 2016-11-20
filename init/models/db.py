@@ -2080,6 +2080,8 @@ db.define_table('docker_tags',
     Field('name', 'string', length=255),
     Field('updated', "datetime"),
     Field('created', "datetime"),
+    Field('config_digest', 'string', length=72),
+    Field('config_size', 'integer'),
     migrate=False)
 
 db.define_table('docker_registries_publications',

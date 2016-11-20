@@ -73,7 +73,7 @@ def discover_repository_tags(registry, repo):
     )
     token_logger.info(r.content)
     data = json.loads(r.content)
-    vars = ["registry_id", "repository_id", "name", "updated"]
+    vars = ["registry_id", "repository_id", "name", "updated", "config_digest", "config_size"]
     vals = []
     now = datetime.datetime.now()
     if "tags" not in data or data["tags"] is None:
@@ -83,7 +83,15 @@ def discover_repository_tags(registry, repo):
         db(q).delete()
         return
     for tag in data["tags"]:
-        vals.append([registry.id, repo.id, tag, now])
+        manifest = get_manifest(registry, repo, tag, __token=__token)
+        _vals = [registry.id, repo.id, tag, now]
+        if "config" in manifest:
+            _vals.append(manifest["config"]["digest"])
+            _vals.append(manifest["config"]["size"])
+        else:
+            _vals.append("")
+            _vals.append(None)
+        vals.append(_vals)
     generic_insert("docker_tags", vars, vals)
 
     # purge tags deleted registry-side
@@ -271,6 +279,8 @@ class table_registries(HtmlTable):
                      'repository_created',
                      'tag_id',
                      'tag_name',
+                     'tag_config_size',
+                     'tag_config_digest',
                      'tag_updated',
                      'tag_created']
         self.colprops = {
@@ -313,6 +323,14 @@ class table_registries(HtmlTable):
             'tag_name': HtmlTableColumn(
                      table='docker_tags',
                      field='name',
+                    ),
+            'tag_config_digest': HtmlTableColumn(
+                     table='docker_tags',
+                     field='config_digest',
+                    ),
+            'tag_config_size': HtmlTableColumn(
+                     table='docker_tags',
+                     field='config_size',
                     ),
             'tag_updated': HtmlTableColumn(
                      table='docker_tags',
