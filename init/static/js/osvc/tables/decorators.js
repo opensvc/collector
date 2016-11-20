@@ -633,6 +633,29 @@ function cell_decorator_action(e, line) {
 	e.html(s)
 }
 
+function cell_decorator_docker_tag_digest(e, line) {
+	var v = $.data(e[0], "v")
+	if ((v == "empty") || (v == "")) {
+		e.empty()
+		return
+	}
+	s = $("<a class='icon resource'>"+v+"</a>")
+	e.addClass("corner")
+	s.click(function(){
+		if (get_selected() != "") {
+			return
+		}
+		var id = toggle_extratable(e)
+		table_resinfo(id, {
+			"volatile_filters": true,
+			"request_vars": {
+				"resinfo_f_res_value": v
+			}
+		})
+	})
+	e.html(s)
+}
+
 function cell_decorator_svc_action_err(e, line) {
 	var v = $.data(e[0], "v")
 	if (v == "empty") {
@@ -2046,6 +2069,7 @@ cell_decorators = {
 	"nodename": cell_decorator_nodename,
 	"nodename_no_os": cell_decorator_nodename_no_os,
 	"svc_action_err": cell_decorator_svc_action_err,
+	"docker_tag_digest": cell_decorator_docker_tag_digest,
 	"availstatus": cell_decorator_availstatus,
 	"overallstatus": cell_decorator_overallstatus,
 	"chk_type": cell_decorator_chk_type,

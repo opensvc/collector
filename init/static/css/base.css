@@ -224,11 +224,13 @@ input.aci, input.aci:focus {
 	background-image: url('../images/cornertop8.png');
 	background-position: 0 0;
 	background-repeat: no-repeat;
+	cursor: pointer;
 }
 .corner:hover {
 	background-image: url('../images/corner8.png');
 	background-position: 0 100%;
 	background-repeat: no-repeat;
+	cursor: pointer;
 }
 
 .group_hidden_menu_entry {

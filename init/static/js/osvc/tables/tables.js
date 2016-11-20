@@ -24,6 +24,7 @@ function table_registries(divid, options) {
 				"title": "Tag name"
 			},
 			"tag_config_digest": {
+				"_class": "docker_tag_digest",
 				"table": "docker_tags",
 				"field": "config_digest",
 				"img": "dockertag16",
