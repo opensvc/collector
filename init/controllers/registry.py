@@ -77,7 +77,10 @@ def discover_repository_tags(registry, repo):
     vals = []
     now = datetime.datetime.now()
     if "tags" not in data or data["tags"] is None:
-        print(data)
+        print "delete repository with no tag:", data
+        q = db.docker_repositories.registry_id == registry.id
+        q &= db.docker_repositories.repository == repo.repository
+        db(q).delete()
         return
     for tag in data["tags"]:
         vals.append([registry.id, repo.id, tag, now])
