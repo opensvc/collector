@@ -179,6 +179,9 @@ def do_push_event(event):
         token_logger.info("unknown registry: %s" % url)
         return
 
+    if "tag" not in event["target"]:
+        token_logger.error("do_push_event: tag key not found in event data: %s", str(event))
+        return
     tag = event["target"]["tag"]
     repo = event["target"]["repository"]
 
