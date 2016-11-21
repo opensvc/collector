@@ -966,7 +966,7 @@ function user_org_membership(options) {
 		services_osvcdeleterest("/users/%1/groups/%2", [options.user_id, tag.attr("tag_id")], "", "", callback, callback_err)
 	}
 	options.am_i_responsible = function(callback) {
-		if (!services_ismemberof("Manager", "UserManager") && ! (services_ismemberof("SelfManager") && (options.user_id==osvc._self.id))) {
+		if (!services_ismemberof("Manager", "UserManager") && ! (services_ismemberof("SelfManager") && (options.user_id==_self.id))) {
 			callback({"data": false})
 			return
 		}
@@ -1009,7 +1009,7 @@ function user_priv_membership(options) {
 		services_osvcdeleterest("/users/%1/groups/%2", [options.user_id, tag.attr("tag_id")], "", "", callback, callback_err)
 	}
 	options.am_i_responsible = function(callback) {
-		if (!services_ismemberof("Manager", "UserManager") && ! (services_ismemberof("SelfManager") && (options.user_id==osvc._self.id))) {
+		if (!services_ismemberof("Manager", "UserManager") && ! (services_ismemberof("SelfManager") && (options.user_id==_self.id))) {
 			callback({"data": false})
 			return
 		}
