@@ -22,6 +22,7 @@ def lib_search_prov_templates(pattern):
     return {
       "total": n,
       "data": data,
+      "fmt": {"id": "%(id)d", "name": "%(tpl_name)s"},
       "elapsed": "%f" % (t.seconds + 1. * t.microseconds / 1000000),
     }
 
@@ -47,6 +48,7 @@ def lib_search_form(pattern):
     return {
       "total": n,
       "data": data,
+      "fmt": {"id": "%(id)d", "name": "%(form_name)s"},
       "elapsed": "%f" % (t.seconds + 1. * t.microseconds / 1000000),
     }
 
@@ -69,6 +71,7 @@ def lib_search_fset(pattern):
     return {
       "total": n,
       "data": data,
+      "fmt": {"id": "%(id)d", "name": "%(fset_name)s"},
       "elapsed": "%f" % (t.seconds + 1. * t.microseconds / 1000000),
     }
 
@@ -88,6 +91,7 @@ def lib_search_disk(pattern):
     return {
       "total": n,
       "data": data,
+      "fmt": {"id": "%(disk_id)s", "name": "%(disk_id)s"},
       "elapsed": "%f" % (t.seconds + 1. * t.microseconds / 1000000),
     }
 
@@ -103,11 +107,12 @@ def lib_search_app(pattern):
     if not "Manager" in user_groups():
         q &= db.apps.id.belongs(user_app_ids())
     n = db(q).count()
-    data = db(q).select(o, orderby=o, limitby=(0,max_search_result)).as_list()
+    data = db(q).select(db.apps.id, o, orderby=o, limitby=(0,max_search_result)).as_list()
     t = datetime.datetime.now() - t
     return {
       "total": n,
       "data": data,
+      "fmt": {"id": "%(id)d", "name": "%(app)s"},
       "elapsed": "%f" % (t.seconds + 1. * t.microseconds / 1000000),
     }
 
@@ -124,6 +129,7 @@ def lib_search_service(pattern):
     return {
       "total": n,
       "data": data,
+      "fmt": {"id": "%(svc_id)s", "name": "%(svcname)s *%(svc_app)s"},
       "elapsed": "%f" % (t.seconds + 1. * t.microseconds / 1000000),
     }
 
@@ -143,6 +149,7 @@ def lib_search_vm(pattern):
     return {
       "total": n,
       "data": data,
+      "fmt": {"id": "%(mon_vmname)s", "name": "%(mon_vmname)s"},
       "elapsed": "%f" % (t.seconds + 1. * t.microseconds / 1000000),
     }
 
@@ -166,6 +173,7 @@ def lib_search_ip(pattern):
     return {
       "total": n,
       "data": data,
+      "fmt": {"id": "%(node_id)s", "name": "%(nodename)s *%(app)s"},
       "elapsed": "%f" % (t.seconds + 1. * t.microseconds / 1000000),
     }
 
@@ -188,6 +196,7 @@ def lib_search_node(pattern):
     return {
       "total": n,
       "data": data,
+      "fmt": {"id": "%(node_id)s", "name": "%(nodename)s *%(app)s"},
       "elapsed": "%f" % (t.seconds + 1. * t.microseconds / 1000000),
     }
 
@@ -222,6 +231,7 @@ def lib_search_user(pattern):
     return {
       "total": n,
       "data": data,
+      "fmt": {"id": "%(id)d", "name": "%(fullname)s <%(email)s>"},
       "elapsed": "%f" % (t.seconds + 1. * t.microseconds / 1000000),
     }
 
@@ -246,6 +256,7 @@ def lib_search_group(pattern):
     return {
       "total": n,
       "data": data,
+      "fmt": {"id": "%(id)d", "name": "%(role)s"},
       "elapsed": "%f" % (t.seconds + 1. * t.microseconds / 1000000),
     }
 
@@ -267,6 +278,7 @@ def lib_search_safe_file(pattern):
     return {
       "total": n,
       "data": data,
+      "fmt": {"id": "%(uuid)s", "name": "%(name)s"},
       "elapsed": "%f" % (t.seconds + 1. * t.microseconds / 1000000),
     }
 
@@ -284,6 +296,7 @@ def lib_search_metric(pattern):
     return {
       "total": n,
       "data": data,
+      "fmt": {"id": "%(id)d", "name": "%(metric_name)s"},
       "elapsed": "%f" % (t.seconds + 1. * t.microseconds / 1000000),
     }
 
@@ -301,6 +314,7 @@ def lib_search_chart(pattern):
     return {
       "total": n,
       "data": data,
+      "fmt": {"id": "%(id)d", "name": "%(chart_name)s"},
       "elapsed": "%f" % (t.seconds + 1. * t.microseconds / 1000000),
     }
 
@@ -318,6 +332,7 @@ def lib_search_report(pattern):
     return {
       "total": n,
       "data": data,
+      "fmt": {"id": "%(id)d", "name": "%(report_name)s"},
       "elapsed": "%f" % (t.seconds + 1. * t.microseconds / 1000000),
     }
 
@@ -338,6 +353,7 @@ def lib_search_modulesets(pattern):
     return {
       "total": n,
       "data": data,
+      "fmt": {"id": "%(id)d", "name": "%(modset_name)s"},
       "elapsed": "%f" % (t.seconds + 1. * t.microseconds / 1000000),
     }
 
@@ -358,6 +374,7 @@ def lib_search_rulesets(pattern):
     return {
       "total": n,
       "data": data,
+      "fmt": {"id": "%(id)d", "name": "%(ruleset_name)s"},
       "elapsed": "%f" % (t.seconds + 1. * t.microseconds / 1000000),
     }
 
@@ -380,6 +397,7 @@ def lib_search_docker_registries(pattern):
     return {
       "total": n,
       "data": data,
+      "fmt": {"id": "%(id)d", "name": "%(service)s"},
       "elapsed": "%f" % (t.seconds + 1. * t.microseconds / 1000000),
     }
 
@@ -399,6 +417,7 @@ def lib_search_docker_repositories(pattern):
     return {
       "total": n,
       "data": data,
+      "fmt": {"id": "%(id)d", "name": "%(repository)s"},
       "elapsed": "%f" % (t.seconds + 1. * t.microseconds / 1000000),
     }
 
