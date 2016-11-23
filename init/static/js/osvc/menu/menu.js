@@ -311,7 +311,7 @@ var menu_data = {
 		  "id" : "adm-prov",
 		  "link" : "/init/provisioning/prov_admin",
 		  "fn" : "table_prov_templates",
-		  "secure" : ["Manager","ProvManager"]
+		  "secure" : ["Manager","ProvisioningManager"]
 		},
 		{
 		  "title" : "filters",
