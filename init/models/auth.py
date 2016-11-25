@@ -267,11 +267,11 @@ def user_apps(id=None):
     return cache.redis("user_apps:%d"%id, lambda: _user_apps(id), time_expire=14400)
 
 def _user_apps(id=None):
-    if hasattr(auth.user, "svc_id"):
+    if auth.user.get("svc_id") is not None:
         q = db.services.svc_id == auth.user.svc_id
         rows = db(q).select(db.services.svc_app)
         return map(lambda x: x.svc_app, rows)
-    elif hasattr(auth.user, "node_id"):
+    elif auth.user.get("node_id") is not None:
         q = db.nodes.node_id == auth.user.node_id
         rows = db(q).select(db.nodes.app)
         return map(lambda x: x.app, rows)
@@ -294,12 +294,12 @@ def user_app_ids(id=None):
     return cache.redis("user_app_ids:%d"%id, lambda: _user_app_ids(id), time_expire=14400)
 
 def _user_app_ids(id=None):
-    if hasattr(auth.user, "svc_id"):
+    if auth.user.get("svc_id") is not None:
         q = db.services.svc_id == auth.user.svc_id
         q &= db.services.svc_app == db.apps.app
         rows = db(q).select(db.apps.id)
         return map(lambda x: x.id, rows)
-    elif hasattr(auth.user, "node_id"):
+    elif auth.user.get("node_id") is not None:
         q = db.nodes.node_id == auth.user.node_id
         q &= db.nodes.app == db.apps.app
         rows = db(q).select(db.apps.id)
@@ -326,16 +326,13 @@ def clear_cache_user_group_ids():
 def user_group_ids(id=None):
     if id is None:
         id = auth.user_id
-    return cache.redis("user_group_ids:%d"%id, lambda: _user_group_ids(id), time_expire=14400)
-
-def _user_group_ids(id):
-    if hasattr(auth.user, "svc_id"):
+    if auth.user.get("svc_id") is not None:
         q = db.services.svc_id == auth.user.svc_id
         q &= db.services.svc_app == db.apps.app
         q &= db.apps_publications.app_id == db.apps.id
         rows = db(q).select(db.apps_publications.group_id)
         return map(lambda x: x.group_id, rows) + [everybody_group_id()]
-    elif hasattr(auth.user, "node_id"):
+    if auth.user.get("node_id") is not None:
         q = db.nodes.node_id == auth.user.node_id
         q &= db.nodes.app == db.apps.app
         q &= db.apps_publications.app_id == db.apps.id
