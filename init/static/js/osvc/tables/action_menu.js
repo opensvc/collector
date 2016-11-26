@@ -2723,7 +2723,7 @@ function tool_grpprf(t, e) {
 			var d = $("<div style='padding:1em;overflow-y:auto'><div>")
 			$("#"+id).html(d)
 			d.uniqueId()
-			node_stats(nodediff, {
+			node_stats(d.attr("id"), {
 				"node_id": nodes,
 				"view": "/init/static/views/nodes_stats.html",
 				"controller": "/init/stats",
