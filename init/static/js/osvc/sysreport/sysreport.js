@@ -98,7 +98,7 @@ function sysrep(divid, options) {
 		}
 
 		// DOM element where the Timeline will be attached
-		var container =document.getElementById("sysrep_timeline_graph");//o.timeline_graph[0]
+		var container = o.timeline_graph[0]
 
 		// Handle max lines
 		var max_fpath = 5
