@@ -10,6 +10,8 @@ function sysrep(divid, options) {
 	o.divid = divid
 	if (Array.isArray(options.node_id)) {
 		o.nodes = options.node_id
+	} else if (options.nodes) {
+		o.nodes = options.nodes
 	} else {
 		o.nodes = [options.node_id]
 	}
