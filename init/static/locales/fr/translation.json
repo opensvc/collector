@@ -1774,6 +1774,7 @@
 		"Node name": "Noeud"
 	},
 	"alert_type": {
+		"service not started on primary node": "service démarré sur un noeud non-primaire",
 		"service configuration not updated": "configuration de service non mise à jour",
 		"duplicate uid": "doublon d'uid",
 		"duplicate gid": "doublon de gid",
