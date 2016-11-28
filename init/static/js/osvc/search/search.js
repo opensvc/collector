@@ -892,9 +892,9 @@ function search_build_result_view(label, resultset) {
 
 function search_parse_input(search_query) {
 	var data = {}
-	if (search_query.match(/^\w+:\s+/)) {
-		data["substring"] = search_query.replace(/^\w+:\s+/, "")
-		data["in"] = search_query.match(/^\w+:\s+/)[0].replace(/:\s+$/, "")
+	if (search_query.match(/^\w+:\s*/)) {
+		data["substring"] = search_query.replace(/^\w+:\s*/, "")
+		data["in"] = search_query.match(/^\w+:\s*/)[0].replace(/:\s*$/, "")
 	} else {
 		data["substring"] = search_query
 	}
