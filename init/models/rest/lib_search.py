@@ -389,6 +389,7 @@ def lib_search_docker_registries(pattern):
         q &= db.docker_registries_publications.group_id.belongs(user_group_ids())
     n = db(q).count()
     data = db(q).select(o,
+                        db.docker_registries.url,
                         db.docker_registries.id,
                         orderby=o,
                         limitby=(0,max_search_result),
@@ -397,7 +398,7 @@ def lib_search_docker_registries(pattern):
     return {
       "total": n,
       "data": data,
-      "fmt": {"id": "%(id)d", "name": "%(service)s"},
+      "fmt": {"id": "%(id)d", "name": "%(service)s @ %(url)s"},
       "elapsed": "%f" % (t.seconds + 1. * t.microseconds / 1000000),
     }
 
@@ -405,14 +406,22 @@ def lib_search_docker_repositories(pattern):
     t = datetime.datetime.now()
     o = db.docker_repositories.repository
     q = db.docker_repositories.repository.like(pattern)
+    q &= db.docker_repositories.registry_id == db.docker_registries.id
     if "Manager" not in user_groups():
          q &= docker_repositories_acls_query()
     n = db(q).count()
-    data = db(q).select(o,
+    rows = db(q).select(o,
                         db.docker_repositories.id,
+                        db.docker_registries.url,
                         orderby=o,
                         limitby=(0,max_search_result),
-    ).as_list()
+    )
+    data = []
+    for row in rows:
+        data.append({
+          "id": row.docker_repositories.id,
+          "repository": row.docker_registries.url.split("://")[-1] + "/" + row.docker_repositories.repository,
+        })
     t = datetime.datetime.now() - t
     return {
       "total": n,
