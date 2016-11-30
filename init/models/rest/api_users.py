@@ -7,7 +7,7 @@ def allowed_user_ids():
     q &= db.auth_membership.group_id == db.auth_group.id
     q &= db.auth_group.role != "Everybody"
     rows = db(q).select(db.auth_membership.user_id)
-    return [r.user_id for r in rows]
+    return [r.user_id for r in rows] + [auth.user_id]
 
 def allowed_user_ids_q():
     try:
