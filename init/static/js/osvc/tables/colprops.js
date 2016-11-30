@@ -5,6 +5,8 @@ objcols = {
 		'fqdn',
 		'serial',
 		'model',
+		'bios_version',
+		'sp_version',
 		'asset_env',
 		'role',
 		'status',
@@ -1795,6 +1797,14 @@ colprops = {
 	"serial": {
 		"img": "node16",
 		"title": "Serial"
+	},
+	"bios_version": {
+		"img": "node16",
+		"title": "Bios Version"
+	},
+	"sp_version": {
+		"img": "node16",
+		"title": "SP Version"
 	},
 	"sig_provider": {
 		"img": "pkg16",

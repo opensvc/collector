@@ -121,6 +121,8 @@ class table_svcmon(HtmlTable):
             'team_support',
             'serial',
             'model',
+            'bios_version',
+            'sp_version',
             'role',
             'warranty_end',
             'status',

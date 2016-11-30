@@ -39,6 +39,8 @@ class table_nodenetworks(HtmlTable):
                       'app',
                       'serial',
                       'model',
+                      'bios_version',
+                      'sp_version',
                       'enclosure',
                       'enclosureslot',
                       'hvvdc',

@@ -3,6 +3,8 @@ nodes_cols = [
     'fqdn',
     'serial',
     'model',
+    'bios_version',
+    'sp_version',
     'asset_env',
     'role',
     'status',
@@ -234,6 +236,14 @@ nodes_colprops = {
             ),
     'serial': HtmlTableColumn(
              field='serial',
+             table = 'nodes',
+            ),
+    'sp_version': HtmlTableColumn(
+             field='sp_version',
+             table = 'nodes',
+            ),
+    'bios_version': HtmlTableColumn(
+             field='bios_version',
              table = 'nodes',
             ),
     'model': HtmlTableColumn(
