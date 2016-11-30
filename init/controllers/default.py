@@ -22,11 +22,14 @@ def user():
         @auth.requires_permission('read','table name',record_id)
     to decorate functions that need access control
     """
+    if len(request.args) > 0 and \
+       request.args[0] in auth.settings.actions_disabled:
+        return dict(form=T("Feature Disabled"))
     try:
         form = auth()
         return dict(form=form)
     except HTTP as e:
-        if str(e) == "500":
+        if str(e) in ("404", "500"):
             return dict(form=str(e))
         raise
     except Exception as e:
