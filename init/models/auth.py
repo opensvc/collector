@@ -226,31 +226,19 @@ def user_email():
         return None
     return row.email
 
-def clear_cache_user_groups():
-    cache.redis.clear(regex="user_groups:.*")
-
 def user_groups(id=None):
     if id is None:
         id = auth.user_id
     if id is None:
         return []
-    return cache.redis("user_groups:%d"%auth.user_id, lambda: _user_groups(id), time_expire=14400)
-
-def _user_groups(id):
     q = db.auth_membership.user_id==id
     q &= db.auth_membership.group_id==db.auth_group.id
     rows = db(q).select(db.auth_group.role)
     return map(lambda x: x.role, rows)
 
-def clear_cache_user_published_apps():
-    cache.redis.clear(regex="user_published_apps:.*")
-
 def user_published_apps(id=None):
     if id is None:
         id = auth.user_id
-    return cache.redis("user_published_apps:%d"%id, lambda: _user_published_apps(id), time_expire=14400)
-
-def _user_published_apps(id=None):
     q = db.auth_membership.user_id==id
     q &= db.auth_membership.group_id==db.auth_group.id
     q &= db.apps_publications.group_id == db.auth_membership.group_id
@@ -258,15 +246,9 @@ def _user_published_apps(id=None):
     rows = db(q).select(db.apps.app)
     return map(lambda x: x.app, rows)
 
-def clear_cache_user_apps():
-    cache.redis.clear(regex="user_apps:.*")
-
 def user_apps(id=None):
     if id is None:
         id = auth.user_id
-    return cache.redis("user_apps:%d"%id, lambda: _user_apps(id), time_expire=14400)
-
-def _user_apps(id=None):
     if auth.user.get("svc_id") is not None:
         q = db.services.svc_id == auth.user.svc_id
         rows = db(q).select(db.services.svc_app)
@@ -285,15 +267,9 @@ def _user_apps(id=None):
         rows = db(q).select(db.apps.app)
         return map(lambda x: x.app, rows)
 
-def clear_cache_user_app_ids():
-    cache.redis.clear(regex="user_app_ids:.*")
-
 def user_app_ids(id=None):
     if id is None:
         id = auth.user_id
-    return cache.redis("user_app_ids:%d"%id, lambda: _user_app_ids(id), time_expire=14400)
-
-def _user_app_ids(id=None):
     if auth.user.get("svc_id") is not None:
         q = db.services.svc_id == auth.user.svc_id
         q &= db.services.svc_app == db.apps.app
@@ -319,9 +295,6 @@ def everybody_group_id():
     if r is None:
         return
     return r.id
-
-def clear_cache_user_group_ids():
-    cache.redis.clear(regex="user_group_ids:.*")
 
 def user_group_ids(id=None):
     if id is None:

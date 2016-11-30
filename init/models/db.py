@@ -69,24 +69,6 @@ def table_modified(name):
     db.executesql(sql)
     db.commit()
 
-    triggers = {
-      "apps_publications": [
-         clear_cache_user_published_apps,
-      ],
-      "apps_responsibles": [
-         clear_cache_user_app_ids,
-         clear_cache_user_apps,
-      ],
-      "auth_membership": [
-         clear_cache_user_group_ids,
-         clear_cache_user_groups,
-         clear_cache_user_published_apps,
-         clear_cache_user_app_ids,
-         clear_cache_user_apps,
-      ]
-    }
-    for t in triggers.get(name, []):
-        t()
 
 #
 # custom auth_user table. new field: email_notifications
