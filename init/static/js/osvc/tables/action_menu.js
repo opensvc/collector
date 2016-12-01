@@ -471,6 +471,13 @@ function table_action_menu_init_data(t) {
 					"condition": "",
 					"children": [
 						{
+							"title": "action_menu.compliance_design",
+							"class": "designer16",
+							"fn": "data_action_import_compliance_design",
+							"privileges": ["Manager", "CompManager"],
+							"min": 0
+						},
+						{
 							"title": "action_menu.report",
 							"class": "spark16",
 							"fn": "data_action_import_report",
@@ -3892,10 +3899,7 @@ function data_action_ack_actions(t, e) {
 	c.focus()
 }
 
-//
-// data action: import report
-//
-function data_action_import_report(t, e) {
+function data_action_import(t, e, options) {
 	var entry = $(e.target)
 
 	// create and focus tool area
@@ -3916,6 +3920,7 @@ function data_action_import_report(t, e) {
 	line.append(input)
 	div.append(line)
 	div.append(button)
+	input.focus()
 
 	var info = $("<div></div>")
 	info.uniqueId()
@@ -3927,10 +3932,10 @@ function data_action_import_report(t, e) {
 	var xhr = null
 
 	button.click(function(e) {
-		var data = JSON.stringify(input.val())
+		var data = JSON.parse(input.val())
 		info.empty()
 		spinner_add(info)
-		xhr  = services_osvcpostrest("/reports/import", "", "", data, function(jd) {
+		xhr  = services_osvcpostrest(options.url, "", "", data, function(jd) {
 			spinner_del(info)
 			if (jd.error && (jd.error.length > 0)) {
 				info.html(services_error_fmt(jd))
@@ -3942,6 +3947,24 @@ function data_action_import_report(t, e) {
 		function(xhr, stat, error) {
 			info.html(services_ajax_error_fmt(xhr, stat, error))
 		})
+	})
+}
+
+//
+// data action: import report
+//
+function data_action_import_report(t, e) {
+	data_action_import(t, e, {
+		url: "/reports/import",
+	})
+}
+
+//
+// data action: import compliance design
+//
+function data_action_import_compliance_design(t, e) {
+	data_action_import(t, e, {
+		url: "/compliance/import",
 	})
 }
 

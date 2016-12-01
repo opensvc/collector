@@ -445,6 +445,31 @@ class rest_get_compliance_moduleset(rest_get_line_handler):
 
 
 #
+class rest_post_compliance_import(rest_post_handler):
+    def __init__(self):
+        desc = [
+          "Import moduleset or ruleset from a JSON formatted export.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/compliance/import"
+        ]
+
+        rest_post_handler.__init__(
+          self,
+          path="/compliance/import",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, modulesets=[], rulesets=[], filtersets=[]):
+        l = lib_compliance_import({
+                "modulesets": modulesets,
+                "rulesets": rulesets,
+                "filtersets": filtersets
+        })
+        return dict(info=l)
+
+#
 class rest_get_compliance_moduleset_export(rest_get_handler):
     def __init__(self):
         desc = [

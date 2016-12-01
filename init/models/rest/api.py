@@ -656,6 +656,7 @@ def get_post_handlers(prefix=None):
              "rest_post_checks_setting",
         ],
         "compliance": [
+             "rest_post_compliance_import",
              "rest_post_compliance_moduleset_moduleset",
              "rest_post_compliance_moduleset_module",
              "rest_post_compliance_moduleset_modules",

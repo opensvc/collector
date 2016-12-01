@@ -83,6 +83,7 @@
 		"group": "Group",
 		"filterset": "Filterset",
 		"import": "Import",
+		"compliance_design": "Compliance Design",
 		"json_data": "JSON data",
 		"app_name": "Application name",
 		"domain_name": "Domain name",

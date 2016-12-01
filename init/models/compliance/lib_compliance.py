@@ -2188,3 +2188,284 @@ def create_filter(f_table=None, f_field=None, f_op=None, f_value=None):
 
     return obj_id
 
+def lib_compliance_import(data):
+    l = []
+    u = user_name()
+    now = datetime.datetime.now()
+
+    # filters
+    filter_id = {}
+    for fset in data.get('filtersets', []):
+        for f in fset.get('filters', []):
+            _f = f.get('filter')
+            if _f is None:
+                continue
+            if 'f_op' not in _f or \
+               'f_field' not in _f or \
+               'f_value' not in _f or \
+               'f_table' not in _f:
+                return T("Error: invalid filter format: %(r)s", dict(r=str(_f)))
+            _f_s = _f['f_table']+'.'+_f['f_field']+' '+_f['f_op']+' '+_f['f_value']
+            q = db.gen_filters.f_op == _f['f_op']
+            q &= db.gen_filters.f_field == _f['f_field']
+            q &= db.gen_filters.f_value == _f['f_value']
+            q &= db.gen_filters.f_table == _f['f_table']
+            row = db(q).select(db.gen_filters.id).first()
+            if row is not None:
+                filter_id[_f_s] = row.id
+                l.append(T("Filter already exists: %(r)s", dict(r=_f_s)))
+                continue
+            n = db.gen_filters.insert(
+              f_op=_f['f_op'],
+              f_field=_f['f_field'],
+              f_value=_f['f_value'],
+              f_table=_f['f_table'],
+              f_author=u,
+              f_updated=now,
+            )
+            filter_id[_f_s] = n
+            l.append(T("Filter added: %(r)s", dict(r=_f_s)))
+
+    # filtersets
+    filterset_id = {}
+    for fset in data.get('filtersets', []):
+        if 'fset_name' not in fset:
+            return T("Error: invalid filterset format: %(r)s", dict(r=str(fset)))
+        q = db.gen_filtersets.fset_name == fset['fset_name']
+        row = db(q).select(db.gen_filtersets.id).first()
+        if row is not None:
+            filterset_id[fset['fset_name']] = row.id
+            l.append(T("Filterset already exists: %(r)s", dict(r=fset['fset_name'])))
+            # todo: verify the existing filterset has the same definition
+            continue
+        n = db.gen_filtersets.insert(
+          fset_name=fset['fset_name'],
+          fset_stats=False,
+          fset_author=u,
+          fset_updated=now,
+        )
+        filterset_id[fset['fset_name']] = n
+        l.append(T("Filterset added: %(r)s", dict(r=fset["fset_name"])))
+
+    # filtersets relations
+    for fset in data.get('filtersets', []):
+        fset_id = filterset_id[fset["fset_name"]]
+        for f in fset.get('filters', []):
+            _f = f.get('filter')
+            encap_fset_name = f.get('filterset')
+            if _f is not None:
+                if 'f_op' not in _f or \
+                   'f_field' not in _f or \
+                   'f_value' not in _f or \
+                   'f_table' not in _f:
+                    return T("Error: invalid filter format: %(r)s", dict(r=str(_f)))
+                _f_s = _f['f_table']+'.'+_f['f_field']+' '+_f['f_op']+' '+_f['f_value']
+                f_id = filter_id[_f_s]
+                rel_s = fset["fset_name"]+" -> "+f['f_log_op']+" "+_f_s+" (%s)"%str(f['f_order'])
+                q = db.gen_filtersets_filters.fset_id == fset_id
+                q &= db.gen_filtersets_filters.f_id == f_id
+                q &= db.gen_filtersets_filters.f_log_op == f['f_log_op']
+                q &= db.gen_filtersets_filters.f_order == f['f_order']
+                row = db(q).select(db.gen_filtersets_filters.id).first()
+                if row is not None:
+                    l.append(T("Filterset relation already exists: %(r)s", dict(r=rel_s)))
+                    continue
+                n = db.gen_filtersets_filters.insert(
+                  fset_id=fset_id,
+                  f_id=f_id,
+                  f_log_op=f['f_log_op'],
+                  f_order=f['f_order'],
+                  encap_fset_id=None,
+                )
+                l.append(T("Filterset relation added: %(r)s", dict(r=rel_s)))
+            elif encap_fset_name is not None:
+                f_id = filter_id[_f_s]
+                encap_fset_id = filterset_id[encap_fset_name]
+                rel_s = fset["fset_name"]+" -> "+f['f_log_op']+" "+encap_fset_name+" (%s)"%str(f['f_order'])
+                q = db.gen_filtersets_filters.fset_id == fset_id
+                q &= db.gen_filtersets_filters.encap_fset_id == encap_fset_id
+                q &= db.gen_filtersets_filters.f_log_op == f['f_log_op']
+                q &= db.gen_filtersets_filters.f_order == f['f_order']
+                row = db(q).select(db.gen_filtersets_filters.id).first()
+                if row is not None:
+                    l.append(T("Filterset relation already exists: %(r)s", dict(r=rel_s)))
+                    continue
+                n = db.gen_filtersets_filters.insert(
+                  fset_id=fset_id,
+                  f_log_op=f['f_log_op'],
+                  f_order=f['f_order'],
+                  encap_fset_id=encap_fset_id,
+                )
+                l.append(T("Filterset relation added: %(r)s", dict(r=rel_s)))
+
+    # rulesets
+    ruleset_id = {}
+    for rset in data.get('rulesets', []):
+        if 'ruleset_name' not in rset or \
+           'ruleset_type' not in rset or \
+           'ruleset_public' not in rset:
+            return T("Error: invalid ruleset format: %(r)s", dict(r=str(rset)))
+        q = db.comp_rulesets.ruleset_name == rset['ruleset_name']
+        row = db(q).select(db.comp_rulesets.id).first()
+        if row is not None:
+            ruleset_id[rset['ruleset_name']] = row.id
+            l.append(T("Ruleset already exists: %(r)s", dict(r=rset['ruleset_name'])))
+            # todo: verify the existing ruleset has the same definition
+            continue
+        n = db.comp_rulesets.insert(
+          ruleset_name=rset['ruleset_name'],
+          ruleset_type=rset['ruleset_type'],
+          ruleset_public=rset['ruleset_public'],
+        )
+        add_default_teams(rset['ruleset_name'])
+        ruleset_id[rset['ruleset_name']] = n
+        l.append(T("Ruleset added: %(r)s", dict(r=rset["ruleset_name"])))
+
+    # rulesets filterset
+    for rset in data.get('rulesets', []):
+        rset_id = ruleset_id[rset['ruleset_name']]
+        fset_name = rset.get('filterset')
+        if fset_name is not None:
+            rel_s = rset['ruleset_name']+" -> "+fset_name
+            fset_id = filterset_id[fset_name]
+            q = db.comp_rulesets_filtersets.ruleset_id == rset_id
+            q &= db.comp_rulesets_filtersets.fset_id == fset_id
+            n = db(q).count()
+            if n > 0:
+                l.append(T("Ruleset filterset relation already exists: %(r)s", dict(r=rel_s)))
+                continue
+            n = db.comp_rulesets_filtersets.insert(
+              ruleset_id=rset_id,
+              fset_id=fset_id,
+            )
+            l.append(T("Ruleset filterset relation added: %(r)s", dict(r=rel_s)))
+
+    # rulesets relations
+    for rset in data.get('rulesets', []):
+        parent_rset_id = ruleset_id[rset['ruleset_name']]
+        for child_rset_name in rset.get('rulesets', []):
+            rel_s = rset['ruleset_name']+" -> "+child_rset_name
+            child_rset_id = ruleset_id[child_rset_name]
+            q = db.comp_rulesets_rulesets.parent_rset_id == parent_rset_id
+            q &= db.comp_rulesets_rulesets.child_rset_id == child_rset_id
+            n = db(q).count()
+            if n > 0:
+                l.append(T("Ruleset relation already exists: %(r)s", dict(r=rel_s)))
+                continue
+            n = db.comp_rulesets_rulesets.insert(
+              parent_rset_id=parent_rset_id,
+              child_rset_id=child_rset_id,
+            )
+            l.append(T("Ruleset relation added: %(r)s", dict(r=rel_s)))
+
+    # rulesets variables
+    for rset in data.get('rulesets', []):
+        rset_id = ruleset_id[rset['ruleset_name']]
+        for var in rset.get('variables', []):
+            if 'var_name' not in var or \
+               'var_class' not in var or \
+               'var_value' not in var:
+                return T("Error: invalid variable format: %(r)s", dict(str(var)))
+            var_s = rset['ruleset_name']+" :: "+var['var_name']+" (%s)"%var['var_class']
+            q = db.comp_rulesets_variables.ruleset_id == rset_id
+            q &= db.comp_rulesets_variables.var_name == var['var_name']
+            q &= db.comp_rulesets_variables.var_class == var['var_class']
+            q &= db.comp_rulesets_variables.var_value == var['var_value']
+            n = db(q).count()
+            if n > 0:
+                l.append(T("Variable already exists: %(r)s", dict(r=var_s)))
+                continue
+            n = db.comp_rulesets_variables.insert(
+              ruleset_id=rset_id,
+              var_name=var['var_name'],
+              var_class=var['var_class'],
+              var_value=var['var_value'],
+              var_updated=now,
+              var_author=u,
+            )
+            l.append(T("Variable added: %(r)s", dict(r=var_s)))
+
+    # modulesets
+    moduleset_id = {}
+    for modset in data.get('modulesets', []):
+        if 'modset_name' not in modset:
+            return T("Error: invalid moduleset format: %(r)s", dict(str(modset)))
+        q = db.comp_moduleset.modset_name == modset['modset_name']
+        row = db(q).select(db.comp_moduleset.id).first()
+        if row is not None:
+            moduleset_id[modset['modset_name']] = row.id
+            l.append(T("Moduleset already exists: %(r)s", dict(r=modset['modset_name'])))
+            # todo: verify the existing ruleset has the same definition
+            continue
+        n = db.comp_moduleset.insert(
+          modset_name=modset['modset_name'],
+          modset_author=u,
+          modset_updated=now,
+        )
+        add_default_teams_to_modset(modset['modset_name'])
+        moduleset_id[modset['modset_name']] = n
+        l.append(T("Moduleset added: %(r)s", dict(r=modset["modset_name"])))
+
+    # modulesets modules
+    for modset in data.get('modulesets', []):
+        modset_id = moduleset_id[modset["modset_name"]]
+        for mod in modset.get("modules", []):
+            if 'autofix' not in mod or \
+               'modset_mod_name' not in mod:
+                return T("Error: invalid module format: %(r)s", dict(r=str(mod)))
+            rel_s = modset["modset_name"]+" :: "+mod['modset_mod_name']+ ' (%s)'%mod['autofix']
+            q = db.comp_moduleset_modules.modset_id == modset_id
+            q &= db.comp_moduleset_modules.modset_mod_name == mod['modset_mod_name']
+            q &= db.comp_moduleset_modules.autofix == mod['autofix']
+            n = db(q).count()
+            if n > 0:
+                l.append(T("Module already exists: %(r)s", dict(r=rel_s)))
+                continue
+            n = db.comp_moduleset_modules.insert(
+              modset_id=modset_id,
+              modset_mod_name=mod['modset_mod_name'],
+              autofix=mod['autofix'],
+              modset_mod_author=u,
+              modset_mod_updated=now,
+            )
+            l.append(T("Module added: %(r)s", dict(r=rel_s)))
+
+    # modulesets relations
+    for modset in data.get('modulesets', []):
+        parent_modset_id = moduleset_id[modset['modset_name']]
+        for child_modset_name in modset.get('modulesets', []):
+            rel_s = modset['modset_name']+" -> "+child_modset_name
+            child_modset_id = moduleset_id[child_modset_name]
+            q = db.comp_moduleset_moduleset.parent_modset_id == parent_modset_id
+            q &= db.comp_moduleset_moduleset.child_modset_id == child_modset_id
+            n = db(q).count()
+            if n > 0:
+                l.append(T("Moduleset relation already exists: %(r)s", dict(r=rel_s)))
+                continue
+            n = db.comp_moduleset_moduleset.insert(
+              parent_modset_id=parent_modset_id,
+              child_modset_id=child_modset_id,
+            )
+            l.append(T("Moduleset relation added: %(r)s", dict(r=rel_s)))
+
+    # modulesets rulesets
+    for modset in data.get('modulesets', []):
+        modset_id = moduleset_id[modset['modset_name']]
+        for ruleset_name in modset.get('rulesets', []):
+            rel_s = modset['modset_name']+" -> "+ruleset_name
+            rset_id = ruleset_id[ruleset_name]
+            q = db.comp_moduleset_ruleset.modset_id == modset_id
+            q &= db.comp_moduleset_ruleset.ruleset_id == rset_id
+            n = db(q).count()
+            if n > 0:
+                l.append(T("Moduleset ruleset relation already exists: %(r)s", dict(r=rel_s)))
+                continue
+            n = db.comp_moduleset_ruleset.insert(
+              modset_id=modset_id,
+              ruleset_id=rset_id,
+            )
+            l.append(T("Moduleset ruleset relation added: %(r)s", dict(r=rel_s)))
+
+    comp_rulesets_chains()
+    return l
+
