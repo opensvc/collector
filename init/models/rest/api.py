@@ -1438,6 +1438,8 @@ def prepare_data(
         left = []
     elif type(left) == pydal.objects.Expression:
         left = [left]
+    elif type(left) == tuple:
+        left = list(left)
     elif type(left) == list:
         pass
     else:
