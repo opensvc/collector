@@ -734,6 +734,9 @@ def get_post_handlers(prefix=None):
         "links": [
              "rest_post_link",
         ],
+        "logs": [
+             "rest_post_logs",
+        ],
         "networks": [
              "rest_post_networks",
              "rest_post_network",
@@ -954,18 +957,22 @@ class rest_handler(object):
         return [node.collector]
 
     def get_collectors(self, *args, **vars):
-        if "node_id" in vars:
-            return self.get_node_collectors(get_node_id(vars["node_id"]))
-        if "nodes" in args:
-            idx = args.index("nodes")
-            if len(args) > idx+1:
-                return self.get_node_collectors(get_node_id(args[idx+1]))
-        if "svc_id" in vars:
-            return self.get_svc_collectors(get_svc_id(vars["svc_id"]))
-        if "services" in args:
-            idx = args.index("services")
-            if len(args) > idx+1:
-                return self.get_svc_collectors(get_svc_id(args[idx+1]))
+        try:
+            if "node_id" in vars:
+                return self.get_node_collectors(get_node_id(vars["node_id"]))
+            if "nodes" in args:
+                idx = args.index("nodes")
+                if len(args) > idx+1:
+                    return self.get_node_collectors(get_node_id(args[idx+1]))
+            if "svc_id" in vars:
+                return self.get_svc_collectors(get_svc_id(vars["svc_id"]))
+            if "services" in args:
+                idx = args.index("services")
+                if len(args) > idx+1:
+                    return self.get_svc_collectors(get_svc_id(args[idx+1]))
+        except:
+            # object not found
+            return []
         return []
 
     def handle(self, *args, **vars):

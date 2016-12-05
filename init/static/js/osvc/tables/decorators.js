@@ -179,6 +179,7 @@ var img_h = {
 	'filter': 'filter16',
 	'group': 'guys16',
 	'link': 'link16',
+	'message': 'im',
 	'moduleset': 'action16',
 	'module': 'action16',
 	'networks': 'net16',

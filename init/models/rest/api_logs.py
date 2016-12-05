@@ -64,3 +64,55 @@ class rest_get_log(rest_get_line_handler):
         data = self.prepare_data(**vars)
         return data
 
+#
+class rest_post_logs(rest_post_handler):
+    def __init__(self):
+        desc = [
+          "Create a log event",
+          "The entry type is forced to 'message'",
+          "The default level is 'info'",
+          "Empty log events are discarded",
+        ]
+        examples = [
+          """# curl -u %(email)s -o- -d node_id=d446fee3-328d-4493-9db9-b1118600bee8 -d log_entry="Zanzibar" https://%(collector)s/init/rest/api/logs""",
+        ]
+        rest_post_handler.__init__(
+          self,
+          path="/logs",
+          tables=["log"],
+          desc=desc,
+          examples=examples,
+          replication=["relay", "local"],
+        )
+
+    def handler(self, **vars):
+        vars["log_date"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        vars["log_action"] = "message"
+        if "log_level" not in vars:
+            vars["log_level"] = "info"
+
+        if "log_fmt" not in vars or vars["log_fmt"] is None or str(vars["log_fmt"]) == 0:
+            raise Exception("empty log event discarded")
+        if "log_dict" not in vars:
+            vars["log_dict"] = {}
+        if hasattr(auth.user, "node_id"):
+            vars["node_id"] = auth.user.node_id
+        if hasattr(auth.user, "svc_id"):
+            vars["svc_id"] = auth.user.svc_id
+        if auth.user.first_name and auth.user.last_name:
+            vars["log_user"] = " ".join((auth.user.first_name,
+                                         auth.user.last_name))
+            # user auth => verify the user is responsible for the svc or node
+            if "svc_id" in vars:
+                svc_responsible(vars["svc_id"])
+            elif "node_id" in vars:
+                node_responsible(vars["node_id"])
+        else:
+            vars["log_user"] = "agent"
+
+        log_id = db.log.insert(**vars)
+        ws_send('log_change', {"id": log_id})
+        return rest_get_log().handler(log_id)
+
+
+
