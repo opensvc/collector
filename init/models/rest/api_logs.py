@@ -91,7 +91,8 @@ class rest_post_logs(rest_post_handler):
         if "log_level" not in vars:
             vars["log_level"] = "info"
 
-        if "log_fmt" not in vars or vars["log_fmt"] is None or str(vars["log_fmt"]) == 0:
+        if "log_fmt" not in vars or vars["log_fmt"] is None or \
+           len(str(vars["log_fmt"])) == 0:
             raise Exception("empty log event discarded")
         if "log_dict" not in vars:
             vars["log_dict"] = {}
