@@ -323,8 +323,8 @@ function table_init(opts) {
 	}
 
 	t.trim_lines = function() {
-		perpage = parseInt($("#table_"+t.id).attr("perpage")) + 2
-		lines = $("#table_"+t.id).children("tbody").children()
+		perpage = t.options.pager.perpage
+		lines = t.e_table.children("tbody").children(".tl")
 		if (lines.length <= perpage) {
 			return
 		}
