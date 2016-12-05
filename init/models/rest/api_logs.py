@@ -95,20 +95,27 @@ class rest_post_logs(rest_post_handler):
             raise Exception("empty log event discarded")
         if "log_dict" not in vars:
             vars["log_dict"] = {}
-        if hasattr(auth.user, "node_id"):
-            vars["node_id"] = auth.user.node_id
+
         if hasattr(auth.user, "svc_id"):
+            # svc auth
             vars["svc_id"] = auth.user.svc_id
-        if auth.user.first_name and auth.user.last_name:
+            vars["node_id"] = auth.user.node_id
+            vars["log_user"] = "agent"
+        elif hasattr(auth.user, "node_id"):
+            # node auth
+            vars["node_id"] = auth.user.node_id
+            vars["log_user"] = "agent"
+        elif auth.user.first_name and auth.user.last_name:
+            # user auth
             vars["log_user"] = " ".join((auth.user.first_name,
                                          auth.user.last_name))
-            # user auth => verify the user is responsible for the svc or node
+            # verify the user is responsible for the svc or node
             if "svc_id" in vars:
                 svc_responsible(vars["svc_id"])
             elif "node_id" in vars:
                 node_responsible(vars["node_id"])
         else:
-            vars["log_user"] = "agent"
+            raise Exception("unknown log sender")
 
         log_id = db.log.insert(**vars)
         ws_send('log_change', {"id": log_id})
