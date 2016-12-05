@@ -97,12 +97,12 @@ input.aci, input.aci:focus {
 .icon_fixed_width:before {
 	display: inline-block;
 	width: 1.3em;
-	font-family: awesome;
+	font-family: FontAwesome;
 }
 .icon:before {
 	display: inline-block;
 	margin-right: 0.3em;
-	font-family: awesome;
+	font-family: FontAwesome;
 }
 .form-header-icon:before {
 	font-size: 3.5em;
@@ -897,13 +897,6 @@ textarea[readonly] {
 	font-weight:300;
 }
 
-@font-face {
-	font-family:"awesome";
-	src:url(../fonts/fontawesome-webfont.woff);
-	font-style:normal;
-	font-weight:normal;
-}
-
 html {
 	font-size: 10pt;
 	font-family: "opensans";
@@ -1010,7 +1003,7 @@ div.menu_box {
 	font-size: x-large;
 	min-width: 1em;
 	text-align: center;
-	font-family: awesome;
+	font-family: FontAwesome;
 }
 .menu .menu_title {
 	color: white;
@@ -2034,32 +2027,27 @@ ul.login_menu ul {
 }
 .cpu16:before {
 	color: cornflowerblue;
-	content: '\f0c8';
+	content: '\f2db';
 }
 .na:before {
 	content: '\f0c8';
-	font-family: awesome;
 	color: lightgray;
 }
 .hw16:before {
 	color: cornflowerblue;
-	content: '\f0c8';
-	font-family: awesome;
+	content: '\f2db';
 }
 .mem16:before {
 	color: cornflowerblue;
 	content: '\f0c8';
-	font-family: awesome;
 }
 .obs16:before {
 	color: cornflowerblue;
 	content: '\f1b8';
-	font-family: awesome;
 }
 .os16:before {
 	color: cornflowerblue;
 	content: '\f268';
-	font-family: awesome;
 }
 .fixable16 {
 	background: transparent url('../images/fixable16.png') no-repeat;
@@ -2069,120 +2057,96 @@ ul.login_menu ul {
 .safe16:before {
 	color: #EE5464;
 	content: '\f023';
-	font-family: awesome;
 }
 .rset16:before {
 	color: #EE5464;
 	content: '\f1b2';
-	font-family: awesome;
 }
 .comp16:before {
 	color: #EE5464;
 	content: '\f140';
-	font-family: awesome;
 }
 .comp-c:before {
 	content: '\f140';
-	font-family: awesome;
 	color: #EE5464;
 }
 .ok:before {
 	content: '\f00c';
-	font-family: awesome;
 	color: green;
 }
 .compstatus:before {
 	color: #EE5464;
 	content: '\f00c';
-	font-family: awesome;
 }
 .check16:before {
 	color: green;
 	content: '\f00c';
-	font-family: awesome;
 }
 .admin:before {
 	content: '\f007';
-	font-family: awesome;
 	color: gold;
 }
 .guy16:before {
 	color: salmon;
 	content: '\f007';
-	font-family: awesome;
 }
 .admins16:before {
 	content: '\f0c0';
-	font-family: awesome;
 	color: gold;
 }
 .privilege16:before {
 	color: goldenrod;
 	content: '\f0a3';
-	font-family: awesome;
 }
 .resp16:before {
 	color: goldenrod;
 	content: '\f0c0';
-	font-family: awesome;
 }
 .guys16:before {
 	color: salmon;
 	content: '\f0c0';
-	font-family: awesome;
 }
 .app16:before {
 	color: deeppink;
 	content: '\f069';
-	font-family: awesome;
 }
 .node_env16:before {
 	color: cornflowerblue;
 	content: '\f24d';
-	font-family: awesome;
 }
 .svc_env16:before {
 	color: seagreen;
 	content: '\f24d';
-	font-family: awesome;
 }
 .resource:before {
 	color: seagreen;
 	content: '\f292';
-	font-family: awesome;
 }
 .svcinstance:before {
 	color: seagreen;
 	content: '\f042';
-	font-family: awesome;
 }
 .svc:before {
 	color: seagreen;
 	content: '\f111';
-	font-family: awesome;
 }
 .svc-c:before {
 	content: '\f111';
-	font-family: awesome;
 	color: #D4E5CA;
 }
 .help:before {
 	content: '\f059';
-	font-family: awesome;
 }
 .nok:before {
 	content: '\f00d';
-	font-family: awesome;
 	color: red;
 }
 .node16:before {
 	color: cornflowerblue;
 	content: '\f233';
-	font-family: awesome;
 }
 .drp16:before {
 	content: '\f1e2';
-	font-family: awesome;
 }
 .key16 {
 	background: transparent url('../images/key16.png') no-repeat;
@@ -2206,12 +2170,10 @@ ul.login_menu ul {
 }
 .action_sync_16:before {
 	content: '\f0ec';
-	font-family: awesome;
 	color: orange;
 }
 .action_stop_16:before {
 	content: '\f063';
-	font-family: awesome;
 	color: #EE5464;
 }
 .action_stonith_16 {
@@ -2221,17 +2183,14 @@ ul.login_menu ul {
 }
 .action_start_16:before {
 	content: '\f062';
-	font-family: awesome;
 	color: green;
 }
 .action_restart_16:before {
 	content: '\f021';
-	font-family: awesome;
 	color: green;
 }
 .action_switch_16:before {
 	content: '\f061';
-	font-family: awesome;
 	color: green;
 }
 .www16:before {
@@ -2239,66 +2198,52 @@ ul.login_menu ul {
 }
 .gear16:before {
 	content: '\f013';
-	font-family: awesome;
 	color: lightgray;
 }
 .mod16:before {
 	color: #EE5464;
 	content: '\f013';
-	font-family: awesome;
 }
 .action16:before {
 	color: seagreen;
 	content: '\f013';
-	font-family: awesome;
 }
 .file16:before {
 	content: '\f15b';
-	font-family: awesome;
 }
 .edit16:before {
 	content: '\f040';
-	font-family: awesome;
 }
 .edit:before {
 	content: '\f040';
-	font-family: awesome;
 }
 .pwr:before {
 	color: cornflowerblue;
 	content: '\f0e7';
-	font-family: awesome;
 }
 .time16:before {
 	content: '\f017';
-	font-family: awesome;
 }
 .filters:before,
 .filter16:before {
 	content: '\f0b0';
-	font-family: awesome;
 }
 .loc:before {
 	color: cornflowerblue;
 	content: '\f041';
-	font-family: awesome;
 }
 .search16:before {
 	content: '\f002';
-	font-family: awesome;
 }
 .avail16:before {
 	color: seagreen;
 	content: '\f21e';
-	font-family: awesome;
 }
 .api:before {
 	content: '\f121';
-	font-family: awesome;
 }
 .keyboard:before {
 	content: '\f11c';
-	font-family: awesome;
 }
 .dockertags16:before {
 	color: #27b8e8;
@@ -2307,26 +2252,21 @@ ul.login_menu ul {
 .fa-tags:before {
 	color: darkcyan;
 	content: '\f02c';
-	font-family: awesome;
 }
 .modset16:before {
 	color: #EE5464;
 	content: '\f085';
-	font-family: awesome;
 }
 .actions:before {
 	color: seagreen;
 	content: '\f085';
-	font-family: awesome;
 }
 .patch:before {
 	color: #CC9966;
 	content: '\f1b2';
-	font-family: awesome;
 }
 .folder-closed:before {
 	content: '\f07b';
-	font-family: awesome;
 }
 .nologo16 {
 	padding: 0 0 0 20px;
@@ -3303,7 +3243,6 @@ input.ocb {
 
 .ocb + label:after {
 	-ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=0)";
-	font-family: awesome;
 	filter: alpha(opacity=0);
 	opacity: 0;
 	content: '\f00c';
@@ -3319,7 +3258,6 @@ input.ocb {
 
 .ocb + label:hover::after {
 	-ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=30)";
-	font-family: awesome;
 	content: '\f00c';
 	min-width: 14px;
 	height: 14px;
@@ -3333,7 +3271,6 @@ input.ocb {
 input[type=checkbox].ocb:checked + label:after {
 	-ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=100)";
 	filter: alpha(opacity=100);
-	font-family: awesome;
 	content: '\f00c';
 	width: 14px;
 	height: 14px;
@@ -3435,7 +3372,6 @@ textarea.link_ta_sub {
 .editable:after {
 	content: '\f040';
 	padding-left: 0.3em;
-	font-family: awesome;
 }
 
 .oi {
