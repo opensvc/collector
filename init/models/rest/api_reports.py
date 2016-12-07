@@ -848,6 +848,7 @@ class rest_post_reports_import(rest_post_handler):
                     del(m["id"])
                 metric_id[m["metric_name"]] = db.metrics.insert(**m)
                 data["info"].append("Added metric %s" % m["metric_name"])
+        db.commit()
 
         for i, m in enumerate(charts):
             if "chart_name" not in m:
@@ -865,16 +866,17 @@ class rest_post_reports_import(rest_post_handler):
                      if not "metric_name" in metric:
                          data["error"].append("Missing 'metric_name' key in metric %d of chart %d" % (j,i))
                          continue
-                     m["chart_definition"]["Metrics"][j]["metric_id"] = metric_id[metric["metric_name"]]
+                     m["chart_definition"]["Metrics"][j]["metric_id"] = int(metric_id[metric["metric_name"]])
                      del(m["chart_definition"]["Metrics"][j]["metric_name"])
                 try:
                     m["chart_yaml"] = yaml.safe_dump(m["chart_definition"], default_flow_style=False, allow_unicode=True)
                 except Exception as e:
                     data["error"].append("Error converting to yaml: %s, %s" % (str(m["chart_definition"]), str(e)))
-                    return data
+                    continue
                 del(m["chart_definition"])
                 chart_id[m["chart_name"]] = db.charts.insert(**m)
                 data["info"].append("Added chart %s" % m["chart_name"])
+        db.commit()
 
         for i, m in enumerate(reports):
             if "report_name" not in m:
@@ -890,10 +892,13 @@ class rest_post_reports_import(rest_post_handler):
                 for j, section in enumerate(m["report_definition"].get("Sections", [])):
                     for k, child in enumerate(m["report_definition"]["Sections"][j].get("children", [])):
                          if "metric_name" in child:
-                             m["report_definition"]["Sections"][j]["children"][k]["metric_id"] = metric_id[child["metric_name"]]
+                             m["report_definition"]["Sections"][j]["children"][k]["metric_id"] = int(metric_id[child["metric_name"]])
                              del(m["report_definition"]["Sections"][j]["children"][k]["metric_name"])
                          elif "chart_name" in child:
-                             m["report_definition"]["Sections"][j]["children"][k]["chart_id"] = chart_id[child["chart_name"]]
+                             if child["chart_name"] not in chart_id:
+                                 data["error"].append("Id of chart %s not found" % child["chart_name"])
+                                 continue
+                             m["report_definition"]["Sections"][j]["children"][k]["chart_id"] = int(chart_id[child["chart_name"]])
                              del(m["report_definition"]["Sections"][j]["children"][k]["chart_name"])
                          else:
                              data["error"].append("Missing 'metric_name' or 'chart_name' key in child %d of section %d of report %d" % (k, j, i))
@@ -902,9 +907,10 @@ class rest_post_reports_import(rest_post_handler):
                         m["report_yaml"] = yaml.safe_dump(m["report_definition"], default_flow_style=False, allow_unicode=True)
                     except Exception as e:
                         data["error"].append("Error converting to yaml: %s, %s" % (str(m["report_definition"]), str(e)))
-                        return data
+                        continue
                 del(m["report_definition"])
                 db.reports.insert(**m)
                 data["info"].append("Added report %s" % m["report_name"])
+        db.commit()
 
         return data
