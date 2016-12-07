@@ -355,8 +355,9 @@ function report(divid, options) {
 			// charts reports
 			if (section.Charts !== undefined) {
 				section.Charts.forEach(function(data){
+					var id = section_div.attr("id")
 					dfd = dfd.then(function(){
-						return chart(section_div.attr("id"), data)
+						return chart(id, data)
 					})
 				})
 			}
@@ -372,8 +373,9 @@ function report(divid, options) {
 					if ("metric_id" in child) {
 						metric(section_div.attr("id"), child)
 					} else if ("chart_id" in child) {
+						var id = section_div.attr("id")
 						dfd = dfd.then(function(){
-							return chart(section_div.attr("id"), child)
+							return chart(id, child)
 						})
 					} else if ("Function" in child) {
 						var div = $("<div class='reports_section'></div>")
