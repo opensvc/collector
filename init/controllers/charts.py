@@ -32,6 +32,7 @@ class table_metrics(HtmlTable):
                      'metric_col_value_index',
                      'metric_col_instance_index',
                      'metric_col_instance_label',
+                     'metric_historize',
                      'metric_created',
                      'metric_author']
         self.colprops = {
@@ -41,6 +42,10 @@ class table_metrics(HtmlTable):
             ),
             'metric_name': HtmlTableColumn(
                 field = 'metric_name',
+                table = 'metrics',
+            ),
+            'metric_historize': HtmlTableColumn(
+                field = 'metric_historize',
                 table = 'metrics',
             ),
             'metric_sql': HtmlTableColumn(

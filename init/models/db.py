@@ -1670,6 +1670,7 @@ db.define_table('metrics',
     Field('metric_col_value_index', 'integer'),
     Field('metric_col_instance_index', 'integer'),
     Field('metric_col_instance_label', 'string'),
+    Field('metric_historize', 'boolean'),
     migrate=False)
 
 db.define_table('metrics_log',

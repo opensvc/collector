@@ -523,6 +523,7 @@
 		"metric_col_value_index": "Index de la colonne valeur",
 		"metric_col_instance_index": "Index de la colonne instance",
 		"metric_col_instance_label": "Label de la colonne instance",
+		"metric_historize": "Historiser",
 		"metric_author": "Auteur",
 		"metric_created": "Creation",
 		"save": "sauvegarder",

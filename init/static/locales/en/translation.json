@@ -525,6 +525,7 @@
 		"metric_col_value_index": "Value column index",
 		"metric_col_instance_index": "Instance column index",
 		"metric_col_instance_label": "Instance column label",
+		"metric_historize": "Historize",
 		"metric_author": "Author",
 		"metric_created": "Created",
 		"save": "save",

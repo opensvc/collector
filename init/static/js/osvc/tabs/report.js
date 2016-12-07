@@ -38,7 +38,7 @@ function report_tabs(divid, options) {
 		// tab properties
 		i = o.register_tab({
 			"title": "report_tabs.properties",
-			"title_class": "icon wf16"
+			"title_class": "icon report16"
 		})
 		o.tabs[i].callback = function(divid) {
 			report_properties(divid, o.options)
@@ -47,7 +47,7 @@ function report_tabs(divid, options) {
 		// tab display
 		i = o.register_tab({
 			"title": "report_tabs.rendering",
-			"title_class": "icon wf16"
+			"title_class": "icon report16"
 		})
 		o.tabs[i].callback = function(divid) {
 			var options = $.extend({}, o.options, {"pad": true})

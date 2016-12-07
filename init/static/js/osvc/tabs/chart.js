@@ -41,7 +41,7 @@ function chart_tabs(divid, options) {
 		// tab properties
 		i = o.register_tab({
 			"title": "chart_tabs.properties",
-			"title_class": "icon wf16"
+			"title_class": "icon chart16"
 		})
 		o.tabs[i].callback = function(divid) {
 			chart_properties(divid, o.options)
@@ -50,7 +50,7 @@ function chart_tabs(divid, options) {
 		// rendering properties
 		i = o.register_tab({
 			"title": "chart_tabs.rendering",
-			"title_class": "icon wf16"
+			"title_class": "icon chart16"
 		})
 		o.tabs[i].callback = function(divid) {
 			chart(divid, o.options)

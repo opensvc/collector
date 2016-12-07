@@ -84,7 +84,7 @@ def _metrics_cron(m, verbose=False):
     db.commit()
 
 def task_metrics(verbose=False):
-    q = db.metrics.id > 0
+    q = db.metrics.metric_historize == True
     rows = db(q).select()
     refresh_fset_cache()
     for row in rows:

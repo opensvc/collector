@@ -86,6 +86,7 @@ function metric_properties(divid, options) {
 		o.info_metric_col_instance_label = o.div.find("#metric_col_instance_label")
 		o.info_metric_col_value_index = o.div.find("#metric_col_value_index")
 		o.info_metric_col_instance_index = o.div.find("#metric_col_instance_index")
+		o.info_metric_historize = o.div.find("#metric_historize")
 		o.load()
 	}
 
@@ -107,6 +108,7 @@ function metric_properties(divid, options) {
 		o.info_metric_col_instance_label.html(data.metric_col_instance_label)
 		o.info_metric_col_value_index.html(data.metric_col_value_index)
 		o.info_metric_col_instance_index.html(data.metric_col_instance_index)
+		o.info_metric_historize.html(data.metric_historize)
 
 		var am_data = [
 			{
