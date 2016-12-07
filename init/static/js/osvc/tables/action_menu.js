@@ -3937,11 +3937,12 @@ function data_action_import(t, e, options) {
 		spinner_add(info)
 		xhr  = services_osvcpostrest(options.url, "", "", data, function(jd) {
 			spinner_del(info)
+			info.empty()
 			if (jd.error && (jd.error.length > 0)) {
-				info.html(services_error_fmt(jd))
+				info.append(services_error_fmt(jd))
 			}
 			if (jd.info && (jd.info.length > 0)) {
-				info.html(services_info_fmt(jd))
+				info.append(services_info_fmt(jd))
 			}
 		},
 		function(xhr, stat, error) {
