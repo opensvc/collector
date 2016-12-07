@@ -46,7 +46,7 @@ am_node_agent_leafs = [
 	},
 	{
 		'title': 'Update stats',
-		'class': 'spark16',
+		'class': 'chart16',
 		"privileges": ["Manager", "NodeManager", "NodeExec"],
 		"min": 1,
 		'action': 'pushstats'
@@ -182,7 +182,7 @@ function table_action_menu_init_data(t) {
 		// section: tools
 		{
 			"title": "action_menu.tools",
-			//"class": "spark16",
+			//"class": "chart16",
 			"children": [
 				{
 					"selector": [],
@@ -244,14 +244,14 @@ function table_action_menu_init_data(t) {
 						},
 						{
 							"title": "action_menu.node_perf",
-							"class": "spark16",
+							"class": "chart16",
 							"fn": "tool_grpprf",
 							"min": 1,
 							"max": 20
 						},
 						{
 							"title": "action_menu.obsolescence",
-							"class": "spark16",
+							"class": "chart16",
 							"fn": "tool_obsolescence",
 							"min": 2
 						}
@@ -312,21 +312,21 @@ function table_action_menu_init_data(t) {
 					"children": [
 						{
 							"title": "action_menu.metric",
-							"class": "spark16",
+							"class": osvc.icons.metric,
 							"fn": "data_action_add_metric",
 							"privileges": ["Manager", "ReportsManager"],
 							"min": 0
 						},
 						{
 							"title": "action_menu.chart",
-							"class": "spark16",
+							"class": osvc.icons.chart,
 							"fn": "data_action_add_chart",
 							"privileges": ["Manager", "ReportsManager"],
 							"min": 0
 						},
 						{
 							"title": "action_menu.report",
-							"class": "spark16",
+							"class": osvc.icons.report,
 							"fn": "data_action_add_report",
 							"privileges": ["Manager", "ReportsManager"],
 							"min": 0
@@ -479,7 +479,7 @@ function table_action_menu_init_data(t) {
 						},
 						{
 							"title": "action_menu.report",
-							"class": "spark16",
+							"class": osvc.icons.report,
 							"fn": "data_action_import_report",
 							"privileges": ["Manager", "ReportsManager"],
 							"min": 0
@@ -621,7 +621,7 @@ function table_action_menu_init_data(t) {
 					"selector": ["clicked", "checked", "all"],
 					"foldable": true,
 					'title': 'action_menu.on_metrics',
-					"class": "spark16",
+					"class": osvc.icons.metric,
 					"table": ["metrics"],
 					"cols": ["id"],
 					"condition": "id",
@@ -639,7 +639,7 @@ function table_action_menu_init_data(t) {
 					"selector": ["clicked", "checked", "all"],
 					"foldable": true,
 					'title': 'action_menu.on_charts',
-					"class": "spark16",
+					"class": osvc.icons.chart,
 					"table": ["charts"],
 					"cols": ["id"],
 					"condition": "id",
@@ -657,7 +657,7 @@ function table_action_menu_init_data(t) {
 					"selector": ["clicked", "checked", "all"],
 					"foldable": true,
 					'title': 'action_menu.on_reports',
-					"class": "spark16",
+					"class": osvc.icons.report,
 					"table": ["reports"],
 					"cols": ["id"],
 					"condition": "id",
@@ -2723,7 +2723,7 @@ function tool_grpprf(t, e) {
 	}
 	osvc.flash.show({
 		id: "grpprf-"+nodes.join(""),
-		cl: "icon spark16",
+		cl: "icon chart16",
 		text: i18n.t("action_menu.node_perf"),
 		bgcolor: osvc.colors.link,
 		fn: function(id){

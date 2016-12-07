@@ -24,7 +24,7 @@ function quota_tabs(divid, options) {
 		// tab usage
 		i = o.register_tab({
 			"title": "node_tabs.stats",
-			"title_class": "icon spark16"
+			"title_class": "icon chart16"
 		})
 		o.tabs[i].callback = function(divid) {
 			services_osvcgetrest("R_ARRAY_DISKGROUP_QUOTA", [0, 0, o.options.quota_id], {"meta": "0"}, function(jd) {

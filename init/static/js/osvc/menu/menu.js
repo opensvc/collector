@@ -218,14 +218,14 @@ var menu_data = {
 	"statistic": [
 		{
 		  "title" : "reports",
-		  "class" : "spark16",
+		  "class" : "report16",
 		  "id" : "stat-reports",
 		  "link" : "/init/charts/reports",
 		  "fn" : "reports"
 		},
 		{
 		  "title" : "scheduler_stats",
-		  "class" : "spark16",
+		  "class" : "chart16",
 		  "id" : "stat-scheduler",
 		  "link" : "/init/stats/scheduler_stats",
                   "fn": "scheduler_stats"
@@ -336,21 +336,21 @@ var menu_data = {
 		},
 		{
 		  "title" : "metrics",
-		  "class" : "spark16",
+		  "class" : "metric16",
 		  "id" : "adm-metrics",
 		  "link" : "/init/charts/metrics_admin",
                   "fn": "table_metrics"
 		},
 		{
 		  "title" : "charts",
-		  "class" : "spark16",
+		  "class" : "chart16",
 		  "id" : "adm-charts",
 		  "link" : "/init/charts/charts_admin",
                   "fn": "table_charts"
 		},
 		{
 		  "title" : "reports",
-		  "class" : "spark16",
+		  "class" : "report16",
 		  "id" : "adm-reports",
 		  "link" : "/init/charts/reports_admin",
 		  "fn" : "table_reports"

@@ -33,7 +33,7 @@ function search_get_menu(fk)
         "title": "__report_name__",
         "short_title": "report_name",
         "menu_entry_id": "adm-reports",
-        "class": "spark16 fa-2x search-section-icon",
+        "class": "report16 fa-2x search-section-icon",
         "subclass": "meta_report clickable",
         "links": []
     },
@@ -45,7 +45,7 @@ function search_get_menu(fk)
         "title": "__chart_name__",
         "short_title": "__chart_name__",
         "menu_entry_id": "adm-charts",
-        "class": "spark16 fa-2x search-section-icon",
+        "class": "chart16 fa-2x search-section-icon",
         "subclass": "meta_chart clickable",
         "links": []
     },
@@ -57,7 +57,7 @@ function search_get_menu(fk)
         "title": "__metric_name__",
         "short_title": "__metric_name__",
         "menu_entry_id": "adm-metrics",
-        "class": "spark16 fa-2x search-section-icon",
+        "class": "metric16 fa-2x search-section-icon",
         "subclass": "meta_metric clickable",
         "links": []
     },

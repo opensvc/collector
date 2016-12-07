@@ -375,12 +375,12 @@ colprops = {
 	},
 	"chart": {
 		"_class": "saves_charts",
-		"img": "spark16",
+		"img": "chart16",
 		"title": "Chart"
 	},
 	"chart_name": {
 		"_class": "chart_name",
-		"img": "spark16",
+		"img": "chart16",
 		"title": "Name"
 	},
 	"chart_yaml": {
@@ -875,7 +875,7 @@ colprops = {
 	},
 	"fset_stats": {
 		"_class": "boolean",
-		"img": "spark16",
+		"img": "chart16",
 		"title": "Compute stats"
 	},
 	"fset_updated": {
@@ -1610,7 +1610,7 @@ colprops = {
 	},
 	"report_name": {
 		"_class": "report_name",
-		"img": "spark16",
+		"img": "report16",
 		"title": "Name"
 	},
 	"report_yaml": {
@@ -1885,11 +1885,11 @@ colprops = {
 		"title": "Config file"
 	},
 	"svc_flex_cpu_high_threshold": {
-		"img": "spark16",
+		"img": "chart16",
 		"title": "Flex cpu high threshold"
 	},
 	"svc_flex_cpu_low_threshold": {
-		"img": "spark16",
+		"img": "chart16",
 		"title": "Flex cpu low threshold"
 	},
 	"svc_flex_max_nodes": {

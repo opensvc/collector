@@ -123,7 +123,7 @@ var action_img_h = {
 	'check': 'check16',
 	'fixable': 'fixable16',
 	'fix': 'comp16',
-	'pushstats': 'spark16',
+	'pushstats': 'chart16',
 	'pushasset': 'node16',
 	'stopcontainer': 'action_stop_16',
 	'startcontainer': 'action_start_16',
@@ -936,7 +936,7 @@ function cell_decorator_comp_log(e, line) {
 	var module = $.data(line.find("[col=run_module]")[0], "v")
 	var svc_id = $.data(line.find("[col=svc_id]")[0], "v")
 	var node_id = $.data(line.find("[col=node_id]")[0], "v")
-	var div = $("<div class='icon spark16'></div>")
+	var div = $("<div class='icon chart16'></div>")
 	div
 	.addClass("a")
 	.addClass("nowrap")
@@ -954,7 +954,7 @@ function cell_decorator_comp_log(e, line) {
 
 function cell_decorator_comp_mod_log(e, line) {
 	var modname = $.data(line.find("[col=mod_name]")[0], "v")
-	var div = $("<div class='a nowrap icon spark16'></div>")
+	var div = $("<div class='a nowrap icon chart16'></div>")
 	div
 	e
 	.html(div)
@@ -973,7 +973,7 @@ function cell_decorator_comp_mod_log(e, line) {
 
 function cell_decorator_comp_node_log(e, line) {
 	var node_id = $.data(line.find("[col=node_id]")[0], "v")
-	var div = $("<div class='icon spark16 a nowrap'></div>")
+	var div = $("<div class='icon chart16 a nowrap'></div>")
 	e
 	.html(div)
 	.addClass("corner")
@@ -991,7 +991,7 @@ function cell_decorator_comp_node_log(e, line) {
 
 function cell_decorator_comp_svc_log(e, line) {
 	var svc_id = $.data(line.find("[col=svc_id]")[0], "v")
-	var div = $("<div class='icon spark16 a nowrap'></div>")
+	var div = $("<div class='icon chart16 a nowrap'></div>")
 	e
 	.html(div)
 	.addClass("corner")
@@ -1882,7 +1882,7 @@ function cell_decorator_resinfo_value(e, line) {
 	var _e = $("<span></span>")
 	_e.text(s)
 	if (is_numeric(s)) {
-		_e.addClass("icon spark16")
+		_e.addClass("icon chart16")
 		e
 		.addClass("corner clickable")
 		.bind("click", function() {

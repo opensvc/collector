@@ -152,7 +152,7 @@ function service_tabs(divid, options) {
 		// tab stats
 		i = o.register_tab({
 			"title": "service_tabs.container_stats",
-			"title_class": "icon spark16"
+			"title_class": "icon chart16"
 		})
 		o.tabs[i].callback = function(divid) {
 			services_osvcgetrest("R_SERVICE_NODES", [o.options.svc_id], {"filters": ["mon_vmname !empty"], "limit": "0", "props": "node_id,mon_vmname", "meta": "0"}, function(jd) {
@@ -190,7 +190,7 @@ function service_tabs(divid, options) {
 		// tab stats
 		i = o.register_tab({
 			"title": "service_tabs.stats",
-			"title_class": "icon spark16"
+			"title_class": "icon chart16"
 		})
 		o.tabs[i].callback = function(divid) {
 			services_osvcgetrest("R_SERVICE_NODES", [o.options.svc_id], {"limit": "0", "props": "node_id", "meta": "0"}, function(jd) {

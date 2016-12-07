@@ -43,7 +43,7 @@ function diskgroup_tabs(divid, options) {
 		// tab usage
 		i = o.register_tab({
 			"title": "node_tabs.stats",
-			"title_class": "icon spark16"
+			"title_class": "icon chart16"
 		})
 		o.tabs[i].callback = function(divid) {
 			$.ajax({

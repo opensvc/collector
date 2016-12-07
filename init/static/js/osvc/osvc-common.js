@@ -426,7 +426,7 @@ function osvc_show_link(url, title, title_args, fn, parameters) {
 	p.select()
 
 	// report snippet
-	var report_header = $("<div class='icon spark16 fa-2x' data-i18n='api.report_snippet'></div>")
+	var report_header = $("<div class='icon report16 fa-2x' data-i18n='api.report_snippet'></div>")
 	var report_subheader = $("<div style='color:lightgray' data-i18n='api.report_snippet_desc'></div>")
 	var snippet = $("<textarea style='height:15em'></textarea>")
 	e.append([report_header, report_subheader, snippet])
@@ -562,7 +562,7 @@ jQuery.fn.osvc_report = function(options) {
 		"options": options,
 		"name": "report_name",
 		"attr": "report_id",
-		"icon": "spark16",
+		"icon": osvc.icons.report,
 		"bgcolor": osvc.colors.stats,
 		"flash_id_prefix": "report-",
 		"fn": function(id, opts) {
@@ -576,7 +576,7 @@ jQuery.fn.osvc_chart = function(options) {
 		"options": options,
 		"name": "chart_name",
 		"attr": "chart_id",
-		"icon": "spark16",
+		"icon": osvc.icons.chart,
 		"bgcolor": osvc.colors.stats,
 		"flash_id_prefix": "chart-",
 		"fn": function(id, opts) {
@@ -590,7 +590,7 @@ jQuery.fn.osvc_metric = function(options) {
 		"options": options,
 		"name": "metric_name",
 		"attr": "metric_id",
-		"icon": "spark16",
+		"icon": osvc.icons.metric,
 		"bgcolor": osvc.colors.stats,
 		"flash_id_prefix": "metric-",
 		"fn": function(id, opts) {

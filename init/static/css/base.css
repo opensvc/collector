@@ -1900,9 +1900,17 @@ ul.login_menu ul {
 	color: orange;
 	content: '\f071';
 }
-.spark16:before {
+.metric16:before {
+	color: sandybrown;
+	content: '\f121';
+}
+.chart16:before {
 	color: sandybrown;
 	content: '\f201';
+}
+.report16:before {
+	color: sandybrown;
+	content: '\f200';
 }
 .values_to_filter:before {
 	content: '\f112';

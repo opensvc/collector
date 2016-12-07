@@ -5,7 +5,7 @@ function metric_tabs(divid, options) {
 	var o = tabs(divid)
 	o.options = options
 	o.options.bgcolor = osvc.colors.stats
-	o.options.icon = "spark16"
+	o.options.icon = osvc.icons.metric
 	o.link = {
 		"fn": arguments.callee.name,
 		"title": "format_title",
@@ -41,7 +41,7 @@ function metric_tabs(divid, options) {
 		// tab properties
 		i = o.register_tab({
 			"title": "metric_tabs.properties",
-			"title_class": "icon spark16"
+			"title_class": "icon metric16"
 		})
 		o.tabs[i].callback = function(divid) {
 			metric_properties(divid, o.options)

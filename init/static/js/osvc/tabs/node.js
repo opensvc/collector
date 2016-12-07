@@ -131,7 +131,7 @@ function node_tabs(divid, options) {
 		// tab stats
 		i = o.register_tab({
 			"title": "node_tabs.stats",
-			"title_class": "icon spark16"
+			"title_class": "icon chart16"
 		})
 		o.tabs[i].callback = function(divid) {
 			node_stats(divid, {
