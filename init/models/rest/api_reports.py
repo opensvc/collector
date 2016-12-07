@@ -751,6 +751,7 @@ class rest_get_report_export(rest_get_handler):
               "metric_col_value_index": row.metric_col_value_index,
               "metric_col_instance_index": row.metric_col_instance_index,
               "metric_col_instance_label": row.metric_col_instance_label,
+              "metric_historize": row.metric_historize,
             })
             metric_name[row.id] = row.metric_name
 
