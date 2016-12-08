@@ -31,7 +31,7 @@ function search_get_menu(fk)
         "color": "report",
         "id": "id",
         "title": "__report_name__",
-        "short_title": "report_name",
+        "short_title": "__report_name__",
         "menu_entry_id": "adm-reports",
         "class": "report16 fa-2x search-section-icon",
         "subclass": "meta_report clickable",
