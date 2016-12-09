@@ -3254,6 +3254,7 @@ input.ocb {
 	filter: alpha(opacity=0);
 	opacity: 0;
 	content: '\f00c';
+	font-family: FontAwesome;
 	min-width: 14px;
 	height: 14px;
 	background: transparent;
@@ -3267,6 +3268,7 @@ input.ocb {
 .ocb + label:hover::after {
 	-ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=30)";
 	content: '\f00c';
+	font-family: FontAwesome;
 	min-width: 14px;
 	height: 14px;
 	color: black;
