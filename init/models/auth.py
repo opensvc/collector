@@ -302,14 +302,14 @@ def user_group_ids(id=None):
     if auth.user.get("svc_id") is not None:
         q = db.services.svc_id == auth.user.svc_id
         q &= db.services.svc_app == db.apps.app
-        q &= db.apps_publications.app_id == db.apps.id
-        rows = db(q).select(db.apps_publications.group_id)
+        q &= db.apps_responsibles.app_id == db.apps.id
+        rows = db(q).select(db.apps_responsibles.group_id)
         return map(lambda x: x.group_id, rows) + [everybody_group_id()]
     if auth.user.get("node_id") is not None:
         q = db.nodes.node_id == auth.user.node_id
         q &= db.nodes.app == db.apps.app
-        q &= db.apps_publications.app_id == db.apps.id
-        rows = db(q).select(db.apps_publications.group_id)
+        q &= db.apps_responsibles.app_id == db.apps.id
+        rows = db(q).select(db.apps_responsibles.group_id)
         return map(lambda x: x.group_id, rows) + [everybody_group_id()]
     else:
         q = db.auth_membership.user_id==id
