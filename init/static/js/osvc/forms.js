@@ -1229,8 +1229,20 @@ function form(divid, options) {
 		}
 		if (content && (content.length > 0)) {
 			input.prop("acid", acid)
-			input.prop("option_data", option_data)
-			input.val(content)
+			if (d.Format != d.Value) {
+				for (var j=0; j<opts.length; j++) {
+					if (opts[j].id != content) {
+						continue
+					}
+					input.prop("option_data", content)
+					input.val(opts[j].label)
+					break
+				}
+			}
+			if (!input.val()) {
+				input.prop("option_data", option_data)
+				input.val(content)
+			}
 		}
 		input.change()
 	}

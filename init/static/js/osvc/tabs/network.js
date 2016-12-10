@@ -28,7 +28,7 @@ function network_tabs(divid, options) {
 			"title_class": "icon net16"
 		})
 		o.tabs[i].callback = function(divid) {
-			sync_ajax("/init/networks/segments/"+o.options.network_id, [], divid, function(){})
+			table_network_segments_network(divid, o.options.network_id)
 		}
 
 		o.set_tab(o.options.tab)

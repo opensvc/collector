@@ -64,6 +64,8 @@
 		"import": "Import"
 	},
 	"action_menu": {
+		"on_network_segments": "On network segments",
+		"network_segment": "Network Segment",
 		"toggle_display": "Fold / Unfold",
 		"docker_registry": "Docker registry",
 		"metric": "Metric",
@@ -274,6 +276,7 @@
 			"column": "Column __col__ filter:"
 		},
 		"name": {
+			"network_segments": "Network segments",
 			"registries": "Docker registries",
 			"safe": "Safe",
 			"action_queue": "Action queue",
@@ -1394,6 +1397,11 @@
 		"hidden_menu_entries": "hidden menu entries"
 	},
 	"col": {
+		"Segment Id": "Segment Id",
+		"Segment Type": "Segment Type",
+		"Segment Begin": "Segment Begin",
+		"Segment End": "Segment End",
+		"Net Id": "Net Id",
 		"Registry id": "Registry Id",
 		"Registry service": "Registry service",
 		"Registry updated": "Registry updated",

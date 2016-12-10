@@ -163,6 +163,8 @@ function table_action_menu_init_data(t) {
 		"vmname": "[col=vmname]",
 		"action": "[col=action]",
 		"id": "[col=id]",
+		"net_id": "[col=net_id]",
+		"seg_id": "[col=seg_id]",
 		"fset_id": "[col=fset_id]",
 		"encap_fset_id": "[col=encap_fset_id]",
 		"f_id": "[col=f_id]",
@@ -377,6 +379,13 @@ function table_action_menu_init_data(t) {
 							"title": "action_menu.network",
 							"class": "net16",
 							"fn": "data_action_add_network",
+							"privileges": ["Manager", "NetworkManager"],
+							"min": 0
+						},
+						{
+							"title": "action_menu.network_segment",
+							"class": "net16",
+							"fn": "data_action_add_network_segment",
 							"privileges": ["Manager", "NetworkManager"],
 							"min": 0
 						},
@@ -902,6 +911,24 @@ function table_action_menu_init_data(t) {
 							"title": "action_menu.delete",
 							"class": "del16",
 							"fn": "data_action_delete_networks",
+							"privileges": ["Manager", "NetworkManager"],
+							"min": 1
+						}
+					]
+				},
+				{
+					"selector": ["clicked", "checked", "all"],
+					"title": "action_menu.on_network_segments",
+					"class": "net16",
+					"table": ["network_segments"],
+					"foldable": true,
+					"cols": ["net_id", "seg_id"],
+					"condition": "net_id+seg_id",
+					"children": [
+						{
+							"title": "action_menu.delete",
+							"class": "del16",
+							"fn": "data_action_delete_networks_segments",
 							"privileges": ["Manager", "NetworkManager"],
 							"min": 1
 						}
@@ -3150,6 +3177,24 @@ function data_action_add_dns_record(t, e) {
 }
 
 //
+// data action: add network segment
+//
+function data_action_add_network_segment(t, e) {
+	var entry = $(e.target)
+	var net_id = t.options.id.replace(/network_segments_/, "")
+	if (!is_numeric(net_id)) {
+		net_id = ""
+	}
+
+	// create and focus tool area
+	table_action_menu_focus_on_leaf(t, entry)
+	var div = $("<div></div>")
+	div.uniqueId()
+	div.insertAfter(entry)
+	form(div.attr("id"), {"form_name": "add_network_segment", "data": {"net_id": net_id}})
+}
+
+//
 // data action: add app publications
 //
 function data_action_add_app_publication(t, e) {
@@ -3781,6 +3826,21 @@ function data_action_add_network(t, e) {
 				"placeholder": "24"
 			}
 		]
+	})
+}
+
+//
+// data action: delete networks segments
+//
+function data_action_delete_networks_segments(t, e) {
+	data_action_generic_delete(t, e, {
+		"request_service": "/networks/segments",
+		"request_data_entry": function(data) {
+			return {
+				'net_id': data['net_id'],
+				'seg_id': data['seg_id']
+			}
+		}
 	})
 }
 

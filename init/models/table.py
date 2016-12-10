@@ -32,6 +32,9 @@ class HtmlTableColumn(object):
         self.filter_redirect = filter_redirect
         self.force_filter = force_filter
 
+    def __repr__(self):
+        return str(self.as_dict())
+
     def __str__(self):
         return str(self.as_dict())
 

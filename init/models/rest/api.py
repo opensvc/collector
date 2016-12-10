@@ -536,6 +536,7 @@ def get_delete_handlers(prefix=None):
              "rest_delete_ip",
         ],
         "networks": [
+             "rest_delete_networks_segments",
              "rest_delete_network",
              "rest_delete_networks",
              "rest_delete_network_segment",
@@ -977,7 +978,7 @@ class rest_handler(object):
 
     def handle(self, *args, **vars):
         if "local" not in self.replication and "relay" not in self.replication:
-             return {"ret": 1, "error": "both local and remote handler skipped"}
+            return {"ret": 1, "error": "both local and remote handler skipped"}
 
         result = {}
 

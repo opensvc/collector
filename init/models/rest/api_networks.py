@@ -405,6 +405,33 @@ class rest_post_network(rest_post_handler):
 
 
 #
+class rest_delete_networks_segments(rest_delete_handler):
+    def __init__(self):
+        desc = [
+          "Delete networks segments",
+          "A segment is an ip range suppporting management delegation and ip provisioning properties.",
+          "Attached responsible group are also detached.",
+          "The NetworkManager privilege is required.",
+          "The segment's parent network ownership is required.",
+        ]
+        examples = [
+          """# curl -u %(email)s -o- -X DELETE https://%(collector)s/init/rest/api/networks/segments""",
+        ]
+        rest_delete_handler.__init__(
+          self,
+          path="/networks/segments",
+          desc=desc,
+          examples=examples
+        )
+
+    def handler(self, **vars):
+        if "net_id" not in vars:
+            raise Exception("the 'net_id' parameter is required")
+        if "seg_id" not in vars:
+            raise Exception("the 'seg_id' parameter is required")
+        return rest_delete_network_segment().handler(vars["net_id"], vars["seg_id"])
+
+#
 class rest_delete_network_segment(rest_delete_handler):
     def __init__(self):
         desc = [
@@ -445,6 +472,7 @@ class rest_delete_network_segment(rest_delete_handler):
              'delete segment %(s)s of network %(n)s',
              dict(s="-".join((seg.seg_begin, seg.seg_end)), n="/".join((net.network, str(net.netmask))))
             )
+        ws_send("network_segments_delete", {"seg_id": seg_id})
         return dict(info='deleted segment %(s)s of network %(n)s' % dict(s="-".join((seg.seg_begin, seg.seg_end)), n="/".join((net.network, str(net.netmask)))))
 
 #
@@ -469,6 +497,7 @@ class rest_post_network_segments(rest_post_handler):
           path="/networks/<id>/segments",
           desc=desc,
           tables=["network_segments"],
+          props_blacklist=["net_id", "id"],
           examples=examples
         )
 
@@ -491,6 +520,7 @@ class rest_post_network_segments(rest_post_handler):
              'create segment of network %(n)s with properties %(data)s',
              dict(n="/".join((row.network, str(row.netmask))), data=str(vars))
             )
+        ws_send("network_segments_change", {"seg_id": seg_id})
         return rest_get_network_segment().handler(net_id, seg_id)
 
     def ip2long(self, s):

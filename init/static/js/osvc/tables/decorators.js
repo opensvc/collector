@@ -441,14 +441,15 @@ function cell_decorator_docker_registry(e, line) {
 
 function cell_decorator_network(e, line) {
 	var v = $.data(e[0], "v")
+	var name = $.data(line.children("[col=name]")[0], "v")
 	e
 	.html("<span class='clickable'>"+v+"</span>")
 	.addClass("corner-top")
 	.click(function(){
-		var net_id = $.data(line.children("[col=id]")[0], "v")
+		var net_id = $.data(line.children("[col=id],[col=net_id]")[0], "v")
 		osvc.flash.show({
 			id: "net-"+net_id,
-			text: v, 
+			text: name, 
 			cl: "icon net16",
 			bgcolor: osvc.colors.net,
 			fn: function(id){network_tabs(id, {"network_id": net_id})}

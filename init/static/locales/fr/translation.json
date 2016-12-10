@@ -64,6 +64,8 @@
 		"import": "Import"
 	},
 	"action_menu": {
+		"on_network_segments": "Sur les segment de réseau",
+		"network_segment": "Segment de réseau",
 		"toggle_display": "Déplier / Replier",
 		"docker_registry": "Registre docker",
 		"metric": "Métrique",
@@ -274,6 +276,7 @@
 			"column": "Filtre de la colonne __col__:"
 		},
 		"name": {
+			"network_segments": "Segments de réseau",
 			"registries": "Registres docker",
 			"safe": "Coffre-fort",
 			"action_queue": "File d'attente des actions",
@@ -1394,6 +1397,10 @@
 		"hidden_menu_entries": "entrées cachées du menu"
 	},
 	"col": {
+		"Segment Id": "Segment Id",
+		"Segment Type": "Segment Type",
+		"Segment Begin": "Segment Begin",
+		"Segment End": "Segment End",
 		"Registry id": "Id du registre",
 		"Registry service": "Service du registre",
 		"Registry updated": "Mise à jour du registre",

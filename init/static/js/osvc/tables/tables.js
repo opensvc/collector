@@ -1191,6 +1191,39 @@ function table_networks(divid, options) {
 	return table_init(_options)
 }
 
+function table_network_segments(divid, options) {
+	var defaults = {
+		'divid': divid,
+		'caller': "table_network_segments",
+		'id': "network_segments",
+		'name': "network_segments",
+		'icon': "net16",
+		'ajax_url': '/init/networks/ajax_network_segments',
+		'span': ['seg_id'],
+		'force_cols': ['seg_id', 'net_id'],
+		'columns': ["seg_id", "seg_type", "seg_begin", "seg_end", "net_id", "name", "pvid", "network", "broadcast", "netmask", "gateway", "begin", "end", "prio", "team_responsible", "comment", "updated"],
+		'default_columns': ["seg_type", "seg_begin", "seg_end", "name", "pvid", "network", "netmask", "team_responsible", "comment", "updated"],
+		'wsable': true,
+		'events': ['network_segments_change', 'network_segments_delete']
+	}
+	var _options = $.extend({}, defaults, options)
+	return table_init(_options)
+}
+
+function table_network_segments_network(divid, network_id) {
+	var id = "network_segments_" + network_id
+	var f_net_id = id+"_f_net_id"
+	var request_vars = {}
+	request_vars[f_net_id] = network_id
+	return table_network_segments(divid, {
+		"id": id,
+		"caller": "table_network_segments_network",
+		"hide_cols": ['net_id'],
+		"request_vars": request_vars,
+		"volatile_filters": true
+	})
+}
+
 function table_nodenetworks(divid, options) {
 	var defaults = {
 		'divid': divid,

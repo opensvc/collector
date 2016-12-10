@@ -1312,6 +1312,22 @@ colprops = {
 		"img": "repl16",
 		"title": "Need resync"
 	},
+	"seg_id": {
+		"img": "key",
+		"title": "Segment Id"
+	},
+	"seg_type": {
+		"img": "net16",
+		"title": "Segment Type"
+	},
+	"seg_begin": {
+		"img": "net16",
+		"title": "Segment Begin"
+	},
+	"seg_end": {
+		"img": "net16",
+		"title": "Segment End"
+	},
 	"net_begin": {
 		"_dataclass": "bluer",
 		"img": "net16",

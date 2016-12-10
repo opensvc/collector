@@ -367,7 +367,6 @@ def output_db(output, form_definition, _d=None):
         log.append((1, "form.submit", "Data insertion in database table error: %(err)s", dict(err=str(e))))
     return log
 
-
 def output_rest(output, form_definition, _d=None, _results=None):
     import re
     import gluon.contrib.simplejson as sjson
@@ -398,7 +397,7 @@ def output_rest(output, form_definition, _d=None, _results=None):
             >>> get_val(d, "a.b.c")
             foo
         """
-        if type(c) == str:
+        if type(v) == str:
             v = v.split(".")
         for key in v:
             if key not in d:
@@ -433,11 +432,13 @@ def output_rest(output, form_definition, _d=None, _results=None):
             raise Exception(out)
         return json.loads('\n'.join(l))
 
-    # prepare the rest url
+    # prepare the rest url and args
+    args = ['']
     for s in re.findall("#[\.\w]+", url):
         k = s.lstrip("#")
-        val = get_val(_d, k)
+        val = str(get_val(_d, k))
         url = url.replace(s, val)
+        args.append(val)
 
     # mangle the form data if a mangler is defined
     if mangler is None:
@@ -452,11 +453,15 @@ def output_rest(output, form_definition, _d=None, _results=None):
     # find the rest handler and execute the call
     handler = get_handler(action, url)
 
+    for k in handler.props_blacklist:
+        if k in vars:
+            del(vars[k])
+
     try:
         if type(vars) == list:
             jd = handler.handle_list(vars, url, {})
         else:
-            jd = handler.handle(url, **vars)
+            jd = handler.handle(*args, **vars)
         if output_id and "data" in jd:
             _results[output_id] = jd["data"]
         log.append((
