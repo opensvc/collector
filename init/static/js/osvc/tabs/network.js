@@ -64,6 +64,7 @@ function network_properties(divid, options) {
 		o.info_prio = o.div.find("#prio")
 
 		// non updateable
+		o.info_id = o.div.find("#id")
 		o.info_begin = o.div.find("#begin")
 		o.info_end = o.div.find("#end")
 		o.info_broadcast = o.div.find("#broadcast")
@@ -79,6 +80,7 @@ function network_properties(divid, options) {
 	}
 
 	o._load_network = function(data) {
+		o.info_id.html(data.id)
 		o.info_pvid.html(data.pvid)
 		o.info_network.html(data.network)
 		o.info_netmask.html(data.netmask)
