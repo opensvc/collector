@@ -25,7 +25,7 @@ function network_tabs(divid, options) {
 		}
 		i = o.register_tab({
 			"title": "network_tabs.segments",
-			"title_class": "icon net16"
+			"title_class": "icon segment16"
 		})
 		o.tabs[i].callback = function(divid) {
 			table_network_segments_network(divid, o.options.network_id)

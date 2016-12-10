@@ -1317,15 +1317,15 @@ colprops = {
 		"title": "Segment Id"
 	},
 	"seg_type": {
-		"img": "net16",
+		"img": "segment16",
 		"title": "Segment Type"
 	},
 	"seg_begin": {
-		"img": "net16",
+		"img": "segment16",
 		"title": "Segment Begin"
 	},
 	"seg_end": {
-		"img": "net16",
+		"img": "segment16",
 		"title": "Segment End"
 	},
 	"net_begin": {

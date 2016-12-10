@@ -1197,7 +1197,7 @@ function table_network_segments(divid, options) {
 		'caller': "table_network_segments",
 		'id': "network_segments",
 		'name': "network_segments",
-		'icon': "net16",
+		'icon': "segment16",
 		'ajax_url': '/init/networks/ajax_network_segments',
 		'span': ['seg_id'],
 		'force_cols': ['seg_id', 'net_id'],

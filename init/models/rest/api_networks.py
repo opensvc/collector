@@ -516,6 +516,9 @@ class rest_post_network_segments(rest_post_handler):
 
         self.validate_range(net_id, vars)
         seg_id = db.network_segments.insert(**vars)
+        db.network_segment_responsibles.insert(seg_id=seg_id,
+                                               group_id=user_primary_group())
+
         _log('networks.segment.create',
              'create segment of network %(n)s with properties %(data)s',
              dict(n="/".join((row.network, str(row.netmask))), data=str(vars))

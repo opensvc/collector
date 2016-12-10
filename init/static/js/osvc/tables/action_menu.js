@@ -384,7 +384,7 @@ function table_action_menu_init_data(t) {
 						},
 						{
 							"title": "action_menu.network_segment",
-							"class": "net16",
+							"class": "segment16",
 							"fn": "data_action_add_network_segment",
 							"privileges": ["Manager", "NetworkManager"],
 							"min": 0
@@ -919,7 +919,7 @@ function table_action_menu_init_data(t) {
 				{
 					"selector": ["clicked", "checked", "all"],
 					"title": "action_menu.on_network_segments",
-					"class": "net16",
+					"class": "segment16",
 					"table": ["network_segments"],
 					"foldable": true,
 					"cols": ["net_id", "seg_id"],

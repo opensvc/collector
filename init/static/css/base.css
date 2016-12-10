@@ -1952,6 +1952,10 @@ ul.login_menu ul {
 .repl16:before {
 	content: '\f0ec';
 }
+.segment16:before {
+	color: cadetblue;
+	content: '\f1dd';
+}
 .net16:before {
 	color: cadetblue;
 	content: '\f0ec';
