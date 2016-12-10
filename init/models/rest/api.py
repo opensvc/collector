@@ -537,6 +537,7 @@ def get_delete_handlers(prefix=None):
         ],
         "networks": [
              "rest_delete_networks_segments",
+             "rest_delete_networks_segments_responsibles",
              "rest_delete_network",
              "rest_delete_networks",
              "rest_delete_network_segment",
@@ -739,6 +740,7 @@ def get_post_handlers(prefix=None):
              "rest_post_logs",
         ],
         "networks": [
+             "rest_post_networks_segments_responsibles",
              "rest_post_networks",
              "rest_post_network",
              "rest_post_network_segment",

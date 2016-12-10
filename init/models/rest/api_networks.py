@@ -325,6 +325,25 @@ class rest_post_network_segment_responsible(rest_post_handler):
              dict(r=role, u='-'.join((row.seg_begin, row.seg_end))))
         return dict(info="attached group %(r)s to network segment %(u)s" % dict(r=role, u='-'.join((row.seg_begin, row.seg_end))))
 
+class rest_post_networks_segments_responsibles(rest_post_handler):
+    def __init__(self):
+        desc = [
+          "Attach responsible groups to network segments.",
+          "A segment is an ip range suppporting management delegation and ip provisioning properties.",
+          "Members of responsible groups are allowed to allocate ips in the segment",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- -X POST https://%(collector)s/init/rest/api/networks/segments_responsibles",
+        ]
+        rest_post_handler.__init__(
+          self,
+          path="/networks/segments_responsibles",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, **vars):
+        return rest_post_network_segment_responsible().handler(vars["net_id"], vars["seg_id"], vars["group_id"])
 
 #
 class rest_delete_network_segment_responsible(rest_delete_handler):
@@ -363,6 +382,26 @@ class rest_delete_network_segment_responsible(rest_delete_handler):
              'detached group %(r)s from network segment %(u)s',
              dict(r=role, u='-'.join((row.seg_begin, row.seg_end))))
         return dict(info="detached group %(r)s from network segment %(u)s" % dict(r=role, u='-'.join((row.seg_begin, row.seg_end))))
+
+class rest_delete_networks_segments_responsibles(rest_delete_handler):
+    def __init__(self):
+        desc = [
+          "Detach responsible groups from network segments.",
+          "A segment is an ip range suppporting management delegation and ip provisioning properties.",
+          "Members of responsible groups are allowed to allocate ips in the segment",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- -X DELETE https://%(collector)s/init/rest/api/networks/segments_responsibles",
+        ]
+        rest_delete_handler.__init__(
+          self,
+          path="/networks/segments_responsibles",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, **vars):
+        return rest_delete_network_segment_responsible().handler(vars["net_id"], vars["seg_id"], vars["group_id"])
 
 
 #

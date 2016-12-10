@@ -926,6 +926,20 @@ function table_action_menu_init_data(t) {
 					"condition": "net_id+seg_id",
 					"children": [
 						{
+							"title": "action_menu.add_responsible",
+							"class": "add16",
+							"fn": "data_action_add_networks_segments_responsible",
+							"privileges": ["Manager", "NetworkManager"],
+							"min": 1
+						},
+						{
+							"title": "action_menu.del_responsible",
+							"class": "del16",
+							"fn": "data_action_del_networks_segments_responsible",
+							"privileges": ["Manager", "NetworkManager"],
+							"min": 1
+						},
+						{
 							"title": "action_menu.delete",
 							"class": "del16",
 							"fn": "data_action_delete_networks_segments",
@@ -3826,6 +3840,42 @@ function data_action_add_network(t, e) {
 				"placeholder": "24"
 			}
 		]
+	})
+}
+
+//
+// data action: add networks_segments responsibles
+//
+function data_action_add_networks_segments_responsible(t, e) {
+	data_action_generic_selector(t, e, {
+		"requestor": services_osvcpostrest,
+		"request_service": "/networks/segments_responsibles",
+		"selector": generic_selector_org_groups,
+		"request_data_entry": function(selected, data) {
+			return {
+				"group_id": selected,
+				"seg_id": data["seg_id"],
+				"net_id": data["net_id"]
+			}
+		}
+	})
+}
+
+//
+// data action: del networks_segments responsible
+//
+function data_action_del_networks_segments_responsible(t, e) {
+	data_action_generic_selector(t, e, {
+		"requestor": services_osvcdeleterest,
+		"request_service": "/networks/segments_responsibles",
+		"selector": generic_selector_org_groups,
+		"request_data_entry": function(selected, data) {
+			return {
+				"group_id": selected,
+				"seg_id": data["seg_id"],
+				"net_id": data["net_id"]
+			}
+		}
 	})
 }
 
