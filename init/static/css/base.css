@@ -70,9 +70,11 @@ input.aci, input.aci:focus {
 }
 .toggle-on:before {
 	content: '\f205';
+	font-family: FontAwesome;
 }
 .toggle-off:before {
 	content: '\f204';
+	font-family: FontAwesome;
 }
 
 .minute:before {
