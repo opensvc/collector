@@ -3386,6 +3386,7 @@ textarea.link_ta_sub {
 .editable:after {
 	content: '\f040';
 	padding-left: 0.3em;
+	font-family: FontAwesome;
 }
 
 .oi {
