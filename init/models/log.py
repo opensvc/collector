@@ -41,11 +41,10 @@ def _log(action, fmt, d, user=None, svc_id="", level="info", node_id=""):
             user = "agent"
         elif svc_id != "":
             user = "agent"
-    if user == "agent" and (node_id is None or node_id == ""):
-        try:
-            node_id = auth.user.node_id
-        except:
-            pass
+    if hasattr(auth.user, "node_id") and node_id is "":
+        node_id = auth.user.node_id
+    if hasattr(auth.user, "svc_id") and svc_id is "":
+        svc_id = auth.user.svc_id
 
     logger = logging.getLogger("web2py.app.init.log")
     logger.setLevel(logging.DEBUG)
