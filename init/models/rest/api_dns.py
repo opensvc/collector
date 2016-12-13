@@ -1,6 +1,36 @@
+def create_zone(zone):
+    domain_type = "MASTER"
+    data = {
+        "name": zone,
+        "type": domain_type,
+    }
+    domain_id = dbdns.domains.insert(**data)
+
+    _log('dns.domains.create',
+         'domain %(name)s %(type)s auto created by dns update',
+         dict(name=zone, type=domain_type),
+        )
+    ws_send('pdns_domains_change')
+
+    # SOA
+    data = {
+        "name": zone,
+        "type": "SOA",
+        "content": config_get("dns_default_soa_content", config_get("dbopensvc", "")),
+        "ttl": 86400,
+        "domain_id": domain_id,
+        "change_date": int((datetime.datetime.now()-datetime.datetime(1970, 1, 1)).total_seconds())
+    }
+    dbdns.records.insert(**data)
+
+    fmt = 'record %(name)s %(type)s %(content)s created in domain %(domain)s'
+    d = dict(name=data["name"], type=data["type"], content=data["content"], domain=zone)
+    _log('dns.records.create', fmt, d)
+    ws_send('pdns_records_change')
+
 def sanitize_dns_name(name):
     name = name.lower()
-    name = re.sub(r'[^a-z\.]', '-', name)
+    name = re.sub(r'[^a-z0-9\.]', '-', name)
     return name
 
 def get_dns_domain(zone):
@@ -274,8 +304,8 @@ class rest_post_dns_domains(rest_post_handler):
         raise_on_error(response)
         row = dbdns(q).select().first()
         _log('dns.domains.create',
-             'record %(name)s %(type)s created. data %(data)s',
-             dict(name=row.name, type=row.type, data=str(vars)),
+             'domain %(name)s %(type)s created',
+             dict(name=row.name, type=row.type),
             )
         ws_send('pdns_domains_change')
         return rest_get_dns_domain().handler(row.id)
@@ -391,23 +421,29 @@ class rest_post_dns_services_records(rest_post_handler):
         if "content" not in vars:
             raise Exception("The 'content' key is mandatory")
 
+        # short record name
+        name = auth.user.svcname.split(".")[0]
+        instance_name = vars.get("name")
+        if instance_name and len(instance_name) > 0:
+            name = name + "-" + instance_name
+        name = sanitize_dns_name(name)
+
         # domain
         zone = config_get("dns_managed_zone", "opensvc")
         zone = zone.rstrip(".")
+        zone = auth.user.svc_app + "." + zone
+        zone = sanitize_dns_name(zone)
         domain = get_dns_domain(zone)
         if domain is None:
-            raise Exception("The collector's defined managed zone '%s' does not exist" % zone)
+            create_zone(zone)
+            domain = get_dns_domain(zone)
+        if domain is None:
+            raise Exception("failed to create the %s zone" % zone)
 
-        # record name
-        basesvcname = auth.user.svcname.split(".")[0]
-        app = auth.user.svc_app
-        suffix = [basesvcname, app]
-        instance_name = vars.get("name")
-        if instance_name and len(instance_name) > 0:
-            name = ".".join([name] + suffix)
-        else:
-            name = ".".join(suffix)
-        name = sanitize_dns_name(name)
+        # full record name
+        name = name + "." + zone
+
+        # content
         content = vars["content"]
 
         # record type
