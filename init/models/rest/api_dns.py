@@ -392,9 +392,7 @@ class rest_post_dns_services_records(rest_post_handler):
             raise Exception("The 'content' key is mandatory")
 
         # domain
-        zone = config_get("dns_managed_zone")
-        if zone is None:
-            raise Exception("The collector has no managed zone")
+        zone = config_get("dns_managed_zone", "opensvc")
         zone = zone.rstrip(".")
         domain = get_dns_domain(zone)
         if domain is None:
