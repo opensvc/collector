@@ -1,14 +1,14 @@
-def node_svc_id(node_id, svcname):
+def node_svc(node_id, svcname):
     if svcname is None:
-        return ""
+        return
     svcname = svcname.strip("'")
     if svcname == "" or svcname is None:
-        return ""
+        return
     q = db.services.svcname == svcname
     q &= db.services.svc_app == db.apps.app
     q &= db.apps.id == db.apps_responsibles.app_id
     q &= db.apps_responsibles.group_id.belongs(node_responsibles(node_id))
-    rows = db(q).select(db.services.svc_id, groupby=db.services.svc_id)
+    rows = db(q).select(db.services.svc_id, db.services.svc_app, groupby=db.services.svc_id)
     if len(rows) > 1:
         raise Exception("multiple services found matching the service name '%(svcname)s' in the node '%(node_id)s' responsibility zone: %(svc_ids)s" % dict(
           svcname=svcname,
@@ -17,7 +17,7 @@ def node_svc_id(node_id, svcname):
         ))
 
     if len(rows) == 1:
-        return rows.first().svc_id
+        return rows.first()
 
     #
     # no service was found in the node's responsability zone.
@@ -27,15 +27,21 @@ def node_svc_id(node_id, svcname):
     q = db.svcmon.node_id == node_id
     q &= db.svcmon.svc_id == db.services.svc_id
     q &= db.services.svcname == svcname
-    rows = db(q).select(db.services.svc_id)
+    rows = db(q).select(db.services.svc_id, db.services.svc_app)
 
     if len(rows) >= 1:
-        return rows.first().svc_id
+        return rows.first()
 
     if len(rows) == 0:
         return create_svc(node_id, svcname)
 
-    return rows.first().svc_id
+    return rows.first()
+
+def node_svc_id(node_id, svcname):
+    svc = node_svc(node_id, svcname)
+    if svc is None:
+        return ""
+    return svc.svc_id
 
 def create_svc(node_id, svcname):
     node = get_node(node_id)
@@ -48,7 +54,7 @@ def create_svc(node_id, svcname):
       "updated": datetime.datetime.now()
     }
     db.services.insert(**data)
-    return data["svc_id"]
+    return data
 
 def node_responsibles(node_id):
     q = db.nodes.node_id == node_id

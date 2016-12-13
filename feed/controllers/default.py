@@ -71,11 +71,19 @@ def rpc_end_action(vars, vals, auth):
 
 @service.xmlrpc
 def update_appinfo(vars, vals, auth):
-    # compat with old agents
+    """
+    'svcmgr push resinfo' data feeder.
+
+    Compatibilty entrypoint with old agents.
+    The up-to-date entrypoint is update_resinfo.
+    """
     return rpc_update_resinfo(vars, vals, auth)
 
 @service.xmlrpc
 def update_resinfo(vars, vals, auth):
+    """
+    'svcmgr push resinfo' data feeder.
+    """
     return rpc_update_resinfo(vars, vals, auth)
 
 @auth_uuid

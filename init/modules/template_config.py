@@ -15,6 +15,10 @@ dbdns_host = "dbopensvc"
 dbdns_user = "opensvc"
 dbdns_password = "opensvc"
 
+# the dns zone whose records the collector manages
+dns_managed_zone = "opensvc.dom.net"
+dns_default_ttl = 120
+
 # connection to the redis
 redis_host = "dbopensvc"
 

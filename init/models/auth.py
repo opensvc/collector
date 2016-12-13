@@ -483,7 +483,13 @@ class MyAuth(Auth):
             if "@" in username:
                 svcname, nodename = username.split("@")
                 node_id = auth_to_node_id([password, nodename])
-                svc_id = node_svc_id(node_id, svcname)
+                svc = node_svc(node_id, svcname)
+                if svc:
+                    svc_id = svc.svc_id
+                    svc_app = svc.svc_app
+                else:
+                    svc_id = None
+                    svc_app = None
             else:
                 nodename = username
                 svcname = None
@@ -492,8 +498,12 @@ class MyAuth(Auth):
 
             self.user.email = "root@"+nodename
             self.user.nodename = nodename
+            self.user.svcname = svcname
             self.user.node_id = node_id
             self.user.svc_id = svc_id
+            self.user.svc_app = svc_app
+
+            # compat with individual user properties
             self.user.first_name = svcname
             self.user.last_name = nodename
         return r

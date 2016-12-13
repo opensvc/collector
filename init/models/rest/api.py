@@ -699,6 +699,7 @@ def get_post_handlers(prefix=None):
              "rest_post_dns_domain",
              "rest_post_dns_records",
              "rest_post_dns_record",
+             "rest_post_dns_services_records",
         ],
         "filters": [
              "rest_post_filters",

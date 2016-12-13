@@ -1,12 +1,28 @@
+def sanitize_dns_name(name):
+    name = name.lower()
+    name = re.sub(r'[^a-z\.]', '-', name)
+    return name
+
+def get_dns_domain(zone):
+    q = dbdns.domains.name == zone
+    return dbdns(q).select().first()
 
 def raise_on_error(response):
     if response.errors:
         s = ", ".join(map(lambda x: ": ".join(x), response.errors.items()))
         raise Exception(s)
 
+def addr_from_reverse(name):
+    addr = name.split(".in-addr.")[0]
+    v = addr.split(".")
+    v.reverse()
+    addr = ".".join(v)
+    return addr
+
 def dns_record_responsible(row, current={}):
-    if "Manager" in user_groups():
+    if not hasattr(auth.user, "node_id") and "Manager" in user_groups():
         return
+    group_ids = user_group_ids()
     t = row.get("type")
     if t is None:
         t = current.get("type")
@@ -23,22 +39,18 @@ def dns_record_responsible(row, current={}):
     if t in ("A", "AAAA"):
         addr = content
     elif t in ("PTR"):
-        addr = name.split(".in-addr.")[0]
-        v = addr.split(".")
-        v.reverse()
-        addr = ".".join(v)
+        addr = addr_from_reverse(name)
     else:
         raise Exception("Manager privilege required to handle the %s record type"%t)
     sql = """
       select networks.id from
       networks, auth_group, auth_membership, auth_user where
-        auth_user.id=%(user_id)d and
-        auth_user.id=auth_membership.user_id and
-        auth_membership.group_id=auth_group.id and
+        auth_group.id in (%(group_ids)s) and
         auth_group.role=networks.team_responsible and
         inet_aton("%(addr)s") >= inet_aton(networks.begin) and
         inet_aton("%(addr)s") <= inet_aton(networks.end)
-    """ % dict(addr=addr, user_id=auth.user_id)
+    """ % dict(addr=addr, user_id=auth.user_id,
+               group_ids = ','.join([repr(str(gid)) for gid in group_ids]))
     networks = db.executesql(sql)
     if len(networks) > 0:
         return
@@ -46,15 +58,12 @@ def dns_record_responsible(row, current={}):
     sql = """
       select network_segments.id from
       network_segments, networks, network_segment_responsibles, auth_group, auth_membership, auth_user where
-        auth_user.id=%(user_id)d and
-        auth_user.id=auth_membership.user_id and
-        auth_membership.group_id=auth_group.id and
-        auth_group.role=networks.team_responsible and
-        networks.id=network_segments.net_id and
+        network_segment_responsibles.group_id in (%(group_ids)s) and
         network_segments.id=network_segment_responsibles.seg_id and
         inet_aton("%(addr)s") >= inet_aton(network_segments.seg_begin) and
         inet_aton("%(addr)s") <= inet_aton(network_segments.seg_end)
-    """ % dict(addr=addr, user_id=auth.user_id)
+    """ % dict(addr=addr, user_id=auth.user_id,
+               group_ids = ','.join([repr(str(gid)) for gid in group_ids]))
     segments = db.executesql(sql)
     if len(segments) > 0:
         return
@@ -237,7 +246,7 @@ class rest_post_dns_domains(rest_post_handler):
           "Create a dns domain.",
           "The user must be in the DnsManager privilege group.",
           "The action is logged in the collector's log.",
-          "A websocket event is sent to announce the change in the nodes table.",
+          "A websocket event is sent to announce the change in the dns domains table.",
         ]
         examples = [
           """# curl -u %(email)s -o- -X POST -d name="opensvc.com" -d type=MASTER https://%(collector)s/init/rest/api/dns/domains""",
@@ -279,7 +288,7 @@ class rest_post_dns_domain(rest_post_handler):
           "Change a dns domain.",
           "The user must be in the DnsManager privilege group.",
           "The action is logged in the collector's log.",
-          "A websocket event is sent to announce the change in the nodes table.",
+          "A websocket event is sent to announce the change in the dns domains table.",
         ]
         examples = [
           """# curl -u %(email)s -o- -X POST -d master="foo" https://%(collector)s/init/rest/api/dns/domains/10""",
@@ -317,7 +326,7 @@ class rest_post_dns_records(rest_post_handler):
           "The user must be responsible for the ip address network or segment.",
           "The user must be in the DnsOperator privilege group.",
           "The action is logged in the collector's log.",
-          "A websocket event is sent to announce the change in the nodes table.",
+          "A websocket event is sent to announce the change in the dns records table.",
         ]
         examples = [
           """# curl -u %(email)s -o- -X POST -d name="mynode.opensvc.com" -d type=A -d content="1.2.3.4" https://%(collector)s/init/rest/api/dns/records""",
@@ -355,6 +364,101 @@ class rest_post_dns_records(rest_post_handler):
         ret["info"] = fmt % d
         return ret
 
+#
+class rest_post_dns_services_records(rest_post_handler):
+    def __init__(self):
+        desc = [
+          "Create a dns record for a service.",
+          "A service app responsible must be responsible for the ip address network or segment.",
+          "The action is logged in the collector's log.",
+          "A websocket event is sent to announce the change in the dns records table.",
+        ]
+        examples = [
+          """# curl -u %(email)s -o- -X POST -d name="mynode.opensvc.com" -d "rid=ip#0" -d content="1.2.3.4" https://%(collector)s/init/rest/api/dns/services/records""",
+        ]
+        rest_post_handler.__init__(
+          self,
+          path="/dns/services/records",
+          tables=["records"],
+          dbo=dbdns,
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, **vars):
+        if auth.user.svc_id is None:
+            raise Exception("Only authenticated services can use this handler")
+        if "content" not in vars:
+            raise Exception("The 'content' key is mandatory")
+
+        # domain
+        zone = config_get("dns_managed_zone")
+        if zone is None:
+            raise Exception("The collector has no managed zone")
+        zone = zone.rstrip(".")
+        domain = get_dns_domain(zone)
+        if domain is None:
+            raise Exception("The collector's defined managed zone '%s' does not exist" % zone)
+
+        # record name
+        basesvcname = auth.user.svcname.split(".")[0]
+        app = auth.user.svc_app
+        suffix = [basesvcname, app]
+        instance_name = vars.get("name")
+        if instance_name and len(instance_name) > 0:
+            name = ".".join([name] + suffix)
+        else:
+            name = ".".join(suffix)
+        name = sanitize_dns_name(name)
+        content = vars["content"]
+
+        # record type
+        if ":" in content:
+            record_type = "AAAA"
+        elif content.count(".") == 3:
+            record_type = "A"
+        else:
+            raise Exception("invalid content type %s" % str(content))
+
+        # record ttl
+        if "ttl" in vars:
+            ttl = vars["ttl"]
+        else:
+            ttl = config_get("dns_default_ttl", 120)
+
+        data = {
+            "name": name,
+            "type": record_type,
+            "content": content,
+            "ttl": ttl,
+            #"prio": 0,
+            "domain_id": domain.id,
+            "change_date": int((datetime.datetime.now()-datetime.datetime(1970, 1, 1)).total_seconds())
+        }
+        dns_record_responsible(data)
+
+        q = dbdns.records.id > 0
+        q &= dbdns.records.name == data["name"]
+        q &= dbdns.records.domain_id == data["domain_id"]
+        row = dbdns(q).select().first()
+
+        if row is not None:
+            response = dbdns(q).validate_and_update(**data)
+            op = "change"
+        else:
+            response = dbdns.records.validate_and_insert(**data)
+            op = "create"
+        raise_on_error(response)
+        row = dbdns(q).select().first()
+
+        fmt = 'record %(name)s %(type)s %(content)s %(op)sd in domain %(domain)s'
+        d = dict(name=row.name, type=row.type, op=op, content=row.content, domain=str(row.domain_id))
+        _log('dns.records.'+op, fmt, d)
+        ws_send('pdns_records_change')
+        ret = rest_get_dns_record().handler(row.id)
+        ret["info"] = fmt % d
+        return ret
+
 
 #
 class rest_post_dns_record(rest_post_handler):
@@ -364,7 +468,7 @@ class rest_post_dns_record(rest_post_handler):
           "The user must be responsible for the ip address network or segment.",
           "The user must be in the DnsOperator privilege group.",
           "The action is logged in the collector's log.",
-          "A websocket event is sent to announce the change in the nodes table.",
+          "A websocket event is sent to announce the change in the dns records table.",
         ]
         examples = [
           """# curl -u %(email)s -o- -X POST -d comment="foo" https://%(collector)s/init/rest/api/dns/records/10""",
@@ -404,7 +508,7 @@ class rest_delete_dns_domains(rest_delete_handler):
           "Also delete dns records in this domain.",
           "The user must be in the DnsManager privilege group.",
           "The action is logged in the collector's log.",
-          "A websocket event is sent to announce the change in the nodes table.",
+          "A websocket event is sent to announce the change in the dns domains table.",
         ]
         examples = [
           "# curl -u %(email)s -o- --header 'Content-Type: application/json' -d @/tmp/data.json -X DELETE https://%(collector)s/init/rest/api/dns/domains",
@@ -429,7 +533,7 @@ class rest_delete_dns_domain(rest_delete_handler):
           "Also delete dns records in this domain.",
           "The user must be in the DnsManager privilege group.",
           "The action is logged in the collector's log.",
-          "A websocket event is sent to announce the change in the nodes table.",
+          "A websocket event is sent to announce the change in the dns domains table.",
         ]
         examples = [
           "# curl -u %(email)s -o- -X DELETE https://%(collector)s/init/rest/api/dns/domains/10",
@@ -470,7 +574,7 @@ class rest_delete_dns_records(rest_delete_handler):
           "The user must be responsible for the ip address network or segment.",
           "The user must be in the DnsOperator privilege group.",
           "The action is logged in the collector's log.",
-          "A websocket event is sent to announce the change in the nodes table.",
+          "A websocket event is sent to announce the change in the dns records table.",
         ]
         examples = [
           "# curl -u %(email)s -o- --header 'Content-Type: application/json' -d @/tmp/data.json -X DELETE https://%(collector)s/init/rest/api/dns/records",
@@ -495,7 +599,7 @@ class rest_delete_dns_record(rest_delete_handler):
           "The user must be responsible for the ip address network or segment.",
           "The user must be in the DnsOperator privilege group.",
           "The action is logged in the collector's log.",
-          "A websocket event is sent to announce the change in the nodes table.",
+          "A websocket event is sent to announce the change in the dns records table.",
         ]
         examples = [
           "# curl -u %(email)s -o- -X DELETE https://%(collector)s/init/rest/api/dns/records/10",
