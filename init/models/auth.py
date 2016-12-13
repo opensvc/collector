@@ -495,6 +495,7 @@ class MyAuth(Auth):
                 svcname = None
                 node_id = auth_to_node_id([password, nodename])
                 svc_id = None
+                svc_app = None
 
             self.user.email = "root@"+nodename
             self.user.nodename = nodename
