@@ -745,6 +745,7 @@ def get_post_handlers(prefix=None):
              "rest_post_networks",
              "rest_post_network",
              "rest_post_network_allocate",
+             "rest_post_network_release",
              "rest_post_network_segment",
              "rest_post_network_segments",
              "rest_post_network_segment_responsible",

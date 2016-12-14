@@ -100,7 +100,7 @@ def dns_record_responsible(row, current={}):
 
     raise Exception("Not allowed to manage the record %s %s %s"%(name, t, content))
 
-def create_service_dns_record(instance_name=None, content=None, ttl=None):
+def prepare_dns_record(instance_name=None, content=None, ttl=None):
     # short record name
     name = auth.user.svcname.split(".")[0]
     if instance_name:
@@ -145,6 +145,33 @@ def create_service_dns_record(instance_name=None, content=None, ttl=None):
         "domain_id": domain.id,
         "change_date": int((datetime.datetime.now()-datetime.datetime(1970, 1, 1)).total_seconds())
     }
+    return data
+
+def delete_service_dns_record(instance_name=None, content=None):
+    data = prepare_dns_record(instance_name, content)
+    dns_record_responsible(data)
+
+    q = dbdns.records.id > 0
+    q &= dbdns.records.name == data["name"]
+    q &= dbdns.records.domain_id == data["domain_id"]
+    row = dbdns(q).select().first()
+
+    if row is None:
+        return {"info": "dns record does not exist"}
+
+    dbdns(q).delete()
+
+    fmt = 'record %(name)s %(type)s %(content)s deleted in domain %(domain)s'
+    d = dict(name=row.name, type=row.type, content=row.content, domain=str(row.domain_id))
+    _log('dns.records.delete', fmt, d)
+    ws_send('pdns_records_change')
+
+    return {
+        "info": fmt % d,
+    }
+
+def create_service_dns_record(instance_name=None, content=None, ttl=None):
+    data = prepare_dns_record(instance_name, content, ttl)
     dns_record_responsible(data)
 
     q = dbdns.records.id > 0

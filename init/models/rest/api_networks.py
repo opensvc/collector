@@ -180,6 +180,33 @@ class rest_post_network_allocate(rest_post_handler):
         return dict(data=ip)
 
 #
+class rest_post_network_release(rest_post_handler):
+    def __init__(self):
+        desc = [
+          "Release an ip address",
+          "The ip to release is used as <id> in the request path",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- -X POST https://%(collector)s/init/rest/api/networks/10.0.0.3/release",
+        ]
+        rest_post_handler.__init__(
+          self,
+          path="/networks/<id>/release",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, ipaddr, **vars):
+        instance_name = vars.get("name")
+        net_id = get_network_id(ipaddr)
+        if auth.user.svc_id is not None:
+            ret = delete_service_dns_record(
+                instance_name=instance_name,
+                content=ipaddr,
+            )
+        return ret
+
+#
 class rest_get_network_segment_responsibles(rest_get_table_handler):
     def __init__(self):
         desc = [
