@@ -43,8 +43,8 @@ def get_network_id(id):
     if not regex.match(id):
         return id
     sql = """select id from networks where
-             inet_aton("%(ip)s") <= inet_aton(end) and
-             inet_aton("%(ip)s") >= inet_aton(begin)""" % dict(ip=id)
+             inet_aton("%(ip)s") <= inet_aton(broadcast) and
+             inet_aton("%(ip)s") >= inet_aton(network)""" % dict(ip=id)
     rows = db.executesql(sql)
     if len(rows) == 0:
         raise Exception("%s not found in any known network"%id)
@@ -200,6 +200,7 @@ class rest_get_network_ips(rest_get_handler):
     def handler(self, net_id, **vars):
         from socket import inet_ntoa
         from struct import pack
+        net_id = get_network_id(net_id)
         sql = """select count(id) from network_segments where net_id=%s"""%net_id
         n_segs = db.executesql(sql)[0][0]
 
