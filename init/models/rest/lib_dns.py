@@ -103,10 +103,11 @@ def dns_record_responsible(row, current={}):
 def create_service_dns_record(instance_name=None, content=None, ttl=None):
     # short record name
     name = auth.user.svcname.split(".")[0]
-    if "." in instance_name:
-        raise Exception("No dots allowed in instance name '%s'" % instance_name)
-    if instance_name and len(instance_name) > 0:
-        name = name + "-" + instance_name
+    if instance_name:
+        if "." in instance_name:
+            raise Exception("No dots allowed in instance name '%s'" % instance_name)
+        if len(instance_name) > 0:
+            name = name + "-" + instance_name
     name = sanitize_dns_name(name)
 
     # domain

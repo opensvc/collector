@@ -166,9 +166,7 @@ class rest_post_network_allocate(rest_post_handler):
         )
 
     def handler(self, net_id, **vars):
-        if "name" not in vars:
-            raise Exception("The 'name' key is mandatory")
-        instance_name = vars["name"]
+        instance_name = vars.get("name")
         net_id = get_network_id(net_id)
         ipl = [ip for ip in get_network_ips(net_id) if ip["record_name"] == "" and ip["nodename"] == ""]
         if len(ipl) == 0:
