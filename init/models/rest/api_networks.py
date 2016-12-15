@@ -177,6 +177,11 @@ class rest_post_network_allocate(rest_post_handler):
                 instance_name=instance_name,
                 content=ip["ip"],
             )
+        elif auth_is_node():
+            raise Exception("Ip allocation for nodes is not implemented")
+        else:
+            raise Exception("Ip allocation for users is not implemented")
+
         return dict(data=ip)
 
 #
@@ -204,8 +209,10 @@ class rest_post_network_release(rest_post_handler):
                 instance_name=instance_name,
                 content=ipaddr,
             )
+        elif auth_is_node():
+            raise Exception("Ip release for nodes is not implemented")
         else:
-            raise Exception("Only services can release ips")
+            raise Exception("Ip release for users is not implemented")
         return ret
 
 #

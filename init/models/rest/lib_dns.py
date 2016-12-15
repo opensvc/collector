@@ -100,7 +100,7 @@ def dns_record_responsible(row, current={}):
 
     raise Exception("Not allowed to manage the record %s %s %s"%(name, t, content))
 
-def prepare_dns_record(instance_name=None, content=None, ttl=None):
+def prepare_service_dns_record(instance_name=None, content=None, ttl=None):
     # short record name
     name = auth.user.svcname.split(".")[0]
     if instance_name:
@@ -148,7 +148,7 @@ def prepare_dns_record(instance_name=None, content=None, ttl=None):
     return data
 
 def delete_service_dns_record(instance_name=None, content=None):
-    data = prepare_dns_record(instance_name, content)
+    data = prepare_service_dns_record(instance_name, content)
     dns_record_responsible(data)
 
     q = dbdns.records.id > 0
@@ -171,7 +171,7 @@ def delete_service_dns_record(instance_name=None, content=None):
     }
 
 def create_service_dns_record(instance_name=None, content=None, ttl=None):
-    data = prepare_dns_record(instance_name, content, ttl)
+    data = prepare_service_dns_record(instance_name, content, ttl)
     dns_record_responsible(data)
 
     q = dbdns.records.id > 0
