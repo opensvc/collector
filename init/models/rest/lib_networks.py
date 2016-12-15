@@ -139,8 +139,7 @@ def _allocate_network_ip(net_id, instance_name):
     elif auth_is_node():
         raise Exception("Ip allocation for nodes is not implemented")
     else:
-        pass
-        #raise Exception("Ip allocation for users is not implemented")
+        raise Exception("Ip allocation for users is not implemented")
 
     ip["network"] = db.networks[net_id].as_dict()
     seg_id = ip["seg_id"]

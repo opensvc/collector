@@ -123,7 +123,7 @@ class rest_get_network_segment(rest_get_line_handler):
         )
 
     def handler(self, net_id, seg_id, **vars):
-        id = get_network_id(id)
+        net_id = get_network_id(net_id)
         q = db.networks.id == net_id
         q &= db.networks.id == db.network_segments.net_id
         q &= db.network_segments.id == seg_id
@@ -500,7 +500,7 @@ class rest_post_network_segments(rest_post_handler):
         self.validate_range(net_id, vars)
         seg_id = db.network_segments.insert(**vars)
         db.network_segment_responsibles.insert(seg_id=seg_id,
-                                               group_id=user_primary_group())
+                                               group_id=user_primary_group_id())
 
         _log('networks.segment.create',
              'create segment of network %(n)s with properties %(data)s',
