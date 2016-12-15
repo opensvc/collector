@@ -167,21 +167,7 @@ class rest_post_network_allocate(rest_post_handler):
 
     def handler(self, net_id, **vars):
         instance_name = vars.get("name")
-        net_id = get_network_id(net_id)
-        ipl = [ip for ip in get_network_ips(net_id) if ip["record_name"] == "" and ip["nodename"] == ""]
-        if len(ipl) == 0:
-            raise Exception("No free address in this network")
-        ip = ipl[0]
-        if auth_is_svc():
-            create_service_dns_record(
-                instance_name=instance_name,
-                content=ip["ip"],
-            )
-        elif auth_is_node():
-            raise Exception("Ip allocation for nodes is not implemented")
-        else:
-            raise Exception("Ip allocation for users is not implemented")
-
+        ip = allocate_network_ip(net_id, instance_name)
         return dict(data=ip)
 
 #
