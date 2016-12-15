@@ -97,6 +97,7 @@ class rest_get_network_segments(rest_get_table_handler):
         )
 
     def handler(self, id, **vars):
+        id = get_network_id(id)
         q = db.networks.id == id
         q &= db.networks.id == db.network_segments.net_id
         self.set_q(q)
@@ -122,6 +123,7 @@ class rest_get_network_segment(rest_get_line_handler):
         )
 
     def handler(self, net_id, seg_id, **vars):
+        id = get_network_id(id)
         q = db.networks.id == net_id
         q &= db.networks.id == db.network_segments.net_id
         q &= db.network_segments.id == seg_id
@@ -220,6 +222,7 @@ class rest_get_network_segment_responsibles(rest_get_table_handler):
         )
 
     def handler(self, net_id, seg_id, **vars):
+        net_id = get_network_id(net_id)
         q = db.networks.id == net_id
         q &= db.networks.id == db.network_segments.net_id
         q &= db.network_segments.id == db.network_segment_responsibles.seg_id

@@ -59,7 +59,8 @@ def get_network_ips(net_id):
     sql = """select
                inet_aton(s.seg_begin),
                inet_aton(s.seg_end),
-               s.seg_type
+               s.seg_type,
+               s.id
              from
                network_segments s,
                network_segment_responsibles sr
@@ -77,17 +78,17 @@ def get_network_ips(net_id):
         if len(rows) == 0:
             raise Exception("you are owner of no segment of this network")
         for row in rows:
-            ipl += map(lambda x: {"ip": inet_ntoa(pack('>L', x)), "type": row[2]}, range(row[0], row[1]))
+            ipl += [{"seg_id": row[3], "ip": inet_ntoa(pack('>L', x)), "type": row[2]} for x in range(row[0], row[1])]
     else:
         sql = """select inet_aton(begin), inet_aton(end) from networks where id=%s"""%net_id
         rows = db.executesql(sql)
         if len(rows) == 0:
             raise Exception("network not found")
-        ipl = map(lambda x: {"ip": inet_ntoa(pack('>L', x)), "type": ""}, range(rows[0][0], rows[0][1]))
+        ipl = [{"seg_id": None, "ip": inet_ntoa(pack('>L', x)), "type": ""} for x in range(rows[0][0], rows[0][1])]
     if len(ipl) == 0:
         return []
 
-    sql = """select content,name from records where content in (%s)"""%','.join(map(lambda x: repr(x["ip"]), ipl))
+    sql = """select content,name from records where content in (%s)"""%','.join([repr(x["ip"]) for x in ipl])
     rows = dbdns.executesql(sql)
     alloc_ips = {}
     for content, name in rows:
@@ -138,8 +139,12 @@ def _allocate_network_ip(net_id, instance_name):
     elif auth_is_node():
         raise Exception("Ip allocation for nodes is not implemented")
     else:
-        raise Exception("Ip allocation for users is not implemented")
+        pass
+        #raise Exception("Ip allocation for users is not implemented")
 
     ip["network"] = db.networks[net_id].as_dict()
+    seg_id = ip["seg_id"]
+    if seg_id:
+        ip["segment"] = db.network_segments[seg_id].as_dict()
     return ip
 
