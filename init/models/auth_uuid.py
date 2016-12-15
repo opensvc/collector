@@ -206,6 +206,11 @@ def auth_is_node():
         return True
     return False
 
+def auth_is_svc():
+    if hasattr(auth.user, "svc_id") and auth.user.svc_id is not None:
+        return True
+    return False
+
 def auth_node_group():
     q = db.nodes.node_id == auth.user.node_id
     try:

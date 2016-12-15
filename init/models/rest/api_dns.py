@@ -314,7 +314,7 @@ class rest_post_dns_services_records(rest_post_handler):
         )
 
     def handler(self, **vars):
-        if auth.user.svc_id is None:
+        if not auth_is_svc():
             raise Exception("Only authenticated services can use this handler")
 
         instance_name = vars.get("name")

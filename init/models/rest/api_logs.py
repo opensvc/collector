@@ -97,7 +97,7 @@ class rest_post_logs(rest_post_handler):
         if "log_dict" not in vars:
             vars["log_dict"] = {}
 
-        if hasattr(auth.user, "svc_id"):
+        if auth_is_svc():
             # svc auth
             vars["svc_id"] = auth.user.svc_id
             vars["node_id"] = auth.user.node_id

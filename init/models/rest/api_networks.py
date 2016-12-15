@@ -172,7 +172,7 @@ class rest_post_network_allocate(rest_post_handler):
         if len(ipl) == 0:
             raise Exception("No free address in this network")
         ip = ipl[0]
-        if auth.user.svc_id is not None:
+        if auth_is_svc():
             create_service_dns_record(
                 instance_name=instance_name,
                 content=ip["ip"],
@@ -199,11 +199,13 @@ class rest_post_network_release(rest_post_handler):
     def handler(self, ipaddr, **vars):
         instance_name = vars.get("name")
         net_id = get_network_id(ipaddr)
-        if auth.user.svc_id is not None:
+        if auth_is_svc():
             ret = delete_service_dns_record(
                 instance_name=instance_name,
                 content=ipaddr,
             )
+        else:
+            raise Exception("Only services can release ips")
         return ret
 
 #
