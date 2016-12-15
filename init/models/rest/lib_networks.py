@@ -140,5 +140,6 @@ def _allocate_network_ip(net_id, instance_name):
     else:
         raise Exception("Ip allocation for users is not implemented")
 
+    ip["network"] = db.networks[net_id].as_dict()
     return ip
 
