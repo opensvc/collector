@@ -1,3 +1,5 @@
+import datetime
+
 dbdns = config_get('dbdns', 'pdns')
 dbdns_host = config_get('dbdns_host', dbopensvc)
 dbdns_user = config_get('dbdns_user', 'pdns')

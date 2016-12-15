@@ -393,7 +393,8 @@ def _push_checks(vars, vals, auth):
 
 def _insert_generic(data, auth):
     now = datetime.datetime.now()
-    node_id = auth_to_node_id(auth)
+    node = auth_to_node(auth)
+    node_id = node.node_id
     if type(data) != dict:
         return
     if 'hba' in data:
@@ -486,6 +487,7 @@ def _insert_generic(data, auth):
         db.executesql(sql)
         generic_insert('node_ip', vars, _vals)
         ws_send('node_ip_change', {'node_id': node_id})
+        create_node_dns_records(node, vars, vals)
     if 'uids' in data:
         vars, vals = data['uids']
         if 'updated' not in vars:

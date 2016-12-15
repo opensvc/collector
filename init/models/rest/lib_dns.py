@@ -100,9 +100,68 @@ def dns_record_responsible(row, current={}):
 
     raise Exception("Not allowed to manage the record %s %s %s"%(name, t, content))
 
-def prepare_service_dns_record(instance_name=None, content=None, ttl=None):
+def prepare_node_dns_record(instance_name=None, content=None, ttl=None, node=None):
+    if node:
+        nodename = node.nodename
+        app = node.app
+    else:
+        nodename = auth.user.nodename
+        app = auth.user.node_app
+
     # short record name
-    name = auth.user.svcname.split(".")[0]
+    name = nodename.split(".")[0]
+    if instance_name:
+        if len(instance_name) > 0:
+            name = name + "-" + instance_name
+    name = sanitize_dns_name(name)
+
+    # domain
+    zone = config_get("dns_managed_zone", "opensvc")
+    zone = zone.rstrip(".")
+    zone = app + "." + zone
+    zone = sanitize_dns_name(zone)
+    domain = get_dns_domain(zone)
+    if domain is None:
+        create_zone(zone)
+        domain = get_dns_domain(zone)
+    if domain is None:
+        raise Exception("failed to create the %s zone" % zone)
+
+    # full record name
+    name = name + "." + zone
+
+    # record type
+    if ":" in content:
+        record_type = "AAAA"
+    elif content.count(".") == 3:
+        record_type = "A"
+    else:
+        raise Exception("invalid content type %s" % str(content))
+
+    # record ttl
+    if ttl is None:
+        ttl = config_get("dns_default_ttl", 120)
+
+    data = {
+        "name": name,
+        "type": record_type,
+        "content": content,
+        "ttl": ttl,
+        "domain_id": domain.id,
+        "change_date": int((datetime.datetime.now()-datetime.datetime(1970, 1, 1)).total_seconds())
+    }
+    return data
+
+def prepare_service_dns_record(instance_name=None, content=None, ttl=None, svc=None):
+    if svc:
+        svcname = svc.svcname
+        app = svc.svc_app
+    else:
+        svcname = auth.user.svcname
+        app = auth.user.svc_app
+
+    # short record name
+    name = svcname.split(".")[0]
     if instance_name:
         if "." in instance_name:
             raise Exception("No dots allowed in instance name '%s'" % instance_name)
@@ -113,7 +172,7 @@ def prepare_service_dns_record(instance_name=None, content=None, ttl=None):
     # domain
     zone = config_get("dns_managed_zone", "opensvc")
     zone = zone.rstrip(".")
-    zone = auth.user.svc_app + "." + zone
+    zone = svc_app + "." + zone
     zone = sanitize_dns_name(zone)
     domain = get_dns_domain(zone)
     if domain is None:
@@ -170,8 +229,9 @@ def delete_service_dns_record(instance_name=None, content=None):
         "info": fmt % d,
     }
 
-def create_service_dns_record(instance_name=None, content=None, ttl=None):
-    data = prepare_service_dns_record(instance_name, content, ttl)
+def _create_dns_record(data):
+    if data.get("type") == "AAAA":
+        return
     dns_record_responsible(data)
 
     q = dbdns.records.id > 0
@@ -197,4 +257,33 @@ def create_service_dns_record(instance_name=None, content=None, ttl=None):
         "data": row,
         "info": fmt % d,
     }
+
+def create_node_dns_record(instance_name=None, content=None, ttl=None, node=None):
+    data = prepare_node_dns_record(instance_name, content, ttl, node=node)
+    _create_dns_record(data)
+
+def create_service_dns_record(instance_name=None, content=None, ttl=None, svc=None):
+    data = prepare_service_dns_record(instance_name, content, ttl, svc=svc)
+    _create_dns_record(data)
+
+def create_node_dns_records(node, vars, vals):
+    try:
+        auth
+    except NameError:
+        from gluon.storage import Storage
+        global auth
+        auth = Storage()
+        auth.user = Storage(
+            nodename=node.nodename,
+            node_id=node.node_id,
+            node_app=node.app,
+        )
+    for val in vals:
+        data = {}
+        for k, v in zip(vars, val):
+            data[k] = v
+        try:
+            create_node_dns_record(instance_name=data["intf"], content=data["addr"], node=node)
+        except:
+            pass
 

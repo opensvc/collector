@@ -71,6 +71,15 @@ def node_responsibles_apps(node_id):
     rows = db(q).select(db.apps.app)
     return [r.app for r in rows]
 
+def auth_to_node(auth):
+    q = db.auth_node.uuid == auth[0]
+    q &= db.auth_node.nodename == auth[1].strip("'")
+    row = db(q).select(db.auth_node.node_id).first()
+    if row is None:
+        return None
+    q = db.nodes.node_id == row.node_id
+    return db(q).select().first()
+
 def auth_to_node_id(auth):
     q = db.auth_node.uuid == auth[0]
     q &= db.auth_node.nodename == auth[1].strip("'")
