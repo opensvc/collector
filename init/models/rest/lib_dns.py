@@ -172,7 +172,7 @@ def prepare_service_dns_record(instance_name=None, content=None, ttl=None, svc=N
     # domain
     zone = config_get("dns_managed_zone", "opensvc")
     zone = zone.rstrip(".")
-    zone = svc_app + "." + zone
+    zone = app + "." + zone
     zone = sanitize_dns_name(zone)
     domain = get_dns_domain(zone)
     if domain is None:
