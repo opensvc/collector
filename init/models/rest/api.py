@@ -26,6 +26,8 @@ def markup_result(result, markup):
     return result
 
 def merge_results(result, _result):
+    if _result is None:
+        return result
     if "ret" not in result:
         if "ret" not in _result:
             pass
