@@ -5,8 +5,8 @@ class table_nodes(HtmlTable):
         HtmlTable.__init__(self, id, func, innerhtml)
         self.cols = ['node_id', 'nodename']+nodes_cols
         self.colprops = nodes_colprops
-        self.span = ["nodename"]
-        self.keys = ["nodename"]
+        self.span = ["node_id"]
+        self.keys = ["node_id"]
         self.colprops.update({
             'node_id': HtmlTableColumn(
                      field='node_id',
