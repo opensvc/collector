@@ -1546,7 +1546,6 @@ def rpc_collector_networks(cmd, auth):
                    networks.comment,
                    networks.pvid,
                    networks.network,
-                   networks.broadcast,
                    networks.netmask,
                    networks.gateway,
                    networks.begin,
@@ -1562,19 +1561,28 @@ def rpc_collector_networks(cmd, auth):
           'ip',
           'mac',
           'interface',
-          'net name',
-          'net comment',
-          'net pvid',
-          'net base',
-          'net broadcast',
-          'net mask',
-          'net gateway',
-          'net begin',
-          'net end'
+          'name',
+          'comment',
+          'pvid',
+          'network',
+          'gateway',
+          'begin',
+          'end'
         ]
         data = [header]
         for row in rows:
-            data.append(map(lambda x: unicode(x), row))
+            data.append([
+                unicode(row[0]),
+                unicode(row[1]),
+                unicode(row[2]),
+                unicode(row[3]),
+                unicode(row[4]),
+                unicode(row[5]),
+                "%s/%d" % (row[6], row[7]),
+                unicode(row[8]),
+                unicode(row[9]),
+                unicode(row[10]),
+            ])
     return {"ret": 0, "msg": "", "data": data}
 
 
@@ -1771,10 +1779,9 @@ def rpc_collector_checks(cmd, auth):
         'instance',
         'type',
         'value',
-        'low threshold',
-        'high threshold',
-        'threshold provider',
-        'last update date',
+        'thresholds',
+        'provider',
+        'updated',
     ]
 
     if "svcname" in cmd:
@@ -1794,13 +1801,14 @@ def rpc_collector_checks(cmd, auth):
     data = [header]
 
     for row in rows:
+        high = str(row.checks_live.chk_high) if row.checks_live.chk_high else "*"
+        low = str(row.checks_live.chk_low) if row.checks_live.chk_low else "*"
         data.append([
           str(prop(row)),
           str(row.checks_live.chk_instance),
           str(row.checks_live.chk_type),
           str(row.checks_live.chk_value),
-          str(row.checks_live.chk_low),
-          str(row.checks_live.chk_high),
+          "%s-%s" % (low, high),
           str(row.checks_live.chk_threshold_provider),
           str(row.checks_live.chk_updated)
         ])
@@ -1823,25 +1831,35 @@ def rpc_collector_alerts(cmd, auth):
         if n == 0:
             return {"ret": 1, "msg": "this node is not owner of %s"%cmd["svcname"]}
 
+    cols = [
+        db.dashboard.dash_severity,
+        db.dashboard.dash_type,
+        db.dashboard.dash_created,
+        db.dashboard.dash_fmt,
+        db.dashboard.dash_dict,
+    ]
+    header = [
+        "severity",
+        "type",
+        "alert",
+        "created",
+    ]
+
     if "svcname" in cmd:
         q = db.dashboard.svc_id == svc_id
+        cols = [db.nodes.nodename] + cols
+        l = db.nodes.on(db.nodes.node_id==db.dashboard.node_id)
+        header = ["node"] + header
+        prop = lambda row: row.nodes.nodename
     else:
         q = db.dashboard.node_id == node_id
+        cols = [db.services.svcname] + cols
+        l = db.services.on(db.services.svc_id==db.dashboard.svc_id)
+        header = ["service"] + header
+        prop = lambda row: row.services.svcname if row.services.svcname else "-"
 
-    l1 = db.nodes.on(db.nodes.node_id==db.dashboard.node_id)
-    l2 = db.services.on(db.services.svc_id==db.dashboard.svc_id)
-
-    rows = db(q).select(
-      db.dashboard.dash_severity,
-      db.dashboard.dash_type,
-      db.dashboard.dash_created,
-      db.dashboard.dash_fmt,
-      db.dashboard.dash_dict,
-      db.services.svcname,
-      db.nodes.nodename,
-      left=(l1,l2),
-    )
-    data = [["severity", "type", "node", "service", "alert", "created"]]
+    rows = db(q).select(*cols, left=l)
+    data = [header]
     for row in rows:
         fmt = row.dashboard.dash_fmt
         try:
@@ -1850,14 +1868,14 @@ def rpc_collector_alerts(cmd, auth):
         except:
             alert = ""
         data += [[
+          str(prop(row)),
           str(row.dashboard.dash_severity),
           str(row.dashboard.dash_type),
-          row.nodes.nodename,
-          row.services.svcname,
-          alert,
+          str(alert),
           str(row.dashboard.dash_created)
         ]]
-    return {"ret": 0, "msg": "", "data":data}
+
+    return {"ret": 0, "msg": "", "data": data}
 
 @service.xmlrpc
 def collector_events(cmd, auth):
