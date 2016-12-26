@@ -1758,40 +1758,44 @@ def rpc_collector_checks(cmd, auth):
         if n == 0:
             return {"ret": 1, "msg": "this node is not owner of %s"%cmd["svcname"]}
 
+    cols = [
+        db.checks_live.chk_instance,
+        db.checks_live.chk_type,
+        db.checks_live.chk_value,
+        db.checks_live.chk_low,
+        db.checks_live.chk_high,
+        db.checks_live.chk_threshold_provider,
+        db.checks_live.chk_updated,
+    ]
+    header = [
+        'instance',
+        'type',
+        'value',
+        'low threshold',
+        'high threshold',
+        'threshold provider',
+        'last update date',
+    ]
+
     if "svcname" in cmd:
         q = db.checks_live.svc_id == svc_id
+        cols = [db.nodes.nodename] + cols
+        header = ["node"] + header
+        l = db.nodes.on(db.checks_live.node_id==db.nodes.node_id)
+        prop = lambda row: row.nodes.nodename
     else:
         q = db.checks_live.node_id == node_id
+        cols = [db.services.svcname] + cols
+        header = ["svcname"] + header
+        l = db.services.on(db.checks_live.svc_id==db.services.svc_id)
+        prop = lambda row: row.services.svcname
 
-    l1 = db.nodes.on(db.checks_live.node_id==db.nodes.node_id)
-    l2 = db.services.on(db.checks_live.svc_id==db.services.svc_id)
-
-    rows = db(q).select(db.nodes.nodename,
-                        db.services.svcname,
-                        db.checks_live.chk_instance,
-                        db.checks_live.chk_type,
-                        db.checks_live.chk_value,
-                        db.checks_live.chk_low,
-                        db.checks_live.chk_high,
-                        db.checks_live.chk_threshold_provider,
-                        db.checks_live.chk_updated,
-                        limitby=(0,1000),
-                        left=(l1,l2),
-                       )
-    header = ['node',
-              'service',
-              'instance',
-              'type',
-              'value',
-              'low threshold',
-              'high threshold',
-              'threshold provider',
-              'last update date']
+    rows = db(q).select(*cols, limitby=(0,1000), left=l)
     data = [header]
+
     for row in rows:
         data.append([
-          str(row.nodes.nodename),
-          str(row.services.svcname),
+          str(prop(row)),
           str(row.checks_live.chk_instance),
           str(row.checks_live.chk_type),
           str(row.checks_live.chk_value),
@@ -1800,7 +1804,7 @@ def rpc_collector_checks(cmd, auth):
           str(row.checks_live.chk_threshold_provider),
           str(row.checks_live.chk_updated)
         ])
-    return {"ret": 0, "msg": "", "data":data}
+    return {"ret": 0, "msg": "", "data": data}
 
 @service.xmlrpc
 def collector_alerts(cmd, auth):
