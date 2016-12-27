@@ -1560,7 +1560,7 @@ def prepare_data(
     else:
         return dict(error="failed to prepare data: missing parameter")
 
-    data = mangle_data(data, props=props, vprops=vprops, vprops_fn=vprops_fn)
+    data = mangle_data(data, props=props, vprops=vprops, vprops_fn=vprops_fn, tables=tables)
 
     # reverve to deprecated column name
     if len(translations) > 0:
@@ -1609,7 +1609,7 @@ def prepare_data(
 
     return d
 
-def mangle_data(data, props=None, vprops={}, vprops_fn=None):
+def mangle_data(data, props=None, vprops={}, vprops_fn=None, tables=None):
     if vprops_fn is None:
         return data
     if props and len(set(vprops) & set(props.split(","))) == 0:
@@ -1625,7 +1625,10 @@ def mangle_data(data, props=None, vprops={}, vprops_fn=None):
         props_to_purge -= set(props.split(","))
     for i, d in enumerate(data):
         for prop in props_to_purge:
-            del(data[i][prop])
+            if prop in data[i]:
+                del data[i][prop]
+            if tables is not None and tables[0] in data[i] and prop in data[i][tables[0]]:
+                del data[i][tables[0]][prop]
     return data
 
 def all_props(tables=[], blacklist=[], vprops={}, db=db):
@@ -1652,7 +1655,7 @@ def props_to_cols(props, tables=[], vprops={}, blacklist=[], db=db):
         else:
             desc = False
         v = p.split(".")
-        if len(v) == 1 and len(tables) == 1:
+        if len(v) == 1:
             v = [tables[0], p]
 
         # deprecated columns translation
@@ -1668,7 +1671,7 @@ def props_to_cols(props, tables=[], vprops={}, blacklist=[], db=db):
         try:
             col = db[v[0]][v[1]]
         except Exception as e:
-            raise Exception("prop %s does not exist for %s" % (v[1], v[0]))
+            raise Exception("prop does not exist: %s" % str(v))
 
         if desc:
             col = ~col

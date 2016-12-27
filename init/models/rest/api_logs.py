@@ -2,11 +2,18 @@ import json
 
 def mangle_logs(data):
     for i, row in enumerate(data):
-        try:
-            data[i]['log_dict'] = json.loads(data[i]['log_dict'])
-            data[i]['log_event'] = data[i]['log_fmt'] % data[i]['log_dict']
-        except:
-            pass
+        if "log" in data[i] and isinstance(data[i]["log"], dict):
+            try:
+                data[i]["log"]['log_dict'] = json.loads(data[i]["log"]['log_dict'])
+                data[i]["log"]['log_event'] = data[i]["log"]['log_fmt'] % data[i]["log"]['log_dict']
+            except:
+                pass
+        else:
+            try:
+                data[i]['log_dict'] = json.loads(data[i]['log_dict'])
+                data[i]['log_event'] = data[i]['log_fmt'] % data[i]['log_dict']
+            except:
+                pass
     return data
 
 #
