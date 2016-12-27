@@ -1795,14 +1795,14 @@ def rpc_collector_checks(cmd, auth):
         cols = [db.services.svcname] + cols
         header = ["svcname"] + header
         l = db.services.on(db.checks_live.svc_id==db.services.svc_id)
-        prop = lambda row: row.services.svcname
+        prop = lambda row: row.services.svcname if row.services.svcname else "-" 
 
     rows = db(q).select(*cols, limitby=(0,1000), left=l)
     data = [header]
 
     for row in rows:
-        high = str(row.checks_live.chk_high) if row.checks_live.chk_high else "*"
-        low = str(row.checks_live.chk_low) if row.checks_live.chk_low else "*"
+        high = str(row.checks_live.chk_high) if row.checks_live.chk_high is not None else "*"
+        low = str(row.checks_live.chk_low) if row.checks_live.chk_low is not None else "*"
         data.append([
           str(prop(row)),
           str(row.checks_live.chk_instance),
@@ -1858,7 +1858,7 @@ def rpc_collector_alerts(cmd, auth):
         header = ["service"] + header
         prop = lambda row: row.services.svcname if row.services.svcname else "-"
 
-    rows = db(q).select(*cols, left=l)
+    rows = db(q).select(*cols, left=l, orderby=~db.dashboard.dash_severity)
     data = [header]
     for row in rows:
         fmt = row.dashboard.dash_fmt
