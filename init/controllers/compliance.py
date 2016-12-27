@@ -2494,7 +2494,6 @@ def rpc_comp_get_svc_ruleset(svcname, auth):
     node_id = auth_to_node_id(auth)
     svc_id = node_svc_id(node_id, svcname)
     ruleset = _comp_get_svc_ruleset(svc_id, node_id)
-    ruleset = _comp_remove_dup_vars(ruleset)
     insert_run_rset(ruleset)
     return ruleset
 
@@ -2588,21 +2587,6 @@ def insert_run_rset(ruleset):
             'vars': [('ruleset_md5', rset_md5)]}
     return ruleset.update({'osvc_collector': rset})
 
-def _comp_remove_dup_vars(ruleset):
-    l = {}
-    for rset in ruleset.copy():
-        for i, (var, val) in enumerate(ruleset[rset]['vars']):
-            removed_s = 'Duplicate variable removed'
-            if var in l:
-                (_rset, _i, _val) = l[var][0]
-                if _val != ruleset[rset]['vars'][i][1] or _val == removed_s:
-                    for _rset, _i, _val in l[var]:
-                        ruleset[_rset]['vars'][_i] = ('xxx_'+var+'_xxx', removed_s)
-                    ruleset[rset]['vars'][i] = ('xxx_'+var+'_xxx', removed_s)
-            else:
-                l[var] = [(rset, i, ruleset[rset]['vars'][i][1])]
-    return ruleset
-
 def _comp_get_explicit_svc_ruleset_ids(svc_id, slave=False):
     # attached to the node directly
     q = db.comp_rulesets_services.svc_id == svc_id
@@ -2667,8 +2651,6 @@ def _comp_get_ruleset(node_id):
                                          rset_relations=rset_relations,
                                          rset_names=rset_names,
                                          via_moduleset=True))
-
-    ruleset = _comp_remove_dup_vars(ruleset)
 
     insert_run_rset(ruleset)
     return ruleset
