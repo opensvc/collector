@@ -111,6 +111,8 @@ def _where(query, table, var, field, depth=0, db=db):
             pass
         q = db[table][field].belongs(chunk.split(','))
     elif chunk[0] not in '<>=':
+        if chunk[0] == "~":
+            chunk = chunk[1:]
         if field not in db[table]:
             pass
         elif db[table][field].type in ('string', 'text', 'date', 'upload'):
