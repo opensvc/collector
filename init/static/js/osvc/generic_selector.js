@@ -77,11 +77,11 @@ function generic_selector_tags(id) {
     "url_params": {
       "orderby": "tag_name",
       "limit": "0",
-      "props": "id,tag_name",
+      "props": "tag_id,tag_name",
       "meta": "0"
     },
     "object_class": "tag16",
-    "object_id": "id",
+    "object_id": "tag_id",
     "object_name": "tag_name"
   })
 }
