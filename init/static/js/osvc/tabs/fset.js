@@ -1076,7 +1076,7 @@ function fset_designer(divid, options) {
 			item.append(val)
 		}
 
-		var edit = $("<span class='edit16 clickable' style='float:right'></span>")
+		var edit = $("<span class='icon edit16 clickable' style='float:right'></span>")
 		item.append(edit)
 		edit.click(function(){
 			var item = $(this).parents(".fset_designer_item").first()
