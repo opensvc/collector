@@ -149,7 +149,7 @@ def _end_action(vars, vals, auth):
     upd = []
     h = {}
     for a, b in zip(vars, vals):
-        h[a] = b
+        h[a] = str(b).strip("'")
 
     vars, vals = replace_nodename_in_data(vars, vals, auth)
     node_id = auth_to_node_id(auth)
@@ -160,25 +160,28 @@ def _end_action(vars, vals, auth):
     if node:
         tz = node.tz
         # convert to local time and strip microseconds
-        h['begin'] = 'convert_tz("%s", "%s", @@time_zone)' % (str(h['begin'].strip("'").split('.')[0]), tz)
-        h['end'] = 'convert_tz("%s", "%s", @@time_zone)' % (str(h['end'].strip("'")), tz)
+        h['begin'] = 'convert_tz("%s", "%s", @@time_zone)' % (str(h['begin'].split('.')[0]), tz)
+        h['end'] = 'convert_tz("%s", "%s", @@time_zone)' % (str(h['end']), tz)
     else:
         # strip microseconds
-        h['begin'] = repr(str(h['begin'].strip("'").split('.')[0]))
+        h['begin'] = repr(str(h['begin'].split('.')[0]))
+        h['end'] = repr(str(h['end'].split('.')[0]))
 
     for a, b in h.items():
         if a not in ['hostname', 'node_id', 'svc_id', 'svcname', 'begin', 'action', 'hostid']:
-            upd.append("%s=%s" % (a, b))
+            if b.startswith("'") or b.startswith("convert"):
+                upd.append('%s=%s' % (a, b))
+            else:
+                upd.append('%s="%s"' % (a, b))
 
-    sql="""select id from svcactions where node_id="%s" and svc_id="%s" and begin=%s and action=%s""" %\
-        (node_id, svc_id, h['begin'], h['action'])
+    sql = """select id from svcactions where node_id="%s" and svc_id="%s" and begin=%s and action="%s" """ %\
+          (node_id, svc_id, h['begin'], h['action'])
     ids = map(lambda x: x[0], db.executesql(sql))
     if len(ids) == 0:
         return
 
     sql="""update svcactions set %s where id in (%s)""" %\
         (','.join(upd), ','.join(map(str, ids)))
-    print(sql)
     db.executesql(sql)
     db.commit()
 
