@@ -618,21 +618,36 @@ function table_init(opts) {
 		return false
 	}
 
-	t.set_orderby = function(c) {
+	t.set_orderby = function(c, event) {
 		var desc_idx = t.options.orderby.indexOf("~"+c)
 		var has_desc = (desc_idx >= 0)
 		var asc_idx = t.options.orderby.indexOf(c)
 		var has_asc = (asc_idx >= 0)
-		if (!has_desc && !has_asc) {
-			// null => asc
-			t.options.orderby.push(c)
-		} else if (has_desc) {
-			// asc => null
-			t.options.orderby.splice(desc_idx, 1)
+		if (event.ctrlKey) {
+			// subsort
+			if (!has_desc && !has_asc) {
+				// null => asc
+				t.options.orderby.push(c)
+			} else if (has_desc) {
+				// asc => null
+				t.options.orderby.splice(desc_idx, 1)
+			} else {
+				// asc => desc
+				t.options.orderby.splice(asc_idx, 1)
+				t.options.orderby.push("~"+c)
+			}
 		} else {
-			// asc => desc
-			t.options.orderby.splice(asc_idx, 1)
-			t.options.orderby.push("~"+c)
+			// no subsort
+			if (!has_desc && !has_asc) {
+				// null => asc
+				t.options.orderby = [c]
+			} else if (has_desc) {
+				// asc => null
+				t.options.orderby = []
+			} else {
+				// asc => desc
+				t.options.orderby = ["~"+c]
+			}
 		}
 		t.refresh_column_headers()
 		t.refresh()
@@ -778,8 +793,8 @@ function table_init(opts) {
 			order.tooltipster()
 			th.prepend(order)
 		}
-		th.bind("dblclick", function(){
-			t.set_orderby(c)
+		th.bind("dblclick", function(event){
+			t.set_orderby(c, event)
 		})
 	}
 
