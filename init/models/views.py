@@ -296,9 +296,9 @@ def filterset_query_id(row, nodes, services, i=0, node_id=None, svc_id=None):
         _qry &= db.apps.app == db.services.svc_app
         if svc_id is not None:
             _qry &= db.services.id == svc_id
-        rows = db(_qry).select(db.services.id,
+        rows = db(_qry).select(db.services.svc_id,
                                cacheable=True)
-        n_services = set(map(lambda x: x.id, rows)) - set([None])
+        n_services = set(map(lambda x: x.svc_id, rows)) - set([None])
 
         _qry = qry
         _qry &= db.apps.app == db.nodes.app
