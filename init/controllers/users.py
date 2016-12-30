@@ -88,7 +88,7 @@ def ajax_users_col_values():
 def ajax_users():
     table_id = request.vars.table_id
     t = table_users(table_id, 'ajax_users')
-    o = ~db.v_users.last
+    o = t.get_orderby(default=~db.v_users.last)
     q = db.v_users.id > 0
     for f in t.cols:
         q = _where(q, 'v_users', t.filter_parse(f), f)

@@ -34,7 +34,7 @@ def ajax_networks():
     table_id = request.vars.table_id
     t = table_networks(table_id, 'ajax_networks')
 
-    o = ~db.networks.name
+    o = t.get_orderby(default=~db.networks.name)
     q = q_filter(group_field=db.networks.team_responsible)
     for f in set(t.cols):
         q = _where(q, 'networks', t.filter_parse(f), f)

@@ -133,7 +133,7 @@ def ajax_quota():
 
     update_dg_reserved()
 
-    o = db.v_disk_quota.array_name | db.v_disk_quota.dg_name
+    o = t.get_orderby(default=db.v_disk_quota.array_name|db.v_disk_quota.dg_name)
     q = q_filter(app_field=db.v_disk_quota.app)
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
@@ -241,7 +241,7 @@ def ajax_disks():
     table_id = request.vars.table_id
     t = table_disks(table_id, 'ajax_disks')
 
-    o = db.diskinfo.disk_id | db.services.svcname | db.nodes.nodename
+    o = t.get_orderby(default=db.diskinfo.disk_id|db.services.svcname|db.nodes.nodename)
     q = db.diskinfo.id>0
     q |= db.stor_array.id<0
     l0 = db.svcdisks.on(db.svcdisks.disk_id == db.diskinfo.disk_id)

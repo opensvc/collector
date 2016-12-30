@@ -259,9 +259,7 @@ def ajax_checks():
     table_id = request.vars.table_id
     t = table_checks(table_id, 'ajax_checks')
 
-    o = db.nodes.nodename
-    o |= db.checks_live.chk_type
-    o |= db.checks_live.chk_instance
+    o = t.get_orderby(default=db.nodes.nodename|db.checks_live.chk_type|db.checks_live.chk_instance)
     q = q_filter(node_field=db.checks_live.node_id)
     q = apply_filters_id(q, db.checks_live.node_id)
     q &= db.checks_live.node_id==db.nodes.node_id

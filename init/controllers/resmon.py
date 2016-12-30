@@ -126,10 +126,7 @@ def ajax_resmon_col_values():
 def ajax_resmon():
     table_id = request.vars.table_id
     t = table_resmon(table_id, 'ajax_resmon')
-    o = db.services.svcname
-    o |= db.nodes.nodename
-    o |= db.resmon.vmname
-    o |= db.resmon.rid
+    o = t.get_orderby(default=db.services.svcname|db.nodes.nodename|db.resmon.vmname|db.resmon.rid)
 
     q = db.resmon.id>0
     q &= db.resmon.node_id==db.nodes.node_id

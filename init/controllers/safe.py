@@ -85,7 +85,7 @@ def ajax_safe_col_values():
 def ajax_safe():
     table_id = request.vars.table_id
     t = table_safe(table_id, 'ajax_safe')
-    o = db.v_safe.safe_name
+    o = t.get_orderby(default=db.v_safe.safe_name)
     g = db.v_safe.id
 
     q = db.v_safe.id>0

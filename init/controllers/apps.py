@@ -57,7 +57,7 @@ def ajax_apps_col_values():
 def ajax_apps():
     table_id = request.vars.table_id
     t = table_apps(table_id, 'ajax_apps')
-    o = ~db.v_apps.app
+    o = t.get_orderby(default=~db.v_apps.app)
     q = db.v_apps.id > 0
     if not "Manager" in user_groups():
         q &= db.v_apps.id.belongs(user_app_ids())

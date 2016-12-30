@@ -135,7 +135,7 @@ def ajax_resinfo():
     table_id = request.vars.table_id
     t = table_resinfo(table_id, 'ajax_resinfo')
 
-    o = db.services.svcname | db.nodes.nodename | db.resinfo.rid | db.resinfo.res_key
+    o = t.get_orderby(default=db.services.svcname|db.nodes.nodename|db.resinfo.rid|db.resinfo.res_key)
     q = db.resinfo.node_id == db.nodes.node_id
     q &= db.resinfo.svc_id == db.services.svc_id
     q = q_filter(q, svc_field=db.resinfo.svc_id)

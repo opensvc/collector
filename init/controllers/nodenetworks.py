@@ -178,7 +178,7 @@ def ajax_nodenetworks():
     table_id = request.vars.table_id
     t = table_nodenetworks(table_id, 'ajax_nodenetworks')
 
-    o = db.v_nodenetworks.nodename|db.v_nodenetworks.intf
+    o = t.get_orderby(default=db.v_nodenetworks.nodename|db.v_nodenetworks.intf)
     q = q_filter(app_field=db.v_nodenetworks.app)
     for f in t.cols:
         q = _where(q, 'v_nodenetworks', t.filter_parse(f), f)

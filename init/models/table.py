@@ -338,6 +338,41 @@ class HtmlTable(object):
 
         return sorted_visible_columns
 
+    def get_orderby(self, fmt="dal", db=db, default=None):
+        if request.vars.orderby is None:
+            return default
+        elements = request.vars.orderby.split(',')
+        if len(request.vars.orderby) == 0:
+            return default
+        orderby = []
+        for c in elements:
+            if c[0] == "~":
+                desc = True
+                c = c[1:]
+            else:
+                desc = False
+            if c not in self.cols or c not in self.colprops:
+                continue
+            cp = self.colprops[c]
+            if cp.field not in db[cp.table]:
+                continue
+            if fmt == "dal":
+                if desc:
+                    f = ~db[cp.table][cp.field]
+                else:
+                    f = db[cp.table][cp.field]
+                orderby.append(f)
+            elif fmt == "sql":
+                f = cp.table+"."+cp.field
+                if desc:
+                    f += " desc"
+                orderby.append(f)
+        if fmt == "sql":
+            orderby = ','.join(orderby)
+
+        return orderby
+
+
 #
 # common column formatting
 #

@@ -370,9 +370,7 @@ def ajax_registries_col_values():
 def ajax_registries():
     table_id = request.vars.table_id
     t = table_registries(table_id, 'ajax_registries')
-    o = db.docker_registries.service
-    o |= db.docker_repositories.repository
-    o |= db.docker_tags.name
+    o = t.get_orderby(default=db.docker_registries.service|db.docker_repositories.repository|db.docker_tags.name)
 
     q = db.docker_tags.registry_id == db.docker_registries.id
     q &= db.docker_tags.repository_id == db.docker_repositories.id

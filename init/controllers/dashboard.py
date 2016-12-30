@@ -197,6 +197,7 @@ def ajax_dashboard():
     table_id = request.vars.table_id
     t = table_dashboard(table_id, 'ajax_dashboard')
     o = ~db.dashboard.dash_severity|db.dashboard.dash_type|db.nodes.nodename|db.services.svcname
+    o = t.get_orderby(default=o)
     q = db.dashboard.id > 0
     l1 = db.nodes.on(db.dashboard.node_id==db.nodes.node_id)
     l2 = db.services.on(db.dashboard.svc_id==db.services.svc_id)

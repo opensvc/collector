@@ -66,10 +66,7 @@ def ajax_patches_col_values():
 def ajax_patches():
     table_id = request.vars.table_id
     t = table_patches(table_id, 'ajax_patches')
-    o = db.nodes.nodename
-    o |= db.patches.patch_num
-    o |= db.patches.patch_rev
-    o |= db.nodes.app
+    o = t.get_orderby(default=db.nodes.nodename|db.patches.patch_num|db.patches.patch_rev|db.nodes.app)
 
     q = db.patches.id>0
     q &= db.patches.node_id==db.nodes.node_id

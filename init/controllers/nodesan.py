@@ -133,7 +133,7 @@ def ajax_nodesan():
     table_id = request.vars.table_id
     t = table_nodesan(table_id, 'ajax_nodesan')
 
-    o = db.v_nodesan.nodename|db.v_nodesan.hba_id|db.v_nodesan.tgt_id
+    o = t.get_orderby(default=db.v_nodesan.nodename|db.v_nodesan.hba_id|db.v_nodesan.tgt_id)
     q = q_filter(app_field=db.v_nodesan.app)
     for f in t.cols:
         q = _where(q, 'v_nodesan', t.filter_parse(f), f)

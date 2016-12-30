@@ -32,7 +32,7 @@ def ajax_tags_col_values():
 def ajax_tags():
     table_id = request.vars.table_id
     t = table_tags(table_id, 'ajax_tags')
-    o = db.tags.tag_name
+    o = t.get_orderby(default=db.tags.tag_name)
     q = db.tags.id>0
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
@@ -133,7 +133,7 @@ def ajax_tagattach_col_values():
 def ajax_tagattach():
     table_id = request.vars.table_id
     t = table_tagattach(table_id, 'ajax_tagattach')
-    o = db.v_tags_full.tag_name | db.v_tags_full.nodename | db.v_tags_full.svcname
+    o = t.get_orderby(default=db.v_tags_full.tag_name|db.v_tags_full.nodename|db.v_tags_full.svcname)
 
     q = db.v_tags_full.id >= 0
     f1 = q_filter(q, node_field=db.v_tags_full.node_id)

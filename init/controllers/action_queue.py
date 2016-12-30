@@ -36,51 +36,67 @@ class table_actions(HtmlTable):
         self.colprops = {
             'id': HtmlTableColumn(
                      field='id',
+                     table='v_action_queue',
                     ),
             'form_id': HtmlTableColumn(
                      field='form_id',
+                     table='v_action_queue',
                     ),
             'status': HtmlTableColumn(
                      field='status',
+                     table='v_action_queue',
                     ),
             'ret': HtmlTableColumn(
                      field='ret',
+                     table='v_action_queue',
                     ),
             'date_queued': HtmlTableColumn(
                      field='date_queued',
+                     table='v_action_queue',
                     ),
             'date_dequeued': HtmlTableColumn(
                      field='date_dequeued',
+                     table='v_action_queue',
                     ),
             'node_id': HtmlTableColumn(
                      field='node_id',
+                     table='v_action_queue',
                     ),
             'nodename': HtmlTableColumn(
                      field='nodename',
+                     table='v_action_queue',
                     ),
             'svc_id': HtmlTableColumn(
                      field='svc_id',
+                     table='v_action_queue',
                     ),
             'svcname': HtmlTableColumn(
                      field='svcname',
+                     table='v_action_queue',
                     ),
             'username': HtmlTableColumn(
                      field='username',
+                     table='v_action_queue',
                     ),
             'action_type': HtmlTableColumn(
                      field='action_type',
+                     table='v_action_queue',
                     ),
             'connect_to': HtmlTableColumn(
                      field='connect_to',
+                     table='v_action_queue',
                     ),
             'command': HtmlTableColumn(
                      field='command',
+                     table='v_action_queue',
                     ),
             'stdout': HtmlTableColumn(
                      field='stdout',
+                     table='v_action_queue',
                     ),
             'stderr': HtmlTableColumn(
                      field='stderr',
+                     table='v_action_queue',
                     ),
         }
         self.keys = ["id"]
@@ -104,7 +120,7 @@ def ajax_actions_col_values():
 def ajax_actions():
     table_id = request.vars.table_id
     t = table_actions(table_id, 'ajax_actions')
-    o = ~db.v_action_queue.id
+    o = t.get_orderby(default=~db.v_action_queue.id)
     q = q_filter(node_field=db.v_action_queue.node_id)
     for f in t.cols:
         q = _where(q, 'v_action_queue', t.filter_parse(f), f)

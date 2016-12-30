@@ -41,10 +41,7 @@ def ajax_packages_col_values():
 def ajax_packages():
     table_id = request.vars.table_id
     t = table_packages(table_id, 'ajax_packages')
-    o = db.nodes.nodename
-    o |= db.packages.pkg_name
-    o |= db.packages.pkg_arch
-    o |= db.nodes.app
+    o = t.get_orderby(default=db.nodes.nodename|db.packages.pkg_name|db.packages.pkg_arch|db.nodes.app)
 
     q = db.packages.id>0
     q &= db.packages.node_id==db.nodes.node_id

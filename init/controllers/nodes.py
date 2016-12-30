@@ -96,7 +96,7 @@ def ajax_nodes():
     table_id = request.vars.table_id
     t = table_nodes(table_id, 'ajax_nodes')
 
-    o = db.nodes.nodename
+    o = t.get_orderby(default=db.nodes.nodename)
     q = db.nodes.id>0
     j = db.apps.app == db.nodes.app
     l = db.apps.on(j)
@@ -343,7 +343,7 @@ def ajax_uids():
     t = table_nodes('nodes', 'ajax_nodes')
     mt = table_uids('uids', 'ajax_uids')
 
-    o = ~db.nodes.id
+    o = t.get_orderby(default=~db.nodes.id)
     q = q_filter(app_field=db.nodes.app)
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
@@ -441,7 +441,7 @@ def ajax_gids():
     t = table_nodes('nodes', 'ajax_nodes')
     mt = table_gids('gids', 'ajax_gids')
 
-    o = ~db.nodes.id
+    o = t.get_orderby(default=~db.nodes.id)
     q = q_filter(app_field=db.nodes.app)
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)

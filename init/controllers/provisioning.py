@@ -65,7 +65,7 @@ def ajax_prov_admin():
     table_id = request.vars.table_id
     t = table_templates(table_id, 'ajax_prov_admin')
 
-    o = db.v_prov_templates.tpl_name > 0
+    o = t.get_orderby(default=db.v_prov_templates.tpl_name)
     q = db.v_prov_templates.id > 0
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)

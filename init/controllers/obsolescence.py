@@ -56,7 +56,7 @@ def ajax_obs():
     table_id = request.vars.table_id
     t = table_obs(table_id, 'ajax_obs')
 
-    o = ~db.v_obsolescence.obs_count
+    o = t.get_orderby(default=~db.v_obsolescence.obs_count)
 
     q = db.v_obsolescence.id >0
     for f in t.cols:

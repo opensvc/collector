@@ -114,7 +114,7 @@ def ajax_filtersets_col_values():
 def ajax_filtersets():
     table_id = request.vars.table_id
     t = table_filtersets(table_id, 'ajax_filtersets')
-    o = db.v_gen_filtersets.fset_name|db.v_gen_filtersets.f_order|db.v_gen_filtersets.join_id
+    o = t.get_orderby(default=db.v_gen_filtersets.fset_name|db.v_gen_filtersets.f_order|db.v_gen_filtersets.join_id)
     q = db.v_gen_filtersets.fset_id > 0
     for f in t.cols:
         q = _where(q, 'v_gen_filtersets', t.filter_parse(f), f)
@@ -168,7 +168,7 @@ def ajax_filters():
     table_id = request.vars.table_id
     t = table_filters(table_id, 'ajax_filters')
 
-    o = db.gen_filters.f_table|db.gen_filters.f_field|db.gen_filters.f_op|db.gen_filters.f_field
+    o = t.get_orderby(default=db.gen_filters.f_table|db.gen_filters.f_field|db.gen_filters.f_op|db.gen_filters.f_field)
     q = db.gen_filters.id > 0
     for f in t.cols:
         q = _where(q, 'gen_filters', t.filter_parse(f), f)

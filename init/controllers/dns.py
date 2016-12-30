@@ -65,7 +65,7 @@ def ajax_dns_domains_col_values():
 def ajax_dns_domains():
     table_id = request.vars.table_id
     t = table_dns_domains(table_id, 'ajax_dns_domains')
-    o = ~dbdns.domains.name
+    o = t.get_orderby(default=~dbdns.domains.name, db=dbdns)
     q = dbdns.domains.id > 0
     for f in set(t.cols):
         q = _where(q, 'domains', t.filter_parse(f), f, db=dbdns)
@@ -157,7 +157,7 @@ def ajax_dns_records():
     table_id = request.vars.table_id
     t = table_dns_records(table_id, 'ajax_dns_records')
 
-    o = ~dbdns.records.name
+    o = t.get_orderby(default=~dbdns.records.name, db=dbdns)
     q = dbdns.records.id > 0
     for f in set(t.cols):
         q = _where(q, 'records', t.filter_parse(f), f, db=dbdns)

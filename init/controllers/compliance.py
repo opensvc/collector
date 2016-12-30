@@ -154,7 +154,7 @@ def ajax_comp_rulesets_services():
     table_id = request.vars.table_id
     t = table_comp_rulesets_services(table_id, 'ajax_comp_rulesets_services')
 
-    o = db.v_comp_services.svcname | db.v_comp_services.encap | db.v_comp_services.ruleset_name
+    o = t.get_orderby(default=db.v_comp_services.svcname|db.v_comp_services.encap|db.v_comp_services.ruleset_name)
     g = db.v_comp_services.svcname | db.v_comp_services.encap | db.v_comp_services.ruleset_name
     q = q_filter(app_field=db.v_comp_services.svc_app)
     for f in t.cols:
@@ -180,7 +180,7 @@ def ajax_comp_rulesets_nodes():
     table_id = request.vars.table_id
     t = table_comp_rulesets_nodes(table_id, 'table_comp_rulesets_nodes')
 
-    o = db.v_comp_nodes.nodename
+    o = t.get_orderby(default=db.v_comp_nodes.nodename)
     g = db.v_comp_nodes.nodename | db.v_comp_nodes.ruleset_name
     q = q_filter(app_field=db.v_comp_nodes.app)
     if 'Manager' not in user_groups():
@@ -320,7 +320,7 @@ def ajax_comp_rulesets_col_values():
 def ajax_comp_rulesets():
     t = table_comp_rulesets('cr0', 'ajax_comp_rulesets')
 
-    o = db.v_comp_rulesets.ruleset_name|db.v_comp_rulesets.chain_len|db.v_comp_rulesets.encap_rset|db.v_comp_rulesets.var_name
+    o = t.get_orderby(default=db.v_comp_rulesets.ruleset_name|db.v_comp_rulesets.chain_len|db.v_comp_rulesets.encap_rset|db.v_comp_rulesets.var_name)
     g = db.v_comp_rulesets.ruleset_id|db.v_comp_rulesets.id
     q = teams_publication_filter()
     for f in t.cols:
@@ -462,7 +462,7 @@ def ajax_comp_moduleset():
     table_id = request.vars.table_id
     t = table_comp_moduleset(table_id, 'ajax_comp_moduleset')
 
-    o = db.v_comp_modulesets.modset_name|db.v_comp_modulesets.modset_mod_name
+    o = t.get_orderby(default=db.v_comp_modulesets.modset_name|db.v_comp_modulesets.modset_mod_name)
     q = db.v_comp_modulesets.modset_id > 0
     if 'Manager' not in user_groups():
         q &= db.comp_moduleset_team_publication.group_id.belongs(user_group_ids())
@@ -579,7 +579,7 @@ def ajax_comp_modulesets_services():
     table_id = request.vars.table_id
     t = table_comp_modulesets_services(table_id, 'ajax_comp_modulesets_services')
 
-    o = db.v_comp_services.svcname | db.v_comp_services.encap | db.v_comp_services.modset_name
+    o = t.get_orderby(default=db.v_comp_services.svcname|db.v_comp_services.encap|db.v_comp_services.modset_name)
     g = db.v_comp_services.svcname | db.v_comp_services.encap | db.v_comp_services.modset_name
     q = q_filter(app_field=db.v_comp_services.svc_app)
     for f in t.cols:
@@ -605,7 +605,7 @@ def ajax_comp_modulesets_nodes():
     table_id = request.vars.table_id
     t = table_comp_modulesets_nodes(table_id, 'ajax_comp_modulesets_services')
 
-    o = db.v_comp_nodes.nodename
+    o = t.get_orderby(default=db.v_comp_nodes.nodename)
     g = db.v_comp_nodes.nodename | db.v_comp_nodes.modset_name
     q = q_filter(app_field=db.v_comp_nodes.app)
     if 'Manager' not in user_groups():
@@ -1135,7 +1135,7 @@ def ajax_comp_status_col_values():
 def ajax_comp_status():
     table_id = request.vars.table_id
     t = table_comp_status(table_id, 'ajax_comp_status')
-    o = db.nodes.nodename
+    o = t.get_orderby(default=db.nodes.nodename)
     q = q_filter(node_field=db.comp_status.node_id)
     q &= db.comp_status.node_id == db.nodes.node_id
     l = db.services.on(db.comp_status.svc_id==db.services.svc_id)
@@ -1165,7 +1165,7 @@ def ajax_comp_status():
 def json_comp_status_agg():
     table_id = request.vars.table_id
     t = table_comp_status(table_id, 'ajax_comp_status')
-    o = db.nodes.nodename
+    o = t.get_orderby(default=db.nodes.nodename)
     q = q_filter(node_field=db.comp_status.node_id)
     q &= db.comp_status.node_id == db.nodes.node_id
     for f in t.cols:
@@ -1200,7 +1200,7 @@ def ajax_comp_svc_status():
     t = table_comp_status('cs0', 'ajax_comp_status')
     mt = table_comp_svc_status('css', 'ajax_comp_svc_status')
 
-    o = db.services.svcname
+    o = t.get_orderby(default=db.services.svcname)
     q = q_filter(node_field=db.comp_status.node_id)
     q &= db.comp_status.node_id == db.nodes.node_id
     q &= db.comp_status.svc_id == db.services.svc_id
@@ -1515,7 +1515,7 @@ def ajax_comp_mod_status():
     t = table_comp_status('cs0', 'ajax_comp_status')
     mt = table_comp_mod_status('cms', 'ajax_comp_mod_status')
 
-    o = ~db.nodes.nodename
+    o = mt.get_orderby(default=~db.nodes.nodename)
     q = q_filter(node_field=db.comp_status.node_id)
     q &= db.comp_status.node_id == db.nodes.node_id
     for f in t.cols:

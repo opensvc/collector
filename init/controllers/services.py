@@ -52,7 +52,7 @@ def ajax_services():
     table_id = request.vars.table_id
     t = table_services(table_id, 'ajax_services')
 
-    o = db.services.svcname
+    o = t.get_orderby(default=db.services.svcname)
     q = q_filter(app_field=db.services.svc_app)
     q = apply_filters_id(q, svc_field=db.services.svc_id)
     for f in t.cols:

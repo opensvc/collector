@@ -93,7 +93,7 @@ def ajax_metrics_admin():
     table_id = request.vars.table_id
     t = table_metrics(table_id, 'ajax_metrics_admin')
 
-    o = db.metrics.metric_name
+    o = t.get_orderby(default=db.metrics.metric_name)
     q = db.metrics.id > 0
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
@@ -165,7 +165,7 @@ def ajax_charts_admin():
     table_id = request.vars.table_id
     t = table_charts(table_id, 'ajax_charts_admin')
 
-    o = db.charts.chart_name
+    o = t.get_orderby(default=db.charts.chart_name)
     q = db.charts.id > 0
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
@@ -238,7 +238,7 @@ def ajax_reports_admin():
     table_id = request.vars.table_id
     t = table_reports_admin(table_id, 'ajax_reports_admin')
 
-    o = db.reports.report_name
+    o = t.get_orderby(default=db.reports.report_name)
     q = db.reports.id > 0
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)

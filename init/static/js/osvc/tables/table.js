@@ -242,7 +242,9 @@ function table_init(opts) {
 		"volatile_filters": false,
 		"child_tables": [],
 		"parent_tables": [],
+		"orderby": [],
 		"linkable": true,
+		"sortable": true,
 		"filterable": true,
 		"refreshable": true,
 		"bookmarkable": true,
@@ -577,6 +579,7 @@ function table_init(opts) {
 				data[fid] = t.convert_dates_in_filter(data[fid])
 			}
 		}
+                data.orderby = t.options.orderby.join(",")
 		return data
 	}
 
@@ -613,6 +616,26 @@ function table_init(opts) {
 			}
 		}
 		return false
+	}
+
+	t.set_orderby = function(c) {
+		var desc_idx = t.options.orderby.indexOf("~"+c)
+		var has_desc = (desc_idx >= 0)
+		var asc_idx = t.options.orderby.indexOf(c)
+		var has_asc = (asc_idx >= 0)
+		if (!has_desc && !has_asc) {
+			// null => asc
+			t.options.orderby.push(c)
+		} else if (has_desc) {
+			// asc => null
+			t.options.orderby.splice(desc_idx, 1)
+		} else {
+			// asc => desc
+			t.options.orderby.splice(asc_idx, 1)
+			t.options.orderby.push("~"+c)
+		}
+		t.refresh_column_headers()
+		t.refresh()
 	}
 
 	t.add_column_header_slim = function(tr, c) {
@@ -738,11 +761,26 @@ function table_init(opts) {
 	}
 
 	t.add_column_header = function(tr, c) {
-		var th = $("<th></th>")
+		var asc_idx = t.options.orderby.indexOf(c)
+		var desc_idx = t.options.orderby.indexOf("~"+c)
+		var th = $("<th style='cursor:row-resize'></th>")
 		th.addClass(t.colprops[c]._class)
 		th.attr("col", c)
 		th.text(i18n.t("col."+t.colprops[c].title))
 		tr.append(th)
+		if (asc_idx >= 0) {
+			var order = $("<span class='icon fa-caret-down' title='"+asc_idx+"'></span>")
+			order.tooltipster()
+			th.prepend(order)
+		}
+		if (desc_idx >= 0) {
+			var order = $("<span class='icon fa-caret-up' title='"+desc_idx+"'></span>")
+			order.tooltipster()
+			th.prepend(order)
+		}
+		th.bind("dblclick", function(){
+			t.set_orderby(c)
+		})
 	}
 
 	t.add_column_header_input_float = function (c) {

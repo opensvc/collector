@@ -103,7 +103,7 @@ def ajax_workflows():
     table_id = request.vars.table_id
     t = table_workflows(table_id, 'ajax_workflows')
 
-    o = ~db.workflows.id
+    o = t.get_orderby(default=~db.workflows.id)
     q = db.workflows.id > 0
     q &= db.workflows.form_md5 == db.forms_revisions.form_md5
     for f in t.cols:
@@ -200,7 +200,7 @@ def ajax_forms_admin_col_values():
 def ajax_forms_admin():
     table_id = request.vars.table_id
     t = table_forms(table_id, 'ajax_forms_admin')
-    o = db.v_forms.form_name
+    o = t.get_orderby(default=db.v_forms.form_name)
     q = db.v_forms.id > 0
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)

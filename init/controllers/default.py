@@ -209,8 +209,7 @@ def ajax_svcmon():
     table_id = request.vars.table_id
     t = table_svcmon(table_id, 'ajax_svcmon')
 
-    o = db.v_svcmon.svcname
-    o |= db.v_svcmon.nodename
+    o = t.get_orderby(default=db.v_svcmon.svcname|db.v_svcmon.nodename)
 
     q = q_filter(app_field=db.v_svcmon.svc_app)
     q = apply_filters_id(q, db.v_svcmon.node_id, db.v_svcmon.svc_id)
