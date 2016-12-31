@@ -55,7 +55,7 @@ def comp_get_fset_data():
             if r.encap_fset_id in data:
                 _data = {'type': 'filterset', 'op': r.f_log_op, 'fset_id': r.encap_fset_id, 'data': data[r.encap_fset_id]}
             else:
-                _data = {'type': 'filterset', 'op': r.f_log_op, 'fset_id': r.encap_fset_id, 'data': []}
+                _data = {'type': 'filterset', 'op': r.f_log_op, 'fset_id': r.encap_fset_id, 'data': None}
             data[r.fset_id].append(_data)
 
     def recurse_fset(_data, depth=0):
