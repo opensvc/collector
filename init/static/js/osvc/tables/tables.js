@@ -152,6 +152,7 @@ function table_actions(divid, options) {
 		'parent_tables': [],
 		'dataable': true,
 		'linkable': true,
+		'sortable': false,
 		'dbfilterable': true,
 		'filterable': true,
 		'refreshable': true,
@@ -529,6 +530,7 @@ function table_comp_log(divid, options) {
 		'colprops': {
 			"run_date": {"default_filter": ">-1d"}
 		},
+		'sortable': false,
 		'wsable': true,
 		'events': ['comp_log_change']
 	}
@@ -1130,6 +1132,7 @@ function table_log(divid, options) {
 		'force_cols': ['id', 'node_id', 'svc_id', 'log_fmt', 'log_dict'],
 		'default_columns': ['log_date', 'log_icons', 'log_level', 'svcname', 'nodename', 'log_user', 'log_action', 'log_evt'],
 		'columns': ['id', 'log_date', 'log_icons', 'log_level', 'svc_id', 'svcname', 'node_id', 'nodename', 'log_user', 'log_action', 'log_evt', 'log_fmt', 'log_dict', 'log_gtalk_sent', 'log_email_sent'],
+		'sortable': false,
 		'wsable': true
 	}
 	var _options = $.extend({}, defaults, options)

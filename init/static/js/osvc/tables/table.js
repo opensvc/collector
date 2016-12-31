@@ -619,6 +619,9 @@ function table_init(opts) {
 	}
 
 	t.set_orderby = function(c, event) {
+		if (!t.options.sortable) {
+			return
+		}
 		var desc_idx = t.options.orderby.indexOf("~"+c)
 		var has_desc = (desc_idx >= 0)
 		var asc_idx = t.options.orderby.indexOf(c)
@@ -778,7 +781,7 @@ function table_init(opts) {
 	t.add_column_header = function(tr, c) {
 		var asc_idx = t.options.orderby.indexOf(c)
 		var desc_idx = t.options.orderby.indexOf("~"+c)
-		var th = $("<th style='cursor:row-resize'></th>")
+		var th = $("<th></th>")
 		th.addClass(t.colprops[c]._class)
 		th.attr("col", c)
 		th.text(i18n.t("col."+t.colprops[c].title))
@@ -793,9 +796,12 @@ function table_init(opts) {
 			order.tooltipster()
 			th.prepend(order)
 		}
-		th.bind("dblclick", function(event){
-			t.set_orderby(c, event)
-		})
+		if (t.options.sortable) {
+			th.css({"cursor": "row-resize"})
+			th.bind("dblclick", function(event){
+				t.set_orderby(c, event)
+			})
+		}
 	}
 
 	t.add_column_header_input_float = function (c) {
