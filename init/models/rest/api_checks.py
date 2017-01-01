@@ -373,6 +373,8 @@ class rest_post_checks_settings(rest_post_handler):
             svc_id = get_svc_id(vars["svc_id"])
             q &= db.checks_settings.svc_id == svc_id
             s += get_svcname(svc_id)
+        else:
+            svc_id = None
         row = db(q).select().first()
         if row is None:
             if not "node_id" in vars or not "chk_type" in vars or not "chk_instance" in vars:
