@@ -101,6 +101,9 @@ input.aci, input.aci:focus {
 	width: 1.3em;
 	font-family: FontAwesome;
 }
+.icon {
+	white-space: nowrap;
+}
 .icon:before {
 	display: inline-block;
 	margin-right: 0.3em;
