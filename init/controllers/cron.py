@@ -799,6 +799,14 @@ def cron_purge_packages():
     db(q).delete()
     db.commit()
 
+def purge_alerts_comp_diff():
+    sql = """select distinct(svc_id) from dashboard where
+             dash_type="compliance differences in cluster"
+    """
+    rows = db.executesql(sql)
+    svc_ids = [row[0] for row in rows]
+    update_dash_compdiff_svc(svc_ids)
+
 def cron_alerts_daily():
     print "alerts_apps_without_responsible"
     alerts_apps_without_responsible()
@@ -838,6 +846,8 @@ def cron_alerts_daily():
     purge_comp_modulesets_services()
     print "purge_comp_rulesets_services"
     purge_comp_rulesets_services()
+    print "purge_alerts_comp_diff"
+    purge_alerts_comp_diff()
 
 def cron_alerts_hourly():
     rets = []
