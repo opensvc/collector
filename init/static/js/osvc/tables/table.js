@@ -888,6 +888,7 @@ function table_init(opts) {
 						dest.addClass("icon spinner")
 					},
 					success: function(msg){
+						dest.removeClass("icon spinner")
 						var data = $.parseJSON(msg)
 						if (t.colprops[col] && t.colprops[col]._class && t.colprops[col]._class.match(/datetime/)) {
 							data = t.convert_cloud_dates(data)
