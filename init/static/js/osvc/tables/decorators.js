@@ -1315,7 +1315,7 @@ function cell_decorator_action_cron(e, line) {
 	var v = $.data(e[0], "v")
 	var l = []
 	if (v == 1) {
-		l.push("time16")
+		l.push("icon time16")
 	}
 	e.html("<div class='"+l.join(" ")+"'></div>")
 }
