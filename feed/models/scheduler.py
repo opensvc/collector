@@ -2758,9 +2758,12 @@ def __svcmon_update(vars, vals, auth):
 
     # set the hv field of container nodes
     if 'mon_vmname' in h and h['mon_vmname'] is not None and len(h['mon_vmname']) > 0:
+        node = get_node(node_id)
         q = db.nodes.nodename == h['mon_vmname']
-        q &= db.nodes.app.belongs(node_responsibles_apps(node_id))
-        db(q).update(hv=get_node(node_id).nodename)
+        q &= db.nodes.app == node.app
+        if db(q).count() == 0:
+            q &= db.nodes.app.belongs(node_responsibles_apps(node_id))
+        db(q).update(hv=node.nodename)
     print datetime.datetime.now() - _now, "set the hv field of container nodes"
     _now = datetime.datetime.now()
 
