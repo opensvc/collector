@@ -66,7 +66,7 @@ class rest_delete_check(rest_delete_handler):
         )
 
     def handler(self, id, **vars):
-        check_privilege("CheckManager")
+        check_privilege("CheckExec")
         q = db.checks_live.id == id
         q = q_filter(q, node_field=db.checks_live.node_id)
         row = db(q).select().first()
@@ -107,6 +107,7 @@ class rest_delete_checks(rest_delete_handler):
         )
 
     def handler(self, **vars):
+        check_privilege("CheckExec")
         s = ""
         if 'id' in vars:
             q = db.checks_live.id == vars["id"]
@@ -199,7 +200,7 @@ class rest_delete_checks_setting(rest_delete_handler):
         )
 
     def handler(self, id, **vars):
-        check_privilege("CheckManager")
+        check_privilege("CheckExec")
         q = db.checks_settings.id == id
         q = q_filter(q, node_field=db.checks_settings.node_id)
         row = db(q).select().first()
@@ -247,6 +248,7 @@ class rest_delete_checks_settings(rest_delete_handler):
         )
 
     def handler(self, **vars):
+        check_privilege("CheckExec")
         s = ""
         if 'id' in vars:
             q = db.checks_settings.id == vars["id"]
@@ -291,7 +293,7 @@ class rest_post_checks_setting(rest_post_handler):
         )
 
     def handler(self, id, **vars):
-        check_privilege("CheckManager")
+        check_privilege("CheckExec")
         q = db.checks_settings.id == id
         q = q_filter(q, node_field=db.checks_settings.node_id)
         row = db(q).select().first()
@@ -354,6 +356,7 @@ class rest_post_checks_settings(rest_post_handler):
         )
 
     def handler(self, **vars):
+        check_privilege("CheckExec")
         s = ""
         if 'id' in vars:
             q = db.checks_settings.id == vars["id"]

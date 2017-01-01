@@ -1187,28 +1187,28 @@ function table_action_menu_init_data(t) {
 							"title": "action_menu.delete",
 							"class": "del16",
 							"fn": "data_action_chk_instance_delete",
-							"privileges": ["Manager", "CheckManager"],
+							"privileges": ["Manager", "CheckExec"],
 							"min": 1
 						},
 						{
 							"title": "action_menu.reset_thresholds",
 							"class": "fa-undo",
 							"fn": "data_action_chk_instance_reset_thresholds",
-							"privileges": ["Manager", "CheckManager"],
+							"privileges": ["Manager", "CheckExec"],
 							"min": 1
 						},
 						{
 							"title": "action_menu.set_low_threshold",
 							"class": "fa-angle-down",
 							"fn": "data_action_chk_instance_set_low_threshold",
-							"privileges": ["Manager", "CheckManager"],
+							"privileges": ["Manager", "CheckExec"],
 							"min": 1
 						},
 						{
 							"title": "action_menu.set_high_threshold",
 							"class": "fa-angle-up",
 							"fn": "data_action_chk_instance_set_high_threshold",
-							"privileges": ["Manager", "CheckManager"],
+							"privileges": ["Manager", "CheckExec"],
 							"min": 1
 						}
 					]

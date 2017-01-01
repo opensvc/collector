@@ -51,7 +51,7 @@ def update_dash_compdiff_svc(svc_ids):
             if row[2] not in h:
                 h[row[2]] = {}
             h[row[2]][row[3]] = row[1]
-            
+
         pb = 0
         for mod, d in h.items():
             if len(d) == 1:
