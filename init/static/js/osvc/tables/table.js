@@ -626,7 +626,7 @@ function table_init(opts) {
 		var has_desc = (desc_idx >= 0)
 		var asc_idx = t.options.orderby.indexOf(c)
 		var has_asc = (asc_idx >= 0)
-		if (event.ctrlKey) {
+		if (event.ctrlKey || event.metaKey) {
 			// subsort
 			if (!has_desc && !has_asc) {
 				// null => asc
