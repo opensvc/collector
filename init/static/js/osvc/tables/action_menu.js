@@ -1824,7 +1824,9 @@ function table_action_menu(t, e){
 function format_search(t, o) {
 	o.e_search = $("<input class='oi' id='amsearch'>")
 	o.menu.append(o.e_search)
-	o.e_search.focus()
+	if (is_in_view(o.e_search)) {
+		o.e_search.focus()
+	}
 	o.e_search.bind("keyup", function(event) {
 		o.search = o.e_search.val().toLowerCase()
 		format_action_menu(t, o)

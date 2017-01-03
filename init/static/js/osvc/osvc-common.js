@@ -1097,3 +1097,6 @@ function format_title(options) {
 	}
 }
 
+function is_in_view(e) {
+	return !($(e).offset().top - $(window).scrollTop() < $(e).height())
+}
