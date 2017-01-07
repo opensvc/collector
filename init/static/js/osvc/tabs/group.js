@@ -211,7 +211,7 @@ function group_properties(divid, options) {
 
 	}
 
-	o.div.load("/init/static/views/group_properties.html?v="+osvc.code_rev, function() {
+	o.div.load("/"+osvc.app+"/static/views/group_properties.html?v="+osvc.code_rev, function() {
 		o.div.i18n()
 		o.init()
 	})
