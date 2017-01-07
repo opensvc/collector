@@ -5,6 +5,9 @@ function osvc_date_from_collector(s) {
 		console.log(e)
 		return s
 	}
+	if (!m) {
+		return s
+	}
 	return m.format(m._f)
 }
 
