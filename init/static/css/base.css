@@ -1031,6 +1031,9 @@ div.menu_box {
 	float:left;
 	border-right: 1px solid #ddd;
 }
+.tab > ul > li > p {
+	margin: 0;
+}
 .tab > ul > li:hover > p:before {
 	color: #EE5464;
 }
