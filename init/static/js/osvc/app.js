@@ -80,7 +80,7 @@ function i18n_init(callback) {
 		getAsync : true,
 		fallbackLng: 'en',
 		load:'unspecific',
-		resGetPath: "/init/static/locales/__lng__/__ns__.json",
+		resGetPath: "/"+osvc.app+"/static/locales/__lng__/__ns__.json",
 		ns: {
 			namespaces: ['translation'],
 			defaultNs: 'translation'
@@ -96,7 +96,7 @@ function i18n_init(callback) {
 
 function init_requirejs() {
 	require.config({
-		baseUrl: '/init/static/js',
+		baseUrl: '/'+osvc.app+'/static/js',
 		urlArgs: 'v='+osvc.code_rev,
 		paths: {
 			"jsyaml": "js-yaml.min",
