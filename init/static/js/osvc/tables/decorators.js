@@ -229,43 +229,6 @@ function cell_decorator_boolean(e, line) {
 	e.html(s)
 }
 
-function cell_decorator_pct(e, line) {
-	var v = $.data(e[0], "v")
-	d = _cell_decorator_pct(v)
-	e.html(d)
-}
-
-function _cell_decorator_pct(v) {
-	var dl = $("<div><div>")
-	var dr = $("<div><div>")
-	var dp = $("<div><div>")
-	var d = $("<div><div>")
-	dl.css({
-		"font-size": "0px",
-		"line-height": "0px",
-		"height": "4px",
-		"min-width": "0%",
-		"max-width": v+"%",
-		"width": v+"%",
-		"background": "#A6FF80"
-	})
-	dr.css({
-		"text-align": "left",
-		"margin": "2px auto",
-		"background": "#FF7863",
-		"overflow": "hidden"
-	})
-	dp.css({
-		"margin": "auto",
-		"text-align": "center",
-		"width": "100%"
-	})
-	dp.text(v+"%")
-	dr.append(dl)
-	d.append([dr, dp])
-	return d
-}
-
 function cell_decorator_app(e, line) {
 	var v = $.data(e[0], "v")
 	e
@@ -1503,185 +1466,6 @@ function cell_decorator_action_q_status(e, line) {
 	e.html("<div class='"+cl.join(" ")+"'>"+st+"</div>")
 }
 
-function datetime_age(s) {
-	// return age in minutes
-	if (typeof s === 'undefined') {
-		return
-	}
-	if (!s || (s == 'empty')) {
-		return
-	}
-	var d = moment.tz(s, osvc.server_timezone)
-	var now = moment()
-	var delta = (now -d)/60000
-	return delta
-}
-
-function _outdated(s, max_age) {
-	var delta = datetime_age(s)
-	if (!delta) {
-		return true
-	}
-	if (delta > max_age) {
-		return true
-	}
-	return false
-}
-
-function status_outdated(line) {
-	var l = line.children("[cell=1][col=mon_updated]")
-	if (l.length == 0) {
-		l = line.children("[cell=1][col=svc_status_updated]")
-	}
-	if (l.length == 0) {
-		l = line.children("[cell=1][col=status_updated]")
-	}
-	if (l.length == 0) {
-		l = line.children("[cell=1][col$=updated]")
-	}
-	if (l.length == 0) {
-		return true
-	}
-	var s = $.data(l[0], "v")
-	return _outdated(s, 15)
-}
-
-function cell_decorator_date_no_age(e, line) {
-	var v = $.data(e[0], "v")
-	if (typeof v === 'undefined') {
-		return
-	}
-	var s = v.split(" ")[0]
-	e.html(s)
-}
-
-function cell_decorator_datetime_no_age(e, line) {
-	cell_decorator_datetime(e, line)
-}
-
-function cell_decorator_date_future(e, line) {
-	e.attr("max_age", 0)
-	cell_decorator_datetime(e, line)
-}
-
-function cell_decorator_datetime_status(e, line) {
-	e.attr("max_age", 15)
-	cell_decorator_datetime(e, line)
-}
-
-function cell_decorator_datetime_future(e, line) {
-	cell_decorator_datetime(e, line)
-}
-
-function cell_decorator_datetime_daily(e, line) {
-	e.attr("max_age", 1440)
-	cell_decorator_datetime(e, line)
-}
-
-function cell_decorator_datetime_weekly(e, line) {
-	e.attr("max_age", 10080)
-	cell_decorator_datetime(e, line)
-}
-
-function cell_decorator_datetime(e, line) {
-	var s = $.data(e[0], "v")
-	if (s == "1000-01-01 00:00:00") {
-		e.empty()
-		return
-	}
-	var max_age = e.attr("max_age")
-	var delta = datetime_age(s)
-
-	if (!delta) {
-		e.html()
-		return
-	}
-	var props = delta_properties(delta, s, max_age)
-	if (e.text() == props.text) {
-		return
-	}
-	if (e.children().length) {
-		// already decorated, just update properties
-		var div = e.children()
-		div
-		.text(props.text)
-		.css({"color": props.color})
-		if (!div.hasClass(props.cl)) {
-			div.removeClass().addClass(props.cl)
-		}
-		return
-	}
-	var content = $("<div class='"+props.cl+"' style='color:"+props.color+"' title='"+props.client_date+"'>"+props.text+"</div>").tooltipster()
-	e.html(content)
-}
-
-function delta_properties(delta, s, max_age) {
-	if (delta > 0) {
-		var prefix = "-"
-		var round = Math.ceil
-	} else {
-		var prefix = ""
-		delta = -delta
-		var round = Math.floor
-	}
-
-	var hour = 60
-	var day = 1440
-	var week = 10080
-	var month = 43200
-	var year = 524520
-
-	if (delta < hour) {
-		var cl = "minute icon"
-		var text = prefix + i18n.t("table.minute", {"count": round(delta)})
-		var color = "#000000"
-	} else if (delta < day) {
-		var cl = "hour icon"
-		var text = prefix + i18n.t("table.hour", {"count": round(delta/hour)})
-		var color = "#181818"
-	} else if (delta < week) {
-		var cl = "day icon "
-		var text = prefix + i18n.t("table.day", {"count": round(delta/day)})
-		var color = "#333333"
-	} else if (delta < month) {
-		var cl = "week icon "
-		var text = prefix + i18n.t("table.week", {"count": round(delta/week)})
-		var color = "#333333"
-	} else if (delta < year) {
-		var cl = "month icon"
-		var text = prefix + i18n.t("table.month", {"count": round(delta/month)})
-		var color = "#484848"
-	} else {
-		var cl = "year icon"
-		var text = prefix + i18n.t("table.year", {"count": round(delta/year)})
-		var color = "#666666"
-	}
-
-	cl += " nowrap"
-
-	if (prefix == "-" && max_age && (delta > max_age)) {
-		cl += " icon-red"
-	}
-
-	if (!s) {
-		s = ""
-	}
-
-	return {
-		cl: cl,
-		color: color,
-		server_date: s,
-		client_date: osvc_date_from_collector(s),
-		text: text
-	}
-}
-
-function cell_decorator_date(e, line) {
-	cell_decorator_datetime(e, line)
-	s = $.data(e[0], "v")
-	e.text(s.split(" ")[0])
-}
-
 function cell_decorator_env(e, line) {
 	if ($.data(e[0], "v") != "PRD") {
 		return
@@ -2036,7 +1820,7 @@ function cell_decorator_rule_value(e, line) {
 	})
 }
 
-cell_decorators = {
+$.extend(true, cell_decorators, {
 	"yaml": cell_decorator_yaml,
 	"sql": cell_decorator_sql,
 	"rsetvars": cell_decorator_rsetvars,
@@ -2078,13 +1862,6 @@ cell_decorators = {
 	"svcmon_links": cell_decorator_svcmon_links,
 	"svc_ha": cell_decorator_svc_ha,
 	"env": cell_decorator_env,
-	"date_future": cell_decorator_date_future,
-	"datetime_future": cell_decorator_datetime_future,
-	"datetime_weekly": cell_decorator_datetime_weekly,
-	"datetime_daily": cell_decorator_datetime_daily,
-	"datetime_status": cell_decorator_datetime_status,
-	"datetime_no_age": cell_decorator_datetime_no_age,
-	"date_no_age": cell_decorator_date_no_age,
 	"dash_severity": cell_decorator_dash_severity,
 	"dash_links": cell_decorator_dash_links,
 	"report_name": cell_decorator_report_name,
@@ -2111,7 +1888,6 @@ cell_decorators = {
 	"obs_count": cell_decorator_obs_count,
 	"uid": cell_decorator_uid,
 	"gid": cell_decorator_gid,
-	"pct": cell_decorator_pct,
 	"tpl_definition": cell_decorator_tpl_definition,
 	"prov_template": cell_decorator_prov_template,
 	"fset_name": cell_decorator_fset_name,
@@ -2126,6 +1902,6 @@ cell_decorators = {
 	"log_event": cell_decorator_log_event,
 	"ruleset_name": cell_decorator_ruleset_name,
 	"rule_value": cell_decorator_rule_value
-}
+})
 
 

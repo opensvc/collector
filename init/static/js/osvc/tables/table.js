@@ -2982,3 +2982,855 @@ function table_init(opts) {
 	return t
 }
 
+//
+// Standard table cell decorators
+//
+function delta_properties(delta, s, max_age) {
+	if (delta > 0) {
+		var prefix = "-"
+		var round = Math.ceil
+	} else {
+		var prefix = ""
+		delta = -delta
+		var round = Math.floor
+	}
+
+	var hour = 60
+	var day = 1440
+	var week = 10080
+	var month = 43200
+	var year = 524520
+
+	if (delta < hour) {
+		var cl = "minute icon"
+		var text = prefix + i18n.t("table.minute", {"count": round(delta)})
+		var color = "#000000"
+	} else if (delta < day) {
+		var cl = "hour icon"
+		var text = prefix + i18n.t("table.hour", {"count": round(delta/hour)})
+		var color = "#181818"
+	} else if (delta < week) {
+		var cl = "day icon "
+		var text = prefix + i18n.t("table.day", {"count": round(delta/day)})
+		var color = "#333333"
+	} else if (delta < month) {
+		var cl = "week icon "
+		var text = prefix + i18n.t("table.week", {"count": round(delta/week)})
+		var color = "#333333"
+	} else if (delta < year) {
+		var cl = "month icon"
+		var text = prefix + i18n.t("table.month", {"count": round(delta/month)})
+		var color = "#484848"
+	} else {
+		var cl = "year icon"
+		var text = prefix + i18n.t("table.year", {"count": round(delta/year)})
+		var color = "#666666"
+	}
+
+	cl += " nowrap"
+
+	if (prefix == "-" && max_age && (delta > max_age)) {
+		cl += " icon-red"
+	}
+
+	if (!s) {
+		s = ""
+	}
+
+	return {
+		cl: cl,
+		color: color,
+		server_date: s,
+		client_date: osvc_date_from_collector(s),
+		text: text
+	}
+}
+
+function cell_decorator_date(e, line) {
+	cell_decorator_datetime(e, line)
+	s = $.data(e[0], "v")
+	e.text(s.split(" ")[0])
+}
+
+function datetime_age(s) {
+	// return age in minutes
+	if (typeof s === 'undefined') {
+		return
+	}
+	if (!s || (s == 'empty')) {
+		return
+	}
+	var d = moment.tz(s, osvc.server_timezone)
+	var now = moment()
+	var delta = (now -d)/60000
+	return delta
+}
+
+function _outdated(s, max_age) {
+	var delta = datetime_age(s)
+	if (!delta) {
+		return true
+	}
+	if (delta > max_age) {
+		return true
+	}
+	return false
+}
+
+function status_outdated(line) {
+	var l = line.children("[cell=1][col=mon_updated]")
+	if (l.length == 0) {
+		l = line.children("[cell=1][col=svc_status_updated]")
+	}
+	if (l.length == 0) {
+		l = line.children("[cell=1][col=status_updated]")
+	}
+	if (l.length == 0) {
+		l = line.children("[cell=1][col$=updated]")
+	}
+	if (l.length == 0) {
+		return true
+	}
+	var s = $.data(l[0], "v")
+	return _outdated(s, 15)
+}
+
+function cell_decorator_date_no_age(e, line) {
+	var v = $.data(e[0], "v")
+	if (typeof v === 'undefined') {
+		return
+	}
+	var s = v.split(" ")[0]
+	e.html(s)
+}
+
+function cell_decorator_datetime_no_age(e, line) {
+	cell_decorator_datetime(e, line)
+}
+
+function cell_decorator_date_future(e, line) {
+	e.attr("max_age", 0)
+	cell_decorator_datetime(e, line)
+}
+
+function cell_decorator_datetime_status(e, line) {
+	e.attr("max_age", 15)
+	cell_decorator_datetime(e, line)
+}
+
+function cell_decorator_datetime_future(e, line) {
+	cell_decorator_datetime(e, line)
+}
+
+function cell_decorator_datetime_daily(e, line) {
+	e.attr("max_age", 1440)
+	cell_decorator_datetime(e, line)
+}
+
+function cell_decorator_datetime_weekly(e, line) {
+	e.attr("max_age", 10080)
+	cell_decorator_datetime(e, line)
+}
+
+function cell_decorator_datetime(e, line) {
+	var s = $.data(e[0], "v")
+	if (s == "1000-01-01 00:00:00") {
+		e.empty()
+		return
+	}
+	var max_age = e.attr("max_age")
+	var delta = datetime_age(s)
+
+	if (!delta) {
+		e.html()
+		return
+	}
+	var props = delta_properties(delta, s, max_age)
+	if (e.text() == props.text) {
+		return
+	}
+	if (e.children().length) {
+		// already decorated, just update properties
+		var div = e.children()
+		div
+		.text(props.text)
+		.css({"color": props.color})
+		if (!div.hasClass(props.cl)) {
+			div.removeClass().addClass(props.cl)
+		}
+		return
+	}
+	var content = $("<div class='"+props.cl+"' style='color:"+props.color+"' title='"+props.client_date+"'>"+props.text+"</div>").tooltipster()
+	e.html(content)
+}
+
+function cell_decorator_pct(e, line) {
+	var v = $.data(e[0], "v")
+	d = _cell_decorator_pct(v)
+	e.html(d)
+}
+
+function _cell_decorator_pct(v) {
+	var dl = $("<div><div>")
+	var dr = $("<div><div>")
+	var dp = $("<div><div>")
+	var d = $("<div><div>")
+	dl.css({
+		"font-size": "0px",
+		"line-height": "0px",
+		"height": "4px",
+		"min-width": "0%",
+		"max-width": v+"%",
+		"width": v+"%",
+		"background": "#A6FF80"
+	})
+	dr.css({
+		"text-align": "left",
+		"margin": "2px auto",
+		"background": "#FF7863",
+		"overflow": "hidden"
+	})
+	dp.css({
+		"margin": "auto",
+		"text-align": "center",
+		"width": "100%"
+	})
+	dp.text(v+"%")
+	dr.append(dl)
+	d.append([dr, dp])
+	return d
+}
+
+cell_decorators = {
+	"date_future": cell_decorator_date_future,
+	"datetime_future": cell_decorator_datetime_future,
+	"datetime_weekly": cell_decorator_datetime_weekly,
+	"datetime_daily": cell_decorator_datetime_daily,
+	"datetime_status": cell_decorator_datetime_status,
+	"datetime_no_age": cell_decorator_datetime_no_age,
+	"date_no_age": cell_decorator_date_no_age,
+	"date": cell_decorator_date,
+	"pct": cell_decorator_pct,
+}
+
+//
+// action menu
+//
+
+//
+// install handler for click events on the table checkbox column.
+// only function called at table init.
+//
+function table_bind_action_menu(t) {
+	table_action_menu_init_data(t)
+
+	$("#table_"+t.id).find("[name="+t.id+"_tools]").each(function(){
+		$(this).bind("mouseup", function(event) {
+			if (event.button == 2) {
+				// right-click => open the action menu
+				table_action_menu(t, event)
+			} else {
+				// left-click => close the action menu, the menu and the filter box
+				var shiftClick = jQuery.Event("click")
+				shiftClick.shiftKey = event.shiftKey
+				$(event.target).find("input").trigger(shiftClick)
+				$("#fsr"+t.id).hide()
+			}
+		})
+	})
+}
+
+//
+// action menu formatter entry point
+//
+function table_action_menu(t, e){
+	o = {}
+	o.menu_id = "am_"+t.id
+	o.menu = $("#"+o.menu_id)
+	o.open_event = e
+
+	// purge the caches
+	t.action_menu_req_cache = null
+	t.action_menu_data_cache = {}
+
+	// create the menu sidepanel
+	o.menu = t.get_sidepanel()
+
+	// add the search tool
+	format_search(t, o)
+
+	// populate the action menu
+	format_action_menu(t, o)
+	return o
+}
+
+function format_search(t, o) {
+	o.e_search = $("<input class='oi' id='amsearch'>")
+	o.menu.append(o.e_search)
+	if (is_in_view(o.e_search)) {
+		o.e_search.focus()
+	}
+	o.e_search.bind("keyup", function(event) {
+		o.search = o.e_search.val().toLowerCase()
+		format_action_menu(t, o)
+	})
+}
+
+function format_action_menu(t, o) {
+	if (!o.e_search) {
+		return
+	}
+
+	// purge previously displayed actions
+	o.e_search.nextAll().remove()
+
+	// format the data as menu
+	var ul = $("<ul></ul>")
+	for (var i=0; i<t.action_menu_data.length; i++) {
+		var li = table_action_menu_format_section(t, o.open_event, t.action_menu_data[i])
+		if (li.html().length == 0) {
+			continue
+		}
+		ul.append(li)
+	}
+
+	// empty menu banner
+	if (ul.html().length == 0) {
+		o.menu.append("<div style='padding-top:1em' class='alert16 icon'>"+i18n.t("action_menu.no_action")+"</div>")
+		return
+	}
+	o.menu.append(ul)
+
+	// display actions only for the clicked section
+	var folders = o.menu.find(".action_menu_folder")
+	folders.addClass("icon_fixed_width right16")
+	folders.children("ul,.action_menu_selector").hide()
+	folders.bind("click", function(e){
+		// the fn might have inserted children dom nodes (forms for example)
+		// we don't want a click in those children to propagate to the li
+		// click trigger, which would close the leaf
+		if (!$(e.target).is(".action_menu_folder,.action_menu_folder>span>span")) {
+			return
+		}
+
+		e.stopPropagation()
+		var v = $(this).hasClass("down16")
+		folders.removeClass("down16")
+		folders.addClass("right16")
+		folders.children("ul,.action_menu_selector").hide("blind", 300)
+		if (!v) {
+			var selector = $(this).children(".action_menu_selector")
+			selector.show()
+			var scope = selector.children(".action_menu_selector_selected").attr("scope")
+			$(this).children("ul").hide()
+			if (scope) {
+				$(this).children("ul[scope="+scope+"]").show()
+			} else {
+				$(this).children("ul").show("blind", 300)
+			}
+			$(this).removeClass("right16")
+			$(this).addClass("down16")
+		} else {
+			table_action_menu_unfocus_leaf(t, $(this))
+		}
+	})
+
+	return o
+}
+
+function table_action_menu_format_section(t, e, section) {
+	var ul = $("<ul></ul>")
+	for (var i=0; i<section.children.length; i++) {
+		var li = table_action_menu_format_selector(t, o, e, section.children[i])
+		if (!li || (li.children("ul").children().length == 0)) {
+			continue
+		}
+		ul.append(li)
+	}
+	var content = $("<li></li>")
+	if (ul.children().length == 0) {
+		return content
+	}
+	var title = $("<h3></h3>")
+	title.text(i18n.t(section.title)).addClass("icon "+section.class)
+	content.append(title)
+	content.append(ul)
+
+	return content
+}
+
+//
+// filter a dataset, removing elements not meeting conditions defined
+// in the action menu data
+//
+function table_action_menu_condition_filter(t, condition, data) {
+	var cond = []
+	var or_cond = condition.split(",")
+	for (var i=0; i<or_cond.length; i++) {
+		cond.push(or_cond[i].split("+"))
+	}
+	var _data = []
+	for (var i=0; i<data.length; i++) {
+		for (var j=0; j<cond.length; j++) {
+			var violation = false
+			for (var k=0; k<cond[j].length; k++) {
+				if (!(cond[j][k] in data[i])) {
+					violation = true
+					break
+				}
+				var val = data[i][cond[j][k]]
+				if ((typeof val !== "boolean") && ((typeof val === "undefined") || (val=="") || (val == "empty"))) {
+					violation = true
+					break
+				}
+			}
+			if (!violation) {
+				_data.push(data[i])
+				break
+			}
+		}
+	}
+	return _data
+}
+
+function table_action_menu_get_cols_data_clicked(t, e, scope, selector) {
+	var data = []
+	var cell = $(e.target)
+	var line = cell.parents(".tl").first()
+	var d = {}
+	for (var i=0; i<selector.cols.length; i++) {
+		var c = selector.cols[i]
+		var s = t.column_selectors[c]
+		var cell = line.find(s).first()
+		if (cell.length == 0) {
+			continue
+		}
+		var val = $.data(cell[0], "v")
+		if ((typeof val !== "boolean") && ((typeof val === "undefined") || (val=="") || (val == "empty"))) {
+			continue
+		}
+		d[c] = val
+	}
+	data.push(d)
+	return table_action_menu_condition_filter(t, selector.condition, data)
+}
+
+function table_action_menu_get_cols_data_checked(t, e, scope, selector) {
+	var data = []
+	var sigs = []
+	t.div.find(".tl").each(function(){
+		var ck = $(this).find("input[id^="+t.id+"_ckid_]").first()
+		if ((ck.length == 0) || !ck.is(":checked")) {
+			return
+		}
+		var d = {}
+		var sig = ""
+		for (var i=0; i<selector.cols.length; i++) {
+			var c = selector.cols[i]
+			var s = t.column_selectors[c]
+			try {
+				var val = $.data($(this).find(s).first()[0], "v")
+			} catch(e) {
+				sig += "-"
+				continue
+			}
+			if ((typeof val !== "boolean") && ((typeof val === "undefined") || (val=="") || (val == "empty"))) {
+				sig += "-"
+				continue
+			}
+			sig += val
+			d[c] = val
+		}
+		if (sigs.indexOf(sig) < 0) {
+			sigs.push(sig)
+			data.push(d)
+		}
+	})
+	return table_action_menu_condition_filter(t, selector.condition, data)
+}
+
+function table_action_menu_get_cols_data_all(t, e, scope, selector) {
+	var data = []
+	var cols = []
+
+	// fetch all columns meaningful for the action menu
+	// so we can cache the result and avoid other requests
+	if (t.action_menu_req_cache) {
+		data = t.action_menu_req_cache
+	} else {
+		var reverse_col = {}
+		for (var c in t.column_selectors) {
+			var s = t.column_selectors[c]
+			var col = t.div.find(".tl").first().find(s).first().attr("col")
+			if (!col) {
+				continue
+			}
+			cols.push(col)
+			reverse_col[col] = c
+		}
+		if (cols.length == 0) {
+			t.action_menu_req_cache = []
+			return data
+		}
+
+		var sigs = []
+		var url = t.options.ajax_url+"/data"
+		var vars = t.prepare_request_data()
+		vars["visible_columns"] = cols.join(",")
+		vars[t.id+"_page"] = 1
+		vars[t.id+"_perpage"] = t.action_menu_req_max
+		$.ajax({
+			async: false,
+			type: "POST",
+			url: url,
+			data: vars,
+			success: function(msg){
+				try {
+					var _data = $.parseJSON(msg)
+					var lines = _data['table_lines']
+				} catch(e) {
+					return []
+				}
+				if (typeof(lines) === "string") {
+					return []
+				}
+				for (i=0; i<lines.length; i++) {
+					var d = {}
+					var sig = ""
+					for (var j=0; j<cols.length; j++) {
+						col = cols[j]
+						var val = lines[i]["cells"][j]
+						d[reverse_col[col]] = val
+						sig += "-"+val
+					}
+					if (sigs.indexOf(sig) < 0) {
+						sigs.push(sig)
+						data.push(d)
+					}
+				}
+			}
+		})
+		t.action_menu_req_cache = data
+	}
+
+	// digest cached data for the selector
+	var sigs = []
+	var _data = []
+	for (i=0; i<data.length; i++) {
+		var d = {}
+		var _d = data[i]
+		var sig = ""
+		for (var j=0; j<selector.cols.length; j++) {
+			var col = selector.cols[j]
+			if (!(col in _d)) {
+				continue
+			}
+			var val = _d[col]
+			d[col] = val
+			sig += "-"+val
+		}
+		if (sigs.indexOf(sig) < 0) {
+			sigs.push(sig)
+			_data.push(d)
+		}
+	}
+	return table_action_menu_condition_filter(t, selector.condition, _data)
+}
+
+function table_action_menu_get_cols_data(t, e, scope, selector) {
+	if (scope == "clicked") {
+		return table_action_menu_get_cols_data_clicked(t, e, scope, selector)
+	} else if (scope == "checked") {
+		return table_action_menu_get_cols_data_checked(t, e, scope, selector)
+	} else if (scope == "all") {
+		return table_action_menu_get_cols_data_all(t, e, scope, selector)
+	} else if (scope == "tab") {
+		return [t.data]
+	}
+	return []
+}
+
+function table_prepare_scope_action_list(t, o, e, selector, scope, data, cache_id) {
+	var ul = $("<ul></ul>")
+	ul.attr("scope", scope)
+	for (var j=0; j<selector.children.length; j++) {
+		var leaf = selector.children[j]
+		if (leaf.max && data && (data.length > leaf.max)) {
+			continue
+		}
+		if (leaf.min && data && (data.length < leaf.min)) {
+			continue
+		}
+		var li = table_action_menu_format_leaf(t, e, leaf)
+		if (!li) {
+			continue
+		}
+		if (o.search && ! li.text().toLowerCase().match(o.search)) {
+			continue
+		}
+		if (cache_id) {
+			li.attr("cache_id", cache_id)
+		}
+		li.bind("click", function(e) {
+			e.stopPropagation()
+			var fn = $(this).attr("fn")
+			if (fn) {
+				window[fn](t, e)
+			} else {
+				table_action_menu_agent_action(t, e)
+			}
+		})
+		ul.append(li)
+	}
+	return ul
+}
+
+function table_selector_match_table(t, selector) {
+	if (!selector.table) {
+		return true
+	}
+	for (var i=0; i<selector.table.length; i++) {
+		var tid = selector.table[i]
+		if (tid == t.options.name) {
+			return true
+		}
+	}
+	return false
+}
+
+function table_action_menu_format_selector(t, o, e, selector) {
+	if (!table_selector_match_table(t, selector)) {
+		return
+	}
+	var content = $("<li></li>")
+	if (selector.foldable && ((o.search == "") || (typeof(o.search) === "undefined"))) {
+		content.addClass("action_menu_folder")
+	}
+	if (selector.title) {
+		var title = $("<span></span>")
+		var _title = $("<span></span>")
+		_title.text(i18n.t(selector.title))
+		if ("class" in selector) {
+			_title.addClass("icon_fixed_width "+selector["class"])
+		}
+		title.append(_title)
+	}
+	if (selector.selector.length == 0) {
+		// no selector, special case for tools not working on data lines
+		var ul = table_prepare_scope_action_list(t, o, e, selector)
+		if (ul.length > 0) {
+			content.prepend(ul)
+			content.prepend(title)
+		}
+		return content
+	}
+	var e_selector = $("<div class='action_menu_selector'></div>")
+
+	if (!t.action_menu_data_cache) {
+		t.action_menu_data_cache = {}
+	}
+
+	for (var i=0; i<selector.selector.length; i++) {
+		var scope = selector.selector[i]
+
+		// don't compute the "all" scope on right-click
+		if ((scope == "all") && (e.which == 3)) {
+			continue
+		}
+
+		// don't compute the "clicked" scope on not right-click
+		if ((scope == "clicked") && (e.which != 3)) {
+			continue
+		}
+
+		// compute selected cursor
+		cache_id = selector.condition
+		cache_id += '-'+scope
+		if (cache_id in t.action_menu_data_cache) {
+			var data = t.action_menu_data_cache[cache_id]
+		} else {
+			var data = table_action_menu_get_cols_data(t, e, scope, selector)
+			t.action_menu_data_cache[cache_id] = data
+		}
+
+		// prepare action list for scope
+		var ul = table_prepare_scope_action_list(t, o, e, selector, scope, data, cache_id)
+
+		// prepare the selector scope button
+		var s = $("<div class='ellipsis'></div>")
+		s.attr("scope", scope)
+
+		// disable the scope if no data and not in natural table
+		if (data.length == 0 && !table_selector_match_table(t, selector)) {
+			s.addClass("action_menu_selector_disabled")
+		}
+
+		// set as selected if not disabled and no other scope is already selected
+		if ((e_selector.children(".action_menu_selector_selected").length == 0) && !s.hasClass("action_menu_selector_disabled")) {
+			s.addClass("action_menu_selector_selected")
+		}
+
+		// set the span text
+		if ((scope == "clicked") && (data.length > 0)) {
+			var l = []
+			for (var j=0; j<selector.cols.length; j++) {
+				var c = selector.cols[j]
+				if (c in data[0]) {
+					l.push(data[0][c])
+				}
+			}
+			s.text(l.join("-"))
+			s.hover(function() {
+				$(this).removeClass("ellipsis");
+				var maxscroll = $(this).width();
+				var speed = maxscroll * 15;
+				$(this).animate({
+					scrollLeft: maxscroll
+				}, speed, "linear");
+			}, function() {
+				$(this).stop();
+				$(this).addClass("ellipsis");
+				$(this).animate({
+					scrollLeft: 0
+				}, 'slow');
+			})
+		} else if ((scope == "checked") || (scope == "all")) {
+			var count = data.length
+			var suffix = ""
+			if (count == t.action_menu_req_max) {
+				suffix = "+"
+			}
+			s.text(scope+" ("+count+suffix+")")
+		} else {
+			s.text(scope)
+		}
+
+		// add the action list and bind click handler if not disabled
+		if ((ul.children().length > 0) && !s.hasClass("action_menu_selector_disabled")) {
+			if (!s.hasClass("action_menu_selector_selected")) {
+				ul.hide()
+			}
+			content.append(ul)
+			s.addClass("clickable")
+			s.bind("click", function(e) {
+				e.stopPropagation()
+				$(this).siblings().removeClass("action_menu_selector_selected")
+				$(this).addClass("action_menu_selector_selected")
+				var scope = $(this).attr("scope")
+				$(this).parent().siblings("ul").hide()
+				$(this).parent().siblings("ul[scope="+scope+"]").show()
+			})
+		} else {
+			s.bind("click", function(e) {
+				e.stopPropagation()
+			})
+		}
+
+		e_selector.append(s)
+
+		// set the "checked" scope as selected if not disabled: take precedence to the "clicked" scope
+		if ((scope == "checked") && !s.hasClass("action_menu_selector_disabled") && (data.length > 0)) {
+			s.click()
+		}
+
+	}
+	if (content.children("ul").length > 0) {
+		content.prepend(e_selector)
+		if (selector.title) {
+			content.prepend(title)
+		}
+	}
+
+	if ((selector.selector.length == 1) && (selector.selector[0] == "tab")) {
+		e_selector.remove()
+	}
+	return content
+}
+
+function table_action_menu_format_leaf(t, e, leaf) {
+	var li = $("<li class='action_menu_leaf clickable search_entry'></li>")
+	if (leaf.privileges && !services_ismemberof(leaf.privileges)) {
+		return
+	}
+	if (leaf.action) {
+		try {
+			var params = leaf.params.join(",")
+		} catch(err) {
+			var params = ""
+		}
+		li.attr("action", leaf.action)
+		li.attr("params", params)
+	}
+	li.attr("fn", leaf.fn)
+	li.addClass("icon_fixed_width "+leaf['class'])
+	li.text(i18n.t(leaf.title))
+	return li
+}
+
+
+//
+// format action submit result as a flash message
+//
+function table_action_menu_status(msg){
+	var s = "accepted: "+msg.accepted+", rejected: "+msg.rejected
+	if (msg.factorized>0) {
+		s = "factorized: "+msg.factorized+", "+s
+	}
+	osvc.flash.info(s)
+}
+
+//
+// Only leave the chosen leaf and its parents visible.
+// Used by tools needing the space to pop addtional questions.
+//
+function table_action_menu_focus_on_leaf(t, entry) {
+	// hide other choices
+	entry.parent().parent().parent().parent().siblings().hide()
+	entry.parent().parent().parent().siblings('ul').hide()
+	entry.parent().parent().siblings('li').hide()
+	entry.parent().siblings('ul').hide()
+
+	// hide other actions in this selector scope
+	entry.siblings().hide()
+	entry.addClass("action_menu_leaf_selected")
+}
+
+function table_action_menu_unfocus_leaf(t, folder) {
+	var entry = folder.find("li:visible")
+	entry.siblings(":not(li)").remove()
+
+	// show other choices
+	entry.parents("li:not(.action_menu_folder)").siblings().show()
+	entry.parents("li.action_menu_folder").siblings('li').show()
+	entry.siblings().show()
+
+	entry.removeClass("action_menu_leaf_selected")
+}
+
+function table_action_menu_yes_no(t, msg, callback) {
+	var e = $("<div style='margin-top:0.6em'></div>")
+	var title = $("<div></div>")
+	title.text(i18n.t(msg))
+	var yes = $("<button class='ok icon_fixed_width button_div clickable' style='padding:0 1em' name='yes'>"+i18n.t("action_menu.yes")+"</button>")
+	var no = $("<button class='nok icon_fixed_width button_div clickable' style='padding:0 1em' name='no'>"+i18n.t("action_menu.no")+"</button>")
+	e.append(title)
+	e.append(yes)
+	e.append(no)
+	e.append($("<br>"))
+	yes.bind("click", function(event){
+		event.preventDefault()
+		event.stopPropagation()
+		$(this).unbind("click")
+		$(this).prop("disabled", true)
+		callback(event)
+		e.remove()
+	})
+	no.bind("click", function(event){
+		event.preventDefault()
+		event.stopPropagation()
+		e.remove()
+	})
+	return e
+}
+
+
