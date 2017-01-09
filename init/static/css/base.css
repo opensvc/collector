@@ -3058,11 +3058,20 @@ button:disabled {
 	background-color: #990000 !important;
 	border-color: #990000 !important;
 }
+.icon-orange {
+       color: orange;
+}
 .icon-red {
 	color: #990000;
 }
 .icon-green {
 	color: #009900;
+}
+.icon-gray {
+	color: #666666;
+}
+.icon-orange:before {
+       color: orange;
 }
 .icon-red:before {
 	color: #990000;
