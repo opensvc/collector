@@ -64,7 +64,12 @@ var osvc = {
 		'ruleset': '#ee5464',
 		'moduleset': '#ee5464',
 		'app': 'deeppink'
-	}
+	},
+	"app": window.location.pathname.split("/")[1]
+}
+
+if (osvc.app == "") {
+        osvc.app = "init"
 }
 
 var _badIE=0
@@ -73,9 +78,9 @@ function i18n_init(callback) {
 	i18n.init({
 		debug: true,
 		getAsync : true,
-		fallbackLng: false,
+		fallbackLng: 'en',
 		load:'unspecific',
-		resGetPath: "/init/static/locales/__lng__/__ns__.json",
+		resGetPath: "/"+osvc.app+"/static/locales/__lng__/__ns__.json",
 		ns: {
 			namespaces: ['translation'],
 			defaultNs: 'translation'
@@ -91,7 +96,7 @@ function i18n_init(callback) {
 
 function init_requirejs() {
 	require.config({
-		baseUrl: '/init/static/js',
+		baseUrl: '/'+osvc.app+'/static/js',
 		urlArgs: 'v='+osvc.code_rev,
 		paths: {
 			"jsyaml": "js-yaml.min",

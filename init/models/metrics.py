@@ -1,4 +1,11 @@
-dbro = DAL('mysql://readonly:readonly@%s/opensvc' % dbopensvc)
+dbro_host = config_get('dbro_host', dbopensvc_host)
+dbro_user = config_get('dbro_user', 'readonly')
+dbro_password = config_get('dbro_password', 'readonly')
+
+try:
+    dbro = DAL('mysql://%s:%s@%s/opensvc' % (dbro_user, dbro_password, dbro_host))
+except Exception as exc:
+    db_error_handler(exc)
 
 def replace_fset_sql(sql, fset_id=None):
     if fset_id is None:

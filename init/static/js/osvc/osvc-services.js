@@ -152,20 +152,20 @@ function encode_uri_key(key) {
 }
 
 function services_getaccessurl(service) {
-	var base_path = "/init/rest/api"
+	var base_path = "/"+osvc.app+"/rest/api"
 	if (service.match(/^S_/)) {
 		service_uri = services_access_uri[service]
 		if (is_blank(service_uri)) {
 			return
 		}
-		return "/init/" + service_uri
+		return "/"+osvc.app+"/" + service_uri
 	} else if (service.match(/^R_/)) {
 		service_uri = services_access_uri[service]
 		if (is_blank(service_uri)) {
 			return
 		}
 		return base_path + service_uri
-	} else if (service.match(/^\/init/)) {
+	} else if (service.indexOf(base_path) == 0) {
 		return service
 	} else if (service.match(/^\//)) {
 		return base_path + service
@@ -271,7 +271,7 @@ function services_osvcpostrest(service, uri, params, data, callback, error_callb
 		error: function(xhr, stat, error) {
 			console.log(error)
 			if (error == "UNAUTHORIZED") {
-				app_load_href("/init/default/user/login")
+				app_load_href("/"+osvc.app+"/default/user/login")
 			}
 			if (error_callback) {
 				error_callback(xhr, stat, error)
@@ -309,7 +309,7 @@ function services_osvcgetrest(service, uri, params, callback, error_callback, as
 		error: function(xhr, stat, error) {
 			console.log(error)
 			if (error == "UNAUTHORIZED") {
-				app_load_href("/init/default/user/login")
+				app_load_href("/"+osvc.app+"/default/user/login")
 			}
 			if (error_callback) {
 				error_callback(xhr, stat, error)

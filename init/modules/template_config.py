@@ -5,13 +5,18 @@
 server_timezone = "Europe/Madrid"
 
 # connection to the database
-dbopensvc = "dbopensvc"
+dbopensvc_host = "127.0.0.1"
 dbopensvc_user = "opensvc"
 dbopensvc_password = "opensvc"
 
+# readonly db access
+dbro_host = "127.0.0.1"
+dbopensvc_user = "readonly"
+dbopensvc_password = "readonly"
+
 # pdns database
 dbdns = "pdns"
-dbdns_host = "dbopensvc"
+dbdns_host = "127.0.0.1"
 dbdns_user = "opensvc"
 dbdns_password = "opensvc"
 

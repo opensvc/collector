@@ -5,6 +5,9 @@ function osvc_date_from_collector(s) {
 		console.log(e)
 		return s
 	}
+	if (!m) {
+		return s
+	}
 	return m.format(m._f)
 }
 
@@ -159,7 +162,7 @@ String.prototype.beginsWith = function (string) {
 
 function link(divid, options) {
 	var link_id = options.link_id
-	$("#"+divid).load("/init/" + link_id, options, function() {})
+	$("#"+divid).load("/"+osvc.app+"/" + link_id, options, function() {})
 }
 
 function osvc_create_link(fn, parameters, title, title_args) {
@@ -192,7 +195,7 @@ function osvc_create_link(fn, parameters, title, title_args) {
 		var link_id = jd.link_id
 		var url = services_get_url()
 
-		url += "/init/link/link?link_id="+link_id
+		url += "/"+osvc.app+"/link/link?link_id="+link_id
 		if (fn.beginsWith("https://")) {
 			// if is not an ajax link, but a function js call
 			url +="&js=false"

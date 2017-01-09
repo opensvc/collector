@@ -7,10 +7,10 @@
 import datetime
 import os
 
-dbopensvc = config_get('dbopensvc', 'dbopensvc')
+dbopensvc_host = config_get('dbopensvc_host', '127.0.0.1')
 dbopensvc_user = config_get('dbopensvc_user', 'opensvc')
 dbopensvc_password = config_get('dbopensvc_password', 'opensvc')
-redis_host = config_get('redis_host', dbopensvc)
+redis_host = config_get('redis_host', dbopensvc_host)
 ldap_mode = config_get("ldap_mode", None)
 
 from gluon.contrib.redis_cache import RedisCache
@@ -22,6 +22,28 @@ from gluon.contrib.redis_session import RedisSession
 sessiondb = RedisSession(redis_conn=rconn, session_expiry=False)
 session.connect(request, response, db=sessiondb)
 
+def db_error_handler(exc):
+    body = """
+<div style="text-align:left:margin:1em">
+        <h1>Database connexion error</h1>
+        <pre>%(error)s</pre>
+        <br>
+        <a href="%(url)s">Edit collector's configuration file</a>
+</div>
+"""
+    lines = str(exc).splitlines()
+    try:
+        error = lines[0]+"\n"+lines[-1]
+    except IndexError:
+        error = str(exc)
+    data = dict(
+        error=error,
+        url=URL(a="admin", c="default", f="edit",
+                args=["init/modules/config.py"],
+                vars={"id": "modules__config__py"}),
+    )
+    raise HTTP(512, body=body%data)
+
 #if request.env.web2py_runtime_gae:            # if running on Google App Engine
 #    db = DAL('gae')                           # connect to Google BigTable
 #    session.connect(request, response, db=db) # and store sessions and tickets there
@@ -30,10 +52,15 @@ session.connect(request, response, db=sessiondb)
     # from google.appengine.api.memcache import Client
     # session.connect(request, response, db=MEMDB(Client())
 #else:                                         # else use a normal relational database
-db = DAL('mysql://%s:%s@%s/opensvc' % (dbopensvc_user, dbopensvc_password, dbopensvc),
-         driver_args={'connect_timeout': 20},
-         pool_size=0,
-         lazy_tables=True)
+try:
+    db = DAL('mysql://%s:%s@%s/opensvc' % (dbopensvc_user, dbopensvc_password, dbopensvc_host),
+             driver_args={'connect_timeout': 20},
+             pool_size=0,
+             lazy_tables=True)
+except Exception as exc:
+    db_error_handler(exc)
+
+
 ## if no need for session
 # session.forget()
 

@@ -4,13 +4,10 @@
     var w2p_ajax_date_format = "{{=T('%Y-%m-%d')}}";
     var w2p_ajax_datetime_format = "{{=T('%Y-%m-%d %H:%M:%S')}}";
     var ajax_error_500 = '{{=XML(
-                              T(
-                               'An error occured, please %(l)s the page',
-                               dict(
-                                l=A(T('reload'), _href=URL(args=request.args, vars=request.get_vars)),
-                               )
-                              )
-                             )}}';
+      T(
+        'An error occured, please %(l)s the page', dict(l=A(T('reload'), _href=URL(args=request.args, vars=request.get_vars)),
+      ),
+    ))}}';
 </script>
 {{
 response.files.extend([
@@ -55,10 +52,10 @@ response.files.extend([
   URL(r=request,c='static',f='js/osvc/osvc-popup.js', vars={"v": code_rev}),
   URL(r=request,c='static',f='js/osvc/tables/settings.js', vars={"v": code_rev}),
   URL(r=request,c='static',f='js/osvc/tables/filters.js', vars={"v": code_rev}),
-  URL(r=request,c='static',f='js/osvc/tables/decorators.js', vars={"v": code_rev}),
   URL(r=request,c='static',f='js/osvc/tables/action_menu.js', vars={"v": code_rev}),
   URL(r=request,c='static',f='js/osvc/tables/colprops.js', vars={"v": code_rev}),
   URL(r=request,c='static',f='js/osvc/tables/table.js', vars={"v": code_rev}),
+  URL(r=request,c='static',f='js/osvc/tables/decorators.js', vars={"v": code_rev}),
   URL(r=request,c='static',f='js/osvc/tables/tables.js', vars={"v": code_rev}),
   URL(r=request,c='static',f='js/osvc/app.js', vars={"v": code_rev}),
 ])
