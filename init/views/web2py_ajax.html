@@ -4,13 +4,10 @@
     var w2p_ajax_date_format = "{{=T('%Y-%m-%d')}}";
     var w2p_ajax_datetime_format = "{{=T('%Y-%m-%d %H:%M:%S')}}";
     var ajax_error_500 = '{{=XML(
-                              T(
-                               'An error occured, please %(l)s the page',
-                               dict(
-                                l=A(T('reload'), _href=URL(args=request.args, vars=request.get_vars)),
-                               )
-                              )
-                             )}}';
+      T(
+        'An error occured, please %(l)s the page', dict(l=A(T('reload'), _href=URL(args=request.args, vars=request.get_vars)),
+      ),
+    ))}}';
 </script>
 {{
 response.files.extend([
