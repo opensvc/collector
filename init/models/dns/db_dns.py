@@ -1,7 +1,7 @@
 import datetime
 
 dbdns = config_get('dbdns', 'pdns')
-dbdns_host = config_get('dbdns_host', dbopensvc)
+dbdns_host = config_get('dbdns_host', dbopensvc_host)
 dbdns_user = config_get('dbdns_user', 'pdns')
 dbdns_password = config_get('dbdns_password', 'pdns')
 
@@ -9,8 +9,8 @@ try:
     dbdns = DAL('mysql://%s:%s@%s/%s' % (dbdns_user, dbdns_password, dbdns_host, dbdns),
              driver_args={'connect_timeout': 20},
              pool_size=0)
-except Exception as e:
-    raise HTTP(400, "<pre>%s</pre>"%str(e))
+except Exception as exc:
+    db_error_handler(exc)
 
 dbdns.define_table('domains',
     Field('name','string'),

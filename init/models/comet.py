@@ -3,8 +3,9 @@ from applications.init.modules.aconfig import config_get
 import json
 import hashlib
 
-dbopensvc = config_get("dbopensvc", "dbopensvc")
-websocket_url = config_get("websocket_url", "http://%s:8889" % dbopensvc)
+dbopensvc_host = config_get('dbopensvc_host', '127.0.0.1')
+websocket_host = config_get("websocket_host", dbopensvc_host)
+websocket_url = config_get("websocket_url", "http://%s:8889" % websocket_host)
 websocket_key = config_get("websocket_key", "magix123")
 
 def event_msg(data):

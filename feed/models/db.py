@@ -4,10 +4,10 @@
 ## This scaffolding model makes your app work on Google App Engine too
 #########################################################################
 
-dbopensvc = config_get('dbopensvc', 'dbopensvc')
+dbopensvc_host = config_get('dbopensvc_host', '127.0.0.1')
 dbopensvc_user = config_get('dbopensvc_user', 'opensvc')
 dbopensvc_password = config_get('dbopensvc_password', 'opensvc')
-redis_host = config_get('redis_host', dbopensvc)
+redis_host = config_get('redis_host', dbopensvc_host)
 
 #from gluon.contrib.redis_cache import RedisCache
 from gluon.contrib.redis_utils import RConn
@@ -23,7 +23,7 @@ if request.env.web2py_runtime_gae:            # if running on Google App Engine
     # session.connect(request, response, db=MEMDB(Client())
 else:                                         # else use a normal relational database
     #db = DAL('mysql://opensvc:opensvc@dbopensvc/opensvc')       # if not, use SQLite or other DB
-    db = DAL('mysql://%s:%s@%s/opensvc'%(dbopensvc_user, dbopensvc_password, dbopensvc),
+    db = DAL('mysql://%s:%s@%s/opensvc'%(dbopensvc_user, dbopensvc_password, dbopensvc_host),
              driver_args={'connect_timeout': 20},
              pool_size=0,
              lazy_tables=True)

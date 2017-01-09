@@ -16,7 +16,7 @@ def create_zone(zone):
     data = {
         "name": zone,
         "type": "SOA",
-        "content": config_get("dns_default_soa_content", config_get("dbopensvc", "")),
+        "content": config_get("dns_default_soa_content", config_get("dbopensvc_host", "")),
         "ttl": 86400,
         "domain_id": domain_id,
         "change_date": int((datetime.datetime.now()-datetime.datetime(1970, 1, 1)).total_seconds())
