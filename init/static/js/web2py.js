@@ -67,6 +67,10 @@ function web2py_event_handlers() {
       switch(xhr.status){
         case 500:
           osvc.flash.error(ajax_error_500)
+        case 401:
+          osvc.flash.error(xhr.responseText)
+        case 512:
+          osvc.flash.error(xhr.responseText)
       }
   });
 };
