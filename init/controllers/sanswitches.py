@@ -83,7 +83,7 @@ def ajax_sanswitches():
     table_id = request.vars.table_id
     t = table_sanswitches(table_id, 'ajax_sanswitches')
 
-    o = db.v_switches.sw_name|db.v_switches.sw_index|db.v_switches.sw_portstate
+    o = t.get_orderby(default=db.v_switches.sw_name|db.v_switches.sw_index|db.v_switches.sw_portstate)
     q = db.v_switches.id > 0
     for f in t.cols:
         q = _where(q, 'v_switches', t.filter_parse(f), f)
