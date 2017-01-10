@@ -64,50 +64,11 @@ function designer(divid, options) {
 	o.show_variable = function(node) {
 		var var_id = node.li_attr.obj_id
 		var rset_id = $("#"+node.parent).attr("obj_id")
-
-		services_osvcgetrest("R_COMPLIANCE_RULESET_VARIABLE", [rset_id, var_id], "", function(jd){
-			if (jd.error && (jd.error.length > 0)) {
-				o.e_info.html(services_error_fmt(jd))
-				return
-			}
-			var data = jd.data[0]
-			var div = $("<div></div>")
-			var form_div = $("<div></div>")
-			var title = $("<h3>"+data.var_name+"</h3>")
-			var p1 = $("<p></p>")
-			var p2 = $("<p></p>")
-
-			p1.text(i18n.t("designer.var_class", {"name": data.var_class}))
-			p2.text(i18n.t("designer.var_last_mod", {"by": data.var_author, "on": data.var_updated}))
-			form_div.uniqueId()
-			id = form_div.attr("id")
-
-			div.append(title)
-			div.append(p1)
-			div.append(p2)
-			div.append("<br>")
-			div.append(form_div)
-			o.e_info.html(div)
-
-			try {
-				var _data = $.parseJSON(data.var_value)
-			} catch(err) {
-				var _data = data.var_value
-			}
-
-			form(id, {
-				"data": _data,
-				"var_id": var_id,
-				"rset_id": rset_id,
-				"display_mode": true,
-				"digest": true,
-				"form_name": data.var_class,
-				"disable_edit": false
-			})
-		},
-		function(xhr, stat, error) {
-			o.e_info.html(services_ajax_error_fmt(xhr, stat, error))
-		})
+		var var_name = node.text
+		var div = $("<div class='white_float' style='overflow:auto;position:relative;padding:0px'></div>")
+		div.uniqueId()
+		o.e_info.empty().append(div)
+		variable_tabs(div.attr("id"), {"variable_id": var_id, "ruleset_id":rset_id, "variable_name": var_name, "tab": "variable_tabs.content"})
 	}
 
 	o.show_moduleset = function(node) {

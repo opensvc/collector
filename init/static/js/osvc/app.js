@@ -925,6 +925,12 @@ function dns_domain_tabs(divid, options) {
 	})
 }
 
+function variable_tabs(divid, options) {
+	require(["osvc/tabs/variable"], function() {
+		variable_tabs(divid, options)
+	})
+}
+
 function ruleset_tabs(divid, options) {
 	require(["osvc/tabs/ruleset"], function() {
 		ruleset_tabs(divid, options)

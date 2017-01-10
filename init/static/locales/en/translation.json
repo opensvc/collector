@@ -843,6 +843,9 @@
 		"export": "export",
 		"content": "content"
 	},
+	"variable_tabs": {
+		"content": "content"
+	},
 	"dns_domain_tabs": {
 		"properties": "properties",
 		"records": "records"
