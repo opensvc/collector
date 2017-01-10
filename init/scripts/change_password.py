@@ -45,7 +45,7 @@ def chpw_db():
     if conn is None:
         sys.exit(1)
     cursor = conn.cursor()
-    cursor.execute("""select Host, User, Password from mysql.user where User in ("opensvc", "pdns", "root") """)
+    cursor.execute("""select Host, User, Password from mysql.user where User in ("opensvc", "pdns", "root", "readonly") """)
     todo = []
     while (1):
         row = cursor.fetchone()
@@ -66,6 +66,7 @@ def chpw_app():
         lines = f.read().split("\n")
     found_dbopensvc_password = False
     found_dbdns_password = False
+    found_dbro_password = False
     for i, line in enumerate(lines):
         if re.match(r'^\s*dbopensvc_password\s*=', line):
             print("change dbopensvc_password parameter in", cf)
@@ -75,12 +76,19 @@ def chpw_app():
             print("change dbdns_password parameter in", cf)
             found_dbdns_password = True
             lines[i] = 'dbdns_password = "%s"' % new_password
+        if re.match(r'^\s*dbro_password\s*=', line):
+            print("change dbro_password parameter in", cf)
+            found_dbro_password = True
+            lines[i] = 'dbro_password = "%s"' % new_password
     if not found_dbopensvc_password:
         print("append dbopensvc_password parameter to", cf)
         lines.append('dbopensvc_password = "%s"' % new_password)
     if not found_dbdns_password:
         print("append dbdns_password parameter to", cf)
         lines.append('dbdns_password = "%s"' % new_password)
+    if not found_dbro_password:
+        print("append dbro_password parameter to", cf)
+        lines.append('dbro_password = "%s"' % new_password)
     print("rewrite", cf)
     with open(cf, "w") as f:
         f.write("\n".join(lines))
