@@ -6,8 +6,9 @@ def user_name():
         return 'Unknown'
     if auth_is_node():
         return 'agent'
-    user = ' '.join([session.auth.user.first_name,
-                     session.auth.user.last_name])
+    first_name = session.auth.user.first_name if session.auth.user.first_name else ""
+    last_name = session.auth.user.last_name if session.auth.user.last_name else ""
+    user = ' '.join([first_name, last_name])
     try:
         user = user.decode("utf8")
     except:
