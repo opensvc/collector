@@ -1162,6 +1162,7 @@ function designer(divid, options) {
 							"obj_id": node.li_attr.obj_id,
 						},
 						success: function(msg){
+							o.show_variable(node)
 							o.json_status(msg)
 						}
 					})
