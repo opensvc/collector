@@ -41,7 +41,7 @@ def msg(conn):
     return s
 
 try:
-    dbopensvc = config.dbopensvc
+    dbopensvc = config.dbopensvc_host
 except:
     dbopensvc = "dbopensvc"
 
