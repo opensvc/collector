@@ -383,7 +383,7 @@ function app_bindings() {
 		//
 
 		// 'f' for search
-		if ((event.which == 70) && !event.ctrlKey) {
+		if ((event.which == 70) && !event.ctrlKey && !event.metaKey) {
 			if (!$('#search_input').is(":focus")) {
 				event.preventDefault()
 				$("[name=fset_selector]").click()
