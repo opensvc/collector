@@ -1004,7 +1004,11 @@
 		"metric": "Metric",
 		"chart": "Chart",
 		"report": "Report",
-		"designer": "Compliance Designer"
+		"designer": "Compliance Designer",
+		"group_tabs": "Group __name__ tabs",
+                "group_properties": "Group __name__ properties",
+                "variable_tabs": "Variable __name__ tabs",
+                "variable_content": "Variable __name__ content"
 	},
 	"menu": {
 		"navigation": "Navigation",

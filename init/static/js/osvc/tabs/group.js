@@ -8,7 +8,11 @@ function group_tabs(divid, options) {
 	o.options.icon = "guys16"
 	o.link = {
 		"fn": arguments.callee.name,
-		"title": "link."+arguments.callee.name
+		"title": "link."+arguments.callee.name,
+		"title_args": {
+			"type": "group",
+			"name": o.options.group_name
+		}
 	}
 
 	o.load(function(){
@@ -60,7 +64,11 @@ function group_properties(divid, options) {
 	o.link = {
 		"fn": arguments.callee.name,
 		"parameters": o.options,
-		"title": "link."+arguments.callee.name
+		"title": "link."+arguments.callee.name,
+		"title_args": {
+			"type": "group",
+			"name": o.options.group_name
+		}
 	}
 
 	o.init = function() {

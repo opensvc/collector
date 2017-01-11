@@ -1002,7 +1002,11 @@
 		"metric": "Métrique",
 		"chart": "Courbe",
 		"report": "Rapport",
-		"designer": "Modélisateur de conformité"
+		"designer": "Modélisateur de conformité",
+		"group_tabs": "Tabs du groupe __name__",
+                "group_properties": "Propriétés du groupe __name__",
+                "variable_tabs": "Tabs de la variable __name__",
+                "variable_content": "Contenu de la variable __name__"
 	},
 	"menu" : {
 		"navigation": "Navigation",
