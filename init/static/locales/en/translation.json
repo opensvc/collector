@@ -1841,7 +1841,8 @@
 		"quota_app": "App Quota",
 		"quota_org_group": "Org Group Quota",
 		"Flag, deprecated": "Flag, deprecated",
-		"Gateway": "Gateway"
+		"Gateway": "Gateway",
+		"Retention": "Retention"
 	},
 	"alert_type": {
 		"service not started on primary node": "service not started on primary node",

@@ -1791,7 +1791,8 @@
 		"quota_app": "Quota d'applis",
 		"quota_org_group": " Quota de groupes orga",
 		"Flag, deprecated": "Flag, déprécié",
-		"Node name": "Noeud"
+		"Node name": "Noeud",
+		"Retention": "Retention"
 	},
 	"alert_type": {
 		"service not started on primary node": "service démarré sur un noeud non-primaire",
