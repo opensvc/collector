@@ -171,6 +171,26 @@ colprops = {
 		"img": "docker_repository16",
 		"title": "Repository name"
 	},
+	"repository_stars": {
+		"field": "stars",
+		"table": "docker_repositories",
+		"img": "fa-star",
+		"title": "Repository stars"
+	},
+	"repository_official": {
+		"_class": "boolean",
+		"field": "official",
+		"table": "docker_repositories",
+		"img": "docker_repository16",
+		"title": "Repository official"
+	},
+	"repository_automated": {
+		"_class": "boolean",
+		"field": "automated",
+		"table": "docker_repositories",
+		"img": "docker_repository16",
+		"title": "Repository automated"
+	},
 	"repository_updated": {
 		"field": "updated",
 		"table": "docker_repositories",

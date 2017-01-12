@@ -278,6 +278,9 @@ class table_registries(HtmlTable):
                      'registry_created',
                      'repository_id',
                      'repository_name',
+                     'repository_stars',
+                     'repository_official',
+                     'repository_automated',
                      'repository_updated',
                      'repository_created',
                      'tag_id',
@@ -310,6 +313,18 @@ class table_registries(HtmlTable):
             'repository_name': HtmlTableColumn(
                      table='docker_repositories',
                      field='repository',
+                    ),
+            'repository_stars': HtmlTableColumn(
+                     table='docker_repositories',
+                     field='stars',
+                    ),
+            'repository_official': HtmlTableColumn(
+                     table='docker_repositories',
+                     field='official',
+                    ),
+            'repository_automated': HtmlTableColumn(
+                     table='docker_repositories',
+                     field='automated',
                     ),
             'repository_updated': HtmlTableColumn(
                      table='docker_repositories',

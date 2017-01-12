@@ -7,10 +7,45 @@ function table_registries(divid, options) {
 		'name': 'registries',
 		'ajax_url': '/init/registry/ajax_registries',
 		'span': ['repository_id'],
-		'force_cols': ['registry_id', 'repository_id', 'tag_id'],
-		'orderby': ['registry_service', 'repository_name', 'tag_name'],
-		'columns': ['registry_id', 'registry_service', 'registry_updated', 'registry_created', 'repository_id', 'repository_name', 'repository_updated', 'repository_created', 'tag_id', 'tag_name', 'tag_config_size', 'tag_config_digest', 'tag_updated', 'tag_created'],
-		'default_columns': ['registry_service', 'repository_name', 'tag_name', 'tag_config_size', 'tag_updated', 'tag_created'],
+		'force_cols': [
+			'registry_id',
+			'repository_id',
+			'tag_id'
+		],
+		'orderby': [
+			'registry_service',
+			'repository_name',
+			'tag_name'
+		],
+		'columns': [
+			'registry_id',
+			'registry_service',
+			'registry_updated',
+			'registry_created',
+			'repository_id',
+			'repository_name',
+			'repository_stars',
+			'repository_official',
+			'repository_automated',
+			'repository_updated',
+			'repository_created',
+			'tag_id',
+			'tag_name',
+			'tag_config_size',
+			'tag_config_digest',
+			'tag_updated',
+			'tag_created'
+		],
+		'default_columns': [
+			'registry_service',
+			'repository_name',
+			'repository_stars',
+			'repository_automated',
+			'tag_name',
+			'tag_config_size',
+			'tag_updated',
+			'tag_created'
+		],
 		'colprops': {
 			"tag_id": {
 				"table": "docker_tags",
