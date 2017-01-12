@@ -165,6 +165,14 @@ def docker_repositories_acls_query(action="pull"):
 
     return q_published & q_acls
 
+def incr_stars(registry_id, repository):
+    sql = """update docker_repositories set stars=stars+1
+             where
+               repository="%s" and
+               registry_id=%d
+          """ % (repository, registry_id)
+    db.executesql(sql)
+
 def _token(scope, service):
     if scope is None:
         # docker login
@@ -234,8 +242,15 @@ def validated_scope(scope, service):
         token_logger.error("unknown registry '%s'" % service)
         scope["actions"] = []
         return scope
-    registry_id = registry.id
 
+    scope = _validated_scope(scope, registry)
+
+    if len(scope["actions"]) > 0:
+        incr_stars(registry.id, scope["name"])
+
+    return scope
+
+def _validated_scope(scope, registry):
     #
     # tokens asked by the collector for its internal use have all privileges on
     # the registry
@@ -251,9 +266,12 @@ def validated_scope(scope, service):
     # No registry publication to any of the requester groups disallows push and pull
     #
     q = db.docker_registries_publications.group_id.belongs(group_ids)
-    q &= db.docker_registries_publications.registry_id == registry_id
+    q &= db.docker_registries_publications.registry_id == registry.id
     if db(q).count() == 0:
-        token_logger.info("disallow 'push,pull' for account '%s' on repo %s:%s (no registry publication)" % (request.vars.get("account", ""), service, scope["name"]))
+        token_logger.info("disallow 'push,pull' for account '%s' on repo %s:%s"
+                          " (no registry publication)",
+                          request.vars.get("account", ""),
+                          registry.service, scope["name"])
         scope["actions"] = []
         return scope
 
@@ -263,9 +281,12 @@ def validated_scope(scope, service):
     #
     if registry.restricted:
         q = db.docker_registries_responsibles.group_id.belongs(group_ids)
-        q &= db.docker_registries_responsibles.registry_id == registry_id
+        q &= db.docker_registries_responsibles.registry_id == registry.id
         if db(q).count() == 0:
-            token_logger.info("disallow 'push' for account '%s' on repo %s:%s (not restricted registry responsible)" % (request.vars.get("account", ""), service, scope["name"]))
+            token_logger.info("disallow 'push' for account '%s' on repo %s:%s"
+                              " (not restricted registry responsible)",
+                              request.vars.get("account", ""),
+                              registry.service, scope["name"])
             scope["actions"] -= set(["push"])
 
     #
@@ -277,9 +298,12 @@ def validated_scope(scope, service):
        scope["name"].startswith("groups/") or \
        scope["name"].startswith("users/")):
         q = db.docker_registries_responsibles.group_id.belongs(group_ids)
-        q &= db.docker_registries_responsibles.registry_id == registry_id
+        q &= db.docker_registries_responsibles.registry_id == registry.id
         if db(q).count() == 0:
-            token_logger.info("disallow 'push' for account '%s' on repo %s:%s (not registry responsible)" % (request.vars.get("account", ""), service, scope["name"]))
+            token_logger.info("disallow 'push' for account '%s' on repo %s:%s"
+                              " (not registry responsible)",
+                              request.vars.get("account", ""),
+                              registry.service, scope["name"])
             scope["actions"] -= set(["push"])
 
     groups = user_groups()
@@ -288,8 +312,12 @@ def validated_scope(scope, service):
     # pulling requires the DockerRegistriesPuller privilege for individual
     # users. services bypass this filter.
     #
-    if not hasattr(auth.user, "svc_id") and hasattr(auth.user, "id") and "DockerRegistriesPuller" not in groups:
-        token_logger.info("disallow 'pull' for account '%s' on repo %s:%s (not DockerRegistriesPuller)" % (request.vars.get("account", ""), service, scope["name"]))
+    if not hasattr(auth.user, "svc_id") and hasattr(auth.user, "id") and \
+       "DockerRegistriesPuller" not in groups:
+        token_logger.info("disallow 'pull' for account '%s' on repo %s:%s (not"
+                          " DockerRegistriesPuller)",
+                          request.vars.get("account", ""),
+                          registry.service, scope["name"])
         scope["actions"] -= set(["pull"])
 
     #
@@ -297,10 +325,16 @@ def validated_scope(scope, service):
     # users. services are never allowed to push.
     #
     if not hasattr(auth.user, "id"):
-        token_logger.info("disallow 'push' for account '%s' on repo %s:%s (service requestor)" % (request.vars.get("account", ""), service, scope["name"]))
+        token_logger.info("disallow 'push' for account '%s' on repo %s:%s"
+                          " (service requestor)",
+                          request.vars.get("account", ""),
+                          registry.service, scope["name"])
         scope["actions"] -= set(["push"])
     if "DockerRegistriesPusher" not in groups:
-        token_logger.info("disallow 'push' for account '%s' on repo %s:%s (not DockerRegistriesPusher)" % (request.vars.get("account", ""), service, scope["name"]))
+        token_logger.info("disallow 'push' for account '%s' on repo %s:%s (not"
+                          " DockerRegistriesPusher)",
+                          request.vars.get("account", ""),
+                          registry.service, scope["name"])
         scope["actions"] -= set(["push"])
 
     if hasattr(auth.user, "id") and scope["name"].startswith("users/%d/" % auth.user.id):
