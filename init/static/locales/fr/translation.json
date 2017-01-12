@@ -436,7 +436,8 @@
 			"title_filtersets" : "Jeux de filtres",
 			"title_ips" : "Adresses IP",
 			"title_groups" : "Groupes",
-			"title_vms" : "Machines virtuelles"
+			"title_vms" : "Machines virtuelles",
+			"title_variables": "Variables"
 		},
 		"menu_link" : {
 			"registries" : "Registres",

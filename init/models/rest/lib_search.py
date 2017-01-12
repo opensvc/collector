@@ -430,4 +430,26 @@ def lib_search_docker_repositories(pattern):
       "elapsed": "%f" % (t.seconds + 1. * t.microseconds / 1000000),
     }
 
+def lib_search_variables(pattern):
+    t = datetime.datetime.now()
+    o = db.v_comp_rulesets.var_name
+    q = db.v_comp_rulesets.var_name.like(pattern)
+    if "Manager" not in user_groups():
+        q &= db.comp_ruleset_team_publication.ruleset_id == db.v_comp_rulesets.ruleset_id
+        q &= db.comp_ruleset_team_publication.group_id.belongs(user_group_ids())
+    n = db(q).count()
+    data = db(q).select(o,
+                        db.v_comp_rulesets.id,
+                        db.v_comp_rulesets.ruleset_id,
+                        db.v_comp_rulesets.ruleset_name,
+                        orderby=o,
+                        limitby=(0,max_search_result),
+    ).as_list()
+    t = datetime.datetime.now() - t
+    return {
+      "total": n,
+      "data": data,
+      "fmt": {"id": "%(id)d", "name": "%(var_name)s in %(ruleset_name)s"},
+      "elapsed": "%f" % (t.seconds + 1. * t.microseconds / 1000000),
+    }
 

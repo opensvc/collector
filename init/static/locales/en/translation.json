@@ -438,7 +438,8 @@
 			"title_filtersets": "Filterset",
 			"title_ips": "IP adresses",
 			"title_groups": "Groups",
-			"title_vms": "Virtuals machines"
+			"title_vms": "Virtuals machines",
+			"title_variables": "Variables"
 		},
 		"menu_link": {
 			"registries" : "Registries",

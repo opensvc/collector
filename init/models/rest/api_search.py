@@ -67,5 +67,7 @@ class rest_get_search(rest_get_handler):
         if otype is None or otype == "docker":
             data["docker_registries"] = lib_search_docker_registries(substring)
             data["docker_repositories"] = lib_search_docker_repositories(substring)
+        if otype is None or otype == "var":
+            data["variables"] = lib_search_variables(substring)
         return dict(data=data)
 

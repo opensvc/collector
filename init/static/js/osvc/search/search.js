@@ -719,6 +719,25 @@ function search_get_menu(fk)
             "options": {"volatile_filters": true, "request_vars": {"svcmon_f_mon_vmname": "__mon_vmname__"}}
           }
         ]
+    },
+    "variables": {
+        "tab" : function(id, res){
+                variable_tabs(id, {
+                        "variable_id": res.id,
+                        "ruleset_id": res.ruleset_id,
+                        "variable_name": res.var_name,
+                        "tab": "variable_tabs.content"
+                })
+        },
+        "type": "var",
+        "color": "comp",
+        "id": "id",
+        "title": "__var_name__ in __ruleset_name__",
+        "short_title": "__var_name__ in __ruleset_name__",
+        "menu_entry_id": "comp-variables",
+        "class": "comp16 fa-2x search-section-icon",
+        "subclass": "meta_variables clickable",
+        "links": []
     }
   }
   return menu[fk]
