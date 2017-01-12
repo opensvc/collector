@@ -93,7 +93,9 @@ def doc():
 
     d = DIV(
           SCRIPT("""
-            api_doc("api_doc", {args: %(args)s})
+            $.when(osvc.app_started).then(function(){
+              api_doc("api_doc", {args: %(args)s})
+            })
           """ % dict(args=str(args))),
           _id="api_doc",
         )
