@@ -2504,6 +2504,19 @@ a.jqplot-image-container-close {
 	background-color: #d8eee7;
 }
 
+.licenses h1 {
+	text-align: left;
+}
+
+.licenses li {
+	list-style: none;
+	text-align: justify
+}
+
+.licenses a:hover {
+	background-color: #d8eee7;
+}
+
 .searchtab {
 	box-shadow: 0 0 20px #555;
 	border-radius: 4px;
