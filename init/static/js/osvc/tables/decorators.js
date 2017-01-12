@@ -1489,6 +1489,14 @@ function cell_decorator_size_mb(e, line) {
 	e.html("<div class='nowrap'>"+fancy_size_mb(v)+"</div>")
 }
 
+function cell_decorator_size_kb(e, line) {
+	v = $.data(e[0], "v")
+	if (v == "empty") {
+		return
+	}
+	e.html("<div class='nowrap'>"+fancy_size_b(v*1024)+"</div>")
+}
+
 function cell_decorator_size_b(e, line) {
 	v = $.data(e[0], "v")
 	if (v == "empty") {
@@ -1828,6 +1836,7 @@ $.extend(true, cell_decorators, {
 	"disk_array_dg": cell_decorator_disk_array_dg,
 	"disk_array": cell_decorator_disk_array,
 	"size_mb": cell_decorator_size_mb,
+	"size_kb": cell_decorator_size_kb,
 	"size_b": cell_decorator_size_b,
 	"chk_instance": cell_decorator_chk_instance,
 	"chk_value": cell_decorator_chk_value,

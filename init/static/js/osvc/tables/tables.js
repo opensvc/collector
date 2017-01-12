@@ -67,6 +67,7 @@ function table_registries(divid, options) {
 				"title": "Tag digest"
 			},
 			"tag_config_size": {
+				"_class": "size_kb",
 				"table": "docker_tags",
 				"field": "config_size",
 				"img": "dockertag16",
