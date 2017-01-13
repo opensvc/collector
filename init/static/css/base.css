@@ -2504,6 +2504,9 @@ a.jqplot-image-container-close {
 	background-color: #d8eee7;
 }
 
+.licenses {
+	padding: 1em;
+}
 .licenses h1 {
 	text-align: left;
 }
