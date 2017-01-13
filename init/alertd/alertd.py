@@ -239,7 +239,7 @@ Content-Type: text/html; charset=UTF-8
 """%dict(n=len(self.lines), sender=config.email_from, rcpt=self.addr, body=str(self))
 
         try:
-            smtpObj = smtplib.SMTP(config.email_host)
+            smtpObj = smtplib.SMTP(config.email_server)
             smtpObj.sendmail(config.email_from, receivers, message)
         except:
             raise SendError()
