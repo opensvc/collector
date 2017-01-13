@@ -397,6 +397,9 @@ class rest_post_user(rest_post_handler):
             except:
                 del(vars["quota_org_group"])
 
+        if "username" in vars and not login_form_username:
+            raise Exception(T("The 'username' property is updateable only with a collector setup for ldap authentication"))
+
         db(q).update(**vars)
         l = []
         fmt = "change user %(email)s: %(data)s"
