@@ -102,7 +102,6 @@ function form_properties(divid, options) {
 		var am_data = [
 			{
 				"title": "action_menu.data_actions",
-				"class": "hd16",
 				"children": [
 					{
 						"selector": ["tab"],

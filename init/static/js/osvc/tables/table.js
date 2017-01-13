@@ -3277,17 +3277,15 @@ function format_search(t, o) {
 }
 
 function format_action_menu(t, o) {
-	if (!o.e_search) {
-		return
+	if (o.e_search) {
+		// purge previously displayed actions
+		o.e_search.nextAll().remove()
 	}
-
-	// purge previously displayed actions
-	o.e_search.nextAll().remove()
 
 	// format the data as menu
 	var ul = $("<ul></ul>")
 	for (var i=0; i<t.action_menu_data.length; i++) {
-		var li = table_action_menu_format_section(t, o.open_event, t.action_menu_data[i])
+		var li = table_action_menu_format_section(t, o, o.open_event, t.action_menu_data[i])
 		if (li.html().length == 0) {
 			continue
 		}
@@ -3338,7 +3336,7 @@ function format_action_menu(t, o) {
 	return o
 }
 
-function table_action_menu_format_section(t, e, section) {
+function table_action_menu_format_section(t, o, e, section) {
 	var ul = $("<ul></ul>")
 	for (var i=0; i<section.children.length; i++) {
 		var li = table_action_menu_format_selector(t, o, e, section.children[i])

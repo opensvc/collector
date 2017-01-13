@@ -279,7 +279,6 @@ function node_properties(divid, options)
 				var am_data = [
 					{
 						"title": "action_menu.data_actions",
-						"class": "hd16",
 						"children": [
 							{
 								"selector": ["tab"],
@@ -298,7 +297,6 @@ function node_properties(divid, options)
 					},
 					{
 						"title": "action_menu.agent_actions",
-						"class": "action16",
 						"children": [
 							{
 								"title": "action_menu.toggle_display",
