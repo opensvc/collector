@@ -710,6 +710,9 @@ jQuery.fn.osvc_nodename = function(options) {
 		}
 		var node_id = o.attr("node_id")
 		if (!node_id) {
+			node_id = o.text()
+		}
+		if (node_id == "") {
 			return
 		}
 		services_osvcgetrest("/nodes/%1", [node_id] , {"meta": "0", "props": "nodename,app"}, function(jd) {
@@ -737,6 +740,9 @@ jQuery.fn.osvc_svcname = function(options) {
 		}
 		var svc_id = o.attr("svc_id")
 		if (!svc_id) {
+			svc_id = o.text()
+		}
+		if (svc_id == "") {
 			return
 		}
 		services_osvcgetrest("/services/%1", [svc_id] , {"meta": "0", "props": "svcname,svc_app"}, function(jd) {

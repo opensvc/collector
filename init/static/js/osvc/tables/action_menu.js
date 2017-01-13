@@ -211,6 +211,9 @@ function table_action_menu_init_data(t) {
 				{
 					"selector": ["clicked", "checked", "all"],
 					"title": "action_menu.on_nodes",
+					"clicked_decorator": function(e, data){
+						e.osvc_nodename()
+					},
 					"class": "node16",
 					"foldable": true,
 					"cols": ["node_id"],
@@ -262,6 +265,9 @@ function table_action_menu_init_data(t) {
 				{
 					"selector": ["checked"],
 					"title": "action_menu.on_services",
+					"clicked_decorator": function(e, data){
+						e.osvc_svcname()
+					},
 					"class": "svc",
 					"foldable": true,
 					"cols": ["svc_id"],
@@ -1127,6 +1133,9 @@ function table_action_menu_init_data(t) {
 					"selector": ["clicked", "checked", "all"],
 					"foldable": true,
 					'title': 'action_menu.on_nodes',
+					"clicked_decorator": function(e, data){
+						e.osvc_nodename()
+					},
 					"class": "node16",
 					"cols": ["node_id"],
 					"condition": "node_id",
@@ -1292,6 +1301,9 @@ function table_action_menu_init_data(t) {
 					"selector": ["clicked", "checked", "all"],
 					"foldable": true,
 					'title': 'action_menu.on_services',
+					"clicked_decorator": function(e, data){
+						e.osvc_svcname()
+					},
 					"class": "svc",
 					"cols": ["svc_id", "slave"],
 					"condition": "svc_id+slave,svc_id",
@@ -1338,9 +1350,10 @@ function table_action_menu_init_data(t) {
 					"selector": ["clicked", "checked", "all"],
 					"foldable": true,
 					'title': 'action_menu.on_services_instances',
+					"clicked_decorator": clicked_decorator_service_instance,
 					"table": ["service_instances"],
 					"class": "svcinstance",
-					"cols": ["id"],
+					"cols": ["id", "node_id", "svc_id"],
 					"condition": "id",
 					"children": [
 						{
@@ -1585,6 +1598,9 @@ function table_action_menu_init_data(t) {
 					"selector": ["clicked", "checked", "all"],
 					"foldable": true,
 					'title': 'action_menu.on_nodes',
+					"clicked_decorator": function(e, data){
+						e.osvc_nodename()
+					},
 					"class": "node16",
 					"cols": ["node_id"],
 					"condition": "node_id",
@@ -1594,6 +1610,7 @@ function table_action_menu_init_data(t) {
 					"selector": ["clicked", "checked", "all"],
 					"foldable": true,
 					'title': 'action_menu.on_services_instances',
+					"clicked_decorator": clicked_decorator_service_instance,
 					"class": "svcinstance",
 					"cols": ["svc_id", "node_id"],
 					"condition": "svc_id+node_id",
@@ -4958,4 +4975,13 @@ function data_action_del_prov_templates_publication(t, e) {
 	})
 }
 
+//
+// Selector clicked decorators
+//
+clicked_decorator_service_instance = function(e, data) {
+	var s = $("<span><span svc_id='"+data.svc_id+"'></span> @ <span node_id='"+data.node_id+"'></span></span>")
+	e.html(s)
+	s.children("[node_id]").osvc_nodename()
+	s.children("[svc_id]").osvc_svcname()
+}
 

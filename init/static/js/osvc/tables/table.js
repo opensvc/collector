@@ -3678,6 +3678,9 @@ function table_action_menu_format_selector(t, o, e, selector) {
 				}
 			}
 			s.text(l.join("-"))
+			if (selector.clicked_decorator) {
+				selector.clicked_decorator(s, data[0])
+			}
 			s.hover(function() {
 				$(this).removeClass("ellipsis");
 				var maxscroll = $(this).width();
