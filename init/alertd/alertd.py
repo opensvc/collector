@@ -236,11 +236,11 @@ Subject: %(n)d OpenSVC events
 Content-Type: text/html; charset=UTF-8
 
 %(body)s
-"""%dict(n=len(self.lines), sender=config.email_from, rcpt=self.addr, body=str(self))
+"""%dict(n=len(self.lines), sender=config.mail_from, rcpt=self.addr, body=str(self))
 
         try:
-            smtpObj = smtplib.SMTP(config.email_server)
-            smtpObj.sendmail(config.email_from, receivers, message)
+            smtpObj = smtplib.SMTP(config.mail_server)
+            smtpObj.sendmail(config.mail_from, receivers, message)
         except:
             raise SendError()
 
@@ -698,10 +698,10 @@ def stop_workers(q):
         p.join()
 
 def dequeue(q):
-    qlog.info("email enabled:%s, im enabled:%s"%(str(config.email), str(config.gtalk)))
+    qlog.info("email enabled:%s, im enabled:%s"%(str(config.mail), str(config.gtalk)))
     c = counters()
     while True:
-        if config.email:
+        if config.mail:
             c.reset()
             c += get_email_queued_svc(q)
             c += get_email_queued_node(q)
