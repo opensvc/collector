@@ -1958,19 +1958,24 @@ def rpc_comp_get_data(nodename, modulesets, auth):
     node_id = auth_to_node_id(auth)
     return _comp_get_data(node_id, modulesets=modulesets)
 
+def sanitize_modulesets(modulesets):
+    return list(set(modulesets) - set([""]))
+
 def _comp_get_data(node_id, modulesets=[]):
+    modulesets = sanitize_modulesets(modulesets)
     return {
       'modulesets': _comp_get_moduleset_data(node_id, modulesets=modulesets),
-      'rulesets': _comp_get_ruleset(node_id),
+      'rulesets': _comp_get_ruleset(node_id, modulesets=modulesets),
       'modset_rset_relations': get_modset_rset_relations_s(),
       'modset_relations': get_modset_relations_s(),
     }
 
 def _comp_get_svc_data(node_id, svc_id, modulesets=[]):
     slave = comp_slave(svc_id, node_id)
+    modulesets = sanitize_modulesets(modulesets)
     return {
       'modulesets': _comp_get_svc_moduleset_data(svc_id, modulesets=modulesets, slave=slave),
-      'rulesets': _comp_get_svc_ruleset(svc_id, node_id, slave=slave),
+      'rulesets': _comp_get_svc_ruleset(svc_id, node_id, slave=slave, modulesets=modulesets),
       'modset_rset_relations': get_modset_rset_relations_s(),
       'modset_relations': get_modset_relations_s(),
     }
@@ -2080,6 +2085,12 @@ def _comp_get_svc_moduleset(svc_id, modulesets=[], slave=False):
     return [r.modset_name for r in rows]
 
 def _comp_get_svc_moduleset_ids(svc_id, modulesets=[], slave=False):
+    if len(modulesets) == 0:
+        return _comp_get_svc_moduleset_ids_attached(svc_id, slave)
+    else:
+        return _comp_get_svc_moduleset_ids_specified(svc_id, modulesets, slave)
+
+def _comp_get_svc_moduleset_ids_attached(svc_id, modulesets=[], slave=False):
     q = db.comp_modulesets_services.svc_id == svc_id
     q &= db.comp_modulesets_services.slave == slave
     q &= db.comp_modulesets_services.modset_id == db.comp_moduleset.id
@@ -2091,8 +2102,20 @@ def _comp_get_svc_moduleset_ids(svc_id, modulesets=[], slave=False):
     q2 &= db.apps.id == db.apps_responsibles.app_id
     q2 &= db.apps_responsibles.group_id == db.auth_group.id
     q &= (q1 | q2)
-    if len(modulesets) > 0:
-        q &= db.comp_moduleset.modset_name.belongs(modulesets)
+    rows = db(q).select(db.comp_moduleset.id, groupby=db.comp_moduleset.id, cacheable=True)
+    modset_ids = [r.id for r in rows]
+    return modset_ids
+
+def _comp_get_svc_moduleset_ids_specified(svc_id, modulesets=[], slave=False):
+    q = db.comp_moduleset.modset_name.belongs(modulesets)
+    q &= db.comp_moduleset.id == db.comp_moduleset_team_publication.modset_id
+    q &= db.auth_group.id == db.comp_moduleset_team_publication.group_id
+    q1 = db.auth_group.role == "Everybody"
+    q2 = db.services.svc_id == svc_id
+    q2 &= db.services.svc_app == db.apps.app
+    q2 &= db.apps.id == db.apps_responsibles.app_id
+    q2 &= db.apps_responsibles.group_id == db.auth_group.id
+    q &= (q1 | q2)
     rows = db(q).select(db.comp_moduleset.id, groupby=db.comp_moduleset.id, cacheable=True)
     modset_ids = [r.id for r in rows]
     return modset_ids
@@ -2130,14 +2153,28 @@ def _comp_get_svc_moduleset_data(svc_id, modulesets=[], slave=False):
     return d
 
 def _comp_get_moduleset_ids(node_id, modulesets=[]):
+    if len(modulesets) == 0:
+        return _comp_get_moduleset_ids_attached(node_id)
+    else:
+        return _comp_get_moduleset_ids_specified(node_id, modulesets)
+
+def _comp_get_moduleset_ids_attached(node_id):
     q = db.comp_node_moduleset.node_id == node_id
     q &= db.comp_node_moduleset.modset_id == db.comp_moduleset.id
     q &= db.comp_moduleset.id == db.comp_moduleset_team_publication.modset_id
     q &= db.auth_group.id == db.comp_moduleset_team_publication.group_id
     q &= (db.nodes.team_responsible == db.auth_group.role)|(db.auth_group.role=="Everybody")
     q &= db.nodes.node_id == node_id
-    if len(modulesets) > 0:
-        q &= db.comp_moduleset.modset_name.belongs(modulesets)
+    rows = db(q).select(db.comp_moduleset.id, groupby=db.comp_moduleset.id, cacheable=True)
+    modset_ids = [r.id for r in rows]
+    return modset_ids
+
+def _comp_get_moduleset_ids_specified(node_id, modulesets=[]):
+    q = db.comp_moduleset.modset_name.belongs(modulesets)
+    q &= db.comp_moduleset.id == db.comp_moduleset_team_publication.modset_id
+    q &= db.auth_group.id == db.comp_moduleset_team_publication.group_id
+    q &= (db.nodes.team_responsible == db.auth_group.role)|(db.auth_group.role=="Everybody")
+    q &= db.nodes.node_id == node_id
     rows = db(q).select(db.comp_moduleset.id, groupby=db.comp_moduleset.id, cacheable=True)
     modset_ids = [r.id for r in rows]
     return modset_ids
@@ -2179,8 +2216,8 @@ def _comp_get_moduleset_data(node_id, modulesets=[]):
 
     return d
 
-def _comp_get_moduleset(node_id):
-    modset_ids = _comp_get_moduleset_ids_with_children(node_id)
+def _comp_get_moduleset(node_id, modulesets=[]):
+    modset_ids = _comp_get_moduleset_ids_with_children(node_id, modulesets)
     q = db.comp_moduleset.id.belongs(modset_ids)
     rows = db(q).select(db.comp_moduleset.modset_name, cacheable=True)
     return [r.modset_name for r in rows]
@@ -2497,7 +2534,10 @@ def rpc_comp_get_svc_ruleset(svcname, auth):
     insert_run_rset(ruleset)
     return ruleset
 
-def comp_contextual_rulesets(node_id, svc_id=None, slave=False, matching_fsets=None, fset_ids=None, rset_relations=None, rset_names=None):
+def comp_contextual_rulesets(node_id, svc_id=None, slave=False,
+                             matching_fsets=None, fset_ids=None,
+                             rset_relations=None, rset_names=None,
+                             modulesets=[]):
     ruleset = {}
 
     q = db.comp_rulesets.ruleset_public == True
@@ -2506,9 +2546,11 @@ def comp_contextual_rulesets(node_id, svc_id=None, slave=False, matching_fsets=N
 
     # attached to the node through modulesets
     if svc_id is not None:
-        modset_ids = _comp_get_svc_moduleset_ids_with_children(svc_id, slave=slave)
+        modset_ids = _comp_get_svc_moduleset_ids_with_children(svc_id, slave=slave,
+                                                               modulesets=modulesets)
     elif node_id is not None:
-        modset_ids = _comp_get_moduleset_ids_with_children(node_id)
+        modset_ids = _comp_get_moduleset_ids_with_children(node_id,
+                                                           modulesets=modulesets)
     q = db.comp_moduleset_ruleset.modset_id.belongs(modset_ids)
     q &= db.comp_moduleset_ruleset.ruleset_id == db.comp_rulesets.id
     q &= db.comp_rulesets.ruleset_type == "contextual"
@@ -2526,7 +2568,7 @@ def comp_contextual_rulesets(node_id, svc_id=None, slave=False, matching_fsets=N
             ruleset.update(comp_ruleset_vars(rset_id, qr=fset_name, matching_fsets=matching_fsets, rset_relations=rset_relations, rset_names=rset_names))
     return ruleset
 
-def _comp_get_svc_ruleset(svc_id, node_id, slave=None):
+def _comp_get_svc_ruleset(svc_id, node_id, slave=None, modulesets=[]):
     if slave is None:
         slave = comp_slave(svc_id, node_id)
 
@@ -2551,10 +2593,11 @@ def _comp_get_svc_ruleset(svc_id, node_id, slave=None):
                                             matching_fsets=matching_fsets,
                                             fset_ids=l,
                                             rset_relations=rset_relations,
-                                            rset_names=rset_names))
+                                            rset_names=rset_names,
+                                            modulesets=modulesets))
 
     # add explicit rulesets variables
-    rset_ids, rset_ids_via_modset = _comp_get_explicit_svc_ruleset_ids(svc_id, slave=slave)
+    rset_ids, rset_ids_via_modset = _comp_get_explicit_svc_ruleset_ids(svc_id, slave=slave, modulesets=modulesets)
     for rset_id in rset_ids:
         ruleset.update(comp_ruleset_vars(rset_id,
                                          matching_fsets=matching_fsets,
@@ -2587,7 +2630,7 @@ def insert_run_rset(ruleset):
             'vars': [('ruleset_md5', rset_md5)]}
     return ruleset.update({'osvc_collector': rset})
 
-def _comp_get_explicit_svc_ruleset_ids(svc_id, slave=False):
+def _comp_get_explicit_svc_ruleset_ids(svc_id, slave=False, modulesets=[]):
     # attached to the node directly
     q = db.comp_rulesets_services.svc_id == svc_id
     q &= db.comp_rulesets_services.slave == slave
@@ -2595,7 +2638,8 @@ def _comp_get_explicit_svc_ruleset_ids(svc_id, slave=False):
     rset_ids = [r.ruleset_id for r in rows]
 
     # attached to the node through modulesets
-    modset_ids = _comp_get_svc_moduleset_ids_with_children(svc_id, slave=slave)
+    modset_ids = _comp_get_svc_moduleset_ids_with_children(svc_id, slave=slave,
+                                                           modulesets=modulesets)
     q = db.comp_moduleset_ruleset.modset_id.belongs(modset_ids)
     q &= db.comp_moduleset_ruleset.ruleset_id == db.comp_rulesets.id
     q &= db.comp_rulesets.ruleset_type == "explicit"
@@ -2604,7 +2648,7 @@ def _comp_get_explicit_svc_ruleset_ids(svc_id, slave=False):
 
     return rset_ids, rset_ids_via_modset
 
-def _comp_get_explicit_ruleset_ids(node_id):
+def _comp_get_explicit_ruleset_ids(node_id, modulesets=[]):
     # attached to the node directly
     q = db.comp_rulesets_nodes.node_id == node_id
     rows = db(q).select(db.comp_rulesets_nodes.ruleset_id,
@@ -2613,7 +2657,7 @@ def _comp_get_explicit_ruleset_ids(node_id):
     rset_ids = [r.ruleset_id for r in rows]
 
     # attached to the node through modulesets
-    modset_ids = _comp_get_moduleset_ids_with_children(node_id)
+    modset_ids = _comp_get_moduleset_ids_with_children(node_id, modulesets)
     q = db.comp_moduleset_ruleset.modset_id.belongs(modset_ids)
     q &= db.comp_moduleset_ruleset.ruleset_id == db.comp_rulesets.id
     q &= db.comp_rulesets.ruleset_type == "explicit"
@@ -2622,7 +2666,7 @@ def _comp_get_explicit_ruleset_ids(node_id):
 
     return rset_ids, rset_ids_via_modset
 
-def _comp_get_ruleset(node_id):
+def _comp_get_ruleset(node_id, modulesets=[]):
     # initialize ruleset with asset variables
     ruleset = comp_get_node_ruleset(node_id)
 
@@ -2636,10 +2680,11 @@ def _comp_get_ruleset(node_id):
                                             matching_fsets=matching_fsets,
                                             fset_ids=l,
                                             rset_relations=rset_relations,
-                                            rset_names=rset_names))
+                                            rset_names=rset_names,
+                                            modulesets=modulesets))
 
     # add explicit rulesets variables
-    rset_ids, rset_ids_via_modset = _comp_get_explicit_ruleset_ids(node_id)
+    rset_ids, rset_ids_via_modset = _comp_get_explicit_ruleset_ids(node_id, modulesets=modulesets)
     for rset_id in rset_ids:
         ruleset.update(comp_ruleset_vars(rset_id,
                                          matching_fsets=matching_fsets,
