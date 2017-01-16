@@ -898,6 +898,35 @@ jQuery.fn.osvc_metricname = function(options) {
 	})
 }
 
+jQuery.fn.osvc_chartname = function(options) {
+	if (!options) {
+		options = {}
+	}
+	$(this).each(function(){
+		var o = $(this)
+		if (o.is(["rendered"])) {
+			return
+		}
+		var id = o.attr("id")
+		if (!id) {
+			id = o.text()
+		}
+		if (id == "") {
+			return
+		}
+		services_osvcgetrest("/reports/charts/%1", [id] , {"meta": "0", "props": "chart_name"}, function(jd) {
+			var e_chartname = $("<span class='chart16 icon_fixed_width'>"+jd.data[0].chart_name+"</span>")
+			o.html([e_chartname])
+			o.prop("title", id)
+			o.attr("rendered", "")
+			o.tooltipster()
+			if (options.callback) {
+				options.callback()
+			}
+		})
+	})
+}
+
 function osvc_nodenames(l) {
 	if (!l) {
 		return
