@@ -1387,6 +1387,7 @@ function table_action_menu_init_data(t) {
 					"selector": ["clicked", "checked", "all"],
 					"foldable": true,
 					'title': 'action_menu.on_service_actions',
+					"clicked_decorator": clicked_decorator_action,
 					"class": "actions",
 					"cols": ["id", "action", "ack"],
 					"condition": "id+action",
@@ -5010,4 +5011,10 @@ clicked_decorator_resource = function(e, data) {
 		e.html(s)
 		s.children("[id]").osvc_resourcename()
 	}
+}
+
+clicked_decorator_action = function(e, data) {
+	var s = $("<span><span action='"+data.action+"'></span></span>")
+	e.html(s)
+	s.children("[action]").osvc_svcaction_name()
 }

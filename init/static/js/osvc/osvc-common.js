@@ -795,6 +795,22 @@ jQuery.fn.osvc_resourcename = function(options) {
 	})
 }
 
+jQuery.fn.osvc_svcaction_name = function(options) {
+	var o = $(this)
+	if (!options) {
+		options = {}
+	}
+	if (o.is('[rendered]')) {
+		return
+	}
+	var e_action_name = $("<span class='actions icon_fixed_width'>"+o.attr("action")+"</span>")
+	o.html([e_action_name])
+	o.attr("rendered", "")
+	if (options.callback) {
+		options.callback()
+	}
+}
+
 function osvc_nodenames(l) {
 	if (!l) {
 		return
