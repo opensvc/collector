@@ -214,6 +214,7 @@ def get_get_handlers(prefix=None):
              "rest_get_provisioning_template_publications",
        ],
        "resources": [
+             "rest_get_resource",
              "rest_get_resources",
        ],
        "resources_logs": [

@@ -75,6 +75,30 @@ class rest_delete_resources(rest_delete_handler):
             raise Exception("The 'id' key is mandatory")
         return rest_delete_resource().handler(id)
 
+
+#
+class rest_get_resource(rest_get_line_handler):
+    def __init__(self):
+        desc = [
+          "Display the specified resource.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/resource/1",
+        ]
+        rest_get_line_handler.__init__(
+          self,
+          path="/resources/<id>",
+          tables=["resmon"],
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, id, **vars):
+        q = db.resmon.id == id
+        q = q_filter(q, svc_field=db.resmon.id)
+        self.set_q(q)
+        return self.prepare_data(**vars)
+
 #
 class rest_delete_resource(rest_delete_handler):
     def __init__(self):
@@ -113,5 +137,4 @@ class rest_delete_resource(rest_delete_handler):
             )
         ws_send('resmon_change', {'id': id})
         return dict(info=fmt%d)
-
 
