@@ -811,6 +811,35 @@ jQuery.fn.osvc_svcaction_name = function(options) {
 	}
 }
 
+jQuery.fn.osvc_formname = function(options) {
+	if (!options) {
+		options = {}
+	}
+	$(this).each(function(){
+		var o = $(this)
+		if (o.is(["rendered"])) {
+			return
+		}
+		var id = o.attr('id')
+		if (!id) {
+			id = o.text()
+		}
+		if (id == "") {
+			return
+		}
+		services_osvcgetrest("/forms/%1", [id] , {"meta": "0", "props": "form_name"}, function(jd) {
+			var e_formname = $("<span class='wf16 icon_fixed_width'>"+jd.data[0].form_name+"</span>")
+			o.html([e_formname])
+			o.prop("title", id)
+			o.attr("rendered", "")
+			o.tooltipster()
+			if (options.callback) {
+				options.callback()
+			}
+		})
+	})
+}
+
 jQuery.fn.osvc_netname = function(options) {
 	if (!options) {
 		options = {}
