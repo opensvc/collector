@@ -956,6 +956,35 @@ jQuery.fn.osvc_reportname = function(options) {
 	})
 }
 
+jQuery.fn.osvc_prov_templatename = function(options) {
+	if (!options) {
+		options = {}
+	}
+	$(this).each(function(){
+		var o = $(this)
+		if (o.is(["rendered"])) {
+			return
+		}
+		var id = o.attr("id")
+		if (!id) {
+			id = o.text()
+		}
+		if (id == "") {
+			return
+		}
+		services_osvcgetrest("/provisioning_templates/%1", [id] , {"meta": "0", "props": "tpl_name"}, function(jd) {
+			var e_tplname = $("<span class='prov icon_fixed_width'>"+jd.data[0].tpl_name+"</span>")
+			o.html([e_tplname])
+			o.prop("title", id)
+			o.attr("rendered", "")
+			o.tooltipster()
+			if (options.callback) {
+				options.callback()
+			}
+		})
+	})
+}
+
 function osvc_nodenames(l) {
 	if (!l) {
 		return

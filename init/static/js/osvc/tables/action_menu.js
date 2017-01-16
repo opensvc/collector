@@ -700,6 +700,9 @@ function table_action_menu_init_data(t) {
 					"selector": ["clicked", "checked", "all"],
 					"foldable": true,
 					'title': 'action_menu.on_prov_templates',
+					"clicked_decorator": function(e, data){
+						e.osvc_prov_templatename()
+					},
 					"class": "prov",
 					"table": ["templates"],
 					"cols": ["id"],
