@@ -219,7 +219,8 @@ def ajax_dashboard():
     if len(request.args) == 1 and request.args[0] == 'data':
         n = db(q).select(db.dashboard.id.count()).first()(db.dashboard.id.count())
         limitby = (t.pager_start,t.pager_end)
-        t.object_list = db(q).select(orderby=o, cacheable=True, limitby=limitby, left=(l1,l2))
+        cols = t.get_visible_columns()
+        t.object_list = db(q).select(*cols, orderby=o, cacheable=True, limitby=limitby, left=(l1,l2))
         return t.table_lines_data(n, html=False)
 
 @auth.requires_login()
