@@ -742,7 +742,7 @@ jQuery.fn.osvc_svcname = function(options) {
 		if (!svc_id) {
 			svc_id = o.text()
 		}
-		if (svc_id == "") {
+		if (svc_id == "" || svc_id == "undefined") {
 			return
 		}
 		services_osvcgetrest("/services/%1", [svc_id] , {"meta": "0", "props": "svcname,svc_app"}, function(jd) {
