@@ -927,6 +927,36 @@ jQuery.fn.osvc_chartname = function(options) {
 	})
 }
 
+jQuery.fn.osvc_obsolescencename = function(options) {
+	if (!options) {
+		options = {}
+	}
+	$(this).each(function(){
+		var o = $(this)
+		if (o.is(["rendered"])) {
+			return
+		}
+		var id = o.attr("id")
+		if (!id) {
+			id = o.text()
+		}
+		if (id == "") {
+			return
+		}
+		services_osvcgetrest("/obsolescence/settings/%1", [id] , {"meta": "0", "props": "obs_name,obs_type"}, function(jd) {
+			var e_obsname = $("<span>"+jd.data[0].obs_name+"</span>")
+			var e_obstype = $("<span>"+jd.data[0].obs_type+"</span>")
+			o.html([e_obstype, " : ", e_obsname])
+			o.prop("title", id)
+			o.attr("rendered", "")
+			o.tooltipster()
+			if (options.callback) {
+				options.callback()
+			}
+		})
+	})
+}
+
 jQuery.fn.osvc_reportname = function(options) {
 	if (!options) {
 		options = {}
