@@ -908,6 +908,9 @@ function table_action_menu_init_data(t) {
 				{
 					"selector": ["clicked", "checked", "all"],
 					"title": "action_menu.on_networks",
+					"clicked_decorator": function(e, data){
+						e.osvc_netname()
+					},
 					"class": "net16",
 					"table": ["networks"],
 					"foldable": true,
@@ -926,6 +929,7 @@ function table_action_menu_init_data(t) {
 				{
 					"selector": ["clicked", "checked", "all"],
 					"title": "action_menu.on_network_segments",
+					"clicked_decorator": clicked_decorator_network_segment,
 					"class": "segment16",
 					"table": ["network_segments"],
 					"foldable": true,
@@ -5017,4 +5021,10 @@ clicked_decorator_action = function(e, data) {
 	var s = $("<span><span action='"+data.action+"'></span></span>")
 	e.html(s)
 	s.children("[action]").osvc_svcaction_name()
+}
+
+clicked_decorator_network_segment = function(e, data) {
+	var s = $("<span><span class='segment16 icon_fixed_width'>"+data.seg_id+"</span> in <span net_id='"+data.net_id+"'></span></span>")
+	e.html(s)
+	s.children("[net_id]").osvc_netname()
 }

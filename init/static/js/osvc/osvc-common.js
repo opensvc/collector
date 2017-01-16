@@ -811,6 +811,35 @@ jQuery.fn.osvc_svcaction_name = function(options) {
 	}
 }
 
+jQuery.fn.osvc_netname = function(options) {
+	if (!options) {
+		options = {}
+	}
+	$(this).each(function(){
+		var o = $(this)
+		if (o.is(["rendered"])) {
+			return
+		}
+		var net_id = o.attr("net_id")
+		if (!net_id) {
+			net_id = o.text()
+		}
+		if (net_id == "") {
+			return
+		}
+		services_osvcgetrest("/networks/%1", [net_id] , {"meta": "0", "props": "name"}, function(jd) {
+			var e_netname = $("<span class='net16 icon_fixed_width'>"+jd.data[0].name+"</span>")
+			o.html([e_netname])
+			o.prop("title", net_id)
+			o.attr("rendered", "")
+			o.tooltipster()
+			if (options.callback) {
+				options.callback()
+			}
+		})
+	})
+}
+
 function osvc_nodenames(l) {
 	if (!l) {
 		return
