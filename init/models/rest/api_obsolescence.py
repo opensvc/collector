@@ -101,7 +101,7 @@ class rest_get_obsolescence_setting(rest_get_line_handler):
           "List obsolescence settings.",
         ]
         examples = [
-          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/obsolescence/1"
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/obsolescence/settings/1"
         ]
 
         rest_get_line_handler.__init__(
@@ -124,7 +124,7 @@ class rest_get_obsolescence_settings(rest_get_table_handler):
           "List obsolescence settings.",
         ]
         examples = [
-          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/obsolescence"
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/obsolescence/settings"
         ]
 
         rest_get_table_handler.__init__(
