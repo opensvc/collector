@@ -290,6 +290,7 @@ function table_action_menu_init_data(t) {
 				{
 					"selector": ["clicked", "checked"],
 					"title": "action_menu.on_nodes_and_services",
+					"clicked_decorator": clicked_decorator_nodes_and_services,
 					"class": "svc",
 					"foldable": true,
 					"cols": ["svc_id", "node_id"],
@@ -4988,3 +4989,12 @@ clicked_decorator_service_instance = function(e, data) {
 	s.children("[svc_id]").osvc_svcname()
 }
 
+clicked_decorator_nodes_and_services = function(e, data) {
+	var s = $("<span><span svc_id='"+data.svc_id+"'></span></span>")
+	if (typeof(data.node_id) != "undefined") {
+		s.append(" @ <span node_id='"+data.node_id+"'></span>")
+	}
+	e.html(s)
+	s.children("[svc_id]").osvc_svcname()
+	s.children("[node_id]").osvc_nodename()
+}
