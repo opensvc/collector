@@ -323,6 +323,8 @@ class HtmlTable(object):
             if c not in self.cols or c not in self.colprops:
                 continue
             cp = self.colprops[c]
+            if cp.table is None:
+                continue
             if cp.field not in db[cp.table]:
                 continue
             sorted_visible_columns.append(c)
