@@ -1370,9 +1370,7 @@ function table_action_menu_init_data(t) {
 					"foldable": true,
 					"table": ["resmon"],
 					'title': 'action_menu.on_resources',
-					"clicked_decorator": function(e, data){
-                                                e.osvc_resourcename()
-                                        },
+					"clicked_decorator": clicked_decorator_resource,
 					"class": "resource",
 					"cols": ["id"],
 					"condition": "id",
@@ -1725,6 +1723,7 @@ function table_action_menu_init_data(t) {
 					"selector": ["clicked", "checked", "all"],
 					"foldable": true,
 					'title': 'action_menu.on_resources',
+					"clicked_decorator": clicked_decorator_resource,
 					"class": "resource",
 					"cols": ["svc_id", "node_id", "vmname", "rid"],
 					"condition": "svc_id+node_id+vmname+rid,svc_id+node_id+rid",
@@ -4997,4 +4996,18 @@ clicked_decorator_nodes_and_services = function(e, data) {
 	e.html(s)
 	s.children("[svc_id]").osvc_svcname()
 	s.children("[node_id]").osvc_nodename()
+}
+
+clicked_decorator_resource = function(e, data) {
+	if (!data.id) {
+		var s = $("<span><span svc_id='"+data.svc_id+"'></span> @ <span node_id='"+data.node_id+"'></span><span rid='"+data.rid+"'></span></span>")
+		e.html(s)
+		s.children("[svc_id]").osvc_svcname()
+		s.children("[node_id]").osvc_nodename()
+		s.children("[rid]").osvc_resourcename()
+	} else {
+		var s = $("<span><span id='"+data.id+"'></span></span>")
+		e.html(s)
+		s.children("[id]").osvc_resourcename()
+	}
 }

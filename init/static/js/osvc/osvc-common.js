@@ -768,21 +768,29 @@ jQuery.fn.osvc_resourcename = function(options) {
 		if (o.is("[rendered]")) {
 			return
 		}
-		var res_id = o.attr("res_id")
-		if (!res_id ) {
-			res_id = o.text()
-		}
-		if (/^[0-9]+$/.test(res_id)) {
-			services_osvcgetrest("/resources/%1", [res_id], {"meta": "0", "props": "rid"}, function(jd) {
+
+		var rid = o.attr("rid")
+		if (!rid ) {
+			rid = o.attr("id")
+			services_osvcgetrest("/resources/%1", [rid], {"meta": "0", "props": "rid"}, function(jd) {
 				var e_resname = $("<span class='resource icon_fixed_width'>"+jd.data[0].rid+"</span>")
 				o.html([e_resname])
-				o.prop("title", res_id)
+				o.prop("title", rid)
 				o.attr("rendered", "")
 				o.tooltipster()
 				if (options.callback) {
 					options.callback()
 				}
 			})
+		} else {
+			var e_resname = $("<span class='resource icon_fixed_width'>"+rid+"</span>")
+			o.html([e_resname])
+			o.prop("title", rid)
+			o.attr("rendered", "")
+			o.tooltipster()
+			if (options.callback) {
+				options.callback()
+			}
 		}
 	})
 }
