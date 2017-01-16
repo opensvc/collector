@@ -290,6 +290,7 @@ function table_action_menu_init_data(t) {
 				{
 					"selector": ["clicked", "checked"],
 					"title": "action_menu.on_nodes_and_services",
+					"clicked_decorator": clicked_decorator_nodes_and_services,
 					"class": "svc",
 					"foldable": true,
 					"cols": ["svc_id", "node_id"],
@@ -1369,6 +1370,7 @@ function table_action_menu_init_data(t) {
 					"foldable": true,
 					"table": ["resmon"],
 					'title': 'action_menu.on_resources',
+					"clicked_decorator": clicked_decorator_resource,
 					"class": "resource",
 					"cols": ["id"],
 					"condition": "id",
@@ -1385,6 +1387,7 @@ function table_action_menu_init_data(t) {
 					"selector": ["clicked", "checked", "all"],
 					"foldable": true,
 					'title': 'action_menu.on_service_actions',
+					"clicked_decorator": clicked_decorator_action,
 					"class": "actions",
 					"cols": ["id", "action", "ack"],
 					"condition": "id+action",
@@ -1721,6 +1724,7 @@ function table_action_menu_init_data(t) {
 					"selector": ["clicked", "checked", "all"],
 					"foldable": true,
 					'title': 'action_menu.on_resources',
+					"clicked_decorator": clicked_decorator_resource,
 					"class": "resource",
 					"cols": ["svc_id", "node_id", "vmname", "rid"],
 					"condition": "svc_id+node_id+vmname+rid,svc_id+node_id+rid",
@@ -4985,3 +4989,32 @@ clicked_decorator_service_instance = function(e, data) {
 	s.children("[svc_id]").osvc_svcname()
 }
 
+clicked_decorator_nodes_and_services = function(e, data) {
+	var s = $("<span><span svc_id='"+data.svc_id+"'></span></span>")
+	if (typeof(data.node_id) != "undefined") {
+		s.append(" @ <span node_id='"+data.node_id+"'></span>")
+	}
+	e.html(s)
+	s.children("[svc_id]").osvc_svcname()
+	s.children("[node_id]").osvc_nodename()
+}
+
+clicked_decorator_resource = function(e, data) {
+	if (!data.id) {
+		var s = $("<span><span svc_id='"+data.svc_id+"'></span> @ <span node_id='"+data.node_id+"'></span><span rid='"+data.rid+"'></span></span>")
+		e.html(s)
+		s.children("[svc_id]").osvc_svcname()
+		s.children("[node_id]").osvc_nodename()
+		s.children("[rid]").osvc_resourcename()
+	} else {
+		var s = $("<span><span id='"+data.id+"'></span></span>")
+		e.html(s)
+		s.children("[id]").osvc_resourcename()
+	}
+}
+
+clicked_decorator_action = function(e, data) {
+	var s = $("<span><span action='"+data.action+"'></span></span>")
+	e.html(s)
+	s.children("[action]").osvc_svcaction_name()
+}

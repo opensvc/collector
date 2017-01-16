@@ -759,6 +759,58 @@ jQuery.fn.osvc_svcname = function(options) {
 	})
 }
 
+jQuery.fn.osvc_resourcename = function(options) {
+	if (!options) {
+		options = {}
+	}
+	$(this).each(function(){
+		var o = $(this)
+		if (o.is("[rendered]")) {
+			return
+		}
+
+		var rid = o.attr("rid")
+		if (!rid ) {
+			rid = o.attr("id")
+			services_osvcgetrest("/resources/%1", [rid], {"meta": "0", "props": "rid"}, function(jd) {
+				var e_resname = $("<span class='resource icon_fixed_width'>"+jd.data[0].rid+"</span>")
+				o.html([e_resname])
+				o.prop("title", rid)
+				o.attr("rendered", "")
+				o.tooltipster()
+				if (options.callback) {
+					options.callback()
+				}
+			})
+		} else {
+			var e_resname = $("<span class='resource icon_fixed_width'>"+rid+"</span>")
+			o.html([e_resname])
+			o.prop("title", rid)
+			o.attr("rendered", "")
+			o.tooltipster()
+			if (options.callback) {
+				options.callback()
+			}
+		}
+	})
+}
+
+jQuery.fn.osvc_svcaction_name = function(options) {
+	var o = $(this)
+	if (!options) {
+		options = {}
+	}
+	if (o.is('[rendered]')) {
+		return
+	}
+	var e_action_name = $("<span class='actions icon_fixed_width'>"+o.attr("action")+"</span>")
+	o.html([e_action_name])
+	o.attr("rendered", "")
+	if (options.callback) {
+		options.callback()
+	}
+}
+
 function osvc_nodenames(l) {
 	if (!l) {
 		return
