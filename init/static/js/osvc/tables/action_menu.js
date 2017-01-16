@@ -679,6 +679,9 @@ function table_action_menu_init_data(t) {
 					"selector": ["clicked", "checked", "all"],
 					"foldable": true,
 					'title': 'action_menu.on_reports',
+					"clicked_decorator": function(e, data){
+						e.osvc_reportname()
+					},
 					"class": osvc.icons.report,
 					"table": ["reports"],
 					"cols": ["id"],

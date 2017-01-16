@@ -927,6 +927,35 @@ jQuery.fn.osvc_chartname = function(options) {
 	})
 }
 
+jQuery.fn.osvc_reportname = function(options) {
+	if (!options) {
+		options = {}
+	}
+	$(this).each(function(){
+		var o = $(this)
+		if (o.is(["rendered"])) {
+			return
+		}
+		var id = o.attr("id")
+		if (!id) {
+			id = o.text()
+		}
+		if (id == "") {
+			return
+		}
+		services_osvcgetrest("/reports/%1", [id] , {"meta": "0", "props": "report_name"}, function(jd) {
+			var e_reportname = $("<span class='report16 icon_fixed_width'>"+jd.data[0].report_name+"</span>")
+			o.html([e_reportname])
+			o.prop("title", id)
+			o.attr("rendered", "")
+			o.tooltipster()
+			if (options.callback) {
+				options.callback()
+			}
+		})
+	})
+}
+
 function osvc_nodenames(l) {
 	if (!l) {
 		return
