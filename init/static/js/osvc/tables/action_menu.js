@@ -1369,6 +1369,9 @@ function table_action_menu_init_data(t) {
 					"foldable": true,
 					"table": ["resmon"],
 					'title': 'action_menu.on_resources',
+					"clicked_decorator": function(e, data){
+                                                e.osvc_resourcename()
+                                        },
 					"class": "resource",
 					"cols": ["id"],
 					"condition": "id",

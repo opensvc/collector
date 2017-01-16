@@ -759,6 +759,34 @@ jQuery.fn.osvc_svcname = function(options) {
 	})
 }
 
+jQuery.fn.osvc_resourcename = function(options) {
+	if (!options) {
+		options = {}
+	}
+	$(this).each(function(){
+		var o = $(this)
+		if (o.is("[rendered]")) {
+			return
+		}
+		var res_id = o.attr("res_id")
+		if (!res_id ) {
+			res_id = o.text()
+		}
+		if (/^[0-9]+$/.test(res_id)) {
+			services_osvcgetrest("/resources/%1", [res_id], {"meta": "0", "props": "rid"}, function(jd) {
+				var e_resname = $("<span class='resource icon_fixed_width'>"+jd.data[0].rid+"</span>")
+				o.html([e_resname])
+				o.prop("title", res_id)
+				o.attr("rendered", "")
+				o.tooltipster()
+				if (options.callback) {
+					options.callback()
+				}
+			})
+		}
+	})
+}
+
 function osvc_nodenames(l) {
 	if (!l) {
 		return
