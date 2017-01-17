@@ -422,7 +422,7 @@ function menu(divid) {
 	o.div = $("#"+divid)
 
 	o.set_title = function(title) {
-		o.menu_clickable.find(".menu16").text(title)
+		o.menu_clickable.text(title)
 	}
 
 	o.set_title_from_href = function() {
