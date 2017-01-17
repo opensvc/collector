@@ -657,6 +657,20 @@ jQuery.fn.osvc_moduleset = function(options) {
 	})
 }
 
+jQuery.fn.osvc_variable_class = function(options) {
+	osvc_jq_decorator(this, {
+		"options": options,
+		"name": "var_class",
+		"attr": "var_id",
+		"icon": osvc.icons.variable,
+		"bgcolor": osvc.colors.comp,
+		"flash_id_prefix": "var-",
+		"fn": function(id, opts) {
+			variable_tabs(id, opts)
+		}
+	})
+}
+
 jQuery.fn.osvc_app = function(options) {
 	osvc_jq_decorator(this, {
 		"options": options,
@@ -681,6 +695,20 @@ jQuery.fn.osvc_org_group = function(options) {
 		"flash_id_prefix": "group-",
 		"fn": function(id, opts) {
 			group_tabs(id, opts)
+		}
+	})
+}
+
+jQuery.fn.osvc_fullname = function(options) {
+	osvc_jq_decorator(this, {
+		"options": options,
+		"name": "fullname",
+		"attr": "fullname",
+		"icon": "guys16",
+		"bgcolor": osvc.colors.user,
+		"flash_id_prefix": "user-",
+		"fn": function(fullname, opts) {
+			user_tabs(fullname, opts)
 		}
 	})
 }
@@ -742,7 +770,7 @@ jQuery.fn.osvc_svcname = function(options) {
 		if (!svc_id) {
 			svc_id = o.text()
 		}
-		if (svc_id == "") {
+		if (svc_id == "" || svc_id == "undefined") {
 			return
 		}
 		services_osvcgetrest("/services/%1", [svc_id] , {"meta": "0", "props": "svcname,svc_app"}, function(jd) {
@@ -860,6 +888,182 @@ jQuery.fn.osvc_netname = function(options) {
 			var e_netname = $("<span class='net16 icon_fixed_width'>"+jd.data[0].name+"</span>")
 			o.html([e_netname])
 			o.prop("title", net_id)
+			o.attr("rendered", "")
+			o.tooltipster()
+			if (options.callback) {
+				options.callback()
+			}
+		})
+	})
+}
+
+jQuery.fn.osvc_metricname = function(options) {
+	if (!options) {
+		options = {}
+	}
+	$(this).each(function(){
+		var o = $(this)
+		if (o.is(["rendered"])) {
+			return
+		}
+		var id = o.attr("id")
+		if (!id) {
+			id = o.text()
+		}
+		if (id == "") {
+			return
+		}
+		services_osvcgetrest("/reports/metrics/%1", [id] , {"meta": "0", "props": "metric_name"}, function(jd) {
+			var e_metricname = $("<span class='metric16 icon_fixed_width'>"+jd.data[0].metric_name+"</span>")
+			o.html([e_metricname])
+			o.prop("title", id)
+			o.attr("rendered", "")
+			o.tooltipster()
+			if (options.callback) {
+				options.callback()
+			}
+		})
+	})
+}
+
+jQuery.fn.osvc_chartname = function(options) {
+	if (!options) {
+		options = {}
+	}
+	$(this).each(function(){
+		var o = $(this)
+		if (o.is(["rendered"])) {
+			return
+		}
+		var id = o.attr("id")
+		if (!id) {
+			id = o.text()
+		}
+		if (id == "") {
+			return
+		}
+		services_osvcgetrest("/reports/charts/%1", [id] , {"meta": "0", "props": "chart_name"}, function(jd) {
+			var e_chartname = $("<span class='chart16 icon_fixed_width'>"+jd.data[0].chart_name+"</span>")
+			o.html([e_chartname])
+			o.prop("title", id)
+			o.attr("rendered", "")
+			o.tooltipster()
+			if (options.callback) {
+				options.callback()
+			}
+		})
+	})
+}
+
+jQuery.fn.osvc_obsolescencename = function(options) {
+	if (!options) {
+		options = {}
+	}
+	$(this).each(function(){
+		var o = $(this)
+		if (o.is(["rendered"])) {
+			return
+		}
+		var id = o.attr("id")
+		if (!id) {
+			id = o.text()
+		}
+		if (id == "") {
+			return
+		}
+		services_osvcgetrest("/obsolescence/settings/%1", [id] , {"meta": "0", "props": "obs_name,obs_type"}, function(jd) {
+			var e_obsname = $("<span>"+jd.data[0].obs_name+"</span>")
+			var e_obstype = $("<span>"+jd.data[0].obs_type+"</span>")
+			o.html([e_obstype, " : ", e_obsname])
+			o.prop("title", id)
+			o.attr("rendered", "")
+			o.tooltipster()
+			if (options.callback) {
+				options.callback()
+			}
+		})
+	})
+}
+
+jQuery.fn.osvc_reportname = function(options) {
+	if (!options) {
+		options = {}
+	}
+	$(this).each(function(){
+		var o = $(this)
+		if (o.is(["rendered"])) {
+			return
+		}
+		var id = o.attr("id")
+		if (!id) {
+			id = o.text()
+		}
+		if (id == "") {
+			return
+		}
+		services_osvcgetrest("/reports/%1", [id] , {"meta": "0", "props": "report_name"}, function(jd) {
+			var e_reportname = $("<span class='report16 icon_fixed_width'>"+jd.data[0].report_name+"</span>")
+			o.html([e_reportname])
+			o.prop("title", id)
+			o.attr("rendered", "")
+			o.tooltipster()
+			if (options.callback) {
+				options.callback()
+			}
+		})
+	})
+}
+
+jQuery.fn.osvc_prov_templatename = function(options) {
+	if (!options) {
+		options = {}
+	}
+	$(this).each(function(){
+		var o = $(this)
+		if (o.is(["rendered"])) {
+			return
+		}
+		var id = o.attr("id")
+		if (!id) {
+			id = o.text()
+		}
+		if (id == "") {
+			return
+		}
+		services_osvcgetrest("/provisioning_templates/%1", [id] , {"meta": "0", "props": "tpl_name"}, function(jd) {
+			var e_tplname = $("<span class='prov icon_fixed_width'>"+jd.data[0].tpl_name+"</span>")
+			o.html([e_tplname])
+			o.prop("title", id)
+			o.attr("rendered", "")
+			o.tooltipster()
+			if (options.callback) {
+				options.callback()
+			}
+		})
+	})
+}
+
+jQuery.fn.osvc_node_ipsname = function(options) {
+	if (!options) {
+		options = {}
+	}
+	$(this).each(function(){
+		var o = $(this)
+		if (o.is(["rendered"])) {
+			return
+		}
+		var id = o.attr("id")
+		if (!id) {
+			id = o.text()
+		}
+		if (id == "") {
+			return
+		}
+		services_osvcgetrest("/ips/%1", [id] , {"meta": "0", "props": "nodename,addr"}, function(jd) {
+			var e_addr = $("<span class='net16 icon_fixed_width'>"+jd.data[0].addr+"</span>")
+			var e_nodename = $("<span class='node16 icon_fixed_width'>"+jd.data[0].nodename+"</span>")
+			o.html([e_addr, " @ ", e_nodename])
+			o.prop("title", id)
 			o.attr("rendered", "")
 			o.tooltipster()
 			if (options.callback) {

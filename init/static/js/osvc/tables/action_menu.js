@@ -637,6 +637,9 @@ function table_action_menu_init_data(t) {
 					"selector": ["clicked", "checked", "all"],
 					"foldable": true,
 					'title': 'action_menu.on_metrics',
+					"clicked_decorator": function(e, data){
+						e.osvc_metricname()
+					},
 					"class": osvc.icons.metric,
 					"table": ["metrics"],
 					"cols": ["id"],
@@ -655,6 +658,9 @@ function table_action_menu_init_data(t) {
 					"selector": ["clicked", "checked", "all"],
 					"foldable": true,
 					'title': 'action_menu.on_charts',
+					"clicked_decorator": function(e, data){
+						e.osvc_chartname()
+					},
 					"class": osvc.icons.chart,
 					"table": ["charts"],
 					"cols": ["id"],
@@ -673,6 +679,9 @@ function table_action_menu_init_data(t) {
 					"selector": ["clicked", "checked", "all"],
 					"foldable": true,
 					'title': 'action_menu.on_reports',
+					"clicked_decorator": function(e, data){
+						e.osvc_reportname()
+					},
 					"class": osvc.icons.report,
 					"table": ["reports"],
 					"cols": ["id"],
@@ -691,6 +700,9 @@ function table_action_menu_init_data(t) {
 					"selector": ["clicked", "checked", "all"],
 					"foldable": true,
 					'title': 'action_menu.on_prov_templates',
+					"clicked_decorator": function(e, data){
+						e.osvc_prov_templatename()
+					},
 					"class": "prov",
 					"table": ["templates"],
 					"cols": ["id"],
@@ -737,6 +749,9 @@ function table_action_menu_init_data(t) {
 					"selector": ["clicked", "checked", "all"],
 					"foldable": true,
 					'title': 'action_menu.on_obsolescence_settings',
+					"clicked_decorator": function(e, data){
+						e.osvc_obsolescencename()
+					},
 					"class": "check16",
 					"table": ["obsolescence"],
 					"cols": ["id"],
@@ -848,6 +863,9 @@ function table_action_menu_init_data(t) {
 				{
 					"selector": ["clicked", "checked", "all"],
 					"title": "action_menu.on_node_ips",
+					"clicked_decorator": function(e, data){
+						e.osvc_node_ipsname()
+					},
 					"class": "net16",
 					"table": ["nodenetworks"],
 					"foldable": true,

@@ -48,6 +48,7 @@ class rest_get_ip(rest_get_line_handler):
         else:
             q = db.v_nodenetworks.id == id
         q = q_filter(q, app_field=db.v_nodenetworks.app)
+        self.set_q(q)
         return self.prepare_data(**vars)
 
 #
