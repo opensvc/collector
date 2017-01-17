@@ -699,6 +699,20 @@ jQuery.fn.osvc_org_group = function(options) {
 	})
 }
 
+jQuery.fn.osvc_fullname = function(options) {
+	osvc_jq_decorator(this, {
+		"options": options,
+		"name": "fullname",
+		"attr": "fullname",
+		"icon": "guys16",
+		"bgcolor": osvc.colors.user,
+		"flash_id_prefix": "user-",
+		"fn": function(fullname, opts) {
+			user_tabs(fullname, opts)
+		}
+	})
+}
+
 jQuery.fn.osvc_prov_template = function(options) {
 	osvc_jq_decorator(this, {
 		"options": options,
