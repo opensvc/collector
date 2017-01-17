@@ -243,9 +243,12 @@ tab_properties_generic_autocomplete = function(options) {
 					e.prev().osvc_app()
 				} else if (upd == "user_app") {
 					e.prev().osvc_app()
-				} else if (upd == "variable_class") {
-					e.prev().osvc_variable_class()
 				}
+
+				if (options.callback) {
+					options.callback(e)
+				}
+
 				input.blur()
 				tab_properties_generic_update_peers(options.div)
 				tab_properties_generic_lists_refresh(options.div)
@@ -298,6 +301,9 @@ tab_properties_generic_autocomplete_org_group_id = function(options) {
 }
 
 tab_properties_generic_autocomplete_variable_class = function(options) {
+	options.callback = function(e) {
+		e.prev().osvc_variable_class()
+	}
 	options.get = function(callback) {
 		var opts = [{"value": 0, "label": ""}]
 			services_osvcgetrest("/forms", [options.user_id], {"props": "form_name", "query": "form_type=obj", "filters": ["privilege F"], "meta": "false", "limit": "0"}, function(jd) {
