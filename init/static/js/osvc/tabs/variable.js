@@ -50,6 +50,13 @@ function variable_content(divid, options) {
 			"name": o.options.variable_name
 		}
 	}
+
+	o.init = function() {
+		o.var_name = o.div.find("#var_name")
+		o.var_class = o.div.find("#var_class")
+		o.var_updated = o.div.find("#var_updated")
+	}
+
 	o.rulesets = {}
 	var head = {}
 
@@ -76,17 +83,14 @@ function variable_content(divid, options) {
 		} catch(e) {
 			var data = variable.var_value
 		}
-		var variable_name = $("<h3 class='b'></h3>")
-		variable_name.text(variable.var_name)
-		o.area.append(variable_name)
 
-		var p1 = $("<p></p>")
-		p1.text(i18n.t("designer.var_class", {"name": variable.var_class}))
-		o.area.append(p1)
+		o.var_name.append(variable.var_name)
+
+		o.var_class.append(variable.var_class)
 
 		var p2 = $("<p></p>")
 		p2.text(i18n.t("designer.var_last_mod", {"by": variable.var_author, "on": variable.var_updated}))
-		o.area.append(p2)
+		o.var_updated.append(p2)
 
 		o.area.append("<br>")
 
@@ -103,7 +107,20 @@ function variable_content(divid, options) {
 			"disable_edit": false
 		})
 		o.area.append("<br>")
-		o.area.append("<br>")
-	}
-}
 
+		tab_properties_generic_updater({
+			"div": o.div,
+			"privileges": ["Manager", "CompManager"],
+			"post": function(_data, callback, error_callback) {
+				services_osvcpostrest("/compliance/rulesets/%1/variables/%2", [variable.ruleset_id, variable.id], "", _data, callback, error_callback)
+			}
+		})
+
+	}
+	o.div.load("/init/static/views/variable_content.html?v="+osvc.code_rev, function() {
+		o.div.i18n()
+		o.init()
+	})
+
+	return o
+}

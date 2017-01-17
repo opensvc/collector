@@ -845,7 +845,8 @@
 		"content": "content"
 	},
 	"variable_tabs": {
-		"content": "content"
+		"content": "content",
+		"var_class": "Variable class:"
 	},
 	"dns_domain_tabs": {
 		"properties": "properties",

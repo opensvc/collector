@@ -134,6 +134,28 @@ input.aci, input.aci:focus {
 	width: 10em;
 }
 
+.var_content_tab {
+	display: flex;
+	flex-wrap: wrap;
+}
+
+.var_content_tab > div {
+	padding: 1em;
+	display: inline-block;
+}
+
+.var_content_tab  #var_name {
+	font-weight: bold;
+	padding-top: 0.3em;
+	font-size: 1.25em;
+	font-style: italic;
+}
+
+.var_content_tab > div > table > tbody > tr > th {
+	font-weight: normal;
+	width: 7em;
+}
+
 .line {
 	position: relative;
 	z-index: 1;

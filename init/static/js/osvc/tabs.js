@@ -243,6 +243,8 @@ tab_properties_generic_autocomplete = function(options) {
 					e.prev().osvc_app()
 				} else if (upd == "user_app") {
 					e.prev().osvc_app()
+				} else if (upd == "variable_class") {
+					e.prev().osvc_variable_class()
 				}
 				input.blur()
 				tab_properties_generic_update_peers(options.div)
@@ -288,6 +290,20 @@ tab_properties_generic_autocomplete_org_group_id = function(options) {
 			for (var i=0; i<jd.data.length; i++) {
 				var group = jd.data[i]
 				opts.push({"value": group.id, "label": group.role})
+			}
+		})
+		callback(opts)
+	}
+	tab_properties_generic_autocomplete(options)
+}
+
+tab_properties_generic_autocomplete_variable_class = function(options) {
+	options.get = function(callback) {
+		var opts = [{"value": 0, "label": ""}]
+			services_osvcgetrest("/forms", [options.user_id], {"props": "form_name", "query": "form_type=obj", "filters": ["privilege F"], "meta": "false", "limit": "0"}, function(jd) {
+			for (var i=0; i<jd.data.length; i++) {
+				var form_line = jd.data[i]
+				opts.push({"value": form_line.form_name, "label": form_line.form_name})
 			}
 		})
 		callback(opts)
@@ -505,6 +521,8 @@ tab_properties_generic_updater = function(options) {
 			$(this).osvc_app()
 		} else if (updater == "user_app") {
 			$(this).osvc_app()
+		} else if (updater == "variable_class") {
+			$(this).osvc_variable_class()
 		}
 
 		if ((updater == "string") || (updater == "text") || (updater == "integer") || (updater == "date") || (updater == "datetime") || (updater == "size_mb")) {
@@ -519,6 +537,8 @@ tab_properties_generic_updater = function(options) {
 			tab_properties_generic_autocomplete_app_id($.extend({}, options, {"div": $(this)}))
 		} else if (updater == "user_app") {
 			tab_properties_generic_autocomplete_user_app($.extend({}, options, {"div": $(this)}))
+		} else if (updater == "variable_class") {
+			tab_properties_generic_autocomplete_variable_class($.extend({}, options, {"div": $(this)}))
 		}
 	})
 }

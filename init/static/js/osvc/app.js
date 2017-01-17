@@ -31,7 +31,8 @@ var osvc = {
 		'modset': 'modset16',
 		'moduleset': 'modset16',
 		'module': 'mod16',
-		'app': 'app16'
+		'app': 'app16',
+		'variable': 'comp16'
 	},
 	'colors': {
 		'docker_repository': '#27b8e8',

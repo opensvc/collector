@@ -657,6 +657,20 @@ jQuery.fn.osvc_moduleset = function(options) {
 	})
 }
 
+jQuery.fn.osvc_variable_class = function(options) {
+	osvc_jq_decorator(this, {
+		"options": options,
+		"name": "var_class",
+		"attr": "var_id",
+		"icon": osvc.icons.variable,
+		"bgcolor": osvc.colors.comp,
+		"flash_id_prefix": "var-",
+		"fn": function(id, opts) {
+			variable_tabs(id, opts)
+		}
+	})
+}
+
 jQuery.fn.osvc_app = function(options) {
 	osvc_jq_decorator(this, {
 		"options": options,
