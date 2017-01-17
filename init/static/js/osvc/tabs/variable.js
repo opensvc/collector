@@ -89,10 +89,12 @@ function variable_content(divid, options) {
 		o.var_class.append(variable.var_class)
 
 		var p2 = $("<p></p>")
-		p2.text(i18n.t("designer.var_last_mod", {"by": variable.var_author, "on": variable.var_updated}))
+		var last_mod = $("<span>"+i18n.t("variable_tabs.var_last_mod")+"</span>")
+		var fullname = $("<span fullname='"+variable.var_author+"'>"+variable.var_author+"</span>")
+		var mod_date = $("<span>"+i18n.t("variable_tabs.var_mod_on")+" "+variable.var_updated+"</span>")
+		p2.append([last_mod, " " ,fullname, " ", mod_date])
+		fullname.osvc_fullname()
 		o.var_updated.append(p2)
-
-		o.area.append("<br>")
 
 		var form_div = $("<div></div>")
 		form_div.uniqueId()
