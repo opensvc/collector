@@ -1029,6 +1029,36 @@ jQuery.fn.osvc_prov_templatename = function(options) {
 	})
 }
 
+jQuery.fn.osvc_node_ipsname = function(options) {
+	if (!options) {
+		options = {}
+	}
+	$(this).each(function(){
+		var o = $(this)
+		if (o.is(["rendered"])) {
+			return
+		}
+		var id = o.attr("id")
+		if (!id) {
+			id = o.text()
+		}
+		if (id == "") {
+			return
+		}
+		services_osvcgetrest("/ips/%1", [id] , {"meta": "0", "props": "nodename,addr"}, function(jd) {
+			var e_addr = $("<span class='net16 icon_fixed_width'>"+jd.data[0].addr+"</span>")
+			var e_nodename = $("<span class='node16 icon_fixed_width'>"+jd.data[0].nodename+"</span>")
+			o.html([e_addr, " @ ", e_nodename])
+			o.prop("title", id)
+			o.attr("rendered", "")
+			o.tooltipster()
+			if (options.callback) {
+				options.callback()
+			}
+		})
+	})
+}
+
 function osvc_nodenames(l) {
 	if (!l) {
 		return

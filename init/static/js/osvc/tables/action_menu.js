@@ -863,6 +863,9 @@ function table_action_menu_init_data(t) {
 				{
 					"selector": ["clicked", "checked", "all"],
 					"title": "action_menu.on_node_ips",
+					"clicked_decorator": function(e, data){
+						e.osvc_node_ipsname()
+					},
 					"class": "net16",
 					"table": ["nodenetworks"],
 					"foldable": true,
