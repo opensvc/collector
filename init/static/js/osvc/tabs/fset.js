@@ -157,7 +157,7 @@ function fset_properties(divid, options) {
 		o.info_id.html(data.id)
 		o.info_fset_name.html(data.fset_name)
 		o.info_fset_stats.html(data.fset_stats)
-		o.info_fset_author.html(data.fset_author)
+		o.info_fset_author.html(data.fset_author).osvc_fullname()
 		o.info_fset_updated.html(osvc_date_from_collector(data.fset_updated))
 
 		var am_data = [
