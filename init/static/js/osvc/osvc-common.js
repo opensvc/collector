@@ -973,7 +973,7 @@ jQuery.fn.osvc_obsolescencename = function(options) {
 		}
 		services_osvcgetrest("/obsolescence/settings/%1", [id] , {"meta": "0", "props": "obs_name,obs_type"}, function(jd) {
 			var e_obsname = $("<span>"+jd.data[0].obs_name+"</span>")
-			var e_obstype = $("<span>"+jd.data[0].obs_type+"</span>")
+			var e_obstype = $("<span class='"+jd.data[0].obs_type+"16 icon_fixed_width'>"+jd.data[0].obs_type+"</span>")
 			o.html([e_obstype, " : ", e_obsname])
 			o.prop("title", id)
 			o.attr("rendered", "")
