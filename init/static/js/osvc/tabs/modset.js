@@ -111,7 +111,7 @@ function modset_properties(divid, options) {
 	o._load_form = function(data) {
 		o.info_id.html(data.id)
 		o.info_modset_name.html(data.modset_name)
-		o.info_modset_author.html(data.modset_author)
+		o.info_modset_author.html(data.modset_author).osvc_fullname()
 		o.info_modset_updated.html(osvc_date_from_collector(data.modset_updated))
 
 		o.load_usage()
