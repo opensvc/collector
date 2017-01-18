@@ -95,19 +95,19 @@ class rest_delete_ip(rest_delete_handler):
     def handler(self, id, **vars):
         check_privilege("NodeManager")
         q = db.node_ip.id == id
-        q = q_filter(q, node_field=db.node_ip.nodename)
+        q = q_filter(q, node_field=db.node_ip.node_id)
         row = db(q).select().first()
         if row is None:
             raise Exception("ip %s not found" % str(id))
-        node = db(db.nodes.nodename==row.nodename).select().first()
+        node = db(db.nodes.node_id==row.node_id).select().first()
         if node:
             # don't check privs if the node does not exist
-            node_responsible(row.nodename)
+            node_responsible(row.node_id)
         db(q).delete()
 
-        fmt = "ip %(addr)s on node %(nodename)s deleted"
-        d = dict(addr=row.addr, nodename=row.nodename)
-        _log("node.ip.delete", fmt, d, nodename=row.nodename)
+        fmt = "ip %(addr)s on node %(node_id)s deleted"
+        d = dict(addr=row.addr, node_id=row.node_id)
+        _log("node.ip.delete", fmt, d, node_id=row.node_id)
         ws_send('node_ip_change', {'id': row.id})
 
         return dict(info=fmt%d)
