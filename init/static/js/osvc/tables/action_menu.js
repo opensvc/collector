@@ -1412,7 +1412,7 @@ function table_action_menu_init_data(t) {
 					'title': 'action_menu.on_service_actions',
 					"clicked_decorator": clicked_decorator_action,
 					"class": "actions",
-					"cols": ["id", "action", "ack"],
+					"cols": ["id", "action", "ack", "svc_id"],
 					"condition": "id+action",
 					"children": [
 						{
@@ -5037,9 +5037,10 @@ clicked_decorator_resource = function(e, data) {
 }
 
 clicked_decorator_action = function(e, data) {
-	var s = $("<span><span action='"+data.action+"'></span></span>")
+	var s = $("<span><span action='"+data.action+"'></span> @ <span svc_id='"+data.svc_id+"'></span></span>")
 	e.html(s)
 	s.children("[action]").osvc_svcaction_name()
+	s.children("[svc_id]").osvc_svcname()
 }
 
 clicked_decorator_network_segment = function(e, data) {
