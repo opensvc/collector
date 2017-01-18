@@ -863,14 +863,12 @@ function table_action_menu_init_data(t) {
 				{
 					"selector": ["clicked", "checked", "all"],
 					"title": "action_menu.on_node_ips",
-					"clicked_decorator": function(e, data){
-						e.osvc_node_ipsname()
-					},
+					"clicked_decorator": clicked_decorator_node_ips,
 					"class": "net16",
 					"table": ["nodenetworks"],
 					"foldable": true,
-					"cols": ["id"],
-					"condition": "id",
+					"cols": ["id", "node_id"],
+					"condition": "id+node_id",
 					"children": [
 						{
 							"title": "action_menu.delete",
@@ -5048,4 +5046,11 @@ clicked_decorator_network_segment = function(e, data) {
 	var s = $("<span><span class='segment16 icon_fixed_width'>"+data.seg_id+"</span> in <span net_id='"+data.net_id+"'></span></span>")
 	e.html(s)
 	s.children("[net_id]").osvc_netname()
+}
+
+clicked_decorator_node_ips = function(e, data) {
+	var s = $("<span><span id='"+data.id+"'></span> @ <span node_id='"+data.node_id+"'></span></span>")
+	e.html(s)
+	s.children("[node_id]").osvc_nodename()
+	s.children("[id]").osvc_ip()
 }

@@ -1043,7 +1043,7 @@ jQuery.fn.osvc_prov_templatename = function(options) {
 	})
 }
 
-jQuery.fn.osvc_node_ipsname = function(options) {
+jQuery.fn.osvc_ip = function(options) {
 	if (!options) {
 		options = {}
 	}
@@ -1061,8 +1061,7 @@ jQuery.fn.osvc_node_ipsname = function(options) {
 		}
 		services_osvcgetrest("/ips/%1", [id] , {"meta": "0", "props": "nodename,addr"}, function(jd) {
 			var e_addr = $("<span class='net16 icon_fixed_width'>"+jd.data[0].addr+"</span>")
-			var e_nodename = $("<span class='node16 icon_fixed_width'>"+jd.data[0].nodename+"</span>")
-			o.html([e_addr, " @ ", e_nodename])
+			o.html([e_addr])
 			o.prop("title", id)
 			o.attr("rendered", "")
 			o.tooltipster()
