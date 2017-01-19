@@ -426,6 +426,7 @@ tab_properties_generic_simple = function(options) {
 			var e = $("<td><form><input class='oi' type='text'></input></form></td>")
 		}
 		e.css({"padding-left": "0px"})
+		e.attr("colspan", $(this).attr("colspan"))
 		var input = e.find(".oi").first()
 		input.uniqueId() // for date picker
 		input.attr("pid", options.div.attr("id"))
