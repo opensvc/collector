@@ -73,22 +73,19 @@ function requests(divid, options) {
 		o.e_search.bind("keyup", function() {
 			o.search()
 		})
-
-		if (o.options && o.options.form_name) {
-			var d = osvc.forms.data[o.options.form_name]
-			o.e_list.append(o.render_form(d))
-		}
 	}
 
 	o.init_list = function() {
-		if (o.options && o.options.form_name) {
-			return
-		}
 		o.e_list.empty()
 		o.e_inputs.empty()
 		o.e_target.empty()
-		o.render_folders()
-		o.render_forms()
+		if (o.options && o.options.form_name) {
+			var d = osvc.forms.data[o.options.form_name]
+			o.e_list.append(o.render_form(d))
+		} else {
+			o.render_folders()
+			o.render_forms()
+		}
 	}
 
 	o.render_folder = function(d) {
@@ -180,7 +177,7 @@ function requests(divid, options) {
 				o.render_folder({"form_definition": d}).insertBefore($(this))
 			}
 			o.e_inputs.empty().show()
-			form("forms_inputs", {
+			form(o.e_inputs, {
 				"form_name": div.attr("form_name")
 			})
 		})
