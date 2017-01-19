@@ -1122,6 +1122,28 @@ class rest_delete_docker_tags(rest_delete_handler):
         return rest_delete_docker_tag().handler(tag_id)
 
 #
+class rest_get_docker_tag(rest_get_line_handler):
+    def __init__(self):
+        desc = [
+          "List docker tag <id> properties.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/docker/tags/1"
+        ]
+
+        rest_get_line_handler.__init__(
+          self,
+          path="/docker/tags/<id>",
+          tables=["docker_tags"],
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, id, **vars):
+        q = db.docker_tags.id == int(id)
+        self.set_q(q)
+        return self.prepare_data(**vars)
+
 class rest_delete_docker_tag(rest_delete_handler):
     def __init__(self):
         desc = [
