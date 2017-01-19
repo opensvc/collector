@@ -124,6 +124,9 @@ function form(divid, options) {
 	}
 
 	o.template_data_to_dict = function(t, data) {
+		if (!data) {
+			data = ""
+		}
                 var _data = {}
 		for (var i=0; i<o.form_data.form_definition.Inputs.length; i++) {
 			var d = o.form_data.form_definition.Inputs[i]
