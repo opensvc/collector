@@ -209,7 +209,7 @@ function cell_decorator_var_name(e, line) {
 			text: v,
 			cl: "icon comp16",
 			bgcolor: osvc.colors.comp,
-			fn: function(id){variable_tabs(id, {"ruleset_id": rset_id, "variable_id": var_id})}
+			fn: function(id){variable_tabs(id, {"ruleset_id": rset_id, "variable_id": var_id, "variable_name": v})}
 		})
 	})
 }
