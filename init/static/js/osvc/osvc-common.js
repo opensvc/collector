@@ -885,8 +885,8 @@ jQuery.fn.osvc_appname = function(options) {
 			return
 		}
 		services_osvcgetrest("/apps/%1", [id] , {"meta": "0", "props": "app"}, function(jd) {
-			var e_formname = $("<span class='app16 icon_fixed_width'>"+jd.data[0].app+"</span>")
-			o.html([e_formname])
+			var e_appname = $("<span class='app16 icon_fixed_width'>"+jd.data[0].app+"</span>")
+			o.html([e_appname])
 			o.prop("title", id)
 			o.attr("rendered", "")
 				o.tooltipster()
