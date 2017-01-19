@@ -735,19 +735,19 @@ function docker_repository_properties(divid, options) {
 }
 
 function form_tabs(divid, options) {
-	require(["osvc/tabs/form"], function() {
+	require(["osvc/tabs/form", "osvc/forms"], function() {
 		form_tabs(divid, options)
 	})
 }
 
 function form_properties(divid, options) {
-	require(["osvc/tabs/form"], function() {
+	require(["osvc/tabs/form", "osvc/forms"], function() {
 		form_properties(divid, options)
 	})
 }
 
 function form_definition(divid, options) {
-	require(["osvc/tabs/form"], function() {
+	require(["osvc/tabs/form", "osvc/forms"], function() {
 		form_definition(divid, options)
 	})
 }

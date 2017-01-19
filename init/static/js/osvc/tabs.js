@@ -302,7 +302,7 @@ tab_properties_generic_autocomplete_org_group_id = function(options) {
 
 tab_properties_generic_autocomplete_variable_class = function(options) {
 	options.callback = function(e) {
-		e.prev().osvc_variable_class()
+		e.prev().osvc_form()
 	}
 	options.get = function(callback) {
 		var opts = [{"value": 0, "label": ""}]
@@ -528,7 +528,7 @@ tab_properties_generic_updater = function(options) {
 		} else if (updater == "user_app") {
 			$(this).osvc_app()
 		} else if (updater == "variable_class") {
-			$(this).osvc_variable_class()
+			$(this).osvc_form()
 		}
 
 		if ((updater == "string") || (updater == "text") || (updater == "integer") || (updater == "date") || (updater == "datetime") || (updater == "size_mb")) {

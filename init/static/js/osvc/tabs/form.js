@@ -12,6 +12,18 @@ function form_tabs(divid, options) {
 	}
 
 	o.load(function() {
+		$.when(osvc.forms_loaded).then(function(){
+			if (o.options.form_name && o.options.form_name in osvc.forms.data) {
+				options.data = osvc.forms.data[o.options.form_name]
+			} 
+			if (!o.options.form_id && options.data) {
+				o.options.form_id = options.data.id
+			}
+			o._load()
+		})
+	})
+
+	o._load = function() {
 		if (o.options.form_name) {
 			var title = o.options.form_name
 		} else {
@@ -50,7 +62,7 @@ function form_tabs(divid, options) {
 		}
 
 		o.set_tab(o.options.tab)
-	})
+	}
 	return o
 }
 
