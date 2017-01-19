@@ -679,7 +679,7 @@ def update_array_xml(arrayid, vars, vals, auth, subdir, fn):
     rconn.rpush("osvc:q:storage", json.dumps([fn.__name__, arrayid, node_id]))
 
     # stor_array_proxy
-    insert_array_proxy(auth[1], arrayid)
+    insert_array_proxy(node_id, arrayid)
 
     # clean up stor_array_*
     sql = "delete from stor_array_dg where array_id not in (select id from stor_array)"
