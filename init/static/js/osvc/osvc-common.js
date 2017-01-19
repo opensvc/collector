@@ -868,6 +868,35 @@ jQuery.fn.osvc_formname = function(options) {
 	})
 }
 
+jQuery.fn.osvc_appname = function(options) {
+	if (!options) {
+		options = {}
+	}
+	$(this).each(function(){
+		var o = $(this)
+		if (o.is(["rendered"])) {
+			return
+		}
+		var id = o.attr('id')
+		if (!id) {
+			id = o.text()
+		}
+		if (id == "") {
+			return
+		}
+		services_osvcgetrest("/apps/%1", [id] , {"meta": "0", "props": "app"}, function(jd) {
+			var e_formname = $("<span class='app16 icon_fixed_width'>"+jd.data[0].app+"</span>")
+			o.html([e_formname])
+			o.prop("title", id)
+			o.attr("rendered", "")
+				o.tooltipster()
+			if (options.callback) {
+				options.callback()
+			}
+		})
+	})
+}
+
 jQuery.fn.osvc_netname = function(options) {
 	if (!options) {
 		options = {}
