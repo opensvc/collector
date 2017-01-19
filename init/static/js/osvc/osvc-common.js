@@ -897,6 +897,64 @@ jQuery.fn.osvc_appname = function(options) {
 	})
 }
 
+jQuery.fn.osvc_dns_domainname = function(options) {
+	if (!options) {
+		options = {}
+	}
+	$(this).each(function(){
+		var o = $(this)
+		if (o.is(["rendered"])) {
+			return
+		}
+		var id = o.attr('id')
+		if (!id) {
+			id = o.text()
+		}
+		if (id == "") {
+			return
+		}
+		services_osvcgetrest("/dns/domains/%1", [id] , {"meta": "0", "props": "name"}, function(jd) {
+			var e_domainname = $("<span class='dns16 icon_fixed_width'>"+jd.data[0].name+"</span>")
+			o.html([e_domainname])
+			o.prop("title", id)
+			o.attr("rendered", "")
+				o.tooltipster()
+			if (options.callback) {
+				options.callback()
+			}
+		})
+	})
+}
+
+jQuery.fn.osvc_dns_recordname = function(options) {
+	if (!options) {
+		options = {}
+	}
+	$(this).each(function(){
+		var o = $(this)
+		if (o.is(["rendered"])) {
+			return
+		}
+		var id = o.attr('id')
+		if (!id) {
+			id = o.text()
+		}
+		if (id == "") {
+			return
+		}
+		services_osvcgetrest("/dns/records/%1", [id] , {"meta": "0", "props": "name"}, function(jd) {
+			var e_recordname = $("<span class='dns16 icon_fixed_width'>"+jd.data[0].name+"</span>")
+			o.html([e_recordname])
+			o.prop("title", id)
+			o.attr("rendered", "")
+				o.tooltipster()
+			if (options.callback) {
+				options.callback()
+			}
+		})
+	})
+}
+
 jQuery.fn.osvc_netname = function(options) {
 	if (!options) {
 		options = {}

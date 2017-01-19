@@ -885,6 +885,9 @@ function table_action_menu_init_data(t) {
 					"selector": ["clicked", "checked", "all"],
 					"foldable": true,
 					'title': 'action_menu.on_dns_domains',
+					"clicked_decorator": function(e, data){
+						e.osvc_dns_domainname()
+					},
 					"class": "dns16",
 					"table": ["dns_domains"],
 					"cols": ["id"],
@@ -910,6 +913,9 @@ function table_action_menu_init_data(t) {
 					"selector": ["clicked", "checked", "all"],
 					"foldable": true,
 					'title': 'action_menu.on_dns_records',
+					"clicked_decorator": function(e, data){
+						e.osvc_dns_recordname()
+					},
 					"class": "dns16",
 					"table": ["dns_records"],
 					"cols": ["id"],
