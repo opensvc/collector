@@ -802,6 +802,9 @@ function table_action_menu_init_data(t) {
 					"selector": ["clicked", "checked", "all"],
 					"foldable": true,
 					'title': 'action_menu.on_apps',
+					"clicked_decorator": function(e, data){
+						e.osvc_appname()
+					},
 					"class": "app16",
 					"table": ["apps"],
 					"cols": ["id"],
