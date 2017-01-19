@@ -885,6 +885,9 @@ function table_action_menu_init_data(t) {
 					"selector": ["clicked", "checked", "all"],
 					"foldable": true,
 					'title': 'action_menu.on_dns_domains',
+					"clicked_decorator": function(e, data){
+						e.osvc_dns_domainname()
+					},
 					"class": "dns16",
 					"table": ["dns_domains"],
 					"cols": ["id"],
@@ -910,6 +913,9 @@ function table_action_menu_init_data(t) {
 					"selector": ["clicked", "checked", "all"],
 					"foldable": true,
 					'title': 'action_menu.on_dns_records',
+					"clicked_decorator": function(e, data){
+						e.osvc_dns_recordname()
+					},
 					"class": "dns16",
 					"table": ["dns_records"],
 					"cols": ["id"],
@@ -1568,10 +1574,11 @@ function table_action_menu_init_data(t) {
 				{
 					"selector": ["clicked", "checked", "all"],
 					"title": "action_menu.on_docker_tags",
+					"clicked_decorator": clicked_decorator_docker,
 					"class": "dockertags16",
 					"foldable": true,
-					"cols": ["registry_id", "tag_id"],
-					"condition": "registry_id+tag_id",
+					"cols": ["registry_id", "tag_id", "repository_id"],
+					"condition": "registry_id+tag_id+repository_id",
 					"children": [
 						{
 							"title": "action_menu.delete",
@@ -1585,6 +1592,7 @@ function table_action_menu_init_data(t) {
 				{
 					"selector": ["clicked", "checked", "all"],
 					"title": "action_menu.on_docker_repositories",
+					"clicked_decorator": clicked_decorator_docker,
 					"class": "docker_repository16",
 					"foldable": true,
 					"cols": ["repository_id"],
@@ -1602,6 +1610,9 @@ function table_action_menu_init_data(t) {
 				{
 					"selector": ["clicked", "checked", "all"],
 					"title": "action_menu.on_docker_registries",
+					"clicked_decorator": function(e, data){
+						e.osvc_docker_registryname()
+					},
 					"class": "docker_registry16",
 					"foldable": true,
 					"cols": ["registry_id"],
@@ -5058,3 +5069,18 @@ clicked_decorator_node_ips = function(e, data) {
 	s.children("[node_id]").osvc_nodename()
 	s.children("[id]").osvc_ip()
 }
+
+clicked_decorator_docker = function(e, data) {
+	if (data.tag_id) {
+		var s = $("<span><span tag_id='"+data.tag_id+"'></span> @ <span repository_id='"+data.repository_id+"'></span></span>")
+		e.html(s)
+		s.children("[repository_id]").osvc_docker_repositoryname()
+		s.children("[tag_id]").osvc_docker_tagname()
+	} else {
+		var s = $("<span><span repository_id='"+data.repository_id+"'></span></span>")
+		e.html(s)
+		s.children("[repository_id]").osvc_docker_repositoryname()
+	}
+	
+}
+

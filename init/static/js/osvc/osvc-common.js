@@ -885,8 +885,153 @@ jQuery.fn.osvc_appname = function(options) {
 			return
 		}
 		services_osvcgetrest("/apps/%1", [id] , {"meta": "0", "props": "app"}, function(jd) {
-			var e_formname = $("<span class='app16 icon_fixed_width'>"+jd.data[0].app+"</span>")
-			o.html([e_formname])
+			var e_appname = $("<span class='app16 icon_fixed_width'>"+jd.data[0].app+"</span>")
+			o.html([e_appname])
+			o.prop("title", id)
+			o.attr("rendered", "")
+				o.tooltipster()
+			if (options.callback) {
+				options.callback()
+			}
+		})
+	})
+}
+
+jQuery.fn.osvc_dns_domainname = function(options) {
+	if (!options) {
+		options = {}
+	}
+	$(this).each(function(){
+		var o = $(this)
+		if (o.is(["rendered"])) {
+			return
+		}
+		var id = o.attr('id')
+		if (!id) {
+			id = o.text()
+		}
+		if (id == "") {
+			return
+		}
+		services_osvcgetrest("/dns/domains/%1", [id] , {"meta": "0", "props": "name"}, function(jd) {
+			var e_domainname = $("<span class='dns16 icon_fixed_width'>"+jd.data[0].name+"</span>")
+			o.html([e_domainname])
+			o.prop("title", id)
+			o.attr("rendered", "")
+				o.tooltipster()
+			if (options.callback) {
+				options.callback()
+			}
+		})
+	})
+}
+
+jQuery.fn.osvc_dns_recordname = function(options) {
+	if (!options) {
+		options = {}
+	}
+	$(this).each(function(){
+		var o = $(this)
+		if (o.is(["rendered"])) {
+			return
+		}
+		var id = o.attr('id')
+		if (!id) {
+			id = o.text()
+		}
+		if (id == "") {
+			return
+		}
+		services_osvcgetrest("/dns/records/%1", [id] , {"meta": "0", "props": "name"}, function(jd) {
+			var e_recordname = $("<span class='dns16 icon_fixed_width'>"+jd.data[0].name+"</span>")
+			o.html([e_recordname])
+			o.prop("title", id)
+			o.attr("rendered", "")
+				o.tooltipster()
+			if (options.callback) {
+				options.callback()
+			}
+		})
+	})
+}
+
+jQuery.fn.osvc_docker_registryname = function(options) {
+	if (!options) {
+		options = {}
+	}
+	$(this).each(function(){
+		var o = $(this)
+		if (o.is(["rendered"])) {
+			return
+		}
+		var id = o.attr('registry_id')
+		if (!id) {
+			id = o.text()
+		}
+		if (id == "") {
+			return
+		}
+		services_osvcgetrest("/docker/registries/%1", [id] , {"meta": "0", "props": "service"}, function(jd) {
+			var e_registryname = $("<span class='docker_registry16 icon_fixed_width'>"+jd.data[0].service+"</span>")
+			o.html([e_registryname])
+			o.prop("title", id)
+			o.attr("rendered", "")
+				o.tooltipster()
+			if (options.callback) {
+				options.callback()
+			}
+		})
+	})
+}
+
+jQuery.fn.osvc_docker_repositoryname = function(options) {
+	if (!options) {
+		options = {}
+	}
+	$(this).each(function(){
+		var o = $(this)
+		if (o.is(["rendered"])) {
+			return
+		}
+		var id = o.attr('repository_id')
+		if (!id) {
+			id = o.text()
+		}
+		if (id == "") {
+			return
+		}
+		services_osvcgetrest("/docker/repositories/%1", [id] , {"meta": "0", "props": "repository"}, function(jd) {
+			var e_reponame = $("<span class='docker_repository16 icon_fixed_width'>"+jd.data[0].repository+"</span>")
+			o.html([e_reponame])
+			o.prop("title", id)
+			o.attr("rendered", "")
+				o.tooltipster()
+			if (options.callback) {
+				options.callback()
+			}
+		})
+	})
+}
+
+jQuery.fn.osvc_docker_tagname = function(options) {
+	if (!options) {
+		options = {}
+	}
+	$(this).each(function(){
+		var o = $(this)
+		if (o.is(["rendered"])) {
+			return
+		}
+		var id = o.attr('tag_id')
+		if (!id) {
+			id = o.text()
+		}
+		if (id == "") {
+			return
+		}
+		services_osvcgetrest("/docker/tags/%1", [id] , {"meta": "0", "props": "name"}, function(jd) {
+			var e_tagname = $("<span class='dockertags16 icon_fixed_width'>"+jd.data[0].name+"</span>")
+			o.html([e_tagname])
 			o.prop("title", id)
 			o.attr("rendered", "")
 				o.tooltipster()

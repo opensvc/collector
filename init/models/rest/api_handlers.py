@@ -103,6 +103,7 @@ def get_get_handlers(prefix=None):
              "rest_get_docker_repository_pushers_apps",
              "rest_get_docker_repository_pushers_groups",
              "rest_get_docker_repository_pushers_users",
+             "rest_get_docker_tag",
        ],
        "dns": [
              "rest_get_dns_domains",
