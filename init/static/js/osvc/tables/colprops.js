@@ -2200,6 +2200,7 @@ colprops = {
 		"title": "Class"
 	},
 	"var_name": {
+		"_class": "var_name",
 		"img": "comp16",
 		"title": "Variable"
 	},

@@ -197,6 +197,23 @@ var img_h = {
 	'tag': 'tag16'
 }
 
+function cell_decorator_var_name(e, line) {
+	var v = $.data(e[0], "v")
+	var var_id = $.data(line.children("[col=id]")[0], "v")
+	var rset_id = $.data(line.children("[col=ruleset_id]")[0], "v")
+	e
+	.html("<span class='clickable'>"+v+"</span>")
+	.addClass("corner-top")
+	.click(function(){
+		osvc.flash.show({
+			text: v,
+			cl: "icon comp16",
+			bgcolor: osvc.colors.comp,
+			fn: function(id){variable_tabs(id, {"ruleset_id": rset_id, "variable_id": var_id})}
+		})
+	})
+}
+
 function cell_decorator_log_icons(e, line) {
 	var action = $.data(line.children("[col=log_action]")[0], "v")
 	var l = action.split(".")
@@ -1892,6 +1909,7 @@ $.extend(true, cell_decorators, {
 	"resinfo_key": cell_decorator_resinfo_key,
 	"resinfo_value": cell_decorator_resinfo_value,
 	"log_icons": cell_decorator_log_icons,
+	"var_name": cell_decorator_var_name,
 	"app": cell_decorator_app,
 	"obs_type": cell_decorator_obs_type,
 	"obs_count": cell_decorator_obs_count,
