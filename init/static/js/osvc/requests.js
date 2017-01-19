@@ -75,8 +75,8 @@ function requests(divid, options) {
 		})
 
 		if (o.options && o.options.form_name) {
-			o.e_search.val(o.options.form_name)
-			o.search()
+			var d = osvc.forms.data[o.options.form_name]
+			o.e_list.append(o.render_form(d))
 		}
 	}
 
