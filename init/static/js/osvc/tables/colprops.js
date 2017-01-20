@@ -2196,6 +2196,7 @@ colprops = {
 		"title": "Author"
 	},
 	"var_class": {
+		"_class": "var_class",
 		"img": "wf16",
 		"title": "Class"
 	},

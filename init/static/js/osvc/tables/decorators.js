@@ -197,6 +197,21 @@ var img_h = {
 	'tag': 'tag16'
 }
 
+function cell_decorator_var_class(e, line) {
+	var v = $.data(e[0], "v")
+	e
+	.html("<span class='clickable'>"+v+"</span>")
+	.addClass("corner-top")
+	.click(function(){
+		osvc.flash.show({
+			text: v,
+			cl: "icon wf16",
+			bgcolor: osvc.colors.comp,
+			fn: function(id){form_tabs(id, {"form_name": v})}
+		})
+	})
+}
+
 function cell_decorator_var_name(e, line) {
 	var v = $.data(e[0], "v")
 	var var_id = $.data(line.children("[col=id]")[0], "v")
@@ -1909,6 +1924,7 @@ $.extend(true, cell_decorators, {
 	"resinfo_key": cell_decorator_resinfo_key,
 	"resinfo_value": cell_decorator_resinfo_value,
 	"log_icons": cell_decorator_log_icons,
+	"var_class": cell_decorator_var_class,
 	"var_name": cell_decorator_var_name,
 	"app": cell_decorator_app,
 	"obs_type": cell_decorator_obs_type,
