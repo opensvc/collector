@@ -432,13 +432,28 @@ def output_rest(output, form_definition, _d=None, _results=None):
             raise Exception(out)
         return json.loads('\n'.join(l))
 
+    #
     # prepare the rest url and args
-    args = ['']
-    for s in re.findall("#[\.\w]+", url):
-        k = s.lstrip("#")
-        val = str(get_val(_d, k))
-        url = url.replace(s, val)
-        args.append(val)
+    # args in the context contains the url path elements with references
+    # substituted.
+    #
+    # ex:
+    # url  = "/arrays/#id/diskgroups/#id/quotas"
+    # =>
+    # url  = "/arrays/554/diskgroups/2525/quotas"
+    # args = ['arrays', 554, 'diskgroups', 2525, 'quotas']
+    #
+    args = []
+    for s in url.rstrip("/").split("/"):
+        if s == "":
+            continue
+        if s.startswith("#"):
+            k = s.lstrip("#")
+            val = str(get_val(_d, k))
+            url = url.replace(s, val)
+            args.append(val)
+        else:
+            args.append(s)
 
     # mangle the form data if a mangler is defined
     if mangler is None:
@@ -449,13 +464,19 @@ def output_rest(output, form_definition, _d=None, _results=None):
     if type(vars) == str:
         raise Exception("The mangler must not return a str")
 
-
     # find the rest handler and execute the call
     handler = get_handler(action, url)
 
     for k in handler.props_blacklist:
         if k in vars:
             del(vars[k])
+
+    # keep only keys specified by "Keys", if defined
+    if len(output.get("Keys", [])) > 0:
+        retain_keys = output.get("Keys")
+        for k in list(vars.keys()):
+            if k not in retain_keys:
+                del(vars[k])
 
     try:
         if type(vars) == list:

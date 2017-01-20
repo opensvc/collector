@@ -260,14 +260,24 @@ class rest_post_array_diskgroup_quotas(rest_post_handler):
         if dg is None:
             raise Exception("dg %s not found" % str(dg_id))
 
+        q = db.stor_array_dg_quota.dg_id == dg_id
+        q &= db.stor_array_dg_quota.app_id == app.id
+        quota = db(q).select().first()
+
         vars["app_id"] = app.id
         vars["dg_id"] = dg_id
-        id = db.stor_array_dg_quota.insert(**vars)
-
-        fmt = "%(quota)s quota added for app %(app)s in dg %(dg)s"
         d = dict(quota=str(vars.get("quota", "")), app=app.app, dg=dg.dg_name)
 
-        _log('quota.add', fmt, d)
+        if quota is None:
+            id = db.stor_array_dg_quota.insert(**vars)
+            fmt = "%(quota)s quota added for app %(app)s in dg %(dg)s"
+            _log('quota.add', fmt, d)
+        else:
+            id = quota.id
+            db(q).update(**vars)
+            fmt = "%(quota)s quota updated for app %(app)s in dg %(dg)s"
+            _log('quota.change', fmt, d)
+
         ws_send('stor_array_dg_quota_change', {'id': id})
         table_modified("stor_array_dg_quota")
 
