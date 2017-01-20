@@ -206,7 +206,7 @@ function cell_decorator_var_class(e, line) {
 		osvc.flash.show({
 			text: v,
 			cl: "icon wf16",
-			bgcolor: osvc.colors.comp,
+			bgcolor: osvc.colors.form,
 			fn: function(id){form_tabs(id, {"form_name": v})}
 		})
 	})
