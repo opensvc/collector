@@ -206,7 +206,7 @@ function cell_decorator_var_class(e, line) {
 		osvc.flash.show({
 			text: v,
 			cl: "icon wf16",
-			bgcolor: osvc.colors.comp,
+			bgcolor: osvc.colors.form,
 			fn: function(id){form_tabs(id, {"form_name": v})}
 		})
 	})
@@ -813,13 +813,14 @@ function cell_decorator_safe_file(e, line) {
 	}
 	e
 	.html("<div class='a nowrap trunc20'>"+uuid+"</div>")
-	.addClass("corner")
+	.addClass("corner-top")
 	.click(function(){
-		if (get_selected() != "") {
-			return
-		}
-		var id = toggle_extraline(e)
-		safe_file_tabs(id, {"uuid": uuid})
+		osvc.flash.show({
+                        text: uuid,
+                        cl: "icon safe16",
+                        bgcolor: osvc.colors.comp,
+                        fn: function(id){safe_file_tabs(id, {"uuid": uuid})}
+                })
 	})
 }
 
