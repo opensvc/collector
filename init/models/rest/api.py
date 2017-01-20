@@ -688,6 +688,20 @@ def prepare_data(
                         tables.append("services")
                         validated_props.append(prop)
                         break
+            elif t == "apps":
+                for table in tables:
+                    if "app_id" in db[table].fields:
+                        left.append(db.apps.on(db.apps.id==db[table].app_id))
+                        tables.append("apps")
+                        validated_props.append(prop)
+                        break
+            elif t == "stor_array":
+                for table in tables:
+                    if "array_id" in db[table].fields:
+                        left.append(db.stor_array.on(db.stor_array.id==db[table].array_id))
+                        tables.append("stor_array")
+                        validated_props.append(prop)
+                        break
         props = ",".join(validated_props)
 
     all_cols, translations = props_to_cols(None, tables=tables, blacklist=props_blacklist, db=db)
@@ -849,6 +863,8 @@ def props_to_cols(props, tables=[], vprops={}, blacklist=[], db=db):
         props |= set(_vprops)
     translations = []
     for p in props:
+        if len(p) == 0:
+            continue
         if p[0] == "~":
             desc = True
             p = p[1:]
