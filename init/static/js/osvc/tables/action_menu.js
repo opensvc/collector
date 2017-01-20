@@ -1083,6 +1083,9 @@ function table_action_menu_init_data(t) {
 				{
 					"selector": ["clicked", "checked", "all"],
 					"title": "action_menu.on_safe_files",
+					"clicked_decorator": function(e, data){
+						e.osvc_safe()
+					},
 					"class": "safe16",
 					"table": ["safe"],
 					"foldable": true,

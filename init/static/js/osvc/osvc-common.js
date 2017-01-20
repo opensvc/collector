@@ -1304,6 +1304,35 @@ jQuery.fn.osvc_rulesetname = function(options) {
 	})
 }
 
+jQuery.fn.osvc_safe = function(options) {
+	if (!options) {
+		options = {}
+	}
+	$(this).each(function(){
+		var o = $(this)
+		if (o.is(["rendered"])) {
+			return
+		}
+		var id = o.attr('id')
+		if (!id) {
+			id = o.text()
+		}
+		if (id == "") {
+			return
+		}
+		services_osvcgetrest("/safe/%1", [id] , {"meta": "0", "props": "uuid"}, function(jd) {
+			var e_safe_uuid = $("<span class='safe16 icon_fixed_width'>"+jd.data[0].uuid+"</span>")
+			o.html([e_safe_uuid])
+			o.prop("title", id)
+			o.attr("rendered", "")
+			o.tooltipster()
+			if (options.callback) {
+				options.callback()
+			}
+		})
+	})
+}
+
 function osvc_nodenames(l) {
 	if (!l) {
 		return
