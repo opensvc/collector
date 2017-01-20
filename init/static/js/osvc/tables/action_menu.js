@@ -987,6 +987,9 @@ function table_action_menu_init_data(t) {
 				{
 					"selector": ["clicked", "checked", "all"],
 					"title": "action_menu.on_modulesets",
+					"clicked_decorator": function(e, data){
+						e.osvc_modulesetname()
+					},
 					"class": "modset16",
 					"foldable": true,
 					"cols": ["modset_id"],
@@ -1032,6 +1035,9 @@ function table_action_menu_init_data(t) {
 				{
 					"selector": ["clicked", "checked", "all"],
 					"title": "action_menu.on_rulesets",
+					"clicked_decorator": function(e, data){
+						e.osvc_rulesetname()
+					},
 					"class": "rset16",
 					"foldable": true,
 					"cols": ["ruleset_id"],
