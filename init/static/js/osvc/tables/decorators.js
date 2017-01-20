@@ -279,25 +279,33 @@ function cell_decorator_app(e, line) {
 
 function cell_decorator_dns_domain(e, line) {
 	var v = $.data(e[0], "v")
+	var domain_id = $.data(line.children("[col=id]")[0], "v")
 	e
 	.html("<span class='clickable'>"+v+"</span>")
-	.addClass("corner")
+	.addClass("corner-top")
 	.click(function(){
-		var domain_id = $.data(line.children("[col=id]")[0], "v")
-		var id = toggle_extraline(e)
-		dns_domain_tabs(id, {"domain_id": domain_id, "domain_name": v})
+		osvc.flash.show({
+			text: v,
+			cl: "icon dns16",
+			bgcolor: osvc.colors.dns,
+			fn: function(id){dns_domain_tabs(id, {"domain_id": domain_id, "domain_name": v})}
+		})
 	})
 }
 
 function cell_decorator_dns_record(e, line) {
 	var v = $.data(e[0], "v")
+	var record_id =  $.data(line.children("[col=id]")[0], "v")
 	e
 	.html("<span class='clickable'>"+v+"</span>")
-	.addClass("corner")
+	.addClass("corner-top")
 	.click(function(){
-		var record_id = $.data(line.children("[col=id]")[0], "v")
-		var id = toggle_extraline(e)
-		dns_record_tabs(id, {"record_id": record_id, "record_name": v})
+		osvc.flash.show({
+			text: v,
+			cl: "icon dns16",
+			bgcolor: osvc.colors.dns,
+			fn: function(id){dns_record_tabs(id, {"record_id": record_id, "record_name": v})}
+		})
 	})
 }
 
