@@ -1246,6 +1246,35 @@ jQuery.fn.osvc_ip = function(options) {
 	})
 }
 
+jQuery.fn.osvc_rulesetname = function(options) {
+	if (!options) {
+		options = {}
+	}
+	$(this).each(function(){
+		var o = $(this)
+		if (o.is(["rendered"])) {
+			return
+		}
+		var id = o.attr("id")
+		if (!id) {
+			id = o.text()
+		}
+		if (id == "") {
+			return
+		}
+		services_osvcgetrest("/compliance/rulesets/%1", [id] , {"meta": "0", "props": "ruleset_name"}, function(jd) {
+			var e_rsetname = $("<span class='rset16 icon_fixed_width'>"+jd.data[0].ruleset_name+"</span>")
+			o.html([e_rsetname])
+			o.prop("title", id)
+			o.attr("rendered", "")
+			o.tooltipster()
+			if (options.callback) {
+				options.callback()
+			}
+		})
+	})
+}
+
 function osvc_nodenames(l) {
 	if (!l) {
 		return
