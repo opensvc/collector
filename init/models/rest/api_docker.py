@@ -1141,6 +1141,7 @@ class rest_get_docker_tag(rest_get_line_handler):
 
     def handler(self, id, **vars):
         q = db.docker_tags.id == int(id)
+        q &= docker_repositories_acls_query()
         self.set_q(q)
         return self.prepare_data(**vars)
 
