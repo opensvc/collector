@@ -530,8 +530,10 @@ function menu(divid) {
 	o.clicked = function() {
 		if (!o.menu_div.is(":visible")) {
 			$(".header").find(".menu").slideUp()
-			o.menu_div.stop().slideDown(function(){filter_menu()})
-			$("#search_input").val("").focus()
+			o.menu_div.stop().slideDown(function(){
+				osvc.search.filter_menu()
+			})
+			osvc.search.e_search_input.val("").focus()
 		} else {
 			o.menu_div.stop().slideUp()
 		}
@@ -554,7 +556,7 @@ function menu(divid) {
 				}
 				o.set_title(title)
 				o.menu_div.slideUp();
-				$("#search_input").val("").blur()
+				osvc.search.e_search_input.val("").blur()
 				app_load_href(href, fn)
 			})
 		}
