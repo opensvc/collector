@@ -348,7 +348,7 @@ function app_bindings() {
 		if ( event.which == 27 ) {
 			$("input:focus").blur()
 			$("textarea:focus").blur()
-			$("#search_input").val("")
+			osvc.search.e_search_input.val("")
 			osvc_popup_remove_from_stack()
 			return
 		}
@@ -359,7 +359,7 @@ function app_bindings() {
 				$(".header").find(".menu_selected").removeClass("menu_selected")
 				$(".header").find(".menu_entry:visible").first().addClass("menu_selected")
 				$(".header").find(".search_entry").first().addClass("menu_selected")
-				$("#search_input").blur()
+				osvc.search.e_search_input.blur()
 				event.preventDefault()
 			}
 			if (tgt.is("#amsearch")) {
@@ -383,9 +383,9 @@ function app_bindings() {
 		// shortcuts
 		//
 
-		// 'f' for search
+		// 'f' for fset selector
 		if ((event.which == 70) && !event.ctrlKey && !event.metaKey) {
-			if (!$('#search_input').is(":focus")) {
+			if (!osvc.search.e_search_input.is(":focus")) {
 				event.preventDefault()
 				$("[name=fset_selector]").click()
 			}
@@ -393,11 +393,11 @@ function app_bindings() {
 
 		// 's' for search
 		else if (event.which == 83) {
-			if (!$('#search_input').is(":focus")) {
+			if (!osvc.search.e_search_input.is(":focus")) {
 				event.preventDefault()
-				$('#search_input').val('')
+				osvc.search.e_search_input.val('')
 			}
-			$('#search_input').focus()
+			osvc.search.e_search_input.focus()
 		}
 
 		// 'n' to open nav menu
@@ -405,11 +405,11 @@ function app_bindings() {
 			event.preventDefault()
 			$(".header").find(".menu").hide()
 			osvc.menu.menu_div.slideDown(function(){
-				filter_menu()
+				osvc.search.filter_menu()
 			})
 			$(".header").find(".menu_selected").removeClass("menu_selected")
-			$('#search_input').val('')
-			$('#search_input').focus()
+			osvc.search.e_search_input.val('')
+			osvc.search.e_search_input.focus()
 		}
 
 		// 'r' for refresh
