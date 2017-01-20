@@ -810,13 +810,14 @@ function cell_decorator_safe_file(e, line) {
 	}
 	e
 	.html("<div class='a nowrap trunc20'>"+uuid+"</div>")
-	.addClass("corner")
+	.addClass("corner-top")
 	.click(function(){
-		if (get_selected() != "") {
-			return
-		}
-		var id = toggle_extraline(e)
-		safe_file_tabs(id, {"uuid": uuid})
+		osvc.flash.show({
+                        text: uuid,
+                        cl: "icon safe16",
+                        bgcolor: osvc.colors.comp,
+                        fn: function(id){safe_file_tabs(id, {"uuid": uuid})}
+                })
 	})
 }
 
