@@ -1556,7 +1556,7 @@ ul.login_menu ul {
 }
 .cd16:before,
 .save16:before {
-	color: #dddd66;
+	color: #949413;
 	content: '\f0c7';
 }
 .designer16:before {
@@ -1575,11 +1575,19 @@ ul.login_menu ul {
 	content: '\f1c0';
 }
 .quota16:before {
-	color: #dddd66;
+	color: #949413;
 	content: '\f1b2';
 }
+.diskgroup:before {
+	color: #949413;
+	content: '\f009';
+}
+.array:before {
+	color: #949413;
+	content: '\f00a';
+}
 .hd16:before {
-	color: #dddd66;
+	color: #949413;
 	content: '\f1c0';
 }
 .pkg16:before {

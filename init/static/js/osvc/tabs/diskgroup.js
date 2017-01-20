@@ -5,7 +5,7 @@ function diskgroup_tabs(divid, options) {
 	var o = tabs(divid)
 	o.options = options
 	o.options.bgcolor = osvc.colors.disk
-	o.options.icon = "hd16"
+	o.options.icon = "diskgroup"
 	o.link = {
 		"fn": arguments.callee.name,
 		"title": "link."+arguments.callee.name
@@ -25,7 +25,7 @@ function diskgroup_tabs(divid, options) {
 		// tab properties
 		i = o.register_tab({
 			"title": "node_tabs.properties",
-			"title_class": "icon hd16"
+			"title_class": "icon diskgroup"
 		})
 		o.tabs[i].callback = function(divid) {
 			diskgroup_properties(divid, {"dg_id": o.data.id})

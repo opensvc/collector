@@ -713,6 +713,20 @@ jQuery.fn.osvc_fullname = function(options) {
 	})
 }
 
+jQuery.fn.osvc_array = function(options) {
+	osvc_jq_decorator(this, {
+		"options": options,
+		"name": "array_name",
+		"attr": "array_id",
+		"icon": "array",
+		"bgcolor": osvc.colors.disk,
+		"flash_id_prefix": "array-",
+		"fn": function(id, opts) {
+			array_tabs(id, opts)
+		}
+	})
+}
+
 jQuery.fn.osvc_prov_template = function(options) {
 	osvc_jq_decorator(this, {
 		"options": options,

@@ -5,7 +5,7 @@ function array_tabs(divid, options) {
 	var o = tabs(divid)
 	o.options = options
 	o.options.bgcolor = osvc.colors.disk
-	o.options.icon = "hd16"
+	o.options.icon = "array"
 	o.link = {
 		"fn": arguments.callee.name,
 		"title": "link."+arguments.callee.name
@@ -25,7 +25,7 @@ function array_tabs(divid, options) {
 		// tab properties
 		i = o.register_tab({
 			"title": "node_tabs.properties",
-			"title_class": "icon hd16"
+			"title_class": "icon array"
 		})
 		o.tabs[i].callback = function(divid) {
 			array_properties(divid, {"array_id": o.data.id})
