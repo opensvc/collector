@@ -110,7 +110,7 @@ function diskgroup_properties(divid, options) {
 		cell_decorator_size_mb(o.info_dg_reserved)
 
 		services_osvcgetrest("R_ARRAY", [o.data.array_id], "", function(jd) {
-			o.info_array_name.html(jd.data[0].array_name)
+			o.info_array_name.html(jd.data[0].array_name).osvc_array()
 			o.info_array_model.html(jd.data[0].array_model)
 			o.info_array_firmware.html(jd.data[0].array_firmware)
 		})

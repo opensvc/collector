@@ -469,6 +469,9 @@
 			"nodes_net" : "Réseau de noeuds"
 		}
 	},
+	"array_properties": {
+		"proxies": "Proxies"
+	},
 	"ruleset_properties": {
 		"base": "Base",
 		"publications": "Publications",

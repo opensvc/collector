@@ -471,6 +471,9 @@
 			"nodes_net": "Nodes net"
 		}
 	},
+	"array_properties": {
+		"proxies": "Proxies"
+	},
 	"ruleset_properties": {
 		"base": "Base",
 		"publications": "Publications",

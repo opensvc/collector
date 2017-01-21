@@ -85,6 +85,8 @@ function array_properties(divid, options) {
 		o.info_array_level = o.div.find("#array_level")
 		o.info_array_cache = o.div.find("#array_cache")
 		o.info_array_updated = o.div.find("#array_updated")
+		o.info_proxies = o.div.find("#proxies")
+		o.info_proxies_title = o.div.find("#proxies_title")
 		o.load_array()
 	}
 
@@ -104,6 +106,28 @@ function array_properties(divid, options) {
 		o.info_array_updated.html(osvc_date_from_collector(o.data.array_updated))
 		$.data(o.info_array_cache[0], "v", o.data.array_cache)
 		cell_decorator_size_mb(o.info_array_cache)
+
+		tab_properties_generic_list({
+			"request_service": "/arrays/%1/proxies",
+			"request_parameters": [o.data.id],
+			"request_data": {
+				"props": "nodes.node_id,nodes.nodename"
+			},
+			"limit": "50",
+			"key": "nodename",
+			"item_class": "icon node16",
+			"id": "node_id",
+			"flash_id_prefix": "node",
+			"title": "app_properties.nodes",
+			"bgcolor": osvc.colors.node,
+			"e_title": o.info_proxies_title,
+			"e_list": o.info_proxies,
+			"lowercase": true,
+			"ondblclick": function(divid, data) {
+				node_tabs(divid, {"node_id": data.id})
+			}
+		})
+
 	}
 
 	o.div.load("/init/static/views/array_properties.html?v="+osvc.code_rev, function() {
