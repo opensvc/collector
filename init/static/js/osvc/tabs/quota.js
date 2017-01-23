@@ -28,12 +28,7 @@ function quota_tabs(divid, options) {
 		})
 		o.tabs[i].callback = function(divid) {
 			services_osvcgetrest("R_ARRAY_DISKGROUP_QUOTA", [0, 0, o.options.quota_id], {"meta": "0"}, function(jd) {
-				$.ajax({
-					"url": "/init/disks/ajax_app",
-					"type": "POST",
-					"success": function(msg) {$("#"+divid).html(msg)},
-					"data": {"app_id": jd.data[0].app_id, "dg_id": jd.data[0].dg_id, "rowid": divid}
-				})
+				quota_stats(divid, jd.data[0])
 			})
 		}
 
@@ -150,5 +145,22 @@ function quota_properties(divid, options) {
 	})
 
 	return o
+}
+
+function quota_stats(divid, options) {
+	var o = {}
+	o.div = $("#"+divid)
+	var div = $("<div style='margin:1em'></div>")
+	var title_dg = $("<h2 data-i18n='quota_stats.title_dg'></h2>")
+	var chart_dg = $("<div></div>")
+	var title_all = $("<h2 data-i18n='quota_stats.title_all'></h2>")
+	var chart_all = $("<div></div>")
+	div.append([title_dg, chart_dg, title_all, chart_all])
+	o.div.append(div)
+	div.i18n()
+	chart_dg.uniqueId()
+	chart_all.uniqueId()
+	stats_disk_app("/"+osvc.app+"/disks/call/json/json_disk_app_dg/"+options.app_id+"/"+options.dg_id, chart_dg.attr("id"))
+	stats_disk_app("/"+osvc.app+"/disks/call/json/json_disk_app/"+options.app_id, chart_all.attr("id"))
 }
 

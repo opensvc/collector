@@ -469,6 +469,16 @@
 			"nodes_net" : "Réseau de noeuds"
 		}
 	},
+	"quota_stats": {
+		"title_dg": "Historique d'utilisation du quota applicatif",
+		"title_all": "Historique d'utilisation du quota applicatif (tous groupes de disques)"
+	},
+	"array_stats": {
+		"title": "Historique d'utilisation de la baie"
+	},
+	"diskgroup_stats": {
+		"title": "Historique d'utilisation du groupe de disques"
+	},
 	"array_properties": {
 		"proxies": "Proxies"
 	},

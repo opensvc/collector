@@ -46,11 +46,9 @@ function diskgroup_tabs(divid, options) {
 			"title_class": "icon chart16"
 		})
 		o.tabs[i].callback = function(divid) {
-			$.ajax({
-				"url": "/init/disks/ajax_array_dg",
-				"type": "POST",
-				"success": function(msg) {$("#"+divid).html(msg)},
-				"data": {"array": o.options.array_name, "dg": o.data.dg_name, "rowid": divid}
+			diskgroup_stats(divid, {
+				"dg_name": o.options.dg_name,
+				"array_name": o.options.array_name
 			})
 		}
 		o.set_tab(o.options.tab)
@@ -122,5 +120,18 @@ function diskgroup_properties(divid, options) {
 	})
 
 	return o
+}
+
+function diskgroup_stats(divid, options) {
+	var o = {}
+	o.div = $("#"+divid)
+	var div = $("<div style='margin:1em'></div>")
+	var title = $("<h2 data-i18n='diskgroup_stats.title'></h2>")
+	var chart = $("<div></div>")
+	div.append([title, chart])
+	o.div.append(div)
+	div.i18n()
+	chart.uniqueId()
+	stats_disk_array("/"+osvc.app+"/disks/call/json/json_disk_array_dg?dg_name="+options.dg_name+"&array_name="+options.array_name, chart.attr("id"))
 }
 

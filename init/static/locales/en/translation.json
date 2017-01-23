@@ -471,6 +471,16 @@
 			"nodes_net": "Nodes net"
 		}
 	},
+	"array_stats": {
+		"title": "Array usage history"
+	},
+	"quota_stats": {
+		"title_dg": "Application usage history",
+		"title_all": "Application usage history (all disk groups)"
+	},
+	"diskgroup_stats": {
+		"title": "Array disk group usage history"
+	},
 	"array_properties": {
 		"proxies": "Proxies"
 	},

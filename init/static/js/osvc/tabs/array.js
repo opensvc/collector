@@ -46,12 +46,7 @@ function array_tabs(divid, options) {
 			"title_class": "icon chart16"
 		})
 		o.tabs[i].callback = function(divid) {
-			$.ajax({
-				"url": "/init/disks/ajax_array",
-				"type": "POST",
-				"success": function(msg) {$("#"+divid).html(msg)},
-				"data": {"array": o.data.array_name, "rowid": divid}
-			})
+			array_stats(divid, {"array_name": o.options.array_name})
 		}
 
 		o.set_tab(o.options.tab)
@@ -136,5 +131,18 @@ function array_properties(divid, options) {
 	})
 
 	return o
+}
+
+function array_stats(divid, options) {
+	var o = {}
+	o.div = $("#"+divid)
+	var div = $("<div style='margin:1em'></div>")
+	var title = $("<h2 data-i18n='array_stats.title'></h2>")
+	var chart = $("<div></div>")
+	div.append([title, chart])
+	o.div.append(div)
+	div.i18n()
+	chart.uniqueId()
+	stats_disk_array("/"+osvc.app+"/disks/call/json/json_disk_array?array_name="+options.array_name, chart.attr("id"))
 }
 
