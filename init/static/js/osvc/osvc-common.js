@@ -1527,6 +1527,7 @@ function closer(e, tools, options) {
 		})
 		if (e.parent().hasClass("searchtab")) {
 			// Tabs in search result
+			osvc.flash.delete_barel_entry(e.parent()[0].id)
 			e.parent().hide()
 		}
 		e.remove()
