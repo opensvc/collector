@@ -291,6 +291,9 @@ function flash() {
 		o.barel.splice(i, 1)
 		o.e_barel.find("[barel_id="+id+"]").remove()
 		o.e_show.find("#"+id).remove()
+		if (o.barel.length == 0) {
+			o.close()
+		}
 	}
 
 	o.render_barel_entry = function(data) {
