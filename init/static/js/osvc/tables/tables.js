@@ -2105,7 +2105,7 @@ function table_users(divid, options) {
 		'divid': divid,
 		'ajax_url': '/init/users/ajax_users',
 		'span': ['id'],
-		'orderby': ['last'],
+		'orderby': ['~last'],
 		'force_cols': ['id'],
 		'columns': ['manager', 'id', 'fullname', 'email', 'phone_work', 'primary_group', 'groups', 'lock_filter', 'fset_name', 'quota_app', 'quota_org_group', 'last'],
 		'default_columns': ['manager', 'fullname', 'email', 'primary_group', 'groups', 'lock_filter', 'fset_name', 'last'],
