@@ -541,6 +541,9 @@ function table_action_menu_init_data(t) {
 					"selector": ["clicked", "checked", "all"],
 					"foldable": true,
 					'title': 'action_menu.on_filtersets',
+					"clicked_decorator": function(e, data){
+						e.osvc_filtersetname()
+					},
 					"class": "filter16",
 					"table": ["filtersets"],
 					"cols": ["fset_id"],

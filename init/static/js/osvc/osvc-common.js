@@ -1318,6 +1318,35 @@ jQuery.fn.osvc_rulesetname = function(options) {
 	})
 }
 
+jQuery.fn.osvc_filtersetname = function(options) {
+	if (!options) {
+		options = {}
+	}
+	$(this).each(function(){
+		var o = $(this)
+		if (o.is(["rendered"])) {
+			return
+		}
+		var id = o.attr("id")
+		if (!id) {
+			id = o.text()
+		}
+		if (id == "") {
+			return
+		}
+		services_osvcgetrest("/filtersets/%1", [id] , {"meta": "0", "props": "fset_name"}, function(jd) {
+			var e_fsetname = $("<span class='filter16 icon_fixed_width'>"+jd.data[0].fset_name+"</span>")
+			o.html([e_fsetname])
+			o.prop("title", id)
+			o.attr("rendered", "")
+			o.tooltipster()
+			if (options.callback) {
+				options.callback()
+			}
+		})
+	})
+}
+
 jQuery.fn.osvc_safe = function(options) {
 	if (!options) {
 		options = {}
