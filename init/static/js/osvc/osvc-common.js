@@ -1269,7 +1269,7 @@ jQuery.fn.osvc_modulesetname = function(options) {
 		if (o.is(["rendered"])) {
 			return
 		}
-		var id = o.attr("id")
+		var id = o.attr("modset_id")
 		if (!id) {
 			id = o.text()
 		}

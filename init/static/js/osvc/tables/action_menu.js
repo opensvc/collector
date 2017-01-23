@@ -1464,6 +1464,7 @@ function table_action_menu_init_data(t) {
 					"selector": ["clicked", "checked", "all"],
 					"foldable": true,
 					'title': 'action_menu.on_services_modulesets',
+					"clicked_decorator": clicked_decorator_service_moduleset,
 					"class": "modset16",
 					"cols": ["svc_id", "modset_id", "slave"],
 					"condition": "svc_id+modset_id+slave",
@@ -5060,6 +5061,14 @@ clicked_decorator_resource = function(e, data) {
 		e.html(s)
 		s.children("[id]").osvc_resourcename()
 	}
+}
+
+clicked_decorator_service_moduleset = function(e, data) {
+	console.log(data)
+	var s = $("<span><span svc_id='"+data.svc_id+"'></span><span modset_id='"+data.modset_id+"'></span></span>")
+	e.html(s)
+	s.children("[svc_id]").osvc_svcname()
+	s.children("[modset_id]").osvc_modulesetname()
 }
 
 clicked_decorator_action = function(e, data) {
