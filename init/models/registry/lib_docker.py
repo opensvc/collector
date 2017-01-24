@@ -245,7 +245,7 @@ def validated_scope(scope, service):
 
     scope = _validated_scope(scope, registry)
 
-    if len(scope["actions"]) > 0:
+    if ((len(scope["actions"]) > 0) and ("pull" in scope["actions"])):
         incr_stars(registry.id, scope["name"])
 
     return scope
