@@ -1105,7 +1105,7 @@ class rest_get_service_targets(rest_get_table_handler):
         rest_get_table_handler.__init__(
           self,
           path="/services/<id>/targets",
-          tables=["stor_zone"],
+          tables=["stor_zone", "stor_array"],
           desc=desc,
           examples=examples,
         )
@@ -1114,6 +1114,8 @@ class rest_get_service_targets(rest_get_table_handler):
         svc_id = get_svc_id(svc_id)
         q = db.svcmon.svc_id == svc_id
         q &= db.svcmon.node_id == db.stor_zone.node_id
+        q &= db.stor_zone.tgt_id == db.stor_array_tgtid.array_tgtid
+        q &= db.stor_array_tgtid.array_id == db.stor_array.id
         q = q_filter(q, node_field=db.stor_zone.node_id)
         self.set_q(q)
         return self.prepare_data(**vars)
