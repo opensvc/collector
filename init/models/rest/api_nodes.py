@@ -327,6 +327,31 @@ class rest_get_node_checks(rest_get_table_handler):
 
 
 #
+class rest_get_node_targets(rest_get_table_handler):
+    def __init__(self):
+        desc = [
+          "List the target ports visible through the node storage host bus adapters.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/nodes/1/targets",
+        ]
+        rest_get_table_handler.__init__(
+          self,
+          path="/nodes/<id>/targets",
+          tables=["stor_zone"],
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, node_id, **vars):
+        node_id = get_node_id(node_id)
+        q = db.stor_zone.node_id == node_id
+        q = q_filter(q, node_field=db.stor_zone.node_id)
+        self.set_q(q)
+        return self.prepare_data(**vars)
+
+
+#
 class rest_get_node_hbas(rest_get_table_handler):
     def __init__(self):
         desc = [

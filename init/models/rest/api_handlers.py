@@ -187,6 +187,7 @@ def get_get_handlers(prefix=None):
              "rest_get_node_compliance_status",
              "rest_get_node_compliance_logs",
              "rest_get_node_hbas",
+             "rest_get_node_targets",
              "rest_get_node_interfaces",
              "rest_get_node_ips",
              "rest_get_node_root_password",
@@ -248,6 +249,7 @@ def get_get_handlers(prefix=None):
              "rest_get_service_resources",
              "rest_get_service_resources_logs",
              "rest_get_service_tags",
+             "rest_get_service_targets",
        ],
        "services_instances": [
              "rest_get_services_instances",
