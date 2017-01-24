@@ -1479,14 +1479,26 @@ function cell_decorator_rset_md5(e, line) {
 }
 
 function cell_decorator_action_q_ret(e, line) {
-	var v = $.data(e[0], "v")
-	var cl = ["boxed_small"]
+	var v = $.data(e[0], "v").toString()
+	var cl = ["boxed_small", "corner-top"]
+	var actionq_id = $.data(line.children("[col=id]")[0], "v")
 	if (v == 0) {
 		cl.push("bggreen")
 	} else {
 		cl.push("bgred")
 	}
 	e.html("<div class='"+cl.join(" ")+"'>"+v+"</div>")
+	.click(function(){
+		osvc.flash.show({
+			text: actionq_id,
+			cl: "icon action16",
+			bgcolor: osvc.colors.action,
+			id: "ret-"+actionq_id,
+			fn: function(id){
+				actionq_tabs(id, {"actionq_id": actionq_id, "retcode": v})
+			}
+		})
+	})
 }
 
 function cell_decorator_action_q_status(e, line) {
