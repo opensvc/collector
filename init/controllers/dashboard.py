@@ -92,6 +92,8 @@ class table_dashboard(HtmlTable):
                      'node_id',
                      'nodename',
                      'node_app',
+                     'dash_dict',
+                     'dash_fmt',
                      'dash_env',
                      'dash_entry',
                      'dash_md5',
