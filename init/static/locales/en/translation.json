@@ -865,7 +865,7 @@
 	},
 	"actionq_tabs": {
 		"id": "Id",
-		"ret": "Returned code",
+		"ret": "Return code",
 		"action_type": "Type",
 		"dates": "Dates",
 		"date_queued": "Date queued",
