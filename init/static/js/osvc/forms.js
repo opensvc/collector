@@ -1067,13 +1067,16 @@ function form(divid, options) {
 		var cb = $("<input type='checkbox' class='ocb'>")
 		var cb_label = $("<label></label>")
 		var e_label = $("<span class='grayed' style='padding:0 0.3em'></span>")
+		if (d.CheckOnLoad == "all") {
+			cb.prop("checked", "on")
+		}
 		cb.uniqueId()
 		cb_label.attr("for", cb.attr("id"))
 		e_label.text(i18n.t("forms.toggle_all"))
 		line.append(cb)
 		line.append(cb_label)
 		line.append(e_label)
-		input.append(line)
+		input.html(line)
 		cb.bind("change", function() {
 			var state = $(this).prop("checked")
 			$(this).parent().siblings().children("input[type=checkbox]").prop("checked", state)
@@ -1108,6 +1111,9 @@ function form(divid, options) {
 			cb.uniqueId()
 			cb.prop("acid", value)
 			cb_label.attr("for", cb.attr("id"))
+			if (d.CheckOnLoad == "all") {
+				cb.prop("checked", "on")
+			}
 			e_label.text(label)
 			line.append(cb)
 			line.append(cb_label)
