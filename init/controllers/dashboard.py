@@ -101,6 +101,7 @@ class table_dashboard(HtmlTable):
                      'dash_updated']
         self.colprops = {
             'dash_links': HtmlTableColumn(
+                     table='dashboard',
                      field='dummy',
                     ),
             'dash_created': HtmlTableColumn(
