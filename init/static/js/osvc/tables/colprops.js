@@ -1557,6 +1557,7 @@ colprops = {
 		"title": "Package"
 	},
 	"node_app": {
+		"_class": "app",
 		"img": "app16",
 		"title": "Node App"
 	},
