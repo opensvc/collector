@@ -1064,27 +1064,27 @@ function form(divid, options) {
 
 		// add a 'toggle all' master checkbox
 		var line = $("<div style='padding:0.2em'></div>")
-		var cb = $("<input type='checkbox' class='ocb'>")
-		var cb_label = $("<label></label>")
+		var master_cb = $("<input type='checkbox' class='ocb'>")
+		var master_cb_label = $("<label></label>")
 		var e_label = $("<span class='grayed' style='padding:0 0.3em'></span>")
-		if (d.CheckOnLoad == "all") {
-			cb.prop("checked", "on")
-		}
-		cb.uniqueId()
-		cb_label.attr("for", cb.attr("id"))
+		master_cb.uniqueId()
+		master_cb_label.attr("for", master_cb.attr("id"))
 		e_label.text(i18n.t("forms.toggle_all"))
-		line.append(cb)
-		line.append(cb_label)
+		line.append(master_cb)
+		line.append(master_cb_label)
 		line.append(e_label)
 		input.html(line)
-		cb.bind("change", function() {
+		master_cb.bind("change", function() {
 			var state = $(this).prop("checked")
 			$(this).parent().siblings().children("input[type=checkbox]").prop("checked", state)
 		})
 
 		if (!content) {
 			// set a sane default to content
+			var has_default = false
 			content = []
+		} else {
+			var has_default = true
 		}
 
 		// ck value can be a string, ex: id from a rest get are strings
@@ -1111,9 +1111,6 @@ function form(divid, options) {
 			cb.uniqueId()
 			cb.prop("acid", value)
 			cb_label.attr("for", cb.attr("id"))
-			if (d.CheckOnLoad == "all") {
-				cb.prop("checked", "on")
-			}
 			e_label.text(label)
 			line.append(cb)
 			line.append(cb_label)
@@ -1122,6 +1119,9 @@ function form(divid, options) {
 			if (str_content.indexOf(""+value) >= 0) {
 				cb.prop("checked", true)
 			}
+		}
+		if (!has_default && (d.CheckOnLoad == "all")) {
+			master_cb.click()
 		}
 	}
 
