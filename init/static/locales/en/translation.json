@@ -864,6 +864,12 @@
 		"var_mod_on": "on"
 	},
 	"actionq_tabs": {
+		"id": "Id",
+		"ret": "Returned code",
+		"action_type": "Type",
+		"dates": "Dates",
+		"date_queued": "Date queued",
+		"Base": "Base",
 		"Command": "Command",
 		"outputs": "Outputs",
 		"Stderr": "Stderr",

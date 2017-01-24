@@ -862,6 +862,12 @@
 		"var_mod_on": "le"
 	},
 	"actionq_tabs": {
+		"id": "Id",
+		"ret": "Code retour",
+		"action_type": "Type",
+		"dates": "Dates",
+		"date_queued": "Date queued",
+		"Base": "Base",
 		"Command": "Commande",
 		"outputs": "Sorties",
 		"Stderr": "Stderr",

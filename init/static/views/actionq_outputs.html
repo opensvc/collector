@@ -2,39 +2,67 @@
 	<div>
 		<h3 class="line">
 			<span>
-				<span data-i18n="col.Command"></span>
+				<span class="icon action16" data-i18n="actionq_tabs.Base"></span>
 			</span>
 		</h3>
 		<table>
 			<tbody>
-                                <tr>
-                                        <td id="command"></td>
-                                </tr>
+				<tr>
+					<th data-i18n="actionq_tabs.id"></th>
+					<td id="id"></td>
+				</tr>
+				<tr>
+					<th data-i18n="actionq_tabs.ret"></th>
+					<td id="ret"></td>
+				</tr>
+				<tr>
+					<th data-i18n="actionq_tabs.action_type"></th>
+					<td id="action_type"></td>
+				</tr>
 			</tbody>
 		</table>
+	</div>
+	<div>
+                <h3 class="line">
+                        <span>
+                                <span class="icon time16" data-i18n="actionq_tabs.dates"></span>
+                        </span>
+                </h3>
+                <table>
+                        <tbody>
+                                <tr>
+                                        <th data-i18n="actionq_tabs.date_queued"></th>
+                                        <td id="date_queued"></td>
+                                </tr>
+                        </tbody>
+                </table>
+        </div>
+        <div>
+                <h3 class="line">
+                        <span class="icon fa-play" data-i18n="tabs.tools"></span>
+                </h3>
+                <div id="tools" class="action_menu action_menu_tab"></div>
+        </div>
+
+
+	<div>
+		<h3 class="line">
+			<span>
+				<span data-i18n="col.Command"></span>
+			</span>
+		</h3>
+		<div class='pre' id="command"></div>
 		<h3 class="line">
 			<span>
 				<span data-i18n="col.Stderr"></span>
 			</span>
 		</h3>
-		<table>
-			<tbody>
-                                <tr>
-                                        <td id="stderr"></td>
-                                </tr>
-			</tbody>
-		</table>
+		<div class="pre" id="stderr"></div>
 		<h3 class="line">
 			<span>
 				<span data-i18n="col.Stdout"></span>
 			</span>
 		</h3>
-		<table>
-			<tbody>
-                                <tr>
-                                        <td id="stdout"></td>
-                                </tr>
-			</tbody>
-		</table>
+		<div class="pre" id="stdout"></div>
 	</div>
 </div>

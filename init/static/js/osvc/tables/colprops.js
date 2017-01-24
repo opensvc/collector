@@ -461,6 +461,7 @@ colprops = {
 		"title": "Value"
 	},
 	"command": {
+		"_class": "action_q_ret",
 		"img": "action16",
 		"title": "Command"
 	},

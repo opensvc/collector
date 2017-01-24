@@ -156,6 +156,16 @@ input.aci, input.aci:focus {
 	width: 7em;
 }
 
+.outputs_tab {
+	display: flex;
+	flex-wrap: wrap;
+}
+
+.outputs_tab > div {
+	padding: 1em;
+	display: inline-block;
+}
+
 .line {
 	position: relative;
 	z-index: 1;

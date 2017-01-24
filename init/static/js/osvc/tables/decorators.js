@@ -1479,15 +1479,19 @@ function cell_decorator_rset_md5(e, line) {
 }
 
 function cell_decorator_action_q_ret(e, line) {
-	var v = $.data(e[0], "v").toString()
-	var cl = ["boxed_small", "corner-top"]
-	var actionq_id = $.data(line.children("[col=id]")[0], "v")
-	if (v == 0) {
-		cl.push("bggreen")
-	} else {
-		cl.push("bgred")
+	var v = $.data(e[0], "v")
+	var cl = []
+	if (typeof v == "number") {
+		cl = ["boxed_small"]
+		v = v.toString()
+		if (v == 0) {
+			cl.push("bggreen")
+		} else {
+			cl.push("bgred")
+		}
 	}
-	e.html("<div class='"+cl.join(" ")+"'>"+v+"</div>")
+	var actionq_id = $.data(line.children("[col=id]")[0], "v")
+	e.addClass("corner-top").html("<div class='"+cl.join(" ")+"'>"+v+"</div>")
 	.click(function(){
 		osvc.flash.show({
 			text: actionq_id,
