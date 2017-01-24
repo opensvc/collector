@@ -1315,7 +1315,9 @@ function form(divid, options) {
 				var keys = key.split(".")
 				var val = data
 				for (var i=0; i<keys.length; i++) {
-					var val = val[keys[i]]
+					if (keys[i] in val) {
+						var val = val[keys[i]]
+					}
 				}
 				var re1 = RegExp("#"+key, "g")
 				_s = _s.replace(re1, val)
