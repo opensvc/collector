@@ -521,9 +521,6 @@ class rest_put_form(rest_put_handler):
           "prev_wfid": {
             "desc": "The previous step id in an existing workflow"
           },
-          "form_html": {
-            "desc": "The html code appended to the mail body in the Mail output destination. If none is provided, the json data is appended."
-          }
         }
         examples = [
           """# curl -u %(email)s -d data='{"nodename": "foooo"}' -X PUT -o- https://%(collector)s/init/rest/api/forms/10"""
@@ -537,7 +534,7 @@ class rest_put_form(rest_put_handler):
           examples=examples,
         )
 
-    def handler(self, form_id, data=None, prev_wfid=None, form_html=None):
+    def handler(self, form_id, data=None, prev_wfid=None):
         q = db.forms.id == form_id
         q &= (db.forms.id == db.forms_team_publication.form_id)
         q &= db.forms_team_publication.group_id.belongs(user_group_ids())
@@ -550,7 +547,7 @@ class rest_put_form(rest_put_handler):
         import yaml
         data = yaml.load(form.form_yaml)
 
-        log = form_submit(form, data, _d=form_data, prev_wfid=prev_wfid, form_html=form_html)
+        log = form_submit(form, data, _d=form_data, prev_wfid=prev_wfid)
         infos = []
         errors = []
         for lvl, action, fmt, d in log:

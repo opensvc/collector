@@ -112,7 +112,7 @@ def insert_form_md5(form):
     table_modified("forms_revisions")
     return form_md5
 
-def output_mail(output, form_definition, form, to=None, record_id=None, _d=None, form_html=None):
+def output_mail(output, form_definition, form, to=None, record_id=None, _d=None):
     if type(to) in (str, unicode):
         to = [to]
 
@@ -154,17 +154,7 @@ def output_mail(output, form_definition, form, to=None, record_id=None, _d=None,
     else:
         next = ""
 
-    if form_html is None:
-        try:
-            form_html = _ajax_forms_inputs(
-              _mode="showdetailed",
-              form=form,
-              form_output=output,
-              showexpert=True,
-              current_values=d,
-            )
-        except:
-            form_html = PRE(json.dumps(_d, indent=4))
+    form_html = PRE(json.dumps(_d, indent=4))
 
     body = BODY(
       P(T("Form submitted on %(date)s by %(submitter)s", dict(date=now_s, submitter=user_name()))),
@@ -188,7 +178,7 @@ def output_mail(output, form_definition, form, to=None, record_id=None, _d=None,
     _to = str(', '.join(to))
     return [(0, "form.submit", "Mail sent to %(to)s on form %(form_name)s submission." , dict(to=_to, form_name=form.form_name))]
 
-def output_workflow(output, form_definition, form, _d=None, form_html=None, prev_wfid=None, _scripts=None):
+def output_workflow(output, form_definition, form, _d=None, prev_wfid=None, _scripts=None):
     log = []
     d = get_form_formatted_data(output, form_definition, _d)
 
@@ -335,7 +325,7 @@ def output_workflow(output, form_definition, form, _d=None, form_html=None, prev
         table_modified("workflows")
 
     if next_id != 0 and output.get('Mail', False):
-        log += output_mail(output, form_definition, form, to=form_assignee, record_id=record_id, _d=_d, form_html=form_html)
+        log += output_mail(output, form_definition, form, to=form_assignee, record_id=record_id, _d=_d)
 
     db.commit()
     return log
@@ -596,10 +586,13 @@ def workflow_continuation(form_definition, prev_wfid):
                     return True
     return False
 
-def form_submit(form, form_definition, _d=None, form_html=None, prev_wfid=None):
+def form_submit(form, form_definition, _d=None, prev_wfid=None):
     """
       Used by the PUT /forms/<id> handler to perform the server-side outputs
     """
+    return _form_submit(form, form_definition, _d=None, prev_wfid=None)
+
+def _form_submit(form, form_definition, _d=None, prev_wfid=None):
     log = []
     _restcalls = {}
     _scripts = {'returncode': 0}
@@ -630,9 +623,9 @@ def form_submit(form, form_definition, _d=None, form_html=None, prev_wfid=None):
                 ret_log, _restcalls = output_rest(output, form_definition, _d, _restcalls)
                 log += ret_log
             elif dest == "mail":
-                log += output_mail(output, form_definition, form, _d=_d, form_html=form_html)
+                log += output_mail(output, form_definition, form, _d=_d)
             elif dest == "workflow":
-                log += output_workflow(output, form_definition, form, _d=_d, form_html=form_html, prev_wfid=prev_wfid, _scripts=_scripts)
+                log += output_workflow(output, form_definition, form, _d=_d, prev_wfid=prev_wfid, _scripts=_scripts)
         except Exception, e:
             log.append((1, "form.submit", str(e), dict()))
             break
