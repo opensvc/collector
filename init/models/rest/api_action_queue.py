@@ -117,10 +117,12 @@ Each action has specific property requirements:
         )
 
     def handler(self, **vars):
-        n = json_action_one(vars)
-        if n > 0:
+        action_id = json_action_one(vars)
+        if action_id > 0:
             action_q_event()
-        return dict(info="Accepted to enqueue %d actions" % n)
+        else:
+            raise Exception("Failed to enqueue action")
+        return rest_get_action_queue_one().handler(action_id)
 
 #
 class rest_get_action_queue_stats(rest_get_handler):

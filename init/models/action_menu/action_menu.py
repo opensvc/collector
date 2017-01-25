@@ -65,9 +65,9 @@ def enqueue_node_action(node, action):
     vals = [node.node_id, "", action_type, command, str(auth.user_id), connect_to]
     if node.collector != "" and node.collector is not None:
         data = {"opensvc.action_queue": (vars, vals)}
-        rpc_push(node.collector, data, mirror=False)
+        return rpc_push(node.collector, data, mirror=False)
     else:
-        generic_insert('action_queue', vars, vals)
+        return generic_insert('action_queue', vars, vals, get_last_id=True)
 
 def enqueue_node_comp_action(node, action, mode, mod):
     action_type = get_action_type(node)
@@ -77,9 +77,9 @@ def enqueue_node_comp_action(node, action, mode, mod):
     vals = [node.node_id, "", action_type, command, str(auth.user_id), connect_to]
     if node.collector != "" and node.collector is not None:
         data = {"opensvc.action_queue": (vars, vals)}
-        rpc_push(node.collector, data, mirror=False)
+        return rpc_push(node.collector, data, mirror=False)
     else:
-        generic_insert('action_queue', vars, vals)
+        return generic_insert('action_queue', vars, vals, get_last_id=True)
 
 def enqueue_svc_action(node, svc, action, rid=None):
     action_type = get_action_type(node)
@@ -89,9 +89,9 @@ def enqueue_svc_action(node, svc, action, rid=None):
     vals = [node.node_id, svc, action_type, command, str(auth.user_id), connect_to]
     if node.collector != "" and node.collector is not None:
         data = {"opensvc.action_queue": (vars, vals)}
-        rpc_push(node.collector, data, mirror=False)
+        return rpc_push(node.collector, data, mirror=False)
     else:
-        generic_insert('action_queue', vars, vals)
+        return generic_insert('action_queue', vars, vals, get_last_id=True)
 
 def enqueue_svc_comp_action(node, svc, action, mode, mod):
     action_type = get_action_type(node)
@@ -101,9 +101,9 @@ def enqueue_svc_comp_action(node, svc, action, mode, mod):
     vals = [node.node_id, svc, action_type, command, str(auth.user_id), connect_to]
     if node.collector != "" and node.collector is not None:
         data = {"opensvc.action_queue": (vars, vals)}
-        rpc_push(node.collector, data, mirror=False)
+        return rpc_push(node.collector, data, mirror=False)
     else:
-        generic_insert('action_queue', vars, vals)
+        return generic_insert('action_queue', vars, vals, get_last_id=True)
 
 def fmt_svc_action(node, svc_id, action, action_type, rid=None, connect_to=None):
     action = action.replace('"', '\"').replace("'", "\'")
@@ -179,12 +179,12 @@ def do_node_comp_action(node_id, action, mode, obj):
     if node is None:
         return 0
 
-    enqueue_node_comp_action(node, action, mode, obj)
+    action_id = enqueue_node_comp_action(node, action, mode, obj)
     _log('node.action', 'run %(a)s of %(mode)s %(m)s',
          dict(a=action, mode=mode, m=obj),
          node_id=node.node_id
     )
-    return 1
+    return action_id
 
 def do_node_action(node_id, action=None):
     check_privilege("NodeExec")
@@ -208,12 +208,12 @@ def do_node_action(node_id, action=None):
     if action == "wol":
         return do_node_wol_action(node_id)
 
-    enqueue_node_action(node, action)
+    action_id = enqueue_node_action(node, action)
     _log('node.action', 'run %(a)s',
          dict(a=action),
          node_id=node.node_id
     )
-    return 1
+    return action_id
 
 def do_node_wol_action(node_id):
     candidates = wol_candidates(node_id)
@@ -254,14 +254,14 @@ def do_svc_comp_action(node_id, svc_id, action, mode, obj):
     if len(rows) == 0:
         return 0
 
-    enqueue_svc_comp_action(node, svc_id, action, mode, obj)
+    action_id = enqueue_svc_comp_action(node, svc_id, action, mode, obj)
     _log('service.action',
          'run %(a)s of %(mode)s %(m)s',
          dict(a=action, mode=mode, m=obj),
          svc_id=svc_id,
          node_id=node_id
     )
-    return 1
+    return action_id
 
 def do_svc_action(node_id, svc_id, action, rid=None):
     check_privilege("NodeExec")
@@ -303,7 +303,7 @@ def do_svc_action(node_id, svc_id, action, rid=None):
     if node is None:
         return 0
 
-    enqueue_svc_action(node, svc_id, action, rid=rid)
+    action_id = enqueue_svc_action(node, svc_id, action, rid=rid)
     if rid is None:
         _log('service.action',
              'run %(a)s',
@@ -318,7 +318,7 @@ def do_svc_action(node_id, svc_id, action, rid=None):
              svc_id=svc_id,
              node_id=node_id
         )
-    return 1
+    return action_id
 
 def json_action_one(d):
     if "vmname" in d:

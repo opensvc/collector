@@ -1084,13 +1084,17 @@ Each action has specific property requirements:
         q = db.svcmon.svc_id == svc_id
         rows = db(q).select(db.svcmon.node_id)
         n = 0
+        data = []
         vars["svc_id"] = svc_id
         for row in rows:
             vars["node_id"] = row.node_id
-            n += json_action_one(vars)
+            action_id = json_action_one(vars)
+            if action_id > 0:
+                n += 1
+                data.append(rest_get_action_queue_one().handler(action_id)["data"])
         if n > 0:
             action_q_event()
-        return dict(info="Accepted to enqueue %d actions" % n)
+        return dict(data=data)
 
 #
 class rest_get_service_targets(rest_get_table_handler):
