@@ -863,6 +863,12 @@
 		"var_last_mod": "Last modified by",
 		"var_mod_on": "on"
 	},
+	"actionq_tabs": {
+		"Command": "Command",
+		"outputs": "Outputs",
+		"Stderr": "Stderr",
+		"Stdout": "Stdout"
+	},
 	"dns_domain_tabs": {
 		"properties": "properties",
 		"records": "records"

@@ -37,6 +37,7 @@ var osvc = {
 		'variable': 'comp16'
 	},
 	'colors': {
+		'action': '#aaa',
 		'docker_repository': '#27b8e8',
 		'docker_registry': '#27b8e8',
 		'docker': '#27b8e8',
@@ -931,6 +932,12 @@ function dns_domain_tabs(divid, options) {
 function variable_tabs(divid, options) {
 	require(["osvc/tabs/variable"], function() {
 		variable_tabs(divid, options)
+	})
+}
+
+function actionq_tabs(divid, options) {
+	require(["osvc/tabs/actionq"], function() {
+		actionq_tabs(divid, options)
 	})
 }
 

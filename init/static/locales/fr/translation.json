@@ -861,6 +861,12 @@
 		"var_last_mod": "Dernière modification par",
 		"var_mod_on": "le"
 	},
+	"actionq_tabs": {
+		"Command": "Commande",
+		"outputs": "Sorties",
+		"Stderr": "Stderr",
+		"Stdout": "Stdout"
+	},
 	"dns_domain_tabs": {
 		"properties": "propriétés",
 		"records": "enregistrements"
