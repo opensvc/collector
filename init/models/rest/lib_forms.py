@@ -377,6 +377,7 @@ def output_rest(output, form_definition, _d=None, _results=None):
     url = output.get("Function")
     mangler = output.get("Mangle")
     output_id = output.get("Id")
+    wait = output.get("WaitResult", 0)
 
     if url is None:
         raise Exception("Function must be defined in a rest output")
@@ -478,11 +479,28 @@ def output_rest(output, form_definition, _d=None, _results=None):
             if k not in retain_keys:
                 del(vars[k])
 
-    try:
-        if type(vars) == list:
-            jd = handler.handle_list(vars, url, {})
+    def run_handler(args, vars, url, wait):
+        if action == "GET" and wait:
+            import time
+            while wait > 0:
+                db.commit()
+                jd = _run_handler(args, vars, url)
+                if "data" in jd and len(jd["data"]) > 0:
+                    return jd
+                wait -= 1
+                time.sleep(1)
         else:
-            jd = handler.handle(*args, **vars)
+            return _run_handler(args, vars, url)
+        raise Exception("Timed out waiting for a result")
+
+    def _run_handler(args, vars, url):
+        if type(vars) == list:
+            return handler.handle_list(vars, url, {})
+        else:
+            return handler.handle(*args, **vars)
+
+    try:
+        jd = run_handler(args, vars, url, wait)
         if output_id and "data" in jd:
             _results[output_id] = jd["data"]
         log.append((
