@@ -995,7 +995,6 @@ div.menu_box {
 .footer {
 	background: #2d2d2d;
 	color: #aaa;
-	border-top: 1px #ddf solid;
 }
 
 .movable {
@@ -2263,11 +2262,10 @@ a.search-link:hover {
 	border-radius:6px;
 	-moz-border-radius:6px;
 	-webkit-border-radius:6px;
-	padding: 2px;
-	padding-left: 10px;
-	padding-right: 10px;
+	margin: 0.2em;
+	padding-left: 0.5em;
+	padding-right: 0.5em;
 	cursor: pointer;
-	border: 2px solid transparent;
 }
 
 .formentry:hover {
@@ -3050,6 +3048,12 @@ button:disabled {
 
 .container_head {
 	display: inline-block;
+}
+
+.container_head table {
+	border-collapse: initial;
+	border-spacing: 0.3em;
+	margin-bottom: 1em;
 }
 
 .group_hidden_menu {
