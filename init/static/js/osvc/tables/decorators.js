@@ -1387,7 +1387,20 @@ function cell_decorator_run_status(e, line) {
 	} else {
 		_v = v
 	}
-	e.html("<div class='icon "+cl+"'>"+_v+"</div>")
+	var log_id = $.data(line.children("[col=id]")[0], "v")
+	e
+	.html("<div class='icon "+cl+"'>"+_v+"</div>")
+	.addClass("corner-top")
+	.click(function(){
+		osvc.flash.show({
+			id: "complog-"+log_id,
+			cl: "icon comp16",
+			text: log_id,
+			bgcolor: osvc.colors.comp,
+			fn: function(id){run_status_tabs(id, {"id": log_id})}
+		})
+	})
+
 }
 
 function cell_decorator_tag_exclude(e, line) {
