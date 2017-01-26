@@ -865,13 +865,29 @@
 		"id": "Id",
 		"ret": "Code retour",
 		"action_type": "Type",
+		"node": "noeud",
+		"service": "service",
 		"dates": "Dates",
 		"date_queued": "Date queued",
+		"date_dequeued": "date dequeued",
 		"Base": "Base",
 		"Command": "Commande",
-		"outputs": "Sorties",
+		"properties": "propriétés",
 		"Stderr": "Stderr",
-		"Stdout": "Stdout"
+		"Stdout": "Stdout",
+		"status": "status"
+	},
+	"run_status_tabs": {
+		"properties": "propriétés",
+		"Base": "base",
+		"run_module": "module",
+		"run_action": "action",
+		"node": "noeud",
+		"service": "service",
+		"status": "status",
+		"dates": "dates",
+		"run_date": "date",
+		"run_log": "log"
 	},
 	"dns_domain_tabs": {
 		"properties": "propriétés",

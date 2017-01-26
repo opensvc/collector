@@ -156,12 +156,22 @@ input.aci, input.aci:focus {
 	width: 7em;
 }
 
-.outputs_tab {
+.actionq_tab {
 	display: flex;
 	flex-wrap: wrap;
 }
 
-.outputs_tab > div {
+.actionq_tab > div {
+	padding: 1em;
+	display: inline-block;
+}
+
+.run_status_tab {
+	display: flex;
+	flex-wrap: wrap;
+}
+
+.run_status_tab > div {
 	padding: 1em;
 	display: inline-block;
 }
@@ -1061,6 +1071,7 @@ div.menu_box {
 	list-style: none;
 	float:left;
 	border-right: 1px solid #ddd;
+	text-transform: capitalize;
 }
 .tab > ul > li > p {
 	margin: 0;
@@ -3179,6 +3190,10 @@ button:disabled {
 .menu_flash {
 	flex: 1 1;
 	cursor: pointer;
+}
+
+.tabs th {
+	text-transform: capitalize;
 }
 
 .tabs > .otools {
