@@ -867,13 +867,17 @@
 		"id": "Id",
 		"ret": "Return code",
 		"action_type": "Type",
+		"node": "node",
+		"service": "service",
 		"dates": "Dates",
 		"date_queued": "Date queued",
+		"date_dequeued": "date dequeued",
 		"Base": "Base",
 		"Command": "Command",
-		"outputs": "Outputs",
+		"properties": "properties",
 		"Stderr": "Stderr",
-		"Stdout": "Stdout"
+		"Stdout": "Stdout",
+		"status": "status"
 	},
 	"dns_domain_tabs": {
 		"properties": "properties",

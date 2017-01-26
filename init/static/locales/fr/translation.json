@@ -865,13 +865,17 @@
 		"id": "Id",
 		"ret": "Code retour",
 		"action_type": "Type",
+		"node": "noeud",
+		"service": "service",
 		"dates": "Dates",
 		"date_queued": "Date queued",
+		"date_dequeued": "date dequeued",
 		"Base": "Base",
 		"Command": "Commande",
-		"outputs": "Sorties",
+		"properties": "propriétés",
 		"Stderr": "Stderr",
-		"Stdout": "Stdout"
+		"Stdout": "Stdout",
+		"status": "status"
 	},
 	"dns_domain_tabs": {
 		"properties": "propriétés",

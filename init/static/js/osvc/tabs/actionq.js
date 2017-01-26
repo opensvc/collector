@@ -14,7 +14,7 @@ function actionq_tabs(divid, options) {
 
 		// tab outputs
 		i = o.register_tab({
-			"title": "actionq_tabs.outputs",
+			"title": "actionq_tabs.properties",
 			"title_class": "icon action16"
 		})
 		o.tabs[i].callback = function(divid) {
@@ -44,7 +44,11 @@ function actionq_outputs(divid, options) {
 		o.output_id = o.div.find("#id")
 		o.output_ret = o.div.find("#ret")
 		o.output_action_type = o.div.find("#action_type")
+		o.output_node_id = o.div.find("#node_id")
+		o.output_svc_id = o.div.find("#svc_id")
+		o.output_status = o.div.find("#status")
 		o.output_date_queued = o.div.find("#date_queued")
+		o.output_date_dequeued = o.div.find("#date_dequeued")
 		o.output_command = o.div.find("#command")
 		o.output_stderr = o.div.find("#stderr")
 		o.output_stdout = o.div.find("#stdout")
@@ -62,7 +66,13 @@ function actionq_outputs(divid, options) {
 		o.output_id.html(o.data.id)
 		o.output_ret.html(o.data.ret)
 		o.output_action_type.html(o.data.action_type)
+		o.output_node_id.html(o.data.node_id)
+		o.output_svc_id.html(o.data.svc_id)
+		o.output_status.html(o.data.status)
+		$.data(o.output_status[0], "v", o.data.status)
+		cell_decorator_action_q_status(o.output_status)
 		o.output_date_queued.html(o.data.date_queued)
+		o.output_date_dequeued.html(o.data.date_dequeued)
 		o.output_command.html(o.data.command)
 		o.output_stderr.html(o.data.stderr)
 		o.output_stdout.html(o.data.stdout)
@@ -99,7 +109,7 @@ function actionq_outputs(divid, options) {
 		})
 	}
 
-	o.div.load("/init/static/views/actionq_outputs.html?v="+osvc.code_rev, function() {
+	o.div.load("/init/static/views/actionq_properties.html?v="+osvc.code_rev, function() {
 		o.div.i18n()
 		o.init()
 	})
