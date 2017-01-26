@@ -2152,10 +2152,10 @@ def task_rq(rqueues, getfn):
             break
         except Exception as e:
             if "server has gone away" in str(e) or "Lost connection" in str(e):
-                log.info("reconnect db")
-                db._adapter.close()
-                db._adapter.reconnect()
                 try:
+                    log.info("reconnect db")
+                    db._adapter.close()
+                    db._adapter.reconnect()
                     fn(*args)
                 except Exception as _e:
                     log.error(_e, exc_info=True)
