@@ -1375,7 +1375,7 @@ function cell_decorator_run_log(e, line) {
 			var log_id = $.data(line.children("[col=id]")[0], "v")
 			osvc.flash.show({
 				id: "complog-"+log_id,
-				cl: "icon comp16",
+				cl: "icon log16",
 				text: log_id,
 				bgcolor: osvc.colors.comp,
 				fn: function(id){run_status_tabs(id, {"id": log_id})}
@@ -1407,7 +1407,7 @@ function cell_decorator_run_status(e, line) {
 			var log_id = $.data(line.children("[col=id]")[0], "v")
 			osvc.flash.show({
 				id: "complog-"+log_id,
-				cl: "icon comp16",
+				cl: "icon log16",
 				text: log_id,
 				bgcolor: osvc.colors.comp,
 				fn: function(id){run_status_tabs(id, {"id": log_id})}

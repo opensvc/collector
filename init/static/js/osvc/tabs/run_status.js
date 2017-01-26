@@ -2,7 +2,7 @@ function run_status_tabs(divid, options) {
 	var o = tabs(divid)
 	o.options = options
 	o.options.bgcolor = osvc.colors.comp
-	o.options.icon = "comp16"
+	o.options.icon = "log16"
 	o.link = {
 		"fn": arguments.callee.name,
 		"title": "link."+arguments.callee.name
