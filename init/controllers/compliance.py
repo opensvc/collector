@@ -1609,13 +1609,14 @@ class table_comp_log(table_comp_status):
                      'nodename',
                      'svc_id',
                      'svcname',
+                     'id',
                      'run_module',
                      'run_action',
                      'run_status',
                      'run_log',
                      'rset_md5']
         for c in self.colprops:
-            if 'run_' in c or c in ('rset_md5', 'node_id', 'svc_id'):
+            if 'run_' in c or c in ('rset_md5', 'node_id', 'svc_id', 'id'):
                 self.colprops[c].table = 'comp_log'
         self.ajax_col_values = 'ajax_comp_log_col_values'
         self.keys = ["run_date", "node_id", "svc_id", "run_module", "run_action"]

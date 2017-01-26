@@ -877,6 +877,18 @@
 		"Stdout": "Stdout",
 		"status": "status"
 	},
+	"run_status_tabs": {
+		"properties": "propriétés",
+		"Base": "base",
+		"run_module": "module",
+		"run_action": "action",
+		"node": "noeud",
+		"service": "service",
+		"status": "status",
+		"dates": "dates",
+		"run_date": "date",
+		"run_log": "log"
+	},
 	"dns_domain_tabs": {
 		"properties": "propriétés",
 		"records": "enregistrements"

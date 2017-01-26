@@ -571,8 +571,8 @@ function table_comp_log(divid, options) {
 		'ajax_url': '/init/compliance/ajax_comp_log',
 		'span': [],
 		'orderby': ['~id'],
-		'force_cols': ['svc_id', 'node_id', 'run_date', 'run_module'],
-		'columns': ['run_date', 'node_id', 'nodename', 'svc_id', 'svcname', 'run_module', 'run_action', 'run_status', 'run_log', 'rset_md5'],
+		'force_cols': ['id', 'svc_id', 'node_id', 'run_date', 'run_module'],
+		'columns': ['id', 'run_date', 'node_id', 'nodename', 'svc_id', 'svcname', 'run_module', 'run_action', 'run_status', 'run_log', 'rset_md5'],
 		'default_columns': ["run_action", "run_date", "run_module", "nodename", "run_status", "svcname"],
 		'colprops': {
 			"run_date": {"default_filter": ">-1d"}
