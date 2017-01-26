@@ -64,8 +64,12 @@ function run_status_outputs(divid, options) {
 		o.run_status_run_module.html(o.data.run_module)
 		o.run_status_run_action.html(o.data.run_action)
 		o.run_status_run_status.html(o.data.run_status)
+		$.data(o.run_status_run_status[0], "v", o.data.run_status)
+		cell_decorator_run_status(o.run_status_run_status)
 		o.run_status_run_date.html(o.data.run_date)
 		o.run_status_run_log.html(o.data.run_log)
+		$.data(o.run_status_run_log[0], "v", o.data.run_log)
+		cell_decorator_run_log(o.run_status_run_log)
 	}
 
 	o.div.load("/init/static/views/run_status_properties.html?v="+osvc.code_rev, function() {
