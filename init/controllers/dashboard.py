@@ -205,7 +205,7 @@ def ajax_dashboard():
     l1 = db.nodes.on(db.dashboard.node_id==db.nodes.node_id)
     l2 = db.services.on(db.dashboard.svc_id==db.services.svc_id)
     for f in set(t.cols):
-        q = _where(q, t.colprops[f].table, t.filter_parse(f), t.colprops[f].field if t.colprops[f].filter_redirect is None else t.colprops[f].filter_redirect)
+        q = table_where(q, t, f)
     f1 = q_filter(node_field=db.dashboard.node_id)
     f2 = q_filter(svc_field=db.dashboard.svc_id)
     q &= (f1|f2)
