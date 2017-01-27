@@ -170,4 +170,9 @@ def _where(query, table, var, field, depth=0, db=db):
     else:
         return query&q
 
-
+def table_where(query, table, field):
+    return _where(query,
+                  table.colprops[field].table,
+                  table.filter_parse(field),
+                  table.colprops[field].field if table.colprops[field].filter_redirect is None else table.colprops[field].filter_redirect
+                 )
