@@ -479,3 +479,4 @@ def json_amazon_sizes(provider, access_key_id):
     from applications.init.modules import amazon
     cloud = amazon.get_cloud(provider, access_key_id)
     return cloud.list_sizes_value_label()
+

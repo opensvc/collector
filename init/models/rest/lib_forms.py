@@ -649,22 +649,13 @@ def form_submit(form, _d=None, prev_wfid=None):
     form_definition = yaml.load(form.form_yaml)
 
     if form_definition.get("Async", False):
-        results["task"] = scheduler.queue_task(
-            _form_submit,
-            pargs=[form.id],
-            pvars={
-                "_d":_d,
-                "prev_wfid": prev_wfid,
-                "results": results,
-                "authdump": authdump
-            },
-            start_time=now,
-            stop_time=None,
-            timeout = 300,
-            prevent_drift=False,
-            immediate=False,
-            repeats=1
-        )
+        rconn.rpush("osvc:q:form_submit", json.dumps([
+            form.id,
+            _d,
+            prev_wfid,
+            results,
+            authdump,
+        ]))
         return results
     else:
         return _form_submit(form.id, _d=_d, prev_wfid=prev_wfid, results=results)
