@@ -717,7 +717,10 @@ function form(divid, options) {
 			spinner_add(o.result, i18n.t("forms.RUNNING"))
 		}
 		services_osvcputrest("R_FORM", [o.form_data.id], "", _data, function(jd) {
-			form_results(o.result, {"results_id": jd.results_id})
+			form_results(o.result, {
+				"results_id": jd.results_id,
+				"async": o.form_data.form_definition.Async
+			})
 		},
 		function(xhr, stat, error) {
 			o.result.append(services_ajax_error_fmt(xhr, stat, error))
@@ -1931,6 +1934,9 @@ function form_results(divid, options) {
 
 	o.handle_results = function() {
 		o.get_results()
+		if (!o.options.async) {
+			return
+		}
 		wsh[o.wsh_id] = function(data) {
 			if (data.event != "form_output_results_change") {
 				return
