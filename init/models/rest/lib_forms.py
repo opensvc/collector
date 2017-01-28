@@ -644,38 +644,53 @@ def form_submit(form, _d=None, prev_wfid=None):
         results=sjson.dumps(results, default=datetime.datetime.isoformat)
     )
 
-    results["task"] = scheduler.queue_task(
-        _form_submit,
-        pargs=[form.id],
-        pvars={
-            "_d":_d,
-            "prev_wfid": prev_wfid,
-            "results": results,
-            "authdump": authdump
-        },
-        start_time=now,
-        stop_time=None,
-        timeout = 300,
-        prevent_drift=False,
-        immediate=False,
-        repeats=1
-    )
-    return results
-
-def _form_submit(form_id, _d=None, prev_wfid=None, results=None, authdump=None):
-    # restore auth
-    from gluon.storage import Storage
-    global auth
-    auth = Storage(authdump)
-    auth.user = Storage(auth.user)
-
     # load form definition from yaml
     import yaml
+    form_definition = yaml.load(form.form_yaml)
+
+    if form_definition.get("Async", False):
+        results["task"] = scheduler.queue_task(
+            _form_submit,
+            pargs=[form.id],
+            pvars={
+                "_d":_d,
+                "prev_wfid": prev_wfid,
+                "results": results,
+                "authdump": authdump
+            },
+            start_time=now,
+            stop_time=None,
+            timeout = 300,
+            prevent_drift=False,
+            immediate=False,
+            repeats=1
+        )
+        return results
+    else:
+        return _form_submit(form.id, _d=_d, prev_wfid=prev_wfid, results=results)
+
+def _form_submit(form_id, _d=None, prev_wfid=None, results=None, authdump=None):
+    from gluon.storage import Storage
+    import yaml
+
+    # restore auth
+    if authdump:
+        global auth
+        auth = Storage(authdump)
+        auth.user = Storage(auth.user)
+
+    # load form definition from yaml
     form = db.forms[form_id]
     form_definition = yaml.load(form.form_yaml)
 
     results["status"] = "RUNNING"
     update_results(results)
+
+    # assign missing output ids
+    for idx, output in enumerate(form_definition.get("Outputs", [])):
+        if "Id" in output:
+            continue
+        form_definition["Outputs"][idx]["Id"] = "output-%d" % idx
 
     for output in ordered_outputs(form_definition):
         try:
@@ -715,6 +730,7 @@ def _form_submit(form_id, _d=None, prev_wfid=None, results=None, authdump=None):
 
     results["status"] = "COMPLETED"
     update_results(results)
+    return results
 
 def lib_forms_add_default_team_responsible(form_name):
     q = db.forms.form_name == form_name

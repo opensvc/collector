@@ -1899,8 +1899,8 @@
 	},
 	"forms": {
 		"QUEUED": "Tâche de fond en attente de prise en charge.",
-		"RUNNING": "Tâche de fond en cours d'exécution.",
-		"COMPLETED": "Tâche de fond terminée.",
+		"RUNNING": "En cours d'exécution.",
+		"COMPLETED": "Terminé.",
 		"status": "État",
 		"logs": "Journal",
 		"results": "Résultats",

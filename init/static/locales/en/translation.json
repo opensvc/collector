@@ -1949,8 +1949,8 @@
 	},
 	"forms": {
 		"QUEUED": "Background task queued. Waiting for a worker.",
-		"RUNNING": "Background task in progress.",
-		"COMPLETED": "Background task completed.",
+		"RUNNING": "In progress.",
+		"COMPLETED": "Completed.",
 		"status": "Status",
 		"logs": "Logs",
 		"results": "Results",

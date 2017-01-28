@@ -711,7 +711,11 @@ function form(divid, options) {
 		if (o.options.prev_wfid) {
 			_data.prev_wfid = o.options.prev_wfid
 		}
-		spinner_add(o.result, i18n.t("forms.creating_task"))
+		if (o.form_data.form_definition.Async) {
+			spinner_add(o.result, i18n.t("forms.creating_task"))
+		} else {
+			spinner_add(o.result, i18n.t("forms.RUNNING"))
+		}
 		services_osvcputrest("R_FORM", [o.form_data.id], "", _data, function(jd) {
 			form_results(o.result, {"results_id": jd.results_id})
 		},
@@ -1861,8 +1865,11 @@ function form_results(divid, options) {
 			delete wsh[o.wsh_id]
 		}
 
-		var log_title = $("<h2 data-i18n='forms.logs'></h2>")
-		o.div.append(log_title)
+		if (results.log.length > 0) {
+			var log_title = $("<h2 data-i18n='forms.logs'></h2>")
+			o.div.append(log_title)
+		}
+
 		for (var i=0; i<results.log.length; i++) {
 			var level = results.log[i][0]
 			var log_type = results.log[i][1]
@@ -1874,7 +1881,7 @@ function form_results(divid, options) {
 				var cl = "nok"
 			}
 			for (key in d) {
-				if (is_numeric(d[key])) {
+				if (is_numeric(d[key]) || !d[key]) {
 					var s = d[key]
 				} else { 
 					try {
