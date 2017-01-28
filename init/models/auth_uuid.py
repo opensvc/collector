@@ -211,7 +211,7 @@ def auth_is_user(email):
     return True
 
 def auth_is_node():
-    if hasattr(auth.user, "nodename"):
+    if hasattr(auth.user, "node_id") and auth.user.node_id is not None:
         return True
     return False
 

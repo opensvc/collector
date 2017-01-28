@@ -711,29 +711,9 @@ function form(divid, options) {
 		if (o.options.prev_wfid) {
 			_data.prev_wfid = o.options.prev_wfid
 		}
+		spinner_add(o.result, i18n.t("forms.creating_task"))
 		services_osvcputrest("R_FORM", [o.form_data.id], "", _data, function(jd) {
-			var title = $("<h3></h3>")
-			o.result.append(title)
-			if (jd.error && (jd.error.length > 0)) {
-				title.append("<div class='icon nok'>"+i18n.t("forms.error")+"</div>")
-				if (typeof(jd.error) === "string") {
-					o.result.append("<p class='pre icon fa-exclamation-triangle' style='padding:0.5em'>"+jd.error+"</p>")
-				} else {
-					for (var i=0; i<jd.error.length; i++) {
-						o.result.append("<p class='pre icon fa-exclamation-triangle' style='padding:0.5em'>"+jd.error[i]+"</p>")
-					}
-				}
-			}
-			if (jd.info && (jd.info.length > 0)) {
-				title.append("<div class='icon ok'>"+i18n.t("forms.success")+"</div>")
-				if (typeof(jd.info) === "string") {
-					o.result.append("<p class='pre icon fa-info-circle' style='padding:0.5em'>"+jd.info+"</p>")
-				} else {
-					for (var i=0; i<jd.info.length; i++) {
-						o.result.append("<p class='pre icon fa-info-circle' style='padding:0.5em'>"+jd.info[i]+"</p>")
-					}
-				}
-			}
+			form_results(o.result, {"results_id": jd.results_id})
 		},
 		function(xhr, stat, error) {
 			o.result.append(services_ajax_error_fmt(xhr, stat, error))
@@ -1067,17 +1047,6 @@ function form(divid, options) {
 		var master_cb = $("<input type='checkbox' class='ocb'>")
 		var master_cb_label = $("<label></label>")
 		var e_label = $("<span class='grayed' style='padding:0 0.3em'></span>")
-		master_cb.uniqueId()
-		master_cb_label.attr("for", master_cb.attr("id"))
-		e_label.text(i18n.t("forms.toggle_all"))
-		line.append(master_cb)
-		line.append(master_cb_label)
-		line.append(e_label)
-		input.html(line)
-		master_cb.bind("change", function() {
-			var state = $(this).prop("checked")
-			$(this).parent().siblings().children("input[type=checkbox]").prop("checked", state)
-		})
 
 		if (!content) {
 			// set a sane default to content
@@ -1086,6 +1055,21 @@ function form(divid, options) {
 		} else {
 			var has_default = true
 		}
+
+		master_cb.uniqueId()
+		master_cb_label.attr("for", master_cb.attr("id"))
+		e_label.text(i18n.t("forms.toggle_all"))
+		line.append(master_cb)
+		line.append(master_cb_label)
+		line.append(e_label)
+		input.html(line)
+		if (!has_default && (d.CheckOnLoad == "all")) {
+			master_cb.prop("checked", true)
+		}
+		master_cb.bind("change", function() {
+			var state = $(this).prop("checked")
+			$(this).parent().siblings().children("input[type=checkbox]").prop("checked", state)
+		})
 
 		// ck value can be a string, ex: id from a rest get are strings
 		str_content = content.map(function(el){return ""+el})
@@ -1119,9 +1103,9 @@ function form(divid, options) {
 			if (str_content.indexOf(""+value) >= 0) {
 				cb.prop("checked", true)
 			}
-		}
-		if (!has_default && (d.CheckOnLoad == "all")) {
-			master_cb.click()
+			if (!has_default && (d.CheckOnLoad == "all")) {
+				cb.prop("checked", true)
+			}
 		}
 	}
 
@@ -1848,6 +1832,114 @@ function form(divid, options) {
 	).then(function() {
 		o.load()
 	})
+	return o
+}
+
+function form_results(divid, options) {
+	o = {}
+	o.options = options
+	o.results_id = options.results_id
+	o.wsh_id = "form_results_" + $("<span>").uniqueId().attr("id")
+
+	if (typeof divid === "string") {
+		o.div = $("#"+divid)
+	} else {
+		o.div = divid
+	}
+
+	o.render_results = function(results) {
+		o.div.empty()
+
+		var status_title = $("<h2 data-i18n='forms.status'></h2>")
+		o.div.append(status_title)
+		if (results.status == "QUEUED") {
+			spinner_add(o.div, i18n.t("forms."+results.status))
+		} else if (results.status == "RUNNING") {
+			spinner_add(o.div, i18n.t("forms."+results.status))
+		} else if (results.status == "COMPLETED") {
+			o.div.append($("<div data-i18n='forms.COMPLETED'></div>"))
+			delete wsh[o.wsh_id]
+		}
+
+		var log_title = $("<h2 data-i18n='forms.logs'></h2>")
+		o.div.append(log_title)
+		for (var i=0; i<results.log.length; i++) {
+			var level = results.log[i][0]
+			var log_type = results.log[i][1]
+			var fmt = results.log[i][2]
+			var d = results.log[i][3]
+			if (level == 0) {
+				var cl = "ok"
+			} else {
+				var cl = "nok"
+			}
+			for (key in d) {
+				if (is_numeric(d[key])) {
+					var s = d[key]
+				} else { 
+					try {
+						var _d = $.parseJSON(d[key])
+						var s = "<br><pre>"+JSON.stringify(_d, null, 4)+"</pre>"
+					} catch(e) {
+						var s = d[key]
+					}
+				}
+				var re = RegExp("%\\("+key+"\\)[sd]", "g")
+				fmt = fmt.replace(re, "<b>"+s+"</b>")
+			}
+			var entry = $("<div class='icon_fixed_width'></div>")
+			entry.addClass(cl)
+			entry.html(fmt)
+			o.div.append(entry)
+		}
+		if (results.outputs_order.length > 0) {
+			var log_results = $("<h2 data-i18n='forms.results'></h2>")
+			o.div.append(log_results)
+		}
+
+		var output_area = $("<pre style='margin-top:1em'></pre>")
+		for (var i=0; i<results.outputs_order.length; i++) {
+			var output = results.outputs_order[i]
+			var result = results.outputs[output]
+			try {
+				result = JSON.stringify(result, null, 4)
+			} catch(e) {}
+			var entry = $("<span class='tag bgblack'>"+output+"</span>")
+			$.data(entry[0], "v", result)
+			o.div.append(entry)
+			entry.bind("click", function(e) {
+				output_area.text($.data(this, "v"))
+			})
+		}
+
+		o.div.append(output_area)
+		o.div.i18n()
+	}
+
+	o.get_results = function() {
+		services_osvcgetrest("/form_output_results/%1", [o.results_id], "", function(jd) {
+			o.render_results(jd)
+		})
+	}
+
+	o.handle_results = function() {
+		o.get_results()
+		wsh[o.wsh_id] = function(data) {
+			if (data.event != "form_output_results_change") {
+				return
+			}
+			if (data.data.results_id != o.results_id) {
+				return
+			}
+			o.get_results()
+		}
+	}
+
+	o.load = function() {
+		o.handle_results()
+	}
+
+	o.load()
 	return o
 }
 

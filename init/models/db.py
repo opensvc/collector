@@ -2114,4 +2114,10 @@ db.define_table('docker_registries_responsibles',
     Field('registry_id', 'integer'),
     migrate=False)
 
+db.define_table('form_output_results',
+    Field('user_id', 'integer'),
+    Field('node_id', 'string'),
+    Field('results', 'text'),
+    migrate=False)
+
 

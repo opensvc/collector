@@ -6309,4 +6309,12 @@ drop view v_svcmon; CREATE VIEW `v_svcmon` AS select `e`.`err` AS `err`,`s`.`svc
 
 alter table metrics add column metric_historize varchar(1) default 'F';
 
+CREATE TABLE `form_output_results` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11),
+  `node_id` char(36),
+  `results` mediumtext,
+  PRIMARY KEY (`id`)
+);
+
 

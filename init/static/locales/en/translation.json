@@ -1948,6 +1948,13 @@
 		}
 	},
 	"forms": {
+		"QUEUED": "Background task queued. Waiting for a worker.",
+		"RUNNING": "Background task in progress.",
+		"COMPLETED": "Background task completed.",
+		"status": "Status",
+		"logs": "Logs",
+		"results": "Results",
+		"creating_task": "Creating background task",
 		"test": "Test",
 		"test_render_title": "Data in display mode",
 		"test_title": "Data produced by the form",

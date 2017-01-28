@@ -126,6 +126,9 @@ def get_get_handlers(prefix=None):
              "rest_get_filterset_nodes",
              "rest_get_filterset_services",
        ],
+       "form_output_results": [
+             "rest_get_form_output_result",
+       ],
        "forms_revisions": [
              "rest_get_forms_revisions",
              "rest_get_forms_revision",

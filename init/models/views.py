@@ -2,12 +2,16 @@ import re
 import datetime
 
 def user_name():
-    if not hasattr(session.auth, 'user'):
+    if session.auth is not None:
+        _auth = session.auth
+    else:
+        _auth = auth
+    if not hasattr(_auth, 'user'):
         return 'Unknown'
     if auth_is_node():
         return 'agent'
-    first_name = session.auth.user.first_name if session.auth.user.first_name else ""
-    last_name = session.auth.user.last_name if session.auth.user.last_name else ""
+    first_name = _auth.user.first_name if _auth.user.first_name else ""
+    last_name = _auth.user.last_name if _auth.user.last_name else ""
     user = ' '.join([first_name, last_name])
     try:
         user = user.decode("utf8")

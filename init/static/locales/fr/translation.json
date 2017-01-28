@@ -1898,6 +1898,13 @@
 		}
 	},
 	"forms": {
+		"QUEUED": "Tâche de fond en attente de prise en charge.",
+		"RUNNING": "Tâche de fond en cours d'exécution.",
+		"COMPLETED": "Tâche de fond terminée.",
+		"status": "État",
+		"logs": "Journal",
+		"results": "Résultats",
+		"creating_task": "Création d'une tâche de fond",
 		"test": "Test",
 		"test_render_title": "Données en mode affichage",
 		"test_title": "Données générées par ce formulaire",

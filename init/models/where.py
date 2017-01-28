@@ -1,4 +1,5 @@
-def q_filter(query=None, svc_field=None, node_field=None, group_field=None, app_field=None, db=db):
+def q_filter(query=None, svc_field=None, node_field=None, group_field=None,
+             app_field=None, user_field=None, db=db):
     q = None
     t = None
     if not auth_is_node() and "Manager" in user_groups():
@@ -33,6 +34,11 @@ def q_filter(query=None, svc_field=None, node_field=None, group_field=None, app_
             q = group_field.belongs(user_groups())
         if t is None:
             t = db[group_field.tablename]
+    if user_field:
+        if not manager:
+            q = user_field.belongs(user_groups_user_ids())
+        if t is None:
+            t = db[user_field.tablename]
     if query is None:
         query = t.id > 0
     if q is None:

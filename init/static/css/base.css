@@ -1532,9 +1532,6 @@ ul.login_menu ul {
 	content: '\f021';
 	display: inline-block;
 }
-.spinner:before {
-	content: '\f110';
-}
 .dns16:before {
 	color: turquoise;
 	content: '\f0e1';
@@ -3224,6 +3221,28 @@ button:disabled {
 .template_beautified > pre {
 	max-height: 30em;
 	overflow-y: auto;
+}
+
+@keyframes spinner {
+  to {transform: rotate(360deg);}
+}
+ 
+span.spinner_text {
+    vertical-align: bottom;
+}
+.spinner:before {
+  content: '';
+  box-sizing: border-box;
+  display: inline-block;
+  padding-right: 0.3em;
+  top: 50%;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid #ccc;
+  border-top-color: #333;
+  animation: spinner 6s steps(90, end) infinite;
 }
 
 

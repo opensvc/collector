@@ -82,8 +82,8 @@ def check_quota_app():
         return
     raise Exception("app quota exceeded")
 
-def check_privilege(privs):
-    ug = user_groups()
+def check_privilege(privs, user_id=None):
+    ug = user_groups(user_id)
     if 'Manager' in ug:
         return
     if type(privs) == list:
@@ -93,28 +93,28 @@ def check_privilege(privs):
     if len(privs & set(ug)) == 0:
         raise Exception("Not authorized: user has no %s privilege" % ", ".join(privs))
 
-def node_responsible(node_id=None):
+def node_responsible(node_id=None, user_id=None):
     if node_id is None:
         raise Exception("node_responsible() must have a not None node_id parameter")
     q = db.nodes.node_id == node_id
     n = db(q).count()
     if n == 0:
         raise Exception("Node %s does not exist" % node_id)
-    if "Manager" in user_groups():
+    if "Manager" in user_groups(user_id):
         return
     q &= db.nodes.app.belongs(user_apps())
     n = db(q).count()
     if n == 0:
         raise Exception("Not authorized: user is not responsible for node %s" % node_id)
 
-def svc_responsible(svc_id=None):
+def svc_responsible(svc_id=None, user_id=None):
     if svc_id is None:
         raise Exception("svc_responsible() must have a not None svc_id parameter")
     q = db.services.svc_id == svc_id
     n = db(q).count()
     if n == 0:
         raise Exception("Service %s does not exist" % svc_id)
-    if "Manager" in user_groups():
+    if "Manager" in user_groups(user_id):
         return
     q &= db.services.svc_app.belongs(user_apps())
     n = db(q).count()
@@ -235,6 +235,15 @@ def user_groups(id=None):
     q &= db.auth_membership.group_id==db.auth_group.id
     rows = db(q).select(db.auth_group.role)
     return map(lambda x: x.role, rows)
+
+def user_groups_user_ids(id=None):
+    if id is None:
+        id = auth.user_id
+    if id is None:
+        return []
+    q = db.auth_membership.group_id.belongs(user_org_group_ids(id))
+    rows = db(q).select(db.auth_membership.user_id, groupby=db.auth_membership.user_id)
+    return map(lambda x: x.user_id, rows)
 
 def user_published_apps(id=None):
     if id is None:
@@ -359,8 +368,8 @@ def user_services(id=None):
     rows = db(q).select(db.services.svc_id, cacheable=True)
     return map(lambda x: x.svc_id, rows)
 
-def member_of(g):
-    groups = user_groups()
+def member_of(g, user_id=None):
+    groups = user_groups(user_id)
     if isinstance(g, str) and g in groups:
         return True
     elif isinstance(g, list) or isinstance(g, tuple):

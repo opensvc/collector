@@ -538,25 +538,13 @@ class rest_put_form(rest_put_handler):
         q = db.forms.id == form_id
         q &= (db.forms.id == db.forms_team_publication.form_id)
         q &= db.forms_team_publication.group_id.belongs(user_group_ids())
-        form = db(q).select(db.forms.ALL).first()
+        form = db(q).select(db.forms.ALL, cacheable=True).first()
         if form is None:
             return dict("error", "the requested form does not exist or you don't have permission to use it")
 
         form_data = json.loads(data)
 
-        import yaml
-        data = yaml.load(form.form_yaml)
-
-        log = form_submit(form, data, _d=form_data, prev_wfid=prev_wfid)
-        infos = []
-        errors = []
-        for lvl, action, fmt, d in log:
-            msg = fmt % d
-            if lvl == 0:
-                infos.append(msg)
-            else:
-                errors.append(msg)
-        return dict(info=infos, error=errors)
+        return form_submit(form, _d=form_data, prev_wfid=prev_wfid)
 
 
 class rest_delete_form(rest_delete_handler):
@@ -650,5 +638,30 @@ class rest_get_form_am_i_responsible(rest_get_handler):
             return dict(data=True)
         except:
             return dict(data=False)
+
+#
+class rest_get_form_output_result(rest_get_handler):
+    def __init__(self):
+        desc = [
+          "Show a submited form results properties.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/form_output_results/1"
+        ]
+
+        rest_get_handler.__init__(
+          self,
+          path="/form_output_results/<id>",
+          tables=["form_output_results"],
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, id, **vars):
+        q = db.form_output_results.id == int(id)
+        q = q_filter(q, node_field=db.form_output_results.node_id,
+                     user_field=db.form_output_results.user_id)
+        row = db(q).select().first()
+        return json.loads(row.results)
 
 
