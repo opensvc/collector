@@ -1369,6 +1369,19 @@ function cell_decorator_run_log(e, line) {
 		var s = "<pre>"+v.replace(/ERR:/g, "<span class='err'>ERR:</span>")+"</pre>"
 	}
 	e.html(s)
+	if (line != undefined) {
+		e.addClass("corner-top")
+		.click(function(){
+			var log_id = $.data(line.children("[col=id]")[0], "v")
+			osvc.flash.show({
+				id: "complog-"+log_id,
+				cl: "icon log16",
+				text: log_id,
+				bgcolor: osvc.colors.comp,
+				fn: function(id){run_status_tabs(id, {"id": log_id})}
+			})
+		})
+	}
 }
 
 function cell_decorator_run_status(e, line) {
@@ -1387,19 +1400,20 @@ function cell_decorator_run_status(e, line) {
 	} else {
 		_v = v
 	}
-	var log_id = $.data(line.children("[col=id]")[0], "v")
-	e
-	.html("<div class='icon "+cl+"'>"+_v+"</div>")
-	.addClass("corner-top")
-	.click(function(){
-		osvc.flash.show({
-			id: "complog-"+log_id,
-			cl: "icon comp16",
-			text: log_id,
-			bgcolor: osvc.colors.comp,
-			fn: function(id){run_status_tabs(id, {"id": log_id})}
+	e.html("<div class='icon "+cl+"'>"+_v+"</div>")
+	if (line != undefined) {
+		e.addClass("corner-top")
+		.click(function(){
+			var log_id = $.data(line.children("[col=id]")[0], "v")
+			osvc.flash.show({
+				id: "complog-"+log_id,
+				cl: "icon log16",
+				text: log_id,
+				bgcolor: osvc.colors.comp,
+				fn: function(id){run_status_tabs(id, {"id": log_id})}
+			})
 		})
-	})
+	}
 
 }
 
