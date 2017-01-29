@@ -188,6 +188,10 @@ function form(divid, options) {
 
 	o.render_form_mode = function() {
 		var area = $("<div name='form_area' class='container_head'></div>")
+		if (o.form_data.form_definition.Vertical) {
+			area.addClass("form_vertical")
+		}
+
 		o.area = area
 		o.div.empty().append(area)
 		o.render_form()
@@ -391,7 +395,7 @@ function form(divid, options) {
 				}
 			}
 			var line = $("<tr></tr>")
-			var label = $("<td style='white-space:nowrap'></td>")
+			var label = $("<th style='white-space:nowrap'></th>")
 			var value = $("<td></td>")
 			label.text(d.DisplayModeLabel)
 			if(d.LabelCss) {
@@ -453,7 +457,7 @@ function form(divid, options) {
 			var d = o.form_data.form_definition.Inputs[i]
 			var input_key_id = get_dict_id(d)
 			var line = $("<tr></tr>")
-			var label = $("<td style='white-space:nowrap'></td>")
+			var label = $("<th style='white-space:nowrap'></th>")
 			var value = $("<td name='val'></td>")
 			line.attr("iid", d.Id)
 			if (d.ExpertMode == true) {
@@ -470,12 +474,8 @@ function form(divid, options) {
 			line.append(label)
 			line.append(value)
 			if (d.Help) {
-				var help = $("<td class='icon help'></td>")
-				help.attr("title", d.Help).tooltipster()
-			} else {
-				var help = $("<td></td>")
+				label.attr("title", d.Help).tooltipster()
 			}
-			line.append(help)
 			if ((typeof(data) === "undefined") || (is_dict(data) && !(input_key_id in data))) {
 				if (d.Default == "__user_email__") {
 					var content = _self.email
@@ -1864,7 +1864,13 @@ function form_results(divid, options) {
 		} else if (results.status == "RUNNING") {
 			spinner_add(o.div, i18n.t("forms."+results.status))
 		} else if (results.status == "COMPLETED") {
-			o.div.append($("<div data-i18n='forms.COMPLETED'></div>"))
+			var e_status = $("<div class='icon_fixed_width' data-i18n='forms.COMPLETED'></div>")
+			o.div.append(e_status)
+			if (results.returncode == 0) {
+				e_status.addClass("ok")
+			} else {
+				e_status.addClass("nok")
+			}
 			delete wsh[o.wsh_id]
 		}
 

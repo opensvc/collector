@@ -3072,6 +3072,11 @@ button:disabled {
 	border-collapse: initial;
 	border-spacing: 0.3em;
 	margin-bottom: 1em;
+	border-spacing: 0 0.6em;
+}
+
+.form_vertical td,.form_vertical th {
+	display: block;
 }
 
 .group_hidden_menu {

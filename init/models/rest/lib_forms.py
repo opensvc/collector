@@ -518,11 +518,45 @@ def output_rest(output, form_definition, _d=None, results=None):
     )
     update_results(results)
 
+    def post_run(jd, results):
+        if "info" in jd:
+            if isinstance(jd["info"], list):
+                for line in jd["info"]:
+                    results["log"].append((0, "form.submit", line, {}))
+            elif len(jd["info"]) > 0:
+                results["log"].append((0, "form.submit", jd["info"], {}))
+        if "error" in jd:
+            if isinstance(jd["error"], list):
+                for line in jd["error"]:
+                    results["log"].append((1, "form.submit", line, {}))
+            elif len(jd["error"]) > 0:
+                results["log"].append((1, "form.submit", jd["error"], {}))
+
+        if "data" not in jd:
+            return results
+
+        results["outputs_order"].append(output_id)
+        results["outputs"][output_id] = jd["data"]
+
+        if output.get("WaitResult", 0) > 0:
+            if isinstance(jd["data"], list):
+                for entry in jd["data"]:
+                    results = _post_run(entry, results)
+            elif isinstance(jd["data"], dict):
+                results = _post_run(jd["data"], results)
+
+        return results
+
+    def _post_run(entry, results):
+        if "ret" in entry and entry["ret"] != 0:
+            results["returncode"] += 1
+        if "stderr" in entry and len(entry["stderr"]) > 0:
+            results["log"].append((1, "form.submit", entry["stderr"], {}))
+        return results
+
     try:
         jd = run_handler(args, vars, url, wait)
-        if output_id and "data" in jd:
-            results["outputs_order"].append(output_id)
-            results["outputs"][output_id] = jd["data"]
+        results = post_run(jd, results)
     except Exception as e:
         results = form_log(results,
           1,
