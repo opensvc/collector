@@ -1841,6 +1841,7 @@
 'Size': 'Taille',
 'Size (GB)': 'Taille (Go)',
 'Slot': 'Slot',
+"smart query error for '%(s)s': %(err)s": "smart query error for '%(s)s': %(err)s",
 'Soumettre': 'Soumettre',
 'SQL request': 'Requête SQL',
 'sskertbic7d': 'sskertbic7d',

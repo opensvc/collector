@@ -433,8 +433,8 @@ def output_rest(output, form_definition, _d=None, results=None):
         vm2 = config_get("vm2", "/usr/local/bin/vm2")
         cmd = [nodejs, vm2, fname]
         import subprocess
-        p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        out, err = p.communicate()
+        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        out, err = proc.communicate()
         f.close()
         l = [ line for line in out.split("\n") if "[vm] " not in line and line != ""]
         if len(l) == 0:
@@ -590,7 +590,7 @@ def output_script(output, form_definition, _d=None, results=None):
     elif not os.path.exists(path):
         results = form_log(results, 1, "form.submit", "Script %(path)s does not exists", dict(path=path))
         results['returncode'] += 1
-        results["output"][output_id] = {
+        results["outputs"][output_id] = {
           'path': path,
           'returncode': 1,
           'stdout': "",
@@ -598,14 +598,35 @@ def output_script(output, form_definition, _d=None, results=None):
         }
         return results
 
+    out = []
+    err = []
+    import select
     try:
-        p = subprocess.Popen([path, d], stdout=subprocess.PIPE,
-                                        stderr=subprocess.PIPE)
-        out, err = p.communicate()
+        proc = subprocess.Popen(["stdbuf", "-o0", "-e0", "-i0", path, d],
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE,
+                                bufsize=1)
+        while True:
+            reads = [proc.stdout.fileno(), proc.stderr.fileno()]
+            ret = select.select(reads, [], [])
+
+            for fd in ret[0]:
+                if fd == proc.stdout.fileno():
+                    read = proc.stdout.readline()
+                    results = form_log(results, 0, "form.submit", read, {})
+                    out.append(read)
+                if fd == proc.stderr.fileno():
+                    read = proc.stderr.readline()
+                    results = form_log(results, 1, "form.submit", read, {})
+                    err.append(read)
+                update_results(results)
+            if proc.poll() != None:
+                break
+        proc.wait()
     except Exception as e:
         results = form_log(results, 1, "form.submit", "Script %(path)s execution error: %(err)s", dict(path=path, err=str(e)))
         results['returncode'] += 1
-        results["output"][output_id] = {
+        results["outputs"][output_id] = {
           'path': path,
           'returncode': 1,
           'stdout': "",
@@ -613,21 +634,16 @@ def output_script(output, form_definition, _d=None, results=None):
         }
         return results
 
-    results['returncode'] += p.returncode
-    results["output"][output_id] = {
+    results['returncode'] += proc.returncode
+    results["outputs"][output_id] = {
       'path': path,
-      'returncode': p.returncode,
-      'stdout': out,
-      'stderr': err,
+      'returncode': proc.returncode,
+      'stdout': "\n".join(out),
+      'stderr': "\n".join(err),
     }
-    msg = out
-    if len(err) > 0:
-        msg += err
 
-    if p.returncode != 0:
-        results = form_log(results, 1, "form.submit", "Script %(path)s returned with error:\n%(err)s", dict(path=path, err=msg))
-    else:
-        results = form_log(results, 0, "form.submit", "Script %(path)s returned on success:\n%(out)s", dict(path=path, out=msg))
+    if proc.returncode != 0:
+        results = form_log(results, 1, "form.submit", "Script %(path)s returned with error", dict(path=path))
 
     return results
 
