@@ -1847,6 +1847,7 @@ function form_results(divid, options) {
 	o.options = options
 	o.results_id = options.results_id
 	o.wsh_id = "form_results_" + $("<span>").uniqueId().attr("id")
+	o.timer = null
 
 	if (typeof divid === "string") {
 		o.div = $("#"+divid)
@@ -1855,6 +1856,8 @@ function form_results(divid, options) {
 	}
 
 	o.render_results = function(results) {
+		var document_scroll_pos = $(document).scrollTop()
+		var flash_scroll_pos = osvc.flash.div.scrollTop()
 		o.div.empty()
 
 		var status_title = $("<h2 data-i18n='forms.status'></h2>")
@@ -1930,11 +1933,21 @@ function form_results(divid, options) {
 
 		o.div.append(output_area)
 		o.div.i18n()
+		$(document).scrollTop(document_scroll_pos)
+		osvc.flash.div.scrollTop(flash_scroll_pos)
 	}
 
 	o.get_results = function() {
+		// clear the timeout in case we're called from the event handler
+		clearTimeout(o.timer)
 		services_osvcgetrest("/form_output_results/%1", [o.results_id], "", function(jd) {
 			o.render_results(jd)
+			if (jd.status != "COMPLETED") {
+				// schedule the next run
+				o.timer = setTimeout(function(){
+					o.get_results()
+				}, 5000)
+			}
 		})
 	}
 
