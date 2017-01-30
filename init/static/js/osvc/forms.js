@@ -1858,6 +1858,7 @@ function form_results(divid, options) {
 	o.render_results = function(results) {
 		var document_scroll_pos = $(document).scrollTop()
 		var flash_scroll_pos = osvc.flash.div.scrollTop()
+		var output_area = $("<pre style='margin-top:1em'></pre>")
 		o.div.empty()
 
 		var status_title = $("<h2 data-i18n='forms.status'></h2>")
@@ -1877,58 +1878,66 @@ function form_results(divid, options) {
 			delete wsh[o.wsh_id]
 		}
 
-		if (results.log.length > 0) {
-			var log_title = $("<h2 data-i18n='forms.logs'></h2>")
-			o.div.append(log_title)
-		}
-
-		for (var i=0; i<results.log.length; i++) {
-			var level = results.log[i][0]
-			var log_type = results.log[i][1]
-			var fmt = results.log[i][2]
-			var d = results.log[i][3]
-			if (level == 0) {
-				var cl = "ok"
-			} else {
-				var cl = "nok"
-			}
-			for (key in d) {
-				if (is_numeric(d[key]) || !d[key]) {
-					var s = d[key]
-				} else { 
-					try {
-						var _d = $.parseJSON(d[key])
-						var s = "<br><pre>"+JSON.stringify(_d, null, 4)+"</pre>"
-					} catch(e) {
-						var s = d[key]
-					}
-				}
-				var re = RegExp("%\\("+key+"\\)[sd]", "g")
-				fmt = fmt.replace(re, "<b>"+s+"</b>")
-			}
-			var entry = $("<div class='icon_fixed_width'></div>")
-			entry.addClass(cl)
-			entry.html(fmt)
-			o.div.append(entry)
-		}
-		if (results.outputs_order.length > 0) {
-			var log_results = $("<h2 data-i18n='forms.results'></h2>")
-			o.div.append(log_results)
-		}
-
-		var output_area = $("<pre style='margin-top:1em'></pre>")
 		for (var i=0; i<results.outputs_order.length; i++) {
-			var output = results.outputs_order[i]
-			var result = results.outputs[output]
-			try {
-				result = JSON.stringify(result, null, 4)
-			} catch(e) {}
-			var entry = $("<span class='tag bgblack'>"+output+"</span>")
-			$.data(entry[0], "v", result)
-			o.div.append(entry)
-			entry.bind("click", function(e) {
-				output_area.text($.data(this, "v"))
-			})
+			var output_name = results.outputs_order[i]
+			var output_title = $("<h2>"+output_name+"</h2>")
+			var log = results.log[output_name]
+			o.div.append(output_title)
+
+			for (var j=0; j<log.length; j++) {
+				var level = log[j][0]
+				var fmt = log[j][1]
+				var d = log[j][2]
+				if (level == 0) {
+					var cl = "ok"
+				} else {
+					var cl = "nok"
+				}
+				for (key in d) {
+					if (is_numeric(d[key]) || !d[key]) {
+						var s = d[key]
+					} else { 
+						try {
+							var _d = $.parseJSON(d[key])
+							var s = "<br><pre>"+JSON.stringify(_d, null, 4)+"</pre>"
+						} catch(e) {
+							var s = d[key]
+						}
+					}
+					var re = RegExp("%\\("+key+"\\)[sd]", "g")
+					fmt = fmt.replace(re, "<b>"+s+"</b>")
+				}
+				var entry = $("<div class='icon_fixed_width'></div>")
+				entry.addClass(cl)
+				entry.html(fmt)
+				o.div.append(entry)
+			}
+
+			if (output_name in results.request_data) {
+				var result = results.request_data[output_name]
+				try {
+					result = JSON.stringify(result, null, 4)
+				} catch(e) {}
+				var log_result = $("<span data-i18n='forms.request_data' class='tag bgblack'></span>")
+				$.data(log_result[0], "v", result)
+				o.div.append(log_result)
+				log_result.bind("click", function(e) {
+					output_area.text($.data(this, "v"))
+				})
+			}
+			if (output_name in results.outputs) {
+				var result = results.outputs[output_name]
+				try {
+					result = JSON.stringify(result, null, 4)
+				} catch(e) {}
+				var log_result = $("<span data-i18n='forms.results' class='tag bgblack'></span>")
+				$.data(log_result[0], "v", result)
+				o.div.append(log_result)
+				log_result.bind("click", function(e) {
+					output_area.text($.data(this, "v"))
+				})
+			}
+
 		}
 
 		o.div.append(output_area)

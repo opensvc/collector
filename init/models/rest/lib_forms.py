@@ -1,11 +1,11 @@
 import gluon.contrib.simplejson as sjson
 
-def form_log(results, ret, action, fmt, d):
+def form_log(output_id, results, ret, action, fmt, d):
     if ret == 0:
         level = "info"
     else:
         level = "error"
-    results["log"].append([ret, action, fmt, d])
+    results["log"][output_id].append([ret, fmt, d])
     _log(action, fmt, d, level=level)
     return results
 
@@ -124,6 +124,7 @@ def insert_form_md5(form):
     return form_md5
 
 def output_mail(output, form_definition, form, to=None, record_id=None, _d=None, results=None):
+    output_id = output.get("Id")
     if type(to) in (str, unicode):
         to = [to]
 
@@ -131,7 +132,7 @@ def output_mail(output, form_definition, form, to=None, record_id=None, _d=None,
         to = output.get('To', set([]))
 
     if len(to) == 0:
-        results = form_log(results, 1, "form.submit", "No mail destination", dict())
+        results = form_log(output_id, results, 1, "form.submit", "No mail destination", dict())
         return results
 
     for i, t in enumerate(to):
@@ -142,7 +143,7 @@ def output_mail(output, form_definition, form, to=None, record_id=None, _d=None,
             to[i] = t
 
     if len(to) == 0:
-        results = form_log(results, 1, "form.submit", "No mail destination", dict())
+        results = form_log(output_id, results, 1, "form.submit", "No mail destination", dict())
         return results
 
     label = form_definition.get('Label', form.form_name)
@@ -150,7 +151,7 @@ def output_mail(output, form_definition, form, to=None, record_id=None, _d=None,
     try:
         d = get_form_formatted_data_o(output, form_definition, _d)
     except Exception, e:
-        results = form_log(results, 1, "form.submit", str(e), dict())
+        results = form_log(output_id, results, 1, "form.submit", str(e), dict())
         return results
     try:
         with open("applications/init/static/css/mail.css", "r") as f:
@@ -190,10 +191,11 @@ def output_mail(output, form_definition, form, to=None, record_id=None, _d=None,
               subject=title.encode("utf-8"),
               message=message)
     _to = str(', '.join(to))
-    results = form_log(results, 0, "form.submit", "Mail sent to %(to)s on form %(form_name)s submission.", dict(to=_to, form_name=form.form_name))
+    results = form_log(output_id, results, 0, "form.submit", "Mail sent to %(to)s on form %(form_name)s submission.", dict(to=_to, form_name=form.form_name))
     return results
 
 def output_workflow(output, form_definition, form, _d=None, prev_wfid=None, results=None):
+    output_id = output.get("Id")
     d = get_form_formatted_data(output, form_definition, _d)
 
     form_md5 = insert_form_md5(form)
@@ -228,7 +230,7 @@ def output_workflow(output, form_definition, form, _d=None, prev_wfid=None, resu
         q = db.forms_store.id == prev_wfid
         prev_wf = db(q).select(cacheable=True).first()
         if prev_wf.form_next_id is not None:
-            results = form_log(results, 0, "form.store", "This step is already completed (id=%(id)d)", dict(id=prev_wf.id))
+            results = form_log(output_id, results, 0, "form.store", "This step is already completed (id=%(id)d)", dict(id=prev_wf.id))
             return results
 
         if form_assignee is None:
@@ -268,10 +270,10 @@ def output_workflow(output, form_definition, form, _d=None, prev_wfid=None, resu
             q = db.forms_store.id == prev_wfid
             db(q).update(form_next_id=record_id)
         if next_id != 0:
-            results = form_log(results, 0, "form.store", "Workflow %(head_id)d step %(form_name)s added with id %(id)d",
+            results = form_log(output_id, results, 0, "form.store", "Workflow %(head_id)d step %(form_name)s added with id %(id)d",
                         dict(form_name=form.form_name, head_id=head_id, id=record_id))
         else:
-            results = form_log(results, 0, "form.store", "Workflow %(head_id)d closed on last step %(form_name)s with id %(id)d",
+            results = form_log(output_id, results, 0, "form.store", "Workflow %(head_id)d closed on last step %(form_name)s with id %(id)d",
                         dict(form_name=form.form_name, head_id=head_id, id=record_id))
         q = db.workflows.form_head_id == head_id
         wfrow = db(q).select(cacheable=True).first()
@@ -317,7 +319,7 @@ def output_workflow(output, form_definition, form, _d=None, prev_wfid=None, resu
         if record_id is not None:
             q = db.forms_store.id == record_id
             db(q).update(form_head_id=record_id)
-        results = form_log(results, 0, "form.store", "New workflow %(form_name)s created with id %(id)d", dict(form_name=form.form_name, id=record_id))
+        results = form_log(output_id, results, 0, "form.store", "New workflow %(form_name)s created with id %(id)d", dict(form_name=form.form_name, id=record_id))
 
         db.workflows.insert(
           status=status,
@@ -340,15 +342,16 @@ def output_workflow(output, form_definition, form, _d=None, prev_wfid=None, resu
     return results
 
 def output_db(output, form_definition, _d=None, results=None):
+    output_id = output.get("Id")
     output['Type'] = 'object'
     output['Format'] = 'dict'
     d = get_form_formatted_data(output, form_definition, _d)
     if 'Table' not in output:
-        results = form_log(results, 1, "form.submit", "Table must be set in db type Output", dict())
+        results = form_log(output_id, results, 1, "form.submit", "Table must be set in db type Output", dict())
         return results
     table = output['Table']
     if table not in db:
-        results = form_log(results, 1, "form.submit", "Table %(t)s not found", dict(t=table))
+        results = form_log(output_id, results, 1, "form.submit", "Table %(t)s not found", dict(t=table))
         return results
 
     # purge keys not present in table as columns
@@ -360,9 +363,9 @@ def output_db(output, form_definition, _d=None, results=None):
     try:
         db[table].insert(**d)
         table_modified(table)
-        results = form_log(results, 0, "form.submit", "Data inserted in database table", dict())
+        results = form_log(output_id, results, 0, "form.submit", "Data inserted in database table", dict())
     except Exception, e:
-        results = form_log(results, 1, "form.submit", "Data insertion in database table error: %(err)s", dict(err=str(e)))
+        results = form_log(output_id, results, 1, "form.submit", "Data insertion in database table error: %(err)s", dict(err=str(e)))
     return results
 
 def output_rest(output, form_definition, _d=None, results=None):
@@ -375,12 +378,11 @@ def output_rest(output, form_definition, _d=None, results=None):
     output_id = output.get("Id")
     wait = output.get("WaitResult", 0)
 
-    results = form_log(results,
+    results = form_log(output_id, results,
       0,
       "form.submit",
-      "%(output_id)s: rest %(action)s %(url)s",
+      "rest %(action)s %(url)s",
       dict(
-        output_id=output_id,
         action=action,
         url=url,
       )
@@ -507,35 +509,26 @@ def output_rest(output, form_definition, _d=None, results=None):
         else:
             return handler.handle(*args, **vars)
 
-    results = form_log(results,
-      0,
-      "form.submit",
-      "%(output_id)s: request data:\n%(data)s",
-      dict(
-        output_id=output_id,
-        data=sjson.dumps(vars, indent=4, default=datetime.datetime.isoformat),
-      )
-    )
+    results["request_data"][output_id] = vars
     update_results(results)
 
     def post_run(jd, results):
         if "info" in jd:
             if isinstance(jd["info"], list):
                 for line in jd["info"]:
-                    results["log"].append((0, "form.submit", line, {}))
+                    results["log"][output_id].append((0, line, {}))
             elif len(jd["info"]) > 0:
-                results["log"].append((0, "form.submit", jd["info"], {}))
+                results["log"][output_id].append((0, jd["info"], {}))
         if "error" in jd:
             if isinstance(jd["error"], list):
                 for line in jd["error"]:
-                    results["log"].append((1, "form.submit", line, {}))
+                    results["log"][output_id].append((1, line, {}))
             elif len(jd["error"]) > 0:
-                results["log"].append((1, "form.submit", jd["error"], {}))
+                results["log"][output_id].append((1, jd["error"], {}))
 
         if "data" not in jd:
             return results
 
-        results["outputs_order"].append(output_id)
         results["outputs"][output_id] = jd["data"]
 
         if output.get("WaitResult", 0) > 0:
@@ -551,19 +544,18 @@ def output_rest(output, form_definition, _d=None, results=None):
         if "ret" in entry and entry["ret"] != 0:
             results["returncode"] += 1
         if "stderr" in entry and len(entry["stderr"]) > 0:
-            results["log"].append((1, "form.submit", entry["stderr"], {}))
+            results["log"][output_id].append((1, entry["stderr"], {}))
         return results
 
     try:
         jd = run_handler(args, vars, url, wait)
         results = post_run(jd, results)
     except Exception as e:
-        results = form_log(results,
+        results = form_log(output_id, results,
           1,
           "form.submit",
-          "%(output_id)s: error:\n%(result)s",
+          "error:\n%(result)s",
           dict(
-            output_id=output_id,
             result=str(e),
           )
         )
@@ -578,7 +570,7 @@ def output_script(output, form_definition, _d=None, results=None):
     output_id = output.get("Id", path)
 
     if path is None:
-        results = form_log(results, 1, "form.submit", "Path must be set in script type Output", dict())
+        results = form_log(output_id, results, 1, "form.submit", "Path must be set in script type Output", dict())
         results['returncode'] += 1
         results["outputs"][output_id] = {
           'path': path,
@@ -588,7 +580,7 @@ def output_script(output, form_definition, _d=None, results=None):
         }
         return results
     elif not os.path.exists(path):
-        results = form_log(results, 1, "form.submit", "Script %(path)s does not exists", dict(path=path))
+        results = form_log(output_id, results, 1, "form.submit", "Script %(path)s does not exists", dict(path=path))
         results['returncode'] += 1
         results["outputs"][output_id] = {
           'path': path,
@@ -613,18 +605,18 @@ def output_script(output, form_definition, _d=None, results=None):
             for fd in ret[0]:
                 if fd == proc.stdout.fileno():
                     read = proc.stdout.readline()
-                    results = form_log(results, 0, "form.submit", read, {})
+                    results = form_log(output_id, results, 0, "form.submit", read, {})
                     out.append(read)
                 if fd == proc.stderr.fileno():
                     read = proc.stderr.readline()
-                    results = form_log(results, 1, "form.submit", read, {})
+                    results = form_log(output_id, results, 1, "form.submit", read, {})
                     err.append(read)
                 update_results(results)
             if proc.poll() != None:
                 break
         proc.wait()
     except Exception as e:
-        results = form_log(results, 1, "form.submit", "Script %(path)s execution error: %(err)s", dict(path=path, err=str(e)))
+        results = form_log(output_id, results, 1, "form.submit", "Script %(path)s execution error: %(err)s", dict(path=path, err=str(e)))
         results['returncode'] += 1
         results["outputs"][output_id] = {
           'path': path,
@@ -643,7 +635,7 @@ def output_script(output, form_definition, _d=None, results=None):
     }
 
     if proc.returncode != 0:
-        results = form_log(results, 1, "form.submit", "Script %(path)s returned with error", dict(path=path))
+        results = form_log(output_id, results, 1, "form.submit", "Script %(path)s returned with error", dict(path=path))
 
     return results
 
@@ -674,9 +666,10 @@ def form_submit(form, _d=None, prev_wfid=None):
       Used by the PUT /forms/<id> handler to perform the server-side outputs
     """
     results = {
-        "log": [],
         "outputs_order": [],
+        "request_data": {},
         "outputs": {},
+        "log": {},
         "returncode": 0,
         "status": "QUEUED",
     }
@@ -735,8 +728,11 @@ def _form_submit(form_id, _d=None, prev_wfid=None, results=None, authdump=None):
         form_definition["Outputs"][idx]["Id"] = "output-%d" % idx
 
     for output in ordered_outputs(form_definition):
+        output_id = output.get("Id")
+        results["log"][output_id] = []
+        results["outputs_order"].append(output_id)
         if output.get("SkipOnErrors", False) and results["returncode"] != 0:
-            results = form_log(results, 1, "form.submit",
+            results = form_log(output_id, results, 1, "form.submit",
                                "%(output_id)s: skip (previous output error)",
                                {"output_id": output.get("Id")})
             update_results(results)
@@ -745,7 +741,7 @@ def _form_submit(form_id, _d=None, prev_wfid=None, results=None, authdump=None):
         try:
             chkcond = check_output_condition(output, form, form_definition, _d)
         except Exception as e:
-            results = form_log(results, 1, "form.submit", str(e), dict())
+            results = form_log(output_id, results, 1, "form.submit", str(e), dict())
             update_results(results)
             continue
 
@@ -771,7 +767,7 @@ def _form_submit(form_id, _d=None, prev_wfid=None, results=None, authdump=None):
                 results = output_workflow(output, form_definition, form, _d=_d,
                                           prev_wfid=prev_wfid, results=results)
         except Exception, e:
-            results = form_log(results, 1, "form.submit", str(e), dict())
+            results = form_log(output_id, results, 1, "form.submit", str(e), dict())
             results["returncode"] += 1
             break
 

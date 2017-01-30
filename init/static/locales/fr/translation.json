@@ -1903,6 +1903,7 @@
 		"COMPLETED": "Terminé.",
 		"status": "État",
 		"logs": "Journal",
+		"request_data": "Données de requête",
 		"results": "Résultats",
 		"creating_task": "Création d'une tâche de fond",
 		"test": "Test",

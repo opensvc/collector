@@ -1953,6 +1953,7 @@
 		"COMPLETED": "Completed.",
 		"status": "Status",
 		"logs": "Logs",
+		"request_data": "Request Data",
 		"results": "Results",
 		"creating_task": "Creating background task",
 		"test": "Test",
