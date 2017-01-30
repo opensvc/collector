@@ -99,6 +99,9 @@ billing_method = "agents"
 nodejs = "/usr/bin/nodejs"
 vm2 = "/usr/local/bin/vm2"
 
+# actiond
+actiond_workers = 5
+
 #
 # DataCore SAN symphony config
 #

@@ -50,8 +50,12 @@ try:
 except:
     dbopensvc_password = "opensvc"
 
+try:
+    actiond_workers = config.actiond_workers
+except:
+    actiond_workers = 10
+
 lockfile = __file__+'.lock'
-N_THREAD = 50
 
 def actiond_lock(lockfile):
     try:
@@ -320,7 +324,7 @@ def get_conn():
 ps = []
 
 def start_workers(send, recv):
-    for i in range(0, N_THREAD):
+    for i in range(0, actiond_workers):
         p = Process(target=dequeue_worker, args=(i, send, recv), name='[worker%d]'%i)
         p.start()
         ps.append(p)
