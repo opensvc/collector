@@ -567,6 +567,7 @@ def output_rest(output, form_definition, _d=None, results=None):
             result=str(e),
           )
         )
+        results["returncode"] += 1
     return results
 
 def output_script(output, form_definition, _d=None, results=None):
@@ -718,6 +719,13 @@ def _form_submit(form_id, _d=None, prev_wfid=None, results=None, authdump=None):
         form_definition["Outputs"][idx]["Id"] = "output-%d" % idx
 
     for output in ordered_outputs(form_definition):
+        if output.get("SkipOnErrors", False) and results["returncode"] != 0:
+            results = form_log(results, 1, "form.submit",
+                               "%(output_id)s: skip (previous output error)",
+                               {"output_id": output.get("Id")})
+            update_results(results)
+            continue
+
         try:
             chkcond = check_output_condition(output, form, form_definition, _d)
         except Exception as e:
@@ -748,7 +756,7 @@ def _form_submit(form_id, _d=None, prev_wfid=None, results=None, authdump=None):
                                           prev_wfid=prev_wfid, results=results)
         except Exception, e:
             results = form_log(results, 1, "form.submit", str(e), dict())
-            update_results(results)
+            results["returncode"] += 1
             break
 
         update_results(results)
