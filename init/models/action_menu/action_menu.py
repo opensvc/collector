@@ -192,7 +192,8 @@ def do_node_action(node_id, action=None):
         raise ToolError("no action specified")
 
     q = db.nodes.node_id == node_id
-    q &= db.nodes.app.belongs(user_apps())
+    if "Manager" not in user_groups():
+        q &= db.nodes.app.belongs(user_apps())
     node = db(q).select(
       db.nodes.node_id,
       db.nodes.nodename,
