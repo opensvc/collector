@@ -245,6 +245,7 @@ def get_get_handlers(prefix=None):
              "rest_get_service_compliance_status",
              "rest_get_service_compliance_logs",
              "rest_get_service_disks",
+             "rest_get_service_hbas",
              "rest_get_service_nodes",
              "rest_get_service_node",
              "rest_get_service_node_resources",

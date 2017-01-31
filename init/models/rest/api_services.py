@@ -1124,4 +1124,30 @@ class rest_get_service_targets(rest_get_table_handler):
         self.set_q(q)
         return self.prepare_data(**vars)
 
+#
+class rest_get_service_hbas(rest_get_table_handler):
+    def __init__(self):
+        desc = [
+          "List a service's nodes storage host bus adapters.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/services/1/hbas",
+        ]
+        rest_get_table_handler.__init__(
+          self,
+          path="/services/<id>/hbas",
+          tables=["node_hba"],
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, svc_id, **vars):
+        svc_id = get_svc_id(svc_id)
+        q = db.svcmon.svc_id == svc_id
+        q &= db.svcmon.node_id == db.node_hba.node_id
+        q = q_filter(q, node_field=db.node_hba.node_id)
+        self.set_q(q)
+        return self.prepare_data(**vars)
+
+
 
