@@ -141,7 +141,7 @@ tab_properties_generic_autocomplete = function(options) {
 	if (options.privileges && !services_ismemberof(options.privileges)) {
 		return
 	}
-	options.div.bind("click", function() {
+	options.div.bind("click", function(event) {
 		if ($(event.target).hasClass("tag")) {
 			return
 		}
