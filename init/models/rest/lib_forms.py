@@ -615,6 +615,15 @@ def output_script(output, form_definition, _d=None, results=None):
             if proc.poll() != None:
                 break
         proc.wait()
+
+        # read data liggering in fds
+        for read in proc.stdout.readlines():
+            results = form_log(output_id, results, 0, "form.submit", read, {})
+            out.append(read)
+        for read in proc.stderr.readlines():
+            results = form_log(output_id, results, 1, "form.submit", read, {})
+            err.append(read)
+        update_results(results)
     except Exception as e:
         results = form_log(output_id, results, 1, "form.submit", "Script %(path)s execution error: %(err)s", dict(path=path, err=str(e)))
         results['returncode'] += 1
