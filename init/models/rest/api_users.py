@@ -139,11 +139,14 @@ class rest_get_user_apps_responsible(rest_get_table_handler):
         )
 
     def handler(self, id, **vars):
-        q = allowed_user_ids_q()
-        q &= user_id_q(id)
-        q &= db.apps_responsibles.group_id == db.auth_membership.group_id
-        q &= db.auth_membership.user_id == db.auth_user.id
-        q &= db.apps.id == db.apps_responsibles.app_id
+        if "Manager" in user_groups():
+            q = db.apps.id > 0
+        else:
+            q = allowed_user_ids_q()
+            q &= user_id_q(id)
+            q &= db.apps_responsibles.group_id == db.auth_membership.group_id
+            q &= db.auth_membership.user_id == db.auth_user.id
+            q &= db.apps.id == db.apps_responsibles.app_id
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -167,11 +170,14 @@ class rest_get_user_apps_publication(rest_get_table_handler):
         )
 
     def handler(self, id, **vars):
-        q = allowed_user_ids_q()
-        q &= user_id_q(id)
-        q &= db.apps_publications.group_id == db.auth_membership.group_id
-        q &= db.auth_membership.user_id == db.auth_user.id
-        q &= db.apps.id == db.apps_publications.app_id
+        if "Manager" in user_groups():
+            q = db.apps.id > 0
+        else:
+            q = allowed_user_ids_q()
+            q &= user_id_q(id)
+            q &= db.apps_publications.group_id == db.auth_membership.group_id
+            q &= db.auth_membership.user_id == db.auth_user.id
+            q &= db.apps.id == db.apps_publications.app_id
         self.set_q(q)
         return self.prepare_data(**vars)
 
