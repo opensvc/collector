@@ -1,3 +1,12 @@
+import datetime
+import xmlrpclib
+
+def chunker(lst, length):
+    i = -1
+    for i in range(len(lst) // length):
+        yield lst[i*length:(i+1)*length]
+    yield lst[(i+1)*length:]
+
 def value_wrap(a):
     return "%(a)s=values(%(a)s)"%dict(a=a)
 
@@ -11,6 +20,8 @@ def quote_wrap(x):
         return str(x)
     elif isinstance(x, datetime.datetime):
         return "'%s'"%str(x)
+    elif isinstance(x, xmlrpclib.DateTime):
+        return "'%s'" % str(datetime.datetime.strptime(x.value, "%Y%m%dT%H:%M:%S"))
     elif isinstance(x, (str, unicode)):
         if len(x) == 0:
             return "''"
@@ -20,8 +31,10 @@ def quote_wrap(x):
             return x
         elif x[0] == '"' and x[-1] == '"':
             return x
+        elif x.startswith("unhex("):
+            return x
         else:
-            return "'%s'"%x.replace("'", '"')
+            return "'%s'"%x.replace("'", "''")
     elif x is None:
         return "NULL"
     raise Exception("quote_wrap: unhandled type %s"%str(x.__class__))
