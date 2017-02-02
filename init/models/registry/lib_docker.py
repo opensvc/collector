@@ -150,13 +150,14 @@ def docker_repositories_acls_query(action="pull"):
         app = app.lower()
         acls.append("^apps/%s/"%app)
 
-    if action == "pull":
-        acls.append("^(?!(users|groups|apps)/)")
-
-    if len(acls) == 0:
+    if len(acls) == 0 and action != "pull":
         return db.docker_repositories.id < 0
 
     q_acls = None
+
+    if action == "pull":
+        q_acls = ~db.docker_repositories.repository.regexp("^(users|groups|apps)")
+
     for chunk in chunker(acls, 20):
         if q_acls is None:
             q_acls = db.docker_repositories.repository.regexp("|".join(chunk))
