@@ -1163,10 +1163,10 @@ def insert_xtremio(name=None, node_id=None):
             print "error parsing data"
             continue
 
-        name = s.clusters[0]["content"]["name"]
-        version = s.clusters[0]["content"]["sys-sw-version"]
-        total = int(s.clusters[0]["content"]["ud-ssd-space"])
-        used = int(s.clusters[0]["content"]["ud-ssd-space-in-use"])
+        name = s.clusters[0]["name"]
+        version = s.clusters[0]["sys-sw-version"]
+        total = int(s.clusters[0]["ud-ssd-space"])
+        used = int(s.clusters[0]["ud-ssd-space-in-use"])
 
         # stor_array_proxy
         insert_array_proxy(node_id, name)
@@ -1201,11 +1201,11 @@ def insert_xtremio(name=None, node_id=None):
         vars = ['array_id', 'array_tgtid']
         vals = []
         for target in s.targets:
-            port_type = target["content"]["port-type"]
+            port_type = target["port-type"]
             if port_type == "iscsi":
-                tgt_id = target["content"]["port-address"]
+                tgt_id = target["port-address"]
             if port_type == "fc":
-                tgt_id = target["content"]["port-address"].replace(":", "").lower()
+                tgt_id = target["port-address"].replace(":", "").lower()
             else:
                 continue
             vals.append([array_id, tgt_id])
@@ -1226,17 +1226,17 @@ def insert_xtremio(name=None, node_id=None):
 
         vals = []
         for d in s.volumes:
-            if d["content"]["created-from-volume"] == "":
+            if d["created-from-volume"] == "":
                 d_type = "volume"
             else:
                 d_type = "snapshot"
             vals.append([
-                d["content"]["naa-name"],
+                d["naa-name"],
                 name,
-                d["content"]["name"],
-                d["content"]["index"],
-                int(d["content"]["vol-size"]) // 1024,
-                int(d["content"]["logical-space-in-use"]) // 1024,
+                d["name"],
+                d["index"],
+                int(d["vol-size"]) // 1024,
+                int(d["logical-space-in-use"]) // 1024,
                 d_type,
                 "default",
                 now
