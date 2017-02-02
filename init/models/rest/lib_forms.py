@@ -644,7 +644,7 @@ def output_script(output, form_definition, _d=None, results=None):
     }
 
     if proc.returncode != 0:
-        results = form_log(output_id, results, 1, "form.submit", "Script %(path)s returned with error", dict(path=path))
+        results = form_log(output_id, results, 1, "form.submit", "Script returned error code %(ret)s", dict(ret=str(proc.returncode)))
 
     return results
 

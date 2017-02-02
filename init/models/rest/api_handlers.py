@@ -105,6 +105,9 @@ def get_get_handlers(prefix=None):
              "rest_get_docker_repository_pushers_users",
              "rest_get_docker_tag",
        ],
+       "disks": [
+             "rest_get_disks",
+       ],
        "dns": [
              "rest_get_dns_domains",
              "rest_get_dns_domain",
