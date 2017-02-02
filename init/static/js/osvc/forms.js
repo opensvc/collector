@@ -1889,9 +1889,9 @@ function form_results(divid, options) {
 				var fmt = log[j][1]
 				var d = log[j][2]
 				if (level == 0) {
-					var cl = "ok"
+					var cl = "prewrap"
 				} else {
-					var cl = "nok"
+					var cl = "prewrap highlight"
 				}
 				for (key in d) {
 					if (is_numeric(d[key]) || !d[key]) {
