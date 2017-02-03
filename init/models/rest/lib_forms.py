@@ -594,7 +594,8 @@ def output_script(output, form_definition, _d=None, results=None):
     err = []
     import select
     try:
-        proc = subprocess.Popen(["stdbuf", "-o0", "-e0", "-i0", path, d],
+        s_results = sjson.dumps(results, default=datetime.datetime.isoformat)
+        proc = subprocess.Popen(["stdbuf", "-o0", "-e0", "-i0", path, d, output_id, s_results],
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE,
                                 bufsize=1)

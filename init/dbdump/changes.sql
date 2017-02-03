@@ -6317,4 +6317,17 @@ CREATE TABLE `form_output_results` (
   PRIMARY KEY (`id`)
 );
 
+drop view v_disk_quota;
+create view v_disk_quota as 
+  SELECT
+    stor_array_dg_quota.id, stor_array.id as array_id, stor_array_dg.id as dg_id, stor_array_dg_quota.app_id as app_id, stor_array.array_name, stor_array_dg.dg_name, stor_array_dg.dg_free, stor_array_dg.dg_size, stor_array_dg.dg_used, stor_array_dg.dg_reserved, stor_array_dg.dg_size - stor_array_dg.dg_reserved as dg_reservable, stor_array.array_model, apps.app, stor_array_dg_quota.quota, ifnull(sum(v_disk_app_dedup.disk_used),0) as quota_used
+  FROM
+    stor_array_dg_quota
+    LEFT JOIN apps ON apps.id = stor_array_dg_quota.app_id
+    LEFT JOIN stor_array_dg ON stor_array_dg.id = stor_array_dg_quota.dg_id
+    LEFT JOIN stor_array ON stor_array_dg.array_id = stor_array.id
+    LEFT JOIN v_disk_app_dedup ON ( v_disk_app_dedup.app=apps.app and v_disk_app_dedup.disk_arrayid=stor_array.array_name and v_disk_app_dedup.disk_group=stor_array_dg.dg_name)
+  group by stor_array_dg_quota.id
+;
+
 
