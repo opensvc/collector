@@ -666,4 +666,46 @@ class rest_get_form_output_result(rest_get_handler):
         row = db(q).select().first()
         return json.loads(row.results)
 
+#
+class rest_put_form_output_result(rest_put_handler):
+    def __init__(self):
+        desc = [
+          "Add the <output_id> result to the results structure.",
+        ]
+        data = {
+          "result": {
+              "desc": """The result to add for <output_id>"""
+          },
+          "output_id": {
+              "desc": "The id of the form output for which to store the result"
+          },
+        }
+        examples = [
+          """# curl -u %(email)s -d output_id="add disk" --result='{"lun": 1}' -X PUT -o- https://%(collector)s/init/rest/api/form_output_results/10"""
+        ]
+
+        rest_put_handler.__init__(
+          self,
+          path="/form_output_results/<id>",
+          desc=desc,
+          data=data,
+          examples=examples,
+        )
+
+    def handler(self, results_id, output_id=None, result=None):
+        results = rest_get_form_output_result().handler(results_id)
+        if output_id in results["outputs"]:
+            raise Exception("A result for output %s already exists. Results "
+                            "are immutable" % output_id)
+        import gluon.contrib.simplejson as sjson
+        results["outputs"][output_id] = sjson.loads(result)
+        s_results = sjson.dumps(results, default=datetime.datetime.isoformat)
+
+        q = db.form_output_results.id == int(results_id)
+        db(q).update(results=s_results)
+        ws_send("form_output_results_change", {
+            "results_id": results_id
+        })
+        return results
+
 

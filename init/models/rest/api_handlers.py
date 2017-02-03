@@ -790,6 +790,9 @@ def get_put_handlers(prefix=None):
              "rest_put_compliance_ruleset",
              "rest_put_compliance_ruleset_variable",
         ],
+        "form_output_results": [
+             "rest_put_form_output_result",
+        ],
         "forms": [
              "rest_put_form",
         ],
