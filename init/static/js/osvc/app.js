@@ -941,9 +941,15 @@ function actionq_tabs(divid, options) {
 	})
 }
 
-function run_status_tabs(divid, options) {
+function comp_status_tabs(divid, options) {
 	require(["osvc/tabs/run_status"], function() {
-		run_status_tabs(divid, options)
+		comp_status_tabs(divid, options)
+	})
+}
+
+function comp_log_tabs(divid, options) {
+	require(["osvc/tabs/run_status"], function() {
+		comp_log_tabs(divid, options)
 	})
 }
 

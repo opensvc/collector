@@ -1361,7 +1361,20 @@ function cell_decorator_form_id(e, line) {
 	})
 }
 
-function cell_decorator_run_log(e, line) {
+function cell_decorator_log_run_log(e, line) {
+	cell_decorator_run_log(e, line, comp_log_tabs)
+}
+function cell_decorator_log_run_status(e, line) {
+	cell_decorator_run_status(e, line, comp_log_tabs)
+}
+function cell_decorator_status_run_log(e, line) {
+	cell_decorator_run_log(e, line, comp_status_tabs)
+}
+function cell_decorator_status_run_status(e, line) {
+	cell_decorator_run_status(e, line, comp_status_tabs)
+}
+
+function cell_decorator_run_log(e, line, fn) {
 	var v = $.data(e[0], "v")
 	if (typeof v === "undefined") {
 		var s = ""
@@ -1378,13 +1391,13 @@ function cell_decorator_run_log(e, line) {
 				cl: "icon log16",
 				text: log_id,
 				bgcolor: osvc.colors.comp,
-				fn: function(id){run_status_tabs(id, {"id": log_id})}
+				fn: function(id){fn(id, {"id": log_id})}
 			})
 		})
 	}
 }
 
-function cell_decorator_run_status(e, line) {
+function cell_decorator_run_status(e, line, fn) {
 	var v = $.data(e[0], "v")
 	var s = ""
 	var cl = ""
@@ -1410,7 +1423,7 @@ function cell_decorator_run_status(e, line) {
 				cl: "icon log16",
 				text: log_id,
 				bgcolor: osvc.colors.comp,
-				fn: function(id){run_status_tabs(id, {"id": log_id})}
+				fn: function(id){fn(id, {"id": log_id})}
 			})
 		})
 	}
@@ -1938,8 +1951,10 @@ $.extend(true, cell_decorators, {
 	"action_log": cell_decorator_action_log,
 	"action_cron": cell_decorator_action_cron,
 	"rset_md5": cell_decorator_rset_md5,
-	"run_status": cell_decorator_run_status,
-	"run_log": cell_decorator_run_log,
+	"status_run_status": cell_decorator_status_run_status,
+	"status_run_log": cell_decorator_status_run_log,
+	"log_run_status": cell_decorator_log_run_status,
+	"log_run_log": cell_decorator_log_run_log,
 	"form_id": cell_decorator_form_id,
 	"action_q_status": cell_decorator_action_q_status,
 	"action_q_ret": cell_decorator_action_q_ret,

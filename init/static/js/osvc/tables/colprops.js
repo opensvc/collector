@@ -1750,18 +1750,18 @@ colprops = {
 		"title": "Run date"
 	},
 	"run_log": {
-		"_class": "run_log",
+		"_class": "status_run_log",
 		"img": "complog",
 		"title": "Log"
+	},
+	"run_status": {
+		"_class": "status_run_status",
+		"img": "compstatus",
+		"title": "Status"
 	},
 	"run_module": {
 		"img": "mod16",
 		"title": "Module"
-	},
-	"run_status": {
-		"_class": "run_status",
-		"img": "compstatus",
-		"title": "Status"
 	},
 	"run_status_log": {
 		"_class": "comp_log",

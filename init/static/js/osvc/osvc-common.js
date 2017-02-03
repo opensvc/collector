@@ -761,12 +761,30 @@ jQuery.fn.osvc_nodename = function(options) {
 			return
 		}
 		services_osvcgetrest("/nodes/%1", [node_id] , {"meta": "0", "props": "nodename,app"}, function(jd) {
-			var e_nodename = $("<span class='node16 icon_fixed_width'>"+jd.data[0].nodename+"</span>")
-			var e_app = $("<span class='app16 icon_fixed_width'>"+jd.data[0].app+"</span>")
-			o.html([e_nodename, " ", e_app])
-			o.prop("title", node_id)
-			o.attr("rendered", "")
-			o.tooltipster()
+			if (!options.tag) {
+				var e_nodename = $("<span class='node16 icon_fixed_width'>"+jd.data[0].nodename+"</span>")
+				var e_app = $("<span class='app16 icon_fixed_width'>"+jd.data[0].app+"</span>")
+				o.html([e_nodename, " ", e_app])
+				o.prop("title", node_id)
+				o.attr("rendered", "")
+				o.tooltipster()
+			} else {
+				var e_nodename = $("<span class='tag icon node16'>"+jd.data[0].nodename+"</span>")
+				e_nodename.css({"background-color": osvc.colors.node})
+				o.html(e_nodename)
+				o.attr("rendered", "")
+			}
+			e_nodename.bind("dblclick", function() {
+				osvc.flash.show({
+					"id": "node-"+node_id,
+					"text": jd.data[0].nodename,
+					"cl": "icon node16",
+					"bgcolor": osvc.colors.node,
+					"fn": function(id) {
+						node_tabs(id, {"node_id": node_id, "nodename": jd.data[0].nodename})
+					}
+				})
+			})
 			if (options.callback) {
 				options.callback()
 			}
@@ -791,12 +809,30 @@ jQuery.fn.osvc_svcname = function(options) {
 			return
 		}
 		services_osvcgetrest("/services/%1", [svc_id] , {"meta": "0", "props": "svcname,svc_app"}, function(jd) {
-			var e_svcname = $("<span class='svc icon_fixed_width'>"+jd.data[0].svcname+"</span>")
-			var e_app = $("<span class='app16 icon_fixed_width'>"+jd.data[0].svc_app+"</span>")
-			o.html([e_svcname, " ", e_app])
-			o.prop("title", svc_id)
-			o.attr("rendered", "")
-			o.tooltipster()
+			if (!options.tag) {
+				var e_svcname = $("<span class='svc icon_fixed_width'>"+jd.data[0].svcname+"</span>")
+				var e_app = $("<span class='app16 icon_fixed_width'>"+jd.data[0].svc_app+"</span>")
+				o.html([e_svcname, " ", e_app])
+				o.prop("title", svc_id)
+				o.attr("rendered", "")
+				o.tooltipster()
+			} else {
+				var e_svcname = $("<span class='tag icon svc'>"+jd.data[0].svcname+"</span>")
+				e_svcname.css({"background-color": osvc.colors.svc})
+				o.html(e_svcname)
+				o.attr("rendered", "")
+			}
+			e_svcname.bind("dblclick", function() {
+				osvc.flash.show({
+					"id": "svc-"+svc_id,
+					"text": jd.data[0].svcname,
+					"cl": "icon svc",
+					"bgcolor": osvc.colors.svc,
+					"fn": function(id) {
+						service_tabs(id, {"svc_id": svc_id, "svcname": jd.data[0].svcname})
+					}
+				})
+			})
 			if (options.callback) {
 				options.callback()
 			}

@@ -1,3 +1,13 @@
+function comp_status_tabs(divid, options) {
+	options.url = "/compliance/status/%1"
+	return run_status_tabs(divid, options)
+}
+
+function comp_log_tabs(divid, options) {
+	options.url = "/compliance/logs/%1"
+	return run_status_tabs(divid, options)
+}
+
 function run_status_tabs(divid, options) {
 	var o = tabs(divid)
 	o.options = options
@@ -52,15 +62,15 @@ function run_status_outputs(divid, options) {
 	}
 
 	o.load_run_status = function() {
-		services_osvcgetrest("/compliance/logs/%1", [o.options.id], "", function(jd) {
+		services_osvcgetrest(o.options.url, [o.options.id], "", function(jd) {
 			o.data = jd.data[0]
 			o._load_run_status()
                 })
 	}
 
 	o._load_run_status = function() {
-		o.run_status_node_id.html(o.data.node_id)
-		o.run_status_svc_id.html(o.data.svc_id)
+		o.run_status_node_id.html(o.data.node_id).osvc_nodename({tag: true})
+		o.run_status_svc_id.html(o.data.svc_id).osvc_svcname({tag: true})
 		o.run_status_run_module.html(o.data.run_module)
 		o.run_status_run_action.html(o.data.run_action)
 		o.run_status_run_status.html(o.data.run_status)

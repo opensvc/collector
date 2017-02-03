@@ -575,7 +575,20 @@ function table_comp_log(divid, options) {
 		'columns': ['id', 'run_date', 'node_id', 'nodename', 'svc_id', 'svcname', 'run_module', 'run_action', 'run_status', 'run_log', 'rset_md5'],
 		'default_columns': ["run_action", "run_date", "run_module", "nodename", "run_status", "svcname"],
 		'colprops': {
-			"run_date": {"default_filter": ">-1d"}
+			"run_date": {
+				"default_filter": ">-1d"
+			},
+			"run_log": {
+				"_class": "log_run_log",
+				"img": "complog",
+				"title": "Log"
+			},
+			"run_status": {
+				"_class": "log_run_status",
+				"img": "compstatus",
+				"title": "Status"
+			}
+
 		},
 		'sortable': false,
 		'wsable': true,
