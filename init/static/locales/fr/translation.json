@@ -886,8 +886,8 @@
 		"service": "service",
 		"status": "status",
 		"dates": "dates",
-		"run_date": "date",
-		"run_log": "log"
+		"run_date": "date du run",
+		"run_log": "journal"
 	},
 	"dns_domain_tabs": {
 		"properties": "propriétés",
