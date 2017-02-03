@@ -57,7 +57,12 @@ def rest_router(action, args, vars):
     if args[0] == "":
         return rest_get_api().handle(*args, **vars)
     try:
-        for handler in get_handlers(action, args[0]):
+        candidate_handlers = get_handlers(action, args[0])
+    except KeyError:
+        return dict(error="Unsupported api url: %s /%s" % (action, str(request.raw_args)))
+
+    try:
+        for handler in candidate_handlers:
             if handler.match("/"+request.raw_args):
                 return handler.handle(*args, **vars)
     except:
