@@ -3234,6 +3234,15 @@ button:disabled {
 	overflow-y: auto;
 }
 
+.log_out {
+	border-left: 0.5em solid green;
+	padding-left: 1em;
+}
+.log_err {
+	border-left: 0.5em solid red;
+	padding-left: 1em;
+}
+
 @keyframes spinner {
   to {transform: rotate(360deg);}
 }

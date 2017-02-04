@@ -1884,14 +1884,19 @@ function form_results(divid, options) {
 			var log = results.log[output_name]
 			o.div.append(output_title)
 
+			if (log.length > 0) {
+				var e_log = $("<div style='margin-bottom:0.5em'></div>")
+				o.div.append(e_log)
+			}
+
 			for (var j=0; j<log.length; j++) {
 				var level = log[j][0]
 				var fmt = log[j][1]
 				var d = log[j][2]
 				if (level == 0) {
-					var cl = "prewrap"
+					var cl = "prewrap log_out"
 				} else {
-					var cl = "prewrap highlight"
+					var cl = "prewrap log_err"
 				}
 				for (key in d) {
 					if (is_numeric(d[key]) || !d[key]) {
@@ -1910,7 +1915,7 @@ function form_results(divid, options) {
 				var entry = $("<div class='icon_fixed_width'></div>")
 				entry.addClass(cl)
 				entry.html(fmt)
-				o.div.append(entry)
+				e_log.append(entry)
 			}
 
 			if (output_name in results.request_data) {
