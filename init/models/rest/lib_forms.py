@@ -572,22 +572,10 @@ def output_script(output, form_definition, _d=None, results=None):
     if path is None:
         results = form_log(output_id, results, 1, "form.submit", "Path must be set in script type Output", dict())
         results['returncode'] += 1
-        results["outputs"][output_id] = {
-          'path': path,
-          'returncode': 1,
-          'stdout': "",
-          'stderr': "Path must be set in script type Output",
-        }
         return results
     elif not os.path.exists(path):
         results = form_log(output_id, results, 1, "form.submit", "Script %(path)s does not exists", dict(path=path))
         results['returncode'] += 1
-        results["outputs"][output_id] = {
-          'path': path,
-          'returncode': 1,
-          'stdout': "",
-          'stderr': "Script %(path)s does not exists"%dict(path=path),
-        }
         return results
 
     out = []
@@ -595,7 +583,8 @@ def output_script(output, form_definition, _d=None, results=None):
     import select
     try:
         s_results = sjson.dumps(results, default=datetime.datetime.isoformat)
-        proc = subprocess.Popen(["stdbuf", "-o0", "-e0", "-i0", path, d, output_id, s_results],
+        proc = subprocess.Popen(["stdbuf", "-o0", "-e0", "-i0",
+                                 path, d, output_id, s_results],
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE,
                                 bufsize=1)
@@ -612,7 +601,7 @@ def output_script(output, form_definition, _d=None, results=None):
                     read = proc.stderr.readline()
                     results = form_log(output_id, results, 1, "form.submit", read, {})
                     err.append(read)
-                update_results(results)
+                update_results(results, reload_outputs=True)
             if proc.poll() != None:
                 break
         proc.wait()
@@ -628,21 +617,9 @@ def output_script(output, form_definition, _d=None, results=None):
     except Exception as e:
         results = form_log(output_id, results, 1, "form.submit", "Script %(path)s execution error: %(err)s", dict(path=path, err=str(e)))
         results['returncode'] += 1
-        results["outputs"][output_id] = {
-          'path': path,
-          'returncode': 1,
-          'stdout': "",
-          'stderr': "Script %(path)s execution error: %(err)s" % dict(path=path, err=str(e))
-        }
         return results
 
     results['returncode'] += proc.returncode
-    results["outputs"][output_id] = {
-      'path': path,
-      'returncode': proc.returncode,
-      'stdout': "\n".join(out),
-      'stderr': "\n".join(err),
-    }
 
     if proc.returncode != 0:
         results = form_log(output_id, results, 1, "form.submit", "Script returned error code %(ret)s", dict(ret=str(proc.returncode)))
@@ -663,8 +640,12 @@ def workflow_continuation(form, prev_wfid):
                     return True
     return False
 
-def update_results(results):
+def update_results(results, reload_outputs=False):
     q = db.form_output_results.id == results["results_id"]
+    if reload_outputs:
+        row = db(q).select().first()
+        current = sjson.loads(row.results)
+        results["outputs"].update(current["outputs"])
     db(q).update(
         results=sjson.dumps(results, default=datetime.datetime.isoformat)
     )

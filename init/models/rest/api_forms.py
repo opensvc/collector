@@ -664,6 +664,8 @@ class rest_get_form_output_result(rest_get_handler):
         q = q_filter(q, node_field=db.form_output_results.node_id,
                      user_field=db.form_output_results.user_id)
         row = db(q).select().first()
+        if row is None:
+            raise Exception("results not found")
         return json.loads(row.results)
 
 #
@@ -698,11 +700,15 @@ class rest_put_form_output_result(rest_put_handler):
             raise Exception("A result for output %s already exists. Results "
                             "are immutable" % output_id)
         import gluon.contrib.simplejson as sjson
-        results["outputs"][output_id] = sjson.loads(result)
+        try:
+            results["outputs"][output_id] = sjson.loads(result)
+        except TypeError:
+            results["outputs"][output_id] = result
         s_results = sjson.dumps(results, default=datetime.datetime.isoformat)
 
         q = db.form_output_results.id == int(results_id)
         db(q).update(results=s_results)
+        db.commit()
         ws_send("form_output_results_change", {
             "results_id": results_id
         })
