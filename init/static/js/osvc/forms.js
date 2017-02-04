@@ -518,6 +518,10 @@ function form(divid, options) {
 				var input = o.render_input(d, content)
 			}
 
+			if (o.form_data.form_definition.Width) {
+				input.width(o.form_data.form_definition.Width)
+			}
+
 			if (d.Condition && d.Condition.match(/#/)) {
 				o.add_cond_triggers(d)
 			}
