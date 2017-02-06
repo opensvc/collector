@@ -703,9 +703,9 @@ def form_dereference(s, data, prefix=""):
             s = form_dereference(s, val, prefix=prefix+key+".")
         else:
             try:
-                s = s.replace("#"+prefix+key, val)
-            except:
-                raise Exception(str(data))
+                s = s.replace("#"+prefix+key, unicode(val))
+            except Exception as e:
+                raise Exception("Dereference '%s' error: %s, data: %s" % (key, str(e), str(data)))
     return s
 
 def form_submit(form, _d=None, prev_wfid=None):
