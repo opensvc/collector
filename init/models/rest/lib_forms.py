@@ -9,6 +9,53 @@ def form_log(output_id, results, ret, action, fmt, d):
     _log(action, fmt, d, level=level)
     return results
 
+def form_get_val(d, v):
+    """
+      Return the nested dict key value for key formatted as a.b.c
+      Example:
+        >>> d = {
+          "a": {
+            "b": {
+              "c": "foo"
+            }
+          }
+        }
+        >>> form_get_val(d, "a.b.c")
+        foo
+    """
+    if type(v) == str:
+        v = v.split(".")
+    for key in v:
+        if key not in d:
+            raise ValueError
+        if len(v) == 1:
+            return d[key]
+        return form_get_val(d[key], v[1:])
+
+def form_rest_args(url, _d):
+    #
+    # prepare the rest url and args
+    # args in the context contains the url path elements with references
+    # substituted.
+    #
+    # ex:
+    # url  = "/arrays/#id/diskgroups/#id/quotas"
+    # =>
+    # url  = "/arrays/554/diskgroups/2525/quotas"
+    # args = ['arrays', 554, 'diskgroups', 2525, 'quotas']
+    #
+    args = []
+    for s in url.rstrip("/").split("/"):
+        if s == "":
+            continue
+        if s.startswith("#"):
+            k = s.lstrip("#")
+            val = str(form_get_val(_d, k))
+            url = url.replace(s, val)
+            args.append(val)
+        else:
+            args.append(s)
+    return args
 
 def ordered_outputs(form_definition):
     l = []
@@ -394,29 +441,6 @@ def output_rest(output, form_definition, _d=None, results=None):
     if action not in ("GET", "POST", "DELETE", "PUT"):
         raise Exception("Handler must be set to either GET, POST, DELETE or PUT in a rest output")
 
-    def get_val(d, v):
-        """
-          Return the nested dict key value for key formatted as a.b.c
-          Example:
-            >>> d = {
-              "a": {
-                "b": {
-                  "c": "foo"
-                }
-              }
-            }
-            >>> get_val(d, "a.b.c")
-            foo
-        """
-        if type(v) == str:
-            v = v.split(".")
-        for key in v:
-            if key not in d:
-                raise ValueError
-            if len(v) == 1:
-                return d[key]
-            return get_val(d[key], v[1:])
-
     def mangle(mangler, _d):
         """
           Run the mangler script in a nodejs vm
@@ -443,28 +467,7 @@ def output_rest(output, form_definition, _d=None, results=None):
             raise Exception(out)
         return json.loads('\n'.join(l))
 
-    #
-    # prepare the rest url and args
-    # args in the context contains the url path elements with references
-    # substituted.
-    #
-    # ex:
-    # url  = "/arrays/#id/diskgroups/#id/quotas"
-    # =>
-    # url  = "/arrays/554/diskgroups/2525/quotas"
-    # args = ['arrays', 554, 'diskgroups', 2525, 'quotas']
-    #
-    args = []
-    for s in url.rstrip("/").split("/"):
-        if s == "":
-            continue
-        if s.startswith("#"):
-            k = s.lstrip("#")
-            val = str(get_val(_d, k))
-            url = url.replace(s, val)
-            args.append(val)
-        else:
-            args.append(s)
+    args = form_rest_args(url, _d)
 
     # mangle the form data if a mangler is defined
     if mangler is None:
@@ -652,6 +655,59 @@ def update_results(results, reload_outputs=False):
     db.commit()
     ws_send("form_output_results_change", {"results_id": results["results_id"]})
 
+def validate_data(form_definition, data):
+    for _input in form_definition.get("Inputs"):
+        validate_input_data(form_definition, data, _input)
+
+def validate_input_data(form_definition, data, _input):
+    input_id = _input.get("Id")
+    val = data.get(input_id)
+
+    if val is None:
+        if _input.get("Mandatory", False):
+            raise Exception("Missing value for mandatory input '%s'" % input_id)
+        return
+
+    if _input.get("Candidates"):
+        if val not in _input.get("Candidates"):
+            raise Exception("Input '%s' value '%s' not in allowed candidates" % (input_id, str(val)))
+
+    key = _input.get("Value")
+    fn = _input.get("Function")
+    if fn is not None and key is not None:
+        fn = form_dereference(fn, data)
+        if fn.startswith("/"):
+            handler = get_handler("GET", fn)
+            args = form_rest_args(fn, data)
+            kwargs = {}
+            for entry in _input.get("Args", []):
+                entry = form_dereference(entry, data)
+                idx = entry.index("=")
+                kwargs[entry[:idx].strip()] = entry[idx+1:].strip()
+            for kwarg, _val in kwargs.items():
+                kwargs[kwarg] = form_dereference(_val, data)
+            candidates = handler.handle(*args, **kwargs)["data"]
+            key = key.lstrip("#")
+            for candidate in candidates:
+                try:
+                    candidate_val = form_get_val(candidate, key)
+                except ValueError:
+                    raise Exception("Key '%s' not in candidate %s" % (key, str(candidate)))
+                if val == val or str(val) == val or unicode(candidate_val) == val:
+                    return
+            raise Exception("Input '%s' value '%s' not in allowed candidates" % (input_id, str(val)))
+
+def form_dereference(s, data, prefix=""):
+    for key, val in data.items():
+        if isinstance(val, dict):
+            s = form_dereference(s, val, prefix=prefix+key+".")
+        else:
+            try:
+                s = s.replace("#"+prefix+key, val)
+            except:
+                raise Exception(str(data))
+    return s
+
 def form_submit(form, _d=None, prev_wfid=None):
     """
       Used by the PUT /forms/<id> handler to perform the server-side outputs
@@ -682,6 +738,8 @@ def form_submit(form, _d=None, prev_wfid=None):
     # load form definition from yaml
     import yaml
     form_definition = yaml.load(form.form_yaml)
+
+    validate_data(form_definition, _d)
 
     if form_definition.get("Async", False):
         rconn.rpush("osvc:q:form_submit", json.dumps([
