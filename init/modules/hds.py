@@ -23,6 +23,9 @@ class Hds(object):
         self.pool = {}
         self.load_pool()
         self.load_port()
+        self.load_lu()
+
+    def load_lu(self):
         n = -1
         for i, line in enumerate(self.lines):
             if "serialNum" in line and self.name in line:
@@ -37,9 +40,9 @@ class Hds(object):
             elif line.startswith("  controllerVersion"):
                 self.firmware = line.split('=')[1].strip()
             elif line.endswith("An instance of LogicalUnit"):
-                self.load_lu(i-5+_i+1,n)
+                self._load_lu(i-5+_i+1,n)
 
-    def load_lu(self, i, n):
+    def _load_lu(self, i, n):
         vdisk = {}
         for line in self.lines[i:n]:
             if line.startswith("      objectID"):
@@ -56,10 +59,14 @@ class Hds(object):
             if line.strip().startswith("label="):
                 s = line.split('=')[-1].strip()
                 vdisk["label"] = s
-            if line.startswith("      arrayGroupName"):
-                vdisk["disk_group"] = line.split('=')[-1].strip()
-                if vdisk["disk_group"] in self.pool:
-                    vdisk["raid"] = self.pool[vdisk["disk_group"]]['raid']
+            if line.startswith("      dpPoolID"):
+                pool_id = line.split('=')[-1].strip()
+                if pool_id in self.pool:
+                    vdisk["disk_group"] = self.pool[pool_id]['name']
+                    vdisk["raid"] = self.pool[pool_id]['raid']
+                else:
+                    vdisk["disk_group"] = pool_id
+                    vdisk["raid"] = ""
             if line.endswith("An instance of LogicalUnit"):
                 self.vdisk.append(vdisk)
                 return
@@ -67,31 +74,29 @@ class Hds(object):
             self.vdisk.append(vdisk)
 
     def load_pool(self):
-        lines = self.readfile("arraygroup").split('\n')
+        lines = self.readfile("pool").split('\n')
         pool = {}
         n = -1
         for i, line in enumerate(lines):
-            if "serialNum" in line and self.name in line:
+            if "An instance of Pool" in line:
                 break
-        for j, line in enumerate(lines[i+1:]):
-            if "serialNum" in line:
-                n = i+j
-                break
-        for line in lines[i+1:n]:
-           if line.startswith("      dpPoolID"):
-               self.pool[pool["name"]] = pool
-               pool = {}
-           elif line.startswith("      displayName"):
-               pool["name"] = line.split('=')[-1].strip()
-           elif line.startswith("      totalCapacity"):
-               s = line.split('=')[-1].strip().replace(',','')
-               pool["size"] = int(s)//1024
-           elif line.startswith("      freeCapacity"):
-               s = line.split('=')[-1].strip().replace(',','')
-               pool["free"] = int(s)//1024
-               pool["used"] = pool["size"] - pool["free"]
-           elif line.startswith("      raidType"):
-               pool["raid"] = line.split('=')[-1].strip()
+        for j, line in enumerate(lines[i:]):
+            if "An instance of Pool" in line:
+                pool = {}
+            if line.startswith("      name="):
+                pool["name"] = line.split('=')[-1].strip()
+            elif line.startswith("      poolID"):
+                pool["id"] = line.split('=')[-1].strip()
+            elif line.startswith("      capacityInKB"):
+                s = line.split('=')[-1].strip().replace(',','')
+                pool["size"] = int(s)//1024
+            elif line.startswith("      freeCapacityInKB"):
+                s = line.split('=')[-1].strip().replace(',','')
+                pool["free"] = int(s)//1024
+                pool["used"] = pool["size"] - pool["free"]
+            elif line.startswith("      raidLevel"):
+                pool["raid"] = line.split('=')[-1].strip()
+                self.pool[pool["id"]] = pool
 
     def load_port(self):
         lines = self.readfile("port").split('\n')
@@ -115,17 +120,18 @@ class Hds(object):
         s += "firmware: %s\n" % self.firmware
         s += "ports: %s\n" % ', '.join(self.ports)
         for i, d in self.pool.items():
-            s += "pool %s: size %d MB, used %d MB, free %d MB\n"%(d['name'], d['size'], d['used'], d['free'])
+            s += "pool %s: id %s size %d MB, used %d MB, free %d MB\n"%(d['name'], d["id"], d['size'], d['used'], d['free'])
         for d in self.vdisk:
-            s += "vdisk %s (%s): size %s MB alloc %s MB raid %s label %s\n"%(d['name'], d['wwid'], str(d['size']), str(d.get('alloc', '')), d['raid'], d.get('label', 'n/a'))
+            s += "vdisk %s (%s): size %s MB alloc %s MB dg %s raid %s label %s\n"%(d['name'], d['wwid'], str(d['size']), str(d.get('alloc', '')), d['disk_group'], d['raid'], d.get('label', 'n/a'))
         return s
 
 
 def get_hds(dir=None):
     try:
-        return Hds(dir)
-    except:
-        return None
+        s = Hds(dir)
+        return s
+    except Exception as e:
+        print e
 
 import sys
 def main():
