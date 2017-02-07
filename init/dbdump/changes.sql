@@ -6330,4 +6330,5 @@ create view v_disk_quota as
   group by stor_array_dg_quota.id
 ;
 
+alter table resmon modify rid varchar(32);
 
