@@ -881,6 +881,7 @@
 	},
 	"run_status_tabs": {
 		"properties": "properties",
+		"history": "history",
 		"Base": "base",
 		"run_module": "module",
 		"run_action": "action",

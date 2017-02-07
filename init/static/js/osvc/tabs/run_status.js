@@ -31,8 +31,45 @@ function run_status_tabs(divid, options) {
 			run_status_outputs(divid, o.options)
 		}
 
+		// tab history
+		i = o.register_tab({
+			"title": "run_status_tabs.history",
+			"title_class": "icon complog"
+		})
+		o.tabs[i].callback = function(divid) {
+			run_status_history(divid, o.options)
+		}
+
 		o.set_tab(o.options.tab)
 	})
+
+	return o
+}
+
+function run_status_history(divid, options) {
+	var o = {}
+
+	o.divid = divid
+	o.div = $("#"+divid)
+	o.div.css("background", "white")
+	o.options = options
+
+	o.init = function() {
+		o.load_history()
+	}
+
+	o.load_history = function() {
+		services_osvcgetrest(o.options.url, [o.options.id], "", function(jd) {
+			o.data = jd.data[0]
+			o._load_history()
+		})
+	}
+
+	o._load_history = function() {
+		comp_log(o.divid, {"module": o.data.run_module, "svc_id": o.data.svc_id, "node_id": o.data.node_id})
+	}
+
+	o.init()
 
 	return o
 }
@@ -43,6 +80,7 @@ function run_status_outputs(divid, options) {
 	// store parameters
 	o.divid = divid
 	o.div = $("#"+divid)
+	o.div.css("background", "white")
 	o.options = options
 	o.link = {
 		"fn": arguments.callee.name,
