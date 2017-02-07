@@ -1,4 +1,5 @@
 import os
+import json
 
 class Hds(object):
     def __init__(self, dir=None):
@@ -6,14 +7,12 @@ class Hds(object):
             return
         self.dir = dir
         self.name = os.path.basename(dir)
-        self.lines = self.readfile("lu").split('\n')
         self.load()
 
     def readfile(self, fname):
         fpath = os.path.join(self.dir, fname)
-        with open(fpath, 'r') as f:
-            buff = f.read()
-        return buff
+        with open(fpath, "r") as fp:
+            return json.load(fp)
 
     def load(self):
         self.array_name = self.name
@@ -21,97 +20,52 @@ class Hds(object):
         self.ports = []
         self.vdisk = []
         self.pool = {}
+        self.load_array()
         self.load_pool()
         self.load_port()
         self.load_lu()
 
-    def load_lu(self):
-        n = -1
-        for i, line in enumerate(self.lines):
-            if "serialNum" in line and self.name in line:
-                break
-        for j, line in enumerate(self.lines[i+1:]):
-            if "serialNum" in line:
-                n = i+j
-                break
-        for _i, line in enumerate(self.lines[i-5:n]):
-            if line.startswith("  arrayType"):
-                self.model = line.split('=')[1].strip()
-            elif line.startswith("  controllerVersion"):
-                self.firmware = line.split('=')[1].strip()
-            elif line.endswith("An instance of LogicalUnit"):
-                self._load_lu(i-5+_i+1,n)
+    def load_array(self):
+        data = self.readfile("array")[0]
+        self.model = data["arrayType"]
+        self.firmware = data["controllerVersion"]
 
-    def _load_lu(self, i, n):
-        vdisk = {}
-        for line in self.lines[i:n]:
-            if line.startswith("      objectID"):
-                wwid = line.split('=')[1].strip().split('.')[2:]
-                vdisk["wwid"] = '.'.join(wwid)
-            if line.startswith("      displayName"):
-                vdisk["name"] = line.split('=')[-1].strip()
-            if line.startswith("      capacityInKB"):
-                s = line.split('=')[-1].strip().replace(',','')
-                vdisk["size"] = int(s)//1024
-            if line.strip().startswith("consumedSizeInKB"):
-                s = line.split('=')[-1].strip().replace(',','')
-                vdisk["alloc"] = int(s)//1024
-            if line.strip().startswith("label="):
-                s = line.split('=')[-1].strip()
-                vdisk["label"] = s
-            if line.startswith("      dpPoolID"):
-                pool_id = line.split('=')[-1].strip()
-                if pool_id in self.pool:
-                    vdisk["disk_group"] = self.pool[pool_id]['name']
-                    vdisk["raid"] = self.pool[pool_id]['raid']
-                else:
-                    vdisk["disk_group"] = pool_id
-                    vdisk["raid"] = ""
-            if line.endswith("An instance of LogicalUnit"):
-                self.vdisk.append(vdisk)
-                return
-        if vdisk != {}:
+    def load_lu(self):
+        data = self.readfile("lu")
+        for lu in data:
+            vdisk = {}
+            wwid = lu["objectID"].split(".")[2:]
+            vdisk["wwid"] = '.'.join(wwid)
+            vdisk["name"] = lu["displayName"]
+            vdisk["size"] = int(lu["capacityInKB"])//1024
+            vdisk["alloc"] = int(lu["consumedCapacityInKB"])//1024
+            if "label" in lu:
+                vdisk["label"] = lu["label"]
+            pool_id = lu["dpPoolID"]
+            if pool_id in self.pool:
+                vdisk["disk_group"] = self.pool[pool_id]['name']
+                vdisk["raid"] = self.pool[pool_id]['raid']
+            else:
+                vdisk["disk_group"] = pool_id
+                vdisk["raid"] = ""
             self.vdisk.append(vdisk)
 
     def load_pool(self):
-        lines = self.readfile("pool").split('\n')
-        pool = {}
-        n = -1
-        for i, line in enumerate(lines):
-            if "An instance of Pool" in line:
-                break
-        for j, line in enumerate(lines[i:]):
-            if "An instance of Pool" in line:
-                pool = {}
-            if line.startswith("      name="):
-                pool["name"] = line.split('=')[-1].strip()
-            elif line.startswith("      poolID"):
-                pool["id"] = line.split('=')[-1].strip()
-            elif line.startswith("      capacityInKB"):
-                s = line.split('=')[-1].strip().replace(',','')
-                pool["size"] = int(s)//1024
-            elif line.startswith("      freeCapacityInKB"):
-                s = line.split('=')[-1].strip().replace(',','')
-                pool["free"] = int(s)//1024
-                pool["used"] = pool["size"] - pool["free"]
-            elif line.startswith("      raidLevel"):
-                pool["raid"] = line.split('=')[-1].strip()
-                self.pool[pool["id"]] = pool
+        data = self.readfile("pool")
+        for p in data:
+            pool = {}
+            pool["name"] = p["name"]
+            pool["id"] = p["poolID"]
+            pool["size"] = int(p["capacityInKB"])//1024
+            pool["free"] = int(p["freeCapacityInKB"])//1024
+            pool["used"] = pool["size"] - pool["free"]
+            pool["raid"] = p["raidLevel"]
+            self.pool[pool["id"]] = pool
 
     def load_port(self):
-        lines = self.readfile("port").split('\n')
-        n = -1
-
-        for i, line in enumerate(lines):
-            if "serialNum" in line and self.name in line:
-                break
-        for j, line in enumerate(lines[i+1:]):
-            if "serialNum" in line:
-                n = i+j
-                break
-        for line in lines[i+1:n]:
-            if line.startswith("      worldWidePortName"):
-                self.ports.append(line.split('=')[-1].strip().replace('.','').lower())
+        data = self.readfile("port")
+        for port in data:
+            self.ports.append(port["worldWidePortName"].replace('.','').lower())
 
     def __str__(self):
         s = "name: %s\n" % self.name
