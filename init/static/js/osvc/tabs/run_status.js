@@ -80,6 +80,7 @@ function run_status_outputs(divid, options) {
 	// store parameters
 	o.divid = divid
 	o.div = $("#"+divid)
+	o.div.css("background", "white")
 	o.options = options
 	o.link = {
 		"fn": arguments.callee.name,
