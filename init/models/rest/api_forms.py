@@ -542,7 +542,7 @@ class rest_put_form(rest_put_handler):
         q &= db.forms_team_publication.group_id.belongs(user_group_ids())
         form = db(q).select(db.forms.ALL, cacheable=True).first()
         if form is None:
-            return dict("error", "the requested form does not exist or you don't have permission to use it")
+            raise Exception("the requested form does not exist or you don't have permission to use it")
 
         form_data = json.loads(data)
 

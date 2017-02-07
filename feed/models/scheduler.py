@@ -1354,85 +1354,87 @@ def insert_hds(name=None, node_id=None):
     for d in dirs:
         s = hds.get_hds(d)
 
+        if s is None:
+            continue
+
         # stor_array_proxy
         insert_array_proxy(node_id, s.name)
 
-        if s is not None:
-            # stor_array
-            vars = ['array_name', 'array_model', 'array_cache', 'array_firmware', 'array_updated']
-            vals = []
-            vals.append([s.name,
-                         s.model,
-                         str(s.cache),
-                         s.firmware,
+        # stor_array
+        vars = ['array_name', 'array_model', 'array_cache', 'array_firmware', 'array_updated']
+        vals = []
+        vals.append([s.name,
+                     s.model,
+                     str(s.cache),
+                     s.firmware,
+                     now])
+        generic_insert('stor_array', vars, vals)
+
+        sql = """select id from stor_array where array_name="%s" """%s.name
+        array_id = str(db.executesql(sql)[0][0])
+
+        # stor_array_dg
+        vars = ['array_id', 'dg_name', 'dg_free', 'dg_used', 'dg_size', 'dg_updated']
+        vals = []
+        for pname, dg in s.pool.items():
+            vals.append([array_id,
+                         dg['name'],
+                         str(dg['free']),
+                         str(dg['used']),
+                         str(dg['size']),
                          now])
-            generic_insert('stor_array', vars, vals)
+        generic_insert('stor_array_dg', vars, vals)
+        sql = """delete from stor_array_dg where array_id=%s and dg_updated < "%s" """%(array_id, str(now))
+        db.executesql(sql)
 
-            sql = """select id from stor_array where array_name="%s" """%s.name
-            array_id = str(db.executesql(sql)[0][0])
+        # stor_array_tgtid
+        vars = ['array_id', 'array_tgtid', 'updated']
+        vals = []
+        for wwn in s.ports:
+            vals.append([array_id, wwn, now])
+        generic_insert('stor_array_tgtid', vars, vals)
+        sql = """delete from stor_array_tgtid where array_id=%s and updated < "%s" """%(array_id, str(now))
+        db.executesql(sql)
 
-            # stor_array_dg
-            vars = ['array_id', 'dg_name', 'dg_free', 'dg_used', 'dg_size', 'dg_updated']
-            vals = []
-            for pname, dg in s.pool.items():
-                vals.append([array_id,
-                             dg['name'],
-                             str(dg['free']),
-                             str(dg['used']),
-                             str(dg['size']),
-                             now])
-            generic_insert('stor_array_dg', vars, vals)
-            sql = """delete from stor_array_dg where array_id=%s and dg_updated < "%s" """%(array_id, str(now))
-            db.executesql(sql)
+        # load all of this array devs seens by the nodes
+        # index by ldev
+        r = s.ports[0]
+        r = "60" + r[2:12] + "%"
+        q = db.svcdisks.disk_id.like(r)
+        ldev_wwid = {}
+        for row in db(q).select(db.svcdisks.disk_id, cacheable=False):
+            ldev_wwid[row.disk_id[26:]] = row.disk_id
 
-            # stor_array_tgtid
-            vars = ['array_id', 'array_tgtid', 'updated']
-            vals = []
-            for wwn in s.ports:
-                vals.append([array_id, wwn, now])
-            generic_insert('stor_array_tgtid', vars, vals)
-            sql = """delete from stor_array_tgtid where array_id=%s and updated < "%s" """%(array_id, str(now))
-            db.executesql(sql)
-
-            # load all of this array devs seens by the nodes
-            # index by ldev
-            r = s.ports[0]
-            r = "60" + r[2:12] + "%"
-            q = db.svcdisks.disk_id.like(r)
-            ldev_wwid = {}
-            for row in db(q).select(db.svcdisks.disk_id, cacheable=False):
-                ldev_wwid[row.disk_id[26:]] = row.disk_id
-
-            # diskinfo
-            vars = ['disk_id',
-                    'disk_arrayid',
-                    'disk_devid',
-                    'disk_name',
-                    'disk_size',
-                    'disk_alloc',
-                    'disk_raid',
-                    'disk_group',
-                    'disk_updated']
-            vals = []
-            for d in s.vdisk:
-                ldev = d['name'].replace(":", "").lower()
-                if ldev in ldev_wwid:
-                    wwid = ldev_wwid[ldev]
-                else:
-                    wwid = d['wwid']
-                vals.append([wwid,
-                             s.name,
-                             d['name'],
-                             d.get('label', ''),
-                             str(d['size']),
-                             str(d.get('alloc', '')),
-                             d['raid'],
-                             d['disk_group'],
-                             now])
-            generic_insert('diskinfo', vars, vals)
-            sql = """delete from diskinfo where disk_arrayid="%s" and disk_updated < "%s" """%(s.name, str(now))
-            db.executesql(sql)
-            db.commit()
+        # diskinfo
+        vars = ['disk_id',
+                'disk_arrayid',
+                'disk_devid',
+                'disk_name',
+                'disk_size',
+                'disk_alloc',
+                'disk_raid',
+                'disk_group',
+                'disk_updated']
+        vals = []
+        for d in s.vdisk:
+            ldev = d['name'].replace(":", "").lower()
+            if ldev in ldev_wwid:
+                wwid = ldev_wwid[ldev]
+            else:
+                wwid = d['wwid']
+            vals.append([wwid,
+                         s.name,
+                         d['name'],
+                         d.get('label', ''),
+                         str(d['size']),
+                         str(d.get('alloc', '')),
+                         d['raid'],
+                         d['disk_group'],
+                         now])
+        generic_insert('diskinfo', vars, vals)
+        sql = """delete from diskinfo where disk_arrayid="%s" and disk_updated < "%s" """%(s.name, str(now))
+        db.executesql(sql)
+        db.commit()
 
 def insert_centera(name=None, node_id=None):
     import glob
