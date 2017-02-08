@@ -178,6 +178,16 @@ class Storage(object):
             print(" hba ", hba_id, "targets:", ", ".join(targets[hba_id]))
         return targets
 
+    def get_array_targets(self):
+        path = "/arrays/%s/targets" % self.request_data["array_id"]
+        data = self.get(path, params={"limit": 0})
+        if len(data["data"]) == 0:
+            raise Error("array targets not found")
+        print("detected array targets:")
+        for entry in data["data"]:
+            print("  ", entry["array_tgtid"])
+        return data["data"]
+
     def get_array(self):
         path = "/arrays/%s" % self.request_data["array_id"]
         data = self.get(path, params={"limit": 0})
@@ -248,8 +258,10 @@ class Storage(object):
 
     def get_mappings(self):
         mappings = []
+        array_targets = set([entry["array_tgtid"] for entry in self.request_data["array"]["targets"]])
         for node in self.request_data["nodes"]:
             for hba_id, targets in node["targets"].items():
+                targets = set(targets) & array_targets
                 mapping = hba_id + ":" + ",".join(targets)
                 mappings += ["--mappings", mapping]
         return mappings
@@ -281,6 +293,7 @@ class Storage(object):
         self.request_data["nodes"] = self.get_nodes()
         self.request_data["disks"] = self.get_disks()
         self.request_data["quota"] = self.get_quota()
+        self.request_data["array"]["targets"] = self.get_array_targets()
         self.validate_quota(self.request_data["size"])
         self.validate_free(self.request_data["size"])
         data = self.driver.add_disk()
