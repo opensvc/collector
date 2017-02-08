@@ -729,17 +729,17 @@ def form_submit(form, _d=None, prev_wfid=None):
         results["log"].append((1, "form.store",  "This step is already completed (id=%(id)d)", dict(id=prev_wfid)))
         return results
 
-    results["results_id"] = db.form_output_results.insert(
-        user_id=auth.user_id if auth.user_id > 0 else None,
-        node_id=auth.user.node_id if "node_id" in auth.user else None,
-        results=sjson.dumps(results, default=datetime.datetime.isoformat)
-    )
-
     # load form definition from yaml
     import yaml
     form_definition = yaml.load(form.form_yaml)
 
     validate_data(form_definition, _d)
+
+    results["results_id"] = db.form_output_results.insert(
+        user_id=auth.user_id if auth.user_id > 0 else None,
+        node_id=auth.user.node_id if "node_id" in auth.user else None,
+        results=sjson.dumps(results, default=datetime.datetime.isoformat)
+    )
 
     if form_definition.get("Async", False):
         rconn.rpush("osvc:q:form_submit", json.dumps([
@@ -754,6 +754,17 @@ def form_submit(form, _d=None, prev_wfid=None):
         return _form_submit(form.id, _d=_d, prev_wfid=prev_wfid, results=results)
 
 def _form_submit(form_id, _d=None, prev_wfid=None, results=None, authdump=None):
+    try:
+        results = __form_submit(form_id, _d=_d, prev_wfid=prev_wfid, results=results, authdump=authdump)
+    except Exception as exc:
+        results["status"] = "COMPLETED"
+        form_log("", results, 1, "form.submit", str(exc), {})
+    finally:
+        results["status"] = "COMPLETED"
+    update_results(results)
+    return results
+
+def __form_submit(form_id, _d=None, prev_wfid=None, results=None, authdump=None):
     from gluon.storage import Storage
     import yaml
 
@@ -822,8 +833,6 @@ def _form_submit(form_id, _d=None, prev_wfid=None, results=None, authdump=None):
 
         update_results(results)
 
-    results["status"] = "COMPLETED"
-    update_results(results)
     return results
 
 def lib_forms_add_default_team_responsible(form_name):
