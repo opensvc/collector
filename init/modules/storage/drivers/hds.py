@@ -13,6 +13,7 @@ class Driver(object):
             "array", "add", "disk",
             "-a", self.storage.request_data["array"]["array_name"],
             "--name", self.storage.disk_name(),
+            "--pool", self.storage.request_data["dg_name"],
             "--size", self.storage.request_data["size"]
         ] + mappings
         ret = self.storage.proxy_action(" ".join(cmd))
