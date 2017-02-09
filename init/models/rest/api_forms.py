@@ -696,14 +696,13 @@ class rest_put_form_output_result(rest_put_handler):
 
     def handler(self, results_id, output_id=None, result=None):
         results = rest_get_form_output_result().handler(results_id)
-        if output_id in results["outputs"]:
-            raise Exception("A result for output %s already exists. Results "
-                            "are immutable" % output_id)
+        if output_id not in results["outputs"]:
+	    results["outputs"][output_id] = []
         import gluon.contrib.simplejson as sjson
         try:
-            results["outputs"][output_id] = sjson.loads(result)
+            results["outputs"][output_id] += [sjson.loads(result)]
         except TypeError:
-            results["outputs"][output_id] = result
+            results["outputs"][output_id] += [result]
         s_results = sjson.dumps(results, default=datetime.datetime.isoformat)
 
         q = db.form_output_results.id == int(results_id)
