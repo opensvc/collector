@@ -156,7 +156,6 @@ class Storage(object):
         if len(data["data"]) == 0:
             raise Error("no nodes found for this service")
         for i, node in enumerate(data["data"]):
-            print("node", node["nodename"], "targets:")
             node["targets"] = self.get_targets(node["node_id"])
             data["data"][i] = node
         return data["data"]
@@ -174,8 +173,6 @@ class Storage(object):
             if hba_id not in targets:
                 targets[hba_id] = []
             targets[hba_id].append(entry["tgt_id"])
-        for hba_id in targets:
-            print(" hba ", hba_id, "targets:", ", ".join(targets[hba_id]))
         return targets
 
     def get_array_targets(self):
@@ -183,9 +180,6 @@ class Storage(object):
         data = self.get(path, params={"limit": 0})
         if len(data["data"]) == 0:
             raise Error("array targets not found")
-        print("detected array targets:")
-        for entry in data["data"]:
-            print("  ", entry["array_tgtid"])
         return data["data"]
 
     def get_array(self):
