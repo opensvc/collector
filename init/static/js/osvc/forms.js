@@ -1887,12 +1887,12 @@ function form_results(divid, options) {
 		}
 
 		if ("" in results.log) {
-			o.render_output_results(results, "")
+			o.render_output_results(results, output_area, "")
 		}
 
 		for (var i=0; i<results.outputs_order.length; i++) {
 			var output_name = results.outputs_order[i]
-			o.render_output_results(results, output_name)
+			o.render_output_results(results, output_area, output_name)
 		}
 
 		o.div.append(output_area)
@@ -1901,7 +1901,7 @@ function form_results(divid, options) {
 		osvc.flash.div.scrollTop(flash_scroll_pos)
 	}
 
-	o.render_output_results = function(results, output_name) {
+	o.render_output_results = function(results, output_area, output_name) {
 		var output_title = $("<h2>"+output_name+"</h2>")
 		var log = results.log[output_name]
 		o.div.append(output_title)
