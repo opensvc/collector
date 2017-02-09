@@ -107,6 +107,7 @@ def get_get_handlers(prefix=None):
              "rest_get_docker_tag",
        ],
        "disks": [
+             "rest_get_disk",
              "rest_get_disks",
        ],
        "dns": [
@@ -414,6 +415,10 @@ def get_delete_handlers(prefix=None):
              "rest_delete_compliance_status_run",
              "rest_delete_compliance_status_runs",
         ],
+        "disks": [
+             "rest_delete_disk",
+             "rest_delete_disks",
+        ],
         "docker": [
              "rest_delete_docker_tags",
              "rest_delete_docker_tag",
@@ -618,6 +623,9 @@ def get_post_handlers(prefix=None):
              "rest_post_compliance_rulesets_services",
              "rest_post_compliance_rulesets",
              "rest_post_compliance_ruleset",
+        ],
+        "disks": [
+             "rest_post_disks",
         ],
         "docker": [
              "rest_post_docker_registries",
