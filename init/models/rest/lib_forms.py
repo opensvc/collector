@@ -662,6 +662,13 @@ def update_results(results, reload_outputs=False):
     ws_send("form_output_results_change", {"results_id": results["results_id"]})
 
 def validate_data(form_definition, data):
+    if isinstance(data, dict):
+        _validate_data(form_definition, data)
+    elif isinstance(data, list):
+        for _data in data:
+            _validate_data(form_definition, _data)
+
+def _validate_data(form_definition, data):
     for _input in form_definition.get("Inputs"):
         validate_input_data(form_definition, data, _input)
 
