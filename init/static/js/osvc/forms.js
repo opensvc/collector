@@ -1668,6 +1668,9 @@ function form(divid, options) {
 
 	function prepare_args(input, l) {
 		var d = {}
+		if (!l) {
+			return d
+		}
 		for (var i=0; i<l.length; i++) {
 			var s = l[i]
 			var idx = s.indexOf("=")
