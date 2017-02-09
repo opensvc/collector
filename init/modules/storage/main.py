@@ -82,10 +82,6 @@ class Storage(object):
             raise Error("driver %s not implemented" % array_model)
 
     def validate_request_data(self):
-        if "svcname" not in self.request_data:
-            raise RequestDataError("The 'svcname' key is mandatory in request data")
-        if "svc_id" not in self.request_data:
-            raise RequestDataError("The 'svc_id' key is mandatory in request data")
         if "array_id" not in self.request_data:
             raise RequestDataError("The 'array_id' key is mandatory in request data")
 
@@ -283,7 +279,9 @@ class Storage(object):
             time.sleep(1)
         raise Error("timeout waiting for node action %d" % action_id)
 
-    def add_disk(self):
+    def add_svc_disk(self):
+        if "svc_id" not in self.request_data:
+            raise RequestDataError("The 'svc_id' key is mandatory in request data")
         self.request_data["nodes"] = self.get_nodes()
         self.request_data["disks"] = self.get_disks()
         self.request_data["quota"] = self.get_quota()
@@ -293,11 +291,21 @@ class Storage(object):
         data = self.driver.add_disk()
         self.put_result(data)
 
-    def del_disk(self):
+    def del_svc_disk(self):
+        if "svc_id" not in self.request_data:
+            raise RequestDataError("The 'svc_id' key is mandatory in request data")
         self.driver.del_disk()
 
-    def resize_disk(self):
+    def resize_svc_disk(self):
+        if "svc_id" not in self.request_data:
+            raise RequestDataError("The 'svc_id' key is mandatory in request data")
         self.driver.resize_disk()
+
+    def del_array_disk(self):
+        self.driver.del_disk()
+
+    def resize_array_disk(self):
+        self.driver.del_disk()
 
     def main(self):
         """
@@ -309,22 +317,28 @@ class Storage(object):
                out own results and where to access the results of the previous
                form outputs.
         """
-        self.request_data = json.loads(sys.argv[1])
+        data = json.loads(sys.argv[1])
         self.output_id = sys.argv[2]
         self.results = json.loads(sys.argv[3])
 
+        if isinstance(data, dict):
+            self._main(data)
+        elif isinstance(data, list):
+            for _data in data:
+                self._main(_data)
+        else:
+            raise RequestDataError("Unsupported request data format (not dict nor list)")
+
+    def _main(self, data):
+        self.request_data = data
         self.validate_request_data()
         self.request_data["array"] = self.get_array()
         self.request_data["proxy"] = self.get_proxy()
 
         self.select_driver()
 
-        if self.request_data["action"] == "add_disk":
-            self.add_disk()
-        elif self.request_data["action"] == "del_disk":
-            self.del_disk()
-        elif self.request_data["action"] == "resize_disk":
-            self.resize_disk()
+        if hasattr(self, self.request_data["action"]):
+            getattr(self, self.request_data["action"])()
         else:
             raise Error("unsupported action: %s" % self.request_data["action"])
 
