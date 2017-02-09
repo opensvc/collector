@@ -36,6 +36,7 @@ def get_get_handlers(prefix=None):
        "arrays": [
              "rest_get_arrays",
              "rest_get_array",
+             "rest_get_array_disks",
              "rest_get_array_diskgroups",
              "rest_get_array_diskgroup",
              "rest_get_array_diskgroup_quota",

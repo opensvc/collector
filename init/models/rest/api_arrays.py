@@ -406,4 +406,31 @@ class rest_get_array_targets(rest_get_table_handler):
         self.set_q(q)
         return self.prepare_data(**vars)
 
+#
+class rest_get_array_disks(rest_get_table_handler):
+    def __init__(self):
+        desc = [
+          "List a specific array disks.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/array/1/disks?props=svcdisks.node_id,svcdisks.disk_id,stor_array.array_name",
+        ]
+        rest_get_table_handler.__init__(
+          self,
+          path="/arrays/<id>/disks",
+          tables=["svcdisks", "diskinfo", "stor_array"],
+          left=(
+              db.svcdisks.on(db.diskinfo.disk_id==db.svcdisks.disk_id),
+              db.stor_array.on(db.diskinfo.disk_arrayid == db.stor_array.array_name)
+          ),
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, array_id, **vars):
+        q = db.stor_array.id == array_id
+        q = q_filter(q, node_field=db.svcdisks.node_id)
+        self.set_q(q)
+        return self.prepare_data(**vars)
+
 
