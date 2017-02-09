@@ -5,8 +5,14 @@ def form_log(output_id, results, ret, action, fmt, d):
         level = "info"
     else:
         level = "error"
+    if output_id not in results["log"]:
+        results["log"][output_id] = []
     results["log"][output_id].append([ret, fmt, d])
-    _log(action, fmt, d, level=level)
+    try:
+        _log(action, fmt, d, level=level)
+    except AttributeError:
+        # before auth restore
+        pass
     return results
 
 def form_get_val(d, v):
@@ -758,6 +764,7 @@ def _form_submit(form_id, _d=None, prev_wfid=None, results=None, authdump=None):
         results = __form_submit(form_id, _d=_d, prev_wfid=prev_wfid, results=results, authdump=authdump)
     except Exception as exc:
         results["status"] = "COMPLETED"
+        results["returncode"] += 1
         form_log("", results, 1, "form.submit", str(exc), {})
     finally:
         results["status"] = "COMPLETED"
