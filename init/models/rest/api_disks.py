@@ -69,12 +69,14 @@ class rest_post_disks(rest_post_handler):
         )
 
     def handler(self, **vars):
-        if "Manager" not in user_groups():
-            raise Exception("you are not allowed to use this handler")
         if "disk_id" not in vars:
             raise Exception("The 'disk_id' key is mandatory")
         if "disk_arrayid" not in vars:
             raise Exception("The 'disk_arrayid' key is mandatory")
+        manager = "Manager" in user_groups()
+        proxy_node = auth.user.node_id and auth.user.node_id in array_proxies(vars["disk_arrayid"])
+        if not manager and not proxy_node:
+            raise Exception("you are not allowed to use this handler")
         db.diskinfo.update_or_insert(
             {"disk_id": vars["disk_id"]},
             **vars
@@ -82,6 +84,11 @@ class rest_post_disks(rest_post_handler):
         table_modified("disks")
         ws_send("disks_change")
         return rest_get_disk().handler(vars["disk_id"])
+
+def array_proxies(array_name):
+    q = db.stor_array.array_name == array_name
+    q &= db.stor_array.id == db.stor_array_proxy.array_id
+    return [row.node_id for row in db(q).select(db.stor_array_proxy.node_id)]
 
 #
 class rest_delete_disks(rest_delete_handler):
@@ -121,15 +128,16 @@ class rest_delete_disk(rest_delete_handler):
         )
 
     def handler(self, disk_id, **vars):
-        if "Manager" not in user_groups():
-            raise Exception("you are not allowed to use this handler")
         q = db.diskinfo.disk_id == disk_id
-        n = db(q).count()
-        if n == 0:
+        disk = db(q).select().first()
+        if disk is None:
             return {"info": "Disk %s does not exist" % disk_id}
+        manager = "Manager" in user_groups()
+        proxy_node = auth.user.node_id and auth.user.node_id in array_proxies(disk.disk_arrayid)
+        if not manager and not proxy_node:
+            raise Exception("you are not allowed to use this handler")
         db(q).delete()
         table_modified("disks")
         ws_send("disks_change")
         return {"info": "Disk %s deleted" % disk_id}
-
 
