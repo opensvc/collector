@@ -1537,7 +1537,13 @@ function table_init(opts) {
 			beforeSend: function(req){
 				t.div.find(".nodataline>td").text(i18n.t("api.loading"))
 			},
-			success: t.refresh_callback
+			success: t.refresh_callback,
+			error: function(e) {
+				if(e.state() == "rejected") {
+					// redirect to the security exception form
+					document.location = document.location
+				}
+			}
 		})
 	}
 
