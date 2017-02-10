@@ -359,7 +359,8 @@ class rest_post_handler(rest_handler):
 
     def handle(self, *args, **vars):
         response.headers["Content-Type"] = "application/json"
-        if request.env.http_content_type and "application/json" in request.env.http_content_type:
+        if request.env.http_content_type and "application/json" in request.env.http_content_type or \
+           request.env.content_type and "application/json" in request.env.content_type:
             try:
                 data = json.loads(request.body.read())
             except:
@@ -424,7 +425,8 @@ class rest_put_handler(rest_handler):
 
     def handle(self, *args, **vars):
         response.headers["Content-Type"] = "application/json"
-        if request.env.http_content_type and "application/json" in request.env.http_content_type:
+        if request.env.http_content_type and "application/json" in request.env.http_content_type or \
+           request.env.content_type and "application/json" in request.env.content_type:
             try:
                 data = json.loads(request.body.read())
             except:
@@ -447,7 +449,8 @@ class rest_delete_handler(rest_handler):
 
     def handle(self, *args, **vars):
         response.headers["Content-Type"] = "application/json"
-        if request.env.http_content_type and "application/json" in request.env.http_content_type:
+        if request.env.http_content_type and "application/json" in request.env.http_content_type or \
+           request.env.content_type and "application/json" in request.env.content_type:
             try:
                 data = json.loads(request.body.read())
             except:
