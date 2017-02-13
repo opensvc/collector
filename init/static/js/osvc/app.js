@@ -941,6 +941,12 @@ function actionq_tabs(divid, options) {
 	})
 }
 
+function actionq_outputs(divid, options) {
+	require(["osvc/tabs/actionq"], function() {
+		actionq_outputs(divid, options)
+	})
+}
+
 function comp_status_tabs(divid, options) {
 	require(["osvc/tabs/run_status"], function() {
 		comp_status_tabs(divid, options)

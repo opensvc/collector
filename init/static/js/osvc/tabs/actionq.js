@@ -41,6 +41,9 @@ function actionq_outputs(divid, options) {
 	}
 
 	o.init = function() {
+		osvc_tools(o.div, {
+			"link": o.link
+		})
 		o.output_id = o.div.find("#id")
 		o.output_ret = o.div.find("#ret")
 		o.output_action_type = o.div.find("#action_type")
