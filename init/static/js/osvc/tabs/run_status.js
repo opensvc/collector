@@ -89,6 +89,9 @@ function run_status_outputs(divid, options) {
 	}
 
 	o.init = function() {
+		osvc_tools(o.div, {
+			"link": o.link
+		})
 		o.run_status_node_id = o.div.find("#node_id")
 		o.run_status_svc_id = o.div.find("#svc_id")
 		o.run_status_run_module = o.div.find("#run_module")
