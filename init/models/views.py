@@ -10,6 +10,8 @@ def user_name():
         return 'Unknown'
     if auth_is_node():
         return 'agent'
+    if auth.user is None:
+        return 'Unknown'
     first_name = _auth.user.first_name if _auth.user.first_name else ""
     last_name = _auth.user.last_name if _auth.user.last_name else ""
     user = ' '.join([first_name, last_name])
