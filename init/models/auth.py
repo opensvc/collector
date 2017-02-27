@@ -492,6 +492,7 @@ class MyAuth(Auth):
             if "@" in username:
                 svcname, nodename = username.split("@")
                 node = auth_to_node([password, nodename])
+            if node is not None:
                 node_id = node.node_id
                 node_app = node.app
                 svc = node_svc(node_id, svcname)
