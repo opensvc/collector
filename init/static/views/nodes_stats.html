@@ -1,5 +1,5 @@
 <div style="padding:1em">
-	<span>
+	<div style="margin-bottom:1em">
 		<img src="/init/static/images/begin16.png" style="vertical-align:middle">
 		<input name="begin" type="text">
 		<input name="end" type="text">
@@ -9,46 +9,40 @@
 		<input type="button" name="last_week">
 		<input type="button" name="last_month">
 		<input type="button" name="last_year">
-	<span>
+	</div>
 	<div class="container open_on_load">
 		<a class="icon svc" data-i18n="node_stats.overview"></a>
 		<a class="icon nok hidden jqplot-image-container-close" style="padding:0.2em 0.3em"></a>
 		<a class="icon refresh16 hidden jqplot-image-container-close" style="padding:0.2em 0.3em"></a>
-                <div class="spacer">&nbsp;</div>
-		<div class="hidden" name="plots" group="avg_cpu_for_nodes">
-			<div name="" class="float perf_plot"></div>
+		<div class="tag_container" name="plots" group="avg_cpu_for_nodes" style="display:none">
+			<div name="" class="perf_plot"></div>
 		</div>
-		<div class="hidden" name="plots" group="avg_mem_for_nodes">
-			<div name="" class="float perf_plot"></div>
+		<div class="tag_container" name="plots" group="avg_mem_for_nodes" style="display:none">
+			<div name="" class="perf_plot"></div>
 		</div>
-		<div class="hidden" name="plots" group="avg_swp_for_nodes">
-			<div name="" class="float perf_plot"></div>
+		<div class="tag_container" name="plots" group="avg_swp_for_nodes" style="display:none">
+			<div name="" class="perf_plot"></div>
 		</div>
-		<div class="hidden" name="plots" group="disk_for_svc">
-			<div name="" class="float perf_plot"></div>
+		<div class="tag_container" name="plots" group="disk_for_svc" style="display:none">
+			<div name="" class="perf_plot"></div>
 		</div>
-		<div class="spacer">&nbsp;</div>
 	</div>
         <div class="container">
                 <a class="icon action16" data-i18n="node_stats.proc"></a>
                 <a class="icon nok hidden jqplot-image-container-close" style="padding:0.2em 0.3em"></a>
                 <a class="icon refresh16 hidden jqplot-image-container-close" style="padding:0.2em 0.3em"></a>
-                <div class="spacer">&nbsp;</div>
-                <div class="hidden" name="plots" group="avg_proc_for_nodes">
-                        <div name="_runq_sz" class="float perf_plot"></div>
-                        <div name="_plist_sz" class="float perf_plot"></div>
+                <div class="tag_container" name="plots" group="avg_proc_for_nodes" style="display:none">
+                        <div name="_runq_sz" class="perf_plot"></div>
+                        <div name="_plist_sz" class="perf_plot"></div>
                 </div>
-                <div class="spacer">&nbsp;</div>
         </div>
         <div class="container">
                 <a class="icon hd16" data-i18n="node_stats.agg_bdev"></a>
                 <a class="icon nok hidden jqplot-image-container-close" style="padding:0.2em 0.3em"></a>
                 <a class="icon refresh16 hidden jqplot-image-container-close" style="padding:0.2em 0.3em"></a>
-                <div class="spacer">&nbsp;</div>
-                <div class="hidden" name="plots" group="avg_block_for_nodes">
-                        <div name="_tps" class="float perf_plot"></div>
-                        <div name="_bps" class="float perf_plot"></div>
+                <div class="tag_container" name="plots" group="avg_block_for_nodes" style="display:none">
+                        <div name="_tps" class="perf_plot"></div>
+                        <div name="_bps" class="perf_plot"></div>
                 </div>
-                <div class="spacer">&nbsp;</div>
         </div>
 </div>
