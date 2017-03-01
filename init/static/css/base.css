@@ -1206,16 +1206,8 @@ div.float h2 {
 }
 
 div.container {
-	border-top: 1px solid #ddc;
-	border-left: 1px solid #ddc;
-	border-right: 1px solid #eed;
-	border-bottom: 1px solid #eed;
-	background-color: #ffe;
-	margin:0.2em;
-	padding:0.2em;
-	-moz-border-radius:8px;
-	-webkit-border-radius:8px;
-	border-radius:8px;
+	margin:0.2em 0;
+	padding:0.2em 0;
 }
 
 div.container > * {
@@ -2298,6 +2290,7 @@ a.search-link:hover {
 
 .perf_plot {
 	width: 600px;
+	margin: 0.5em 0;
 }
 
 .nowrap {
@@ -2515,6 +2508,12 @@ a.jqplot-image-container-close {
 	float: right;
 }
 
+.jqplot-table-legend {
+	border: 0px !important;
+}
+.jqplot-table-legend-swatch-outline {
+	border: 0px !important;
+}
 
 .billing {
 	width: 95%;

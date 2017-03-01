@@ -146,21 +146,10 @@ function stats_avg_cpu_for_nodes(url, id) {
         if (data[0].length == 0) { return }
         plot_height(id, data[0])
         $('#'+id).width('450px')
-	p = $.jqplot(id, data[1], {
+	p = $.jqplot(id, data[1], $.extend({}, chart_defaults, {
 	    stackSeries: true,
-	    grid: {
-                borderWidth: 0.5
-            },
             title: {
                 text: 'Average cpu utilization'
-            },
-            legend: {
-                show: true,
-                location: 'e',
-                placement: "outside"
-            },
-            gridPadding: {
-                right:90
             },
 	    seriesDefaults: {
                 renderer: $.jqplot.BarRenderer, 
@@ -192,7 +181,7 @@ function stats_avg_cpu_for_nodes(url, id) {
                     ticks: data[0]
 		}
 	    }
-	});
+	}))
         _jqplot_extra($('#'+id), p)
     });
   })
@@ -214,21 +203,10 @@ function stats_avg_swp_for_nodes(url, id) {
 
         plot_height(id, data[0])
         $('#'+id).width('450px')
-	p = $.jqplot(id, data[1], {
+	p = $.jqplot(id, data[1], $.extend({}, chart_defaults, {
 	    stackSeries: true,
-	    grid: {
-                borderWidth: 0.5
-            },
             title: {
                 text: 'Average swap utilization'
-            },
-            legend: {
-                show: true,
-                location: 'e',
-                placement: "outside"
-            },
-            gridPadding: {
-                right:90
             },
 	    seriesDefaults: {
                 renderer: $.jqplot.BarRenderer, 
@@ -254,7 +232,7 @@ function stats_avg_swp_for_nodes(url, id) {
                     ticks: data[0]
 		}
 	    }
-	});
+	}))
         _jqplot_extra($('#'+id), p)
     });
   })
@@ -276,21 +254,10 @@ function stats_avg_mem_for_nodes(url, id) {
 
         plot_height(id, data[0])
         $('#'+id).width('450px')
-	p = $.jqplot(id, data[1], {
+	p = $.jqplot(id, data[1], $.extend({}, chart_defaults, {
 	    stackSeries: true,
-	    grid: {
-                borderWidth: 0.5
-            },
             title: {
                 text: 'Average memory utilization'
-            },
-            legend: {
-                show: true,
-                location: 'e',
-                placement: "outside"
-            },
-            gridPadding: {
-                right:90
             },
 	    seriesDefaults: {
                 renderer: $.jqplot.BarRenderer, 
@@ -316,7 +283,7 @@ function stats_avg_mem_for_nodes(url, id) {
                     ticks: data[0]
 		}
 	    }
-	});
+	}))
         _jqplot_extra($('#'+id), p)
     });
   })
@@ -339,21 +306,10 @@ function stats_avg_block_for_nodes(url, id) {
 
         plot_height(id+'_tps', data[0])
         $('#'+id+'_tps').width('450px')
-	p = $.jqplot(id+'_tps', [data[1][0], data[1][1]], {
+	p = $.jqplot(id+'_tps', [data[1][0], data[1][1]], $.extend({}, chart_defaults, {
 	    stackSeries: true,
-	    grid: {
-                borderWidth: 0.5
-            },
             title: {
                 text: 'Average io/s'
-            },
-            legend: {
-                show: true,
-                location: 'e',
-                placement: "outside"
-            },
-            gridPadding: {
-                right:90
             },
 	    seriesDefaults: {
                 renderer: $.jqplot.BarRenderer, 
@@ -379,7 +335,7 @@ function stats_avg_block_for_nodes(url, id) {
                     ticks: data[0]
 		}
 	    }
-	});
+	}))
         _jqplot_extra($('#'+id+'_tps'), p)
 
         max = 0
@@ -394,21 +350,10 @@ function stats_avg_block_for_nodes(url, id) {
 
         plot_height(id+'_bps', data[0])
         $('#'+id+'_bps').width('450px')
-	p = $.jqplot(id+'_bps', [data[1][2], data[1][3]], {
+	p = $.jqplot(id+'_bps', [data[1][2], data[1][3]], $.extend({}, chart_defaults, {
 	    stackSeries: true,
-	    grid: {
-                borderWidth: 0.5
-            },
             title: {
                 text: 'Average block devices bandwidth'
-            },
-            legend: {
-                show: true,
-                location: 'e',
-                placement: "outside"
-            },
-            gridPadding: {
-                right:90
             },
 	    seriesDefaults: {
                 renderer: $.jqplot.BarRenderer, 
@@ -434,7 +379,7 @@ function stats_avg_block_for_nodes(url, id) {
                     ticks: data[0]
 		}
 	    }
-	});
+	}))
         _jqplot_extra($('#'+id+'_bps'), p)
     });
   })
@@ -456,21 +401,10 @@ function stats_disk_for_svc(url, id) {
 
         plot_height(id, data[0])
         $('#'+id).width('450px')
-	p = $.jqplot(id, [data[1][0]], {
+	p = $.jqplot(id, [data[1][0]], $.extend({}, chart_defaults, {
 	    stackSeries: true,
-	    grid: {
-                borderWidth: 0.5
-            },
             title: {
                 text: 'Disk size per service'
-            },
-            legend: {
-                show: true,
-                location: 'e',
-                placement: "outside"
-            },
-            gridPadding: {
-                right:90
             },
 	    seriesDefaults: {
                 renderer: $.jqplot.BarRenderer, 
@@ -494,7 +428,7 @@ function stats_disk_for_svc(url, id) {
                     ticks: data[0]
 		}
 	    }
-	});
+	}))
         _jqplot_extra($('#'+id), p)
     });
   })
@@ -506,21 +440,10 @@ function stats_avg_proc_for_nodes(url, id) {
         if (data[0].length == 0) { return }
         plot_height(id+'_runq_sz', data[0])
         $('#'+id+'_runq_sz').width('450px')
-	p = $.jqplot(id+'_runq_sz', [data[1][0]], {
+	p = $.jqplot(id+'_runq_sz', [data[1][0]], $.extend({}, chart_defaults, {
 	    stackSeries: true,
-	    grid: {
-                borderWidth: 0.5
-            },
             title: {
                 text: 'Average run queue size'
-            },
-            legend: {
-                show: true,
-                location: 'e',
-                placement: "outside"
-            },
-            gridPadding: {
-                right:90
             },
 	    seriesDefaults: {
                 renderer: $.jqplot.BarRenderer, 
@@ -544,26 +467,15 @@ function stats_avg_proc_for_nodes(url, id) {
                     ticks: data[0]
 		}
 	    }
-	});
+	}))
         _jqplot_extra($('#'+id+'_runq_sz'), p)
 
         plot_height(id+'_plist_sz', data[0])
         $('#'+id+'_plist_sz').width('450px')
-	p = $.jqplot(id+'_plist_sz', [data[1][1]], {
+	p = $.jqplot(id+'_plist_sz', [data[1][1]], $.extend({}, chart_defaults, {
 	    stackSeries: true,
-	    grid: {
-                borderWidth: 0.5
-            },
             title: {
                 text: 'Average process list size'
-            },
-            legend: {
-                show: true,
-                location: 'e',
-                placement: "outside"
-            },
-            gridPadding: {
-                right:90
             },
 	    seriesDefaults: {
                 renderer: $.jqplot.BarRenderer, 
@@ -587,7 +499,7 @@ function stats_avg_proc_for_nodes(url, id) {
                     ticks: data[0]
 		}
 	    }
-	});
+	}))
         _jqplot_extra($('#'+id+'_plist_sz'), p)
     });
   })
@@ -598,14 +510,8 @@ function dash_history(url, id) {
     $.getJSON(url, function(data) {
         //$('#'+id).height('300px')
         $('#'+id).width('100%')
-        p = $.jqplot(id, [data], {
-            cursor:{zoom:true, showTooltip:false},
+        p = $.jqplot(id, [data], $.extend({}, chart_defaults, {
             stackSeries: true,
-            grid: {
-                borderWidth: 0.5,
-                shadowOffset: 1.0,
-                shadowWidth: 2
-            },
             seriesDefaults: {
                 renderer: $.jqplot.BarRenderer,
                 rendererOptions: {
@@ -629,9 +535,9 @@ function dash_history(url, id) {
                     tickOptions:{formatString:'%i'}
                 }
             }
-        });
+        }))
         _jqplot_extra($('#'+id), p)
-    });
+    })
   })
 }
 function comp_history(url, id) {
@@ -640,20 +546,9 @@ function comp_history(url, id) {
     $.getJSON(url, function(data) {
         //$('#'+id).height('300px')
         $('#'+id).width('100%')
-        p = $.jqplot(id, data, {
+        p = $.jqplot(id, data, $.extend({}, chart_defaults, {
             cursor:{zoom:true, showTooltip:false},
             stackSeries: true,
-            legend: {
-                renderer: $.jqplot.EnhancedLegendRenderer,
-                rendererOptions:{numberRows: 1},
-                show: true,
-                location: 'n'
-            },
-            grid: {
-                borderWidth: 0.5,
-                shadowOffset: 1.0,
-                shadowWidth: 2
-            },
             seriesDefaults: {
                 breakOnNull : true,
                 fill: true,
@@ -677,7 +572,7 @@ function comp_history(url, id) {
                     tickOptions:{formatString:'%i'}
                 }
             }
-        });
+        }))
         _jqplot_extra($('#'+id), p)
     })
   })
@@ -692,30 +587,55 @@ function mangle_data(data) {
 	return data
 }
 
+function set_has_data(e) {
+	e.children().empty()
+	e.children(".ui-resizable-handle").remove()
+	e.children(".perf_plot").height(0).width(0)
+	e.children("[name=nodata]").remove()
+}
+
+function set_no_data(e) {
+	set_has_data(e)
+	e.append("<div name='nodata' class='icon db16 grayed' style='padding:1em'>no data</div>")
+}
+
+var chart_defaults = {
+	cursor: {
+		zoom: true,
+		showTooltip: true
+	},
+	grid: {
+		gridLineColor: "#efefef",
+		background: "transparent",
+		borderWidth: 0,
+		shadowOffset: 0,
+		shadowWidth: 0
+	},
+	gridPadding: {
+		right: 90
+	},
+	legend: {
+		show: true,
+		location: "e",
+		placement: "outside"
+	}
+}
+
 function stats_cpu(url, id) {
   require(["jqplot"], function(){
     $.jqplot.config.enablePlugins = true;
     $.getJSON(url, function(data) {
+        if (data[0].length == 0) {
+          set_no_data($("#"+id))
+          return
+        }
+        set_has_data($("#"+id))
         $("#"+id+"_u").width("600px")
         data = mangle_data(data)
-	p = $.jqplot(id+"_u", data, {
-            cursor:{zoom:true, showTooltip:true},
+	p = $.jqplot(id+"_u", data, $.extend({}, chart_defaults, {
 	    stackSeries: true,
             title: {
                 text: 'Cpu usage'
-            },
-            legend: {
-                show: true,
-                location: 'e',
-                placement: "outside"
-            },
-            gridPadding: {
-                right:90
-            },
-	    grid: {
-                borderWidth: 0.5,
-                shadowOffset: 1.0,
-                shadowWidth: 2
             },
 	    seriesDefaults: {
                 markerOptions: {size: 2},
@@ -744,10 +664,10 @@ function stats_cpu(url, id) {
 		}, 
 		yaxis: {
 		    min: 0,
-		    tickOptions:{formatString:'%.2f'}
+		    tickOptions:{formatString:'%.2f%%'}
 		}
 	    }
-	});
+	}))
         _jqplot_extra($('#'+id+'_u'), p)
     });
   })
@@ -757,23 +677,14 @@ function stats_proc(url, id) {
     $.jqplot.config.enablePlugins = true;
     $.getJSON(url, function(data) {
         data = mangle_data(data)
-	p = $.jqplot(id+'_runq_sz', [data[0]], {
-            cursor:{zoom:true, showTooltip:true},
+        if (data[0].length == 0) {
+          set_no_data($("#"+id))
+          return
+        }
+        set_has_data($("#"+id))
+	p = $.jqplot(id+'_runq_sz', [data[0]], $.extend({}, chart_defaults, {
             title: {
                 text: 'Run queue size'
-            },
-            legend: {
-                show: true,
-                location: 'e',
-                placement: "outside"
-            },
-            gridPadding: {
-                right:90
-            },
-	    grid: {
-                borderWidth: 0.5,
-                shadowOffset: 1.0,
-                shadowWidth: 2
             },
 	    seriesDefaults: {
                 breakOnNull : true,
@@ -797,26 +708,12 @@ function stats_proc(url, id) {
 		    tickOptions:{formatString:'%.2f'}
 		}
 	    }
-	});
+	}))
         _jqplot_extra($('#'+id+'_runq_sz'), p)
 
-	p = $.jqplot(id+'_plist_sz', [data[1]], {
-            cursor:{zoom:true, showTooltip:true},
+	p = $.jqplot(id+'_plist_sz', [data[1]], $.extend({}, chart_defaults, {
             title: {
                 text: 'Process list size'
-            },
-            legend: {
-                show: true,
-                location: 'e',
-                placement: "outside"
-            },
-            gridPadding: {
-                right:90
-            },
-	    grid: {
-                borderWidth: 0.5,
-                shadowOffset: 1.0,
-                shadowWidth: 2
             },
 	    seriesDefaults: {
                 breakOnNull : true,
@@ -840,26 +737,12 @@ function stats_proc(url, id) {
 		    tickOptions:{formatString:'%i'}
 		}
 	    }
-	});
+	}))
         _jqplot_extra($('#'+id+'_plist_sz'), p)
 
-	p = $.jqplot(id+'_loadavg', [data[2],data[3],data[4]], {
-            cursor:{zoom:true, showTooltip:true},
+	p = $.jqplot(id+'_loadavg', [data[2],data[3],data[4]], $.extend({}, chart_defaults, {
             title: {
                 text: 'Load average'
-            },
-            legend: {
-                show: true,
-                location: 'e',
-                placement: "outside"
-            },
-            gridPadding: {
-                right:90
-            },
-	    grid: {
-                borderWidth: 0.5,
-                shadowOffset: 1.0,
-                shadowWidth: 2
             },
 	    seriesDefaults: {
                 breakOnNull : true,
@@ -886,7 +769,7 @@ function stats_proc(url, id) {
 		    tickOptions:{formatString:'%.2f'}
 		}
 	    }
-	});
+	}))
         _jqplot_extra($('#'+id+'_loadavg'), p)
     });
   })
@@ -955,25 +838,10 @@ function stats_svc(url, id, title, unit) {
           }
         }
 
-	p = $.jqplot(id, data[1], {
-            cursor:{zoom:true, showTooltip:true},
+	p = $.jqplot(id, data[1], $.extend({}, chart_defaults, {
 	    stackSeries: true,
             title: {
                 text: title
-            },
-            legend: {
-                renderer: $.jqplot.EnhancedLegendRenderer,
-                show: true,
-                location: 'e',
-                placement: "outside"
-            },
-            gridPadding: {
-                right:90
-            },
-	    grid: {
-                borderWidth: 0.5,
-                shadowOffset: 1.0,
-                shadowWidth: 2
             },
 	    seriesDefaults: {
                 breakOnNull : true,
@@ -995,7 +863,7 @@ function stats_svc(url, id, title, unit) {
                     tickOptions:{formatString: d['fmt']+' '+d['unit']}
 		}
 	    }
-	});
+	}))
         _jqplot_extra($('#'+id), p)
     });
   })
@@ -1004,6 +872,11 @@ function stats_mem(url, id) {
   require(["jqplot"], function(){
     $.jqplot.config.enablePlugins = true;
     $.getJSON(url, function(data) {
+        if (data[0].length == 0) {
+          set_no_data($("#"+id))
+          return
+        }
+        set_has_data($("#"+id))
         data = mangle_data(data)
 
         max = 0
@@ -1019,24 +892,10 @@ function stats_mem(url, id) {
             data[0][i][1] /= d['div']*1024
         }
 
-	p = $.jqplot(id+'_u', [data[1], data[3], data[4], data[7], data[0]], {
-            cursor:{zoom:true, showTooltip:true},
+	p = $.jqplot(id+'_u', [data[1], data[3], data[4], data[7], data[0]], $.extend({}, chart_defaults, {
 	    stackSeries: true,
             title: {
                 text: 'Memory usage'
-            },
-            legend: {
-                show: true,
-                location: 'e',
-                placement: "outside"
-            },
-            gridPadding: {
-                right:90
-            },
-	    grid: {
-                borderWidth: 0.5,
-                shadowOffset: 1.0,
-                shadowWidth: 2
             },
 	    seriesDefaults: {
                 breakOnNull : true,
@@ -1064,26 +923,12 @@ function stats_mem(url, id) {
                     tickOptions:{formatString: d['fmt']+' '+d['unit']}
 		}
 	    }
-	});
+	}))
         _jqplot_extra($('#'+id+'_u'), p)
 
-	p = $.jqplot(id+'_pct', [data[2],data[6]], {
-            cursor:{zoom:true, showTooltip:true},
+	p = $.jqplot(id+'_pct', [data[2],data[6]], $.extend({}, chart_defaults, {
             title: {
-                text: 'Memory usage percent'
-            },
-            legend: {
-                show: true,
-                location: 'e',
-                placement: "outside"
-            },
-            gridPadding: {
-                right:90
-            },
-	    grid: {
-                borderWidth: 0.5,
-                shadowOffset: 1.0,
-                shadowWidth: 2
+                text: 'Memory usage %'
             },
 	    seriesDefaults: {
                 breakOnNull : true,
@@ -1109,7 +954,7 @@ function stats_mem(url, id) {
 		    tickOptions:{formatString:'%.2f%%'}
 		}
 	    }
-	});
+	}))
         _jqplot_extra($('#'+id+'_pct'), p)
 
     });
@@ -1119,6 +964,11 @@ function stats_swap(url, id) {
   require(["jqplot"], function(){
     $.jqplot.config.enablePlugins = true;
     $.getJSON(url, function(data) {
+        if (data[0].length == 0) {
+          set_no_data($("#"+id))
+          return
+        }
+        set_has_data($("#"+id))
         data = mangle_data(data)
 
         max = 0
@@ -1132,24 +982,10 @@ function stats_swap(url, id) {
             data[0][i][1] /= d['div']*1024
         }
 
-	p = $.jqplot(id+'_u', [data[1], data[3], data[0]], {
-            cursor:{zoom:true, showTooltip:true},
+	p = $.jqplot(id+'_u', [data[1], data[3], data[0]], $.extend({}, chart_defaults, {
 	    stackSeries: true,
             title: {
                 text: 'Swap usage'
-            },
-            legend: {
-                show: true,
-                location: 'e',
-                placement: "outside"
-            },
-            gridPadding: {
-                right:90
-            },
-	    grid: {
-                borderWidth: 0.5,
-                shadowOffset: 1.0,
-                shadowWidth: 2
             },
 	    seriesDefaults: {
                 breakOnNull : true,
@@ -1175,26 +1011,12 @@ function stats_swap(url, id) {
                     tickOptions:{formatString: d['fmt']+' '+d['unit']}
 		}
 	    }
-	});
+	}))
         _jqplot_extra($('#'+id+'_u'), p)
 
-	p = $.jqplot(id+'_pct', [data[2],data[4]], {
-            cursor:{zoom:true, showTooltip:true},
+	p = $.jqplot(id+'_pct', [data[2],data[4]], $.extend({}, chart_defaults, {
             title: {
                 text: 'Swap usage percent'
-            },
-            legend: {
-                show: true,
-                location: 'e',
-                placement: "outside"
-            },
-            gridPadding: {
-                right:90
-            },
-	    grid: {
-                borderWidth: 0.5,
-                shadowOffset: 1.0,
-                shadowWidth: 2
             },
 	    seriesDefaults: {
                 breakOnNull : true,
@@ -1220,15 +1042,21 @@ function stats_swap(url, id) {
 		    tickOptions:{formatString:'%.2f%%'}
 		}
 	    }
-	});
+	}))
         _jqplot_extra($('#'+id+'_pct'), p)
-    });
+    })
   })
 }
+
 function stats_block(url, id) {
   require(["jqplot"], function(){
     $.jqplot.config.enablePlugins = true;
     $.getJSON(url, function(data) {
+        if (data[0].length == 0) {
+          set_no_data($("#"+id))
+          return
+        }
+        set_has_data($("#"+id))
         data = mangle_data(data)
         max = 0
         for (i=0; i<data[0].length; i++) {
@@ -1241,23 +1069,9 @@ function stats_block(url, id) {
             data[0][i][1] /= d['div']
         }
 
-	p = $.jqplot(id+'_tps', [data[0],data[1]], {
-            cursor:{zoom:true, showTooltip:true},
+	p = $.jqplot(id+'_tps', [data[0],data[1]], $.extend({}, chart_defaults, {
             title: {
                 text: 'Block device transactions'
-            },
-            legend: {
-                show: true,
-                location: 'e',
-                placement: "outside"
-            },
-            gridPadding: {
-                right:90
-            },
-	    grid: {
-                borderWidth: 0.5,
-                shadowOffset: 1.0,
-                shadowWidth: 2
             },
 	    seriesDefaults: {
                 breakOnNull : true,
@@ -1283,7 +1097,7 @@ function stats_block(url, id) {
 		    min: 0
 		}
 	    }
-	});
+	}))
         _jqplot_extra($('#'+id+'_tps'), p)
 
         max = 0
@@ -1297,23 +1111,9 @@ function stats_block(url, id) {
             data[3][i][1] /= d['div']
         }
 
-	p = $.jqplot(id+'_bps', [data[2],data[3]], {
-            cursor:{zoom:true, showTooltip:true},
+	p = $.jqplot(id+'_bps', [data[2],data[3]], $.extend({}, chart_defaults, {
             title: {
                 text: 'Block device bandwidth'
-            },
-            legend: {
-                show: true,
-                location: 'e',
-                placement: "outside"
-            },
-            gridPadding: {
-                right:90
-            },
-	    grid: {
-                borderWidth: 0.5,
-                shadowOffset: 1.0,
-                shadowWidth: 2
             },
 	    seriesDefaults: {
                 breakOnNull : true,
@@ -1339,32 +1139,18 @@ function stats_block(url, id) {
 		    min: 0
 		}
 	    }
-	});
+	}))
         _jqplot_extra($('#'+id+'_bps'), p)
-    });
+    })
   })
 }
 function stats_trend_mem(url, id) {
   require(["jqplot"], function(){
     $.jqplot.config.enablePlugins = true;
     $.getJSON(url, function(data) {
-	p = $.jqplot(id, [data], {
-            cursor:{zoom:true, showTooltip:true},
+	p = $.jqplot(id, [data], $.extend({}, chart_defaults, {
             title: {
                 text: 'Memory usage trend<br>high/low/average'
-            },
-            legend: {
-                show: true,
-                location: 'e',
-                placement: "outside"
-            },
-            gridPadding: {
-                right:90
-            },
-	    grid: {
-                borderWidth: 0.5,
-                shadowOffset: 1.0,
-                shadowWidth: 2
             },
 	    seriesDefaults: {
                 renderer: $.jqplot.OHLCRenderer, 
@@ -1386,32 +1172,18 @@ function stats_trend_mem(url, id) {
 		    tickOptions:{formatString:'%i'}
 		}
 	    }
-	});
+	}))
         _jqplot_extra($('#'+id), p)
-    });
+    })
   })
 }
 function stats_trend_cpu(url, id) {
   require(["jqplot"], function(){
     $.jqplot.config.enablePlugins = true;
     $.getJSON(url, function(data) {
-	p = $.jqplot(id, [data], {
-            cursor:{zoom:true, showTooltip:true},
+	p = $.jqplot(id, [data], $.extend({}, chart_defaults, {
             title: {
                 text: 'Cpu usage trend<br>high/low/average'
-            },
-            legend: {
-                show: true,
-                location: 'e',
-                placement: "outside"
-            },
-            gridPadding: {
-                right:90
-            },
-	    grid: {
-                borderWidth: 0.5,
-                shadowOffset: 1.0,
-                shadowWidth: 2
             },
 	    seriesDefaults: {
                 renderer: $.jqplot.OHLCRenderer, 
@@ -1434,15 +1206,21 @@ function stats_trend_cpu(url, id) {
 		    tickOptions:{formatString:'%.2f'}
 		}
 	    }
-	});
+	}))
         _jqplot_extra($('#'+id), p)
-    });
+    })
   })
 }
+
 function stats_blockdev(url, id) {
   require(["jqplot"], function(){
     $.jqplot.config.enablePlugins = true;
     $.getJSON(url, function(_data) {
+        if (_data["avg"][0].length == 0) {
+          set_no_data($("#"+id))
+          return
+        }
+        set_has_data($("#"+id))
         colors = [ "#4bb2c5", "#4bb2c5", "#EAA228", "#EAA228", "#c5b47f", "#c5b47f", "#579575", "#579575", "#839557", "#839557", "#958c12", "#958c12", "#953579", "#953579", "#4b5de4", "#4b5de4", "#d8b83f", "#d8b83f", "#ff5800", "#ff5800", "#0085cc", "#0085cc", "#c747a3", "#c747a3", "#cddf54", "#cddf54", "#FBD178", "#FBD178", "#26B4E3", "#26B4E3", "#bd70c7", "#bd70c7"]
         _data.begin = osvc_date_from_collector(_data.begin)
         _data.end = osvc_date_from_collector(_data.end)
@@ -1466,26 +1244,11 @@ function stats_blockdev(url, id) {
         for (i=0; i<labels.length; i++) {
           series.push({label: labels[i]})
         }
-	p = $.jqplot(id+'_secps_time', data, {
-            cursor:{zoom:true, showTooltip:true},
+	p = $.jqplot(id+'_secps_time', data, $.extend({}, chart_defaults, {
 	    stackSeries: false,
             seriesColors: colors,
             title: {
                 text: 'Block device bandwidth'
-            },
-            legend: {
-                renderer: $.jqplot.EnhancedLegendRenderer,
-                show: true,
-                location: 'e',
-                placement: "outside"
-            },
-            gridPadding: {
-                right:90
-            },
-	    grid: {
-                borderWidth: 0.5,
-                shadowOffset: 1.0,
-                shadowWidth: 2
             },
 	    seriesDefaults: {
                 breakOnNull : true,
@@ -1507,7 +1270,7 @@ function stats_blockdev(url, id) {
                     tickOptions:{formatString: d_secps['fmt']+' '+d_secps['unit']+'sect/s'}
 		}
 	    }
-	});
+	}))
         _jqplot_extra($('#'+id+'_secps_time'), p)
 
         data = _data['time']['pct_util']['data']
@@ -1530,25 +1293,10 @@ function stats_blockdev(url, id) {
         for (i=0; i<labels.length; i++) {
           series.push({label: labels[i]})
         }
-	p = $.jqplot(id+'_pct_util_time', data, {
-            cursor:{zoom:true, showTooltip:true},
+	p = $.jqplot(id+'_pct_util_time', data, $.extend({}, chart_defaults, {
 	    stackSeries: false,
             title: {
                 text: 'Block device utilization'
-            },
-            legend: {
-                renderer: $.jqplot.EnhancedLegendRenderer,
-                show: true,
-                location: 'e',
-                placement: "outside"
-            },
-            gridPadding: {
-                right:90
-            },
-	    grid: {
-                borderWidth: 0.5,
-                shadowOffset: 1.0,
-                shadowWidth: 2
             },
 	    seriesDefaults: {
                 breakOnNull : true,
@@ -1571,7 +1319,7 @@ function stats_blockdev(url, id) {
                     tickOptions:{formatString: d_pct_util['fmt']+' '+d_pct_util['unit']+'%'}
 		}
 	    }
-	});
+	}))
         _jqplot_extra($('#'+id+'_pct_util_time'), p)
 
         data = _data['time']['tps']['data']
@@ -1594,25 +1342,10 @@ function stats_blockdev(url, id) {
         for (i=0; i<labels.length; i++) {
           series.push({label: labels[i]})
         }
-	p = $.jqplot(id+'_tps_time', data, {
-            cursor:{zoom:true, showTooltip:true},
+	p = $.jqplot(id+'_tps_time', data, $.extend({}, chart_defaults, {
 	    stackSeries: false,
             title: {
                 text: 'Block device transactions'
-            },
-            legend: {
-                renderer: $.jqplot.EnhancedLegendRenderer,
-                show: true,
-                location: 'e',
-                placement: "outside"
-            },
-            gridPadding: {
-                right:90
-            },
-	    grid: {
-                borderWidth: 0.5,
-                shadowOffset: 1.0,
-                shadowWidth: 2
             },
 	    seriesDefaults: {
                 breakOnNull : true,
@@ -1635,7 +1368,7 @@ function stats_blockdev(url, id) {
                     tickOptions:{formatString: d_tps['fmt']+' '+d_tps['unit']+'io/s'}
 		}
 	    }
-	});
+	}))
         _jqplot_extra($('#'+id+'_tps_time'), p)
 
         data = _data['time']['await']['data']
@@ -1658,25 +1391,10 @@ function stats_blockdev(url, id) {
         for (i=0; i<labels.length; i++) {
           series.push({label: labels[i]})
         }
-	p = $.jqplot(id+'_await_time', data, {
-            cursor:{zoom:true, showTooltip:true},
+	p = $.jqplot(id+'_await_time', data, $.extend({}, chart_defaults, {
 	    stackSeries: false,
             title: {
                 text: 'Block device wait time'
-            },
-            legend: {
-                renderer: $.jqplot.EnhancedLegendRenderer,
-                show: true,
-                location: 'e',
-                placement: "outside"
-            },
-            gridPadding: {
-                right:90
-            },
-	    grid: {
-                borderWidth: 0.5,
-                shadowOffset: 1.0,
-                shadowWidth: 2
             },
 	    seriesDefaults: {
                 breakOnNull : true,
@@ -1699,7 +1417,7 @@ function stats_blockdev(url, id) {
                     tickOptions:{formatString: d_await['fmt']+' '+d_await['unit']}
 		}
 	    }
-	});
+	}))
         _jqplot_extra($('#'+id+'_await_time'), p)
 
         data = _data['time']['svctm']['data']
@@ -1722,25 +1440,10 @@ function stats_blockdev(url, id) {
         for (i=0; i<labels.length; i++) {
           series.push({label: labels[i]})
         }
-	p = $.jqplot(id+'_svctm_time', data, {
-            cursor:{zoom:true, showTooltip:true},
+	p = $.jqplot(id+'_svctm_time', data, $.extend({}, chart_defaults, {
 	    stackSeries: false,
             title: {
                 text: 'Block device service time'
-            },
-            legend: {
-                renderer: $.jqplot.EnhancedLegendRenderer,
-                show: true,
-                location: 'e',
-                placement: "outside"
-            },
-            gridPadding: {
-                right:90
-            },
-	    grid: {
-                borderWidth: 0.5,
-                shadowOffset: 1.0,
-                shadowWidth: 2
             },
 	    seriesDefaults: {
                 breakOnNull : true,
@@ -1763,7 +1466,7 @@ function stats_blockdev(url, id) {
                     tickOptions:{formatString: d_svctm['fmt']+' '+d_svctm['unit']}
 		}
 	    }
-	});
+	}))
         _jqplot_extra($('#'+id+'_svctm_time'), p)
 
         data = _data['time']['avgrq_sz']['data']
@@ -1786,25 +1489,10 @@ function stats_blockdev(url, id) {
         for (i=0; i<labels.length; i++) {
           series.push({label: labels[i]})
         }
-	p = $.jqplot(id+'_avgrq_sz_time', data, {
-            cursor:{zoom:true, showTooltip:true},
+	p = $.jqplot(id+'_avgrq_sz_time', data, $.extend({}, chart_defaults, {
 	    stackSeries: false,
             title: {
                 text: 'Block device request size'
-            },
-            legend: {
-                renderer: $.jqplot.EnhancedLegendRenderer,
-                show: true,
-                location: 'e',
-                placement: "outside"
-            },
-            gridPadding: {
-                right:90
-            },
-	    grid: {
-                borderWidth: 0.5,
-                shadowOffset: 1.0,
-                shadowWidth: 2
             },
 	    seriesDefaults: {
                 breakOnNull : true,
@@ -1827,7 +1515,7 @@ function stats_blockdev(url, id) {
                     tickOptions:{formatString: d_avgrq_sz['fmt']+' '+d_avgrq_sz['unit']+'sectors'}
 		}
 	    }
-	});
+	}))
         _jqplot_extra($('#'+id+'_avgrq_sz_time'), p)
 
         data = _data['avg']
@@ -1837,23 +1525,9 @@ function stats_blockdev(url, id) {
           data[1][i][3] /= d_tps['div']
         }
         plot_width_x(id+'_tps', data[0])
-	p = $.jqplot(id+'_tps', [data[1]], {
-            cursor:{zoom:true, showTooltip:true},
+	p = $.jqplot(id+'_tps', [data[1]], $.extend({}, chart_defaults, {
             title: {
                 text: 'Block device transactions<br>high/low/average'
-            },
-            legend: {
-                show: false,
-                location: 'e',
-                placement: "outside"
-            },
-            gridPadding: {
-                right:90
-            },
-	    grid: {
-                borderWidth: 0.5,
-                shadowOffset: 1.0,
-                shadowWidth: 2
             },
 	    seriesDefaults: {
                 renderer: $.jqplot.OHLCRenderer
@@ -1873,7 +1547,7 @@ function stats_blockdev(url, id) {
 		    min: 0
 		}
 	    }
-	});
+	}))
         _jqplot_extra($('#'+id+'_tps'), p)
 
         for (i=0; i<data[2].length; i++) {
@@ -1882,23 +1556,9 @@ function stats_blockdev(url, id) {
           data[2][i][3] /= d_avgrq_sz['div']
         }
         plot_width_x(id+'_avgrq_sz', data[0])
-	p = $.jqplot(id+'_avgrq_sz', [data[2]], {
-            cursor:{zoom:true, showTooltip:true},
+	p = $.jqplot(id+'_avgrq_sz', [data[2]], $.extend({}, chart_defaults, {
             title: {
                 text: 'Block device request size<br>high/low/average'
-            },
-            legend: {
-                show: false,
-                location: 'e',
-                placement: "outside"
-            },
-            gridPadding: {
-                right:90
-            },
-	    grid: {
-                borderWidth: 0.5,
-                shadowOffset: 1.0,
-                shadowWidth: 2
             },
 	    seriesDefaults: {
                 renderer: $.jqplot.OHLCRenderer
@@ -1918,7 +1578,7 @@ function stats_blockdev(url, id) {
                     tickOptions:{formatString: d_avgrq_sz['fmt']+' '+d_avgrq_sz['unit']+'sectors'}
 		}
 	    }
-	});
+	}))
         _jqplot_extra($('#'+id+'_avgrq_sz'), p)
 
         for (i=0; i<data[3].length; i++) {
@@ -1927,23 +1587,9 @@ function stats_blockdev(url, id) {
           data[3][i][3] /= d_await['div']
         }
         plot_width_x(id+'_await', data[0])
-	p = $.jqplot(id+'_await', [data[3]], {
-            cursor:{zoom:true, showTooltip:true},
+	p = $.jqplot(id+'_await', [data[3]], $.extend({}, chart_defaults, {
             title: {
                 text: 'Block device wait time<br>high/low/average'
-            },
-            legend: {
-                show: false,
-                location: 'e',
-                placement: "outside"
-            },
-            gridPadding: {
-                right:90
-            },
-	    grid: {
-                borderWidth: 0.5,
-                shadowOffset: 1.0,
-                shadowWidth: 2
             },
 	    seriesDefaults: {
                 renderer: $.jqplot.OHLCRenderer
@@ -1963,7 +1609,7 @@ function stats_blockdev(url, id) {
                     tickOptions:{formatString: d_await['fmt']+' '+d_await['unit']}
 		}
 	    }
-	});
+	}))
         _jqplot_extra($('#'+id+'_await'), p)
 
         for (i=0; i<data[4].length; i++) {
@@ -1972,23 +1618,9 @@ function stats_blockdev(url, id) {
           data[4][i][3] /= d_svctm['div']
         }
         plot_width_x(id+'_svctm', data[0])
-	p = $.jqplot(id+'_svctm', [data[4]], {
-            cursor:{zoom:true, showTooltip:true},
+	p = $.jqplot(id+'_svctm', [data[4]], $.extend({}, chart_defaults, {
             title: {
                 text: 'Block device service time<br>high/low/average'
-            },
-            legend: {
-                show: false,
-                location: 'e',
-                placement: "outside"
-            },
-            gridPadding: {
-                right:90
-            },
-	    grid: {
-                borderWidth: 0.5,
-                shadowOffset: 1.0,
-                shadowWidth: 2
             },
 	    seriesDefaults: {
                 renderer: $.jqplot.OHLCRenderer
@@ -2008,7 +1640,7 @@ function stats_blockdev(url, id) {
                     tickOptions:{formatString: d_svctm['fmt']+' '+d_svctm['unit']}
 		}
 	    }
-	});
+	}))
         _jqplot_extra($('#'+id+'_svctm'), p)
 
         for (i=0; i<data[5].length; i++) {
@@ -2017,23 +1649,9 @@ function stats_blockdev(url, id) {
           data[5][i][3] /= d_pct_util['div']
         }
         plot_width_x(id+'_pct_util', data[0])
-	p = $.jqplot(id+'_pct_util', [data[5]], {
-            cursor:{zoom:true, showTooltip:true},
+	p = $.jqplot(id+'_pct_util', [data[5]], $.extend({}, chart_defaults, {
             title: {
                 text: 'Block device utilization<br>high/low/average'
-            },
-            legend: {
-                show: false,
-                location: 'e',
-                placement: "outside"
-            },
-            gridPadding: {
-                right:90
-            },
-	    grid: {
-                borderWidth: 0.5,
-                shadowOffset: 1.0,
-                shadowWidth: 2
             },
 	    seriesDefaults: {
                 renderer: $.jqplot.OHLCRenderer
@@ -2053,7 +1671,7 @@ function stats_blockdev(url, id) {
 		    min: 0
 		}
 	    }
-	});
+	}))
         _jqplot_extra($('#'+id+'_pct_util'), p)
 
         for (i=0; i<data[6][0].length; i++) {
@@ -2061,21 +1679,10 @@ function stats_blockdev(url, id) {
           data[6][1][i] /= d_secps['div']
         }
         plot_width_x(id+'_secps', data[0])
-	p = $.jqplot(id+'_secps', data[6], {
+	p = $.jqplot(id+'_secps', data[6], $.extend({}, chart_defaults, {
 	    stackSeries: true,
-	    grid: {
-                borderWidth: 0.5
-            },
             title: {
                 text: 'Block device bandwidth<br>average'
-            },
-            legend: {
-                show: true,
-                location: 'e',
-                placement: "outside"
-            },
-            gridPadding: {
-                right:90
             },
 	    seriesDefaults: {
                 renderer: $.jqplot.BarRenderer, 
@@ -2097,25 +1704,14 @@ function stats_blockdev(url, id) {
                     tickOptions:{formatString: d_secps['fmt']+' '+d_secps['unit']+'sect/s'}
 		}
 	    }
-	});
+	}))
         _jqplot_extra($('#'+id+'_secps'), p)
 
         plot_width_x(id+'_tm', data[7])
-	p = $.jqplot(id+'_tm', data[8], {
+	p = $.jqplot(id+'_tm', data[8], $.extend({}, chart_defaults, {
 	    stackSeries: true,
-	    grid: {
-                borderWidth: 0.5
-            },
             title: {
                 text: 'Hard/Soft times<br>average'
-            },
-            legend: {
-                show: true,
-                location: 'e',
-                placement: "outside"
-            },
-            gridPadding: {
-                right:90
             },
 	    seriesDefaults: {
                 renderer: $.jqplot.BarRenderer, 
@@ -2137,7 +1733,7 @@ function stats_blockdev(url, id) {
 		    tickOptions:{formatString:'%.2f'}
 		}
 	    }
-	});
+	}))
         _jqplot_extra($('#'+id+'_tm'), p)
     });
   })
@@ -2146,6 +1742,11 @@ function stats_netdev_err(url, id) {
   require(["jqplot"], function(){
     $.jqplot.config.enablePlugins = true;
     $.getJSON(url, function(_data) {
+        if (_data[0][0].length == 0) {
+          set_no_data($("#"+id))
+          return
+        }
+        set_has_data($("#"+id))
         errps = _data[0]
         collps = _data[1]
         dropps = _data[2]
@@ -2170,26 +1771,11 @@ function stats_netdev_err(url, id) {
         for (i=0; i<labels.length; i++) {
           series.push({label: labels[i]})
         }
-	p = $.jqplot(id+'_errps', data, {
-            cursor:{zoom:true, showTooltip:true},
+	p = $.jqplot(id+'_errps', data, $.extend({}, chart_defaults, {
 	    stackSeries: false,
             seriesColors: colors,
             title: {
                 text: 'Net device errors/s'
-            },
-            legend: {
-                renderer: $.jqplot.EnhancedLegendRenderer,
-                show: true,
-                location: 'e',
-                placement: "outside"
-            },
-            gridPadding: {
-                right:90
-            },
-	    grid: {
-                borderWidth: 0.5,
-                shadowOffset: 1.0,
-                shadowWidth: 2
             },
 	    seriesDefaults: {
                 breakOnNull : true,
@@ -2211,7 +1797,7 @@ function stats_netdev_err(url, id) {
                     tickOptions:{formatString: d['fmt']+' '+d['unit']+'/s'}
 		}
 	    }
-	});
+	}))
         _jqplot_extra($('#'+id+'_errps'), p)
 
         labels = collps[0]
@@ -2233,26 +1819,11 @@ function stats_netdev_err(url, id) {
         for (i=0; i<labels.length; i++) {
           series.push({label: labels[i]})
         }
-	p = $.jqplot(id+'_collps', data, {
-            cursor:{zoom:true, showTooltip:true},
+	p = $.jqplot(id+'_collps', data, $.extend({}, chart_defaults, {
 	    stackSeries: false,
             seriesColors: colors,
             title: {
                 text: 'Net device collisions/s'
-            },
-            legend: {
-                renderer: $.jqplot.EnhancedLegendRenderer,
-                show: true,
-                location: 'e',
-                placement: "outside"
-            },
-            gridPadding: {
-                right:90
-            },
-	    grid: {
-                borderWidth: 0.5,
-                shadowOffset: 1.0,
-                shadowWidth: 2
             },
 	    seriesDefaults: {
                 breakOnNull : true,
@@ -2274,7 +1845,7 @@ function stats_netdev_err(url, id) {
                     tickOptions:{formatString: d['fmt']+' '+d['unit']+'/s'}
 		}
 	    }
-	});
+	}))
         _jqplot_extra($('#'+id+'_collps'), p)
 
         labels = dropps[0]
@@ -2296,26 +1867,11 @@ function stats_netdev_err(url, id) {
         for (i=0; i<labels.length; i++) {
           series.push({label: labels[i]})
         }
-	p = $.jqplot(id+'_dropps', data, {
-            cursor:{zoom:true, showTooltip:true},
+	p = $.jqplot(id+'_dropps', data, $.extend({}, chart_defaults, {
 	    stackSeries: false,
             seriesColors: colors,
             title: {
                 text: 'Net device drops/s'
-            },
-            legend: {
-                renderer: $.jqplot.EnhancedLegendRenderer,
-                show: true,
-                location: 'e',
-                placement: "outside"
-            },
-            gridPadding: {
-                right:90
-            },
-	    grid: {
-                borderWidth: 0.5,
-                shadowOffset: 1.0,
-                shadowWidth: 2
             },
 	    seriesDefaults: {
                 breakOnNull : true,
@@ -2337,31 +1893,25 @@ function stats_netdev_err(url, id) {
                     tickOptions:{formatString: d['fmt']+' '+d['unit']+'/s'}
 		}
 	    }
-	});
+	}))
         _jqplot_extra($('#'+id+'_dropps'), p)
-    });
+    })
   })
 }
 function stats_netdev_avg(url, id) {
   require(["jqplot"], function(){
     $.jqplot.config.enablePlugins = true;
     $.getJSON(url, function(data) {
+        if (data[0].length == 0) {
+          set_no_data($("#"+id))
+          return
+        }
+        set_has_data($("#"+id))
         plot_width_x(id+'_kBps', data[0])
-	p = $.jqplot(id+'_kBps', data[1], {
+	p = $.jqplot(id+'_kBps', data[1], $.extend({}, chart_defaults, {
 	    stackSeries: false,
-	    grid: {
-                borderWidth: 0.5
-            },
             title: {
                 text: 'Net device bandwidth'
-            },
-            legend: {
-                show: true,
-                location: 'e',
-                placement: "outside"
-            },
-            gridPadding: {
-                right:90
             },
 	    seriesDefaults: {
                 renderer: $.jqplot.BarRenderer, 
@@ -2383,25 +1933,14 @@ function stats_netdev_avg(url, id) {
 		    tickOptions:{formatString:'%.2f'}
 		}
 	    }
-	});
+	}))
         _jqplot_extra($('#'+id+'_kBps'), p)
 
         plot_width_x(id+'_pckps', data[0])
-	p = $.jqplot(id+'_pckps', data[2], {
+	p = $.jqplot(id+'_pckps', data[2], $.extend({}, chart_defaults, {
 	    stackSeries: false,
-	    grid: {
-                borderWidth: 0.5
-            },
             title: {
                 text: 'Net device packet rate'
-            },
-            legend: {
-                show: true,
-                location: 'e',
-                placement: "outside"
-            },
-            gridPadding: {
-                right:90
             },
 	    seriesDefaults: {
                 renderer: $.jqplot.BarRenderer, 
@@ -2423,15 +1962,20 @@ function stats_netdev_avg(url, id) {
 		    tickOptions:{formatString:'%.2f'}
 		}
 	    }
-	});
+	}))
         _jqplot_extra($('#'+id+'_pckps'), p)
-    });
+    })
   })
 }
 function stats_netdev(url, id) {
   require(["jqplot"], function(){
     $.jqplot.config.enablePlugins = true;
     $.getJSON(url, function(_data) {
+        if (_data[0][0].length == 0) {
+          set_no_data($("#"+id))
+          return
+        }
+        set_has_data($("#"+id))
         bw = _data[0]
         pk = _data[1]
         colors = [ "#4bb2c5", "#4bb2c5", "#EAA228", "#EAA228", "#c5b47f", "#c5b47f", "#579575", "#579575", "#839557", "#839557", "#958c12", "#958c12", "#953579", "#953579", "#4b5de4", "#4b5de4", "#d8b83f", "#d8b83f", "#ff5800", "#ff5800", "#0085cc", "#0085cc", "#c747a3", "#c747a3", "#cddf54", "#cddf54", "#FBD178", "#FBD178", "#26B4E3", "#26B4E3", "#bd70c7", "#bd70c7"]
@@ -2456,26 +2000,11 @@ function stats_netdev(url, id) {
         for (i=0; i<labels.length; i++) {
           series.push({label: labels[i]})
         }
-	p = $.jqplot(id+'_kBps', data, {
-            cursor:{zoom:true, showTooltip:true},
+	p = $.jqplot(id+'_kBps', data, $.extend({}, chart_defaults, {
 	    stackSeries: false,
             seriesColors: colors,
             title: {
                 text: 'Net device bandwidth'
-            },
-            legend: {
-                renderer: $.jqplot.EnhancedLegendRenderer,
-                show: true,
-                location: 'e',
-                placement: "outside"
-            },
-            gridPadding: {
-                right:90
-            },
-	    grid: {
-                borderWidth: 0.5,
-                shadowOffset: 1.0,
-                shadowWidth: 2
             },
 	    seriesDefaults: {
                 breakOnNull : true,
@@ -2497,7 +2026,7 @@ function stats_netdev(url, id) {
                     tickOptions:{formatString: d['fmt']+' '+d['unit']+'/s'}
 		}
 	    }
-	});
+	}))
         _jqplot_extra($('#'+id+'_kBps'), p)
 
         labels = pk[0]
@@ -2520,26 +2049,11 @@ function stats_netdev(url, id) {
         for (i=0; i<labels.length; i++) {
           series.push({label: labels[i]})
         }
-	p = $.jqplot(id+'_pckps', data, {
-            cursor:{zoom:true, showTooltip:true},
+	p = $.jqplot(id+'_pckps', data, $.extend({}, chart_defaults, {
 	    stackSeries: false,
             seriesColors: colors,
             title: {
                 text: 'Net device packets/s'
-            },
-            legend: {
-                renderer: $.jqplot.EnhancedLegendRenderer,
-                show: true,
-                location: 'e',
-                placement: "outside"
-            },
-            gridPadding: {
-                right:90
-            },
-	    grid: {
-                borderWidth: 0.5,
-                shadowOffset: 1.0,
-                shadowWidth: 2
             },
 	    seriesDefaults: {
                 breakOnNull : true,
@@ -2561,7 +2075,7 @@ function stats_netdev(url, id) {
                     tickOptions:{formatString: d['fmt']+' '+d['unit']}
 		}
 	    }
-	});
+	}))
         _jqplot_extra($('#'+id+'_pckps'), p)
     });
   })
@@ -2795,6 +2309,11 @@ function stats_fs(url, id) {
   require(["jqplot"], function(){
     $.jqplot.config.enablePlugins = true;
     $.getJSON(url, function(data) {
+        if (data[0].length == 0) {
+          set_no_data($("#"+id))
+          return
+        }
+        set_has_data($("#"+id))
         data[1] = mangle_data(data[1])
         labels = new Array()
         for (i=0;i<data[0].length;i++){
@@ -2804,24 +2323,9 @@ function stats_fs(url, id) {
         h = Math.max(38*h, 300)
         $('#'+id+'_u').height(h+'px')
         //plot_width_x(id+'_u', data[0])
-	p = $.jqplot(id+'_u', data[1], {
-            cursor:{zoom:true, showTooltip:true},
+	p = $.jqplot(id+'_u', data[1], $.extend({}, chart_defaults, {
             title: {
                 text: 'Fs usage %'
-            },
-            legend: {
-                renderer: $.jqplot.EnhancedLegendRenderer,
-                show: true,
-                location: 'e',
-                placement: "outside"
-            },
-            gridPadding: {
-                right:90
-            },
-	    grid: {
-                borderWidth: 0.5,
-                shadowOffset: 1.0,
-                shadowWidth: 2
             },
 	    seriesDefaults: {
                 breakOnNull : true,
@@ -2844,9 +2348,9 @@ function stats_fs(url, id) {
 		    tickOptions:{formatString:'%.2f'}
 		}
 	    }
-  	});
+  	}))
         _jqplot_extra($('#'+id+'_u'), p)
-    });
+    })
   })
 }
 function stats_resinfo(url, id) {
@@ -2865,16 +2369,11 @@ function stats_resinfo(url, id) {
                 data[i][j][1] /= d['div']
             }
         }
-	p = $.jqplot(id, data, {
+	p = $.jqplot(id, data, $.extend({}, chart_defaults, {
             cursor:{zoom:true},
             stackSeries: true,
             legend: {
                 show: false
-            },
-            grid: {
-                borderWidth: 0.5,
-                shadowOffset: 1.0,
-                shadowWidth: 2
             },
             seriesDefaults: {
                 breakOnNull : true,
@@ -2896,9 +2395,9 @@ function stats_resinfo(url, id) {
                 }
             }
 
-	});
+	}))
         _jqplot_extra($('#'+id), p)
-    });
+    })
   })
 }
 function stats_disk_array(url, id) {
@@ -2916,20 +2415,8 @@ function stats_disk_array(url, id) {
                 data[i][j][1] /= d['div']
             }
         }
-	p = $.jqplot(id, data, {
-            cursor:{zoom:true, showTooltip:false},
+	p = $.jqplot(id, data, $.extend({}, chart_defaults, {
             stackSeries: true,
-            legend: {
-                renderer: $.jqplot.EnhancedLegendRenderer,
-                rendererOptions:{numberRows: 1},
-                show: true,
-                location: 'n'
-            },
-            grid: {
-                borderWidth: 0.5,
-                shadowOffset: 1.0,
-                shadowWidth: 2
-            },
             seriesDefaults: {
                 breakOnNull : true,
                 fill: true,
@@ -2955,9 +2442,9 @@ function stats_disk_array(url, id) {
                 }
             }
 
-	});
+	}))
         _jqplot_extra($('#'+id), p)
-    });
+    })
   })
 }
 function stats_disk_app(url, id) {
@@ -2975,19 +2462,7 @@ function stats_disk_app(url, id) {
                 data[i][j][1] /= d['div']
             }
         }
-	p = $.jqplot(id, data, {
-            cursor:{zoom:true, showTooltip:false},
-            legend: {
-                renderer: $.jqplot.EnhancedLegendRenderer,
-                rendererOptions:{numberRows: 1},
-                show: true,
-                location: 'n'
-            },
-            grid: {
-                borderWidth: 0.5,
-                shadowOffset: 1.0,
-                shadowWidth: 2
-            },
+	p = $.jqplot(id, data, $.extend({}, chart_defaults, {
             seriesDefaults: {
                 breakOnNull : true,
                 shadowAngle: 135,
@@ -3010,9 +2485,9 @@ function stats_disk_app(url, id) {
                 }
             }
 
-	});
+	}))
         _jqplot_extra($('#'+id), p)
-    });
+    })
   })
 }
 function charts_plot(url, id) {
@@ -3062,15 +2537,9 @@ function charts_plot(url, id) {
                 data[i][j][1] /= d['div']
             }
         }
-	p = $.jqplot(id, data, {
+	p = $.jqplot(id, data, $.extend({}, chart_defaults, {
 	    stackSeries: stackSeries,
-            cursor:{zoom:true, showTooltip:false},
             legend: legend,
-            grid: {
-                borderWidth: 0.5,
-                shadowOffset: 1.0,
-                shadowWidth: 2
-            },
             seriesDefaults: {
                 breakOnNull : true,
                 shadowAngle: 135,
@@ -3090,9 +2559,9 @@ function charts_plot(url, id) {
                 }
             }
 
-	});
+	}))
         _jqplot_extra($('#'+id), p)
-    });
+    })
   })
 }
 function obsplot(o) {
@@ -3143,16 +2612,6 @@ function obsplot(o) {
 }
 
 function _jqplot_extra(e, p){
-	_jqplot_resize(e, p);
-}
-
-function _jqplot_resize(e, p){
-	e.parent().resizable({delay:20});
-	e.parent().bind('resize', function(event, ui) {
-          e.width('100%');
-          e.height('90%');
-	  p.replot( { resetAxes: false } );
-	});
 }
 
 function savedonut(o) {
@@ -3162,8 +2621,7 @@ function savedonut(o) {
   var total = fancy_size_mb(d['total'])
   var title = total
   o.html("")
-  $.jqplot(o.attr('id'), d['data'],
-    {
+  $.jqplot(o.attr('id'), d['data'], {
       grid:{background:'transparent',borderColor:'transparent',shadow:false,drawBorder:false,shadowColor:'transparent'},
       seriesDefaults: {
         renderer: $.jqplot.DonutRenderer,
