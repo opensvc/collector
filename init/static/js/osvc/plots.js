@@ -537,7 +537,7 @@ function set_no_data(e) {
 var chart_defaults = {
 	cursor: {
 		zoom: true,
-		showTooltip: true
+		showTooltip: false
 	},
 	grid: {
 		gridLineColor: "#efefef",
