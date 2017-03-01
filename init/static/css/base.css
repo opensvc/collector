@@ -2291,7 +2291,6 @@ a.search-link:hover {
 .perf_plot {
 	flex: 1 1 600px;
 	margin: 0.5em 0;
-	padding-right: 10em;
 }
 
 .nowrap {

@@ -145,7 +145,6 @@ function stats_avg_cpu_for_nodes(url, id) {
     $.getJSON(url, function(data) {
         if (data[0].length == 0) { return }
         plot_height(id, data[0])
-        $('#'+id).width('450px')
 	p = $.jqplot(id, data[1], $.extend({}, chart_defaults, {
 	    stackSeries: true,
             title: {
@@ -202,7 +201,6 @@ function stats_avg_swp_for_nodes(url, id) {
         }
 
         plot_height(id, data[0])
-        $('#'+id).width('450px')
 	p = $.jqplot(id, data[1], $.extend({}, chart_defaults, {
 	    stackSeries: true,
             title: {
@@ -253,7 +251,6 @@ function stats_avg_mem_for_nodes(url, id) {
         }
 
         plot_height(id, data[0])
-        $('#'+id).width('450px')
 	p = $.jqplot(id, data[1], $.extend({}, chart_defaults, {
 	    stackSeries: true,
             title: {
@@ -305,7 +302,6 @@ function stats_avg_block_for_nodes(url, id) {
         }
 
         plot_height(id+'_tps', data[0])
-        $('#'+id+'_tps').width('450px')
 	p = $.jqplot(id+'_tps', [data[1][0], data[1][1]], $.extend({}, chart_defaults, {
 	    stackSeries: true,
             title: {
@@ -349,7 +345,6 @@ function stats_avg_block_for_nodes(url, id) {
         }
 
         plot_height(id+'_bps', data[0])
-        $('#'+id+'_bps').width('450px')
 	p = $.jqplot(id+'_bps', [data[1][2], data[1][3]], $.extend({}, chart_defaults, {
 	    stackSeries: true,
             title: {
@@ -400,7 +395,6 @@ function stats_disk_for_svc(url, id) {
         }
 
         plot_height(id, data[0])
-        $('#'+id).width('450px')
 	p = $.jqplot(id, [data[1][0]], $.extend({}, chart_defaults, {
 	    stackSeries: true,
             title: {
@@ -439,7 +433,6 @@ function stats_avg_proc_for_nodes(url, id) {
     $.getJSON(url, function(data) {
         if (data[0].length == 0) { return }
         plot_height(id+'_runq_sz', data[0])
-        $('#'+id+'_runq_sz').width('450px')
 	p = $.jqplot(id+'_runq_sz', [data[1][0]], $.extend({}, chart_defaults, {
 	    stackSeries: true,
             title: {
@@ -471,7 +464,6 @@ function stats_avg_proc_for_nodes(url, id) {
         _jqplot_extra($('#'+id+'_runq_sz'), p)
 
         plot_height(id+'_plist_sz', data[0])
-        $('#'+id+'_plist_sz').width('450px')
 	p = $.jqplot(id+'_plist_sz', [data[1][1]], $.extend({}, chart_defaults, {
 	    stackSeries: true,
             title: {
@@ -633,7 +625,6 @@ function stats_cpu(url, id) {
           return
         }
         set_has_data($("#"+id))
-        $("#"+id+"_u").width("600px")
         data = mangle_data(data)
 	p = $.jqplot(id+"_u", data, $.extend({}, chart_defaults, {
 	    stackSeries: true,
