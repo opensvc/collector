@@ -2289,8 +2289,9 @@ a.search-link:hover {
 }
 
 .perf_plot {
-	width: 600px;
+	flex: 1 1 600px;
 	margin: 0.5em 0;
+	padding-right: 10em;
 }
 
 .nowrap {
@@ -2509,6 +2510,7 @@ a.jqplot-image-container-close {
 }
 
 .jqplot-table-legend {
+	max-width: 10em;
 	border: 0px !important;
 }
 .jqplot-table-legend-swatch-outline {

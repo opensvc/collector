@@ -590,12 +590,15 @@ function mangle_data(data) {
 function set_has_data(e) {
 	e.children().empty()
 	e.children(".ui-resizable-handle").remove()
-	e.children(".perf_plot").height(0).width(0)
+	e.children(".perf_plot").show()
 	e.children("[name=nodata]").remove()
 }
 
 function set_no_data(e) {
-	set_has_data(e)
+	e.children().empty()
+	e.children(".ui-resizable-handle").remove()
+	e.children(".perf_plot").hide()
+	e.children("[name=nodata]").remove()
 	e.append("<div name='nodata' class='icon db16 grayed' style='padding:1em'>no data</div>")
 }
 
