@@ -309,7 +309,7 @@ def update_dash_rsetdiff(svc_id):
              dash_env="%(env)s"
            on duplicate key update
              dash_updated="%(now)s"
-    """%dict(now=str(now), svc_id=svc_id, nodes=nodes_s, ndiff=_rows[0][0], sev=sev, env=rows.first().mon_svctype)
+    """%dict(now=str(now), svc_id=svc_id, nodes=nodes_s, ndiff=_rows[0][0], sev=sev, env=rows.first().svcmon.mon_svctype)
     db.executesql(sql)
     db.commit()
 
