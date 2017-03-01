@@ -58,66 +58,6 @@ function comp_status_plot(url, id) {
     })
   })
 }
-function avail_plot(id, data) {
-  require(["jqplot"], function(){
-    $.jqplot.config.enablePlugins = true;
-        document.getElementById(id).style['height'] = '50px'
-	$.jqplot(id, data, {
-            width: 300,
-            height: 50,
-            cursor: {
-                zoom:true,
-                showTooltip:true
-            },
-            highlighter: {
-                show: false
-            },
-	    grid: {
-                drawGridlines: false,
-                borderWidth: 0,
-                shadow: false,
-                background: 'rgba(0,0,0,0)'
-            },
-	    seriesDefaults: {
-                breakOnNull : true,
-                breakOnNull: true,
-                fill: false
-            },
-	    series: [
-                {
-                    label: 'down',
-                    color: 'red'
-                },
-                {
-                    label: 'down acked',
-                    color: 'gray'
-                },
-                {
-                    label: 'ack',
-                    markerOptions:{style:'filledDiamond'}
-                }
-            ],
-	    axes: {
-		xaxis: {
-		    renderer: $.jqplot.DateAxisRenderer, 
-		    tickOptions: {
-                        fontSize:'7pt',
-		        formatString:'%#m/%#d %R'
-                    }
-		}, 
-		yaxis: {
-		    min: 0.8, 
-		    max: 1.2, 
-		    tickOptions:{
-                        showLabel: false,
-                        size: 0,
-                        formatString:'%d'
-                    }
-		}
-	    }
-	})
-  })
-}
 
 function plot_height(id, data) {
     h = Math.max(100+data.length*30, 200)+'px'
