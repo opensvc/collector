@@ -403,6 +403,7 @@ def ajax_node_stor():
       BR(),
       H3(T("Disks")),
       TABLE(_disks),
+      _style="padding:1em",
     )
     return stor
 
@@ -696,6 +697,7 @@ def ajax_svc_stor():
       BR(),
       H3(T("Disks")),
       TABLE(_disks),
+      _style="padding:1em",
     )
     return stor
 
