@@ -1,4 +1,4 @@
-from applications.init.modules import sysreport
+from applications.init.modules import gittrack
 import re
 
 def get_pattern_secure():
@@ -106,7 +106,7 @@ def sysrep_allow(node_ids, fpath):
     return False
 
 def lib_get_sysreport(node_ids, path=None, begin=None, end=None):
-    data = sysreport.sysreport().timeline(node_ids, path=encode_fpath(path), begin=begin, end=end)
+    data = gittrack.gittrack().timeline(node_ids, path=encode_fpath(path), begin=begin, end=end)
     for i, d in enumerate(data):
         for j, fpath in enumerate(d["stat"]):
             data[i]["stat"][j] = beautify_fpath(fpath)
@@ -114,7 +114,7 @@ def lib_get_sysreport(node_ids, path=None, begin=None, end=None):
 
 def lib_get_sysreport_timediff(node_id, path=None, begin=None, end=None):
     sysresponsible = is_sysresponsible(node_id)
-    data = sysreport.sysreport().show_data(None,
+    data = gittrack.gittrack().show_data(None,
                                            node_id,
                                            path=encode_fpath(path),
                                            begin=begin,
@@ -147,7 +147,7 @@ def lib_get_sysreport_timediff(node_id, path=None, begin=None, end=None):
 
 def lib_get_sysreport_commit(node_id, cid, path=None):
     sysresponsible = is_sysresponsible(node_id)
-    data = sysreport.sysreport().show_data(cid, node_id, path=encode_fpath(path),
+    data = gittrack.gittrack().show_data(cid, node_id, path=encode_fpath(path),
                                           )
     for k, d in data['stat'].items():
         del(data['stat'][k])
@@ -176,7 +176,7 @@ def lib_get_sysreport_commit(node_id, cid, path=None):
 
 def lib_get_sysreport_commit_tree(node_id, cid, path=None):
     sysresponsible = is_sysresponsible(node_id)
-    data = sysreport.sysreport().lstree_data(cid, node_id, path=encode_fpath(path))
+    data = gittrack.gittrack().lstree_data(cid, node_id, path=encode_fpath(path))
     sec_pattern = get_pattern_secure()
     for i, d in enumerate(data):
         if d["fpath"].startswith("cmd/"):
@@ -192,7 +192,7 @@ def lib_get_sysreport_commit_tree(node_id, cid, path=None):
 
 def lib_get_sysreport_commit_tree_file(node_id, cid, oid):
     sysresponsible = is_sysresponsible(node_id)
-    data = sysreport.sysreport().lstree_data(cid, node_id)
+    data = gittrack.gittrack().lstree_data(cid, node_id)
     sec_pattern = get_pattern_secure()
     for d in data:
         if d["oid"] != oid:
@@ -204,7 +204,7 @@ def lib_get_sysreport_commit_tree_file(node_id, cid, oid):
               "oid": oid,
               "content": T("You are not allowed to view this file content"),
             }
-    data = sysreport.sysreport().show_file_unvalidated(cid, oid, node_id)
+    data = gittrack.gittrack().show_file_unvalidated(cid, oid, node_id)
     return data
 
 def lib_get_sysreport_nodediff(node_ids, path=None, ignore_blanks=False):
@@ -238,7 +238,7 @@ def lib_get_sysreport_nodediff(node_ids, path=None, ignore_blanks=False):
     # load secure patterns
     sec_pattern = get_pattern_secure()
 
-    diff_data = sysreport.sysreport().parse_show(out)
+    diff_data = gittrack.gittrack().parse_show(out)
     os.chdir(cwd)
 
     data = []

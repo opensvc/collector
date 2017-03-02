@@ -3,7 +3,7 @@ from subprocess import *
 import copy
 import uuid
 
-class sysreport(object):
+class gittrack(object):
     def __init__(self):
         here_d = os.path.dirname(__file__)
         self.collect_d = os.path.join(here_d, '..', 'uploads', 'sysreport')
@@ -238,6 +238,6 @@ class sysreport(object):
 
 
 if __name__ == "__main__":
-    o = sysreport()
+    o = gittrack()
     #print(o.timeline(["clementine"]))
     print(o.lstree_data('f8f48a59d61501e290cb521641ff27bd747252cb', 'clementine'))
