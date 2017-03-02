@@ -1,3 +1,64 @@
+var plots_colors = [
+	"#4bb2c5",
+	"#4bb2c5",
+	"#EAA228",
+	"#EAA228",
+	"#c5b47f",
+	"#c5b47f",
+	"#579575",
+	"#579575",
+	"#839557",
+	"#839557",
+	"#958c12",
+	"#958c12",
+	"#953579",
+	"#953579",
+	"#4b5de4",
+	"#4b5de4",
+	"#d8b83f",
+	"#d8b83f",
+	"#ff5800",
+	"#ff5800",
+	"#0085cc",
+	"#0085cc",
+	"#c747a3",
+	"#c747a3",
+	"#cddf54",
+	"#cddf54",
+	"#FBD178",
+	"#FBD178",
+	"#26B4E3",
+	"#26B4E3",
+	"#bd70c7",
+	"#bd70c7"
+]
+var hlc_defaults = {
+	hlc: true,
+	tickLength: 10,
+	closeColor: plots_colors[2],
+	lineWidth: 3
+}
+var chart_defaults = {
+	cursor: {
+		zoom: true,
+		showTooltip: false
+	},
+	grid: {
+		gridLineColor: "#efefef",
+		background: "transparent",
+		borderWidth: 0,
+		shadowOffset: 0,
+		shadowWidth: 0
+	},
+	gridPadding: {
+		right: 90
+	},
+	legend: {
+		show: true,
+		location: "e",
+		placement: "outside"
+	}
+}
 
 function comp_status_plot(url, id) {
   require(["jqplot"], function(){
@@ -534,28 +595,6 @@ function set_no_data(e) {
 	e.append("<div name='nodata' class='icon db16 grayed' style='padding:1em'>no data</div>")
 }
 
-var chart_defaults = {
-	cursor: {
-		zoom: true,
-		showTooltip: false
-	},
-	grid: {
-		gridLineColor: "#efefef",
-		background: "transparent",
-		borderWidth: 0,
-		shadowOffset: 0,
-		shadowWidth: 0
-	},
-	gridPadding: {
-		right: 90
-	},
-	legend: {
-		show: true,
-		location: "e",
-		placement: "outside"
-	}
-}
-
 function stats_cpu(url, id) {
   require(["jqplot"], function(){
     $.jqplot.config.enablePlugins = true;
@@ -1086,7 +1125,11 @@ function stats_trend_mem(url, id) {
             title: {
                 text: 'Memory usage trend<br>high/low/average'
             },
+            legend: {
+                show: false
+            },
 	    seriesDefaults: {
+		rendererOptions: hlc_defaults,
                 renderer: $.jqplot.OHLCRenderer, 
                 fill: false,
                 shadowAngle: 135,
@@ -1119,7 +1162,11 @@ function stats_trend_cpu(url, id) {
             title: {
                 text: 'Cpu usage trend<br>high/low/average'
             },
+            legend: {
+                show: false
+            },
 	    seriesDefaults: {
+		rendererOptions: hlc_defaults,
                 renderer: $.jqplot.OHLCRenderer, 
                 fill: false,
                 shadowAngle: 135,
@@ -1155,7 +1202,6 @@ function stats_blockdev(url, id) {
           return
         }
         set_has_data($("#"+id))
-        colors = [ "#4bb2c5", "#4bb2c5", "#EAA228", "#EAA228", "#c5b47f", "#c5b47f", "#579575", "#579575", "#839557", "#839557", "#958c12", "#958c12", "#953579", "#953579", "#4b5de4", "#4b5de4", "#d8b83f", "#d8b83f", "#ff5800", "#ff5800", "#0085cc", "#0085cc", "#c747a3", "#c747a3", "#cddf54", "#cddf54", "#FBD178", "#FBD178", "#26B4E3", "#26B4E3", "#bd70c7", "#bd70c7"]
         _data.begin = osvc_date_from_collector(_data.begin)
         _data.end = osvc_date_from_collector(_data.end)
         data = _data['time']['secps']['data']
@@ -1180,7 +1226,7 @@ function stats_blockdev(url, id) {
         }
 	p = $.jqplot(id+'_secps_time', data, $.extend({}, chart_defaults, {
 	    stackSeries: false,
-            seriesColors: colors,
+            seriesColors: plots_colors,
             title: {
                 text: 'Block device bandwidth'
             },
@@ -1463,7 +1509,11 @@ function stats_blockdev(url, id) {
             title: {
                 text: 'Block device transactions<br>high/low/average'
             },
+            legend: {
+                show: false
+            },
 	    seriesDefaults: {
+		rendererOptions: hlc_defaults,
                 renderer: $.jqplot.OHLCRenderer
             },
 	    series: [
@@ -1494,7 +1544,11 @@ function stats_blockdev(url, id) {
             title: {
                 text: 'Block device request size<br>high/low/average'
             },
+            legend: {
+                show: false
+            },
 	    seriesDefaults: {
+		rendererOptions: hlc_defaults,
                 renderer: $.jqplot.OHLCRenderer
             },
 	    series: [
@@ -1525,7 +1579,11 @@ function stats_blockdev(url, id) {
             title: {
                 text: 'Block device wait time<br>high/low/average'
             },
+            legend: {
+                show: false
+            },
 	    seriesDefaults: {
+		rendererOptions: hlc_defaults,
                 renderer: $.jqplot.OHLCRenderer
             },
 	    series: [
@@ -1556,7 +1614,11 @@ function stats_blockdev(url, id) {
             title: {
                 text: 'Block device service time<br>high/low/average'
             },
+            legend: {
+                show: false
+            },
 	    seriesDefaults: {
+		rendererOptions: hlc_defaults,
                 renderer: $.jqplot.OHLCRenderer
             },
 	    series: [
@@ -1587,7 +1649,11 @@ function stats_blockdev(url, id) {
             title: {
                 text: 'Block device utilization<br>high/low/average'
             },
+            legend: {
+                show: false
+            },
 	    seriesDefaults: {
+		rendererOptions: hlc_defaults,
                 renderer: $.jqplot.OHLCRenderer
             },
 	    series: [
@@ -1684,8 +1750,6 @@ function stats_netdev_err(url, id) {
         errps = _data[0]
         collps = _data[1]
         dropps = _data[2]
-        colors = [ "#4bb2c5", "#4bb2c5", "#EAA228", "#EAA228", "#c5b47f", "#c5b47f", "#579575", "#579575", "#839557", "#839557", "#958c12", "#958c12", "#953579", "#953579", "#4b5de4", "#4b5de4", "#d8b83f", "#d8b83f", "#ff5800", "#ff5800", "#0085cc", "#0085cc", "#c747a3", "#c747a3", "#cddf54", "#cddf54", "#FBD178", "#FBD178", "#26B4E3", "#26B4E3", "#bd70c7", "#bd70c7"]
-
         labels = errps[0]
         data = errps[1]
         data = mangle_data(data)
@@ -1707,7 +1771,7 @@ function stats_netdev_err(url, id) {
         }
 	p = $.jqplot(id+'_errps', data, $.extend({}, chart_defaults, {
 	    stackSeries: false,
-            seriesColors: colors,
+            seriesColors: plots_colors,
             title: {
                 text: 'Net device errors/s'
             },
@@ -1755,7 +1819,7 @@ function stats_netdev_err(url, id) {
         }
 	p = $.jqplot(id+'_collps', data, $.extend({}, chart_defaults, {
 	    stackSeries: false,
-            seriesColors: colors,
+            seriesColors: plots_colors,
             title: {
                 text: 'Net device collisions/s'
             },
@@ -1803,7 +1867,7 @@ function stats_netdev_err(url, id) {
         }
 	p = $.jqplot(id+'_dropps', data, $.extend({}, chart_defaults, {
 	    stackSeries: false,
-            seriesColors: colors,
+            seriesColors: plots_colors,
             title: {
                 text: 'Net device drops/s'
             },
@@ -1912,8 +1976,6 @@ function stats_netdev(url, id) {
         set_has_data($("#"+id))
         bw = _data[0]
         pk = _data[1]
-        colors = [ "#4bb2c5", "#4bb2c5", "#EAA228", "#EAA228", "#c5b47f", "#c5b47f", "#579575", "#579575", "#839557", "#839557", "#958c12", "#958c12", "#953579", "#953579", "#4b5de4", "#4b5de4", "#d8b83f", "#d8b83f", "#ff5800", "#ff5800", "#0085cc", "#0085cc", "#c747a3", "#c747a3", "#cddf54", "#cddf54", "#FBD178", "#FBD178", "#26B4E3", "#26B4E3", "#bd70c7", "#bd70c7"]
-
         labels = bw[0]
         data = bw[1]
         data = mangle_data(data)
@@ -1936,7 +1998,7 @@ function stats_netdev(url, id) {
         }
 	p = $.jqplot(id+'_kBps', data, $.extend({}, chart_defaults, {
 	    stackSeries: false,
-            seriesColors: colors,
+            seriesColors: plots_colors,
             title: {
                 text: 'Net device bandwidth'
             },
@@ -1985,7 +2047,7 @@ function stats_netdev(url, id) {
         }
 	p = $.jqplot(id+'_pckps', data, $.extend({}, chart_defaults, {
 	    stackSeries: false,
-            seriesColors: colors,
+            seriesColors: plots_colors,
             title: {
                 text: 'Net device packets/s'
             },
