@@ -3138,10 +3138,24 @@ button:disabled {
 	align-self: center;
 }
 
+// for svc avail timeline
+.box-orange {
+	background-color: orange !important;
+	border-color: orange !important;
+}
+.box-green {
+	background-color: #009900 !important;
+	border-color: #009900 !important;
+}
+.box-gray {
+	background-color: #666666 !important;
+	border-color: #666666 !important;
+}
 .box-red {
 	background-color: #990000 !important;
 	border-color: #990000 !important;
 }
+
 .icon-orange {
        color: orange;
 }
