@@ -222,23 +222,6 @@ function flash() {
 	$(".menu_flash").bind("click", function(e) {
 		o.div.slideToggle()
 	})
-	$(".menu_flash").droppable({
-		accept: ".tag",
-		activeClass: "tag_del_active",
-		hoverClass: "tag_del_hover",
-		activate: function(event, ui) {
-			ui.helper.css({"z-index": 2002})
-		},
-		over: function(event, ui) {
-			ui.draggable.addClass("tag_kill")
-		},
-		out: function(event, ui) {
-			ui.draggable.removeClass("tag_kill")
-		},
-		drop: function(event, ui) {
-			o.drop_barel_entry(ui)
-		}
-	})
 
 	o.sanitize_id = function(id) {
 		id = "" + id
@@ -281,11 +264,6 @@ function flash() {
 		}
 	}
 
-	o.drop_barel_entry = function(ui) {
-		var id = ui.draggable.attr("barel_id")
-		o.delete_barel_entry(id)
-	}
-
 	o.delete_barel_entry = function(id) {
 		var i = o.find_id(id)
 		o.barel.splice(i, 1)
@@ -310,11 +288,6 @@ function flash() {
 		}
 		d.bind("click", function() {
 			o.show_entry(data)
-		})
-		d.draggable({
-			"opacity": 0.9,
-			"revert": true,
-			"stack": ".tag",
 		})
 	}
 
