@@ -40,6 +40,7 @@ var hlc_defaults = {
 }
 var chart_defaults = {
 	cursor: {
+		clickReset: true,
 		zoom: true,
 		showTooltip: false
 	},
