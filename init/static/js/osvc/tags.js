@@ -45,8 +45,13 @@ function tags(options) {
 				d.append(o.add_tag(_data[i]), " ")
 			}
 			if (o.options.responsible && o.options.candidates != true) {
-				d.append(o.add_add_tag())
-				d.append(o.add_del_tag())
+				o.e_del_tag = o.add_del_tag()
+				o.e_add_tag = o.add_add_tag()
+				d.append(o.e_del_tag)
+				d.append(o.e_add_tag)
+			} else {
+				o.e_del_tag = $("")
+				o.e_add_tag = $("")
 			}
 			o.div.find("[name=tag_container]").remove()
 			o.div.prepend(d)
@@ -114,10 +119,16 @@ function tags(options) {
 			})
 		})
 		e.draggable({
-			"containment": o.div,
-			"opacity": 0.9,
+			"opacity": 0.6,
+			"addClasses": false,
 			"revert": true,
-			"stack": ".tag",
+			"zIndex": 3001,
+			"start": function(event, ui) {
+				o.e_del_tag.show()
+			},
+			"stop": function(event, ui) {
+				o.e_del_tag.hide()
+			}
 		})
 		return e
 	}
@@ -299,10 +310,10 @@ function tags(options) {
 	o._bind_admin_tools = function() {
 		o.div.hover(
 			function(){
-				o.div.find(".tag_add,.tag_del").show()
+				o.div.find(".tag_add").show()
 			},
 			function(){
-				o.div.find(".tag_add,.tag_del").hide()
+				o.div.find(".tag_add").hide()
 			}
 		)
 	}
