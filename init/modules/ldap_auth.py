@@ -672,12 +672,15 @@ def ldap_auth(server='ldap',
                 con.simple_bind_s(username, password)
                 logger.debug('Ldap username connect...')
             # We have to use the full string
-            username = \
-                con.search_ext_s(base_dn,
-                                 ldap.SCOPE_SUBTREE,
-                                 "(&(sAMAccountName=%s)(%s))" % (ldap.filter.escape_filter_chars(username_bare),
-                                                                 filterstr),
-                                 ["cn"])[0][0]
+            try:
+                username = \
+                    con.search_ext_s(base_dn,
+                                     ldap.SCOPE_SUBTREE,
+                                     "(&(sAMAccountName=%s)(%s))" % (ldap.filter.escape_filter_chars(username_bare),
+                                                                     filterstr),
+                                     ["cn"])[0][0]
+            except:
+                username = None
         else:
             if ldap_binddn:
                 # need to search directory with an bind_dn account 1st

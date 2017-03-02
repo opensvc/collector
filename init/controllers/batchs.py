@@ -121,6 +121,15 @@ data = {
      },
    ],
  },
+ 'docker': {
+   'title': 'Docker Registries',
+   'batchs': [
+     {
+       'url': URL(r=request, c='registry', f='discover_registries'),
+       'comment': "Refresh docker registries indexes",
+     },
+   ],
+ },
 }
 
 def batchs():

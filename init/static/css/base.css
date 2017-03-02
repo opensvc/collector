@@ -1206,16 +1206,8 @@ div.float h2 {
 }
 
 div.container {
-	border-top: 1px solid #ddc;
-	border-left: 1px solid #ddc;
-	border-right: 1px solid #eed;
-	border-bottom: 1px solid #eed;
-	background-color: #ffe;
-	margin:0.2em;
-	padding:0.2em;
-	-moz-border-radius:8px;
-	-webkit-border-radius:8px;
-	border-radius:8px;
+	margin:0.2em 0;
+	padding:0.2em 0;
 }
 
 div.container > * {
@@ -2297,7 +2289,8 @@ a.search-link:hover {
 }
 
 .perf_plot {
-	width: 600px;
+	flex: 1 1 600px;
+	margin: 0.5em 0;
 }
 
 .nowrap {
@@ -2487,6 +2480,11 @@ button, input[type=button], input[type=submit] {
 	color: #333388;
 }
 
+.jqplot-highlighter-tooltip,.jqplot-canvasOverlay-tooltip {
+	background: rgba(255,255,255,0.6) !important;
+	border: 0px !important;
+	border-radius: 3px;
+}
 .jqplot-image-button {
 	float: right;
 	position: relative;
@@ -2515,6 +2513,13 @@ a.jqplot-image-container-close {
 	float: right;
 }
 
+.jqplot-table-legend {
+	max-width: 10em;
+	border: 0px !important;
+}
+.jqplot-table-legend-swatch-outline {
+	border: 0px !important;
+}
 
 .billing {
 	width: 95%;
@@ -3133,10 +3138,24 @@ button:disabled {
 	align-self: center;
 }
 
+// for svc avail timeline
+.box-orange {
+	background-color: orange !important;
+	border-color: orange !important;
+}
+.box-green {
+	background-color: #009900 !important;
+	border-color: #009900 !important;
+}
+.box-gray {
+	background-color: #666666 !important;
+	border-color: #666666 !important;
+}
 .box-red {
 	background-color: #990000 !important;
 	border-color: #990000 !important;
 }
+
 .icon-orange {
        color: orange;
 }

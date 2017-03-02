@@ -804,12 +804,21 @@ function cell_decorator_username(e, line) {
 		if (get_selected() != "") {
 			return
 		}
+		var table_id = e.parents("table").attr("id").replace(/^table_/, '')
+		var data = {"fullname": v}
+		if (table_id.match(/^users/)) {
+			var user_id = $.data(line.children("[col=id]")[0], "v")
+			data["user_id"] = user_id
+			flash_id = "user-" + user_id
+		} else {
+			flash_id = "user-" + v
+		}
 		osvc.flash.show({
-			id: "user-"+v,
+			id: flash_id,
 			text: v, 
 			cl: "icon guy16",
 			bgcolor: osvc.colors.user,
-			fn: function(id){user_tabs(id, {"fullname": v})}
+			fn: function(id){user_tabs(id, data)}
 		})
 	})
 }
@@ -1896,9 +1905,9 @@ function cell_decorator_users_role(e, line) {
 	var s = $.data(e[0], "v")
 	e.empty()
 	if (s == 1) {
-		e.addClass("admin")
+		e.addClass("icon admin")
 	} else {
-		e.addClass("guy16")
+		e.addClass("icon guy16")
 	}
 }
 

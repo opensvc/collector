@@ -467,8 +467,13 @@ def insert_stats(data, auth):
 
 @auth_uuid
 def rpc_insert_stats(data, auth):
-    import cPickle
-    h = cPickle.loads(data)
+    try:
+        import cPickle
+        h = cPickle.loads(data)
+    except:
+        import json
+        h = json.loads(data)
+
     node_id = auth_to_node_id(auth)
     for stat in h:
         vars, vals = h[stat]

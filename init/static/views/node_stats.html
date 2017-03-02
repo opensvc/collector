@@ -1,5 +1,5 @@
 <div style="padding:1em">
-	<span>
+	<div style="margin-bottom:1em">
 		<img src="/init/static/images/begin16.png" style="vertical-align:middle">
 		<input name="begin" type="text">
 		<input name="end" type="text">
@@ -9,157 +9,130 @@
 		<input type="button" name="last_week">
 		<input type="button" name="last_month">
 		<input type="button" name="last_year">
-	<span>
-	<div class="container">
-		<img src="/init/static/images/svc.png">
-		<a data-i18n="node_stats.containers"></a>
-		<a class="icon nok hidden jqplot-image-container-close" style="padding:0.2em 0.3em"></a>
-		<a class="icon refresh16 hidden jqplot-image-container-close" style="padding:0.2em 0.3em"></a>
-		<div class="spacer">&nbsp;</div>
-		<div class="hidden" name="plots" group="svc_cpu">
-			<div name="" class="float perf_plot"></div>
-		</div>
-		<div class="hidden" name="plots" group="svc_cap_cpu">
-			<div name="" class="float perf_plot"></div>
-		</div>
-		<div class="hidden" name="plots" group="svc_mem">
-			<div name="" class="float perf_plot"></div>
-		</div>
-		<div class="hidden" name="plots" group="svc_cap">
-			<div name="" class="float perf_plot"></div>
-		</div>
-		<div class="hidden" name="plots" group="svc_swap">
-			<div name="" class="float perf_plot"></div>
-		</div>
-		<div class="hidden" name="plots" group="svc_rss">
-			<div name="" class="float perf_plot"></div>
-		</div>
-		<div class="hidden" name="plots" group="svc_nproc">
-			<div name="" class="float perf_plot"></div>
-		</div>
-		<div class="hidden" name="plots" group="svc_pg">
-			<div name="" class="float perf_plot"></div>
-		</div>
-		<div class="hidden" name="plots" group="svc_avgpg">
-			<div name="" class="float perf_plot"></div>
-		</div>
-		<div class="hidden" name="plots" group="svc_at">
-			<div name="" class="float perf_plot"></div>
-		</div>
-		<div class="hidden" name="plots" group="svc_avgat">
-			<div name="" class="float perf_plot"></div>
-		</div>
-		<div class="spacer">&nbsp;</div>
 	</div>
 	<div class="container">
-		<img src="/init/static/images/hw16.png">
-		<a data-i18n="node_stats.cpu"></a>
+		<a class="b icon_fixed_width svc" data-i18n="node_stats.containers"></a>
 		<a class="icon nok hidden jqplot-image-container-close" style="padding:0.2em 0.3em"></a>
 		<a class="icon refresh16 hidden jqplot-image-container-close" style="padding:0.2em 0.3em"></a>
-		<div class="spacer">&nbsp;</div>
-		<div class="hidden" name="plots" group="cpu">
-			<div name="_u" class="float perf_plot"></div>
+		<div class="tag_container" name="plots" group="svc_cpu" style="display:none">
+			<div name="" class="perf_plot"></div>
 		</div>
-		<div class="spacer">&nbsp;</div>
+		<div class="tag_container" name="plots" group="svc_cap_cpu" style="display:none">
+			<div name="" class="perf_plot"></div>
+		</div>
+		<div class="tag_container" name="plots" group="svc_mem" style="display:none">
+			<div name="" class="perf_plot"></div>
+		</div>
+		<div class="tag_container" name="plots" group="svc_cap" style="display:none">
+			<div name="" class="perf_plot"></div>
+		</div>
+		<div class="tag_container" name="plots" group="svc_swap" style="display:none">
+			<div name="" class="perf_plot"></div>
+		</div>
+		<div class="tag_container" name="plots" group="svc_rss" style="display:none">
+			<div name="" class="perf_plot"></div>
+		</div>
+		<div class="tag_container" name="plots" group="svc_nproc" style="display:none">
+			<div name="" class="perf_plot"></div>
+		</div>
+		<div class="tag_container" name="plots" group="svc_pg" style="display:none">
+			<div name="" class="perf_plot"></div>
+		</div>
+		<div class="tag_container" name="plots" group="svc_avgpg" style="display:none">
+			<div name="" class="perf_plot"></div>
+		</div>
+		<div class="tag_container" name="plots" group="svc_at" style="display:none">
+			<div name="" class="perf_plot"></div>
+		</div>
+		<div class="tag_container" name="plots" group="svc_avgat" style="display:none">
+			<div name="" class="perf_plot"></div>
+		</div>
+	</div>
+	<div class="container open_on_load">
+		<a class="b icon_fixed_width cpu16" data-i18n="node_stats.cpu"></a>
+		<a class="icon nok hidden jqplot-image-container-close" style="padding:0.2em 0.3em"></a>
+		<a class="icon refresh16 hidden jqplot-image-container-close" style="padding:0.2em 0.3em"></a>
+		<div class="tag_container" name="plots" group="cpu" style="display:none">
+			<div name="_u" class="perf_plot"></div>
+		</div>
 	</div>
 	<div class="container">
-		<img src="/init/static/images/hw16.png">
-		<a data-i18n="node_stats.mem"></a>
+		<a class="b icon_fixed_width mem16" data-i18n="node_stats.mem"></a>
 		<a class="icon nok hidden jqplot-image-container-close" style="padding:0.2em 0.3em"></a>
 		<a class="icon refresh16 hidden jqplot-image-container-close" style="padding:0.2em 0.3em"></a>
-		<div class="spacer">&nbsp;</div>
-		<div class="hidden" name="plots" group="mem">
-			<div name="_u" class="float perf_plot"></div>
-			<div name="_pct" class="float perf_plot"></div>
+		<div class="tag_container" name="plots" group="mem" style="display:none">
+			<div name="_u" class="perf_plot"></div>
+			<div name="_pct" class="perf_plot"></div>
 		</div>
-		<div class="hidden" name="plots" group="swap">
-			<div name="_u" class="float perf_plot"></div>
-			<div name="_pct" class="float perf_plot"></div>
+		<div class="tag_container" name="plots" group="swap" style="display:none">
+			<div name="_u" class="perf_plot"></div>
+			<div name="_pct" class="perf_plot"></div>
 		</div>
-		<div class="spacer">&nbsp;</div>
 	</div>
 	<div class="container">
-		<img src="/init/static/images/action16.png">
-		<a data-i18n="node_stats.proc"></a>
+		<a class="b icon_fixed_width action16" data-i18n="node_stats.proc"></a>
 		<a class="icon nok hidden jqplot-image-container-close" style="padding:0.2em 0.3em"></a>
 		<a class="icon refresh16 hidden jqplot-image-container-close" style="padding:0.2em 0.3em"></a>
-		<div class="spacer">&nbsp;</div>
-		<div class="hidden" name="plots" group="proc">
-			<div name="_runq_sz" class="float perf_plot"></div>
-			<div name="_plist_sz" class="float perf_plot"></div>
-			<div name="_loadavg" class="float perf_plot"></div>
+		<div class="tag_container" name="plots" group="proc" style="display:none">
+			<div name="_runq_sz" class="perf_plot"></div>
+			<div name="_plist_sz" class="perf_plot"></div>
+			<div name="_loadavg" class="perf_plot"></div>
 		</div>
-		<div class="spacer">&nbsp;</div>
 	</div>
 	<div class="container">
-		<img src="/init/static/images/hd16.png">
-		<a data-i18n="node_stats.fs"></a>
+		<a class="b icon_fixed_width hd16" data-i18n="node_stats.fs"></a>
 		<a class="icon nok hidden jqplot-image-container-close" style="padding:0.2em 0.3em"></a>
 		<a class="icon refresh16 hidden jqplot-image-container-close" style="padding:0.2em 0.3em"></a>
-		<div class="spacer">&nbsp;</div>
-		<div class="hidden" name="plots" group="fs">
-			<div name="_u" class="float perf_plot"></div>
+		<div class="tag_container" name="plots" group="fs" style="display:none">
+			<div name="_u" class="perf_plot"></div>
 		</div>
-		<div class="spacer">&nbsp;</div>
 	</div>
 	<div class="container">
-		<img src="/init/static/images/hd16.png">
-		<a data-i18n="node_stats.agg_bdev"></a>
+		<a class="b icon_fixed_width hd16" data-i18n="node_stats.agg_bdev"></a>
 		<a class="icon nok hidden jqplot-image-container-close" style="padding:0.2em 0.3em"></a>
 		<a class="icon refresh16 hidden jqplot-image-container-close" style="padding:0.2em 0.3em"></a>
-		<div class="spacer">&nbsp;</div>
-		<div class="hidden" name="plots" group="block">
-			<div name="_tps" class="float perf_plot"></div>
-			<div name="_bps" class="float perf_plot"></div>
+		<div class="tag_container" name="plots" group="block" style="display:none">
+			<div name="_tps" class="perf_plot"></div>
+			<div name="_bps" class="perf_plot"></div>
 		</div>
-		<div class="spacer">&nbsp;</div>
 	</div>
 	<div class="container">
-		<img src="/init/static/images/hd16.png">
-		<a data-i18n="node_stats.bdev"></a>
+		<a class="b icon_fixed_width hd16" data-i18n="node_stats.bdev"></a>
 		<a class="icon nok hidden jqplot-image-container-close" style="padding:0.2em 0.3em"></a>
 		<a class="icon refresh16 hidden jqplot-image-container-close" style="padding:0.2em 0.3em"></a>
-		<div class="spacer">&nbsp;</div>
-		<div class="hidden" name="plots" group="blockdev">
-			<div name="_pct_util" class="float perf_plot"></div>
-			<div name="_pct_util_time" class="float perf_plot"></div>
-			<div name="_tps" class="float perf_plot"></div>
-			<div name="_tps_time" class="float perf_plot"></div>
-			<div name="_secps" class="float perf_plot"></div>
-			<div name="_secps_time" class="float perf_plot"></div>
-			<div name="_await" class="float perf_plot"></div>
-			<div name="_await_time" class="float perf_plot"></div>
-			<div name="_svctm" class="float perf_plot"></div>
-			<div name="_svctm_time" class="float perf_plot"></div>
-			<div name="_avgrq_sz" class="float perf_plot"></div>
-			<div name="_avgrq_sz_time" class="float perf_plot"></div>
-			<div name="_tm" class="float perf_plot"></div>
+		<div class="tag_container" name="plots" group="blockdev" style="display:none">
+			<div name="_pct_util" class="perf_plot"></div>
+			<div name="_pct_util_time" class="perf_plot"></div>
+			<div name="_tps" class="perf_plot"></div>
+			<div name="_tps_time" class="perf_plot"></div>
+			<div name="_secps" class="perf_plot"></div>
+			<div name="_secps_time" class="perf_plot"></div>
+			<div name="_await" class="perf_plot"></div>
+			<div name="_await_time" class="perf_plot"></div>
+			<div name="_svctm" class="perf_plot"></div>
+			<div name="_svctm_time" class="perf_plot"></div>
+			<div name="_avgrq_sz" class="perf_plot"></div>
+			<div name="_avgrq_sz_time" class="perf_plot"></div>
+			<div name="_tm" class="perf_plot"></div>
 		</div>
-		<div class="spacer">&nbsp;</div>
 	</div>
 	<div class="container">
-		<img src="/init/static/images/action_sync_16.png">
-		<a data-i18n="node_stats.netdev"></a>
+		<a class="b icon_fixed_width net16" data-i18n="node_stats.netdev"></a>
 		<a class="icon nok hidden jqplot-image-container-close" style="padding:0.2em 0.3em"></a>
 		<a class="icon refresh16 hidden jqplot-image-container-close" style="padding:0.2em 0.3em"></a>
-		<div class="spacer">&nbsp;</div>
-		<div class="hidden" name="plots" group="netdev">
-			<div name="_kBps" class="float perf_plot"></div>
-			<div name="_pckps" class="float perf_plot"></div>
+		<div class="tag_container" name="plots" group="netdev" style="display:none">
+			<div name="_kBps" class="perf_plot"></div>
+			<div name="_pckps" class="perf_plot"></div>
 		</div>
-		<div class="spacer">&nbsp;</div>
 	</div>
 	<div class="container">
-		<img src="/init/static/images/action_sync_16.png">
-		<a data-i18n="node_stats.netdev_err"></a>
+		<a class="b icon_fixed_width net16" data-i18n="node_stats.netdev_err"></a>
 		<a class="icon nok hidden jqplot-image-container-close" style="padding:0.2em 0.3em"></a>
 		<a class="icon refresh16 hidden jqplot-image-container-close" style="padding:0.2em 0.3em"></a>
-		<div class="spacer">&nbsp;</div>
-		<div class="hidden" name="plots" group="netdev_err">
-			<div name="_errps" class="float perf_plot"></div>
-			<div name="_collps" class="float perf_plot"></div>
-			<div name="_dropps" class="float perf_plot"></div>
+		<div class="tag_container" name="plots" group="netdev_err" style="display:none">
+			<div name="_errps" class="perf_plot"></div>
+			<div name="_collps" class="perf_plot"></div>
+			<div name="_dropps" class="perf_plot"></div>
 		</div>
-		<div class="spacer">&nbsp;</div>
 	</div>
 </div>

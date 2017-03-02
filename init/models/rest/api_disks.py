@@ -133,7 +133,7 @@ class rest_delete_disk(rest_delete_handler):
         if disk is None:
             return {"info": "Disk %s does not exist" % disk_id}
         manager = "Manager" in user_groups()
-        proxy_node = auth.user.node_id and auth.user.node_id in array_proxies(disk.disk_arrayid)
+        proxy_node = hasattr(auth.user, "node_id") and auth.user.node_id in array_proxies(disk.disk_arrayid)
         if not manager and not proxy_node:
             raise Exception("you are not allowed to use this handler")
         db(q).delete()
