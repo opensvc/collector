@@ -2757,12 +2757,19 @@ div.containertrans {
 	-webkit-border-radius:8px;
 }
 
+.vis-item {
+	background-color: #ECF3F5 !important;
+	border-color: lightgray !important;
+}
+.vis-item.vis-selected {
+	border-color: #FFC200 !important;
+}
+
 .vis-item.red {
 	color: white;
 	background-color: #FF8080;
 	border-color: #EE5464;
 }
-
 .vis-item.redlight {
 	color: white;
 	background-color: #FF6666;
