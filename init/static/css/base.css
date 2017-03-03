@@ -2422,16 +2422,12 @@ a.jqplot-image-container-close {
 	color: #999999;
 }
 
-.batchs h1 {
+.batchs {
+	padding: 1em;
 	text-align: left;
 }
-
 .batchs li {
 	list-style: none;
-}
-
-.batchs p:hover {
-	background-color: #d8eee7;
 }
 
 .licenses {

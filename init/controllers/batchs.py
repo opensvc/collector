@@ -136,13 +136,15 @@ def batchs():
     d = []
     for section, sdata in data.items():
         d.append(H1(T(sdata['title'])))
+        l = []
         for bdata in sdata['batchs']:
             _d = LI(A(
-               P(bdata['comment']),
+               bdata['comment'],
                _href=bdata['url'],
                _class="clickable",
             ))
-            d.append(_d)
+            l.append(_d)
+        d.append(P(l))
     return dict(table=DIV(d, _class="batchs"))
 
 def batchs_load():

@@ -6332,3 +6332,10 @@ create view v_disk_quota as
 
 alter table resmon modify rid varchar(32);
 
+# install plugin tokudb soname 'ha_tokudb.so';
+# install plugin tokudb_user_data soname 'ha_tokudb.so';
+# install plugin tokudb_user_data_exact soname 'ha_tokudb.so';
+# install plugin tokudb_file_map soname 'ha_tokudb.so';
+# install plugin tokudb_fractal_tree_info soname 'ha_tokudb.so';
+# install plugin tokudb_fractal_tree_block_map soname 'ha_tokudb.so';
+
