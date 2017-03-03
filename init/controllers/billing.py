@@ -21,6 +21,7 @@ def ajax_billing():
     table = DIV(
      billing_fmt(),
      _id="billing",
+     _class="billing",
     )
     return table
 
@@ -148,7 +149,6 @@ def billing_fmt():
             TH("Tokens", _class="head3"),
           ),
           lines,
-          _class="billing",
         )
 
     for k in ('svc_prd', 'agents_without_svc_prd', 'svc_nonprd', 'agents_without_svc_nonprd'):
@@ -160,7 +160,7 @@ def billing_fmt():
                 if i > 0:
                     l.append(", ")
                 l.append(SPAN(o_fmt(o, k, data)))
-            details.append(SPAN(
+            details.append(P(
               A(_name=name_fmt(k,os)),
               H2(headings[k]+" : "+os),
               SPAN(l),
@@ -170,16 +170,15 @@ def billing_fmt():
     summary = DIV(
       H2(T("Accounting")),
       SPAN(T("%(n)d / %(quota)s tokens", dict(n=token['total']['svc']+token['total']['agents_without_svc'], quota=quota))),
-      _style="text-align:left", _class="billing"
     )
 
     d = DIV(
       summary,
       BR(),
-      DIV(H2(T("Detailled Accounting")), _style="text-align:left", _class="billing"),
+      DIV(H2(T("Detailled Accounting")), _style="text-align:left"),
       t,
       BR(),
-      DIV(details, _style="text-align:left", _class="billing")
+      DIV(details)
     )
     return d
 

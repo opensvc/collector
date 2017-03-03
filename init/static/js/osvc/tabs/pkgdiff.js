@@ -106,6 +106,7 @@ function svc_pkgdiff(divid, options) {
 	var d
 
 	o.div.empty()
+	o.div.addClass("p-3")
 	osvc_tools(o.div, {
 		"link": o.link
 	})

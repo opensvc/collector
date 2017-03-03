@@ -887,16 +887,16 @@ function cell_decorator_log_event(e, line) {
 function cell_decorator_log_level(e, line) {
 	var v = $.data(e[0], "v")
 	var t = {
-		"warning": "boxed_small bgorange",
-		"info": "boxed_small bggreen",
-		"error": "boxed_small bgred",
+		"warning": "bgorange",
+		"info": "bggreen",
+		"error": "bgred",
 	}
 	if (v in t) {
 		var cl = t[v]
 	} else {
-		var cl = "boxed_small bgblack"
+		var cl = "bgblack"
 	}
-	e.html("<div class='"+cl+"'>"+v+"</div>")
+	e.addClass(cl).css({color: "whitesmoke", "text-align": "center"})
 }
 
 function cell_decorator_status(e, line) {

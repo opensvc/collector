@@ -130,7 +130,7 @@ function sysrep(divid, options) {
 		// Configuration for the Timeline
 		var options = {
 			template: function (item) {
-				return '<pre style="text-align:left">' + item.stat + '</pre>'
+				return '<div class="pre" style="text-align:left">' + item.stat + '</div>'
 			},
 			//zoomKey: "metaKey",
 			zoomable: false,
@@ -223,7 +223,7 @@ function sysrep(divid, options) {
 			}
 
 			// item title
-			var e = $("<h2></h2>")
+			var e = $("<h4></h4>")
 			e.addClass("clickable")
 			e.addClass(highlight_cl)
 			e.bind("click", function() {
@@ -339,7 +339,7 @@ function sysrep(divid, options) {
 				for (j=0;j<_dele;j++) stat += "-"
 
 				// diff title
-				var e = $("<h2></h2>")
+				var e = $("<h4></h4>")
 				e.addClass("clickable")
 				if (result.blocks[d].secure) {
 					e.addClass("highlight")
@@ -379,7 +379,7 @@ function sysrep(divid, options) {
 				} else {
 					cl = "icon log16"
 				}
-				var e = $("<h2>" + result[i].fpath + "</h2>")
+				var e = $("<h4>" + result[i].fpath + "</h4>")
 				e.addClass("clickable")
 				if (result[i].secure) {
 					e.addClass("highlight")
@@ -762,7 +762,7 @@ function sysrepdiff(divid, options)
 			}
 
 			// item title
-			var e = $("<h2></h2>")
+			var e = $("<h4></h4>")
 			e.addClass("clickable")
 			e.addClass(highlight_cl)
 			e.bind("click", function() {

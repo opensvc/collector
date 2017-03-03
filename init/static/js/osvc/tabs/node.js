@@ -433,11 +433,11 @@ function node_stats(divid, options) {
 		o.dates_set_now()
 
 		// init buttons
-		o.btn_now = o.div.find("input[name=now]")
-		o.btn_last_day = o.div.find("input[name=last_day]")
-		o.btn_last_week = o.div.find("input[name=last_week]")
-		o.btn_last_month = o.div.find("input[name=last_month]")
-		o.btn_last_year = o.div.find("input[name=last_year]")
+		o.btn_now = o.div.find("button[name=now]")
+		o.btn_last_day = o.div.find("button[name=last_day]")
+		o.btn_last_week = o.div.find("button[name=last_week]")
+		o.btn_last_month = o.div.find("button[name=last_month]")
+		o.btn_last_year = o.div.find("button[name=last_year]")
 
 		o.btn_now.attr("value", i18n.t("node_stats.now"))
 		o.btn_last_day.attr("value", i18n.t("node_stats.last_day"))

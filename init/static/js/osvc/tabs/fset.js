@@ -590,7 +590,7 @@ function fset_designer(divid, options) {
 			{"label": "LIKE", "value": "LIKE"},
 			{"label": "IN", "value": "IN"}
 		]
-		var input = $("<input id='f_op' class='aci oi' style='width:3em'>")
+		var input = $("<input id='f_op' class='aci oi' style='width:5em'>")
 		input.val(current)
 		input.attr("acid", current)
 		input.autocomplete({
@@ -794,7 +794,7 @@ function fset_designer(divid, options) {
 	}
 
 	o.save_input = function() {
-		var input = $("<input type='submit'>").val(i18n.t("fset_designer.save"))
+		var input = $("<input class='button_div' type='submit'>").val(i18n.t("fset_designer.save"))
 		return input
 	}
 
@@ -920,7 +920,7 @@ function fset_designer(divid, options) {
 			}
 		})
 
-		var del = $("<span class='icon del16 highlight clickable' style='float:right'></span>")
+		var del = $("<span class='icon del16 link' style='float:right'></span>")
 		div.append(del)
 		del.click(function(){
 			var item = $(this).parents(".fset_designer_adder,.fset_designer_item").first()
@@ -1014,10 +1014,7 @@ function fset_designer(divid, options) {
 	o.add_adder = function(data) {
 		var item = $("<div class='fset_designer_adder'></div>")
 
-		var handle = $("<span class='fa fa-plus-square'></span>")
-		item.append(handle)
-
-		var s1 = $("<span class='icon filter16 clickable'></span>")
+		var s1 = $("<div class='icon add16 button_div d-inline-block'></div>")
 		s1.text(i18n.t("fset_designer.add_filter"))
 		item.append(s1)
 		s1.click(function(){
@@ -1025,7 +1022,7 @@ function fset_designer(divid, options) {
 			o.add_adder()
 		})
 
-		var s2 = $("<span class='icon filter16 clickable'></span>")
+		var s2 = $("<div class='icon add16 button_div d-inline-block'></div>")
 		s2.text(i18n.t("fset_designer.add_filterset"))
 		item.append(s2)
 		s2.click(function(){

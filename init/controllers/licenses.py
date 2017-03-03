@@ -130,6 +130,7 @@ def licenses():
     d = []
     for section, sdata in data.items():
         d.append(H1(T(sdata['title'])))
+        l = []
         for bdata in sdata['licences']:
             _d = LI(
                A(bdata['prj_name'], 
@@ -141,7 +142,8 @@ def licenses():
                _class="clickable", 
                _target="_blank_")
             )
-            d.append(_d)
+            l.append(_d)
+        d.append(P(l))
     return dict(table=DIV(d, _class="licenses"))
 
 def licenses_load():

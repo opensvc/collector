@@ -11,6 +11,7 @@
 </script>
 {{
 response.files.extend([
+  URL(r=request,c='static',f='css/bootstrap.css', vars={"v": code_rev}),
   URL(r=request,c='static',f='css/base.css', vars={"v": code_rev}),
   URL(r=request,c='static',f='css/awesome.css', vars={"v": code_rev}),
   URL(r=request,c='static',f='js/tooltipster/css/tooltipster.css', vars={"v": code_rev}),

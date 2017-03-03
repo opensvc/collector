@@ -272,6 +272,7 @@
 		"report_snippet_desc": "The paragraph below contains the definition to add to a report definition to embed the widget pointed by this link as a report section."
 	},
 	"table": {
+		"filter_menu": "Filter menu",
 		"fsr": {
 			"column": "Column __col__ filter:"
 		},

@@ -1208,7 +1208,7 @@ function table_log(divid, options) {
 		'orderby': ['~id'],
 		'force_cols': ['id', 'node_id', 'svc_id', 'log_fmt', 'log_dict'],
 		'default_columns': ['log_date', 'log_icons', 'log_level', 'svcname', 'nodename', 'log_user', 'log_action', 'log_evt'],
-		'columns': ['id', 'log_date', 'log_icons', 'log_level', 'svc_id', 'svcname', 'node_id', 'nodename', 'log_user', 'log_action', 'log_evt', 'log_fmt', 'log_dict', 'log_gtalk_sent', 'log_email_sent'],
+		'columns': ['log_level', 'id', 'log_date', 'log_icons', 'svc_id', 'svcname', 'node_id', 'nodename', 'log_user', 'log_action', 'log_evt', 'log_fmt', 'log_dict', 'log_gtalk_sent', 'log_email_sent'],
 		'sortable': false,
 		'wsable': true
 	}

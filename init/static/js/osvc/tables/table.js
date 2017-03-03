@@ -810,7 +810,7 @@ function table_init(opts) {
 		}
 		var sidepanel = t.get_sidepanel()
 		var input_float = $("<div style='width:21em'></div>")
-		var header = $("<h2 class='icon filter16'></h2>")
+		var header = $("<h3 class='icon filter16'></h3>")
 		var input = $("<input class='oi' name='fi'>")
 		var value_to_filter_tool = $("<span class='clickable icon values_to_filter'></span><br>")
 		var value_pie = $("<div></div>")
@@ -1614,7 +1614,7 @@ function table_init(opts) {
 		if (k in colprops) {
 			var coldiv = $("<div name='colname'></div>")
 			coldiv.html(i18n.t("table.fsr.column", {"col": "<span class='b icon "+colprops[k].img+"'>"+i18n.t("col."+colprops[k].title)+"</span>"}))
-			coldiv.insertAfter(t.e_fsr.find("h2"))
+			coldiv.insertAfter(t.e_fsr.find("h3"))
 		}
 	  
 		// position the tool
@@ -1894,7 +1894,7 @@ function table_init(opts) {
 			return
 		}
 		var s = "<span id='fsr"+t.id+"' class='right_click_menu stackable' style='display: none'>"
-		s += "<h2 class='icon fa-bars movable'>"+i18n.t("table.filterbox_title")+"</h2>"
+		s += "<h3 class='icon fa-bars movable'>"+i18n.t("table.filterbox_title")+"</h3>"
 		s += "<table>"
 		s +=  "<tr>"
 		s +=   "<td id='fsrview' colspan=3 style='height:1.3em'></td>"
@@ -2770,13 +2770,13 @@ function table_init(opts) {
 		var area = $("<div></div>")
 		sidepanel.append(area)
 
-		var save = $("<a class='icon add16' data-i18n='table.bookmarks_save'></a>")
+		var save = $("<p class='button_div icon add16' data-i18n='table.bookmarks_save'></p>")
 		area.append(save)
 
-		var save_name = $("<div class='hidden'><hr><div class='icon edit16' data-i18n='table.bookmarks_save_name'></div><div>")
+		var save_name = $("<div class='hidden'><hr><div class='icon edit16 ml-3' data-i18n='table.bookmarks_save_name'></div><div>")
 		area.append(save_name)
 
-		var save_name_input = $("<input style='margin-left:1em' class='oi' />")
+		var save_name_input = $("<input class='oi ml-3'>")
 		save_name.append(save_name_input)
 
 		area.append("<hr>")
@@ -2886,9 +2886,9 @@ function table_init(opts) {
 		}
 
 		// append the bookmark to the list area
-		var bookmark = $("<p></p>")
+		var bookmark = $("<p class='button_div'></p>")
 		bookmark.append($("<a class='icon bookmark16'>"+name+"</a>"))
-		bookmark.append($("<a style='float:right' class='icon del16'>&nbsp;</a>"))
+		bookmark.append($("<a style='float:right' class='link icon del16'>&nbsp;</a>"))
 		t.e_tool_bookmarks_listarea.append(bookmark)
 
 		// "del" binding
@@ -3177,33 +3177,15 @@ function cell_decorator_pct(e, line) {
 }
 
 function _cell_decorator_pct(v) {
-	var dl = $("<div><div>")
-	var dr = $("<div><div>")
-	var dp = $("<div><div>")
 	var d = $("<div><div>")
-	dl.css({
-		"font-size": "0px",
-		"line-height": "0px",
-		"height": "4px",
-		"min-width": "0%",
-		"max-width": v+"%",
-		"width": v+"%",
-		"background": "#A6FF80"
-	})
-	dr.css({
-		"text-align": "left",
-		"margin": "2px auto",
-		"background": "#FF7863",
-		"overflow": "hidden"
-	})
-	dp.css({
-		"margin": "auto",
+	d.css({
+		"background": "repeating-linear-gradient(to right, #009900, #009900 "+v+"%, #990000 0%, #990000)",
+		"border-radius": "3px",
+		"color": "white",
 		"text-align": "center",
 		"width": "100%"
 	})
-	dp.text(v+"%")
-	dr.append(dl)
-	d.append([dr, dp])
+	d.text(v+"%")
 	return d
 }
 
@@ -3272,6 +3254,7 @@ function table_action_menu(t, e){
 
 function format_search(t, o) {
 	o.e_search = $("<input class='oi' id='amsearch'>")
+	o.e_search.attr("placeholder", i18n.t("table.filter_menu"))
 	o.menu.append(o.e_search)
 	if (is_in_view(o.e_search)) {
 		o.e_search.focus()
@@ -3818,8 +3801,8 @@ function table_action_menu_yes_no(t, msg, callback) {
 	var e = $("<div style='margin-top:0.6em'></div>")
 	var title = $("<div></div>")
 	title.text(i18n.t(msg))
-	var yes = $("<button class='ok icon_fixed_width button_div clickable' style='padding:0 1em' name='yes'>"+i18n.t("action_menu.yes")+"</button>")
-	var no = $("<button class='nok icon_fixed_width button_div clickable' style='padding:0 1em' name='no'>"+i18n.t("action_menu.no")+"</button>")
+	var yes = $("<button class='ok icon_fixed_width button_div clickable' name='yes'>"+i18n.t("action_menu.yes")+"</button>")
+	var no = $("<button class='nok icon_fixed_width button_div clickable' name='no'>"+i18n.t("action_menu.no")+"</button>")
 	e.append(title)
 	e.append(yes)
 	e.append(no)

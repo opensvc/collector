@@ -380,13 +380,13 @@ function osvc_show_link(url, title, title_args, fn, parameters) {
 	var header = $("<div class='icon attach16 fa-2x'></div>")
 	e.append(header)
 
-	var subheader = $("<div style='color:lightgray' data-i18n='api.link_text'></div>")
+	var subheader = $("<div data-i18n='api.link_text'></div>")
 	e.append(subheader)
 
 	osvc_render_title(header, title, title_args)
 
 	// link display area
-	var p = $("<textarea class='clickable'></textarea>")
+	var p = $("<textarea class='clickable flash'></textarea>")
 	p.val(url)
 	p.bind("click", function() {
 		window.open($(this).val(), '_blank')
@@ -407,7 +407,7 @@ function osvc_show_link(url, title, title_args, fn, parameters) {
 	// report snippet
 	var report_header = $("<div class='icon report16 fa-2x' data-i18n='api.report_snippet'></div>")
 	var report_subheader = $("<div style='color:lightgray' data-i18n='api.report_snippet_desc'></div>")
-	var snippet = $("<textarea style='height:15em'></textarea>")
+	var snippet = $("<textarea class='flash' style='height:15em'></textarea>")
 	e.append([report_header, report_subheader, snippet])
 
 	var data = [{
@@ -420,12 +420,7 @@ function osvc_show_link(url, title, title_args, fn, parameters) {
 	require(["jsyaml"], function(jsyaml){
 		snippet.text(jsyaml.dump(data))
 	})
-	e.children("textarea").css({
-		"width": "100%",
-		"background": "rgba(0,0,0,0)",
-		"border": "rgba(0,0,0,0)",
-		"padding": "1em 0 0 0",
-	})
+	e.children("textarea").css({"width": "100%"})
 
 	// translate
 	e.i18n()
