@@ -2865,6 +2865,11 @@ function table_init(opts) {
 
 		// add a close button
 		var closer = $("<div class='fa fa-times clickable link'></div>")
+		closer.css({
+			"float": "right",
+			"padding": "0.5rem",
+			"font-size": "1.3rem"
+		})
 		closer.bind("click", function(){
 			am.remove()
 		})

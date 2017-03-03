@@ -305,6 +305,7 @@
 			"forms": "Forms",
 			"gids": "Group ids",
 			"log": "Collector log",
+			"charts": "Charts",
 			"metrics": "Metrics",
 			"networks": "Networks",
 			"nodenetworks": "Nodes networks",
