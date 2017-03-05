@@ -272,11 +272,14 @@
 		"report_snippet_desc": "The paragraph below contains the definition to add to a report definition to embed the widget pointed by this link as a report section."
 	},
 	"table": {
+		"lines_per_page": "Lines per page",
+		"filter_placeholder": "Filter",
 		"filter_menu": "Filter menu",
 		"fsr": {
 			"column": "Column __col__ filter:"
 		},
 		"name": {
+			"scheduler_tasks": "Scheduler tasks",
 			"network_segments": "Network segments",
 			"registries": "Docker registries",
 			"safe": "Safe",
@@ -1452,6 +1455,12 @@
 		"hidden_menu_entries": "hidden menu entries"
 	},
 	"col": {
+		"Period": "Period",
+		"Times run": "Runs",
+		"Times failed": "Failures",
+		"Last run time": "Last Run",
+		"Next run time": "Next Run",
+		"Status": "Status",
 		"Segment Id": "Segment Id",
 		"Segment Type": "Segment Type",
 		"Segment Begin": "Segment Begin",
@@ -1992,7 +2001,8 @@
 		"choose_form": "Choose a request form"
 	},
 	"scheduler_stats": {
-		"queue": "Feed queues usage"
+		"tasks": "Tasks",
+		"queue": "Feed Queues"
 	},
 	"tabs": {
 		"close": "Click to close",

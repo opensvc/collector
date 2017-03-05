@@ -3,7 +3,7 @@ function scheduler_stats(divid) {
 	o.div = $("#"+divid)
 	o.queue_data = {}
 
-	o.refresh = function() {
+	o.queues = function() {
 		services_osvcgetrest("R_SCHEDULER_STATS", "", "", function(jd) {
 			o.load_queue(jd)
 
@@ -12,29 +12,14 @@ function scheduler_stats(divid) {
 				return
 			}
 			setTimeout(function() {
-				o.refresh()
+				o.queues()
 			}, 6000)
 		})
 	}
 
 	o.plot_options = function(series) {
-		return options = {
+		return options = $.extend({}, chart_defaults, {
 			stackSeries: false,
-			cursor:{
-				zoom: true,
-				showTooltip: true
-			},
-			grid: {
-				borderWidth: 0.5
-			},
-			legend: {
-				show: true,
-				location: 'e',
-				placement: "outside"
-			},
-			gridPadding: {
-				right: 90
-			},
 			seriesDefaults: {
 				markerOptions: {size: 2},
 				fill: false,
@@ -54,7 +39,7 @@ function scheduler_stats(divid) {
 					tickOptions: {formatString:'%d'}
 				}
 			}
-		}
+		})
 	}
 
 	o.load_queue = function(data) {
@@ -96,13 +81,23 @@ function scheduler_stats(divid) {
 		} catch (e) { }
 	}
 
+	o.tasks = function() {
+		var div = $("[name=tasks]")
+		div.uniqueId()
+		table_scheduler_tasks(div.attr("id"))
+	}
+
 	require(["jqplot"], function() {
 		o.div.load("/init/static/views/scheduler_stats.html?v="+osvc.code_rev, function() {
 			o.div.i18n()
 			o.e_queue = $("[name=queue]")
 			o.e_queue.uniqueId()
+			o.e_tasks = $("[name=tasks]")
+			o.e_tasks_table = $("<table class='table'></table>")
+			o.e_tasks.append(o.e_tasks_table)
 
-			o.refresh()
+			o.queues()
+			o.tasks()
 		})
 	})
 

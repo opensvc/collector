@@ -887,16 +887,16 @@ function cell_decorator_log_event(e, line) {
 function cell_decorator_log_level(e, line) {
 	var v = $.data(e[0], "v")
 	var t = {
-		"warning": "bgorange",
-		"info": "bggreen",
-		"error": "bgred",
+		"warning": "icon-orange",
+		"info": "icon-green",
+		"error": "icon-red",
 	}
 	if (v in t) {
 		var cl = t[v]
 	} else {
-		var cl = "bgblack"
+		var cl = ""
 	}
-	e.addClass(cl).css({color: "whitesmoke", "text-align": "center"})
+	e.addClass(cl)
 }
 
 function cell_decorator_status(e, line) {
@@ -917,7 +917,7 @@ function cell_decorator_status(e, line) {
 		"undef": "gray",
 		"n/a": "gray"
 	}
-	e.html("<div class='icon status_icon nowrap icon-"+t[c]+"'>"+v+"</div>")
+	e.html("<div class='nowrap icon-"+t[c]+"'>"+v+"</div>")
 }
 
 function cell_decorator_dns_records_type(e, line) {
@@ -1338,20 +1338,23 @@ function cell_decorator_action_cron(e, line) {
 
 function cell_decorator_dash_severity(e, line) {
 	var v = $.data(e[0], "v")
-	var l = []
 	if (v == 0) {
-		l.push("alertgreen")
+		cl = "icon-green"
+		text = "info"
 	} else if (v == 1) {
-		l.push("alertorange")
+		cl = "icon-orange"
+		text = "warning"
 	} else if (v == 2) {
-		l.push("alertred")
+		cl = "icon-lightred"
+		text = "error"
 	} else if (v == 3) {
-		l.push("alertdarkred")
+		cl = "icon-red"
+		text = "critical"
 	} else {
-		l.push("alertblack")
+		cl = "icon-black"
+		text = "alert"
 	}
-	var content = $("<div class='icon "+l.join(" ")+"' title='"+v+"'></div>").tooltipster()
-	e.html(content)
+	e.text(text).addClass(cl)
 }
 
 function cell_decorator_form_id(e, line) {
@@ -1579,7 +1582,7 @@ function cell_decorator_env(e, line) {
 	if ($.data(e[0], "v") != "PRD") {
 		return
 	}
-	e.addClass("highlight")
+	e.addClass("icon-red")
 }
 
 function cell_decorator_svc_ha(e, line) {

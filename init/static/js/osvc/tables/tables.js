@@ -1,3 +1,101 @@
+function table_scheduler_tasks(divid, options) {
+	var defaults = {
+		'divid': divid,
+		'icon': "chart16",
+		'caller': 'table_scheduler_tasks',
+		'id': 'scheduler_tasks',
+		'name': 'scheduler_tasks',
+		'ajax_url': '/init/scheduler_stats/ajax_scheduler_tasks',
+		'checkboxes': false,
+		'span': ['id'],
+		'force_cols': [
+			'function_name',
+			'status'
+		],
+		'orderby': [
+			'id',
+		],
+		'columns': [
+			'id',
+			'function_name',
+			'status',
+			'period',
+			'next_run_time',
+			'last_run_time',
+			'times_run',
+			'times_failed'
+		],
+		'default_columns': [
+			'function_name',
+			'status',
+			'period',
+			'next_run_time',
+			'last_run_time',
+			'times_run',
+			'times_failed'
+		],
+		'colprops': {
+			"id": {
+				"table": "scheduler_task",
+				"field": "id",
+				"img": "key",
+				"title": "Id"
+			},
+			"function_name": {
+				"table": "scheduler_task",
+				"field": "function_name",
+				"img": "fa-cog",
+				"title": "Name"
+			},
+			"status": {
+				"table": "scheduler_task",
+				"field": "status",
+				"img": "fa-cog",
+				"title": "Status"
+			},
+			"period": {
+				"table": "scheduler_task",
+				"field": "period",
+				"img": "time16",
+				"title": "Period"
+			},
+			"next_run_time": {
+				"_class": "datetime_no_age",
+				"table": "scheduler_task",
+				"field": "next_run_time",
+				"img": "time16",
+				"title": "Next run time"
+			},
+			"last_run_time": {
+				"_class": "datetime_no_age",
+				"table": "scheduler_task",
+				"field": "last_run_time",
+				"img": "time16",
+				"title": "Last run time"
+			},
+			"times_run": {
+				"_class": "numeric",
+				"table": "scheduler_task",
+				"field": "times_run",
+				"img": "fa-cog",
+				"title": "Times run"
+			},
+			"times_failed": {
+				"_class": "numeric",
+				"table": "scheduler_task",
+				"field": "times_failed",
+				"img": "fa-cog",
+				"title": "Times failed"
+			}
+		},
+		'wsable': true,
+		'events': []
+	}
+
+	var _options = $.extend({}, defaults, options)
+	return table_init(_options)
+}
+
 function table_registries(divid, options) {
 	var defaults = {
 		'divid': divid,
@@ -840,15 +938,6 @@ function view_comp_status(divid, options) {
 
 }
 
-function comp_status_log_on_hover(t) {
-	t.div.find("[col=run_status]").each(function() {
-		line = $(this).parents("tr")
-		var s = line.children("[col=run_status]")
-		var e = line.children("[col=run_log]")
-		$(this).attr("title", e.html()).tooltipster({contentAsHTML: true})
-	})
-}
-
 function table_comp_status_node(divid, node_id) {
 	var id = "cs_node_" + node_id
 	var f = id+"_f_node_id"
@@ -864,9 +953,6 @@ function table_comp_status_node(divid, node_id) {
 		"force_cols": ['id', 'node_id', 'svc_id', 'os_name', 'run_log'],
 		"visible_columns": ['run_date', 'svcname', 'run_module', 'run_status']
 	})
-	t.on_change = function() {
-		comp_status_log_on_hover(t)
-	}
 	return t
 }
 
@@ -885,9 +971,6 @@ function table_comp_status_svc(divid, svc_id) {
 		"force_cols": ['id', 'node_id', 'svc_id', 'os_name', 'run_log'],
 		"visible_columns": ['run_date', 'nodename', 'run_module', 'run_status']
 	})
-	t.on_change = function() {
-		comp_status_log_on_hover(t)
-	}
 	return t
 }
 

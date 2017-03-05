@@ -257,6 +257,7 @@ function table_init(opts) {
 		"on_change": false,
 		"events": [],
 		"delay": 2000,
+		"live_max_perpage": 50,
 		"detached_decorate_cells": true,
 		"request_vars": {}
 	}
@@ -430,26 +431,10 @@ function table_init(opts) {
 	}
 
 	t.reset_column_filters = function() {
-		if (!t.e_header_filters) {
-			return
-		}
-		t.e_header_filters.find("th").each(function() {
-			var input = $(this).find("input")
-			var label = $(this).find(".col_filter_label")
-			if ((c in t.colprops) && (typeof(t.colprops[c].force_filter) !== "undefined") && (t.colprops[c].force_filter != "")) {
-				input.val(t.colprops[c].force_filter)
-			} else if ((c in t.colprops) && (typeof(t.colprops[c].default_filter) !== "undefined") && (t.colprops[c].default_filter != "")) {
-				input.val(t.colprops[c].default_filter)
-			} else {
-				input.val("")
-			}
-			label.empty()
-			$(this).find(".clear16,.invert16").hide()
-		})
-		t.e_header_slim.find("th").each(function() {
-			$(this).removeClass("bgblack")
-			$(this).removeClass("bgred")
-			$(this).removeClass("bgorange")
+		t.e_header.find("th").each(function() {
+			$(this).removeClass("col-filtered-volatile")
+			$(this).removeClass("col-filtered")
+			$(this).removeClass("col-filter-changed")
 		})
 	}
 
@@ -502,7 +487,7 @@ function table_init(opts) {
 		}
 		var container = $("#"+t.options.divid)
 		var d = $("<div class='tableo'></div>")
-		var toolbar = $("<div class='theader toolbar' name='toolbar'></div>")
+		var toolbar = $("<div class='toolbar clickable' name='toolbar'></div>")
 		var table_scroll_zone = $("<div class='table_scroll_zone'></div>")
 		var table_div = $("<div></div>")
 		var table = $("<table></table>")
@@ -515,6 +500,8 @@ function table_init(opts) {
 		d.append(toolbar)
 		d.append(table_scroll_zone)
 		container.empty().append(d)
+		t.e_table = table
+		t.e_toolbar = toolbar
 	}
 
 	t.on_change = function() {
@@ -656,43 +643,6 @@ function table_init(opts) {
 		t.refresh()
 	}
 
-	t.add_column_header_slim = function(tr, c) {
-		var th = $("<th></th>")
-		th.addClass(t.colprops[c]._class)
-		th.attr("col", c)
-		tr.append(th)
-	}
-
-	t.refresh_column_headers_slim = function() {
-		t.e_header_slim.empty()
-		t.add_column_headers_slim()
-	}
-
-	t.add_column_headers_slim = function() {
-		if (t.e_header_slim) {
-			var tr = t.e_header_slim
-		} else {
-			var tr = $("<tr class='theader_slim'></tr>")
-			t.e_table.append(tr)
-			t.e_header_slim = tr
-		}
-		if (t.options.checkboxes) {
-			tr.append($("<th></th>"))
-		}
-		if (t.options.extrarow) {
-			tr.append($("<th></th>"))
-		}
-		for (i=0; i<t.options.columns.length; i++) {
-			var c = t.options.columns[i]
-			if (t.options.visible_columns.indexOf(c) >= 0) {
-				t.add_column_header_slim(tr, c)
-			}
-		}
-		tr.bind("click", function() {
-			t.e_header_filters.toggle()
-		})
-	}
-
 	t.init_colprops = function() {
 		for (var i=0; i<t.options.columns.length; i++) {
 			var c = t.options.columns[i]
@@ -761,12 +711,25 @@ function table_init(opts) {
 			t.e_header = tr
 		}
 		if (t.options.checkboxes) {
-			var th = $("<th><div class='fa fa-bars movable'></div></th>")
+			var th = $("<th class='text-center'><div class='fa fa-bars clickable mb-1 d-block'></div></th>")
 			th.click(function(e){
 				table_action_menu(t, e)
 			})
+
+			var mcb_id = t.id+"_mcb"
+			var input = $("<input type='checkbox' class='ocb'></input>")
+			input.attr("id", mcb_id)
+			var label = $("<label></label>")
+			label.attr("for", mcb_id)
+			input.bind("click", function() {
+				check_all(t.id+"_ck", this.checked)
+				t.highlighed_checked_lines()
+			})
+			th.append(input)
+			th.append(label)
 			tr.append(th)
 		}
+
 		if (t.options.extrarow) {
 			tr.append($("<th></th>"))
 		}
@@ -798,21 +761,24 @@ function table_init(opts) {
 		}
 		if (t.options.sortable) {
 			th.css({"cursor": "row-resize"})
-			th.bind("dblclick", function(event){
+			th.bind("click", function(event){
 				t.set_orderby(c, event)
 			})
 		}
 	}
 
-	t.add_column_header_input_float = function (c) {
+	t.add_column_filter_sidepanel = function (c) {
 		if (t.e_filter) {
 			t.e_filter.remove()
 		}
 		var sidepanel = t.get_sidepanel()
 		var input_float = $("<div style='width:21em'></div>")
-		var header = $("<h3 class='icon filter16'></h3>")
+		var header = $("<h3></h3>")
 		var input = $("<input class='oi' name='fi'>")
-		var value_to_filter_tool = $("<span class='clickable icon values_to_filter'></span><br>")
+		var value_to_filter_tool = $("<span class='clickable icon ml-3 values_to_filter'></span>")
+		var invert_tool = $("<span class='clickable hidden icon invert16'></span>")
+		var clear_tool = $("<span class='clickable hidden icon clear16'></span>")
+		var filterbox = $("<div id='filterbox'></div>")
 		var value_pie = $("<div></div>")
 		var value_cloud = $("<span></span>")
 
@@ -823,7 +789,15 @@ function table_init(opts) {
 			input.val(t.colprops[c].current_filter)
 		}
 		input.attr("id", input_id)
-		header.text(i18n.t("table.column_filter_header", {"col": i18n.t("col."+t.colprops[c].title)}))
+		input.attr("placeholder", i18n.t("table.filter_placeholder"))
+		t.bind_filter_reformat(input, c)
+
+		// update the column name in header
+		if (c in colprops) {
+			header.html("<span class='icon "+colprops[c].img+"'>"+i18n.t("col."+colprops[c].title)+"</span>")
+		} else {
+			header.text(i18n.t("table.column_filter_header", {"col": i18n.t("col."+t.colprops[c].title)}))
+		}
 		value_to_filter_tool.attr("title", i18n.t("table.value_to_filter_tool_title")).tooltipster()
 		value_pie.attr("id", t.id+"_fp_"+c)
 		value_pie.css({"margin-top": "0.8em"})
@@ -833,6 +807,9 @@ function table_init(opts) {
 		input_float.append(header)
 		input_float.append(input)
 		input_float.append(value_to_filter_tool)
+		input_float.append(invert_tool)
+		input_float.append(clear_tool)
+		input_float.append(filterbox)
 		input_float.append(value_pie)
 		input_float.append(value_cloud)
 
@@ -840,6 +817,24 @@ function table_init(opts) {
 		sidepanel.append(input_float)
 
 		var url = t.options.ajax_url + "_col_values/"
+
+		// clear tool click
+		clear_tool.bind("click", function(event){
+			input.val("")
+			input.trigger("keyup")
+			t.save_column_filters()
+			t.refresh_column_filters_in_place()
+			t.refresh()
+		})
+
+		// invert tool click
+		invert_tool.bind("click", function(event){
+			input.val(_invert_filter(input.val()))
+			input.trigger("keyup")
+			t.save_column_filters()
+			t.refresh_column_filters_in_place()
+			t.refresh()
+		})
 
 		// refresh column filter cloud on keyup
 		var xhr = null
@@ -852,14 +847,25 @@ function table_init(opts) {
 				return
 			}
 
-			// handle slim header colorization
-			var current_filter = t.e_header_filters.find("[col="+c+"] > .col_filter_label").attr("title")
-			if (current_filter != input.val()) {
-				t.e_header_slim.find("[col='"+col+"']").removeClass("bgred").addClass("bgorange")
+			var val = input.val()
+
+			// handle clear/invert tools visibibity
+			if (val == "") {
+				invert_tool.hide()
+				clear_tool.hide()
 			} else {
-				t.e_header_slim.find("[col='"+col+"']").removeClass("bgorange")
-				if (input.val() != "") {
-					t.e_header_slim.find("[col='"+col+"']").addClass("bgred")
+				invert_tool.show()
+				clear_tool.show()
+			}
+
+			// handle header colorization
+			var current_filter = t.colprops[c].current_filter
+			if (current_filter != val) {
+				t.e_header.find("[col='"+col+"']").removeClass("col-filtered").addClass("col-filter-changed")
+			} else {
+				t.e_header.find("[col='"+col+"']").removeClass("col-filter-changed")
+				if (val != "") {
+					t.e_header.find("[col='"+col+"']").addClass("col-filtered")
 				}
 			}
 
@@ -921,70 +927,11 @@ function table_init(opts) {
 			t.refresh()
 		})
 
-	}
-
-	t.add_column_header_input = function (tr, c) {
-		var th = $("<th></th>")
-		//th.addClass(t.colprops[c]._class)
-		th.attr("col", c)
-
-		var filter_tool = $("<span class='clickable icon filter16'></span>")
-		var invert_tool = $("<span class='clickable hidden icon invert16'></span>")
-		var clear_tool = $("<span class='clickable hidden icon clear16'></span>")
-		var label = $("<span class='col_filter_label'></span>")
-
-		th.append(filter_tool)
-		th.append(invert_tool)
-		th.append(clear_tool)
-		th.append(label)
-		tr.append(th)
-	}
-
-	t.add_column_headers_input = function() {
-		if (!t.options.headers) {
-			return
-		}
-		if (t.e_header_filters) {
-			var tr = t.e_header_filters
-		} else {
-			var tr = $("<tr class='theader_filters'></tr>")
-			t.e_table.prepend(tr)
-			t.e_header_filters = tr
-		}
-		if (!t.options.filterable) {
-			tr.hide()
-		}
-		if (t.options.checkboxes) {
-			var mcb_id = t.id+"_mcb"
-			var th = $("<th></th>")
-			var input = $("<input type='checkbox' class='ocb'></input>")
-			input.attr("id", mcb_id)
-			var label = $("<label></label>")
-			label.attr("for", mcb_id)
-			input.bind("click", function() {
-				check_all(t.id+"_ck", this.checked)
-				t.highlighed_checked_lines()
-			})
-			th.append(input)
-			th.append(label)
-			tr.append(th)
-		}
-		if (t.options.extrarow) {
-			tr.append($("<th></th>"))
-		}
-		for (i=0; i<t.options.columns.length; i++) {
-			var c = t.options.columns[i]
-			if (t.options.visible_columns.indexOf(c) >= 0) {
-				t.add_column_header_input(tr, c)
-			}
-		}
-		t.bind_filter_input_events()
+		input.focus().trigger("keyup")
 	}
 
 	t.refresh_column_filters = function() {
 		t.e_table.find("tr.theader.stick").remove()
-		t.e_header_filters.empty()
-		t.add_column_headers_input()
 		t.refresh_column_filters_in_place()
 	}
 
@@ -994,16 +941,13 @@ function table_init(opts) {
 	}
 
 	t.refresh_column_filter = function(c, val) {
-		if (!t.e_header_filters) {
-			return
-		}
-		var th = t.e_header_filters.find("th[col="+c+"]")
-		if (th.length == 0) {
-			// a bogus col filter in db with no corresponding column
+		if (!t.options.filterable) {
 			return
 		}
 
-		var label = th.find(".col_filter_label")
+		if (!(c in t.colprops)) {
+			return
+		}
 
 		if ((c in t.colprops) && (typeof(t.colprops[c].force_filter) !== "undefined") && (t.colprops[c].force_filter != "")) {
 			val = t.colprops[c].force_filter
@@ -1015,47 +959,17 @@ function table_init(opts) {
 			t.colprops[c].current_filter = val
 		}
 
-		// update text in display area
-		if (typeof(val) === "undefined") {
-			val = ""
-		}
-		var n = val.length
-		if ((n == 0) && (typeof(t.colprops[c].default_filter) !== "undefined") && (t.colprops[c].default_filter != "")) {
-			val = t.colprops[c].default_filter
-			n = val.length
-		}
-		if (n > 20) {
-			var _val = val.substring(0, 17)+"..."
-			label.attr("title", val).tooltipster()
-		} else {
-			var _val = val
-			label.attr("title", "")
-			try { label.tooltipster("destroy") } catch(e) {}
-		}
-		label.text(_val)
-
-		// toggle the clear and invert tools visibility
-		if (val == "") {
-			th.find(".clear16,.invert16").hide()
-		} else {
-			th.find(".clear16,.invert16").show()
-		}
-
-		if ((c in t.colprops) && (typeof(t.colprops[c].force_filter) !== "undefined") && (t.colprops[c].force_filter != "")) {
-			th.find(".clear16,.invert16,.filter16").hide()
-		}
-
-		// update the slim header cell colorization
-		var th = t.e_header_slim.find("[col="+c+"]")
-		th.removeClass("bgblack")
-		th.removeClass("bgred")
-		th.removeClass("bgorange")
+		// update the header cell colorization
+		var th = t.e_header.find("[col="+c+"]")
+		th.removeClass("col-filtered-volatile")
+		th.removeClass("col-filtered")
+		th.removeClass("col-filter-changed")
 		var cl = ""
-		if (val.length > 0) {
+		if (val && val.length > 0) {
 			if (!t.options.volatile_filters) {
-				th.addClass("bgred")
+				th.addClass("col-filtered")
 			} else {
-				th.addClass("bgblack")
+				th.addClass("col-filtered-volatile")
 			}
 		}
 	}
@@ -1126,7 +1040,6 @@ function table_init(opts) {
 		} else {
 			t.options.visible_columns = t.options.visible_columns.filter(function(x){if (x!=c){return true}})
 		}
-		t.refresh_column_headers_slim()
 		t.refresh_column_filters()
 		t.refresh_column_headers()
 		if (checked) {
@@ -1148,16 +1061,21 @@ function table_init(opts) {
 	}
 
 	t.bind_filter_selector = function() {
-		$("#table_"+t.id).find("[cell=1]").each(function(){
+		$("#table_"+t.id).find("[col]").each(function(){
 			$(this).bind("mouseup", function(event) {
-				cell = $(event.target)
+				if(event.button != 2) {
+					return
+				}
+				var cell = $(event.target)
+				if (cell.is("th")) {
+					var col = cell.attr('col')
+					t.add_column_filter_sidepanel(col)
+					return
+				}
 				if (typeof cell.attr("cell") === 'undefined') {
 					cell = cell.parents("[cell=1]").first()
 				}
 				t.filter_selector(event, cell.attr('col'), $.data(cell[0], 'v'))
-			})
-			$(this).bind("click", function() {
-				t.e_fsr.hide()
 			})
 		})
 	}
@@ -1605,21 +1523,10 @@ function table_init(opts) {
 	}
 
 	t.filter_selector = function(e, k, v) {
-		if(e.button != 2) {
-			return
-		}
 
-		// update the column name
-		t.e_fsr.find("[name=colname]").remove()
-		if (k in colprops) {
-			var coldiv = $("<div name='colname'></div>")
-			coldiv.html(i18n.t("table.fsr.column", {"col": "<span class='b icon "+colprops[k].img+"'>"+i18n.t("col."+colprops[k].title)+"</span>"}))
-			coldiv.insertAfter(t.e_fsr.find("h3"))
-		}
-	  
-		// position the tool
-		t.e_fsr.show()
-		t.position_on_pointer(e, t.e_fsr)
+		// open the filter sidepanel
+		t.add_column_filter_sidepanel(k)
+		t.add_filterbox()
 
 		// reset selected toggles
 		t.e_fsr.find(".bgred").each(function(){
@@ -1660,6 +1567,7 @@ function table_init(opts) {
 			$(this).bind("dblclick", function(){
 				sel = $(this).text()
 				t.colprops[k].current_filter = sel
+				t.e_sidepanel.find("input[name=fi]").val(sel).trigger("keyup")
 				t.save_column_filters()
 				t.refresh_column_filters_in_place()
 				t.refresh()
@@ -1671,9 +1579,10 @@ function table_init(opts) {
 				$(this).removeClass("highlight")
 				$(this).addClass("b")
 				t.colprops[k].current_filter = cur
-				t.e_header_slim.find("[col="+k+"]").each(function() {
-					$(this).removeClass("bgred")
-					$(this).addClass("bgorange")
+				t.e_sidepanel.find("input[name=fi]").val(cur).trigger("keyup")
+				t.e_header.find("[col="+k+"]").each(function() {
+					$(this).removeClass("col-filtered")
+					$(this).addClass("col-filter-changed")
 				})
 			})
 		})
@@ -1890,11 +1799,7 @@ function table_init(opts) {
 	}
 
 	t.add_filterbox = function() {
-		if (t.e_fsr) {
-			return
-		}
-		var s = "<span id='fsr"+t.id+"' class='right_click_menu stackable' style='display: none'>"
-		s += "<h3 class='icon fa-bars movable'>"+i18n.t("table.filterbox_title")+"</h3>"
+		var s = "<span id='fsr"+t.id+"' class='right_click_menu'>"
 		s += "<table>"
 		s +=  "<tr>"
 		s +=   "<td id='fsrview' colspan=3 style='height:1.3em'></td>"
@@ -1932,10 +1837,7 @@ function table_init(opts) {
 		s += "</table>"
 		s += "</span>"
 		t.e_fsr = $(s)
-		t.div.append(t.e_fsr)
-		t.e_fsr.draggable({
-			"handle": ".fa-bars"
-		})
+		t.e_sidepanel.find("#filterbox").html(t.e_fsr)
 	}
 
 	t.save_column_filters = function() {
@@ -2029,39 +1931,36 @@ function table_init(opts) {
 		if (!t.options.pageable) {
 			return
 		}
-		var e = $("<span class='pager floatw'></span>")
+		var e = $("<div class='pager'></div>")
 		t.e_toolbar.prepend(e)
 		t.e_pager = e
 	}
 
-	t.bind_filter_reformat = function() {
-		$("#table_"+t.id).find("input").each(function(){
-			attr = $(this).attr('id')
-			if ( typeof(attr) == 'undefined' || attr == false ) {
-				return
-			}
-			if ( ! attr.match(/nodename/gi) &&
-			     ! attr.match(/svcname/gi) &&
-			     ! attr.match(/fqdn/gi) &&
-			     ! attr.match(/assetname/gi) &&
-			     ! attr.match(/svc_id/gi) &&
-			     ! attr.match(/node_id/gi) &&
-			     ! attr.match(/disk_id/gi) &&
-			     ! attr.match(/disk_svcname/gi) &&
-			     ! attr.match(/save_svcname/gi)
-			) {return}
-			$(this).bind("change keyup input", function(){
-				if (this.value.match(/\s+/g)) {
-					if (this.value.match(/^\(/)) {return}
-					this.value = this.value.replace(/\s+/g, ',')
-					if (!this.value.match(/^\(/)) {
-						this.value = '(' + this.value
-					}
-					if (!this.value.match(/\)$/)) {
-						this.value = this.value + ')'
-					}
+	t.bind_filter_reformat = function(input, attr) {
+		if ( typeof(attr) == 'undefined' || attr == false ) {
+			return
+		}
+		if ( ! attr.match(/nodename/gi) &&
+		     ! attr.match(/svcname/gi) &&
+		     ! attr.match(/fqdn/gi) &&
+		     ! attr.match(/assetname/gi) &&
+		     ! attr.match(/svc_id/gi) &&
+		     ! attr.match(/node_id/gi) &&
+		     ! attr.match(/disk_id/gi) &&
+		     ! attr.match(/disk_svcname/gi) &&
+		     ! attr.match(/save_svcname/gi)
+		) {return}
+		input.bind("change keyup input", function(){
+			if (this.value.match(/\s+/g)) {
+				if (this.value.match(/^\(/)) {return}
+				this.value = this.value.replace(/\s+/g, ',')
+				if (!this.value.match(/^\(/)) {
+					this.value = '(' + this.value
 				}
-			})
+				if (!this.value.match(/\)$/)) {
+					this.value = this.value + ')'
+				}
+			}
 		})
 	}
 
@@ -2113,7 +2012,7 @@ function table_init(opts) {
 		span.children("a").bind("click", trigger)
 
 		function trigger() {
-			span.siblings("input").val($(this).text())
+			span.siblings("input").val($(this).text()).trigger("keyup")
 			t.colprops[col].current_filter = $(this).text()
 			t.refresh()
 			t.refresh_column_filters_in_place()
@@ -2161,6 +2060,7 @@ function table_init(opts) {
 			seriesDefaults: {
 				sortData: true,
 				renderer: $.jqplot.PieRenderer,
+				shadow: false,
 				//seriesColors: c,
 				rendererOptions: {
 					padding: 10,
@@ -2204,42 +2104,6 @@ function table_init(opts) {
 		})
 	}
 
-	t.bind_filter_input_events = function() {
-		// open filter input on filter icon click
-		t.e_header_filters.find("th > .filter16").bind("click", function(event) {
-			var c = $(this).parent().attr("col")
-			t.add_column_header_input_float(c)
-			t.e_filter.show()
-			t.position_on_pointer(event, t.e_filter)
-			t.e_filter.find("input").focus().trigger("keyup")
-		})
-
-		// clear column filter click
-		t.e_header_filters.find("th > .clear16").bind("click", function(event) {
-			var c = $(this).parent().attr("col")
-			if ((c in t.colprops) && (typeof(t.colprops[c].force_filter) !== "undefined") && (t.colprops[c].force_filter != "")) {
-				t.colprops[c].current_filter = t.colprops[c].force_filter
-			} else if ((c in t.colprops) && (typeof(t.colprops[c].default_filter) !== "undefined") && (t.colprops[c].default_filter != "")) {
-				t.colprops[c].current_filter = t.colprops[c].default_filter
-			} else {
-				t.colprops[c].current_filter = ""
-			}
-			t.save_column_filters(c)
-			t.refresh_column_filters_in_place()
-			t.refresh()
-		})
-
-		// invert column filter click
-		t.e_header_filters.find("th > .invert16").bind("click", function(event) {
-			var c = $(this).parent().attr("col")
-			t.invert_column_filter(c)
-			t.refresh_column_filters_in_place()
-			t.refresh()
-		})
-
-		t.bind_filter_reformat()
-	}
-
 	t.convert_cloud_dates = function(data) {
 		var _data = {}
 		for (var d in data) {
@@ -2255,18 +2119,19 @@ function table_init(opts) {
 		if (!t.options.linkable) {
 			return
 		}
-		var e = $("<div class='floatw clickable' name='tool_link'></div>")
+		var e = $("<div class='button_div clickable' name='tool_link'></div>")
 		var span = $("<span class='icon link16' data-i18n='table.link'></span>")
 		span.attr("title", i18n.t("table.link_help")).tooltipster()
 		e.append(span)
 		try { e.i18n() } catch(e) {}
 
 		// bindings
-		e.bind("click", function() {
+		e.bind("click", function(event) {
+			event.stopPropagation()
 			t.link()
 		})
 
-		$(this).bind("keypress", function(event) {
+		$(this).bind("keypress", function() {
 			if ($('input').is(":focus")) { return }
 			if ($('textarea').is(":focus")) { return }
 			if ( event.which == 108 ) {
@@ -2275,7 +2140,7 @@ function table_init(opts) {
 		})
 
 		t.e_tool_link = e
-		t.e_toolbar.prepend(e)
+		return e
 	}
 
 	//
@@ -2286,13 +2151,14 @@ function table_init(opts) {
 			return
 		}
 
-		var e = $("<div class='floatw clickable' name='tool_csv'></div>")
+		var e = $("<div class='button_div clickable' name='tool_csv'></div>")
 		t.e_tool_csv = e
 
 		var span = $("<span class='icon csv' data-i18n='table.csv'></span>")
 		e.append(span)
 
-		e.bind("click", function() {
+		e.bind("click", function(event) {
+			event.stopPropagation()
 			var _e = t.e_tool_csv.children("span")
 			if (!_e.hasClass("csv")) {
 				return
@@ -2315,7 +2181,7 @@ function table_init(opts) {
 			document.location.href = url
 		})
 		try { e.i18n() } catch(e) {}
-		t.e_toolbar.prepend(e)
+		return e
 	}
 
 	//
@@ -2326,15 +2192,16 @@ function table_init(opts) {
 			return
 		}
 
-		var e = $("<div class='floatw clickable' name='tool_refresh'><span class='fa refresh16'></span><span></span></div>")
+		var e = $("<div class='button_div clickable' name='tool_refresh'><span class='fa refresh16'></span><span></span></div>")
 		e.children().last().text("  "+i18n.t('table.refresh'))
 
 		// bindings
-		e.bind("click", function(){
+		e.bind("click", function(event) {
+			event.stopPropagation()
 			t.refresh()
 		})
 
-		$(this).bind("keypress", function(event) {
+		$(this).bind("keypress", function() {
 			if ($('input').is(":focus")) { return }
 			if ($('textarea').is(":focus")) { return }
 			if ( event.which == 114 ) {
@@ -2344,7 +2211,7 @@ function table_init(opts) {
 
 		t.e_tool_refresh = e
 		t.e_tool_refresh_spin = e.find(".refresh16")
-		t.e_toolbar.prepend(e)
+		return e
 	}
 
 	//
@@ -2358,13 +2225,43 @@ function table_init(opts) {
 		// checkbox
 		var input = $("<input type='checkbox' class='ocb' />")
 		input.uniqueId()
-		input.bind("click", function() {
-			var current_state
-			if ($(this).is(":checked")) {
-				current_state = 1
-			} else {
+
+		// label
+		var label = $("<label></label>")
+		label.attr("for", input.attr("id"))
+
+		// title
+		var title = $("<span data-i18n='table.live' style='padding-left:0.3em;'></span>")
+		title.attr("title", i18n.t("table.live_help")).tooltipster()
+
+		// container
+		var e = $("<div class='button_div'></div>")
+		e.append(input)
+		e.append(label)
+		e.append(title)
+		try { e.i18n() } catch(e) {}
+
+		if (t.live_enabled()) {
+			input.prop("checked", true)
+			t.pager()
+		} else {
+			input.prop("checked", false)
+		}
+
+		e.bind("click", function(event) {
+			event.stopImmediatePropagation()
+			var input = $(this).children("input")
+			if (input.is(":checked")) {
+				input.prop("checked", false)
 				current_state = 0
+			} else {
+				input.prop("checked", true)
+				current_state = 1
 			}
+
+			// anticipate table_settings refresh through websocket
+			osvc.table_settings.data[t.id].wsenabled = current_state
+
 			var data = {
 				"upc_table": t.id,
 				"upc_field": "wsenabled",
@@ -2378,32 +2275,21 @@ function table_init(opts) {
 			function(xhr, stat, error) {
 				osvc.flash.error(services_ajax_error_fmt(xhr, stat, error))
 			})
+
+			// refresh perpage table tool
+			var selector = t.add_perpage_selector()
+			t.e_sidepanel.find("[name=perpage]").html(selector.html())
 		})
 
-		// label
-		var label = $("<label></label>")
-		label.attr("for", input.attr("id"))
-
-		// title
-		var title = $("<span data-i18n='table.live' style='padding-left:0.3em;'></span>")
-		title.attr("title", i18n.t("table.live_help")).tooltipster()
-
-		// container
-		var e = $("<span class='floatw'></span>")
-		e.append(input)
-		e.append(label)
-		e.append(title)
-		try { e.i18n() } catch(e) {}
-
-		if (!(t.id in osvc.table_settings.data) || !("wsenabled" in osvc.table_settings.data[t.id]) || osvc.table_settings.data[t.id].wsenabled) {
-			input.prop("checked", true)
-			t.pager()
-		} else {
-			input.prop("checked", false)
-		}
-
-		t.e_toolbar.prepend(e)
 		t.e_wsswitch = e
+		return e
+	}
+
+	t.live_enabled = function() {
+		if (!(t.id in osvc.table_settings.data) || !("wsenabled" in osvc.table_settings.data[t.id]) || osvc.table_settings.data[t.id].wsenabled) {
+			return true
+		}
+		return false
 	}
 
 	//
@@ -2420,16 +2306,6 @@ function table_init(opts) {
 			input.prop("checked", true)
 		}
 		input.uniqueId()
-		input.bind("click", function() {
-			var current_state
-			if ($(this).is(":checked")) {
-				current_state = true
-			} else {
-				current_state = false
-			}
-			t.options.volatile_filters = current_state
-			t.refresh_column_filters_in_place()
-		})
 
 		// label
 		var label = $("<label></label>")
@@ -2441,12 +2317,54 @@ function table_init(opts) {
 		title.attr("title", i18n.t("table.volatile_help")).tooltipster()
 
 		// container
-		var e = $("<span class='floatw'></span>")
+		var e = $("<div class='button_div'></div>")
 		e.append(input)
 		e.append(label)
 		e.append(title)
 
-		t.e_toolbar.prepend(e)
+		e.bind("click", function(event) {
+			event.stopImmediatePropagation()
+			var input = $(this).children("input")
+			var current_state
+			if (input.is(":checked")) {
+				input.prop("checked", false)
+				current_state = false
+			} else {
+				input.prop("checked", true)
+				current_state = true
+			}
+			t.options.volatile_filters = current_state
+			t.refresh_column_filters_in_place()
+		})
+
+		return e
+	}
+
+	//
+	// create the tools sidepanel
+	//
+	t.add_tools_panel = function() {
+		var sidepanel = t.get_sidepanel()
+		sidepanel.append(t.add_commonality())
+		sidepanel.append(t.add_column_selector())
+		sidepanel.append(t.add_csv())
+		sidepanel.append(t.add_bookmarks())
+		sidepanel.append(t.add_link())
+		sidepanel.append(t.add_refresh())
+		sidepanel.append(t.add_wsswitch())
+		sidepanel.append(t.add_volatile())
+		sidepanel.append(t.add_perpage_selector())
+	}
+
+	//
+	// table tools toggle
+	//
+	t.add_tools_toggle = function() {
+		var e = $("<div class='icon fa-table clickable'></div>")
+		t.e_toolbar.bind("click", function() {
+			t.add_tools_panel()
+		})
+		t.e_toolbar.append(e)
 	}
 
 	//
@@ -2457,7 +2375,7 @@ function table_init(opts) {
 			return
 		}
 
-		var e = $("<div class='floatw clickable' name='tool_commonality'></div>")
+		var e = $("<div class='button_div clickable' name='tool_commonality'></div>")
 		t.e_tool_commonality = e
 
 		var span = $("<span class='icon common16' data-i18n='table.commonality'></span>")
@@ -2466,6 +2384,7 @@ function table_init(opts) {
 
 
 		e.bind("click", function(event) {
+			event.stopPropagation()
 			var sidepanel = t.get_sidepanel()
 			var area = $("<div></div>")
 			area.uniqueId()
@@ -2487,7 +2406,7 @@ function table_init(opts) {
 
 		function format(msg) {
 			var data = $.parseJSON(msg)
-			var table = $("<table></table>")
+			var table = $("<table class='table table-sm'></table>")
 			var th = $("<tr><th data-i18n='table.pct'></th><th data-i18n='table.column'></th><th data-i18n='table.value'></th></tr>")
 			th.i18n()
 			table.append(th)
@@ -2521,7 +2440,7 @@ function table_init(opts) {
 		}
 
 		try { e.i18n() } catch(e) {}
-		t.e_toolbar.prepend(e)
+		return e
 	}
 
 	//
@@ -2546,16 +2465,12 @@ function table_init(opts) {
 		var p_end = parseInt(t.options.pager.end)
 		var p_total = parseInt(t.options.pager.total)
 		var p_perpage = parseInt(t.options.pager.perpage)
-		var max_perpage = 50
 
-		if (t.e_wsswitch && t.e_wsswitch.find("input").is(":checked")) {
-			var wsswitch = true
-			if (p_perpage > max_perpage) {
-				p_perpage = max_perpage
-				t.options.pager.perpage = max_perpage
+		if (t.live_enabled()) {
+			if (p_perpage > t.options.live_max_perpage) {
+				p_perpage = t.options.live_max_perpage
+				t.options.pager.perpage = t.options.live_max_perpage
 			}
-		} else {
-			var wsswitch = false
 		}
 
 		if ((p_total > 0) && (p_end > p_total)) {
@@ -2564,23 +2479,6 @@ function table_init(opts) {
 		var s_total = ""
 		if (p_total > 0) {
 			s_total = "/" + p_total
-		}
-
-		// perpage selector
-		var l = [20, 50, 100, 500]
-		var selector = $("<div name='pager_perpage' class='white_float stackable' style='display:none;max-width:50%;text-align:right;'></div>")
-		for (i=0; i<l.length; i++) {
-			var v = l[i]
-			var entry = $("<span name='perpage_val' class='clickable'>"+v+"</span>")
-			if (v == p_perpage) {
-				entry.addClass("current_page")
-			}
-			if (wsswitch && (v > max_perpage)) {
-				entry.addClass("grayed")
-				entry.removeClass("clickable")
-			}
-			selector.append(entry)
-			selector.append($("<br>"))
 		}
 
 		t.e_pager.empty()
@@ -2608,37 +2506,62 @@ function table_init(opts) {
 				t.e_pager.append(right)
 			}
 		}
-		t.e_pager.append(selector)
-		keep_inside(selector[0])
 
 		t.e_pager.children("span").each(function () {
 			$(this).addClass('current_page clickable')
 		})
-		t.e_pager.find("[name=pager_right]").click(function(){
+		t.e_pager.find("[name=pager_right]").click(function(event){
+			event.stopPropagation()
 			t.page_submit(p_page+1)
 		})
-		t.e_pager.find("[name=pager_left]").click(function(){
+		t.e_pager.find("[name=pager_left]").click(function(event){
+			event.stopPropagation()
 			t.page_submit(p_page-1)
 		})
-		t.e_pager.find("[name=pager_center]").click(function(){
-			t.e_pager.find("[name=pager_perpage]").toggle()
-		})
-		t.e_pager.find("[name=perpage_val]").click(function(){
-			if ($(this).hasClass("grayed")) {
-				return
+	}
+
+	//
+	// table tool: perpage selector
+	//
+	t.add_perpage_selector = function () {
+		var e = $("<div name='perpage' class='p-3'></div>")
+		var title = $("<div>"+i18n.t("table.lines_per_page")+"</div>")
+		var selector = $("<div class='action_menu_selector'></div>")
+		var p_perpage = parseInt(t.options.pager.perpage)
+
+		if (t.live_enabled()) {
+			var l = [20, 50]
+		} else {
+			var l = [20, 50, 100, 500]
+		}
+		for (i=0; i<l.length; i++) {
+			var v = l[i]
+			var entry = $("<div name='perpage_val' class='clickable'>"+v+"</span>")
+			if (v == p_perpage) {
+				entry.addClass("action_menu_selector_selected")
 			}
+			selector.append(entry)
+		}
+
+		// click event
+		selector.children().click(function(event){
+			event.stopPropagation()
+			$(this).siblings().removeClass("action_menu_selector_selected")
+			$(this).addClass("action_menu_selector_selected")
 			var new_perpage = parseInt($(this).text())
 			var data = {
 				"perpage": new_perpage
 			}
 			services_osvcpostrest("R_USERS_SELF", "", "", data, function(jd) {
-				t.page = Math.floor(((p_page - 1) * p_perpage) / new_perpage)+1
+				t.page = Math.floor(((t.page - 1) * p_perpage) / new_perpage)+1
 				t.refresh()
-			},
-			function(xhr, stat, error) {
+			}, function(xhr, stat, error) {
 				osvc.flash.error(services_ajax_error_fmt(xhr, stat, error))
 			})
 		})
+		e.append(title)
+		e.append(selector)
+		return e
 	}
 
 	//
@@ -2649,19 +2572,20 @@ function table_init(opts) {
 			return
 		}
 
-		var e = $("<div class='floatw clickable' name='tool_column_selector'></div>")
+		var e = $("<div class='button_div clickable' name='tool_column_selector'></div>")
 		t.e_tool_column_selector = e
 
 		var span = $("<span class='icon columns' data-i18n='table.columns'></span>")
 		e.append(span)
-		t.e_toolbar.prepend(e)
 
 		try { e.i18n() } catch(e) {}
 
 		// bindings
-		e.bind("click", function() {
+		e.bind("click", function(event) {
+			event.stopPropagation()
 			t.show_column_selector()
 		})
+		return e
 	}
 
 	t.show_column_selector = function() {
@@ -2677,13 +2601,49 @@ function table_init(opts) {
 			var input = $("<input type='checkbox' class='ocb' />")
 			input.attr("colname", colname)
 			input.uniqueId()
-			input.bind("click", function() {
-				var colname = $(this).attr("colname")
+			if (t.options.visible_columns.indexOf(colname) >= 0) {
+				input.prop("checked", true)
+			}
+
+			// filtered columns are always visible
+			if (t.options.filterable) {
+				var val = t.colprops[colname].current_filter
+				if ((val != "") && (typeof val !== "undefined")) {
+					input.prop("disabled", true)
+					input.prop("checked", true)
+				}
+			}
+
+			// label
+			var label = $("<label></label>")
+			label.attr("for", input.attr("id"))
+
+			// title
+			var title = $("<span style='padding-left:1em;'></span>")
+			title.text(i18n.t("col."+t.colprops[colname].title))
+			title.addClass("icon_fixed_width")
+			title.addClass(t.colprops[colname].img)
+
+			// container
+			var _e = $("<div class='button_div' style='white-space:nowrap'></div>")
+			_e.append(input)
+			_e.append(label)
+			_e.append(title)
+
+			area.append(_e)
+
+			// click event
+			_e.bind("click", function(event) {
+				event.stopImmediatePropagation()
+				var input = $(this).children("input")
+				var colname = input.attr("colname")
 				var current_state
-				if ($(this).is(":checked")) {
-					current_state = 1
-				} else {
+				if (input.is(":checked")) {
+					input.prop("checked", false)
 					current_state = 0
+				} else {
+					input.prop("checked", true)
+					current_state = 1
 				}
 				var data = {
 					"upc_table": t.id,
@@ -2708,36 +2668,6 @@ function table_init(opts) {
 					osvc.flash.error(services_ajax_error_fmt(xhr, stat, error))
 				})
 			})
-			if (t.options.visible_columns.indexOf(colname) >= 0) {
-				input.prop("checked", true)
-			}
-
-			// filtered columns are always visible
-			if (t.e_header_filters) {
-				var val = t.colprops[colname].current_filter
-				if ((val != "") && (typeof val !== "undefined")) {
-					input.prop("disabled", true)
-					input.prop("checked", true)
-				}
-			}
-
-			// label
-			var label = $("<label></label>")
-			label.attr("for", input.attr("id"))
-
-			// title
-			var title = $("<span style='padding-left:1em;'></span>")
-			title.text(i18n.t("col."+t.colprops[colname].title))
-			title.addClass("icon_fixed_width")
-			title.addClass(t.colprops[colname].img)
-
-			// container
-			var _e = $("<div style='margin:0.3em 0;white-space:nowrap'></div>")
-			_e.append(input)
-			_e.append(label)
-			_e.append(title)
-
-			area.append(_e)
 		}
 
 		try { area.i18n() } catch(e) {}
@@ -2751,18 +2681,19 @@ function table_init(opts) {
 			return
 		}
 
-		var e = $("<div class='floatw clickable' name='tool_bookmark'></div>")
+		var e = $("<div class='button_div clickable' name='tool_bookmark'></div>")
 
 		var span = $("<span class='icon bookmark16' data-i18n='table.bookmarks'></span>")
 		e.append(span)
 		try { e.i18n() } catch(err) {}
-		t.e_toolbar.prepend(e)
 		t.e_tool_bookmarks = e
 
 		// bindings
-		span.bind("click", function() {
+		e.bind("click", function(event) {
+			event.stopPropagation()
 			t.show_bookmarks()
 		})
+		return e
 	}
 
 	t.show_bookmarks = function() {
@@ -2797,7 +2728,9 @@ function table_init(opts) {
 		}
 
 		if (!bookmarks.length) {
-			listarea.text(i18n.t("table.bookmarks_no_bookmarks"))
+			var e = $("<div class='pl-3'></div>")
+			e.text(i18n.t("table.bookmarks_no_bookmarks"))
+			listarea.html(e)
 		}
 
 		for (var i=0; i<bookmarks.length; i++) {
@@ -2880,6 +2813,7 @@ function table_init(opts) {
 		var header = $("<h2 style='padding-bottom:0.4em'></h2>")
 		header.text(i18n.t("table.name."+t.options.name))
 		am.append(header)
+		t.e_sidepanel = am
 
 		return am
 	}
@@ -2955,10 +2889,6 @@ function table_init(opts) {
 	t.init_colprops()
 	t.add_table()
 
-	// selectors cache
-	t.e_toolbar = t.div.find("[name=toolbar]").first()
-	t.e_table = t.div.find("table#table_"+t.id).first()
-
 	osvc.tables[t.id] = t
 
 	$.when(
@@ -2967,21 +2897,11 @@ function table_init(opts) {
 		t.get_visible_columns()
 		t.init_current_filters()
 		t.add_filtered_to_visible_columns()
-		t.add_column_headers_slim()
-		t.add_column_headers_input()
 		t.add_column_headers()
 		t.refresh_column_filters_in_place()
-		t.add_commonality()
-		t.add_column_selector()
-		t.add_csv()
-		t.add_bookmarks()
-		t.add_link()
-		t.add_refresh()
-		t.add_wsswitch()
-		t.add_volatile()
 		t.add_pager()
+		t.add_tools_toggle()
 		t.hide_cells()
-		t.add_filterbox()
 		t.add_scrollers()
 		t.scroll_enable()
 		t.stick()

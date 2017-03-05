@@ -272,11 +272,14 @@
 		"report_snippet_desc": "Le paragraphe qui suit contient le fragment à ajouter à la définition d'un rapport pour y inclure le widget pointé par ce lien en tant que section du rapport."
 	},
 	"table": {
+		"lines_per_page": "Lignes par page",
+		"filter_placeholder": "Filtre",
 		"filter_menu": "Filtre du menu",
 		"fsr": {
 			"column": "Filtre de la colonne __col__:"
 		},
 		"name": {
+			"scheduler_tasks": "Tâches schedulées",
 			"network_segments": "Segments de réseau",
 			"registries": "Registres docker",
 			"safe": "Coffre-fort",
@@ -1452,6 +1455,12 @@
 		"hidden_menu_entries": "entrées cachées du menu"
 	},
 	"col": {
+		"Period": "Période",
+		"Times run": "Exécutions",
+		"Times_failed": "Echecs",
+		"Last run time": "Dernier Run",
+		"Next run time": "Prochain Run",
+		"Status": "Etat",
 		"Segment Id": "Segment Id",
 		"Segment Type": "Segment Type",
 		"Segment Begin": "Segment Begin",
@@ -1942,7 +1951,8 @@
 		"choose_form": "Choisissez un formulaire de demande"
 	},
 	"scheduler_stats": {
-		"queue": "Utilisation des queues d'alimentation"
+		"tasks": "Tâches",
+		"queue": "Queues d'alimentation"
 	},
 	"tabs": {
 		"close": "Cliquez ici pour fermer",

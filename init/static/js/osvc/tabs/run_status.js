@@ -37,6 +37,7 @@ function run_status_tabs(divid, options) {
 			"title_class": "icon complog"
 		})
 		o.tabs[i].callback = function(divid) {
+			$("#"+divid).addClass("p-3")
 			run_status_history(divid, o.options)
 		}
 
