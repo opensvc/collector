@@ -536,9 +536,9 @@ img {
 .boxed_small {
 	text-align: center;
 	color: white;
-	-moz-border-radius: 3px;
-	-webkit-border-radius: 3px;
-	border-radius: 3px;
+	-moz-border-radius: 4px;
+	-webkit-border-radius: 4px;
+	border-radius: 4px;
 	background-color: #008099;
 	padding: 0.1rem 0.3rem;
 	overflow: hidden;
@@ -589,6 +589,7 @@ img {
 	display: flex;
 	flex-wrap: wrap;
 	flex-direction: row-reverse;
+	align-items: center;
 }
 .toolbar > div {
 	padding: 0.2rem 0.5rem;
@@ -2121,6 +2122,10 @@ a.search-link:hover {
 }
 .tl > td, .theader > th {
 	padding: 0.75rem;
+}
+.table_title {
+	flex: 1;
+	font-size: 1.75rem;
 }
 
 .theader {

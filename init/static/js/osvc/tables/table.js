@@ -281,6 +281,42 @@ function table_init(opts) {
 		}
 	}
 
+	t.fold = function() {
+		t.e_scroll_zone.hide()
+		t.e_toolbar.addClass("grayed")
+		t.e_folder.removeClass("fa-caret-down").addClass("fa-caret-up")
+		t.e_tools_toggle.hide()
+		t.e_pager.empty()
+	}
+	t.unfold = function() {
+		t.e_toolbar.removeClass("grayed")
+		t.e_folder.removeClass("fa-caret-up").addClass("fa-caret-down")
+		t.e_scroll_zone.show()
+		t.e_tools_toggle.show()
+		t.refresh()
+	}
+	t.folded = function() {
+		return !t.e_scroll_zone.is(":visible")
+	}
+	t.add_folder = function() {
+		var e = $("<div class='icon'></div>")
+		if (t.options.folded) {
+			e.addClass("fa-caret-up")
+		} else {
+			e.addClass("fa-caret-down")
+		}
+		e.bind("click", function(event) {
+			event.stopImmediatePropagation()
+			if (t.folded()) {
+				t.unfold()
+			} else {
+				t.fold()
+			}
+		})
+		t.e_toolbar.append(e)
+		t.e_folder = e
+	}
+
 	t.add_filtered_to_visible_columns = function() {
 		for (col in t.colprops) {
 			if (t.options.hide_cols.indexOf(col) >= 0) {
@@ -491,6 +527,12 @@ function table_init(opts) {
 		var table_scroll_zone = $("<div class='table_scroll_zone'></div>")
 		var table_div = $("<div></div>")
 		var table = $("<table></table>")
+
+		if (t.options.folded) {
+			table_scroll_zone.hide()
+			toolbar.addClass("grayed")
+		}
+
 		d.attr("id", t.id)
 		t.div = d
 		t.page = t.options.pager.page
@@ -500,6 +542,7 @@ function table_init(opts) {
 		d.append(toolbar)
 		d.append(table_scroll_zone)
 		container.empty().append(d)
+		t.e_scroll_zone = table_scroll_zone
 		t.e_table = table
 		t.e_toolbar = toolbar
 	}
@@ -1436,6 +1479,9 @@ function table_init(opts) {
 		if (t.div.length > 0 && !t.div.is(":visible")) {
 			return
 		}
+		if (t.folded()) {
+			return
+		}
 		if (t.delay_refresh || (t.e_tool_refresh && t.e_tool_refresh.length > 0 && t.e_tool_refresh_spin && t.e_tool_refresh_spin.hasClass(t.spin_class))) {
 			t.need_refresh = true
 			return
@@ -2361,10 +2407,21 @@ function table_init(opts) {
 	//
 	t.add_tools_toggle = function() {
 		var e = $("<div class='icon fa-table clickable'></div>")
+		if (t.options.folded) {
+			e.hide()
+		}
 		t.e_toolbar.bind("click", function() {
 			t.add_tools_panel()
 		})
+		t.e_tools_toggle = e
 		t.e_toolbar.append(e)
+	}
+
+	t.add_table_title = function() {
+		// add the table title
+		var title = $("<div class='table_title'></div>")
+		title.text(i18n.t("table.name."+t.options.name))
+		t.e_toolbar.append(title)
 	}
 
 	//
@@ -2799,7 +2856,8 @@ function table_init(opts) {
 		// add a close button
 		var closer = $("<div class='fa fa-times clickable link'></div>")
 		closer.css({
-			"float": "right",
+			"text-align": "right",
+			"width": "100%",
 			"padding": "0.5rem",
 			"font-size": "1.3rem"
 		})
@@ -2809,10 +2867,6 @@ function table_init(opts) {
 		am.append(closer)
 		t.div.children(".table_scroll_zone").prepend(am)
 
-		// add the table title
-		var header = $("<h2 style='padding-bottom:0.4em'></h2>")
-		header.text(i18n.t("table.name."+t.options.name))
-		am.append(header)
 		t.e_sidepanel = am
 
 		return am
@@ -2901,6 +2955,8 @@ function table_init(opts) {
 		t.refresh_column_filters_in_place()
 		t.add_pager()
 		t.add_tools_toggle()
+		t.add_folder()
+		t.add_table_title()
 		t.hide_cells()
 		t.add_scrollers()
 		t.scroll_enable()

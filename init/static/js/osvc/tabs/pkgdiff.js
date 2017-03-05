@@ -28,7 +28,7 @@ function pkgdiff(divid, options) {
 			return
 		}
 
-		var t = $("<table class='diff_table'></table>")
+		var t = $("<table class='table'></table>")
 
 		// table header
 		var header1 = $("<tr></tr>")
@@ -76,9 +76,9 @@ function pkgdiff(divid, options) {
 			for (var j=0; j<data.meta.node_ids.length; j++) {
 				var node_id = data.meta.node_ids[j]
 				if (node_id in p.pkg_version) {
-					l.append($("<td style='border-left:dotted 1px'>"+p.pkg_version[node_id]+"</td>"))
+					l.append($("<td>"+p.pkg_version[node_id]+"</td>"))
 				} else {
-					l.append($("<td style='border-left:dotted 1px'></td>"))
+					l.append($("<td></td>"))
 				}
 			}
 			t.append(l)
@@ -199,7 +199,7 @@ function generic_diff(divid, options) {
 			return
 		}
 
-		var t = $("<table class='diff_table'></table>")
+		var t = $("<table class='table'></table>")
 
 		// table header
 		var header1 = $("<tr></tr>")
@@ -263,7 +263,7 @@ function generic_diff(divid, options) {
 				if (typeof(val) === "undefined" || val == null) {
 					val = ""
 				}
-				l.append($("<td style='border-left:dotted 1px'>"+val+"</td>"))
+				l.append($("<td>"+val+"</td>"))
 			}
 			t.append(l)
 		}

@@ -3330,7 +3330,7 @@ def _show_compdiff(nodes, n, _rows, objtype="Nodes"):
                 else:
                     rows.append(data[module][node])
             lines.append(fmt_line(module, rows, bg))
-        return TABLE(lines)
+        return TABLE(lines, _class="table")
 
     return DIV(fmt_table(_rows))
 
@@ -3538,7 +3538,7 @@ def _show_moddiff(node_ids, n, _rows, objtype="Nodes"):
                 bg = bgl[bg]
                 last = row[2]
             lines.append(fmt_line(row, bg))
-        return TABLE(lines)
+        return TABLE(lines, _class="table")
 
     return DIV(fmt_table(_rows))
 
@@ -3755,7 +3755,7 @@ def _show_rsetdiff(node_ids, n, _rows, objtype="Nodes"):
                 bg = bgl[bg]
                 last = row[2]
             lines.append(fmt_line(row, bg))
-        return TABLE(lines)
+        return TABLE(lines, _class="table")
 
     return DIV(fmt_table(_rows))
 

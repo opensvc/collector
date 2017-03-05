@@ -898,42 +898,13 @@ function view_comp_status(divid, options) {
 		t.options.on_change = function() {
 			comp_status_agg("agg", {"table": t})
 		}
-		$("#cms_a").bind("click", function() {
-			if (!$("#cms").is(":visible")) {
-				$(this).addClass("down16")
-				$(this).removeClass("right16")
-				$("#cms").show()
-				table_comp_module_status("cms", options)
-			} else {
-				$(this).addClass("right16")
-				$(this).removeClass("down16")
-				$("#cms").hide()
-			}
-		})
-		$("#cns_a").bind("click", function() {
-			if (!$("#cns").is(":visible")) {
-				$(this).addClass("down16")
-				$(this).removeClass("right16")
-				$("#cns").show()
-				table_comp_node_status("cns", options)
-			} else {
-				$(this).addClass("right16")
-				$(this).removeClass("down16")
-				$("#cns").hide()
-			}
-		})
-		$("#css_a").bind("click", function() {
-			if (!$("#css").is(":visible")) {
-				$(this).addClass("down16")
-				$(this).removeClass("right16")
-				$("#css").show()
-				table_comp_service_status("css", options)
-			} else {
-				$(this).addClass("right16")
-				$(this).removeClass("down16")
-				$("#css").hide()
-			}
-		})
+		if (!options) {
+			options = {}
+		}
+		options.folded = true
+		table_comp_module_status("cms", options)
+		table_comp_node_status("cns", options)
+		table_comp_service_status("css", options)
 	})
 
 }
@@ -1200,7 +1171,12 @@ function view_dns(divid, options) {
 	var o = {}
 	$("#"+divid).load("/init/static/views/dns.html?v="+osvc.code_rev, function() {
 		$(this).i18n()
+		if (!options) {
+			options = {}
+		}
+		options.folded = true
 		table_dns_domains("dnsddiv", options)
+		options.folded = false
 		table_dns_records("dnsrdiv", options)
 	})
 }
