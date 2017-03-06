@@ -1978,9 +1978,12 @@ a.search-link:hover {
 	background: white url('../images/search.png') no-repeat;
 	background-size: 14px;
 	background-position-y: 4px;
+	transition: 0.2s all ease-in-out;
 }
 .searchidle > input:focus {
 	background-color: rgb(255, 248, 239);
+	transition: 0.2s all ease-in-out;
+	width: 20rem;
 }
 .searching > input {
 	background-image: white url('../images/spinner.gif') no-repeat;
