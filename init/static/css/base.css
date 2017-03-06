@@ -662,7 +662,7 @@ body {
 }
 
 .pre {
-	font-size: 0.8em;
+	font-size: 0.9em;
 	font-family: monospace, courier;
 	padding-left: 0em;
 	padding-top: 0em;
@@ -1008,6 +1008,9 @@ textarea.flash:focus {
 	padding: 0.5em;
 	margin: 0 0 0 0.3em;
 }
+.action_menu > ul > li > ul {
+	padding: 0;
+}
 .action_menu > ul > li > ul > li > ul {
 	border-left: 1px dotted lightgray;
 	padding: 0.2em 1.2em;
@@ -1018,10 +1021,8 @@ li.action_menu_folder {
 }
 .action_menu li.action_menu_leaf,.action_menu li.action_menu_folder,.action_menu > ul > li,.action_menu > ul > li > ul {
 	list-style: none;
-	padding: 0.3em 0;
-}
-.action_menu_leaf:hover {
-	background: rgba(0, 0, 0, 0.1);
+	padding-top: 0.3em;
+	padding-bottom: 0.3em;
 }
 .action_menu_leaf_selected {
 	color: cadetblue;
@@ -3010,7 +3011,7 @@ pre.api_doc {
 	align-self: center;
 }
 
-// for svc avail timeline
+/* for svc avail timeline */
 .box-orange {
 	background-color: orange !important;
 	border-color: orange !important;

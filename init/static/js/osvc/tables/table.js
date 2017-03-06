@@ -812,8 +812,8 @@ function table_init(opts) {
 			t.e_filter.remove()
 		}
 		var sidepanel = t.get_sidepanel()
-		var input_float = $("<div style='width:21em'></div>")
-		var header = $("<h3></h3>")
+		var input_float = $("<div style='width:21em' class='nowrap'></div>")
+		var header = $("<h4></h4>")
 		var input = $("<input class='oi' name='fi'>")
 		var value_to_filter_tool = $("<span class='clickable icon ml-3 values_to_filter'></span>")
 		var invert_tool = $("<span class='clickable hidden icon invert16'></span>")
@@ -2025,7 +2025,7 @@ function table_init(opts) {
 		delta = max - min
 
 		// header
-		var header = $("<h3></h3>")
+		var header = $("<h4></h4>")
 		header.text(i18n.t("table.unique_matching_values", {"count": keys.length}))
 		span.append(header)
 
@@ -3404,7 +3404,7 @@ function table_action_menu_format_section(t, o, e, section) {
 	if (ul.children().length == 0) {
 		return content
 	}
-	var title = $("<h3></h3>")
+	var title = $("<h4></h4>")
 	title.text(i18n.t(section.title)).addClass("icon "+section.class)
 	content.append(title)
 	content.append(ul)
@@ -3804,7 +3804,7 @@ function table_action_menu_format_selector(t, o, e, selector) {
 }
 
 function table_action_menu_format_leaf(t, e, leaf) {
-	var li = $("<li class='action_menu_leaf clickable search_entry'></li>")
+	var li = $("<li class='action_menu_leaf button_div search_entry'></li>")
 	if (leaf.privileges && !services_ismemberof(leaf.privileges)) {
 		return
 	}

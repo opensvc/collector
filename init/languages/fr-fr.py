@@ -1650,6 +1650,7 @@
 'ruleset added': 'Jeu de règles ajouté',
 'Ruleset added: %(r)s': 'Ruleset added: %(r)s',
 'Ruleset already exists: %(r)s': 'Ruleset already exists: %(r)s',
+'Ruleset attachment differences amongst encapsulated services': 'Ruleset attachment differences amongst encapsulated services',
 'Ruleset attachment differences amongst services': 'Ruleset attachment differences amongst services',
 'Ruleset attachment differences in cluster': "Différences d'attachement de jeux de règles dans le cluster",
 'Ruleset attachment differences in encapsulated cluster': 'Ruleset attachment differences in encapsulated cluster',
