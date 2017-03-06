@@ -135,11 +135,11 @@ input.aci, input.aci:focus {
 }
 
 .asset_tab > div > table > tbody > tr > td {
-	font-weight: bold;
 }
 
 .asset_tab > div > table > tbody > tr > th {
 	font-weight: normal;
+	color: gray;
 	width: 10em;
 }
 
@@ -512,7 +512,6 @@ img {
 	display: inline-block;
 	white-space: nowrap;
 	margin: 0.1em;
-	font-weight: bold;
 	font-size: 95%;
 	text-align: center;
 	color: whitesmoke;
@@ -648,7 +647,6 @@ img {
 .aggstatus {
 	border-bottom: solid 1px #dddddd;
 	text-align: center;
-	font-weight: bold;
 }
 
 body {
@@ -926,12 +924,12 @@ textarea.flash:focus {
 	width: 100%;
 }
 .tab {
-	background: whitesmoke;
-	color: black;
 	padding:0;
 	-moz-border-radius: 4px 4px 0 0;
 	-webkit-border-radius: 4px 4px 0 0;
 	border-radius: 4px 4px 0 0;
+	border-bottom: 1px solid rgb(240,240,240);
+	background-color: rgb(253,253,253);
 }
 .tab:after {
 	content: ".";
@@ -940,28 +938,38 @@ textarea.flash:focus {
 	clear: both;
 }
 .tab ul {
-	padding:0;
+	padding: 0;
+	display: flex;
+	flex-wrap: wrap;
+	margin-bottom: 0;
 }
 .tab li {
 	text-align: center;
-	vertical-align: middle;
-	padding-left: 0.5em;
-	padding-right: 0.5em;
-	padding-top: 0.3em;
-	padding-bottom: 0.5em;
+	padding: 0.3rem 0.5rem 0.3rem 0.3rem;
+	margin: 0.3rem 0 0.3rem 0.3rem;
 	cursor: pointer;
 	color: black;
 	list-style: none;
-	float:left;
-	border-right: 1px solid #ddd;
+	border: 1px solid rgba(0,0,0,0);
+	border-right: 1px solid rgba(220,220,220,0.3);
 	text-transform: capitalize;
+}
+.tab li:first-child {
+	text-transform: none;
+	margin: 0;
+	border: 0;
+}
+.tab li:first-child:hover {
+	border: 0;
 }
 .tab > ul > li > p {
 	margin: 0;
 }
 .tab > ul > li:hover {
 	background-color: white;
-	transition: all 0.2s ease-in-out;
+	transition: all 0.1s ease-in-out;
+	border: 1px solid lightgray;
+	border-radius: 3px;
 }
 .tab .closetab:hover {
 	color: whitesmoke;
@@ -969,6 +977,9 @@ textarea.flash:focus {
 
 .tab .tab_active {
 	background: white;
+	border: 1px solid lightgray;
+	box-shadow: inset 0 1px 0px rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,.4);
+	border-radius: 3px;
 }
 .tab .closetab {
 	border-top-left-radius: 4px;
