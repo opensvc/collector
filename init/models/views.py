@@ -230,14 +230,14 @@ def filterset_query_id(row, nodes, services, i=0, node_id=None, svc_id=None):
 
     if v.f_table == 'services':
         if svc_id is not None:
-            qry &= db.services.id == svc_id
+            qry &= db.services.svc_id == svc_id
         if node_id is not None:
             qry &= db.svcmon.node_id == node_id
-        rows = db(qry).select(db.services.id, db.svcmon.node_id,
-                              left=db.svcmon.on(db.services.id==db.svcmon.svc_id),
+        rows = db(qry).select(db.services.svc_id, db.svcmon.node_id,
+                              left=db.svcmon.on(db.services.svc_id==db.svcmon.svc_id),
                               cacheable=True)
         n_nodes = set(map(lambda x: x.svcmon.node_id, rows)) - set([None])
-        n_services = set(map(lambda x: x.services.id, rows)) - set([None])
+        n_services = set(map(lambda x: x.services.svc_id, rows)) - set([None])
     elif v.f_table == 'nodes':
         if svc_id is not None:
             qry &= db.svcmon.svc_id == svc_id
@@ -302,7 +302,7 @@ def filterset_query_id(row, nodes, services, i=0, node_id=None, svc_id=None):
         _qry = qry
         _qry &= db.apps.app == db.services.svc_app
         if svc_id is not None:
-            _qry &= db.services.id == svc_id
+            _qry &= db.services.svc_id == svc_id
         rows = db(_qry).select(db.services.svc_id,
                                cacheable=True)
         n_services = set(map(lambda x: x.svc_id, rows)) - set([None])
