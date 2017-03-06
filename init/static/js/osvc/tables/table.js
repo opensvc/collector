@@ -285,14 +285,13 @@ function table_init(opts) {
 		t.e_scroll_zone.hide()
 		t.e_toolbar.addClass("grayed")
 		t.e_folder.removeClass("fa-caret-down").addClass("fa-caret-up")
-		t.e_tools_toggle.hide()
-		t.e_pager.empty()
+		t.e_pager.hide()
 	}
 	t.unfold = function() {
 		t.e_toolbar.removeClass("grayed")
 		t.e_folder.removeClass("fa-caret-up").addClass("fa-caret-down")
 		t.e_scroll_zone.show()
-		t.e_tools_toggle.show()
+		t.e_pager.show()
 		t.refresh()
 	}
 	t.folded = function() {
@@ -2390,6 +2389,9 @@ function table_init(opts) {
 	// create the tools sidepanel
 	//
 	t.add_tools_panel = function() {
+		if (t.folded()) {
+			return
+		}
 		var sidepanel = t.get_sidepanel()
 		sidepanel.append(t.add_commonality())
 		sidepanel.append(t.add_column_selector())
@@ -2406,15 +2408,9 @@ function table_init(opts) {
 	// table tools toggle
 	//
 	t.add_tools_toggle = function() {
-		var e = $("<div class='icon fa-table clickable'></div>")
-		if (t.options.folded) {
-			e.hide()
-		}
 		t.e_toolbar.bind("click", function() {
 			t.add_tools_panel()
 		})
-		t.e_tools_toggle = e
-		t.e_toolbar.append(e)
 	}
 
 	t.add_table_title = function() {

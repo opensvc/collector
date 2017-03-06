@@ -628,7 +628,7 @@
 		"services": "Services correspondants",
 		"used_by_filtersets": "Utilisé par les jeux de filtres",
 		"used_by_rulesets": "Utilisés par les jeux de règles",
-		"used_by_checks_contextual_thresholds": "Utilisé par les seuils contextuels de sondes",
+		"used_by_checks_contextual_thresholds": "Utilisé par les seuils de sondes",
 		"base": "Base",
 		"id": "Id",
 		"name": "Nom",

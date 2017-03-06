@@ -630,7 +630,7 @@
 		"services": "Matching services",
 		"used_by_filtersets": "Used by filtersets",
 		"used_by_rulesets": "Used by rulesets",
-		"used_by_checks_contextual_thresholds": "Used by checks contextual thresholds",
+		"used_by_checks_contextual_thresholds": "Used by checks thresholds",
 		"base": "Base",
 		"id": "Id",
 		"name": "Name",
