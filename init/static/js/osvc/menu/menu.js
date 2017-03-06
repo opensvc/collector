@@ -449,6 +449,7 @@ function menu(divid) {
 
 	o.div.load("/init/static/views/menu.html?v="+osvc.code_rev, function() {
 		o.div.i18n()
+		o.div.addClass("clickable")
 		$.when(osvc.user_loaded).then(function(){
 			o.store_data(osvc.hidden_menu_entries_stats)
 			o.init()
@@ -495,7 +496,7 @@ function menu(divid) {
 		o.set_title_from_href()
 
 		//Binding
-		o.menu_clickable.on("click", function (event) {
+		o.div.on("click", function (event) {
 			o.clicked()
 		});
 	}

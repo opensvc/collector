@@ -12,6 +12,7 @@ function login(divid) {
 	})
 
 	o.init = function() {
+		o.div.addClass("clickable")
 		o.login_div = $("#login_login")
 		o.login_clickable = $("#login_user_name")
 		o.login_menu_top = $("#login_menu_top")
@@ -20,7 +21,7 @@ function login(divid) {
 		o.login_clickable.append(_self.first_name)
 
 		//Binding
-		o.login_clickable.on("click",function (event) {
+		o.div.on("click",function (event) {
 			login_clicked(o)
 		})
 	}
