@@ -1102,7 +1102,7 @@ function table_init(opts) {
 
 	t.bind_filter_selector = function() {
 		$("#table_"+t.id).find("[col]").each(function(){
-			$(this).bind("mouseup", function(event) {
+			$(this).on("contextmenu mouseup", function(event) {
 				if(event.button != 2) {
 					return
 				}
@@ -3279,7 +3279,7 @@ function table_bind_action_menu(t) {
 	table_action_menu_init_data(t)
 
 	$("#table_"+t.id).find("[name="+t.id+"_tools]").each(function(){
-		$(this).bind("mouseup", function(event) {
+		$(this).on("contextmenu mouseup", function(event) {
 			if (event.button == 2) {
 				// right-click => open the action menu
 				table_action_menu(t, event)
