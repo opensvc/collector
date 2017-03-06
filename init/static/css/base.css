@@ -127,16 +127,10 @@ input.aci, input.aci:focus {
 	display: flex;
 	flex-wrap: wrap;
 }
-
 .asset_tab > div {
 	padding: 1em;
-	width: 31em;
-	display: inline-block;
+	flex: 1 0 31em;
 }
-
-.asset_tab > div > table > tbody > tr > td {
-}
-
 .asset_tab > div > table > tbody > tr > th {
 	font-weight: normal;
 	color: gray;
@@ -1986,13 +1980,15 @@ a.search-link:hover {
 	background-position-y: 4px;
 }
 .searchidle > input:focus {
-	background: rgb(255, 248, 239) url('../images/search.png') no-repeat;
+	background-color: rgb(255, 248, 239);
 }
 .searching > input {
-	background: white url('../images/spinner.gif') no-repeat;
+	background-image: white url('../images/spinner.gif') no-repeat;
+	background-position-y: 4px;
 }
 .searching > input:focus {
 	background: rgb(255, 248, 239) url('../images/spinner.gif') no-repeat;
+	background-position-y: 4px;
 }
 .search > input {
 	color: black;
