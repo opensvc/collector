@@ -118,7 +118,7 @@ function sync_ajax(url, inputs, id, f) {
 
 function toggle_extratable(e) {
 	var id = toggle_extraline(e)
-	var d = $("<table></table>")
+	var d = $("<table style='background-color:white'></table>")
 	d.uniqueId()
 	$("#"+id).empty().append(d)
 	return d.attr("id")
@@ -135,13 +135,10 @@ function toggle_extra(url, id, e, ncols) {
 		var line = $(e).parents(".tl").first()
 	}
 	if (!ncols) {
-		ncols = line.children("[cell=1]").length
+		ncols = line.children().length
 	}
 	var extra = $("<tr class='extraline stackable empty_on_pop'></tr>")
 	extra.attr("anchor", line.attr("cksum"))
-	line.children("td.tools").each(function(){
-		extra.append("<td class='tools'></td>")
-	})
 	if (line.next().is(".extraline")) {
 		line.next().remove()
 	}
@@ -152,6 +149,7 @@ function toggle_extra(url, id, e, ncols) {
 		td.uniqueId()
 		id = td.attr("id")
 	}
+	extra.css({"background-color": line.css("background-color")})
 	extra.append(td)
 	extra.insertAfter(line)
 
@@ -1186,11 +1184,13 @@ function table_init(opts) {
 			table_action_menu(t, event)
 		}
 		t.div.find("input[name="+t.id+"_ck]").each(function(){
+			var line = $(this).parents("tr").first()
 			if ($(this).is(":checked")) {
-				$(this).parents("tr").first().addClass("tl_checked")
+				line.addClass("tl_checked")
 			} else {
-				$(this).parents("tr").first().removeClass("tl_checked")
+				line.removeClass("tl_checked")
 			}
+			line.next(".extraline").css({"background-color": line.css("background-color")})
 		})
 	}
 
