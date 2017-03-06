@@ -2425,14 +2425,40 @@ function table_init(opts) {
 	// table tool: filters summary
 	//
 	t.add_filters_summary = function () {
-		var e = $("<div class='pl-3 pr-3 pb-3'></div>").text(i18n.t("table.filters"))
+		var e = $("<div class='pl-3 pr-3 pb-3'></div>")
+		var _e = $("<div class='d-flex pb-2'></div>")
+		var title = $("<div class='pb-2'></div>").text(i18n.t("table.filters"))
+		var tools = $("<span style='flex:1;text-align:right'></div>")
+		var clear_tool = $("<span class='icon clear16 clickable'></span>")
+		tools.append(clear_tool)
+		_e.append(title)
+		_e.append(tools)
+		e.append(_e)
+
+		// clear all filters
+		clear_tool.bind("click", function(event){
+			for (c in t.colprops) {
+				var current = t.colprops[c].current_filter
+				if ((current == "") || (typeof current === 'undefined')) {
+					continue
+				}
+				if ((typeof(t.colprops[c].force_filter) !== "undefined") && (t.colprops[c].force_filter != "")) {
+					continue
+				}
+				t.colprops[c].current_filter = ""
+			}
+			t.save_column_filters()
+			t.refresh_column_filters_in_place()
+			t.refresh()
+			t.add_tools_panel()
+		})
+
 		for (c in t.colprops) {
 			var current = t.colprops[c].current_filter
 			if ((current == "") || (typeof current === 'undefined')) {
 				continue
 			}
-			console.log(current)
-			var _e = $("<div class='d-flex pt-2 pb-2'></div>")
+			var _e = $("<div class='d-flex pt-2 pb-2 pl-2' style='border-top: 1px solid rgba(220, 220, 220, 0.2);'></div>")
 			if ((typeof(t.colprops[c].force_filter) !== "undefined") && (t.colprops[c].force_filter != "")) {
 				current = t.colprops[c].force_filter
 				var force = true
@@ -2478,7 +2504,7 @@ function table_init(opts) {
 			}
 			e.append(_e)
 		}
-		if (e.children().length > 0) {
+		if (e.children().length > 1) {
 			t.e_sidepanel.append(e)
 		}
 	}
