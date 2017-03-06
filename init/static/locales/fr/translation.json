@@ -272,6 +272,7 @@
 		"report_snippet_desc": "Le paragraphe qui suit contient le fragment à ajouter à la définition d'un rapport pour y inclure le widget pointé par ce lien en tant que section du rapport."
 	},
 	"table": {
+		"filters": "Filtres",
 		"lines_per_page": "Lignes par page",
 		"filter_placeholder": "Filtre",
 		"filter_menu": "Filtre du menu",
