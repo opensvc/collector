@@ -1534,30 +1534,9 @@ function view_nodes(divid, options) {
 	$("#"+divid).load("/init/static/views/nodes.html?v="+osvc.code_rev, function() {
 		$(this).i18n()
 		table_nodes("nodes_container", options)
-		$("#uids_a").bind("click", function() {
-			if (!$("#uids").is(":visible")) {
-				$(this).addClass("down16")
-				$(this).removeClass("right16")
-				$("#uids").show()
-				table_uids("uids", options)
-			} else {
-				$(this).addClass("right16")
-				$(this).removeClass("down16")
-				$("#uids").hide()
-			}
-		})
-		$("#gids_a").bind("click", function() {
-			if (!$("#gids").is(":visible")) {
-				$(this).addClass("down16")
-				$(this).removeClass("right16")
-				$("#gids").show()
-				table_gids("gids", options)
-			} else {
-				$(this).addClass("right16")
-				$(this).removeClass("down16")
-				$("#gids").hide()
-			}
-		})
+		options.folded = true
+		table_uids("uids", options)
+		table_gids("gids", options)
 	})
 }
 

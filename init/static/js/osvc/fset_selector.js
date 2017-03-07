@@ -72,7 +72,7 @@ function fset_selector(divid, callback) {
 			o.span.empty()
 			o.span.text(new_fset_name)
 			o.span.attr("fset_id", new_fset_id)
-			o.area.hide()
+			o.close()
 			o.callbacks()
 		},
 		function(xhr, stat, error) {
@@ -81,12 +81,18 @@ function fset_selector(divid, callback) {
 		})
 	}
 
+	o.close = function() {
+		if (o.area.is(':visible')) {
+			o.area.stop().slideUp()
+		}
+	}
+
 	o.unset_fset = function() {
 		services_osvcdeleterest("R_USERS_SELF_FILTERSET", [], "", "", function(jd) {
 			o.span.empty()
 			o.span.text(i18n.t("fset_selector.none"))
 			o.span.attr("fset_id", "-1")
-			o.area.hide()
+			o.close()
 			o.callbacks()
 		},
 		function(xhr, stat, error) {

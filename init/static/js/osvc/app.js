@@ -270,8 +270,8 @@ function app_load_href(href, fn, options, fn_options) {
 
 	// the designer view sets a height, and triggers a resizer on resize and
 	// load window events, which is annoying for other views. clean-up
-	$(window).unbind("resize")
-	$(window).unbind("load")
+	$(window).off("resize")
+	$(window).off("load")
 	$("#layout").removeAttr("style")
 
 	if ((fn != "undefined") && (fn !== "undefined") && fn) {

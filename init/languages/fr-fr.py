@@ -1121,6 +1121,7 @@
 'Matching services': 'Services correspondants',
 'Max active nodes': 'Max noeuds actifs',
 'Maximum number of applications the user can be responsible of': 'Maximum number of applications the user can be responsible of',
+'Maximum number of docker registries the user can be responsible of': 'Maximum number of docker registries the user can be responsible of',
 'Maximum number of organizational groups the user can be member of': 'Maximum number of organizational groups the user can be member of',
 'Maximum version': 'Version maximum',
 'MB': 'Mo',

@@ -22,8 +22,17 @@ function login(divid) {
 
 		//Binding
 		o.div.on("click",function (event) {
+			if ($(event.target).is(".menu_section") || $(event.target).parents(".menu_section").length > 0) {
+				return
+			}
 			login_clicked(o)
 		})
+	}
+
+	o.close = function() {
+		if (o.login_div.is(":visible")) {
+			login_clicked(o)
+		}
 	}
 
 	return o

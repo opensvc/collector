@@ -772,7 +772,7 @@ div.error {
 	position: fixed;
 	z-index: 1001;
 	width: 100%;
-	max-height: 90%;
+	max-height: 87%;
 	background: #2d2d2d;
 	box-shadow: black -0px 20px 25px;
 	box-sizing: border-box;
@@ -853,7 +853,6 @@ div.menu_box {
 	border: 0;
 	border-spacing: 0;
 	background: #fff;
-	z-index: 1;
 }
 
 textarea.flash {
@@ -863,7 +862,6 @@ textarea.flash {
 	padding: 1em 0 0 0;
 }
 textarea.flash:focus {
-	outline: none !important;
 	border: rgba(0,0,0,0.5);
 }
 
@@ -875,6 +873,9 @@ textarea.flash:focus {
 	position: fixed;
 	z-index: 2000;
 	height: 3em;
+}
+.header :focus {
+	outline: none;
 }
 .header > div {
 	color: lightgray;
@@ -893,9 +894,12 @@ textarea.flash:focus {
 .footer {
 	background: #2d2d2d;
 	color: #aaa;
+	text-align: center;
+	height: 3em;
+	padding: 0.8rem;
 }
 .footer a {
-	color: lightgray;
+	color: #aaa;
 }
 
 .movable {
@@ -1232,6 +1236,8 @@ ul.login_menu ul {
 	-moz-border-radius: 4px;
 	-webkit-border-radius: 4px;
 	border-radius: 4px;
+}
+.login input:focus {
 	outline: 0;
 }
 .login table {
@@ -1989,6 +1995,7 @@ a.search-link:hover {
 	background-color: rgb(255, 248, 239);
 	transition: 0.2s all ease-in-out;
 	width: 20rem;
+	outline: none;
 }
 .searching > input {
 	background-image: white url('../images/spinner.gif') no-repeat;
@@ -2007,8 +2014,10 @@ a.search-link:hover {
 	-moz-border-radius: 4px;
 	-webkit-border-radius: 4px;
 	border-radius: 4px;
-	outline: none;
 	-webkit-appearance: none;
+}
+.search > input:focus  {
+	outline: none;
 }
 .search > * > menu_section > table {
 	padding-bottom: 0.4em;
@@ -2022,6 +2031,10 @@ a.search-link:hover {
 	padding-right: 0.2em;
 	padding-top: 0.2em;
 }
+.search_entry:hover {
+	background-color: #252525;
+}
+
 .action_q_widget a {
 	margin-top: 0.5em;
 	white-space: nowrap;
@@ -2090,8 +2103,7 @@ a.search-link:hover {
 
 .highlight_light {
 	font-weight: bold;
-	text-decoration: underline;
-	opacity: 0.5;
+	color: white;
 }
 .tag_kill:before {
 	content: '\f1f8' !important

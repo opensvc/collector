@@ -220,7 +220,15 @@ function flash() {
 	o.div.css({"display": "none"})
 
 	$(".menu_flash").bind("click", function(e) {
-		o.div.slideToggle()
+		var opened = $(".menu:visible:not(.flash)").length
+                osvc.search.close()
+                osvc.fset_selector.close()
+                osvc.menu.close()
+                osvc.login.close()
+		console.log(opened)
+		if (opened == 0 || o.div.is(":visible")) {
+			o.div.slideToggle()
+		}
 	})
 
 	o.sanitize_id = function(id) {

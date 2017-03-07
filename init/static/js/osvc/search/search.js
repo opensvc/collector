@@ -323,17 +323,15 @@ function search(divid) {
 					count += result[d].data.length
 				}
 			}
+			osvc.flash.close()
 
 			if (count == 0) {
 				var div = "<div class='menu_entry meta_not_found'><a><div class='question48'>"+i18n.t("search.nothing_found")+"</div></a></div>"
 				o.e_search_result.append(div)
 			} else if (count == 1) {
-				$('#search_result_table tr:first').remove()
-				var td = $('#search_title_click0')
-				td.trigger("click")
+				o.e_search_result.find(".search_entry .clickable").first().trigger("click")
 			}
 
-			osvc.flash.close()
 			o.open()
 			o.e_search_div.removeClass("searching")
 			o.e_search_div.addClass("searchidle")

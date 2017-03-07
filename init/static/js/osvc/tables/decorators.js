@@ -202,7 +202,7 @@ function cell_decorator_var_class(e, line) {
 	e
 	.html("<span class='clickable'>"+v+"</span>")
 	.addClass("corner-top")
-	.click(function(){
+	.on("click", function(){
 		osvc.flash.show({
 			text: v,
 			cl: "icon wf16",
@@ -219,7 +219,7 @@ function cell_decorator_var_name(e, line) {
 	e
 	.html("<span class='clickable'>"+v+"</span>")
 	.addClass("corner-top")
-	.click(function(){
+	.on("click", function(){
 		osvc.flash.show({
 			text: v,
 			cl: "icon comp16",
@@ -266,7 +266,7 @@ function cell_decorator_app(e, line) {
 	e
 	.html("<span class='clickable'>"+v+"</span>")
 	.addClass("corner-top")
-	.click(function(){
+	.on("click", function(){
 		osvc.flash.show({
 			id: "app-"+v,
 			cl: "icon app16",
@@ -283,7 +283,7 @@ function cell_decorator_dns_domain(e, line) {
 	e
 	.html("<span class='clickable'>"+v+"</span>")
 	.addClass("corner-top")
-	.click(function(){
+	.on("click", function(){
 		osvc.flash.show({
 			text: v,
 			cl: "icon dns16",
@@ -299,7 +299,7 @@ function cell_decorator_dns_record(e, line) {
 	e
 	.html("<span class='clickable'>"+v+"</span>")
 	.addClass("corner-top")
-	.click(function(){
+	.on("click", function(){
 		osvc.flash.show({
 			text: v,
 			cl: "icon dns16",
@@ -314,7 +314,7 @@ function cell_decorator_disk_array_dg(e, line) {
 	e
 	.html("<span class='clickable'>"+v+"</span>")
 	.addClass("corner-top")
-	.click(function(){
+	.on("click", function(){
 		var array_name = $.data(line.children("[col=array_name],[col=disk_arrayid]")[0], "v")
 		osvc.flash.show({
 			id: "dg-"+v,
@@ -340,7 +340,7 @@ function cell_decorator_quota(e, line) {
 	e
 	.html("<span class='clickable'>"+v+"</span>")
 	.addClass("corner")
-	.click(function(){
+	.on("click", function(){
 		var quota_id = $.data(line.children("[col=id]")[0], "v")
 		var id = toggle_extraline(e)
 		quota_tabs(id, {"quota_id": quota_id})
@@ -370,7 +370,7 @@ function cell_decorator_modset_name(e, line) {
 	e
 	.html("<span class='clickable'>"+v+"</span>")
 	.addClass("corner-top")
-	.click(function(){
+	.on("click", function(){
 		osvc.flash.show({
 			id: "modset-"+v,
 			text: v, 
@@ -386,7 +386,7 @@ function cell_decorator_ruleset_name(e, line) {
 	e
 	.html("<span class='clickable'>"+v+"</span>")
 	.addClass("corner-top")
-	.click(function(){
+	.on("click", function(){
 		osvc.flash.show({
 			id: "rset-"+v,
 			text: v, 
@@ -451,7 +451,7 @@ function cell_decorator_network(e, line) {
 	e
 	.html("<span class='clickable'>"+v+"</span>")
 	.addClass("corner-top")
-	.click(function(){
+	.on("click", function(){
 		var net_id = $.data(line.children("[col=id],[col=net_id]")[0], "v")
 		osvc.flash.show({
 			id: "net-"+net_id,
@@ -472,7 +472,7 @@ function cell_decorator_chk_instance(e, line) {
 		e
 		.html(s)
 		.addClass("corner")
-		.click(function(){
+		.on("click", function(){
 			var id = toggle_extratable(e)
 			var req = {}
 			req[id+"_f_disk_id"] = disk_id
@@ -528,7 +528,7 @@ function cell_decorator_action_pid(e, line) {
 	var s = "<a>"+v+"</a>"
 	e
 	.html(s)
-	.bind('click', function(){
+	.on('click', function(){
 		var node_id = $.data(line.children("[col=node_id]")[0], "v")
 		var svc_id = $.data(line.children("[col=svc_id]")[0], "v")
 		var begin = $.data(line.children("[col=begin]")[0], "v")
@@ -649,7 +649,7 @@ function cell_decorator_docker_tag_digest(e, line) {
 	}
 	s = $("<a class='icon resource'>"+v+"</a>")
 	e.addClass("corner")
-	s.click(function(){
+	s.on("click", function(){
 		if (get_selected() != "") {
 			return
 		}
@@ -671,7 +671,7 @@ function cell_decorator_svc_action_err(e, line) {
 		return
 	}
 	s = $("<a class='icon action16 icon-red clickable'>"+v+"</a>")
-	s.click(function(){
+	s.on("click", function(){
 		if (get_selected() != "") {
 			return
 		}
@@ -736,7 +736,7 @@ function _cell_decorator_nodename(e, os_icon, line) {
 	e
 	.html(div)
 	.addClass("corner-top")
-	.click(function(){
+	.on("click", function(){
 		if (get_selected() != "") {
 			return
 		}
@@ -779,7 +779,7 @@ function cell_decorator_user_id(e, line) {
 	var fullname = $.data(line.children("[col=fullname]")[0], "v")
 	e
 	.addClass("corner-top")
-	.click(function(){
+	.on("click", function(){
 		if (get_selected() != "") {
 			return
 		}
@@ -800,7 +800,7 @@ function cell_decorator_username(e, line) {
 	}
 	e
 	.addClass("corner-top")
-	.click(function(){
+	.on("click", function(){
 		if (get_selected() != "") {
 			return
 		}
@@ -831,7 +831,7 @@ function cell_decorator_safe_file(e, line) {
 	e
 	.html("<div class='a nowrap trunc20'>"+uuid+"</div>")
 	.addClass("corner-top")
-	.click(function(){
+	.on("click", function(){
 		osvc.flash.show({
                         text: uuid,
                         cl: "icon safe16",
@@ -850,7 +850,7 @@ function cell_decorator_svcname(e, line) {
 	e
 	.html("<div class='a nowrap trunc20'>"+v+"</div>")
 	.addClass("corner-top")
-	.click(function(){
+	.on("click", function(){
 		if (get_selected() != "") {
 			return
 		}
@@ -960,7 +960,7 @@ function cell_decorator_comp_log(e, line) {
 	e
 	.html(div)
 	.addClass("corner")
-	.click(function(){
+	.on("click", function(){
 		if (get_selected() != "") {
 			return
 		}
@@ -976,7 +976,7 @@ function cell_decorator_comp_mod_log(e, line) {
 	e
 	.html(div)
 	.addClass("corner")
-	.click(function(){
+	.on("click", function(){
 		if (get_selected() != "") {
 			return
 		}
@@ -994,7 +994,7 @@ function cell_decorator_comp_node_log(e, line) {
 	e
 	.html(div)
 	.addClass("corner")
-	.click(function(){
+	.on("click", function(){
 		if (get_selected() != "") {
 			return
 		}
@@ -1012,7 +1012,7 @@ function cell_decorator_comp_svc_log(e, line) {
 	e
 	.html(div)
 	.addClass("corner")
-	.click(function(){
+	.on("click", function(){
 		if (get_selected() != "") {
 			return
 		}
@@ -1033,7 +1033,7 @@ function cell_decorator_uid(e, line) {
 	e
 	.html(div)
 	.addClass("corner")
-	.click(function(){
+	.on("click", function(){
 		if (get_selected() != "") {
 			return
 		}
@@ -1051,7 +1051,7 @@ function cell_decorator_gid(e, line) {
 	e
 	.html(div)
 	.addClass("corner")
-	.click(function(){
+	.on("click", function(){
 		if (get_selected() != "") {
 			return
 		}
@@ -1069,7 +1069,7 @@ function cell_decorator_chk_type(e, line) {
 	e
 	.html(div)
 	.addClass("corner")
-	.click(function(){
+	.on("click", function(){
 		if (get_selected() != "") {
 			return
 		}
@@ -1084,7 +1084,7 @@ function cell_decorator_dash_link_comp_svcdiff(e, line) {
 	e
 	.html(s)
 	.addClass("corner")
-	e.click(function(){
+	e.on("click", function(){
 		var id = toggle_extraline(e)
 		t = $("<h2 data-i18n='diff.comp_title'></h2>")
 		d = $("<div></div>")
@@ -1103,12 +1103,12 @@ function cell_decorator_dash_link_comp_tab(e, line) {
 	.html(s)
 	.addClass("corner")
 	if (svc_id != "") {
-		e.click(function(){
+		e.on("click", function(){
 			var id = toggle_extraline(e)
 			service_tabs(id, {"svc_id": svc_id, "tab": "service_tabs.compliance"})
 		})
 	} else if (node_id != "") {
-		e.click(function(){
+		e.on("click", function(){
 			var id = toggle_extraline(e)
 			node_tabs(id, {"node_id": node_id, "tab": "node_tabs.compliance"})
 		})
@@ -1121,7 +1121,7 @@ function cell_decorator_dash_link_pkg_tab(e, line) {
 	.html("<div class='icon pkg16 clickable'></div>")
 	.addClass("corner")
 	if (svc_id != "") {
-		e.click(function(){
+		e.on("click", function(){
 			var id = toggle_extraline(e)
 			service_tabs(id, {"svc_id": svc_id, "tab": "service_tabs.pkgdiff"})
 		})
@@ -1134,7 +1134,7 @@ function cell_decorator_dash_link_feed_queue(e, line) {
 
 function _cell_decorator_dash_link_actions(svc_id, e) {
 	s = $("<a class='icon action16 clickable'></a>")
-	s.click(function(){
+	s.on("click", function(){
 		if (get_selected() != "") {
 			return
 		}
@@ -1156,7 +1156,7 @@ function cell_decorator_obs_count(e, line) {
 	e
 	.html("<a class='icon node16 clickable'>"+v+"</a>")
 	.addClass("corner")
-	.click(function(){
+	.on("click", function(){
 		if (get_selected() != "") {
 			return
 		}
@@ -1178,7 +1178,7 @@ function cell_decorator_obs_count(e, line) {
 
 function _cell_decorator_dash_link_action_error(svc_id, e) {
 	s = $("<a class='icon alert16 clickable'></a>")
-	s.click(function(){
+	s.on("click", function(){
 		if (get_selected() != "") {
 			return
 		}
@@ -1210,7 +1210,7 @@ function cell_decorator_dash_link_svcmon(e, line) {
 	.html("<div class='icon svc clickable'></div>")
 	.addClass("corner")
 	if (svc_id != "") {
-		e.click(function(){
+		e.on("click", function(){
 			var id = toggle_extraline(e)
 			service_tabs(id, {"svc_id": svc_id, "tab": "service_tabs.status"})
 		})
@@ -1223,7 +1223,7 @@ function cell_decorator_dash_link_node(e, line) {
 	.html("<div class='icon node16 clickable'></div>")
 	.addClass("corner")
 	if (node_id != "") {
-		e.click(function(){
+		e.on("click", function(){
 			var id = toggle_extraline(e)
 			node_tabs(id, {"node_id": node_id, "tab": "node_tabs.properties"})
 		})
@@ -1236,7 +1236,7 @@ function cell_decorator_dash_link_checks(e, line) {
 	.html("<div class='icon check16 clickable'></div>")
 	.addClass("corner")
 	if (node_id != "") {
-		e.click(function(){
+		e.on("click", function(){
 			var id = toggle_extratable(e)
 			var req = {}
 			req[id+"_f_node_id"] = node_id
@@ -1269,7 +1269,7 @@ function cell_decorator_dash_link_mac_duplicate(e, line) {
 
 function cell_decorator_dash_link_obsolescence(e, line) {
 	s = $("<a class='icon obs16 clickable'></a>")
-	s.click(function(){
+	s.on("click", function(){
 		if (get_selected() != "") {
 			return
 		}
@@ -1362,7 +1362,7 @@ function cell_decorator_form_id(e, line) {
 	e
 	.html("<span class='icon wf16 nowrap clickable'>"+v+"</span>")
 	.addClass("corner")
-	.click(function(){
+	.on("click", function(){
 		osvc.flash.show({
 			id: "wf-"+v,
 			cl: "icon wf16",
@@ -1396,7 +1396,7 @@ function cell_decorator_run_log(e, line, fn) {
 	e.html(s)
 	if (line != undefined) {
 		e.addClass("corner-top")
-		.click(function(){
+		.on("click", function(){
 			var log_id = $.data(line.children("[col=id]")[0], "v")
 			osvc.flash.show({
 				id: "complog-"+log_id,
@@ -1428,7 +1428,7 @@ function cell_decorator_run_status(e, line, fn) {
 	e.html("<div class='icon "+cl+"'>"+_v+"</div>")
 	if (line != undefined) {
 		e.addClass("corner-top")
-		.click(function(){
+		.on("click", function(){
 			var log_id = $.data(line.children("[col=id]")[0], "v")
 			osvc.flash.show({
 				id: "complog-"+log_id,
@@ -1448,11 +1448,11 @@ function cell_decorator_tag_exclude(e, line) {
 		v = ""
 	}
 	e.html(v)
-	$(window).bind("click", function() {
+	$(window).on("click", function() {
 		$("input.tag_exclude").parent().html(v)
 	})
 	if (services_ismemberof(["Manager", "TagManager"])) {
-		e.bind("click", function(event){
+		e.on("click", function(event){
 			event.stopPropagation()
 			var i = $("<input class='oi tag_exclude'></input>")
 			var _v = $.data(this, "v")
@@ -1460,7 +1460,7 @@ function cell_decorator_tag_exclude(e, line) {
 				_v = ""
 			}
 			i.val(_v)
-			i.bind("keyup", function(event){
+			i.on("keyup", function(event){
 				if (!is_enter(event)) {
 					return
 				}
@@ -1504,7 +1504,7 @@ function cell_decorator_dash_entry(e, line) {
 	e
 	.html(fmt)
 	.addClass("clickable corner")
-	.click(function(){
+	.on("click", function(){
 		var options = {
 			"node_id": $.data(line.children("[col=node_id]")[0], "v"),
 			"svc_id": $.data(line.children("[col=svc_id]")[0], "v"),
@@ -1521,7 +1521,7 @@ function cell_decorator_rset_md5(e, line) {
 	e
 	.html("<div class='clickable'>"+v+"</div>")
 	.addClass("corner")
-	.click(function(){
+	.on("click", function(){
 		if (get_selected() != "") {
 			return
 		}
@@ -1544,7 +1544,7 @@ function cell_decorator_action_q_ret(e, line) {
 	}
 	var actionq_id = $.data(line.children("[col=id]")[0], "v")
 	e.addClass("corner-top").html("<div class='"+cl.join(" ")+"'>"+v+"</div>")
-	.click(function(){
+	.on("click", function(){
 		osvc.flash.show({
 			text: actionq_id,
 			cl: "icon action16",
@@ -1790,7 +1790,7 @@ function cell_decorator_resinfo_value(e, line) {
 		_e.addClass("icon chart16")
 		e
 		.addClass("corner clickable")
-		.bind("click", function() {
+		.on("click", function() {
 			var span_id = line.attr("spansum")
 			var table_id = e.parents("table").attr("id").replace(/^table_/, '')
 			var id = table_id + "_x_" + span_id

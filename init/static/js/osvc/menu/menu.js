@@ -497,6 +497,9 @@ function menu(divid) {
 
 		//Binding
 		o.div.on("click", function (event) {
+			if ($(event.target).is(".menu_section") || $(event.target).parents(".menu_section").length > 0) {
+				return
+			}
 			o.clicked()
 		});
 	}
@@ -536,6 +539,12 @@ function menu(divid) {
 			})
 			osvc.search.e_search_input.val("").focus()
 		} else {
+			o.close()
+		}
+	}
+
+	o.close = function() {
+		if (o.menu_div.is(':visible')) {
 			o.menu_div.stop().slideUp()
 		}
 	}
@@ -556,7 +565,7 @@ function menu(divid) {
 				  return
 				}
 				o.set_title(title)
-				o.menu_div.slideUp();
+				o.close()
 				osvc.search.e_search_input.val("").blur()
 				app_load_href(href, fn)
 			})
