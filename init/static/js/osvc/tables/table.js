@@ -812,7 +812,7 @@ function table_init(opts) {
 			t.e_filter.remove()
 		}
 		var sidepanel = t.get_sidepanel()
-		var input_float = $("<div style='width:21em'></div>")
+		var input_float = $("<div style='max-width:21em'></div>")
 		var header = $("<h4></h4>")
 		var input = $("<input class='oi' style='width:100%' name='fi'>")
 		var value_to_filter_tool = $("<div data-i18n='table.value_to_filter_tool_title' class='button_div icon_fixed_width values_to_filter'></div>")
@@ -2172,7 +2172,7 @@ function table_init(opts) {
 			return
 		}
 		var e = $("<div class='button_div clickable' name='tool_link'></div>")
-		var span = $("<span class='icon link16' data-i18n='table.link'></span>")
+		var span = $("<span class='icon_fixed_width link16' data-i18n='table.link'></span>")
 		span.attr("title", i18n.t("table.link_help")).tooltipster()
 		e.append(span)
 		try { e.i18n() } catch(e) {}
@@ -2206,7 +2206,7 @@ function table_init(opts) {
 		var e = $("<div class='button_div clickable' name='tool_csv'></div>")
 		t.e_tool_csv = e
 
-		var span = $("<span class='icon csv' data-i18n='table.csv'></span>")
+		var span = $("<span class='icon_fixed_width csv' data-i18n='table.csv'></span>")
 		e.append(span)
 
 		e.bind("click", function(event) {
@@ -2244,8 +2244,8 @@ function table_init(opts) {
 			return
 		}
 
-		var e = $("<div class='button_div clickable' name='tool_refresh'><span class='fa refresh16'></span><span></span></div>")
-		e.children().last().text("  "+i18n.t('table.refresh'))
+		var e = $("<div class='button_div clickable' name='tool_refresh'><span class='fa refresh16'></span><span style='padding-left:0.45em'></span></div>")
+		e.children().last().text(i18n.t('table.refresh'))
 
 		// bindings
 		e.bind("click", function(event) {
@@ -2527,7 +2527,7 @@ function table_init(opts) {
 		var e = $("<div class='button_div clickable' name='tool_commonality'></div>")
 		t.e_tool_commonality = e
 
-		var span = $("<span class='icon common16' data-i18n='table.commonality'></span>")
+		var span = $("<span class='icon_fixed_width common16' data-i18n='table.commonality'></span>")
 		span.attr("title", i18n.t("table.commonality_help")).tooltipster()
 		e.append(span)
 
@@ -2724,7 +2724,7 @@ function table_init(opts) {
 		var e = $("<div class='button_div clickable' name='tool_column_selector'></div>")
 		t.e_tool_column_selector = e
 
-		var span = $("<span class='icon columns' data-i18n='table.columns'></span>")
+		var span = $("<span class='icon_fixed_width columns' data-i18n='table.columns'></span>")
 		e.append(span)
 
 		try { e.i18n() } catch(e) {}
@@ -2832,7 +2832,7 @@ function table_init(opts) {
 
 		var e = $("<div class='button_div clickable' name='tool_bookmark'></div>")
 
-		var span = $("<span class='icon bookmark16' data-i18n='table.bookmarks'></span>")
+		var span = $("<span class='icon_fixed_width bookmark16' data-i18n='table.bookmarks'></span>")
 		e.append(span)
 		try { e.i18n() } catch(err) {}
 		t.e_tool_bookmarks = e
