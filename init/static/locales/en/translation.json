@@ -272,6 +272,8 @@
 		"report_snippet_desc": "The paragraph below contains the definition to add to a report definition to embed the widget pointed by this link as a report section."
 	},
 	"table": {
+		"clear_filter": "Remove filter",
+		"invert_filter": "Invert filter",
 		"filters": "Filters",
 		"lines_per_page": "Lines per page",
 		"filter_placeholder": "Filter",
@@ -341,7 +343,7 @@
 		"column": "Column",
 		"value": "Value",
 		"tool_error": "Table tool error",
-		"value_to_filter_tool_title": "Click to set the filter as an inclusion of all distinct values of this column.",
+		"value_to_filter_tool_title": "Set all candidates as filter",
 		"column_filter_header": "__col__ filter",
 		"number_of_occurence": "__count__ occurence",
 		"number_of_occurence_plural": "__count__ occurences",

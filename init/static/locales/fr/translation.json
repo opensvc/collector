@@ -272,6 +272,8 @@
 		"report_snippet_desc": "Le paragraphe qui suit contient le fragment à ajouter à la définition d'un rapport pour y inclure le widget pointé par ce lien en tant que section du rapport."
 	},
 	"table": {
+		"clear_filter": "Retirer le filtre",
+		"invert_filter": "Inverser le filtre",
 		"filters": "Filtres",
 		"lines_per_page": "Lignes par page",
 		"filter_placeholder": "Filtre",
@@ -341,7 +343,7 @@
 		"column": "Colonne",
 		"value": "Valeur",
 		"tool_error": "Erreur de l'outil de table",
-		"value_to_filter_tool_title": "Cliquez pour créer un filtre à partir de toutes les valeurs distinctes de cette colonne.",
+		"value_to_filter_tool_title": "Filtre de tous les candidats",
 		"column_filter_header": "Filtre sur __col__",
 		"number_of_occurence": "__count__ occurence",
 		"number_of_occurence_plural": "__count__ occurences",

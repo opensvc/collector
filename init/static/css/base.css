@@ -64,6 +64,9 @@ input.aci, input.aci:focus {
 .grayed {
 	color: gray;
 }
+.lightgrayed {
+	color: lightgray;
+}
 
 .stick {
 	position: fixed;
@@ -2224,14 +2227,17 @@ div.formentry {
 
 .right_click_menu > table {
 	width: 100%;
+	border-collapse: separate;
 }
 .right_click_menu {
 	word-break: break-word;
-	padding: 0.5em;
 }
 
 .right_click_menu td {
 	text-align: center;
+	height: 2.5rem;
+	border: 1px solid rgb(245,245,245);
+	border-radius: 4px;
 }
 
 .right_click_menu td:hover {
@@ -2311,6 +2317,7 @@ div.formentry {
 }
 .bgred {
 	background-color: #990000;
+	color: whitesmoke;
 }
 .bgdarkred {
 	background-color: #660000;

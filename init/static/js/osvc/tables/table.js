@@ -812,12 +812,12 @@ function table_init(opts) {
 			t.e_filter.remove()
 		}
 		var sidepanel = t.get_sidepanel()
-		var input_float = $("<div style='width:21em' class='nowrap'></div>")
+		var input_float = $("<div style='width:21em'></div>")
 		var header = $("<h4></h4>")
-		var input = $("<input class='oi' name='fi'>")
-		var value_to_filter_tool = $("<span class='clickable icon ml-3 values_to_filter'></span>")
-		var invert_tool = $("<span class='clickable hidden icon invert16'></span>")
-		var clear_tool = $("<span class='clickable hidden icon clear16'></span>")
+		var input = $("<input class='oi' style='width:100%' name='fi'>")
+		var value_to_filter_tool = $("<div data-i18n='table.value_to_filter_tool_title' class='button_div icon_fixed_width values_to_filter'></div>")
+		var invert_tool = $("<div data-i18n='table.invert_filter' class='button_div lightgrayed icon_fixed_width invert16'></div>")
+		var clear_tool = $("<div data-i18n='table.clear_filter' class='button_div lightgrayed icon_fixed_width clear16'></div>")
 		var filterbox = $("<div id='filterbox'></div>")
 		var value_pie = $("<div></div>")
 		var value_cloud = $("<span></span>")
@@ -838,7 +838,6 @@ function table_init(opts) {
 		} else {
 			header.text(i18n.t("table.column_filter_header", {"col": i18n.t("col."+t.colprops[c].title)}))
 		}
-		value_to_filter_tool.attr("title", i18n.t("table.value_to_filter_tool_title")).tooltipster()
 		value_pie.attr("id", t.id+"_fp_"+c)
 		value_pie.css({"margin-top": "0.8em"})
 		value_cloud.attr("id", t.id+"_fc_"+c)
@@ -854,12 +853,16 @@ function table_init(opts) {
 		input_float.append(value_cloud)
 
 		t.e_filter = input_float
+		input_float.i18n()
 		sidepanel.append(input_float)
 
 		var url = t.options.ajax_url + "_col_values/"
 
 		// clear tool click
 		clear_tool.bind("click", function(event){
+			if ($(this).is(".lightgrayed")) {
+				return
+			}
 			input.val("")
 			input.trigger("keyup")
 			t.save_column_filters()
@@ -869,6 +872,9 @@ function table_init(opts) {
 
 		// invert tool click
 		invert_tool.bind("click", function(event){
+			if ($(this).is(".lightgrayed")) {
+				return
+			}
 			input.val(_invert_filter(input.val()))
 			input.trigger("keyup")
 			t.save_column_filters()
@@ -891,11 +897,11 @@ function table_init(opts) {
 
 			// handle clear/invert tools visibibity
 			if (val == "") {
-				invert_tool.hide()
-				clear_tool.hide()
+				invert_tool.addClass("lightgrayed")
+				clear_tool.addClass("lightgrayed")
 			} else {
-				invert_tool.show()
-				clear_tool.show()
+				invert_tool.removeClass("lightgrayed")
+				clear_tool.removeClass("lightgrayed")
 			}
 
 			// handle header colorization
@@ -961,6 +967,7 @@ function table_init(opts) {
 			var ck = input.attr("id").replace("_f_", "_fc_")
 			var cloud = $(this).parent().find("#"+ck)
 			values_to_filter(input, cloud)
+			input.trigger("keyup")
 			t.colprops[c].current_filter = input.val()
 			t.save_column_filters()
 			t.refresh_column_filters_in_place()
@@ -1609,7 +1616,7 @@ function table_init(opts) {
 		t.e_fsr.find("#fsrview").each(function() {
 			$(this).text(t.colprops[k].current_filter)
 			$(this).unbind()
-			$(this).bind("dblclick", function(){
+			$(this).bind("contextmenu dblclick", function(){
 				sel = $(this).text()
 				t.colprops[k].current_filter = sel
 				t.e_sidepanel.find("input[name=fi]").val(sel).trigger("keyup")
@@ -1844,10 +1851,10 @@ function table_init(opts) {
 	}
 
 	t.add_filterbox = function() {
-		var s = "<span id='fsr"+t.id+"' class='right_click_menu'>"
+		var s = "<div id='fsr"+t.id+"' class='right_click_menu'>"
 		s += "<table>"
 		s +=  "<tr>"
-		s +=   "<td id='fsrview' colspan=3 style='height:1.3em'></td>"
+		s +=   "<td id='fsrview' colspan=3></td>"
 		s +=  "</tr>"
 		s +=  "<tr>"
 		s +=   "<td id='fsrclear'>clear</td>"
@@ -1880,7 +1887,7 @@ function table_init(opts) {
 		s +=   "<td id='fsrorempty'>|empty</td>"
 		s +=  "</tr>"
 		s += "</table>"
-		s += "</span>"
+		s += "</div>"
 		t.e_fsr = $(s)
 		t.e_sidepanel.find("#filterbox").html(t.e_fsr)
 	}
