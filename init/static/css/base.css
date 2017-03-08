@@ -2663,27 +2663,25 @@ textarea.link_ta_sub {
 	vertical-align:middle;
 	background-color: rgba(0,0,0,0);
 	border: 0;
+	border-radius: 3px;
 	padding: 0.3rem 1rem;
 }
 
 .button_div:focus {
 	background-color: rgba(0,0,0,0.01);
 	box-shadow: inset 0 0px 1px rgba(0,0,0,0.2), inset 0 0px 1px rgba(0,0,0,0.4);
-	border-radius: 3px;
 	border-color: rgba(0,0,0,0);
 }
 .button_div:hover {
 	background-color: rgba(0,0,0,0.02);
 	box-shadow: inset 0 0px 1px rgba(0,0,0,0.3), inset 0 0px 1px rgba(0,0,0,0.5);
-	border-radius: 3px;
 	border-color: rgba(0,0,0,0);
 }
-
 .button_div:active {
 	background-color: rgba(0,0,0,0.1);
 }
-
-.button_div_active {
+.button_div_active, .button_div.menu_selected {
+	box-shadow: inset 0 0px 1px rgba(0,0,0,0.3), inset 0 0px 1px rgba(0,0,0,0.5);
 	background-color: rgba(0,0,0,0.1);
 }
 

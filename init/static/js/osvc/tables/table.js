@@ -3817,7 +3817,7 @@ function table_action_menu_format_selector(t, o, e, selector) {
 }
 
 function table_action_menu_format_leaf(t, e, leaf) {
-	var li = $("<li class='action_menu_leaf button_div search_entry'></li>")
+	var li = $("<li class='action_menu_leaf clickable button_div search_entry'></li>")
 	if (leaf.privileges && !services_ismemberof(leaf.privileges)) {
 		return
 	}

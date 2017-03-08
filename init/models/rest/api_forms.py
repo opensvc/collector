@@ -538,8 +538,11 @@ class rest_put_form(rest_put_handler):
 
     def handler(self, form_id, data=None, prev_wfid=None):
         q = db.forms.id == form_id
-        q &= (db.forms.id == db.forms_team_publication.form_id)
-        q &= db.forms_team_publication.group_id.belongs(user_group_ids())
+
+        if "Manager" not in user_groups():
+            q &= (db.forms.id == db.forms_team_publication.form_id)
+            q &= db.forms_team_publication.group_id.belongs(user_group_ids())
+
         form = db(q).select(db.forms.ALL, cacheable=True).first()
         if form is None:
             raise Exception("the requested form does not exist or you don't have permission to use it")
