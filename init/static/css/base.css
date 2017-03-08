@@ -737,9 +737,6 @@ div.error {
 	display: flex;
 	flex-wrap: wrap;
 }
-.menu_section > span > table {
-	width: 100%;
-}
 .menu_current {
 	background: #1f1f1f;
 }
@@ -751,15 +748,6 @@ div.error {
 }
 .menu_entry > a {
 	text-decoration: none;
-}
-.menu_entry > a > div {
-	padding-top: 10px;
-	padding-bottom: 3px;
-	height: 48px;
-	vertical-align: middle;
-}
-.menu_entry > a > div > div {
-	white-space: normal;
 }
 .menu_section > a {
 	text-decoration: none;
@@ -793,8 +781,7 @@ table.tabs {
 .menu_entry {
 	padding: 1em;
 	min-height: 60px;
-	float: left;
-	width: 15em;
+	flex: 0 0 17rem;
 	color: #ccc;
 }
 .menu_entry * {
