@@ -1040,7 +1040,14 @@ function table_disks(divid, options) {
 		'span': ['disk_id', 'svcname', 'nodename'],
 		'orderby': ['disk_id', 'node_id', 'svc_id', 'os_name'],
 		'force_cols': ['id', 'disk_id', 'node_id', 'svc_id', 'os_name'],
-		'columns': ['disk_id', 'disk_region', 'disk_vendor', 'disk_model', 'app', 'node_id', 'nodename', 'svc_id', 'svcname', 'disk_local', 'disk_dg', 'svcdisk_updated', 'disk_used', 'disk_size', 'disk_alloc', 'disk_name', 'disk_devid', 'disk_raid', 'disk_group', 'disk_arrayid', 'disk_level', 'array_model', 'disk_created', 'disk_updated', 'tz', 'loc_country', 'loc_zip', 'loc_city', 'loc_addr', 'loc_building', 'loc_floor', 'loc_room', 'loc_rack', 'power_supply_nb', 'power_cabinet1', 'power_cabinet2', 'power_protect', 'power_protect_breaker', 'power_breaker1', 'power_breaker2'],
+		'colprops': {
+			"size": {
+				"_dataclass": "bluer size_mb",
+				"img": "hd16",
+				"title": "Size"
+			},
+		},
+		'columns': ['disk_id', 'disk_region', 'disk_vendor', 'disk_model', 'app', 'node_id', 'nodename', 'svc_id', 'svcname', 'disk_local', 'disk_dg', 'svcdisk_updated', 'disk_used', 'size', 'disk_size', 'disk_alloc', 'disk_name', 'disk_devid', 'disk_raid', 'disk_group', 'disk_arrayid', 'disk_level', 'array_model', 'disk_created', 'disk_updated', 'tz', 'loc_country', 'loc_zip', 'loc_city', 'loc_addr', 'loc_building', 'loc_floor', 'loc_room', 'loc_rack', 'power_supply_nb', 'power_cabinet1', 'power_cabinet2', 'power_protect', 'power_protect_breaker', 'power_breaker1', 'power_breaker2'],
 		'default_columns': ["app", "array_model", "disk_alloc", "disk_arrayid", "disk_created", "disk_devid", "disk_dg", "disk_group", "disk_id", "disk_level", "disk_local", "disk_model", "disk_name", "nodename", "disk_raid", "disk_size", "svcname", "disk_updated", "disk_used", "disk_vendor", "svcdisk_updated"],
 		'child_tables': ['disks_charts'],
 		'wsable': true,

@@ -177,6 +177,7 @@ class table_disks(HtmlTable):
                      'svcname',
                      'disk_dg',
                      'svcdisk_updated',
+                     'size',
                      'disk_used',
                      'disk_size',
                      'disk_alloc',

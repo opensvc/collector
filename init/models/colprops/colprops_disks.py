@@ -35,8 +35,12 @@ disk_app_colprops = {
              table='svcdisks',
              field='disk_local',
             ),
-    'disk_size': HtmlTableColumn(
+    'size': HtmlTableColumn(
              table='svcdisks',
+             field='disk_size',
+            ),
+    'disk_size': HtmlTableColumn(
+             table='diskinfo',
              field='disk_size',
             ),
     'disk_alloc': HtmlTableColumn(
