@@ -1,4 +1,3 @@
-import pickle
 import os
 from xml.etree.ElementTree import ElementTree, SubElement
 
@@ -413,7 +412,7 @@ class SymDisk(object):
         return '\n'.join(l)
 
 class Sym(object):
-    def __init__(self, xml_dir=None, preload_data=False):
+    def __init__(self, xml_dir=None):
         if xml_dir is None:
             return
         self.info = {}
@@ -427,11 +426,6 @@ class Sym(object):
                         'sym_meta',
                         'sym_director',
                         'sym_tdev']
-        self.dumps = ['info',
-                      'dev',
-                      'disk',
-                      'diskgroup',
-                      'director']
 
         self.xml_dir = xml_dir
         self.xml_mtime = None
@@ -444,53 +438,15 @@ class Sym(object):
         self.diskgroup = {}
         self.director = {}
 
-    def init_data(self, preload_data):
-        if self.dump_outdated():
-            self.load_xml()
-        elif preload_data:
-            self.get_sym_all()
+    def init_data(self):
+        self.load_xml()
 
     def load_xml(self):
         for parser in self.parsers:
             try:
                 getattr(self, parser)()
             except Exception as e:
-                print "parser", parser, ":", e
-
-        # restore mtime changed by the parser
-        os.utime(os.path.join(self.xml_dir, 'sym_info'),
-                 (-1, self.xml_mtime))
-
-        for d in self.dumps:
-            self.dump(d+'.dump', getattr(self, d))
-
-    def dump_outdated(self):
-        try:
-            xml = os.path.join(self.xml_dir, 'sym_info')
-            dump = os.path.join(self.xml_dir, 'info.dump')
-            self.xml_mtime = os.stat(xml).st_mtime
-            dump_mtime = os.stat(dump).st_mtime
-            module_mtime = os.stat(__file__).st_mtime
-        except:
-            return True
-        if self.xml_mtime > dump_mtime:
-            return True
-        if module_mtime > dump_mtime:
-            return True
-        return False
-
-    def load(self, f):
-        p = os.path.join(self.xml_dir, f)
-        fd = open(p, 'r')
-        s = pickle.load(fd)
-        fd.close()
-        return s
-
-    def dump(self, f, o):
-        p = os.path.join(self.xml_dir, f)
-        fd = open(p, 'w')
-        pickle.dump(o, fd)
-        fd.close()
+                print "parser error:", parser, ":", e
 
     def prefix(self, text=""):
         if len(text) == 0:
@@ -501,7 +457,7 @@ class Sym(object):
         return lines
 
     def __str__(self):
-        self.get_sym_all()
+        self.init_data()
         l = []
         for key in self.info:
             l += self.prefix('%s: %s'%(key,self.info[key]))
@@ -653,48 +609,16 @@ class Sym(object):
             self += SymDirector(e)
         del tree
 
-    """ Accessors
-    """
-    def get_sym_info(self):
-        if 'symid' not in self.info:
-            self.info = self.load('info.dump')
-        return self.info
-
-    def get_sym_diskgroup(self):
-        if len(self.diskgroup) == 0:
-            self.diskgroup = self.load('diskgroup.dump')
-        return self.diskgroup
-
-    def get_sym_disk(self):
-        if len(self.disk) == 0:
-            self.disk = self.load('disk.dump')
-        return self.disk
-
-    def get_sym_dev(self):
-        if len(self.dev) == 0:
-            self.dev = self.load('dev.dump')
-        return self.dev
-
-    def get_sym_director(self):
-        if len(self.director) == 0:
-            self.director = self.load('director.dump')
-        return self.director
-
-    def get_sym_all(self):
-        for d in self.dumps:
-            getattr(self, 'get_sym_'+d)()
-
 class Dmx(Sym):
-    def __init__(self, xml_dir=None, preload_data=False):
-        Sym.__init__(self, xml_dir, preload_data)
+    def __init__(self, xml_dir=None):
+        Sym.__init__(self, xml_dir)
         self.parsers += ['sym_maskdb']
-        self.dumps += ['maskdb']
         self.maskdb = {}
         self.info.update({'maskdb_count': 0})
-        self.init_data(preload_data)
+        self.init_data()
 
     def __str__(self):
-        self.get_sym_all()
+        self.init_data()
         l = []
         for mask in self.maskdb:
             l += self.prefix(str(self.maskdb[mask]))
@@ -727,18 +651,10 @@ class Dmx(Sym):
                 self += SymMask(director, port, ee)
         del tree
 
-    """ Accessors
-    """
-    def get_sym_maskdb(self):
-        if len(self.maskdb) == 0:
-            self.maskdb = self.load('maskdb.dump')
-        return self.maskdb
-
 class Vmax(Sym):
-    def __init__(self, xml_dir=None, preload_data=False):
-        Sym.__init__(self, xml_dir, preload_data)
+    def __init__(self, xml_dir=None):
+        Sym.__init__(self, xml_dir)
         self.parsers += ['sym_view']
-        self.dumps += ['ig', 'pg', 'sg', 'view']
         self.ig = {}
         self.pg = {}
         self.sg = {}
@@ -747,10 +663,10 @@ class Vmax(Sym):
                           'ig_count': 0,
                           'pg_count': 0,
                           'sg_count': 0})
-        self.init_data(preload_data)
+        self.init_data()
 
     def __str__(self):
-        self.get_sym_all()
+        self.init_data()
         l = []
         for view in self.view:
             l += self.prefix(str(self.view[view]))
@@ -787,29 +703,7 @@ class Vmax(Sym):
             self += VmaxView(e)
         del tree
 
-    """ Accessors
-    """
-    def get_sym_sg(self):
-        if len(self.sg) == 0:
-            self.sg = self.load('sg.dump')
-        return self.sg
-
-    def get_sym_pg(self):
-        if len(self.pg) == 0:
-            self.pg = self.load('pg.dump')
-        return self.pg
-
-    def get_sym_ig(self):
-        if len(self.ig) == 0:
-            self.ig = self.load('ig.dump')
-        return self.ig
-
-    def get_sym_view(self):
-        if len(self.view) == 0:
-            self.view = self.load('view.dump')
-        return self.view
-
-def get_sym(xml_dir=None, preload_data=False):
+def get_sym(xml_dir=None):
         f = os.path.join(xml_dir, 'sym_info')
         tree = ElementTree()
         tree.parse(f)
@@ -818,9 +712,9 @@ def get_sym(xml_dir=None, preload_data=False):
         del tree
         try:
             if 'VMAX' in model:
-                return Vmax(xml_dir, preload_data)
+                return Vmax(xml_dir)
             elif 'DMX' in model or '3000-M':
-                return Dmx(xml_dir, preload_data)
+                return Dmx(xml_dir)
         except Exception as e:
             print e
             return None

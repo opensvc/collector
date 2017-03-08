@@ -2617,14 +2617,12 @@ def insert_sym(symid=None, node_id=None):
         s = symmetrix.get_sym(d)
 
         if s is not None:
-            # stor_array
-            s.get_sym_info()
-
             # stor_array_proxy
             print s.info['symid']
             print " model", s.info['model']
             insert_array_proxy(node_id, s.info['symid'])
 
+            # stor_array
             vars = ['array_name', 'array_model', 'array_cache', 'array_firmware', 'array_updated']
             vals = []
             vals.append([s.info['symid'],
@@ -2640,7 +2638,6 @@ def insert_sym(symid=None, node_id=None):
             array_id = str(db.executesql(sql)[0][0])
 
             # stor_array_dg
-            s.get_sym_diskgroup()
             vars = ['array_id', 'dg_name', 'dg_free', 'dg_used', 'dg_size', 'dg_updated']
             vals = []
             print " dg"
@@ -2658,7 +2655,6 @@ def insert_sym(symid=None, node_id=None):
             db.executesql(sql)
 
             # stor_array_tgtid
-            s.get_sym_director()
             vars = ['array_id', 'array_tgtid']
             vals = []
             print " targets"
@@ -2672,7 +2668,6 @@ def insert_sym(symid=None, node_id=None):
             del(s.director)
 
             # diskinfo
-            s.get_sym_dev()
             vars = ['disk_id',
                     'disk_arrayid',
                     'disk_devid',
