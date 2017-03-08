@@ -2616,12 +2616,15 @@ def insert_sym(symid=None, node_id=None):
     for d in sym_dirs:
         s = symmetrix.get_sym(d)
 
-        # stor_array_proxy
-        insert_array_proxy(node_id, s.info['symid'])
-
         if s is not None:
             # stor_array
             s.get_sym_info()
+
+            # stor_array_proxy
+            print s.info['symid']
+            print " model", s.info['model']
+            insert_array_proxy(node_id, s.info['symid'])
+
             vars = ['array_name', 'array_model', 'array_cache', 'array_firmware', 'array_updated']
             vals = []
             vals.append([s.info['symid'],
@@ -2640,7 +2643,9 @@ def insert_sym(symid=None, node_id=None):
             s.get_sym_diskgroup()
             vars = ['array_id', 'dg_name', 'dg_free', 'dg_used', 'dg_size', 'dg_updated']
             vals = []
+            print " dg"
             for dg in s.diskgroup.values():
+                print "  ", dg.info['disk_group_name']
                 vals.append([array_id,
                              dg.info['disk_group_name'],
                              str(dg.total-dg.used),
@@ -2656,8 +2661,12 @@ def insert_sym(symid=None, node_id=None):
             s.get_sym_director()
             vars = ['array_id', 'array_tgtid']
             vals = []
+            print " targets"
             for dir in s.director.values():
                 for wwn in dir.port_wwn:
+                    if wwn == "N/A":
+                        continue
+                    print "  ", wwn
                     vals.append([array_id, wwn])
             generic_insert('stor_array_tgtid', vars, vals)
             del(s.director)
@@ -2685,6 +2694,7 @@ def insert_sym(symid=None, node_id=None):
                              dev.diskgroup_name,
                              now])
             generic_insert('diskinfo', vars, vals)
+            print " disks", len(vals)
             del(s.dev)
             sql = """delete from diskinfo where disk_arrayid="%s" and disk_updated < "%s" """%(s.info['symid'], str(now))
             db.executesql(sql)
