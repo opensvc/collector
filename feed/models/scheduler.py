@@ -2615,6 +2615,7 @@ def insert_sym(symid=None, node_id=None):
 
     for d in sym_dirs:
         s = symmetrix.get_sym(d)
+	s.init_data()
 
         if s is not None:
             # stor_array_proxy

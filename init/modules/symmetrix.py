@@ -8,7 +8,10 @@ class SymTDev(object):
         self.alloc_tracks_mb = int(xml.find("alloc_tracks_mb").text)
         self.pools = []
         for e in xml.findall("pool"):
-            self.pools.append(e.find("pool_name").text)
+            pool_name = e.find("pool_name").text
+            if pool_name == "N/A":
+                continue
+            self.pools.append(pool_name)
 
     def prefix(self, text=""):
         if len(text) == 0:
@@ -439,14 +442,12 @@ class Sym(object):
         self.director = {}
 
     def init_data(self):
-        self.load_xml()
-
-    def load_xml(self):
         for parser in self.parsers:
             try:
                 getattr(self, parser)()
             except Exception as e:
                 print "parser error:", parser, ":", e
+                #raise
 
     def prefix(self, text=""):
         if len(text) == 0:
@@ -457,7 +458,6 @@ class Sym(object):
         return lines
 
     def __str__(self):
-        self.init_data()
         l = []
         for key in self.info:
             l += self.prefix('%s: %s'%(key,self.info[key]))
@@ -493,6 +493,8 @@ class Sym(object):
         return self
 
     def add_sym_tdev(self, o):
+        if o.dev_name not in self.dev:
+            return
         self.dev[o.dev_name] += o
 
     def add_sym_dev_wwn(self, o):
@@ -615,10 +617,8 @@ class Dmx(Sym):
         self.parsers += ['sym_maskdb']
         self.maskdb = {}
         self.info.update({'maskdb_count': 0})
-        self.init_data()
 
     def __str__(self):
-        self.init_data()
         l = []
         for mask in self.maskdb:
             l += self.prefix(str(self.maskdb[mask]))
@@ -663,10 +663,8 @@ class Vmax(Sym):
                           'ig_count': 0,
                           'pg_count': 0,
                           'sg_count': 0})
-        self.init_data()
 
     def __str__(self):
-        self.init_data()
         l = []
         for view in self.view:
             l += self.prefix(str(self.view[view]))
@@ -723,6 +721,7 @@ def get_sym(xml_dir=None):
 import sys
 def main():
     s = get_sym(sys.argv[1])
+    s.init_data()
     print s
 
 if __name__ == "__main__":
