@@ -592,7 +592,7 @@ def ajax_uid_dispatch():
                  TD(row['nodes']),
                )
         l.append(line)
-    return TABLE(SPAN(l))
+    return TABLE(SPAN(l), _class="table")
 
 @auth.requires_login()
 def ajax_gid_dispatch():
@@ -622,7 +622,7 @@ def ajax_gid_dispatch():
                  TD(row['nodes']),
                )
         l.append(line)
-    return TABLE(SPAN(l))
+    return TABLE(SPAN(l), _class="table")
 
 
 @auth.requires_login()
