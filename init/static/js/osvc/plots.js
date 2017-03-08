@@ -42,6 +42,7 @@ var chart_defaults = {
 	cursor: {
 		clickReset: true,
 		zoom: true,
+		show: true,
 		showTooltip: false
 	},
 	grid: {
@@ -2562,50 +2563,49 @@ function charts_plot(url, id) {
   })
 }
 function obsplot(o) {
-  require(["jqplot"], function(){
-  var data = $.parseJSON(o.html())
-  o.html("")
-  if (data[0].length < 1) {
-    return
-  }
-  options = {
-	    cursor: {
-                show: true,
-                zoom: true
-            },
-            highlighter: {
-                show: true
-            },
-            legend: {
-                show: true,
-                location: 'e',
-                placement: "outside"
-            },
-            series: [
-                {label: 'delta', renderer: $.jqplot.BarRenderer,
-                 rendererOptions: {
-                  barWidth: 10
-                 }
-                },
-                {label: 'sigma'},
-                {label: 'today', color: 'red', showMarker: false},
-            ],
-            axes: {
-                xaxis: {
-                    renderer: $.jqplot.DateAxisRenderer,
-                    numberTicks: 5,
-                    tickOptions:{formatString:'%b\n%Y'}
-                },
-                yaxis: {
-                    min: 0,
-                    max: data[2][1][1],
-                    tickOptions:{formatString:'%i'}
-                }
-            }
-  }
-  p = $.jqplot(o.attr('id'), data, options)
-  _jqplot_extra(o, p)
-  })
+	require(["jqplot"], function(){
+		var data = $.parseJSON(o.html())
+		o.html("")
+		if (data[0].length < 1) {
+			return
+		}
+		options = $.extend({}, chart_defaults, {
+			series: [
+				{
+					label: 'delta', renderer: $.jqplot.BarRenderer,
+					rendererOptions: {
+						barWidth: 10
+					}
+				},
+				{
+					label: 'sigma'
+				},
+				{
+					label: 'today',
+					color: 'red',
+					showMarker: false
+				}
+			],
+			axes: {
+				xaxis: {
+					renderer: $.jqplot.DateAxisRenderer,
+					numberTicks: 5,
+					tickOptions: {
+						formatString:'%b\n%Y'
+					}
+				},
+				yaxis: {
+					min: 0,
+					max: data[2][1][1],
+					tickOptions: {
+						formatString:'%i'
+					}
+				}
+			}
+		})
+		p = $.jqplot(o.attr('id'), data, options)
+		_jqplot_extra(o, p)
+	})
 }
 
 function _jqplot_extra(e, p){
