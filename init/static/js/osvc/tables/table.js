@@ -283,13 +283,17 @@ function table_init(opts) {
 		t.e_scroll_zone.hide()
 		t.e_toolbar.addClass("grayed")
 		t.e_folder.removeClass("fa-angle-down").addClass("fa-angle-up")
-		t.e_pager.hide()
+		if (t.e_pager) {
+			t.e_pager.hide()
+		}
 	}
 	t.unfold = function() {
 		t.e_toolbar.removeClass("grayed")
 		t.e_folder.removeClass("fa-angle-up").addClass("fa-angle-down")
 		t.e_scroll_zone.show()
-		t.e_pager.show()
+		if (t.e_pager) {
+			t.e_pager.show()
+		}
 		t.refresh()
 	}
 	t.folded = function() {
