@@ -1113,11 +1113,10 @@ function table_init(opts) {
 
 	t.bind_filter_selector = function() {
 		$("#table_"+t.id).find("[col]").each(function(){
-			$(this).on("contextmenu mouseup", function(event) {
+			$(this).on("mouseup", function(event) {
 				t.div.find("tr.extraline").remove()
-				if(event.button != 2) {
-					return
-				}
+			})
+			$(this).on("contextmenu", function(event) {
 				var cell = $(event.target)
 				if (cell.is("th")) {
 					var col = cell.attr('col')
@@ -3293,7 +3292,7 @@ function table_bind_action_menu(t) {
 	table_action_menu_init_data(t)
 
 	$("#table_"+t.id).find("[name="+t.id+"_tools]").each(function(){
-		$(this).on("contextmenu mouseup", function(event) {
+		$(this).on("mouseup", function(event) {
 			if (event.button == 2) {
 				// right-click => open the action menu
 				table_action_menu(t, event)
