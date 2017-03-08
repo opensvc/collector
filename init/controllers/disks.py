@@ -223,7 +223,7 @@ def ajax_disks_col_values():
     col = request.args[0]
     o = db[t.colprops[col].table][col]
     q = db.svcdisks.id>0
-    q |= db.stor_array.id<0
+    q |= db.stor_array.id>0
     l0 = db.svcdisks.on(db.svcdisks.disk_id == db.diskinfo.disk_id)
     l1 = db.stor_array.on(db.diskinfo.disk_arrayid == db.stor_array.array_name)
     l2 = db.nodes.on(db.svcdisks.node_id==db.nodes.node_id)
@@ -232,7 +232,7 @@ def ajax_disks_col_values():
     q = q_filter(q, app_field=db.apps.app)
     q = apply_filters_id(q, db.svcdisks.node_id)
     for f in t.cols:
-        q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
+        q = _where(q, t.colprops[f].table, t.filter_parse(f), t.colprops[f].field)
     t.object_list = db(q).select(o, cacheable=True, orderby=o, left=(l0,l1,l2,l3,l4))
     return t.col_values_cloud_ungrouped(col)
 
@@ -243,7 +243,7 @@ def ajax_disks():
 
     o = t.get_orderby(default=db.diskinfo.disk_id|db.services.svcname|db.nodes.nodename)
     q = db.diskinfo.id>0
-    q |= db.stor_array.id<0
+    q |= db.stor_array.id>0
     l0 = db.svcdisks.on(db.svcdisks.disk_id == db.diskinfo.disk_id)
     l1 = db.stor_array.on(db.diskinfo.disk_arrayid == db.stor_array.array_name)
     l2 = db.nodes.on(db.svcdisks.node_id==db.nodes.node_id)
@@ -255,8 +255,8 @@ def ajax_disks():
         q = _where(q, t.colprops[f].table, t.filter_parse(f), t.colprops[f].field)
 
     if len(request.args) == 1 and request.args[0] == 'data':
-        n = db(q).select(db.svcdisks.id.count(), cacheable=True,
-                         left=(l0,l1,l2,l3,l4)).first()._extra[db.svcdisks.id.count()]
+        n = db(q).select(db.diskinfo.id.count(), cacheable=True,
+                         left=(l0,l1,l2,l3,l4)).first()._extra[db.diskinfo.id.count()]
         t.setup_pager(n)
         limitby = (t.pager_start,t.pager_end)
         cols = t.get_visible_columns()
