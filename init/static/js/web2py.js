@@ -64,6 +64,9 @@ function web2py_event_handlers() {
 
   doc.ajaxError(function(e, xhr, settings, exception) {
     doc.off('click', '.flash')
+      if (!osvc.flash) {
+        return
+      }
       switch(xhr.status){
         case 500:
           osvc.flash.error(ajax_error_500)

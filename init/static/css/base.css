@@ -1214,35 +1214,19 @@ div.floatw:active {
 ul.login_menu ul {
 	border-top: 1px solid white;
 }
+
 .login label {
 	color: white;
 }
-
-.login {
-	z-index: 501;
-	position: absolute;
-	top: 50%;
-	left: 50%;
-	vertical-align: middle;
-	text-align: center;
+div.login {
 	color: white;
+	padding: 6rem 3rem;
 }
 .login h2 {
-	width: 100%;
-	margin: 0 0 1em 0;
+	margin: 0 0 1rem 1rem;
 }
-.login input {
-	color: black;
-	-moz-border-radius: 4px;
-	-webkit-border-radius: 4px;
-	border-radius: 4px;
-}
-.login input:focus {
-	outline: 0;
-}
-.login table {
-	border-collapse: initial;
-	border-spacing: 5px;
+.login input,select {
+	max-width: 30em;
 }
 
 .common16:before {

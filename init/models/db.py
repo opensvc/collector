@@ -81,6 +81,7 @@ auth.settings.allow_basic_login = True
 auth.settings.remember_me_form = False
 auth.settings.login_methods = [auth]
 auth.settings.register_onaccept = [lambda form: auth_register_callback(form)]
+auth.settings.formstyle = "bootstrap3_inline"
 login_form_username = False
 
 if config_get("allow_register", False):
@@ -115,12 +116,12 @@ auth.settings.extra_fields['auth_membership']= [
 
 auth.settings.extra_fields['auth_user']= [
     Field('quota_docker_registries', 'integer', default=1,
-          requires=IS_INT_IN_RANGE(minimum=0), writable=False,
+          requires=IS_INT_IN_RANGE(minimum=0), writable=False, readable=False,
           label=T('Maximum number of docker registries the user can be responsible of')),
     Field('quota_org_group', 'integer', default=1,
-          requires=IS_INT_IN_RANGE(minimum=0), writable=False,
+          requires=IS_INT_IN_RANGE(minimum=0), writable=False, readable=False,
           label=T('Maximum number of organizational groups the user can be member of')),
-    Field('quota_app', 'integer', default=1, writable=False,
+    Field('quota_app', 'integer', default=1, writable=False, readable=False,
           requires=IS_INT_IN_RANGE(minimum=0),
           label=T('Maximum number of applications the user can be responsible of')),
     Field('phone_work', 'string', label=T("Work desk phone number"), length=15),

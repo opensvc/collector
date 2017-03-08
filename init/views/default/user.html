@@ -23,33 +23,6 @@ pass
     {{if 'MSIE 6' in request.env.http_user_agent:}}
     {{=redirect(URL(r=request, c='unsupported', f='index'))}}
     {{pass}}
-    <script type="text/javascript">
-/*
- * browser can fill this field asynchronously
- */
-function email_focus() {
-    $('#auth_user_email').select();
-}
-function align_login_inputs() {
-    var w = "250px"
-    $('#auth_user_username').width(w);
-    $('#auth_user_email').width(w);
-    $('#auth_user_password').width(w);
-    $('#auth_user_first_name').width(w);
-    $('#auth_user_last_name').width(w);
-    $("[name='password_two']").width(w);
-}
-function margins() {
-    $('.login').css('margin-top', -$('.login').height()/2-10)
-    $('.login').css('margin-left', -$('.login').width()/2-50)
-}
-jQuery(window).load(function(){
-    align_login_inputs()
-    margins()
-    $('#auth_user_email').focus();
-    setTimeout(email_focus, 500);
-});
-    </script>
   </head>
   <body>
     <div id="not_login" class='login_menu header'>
