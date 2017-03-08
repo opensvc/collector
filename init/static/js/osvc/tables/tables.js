@@ -1541,6 +1541,9 @@ function view_nodes(divid, options) {
 	$("#"+divid).load("/init/static/views/nodes.html?v="+osvc.code_rev, function() {
 		$(this).i18n()
 		table_nodes("nodes_container", options)
+		if (!options) {
+			options = {}
+		}
 		options.folded = true
 		table_uids("uids", options)
 		table_gids("gids", options)
