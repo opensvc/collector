@@ -348,7 +348,7 @@ function table_init(opts) {
 		var cls = ["cell1", "cell2"]
 		var cl = "cell1"
 		var i = 1
-		t.e_table.children().children(".tl").each(function(){
+		t.e_body.children(".tl").each(function(){
 			spansum = $(this).attr("spansum")
 			if (spansum != prev_spansum) {
 				prev_spansum = spansum
@@ -364,7 +364,7 @@ function table_init(opts) {
 
 	t.trim_lines = function() {
 		perpage = t.options.pager.perpage
-		lines = t.e_table.children("tbody").children(".tl")
+		lines = t.e_body.children(".tl")
 		if (lines.length <= perpage) {
 			return
 		}
@@ -461,6 +461,9 @@ function table_init(opts) {
 		anchor.insertBefore(t.e_header)
 		t.e_sticky_anchor = anchor
 		sticky_relocate(t.e_header, t.e_sticky_anchor)
+		$(".menu.flash").scroll(function(){
+			sticky_relocate(t.e_header, t.e_sticky_anchor)
+		})
 		$(window).scroll(function(){
 			sticky_relocate(t.e_header, t.e_sticky_anchor)
 		})
@@ -527,7 +530,7 @@ function table_init(opts) {
 		var toolbar = $("<div class='toolbar clickable' name='toolbar'></div>")
 		var table_scroll_zone = $("<div class='table_scroll_zone'></div>")
 		var table_div = $("<div></div>")
-		var table = $("<table></table>")
+		var table = $("<table><thead><tr class='theader'></tr></thead><tbody></tbody></table>")
 
 		if (t.options.folded) {
 			table_scroll_zone.hide()
@@ -545,6 +548,8 @@ function table_init(opts) {
 		container.empty().append(d)
 		t.e_scroll_zone = table_scroll_zone
 		t.e_table = table
+		t.e_header = table.find("thead>tr")
+		t.e_body = table.find("tbody")
 		t.e_toolbar = toolbar
 	}
 
@@ -716,7 +721,7 @@ function table_init(opts) {
 
 	t.cell_decorator = function(lines) {
 		if (!lines) {
-			lines = t.e_table.find("tbody > .tl")
+			lines = t.e_body.find(".tl")
 		}
 		var spansum1 = null
 		lines.each(function(){
@@ -747,13 +752,7 @@ function table_init(opts) {
 		if (!t.options.headers) {
 			return
 		}
-		if (t.e_header) {
-			var tr = t.e_header
-		} else {
-			var tr = $("<tr class='theader'></tr>")
-			t.e_table.prepend(tr)
-			t.e_header = tr
-		}
+		var tr = t.e_header
 		if (t.options.checkboxes) {
 			var th = $("<th class='text-center'><div class='fa fa-bars clickable mb-1 d-block'></div></th>")
 			th.click(function(e){
@@ -1067,7 +1066,7 @@ function table_init(opts) {
 			if (t.options.visible_columns.indexOf(c) >= 0) {
 				continue
 			}
-			t.e_table.find("tbody > * > [col="+c+"]").hide()
+			t.e_table.find("tr > [col="+c+"]").hide()
 		}
 	}
 
@@ -1095,7 +1094,7 @@ function table_init(opts) {
 		t.refresh_column_headers()
 		if (checked) {
 			if (t.options.force_cols.indexOf(c) >=0 ) {
-				t.e_table.find("tbody > .tl > td[col="+c+"]").show()
+				t.e_table.find(".tl > td[col="+c+"]").show()
 			} else {
 				t.refresh()
 			}
@@ -1269,14 +1268,13 @@ function table_init(opts) {
 		}
 
 		// detach extralines
-		var extralines = t.e_table.children("tbody").children(".extraline:visible").detach()
+		var extralines = t.e_body.children(".extraline:visible").detach()
 
 		// detach old lines
 		var old_lines = $("<tbody></tbody>").append($("#table_"+t.id).children("tbody").children(".tl").detach())
 
 		// insert new lines
-		tbody = $("#table_"+t.id).children("tbody")
-		tbody.append(msg)
+		t.e_body.append(msg)
 
 		if (!t.options.detached_decorate_cells) {
 			msg = t.cell_decorator(msg)
@@ -1285,7 +1283,7 @@ function table_init(opts) {
 		// reattach extralines
 		extralines.each(function(){
 			var cksum = $(this).attr("anchor")
-			var new_line = tbody.children(".tl[cksum="+cksum+"]")
+			var new_line = t.e_body.children(".tl[cksum="+cksum+"]")
 			if (new_line.length == 0) {
 				// the extraline parent line disappeared
 				return
@@ -1297,7 +1295,7 @@ function table_init(opts) {
 		})
 		extralines.remove()
 
-		tbody.children(".tl").each(function(){
+		t.e_body.children(".tl").each(function(){
 			var new_line = $(this)
 			var cksum = new_line.attr("cksum")
 			var old_line = $("[cksum="+cksum+"]", old_lines)
@@ -1341,7 +1339,7 @@ function table_init(opts) {
 		t.restripe_lines()
 		t.hide_cells()
 		t.unset_refresh_spin()
-		tbody.find("tr.tl").children("td.tohighlight").removeClass("tohighlight").effect("highlight", 1000)
+		t.e_body.find("tr.tl").children("td.tohighlight").removeClass("tohighlight").effect("highlight", 1000)
 		t.scroll_enable_dom()
 		t.scroll()
 
@@ -2808,9 +2806,9 @@ function table_init(opts) {
 				if (!current_state) {
 					if (t.options.force_cols.indexOf(colname) >=0 ) {
 						// don't remove forced columns
-						t.e_table.find("tbody > * > [col="+colname+"]").hide()
+						t.e_table.find("tr > [col="+colname+"]").hide()
 					} else {
-						t.e_table.find("tbody > * > [col="+colname+"]").remove()
+						t.e_table.find("tr > [col="+colname+"]").remove()
 					}
 					// reset the table data md5 so that toggle on-off-on a column is not interpreted
 					// as unchanged data
