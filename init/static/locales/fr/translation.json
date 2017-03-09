@@ -1941,6 +1941,9 @@
 		"move_group": "Déplacer",
 		"cancel": "Annuler"
 	},
+	"reports": {
+		"select": "Sélectionnez un rapport"
+	},
 	"requests": {
 		"scripts": "Scripts exécutés pour cette étape",
 		"not_assigned": "ette étape de workflow ne vous est pas assignée",

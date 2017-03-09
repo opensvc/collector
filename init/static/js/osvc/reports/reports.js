@@ -457,24 +457,24 @@ function reports(divid, options)
 				return
 			}
 			o.build_selection(data)
-			o.load_selected(data[0].id)
-			o.select_report(data[0].id); 
+			//o.load_selected(data[0].id)
+			//o.select_report(data[0].id); 
 		})
 	}
 
-	o.select_report = function select_report(report_id) {
+	o.select_report = function(report_id) {
 		o.current_reports = report_id
-		o.e_reports_select.find(".report_button_div_active").removeClass("report_button_div_active")
-		o.e_reports_select.find("[report_id="+o.current_reports+"]").addClass("report_button_div_active")
+		o.e_reports_select.find(".button_div_active").removeClass("button_div_active")
+		o.e_reports_select.find("[report_id="+o.current_reports+"]").addClass("button_div_active")
 	}
 
-	o.refresh = function refresh(report_id) {
+	o.refresh = function(report_id) {
 		o.e_reports_data.empty()
 		o.load_selected(report_id)
 		o.select_report(report_id)
 	}
 
-	o.build_selection = function build_selection(data) {
+	o.build_selection = function(data) {
 		var sect_div = $("<div></div>")
 		var title = $("<h3 class='mt-3'></h3>").text(i18n.t("table.name.reports"))
 		o.e_reports_select.empty()
@@ -499,6 +499,7 @@ function reports(divid, options)
 	}
 
 	o.div.load("/init/static/views/reports.html?v="+osvc.code_rev, function() {
+		o.div.i18n()
 		o.init()
 	})
 

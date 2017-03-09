@@ -1991,6 +1991,9 @@
 		"move_group": "Move",
 		"cancel": "Cancel"
 	},
+	"reports": {
+		"select": "Select a report"
+	},
 	"requests": {
 		"scripts": "Scripts executed for this step",
 		"not_assigned": "This Workflow step is not assigned to you",
