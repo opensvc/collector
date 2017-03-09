@@ -312,7 +312,11 @@ function chart(divid, options) {
 function report(divid, options) {
 	var o = {}
 	o.options = options
-	o.div = $("#"+divid)
+	if (typeof divid === "string") {
+		o.div = $("#"+divid)
+	} else {
+		o.div = divid
+	}
 
 	o.create = function() {
 		// report area
@@ -429,18 +433,20 @@ function reports(divid, options)
 	o.current_reports = 0
 
 	o.init = function init() {
-		o.e_reports_select = o.div.find("#reports_select")
-		o.e_reports_select_off = o.div.find("#reports_select_off")
-		o.e_reports_data = o.div.find("#reports_data")
+		o.e_reports_selector = o.div.find(".reports_selector")
+		o.e_reports_folder = o.div.find(".reports_folder")
+		o.e_reports_data = o.div.find(".reports_data")
 		o.ql_link = o.div.find("#reports_ql_link")
 
 		o.e_reports_data.on("click", function () {
-			o.e_reports_select.addClass("hidden")
-			o.e_reports_select_off.removeClass("hidden")
+			o.e_reports_selector.addClass("hidden")
+			o.e_reports_folder.removeClass("hidden")
+			o.e_reports_data.css({"max-width": "calc(100% - 3rem)"})
 		})
-		o.e_reports_select_off.on("click", function() {
-			o.e_reports_select_off.addClass("hidden")
-			o.e_reports_select.removeClass("hidden")
+		o.e_reports_folder.on("click", function() {
+			o.e_reports_folder.addClass("hidden")
+			o.e_reports_selector.removeClass("hidden")
+			o.e_reports_data.css({"max-width": "calc(100% - 15rem)"})
 		})
 		o.load()
 	}
@@ -464,8 +470,8 @@ function reports(divid, options)
 
 	o.select_report = function(report_id) {
 		o.current_reports = report_id
-		o.e_reports_select.find(".button_div_active").removeClass("button_div_active")
-		o.e_reports_select.find("[report_id="+o.current_reports+"]").addClass("button_div_active")
+		o.e_reports_selector.find(".button_div_active").removeClass("button_div_active")
+		o.e_reports_selector.find("[report_id="+o.current_reports+"]").addClass("button_div_active")
 	}
 
 	o.refresh = function(report_id) {
@@ -477,9 +483,9 @@ function reports(divid, options)
 	o.build_selection = function(data) {
 		var sect_div = $("<div></div>")
 		var title = $("<h3 class='mt-3'></h3>").text(i18n.t("table.name.reports"))
-		o.e_reports_select.empty()
-		o.e_reports_select.append(title)
-		o.e_reports_select.append(sect_div)
+		o.e_reports_selector.empty()
+		o.e_reports_selector.append(title)
+		o.e_reports_selector.append(sect_div)
 
 		for (var i=0; i<data.length; i++) {
 			var faccess = $("<div class='button_div'></div>")
@@ -495,7 +501,7 @@ function reports(divid, options)
 
 	o.load_selected = function(report_id) {
 		o.report_id = report_id
-		report("reports_data", {"report_id": report_id})
+		report(o.e_reports_data, {"report_id": report_id})
 	}
 
 	o.div.load("/init/static/views/reports.html?v="+osvc.code_rev, function() {

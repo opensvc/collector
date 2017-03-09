@@ -2816,14 +2816,20 @@ div.containertrans {
 	padding: 10px;
 	max-width: 100%;
 }
-.reports_data {
+div.reports_data {
 	padding: 1rem;
+	max-width: calc(100% - 15rem)
 }
-div.reports_section_sel {
+div.reports_selector {
 	overflow: hidden;
 	background-color: white;
 	overflow-y: auto;
-	max-width: 15em;
+	max-width: 15rem;
+	border-right: 1px solid rgba(220, 220, 220, 0.3);
+	padding-bottom: 1rem;
+}
+div.reports_folder {
+	max-width: 3rem;
 	border-right: 1px solid rgba(220, 220, 220, 0.3);
 }
 
