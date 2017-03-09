@@ -1085,15 +1085,6 @@ div.float h2 {
 	text-align: center;
 }
 
-div.container {
-	margin:0.2em 0;
-	padding:0.2em 0;
-}
-
-div.container > * {
-	vertical-align: middle;
-}
-
 div.spacer {
 	height: 0;
 	clear: both;
@@ -2274,16 +2265,13 @@ div.formentry {
 }
 
 .postit {
-	-moz-border-radius: 5px;
-	-webkit-border-radius: 5px;
+	-moz-border-radius: 4px;
+	-webkit-border-radius: 4px;
 	min-height: 1em;
-	border-radius: 5px;
+	border-radius: 4px;
 	padding: 3px;
-	box-shadow: 0 0 5px 0 #aaa;
-	background-color: whitesmoke;
-	border-color: transparent;
-	border-width: 1px;
-	border-style: solid;
+	border: 1px solid #eee;
+	background-color: rgb(252,252,252);
 	overflow: auto;
 }
 
@@ -2690,7 +2678,7 @@ textarea.link_ta_sub {
 }
 
 .oi {
-	background-color: rgba(0,0,0,0.02);
+	background-color: rgba(100,100,100,0.02);
 	border-radius: 3px;
 	border-width: 1px;
 	border-color: rgba(0,0,0,0.1);
@@ -2699,7 +2687,7 @@ textarea.link_ta_sub {
 	-webkit-border-radius: 3px;
 }
 input.oi:focus, textarea.oi:focus {
-	background-color: rgba(0,0,0,0.05);
+	background-color: rgba(100,100,100,0.05);
 	outline-color: rgba(0,0,0,0.1);
 }
 
@@ -2822,77 +2810,21 @@ div.containertrans {
 }
 
 .reports_section {
-	min-width: 15em;
-	border-width: 0;
-	color: black;
-	cursor: default;
 	margin: 1%;
 	margin-top: 16px;
 	margin-bottom: 16px;
 	padding: 10px;
-	vertical-align: baseline;
-	text-align: center;
+	max-width: 100%;
+}
+.reports_data {
+	padding: 1rem;
+}
+div.reports_section_sel {
+	overflow: hidden;
 	background-color: white;
-	box-shadow: 0 0 20px 2px;
-	border-radius: 4px;
-	-moz-border-radius: 4px;
-	-webkit-border-radius: 4px;
-	width:auto;
-	height:auto;
-}
-.reports_div {
-	background-color : #E0E1CD;
-}
-.reports_div > div > h3.line > span {
-	background-color : #E0E1CD;
-}
-.reports_section_sel {
-	width:15em;
-	position: fixed;
-	overflow: hidden;
-	left: Opx;
-	background-color : #2d2d2d;
-	box-shadow: #555 0 0 20px;
-	height: -moz-calc(100% - 19px); /* Firefox */
- 	height: -webkit-calc(100% - 19px); /* Chrome, Safari */
- 	height: calc(100% - 19px); /* IE9+ and future browsers */
-	overflow-y:auto;
-	z-index:10;
-}
-.reports_section_sel_off {
-	width:2em;
-	position: fixed;
-	overflow: hidden;
-	left: Opx;
-	background-color: rgba(255,255,255,0.6);
-	box-shadow: #555 0 0 20px;
-	height: -moz-calc(100% - 18px); /* Firefox */
- 	height: -webkit-calc(100% - 18px); /* Chrome, Safari */
- 	height: calc(100% - 18px); /* IE9+ and future browsers */
-	z-index:10;
-}
-.report_button_div {
-	cursor: pointer;
-	vertical-align:middle;
-	padding: 0.3em;
-	background-color: rgba(255,255,255,0.6);
-	font-weight: normal;
-}
-.report_button_div:hover {
-	background-color: rgba(255,255,255,1.0);
-}
-.report_button_div_active {
-	font-weight: bold;
-}
-.reports_table {
-	width : 100%;
-	text-align: left;
-}
-.reports_table tr:last-child { 
-}
-
-.reports_table tr:nth-child(2n) {
-	background-color: #EEEEEE;
+	overflow-y: auto;
+	max-width: 15em;
+	border-right: 1px solid rgba(220, 220, 220, 0.3);
 }
 
 .param {

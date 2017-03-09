@@ -33,7 +33,7 @@ function metric(divid, options) {
 		}
 
 		// metric table area
-		o.table = $("<table class='reports_table'></table>")
+		o.table = $("<table class='table'></table>")
 		div.append(o.table)
 
 		// render table
@@ -254,15 +254,22 @@ function chart(divid, options) {
 	
 			p = $.jqplot(id, series_list, {
 				stackSeries: stackSeries,
+				gridPadding: {
+				  right: 90
+				},
 				cursor:{
-				  zoom:true,
-				  showTooltip:false
+				  clickReset: true,
+				  zoom: true,
+				  show: true,
+				  showTooltip: false
 				},
 				legend: legend,
 				grid: {
-				  borderWidth: 0.5,
-				  shadowOffset: 1.0,
-				  shadowWidth: 2
+				  gridLineColor: "#efefef",
+				  background: "transparent",
+				  borderWidth: 0,
+				  shadowOffset: 0,
+				  shadowWidth: 0
 				},
 				seriesDefaults: {
 				  breakOnNull : true,
@@ -422,23 +429,18 @@ function reports(divid, options)
 	o.current_reports = 0
 
 	o.init = function init() {
-		o.div_reports_header = o.div.find("#reports_header")
-		o.div_reports_data = o.div.find("#reports_data")
+		o.e_reports_select = o.div.find("#reports_select")
+		o.e_reports_select_off = o.div.find("#reports_select_off")
+		o.e_reports_data = o.div.find("#reports_data")
 		o.ql_link = o.div.find("#reports_ql_link")
-		o.reports_select = o.div_reports_header.find("#reports_select")
 
-		o.div_reports_data.bind("click", function () {
-			o.reports_select.animate({ left: "-13em" }, 300, "linear")
+		o.e_reports_data.on("click", function () {
+			o.e_reports_select.addClass("hidden")
+			o.e_reports_select_off.removeClass("hidden")
 		})
-
-		o.reports_select.hover(function() {
-			o.reports_select.animate({ left: "0" }, 300, "linear")
-		},
-		function() {
-			o.reports_select.animate({ left: "-13em" }, 300, "linear")
-		})
-		o.reports_select.bind("click", function() {
-			o.reports_select.animate({ left: "0" }, 300, "linear")
+		o.e_reports_select_off.on("click", function() {
+			o.e_reports_select_off.addClass("hidden")
+			o.e_reports_select.removeClass("hidden")
 		})
 		o.load()
 	}
@@ -462,23 +464,25 @@ function reports(divid, options)
 
 	o.select_report = function select_report(report_id) {
 		o.current_reports = report_id
-		o.reports_select.find(".report_button_div_active").removeClass("report_button_div_active")
-		o.reports_select.find("[report_id="+o.current_reports+"]").addClass("report_button_div_active")
+		o.e_reports_select.find(".report_button_div_active").removeClass("report_button_div_active")
+		o.e_reports_select.find("[report_id="+o.current_reports+"]").addClass("report_button_div_active")
 	}
 
 	o.refresh = function refresh(report_id) {
-		o.div_reports_data.empty()
+		o.e_reports_data.empty()
 		o.load_selected(report_id)
 		o.select_report(report_id)
 	}
 
 	o.build_selection = function build_selection(data) {
-		var sect_div = $("<div style='clear:both'></div>")
-		o.reports_select.empty()
-		o.reports_select.append(sect_div)
+		var sect_div = $("<div></div>")
+		var title = $("<h3 class='mt-3'></h3>").text(i18n.t("table.name.reports"))
+		o.e_reports_select.empty()
+		o.e_reports_select.append(title)
+		o.e_reports_select.append(sect_div)
 
 		for (var i=0; i<data.length; i++) {
-			var faccess = $("<div class='report_button_div'></div>")
+			var faccess = $("<div class='button_div'></div>")
 			faccess.attr("report_id", data[i].id)
 			faccess.text(data[i].report_name)
 			faccess.bind("click", function(event) {
