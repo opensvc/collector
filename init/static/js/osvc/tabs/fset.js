@@ -323,6 +323,7 @@ function fset_export(divid, options) {
 		o.textarea = $("<textarea class='export_data'>")
 		o.textarea.prop("disabled", true)
 		o.textarea.text(JSON.stringify(data, null, 4))
+		o.div.css({"padding": "4px"})
 		o.div.html(o.textarea)
 		o.resize()
 		o.link.title_args.name = o.options.fset_name
