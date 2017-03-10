@@ -64,8 +64,9 @@ input.aci, input.aci:focus {
 .grayed {
 	color: gray;
 }
-.lightgrayed {
-	color: lightgray;
+.lightgrayed,
+.lightgrayed:before {
+	color: lightgray !important;
 }
 
 .stick {
