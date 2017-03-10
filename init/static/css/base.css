@@ -2174,9 +2174,16 @@ div.formentry {
 	-webkit-border-radius:4px;
 	cursor: pointer;
 	display: flex;
-	padding: 0.8em 1em;
+	padding: 0.8rem;
+	flex: 1 0 20rem;
+	margin: 0.5rem;
+	background: rgb(252,252,252);
+	border: 1px solid lightgray;
 }
-.formentry:hover {
+div.formentry.form_folder {
+	background: rgb(255,251,247);
+}
+.formentry:hover,.formentry.form_folder:hover {
 	background-color: #f6f6f0;
 }
 .formentry > div:first-child {
