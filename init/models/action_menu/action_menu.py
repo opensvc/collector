@@ -224,7 +224,7 @@ def do_node_wol_action(node_id):
         node = db(db.nodes.node_id==candidate['proxy_node_id']).select().first()
         if node is None:
             continue
-        n += do_node_action(node, action)
+        n += do_node_action(node_id, action)
     return n
 
 def do_svc_comp_action(node_id, svc_id, action, mode, obj):
@@ -368,6 +368,12 @@ def factorize_actions(data):
     return fdata
 
 def wol_candidates(node_id):
+    ug = user_groups()
+    if "Manager" not in ug:
+        proxy_filter = "n2.team_responsible in (%(ug)s) and" % dict(ug=",".join(map(lambda x: repr(x), ug)))
+    else:
+        proxy_filter = ""
+
     sql = """
      select
        n1.node_id as node_id,
@@ -385,7 +391,7 @@ def wol_candidates(node_id):
        n1.net_broadcast=n2.net_broadcast and
        n2.intf not like "%%:%%" and
        n2.version is not null and
-       n2.team_responsible in (%(ug)s) and
+       %(proxy_filter)s
        substring_index(n2.version,".",1) >= %(v1)d and
        substring_index(substring_index(n2.version,".",-1), "-", 1) >= %(v2)d and
        substring_index(n2.version,"-",-1) >= %(v3)d and
@@ -395,8 +401,7 @@ def wol_candidates(node_id):
        n1.net_broadcast
     """ % dict(
       node_id=node_id,
-      v1=1, v2=6, v3=110,
-      ug=",".join(map(lambda x: repr(x), user_groups())),
+      v1=1, v2=6, v3=110, proxy_filter=proxy_filter,
     )
     rows = db.executesql(sql, as_dict=True)
     return rows
