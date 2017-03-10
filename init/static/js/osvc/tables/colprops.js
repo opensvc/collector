@@ -220,7 +220,7 @@ colprops = {
 		"title": "Size"
 	},
 	"md5": {
-		"_class": "pre",
+		"_dataclass": "pre",
 		"img": "safe16",
 		"title": "Checksum"
 	},
@@ -643,8 +643,7 @@ colprops = {
 		"title": "Storage Created"
 	},
 	"disk_devid": {
-		"_class": "pre",
-		"_dataclass": "bluer",
+		"_dataclass": "pre bluer",
 		"img": "hd16",
 		"title": "Array device Id"
 	},
@@ -659,8 +658,7 @@ colprops = {
 		"title": "Array disk group"
 	},
 	"disk_id": {
-		"_class": "pre",
-		"_dataclass": "bluer",
+		"_dataclass": "pre bluer",
 		"img": "hd16",
 		"title": "Disk Id"
 	},
@@ -679,8 +677,7 @@ colprops = {
 		"title": "Disk Model"
 	},
 	"disk_name": {
-		"_class": "pre",
-		"_dataclass": "bluer",
+		"_dataclass": "pre bluer",
 		"img": "hd16",
 		"title": "Disk Name"
 	},
@@ -695,7 +692,7 @@ colprops = {
 		"title": "Raid"
 	},
 	"disk_region": {
-		"_class": "pre",
+		"_dataclass": "pre",
 		"img": "hd16",
 		"title": "Disk Region"
 	},
@@ -1576,7 +1573,7 @@ colprops = {
 		"title": "Service Id"
 	},
 	"pkg_sig": {
-		"_class": "pre",
+		"_dataclass": "pre",
 		"img": "pkg16",
 		"title": "Signature"
 	},
@@ -1723,7 +1720,7 @@ colprops = {
 		"title": "Sysresp teams"
 	},
 	"rset_md5": {
-		"_class": "nowrap pre rset_md5",
+		"_dataclass": "nowrap pre rset_md5",
 		"img": "comp16",
 		"title": "Ruleset md5"
 	},
@@ -1863,12 +1860,12 @@ colprops = {
 		"title": "Log"
 	},
 	"stderr": {
-		"_class": "pre",
+		"_dataclass": "pre",
 		"img": "action16",
 		"title": "Stderr"
 	},
 	"stdout": {
-		"_class": "pre",
+		"_dataclass": "pre",
 		"img": "action16",
 		"title": "Stdout"
 	},
