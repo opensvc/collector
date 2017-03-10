@@ -224,7 +224,7 @@ def do_node_wol_action(node_id):
         node = db(db.nodes.node_id==candidate['proxy_node_id']).select().first()
         if node is None:
             continue
-        n += do_node_action(node_id, action)
+        n += do_node_action(candidate['proxy_node_id'], action)
     return n
 
 def do_svc_comp_action(node_id, svc_id, action, mode, obj):
