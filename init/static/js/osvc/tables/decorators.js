@@ -313,9 +313,7 @@ function cell_decorator_disk_array_dg(e, line) {
 	var v = $.data(e[0], "v")
 	e.addClass("corner-top").empty()
 	v.split(", ").forEach(function(v) {
-		var dg = $("<span><span>")
-		dg
-		.html("<div class='clickable link pl-1 pr-1>"+v+"</div>")
+		$("<div class='clickable link pl-1 pr-1'>"+v+"</div>")
 		.on("click", function(){
 			var array_name = $.data(line.children("[col=array_name],[col=disk_arrayid]")[0], "v")
 			osvc.flash.show({
