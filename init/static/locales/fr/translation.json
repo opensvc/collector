@@ -490,6 +490,7 @@
 		"title": "Historique d'utilisation du groupe de disques"
 	},
 	"array_properties": {
+		"diskgroups": "Groupes de disques",
 		"proxies": "Proxies"
 	},
 	"ruleset_properties": {

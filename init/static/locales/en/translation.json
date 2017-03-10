@@ -492,6 +492,7 @@
 		"title": "Array disk group usage history"
 	},
 	"array_properties": {
+		"diskgroups": "Diskgroups",
 		"proxies": "Proxies"
 	},
 	"ruleset_properties": {

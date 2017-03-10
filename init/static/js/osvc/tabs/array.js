@@ -81,7 +81,9 @@ function array_properties(divid, options) {
 		o.info_array_cache = o.div.find("#array_cache")
 		o.info_array_updated = o.div.find("#array_updated")
 		o.info_proxies = o.div.find("#proxies")
+		o.info_diskgroups = o.div.find("#diskgroups")
 		o.info_proxies_title = o.div.find("#proxies_title")
+		o.info_diskgroups_title = o.div.find("#diskgroups_title")
 		o.load_array()
 	}
 
@@ -120,6 +122,27 @@ function array_properties(divid, options) {
 			"lowercase": true,
 			"ondblclick": function(divid, data) {
 				node_tabs(divid, {"node_id": data.id})
+			}
+		})
+
+		tab_properties_generic_list({
+			"request_service": "/arrays/%1/diskgroups",
+			"request_parameters": [o.data.id],
+			"request_data": {
+				"props": "id,dg_name,array_id"
+			},
+			"limit": "50",
+			"key": "dg_name",
+			"item_class": "icon " + osvc.icons.diskgroup,
+			"id": "id",
+			"flash_id_prefix": "dg",
+			"title": "array_properties.diskgroups",
+			"bgcolor": osvc.colors.disk,
+			"e_title": o.info_diskgroups_title,
+			"e_list": o.info_diskgroups,
+			"lowercase": false,
+			"ondblclick": function(divid, data) {
+				diskgroup_tabs(divid, {"array_name": o.data.array_name, "dg_name": data.name})
 			}
 		})
 
