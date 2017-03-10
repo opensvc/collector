@@ -94,6 +94,8 @@ def task_metrics(verbose=False):
     q = db.metrics.metric_historize == True
     rows = db(q).select()
     refresh_fset_cache()
+    if verbose:
+        print len(rows), "metrics to compute"
     for row in rows:
         if verbose:
             print "* metric:", row.metric_name

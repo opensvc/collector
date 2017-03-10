@@ -1182,6 +1182,11 @@ colprops = {
 		"img": "action16",
 		"title": "SQL request"
 	},
+	"metric_historize": {
+		"_class": "boolean",
+		"img": "action16",
+		"title": "Historize"
+	},
 	"mod_log": {
 		"_class": "comp_mod_log",
 		"img": "complog",

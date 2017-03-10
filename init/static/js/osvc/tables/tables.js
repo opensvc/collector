@@ -1778,8 +1778,25 @@ function table_metrics(divid, options) {
 		'span': ['id'],
 		'force_cols': ['id'],
 		'orderby': ['metric_name'],
-		'columns': ['id', 'metric_name', 'metric_sql', 'metric_col_value_index', 'metric_col_instance_index', 'metric_col_instance_label', 'metric_created', 'metric_author'],
-		'default_columns': ['metric_name', 'metric_sql', 'metric_col_value_index', 'metric_col_instance_index', 'metric_col_instance_label'],
+		'columns': [
+			'id',
+			'metric_name',
+			'metric_historize',
+			'metric_sql',
+			'metric_col_value_index',
+			'metric_col_instance_index',
+			'metric_col_instance_label',
+			'metric_created',
+			'metric_author'
+		],
+		'default_columns': [
+			'metric_name',
+			'metric_historize',
+			'metric_sql',
+			'metric_col_value_index',
+			'metric_col_instance_index',
+			'metric_col_instance_label'
+		],
 		'wsable': true,
 		'events': ['metrics_change']
 	}

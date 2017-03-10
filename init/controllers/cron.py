@@ -1322,4 +1322,4 @@ def _perf_svc(begin, end, period):
     db.executesql(sql)
 
 def test_task_metrics():
-    task_metrics()
+    task_metrics(verbose=True)
