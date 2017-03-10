@@ -305,6 +305,36 @@ class SymDevWwn(object):
     def __str__(self):
         return ''
 
+class SymPool(object):
+    def __init__(self, xml):
+        self.info = {}
+	self.totals = {}
+        for e in list(xml):
+            if e.tag == "SaveDev":
+                continue
+            elif e.tag == "Totals":
+                for _e in list(e):
+                    self.totals[_e.tag] = _e.text
+            else:
+                self.info[e.tag] = e.text
+
+    def prefix(self, text=""):
+        if len(text) == 0:
+            return ""
+        lines = text.split('\n')
+        for i, line in enumerate(lines):
+            lines[i] = "pool[%s].%s"%(self.info['pool_name'], line)
+        return lines
+
+    def __str__(self):
+        l = []
+        for key in self.info:
+            l += self.prefix(key+": "+self.info[key])
+        l += self.prefix('total: %d' % int(self.totals["total_tracks_mb"]))
+        l += self.prefix('free: %d' % int(self.totals["total_free_tracks_mb"]))
+        l += self.prefix('used: %d' % int(self.totals["total_used_tracks_mb"]))
+        return '\n'.join(l)
+
 class SymDiskGroup(object):
     def __init__(self, xml):
         self.total = 0
@@ -421,6 +451,7 @@ class Sym(object):
         self.info = {}
         self.parsers = ['sym_info',
                         'sym_diskgroup',
+                        'sym_pool',
                         'sym_disk',
                         'sym_dev',
                         'sym_dev_wwn',
@@ -440,14 +471,11 @@ class Sym(object):
         self.disk = {}
         self.diskgroup = {}
         self.director = {}
+        self.pool = {}
 
     def init_data(self):
         for parser in self.parsers:
-            try:
-                getattr(self, parser)()
-            except Exception as e:
-                print "parser error:", parser, ":", e
-                #raise
+            getattr(self, parser)()
 
     def prefix(self, text=""):
         if len(text) == 0:
@@ -461,6 +489,8 @@ class Sym(object):
         l = []
         for key in self.info:
             l += self.prefix('%s: %s'%(key,self.info[key]))
+        for pool in self.pool:
+            l += self.prefix(str(self.pool[pool]))
         for dg in self.diskgroup:
             l += self.prefix(str(self.diskgroup[dg]))
         for disk in self.disk:
@@ -472,7 +502,9 @@ class Sym(object):
         return '\n'.join(l)
 
     def __iadd__(self, o):
-        if isinstance(o, SymDiskGroup):
+        if isinstance(o, SymPool):
+            self.add_sym_pool(o)
+        elif isinstance(o, SymDiskGroup):
             self.add_sym_diskgroup(o)
         elif isinstance(o, SymDisk):
             self.add_sym_disk(o)
@@ -508,6 +540,9 @@ class Sym(object):
     def add_sym_diskgroup(self, o):
         self.diskgroup[int(o.info['disk_group_number'])] = o
         self.info['diskgroup_count'] += 1
+
+    def add_sym_pool(self, o):
+        self.pool[o.info['pool_name']] = o
 
     def add_sym_disk(self, o):
         self.disk[o.id] = o
@@ -551,10 +586,16 @@ class Sym(object):
         del tree
 
     def sym_diskgroup(self):
-        tree = self.xmltree('sym_diskgroup_info')
         self.diskgroup = {}
+        tree = self.xmltree('sym_diskgroup_info')
         for e in tree.getiterator('Disk_Group'):
             self += SymDiskGroup(e)
+        del tree
+
+    def sym_pool(self):
+        tree = self.xmltree('sym_pool_info')
+        for e in tree.getiterator('DevicePool'):
+            self += SymPool(e)
         del tree
 
     def sym_disk(self):
@@ -689,11 +730,13 @@ class Vmax(Sym):
             dev.view.append(o.view_name)
             dev.frontend += o.pg
             o.dev.append(dev)
-            dg = dev.diskgroup
+            dg = dev.diskgroup_name
             if dg is None:
                 # VDEV
                 continue
-            self.diskgroup[dg].add_masked_dev(dev)
+            for _dg in dg.split(", "):
+                if _dg in self.diskgroup:
+                    self.diskgroup[_dg].add_masked_dev(dev)
 
     def sym_view(self):
         tree = self.xmltree('sym_view_aclx')
@@ -708,14 +751,10 @@ def get_sym(xml_dir=None):
         for e in tree.getiterator('Symm_Info'): pass
         model = e.find('model').text
         del tree
-        try:
-            if 'VMAX' in model:
-                return Vmax(xml_dir)
-            elif 'DMX' in model or '3000-M':
-                return Dmx(xml_dir)
-        except Exception as e:
-            print e
-            return None
+        if 'VMAX' in model:
+            return Vmax(xml_dir)
+        elif 'DMX' in model or '3000-M':
+            return Dmx(xml_dir)
         return None
 
 import sys
