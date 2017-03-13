@@ -817,7 +817,7 @@ function table_init(opts) {
 		var sidepanel = t.get_sidepanel()
 		var input_float = $("<div style='max-width:21em'></div>")
 		var header = $("<h4></h4>")
-		var input = $("<input class='oi' style='width:100%' name='fi'>")
+		var input = $("<input class='oi mt-3 mb-3' style='width:100%' name='fi'>")
 		var value_to_filter_tool = $("<div data-i18n='table.value_to_filter_tool_title' class='button_div icon_fixed_width values_to_filter'></div>")
 		var invert_tool = $("<div data-i18n='table.invert_filter' class='button_div lightgrayed icon_fixed_width invert16'></div>")
 		var clear_tool = $("<div data-i18n='table.clear_filter' class='button_div lightgrayed icon_fixed_width clear16'></div>")

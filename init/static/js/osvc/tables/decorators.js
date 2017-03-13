@@ -311,22 +311,25 @@ function cell_decorator_dns_record(e, line) {
 
 function cell_decorator_disk_array_dg(e, line) {
 	var v = $.data(e[0], "v")
-	e
-	.html("<span class='clickable'>"+v+"</span>")
-	.addClass("corner-top")
-	.on("click", function(){
-		var array_name = $.data(line.children("[col=array_name],[col=disk_arrayid]")[0], "v")
-		osvc.flash.show({
-			id: "dg-"+v,
-			text: v, 
-			cl: "icon diskgroup",
-			bgcolor: osvc.colors.disk,
-			fn: function(id){
-				diskgroup_tabs(id, {"array_name": array_name, "dg_name": v})
-			}
+	e.addClass("corner-top").empty()
+	v.split(", ").forEach(function(v) {
+		$("<div class='clickable link pl-1 pr-1'>"+v+"</div>")
+		.on("click", function(){
+			var array_name = $.data(line.children("[col=array_name],[col=disk_arrayid]")[0], "v")
+			osvc.flash.show({
+				id: "dg-"+v,
+				text: v,
+				cl: "icon diskgroup",
+				bgcolor: osvc.colors.disk,
+				fn: function(id){
+					diskgroup_tabs(id, {"array_name": array_name, "dg_name": v})
+				}
+			})
 		})
+		.appendTo(e)
 	})
 }
+
 
 function cell_decorator_disk_array(e, line) {
 	var v = $.data(e[0], "v")

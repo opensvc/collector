@@ -96,6 +96,7 @@ function ruleset_export(divid, options) {
 		o.textarea = $("<textarea class='export_data'>")
 		o.textarea.prop("disabled", true)
 		o.textarea.text(JSON.stringify(jd, null, 4))
+		o.div.css({"padding": "4px"})
 		o.div.html(o.textarea)
 		o.resize()
 		osvc_tools(o.div, {

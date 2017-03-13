@@ -622,7 +622,7 @@ tab_properties_generic_list = function(options) {
 			} else {
 				var val = data[i]
 			}
-			if (options.lowercase) {
+			if (options.lowercase && val) {
 				val.toLowerCase()
 			}
 			e.text(val)

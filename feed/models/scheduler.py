@@ -2650,6 +2650,14 @@ def insert_sym(symid=None, node_id=None):
                              str(dg.used),
                              str(dg.total),
                              now])
+            for pool in s.pool.values():
+                print "  ", pool.info['pool_name']
+                vals.append([array_id,
+                             pool.info['pool_name'],
+                             str(pool.totals["total_free_tracks_mb"]),
+                             str(pool.totals["total_used_tracks_mb"]),
+                             str(pool.totals["total_tracks_mb"]),
+                             now])
             generic_insert('stor_array_dg', vars, vals)
             del(s.diskgroup)
             sql = """delete from stor_array_dg where array_id=%s and dg_updated < "%s" """%(array_id, str(now))

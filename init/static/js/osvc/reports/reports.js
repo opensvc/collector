@@ -341,6 +341,9 @@ function report(divid, options) {
 
 	o.load_sections = function() {
 		var dfd = $.Deferred().resolve()
+		if (!o.definition.Sections || o.definition.Sections.length == 0) {
+			return
+		}
 		for(var i=0; i<o.definition.Sections.length; i++) {
 			var section = o.definition.Sections[i]
 

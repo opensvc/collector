@@ -271,6 +271,7 @@ function report_export(divid, options) {
 	o.init = function() {
 		o.textarea = $("<textarea class='export_data'>")
 		o.textarea.prop("disabled", true)
+		o.div.css({"padding": "4px"})
 
 		spinner_add(o.div)
 		services_osvcgetrest("/reports/%1/export", [o.options.report_id], "", function(jd) {

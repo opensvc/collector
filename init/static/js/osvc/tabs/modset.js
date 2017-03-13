@@ -365,6 +365,7 @@ function modset_export(divid, options) {
 	o._load_export = function(data) {
 		o.textarea = $("<textarea class='export_data'>")
 		o.textarea.prop("disabled", true)
+		o.div.css({"padding": "4px"})
 		o.div.html(o.textarea)
 		o.textarea.text(JSON.stringify(data, null, 4))
 		o.resize()

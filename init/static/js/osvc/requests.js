@@ -54,6 +54,7 @@ function requests(divid, options) {
 
 		}
 		o.e_list.empty()
+		o.e_inputs.empty()
 		var s = o.e_search.val()
 		if (s == "") {
 			delete(o.options.form_name)
@@ -102,10 +103,11 @@ function requests(divid, options) {
 		var p2 = $("<div style='font-style:italic;padding-left:1em'></div>")
 
 		div.attr("folder_name", d.form_definition.FolderName)
+		div.addClass("form_folder")
 		if (d.form_definition.FolderCss) {
 			div_icon.addClass(d.form_definition.FolderCss)
 		} else {
-			div_icon.addClass("folder48")
+			div_icon.addClass("fa-folder-open")
 		}
 		p1.text(d.form_definition.FolderLabel)
 		p2.text(d.form_definition.FolderDesc)
