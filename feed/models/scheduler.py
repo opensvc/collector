@@ -2658,6 +2658,16 @@ def insert_sym(symid=None, node_id=None):
                              str(pool.totals["total_used_tracks_mb"]),
                              str(pool.totals["total_tracks_mb"]),
                              now])
+
+            for srp in s.srp.values():
+                print "  ", srp.info['name']
+                vals.append([array_id,
+                             srp.info['name'],
+                             str(float(srp.info["free_capacity_gigabytes"])*1024),
+                             str(float(srp.info["allocated_capacity_gigabytes"])*1024),
+                             str(float(srp.info["usable_capacity_gigabytes"])*1024),
+                             now])
+
             generic_insert('stor_array_dg', vars, vals)
             del(s.diskgroup)
             sql = """delete from stor_array_dg where array_id=%s and dg_updated < "%s" """%(array_id, str(now))
@@ -2700,7 +2710,6 @@ def insert_sym(symid=None, node_id=None):
                              dev.diskgroup_name,
                              now])
             generic_insert('diskinfo', vars, vals)
-            print " disks", len(vals)
             del(s.dev)
             sql = """delete from diskinfo where disk_arrayid="%s" and disk_updated < "%s" """%(s.info['symid'], str(now))
             db.executesql(sql)

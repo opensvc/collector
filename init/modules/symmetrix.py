@@ -292,7 +292,6 @@ class SymDev(object):
             self.megabytes = o.total_tracks_mb
             self.alloc = o.alloc_tracks_mb
             self.backend_alloc = 0
-            self.diskgroup_name = ', '.join(o.pools)
         return self
 
     def set_membership(self, devname):
@@ -334,6 +333,30 @@ class SymPool(object):
         l += self.prefix('total: %d' % int(self.totals["total_tracks_mb"]))
         l += self.prefix('free: %d' % int(self.totals["total_free_tracks_mb"]))
         l += self.prefix('used: %d' % int(self.totals["total_used_tracks_mb"]))
+        return '\n'.join(l)
+
+class SymSrp(object):
+    def __init__(self, xml):
+        self.info = {}
+        for e in xml.findall("SRP_Info"):
+	    for _e in list(e):
+                self.info[_e.tag] = _e.text
+
+    def prefix(self, text=""):
+        if len(text) == 0:
+            return ""
+        lines = text.split('\n')
+        for i, line in enumerate(lines):
+            lines[i] = "srp[%s].%s"%(self.info['name'], line)
+        return lines
+
+    def __str__(self):
+        l = []
+        for key in self.info:
+            l += self.prefix(key+": "+self.info[key])
+        l += self.prefix('total: %d' % int(float(self.info["usable_capacity_gigabytes"]))*1024)
+        l += self.prefix('free: %d' % int(float(self.info["free_capacity_gigabytes"]))*1024)
+        l += self.prefix('used: %d' % int(float(self.info["allocated_capacity_gigabytes"]))*1024)
         return '\n'.join(l)
 
 class SymDiskGroup(object):
@@ -453,6 +476,7 @@ class Sym(object):
         self.parsers = ['sym_info',
                         'sym_diskgroup',
                         'sym_pool',
+                        'sym_srp',
                         'sym_disk',
                         'sym_dev',
                         'sym_dev_ident_name',
@@ -474,6 +498,7 @@ class Sym(object):
         self.diskgroup = {}
         self.director = {}
         self.pool = {}
+        self.srp = {}
 
     def init_data(self):
         for parser in self.parsers:
@@ -491,6 +516,8 @@ class Sym(object):
         l = []
         for key in self.info:
             l += self.prefix('%s: %s'%(key,self.info[key]))
+        for srp in self.srp:
+            l += self.prefix(str(self.srp[srp]))
         for pool in self.pool:
             l += self.prefix(str(self.pool[pool]))
         for dg in self.diskgroup:
@@ -504,6 +531,8 @@ class Sym(object):
         return '\n'.join(l)
 
     def __iadd__(self, o):
+        if isinstance(o, SymSrp):
+            self.add_sym_srp(o)
         if isinstance(o, SymPool):
             self.add_sym_pool(o)
         elif isinstance(o, SymDiskGroup):
@@ -542,6 +571,9 @@ class Sym(object):
     def add_sym_diskgroup(self, o):
         self.diskgroup[int(o.info['disk_group_number'])] = o
         self.info['diskgroup_count'] += 1
+
+    def add_sym_srp(self, o):
+        self.srp[o.info['name']] = o
 
     def add_sym_pool(self, o):
         self.pool[o.info['pool_name']] = o
@@ -592,6 +624,12 @@ class Sym(object):
         tree = self.xmltree('sym_diskgroup_info')
         for e in tree.getiterator('Disk_Group'):
             self += SymDiskGroup(e)
+        del tree
+
+    def sym_srp(self):
+        tree = self.xmltree('sym_srp_info')
+        for e in tree.getiterator('SRP'):
+            self += SymSrp(e)
         del tree
 
     def sym_pool(self):
@@ -705,7 +743,10 @@ class Dmx(Sym):
 class Vmax(Sym):
     def __init__(self, xml_dir=None):
         Sym.__init__(self, xml_dir)
-        self.parsers += ['sym_view']
+        self.parsers += [
+            'sym_view',
+            'sym_sg',
+        ]
         self.ig = {}
         self.pg = {}
         self.sg = {}
@@ -752,6 +793,20 @@ class Vmax(Sym):
         tree = self.xmltree('sym_view_aclx')
         for e in tree.getiterator('View_Info'):
             self += VmaxView(e)
+        del tree
+
+    def sym_sg(self):
+        tree = self.xmltree('sym_sg_info')
+        for e in tree.findall('SG'):
+            sg = e.find("SG_Info/name").text
+            srp = e.find("SG_Info/SRP_name").text
+            if srp == "none":
+                # skip parent SG
+                continue
+            for edev in e.findall("DEVS_List/Device"):
+                dev = edev.find("dev_name").text
+                if dev in self.dev:
+                    self.dev[dev].diskgroup_name = srp + "/" +sg
         del tree
 
 def get_sym(xml_dir=None):
