@@ -79,6 +79,8 @@ class rest_post_form(rest_post_handler):
         ws_send('forms_change', {'id': form.id})
 
         ret = rest_get_form().handler(form.id)
+        content = yaml.dump(ret["data"][0]["form_definition"], default_flow_style=False)
+        lib_form_add_to_git(id, content)
         ret["info"] = fmt % d
         self.cache_clear(["rest_get_forms"])
         return ret
@@ -374,6 +376,56 @@ class rest_get_form_responsibles(rest_get_table_handler):
         data = self.prepare_data(**vars)
         return data
 
+class rest_get_form_revisions(rest_get_handler):
+    def __init__(self):
+        desc = [
+          "- return form revisions.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/forms/1/revisions",
+        ]
+        rest_get_handler.__init__(
+          self,
+          path="/forms/<id>/revisions",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, form_id, **vars):
+        r = []
+        q = db.forms.id == int(form_id)
+        if "Manager" not in user_groups():
+            q &= db.forms.id == db.forms_team_publication.form_id
+            q &= db.forms_team_publication.group_id.belongs(user_group_ids())
+        if db(q).count():
+            r =  lib_form_revisions(form_id)
+        return r
+
+class rest_get_form_diff(rest_get_handler):
+    def __init__(self):
+        desc = [
+          "Show differences between an old revision and the current one",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/forms/1/diff/9a26e8e40d9d7a7e585ac8ccb6bc01f70f68b710",
+        ]
+        rest_get_handler.__init__(
+          self,
+          path="/forms/<id>/diff/<cid>",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, form_id, cid, **vars):
+        r = []
+        q = db.forms.id == int(form_id)
+        if "Manager" not in user_groups():
+            q &= db.forms.id == db.forms_team_publication.form_id
+            q &= db.forms_team_publication.group_id.belongs(user_group_ids())
+        if db(q).count():
+            r =  lib_form_diff(form_id, cid)
+        return r
+
 class rest_delete_form_responsible(rest_delete_handler):
     def __init__(self):
         desc = [
@@ -509,6 +561,27 @@ class rest_post_forms_responsibles(rest_post_handler):
 
         return rest_post_form_responsible().handler(form_id, group_id, **vars)
 
+class rest_post_form_rollback(rest_post_handler):
+    def __init__(self):
+        desc = [
+          "Restore an old revision of a form",
+        ]
+        examples = [
+          "# curl -u %(email)s -X POST -o- https://%(collector)s/init/rest/api/forms/1/rollback/9a26e8e40d9d7a7e585ac8ccb6bc01f70f68b710"
+        ]
+
+        rest_post_handler.__init__(
+          self,
+          path="/forms/<id>/rollback/<cid>",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, form_id, cid, **vars):
+        check_privilege("FormsManager")
+        form_responsible(form_id)
+        lib_form_rollback(form_id, cid)
+        return
 
 #
 class rest_put_form(rest_put_handler):

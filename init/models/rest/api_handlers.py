@@ -144,6 +144,8 @@ def get_get_handlers(prefix=None):
              "rest_get_form_publications",
              "rest_get_form_responsibles",
              "rest_get_form_am_i_responsible",
+             "rest_get_form_revisions",
+             "rest_get_form_diff",
        ],
        "frontend": [
              "rest_get_frontend_hidden_menu_entries",
@@ -222,6 +224,8 @@ def get_get_handlers(prefix=None):
              "rest_get_provisioning_template_am_i_responsible",
              "rest_get_provisioning_template_responsibles",
              "rest_get_provisioning_template_publications",
+             "rest_get_provisioning_template_revisions",
+             "rest_get_provisioning_template_diff",
        ],
        "resources": [
              "rest_get_resource",
@@ -664,6 +668,7 @@ def get_post_handlers(prefix=None):
              "rest_post_form",
              "rest_post_form_publication",
              "rest_post_form_responsible",
+             "rest_post_form_rollback",
         ],
         "forms_publications": [
              "rest_post_forms_publications",
@@ -707,6 +712,7 @@ def get_post_handlers(prefix=None):
              "rest_post_provisioning_template",
              "rest_post_provisioning_template_responsible",
              "rest_post_provisioning_template_publication",
+             "rest_post_provisioning_template_rollback",
         ],
         "provisioning_templates_publications": [
              "rest_post_provisioning_templates_publications",
