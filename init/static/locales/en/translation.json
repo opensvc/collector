@@ -933,7 +933,8 @@
 	"form_tabs": {
 		"request": "request",
 		"properties": "properties",
-		"definition": "definition"
+		"definition": "definition",
+		"revisions": "revisions"
 	},
 	"node_tabs": {
 		"properties": "properties",

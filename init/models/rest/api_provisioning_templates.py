@@ -175,6 +175,7 @@ class rest_post_provisioning_template(rest_post_handler):
         ws_send('prov_templates_change', {'id': tpl.id})
 
         ret = rest_get_provisioning_template().handler(tpl.id)
+        lib_provisioning_templates_add_to_git(str(tpl.id), ret["data"][0]["tpl_definition"])
         ret["info"] = fmt % d
         return ret
 
@@ -633,6 +634,27 @@ class rest_post_provisioning_templates_publications(rest_post_handler):
 
         return rest_post_provisioning_template_publication().handler(tpl_id, group_id, **vars)
 
+class rest_post_provisioning_template_rollback(rest_post_handler):
+    def __init__(self):
+        desc = [
+          "Restore an old revision of a provisioning template",
+        ]
+        examples = [
+          "# curl -u %(email)s -X POST -o- https://%(collector)s/init/rest/api/provisioning_templates/1/rollback/9a26e8e40d9d7a7e585ac8ccb6bc01f70f68b710"
+        ]
+
+        rest_post_handler.__init__(
+          self,
+          path="/provisioning_templates/<id>/rollback/<cid>",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, tpl_id, cid, **vars):
+        check_privilege("ProvisioningManager")
+        form_responsible(tpl_id)
+        lib_provisioning_templates_rollback(tpl_id, cid)
+        return
 
 #
 class rest_get_provisioning_template_am_i_responsible(rest_get_handler):
@@ -658,4 +680,52 @@ class rest_get_provisioning_template_am_i_responsible(rest_get_handler):
         except:
             return dict(data=False)
 
+class rest_get_provisioning_template_revisions(rest_get_handler):
+    def __init__(self):
+        desc = [
+          "- return provisioning template revisions.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/provisioning_templates/1/revisions",
+        ]
+        rest_get_handler.__init__(
+          self,
+          path="/provisioning_templates/<id>/revisions",
+          desc=desc,
+          examples=examples,
+        )
 
+    def handler(self, tpl_id, **vars):
+        r = []
+        q = db.prov_templates.id == int(tpl_id)
+        if "Manager" not in user_groups():
+            q &= db.prov_templates.id == db.prov_template_team_publication.tpl_id
+            q &= db.prov_template_team_publication.group_id.belongs(user_group_ids())
+        if db(q).count():
+            r =  lib_provisioning_templates_revisions(tpl_id)
+        return r
+
+class rest_get_provisioning_template_diff(rest_get_handler):
+    def __init__(self):
+        desc = [
+          "Show differences between an old revision and the current one",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/provisioning_templates/1/diff/9a26e8e40d9d7a7e585ac8ccb6bc01f70f68b710",
+        ]
+        rest_get_handler.__init__(
+          self,
+          path="/provisioning_templates/<id>/diff/<cid>",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, tpl_id, cid, **vars):
+        r = []
+        q = db.prov_templates.id == int(tpl_id)
+        if "Manager" not in user_groups():
+            q &= db.prov_templates.id == db.prov_template_team_publication.tpl_id
+            q &= db.prov_template_team_publication.group_id.belongs(user_group_ids())
+        if db(q).count():
+            r =  lib_provisioning_templates_diff(tpl_id, cid)
+        return r

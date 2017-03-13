@@ -1,4 +1,5 @@
 import gluon.contrib.simplejson as sjson
+from applications.init.modules import gittrack;
 
 def form_log(output_id, results, ret, action, fmt, d):
     if ret == 0:
@@ -863,4 +864,26 @@ def lib_forms_add_default_team_publication(form_name):
     db.forms_team_publication.insert(form_id=form_id, group_id=group_id)
     table_modified("forms_team_publication")
 
+def lib_form_add_to_git(form_id, yaml):
+    o = gittrack.gittrack(otype='forms')
+    r = o.commit(form_id, yaml)
 
+def lib_form_revisions(form_id):
+    o = gittrack.gittrack(otype='forms')
+    r = o.timeline([form_id])
+    return sjson.dumps(r)
+
+def lib_form_diff(form_id, cid):
+    o = gittrack.gittrack(otype='forms')
+    r = o.diff_cids(form_id, cid, 'HEAD', 'forms')
+    return sjson.dumps(r)
+
+def lib_form_rollback(form_id, cid):
+    o = gittrack.gittrack(otype='forms')
+    r = o.rollback(form_id, cid)
+    row = db(db.forms.id == form_id).select().first()
+    here_d = os.path.dirname(__file__)
+    collect_d = os.path.join(here_d, '..', 'private', 'forms')
+    with open (collect_d+"/"+form_id+"/forms", "r") as myfile:
+        data=myfile.readlines()
+    row.update_record(form_yaml=''.join(data))

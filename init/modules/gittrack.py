@@ -4,9 +4,13 @@ import copy
 import uuid
 
 class gittrack(object):
-    def __init__(self):
+    def __init__(self, otype='sysreport'):
+        bdir = 'uploads'
+        if otype != 'sysreport':
+            bdir = 'private'
+        self.otype = otype
         here_d = os.path.dirname(__file__)
-        self.collect_d = os.path.join(here_d, '..', 'uploads', 'sysreport')
+        self.collect_d = os.path.join(here_d, '..', bdir, self.otype)
         self.cwd = os.getcwd()
 
     def timeline(self, nodes=[], path=None, begin=None, end=None):
@@ -15,15 +19,16 @@ class gittrack(object):
             data += self._timeline(node, path=path, begin=begin, end=end)
         return data
 
-    def _timeline(self, node_id, path=None, begin=None, end=None):
-        s = self.log(node_id, path=path, begin=begin, end=end)
-        data = self.parse_log(s, node_id)
-        if len(data) > 1:
-            # do not to display the node sysreport initial commit
-            data = data[:-1]
+    def _timeline(self, data_id, path=None, begin=None, end=None):
+        s = self.log(data_id, path=path, begin=begin, end=end)
+        data = self.parse_log(s, data_id)
+        if self.otype == 'sysreport':
+            if len(data) > 1:
+                # do not to display the node sysreport initial commit
+                data = data[:-1]
         return data
 
-    def parse_log(self, s, node_id):
+    def parse_log(self, s, data_id):
         data = []
         d0 = {
          'id': '',
@@ -39,8 +44,15 @@ class gittrack(object):
                     data.append(d)
                     d = copy.copy(d0)
                 d['cid'] = line.split()[1]
-                d['id'] = uuid.uuid1().hex
+                if self.otype == 'sysreport':
+                    d['id'] = uuid.uuid1().hex
+                else:
+                    d['id'] = d['cid']
             elif line.startswith("Author:"):
+                if self.otype != 'sysreport':
+                    l = line.split()
+                    d['content'] = l[2][1:-1]
+                    #d['title'] = "todo"
                 pass
             elif line.startswith("Date:"):
                 l = line.split()
@@ -61,11 +73,11 @@ class gittrack(object):
                 fpath = line.split(" | ")[0].strip().strip('"')
                 changed.add(fpath)
             data[i]['stat'] = sorted(changed)
-            data[i]['group'] = node_id
+            data[i]['group'] = data_id
         return data
 
-    def log(self, node_id=None, path=None, begin=None, end=None):
-        git_d = os.path.join(self.collect_d, node_id, ".git")
+    def log(self, data_id=None, path=None, begin=None, end=None):
+        git_d = os.path.join(self.collect_d, data_id, ".git")
         cmd = ["git", "--git-dir="+git_d, "log", "-n", "300",
                "--stat=510,500", "--date=iso"]
         if begin:
@@ -78,13 +90,13 @@ class gittrack(object):
         out, err = p.communicate()
         return out
 
-    def show_data(self, cid, node_id, path=None, begin=None, end=None):
+    def show_data(self, cid, data_id, path=None, begin=None, end=None):
         if begin or end:
             ss = ""
-            s = self.diff(node_id, path=path, begin=begin, end=end)
+            s = self.diff(data_id, path=path, begin=begin, end=end)
         elif cid:
-            ss = self.show_stat(cid, node_id, path=path)
-            s = self.show(cid, node_id, path=path)
+            ss = self.show_stat(cid, data_id, path=path)
+            s = self.show(cid, data_id, path=path)
         else:
             ss = ""
             s = ""
@@ -92,8 +104,8 @@ class gittrack(object):
         data['stat'] = self.parse_show_stat(ss)
         return data
 
-    def diff(self, node_id, path=None, begin=None, end=None):
-        git_d = os.path.join(self.collect_d, node_id, ".git")
+    def diff(self, data_id, path=None, begin=None, end=None):
+        git_d = os.path.join(self.collect_d, data_id, ".git")
         cmd = ["git", "--git-dir="+git_d, "diff", '--pretty=format:%ci%n%b']
         if begin:
             cmd += ['master@{%s}'%begin]
@@ -107,8 +119,17 @@ class gittrack(object):
             raise Exception(err)
         return out
 
-    def show(self, cid, node_id, path=None):
-        git_d = os.path.join(self.collect_d, node_id, ".git")
+    def diff_cids(self, data_id, cid1, cid2, filename=None):
+        git_d = os.path.join(self.collect_d, data_id, ".git")
+        cmd = ["git", "--git-dir="+git_d, "diff", '--pretty=format:%ci%n%b', cid1, cid2]
+        if filename:
+            cmd += ["--", filename]
+        p = Popen(cmd, stdout=PIPE, stderr=PIPE)
+        out, err = p.communicate()
+        return out
+
+    def show(self, cid, data_id, path=None):
+        git_d = os.path.join(self.collect_d, data_id, ".git")
         cmd = ["git", "--git-dir="+git_d, "show", '--pretty=format:%ci%n%b', cid]
         if path and path != "":
             cmd += ["--", path]
@@ -116,8 +137,8 @@ class gittrack(object):
         out, err = p.communicate()
         return out
 
-    def show_stat(self, cid, node_id, path=None):
-        git_d = os.path.join(self.collect_d, node_id, ".git")
+    def show_stat(self, cid, data_id, path=None):
+        git_d = os.path.join(self.collect_d, data_id, ".git")
         cmd = ["git", "--git-dir="+git_d, "show", '--pretty=format:%ci%n%b', '--numstat', cid]
         if path:
             cmd += ["--", path]
@@ -173,8 +194,8 @@ class gittrack(object):
             d[fpath] = '\n'.join(block)
         return {'date': date, 'blocks': d}
 
-    def lstree(self, cid, node_id, path=None):
-        git_d = os.path.join(self.collect_d, node_id, ".git")
+    def lstree(self, cid, data_id, path=None):
+        git_d = os.path.join(self.collect_d, data_id, ".git")
         cmd = ["git", "--git-dir="+git_d, "ls-tree", "-r", cid]
         if path:
             base_d = os.path.join(git_d, '..')
@@ -208,21 +229,21 @@ class gittrack(object):
             data.append(d)
         return data
 
-    def lstree_data(self, cid, node_id, path=None):
+    def lstree_data(self, cid, data_id, path=None):
         if cid is None:
             return []
-        s = self.lstree(cid, node_id, path=path)
+        s = self.lstree(cid, data_id, path=path)
         return self.parse_lstree(cid, s)
 
-    def show_file_unvalidated(self, cid, _uuid, node_id):
-        git_d = os.path.join(self.collect_d, node_id, ".git")
+    def show_file_unvalidated(self, cid, _uuid, data_id):
+        git_d = os.path.join(self.collect_d, data_id, ".git")
         cmd = ["git", "--git-dir="+git_d, "show", _uuid]
         p = Popen(cmd, stdout=PIPE, stderr=PIPE)
         out, err = p.communicate()
         return {'oid': _uuid, 'content': out}
 
-    def show_file(self, fpath, cid, _uuid, node_id):
-        git_d = os.path.join(self.collect_d, node_id, ".git")
+    def show_file(self, fpath, cid, _uuid, data_id):
+        git_d = os.path.join(self.collect_d, data_id, ".git")
         cmd = ["git", "--git-dir="+git_d, "ls-tree", cid, fpath]
         p = Popen(cmd, stdout=PIPE, stderr=PIPE)
         out, err = p.communicate()
@@ -236,6 +257,36 @@ class gittrack(object):
         out, err = p.communicate()
         return {'fpath': validated_fpath, 'content': out}
 
+    def init_repo(self, data_id):
+        import config
+        git_d = os.path.join(self.collect_d, data_id)
+        os.system("mkdir -p " + git_d)
+        git_d += "/.git"
+        if hasattr(config, "email_from"):
+            email = config.email_from
+        else:
+            email = "nobody@localhost.localdomain"
+        cmd = ["git", "--git-dir="+git_d, "init"]
+        p = Popen(cmd, stdout=PIPE, stderr=PIPE)
+        out, err = p.communicate()
+        os.system("git --git-dir=%s config user.email %s" % (git_d, email))
+        os.system("git --git-dir=%s config user.name collector" % git_d)
+        os.system('cd %s/.. && (rm -f .git/index.lock && git add . ; git commit -m"" -a)' % git_d)
+
+    def commit(self, data_id, content):
+        git_d = os.path.join(self.collect_d, data_id)
+        if not os.path.exists(git_d):
+            self.init_repo(data_id)
+        with open(git_d+"/"+self.otype, "w") as text_file:
+            text_file.write(content)
+        cf = 'cd %s && (git add %s; git commit -m"auto" -a)' % (git_d, self.otype)
+        os.system(cf)
+        return 0
+
+    def rollback(self, data_id, cid):
+        git_d = os.path.join(self.collect_d, data_id)
+        cmd = 'cd %s && (git checkout %s %s) && (git commit -m"rollback" -a)' % (git_d, cid, self.otype)
+        os.system(cmd)
 
 if __name__ == "__main__":
     o = gittrack()
