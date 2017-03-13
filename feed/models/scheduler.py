@@ -2679,6 +2679,7 @@ def insert_sym(symid=None, node_id=None):
             # diskinfo
             vars = ['disk_id',
                     'disk_arrayid',
+                    'disk_name',
                     'disk_devid',
                     'disk_size',
                     'disk_alloc',
@@ -2691,6 +2692,7 @@ def insert_sym(symid=None, node_id=None):
                     continue
                 vals.append([dev.wwn,
                              s.info['symid'],
+                             dev.ident_name,
                              dev.info['dev_name'],
                              str(dev.megabytes),
                              str(dev.alloc),

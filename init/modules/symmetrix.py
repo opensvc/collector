@@ -209,6 +209,7 @@ class SymDev(object):
         self.memberof = ""
         self.alloc = 0
         self.backend_alloc = 0
+        self.ident_name = ""
 
         try:
             self.megabytes = int(xml.find("Capacity/megabytes").text)
@@ -454,6 +455,7 @@ class Sym(object):
                         'sym_pool',
                         'sym_disk',
                         'sym_dev',
+                        'sym_dev_ident_name',
                         'sym_dev_wwn',
                         'sym_devrdfa',
                         'sym_ficondev',
@@ -608,6 +610,14 @@ class Sym(object):
         tree = self.xmltree('sym_dev_info')
         for e in tree.getiterator('Device'):
             self += SymDev(e)
+        del tree
+
+    def sym_dev_ident_name(self):
+        tree = self.xmltree('sym_dev_name_info')
+        for e in tree.getiterator('Dev_Info'):
+            devid = e.find("dev_name").text
+            devname = e.find("dev_ident_name").text
+            self.dev[devid].ident_name = devname
         del tree
 
     def sym_tdev(self):
