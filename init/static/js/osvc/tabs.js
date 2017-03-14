@@ -742,3 +742,127 @@ function osvc_editor(divid, options) {
 	return o
 }
 
+//
+// handle the revisions tab
+//
+// options:
+// - id: 1			the object id
+// - base_url: "/forms"		the rest api base url
+//
+function generic_revisions(divid, options) {
+	var o = {}
+
+	// store parameters
+	o.divid = divid
+	o.div = $("#"+divid)
+	o.options = options
+	o.link = {
+		"fn": arguments.callee.name,
+		"parameters": o.options,
+		"title": "link."+arguments.callee.name
+	}
+
+	o.init = function() {
+		osvc_tools(o.div, {
+			"link": o.link
+		})
+
+		o.log = o.div.find('#log')
+		o.diff = o.div.find('#diff')
+		o.revisions = o.div.find('#revisions')
+		o.bt_rollback = o.div.find('#rollback')
+		o.bt_content = o.div.find('#bcontent')
+		o.bt_diff = o.div.find('#bdiff')
+		o.bt_diff_to_now = o.div.find('#bdiff_to_now')
+		o.bt_group = o.bt_content.parent()
+		o.bt = o.bt_group.parent()
+
+		o.load_form()
+		o.bt_binds()
+	}
+
+	o.load_form = function() {
+		services_osvcgetrest(o.options.base_url+"/%1/revisions", [o.options.id], "", function(jd) {
+			for (var i=0; i<jd.data.length; i++) {
+				if (jd.data[i]["content"].indexOf("rollback") >= 0) {
+					jd.data[i]["style"] = "background-color:#d9534f !important;color:white"
+				}
+			}
+			require(["vis"], function(vis) {
+				var timeline = new vis.Timeline(o.revisions[0], jd.data, {});
+				o.revisions.on('click', function(e) {
+					var props = timeline.getEventProperties(e)
+					o.bt.show()
+					o.bt_rollback.data('cid', props['item'])
+					o.bt_group.find(".active").click()
+				})
+			})
+		})
+	}
+
+	o.bt_binds = function() {
+		o.bt_rollback.on("click", function(e) {
+                        services_osvcpostrest(o.options.base_url+"/%1/rollback/%2", [o.options.id, o.bt_rollback.data('cid')])
+			o.revisions.empty()
+			o.diff.empty()
+			o.bt.hide()
+			o.load_form()
+		})
+		o.bt_content.on("click", function(e) {
+			o.bt_group.find(".active").removeClass("active")
+			o.bt_content.addClass("active")
+			o.diff.empty()
+			spinner_add(o.diff)
+                        services_osvcgetrest(o.options.base_url+"/%1/revisions/%2", [o.options.id, o.bt_rollback.data('cid')], {}, function(jd){
+				spinner_del(o.diff)
+				o.diff.html(jd.data.content)
+			},function(xhr) {
+				spinner_del(o.diff)
+				o.diff.html(xhr)
+			})
+		})
+		o.bt_diff.on("click", function(e) {
+			o.bt_group.find(".active").removeClass("active")
+			o.bt_diff.addClass("active")
+			o.diff.empty()
+			spinner_add(o.diff)
+                        services_osvcgetrest(o.options.base_url+"/%1/diff/%2", [o.options.id, o.bt_rollback.data('cid')], {}, function(jd){
+				spinner_del(o.diff)
+				jd.data = jd.data.substring(jd.data.indexOf("@@"))
+				o.diff.html(jd.data)
+				require(["hljs"], function(hljs) {
+					hljs.highlightBlock(o.diff[0])
+				})
+			},function(xhr) {
+				spinner_del(o.diff)
+				o.diff.html(xhr)
+			})
+		})
+		o.bt_diff_to_now.on("click", function(e) {
+			o.bt_group.find(".active").removeClass("active")
+			o.bt_diff_to_now.addClass("active")
+			o.diff.empty()
+			spinner_add(o.diff)
+                        services_osvcgetrest(o.options.base_url+"/%1/diff/%2", [o.options.id, o.bt_rollback.data('cid')], {"other": "HEAD"}, function(jd){
+				spinner_del(o.diff)
+				jd.data = jd.data.substring(jd.data.indexOf("@@"))
+				o.diff.html(jd.data)
+				require(["hljs"], function(hljs) {
+					hljs.highlightBlock(o.diff[0])
+				})
+			},function(xhr) {
+				spinner_del(o.diff)
+				o.diff.html(xhr)
+			})
+		})
+	}
+
+	o.div.load("/init/static/views/revisions.html?v="+osvc.code_rev, function() {
+		o.div.i18n()
+		o.init()
+	})
+
+	return o
+}
+
+

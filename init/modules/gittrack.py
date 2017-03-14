@@ -48,12 +48,10 @@ class gittrack(object):
                     d['id'] = uuid.uuid1().hex
                 else:
                     d['id'] = d['cid']
-            elif line.startswith("Author:"):
-                if self.otype != 'sysreport':
-                    l = line.split()
-                    d['content'] = l[2][1:-1]
-                    #d['title'] = "todo"
-                pass
+            elif self.otype != 'sysreport' and line.startswith("Author:"):
+                d['content'] = line
+            elif self.otype != 'sysreport' and line.strip().startswith("rollback"):
+                d['content'] += "<br>"+line
             elif line.startswith("Date:"):
                 l = line.split()
                 d['start'] = "T".join(l[1:3])
@@ -128,9 +126,13 @@ class gittrack(object):
         out, err = p.communicate()
         return out
 
-    def show(self, cid, data_id, path=None):
+    def show(self, cid, data_id, path=None, numstat=False, patch=True):
         git_d = os.path.join(self.collect_d, data_id, ".git")
         cmd = ["git", "--git-dir="+git_d, "show", '--pretty=format:%ci%n%b', cid]
+        if numstat:
+            cmd += ['--numstat']
+        if patch:
+            cmd += ['--patch']
         if path and path != "":
             cmd += ["--", path]
         p = Popen(cmd, stdout=PIPE, stderr=PIPE)
@@ -138,17 +140,13 @@ class gittrack(object):
         return out
 
     def show_stat(self, cid, data_id, path=None):
-        git_d = os.path.join(self.collect_d, data_id, ".git")
-        cmd = ["git", "--git-dir="+git_d, "show", '--pretty=format:%ci%n%b', '--numstat', cid]
-        if path:
-            cmd += ["--", path]
-        p = Popen(cmd, stdout=PIPE, stderr=PIPE)
-        out, err = p.communicate()
-        return out
+        self.show(cid, data_id, path=path, patch=False, numstat=True)
 
     def parse_show_stat(self, s):
-        lines = s.split("\n")
         data = {}
+        if s is None:
+            return data
+        lines = s.split("\n")
         for line in lines:
             try:
                 insertions, deletions, fpath = line.split("\t")
@@ -273,20 +271,36 @@ class gittrack(object):
         os.system("git --git-dir=%s config user.name collector" % git_d)
         os.system('cd %s/.. && (rm -f .git/index.lock && git add . ; git commit -m"" -a)' % git_d)
 
-    def commit(self, data_id, content):
+    def commit(self, data_id, content, author=None):
         git_d = os.path.join(self.collect_d, data_id)
         if not os.path.exists(git_d):
             self.init_repo(data_id)
         with open(git_d+"/"+self.otype, "w") as text_file:
             text_file.write(content)
-        cf = 'cd %s && (git add %s; git commit -m"auto" -a)' % (git_d, self.otype)
+        if author:
+            author = "--author='%s'" % author.encode("utf-8")
+        cf = "cd %(git_d)s && (git add %(otype)s; git commit -m'change' %(author)s -a)" % dict(
+            git_d=git_d,
+            otype=self.otype,
+            author=author,
+        )
         os.system(cf)
         return 0
 
-    def rollback(self, data_id, cid):
+    def rollback(self, data_id, cid, author=None):
         git_d = os.path.join(self.collect_d, data_id)
-        cmd = 'cd %s && (git checkout %s %s) && (git commit -m"rollback" -a)' % (git_d, cid, self.otype)
+        date = self.show_data(cid, data_id)["date"]
+        if author:
+            author = "--author='%s'" % author.encode("utf-8")
+        cmd = "cd %(git_d)s && (git checkout %(cid)s %(otype)s; git commit -m'rollback to %(date)s' %(author)s -a)" % dict(
+            git_d=git_d,
+            cid=cid,
+            otype=self.otype,
+            author=author,
+            date=date,
+        )
         os.system(cmd)
+        return 0
 
 if __name__ == "__main__":
     o = gittrack()

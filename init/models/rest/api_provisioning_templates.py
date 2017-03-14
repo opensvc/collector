@@ -680,10 +680,35 @@ class rest_get_provisioning_template_am_i_responsible(rest_get_handler):
         except:
             return dict(data=False)
 
+class rest_get_provisioning_template_revision(rest_get_handler):
+    def __init__(self):
+        desc = [
+          "Return the provisioning template content for the given revision.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/provisioning_templates/1/revision/1234",
+        ]
+        rest_get_handler.__init__(
+          self,
+          path="/provisioning_templates/<id>/revisions/<id>",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, tpl_id, cid, **vars):
+        r = []
+        q = db.prov_templates.id == int(tpl_id)
+        if "Manager" not in user_groups():
+            q &= db.prov_templates.id == db.prov_template_team_publication.tpl_id
+            q &= db.prov_template_team_publication.group_id.belongs(user_group_ids())
+        if db(q).count():
+            r =  lib_provisioning_templates_revision(tpl_id, cid)
+        return r
+
 class rest_get_provisioning_template_revisions(rest_get_handler):
     def __init__(self):
         desc = [
-          "- return provisioning template revisions.",
+          "Return the provisioning template revisions.",
         ]
         examples = [
           "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/provisioning_templates/1/revisions",
@@ -708,7 +733,8 @@ class rest_get_provisioning_template_revisions(rest_get_handler):
 class rest_get_provisioning_template_diff(rest_get_handler):
     def __init__(self):
         desc = [
-          "Show differences between an old revision and the current one",
+          "Show the commit diff, or differences between <cid> and <other> if"
+          "other is set",
         ]
         examples = [
           "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/provisioning_templates/1/diff/9a26e8e40d9d7a7e585ac8ccb6bc01f70f68b710",
@@ -720,12 +746,12 @@ class rest_get_provisioning_template_diff(rest_get_handler):
           examples=examples,
         )
 
-    def handler(self, tpl_id, cid, **vars):
+    def handler(self, tpl_id, cid, other=None, **vars):
         r = []
         q = db.prov_templates.id == int(tpl_id)
         if "Manager" not in user_groups():
             q &= db.prov_templates.id == db.prov_template_team_publication.tpl_id
             q &= db.prov_template_team_publication.group_id.belongs(user_group_ids())
         if db(q).count():
-            r =  lib_provisioning_templates_diff(tpl_id, cid)
+            r =  lib_provisioning_templates_diff(tpl_id, cid, other=other)
         return r

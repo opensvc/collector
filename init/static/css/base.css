@@ -142,10 +142,6 @@ input.aci, input.aci:focus {
 	width: 10em;
 }
 
-.revisions_tab > div {
-	padding: 1em;
-}
-
 .var_content_tab {
 	display: flex;
 	flex-wrap: wrap;
@@ -2758,6 +2754,7 @@ div.containertrans {
 }
 
 .vis-item {
+	text-align: left !important;
 	background-color: #ECF3F5 !important;
 	border-color: lightgray !important;
 }

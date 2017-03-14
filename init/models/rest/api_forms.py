@@ -401,17 +401,17 @@ class rest_get_form_revisions(rest_get_handler):
             r =  lib_form_revisions(form_id)
         return r
 
-class rest_get_form_diff(rest_get_handler):
+class rest_get_form_revision(rest_get_handler):
     def __init__(self):
         desc = [
-          "Show differences between an old revision and the current one",
+          "return form content for a specific revision",
         ]
         examples = [
-          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/forms/1/diff/9a26e8e40d9d7a7e585ac8ccb6bc01f70f68b710",
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/forms/1/revisions/1234",
         ]
         rest_get_handler.__init__(
           self,
-          path="/forms/<id>/diff/<cid>",
+          path="/forms/<id>/revisions/<id>",
           desc=desc,
           examples=examples,
         )
@@ -423,7 +423,33 @@ class rest_get_form_diff(rest_get_handler):
             q &= db.forms.id == db.forms_team_publication.form_id
             q &= db.forms_team_publication.group_id.belongs(user_group_ids())
         if db(q).count():
-            r =  lib_form_diff(form_id, cid)
+            r =  lib_form_revision(form_id, cid)
+        return r
+
+class rest_get_form_diff(rest_get_handler):
+    def __init__(self):
+        desc = [
+          "Show the commit diff, or differences between <cid> and <other> if"
+          "other is set",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/forms/1/diff/9a26e8e40d9d7a7e585ac8ccb6bc01f70f68b710",
+        ]
+        rest_get_handler.__init__(
+          self,
+          path="/forms/<id>/diff/<cid>",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, form_id, cid, other=None, **vars):
+        r = []
+        q = db.forms.id == int(form_id)
+        if "Manager" not in user_groups():
+            q &= db.forms.id == db.forms_team_publication.form_id
+            q &= db.forms_team_publication.group_id.belongs(user_group_ids())
+        if db(q).count():
+            r = lib_form_diff(form_id, cid, other)
         return r
 
 class rest_delete_form_responsible(rest_delete_handler):

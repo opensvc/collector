@@ -40,72 +40,14 @@ function prov_template_tabs(divid, options) {
 			"title_class": "icon time16"
 		})
 		o.tabs[i].callback = function(divid) {
-			prov_template_revisions(divid, o.options)
+			generic_revisions(divid, {
+				"id": o.options.tpl_id,
+				"base_url": "/provisioning_templates"
+			})
 		}
 
 		o.set_tab(o.options.tab)
 	})
-	return o
-}
-
-function prov_template_revisions(divid, options) {
-	var o = {}
-
-	// store parameters
-	o.divid = divid
-	o.div = $("#"+divid)
-	o.options = options
-	o.link = {
-		"fn": arguments.callee.name,
-		"parameters": o.options,
-		"title": "link."+arguments.callee.name
-	}
-
-	o.init = function() {
-		osvc_tools(o.div, {
-			"link": o.link
-		})
-
-		o.log = o.div.find('#log')
-		o.diff = o.div.find('#diff')
-		o.revisions = o.div.find('#revisions')
-
-		o.load_form()
-	}
-
-	o.load_form = function() {
-		console.log(o.options)
-		services_osvcgetrest("/provisioning_templates/%1/revisions", [o.options.tpl_id], "", function(jd) {
-			o.diff.after('<button id="rollback">Rollback</button>')
-			o.bt_rollback = o.div.find("#rollback")
-			require(["vis"], function(vis) {
-				var timeline = new vis.Timeline(o.revisions[0], jd, {});
-				o.revisions.on('click', function(e) {
-					var props = timeline.getEventProperties(e)
-					services_osvcgetrest("/provisioning_templates/%1/diff/%2", [o.options.tpl_id, props['item']], "", function(jd) {
-						o.diff.html(jd)
-						require(["hljs"], function(hljs) {
-							hljs.highlightBlock(o.diff[0])
-						})
-						o.bt_rollback.data('cid', props['item'])
-					})
-				})
-			})
-			o._load_form(jd)
-		})
-	}
-
-	o._load_form = function(data) {
-		o.bt_rollback.on("click", function(e) {
-			services_osvcpostrest("/provisioning_templates/%1/rollback/%2", [o.options.tpl_id, o.bt_rollback.data('cid')])
-		})
-	}
-
-	o.div.load("/init/static/views/form_revisions.html?v="+osvc.code_rev, function() {
-		o.div.i18n()
-		o.init()
-	})
-
 	return o
 }
 

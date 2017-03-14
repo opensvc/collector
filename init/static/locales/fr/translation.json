@@ -1001,6 +1001,7 @@
 		"help": "Survoler un élément pour obtenir les détails"
 	},
 	"link": {
+		"generic_revisions": "Révisions",
 		"nodediff": "Différences entre noeuds",
 		"fset_designer": "Designer du jeu de filtres __name__",
 		"fset_export": "Export du jeu de filtres __name__",
@@ -1964,6 +1965,12 @@
 	"scheduler_stats": {
 		"tasks": "Tâches",
 		"queue": "Queues d'alimentation"
+	},
+	"revisions": {
+		"rollback": "Rollback",
+		"content": "Contenu",
+		"diff_to_now": "Diff jusqu'à maintenant",
+		"diff": "Diff"
 	},
 	"tabs": {
 		"close": "Cliquez ici pour fermer",

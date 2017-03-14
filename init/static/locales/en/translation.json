@@ -1003,6 +1003,7 @@
 		"help": "hover on a range to display details"
 	},
 	"link": {
+		"generic_revisions": "Revisions",
 		"nodediff": "Nodes differences",
 		"fset_designer": "Filterset __name__ designer",
 		"fset_export": "Filterset __name__ export",
@@ -2014,6 +2015,12 @@
 	"scheduler_stats": {
 		"tasks": "Tasks",
 		"queue": "Feed Queues"
+	},
+	"revisions": {
+		"rollback": "Rollback",
+		"content": "Content",
+		"diff_to_now": "Diff to now",
+		"diff": "Diff"
 	},
 	"tabs": {
 		"close": "Click to close",

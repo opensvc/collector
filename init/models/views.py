@@ -1,7 +1,7 @@
 import re
 import datetime
 
-def user_name():
+def user_name(email=False):
     if session.auth is not None:
         _auth = session.auth
     else:
@@ -15,6 +15,8 @@ def user_name():
     first_name = _auth.user.first_name if _auth.user.first_name else ""
     last_name = _auth.user.last_name if _auth.user.last_name else ""
     user = ' '.join([first_name, last_name])
+    if email:
+        user += "<%s>" % _auth.user.email
     try:
         user = user.decode("utf8")
     except:

@@ -866,21 +866,30 @@ def lib_forms_add_default_team_publication(form_name):
 
 def lib_form_add_to_git(form_id, yaml):
     o = gittrack.gittrack(otype='forms')
-    r = o.commit(form_id, yaml)
+    r = o.commit(form_id, yaml, author=user_name(email=True))
+
+def lib_form_revision(form_id, cid):
+    o = gittrack.gittrack(otype='forms')
+    data = o.lstree_data(cid, form_id)
+    oid = data[0]["oid"]
+    return {"data": o.show_file_unvalidated(cid, oid, form_id)}
 
 def lib_form_revisions(form_id):
     o = gittrack.gittrack(otype='forms')
     r = o.timeline([form_id])
-    return sjson.dumps(r)
+    return {"data": r}
 
-def lib_form_diff(form_id, cid):
+def lib_form_diff(form_id, cid, other=None):
     o = gittrack.gittrack(otype='forms')
-    r = o.diff_cids(form_id, cid, 'HEAD', 'forms')
-    return sjson.dumps(r)
+    if other:
+        r = o.diff_cids(form_id, cid, other, filename="forms")
+    else:
+        r = o.show(cid, form_id, numstat=True)
+    return {"data": r}
 
 def lib_form_rollback(form_id, cid):
     o = gittrack.gittrack(otype='forms')
-    r = o.rollback(form_id, cid)
+    r = o.rollback(form_id, cid, author=user_name(email=True))
     row = db(db.forms.id == form_id).select().first()
     here_d = os.path.dirname(__file__)
     collect_d = os.path.join(here_d, '..', 'private', 'forms')
