@@ -322,19 +322,28 @@ function table_init(opts) {
 	// pin toolbar and header to top on scroll past
 	//
 	t.sticky_relocate = function() {
+		if (t.folded()) {
+			t.e_sticky.empty()
+			return
+		}
 		var header_offset = $(".header").height()
 		var top_offset = header_offset + t.e_header_tr.height() + t.e_toolbar.height()
 		var window_top = $(window).scrollTop() + header_offset
 		var table_visible = check_visible(t.div, top_offset)
+
+		if (!table_visible) {
+			t.e_sticky.empty()
+			return
+		}
 		t.e_sticky.css({
 			"width": t.e_table.parent()[0].getBoundingClientRect().width,
 			"left": t.e_table.parent().offset().left
 		})
 
 		// handle table toolbar stickyness
-		var toolbar_top = t.e_header_tr.offset().top - t.e_header_tr.height()
+		var table_top = t.div.offset().top
 		var clone = t.e_sticky.children("div")
-		if (window_top > toolbar_top && table_visible && !t.folded()) {
+		if (window_top > table_top) {
 			// add the top-fixed clone element if not already present
 			if (clone.length == 0) {
 				var clone = t.e_toolbar.clone(true, true)
@@ -345,10 +354,9 @@ function table_init(opts) {
 		}
 
 		// handle table header stickyness
-		var header_tr_top = t.e_header_tr.offset().top - t.e_header_tr.height()
 		var scroll_zone = t.e_sticky.find(".table_scroll_zone")
 		var clone = scroll_zone.find("div>tr")
-		if (window_top > header_tr_top && table_visible && !t.folded()) {
+		if (window_top > table_top) {
 			// add the top-fixed clone element if not already present
 			if (scroll_zone.length == 0) {
 				var clone = t.e_header_tr.clone(true, true)
@@ -358,7 +366,7 @@ function table_init(opts) {
 					"width": "100%"
 				})
 				clone.css({
-					"display": "block",
+					"display": "flex",
 					"width": t.e_header_tr[0].getBoundingClientRect().width
 				})
 
@@ -452,7 +460,10 @@ function table_init(opts) {
 		t.scroll_right.click(function(){
 			t.e_table.parent().animate({'scrollLeft': '+='+$(window).width()}, 500, t.scroll)
 		})
-		t.e_table.parent().on("scroll", function(){
+		$(window).on("scroll", function(){
+			t.scroll()
+		})
+		t.e_table.parents(".table_scroll_zone>div").on("scroll", function(){
 			t.scroll()
 		})
 		$(window).resize(function(){
@@ -580,8 +591,8 @@ function table_init(opts) {
 		t.page = t.options.pager.page
 		table.attr("id", "table_"+t.id)
 		table_scroll_zone.append(table_div)
-		table_div.append(toolbar)
 		table_div.append(table)
+		d.append(toolbar)
 		d.append(t.e_sticky)
 		d.append(table_scroll_zone)
 		container.empty().append(d)
@@ -803,9 +814,9 @@ function table_init(opts) {
 			input.attr("id", mcb_id)
 			var label = $("<label></label>")
 			label.attr("for", mcb_id)
-			input.on("click", function() {
+			input.on("click", function(event) {
 				check_all(t.id+"_ck", this.checked)
-				t.highlighed_checked_lines()
+				t.highlighed_checked_lines(event)
 			})
 			th.append(input)
 			th.append(label)
@@ -1231,7 +1242,7 @@ function table_init(opts) {
 		t.last_checkbox_clicked = ref_id
 		t.highlighed_checked_lines()
 	}
-	t.highlighed_checked_lines = function() {
+	t.highlighed_checked_lines = function(event) {
 		if ($("#am_"+t.id).length > 0) {
 			table_action_menu(t, event)
 		}

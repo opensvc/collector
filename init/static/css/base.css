@@ -342,6 +342,7 @@ input.aci, input.aci:focus {
 	background: -ms-linear-gradient(left, rgba(100, 100, 100, 0.5), rgba(100, 100, 100, 0));
 	background: -o-linear-gradient(left, rgba(100, 100, 100, 0.5), rgba(100, 100, 100, 0));
 	cursor: pointer;
+	z-index: 1;
 }
 .scroll_right {
 	width:1em !important;
@@ -357,6 +358,7 @@ input.aci, input.aci:focus {
 	background: -ms-linear-gradient(left, rgba(100, 100, 100, 0), rgba(100, 100, 100, 0.5));
 	background: -o-linear-gradient(left, rgba(100, 100, 100, 0), rgba(100, 100, 100, 0.5));
 	cursor: pointer;
+	z-index: 1;
 }
 
 tr.tl {
@@ -1005,6 +1007,7 @@ textarea.flash:focus {
 	min-width: 20em;
 	max-width: 75%;
 	border-right: 1px solid rgba(220, 220, 220, 0.3);
+	z-index: 2;
 }
 .action_menu > ul {
 	padding: 0.5em;
@@ -2126,7 +2129,6 @@ a.search-link:hover {
 }
 
 .theader {
-	background-color: white;
 	color: #555;
 	padding: 1px 0 0 0;
 	margin-top: 0;

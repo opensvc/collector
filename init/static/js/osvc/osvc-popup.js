@@ -25,12 +25,6 @@ function osvc_popup_stack_log_stack() {
 	}
 }
 
-function osvc_popup_adjust_zindex_after(idx) {
-	for (var i=idx; i<_stack.length; i++) {
-		$("[stack_id="+_stack[i].span+"]").css({"z-index": idx})
-	}
-}
-
 function osvc_popup_get_stack_index_of(value) {
 	if (value == undefined) {
 		return -1
@@ -52,7 +46,6 @@ function osvc_popup_delete_children(value)
 		}
 		// remove children
 		var e = _stack.splice(i, 1);
-		osvc_popup_adjust_zindex_after(i)
 
 		// recurse
 		osvc_popup_delete_children(e.span);
@@ -66,7 +59,6 @@ function osvc_popup_delete_by_id(value)
 		return
 	}
 	_stack.splice(idx, 1);
-	osvc_popup_adjust_zindex_after(idx)
 	osvc_popup_delete_children(value);
 }
 
@@ -95,7 +87,6 @@ function osvc_popup_stack_listener_mutation_handler_add_node(mutation, node) {
 	p = osvc_popup_get_parent_id(e)
 	var stack_id = "p"+ (_stack_counter++).toString();
 	e.attr('stack_id', stack_id);
-	e.css({'z-index': 1000+_stack.length});
 	_stack.push({"span": stack_id, "parent": p});
 	//console.log("stack push (add mutation)", stack_id, e);
 }
@@ -149,7 +140,6 @@ function osvc_popup_stack_listener_mutation_handler_show(mutation) {
 			var stack_id = "p"+(_stack_counter++).toString();
 			p = osvc_popup_get_parent_id(e)
 			e.attr('stack_id', stack_id);
-			e.css({'z-index': 1000+_stack.length});
 			_stack.push({"span": stack_id, "parent": p});
 			//console.log("stack push (show mutation)", stack_id, e)
 		}
