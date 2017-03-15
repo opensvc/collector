@@ -70,8 +70,10 @@ input.aci, input.aci:focus {
 }
 
 .stick {
+	background-color: white !important;
 	position: fixed;
 	top: 3em;
+	z-index: 1;
 }
 
 .im:before {
@@ -2107,7 +2109,7 @@ a.search-link:hover {
 .tableo {
 	position: relative;
 }
-.tableo > div {
+.tableo > .table_scroll_zone {
 	width: 100%;
 	overflow-x: auto;
 	overflow-y: hidden;
@@ -2545,16 +2547,13 @@ input.ocb {
 }
 
 .ocb + label:after {
-	-ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=0)";
-	filter: alpha(opacity=0);
-	opacity: 0;
 	content: '\f00c';
 	font-family: FontAwesome;
 	min-width: 14px;
 	height: 14px;
 	background: transparent;
 	border: none;
-	color: black;
+	color: rgba(0,0,0,0);
 	padding: 1px;
 	position: relative;
 	top: -1px;
@@ -2562,15 +2561,12 @@ input.ocb {
 }
 
 .ocb + label:hover::after {
-	-ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=30)";
 	content: '\f00c';
 	font-family: FontAwesome;
 	min-width: 14px;
 	height: 14px;
-	color: black;
-	filter: alpha(opacity=30);
+	color: rgba(0,0,0,0.3);
 	border: none;
-	opacity: 0.3;
 	padding: 1px;
 	position: relative;
 	top: -1px;
@@ -2578,14 +2574,11 @@ input.ocb {
 }
 
 input[type=checkbox].ocb:checked + label:after {
-	-ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=100)";
-	filter: alpha(opacity=100);
 	content: '\f00c';
 	width: 14px;
 	height: 14px;
 	color: black;
 	border: none;
-	opacity: 1;
 	padding: 1px;
 	position: relative;
 	top: -1px;

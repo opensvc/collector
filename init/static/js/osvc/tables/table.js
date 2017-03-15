@@ -318,6 +318,73 @@ function table_init(opts) {
 		t.e_folder = e
 	}
 
+	//
+	// pin toolbar and header to top on scroll past
+	//
+	t.sticky_relocate = function() {
+		var header_offset = $(".header").height()
+		var top_offset = header_offset + t.e_header_tr.height() + t.e_toolbar.height()
+		var window_top = $(window).scrollTop() + header_offset
+		var table_visible = check_visible(t.div, top_offset)
+		t.e_sticky.css({
+			"width": t.e_table.parent()[0].getBoundingClientRect().width,
+			"left": t.e_table.parent().offset().left
+		})
+
+		// handle table toolbar stickyness
+		var toolbar_top = t.e_header_tr.offset().top - t.e_header_tr.height()
+		var clone = t.e_sticky.children("div")
+		if (window_top > toolbar_top && table_visible && !t.folded()) {
+			// add the top-fixed clone element if not already present
+			if (clone.length == 0) {
+				var clone = t.e_toolbar.clone(true, true)
+				t.e_sticky.append(clone)
+			}
+		} else {
+			clone.remove()
+		}
+
+		// handle table header stickyness
+		var header_tr_top = t.e_header_tr.offset().top - t.e_header_tr.height()
+		var scroll_zone = t.e_sticky.find(".table_scroll_zone")
+		var clone = scroll_zone.find("div>tr")
+		if (window_top > header_tr_top && table_visible && !t.folded()) {
+			// add the top-fixed clone element if not already present
+			if (scroll_zone.length == 0) {
+				var clone = t.e_header_tr.clone(true, true)
+
+				// adjust top-fixed clone element width
+				scroll_zone.css({
+					"width": "100%"
+				})
+				clone.css({
+					"display": "block",
+					"width": t.e_header_tr[0].getBoundingClientRect().width
+				})
+
+				// adjust top-fixed clone element children width
+				var e_children = t.e_header_tr.children()
+				var i = 0
+				clone.children().each(function(){
+					$(this).css({
+						"box-sizing": "border-box",
+						"width": e_children[i].getBoundingClientRect().width
+					})
+					i++
+				})
+				var scroll_div = $("<div class='table_scroll_zone'><div style='overflow-x:hidden'></div></div>")
+				scroll_div.children().append(clone)
+				t.e_sticky.append(scroll_div)
+			}
+			// adjust left scroll position
+			// adjust horizontal scroll position
+			var left = t.e_header_tr.scrollParent().scrollLeft()
+			clone.scrollParent().scrollLeft(left)
+		} else {
+			clone.parent().remove()
+		}
+	}
+
 	t.add_filtered_to_visible_columns = function() {
 		for (col in t.colprops) {
 			if (t.options.hide_cols.indexOf(col) >= 0) {
@@ -399,7 +466,7 @@ function table_init(opts) {
 
 	t.scroll = function() {
 		t.scroll_disable_dom()
-		sticky_relocate(t.e_header, t.e_sticky_anchor)
+		t.sticky_relocate()
 		var to_p = t.e_table.parent()
 		var ww = to_p.width()
 		var tw = t.e_table.width()
@@ -455,23 +522,18 @@ function table_init(opts) {
 		if (t.div.parents(".tableo").length > 0) {
 			return
 		}
-
-		var anchor = $("<span></span>")
-		anchor.uniqueId()
-		anchor.insertBefore(t.e_header)
-		t.e_sticky_anchor = anchor
-		sticky_relocate(t.e_header, t.e_sticky_anchor)
+		t.sticky_relocate()
 		$(".menu.flash").scroll(function(){
-			sticky_relocate(t.e_header, t.e_sticky_anchor)
+			t.sticky_relocate()
 		})
 		$(window).scroll(function(){
-			sticky_relocate(t.e_header, t.e_sticky_anchor)
+			t.sticky_relocate()
 		})
-		sticky_relocate(t.e_header, t.e_sticky_anchor)
+		t.sticky_relocate()
 	}
 
 	t.reset_column_filters = function() {
-		t.e_header.find("th").each(function() {
+		t.e_header_tr.children("th").each(function() {
 			$(this).removeClass("col-filtered-volatile")
 			$(this).removeClass("col-filtered")
 			$(this).removeClass("col-filter-changed")
@@ -506,6 +568,7 @@ function table_init(opts) {
 		var table_scroll_zone = $("<div class='table_scroll_zone'></div>")
 		var table_div = $("<div></div>")
 		var table = $("<table><thead><tr class='theader'></tr></thead><tbody></tbody></table>")
+		t.e_sticky = $("<div class='stick'></div>")
 
 		if (t.options.folded) {
 			table_scroll_zone.hide()
@@ -517,13 +580,15 @@ function table_init(opts) {
 		t.page = t.options.pager.page
 		table.attr("id", "table_"+t.id)
 		table_scroll_zone.append(table_div)
+		table_div.append(toolbar)
 		table_div.append(table)
-		d.append(toolbar)
+		d.append(t.e_sticky)
 		d.append(table_scroll_zone)
 		container.empty().append(d)
 		t.e_scroll_zone = table_scroll_zone
 		t.e_table = table
-		t.e_header = table.find("thead>tr")
+		t.e_header = table.find("thead")
+		t.e_header_tr = t.e_header.children("tr")
 		t.e_body = table.find("tbody")
 		t.e_toolbar = toolbar
 	}
@@ -719,7 +784,7 @@ function table_init(opts) {
 		if (!t.options.headers) {
 			return
 		}
-		t.e_header.empty()
+		t.e_header_tr.empty()
 		t.add_column_headers()
 	}
 
@@ -727,7 +792,6 @@ function table_init(opts) {
 		if (!t.options.headers) {
 			return
 		}
-		var tr = t.e_header
 		if (t.options.checkboxes) {
 			var th = $("<th class='text-center'><div class='fa fa-bars clickable mb-1 d-block'></div></th>")
 			th.click(function(e){
@@ -745,29 +809,29 @@ function table_init(opts) {
 			})
 			th.append(input)
 			th.append(label)
-			tr.append(th)
+			t.e_header_tr.append(th)
 		}
 
 		if (t.options.extrarow) {
-			tr.append($("<th></th>"))
+			t.e_header_tr.append($("<th></th>"))
 		}
 		for (i=0; i<t.options.columns.length; i++) {
 			var c = t.options.columns[i]
 			if (t.options.visible_columns.indexOf(c) >= 0) {
-				t.add_column_header(tr, c)
+				t.add_column_header(c)
 			}
 		}
 		t.bind_header_filter_selector()
 	}
 
-	t.add_column_header = function(tr, c) {
+	t.add_column_header = function(c) {
 		var asc_idx = t.options.orderby.indexOf(c)
 		var desc_idx = t.options.orderby.indexOf("~"+c)
 		var th = $("<th></th>")
 		th.addClass(t.colprops[c]._class)
 		th.attr("col", c)
 		th.text(i18n.t("col."+t.colprops[c].title))
-		tr.append(th)
+		t.e_header_tr.append(th)
 		if (asc_idx >= 0) {
 			var order = $("<span class='icon fa-caret-down' title='"+asc_idx+"'></span>")
 			order.tooltipster()
@@ -886,11 +950,11 @@ function table_init(opts) {
 			// handle header colorization
 			var current_filter = t.colprops[c].current_filter
 			if (current_filter != val) {
-				t.e_header.find("[col='"+col+"']").removeClass("col-filtered").addClass("col-filter-changed")
+				t.e_header_tr.children("[col='"+col+"']").removeClass("col-filtered").addClass("col-filter-changed")
 			} else {
-				t.e_header.find("[col='"+col+"']").removeClass("col-filter-changed")
+				t.e_header_tr.children("[col='"+col+"']").removeClass("col-filter-changed")
 				if (val != "") {
-					t.e_header.find("[col='"+col+"']").addClass("col-filtered")
+					t.e_header_tr.children("[col='"+col+"']").addClass("col-filtered")
 				}
 			}
 
@@ -957,7 +1021,7 @@ function table_init(opts) {
 	}
 
 	t.refresh_column_filters = function() {
-		t.e_table.find("tr.theader.stick").remove()
+		t.e_sticky.empty()
 		t.refresh_column_filters_in_place()
 	}
 
@@ -986,7 +1050,7 @@ function table_init(opts) {
 		}
 
 		// update the header cell colorization
-		var th = t.e_header.find("[col="+c+"]")
+		var th = t.e_header_tr.children("[col="+c+"]")
 		th.removeClass("col-filtered-volatile")
 		th.removeClass("col-filtered")
 		th.removeClass("col-filter-changed")
@@ -1084,7 +1148,7 @@ function table_init(opts) {
 	}
 
 	t.bind_header_filter_selector = function() {
-		t.e_header.children("th[col]").each(function(){
+		t.e_header_tr.children("th[col]").each(function(){
 			$(this).on("contextmenu", function(event) {
 				var cell = $(event.target)
 				var col = cell.attr('col')
@@ -1612,7 +1676,7 @@ function table_init(opts) {
 				$(this).addClass("b")
 				t.colprops[k].current_filter = cur
 				t.e_sidepanel.find("input[name=fi]").val(cur).trigger("keyup")
-				t.e_header.find("[col="+k+"]").each(function() {
+				t.e_header_tr.children("[col="+k+"]").each(function() {
 					$(this).removeClass("col-filtered")
 					$(this).addClass("col-filter-changed")
 				})
@@ -2609,6 +2673,10 @@ function table_init(opts) {
 			event.stopPropagation()
 			t.page_submit(p_page-1)
 		})
+
+		// resync the sticky toolbar
+		t.e_sticky.empty()
+		t.sticky_relocate()
 	}
 
 	//
@@ -2886,6 +2954,7 @@ function table_init(opts) {
 
 		t.e_sidepanel = am
 
+		t.sticky_relocate()
 		return am
 	}
 

@@ -1468,60 +1468,15 @@ function osvc_get_link(divid,link_id) {
 	})
 }
 
-function check_visible(e) {
+function check_visible(e, top_offset) {
 	var vpH = $(window).height()
 	var st = $(window).scrollTop()
+	if (top_offset) {
+		st += top_offset
+	}
         var y = $(e).offset().top
         var elementHeight = $(e).height()
-	return ((y < (vpH + st)) && (y > (st - elementHeight)));
-}
-
-/*
- * pin a DOM element to top on scroll past
- */
-function sticky_relocate(e, anchor, onstick) {
-	if (!e || !anchor) {
-		return
-	}
-	var window_top = $(window).scrollTop();
-	var div_top = anchor.offset().top;
-	if (window_top > div_top && check_visible(e.parents(".tableo").first())) {
-		// add the top-fixed clone element if not already present
-		if (!e.next().is(".stick")) {
-			var clone = e.clone(true, true)
-			if (onstick) {
-				onstick(clone, e)
-			}
-			clone.addClass('stick')
-
-			// adjust top-fixed clone element width
-			clone.css({
-				"width": e[0].getBoundingClientRect().width,
-			})
-
-			// adjust top-fixed clone element children width
-			var e_children = e.children()
-			var i = 0
-			clone.children().each(function(){
-				//$(this).width(e_children[i].offsetWidth)
-				$(this).css({
-					"box-sizing": "border-box",
-					"width": e_children[i].getBoundingClientRect().width
-				})
-				i++
-			})
-			clone.insertAfter(e)
-		} else {
-			var clone = e.next()
-		}
-
-		// adjust left position
-		var left = e.parents("table").first().parent().offset().left - e.scrollParent().scrollLeft()
-
-		e.next(".stick").css({"left": left})
-	} else {
-		try {e.next('.stick').remove()} catch(err) {}
-	}
+	return ((y < (vpH + st)) && (y > (st - elementHeight)))
 }
 
 function is_numeric(n) {
