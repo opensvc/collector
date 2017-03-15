@@ -930,7 +930,7 @@ def cron_mac_dup():
                   """%dict(severity=severity,
                            environment=environment,
                            node_id=node_id,
-                           nodes=', '.join(map(lambda x: get_nodename(x), row[1])),
+                           nodes=', '.join(map(lambda x: get_nodename(x), row[1].split(","))),
                            mac=row[2],
                            now=str(now))
             db.executesql(sql)
