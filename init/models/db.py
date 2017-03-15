@@ -850,31 +850,10 @@ db.define_table('lifecycle_os',
     Field('lc_date', 'date'),
     migrate=False)
 
-db.define_table('v_lifecycle_os_name',
+db.define_table('user_prefs',
     Field('id', 'integer'),
-    Field('fset_id', 'integer'),
-    Field('lc_os_name', 'string'),
-    Field('lc_count', 'integer'),
-    Field('lc_date', 'date'),
-    migrate=False)
-
-db.define_table('user_prefs_columns',
-    Field('id', 'integer'),
-    Field('upc_user_id', 'integer'),
-    Field('upc_table', 'string'),
-    Field('upc_field', 'string'),
-    Field('upc_visible', 'integer'),
-    migrate=False)
-
-db.define_table('upc_dashboard',
-    Field('id', 'integer'),
-    Field('upc_user_id', 'integer'),
-    Field('upc_dashboard', 'string'),
-    migrate=False)
-
-db.define_table('sym_upload',
-    Field('archive','upload', requires=IS_NOT_EMPTY()),
-    Field('batched','integer', writable=False),
+    Field('user_id', 'integer'),
+    Field('prefs', 'text'),
     migrate=False)
 
 db.define_table('v_comp_modulesets',
@@ -1128,14 +1107,6 @@ db.define_table('log',
     Field('log_email_sent','integer'),
     Field('log_entry_id','string'),
     Field('log_level','string'),
-    migrate=False)
-
-db.define_table('column_filters',
-    Field('user_id','integer'),
-    Field('col_tableid','string'),
-    Field('col_name','string'),
-    Field('col_filter','string'),
-    Field('bookmark','string'),
     migrate=False)
 
 db.define_table('wiki_pages',

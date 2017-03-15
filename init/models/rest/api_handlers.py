@@ -304,6 +304,7 @@ def get_get_handlers(prefix=None):
        "users": [
              "rest_get_users",
              "rest_get_user",
+             "rest_get_user_prefs",
              "rest_get_user_dump",
              "rest_get_user_apps_publication",
              "rest_get_user_apps_responsible",
@@ -313,8 +314,6 @@ def get_get_handlers(prefix=None):
              "rest_get_user_hidden_menu_entries",
              "rest_get_user_primary_group",
              "rest_get_user_filterset",
-             "rest_get_user_table_settings",
-             "rest_get_user_table_filters",
        ],
        "reports": [
              "rest_get_reports_charts",
@@ -772,12 +771,9 @@ def get_post_handlers(prefix=None):
              "rest_post_users",
              "rest_post_user",
              "rest_post_user_group",
+             "rest_post_user_prefs",
              "rest_post_user_primary_group",
              "rest_post_user_filterset",
-             "rest_post_user_table_settings",
-             "rest_post_user_table_filters",
-             "rest_post_user_table_filters_load_bookmark",
-             "rest_post_user_table_filters_save_bookmark",
         ],
         "users_groups": [
              "rest_post_users_groups",

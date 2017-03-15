@@ -480,42 +480,17 @@ function table_init(opts) {
 
 	t.get_visible_columns = function() {
 		// if visible columns is not explicitely set in options
-		// fetch it from the db-stored table settings
+		// fetch it from the db-stored user prefs
 		if (t.options.visible_columns) {
 			return
 		}
 
-		// init with default visibility defined in colprops
-		if (t.options.default_columns) {
+		if (osvc.user_prefs.data.tables[t.id]["visible_columns"].length == 0) {
+			// init with default visibility defined in colprops
 			t.options.visible_columns = t.options.default_columns
 		} else {
-			t.options.visible_columns = []
-			for (key in t.colprops) {
-				var d = t.colprops[key]
-				if (d.display) {
-					t.options.visible_columns.push(key)
-				}
-			}
-		}
-
-		// adjust with db-stored user's table settings
-		if (!(t.id in osvc.table_settings.data)) {
-			return
-		}
-		for (col in osvc.table_settings.data[t.id]) {
-			if (col == "wsenabled") {
-				continue
-			}
-			if (osvc.table_settings.data[t.id][col]) {
-				if (t.options.visible_columns.indexOf(col) < 0) {
-					t.options.visible_columns.push(col)
-				}
-			} else {
-				var idx = t.options.visible_columns.indexOf(col)
-				if (idx >= 0) {
-					t.options.visible_columns.splice(idx, 1)
-				}
-			}
+			// adjust with db-stored user's prefs
+			t.options.visible_columns = osvc.user_prefs.data.tables[t.id]["visible_columns"]
 		}
 	}
 
@@ -782,6 +757,7 @@ function table_init(opts) {
 				t.add_column_header(tr, c)
 			}
 		}
+		t.bind_header_filter_selector()
 	}
 
 	t.add_column_header = function(tr, c) {
@@ -1035,13 +1011,7 @@ function table_init(opts) {
 		if (t.options.volatile_filters || t.has_filter_in_request_vars()) {
 			return
 		}
-		if (!(t.id in osvc.table_filters.data)) {
-			return
-		}
-		if (!("current" in osvc.table_filters.data[t.id])) {
-			return
-		}
-		var tf = osvc.table_filters.data[t.id]["current"]
+		var tf = osvc.user_prefs.data.tables[t.id]["filters"]
 		t.reset_column_filters()
 		for (col in tf) {
 			var f = tf[col]
@@ -1085,13 +1055,16 @@ function table_init(opts) {
 	}
 
 	t.check_toggle_vis = function(checked, c) {
-		if (checked && (t.options.visible_columns.indexOf(c) < 0)) {
+		var idx = t.options.visible_columns.indexOf(c)
+		if (checked && (idx < 0)) {
 			t.options.visible_columns.push(c)
-		} else {
+		} else if (!checked && (idx >= 0)) {
 			t.options.visible_columns = t.options.visible_columns.filter(function(x){if (x!=c){return true}})
 		}
-		t.refresh_column_filters()
+		osvc.user_prefs.data.tables[t.id].visible_columns = t.options.visible_columns
+		osvc.user_prefs.save()
 		t.refresh_column_headers()
+		t.refresh_column_filters()
 		if (checked) {
 			if (t.options.force_cols.indexOf(c) >=0 ) {
 				t.e_table.find(".tl > td[col="+c+"]").show()
@@ -1102,7 +1075,7 @@ function table_init(opts) {
 	}
 
 	t.bind_checkboxes = function() {
-		$("#table_"+t.id).find("[name="+t.id+"_ck]").each(function(){
+		t.e_body.children("tr").children("td:first-child").children("input[name="+t.id+"_ck]").each(function(){
 			this.value = this.checked
 			$(this).click(function(){
 				this.value = this.checked
@@ -1110,18 +1083,23 @@ function table_init(opts) {
 		})
 	}
 
+	t.bind_header_filter_selector = function() {
+		t.e_header.children("th[col]").each(function(){
+			$(this).on("contextmenu", function(event) {
+				var cell = $(event.target)
+				var col = cell.attr('col')
+				t.add_column_filter_sidepanel(col)
+			})
+		})
+	}
+
 	t.bind_filter_selector = function() {
-		$("#table_"+t.id).find("[col]").each(function(){
+		t.e_body.children("tr").children("td[col]").each(function(){
 			$(this).on("mouseup", function(event) {
 				t.div.find("tr.extraline").remove()
 			})
 			$(this).on("contextmenu", function(event) {
 				var cell = $(event.target)
-				if (cell.is("th")) {
-					var col = cell.attr('col')
-					t.add_column_filter_sidepanel(col)
-					return
-				}
 				if (typeof cell.attr("cell") === 'undefined') {
 					cell = cell.parents("[cell=1]").first()
 				}
@@ -1905,44 +1883,13 @@ function table_init(opts) {
 			var val = t.colprops[c].current_filter
 			if (val != "" && (typeof val !== "undefined")) {
 				// filter value to save
-				var d = {
-					'bookmark': 'current',
-					'col_tableid': t.id,
-					'col_name': c,
-					'col_filter': val
-				}
-				data.push(d)
-			} else {
-				// filter value to delete
-				var d = {
-					'bookmark': 'current',
-					'col_tableid': t.id,
-					'col_name': c
-				}
-				del_data.push(d)
+				osvc.user_prefs.data.tables[t.id].filters[c] = val
+			} else if (c in osvc.user_prefs.data.tables[t.id].filters) {
+				// filter to delete
+				delete osvc.user_prefs.data.tables[t.id].filters[c]
 			}
 		}
-
-		if (data.length > 0) {
-			services_osvcpostrest("R_USERS_SELF_TABLE_FILTERS", "", "", data, function(jd) {
-				if (jd.error && (jd.error.length > 0)) {
-					osvc.flash.error(services_error_fmt(jd))
-				}
-			},
-			function(xhr, stat, error) {
-				osvc.flash.error(services_ajax_error_fmt(xhr, stat, error))
-			})
-		}
-		if (del_data.length > 0) {
-			services_osvcdeleterest("R_USERS_SELF_TABLE_FILTERS", "", "", del_data, function(jd) {
-				if (jd.error && (jd.error.length > 0)) {
-					osvc.flash.error(services_error_fmt(jd))
-				}
-			},
-			function(xhr, stat, error) {
-				osvc.flash.error(services_ajax_error_fmt(xhr, stat, error))
-			})
-		}
+		osvc.user_prefs.save()
 	}
 
 	t.unset_refresh_spin = function() {
@@ -2314,22 +2261,13 @@ function table_init(opts) {
 				current_state = 1
 			}
 
-			// anticipate table_settings refresh through websocket
-			osvc.table_settings.data[t.id].wsenabled = current_state
+			osvc.user_prefs.data.tables[t.id].wsenabled = current_state
+			osvc.user_prefs.save()
 
-			var data = {
-				"upc_table": t.id,
-				"upc_field": "wsenabled",
-				"upc_visible": current_state,
+			if (t.need_refresh && current_state == 1) {
+				// honor past change events
+				t.refresh()
 			}
-			services_osvcpostrest("R_USERS_SELF_TABLE_SETTINGS", "", "", data, function(jd) {
-				if (t.need_refresh) {
-					t.refresh()
-				}
-			},
-			function(xhr, stat, error) {
-				osvc.flash.error(services_ajax_error_fmt(xhr, stat, error))
-			})
 
 			// refresh perpage table tool
 			var selector = t.add_perpage_selector()
@@ -2341,7 +2279,7 @@ function table_init(opts) {
 	}
 
 	t.live_enabled = function() {
-		if (!(t.id in osvc.table_settings.data) || !("wsenabled" in osvc.table_settings.data[t.id]) || osvc.table_settings.data[t.id].wsenabled) {
+		if (!("wsenabled" in osvc.user_prefs.data.tables[t.id]) || osvc.user_prefs.data.tables[t.id].wsenabled) {
 			return true
 		}
 		return false
@@ -2787,21 +2725,25 @@ function table_init(opts) {
 
 			// click event
 			_e.on("click", function(event) {
-				event.stopImmediatePropagation()
+				if ($(event.target).is("label")) {
+					return
+				}
 				var input = $(this).children("input")
 				var colname = input.attr("colname")
 				var current_state
-				if (input.is(":checked")) {
-					input.prop("checked", false)
-					current_state = 0
+				if ($(event.target).is("input")) {
+					if (input.is(":checked")) {
+						current_state = true
+					} else {
+						current_state = false
+					}
 				} else {
-					input.prop("checked", true)
-					current_state = 1
-				}
-				var data = {
-					"upc_table": t.id,
-					"upc_field": colname,
-					"upc_visible": current_state,
+					if (input.is(":checked")) {
+						current_state = false
+					} else {
+						current_state = true
+					}
+					input.prop("checked", current_state)
 				}
 				if (!current_state) {
 					if (t.options.force_cols.indexOf(colname) >=0 ) {
@@ -2814,12 +2756,7 @@ function table_init(opts) {
 					// as unchanged data
 					t.md5sum = null
 				}
-				services_osvcpostrest("R_USERS_SELF_TABLE_SETTINGS", "", "", data, function(jd) {
-					t.check_toggle_vis(current_state, colname)
-				},
-				function(xhr, stat, error) {
-					osvc.flash.error(services_ajax_error_fmt(xhr, stat, error))
-				})
+				t.check_toggle_vis(current_state, colname)
 			})
 		}
 
@@ -2870,15 +2807,10 @@ function table_init(opts) {
 		t.e_tool_bookmarks_listarea = listarea
 
 		var bookmarks = []
-		if (t.id in osvc.table_filters.data) {
-			for (var b in osvc.table_filters.data[t.id]) {
-				if (b == "current") {
-					continue
-				}
-				bookmarks.push(b)
-			}
-			bookmarks.sort()
+		for (var b in osvc.user_prefs.data.tables[t.id]["bookmarks"]) {
+			bookmarks.push(b)
 		}
+		bookmarks.sort()
 
 		if (!bookmarks.length) {
 			var e = $("<div class='pl-3'></div>")
@@ -2909,22 +2841,11 @@ function table_init(opts) {
 				return
 			}
 			var name = $(this).val()
-			var data = {
-				"col_tableid": t.id,
-				"bookmark": name,
-			}
-			services_osvcpostrest("R_USERS_SELF_TABLE_FILTERS_SAVE_BOOKMARK", "", "", data, function(jd) {
-				if (jd.error) {
-					osvc.flash.error(services_error_fmt(jd))
-					return
-				}
-				t.insert_bookmark(name)
-				t.e_tool_bookmarks_save_name.hide()
-				t.e_tool_bookmarks_save.show()
-			},
-			function(xhr, stat, error) {
-				osvc.flash.error(services_ajax_error_fmt(xhr, stat, error))
-			})
+			osvc.user_prefs.data.tables[t.id].bookmarks[name] = osvc.user_prefs.data.tables[t.id].filters
+			osvc.user_prefs.save()
+			t.insert_bookmark(name)
+			t.e_tool_bookmarks_save_name.hide()
+			t.e_tool_bookmarks_save.show()
 		})
 	}
 
@@ -2984,56 +2905,38 @@ function table_init(opts) {
 		bookmark.find(".del16").on("click", function() {
 			var name = $(this).prev().text()
 			var line = $(this).parents("p").first()
-			var data = {
-				"col_tableid": t.id,
-				"bookmark": name,
-			}
-			services_osvcdeleterest("R_USERS_SELF_TABLE_FILTERS", "", "", data, function(jd) {
-				if (jd.error) {
-					osvc.flash.error(services_error_fmt(jd))
-					return
-				}
-				line.hide("blind", function(){line.remove()})
-			},
-			function(xhr, stat, error) {
-				osvc.flash.error(services_ajax_error_fmt(xhr, stat, error))
-			})
+			delete osvc.user_prefs.data.tables[t.id].bookmarks[name]
+			osvc.user_prefs.save()
+			line.hide("blind", function(){line.remove()})
 		})
 
 		// "load" binding
 		bookmark.find(".bookmark16").on("click", function() {
 			var name = $(this).text()
-			var data = {
-				"col_tableid": t.id,
-				"bookmark": name,
-			}
-			services_osvcpostrest("R_USERS_SELF_TABLE_FILTERS_LOAD_BOOKMARK", "", "", data, function(jd) {
-				if (jd.error) {
-					osvc.flash.error(services_error_fmt(jd))
-					return
-				}
-
-				// update the column filters
-				t.reset_column_filters()
-				for (var i=0; i<jd.data.length; i++) {
-					var data = jd.data[i]
-					if (data.col_name.indexOf(".") >= 0) {
-						var k = data.col_name.split('.')[1]
-					} else {
-						var k = data.col_name
-					}
-					var v = data.col_filter
-					t.refresh_column_filter(k, v)
-				}
-
-				t.refresh()
-			},
-			function(xhr, stat, error) {
-				osvc.flash.error(services_ajax_error_fmt(xhr, stat, error))
-			})
+			osvc.user_prefs.data.tables[t.id].filters = osvc.user_prefs.data.tables[t.id].bookmarks[name]
+			osvc.user_prefs.save()
+			t.set_column_filters()
+			t.refresh()
 		})
 	}
 
+	t.init_prefs = function() {
+		if (!("tables" in osvc.user_prefs.data)) {
+			osvc.user_prefs.data.tables = {}
+		}
+		if (!(t.id in osvc.user_prefs.data.tables)) {
+			osvc.user_prefs.data.tables[t.id] = {}
+		}
+		if (!("filters" in osvc.user_prefs.data.tables[t.id])) {
+			osvc.user_prefs.data.tables[t.id]["filters"] = {}
+		}
+		if (!("visible_columns" in osvc.user_prefs.data.tables[t.id])) {
+			osvc.user_prefs.data.tables[t.id]["visible_columns"] = t.options.default_columns
+		}
+		if (!("bookmarks" in osvc.user_prefs.data.tables[t.id])) {
+			osvc.user_prefs.data.tables[t.id]["bookmarks"] = {}
+		}
+	}
 
 	t.refresh_timer = null
 	t.init_colprops()
@@ -3044,6 +2947,7 @@ function table_init(opts) {
 	$.when(
 		osvc.user_loaded
 	).then(function(){
+		t.init_prefs()
 		t.get_visible_columns()
 		t.init_current_filters()
 		t.add_filtered_to_visible_columns()
@@ -3143,7 +3047,7 @@ function datetime_age(s) {
 	if (!s || (s == 'empty')) {
 		return
 	}
-	var d = moment.tz(s, osvc.server_timezone)
+	var d = moment.tz(s, "YYYY-MM-DD HH:mm:ss", osvc.server_timezone)
 	var now = moment()
 	var delta = (now -d)/60000
 	return delta

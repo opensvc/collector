@@ -6339,3 +6339,16 @@ alter table resmon modify rid varchar(32);
 # install plugin tokudb_fractal_tree_info soname 'ha_tokudb.so';
 # install plugin tokudb_fractal_tree_block_map soname 'ha_tokudb.so';
 
+CREATE TABLE  `opensvc`.`user_prefs` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) NOT NULL,
+  `prefs` longtext NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_user_id` (`user_id`)
+) ENGINE=InnoDB;
+
+drop table upc_dashboard;
+drop table column_filters;
+drop table user_prefs_columns;
+drop table sym_upload;
+

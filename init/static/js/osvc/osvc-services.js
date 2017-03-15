@@ -111,10 +111,6 @@ var services_access_uri = {
 	"R_USERS_SELF" : "/users/self",
 	"R_USERS_SELF_FILTERSET" : "/users/self/filterset",
 	"R_USERS_SELF_FILTERSET_ONE" : "/users/self/filterset/%1",
-	"R_USERS_SELF_TABLE_SETTINGS" : "/users/self/table_settings",
-	"R_USERS_SELF_TABLE_FILTERS" : "/users/self/table_filters",
-	"R_USERS_SELF_TABLE_FILTERS_LOAD_BOOKMARK" : "/users/self/table_filters/load_bookmark",
-	"R_USERS_SELF_TABLE_FILTERS_SAVE_BOOKMARK" : "/users/self/table_filters/save_bookmark",
 	"R_USER_PRIMARY_GROUP" : "/users/%1/primary_group",
 	"R_USER_PRIMARY_GROUP_SET" : "/users/%1/primary_group/%2",
 	"R_USER" : "/users/%1",
@@ -376,10 +372,7 @@ function load_user() {
 		osvc.code_rev = jd.code_rev
 		osvc.server_timezone = jd.server_timezone
 		osvc.client_timezone = moment.tz.guess()
-		osvc.table_settings = table_settings()
-		osvc.table_settings.store_data(jd.table_settings)
-		osvc.table_filters = table_column_filters()
-		osvc.table_filters.store_data(jd.table_filters)
+		osvc.user_prefs = user_prefs(jd.prefs)
 		osvc.hidden_menu_entries_stats = jd.hidden_menu_entries_stats
 		osvc.filterset = jd.filterset
 		osvc.user_loaded.resolve(true)
