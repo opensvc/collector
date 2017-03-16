@@ -1203,28 +1203,28 @@ function table_action_menu_init_data(t) {
 							"title": "action_menu.modset_attach",
 							"class": "modset16",
 							"fn": "data_action_nodes_modsets_attach",
-							"privileges": ["Manager", "NodeManager"],
+							"privileges": ["Manager", "CompExec"],
 							"min": 1
 						},
 						{
 							"title": "action_menu.modset_detach",
 							"class": "modset16",
 							"fn": "data_action_nodes_modsets_detach",
-							"privileges": ["Manager", "NodeManager"],
+							"privileges": ["Manager", "CompExec"],
 							"min": 1
 						},
 						{
 							"title": "action_menu.ruleset_attach",
 							"class": "comp16",
 							"fn": "data_action_nodes_rulesets_attach",
-							"privileges": ["Manager", "NodeManager"],
+							"privileges": ["Manager", "CompExec"],
 							"min": 1
 						},
 						{
 							"title": "action_menu.ruleset_detach",
 							"class": "comp16",
 							"fn": "data_action_nodes_rulesets_detach",
-							"privileges": ["Manager", "NodeManager"],
+							"privileges": ["Manager", "CompExec"],
 							"min": 1
 						}
 					]
@@ -1279,7 +1279,7 @@ function table_action_menu_init_data(t) {
 							"title": "action_menu.modset_detach",
 							"class": "del16",
 							"fn": "data_action_nodes_modsets_detach_no_selector",
-							"privileges": ["Manager", "NodeManager"],
+							"privileges": ["Manager", "CompExec"],
 							"min": 1
 						}
 					]
@@ -1369,24 +1369,28 @@ function table_action_menu_init_data(t) {
 							"title": "action_menu.modset_attach",
 							"class": "modset16",
 							"fn": "data_action_services_modsets_attach",
+							"privileges": ["Manager", "CompExec"],
 							"min": 1
 						},
 						{
 							"title": "action_menu.modset_detach",
 							"class": "modset16",
 							"fn": "data_action_services_modsets_detach",
+							"privileges": ["Manager", "CompExec"],
 							"min": 1
 						},
 						{
 							"title": "action_menu.ruleset_attach",
 							"class": "comp16",
 							"fn": "data_action_services_rulesets_attach",
+							"privileges": ["Manager", "CompExec"],
 							"min": 1
 						},
 						{
 							"title": "action_menu.ruleset_detach",
 							"class": "comp16",
 							"fn": "data_action_services_rulesets_detach",
+							"privileges": ["Manager", "CompExec"],
 							"min": 1
 						}
 					]
@@ -1489,6 +1493,7 @@ function table_action_menu_init_data(t) {
 							"title": "action_menu.ruleset_detach",
 							"class": "del16",
 							"fn": "data_action_services_rulesets_detach_no_selector",
+							"privileges": ["Manager", "CompExec"],
 							"min": 1
 						}
 					]
