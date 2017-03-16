@@ -1037,7 +1037,7 @@ function table_disks(divid, options) {
 		'name': "disks",
 		'icon': "hd16",
 		'ajax_url': '/init/disks/ajax_disks',
-		'span': ['disk_id', 'svcname', 'nodename'],
+		'span': ['disk_id'],
 		'orderby': ['disk_id', 'node_id', 'svc_id', 'os_name'],
 		'force_cols': ['id', 'disk_id', 'node_id', 'svc_id', 'os_name'],
 		'colprops': {
