@@ -568,12 +568,11 @@ function table_init(opts) {
 	}
 
 	t.add_table = function() {
-		if (typeof(t.options.divid) === "undefined") {
-			// web2py provided table structure
-			t.div = $("#"+t.id+" .tableo")
-			return
-		}
 		var container = $("#"+t.options.divid)
+
+		// remove the hosting element id for the js links to not encode it
+		delete t.options.divid
+
 		var d = $("<div class='tableo'></div>")
 		var toolbar = $("<div class='toolbar clickable' name='toolbar'></div>")
 		var table_scroll_zone = $("<div class='table_scroll_zone'></div>")
