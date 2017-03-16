@@ -602,10 +602,10 @@ img {
 	background: #fafaf4;
 }
 .cell2 {
-	background-color: initial;
+	background-color: white;
 }
 .cell3 {
-	background: white;
+	background-color: white;
 }
 
 .tl_checked.cell1 {
