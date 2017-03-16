@@ -740,6 +740,7 @@ function table_init(opts) {
 			}
 		}
 		t.refresh_column_headers()
+		t.refresh_column_filters()
 		t.refresh()
 	}
 
