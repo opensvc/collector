@@ -1324,6 +1324,7 @@
 'None': 'Aucun',
 'None of your workflow are pending tiers action': "Aucun de vos workflows n'est en attente d'action de tiers",
 'not acknowledged': 'non acquitté',
+'Not found': 'Not found',
 'Not Ok': 'Non Ok',
 'not ok': 'non ok',
 'not registered': 'non enregistré',

@@ -396,13 +396,13 @@ def ajax_node_stor():
       ),
       BR(),
       H3(T("Host Bus Adapters")),
-      TABLE(_hbas),
+      TABLE(_hbas, _class="table"),
       BR(),
       H3(T("Targets")),
-      TABLE(_tgts),
+      TABLE(_tgts, _class="table"),
       BR(),
       H3(T("Disks")),
-      TABLE(_disks),
+      TABLE(_disks, _class="table"),
       _style="padding:1em",
     )
     return stor
@@ -690,13 +690,13 @@ def ajax_svc_stor():
       ),
       BR(),
       H3(T("Host Bus Adapters")),
-      TABLE(_hbas),
+      TABLE(_hbas, _class="table"),
       BR(),
       H3(T("Targets")),
-      TABLE(_tgts),
+      TABLE(_tgts, _class="table"),
       BR(),
       H3(T("Disks")),
-      TABLE(_disks),
+      TABLE(_disks, _class="table"),
       _style="padding:1em",
     )
     return stor
