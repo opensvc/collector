@@ -16,7 +16,7 @@ def user_name(email=False):
     last_name = _auth.user.last_name if _auth.user.last_name else ""
     user = ' '.join([first_name, last_name])
     if email:
-        user += "<%s>" % _auth.user.email
+        user += " <%s>" % _auth.user.email
     try:
         user = user.decode("utf8")
     except:

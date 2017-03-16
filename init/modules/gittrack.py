@@ -255,7 +255,7 @@ class gittrack(object):
         out, err = p.communicate()
         return {'fpath': validated_fpath, 'content': out}
 
-    def init_repo(self, data_id):
+    def init_repo(self, data_id, author=None):
         import config
         git_d = os.path.join(self.collect_d, data_id)
         os.system("mkdir -p " + git_d)
@@ -264,21 +264,30 @@ class gittrack(object):
             email = config.email_from
         else:
             email = "nobody@localhost.localdomain"
+        if author:
+            author = "--author='%s'" % author.encode("utf-8")
+        else:
+            author = ""
         cmd = ["git", "--git-dir="+git_d, "init"]
         p = Popen(cmd, stdout=PIPE, stderr=PIPE)
         out, err = p.communicate()
         os.system("git --git-dir=%s config user.email %s" % (git_d, email))
         os.system("git --git-dir=%s config user.name collector" % git_d)
-        os.system('cd %s/.. && (rm -f .git/index.lock && git add . ; git commit -m"" -a)' % git_d)
+        os.system("cd %(git_d)s/.. && (rm -f .git/index.lock ; git add . ; git commit -m'initial commit' %(author)s -a)" % dict(
+            git_d=git_d,
+            author=author,
+        ))
 
     def commit(self, data_id, content, author=None):
         git_d = os.path.join(self.collect_d, data_id)
         if not os.path.exists(git_d):
-            self.init_repo(data_id)
+            self.init_repo(data_id, author=author)
         with open(git_d+"/"+self.otype, "w") as text_file:
             text_file.write(content)
         if author:
             author = "--author='%s'" % author.encode("utf-8")
+        else:
+            author = ""
         cf = "cd %(git_d)s && (git add %(otype)s; git commit -m'change' %(author)s -a)" % dict(
             git_d=git_d,
             otype=self.otype,
