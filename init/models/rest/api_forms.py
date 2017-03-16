@@ -79,7 +79,10 @@ class rest_post_form(rest_post_handler):
         ws_send('forms_change', {'id': form.id})
 
         ret = rest_get_form().handler(form.id)
-        content = yaml.dump(ret["data"][0]["form_definition"], default_flow_style=False)
+        if "form_definition" in ret["data"][0]:
+            content = yaml.dump(ret["data"][0]["form_definition"], default_flow_style=False)
+        else:
+            content = ""
         lib_form_add_to_git(id, content)
         ret["info"] = fmt % d
         self.cache_clear(["rest_get_forms"])
