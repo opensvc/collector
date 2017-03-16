@@ -562,7 +562,6 @@ def get_delete_handlers(prefix=None):
              "rest_delete_user_group",
              "rest_delete_user_primary_group",
              "rest_delete_user_filterset",
-             "rest_delete_user_table_filters",
         ]
     }
     if prefix:
