@@ -806,7 +806,9 @@ function table_init(opts) {
 		if (t.options.checkboxes) {
 			var th = $("<th class='text-center'><div class='fa fa-bars clickable mb-1 d-block'></div></th>")
 			th.click(function(e){
-				table_action_menu(t, e)
+				t.action_menu = table_action_menu(t, e)
+				t.action_menu.menu.find("input").first().focus()
+				t.scroll_to_sidepanel()
 			})
 
 			var mcb_id = t.id+"_mcb"
@@ -2426,6 +2428,11 @@ function table_init(opts) {
 		sidepanel.append(t.add_volatile())
 		sidepanel.append(t.add_perpage_selector())
 		sidepanel.append(t.add_filters_summary())
+		t.scroll_to_sidepanel()
+	}
+
+	t.scroll_to_sidepanel = function() {
+		t.e_sidepanel.parents("body,.menu").first().scrollTop(0)
 	}
 
 	//
@@ -3277,7 +3284,9 @@ function table_bind_action_menu(t) {
 		$(this).on("mouseup", function(event) {
 			if (event.button == 2) {
 				// right-click => open the action menu
-				table_action_menu(t, event)
+				t.action_menu = table_action_menu(t, event)
+				t.action_menu.menu.find("input").first().focus()
+				t.scroll_to_sidepanel()
 			} else {
 				// left-click => close the action menu, the menu and the filter box
 				var shiftClick = jQuery.Event("click")
