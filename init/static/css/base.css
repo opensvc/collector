@@ -782,12 +782,6 @@ div.error {
 	clear: both;
 	border-top:1px solid #2f2f2f;
 }
-table.tabs {
-	table-layout: fixed;
-}
-.searchtab > table.tabs > tbody > tr:first-child {
-	background-color: #2d2d2d;
-}
 .menu_entry {
 	padding: 1em;
 	min-height: 60px;
@@ -3030,7 +3024,6 @@ pre.api_doc {
 .tabs th {
 	text-transform: capitalize;
 }
-
 .tabs > .otools {
 	color: whitesmoke;
 }
