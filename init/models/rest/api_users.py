@@ -1059,6 +1059,9 @@ class rest_get_user_hidden_menu_entries(rest_get_table_handler):
         q = user_id_q(user_id)
         q &= db.auth_membership.user_id == db.auth_user.id
         q &= db.group_hidden_menu_entries.group_id == db.auth_membership.group_id
+        q &= db.auth_membership.group_id == db.auth_group.id
+        q &= db.auth_group.role != "Everybody"
+        q &= db.auth_group.privilege == False
         try:
             check_privilege("UserManager")
         except:

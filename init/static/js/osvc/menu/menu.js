@@ -469,9 +469,15 @@ function menu(divid) {
 		}
 		*/
 		osvc.hidden_menu_entries = []
+
+		// compute the number of org groups the user is member of.
+		// exclude Everybody.
 		var ref_count = 0
 		for (var i=0; i<_groups.length; i++) {
 			var g = _groups[i]
+			if (g.role == "Everybody") {
+				continue
+			}
 			if (g.privilege == true) {
 				continue
 			}
