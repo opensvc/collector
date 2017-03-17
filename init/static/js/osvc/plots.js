@@ -2206,6 +2206,12 @@ function fancy_size_b(size) {
     return _size + ' ' + unit
 }
 function fancy_size_mb(size) {
+	if (size < 0) {
+		var sign = "- "
+		size = - size
+	} else {
+		var sign = ""
+	}
     if (size<1024) {
         unit = 'MB'
         _size = size
@@ -2223,7 +2229,7 @@ function fancy_size_mb(size) {
     } else {
         _size = Math.round(_size*100)/100
     }
-    return _size + ' ' + unit
+    return sign + _size + ' ' + unit
 }
 function best_unit_mb(max, iunit) {
     if (typeof(iunit)==='undefined') {
