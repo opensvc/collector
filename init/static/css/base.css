@@ -2899,16 +2899,14 @@ pre.api_doc {
 
 .group_hidden_menu {
 	padding: 1em;
-	width: 100%;
-	text-align: left;
-	display: inline-block;
+	display: flex;
+	flex-wrap: wrap;
 }
 .group_hidden_menu > h2 {
-	display: block;
-	clear: both;
+	flex: 0 0 100%;
 }
 .group_hidden_menu > div {
-	float: left;
+	flex: 0 0 28rem;
 }
 .group_hidden_menu label {
 	align-self: center;
