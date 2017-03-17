@@ -178,7 +178,10 @@ def ajax_dashboard_col_values():
     if col is None or t.colprops[col].table is None:
         return
     if t.colprops[col].filter_redirect is None:
-        o = db[t.colprops[col].table][t.colprops[col].field]
+        dbt = db[t.colprops[col].table]
+        if t.colprops[col].field not in dbt:
+            return "{}"
+        o = db[dbt][t.colprops[col].field]
         s = [o]
     else:
         o = db.dashboard[t.colprops[col].filter_redirect]
