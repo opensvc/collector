@@ -1165,8 +1165,8 @@ def insert_xtremio(name=None, node_id=None):
 
         name = s.clusters[0]["name"]
         version = s.clusters[0]["sys-sw-version"]
-        total = int(s.clusters[0]["ud-ssd-space"])
-        used = int(s.clusters[0]["ud-ssd-space-in-use"])
+        total = int(s.clusters[0]["ud-ssd-space"])/1024
+        used = int(s.clusters[0]["ud-ssd-space-in-use"])/1024
 
         # stor_array_proxy
         insert_array_proxy(node_id, name)
