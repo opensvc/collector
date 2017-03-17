@@ -1240,7 +1240,7 @@ function table_init(opts) {
 			}
 		}
 		t.last_checkbox_clicked = ref_id
-		t.highlighed_checked_lines()
+		t.highlighed_checked_lines(e)
 	}
 	t.highlighed_checked_lines = function(event) {
 		if ($("#am_"+t.id).length > 0) {
