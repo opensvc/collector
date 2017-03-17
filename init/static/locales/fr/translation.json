@@ -1919,6 +1919,8 @@
 		}
 	},
 	"forms": {
+		"no_definition": "Ce formulaire n'a pas de définition",
+		"no_output": "Ce formulaire n'a pas de section ouput définie",
 		"QUEUED": "Tâche de fond en attente de prise en charge.",
 		"RUNNING": "En cours d'exécution.",
 		"COMPLETED": "Terminé.",

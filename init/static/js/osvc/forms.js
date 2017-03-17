@@ -154,6 +154,9 @@ function form(divid, options) {
 	}
 
 	o.mangle_form_data = function() {
+		if (!o.form_data.form_definition || !o.form_data.form_definition.Inputs) {
+			return
+		}
 		for (var i=0; i<o.form_data.form_definition.Inputs.length; i++) {
 			var d = o.form_data.form_definition.Inputs[i]
 			if (d.Candidates == "__node_selector__") {
@@ -681,6 +684,14 @@ function form(divid, options) {
 
 	o.render_form = function() {
 		o.area.removeClass("pre")
+		if (!o.form_data.form_definition) {
+			o.area.html("<div data-i18n='forms.no_definition' class='icon fa-exclamation-triangle grayed'></div>").i18n()
+			return
+		}
+		if (!o.form_data.form_definition.Outputs) {
+			o.area.html("<div data-i18n='forms.no_output' class='icon fa-exclamation-triangle grayed'></div>").i18n()
+			return
+		}
 		var f = o.form_data.form_definition.Outputs[0].Format
 		if (!f || (f == "dict")) {
 			o.render_form_dict()
