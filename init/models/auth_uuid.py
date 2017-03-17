@@ -117,7 +117,8 @@ def common_responsible(node_id=None, svc_id=None, app=None, user_id=None):
 def check_auth(node, uuid):
     q = db.auth_node.nodename == node
     q &= db.auth_node.uuid == uuid
-    n = db(q).count()
+    rows = db(q).select(db.auth_node.node_id)
+    n = len(rows)
     if n != 1:
         q = db.auth_node.nodename == node
         n = db(q).count()
@@ -125,6 +126,7 @@ def check_auth(node, uuid):
             raise Exception("agent %s not registered"%node)
         else:
             raise Exception("agent authentication error")
+    db(db.nodes.node_id==rows.first().node_id).update(last_comm=request.now)
 
 def auth_uuid(fn):
     def new(*args, **kwargs):

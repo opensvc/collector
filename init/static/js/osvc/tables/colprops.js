@@ -52,6 +52,7 @@ objcols = {
 		'team_support',
 		'app',
 		'app_domain',
+		'last_comm',
 		'last_boot',
 		'power_supply_nb',
 		'power_cabinet1',
@@ -981,6 +982,10 @@ colprops = {
 	"last_assignee": {
 		"img": "guy16",
 		"title": "Last assignee"
+	},
+	"last_comm": {
+		"img": "time16",
+		"title": "Last comm"
 	},
 	"last_boot": {
 		"img": "time16",

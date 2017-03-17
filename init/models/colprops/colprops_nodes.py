@@ -56,6 +56,7 @@ nodes_cols = [
     'power_breaker1',
     'power_breaker2',
     'last_boot',
+    'last_comm',
     'warranty_end',
     'maintenance_end',
     'os_obs_warn_date',
@@ -148,6 +149,10 @@ nodes_colprops = {
             ),
     'last_boot': HtmlTableColumn(
              field='last_boot',
+             table = 'nodes',
+            ),
+    'last_comm': HtmlTableColumn(
+             field='last_comm',
              table = 'nodes',
             ),
     'sec_zone': HtmlTableColumn(
