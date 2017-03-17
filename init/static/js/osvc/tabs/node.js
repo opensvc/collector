@@ -467,7 +467,7 @@ function node_stats(divid, options) {
 		})
 
 		// init containers
-		o.div.find(".container").each(function() {
+		o.div.find("[name=container]").each(function() {
 			o.init_container($(this))
 		})
 	}
@@ -590,7 +590,7 @@ function node_stats(divid, options) {
 	}
 
 	o.refresh_container_groups = function() {
-		o.div.find(".container").each(function() {
+		o.div.find("[name=container]").each(function() {
 			if (!$(this).is(":visible")) {
 				return
 			}
