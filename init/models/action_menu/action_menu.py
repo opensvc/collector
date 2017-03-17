@@ -391,11 +391,9 @@ def wol_candidates(node_id):
        n1.net_broadcast=n2.net_broadcast and
        n2.intf not like "%%:%%" and
        n2.version is not null and
+       n2.last_comm > date_sub(now(), interval 15 minute) and
+       n2.last_comm is not NULL and
        %(proxy_filter)s
-       substring_index(n2.version,".",1) >= %(v1)d and
-       substring_index(substring_index(n2.version,".",-1), "-", 1) >= %(v2)d and
-       substring_index(n2.version,"-",-1) >= %(v3)d and
-       substring_index(n2.version,"-",-1) < 10000 and
        n2.node_id!="%(node_id)s"
      group by
        n1.net_broadcast
