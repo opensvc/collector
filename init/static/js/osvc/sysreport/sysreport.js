@@ -236,7 +236,7 @@ function sysrep(divid, options) {
 			e.text(d)
 
 			// item folded content
-			var p = $("<pre></pre>")
+			var p = $("<pre class='pb-1'></pre>")
 			p.addClass("diff hljs")
 			p.css({"display": "none"})
 			p.text(result.blocks[d].diff)
@@ -351,7 +351,7 @@ function sysrep(divid, options) {
 						hljs.highlightBlock(je[0])
 					})
 				})
-				e.html(d+"<pre>"+stat+"</pre>")
+				e.html(d+"<pre class='pb-1'>"+stat+"</pre>")
 
 				// diff text
 				var p = $("<pre></pre>")

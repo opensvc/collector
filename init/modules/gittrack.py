@@ -140,7 +140,7 @@ class gittrack(object):
         return out
 
     def show_stat(self, cid, data_id, path=None):
-        self.show(cid, data_id, path=path, patch=False, numstat=True)
+        return self.show(cid, data_id, path=path, patch=False, numstat=True)
 
     def parse_show_stat(self, s):
         data = {}
