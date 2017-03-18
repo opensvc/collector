@@ -132,10 +132,17 @@ function sysrep(divid, options) {
 			template: function (item) {
 				return '<div class="pre" style="text-align:left">' + item.stat + '</div>'
 			},
-			//zoomKey: "metaKey",
-			zoomable: false,
+			zoomKey: "altKey",
+			zoomable: true,
 			clickToUse: false
 		}
+
+		// Determine the start date
+		if (data.length > 8) {
+			options.start = data[8].start
+			options.end = data[0].start
+		}
+
 
 		// Create a Timeline
 		var groups = []
@@ -168,7 +175,7 @@ function sysrep(divid, options) {
 				})
 			})
 
-			o.timeline.on('select', function (properties) {
+			o.timeline.on('select', function(properties) {
 				var item_id = properties.items[0]
 				var item = null
 				for (i=0; i<data.length; i++) {
@@ -204,6 +211,7 @@ function sysrep(divid, options) {
 					}
 				}
 			}
+
 		})
 		o.sysrep_timediff()
 	}
@@ -437,6 +445,7 @@ function sysrep_init(o)
 	o.allow_groups = o.administration.find('#sysreport_allow_groups')
 	o.allow_pattern = o.administration.find("#sysreport_allow_pattern")
 
+	o.timeline_div = o.div.find("#sysrep_timeline")
 	o.timeline_title = o.div.find("#sysrep_timeline_title")
 	o.timeline_graph = o.div.find("#sysrep_timeline_graph")
 	o.tree_diff_detail = o.div.find("#sysrep_tree_diff_detail")

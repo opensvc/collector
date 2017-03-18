@@ -381,6 +381,8 @@
 		"name": "collector"
 	},
 	"sysrep": {
+		"tip1": "Alt-Scroll to zoom",
+		"tip2": "Click on a change to display details",
 		"now": "now",
 		"begining": "begining",
 		"admin_title": "Sysreports administration",

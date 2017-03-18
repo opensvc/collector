@@ -788,8 +788,20 @@ function generic_revisions(divid, options) {
 					jd.data[i]["style"] = "background-color:#d9534f !important;color:white"
 				}
 			}
+
+			var options = {
+				zoomKey: "altKey",
+				zoomable: true,
+				clickToUse: false
+			}
+			// Determine the start date
+			if (jd.data.length > 8) {
+				options.start = jd.data[8].start
+				options.start = jd.data[0].start
+			}
+
 			require(["vis"], function(vis) {
-				var timeline = new vis.Timeline(o.revisions[0], jd.data, {});
+				var timeline = new vis.Timeline(o.revisions[0], jd.data, options)
 				o.revisions.on('click', function(e) {
 					var props = timeline.getEventProperties(e)
 					o.bt.show()
