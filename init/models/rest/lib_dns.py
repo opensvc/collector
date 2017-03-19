@@ -22,6 +22,7 @@ def create_zone(zone):
         "change_date": int((datetime.datetime.now()-datetime.datetime(1970, 1, 1)).total_seconds())
     }
     dbdns.records.insert(**data)
+    dbdns.commit()
 
     fmt = 'record %(name)s %(type)s %(content)s created in domain %(domain)s'
     d = dict(name=data["name"], type=data["type"], content=data["content"], domain=zone)
@@ -219,6 +220,7 @@ def delete_service_dns_record(instance_name=None, content=None):
         return {"info": "dns record does not exist"}
 
     dbdns(q).delete()
+    dbdns.commit()
 
     fmt = 'record %(name)s %(type)s %(content)s deleted in domain %(domain)s'
     d = dict(name=row.name, type=row.type, content=row.content, domain=str(row.domain_id))
@@ -245,6 +247,7 @@ def _create_dns_record(data):
     else:
         response = dbdns.records.validate_and_insert(**data)
         op = "create"
+    dbdns.commit()
     raise_on_error(response)
     row = dbdns(q).select().first()
 
