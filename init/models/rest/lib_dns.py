@@ -74,7 +74,7 @@ def dns_record_responsible(row, current={}):
         raise Exception("Manager privilege required to handle the %s record type"%t)
     sql = """
       select networks.id from
-      networks, auth_group, auth_membership, auth_user where
+      networks, auth_group where
         auth_group.id in (%(group_ids)s) and
         auth_group.role=networks.team_responsible and
         inet_aton("%(addr)s") >= inet_aton(networks.begin) and
@@ -87,7 +87,7 @@ def dns_record_responsible(row, current={}):
 
     sql = """
       select network_segments.id from
-      network_segments, networks, network_segment_responsibles, auth_group, auth_membership, auth_user where
+      network_segments, networks, network_segment_responsibles where
         network_segment_responsibles.group_id in (%(group_ids)s) and
         network_segments.id=network_segment_responsibles.seg_id and
         inet_aton("%(addr)s") >= inet_aton(network_segments.seg_begin) and
@@ -267,23 +267,24 @@ def create_service_dns_record(instance_name=None, content=None, ttl=None, svc=No
     _create_dns_record(data)
 
 def create_node_dns_records(node, vars, vals):
+    log = logging.getLogger("web2py.app.init.create_node_dns_records")
     try:
         auth
     except NameError:
         from gluon.storage import Storage
-        global auth
         auth = Storage()
         auth.user = Storage(
             nodename=node.nodename,
             node_id=node.node_id,
             node_app=node.app,
         )
+        globals()["auth"] = auth
     for val in vals:
         data = {}
         for k, v in zip(vars, val):
             data[k] = v
         try:
             create_node_dns_record(instance_name=data["intf"], content=data["addr"], node=node)
-        except:
-            pass
+        except Exception as exc:
+            log.warning(str(exc))
 
