@@ -527,6 +527,9 @@ img {
 .tag:hover {
 	cursor: move;
 }
+.flash > .tag_container > .tag:hover {
+	cursor: pointer;
+}
 .tag_attached {
 	background-color:#008099;
 }
