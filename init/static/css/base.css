@@ -2844,6 +2844,7 @@ div.reports_folder {
 }
 
 pre.api_doc {
+	white-space: pre-wrap;
 	background: #333;
 	color: lightgrey;
 	box-shadow: #333 1px 1px 20px 0;
