@@ -539,20 +539,31 @@ function menu(divid) {
 
 	o.clicked = function() {
 		if (!o.menu_div.is(":visible")) {
-			$(".header").find(".menu").slideUp()
-			o.menu_div.stop().slideDown(function(){
-				osvc.search.filter_menu()
-			})
-			osvc.search.e_search_input.val("").focus()
+			o.open()
 		} else {
 			o.close()
 		}
 	}
 
-	o.close = function() {
+	o.open = function() {
 		if (o.menu_div.is(':visible')) {
-			o.menu_div.stop().slideUp()
+			return
 		}
+		$(".header").find(".menu").slideUp()
+		o.menu_div.stop().slideDown(function(){
+			osvc.search.filter_menu()
+			osvc.search.e_search_input.val("").focus()
+			osvc.body_scroll.disable()
+		})
+	}
+
+	o.close = function() {
+		if (!o.menu_div.is(':visible')) {
+			return
+		}
+		o.menu_div.stop().slideUp(function(){
+			osvc.body_scroll.enable()
+		})
 	}
 
 	o.bind_sub_link = function(title) {

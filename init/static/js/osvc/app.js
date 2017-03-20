@@ -221,6 +221,7 @@ function app_start() {
 		osvc.login = login("login_location")
 		osvc.search = search("layout_search_tool")
 		osvc.fset_selector = fset_selector("fset_selector")
+		osvc.body_scroll = body_scroll()
 		ws_init()
 		app_bindings()
 		app_datetime_decorators()
@@ -390,7 +391,7 @@ function app_bindings() {
 		if ((event.which == 70) && !event.ctrlKey && !event.metaKey) {
 			if (!osvc.search.e_search_input.is(":focus")) {
 				event.preventDefault()
-				$("[name=fset_selector]").click()
+				o.fset_selector.open()
 			}
 		}
 
@@ -406,13 +407,9 @@ function app_bindings() {
 		// 'n' to open nav menu
 		else if (event.which == 78) {
 			event.preventDefault()
-			$(".header").find(".menu").hide()
-			osvc.menu.menu_div.slideDown(function(){
-				osvc.search.filter_menu()
-			})
 			$(".header").find(".menu_selected").removeClass("menu_selected")
 			osvc.search.e_search_input.val('')
-			osvc.search.e_search_input.focus()
+			osvc.menu.open()
 		}
 
 		// 'r' for refresh

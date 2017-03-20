@@ -179,7 +179,9 @@ function osvc_popup_hide(span)
 	var target = $(document).find("[stack_id='"+span.span + "']")
 
         if (target.hasClass("menu") || (target.parents(".menu").length > 0)) {
-		target.slideUp()
+		target.stop().slideUp(function(){
+			osvc.body_scroll.enable()
+		})
         } else {
 		target.hide()
         }

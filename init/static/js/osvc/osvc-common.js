@@ -225,9 +225,12 @@ function flash() {
                 osvc.fset_selector.close()
                 osvc.menu.close()
                 osvc.login.close()
-		console.log(opened)
 		if (opened == 0 || o.div.is(":visible")) {
-			o.div.slideToggle()
+			if (o.div.is(":visible")) {
+				o.close()
+			} else {
+				o.open()
+			}
 		}
 	})
 
@@ -354,10 +357,14 @@ function flash() {
 	}
 
 	o.open = function() {
-		o.div.slideDown()
+		o.div.stop().slideDown(function(){
+			osvc.body_scroll.disable()
+		})
 	}
 	o.close = function() {
-		o.div.slideUp()
+		o.div.stop().slideUp(function(){
+			osvc.body_scroll.enable()
+		})
 	}
 
 	return o
@@ -1710,3 +1717,22 @@ function format_title(options) {
 function is_in_view(e) {
 	return !($(e).offset().top - $(window).scrollTop() < $(e).height())
 }
+
+function body_scroll() {
+	o = {}
+	o.disable = function() {
+		console.log("disable body scroll")
+		$("body").css({"height": "100%", "overflow": "hidden"})
+	}
+
+	o.enable = function() {
+		if ($(".menu:visible").length) {
+			console.log("skip body scroll enable: a menu is still open")
+			return
+		}
+		console.log("enable body scroll")
+		$("body").css({"overflow": "auto"})
+	}
+	return o
+}
+

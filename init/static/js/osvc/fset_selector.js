@@ -21,9 +21,9 @@ function fset_selector(divid, callback) {
 		o.span.attr("fset_id", fset_id)
 		o.div.bind("click", function() {
 			if (!o.area.is(":visible")) {
-				o.area.slideDown()
-				$("#search_input").focus()
-				o.load_area()
+				o.open()
+			} else {
+				o.close()
 			}
 		})
 		return o
@@ -81,10 +81,24 @@ function fset_selector(divid, callback) {
 		})
 	}
 
-	o.close = function() {
+	o.open = function() {
 		if (o.area.is(':visible')) {
-			o.area.stop().slideUp()
+			return
 		}
+		o.area.stop().slideDown(function(){
+			osvc.body_scroll.disable()
+		})
+		$("#search_input").focus()
+		o.load_area()
+	}
+
+	o.close = function() {
+		if (!o.area.is(':visible')) {
+			return
+		}
+		o.area.stop().slideUp(function(){
+			osvc.body_scroll.enable()
+		})
 	}
 
 	o.unset_fset = function() {
