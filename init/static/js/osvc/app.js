@@ -391,7 +391,7 @@ function app_bindings() {
 		if ((event.which == 70) && !event.ctrlKey && !event.metaKey) {
 			if (!osvc.search.e_search_input.is(":focus")) {
 				event.preventDefault()
-				o.fset_selector.open()
+				osvc.fset_selector.open()
 			}
 		}
 
