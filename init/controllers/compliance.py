@@ -1351,6 +1351,7 @@ def ajax_svc_history():
             ),
             _name=id+'_to_eval'
           ),
+        _class="p-3",
         )
     return d
 
@@ -1408,8 +1409,9 @@ def ajax_mod_history():
                id=id_chart,
             ),
             _name=id+'_to_eval'
-          ),
-        )
+        ),
+        _class="p-3",
+      )
     return d
 
 @service.json
@@ -1469,6 +1471,7 @@ def ajax_node_history():
             ),
             _name=id+'_to_eval'
           ),
+        _class="p-3",
         )
     return d
 

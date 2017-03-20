@@ -118,7 +118,7 @@ function sync_ajax(url, inputs, id, f) {
 
 function toggle_extratable(e) {
 	var id = toggle_extraline(e)
-	var d = $("<table style='background-color:white'></table>")
+	var d = $("<div style='background-color:white'></div>")
 	d.uniqueId()
 	$("#"+id).empty().append(d)
 	return d.attr("id")

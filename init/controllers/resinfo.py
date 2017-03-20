@@ -39,7 +39,7 @@ def ajax_resinfo_log():
     row_id = request.vars.rowid
     id = 'chart_'+row_id
 
-    return TABLE(
+    return DIV(
       H3(T("History of key '%(key)s' from rid '%(rid)s'", dict(rid=request.vars.rid, key=request.vars.key))),
       DIV(
         _id=id,
@@ -57,6 +57,7 @@ def ajax_resinfo_log():
             ),
         _name='%s_to_eval'%row_id,
       ),
+      _class="p-3",
     )
 
 class table_resinfo(HtmlTable):
