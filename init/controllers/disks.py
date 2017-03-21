@@ -752,7 +752,7 @@ def json_disk_array_dg():
     disk_free = []
     disk_reserved = []
     disk_reservable = []
-    if len(rows) < 2:
+    if len(rows) < 1:
         return [disk_used, disk_free, disk_reserved, disk_reservable]
     for r in rows:
         disk_used.append([r.day, r.disk_used])
@@ -772,7 +772,7 @@ def json_disk_array():
     disk_free = []
     disk_reserved = []
     disk_reservable = []
-    if len(rows) < 2:
+    if len(rows) < 1:
         return [disk_used, disk_free, disk_reserved, disk_reservable]
     for r in rows:
         disk_used.append([r.day, r.disk_used])
@@ -788,7 +788,7 @@ def json_disk_app(app_id):
     rows = db(q).select(cacheable=True)
     disk_used = []
     disk_quota = []
-    if len(rows) < 2:
+    if len(rows) < 1:
         return [disk_used, disk_quota]
     for r in rows:
         disk_used.append([r.stat_day_disk_app.day, r.stat_day_disk_app.disk_used])
@@ -803,7 +803,7 @@ def json_disk_app_dg(app_id, dg_id):
     rows = db(q).select(cacheable=True)
     disk_used = []
     disk_quota = []
-    if len(rows) < 2:
+    if len(rows) < 1:
         return [disk_used, disk_quota]
     for r in rows:
         disk_used.append([r.stat_day_disk_app_dg.day, r.stat_day_disk_app_dg.disk_used])
