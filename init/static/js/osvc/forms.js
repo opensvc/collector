@@ -1476,13 +1476,19 @@ function form(divid, options) {
 	o.install_cond_trigger = function(table, key, d) {
 		console.log("install cond trigger", key, "->", d.Id)
 
-		var cell = table.find("[iid="+key+"]").children("[name=val]").children("input,textarea")
+		var line = table.find("[iid="+key+"]")
+		if (line.length == 0) {
+			var input_id = o.resolve_key(key)
+			var line = table.find("[iid="+input_id+"]")
+		}
+		var cell = line.children("[name=val]").children("input,textarea")
 		trigger(cell, true)
 		cell.bind("blur change", function() {
 			trigger($(this))
 		})
 		function trigger(input, initial) {
-			var val = o.get_val(input.parent())
+			var data = o.form_to_data()
+			var val = data[key]
 			var c = o.parse_condition(d)
 			var ret = o.eval_condition(c, val)
 			console.log("condition:", key, "->", d.Id, d.Condition, "=>", ret)
