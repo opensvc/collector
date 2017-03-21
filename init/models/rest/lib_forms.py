@@ -48,7 +48,6 @@ def form_rest_args(url, _d):
     # ex:
     # url  = "/arrays/#id/diskgroups/#id/quotas"
     # =>
-    # url  = "/arrays/554/diskgroups/2525/quotas"
     # args = ['arrays', 554, 'diskgroups', 2525, 'quotas']
     #
     args = []
@@ -58,7 +57,6 @@ def form_rest_args(url, _d):
         if s.startswith("#"):
             k = s.lstrip("#")
             val = str(form_get_val(_d, k))
-            url = url.replace(s, val)
             args.append(val)
         else:
             args.append(s)
@@ -709,10 +707,11 @@ def validate_input_data(form_definition, data, _input):
                     raise Exception("Key '%s' not in candidate %s" % (key, str(candidate)))
                 if val == val or str(val) == val or unicode(candidate_val) == val:
                     return
-            raise Exception("Input '%s' value '%s' not in allowed candidates" % (input_id, str(val)))
+            raise Exception("Input '%s' value '%s' not in allowed candidates %s obtained from %s" % (input_id, str(val), str(candidates), str(args)))
 
 def form_dereference(s, data, prefix=""):
-    for key, val in data.items():
+    for key in sorted(data.keys(), reverse=True):
+        val = data[key]
         if isinstance(val, dict):
             s = form_dereference(s, val, prefix=prefix+key+".")
         else:
