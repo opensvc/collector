@@ -798,7 +798,6 @@ class Vmax(Sym):
     def sym_sg(self):
         tree = self.xmltree('sym_sg_info')
         for e in tree.findall('SG'):
-            sg = e.find("SG_Info/name").text
             srp = e.find("SG_Info/SRP_name").text
             if srp == "none":
                 # skip parent SG
@@ -806,7 +805,7 @@ class Vmax(Sym):
             for edev in e.findall("DEVS_List/Device"):
                 dev = edev.find("dev_name").text
                 if dev in self.dev:
-                    self.dev[dev].diskgroup_name = srp + "/" +sg
+                    self.dev[dev].diskgroup_name = srp
         del tree
 
 def get_sym(xml_dir=None):
