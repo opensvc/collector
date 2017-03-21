@@ -729,7 +729,7 @@ def prepare_data(
         if type(filters) in (str, unicode):
             filters = [filters]
         for f in filters:
-            f_prop = re.findall(r'\w+', f)[0]
+            f_prop = re.findall(r'[\.\w]+', f)[0]
             f_val = f[len(f_prop):].strip()
             if '.' in f_prop:
                 t, f_col = f_prop.split(".")
