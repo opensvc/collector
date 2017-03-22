@@ -76,7 +76,7 @@ except Exception as exc:
 from gluon.tools import *
 auth=MyAuth(globals(), db)
 auth.settings.hmac_key='sha512:7755f108-1b83-45dc-8302-54be8f3616a1'
-auth.settings.expiration=config_get("session_expire", 36000000)
+auth.settings.expiration=config_get("session_expire", 604800)
 auth.settings.allow_basic_login = True
 auth.settings.remember_me_form = False
 auth.settings.login_methods = [auth]

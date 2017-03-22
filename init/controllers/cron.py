@@ -620,6 +620,10 @@ def alerts_failed_actions_not_acked():
 
     return ids
 
+def purge_sessions():
+    from sessions2trash import single_loop
+    single_loop(auth.settings.expiration, force=True, verbose=True)
+
 def purge_svcdisks():
     sql = """delete from svcdisks where disk_updated < DATE_SUB(NOW(), INTERVAL 2 day)"""
     db.executesql(sql)
@@ -631,7 +635,7 @@ def purge_diskinfo():
     db.commit()
 
 def purge_stor_array():
-    sql = """delete from stor_array where array_updated < DATE_SUB(NOW(), INTERVAL 2 day)"""
+    sql = """delete from stor_array where array_model like "vdisk%" and array_updated < DATE_SUB(NOW(), INTERVAL 2 day)"""
     db.executesql(sql)
     db.commit()
 
@@ -852,6 +856,8 @@ def cron_alerts_daily():
     purge_comp_rulesets_services()
     print "purge_alerts_comp_diff"
     purge_alerts_comp_diff()
+    print "purge_sessions"
+    purge_sessions()
 
 def cron_alerts_hourly():
     rets = []
