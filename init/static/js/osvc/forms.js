@@ -1321,6 +1321,10 @@ function form(divid, options) {
 	}
 
 	function subst_refs_from_data(data, s) {
+		if (!is_dict(data)) {
+			console.log("skip subst_refs_from_data: data is not a dict.", data)
+			return s
+		}
 		var re = RegExp(/#[\w\.]+/g)
 		var _s = s
 
