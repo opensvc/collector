@@ -15,9 +15,16 @@ class Driver(object):
             "--name", self.storage.disk_name(),
             "--size", self.storage.request_data["size"]
         ] + mappings
+        if "dg_name" in self.storage.request_data and self.storage.request_data["dg_name"] != "":
+            cmd += ["--srp", self.storage.request_data["dg_name"]]
+        if "slo" in self.storage.request_data and self.storage.request_data["slo"] != "":
+            cmd += ["--slo", self.storage.request_data["slo"]]
         ret = self.storage.proxy_action(" ".join(cmd))
+        data = {}
         try:
-            data = json.loads(ret["data"][0]["stdout"])
+            data["driver_data"] = json.loads(ret["data"][0]["stdout"])
+            data["disk_id"] = data["driver_data"]["wwn"]
+            data["disk_devid"] = data["driver_data"]["dev_name"]
             return data
         except ValueError:
             Error("unexpected add disk output format: %s" % ret)

@@ -5,7 +5,13 @@ class DiskNamingPolicy(object):
         self.storage = storage
 
     def disk_name(self):
-        name = self.storage.request_data["svcname"] + "_"
+        if "svcname" in self.storage.request_data:
+            name = self.storage.request_data["svcname"] + "_"
+        elif "nodename" in self.storage.request_data:
+            name = self.storage.request_data["nodename"] + "_"
+        else:
+            raise Error("simple disk naming error: 'svcname' or 'nodename' not found in request data")
+        name = name.replace("-", "_")
         disk_names = [r["disk_name"] for r in self.storage.request_data["disks"]]
         inc = 0
         while True:

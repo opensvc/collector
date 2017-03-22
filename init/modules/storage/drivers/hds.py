@@ -17,8 +17,11 @@ class Driver(object):
             "--size", self.storage.request_data["size"]
         ] + mappings
         ret = self.storage.proxy_action(" ".join(cmd))
+        data = {}
         try:
-            data = json.loads(ret["data"][0]["stdout"])
+            data["driver_data"] = json.loads(ret["data"][0]["stdout"])
+            data["disk_id"] = ".".join(data["driver_data"]["objectID"].split(".")[-2:])
+            data["disk_devid"] = data["driver_data"]["displayName"]
             return data
         except ValueError:
             Error("unexpected add volume output format: %s" % ret)

@@ -144,6 +144,26 @@ class Storage(object):
         })
 
     def get_nodes(self):
+        if "svc_id" in self.request_data:
+            return self.get_svc_nodes()
+        if "node_id" in self.request_data:
+            return self.get_node_node()
+        raise Error("neither 'svc_id' nor 'node_id' key in request data")
+
+    def get_node_node(self):
+        path = "/nodes/%s" % self.request_data["node_id"]
+        data = self.get(path, params={
+            "limit": 0,
+            "props": "node_id,nodename",
+        })
+        if len(data["data"]) == 0:
+            raise Error("node not found")
+        for i, node in enumerate(data["data"]):
+            node["targets"] = self.get_targets(node["node_id"])
+            data["data"][i] = node
+        return data["data"]
+
+    def get_svc_nodes(self):
         path = "/services/%s/nodes" % self.request_data["svc_id"]
         data = self.get(path, params={
             "limit": 0,
@@ -244,6 +264,8 @@ class Storage(object):
                         " %d MB" % (dg_free, missing))
 
     def disk_name(self):
+        if "disk_name" in self.request_data and self.request_data["disk_name"] != "":
+            return self.request_data["disk_name"]
         return self.disk_naming_policy_driver.disk_name()
 
     def get_mappings(self):
@@ -252,6 +274,8 @@ class Storage(object):
         for node in self.request_data["nodes"]:
             for hba_id, targets in node["targets"].items():
                 targets = set(targets) & array_targets
+                if len(targets) == 0:
+                    continue
                 mapping = hba_id + ":" + ",".join(targets)
                 mappings += ["--mappings", mapping]
         return mappings
@@ -279,6 +303,9 @@ class Storage(object):
             time.sleep(1)
         raise Error("timeout waiting for node action %d" % action_id)
 
+    #
+    # service actions
+    #
     def add_svc_disk(self):
         if "svc_id" not in self.request_data:
             raise RequestDataError("The 'svc_id' key is mandatory in request data")
@@ -304,6 +331,34 @@ class Storage(object):
     def del_array_disk(self):
         self.driver.del_disk()
 
+    #
+    # node actions
+    #
+    def add_node_disk(self):
+        if "node_id" not in self.request_data:
+            raise RequestDataError("The 'node_id' key is mandatory in request data")
+        self.request_data["nodes"] = self.get_nodes()
+        self.request_data["disks"] = self.get_disks()
+        self.request_data["quota"] = self.get_quota()
+        self.request_data["array"]["targets"] = self.get_array_targets()
+        self.validate_quota(self.request_data["size"])
+        self.validate_free(self.request_data["size"])
+        data = self.driver.add_disk()
+        self.put_result(data)
+
+    def del_node_disk(self):
+        if "svc_id" not in self.request_data:
+            raise RequestDataError("The 'svc_id' key is mandatory in request data")
+        self.driver.del_disk()
+
+    def resize_node_disk(self):
+        if "svc_id" not in self.request_data:
+            raise RequestDataError("The 'svc_id' key is mandatory in request data")
+        self.driver.resize_disk()
+
+    #
+    # array actions
+    #
     def resize_array_disk(self):
         self.driver.del_disk()
 
