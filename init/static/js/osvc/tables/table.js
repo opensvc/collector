@@ -279,6 +279,13 @@ function table_init(opts) {
 		}
 	}
 
+	t.save_prefs = function() {
+		if (t.options.volatile_prefs) {
+			return
+		}
+		osvc.user_prefs.save()
+	}
+
 	t.fold = function() {
 		t.e_scroll_zone.hide()
 		t.e_toolbar.addClass("grayed")
@@ -287,7 +294,7 @@ function table_init(opts) {
 			t.e_pager.hide()
 		}
 		osvc.user_prefs.data.tables[t.id].folded = true
-		osvc.user_prefs.save()
+		t.save_prefs()
 	}
 	t.unfold = function() {
 		t.e_toolbar.removeClass("grayed")
@@ -298,7 +305,7 @@ function table_init(opts) {
 		}
 		t.refresh()
 		osvc.user_prefs.data.tables[t.id].folded = false
-		osvc.user_prefs.save()
+		t.save_prefs()
 	}
 	t.folded = function() {
 		return !t.e_scroll_zone.is(":visible")
@@ -1143,7 +1150,7 @@ function table_init(opts) {
 			t.options.visible_columns = t.options.visible_columns.filter(function(x){if (x!=c){return true}})
 		}
 		osvc.user_prefs.data.tables[t.id].visible_columns = t.options.visible_columns
-		osvc.user_prefs.save()
+		t.save_prefs()
 		t.refresh_column_headers()
 		t.refresh_column_filters()
 		if (checked) {
@@ -1970,7 +1977,7 @@ function table_init(opts) {
 				delete osvc.user_prefs.data.tables[t.id].filters[c]
 			}
 		}
-		osvc.user_prefs.save()
+		t.save_prefs()
 	}
 
 	t.unset_refresh_spin = function() {
@@ -2343,7 +2350,7 @@ function table_init(opts) {
 			}
 
 			osvc.user_prefs.data.tables[t.id].wsenabled = current_state
-			osvc.user_prefs.save()
+			t.save_prefs()
 
 			if (t.need_refresh && current_state == 1) {
 				// honor past change events
@@ -2932,7 +2939,7 @@ function table_init(opts) {
 			}
 			var name = $(this).val()
 			osvc.user_prefs.data.tables[t.id].bookmarks[name] = osvc.user_prefs.data.tables[t.id].filters
-			osvc.user_prefs.save()
+			t.save_prefs()
 			t.insert_bookmark(name)
 			t.e_tool_bookmarks_save_name.hide()
 			t.e_tool_bookmarks_save.show()
@@ -2997,7 +3004,7 @@ function table_init(opts) {
 			var name = $(this).prev().text()
 			var line = $(this).parents("p").first()
 			delete osvc.user_prefs.data.tables[t.id].bookmarks[name]
-			osvc.user_prefs.save()
+			t.save_prefs()
 			line.hide("blind", function(){line.remove()})
 		})
 
@@ -3005,7 +3012,7 @@ function table_init(opts) {
 		bookmark.find(".bookmark16").on("click", function() {
 			var name = $(this).text()
 			osvc.user_prefs.data.tables[t.id].filters = osvc.user_prefs.data.tables[t.id].bookmarks[name]
-			osvc.user_prefs.save()
+			t.save_prefs()
 			t.set_column_filters()
 			t.refresh()
 		})

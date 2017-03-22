@@ -204,6 +204,7 @@ function table_registries_repo(divid, repository_id) {
 		"caller": "table_registries_repo",
 		"request_vars": request_vars,
 		"volatile_filters": true,
+		"volatile_prefs": true,
 		"hide_cols": ['repository_id', 'repository_name']
 	})
 }
@@ -218,6 +219,7 @@ function table_registries_registry(divid, registry_id) {
 		"caller": "table_registries_registry",
 		"request_vars": request_vars,
 		"volatile_filters": true,
+		"volatile_prefs": true,
 		"hide_cols": ['registry_id', 'registry_service']
 	})
 }
@@ -285,6 +287,7 @@ function table_actions(divid, options) {
 			}
 		},
 		'volatile_filters': false,
+		"volatile_prefs": true,
 		'child_tables': [],
 		'parent_tables': [],
 		'dataable': true,
@@ -323,6 +326,7 @@ function table_actions_node(divid, node_id) {
 		"caller": "table_actions_node",
 		"request_vars": request_vars,
 		"volatile_filters": true,
+		"volatile_prefs": true,
 		"hide_cols": ['node_id'],
 		"visible_columns": [
 			'svcname',
@@ -358,6 +362,7 @@ function table_actions_svc(divid, svc_id) {
 		"caller": "table_actions_svc",
 		"request_vars": request_vars,
 		"volatile_filters": true,
+		"volatile_prefs": true,
 		"hide_cols": ['svc_id'],
 		"visible_columns": [
 			'nodename',
@@ -411,6 +416,7 @@ function table_resinfo_svc(divid, svc_id) {
 		"caller": "table_resinfo_svc",
 		"hide_cols": ['svc_id'],
 		"request_vars": request_vars,
+		"volatile_prefs": true,
 		"volatile_filters": true
 	})
 }
@@ -488,6 +494,7 @@ function table_checks_node(divid, node_id) {
 		"caller": "table_checks_node",
 		"request_vars": request_vars,
 		"volatile_filters": true,
+		"volatile_prefs": true,
 		"hide_cols": ['node_id'],
 		"visible_columns": [
 			'svcname',
@@ -514,6 +521,7 @@ function table_checks_svc(divid, svc_id) {
 		"caller": "table_checks_svc",
 		"request_vars": request_vars,
 		"volatile_filters": true,
+		"volatile_prefs": true,
 		"hide_cols": ['svc_id'],
 		"visible_columns": [
 			'chk_nodename',
@@ -920,6 +928,7 @@ function table_comp_status_node(divid, node_id) {
 		"caller": "table_comp_status_node",
 		"request_vars": request_vars,
 		"volatile_filters": true,
+		"volatile_prefs": true,
 		"hide_cols": ['node_id'],
 		"force_cols": ['id', 'node_id', 'svc_id', 'os_name', 'run_log'],
 		"visible_columns": ['run_date', 'svcname', 'run_module', 'run_status']
@@ -938,6 +947,7 @@ function table_comp_status_svc(divid, svc_id) {
 		"caller": "table_comp_status_svc",
 		"request_vars": request_vars,
 		"volatile_filters": true,
+		"volatile_prefs": true,
 		"hide_cols": ['svc_id'],
 		"force_cols": ['id', 'node_id', 'svc_id', 'os_name', 'run_log'],
 		"visible_columns": ['run_date', 'nodename', 'run_module', 'run_status']
@@ -977,6 +987,7 @@ function table_dashboard_node(divid, node_id) {
 		"hide_cols": ['node_id'],
 		"visible_columns": ['dash_updated', 'dash_type', 'dash_links', 'dash_entry', 'dash_env', 'svcname', 'dash_severity', 'dash_created'],
 		"volatile_filters": true,
+		"volatile_prefs": true,
 		"wsable": false
 	})
 }
@@ -992,6 +1003,7 @@ function table_dashboard_svc(divid, svc_id) {
 		"request_vars": request_vars,
 		"hide_cols": ['svc_id'],
 		"visible_columns": ['dash_updated', 'dash_type', 'dash_links', 'dash_entry', 'dash_env', 'nodename', 'dash_severity', 'dash_created'],
+		"volatile_prefs": true,
 		"volatile_filters": true
 	})
 }
@@ -1128,6 +1140,7 @@ function table_dns_records_domain_id(divid, domain_id) {
 		"caller": "table_dns_records_domain_id",
 		"request_vars": request_vars,
 		"volatile_filters": true,
+		"volatile_prefs": true,
 		"bookmarkable": false,
 		"refreshable": false,
 		"linkable": false,
@@ -1301,6 +1314,7 @@ function table_log_node(divid, node_id) {
 		"caller": "table_log_node",
 		"hide_cols": ['node_id'],
 		"request_vars": request_vars,
+		"volatile_prefs": true,
 		"volatile_filters": true
 	})
 }
@@ -1315,6 +1329,7 @@ function table_log_svc(divid, svc_id) {
 		"caller": "table_log_svc",
 		"hide_cols": ['svc_id'],
 		"request_vars": request_vars,
+		"volatile_prefs": true,
 		"volatile_filters": true
 	})
 }
@@ -1368,6 +1383,7 @@ function table_network_segments_network(divid, network_id) {
 		"caller": "table_network_segments_network",
 		"hide_cols": ['net_id'],
 		"request_vars": request_vars,
+		"volatile_prefs": true,
 		"volatile_filters": true
 	})
 }
@@ -1406,6 +1422,7 @@ function table_nodenetworks_addr(divid, addr) {
 		"caller": "table_table_nodenetworks_addr",
 		"request_vars": request_vars,
 		"volatile_filters": true,
+		"volatile_prefs": true,
 		"bookmarkable": false,
 		"refreshable": false,
 		"linkable": false,
@@ -1615,6 +1632,7 @@ function table_packages_node(divid, node_id) {
 		"caller": "table_packages_node",
 		"hide_cols": ['node_id'],
 		"request_vars": request_vars,
+		"volatile_prefs": true,
 		"volatile_filters": true
 	})
 }
@@ -1689,6 +1707,7 @@ function table_quota_array(divid, array_name) {
 		"id": id,
 		"caller": "table_quota_array",
 		"request_vars": request_vars,
+		"volatile_prefs": true,
 		"volatile_filters": true,
 		"bookmarkable": false,
 		"refreshable": false,
@@ -1712,6 +1731,7 @@ function table_quota_app(divid, app) {
 		"caller": "table_quota_app",
 		"request_vars": request_vars,
 		"volatile_filters": true,
+		"volatile_prefs": true,
 		"bookmarkable": false,
 		"refreshable": false,
 		"linkable": false,
@@ -1736,6 +1756,7 @@ function table_quota_array_dg(divid, array_name, dg_name) {
 		"caller": "table_quota_array_dg",
 		"request_vars": request_vars,
 		"volatile_filters": true,
+		"volatile_prefs": true,
 		"bookmarkable": false,
 		"refreshable": false,
 		"linkable": false,
@@ -1880,6 +1901,7 @@ function table_resources_node(divid, node_id) {
 		"request_vars": request_vars,
 		"hide_cols": ['node_id'],
 		"visible_columns": ['svcname', 'vmname', 'rid', 'res_type', 'res_status', 'res_desc', 'res_log', 'res_monitor', 'res_disable', 'res_optional', 'updated'],
+		"volatile_prefs": true,
 		"volatile_filters": true
 	})
 }
@@ -1895,6 +1917,7 @@ function table_resources_svc(divid, svc_id) {
 		"request_vars": request_vars,
 		"hide_cols": ['svc_id'],
 		"visible_columns": ['nodename', 'vmname', 'rid', 'res_type', 'res_status', 'res_desc', 'res_log', 'res_monitor', 'res_disable', 'res_optional', 'updated'],
+		"volatile_prefs": true,
 		"volatile_filters": true
 	})
 }
@@ -2070,6 +2093,7 @@ function table_service_instances_node(divid, node_id) {
 		"caller": "table_service_instances_node",
 		"request_vars": request_vars,
 		"volatile_filters": true,
+		"volatile_prefs": true,
 		"hide_cols": ['node_id'],
 		"visible_columns": [
 			'svcname',
@@ -2094,6 +2118,7 @@ function table_service_instances_svc(divid, svc_id) {
 		"caller": "table_service_instances_svc",
 		"request_vars": request_vars,
 		"volatile_filters": true,
+		"volatile_prefs": true,
 		"hide_cols": ['svc_id'],
 		"visible_columns": [
 			'svc_ha',

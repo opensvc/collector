@@ -36,6 +36,7 @@ function user_prefs(initial_prefs) {
 			"data": o.data,
 			"uuid": o.uuid
 		}
+		o.cleanup()
 		services_osvcpostrest("/users/self/prefs", "", "", data, function(jd) {
 			o.saving = false
 			if (jd.error) {
@@ -47,6 +48,17 @@ function user_prefs(initial_prefs) {
 		function(xhr, stat, error){
 			osvc.flash.error(services_ajax_error_fmt(xhr, stat, error))
 		})
+	}
+
+	o.cleanup = function() {
+		for (table in osvc.tables) {
+			if (osvc.tables[table].options.volatile_prefs == true) {
+				if (table in o.data.tables) {
+					console.log("delete volatile table prefs:", table)
+					delete o.data.tables[table]
+				}
+			}
+		}
 	}
 
 	o.event_handler = function(data) {
