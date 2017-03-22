@@ -1,4 +1,25 @@
 def task_rq(rqueues, getfn, app="feed"):
+    import socket
+
+    def db_disconnect_handler():
+        try:
+            db._adapter.close()
+            db._adapter.reconnect()
+            log.info("reconnected db")
+            fn(*args)
+            db.commit()
+        except Exception as _e:
+            log.error(_e, exc_info=True)
+            log.error(str(l))
+
+    def error_handler(e):
+        s = str(e)
+        if "server has gone away" in s or "Lost connection" in s or "socket.error" in s:
+            db_disconnect_handler()
+        else:
+            log.error(e, exc_info=True)
+            log.error(str(l))
+
     log = logging.getLogger("web2py.app.%s.task_rq" % app)
     l = None
     while True:
@@ -13,19 +34,8 @@ def task_rq(rqueues, getfn, app="feed"):
         except KeyboardInterrupt:
             log.info("keyboard interrupt")
             break
-        except Exception as e:
-            if "server has gone away" in str(e) or "Lost connection" in str(e):
-                try:
-                    log.info("reconnect db")
-                    db._adapter.close()
-                    db._adapter.reconnect()
-                    fn(*args)
-                    db.commit()
-                except Exception as _e:
-                    log.error(_e, exc_info=True)
-                    log.error(str(l))
-            else:
-                db.commit()
-                log.error(e, exc_info=True)
-                log.error(str(l))
+        except socket.error:
+            db_disconnect_handler()
+        except Exception as exc:
+            error_handler(exc)
 
