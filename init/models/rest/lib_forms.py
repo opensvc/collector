@@ -725,6 +725,12 @@ def form_submit(form, _d=None, prev_wfid=None):
     """
       Used by the PUT /forms/<id> handler to perform the server-side outputs
     """
+    try:
+        # reconnect if needed
+        db.commit()
+    except:
+        pass
+
     results = {
         "outputs_order": [],
         "request_data": {},
@@ -771,8 +777,9 @@ def _form_submit(form_id, _d=None, prev_wfid=None, results=None, authdump=None):
         results = __form_submit(form_id, _d=_d, prev_wfid=prev_wfid, results=results, authdump=authdump)
     except Exception as exc:
         results["status"] = "COMPLETED"
-        results["returncode"] += 1
-        form_log("", results, 1, "form.submit", str(exc), {})
+        if "Lost connection" not in str(exc):
+            results["returncode"] += 1
+            form_log("", results, 1, "form.submit", str(exc), {})
     finally:
         results["status"] = "COMPLETED"
     update_results(results)
