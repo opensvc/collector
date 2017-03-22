@@ -286,6 +286,8 @@ function table_init(opts) {
 		if (t.e_pager) {
 			t.e_pager.hide()
 		}
+		osvc.user_prefs.data.tables[t.id].folded = true
+		osvc.user_prefs.save()
 	}
 	t.unfold = function() {
 		t.e_toolbar.removeClass("grayed")
@@ -295,13 +297,15 @@ function table_init(opts) {
 			t.e_pager.show()
 		}
 		t.refresh()
+		osvc.user_prefs.data.tables[t.id].folded = false
+		osvc.user_prefs.save()
 	}
 	t.folded = function() {
 		return !t.e_scroll_zone.is(":visible")
 	}
 	t.add_folder = function() {
 		var e = $("<div class='icon'></div>")
-		if (t.options.folded) {
+		if (osvc.user_prefs.data.tables[t.id].folded) {
 			e.addClass("fa-angle-up")
 		} else {
 			e.addClass("fa-angle-down")
@@ -580,7 +584,7 @@ function table_init(opts) {
 		var table = $("<table><thead><tr class='theader'></tr></thead><tbody></tbody></table>")
 		t.e_sticky = $("<div class='stick'></div>")
 
-		if (t.options.folded) {
+		if (osvc.user_prefs.data.tables[t.id].folded) {
 			table_scroll_zone.hide()
 			toolbar.addClass("grayed")
 		}
@@ -3023,11 +3027,13 @@ function table_init(opts) {
 		if (!("bookmarks" in osvc.user_prefs.data.tables[t.id])) {
 			osvc.user_prefs.data.tables[t.id]["bookmarks"] = {}
 		}
+		if (!("folded" in osvc.user_prefs.data.tables[t.id]) && "folded" in t.options) {
+			osvc.user_prefs.data.tables[t.id]["folded"] = t.options.folded
+		}
 	}
 
 	t.refresh_timer = null
 	t.init_colprops()
-	t.add_table()
 
 	osvc.tables[t.id] = t
 
@@ -3035,6 +3041,7 @@ function table_init(opts) {
 		osvc.user_loaded
 	).then(function(){
 		t.init_prefs()
+		t.add_table()
 		t.get_visible_columns()
 		t.init_current_filters()
 		t.add_filtered_to_visible_columns()
