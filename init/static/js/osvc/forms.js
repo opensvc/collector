@@ -296,7 +296,6 @@ function form(divid, options) {
 		for (var i=0; i<o.form_data.form_definition.Inputs.length; i++) {
 			var d = o.form_data.form_definition.Inputs[i]
 			var input_key_id = get_dict_id(d)
-console.log(data, key, input_key_id, d)
 			if (d.Hidden == true) {
 				continue
 			}
@@ -399,7 +398,7 @@ console.log(data, key, input_key_id, d)
 				}
 			}
 			var line = $("<tr></tr>")
-			var label = $("<th style='white-space:nowrap'></th>")
+			var label = $("<th class='nowrap pr-3'></th>")
 			var value = $("<td></td>")
 			label.text(d.DisplayModeLabel)
 			if(d.LabelCss) {
@@ -411,7 +410,12 @@ console.log(data, key, input_key_id, d)
 				value.addClass(d.Css)
 			}
 			line.append(label)
-			line.append(value)
+			if (d.Format) {
+				var label = subst_refs_from_data(data, d.Format)
+				line.append(label)
+			} else {
+				line.append(value)
+			}
 
                         if (d.Type == "form") {
 				form(value, {
@@ -1341,7 +1345,10 @@ console.log(data, key, input_key_id, d)
 					}
 				}
 				var re1 = RegExp("#"+key, "g")
-				_s = _s.replace(re1, val)
+				var t = typeof val
+				if ((t === "number") || (t === "string")) {
+					_s = _s.replace(re1, val)
+				}
 			}
 		} while (m)
 		return _s
