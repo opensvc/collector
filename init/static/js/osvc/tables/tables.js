@@ -1090,6 +1090,38 @@ function view_disks(divid, options) {
 	})
 }
 
+function table_disks_array(divid, array_name) {
+	var id = "disks_" + array_name.replace(/[ \.-]/g, "_")
+	var f = id+"_f_disk_arrayid"
+	var request_vars = {}
+	request_vars[f] = array_name
+	table_disks(divid, {
+		"id": id,
+		"caller": "table_disks_array",
+		"request_vars": request_vars,
+		"hide_cols": ['disk_arrayid'],
+		"volatile_prefs": true,
+		"volatile_filters": true
+	})
+}
+
+function table_disks_array_dg(divid, array_name, dg_name) {
+	var id = "disks_" + array_name.replace(/[ \.-]/g, "_") + dg_name.replace(/[ \.-]/g, "_")
+	var f1 = id+"_f_disk_arrayid"
+	var f2 = id+"_f_disk_group"
+	var request_vars = {}
+	request_vars[f1] = array_name
+	request_vars[f2] = dg_name
+	table_disks(divid, {
+		"id": id,
+		"caller": "table_disks_array_dg",
+		"request_vars": request_vars,
+		"hide_cols": ['disk_arrayid', 'disk_group'],
+		"volatile_prefs": true,
+		"volatile_filters": true
+	})
+}
+
 function table_dns_records(divid, options) {
 	var defaults = {
 		'divid': divid,

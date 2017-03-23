@@ -31,6 +31,15 @@ function array_tabs(divid, options) {
 			array_properties(divid, {"array_id": o.data.id})
 		}
 
+		// tab disks
+		i = o.register_tab({
+			"title": "table.name.disks",
+			"title_class": "icon hd16"
+		})
+		o.tabs[i].callback = function(divid) {
+			table_disks_array(divid, o.data.array_name)
+		}
+
 		// tab quotas
 		i = o.register_tab({
 			"title": "array_tabs.quotas",

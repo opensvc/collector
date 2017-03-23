@@ -31,6 +31,15 @@ function diskgroup_tabs(divid, options) {
 			diskgroup_properties(divid, {"dg_id": o.data.id})
 		}
 
+		// tab disks
+		i = o.register_tab({
+			"title": "table.name.disks",
+			"title_class": "icon hd16"
+		})
+		o.tabs[i].callback = function(divid) {
+			table_disks_array_dg(divid, o.options.array_name, o.options.dg_name)
+		}
+
 		// tab quotas
 		i = o.register_tab({
 			"title": "array_tabs.quotas",
