@@ -13,8 +13,11 @@ class Freenas(object):
         self.load_iscsi_extents()
         self.load_iscsi_targettoextents()
 
+    def fpath(self, fname):
+        return os.path.join(self.dir, fname)
+
     def readfile(self, fname):
-        fpath = os.path.join(self.dir, fname)
+        fpath = self.fpath(fname)
         with open(fpath, 'r') as f:
             buff = f.read()
         return buff
@@ -32,24 +35,24 @@ class Freenas(object):
         buff = self.readfile('iscsi_targets')
         try:
             self.iscsi_targets = json.loads(buff)
-        except:
-            print "failed to load iscsi_targets"
+        except Exception as exc:
+            print "failed to load iscsi_targets:", str(exc)
             self.iscsi_targets = []
 
     def load_iscsi_extents(self):
         buff = self.readfile('iscsi_extents')
         try:
             self.iscsi_extents = json.loads(buff)
-        except:
-            print "failed to load iscsi_extents"
+        except Exception as exc:
+            print "failed to load iscsi_extents:", str(exc)
             self.iscsi_extents = []
 
     def load_iscsi_targettoextents(self):
         buff = self.readfile('iscsi_targettoextents')
         try:
             self.iscsi_targettoextents = json.loads(buff)
-        except:
-            print "failed to load iscsi_targettoextents"
+        except Exception as exc:
+            print "failed to load iscsi_targettoextents:", str(exc)
             self.iscsi_targettoextents = []
 
     def __str__(self):
