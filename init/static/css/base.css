@@ -2120,6 +2120,8 @@ a.search-link:hover {
 }
 .tl > td, .theader > th {
 	padding: 0.75rem;
+	vertical-align: bottom;
+	align-self: flex-end;
 }
 .table_title {
 	flex: 1;
