@@ -122,9 +122,9 @@ def lib_search_service(pattern):
     q = _where(None, 'services', pattern, 'svcname')
     q |= _where(None, 'services', pattern.decode("utf8").encode("ascii", errors="ignore"), 'svc_id')
     q = q_filter(q, app_field=db.services.svc_app)
-    q = apply_filters_id(q, db.services.svc_id, None)
+    q = apply_filters_id(q, None, db.services.svc_id)
     n = db(q).count()
-    data = db(q).select(o, db.services.svc_id, db.services.svc_app, orderby=o, limitby=(0,max_search_result),).as_list()
+    data = db(q).select(o, db.services.svc_id, db.services.svc_app, orderby=o, groupby=db.services.svc_id, limitby=(0,max_search_result),).as_list()
     t = datetime.datetime.now() - t
     return {
       "total": n,
@@ -139,7 +139,7 @@ def lib_search_vm(pattern):
     q = _where(None, 'svcmon', pattern, 'mon_vmname')
     q = _where(q, 'svcmon', "!empty", 'mon_vmname')
     q = q_filter(q, svc_field=db.svcmon.svc_id)
-    q = apply_filters_id(q, db.svcmon.svc_id, None)
+    q = apply_filters_id(q, None, db.svcmon.svc_id)
     n = db(q).count()
     data = db(q).select(o,
                         orderby=o,
