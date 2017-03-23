@@ -676,13 +676,11 @@ def update_array_xml(arrayid, vars, vals, auth, subdir, fn):
         if hasattr(b, "data"):
             import zlib
             b = zlib.decompress(b.data)
-        try:
-            f = codecs.open(a, "w", "utf-8")
-            f.write(b)
-            f.sync()
-            f.close()
-        except:
-            pass
+        f = codecs.open(a, "w", "utf-8")
+        f.write(b)
+        f.flush()
+        os.fsync(f)
+        f.close()
 
     if fn is None:
         return
