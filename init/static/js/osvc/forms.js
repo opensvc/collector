@@ -296,6 +296,7 @@ function form(divid, options) {
 		for (var i=0; i<o.form_data.form_definition.Inputs.length; i++) {
 			var d = o.form_data.form_definition.Inputs[i]
 			var input_key_id = get_dict_id(d)
+console.log(data, key, input_key_id, d)
 			if (d.Hidden == true) {
 				continue
 			}
@@ -1910,10 +1911,13 @@ function form_results(divid, options) {
 			delete wsh[o.wsh_id]
 		}
 
-		if ("" in results.log) {
+		if (results.log && "" in results.log) {
 			o.render_output_results(results, output_area, "")
 		}
 
+		if (!results.outputs_order) {
+			return
+		}
 		for (var i=0; i<results.outputs_order.length; i++) {
 			var output_name = results.outputs_order[i]
 			o.render_output_results(results, output_area, output_name)

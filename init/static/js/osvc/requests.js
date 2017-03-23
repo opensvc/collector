@@ -1,5 +1,5 @@
 function requests(divid, options) {
-	o = {}
+	var o = {}
 	o.options = options
 	o.div = $("#"+divid)
 
@@ -251,7 +251,7 @@ function requests(divid, options) {
 }
 
 function workflow(divid, options) {
-	o = {}
+	var o = {}
 	o.divid = divid
 	o.options = options
 	o.div = $("#"+divid)
@@ -283,8 +283,8 @@ function workflow(divid, options) {
 	o.init = function() {
 		services_osvcgetrest("R_STORE_FORM", [o.options.form_id], {"meta": 0}, function(jd) {
 			o.stored_form = jd.data[0]
-			services_osvcgetrest("R_STORE_FORMS", "", {"meta": 0, "filters": ["form_head_id "+o.stored_form.form_head_id]}, function(jd) {
-				o.workflow_stored_forms = jd.data
+			services_osvcgetrest("R_STORE_FORMS", "", {"meta": 0, "filters": ["form_head_id "+o.stored_form.form_head_id]}, function(_jd) {
+				o.workflow_stored_forms = _jd.data
 				o.link.title_args.name = o.options.workflow_id+"/"+o.workflow_stored_forms[0].form_name
 				o.render()
 			})
@@ -292,13 +292,39 @@ function workflow(divid, options) {
 
 	}
 
+	o.render_next = function(stored_form) {
+		o.e_next.empty()
+		if (stored_form.form_next_id) {
+			o.e_next.html(i18n.t("requests.already_completed"))
+			return
+		}
+		var d = o.get_workflow_output(stored_form)
+		if (!d) {
+			return
+		}
+		if (!d.NextForms || (d.NextForms.length == 0)) {
+			o.e_next.html(i18n.t("requests.no_successor"))
+			return
+		}
+		if ((_self.first_name + " " + _self.last_name != stored_form.form_assignee) &&
+		    !services_ismemberof(stored_form.form_assignee)) {
+			o.e_next.html(i18n.t("requests.not_assigned"))
+			return
+		}
+		for (var i=0; i<d.NextForms.length; i++) {
+			var e = d.NextForms[i]
+			o.e_next.append(o.render_form_list_entry(e))
+		}
+	}
+
 	o.render = function() {
 		osvc_tools(o.div, {
 			"link": o.link
 		})
-		for (var i=0; i<o.workflow_stored_forms.length; i++) {
+		var n = o.workflow_stored_forms.length
+		for (var i=0; i<n; i++) {
 			if (i>0) {
-				var arrow = $("<div class='icon fa-angle-double-down'></div>")
+				var arrow = $("<div class='icon fa-angle-double-down' style='text-align:center'></div>")
 				o.e_form.append(arrow)
 			}
 			o.render_form(o.workflow_stored_forms[i])
@@ -314,13 +340,13 @@ function workflow(divid, options) {
 		var d = osvc.forms.data[form_name]
 		console.log(form_name, d)
 
-		var div = $("<div class='clickable' style='padding-bottom:0.5em'></div>")
+		var div = $("<div class='clickable pb-2'></div>")
 		if (d.form_definition.Css) {
 			div.addClass(d.form_definition.Css)
 		} else {
 			div.addClass("wf48")
 		}
-		var h = $("<h2 style='text-align:left'></h2>")
+		var h = $("<h2></h2>")
 		if (d.form_definition.Label) {
 			var title = d.form_definition.Label
 		} else {
@@ -349,9 +375,9 @@ function workflow(divid, options) {
 	}
 
 	o.render_form_title = function(stored_form) {
-		var div = $("<div class='clickable' style='padding-bottom:0.5em'></div>")
+		var div = $("<div class='clickable pt-3 pb-3'></div>")
 		div.addClass(stored_form.form_definition.Css)
-		var h = $("<h2 style='text-align:left'></h2>")
+		var h = $("<h3></h3>")
 		if (stored_form.form_definition.Label) {
 			var title = stored_form.form_definition.Label
 		} else {
@@ -373,63 +399,20 @@ function workflow(divid, options) {
 		return div
 	}
 
-	o.render_form_scripts = function(stored_form) {
-		try {
-			var scripts = $.parseJSON(stored_form.form_scripts)
-		} catch(e) {
-			console.log(e)
+	o.render_form_results = function(stored_form) {
+		if (!stored_form.results_id) {
 			return
 		}
-		console.log(scripts)
-		var ret = scripts.returncode
-		delete(scripts["returncode"])
-
-		// count the number of scripts executed
-		var n = 0
-		for (script in scripts) {
-			n++
-		}
-
-		if (n == 0) {
-			return
-		}
-
-		var div = $("<div class='postit' style='margin-top:0.5em'></div>")
-		var title = $("<h3 style='text-align:left'></h3>")
-		title.text(i18n.t("requests.scripts"))
-		if (ret == 0) {
-			title.addClass("ok")
-		} else {
-			title.addClass("nok")
-		}
-		div.append(title)
-
-		var ul = $("<ul style='list-style-type:none;text-align:left'></ul>")
-		for (key in scripts) {
-			var d = scripts[key]
-			console.log(d)
-			var li = $("<li>"+d.path+"</li>")
-			if (d.returncode == 0) {
-				li.addClass("ok")
-			} else {
-				li.addClass("nok")
-			}
-			var _ul = $("<ul style='list-style-type:none'></ul>")
-			if (d.stdout.length > 0) {
-				_ul.append("<li>"+d.stdout+"</li>")
-			}
-			if (d.stderr.length > 0) {
-				_ul.append("<li class='highlight'>"+d.stderr+"</li>")
-			}
-			li.append(_ul)
-			ul.append(li)
-		}
-		div.append(ul)
-		return div
+		var div = $("<div class='postit p-3' style='margin-top:0.5em'></div>")
+		form_results(div, {
+			"results_id": stored_form.results_id,
+			"async": false
+		})
+		o.e_form.append(div)
 	}
 
 	o.render_form = function(stored_form) {
-		var div = $("<div class='forms' style='padding-bottom:1em'></div>")
+		var div = $("<div></div>")
 		var div_form = $("<div></div>")
 		div.append(o.render_form_title(stored_form))
 		div_form.uniqueId()
@@ -458,7 +441,8 @@ function workflow(divid, options) {
 
 		form(div_form.attr("id"), options)
 
-		div_form.append(o.render_form_scripts(stored_form))
+		//div_form.append(o.render_form_results(stored_form))
+		o.render_form_results(stored_form)
 	}
 
 	o.get_workflow_output = function(stored_form) {
@@ -470,30 +454,6 @@ function workflow(divid, options) {
 		}
 	}
 
-	o.render_next = function(stored_form) {
-		o.e_next.empty()
-		if (stored_form.form_next_id) {
-			o.e_next.html(i18n.t("requests.already_completed"))
-			return
-		}
-		var d = o.get_workflow_output(stored_form)
-		if (!d) {
-			return
-		}
-		if (!d.NextForms || (d.NextForms.length == 0)) {
-			o.e_next.html(i18n.t("requests.no_successor"))
-			return
-		}
-		if ((_self.first_name + " " + _self.last_name != stored_form.form_assignee) &&
-		    !services_ismemberof(stored_form.form_assignee)) {
-			o.e_next.html(i18n.t("requests.not_assigned"))
-			return
-		}
-		for (var i=0; i<d.NextForms.length; i++) {
-			var e = d.NextForms[i]
-			o.e_next.append(o.render_form_list_entry(e))
-		}
-	}
 
 	return o
 }

@@ -315,7 +315,7 @@ def output_workflow(output, form_definition, form, _d=None, prev_wfid=None, resu
           form_next_id=next_id,
           form_head_id=head_id,
           form_data=d,
-          form_scripts=sjson.dumps(results["outputs"], default=datetime.datetime.isoformat),
+          results_id=results["results_id"],
         )
         table_modified("forms_store")
         if record_id is not None:
@@ -365,7 +365,7 @@ def output_workflow(output, form_definition, form, _d=None, prev_wfid=None, resu
           form_assignee=form_assignee,
           form_submit_date=datetime.datetime.now(),
           form_data=d,
-          form_scripts=sjson.dumps(results["outputs"], default=datetime.datetime.isoformat),
+          results_id=results["results_id"],
         )
         table_modified("forms_store")
         if record_id is not None:
