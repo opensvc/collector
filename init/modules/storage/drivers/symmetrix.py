@@ -22,10 +22,7 @@ class Driver(object):
         ret = self.storage.proxy_action(" ".join(cmd))
         data = {}
         try:
-            data["driver_data"] = json.loads(ret["data"][0]["stdout"])
-            data["disk_id"] = data["driver_data"]["wwn"]
-            data["disk_devid"] = data["driver_data"]["dev_name"]
-            return data
+            return json.loads(ret["data"][0]["stdout"])
         except ValueError:
             Error("unexpected add disk output format: %s" % ret)
 
