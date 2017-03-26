@@ -21,10 +21,7 @@ class Driver(object):
         ret = self.storage.proxy_action(" ".join(cmd))
         data = {}
         try:
-            data["driver_data"] = json.loads(ret["data"][0]["stdout"])
-            data["disk_id"] = data["driver_data"]["iscsi_target_extent_naa"].replace("0x", "")
-            data["disk_devid"] = data["driver_data"]["id"]
-            return data
+            return json.loads(ret["data"][0]["stdout"])
         except ValueError:
             Error("unexpected add volume output format: %s" % ret)
 
