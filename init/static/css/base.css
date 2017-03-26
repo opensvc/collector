@@ -2120,8 +2120,6 @@ a.search-link:hover {
 }
 .tl > td, .theader > th {
 	padding: 0.75rem;
-	vertical-align: bottom;
-	align-self: flex-end;
 }
 .table_title {
 	flex: 1;
@@ -2136,6 +2134,8 @@ a.search-link:hover {
 	z-index: 2;
 }
 .theader > th {
+	vertical-align: bottom;
+	align-self: flex-end;
 	border-bottom-width: 1px;
 	border-bottom-style: solid;
 	border-bottom-color: lightgray;
