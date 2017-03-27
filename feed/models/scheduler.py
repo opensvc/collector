@@ -1030,7 +1030,7 @@ def insert_gcedisks(name=None, node_id=None):
                          d['disk_group'],
                          now])
         generic_insert('diskinfo', vars, vals)
-        sql = """delete from diskinfo where disk_arrayid="%s" and disk_updated < "%s" """%(name, str(now))
+        sql = """delete from diskinfo where disk_arrayid="%s" and (disk_updated < "%s" or disk_updated is NULL)"""%(name, str(now))
         db.executesql(sql)
         db.commit()
 
@@ -1138,7 +1138,7 @@ def insert_freenas(name=None, node_id=None):
                          disk_group,
                          now])
         generic_insert('diskinfo', vars, vals)
-        sql = """delete from diskinfo where disk_arrayid="%s" and disk_updated < "%s" """%(name, str(now))
+        sql = """delete from diskinfo where disk_arrayid="%s" and (disk_updated < "%s" or disk_updated is NULL)"""%(name, str(now))
         db.executesql(sql)
         db.commit()
 
@@ -1242,7 +1242,7 @@ def insert_xtremio(name=None, node_id=None):
                 now
         ])
         generic_insert('diskinfo', vars, vals)
-        sql = """delete from diskinfo where disk_arrayid="%s" and disk_updated < "%s" """%(name, str(now))
+        sql = """delete from diskinfo where disk_arrayid="%s" and (disk_updated < "%s" or disk_updated is NULL)"""%(name, str(now))
         db.executesql(sql)
         db.commit()
 
@@ -1333,7 +1333,7 @@ def insert_dcs(name=None, node_id=None):
                              s.pool[poolid]['caption'],
                              now])
         generic_insert('diskinfo', vars, vals)
-        sql = """delete from diskinfo where disk_arrayid="%s" and disk_updated < "%s" """%(name, str(now))
+        sql = """delete from diskinfo where disk_arrayid="%s" and (disk_updated < "%s" or disk_updated is NULL)"""%(name, str(now))
         db.executesql(sql)
         db.commit()
 
@@ -1432,7 +1432,7 @@ def insert_hds(name=None, node_id=None):
                          d['disk_group'],
                          now])
         generic_insert('diskinfo', vars, vals)
-        sql = """delete from diskinfo where disk_arrayid="%s" and disk_updated < "%s" """%(s.name, str(now))
+        sql = """delete from diskinfo where disk_arrayid="%s" and (disk_updated < "%s" or disk_updated is NULL)"""%(s.name, str(now))
         db.executesql(sql)
         db.commit()
 
@@ -1516,7 +1516,7 @@ def insert_centera(name=None, node_id=None):
                              d['name'],
                              now])
             generic_insert('diskinfo', vars, vals)
-            sql = """delete from diskinfo where disk_arrayid="%s" and disk_updated < "%s" """%(s.name, str(now))
+            sql = """delete from diskinfo where disk_arrayid="%s" and (disk_updated < "%s" or disk_updated is NULL)"""%(s.name, str(now))
             db.executesql(sql)
 
             # svcdisks
@@ -1631,7 +1631,7 @@ def insert_emcvnx(name=None, node_id=None):
                              d['disk_group'],
                              now])
             generic_insert('diskinfo', vars, vals)
-            sql = """delete from diskinfo where disk_arrayid="%s" and disk_updated < "%s" """%(s.name, str(now))
+            sql = """delete from diskinfo where disk_arrayid="%s" and (disk_updated < "%s" or disk_updated is NULL)"""%(s.name, str(now))
             db.executesql(sql)
             db.commit()
 
@@ -1708,7 +1708,7 @@ def insert_necism(name=None, node_id=None):
                              d['disk_group'],
                              now])
             generic_insert('diskinfo', vars, vals)
-            sql = """delete from diskinfo where disk_arrayid="%s" and disk_updated < "%s" """%(s.name, str(now))
+            sql = """delete from diskinfo where disk_arrayid="%s" and (disk_updated < "%s" or disk_updated is NULL)"""%(s.name, str(now))
             db.executesql(sql)
             db.commit()
 
@@ -1878,7 +1878,7 @@ def insert_vioserver(name=None, node_id=None):
                          str(disk_level(d['backingdevid'])),
                          now])
         generic_insert('diskinfo', vars, vals)
-        sql = """delete from diskinfo where disk_arrayid="%s" and disk_updated < "%s" """%(s.array_name, str(now))
+        sql = """delete from diskinfo where disk_arrayid="%s" and (disk_updated < "%s" or disk_updated is NULL)"""%(s.array_name, str(now))
         db.executesql(sql)
 
         # svcdisks
@@ -2268,7 +2268,7 @@ def insert_netapp(name=None, node_id=None):
                              d['aggr'],
                              now])
             generic_insert('diskinfo', vars, vals)
-            sql = """delete from diskinfo where disk_arrayid="%s" and disk_updated < "%s" """%(s.array_name, str(now))
+            sql = """delete from diskinfo where disk_arrayid="%s" and (disk_updated < "%s" or disk_updated is NULL)"""%(s.array_name, str(now))
             db.executesql(sql)
             db.commit()
 
@@ -2355,7 +2355,7 @@ def insert_hp3par(name=None, node_id=None):
                              d['UsrCPG'],
                              now])
             generic_insert('diskinfo', vars, vals)
-            sql = """delete from diskinfo where disk_arrayid="%s" and disk_updated < "%s" """%(s.name, str(now))
+            sql = """delete from diskinfo where disk_arrayid="%s" and (disk_updated < "%s" or disk_updated is NULL)"""%(s.name, str(now))
             db.executesql(sql)
             db.commit()
 
@@ -2435,7 +2435,7 @@ def insert_ibmds(name=None, node_id=None):
                              d['PoolName'],
                              now])
             generic_insert('diskinfo', vars, vals)
-            sql = """delete from diskinfo where disk_arrayid="%s" and disk_updated < "%s" """%(s.si['ID'], str(now))
+            sql = """delete from diskinfo where disk_arrayid="%s" and (disk_updated < "%s" or disk_updated is NULL)"""%(s.si['ID'], str(now))
             db.executesql(sql)
             db.commit()
 
@@ -2512,7 +2512,7 @@ def insert_ibmsvc(name=None, node_id=None):
                              d['mdisk_grp_name'],
                              now])
             generic_insert('diskinfo', vars, vals)
-            sql = """delete from diskinfo where disk_arrayid="%s" and disk_updated < "%s" """%(s.array_name, str(now))
+            sql = """delete from diskinfo where disk_arrayid="%s" and (disk_updated < "%s" or disk_updated is NULL)"""%(s.array_name, str(now))
             db.executesql(sql)
             db.commit()
 
@@ -2594,7 +2594,7 @@ def insert_eva(name=None, node_id=None):
                              d['diskgroupname'],
                              now])
             generic_insert('diskinfo', vars, vals)
-            sql = """delete from diskinfo where disk_arrayid="%s" and disk_updated < "%s" """%(s.name, str(now))
+            sql = """delete from diskinfo where disk_arrayid="%s" and (disk_updated < "%s" or disk_updated is NULL)"""%(s.name, str(now))
             db.executesql(sql)
             db.commit()
 
@@ -2711,7 +2711,7 @@ def insert_sym(symid=None, node_id=None):
                              now])
             generic_insert('diskinfo', vars, vals)
             del(s.dev)
-            sql = """delete from diskinfo where disk_arrayid="%s" and disk_updated < "%s" """%(s.info['symid'], str(now))
+            sql = """delete from diskinfo where disk_arrayid="%s" and (disk_updated < "%s" or disk_updated is NULL)"""%(s.info['symid'], str(now))
             db.executesql(sql)
             db.commit()
 
