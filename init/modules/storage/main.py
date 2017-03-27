@@ -147,14 +147,30 @@ class Storage(object):
         if "svc_id" in self.request_data:
             return self.get_svc_nodes()
         if "node_id" in self.request_data:
-            return self.get_node_node()
-        raise Error("neither 'svc_id' nor 'node_id' key in request data")
+            return self.get_node_nodes()
+        if "nodes" in self.request_data:
+            return self.get_nodes_nodes()
+        raise Error("neither 'svc_id', 'nodes' nor 'node_id' key in request data")
 
-    def get_node_node(self):
+    def get_node_nodes(self):
         path = "/nodes/%s" % self.request_data["node_id"]
         data = self.get(path, params={
             "limit": 0,
-            "props": "node_id,nodename",
+            "props": "node_id,nodename,app",
+        })
+        if len(data["data"]) == 0:
+            raise Error("node not found")
+        for i, node in enumerate(data["data"]):
+            node["targets"] = self.get_targets(node["node_id"])
+            data["data"][i] = node
+        return data["data"]
+
+    def get_nodes_nodes(self):
+        path = "/nodes"
+        data = self.get(path, params={
+            "filters": "node_id (%s)" % ",".join([node["node_id"] for node in self.request_data["nodes"]]),
+            "limit": 0,
+            "props": "node_id,nodename,app",
         })
         if len(data["data"]) == 0:
             raise Error("node not found")
@@ -167,7 +183,7 @@ class Storage(object):
         path = "/services/%s/nodes" % self.request_data["svc_id"]
         data = self.get(path, params={
             "limit": 0,
-            "props": "nodes.node_id,nodes.nodename",
+            "props": "nodes.node_id,nodes.nodename,nodes.app",
         })
         if len(data["data"]) == 0:
             raise Error("no nodes found for this service")
@@ -175,6 +191,24 @@ class Storage(object):
             node["targets"] = self.get_targets(node["node_id"])
             data["data"][i] = node
         return data["data"]
+
+    def get_nodes_app_id(self):
+        if "app_id" in self.request_data:
+            return self.request_data["app_id"]
+        app = None
+        for node in self.request_data["nodes"]:
+            if app is None:
+                app = node["app"]
+            elif app != node["app"]:
+                raise ex.excError("selected nodes have different application codes")
+        path = "/apps"
+        data = self.get(path, params={
+            "props": "id",
+            "filters": "app %s" % app,
+        })
+        if len(data["data"]) == 0:
+            raise Error("app %s not found" % app)
+        return data["data"][0]["id"]
 
     def get_targets(self, node_id):
         targets = {}
@@ -334,10 +368,11 @@ class Storage(object):
     #
     # node actions
     #
-    def add_node_disk(self):
-        if "node_id" not in self.request_data:
+    def add_nodes_disk(self):
+        if "node_id" not in self.request_data and "nodes" not in self.request_data:
             raise RequestDataError("The 'node_id' key is mandatory in request data")
         self.request_data["nodes"] = self.get_nodes()
+        self.request_data["app_id"] = self.get_nodes_app_id()
         self.request_data["disks"] = self.get_disks()
         self.request_data["quota"] = self.get_quota()
         self.request_data["array"]["targets"] = self.get_array_targets()
@@ -346,14 +381,14 @@ class Storage(object):
         data = self.driver.add_disk()
         self.put_result(data)
 
-    def del_node_disk(self):
-        if "svc_id" not in self.request_data:
-            raise RequestDataError("The 'svc_id' key is mandatory in request data")
+    def del_nodes_disk(self):
+        if "node_id" not in self.request_data and "nodes" not in self.request_data:
+            raise RequestDataError("The 'node_id' key is mandatory in request data")
         self.driver.del_disk()
 
-    def resize_node_disk(self):
-        if "svc_id" not in self.request_data:
-            raise RequestDataError("The 'svc_id' key is mandatory in request data")
+    def resize_nodes_disk(self):
+        if "node_id" not in self.request_data and "nodes" not in self.request_data:
+            raise RequestDataError("The 'node_id' key is mandatory in request data")
         self.driver.resize_disk()
 
     #
