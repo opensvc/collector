@@ -2582,8 +2582,10 @@ def comp_contextual_rulesets(node_id, svc_id=None, slave=False,
             if rset_id not in public_rsets and rset_id not in rset_ids_via_modset:
                 continue
             if rset_id not in public_rsets and rset_id in rset_ids_via_modset:
-                fset_name += " (matching non-public contextual ruleset shown via moduleset)"
-            ruleset.update(comp_ruleset_vars(rset_id, qr=fset_name,
+                comment = " (matching non-public contextual ruleset shown via moduleset)"
+            else:
+                comment = ""
+            ruleset.update(comp_ruleset_vars(rset_id, qr=fset_name+comment,
                                              matching_fsets=matching_fsets,
                                              rset_relations=rset_relations,
                                              rset_names=rset_names,
