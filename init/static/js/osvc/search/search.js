@@ -342,12 +342,14 @@ function search(divid) {
 	o.open = function() {
 		if (!o.e_search_result.is(':visible')) {
 			toggle('search_result')
+			osvc.body_scroll.disable()
 		}
 	}
 
 	o.close = function() {
 		if (o.e_search_result.is(':visible')) {
 			toggle('search_result')
+			osvc.body_scroll.enable()
 		}
 	}
 

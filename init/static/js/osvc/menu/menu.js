@@ -551,8 +551,8 @@ function menu(divid) {
 		}
 		$(".header").find(".menu").slideUp()
 		o.menu_div.stop().slideDown(function(){
-			osvc.search.filter_menu()
 			osvc.search.e_search_input.val("").focus()
+			osvc.search.filter_menu()
 			osvc.body_scroll.disable()
 		})
 	}
