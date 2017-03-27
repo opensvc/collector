@@ -110,6 +110,7 @@ input.aci, input.aci:focus {
 .icon_fixed_width:before {
 	display: inline-block;
 	width: 1.3em;
+	text-align: left;
 	font-family: FontAwesome;
 }
 .icon {
@@ -396,6 +397,9 @@ tr.tl:last-child {
 .form_group {
 	text-align: left;
 }
+.form_vertical div.form_group {
+	padding-left: 1rem;
+}
 .form_tool:before {
 	color: gray;
 }
@@ -407,7 +411,7 @@ tr.tl:last-child {
 	color: inherit;
 }
 .form_tool {
-	padding: 0.3em 0.3em 0.5em 0.3em;
+	padding: 0.3em 0 0 0.2em;
 	display: inline-block;
 	color: gray;
 }
@@ -2886,7 +2890,7 @@ pre.api_doc {
 	display: inline-block;
 }
 
-.container_head table {
+.container_head > table {
 	border-collapse: initial;
 	border-spacing: 0.3em;
 	margin-bottom: 1em;

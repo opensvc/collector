@@ -545,12 +545,12 @@ function form(divid, options) {
 	}
 
 	o.render_move_group = function() {
-		var div = $("<span class='icon_fixed_width fa-bars form_tool movable'></span>")
+		var div = $("<div class='icon_fixed_width fa-bars form_tool movable'></div>")
 		return div
 	}
 
 	o.render_del_group = function() {
-		var div = $("<span class='icon_fixed_width del16 form_tool'></span>")
+		var div = $("<div class='icon_fixed_width del16 form_tool nowrap'></div>")
 		div.text(i18n.t("forms.del_group"))
 		div.bind("click", function() {
 			$(this).parent().remove()
