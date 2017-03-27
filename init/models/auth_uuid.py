@@ -41,7 +41,7 @@ def node_svc_id(node_id, svcname):
     svc = node_svc(node_id, svcname)
     if svc is None:
         return ""
-    return svc.svc_id
+    return svc["svc_id"]
 
 def create_svc(node_id, svcname):
     node = get_node(node_id)

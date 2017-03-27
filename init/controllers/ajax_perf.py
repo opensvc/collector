@@ -255,8 +255,8 @@ def _ajax_perf_plot(group, sub=[''], last=False, base=None, container=None):
         base = group
     node = request.args[0]
     rowid = request.args[1]
-    begin = None
-    end = None
+    begin = datetime.datetime.now() - datetime.timedelta(days=1)
+    end = datetime.datetime.now()
     try:
         container = request.args[2]
     except:
@@ -264,17 +264,17 @@ def _ajax_perf_plot(group, sub=[''], last=False, base=None, container=None):
 
     for k in request.vars:
         if 'begin_' in k:
-            b = request.vars[k]
+            begin = request.vars[k]
         elif 'end_' in k:
-            e = request.vars[k]
-    if node is None or b is None or e is None:
+            end = request.vars[k]
+    if node is None:
         return SPAN()
 
     plots = []
     plots.append("stats_%(group)s('%(url)s', 'perf_%(group)s_%(rowid)s');"%dict(
       url=URL(r=request,
               f='call/json/json_%s'%group,
-              vars={'node':node, 'b':b, 'e':e, 'container':container}
+              vars={'node':node, 'b':begin, 'e':end, 'container':container}
           ),
       rowid=rowid,
       group=group,
