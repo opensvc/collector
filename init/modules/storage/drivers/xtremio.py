@@ -10,7 +10,7 @@ class Driver(object):
         if len(mappings) == 0:
             raise Error("No mappings found.")
         cmd = [
-            "array", "add", "volume",
+            "array", "add", "disk",
             "-a", self.storage.request_data["array"]["array_name"],
             "--name", self.storage.disk_name(),
             "--size", self.storage.request_data["size"]
@@ -19,14 +19,14 @@ class Driver(object):
         try:
             data = json.loads(ret["data"][0]["stdout"])
         except ValueError:
-            Error("unexpected add volume output format: %s" % ret)
+            Error("unexpected add disk output format: %s" % ret)
         return data
 
     def resize_disk(self):
         if "disk_name" not in self.storage.request_data:
             raise RequestDataError("The 'disk_name' key is mandatory in request data")
         cmd = [
-            "array", "resize", "volume",
+            "array", "resize", "disk",
             "-a", self.storage.request_data["array"]["array_name"],
             "--volume", self.storage.request_data["disk_name"],
             "--size", self.storage.request_data["size"]
@@ -37,7 +37,7 @@ class Driver(object):
         if "disk_name" not in self.storage.request_data:
             raise RequestDataError("The 'disk_name' key is mandatory in request data")
         cmd = [
-            "array", "del", "volume",
+            "array", "del", "disk",
             "-a", self.storage.request_data["array"]["array_name"],
             "--volume", self.storage.request_data["disk_name"]
         ]

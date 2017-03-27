@@ -30,7 +30,7 @@ class Driver(object):
         if "disk_devid" not in self.storage.request_data:
             raise RequestDataError("The 'disk_devid' key is mandatory in request data")
         cmd = [
-            "array", "resize", "tdev",
+            "array", "resize", "disk",
             "-a", self.storage.request_data["array"]["array_name"],
             "--dev", self.storage.request_data["disk_devid"],
             "--size", self.storage.request_data["size"]
