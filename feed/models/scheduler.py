@@ -878,15 +878,6 @@ def _register_disk(vars, vals, auth):
     vars, vals = replace_nodename_in_data(h.keys(), h.values(), auth, fieldname="disk_nodename")
     vars, vals = add_app_id_in_data(vars, vals)
     generic_insert('svcdisks', vars, vals)
-    purge_old_disks(node_id, now)
-
-def purge_old_disks(node_id, now):
-    if node_id is None or node_id == "":
-        return
-    q = db.svcdisks.node_id == node_id
-    q &= db.svcdisks.disk_updated < now
-    db(q).delete()
-    db.commit()
 
 def _insert_pkg(vars, vals, auth):
     now = datetime.datetime.now()
