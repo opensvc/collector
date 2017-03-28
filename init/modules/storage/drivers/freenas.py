@@ -31,7 +31,7 @@ class Driver(object):
         cmd = [
             "array", "resize", "zvol",
             "-a", self.storage.request_data["array"]["array_name"],
-            "--volume", self.storage.request_data["disk_name"],
+            "--name", self.storage.request_data["disk_name"],
             "--size", self.storage.request_data["size"]
         ]
         ret = self.storage.proxy_action(" ".join(cmd))
@@ -42,7 +42,7 @@ class Driver(object):
         cmd = [
             "array", "del", "iscsi", "zvol",
             "-a", self.storage.request_data["array"]["array_name"],
-            "--volume", self.storage.request_data["disk_name"]
+            "--name", self.storage.request_data["disk_name"]
         ]
         ret = self.storage.proxy_action(" ".join(cmd))
 

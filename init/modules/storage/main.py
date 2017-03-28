@@ -362,9 +362,6 @@ class Storage(object):
             raise RequestDataError("The 'svc_id' key is mandatory in request data")
         self.driver.resize_disk()
 
-    def del_array_disk(self):
-        self.driver.del_disk()
-
     #
     # node actions
     #
@@ -394,6 +391,9 @@ class Storage(object):
     #
     # array actions
     #
+    def del_array_disk(self):
+        self.driver.del_disk()
+
     def resize_array_disk(self):
         self.driver.del_disk()
 
