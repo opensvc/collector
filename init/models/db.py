@@ -2087,6 +2087,7 @@ db.define_table('docker_registries_responsibles',
 db.define_table('form_output_results',
     Field('user_id', 'integer'),
     Field('node_id', 'string'),
+    Field('svc_id', 'string'),
     Field('results', 'text'),
     migrate=False)
 

@@ -649,7 +649,10 @@ class rest_put_form(rest_put_handler):
         if form is None:
             raise Exception("the requested form does not exist or you don't have permission to use it")
 
-        form_data = json.loads(data)
+        try:
+            form_data = json.loads(data)
+        except ValueError:
+            raise Exception("unparsable form data: " + str(data))
 
         return form_submit(form, _d=form_data, prev_wfid=prev_wfid)
 
@@ -766,8 +769,12 @@ class rest_get_form_output_result(rest_get_handler):
 
     def handler(self, id, **vars):
         q = db.form_output_results.id == int(id)
-        q = q_filter(q, node_field=db.form_output_results.node_id,
-                     user_field=db.form_output_results.user_id)
+        q = q_filter(
+            q,
+            user_field=db.form_output_results.user_id,
+            node_field=db.form_output_results.node_id,
+            svc_field=db.form_output_results.svc_id,
+        )
         row = db(q).select().first()
         if row is None:
             raise Exception("results not found")
