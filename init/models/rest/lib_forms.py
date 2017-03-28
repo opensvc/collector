@@ -30,11 +30,11 @@ def form_get_val(d, v):
         >>> form_get_val(d, "a.b.c")
         foo
     """
-    if type(v) == str:
+    if type(v) in (str, unicode):
         v = v.split(".")
     for key in v:
         if key not in d:
-            raise ValueError
+            raise ValueError(key)
         if len(v) == 1:
             return d[key]
         return form_get_val(d[key], v[1:])
@@ -707,7 +707,7 @@ def validate_input_data(form_definition, data, _input):
                     raise Exception("Key '%s' not in candidate %s" % (key, str(candidate)))
                 if val == val or str(val) == val or unicode(candidate_val) == val:
                     return
-            raise Exception("Input '%s' value '%s' not in allowed candidates %s obtained from %s" % (input_id, str(val), str(candidates), str(args)))
+            raise Exception("Input '%s' value '%s' not in allowed candidates %s obtained from %s" % (input_id, str(val), str(candidates), "/"+"/".join(args)))
 
 def form_dereference(s, data, prefix=""):
     for key in sorted(data.keys(), reverse=True):
@@ -757,6 +757,7 @@ def form_submit(form, _d=None, prev_wfid=None):
     results["results_id"] = db.form_output_results.insert(
         user_id=auth.user_id if auth.user_id > 0 else None,
         node_id=auth.user.node_id if "node_id" in auth.user else None,
+        svc_id=auth.user.svc_id if "svc_id" in auth.user else None,
         results=sjson.dumps(results, default=datetime.datetime.isoformat)
     )
 
