@@ -42,6 +42,12 @@ def get_svcname(svc_id):
     return s
 
 def get_svc_id(s):
+    if s == "self":
+        if "svc_id" in auth.user:
+            return auth.user["svc_id"]
+        else:
+            raise Exception("the 'self' id can only be used when logged as a service")
+
     svc = get_svc(s)
     if svc:
         return svc.svc_id
