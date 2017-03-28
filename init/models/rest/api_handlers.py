@@ -816,6 +816,7 @@ def get_put_handlers(prefix=None):
         ],
         "services": [
              "rest_put_service_action_queue",
+             "rest_put_service_disks",
         ]
     }
     if prefix:

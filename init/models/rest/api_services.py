@@ -1150,4 +1150,88 @@ class rest_get_service_hbas(rest_get_table_handler):
         return self.prepare_data(**vars)
 
 
+#
+class rest_put_service_disks(rest_put_handler):
+    def __init__(self):
+        desc = [
+          "Provision/Unprovision a service disk.",
+        ]
+        examples = [
+          "# curl -u %(email)s -X PUT -d action=provision -o- https://%(collector)s/init/rest/api/services/1/disks",
+        ]
+        rest_put_handler.__init__(
+          self,
+          path="/services/<id>/disks",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, svc_id, **vars):
+        svc_id = get_svc_id(svc_id)
+        svc_responsible(svc_id)
+        if "action" not in vars:
+            raise Exception("The 'action' parameter is mandatory")
+        action = vars["action"]
+        if action == "unprovision":
+            if "disk_id" not in vars:
+                raise Exception("The 'disk_id' parameter is mandatory")
+            disk_id = vars["disk_id"]
+            q = db.forms.form_name == "storage.array.disk.del"
+            form = db(q).select().first()
+            if form is None:
+                raise Exception("The 'storage.array.disk.del' form is not defined")
+            q = db.diskinfo.disk_id == disk_id
+            q &= db.diskinfo.disk_arrayid == db.stor_array.array_name
+            disk = db(q).select().first()
+            if disk is None:
+                raise Exception("disk %s not found" % disk_id)
+            q &= db.diskinfo.disk_id == db.svcdisks.disk_id
+            q &= db.svcdisks.svc_id == svc_id
+            disk = db(q).select().first()
+            if disk is None:
+                raise Exception("service %s is not responsible of disk %s" % (svc_id, disk_id))
+            form_data = {
+                "array_id": disk.stor_array.id,
+                "disk_id": disk.diskinfo.disk_id,
+                "disk_name": disk.diskinfo.disk_name,
+                "action": "del_array_disk",
+            }
+        elif action == "provision":
+            if "size" not in vars:
+                raise Exception("The 'size' parameter is mandatory")
+            if "array_name" not in vars:
+                raise Exception("The 'array_name' parameter is mandatory")
+            if "diskgroup" not in vars:
+                raise Exception("The 'diskgroup' parameter is mandatory")
+            size = vars["size"]
+            q = db.forms.form_name == "storage.svc.disk.add"
+            form = db(q).select().first()
+            if form is None:
+                raise Exception("The 'storage.array.disk.del' form is not defined")
+            q = db.stor_array_dg.dg_name == vars["diskgroup"]
+            q &= db.stor_array_dg.array_id == db.stor_array.id
+            q &= db.stor_array.array_name == vars["array_name"]
+            row = db(q).select().first()
+            if row is None:
+                raise Exception("array diskgroup not found")
+            q = db.services.svc_id == svc_id
+            svc = db(q).select(db.services.svcname,db.services.svc_app).first()
+            if svc is None:
+                raise Exception("service not found")
+            q = db.apps.app == svc.svc_app
+            app = db(q).select(db.apps.id,db.apps.app).first()
+            if app is None:
+                raise Exception("service app not found")
+            form_data = {
+                "size": size,
+                "svcname": svc.svcname,
+                "svc_id": svc_id,
+                "svc_app": app.app,
+                "app_id": app.id,
+                "array_id": row.stor_array.id,
+                "dg_name": row.stor_array_dg.dg_name,
+                "dg_id": row.stor_array_dg.id,
+                "action": "add_svc_disk",
+            }
+        return form_submit(form, _d=form_data)
 
