@@ -1233,5 +1233,7 @@ class rest_put_service_disks(rest_put_handler):
                 "dg_id": row.stor_array_dg.id,
                 "action": "add_svc_disk",
             }
+            if "slo" in vars:
+                form_data["slo"] = slo
         return form_submit(form, _d=form_data)
 
