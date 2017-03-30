@@ -918,6 +918,28 @@ def _insert_patch(vars, vals, auth):
     generic_insert('patches', vars, vals)
     delete_old_patches(threshold, node_id)
 
+def purge_array_dg(vals):
+    if len(vals) == 0:
+        return
+    array_id = vals[0][0]
+    dg_names = ['"'+str(val[1])+'"' for val in vals]
+    sql = """delete from stor_array_dg where
+             array_id=%s and dg_name not in (%s)
+          """ % (str(array_id), ','.join(dg_names))
+    db.executesql(sql)
+    db.commit()
+
+def purge_array_tgtid(vals):
+    if len(vals) == 0:
+        return
+    array_id = vals[0][0]
+    tgt_ids = ['"'+str(val[1])+'"' for val in vals]
+    sql = """delete from stor_array_tgtid where
+             array_id=%s and array_tgtid not in (%s)
+          """ % (str(array_id), ','.join(tgt_ids))
+    db.executesql(sql)
+    db.commit()
+
 def insert_array_proxy(node_id, array_name):
     if node_id is None:
         return
@@ -979,6 +1001,7 @@ def insert_gcedisks(name=None, node_id=None):
             vals.append([array_id, wwn])
             sw_vals.append(["virtual", "0", "0", wwn, str(datetime.datetime.now())])
         generic_insert('stor_array_tgtid', vars, vals)
+        purge_array_tgtid(vals)
         generic_insert('switches', sw_vars, sw_vals)
 
         # stor_array_dg
@@ -995,8 +1018,7 @@ def insert_gcedisks(name=None, node_id=None):
                          str(total),
                          now])
         generic_insert('stor_array_dg', vars, vals)
-        sql = """delete from stor_array_dg where array_id=%s and dg_updated < date_sub(now(), interval 24 hour) """%array_id
-        db.executesql(sql)
+        purge_array_dg(vals)
 
         # diskinfo
         vars = ['disk_id',
@@ -1076,8 +1098,7 @@ def insert_freenas(name=None, node_id=None):
                          str(avail+used),
                          now])
         generic_insert('stor_array_dg', vars, vals)
-        sql = """delete from stor_array_dg where array_id=%s and dg_updated < date_sub(now(), interval 24 hour) """%array_id
-        db.executesql(sql)
+        purge_array_dg(vals)
 
         # stor_array_tgtid
         vars = ['array_id', 'array_tgtid']
@@ -1085,8 +1106,7 @@ def insert_freenas(name=None, node_id=None):
         for target in s.iscsi_targets:
             vals.append([array_id, target['iscsi_target_name']])
         generic_insert('stor_array_tgtid', vars, vals)
-        sql = """delete from stor_array_tgtid where array_id=%s and updated < date_sub(now(), interval 24 hour) """%array_id
-        db.executesql(sql)
+        purge_array_tgtid(vals)
 
         # load cache
         devices = {}
@@ -1185,8 +1205,7 @@ def insert_xtremio(name=None, node_id=None):
                      str(total),
                      now])
         generic_insert('stor_array_dg', vars, vals)
-        sql = """delete from stor_array_dg where array_id=%s and dg_updated < date_sub(now(), interval 24 hour) """%array_id
-        db.executesql(sql)
+        purge_array_dg(vals)
 
         # stor_array_tgtid
         vars = ['array_id', 'array_tgtid']
@@ -1201,8 +1220,7 @@ def insert_xtremio(name=None, node_id=None):
                 continue
             vals.append([array_id, tgt_id])
         generic_insert('stor_array_tgtid', vars, vals)
-        sql = """delete from stor_array_tgtid where array_id=%s and updated < date_sub(now(), interval 24 hour) """%array_id
-        db.executesql(sql)
+        purge_array_tgtid(vals)
 
         # diskinfo
         vars = ['disk_id',
@@ -1289,8 +1307,7 @@ def insert_dcs(name=None, node_id=None):
                          str(dg['total']),
                          now])
         generic_insert('stor_array_dg', vars, vals)
-        sql = """delete from stor_array_dg where array_id=%s and dg_updated < date_sub(now(), interval 24 hour) """%array_id
-        db.executesql(sql)
+        purge_array_dg(vals)
 
         # stor_array_tgtid
         vars = ['array_id', 'array_tgtid']
@@ -1298,8 +1315,7 @@ def insert_dcs(name=None, node_id=None):
         for wwn in s.port_list:
             vals.append([array_id, wwn])
         generic_insert('stor_array_tgtid', vars, vals)
-        sql = """delete from stor_array_tgtid where array_id=%s and updated < date_sub(now(), interval 24 hour) """%array_id
-        db.executesql(sql)
+        purge_array_tgtid(vals)
 
         # diskinfo
         vars = ['disk_id',
@@ -1375,8 +1391,7 @@ def insert_hds(name=None, node_id=None):
                          str(dg['size']),
                          now])
         generic_insert('stor_array_dg', vars, vals)
-        sql = """delete from stor_array_dg where array_id=%s and dg_updated < "%s" """%(array_id, str(now))
-        db.executesql(sql)
+        purge_array_dg(vals)
 
         # stor_array_tgtid
         vars = ['array_id', 'array_tgtid', 'updated']
@@ -1384,8 +1399,7 @@ def insert_hds(name=None, node_id=None):
         for wwn in s.ports:
             vals.append([array_id, wwn, now])
         generic_insert('stor_array_tgtid', vars, vals)
-        sql = """delete from stor_array_tgtid where array_id=%s and updated < "%s" """%(array_id, str(now))
-        db.executesql(sql)
+        purge_array_tgtid(vals)
 
         # load all of this array devs seens by the nodes
         # index by ldev
@@ -1481,8 +1495,7 @@ def insert_centera(name=None, node_id=None):
                              str(dg['size']),
                              now])
             generic_insert('stor_array_dg', vars, vals)
-            sql = """delete from stor_array_dg where array_id=%s and dg_updated < "%s" """%(array_id, str(now))
-            db.executesql(sql)
+            purge_array_dg(vals)
 
             # diskinfo
             print s.name, "insert disk info"
@@ -1590,8 +1603,7 @@ def insert_emcvnx(name=None, node_id=None):
                              str(dg['size']),
                              now])
             generic_insert('stor_array_dg', vars, vals)
-            sql = """delete from stor_array_dg where array_id=%s and dg_updated < "%s" """%(array_id, str(now))
-            db.executesql(sql)
+            purge_array_dg(vals)
 
             # stor_array_tgtid
             print s.name, "insert port info"
@@ -1600,6 +1612,7 @@ def insert_emcvnx(name=None, node_id=None):
             for wwn in s.ports:
                 vals.append([array_id, wwn])
             generic_insert('stor_array_tgtid', vars, vals)
+            purge_array_tgtid(vals)
 
             # diskinfo
             print s.name, "insert disk info"
@@ -1671,8 +1684,7 @@ def insert_necism(name=None, node_id=None):
                              str(dg['size']),
                              now])
             generic_insert('stor_array_dg', vars, vals)
-            sql = """delete from stor_array_dg where array_id=%s and dg_updated < "%s" """%(array_id, str(now))
-            db.executesql(sql)
+            purge_array_dg(vals)
 
             # stor_array_tgtid
             vars = ['array_id', 'array_tgtid']
@@ -1680,6 +1692,7 @@ def insert_necism(name=None, node_id=None):
             for wwn in s.ports:
                 vals.append([array_id, wwn])
             generic_insert('stor_array_tgtid', vars, vals)
+            purge_array_tgtid(vals)
 
             # diskinfo
             vars = ['disk_id',
@@ -2227,8 +2240,7 @@ def insert_netapp(name=None, node_id=None):
                              str(dg['size']),
                              now])
             generic_insert('stor_array_dg', vars, vals)
-            sql = """delete from stor_array_dg where array_id=%s and dg_updated < "%s" """%(array_id, str(now))
-            db.executesql(sql)
+            purge_array_dg(vals)
 
             # stor_array_tgtid
             vars = ['array_id', 'array_tgtid']
@@ -2236,6 +2248,7 @@ def insert_netapp(name=None, node_id=None):
             for wwn in s.ports:
                 vals.append([array_id, wwn])
             generic_insert('stor_array_tgtid', vars, vals)
+            purge_array_tgtid(vals)
 
             # diskinfo
             vars = ['disk_id',
@@ -2313,8 +2326,7 @@ def insert_hp3par(name=None, node_id=None):
                              "",
                              now])
             generic_insert('stor_array_dg', vars, vals)
-            sql = """delete from stor_array_dg where array_id=%s and dg_updated < "%s" """%(array_id, str(now))
-            db.executesql(sql)
+            purge_array_dg(vals)
 
             # stor_array_tgtid
             vars = ['array_id', 'array_tgtid']
@@ -2322,6 +2334,7 @@ def insert_hp3par(name=None, node_id=None):
             for wwn in s.ports:
                 vals.append([array_id, wwn.lower()])
             generic_insert('stor_array_tgtid', vars, vals)
+            purge_array_tgtid(vals)
 
             # diskinfo
             vars = ['disk_id',
@@ -2396,8 +2409,7 @@ def insert_ibmds(name=None, node_id=None):
                              '1',
                              now])
             generic_insert('stor_array_dg', vars, vals)
-            sql = """delete from stor_array_dg where array_id=%s and dg_updated < "%s" """%(array_id, str(now))
-            db.executesql(sql)
+            purge_array_dg(vals)
 
             # stor_array_tgtid
             vars = ['array_id', 'array_tgtid']
@@ -2405,6 +2417,7 @@ def insert_ibmds(name=None, node_id=None):
             for ioport in s.ioport:
                 vals.append([array_id, ioport['WWPN'].lower()])
             generic_insert('stor_array_tgtid', vars, vals)
+            purge_array_tgtid(vals)
 
             # diskinfo
             vars = ['disk_id',
@@ -2475,8 +2488,7 @@ def insert_ibmsvc(name=None, node_id=None):
                              str(dg['capacity']),
                              now])
             generic_insert('stor_array_dg', vars, vals)
-            sql = """delete from stor_array_dg where array_id=%s and dg_updated < "%s" """%(array_id, str(now))
-            db.executesql(sql)
+            purge_array_dg(vals)
 
             # stor_array_tgtid
             vars = ['array_id', 'array_tgtid']
@@ -2484,6 +2496,7 @@ def insert_ibmsvc(name=None, node_id=None):
             for wwn in s.ports:
                 vals.append([array_id, wwn])
             generic_insert('stor_array_tgtid', vars, vals)
+            purge_array_tgtid(vals)
 
             # diskinfo
             vars = ['disk_id',
@@ -2553,8 +2566,7 @@ def insert_eva(name=None, node_id=None):
                              str(dg['totalstoragespace']),
                              now])
             generic_insert('stor_array_dg', vars, vals)
-            sql = """delete from stor_array_dg where array_id=%s and dg_updated < "%s" """%(array_id, str(now))
-            db.executesql(sql)
+            purge_array_dg(vals)
 
             # stor_array_tgtid
             vars = ['array_id', 'array_tgtid']
@@ -2562,6 +2574,7 @@ def insert_eva(name=None, node_id=None):
             for wwn in s.ports:
                 vals.append([array_id, wwn])
             generic_insert('stor_array_tgtid', vars, vals)
+            purge_array_tgtid(vals)
 
             # diskinfo
             vars = ['disk_id',
@@ -2660,9 +2673,8 @@ def insert_sym(symid=None, node_id=None):
                              now])
 
             generic_insert('stor_array_dg', vars, vals)
+            purge_array_dg(vals)
             del(s.diskgroup)
-            sql = """delete from stor_array_dg where array_id=%s and dg_updated < "%s" """%(array_id, str(now))
-            db.executesql(sql)
 
             # stor_array_tgtid
             vars = ['array_id', 'array_tgtid']
@@ -2675,6 +2687,7 @@ def insert_sym(symid=None, node_id=None):
                     print "  ", wwn
                     vals.append([array_id, wwn])
             generic_insert('stor_array_tgtid', vars, vals)
+            purge_array_tgtid(vals)
             del(s.director)
 
             # diskinfo
