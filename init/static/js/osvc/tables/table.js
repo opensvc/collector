@@ -569,9 +569,14 @@ function table_init(opts) {
 			return
 		}
 
-		if (osvc.user_prefs.data.tables[t.id]["visible_columns"].length == 0) {
+		if (!osvc.user_prefs.data.tables[t.id]["visible_columns"] ||
+		    osvc.user_prefs.data.tables[t.id]["visible_columns"].length == 0) {
 			// init with default visibility defined in colprops
-			t.options.visible_columns = t.options.default_columns
+			if (t.options.default_columns) {
+				t.options.visible_columns = t.options.default_columns
+			} else {
+				t.options.visible_columns = t.options.columns
+			}
 		} else {
 			// adjust with db-stored user's prefs
 			t.options.visible_columns = osvc.user_prefs.data.tables[t.id]["visible_columns"]
