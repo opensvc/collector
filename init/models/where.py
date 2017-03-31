@@ -138,13 +138,13 @@ def _where(query, table, var, field, depth=0, db=db):
             try:
                c = int(chunk)
                q = db[table][field]==c
-            except:
+            except ValueError:
                pass
         elif db[table][field].type == 'float':
             try:
                c = float(chunk)
                q = db[table][field]==c
-            except:
+            except ValueError:
                pass
         elif db[table][field].type == 'boolean':
             if chunk in ('T', 't', "true", "True", True, "yes", "Yes", "YES", "Y", "y"):
@@ -160,18 +160,25 @@ def _where(query, table, var, field, depth=0, db=db):
             return query
 
         chunk = chunk[1:]
+        q = None
 
         if field not in db[table]:
             pass
         elif db[table][field].type in ('datetime', 'timestamp', 'date'):
             chunk = delta_to_date(chunk)
+        elif db[table][field].type in ('id', 'integer'):
+            try:
+                chunk = int(chunk)
+            except ValueError:
+                q = db[table].id < 0
 
-        if _op == '>':
-            q = db[table][field]>chunk
-        elif _op == '<':
-            q = db[table][field]<chunk
-        elif _op == '=':
-            q = db[table][field]==chunk
+        if q is None:
+            if _op == '>':
+                q = db[table][field]>chunk
+            elif _op == '<':
+                q = db[table][field]<chunk
+            elif _op == '=':
+                q = db[table][field]==chunk
 
     if _not:
         q = ~q
