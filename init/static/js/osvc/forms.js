@@ -887,7 +887,7 @@ function form(divid, options) {
 		return div
 	}
 	o.render_text = function(d, content) {
-		var textarea = $("<textarea class='oi pre' style='padding:0.4em;width:17em;height:8em'>")
+		var textarea = $("<textarea class='oi pre' style='padding:0.4em;min-width:17em;min-height:8em'>")
 		if (d.ReadOnly == true) {
 			textarea.prop("disabled", true)
 		}
