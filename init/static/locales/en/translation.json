@@ -31,6 +31,8 @@
 		"add_filterset": "Add filterset"
 	},
 	"designer": {
+		"search": "Filter the tree",
+		"resize": "Drag to resize the panel, Double-Click to open a second tree",
 		"delete": "Delete",
 		"rename": "Rename",
 		"clone": "Clone",

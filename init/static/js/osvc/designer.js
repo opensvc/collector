@@ -1490,6 +1490,9 @@ function designer(divid, options) {
 		o.e_search_input2 = o.div.find("#casearch2")
 
 
+		o.div.i18n()
+		o.e_sep.tooltipster()
+
 		if (!osvc.user_prefs.data.designer) {
 			osvc.user_prefs.data.designer = {
 				"search": "",

@@ -31,6 +31,8 @@
 		"add_filterset": "Ajouter un jeu de filtres"
 	},
 	"designer": {
+		"search": "Filtrer l'arbre",
+		"resize": "Glisser pour redimensionner le panneau, Double-cliquer pour ouvrir un deuxième arbre",
 		"delete": "Supprimer",
 		"rename": "Renommer",
 		"clone": "Cloner",
@@ -361,11 +363,11 @@
 		"year": "__count__ an",
 		"year_plural": "__count__ ans",
 		"volatile": "Filtres volatiles",
-		"volatile_help": "Activé, les filtres de colonne ne sont pas sauvegarde sur le serveur.",
+		"volatile_help": "Activé, les filtres de colonne ne sont pas sauvegardés sur le serveur",
 		"live": "Live",
-		"live_help": "Active et désactive le rechargement automatique des données sur événement coté serveur.",
+		"live_help": "Active et désactive le rechargement événementiel des données",
 		"link": "Lien",
-		"link_help": "Partagez votre vue avec des collaborateurs.",
+		"link_help": "Partagez votre vue avec des collaborateurs",
 		"bookmarks": "Marque-pages",
 		"bookmarks_save": "Enregistrer les filtres actuels en marque-page",
 		"bookmarks_save_name": "Entrez le nom du nouveau marque-page",
@@ -374,7 +376,7 @@
 		"csv": "Export to csv",
 		"columns": "Colonnes",
 		"commonality": "Communité",
-		"commonality_help": "Affiche les valeurs les plus fréquentes de chaque colonne du tableau.",
+		"commonality_help": "Affiche les valeurs les plus fréquentes de chaque colonne du tableau",
 		"filter": "Filtre: "
 	},
 	"app": {
