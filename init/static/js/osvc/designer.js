@@ -1491,7 +1491,7 @@ function designer(divid, options) {
 
 
 		o.div.i18n()
-		o.e_sep.tooltipster()
+		o.div.find("[title]").tooltipster()
 
 		if (!osvc.user_prefs.data.designer) {
 			osvc.user_prefs.data.designer = {

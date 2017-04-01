@@ -33,6 +33,7 @@
 	"designer": {
 		"search": "Filtrer l'arbre",
 		"resize": "Glisser pour redimensionner le panneau, Double-cliquer pour ouvrir un deuxième arbre",
+		"collapse": "Fermer toutes les branches des arbres",
 		"delete": "Supprimer",
 		"rename": "Renommer",
 		"clone": "Cloner",

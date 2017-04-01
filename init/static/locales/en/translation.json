@@ -33,6 +33,7 @@
 	"designer": {
 		"search": "Filter the tree",
 		"resize": "Drag to resize the panel, Double-Click to open a second tree",
+		"collapse": "Collapse all tree nodes",
 		"delete": "Delete",
 		"rename": "Rename",
 		"clone": "Clone",
