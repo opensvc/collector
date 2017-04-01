@@ -3342,7 +3342,7 @@ function table_action_menu(t, e){
 }
 
 function format_search(t, o) {
-	o.e_search = $("<input class='oi' id='amsearch'>")
+	o.e_search = $("<input class='oi' id='amsearch' style='width:100%'>")
 	o.e_search.attr("placeholder", i18n.t("table.filter_menu"))
 	o.menu.append(o.e_search)
 	if (is_in_view(o.e_search)) {
