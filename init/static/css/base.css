@@ -2805,9 +2805,9 @@ div.designer {
 	height: 100%;
 }
 .casep {
-	cursor:pointer;
-	width:5px;
-	background-color:lightgray;
+	cursor: col-resize;
+	width: 0.5em;
+	border-left: 1px solid #eee;
 }
 .cainfo {
 	overflow-y:auto;

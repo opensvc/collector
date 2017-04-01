@@ -149,23 +149,8 @@ function designer(divid, options) {
 			// we were triggered by an event but not fully initialized
 			return
 		}
-		var i_height = o.e_search_input.outerHeight()
-		var t_height = o.e_close.outerHeight()
 		var height = $(window).height()-$(".header").outerHeight()-$(".footer").outerHeight()
-		var l_width = 0
-		o.div.find(".catree:visible,#casep").each(function(){
-			l_width += $(this).outerWidth(true)
-		})
 		o.div.height(height)
-
-		// occupy all vertical space
-		o.e_tree.outerHeight(height - i_height)
-		o.e_tree2.outerHeight(height - i_height)
-		o.e_sep.outerHeight(height)
-		o.e_info.outerHeight(height - t_height)
-
-		// make the info panel occupy the whole right-most space
-		o.e_info.outerWidth(o.div.innerWidth() - l_width - 1)
 	}
 
 	o.monitor_doc_height = function(t) {
@@ -1500,7 +1485,7 @@ function designer(divid, options) {
 		o.e_tree2 = o.div.find("#catree2")
 		o.e_tree_container2 = o.e_tree2.parent()
 		o.e_info = o.div.find("#cainfo")
-		o.e_sep = o.div.find("#casep")
+		o.e_sep = o.div.find(".casep")
 		o.e_search_input = o.div.find("#casearch")
 		o.e_search_input2 = o.div.find("#casearch2")
 
@@ -1651,23 +1636,23 @@ function designer(divid, options) {
 		// tree width change when dragging the separator
 		o.e_sep.mousedown(function(){
 			$("body").addClass("noselect")
+			var tree = $(this).prev()
 			var ini_x = event.pageX
-			var ini_w = $("#catree").width()
+			var ini_w = tree.width()
 			$(document).bind("mousemove", function(){
-				$("#catree").css({"width": ini_w+event.pageX-ini_x})
-				o.resizer()
+				tree.css({"width": ini_w+event.pageX-ini_x})
 			})
 		})
 		$(document).mouseup(function(){
 			$("body").removeClass("noselect")
-			$(this).unbind("mousemove")
+			$(document).unbind("mousemove")
 		})
 
 		// double click on the separator opens the 2nd tree
 		o.e_sep.dblclick(function(){
 			o.e_tree_container2.toggle()
+			o.e_tree_container2.next().toggle()
 			o.e_tree_container2.find("#catree2:visible").jstree("refresh");
-			o.resizer()
 		})
 
 		$(window).bind("resize", o.resizer)
