@@ -2285,10 +2285,16 @@ div.formentry.form_folder {
 	-webkit-border-radius: 4px;
 	min-height: 1em;
 	border-radius: 4px;
-	padding: 3px;
+	padding: 1em;
 	border: 1px solid #eee;
 	background-color: rgb(252,252,252);
 	overflow: auto;
+}
+.postit table {
+	width:100%;
+}
+.postit input,textarea {
+	width:100%;
 }
 
 .syntax_blue {
@@ -2638,9 +2644,8 @@ textarea.link_ta_sub {
 }
 
 .ql {
-	float: right;
+	vertical-align: middle;
 	font-size: 18px;
-	padding: 0.3em;
 }
 
 .button_div {
@@ -2794,25 +2799,26 @@ div.containertrans {
 	-moz-transform: translate(0px,40px); /* Firefox */
 }
 
-.designer {
+div.designer {
 	text-align:left;
+	display: flex;
+	height: 100%;
 }
 .casep {
-	float:left;
 	cursor:pointer;
 	width:5px;
 	background-color:lightgray;
 }
 .cainfo {
-	float:left;
 	overflow-y:auto;
-	float:left;
-	padding:20px;
+	padding: 1rem;
+	flex: 1;
 }
 .catree {
-	overflow-x: overlay;
-	overflow-y: scroll;
-	float: left;
+	overflow-x: auto;
+	overflow-y: auto;
+	padding: 0.5em;
+	height: 100%;
 }
 .casearch {
 }
