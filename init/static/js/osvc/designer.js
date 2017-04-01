@@ -129,10 +129,10 @@ function designer(divid, options) {
 		return function() {
 			if (tree==2) {
 				var search = o.e_search_input2
-				var osearch = o.options.search2
+				var osearch = osvc.user_prefs.data.designer.search2
 			} else {
 				var search = o.e_search_input
-				var osearch = o.options.search
+				var osearch = osvc.user_prefs.data.designer.search
 			}
 			var val = search.val()
 			if ((!val || (val == "")) && osearch) {
@@ -1490,6 +1490,18 @@ function designer(divid, options) {
 		o.e_search_input2 = o.div.find("#casearch2")
 
 
+		if (!osvc.user_prefs.data.designer) {
+			osvc.user_prefs.data.designer = {
+				"search": "",
+				"search2": ""
+			}
+		}
+		if (o.options.search) {
+			osvc.user_prefs.data.designer.search = o.options.search
+		}
+		if (o.options.search2) {
+			osvc.user_prefs.data.designer.search2 = o.options.search2
+		}
 		if (o.options.search2) {
 			o.e_tree_container2.show(500)
 		}
@@ -1624,11 +1636,15 @@ function designer(divid, options) {
 
 		o.e_search_input.keyup(function(event){
 			if (is_enter(event)) {
+				osvc.user_prefs.data.designer.search = $(this).val()
+				osvc.user_prefs.save()
 				$("#catree:visible").jstree("refresh");
 			}
 		})
 		o.e_search_input2.keyup(function(event){
 			if (is_enter(event)) {
+				osvc.user_prefs.data.designer.search2 = $(this).val()
+				osvc.user_prefs.save()
 				$("#catree2:visible").jstree("refresh");
 			}
 		})
