@@ -287,7 +287,6 @@ function table_actions(divid, options) {
 			}
 		},
 		'volatile_filters': false,
-		"volatile_prefs": true,
 		'child_tables': [],
 		'parent_tables': [],
 		'dataable': true,
