@@ -1433,8 +1433,8 @@ function osvc_nodename(node_id) {
 	return e
 }
 
-function osvc_get_link(divid,link_id) {
-	services_osvcgetrest("R_LINK",[link_id] , "", function(jd) {
+function osvc_get_link(divid, link_id) {
+	services_osvcgetrest("R_LINK", [link_id], "", function(jd) {
 		if (jd.data.length === 0) {
 			// Link not found
 			var val = "<div style='text-align:center'>" + i18n.t("link.notfound")+"</div>"
