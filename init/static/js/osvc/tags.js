@@ -14,13 +14,45 @@ function tags(options) {
 	o.div.css({"min-height": "1em"})
 
 	o.load = function() {
+		// try to guess a title element
+		if (!o.options.e_title) {
+			o.options.e_title = o.div.prev(".line").children().first()
+		}
+
+		// init tags zone
+		o.e_tags = $("<div class='tag_container' name='tag_container'></div>")
+		o.div.append(o.e_tags)
+
+		// init candidates
+		o.e_candidates = $("")
+
+		// init edit/add/del tools
+		if (o.options.responsible && o.options.candidates != true) {
+			o.e_tools = $("<div class='tag_container mb-2 mt-2'></div>")
+			o.e_del_tag = o.add_del_tag().hide()
+			o.e_add_tag = o.add_add_tag().hide()
+			o.e_tools.append(o.e_del_tag)
+			o.e_tools.append(o.e_add_tag)
+			o.div.append(o.e_tools)
+			o.add_edit()
+		} else {
+			o.e_tools = $("")
+			o.e_edit = $("")
+			o.e_del_tag = $("")
+			o.e_add_tag = $("")
+		}
+
 		// init error display zone
 		if (!o.div.info) {
 			info = $("<div></div>")
 			o.div.append(info)
 			o.div.info = info
 		}
+		o.reload_tags()
 		o.div.info.empty()
+	}
+
+	o.reload_tags = function() {
 		spinner_add(o.div.info)
 		o.get(o.options.fval, function(_data) {
 			spinner_del(o.div.info)
@@ -30,8 +62,10 @@ function tags(options) {
 			}
 			if (o.options.title && o.options.e_title && _data.meta) {
 				o.options.e_title.text(i18n.t(o.options.title) + " (" + _data.meta.total + ")")
+				o.add_edit()
 			}
 			_data = _data.data
+			o.e_tags.empty()
 			if ((_data.length == 0) && o.options.candidates) {
 				if (o.options.create) {
 					var msg = "tags.no_candidates_create"
@@ -40,23 +74,20 @@ function tags(options) {
 				}
 				o.div.info.text(i18n.t(msg))
 			}
-			d = $("<div class='tag_container' name='tag_container'></div>")
 			for (i=0; i<_data.length; i++) {
-				d.append(o.add_tag(_data[i]), " ")
+				o.e_tags.append(o.add_tag(_data[i]), " ")
 			}
-			if (o.options.responsible && o.options.candidates != true) {
-				o.e_del_tag = o.add_del_tag()
-				o.e_add_tag = o.add_add_tag()
-				d.append(o.e_del_tag)
-				d.append(o.e_add_tag)
-			} else {
-				o.e_del_tag = $("")
-				o.e_add_tag = $("")
+			if (_data.length > 4) {
+				o.e_tags.addClass("grow")
 			}
-			o.div.find("[name=tag_container]").remove()
-			o.div.prepend(d)
-
 			o.bind_admin_tools()
+			o.e_tags.children("[tag_id]").draggable({
+				"opacity": 0.6,
+				"addClasses": false,
+				"revert": true,
+				"refreshPositions": true,
+				"zIndex": 3001
+			})
 		},
 		function(xhr, stat, error) {
 			o.div.info.html(services_ajax_error_fmt(xhr, stat, error))
@@ -65,12 +96,16 @@ function tags(options) {
 
 	o.add_tag = function(tag_data) {
 		if (o.options.candidates == true) {
+			if (o.options.parent_object.e_tags.find("[tag_id="+tag_data[o.options.id]+"]").length > 0) {
+				// candidate already attached
+				return
+			}
 			cl = "icon tag tag_candidate"
 		} else {
 			cl = "icon tag tag_attached"
 		}
 		s = "<span tag_id='"+tag_data[o.options.id]+"' class='"+cl+"'>"+tag_data[o.options.tag_name]+" </span>"
-		e = $(s)
+		var e = $(s)
 		if (o.options.bgcolor) {
 			e.css({"background-color": o.options.bgcolor})
 		}
@@ -118,18 +153,6 @@ function tags(options) {
 				}
 			})
 		})
-		e.draggable({
-			"opacity": 0.6,
-			"addClasses": false,
-			"revert": true,
-			"zIndex": 3001,
-			"start": function(event, ui) {
-				o.e_del_tag.show()
-			},
-			"stop": function(event, ui) {
-				o.e_del_tag.hide()
-			}
-		})
 		return e
 	}
 
@@ -139,28 +162,46 @@ function tags(options) {
 		})
 	}
 
+	o.add_edit = function() {
+		if (o.options.candidates) {
+			return
+		}
+		var e = $("<span class='clickable editable editable-placeholder' style='cursor:pointer'></span>")
+		e.bind("click", function(){
+			if (o.e_add_tag.is(":visible")) {
+				o.e_add_tag.hide()
+				o.e_del_tag.hide()
+				o.e_candidates.hide()
+			} else {
+				o.e_add_tag.show()
+				o.e_del_tag.show()
+				o.e_candidates.show()
+			}
+		})
+		o.e_edit = e
+		if (o.options.e_title) {
+			o.options.e_title.append(o.e_edit)
+		}
+		return e
+	}
+
 	o.add_add_tag = function() {
 		if (o.options.candidates) {
 			return
 		}
-		e = $("<span class='icon tag_add'></span>")
-		e.css({"display": "none"})
+		var e = $("<span class='icon tag tag_add'></span>")
 		e.text(i18n.t("tags.add"))
 		e.bind("click", function(){
-			old_html = $(this).html()
-			e = $(this).find(".tag_input")
+			var e = $(this).find(".tag_input")
 			if (e.length>0) {
 				return
 			}
-			s = "<input class='tag_input'></input>"
-			$(this).html(s)
-			e = $(this).find(".tag_input")
-			e.bind("keyup", function(event){
-				tag = $(this).parent()
-				tag_name = $(this).val()
-				o.input_keyup(event, tag, tag_name)
+			o.e_tag_add_input = $("<input class='tag_input'></input>")
+			$(this).html(o.e_tag_add_input)
+			o.e_tag_add_input.bind("keyup", function(event){
+				o.input_keyup(event)
 			})
-			e.focus()
+			o.e_tag_add_input.focus()
 		})
 		return e
 	}
@@ -169,8 +210,7 @@ function tags(options) {
 		if (o.options.candidates) {
 			return
 		}
-		e = $("<span class='icon tag_del'></span>")
-		e.css({"display": "none"})
+		var e = $("<span class='icon tag tag_del'></span>")
 		e.text(i18n.t("tags.del"))
 		e.droppable({
 			accept: ".tag",
@@ -183,8 +223,8 @@ function tags(options) {
 		return e
 	}
 
-	o.add_candidates = function(tag, tag_name) {
-		fval = o.div.find(".tag_input").val()
+	o.add_candidates = function() {
+		fval = o.e_tag_add_input.val()
 		if (fval.length == 0) {
 			fval = '%'
 		} else {
@@ -207,16 +247,17 @@ function tags(options) {
 			"candidates": true
 		})
 		o.div.find("#"+ctid).parent().remove()
-		e = $("<span><h3>"+i18n.t("tags.candidates")+"</h3><div id='"+ctid+"' class='tags'></div></span>")
+		o.e_candidates = $("<span><h3>"+i18n.t("tags.candidates")+"</h3><div id='"+ctid+"' class='tags'></div></span>")
 		if (o.options.bgcolor) {
-			e.css({"background-color": o.options.bgcolor})
+			o.e_candidates.css({"background-color": o.options.bgcolor})
 		}
-		o.div.append(e)
+		o.div.append(o.e_candidates)
 		o.candidates = tags(options)
 	}
 
 	o._attach_tag = function(tag_data) {
-		o.div.info.empty()
+		var tag = o.div.find("[tag_id="+tag_data["id"]+"]")
+		tag.remove()
 		spinner_add(o.div.info, i18n.t("tags.attaching"))
 		o.options.attach(tag_data, function(jd) {
 			spinner_del(o.div.info)
@@ -226,10 +267,9 @@ function tags(options) {
 			}
 			// refresh tags
 			if (o.options.parent_object) {
-				o.div.parent().remove()
-				o.options.parent_object.load()
+				o.options.parent_object.reload_tags()
 			} else {
-				o.load()
+				o.reload_tags()
 			}
 		},
 		function(xhr, stat, error) {
@@ -256,7 +296,7 @@ function tags(options) {
 					o.div.info.html(services_ajax_error_fmt(xhr, stat, error))
 				})
 			} else if (jd.data && (jd.data.length == 1)) {
-				// tag elready exists
+				// tag already exists
 				o._attach_tag(jd.data[0])
 			} else {
 				console.log("no candidate found")
@@ -286,10 +326,16 @@ function tags(options) {
 			spinner_del(o.div.info)
 			if (jd.error) {
 				o.div.info.html(services_error_fmt(jd))
+				tag.show()
 				return
 			}
-			// refresh tags
-			o.load()
+			tag.remove()
+			fval = o.e_tag_add_input.val()
+			if (fval && (fval != "")) {
+				// refresh candidates, in case the removed tag
+				// should appear in the candidates list
+				o.add_candidates()
+			}
 		},
 		function(xhr, stat, error) {
 			tag.show()
@@ -299,27 +345,18 @@ function tags(options) {
 
 	o.bind_admin_tools = function() {
 		// show tag admin tools to responsibles and managers
-		if (o.options.responsible) {
-			o._bind_admin_tools()
-			return
+		if (o.options.responsible || services_ismemberof("Manager")) {
+			o.e_edit.show()
+		} else {
+			o.e_edit.hide()
 		}
-		if (services_ismemberof("Manager")) {
-			o._bind_admin_tools()
-		}
-	}
-	o._bind_admin_tools = function() {
-		o.div.hover(
-			function(){
-				o.div.find(".tag_add").show()
-			},
-			function(){
-				o.div.find(".tag_add").hide()
-			}
-		)
 	}
 
 	o.event_handler = function(data) {
 		if (o.options.candidates == true) {
+			return
+		}
+		if (o.e_add_tag.is(":visible")) {
 			return
 		}
 		if (o.options.event_handler) {
@@ -330,21 +367,22 @@ function tags(options) {
 			// simple reload tags action
 			for (var i=0; i<o.options.events.length; i++) {
 				if (o.options.events[i] == data.event) {
-					o.load()
+					o.reload_tags()
 					return
 				}
 			}
 		}
 	}
 
-	o.input_keyup = function(event, tag, tag_name) {
+	o.input_keyup = function(event) {
+		tag = $(event.target).parent()
 		if (!is_enter(event)) {
 			tag.removeClass("tag_create")
 			tag.find("input").removeClass("tag_create")
-			o.add_candidates(tag, tag_name)
+			o.add_candidates()
 			return
 		}
-		o.attach_tag({"tag_name": tag_name})
+		o.attach_tag({"tag_name": o.e_tag_add_input.val()})
 	}
 
 	o.get = function(fval, callback, callback_err) {

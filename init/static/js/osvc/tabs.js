@@ -523,7 +523,7 @@ tab_properties_generic_updater = function(options) {
 		if (updater == "org_group") {
 			$(this).osvc_org_group()
 		} else if ((updater == "org_group_id") || (updater == "primary_group")) {
-			$(this).osvc_org_group({"group_id": e.attr("acid")})
+			$(this).osvc_org_group({"group_id": $(this).attr("acid")})
 		} else if (updater == "app") {
 			$(this).osvc_app()
 		} else if (updater == "user_app") {
@@ -656,7 +656,9 @@ tab_properties_generic_list = function(options) {
 					}
 				})
 			})
-
+			if (data.length > 4) {
+				options.e_list.addClass("grow")
+			}
 		}
 		if (total > n) {
 			var e = $("<span></span>")

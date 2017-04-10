@@ -456,6 +456,7 @@ img {
 	border: 0;
 	background-color:#5d5d5d;
 	width:5em;
+	line-height: 1.6em;
 }
 .tag_input:focus {
 	background-color:#5d5d5d;
@@ -464,6 +465,7 @@ img {
 	content: '\f146';
 }
 .tag_del {
+	flex: 1 0 100%;
 	padding: 0 20px 0 20px;
 	min-height: 16px;
 	line-height: 1.7em;
@@ -491,6 +493,7 @@ img {
 	content: '\f0fe';
 }
 .tag_add {
+	flex: 1 0 100%;
 	white-space: nowrap;
 	line-height: 1.7em;
 	margin: 0.1em;
@@ -514,6 +517,9 @@ img {
 }
 .tag:before {
 	color: whitesmoke !important;
+}
+.tag_container.grow > * {
+	flex-grow: 1;
 }
 .tag {
 	display: inline-block;
@@ -2682,6 +2688,9 @@ textarea.link_ta_sub {
 .editable-placeholder:after {
 	color: #dddddd;
 }
+.editable-placeholder:hover:after {
+	color: black;
+}
 .editable:after {
 	content: '\f040';
 	padding-left: 0.3em;
@@ -2997,6 +3006,9 @@ pre.api_doc {
 }
 .icon-gray:before {
 	color: #666666;
+}
+.icon-black:before {
+	color: black !important;
 }
 
 .nocolor:before {
