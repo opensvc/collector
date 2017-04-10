@@ -203,7 +203,7 @@ class rest_get_user_apps_responsible(rest_get_table_handler):
         )
 
     def handler(self, id, **vars):
-        if "Manager" in user_groups():
+        if "Manager" in user_groups(id):
             q = db.apps.id > 0
         else:
             q = allowed_user_ids_q()
@@ -234,7 +234,7 @@ class rest_get_user_apps_publication(rest_get_table_handler):
         )
 
     def handler(self, id, **vars):
-        if "Manager" in user_groups():
+        if "Manager" in user_groups(id):
             q = db.apps.id > 0
         else:
             q = allowed_user_ids_q()
