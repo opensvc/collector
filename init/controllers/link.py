@@ -5,7 +5,6 @@ def link():
     link_div = DIV(
       SCRIPT("""$.when(osvc.app_started).then(function(){ osvc_get_link("link", "%(link_id)s")})""" % dict(link_id=link_id)),
       _id="link",
-      _style="text-align:left",
     )
 
     return dict(table=link_div)
