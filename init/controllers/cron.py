@@ -212,12 +212,14 @@ def cron_stats():
     except Exception as e:
         print(e)
         pass
+    db.commit()
 
 def cron_stat_day_disk():
     cron_stat_day_disk_app()
     cron_stat_day_disk_app_dg()
     cron_stat_day_disk_array()
     cron_stat_day_disk_array_dg()
+    db.commit()
 
 def cron_stat_day_disk_app():
     sql = """insert ignore into stat_day_disk_app
