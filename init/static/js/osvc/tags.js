@@ -23,8 +23,9 @@ function tags(options) {
 		o.e_tags = $("<div class='tag_container' name='tag_container'></div>")
 		o.div.append(o.e_tags)
 
-		// init candidates
+		// init placeholders
 		o.e_candidates = $("")
+		o.e_tag_add_input = $("")
 
 		// init edit/add/del tools
 		if (o.options.responsible && o.options.candidates != true) {
