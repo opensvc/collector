@@ -357,7 +357,7 @@ function tags(options) {
 		if (o.options.candidates == true) {
 			return
 		}
-		if (o.e_add_tag.is(":visible")) {
+		if (!o.e_add_tag || o.e_add_tag.is(":visible")) {
 			return
 		}
 		if (o.options.event_handler) {
