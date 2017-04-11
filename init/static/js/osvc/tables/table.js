@@ -3044,6 +3044,14 @@ function table_init(opts) {
 		}
 	}
 
+	t.refresh_menu_data_cache = function(entry, e) {
+		var scope = entry.attr("scope")
+		var selector = $.data(entry[0], "selector")
+		var cache_id = selector.condition + '-' + scope
+		t.action_menu_req_cache = null
+		t.action_menu_data_cache[cache_id] = table_action_menu_get_cols_data(t, e, scope, selector)
+	}
+
 	t.refresh_timer = null
 	t.init_colprops()
 
@@ -3646,6 +3654,8 @@ function table_prepare_scope_action_list(t, o, e, selector, scope, data, cache_i
 		}
 		if (cache_id) {
 			li.attr("cache_id", cache_id)
+			li.attr("scope", scope)
+			$.data(li[0], "selector", selector)
 		}
 		li.on("click", function(e) {
 			e.stopPropagation()

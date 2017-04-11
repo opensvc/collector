@@ -3164,6 +3164,7 @@ function data_action_action_queue_cancel(t, e) {
 		if (jd.info && (jd.info.length > 0)) {
 			osvc.flash.info(services_info_fmt(jd))
 		}
+		t.refresh_menu_data_cache(entry, e)
 	},
 	function(xhr, stat, error) {
 		osvc.flash.error(services_ajax_error_fmt(xhr, stat, error))
@@ -3191,6 +3192,7 @@ function data_action_action_queue_redo(t, e) {
 		if (jd.info && (jd.info.length > 0)) {
 			osvc.flash.info(services_info_fmt(jd))
 		}
+		t.refresh_menu_data_cache(entry, e)
 	},
 	function(xhr, stat, error) {
 		osvc.flash.error(services_ajax_error_fmt(xhr, stat, error))
@@ -3419,6 +3421,8 @@ function data_action_delete_node_ips(t, e) {
 function data_action_ack_actions(t, e) {
 	var entry = $(e.target)
 	var cache_id = entry.attr("cache_id")
+	var scope = entry.attr("scope")
+	var selector = $.data(entry[0], "selector")
 	var data = t.action_menu_data_cache[cache_id]
 	var post_data = new Array()
 
@@ -3456,6 +3460,7 @@ function data_action_ack_actions(t, e) {
 			if (jd.info && (jd.info.length > 0)) {
 				result.html(services_info_fmt(jd))
 			}
+			t.refresh_menu_data_cache(entry, e)
 		},
 		function(xhr, stat, error) {
 			result.html(services_ajax_error_fmt(xhr, stat, error))
@@ -4518,6 +4523,7 @@ function data_action_generic(t, e, options) {
 			if (jd.info && (jd.info.length > 0)) {
 				result.html(services_info_fmt(jd))
 			}
+			t.refresh_menu_data_cache(entry, e)
 		},
 		function(xhr, stat, error) {
 			result.html(services_ajax_error_fmt(xhr, stat, error))
@@ -4575,6 +4581,7 @@ function data_action_generic_selector(t, e, options) {
 			if (jd.info && (jd.info.length > 0)) {
 				form.html(services_info_fmt(jd))
 			}
+			t.refresh_menu_data_cache(entry, e)
 		},
 		function(xhr, stat, error) {
 			form.html(services_ajax_error_fmt(xhr, stat, error))
@@ -4868,6 +4875,7 @@ function data_action_obs_set(t, e, options) {
 			if (jd.info && (jd.info.length > 0)) {
 				info.html(services_info_fmt(jd))
 			}
+			t.refresh_menu_data_cache(entry, e)
 		},
 		function(xhr, stat, error) {
 			info.html(services_ajax_error_fmt(xhr, stat, error))
