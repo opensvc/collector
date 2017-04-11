@@ -1,230 +1,226 @@
-function search_get_menu(fk)
-{
-  var menu = {
-    "modulesets": {
-        "tab" : function(id, res){moduleset_tabs(id, {"modset_id": res.id, "modset_name": res.modset_name})},
-        "type": "modset",
-        "color": "comp",
-        "id": "id",
-        "title": "__modset_name__",
-        "short_title": "__modset_name__",
-        "menu_entry_id": "comp-modulesets",
-        "class": "modset16 fa-2x search-section-icon",
-        "subclass": "meta_moduleset clickable"
-    },
-    "rulesets": {
-        "tab" : function(id, res){ruleset_tabs(id, {"ruleset_id": res.id, "ruleset_name": res.ruleset_name})},
-        "type": "rset",
-        "color": "comp",
-        "id": "id",
-        "title": "__ruleset_name__",
-        "short_title": "__ruleset_name__",
-        "menu_entry_id": "comp-rulesets",
-        "class": "rset16 fa-2x search-section-icon",
-        "subclass": "meta_ruleset clickable"
-    },
-    "reports": {
-        "tab" : function(id, res){report_tabs(id, {"report_id": res.id, "report_name": res.report_name})},
-        "type": "report",
-        "color": "report",
-        "id": "id",
-        "title": "__report_name__",
-        "short_title": "__report_name__",
-        "menu_entry_id": "adm-reports",
-        "class": "report16 fa-2x search-section-icon",
-        "subclass": "meta_report clickable"
-    },
-    "charts": {
-        "tab" : function(id, res){chart_tabs(id, {"chart_id": res.id, "chart_name": res.chart_name})},
-        "type": "chart",
-        "color": "chart",
-        "id": "id",
-        "title": "__chart_name__",
-        "short_title": "__chart_name__",
-        "menu_entry_id": "adm-charts",
-        "class": "chart16 fa-2x search-section-icon",
-        "subclass": "meta_chart clickable"
-    },
-    "metrics": {
-        "tab" : function(id, res){metric_tabs(id, {"metric_id": res.id, "metric_name": res.metric_name})},
-        "type": "metric",
-        "color": "metric",
-        "id": "id",
-        "title": "__metric_name__",
-        "short_title": "__metric_name__",
-        "menu_entry_id": "adm-metrics",
-        "class": "metric16 fa-2x search-section-icon",
-        "subclass": "meta_metric clickable"
-    },
-    "forms": {
-        "tab" : function(id, res){form_tabs(id, {"form_id": res.id, "form_name": res.form_name})},
-        "type": "form",
-        "color": "form",
-        "id": "id",
-        "title": "__form_name__",
-        "short_title": "__form_name__",
-        "menu_entry_id": "adm-forms",
-        "class": "wf16 fa-2x search-section-icon",
-        "subclass": "meta_form clickable"
-    },
-    "users": {
-        "tab" : function(id, res){user_tabs(id, {"user_id": res.id, "fullname": res.fullname})},
-        "type": "user",
-        "color": "org",
-        "id": "id",
-        "title": "__fullname__ <__email__>",
-        "short_title": "__fullname__",
-        "menu_entry_id": "adm-usr",
-        "class": "guy16 fa-2x search-section-icon",
-        "subclass": "meta_username clickable"
-    },
-    "safe_files": {
-        "tab" : function(id, res){safe_file_tabs(id, {"uuid": res.uuid, "name": res.name})},
-        "type": "safe",
-        "color": "comp",
-        "id": "uuid",
-        "title": "__name__ (__uuid__)",
-        "short_title": "__name__ (__uuid__)",
-        "menu_entry_id": "view-safe",
-        "class": "safe16 fa-2x search-section-icon",
-        "subclass": "meta_safe_file"
-    },
-    "disks": {
-        "title": "__disk_id__",
-        "short_title": "__disk_id__",
-        "type": "disk",
-        "color": "disk",
-        "menu_entry_id": "view-disks",
-        "class": "hd16 fa-2x search-section-icon",
-        "subclass": "meta_app"
-    },
-    "apps": {
-        "id": "app",
-        "title": "__app__",
-        "short_title": "__app__",
-        "type": "app",
-        "color": "app",
-        "tab" : function(id, res){app_tabs(id, {"app_name": res.app})},
-        "menu_entry_id": "view-dummy",
-        "class": "app16 fa-2x search-section-icon",
-        "subclass": "meta_app clickable"
-    },
-    "ips": {
-        "title": "__node_ip.addr__@__nodes.nodename__  *__nodes.app__",
-        "short_title": "__node_ip.addr__@__nodes.nodename__",
-        "type": "ip",
-        "color": "net",
-        "menu_entry_id": "view-node-net",
-        "class": "net16 fa-2x search-section-icon",
-        "subclass": "meta_username"
-    },
-    "groups": {
-        "tab" : function(id, res){group_tabs(id, {"group_id": res.id, "group_name": res.role})},
-        "type": "group",
-        "color": "org",
-        "id": "id",
-        "title": "__role__",
-        "short_title": "__role__",
-        "menu_entry_id": "adm-usr",
-        "class": "guys16 fa-2x search-section-icon",
-        "subclass": "meta_username clickable"
-    },
-    "services": {
-        "tab" : function(id, res){service_tabs(id, {"svc_id": res.svc_id})},
-        "type": "svc",
-        "color": "svc",
-        "id": "svc_id",
-        "title": "__svcname__  *__svc_app__",
-        "short_title": "__svcname__",
-        "menu_entry_id": "view-services",
-        "class": "svc fa-2x search-section-icon",
-        "subclass": "meta_svcname clickable"
-    },
-    "nodes": {
-        "tab" : function(id, res){node_tabs(id, {"node_id": res.node_id})},
-        "type": "node",
-        "color": "node",
-        "id": "node_id",
-        "title": "__nodename__  *__app__",
-        "short_title": "__nodename__",
-        "menu_entry_id": "view-nodes",
-        "class": "node16 fa-2x search-section-icon",
-        "subclass": "meta_nodename clickable"
-    },
-    "docker_registries": {
-        "tab" : function(id, res){docker_registry_tabs(id, {"registry_name": res.service, "registry_id": res.id})},
-        "type": "docker_registry",
-        "color": "docker",
-        "id": "id",
-        "title": "__service__ @ __url__",
-        "short_title": "__service__ @ __url__",
-        "menu_entry_id": "view-registries",
-        "class": "docker_registry16 fa-2x search-section-icon",
-        "subclass": "meta_docker_repository clickable"
-    },
-    "docker_repositories": {
-        "tab" : function(id, res){docker_repository_tabs(id, {"repository_name": res.repository, "repository_id": res.id})},
-        "type": "docker_repository",
-        "color": "docker",
-        "id": "id",
-        "title": "__repository__",
-        "short_title": "__repository__",
-        "menu_entry_id": "view-registries",
-        "class": "docker_repository16 fa-2x search-section-icon",
-        "subclass": "meta_docker_repository clickable"
-    },
-    "prov_templates": {
-        "tab" : function(id, res){prov_template_tabs(id, {"tpl_id": res.id, "tpl_name": res.tpl_name})},
-        "type": "prov_template",
-        "color": "svc",
-        "id": "id",
-        "title": "__tpl_name__",
-        "short_title": "__tpl_name__",
-        "menu_entry_id": "view-prov",
-        "class": "prov fa-2x search-section-icon",
-        "subclass": "meta_prov_template clickable"
-    },
-    "filtersets": {
-        "tab" : function(id, res){filterset_tabs(id, {"fset_name": res.fset_name})},
-        "type": "fset",
-        "color": "fset",
-        "id": "fset_name",
-        "title": "__fset_name__",
-        "short_title": "__fset_name__",
-        "menu_entry_id": "adm-filters",
-        "class": "filter16 fa-2x search-section-icon",
-        "subclass": "meta_username clickable"
-    },
-    "vms": {
-        "tab" : function(id, res){node_tabs(id, {"nodename": res.mon_vmname})},
-        "type": "node",
-        "color": "node",
-        "title": "__mon_vmname__",
-        "short_title": "__mon_vmname__",
-        "menu_entry_id": "view-nodes",
-        "class": "hv16 fa-2x search-section-icon",
-        "subclass": "meta_nodename"
-    },
-    "variables": {
-        "tab" : function(id, res){
-                variable_tabs(id, {
-                        "variable_id": res.id,
-                        "ruleset_id": res.ruleset_id,
-                        "variable_name": res.var_name,
-                        "tab": "variable_tabs.content"
-                })
-        },
-        "type": "var",
-        "color": "comp",
-        "id": "id",
-        "title": "__var_name__ in __ruleset_name__",
-        "short_title": "__var_name__ in __ruleset_name__",
-        "menu_entry_id": "comp-variables",
-        "class": "comp16 fa-2x search-section-icon",
-        "subclass": "meta_variables clickable"
-    }
-  }
-  return menu[fk]
+var search_data = {
+	"modulesets": {
+		"tab" : function(id, res){moduleset_tabs(id, {"modset_id": res.id, "modset_name": res.modset_name})},
+		"type": "modset",
+		"color": "comp",
+		"id": "id",
+		"title": "__modset_name__",
+		"short_title": "__modset_name__",
+		"menu_entry_id": "comp-modulesets",
+		"class": "modset16 fa-2x search-section-icon",
+		"subclass": "meta_moduleset clickable"
+	},
+	"rulesets": {
+		"tab" : function(id, res){ruleset_tabs(id, {"ruleset_id": res.id, "ruleset_name": res.ruleset_name})},
+		"type": "rset",
+		"color": "comp",
+		"id": "id",
+		"title": "__ruleset_name__",
+		"short_title": "__ruleset_name__",
+		"menu_entry_id": "comp-rulesets",
+		"class": "rset16 fa-2x search-section-icon",
+		"subclass": "meta_ruleset clickable"
+	},
+	"reports": {
+		"tab" : function(id, res){report_tabs(id, {"report_id": res.id, "report_name": res.report_name})},
+		"type": "report",
+		"color": "report",
+		"id": "id",
+		"title": "__report_name__",
+		"short_title": "__report_name__",
+		"menu_entry_id": "adm-reports",
+		"class": "report16 fa-2x search-section-icon",
+		"subclass": "meta_report clickable"
+	},
+	"charts": {
+		"tab" : function(id, res){chart_tabs(id, {"chart_id": res.id, "chart_name": res.chart_name})},
+		"type": "chart",
+		"color": "chart",
+		"id": "id",
+		"title": "__chart_name__",
+		"short_title": "__chart_name__",
+		"menu_entry_id": "adm-charts",
+		"class": "chart16 fa-2x search-section-icon",
+		"subclass": "meta_chart clickable"
+	},
+	"metrics": {
+		"tab" : function(id, res){metric_tabs(id, {"metric_id": res.id, "metric_name": res.metric_name})},
+		"type": "metric",
+		"color": "metric",
+		"id": "id",
+		"title": "__metric_name__",
+		"short_title": "__metric_name__",
+		"menu_entry_id": "adm-metrics",
+		"class": "metric16 fa-2x search-section-icon",
+		"subclass": "meta_metric clickable"
+	},
+	"forms": {
+		"tab" : function(id, res){form_tabs(id, {"form_id": res.id, "form_name": res.form_name})},
+		"type": "form",
+		"color": "form",
+		"id": "id",
+		"title": "__form_name__",
+		"short_title": "__form_name__",
+		"menu_entry_id": "adm-forms",
+		"class": "wf16 fa-2x search-section-icon",
+		"subclass": "meta_form clickable"
+	},
+	"users": {
+		"tab" : function(id, res){user_tabs(id, {"user_id": res.id, "fullname": res.fullname})},
+		"type": "user",
+		"color": "org",
+		"id": "id",
+		"title": "__fullname__ <__email__>",
+		"short_title": "__fullname__",
+		"menu_entry_id": "adm-usr",
+		"class": "guy16 fa-2x search-section-icon",
+		"subclass": "meta_username clickable"
+	},
+	"safe_files": {
+		"tab" : function(id, res){safe_file_tabs(id, {"uuid": res.uuid, "name": res.name})},
+		"type": "safe",
+		"color": "comp",
+		"id": "uuid",
+		"title": "__name__ (__uuid__)",
+		"short_title": "__name__ (__uuid__)",
+		"menu_entry_id": "view-safe",
+		"class": "safe16 fa-2x search-section-icon",
+		"subclass": "meta_safe_file"
+	},
+	"disks": {
+		"title": "__disk_id__",
+		"short_title": "__disk_id__",
+		"type": "disk",
+		"color": "disk",
+		"menu_entry_id": "view-disks",
+		"class": "hd16 fa-2x search-section-icon",
+		"subclass": "meta_app"
+	},
+	"apps": {
+		"id": "app",
+		"title": "__app__",
+		"short_title": "__app__",
+		"type": "app",
+		"color": "app",
+		"tab" : function(id, res){app_tabs(id, {"app_name": res.app})},
+		"menu_entry_id": "view-dummy",
+		"class": "app16 fa-2x search-section-icon",
+		"subclass": "meta_app clickable"
+	},
+	"ips": {
+		"title": "__node_ip.addr__@__nodes.nodename__  *__nodes.app__",
+		"short_title": "__node_ip.addr__@__nodes.nodename__",
+		"type": "ip",
+		"color": "net",
+		"menu_entry_id": "view-node-net",
+		"class": "net16 fa-2x search-section-icon",
+		"subclass": "meta_username"
+	},
+	"groups": {
+		"tab" : function(id, res){group_tabs(id, {"group_id": res.id, "group_name": res.role})},
+		"type": "group",
+		"color": "org",
+		"id": "id",
+		"title": "__role__",
+		"short_title": "__role__",
+		"menu_entry_id": "adm-usr",
+		"class": "guys16 fa-2x search-section-icon",
+		"subclass": "meta_username clickable"
+	},
+	"services": {
+		"tab" : function(id, res){service_tabs(id, {"svc_id": res.svc_id})},
+		"type": "svc",
+		"color": "svc",
+		"id": "svc_id",
+		"title": "__svcname__  *__svc_app__",
+		"short_title": "__svcname__",
+		"menu_entry_id": "view-services",
+		"class": "svc fa-2x search-section-icon",
+		"subclass": "meta_svcname clickable"
+	},
+	"nodes": {
+		"tab" : function(id, res){node_tabs(id, {"node_id": res.node_id})},
+		"type": "node",
+		"color": "node",
+		"id": "node_id",
+		"title": "__nodename__  *__app__",
+		"short_title": "__nodename__",
+		"menu_entry_id": "view-nodes",
+		"class": "node16 fa-2x search-section-icon",
+		"subclass": "meta_nodename clickable"
+	},
+	"docker_registries": {
+		"tab" : function(id, res){docker_registry_tabs(id, {"registry_name": res.service, "registry_id": res.id})},
+		"type": "docker_registry",
+		"color": "docker",
+		"id": "id",
+		"title": "__service__ @ __url__",
+		"short_title": "__service__ @ __url__",
+		"menu_entry_id": "view-registries",
+		"class": "docker_registry16 fa-2x search-section-icon",
+		"subclass": "meta_docker_repository clickable"
+	},
+	"docker_repositories": {
+		"tab" : function(id, res){docker_repository_tabs(id, {"repository_name": res.repository, "repository_id": res.id})},
+		"type": "docker_repository",
+		"color": "docker",
+		"id": "id",
+		"title": "__repository__",
+		"short_title": "__repository__",
+		"menu_entry_id": "view-registries",
+		"class": "docker_repository16 fa-2x search-section-icon",
+		"subclass": "meta_docker_repository clickable"
+	},
+	"prov_templates": {
+		"tab" : function(id, res){prov_template_tabs(id, {"tpl_id": res.id, "tpl_name": res.tpl_name})},
+		"type": "prov_template",
+		"color": "svc",
+		"id": "id",
+		"title": "__tpl_name__",
+		"short_title": "__tpl_name__",
+		"menu_entry_id": "view-prov",
+		"class": "prov fa-2x search-section-icon",
+		"subclass": "meta_prov_template clickable"
+	},
+	"filtersets": {
+		"tab" : function(id, res){filterset_tabs(id, {"fset_name": res.fset_name})},
+		"type": "fset",
+		"color": "fset",
+		"id": "fset_name",
+		"title": "__fset_name__",
+		"short_title": "__fset_name__",
+		"menu_entry_id": "adm-filters",
+		"class": "filter16 fa-2x search-section-icon",
+		"subclass": "meta_username clickable"
+	},
+	"vms": {
+		"tab" : function(id, res){node_tabs(id, {"nodename": res.mon_vmname})},
+		"type": "node",
+		"color": "node",
+		"title": "__mon_vmname__",
+		"short_title": "__mon_vmname__",
+		"menu_entry_id": "view-nodes",
+		"class": "hv16 fa-2x search-section-icon",
+		"subclass": "meta_nodename"
+	},
+	"variables": {
+		"tab" : function(id, res){
+			variable_tabs(id, {
+				"variable_id": res.id,
+				"ruleset_id": res.ruleset_id,
+				"variable_name": res.var_name,
+				"tab": "variable_tabs.content"
+			})
+		},
+		"type": "var",
+		"color": "comp",
+		"id": "id",
+		"title": "__var_name__ in __ruleset_name__",
+		"short_title": "__var_name__ in __ruleset_name__",
+		"menu_entry_id": "comp-variables",
+		"class": "comp16 fa-2x search-section-icon",
+		"subclass": "meta_variables clickable"
+	}
 }
 
 
@@ -317,7 +313,7 @@ function search(divid) {
 		services_osvcgetrest("R_SEARCH", "", data, function(jd) {
 			var result = jd.data
 			for (d in result) {
-				if (result[d].data.length>0 && search_get_menu(d) !== undefined) {
+				if (result[d].data.length>0 && search_data[d] !== undefined) {
 					response = o.search_build_result_view(d, result[d])
 					o.e_search_result.append(response)
 					count += result[d].data.length
@@ -386,7 +382,7 @@ function search(divid) {
 	}
 
 	o.search_build_result_row = function(label, first, res, count) {
-		var section_data = search_get_menu(label)
+		var section_data = search_data[label]
 
 		// init result row, set icon cell
 		var row_group = $("<div></div>")
@@ -448,7 +444,7 @@ function search(divid) {
 	}
 
 	o.search_build_result_view = function(label, resultset) {
-		var section_data = search_get_menu(label)
+		var section_data = search_data[label]
 		if (osvc.hidden_menu_entries.indexOf(section_data.menu_entry_id) >= 0) {
 			return
 		}
