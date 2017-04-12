@@ -39,8 +39,7 @@ $MYSQLDUMP opensvc billing >> $DUMP_DIR/data.dump
 $MYSQLDUMP opensvc billing_agent >> $DUMP_DIR/data.dump
 $MYSQLDUMP --where="privilege='T'" opensvc auth_group >> $DUMP_DIR/data.dump
 $MYSQLDUMP --where="form_type='obj'" opensvc forms >> $DUMP_DIR/data.dump
-$MYSQLDUMP --where="form_folder='/internal'" opensvc forms >> $DUMP_DIR/data.dump
-$MYSQLDUMP --where="form_name='folder_internal'" opensvc forms >> $DUMP_DIR/data.dump
+$MYSQLDUMP --where="form_name='folder_compliance'" opensvc forms >> $DUMP_DIR/data.dump
 
 cat - <<EOF >> $DUMP_DIR/data.dump
 INSERT INTO sysrep_secure VALUES (1,'.*');

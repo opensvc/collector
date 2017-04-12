@@ -635,6 +635,8 @@ def output_script(output, form_definition, _d=None, results=None):
     return results
 
 def workflow_continuation(form, prev_wfid):
+    if form["id"] < 0:
+        return False
     import yaml
     form_definition = yaml.load(form.form_yaml)
 
@@ -749,8 +751,11 @@ def form_submit(form, _d=None, prev_wfid=None):
         return results
 
     # load form definition from yaml
-    import yaml
-    form_definition = yaml.load(form.form_yaml)
+    if "form_yaml" in form:
+        import yaml
+        form_definition = yaml.load(form.form_yaml)
+    else:
+        form_definition = form["form_definition"]
 
     validate_data(form_definition, _d)
 
@@ -797,8 +802,12 @@ def __form_submit(form_id, _d=None, prev_wfid=None, results=None, authdump=None)
         auth.user = Storage(auth.user)
 
     # load form definition from yaml
-    form = db.forms[form_id]
-    form_definition = yaml.load(form.form_yaml)
+    if form_id < 0:
+        form = get_internal_form(form_id)
+        form_definition = form.form_definition
+    else:
+        form = db.forms[form_id]
+        form_definition = yaml.load(form.form_yaml)
 
     results["status"] = "RUNNING"
     update_results(results)

@@ -770,7 +770,8 @@ div.error {
 }
 .menu_section > a {
 	text-decoration: none;
-	height: 70px;
+	height: 3rem;
+	font-size: 2rem;
 }
 .meta_not_found > a > div {
 	padding-top: 2rem;
@@ -797,8 +798,9 @@ div.error {
 }
 .menu_entry {
 	padding: 1em;
+	transition: all 0.1s ease-in-out;
 	min-height: 60px;
-	flex: 0 0 17rem;
+	flex: 0 0 19rem;
 	color: #ccc;
 }
 .menu_entry * {
@@ -807,17 +809,29 @@ div.error {
 
 div.menu_box {
 	display: flex;
+	height: 100%;
 }
 .menu_box > div {
 	display: inline-block;
 	align-self: center;
+	height: 100%;
 }
 .menu_icon {
+	height: 100%;
 	margin-right: .5em;
 	font-size: x-large;
-	min-width: 1em;
+	width: 1em;
 	text-align: center;
 	font-family: FontAwesome;
+}
+.menu_icon:before {
+	width: 1em;
+}
+.menu_icon > i {
+	top: -1em;
+	font-size: 1.5rem;
+	left: -1em;
+	position: relative;
 }
 .menu .menu_title {
 	color: white;

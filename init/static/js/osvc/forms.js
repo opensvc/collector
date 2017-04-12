@@ -10,6 +10,7 @@ function forms() {
 			"props": "form_definition,form_name,id,form_type,form_folder"
 		}
 		services_osvcgetrest("R_FORMS", "", data, function(jd) {
+			jd.data = jd.data.concat(osvc.internal_forms)
 			for (var i=0; i<jd.data.length; i++) {
 				var d = jd.data[i]
 				o.data[d.form_name] = d

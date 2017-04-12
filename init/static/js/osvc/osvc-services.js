@@ -375,6 +375,7 @@ function load_user() {
 		osvc.user_prefs = user_prefs(jd.prefs)
 		osvc.hidden_menu_entries_stats = jd.hidden_menu_entries_stats
 		osvc.filterset = jd.filterset
+		osvc.internal_forms = jd.internal_forms
 		osvc.user_loaded.resolve(true)
 	})
 }

@@ -89,6 +89,7 @@ class rest_get_user_dump(rest_get_handler):
             "prefs": rest_get_user_prefs().handler(id)["data"],
             "groups": rest_get_user_groups().handler(id, limit=0)["data"],
             "filterset": rest_get_user_filterset().handler(id, meta=0)["data"],
+            "internal_forms": form_data_internal,
             "hidden_menu_entries_stats": rest_get_user_hidden_menu_entries().handler(id, stats="menu_entry", props="menu_entry", limit=0, meta=0)["data"],
         }
 

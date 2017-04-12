@@ -130,6 +130,7 @@
 		"attach_groups": "Attach groups",
 		"detach_groups": "Detach groups",
 		"group_name": "Group name",
+		"tpl_name": "Template name",
 		"set_primary_group": "Set primary group",
 		"set_filterset": "Set filterset",
 		"lock_filterset": "Lock filterset",
@@ -1077,91 +1078,198 @@
 	},
 	"menu": {
 		"navigation": "Navigation",
+		"data_management": {
+			"title": "Data Management",
+			"add_app": {
+				"title": "Add application",
+				"text": "For linking org groups, nodes and services"
+			},
+			"add_chart": {
+				"title": "Add chart",
+				"text": "To plot metrics, for use in reports"
+			},
+			"add_contextual_thresholds": {
+				"title": "Add contextual thresholds",
+				"text": "Check instance values thresholds scoped by filterset"
+			},
+			"add_dns_domain": {
+				"title": "Add DNS domain",
+				"text": "A zone in the embedded DNS"
+			},
+			"add_dns_record": {
+				"title": "Add DNS record",
+				"text": "A zone record in the embedded DNS"
+			},
+			"add_docker_registry": {
+				"title": "Add docker registry",
+				"text": "A registry the collector will serve authentication and autorisations for"
+			},
+			"add_filterset": {
+				"title": "Add filterset",
+				"text": "For use in rulesets, check thresholds and navigation"
+			},
+			"add_form": {
+				"title": "Add form",
+				"text": "For use in the request portal"
+			},
+			"add_group": {
+				"title": "Add group",
+				"text": "A privilege or organizational group"
+			},
+			"add_metric": {
+				"title": "Add metric",
+				"text": "For use in reports"
+			},
+			"add_network": {
+				"title": "Add network",
+				"text": "Create a network in the embedded CMBD"
+			},
+			"add_node": {
+				"title": "Add node",
+				"text": "Create a node, anticipating its discovery"
+			},
+			"add_network_segment": {
+				"title": "Add network segment",
+				"text": "Create a network segment in the embedded CMBD"
+			},
+			"add_prov_template": {
+				"title": "Add provisioning template",
+				"text": "A template to provision services from"
+			},
+			"add_quota": {
+				"title": "Add quota",
+				"text": "To control application allocations in SAN arrays"
+			},
+			"add_report": {
+				"title": "Add report",
+				"text": "To group metrics, charts and objects"
+			},
+			"add_service": {
+				"title": "Add service",
+				"text": "Create a service, anticipating its discovery"
+			},
+			"add_tag": {
+				"title": "Add tag",
+				"text": "For attachment to nodes and services"
+			},
+			"add_user": {
+				"title": "Add user",
+				"text": "A collector user account"
+			},
+			"del_contextual_thresholds": {
+				"title": "Delete contextual thresholds",
+				"text": "Check instance values thresholds scoped by filterset"
+			},
+			"del_groups": {
+				"title": "Delete groups",
+				"text": "Only organizational groups"
+			},
+			"free_gids": {
+				"title": "Free gids",
+				"text": "Find unused group ids"
+			},
+			"free_uids": {
+				"title": "Free uids",
+				"text": "Find unused user ids"
+			},
+			"import_compliance_design": {
+				"title": "Import a compliance design",
+				"text": "Modulesets, rulesets, filtersets"
+			},
+			"import_report": {
+				"title": "Import a report",
+				"text": "Charts, metrics and report"
+			},
+			"refresh_obsolescence": {
+				"title": "Refresh obsolescence",
+				"text": "Discover new assets hardware and operating systems"
+			}
+		},
 		"views": {
 			"title": "Infrastructure",
 			"docker": {
-					"title": "Docker registries",
-					"text": "Repositories and tags in each private registries"
+				"title": "Docker registries",
+				"text": "Repositories and tags in each private registries"
 			},
 			"dashboard": {
-					"title": "Dashboard",
-					"text": "Current issues on nodes and services"
+				"title": "Dashboard",
+				"text": "Current issues on nodes and services"
 			},
 			"services": {
 				"title": "Services",
 				"text": "Services information and status"
 			},
 			"services_instances": {
-					"title": "Services Instances",
-					"text": "Service instances status"
+				"title": "Services Instances",
+				"text": "Service instances status"
 			},
 			"resources": {
-					"title": "Resources",
-					"text": "Service resources status"
+				"title": "Resources",
+				"text": "Service resources status"
 			},
 			"res_info": {
-					"title": "Resources Info",
-					"text": "Service resources key:val store"
+				"title": "Resources Info",
+				"text": "Service resources key:val store"
 			},
-			"nodes":	{
-					"title": "Nodes",
-					"text": "Technical and organizational info"
+			"nodes": {
+				"title": "Nodes",
+				"text": "Technical and organizational info"
 			},
 			"tag_attachments": {
-					"title": "Tag Attachments",
-					"text": "Tags attached to nodes and services"
+				"title": "Tag Attachments",
+				"text": "Tags attached to nodes and services"
 			},
 			"actions": {
-					"title": "Actions",
-					"text": "Service actions log"
+				"title": "Actions",
+				"text": "Service actions log"
 			},
 			"actions_queue": {
-					"title": "Actions Queue",
-					"text": "Service and node actions queued on the collector for agents"
+				"title": "Actions Queue",
+				"text": "Service and node actions queued on the collector for agents"
 			},
 			"checks": {
-					"title": "Checks",
-					"text": "Nodes health monitoring"
+				"title": "Checks",
+				"text": "Nodes health monitoring"
 			},
 			"packages": {
-					"title": "Packages",
-					"text": "All packages installed on nodes"
+				"title": "Packages",
+				"text": "All packages installed on nodes"
 			},
 			"patches": {
-					"title": "Patches",
-					"text": "All patches installed on nodes"
+				"title": "Patches",
+				"text": "All patches installed on nodes"
 			},
 			"networks": {
-					"title": "Networks",
-					"text": "Known subnets, gateways, vlans, ..."
+				"title": "Networks",
+				"text": "Known subnets, gateways, vlans, ..."
 			},
 			"node_networks": {
-					"title": "Node Networks",
-					"text": "Node ips with their network information"
+				"title": "Node Networks",
+				"text": "Node ips with their network information"
 			},
 			"node_san": {
-					"title": "Node SAN",
-					"text": "Node SAN ports with their fabric information"
+				"title": "Node SAN",
+				"text": "Node SAN ports with their fabric information"
 			},
 			"san_switches": {
-					"title": "SAN switches",
-					"text": "Ports id, state, remote ports"
+				"title": "SAN switches",
+				"text": "Ports id, state, remote ports"
 			},
 			"dns": {
-					"title": "Domain Name Service",
-					"text": "Internal dns zones and records"
+				"title": "Domain Name Service",
+				"text": "Internal dns zones and records"
 			},
 			"saves": {
-					"title": "Saves",
-					"text": "Backup servers aggregated index"
+				"title": "Saves",
+				"text": "Backup servers aggregated index"
 			},
 			"disks": {
-					"title": "Disks",
-					"text": "All known disks with their array information"
+				"title": "Disks",
+				"text": "All known disks with their array information"
 			},
 			"disks_quotas": {
-					"title": "Disks quotas",
-					"text": "Per application and diskgroup disk provisioning size limits"
+				"title": "Disks quotas",
+				"text": "Per application and diskgroup disk provisioning size limits"
 			}
 		},
 		"compliance": {
@@ -1171,8 +1279,8 @@
 				"text": "Nodes and service last configuration checks"
 			},
 			"safe": {
-					"title": "File Safe",
-					"text": "Integrity controlled and RBAC conforming file store"
+				"title": "File Safe",
+				"text": "Integrity controlled and RBAC conforming file store"
 			},
 			"log": {
 				"title": "Log",
@@ -1469,6 +1577,7 @@
 		"hidden_menu_entries": "hidden menu entries"
 	},
 	"col": {
+		"Instance regex": "Instance regex",
 		"Period": "Period",
 		"Times run": "Runs",
 		"Times failed": "Failures",

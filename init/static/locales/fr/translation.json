@@ -129,6 +129,7 @@
 		"detach_privileges": "Détacher des privilèges",
 		"attach_groups": "Attacher des groupes",
 		"detach_groups": "Détacher des groupes",
+		"tpl_name": "Nom du garabi",
 		"group_name": "Nom du groupe",
 		"set_primary_group": "Changer le groupe primaire",
 		"set_filterset": "Changer le jeu de filtres",
@@ -1075,91 +1076,198 @@
 	},
 	"menu" : {
 		"navigation": "Navigation",
+		"data_management": {
+			"title": "Gestion des données",
+			"add_app": {
+				"title": "Ajouter une application",
+				"text": "Créer un nouveau code d'application"
+			},
+			"add_chart": {
+				"title": "Ajouter une courbe",
+				"text": "Créer une courbe pour un rapport"
+			},
+			"add_contextual_thresholds": {
+				"title": "Ajouter des seuils contextuels",
+				"text": "Définir des seuils de sondes contextualisés"
+			},
+			"add_dns_domain": {
+				"title": "Ajouter un domaine DNS",
+				"text": "Créer une zone dans le DNS embarqué"
+			},
+			"add_dns_record": {
+				"title": "Ajouter un enregistrement DNS",
+				"text": "Créer un enregistrement dans une zone du DNS embarqué"
+			},
+			"add_docker_registry": {
+				"title": "Ajouter un registre docker",
+				"text": "Pour lequel le collecteur servira d'authentificateur et d'habilitateur"
+			},
+			"add_filterset": {
+				"title": "Ajouter un jeu de filtres",
+				"text": "Pour utilisation dans les jeux de règles, les seuils contextuels de sondes et dans la navigation"
+			},
+			"add_form": {
+				"title": "Ajouter un formulaire",
+				"text": "Pour utilisation dans le portail des demandes"
+			},
+			"add_group": {
+				"title": "Ajouter un groupe",
+				"text": "Créer un groupe organisationnel ou de privilèges"
+			},
+			"add_metric": {
+				"title": "Ajouter une métrique",
+				"text": "Pour utilisation dans les rapports"
+			},
+			"add_network": {
+				"title": "Ajouter un réseau",
+				"text": "Dans la CMDB embarquée"
+			},
+			"add_node": {
+				"title": "Ajouter un noeud",
+				"text": "En anticipation de sa découverte"
+			},
+			"add_network_segment": {
+				"title": "Ajouter un segment de réseau",
+				"text": "Dans la CMDB réseau embarquée"
+			},
+			"add_prov_template": {
+				"title": "Ajouter un gabari",
+				"text": "Pour instancier des services types"
+			},
+			"add_quota": {
+				"title": "Ajouter un quota",
+				"text": "Pour contrôler les allocation des applications dans les baies SAN"
+			},
+			"add_report": {
+				"title": "Ajouter un rapport",
+				"text": "Assemblage de métriques, courbes et objets"
+			},
+			"add_service": {
+				"title": "Ajouter un service",
+				"text": "En anticipation de sa découverte"
+			},
+			"add_tag": {
+				"title": "Ajouter un tag",
+				"text": "Pour attachements aux noeuds et services"
+			},
+			"add_user": {
+				"title": "Ajouter un utilisateur",
+				"text": "Créer un compte sur le collecteur"
+			},
+			"del_contextual_thresholds": {
+				"title": "Supprimer des seuils contextuels",
+				"text": "Supprimer des seuils de sondes contextualisés"
+			},
+			"del_groups": {
+				"title": "Supprimer des groupes",
+				"text": "Supprimer un groupe organisationnel ou de privilèges"
+			},
+			"free_gids": {
+				"title": "Allouer un gid",
+				"text": "Lister les gids non-utilisés"
+			},
+			"free_uids": {
+				"title": "Allouer un uid",
+				"text": "Lister les uids non-utilisés"
+			},
+			"import_compliance_design": {
+				"title": "Importer une modélisation de conformité",
+				"text": "Jeux de modules, jeux de règles, jeux de filtres"
+			},
+			"import_report": {
+				"title": "Importer un rapport",
+				"text": "Courbes, métriques et rapport"
+			},
+			"refresh_obsolescence": {
+				"title": "Rafraîchir l'obsolescence",
+				"text": "Découvrir les nouveaux matériels et systèmes d'exploitation"
+			}
+		},
 		"views" : {
 			"title" : "Infrastructure",
 			"docker": {
-					"title": "Registres Docker",
-					"text": "Dépots et tags dans les registres privés"
+				"title": "Registres Docker",
+				"text": "Dépots et tags dans les registres privés"
 			},
 			"dashboard" : {
-					"title" : "Pilotage",
-					"text" : "Problèmes actuels sur les nœuds et services"
+				"title" : "Pilotage",
+				"text" : "Problèmes actuels sur les nœuds et services"
 			},
 			"services" : {
 				"title" : "Services",
 				"text" : "Informations et états des services"
 			},
 			"services_instances" : {
-					"title" : "Instances de services",
-					"text" : "Informations et états des services"
+				"title" : "Instances de services",
+				"text" : "Informations et états des services"
 			},
 			"resources" : {
-					"title" : "Ressources",
-					"text" : "Etat et inventaire des ressources des services"
+				"title" : "Ressources",
+				"text" : "Etat et inventaire des ressources des services"
 			},
 			"res_info" : {
-					"title" : "Info de Ressources",
-					"text" : "Dépôt des couples clé:valeur des ressources des services"
+				"title" : "Info de Ressources",
+				"text" : "Dépôt des couples clé:valeur des ressources des services"
 			},
 			"nodes" : {
-					"title" : "Noeuds",
-					"text" : "Infos techniques et organisationelles"
+				"title" : "Noeuds",
+				"text" : "Infos techniques et organisationelles"
 			},
 			"tag_attachments" : {
-					"title" : "Attachements des tags",
-					"text" : "Tags attachés aux noeuds et aux services"
+				"title" : "Attachements des tags",
+				"text" : "Tags attachés aux noeuds et aux services"
 			},
 			"actions" : {
-					"title" : "Actions",
-					"text" : "Journal des actions de service"
+				"title" : "Actions",
+				"text" : "Journal des actions de service"
 			},
 			"actions_queue" : {
-					"title" : "File d'attente d'actions",
-					"text" : "Actions postées pour traitement par les agents"
+				"title" : "File d'attente d'actions",
+				"text" : "Actions postées pour traitement par les agents"
 			},
 			"checks" : {
-					"title" : "Sondes",
-					"text" : "Etats des sondes de santé des noeuds"
+				"title" : "Sondes",
+				"text" : "Etats des sondes de santé des noeuds"
 			},
 			"packages" : {
-					"title" : "Paquets",
-					"text" : "Tous les paquets installés sur les noeuds"
+				"title" : "Paquets",
+				"text" : "Tous les paquets installés sur les noeuds"
 			},
 			"patches" : {
-					"title" : "Patches",
-					"text" : "Tous les patchs installés sur les noeuds"
+				"title" : "Patches",
+				"text" : "Tous les patchs installés sur les noeuds"
 			},
 			"networks" : {
-					"title" : "Réseau",
-					"text" : "Référentiel des sous-réseau"
+				"title" : "Réseau",
+				"text" : "Référentiel des sous-réseau"
 			},
 			"node_networks" : {
-					"title" : "Réseaux des noeuds",
-					"text" : "Adresses ip des noeuds avec leurs informations de réseau"
+				"title" : "Réseaux des noeuds",
+				"text" : "Adresses ip des noeuds avec leurs informations de réseau"
 			},
 			"node_san" : {
-					"title" : "SAN des noeuds",
-					"text" : "Ports SAN des noeuds avec leurs informations réseau"
+				"title" : "SAN des noeuds",
+				"text" : "Ports SAN des noeuds avec leurs informations réseau"
 			},
 			"san_switches" : {
-					"title" : "Switches SAN",
-					"text" : "id, états, pair des ports"
+				"title" : "Switches SAN",
+				"text" : "id, états, pair des ports"
 			},
 			"dns" : {
-					"title" : "Domain Name Service",
-					"text" : "Zones et enregistrements du dns interne"
+				"title" : "Domain Name Service",
+				"text" : "Zones et enregistrements du dns interne"
 			},
 			"saves" : {
-					"title" : "Sauvegardes",
-					"text" : "Index aggrégé des serveurs de sauvegarde"
+				"title" : "Sauvegardes",
+				"text" : "Index aggrégé des serveurs de sauvegarde"
 			},
 			"disks" : {
-					"title" : "Disques",
-					"text" : "Tous les disques connus avec leurs informations prises dans les baies"
+				"title" : "Disques",
+				"text" : "Tous les disques connus avec leurs informations prises dans les baies"
 			},
 			"disks_quotas" : {
-					"title" : "Quotas disques",
-					"text" : "Limites d'allocation de disque par application et groupe de disque"
+				"title" : "Quotas disques",
+				"text" : "Limites d'allocation de disque par application et groupe de disque"
 			}
 		},
 		"compliance" : {
@@ -1173,8 +1281,8 @@
 				"text" : "Toutes les vérifications et remédiations"
 			},
 			"safe": {
-					"title": "Coffre-fort",
-					"text": "Stockage de fichiers avec contrôle d'intégrité et d'accès"
+				"title": "Coffre-fort",
+				"text": "Stockage de fichiers avec contrôle d'intégrité et d'accès"
 			},
 			"modulesets" : {
 				"title" : "Jeux de modules",
@@ -1469,6 +1577,7 @@
 		"hidden_menu_entries": "entrées cachées du menu"
 	},
 	"col": {
+		"Instance regex": "Regex sur les instances",
 		"Period": "Période",
 		"Times run": "Exécutions",
 		"Times_failed": "Echecs",

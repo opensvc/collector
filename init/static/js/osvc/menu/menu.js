@@ -370,6 +370,240 @@ var menu_data = {
                   "fn": "table_replication"
 		}
 	],
+	"data_management": [
+		{
+			"title" : "add_app",
+			"class" : "app16",
+			"stack" : "fa-plus-square",
+			"id" : "dm-add-app",
+			"fn" : "data_action_add_app",
+			"link" : "/init/dm/index/data_action_add_app",
+			"secure" : ["Manager", "AppManager"]
+		},
+		{
+			"title" : "add_chart",
+			"class" : "chart16",
+			"stack" : "fa-plus-square",
+			"id" : "dm-add-chart",
+			"fn" : "data_action_add_chart",
+			"link" : "/init/dm/index/data_action_add_chart",
+			"secure" : ["Manager", "ReportsManager"]
+		},
+		{
+			"title" : "add_contextual_thresholds",
+			"class" : "check16",
+			"stack" : "fa-plus-square",
+			"id" : "dm-add-contextual-thresholds",
+			"fn" : "data_action_add_contextual_thresholds",
+			"link" : "/init/dm/index/data_action_add_contextual_thresholds",
+			"secure" : ["Manager", "ContextCheckManager"]
+		},
+		{
+			"title" : "add_dns_domain",
+			"class" : "dns16",
+			"stack" : "fa-plus-square",
+			"id" : "dm-add-dns-domain",
+			"fn" : "data_action_add_dns_domain",
+			"link" : "/init/dm/index/data_action_add_dns_domain",
+			"secure" : ["Manager", "DnsManager"]
+		},
+		{
+			"title" : "add_docker_registry",
+			"class" : "docker_registry16",
+			"stack" : "fa-plus-square",
+			"id" : "dm-add-docker-registry",
+			"fn" : "data_action_add_docker_registry",
+			"link" : "/init/dm/index/data_action_add_docker_registry",
+			"secure" : ["Manager", "DockerRegistriesManager"]
+		},
+		{
+			"title" : "add_filterset",
+			"class" : "filter16",
+			"stack" : "fa-plus-square",
+			"id" : "dm-add-filterset",
+			"fn" : "data_action_add_filterset",
+			"link" : "/init/dm/index/data_action_add_filterset",
+			"secure" : ["Manager", "CompManager"]
+		},
+		{
+			"title" : "add_form",
+			"class" : "wf16",
+			"stack" : "fa-plus-square",
+			"id" : "dm-add-form",
+			"fn" : "data_action_add_form",
+			"link" : "/init/dm/index/data_action_add_form",
+			"secure" : ["Manager", "FormsManager"]
+		},
+		{
+			"title" : "add_dns_record",
+			"class" : "dns16",
+			"stack" : "fa-plus-square",
+			"id" : "dm-add-dns-record",
+			"fn" : "data_action_add_dns_record",
+			"link" : "/init/dm/index/data_action_add_dns_record",
+			"secure" : ["Manager", "DnsManager"]
+		},
+		{
+			"title" : "add_group",
+			"class" : "guys16",
+			"stack" : "fa-plus-square",
+			"id" : "dm-add-group",
+			"fn" : "data_action_add_group",
+			"link" : "/init/dm/index/data_action_add_group",
+			"secure" : ["Manager", "GroupManager"]
+		},
+		{
+			"title" : "add_metric",
+			"class" : "metric16",
+			"stack" : "fa-plus-square",
+			"id" : "dm-add-metric",
+			"fn" : "data_action_add_metric",
+			"link" : "/init/dm/index/data_action_add_metric",
+			"secure" : ["Manager", "ReportsManager"]
+		},
+		{
+			"title" : "add_network",
+			"class" : "net16",
+			"stack" : "fa-plus-square",
+			"id" : "dm-add-network",
+			"fn" : "data_action_add_network",
+			"link" : "/init/dm/index/data_action_add_network",
+			"secure" : ["Manager", "ReportsManager"]
+		},
+		{
+			"title" : "add_network_segment",
+			"class" : "net16",
+			"stack" : "fa-plus-square",
+			"id" : "dm-add-network-segment",
+			"fn" : "data_action_add_network_segment",
+			"link" : "/init/dm/index/data_action_add_network_segment",
+			"secure" : ["Manager", "ReportsManager"]
+		},
+		{
+			"title" : "add_node",
+			"class" : "node16",
+			"stack" : "fa-plus-square",
+			"id" : "dm-add-node",
+			"fn" : "data_action_add_node",
+			"link" : "/init/dm/index/data_action_add_node",
+			"secure" : ["Manager", "NodeManager"]
+		},
+		{
+			"title" : "add_prov_template",
+			"class" : "prov",
+			"stack" : "fa-plus-square",
+			"id" : "dm-add-prov-template",
+			"fn" : "data_action_add_prov_template",
+			"link" : "/init/dm/index/data_action_add_prov_template",
+			"secure" : ["Manager", "ProvisioningManager"]
+		},
+		{
+			"title" : "add_quota",
+			"class" : "quota16",
+			"stack" : "fa-plus-square",
+			"id" : "dm-add-quota",
+			"fn" : "data_action_add_quota",
+			"link" : "/init/dm/index/data_action_add_quota",
+			"secure" : ["Manager", "StorageManager"]
+		},
+		{
+			"title" : "add_report",
+			"class" : "report16",
+			"stack" : "fa-plus-square",
+			"id" : "dm-add-report",
+			"fn" : "data_action_add_report",
+			"link" : "/init/dm/index/data_action_add_report",
+			"secure" : ["Manager", "ReportsManager"]
+		},
+		{
+			"title" : "add_service",
+			"class" : "svc",
+			"stack" : "fa-plus-square",
+			"id" : "dm-add-service",
+			"fn" : "data_action_add_service",
+			"link" : "/init/dm/index/data_action_add_service",
+			"secure" : ["Manager", "NodeManager"]
+		},
+		{
+			"title" : "add_tag",
+			"class" : "tag16",
+			"stack" : "fa-plus-square",
+			"id" : "dm-add-tag",
+			"fn" : "data_action_add_tag",
+			"link" : "/init/dm/index/data_action_add_tag",
+			"secure" : ["Manager", "TagManager"]
+		},
+		{
+			"title" : "add_user",
+			"class" : "guy16",
+			"stack" : "fa-plus-square",
+			"id" : "dm-add-user",
+			"fn" : "data_action_add_user",
+			"link" : "/init/dm/index/data_action_add_user",
+			"secure" : ["Manager", "UserManager"]
+		},
+		{
+			"title" : "del_contextual_thresholds",
+			"class" : "check16",
+			"stack" : "fa-minus-square",
+			"id" : "dm-del-contextual-thresholds",
+			"fn" : "data_action_delete_contextual_thresholds",
+			"link" : "/init/dm/index/data_action_delete_contextual_thresholds",
+			"secure" : ["Manager", "ContextCheckManager"]
+		},
+		{
+			"title" : "del_groups",
+			"class" : "guys16",
+			"stack" : "fa-minus-square",
+			"id" : "dm-del-groups",
+			"fn" : "data_action_del_groups",
+			"link" : "/init/dm/index/data_action_del_groups",
+			"secure" : ["Manager", "GroupManager"]
+		},
+		{
+			"title" : "free_gids",
+			"class" : "guys16",
+			"stack" : "fa-search-plus",
+			"id" : "dm-free-gids",
+			"fn" : "tool_free_gids",
+			"link" : "/init/dm/index/tool_free_gids"
+		},
+		{
+			"title" : "free_uids",
+			"class" : "guy16",
+			"stack" : "fa-search-plus",
+			"id" : "dm-free-uids",
+			"fn" : "tool_free_uids",
+			"link" : "/init/dm/index/tool_free_uids"
+		},
+		{
+			"title" : "import_compliance_design",
+			"class" : "comp16",
+			"stack" : "fa-upload",
+			"id" : "dm-import-compliance-design",
+			"fn" : "data_action_import_compliance_design",
+			"link" : "/init/dm/index/data_action_import_compliance_design",
+			"secure" : ["Manager", "CompManager"]
+		},
+		{
+			"title" : "import_report",
+			"class" : "report16",
+			"stack" : "fa-upload",
+			"id" : "dm-import-report",
+			"fn" : "data_action_import_report",
+			"link" : "/init/dm/index/data_action_import_report",
+			"secure" : ["Manager", "ReportsManager"]
+		},
+		{
+			"title" : "refresh_obsolescence",
+			"class" : "obs16",
+			"stack" : "fa-refresh",
+			"id" : "dm-refresh-obsolescence",
+			"fn" : "data_action_obs_refresh",
+			"link" : "/init/dm/index/data_action_obs_refresh",
+			"secure" : ["Manager", "ObsManager"]
+		},
+	],
 	"shortcuts": [
 		{
 		  "title" : "filter_sel",
@@ -575,11 +809,11 @@ function menu(divid) {
 				var href = $(this).attr("link");
 				var fn = $(this).attr("fn");
 				if (!href) {
-				  return
+					return
 				}
 				if (event.ctrlKey) {
-				  window.open(href, "_blank")
-				  return
+					window.open(href, "_blank")
+					return
 				}
 				o.set_title(title)
 				o.close()
@@ -601,11 +835,17 @@ function menu_create_entry_s(section, entry)
 
 	div_entry += "<div class='menu_box'>";
 
-	var cl = entry.class;
-	if (cl != "")
-		div_entry += "<div class='menu_icon " + entry.class +  "'></div>";
-	else
+	if (entry.stack) {
+		var stack = "<i class='fa "+entry.stack+"'></i>"
+	} else {
+		var stack = ""
+	}
+	var cl = entry.class
+	if (cl != "") {
+		div_entry += "<div class='menu_icon " + cl + "'>" + stack + "</div>";
+	} else {
 		div_entry += "<div class='menu_icon'>" + entry.label +  "</div>";
+	}
 	div_entry += "<div>";
 	div_entry += "<div class='menu_title'>" + titre + "</div>";
 	div_entry += "<div class='menu_subtitle'>" + text + "</div>";

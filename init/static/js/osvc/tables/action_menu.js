@@ -1,7 +1,7 @@
 //
 // install agent action menu entries definitions in the table object
 //
-am_node_agent_leafs = [
+var am_node_agent_leafs = [
 	{
 		'title': 'Update node information',
 		'class': 'node16',
@@ -187,28 +187,6 @@ function table_action_menu_init_data(t) {
 			//"class": "chart16",
 			"children": [
 				{
-					"selector": [],
-					"title": "action_menu.free_uids_gids",
-					"class": "db16",
-					"foldable": true,
-					"cols": [],
-					"condition": "",
-					"children": [
-						{
-							"title": "action_menu.free_uids",
-							"class": "guy16",
-							"fn": "tool_free_uids",
-							"min": 0
-						},
-						{
-							"title": "action_menu.free_gids",
-							"class": "guys16",
-							"fn": "tool_free_gids",
-							"min": 0
-						}
-					]
-				},
-				{
 					"selector": ["clicked", "checked", "all"],
 					"title": "action_menu.on_nodes",
 					"clicked_decorator": function(e, data){
@@ -309,216 +287,7 @@ function table_action_menu_init_data(t) {
 		// section: data actions
 		{
 			"title": "action_menu.data_actions",
-			//"class": "hd16",
 			"children": [
-				{
-					"selector": [],
-					"title": "action_menu.add",
-					"class": "add16",
-					"foldable": true,
-					"cols": [],
-					"condition": "",
-					"children": [
-						{
-							"title": "action_menu.metric",
-							"class": osvc.icons.metric,
-							"fn": "data_action_add_metric",
-							"privileges": ["Manager", "ReportsManager"],
-							"min": 0
-						},
-						{
-							"title": "action_menu.chart",
-							"class": osvc.icons.chart,
-							"fn": "data_action_add_chart",
-							"privileges": ["Manager", "ReportsManager"],
-							"min": 0
-						},
-						{
-							"title": "action_menu.report",
-							"class": osvc.icons.report,
-							"fn": "data_action_add_report",
-							"privileges": ["Manager", "ReportsManager"],
-							"min": 0
-						},
-						{
-							"title": "action_menu.prov_template",
-							"class": "prov",
-							"fn": "data_action_add_prov_template",
-							"privileges": ["Manager", "ProvisioningManager"],
-							"min": 0
-						},
-						{
-							"title": "action_menu.form",
-							"class": "wf16",
-							"fn": "data_action_add_form",
-							"privileges": ["Manager", "FormsManager"],
-							"min": 0
-						},
-						{
-							"title": "action_menu.quota",
-							"class": "quota16",
-							"fn": "data_action_add_quota",
-							"privileges": ["Manager", "StorageManager"],
-							"min": 0
-						},
-						{
-							"title": "action_menu.app",
-							"class": "app16",
-							"fn": "data_action_add_app",
-							"privileges": ["Manager", "AppManager"],
-							"min": 0
-						},
-						{
-							"title": "action_menu.dns_domain",
-							"class": "dns16",
-							"fn": "data_action_add_dns_domain",
-							"privileges": ["Manager", "DnsManager"],
-							"min": 0
-						},
-						{
-							"title": "action_menu.dns_record",
-							"class": "dns16",
-							"fn": "data_action_add_dns_record",
-							"privileges": ["Manager", "DnsManager"],
-							"min": 0
-						},
-						{
-							"title": "action_menu.network",
-							"class": "net16",
-							"fn": "data_action_add_network",
-							"privileges": ["Manager", "NetworkManager"],
-							"min": 0
-						},
-						{
-							"title": "action_menu.network_segment",
-							"class": "segment16",
-							"fn": "data_action_add_network_segment",
-							"privileges": ["Manager", "NetworkManager"],
-							"min": 0
-						},
-						{
-							"title": "action_menu.node",
-							"class": "node16",
-							"fn": "data_action_add_node",
-							"privileges": ["Manager", "NodeManager"],
-							"min": 0
-						},
-						{
-							"title": "col.Service",
-							"class": "svc",
-							"fn": "data_action_add_service",
-							"privileges": ["Manager", "NodeManager"],
-							"min": 0
-						},
-						{
-							"title": "action_menu.contextual_thresholds",
-							"class": "check16",
-							"fn": "data_action_add_contextual_thresholds",
-							"privileges": ["Manager", "ContextCheckManager"],
-							"min": 0
-						},
-						{
-							"title": "action_menu.tag",
-							"class": "tag16",
-							"fn": "data_action_add_tag",
-							"privileges": ["Manager", "TagManager"],
-							"min": 0
-						},
-						{
-							"title": "action_menu.user",
-							"class": "guy16",
-							"fn": "data_action_add_user",
-							"privileges": ["Manager", "UserManager"],
-							"min": 0
-						},
-						{
-							"title": "action_menu.group",
-							"class": "guys16",
-							"fn": "data_action_add_group",
-							"privileges": ["Manager", "GroupManager"],
-							"min": 0
-						},
-						{
-							"title": "action_menu.filterset",
-							"class": "filter16",
-							"fn": "data_action_add_filterset",
-							"privileges": ["Manager", "CompManager"],
-							"min": 0
-						},
-						{
-							"title": "action_menu.docker_registry",
-							"class": "docker_registry16",
-							"fn": "data_action_add_docker_registry",
-							"privileges": ["Manager", "DockerRegistriesManager"],
-							"min": 0
-						}
-					]
-				},
-				{
-					"selector": [],
-					"title": "action_menu.del",
-					"class": "del16",
-					"foldable": true,
-					"cols": [],
-					"condition": "",
-					"children": [
-						{
-							"title": "action_menu.contextual_thresholds",
-							"class": "check16",
-							"fn": "data_action_delete_contextual_thresholds",
-							"privileges": ["Manager", "ContextCheckManager"],
-							"min": 0
-						},
-						{
-							"title": "action_menu.group",
-							"class": "guys16",
-							"fn": "data_action_del_groups",
-							"privileges": ["Manager", "GroupManager"],
-							"min": 0
-						}
-					]
-				},
-				{
-					"selector": [],
-					"title": "action_menu.import",
-					"class": "fa-upload",
-					"foldable": true,
-					"cols": [],
-					"condition": "",
-					"children": [
-						{
-							"title": "action_menu.compliance_design",
-							"class": "designer16",
-							"fn": "data_action_import_compliance_design",
-							"privileges": ["Manager", "CompManager"],
-							"min": 0
-						},
-						{
-							"title": "action_menu.report",
-							"class": osvc.icons.report,
-							"fn": "data_action_import_report",
-							"privileges": ["Manager", "ReportsManager"],
-							"min": 0
-						}
-					]
-				},
-				{
-					"selector": [],
-					"title": "action_menu.refresh",
-					"class": "refresh16",
-					"foldable": true,
-					"cols": [],
-					"condition": "",
-					"children": [
-						{
-							"title": "action_menu.obsolescence_products",
-							"class": "obs16",
-							"fn": "data_action_obs_refresh",
-							"privileges": ["Manager", "ObsManager"],
-							"min": 0
-						}
-					]
-				},
 				{
 					"selector": ["clicked", "checked", "all"],
 					"foldable": true,
@@ -1924,7 +1693,7 @@ function table_action_menu_agent_action(t, e, confirmation) {
 			}
 		}
 
-		var yes_no = table_action_menu_yes_no(t, 'action_menu.confirmation', function(){
+		var yes_no = table_action_menu_yes_no('action_menu.confirmation', function(){
 			table_action_menu_agent_action(t, e, true)
 		})
 		yes_no.insertAfter(entry)
@@ -1980,10 +1749,10 @@ function table_action_menu_agent_action(t, e, confirmation) {
 //
 // tool: free uids
 //
-function tool_free_uids(t, e) {
-	var entry = $(e.target)
-	table_action_menu_focus_on_leaf(t, entry)
-	var div = $("<div name='tool' style='padding:0.5em'></div>")
+function tool_free_uids(divid) {
+	var parent_div = $("#"+divid)
+	var div = data_management_div({"title": "menu.data_management.free_uids.title"})
+	parent_div.empty().append(div)
 	var title = $("<div></div>")
 	var input = $("<input class='oi' id='uid_start'>")
 	var area = $("<div style='padding-top:1em' class='pre'></div>")
@@ -1992,7 +1761,6 @@ function tool_free_uids(t, e) {
 	div.append(title)
 	div.append(input)
 	div.append(area)
-	div.insertAfter(entry)
 	input.bind("keyup", function(event) {
 		if (!is_enter(event)) {
 			return
@@ -2004,10 +1772,10 @@ function tool_free_uids(t, e) {
 //
 // tool: free gids
 //
-function tool_free_gids(t, e) {
-	var entry = $(e.target)
-	table_action_menu_focus_on_leaf(t, entry)
-	var div = $("<div name='tool' style='padding:0.5em'></div>")
+function tool_free_gids(divid) {
+	var parent_div = $("#"+divid)
+	var div = data_management_div({"title": "menu.data_management.free_gids.title"})
+	parent_div.empty().append(div)
 	var title = $("<div></div>")
 	var input = $("<input class='oi' id='gid_start'>")
 	var area = $("<div style='padding-top:1em' class='pre'></div>")
@@ -2016,7 +1784,6 @@ function tool_free_gids(t, e) {
 	div.append(title)
 	div.append(input)
 	div.append(area)
-	div.insertAfter(entry)
 	input.bind("keyup", function(event) {
 		if (!is_enter(event)) {
 			return
@@ -2359,7 +2126,7 @@ function data_action_user_set_primary_group(t, e) {
 	var div = $("<div style='padding:0.5em'></div>")
 	var label_group_id = $("<div data-i18n='action_menu.group_name'></div>")
 	var input_group_id = $("<input id='group_id' class='oi'>")
-	var yes_no = table_action_menu_yes_no(t, 'action_menu.submit', function(e){
+	var yes_no = table_action_menu_yes_no('action_menu.submit', function(e){
 		var _data = []
 		div.empty()
 		for (i=0;i<data.length;i++) {
@@ -2419,7 +2186,7 @@ function data_action_user_set_filterset(t, e) {
 	var div = $("<div style='padding:0.5em'></div>")
 	var label_fset_id = $("<div data-i18n='col.Filterset'></div>")
 	var input_fset_id = $("<input id='fset_id' class='oi'>")
-	var yes_no = table_action_menu_yes_no(t, 'action_menu.submit', function(e){
+	var yes_no = table_action_menu_yes_no('action_menu.submit', function(e){
 		var _data = []
 		div.empty()
 		for (i=0;i<data.length;i++) {
@@ -2469,8 +2236,9 @@ function data_action_user_set_filterset(t, e) {
 //
 // data action: add dns domain
 //
-function data_action_add_dns_domain(t, e) {
-	data_action_generic_add(t, e, {
+function data_action_add_dns_domain(divid) {
+	data_action_generic_add(divid, {
+		"title": "menu.data_management.add_dns_domain.title",
 		"request_service": "R_DNS_DOMAINS",
 		"properties_tab": function(divid, data) {
 			dns_domain_properties(divid, {"domain_id": data.id})
@@ -2485,14 +2253,19 @@ function data_action_add_dns_domain(t, e) {
 	})
 }
 
-function data_action_generic_add(t, e, options) {
-	var entry = $(e.target)
+function data_management_div(options) {
+	var child_div = $("<div class='p-3'><div>")
+	if (options.title) {
+		var title = $("<h2></h2>").text(i18n.t(options.title))
+		child_div.append(title)
+	}
+	return child_div
+}
 
-	// create and focus tool area
-	table_action_menu_focus_on_leaf(t, entry)
-	var div = $("<div></div>")
-	div.uniqueId()
-	div.insertAfter(entry)
+function data_action_generic_add(divid, options) {
+	var div = $("#"+divid)
+	var child_div = data_management_div(options)
+	div.empty().append(child_div)
 
 	// minimal create information
 	for (var i=0; i<options.inputs.length; i++) {
@@ -2505,18 +2278,18 @@ function data_action_generic_add(t, e, options) {
 		input.attr("placeholder", input_data.placeholder)
 		line.append(title)
 		line.append(input)
-		div.append(line)
+		child_div.append(line)
 	}
 	var info = $("<div></div>")
 	info.uniqueId()
 	info.css({"margin": "0.8em 0 0.8em 0"})
-	div.append(info)
-	div.find("div.template_form_line input").first().focus()
+	child_div.append(info)
+	child_div.find("div.template_form_line input").first().focus()
 
 	var timer = null
 	var xhr = null
 
-	div.find("div.template_form_line input").bind("keyup", keyup_trigger)
+	child_div.find("div.template_form_line input").bind("keyup", keyup_trigger)
 
 	function keyup_trigger(e) {
 		if (is_special_key(e)) {
@@ -2524,8 +2297,11 @@ function data_action_generic_add(t, e, options) {
 		}
 		clearTimeout(timer)
 		if (is_enter(e)) {
+			if ($(this).val() == "") {
+				return
+			}
 			var data = {}
-			div.find("div.template_form_line input").each(function(){
+			child_div.find("div.template_form_line input").each(function(){
 				data[$(this).attr("id")] = $(this).val()
 			})
 			info.empty()
@@ -2549,7 +2325,7 @@ function data_action_generic_add(t, e, options) {
 					xhr.abort()
 				}
 				var data = {"filters": []}
-				var inputs = div.find("div.template_form_line input")
+				var inputs = child_div.find("div.template_form_line input")
 				for (var i=0; i<inputs.length; i++) {
 					var key = $(inputs[i]).attr("id")
 					if (options.exist_check_keys && options.exist_check_keys.indexOf(key) < 0) {
@@ -2642,33 +2418,31 @@ function data_action_del_dns_records(t, e) {
 //
 // data action: add dns record
 //
-function data_action_add_dns_record(t, e) {
-	var entry = $(e.target)
-
-	// create and focus tool area
-	table_action_menu_focus_on_leaf(t, entry)
-	var div = $("<div></div>")
-	div.uniqueId()
-	div.insertAfter(entry)
-	form(div.attr("id"), {"form_name": "add_dns_record"})
+function data_action_add_dns_record(divid) {
+	div = $("#"+divid)
+	var child_div = data_management_div({
+		"title": "menu.data_management.add_dns_record.title"
+	})
+	div.empty().append(child_div)
+	var form_div = $("<div></div>")
+	form_div.uniqueId()
+	child_div.append(form_div)
+	form(form_div.attr("id"), {"form_name": "internal_add_dns_record"})
 }
 
 //
 // data action: add network segment
 //
-function data_action_add_network_segment(t, e) {
-	var entry = $(e.target)
-	var net_id = t.options.id.replace(/network_segments_/, "")
-	if (!is_numeric(net_id)) {
-		net_id = ""
-	}
-
-	// create and focus tool area
-	table_action_menu_focus_on_leaf(t, entry)
-	var div = $("<div></div>")
-	div.uniqueId()
-	div.insertAfter(entry)
-	form(div.attr("id"), {"form_name": "add_network_segment", "data": {"net_id": net_id}})
+function data_action_add_network_segment(divid) {
+	div = $("#"+divid)
+	var child_div = data_management_div({
+		"title": "menu.data_management.add_network_segment.title"
+	})
+	div.empty().append(child_div)
+	var form_div = $("<div></div>")
+	form_div.uniqueId()
+	child_div.append(form_div)
+	form(form_div.attr("id"), {"form_name": "internal_add_network_segment"})
 }
 
 //
@@ -2756,8 +2530,9 @@ function data_action_del_apps(t, e) {
 //
 // data action: add app
 //
-function data_action_add_app(t, e) {
-	data_action_generic_add(t, e, {
+function data_action_add_app(divid) {
+	data_action_generic_add(divid, {
+		"title": "menu.data_management.add_app.title",
 		"request_service": "R_APPS",
 		"properties_tab": function(divid, data) {
 			app_properties(divid, {"app_id": data.id})
@@ -2857,8 +2632,13 @@ function data_action_del_group(t, e) {
 //
 // data action: del groups
 //
-function data_action_del_groups(t, e) {
-	data_action_generic_selector(t, e, {
+function data_action_del_groups(divid) {
+	var div = $("#"+divid)
+	var child_div = data_management_div({
+		"title": "menu.data_management.del_groups.title"
+	})
+	div.empty().append(child_div)
+	_data_action_generic_selector(child_div, {
 		"requestor": services_osvcdeleterest,
 		"request_service": "R_GROUPS",
 		"selector": generic_selector_org_groups,
@@ -2874,8 +2654,9 @@ function data_action_del_groups(t, e) {
 //
 // data action: add group
 //
-function data_action_add_group(t, e) {
-	data_action_generic_add(t, e, {
+function data_action_add_group(divid) {
+	data_action_generic_add(divid, {
+		"title": "menu.data_management.add_group.title",
 		"request_service": "R_GROUPS",
 		"properties_tab": function(divid, data) {
 			group_properties(divid, {"group_id": data.id})
@@ -2893,8 +2674,9 @@ function data_action_add_group(t, e) {
 //
 // data action: add user
 //
-function data_action_add_user(t, e) {
-	data_action_generic_add(t, e, {
+function data_action_add_user(divid) {
+	data_action_generic_add(divid, {
+		"title": "menu.data_management.add_user.title",
 		"request_service": "R_USERS",
 		"properties_tab": function(divid, data) {
 			user_tabs(divid, {"user_id": data.id})
@@ -2912,8 +2694,9 @@ function data_action_add_user(t, e) {
 //
 // data action: add node
 //
-function data_action_add_node(t, e) {
-	data_action_generic_add(t, e, {
+function data_action_add_node(divid) {
+	data_action_generic_add(divid, {
+		"title": "menu.data_management.add_node.title",
 		"request_service": "R_NODES",
 		"properties_tab": function(divid, data) {
 			node_properties(divid, {"node_id": data.node_id})
@@ -2931,8 +2714,9 @@ function data_action_add_node(t, e) {
 //
 // data action: add service
 //
-function data_action_add_service(t, e) {
-	data_action_generic_add(t, e, {
+function data_action_add_service(divid) {
+	data_action_generic_add(divid, {
+		"title": "menu.data_management.add_service.title",
 		"request_service": "R_SERVICES",
 		"properties_tab": function(divid, data) {
 			service_tabs(divid, {
@@ -3052,85 +2836,28 @@ function data_action_chk_instance_delete(t, e) {
 //
 // data action: add contextual threshold
 //
-function data_action_add_contextual_thresholds(t, e) {
-	var entry = $(e.target)
-	table_action_menu_focus_on_leaf(t, entry)
-
-	// form elements
-	var div = $("<div style='padding:0.5em'></div>")
-	var label_chk_type = $("<div data-i18n='col.Type'></div>")
-	var input_chk_type = $("<input id='chk_type' class='oi'>")
-	var label_chk_instance = $("<div data-i18n='col.Instance'></div>")
-	var input_chk_instance = $("<input id='chk_instance' class='oi'>")
-	var label_chk_low = $("<div data-i18n='col.Low threshold'></div>")
-	var input_chk_low = $("<input id='chk_low' class='oi'>")
-	var label_chk_high = $("<div data-i18n='col.High threshold'></div>")
-	var input_chk_high = $("<input id='chk_high' class='oi'>")
-	var label_fset_id = $("<div data-i18n='col.Filterset'></div>")
-	var input_fset_id = $("<input id='fset_id' class='oi'>")
-	var yes_no = table_action_menu_yes_no(t, 'action_menu.submit', function(e){
-		var _data = {
-			"chk_type": input_chk_type.val(),
-			"chk_instance": input_chk_instance.val(),
-			"chk_low": input_chk_low.val(),
-			"chk_high": input_chk_high.val(),
-			"fset_id": input_fset_id.attr("fset_id")
-		}
-		services_osvcpostrest("R_CHECKS_CONTEXTUAL_SETTINGS", "", "", _data, function(jd) {
-			if (jd.error && (jd.error.length > 0)) {
-				div.html(services_error_fmt(jd))
-			}
-			if (jd.info && (jd.info.length > 0)) {
-				div.html(services_info_fmt(jd))
-			}
-		},
-		function(xhr, stat, error) {
-			div.html(services_ajax_error_fmt(xhr, stat, error))
-		})
+function data_action_add_contextual_thresholds(divid) {
+	div = $("#"+divid)
+	var child_div = data_management_div({
+		"title": "menu.data_management.add_contextual_thresholds.title"
 	})
-
-	// fset autocomplete
-	var fsets = []
-	services_osvcgetrest("R_FILTERSETS", "", {"limit": "0", "meta": "0", "orderby": "fset_name"}, function(jd) {
-		for (var i=0; i<jd.data.length; i++) {
-			fsets.push({
-				"id": jd.data[i].id,
-				"label": jd.data[i].fset_name
-			})
-		}
-	})
-	input_fset_id.autocomplete({
-		source: fsets,
-		minLength: 0,
-		focus: function(event, ui) {
-			input_fset_id.attr("fset_id", ui.item.id)
-		},
-		select: function(event, ui) {
-			input_fset_id.attr("fset_id", ui.item.id)
-		}
-	})
-
-	// assemble the form elements
-	div.append(label_chk_type)
-	div.append(input_chk_type)
-	div.append(label_chk_instance)
-	div.append(input_chk_instance)
-	div.append(label_chk_low)
-	div.append(input_chk_low)
-	div.append(label_chk_high)
-	div.append(input_chk_high)
-	div.append(label_fset_id)
-	div.append(input_fset_id)
-	div.append(yes_no)
-	div.i18n()
-	div.insertAfter(entry)
+	div.empty().append(child_div)
+	var form_div = $("<div></div>")
+	form_div.uniqueId()
+	child_div.append(form_div)
+	form(form_div, {"form_name": "internal_add_contextual_thresholds"})
 }
 
 //
 // data action: delete contextual threshold
 //
-function data_action_delete_contextual_thresholds(t, e) {
-	data_action_generic_selector(t, e, {
+function data_action_delete_contextual_thresholds(divid) {
+	var div = $("#"+divid)
+	var child_div = data_management_div({
+		"title": "menu.data_management.del_contextual_thresholds.title"
+	})
+	div.empty().append(child_div)
+	_data_action_generic_selector(child_div, {
 		"requestor": services_osvcdeleterest,
 		"request_service": "R_CHECKS_CONTEXTUAL_SETTINGS",
 		"selector": generic_selector_checks_contextual_settings,
@@ -3286,8 +3013,9 @@ function data_action_delete_compliance_status(t, e) {
 //
 // data action: add network
 //
-function data_action_add_network(t, e) {
-	data_action_generic_add(t, e, {
+function data_action_add_network(divid) {
+	data_action_generic_add(divid, {
+		"title": "menu.data_management.add_network.title",
 		"request_service": "R_NETWORKS",
 		"properties_tab": function(divid, data) {
 			network_properties(divid, {"network_id": data.id})
@@ -3439,7 +3167,7 @@ function data_action_ack_actions(t, e) {
 		event.stopPropagation()
 	})
 	table_action_menu_focus_on_leaf(t, entry)
-	var yes_no = table_action_menu_yes_no(t, 'action_menu.submit', function(e){
+	var yes_no = table_action_menu_yes_no('action_menu.submit', function(e){
 		var comment = $(e.target).parents("form").first().find("textarea").val()
 		for (i=0;i<data.length;i++) {
 			if (data[i].ack) {
@@ -3477,14 +3205,10 @@ function data_action_ack_actions(t, e) {
 	c.focus()
 }
 
-function data_action_import(t, e, options) {
-	var entry = $(e.target)
-
-	// create and focus tool area
-	table_action_menu_focus_on_leaf(t, entry)
-	var div = $("<div></div>")
-	div.uniqueId()
-	div.insertAfter(entry)
+function data_action_import(divid, options) {
+	var parent_div = $("#"+divid)
+	var div = data_management_div({"title": options.title})
+	parent_div.empty().append(div)
 
 	var line = $("<div class='template_form_line'></div>")
 	var title = $("<div></div>")
@@ -3532,18 +3256,20 @@ function data_action_import(t, e, options) {
 //
 // data action: import report
 //
-function data_action_import_report(t, e) {
-	data_action_import(t, e, {
+function data_action_import_report(divid) {
+	data_action_import(divid, {
 		url: "/reports/import",
+		title: "menu.data_management.import_report.title"
 	})
 }
 
 //
 // data action: import compliance design
 //
-function data_action_import_compliance_design(t, e) {
-	data_action_import(t, e, {
+function data_action_import_compliance_design(divid) {
+	data_action_import(divid, {
 		url: "/compliance/import",
+		title: "menu.data_management.import_compliance_design.title"
 	})
 }
 
@@ -3551,7 +3277,8 @@ function data_action_import_compliance_design(t, e) {
 // data action: add report
 //
 function data_action_add_report(t, e) {
-	data_action_generic_add(t, e, {
+	data_action_generic_add(t, {
+		"title": "menu.data_management.add_report.title",
 		"request_service": "/reports",
 		"properties_tab": function(divid, data) {
 			report_tabs(divid, {"report_id": data.id, "report_name": data.report_name})
@@ -3583,8 +3310,9 @@ function data_action_del_reports(t, e) {
 //
 // data action: add chart
 //
-function data_action_add_chart(t, e) {
-	data_action_generic_add(t, e, {
+function data_action_add_chart(divid) {
+	data_action_generic_add(divid, {
+		"title": "menu.data_management.add_chart.title",
 		"request_service": "/reports/charts",
 		"properties_tab": function(divid, data) {
 			chart_tabs(divid, {"chart_id": data.id, "chart_name": data.chart_name})
@@ -3630,8 +3358,9 @@ function data_action_del_filtersets(t, e) {
 //
 // data action: add filterset
 //
-function data_action_add_filterset(t, e) {
-	data_action_generic_add(t, e, {
+function data_action_add_filterset(divid) {
+	data_action_generic_add(divid, {
+		"title": "menu.data_management.add_filterset.title",
 		"request_service": "/filtersets",
 		"properties_tab": function(divid, data) {
 			filterset_tabs(divid, {"fset_name": data.fset_name})
@@ -3649,8 +3378,9 @@ function data_action_add_filterset(t, e) {
 //
 // data action: add docker registry
 //
-function data_action_add_docker_registry(t, e) {
-	data_action_generic_add(t, e, {
+function data_action_add_docker_registry(divid) {
+	data_action_generic_add(divid, {
+		"title": "menu.data_management.add_docker_registry.title",
 		"request_service": "/docker/registries",
 		"properties_tab": function(divid, data) {
 			docker_registry_tabs(divid, {"registry_service": data.service})
@@ -3819,8 +3549,9 @@ function data_action_del_charts(t, e) {
 //
 // data action: add metric
 //
-function data_action_add_metric(t, e) {
-	data_action_generic_add(t, e, {
+function data_action_add_metric(divid) {
+	data_action_generic_add(divid, {
+		"title": "menu.data_management.add_metric.title",
 		"request_service": "/reports/metrics",
 		"properties_tab": function(divid, data) {
 			metric_tabs(divid, {"metric_id": data.id, "metric_name": data.metric_name})
@@ -3866,8 +3597,9 @@ function data_action_del_tag(t, e) {
 //
 // data action: add tag
 //
-function data_action_add_tag(t, e) {
-	data_action_generic_add(t, e, {
+function data_action_add_tag(divid) {
+	data_action_generic_add(divid, {
+		"title": "menu.data_management.add_tag.title",
 		"request_service": "R_TAGS",
 		"properties_tab": function(divid, data) {
 			$("#"+divid).html(i18n.t("action_menu.tag_not_createable"))
@@ -3885,8 +3617,9 @@ function data_action_add_tag(t, e) {
 //
 // data action: add form
 //
-function data_action_add_form(t, e) {
-	data_action_generic_add(t, e, {
+function data_action_add_form(divid) {
+	data_action_generic_add(divid, {
+		"title": "menu.data_management.add_form.title",
 		"request_service": "R_FORMS",
 		"properties_tab": function(divid, data) {
 			form_tabs(divid, {"form_id": data.id, "form_name": data.form_name})
@@ -4507,7 +4240,7 @@ function data_action_generic(t, e, options) {
 	}
 
 	if (options.confirmation) {
-		var yes_no = table_action_menu_yes_no(t, 'action_menu.submit', function(event){
+		var yes_no = table_action_menu_yes_no('action_menu.submit', function(event){
 			do_action(event)
 		})
 		yes_no.insertAfter(result)
@@ -4546,31 +4279,37 @@ function data_action_generic_delete(t, e, options) {
 function data_action_generic_selector(t, e, options) {
 	var entry = $(e.target)
 	var cache_id = entry.attr("cache_id")
-	var data = t.action_menu_data_cache[cache_id]
-	var request_data = new Array()
 	table_action_menu_focus_on_leaf(t, entry)
-
+	options.data = t.action_menu_data_cache[cache_id]
+	options.callback = function(){
+		t.refresh_menu_data_cache(entry, e)
+	}
 	// form
 	var form = $("<form></form>")
-	form.css({"width": entry.width(), "padding": "0.3em"})
+	form.css({"width": "100%", "padding": "0.3em"})
 	form.insertAfter(entry)
+	_data_action_generic_selector(form, options)
+}
+
+function _data_action_generic_selector(form, options) {
+	var request_data = new Array()
 
 	// selector
 	var selector_div = $("<div></div>")
 	selector_div.uniqueId()
 	form.append(selector_div)
 	var selector_instance = options.selector(selector_div.attr("id"))
-	var yes_no = table_action_menu_yes_no(t, 'action_menu.submit', function(e){
-		if (options.no_lines) {
+	var yes_no = table_action_menu_yes_no('action_menu.submit', function(e){
+		if (options.no_lines || !options.data) {
 			var selected = selector_instance.get_selected()
 			for (j=0;j<selected.length;j++) {
 				request_data.push(options.request_data_entry(selected[j]))
 			}
 		} else {
 			var selected = selector_instance.get_selected()
-			for (i=0;i<data.length;i++) {
+			for (i=0;i<options.data.length;i++) {
 				for (j=0;j<selected.length;j++) {
-					request_data.push(options.request_data_entry(selected[j], data[i]))
+					request_data.push(options.request_data_entry(selected[j], options.data[i]))
 				}
 			}
 		}
@@ -4581,13 +4320,16 @@ function data_action_generic_selector(t, e, options) {
 			if (jd.info && (jd.info.length > 0)) {
 				form.html(services_info_fmt(jd))
 			}
-			t.refresh_menu_data_cache(entry, e)
+			if (options.callback) {
+				options.callback()
+			}
 		},
 		function(xhr, stat, error) {
 			form.html(services_ajax_error_fmt(xhr, stat, error))
 		})
 	})
 	form.append(yes_no)
+	return form
 }
 
 //
@@ -4689,7 +4431,7 @@ function agent_action_provisioning(t, e) {
 			}
 
 			// add submit/cancel buttons
-			var yes_no = table_action_menu_yes_no(t, 'action_menu.provisioning_submit', function(e){
+			var yes_no = table_action_menu_yes_no('action_menu.provisioning_submit', function(e){
 				var entry = $(e.target).parents(".template_selector").prev()
 				var cache_id = entry.attr("cache_id")
 				var data = t.action_menu_data_cache[cache_id]
@@ -4765,33 +4507,37 @@ function data_action_del_quotas(t, e) {
 //
 // data action: add quota
 //
-function data_action_add_quota(t, e) {
-	var entry = $(e.target)
-
-	// create and focus tool area
-	table_action_menu_focus_on_leaf(t, entry)
-	var div = $("<div></div>")
-	div.uniqueId()
-	div.insertAfter(entry)
-	form(div.attr("id"), {"form_name": "add_quota"})
+function data_action_add_quota(divid) {
+	div = $("#"+divid)
+	var child_div = data_management_div({
+		"title": "menu.data_management.add_quota.title"
+	})
+	div.empty().append(child_div)
+	var form_div = $("<div></div>")
+	form_div.uniqueId()
+	child_div.append(form_div)
+	form(form_div.attr("id"), {"form_name": "internal_add_quota"})
 }
 
 //
 // data action: refresh obsolescence list and alerts
 //
-function data_action_obs_refresh(t, e) {
-	var entry = $(e.target)
-	table_action_menu_focus_on_leaf(t, entry)
+function data_action_obs_refresh(divid) {
+	div = $("#"+divid)
+	var child_div = data_management_div({
+		"title": "menu.data_management.refresh_obsolescence.title"
+	})
+	div.empty().append(child_div)
 	services_osvcputrest("/obsolescence/refresh", "", "", "", function(jd) {
 		if (jd.error && (jd.error.length > 0)) {
-			osvc.flash.error(services_error_fmt(jd))
+			child_div.append(services_error_fmt(jd))
 		}
 		if (jd.info && (jd.info.length > 0)) {
-			osvc.flash.info(services_info_fmt(jd))
+			child_div.append(services_info_fmt(jd))
 		}
 	},
 	function(xhr, stat, error) {
-		osvc.flash.error(services_ajax_error_fmt(xhr, stat, error))
+		child_div.append(services_ajax_error_fmt(xhr, stat, error))
 	})
 }
 
@@ -4886,77 +4632,20 @@ function data_action_obs_set(t, e, options) {
 //
 // data action: add prov template
 //
-function data_action_add_prov_template(t, e) {
-	var entry = $(e.target)
-
-	// create and focus tool area
-	table_action_menu_focus_on_leaf(t, entry)
-	var div = $("<div></div>")
-	div.uniqueId()
-	div.insertAfter(entry)
-
-	// minimal create information
-	var line = $("<div class='template_form_line'></div>")
-	var title = $("<div data-i18n='col.Name'></div>").i18n()
-	var input = $("<input class='oi'></input>")
-	var info = $("<div></div>")
-	info.uniqueId()
-	info.css({"margin": "0.8em 0 0.8em 0"})
-	line.append(title)
-	line.append(input)
-	div.append(line)
-	div.append(info)
-	input.focus()
-
-	var timer = null
-	var xhr = null
-
-	input.bind("keyup", function(e) {
-		clearTimeout(timer)
-		if (is_enter(e)) {
-			data = {
-				"tpl_name": input.val()
+function data_action_add_prov_template(divid) {
+	data_action_generic_add(divid, {
+		"title": "menu.data_management.add_prov_template.title",
+		"request_service": "/provisioning_templates",
+		"properties_tab": function(divid, data) {
+			prov_template_tabs(divid, {"tpl_id": data.id, "tpl_name": data.tpl_name})
+		},
+		"createable_message": "action_menu.tpl_createable",
+		"inputs": [
+			{
+				"title": "action_menu.tpl_name",
+				"key": "tpl_name"
 			}
-			info.empty()
-			spinner_add(info)
-			xhr  = services_osvcpostrest("/provisioning_templates", "", "", data, function(jd) {
-				spinner_del(info)
-				if (jd.error && (jd.error.length > 0)) {
-					info.html(services_error_fmt(jd))
-				}
-				// display the node properties tab to set more properties
-				prov_template_properties(div.attr("id"), {"tpl_id": jd.data[0].id})
-			},
-			function(xhr, stat, error) {
-				info.html(services_ajax_error_fmt(xhr, stat, error))
-			})
-		} else {
-			var tpl_name = input.val()
-			timer = setTimeout(function(){
-				info.empty()
-				spinner_add(info)
-				if (xhr) {
-					xhr.abort()
-				}
-				services_osvcgetrest("/provisioning_templates", "", {"filters": "tpl_name "+tpl_name}, function(jd) {
-					xhr = null
-					spinner_del(info)
-					if (jd.error && (jd.error.length > 0)) {
-						info.html(services_error_fmt(jd))
-					}
-					if (jd.data.length == 0) {
-						info.text(i18n.t("action_menu.tpl_createable"))
-						return
-					}
-
-					// display the template properties tab
-					prov_template_properties(info.attr("id"), {"tpl_id": jd.data[0].id})
-				},
-				function(xhr, stat, error) {
-					info.html(services_ajax_error_fmt(xhr, stat, error))
-				})
-			}, 500)
-		}
+		]
 	})
 }
 
@@ -5077,7 +4766,6 @@ clicked_decorator_resource = function(e, data) {
 }
 
 clicked_decorator_service_moduleset = function(e, data) {
-	console.log(data)
 	var s = $("<span><span svc_id='"+data.svc_id+"'></span><span modset_id='"+data.modset_id+"'></span></span>")
 	e.html(s)
 	s.children("[svc_id]").osvc_svcname()

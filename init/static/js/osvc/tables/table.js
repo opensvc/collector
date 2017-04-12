@@ -3896,7 +3896,7 @@ function table_action_menu_unfocus_leaf(t, folder) {
 	entry.removeClass("action_menu_leaf_selected")
 }
 
-function table_action_menu_yes_no(t, msg, callback) {
+function table_action_menu_yes_no(msg, callback) {
 	var e = $("<div style='margin-top:0.6em'></div>")
 	var title = $("<div></div>")
 	title.text(i18n.t(msg))
