@@ -1673,6 +1673,7 @@ colprops = {
 		"title": "Disable"
 	},
 	"res_log": {
+		"_class": "res_log",
 		"img": "resource",
 		"title": "Log"
 	},

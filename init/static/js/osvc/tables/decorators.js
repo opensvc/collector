@@ -867,6 +867,16 @@ function cell_decorator_svcname(e, line) {
 	})
 }
 
+function cell_decorator_res_log(e, line) {
+	var v = $.data(e[0], "v")
+	e.css({"white-space": "pre"})
+	var s = v
+		.replace(/info: /g, "<span style='width:5em' class='mr-2 btn btn-sm btn-info'>info</span>")
+		.replace(/warn: /g, "<span style='width:5em' class='mr-2 btn btn-sm btn-warning'>warn</span>")
+		.replace(/err: /g, "<span style='width:5em' class='mr-2 btn btn-sm btn-danger'>err</span>")
+	e.html(s)
+}
+
 function cell_decorator_log_event(e, line) {
 	var d = $.data(line.children("[col=log_dict]")[0], "v")
 	var fmt = $.data(line.children("[col=log_fmt]")[0], "v")
@@ -2028,6 +2038,7 @@ $.extend(true, cell_decorators, {
 	"modset_name": cell_decorator_modset_name,
 	"log_level": cell_decorator_log_level,
 	"log_event": cell_decorator_log_event,
+	"res_log": cell_decorator_res_log,
 	"ruleset_name": cell_decorator_ruleset_name,
 	"rule_value": cell_decorator_rule_value
 })
