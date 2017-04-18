@@ -497,7 +497,7 @@ class rest_get_service_disks(rest_get_table_handler):
         rest_get_table_handler.__init__(
           self,
           path="/services/<id>/disks",
-          tables=["stor_array", "diskinfo", "svcdisks"],
+          tables=["svcdisks", "diskinfo", "stor_array"],
           left=(db.diskinfo.on(db.svcdisks.disk_id==db.diskinfo.disk_id), db.stor_array.on(db.diskinfo.disk_arrayid == db.stor_array.array_name)),
           count_prop="svcdisks.id",
           desc=desc,
