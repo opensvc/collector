@@ -16,6 +16,10 @@ data = {
        'comment': "Insert EVA arrays data from uploads",
      },
      {
+       'url': URL(r=request, a='feed',  c='default', f='insert_hdss'),
+       'comment': "Insert Hitachi arrays data from uploads",
+     },
+     {
        'url': URL(r=request, a='feed',  c='default', f='insert_syms'),
        'comment': "Insert Symmetrix arrays data from uploads",
      },
