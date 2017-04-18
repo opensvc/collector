@@ -130,6 +130,7 @@ auth.settings.extra_fields['auth_user']= [
     Field('im_notifications', 'boolean', default=False,
           label=T('Instant messaging notifications')),
     Field('perpage', 'integer', default=20,
+          requires=IS_INT_IN_RANGE(minimum=20, maximum=101),
           label=T('Preferred lines per page')),
     Field('im_type', 'integer',
           label=T('Instant messaging protocol'), default=1,
