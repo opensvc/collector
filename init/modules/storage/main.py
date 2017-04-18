@@ -411,6 +411,9 @@ class Storage(object):
         self.output_id = sys.argv[2]
         self.results = json.loads(sys.argv[3])
 
+        if self.results and "returncode" in self.results and self.results["returncode"] != 0:
+            raise RequestDataError("Abort because of previous errors")
+
         if isinstance(data, dict):
             self._main(data)
         elif isinstance(data, list):
