@@ -962,8 +962,15 @@ function form(divid, options) {
 					}
 				}
 			},
+			change: function(event, ui) {
+				if (ui.item) {
+					$(this).prop("acid", ui.item.id)
+				}
+				input.removeClass("candidates_violation")
+				$(this).change()
+			},
 			focus: function(event, ui) {
-				$(this).prop("acid", ui.item.id)
+				return false
 			},
 			select: function(event, ui) {
 				$(this).prop("acid", ui.item.id)
@@ -1202,7 +1209,9 @@ function form(divid, options) {
 		} else if (input.is("textarea")) {
 			input.val(opts_to_text(opts))
 		} else {
-			try { input.autocomplete("destroy") } catch(e) {}
+			if ($.data(input[0], "ui-autocomplete") != undefined) {
+				input.autocomplete("destroy")
+			}
 			input.val("")
 			input.removeProp("acid")
 			input.removeProp("option_data")
@@ -1228,9 +1237,16 @@ function form(divid, options) {
 						}
 					}
 				},
+				change: function(event, ui) {
+					if (ui.item) {
+						$(this).prop("acid", ui.item.id)
+						$(this).prop("option_data", ui.item.option_data)
+					}
+					input.removeClass("candidates_violation")
+					$(this).change()
+				},
 				focus: function(event, ui) {
-					$(this).prop("acid", ui.item.id)
-					$(this).prop("option_data", ui.item.option_data)
+					return false
 				},
 				select: function(event, ui) {
 					$(this).prop("acid", ui.item.id)
