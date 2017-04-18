@@ -12,36 +12,40 @@ data = {
    'title': 'Parsers',
    'batchs': [
      {
-       'url': URL(r=request, a='feed',  c='default', f='insert_evas'),
-       'comment': "Insert EVA arrays data from uploads",
-     },
-     {
-       'url': URL(r=request, a='feed',  c='default', f='insert_hdss'),
-       'comment': "Insert Hitachi arrays data from uploads",
-     },
-     {
-       'url': URL(r=request, a='feed',  c='default', f='insert_syms'),
-       'comment': "Insert Symmetrix arrays data from uploads",
+       'url': URL(r=request, a='feed',  c='default', f='insert_centeras'),
+       'comment': "Insert Centera arrays data from uploads",
      },
      {
        'url': URL(r=request, a='feed',  c='default', f='insert_dcss'),
        'comment': "Insert DataCore arrays data from uploads",
      },
      {
-       'url': URL(r=request, a='feed',  c='default', f='insert_ibmsvcs'),
-       'comment': "Insert IBM SVC arrays data from uploads",
+       'url': URL(r=request, a='feed',  c='default', f='insert_emcvnxs'),
+       'comment': "Insert VNX arrays data from uploads",
+     },
+     {
+       'url': URL(r=request, a='feed',  c='default', f='insert_evas'),
+       'comment': "Insert EVA arrays data from uploads",
+     },
+     {
+       'url': URL(r=request, a='feed',  c='default', f='insert_freenass'),
+       'comment': "Insert FreeNAS arrays data from uploads",
+     },
+     {
+       'url': URL(r=request, a='feed',  c='default', f='insert_gcediskss'),
+       'comment': "Insert GCloud arrays data from uploads",
+     },
+     {
+       'url': URL(r=request, a='feed',  c='default', f='insert_hdss'),
+       'comment': "Insert Hitachi arrays data from uploads",
      },
      {
        'url': URL(r=request, a='feed',  c='default', f='insert_hp3pars'),
        'comment': "Insert HP 3par arrays data from uploads",
      },
      {
-       'url': URL(r=request, a='feed',  c='default', f='insert_centeras'),
-       'comment': "Insert Centera arrays data from uploads",
-     },
-     {
-       'url': URL(r=request, a='feed',  c='default', f='insert_emcvnxs'),
-       'comment': "Insert VNX arrays data from uploads",
+       'url': URL(r=request, a='feed',  c='default', f='insert_ibmsvcs'),
+       'comment': "Insert IBM SVC arrays data from uploads",
      },
      {
        'url': URL(r=request, a='feed',  c='default', f='insert_necisms'),
@@ -52,8 +56,24 @@ data = {
        'comment': "Insert NetApp arrays data from uploads",
      },
      {
+       'url': URL(r=request, a='feed',  c='default', f='insert_syms'),
+       'comment': "Insert Symmetrix arrays data from uploads",
+     },
+     {
+       'url': URL(r=request, a='feed',  c='default', f='insert_vioservers'),
+       'comment': "Insert IBM VirtualIO arrays data from uploads",
+     },
+     {
+       'url': URL(r=request, a='feed',  c='default', f='insert_xtremios'),
+       'comment': "Insert XtremIO arrays data from uploads",
+     },
+     {
        'url': URL(r=request, a='feed',  c='default', f='insert_brocades'),
        'comment': "Insert Brocade switches data from uploads",
+     },
+     {
+       'url': URL(r=request, a='feed',  c='default', f='insert_nsrs'),
+       'comment': "Insert Networker Backup index data from uploads",
      },
    ],
  },
