@@ -2031,6 +2031,7 @@
 		"Retention": "Retention"
 	},
 	"alert_type": {
+		"netmask misconfigured": "netmask misconfigured",
 		"service not started on primary node": "service not started on primary node",
 		"service configuration not updated": "service configuration not updated",
 		"duplicate uid": "duplicate uid",

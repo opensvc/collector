@@ -1981,6 +1981,7 @@
 		"Retention": "Retention"
 	},
 	"alert_type": {
+		"netmask misconfigured": "netmask erroné",
 		"service not started on primary node": "service démarré sur un noeud non-primaire",
 		"service configuration not updated": "configuration de service non mise à jour",
 		"duplicate uid": "doublon d'uid",
