@@ -6368,3 +6368,6 @@ alter table forms_store drop column form_scripts;
 drop view v_forms_store ;CREATE VIEW `v_forms_store` AS select `fs`.`id` AS `id`,`fs`.`results_id` AS `results_id`,`fs`.`form_submitter` AS `form_submitter`,`fs`.`form_submit_date` AS `form_submit_date`,`fs`.`form_data` AS `form_data`,`fs`.`form_next_id` AS `form_next_id`,`fs`.`form_prev_id` AS `form_prev_id`,`fs`.`form_assignee` AS `form_assignee`,`fs`.`form_head_id` AS `form_head_id`,`fs`.`form_md5` AS `form_md5`,`fs`.`form_var_id` AS `form_var_id`,`fr`.`form_yaml` AS `form_yaml`,`fr`.`form_date` AS `form_date`,`fr`.`form_id` AS `form_id`,`fr`.`form_folder` AS `form_folder`,`fr`.`form_name` AS `form_name` from (`forms_store` `fs` join `forms_revisions` `fr`) where (`fs`.`form_md5` = `fr`.`form_md5`);
 
 alter table form_output_results add column svc_id CHAR(36) character set ascii default "";
+
+alter table auth_user drop column perpage;
+

@@ -669,6 +669,8 @@ function table_init(opts) {
 	t.prepare_request_data = function() {
 		var data = t.parent_tables_data()
 		data.table_id = t.id
+		data.perpage = osvc.user_prefs.data.tables[t.id].perpage
+		data.page = t.pager.page
 		for (c in t.colprops) {
 			var fid = t.id+"_f_"+c
 			var current = t.colprops[c].current_filter
@@ -1571,7 +1573,7 @@ function table_init(opts) {
 		var data = t.prepare_request_data()
 
 		data.visible_columns = t.get_ordered_visible_columns().join(',')
-		data[t.id+"_page"] = t.page
+		data["page"] = t.page
 		$.ajax({
 			type: "POST",
 			url: t.options.ajax_url+"/data",
@@ -2742,15 +2744,10 @@ function table_init(opts) {
 			$(this).siblings().removeClass("action_menu_selector_selected")
 			$(this).addClass("action_menu_selector_selected")
 			var new_perpage = parseInt($(this).text())
-			var data = {
-				"perpage": new_perpage
-			}
-			services_osvcpostrest("R_USERS_SELF", "", "", data, function(jd) {
-				t.page = Math.floor(((t.page - 1) * p_perpage) / new_perpage)+1
-				t.refresh()
-			}, function(xhr, stat, error) {
-				osvc.flash.error(services_ajax_error_fmt(xhr, stat, error))
-			})
+			osvc.user_prefs.data.tables[t.id].perpage = new_perpage
+			t.save_prefs()
+			t.page = Math.floor(((t.page - 1) * p_perpage) / new_perpage)+1
+			t.refresh()
 		})
 		e.append(title)
 		e.append(selector)
@@ -3029,6 +3026,9 @@ function table_init(opts) {
 		}
 		if (!(t.id in osvc.user_prefs.data.tables)) {
 			osvc.user_prefs.data.tables[t.id] = {}
+		}
+		if (!("perpage" in osvc.user_prefs.data.tables[t.id])) {
+			osvc.user_prefs.data.tables[t.id]["perpage"] = 20
 		}
 		if (!("filters" in osvc.user_prefs.data.tables[t.id])) {
 			osvc.user_prefs.data.tables[t.id]["filters"] = {}
@@ -3561,8 +3561,8 @@ function table_action_menu_get_cols_data_all(t, e, scope, selector) {
 		var url = t.options.ajax_url+"/data"
 		var vars = t.prepare_request_data()
 		vars["visible_columns"] = cols.join(",")
-		vars[t.id+"_page"] = 1
-		vars[t.id+"_perpage"] = t.action_menu_req_max
+		vars["page"] = 1
+		vars["perpage"] = t.action_menu_req_max
 		$.ajax({
 			async: false,
 			type: "POST",

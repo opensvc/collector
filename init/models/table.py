@@ -63,8 +63,8 @@ class HtmlTable(object):
         self.id = id
         self.innerhtml = innerhtml
         self.line_count = 0
-        self.id_perpage = '_'.join((self.id, 'perpage'))
-        self.id_page = '_'.join((self.id, 'page'))
+        self.id_perpage = 'perpage'
+        self.id_page = 'page'
         self.upc_table = self.id
         self.last = None
         self.object_list = []
@@ -100,14 +100,10 @@ class HtmlTable(object):
         else:
             self.overlimit = ""
         if self.pageable:
-            q = db.auth_user.id==auth.user.id
             try:
-                self.perpage = int(request.vars[self.id+"_perpage"])
+                self.perpage = int(request.vars[self.id_perpage])
             except:
-                try:
-                    self.perpage = db(q).select(cacheable=True).first().perpage
-                except:
-                    self.perpage = 20
+                self.perpage = 20
 
             if self.id_page in request.vars and request.vars[self.id_page] != "undefined":
                 self.page = int(request.vars[self.id_page])

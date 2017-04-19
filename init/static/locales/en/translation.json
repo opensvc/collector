@@ -1547,7 +1547,6 @@
 		"username": "login",
 		"first_name": "first name",
 		"last_name": "last name",
-		"perpage": "lines per page",
 		"email": "address",
 		"email_section": "Mail",
 		"phone_work": "phone",

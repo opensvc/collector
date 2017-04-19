@@ -351,7 +351,6 @@ function table_actions_svc(divid, svc_id) {
 	var f_svc_id = id+"_f_svc_id"
 	var f_begin = id+"_f_begin"
 	var f_status_log = id+"_f_status_log"
-	var perpage = id+"_perpage"
 	var request_vars = {}
 	request_vars[f_svc_id] = svc_id
 	request_vars[f_begin] = ">-60d"
@@ -406,10 +405,8 @@ function table_resinfo(divid, options) {
 function table_resinfo_svc(divid, svc_id) {
 	var id = "resinfo_" + svc_id.replace(/-/g, "")
 	var f_svc_id = id+"_f_svc_id"
-	var perpage = id+"_perpage"
 	var request_vars = {}
 	request_vars[f_svc_id] = svc_id
-	request_vars["perpage"] = 0
 	return table_resinfo(divid, {
 		"id": id,
 		"caller": "table_resinfo_svc",

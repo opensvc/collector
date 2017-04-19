@@ -1,5 +1,3 @@
-user_max_perpage = 500
-
 def allowed_user_ids():
     """ Return ids of the users member of the same groups than the requester.
     """
@@ -367,9 +365,6 @@ class rest_post_users(rest_post_handler):
 
         check_privilege("UserManager")
 
-        if "perpage" in vars and int(vars["perpage"]) > user_max_perpage:
-            raise Exception(T("perpage can not be more than %(n)d", dict(n=user_max_perpage)))
-
         if "quota_docker_registries" in vars:
             try:
                 check_privilege("QuotaManager")
@@ -423,7 +418,7 @@ class rest_post_user(rest_post_handler):
           "A websocket event is sent to announce the change in the users table.",
         ]
         examples = [
-          "# curl -u %(email)s -o- -X POST -d perpage=20 https://%(collector)s/init/rest/api/users/10",
+          "# curl -u %(email)s -o- -X POST -d first_name=joe https://%(collector)s/init/rest/api/users/10",
         ]
         rest_post_handler.__init__(
           self,
@@ -446,9 +441,6 @@ class rest_post_user(rest_post_handler):
         else:
             # allow modifying our own primary group
             check_privilege(["UserManager", "SelfManager"])
-
-        if "perpage" in vars and int(vars["perpage"]) > user_max_perpage:
-            raise Exception(T("perpage can not be more than %(n)d", dict(n=user_max_perpage)))
 
         if "quota_docker_registries" in vars:
             try:
