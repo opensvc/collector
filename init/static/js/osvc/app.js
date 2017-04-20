@@ -968,6 +968,12 @@ function comp_log_tabs(divid, options) {
 	})
 }
 
+function run_status_ruleset(divid, options) {
+	require(["osvc/tabs/run_status"], function() {
+		run_status_ruleset(divid, options)
+	})
+}
+
 function run_status_outputs(divid, options) {
 	require(["osvc/tabs/run_status"], function() {
 		run_status_outputs(divid, options)
