@@ -699,6 +699,34 @@ jQuery.fn.osvc_fullname = function(options) {
 	})
 }
 
+jQuery.fn.osvc_disk = function(options) {
+	osvc_jq_decorator(this, {
+		"options": options,
+		"name": "disk_id",
+		"attr": "disk_id",
+		"icon": "hd16",
+		"bgcolor": osvc.colors.disk,
+		"flash_id_prefix": "disk-",
+		"fn": function(id, opts) {
+			disk_tabs(id, opts)
+		}
+	})
+}
+
+jQuery.fn.osvc_diskgroup = function(options) {
+	osvc_jq_decorator(this, {
+		"options": options,
+		"name": "dg_name",
+		"attr": "array_name",
+		"icon": "diskgroup",
+		"bgcolor": osvc.colors.disk,
+		"flash_id_prefix": "dg-",
+		"fn": function(id, opts) {
+			diskgroup_tabs(id, opts)
+		}
+	})
+}
+
 jQuery.fn.osvc_array = function(options) {
 	osvc_jq_decorator(this, {
 		"options": options,

@@ -331,6 +331,14 @@ function cell_decorator_disk_array_dg(e, line) {
 }
 
 
+function cell_decorator_disk_id(e, line) {
+	var v = $.data(e[0], "v")
+	e
+	.attr("disk_id", v)
+	.addClass("corner-top")
+	.osvc_disk({"tag": false, "event": "click"})
+}
+
 function cell_decorator_disk_array(e, line) {
 	var v = $.data(e[0], "v")
 	e
@@ -1960,6 +1968,7 @@ $.extend(true, cell_decorators, {
 	"dash_entry": cell_decorator_dash_entry,
 	"disk_array_dg": cell_decorator_disk_array_dg,
 	"disk_array": cell_decorator_disk_array,
+	"disk_id": cell_decorator_disk_id,
 	"size_mb": cell_decorator_size_mb,
 	"size_kb": cell_decorator_size_kb,
 	"size_b": cell_decorator_size_b,

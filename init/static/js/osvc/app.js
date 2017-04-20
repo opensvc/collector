@@ -878,15 +878,27 @@ function quota_tabs(divid, options) {
 	})
 }
 
-function array_properties(divid, options) {
-	require(["osvc/tabs/array"], function() {
-		array_properties(divid, options)
+function disk_tabs(divid, options) {
+	require(["osvc/tabs/disk"], function() {
+		disk_tabs(divid, options)
+	})
+}
+
+function disk_properties(divid, options) {
+	require(["osvc/tabs/disk"], function() {
+		disk_properties(divid, options)
 	})
 }
 
 function array_tabs(divid, options) {
 	require(["osvc/tabs/array"], function() {
 		array_tabs(divid, options)
+	})
+}
+
+function array_properties(divid, options) {
+	require(["osvc/tabs/array"], function() {
+		array_properties(divid, options)
 	})
 }
 

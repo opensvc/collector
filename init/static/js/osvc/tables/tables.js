@@ -1101,6 +1101,21 @@ function table_disks_array(divid, array_name) {
 	})
 }
 
+function table_disks_disk(divid, disk_id) {
+	var id = "disks_" + disk_id.replace(/[ \.-]/g, "_")
+	var f = id+"_f_disk_id"
+	var request_vars = {}
+	request_vars[f] = disk_id
+	table_disks(divid, {
+		"id": id,
+		"caller": "table_disks_disk",
+		"request_vars": request_vars,
+		"hide_cols": ['disk_id'],
+		"volatile_prefs": true,
+		"volatile_filters": true
+	})
+}
+
 function table_disks_array_dg(divid, array_name, dg_name) {
 	var id = "disks_" + array_name.replace(/[ \.-]/g, "_") + dg_name.replace(/[ \.-]/g, "_")
 	var f1 = id+"_f_disk_arrayid"

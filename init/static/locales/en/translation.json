@@ -498,6 +498,14 @@
 	"diskgroup_stats": {
 		"title": "Array disk group usage history"
 	},
+	"disk_properties": {
+		"array_info": "Array information",
+		"agent_info": "Agent information",
+		"apps": "apps",
+		"nodes": "nodes",
+		"services": "services",
+		"disk": "disk"
+	},
 	"array_properties": {
 		"targets": "Target ports",
 		"diskgroups": "Diskgroups",

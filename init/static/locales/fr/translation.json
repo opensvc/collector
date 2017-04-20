@@ -496,6 +496,15 @@
 	"diskgroup_stats": {
 		"title": "Historique d'utilisation du groupe de disques"
 	},
+	"disk_properties": {
+		"array_info": "Information de la baie",
+		"agent_info": "Information de l'agent",
+		"apps": "apps",
+		"apps": "apps",
+		"nodes": "noeuds",
+		"services": "services",
+		"disk": "disque"
+	},
 	"array_properties": {
 		"targets": "Target ports",
 		"diskgroups": "Groupes de disques",

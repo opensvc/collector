@@ -99,13 +99,14 @@ var search_data = {
 		"subclass": "meta_safe_file"
 	},
 	"disks": {
+		"tab" : function(id, res){disk_tabs(id, {"disk_id": res.disk_id})},
 		"title": "__disk_id__",
 		"short_title": "__disk_id__",
 		"type": "disk",
 		"color": "disk",
 		"menu_entry_id": "view-disks",
 		"class": "hd16 fa-2x search-section-icon",
-		"subclass": "meta_app"
+		"subclass": "meta_disk clickable"
 	},
 	"apps": {
 		"id": "app",
