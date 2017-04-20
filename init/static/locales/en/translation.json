@@ -436,6 +436,7 @@
 	"search": {
 		"nothing_found": "No entry found matching filter",
 		"menu_header": {
+			"title_arrays": "Storage arrays",
 			"title_prov_templates": "Provisioning templates",
 			"title_docker_registries": "Docker registries",
 			"title_docker_repositories": "Docker repositories",

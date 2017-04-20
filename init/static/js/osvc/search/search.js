@@ -1,4 +1,15 @@
 var search_data = {
+	"arrays": {
+		"tab" : function(id, res){array_tabs(id, {"array_id": res.id, "array_name": res.array_name})},
+		"type": "array",
+		"color": "disk",
+		"id": "id",
+		"title": "__array_name__",
+		"short_title": "__array_name__",
+		"menu_entry_id": "array",
+		"class": "array fa-2x search-section-icon",
+		"subclass": "meta_array clickable"
+	},
 	"modulesets": {
 		"tab" : function(id, res){moduleset_tabs(id, {"modset_id": res.id, "modset_name": res.modset_name})},
 		"type": "modset",

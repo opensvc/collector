@@ -434,6 +434,7 @@
 	"search": {
 		"nothing_found" : "Aucun résultat ne répond au critère de recherche.",
 		"menu_header" : {
+			"title_arrays": "Baies de stockage",
 			"title_prov_templates": "Modèles de provisioning",
 			"title_docker_registries": "Registres docker",
 			"title_docker_repositories": "Dépôts docker",

@@ -32,6 +32,8 @@ class rest_get_search(rest_get_handler):
         substring = "%" + substring + "%"
         if otype is None or otype == "fset":
             data["filtersets"] = lib_search_fset(substring)
+        if otype is None or otype == "array":
+            data["arrays"] = lib_search_arrays(substring)
         if otype is None or otype == "disk":
             data["disks"] = lib_search_disk(substring)
         if otype is None or otype == "app":

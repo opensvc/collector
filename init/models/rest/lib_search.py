@@ -1,5 +1,39 @@
 max_search_result = 10
 
+def lib_search_arrays(pattern):
+    t = datetime.datetime.now()
+    o = db.stor_array.array_name
+    q = db.stor_array.array_name.like(pattern)
+    try:
+        id = int(pattern.strip("%"))
+        q |= db.stor_array.id == id
+    except:
+        pass
+    if not "Manager" in user_groups():
+        q &= db.stor_array.id == db.stor_array_dg.array_id
+        q &= db.stor_array_dg.id == db.stor_array_dg_quota.dg_id
+        q &= db.stor_array_dg_quota.app_id.belongs(user_published_app_ids())
+
+    row = db(q).select(o.count(), groupby=o).first()
+    if row is None:
+        n = 0
+    else:
+        n = row._extra[o.count()]
+
+    data = db(q).select(o,
+                        db.stor_array.id,
+                        groupby=o,
+                        orderby=o,
+                        limitby=(0,max_search_result)
+    ).as_list()
+    t = datetime.datetime.now() - t
+    return {
+      "total": n,
+      "data": data,
+      "fmt": {"id": "%(id)d", "name": "%(array_name)s"},
+      "elapsed": "%f" % (t.seconds + 1. * t.microseconds / 1000000),
+    }
+
 def lib_search_prov_templates(pattern):
     t = datetime.datetime.now()
     o = db.prov_templates.tpl_name

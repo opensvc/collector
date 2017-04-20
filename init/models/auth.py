@@ -251,6 +251,15 @@ def user_groups_user_ids(id=None):
     rows = db(q).select(db.auth_membership.user_id, groupby=db.auth_membership.user_id)
     return map(lambda x: x.user_id, rows)
 
+def user_published_app_ids(id=None):
+    if id is None:
+        id = auth.user_id
+    q = db.auth_membership.user_id==id
+    q &= db.auth_membership.group_id==db.auth_group.id
+    q &= db.apps_publications.group_id == db.auth_membership.group_id
+    rows = db(q).select(db.apps_publications.app_id)
+    return map(lambda x: x.app_id, rows)
+
 def user_published_apps(id=None):
     if id is None:
         id = auth.user_id
