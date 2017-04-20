@@ -254,6 +254,8 @@ def user_groups_user_ids(id=None):
 def user_published_app_ids(id=None):
     if id is None:
         id = auth.user_id
+    if auth_is_node():
+        return [node_app_id()]
     q = db.auth_membership.user_id==id
     q &= db.auth_membership.group_id==db.auth_group.id
     q &= db.apps_publications.group_id == db.auth_membership.group_id
