@@ -498,6 +498,7 @@
 		"title": "Array disk group usage history"
 	},
 	"array_properties": {
+		"targets": "Target ports",
 		"diskgroups": "Diskgroups",
 		"proxies": "Proxies"
 	},

@@ -496,6 +496,7 @@
 		"title": "Historique d'utilisation du groupe de disques"
 	},
 	"array_properties": {
+		"targets": "Target ports",
 		"diskgroups": "Groupes de disques",
 		"proxies": "Proxies"
 	},
