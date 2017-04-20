@@ -2648,10 +2648,12 @@ def insert_run_rset(ruleset):
         o.update(str(ruleset[key]))
     rset_md5 = str(o.hexdigest())
     try:
-        db.comp_run_ruleset.insert(rset_md5=rset_md5, rset=s)
+        db.comp_run_ruleset.insert(rset_md5=rset_md5, rset=s, date=request.now)
         table_modified("comp_run_ruleset")
     except:
-        pass
+        q = db.comp_run_ruleset.rest_md5 == rset_md5
+        db(q).update(date=request.now)
+        table_modified("comp_run_ruleset")
     rset = {'name': 'osvc_collector',
             'filter': '',
             'vars': [('ruleset_md5', rset_md5)]}

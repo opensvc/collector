@@ -6371,3 +6371,5 @@ alter table form_output_results add column svc_id CHAR(36) character set ascii d
 
 alter table auth_user drop column perpage;
 
+alter table comp_run_ruleset add column date datetime;
+

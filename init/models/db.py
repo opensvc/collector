@@ -1465,6 +1465,7 @@ db.define_table('stor_array_proxy',
 db.define_table('comp_run_ruleset',
     Field('rset_md5','string'),
     Field('rset','text'),
+    Field('date','datetime'),
     migrate=False)
 
 db.define_table('v_disk_quota',
