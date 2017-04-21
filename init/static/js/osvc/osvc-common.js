@@ -1,3 +1,7 @@
+function sanitize_dom_id(id) {
+	return id.replace(/^[^a-z]+|[^\w:.-]+/gi, "_")
+}
+
 function osvc_date_from_collector(s) {
 	try {
 		var m = moment.tz(s, osvc.server_timezone).tz(osvc.client_timezone)
@@ -350,6 +354,9 @@ function flash() {
 	}
 
 	o.show = function(data) {
+		if (data.id) {
+			data.id = sanitize_dom_id(data.id)
+		}
 		o.open()
 		o.push(data)
 		o.render_barel()
