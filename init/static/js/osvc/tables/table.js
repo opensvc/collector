@@ -2458,6 +2458,7 @@ function table_init(opts) {
 	//
 	t.add_tools_toggle = function() {
 		t.e_toolbar.on("click", function() {
+			t.unfold()
 			t.add_tools_panel()
 		})
 	}
