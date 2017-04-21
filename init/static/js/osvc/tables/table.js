@@ -1584,7 +1584,7 @@ function table_init(opts) {
 			},
 			success: t.refresh_callback,
 			error: function(e) {
-				if(e.state() == "rejected") {
+				if((e.status != 403) && (e.state() == "rejected")) {
 					// redirect to the security exception form
 					document.location = document.location
 				}
