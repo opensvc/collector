@@ -875,6 +875,9 @@ def cron_resmon_purge():
     db.commit()
 
 def cron_mac_dup():
+    """
+    2:21:28:57:47:17 Sun T-series SMC mac addr
+    """
     sql = """select * from (
               select
                count(t.mac) as n,
@@ -888,6 +891,7 @@ def cron_mac_dup():
                 node_ip.intf not like "usbecm%" and
                 node_ip.intf not like "docker%" and
                 node_ip.mac!="00:00:00:00:00:00" and
+                node_ip.mac!="2:21:28:57:47:17" and
                 node_ip.mac!="0:0:0:0:0:0" and
                 node_ip.mac!="0" and
                 node_ip.updated > date_sub(now(), interval 1 day)
