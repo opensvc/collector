@@ -2946,6 +2946,12 @@ def __svcmon_update(vars, vals, auth):
     if len(rows) > 0 and rows[0]['svc_cluster_type'] == 'flex':
         update_dash_flex_instances_started(h['svc_id'])
         update_dash_flex_cpu(h['svc_id'])
+    else:
+        sql = """delete from dashboard where
+                 svc_id="%(svc_id)s" and dash_type="flex error"
+              """ % dict(svc_id=h['svc_id'])
+        db.executesql(sql)
+        db.commit()
     print datetime.datetime.now() - _now, "flex janitoring"
     _now = datetime.datetime.now()
 
