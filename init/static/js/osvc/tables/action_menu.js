@@ -1443,6 +1443,13 @@ function table_action_menu_init_data(t) {
 					"condition": "svc_id+node_id",
 					"children": [
 						{
+							'title': 'Push',
+							'class': 'fa-upload',
+							"privileges": ["Manager", "NodeManager", "NodeExec"],
+							"min": 1,
+							'action': 'push'
+						},
+						{
 							'title': 'Pull',
 							'class': 'fa-download',
 							"privileges": ["Manager", "NodeManager", "NodeExec"],
