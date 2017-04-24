@@ -41,6 +41,16 @@ function run_status_tabs(divid, options) {
 			run_status_history(divid, o.options)
 		}
 
+		// tab ruleset
+		i = o.register_tab({
+			"title": "col.Ruleset",
+			"title_class": "icon comp16"
+		})
+		o.tabs[i].callback = function(divid) {
+			$("#"+divid).addClass("p-3")
+			run_status_ruleset(divid, o.options)
+		}
+
 		o.set_tab(o.options.tab)
 	})
 
@@ -132,3 +142,17 @@ function run_status_outputs(divid, options) {
 	return o
 }
 
+function run_status_ruleset(divid, options) {
+	var o = {}
+	o.divid = divid
+	o.options = options
+	o.div = $("#"+divid)
+	o.div.addClass("spinner")
+	services_osvcgetrest(o.options.url, [o.options.id], "", function(jd) {
+		var url = services_get_url() + "/init/compliance/ajax_rset_md5?rset_md5="+jd.data[0].rset_md5
+		sync_ajax(url, [], divid, function(){
+			o.div.removeClass("spinner")
+		})
+	})
+	return o
+}

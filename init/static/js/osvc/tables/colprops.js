@@ -659,6 +659,7 @@ colprops = {
 		"title": "Array disk group"
 	},
 	"disk_id": {
+		"_class": "disk_id",
 		"_dataclass": "pre bluer",
 		"img": "hd16",
 		"title": "Disk Id"

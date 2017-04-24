@@ -1,3 +1,15 @@
+def node_app_id(node_id=None):
+    if node_id is None:
+        node_id = auth.user.node_id
+    if node_id is None:
+        return
+    q = db.nodes.node_id == node_id
+    q &= db.nodes.app == db.apps.app
+    row = db(q).select(db.apps.id).first()
+    if row is None:
+        return []
+    return row.id
+
 def node_svc(node_id, svcname):
     if svcname is None:
         return

@@ -129,8 +129,6 @@ auth.settings.extra_fields['auth_user']= [
           label=T('Email notifications')),
     Field('im_notifications', 'boolean', default=False,
           label=T('Instant messaging notifications')),
-    Field('perpage', 'integer', default=20,
-          label=T('Preferred lines per page')),
     Field('im_type', 'integer',
           label=T('Instant messaging protocol'), default=1,
           requires=IS_IN_DB(db, db.im_types.id, "%(im_type)s", zero=T('choose one'))),
@@ -1467,6 +1465,7 @@ db.define_table('stor_array_proxy',
 db.define_table('comp_run_ruleset',
     Field('rset_md5','string'),
     Field('rset','text'),
+    Field('date','datetime'),
     migrate=False)
 
 db.define_table('v_disk_quota',

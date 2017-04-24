@@ -2549,7 +2549,6 @@ def rpc_comp_get_svc_ruleset(svcname, auth):
     node_id = auth_to_node_id(auth)
     svc_id = node_svc_id(node_id, svcname)
     ruleset = _comp_get_svc_ruleset(svc_id, node_id)
-    insert_run_rset(ruleset)
     return ruleset
 
 def comp_contextual_rulesets(node_id, svc_id=None, slave=False,
@@ -2637,6 +2636,7 @@ def _comp_get_svc_ruleset(svc_id, node_id, slave=None, modulesets=[], var_class=
                                          via_moduleset=True,
                                          var_class=var_class))
 
+    insert_run_rset(ruleset)
     return ruleset
 
 def insert_run_rset(ruleset):
@@ -2648,10 +2648,12 @@ def insert_run_rset(ruleset):
         o.update(str(ruleset[key]))
     rset_md5 = str(o.hexdigest())
     try:
-        db.comp_run_ruleset.insert(rset_md5=rset_md5, rset=s)
+        db.comp_run_ruleset.insert(rset_md5=rset_md5, rset=s, date=request.now)
         table_modified("comp_run_ruleset")
     except:
-        pass
+        q = db.comp_run_ruleset.rest_md5 == rset_md5
+        db(q).update(date=request.now)
+        table_modified("comp_run_ruleset")
     rset = {'name': 'osvc_collector',
             'filter': '',
             'vars': [('ruleset_md5', rset_md5)]}

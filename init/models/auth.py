@@ -169,6 +169,7 @@ def user_private_group_id():
     q = db.auth_membership.user_id == auth.user_id
     q &= db.auth_membership.group_id == db.auth_group.id
     q &= db.auth_group.role.like("user_%")
+    q &= db.auth_group.privilege == False
     row = db(q).select(db.auth_group.id).first()
     if row is None:
         return
@@ -181,6 +182,7 @@ def user_primary_group():
              where
                auth_membership.user_id = %(user_id)s and
                auth_membership.primary_group = 'T' and
+               auth_group.privilege = 'F' and
                auth_membership.group_id = auth_group.id
              limit 1"""%dict(user_id=auth.user_id)
     rows = db.executesql(sql)
@@ -204,6 +206,8 @@ def user_primary_group_id():
 
 def user_default_group():
     gid = user_default_group_id()
+    if gid is None:
+        return
     return db.auth_group[gid].role
 
 def user_default_group_id():
@@ -215,8 +219,9 @@ def user_default_group_id():
         return gid
     q = db.auth_membership.user_id == auth.user_id
     q &= db.auth_membership.group_id == db.auth_group.id
-    q &= db.auth_group.privilege == "F"
-    g = db(q).select(db.auth_group.id).first()
+    q &= db.auth_group.privilege == False
+    q &= db.auth_group.role != "Everybody"
+    g = db(q).select(db.auth_group.id, orderby=db.auth_group.role).first()
     if g:
         return g.id
 
@@ -250,6 +255,17 @@ def user_groups_user_ids(id=None):
     q = db.auth_membership.group_id.belongs(user_org_group_ids(id))
     rows = db(q).select(db.auth_membership.user_id, groupby=db.auth_membership.user_id)
     return map(lambda x: x.user_id, rows)
+
+def user_published_app_ids(id=None):
+    if id is None:
+        id = auth.user_id
+    if auth_is_node():
+        return [node_app_id()]
+    q = db.auth_membership.user_id==id
+    q &= db.auth_membership.group_id==db.auth_group.id
+    q &= db.apps_publications.group_id == db.auth_membership.group_id
+    rows = db(q).select(db.apps_publications.app_id)
+    return map(lambda x: x.app_id, rows)
 
 def user_published_apps(id=None):
     if id is None:

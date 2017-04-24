@@ -1,3 +1,7 @@
+function sanitize_dom_id(id) {
+	return id.replace(/^[^a-z]+|[^\w:.-]+/gi, "_")
+}
+
 function osvc_date_from_collector(s) {
 	try {
 		var m = moment.tz(s, osvc.server_timezone).tz(osvc.client_timezone)
@@ -350,6 +354,9 @@ function flash() {
 	}
 
 	o.show = function(data) {
+		if (data.id) {
+			data.id = sanitize_dom_id(data.id)
+		}
 		o.open()
 		o.push(data)
 		o.render_barel()
@@ -695,6 +702,34 @@ jQuery.fn.osvc_fullname = function(options) {
 		"flash_id_prefix": "user-",
 		"fn": function(fullname, opts) {
 			user_tabs(fullname, opts)
+		}
+	})
+}
+
+jQuery.fn.osvc_disk = function(options) {
+	osvc_jq_decorator(this, {
+		"options": options,
+		"name": "disk_id",
+		"attr": "disk_id",
+		"icon": "hd16",
+		"bgcolor": osvc.colors.disk,
+		"flash_id_prefix": "disk-",
+		"fn": function(id, opts) {
+			disk_tabs(id, opts)
+		}
+	})
+}
+
+jQuery.fn.osvc_diskgroup = function(options) {
+	osvc_jq_decorator(this, {
+		"options": options,
+		"name": "dg_name",
+		"attr": "array_name",
+		"icon": "diskgroup",
+		"bgcolor": osvc.colors.disk,
+		"flash_id_prefix": "dg-",
+		"fn": function(id, opts) {
+			diskgroup_tabs(id, opts)
 		}
 	})
 }

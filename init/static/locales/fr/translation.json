@@ -434,6 +434,7 @@
 	"search": {
 		"nothing_found" : "Aucun résultat ne répond au critère de recherche.",
 		"menu_header" : {
+			"title_arrays": "Baies de stockage",
 			"title_prov_templates": "Modèles de provisioning",
 			"title_docker_registries": "Registres docker",
 			"title_docker_repositories": "Dépôts docker",
@@ -495,7 +496,17 @@
 	"diskgroup_stats": {
 		"title": "Historique d'utilisation du groupe de disques"
 	},
+	"disk_properties": {
+		"array_info": "Information de la baie",
+		"agent_info": "Information de l'agent",
+		"apps": "apps",
+		"apps": "apps",
+		"nodes": "noeuds",
+		"services": "services",
+		"disk": "disque"
+	},
 	"array_properties": {
+		"targets": "Target ports",
 		"diskgroups": "Groupes de disques",
 		"proxies": "Proxies"
 	},
@@ -1547,7 +1558,6 @@
 		"username": "login",
 		"first_name": "prénom",
 		"last_name": "nom de famille",
-		"perpage": "lignes par page",
 		"email": "adresse",
 		"email_section": "Messagerie",
 		"phone_work": "téléphone",

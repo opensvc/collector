@@ -436,6 +436,7 @@
 	"search": {
 		"nothing_found": "No entry found matching filter",
 		"menu_header": {
+			"title_arrays": "Storage arrays",
 			"title_prov_templates": "Provisioning templates",
 			"title_docker_registries": "Docker registries",
 			"title_docker_repositories": "Docker repositories",
@@ -497,7 +498,16 @@
 	"diskgroup_stats": {
 		"title": "Array disk group usage history"
 	},
+	"disk_properties": {
+		"array_info": "Array information",
+		"agent_info": "Agent information",
+		"apps": "apps",
+		"nodes": "nodes",
+		"services": "services",
+		"disk": "disk"
+	},
 	"array_properties": {
+		"targets": "Target ports",
 		"diskgroups": "Diskgroups",
 		"proxies": "Proxies"
 	},
@@ -1547,7 +1557,6 @@
 		"username": "login",
 		"first_name": "first name",
 		"last_name": "last name",
-		"perpage": "lines per page",
 		"email": "address",
 		"email_section": "Mail",
 		"phone_work": "phone",
