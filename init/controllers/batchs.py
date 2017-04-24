@@ -107,6 +107,10 @@ data = {
    'title': 'Alerts',
    'batchs': [
      {
+       'url': URL(r=request, c='cron', f='cron_alerts_hourly'),
+       'comment': "Hourly alert janitoring",
+     },
+     {
        'url': URL(r=request, c='cron', f='cron_alerts_daily'),
        'comment': "Daily alert janitoring",
      },
