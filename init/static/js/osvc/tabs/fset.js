@@ -690,6 +690,12 @@ function fset_designer(divid, options) {
 				event.preventDefault()
 				input.val(ui.item.label)
 				input.attr("acid", ui.item.value)
+			},
+			_renderItem: function(ul, item) {
+				return $("<li></li>")
+					.data("item.autocomplete", item)
+					.append("<a class='icon_fixed_width "+item.cl+"'>"+item.label+"</a>")
+					.appendTo(ul)
 			}
 		})
 		input.click(function(){
@@ -713,12 +719,6 @@ function fset_designer(divid, options) {
 				input.attr("acid", opt.value)
 			}
 		})
-		input.data("autocomplete")._renderItem = function(ul, item) {
-			return $("<li></li>")
-				.data("item.autocomplete", item)
-				.append("<a class='icon_fixed_width "+item.cl+"'>"+item.label+"</a>")
-				.appendTo(ul)
-		}
 		return input
 	}
 
@@ -760,6 +760,12 @@ function fset_designer(divid, options) {
 			select: function(event, ui) {
 				event.preventDefault()
 				update_f_fields(input, ui.item.value, ui.item.label)
+			},
+			_renderItem: function(ul, item) {
+				return $("<li></li>")
+					.data("item.autocomplete", item)
+					.append("<a class='icon_fixed_width "+item.cl+"'>"+item.label+"</a>")
+					.appendTo(ul)
 			}
 		})
 		input.click(function(){
@@ -785,12 +791,6 @@ function fset_designer(divid, options) {
 				input.attr("acid", opt.value)
 			}
 		})
-		input.data("autocomplete")._renderItem = function(ul, item) {
-			return $("<li></li>")
-				.data("item.autocomplete", item)
-				.append("<a class='icon_fixed_width "+item.cl+"'>"+item.label+"</a>")
-				.appendTo(ul)
-		}
 		return input
 	}
 
