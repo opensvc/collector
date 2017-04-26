@@ -988,7 +988,8 @@
 		"tab_edit_save": "Save",
 		"tab_edit_insert_sig": "Insert signature and timestamp",
 		"tab_edit_help": "Help",
-		"last_table_title": "Last __number__ result(s)"
+		"last_table_title": "Last change",
+		"last_table_title_plural": "Last __count__ changes"
 	},
 	"service_config": {
 		"header": "Last updated on __updated__"

@@ -987,7 +987,8 @@
 		"tab_edit_save" : "Sauvegarder",
 		"tab_edit_insert_sig" : "Insérer signature et date",
 		"tab_edit_help" : "Aide",
-		"last_table_title" : "__number__ dernier(s) enregistrement(s)"
+		"last_table_title": "Dernier changement",
+		"last_table_title_plural": "__count__ derniers changements"
 	},
 	"service_config": {
 		"header": "Dernière mise à jour le __updated__"

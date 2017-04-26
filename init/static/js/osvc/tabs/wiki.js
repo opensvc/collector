@@ -96,7 +96,7 @@ function wiki(divid, options) {
 				var line = "<tr><td class='datetime'>" + osvc_date_from_collector(result[i].saved_on) + "</td><td>"+ result[i].email +"</td></tr>"
 				o.wiki_table_last_changes.append(line)
 			}
-			o.wiki_tab_titles.html(i18n.t("wiki.last_table_title", {"number" : i}))
+			o.wiki_tab_titles.html(i18n.t("wiki.last_table_title", {"count" : i}))
 
 			require(["markdown-converter"], function() {
 				var converter = new Markdown.Converter()
