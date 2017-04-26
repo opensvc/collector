@@ -137,6 +137,17 @@ class rest_handler(object):
         return regexp.match(args)
 
     def replication_relay(self, collector, data):
+        try:
+            replication_config_mod = local_import('replication_config', reload=True)
+        except ImportError:
+            return
+        try:
+            repl_config = replication_config_mod.repl_config
+        except AttributeError:
+            return
+        if len(repl_config) == 0 or "push" not in repl_config or len(repl_config["push"]) == 0:
+            return
+
         p = get_proxy(collector, controller="rest")
         try:
             ret = p.relay_rest_request(auth.user_id, self.action, self.path, data)
