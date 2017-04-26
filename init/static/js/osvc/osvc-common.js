@@ -329,7 +329,12 @@ function flash() {
 		o.e_show.children().hide()
 		var e = o.e_show.children("span#"+data.id)
 		if (e.length == 1) {
-			e.show()
+			if (e.children().length == 0) {
+				e.remove()
+				o.create_entry(data)
+			} else {
+				e.show()
+			}
 		} else {
 			o.create_entry(data)
 		}
