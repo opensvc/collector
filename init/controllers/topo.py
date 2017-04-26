@@ -1263,8 +1263,13 @@ def json_startup_data():
                 continue
 
             family = s.split("#")[0]
+
+            if family == "task":
+                continue
+
             if family in disk_types:
                 family = "disk"
+
             if t and family == "ip" and t == "docker":
                 family = "ip.container"
 
