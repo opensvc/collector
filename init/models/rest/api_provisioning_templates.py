@@ -652,7 +652,7 @@ class rest_post_provisioning_template_rollback(rest_post_handler):
 
     def handler(self, tpl_id, cid, **vars):
         check_privilege("ProvisioningManager")
-        form_responsible(tpl_id)
+        prov_template_responsible(tpl_id)
         lib_provisioning_templates_rollback(tpl_id, cid)
         return
 
