@@ -332,12 +332,12 @@ class rest_delete_provisioning_template_responsible(rest_delete_handler):
         q = db.prov_template_team_responsible.tpl_id == tpl_id
         q &= db.prov_template_team_responsible.group_id == group_id
 
-        fmt = "Form %(tpl_id)s responsibility to group %(group_id)s removed"
+        fmt = "Provisioning template %(tpl_id)s responsibility to group %(group_id)s removed"
         d = dict(tpl_id=str(tpl_id), group_id=str(group_id))
 
         row = db(q).select().first()
         if row is None:
-            return dict(info="Form %(tpl_id)s responsibility to group %(group_id)s already removed" % d)
+            return dict(info="Provisioning template %(tpl_id)s responsibility to group %(group_id)s already removed" % d)
 
         db(q).delete()
 
@@ -409,14 +409,14 @@ class rest_post_provisioning_template_responsible(rest_post_handler):
         if group is None:
             raise Exception("Group %s does not exist" % str(group_id))
 
-        fmt = "Form %(tpl_id)s responsibility to group %(group_id)s added"
+        fmt = "Provisioning template %(tpl_id)s responsibility to group %(group_id)s added"
         d = dict(tpl_id=str(tpl_id), group_id=str(group_id))
 
         q = db.prov_template_team_responsible.tpl_id == tpl_id
         q &= db.prov_template_team_responsible.group_id == group.id
         row = db(q).select().first()
         if row is not None:
-            return dict(info="Form %(tpl_id)s responsibility to group %(group_id)s already added" % d)
+            return dict(info="Provisioning template %(tpl_id)s responsibility to group %(group_id)s already added" % d)
 
         db.prov_template_team_responsible.insert(tpl_id=tpl_id, group_id=group.id)
 
@@ -508,12 +508,12 @@ class rest_delete_provisioning_template_publication(rest_delete_handler):
         q = db.prov_template_team_publication.tpl_id == tpl_id
         q &= db.prov_template_team_publication.group_id == group_id
 
-        fmt = "Form %(tpl_id)s publication to group %(group_id)s removed"
+        fmt = "Provisioning template %(tpl_id)s publication to group %(group_id)s removed"
         d = dict(tpl_id=str(tpl_id), group_id=str(group_id))
 
         row = db(q).select().first()
         if row is None:
-            return dict(info="Form %(tpl_id)s publication to group %(group_id)s already removed" % d)
+            return dict(info="Provisioning template %(tpl_id)s publication to group %(group_id)s already removed" % d)
 
         db(q).delete()
 
@@ -585,14 +585,14 @@ class rest_post_provisioning_template_publication(rest_post_handler):
         if group is None:
             raise Exception("Group %s does not exist" % str(group_id))
 
-        fmt = "Form %(tpl_id)s publication to group %(group_id)s added"
+        fmt = "Provisioning template %(tpl_id)s publication to group %(group_id)s added"
         d = dict(tpl_id=str(tpl_id), group_id=str(group_id))
 
         q = db.prov_template_team_publication.tpl_id == tpl_id
         q &= db.prov_template_team_publication.group_id == group.id
         row = db(q).select().first()
         if row is not None:
-            return dict(info="Form %(tpl_id)s publication to group %(group_id)s already added" % d)
+            return dict(info="Provisioning template %(tpl_id)s publication to group %(group_id)s already added" % d)
 
         db.prov_template_team_publication.insert(tpl_id=tpl_id, group_id=group.id)
 
