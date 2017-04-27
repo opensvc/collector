@@ -465,6 +465,34 @@ function table_action_menu_init_data(t) {
 							"fn": "data_action_del_reports",
 							"privileges": ["Manager", "ReportsManager"],
 							"min": 1
+						},
+						{
+							"title": "action_menu.add_publication",
+							"class": "add16",
+							"fn": "data_action_add_reports_publication",
+							"privileges": ["Manager", "ReportsManager"],
+							"min": 1
+						},
+						{
+							"title": "action_menu.del_publication",
+							"class": "del16",
+							"fn": "data_action_del_reports_publication",
+							"privileges": ["Manager", "ReportsManager"],
+							"min": 1
+						},
+						{
+							"title": "action_menu.add_responsible",
+							"class": "add16",
+							"fn": "data_action_add_reports_responsible",
+							"privileges": ["Manager", "ReportsManager"],
+							"min": 1
+						},
+						{
+							"title": "action_menu.del_responsible",
+							"class": "del16",
+							"fn": "data_action_del_reports_responsible",
+							"privileges": ["Manager", "ReportsManager"],
+							"min": 1
 						}
 					]
 				},
@@ -3313,6 +3341,75 @@ function data_action_del_reports(t, e) {
 		}
 	})
 }
+
+//
+// data action: add reports responsibles
+//
+function data_action_add_reports_responsible(t, e) {
+	data_action_generic_selector(t, e, {
+		"requestor": services_osvcpostrest,
+		"request_service": "/reports_responsibles",
+		"selector": generic_selector_org_groups,
+		"request_data_entry": function(selected, data) {
+			return {
+				"group_id": selected,
+				"report_id": data["id"]
+			}
+		}
+	})
+}
+
+//
+// data action: del reports responsible
+//
+function data_action_del_reports_responsible(t, e) {
+	data_action_generic_selector(t, e, {
+		"requestor": services_osvcdeleterest,
+		"request_service": "/reports_responsibles",
+		"selector": generic_selector_org_groups,
+		"request_data_entry": function(selected, data) {
+			return {
+				"group_id": selected,
+				"report_id": data["id"]
+			}
+		}
+	})
+}
+
+//
+// data action: add reports publications
+//
+function data_action_add_reports_publication(t, e) {
+	data_action_generic_selector(t, e, {
+		"requestor": services_osvcpostrest,
+		"request_service": "/reports_publications",
+		"selector": generic_selector_org_groups,
+		"request_data_entry": function(selected, data) {
+			return {
+				"group_id": selected,
+				"report_id": data["id"]
+			}
+		}
+	})
+}
+
+//
+// data action: del reports publications
+//
+function data_action_del_reports_publication(t, e) {
+	data_action_generic_selector(t, e, {
+		"requestor": services_osvcdeleterest,
+		"request_service": "/reports_publications",
+		"selector": generic_selector_org_groups,
+		"request_data_entry": function(selected, data) {
+			return {
+				"group_id": selected,
+				"report_id": data["id"]
+			}
+		}
+	})
+}
+
 
 //
 // data action: add chart

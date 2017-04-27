@@ -1,6 +1,32 @@
 import gluon.contrib.simplejson as sjson
 from applications.init.modules import gittrack
 
+def report_published_ids():
+    q = db.report_team_publication.group_id.belongs(user_group_ids())
+    return [r.report_id for r in db(q).select(db.report_team_publication.report_id)]
+
+def report_published(report_id):
+    if 'Manager' in user_groups():
+        return
+    q = db.report_team_publication.group_id.belongs(user_group_ids())
+    if db(q).count() == 0:
+        raise Exception("You are not allowed to access the report %s" % str(report_id))
+
+def report_responsible(report_id):
+    if 'Manager' in user_groups():
+        return
+    q = db.report_team_responsible.group_id.belongs(user_group_ids())
+    if db(q).count() == 0:
+        raise Exception("You are not allowed to do this operation on the report %s" % str(report_id))
+
+def lib_reports_add_default_team_responsible(report_id):
+    group_id = user_default_group_id()
+    db.report_team_responsible.insert(report_id=report_id, group_id=group_id)
+
+def lib_reports_add_default_team_publication(report_id):
+    group_id = user_default_group_id()
+    db.report_team_publication.insert(report_id=report_id, group_id=group_id)
+
 def lib_reports_add_to_git(report_id, content):
     o = gittrack.gittrack(otype='reports')
     r = o.commit(report_id, content, author=user_name(email=True))
@@ -34,18 +60,14 @@ def lib_reports_rollback(report_id, cid):
         data=myfile.read()
     row.update_record(report_yaml=data)
 
-def get_report(report_id):
+def get_report_id(report_id):
     try:
         report_id = int(report_id)
         return report_id
     except ValueError:
         pass
     q = db.reports.report_name == report_id
-    report = db(q).select(db.reports.id).first()
-    return report
-
-def get_report_id(report_id):
-    report = get_report(report_id)
+    report = db(q).select().first()
     if report is None:
         return
     return report.id

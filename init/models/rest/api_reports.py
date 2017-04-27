@@ -19,6 +19,7 @@ class rest_delete_report(rest_delete_handler):
 
     def handler(self, id, **vars):
         check_privilege("ReportsManager")
+        report_responsible(id)
 
         q = db.reports.id == id
         report = db(q).select().first()
@@ -92,10 +93,10 @@ class rest_post_reports(rest_post_handler):
         #vars["report_author"] = user_name()
 
         report_id = db.reports.insert(**vars)
-        #lib_reports_add_default_team_responsible(report_id)
-        #lib_reports_add_default_team_publication(report_id)
+        lib_reports_add_default_team_responsible(report_id)
+        lib_reports_add_default_team_publication(report_id)
 
-        fmt = "Chart %(report_name)s added"
+        fmt = "Report %(report_name)s added"
         d = dict(report_name=report_name)
 
         _log('report.add', fmt, d)
@@ -126,6 +127,7 @@ class rest_post_report(rest_post_handler):
 
     def handler(self, id, **vars):
         check_privilege("ReportsManager")
+        report_responsible(id)
 
         if "id" in vars:
             del(vars["id"])
@@ -162,10 +164,14 @@ class rest_get_reports(rest_get_table_handler):
           tables=["reports"],
           desc=desc,
           examples=examples,
+          left=db.report_team_publication.on(db.reports.id==db.report_team_publication.report_id),
+          groupby=db.reports.id,
         )
 
     def handler(self, **vars):
         q = db.reports.id > 0
+        if "Manager" not in user_groups():
+            q &= db.report_team_publication.group_id.belongs(user_group_ids())
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -183,10 +189,14 @@ class rest_get_report(rest_get_line_handler):
           tables=["reports"],
           desc=desc,
           examples=examples,
+          left=db.report_team_publication.on(db.reports.id==db.report_team_publication.report_id),
+          groupby=db.reports.id,
         )
 
     def handler(self, id, **vars):
         q = db.reports.id == id
+        if "Manager" not in user_groups():
+            q &= db.report_team_publication.group_id.belongs(user_group_ids())
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -936,7 +946,7 @@ class rest_post_report_rollback(rest_post_handler):
         )
 
     def handler(self, report_id, cid, **vars):
-        #check_privilege("ReportsManager")
+        check_privilege("ReportsManager")
         report_responsible(report_id)
         lib_reports_rollback(report_id, cid)
         return
@@ -983,9 +993,9 @@ class rest_get_report_revision(rest_get_handler):
     def handler(self, report_id, cid, **vars):
         r = []
         q = db.reports.id == int(report_id)
-        #if "Manager" not in user_groups():
-        #    q &= db.reports.id == db.report_team_publication.report_id
-        #    q &= db.report_team_publication.group_id.belongs(user_group_ids())
+        if "Manager" not in user_groups():
+            q &= db.reports.id == db.report_team_publication.report_id
+            q &= db.report_team_publication.group_id.belongs(user_group_ids())
         if db(q).count():
             r =  lib_reports_revision(report_id, cid)
         return r
@@ -1008,9 +1018,9 @@ class rest_get_report_revisions(rest_get_handler):
     def handler(self, report_id, **vars):
         r = []
         q = db.reports.id == int(report_id)
-        #if "Manager" not in user_groups():
-        #    q &= db.reports.id == db.report_team_publication.report_id
-        #    q &= db.report_team_publication.group_id.belongs(user_group_ids())
+        if "Manager" not in user_groups():
+            q &= db.reports.id == db.report_team_publication.report_id
+            q &= db.report_team_publication.group_id.belongs(user_group_ids())
         if db(q).count():
             r =  lib_reports_revisions(report_id)
         return r
@@ -1034,9 +1044,362 @@ class rest_get_report_diff(rest_get_handler):
     def handler(self, report_id, cid, other=None, **vars):
         r = []
         q = db.reports.id == int(report_id)
-        #if "Manager" not in user_groups():
-        #    q &= db.reports.id == db.report_team_publication.report_id
-        #    q &= db.report_team_publication.group_id.belongs(user_group_ids())
+        if "Manager" not in user_groups():
+            q &= db.reports.id == db.report_team_publication.report_id
+            q &= db.report_team_publication.group_id.belongs(user_group_ids())
         if db(q).count():
             r =  lib_reports_diff(report_id, cid, other=other)
         return r
+
+class rest_get_report_responsibles(rest_get_table_handler):
+    def __init__(self):
+        desc = [
+          "List groups responsible for the provisioning template.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/report/1/responsibles"
+        ]
+
+        rest_get_table_handler.__init__(
+          self,
+          path="/reports/<id>/responsibles",
+          tables=["auth_group"],
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, report_id, **vars):
+        report_id = get_report_id(report_id)
+        report_published(report_id)
+        q = db.report_team_responsible.report_id == report_id
+        q &= db.report_team_responsible.group_id == db.auth_group.id
+        self.set_q(q)
+        data = self.prepare_data(**vars)
+        return data
+
+class rest_delete_report_responsible(rest_delete_handler):
+    def __init__(self):
+        desc = [
+          "Remove a provisioning template responsible group",
+        ]
+        examples = [
+          "# curl -u %(email)s -X DELETE -o- https://%(collector)s/init/rest/api/reports/1/responsibles/2"
+        ]
+
+        rest_delete_handler.__init__(
+          self,
+          path="/reports/<id>/responsibles/<group>",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, report_id, group_id, **vars):
+        check_privilege("ReportsManager")
+        report_id = get_report_id(report_id)
+        report_responsible(report_id)
+        q = db.report_team_responsible.report_id == report_id
+        q &= db.report_team_responsible.group_id == group_id
+
+        fmt = "Report %(report_id)s responsibility to group %(group_id)s removed"
+        d = dict(report_id=str(report_id), group_id=str(group_id))
+
+        row = db(q).select().first()
+        if row is None:
+            return dict(info="Report %(report_id)s responsibility to group %(group_id)s already removed" % d)
+
+        db(q).delete()
+
+        _log(
+          'report.responsible.delete',
+          fmt,
+          d
+        )
+        ws_send('report_responsible_change', {'id': report_id})
+
+        return dict(info=fmt%d)
+
+class rest_delete_reports_responsibles(rest_delete_handler):
+    def __init__(self):
+        desc = [
+          "Remove responsible groups from provisioning templates",
+        ]
+        examples = [
+          """# curl -u %(email)s -X DELETE -o- https://%(collector)s/init/rest/api/reports_responsibles?filters[]="report_id 1" """
+        ]
+
+        rest_delete_handler.__init__(
+          self,
+          path="/reports_responsibles",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, **vars):
+        if not "report_id" in vars:
+            raise Exception("The 'report_id' key is mandatory")
+        report_id = vars.get("report_id")
+        del(vars["report_id"])
+
+        if not "group_id" in vars:
+            raise Exception("The 'group_id' key is mandatory")
+        group_id = vars.get("group_id")
+        del(vars["group_id"])
+
+        return rest_delete_report_responsible().handler(report_id, group_id, **vars)
+
+class rest_post_report_responsible(rest_post_handler):
+    def __init__(self):
+        desc = [
+          "Add a provisioning template responsible group",
+        ]
+        examples = [
+          "# curl -u %(email)s -X POST -o- https://%(collector)s/init/rest/api/reports/1/responsibles/2"
+        ]
+
+        rest_post_handler.__init__(
+          self,
+          path="/reports/<id>/responsibles/<group>",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, report_id, group_id, **vars):
+        check_privilege("ReportsManager")
+        report_id = get_report_id(report_id)
+        report_responsible(report_id)
+
+        try:
+            id = int(group_id)
+            q = db.auth_group.id == group_id
+        except:
+            q = db.auth_group.role == group_id
+        group = db(q).select().first()
+        if group is None:
+            raise Exception("Group %s does not exist" % str(group_id))
+
+        fmt = "Report %(report_id)s responsibility to group %(group_id)s added"
+        d = dict(report_id=str(report_id), group_id=str(group_id))
+
+        q = db.report_team_responsible.report_id == report_id
+        q &= db.report_team_responsible.group_id == group.id
+        row = db(q).select().first()
+        if row is not None:
+            return dict(info="Report %(report_id)s responsibility to group %(group_id)s already added" % d)
+
+        db.report_team_responsible.insert(report_id=report_id, group_id=group.id)
+
+        _log(
+          'report.responsible.add',
+          fmt,
+          d
+        )
+        ws_send('report_responsible_change', {'id': report_id})
+
+        return dict(info=fmt%d)
+
+class rest_post_reports_responsibles(rest_post_handler):
+    def __init__(self):
+        desc = [
+          "Add responsible groups to provisioning templates",
+        ]
+        examples = [
+          "# curl -u %(email)s --header 'Content-Type: application/json' -d @/tmp/data.json -X POST -o- https://%(collector)s/init/rest/api/reports_responsibles"
+        ]
+
+        rest_post_handler.__init__(
+          self,
+          path="/reports_responsibles",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, **vars):
+        if not "report_id" in vars:
+            raise Exception("The 'report_id' key is mandatory")
+        report_id = vars.get("report_id")
+        del(vars["report_id"])
+
+        if not "group_id" in vars:
+            raise Exception("The 'group_id' key is mandatory")
+        group_id = vars.get("group_id")
+        del(vars["group_id"])
+
+        return rest_post_report_responsible().handler(report_id, group_id, **vars)
+
+
+class rest_get_report_publications(rest_get_table_handler):
+    def __init__(self):
+        desc = [
+          "List groups publication for the provisioning template.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/report/1/publications"
+        ]
+
+        rest_get_table_handler.__init__(
+          self,
+          path="/reports/<id>/publications",
+          tables=["auth_group"],
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, report_id, **vars):
+        report_published(report_id)
+        report_id = get_report_id(report_id)
+        q = db.report_team_publication.report_id == report_id
+        q &= db.report_team_publication.group_id == db.auth_group.id
+        self.set_q(q)
+        data = self.prepare_data(**vars)
+        return data
+
+class rest_delete_report_publication(rest_delete_handler):
+    def __init__(self):
+        desc = [
+          "Remove a provisioning template publication group",
+        ]
+        examples = [
+          "# curl -u %(email)s -X DELETE -o- https://%(collector)s/init/rest/api/reports/1/publications/2"
+        ]
+
+        rest_delete_handler.__init__(
+          self,
+          path="/reports/<id>/publications/<group>",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, report_id, group_id, **vars):
+        check_privilege("ReportsManager")
+        report_id = get_report_id(report_id)
+        report_responsible(report_id)
+        q = db.report_team_publication.report_id == report_id
+        q &= db.report_team_publication.group_id == group_id
+
+        fmt = "Report %(report_id)s publication to group %(group_id)s removed"
+        d = dict(report_id=str(report_id), group_id=str(group_id))
+
+        row = db(q).select().first()
+        if row is None:
+            return dict(info="Report %(report_id)s publication to group %(group_id)s already removed" % d)
+
+        db(q).delete()
+
+        _log(
+          'report.publication.delete',
+          fmt,
+          d
+        )
+        ws_send('report_publication_change', {'id': report_id})
+
+        return dict(info=fmt%d)
+
+class rest_delete_reports_publications(rest_delete_handler):
+    def __init__(self):
+        desc = [
+          "Remove publication groups from provisioning templates",
+        ]
+        examples = [
+          """# curl -u %(email)s -X DELETE -o- https://%(collector)s/init/rest/api/reports_publications?filters[]="report_id 1" """
+        ]
+
+        rest_delete_handler.__init__(
+          self,
+          path="/reports_publications",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, **vars):
+        if not "report_id" in vars:
+            raise Exception("The 'report_id' key is mandatory")
+        report_id = vars.get("report_id")
+        del(vars["report_id"])
+
+        if not "group_id" in vars:
+            raise Exception("The 'group_id' key is mandatory")
+        group_id = vars.get("group_id")
+        del(vars["group_id"])
+
+        return rest_delete_report_publication().handler(report_id, group_id, **vars)
+
+class rest_post_report_publication(rest_post_handler):
+    def __init__(self):
+        desc = [
+          "Add a provisioning template publication group",
+        ]
+        examples = [
+          "# curl -u %(email)s -X POST -o- https://%(collector)s/init/rest/api/reports/1/publications/2"
+        ]
+
+        rest_post_handler.__init__(
+          self,
+          path="/reports/<id>/publications/<group>",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, report_id, group_id, **vars):
+        check_privilege("ReportsManager")
+        report_id = get_report_id(report_id)
+        report_responsible(report_id)
+
+        try:
+            id = int(group_id)
+            q = db.auth_group.id == group_id
+        except:
+            q = db.auth_group.role == group_id
+        group = db(q).select().first()
+        if group is None:
+            raise Exception("Group %s does not exist" % str(group_id))
+
+        fmt = "Report %(report_id)s publication to group %(group_id)s added"
+        d = dict(report_id=str(report_id), group_id=str(group_id))
+
+        q = db.report_team_publication.report_id == report_id
+        q &= db.report_team_publication.group_id == group.id
+        row = db(q).select().first()
+        if row is not None:
+            return dict(info="Report %(report_id)s publication to group %(group_id)s already added" % d)
+
+        db.report_team_publication.insert(report_id=report_id, group_id=group.id)
+
+        _log(
+          'report.publication.add',
+          fmt,
+          d
+        )
+        ws_send('report_publication_change', {'id': report_id})
+
+        return dict(info=fmt%d)
+
+class rest_post_reports_publications(rest_post_handler):
+    def __init__(self):
+        desc = [
+          "Add publication groups to provisioning templates",
+        ]
+        examples = [
+          "# curl -u %(email)s --header 'Content-Type: application/json' -d @/tmp/data.json -X POST -o- https://%(collector)s/init/rest/api/reports_publications"
+        ]
+
+        rest_post_handler.__init__(
+          self,
+          path="/reports_publications",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, **vars):
+        if not "report_id" in vars:
+            raise Exception("The 'report_id' key is mandatory")
+        report_id = vars.get("report_id")
+        del(vars["report_id"])
+
+        if not "group_id" in vars:
+            raise Exception("The 'group_id' key is mandatory")
+        group_id = vars.get("group_id")
+        del(vars["group_id"])
+
+        return rest_post_report_publication().handler(report_id, group_id, **vars)
+
+

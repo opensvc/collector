@@ -6373,3 +6373,22 @@ alter table auth_user drop column perpage;
 
 alter table comp_run_ruleset add column date datetime;
 
+CREATE TABLE `report_team_responsible` (
+  `id` integer  NOT NULL AUTO_INCREMENT,
+  `report_id` integer NOT NULL,
+  `group_id` integer NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx1` (`report_id`),
+  KEY `idx2` (`group_id`)
+);
+
+CREATE TABLE `report_team_publication` (
+  `id` integer  NOT NULL AUTO_INCREMENT,
+  `report_id` integer NOT NULL,
+  `group_id` integer NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx1` (`report_id`),
+  KEY `idx2` (`group_id`)
+);
+
+

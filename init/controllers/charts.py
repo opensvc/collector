@@ -228,6 +228,8 @@ def ajax_reports_admin_col_values():
     col = request.args[0]
     o = db.reports[col]
     q = db.reports.id > 0
+    if "Manager" not in user_groups():
+        q &= db.reports.id.belongs(report_published_ids())
     for f in t.cols:
         q = _where(q, 'reports', t.filter_parse(f), f)
     t.object_list = db(q).select(o, orderby=o)
@@ -240,6 +242,8 @@ def ajax_reports_admin():
 
     o = t.get_orderby(default=db.reports.report_name)
     q = db.reports.id > 0
+    if "Manager" not in user_groups():
+        q &= db.reports.id.belongs(report_published_ids())
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
 

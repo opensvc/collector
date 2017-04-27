@@ -109,6 +109,10 @@ function report_properties(divid, options) {
 	o.init = function() {
 		o.info_id = o.div.find("#id")
 		o.info_report_name = o.div.find("#report_name")
+		o.info_publications = o.div.find("#publications")
+		o.info_publications_title = o.div.find("#publications_title")
+		o.info_responsibles = o.div.find("#responsibles")
+		o.info_responsibles_title = o.div.find("#responsibles_title")
 		o.load()
 	}
 
@@ -163,6 +167,14 @@ function report_properties(divid, options) {
 			"post": function(data, callback, error_callback) {
 				services_osvcpostrest("/reports/%1", [o.options.report_id], "", data, callback, error_callback)
 			}
+		})
+		report_publications({
+			"tid": o.info_publications,
+			"tpl_id": data.id
+		})
+		report_responsibles({
+			"tid": o.info_responsibles,
+			"tpl_id": data.id
 		})
 	}
 

@@ -327,6 +327,8 @@ def get_get_handlers(prefix=None):
              "rest_get_reports",
              "rest_get_report",
              "rest_get_report_am_i_responsible",
+             "rest_get_report_publications",
+             "rest_get_report_responsibles",
              "rest_get_report_revision",
              "rest_get_report_revisions",
              "rest_get_report_diff",
@@ -520,6 +522,14 @@ def get_delete_handlers(prefix=None):
              "rest_delete_reports_metrics",
              "rest_delete_reports",
              "rest_delete_report",
+             "rest_delete_report_publication",
+             "rest_delete_report_responsible",
+        ],
+        "reports_publications": [
+             "rest_delete_reports_publications",
+        ],
+        "reports_publications": [
+             "rest_delete_reports_responsibles",
         ],
         "resources": [
              "rest_delete_resource",
@@ -735,7 +745,15 @@ def get_post_handlers(prefix=None):
              "rest_post_reports_import",
              "rest_post_reports",
              "rest_post_report",
+             "rest_post_report_responsible",
+             "rest_post_report_publication",
              "rest_post_report_rollback",
+        ],
+        "reports_publications": [
+             "rest_post_reports_publications",
+        ],
+        "reports_responsibles": [
+             "rest_post_reports_responsibles",
         ],
         "safe": [
              "rest_post_safe_files_publications",

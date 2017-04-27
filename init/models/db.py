@@ -1689,6 +1689,16 @@ db.define_table('reports',
     Field('report_yaml', 'text'),
     migrate=False)
 
+db.define_table('report_team_responsible',
+    Field('report_id','integer'),
+    Field('group_id','integer'),
+    migrate=False)
+
+db.define_table('report_team_publication',
+    Field('report_id','integer'),
+    Field('group_id','integer'),
+    migrate=False)
+
 db.define_table('reports_user',
     Field('report_id','integer'),
     Field('user_id','integer'),
