@@ -101,7 +101,10 @@ class rest_post_reports(rest_post_handler):
         _log('report.add', fmt, d)
         ws_send('reports_change', {'id': report_id})
 
-        return rest_get_report().handler(report_id)
+        ret = rest_get_report().handler(report_id)
+        lib_reports_add_to_git(str(report_id), ret["data"][0]["report_yaml"])
+
+        return ret
 
 
 class rest_post_report(rest_post_handler):
@@ -141,6 +144,7 @@ class rest_post_report(rest_post_handler):
         ws_send('reports_change', {'id': report.id})
 
         ret = rest_get_report().handler(report.id)
+        lib_reports_add_to_git(str(report.id), ret["data"][0]["report_yaml"])
         ret["info"] = fmt % d
         return ret
 
@@ -914,3 +918,125 @@ class rest_post_reports_import(rest_post_handler):
         db.commit()
 
         return data
+
+class rest_post_report_rollback(rest_post_handler):
+    def __init__(self):
+        desc = [
+          "Restore an old revision of a report",
+        ]
+        examples = [
+          "# curl -u %(email)s -X POST -o- https://%(collector)s/init/rest/api/reports/1/rollback/9a26e8e40d9d7a7e585ac8ccb6bc01f70f68b710"
+        ]
+
+        rest_post_handler.__init__(
+          self,
+          path="/reports/<id>/rollback/<cid>",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, report_id, cid, **vars):
+        #check_privilege("ReportsManager")
+        report_responsible(report_id)
+        lib_reports_rollback(report_id, cid)
+        return
+
+#
+class rest_get_report_am_i_responsible(rest_get_handler):
+    def __init__(self):
+        desc = [
+          "- return true if the requester is responsible for this report.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/reports/1/am_i_responsible",
+        ]
+        rest_get_handler.__init__(
+          self,
+          path="/reports/<id>/am_i_responsible",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, report_id, **vars):
+        try:
+            report_id = get_report_id(report_id)
+            report_responsible(report_id)
+            return dict(data=True)
+        except:
+            return dict(data=False)
+
+class rest_get_report_revision(rest_get_handler):
+    def __init__(self):
+        desc = [
+          "Return the report content for the given revision.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/reports/1/revision/1234",
+        ]
+        rest_get_handler.__init__(
+          self,
+          path="/reports/<id>/revisions/<id>",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, report_id, cid, **vars):
+        r = []
+        q = db.reports.id == int(report_id)
+        #if "Manager" not in user_groups():
+        #    q &= db.reports.id == db.report_team_publication.report_id
+        #    q &= db.report_team_publication.group_id.belongs(user_group_ids())
+        if db(q).count():
+            r =  lib_reports_revision(report_id, cid)
+        return r
+
+class rest_get_report_revisions(rest_get_handler):
+    def __init__(self):
+        desc = [
+          "Return the report revisions.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/reports/1/revisions",
+        ]
+        rest_get_handler.__init__(
+          self,
+          path="/reports/<id>/revisions",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, report_id, **vars):
+        r = []
+        q = db.reports.id == int(report_id)
+        #if "Manager" not in user_groups():
+        #    q &= db.reports.id == db.report_team_publication.report_id
+        #    q &= db.report_team_publication.group_id.belongs(user_group_ids())
+        if db(q).count():
+            r =  lib_reports_revisions(report_id)
+        return r
+
+class rest_get_report_diff(rest_get_handler):
+    def __init__(self):
+        desc = [
+          "Show the commit diff, or differences between <cid> and <other> if"
+          "other is set",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/reports/1/diff/9a26e8e40d9d7a7e585ac8ccb6bc01f70f68b710",
+        ]
+        rest_get_handler.__init__(
+          self,
+          path="/reports/<id>/diff/<cid>",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, report_id, cid, other=None, **vars):
+        r = []
+        q = db.reports.id == int(report_id)
+        #if "Manager" not in user_groups():
+        #    q &= db.reports.id == db.report_team_publication.report_id
+        #    q &= db.report_team_publication.group_id.belongs(user_group_ids())
+        if db(q).count():
+            r =  lib_reports_diff(report_id, cid, other=other)
+        return r

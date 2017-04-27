@@ -63,6 +63,18 @@ function report_tabs(divid, options) {
 			report_definition(divid, o.options)
 		}
 
+		// tab revision
+		i = o.register_tab({
+			"title": "form_tabs.revisions",
+			"title_class": "icon time16"
+		})
+		o.tabs[i].callback = function(divid) {
+			generic_revisions(divid, {
+				"id": o.options.report_id,
+				"base_url": "/reports"
+			})
+		}
+
 		// tab export
 		i = o.register_tab({
 			"title": "report_tabs.export",

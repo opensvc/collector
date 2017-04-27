@@ -326,6 +326,10 @@ def get_get_handlers(prefix=None):
              "rest_get_report_export",
              "rest_get_reports",
              "rest_get_report",
+             "rest_get_report_am_i_responsible",
+             "rest_get_report_revision",
+             "rest_get_report_revisions",
+             "rest_get_report_diff",
        ],
        "safe": [
              "rest_get_safe",
@@ -731,6 +735,7 @@ def get_post_handlers(prefix=None):
              "rest_post_reports_import",
              "rest_post_reports",
              "rest_post_report",
+             "rest_post_report_rollback",
         ],
         "safe": [
              "rest_post_safe_files_publications",
