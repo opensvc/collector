@@ -170,11 +170,11 @@ function report_properties(divid, options) {
 		})
 		report_publications({
 			"tid": o.info_publications,
-			"tpl_id": data.id
+			"report_id": data.id
 		})
 		report_responsibles({
 			"tid": o.info_responsibles,
-			"tpl_id": data.id
+			"report_id": data.id
 		})
 	}
 

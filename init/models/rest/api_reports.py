@@ -295,8 +295,8 @@ class rest_post_reports_charts(rest_post_handler):
         #vars["chart_author"] = user_name()
 
         chart_id = db.charts.insert(**vars)
-        #lib_reports_add_default_team_responsible(chart_id)
-        #lib_reports_add_default_team_publication(chart_id)
+        lib_charts_add_default_team_responsible(chart_id)
+        lib_charts_add_default_team_publication(chart_id)
 
         fmt = "Chart %(chart_name)s added"
         d = dict(chart_name=chart_name)
@@ -304,7 +304,10 @@ class rest_post_reports_charts(rest_post_handler):
         _log('chart.add', fmt, d)
         ws_send('charts_change', {'id': chart_id})
 
-        return rest_get_reports_chart().handler(chart_id)
+        ret = rest_get_reports_chart().handler(chart_id)
+        lib_reports_add_to_git(str(chart_id), ret["data"][0]["chart_yaml"], otype="charts")
+
+        return ret
 
 
 class rest_post_reports_chart(rest_post_handler):
@@ -322,15 +325,20 @@ class rest_post_reports_chart(rest_post_handler):
           tables=["charts"],
           desc=desc,
           examples=examples,
+          groupby=db.charts.id,
         )
 
     def handler(self, id, **vars):
         check_privilege("ReportsManager")
+        chart_responsible(id)
 
         if "id" in vars:
             del(vars["id"])
 
         q = db.charts.id == id
+        if "Manager" not in user_groups():
+            q &= db.chart_team_publication.chart_id == db.charts.id
+            q &= db.chart_team_publication.group_id.belongs(user_group_ids())
         chart = db(q).select().first()
         if chart is None:
             raise Exception("Chart %s not found"%str(id))
@@ -344,6 +352,8 @@ class rest_post_reports_chart(rest_post_handler):
         ws_send('charts_change', {'id': chart.id})
 
         ret = rest_get_reports_chart().handler(chart.id)
+        lib_reports_add_to_git(str(chart.id), ret["data"][0]["chart_yaml"], otype="charts")
+
         ret["info"] = fmt % d
         return ret
 
@@ -361,10 +371,14 @@ class rest_get_reports_charts(rest_get_table_handler):
           tables=["charts"],
           desc=desc,
           examples=examples,
+          groupby=db.charts.id,
         )
 
     def handler(self, **vars):
         q = db.charts.id > 0
+        if "Manager" not in user_groups():
+            q &= db.chart_team_publication.chart_id == db.charts.id
+            q &= db.chart_team_publication.group_id.belongs(user_group_ids())
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -469,7 +483,7 @@ class rest_post_reports_metrics(rest_post_handler):
         )
 
     def handler(self, **vars):
-        check_privilege("ReportsManager")
+        check_privilege("Manager")
 
         if 'id' in vars:
             metric_id = vars["id"]
@@ -485,7 +499,7 @@ class rest_post_reports_metrics(rest_post_handler):
 
         metric_id = db.metrics.insert(**vars)
         #lib_reports_add_default_team_responsible(metric_id)
-        #lib_reports_add_default_team_publication(metric_id)
+        lib_metrics_add_default_team_publication(metric_id)
 
         fmt = "Metric %(metric_name)s added"
         d = dict(metric_name=metric_name)
@@ -493,7 +507,10 @@ class rest_post_reports_metrics(rest_post_handler):
         _log('metric.add', fmt, d)
         ws_send('metrics_change', {'id': metric_id})
 
-        return rest_get_reports_metric().handler(metric_id)
+        ret = rest_get_reports_metric().handler(metric_id)
+        lib_reports_add_to_git(str(metric_id), ret["data"][0]["metric_sql"], otype="metrics")
+
+        return ret
 
 
 class rest_post_reports_metric(rest_post_handler):
@@ -514,7 +531,7 @@ class rest_post_reports_metric(rest_post_handler):
         )
 
     def handler(self, id, **vars):
-        check_privilege("ReportsManager")
+        check_privilege("Manager")
 
         if "id" in vars:
             del(vars["id"])
@@ -533,6 +550,8 @@ class rest_post_reports_metric(rest_post_handler):
         ws_send('metrics_change', {'id': metric.id})
 
         ret = rest_get_reports_metric().handler(metric.id)
+        lib_reports_add_to_git(str(metric.id), ret["data"][0]["metric_sql"], otype="metrics")
+
         ret["info"] = fmt % d
         return ret
 
@@ -550,10 +569,14 @@ class rest_get_reports_metrics(rest_get_table_handler):
           tables=["metrics"],
           desc=desc,
           examples=examples,
+          groupby=db.metrics.id,
         )
 
     def handler(self, **vars):
         q = db.metrics.id > 0
+        if "Manager" not in user_groups():
+            q &= db.metric_team_publication.metric_id == db.metrics.id
+            q &= db.metric_team_publication.group_id.belongs(user_group_ids())
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -571,10 +594,14 @@ class rest_get_reports_metric(rest_get_line_handler):
           tables=["metrics"],
           desc=desc,
           examples=examples,
+          groupby=db.metrics.id,
         )
 
     def handler(self, id, **vars):
         q = db.metrics.id == id
+        if "Manager" not in user_groups():
+            q &= db.metric_team_publication.metric_id == db.metrics.id
+            q &= db.metric_team_publication.group_id.belongs(user_group_ids())
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -929,29 +956,53 @@ class rest_post_reports_import(rest_post_handler):
 
         return data
 
-class rest_post_report_rollback(rest_post_handler):
+#
+class rest_get_reports_metric_am_i_responsible(rest_get_handler):
     def __init__(self):
         desc = [
-          "Restore an old revision of a report",
+          "- return true if the requester is responsible for this metric.",
+          "- only Manager members are responsible for metrics.",
         ]
         examples = [
-          "# curl -u %(email)s -X POST -o- https://%(collector)s/init/rest/api/reports/1/rollback/9a26e8e40d9d7a7e585ac8ccb6bc01f70f68b710"
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/reports/metrics/1/am_i_responsible",
         ]
-
-        rest_post_handler.__init__(
+        rest_get_handler.__init__(
           self,
-          path="/reports/<id>/rollback/<cid>",
+          path="/reports/metrics/<id>/am_i_responsible",
           desc=desc,
           examples=examples,
         )
 
-    def handler(self, report_id, cid, **vars):
-        check_privilege("ReportsManager")
-        report_responsible(report_id)
-        lib_reports_rollback(report_id, cid)
-        return
+    def handler(self, chart_id, **vars):
+        try:
+            check_privilege("Manager")
+            return dict(data=True)
+        except:
+            return dict(data=False)
 
-#
+class rest_get_reports_chart_am_i_responsible(rest_get_handler):
+    def __init__(self):
+        desc = [
+          "- return true if the requester is responsible for this chart.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/reports/charts/1/am_i_responsible",
+        ]
+        rest_get_handler.__init__(
+          self,
+          path="/reports/charts/<id>/am_i_responsible",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, chart_id, **vars):
+        try:
+            chart_id = get_chart_id(chart_id)
+            chart_responsible(chart_id)
+            return dict(data=True)
+        except:
+            return dict(data=False)
+
 class rest_get_report_am_i_responsible(rest_get_handler):
     def __init__(self):
         desc = [
@@ -974,6 +1025,233 @@ class rest_get_report_am_i_responsible(rest_get_handler):
             return dict(data=True)
         except:
             return dict(data=False)
+
+#
+# metrics revisions
+#
+class rest_post_reports_metric_rollback(rest_post_handler):
+    def __init__(self):
+        desc = [
+          "Restore an old revision of a metric",
+        ]
+        examples = [
+          "# curl -u %(email)s -X POST -o- https://%(collector)s/init/rest/api/reports/metrics/1/rollback/9a26e8e40d9d7a7e585ac8ccb6bc01f70f68b710"
+        ]
+
+        rest_post_handler.__init__(
+          self,
+          path="/reports/metrics/<id>/rollback/<cid>",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, metric_id, cid, **vars):
+        check_privilege("ReportsManager")
+        metric_responsible(metric_id)
+        lib_reports_rollback(metric_id, cid, otype="metrics")
+        return
+
+class rest_get_reports_metric_revision(rest_get_handler):
+    def __init__(self):
+        desc = [
+          "Return the metric content for the given revision.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/reports/metrics/1/revision/1234",
+        ]
+        rest_get_handler.__init__(
+          self,
+          path="/reports/metrics/<id>/revisions/<id>",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, metric_id, cid, **vars):
+        r = []
+        q = db.metrics.id == int(metric_id)
+        if "Manager" not in user_groups():
+            q &= db.metrics.id == db.metric_team_publication.metric_id
+            q &= db.metric_team_publication.group_id.belongs(user_group_ids())
+        if db(q).count():
+            r =  lib_reports_revision(metric_id, cid, otype="metrics")
+        return r
+
+class rest_get_reports_metric_revisions(rest_get_handler):
+    def __init__(self):
+        desc = [
+          "Return the metric revisions.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/reports/metrics/1/revisions",
+        ]
+        rest_get_handler.__init__(
+          self,
+          path="/reports/metrics/<id>/revisions",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, metric_id, **vars):
+        r = []
+        q = db.metrics.id == int(metric_id)
+        if "Manager" not in user_groups():
+            q &= db.metrics.id == db.metric_team_publication.metric_id
+            q &= db.metric_team_publication.group_id.belongs(user_group_ids())
+        if db(q).count():
+            r =  lib_reports_revisions(metric_id, otype="metrics")
+        return r
+
+class rest_get_reports_metric_diff(rest_get_handler):
+    def __init__(self):
+        desc = [
+          "Show the commit diff, or differences between <cid> and <other> if"
+          "other is set",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/reports/metrics/1/diff/9a26e8e40d9d7a7e585ac8ccb6bc01f70f68b710",
+        ]
+        rest_get_handler.__init__(
+          self,
+          path="/reports/metrics/<id>/diff/<cid>",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, metric_id, cid, other=None, **vars):
+        r = []
+        q = db.metrics.id == int(metric_id)
+        if "Manager" not in user_groups():
+            q &= db.metrics.id == db.metric_team_publication.metric_id
+            q &= db.metric_team_publication.group_id.belongs(user_group_ids())
+        if db(q).count():
+            r =  lib_reports_diff(metric_id, cid, other=other, otype="metrics")
+        return r
+
+#
+# charts revisions
+#
+class rest_post_reports_chart_rollback(rest_post_handler):
+    def __init__(self):
+        desc = [
+          "Restore an old revision of a chart",
+        ]
+        examples = [
+          "# curl -u %(email)s -X POST -o- https://%(collector)s/init/rest/api/reports/charts/1/rollback/9a26e8e40d9d7a7e585ac8ccb6bc01f70f68b710"
+        ]
+
+        rest_post_handler.__init__(
+          self,
+          path="/reports/charts/<id>/rollback/<cid>",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, chart_id, cid, **vars):
+        check_privilege("ReportsManager")
+        chart_responsible(chart_id)
+        lib_reports_rollback(chart_id, cid, otype="charts")
+        return
+
+class rest_get_reports_chart_revision(rest_get_handler):
+    def __init__(self):
+        desc = [
+          "Return the chart content for the given revision.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/reports/charts/1/revision/1234",
+        ]
+        rest_get_handler.__init__(
+          self,
+          path="/reports/charts/<id>/revisions/<id>",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, chart_id, cid, **vars):
+        r = []
+        q = db.charts.id == int(chart_id)
+        if "Manager" not in user_groups():
+            q &= db.charts.id == db.chart_team_publication.chart_id
+            q &= db.chart_team_publication.group_id.belongs(user_group_ids())
+        if db(q).count():
+            r =  lib_reports_revision(chart_id, cid, otype="charts")
+        return r
+
+class rest_get_reports_chart_revisions(rest_get_handler):
+    def __init__(self):
+        desc = [
+          "Return the chart revisions.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/reports/charts/1/revisions",
+        ]
+        rest_get_handler.__init__(
+          self,
+          path="/reports/charts/<id>/revisions",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, chart_id, **vars):
+        r = []
+        q = db.charts.id == int(chart_id)
+        if "Manager" not in user_groups():
+            q &= db.charts.id == db.chart_team_publication.chart_id
+            q &= db.chart_team_publication.group_id.belongs(user_group_ids())
+        if db(q).count():
+            r =  lib_reports_revisions(chart_id, otype="charts")
+        return r
+
+class rest_get_reports_chart_diff(rest_get_handler):
+    def __init__(self):
+        desc = [
+          "Show the commit diff, or differences between <cid> and <other> if"
+          "other is set",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/reports/charts/1/diff/9a26e8e40d9d7a7e585ac8ccb6bc01f70f68b710",
+        ]
+        rest_get_handler.__init__(
+          self,
+          path="/reports/charts/<id>/diff/<cid>",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, chart_id, cid, other=None, **vars):
+        r = []
+        q = db.charts.id == int(chart_id)
+        if "Manager" not in user_groups():
+            q &= db.charts.id == db.chart_team_publication.chart_id
+            q &= db.chart_team_publication.group_id.belongs(user_group_ids())
+        if db(q).count():
+            r =  lib_reports_diff(chart_id, cid, other=other, otype="charts")
+        return r
+
+#
+# reports revisions
+#
+class rest_post_report_rollback(rest_post_handler):
+    def __init__(self):
+        desc = [
+          "Restore an old revision of a report",
+        ]
+        examples = [
+          "# curl -u %(email)s -X POST -o- https://%(collector)s/init/rest/api/reports/1/rollback/9a26e8e40d9d7a7e585ac8ccb6bc01f70f68b710"
+        ]
+
+        rest_post_handler.__init__(
+          self,
+          path="/reports/<id>/rollback/<cid>",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, report_id, cid, **vars):
+        check_privilege("ReportsManager")
+        report_responsible(report_id)
+        lib_reports_rollback(report_id, cid)
+        return
 
 class rest_get_report_revision(rest_get_handler):
     def __init__(self):
@@ -1051,6 +1329,9 @@ class rest_get_report_diff(rest_get_handler):
             r =  lib_reports_diff(report_id, cid, other=other)
         return r
 
+#
+# Reports responsibles and publications
+#
 class rest_get_report_responsibles(rest_get_table_handler):
     def __init__(self):
         desc = [
@@ -1121,7 +1402,7 @@ class rest_delete_report_responsible(rest_delete_handler):
 class rest_delete_reports_responsibles(rest_delete_handler):
     def __init__(self):
         desc = [
-          "Remove responsible groups from provisioning templates",
+          "Remove responsible groups from report",
         ]
         examples = [
           """# curl -u %(email)s -X DELETE -o- https://%(collector)s/init/rest/api/reports_responsibles?filters[]="report_id 1" """
@@ -1200,7 +1481,7 @@ class rest_post_report_responsible(rest_post_handler):
 class rest_post_reports_responsibles(rest_post_handler):
     def __init__(self):
         desc = [
-          "Add responsible groups to provisioning templates",
+          "Add responsible groups to report",
         ]
         examples = [
           "# curl -u %(email)s --header 'Content-Type: application/json' -d @/tmp/data.json -X POST -o- https://%(collector)s/init/rest/api/reports_responsibles"
@@ -1297,7 +1578,7 @@ class rest_delete_report_publication(rest_delete_handler):
 class rest_delete_reports_publications(rest_delete_handler):
     def __init__(self):
         desc = [
-          "Remove publication groups from provisioning templates",
+          "Remove publication groups from report",
         ]
         examples = [
           """# curl -u %(email)s -X DELETE -o- https://%(collector)s/init/rest/api/reports_publications?filters[]="report_id 1" """
@@ -1376,7 +1657,7 @@ class rest_post_report_publication(rest_post_handler):
 class rest_post_reports_publications(rest_post_handler):
     def __init__(self):
         desc = [
-          "Add publication groups to provisioning templates",
+          "Add publication groups to report",
         ]
         examples = [
           "# curl -u %(email)s --header 'Content-Type: application/json' -d @/tmp/data.json -X POST -o- https://%(collector)s/init/rest/api/reports_publications"
@@ -1401,5 +1682,535 @@ class rest_post_reports_publications(rest_post_handler):
         del(vars["group_id"])
 
         return rest_post_report_publication().handler(report_id, group_id, **vars)
+
+#
+# Charts responsibles and publications
+#
+class rest_get_reports_chart_responsibles(rest_get_table_handler):
+    def __init__(self):
+        desc = [
+          "List groups responsible for the provisioning template.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/reports/chart/1/responsibles"
+        ]
+
+        rest_get_table_handler.__init__(
+          self,
+          path="/reports/charts/<id>/responsibles",
+          tables=["auth_group"],
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, chart_id, **vars):
+        chart_id = get_chart_id(chart_id)
+        chart_published(chart_id)
+        q = db.chart_team_responsible.chart_id == chart_id
+        q &= db.chart_team_responsible.group_id == db.auth_group.id
+        self.set_q(q)
+        data = self.prepare_data(**vars)
+        return data
+
+class rest_delete_reports_chart_responsible(rest_delete_handler):
+    def __init__(self):
+        desc = [
+          "Remove a provisioning template responsible group",
+        ]
+        examples = [
+          "# curl -u %(email)s -X DELETE -o- https://%(collector)s/init/rest/api/reports/charts/1/responsibles/2"
+        ]
+
+        rest_delete_handler.__init__(
+          self,
+          path="/reports/charts/<id>/responsibles/<group>",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, chart_id, group_id, **vars):
+        check_privilege("ChartsManager")
+        chart_id = get_chart_id(chart_id)
+        chart_responsible(chart_id)
+        q = db.chart_team_responsible.chart_id == chart_id
+        q &= db.chart_team_responsible.group_id == group_id
+
+        fmt = "Chart %(chart_id)s responsibility to group %(group_id)s removed"
+        d = dict(chart_id=str(chart_id), group_id=str(group_id))
+
+        row = db(q).select().first()
+        if row is None:
+            return dict(info="Chart %(chart_id)s responsibility to group %(group_id)s already removed" % d)
+
+        db(q).delete()
+
+        _log(
+          'chart.responsible.delete',
+          fmt,
+          d
+        )
+        ws_send('chart_responsible_change', {'id': chart_id})
+
+        return dict(info=fmt%d)
+
+class rest_delete_reports_charts_responsibles(rest_delete_handler):
+    def __init__(self):
+        desc = [
+          "Remove responsible groups from chart",
+        ]
+        examples = [
+          """# curl -u %(email)s -X DELETE -o- https://%(collector)s/init/rest/api/reports/charts_responsibles?filters[]="chart_id 1" """
+        ]
+
+        rest_delete_handler.__init__(
+          self,
+          path="/reports/charts_responsibles",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, **vars):
+        if not "chart_id" in vars:
+            raise Exception("The 'chart_id' key is mandatory")
+        chart_id = vars.get("chart_id")
+        del(vars["chart_id"])
+
+        if not "group_id" in vars:
+            raise Exception("The 'group_id' key is mandatory")
+        group_id = vars.get("group_id")
+        del(vars["group_id"])
+
+        return rest_delete_reports_chart_responsible().handler(chart_id, group_id, **vars)
+
+class rest_post_reports_chart_responsible(rest_post_handler):
+    def __init__(self):
+        desc = [
+          "Add a provisioning template responsible group",
+        ]
+        examples = [
+          "# curl -u %(email)s -X POST -o- https://%(collector)s/init/rest/api/reports/charts/1/responsibles/2"
+        ]
+
+        rest_post_handler.__init__(
+          self,
+          path="/reports/charts/<id>/responsibles/<group>",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, chart_id, group_id, **vars):
+        check_privilege("ChartsManager")
+        chart_id = get_chart_id(chart_id)
+        chart_responsible(chart_id)
+
+        try:
+            id = int(group_id)
+            q = db.auth_group.id == group_id
+        except:
+            q = db.auth_group.role == group_id
+        group = db(q).select().first()
+        if group is None:
+            raise Exception("Group %s does not exist" % str(group_id))
+
+        fmt = "Chart %(chart_id)s responsibility to group %(group_id)s added"
+        d = dict(chart_id=str(chart_id), group_id=str(group_id))
+
+        q = db.chart_team_responsible.chart_id == chart_id
+        q &= db.chart_team_responsible.group_id == group.id
+        row = db(q).select().first()
+        if row is not None:
+            return dict(info="Chart %(chart_id)s responsibility to group %(group_id)s already added" % d)
+
+        chart_id = db.chart_team_responsible.insert(chart_id=chart_id, group_id=group.id)
+
+        _log(
+          'chart.responsible.add',
+          fmt,
+          d
+        )
+        ws_send('chart_responsible_change', {'id': chart_id})
+
+        return dict(info=fmt%d)
+
+class rest_post_reports_charts_responsibles(rest_post_handler):
+    def __init__(self):
+        desc = [
+          "Add responsible groups to chart",
+        ]
+        examples = [
+          "# curl -u %(email)s --header 'Content-Type: application/json' -d @/tmp/data.json -X POST -o- https://%(collector)s/init/rest/api/reports/charts_responsibles"
+        ]
+
+        rest_post_handler.__init__(
+          self,
+          path="/reports/charts_responsibles",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, **vars):
+        if not "chart_id" in vars:
+            raise Exception("The 'chart_id' key is mandatory")
+        chart_id = vars.get("chart_id")
+        del(vars["chart_id"])
+
+        if not "group_id" in vars:
+            raise Exception("The 'group_id' key is mandatory")
+        group_id = vars.get("group_id")
+        del(vars["group_id"])
+
+        return rest_post_reports_chart_responsible().handler(chart_id, group_id, **vars)
+
+
+class rest_get_reports_chart_publications(rest_get_table_handler):
+    def __init__(self):
+        desc = [
+          "List groups publication for the provisioning template.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/reports/chart/1/publications"
+        ]
+
+        rest_get_table_handler.__init__(
+          self,
+          path="/reports/charts/<id>/publications",
+          tables=["auth_group"],
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, chart_id, **vars):
+        chart_published(chart_id)
+        chart_id = get_chart_id(chart_id)
+        q = db.chart_team_publication.chart_id == chart_id
+        q &= db.chart_team_publication.group_id == db.auth_group.id
+        self.set_q(q)
+        data = self.prepare_data(**vars)
+        return data
+
+class rest_delete_reports_chart_publication(rest_delete_handler):
+    def __init__(self):
+        desc = [
+          "Remove a provisioning template publication group",
+        ]
+        examples = [
+          "# curl -u %(email)s -X DELETE -o- https://%(collector)s/init/rest/api/reports/charts/1/publications/2"
+        ]
+
+        rest_delete_handler.__init__(
+          self,
+          path="/reports/charts/<id>/publications/<group>",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, chart_id, group_id, **vars):
+        check_privilege("ChartsManager")
+        chart_id = get_chart_id(chart_id)
+        chart_responsible(chart_id)
+        q = db.chart_team_publication.chart_id == chart_id
+        q &= db.chart_team_publication.group_id == group_id
+
+        fmt = "Chart %(chart_id)s publication to group %(group_id)s removed"
+        d = dict(chart_id=str(chart_id), group_id=str(group_id))
+
+        row = db(q).select().first()
+        if row is None:
+            return dict(info="Chart %(chart_id)s publication to group %(group_id)s already removed" % d)
+
+        db(q).delete()
+
+        _log(
+          'chart.publication.delete',
+          fmt,
+          d
+        )
+        ws_send('chart_publication_change', {'id': chart_id})
+
+        return dict(info=fmt%d)
+
+class rest_delete_reports_charts_publications(rest_delete_handler):
+    def __init__(self):
+        desc = [
+          "Remove publication groups from chart",
+        ]
+        examples = [
+          """# curl -u %(email)s -X DELETE -o- https://%(collector)s/init/rest/api/reports/charts_publications?filters[]="chart_id 1" """
+        ]
+
+        rest_delete_handler.__init__(
+          self,
+          path="/reports/charts_publications",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, **vars):
+        if not "chart_id" in vars:
+            raise Exception("The 'chart_id' key is mandatory")
+        chart_id = vars.get("chart_id")
+        del(vars["chart_id"])
+
+        if not "group_id" in vars:
+            raise Exception("The 'group_id' key is mandatory")
+        group_id = vars.get("group_id")
+        del(vars["group_id"])
+
+        return rest_delete_reports_chart_publication().handler(chart_id, group_id, **vars)
+
+class rest_post_reports_chart_publication(rest_post_handler):
+    def __init__(self):
+        desc = [
+          "Add a provisioning template publication group",
+        ]
+        examples = [
+          "# curl -u %(email)s -X POST -o- https://%(collector)s/init/rest/api/reports/charts/1/publications/2"
+        ]
+
+        rest_post_handler.__init__(
+          self,
+          path="/reports/charts/<id>/publications/<group>",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, chart_id, group_id, **vars):
+        check_privilege("ChartsManager")
+        chart_id = get_chart_id(chart_id)
+        chart_responsible(chart_id)
+
+        try:
+            id = int(group_id)
+            q = db.auth_group.id == group_id
+        except:
+            q = db.auth_group.role == group_id
+        group = db(q).select().first()
+        if group is None:
+            raise Exception("Group %s does not exist" % str(group_id))
+
+        fmt = "Chart %(chart_id)s publication to group %(group_id)s added"
+        d = dict(chart_id=str(chart_id), group_id=str(group_id))
+
+        q = db.chart_team_publication.chart_id == chart_id
+        q &= db.chart_team_publication.group_id == group.id
+        row = db(q).select().first()
+        if row is not None:
+            return dict(info="Chart %(chart_id)s publication to group %(group_id)s already added" % d)
+
+        db.chart_team_publication.insert(chart_id=chart_id, group_id=group.id)
+
+        _log(
+          'chart.publication.add',
+          fmt,
+          d
+        )
+        ws_send('chart_publication_change', {'id': chart_id})
+
+        return dict(info=fmt%d)
+
+class rest_post_reports_charts_publications(rest_post_handler):
+    def __init__(self):
+        desc = [
+          "Add publication groups to chart",
+        ]
+        examples = [
+          "# curl -u %(email)s --header 'Content-Type: application/json' -d @/tmp/data.json -X POST -o- https://%(collector)s/init/rest/api/reports/charts_publications"
+        ]
+
+        rest_post_handler.__init__(
+          self,
+          path="/reports/charts_publications",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, **vars):
+        if not "chart_id" in vars:
+            raise Exception("The 'chart_id' key is mandatory")
+        chart_id = vars.get("chart_id")
+        del(vars["chart_id"])
+
+        if not "group_id" in vars:
+            raise Exception("The 'group_id' key is mandatory")
+        group_id = vars.get("group_id")
+        del(vars["group_id"])
+
+        return rest_post_reports_chart_publication().handler(chart_id, group_id, **vars)
+
+#
+# Metrics publications
+#
+class rest_get_reports_metric_publications(rest_get_table_handler):
+    def __init__(self):
+        desc = [
+          "List groups publication for the provisioning template.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/reports/metric/1/publications"
+        ]
+
+        rest_get_table_handler.__init__(
+          self,
+          path="/reports/metrics/<id>/publications",
+          tables=["auth_group"],
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, metric_id, **vars):
+        metric_published(metric_id)
+        metric_id = get_metric_id(metric_id)
+        q = db.metric_team_publication.metric_id == metric_id
+        q &= db.metric_team_publication.group_id == db.auth_group.id
+        self.set_q(q)
+        data = self.prepare_data(**vars)
+        return data
+
+class rest_delete_reports_metric_publication(rest_delete_handler):
+    def __init__(self):
+        desc = [
+          "Remove a provisioning template publication group",
+        ]
+        examples = [
+          "# curl -u %(email)s -X DELETE -o- https://%(collector)s/init/rest/api/reports/metrics/1/publications/2"
+        ]
+
+        rest_delete_handler.__init__(
+          self,
+          path="/reports/metrics/<id>/publications/<group>",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, metric_id, group_id, **vars):
+        check_privilege("Manager")
+        metric_id = get_metric_id(metric_id)
+        q = db.metric_team_publication.metric_id == metric_id
+        q &= db.metric_team_publication.group_id == group_id
+
+        fmt = "Metric %(metric_id)s publication to group %(group_id)s removed"
+        d = dict(metric_id=str(metric_id), group_id=str(group_id))
+
+        row = db(q).select().first()
+        if row is None:
+            return dict(info="Metric %(metric_id)s publication to group %(group_id)s already removed" % d)
+
+        db(q).delete()
+
+        _log(
+          'metric.publication.delete',
+          fmt,
+          d
+        )
+        ws_send('metric_publication_change', {'id': metric_id})
+
+        return dict(info=fmt%d)
+
+class rest_delete_reports_metrics_publications(rest_delete_handler):
+    def __init__(self):
+        desc = [
+          "Remove publication groups from metric",
+        ]
+        examples = [
+          """# curl -u %(email)s -X DELETE -o- https://%(collector)s/init/rest/api/reports/metrics_publications?filters[]="metric_id 1" """
+        ]
+
+        rest_delete_handler.__init__(
+          self,
+          path="/reports/metrics_publications",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, **vars):
+        if not "metric_id" in vars:
+            raise Exception("The 'metric_id' key is mandatory")
+        metric_id = vars.get("metric_id")
+        del(vars["metric_id"])
+
+        if not "group_id" in vars:
+            raise Exception("The 'group_id' key is mandatory")
+        group_id = vars.get("group_id")
+        del(vars["group_id"])
+
+        return rest_delete_reports_metric_publication().handler(metric_id, group_id, **vars)
+
+class rest_post_reports_metric_publication(rest_post_handler):
+    def __init__(self):
+        desc = [
+          "Add a provisioning template publication group",
+        ]
+        examples = [
+          "# curl -u %(email)s -X POST -o- https://%(collector)s/init/rest/api/reports/metrics/1/publications/2"
+        ]
+
+        rest_post_handler.__init__(
+          self,
+          path="/reports/metrics/<id>/publications/<group>",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, metric_id, group_id, **vars):
+        check_privilege("Manager")
+        metric_id = get_metric_id(metric_id)
+
+        try:
+            id = int(group_id)
+            q = db.auth_group.id == group_id
+        except:
+            q = db.auth_group.role == group_id
+        group = db(q).select().first()
+        if group is None:
+            raise Exception("Group %s does not exist" % str(group_id))
+
+        fmt = "Metric %(metric_id)s publication to group %(group_id)s added"
+        d = dict(metric_id=str(metric_id), group_id=str(group_id))
+
+        q = db.metric_team_publication.metric_id == metric_id
+        q &= db.metric_team_publication.group_id == group.id
+        row = db(q).select().first()
+        if row is not None:
+            return dict(info="Metric %(metric_id)s publication to group %(group_id)s already added" % d)
+
+        db.metric_team_publication.insert(metric_id=metric_id, group_id=group.id)
+
+        _log(
+          'metric.publication.add',
+          fmt,
+          d
+        )
+        ws_send('metric_publication_change', {'id': metric_id})
+
+        return dict(info=fmt%d)
+
+class rest_post_reports_metrics_publications(rest_post_handler):
+    def __init__(self):
+        desc = [
+          "Add publication groups to metric",
+        ]
+        examples = [
+          "# curl -u %(email)s --header 'Content-Type: application/json' -d @/tmp/data.json -X POST -o- https://%(collector)s/init/rest/api/reports/metrics_publications"
+        ]
+
+        rest_post_handler.__init__(
+          self,
+          path="/reports/metrics_publications",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, **vars):
+        if not "metric_id" in vars:
+            raise Exception("The 'metric_id' key is mandatory")
+        metric_id = vars.get("metric_id")
+        del(vars["metric_id"])
+
+        if not "group_id" in vars:
+            raise Exception("The 'group_id' key is mandatory")
+        group_id = vars.get("group_id")
+        del(vars["group_id"])
+
+        return rest_post_reports_metric_publication().handler(metric_id, group_id, **vars)
 
 

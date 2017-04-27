@@ -423,7 +423,21 @@ function table_action_menu_init_data(t) {
 							"fn": "data_action_del_metrics",
 							"privileges": ["Manager", "ReportsManager"],
 							"min": 1
-						}
+						},
+						{
+							"title": "action_menu.add_publication",
+							"class": "add16",
+							"fn": "data_action_add_metrics_publication",
+							"privileges": ["Manager", "ReportsManager"],
+							"min": 1
+						},
+						{
+							"title": "action_menu.del_publication",
+							"class": "del16",
+							"fn": "data_action_del_metrics_publication",
+							"privileges": ["Manager", "ReportsManager"],
+							"min": 1
+						},
 					]
 				},
 				{
@@ -442,6 +456,34 @@ function table_action_menu_init_data(t) {
 							"title": "action_menu.del",
 							"class": "del16",
 							"fn": "data_action_del_charts",
+							"privileges": ["Manager", "ReportsManager"],
+							"min": 1
+						},
+						{
+							"title": "action_menu.add_publication",
+							"class": "add16",
+							"fn": "data_action_add_charts_publication",
+							"privileges": ["Manager", "ReportsManager"],
+							"min": 1
+						},
+						{
+							"title": "action_menu.del_publication",
+							"class": "del16",
+							"fn": "data_action_del_charts_publication",
+							"privileges": ["Manager", "ReportsManager"],
+							"min": 1
+						},
+						{
+							"title": "action_menu.add_responsible",
+							"class": "add16",
+							"fn": "data_action_add_charts_responsible",
+							"privileges": ["Manager", "ReportsManager"],
+							"min": 1
+						},
+						{
+							"title": "action_menu.del_responsible",
+							"class": "del16",
+							"fn": "data_action_del_charts_responsible",
 							"privileges": ["Manager", "ReportsManager"],
 							"min": 1
 						}
@@ -3432,6 +3474,74 @@ function data_action_add_chart(divid) {
 }
 
 //
+// data action: add charts responsibles
+//
+function data_action_add_charts_responsible(t, e) {
+	data_action_generic_selector(t, e, {
+		"requestor": services_osvcpostrest,
+		"request_service": "/reports/charts_responsibles",
+		"selector": generic_selector_org_groups,
+		"request_data_entry": function(selected, data) {
+			return {
+				"group_id": selected,
+				"chart_id": data["id"]
+			}
+		}
+	})
+}
+
+//
+// data action: del charts responsible
+//
+function data_action_del_charts_responsible(t, e) {
+	data_action_generic_selector(t, e, {
+		"requestor": services_osvcdeleterest,
+		"request_service": "/reports/charts_responsibles",
+		"selector": generic_selector_org_groups,
+		"request_data_entry": function(selected, data) {
+			return {
+				"group_id": selected,
+				"chart_id": data["id"]
+			}
+		}
+	})
+}
+
+//
+// data action: add charts publications
+//
+function data_action_add_charts_publication(t, e) {
+	data_action_generic_selector(t, e, {
+		"requestor": services_osvcpostrest,
+		"request_service": "/reports/charts_publications",
+		"selector": generic_selector_org_groups,
+		"request_data_entry": function(selected, data) {
+			return {
+				"group_id": selected,
+				"chart_id": data["id"]
+			}
+		}
+	})
+}
+
+//
+// data action: del charts publications
+//
+function data_action_del_charts_publication(t, e) {
+	data_action_generic_selector(t, e, {
+		"requestor": services_osvcdeleterest,
+		"request_service": "/reports/charts_publications",
+		"selector": generic_selector_org_groups,
+		"request_data_entry": function(selected, data) {
+			return {
+				"group_id": selected,
+				"chart_id": data["id"]
+			}
+		}
+	})
+}
+
+//
 // data action: delete filters
 //
 function data_action_del_filters(t, e) {
@@ -3669,6 +3779,41 @@ function data_action_add_metric(divid) {
 		]
 	})
 }
+
+//
+// data action: add metrics publications
+//
+function data_action_add_metrics_publication(t, e) {
+	data_action_generic_selector(t, e, {
+		"requestor": services_osvcpostrest,
+		"request_service": "/reports/metrics_publications",
+		"selector": generic_selector_org_groups,
+		"request_data_entry": function(selected, data) {
+			return {
+				"group_id": selected,
+				"metric_id": data["id"]
+			}
+		}
+	})
+}
+
+//
+// data action: del metrics publications
+//
+function data_action_del_metrics_publication(t, e) {
+	data_action_generic_selector(t, e, {
+		"requestor": services_osvcdeleterest,
+		"request_service": "/reports/metrics_publications",
+		"selector": generic_selector_org_groups,
+		"request_data_entry": function(selected, data) {
+			return {
+				"group_id": selected,
+				"metric_id": data["id"]
+			}
+		}
+	})
+}
+
 
 //
 // data action: delete metrics

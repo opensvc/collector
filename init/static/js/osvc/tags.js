@@ -757,14 +757,14 @@ function ruleset_publications(options) {
 	return tags(options)
 }
 
-function report_responsibles(options) {
+function chart_responsibles(options) {
 	options.tag_name = "role"
 	options.flash_id_prefix = "group"
 	options.id = "id"
 	options.bgcolor = osvc.colors.org
 	options.icon = "guys16"
 	options.get_tags = function(fval, callback, callback_err) {
-		services_osvcgetrest("/reports/%1/responsibles", [options.tpl_id], {
+		services_osvcgetrest("/reports/charts/%1/responsibles", [options.chart_id], {
 			"orderby": options.tag_name,
 			"props": "id," + options.tag_name,
 			"limit": "0"
@@ -780,13 +780,127 @@ function report_responsibles(options) {
 		}, callback, callback_err)
 	}
 	options.attach = function(tag_data, callback, callback_err) {
-		services_osvcpostrest("/reports/%1/responsibles/%2", [options.tpl_id, tag_data.id], "", "", callback, callback_err)
+		services_osvcpostrest("/reports/charts/%1/responsibles/%2", [options.chart_id, tag_data.id], "", "", callback, callback_err)
 	}
 	options.detach = function(tag, callback, callback_err) {
-		services_osvcdeleterest("/reports/%1/responsibles/%2", [options.tpl_id, tag.attr("tag_id")], "", "", callback, callback_err)
+		services_osvcdeleterest("/reports/charts/%1/responsibles/%2", [options.chart_id, tag.attr("tag_id")], "", "", callback, callback_err)
 	}
 	options.am_i_responsible = function(callback) {
-		services_osvcgetrest("/reports/%1/am_i_responsible", [options.tpl_id], "", callback)
+		services_osvcgetrest("/reports/charts/%1/am_i_responsible", [options.chart_id], "", callback)
+	}
+	options.ondblclick = function(divid, data) {
+		group_tabs(divid, {"group_id": data.id, "group_name": data.name})
+	}
+	options.events = ["auth_group_change", "chart_responsible_change"]
+	return tags(options)
+}
+
+function metric_publications(options) {
+	options.tag_name = "role"
+	options.flash_id_prefix = "group"
+	options.id = "id"
+	options.bgcolor = osvc.colors.org
+	options.icon = "guys16"
+	options.get_tags = function(fval, callback, callback_err) {
+		services_osvcgetrest("/reports/metrics/%1/publications", [options.metric_id], {
+			"orderby": options.tag_name,
+			"props": "id," + options.tag_name,
+			"limit": "0"
+		}, callback, callback_err)
+	}
+	options.get_candidates = function(fval, callback, callback_err) {
+		services_osvcgetrest("/groups", "", {
+			"orderby": options.tag_name,
+			"props": "id," + options.tag_name,
+			"limit": "0",
+			"meta": "false",
+			"filters": ["privilege F", options.tag_name+" "+fval]
+		}, callback, callback_err)
+	}
+	options.attach = function(tag_data, callback, callback_err) {
+		services_osvcpostrest("/reports/metrics/%1/publications/%2", [options.metric_id, tag_data.id], "", "", callback, callback_err)
+	}
+	options.detach = function(tag, callback, callback_err) {
+		services_osvcdeleterest("/reports/metrics/%1/publications/%2", [options.metric_id, tag.attr("tag_id")], "", "", callback, callback_err)
+	}
+	options.am_i_responsible = function(callback) {
+		services_osvcgetrest("/reports/metrics/%1/am_i_responsible", [options.metric_id], "", callback)
+	}
+	options.ondblclick = function(divid, data) {
+		group_tabs(divid, {"group_id": data.id, "group_name": data.name})
+	}
+	options.events = ["auth_group_change", "metric_publication_change"]
+	return tags(options)
+}
+
+function chart_publications(options) {
+	options.tag_name = "role"
+	options.flash_id_prefix = "group"
+	options.id = "id"
+	options.bgcolor = osvc.colors.org
+	options.icon = "guys16"
+	options.get_tags = function(fval, callback, callback_err) {
+		services_osvcgetrest("/reports/charts/%1/publications", [options.chart_id], {
+			"orderby": options.tag_name,
+			"props": "id," + options.tag_name,
+			"limit": "0"
+		}, callback, callback_err)
+	}
+	options.get_candidates = function(fval, callback, callback_err) {
+		services_osvcgetrest("/groups", "", {
+			"orderby": options.tag_name,
+			"props": "id," + options.tag_name,
+			"limit": "0",
+			"meta": "false",
+			"filters": ["privilege F", options.tag_name+" "+fval]
+		}, callback, callback_err)
+	}
+	options.attach = function(tag_data, callback, callback_err) {
+		services_osvcpostrest("/reports/charts/%1/publications/%2", [options.chart_id, tag_data.id], "", "", callback, callback_err)
+	}
+	options.detach = function(tag, callback, callback_err) {
+		services_osvcdeleterest("/reports/charts/%1/publications/%2", [options.chart_id, tag.attr("tag_id")], "", "", callback, callback_err)
+	}
+	options.am_i_responsible = function(callback) {
+		services_osvcgetrest("/reports/charts/%1/am_i_responsible", [options.chart_id], "", callback)
+	}
+	options.ondblclick = function(divid, data) {
+		group_tabs(divid, {"group_id": data.id, "group_name": data.name})
+	}
+	options.events = ["auth_group_change", "chart_publication_change"]
+	return tags(options)
+}
+
+function report_responsibles(options) {
+	options.tag_name = "role"
+	options.flash_id_prefix = "group"
+	options.id = "id"
+	options.bgcolor = osvc.colors.org
+	options.icon = "guys16"
+	options.get_tags = function(fval, callback, callback_err) {
+		services_osvcgetrest("/reports/%1/responsibles", [options.report_id], {
+			"orderby": options.tag_name,
+			"props": "id," + options.tag_name,
+			"limit": "0"
+		}, callback, callback_err)
+	}
+	options.get_candidates = function(fval, callback, callback_err) {
+		services_osvcgetrest("/groups", "", {
+			"orderby": options.tag_name,
+			"props": "id," + options.tag_name,
+			"limit": "0",
+			"meta": "false",
+			"filters": ["privilege F", options.tag_name+" "+fval]
+		}, callback, callback_err)
+	}
+	options.attach = function(tag_data, callback, callback_err) {
+		services_osvcpostrest("/reports/%1/responsibles/%2", [options.report_id, tag_data.id], "", "", callback, callback_err)
+	}
+	options.detach = function(tag, callback, callback_err) {
+		services_osvcdeleterest("/reports/%1/responsibles/%2", [options.report_id, tag.attr("tag_id")], "", "", callback, callback_err)
+	}
+	options.am_i_responsible = function(callback) {
+		services_osvcgetrest("/reports/%1/am_i_responsible", [options.report_id], "", callback)
 	}
 	options.ondblclick = function(divid, data) {
 		group_tabs(divid, {"group_id": data.id, "group_name": data.name})
@@ -802,7 +916,7 @@ function report_publications(options) {
 	options.bgcolor = osvc.colors.org
 	options.icon = "guys16"
 	options.get_tags = function(fval, callback, callback_err) {
-		services_osvcgetrest("/reports/%1/publications", [options.tpl_id], {
+		services_osvcgetrest("/reports/%1/publications", [options.report_id], {
 			"orderby": options.tag_name,
 			"props": "id," + options.tag_name,
 			"limit": "0"
@@ -818,13 +932,13 @@ function report_publications(options) {
 		}, callback, callback_err)
 	}
 	options.attach = function(tag_data, callback, callback_err) {
-		services_osvcpostrest("/reports/%1/publications/%2", [options.tpl_id, tag_data.id], "", "", callback, callback_err)
+		services_osvcpostrest("/reports/%1/publications/%2", [options.report_id, tag_data.id], "", "", callback, callback_err)
 	}
 	options.detach = function(tag, callback, callback_err) {
-		services_osvcdeleterest("/reports/%1/publications/%2", [options.tpl_id, tag.attr("tag_id")], "", "", callback, callback_err)
+		services_osvcdeleterest("/reports/%1/publications/%2", [options.report_id, tag.attr("tag_id")], "", "", callback, callback_err)
 	}
 	options.am_i_responsible = function(callback) {
-		services_osvcgetrest("/reports/%1/am_i_responsible", [options.tpl_id], "", callback)
+		services_osvcgetrest("/reports/%1/am_i_responsible", [options.report_id], "", callback)
 	}
 	options.ondblclick = function(divid, data) {
 		group_tabs(divid, {"group_id": data.id, "group_name": data.name})

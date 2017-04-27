@@ -6391,4 +6391,31 @@ CREATE TABLE `report_team_publication` (
   KEY `idx2` (`group_id`)
 );
 
+CREATE TABLE `chart_team_responsible` (
+  `id` integer  NOT NULL AUTO_INCREMENT,
+  `chart_id` integer NOT NULL,
+  `group_id` integer NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx1` (`chart_id`),
+  KEY `idx2` (`group_id`)
+);
+
+CREATE TABLE `chart_team_publication` (
+  `id` integer  NOT NULL AUTO_INCREMENT,
+  `chart_id` integer NOT NULL,
+  `group_id` integer NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx1` (`chart_id`),
+  KEY `idx2` (`group_id`)
+);
+
+CREATE TABLE `metric_team_publication` (
+  `id` integer  NOT NULL AUTO_INCREMENT,
+  `metric_id` integer NOT NULL,
+  `group_id` integer NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx1` (`metric_id`),
+  KEY `idx2` (`group_id`)
+);
+
 

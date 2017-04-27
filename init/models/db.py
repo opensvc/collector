@@ -1689,6 +1689,21 @@ db.define_table('reports',
     Field('report_yaml', 'text'),
     migrate=False)
 
+db.define_table('metric_team_publication',
+    Field('metric_id','integer'),
+    Field('group_id','integer'),
+    migrate=False)
+
+db.define_table('chart_team_responsible',
+    Field('chart_id','integer'),
+    Field('group_id','integer'),
+    migrate=False)
+
+db.define_table('chart_team_publication',
+    Field('chart_id','integer'),
+    Field('group_id','integer'),
+    migrate=False)
+
 db.define_table('report_team_responsible',
     Field('report_id','integer'),
     Field('group_id','integer'),

@@ -83,6 +83,8 @@ def ajax_metrics_admin_col_values():
     col = request.args[0]
     o = db.metrics[col]
     q = db.metrics.id > 0
+    if "Manager" not in user_groups():
+        q &= db.metrics.id.belongs(metric_published_ids())
     for f in t.cols:
         q = _where(q, 'metrics', t.filter_parse(f), f)
     t.object_list = db(q).select(o, orderby=o)
@@ -95,6 +97,8 @@ def ajax_metrics_admin():
 
     o = t.get_orderby(default=db.metrics.metric_name)
     q = db.metrics.id > 0
+    if "Manager" not in user_groups():
+        q &= db.metrics.id.belongs(metric_published_ids())
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
 
@@ -155,6 +159,8 @@ def ajax_charts_admin_col_values():
     col = request.args[0]
     o = db.charts[col]
     q = db.charts.id > 0
+    if "Manager" not in user_groups():
+        q &= db.charts.id.belongs(chart_published_ids())
     for f in t.cols:
         q = _where(q, 'charts', t.filter_parse(f), f)
     t.object_list = db(q).select(o, orderby=o)
@@ -167,6 +173,8 @@ def ajax_charts_admin():
 
     o = t.get_orderby(default=db.charts.chart_name)
     q = db.charts.id > 0
+    if "Manager" not in user_groups():
+        q &= db.charts.id.belongs(chart_published_ids())
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
 

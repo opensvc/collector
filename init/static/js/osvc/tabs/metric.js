@@ -57,6 +57,19 @@ function metric_tabs(divid, options) {
 		}
 
 		o.set_tab(o.options.tab)
+
+		// tab revision
+		i = o.register_tab({
+			"title": "form_tabs.revisions",
+			"title_class": "icon time16"
+		})
+		o.tabs[i].callback = function(divid) {
+			generic_revisions(divid, {
+				"id": o.options.metric_id,
+				"base_url": "/reports/metrics"
+			})
+		}
+
 	}
 	return o
 }
@@ -109,6 +122,8 @@ function metric_properties(divid, options) {
 		o.info_metric_col_value_index.html(data.metric_col_value_index)
 		o.info_metric_col_instance_index.html(data.metric_col_instance_index)
 		o.info_metric_historize.html(data.metric_historize)
+		o.info_publications = o.div.find("#publications")
+		o.info_publications_title = o.div.find("#publications_title")
 
 		var am_data = [
 			{
@@ -142,6 +157,10 @@ function metric_properties(divid, options) {
 			"post": function(data, callback, error_callback) {
 				services_osvcpostrest("/reports/metrics/%1", [o.options.metric_id], "", data, callback, error_callback)
 			}
+		})
+		metric_publications({
+			"tid": o.info_publications,
+			"metric_id": data.id
 		})
 	}
 

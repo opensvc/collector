@@ -66,6 +66,19 @@ function chart_tabs(divid, options) {
 		}
 
 		o.set_tab(o.options.tab)
+
+		// tab revision
+		i = o.register_tab({
+			"title": "form_tabs.revisions",
+			"title_class": "icon time16"
+		})
+		o.tabs[i].callback = function(divid) {
+			generic_revisions(divid, {
+				"id": o.options.chart_id,
+				"base_url": "/reports/charts"
+			})
+		}
+
 	}
 	return o
 }
@@ -90,6 +103,10 @@ function chart_properties(divid, options) {
 	o.init = function() {
 		o.info_id = o.div.find("#id")
 		o.info_chart_name = o.div.find("#chart_name")
+		o.info_publications = o.div.find("#publications")
+		o.info_publications_title = o.div.find("#publications_title")
+		o.info_responsibles = o.div.find("#responsibles")
+		o.info_responsibles_title = o.div.find("#responsibles_title")
 		o.load()
 	}
 
@@ -143,6 +160,14 @@ function chart_properties(divid, options) {
 			"post": function(data, callback, error_callback) {
 				services_osvcpostrest("/reports/charts/%1", [o.options.chart_id], "", data, callback, error_callback)
 			}
+		})
+		chart_publications({
+			"tid": o.info_publications,
+			"chart_id": data.id
+		})
+		chart_responsibles({
+			"tid": o.info_responsibles,
+			"chart_id": data.id
 		})
 	}
 
