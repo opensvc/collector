@@ -263,7 +263,7 @@ class rest_delete_checks_settings(rest_delete_handler):
             raise Exception("id key or node_id+chk_type+chk_instance[+svc_id] must be specified")
         if 'svc_id' in vars:
             svc_id = get_svc_id(vars["svc_id"])
-            q &= db.checks_settings.chk_svcname == svc_id
+            q &= db.checks_settings.svc_id == svc_id
             s += get_svcname(svc_id)
         q = q_filter(q, node_field=db.checks_settings.node_id)
         row = db(q).select().first()
