@@ -777,6 +777,7 @@ class rest_post_node(rest_post_handler):
              dict(data=beautify_change(row, vars)),
              node_id=node_id)
         ws_send('nodes_change', {'node_id': node_id})
+        node_dashboard_updates(node_id)
         return rest_get_node().handler(node_id, props=','.join(["node_id", "nodename", "app", "updated"]+vars.keys()))
 
 
@@ -847,6 +848,7 @@ class rest_post_nodes(rest_post_handler):
              dict(data=beautify_data(vars)),
              node_id=node_id)
         ws_send('nodes_change', {'node_id': node_id})
+        node_dashboard_updates(node_id)
         return rest_get_node().handler(node_id)
 
 

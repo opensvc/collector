@@ -672,9 +672,7 @@ def _update_asset(vars, vals, auth):
 
     generic_insert('nodes', h.keys(), h.values())
     ws_send('nodes_change')
-    update_dash_node_not_updated(node_id)
-    update_dash_node_without_maintenance_end(node_id)
-    update_dash_node_without_asset(node_id)
+    node_dashboard_updates(node_id)
 
 def _resmon_clean(node_id, svc_id, threshold=None):
     try:
@@ -3302,7 +3300,6 @@ def cron_dash_node_beyond_maintenance_date():
                  dash_updated="%(now)s"
           """%dict(now=str(now))
     db.executesql(sql)
-    db.commit()
 
     sql = """delete from dashboard where
                dash_type="node maintenance expired" and
@@ -3312,6 +3309,7 @@ def cron_dash_node_beyond_maintenance_date():
                )
           """%dict(now=str(now))
     db.executesql(sql)
+    db.commit()
 
 def cron_dash_node_near_maintenance_date():
     sql = """insert into dashboard
@@ -3337,8 +3335,8 @@ def cron_dash_node_near_maintenance_date():
                on duplicate key update
                  dash_updated=now()
           """
-    db.commit()
     db.executesql(sql)
+    db.commit()
 
 def cron_dash_node_without_maintenance_date():
     # do not alert for nodes under warranty
@@ -3704,94 +3702,12 @@ def cron_dash_action_errors_cleanup():
 #
 #   Used by xmlrpc processors for event based dashboard alerts
 #
-def update_dash_node_beyond_maintenance_end(node_id):
-    sql = """delete from dashboard
-               where
-                 node_id in (
-                   select node_id
-                   from nodes
-                   where
-                     node_id="%(node_id)s" and
-                     maintenance_end is not NULL and
-                     maintenance_end != "0000-00-00 00:00:00" and
-                     maintenance_end < now()
-                 ) and
-                 dash_type = "node maintenance expired"
-          """%dict(node_id=node_id)
-    rows = db.executesql(sql)
-    db.commit()
-    dashboard_events()
-
-def update_dash_node_near_maintenance_end(node_id):
-    sql = """delete from dashboard
-               where
-                 node_id in (
-                   select node_id
-                   from nodes
-                   where
-                     node_id="%(node_id)s" and
-                     maintenance_end is not NULL and
-                     maintenance_end != "0000-00-00 00:00:00" and
-                     maintenance_end > now() and
-                     maintenance_end < date_sub(now(), interval 30 day)
-                 ) and
-                 dash_type = "node maintenance expired"
-          """%dict(node_id=node_id)
-    rows = db.executesql(sql)
-    db.commit()
-    dashboard_events()
-
-def update_dash_node_without_asset(node_id):
-    sql = """delete from dashboard
-               where
-                 node_id in (
-                   select node_id
-                   from nodes
-                   where
-                     node_id="%(node_id)s"
-                 ) and
-                 dash_type = "node without asset information"
-          """%dict(node_id=node_id)
-    rows = db.executesql(sql)
-    db.commit()
-    dashboard_events()
-
-def update_dash_node_without_maintenance_end(node_id):
-    sql = """delete from dashboard
-               where
-                 node_id in (
-                   select node_id
-                   from nodes
-                   where
-                     node_id="%(node_id)s" and
-                     ((maintenance_end != "0000-00-00 00:00:00" and
-                       maintenance_end is not NULL) or
-                       model like "%%virt%%" or
-                       model like "%%Not Specified%%" or
-                       model like "%%KVM%%")
-                 ) and
-                 dash_type = "node without maintenance end date"
-          """%dict(node_id=node_id)
-    rows = db.executesql(sql)
-    db.commit()
-    dashboard_events()
-
 def update_dash_service_not_updated(svc_id):
     sql = """delete from dashboard
                where
                  svc_id = "%(svc_id)s" and
                  dash_type = "service configuration not updated"
           """%dict(svc_id=svc_id)
-    rows = db.executesql(sql)
-    db.commit()
-    dashboard_events()
-
-def update_dash_node_not_updated(node_id):
-    sql = """delete from dashboard
-               where
-                 node_id = "%(node_id)s" and
-                 dash_type = "node information not updated"
-          """%dict(node_id=node_id)
     rows = db.executesql(sql)
     db.commit()
     dashboard_events()
