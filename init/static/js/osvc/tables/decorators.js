@@ -494,11 +494,10 @@ function cell_decorator_chk_instance(e, line) {
 
 function cell_decorator_chk_high(e, line) {
 	var high = $.data(e[0], "v")
-	var v = $.data(line.children("[col=chk_value]")[0], "v")
+	var err = $.data(line.children("[col=chk_err]")[0], "v")
 	var cl = []
-	v = parseInt(v)
-	high = parseInt(high)
-	if (v > high) {
+	err = parseInt(err)
+	if (err == 2) {
 		cl.push("highlight")
 	}
 	e.html("<span class='"+cl.join(" ")+"'>"+high+"</span>")
@@ -506,11 +505,10 @@ function cell_decorator_chk_high(e, line) {
 
 function cell_decorator_chk_low(e, line) {
 	var low = $.data(e[0], "v")
-	var v = $.data(line.children("[col=chk_value]")[0], "v")
+	var err = $.data(line.children("[col=chk_err]")[0], "v")
 	var cl = []
-	v = parseInt(v)
-	low = parseInt(low)
-	if (v < low) {
+	err = parseInt(err)
+	if (err == 1) {
 		cl.push("highlight")
 	}
 	e.html("<span class='"+cl.join(" ")+"'>"+low+"</span>")
