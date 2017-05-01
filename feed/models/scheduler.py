@@ -2071,10 +2071,10 @@ def update_save_checks():
     # fs known to have fs_u checks but not in saves index
     print "== not saved", datetime.datetime.now()
     sql = """
-           insert into checks_live (chk_nodename, chk_svcname, chk_type, chk_updated, chk_value, chk_created, chk_instance)
+           insert into checks_live (node_id, svc_id, chk_type, chk_updated, chk_value, chk_created, chk_instance)
              select
-               t.chk_nodename as chk_nodename,
-               t.chk_svcname as chk_svcname,
+               t.node_id as node_id,
+               t.svc_id as svc_id,
                "save",
                now(),
                1000000 as chk_value,
@@ -2089,8 +2089,8 @@ def update_save_checks():
                  chk_instance not in ("/run", "/dev/shm", "/tmp", "/var/lib/xenstored", "/var/adm/crash", "/var/adm/ras/livedump")
                ) t
                left join saves_last on
-                 t.chk_nodename = saves_last.save_nodename and
-                 (t.chk_svcname = saves_last.save_svcname or saves_last.save_svcname = "" or t.chk_svcname = "") and
+                 t.node_id = saves_last.node_id and
+                 (t.svc_id = saves_last.svc_id or saves_last.svc_id = "" or t.svc_id = "") and
                  t.chk_instance = saves_last.save_name
              where
                saves_last.save_name is null
@@ -2103,10 +2103,10 @@ def update_save_checks():
 
     print "== saved", datetime.datetime.now()
     sql = """
-           insert into checks_live (chk_nodename, chk_svcname, chk_type, chk_updated, chk_value, chk_created, chk_instance)
+           insert into checks_live (node_id, svc_id, chk_type, chk_updated, chk_value, chk_created, chk_instance)
              select
-               saves_last.save_nodename as chk_nodename,
-               saves_last.save_svcname as chk_svcname,
+               saves_last.node_id as node_id,
+               saves_last.svc_id as svc_id,
                "save",
                now(),
                datediff(now(), saves_last.save_date) as chk_value,
@@ -2146,20 +2146,20 @@ def update_save_checks():
                select t.* from (
                  select
                    count(id) as n,
-                   chk_svcname,
+                   svc_id,
                    chk_instance,
                    min(chk_value) as chk_value
                  from checks_live
                  where
                    chk_type="save"
-                 group by chk_svcname,chk_instance
+                 group by svc_id, chk_instance
                ) t
                join services s on
                  t.svc_id = s.svc_id and
                  s.svc_cluster_type="failover"
                where t.n>1
              ) u on
-               checks_live.chk_svcname=u.chk_svcname and
+               checks_live.svc_id=u.svc_id and
                checks_live.chk_instance=u.chk_instance and
                checks_live.chk_value=u.chk_value and
                checks_live.chk_type="save"
@@ -2173,15 +2173,15 @@ def update_save_checks():
              where
                chk_type="save" and
                chk_updated < "%(now)s" and
-               concat(chk_svcname, chk_instance) in (
-                 select concat(t.chk_svcname, t.chk_instance) from (
+               concat(svc_id, chk_instance) in (
+                 select concat(t.svc_id, t.chk_instance) from (
                  select
-                   chk_svcname,
+                   svc_id,
                    chk_instance
                  from checks_live
                  where
                    chk_type="save"
-                 group by chk_svcname,chk_instance
+                 group by svc_id, chk_instance
                  having count(id)>1
                ) t
                join services s on
