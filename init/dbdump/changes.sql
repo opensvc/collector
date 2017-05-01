@@ -6418,4 +6418,11 @@ CREATE TABLE `metric_team_publication` (
   KEY `idx2` (`group_id`)
 );
 
+alter table checks_live modify column chk_value bigint default NULL;
+alter table checks_live modify column chk_low bigint default NULL;
+alter table checks_live modify column chk_high bigint default NULL;
+alter table checks_settings modify column chk_low bigint default NULL;
+alter table checks_settings modify column chk_high bigint default NULL;
+alter table checks_defaults modify column chk_low bigint default NULL;
+alter table checks_defaults modify column chk_high bigint default NULL;
 
