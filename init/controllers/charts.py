@@ -100,6 +100,13 @@ def ajax_metrics_admin():
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
 
+    if len(request.args) == 1 and request.args[0] == 'csv':
+        t.csv_q = q
+        t.csv_orderby = o
+        return t.csv()
+    if len(request.args) == 1 and request.args[0] == 'commonality':
+        t.csv_q = q
+        return t.do_commonality()
     if len(request.args) == 1 and request.args[0] == 'data':
         n = db(q).count()
         limitby = (t.pager_start,t.pager_end)
@@ -174,6 +181,13 @@ def ajax_charts_admin():
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
 
+    if len(request.args) == 1 and request.args[0] == 'csv':
+        t.csv_q = q
+        t.csv_orderby = o
+        return t.csv()
+    if len(request.args) == 1 and request.args[0] == 'commonality':
+        t.csv_q = q
+        return t.do_commonality()
     if len(request.args) == 1 and request.args[0] == 'data':
         n = db(q).count()
         limitby = (t.pager_start,t.pager_end)
@@ -249,6 +263,13 @@ def ajax_reports_admin():
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
 
+    if len(request.args) == 1 and request.args[0] == 'csv':
+        t.csv_q = q
+        t.csv_orderby = o
+        return t.csv()
+    if len(request.args) == 1 and request.args[0] == 'commonality':
+        t.csv_q = q
+        return t.do_commonality()
     if len(request.args) == 1 and request.args[0] == 'data':
         n = db(q).count()
         limitby = (t.pager_start,t.pager_end)
