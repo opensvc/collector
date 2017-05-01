@@ -605,7 +605,6 @@ function table_init(opts) {
 
 		d.attr("id", t.id)
 		t.div = d
-		t.page = t.options.pager.page
 		table.attr("id", "table_"+t.id)
 		table_scroll_zone.append(table_div)
 		table_div.append(table)
@@ -671,8 +670,8 @@ function table_init(opts) {
 	t.prepare_request_data = function() {
 		var data = t.parent_tables_data()
 		data.table_id = t.id
-		data.perpage = osvc.user_prefs.data.tables[t.id].perpage
-		data.page = t.pager.page
+		data.limit = osvc.user_prefs.data.tables[t.id].perpage
+		data.offset = t.options.pager.offset
 		for (c in t.colprops) {
 			var fid = t.id+"_f_"+c
 			var current = t.colprops[c].current_filter
@@ -1121,8 +1120,11 @@ function table_init(opts) {
 		}
 	}
 
-	t.page_submit = function(v){
-		t.page = v
+	t.page_submit = function(offset){
+		if (offset < 0) {
+			offset = 0
+		}
+		t.options.pager.offset = offset
 		t.refresh()
 		t.refresh_column_filters_in_place()
 	}
@@ -1357,8 +1359,8 @@ function table_init(opts) {
 
 		try {
 			var data = $.parseJSON(msg)
-			var pager = data['pager']
-			var lines = data['table_lines']
+			var lines = data['data']
+			t.options.pager = data['meta']
 		} catch(e) {
 			t.div.html(msg)
 			return
@@ -1433,7 +1435,7 @@ function table_init(opts) {
 		old_line = null
 		old_lines = null
 
-		t.pager(pager)
+		t.pager()
 		t.add_filtered_to_visible_columns()
 		t.bind_checkboxes()
 		t.bind_filter_selector()
@@ -1496,8 +1498,8 @@ function table_init(opts) {
 
 				try {
 					var data = $.parseJSON(msg)
-					var pager = data['pager']
-					var lines = data['table_lines']
+					var lines = data['data']
+					t.options.pager = data['meta']
 				} catch(e) {}
 
 				msg = t.data_to_lines(lines)
@@ -1602,7 +1604,7 @@ function table_init(opts) {
 		var data = t.prepare_request_data()
 
 		data.visible_columns = t.get_ordered_visible_columns().join(',')
-		data["page"] = t.page
+		data["offset"] = t.options.pager.offset
 		$.ajax({
 			type: "POST",
 			url: t.options.ajax_url+"/data",
@@ -2666,14 +2668,11 @@ function table_init(opts) {
 	//
 	// table tool: pager
 	//
-	t.pager = function(options) {
+	t.pager = function() {
 		if (!t.e_pager) {
 			return
 		}
 		t.e_pager.show()
-		if (options) {
-			t.options.pager = options
-		}
 
 		if (t.e_wsswitch && t.e_wsswitch.find("input").is(":checked")) {
 			var wsswitch = true
@@ -2681,11 +2680,10 @@ function table_init(opts) {
 			var wsswitch = false
 		}
 
-		var p_page = parseInt(t.options.pager.page)
-		var p_start = parseInt(t.options.pager.start)
-		var p_end = parseInt(t.options.pager.end)
+		var p_start = parseInt(t.options.pager.offset)
+		var p_end = parseInt(t.options.pager.offset)+parseInt(t.options.pager.count)
 		var p_total = parseInt(t.options.pager.total)
-		var p_perpage = parseInt(t.options.pager.perpage)
+		var p_perpage = parseInt(osvc.user_prefs.data.tables[t.id].perpage)
 
 		if (t.live_enabled()) {
 			if (p_perpage > t.options.live_max_perpage) {
@@ -2709,7 +2707,7 @@ function table_init(opts) {
 			t.e_pager.text("No records found matching filters")
 		} else {
 			// left arrow
-			if (p_page > 1) {
+			if (p_start > 0) {
 				var left = $("<span name='pager_left'></span>")
 				left.text("<< ")
 				t.e_pager.append(left)
@@ -2721,7 +2719,7 @@ function table_init(opts) {
 			t.e_pager.append(center)
 
 			// right arrow
-			if ((p_total < 0) || ((p_page * p_perpage) < p_total)) {
+			if ((p_total < 0) || (p_end < p_total)) {
 				var right = $("<span name='pager_right'></span>")
 				right.text(" >>")
 				t.e_pager.append(right)
@@ -2733,11 +2731,11 @@ function table_init(opts) {
 		})
 		t.e_pager.find("[name=pager_right]").click(function(event){
 			event.stopPropagation()
-			t.page_submit(p_page+1)
+			t.page_submit(p_start+p_perpage)
 		})
 		t.e_pager.find("[name=pager_left]").click(function(event){
 			event.stopPropagation()
-			t.page_submit(p_page-1)
+			t.page_submit(p_start-p_perpage)
 		})
 
 		// resync the sticky toolbar
@@ -2752,7 +2750,7 @@ function table_init(opts) {
 		var e = $("<div name='perpage' class='p-3'></div>")
 		var title = $("<div>"+i18n.t("table.lines_per_page")+"</div>")
 		var selector = $("<div class='action_menu_selector'></div>")
-		var p_perpage = parseInt(t.options.pager.perpage)
+		var p_perpage = parseInt(osvc.user_prefs.data.tables[t.id].perpage)
 
 		if (t.live_enabled()) {
 			var l = [20, 50]
@@ -2776,7 +2774,6 @@ function table_init(opts) {
 			var new_perpage = parseInt($(this).text())
 			osvc.user_prefs.data.tables[t.id].perpage = new_perpage
 			t.save_prefs()
-			t.page = Math.floor(((t.page - 1) * p_perpage) / new_perpage)+1
 			t.refresh()
 		})
 		e.append(title)

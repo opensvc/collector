@@ -62,8 +62,6 @@ class HtmlTable(object):
         self.id = id
         self.innerhtml = innerhtml
         self.line_count = 0
-        self.id_perpage = 'perpage'
-        self.id_page = 'page'
         self.upc_table = self.id
         self.last = None
         self.object_list = []
@@ -95,30 +93,26 @@ class HtmlTable(object):
             self.overlimit = ""
         if self.pageable:
             try:
-                self.perpage = int(request.vars[self.id_perpage])
+                self.limit = int(request.vars["limit"])
             except:
-                self.perpage = 20
+                self.limit = 20
+            try:
+                self.offset = int(request.vars["offset"])
+            except:
+                self.offset = 0
 
-            if self.id_page in request.vars and request.vars[self.id_page] != "undefined":
-                self.page = int(request.vars[self.id_page])
-            else:
-                self.page = 1
-
-            if self.page == 0:
-                self.perpage = 0
+            if self.limit == 0:
                 self.pager_start = 0
                 self.pager_end = n
             else:
-                self.pager_start = (self.page-1) * self.perpage
+                self.pager_start = self.offset
                 if self.totalrecs > 0 and self.pager_start > self.totalrecs:
                     self.pager_start = 0
-                self.pager_end = self.pager_start + self.perpage
+                self.pager_end = self.offset + self.limit
         else:
-            self.perpage = 0
-            self.page = 0
+            self.limit = 0
             self.pager_start = 0
             self.pager_end = n
-        self.page_len = self.pager_end - self.pager_start
 
     def repr_val(self, s):
         if s is None or s == "":
@@ -148,11 +142,9 @@ class HtmlTable(object):
 
     def pager_info(self):
         d = {
-          'perpage': self.perpage,
           'total': self.totalrecs,
-          'start': self.pager_start,
-          'end': self.pager_end,
-          'page': self.page,
+          'offset': self.pager_start,
+          'count': self.pager_end - self.pager_start,
         }
         return d
 
@@ -182,12 +174,11 @@ class HtmlTable(object):
 
     def table_lines_data(self, n=0, html=False):
         self.setup_pager(n)
-        fmt = "json"
         formatter = self._table_lines_data
+        pager = self.pager_info()
         d = {
-          'format': fmt,
-          'pager': self.pager_info(),
-          'table_lines': formatter(),
+          'meta': pager,
+          'data': formatter(),
         }
         return json.dumps(d, use_decimal=True)
 
