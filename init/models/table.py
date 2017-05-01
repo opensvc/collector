@@ -152,7 +152,7 @@ class HtmlTable(object):
         l = []
         for line in self.object_list:
             _l = []
-            for c in request.vars.visible_columns.split(","):
+            for c in request.vars.props.split(","):
                 v = self.colprops[c].get(line)
                 if type(v) == datetime.datetime:
                     try:
@@ -281,7 +281,7 @@ class HtmlTable(object):
         return json.dumps(top, use_decimal=True)
 
     def get_visible_columns(self, fmt="dal", db=db):
-        visible_columns = request.vars.visible_columns.split(',')
+        visible_columns = request.vars.props.split(',')
         sorted_visible_columns = []
         for c in visible_columns:
             if c not in self.cols or c not in self.colprops:
