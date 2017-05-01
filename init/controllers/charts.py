@@ -24,8 +24,6 @@ class table_metrics(HtmlTable):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
-        self.span = ['id']
-        self.keys = ['id']
         self.cols = ['id',
                      'metric_name',
                      'metric_sql',
@@ -130,8 +128,6 @@ class table_charts(HtmlTable):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
-        self.span = ['id']
-        self.keys = ['id']
         self.cols = ['id',
                      'chart_name',
                      'chart_yaml']
@@ -207,8 +203,6 @@ class table_reports_admin(HtmlTable):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
-        self.span = ['id']
-        self.keys = ['id']
         self.cols = ['id',
                      'report_name',
                      'report_yaml']

@@ -99,8 +99,6 @@ class table_actions(HtmlTable):
                      table='v_action_queue',
                     ),
         }
-        self.keys = ["id"]
-        self.span = ["id"]
         self.ajax_col_values = 'ajax_actions_col_values'
 
 

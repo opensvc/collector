@@ -62,8 +62,6 @@ class table_safe(HtmlTable):
           ),
         }
         self.ajax_col_values = 'ajax_safe_col_values'
-        self.span = ["id"]
-        self.keys = ["id"]
 
 @auth.requires_login()
 def ajax_safe_col_values():

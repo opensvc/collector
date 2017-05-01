@@ -5,8 +5,6 @@ class table_nodes(HtmlTable):
         HtmlTable.__init__(self, id, func, innerhtml)
         self.cols = ['node_id', 'nodename']+nodes_cols
         self.colprops = nodes_colprops
-        self.span = ["node_id"]
-        self.keys = ["node_id"]
         self.colprops.update({
             'node_id': HtmlTableColumn(
                      field='node_id',
@@ -140,8 +138,6 @@ class table_uids(HtmlTable):
         self.cols = ['user_id',
                      'user_id_count',
                      'user_name']
-        self.keys = ["user_id"]
-        self.span = ["user_id"]
         self.colprops = {
             'user_id': HtmlTableColumn(
                      field='user_id',
@@ -184,8 +180,6 @@ class table_gids(HtmlTable):
         self.cols = ['group_id',
                      'group_id_count',
                      'group_name']
-        self.keys = ["group_id"]
-        self.span = ["group_id"]
         self.colprops = {
             'group_id': HtmlTableColumn(
                      field='group_id',

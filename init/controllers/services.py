@@ -30,8 +30,6 @@ class table_services(HtmlTable):
             self.colprops[col].table = "services"
         self.colprops["updated"] = self.colprops["svc_updated"]
         self.ajax_col_values = 'ajax_services_col_values'
-        self.span = ["svc_id"]
-        self.keys = ["svc_id"]
 
 
 @auth.requires_login()

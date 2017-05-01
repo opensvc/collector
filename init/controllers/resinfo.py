@@ -113,7 +113,6 @@ class table_resinfo(HtmlTable):
                     ),
         }
         self.ajax_col_values = 'ajax_resinfo_col_values'
-        self.span = ['svc_id', 'node_id', 'rid']
 
 @auth.requires_login()
 def ajax_resinfo_col_values():

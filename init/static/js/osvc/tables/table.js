@@ -233,6 +233,8 @@ function table_init(opts) {
 		"extrarow_class": "",
 		"checkboxes": true,
 		"span": ["id"],
+		"spankeys": ["id"],
+		"keys": ["id"],
 		"force_cols": [],
 		"hide_cols": [],
 		"columns": [],
@@ -1277,11 +1279,38 @@ function table_init(opts) {
 		})
 	}
 
+	t.line_cksum = function(line, sum) {
+		if (sum == "keys") {
+			var keys = t.options.keys
+		} else if (sum == "span") {
+			var keys = t.options.spankeys
+		}
+		if (!keys) {
+			return ""
+		}
+		var colindex = []
+		var cols = t.get_ordered_visible_columns()
+		for (var i=0; i<keys.length; i++) {
+			index = cols.indexOf(keys[i])
+			if (index < 0) {
+				continue
+			}
+			colindex.push(index)
+		}
+		var s = ""
+		for (var i=0; i<colindex.length; i++) {
+			s += line[colindex[i]]
+		}
+		return md5(s)
+	}
+
 	t.data_to_lines = function (data) {
 		var lines = $("<span></span>")
 		for (var i=0; i<data.length; i++) {
-			var line = $("<tr class='tl h' spansum='"+data[i]['spansum']+"' cksum='"+data[i]['cksum']+"'></tr>")
-			var ckid = t.id + "_ckid_" + data[i]['cksum']
+			var cksum = t.line_cksum(data[i], "keys")
+			var spansum = t.line_cksum(data[i], "span")
+			var line = $("<tr class='tl h' spansum='"+spansum+"' cksum='"+cksum+"'></tr>")
+			var ckid = t.id + "_ckid_" + cksum
 			if (t.options.checkboxes) {
 				var cb = $("<input class='ocb' value='"+data[i]['checked']+"' type='checkbox' id='"+ckid+"' name='"+t.id+"_ck'>")
 				var label = $("<label for='"+ckid+"'></label>")
@@ -1299,7 +1328,7 @@ function table_init(opts) {
 			var cols = t.get_ordered_visible_columns()
 			for (var j=0; j<cols.length; j++) {
 				var k = cols[j]
-				var v = data[i]['cells'][j]
+				var v = data[i][j]
 				var cell = t.cell_fmt(k, v)
 				line.append(cell)
 			}
@@ -3584,7 +3613,7 @@ function table_action_menu_get_cols_data_all(t, e, scope, selector) {
 					var sig = ""
 					for (var j=0; j<cols.length; j++) {
 						col = cols[j]
-						var val = lines[i]["cells"][j]
+						var val = lines[i][j]
 						d[reverse_col[col]] = val
 						sig += "-"+val
 					}

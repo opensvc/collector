@@ -9,7 +9,6 @@ class table_obs(HtmlTable):
                      'obs_name',
                      'obs_warn_date',
                      'obs_alert_date']
-        self.keys = ['id']
         self.colprops = {
             'obs_type': HtmlTableColumn(
                      table='v_obsolescence',

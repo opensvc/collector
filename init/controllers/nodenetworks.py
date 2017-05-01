@@ -156,8 +156,6 @@ class table_nodenetworks(HtmlTable):
         for c in self.cols:
             self.colprops[c].table = 'v_nodenetworks'
         self.ajax_col_values = 'ajax_nodenetworks_col_values'
-        self.keys = ["node_id", "addr"]
-        self.span = ["node_id"]
         self.csv_limit = 30000
 
 @auth.requires_login()

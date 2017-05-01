@@ -17,8 +17,6 @@ class table_workflows(HtmlTable):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
-        self.keys = ['form_head_id']
-        self.span = ['form_head_id']
         self.cols = ['form_head_id',
                      'form_name',
                      'last_form_id',
@@ -132,8 +130,6 @@ class table_forms(HtmlTable):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
-        self.keys = ['id']
-        self.span = ['id']
         self.cols = ['id',
                      'form_name',
                      'form_type',

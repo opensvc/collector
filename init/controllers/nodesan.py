@@ -74,8 +74,6 @@ class table_nodesan(HtmlTable):
                       'array_level',
                      ]
         self.colprops = nodes_colprops
-        self.span = ["nodename"]
-        self.keys = ['hba_id', 'tgt_id']
         self.colprops.update({
             'node_updated': HtmlTableColumn(
                      field='node_updated',

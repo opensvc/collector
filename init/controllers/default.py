@@ -183,10 +183,6 @@ class table_svcmon(HtmlTable):
         self.colprops['svc_updated'].field = 'svc_updated'
         for i in self.cols:
             self.colprops[i].table = 'v_svcmon'
-        self.keys = ["node_id", "svc_id", "mon_vmname"]
-        self.span = ['svc_id']
-        self.span.append('app_domain')
-        self.span.append('app_team_ops')
         self.ajax_col_values = 'ajax_svcmon_col_values'
 
 @auth.requires_login()

@@ -95,8 +95,6 @@ class table_comp_rulesets_services(HtmlTable):
                     )
         for c in self.cols:
             self.colprops[c].table = 'v_comp_services'
-        self.span = ['svc_id']
-        self.keys = ['svc_id', 'ruleset_id', 'encap']
         self.ajax_col_values = 'ajax_comp_rulesets_services_col_values'
 
 
@@ -118,8 +116,6 @@ class table_comp_rulesets_nodes(HtmlTable):
                     )
         for c in self.cols:
             self.colprops[c].table = 'v_comp_nodes'
-        self.span = ['node_id']
-        self.keys = ['node_id', 'ruleset_id']
         self.ajax_col_values = 'ajax_comp_rulesets_nodes_col_values'
 
 
@@ -299,10 +295,6 @@ class table_comp_rulesets(HtmlTable):
                      table='v_comp_rulesets',
                     ),
         }
-        self.keys = ['ruleset_id', 'encap_rset_id']
-        self.span = ['ruleset_name', 'ruleset_type', 'ruleset_public',
-                     'fset_name', 'teams_responsible', 'teams_publication']
-        self.ajax_col_values = 'ajax_comp_rulesets_col_values'
 
 @auth.requires_login()
 def ajax_comp_rulesets_col_values():
@@ -390,7 +382,6 @@ class table_comp_moduleset(HtmlTable):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
-        self.keys = ['id']
         self.cols = ['id',
                      'modset_id',
                      'modset_name',
@@ -439,7 +430,6 @@ class table_comp_moduleset(HtmlTable):
                     ),
         }
         self.ajax_col_values = ajax_comp_moduleset_col_values
-        self.span = ['modset_name']
 
 @auth.requires_login()
 def ajax_comp_moduleset_col_values():
@@ -515,8 +505,6 @@ class table_comp_modulesets_services(HtmlTable):
                     )
         for c in self.cols:
             self.colprops[c].table = 'v_comp_services'
-        self.span = ['svc_id']
-        self.keys = ['svc_id', 'modset_id', 'encap']
         self.ajax_col_values = 'ajax_comp_modulesets_services_col_values'
 
 class table_comp_modulesets_nodes(HtmlTable):
@@ -538,8 +526,6 @@ class table_comp_modulesets_nodes(HtmlTable):
                     )
         for c in self.cols:
             self.colprops[c].table = 'v_comp_nodes'
-        self.span = ['node_id']
-        self.keys = ['nodename', 'modset_id']
         self.ajax_col_values = 'ajax_comp_modulesets_nodes_col_values'
 
 @auth.requires_login()
@@ -663,8 +649,6 @@ class table_comp_mod_status(HtmlTable):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
-        self.keys = ['mod_name']
-        self.span = ['mod_name']
         self.cols = ['mod_name', 'total', 'ok', 'nok', 'na', 'obs', 'pct',
                      'mod_log']
         self.colprops = {
@@ -707,8 +691,6 @@ class table_comp_svc_status(HtmlTable):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
-        self.keys = ['svc_id']
-        self.span = ['svc_id']
         self.cols = ['svc_id', 'svcname', 'total', 'ok', 'nok', 'na', 'obs', 'pct', "svc_log"]
         self.colprops = {
             'svc_id': HtmlTableColumn(
@@ -753,8 +735,6 @@ class table_comp_node_status(HtmlTable):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
-        self.keys = ['node_id', 'nodename']
-        self.span = ['node_id']
         self.cols = ['node_id', 'nodename', 'total', 'ok', 'nok', 'na', 'obs', 'pct', "node_log"]
         self.colprops = {
             'node_id': HtmlTableColumn(
@@ -891,8 +871,6 @@ class table_comp_status(HtmlTable):
                     ),
         })
         self.ajax_col_values = 'ajax_comp_status_col_values'
-        self.keys = ["node_id", "svc_id", "run_module"]
-        self.span = ["node_id", "svc_id", "run_module"]
 
 @auth.requires_login()
 def fix_module_on_node():
@@ -1622,8 +1600,6 @@ class table_comp_log(table_comp_status):
             if 'run_' in c or c in ('rset_md5', 'node_id', 'svc_id', 'id'):
                 self.colprops[c].table = 'comp_log'
         self.ajax_col_values = 'ajax_comp_log_col_values'
-        self.keys = ["run_date", "node_id", "svc_id", "run_module", "run_action"]
-        self.span = ["run_date", "node_id", "svc_id", "run_module", "run_action"]
 
 @auth.requires_login()
 def ajax_comp_log():

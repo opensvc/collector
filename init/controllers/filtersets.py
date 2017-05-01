@@ -94,8 +94,6 @@ class table_filtersets(HtmlTable):
         self.colprops.update(filters_colprops)
         for c in self.colprops:
             self.colprops[c].table = 'v_gen_filtersets'
-        self.span = ['fset_name', 'fset_stats']
-        self.keys = ['fset_id', 'f_id', 'encap_fset_id']
         self.ajax_col_values = ajax_filtersets_col_values
 
 @auth.requires_login()
@@ -145,8 +143,6 @@ class table_filters(HtmlTable):
         if id is None and 'tableid' in request.vars:
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
-        self.keys = ["id"]
-        self.span = ["f_table", "f_field"]
         self.cols = ["id"] + filters_cols
         self.colprops = filters_colprops
         self.ajax_col_values = 'ajax_filters_col_values'

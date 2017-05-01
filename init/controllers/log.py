@@ -90,8 +90,6 @@ class table_log(HtmlTable):
                      field='log_email_sent',
                     ),
         }
-        self.keys = ["id"]
-        self.span = ["id"]
         self.ajax_col_values = 'ajax_log_col_values'
 
 @auth.requires_login()

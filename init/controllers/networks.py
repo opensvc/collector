@@ -8,8 +8,6 @@ class table_networks(HtmlTable):
         self.cols = networks_cols
         self.colprops = networks_colprops
 
-        self.span = ["id"]
-        self.keys = ["id"]
         self.csv_limit = 30000
 
         for c in self.cols:
@@ -166,8 +164,6 @@ class table_network_segments(HtmlTable):
             ),
         }
 
-        self.span = ["seg_id"]
-        self.keys = ["seg_id"]
         self.csv_limit = 30000
 
         self.ajax_col_values = 'ajax_network_segments_col_values'

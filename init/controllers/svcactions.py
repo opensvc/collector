@@ -102,9 +102,6 @@ class table_actions(HtmlTable):
         self.cols += services_cols
         self.cols += ncols
         self.ajax_col_values = 'ajax_actions_col_values'
-        self.span = ['pid']
-        self.keys = ["id"]
-        self.force_cols = ['node_id', 'nodename', 'svc_id', 'svcname', 'os_name', 'action']
 
 @auth.requires_login()
 def ajax_actions_col_values():

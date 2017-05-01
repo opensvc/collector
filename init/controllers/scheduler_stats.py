@@ -46,8 +46,6 @@ class table_scheduler_tasks(HtmlTable):
             ),
         }
         self.ajax_col_values = 'ajax_scheduler_tasks_col_values'
-        self.span = ["id"]
-        self.keys = ["id"]
 
 @auth.requires_login()
 def ajax_scheduler_tasks_col_values():

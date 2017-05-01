@@ -62,8 +62,6 @@ class table_sanswitches(HtmlTable):
         for c in self.cols:
             self.colprops[c].table = 'v_switches'
         self.ajax_col_values = 'ajax_sanswitches_col_values'
-        self.span = ["sw_name", "sw_index"]
-        self.keys = ["sw_name", "sw_index"]
 
 @auth.requires_login()
 def ajax_sanswitches_col_values():

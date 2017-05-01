@@ -104,8 +104,6 @@ class table_resmon(HtmlTable):
                     ),
         })
         self.ajax_col_values = 'ajax_resmon_col_values'
-        self.span = ['node_id', 'svc_id']
-        self.keys = ['node_id', 'svc_id', 'vmname', 'rid']
 
 @auth.requires_login()
 def ajax_resmon_col_values():

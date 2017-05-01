@@ -166,8 +166,6 @@ class table_dashboard(HtmlTable):
                      field='id',
                     ),
         }
-        self.span = ["id"]
-        self.keys = ["node_id", "dash_type", "svc_id", "dash_md5"]
         self.order = ["~dash_severity", "dash_type", "nodename", "svcname"]
 
 @auth.requires_login()

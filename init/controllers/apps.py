@@ -10,8 +10,6 @@ class table_apps(HtmlTable):
                      'publications',
                      'responsibles',
                     ]
-        self.keys = ['id']
-        self.span = ['id']
         self.colprops = {
             'id': HtmlTableColumn(
                      table='v_apps',

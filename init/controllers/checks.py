@@ -159,10 +159,6 @@ class table_checks(HtmlTable):
                      'chk_threshold_provider',
                      'chk_created',
                      'chk_updated']
-        self.keys = ['node_id',
-                     'svc_id',
-                     'chk_type',
-                     'chk_instance']
         self.colprops = {
             'svc_id': HtmlTableColumn(
                 field = 'svc_id',
@@ -234,7 +230,6 @@ class table_checks(HtmlTable):
         self.cols.insert(self.cols.index('app')+1, 'app_domain')
 
         self.ajax_col_values = 'ajax_checks_col_values'
-        self.span = ['node_id']
 
 @auth.requires_login()
 def ajax_checks_col_values():

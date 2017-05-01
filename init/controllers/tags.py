@@ -13,8 +13,6 @@ class table_tags(HtmlTable):
         self.colprops = tags_colprops
 
         self.ajax_col_values = 'ajax_tags_col_values'
-        self.span = ["tag_id"]
-        self.keys = ["tag_id"]
 
 @auth.requires_login()
 def ajax_tags_col_values():
@@ -109,9 +107,6 @@ class table_tagattach(HtmlTable):
                     ),
         }
         self.ajax_col_values = 'ajax_tagattach_col_values'
-        self.span = ["tag_id"]
-        self.force_cols = ["tag_id", "node_id", "svc_id"]
-        self.keys = ["tag_id", "node_id", "svc_id"]
 
 
 @auth.requires_login()

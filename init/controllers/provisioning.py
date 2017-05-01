@@ -11,8 +11,6 @@ class table_templates(HtmlTable):
                      'tpl_author',
                      'tpl_team_responsible',
                      'tpl_team_publication']
-        self.keys = ['id']
-        self.span = ['id']
         self.colprops = {
             'id': HtmlTableColumn(
                 field = 'id',

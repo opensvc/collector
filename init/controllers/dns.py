@@ -45,8 +45,6 @@ class table_dns_domains(HtmlTable):
                      field='account',
                     ),
         }
-        self.keys = ["id"]
-        self.span = ["id"]
         self.ajax_col_values = 'ajax_dns_domains_col_values'
 
 @auth.requires_login()
@@ -102,8 +100,6 @@ class table_dns_records(HtmlTable):
                      'ttl',
                      'prio',
                      'change_date']
-        self.keys = ["id"]
-        self.span = ["id"]
         self.colprops = {
             'id': HtmlTableColumn(
                      table='records',

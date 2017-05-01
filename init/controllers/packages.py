@@ -18,8 +18,6 @@ class table_packages(HtmlTable):
         self.colprops = nodes_colprops
         self.colprops.update(packages_colprops)
         self.ajax_col_values = 'ajax_packages_col_values'
-        self.span = ["id"]
-        self.keys = ["id"]
 
 @auth.requires_login()
 def ajax_packages_col_values():

@@ -54,12 +54,6 @@ class table_saves(HtmlTable):
                       'save_volume',
                       'save_date',
                       'save_retention']
-        self.keys =  ['id']
-        self.span = nodes_cols + [
-                      'save_server',
-                      'save_app',
-                      'node_id',
-                      'svc_id']
         self.child_tables = ["charts"]
 
         self.cols += nodes_cols
@@ -411,8 +405,6 @@ class table_saves_charts(HtmlTable):
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
         self.cols = ['chart']
-        self.keys = ['chart']
-        self.span = ['chart']
         self.colprops.update({
             'chart': HtmlTableColumn(
                      field='chart',

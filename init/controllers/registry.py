@@ -360,8 +360,6 @@ class table_registries(HtmlTable):
                     ),
         }
         self.ajax_col_values = 'ajax_registries_col_values'
-        self.span = ["repository_id"]
-        self.keys = ["repository_id"]
 
 @auth.requires_login()
 def ajax_registries_col_values():

@@ -44,8 +44,6 @@ class table_patches(HtmlTable):
         })
         self.colprops['nodename'].display = True
         self.ajax_col_values = 'ajax_patches_col_values'
-        self.span = ["id"]
-        self.keys = ["id"]
 
 @auth.requires_login()
 def ajax_patches_col_values():

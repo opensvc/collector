@@ -28,12 +28,6 @@ class table_quota(HtmlTable):
                      'app',
                      'quota',
                      'quota_used']
-        self.keys = ['array_name',
-                     'dg_name',
-                     'app']
-        self.span = ['array_name',
-                     'dg_name',
-                     'app']
         self.colprops.update({
             'id': HtmlTableColumn(
                      table='v_disk_quota',
@@ -97,7 +91,6 @@ class table_quota(HtmlTable):
                     ),
         })
         self.ajax_col_values = 'ajax_quota_col_values'
-        self.keys = ["id"]
 
 def update_dg_reserved():
     sql = """select dg_id, sum(v_disk_quota.quota)
@@ -212,10 +205,6 @@ class table_disks(HtmlTable):
             _nodes_colprops[i].table = 'nodes'
         self.colprops.update(_nodes_colprops)
         self.ajax_col_values = 'ajax_disks_col_values'
-        self.force_cols = ['disk_id', 'node_id', 'nodename', 'os_name', 'svc_id', 'svcname']
-        self.keys = ['disk_id', 'disk_region', 'node_id', 'svc_id']
-        self.span = ['disk_id', 'disk_size', 'disk_alloc', 'disk_arrayid',
-                     'disk_devid', 'disk_name', 'disk_raid', 'disk_group', 'array_model']
 
 @auth.requires_login()
 def ajax_disks_col_values():
@@ -298,8 +287,6 @@ class table_disk_charts(HtmlTable):
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
         self.cols = ['chart']
-        self.keys = ['chart']
-        self.span = ['chart']
         self.colprops.update({
             'chart': HtmlTableColumn(
                      field='chart',

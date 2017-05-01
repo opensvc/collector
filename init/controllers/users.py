@@ -16,8 +16,6 @@ class table_users(HtmlTable):
                      'quota_app',
                      'quota_org_group',
                      'last']
-        self.keys = ['id']
-        self.span = ['id']
         self.colprops = {
             'id': HtmlTableColumn(
                      table='v_users',

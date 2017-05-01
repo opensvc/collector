@@ -1,5 +1,4 @@
 import re
-import hashlib
 import datetime
 import gluon.contrib.simplejson as json
 
@@ -73,13 +72,8 @@ class HtmlTable(object):
         self.cols = []
         self.colprops = {}
 
-        # column ids to use as keys to detect duplicate lines on
-        # websocket triggered updates.
-        self.keys = []
-
         # to be set be instanciers
         self.pageable = True
-        self.span = []
 
         # initialize the pager, to be re-executed by instanciers
         self.setup_pager()
@@ -165,15 +159,6 @@ class HtmlTable(object):
     def _table_lines_data(self):
         l = []
         for line in self.object_list:
-            if len(self.keys) > 0:
-                cksum = hashlib.md5()
-            else:
-                cksum = None
-            if len(self.span) > 0:
-                spansum = hashlib.md5()
-            else:
-                spansum = None
-
             _l = []
             for c in request.vars.visible_columns.split(","):
                 v = self.colprops[c].get(line)
@@ -192,15 +177,7 @@ class HtmlTable(object):
                 #elif type(v) in (str, unicode):
                 #    v = v.replace('"','').replace("'","")
                 _l.append(v)
-                if c in self.keys:
-                    cksum.update(str(v))
-                if c in self.span:
-                    spansum.update(str(v))
-            l.append({
-              'cksum': cksum.hexdigest() if cksum else '',
-              'spansum': spansum.hexdigest() if spansum else '',
-              'cells': _l,
-            })
+            l.append(_l)
         return l
 
     def table_lines_data(self, n=0, html=False):
