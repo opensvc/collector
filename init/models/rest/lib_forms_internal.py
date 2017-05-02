@@ -362,6 +362,70 @@ form_data_internal = [
             ]
         },
     }),
+    Storage({
+        "id": -5,
+        "form_name": "internal_add_default_thresholds",
+        "form_folder": "/internal",
+        "form_type": "generic",
+        "form_definition": {
+            "Vertical": True,
+            "Outputs": [
+                {
+                    "Type": "json",
+                    "Format": "dict",
+                    "Dest": "rest",
+                    "Function": "/checks/defaults",
+                    "Handler": "POST"
+                }
+            ],
+            "Inputs": [
+                {
+                    "Id": "chk_type",
+                    "Label": "Type",
+                    "LabelCss": "check16",
+                    "Type": "string",
+                    "Mandatory": True,
+                    "Function": "/checks/live",
+                    "Args": [
+                        "props = chk_type",
+                        "groupby = chk_type",
+                        "orderby = chk_type",
+                        "meta = 0",
+                        "limit = 0"
+                    ],
+                    "DisableAutoDefault": True
+                },
+                {
+                    "Id": "chk_inst",
+                    "Label": "Instance regex",
+                    "LabelCss": "check16",
+                    "Type": "string",
+                    "Mandatory": True
+                },
+                {
+                    "Id": "chk_prio",
+                    "Label": "Priority",
+                    "LabelCss": "fa-sort",
+                    "Type": "integer",
+                    "Constraint": "match [0-9]*"
+                },
+                {
+                    "Id": "chk_low",
+                    "Label": "Low threshold",
+                    "LabelCss": "fa-step-backward",
+                    "Type": "integer",
+                    "Constraint": "match [0-9]*"
+                },
+                {
+                    "Id": "chk_high",
+                    "Label": "High threshold",
+                    "LabelCss": "fa-step-forward",
+                    "Type": "integer",
+                    "Constraint": "match [0-9]*"
+                },
+            ]
+        }
+    }),
 ]
 
 def get_internal_form(form_id):
