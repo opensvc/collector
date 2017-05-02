@@ -166,11 +166,7 @@ class rest_post_tag(rest_post_handler):
 
     def handler(self, tag_id, **vars):
         check_privilege("TagManager")
-        try:
-            tag_id = int(tag_id)
-            q = db.tags.tag_id == tag_id
-        except:
-            q = db.tags.tag_name == tag_id
+        q = db.tags.tag_id == tag_id
         row = db(q).select().first()
         if row is None:
             raise Exception("tag %s not found" % tag_id)
