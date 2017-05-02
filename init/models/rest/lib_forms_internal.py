@@ -44,14 +44,14 @@ form_data_internal = [
                 {
                     "Id": "chk_low",
                     "Label": "Low threshold",
-                    "LabelCss": "check16",
+                    "LabelCss": "fa-step-backward",
                     "Type": "integer",
                     "Constraint": "match [0-9]*"
                 },
                 {
                     "Id": "chk_high",
                     "Label": "High threshold",
-                    "LabelCss": "check16",
+                    "LabelCss": "fa-step-forward",
                     "Type": "integer",
                     "Constraint": "match [0-9]*"
                 },
