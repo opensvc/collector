@@ -138,7 +138,8 @@ class HtmlTable(object):
                 h[s] = 1
             else:
                 h[s] += 1
-        return json.dumps(h, use_decimal=True)
+        response.headers['Content-Type'] = "application/json"
+        return json.dumps({"data": {c: h}}, use_decimal=True)
 
     def pager_info(self):
         d = {
@@ -180,6 +181,7 @@ class HtmlTable(object):
           'meta': pager,
           'data': formatter(),
         }
+        response.headers['Content-Type'] = "application/json"
         return json.dumps(d, use_decimal=True)
 
     def filter_key(self, f):
@@ -276,9 +278,10 @@ class HtmlTable(object):
             if pct == 0 or n == 1:
                 continue
             v = self.repr_val(v)
-            top.append((col, v, pct))
-        top.sort(lambda x, y: cmp(x[2], y[2]), reverse=True)
-        return json.dumps(top, use_decimal=True)
+            top.append({"prop": col, "value": v, "percent": pct})
+        top.sort(lambda x, y: cmp(x["percent"], y["percent"]), reverse=True)
+        response.headers['Content-Type'] = "application/json"
+        return json.dumps({"data": top}, use_decimal=True)
 
     def get_visible_columns(self, fmt="dal", db=db):
         visible_columns = request.vars.props.split(',')

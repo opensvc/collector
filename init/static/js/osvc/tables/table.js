@@ -667,21 +667,74 @@ function table_init(opts) {
 		return data
 	}
 
-	t.prepare_request_data = function() {
+	t.is_rest_url = function() {
+		if (t.options.ajax_url.match(/\/rest\//)) {
+			return true
+		}
+		return false
+	}
+
+	t.prepare_request_commonality_url = function() {
+		var url = t.options.ajax_url
+		if (!t.is_rest_url()) {
+			return t.options.ajax_url + "/commonality"
+		}
+		return t.options.ajax_url
+	}
+
+	t.prepare_request_data_url = function() {
+		var url = t.options.ajax_url
+		if (!t.is_rest_url()) {
+			return t.options.ajax_url + "/data"
+		}
+		return t.options.ajax_url
+	}
+
+	t.prepare_request_col_values_url = function(col) {
+		var url = t.options.ajax_url
+		if (!t.is_rest_url()) {
+			return t.options.ajax_url + "_col_values/"+col
+		}
+		return t.options.ajax_url
+	}
+
+	t.prepare_request_data = function(options) {
+		if (!options) {
+			options = {}
+		}
 		var data = t.parent_tables_data()
-		data.table_id = t.id
 		data.limit = osvc.user_prefs.data.tables[t.id].perpage
 		data.offset = t.options.pager.offset
+		if (t.is_rest_url()) {
+			data.data_format = "table"
+			data.filters = []
+			if (options.col_values) {
+				data.stats = true
+				data.props = options.col_values
+				data.limit = 0
+			}
+		} else {
+			data.table_id = t.id
+		}
 		for (c in t.colprops) {
 			var fid = t.id+"_f_"+c
+			var f_val = null
 			var current = t.colprops[c].current_filter
 			if ((current != "") && (typeof current !== 'undefined')) {
-				data[fid] = current
+				f_val = current
 			} else if ((typeof(t.colprops[c].force_filter) !== "undefined") && (t.colprops[c].force_filter != "")) {
-				data[fid] = t.colprops[c].force_filter
+				f_val = t.colprops[c].force_filter
 			}
 			if (data[fid] && t.colprops[c]._class && (t.colprops[c]._class.indexOf("datetime") >= 0)) {
-				data[fid] = t.convert_dates_in_filter(data[fid])
+				f_val = t.convert_dates_in_filter(data[fid])
+			}
+			if (f_val == null) {
+				continue
+			}
+			if (t.is_rest_url()) {
+				data.filters.push(c+" "+f_val)
+			} else {
+				data[fid] = f_val
 			}
 		}
                 data.orderby = t.options.orderby.join(",")
@@ -931,8 +984,6 @@ function table_init(opts) {
 		input_float.i18n()
 		sidepanel.append(input_float)
 
-		var url = t.options.ajax_url + "_col_values/"
-
 		// clear tool click
 		clear_tool.on("click", function(event){
 			if ($(this).is(".lightgrayed")) {
@@ -995,15 +1046,14 @@ function table_init(opts) {
 				if (xhr) {
 					xhr.abort()
 				}
-				var data = t.prepare_request_data()
+				var data = t.prepare_request_data({"col_values": col})
 				//data[input.attr('id')] = input.val()
 				var dest = input.siblings("[id^="+t.id+"_fc_]")
 				var pie = input.siblings("[id^="+t.id+"_fp_]")
 				pie.height(0)
-				_url = url + col
 				xhr = $.ajax({
-					type: "POST",
-					url: _url,
+					type: "GET",
+					url: t.prepare_request_col_values_url(col),
 					data: data,
 					sync: false,
 					context: document.body,
@@ -1015,8 +1065,8 @@ function table_init(opts) {
 						dest.addClass("icon spinner")
 					},
 					success: function(msg){
+						var data = msg["data"][col]
 						dest.removeClass("icon spinner")
-						var data = $.parseJSON(msg)
 						if (t.colprops[col] && t.colprops[col]._class && t.colprops[col]._class.match(/datetime/)) {
 							data = t.convert_cloud_dates(data)
 						}
@@ -1342,7 +1392,7 @@ function table_init(opts) {
 	t.refresh_callback = function(msg){
 		// don't install the new data if nothing has changed.
 		// avoids flickering and useless client load.
-		var md5sum = md5(msg)
+		var md5sum = md5(JSON.stringify(msg))
 		if (md5sum == t.md5sum) {
 			var msg = ""
 			console.log("refresh: data unchanged,", md5sum)
@@ -1357,11 +1407,11 @@ function table_init(opts) {
 		t.need_refresh = false
 		t.scroll_disable_dom()
 
-		try {
-			var data = $.parseJSON(msg)
+		if (is_dict(msg) && "data" in msg) {
+			var data = msg
 			var lines = data['data']
 			t.options.pager = data['meta']
-		} catch(e) {
+		} else {
 			t.div.html(msg)
 			return
 		}
@@ -1456,8 +1506,9 @@ function table_init(opts) {
 	}
 
 	t.insert = function(data) {
-		var params = {
-			"table_id": t.id
+		var params = {}
+		if (!t.is_rest_url()) {
+			params.table_id = t.id
 		}
 		for (i=0; i<data.length; i++) {
 			try {
@@ -1483,8 +1534,8 @@ function table_init(opts) {
 		}
 		params.props = t.get_ordered_visible_columns().join(',')
 		$.ajax({
-			type: "POST",
-			url: t.options.ajax_url+"/data",
+			type: "GET",
+			url: t.prepare_request_data_url(),
 			data: params,
 			context: document.body,
 			beforeSend: function(req){
@@ -1496,11 +1547,11 @@ function table_init(opts) {
 				// disable DOM insert event trigger for perf
 				t.scroll_disable_dom()
 
-				try {
-					var data = $.parseJSON(msg)
-					var lines = data['data']
-					t.options.pager = data['meta']
-				} catch(e) {}
+				if (!is_dict(msg) || !("data" in msg)) {
+					return
+				}
+				var lines = msg['data']
+				t.options.pager = msg['meta']
 
 				msg = t.data_to_lines(lines)
 
@@ -1606,8 +1657,8 @@ function table_init(opts) {
 		data.props = t.get_ordered_visible_columns().join(',')
 		data["offset"] = t.options.pager.offset
 		$.ajax({
-			type: "POST",
-			url: t.options.ajax_url+"/data",
+			type: "GET",
+			url: t.prepare_request_data_url(),
 			data: data,
 			context: document.body,
 			beforeSend: function(req){
@@ -2615,9 +2666,12 @@ function table_init(opts) {
 
 			spinner_add(t.e_tool_commonality_area)
 			var data = t.prepare_request_data()
+			if (t.is_rest_url()) {
+				data.commonality = true
+			}
 			$.ajax({
-				type: "POST",
-				url: t.options.ajax_url+"/commonality",
+				type: "GET",
+				url: t.prepare_request_commonality_url(),
 				data: data,
 				context: document.body,
 				success: function(msg){
@@ -2626,8 +2680,8 @@ function table_init(opts) {
 			})
 		})
 
-		function format(msg) {
-			var data = $.parseJSON(msg)
+		function format(data) {
+			var data = data.data
 			var table = $("<table class='table table-sm'></table>")
 			var th = $("<tr><th data-i18n='table.pct'></th><th data-i18n='table.column'></th><th data-i18n='table.value'></th></tr>")
 			th.i18n()
@@ -2638,22 +2692,22 @@ function table_init(opts) {
 
 				// pct
 				var pct = $("<td></td>")
-				pct.append(_cell_decorator_pct(d[2]))
+				pct.append(_cell_decorator_pct(d.percent))
 				line.append(pct)
 
 				// column
 				var col = $("<td></td>")
 				if (d[0] in t.colprops) {
-					col.addClass("nowrap icon_fixed_width "+t.colprops[d[0]].img)
-					col.text(i18n.t("col."+t.colprops[d[0]].title))
+					col.addClass("nowrap icon_fixed_width "+t.colprops[d.prop].img)
+					col.text(i18n.t("col."+t.colprops[d.prop].title))
 				} else {
-					col.text(d[0])
+					col.text(d.prop)
 				}
 				line.append(col)
 
 				// val
 				var val = $("<td></td>")
-				val.text(d[1])
+				val.text(d.value)
 				line.append(val)
 
 				table.append(line)
@@ -3585,23 +3639,21 @@ function table_action_menu_get_cols_data_all(t, e, scope, selector) {
 		}
 
 		var sigs = []
-		var url = t.options.ajax_url+"/data"
+		var url = t.prepare_request_data_url()
 		var vars = t.prepare_request_data()
 		vars["props"] = cols.join(",")
 		vars["offset"] = 0
 		vars["limit"] = t.action_menu_req_max
 		$.ajax({
 			async: false,
-			type: "POST",
+			type: "GET",
 			url: url,
 			data: vars,
 			success: function(msg){
-				try {
-					var _data = $.parseJSON(msg)
-					var lines = _data['table_lines']
-				} catch(e) {
+				if (!is_dict(msg) || !("data" in msg)) {
 					return []
 				}
+				var lines = msg['data']
 				if (typeof(lines) === "string") {
 					return []
 				}

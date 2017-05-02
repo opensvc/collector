@@ -501,6 +501,11 @@ Controls the inclusion in the returned dictionnary of a "commonality" key, conta
 * false: do not include.
 """,
           },
+          "data_format": {
+            "desc": """
+If set to "table", the structure in the "data" key value is formatted as a list of list instead of a list of dict. This parameter is used by the collector's javascript tables.
+""",
+          },
           "stats": {
             "desc": """
 Controls the inclusion in the returned dictionnary of a "stats" key, containing the selected properties distinct values counts.
@@ -661,7 +666,8 @@ def prepare_data(
      cols=[],
      offset=0,
      limit=20,
-     total=None):
+     total=None,
+     data_format=None):
 
     validated_props = []
     if left is None:
@@ -835,6 +841,17 @@ def prepare_data(
     else:
         d = dict(data=data)
 
+    if data_format == "table":
+        d["data"] = []
+        for line in data:
+            l = []
+            for col in validated_props:
+                table, field = col.split(".")
+                if field in line:
+                    l.append(line[field])
+                else:
+                    l.append(line[table][field])
+            d["data"].append(l)
     return d
 
 def mangle_data(data, props=None, vprops={}, vprops_fn=None, tables=None):
