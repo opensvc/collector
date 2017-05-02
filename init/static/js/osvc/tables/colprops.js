@@ -409,6 +409,10 @@ colprops = {
 		"img": "log16",
 		"title": "Definition"
 	},
+	"chk_prio": {
+		"img": "fa-sort",
+		"title": "Priority"
+	},
 	"chk_created": {
 		"img": "check16",
 		"title": "Created"
@@ -419,8 +423,13 @@ colprops = {
 	},
 	"chk_high": {
 		"_class": "chk_high",
-		"img": "check16",
+		"img": "fa-step-forward",
 		"title": "High threshold"
+	},
+	"chk_inst": {
+		"_class": "chk_inst",
+		"img": "check16",
+		"title": "Instance"
 	},
 	"chk_instance": {
 		"_class": "chk_instance",
@@ -429,7 +438,7 @@ colprops = {
 	},
 	"chk_low": {
 		"_class": "chk_low",
-		"img": "check16",
+		"img": "fa-step-backward",
 		"title": "Low threshold"
 	},
 	"chk_nodename": {

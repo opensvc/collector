@@ -490,6 +490,48 @@ function table_checks(divid, options) {
 	return table_init(_options)
 }
 
+function table_checks_defaults(divid, options) {
+	var defaults = {
+		'divid': divid,
+		'id': 'checks_defaults',
+		'caller': 'table_checks_defaults',
+		'name': 'checks_defaults',
+		'icon': "check16",
+		'ajax_url': '/init/rest/api/checks/defaults',
+		'columns': ['id', 'chk_type', 'chk_inst', 'chk_prio', 'chk_low', 'chk_high'],
+		'default_columns': ['chk_type', 'chk_inst', 'chk_prio', 'chk_low', 'chk_high'],
+		'wsable': true,
+		'orderby': ['chk_type', 'chk_inst', 'chk_prio'],
+		'force_cols': ['id', 'chk_type', 'chk_inst', 'chk_prio', 'chk_low', 'chk_high'],
+		'events': ['checks_defaults_change'],
+		'colprops': {
+			"chk_high": {"_class": "chk_def_high"},
+			"chk_low": {"_class": "chk_def_low"},
+			"chk_prio": {"_class": "chk_def_prio"},
+			"chk_inst": {"_class": "chk_def_inst"}
+		}
+	}
+
+	var _options = $.extend({}, defaults, options)
+	return table_init(_options)
+}
+
+function table_checks_defaults_type(divid, chk_type) {
+	var id = "checks_defaults_" + chk_type
+	var f_chk_type = id+"_f_chk_type"
+	var request_vars = {}
+	request_vars[f_chk_type] = chk_type
+	return table_checks_defaults(divid, {
+		"id": id,
+		"caller": "table_check_defaults_type",
+		"request_vars": request_vars,
+		"volatile_filters": true,
+		"volatile_prefs": true,
+		'default_columns': ['chk_inst', 'chk_prio', 'chk_low', 'chk_high'],
+		"hide_cols": ['chk_type']
+	})
+}
+
 function table_checks_node(divid, node_id) {
 	var id = "checks_" + node_id
 	var f = id+"_f_node_id"

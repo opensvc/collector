@@ -494,7 +494,11 @@ function cell_decorator_chk_instance(e, line) {
 
 function cell_decorator_chk_high(e, line) {
 	var high = $.data(e[0], "v")
-	var err = $.data(line.children("[col=chk_err]")[0], "v")
+	try {
+		var err = $.data(line.children("[col=chk_err]")[0], "v")
+	} catch(e) {
+		return
+	}
 	var cl = []
 	err = parseInt(err)
 	if (err == 2) {
@@ -505,7 +509,11 @@ function cell_decorator_chk_high(e, line) {
 
 function cell_decorator_chk_low(e, line) {
 	var low = $.data(e[0], "v")
-	var err = $.data(line.children("[col=chk_err]")[0], "v")
+	try {
+		var err = $.data(line.children("[col=chk_err]")[0], "v")
+	} catch(e) {
+		return
+	}
 	var cl = []
 	err = parseInt(err)
 	if (err == 1) {
@@ -1092,8 +1100,8 @@ function cell_decorator_chk_type(e, line) {
 		if (get_selected() != "") {
 			return
 		}
-		var url = services_get_url() + "/init/checks/ajax_chk_type_defaults/"+v
-		toggle_extra(url, null, e, 0)
+		var id = toggle_extratable(e)
+		table_checks_defaults_type(id, v)
 	})
 }
 
@@ -1462,18 +1470,44 @@ function cell_decorator_run_status(e, line, fn) {
 }
 
 function cell_decorator_tag_exclude(e, line) {
+	generic_prop_updater(e, line, {
+		"privileges": ["Manager", "TagManager"],
+		"url": "/tags/%1",
+		"prop": "tag_exclude",
+		"id_prop": "tag_id",
+	})
+}
+
+//
+// options:
+//  privileges: list of priv groups, one of which being required
+//  url: the rest api url to post on
+//  prop: the rest api url property to post an update on
+//
+function generic_prop_updater(e, line, options) {
+	if (!options) {
+		return
+	}
+	if (!options.privileges) {
+		options.privileges = ["Manager"]
+	}
+	if (!options.id_prop) {
+		options.id_prop = "id"
+	}
 	var v = $.data(e[0], "v")
 	if (v == "empty") {
 		v = ""
 	}
 	e.html(v)
-	$(window).on("click", function() {
-		$("input.tag_exclude").parent().html(v)
-	})
-	if (services_ismemberof(["Manager", "TagManager"])) {
+	if (services_ismemberof(options.privileges)) {
+		e.addClass("editable editable-placeholder")
 		e.on("click", function(event){
 			event.stopPropagation()
+			e.removeClass("editable editable-placeholder")
 			var i = $("<input class='oi tag_exclude'></input>")
+			i.on("blur", function() {
+				$(this).parent().html(v).addClass("editable editable-placeholder")
+			})
 			var _v = $.data(this, "v")
 			if (_v == "empty") {
 				_v = ""
@@ -1483,17 +1517,16 @@ function cell_decorator_tag_exclude(e, line) {
 				if (!is_enter(event)) {
 					return
 				}
-				var tag_id = $.data($(this).parents(".tl").find("[col=id]")[0], "v")
-				var data = {
-					"tag_exclude": $(this).val(),
-				}
+				var line_id = $.data($(this).parents(".tl").find("[col="+options.id_prop+"]")[0], "v")
+				var data = {}
+				data[options.prop] = $(this).val()
 				var _i = $(this)
-				services_osvcpostrest("R_TAG", [tag_id], "", data, function(jd) {
+				services_osvcpostrest(options.url, [line_id], "", data, function(jd) {
 					if (jd.error && (jd.error.length > 0)) {
 						osvc.flash.error(services_error_fmt(jd))
 						return
 					}
-					_i.parent().html(data.tag_exclude)
+					_i.parent().html(data[options.prop]).addClass("editable editable-placeholder")
 				},
 				function(xhr, stat, error) {
 					osvc.flash.info(services_ajax_error_fmt(xhr, stat, error))
@@ -1959,6 +1992,38 @@ function cell_decorator_rule_value(e, line) {
 	})
 }
 
+function cell_decorator_chk_def_high(e, line) {
+	generic_prop_updater(e, line, {
+		"privileges": ["Manager", "CheckManager"],
+		"url": "/checks/defaults/%1",
+		"prop": "chk_high",
+	})
+}
+
+function cell_decorator_chk_def_low(e, line) {
+	generic_prop_updater(e, line, {
+		"privileges": ["Manager", "CheckManager"],
+		"url": "/checks/defaults/%1",
+		"prop": "chk_low",
+	})
+}
+
+function cell_decorator_chk_def_prio(e, line) {
+	generic_prop_updater(e, line, {
+		"privileges": ["Manager", "CheckManager"],
+		"url": "/checks/defaults/%1",
+		"prop": "chk_prio",
+	})
+}
+
+function cell_decorator_chk_def_inst(e, line) {
+	generic_prop_updater(e, line, {
+		"privileges": ["Manager", "CheckManager"],
+		"url": "/checks/defaults/%1",
+		"prop": "chk_inst",
+	})
+}
+
 $.extend(true, cell_decorators, {
 	"yaml": cell_decorator_yaml,
 	"sql": cell_decorator_sql,
@@ -1974,6 +2039,10 @@ $.extend(true, cell_decorators, {
 	"chk_value": cell_decorator_chk_value,
 	"chk_low": cell_decorator_chk_low,
 	"chk_high": cell_decorator_chk_high,
+	"chk_def_high": cell_decorator_chk_def_high,
+	"chk_def_low": cell_decorator_chk_def_low,
+	"chk_def_prio": cell_decorator_chk_def_prio,
+	"chk_def_inst": cell_decorator_chk_def_inst,
 	"db_table_name": cell_decorator_db_table_name,
 	"db_column_name": cell_decorator_db_column_name,
 	"action": cell_decorator_action,

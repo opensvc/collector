@@ -263,6 +263,14 @@ var menu_data = {
 	],
 	"administration": [
 		{
+		  "title" : "checks_defaults",
+		  "class" : "check16",
+		  "id" : "adm-chk-def",
+		  "link" : "/init/checks/checks_defaults",
+		  "fn" : "table_checks_defaults",
+		  "secure" : ["Manager", "ChecksManager"]
+		},
+		{
 		  "title" : "users",
 		  "class" : "guys16",
 		  "id" : "adm-usr",
@@ -397,6 +405,15 @@ var menu_data = {
 			"fn" : "data_action_add_contextual_thresholds",
 			"link" : "/init/dm/index/data_action_add_contextual_thresholds",
 			"secure" : ["Manager", "ContextCheckManager"]
+		},
+		{
+			"title" : "add_default_thresholds",
+			"class" : "check16",
+			"stack" : "fa-plus-square",
+			"id" : "dm-add-default-thresholds",
+			"fn" : "data_action_add_default_thresholds",
+			"link" : "/init/dm/index/data_action_add_default_thresholds",
+			"secure" : ["Manager", "ChecksManager"]
 		},
 		{
 			"title" : "add_dns_domain",

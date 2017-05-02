@@ -1,146 +1,3 @@
-@auth.requires_membership('CheckManager')
-def checks_defaults_insert():
-    record = None
-    if request.vars.chk_id is not None:
-        q = db.checks_defaults.id==request.vars.chk_id
-        rows = db(q).select()
-        if len(rows) == 1:
-            record = rows[0]
-
-    db.checks_defaults.chk_type.default = request.vars.chk_type
-    db.checks_defaults.chk_prio.default = 0
-
-    form = SQLFORM(db.checks_defaults,
-                 record=record,
-                 deletable=True,
-                 fields=['chk_type',
-                         'chk_inst',
-                         'chk_low',
-                         'chk_high',
-                         'chk_prio'],
-                 labels={'chk_type': T('Check type'),
-                         'chk_inst': T('Instance'),
-                         'chk_low': T('Low threshold'),
-                         'chk_high': T('High threshold'),
-                         'chk_prio': T('Evaluation priority')},
-                )
-
-    if request.vars.chk_prio is None and request.vars.chk_inst is not None:
-        request.vars.chk_prio = len(request.vars.chk_inst)
-
-    if form.accepts(request.vars):
-        response.flash = T("edition recorded")
-        table_modified("checks_defaults")
-        enqueue_update_thresholds_batch(request.vars.chk_type)
-        redirect(URL(r=request, c='checks', f='checks'))
-    elif form.errors:
-        response.flash = T("errors in form")
-    return dict(form=form)
-
-@auth.requires_login()
-def ajax_chk_type_defaults():
-    chk_type = request.args[0]
-    q = db.checks_defaults.chk_type == chk_type
-    o = ~db.checks_defaults.chk_prio
-    rows = db(q).select(orderby=o)
-
-    l = []
-    l.append(DIV(
-                 DIV(
-                   T("Edit"),
-                   _style="font-weight:bold"
-                 ),
-                 DIV(
-                   T("Type"),
-                   _style="font-weight:bold"
-                 ),
-                 DIV(
-                   T("Prio"),
-                   _style="font-weight:bold"
-                 ),
-                 DIV(
-                   T("Instance"),
-                   _style="font-weight:bold"
-                 ),
-                 DIV(
-                   T("Low threshold"),
-                   _style="font-weight:bold"
-                 ),
-                 DIV(
-                   T("High threshold"),
-                   _style="font-weight:bold"
-                 ),
-               ))
-
-    if len(rows) == 0:
-        l.append(DIV(
-                 DIV(
-                   "-",
-                 ),
-                 DIV(
-                   "-",
-                 ),
-                 DIV(
-                   "-",
-                 ),
-                 DIV(
-                   "-",
-                 ),
-                 DIV(
-                   "-",
-                 ),
-                 DIV(
-                   "-",
-                 ),
-               ))
-
-    for row in rows:
-        l.append(DIV(
-                 DIV(
-                   A(
-                     IMG(_src=URL(r=request, c='static', f='images/edit.png')),
-                     _href=URL(r=request, f='checks_defaults_insert', vars={'chk_type': row.chk_type, 'chk_id': row.id}),
-                   ),
-                 ),
-                 DIV(
-                   row.chk_type,
-                 ),
-                 DIV(
-                   row.chk_prio,
-                 ),
-                 DIV(
-                   row.chk_inst if row.chk_inst is not None else "",
-                 ),
-                 DIV(
-                   row.chk_low,
-                 ),
-                 DIV(
-                   row.chk_high,
-                 ),
-               ))
-
-    l.append(DIV(
-             DIV(
-               A(
-                 IMG(_src=URL(r=request, c='static', f='images/add16.png')),
-                 _href=URL(r=request, f='checks_defaults_insert', vars={'chk_type': chk_type}),
-               ),
-             ),
-             DIV(
-               T("Add threshold defaults"),
-             ),
-           ))
-
-
-    return TABLE(
-             DIV(
-               H3(T("Threshold defaults")),
-             ),
-             DIV(
-               DIV(l, _class="table0"),
-             ),
-           )
-
 class table_checks(HtmlTable):
     def __init__(self, id=None, func=None, innerhtml=None):
         if id is None and 'tableid' in request.vars:
@@ -292,6 +149,18 @@ def checks():
 def checks_load():
     return checks()["table"]
 
+#
+@auth.requires_login()
+def checks_defaults():
+    t = SCRIPT(
+          """table_checks_defaults("layout", %s)""" % request_vars_to_table_options(),
+        )
+    return dict(table=t)
+
+def checks_defaults_load():
+    return checks_defaults()["table"]
+
+#
 def batch_update_thresholds():
     update_thresholds_batch()
 

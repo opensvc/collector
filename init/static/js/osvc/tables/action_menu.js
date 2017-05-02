@@ -1071,6 +1071,24 @@ function table_action_menu_init_data(t) {
 				{
 					"selector": ["clicked", "checked", "all"],
 					"foldable": true,
+					'title': 'action_menu.on_check_defaults',
+					"class": "check16",
+					"cols": ["id"],
+					"condition": "id",
+					"table": ["checks_defaults"],
+					"children": [
+						{
+							"title": "action_menu.delete",
+							"class": "del16",
+							"fn": "data_action_delete_default_thresholds",
+							"privileges": ["Manager", "ChecksManager"],
+							"min": 1
+						},
+					]
+				},
+				{
+					"selector": ["clicked", "checked", "all"],
+					"foldable": true,
 					'title': 'action_menu.on_check_instances',
 					"class": "check16",
 					"cols": ["node_id", "svc_id", "chk_type", "chk_instance"],
@@ -2941,6 +2959,35 @@ function data_action_delete_contextual_thresholds(divid) {
 		"request_data_entry": function(selected, data) {
 			return {
 				"id": selected
+			}
+		}
+	})
+}
+
+//
+// data action: add default threshold
+//
+function data_action_add_default_thresholds(divid) {
+	div = $("#"+divid)
+	var child_div = data_management_div({
+		"title": "menu.data_management.add_default_thresholds.title"
+	})
+	div.empty().append(child_div)
+	var form_div = $("<div></div>")
+	form_div.uniqueId()
+	child_div.append(form_div)
+	form(form_div, {"form_name": "internal_add_default_thresholds"})
+}
+
+//
+// data action: delete default threshold
+//
+function data_action_delete_default_thresholds(t, e) {
+	data_action_generic_delete(t, e, {
+		"request_service": "/checks/defaults",
+		"request_data_entry": function(data) {
+			return {
+				'id': data['id']
 			}
 		}
 	})

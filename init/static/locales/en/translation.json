@@ -81,6 +81,7 @@
 		"dns_domain": "DNS domain",
 		"dns_record": "DNS record",
 		"node": "Node",
+		"default_thresholds": "Checks default thresholds",
 		"contextual_thresholds": "Checks contextual thresholds",
 		"obsolescence_products": "Obsolescence tracked products",
 		"tag": "Tag",
@@ -165,8 +166,11 @@
 		"netmask": "Netmask",
 		"net_createable": "This network does not exist yet. Press <enter> to create.",
 		"on_check_instances": "On check instances",
+		"on_check_defaults": "On check defaults",
+		"delete_default_thresholds": "Delete default thresholds",
 		"delete_contextual_thresholds": "Delete contextual thresholds",
 		"add_contextual_thresholds": "Add contextual thresholds",
+		"add_default_thresholds": "Add default thresholds",
 		"set_low_threshold": "Set low threshold",
 		"set_high_threshold": "Set high threshold",
 		"reset_thresholds": "Reset thresholds",
@@ -297,6 +301,7 @@
 			"resinfo": "Resources info",
 			"apps": "Application codes",
 			"checks": "Checks",
+			"checks_defaults": "Checks default thresholds",
 			"comp_log": "Compliance log",
 			"comp_modules": "Modulesets",
 			"comp_modulesets_nodes": "Nodes-modulesets attachments",
@@ -468,6 +473,7 @@
 			"resinfo": "Resources info",
 			"actions": "Actions",
 			"checks": "Checks",
+			"checks_defaults": "Checks default thresholds",
 			"disks": "Disks",
 			"disk_info": "Disks",
 			"saves": "Saves",
@@ -1103,6 +1109,10 @@
 				"title": "Add contextual thresholds",
 				"text": "Check instance values thresholds scoped by filterset"
 			},
+			"add_default_thresholds": {
+				"title": "Add default thresholds",
+				"text": "High-Low thresholds for a type and instance pattern"
+			},
 			"add_dns_domain": {
 				"title": "Add DNS domain",
 				"text": "A zone in the embedded DNS"
@@ -1390,9 +1400,13 @@
 		},
 		"administration": {
 			"title": "Collector Administration",
+			"checks_defaults": {
+				"title": "Checks default threshold",
+				"text": "High-Low thresholds per type and instance pattern"
+			},
 			"replication": {
-					"title": "Replication",
-					"text": "Current state of the collector to collector replications"
+				"title": "Replication",
+				"text": "Current state of the collector to collector replications"
 			},
 			"users": {
 				"title": "Users",

@@ -51,6 +51,7 @@ menu_entries = [
   'req-pending-my',
   'req-pending-tiers',
   'req-all',
+  'adm-chk-def',
   'adm-usr',
   'adm-log',
   'adm-obs',

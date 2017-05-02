@@ -82,6 +82,7 @@
 		"dns_record": "Enregistrement DNS",
 		"node": "Noeud",
 		"contextual_thresholds": "Seuils contextuels de sonde",
+		"default_thresholds": "Seuils par défaut de sonde",
 		"obsolescence_products": "Produits gérés en obsolescence",
 		"tag": "Tag",
 		"user": "Utilisateur",
@@ -165,8 +166,11 @@
 		"network": "Réseau",
 		"netmask": "Masque",
 		"on_check_instances": "Sur les instances de sonde",
+		"on_check_defaults": "Sur les seuils par défaut",
 		"delete_contextual_thresholds": "Supprimer des seuils contextuels",
+		"delete_default_thresholds": "Supprimer des seuils par défaut",
 		"add_contextual_thresholds": "Ajouter des seuils contextuels",
+		"add_default_thresholds": "Ajouter des seuils par défaut",
 		"set_low_threshold": "Définir le seuil bas",
 		"set_high_threshold": "Définir le seuil haut",
 		"reset_thresholds": "Réinitialiser les seuils",
@@ -297,6 +301,7 @@
 			"resinfo": "Info de ressources",
 			"apps": "Codes applicatifs",
 			"checks": "Sondes",
+			"checks_defaults": "Seuils par défaut des sondes",
 			"comp_log": "Journaux de conformité",
 			"comp_modules": "Jeux de modules",
 			"comp_modulesets_nodes": "Attachements noeuds-jeux de modules",
@@ -466,6 +471,7 @@
 			"resinfo" : "Info de ressources",
 			"actions" : "Actions",
 			"checks" : "Sondes",
+			"checks_defaults": "Seuils par défaut des sondes",
 			"disks" : "Disques",
 			"disk_info" : "Disques",
 			"saves" : "Sauvegardes",
@@ -1102,6 +1108,10 @@
 				"title": "Ajouter des seuils contextuels",
 				"text": "Définir des seuils de sondes contextualisés"
 			},
+			"add_default_thresholds": {
+				"title": "Ajouter des seuils par défaut",
+				"text": "Seuil haut/bas pour un type de sonde et instance"
+			},
 			"add_dns_domain": {
 				"title": "Ajouter un domaine DNS",
 				"text": "Créer une zone dans le DNS embarqué"
@@ -1389,6 +1399,10 @@
 		},
 		"administration" : {
 			"title" : "Administration du collecteur",
+			"checks_defaults": {
+				"title": "Seuils par défaut des sondes",
+				"text": "Seuil haut/bas par type de sonde et instance"
+			},
 			"replication" : {
 					"title" : "Replication",
 					"text" : "Current state of the collector to collector replications"
