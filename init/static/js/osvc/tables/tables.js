@@ -1578,6 +1578,35 @@ function table_nodenetworks_addr(divid, addr) {
 	})
 }
 
+function table_nodenetworks_node(divid, node_id) {
+	var id = "nodenetworks_" + node_id.replace(/[\.-]/g, "_")
+	var f = id+"_f_node_id"
+	var request_vars = {}
+	request_vars[f] = node_id
+	table_nodenetworks(divid, {
+		"id": id,
+		"caller": "table_table_nodenetworks_node",
+		"request_vars": request_vars,
+		"volatile_filters": true,
+		"volatile_prefs": true,
+		'orderby': ['intf', 'addr'],
+		"hide_cols": ['node_id'],
+		"visible_columns": [
+			'intf',
+			'addr',
+			'mask',
+			'mac',
+			'flag_deprecated',
+			'addr_updated',
+			'net_name',
+			'net_network',
+			'net_gateway',
+			'net_pvid',
+			'net_netmask'
+		]
+	})
+}
+
 function table_nodesan(divid, options) {
 	var defaults = {
 		'divid': divid,
