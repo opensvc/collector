@@ -45,6 +45,8 @@ def get_get_handlers(prefix=None):
              "rest_get_array_targets",
        ],
        "checks": [
+             "rest_get_checks_defaults",
+             "rest_get_checks_default",
              "rest_get_checks_settings",
              "rest_get_checks_setting",
              "rest_get_checks_contextual_settings",
@@ -408,6 +410,8 @@ def get_delete_handlers(prefix=None):
              "rest_delete_checks_setting",
              "rest_delete_checks_contextual_settings",
              "rest_delete_checks_contextual_setting",
+             "rest_delete_checks_defaults",
+             "rest_delete_checks_default",
              "rest_delete_checks",
              "rest_delete_check",
         ],
@@ -628,6 +632,8 @@ def get_post_handlers(prefix=None):
         "checks": [
              "rest_post_checks_contextual_settings",
              "rest_post_checks_contextual_setting",
+             "rest_post_checks_defaults",
+             "rest_post_checks_default",
              "rest_post_checks_settings",
              "rest_post_checks_setting",
         ],

@@ -120,7 +120,7 @@ class rest_delete_checks(rest_delete_handler):
             s = "%s %s %s" % (vars["chk_type"], vars["chk_instance"], get_nodename(node_id))
         else:
             raise Exception("id key or node_id+chk_type+chk_instance[+svc_id] must be specified")
-        if 'svc_id' in vars:
+        if 'svc_id' in vars and vars["svc_id"] != "":
             svc_id = get_svc_id(vars["svc_id"])
             q &= db.checks_live.svc_id == svc_id
             s += get_svcname(svc_id)
@@ -130,6 +130,199 @@ class rest_delete_checks(rest_delete_handler):
             raise Exception("check instance %s does not exist" % s)
         return rest_delete_check().handler(row.id)
 
+
+#
+# checks_defaults table handlers
+#
+class rest_get_checks_defaults(rest_get_table_handler):
+    def __init__(self):
+        desc = [
+          "List check instances threshold defaults.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/checks/defaults",
+        ]
+        rest_get_table_handler.__init__(
+          self,
+          path="/checks/defaults",
+          tables=["checks_defaults"],
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, **vars):
+        q = db.checks_defaults.id > 0
+        self.set_q(q)
+        return self.prepare_data(**vars)
+
+#
+class rest_get_checks_default(rest_get_line_handler):
+    def __init__(self):
+        desc = [
+          "List a check instance threshold defaults properties.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/checks/defaults/1",
+        ]
+        rest_get_line_handler.__init__(
+          self,
+          path="/checks/defaults/<id>",
+          tables=["checks_defaults"],
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, id, **vars):
+        q = db.checks_defaults.id == id
+        self.set_q(q)
+        return self.prepare_data(**vars)
+
+class rest_delete_checks_default(rest_delete_handler):
+    def __init__(self):
+        desc = [
+          "- Delete a check instance threshold defaults.",
+          "- Log the deletion.",
+          "- Send a websocket change event.",
+        ]
+        examples = [
+          "# curl -u %(email)s -X DELETE -o- https://%(collector)s/init/rest/api/checks/defaults/1",
+        ]
+        rest_delete_handler.__init__(
+          self,
+          path="/checks/defaults/<id>",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, id, **vars):
+        check_privilege("CheckManager")
+        q = db.checks_defaults.id == id
+        row = db(q).select().first()
+        if row is None:
+            raise Exception("Check instance defaults %s does not exist" % str(id))
+
+        db(q).delete()
+
+        _log('check.defaults.delete',
+             'delete check instance defaults %(data)s',
+             dict(data='-'.join((row.chk_type, row.chk_inst))),
+            )
+        table_modified("checks_defaults")
+        ws_send('checks_defaults_change', {'id': row.id})
+
+        #q = db.checks_live.chk_type == row.chk_type
+        #rows = db(q).select()
+        #update_thresholds_batch(rows, one_source=True)
+
+        return dict(info="check instance defaults %s deleted" % str(id))
+
+#
+class rest_delete_checks_defaults(rest_delete_handler):
+    def __init__(self):
+        desc = [
+          "- Delete check instances defaults.",
+          "- Log the deletion.",
+          "- Send websocket change events.",
+        ]
+        examples = [
+          "# curl -u %(email)s -X DELETE -o- https://%(collector)s/init/rest/api/checks/defaults?filter[]=chk_type=eth%%",
+        ]
+        rest_delete_handler.__init__(
+          self,
+          path="/checks/defaults",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, **vars):
+        check_privilege("CheckManager")
+        if 'id' not in vars:
+            raise Exception("id key must be specified")
+        return rest_delete_checks_default().handler(vars["id"])
+
+#
+class rest_post_checks_default(rest_post_handler):
+    def __init__(self):
+        desc = [
+          "- Modify a check instance threshold defaults.",
+          "- The user must be in the CheckManager privilege group.",
+          "- Log the change.",
+          "- Send a websocket change event.",
+        ]
+        examples = [
+          "# curl -u %(email)s -X POST -d chk_low=1 -o- https://%(collector)s/init/rest/api/checks/defaults/1",
+        ]
+        rest_post_handler.__init__(
+          self,
+          path="/checks/defaults/<id>",
+          tables=["checks_defaults"],
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, id, **vars):
+        check_privilege("CheckManager")
+        q = db.checks_defaults.id == id
+        row = db(q).select().first()
+        if row is None:
+            raise Exception("Check instance defaults %s does not exist" % str(id))
+
+        if "id" in vars:
+            del vars["id"]
+
+        db(q).update(**vars)
+
+        fmt = 'change check instance defaults %(data)s'
+        d = dict(data=beautify_change(row, vars))
+        _log('check.defaults.change', fmt, d)
+        table_modified("checks_defaults")
+        l = {
+          'event': 'checks_defaults_change',
+          'data': {'id': row.id},
+        }
+
+        return_data = rest_get_checks_default().handler(id)
+        return_data["info"] = fmt % d
+        return return_data
+
+#
+class rest_post_checks_defaults(rest_post_handler):
+    def __init__(self):
+        desc = [
+          "- Modify or add check instances threshold defaults.",
+          "- The user must be in the CheckManager privilege group.",
+          "- Log the changes.",
+          "- Send websocket change events.",
+        ]
+        examples = [
+          "# curl -u %(email)s -X POST -d node_id=1 -d chk_type=eth -d chk_inst=eth0.speed -d chk_low=0 -o- https://%(collector)s/init/rest/api/checks/defaults",
+        ]
+        rest_post_handler.__init__(
+          self,
+          path="/checks/defaults",
+          tables=["checks_defaults"],
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, **vars):
+        if 'id' not in vars:
+            check_privilege("CheckManager")
+            if not "chk_type" in vars:
+                raise Exception("chk_type must be specified")
+
+            id = db.checks_defaults.insert(**vars)
+            fmt = 'add check instance defaults %(data)s'
+            d = dict(data=beautify_data(vars))
+            _log('check.defaults.add',fmt, d)
+            table_modified("checks_defaults")
+            ws_send('checks_change', {'id': id})
+
+            return_data = rest_get_checks_default().handler(id)
+            return_data["info"] = fmt % d
+            return return_data
+
+        return rest_post_checks_default().handler(vars["id"], **vars)
 
 #
 # checks_settings table handlers
@@ -261,7 +454,7 @@ class rest_delete_checks_settings(rest_delete_handler):
             s = "%s %s %s" % (vars["chk_type"], vars["chk_instance"], get_nodename(node_id))
         else:
             raise Exception("id key or node_id+chk_type+chk_instance[+svc_id] must be specified")
-        if 'svc_id' in vars:
+        if 'svc_id' in vars and vars["svc_id"] != "":
             svc_id = get_svc_id(vars["svc_id"])
             q &= db.checks_settings.svc_id == svc_id
             s += get_svcname(svc_id)
@@ -277,7 +470,7 @@ class rest_post_checks_setting(rest_post_handler):
         desc = [
           "- Modify a check instance threshold settings.",
           "- The user must be responsible for the node.",
-          "- The user must be in the CheckManager privilege group.",
+          "- The user must be in the CheckExec privilege group.",
           "- Log the change.",
           "- Send a websocket change event.",
         ]
@@ -340,7 +533,7 @@ class rest_post_checks_settings(rest_post_handler):
         desc = [
           "- Modify or add check instances threshold settings.",
           "- The user must be responsible for the nodes.",
-          "- The user must be in the CheckManager privilege group.",
+          "- The user must be in the CheckExec privilege group.",
           "- Log the changes.",
           "- Send websocket change events.",
         ]
@@ -369,7 +562,7 @@ class rest_post_checks_settings(rest_post_handler):
             s = "%s %s %s" % (vars["chk_type"], vars["chk_instance"], get_nodename(node_id))
         else:
             raise Exception("id key or node_id+chk_type+chk_instance[+svc_id] must be specified")
-        if 'svc_id' in vars:
+        if 'svc_id' in vars and vars["svc_id"] != "":
             svc_id = get_svc_id(vars["svc_id"])
             q &= db.checks_settings.svc_id == svc_id
             s += get_svcname(svc_id)
