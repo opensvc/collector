@@ -26,10 +26,12 @@
 			{{include}}
 		</div>
 		<div class=footer>
-			<span>{{=T('Copyright')}} &copy; 2009 - 2017 </span>
-			<span class="header_logo">{{=A((response.title or request.application), _href="http://www.opensvc.com", _class="icon www16 hide_text_on_small", _target="_blank")}}</span>
+			<span>&copy; 2009-2017 </span>
+			<span class="header_logo">{{=A((response.title or request.application), _href="https://www.opensvc.com", _class="icon www16 hide_text_on_small", _target="_blank")}}</span>
 			<span> - </span>
-			<span class="header_logo">{{=A('legal', callback=URL(c='licenses', f='licenses'))}}</span>
+			<span class="header_logo">{{=A('Licenses', callback=URL(c='licenses', f='licenses'), _class='icon fa-balance-scale hide_text_on_small')}}</span>
+			<span> - </span>
+			<span class="header_logo">{{=A("Docs", _href="https://docs.opensvc.com", _class="icon fa-book hide_text_on_small", _target="_blank")}}</span>
 		</div>
 		<script> app_start() </script>
 	</body>
