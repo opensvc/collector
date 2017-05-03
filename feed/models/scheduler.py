@@ -2619,105 +2619,117 @@ def insert_sym(symid=None, node_id=None):
         s = symmetrix.get_sym(d)
 	s.init_data()
 
-        if s is not None:
-            # stor_array_proxy
-            print s.info['symid']
-            print " model", s.info['model']
-            insert_array_proxy(node_id, s.info['symid'])
+        if s is None:
+            continue
 
-            # stor_array
-            vars = ['array_name', 'array_model', 'array_cache', 'array_firmware', 'array_updated']
-            vals = []
-            vals.append([s.info['symid'],
-                         s.info['model'],
-                         s.info['cache_megabytes'],
-                         '.'.join((s.info['version'],
-                                   s.info['patch_level'],
-                                   s.info['symmwin_version'])),
+        if "model" not in s.info:
+            continue
+
+        # stor_array_proxy
+        print s.info['symid']
+        print " model", s.info['model']
+        insert_array_proxy(node_id, s.info['symid'])
+
+        if "version" not in s.info:
+            continue
+
+        # stor_array
+        vars = ['array_name', 'array_model', 'array_cache', 'array_firmware', 'array_updated']
+        vals = []
+        vals.append([s.info['symid'],
+                     s.info['model'],
+                     s.info['cache_megabytes'],
+                     '.'.join((s.info['version'],
+                               s.info['patch_level'],
+                               s.info['symmwin_version'])),
+                     now])
+        generic_insert('stor_array', vars, vals)
+
+        sql = """select id from stor_array where array_name="%s" """%s.info['symid']
+        array_id = str(db.executesql(sql)[0][0])
+
+        # stor_array_dg
+        vars = ['array_id', 'dg_name', 'dg_free', 'dg_used', 'dg_size', 'dg_updated']
+        vals = []
+        print " dg"
+        for dg in s.diskgroup.values():
+            print "  ", dg.info['disk_group_name']
+            vals.append([array_id,
+                         dg.info['disk_group_name'],
+                         str(dg.total-dg.used),
+                         str(dg.used),
+                         str(dg.total),
                          now])
-            generic_insert('stor_array', vars, vals)
+        for pool in s.pool.values():
+            print "  ", pool.info['pool_name']
+            if "total_used_tracks_mb" not in pool.totals:
+                continue
+            vals.append([array_id,
+                         pool.info['pool_name'],
+                         str(pool.totals["total_free_tracks_mb"]),
+                         str(pool.totals["total_used_tracks_mb"]),
+                         str(pool.totals["total_tracks_mb"]),
+                         now])
 
-            sql = """select id from stor_array where array_name="%s" """%s.info['symid']
-            array_id = str(db.executesql(sql)[0][0])
+        for srp in s.srp.values():
+            print "  ", srp.info['name']
+            if "allocated_capacity_gigabytes" not in srp.info:
+                continue
+            vals.append([array_id,
+                         srp.info['name'],
+                         str(float(srp.info["free_capacity_gigabytes"])*1024),
+                         str(float(srp.info["allocated_capacity_gigabytes"])*1024),
+                         str(float(srp.info["usable_capacity_gigabytes"])*1024),
+                         now])
 
-            # stor_array_dg
-            vars = ['array_id', 'dg_name', 'dg_free', 'dg_used', 'dg_size', 'dg_updated']
-            vals = []
-            print " dg"
-            for dg in s.diskgroup.values():
-                print "  ", dg.info['disk_group_name']
-                vals.append([array_id,
-                             dg.info['disk_group_name'],
-                             str(dg.total-dg.used),
-                             str(dg.used),
-                             str(dg.total),
-                             now])
-            for pool in s.pool.values():
-                print "  ", pool.info['pool_name']
-                vals.append([array_id,
-                             pool.info['pool_name'],
-                             str(pool.totals["total_free_tracks_mb"]),
-                             str(pool.totals["total_used_tracks_mb"]),
-                             str(pool.totals["total_tracks_mb"]),
-                             now])
+        generic_insert('stor_array_dg', vars, vals)
+        purge_array_dg(vals)
+        del(s.diskgroup)
 
-            for srp in s.srp.values():
-                print "  ", srp.info['name']
-                vals.append([array_id,
-                             srp.info['name'],
-                             str(float(srp.info["free_capacity_gigabytes"])*1024),
-                             str(float(srp.info["allocated_capacity_gigabytes"])*1024),
-                             str(float(srp.info["usable_capacity_gigabytes"])*1024),
-                             now])
-
-            generic_insert('stor_array_dg', vars, vals)
-            purge_array_dg(vals)
-            del(s.diskgroup)
-
-            # stor_array_tgtid
-            vars = ['array_id', 'array_tgtid']
-            vals = []
-            print " targets"
-            for dir in s.director.values():
-                for wwn in dir.port_wwn:
-                    if wwn == "N/A":
-                        continue
-                    print "  ", wwn
-                    vals.append([array_id, wwn])
-            generic_insert('stor_array_tgtid', vars, vals)
-            purge_array_tgtid(vals)
-            del(s.director)
-
-            # diskinfo
-            vars = ['disk_id',
-                    'disk_arrayid',
-                    'disk_name',
-                    'disk_devid',
-                    'disk_size',
-                    'disk_alloc',
-                    'disk_raid',
-                    'disk_group',
-                    'disk_updated']
-            vals = []
-            for dev in s.dev.values():
-                if dev.flags['meta'] not in ('Head', 'None'):
+        # stor_array_tgtid
+        vars = ['array_id', 'array_tgtid']
+        vals = []
+        print " targets"
+        for dir in s.director.values():
+            for wwn in dir.port_wwn:
+                if wwn == "N/A":
                     continue
-                vals.append([dev.wwn,
-                             s.info['symid'],
-                             dev.ident_name,
-                             dev.info['dev_name'],
-                             str(dev.megabytes),
-                             str(dev.alloc),
-                             "Meta-%d %s"%(dev.meta_count, dev.info['configuration']),
-                             dev.diskgroup_name,
-                             now])
-            generic_insert('diskinfo', vars, vals)
-            del(s.dev)
-            sql = """delete from diskinfo where disk_arrayid="%s" and (disk_updated < "%s" or disk_updated is NULL)"""%(s.info['symid'], str(now))
-            db.executesql(sql)
-            db.commit()
+                print "  ", wwn
+                vals.append([array_id, wwn])
+        generic_insert('stor_array_tgtid', vars, vals)
+        purge_array_tgtid(vals)
+        del(s.director)
 
-            del(s)
+        # diskinfo
+        vars = ['disk_id',
+                'disk_arrayid',
+                'disk_name',
+                'disk_devid',
+                'disk_size',
+                'disk_alloc',
+                'disk_raid',
+                'disk_group',
+                'disk_updated']
+        vals = []
+        for dev in s.dev.values():
+            if dev.flags['meta'] not in ('Head', 'None'):
+                continue
+            vals.append([dev.wwn,
+                         s.info['symid'],
+                         dev.ident_name,
+                         dev.info['dev_name'],
+                         str(dev.megabytes),
+                         str(dev.alloc),
+                         "Meta-%d %s"%(dev.meta_count, dev.info['configuration']),
+                         dev.diskgroup_name,
+                         now])
+        generic_insert('diskinfo', vars, vals)
+        del(s.dev)
+        sql = """delete from diskinfo where disk_arrayid="%s" and (disk_updated < "%s" or disk_updated is NULL)"""%(s.info['symid'], str(now))
+        db.executesql(sql)
+        db.commit()
+
+        del(s)
 
 def _svcmon_update_combo(g_vars, g_vals, r_vars, r_vals, auth):
     _svcmon_update(g_vars, g_vals, auth)

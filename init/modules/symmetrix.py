@@ -569,13 +569,19 @@ class Sym(object):
             self.dev[devname].set_membership(o.dev_name)
 
     def add_sym_diskgroup(self, o):
+        if "disk_group_number" not in o.info:
+            return
         self.diskgroup[int(o.info['disk_group_number'])] = o
         self.info['diskgroup_count'] += 1
 
     def add_sym_srp(self, o):
+        if "name" not in o.info:
+            return
         self.srp[o.info['name']] = o
 
     def add_sym_pool(self, o):
+        if "pool_name" not in o.info:
+            return
         self.pool[o.info['pool_name']] = o
 
     def add_sym_disk(self, o):
@@ -613,45 +619,74 @@ class Sym(object):
         return tree
 
     def sym_info(self):
-        tree = self.xmltree('sym_info')
-        for e in tree.getiterator('Symm_Info'): pass
+        try:
+            tree = self.xmltree('sym_info')
+        except Exception as e:
+            print(" skip sym_info: "+str(e))
+            return
+        for e in tree.getiterator('Symm_Info'):
+            pass
         for se in list(e):
-          self.info[se.tag] = se.text
+            self.info[se.tag] = se.text
         del tree
 
     def sym_diskgroup(self):
         self.diskgroup = {}
-        tree = self.xmltree('sym_diskgroup_info')
+        try:
+            tree = self.xmltree('sym_diskgroup_info')
+        except Exception as e:
+            print(" skip sym_diskgroup_info: "+str(e))
+            return
         for e in tree.getiterator('Disk_Group'):
             self += SymDiskGroup(e)
         del tree
 
     def sym_srp(self):
-        tree = self.xmltree('sym_srp_info')
+        try:
+            tree = self.xmltree('sym_srp_info')
+        except Exception as e:
+            print(" skip sym_srp_info: "+str(e))
+            return
         for e in tree.getiterator('SRP'):
             self += SymSrp(e)
         del tree
 
     def sym_pool(self):
-        tree = self.xmltree('sym_pool_info')
+        try:
+            tree = self.xmltree('sym_pool_info')
+        except Exception as e:
+            print(" skip sym_pool_info: "+str(e))
+            return
         for e in tree.getiterator('DevicePool'):
             self += SymPool(e)
         del tree
 
     def sym_disk(self):
-        tree = self.xmltree('sym_disk_info')
+        try:
+            tree = self.xmltree('sym_disk_info')
+        except Exception as e:
+            print(" skip sym_disk_info: "+str(e))
+            return
         for e in tree.getiterator('Disk'):
             self += SymDisk(e)
         del tree
 
     def sym_dev(self):
-        tree = self.xmltree('sym_dev_info')
+        try:
+            tree = self.xmltree('sym_dev_info')
+        except Exception as e:
+            print(" skip sym_dev_info: "+str(e))
+            return
         for e in tree.getiterator('Device'):
             self += SymDev(e)
         del tree
 
     def sym_dev_ident_name(self):
-        tree = self.xmltree('sym_dev_name_info')
+        try:
+            tree = self.xmltree('sym_dev_name_info')
+        except Exception as e:
+            print(" skip sym_dev_name_info: "+str(e))
+            return
         for e in tree.getiterator('Dev_Info'):
             devid = e.find("dev_name").text
             devname = e.find("dev_ident_name").text
@@ -659,37 +694,61 @@ class Sym(object):
         del tree
 
     def sym_tdev(self):
-        tree = self.xmltree('sym_tdev_info')
+        try:
+            tree = self.xmltree('sym_tdev_info')
+        except Exception as e:
+            print(" skip sym_tdev_info: "+str(e))
+            return
         for e in tree.getiterator('Device'):
             self += SymTDev(e)
         del tree
 
     def sym_dev_wwn(self):
-        tree = self.xmltree('sym_dev_wwn_info')
+        try:
+            tree = self.xmltree('sym_dev_wwn_info')
+        except Exception as e:
+            print(" skip sym_dev_wwn_info: "+str(e))
+            return
         for e in tree.getiterator('Device'):
             self += SymDevWwn(e)
         del tree
 
     def sym_devrdfa(self):
-        tree = self.xmltree('sym_devrdfa_info')
+        try:
+            tree = self.xmltree('sym_devrdfa_info')
+        except Exception as e:
+            print(" skip sym_devrdfa_info: "+str(e))
+            return
         for e in tree.getiterator('Device'):
             self += SymDevRdf(e)
         del tree
 
     def sym_ficondev(self):
-        tree = self.xmltree('sym_ficondev_info')
+        try:
+            tree = self.xmltree('sym_ficondev_info')
+        except Exception as e:
+            print(" skip sym_ficondev_info: "+str(e))
+            return
         for e in tree.getiterator('Device'):
             self += SymFiconDev(e)
         del tree
 
     def sym_meta(self):
-        tree = self.xmltree('sym_meta_info')
+        try:
+            tree = self.xmltree('sym_meta_info')
+        except Exception as e:
+            print(" skip sym_meta_info: "+str(e))
+            return
         for e in tree.getiterator('Device'):
             self += SymMeta(e)
         del tree
 
     def sym_director(self):
-        tree = self.xmltree('sym_dir_info')
+        try:
+            tree = self.xmltree('sym_dir_info')
+        except Exception as e:
+            print(" skip sym_dir_info: "+str(e))
+            return
         for e in tree.getiterator('Microcode'):
             for el in list(e):
                 self.info[el.tag] = el.text
@@ -732,7 +791,11 @@ class Dmx(Sym):
             self.diskgroup[dg].add_masked_dev(dev)
 
     def sym_maskdb(self):
-        tree = self.xmltree('sym_maskdb')
+        try:
+            tree = self.xmltree('sym_maskdb')
+        except Exception as e:
+            print(" skip sym_maskdb: "+str(e))
+            return
         for e in tree.getiterator('Devmask_Database_Record'):
             director = e.find('director').text
             port = e.find('port').text
@@ -790,13 +853,21 @@ class Vmax(Sym):
                     self.diskgroup[_dg].add_masked_dev(dev)
 
     def sym_view(self):
-        tree = self.xmltree('sym_view_aclx')
+        try:
+            tree = self.xmltree('sym_view_aclx')
+        except Exception as e:
+            print(" skip sym_view_aclx: "+str(e))
+            return
         for e in tree.getiterator('View_Info'):
             self += VmaxView(e)
         del tree
 
     def sym_sg(self):
-        tree = self.xmltree('sym_sg_info')
+        try:
+            tree = self.xmltree('sym_sg_info')
+        except Exception as e:
+            print(" skip sym_sg_info: "+str(e))
+            return
         for e in tree.findall('SG'):
             srp = e.find("SG_Info/SRP_name").text
             if srp == "none":
