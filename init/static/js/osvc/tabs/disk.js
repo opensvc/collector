@@ -85,6 +85,7 @@ function disk_properties(divid, options) {
 			o.data_nodes = []
 			o.data_services = []
 			o.data_apps = []
+			o.data_apps_flat = []
 			for (var i=0; i<jd.data.length; i++) {
 				if (jd.data[i].svcdisks.node_id) {
 					o.data_nodes.push({
@@ -98,14 +99,18 @@ function disk_properties(divid, options) {
 						"svc_id": jd.data[i].svcdisks.svc_id,
 					})
 				}
-				if (jd.data[i].services.svc_app && o.data_apps.indexOf(jd.data[i].services.svc_app) < 0) {
+				var app = jd.data[i].services.svc_app
+				if (app && o.data_apps_flat.indexOf(app) < 0) {
+					o.data_apps_flat.push(app)
 					o.data_apps.push({
-						"app": jd.data[i].services.svc_app,
+						"app": app,
 					})
 				}
-				if (jd.data[i].nodes.app && o.data_apps.indexOf(jd.data[i].nodes.app) < 0) {
+				app = jd.data[i].nodes.app
+				if (app && o.data_apps_flat.indexOf(app) < 0) {
+					o.data_apps_flat.push(app)
 					o.data_apps.push({
-						"app": jd.data[i].nodes.app,
+						"app": app,
 					})
 				}
 			}
