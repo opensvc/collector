@@ -187,7 +187,8 @@ def ajax_saves_charts():
     nt = table_saves_charts('charts', 'ajax_saves_charts')
 
     o = db.saves.id
-    q = q_filter(app_field=db.saves.save_app)
+    q = db.saves.id > 0
+    q = q_filter(q, app_field=db.saves.save_app)
     q = apply_filters_id(q, node_field=db.saves.node_id)
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
