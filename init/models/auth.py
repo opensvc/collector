@@ -504,8 +504,12 @@ class MyAuth(Auth):
         return
 
     def login_bare(self, username, password):
+        logger = logging.getLogger("web2py.app.init.log")
+        logger.setLevel(logging.DEBUG)
+
         r = Auth.login_bare(self, username, password)
         if r is False:
+            logger.warning("local user %s authentication failed", username)
             return False
         if self.user is None or (type(self.user) == str and self.user == username):
             from gluon.storage import Storage
