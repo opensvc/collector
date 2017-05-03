@@ -48,10 +48,15 @@ def q_filter(query=None, svc_field=None, node_field=None, group_field=None,
             t = db[user_field.tablename]
 
     if query is None:
-        query = t.id > 0
-    if q is None:
-        return query
-    return query & q
+        if q is None:
+            return t.id > 0
+        else:
+            return q
+    else:
+        if q is None:
+            return query
+        else:
+            return query & q
 
 def _where(query, table, var, field, depth=0, db=db):
     if table not in db:

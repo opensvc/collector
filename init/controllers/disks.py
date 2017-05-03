@@ -301,7 +301,8 @@ def ajax_disk_charts():
     volatile_filters = request.vars.volatile_filters
     request.vars.volatile_filters = None
 
-    q = q_filter(app_field=db.apps.app)
+    q = db.diskinfo.id > 0
+    q = q_filter(q, app_field=db.apps.app)
     q = apply_filters_id(q, db.svcdisks.node_id)
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), t.colprops[f].field)
