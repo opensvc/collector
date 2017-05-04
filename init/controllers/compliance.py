@@ -1081,7 +1081,7 @@ def ajax_comp_log_col_values():
     table_id = request.vars.table_id
     t = table_comp_log(table_id, 'ajax_comp_log')
     col = request.args[0]
-    o = db.comp_log[col]
+    o = db[t.colprops[col].table][col]
     q = db.comp_log.node_id == db.nodes.node_id
     q = q_filter(q, node_field=db.comp_log.node_id)
     l = db.services.on(db.comp_log.svc_id==db.services.svc_id)
