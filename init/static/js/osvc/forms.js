@@ -273,7 +273,11 @@ function form(divid, options) {
 				keys_done.push(d.Key)
 			}
 			var cell = $("<th></th>")
-			cell.text(d.DisplayModeLabel)
+			if (d.DisplayModeLabel) {
+				cell.text(d.DisplayModeLabel)
+			} else {
+				cell.text(d.Label)
+			}
 			if (i == 0) {
 				cell.addClass("icon comp16")
 			}
@@ -401,7 +405,11 @@ function form(divid, options) {
 			var line = $("<tr></tr>")
 			var label = $("<th class='nowrap pr-3'></th>")
 			var value = $("<td></td>")
-			label.text(d.DisplayModeLabel)
+			if (d.DisplayModeLabel) {
+				label.text(d.DisplayModeLabel)
+			} else {
+				label.text(d.Label)
+			}
 			if(d.LabelCss) {
 				label.addClass("icon_fixed_width")
 				label.addClass(d.LabelCss)
