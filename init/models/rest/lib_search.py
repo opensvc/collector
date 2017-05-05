@@ -62,6 +62,7 @@ def lib_search_prov_templates(pattern):
 
 def lib_search_form(pattern):
     t = datetime.datetime.now()
+    g = db.forms.id
     o = db.forms.form_name
     q = db.forms.form_name.like(pattern)
     try:
@@ -71,10 +72,10 @@ def lib_search_form(pattern):
         pass
     q &= db.forms.id == db.forms_team_publication.form_id
     q &= db.forms_team_publication.group_id.belongs(user_group_ids())
-    n = db(q).count()
+    n = len(db(q).select(g, distinct=True))
     data = db(q).select(db.forms.form_name,
                         db.forms.id,
-                        groupby=o,
+                        groupby=g,
                         orderby=o,
                         limitby=(0,max_search_result)
     ).as_list()

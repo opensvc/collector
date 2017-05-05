@@ -682,10 +682,26 @@ def validate_input_data(form_definition, data, _input):
             raise Exception("Missing value for mandatory input '%s'" % input_id)
         return
 
-    if _input.get("Candidates"):
-        if val not in _input.get("Candidates"):
-            raise Exception("Input '%s' value '%s' not in allowed candidates" % (input_id, str(val)))
+    #
+    # val can be a list (ex: checklist inputs)
+    # factorize the code by considering val is [val] when val is not already a list
+    #
+    if type(val) != list:
+        vals = [val]
+    else:
+        vals = val
 
+    if _input.get("Candidates"):
+        candidate_vals = []
+        for candidate in _input.get("Candidates"):
+            if isinstance(candidate, dict) and "Value" in candidate:
+                candidate_vals.append(candidate["Value"])
+            else:
+                candidate_vals.append(candidate)
+        for val in vals:
+            if val not in candidate_vals:
+                raise Exception("Input '%s' value '%s' not in allowed candidates" % (input_id, str(val)))
+    
     key = _input.get("Value")
     fn = _input.get("Function")
     if fn is not None and key is not None:
@@ -702,14 +718,15 @@ def validate_input_data(form_definition, data, _input):
                 kwargs[kwarg] = form_dereference(_val, data)
             candidates = handler.handle(*args, **kwargs)["data"]
             key = key.lstrip("#")
-            for candidate in candidates:
-                try:
-                    candidate_val = form_get_val(candidate, key)
-                except ValueError:
-                    raise Exception("Key '%s' not in candidate %s" % (key, str(candidate)))
-                if val == val or str(val) == val or unicode(candidate_val) == val:
-                    return
-            raise Exception("Input '%s' value '%s' not in allowed candidates %s obtained from %s" % (input_id, str(val), str(candidates), "/"+"/".join(args)))
+            for val in vals:
+                for candidate in candidates:
+                    try:
+                        candidate_val = form_get_val(candidate, key)
+                    except ValueError:
+                        raise Exception("Key '%s' not in candidate %s" % (key, str(candidate)))
+                    if val == val or str(val) == val or unicode(candidate_val) == val:
+                        return
+                raise Exception("Input '%s' value '%s' not in allowed candidates %s obtained from %s" % (input_id, str(val), str(candidates), "/"+"/".join(args)))
 
 def form_dereference(s, data, prefix=""):
     for key in sorted(data.keys(), reverse=True):

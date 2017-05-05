@@ -97,6 +97,9 @@ function form(divid, options) {
 	} else {
 		o.div = divid
 	}
+	if (o.div.is("#link")) {
+		o.div.addClass("p-3")
+	}
 
 	o.load = function() {
 		if ("form_data" in o.options) {
@@ -155,11 +158,13 @@ function form(divid, options) {
 	}
 
 	o.mangle_form_data = function() {
+		o.form_inputs = {}
 		if (!o.form_data.form_definition || !o.form_data.form_definition.Inputs) {
 			return
 		}
 		for (var i=0; i<o.form_data.form_definition.Inputs.length; i++) {
 			var d = o.form_data.form_definition.Inputs[i]
+			o.form_inputs[d.Id] = d
 			if (d.Candidates == "__node_selector__") {
 				console.log("mangle form definition: swich __node_selector__ to rest GET /users/self/nodes")
 				o.form_data.form_definition.Inputs[i].Function = "/users/self/nodes"
@@ -188,6 +193,16 @@ function form(divid, options) {
 				o.form_data.form_definition.Inputs[i].Default = _self.email
 			}
 		}
+	}
+
+	function input_has_default(d) {
+		if (is_numeric(d.Default) && (d.Default == 0)) {
+			return true
+		}
+		if (d.Default) {
+			return true
+		}
+		return false
 	}
 
 	o.render_form_mode = function() {
@@ -273,7 +288,11 @@ function form(divid, options) {
 				keys_done.push(d.Key)
 			}
 			var cell = $("<th></th>")
-			cell.text(d.DisplayModeLabel)
+			if (d.DisplayModeLabel) {
+				cell.text(d.DisplayModeLabel)
+			} else {
+				cell.text(d.Label)
+			}
 			if (i == 0) {
 				cell.addClass("icon comp16")
 			}
@@ -307,7 +326,7 @@ function form(divid, options) {
 				var c = o.parse_condition(d)
 				var val = data[c.id]
 				var ret = o.eval_condition(c, val)
-				console.log("render condition:", input_key_id, "->", d.Id, ":", d.Condition, "=>", ret)
+				console.log("render condition:", input_key_id, "->", d.Id, ":", val, d.Condition, "=>", ret)
 				if (!ret) {
 					continue
 				}
@@ -393,7 +412,7 @@ function form(divid, options) {
 				var c = o.parse_condition(d)
 				var val = data[c.id]
 				var ret = o.eval_condition(c, val)
-				console.log("render condition:", input_key_id, "->", d.Id, ":", d.Condition, "=>", ret)
+				console.log("render condition:", input_key_id, "->", d.Id, ":", val, d.Condition, "=>", ret)
 				if (!ret) {
 					continue
 				}
@@ -401,7 +420,11 @@ function form(divid, options) {
 			var line = $("<tr></tr>")
 			var label = $("<th class='nowrap pr-3'></th>")
 			var value = $("<td></td>")
-			label.text(d.DisplayModeLabel)
+			if (d.DisplayModeLabel) {
+				label.text(d.DisplayModeLabel)
+			} else {
+				label.text(d.Label)
+			}
 			if(d.LabelCss) {
 				label.addClass("icon_fixed_width")
 				label.addClass(d.LabelCss)
@@ -1477,6 +1500,15 @@ function form(divid, options) {
 		console.log("hide", d.Id)
 		tr.addClass("hidden")
 		tr.find("[name=val]").children("input,textarea").val("").prop("acid", "").trigger("change")
+		if (d.Id in o.cond_triggers) {
+			var triggers = o.cond_triggers[d.Id]
+			for (var i=0; i<triggers.length; i++) {
+				if (o.div.find("tr[iid="+triggers[i].Id+"]").hasClass("hidden")) {
+					continue
+				}
+				o.hide_input(table, triggers[i], initial)
+			}
+		}
 	}
 
 	o.show_input = function(table, d) {
@@ -1495,7 +1527,7 @@ function form(divid, options) {
 				input.prop("acid", data.autocomplete.options.source[0].id)
 				input.change()
 			}
-		} else if (d.Type == "string" && d.Default) {
+		} else if ((d.Type == "string" || d.Type == "integer") && input_has_default(d)) {
 			input.val(d.Default)
 			input.prop("acid", d.Default)
 			input.change()
@@ -1512,15 +1544,19 @@ function form(divid, options) {
 		}
 		var cell = line.children("[name=val]").children("input,textarea")
 		trigger(cell, true)
-		cell.bind("blur change", function() {
+		cell.bind("change", function() {
 			trigger($(this))
 		})
 		function trigger(input, initial) {
-			var data = o.form_to_data()
-			var val = data[key]
+			if (key in o.form_inputs) {
+				var val = o.get_val(input.parent())
+			} else {
+				var data = o.form_to_data()
+				var val = data[key]
+			}
 			var c = o.parse_condition(d)
 			var ret = o.eval_condition(c, val)
-			console.log("condition:", key, "->", d.Id, d.Condition, "=>", ret)
+			console.log("condition:", key, "->", d.Id, val , d.Condition, "=>", ret)
 			if (ret) {
 				o.show_input(table, d)
 			} else {
@@ -1538,6 +1574,10 @@ function form(divid, options) {
 			var op = "NOT IN"
 		} else if (d.Condition.match(/IN/)) {
 			var op = "IN"
+		} else if (d.Condition.match(/>/)) {
+			var op = ">"
+		} else if (d.Condition.match(/</)) {
+			var op = "<"
 		} else {
 			console.log(d.Id, "unsupported condition operator:", d.Condition)
 		}
@@ -1552,7 +1592,15 @@ function form(divid, options) {
 	}
 
 	o.eval_condition = function(c, val) {
-		if (val != "") {
+		if (typeof val === "undefined") {
+			return false
+		}
+		if (typeof val === "number") {
+			try {
+				c.ref = parseInt(c.ref)
+			} catch(e) {}
+		}
+		if ((val != "") || (val == 0)) {
 			if (c.op == "!=") {
 				if (c.ref == "empty") {
 					// foo != empty
@@ -1589,6 +1637,28 @@ function form(divid, options) {
 				} else {
 					return false
 				}
+			} else if (c.op == ">") {
+				if (c.ref == "empty") {
+					// foo > empty
+					return false
+				} else if (val > c.ref) {
+					// foo > foo
+					return true
+				} else {
+					// foo > bar
+					return false
+				}
+			} else if (c.op == "<") {
+				if (c.ref == "empty") {
+					// foo < empty
+					return false
+				} else if (val < c.ref) {
+					// foo < foo
+					return true
+				} else {
+					// foo < bar
+					return false
+				}
 			}
 		} else {
 			if (c.op == "!=") {
@@ -1610,6 +1680,10 @@ function form(divid, options) {
 			} else if (c.op == "NOT IN") {
 				return false
 			} else if (c.op == "IN") {
+				return false
+			} else if (c.op == ">") {
+				return false
+			} else if (c.op == "<") {
 				return false
 			}
 		}
@@ -1643,7 +1717,7 @@ function form(divid, options) {
 	o.install_fn_trigger = function(table, key, d) {
 		console.log("install fn trigger", key, "->", d.Id)
 		var cell = table.find("[iid="+key+"]").children("[name=val]").children("input,textarea")
-		cell.bind("blur change", function() {
+		cell.bind("change", function() {
 			var input = table.find("[iid="+d.Id+"]").find("input,textarea,.form_input_info")
 			if (input.length == 0) {
 				return
