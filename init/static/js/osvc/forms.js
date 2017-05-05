@@ -1560,7 +1560,15 @@ function form(divid, options) {
 	}
 
 	o.eval_condition = function(c, val) {
-		if (val != "") {
+		if (typeof val === "undefined") {
+			return false
+		}
+		if (typeof val === "number") {
+			try {
+				c.ref = parseInt(c.ref)
+			} catch(e) {}
+		}
+		if ((val != "") || (val == 0)) {
 			if (c.op == "!=") {
 				if (c.ref == "empty") {
 					// foo != empty
