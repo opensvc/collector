@@ -546,6 +546,13 @@ An opensvc property values filter. Example: "updated>-2d".
 
 """,
           },
+          "groupby": {
+            "desc": """
+A comma-separated list of properties.
+
+Group the resultset using the specified properties.
+""",
+          },
           "orderby": {
             "desc": """
 A comma-separated list of properties.
