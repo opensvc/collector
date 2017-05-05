@@ -1388,7 +1388,7 @@ function cell_decorator_form_id(e, line) {
 	var v = $.data(e[0], "v")
 	e
 	.html("<span class='icon wf16 nowrap clickable'>"+v+"</span>")
-	.addClass("corner")
+	.addClass("corner-top")
 	.on("click", function(){
 		osvc.flash.show({
 			id: "wf-"+v,
