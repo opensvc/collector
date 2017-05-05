@@ -412,7 +412,7 @@ function workflow(divid, options) {
 	}
 
 	o.render_form = function(stored_form) {
-		var div = $("<div></div>")
+		var div = $("<div name='step'></div>")
 		var div_form = $("<div></div>")
 		div.append(o.render_form_title(stored_form))
 		div_form.uniqueId()
@@ -431,9 +431,12 @@ function workflow(divid, options) {
 			div_form.hide()
 		}
 
-		div.bind("click", function() {
-			$(this).parent().find(".forms").addClass("grayed")
-			$(this).parent().find(".postit").parent().hide(500)
+		div.bind("click", function(event) {
+			if (!$(this).hasClass("grayed")) {
+				return
+			}
+			o.e_form.children("[name=step]").addClass("grayed")
+			o.e_form.find(".postit").parent().hide(500)
 			$(this).removeClass("grayed")
 			div_form.show()
 			o.render_next(stored_form)
