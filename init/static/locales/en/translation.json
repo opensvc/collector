@@ -2110,6 +2110,7 @@
 		}
 	},
 	"forms": {
+		"toogle_json": "Toggle between rendered and JSON",
 		"no_definition": "This form has no definition",
 		"no_output": "This form has no output defined",
 		"QUEUED": "Background task queued. Waiting for a worker.",

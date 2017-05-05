@@ -222,6 +222,7 @@ function form(divid, options) {
 		o.area = area
 		div.append(o.render_edit())
 		div.append(o.render_cancel())
+		div.append(o.render_code())
 		div.append(area)
 		o.render_display()
 		o.div.empty()
@@ -232,12 +233,31 @@ function form(divid, options) {
 		if (o.options.editable == false) {
 			return ""
 		}
-		var a = $("<a class='icon edit16' style='position:absolute;top:2px;right:2px;z-index:400'></a>")
+		var a = $("<a class='icon edit16' style='position:absolute;top:2px;right:2px'></a>")
 		a.attr("title", i18n.t("forms.edit")).tooltipster()
 		a.bind("click", function(){
 			$(this).siblings("a.nok").show()
+			$(this).siblings("a.fa-bars,a.fa-code").hide()
 			$(this).hide()
 			o.render_form()
+		})
+		return a
+	}
+
+	o.render_code = function() {
+		var a = $("<a class='icon fa-code' style='position:absolute;top:2px;right:1.5em'></a>")
+		if (o.options.editable == false) {
+			a.css({"right": "2px"})
+		}
+		a.attr("title", i18n.t("forms.toggle_json")).tooltipster()
+		a.bind("click", function() {
+			if ($(this).hasClass("fa-code")) {
+				$(this).removeClass("fa-code").addClass("fa-bars")
+				o.render_json()
+			} else {
+				$(this).removeClass("fa-bars").addClass("fa-code")
+				o.render_display()
+			}
 		})
 		return a
 	}
@@ -246,14 +266,29 @@ function form(divid, options) {
 		if (o.options.editable == false) {
 			return ""
 		}
-		var a = $("<a class='icon nok' style='display:none;position:absolute;top:2px;right:2px;z-index:400'></a>")
+		var a = $("<a class='icon nok' style='display:none;position:absolute;top:2px;right:2px'></a>")
 		a.attr("title", i18n.t("forms.cancel")).tooltipster()
 		a.bind("click", function(){
 			$(this).siblings("a.edit16").show()
+			$(this).siblings("a.fa-bars").removeClass("fa-bars").addClass("fa-code")
+			$(this).siblings("a.fa-code").show()
 			$(this).hide()
 			o.render_display()
 		})
 		return a
+	}
+
+	o.render_json = function() {
+		if ((typeof(o.options.data) == "string") || (typeof(o.options.data) == "number")) {
+			o.area.text(o.options.data)
+			o.area.addClass("pre")
+			return
+		}
+		o.area.text(JSON.stringify(o.options.data, null, 4))
+		require(["hljs"], function(hljs) {
+			hljs.highlightBlock(o.area[0])
+		})
+		o.area.addClass("pre")
 	}
 
 	o.render_display = function() {
@@ -262,6 +297,7 @@ function form(divid, options) {
 			o.area.addClass("pre")
 			return
 		}
+		o.area.removeClass("pre")
 		if (o.options.digest) {
 			o.render_display_digest()
 		} else {
