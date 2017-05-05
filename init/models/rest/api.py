@@ -631,8 +631,10 @@ def data_commonality(cols, data):
 
 def data_stats(cols, data):
     h = {}
-    if len(data) == 0:
-        return dict(data=h)
+    meta = {"distinct": {}}
+    meta["total"] = len(data)
+    if meta["total"] == 0:
+        return dict(data=h, meta=meta)
     for c in cols:
         _col = ".".join((c.table._tablename, c.name))
         if _col not in data[0]:
@@ -650,7 +652,10 @@ def data_stats(cols, data):
                 h[_col][val] = 1
             else:
                 h[_col][val] += 1
-    return dict(data=h)
+
+    for _col in h:
+        meta["distinct"][_col] = len(h[_col])
+    return dict(data=h, meta=meta)
 
 def prepare_data(
      meta=True,
