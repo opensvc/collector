@@ -542,7 +542,20 @@ function form(divid, options) {
 			line.append(label)
 			line.append(value)
 			if (d.Help) {
-				label.attr("title", d.Help).tooltipster()
+				label.addClass("cursor-help").tooltipster({
+					content: $("<div>"+d.Help+"</div>"),
+					interactive: true,
+					trigger: 'custom',
+					triggerOpen: {
+						click: true,
+						tap: true
+					},
+					triggerClose: {
+						click: true,
+						tap: true,
+						scroll: true
+					}
+				})
 			}
 			if ((typeof(data) === "undefined") || (is_dict(data) && !(input_key_id in data))) {
 				if (d.Default == "__user_email__") {

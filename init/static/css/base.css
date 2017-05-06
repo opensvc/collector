@@ -3104,6 +3104,9 @@ pre.api_doc {
 	border-left: 0.5em solid red;
 	padding-left: 1em;
 }
+.cursor-help {
+	cursor: help;
+} 
 
 @keyframes spinner {
   to {transform: rotate(360deg);}
