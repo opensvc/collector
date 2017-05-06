@@ -594,10 +594,14 @@ class rest_get_nodes(rest_get_table_handler):
           tables=["nodes"],
           desc=desc,
           examples=examples,
+          allow_fset_id=True,
         )
 
     def handler(self, **vars):
         q = q_filter(app_field=db.nodes.app)
+        fset_id = vars.get("fset-id")
+        if fset_id:
+            q = apply_filters_id(q, node_field=db.nodes.node_id, fset_id=fset_id)
         self.set_q(q)
         return self.prepare_data(**vars)
 
