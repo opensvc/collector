@@ -702,6 +702,10 @@
 		"encap_rulesets": "Jeux de règles du service encapsulé"
 	},
 	"node_properties": {
+		"virtualization": "virtualisation",
+		"hv": "hyperviseur",
+		"hvpool": "pool d'hyperviseurs",
+		"hvvdc": "datacentre virtuel",
 		"timezone": "fuseau horaire",
 		"no_uuid": "Agent non enregistré",
 		"id": "id",

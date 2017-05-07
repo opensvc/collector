@@ -733,6 +733,10 @@
 		"encap_rulesets": "Encapsulated service rulesets"
 	},
 	"node_properties": {
+		"virtualization": "virtualization",
+		"hv": "hypervisor",
+		"hvpool": "hypervisor pool",
+		"hvvdc": "virtual datacenter",
 		"timezone": "timezone",
 		"no_uuid": "Agent not registered",
 		"id": "id",
