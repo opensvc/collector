@@ -26,24 +26,26 @@ class rest_get_logs(rest_get_table_handler):
           "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/logs"
         ]
 
-        o = ~db.log.id
-        q = db.log.id > 0
-
         rest_get_table_handler.__init__(
           self,
           path="/logs",
           tables=["log"],
           vprops={"log_event": ["log_fmt", "log_dict"]},
           vprops_fn=mangle_logs,
-          q=q,
-          orderby=o,
+          orderby=~db.log.id,
           desc=desc,
           examples=examples,
+          allow_fset_id=True,
         )
 
     def handler(self, **vars):
-        data = self.prepare_data(**vars)
-        return data
+        q = db.log.id > 0
+        fset_id = vars.get("fset-id")
+        if fset_id:
+            q = apply_filters_id(q, node_field=db.log.node_id, svc_field=db.log.svc_id, fset_id=fset_id)
+        self.set_q(q)
+
+        return self.prepare_data(**vars)
 
 #
 class rest_get_log(rest_get_line_handler):

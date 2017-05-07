@@ -19,23 +19,26 @@ class rest_get_alerts(rest_get_table_handler):
           "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/alerts?query=not dash_type contains save"
         ]
 
-        q = db.dashboard.id > 0
-        o = ~db.dashboard.id
-
         rest_get_table_handler.__init__(
           self,
           path="/alerts",
           tables=["dashboard"],
           vprops={"alert": ["dash_fmt", "dash_dict"]},
           vprops_fn=mangle_alerts,
-          orderby=o,
-          q=q,
+          orderby=~db.dashboard.id,
           desc=desc,
           examples=examples,
+          allow_fset_id=True,
         )
 
     def handler(self, **vars):
+        q = db.dashboard.id > 0
+        fset_id = vars.get("fset-id")
+        if fset_id:
+            q = apply_filters_id(q, node_field=db.dashboard.node_id, fset_id=fset_id)
+        self.set_q(q)
         data = self.prepare_data(**vars)
+        data["data"] = mangle_alerts(data["data"])
         return data
 
 #

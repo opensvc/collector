@@ -15,10 +15,14 @@ class rest_get_ips(rest_get_table_handler):
           tables=["v_nodenetworks"],
           desc=desc,
           examples=examples,
+          allow_fset_id=True,
         )
 
     def handler(self, **vars):
         q = q_filter(app_field=db.v_nodenetworks.app)
+        fset_id = vars.get("fset-id")
+        if fset_id:
+            q = apply_filters_id(q, node_field=db.v_nodenetworks.node_id, fset_id=fset_id)
         self.set_q(q)
         return self.prepare_data(**vars)
 

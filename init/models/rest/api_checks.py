@@ -15,10 +15,14 @@ class rest_get_checks(rest_get_table_handler):
           tables=["checks_live"],
           desc=desc,
           examples=examples,
+          allow_fset_id=True,
         )
 
     def handler(self, **vars):
         q = q_filter(node_field=db.checks_live.node_id)
+        fset_id = vars.get("fset-id")
+        if fset_id:
+            q = apply_filters_id(q, node_field=db.checks_live.node_id, fset_id=fset_id)
         self.set_q(q)
         return self.prepare_data(**vars)
 
@@ -341,11 +345,15 @@ class rest_get_checks_settings(rest_get_table_handler):
           tables=["checks_settings"],
           desc=desc,
           examples=examples,
+          allow_fset_id=True,
         )
 
     def handler(self, **vars):
         q = db.checks_settings.id > 0
         q = q_filter(q, node_field=db.checks_settings.node_id)
+        fset_id = vars.get("fset-id")
+        if fset_id:
+            q = apply_filters_id(q, node_field=db.checks_settings.node_id, fset_id=fset_id)
         self.set_q(q)
         return self.prepare_data(**vars)
 

@@ -44,11 +44,15 @@ class rest_get_disks(rest_get_table_handler):
           ),
           desc=desc,
           examples=examples,
+          allow_fset_id=True,
         )
 
     def handler(self, **vars):
         q = db.diskinfo.id > 0
         q = q_filter(q, node_field=db.svcdisks.node_id)
+        fset_id = vars.get("fset-id")
+        if fset_id:
+            q = apply_filters_id(q, node_field=db.svcdisks.node_id, fset_id=fset_id)
         self.set_q(q)
         return self.prepare_data(**vars)
 

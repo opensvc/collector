@@ -23,15 +23,22 @@ class rest_get_compliance_logs(rest_get_table_handler):
         examples = [
           "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/compliance/logs?query=run_module=mymod"
         ]
-        q = q_filter(node_field=db.comp_log.node_id)
         rest_get_table_handler.__init__(
           self,
           path="/compliance/logs",
           tables=["comp_log"],
-          q=q,
           desc=desc,
           examples=examples,
+          allow_fset_id=True,
         )
+
+    def handler(self, id, **vars):
+        q = q_filter(node_field=db.comp_log.node_id)
+        fset_id = vars.get("fset-id")
+        if fset_id:
+            q = apply_filters_id(q, node_field=db.comp_log.node_id, fset_id=fset_id)
+        self.set_q(q)
+        return self.prepare_data(**vars)
 
 #
 class rest_get_compliance_log(rest_get_line_handler):
@@ -66,15 +73,22 @@ class rest_get_compliance_status(rest_get_table_handler):
         examples = [
           "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/compliance/status?query=run_status=1 and run_module=mymod"
         ]
-        q = q_filter(node_field=db.comp_status.node_id)
         rest_get_table_handler.__init__(
           self,
           path="/compliance/status",
           tables=["comp_status"],
-          q=q,
           desc=desc,
           examples=examples,
+          allow_fset_id=True,
         )
+
+    def handler(self, id, **vars):
+        q = q_filter(node_field=db.comp_status.node_id)
+        fset_id = vars.get("fset-id")
+        if fset_id:
+            q = apply_filters_id(q, node_field=db.comp_status.node_id, fset_id=fset_id)
+        self.set_q(q)
+        return self.prepare_data(**vars)
 
 #
 class rest_get_compliance_status_one(rest_get_line_handler):
