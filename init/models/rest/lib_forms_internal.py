@@ -331,10 +331,11 @@ form_data_internal = [
                     "Label": "Diskgroup",
                     "Type": "string",
                     "Id": "dg_id",
-                    "Condition": "#array != empty"
+                    "Condition": "#array_id > 0"
                 },
                 {
                     "Function": "/apps",
+                    "DisableAutoDefault": True,
                     "Mandatory": True,
                     "Format": "#app",
                     "Args": [
