@@ -1221,7 +1221,9 @@ function form(divid, options) {
 	}
 
 	function autocomplete_callback(input, d, args, data, content) {
-		if (typeof(data) === "string") {
+		if (typeof(data) === "undefined") {
+			return
+		} else if (typeof(data) === "string") {
 			if (input.hasClass("form_input_info")) {
 				input.text(data)
 			} else {
