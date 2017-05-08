@@ -734,6 +734,13 @@ def prepare_data(
                         tables.append("stor_array")
                         validated_props.append(prop)
                         break
+            elif t == "tags":
+                for table in tables:
+                    if "tag_id" in db[table].fields:
+                        left.append(db.tags.on(db.tags.tag_id==db[table].tag_id))
+                        tables.append("tags")
+                        validated_props.append(prop)
+                        break
         props = ",".join(validated_props)
 
     all_cols, translations = props_to_cols(None, tables=tables, blacklist=props_blacklist, db=db)
