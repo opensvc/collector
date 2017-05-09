@@ -745,7 +745,7 @@ def prepare_data(
 
     all_cols, translations = props_to_cols(None, tables=tables, blacklist=props_blacklist, db=db)
     cols, translations = props_to_cols(props, tables=tables, vprops=vprops, blacklist=props_blacklist, db=db)
-    false_values = ("0", "f", "F", "False", "false", False)
+    false_values = ("0", "f", "F", "False", "false", False, "n", "no", "N")
 
     if meta in false_values:
         meta = False
