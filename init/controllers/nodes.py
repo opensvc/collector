@@ -374,7 +374,7 @@ def ajax_uids():
         sql2 += """
               limit %(limit)d
               offset %(offset)d"""%dict(
-                limit=mt.perpage,
+                limit=mt.limit,
                 offset=mt.pager_start,
            )
     mt.object_list = db.executesql(sql2, as_dict=True)
@@ -472,7 +472,7 @@ def ajax_gids():
         sql2 += """
               limit %(limit)d
               offset %(offset)d"""%dict(
-                limit=mt.perpage,
+                limit=mt.limit,
                 offset=mt.pager_start,
            )
 

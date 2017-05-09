@@ -1223,7 +1223,7 @@ def ajax_comp_svc_status():
                 sql=sql1,
                 where=where,
                 d=(now-datetime.timedelta(days=7)),
-                limit=mt.perpage,
+                limit=mt.limit,
                 offset=mt.pager_start,
            )
 
@@ -1292,7 +1292,7 @@ def ajax_comp_node_status():
                 sql=sql1,
                 where=where,
                 d=(now-datetime.timedelta(days=7)),
-                limit=mt.perpage,
+                limit=mt.limit,
                 offset=mt.pager_start,
            )
 
@@ -1537,7 +1537,7 @@ def ajax_comp_mod_status():
                 sql=sql1,
                 where=where,
                 d=(now-datetime.timedelta(days=7)),
-                limit=mt.perpage,
+                limit=mt.limit,
                 offset=mt.pager_start,
            )
 
