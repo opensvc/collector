@@ -3122,7 +3122,8 @@ def show_services_compdiff(svc_ids, encap=False):
                from
                  comp_status cs
                where
-                 cs.node_id in (%(node_ids)s)
+                 cs.node_id in (%(node_ids)s) and
+                 (cs.svc_id = "" or cs.svc_id is NULL)
                group by
                  cs.run_module,
                  cs.run_status
@@ -3154,13 +3155,14 @@ def show_services_compdiff(svc_ids, encap=False):
                nodes n
              where
                cs.run_module in (%(mods)s) and
-               m.svc_id in (%(svc_ids)s) and
                m.node_id=cs.node_id and
-               m.node_id=n.node_id
+               m.node_id=n.node_id and
+               m.node_id in (%(node_ids)s) and
+               (cs.svc_id = "" or cs.svc_id is NULL)
              order by
                cs.run_module,
                n.nodename
-         """%dict(svc_ids=','.join(map(lambda x: repr(x), svc_ids)), mods=','.join(map(lambda x: repr(str(x)), mods)))
+         """%dict(node_ids=','.join(map(lambda x: repr(x), node_ids)), mods=','.join(map(lambda x: repr(str(x)), mods)))
     _rows = db.executesql(sql)
 
     if len(_rows) == 0:
