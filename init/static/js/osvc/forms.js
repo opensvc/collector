@@ -1850,7 +1850,7 @@ function form(divid, options) {
 			val = subst_refs(input, val)
 			if (key in d) {
 				// support multiple occurence of the same key
-				if (typeof(d[key]) !== "Array") {
+				if (!Array.isArray(d[key])) {
 					d[key] = [d[key]]
 				}
 				d[key].push(val)
@@ -1858,6 +1858,7 @@ function form(divid, options) {
 				d[key] = val
 			}
 		}
+		console.log(d)
 		return d
 	}
 
