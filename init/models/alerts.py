@@ -13,6 +13,14 @@ def update_dash_compdiff_svc(svc_ids):
     now = datetime.datetime.now()
     now = now - datetime.timedelta(microseconds=now.microsecond)
 
+    q = db.services.id > 0
+    existing_svc_ids = set([r.svc_id for r in db(q).select(db.services.svc_id)])
+    deleted_svc_ids = set(svc_ids) - existing_svc_ids
+    if len(deleted_svc_ids) > 0:
+        q = db.dashboard.dash_type == "compliance differences in cluster"
+        q &= db.dashboard.svc_id.belongs(deleted_svc_id)
+        db(q).delete()
+
     for svc_id in svc_ids:
         q = db.svcmon.svc_id == svc_id
         q &= db.svcmon.node_id == db.nodes.node_id
@@ -23,7 +31,11 @@ def update_dash_compdiff_svc(svc_ids):
         n = len(nodes)
 
         if n < 2:
-            continue
+            q = db.dashboard.dash_type == "compliance differences in cluster"
+            q &= db.dashboard.svc_id == svc_id
+            db(q).delete()
+            ws_send("dashboard_change")
+	    continue
 
         sql = """
                    select
@@ -63,7 +75,11 @@ def update_dash_compdiff_svc(svc_ids):
             pb += 1
 
         if pb == 0:
-            continue
+            q = db.dashboard.dash_type == "compliance differences in cluster"
+            q &= db.dashboard.svc_id == svc_id
+            db(q).delete()
+            ws_send("dashboard_change")
+	    continue
 
         q = db.services.svc_id == svc_id
         svc = db(q).select(db.services.svc_env).first()
