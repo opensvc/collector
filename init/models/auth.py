@@ -208,7 +208,10 @@ def user_default_group():
     gid = user_default_group_id()
     if gid is None:
         return
-    return db.auth_group[gid].role
+    group = db.auth_group[gid]
+    if group is None:
+        return
+    return group.role
 
 def user_default_group_id():
     gid = user_primary_group_id()
