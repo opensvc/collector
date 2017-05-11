@@ -304,7 +304,7 @@ class Storage(object):
 
     def get_mappings(self):
         mappings = []
-        array_targets = set([entry["array_tgtid"] for entry in self.request_data["array"]["targets"]])
+        array_targets = set([entry["array_tgtid"].lower() for entry in self.request_data["array"]["targets"]])
         for node in self.request_data["nodes"]:
             for hba_id, targets in node["targets"].items():
                 targets = set(targets) & array_targets
@@ -365,6 +365,16 @@ class Storage(object):
     #
     # node actions
     #
+    def map_nodes_disk(self):
+        if "node_id" not in self.request_data and "nodes" not in self.request_data:
+            raise RequestDataError("The 'node_id' key is mandatory in request data")
+        self.request_data["nodes"] = self.get_nodes()
+        self.request_data["app_id"] = self.get_nodes_app_id()
+        self.request_data["disks"] = self.get_disks()
+        self.request_data["array"]["targets"] = self.get_array_targets()
+        data = self.driver.map_disk()
+        self.put_result(data)
+
     def add_nodes_disk(self):
         if "node_id" not in self.request_data and "nodes" not in self.request_data:
             raise RequestDataError("The 'node_id' key is mandatory in request data")
