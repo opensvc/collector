@@ -99,7 +99,7 @@ class rest_get_node_compliance_candidate_rulesets(rest_get_table_handler):
           "List compliance rulesets attachable to the node.",
         ]
         examples = [
-          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/nodes/1/compliance/candidate_rulesets",
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/nodes/5c977246-0562-11e6-8c70-7e9e6cf13c8a/compliance/candidate_rulesets",
         ]
 
         rest_get_table_handler.__init__(
@@ -136,7 +136,7 @@ class rest_get_node_compliance_rulesets(rest_get_table_handler):
           "List compliance rulesets attached to the node.",
         ]
         examples = [
-          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/nodes/1/compliance/rulesets",
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/nodes/5c977246-0562-11e6-8c70-7e9e6cf13c8a/compliance/rulesets",
         ]
 
         rest_get_table_handler.__init__(
@@ -163,7 +163,7 @@ class rest_get_node_compliance_candidate_modulesets(rest_get_table_handler):
           "List compliance modulesets attachable to the node.",
         ]
         examples = [
-          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/nodes/1/compliance/candidate_modulesets",
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/nodes/5c977246-0562-11e6-8c70-7e9e6cf13c8a/compliance/candidate_modulesets",
         ]
 
         rest_get_table_handler.__init__(
@@ -198,7 +198,7 @@ class rest_get_node_compliance_modulesets(rest_get_table_handler):
           "List compliance modulesets attached to the node.",
         ]
         examples = [
-          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/nodes/1/compliance/modulesets",
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/nodes/5c977246-0562-11e6-8c70-7e9e6cf13c8a/compliance/modulesets",
         ]
 
         rest_get_table_handler.__init__(
@@ -225,7 +225,7 @@ class rest_get_node_interfaces(rest_get_table_handler):
           "List a node network interfaces.",
         ]
         examples = [
-          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/nodes/1/interfaces?props=intf,mac",
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/nodes/5c977246-0562-11e6-8c70-7e9e6cf13c8a/interfaces?props=intf,mac",
         ]
 
         rest_get_table_handler.__init__(
@@ -253,7 +253,7 @@ class rest_get_node_ips(rest_get_table_handler):
           "List a node ips.",
         ]
         examples = [
-          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/nodes/1/ips?props=prio,net_network,net_netmask",
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/nodes/5c977246-0562-11e6-8c70-7e9e6cf13c8a/ips?props=prio,net_network,net_netmask",
         ]
 
         rest_get_table_handler.__init__(
@@ -306,7 +306,7 @@ class rest_get_node_checks(rest_get_table_handler):
           "List a node checks.",
         ]
         examples = [
-          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/nodes/1/checks",
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/nodes/5c977246-0562-11e6-8c70-7e9e6cf13c8a/checks",
         ]
         rest_get_table_handler.__init__(
           self,
@@ -333,7 +333,7 @@ class rest_get_node_targets(rest_get_table_handler):
           "List the target ports visible through the node storage host bus adapters.",
         ]
         examples = [
-          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/nodes/1/targets",
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/nodes/5c977246-0562-11e6-8c70-7e9e6cf13c8a/targets",
         ]
         rest_get_table_handler.__init__(
           self,
@@ -360,7 +360,7 @@ class rest_get_node_hbas(rest_get_table_handler):
           "List a node storage host bus adapters.",
         ]
         examples = [
-          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/nodes/1/hbas",
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/nodes/5c977246-0562-11e6-8c70-7e9e6cf13c8a/hbas",
         ]
         rest_get_table_handler.__init__(
           self,
@@ -385,7 +385,7 @@ class rest_get_node_services(rest_get_table_handler):
           "List node OpenSVC services.",
         ]
         examples = [
-          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/nodes/1/services",
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/nodes/5c977246-0562-11e6-8c70-7e9e6cf13c8a/services",
         ]
         rest_get_table_handler.__init__(
           self,
@@ -410,7 +410,7 @@ class rest_get_node_service(rest_get_line_handler):
           "Display the specified service on the specified node.",
         ]
         examples = [
-          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/nodes/1/services/2",
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/nodes/5c977246-0562-11e6-8c70-7e9e6cf13c8a/services/2",
         ]
         rest_get_line_handler.__init__(
           self,
@@ -437,7 +437,7 @@ class rest_get_node_alerts(rest_get_table_handler):
           "List a node alerts.",
         ]
         examples = [
-          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/nodes/1/alerts?props=dash_type",
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/nodes/5c977246-0562-11e6-8c70-7e9e6cf13c8a/alerts?props=dash_type",
         ]
         rest_get_table_handler.__init__(
           self,
@@ -468,7 +468,7 @@ class rest_get_node(rest_get_line_handler):
           "Display selected node properties.",
         ]
         examples = [
-          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/nodes/1?props=nodename,loc_city",
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/nodes/5c977246-0562-11e6-8c70-7e9e6cf13c8a?props=nodename,loc_city",
         ]
         rest_get_line_handler.__init__(
           self,
@@ -492,7 +492,7 @@ class rest_get_node_uuid(rest_get_line_handler):
           "- Only node responsibles and managers are allowed to see this information.",
         ]
         examples = [
-          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/nodes/1/uuid",
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/nodes/5c977246-0562-11e6-8c70-7e9e6cf13c8a/uuid",
         ]
         rest_get_line_handler.__init__(
           self,
@@ -516,7 +516,7 @@ class rest_get_node_am_i_responsible(rest_get_handler):
           "- return true if the requester is responsible for this node.",
         ]
         examples = [
-          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/nodes/1/am_i_responsible",
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/nodes/5c977246-0562-11e6-8c70-7e9e6cf13c8a/am_i_responsible",
         ]
         rest_get_handler.__init__(
           self,
@@ -539,7 +539,7 @@ class rest_get_node_root_password(rest_get_handler):
           "- The password retrieval is logged for audit.",
         ]
         examples = [
-          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/nodes/1/root_password",
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/nodes/5c977246-0562-11e6-8c70-7e9e6cf13c8a/root_password",
         ]
         rest_get_handler.__init__(
           self,
