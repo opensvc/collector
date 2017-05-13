@@ -147,6 +147,9 @@ if ldap_mode:
 
 auth.define_tables(migrate=False, username=login_form_username)
 
+if auth_google and (auth.is_logged_in() or request.vars.state == "auth_provider=google"):
+    auth.settings.login_form = googleAccount()
+
 if ldap_mode:
     from applications.init.modules.ldap_auth import ldap_auth
     auth.settings.actions_disabled=['register','change_password','request_reset_password','retrieve_username','profile']

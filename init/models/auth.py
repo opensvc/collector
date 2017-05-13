@@ -416,7 +416,11 @@ def auth_register_callback(form):
     table_modified("auth_group")
     table_modified("auth_membership")
 
-    q = db.auth_user.email == form.vars.email
+    if form.get("registration_id"):
+        # google login
+        q = db.auth_user.registration_id == form.get("registration_id")
+    else:
+        q = db.auth_user.email == form.vars.email
     user = db(q).select().first()
 
     set_quota_docker_registries_on_register(user)

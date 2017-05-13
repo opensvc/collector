@@ -22,18 +22,34 @@ def user():
         @auth.requires_permission('read','table name',record_id)
     to decorate functions that need access control
     """
-    if len(request.args) > 0 and \
-       request.args[0] in auth.settings.actions_disabled:
-        return dict(form=T("Feature Disabled"))
+    extra = ""
+    if len(request.args) > 0:
+        if request.args[0] in auth.settings.actions_disabled:
+            return dict(form=T("Feature Disabled"))
+        if request.args[-1] == "google":
+            auth.settings.login_form = googleAccount()
+        if request.args[0] == "login" and auth_google:
+            extra = DIV(
+                BR(),
+                H2(T("Or")),
+                A(
+                    IMG(
+                        _src=URL(c="static",f="images/btn_google_signin_light_normal_web.png"),
+                    ),
+                    _class="p-3 clickable",
+                    _href=URL(args=["login", "google"]),
+                )
+            )
+
     try:
         form = auth()
-        return dict(form=form)
+        return dict(form=form, extra=extra)
     except HTTP as e:
         if str(e) in ("404", "500"):
-            return dict(form=str(e))
+            return dict(form=str(e), extra=extra)
         raise
     except Exception as e:
-        return dict(form=str(e))
+        return dict(form=str(e), extra=extra)
 
 def user_load():
     if request.args[0] != "profile":

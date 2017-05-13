@@ -27,6 +27,10 @@ dns_default_ttl = 120
 # connection to the redis
 redis_host = "dbopensvc"
 
+# google auth
+google_client_id = "0123456789-abcdefghijklmnopqrstuvwxyz012345.apps.googleusercontent.com"
+google_client_secret = "TRuz_acPKuiKApq-OsmOTIqC"
+
 # ldap / ad
 ldap_mode = "ad"
 ldap_server = "ad.my.corp"
