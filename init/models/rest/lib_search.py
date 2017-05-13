@@ -44,7 +44,7 @@ def lib_search_prov_templates(pattern):
     except:
         pass
     q &= db.prov_templates.id == db.prov_template_team_publication.tpl_id
-    q &= db.prov_template_team_publication.group_id.belongs(user_group_ids())
+    q &= db.prov_template_team_publication.group_id.belongs(user_org_group_ids())
     n = db(q).count()
     data = db(q).select(db.prov_templates.tpl_name,
                         db.prov_templates.id,
@@ -71,7 +71,7 @@ def lib_search_form(pattern):
     except:
         pass
     q &= db.forms.id == db.forms_team_publication.form_id
-    q &= db.forms_team_publication.group_id.belongs(user_group_ids())
+    q &= db.forms_team_publication.group_id.belongs(user_org_group_ids())
     n = len(db(q).select(g, distinct=True))
     data = db(q).select(db.forms.form_name,
                         db.forms.id,
@@ -247,7 +247,7 @@ def lib_search_user(pattern):
         pass
     if "Manager" not in user_groups():
         q &= db.v_users.id == db.auth_membership.user_id
-        q &= db.auth_membership.group_id.belongs(user_group_ids())
+        q &= db.auth_membership.group_id.belongs(user_org_group_ids())
         q &= db.auth_membership.group_id == db.auth_group.id
         q &= db.auth_group.role != "Everybody"
     row = db(q).select(db.v_users.id.count(), groupby=db.v_users.id).first()
@@ -300,7 +300,7 @@ def lib_search_safe_file(pattern):
     o = db.safe.uuid
     q = db.safe.uuid.like(pattern) | db.safe.name.like(pattern)
     l = db.safe_team_publication.on(db.safe.id == db.safe_team_publication.file_id)
-    q &= db.safe_team_publication.group_id.belongs(user_group_ids()) | \
+    q &= db.safe_team_publication.group_id.belongs(user_org_group_ids()) | \
          (db.safe.uploader == auth.user_id)
     n = db(q).count()
     data = db(q).select(o,
@@ -320,8 +320,12 @@ def lib_search_safe_file(pattern):
 def lib_search_metric(pattern):
     t = datetime.datetime.now()
     o = db.metrics.metric_name
+    g = db.metrics.id
     q = db.metrics.metric_name.like(pattern)
-    n = db(q).count()
+    if "Manager" not in user_groups():
+        q &= db.metric_team_publication.metric_id == db.metrics.id
+        q &= db.metric_team_publication.group_id.belongs(user_org_group_ids())
+    n = len(db(q).select(g, distinct=True))
     data = db(q).select(o,
                         db.metrics.id,
                         orderby=o,
@@ -338,8 +342,12 @@ def lib_search_metric(pattern):
 def lib_search_chart(pattern):
     t = datetime.datetime.now()
     o = db.charts.chart_name
+    g = db.charts.id
     q = db.charts.chart_name.like(pattern)
-    n = db(q).count()
+    if "Manager" not in user_groups():
+        q &= db.chart_team_publication.chart_id == db.charts.id
+        q &= db.chart_team_publication.group_id.belongs(user_org_group_ids())
+    n = len(db(q).select(g, distinct=True))
     data = db(q).select(o,
                         db.charts.id,
                         orderby=o,
@@ -356,8 +364,12 @@ def lib_search_chart(pattern):
 def lib_search_report(pattern):
     t = datetime.datetime.now()
     o = db.reports.report_name
+    g = db.reports.id
     q = db.reports.report_name.like(pattern)
-    n = db(q).count()
+    if "Manager" not in user_groups():
+        q &= db.report_team_publication.report_id == db.reports.id
+        q &= db.report_team_publication.group_id.belongs(user_org_group_ids())
+    n = len(db(q).select(g, distinct=True))
     data = db(q).select(o,
                         db.reports.id,
                         orderby=o,
@@ -377,7 +389,7 @@ def lib_search_modulesets(pattern):
     q = db.comp_moduleset.modset_name.like(pattern)
     if "Manager" not in user_groups():
         q &= db.comp_moduleset_team_publication.modset_id == db.comp_moduleset.id
-        q &= db.comp_moduleset_team_publication.group_id.belongs(user_group_ids())
+        q &= db.comp_moduleset_team_publication.group_id.belongs(user_org_group_ids())
     n = db(q).count()
     data = db(q).select(o,
                         db.comp_moduleset.id,
@@ -398,7 +410,7 @@ def lib_search_rulesets(pattern):
     q = db.comp_rulesets.ruleset_name.like(pattern)
     if "Manager" not in user_groups():
         q &= db.comp_ruleset_team_publication.ruleset_id == db.comp_rulesets.id
-        q &= db.comp_ruleset_team_publication.group_id.belongs(user_group_ids())
+        q &= db.comp_ruleset_team_publication.group_id.belongs(user_org_group_ids())
     n = db(q).count()
     data = db(q).select(o,
                         db.comp_rulesets.id,
@@ -421,7 +433,7 @@ def lib_search_docker_registries(pattern):
     q |= db.docker_registries.url.like(pattern)
     if "Manager" not in user_groups():
         q &= db.docker_registries_publications.registry_id == db.docker_registries.id
-        q &= db.docker_registries_publications.group_id.belongs(user_group_ids())
+        q &= db.docker_registries_publications.group_id.belongs(user_org_group_ids())
     n = db(q).count()
     data = db(q).select(o,
                         db.docker_registries.url,
@@ -471,7 +483,7 @@ def lib_search_variables(pattern):
     q = db.v_comp_rulesets.var_name.like(pattern)
     if "Manager" not in user_groups():
         q &= db.comp_ruleset_team_publication.ruleset_id == db.v_comp_rulesets.ruleset_id
-        q &= db.comp_ruleset_team_publication.group_id.belongs(user_group_ids())
+        q &= db.comp_ruleset_team_publication.group_id.belongs(user_org_group_ids())
     n = db(q).count()
     data = db(q).select(o,
                         db.v_comp_rulesets.id,
