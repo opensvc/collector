@@ -6,6 +6,7 @@ def node_dashboard_updates(node_id):
     delete_dash_node_not_updated(node_id)
     update_dash_node_beyond_maintenance_end(node_id)
     update_dash_node_near_maintenance_end(node_id)
+    update_dash_node_without_maintenance_end(node_id)
     dashboard_events()
 
 def delete_dash_node_without_asset(node_id):
@@ -15,6 +16,44 @@ def delete_dash_node_without_asset(node_id):
                  dash_type = "node without asset information"
           """%dict(node_id=node_id)
     rows = db.executesql(sql)
+    db.commit()
+
+def update_dash_node_without_maintenance_end(node_id):
+    sql = """delete from dashboard
+               where
+                 node_id in (
+                   select node_id
+                   from nodes
+                   where
+                     node_id="%(node_id)s" and
+                     maintenance_end is NULL
+                 ) and
+                 dash_type = "node without maintenance end date"
+          """%dict(node_id=node_id)
+    rows = db.executesql(sql)
+
+    sql = """insert into dashboard
+               select
+                 NULL,
+                 "node without maintenance end date",
+                 "",
+                 1,
+                 "",
+                 "",
+                 now(),
+                 "",
+                 node_env,
+                 now(),
+                 node_id,
+                 NULL
+               from nodes
+               where
+                 node_id="%(node_id)s" and
+                 maintenance_end is NULL
+               on duplicate key update
+                 dash_updated=now()
+          """ % dict(node_id=node_id)
+    db.executesql(sql)
     db.commit()
 
 def update_dash_node_beyond_maintenance_end(node_id):
