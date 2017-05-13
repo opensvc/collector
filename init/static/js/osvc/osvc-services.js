@@ -404,6 +404,7 @@ function services_ajax_error_fmt(xhr, stat, error) {
 	p.css({
 		"padding": "5px",
 		"padding-left": "20px",
+		"color": "lightgray",
 	})
 	e.append(p)
 	return e
@@ -423,6 +424,7 @@ function services_error_fmt(data) {
 	}
 	p.css({
 		"padding": "2em 0 0 0",
+		"color": "lightgray",
 	})
 	e.append(p)
 	return e
@@ -442,6 +444,7 @@ function services_info_fmt(data) {
 	}
 	p.css({
 		"padding": "2em 0 0 0",
+		"color": "lightgray",
 	})
 	e.append(p)
 	return e
