@@ -383,10 +383,20 @@ class rest_post_users(rest_post_handler):
             except:
                 del(vars["quota_org_group"])
 
-        if "password" in vars:
-            pass
+        q = db.auth_user.id > 0
+        if "email" in vars:
+            q &= db.auth_user.email == vars["email"]
+        elif "username" in vars:
+            q &= db.auth_user.username == vars["username"]
+        else:
+            raise Exception("email or username are mandatory")
+        user = db(q).select().first()
+        if user is not None:
+            return rest_post_user().handler(user.id, **vars)
 
         obj_id = db.auth_user.validate_and_insert(**vars)
+        if not isinstance(obj_id, int):
+            return dict(error=obj_id.errors)
         if "password" in vars:
             vars["password"] = "xxxxx"
         _log('user.create',
@@ -397,6 +407,7 @@ class rest_post_users(rest_post_handler):
         table_modified("auth_user")
 
         user = db.auth_user(obj_id)
+
         if auth.settings.create_user_groups:
             group_id = auth.add_group(auth.settings.create_user_groups % user)
             auth.add_membership(group_id, user.id)
@@ -466,8 +477,6 @@ class rest_post_user(rest_post_handler):
         if "username" in vars and not login_form_username:
             raise Exception(T("The 'username' property is updatable only with a collector setup for ldap authentication"))
 
-        if "password" in vars:
-            pass
         db(q).validate_and_update(**vars)
         if "password" in vars:
             vars["password"] = "xxxxx"
