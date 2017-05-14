@@ -6,7 +6,7 @@ PATH_SCRIPT="$(cd $(/usr/bin/dirname $(whence -- $0 || echo $0));pwd)"
 . $PATH_SCRIPT/$(basename $0).conf
 
 DUMP_DIR=$PATH_SCRIPT/../dbdump
-MYSQLDUMP="mysqldump -S $DATADIR/mysql.sock -u root -p$PASSWORD"
+MYSQLDUMP="mysqldump -S $DATADIR/mysql.sock -u root -p$PASSWORD --hex-blob"
 MYSQL="mysql -S $DATADIR/mysql.sock -u root -p$PASSWORD"
 
 echo >$DUMP_DIR/schema.dump
@@ -38,8 +38,7 @@ $MYSQLDUMP opensvc checks_defaults >> $DUMP_DIR/data.dump
 $MYSQLDUMP opensvc billing >> $DUMP_DIR/data.dump
 $MYSQLDUMP opensvc billing_agent >> $DUMP_DIR/data.dump
 $MYSQLDUMP --where="privilege='T'" opensvc auth_group >> $DUMP_DIR/data.dump
-$MYSQLDUMP --where="form_type='obj'" opensvc forms >> $DUMP_DIR/data.dump
-$MYSQLDUMP --where="form_name='folder_compliance'" opensvc forms >> $DUMP_DIR/data.dump
+$MYSQLDUMP --where="form_type='obj' or form_name='folder_compliance'" opensvc forms >> $DUMP_DIR/data.dump
 
 cat - <<EOF >> $DUMP_DIR/data.dump
 INSERT INTO sysrep_secure VALUES (1,'.*');
