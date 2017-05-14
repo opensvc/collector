@@ -383,7 +383,10 @@ class rest_post_users(rest_post_handler):
             except:
                 del(vars["quota_org_group"])
 
-        obj_id = db.auth_user.insert(**vars)
+        if "password" in vars:
+            pass
+
+        obj_id = db.auth_user.validate_and_insert(**vars)
         if "password" in vars:
             vars["password"] = "xxxxx"
         _log('user.create',
@@ -463,7 +466,11 @@ class rest_post_user(rest_post_handler):
         if "username" in vars and not login_form_username:
             raise Exception(T("The 'username' property is updatable only with a collector setup for ldap authentication"))
 
-        db(q).update(**vars)
+        if "password" in vars:
+            pass
+        db(q).validate_and_update(**vars)
+        if "password" in vars:
+            vars["password"] = "xxxxx"
         l = []
         fmt = "change user %(email)s: %(data)s"
         d = dict(email=row.email, data=beautify_change(row, vars))
