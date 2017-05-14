@@ -132,14 +132,18 @@ function generic_selector_checks_contextual_settings(id) {
 	})
 }
 
-function generic_selector_org_groups(id) {
+function generic_selector_org_groups(id, options) {
+	var filters = ["privilege F"]
+	if (options.exclude) {
+		filters.push("role !("+options.exclude.join(",")+")")
+	}
 	return generic_selector(id, {
 		"url_path": "R_GROUPS",
 		"url_params": {
 			"orderby": "role",
 			"limit": "0",
 			"props": "id,role",
-			"filters": ["privilege F"],
+			"filters": filters,
 			"meta": "0"
 		},
 		"object_class": "guys16",

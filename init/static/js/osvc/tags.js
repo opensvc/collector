@@ -1183,11 +1183,16 @@ function user_org_membership(options) {
 	options.bgcolor = osvc.colors.org
 	options.icon = "guys16"
 	options.get_tags = function(fval, callback, callback_err) {
+		var filters = ["privilege F"]
+console.log(options)
+		if (options.exclude) {
+			filters.push("role !("+options.exclude.join(",")+")")
+		}
 		services_osvcgetrest("/users/%1/groups", [options.user_id], {
 			"orderby": options.tag_name,
 			"props": "id," + options.tag_name,
 			"limit": "0",
-			"filters": ["privilege F"],
+			"filters": filters,
 		}, callback, callback_err)
 	}
 	options.get_candidates = function(fval, callback, callback_err) {

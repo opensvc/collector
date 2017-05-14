@@ -2737,6 +2737,9 @@ function data_action_del_groups(divid) {
 		"requestor": services_osvcdeleterest,
 		"request_service": "R_GROUPS",
 		"selector": generic_selector_org_groups,
+		"selector_options": {
+			"exclude": ["Everybody"]
+		},
 		"no_lines": true,
 		"request_data_entry": function(selected) {
 			return {
@@ -4594,7 +4597,7 @@ function _data_action_generic_selector(form, options) {
 	var selector_div = $("<div></div>")
 	selector_div.uniqueId()
 	form.append(selector_div)
-	var selector_instance = options.selector(selector_div.attr("id"))
+	var selector_instance = options.selector(selector_div.attr("id"), options.selector_options)
 	var yes_no = table_action_menu_yes_no('action_menu.submit', function(e){
 		if (options.no_lines || !options.data) {
 			var selected = selector_instance.get_selected()
