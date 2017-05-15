@@ -111,7 +111,7 @@ def docker_repositories_acls_query(action="pull"):
         q_acls = db.docker_repositories.id > 0
         return q_acls
 
-    group_ids = user_group_ids()
+    group_ids = user_org_group_ids()
     if action == "push":
         q = db.docker_registries.restricted == False
         q &= db.docker_registries_publications.registry_id == db.docker_registries.id
@@ -139,16 +139,10 @@ def docker_repositories_acls_query(action="pull"):
         acls.append("^users/%d/"%auth.user_id)
     if hasattr(auth.user, "username") and auth.user.username:
         acls.append("^users/%s/"%auth.user.username)
-    for gid in user_group_ids():
+    for gid in group_ids:
         acls.append("^groups/%d/"%gid)
-    for group in user_groups():
-        group = group.lower()
-        acls.append("^groups/%s/"%group)
     for app_id in user_app_ids():
         acls.append("^apps/%d/"%app_id)
-    for app in user_apps():
-        app = app.lower()
-        acls.append("^apps/%s/"%app)
 
     if len(acls) == 0 and action != "pull":
         return db.docker_repositories.id < 0
