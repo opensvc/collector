@@ -399,13 +399,8 @@ function services_ismemberof(groups) {
 function services_ajax_error_fmt(xhr, stat, error) {
 	var e = $("<span><span class='icon alert16 err fa-2x'></span><span data-i18n='ajax.error'></span></span>")
 	e.i18n()
-	var p = $("<pre></pre>")
+	var p = $("<pre class='api_error'></pre>")
 	p.text("status: " + stat + "\nerror: " + error)
-	p.css({
-		"padding": "5px",
-		"padding-left": "20px",
-		"color": "lightgray",
-	})
 	e.append(p)
 	return e
 }
@@ -416,16 +411,12 @@ function services_error_fmt(data) {
 	}
 	var e = $("<span><span class='icon alert16 err fa-2x'></span><span data-i18n='api.error'></span></span>")
 	e.i18n()
-	var p = $("<pre></pre>")
+	var p = $("<pre class='api_error'></pre>")
 	if (typeof data.error === "string") {
 		p.text(data.error)
 	} else {
 		p.text(data.error.join("\n"))
 	}
-	p.css({
-		"padding": "2em 0 0 0",
-		"color": "lightgray",
-	})
 	e.append(p)
 	return e
 }
@@ -436,16 +427,12 @@ function services_info_fmt(data) {
 	}
 	var e = $("<span><span class='fa fa-info-circle fa-2x icon-green icon'></span><span data-i18n='api.info'></span></span>")
 	e.i18n()
-	var p = $("<pre></pre>")
+	var p = $("<pre class='api_error'></pre>")
 	if (typeof data.info === "string") {
 		p.text(data.info)
 	} else {
 		p.text(data.info.join("\n"))
 	}
-	p.css({
-		"padding": "2em 0 0 0",
-		"color": "lightgray",
-	})
 	e.append(p)
 	return e
 }

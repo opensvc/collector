@@ -697,6 +697,12 @@ body {
 	white-space: -o-pre-wrap; /* Opera 7 */
 	word-wrap: break-word; /* Internet Explorer 5.5+ */
 }
+.header .api_error {
+	color: lightgray;
+}
+.api_error {
+	padding: 2em 0;
+}
 
 .err {
 	color: red;
