@@ -14,7 +14,7 @@ def allowed_user_ids_q(table="auth_user"):
     same groups than the requester.
     """
     try:
-        check_privilege("UserManager")
+        check_privilege("Manager")
         q = db[table].id > 0
     except:
         user_ids = allowed_user_ids()
