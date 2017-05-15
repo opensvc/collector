@@ -75,19 +75,20 @@ def ajax_users_col_values():
     col = request.args[0]
     o = db.v_users[col]
     q = db.v_users.id > 0
+    q &= allowed_user_ids_q("v_users")
     t.object_list = db(q).select(orderby=o, groupby=o)
     for f in t.cols:
         q = _where(q, 'v_users', t.filter_parse(f), f)
     t.object_list = db(q).select(o, orderby=o)
     return t.col_values_cloud_ungrouped(col)
 
-@auth.requires_membership('Manager')
 @auth.requires_login()
 def ajax_users():
     table_id = request.vars.table_id
     t = table_users(table_id, 'ajax_users')
     o = t.get_orderby(default=~db.v_users.last)
     q = db.v_users.id > 0
+    q &= allowed_user_ids_q("v_users")
     for f in t.cols:
         q = _where(q, 'v_users', t.filter_parse(f), f)
 
