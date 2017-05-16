@@ -903,7 +903,8 @@ function form(divid, options) {
 		o.area.append(button)
 
 		button.bind("click", function() {
-			if (!$(this).hasClass("fa-save")) {
+			if (o.submit_disabled()) {
+				o.area.find(".constraint_violation,.mandatory_violation").effect("highlight", 600)
 				return
 			}
 			o.result.empty()
@@ -1502,6 +1503,10 @@ function form(divid, options) {
 		if (o.options.parent_form) {
 			o.options.parent_form.update_submit()
 		}
+	}
+
+	o.submit_disabled = function() {
+		return o.submit_tool.hasClass("nok")
 	}
 
 	o.disable_submit = function() {
