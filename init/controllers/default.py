@@ -25,7 +25,7 @@ def user():
     extra = ""
     if len(request.args) > 0:
         if request.args[0] in auth.settings.actions_disabled:
-            return dict(form=T("Feature Disabled"))
+            return dict(form=T("Feature Disabled"), extra=extra)
         if request.args[-1] == "google":
             auth.settings.login_form = googleAccount()
         if request.args[0] == "login" and auth_google:
