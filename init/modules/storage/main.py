@@ -350,17 +350,22 @@ class Storage(object):
         self.validate_quota(self.request_data["size"])
         self.validate_free(self.request_data["size"])
         data = self.driver.add_disk()
-        self.put_result(data)
+        if data:
+            self.put_result(data)
 
     def del_svc_disk(self):
         if "svc_id" not in self.request_data:
             raise RequestDataError("The 'svc_id' key is mandatory in request data")
-        self.driver.del_disk()
+        data = self.driver.del_disk()
+        if data:
+            self.put_result(data)
 
     def resize_svc_disk(self):
         if "svc_id" not in self.request_data:
             raise RequestDataError("The 'svc_id' key is mandatory in request data")
-        self.driver.resize_disk()
+        data = self.driver.resize_disk()
+        if data:
+            self.put_result(data)
 
     #
     # node actions
@@ -386,26 +391,35 @@ class Storage(object):
         self.validate_quota(self.request_data["size"])
         self.validate_free(self.request_data["size"])
         data = self.driver.add_disk()
-        self.put_result(data)
+        if data:
+            self.put_result(data)
 
     def del_nodes_disk(self):
         if "node_id" not in self.request_data and "nodes" not in self.request_data:
             raise RequestDataError("The 'node_id' key is mandatory in request data")
-        self.driver.del_disk()
+        data = self.driver.del_disk()
+        if data:
+            self.put_result(data)
 
     def resize_nodes_disk(self):
         if "node_id" not in self.request_data and "nodes" not in self.request_data:
             raise RequestDataError("The 'node_id' key is mandatory in request data")
-        self.driver.resize_disk()
+        data = self.driver.resize_disk()
+        if data:
+            self.put_result(data)
 
     #
     # array actions
     #
     def del_array_disk(self):
-        self.driver.del_disk()
+        data = self.driver.del_disk()
+        if data:
+            self.put_result(data)
 
     def resize_array_disk(self):
-        self.driver.del_disk()
+        data = self.driver.del_disk()
+        if data:
+            self.put_result(data)
 
     def main(self):
         """
