@@ -186,6 +186,7 @@ var search_data = {
 	"prov_templates": {
 		"tab" : function(id, res){prov_template_tabs(id, {"tpl_id": res.id, "tpl_name": res.tpl_name})},
 		"type": "prov_template",
+		"prefix": "prov",
 		"color": "svc",
 		"id": "id",
 		"title": "__tpl_name__",
@@ -208,6 +209,7 @@ var search_data = {
 	"vms": {
 		"tab" : function(id, res){node_tabs(id, {"nodename": res.mon_vmname})},
 		"type": "node",
+		"prefix": "vm",
 		"color": "node",
 		"title": "__mon_vmname__",
 		"short_title": "__mon_vmname__",
@@ -308,8 +310,8 @@ function search(divid) {
 		})
 	}
 
-	o.search = function() {
-		var count=0
+	o.search = function(section, limit) {
+		var count = 0
 		var search_query = o.e_search_input.val()
 
 		if (search_query == "") {
@@ -317,6 +319,12 @@ function search(divid) {
 		}
 
 		var data = o.search_parse_input(search_query)
+		if (typeof section !== "undefined") {
+			data["in"] = section
+		}
+		if (typeof limit !== "undefined") {
+			data["limit"] = limit
+		}
 
 		o.e_search_div.removeClass("searchidle")
 		o.e_search_div.addClass("searching")
@@ -387,6 +395,8 @@ function search(divid) {
 		if (search_query.match(/^\w+:\s*/)) {
 			data["substring"] = search_query.replace(/^\w+:\s*/, "")
 			data["in"] = search_query.match(/^\w+:\s*/)[0].replace(/:\s*$/, "")
+			data["limit"] = o.search_limit
+			o.search_limit = 10
 		} else {
 			data["substring"] = search_query
 		}
@@ -460,13 +470,20 @@ function search(divid) {
 		if (osvc.hidden_menu_entries.indexOf(section_data.menu_entry_id) >= 0) {
 			return
 		}
-		var section_div = $("<div class='menu_section'></div>")
+		var section_div = $("<div class='menu_section clickable'></div>")
 		section_div.attr("id", label)
 		var title = $("<h4></h4>")
 		title.text(i18n.t("search.menu_header.title_"+label) + " (" + resultset.total +")")
 		section_div.append(title)
 		var table = $("<table id='search_result_table' style='width:100%'></table>")
 		section_div.append(table)
+		section_div.on("click", function() {
+			var prefix = section_data.prefix
+			if (!prefix) {
+				prefix = section_data.type
+			}
+			o.search(prefix, 0)
+		})
 
 		for (i=0; i<resultset.data.length; i++) {
 			table.append(o.search_build_result_row(label, 0, resultset.data[i], i))

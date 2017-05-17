@@ -1,6 +1,12 @@
 max_search_result = 10
+hard_max_search_result = 1000
 
-def lib_search_arrays(pattern):
+def search_cap_limit(limit):
+    if limit > hard_max_search_result:
+        return hard_max_search_result
+    return limit
+
+def lib_search_arrays(pattern, limit):
     t = datetime.datetime.now()
     o = db.stor_array.array_name
     q = db.stor_array.array_name.like(pattern)
@@ -24,7 +30,7 @@ def lib_search_arrays(pattern):
                         db.stor_array.id,
                         groupby=o,
                         orderby=o,
-                        limitby=(0,max_search_result)
+                        limitby=(0,search_cap_limit(limit))
     ).as_list()
     t = datetime.datetime.now() - t
     return {
@@ -34,7 +40,7 @@ def lib_search_arrays(pattern):
       "elapsed": "%f" % (t.seconds + 1. * t.microseconds / 1000000),
     }
 
-def lib_search_prov_templates(pattern):
+def lib_search_prov_templates(pattern, limit):
     t = datetime.datetime.now()
     o = db.prov_templates.tpl_name
     q = db.prov_templates.tpl_name.like(pattern)
@@ -50,7 +56,7 @@ def lib_search_prov_templates(pattern):
                         db.prov_templates.id,
                         groupby=o,
                         orderby=o,
-                        limitby=(0,max_search_result)
+                        limitby=(0,search_cap_limit(limit))
     ).as_list()
     t = datetime.datetime.now() - t
     return {
@@ -60,7 +66,7 @@ def lib_search_prov_templates(pattern):
       "elapsed": "%f" % (t.seconds + 1. * t.microseconds / 1000000),
     }
 
-def lib_search_form(pattern):
+def lib_search_form(pattern, limit):
     t = datetime.datetime.now()
     g = db.forms.id
     o = db.forms.form_name
@@ -77,7 +83,7 @@ def lib_search_form(pattern):
                         db.forms.id,
                         groupby=g,
                         orderby=o,
-                        limitby=(0,max_search_result)
+                        limitby=(0,search_cap_limit(limit))
     ).as_list()
     t = datetime.datetime.now() - t
     return {
@@ -87,7 +93,7 @@ def lib_search_form(pattern):
       "elapsed": "%f" % (t.seconds + 1. * t.microseconds / 1000000),
     }
 
-def lib_search_fset(pattern):
+def lib_search_fset(pattern, limit):
     t = datetime.datetime.now()
     o = db.gen_filtersets.fset_name
     q = _where(None, 'gen_filtersets', pattern, 'fset_name')
@@ -100,7 +106,7 @@ def lib_search_fset(pattern):
     data = db(q).select(db.gen_filtersets.id,
                         o,
                         orderby=o,
-                        limitby=(0,max_search_result)
+                        limitby=(0,search_cap_limit(limit))
     ).as_list()
     t = datetime.datetime.now() - t
     return {
@@ -110,7 +116,7 @@ def lib_search_fset(pattern):
       "elapsed": "%f" % (t.seconds + 1. * t.microseconds / 1000000),
     }
 
-def lib_search_disk(pattern):
+def lib_search_disk(pattern, limit):
     t = datetime.datetime.now()
     o = db.svcdisks.disk_id
     q = _where(None, 'svcdisks', pattern, 'disk_id')
@@ -120,7 +126,7 @@ def lib_search_disk(pattern):
     data = db(q).select(o,
                         orderby=o,
                         groupby=o,
-                        limitby=(0,max_search_result)
+                        limitby=(0,search_cap_limit(limit))
     ).as_list()
     t = datetime.datetime.now() - t
     return {
@@ -130,7 +136,7 @@ def lib_search_disk(pattern):
       "elapsed": "%f" % (t.seconds + 1. * t.microseconds / 1000000),
     }
 
-def lib_search_app(pattern):
+def lib_search_app(pattern, limit):
     t = datetime.datetime.now()
     o = db.apps.app
     q = db.apps.app.like(pattern)
@@ -142,7 +148,7 @@ def lib_search_app(pattern):
     if not "Manager" in user_groups():
         q &= db.apps.id.belongs(user_app_ids())
     n = db(q).count()
-    data = db(q).select(db.apps.id, o, orderby=o, limitby=(0,max_search_result)).as_list()
+    data = db(q).select(db.apps.id, o, orderby=o, limitby=(0,search_cap_limit(limit))).as_list()
     t = datetime.datetime.now() - t
     return {
       "total": n,
@@ -151,7 +157,7 @@ def lib_search_app(pattern):
       "elapsed": "%f" % (t.seconds + 1. * t.microseconds / 1000000),
     }
 
-def lib_search_service(pattern):
+def lib_search_service(pattern, limit):
     t = datetime.datetime.now()
     o = db.services.svcname
     q = _where(None, 'services', pattern, 'svcname')
@@ -159,7 +165,7 @@ def lib_search_service(pattern):
     q = q_filter(q, app_field=db.services.svc_app)
     q = apply_filters_id(q, None, db.services.svc_id)
     n = db(q).count()
-    data = db(q).select(o, db.services.svc_id, db.services.svc_app, orderby=o, groupby=db.services.svc_id, limitby=(0,max_search_result),).as_list()
+    data = db(q).select(o, db.services.svc_id, db.services.svc_app, orderby=o, groupby=db.services.svc_id, limitby=(0,search_cap_limit(limit)),).as_list()
     t = datetime.datetime.now() - t
     return {
       "total": n,
@@ -168,7 +174,7 @@ def lib_search_service(pattern):
       "elapsed": "%f" % (t.seconds + 1. * t.microseconds / 1000000),
     }
 
-def lib_search_vm(pattern):
+def lib_search_vm(pattern, limit):
     t = datetime.datetime.now()
     o = db.svcmon.mon_vmname
     q = _where(None, 'svcmon', pattern, 'mon_vmname')
@@ -178,7 +184,7 @@ def lib_search_vm(pattern):
     n = db(q).count()
     data = db(q).select(o,
                         orderby=o,
-                        limitby=(0,max_search_result),
+                        limitby=(0,search_cap_limit(limit)),
     ).as_list()
     t = datetime.datetime.now() - t
     return {
@@ -188,7 +194,7 @@ def lib_search_vm(pattern):
       "elapsed": "%f" % (t.seconds + 1. * t.microseconds / 1000000),
     }
 
-def lib_search_ip(pattern):
+def lib_search_ip(pattern, limit):
     t = datetime.datetime.now()
     o = db.node_ip.addr
     q = _where(None, 'node_ip', pattern, 'addr')
@@ -202,7 +208,7 @@ def lib_search_ip(pattern):
                         db.nodes.nodename,
                         db.nodes.app,
                         orderby=o,
-                        limitby=(0,max_search_result),
+                        limitby=(0,search_cap_limit(limit)),
     ).as_list()
     t = datetime.datetime.now() - t
     return {
@@ -213,7 +219,7 @@ def lib_search_ip(pattern):
     }
 
 
-def lib_search_node(pattern):
+def lib_search_node(pattern, limit):
     t = datetime.datetime.now()
     o = db.nodes.nodename
     q = _where(None, 'nodes', pattern, 'nodename')
@@ -225,7 +231,7 @@ def lib_search_node(pattern):
                         db.nodes.node_id,
                         db.nodes.app,
                         orderby=o,
-                        limitby=(0,max_search_result),
+                        limitby=(0,search_cap_limit(limit)),
     ).as_list()
     t = datetime.datetime.now() - t
     return {
@@ -235,7 +241,7 @@ def lib_search_node(pattern):
       "elapsed": "%f" % (t.seconds + 1. * t.microseconds / 1000000),
     }
 
-def lib_search_user(pattern):
+def lib_search_user(pattern, limit):
     t = datetime.datetime.now()
     o = db.v_users.fullname
     q = _where(None, 'v_users', pattern, 'fullname')
@@ -259,7 +265,7 @@ def lib_search_user(pattern):
                         db.v_users.id,
                         db.v_users.email,
                         orderby=o,
-                        limitby=(0,max_search_result),
+                        limitby=(0,search_cap_limit(limit)),
                         groupby=db.v_users.id,
     ).as_list()
     t = datetime.datetime.now() - t
@@ -270,7 +276,7 @@ def lib_search_user(pattern):
       "elapsed": "%f" % (t.seconds + 1. * t.microseconds / 1000000),
     }
 
-def lib_search_group(pattern):
+def lib_search_group(pattern, limit):
     t = datetime.datetime.now()
     o = db.auth_group.role
     q = db.auth_group.privilege == 'F'
@@ -285,7 +291,7 @@ def lib_search_group(pattern):
     data = db(q).select(o,
                         db.auth_group.id,
                         orderby=o,
-                        limitby=(0,max_search_result),
+                        limitby=(0,search_cap_limit(limit)),
     ).as_list()
     t = datetime.datetime.now() - t
     return {
@@ -295,7 +301,7 @@ def lib_search_group(pattern):
       "elapsed": "%f" % (t.seconds + 1. * t.microseconds / 1000000),
     }
 
-def lib_search_safe_file(pattern):
+def lib_search_safe_file(pattern, limit):
     t = datetime.datetime.now()
     o = db.safe.uuid
     q = db.safe.uuid.like(pattern) | db.safe.name.like(pattern)
@@ -307,7 +313,7 @@ def lib_search_safe_file(pattern):
                         db.safe.name,
                         left=l,
                         orderby=o,
-                        limitby=(0,max_search_result),
+                        limitby=(0,search_cap_limit(limit)),
     ).as_list()
     t = datetime.datetime.now() - t
     return {
@@ -317,7 +323,7 @@ def lib_search_safe_file(pattern):
       "elapsed": "%f" % (t.seconds + 1. * t.microseconds / 1000000),
     }
 
-def lib_search_metric(pattern):
+def lib_search_metric(pattern, limit):
     t = datetime.datetime.now()
     o = db.metrics.metric_name
     g = db.metrics.id
@@ -329,7 +335,7 @@ def lib_search_metric(pattern):
     data = db(q).select(o,
                         db.metrics.id,
                         orderby=o,
-                        limitby=(0,max_search_result),
+                        limitby=(0,search_cap_limit(limit)),
     ).as_list()
     t = datetime.datetime.now() - t
     return {
@@ -339,7 +345,7 @@ def lib_search_metric(pattern):
       "elapsed": "%f" % (t.seconds + 1. * t.microseconds / 1000000),
     }
 
-def lib_search_chart(pattern):
+def lib_search_chart(pattern, limit):
     t = datetime.datetime.now()
     o = db.charts.chart_name
     g = db.charts.id
@@ -351,7 +357,7 @@ def lib_search_chart(pattern):
     data = db(q).select(o,
                         db.charts.id,
                         orderby=o,
-                        limitby=(0,max_search_result),
+                        limitby=(0,search_cap_limit(limit)),
     ).as_list()
     t = datetime.datetime.now() - t
     return {
@@ -361,7 +367,7 @@ def lib_search_chart(pattern):
       "elapsed": "%f" % (t.seconds + 1. * t.microseconds / 1000000),
     }
 
-def lib_search_report(pattern):
+def lib_search_report(pattern, limit):
     t = datetime.datetime.now()
     o = db.reports.report_name
     g = db.reports.id
@@ -373,7 +379,7 @@ def lib_search_report(pattern):
     data = db(q).select(o,
                         db.reports.id,
                         orderby=o,
-                        limitby=(0,max_search_result),
+                        limitby=(0,search_cap_limit(limit)),
     ).as_list()
     t = datetime.datetime.now() - t
     return {
@@ -383,7 +389,7 @@ def lib_search_report(pattern):
       "elapsed": "%f" % (t.seconds + 1. * t.microseconds / 1000000),
     }
 
-def lib_search_modulesets(pattern):
+def lib_search_modulesets(pattern, limit):
     t = datetime.datetime.now()
     o = db.comp_moduleset.modset_name
     q = db.comp_moduleset.modset_name.like(pattern)
@@ -394,7 +400,7 @@ def lib_search_modulesets(pattern):
     data = db(q).select(o,
                         db.comp_moduleset.id,
                         orderby=o,
-                        limitby=(0,max_search_result),
+                        limitby=(0,search_cap_limit(limit)),
     ).as_list()
     t = datetime.datetime.now() - t
     return {
@@ -404,7 +410,7 @@ def lib_search_modulesets(pattern):
       "elapsed": "%f" % (t.seconds + 1. * t.microseconds / 1000000),
     }
 
-def lib_search_rulesets(pattern):
+def lib_search_rulesets(pattern, limit):
     t = datetime.datetime.now()
     o = db.comp_rulesets.ruleset_name
     q = db.comp_rulesets.ruleset_name.like(pattern)
@@ -415,7 +421,7 @@ def lib_search_rulesets(pattern):
     data = db(q).select(o,
                         db.comp_rulesets.id,
                         orderby=o,
-                        limitby=(0,max_search_result),
+                        limitby=(0,search_cap_limit(limit)),
     ).as_list()
     t = datetime.datetime.now() - t
     return {
@@ -426,7 +432,7 @@ def lib_search_rulesets(pattern):
     }
 
 
-def lib_search_docker_registries(pattern):
+def lib_search_docker_registries(pattern, limit):
     t = datetime.datetime.now()
     o = db.docker_registries.service
     q = db.docker_registries.service.like(pattern)
@@ -439,7 +445,7 @@ def lib_search_docker_registries(pattern):
                         db.docker_registries.url,
                         db.docker_registries.id,
                         orderby=o,
-                        limitby=(0,max_search_result),
+                        limitby=(0,search_cap_limit(limit)),
     ).as_list()
     t = datetime.datetime.now() - t
     return {
@@ -449,7 +455,7 @@ def lib_search_docker_registries(pattern):
       "elapsed": "%f" % (t.seconds + 1. * t.microseconds / 1000000),
     }
 
-def lib_search_docker_repositories(pattern):
+def lib_search_docker_repositories(pattern, limit):
     t = datetime.datetime.now()
     o = db.docker_repositories.repository
     q = db.docker_repositories.repository.like(pattern)
@@ -461,7 +467,7 @@ def lib_search_docker_repositories(pattern):
                         db.docker_repositories.id,
                         db.docker_registries.url,
                         orderby=o,
-                        limitby=(0,max_search_result),
+                        limitby=(0,search_cap_limit(limit)),
     )
     data = []
     for row in rows:
@@ -477,7 +483,7 @@ def lib_search_docker_repositories(pattern):
       "elapsed": "%f" % (t.seconds + 1. * t.microseconds / 1000000),
     }
 
-def lib_search_variables(pattern):
+def lib_search_variables(pattern, limit):
     t = datetime.datetime.now()
     o = db.v_comp_rulesets.var_name
     q = db.v_comp_rulesets.var_name.like(pattern)
@@ -490,7 +496,7 @@ def lib_search_variables(pattern):
                         db.v_comp_rulesets.ruleset_id,
                         db.v_comp_rulesets.ruleset_name,
                         orderby=o,
-                        limitby=(0,max_search_result),
+                        limitby=(0,search_cap_limit(limit)),
     ).as_list()
     t = datetime.datetime.now() - t
     return {
