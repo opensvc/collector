@@ -14,6 +14,9 @@ class rest_get_search(rest_get_handler):
           "in": {
              "desc": "Limit the search to the selected object type: fset, disk, app, svc, vm, ip, node, user, group, safe, form, rset, modset, prov, docker",
           },
+          "limit": {
+             "desc": "Limit the search resultset to <n>. Honored only if 'in' is also set.",
+          },
         }
         rest_get_handler.__init__(
           self,
