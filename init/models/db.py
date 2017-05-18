@@ -1428,6 +1428,7 @@ db.define_table('node_hba',
 
 db.define_table('stor_array',
     Field('array_name','string'),
+    Field('array_comment','string'),
     Field('array_model','string'),
     Field('array_firmware','string'),
     Field('array_cache','integer'),

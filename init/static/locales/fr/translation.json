@@ -1867,6 +1867,7 @@
 		"Hba Id": "Id de hba",
 		"Target Id": "Id de target",
 		"Array Name": "Nom de la baie",
+		"Array Comment": "Commentaire",
 		"Array Cache": "Cache de la baie",
 		"Array Firmware": "Microcode de la baie",
 		"Array Updated": "Mise à jour baie",

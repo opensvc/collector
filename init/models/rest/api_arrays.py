@@ -1,3 +1,14 @@
+def lib_array_id(id):
+    try:
+        id = int(id)
+        return id
+    except:
+        pass
+    q = db.stor_array.array_name == id
+    row = db(q).select(db.stor_array.id).first()
+    if row is None:
+        return
+    return row.id
 
 #
 class rest_get_arrays(rest_get_table_handler):
@@ -432,5 +443,45 @@ class rest_get_array_disks(rest_get_table_handler):
         q = q_filter(q, node_field=db.svcdisks.node_id)
         self.set_q(q)
         return self.prepare_data(**vars)
+
+#
+class rest_post_array(rest_post_handler):
+    def __init__(self):
+        desc = [
+          "Change an array properties.",
+          "The user must be in the StorageManager or Manager privilege group.",
+          "The action is logged in the collector's log.",
+          "A websocket event is sent to announce the change in the table.",
+        ]
+        examples = [
+          """# curl -u %(email)s -o- -X POST -d array_comment="Moui importante" https://%(collector)s/init/rest/api/arrays/1""",
+        ]
+        rest_post_handler.__init__(
+          self,
+          path="/arrays/<id>",
+          tables=["stor_array"],
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, id, **vars):
+        check_privilege("StorageManager")
+        id = lib_array_id(id)
+        if id is None:
+            return Exception("array id not found")
+        q = db.stor_array.id == id
+        row = db(q).select().first()
+        if row is None:
+            raise Exception("array %s does not exist" % str(id))
+        response = db(q).validate_and_update(**vars)
+        raise_on_error(response)
+        table_modified("stor_array")
+        fmt = 'array %(name)s changed: %(data)s'
+        d = dict(name=row.array_name, data=beautify_change(row, vars))
+        _log('array.change', fmt, d)
+        ws_send('stor_array_change', {'id': row.id})
+        ret = rest_get_array().handler(row.id)
+        ret["info"] = fmt % d
+        return ret
 
 

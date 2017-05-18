@@ -626,6 +626,7 @@ def get_post_handlers(prefix=None):
              "rest_post_apps_publications",
         ],
         "arrays": [
+             "rest_post_array",
              "rest_post_array_diskgroup_quotas",
              "rest_post_array_diskgroup_quota",
         ],

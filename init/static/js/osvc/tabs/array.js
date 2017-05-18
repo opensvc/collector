@@ -84,6 +84,7 @@ function array_properties(divid, options) {
 		})
 		o.info_id = o.div.find("#id")
 		o.info_array_name = o.div.find("#array_name")
+		o.info_array_comment = o.div.find("#array_comment")
 		o.info_array_model = o.div.find("#array_model")
 		o.info_array_firmware = o.div.find("#array_firmware")
 		o.info_array_level = o.div.find("#array_level")
@@ -108,6 +109,7 @@ function array_properties(divid, options) {
 	o._load_array = function() {
 		o.info_id.html(o.data.id)
 		o.info_array_name.html(o.data.array_name)
+		o.info_array_comment.html(o.data.array_comment)
 		o.info_array_model.html(o.data.array_model)
 		o.info_array_firmware.html(o.data.array_firmware)
 		o.info_array_level.html(o.data.array_level)
@@ -131,6 +133,14 @@ function array_properties(divid, options) {
 			"e_title": o.info_targets_title,
 			"e_list": o.info_targets,
 			"lowercase": true,
+		})
+
+		tab_properties_generic_updater({
+			"div": o.div,
+			"privileges": ["StorageManager", "Manager"],
+			"post": function(_data, callback, error_callback) {
+				services_osvcpostrest("/arrays/%1", [o.options.array_id], "", _data, callback, error_callback)
+			}
 		})
 
 		tab_properties_generic_list({
