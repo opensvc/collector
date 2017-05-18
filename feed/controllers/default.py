@@ -1422,7 +1422,6 @@ def rpc_collector_list_actions(cmd, auth):
     q &= db.services.svc_id == db.svcactions.svc_id
     rows = db(q).select(db.svcactions.id,
                         db.nodes.nodename,
-                        db.services.svcname,
                         db.svcactions.begin,
                         db.svcactions.end,
                         db.svcactions.action,
@@ -1431,21 +1430,19 @@ def rpc_collector_list_actions(cmd, auth):
                         db.svcactions.cron,
                         db.svcactions.status_log,
                        )
-    header = ['action id',
+    header = ['id',
               'node',
-              'service',
               'begin',
               'action',
               'status',
-              'acknowledged',
-              'scheduled',
+              'ack',
+              'sched',
               'log']
     data = [header]
     for row in rows:
         data.append([
           str(row.svcactions.id),
           str(row.nodes.nodename),
-          str(row.services.svcname),
           str(row.svcactions.begin),
           str(row.svcactions.action),
           str(row.svcactions.status),
