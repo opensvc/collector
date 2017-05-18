@@ -245,7 +245,7 @@ function chart_definition(divid, options) {
 			"chart_yaml": text
 		}
 		services_osvcpostrest("/reports/charts/%1", [o.options.chart_id], "", data, function(jd) {
-			if (jd.error && (jd.error.length > 0)) {
+			if (rest_error(jd)) {
 				osvc.flash.error(services_error_fmt(jd))
 				return
 			}

@@ -43,7 +43,7 @@ function metric(divid, options) {
 
 	o.render_table = function() {
 		services_osvcgetrest("R_GET_REPORT_METRIC_SAMPLES", [o.options.metric_id], {"meta": "false", "limit": "0"}, function(jd) {
-			if (jd.error && (jd.error.length > 0)) {
+			if (rest_error(jd)) {
 				osvc.flash.error(services_error_fmt(jd))
 				return
 			}
@@ -135,7 +135,7 @@ function chart(divid, options) {
 		$.jqplot.config.enablePlugins = true
 		services_osvcgetrest("R_GET_REPORT_CHART_SAMPLES", [o.options.chart_id], {"props": "metric_id,instance,value,date", "meta": "false", "limit": "2000"}, function(jd) {
 			dfd.resolve()
-			if (jd.error && (jd.error.length > 0)) {
+			if (rest_error(jd)) {
 				osvc.flash.error(services_error_fmt(jd))
 				return
 			}
@@ -413,7 +413,7 @@ function report(divid, options) {
 
 	o.load = function() {
 		services_osvcgetrest("/reports/%1/definition", [o.options.report_id], {"meta": "false", "limit": "0"}, function(jd) {
-			if (jd.error && (jd.error.length > 0)) {
+			if (rest_error(jd)) {
 				osvc.flash.error(services_error_fmt(jd))
 				return
 			}
@@ -457,7 +457,7 @@ function reports(divid, options)
 	o.load = function load() {
 		// Init Select Report
 		services_osvcgetrest("R_GET_REPORTS", "", {"meta": "false", "limit": "0"}, function(jd) {
-			if (jd.error && (jd.error.length > 0)) {
+			if (rest_error(jd)) {
 				osvc.flash.error(services_error_fmt(jd))
 				return
 			}

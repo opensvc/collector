@@ -244,7 +244,7 @@ function metric_request(divid, options) {
 			"metric_sql": text
 		}
 		services_osvcpostrest("/reports/metrics/%1", [o.options.metric_id], "", data, function(jd) {
-			if (jd.error && (jd.error.length > 0)) {
+			if (rest_error(jd)) {
 				osvc.flash.error(services_error_fmt(jd))
 				return
 			}

@@ -414,11 +414,29 @@ function services_error_fmt(data) {
 	var p = $("<pre class='api_error'></pre>")
 	if (typeof data.error === "string") {
 		p.text(data.error)
-	} else {
+	} else if (Array.isArray(data.error)) {
 		p.text(data.error.join("\n"))
+	} else if (Object.keys(data.error).length > 0) {
+		p.text(JSON.stringify(data.error, null, 4))
 	}
 	e.append(p)
 	return e
+}
+
+function rest_error(jd) {
+	if (!jd.error) {
+		return false
+	}
+	if ((typeof jd.error == "string") && (jd.error.length == 0)) {
+		return false
+	}
+	if (Array.isArray(jd.error) && (jd.error.length == 0)) {
+		return false
+	}
+	if (Object.keys(jd.error).length == 0) {
+		return false
+	}
+	return true
 }
 
 function services_info_fmt(data) {
@@ -440,4 +458,5 @@ function services_info_fmt(data) {
 function services_get_url() {
 	return window.location.protocol +"//" + window.location.host;
 }
+
 

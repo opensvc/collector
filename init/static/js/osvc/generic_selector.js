@@ -33,7 +33,7 @@ function generic_selector(divid, options) {
 		spinner_add(o.object_area)
 		services_osvcgetrest(o.url_path, o.url_wildcards, o.url_params, function(jd) {
 			spinner_del(o.object_area)
-			if (jd.error && (jd.error.length > 0)) {
+			if (rest_error(jd)) {
 				o.object_area.html(services_error_fmt(jd))
 				return
 			}

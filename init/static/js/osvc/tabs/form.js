@@ -260,7 +260,7 @@ function form_definition(divid, options) {
 		spinner_add(result)
 		services_osvcpostrest("R_FORM", [o.options.form_id], "", data, function(jd) {
 			spinner_del(result)
-			if (jd.error && (jd.error.length > 0)) {
+			if (rest_error(jd)) {
 				result.html(services_error_fmt(jd))
 				return
 			}

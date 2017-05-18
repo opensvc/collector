@@ -208,7 +208,7 @@ function prov_template_definition(divid, options) {
 			"tpl_definition": text
 		}
 		services_osvcpostrest("/provisioning_templates/%1", [o.options.tpl_id], "", data, function(jd) {
-			if (jd.error && (jd.error.length > 0)) {
+			if (rest_error(jd)) {
 				osvc.flash.error(services_error_fmt(jd))
 				return
 			}

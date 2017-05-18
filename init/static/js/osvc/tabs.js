@@ -229,7 +229,7 @@ tab_properties_generic_autocomplete = function(options) {
 				data[input.attr("pid")] = input.attr("acid")
 			}
 			options.post(data, function(jd) {
-				if (jd.error && (jd.error.length > 0)) {
+				if (rest_error(jd)) {
 					osvc.flash.error(services_error_fmt(jd))
 					return
 				}
@@ -388,7 +388,7 @@ tab_properties_generic_boolean = function(options) {
 			data[key] = true
 		}
 		options.post(data, function(jd) {
-			if (jd.error) {
+			if (rest_error(jd)) {
 				return
 			}
 			if (jd.data[0][key] == false) {
@@ -458,7 +458,7 @@ tab_properties_generic_simple = function(options) {
 			}
 			data[input.attr("pid")] = val
 			options.post(data, function(jd) {
-				if (jd.error && (jd.error.length > 0)) {
+				if (rest_error(jd)) {
 					osvc.flash.error(services_error_fmt(jd))
 					return
 				}

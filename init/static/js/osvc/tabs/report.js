@@ -252,7 +252,7 @@ function report_definition(divid, options) {
 			"report_yaml": text
 		}
 		services_osvcpostrest("/reports/%1", [o.options.report_id], "", data, function(jd) {
-			if (jd.error && (jd.error.length > 0)) {
+			if (rest_error(jd)) {
 				osvc.flash.error(services_error_fmt(jd))
 				return
 			}
@@ -299,7 +299,7 @@ function report_export(divid, options) {
 
 		spinner_add(o.div)
 		services_osvcgetrest("/reports/%1/export", [o.options.report_id], "", function(jd) {
-			if (jd.error) {
+			if (rest_error(jd)) {
 				o.div.html(services_error_fmt(jd))
 			}
 			o.textarea.text(JSON.stringify(jd, null, 4))

@@ -2226,7 +2226,7 @@ function data_action_user_set_primary_group(t, e) {
 		div.empty()
 		for (i=0;i<data.length;i++) {
 			services_osvcpostrest("R_USER_PRIMARY_GROUP_SET", [data[i]['id'], input_group_id.attr("group_id")], "", "", function(jd) {
-				if (jd.error && (jd.error.length > 0)) {
+				if (rest_error(jd)) {
 					div.html(services_error_fmt(jd))
 				}
 				if (jd.info && (jd.info.length > 0)) {
@@ -2286,7 +2286,7 @@ function data_action_user_set_filterset(t, e) {
 		div.empty()
 		for (i=0;i<data.length;i++) {
 			services_osvcpostrest("R_USER_FILTERSET_SET", [data[i]['id'], input_fset_id.attr("fset_id")], "", "", function(jd) {
-				if (jd.error && (jd.error.length > 0)) {
+				if (rest_error(jd)) {
 					  div.html(services_error_fmt(jd))
 				}
 				if (jd.info && (jd.info.length > 0)) {
@@ -2403,7 +2403,7 @@ function data_action_generic_add(divid, options) {
 			spinner_add(info)
 			xhr  = services_osvcpostrest(options.request_service, options.request_parameters, "", data, function(jd) {
 				spinner_del(info)
-				if (jd.error && (jd.error.length > 0)) {
+				if (rest_error(jd)) {
 					info.html(services_error_fmt(jd))
 					return
 				}
@@ -2436,7 +2436,7 @@ function data_action_generic_add(divid, options) {
 				services_osvcgetrest(options.request_service, "", data, function(jd) {
 					xhr = null
 					spinner_del(info)
-					if (jd.error && (jd.error.length > 0)) {
+					if (rest_error(jd)) {
 						info.html(services_error_fmt(jd))
 					}
 					if (jd.data.length == 0) {
@@ -2483,7 +2483,7 @@ function data_action_sync_dns_domains(t, e) {
 
 	for (i=0; i<data.length; i++) {
 		services_osvcputrest("R_DNS_DOMAIN_SYNC", [data[i]['id']], "", "", function(jd) {
-			if (jd.error && (jd.error.length > 0)) {
+			if (rest_error(jd)) {
 				info.append("<pre>"+jd.error+"</pre>")
 			}
 			if (jd.info && (jd.info.length > 0)) {
@@ -2657,7 +2657,7 @@ function data_action_user_lock_filterset(t, e) {
 		})
 	}
 	services_osvcpostrest("R_USERS", "", "", _data, function(jd) {
-		if (jd.error && (jd.error.length > 0)) {
+		if (rest_error(jd)) {
 			osvc.flash.error(services_error_fmt(jd))
 		}
 		if (jd.info && (jd.info.length > 0)) {
@@ -2684,7 +2684,7 @@ function data_action_user_unlock_filterset(t, e) {
 		})
 	}
 	services_osvcpostrest("R_USERS", "", "", _data, function(jd) {
-		if (jd.error && (jd.error.length > 0)) {
+		if (rest_error(jd)) {
 			osvc.flash.error(services_error_fmt(jd))
 		}
 		if (jd.info && (jd.info.length > 0)) {
@@ -2884,7 +2884,7 @@ function data_action_chk_instance_set_threshold(t, e, threshold) {
 		}
 		result.empty()
 		xhr  = services_osvcpostrest("R_CHECKS_SETTINGS", "", "", _data, function(jd) {
-			if (jd.error && (jd.error.length > 0)) {
+			if (rest_error(jd)) {
 				result.html(services_error_fmt(jd))
 			}
 			if (jd.info && (jd.info.length > 0)) {
@@ -3012,7 +3012,7 @@ function data_action_action_queue_cancel(t, e) {
 		})
 	}
 	services_osvcpostrest("R_ACTIONS", "", "", _data, function(jd) {
-		if (jd.error && (jd.error.length > 0)) {
+		if (rest_error(jd)) {
 			osvc.flash.error(services_error_fmt(jd))
 		}
 		if (jd.info && (jd.info.length > 0)) {
@@ -3040,7 +3040,7 @@ function data_action_action_queue_redo(t, e) {
 		})
 	}
 	services_osvcpostrest("R_ACTIONS", "", "", _data, function(jd) {
-		if (jd.error && (jd.error.length > 0)) {
+		if (rest_error(jd)) {
 			osvc.flash.error(services_error_fmt(jd))
 		}
 		if (jd.info && (jd.info.length > 0)) {
@@ -3309,7 +3309,7 @@ function data_action_ack_actions(t, e) {
 		}
 		result.empty()
 		services_osvcpostrest("R_SERVICES_ACTIONS", "", "", post_data, function(jd) {
-			if (jd.error && (jd.error.length > 0)) {
+			if (rest_error(jd)) {
 				result.html(services_error_fmt(jd))
 			}
 			if (jd.info && (jd.info.length > 0)) {
@@ -3367,7 +3367,7 @@ function data_action_import(divid, options) {
 		xhr  = services_osvcpostrest(options.url, "", "", data, function(jd) {
 			spinner_del(info)
 			info.empty()
-			if (jd.error && (jd.error.length > 0)) {
+			if (rest_error(jd)) {
 				info.append(services_error_fmt(jd))
 			}
 			if (jd.info && (jd.info.length > 0)) {
@@ -4549,7 +4549,7 @@ function data_action_generic(t, e, options) {
 
 	function do_action(e) {
 		options.requestor(options.request_service, options.request_parameters, "", request_data, function(jd) {
-			if (jd.error && (jd.error.length > 0)) {
+			if (rest_error(jd)) {
 				result.html(services_error_fmt(jd))
 			}
 			if (jd.info && (jd.info.length > 0)) {
@@ -4613,7 +4613,7 @@ function _data_action_generic_selector(form, options) {
 			}
 		}
 		options.requestor(options.request_service, "", "", request_data, function(jd) {
-			if (jd.error && (jd.error.length > 0)) {
+			if (rest_error(jd)) {
 				form.html(services_error_fmt(jd))
 			}
 			if (jd.info && (jd.info.length > 0)) {
@@ -4650,7 +4650,7 @@ function agent_action_provisioning(t, e) {
 	spinner_add(div)
 	services_osvcgetrest("R_PROVISIONING_TEMPLATES", "", "", function(jd) {
 		spinner_del(div)
-		if (jd.error && (jd.error.length > 0)) {
+		if (rest_error(jd)) {
 			osvc.flash.error(services_error_fmt(jd))
 		}
 		if (jd.data.length == 0) {
@@ -4758,7 +4758,7 @@ function agent_action_provisioning(t, e) {
 
 				// put the provisioning action in queue
 				services_osvcputrest("R_PROVISIONING_TEMPLATE", [tpl_id], "", put_data, function(jd) {
-					if (jd.error && (jd.error.length > 0)) {
+					if (rest_error(jd)) {
 						osvc.flash.error(services_error_fmt(jd))
 					}
 					if (jd.info && (jd.info.length > 0)) {
@@ -4828,7 +4828,7 @@ function data_action_obs_refresh(divid) {
 	})
 	div.empty().append(child_div)
 	services_osvcputrest("/obsolescence/refresh", "", "", "", function(jd) {
-		if (jd.error && (jd.error.length > 0)) {
+		if (rest_error(jd)) {
 			child_div.append(services_error_fmt(jd))
 		}
 		if (jd.info && (jd.info.length > 0)) {
@@ -4914,7 +4914,7 @@ function data_action_obs_set(t, e, options) {
 		spinner_add(info)
 		services_osvcpostrest("/obsolescence/settings", "", "", _data, function(jd) {
 			spinner_del(info)
-			if (jd.error && (jd.error.length > 0)) {
+			if (rest_error(jd)) {
 				info.html(services_error_fmt(jd))
 			}
 			if (jd.info && (jd.info.length > 0)) {

@@ -243,7 +243,7 @@ function group_hidden_menu_entries(divid, options) {
 			"menu_entry": id
 		}
 		services_osvcpostrest("R_GROUP_HIDDEN_MENU_ENTRIES", [o.options.group_id], "", data, function(jd) {
-			if (jd.error && (jd.error.length > 0)) {
+			if (rest_error(jd)) {
 				osvc.flash.error(services_error_fmt(jd))
 			}
 			
@@ -255,7 +255,7 @@ function group_hidden_menu_entries(divid, options) {
 			"menu_entry": id
 		}
 		services_osvcdeleterest("R_GROUP_HIDDEN_MENU_ENTRIES", [o.options.group_id], "", data, function(jd) {
-			if (jd.error && (jd.error.length > 0)) {
+			if (rest_error(jd)) {
 				osvc.flash.error(services_error_fmt(jd))
 			}
 		})
@@ -267,7 +267,7 @@ function group_hidden_menu_entries(divid, options) {
 			"limit": "0"
 		}
 		services_osvcgetrest("R_GROUP_HIDDEN_MENU_ENTRIES", [o.options.group_id], params, function(jd) {
-			if (jd.error && (jd.error.length > 0)) {
+			if (rest_error(jd)) {
 				osvc.flash.error(services_error_fmt(jd))
 			}
 			o.hidden = []

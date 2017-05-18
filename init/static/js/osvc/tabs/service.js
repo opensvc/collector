@@ -156,7 +156,7 @@ function service_tabs(divid, options) {
 		})
 		o.tabs[i].callback = function(divid) {
 			services_osvcgetrest("R_SERVICE_NODES", [o.options.svc_id], {"filters": ["mon_vmname !empty"], "limit": "0", "props": "node_id,mon_vmname", "meta": "0"}, function(jd) {
-				if (jd.error) {
+				if (rest_error(jd)) {
 					$("#"+divid).html(services_error_fmt(jd))
 					return
 				}
@@ -194,7 +194,7 @@ function service_tabs(divid, options) {
 		})
 		o.tabs[i].callback = function(divid) {
 			services_osvcgetrest("R_SERVICE_NODES", [o.options.svc_id], {"limit": "0", "props": "node_id", "meta": "0"}, function(jd) {
-				if (jd.error) {
+				if (rest_error(jd)) {
 					$("#"+divid).html(services_error_fmt(jd))
 					return
 				}
@@ -340,7 +340,7 @@ function service_config(divid, options)
 			"svc_config": text
 		}
 		services_osvcpostrest("/services/%1", [o.options.svc_id], "", data, function(jd) {
-			if (jd.error && (jd.error.length > 0)) {
+			if (rest_error(jd)) {
 				osvc.flash.error(services_error_fmt(jd))
 				return
 			}

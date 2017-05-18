@@ -837,7 +837,7 @@ function form(divid, options) {
 			_data.var_value = JSON.stringify(data)
 		}
 		services_osvcpostrest("R_COMPLIANCE_RULESET_VARIABLE", [o.options.rset_id, o.options.var_id], "", _data, function(jd) {
-			if (jd.error && (jd.error.length > 0)) {
+			if (rest_error(jd)) {
 				o.result.html(services_error_fmt(jd))
 				return
 			}
