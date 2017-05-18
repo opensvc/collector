@@ -477,7 +477,7 @@ function search(divid) {
 		section_div.append(title)
 		var table = $("<table id='search_result_table' style='width:100%'></table>")
 		section_div.append(table)
-		section_div.on("click", function() {
+		title.on("click", function() {
 			var prefix = section_data.prefix
 			if (!prefix) {
 				prefix = section_data.type
