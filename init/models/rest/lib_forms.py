@@ -62,33 +62,6 @@ def form_rest_args(url, _d):
             args.append(s)
     return args
 
-def ordered_outputs(form_definition):
-    l = []
-    h = {}
-
-    dest_order = [
-     'db',
-     'script',
-     'rest',
-     'workflow',
-     'mail',
-    ]
-
-    for output in form_definition.get('Outputs', []):
-        dest = output.get('Dest')
-        if dest not in h:
-            h[dest] = [output]
-        else:
-            h[dest].append(output)
-
-    unclassified = set(h.keys()) - set(dest_order)
-
-    for dest in dest_order + list(unclassified):
-        if dest in h:
-            l += h[dest]
-
-    return l
-
 def get_form_formatted_data_o(output, form_definition, _d=None):
     if _d is not None:
         return _d
@@ -373,7 +346,7 @@ def output_workflow(output, form_definition, form, _d=None, prev_wfid=None, resu
             db(q).update(form_head_id=record_id)
         results = form_log(output_id, results, 0, "form.store", "New workflow %(form_name)s created with id %(id)d", dict(form_name=form.form_name, id=record_id))
 
-        db.workflows.insert(
+        wfid = db.workflows.insert(
           status=status,
           form_md5=form_md5,
           steps=1,
@@ -386,6 +359,8 @@ def output_workflow(output, form_definition, form, _d=None, prev_wfid=None, resu
           create_date=now,
         )
         table_modified("workflows")
+	results["outputs"][output_id] = {"workflow_id": wfid, "head_form_id": record_id}
+	update_results(results)
 
     if next_id != 0 and output.get('Mail', False):
         results = output_mail(output, form_definition, form, to=form_assignee, record_id=record_id, _d=_d, results=results)
@@ -835,7 +810,7 @@ def __form_submit(form_id, _d=None, prev_wfid=None, results=None, authdump=None)
             continue
         form_definition["Outputs"][idx]["Id"] = "output-%d" % idx
 
-    for output in ordered_outputs(form_definition):
+    for output in form_definition.get('Outputs', []):
         output_id = output.get("Id")
         results["log"][output_id] = []
         results["outputs_order"].append(output_id)
