@@ -427,6 +427,57 @@ form_data_internal = [
             ]
         }
     }),
+    Storage({
+        "id": -6,
+        "form_name": "internal_add_user",
+        "form_folder": "/internal",
+        "form_type": "generic",
+        "form_definition": {
+            "Vertical": True,
+            "Outputs": [
+                {
+                    "Type": "json",
+                    "Format": "dict",
+                    "Dest": "rest",
+                    "LogRequestData": False,
+                    "Function": "/users",
+                    "Handler": "POST"
+                }
+            ],
+            "Inputs": [
+                {
+                    "Id": "email",
+                    "Label": "Email",
+                    "LabelCss": "fa-mail",
+                    "Type": "string",
+                    "Mandatory": True,
+                    "Constraint": "match ^([\w\!\#$\%\&\'\*\+\-\/\=\?\^\`{\|\}\~]+\.)*[\w\!\#$\%\&\'\*\+\-\/\=\?\^\`{\|\}\~]+@((((([a-z0-9]{1}[a-z0-9\-]{0,62}[a-z0-9]{1})|[a-z])\.)+[a-z]{2,6})|(\d{1,3}\.){3}\d{1,3}(\:\d{1,5})?)$"
+                },
+                {
+                    "Id": "first_name",
+                    "Label": "First Name",
+                    "LabelCss": "guy16",
+                    "Type": "string",
+                    "Mandatory": True,
+                },
+                {
+                    "Id": "last_name",
+                    "Label": "Last Name",
+                    "LabelCss": "guy16",
+                    "Type": "string",
+                    "Mandatory": True,
+                },
+                {
+                    "Id": "password",
+                    "Label": "Password",
+                    "LabelCss": "key",
+                    "Type": "password",
+                    "Mandatory": True,
+                    "Constraint": "match ^......*"
+                },
+            ]
+        }
+    }),
 ]
 
 def get_internal_form(form_id):

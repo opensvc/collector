@@ -2773,20 +2773,15 @@ function data_action_add_group(divid) {
 // data action: add user
 //
 function data_action_add_user(divid) {
-	data_action_generic_add(divid, {
-		"title": "menu.data_management.add_user.title",
-		"request_service": "R_USERS",
-		"properties_tab": function(divid, data) {
-			user_tabs(divid, {"user_id": data.id})
-		},
-		"createable_message": "action_menu.user_createable",
-		"inputs": [
-			{
-				"title": "action_menu.email",
-				"key": "email"
-			}
-		]
+	div = $("#"+divid)
+	var child_div = data_management_div({
+		"title": "menu.data_management.add_user.title"
 	})
+	div.empty().append(child_div)
+	var form_div = $("<div></div>")
+	form_div.uniqueId()
+	child_div.append(form_div)
+	form(form_div, {"form_name": "internal_add_user"})
 }
 
 //

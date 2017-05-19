@@ -492,7 +492,9 @@ def output_rest(output, form_definition, _d=None, results=None):
         else:
             return handler.handle(*args, **vars)
 
-    results["request_data"][output_id] = vars
+    if output.get("LogRequestData", True) == True:
+        results["request_data"][output_id] = vars
+
     update_results(results)
 
     def post_run(jd, results):
