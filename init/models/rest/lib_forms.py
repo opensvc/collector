@@ -503,9 +503,17 @@ def output_rest(output, form_definition, _d=None, results=None):
             elif len(jd["info"]) > 0:
                 results["log"][output_id].append((0, jd["info"], {}))
         if "error" in jd:
+            results["returncode"] += 1
             if isinstance(jd["error"], list):
                 for line in jd["error"]:
                     results["log"][output_id].append((1, line, {}))
+            elif isinstance(jd["error"], (dict, pydal.objects.Row)):
+                if isinstance(jd["error"], pydal.objects.Row):
+                    d = jd["error"].as_dict()
+                else:
+                    d = jd["error"]
+                for key, val in d.items():
+                    results["log"][output_id].append((1, key+": "+str(val), {}))
             elif len(jd["error"]) > 0:
                 results["log"][output_id].append((1, jd["error"], {}))
 
