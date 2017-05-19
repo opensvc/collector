@@ -962,12 +962,31 @@ function cell_decorator_dns_records_type(e, line) {
 
 function cell_decorator_svcmon_link_frozen(e, line) {
 	var mon_frozen = $.data(line.children("[col=mon_frozen]")[0], "v")
-	if (mon_frozen == "1") {
-		var s = $("<span class='icon frozen16'>&nbsp</span>")
+	var mon_vmname = $.data(line.children("[col=mon_vmname]")[0], "v")
+	if (mon_vmname) {
+		if (mon_frozen == "3") {
+			var s1 = $("<span class='icon fa-snowflake-o'>&nbsp</span>")
+			var s2 = $("<span class='icon fa-snowflake-o'>&nbsp</span>")
+		} else if (mon_frozen == "2") {
+			var s1 = $("<span class='icon fa-snowflake-o icon-lightgray'>&nbsp</span>")
+			var s2 = $("<span class='icon fa-snowflake-o'>&nbsp</span>")
+		} else if (mon_frozen == "1") {
+			var s1 = $("<span class='icon fa-snowflake-o'>&nbsp</span>")
+			var s2 = $("<span class='icon fa-snowflake-o icon-lightgray'>&nbsp</span>")
+		} else {
+			var s1 = null
+			var s2 = null
+		}
 	} else {
-		var s = null
+		if (mon_frozen == "1") {
+			var s1 = $("<span class='icon fa-snowflake-o'>&nbsp</span>")
+			var s2 = null
+		} else {
+			var s1 = null
+			var s2 = null
+		}
 	}
-	return s
+	return [s1, s2]
 }
 
 function cell_decorator_svcmon_links(e, line) {

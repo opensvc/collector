@@ -3030,6 +3030,9 @@ pre.api_doc {
 .icon-black:before {
 	color: black !important;
 }
+.icon-lightgray:before {
+	color: #eeeeee;
+}
 
 .nocolor:before {
 	color: inherit;
