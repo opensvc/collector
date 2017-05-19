@@ -976,6 +976,9 @@ function form(divid, options) {
 		if (d.ReadOnly == true) {
 			input.prop("disabled", true)
 		}
+		if (d.Type == "password") {
+			input.prop("type", "password")
+		}
 		input.val(content)
 		input.prop("acid", content)
 		return input
