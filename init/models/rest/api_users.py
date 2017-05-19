@@ -364,9 +364,9 @@ class rest_post_users(rest_post_handler):
         if user is not None:
             return rest_post_user().handler(user.id, **vars)
 
-        obj_id = db.auth_user.validate_and_insert(**vars)
-        if not isinstance(obj_id, int):
-            return dict(error=obj_id.errors)
+        row = db.auth_user.validate_and_insert(**vars)
+        if row.id is None:
+            return dict(error=row.errors)
         if "password" in vars:
             vars["password"] = "xxxxx"
         _log('user.create',
@@ -376,10 +376,15 @@ class rest_post_users(rest_post_handler):
         ws_send("auth_user_change")
         table_modified("auth_user")
 
-        user = db.auth_user(obj_id)
+        user = db.auth_user(row.id)
 
         if auth.settings.create_user_groups:
-            group_id = auth.add_group(auth.settings.create_user_groups % user)
+            q = db.auth_group.role == "user_%d" % user.id
+            group = db(q).select(db.auth_group.id).first()
+            if group is None:
+                group_id = auth.add_group(auth.settings.create_user_groups % user)
+            else:
+                group_id = group.id
             auth.add_membership(group_id, user.id)
 
         set_quota_app_on_register(user)
@@ -388,7 +393,7 @@ class rest_post_users(rest_post_handler):
         do_create_app_on_register(user)
         do_membership_on_register(user)
 
-        return rest_get_user().handler(obj_id)
+        return rest_get_user().handler(row.id)
 
 
 #
