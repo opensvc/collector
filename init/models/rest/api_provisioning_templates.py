@@ -116,12 +116,16 @@ class rest_put_provisioning_template(rest_put_handler):
             return dict("error", "the requested provisioning template does not exist or you don't have permission to use it")
 
         definition = provisioning_template.tpl_definition
-        data = rest_post_services().handler(
-          svcname=vars["svcname"],
-          svc_config=definition
-        )
 
-        svc = data["data"][0]
+        data = rest_get_service().handler(vars["svcname"])
+        if len(data["data"]) == 1:
+            svc = data["data"][0]
+        else:
+            data = rest_post_services().handler(
+              svcname=vars["svcname"],
+              svc_config=definition
+            )
+            svc = data["data"][0]
 
         command = 'create --provision --template %d' % provisioning_template.id
         for k, v in vars.items():
