@@ -395,6 +395,8 @@ function search(divid) {
 		b.on("click", function() {
 			var val = o.e_search_input.val()
 			val = val.replace(/^\w+:/, "")
+			$(this).siblings("."+highlight_class).removeClass(highlight_class)
+			$(this).addClass(highlight_class)
 			o.e_search_input.val(val).focus().trigger("keyup")
 		})
 		sel.append(b)
