@@ -805,6 +805,7 @@ function menu(divid) {
 			osvc.search.e_search_input.val("").focus()
 			osvc.search.filter_menu()
 			osvc.body_scroll.disable()
+			osvc.search.set_placeholder()
 		})
 	}
 
@@ -814,6 +815,7 @@ function menu(divid) {
 		}
 		o.menu_div.stop().slideUp(function(){
 			osvc.body_scroll.enable()
+			osvc.search.set_placeholder()
 		})
 	}
 

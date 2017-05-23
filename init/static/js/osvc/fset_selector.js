@@ -87,6 +87,7 @@ function fset_selector(divid, callback) {
 		}
 		o.area.stop().slideDown(function(){
 			osvc.body_scroll.disable()
+			osvc.search.set_placeholder()
 		})
 		$("#search_input").focus()
 		o.load_area()
@@ -98,6 +99,7 @@ function fset_selector(divid, callback) {
 		}
 		o.area.stop().slideUp(function(){
 			osvc.body_scroll.enable()
+			osvc.search.set_placeholder()
 		})
 	}
 

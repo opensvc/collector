@@ -263,9 +263,9 @@ function search(divid) {
 	]
 
 	o.router = function router(delay) {
-		if (osvc.menu.menu_div.is(":visible")) {
+		if (osvc.menu && osvc.menu.menu_div.is(":visible")) {
 			o.filter_menu(null)
-		} else if ($(".header [name=fset_selector_entries]").is(":visible")) {
+		} else if (osvc.fset_selector && osvc.fset_selector.area.is(":visible")) {
 			o.filter_fset_selector(null)
 		} else {
 			// close the search result panel if no search keyword
@@ -284,18 +284,11 @@ function search(divid) {
 
 	o.init = function() {
 		o.timer = null
-		o.phi = 0
 		o.div.i18n()
 		o.e_search_div = $("#search_div")
 		o.e_search_input = $("#search_input")
 		o.e_search_result = $("#search_result")
 
-		setInterval(function() {
-			o.e_search_input.attr("placeholder", o.placeholders[o.phi++])
-			if (o.phi == o.placeholders.length-1) {
-				o.phi = 0
-			}
-		}, 15000)
 		o.e_search_input.on("keyup",function (event) {
 			if (is_special_key(event)) {
 				// do search on special key (esc, arrows, etc...)
@@ -355,10 +348,21 @@ function search(divid) {
 		})
 	}
 
+	o.set_placeholder = function() {
+		if (osvc.menu && osvc.menu.menu_div.is(":visible")) {
+			o.e_search_input.attr("placeholder", i18n.t("search.placeholder.filter"))
+		} else if (osvc.fset_selector && osvc.fset_selector.area.is(":visible")) {
+			o.e_search_input.attr("placeholder", i18n.t("search.placeholder.filter"))
+		} else {
+			o.e_search_input.attr("placeholder", i18n.t("search.placeholder.search"))
+		}
+	}
+
 	o.open = function() {
 		if (!o.e_search_result.is(':visible')) {
 			toggle('search_result')
 			osvc.body_scroll.disable()
+			o.set_placeholder()
 		}
 	}
 
@@ -366,6 +370,7 @@ function search(divid) {
 		if (o.e_search_result.is(':visible')) {
 			toggle('search_result')
 			osvc.body_scroll.enable()
+			o.set_placeholder()
 		}
 	}
 

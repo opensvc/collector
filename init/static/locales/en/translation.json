@@ -6,9 +6,6 @@
 	"alert_info": {
 		"timeline": "Alert timeline"
 	},
-	"layout": {
-		"search": "Global search"
-	},
 	"decorators": {
 		"corrupted_log": "corrupted log",
 		"cancelled": "cancelled",
@@ -440,6 +437,10 @@
 	},
 	"search": {
 		"nothing_found": "No entry found matching filter",
+		"placeholder": {
+			"search": "Search",
+			"filter": "Filter"
+		},
 		"menu_header": {
 			"title_arrays": "Storage arrays",
 			"title_prov_templates": "Provisioning templates",
