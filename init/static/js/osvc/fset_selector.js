@@ -145,7 +145,7 @@ function fset_selector(divid, callback) {
 	}
 
 	o.add_fset = function(id, name) {
-		var e = $("<div class='menu_entry menu_box' fset_id='"+id+"'></div>")
+		var e = $("<div class='menu_entry menu_box clickable' fset_id='"+id+"'></div>")
 		var icon = $("<div class='menu_icon filter16'></div>")
 		e.append(icon)
 
