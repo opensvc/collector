@@ -243,23 +243,77 @@ function search(divid) {
 	var o = {}
 	o.divid = divid
 	o.div = $("#"+divid)
-	o.placeholders = [
-		i18n.t("layout.search"),
-		"fset: linux",
-		"disk: 6005",
-		"user: me",
-		"group: Manager",
-		"net: intra",
-		"ip: 192.168",
-		"svc: web",
-		"node: 02",
-		"vm: 02",
-		"safe: etc",
-		"form: add_",
-		"report: lifecycle",
-		"chart: disk",
-		"metric: lifecycle",
-		"rset: test"
+	o.object_types = [
+		{
+			"color": "fset",
+			"prefix": "fset",
+			"title": "search.menu_header.title_filtersets",
+		},
+		{
+			"color": "disk",
+			"prefix": "disk",
+			"title": "search.menu_header.title_disks",
+		},
+		{
+			"color": "user",
+			"prefix": "user",
+			"title": "search.menu_header.title_users",
+		},
+		{
+			"color": "org",
+			"prefix": "group",
+			"title": "search.menu_header.title_groups",
+		},
+		{
+			"color": "net",
+			"prefix": "ip",
+			"title": "search.menu_header.title_ips",
+		},
+		{
+			"color": "svc",
+			"prefix": "svc",
+			"title": "search.menu_header.title_services",
+		},
+		{
+			"color": "node",
+			"prefix": "node",
+			"title": "search.menu_header.title_nodes",
+		},
+		{
+			"color": "node",
+			"prefix": "vm",
+			"title": "search.menu_header.title_vms",
+		},
+		{
+			"color": "comp",
+			"prefix": "safe",
+			"title": "search.menu_header.title_safe_files",
+		},
+		{
+			"color": "form",
+			"prefix": "form",
+			"title": "search.menu_header.title_forms",
+		},
+		{
+			"color": "report",
+			"prefix": "report",
+			"title": "search.menu_header.title_reports",
+		},
+		{
+			"color": "chart",
+			"prefix": "chart",
+			"title": "search.menu_header.title_charts",
+		},
+		{
+			"color": "metric",
+			"prefix": "metric",
+			"title": "search.menu_header.title_metrics",
+		},
+		{
+			"color": "comp",
+			"prefix": "rset",
+			"title": "search.menu_header.title_rulesets",
+		}
 	]
 
 	o.router = function router(delay) {
@@ -270,7 +324,7 @@ function search(divid) {
 		} else {
 			// close the search result panel if no search keyword
 			if (o.e_search_input.val() == "") {
-				o.close()
+				//o.close()
 			} else {
 				clearTimeout(o.timer)
 				o.timer = setTimeout(o.search, delay)
@@ -289,6 +343,15 @@ function search(divid) {
 		o.e_search_input = $("#search_input")
 		o.e_search_result = $("#search_result")
 
+		o.e_search_input.on("blur", function (event) {
+			o.del_selector(event)
+		})
+		o.e_search_input.on("focus click", function (event) {
+			if (!o.e_search_result.is(":visible")) {
+				o.open()
+			}
+			o.add_selector()
+		})
 		o.e_search_input.on("keyup",function (event) {
 			if (is_special_key(event)) {
 				// do search on special key (esc, arrows, etc...)
@@ -303,6 +366,42 @@ function search(divid) {
 		})
 	}
 
+	o.del_selector = function(event) {
+		if ($(event.relatedTarget).is(".search_selector>button,.search_selector")) {
+			return
+		}
+		o.e_search_result.children("[name=selector]").remove()
+	}
+	o.add_selector = function() {
+		if (o.e_search_result.children("[name=selector]").length > 0) {
+			return
+		}
+		var sel = $("<div name='selector' class='search_selector'><h4 data-i18n='search.selector_title' style='width:100%'></h4></div>")
+		sel.i18n()
+		var b = $("<button name='all' class='btn'>")
+		b.text(i18n.t("search.menu_header.title_all"))
+		b.on("click", function() {
+			var val = o.e_search_input.val()
+			val = val.replace(/^\w+:/, "")
+			o.e_search_input.val(val).focus().trigger("keyup")
+		})
+		sel.append(b)
+		for (var i=0; i<o.object_types.length; i++) {
+			var data = o.object_types[i]
+			var b = $("<button class='btn'>")
+			b.attr("search_prefix", data.prefix)
+			b.css({"border-bottom-color": osvc.colors[data.color]})
+			b.text(i18n.t(data.title))
+			sel.append(b)
+			o.e_search_result.prepend(sel)
+			b.on("click", function() {
+				var val = o.e_search_input.val()
+				val = $(this).attr("search_prefix")+":"+val.replace(/^\w+:/, "")
+				o.e_search_input.val(val).focus().trigger("keyup")
+			})
+		}
+		o.e_search_result.prepend(sel)
+	}
 	o.search = function(section, limit) {
 		var count = 0
 		var search_query = o.e_search_input.val()

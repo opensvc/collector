@@ -435,11 +435,13 @@
 	},
 	"search": {
 		"nothing_found" : "Aucun résultat ne répond au critère de recherche.",
+		"selector_title": "Recherche parmi",
 		"placeholder": {
 			"search": "Recherche",
 			"filter": "Filtre"
 		},
 		"menu_header" : {
+			"title_all": "Tous",
 			"title_arrays": "Baies de stockage",
 			"title_prov_templates": "Modèles de provisioning",
 			"title_docker_registries": "Registres docker",

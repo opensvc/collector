@@ -2027,7 +2027,18 @@ a.search-link:hover {
     border: 1px solid #ccc;
   }
 }
-
+.search_selector {
+	display: flex;
+	flex-wrap: wrap;
+	padding: 1em;
+}
+.search_selector > button {
+	background: none;
+	color: lightgray;
+	border-bottom: 3px solid white;
+	border-radius: 0;
+	flex-grow: 1;
+}
 .search > * > menu_section > table {
 	padding-bottom: 0.4em;
 }

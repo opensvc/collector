@@ -437,11 +437,13 @@
 	},
 	"search": {
 		"nothing_found": "No entry found matching filter",
+		"selector_title": "Search in",
 		"placeholder": {
 			"search": "Search",
 			"filter": "Filter"
 		},
 		"menu_header": {
+			"title_all": "All",
 			"title_arrays": "Storage arrays",
 			"title_prov_templates": "Provisioning templates",
 			"title_docker_registries": "Docker registries",
