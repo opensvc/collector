@@ -347,6 +347,12 @@ function search(divid) {
 			o.del_selector(event)
 		})
 		o.e_search_input.on("focus click", function (event) {
+			if (osvc.menu && osvc.menu.menu_div.is(":visible")) {
+				return
+			}
+			if (osvc.fset_selector && osvc.fset_selector.area.is(":visible")) {
+				return
+			}
 			if (!o.e_search_result.is(":visible")) {
 				o.open()
 			}
