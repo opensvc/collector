@@ -2042,7 +2042,8 @@ a.search-link:hover {
 	cursor: pointer;
 }
 .search_selector_selected {
-	color: white !important
+	color: white !important;
+	font-size: 1.3em;
 }
 .search > * > menu_section > table {
 	padding-bottom: 0.4em;
