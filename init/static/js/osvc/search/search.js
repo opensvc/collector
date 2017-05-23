@@ -243,6 +243,7 @@ function search(divid) {
 	var o = {}
 	o.divid = divid
 	o.div = $("#"+divid)
+	o.highlight_class = "search_selector_selected"
 	o.object_types = [
 		{
 			"color": "fset",
@@ -321,13 +322,12 @@ function search(divid) {
 			o.filter_menu(null)
 		} else if (osvc.fset_selector && osvc.fset_selector.area.is(":visible")) {
 			o.filter_fset_selector(null)
-		} else {
+		} else if (!delay) {
 			// close the search result panel if no search keyword
 			if (o.e_search_input.val() == "") {
 				//o.close()
 			} else {
-				clearTimeout(o.timer)
-				o.timer = setTimeout(o.search, delay)
+				o.search()
 			}
 		}
 	}
@@ -361,17 +361,38 @@ function search(divid) {
 		o.e_search_input.on("keyup",function (event) {
 			if (is_special_key(event)) {
 				// do search on special key (esc, arrows, etc...)
-				return
+				o.add_selector()
+				o.set_selector()
 			} else if (event.keyCode == 13) {
 				// do a search immediately on <enter>
 				o.router(0)
 			} else {
-				// schedule a search
+				// type-ahead search
+				o.add_selector()
+				o.set_selector()
 				o.router(1000)
 			}
 		})
 	}
 
+	o.set_selector = function(event) {
+		if (o.e_search_result.children("[name=selector]").length == 0) {
+			return
+		}
+		var val = o.e_search_input.val()
+		var current_prefix = o.search_parse_input(val).in
+		if (current_prefix == o.last_prefix) {
+			return
+		}
+		o.last_prefix = current_prefix
+		if (!current_prefix) {
+			o.e_selector.children("[search_prefix]").removeClass(o.highlight_class)
+			o.e_selector.children("[search_prefix=all]").addClass(o.highlight_class)
+			return
+		}
+		o.e_selector.children("[search_prefix]").removeClass(o.highlight_class)
+		o.e_selector.children("[search_prefix="+current_prefix+"]").addClass(o.highlight_class)
+	}
 	o.del_selector = function(event) {
 		if ($(event.relatedTarget).is(".search_selector>button,.search_selector")) {
 			return
@@ -382,21 +403,15 @@ function search(divid) {
 		if (o.e_search_result.children("[name=selector]").length > 0) {
 			return
 		}
-		var highlight_class = "search_selector_selected"
-		var val = o.e_search_input.val()
-		var current_prefix = o.search_parse_input(val).in
 		var sel = $("<div name='selector' class='search_selector'><h4 data-i18n='search.selector_title' style='width:100%'></h4></div>")
 		sel.i18n()
-		var b = $("<button name='all' class='btn'>")
+		var b = $("<button search_prefix='all' class='btn'>")
 		b.text(i18n.t("search.menu_header.title_all"))
-		if (!current_prefix) {
-			b.addClass(highlight_class)
-		}
 		b.on("click", function() {
 			var val = o.e_search_input.val()
 			val = val.replace(/^\w+:/, "")
-			$(this).siblings("."+highlight_class).removeClass(highlight_class)
-			$(this).addClass(highlight_class)
+			$(this).siblings("."+o.highlight_class).removeClass(o.highlight_class)
+			$(this).addClass(o.highlight_class)
 			o.e_search_input.val(val).focus().trigger("keyup")
 		})
 		sel.append(b)
@@ -408,17 +423,16 @@ function search(divid) {
 			b.text(i18n.t(data.title))
 			sel.append(b)
 			o.e_search_result.prepend(sel)
-			if (current_prefix == data.prefix) {
-				b.addClass(highlight_class)
-			}
 			b.on("click", function() {
 				var val = o.e_search_input.val()
 				val = $(this).attr("search_prefix")+":"+val.replace(/^\w+:/, "")
-				$(this).siblings("."+highlight_class).removeClass(highlight_class)
-				$(this).addClass(highlight_class)
+				$(this).siblings("."+o.highlight_class).removeClass(o.highlight_class)
+				$(this).addClass(o.highlight_class)
 				o.e_search_input.val(val).focus().trigger("keyup")
 			})
 		}
+		o.set_selector()
+		o.e_selector = sel
 		o.e_search_result.prepend(sel)
 	}
 	o.search = function(section, limit) {
