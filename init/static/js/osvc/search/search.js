@@ -382,10 +382,16 @@ function search(divid) {
 		if (o.e_search_result.children("[name=selector]").length > 0) {
 			return
 		}
+		var highlight_class = "search_selector_selected"
+		var val = o.e_search_input.val()
+		var current_prefix = o.search_parse_input(val).in
 		var sel = $("<div name='selector' class='search_selector'><h4 data-i18n='search.selector_title' style='width:100%'></h4></div>")
 		sel.i18n()
 		var b = $("<button name='all' class='btn'>")
 		b.text(i18n.t("search.menu_header.title_all"))
+		if (!current_prefix) {
+			b.addClass(highlight_class)
+		}
 		b.on("click", function() {
 			var val = o.e_search_input.val()
 			val = val.replace(/^\w+:/, "")
@@ -396,13 +402,18 @@ function search(divid) {
 			var data = o.object_types[i]
 			var b = $("<button class='btn'>")
 			b.attr("search_prefix", data.prefix)
-			b.css({"border-bottom-color": osvc.colors[data.color]})
+			b.css({"border-color": osvc.colors[data.color]})
 			b.text(i18n.t(data.title))
 			sel.append(b)
 			o.e_search_result.prepend(sel)
+			if (current_prefix == data.prefix) {
+				b.addClass(highlight_class)
+			}
 			b.on("click", function() {
 				var val = o.e_search_input.val()
 				val = $(this).attr("search_prefix")+":"+val.replace(/^\w+:/, "")
+				$(this).siblings("."+highlight_class).removeClass(highlight_class)
+				$(this).addClass(highlight_class)
 				o.e_search_input.val(val).focus().trigger("keyup")
 			})
 		}

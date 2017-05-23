@@ -2035,9 +2035,14 @@ a.search-link:hover {
 .search_selector > button {
 	background: none;
 	color: lightgray;
-	border-bottom: 3px solid white;
+	border: 0 solid white;
+	border-bottom-width: 3px;
 	border-radius: 0;
 	flex-grow: 1;
+	cursor: pointer;
+}
+.search_selector_selected {
+	color: white !important
 }
 .search > * > menu_section > table {
 	padding-bottom: 0.4em;
