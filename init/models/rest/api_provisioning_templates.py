@@ -212,6 +212,11 @@ class rest_post_provisioning_templates(rest_post_handler):
             raise Exception("Key 'tpl_name' is mandatory")
         tpl_name = vars.get("tpl_name")
 
+        q = db.prov_templates.tpl_name == vars["tpl_name"]
+        tpl = db(q).select().first()
+        if tpl is not None:
+            return rest_post_provisioning_template().handler(tpl.id, **vars)
+
         vars["tpl_created"] = datetime.datetime.now()
         vars["tpl_author"] = user_name()
 

@@ -2,6 +2,8 @@ import gluon.contrib.simplejson as sjson
 from applications.init.modules import gittrack
 
 def lib_provisioning_templates_add_to_git(tpl_id, tpl):
+    if tpl is None:
+        return
     o = gittrack.gittrack(otype='provisioning_templates')
     r = o.commit(tpl_id, tpl, author=user_name(email=True))
 
