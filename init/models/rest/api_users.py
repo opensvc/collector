@@ -452,7 +452,13 @@ class rest_post_user(rest_post_handler):
         if "username" in vars and not login_form_username:
             raise Exception(T("The 'username' property is updatable only with a collector setup for ldap authentication"))
 
-        db(q).validate_and_update(**vars)
+        if "email" in vars and row.email == vars["email"]:
+            # avoid the IS_IN_DB raising an undue error
+            del vars["email"]
+
+        result = db(q).validate_and_update(**vars)
+        if len(result.errors.as_dict()) > 0:
+            return dict(error=result.errors)
         if "password" in vars:
             vars["password"] = "xxxxx"
         l = []
