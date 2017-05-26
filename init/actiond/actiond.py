@@ -43,7 +43,7 @@ def msg(conn):
 try:
     dbopensvc = config.dbopensvc_host
 except:
-    dbopensvc = "dbopensvc"
+    dbopensvc = "127.0.0.1"
 
 try:
     dbopensvc_password = config.dbopensvc_password
