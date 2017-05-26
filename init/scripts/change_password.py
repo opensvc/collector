@@ -95,6 +95,31 @@ def chpw_app():
     print("reload uwsgi")
     os.system("pkill -1 -o uwsgi")
 
+def chpw_actiond():
+    cf = os.path.join(web2py_d, "applications", "init", "actiond", "config.py")
+    if not os.path.exists(cf):
+        open(cf, 'a').close()
+    with open(cf, "r") as f:
+        lines = f.read().split("\n")
+    found_dbopensvc_password = False
+    for i, line in enumerate(lines):
+        if re.match(r'^\s*dbopensvc_password\s*=', line):
+            print("change dbopensvc_password parameter in", cf)
+            found_dbopensvc_password = True
+            lines[i] = 'dbopensvc_password = "%s"' % new_password
+    if not found_dbopensvc_password:
+        print("append dbopensvc_password parameter to", cf)
+        lines.append('dbopensvc_password = "%s"' % new_password)
+    print("rewrite", cf)
+    with open(cf, "w") as f:
+        f.write("\n".join(lines))
+        if lines[-1] != "":
+            f.write("\n")
+    print("reload actiond")
+    os.system("pkill -1 -o actiond")
+
 chpw_web2py()
 chpw_db()
 chpw_app()
+chpw_actiond()
+
