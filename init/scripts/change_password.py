@@ -116,7 +116,7 @@ def chpw_actiond():
         if lines[-1] != "":
             f.write("\n")
     print("reload actiond")
-    os.system("pkill -1 -o actiond")
+    os.system("/etc/init.d/actiond restart")
 
 chpw_web2py()
 chpw_db()
