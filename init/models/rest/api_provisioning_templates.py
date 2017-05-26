@@ -117,7 +117,11 @@ class rest_put_provisioning_template(rest_put_handler):
 
         definition = provisioning_template.tpl_definition
 
-        data = rest_get_service().handler(vars["svcname"])
+        try:
+            data = rest_get_service().handler(vars["svcname"])
+        except KeyError:
+            data = {"data": []}
+
         if len(data["data"]) == 1:
             svc = data["data"][0]
         else:
