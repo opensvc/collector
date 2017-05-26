@@ -2320,10 +2320,14 @@ def lib_compliance_import(data):
     # rulesets filterset
     for rset in data.get('rulesets', []):
         rset_id = ruleset_id[rset['ruleset_name']]
-        fset_name = rset.get('filterset')
+        fset_name = rset.get('fset_name')
         if fset_name is not None:
             rel_s = rset['ruleset_name']+" -> "+fset_name
-            fset_id = filterset_id[fset_name]
+            if fset_name in filterset_id:
+                fset_id = filterset_id[fset_name]
+            else:
+                q = db.gen_filtersets.fset_name == fset_name
+                fset_id = db(q).select().first().id
             q = db.comp_rulesets_filtersets.ruleset_id == rset_id
             q &= db.comp_rulesets_filtersets.fset_id == fset_id
             n = db(q).count()
