@@ -2380,6 +2380,8 @@ def lib_compliance_import(data):
                   ruleset_id=rset_id,
                   var_name=var['var_name'],
               ),
+              ruleset_id=rset_id,
+              var_name=var['var_name'],
               var_class=var['var_class'],
               var_value=var['var_value'],
               var_updated=now,
