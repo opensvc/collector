@@ -598,14 +598,19 @@ class rest_post_user_group(rest_post_handler):
         if group is None:
             return dict(error="Group %s does not exist" % str(group_id))
 
+        primary_group = vars.get("primary_group", "F")
         q = db.auth_membership.user_id == user.id
         q &= db.auth_membership.group_id == group.id
-        q &= db.auth_membership.primary_group == 'F'
         row = db(q).select().first()
         if row is not None:
-            return dict(info="User %s is already attached to group %s" % (str(user.email), str(group.role)))
+            if row.primary_group == primary_group:
+                return dict(info="User %s is already attached to group %s" % (str(user.email), str(group.role)))
+            elif primary_group in TRUE_VALUES:
+                return rest_post_user_primary_group().handler(user_id, group_id)
+            else:
+                return rest_delete_user_primary_group().handler(user_id)
 
-        db.auth_membership.insert(user_id=user_id, group_id=group_id, primary_group='F')
+        db.auth_membership.insert(user_id=user_id, group_id=group_id, primary_group=primary_group)
         table_modified("auth_membership")
         _log('user.group.attach',
              'user %(u)s attached to group %(g)s',
