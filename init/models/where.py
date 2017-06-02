@@ -1,3 +1,5 @@
+TRUE_VALUES = ('T', 't', "true", "True", True, "yes", "Yes", "YES", "Y", "y")
+
 def q_filter(query=None, svc_field=None, node_field=None, group_field=None,
              app_field=None, user_field=None, db=db):
     q = None
@@ -152,7 +154,7 @@ def _where(query, table, var, field, depth=0, db=db):
             except ValueError:
                pass
         elif db[table][field].type == 'boolean':
-            if chunk in ('T', 't', "true", "True", True, "yes", "Yes", "YES", "Y", "y"):
+            if chunk in TRUE_VALUES:
                q = db[table][field]==True
             elif chunk == "%":
                q = db[table].id >= 0
