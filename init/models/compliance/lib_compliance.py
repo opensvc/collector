@@ -2375,9 +2375,11 @@ def lib_compliance_import(data):
             if n > 0:
                 l.append(T("Variable already exists: %(r)s", dict(r=var_s)))
                 continue
-            n = db.comp_rulesets_variables.insert(
-              ruleset_id=rset_id,
-              var_name=var['var_name'],
+            n = db.comp_rulesets_variables.update_or_insert(
+              dict(
+                  ruleset_id=rset_id,
+                  var_name=var['var_name'],
+              ),
               var_class=var['var_class'],
               var_value=var['var_value'],
               var_updated=now,
