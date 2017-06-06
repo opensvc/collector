@@ -4618,6 +4618,7 @@ def json_tree_action_set_type(rset_id, rset_type):
         return {"err": "ruleset does not exist or not owned by you"}
     if v.ruleset_type == rset_type:
         return {"err": "ruleset type is already '%(rset_type)s'"%dict(rset_type=rset_type)}
+    q = db.comp_rulesets.id == rset_id
     db(q).update(ruleset_type=rset_type)
 
     if rset_type == "explicit":
