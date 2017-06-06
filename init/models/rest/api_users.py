@@ -607,7 +607,7 @@ class rest_post_user_group(rest_post_handler):
                 return dict(info="User %s is already attached to group %s" % (str(user.email), str(group.role)))
             elif primary_group in TRUE_VALUES:
                 return rest_post_user_primary_group().handler(user_id, group_id)
-            else:
+            elif row.primary_group == True:
                 return rest_delete_user_primary_group().handler(user_id)
 
         db.auth_membership.insert(user_id=user_id, group_id=group_id, primary_group=primary_group)
@@ -826,7 +826,7 @@ class rest_post_user_primary_group(rest_post_handler):
           "group_id": group.id,
         }, user_id=user.id, group_id=group.id, primary_group=True)
         table_modified("auth_membership")
-        _log('user.primary_group.attach',
+        _log('user.primary_group.set',
              'user %(u)s primary group set to %(g)s',
              dict(u=user.email, g=group.role),
             )
@@ -876,9 +876,9 @@ class rest_delete_user_primary_group(rest_delete_handler):
         if row is None:
             return dict(info="User %s has already no primary group" % str(user.email))
 
-        db(q).delete()
+        db(q).update(primary_group=False)
         table_modified("auth_membership")
-        _log('user.primary_group.detach',
+        _log('user.primary_group.unset',
              'user %(u)s primary group unset',
              dict(u=user.email),
             )
