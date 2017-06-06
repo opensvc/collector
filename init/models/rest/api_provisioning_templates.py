@@ -141,8 +141,9 @@ class rest_put_provisioning_template(rest_put_handler):
         if n == 0:
             return dict(error="service provision command enqueue refused")
 
-        return dict(info="service provision command queued")
-
+        results = rest_get_action_queue_one().handler(n)
+        results["info"] = "service provision command queued"
+        return results
 
 class rest_post_provisioning_template(rest_post_handler):
     def __init__(self):
