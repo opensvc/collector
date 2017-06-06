@@ -133,6 +133,9 @@ function generic_selector_checks_contextual_settings(id) {
 }
 
 function generic_selector_org_groups(id, options) {
+	if (!options) {
+		options = {}
+	}
 	var filters = ["privilege F"]
 	if (options.exclude) {
 		filters.push("role !("+options.exclude.join(",")+")")
