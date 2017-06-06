@@ -5,7 +5,7 @@ def ruleset_responsible(id):
     q = db.comp_rulesets.id == id
     if 'Manager' not in ug:
         q &= db.comp_rulesets.id == db.comp_ruleset_team_responsible.ruleset_id
-        q &= db.comp_ruleset_team_responsible.group_id.belongs(user_group_ids())
+        q &= db.comp_ruleset_team_responsible.group_id.belongs(user_org_group_ids())
     rows = db(q).select(db.comp_rulesets.id, cacheable=True)
     v = rows.first()
     if v is None:
@@ -19,7 +19,7 @@ def ruleset_publication(id):
     q = db.comp_rulesets.id == id
     if 'Manager' not in ug:
         q &= db.comp_rulesets.id == db.comp_ruleset_team_publication.ruleset_id
-        q &= db.comp_ruleset_team_publication.group_id.belongs(user_group_ids())
+        q &= db.comp_ruleset_team_publication.group_id.belongs(user_org_group_ids())
     rows = db(q).select(db.comp_rulesets.id, cacheable=True)
     v = rows.first()
     if v is None:
@@ -31,7 +31,7 @@ def moduleset_responsible(id):
     q = db.comp_moduleset.id == id
     if 'Manager' not in ug:
         q &= db.comp_moduleset.id == db.comp_moduleset_team_responsible.modset_id
-        q &= db.comp_moduleset_team_responsible.group_id.belongs(user_group_ids())
+        q &= db.comp_moduleset_team_responsible.group_id.belongs(user_org_group_ids())
     rows = db(q).select(db.comp_moduleset.id, cacheable=True)
     v = rows.first()
     if v is None:
@@ -45,7 +45,7 @@ def moduleset_publication(id):
     q = db.comp_moduleset.id == id
     if 'Manager' not in ug:
         q &= db.comp_moduleset.id == db.comp_moduleset_team_publication.modset_id
-        q &= db.comp_moduleset_team_publication.group_id.belongs(user_group_ids())
+        q &= db.comp_moduleset_team_publication.group_id.belongs(user_org_group_ids())
     rows = db(q).select(db.comp_moduleset.id, cacheable=True)
     v = rows.first()
     if v is None:
