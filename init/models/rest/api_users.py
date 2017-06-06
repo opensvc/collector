@@ -599,13 +599,17 @@ class rest_post_user_group(rest_post_handler):
             return dict(error="Group %s does not exist" % str(group_id))
 
         primary_group = vars.get("primary_group", "F")
+        if primary_group in TRUE_VALUES:
+            primary_group = True
+        else:
+            primary_group = False
         q = db.auth_membership.user_id == user.id
         q &= db.auth_membership.group_id == group.id
         row = db(q).select().first()
         if row is not None:
             if row.primary_group == primary_group:
                 return dict(info="User %s is already attached to group %s" % (str(user.email), str(group.role)))
-            elif primary_group in TRUE_VALUES:
+            elif primary_group:
                 return rest_post_user_primary_group().handler(user_id, group_id)
             elif row.primary_group == True:
                 return rest_delete_user_primary_group().handler(user_id)
