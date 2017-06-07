@@ -2063,6 +2063,7 @@
 		"Retention": "Retention"
 	},
 	"alert_type": {
+		"service_frozen": "service frozen",
 		"netmask misconfigured": "netmask misconfigured",
 		"service not started on primary node": "service not started on primary node",
 		"service configuration not updated": "service configuration not updated",
