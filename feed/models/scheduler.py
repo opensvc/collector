@@ -4,6 +4,9 @@ import datetime
 import hashlib
 import os
 import copy
+import logging
+
+log = logging.getLogger("web2py.app.feed")
 
 def send_sysreport_delete(deleted, sysreport_d, node_id):
     if len(deleted) == 0:
@@ -4301,7 +4304,7 @@ def update_dash_service_frozen(svc_id, node_id, env, frozen):
         sev = 2
     else:
         sev = 1
-    if frozen == "0":
+    if int(frozen) == 0:
         sql = """delete from dashboard
                  where
                    dash_type="service frozen" and
