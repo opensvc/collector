@@ -359,6 +359,14 @@ def user_docker_registry_ids(id=None):
     return map(lambda x: x.group_id, rows)
 
 def user_org_group_ids(id=None):
+    if auth.user.get("node_id") is not None:
+        q = db.nodes.node_id == auth.user.node_id
+        q &= db.nodes.app == db.apps.app
+        q &= db.apps_responsibles.app_id == db.apps.id
+        q &= db.apps_responsibles.group_id == db.auth_group.id
+        q &= db.auth_group.privilege == False
+        rows = db(q).select(db.auth_group.id, groupby=db.auth_group.id)
+        return map(lambda x: x.id, rows) + [everybody_group_id()]
     if id is None:
         id = auth.user_id
     if id is None:
