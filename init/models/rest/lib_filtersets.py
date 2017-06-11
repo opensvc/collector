@@ -138,7 +138,7 @@ def comp_get_matching_filters(fset_ids, fset_data=None, node_id=None, svc_id=Non
             elif table in ("diskinfo"):
                 join_table += ", nodes, svcdisks"
                 where_ext += """ and svcdisks.node_id=nodes.node_id and nodes.node_id="%s" and svcdisks.disk_id=diskinfo.disk_id""" % node_id
-            elif svc_id is None and table in (
+            elif table in (
               "v_comp_moduleset_attachments",
               "v_tags",
               "packages",
@@ -149,8 +149,11 @@ def comp_get_matching_filters(fset_ids, fset_data=None, node_id=None, svc_id=Non
               "resmon",
               "resinfo"
             ):
-                join_table += ", nodes"
-                where_ext += """ and %s.node_id="%s" """ % (table, node_id)
+                if svc_id is None:
+                    join_table += ", nodes"
+                    where_ext += """ and %s.node_id="%s" """ % (table, node_id)
+                else:
+                    pass
             elif table in ("services"):
                 if slave:
                     where_ext += """ and services.svc_id=svcmon.svc_id and nodes.node_id="%s" and nodes.nodename=svcmon.mon_vmname """ % node_id
