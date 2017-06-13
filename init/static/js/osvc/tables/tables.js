@@ -2234,6 +2234,7 @@ function table_service_instances(divid, options) {
 			'mon_guestos',
 			'node_id',
 			'mon_containerstatus',
+			'mon_vmname',		// used in the frozen decorator
 			'mon_ipstatus',
 			'mon_fsstatus',
 			'mon_diskstatus',
