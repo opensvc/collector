@@ -28,6 +28,8 @@ grant all privileges on pdns.* to pdns@localhost;
 flush privileges;
 EOF
 
+sed -i 's/DEFINER=`opensvc`@`.*`/DEFINER=`root`@`localhost`/g' $DUMP_DIR/schema.dump
+
 echo >$DUMP_DIR/data.dump
 $MYSQLDUMP --where="repeats=0" opensvc scheduler_task >> $DUMP_DIR/data.dump
 $MYSQLDUMP opensvc pkg_sig_provider >> $DUMP_DIR/data.dump
