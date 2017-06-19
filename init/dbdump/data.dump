@@ -74,7 +74,7 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-06-17 17:38:09
+-- Dump completed on 2017-06-20  1:04:39
 -- MySQL dump 10.14  Distrib 5.5.33a-MariaDB, for Linux (x86_64)
 --
 -- Host: localhost    Database: opensvc
@@ -127,7 +127,7 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-06-17 17:38:09
+-- Dump completed on 2017-06-20  1:04:39
 -- MySQL dump 10.14  Distrib 5.5.33a-MariaDB, for Linux (x86_64)
 --
 -- Host: localhost    Database: opensvc
@@ -175,7 +175,7 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-06-17 17:38:09
+-- Dump completed on 2017-06-20  1:04:39
 -- MySQL dump 10.14  Distrib 5.5.33a-MariaDB, for Linux (x86_64)
 --
 -- Host: localhost    Database: opensvc
@@ -225,7 +225,7 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-06-17 17:38:09
+-- Dump completed on 2017-06-20  1:04:39
 -- MySQL dump 10.14  Distrib 5.5.33a-MariaDB, for Linux (x86_64)
 --
 -- Host: localhost    Database: opensvc
@@ -276,7 +276,7 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-06-17 17:38:09
+-- Dump completed on 2017-06-20  1:04:39
 -- MySQL dump 10.14  Distrib 5.5.33a-MariaDB, for Linux (x86_64)
 --
 -- Host: localhost    Database: opensvc
@@ -332,7 +332,7 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-06-17 17:38:09
+-- Dump completed on 2017-06-20  1:04:39
 -- MySQL dump 10.14  Distrib 5.5.33a-MariaDB, for Linux (x86_64)
 --
 -- Host: localhost    Database: opensvc
@@ -387,7 +387,7 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-06-17 17:38:09
+-- Dump completed on 2017-06-20  1:04:39
 -- MySQL dump 10.14  Distrib 5.5.33a-MariaDB, for Linux (x86_64)
 --
 -- Host: localhost    Database: opensvc
@@ -442,7 +442,7 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-06-17 17:38:09
+-- Dump completed on 2017-06-20  1:04:39
 -- MySQL dump 10.14  Distrib 5.5.33a-MariaDB, for Linux (x86_64)
 --
 -- Host: localhost    Database: opensvc
@@ -498,7 +498,7 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-06-17 17:38:09
+-- Dump completed on 2017-06-20  1:04:39
 -- MySQL dump 10.14  Distrib 5.5.33a-MariaDB, for Linux (x86_64)
 --
 -- Host: localhost    Database: opensvc
@@ -556,8 +556,8 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-06-17 17:38:09
+-- Dump completed on 2017-06-20  1:04:39
 INSERT INTO sysrep_secure VALUES (1,'.*');
-INSERT INTO auth_user (id, last_name, email, password) VALUES (1,'Manager','root@localhost.localdomain','sha512$85f8c776fe663b25$a9ab1f4ebd03fa7f2cf992bf7bc111e24a76397db7a228edc54a95e44e2cfbd50b7d83a5942a9c66da99c1f14c14b9ef070eef730460850c7eb48c1126236e96');
+INSERT INTO auth_user (id, last_name, email, password) VALUES (1,'Manager','root@127.0.0.1.localdomain','sha512$85f8c776fe663b25$a9ab1f4ebd03fa7f2cf992bf7bc111e24a76397db7a228edc54a95e44e2cfbd50b7d83a5942a9c66da99c1f14c14b9ef070eef730460850c7eb48c1126236e96');
 INSERT INTO auth_membership VALUES (1, 1, 2, 'F');
 insert into auth_permission set group_id=(select id from auth_group where role = "Impersonate"), name="impersonate", table_name="auth_user", record_id=0;

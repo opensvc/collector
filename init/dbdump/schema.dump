@@ -1,7 +1,7 @@
 
-create user if not exists opensvc@localhost identified by 'opensvc';
-create user if not exists pdns@localhost identified by 'pdns';
-create user if not exists readonly@localhost identified by 'readonly';
+create user if not exists opensvc@127.0.0.1 identified by 'opensvc';
+create user if not exists pdns@127.0.0.1 identified by 'pdns';
+create user if not exists readonly@127.0.0.1 identified by 'readonly';
 -- MySQL dump 10.14  Distrib 5.5.33a-MariaDB, for Linux (x86_64)
 --
 -- Host: localhost    Database: opensvc
@@ -329,7 +329,7 @@ CREATE TABLE `b_action_errors` (
   `err` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `i_svcname` (`svc_id`,`node_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=77 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=144 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -482,7 +482,7 @@ CREATE TABLE `checks_live` (
   KEY `k_node_id` (`node_id`),
   KEY `k_svc_id` (`svc_id`),
   KEY `k_chk_type` (`chk_type`)
-) ENGINE=InnoDB AUTO_INCREMENT=513017 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=562271 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -532,7 +532,7 @@ CREATE TABLE `comp_log` (
   KEY `idx3` (`run_module`),
   KEY `k_node_id` (`node_id`),
   KEY `k_svc_id` (`svc_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=180497 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=180517 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -554,7 +554,7 @@ CREATE TABLE `comp_log_daily` (
   KEY `idx3` (`run_module`),
   KEY `k_node_id` (`node_id`),
   KEY `k_svc_id` (`svc_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=78975 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=78985 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -912,7 +912,7 @@ CREATE TABLE `comp_run_ruleset` (
   `date` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `new_index` (`rset_md5`)
-) ENGINE=InnoDB AUTO_INCREMENT=441365 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=441446 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -937,7 +937,7 @@ CREATE TABLE `comp_status` (
   KEY `idx3` (`run_date`),
   KEY `k_node_id` (`node_id`),
   KEY `k_svc_id` (`svc_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=5981 DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC;
+) ENGINE=InnoDB AUTO_INCREMENT=5991 DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -986,7 +986,7 @@ CREATE TABLE `dashboard` (
   KEY `k_node_id` (`node_id`),
   KEY `k_svc_id` (`svc_id`),
   KEY `k_dash_janitor` (`dash_type`,`node_id`,`svc_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=981811 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=982640 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
@@ -997,7 +997,7 @@ CREATE TABLE `dashboard` (
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = '' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 trigger dash_add_evt after insert on dashboard for each row
+/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`127.0.0.1`*/ /*!50003 trigger dash_add_evt after insert on dashboard for each row
 begin
  insert ignore into dashboard_ref (dash_md5, dash_fmt, dash_dict, dash_type) values (new.dash_md5, new.dash_fmt, new.dash_dict, new.dash_type) ;
  insert into dashboard_events (dash_md5, node_id, svc_id, dash_begin) values (new.dash_md5, new.node_id, new.svc_id, now()) ;
@@ -1016,7 +1016,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = '' */ ;
 DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 trigger dash_del_evt before delete on dashboard for each row begin update dashboard_events set dash_end=now() where dash_md5=old.dash_md5 and node_id=old.node_id and svc_id=old.svc_id and dash_end is null ; end */;;
+/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`127.0.0.1`*/ /*!50003 trigger dash_del_evt before delete on dashboard for each row begin update dashboard_events set dash_end=now() where dash_md5=old.dash_md5 and node_id=old.node_id and svc_id=old.svc_id and dash_end is null ; end */;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
@@ -1044,7 +1044,7 @@ CREATE TABLE `dashboard_events` (
   KEY `k_svc_id` (`svc_id`),
   KEY `idx3` (`node_id`,`svc_id`,`dash_md5`),
   KEY `k_purge_future` (`dash_end`)
-) ENGINE=InnoDB AUTO_INCREMENT=542812 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=542816 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1080,7 +1080,7 @@ CREATE TABLE `dashboard_ref` (
   `dash_dict` varchar(200) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `idx1` (`dash_md5`)
-) ENGINE=InnoDB AUTO_INCREMENT=15525534 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=15525537 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1134,7 +1134,7 @@ CREATE TABLE `diskinfo` (
   `disk_created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `new_index` (`disk_id`,`disk_group`)
-) ENGINE=InnoDB AUTO_INCREMENT=211 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=217 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1661,7 +1661,7 @@ CREATE TABLE `log` (
   KEY `idx6` (`log_date`),
   KEY `k_node_id` (`node_id`),
   KEY `k_svc_id` (`svc_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=294600 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=294808 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2116,7 +2116,7 @@ CREATE TABLE `packages` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `idx3` (`node_id`,`pkg_name`,`pkg_arch`,`pkg_version`,`pkg_type`),
   KEY `idx2` (`pkg_version`)
-) ENGINE=InnoDB AUTO_INCREMENT=414293 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=424073 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2313,7 +2313,7 @@ CREATE TABLE `resinfo` (
   UNIQUE KEY `uk` (`node_id`,`svc_id`,`rid`,`res_key`),
   KEY `k_node_id` (`node_id`),
   KEY `k_svc_id` (`svc_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=928646 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=934933 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2335,7 +2335,7 @@ CREATE TABLE `resinfo_log` (
   PRIMARY KEY (`id`),
   KEY `k_node_id` (`node_id`),
   KEY `k_svc_id` (`svc_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=407780 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=408679 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2365,7 +2365,7 @@ CREATE TABLE `resmon` (
   KEY `resmon_updated` (`updated`),
   KEY `k_node_id` (`node_id`),
   KEY `k_svc_id` (`svc_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2939416 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=2952833 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2385,7 +2385,7 @@ CREATE TABLE `resmon_log` (
   `res_end` datetime NOT NULL,
   PRIMARY KEY (`id`),
   KEY `idx1` (`node_id`,`svc_id`,`rid`)
-) ENGINE=TokuDB AUTO_INCREMENT=174403 DEFAULT CHARSET=utf8;
+) ENGINE=TokuDB AUTO_INCREMENT=174419 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2406,7 +2406,7 @@ CREATE TABLE `resmon_log_last` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk` (`node_id`,`svc_id`,`rid`),
   KEY `idx1` (`node_id`,`svc_id`,`rid`)
-) ENGINE=InnoDB AUTO_INCREMENT=279 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=280 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2709,7 +2709,7 @@ CREATE TABLE `services` (
   KEY `idx2` (`svc_cluster_type`),
   KEY `services_svc_app` (`svc_app`),
   KEY `k_svc_name` (`svcname`)
-) ENGINE=InnoDB AUTO_INCREMENT=397004 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=397022 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2727,7 +2727,7 @@ CREATE TABLE `services_log` (
   `svc_id` char(36) CHARACTER SET ascii DEFAULT '',
   PRIMARY KEY (`id`),
   KEY `k_svc_id` (`svc_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=590529 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=590537 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3808,7 +3808,7 @@ CREATE TABLE `svcactions` (
   KEY `status` (`status`),
   KEY `k_node_id` (`node_id`),
   KEY `k_svc_id` (`svc_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=8921004 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=8922128 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3837,7 +3837,7 @@ CREATE TABLE `svcdisks` (
   KEY `k_node_id` (`node_id`),
   KEY `k_svc_id` (`svc_id`),
   KEY `k_svcdisks_1` (`svc_id`,`node_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8 COMMENT='disks used by services';
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8 COMMENT='disks used by services';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3876,7 +3876,7 @@ CREATE TABLE `svcmon` (
   KEY `mon_vmname` (`mon_vmname`),
   KEY `k_node_id` (`node_id`),
   KEY `k_svc_id` (`svc_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=94008 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=94926 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3907,7 +3907,7 @@ CREATE TABLE `svcmon_log` (
   KEY `mon_begin` (`mon_begin`,`mon_end`),
   KEY `k_node_id` (`node_id`),
   KEY `k_svc_id` (`svc_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=6481055 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=6481123 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3963,7 +3963,7 @@ CREATE TABLE `svcmon_log_last` (
   KEY `mon_begin` (`mon_begin`,`mon_end`),
   KEY `k_node_id` (`node_id`),
   KEY `k_svc_id` (`svc_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=1393 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1451 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -4050,7 +4050,7 @@ CREATE TABLE `table_modified` (
   `table_modified` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `index_1` (`table_name`)
-) ENGINE=InnoDB AUTO_INCREMENT=407943 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=417253 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -5477,7 +5477,7 @@ USE `opensvc`;
 /*!50001 SET character_set_results     = utf8 */;
 /*!50001 SET collation_connection      = utf8_general_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
-/*!50013 DEFINER=`root`@`localhost` SQL SECURITY INVOKER */
+/*!50013 DEFINER=`root`@`127.0.0.1` SQL SECURITY INVOKER */
 /*!50001 VIEW `v_action_queue` AS select `n`.`nodename` AS `nodename`,`s`.`svcname` AS `svcname`,`a`.`id` AS `id`,`a`.`status` AS `status`,`a`.`command` AS `command`,`a`.`date_queued` AS `date_queued`,`a`.`date_dequeued` AS `date_dequeued`,`a`.`ret` AS `ret`,`a`.`stdout` AS `stdout`,`a`.`stderr` AS `stderr`,`a`.`action_type` AS `action_type`,`a`.`user_id` AS `user_id`,`a`.`form_id` AS `form_id`,`a`.`connect_to` AS `connect_to`,`a`.`node_id` AS `node_id`,`a`.`svc_id` AS `svc_id`,concat(`u`.`first_name`,' ',`u`.`last_name`) AS `username` from (((`action_queue` `a` left join `auth_user` `u` on((`a`.`user_id` = `u`.`id`))) left join `nodes` `n` on((`a`.`node_id` = `n`.`node_id`))) left join `services` `s` on((`a`.`svc_id` = `s`.`svc_id`))) */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
@@ -5496,7 +5496,7 @@ USE `opensvc`;
 /*!50001 SET character_set_results     = utf8 */;
 /*!50001 SET collation_connection      = utf8_general_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
-/*!50013 DEFINER=`root`@`localhost` SQL SECURITY INVOKER */
+/*!50013 DEFINER=`root`@`127.0.0.1` SQL SECURITY INVOKER */
 /*!50001 VIEW `v_apps` AS (select `a`.`id` AS `id`,`a`.`app` AS `app`,`a`.`updated` AS `updated`,`a`.`app_domain` AS `app_domain`,`a`.`app_team_ops` AS `app_team_ops`,`a`.`description` AS `description`,group_concat(distinct `tr`.`role` order by `tr`.`role` ASC separator ', ') AS `responsibles`,group_concat(distinct `tp`.`role` order by `tp`.`role` ASC separator ', ') AS `publications` from ((((`apps` `a` left join `apps_responsibles` `ar` on((`a`.`id` = `ar`.`app_id`))) left join `auth_group` `tr` on((`ar`.`group_id` = `tr`.`id`))) left join `apps_publications` `ap` on((`a`.`id` = `ap`.`app_id`))) left join `auth_group` `tp` on((`ap`.`group_id` = `tp`.`id`))) group by `a`.`app`) */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
@@ -5534,7 +5534,7 @@ USE `opensvc`;
 /*!50001 SET character_set_results     = utf8 */;
 /*!50001 SET collation_connection      = utf8_general_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
-/*!50013 DEFINER=`root`@`localhost` SQL SECURITY INVOKER */
+/*!50013 DEFINER=`root`@`127.0.0.1` SQL SECURITY INVOKER */
 /*!50001 VIEW `v_comp_moduleset_attachments` AS select `nm`.`node_id` AS `node_id`,NULL AS `svc_id`,`ms`.`modset_name` AS `modset_name` from (`comp_node_moduleset` `nm` join `comp_moduleset` `ms` on((`nm`.`modset_id` = `ms`.`id`))) union all select '' AS `node_id`,`sm`.`svc_id` AS `svc_id`,`ms`.`modset_name` AS `modset_name` from (`comp_modulesets_services` `sm` join `comp_moduleset` `ms` on((`sm`.`modset_id` = `ms`.`id`))) */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
@@ -5553,7 +5553,7 @@ USE `opensvc`;
 /*!50001 SET character_set_results     = utf8 */;
 /*!50001 SET collation_connection      = utf8_general_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
-/*!50013 DEFINER=`root`@`localhost` SQL SECURITY INVOKER */
+/*!50013 DEFINER=`root`@`127.0.0.1` SQL SECURITY INVOKER */
 /*!50001 VIEW `v_comp_modulesets` AS select if(`m`.`id`,`m`.`id`,0) AS `id`,`ms`.`id` AS `modset_id`,`ms`.`modset_name` AS `modset_name`,`ms`.`modset_author` AS `modset_author`,`ms`.`modset_updated` AS `modset_updated`,`m`.`id` AS `modset_mod_id`,`m`.`modset_mod_name` AS `modset_mod_name`,`m`.`modset_mod_author` AS `modset_mod_author`,`m`.`modset_mod_updated` AS `modset_mod_updated`,`m`.`autofix` AS `autofix`,group_concat(distinct `rg`.`role` separator ', ') AS `teams_responsible`,group_concat(distinct `pg`.`role` separator ', ') AS `teams_publication` from (((((`comp_moduleset` `ms` left join `comp_moduleset_modules` `m` on((`ms`.`id` = `m`.`modset_id`))) left join `comp_moduleset_team_responsible` `rt` on((`ms`.`id` = `rt`.`modset_id`))) left join `comp_moduleset_team_publication` `pt` on((`ms`.`id` = `pt`.`modset_id`))) left join `auth_group` `rg` on((`rt`.`group_id` = `rg`.`id`))) left join `auth_group` `pg` on((`pt`.`group_id` = `pg`.`id`))) group by `m`.`id`,`ms`.`id` */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
@@ -5572,7 +5572,7 @@ USE `opensvc`;
 /*!50001 SET character_set_results     = utf8 */;
 /*!50001 SET collation_connection      = utf8_general_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
-/*!50013 DEFINER=`root`@`localhost` SQL SECURITY INVOKER */
+/*!50013 DEFINER=`root`@`127.0.0.1` SQL SECURITY INVOKER */
 /*!50001 VIEW `v_comp_nodes` AS (select `n`.`node_id` AS `node_id`,`n`.`nodename` AS `nodename`,`n`.`fqdn` AS `fqdn`,`n`.`loc_country` AS `loc_country`,`n`.`loc_city` AS `loc_city`,`n`.`loc_addr` AS `loc_addr`,`n`.`loc_building` AS `loc_building`,`n`.`loc_floor` AS `loc_floor`,`n`.`loc_room` AS `loc_room`,`n`.`loc_rack` AS `loc_rack`,`n`.`id` AS `id`,`n`.`cpu_freq` AS `cpu_freq`,`n`.`cpu_cores` AS `cpu_cores`,`n`.`cpu_dies` AS `cpu_dies`,`n`.`cpu_vendor` AS `cpu_vendor`,`n`.`cpu_model` AS `cpu_model`,`n`.`mem_banks` AS `mem_banks`,`n`.`mem_slots` AS `mem_slots`,`n`.`mem_bytes` AS `mem_bytes`,`n`.`os_name` AS `os_name`,`n`.`os_release` AS `os_release`,`n`.`os_update` AS `os_update`,`n`.`os_segment` AS `os_segment`,`n`.`os_arch` AS `os_arch`,`n`.`os_vendor` AS `os_vendor`,`n`.`os_kernel` AS `os_kernel`,`n`.`loc_zip` AS `loc_zip`,`n`.`version` AS `version`,`n`.`listener_port` AS `listener_port`,`n`.`tz` AS `tz`,`n`.`last_comm` AS `last_comm`,`n`.`collector` AS `collector`,`n`.`connect_to` AS `connect_to`,`n`.`team_responsible` AS `team_responsible`,`n`.`team_integ` AS `team_integ`,`n`.`team_support` AS `team_support`,`n`.`app` AS `app`,`n`.`serial` AS `serial`,`n`.`sp_version` AS `sp_version`,`n`.`bios_version` AS `bios_version`,`n`.`model` AS `model`,`n`.`type` AS `type`,`n`.`warranty_end` AS `warranty_end`,`n`.`maintenance_end` AS `maintenance_end`,`n`.`status` AS `status`,`n`.`role` AS `role`,`n`.`asset_env` AS `asset_env`,`n`.`node_env` AS `node_env`,`n`.`power_cabinet1` AS `power_cabinet1`,`n`.`power_cabinet2` AS `power_cabinet2`,`n`.`power_supply_nb` AS `power_supply_nb`,`n`.`power_protect` AS `power_protect`,`n`.`power_protect_breaker` AS `power_protect_breaker`,`n`.`power_breaker1` AS `power_breaker1`,`n`.`power_breaker2` AS `power_breaker2`,`n`.`os_concat` AS `os_concat`,`n`.`updated` AS `updated`,`n`.`enclosure` AS `enclosure`,`n`.`enclosureslot` AS `enclosureslot`,`n`.`assetname` AS `assetname`,`n`.`cpu_threads` AS `cpu_threads`,`n`.`hw_obs_warn_date` AS `hw_obs_warn_date`,`n`.`hw_obs_alert_date` AS `hw_obs_alert_date`,`n`.`os_obs_warn_date` AS `os_obs_warn_date`,`n`.`os_obs_alert_date` AS `os_obs_alert_date`,`n`.`hvpool` AS `hvpool`,`n`.`hv` AS `hv`,`n`.`hvvdc` AS `hvvdc`,`n`.`sec_zone` AS `sec_zone`,`n`.`last_boot` AS `last_boot`,`n`.`action_type` AS `action_type`,`r`.`id` AS `ruleset_id`,`r`.`ruleset_name` AS `ruleset_name`,`m`.`id` AS `modset_id`,`m`.`modset_name` AS `modset_name` from ((((`nodes` `n` left join `comp_rulesets_nodes` `rn` on((`n`.`node_id` = `rn`.`node_id`))) left join `comp_rulesets` `r` on((`r`.`id` = `rn`.`ruleset_id`))) left join `comp_node_moduleset` `mn` on((`mn`.`node_id` = `n`.`node_id`))) left join `comp_moduleset` `m` on((`m`.`id` = `mn`.`modset_id`)))) */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
@@ -5591,7 +5591,7 @@ USE `opensvc`;
 /*!50001 SET character_set_results     = utf8 */;
 /*!50001 SET collation_connection      = utf8_general_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
-/*!50013 DEFINER=`root`@`localhost` SQL SECURITY INVOKER */
+/*!50013 DEFINER=`root`@`127.0.0.1` SQL SECURITY INVOKER */
 /*!50001 VIEW `v_comp_rulesets` AS select `r`.`id` AS `ruleset_id`,`r`.`ruleset_name` AS `ruleset_name`,`r`.`ruleset_type` AS `ruleset_type`,`r`.`ruleset_public` AS `ruleset_public`,group_concat(distinct `rg`.`role` separator ', ') AS `teams_responsible`,group_concat(distinct `pg`.`role` separator ', ') AS `teams_publication`,if((`rr`.`ruleset_name` <> `r`.`ruleset_name`),`rr`.`ruleset_name`,'') AS `encap_rset`,if((`rr`.`id` <> `r`.`id`),`rr`.`id`,NULL) AS `encap_rset_id`,`rc`.`chain` AS `chain`,`rc`.`chain_len` AS `chain_len`,`rv`.`id` AS `id`,`rv`.`var_name` AS `var_name`,`rv`.`var_class` AS `var_class`,`rv`.`var_value` AS `var_value`,`rv`.`var_author` AS `var_author`,`rv`.`var_updated` AS `var_updated`,`rf`.`fset_id` AS `fset_id`,`fs`.`fset_name` AS `fset_name` from (((((((((`comp_rulesets` `r` left join `comp_rulesets_filtersets` `rf` on((`r`.`id` = `rf`.`ruleset_id`))) left join `gen_filtersets` `fs` on((`fs`.`id` = `rf`.`fset_id`))) left join `comp_ruleset_team_responsible` `rt` on((`r`.`id` = `rt`.`ruleset_id`))) left join `comp_ruleset_team_publication` `pt` on((`r`.`id` = `pt`.`ruleset_id`))) left join `auth_group` `rg` on((`rt`.`group_id` = `rg`.`id`))) left join `auth_group` `pg` on((`pt`.`group_id` = `pg`.`id`))) left join `comp_rulesets_chains` `rc` on((`r`.`id` = `rc`.`head_rset_id`))) left join `comp_rulesets` `rr` on((`rc`.`tail_rset_id` = `rr`.`id`))) left join `comp_rulesets_variables` `rv` on((`rr`.`id` = `rv`.`ruleset_id`))) group by `r`.`id`,`rv`.`id`,`rr`.`id` */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
@@ -5610,7 +5610,7 @@ USE `opensvc`;
 /*!50001 SET character_set_results     = utf8 */;
 /*!50001 SET collation_connection      = utf8_general_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
-/*!50013 DEFINER=`root`@`localhost` SQL SECURITY INVOKER */
+/*!50013 DEFINER=`root`@`127.0.0.1` SQL SECURITY INVOKER */
 /*!50001 VIEW `v_comp_services` AS select `s`.`svc_status_updated` AS `svc_status_updated`,`s`.`svc_ha` AS `svc_ha`,`s`.`svc_status` AS `svc_status`,`s`.`svc_availstatus` AS `svc_availstatus`,`s`.`svc_cluster_type` AS `svc_cluster_type`,`s`.`svc_flex_min_nodes` AS `svc_flex_min_nodes`,`s`.`svc_flex_max_nodes` AS `svc_flex_max_nodes`,`s`.`svc_flex_cpu_low_threshold` AS `svc_flex_cpu_low_threshold`,`s`.`svc_flex_cpu_high_threshold` AS `svc_flex_cpu_high_threshold`,`s`.`svc_id` AS `svc_id`,`s`.`svcname` AS `svcname`,`s`.`svc_nodes` AS `svc_nodes`,`s`.`svc_drpnode` AS `svc_drpnode`,`s`.`svc_drptype` AS `svc_drptype`,`s`.`svc_autostart` AS `svc_autostart`,`s`.`svc_env` AS `svc_env`,`s`.`svc_drpnodes` AS `svc_drpnodes`,`s`.`svc_comment` AS `svc_comment`,`s`.`svc_app` AS `svc_app`,`s`.`svc_drnoaction` AS `svc_drnoaction`,`s`.`svc_created` AS `svc_created`,`s`.`updated` AS `updated`,`s`.`svc_config_updated` AS `svc_config_updated`,`s`.`svc_containertype` AS `svc_containertype`,`s`.`svc_metrocluster` AS `svc_metrocluster`,`s`.`id` AS `id`,`s`.`svc_wave` AS `svc_wave`,'F' AS `encap`,`r`.`id` AS `ruleset_id`,`r`.`ruleset_name` AS `ruleset_name`,`m`.`id` AS `modset_id`,`m`.`modset_name` AS `modset_name` from ((((`services` `s` left join `comp_rulesets_services` `rs1` on(((`s`.`svc_id` = `rs1`.`svc_id`) and (`rs1`.`slave` = 'F')))) left join `comp_rulesets` `r` on((`rs1`.`ruleset_id` = `r`.`id`))) left join `comp_modulesets_services` `ms` on(((`s`.`svc_id` = `ms`.`svc_id`) and (`ms`.`slave` = 'F')))) left join `comp_moduleset` `m` on((`ms`.`modset_id` = `m`.`id`))) union all select `s`.`svc_status_updated` AS `svc_status_updated`,`s`.`svc_ha` AS `svc_ha`,`s`.`svc_status` AS `svc_status`,`s`.`svc_availstatus` AS `svc_availstatus`,`s`.`svc_cluster_type` AS `svc_cluster_type`,`s`.`svc_flex_min_nodes` AS `svc_flex_min_nodes`,`s`.`svc_flex_max_nodes` AS `svc_flex_max_nodes`,`s`.`svc_flex_cpu_low_threshold` AS `svc_flex_cpu_low_threshold`,`s`.`svc_flex_cpu_high_threshold` AS `svc_flex_cpu_high_threshold`,`s`.`svc_id` AS `svc_id`,`s`.`svcname` AS `svcname`,`s`.`svc_nodes` AS `svc_nodes`,`s`.`svc_drpnode` AS `svc_drpnode`,`s`.`svc_drptype` AS `svc_drptype`,`s`.`svc_autostart` AS `svc_autostart`,`s`.`svc_env` AS `svc_env`,`s`.`svc_drpnodes` AS `svc_drpnodes`,`s`.`svc_comment` AS `svc_comment`,`s`.`svc_app` AS `svc_app`,`s`.`svc_drnoaction` AS `svc_drnoaction`,`s`.`svc_created` AS `svc_created`,`s`.`updated` AS `updated`,`s`.`svc_config_updated` AS `svc_config_updated`,`s`.`svc_containertype` AS `svc_containertype`,`s`.`svc_metrocluster` AS `svc_metrocluster`,`s`.`id` AS `id`,`s`.`svc_wave` AS `svc_wave`,'T' AS `encap`,`r`.`id` AS `ruleset_id`,`r`.`ruleset_name` AS `ruleset_name`,`m`.`id` AS `modset_id`,`m`.`modset_name` AS `modset_name` from (((((`services` `s` join `svcmon` `sm` on(((`s`.`svc_id` = `sm`.`svc_id`) and (`sm`.`mon_vmname` <> '') and (`sm`.`mon_vmname` is not null)))) left join `comp_rulesets_services` `rs1` on(((`s`.`svc_id` = `rs1`.`svc_id`) and (`rs1`.`slave` = 'T')))) left join `comp_rulesets` `r` on((`rs1`.`ruleset_id` = `r`.`id`))) left join `comp_modulesets_services` `ms` on(((`s`.`svc_id` = `ms`.`svc_id`) and (`ms`.`slave` = 'T')))) left join `comp_moduleset` `m` on((`ms`.`modset_id` = `m`.`id`))) */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
@@ -5629,7 +5629,7 @@ USE `opensvc`;
 /*!50001 SET character_set_results     = utf8 */;
 /*!50001 SET collation_connection      = utf8_general_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
-/*!50013 DEFINER=`root`@`localhost` SQL SECURITY INVOKER */
+/*!50013 DEFINER=`root`@`127.0.0.1` SQL SECURITY INVOKER */
 /*!50001 VIEW `v_disk_app_dedup` AS select `apps`.`app` AS `app`,max(`svcdisks`.`disk_used`) AS `disk_used`,`svcdisks`.`disk_size` AS `disk_size`,`diskinfo`.`disk_arrayid` AS `disk_arrayid`,`diskinfo`.`disk_group` AS `disk_group` from ((`svcdisks` join `diskinfo`) join `apps`) where ((`svcdisks`.`disk_id` = convert(`diskinfo`.`disk_id` using utf8)) and (`svcdisks`.`app_id` = `apps`.`id`)) group by `svcdisks`.`disk_id`,`svcdisks`.`disk_region`,`diskinfo`.`disk_arrayid`,`diskinfo`.`disk_group` */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
@@ -5667,7 +5667,7 @@ USE `opensvc`;
 /*!50001 SET character_set_results     = utf8 */;
 /*!50001 SET collation_connection      = utf8_general_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
-/*!50013 DEFINER=`root`@`localhost` SQL SECURITY INVOKER */
+/*!50013 DEFINER=`root`@`127.0.0.1` SQL SECURITY INVOKER */
 /*!50001 VIEW `v_disks_app` AS select `v_disk_app_dedup`.`app` AS `app`,sum(if(((`v_disk_app_dedup`.`disk_used` is not null) and (`v_disk_app_dedup`.`disk_used` > 0)),`v_disk_app_dedup`.`disk_used`,`v_disk_app_dedup`.`disk_size`)) AS `disk_used`,`v_disk_app_dedup`.`disk_arrayid` AS `disk_arrayid`,`v_disk_app_dedup`.`disk_group` AS `disk_group` from `v_disk_app_dedup` group by `v_disk_app_dedup`.`app`,`v_disk_app_dedup`.`disk_arrayid`,`v_disk_app_dedup`.`disk_group` */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
@@ -5705,7 +5705,7 @@ USE `opensvc`;
 /*!50001 SET character_set_results     = utf8 */;
 /*!50001 SET collation_connection      = utf8_general_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
-/*!50013 DEFINER=`root`@`localhost` SQL SECURITY INVOKER */
+/*!50013 DEFINER=`root`@`127.0.0.1` SQL SECURITY INVOKER */
 /*!50001 VIEW `v_forms_store` AS select `fs`.`id` AS `id`,`fs`.`results_id` AS `results_id`,`fs`.`form_submitter` AS `form_submitter`,`fs`.`form_submit_date` AS `form_submit_date`,`fs`.`form_data` AS `form_data`,`fs`.`form_next_id` AS `form_next_id`,`fs`.`form_prev_id` AS `form_prev_id`,`fs`.`form_assignee` AS `form_assignee`,`fs`.`form_head_id` AS `form_head_id`,`fs`.`form_md5` AS `form_md5`,`fs`.`form_var_id` AS `form_var_id`,`fr`.`form_yaml` AS `form_yaml`,`fr`.`form_date` AS `form_date`,`fr`.`form_id` AS `form_id`,`fr`.`form_folder` AS `form_folder`,`fr`.`form_name` AS `form_name` from (`forms_store` `fs` join `forms_revisions` `fr`) where (`fs`.`form_md5` = `fr`.`form_md5`) */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
@@ -5724,7 +5724,7 @@ USE `opensvc`;
 /*!50001 SET character_set_results     = utf8 */;
 /*!50001 SET collation_connection      = utf8_general_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
-/*!50013 DEFINER=`root`@`localhost` SQL SECURITY INVOKER */
+/*!50013 DEFINER=`root`@`127.0.0.1` SQL SECURITY INVOKER */
 /*!50001 VIEW `v_gen_filterset_check_threshold` AS (select `fsc`.`id` AS `id`,`fsc`.`fset_id` AS `fset_id`,`fsc`.`chk_type` AS `chk_type`,`fsc`.`chk_low` AS `chk_low`,`fsc`.`chk_high` AS `chk_high`,`fsc`.`chk_instance` AS `chk_instance`,concat(if((`fs`.`fset_name` is not null),`fs`.`fset_name`,'fset_deleted'),' ',`fsc`.`chk_type`,':',`fsc`.`chk_instance`,' ',`fsc`.`chk_low`,':',`fsc`.`chk_high`) AS `name` from (`gen_filterset_check_threshold` `fsc` left join `gen_filtersets` `fs` on((`fsc`.`fset_id` = `fs`.`id`)))) */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
@@ -5762,7 +5762,7 @@ USE `opensvc`;
 /*!50001 SET character_set_results     = utf8 */;
 /*!50001 SET collation_connection      = utf8_general_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
-/*!50013 DEFINER=`root`@`localhost` SQL SECURITY INVOKER */
+/*!50013 DEFINER=`root`@`127.0.0.1` SQL SECURITY INVOKER */
 /*!50001 VIEW `v_gen_filtersets` AS (select `fs`.`fset_name` AS `fset_name`,`fs`.`fset_stats` AS `fset_stats`,`fs`.`fset_updated` AS `fset_updated`,`fs`.`fset_author` AS `fset_author`,`fs`.`id` AS `fset_id`,`g`.`id` AS `join_id`,`g`.`f_order` AS `f_order`,`f`.`id` AS `f_id`,`g`.`encap_fset_id` AS `encap_fset_id`,`cfs`.`fset_name` AS `encap_fset_name`,`g`.`f_log_op` AS `f_log_op`,`f`.`id` AS `id`,`f`.`f_table` AS `f_table`,`f`.`f_field` AS `f_field`,`f`.`f_value` AS `f_value`,`f`.`f_updated` AS `f_updated`,`f`.`f_author` AS `f_author`,`f`.`f_op` AS `f_op`,`f`.`f_label` AS `f_label` from (((`gen_filtersets` `fs` left join `gen_filtersets_filters` `g` on((`g`.`fset_id` = `fs`.`id`))) left join `gen_filtersets` `cfs` on((`g`.`encap_fset_id` = `cfs`.`id`))) left join `gen_filters` `f` on((`g`.`f_id` = `f`.`id`)))) */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
@@ -5781,7 +5781,7 @@ USE `opensvc`;
 /*!50001 SET character_set_results     = utf8 */;
 /*!50001 SET collation_connection      = utf8_general_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
-/*!50013 DEFINER=`root`@`localhost` SQL SECURITY INVOKER */
+/*!50013 DEFINER=`root`@`127.0.0.1` SQL SECURITY INVOKER */
 /*!50001 VIEW `v_gids` AS select `node_groups`.`id` AS `id`,`node_groups`.`group_id` AS `group_id`,count(`node_groups`.`id`) AS `group_id_count`,group_concat(`node_groups`.`group_name` separator ',') AS `group_name` from `node_groups` group by `node_groups`.`group_id` */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
@@ -5857,7 +5857,7 @@ USE `opensvc`;
 /*!50001 SET character_set_results     = utf8 */;
 /*!50001 SET collation_connection      = utf8_general_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
-/*!50013 DEFINER=`root`@`localhost` SQL SECURITY INVOKER */
+/*!50013 DEFINER=`root`@`127.0.0.1` SQL SECURITY INVOKER */
 /*!50001 VIEW `v_nodenetworks` AS select `n`.`nodename` AS `nodename`,`n`.`fqdn` AS `fqdn`,`n`.`loc_country` AS `loc_country`,`n`.`loc_city` AS `loc_city`,`n`.`loc_addr` AS `loc_addr`,`n`.`loc_building` AS `loc_building`,`n`.`loc_floor` AS `loc_floor`,`n`.`loc_room` AS `loc_room`,`n`.`loc_rack` AS `loc_rack`,`n`.`cpu_freq` AS `cpu_freq`,`n`.`cpu_cores` AS `cpu_cores`,`n`.`cpu_dies` AS `cpu_dies`,`n`.`cpu_vendor` AS `cpu_vendor`,`n`.`cpu_model` AS `cpu_model`,`n`.`mem_banks` AS `mem_banks`,`n`.`mem_slots` AS `mem_slots`,`n`.`mem_bytes` AS `mem_bytes`,`n`.`os_name` AS `os_name`,`n`.`os_release` AS `os_release`,`n`.`os_update` AS `os_update`,`n`.`os_segment` AS `os_segment`,`n`.`os_arch` AS `os_arch`,`n`.`os_vendor` AS `os_vendor`,`n`.`os_kernel` AS `os_kernel`,`n`.`loc_zip` AS `loc_zip`,`n`.`version` AS `version`,`n`.`listener_port` AS `listener_port`,`n`.`tz` AS `tz`,`n`.`last_comm` AS `last_comm`,`n`.`collector` AS `collector`,`n`.`connect_to` AS `connect_to`,`n`.`team_responsible` AS `team_responsible`,`n`.`team_integ` AS `team_integ`,`n`.`team_support` AS `team_support`,`n`.`app` AS `app`,`n`.`serial` AS `serial`,`n`.`sp_version` AS `sp_version`,`n`.`bios_version` AS `bios_version`,`n`.`model` AS `model`,`n`.`type` AS `type`,`n`.`warranty_end` AS `warranty_end`,`n`.`maintenance_end` AS `maintenance_end`,`n`.`status` AS `status`,`n`.`role` AS `role`,`n`.`asset_env` AS `asset_env`,`n`.`node_env` AS `node_env`,`n`.`power_cabinet1` AS `power_cabinet1`,`n`.`power_cabinet2` AS `power_cabinet2`,`n`.`power_supply_nb` AS `power_supply_nb`,`n`.`power_protect` AS `power_protect`,`n`.`power_protect_breaker` AS `power_protect_breaker`,`n`.`power_breaker1` AS `power_breaker1`,`n`.`power_breaker2` AS `power_breaker2`,`n`.`os_concat` AS `os_concat`,`n`.`updated` AS `updated`,`n`.`enclosure` AS `enclosure`,`n`.`enclosureslot` AS `enclosureslot`,`n`.`assetname` AS `assetname`,`n`.`cpu_threads` AS `cpu_threads`,`n`.`hw_obs_warn_date` AS `hw_obs_warn_date`,`n`.`hw_obs_alert_date` AS `hw_obs_alert_date`,`n`.`os_obs_warn_date` AS `os_obs_warn_date`,`n`.`os_obs_alert_date` AS `os_obs_alert_date`,`n`.`hvpool` AS `hvpool`,`n`.`hv` AS `hv`,`n`.`hvvdc` AS `hvvdc`,`n`.`sec_zone` AS `sec_zone`,`n`.`last_boot` AS `last_boot`,`n`.`action_type` AS `action_type`,`ni`.`node_id` AS `node_id`,`ni`.`id` AS `id`,`ni`.`mac` AS `mac`,`ni`.`intf` AS `intf`,`ni`.`addr` AS `addr`,`ni`.`type` AS `addr_type`,`ni`.`mask` AS `mask`,`ni`.`flag_deprecated` AS `flag_deprecated`,`ni`.`updated` AS `addr_updated`,`nw`.`name` AS `net_name`,`nw`.`network` AS `net_network`,`nw`.`broadcast` AS `net_broadcast`,`nw`.`netmask` AS `net_netmask`,`nw`.`team_responsible` AS `net_team_responsible`,`nw`.`begin` AS `net_begin`,`nw`.`end` AS `net_end`,`nw`.`comment` AS `net_comment`,`nw`.`pvid` AS `net_pvid`,`nw`.`gateway` AS `net_gateway`,`nw`.`id` AS `net_id`,`nw`.`prio` AS `prio` from ((`node_ip` `ni` left join `nodes` `n` on((`ni`.`node_id` = `n`.`node_id`))) left join `networks` `nw` on(((inet_aton(`ni`.`addr`) >= inet_aton(`nw`.`begin`)) and (inet_aton(`ni`.`addr`) <= inet_aton(`nw`.`end`))))) */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
@@ -5876,7 +5876,7 @@ USE `opensvc`;
 /*!50001 SET character_set_results     = utf8 */;
 /*!50001 SET collation_connection      = utf8_general_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
-/*!50013 DEFINER=`root`@`localhost` SQL SECURITY INVOKER */
+/*!50013 DEFINER=`root`@`127.0.0.1` SQL SECURITY INVOKER */
 /*!50001 VIEW `v_nodesan` AS select `z`.`id` AS `id`,`z`.`tgt_id` AS `tgt_id`,`z`.`hba_id` AS `hba_id`,`z`.`node_id` AS `node_id`,`n`.`nodename` AS `nodename`,`z`.`updated` AS `updated`,`n`.`fqdn` AS `fqdn`,`n`.`loc_country` AS `loc_country`,`n`.`loc_city` AS `loc_city`,`n`.`loc_addr` AS `loc_addr`,`n`.`loc_building` AS `loc_building`,`n`.`loc_floor` AS `loc_floor`,`n`.`loc_room` AS `loc_room`,`n`.`loc_rack` AS `loc_rack`,`n`.`cpu_freq` AS `cpu_freq`,`n`.`cpu_cores` AS `cpu_cores`,`n`.`cpu_dies` AS `cpu_dies`,`n`.`cpu_vendor` AS `cpu_vendor`,`n`.`cpu_model` AS `cpu_model`,`n`.`mem_banks` AS `mem_banks`,`n`.`mem_slots` AS `mem_slots`,`n`.`mem_bytes` AS `mem_bytes`,`n`.`os_name` AS `os_name`,`n`.`os_release` AS `os_release`,`n`.`os_update` AS `os_update`,`n`.`os_segment` AS `os_segment`,`n`.`os_arch` AS `os_arch`,`n`.`os_vendor` AS `os_vendor`,`n`.`os_kernel` AS `os_kernel`,`n`.`loc_zip` AS `loc_zip`,`n`.`version` AS `version`,`n`.`listener_port` AS `listener_port`,`n`.`tz` AS `tz`,`n`.`last_comm` AS `last_comm`,`n`.`collector` AS `collector`,`n`.`connect_to` AS `connect_to`,`n`.`team_responsible` AS `team_responsible`,`n`.`team_integ` AS `team_integ`,`n`.`team_support` AS `team_support`,`n`.`app` AS `app`,`n`.`serial` AS `serial`,`n`.`sp_version` AS `sp_version`,`n`.`bios_version` AS `bios_version`,`n`.`model` AS `model`,`n`.`type` AS `type`,`n`.`warranty_end` AS `warranty_end`,`n`.`maintenance_end` AS `maintenance_end`,`n`.`status` AS `status`,`n`.`role` AS `role`,`n`.`asset_env` AS `asset_env`,`n`.`node_env` AS `node_env`,`n`.`power_cabinet1` AS `power_cabinet1`,`n`.`power_cabinet2` AS `power_cabinet2`,`n`.`power_supply_nb` AS `power_supply_nb`,`n`.`power_protect` AS `power_protect`,`n`.`power_protect_breaker` AS `power_protect_breaker`,`n`.`power_breaker1` AS `power_breaker1`,`n`.`power_breaker2` AS `power_breaker2`,`n`.`os_concat` AS `os_concat`,`n`.`updated` AS `node_updated`,`n`.`enclosure` AS `enclosure`,`n`.`hw_obs_warn_date` AS `hw_obs_warn_date`,`n`.`hw_obs_alert_date` AS `hw_obs_alert_date`,`n`.`os_obs_warn_date` AS `os_obs_warn_date`,`n`.`os_obs_alert_date` AS `os_obs_alert_date`,`n`.`hvpool` AS `hvpool`,`n`.`hv` AS `hv`,`n`.`hvvdc` AS `hvvdc`,`n`.`enclosureslot` AS `enclosureslot`,`n`.`assetname` AS `assetname`,`n`.`cpu_threads` AS `cpu_threads`,`n`.`sec_zone` AS `sec_zone`,`n`.`last_boot` AS `last_boot`,`n`.`action_type` AS `action_type`,`a`.`array_name` AS `array_name`,`a`.`array_model` AS `array_model`,`a`.`array_cache` AS `array_cache`,`a`.`array_firmware` AS `array_firmware`,`a`.`array_updated` AS `array_updated`,`a`.`array_level` AS `array_level` from (((`stor_zone` `z` join `nodes` `n` on((`z`.`node_id` = `n`.`node_id`))) left join `stor_array_tgtid` `at` on((`z`.`tgt_id` = `at`.`array_tgtid`))) left join `stor_array` `a` on((`at`.`array_id` = `a`.`id`))) */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
@@ -5895,7 +5895,7 @@ USE `opensvc`;
 /*!50001 SET character_set_results     = utf8 */;
 /*!50001 SET collation_connection      = utf8_general_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
-/*!50013 DEFINER=`root`@`localhost` SQL SECURITY INVOKER */
+/*!50013 DEFINER=`root`@`127.0.0.1` SQL SECURITY INVOKER */
 /*!50001 VIEW `v_obsolescence` AS select `obsolescence`.`id` AS `id`,`obsolescence`.`obs_type` AS `obs_type`,`obsolescence`.`obs_name` AS `obs_name`,`obsolescence`.`obs_warn_date` AS `obs_warn_date`,`obsolescence`.`obs_alert_date` AS `obs_alert_date`,`obsolescence`.`obs_warn_date_updated_by` AS `obs_warn_date_updated_by`,`obsolescence`.`obs_alert_date_updated_by` AS `obs_alert_date_updated_by`,`obsolescence`.`obs_warn_date_updated` AS `obs_warn_date_updated`,`obsolescence`.`obs_alert_date_updated` AS `obs_alert_date_updated`,count(`nodes`.`id`) AS `obs_count` from (`obsolescence` left join `nodes` on(((convert(`obsolescence`.`obs_name` using utf8) = `nodes`.`model`) and (not((`obsolescence`.`obs_name` like '%virt%'))) and (not((`obsolescence`.`obs_name` like '%cluster%')))))) where (`obsolescence`.`obs_type` = 'hw') group by `obsolescence`.`id` union all select `obsolescence`.`id` AS `id`,`obsolescence`.`obs_type` AS `obs_type`,`obsolescence`.`obs_name` AS `obs_name`,`obsolescence`.`obs_warn_date` AS `obs_warn_date`,`obsolescence`.`obs_alert_date` AS `obs_alert_date`,`obsolescence`.`obs_warn_date_updated_by` AS `obs_warn_date_updated_by`,`obsolescence`.`obs_alert_date_updated_by` AS `obs_alert_date_updated_by`,`obsolescence`.`obs_warn_date_updated` AS `obs_warn_date_updated`,`obsolescence`.`obs_alert_date_updated` AS `obs_alert_date_updated`,count(`nodes`.`id`) AS `obs_count` from (`obsolescence` left join `nodes` on((convert(`obsolescence`.`obs_name` using utf8) = `nodes`.`os_concat`))) where (`obsolescence`.`obs_type` = 'os') group by `obsolescence`.`id` */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
@@ -5914,7 +5914,7 @@ USE `opensvc`;
 /*!50001 SET character_set_results     = utf8 */;
 /*!50001 SET collation_connection      = utf8_general_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
-/*!50013 DEFINER=`root`@`localhost` SQL SECURITY INVOKER */
+/*!50013 DEFINER=`root`@`127.0.0.1` SQL SECURITY INVOKER */
 /*!50001 VIEW `v_outdated_services` AS (select `svcmon`.`svc_id` AS `svc_id`,sum(if((`svcmon`.`mon_updated` >= (now() - interval 15 minute)),1,0)) AS `uptodate` from `svcmon` group by `svcmon`.`svc_id`) */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
@@ -5933,7 +5933,7 @@ USE `opensvc`;
 /*!50001 SET character_set_results     = utf8 */;
 /*!50001 SET collation_connection      = utf8_general_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
-/*!50013 DEFINER=`root`@`localhost` SQL SECURITY INVOKER */
+/*!50013 DEFINER=`root`@`127.0.0.1` SQL SECURITY INVOKER */
 /*!50001 VIEW `v_prov_templates` AS (select `f`.`id` AS `id`,`f`.`tpl_name` AS `tpl_name`,`f`.`tpl_definition` AS `tpl_definition`,`f`.`tpl_comment` AS `tpl_comment`,`f`.`tpl_author` AS `tpl_author`,`f`.`tpl_created` AS `tpl_created`,group_concat(distinct `gr`.`role` order by `gr`.`role` ASC separator ', ') AS `tpl_team_responsible`,group_concat(distinct `gp`.`role` order by `gp`.`role` ASC separator ', ') AS `tpl_team_publication` from ((((`prov_templates` `f` left join `prov_template_team_responsible` `fr` on((`f`.`id` = `fr`.`tpl_id`))) left join `prov_template_team_publication` `fp` on((`f`.`id` = `fp`.`tpl_id`))) left join `auth_group` `gr` on((`fr`.`group_id` = `gr`.`id`))) left join `auth_group` `gp` on((`fp`.`group_id` = `gp`.`id`))) group by `f`.`id`) */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
@@ -5971,7 +5971,7 @@ USE `opensvc`;
 /*!50001 SET character_set_results     = utf8 */;
 /*!50001 SET collation_connection      = utf8_general_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
-/*!50013 DEFINER=`root`@`localhost` SQL SECURITY INVOKER */
+/*!50013 DEFINER=`root`@`127.0.0.1` SQL SECURITY INVOKER */
 /*!50001 VIEW `v_safe` AS select `safe`.`id` AS `id`,`safe`.`size` AS `size`,`safe`.`name` AS `safe_name`,`safe`.`md5` AS `md5`,`safe`.`uuid` AS `uuid`,`safe`.`uploader` AS `uploader`,`safe`.`uploaded_date` AS `uploaded_date`,`safe`.`uploaded_from` AS `uploaded_from`,concat(`auth_user`.`first_name`,' ',`auth_user`.`last_name`) AS `uploader_name`,group_concat(distinct `gp`.`role` order by `gp`.`role` ASC separator ', ') AS `safe_team_publication`,group_concat(distinct `gr`.`role` order by `gr`.`role` ASC separator ', ') AS `safe_team_responsible` from (((((`safe` left join `auth_user` on((`safe`.`uploader` = `auth_user`.`id`))) left join `safe_team_responsible` on((`safe`.`id` = `safe_team_responsible`.`file_id`))) left join `auth_group` `gr` on((`safe_team_responsible`.`group_id` = `gr`.`id`))) left join `safe_team_publication` on((`safe`.`id` = `safe_team_publication`.`file_id`))) left join `auth_group` `gp` on((`safe_team_publication`.`group_id` = `gp`.`id`))) group by `safe`.`id` */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
@@ -5990,7 +5990,7 @@ USE `opensvc`;
 /*!50001 SET character_set_results     = utf8 */;
 /*!50001 SET collation_connection      = utf8_general_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
-/*!50013 DEFINER=`root`@`localhost` SQL SECURITY INVOKER */
+/*!50013 DEFINER=`root`@`127.0.0.1` SQL SECURITY INVOKER */
 /*!50001 VIEW `v_scheduler_run` AS select `sr`.`id` AS `id`,`sr`.`task_id` AS `task_id`,`sr`.`start_time` AS `start_time`,`sr`.`stop_time` AS `stop_time`,`sr`.`run_output` AS `run_output`,`sr`.`run_result` AS `run_result`,`sr`.`traceback` AS `traceback`,`sr`.`status` AS `status`,`sr`.`worker_name` AS `worker_name`,`sr`.`duration` AS `duration`,`st`.`timeout` AS `timeout`,`st`.`args` AS `args`,`st`.`vars` AS `vars`,`st`.`retry_failed` AS `retry_failed`,`st`.`times_run` AS `times_run`,`st`.`times_failed` AS `times_failed`,`st`.`group_name` AS `group_name`,`st`.`function_name` AS `function_name`,`st`.`application_name` AS `application_name`,`st`.`assigned_worker_name` AS `assigned_worker_name` from (`scheduler_run` `sr` left join `scheduler_task` `st` on((`sr`.`task_id` = `st`.`id`))) */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
@@ -6028,7 +6028,7 @@ USE `opensvc`;
 /*!50001 SET character_set_results     = utf8 */;
 /*!50001 SET collation_connection      = utf8_general_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
-/*!50013 DEFINER=`root`@`localhost` SQL SECURITY INVOKER */
+/*!50013 DEFINER=`root`@`127.0.0.1` SQL SECURITY INVOKER */
 /*!50001 VIEW `v_svcmon` AS select `e`.`err` AS `err`,`s`.`svc_ha` AS `svc_ha`,`s`.`svc_cluster_type` AS `svc_cluster_type`,`s`.`svc_status` AS `svc_status`,`s`.`svc_availstatus` AS `svc_availstatus`,`s`.`svc_flex_min_nodes` AS `svc_flex_min_nodes`,`s`.`svc_flex_max_nodes` AS `svc_flex_max_nodes`,`s`.`svc_flex_cpu_low_threshold` AS `svc_flex_cpu_low_threshold`,`s`.`svc_flex_cpu_high_threshold` AS `svc_flex_cpu_high_threshold`,`m`.`mon_vmname` AS `mon_vmname`,`m`.`mon_vmtype` AS `mon_vmtype`,`m`.`mon_guestos` AS `mon_guestos`,`s`.`svc_id` AS `svc_id`,`s`.`svcname` AS `svcname`,`s`.`svc_nodes` AS `svc_nodes`,`s`.`svc_drpnode` AS `svc_drpnode`,`s`.`svc_drpnodes` AS `svc_drpnodes`,`s`.`svc_drptype` AS `svc_drptype`,`s`.`svc_autostart` AS `svc_autostart`,`s`.`svc_env` AS `svc_env`,`s`.`svc_comment` AS `svc_comment`,`s`.`svc_app` AS `svc_app`,`s`.`svc_drnoaction` AS `svc_drnoaction`,`s`.`svc_created` AS `svc_created`,`s`.`updated` AS `svc_updated`,`s`.`svc_config_updated` AS `svc_config_updated`,`s`.`svc_containertype` AS `svc_containertype`,`s`.`svc_metrocluster` AS `svc_metrocluster`,`m`.`mon_vcpus` AS `mon_vcpus`,`m`.`mon_vmem` AS `mon_vmem`,`m`.`mon_svctype` AS `mon_svctype`,`m`.`mon_ipstatus` AS `mon_ipstatus`,`m`.`mon_fsstatus` AS `mon_fsstatus`,`m`.`ID` AS `ID`,`m`.`mon_frozen` AS `mon_frozen`,`m`.`mon_changed` AS `mon_changed`,`m`.`mon_updated` AS `mon_updated`,`m`.`mon_sharestatus` AS `mon_sharestatus`,`m`.`mon_diskstatus` AS `mon_diskstatus`,`m`.`mon_containerstatus` AS `mon_containerstatus`,`m`.`mon_overallstatus` AS `mon_overallstatus`,`m`.`node_id` AS `node_id`,`n`.`nodename` AS `nodename`,`n`.`listener_port` AS `listener_port`,`n`.`tz` AS `tz`,`n`.`last_comm` AS `last_comm`,`n`.`collector` AS `collector`,`n`.`connect_to` AS `connect_to`,`n`.`version` AS `version`,`n`.`updated` AS `node_updated`,`n`.`loc_country` AS `loc_country`,`n`.`loc_city` AS `loc_city`,`n`.`loc_addr` AS `loc_addr`,`n`.`loc_building` AS `loc_building`,`n`.`loc_floor` AS `loc_floor`,`n`.`loc_room` AS `loc_room`,`n`.`loc_rack` AS `loc_rack`,`n`.`hv` AS `hv`,`n`.`hvpool` AS `hvpool`,`n`.`hvvdc` AS `hvvdc`,`n`.`cpu_freq` AS `cpu_freq`,`n`.`cpu_cores` AS `cpu_cores`,`n`.`cpu_dies` AS `cpu_dies`,`n`.`cpu_vendor` AS `cpu_vendor`,`n`.`cpu_model` AS `cpu_model`,`n`.`mem_banks` AS `mem_banks`,`n`.`mem_slots` AS `mem_slots`,`n`.`mem_bytes` AS `mem_bytes`,`n`.`os_name` AS `os_name`,`n`.`os_release` AS `os_release`,`n`.`os_update` AS `os_update`,`n`.`os_segment` AS `os_segment`,`n`.`os_arch` AS `os_arch`,`n`.`os_vendor` AS `os_vendor`,`n`.`os_kernel` AS `os_kernel`,`n`.`loc_zip` AS `loc_zip`,`n`.`team_responsible` AS `team_responsible`,`n`.`team_integ` AS `team_integ`,`n`.`team_support` AS `team_support`,`n`.`serial` AS `serial`,`n`.`sp_version` AS `sp_version`,`n`.`bios_version` AS `bios_version`,`n`.`model` AS `model`,`n`.`type` AS `type`,`n`.`warranty_end` AS `warranty_end`,`n`.`maintenance_end` AS `maintenance_end`,`n`.`status` AS `status`,`n`.`role` AS `role`,`n`.`asset_env` AS `asset_env`,`n`.`node_env` AS `node_env`,`n`.`power_supply_nb` AS `power_supply_nb`,`n`.`power_cabinet1` AS `power_cabinet1`,`n`.`power_cabinet2` AS `power_cabinet2`,`n`.`power_protect` AS `power_protect`,`n`.`power_protect_breaker` AS `power_protect_breaker`,`n`.`power_breaker1` AS `power_breaker1`,`n`.`power_breaker2` AS `power_breaker2`,`n`.`sec_zone` AS `sec_zone`,`n`.`last_boot` AS `last_boot`,`n`.`action_type` AS `action_type`,`m`.`mon_syncstatus` AS `mon_syncstatus`,`m`.`mon_hbstatus` AS `mon_hbstatus`,`m`.`mon_availstatus` AS `mon_availstatus`,`m`.`mon_appstatus` AS `mon_appstatus`,`ap`.`app_domain` AS `app_domain`,`ap`.`app_team_ops` AS `app_team_ops`,`n`.`enclosure` AS `enclosure`,`n`.`enclosureslot` AS `enclosureslot`,`n`.`assetname` AS `assetname`,`n`.`cpu_threads` AS `cpu_threads` from ((((`svcmon` `m` left join `services` `s` on((`s`.`svc_id` = `m`.`svc_id`))) left join `nodes` `n` on((`m`.`node_id` = `n`.`node_id`))) left join `apps` `ap` on((`ap`.`app` = `s`.`svc_app`))) left join `b_action_errors` `e` on(((`e`.`svc_id` = `s`.`svc_id`) and (`e`.`node_id` = `m`.`node_id`)))) */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
@@ -6066,7 +6066,7 @@ USE `opensvc`;
 /*!50001 SET character_set_results     = utf8 */;
 /*!50001 SET collation_connection      = utf8_general_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
-/*!50013 DEFINER=`root`@`localhost` SQL SECURITY INVOKER */
+/*!50013 DEFINER=`root`@`127.0.0.1` SQL SECURITY INVOKER */
 /*!50001 VIEW `v_switches` AS select `s`.`id` AS `id`,`s`.`sw_name` AS `sw_name`,`s`.`sw_slot` AS `sw_slot`,`s`.`sw_port` AS `sw_port`,`s`.`sw_portspeed` AS `sw_portspeed`,`s`.`sw_portnego` AS `sw_portnego`,`s`.`sw_porttype` AS `sw_porttype`,`s`.`sw_portstate` AS `sw_portstate`,`s`.`sw_portname` AS `sw_portname`,`s`.`sw_rportname` AS `sw_rportname`,`s`.`sw_updated` AS `sw_updated`,`s`.`sw_fabric` AS `sw_fabric`,`s`.`sw_index` AS `sw_index`,`nh`.`node_id` AS `node_id`,if((`n`.`nodename` is not null),`n`.`nodename`,if((`a`.`array_name` is not null),`a`.`array_name`,(select `switches`.`sw_name` from `switches` where (`switches`.`sw_portname` = `s`.`sw_rportname`) limit 1))) AS `sw_rname` from ((((`switches` `s` left join `node_hba` `nh` on((`s`.`sw_rportname` = `nh`.`hba_id`))) left join `nodes` `n` on((`nh`.`node_id` = `n`.`node_id`))) left join `stor_array_tgtid` `at` on((`s`.`sw_rportname` = `at`.`array_tgtid`))) left join `stor_array` `a` on((`at`.`array_id` = `a`.`id`))) */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
@@ -6104,7 +6104,7 @@ USE `opensvc`;
 /*!50001 SET character_set_results     = utf8 */;
 /*!50001 SET collation_connection      = utf8_general_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
-/*!50013 DEFINER=`root`@`localhost` SQL SECURITY INVOKER */
+/*!50013 DEFINER=`root`@`127.0.0.1` SQL SECURITY INVOKER */
 /*!50001 VIEW `v_tags` AS select NULL AS `id`,`tags`.`tag_id` AS `tag_id`,`tags`.`tag_name` AS `tag_name`,`node_tags`.`node_id` AS `node_id`,'' AS `svc_id`,`node_tags`.`created` AS `created` from (`tags` join `node_tags` on((`tags`.`tag_id` = `node_tags`.`tag_id`))) union all select NULL AS `id`,`tags`.`tag_id` AS `tag_id`,`tags`.`tag_name` AS `tag_name`,'' AS `node_id`,`svc_tags`.`svc_id` AS `svc_id`,`svc_tags`.`created` AS `created` from (`tags` join `svc_tags` on((`tags`.`tag_id` = `svc_tags`.`tag_id`))) */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
@@ -6123,7 +6123,7 @@ USE `opensvc`;
 /*!50001 SET character_set_results     = utf8 */;
 /*!50001 SET collation_connection      = utf8_general_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
-/*!50013 DEFINER=`root`@`localhost` SQL SECURITY INVOKER */
+/*!50013 DEFINER=`root`@`127.0.0.1` SQL SECURITY INVOKER */
 /*!50001 VIEW `v_tags_full` AS select 0 AS `id`,concat(convert(`nodes`.`node_id` using utf8),'_null_',if(`tags`.`tag_id`,`tags`.`tag_id`,'null')) AS `ckid`,`tags`.`tag_id` AS `tag_id`,`tags`.`tag_name` AS `tag_name`,`nodes`.`node_id` AS `node_id`,`nodes`.`nodename` AS `nodename`,'' AS `svc_id`,NULL AS `svcname`,`node_tags`.`created` AS `created` from ((`nodes` left join `node_tags` on((`nodes`.`node_id` = `node_tags`.`node_id`))) left join `tags` on((`node_tags`.`tag_id` = `tags`.`tag_id`))) union all select 0 AS `id`,concat('null_',convert(`services`.`svc_id` using utf8),'_',if(`tags`.`tag_id`,`tags`.`tag_id`,'null')) AS `ckid`,`tags`.`tag_id` AS `tag_id`,`tags`.`tag_name` AS `tag_name`,'' AS `node_id`,NULL AS `nodename`,`services`.`svc_id` AS `svc_id`,`services`.`svcname` AS `svcname`,`svc_tags`.`created` AS `created` from ((`services` left join `svc_tags` on((`services`.`svc_id` = `svc_tags`.`svc_id`))) left join `tags` on((`svc_tags`.`tag_id` = `tags`.`tag_id`))) */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
@@ -6142,7 +6142,7 @@ USE `opensvc`;
 /*!50001 SET character_set_results     = utf8 */;
 /*!50001 SET collation_connection      = utf8_general_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
-/*!50013 DEFINER=`root`@`localhost` SQL SECURITY INVOKER */
+/*!50013 DEFINER=`root`@`127.0.0.1` SQL SECURITY INVOKER */
 /*!50001 VIEW `v_uids` AS select `node_users`.`id` AS `id`,`node_users`.`user_id` AS `user_id`,count(`node_users`.`id`) AS `user_id_count`,group_concat(`node_users`.`user_name` separator ',') AS `user_name` from `node_users` group by `node_users`.`user_id` */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
@@ -6161,7 +6161,7 @@ USE `opensvc`;
 /*!50001 SET character_set_results     = utf8 */;
 /*!50001 SET collation_connection      = utf8_general_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
-/*!50013 DEFINER=`root`@`localhost` SQL SECURITY INVOKER */
+/*!50013 DEFINER=`root`@`127.0.0.1` SQL SECURITY INVOKER */
 /*!50001 VIEW `v_users` AS (select (select `e`.`time_stamp` AS `time_stamp` from `auth_event` `e` where (`e`.`user_id` = `u`.`id`) order by `e`.`time_stamp` desc limit 1) AS `last`,`u`.`id` AS `id`,concat_ws(' ',`u`.`first_name`,`u`.`last_name`) AS `fullname`,`u`.`quota_org_group` AS `quota_org_group`,`u`.`quota_app` AS `quota_app`,`u`.`email` AS `email`,sum((select count(0) AS `count(*)` from `auth_group` `gg` where ((`gg`.`role` = 'Manager') and (`gg`.`id` = `g`.`id`)))) AS `manager`,group_concat(`g`.`role` order by `g`.`role` ASC separator ', ') AS `groups`,`gg`.`role` AS `primary_group`,`u`.`lock_filter` AS `lock_filter`,`fs`.`fset_name` AS `fset_name`,`u`.`phone_work` AS `phone_work` from ((((((`auth_user` `u` left join `auth_membership` `mm` on(((`u`.`id` = `mm`.`user_id`) and (`mm`.`primary_group` = 'T')))) left join `auth_group` `gg` on((`mm`.`group_id` = `gg`.`id`))) left join `auth_membership` `m` on((`u`.`id` = `m`.`user_id`))) left join `auth_group` `g` on(((`m`.`group_id` = `g`.`id`) and (not((`g`.`role` like 'user_%')))))) left join `gen_filterset_user` `fsu` on((`fsu`.`user_id` = `u`.`id`))) left join `gen_filtersets` `fs` on((`fs`.`id` = `fsu`.`fset_id`))) group by `u`.`id`) */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
@@ -6180,7 +6180,7 @@ USE `opensvc`;
 /*!50001 SET character_set_results     = utf8 */;
 /*!50001 SET collation_connection      = utf8_general_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
-/*!50013 DEFINER=`root`@`localhost` SQL SECURITY INVOKER */
+/*!50013 DEFINER=`root`@`127.0.0.1` SQL SECURITY INVOKER */
 /*!50001 VIEW `v_wiki_events` AS (select `s`.`id` AS `id`,`s`.`name` AS `name`,`s`.`title` AS `title`,`s`.`saved_on` AS `saved_on`,`s`.`change_note` AS `change_note`,`s`.`body` AS `body`,`a`.`email` AS `email` from (`wiki_pages` `s` left join `auth_user` `a` on((`s`.`author` = `a`.`id`)))) */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
@@ -6201,238 +6201,238 @@ USE `pdns`;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-06-17 17:38:09
-GRANT UPDATE ON opensvc.action_queue TO readonly@localhost;
-GRANT UPDATE ON opensvc.alerts TO readonly@localhost;
-GRANT UPDATE ON opensvc.apps TO readonly@localhost;
-GRANT UPDATE ON opensvc.apps_import TO readonly@localhost;
-GRANT UPDATE ON opensvc.apps_publications TO readonly@localhost;
-GRANT UPDATE ON opensvc.apps_responsibles TO readonly@localhost;
-GRANT UPDATE ON opensvc.auth_event TO readonly@localhost;
-GRANT UPDATE ON opensvc.auth_filters TO readonly@localhost;
-GRANT UPDATE ON opensvc.auth_group TO readonly@localhost;
-GRANT UPDATE ON opensvc.auth_membership TO readonly@localhost;
-GRANT UPDATE ON opensvc.auth_permission TO readonly@localhost;
-GRANT UPDATE ON opensvc.b_action_errors TO readonly@localhost;
-GRANT UPDATE ON opensvc.b_apps_old TO readonly@localhost;
-GRANT UPDATE ON opensvc.billing TO readonly@localhost;
-GRANT UPDATE ON opensvc.billing_agent TO readonly@localhost;
-GRANT UPDATE ON opensvc.chart_team_publication TO readonly@localhost;
-GRANT UPDATE ON opensvc.chart_team_responsible TO readonly@localhost;
-GRANT UPDATE ON opensvc.charts TO readonly@localhost;
-GRANT UPDATE ON opensvc.checks_defaults TO readonly@localhost;
-GRANT UPDATE ON opensvc.checks_live TO readonly@localhost;
-GRANT UPDATE ON opensvc.checks_settings TO readonly@localhost;
-GRANT UPDATE ON opensvc.comp_log TO readonly@localhost;
-GRANT UPDATE ON opensvc.comp_log_daily TO readonly@localhost;
-GRANT UPDATE ON opensvc.comp_mod_status TO readonly@localhost;
-GRANT UPDATE ON opensvc.comp_moduleset TO readonly@localhost;
-GRANT UPDATE ON opensvc.comp_moduleset_modules TO readonly@localhost;
-GRANT UPDATE ON opensvc.comp_moduleset_moduleset TO readonly@localhost;
-GRANT UPDATE ON opensvc.comp_moduleset_ruleset TO readonly@localhost;
-GRANT UPDATE ON opensvc.comp_moduleset_team_publication TO readonly@localhost;
-GRANT UPDATE ON opensvc.comp_moduleset_team_responsible TO readonly@localhost;
-GRANT UPDATE ON opensvc.comp_modulesets_services TO readonly@localhost;
-GRANT UPDATE ON opensvc.comp_node_moduleset TO readonly@localhost;
-GRANT UPDATE ON opensvc.comp_node_status TO readonly@localhost;
-GRANT UPDATE ON opensvc.comp_ruleset_team_publication TO readonly@localhost;
-GRANT UPDATE ON opensvc.comp_ruleset_team_responsible TO readonly@localhost;
-GRANT UPDATE ON opensvc.comp_rulesets TO readonly@localhost;
-GRANT UPDATE ON opensvc.comp_rulesets_chains TO readonly@localhost;
-GRANT UPDATE ON opensvc.comp_rulesets_filtersets TO readonly@localhost;
-GRANT UPDATE ON opensvc.comp_rulesets_nodes TO readonly@localhost;
-GRANT UPDATE ON opensvc.comp_rulesets_rulesets TO readonly@localhost;
-GRANT UPDATE ON opensvc.comp_rulesets_services TO readonly@localhost;
-GRANT UPDATE ON opensvc.comp_rulesets_variables TO readonly@localhost;
-GRANT UPDATE ON opensvc.comp_run_ruleset TO readonly@localhost;
-GRANT UPDATE ON opensvc.comp_status TO readonly@localhost;
-GRANT UPDATE ON opensvc.comp_svc_status TO readonly@localhost;
-GRANT UPDATE ON opensvc.dashboard TO readonly@localhost;
-GRANT UPDATE ON opensvc.dashboard_events TO readonly@localhost;
-GRANT UPDATE ON opensvc.dashboard_log TO readonly@localhost;
-GRANT UPDATE ON opensvc.dashboard_ref TO readonly@localhost;
-GRANT UPDATE ON opensvc.digit TO readonly@localhost;
-GRANT UPDATE ON opensvc.disk_blacklist TO readonly@localhost;
-GRANT UPDATE ON opensvc.diskinfo TO readonly@localhost;
-GRANT UPDATE ON opensvc.docker_registries TO readonly@localhost;
-GRANT UPDATE ON opensvc.docker_registries_publications TO readonly@localhost;
-GRANT UPDATE ON opensvc.docker_registries_responsibles TO readonly@localhost;
-GRANT UPDATE ON opensvc.docker_repositories TO readonly@localhost;
-GRANT UPDATE ON opensvc.docker_tags TO readonly@localhost;
-GRANT UPDATE ON opensvc.drpprojects TO readonly@localhost;
-GRANT UPDATE ON opensvc.drpservices TO readonly@localhost;
-GRANT UPDATE ON opensvc.feed_queue TO readonly@localhost;
-GRANT UPDATE ON opensvc.feed_queue_stats TO readonly@localhost;
-GRANT UPDATE ON opensvc.filters TO readonly@localhost;
-GRANT UPDATE ON opensvc.form_output_results TO readonly@localhost;
-GRANT UPDATE ON opensvc.forms TO readonly@localhost;
-GRANT UPDATE ON opensvc.forms_revisions TO readonly@localhost;
-GRANT UPDATE ON opensvc.forms_store TO readonly@localhost;
-GRANT UPDATE ON opensvc.forms_team_publication TO readonly@localhost;
-GRANT UPDATE ON opensvc.forms_team_responsible TO readonly@localhost;
-GRANT UPDATE ON opensvc.fset_cache TO readonly@localhost;
-GRANT UPDATE ON opensvc.gen_filters TO readonly@localhost;
-GRANT UPDATE ON opensvc.gen_filterset_check_threshold TO readonly@localhost;
-GRANT UPDATE ON opensvc.gen_filterset_team_responsible TO readonly@localhost;
-GRANT UPDATE ON opensvc.gen_filterset_user TO readonly@localhost;
-GRANT UPDATE ON opensvc.gen_filtersets TO readonly@localhost;
-GRANT UPDATE ON opensvc.gen_filtersets_filters TO readonly@localhost;
-GRANT UPDATE ON opensvc.group_hidden_menu_entries TO readonly@localhost;
-GRANT UPDATE ON opensvc.im_types TO readonly@localhost;
-GRANT UPDATE ON opensvc.lifecycle_os TO readonly@localhost;
-GRANT UPDATE ON opensvc.links TO readonly@localhost;
-GRANT UPDATE ON opensvc.log TO readonly@localhost;
-GRANT UPDATE ON opensvc.metric_team_publication TO readonly@localhost;
-GRANT UPDATE ON opensvc.metrics TO readonly@localhost;
-GRANT UPDATE ON opensvc.metrics_log TO readonly@localhost;
-GRANT UPDATE ON opensvc.network_segment_responsibles TO readonly@localhost;
-GRANT UPDATE ON opensvc.network_segments TO readonly@localhost;
-GRANT UPDATE ON opensvc.networks TO readonly@localhost;
-GRANT UPDATE ON opensvc.node_groups TO readonly@localhost;
-GRANT UPDATE ON opensvc.node_hba TO readonly@localhost;
-GRANT UPDATE ON opensvc.node_ip TO readonly@localhost;
-GRANT UPDATE ON opensvc.node_pw TO readonly@localhost;
-GRANT UPDATE ON opensvc.node_tags TO readonly@localhost;
-GRANT UPDATE ON opensvc.node_users TO readonly@localhost;
-GRANT UPDATE ON opensvc.nodes TO readonly@localhost;
-GRANT UPDATE ON opensvc.nodes_import TO readonly@localhost;
-GRANT UPDATE ON opensvc.obsolescence TO readonly@localhost;
-GRANT UPDATE ON opensvc.packages TO readonly@localhost;
-GRANT UPDATE ON opensvc.patches TO readonly@localhost;
-GRANT UPDATE ON opensvc.pkg_sig_provider TO readonly@localhost;
-GRANT UPDATE ON opensvc.prov_template_team_publication TO readonly@localhost;
-GRANT UPDATE ON opensvc.prov_template_team_responsible TO readonly@localhost;
-GRANT UPDATE ON opensvc.prov_templates TO readonly@localhost;
-GRANT UPDATE ON opensvc.replication_status TO readonly@localhost;
-GRANT UPDATE ON opensvc.report_team_publication TO readonly@localhost;
-GRANT UPDATE ON opensvc.report_team_responsible TO readonly@localhost;
-GRANT UPDATE ON opensvc.reports TO readonly@localhost;
-GRANT UPDATE ON opensvc.reports_user TO readonly@localhost;
-GRANT UPDATE ON opensvc.resinfo TO readonly@localhost;
-GRANT UPDATE ON opensvc.resinfo_log TO readonly@localhost;
-GRANT UPDATE ON opensvc.resmon TO readonly@localhost;
-GRANT UPDATE ON opensvc.resmon_log TO readonly@localhost;
-GRANT UPDATE ON opensvc.resmon_log_last TO readonly@localhost;
-GRANT UPDATE ON opensvc.safe TO readonly@localhost;
-GRANT UPDATE ON opensvc.safe_team_publication TO readonly@localhost;
-GRANT UPDATE ON opensvc.safe_team_responsible TO readonly@localhost;
-GRANT UPDATE ON opensvc.san_zone TO readonly@localhost;
-GRANT UPDATE ON opensvc.san_zone_alias TO readonly@localhost;
-GRANT UPDATE ON opensvc.saves TO readonly@localhost;
-GRANT UPDATE ON opensvc.saves_last TO readonly@localhost;
-GRANT UPDATE ON opensvc.scheduler_run TO readonly@localhost;
-GRANT UPDATE ON opensvc.scheduler_task TO readonly@localhost;
-GRANT UPDATE ON opensvc.scheduler_task_deps TO readonly@localhost;
-GRANT UPDATE ON opensvc.scheduler_worker TO readonly@localhost;
-GRANT UPDATE ON opensvc.services TO readonly@localhost;
-GRANT UPDATE ON opensvc.services_log TO readonly@localhost;
-GRANT UPDATE ON opensvc.services_log_last TO readonly@localhost;
-GRANT UPDATE ON opensvc.stat_day TO readonly@localhost;
-GRANT UPDATE ON opensvc.stat_day_billing TO readonly@localhost;
-GRANT UPDATE ON opensvc.stat_day_disk_app TO readonly@localhost;
-GRANT UPDATE ON opensvc.stat_day_disk_app_dg TO readonly@localhost;
-GRANT UPDATE ON opensvc.stat_day_disk_array TO readonly@localhost;
-GRANT UPDATE ON opensvc.stat_day_disk_array_dg TO readonly@localhost;
-GRANT UPDATE ON opensvc.stat_day_svc TO readonly@localhost;
-GRANT UPDATE ON opensvc.stats_block TO readonly@localhost;
-GRANT UPDATE ON opensvc.stats_block_day TO readonly@localhost;
-GRANT UPDATE ON opensvc.stats_block_hour TO readonly@localhost;
-GRANT UPDATE ON opensvc.stats_blockdev TO readonly@localhost;
-GRANT UPDATE ON opensvc.stats_blockdev_day TO readonly@localhost;
-GRANT UPDATE ON opensvc.stats_blockdev_hour TO readonly@localhost;
-GRANT UPDATE ON opensvc.stats_compare TO readonly@localhost;
-GRANT UPDATE ON opensvc.stats_compare_fset TO readonly@localhost;
-GRANT UPDATE ON opensvc.stats_compare_user TO readonly@localhost;
-GRANT UPDATE ON opensvc.stats_cpu TO readonly@localhost;
-GRANT UPDATE ON opensvc.stats_cpu_day TO readonly@localhost;
-GRANT UPDATE ON opensvc.stats_cpu_hour TO readonly@localhost;
-GRANT UPDATE ON opensvc.stats_fs_u TO readonly@localhost;
-GRANT UPDATE ON opensvc.stats_fs_u_day TO readonly@localhost;
-GRANT UPDATE ON opensvc.stats_fs_u_diff TO readonly@localhost;
-GRANT UPDATE ON opensvc.stats_fs_u_hour TO readonly@localhost;
-GRANT UPDATE ON opensvc.stats_fs_u_last TO readonly@localhost;
-GRANT UPDATE ON opensvc.stats_mem_u TO readonly@localhost;
-GRANT UPDATE ON opensvc.stats_mem_u_day TO readonly@localhost;
-GRANT UPDATE ON opensvc.stats_mem_u_hour TO readonly@localhost;
-GRANT UPDATE ON opensvc.stats_netdev TO readonly@localhost;
-GRANT UPDATE ON opensvc.stats_netdev_day TO readonly@localhost;
-GRANT UPDATE ON opensvc.stats_netdev_err TO readonly@localhost;
-GRANT UPDATE ON opensvc.stats_netdev_err_day TO readonly@localhost;
-GRANT UPDATE ON opensvc.stats_netdev_err_hour TO readonly@localhost;
-GRANT UPDATE ON opensvc.stats_netdev_hour TO readonly@localhost;
-GRANT UPDATE ON opensvc.stats_proc TO readonly@localhost;
-GRANT UPDATE ON opensvc.stats_proc_day TO readonly@localhost;
-GRANT UPDATE ON opensvc.stats_proc_hour TO readonly@localhost;
-GRANT UPDATE ON opensvc.stats_svc TO readonly@localhost;
-GRANT UPDATE ON opensvc.stats_svc_day TO readonly@localhost;
-GRANT UPDATE ON opensvc.stats_svc_hour TO readonly@localhost;
-GRANT UPDATE ON opensvc.stats_swap TO readonly@localhost;
-GRANT UPDATE ON opensvc.stats_swap_day TO readonly@localhost;
-GRANT UPDATE ON opensvc.stats_swap_hour TO readonly@localhost;
-GRANT UPDATE ON opensvc.stor_array TO readonly@localhost;
-GRANT UPDATE ON opensvc.stor_array_dg TO readonly@localhost;
-GRANT UPDATE ON opensvc.stor_array_dg_quota TO readonly@localhost;
-GRANT UPDATE ON opensvc.stor_array_proxy TO readonly@localhost;
-GRANT UPDATE ON opensvc.stor_array_tgtid TO readonly@localhost;
-GRANT UPDATE ON opensvc.stor_zone TO readonly@localhost;
-GRANT UPDATE ON opensvc.svc_tags TO readonly@localhost;
-GRANT UPDATE ON opensvc.svcactions TO readonly@localhost;
-GRANT UPDATE ON opensvc.svcdisks TO readonly@localhost;
-GRANT UPDATE ON opensvc.svcmon TO readonly@localhost;
-GRANT UPDATE ON opensvc.svcmon_log TO readonly@localhost;
-GRANT UPDATE ON opensvc.svcmon_log_ack TO readonly@localhost;
-GRANT UPDATE ON opensvc.svcmon_log_last TO readonly@localhost;
-GRANT UPDATE ON opensvc.switches TO readonly@localhost;
-GRANT UPDATE ON opensvc.sysrep_allow TO readonly@localhost;
-GRANT UPDATE ON opensvc.sysrep_changing TO readonly@localhost;
-GRANT UPDATE ON opensvc.sysrep_secure TO readonly@localhost;
-GRANT UPDATE ON opensvc.table_modified TO readonly@localhost;
-GRANT UPDATE ON opensvc.tags TO readonly@localhost;
-GRANT UPDATE ON opensvc.tmp TO readonly@localhost;
-GRANT UPDATE ON opensvc.tmpmd5 TO readonly@localhost;
-GRANT UPDATE ON opensvc.u_inc TO readonly@localhost;
-GRANT UPDATE ON opensvc.user_log TO readonly@localhost;
-GRANT UPDATE ON opensvc.user_prefs TO readonly@localhost;
-GRANT UPDATE ON opensvc.v_action_queue TO readonly@localhost;
-GRANT UPDATE ON opensvc.v_apps TO readonly@localhost;
-GRANT UPDATE ON opensvc.v_comp_explicit_rulesets TO readonly@localhost;
-GRANT UPDATE ON opensvc.v_comp_moduleset_attachments TO readonly@localhost;
-GRANT UPDATE ON opensvc.v_comp_modulesets TO readonly@localhost;
-GRANT UPDATE ON opensvc.v_comp_nodes TO readonly@localhost;
-GRANT UPDATE ON opensvc.v_comp_rulesets TO readonly@localhost;
-GRANT UPDATE ON opensvc.v_comp_services TO readonly@localhost;
-GRANT UPDATE ON opensvc.v_disk_app_dedup TO readonly@localhost;
-GRANT UPDATE ON opensvc.v_disk_quota TO readonly@localhost;
-GRANT UPDATE ON opensvc.v_disks_app TO readonly@localhost;
-GRANT UPDATE ON opensvc.v_forms TO readonly@localhost;
-GRANT UPDATE ON opensvc.v_forms_store TO readonly@localhost;
-GRANT UPDATE ON opensvc.v_gen_filterset_check_threshold TO readonly@localhost;
-GRANT UPDATE ON opensvc.v_gen_filterset_teams_responsible TO readonly@localhost;
-GRANT UPDATE ON opensvc.v_gen_filtersets TO readonly@localhost;
-GRANT UPDATE ON opensvc.v_gids TO readonly@localhost;
-GRANT UPDATE ON opensvc.v_lifecycle_os_name TO readonly@localhost;
-GRANT UPDATE ON opensvc.v_nb_services TO readonly@localhost;
-GRANT UPDATE ON opensvc.v_network_segments TO readonly@localhost;
-GRANT UPDATE ON opensvc.v_nodenetworks TO readonly@localhost;
-GRANT UPDATE ON opensvc.v_nodesan TO readonly@localhost;
-GRANT UPDATE ON opensvc.v_obsolescence TO readonly@localhost;
-GRANT UPDATE ON opensvc.v_outdated_services TO readonly@localhost;
-GRANT UPDATE ON opensvc.v_prov_templates TO readonly@localhost;
-GRANT UPDATE ON opensvc.v_resmon_log TO readonly@localhost;
-GRANT UPDATE ON opensvc.v_safe TO readonly@localhost;
-GRANT UPDATE ON opensvc.v_scheduler_run TO readonly@localhost;
-GRANT UPDATE ON opensvc.v_services_log TO readonly@localhost;
-GRANT UPDATE ON opensvc.v_svcmon TO readonly@localhost;
-GRANT UPDATE ON opensvc.v_svcmon_log TO readonly@localhost;
-GRANT UPDATE ON opensvc.v_switches TO readonly@localhost;
-GRANT UPDATE ON opensvc.v_sysrep_allow TO readonly@localhost;
-GRANT UPDATE ON opensvc.v_tags TO readonly@localhost;
-GRANT UPDATE ON opensvc.v_tags_full TO readonly@localhost;
-GRANT UPDATE ON opensvc.v_uids TO readonly@localhost;
-GRANT UPDATE ON opensvc.v_users TO readonly@localhost;
-GRANT UPDATE ON opensvc.v_wiki_events TO readonly@localhost;
-GRANT UPDATE ON opensvc.wiki_pages TO readonly@localhost;
-GRANT UPDATE ON opensvc.workflows TO readonly@localhost;
-grant all privileges on opensvc.* to opensvc@localhost;
-grant all privileges on pdns.* to pdns@localhost;
+-- Dump completed on 2017-06-20  1:04:39
+GRANT SELECT ON opensvc.action_queue TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.alerts TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.apps TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.apps_import TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.apps_publications TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.apps_responsibles TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.auth_event TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.auth_filters TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.auth_group TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.auth_membership TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.auth_permission TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.b_action_errors TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.b_apps_old TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.billing TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.billing_agent TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.chart_team_publication TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.chart_team_responsible TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.charts TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.checks_defaults TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.checks_live TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.checks_settings TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.comp_log TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.comp_log_daily TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.comp_mod_status TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.comp_moduleset TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.comp_moduleset_modules TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.comp_moduleset_moduleset TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.comp_moduleset_ruleset TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.comp_moduleset_team_publication TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.comp_moduleset_team_responsible TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.comp_modulesets_services TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.comp_node_moduleset TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.comp_node_status TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.comp_ruleset_team_publication TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.comp_ruleset_team_responsible TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.comp_rulesets TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.comp_rulesets_chains TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.comp_rulesets_filtersets TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.comp_rulesets_nodes TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.comp_rulesets_rulesets TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.comp_rulesets_services TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.comp_rulesets_variables TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.comp_run_ruleset TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.comp_status TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.comp_svc_status TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.dashboard TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.dashboard_events TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.dashboard_log TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.dashboard_ref TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.digit TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.disk_blacklist TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.diskinfo TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.docker_registries TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.docker_registries_publications TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.docker_registries_responsibles TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.docker_repositories TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.docker_tags TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.drpprojects TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.drpservices TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.feed_queue TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.feed_queue_stats TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.filters TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.form_output_results TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.forms TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.forms_revisions TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.forms_store TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.forms_team_publication TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.forms_team_responsible TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.fset_cache TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.gen_filters TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.gen_filterset_check_threshold TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.gen_filterset_team_responsible TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.gen_filterset_user TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.gen_filtersets TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.gen_filtersets_filters TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.group_hidden_menu_entries TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.im_types TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.lifecycle_os TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.links TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.log TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.metric_team_publication TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.metrics TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.metrics_log TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.network_segment_responsibles TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.network_segments TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.networks TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.node_groups TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.node_hba TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.node_ip TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.node_pw TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.node_tags TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.node_users TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.nodes TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.nodes_import TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.obsolescence TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.packages TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.patches TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.pkg_sig_provider TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.prov_template_team_publication TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.prov_template_team_responsible TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.prov_templates TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.replication_status TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.report_team_publication TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.report_team_responsible TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.reports TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.reports_user TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.resinfo TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.resinfo_log TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.resmon TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.resmon_log TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.resmon_log_last TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.safe TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.safe_team_publication TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.safe_team_responsible TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.san_zone TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.san_zone_alias TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.saves TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.saves_last TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.scheduler_run TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.scheduler_task TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.scheduler_task_deps TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.scheduler_worker TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.services TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.services_log TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.services_log_last TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.stat_day TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.stat_day_billing TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.stat_day_disk_app TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.stat_day_disk_app_dg TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.stat_day_disk_array TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.stat_day_disk_array_dg TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.stat_day_svc TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.stats_block TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.stats_block_day TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.stats_block_hour TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.stats_blockdev TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.stats_blockdev_day TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.stats_blockdev_hour TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.stats_compare TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.stats_compare_fset TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.stats_compare_user TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.stats_cpu TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.stats_cpu_day TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.stats_cpu_hour TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.stats_fs_u TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.stats_fs_u_day TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.stats_fs_u_diff TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.stats_fs_u_hour TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.stats_fs_u_last TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.stats_mem_u TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.stats_mem_u_day TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.stats_mem_u_hour TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.stats_netdev TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.stats_netdev_day TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.stats_netdev_err TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.stats_netdev_err_day TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.stats_netdev_err_hour TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.stats_netdev_hour TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.stats_proc TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.stats_proc_day TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.stats_proc_hour TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.stats_svc TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.stats_svc_day TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.stats_svc_hour TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.stats_swap TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.stats_swap_day TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.stats_swap_hour TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.stor_array TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.stor_array_dg TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.stor_array_dg_quota TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.stor_array_proxy TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.stor_array_tgtid TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.stor_zone TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.svc_tags TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.svcactions TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.svcdisks TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.svcmon TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.svcmon_log TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.svcmon_log_ack TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.svcmon_log_last TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.switches TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.sysrep_allow TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.sysrep_changing TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.sysrep_secure TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.table_modified TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.tags TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.tmp TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.tmpmd5 TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.u_inc TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.user_log TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.user_prefs TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.v_action_queue TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.v_apps TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.v_comp_explicit_rulesets TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.v_comp_moduleset_attachments TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.v_comp_modulesets TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.v_comp_nodes TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.v_comp_rulesets TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.v_comp_services TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.v_disk_app_dedup TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.v_disk_quota TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.v_disks_app TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.v_forms TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.v_forms_store TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.v_gen_filterset_check_threshold TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.v_gen_filterset_teams_responsible TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.v_gen_filtersets TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.v_gids TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.v_lifecycle_os_name TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.v_nb_services TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.v_network_segments TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.v_nodenetworks TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.v_nodesan TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.v_obsolescence TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.v_outdated_services TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.v_prov_templates TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.v_resmon_log TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.v_safe TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.v_scheduler_run TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.v_services_log TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.v_svcmon TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.v_svcmon_log TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.v_switches TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.v_sysrep_allow TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.v_tags TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.v_tags_full TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.v_uids TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.v_users TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.v_wiki_events TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.wiki_pages TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.workflows TO readonly@127.0.0.1;
+grant all privileges on opensvc.* to opensvc@127.0.0.1;
+grant all privileges on pdns.* to pdns@127.0.0.1;
 flush privileges;

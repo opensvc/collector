@@ -11,24 +11,24 @@ MYSQL="mysql -S $DATADIR/mysql.sock -u root -p$PASSWORD"
 
 echo >$DUMP_DIR/schema.dump
 cat - <<EOF >> $DUMP_DIR/schema.dump
-create user if not exists opensvc@localhost identified by 'opensvc';
-create user if not exists pdns@localhost identified by 'pdns';
-create user if not exists readonly@localhost identified by 'readonly';
+create user if not exists opensvc@127.0.0.1 identified by 'opensvc';
+create user if not exists pdns@127.0.0.1 identified by 'pdns';
+create user if not exists readonly@127.0.0.1 identified by 'readonly';
 EOF
 
 # dump schema
 $MYSQLDUMP --no-data --databases opensvc pdns | sed -e "s/SECURITY DEFINER/SECURITY INVOKER/" >> $DUMP_DIR/schema.dump
 
 # compute readonly account readable tables grants
-$MYSQL -B -N -e 'SELECT CONCAT("GRANT UPDATE ON opensvc.", table_name, " TO readonly@localhost;") FROM information_schema.TABLES WHERE table_schema = "opensvc" AND table_name not in ("auth_node", "auth_user");' >>$DUMP_DIR/schema.dump
+$MYSQL -B -N -e 'SELECT CONCAT("GRANT SELECT ON opensvc.", table_name, " TO readonly@127.0.0.1;") FROM information_schema.TABLES WHERE table_schema = "opensvc" AND table_name not in ("auth_node", "auth_user");' >>$DUMP_DIR/schema.dump
 
 cat - <<EOF >> $DUMP_DIR/schema.dump
-grant all privileges on opensvc.* to opensvc@localhost;
-grant all privileges on pdns.* to pdns@localhost;
+grant all privileges on opensvc.* to opensvc@127.0.0.1;
+grant all privileges on pdns.* to pdns@127.0.0.1;
 flush privileges;
 EOF
 
-sed -i 's/DEFINER=`opensvc`@`.*`/DEFINER=`root`@`localhost`/g' $DUMP_DIR/schema.dump
+sed -i 's/DEFINER=`opensvc`@`.*`/DEFINER=`root`@`127.0.0.1`/g' $DUMP_DIR/schema.dump
 
 echo >$DUMP_DIR/data.dump
 $MYSQLDUMP --where="repeats=0" opensvc scheduler_task >> $DUMP_DIR/data.dump
@@ -44,7 +44,7 @@ $MYSQLDUMP --where="form_type='obj' or form_name='folder_compliance'" opensvc fo
 
 cat - <<EOF >> $DUMP_DIR/data.dump
 INSERT INTO sysrep_secure VALUES (1,'.*');
-INSERT INTO auth_user (id, last_name, email, password) VALUES (1,'Manager','root@localhost.localdomain','sha512\$85f8c776fe663b25\$a9ab1f4ebd03fa7f2cf992bf7bc111e24a76397db7a228edc54a95e44e2cfbd50b7d83a5942a9c66da99c1f14c14b9ef070eef730460850c7eb48c1126236e96');
+INSERT INTO auth_user (id, last_name, email, password) VALUES (1,'Manager','root@127.0.0.1.localdomain','sha512\$85f8c776fe663b25\$a9ab1f4ebd03fa7f2cf992bf7bc111e24a76397db7a228edc54a95e44e2cfbd50b7d83a5942a9c66da99c1f14c14b9ef070eef730460850c7eb48c1126236e96');
 INSERT INTO auth_membership VALUES (1, 1, 2, 'F');
 insert into auth_permission set group_id=(select id from auth_group where role = "Impersonate"), name="impersonate", table_name="auth_user", record_id=0;
 EOF
