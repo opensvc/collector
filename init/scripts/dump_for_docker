@@ -30,7 +30,7 @@ EOF
 
 sed -i 's/DEFINER=`opensvc`@`.*`/DEFINER=`root`@`127.0.0.1`/g' $DUMP_DIR/schema.dump
 
-echo >$DUMP_DIR/data.dump
+echo "use opensvc;" >$DUMP_DIR/data.dump
 $MYSQLDUMP --where="repeats=0" opensvc scheduler_task >> $DUMP_DIR/data.dump
 $MYSQLDUMP opensvc pkg_sig_provider >> $DUMP_DIR/data.dump
 $MYSQLDUMP opensvc u_inc >> $DUMP_DIR/data.dump
