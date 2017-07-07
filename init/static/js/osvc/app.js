@@ -39,7 +39,7 @@ var osvc = {
 	'colors': {
 		'action': '#aaa',
 		'alert': 'orange',
-		'app': 'deeppink',
+		'app': '#cc1377',
 		'chart': 'sandybrown',
 		'chk': 'green',
 		'comp': '#ee5464',

@@ -1599,7 +1599,7 @@ div.login {
 	content: '\f0c0';
 }
 .app16:before {
-	color: deeppink;
+	color: #cc1377;
 	content: '\f069';
 }
 .node_env16:before {
