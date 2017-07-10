@@ -3021,7 +3021,7 @@ function table_init(opts) {
 				return
 			}
 			var name = $(this).val()
-			osvc.user_prefs.data.tables[t.id].bookmarks[name] = osvc.user_prefs.data.tables[t.id].filters
+			osvc.user_prefs.data.tables[t.id].bookmarks[name] = $.extend({}, osvc.user_prefs.data.tables[t.id].filters)
 			t.save_prefs()
 			t.insert_bookmark(name)
 			t.e_tool_bookmarks_save_name.hide()
