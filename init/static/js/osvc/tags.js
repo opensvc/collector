@@ -291,7 +291,7 @@ function tags(options) {
 						o.div.info.html(services_error_fmt(jd))
 						return
 					}
-					o._attach_tag(jd.data)
+					o._attach_tag(jd.data[0])
 				},
 				function(xhr, stat, error) {
 					o.div.info.html(services_ajax_error_fmt(xhr, stat, error))

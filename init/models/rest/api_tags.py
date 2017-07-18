@@ -210,14 +210,15 @@ class rest_post_tags(rest_post_handler):
         if db(q).count() == 1:
             raise Exception("tag already exist")
         db.tags.insert(**vars)
-        data = db(q).select().first()
-        _log('tag.create',
-             "tag '%(tag_name)s' created",
-             dict(tag_name=data.tag_name),
-            )
+        row = db(q).select().first()
+        fmt = "tag '%(tag_name)s' created"
+        d = dict(tag_name=tag_name)
+        _log('tag.create', fmt, d)
         table_modified("tags")
         ws_send("tags_change")
-        return dict(info="tag created", data=data)
+        ret = rest_get_tag().handler(row.tag_id)
+        ret["info"] = fmt % d
+        return ret
 
 
 #
