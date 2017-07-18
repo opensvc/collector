@@ -207,8 +207,11 @@ class rest_post_tags(rest_post_handler):
             raise Exception("the tag_name property is mandatory")
         tag_name = vars['tag_name']
         q = db.tags.tag_name == tag_name
-        if db(q).count() == 1:
-            raise Exception("tag already exist")
+        row = db(q).select().first()
+        if row:
+            ret = rest_get_tag().handler(row.tag_id)
+            ret["error"] = "tag '%s' already exists" % tag_name
+            return ret
         db.tags.insert(**vars)
         row = db(q).select().first()
         fmt = "tag '%(tag_name)s' created"
