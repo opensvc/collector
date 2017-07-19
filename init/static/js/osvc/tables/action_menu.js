@@ -1361,8 +1361,8 @@ function table_action_menu_init_data(t) {
 					'title': 'action_menu.on_tags',
 					"class": "tag16",
 					"table": ["tags"],
-					"cols": ["id"],
-					"condition": "id",
+					"cols": ["tag_id"],
+					"condition": "tag_id",
 					"children": [
 						{
 							"title": "action_menu.del",
@@ -3882,7 +3882,7 @@ function data_action_del_tag(t, e) {
 		"request_service": "R_TAGS",
 		"request_data_entry": function(data) {
 			return {
-				'id': data['id']
+				'tag_id': data['tag_id']
 			}
 		}
 	})

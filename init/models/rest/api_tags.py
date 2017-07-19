@@ -266,8 +266,8 @@ class rest_delete_tags(rest_delete_handler):
         )
 
     def handler(self, **vars):
-        if "id" not in vars:
-            raise Exception("The 'id' key is mandatory")
+        if "tag_id" not in vars:
+            raise Exception("The 'tag_id' key is mandatory")
 
         tag_id = vars.get("tag_id")
         del(vars["tag_id"])
@@ -326,7 +326,10 @@ class rest_delete_tag(rest_delete_handler):
 
         q = db.tags.tag_id == tag_id
         n = db(q).delete()
-        info += ["%d tag deleted"%n]
+        if n > 0:
+            info += ["tag '%s' deleted" % tag.tag_name]
+        else:
+            info += ["tag '%s' not deleted" % tag.tag_name]
         table_modified("tags")
         ws_send("tags_change")
 
