@@ -28,7 +28,7 @@ var am_node_agent_leafs = [
 		'class': 'svc',
 		"privileges": ["Manager", "NodeManager", "NodeExec"],
 		"min": 1,
-		'action': 'pushservices'
+		'action': 'push_services'
 	},
 	{
 		'title': 'Update installed packages information',
