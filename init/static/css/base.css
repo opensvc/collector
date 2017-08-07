@@ -1422,7 +1422,7 @@ div.login {
 	display: inline-block;
 }
 .dns16:before {
-	color: turquoise;
+	color: #1ab2a3;
 	content: '\f0e1';
 }
 .repl16:before {

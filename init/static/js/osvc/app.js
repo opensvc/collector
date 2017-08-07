@@ -44,7 +44,7 @@ var osvc = {
 		'chk': 'green',
 		'comp': '#ee5464',
 		'disk': '#949413',
-		'dns': 'turquoise',
+		'dns': '#1ab2a3',
 		'docker_repository': '#27b8e8',
 		'docker_registry': '#27b8e8',
 		'docker': '#27b8e8',
