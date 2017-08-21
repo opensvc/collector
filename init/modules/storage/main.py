@@ -240,8 +240,10 @@ class Storage(object):
         print("detected array:", data["data"][0]["array_name"], "model", data["data"][0]["array_model"])
         return data["data"][0]
 
-    def get_proxy(self):
-        path = "/arrays/%s/proxies" % self.request_data["array_id"]
+    def get_proxy(self, array_id=None):
+        if array_id is None:
+            array_id = self.request_data["array_id"]
+        path = "/arrays/%s/proxies" % array_id
         data = self.get(path, params={
             "meta": 0,
             "limit": 0,
@@ -314,8 +316,10 @@ class Storage(object):
                 mappings += ["--mappings", mapping]
         return mappings
 
-    def proxy_action(self, command):
-        return self.node_action(self.request_data["proxy"], command)
+    def proxy_action(self, command, proxy=None):
+        if proxy is None:
+            proxy = self.request_data["proxy"]
+        return self.node_action(proxy, command)
 
     def node_action(self, node, command):
         print("run command on node", node["nodename"], ":", command)

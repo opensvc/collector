@@ -67,7 +67,8 @@ class Driver(object):
             "--dev", dev,
             "--size", size,
         ]
-        ret = self.storage.proxy_action(" ".join(cmd))
+        proxy = self.storage.get_proxy(array_name)
+        ret = self.storage.proxy_action(" ".join(cmd), proxy=proxy)
 
 	if "stdout" not in ret["data"][0]:
             return
@@ -132,7 +133,8 @@ class Driver(object):
             "-a", array_name,
             "--dev", dev,
         ]
-        ret = self.storage.proxy_action(" ".join(cmd))
+        proxy = self.storage.get_proxy(array_name)
+        ret = self.storage.proxy_action(" ".join(cmd), proxy=proxy)
 
 	if "stdout" not in ret["data"][0]:
             return
