@@ -143,24 +143,9 @@ function array_properties(divid, options) {
 			}
 		})
 
-		tab_properties_generic_list({
-			"request_service": "/arrays/%1/proxies",
-			"request_parameters": [o.data.id],
-			"request_data": {
-				"props": "nodes.node_id,nodes.nodename"
-			},
-			"key": "nodename",
-			"item_class": "icon node16",
-			"id": "node_id",
-			"flash_id_prefix": "node",
-			"title": "app_properties.nodes",
-			"bgcolor": osvc.colors.node,
-			"e_title": o.info_proxies_title,
-			"e_list": o.info_proxies,
-			"lowercase": true,
-			"ondblclick": function(divid, data) {
-				node_tabs(divid, {"node_id": data.id})
-			}
+		array_proxies({
+			"tid": o.info_proxies,
+			"array_id": o.options.array_id
 		})
 
 		tab_properties_generic_list({

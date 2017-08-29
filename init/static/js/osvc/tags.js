@@ -1702,4 +1702,42 @@ function docker_registry_publications(options) {
 	return tags(options)
 }
 
+function array_proxies(options) {
+	options.tag_name = "nodename"
+	options.flash_id_prefix = "node"
+	options.id = "node_id"
+	options.bgcolor = osvc.colors.node
+	options.icon = "node16"
+	options.get_tags = function(fval, callback, callback_err) {
+		services_osvcgetrest("/arrays/%1/proxies", [options.array_id], {
+			"orderby": "nodes.nodename",
+			"props": "nodes.node_id,nodes.nodename",
+			"limit": "0"
+		}, callback, callback_err)
+	}
+	options.get_candidates = function(fval, callback, callback_err) {
+		services_osvcgetrest("/nodes", "", {
+			"orderby": options.tag_name,
+			"props": "node_id," + options.tag_name,
+			"limit": "0",
+			"meta": "false"
+			//"filters": ["privilege F", options.tag_name+" "+fval]
+		}, callback, callback_err)
+	}
+	options.attach = function(tag_data, callback, callback_err) {
+		services_osvcpostrest("/arrays/%1/proxies/%2", [options.array_id, tag_data.node_id], "", "", callback, callback_err)
+	}
+	options.detach = function(tag, callback, callback_err) {
+		services_osvcdeleterest("/arrays/%1/proxies/%2", [options.array_id, tag.attr("tag_id")], "", "", callback, callback_err)
+	}
+	options.am_i_responsible = function(callback) {
+		callback({"data": []})
+	}
+	options.ondblclick = function(divid, data) {
+		node_tabs(divid, {"node_id": data.id, "nodename": data.name})
+	}
+	options.events = ["stor_array_proxy_change"]
+	return tags(options)
+}
+
 
