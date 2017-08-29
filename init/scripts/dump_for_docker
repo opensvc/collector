@@ -1,4 +1,4 @@
-#!/bin/ksh
+#!/bin/bash
 
 PATH_SCRIPT="$(cd $(/usr/bin/dirname $(whence -- $0 || echo $0));pwd)"
 
