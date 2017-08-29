@@ -3814,11 +3814,12 @@ def update_dash_pkgdiff(node_id):
         db.commit()
 
     # clean old
-    q = db.dashboard.svc_id.belongs(svc_ids)
-    q &= db.dashboard.dash_type == "package differences in cluster"
-    q &= db.dashboard.dash_updated < now
-    db(q).delete()
-    db.commit()
+    if len(svc_ids) > 0:
+	q = db.dashboard.svc_id.belongs(svc_ids)
+	q &= db.dashboard.dash_type == "package differences in cluster"
+	q &= db.dashboard.dash_updated < now - datetime.timedelta(seconds=1)
+	db(q).delete()
+	db.commit()
     dashboard_events()
 
 def update_dash_flex_cpu(svc_id):
@@ -4302,10 +4303,6 @@ def update_dash_action_errors(svc_id, node_id):
         db.commit()
 
 def update_dash_service_frozen(svc_id, node_id, env, frozen):
-    if env == 'PRD':
-        sev = 2
-    else:
-        sev = 1
     if int(frozen) == 0:
         sql = """delete from dashboard
                  where
@@ -4319,20 +4316,19 @@ def update_dash_service_frozen(svc_id, node_id, env, frozen):
                    dash_type="service frozen",
                    svc_id="%(svc_id)s",
                    node_id="%(node_id)s",
-                   dash_severity=%(sev)d,
+                   dash_severity=1,
                    dash_fmt="",
                    dash_dict="",
                    dash_created=now(),
                    dash_updated=now(),
                    dash_env="%(env)s"
                  on duplicate key update
-                   dash_severity=%(sev)d,
+                   dash_severity=1,
                    dash_fmt="",
                    dash_updated=now(),
                    dash_env="%(env)s"
               """%dict(svc_id=svc_id,
                        node_id=node_id,
-                       sev=sev,
                        env=env,
                       )
     db.executesql(sql)
