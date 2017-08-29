@@ -389,6 +389,127 @@ class rest_get_array_proxies(rest_get_table_handler):
         self.set_q(q)
         return self.prepare_data(**vars)
 
+#
+class rest_post_array_proxy(rest_post_handler):
+    def __init__(self):
+        desc = [
+          "Add a storage array proxy.",
+        ]
+        examples = [
+          "# curl -u %(email)s -X POST -o- https://%(collector)s/init/rest/api/arrays/myarray/proxies/9d5ae2e6-9ca7-47b2-ab25-cd026be434f4"
+        ]
+        rest_post_handler.__init__(
+          self,
+          path="/arrays/<id>/proxies/<id>",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, array_id, node_id, **vars):
+        check_privilege("StorageManager")
+        array_id = lib_array_id(array_id)
+        q = db.stor_array_proxy.array_id == array_id
+        q &= db.stor_array_proxy.node_id == node_id
+        row = db(q).select().first()
+        if row is not None:
+            raise Exception("node %s is already proxy for array %d" % (node_id, array_id))
+        row_id = db.stor_array_proxy.insert(
+            node_id=node_id,
+            array_id=array_id,
+        )
+        fmt = "node %(node_id)s set as proxy for array %(array_id)s"
+        d = dict(node_id=str(node_id), array_id=str(array_id))
+
+        _log('storage.array.proxy.add', fmt, d)
+        ws_send('stor_array_proxy_change', {'id': row_id})
+        table_modified("stor_array_proxy")
+
+        ret = {}
+        ret["info"] = fmt % d
+        return ret
+
+class rest_post_array_proxies(rest_post_handler):
+    def __init__(self):
+        desc = [
+          "Add storage array proxies.",
+        ]
+        examples = [
+                """# echo '[{"node_id": "9d5ae2e6-9ca7-47b2-ab25-cd026be434f4"}]' >/tmp/list.json\n"""
+                """# curl -u %(email)s -X POST --header 'Content-Type: application/json' -d @/tmp/list.json -o- https://%(collector)s/init/rest/api/arrays/myarray/proxies"""
+        ]
+        rest_post_handler.__init__(
+          self,
+          path="/arrays/<id>/proxies",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, array_id, **vars):
+        check_privilege("StorageManager")
+        if "node_id" not in vars:
+            raise Exception("The 'node_id' key is mandatory")
+        node_id = vars.get("node_id")
+        del(vars["node_id"])
+        return rest_post_array_proxy().handler(array_id, node_id, **vars)
+
+class rest_delete_array_proxy(rest_delete_handler):
+    def __init__(self):
+        desc = [
+          "Delete a storage array proxy.",
+        ]
+        examples = [
+          "# curl -u %(email)s -X DELETE -o- https://%(collector)s/init/rest/api/arrays/myarray/proxies/9d5ae2e6-9ca7-47b2-ab25-cd026be434f4"
+        ]
+        rest_delete_handler.__init__(
+          self,
+          path="/arrays/<id>/proxies/<id>",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, array_id, node_id, **vars):
+        check_privilege("StorageManager")
+        array_id = lib_array_id(array_id)
+        q = db.stor_array_proxy.array_id == array_id
+        q &= db.stor_array_proxy.node_id == node_id
+        row = db(q).select().first()
+        if row is None:
+            raise Exception("node %s is not proxy for array %d" % (node_id, array_id))
+        db(q).delete()
+        fmt = "node %(node_id)s unset as proxy for array %(array_id)s"
+        d = dict(node_id=str(node_id), array_id=str(array_id))
+
+        _log('storage.array.proxy.del', fmt, d)
+        ws_send('stor_array_proxy_change', {'id': row.id})
+        table_modified("stor_array_proxy")
+
+        ret = {}
+        ret["info"] = fmt % d
+        return ret
+
+class rest_delete_array_proxies(rest_delete_handler):
+    def __init__(self):
+        desc = [
+          "Delete storage array proxies.",
+        ]
+        examples = [
+                """# echo '[{"node_id": "9d5ae2e6-9ca7-47b2-ab25-cd026be434f4"}]' >/tmp/list.json\n"""
+                """# curl -u %(email)s -X DELETE --header 'Content-Type: application/json' -d @/tmp/list.json -o- https://%(collector)s/init/rest/api/arrays/myarray/proxies"""
+        ]
+        rest_delete_handler.__init__(
+          self,
+          path="/arrays/<id>/proxies",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, array_id, **vars):
+        check_privilege("StorageManager")
+        if "node_id" not in vars:
+            raise Exception("The 'node_id' key is mandatory")
+        node_id = vars.get("node_id")
+        del(vars["node_id"])
+        return rest_delete_array_proxy().handler(array_id, node_id, **vars)
 
 #
 class rest_get_array_targets(rest_get_table_handler):
