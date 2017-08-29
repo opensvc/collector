@@ -1720,8 +1720,8 @@ function array_proxies(options) {
 			"orderby": options.tag_name,
 			"props": "node_id," + options.tag_name,
 			"limit": "0",
-			"meta": "false"
-			//"filters": ["privilege F", options.tag_name+" "+fval]
+			"meta": "false",
+			"filters": ["nodename "+fval]
 		}, callback, callback_err)
 	}
 	options.attach = function(tag_data, callback, callback_err) {
