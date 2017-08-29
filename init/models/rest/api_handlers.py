@@ -404,6 +404,8 @@ def get_delete_handlers(prefix=None):
         "arrays": [
              "rest_delete_array_diskgroup_quotas",
              "rest_delete_array_diskgroup_quota",
+             "rest_delete_array_proxies",
+             "rest_delete_array_proxy",
         ],
         "checks": [
              "rest_delete_checks_settings",
@@ -629,6 +631,8 @@ def get_post_handlers(prefix=None):
              "rest_post_array",
              "rest_post_array_diskgroup_quotas",
              "rest_post_array_diskgroup_quota",
+             "rest_post_array_proxies",
+             "rest_post_array_proxy",
         ],
         "checks": [
              "rest_post_checks_contextual_settings",
