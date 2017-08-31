@@ -1,14 +1,23 @@
 def update_nodes_fields():
+    print "update nodes obs dates"
     q = db.obsolescence.id > 0
     for row in db(q).select():
         _update_nodes_fields(row.obs_type, row.obs_name,
                              row.obs_warn_date, row.obs_alert_date)
 
 def _update_nodes_fields(obs_type, obs_name, obs_warn_date, obs_alert_date):
+        if obs_warn_date is None:
+            obs_warn_date = "NULL"
+        else:
+            obs_warn_date = repr(obs_warn_date.strftime("%Y-%m-%d"))
+        if obs_alert_date is None:
+            obs_alert_date = "NULL"
+        else:
+            obs_alert_date = repr(obs_alert_date.strftime("%Y-%m-%d"))
         if obs_type == 'hw':
             sql = """update nodes set
-                       hw_obs_warn_date="%(warn_date)s",
-                       hw_obs_alert_date="%(alert_date)s"
+                       hw_obs_warn_date=%(warn_date)s,
+                       hw_obs_alert_date=%(alert_date)s
                      where
                        model="%(name)s"
                   """%dict(warn_date=obs_warn_date,
@@ -16,8 +25,8 @@ def _update_nodes_fields(obs_type, obs_name, obs_warn_date, obs_alert_date):
                            name=obs_name)
         elif obs_type == 'os':
             sql = """update nodes set
-                       os_obs_warn_date="%(warn_date)s",
-                       os_obs_alert_date="%(alert_date)s"
+                       os_obs_warn_date=%(warn_date)s,
+                       os_obs_alert_date=%(alert_date)s
                      where
                        concat_ws(" ", os_name, os_vendor, os_release, os_update)="%(name)s"
                   """%dict(warn_date=obs_warn_date,
@@ -26,28 +35,34 @@ def _update_nodes_fields(obs_type, obs_name, obs_warn_date, obs_alert_date):
         db.executesql(sql)
 
 def cron_obsolescence_hw():
-    sql = """insert ignore into obsolescence (obs_type, obs_name)
-             select "hw", model
+    print "refresh hw models"
+    sql = """insert ignore into obsolescence (obs_type, obs_name, obs_warn_date_updated_by, obs_warn_date_updated, obs_alert_date_updated_by, obs_alert_date_updated)
+             select "hw", model, "collector", now(), "collector", now()
              from nodes
              where model!=''
              group by model
           """
     db.executesql(sql)
     db.commit()
+    print "refresh hw alerts"
     update_dash_obs_hw_alert()
+    print "refresh hw warnings"
     update_dash_obs_hw_warn()
     return dict(message=T("done"))
 
 def cron_obsolescence_os():
-    sql = """insert ignore into obsolescence (obs_type, obs_name)
-             select "os", os_concat
+    print "refresh os names"
+    sql = """insert ignore into obsolescence (obs_type, obs_name, obs_warn_date_updated_by, obs_warn_date_updated, obs_alert_date_updated_by, obs_alert_date_updated)
+             select "os", os_concat, "collector", now(), "collector", now()
              from nodes
              where os_concat!=''
              group by os_concat
           """
     db.executesql(sql)
     db.commit()
+    print "refresh os alerts"
     update_dash_obs_os_alert()
+    print "refresh os warnings"
     update_dash_obs_os_warn()
     return dict(message=T("done"))
 
@@ -375,6 +390,7 @@ def purge_dash_obs_without():
            )
 
     for dash_type, obs_type in data_hw:
+        print "purge %s" % dash_type
         sql = """select d.id from dashboard d
                  join nodes n on d.node_id=n.node_id
                  where
@@ -388,6 +404,7 @@ def purge_dash_obs_without():
         db.commit()
 
     for dash_type, obs_type in data_os:
+        print "purge %s" % dash_type
         sql = """select d.id from dashboard d
                  join nodes n on d.node_id=n.node_id
                  where

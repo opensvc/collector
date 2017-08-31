@@ -1336,3 +1336,7 @@ def _perf_svc(begin, end, period):
 
 def test_task_metrics():
     task_metrics(verbose=True)
+
+def test_task_refresh_obsolescence():
+    task_refresh_obsolescence()
+
