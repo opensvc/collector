@@ -38,7 +38,8 @@ def discover_registry(registry):
         r = requests.get(
           registry.url+"/v2/_catalog",
           verify=verify,
-          headers={"Authorization": "Bearer "+__token}
+          headers={"Authorization": "Bearer "+__token},
+          timeout=5,
         )
     except Exception as exc:
         print "get catalog error: %s" % str(exc)
@@ -71,11 +72,16 @@ def discover_repository_tags(registry, repo):
     __token = manager_token(registry.service, repo=repo.repository)
 
     verify = not registry.insecure
-    r = requests.get(
-      registry.url+"/v2/%s/tags/list" % repo.repository,
-      verify=verify,
-      headers={"Authorization": "Bearer "+__token}
-    )
+    try:
+        r = requests.get(
+          registry.url+"/v2/%s/tags/list" % repo.repository,
+          verify=verify,
+          headers={"Authorization": "Bearer "+__token},
+          timeout=5,
+        )
+    except Exception as exc:
+        print "get catalog error: %s" % str(exc)
+        return 1
     token_logger.info(r.content)
     data = json.loads(r.content)
     vars = ["registry_id", "repository_id", "name", "updated", "config_digest", "config_size"]
