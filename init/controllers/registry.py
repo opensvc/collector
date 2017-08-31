@@ -34,11 +34,16 @@ def discover_registry(registry):
 
     # fetch repos
     verify = not registry.insecure
-    r = requests.get(
-      registry.url+"/v2/_catalog",
-      verify=verify,
-      headers={"Authorization": "Bearer "+__token}
-    )
+    try:
+        r = requests.get(
+          registry.url+"/v2/_catalog",
+          verify=verify,
+          headers={"Authorization": "Bearer "+__token}
+        )
+    except Exception as exc:
+        print "get catalog error: %s" % str(exc)
+        return 1
+
     token_logger.info(r.content)
 
     # insert or update repos
