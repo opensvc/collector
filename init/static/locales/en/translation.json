@@ -614,6 +614,13 @@
 	"docker_repository_tabs": {
 		"tags": "tags"
 	},
+	"tag_properties": {
+		"id": "Id",
+		"name": "Name",
+		"nodes": "Nodes",
+		"services": "Services",
+		"exclude": "Exclusion Regexp"
+	},
 	"workflow_tabs": {
 		"derive_text": "Derive a new workflow from this workflow head form, using the submitted data as initial values in the new workflow.",
 		"derive": "derive",

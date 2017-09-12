@@ -2106,6 +2106,7 @@ colprops = {
 		"title": "Tag id"
 	},
 	"tag_name": {
+		"_class": "tag_name",
 		"img": "tag16",
 		"title": "Tag name"
 	},

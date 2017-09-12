@@ -199,6 +199,22 @@ var img_h = {
 	'tag': 'tag16'
 }
 
+function cell_decorator_tag_name(e, line) {
+	var v = $.data(e[0], "v")
+	var tag_id = $.data(line.children("[col=tag_id]")[0], "v")
+	e
+	.html("<span class='clickable'>"+v+"</span>")
+	.addClass("corner-top")
+	.on("click", function(){
+		osvc.flash.show({
+			text: v,
+			cl: "icon tag16",
+			bgcolor: osvc.colors.tag,
+			fn: function(id){tag_tabs(id, {"tag_name": v, "tag_id": tag_id})}
+		})
+	})
+}
+
 function cell_decorator_var_class(e, line) {
 	var v = $.data(e[0], "v")
 	e
@@ -2136,6 +2152,7 @@ $.extend(true, cell_decorators, {
 	"log_level": cell_decorator_log_level,
 	"log_event": cell_decorator_log_event,
 	"res_log": cell_decorator_res_log,
+	"tag_name": cell_decorator_tag_name,
 	"ruleset_name": cell_decorator_ruleset_name,
 	"rule_value": cell_decorator_rule_value
 })

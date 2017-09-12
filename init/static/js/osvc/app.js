@@ -638,6 +638,12 @@ function wiki(divid, options) {
 	})
 }
 
+function tag_tabs(divid, options) {
+	require(["osvc/tabs/tag"], function() {
+		tag_tabs(divid, options)
+	})
+}
+
 function filterset_tabs(divid, options) {
 	require(["osvc/tabs/fset"], function() {
 		filterset_tabs(divid, options)

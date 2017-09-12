@@ -2132,7 +2132,7 @@ a.search-link:hover {
 	color: white;
 }
 .tag_kill:before {
-	content: '\f1f8' !important
+	content: '\f1f8' !important;
 }
 .tag_kill {
 	background-color: #EE5464 !important;

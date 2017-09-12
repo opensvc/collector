@@ -463,7 +463,9 @@ function node_tags(options) {
 			})
 		}
 	}
-
+	options.ondblclick = function(divid, data) {
+		tag_tabs(divid, {"tag_id": data.id, "tag_name": data.name})
+	}
 
 	return tags(options)
 }
@@ -524,6 +526,9 @@ function service_tags(options) {
 				"tag_id": data.tag_id,
 			})
 		}
+	}
+	options.ondblclick = function(divid, data) {
+		tag_tabs(divid, {"tag_id": data.id, "tag_name": data.name})
 	}
 
 	return tags(options)
@@ -1737,6 +1742,114 @@ function array_proxies(options) {
 		node_tabs(divid, {"node_id": data.id, "nodename": data.name})
 	}
 	options.events = ["stor_array_proxy_change"]
+	return tags(options)
+}
+
+function tag_nodes(options) {
+	options.tag_name = "nodename"
+	options.flash_id_prefix = "node"
+	options.id = "node_id"
+	options.bgcolor = osvc.colors.node
+	options.icon = osvc.icons.node
+	options.get_tags = function(fval, callback, callback_err) {
+		services_osvcgetrest("/tags/%1/nodes", [options.tag_id], {
+			"orderby": options.tag_name,
+			"props": "node_id," + options.tag_name,
+			"limit": "0",
+			"meta": "false"
+		}, callback, callback_err)
+	}
+	options.get_candidates = function(fval, callback, callback_err) {
+		services_osvcgetrest("/nodes", "", {
+			"orderby": options.tag_name,
+			"props": "node_id," + options.tag_name,
+			"limit": "0",
+			"meta": "false",
+			"filters": [options.tag_name+" "+fval]
+		}, callback, callback_err)
+	}
+	options.attach = function(tag_data, callback, callback_err) {
+		services_osvcpostrest("/tags/%1/nodes/%2", [options.tag_id, tag_data.node_id], "", "", callback, callback_err)
+	}
+	options.detach = function(tag, callback, callback_err) {
+		services_osvcdeleterest("/tags/%1/nodes/%2", [options.tag_id, tag.attr("tag_id")], "", "", callback, callback_err)
+	}
+	options.am_i_responsible = function(callback) {
+		callback({"data": []})
+	}
+	options.ondblclick = function(divid, data) {
+		node_tabs(divid, {"node_id": data.id, "nodename": data.name})
+	}
+	options.event_handler = function(o, data) {
+		if (!("data" in data)) {
+			return
+		} 
+		data = data.data
+		if (!data.tag_name || (o.options.tag_name != data.tag_name)) {
+			return
+		}
+		if (!("action" in data)) {
+			return
+		}
+		if ((data["action"] != "attach") && (data["action"] != "detach")) {
+			return
+		}
+		o.reload_tags()
+	}
+	return tags(options)
+}
+
+function tag_services(options) {
+	options.tag_name = "svcname"
+	options.flash_id_prefix = "svc"
+	options.id = "svc_id"
+	options.bgcolor = osvc.colors.svc
+	options.icon = osvc.icons.svc
+	options.get_tags = function(fval, callback, callback_err) {
+		services_osvcgetrest("/tags/%1/services", [options.tag_id], {
+			"orderby": options.tag_name,
+			"props": "svc_id," + options.tag_name,
+			"limit": "0",
+			"meta": "false",
+		}, callback, callback_err)
+	}
+	options.get_candidates = function(fval, callback, callback_err) {
+		services_osvcgetrest("/services", "", {
+			"orderby": options.tag_name,
+			"props": "svc_id," + options.tag_name,
+			"limit": "0",
+			"meta": "false",
+			"filters": [options.tag_name+" "+fval]
+		}, callback, callback_err)
+	}
+	options.attach = function(tag_data, callback, callback_err) {
+		services_osvcpostrest("/tags/%1/services/%2", [options.tag_id, tag_data.svc_id], "", "", callback, callback_err)
+	}
+	options.detach = function(tag, callback, callback_err) {
+		services_osvcdeleterest("/tags/%1/services/%2", [options.tag_id, tag.attr("tag_id")], "", "", callback, callback_err)
+	}
+	options.am_i_responsible = function(callback) {
+		callback({"data": []})
+	}
+	options.ondblclick = function(divid, data) {
+		service_tabs(divid, {"svc_id": data.id, "svcname": data.name})
+	}
+	options.event_handler = function(o, data) {
+		if (!("data" in data)) {
+			return
+		} 
+		data = data.data
+		if (!data.tag_name || (o.options.tag_name != data.tag_name)) {
+			return
+		}
+		if (!("action" in data)) {
+			return
+		}
+		if ((data["action"] != "attach") && (data["action"] != "detach")) {
+			return
+		}
+		o.reload_tags()
+	}
 	return tags(options)
 }
 

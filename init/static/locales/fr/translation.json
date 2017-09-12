@@ -613,6 +613,13 @@
 	"docker_repository_tabs": {
 		"tags": "tags"
 	},
+	"tag_properties": {
+		"id": "Id",
+		"name": "Nom",
+		"nodes": "Noeuds",
+		"services": "Services",
+		"exclude": "Regexp d'exclusion"
+	},
 	"workflow_tabs": {
 		"derive_text": "Dériver un nouveau worflow à partir du formulaire de tête de ce workflow, en utilisant les valeurs saisies comme valeurs initiales dans le nouveau workflow.",
 		"derive": "dériver",
