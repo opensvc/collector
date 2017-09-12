@@ -243,6 +243,7 @@ function node_properties(divid, options)
 
 		// init tags
 		node_tags({
+			"bgcolor": osvc.colors.tag,
 			"tid": o.e_tags.attr("id"),
 			"node_id": o.options.node_id,
 			"responsible": o.options.responsible

@@ -483,6 +483,7 @@ function service_properties(divid, options)
 
 		// init tags
 		service_tags({
+			"bgcolor": osvc.colors.tag,
 			"tid": o.e_tags.attr("id"),
 			"svc_id": o.options.svc_id,
 		})
