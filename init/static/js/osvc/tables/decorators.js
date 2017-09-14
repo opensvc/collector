@@ -1682,6 +1682,14 @@ function cell_decorator_svc_ha(e, line) {
 	e.html("<div class='boxed_small'>HA</div>")
 }
 
+function cell_decorator_cpu_freq(e, line) {
+	v = $.data(e[0], "v")
+	if (v == "empty") {
+		return
+	}
+	e.html("<div class='nowrap'>"+fancy_size_mb(v).replace(/B$/, "Hz")+"</div>")
+}
+
 function cell_decorator_size_mb(e, line) {
 	v = $.data(e[0], "v")
 	if (v == "empty") {
@@ -2072,6 +2080,7 @@ $.extend(true, cell_decorators, {
 	"size_mb": cell_decorator_size_mb,
 	"size_kb": cell_decorator_size_kb,
 	"size_b": cell_decorator_size_b,
+	"cpu_freq": cell_decorator_cpu_freq,
 	"chk_instance": cell_decorator_chk_instance,
 	"chk_value": cell_decorator_chk_value,
 	"chk_low": cell_decorator_chk_low,

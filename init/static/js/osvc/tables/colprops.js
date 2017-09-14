@@ -501,6 +501,7 @@ colprops = {
 		"title": "CPU dies"
 	},
 	"cpu_freq": {
+		"_class": "cpu_freq",
 		"img": "cpu16",
 		"title": "CPU freq"
 	},

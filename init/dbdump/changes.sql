@@ -6436,4 +6436,5 @@ drop view v_stats_stats;
 
 create view v_table_size as SELECT table_schema, table_name,ROUND((data_length+index_length)/POWER(1024,2),2) AS tablesize_mb FROM information_schema.tables ORDER BY tablesize_mb DESC;
 
+alter table nodes modify cpu_freq integer default NULL;
 
