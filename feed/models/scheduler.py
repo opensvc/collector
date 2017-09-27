@@ -111,7 +111,7 @@ def git_commit(git_d):
     return 0
 
 def task_send_sysreport(need_commit, deleted, node_id):
-    sysreport_d = os.path.join(os.path.dirname(__file__), "..", "..", "..", "init", 'uploads', 'sysreport')
+    sysreport_d = os.path.join(os.path.dirname(__file__), "..", "..", "init", 'uploads', 'sysreport')
     git_d = os.path.join(sysreport_d, node_id, ".git")
 
     if not need_commit:
