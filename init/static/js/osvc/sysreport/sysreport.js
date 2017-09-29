@@ -104,8 +104,8 @@ function sysrep(divid, options) {
 
 		// Handle max lines
 		var max_fpath = 5
-		for (i=0; i<data.length; i++) {
-			if (!("summary" in data[i])) {
+		for (i=data.length-1; i>=0; i--) {
+			if (!("stat" in data[i])) {
 				// git-filter allows to purge a file from the history.
 				// In this case, some commits might end up empty. We don't
 				// want to display those.

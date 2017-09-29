@@ -77,7 +77,7 @@ class gittrack(object):
     def log(self, data_id=None, path=None, begin=None, end=None):
         git_d = os.path.join(self.collect_d, data_id, ".git")
         cmd = ["git", "--git-dir="+git_d, "log", "-n", "300",
-               "--stat=510,500", "--date=iso"]
+               "--stat=510,500", "--date=iso", "--all"]
         if begin:
             cmd += ['--since='+begin]
         if end:
