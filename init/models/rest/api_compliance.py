@@ -32,7 +32,7 @@ class rest_get_compliance_logs(rest_get_table_handler):
           allow_fset_id=True,
         )
 
-    def handler(self, id, **vars):
+    def handler(self, **vars):
         q = q_filter(node_field=db.comp_log.node_id)
         fset_id = vars.get("fset-id")
         if fset_id:
@@ -82,7 +82,7 @@ class rest_get_compliance_status(rest_get_table_handler):
           allow_fset_id=True,
         )
 
-    def handler(self, id, **vars):
+    def handler(self, **vars):
         q = q_filter(node_field=db.comp_status.node_id)
         fset_id = vars.get("fset-id")
         if fset_id:

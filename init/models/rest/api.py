@@ -232,7 +232,10 @@ class rest_handler(object):
             del(vars["filters[]"])
 
         if self._cache is None:
-            return self.handler(*nargs, **vars)
+            try:
+                return self.handler(*nargs, **vars)
+            except TypeError as exc:
+                raise Exception(exc)
         if self._cache is True:
             time_expire = 14400
         elif type(self._cache) == int:
@@ -251,7 +254,7 @@ class rest_handler(object):
         key = "rest:%s:%s:%s" % (auth.user_id, type(self).__name__, sign)
         return key
 
-    def prepare_data(self, **vars):
+    def prepare_data(self, *args, **vars):
         add_to_vars = [
           "q",
           "orderby",
@@ -285,8 +288,8 @@ class rest_handler(object):
                 vars[v] = getattr(self, v)
         return prepare_data(**vars)
 
-    def handler(self, **vars):
-        return self.prepare_data(**vars)
+    def handler(self, *args, **vars):
+        return self.prepare_data(*args, **vars)
 
     def update_data(self):
         self.data = {}
@@ -598,7 +601,7 @@ class rest_get_line_handler(rest_handler):
     def update_data(self):
         self.data = copy.copy(self.init_data)
 
-    def prepare_data(self, **vars):
+    def prepare_data(self, *args, **vars):
         vars["meta"] = False
         vars["stats"] = False
         vars["commonality"] = False
