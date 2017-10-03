@@ -1723,6 +1723,8 @@ def rpc_comp_attach_svc_ruleset(svcname, ruleset, auth):
     if len(ruleset) == 0:
         return dict(status=False, msg="no ruleset specified"%ruleset)
     rset_id = comp_ruleset_id(ruleset)
+    if rset_id is None:
+        return dict(status=False, msg="ruleset %s does not exist"%ruleset)
     node_id = auth_to_node_id(auth)
     svc_id = node_svc_id(node_id, svcname)
     slave = comp_slave(svc_id, node_id)
@@ -1738,6 +1740,8 @@ def rpc_comp_attach_svc_moduleset(svcname, moduleset, auth):
     if len(moduleset) == 0:
         return dict(status=False, msg="no moduleset specified"%moduleset)
     modset_id = comp_moduleset_id(moduleset)
+    if modset_id is None:
+        return dict(status=False, msg="moduleset %s does not exist"%moduleset)
     node_id = auth_to_node_id(auth)
     svc_id = node_svc_id(node_id, svcname)
     slave = comp_slave(svc_id, node_id)
@@ -1753,6 +1757,8 @@ def rpc_comp_attach_moduleset(nodename, moduleset, auth):
     if len(moduleset) == 0:
         return dict(status=False, msg="no moduleset specified"%moduleset)
     modset_id = comp_moduleset_id(moduleset)
+    if modset_id is None:
+        return dict(status=False, msg="moduleset %s does not exist"%moduleset)
     node_id = auth_to_node_id(auth)
     d = lib_comp_moduleset_attach_node(node_id, modset_id)
     return mangle_lib_result(d)
@@ -1830,6 +1836,8 @@ def rpc_comp_attach_ruleset(nodename, ruleset, auth):
     if len(ruleset) == 0:
         return dict(status=False, msg="no ruleset specified"%ruleset)
     ruleset_id = comp_ruleset_id(ruleset)
+    if ruleset_id is None:
+        return dict(status=False, msg="ruleset %s does not exist"%ruleset)
     node_id = auth_to_node_id(auth)
     d = lib_comp_ruleset_attach_node(node_id, ruleset_id)
     return mangle_lib_result(d)
