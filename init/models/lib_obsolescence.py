@@ -6,33 +6,14 @@ def update_nodes_fields():
                              row.obs_warn_date, row.obs_alert_date)
 
 def _update_nodes_fields(obs_type, obs_name, obs_warn_date, obs_alert_date):
-        if obs_warn_date is None:
-            obs_warn_date = "NULL"
-        else:
-            obs_warn_date = repr(obs_warn_date.strftime("%Y-%m-%d"))
-        if obs_alert_date is None:
-            obs_alert_date = "NULL"
-        else:
-            obs_alert_date = repr(obs_alert_date.strftime("%Y-%m-%d"))
         if obs_type == 'hw':
-            sql = """update nodes set
-                       hw_obs_warn_date=%(warn_date)s,
-                       hw_obs_alert_date=%(alert_date)s
-                     where
-                       model="%(name)s"
-                  """%dict(warn_date=obs_warn_date,
-                           alert_date=obs_alert_date,
-                           name=obs_name)
+            q = db.nodes.model == obs_name
+            db(q).update(hw_obs_warn_date=obs_warn_date,
+                         hw_obs_alert_date=obs_alert_date)
         elif obs_type == 'os':
-            sql = """update nodes set
-                       os_obs_warn_date=%(warn_date)s,
-                       os_obs_alert_date=%(alert_date)s
-                     where
-                       concat_ws(" ", os_name, os_vendor, os_release, os_update)="%(name)s"
-                  """%dict(warn_date=obs_warn_date,
-                           alert_date=obs_alert_date,
-                           name=obs_name)
-        db.executesql(sql)
+            q = db.nodes.os_concat == obs_name
+            db(q).update(os_obs_warn_date=obs_warn_date,
+                         os_obs_alert_date=obs_alert_date)
 
 def cron_obsolescence_hw():
     print "refresh hw models"
