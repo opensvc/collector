@@ -267,6 +267,7 @@ colprops = {
 		"title": "Ack comment"
 	},
 	"acked_date": {
+		"_class": "datetime_no_age",
 		"img": "time16",
 		"title": "Ack date"
 	},
@@ -386,6 +387,7 @@ colprops = {
 		"title": "Chain length"
 	},
 	"change_date": {
+		"_class": "datetime_no_age",
 		"img": "time16",
 		"title": "Last change"
 	},
@@ -995,14 +997,17 @@ colprops = {
 		"title": "Last assignee"
 	},
 	"last_comm": {
+		"_class": "datetime_no_age",
 		"img": "time16",
 		"title": "Last comm"
 	},
 	"last_boot": {
+		"_class": "datetime_no_age",
 		"img": "time16",
 		"title": "Last boot"
 	},
 	"last_check": {
+		"_class": "datetime_daily",
 		"img": "time16",
 		"title": "Last Check"
 	},
@@ -1182,6 +1187,7 @@ colprops = {
 		"title": "Value column index"
 	},
 	"metric_created": {
+		"_class": "datetime_no_age",
 		"img": "time16",
 		"title": "Created on"
 	},
@@ -1250,6 +1256,7 @@ colprops = {
 		"title": "Availability status"
 	},
 	"mon_changed": {
+		"_class": "datetime_no_age",
 		"img": "time16",
 		"title": "Last status change"
 	},
@@ -1531,6 +1538,7 @@ colprops = {
 		"title": "OS vendor"
 	},
 	"patch_install_date": {
+		"_class": "datetime_no_age",
 		"img": "time16",
 		"title": "Install date"
 	},
@@ -1918,6 +1926,7 @@ colprops = {
 		"title": "Service mode"
 	},
 	"svc_created": {
+		"_class": "datetime_no_age",
 		"img": "time16",
 		"title": "Service creation date"
 	},
@@ -1934,6 +1943,7 @@ colprops = {
 		"title": "DRP type"
 	},
 	"svc_config_updated": {
+		"_class": "datetime_no_age",
 		"img": "time16",
 		"title": "Config file updated"
 	},
@@ -2089,6 +2099,7 @@ colprops = {
 		"title": "Database"
 	},
 	"table_updated": {
+		"_class": "datetime_no_age",
 		"img": "time16",
 		"title": "Updated"
 	},
@@ -2164,6 +2175,7 @@ colprops = {
 		"title": "Comment"
 	},
 	"tpl_created": {
+		"_class": "datetime_no_age",
 		"img": "time16",
 		"title": "Created on"
 	},
