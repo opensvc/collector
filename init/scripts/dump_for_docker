@@ -6,8 +6,8 @@ PATH_SCRIPT="$(cd $(/usr/bin/dirname $(whence -- $0 || echo $0));pwd)"
 . $PATH_SCRIPT/$(basename $0).conf
 
 DUMP_DIR=$PATH_SCRIPT/../dbdump
-MYSQLDUMP="mysqldump -S $DATADIR/mysql.sock -u root -p$PASSWORD --hex-blob"
-MYSQL="mysql -S $DATADIR/mysql.sock -u root -p$PASSWORD"
+MYSQLDUMP="$DOCKEREXEC /opt/mysql/bin/mysqldump -S $SOCKET -u root -p$PASSWORD --hex-blob"
+MYSQL="$DOCKEREXEC /opt/mysql/bin/mysql -S $SOCKET -u root -p$PASSWORD"
 
 echo >$DUMP_DIR/schema.dump
 cat - <<EOF >> $DUMP_DIR/schema.dump
