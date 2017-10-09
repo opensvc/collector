@@ -1436,6 +1436,10 @@ div.login {
 	color: cadetblue;
 	content: '\f0ec';
 }
+.cluster:before {
+	color: cornflowerblue;
+	content: '\f1ce';
+}
 .ip16:before {
 	color: cadetblue;
 	content: '\f124';
