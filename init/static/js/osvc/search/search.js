@@ -251,12 +251,7 @@ function search(divid) {
 			"title": "search.menu_header.title_filtersets",
 		},
 		{
-			"color": "disk",
-			"prefix": "disk",
-			"title": "search.menu_header.title_disks",
-		},
-		{
-			"color": "user",
+			"color": "org",
 			"prefix": "user",
 			"title": "search.menu_header.title_users",
 		},
@@ -266,9 +261,9 @@ function search(divid) {
 			"title": "search.menu_header.title_groups",
 		},
 		{
-			"color": "net",
-			"prefix": "ip",
-			"title": "search.menu_header.title_ips",
+			"color": "app",
+			"prefix": "app",
+			"title": "search.menu_header.title_apps",
 		},
 		{
 			"color": "svc",
@@ -284,6 +279,16 @@ function search(divid) {
 			"color": "node",
 			"prefix": "vm",
 			"title": "search.menu_header.title_vms",
+		},
+		{
+			"color": "net",
+			"prefix": "ip",
+			"title": "search.menu_header.title_ips",
+		},
+		{
+			"color": "disk",
+			"prefix": "disk",
+			"title": "search.menu_header.title_disks",
 		},
 		{
 			"color": "comp",
@@ -314,6 +319,16 @@ function search(divid) {
 			"color": "comp",
 			"prefix": "rset",
 			"title": "search.menu_header.title_rulesets",
+		},
+		{
+			"color": "comp",
+			"prefix": "modset",
+			"title": "search.menu_header.title_modulesets",
+		},
+		{
+			"color": "comp",
+			"prefix": "var",
+			"title": "search.menu_header.title_variables",
 		}
 	]
 
