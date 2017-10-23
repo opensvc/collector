@@ -4785,20 +4785,20 @@ def merge_daemon_status(node_id, changes):
             svc = node_svc(peer_node_id, svcname)
             if svc:
                 break
-        if changes is not None and svcname not in changes:
+        if changes is not None and svcname not in changes and not svc.svc_availstatus == "undef":
             print " ping service", svcname, svc.svc_id
             ping_svc(svc, now)
-            continue
-        print " update service", svcname, svc.svc_id
-        changed |= svc_log_update(svc.svc_id, sdata["avail"], deferred=True)
-        changed |= update_service(svc, sdata)
+        else:
+            print " update service", svcname, svc.svc_id
+            changed |= svc_log_update(svc.svc_id, sdata["avail"], deferred=True)
+            changed |= update_service(svc, sdata)
 
         for nodename, ndata in data["nodes"].items():
             peer = get_cluster_node(nodename)
             if peer is None:
                 print "  skip instance on unknwon peer", nodename
                 continue
-            if changes is not None and svcname+"@"+nodename not in changes:
+            if changes is not None and svcname+"@"+nodename not in changes and not svc.svc_availstatus == "undef":
                 print "  ping service", svcname, svc.svc_id, "instance on node", nodename
                 ping_instance(svc, peer, now)
                 continue
