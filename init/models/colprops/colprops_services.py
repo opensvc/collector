@@ -5,12 +5,14 @@ services_cols = [
     'svc_env',
     'svc_ha',
     'svc_cluster_type',
+    'svc_frozen',
+    'svc_placement',
+    'svc_provisioned',
     'svc_flex_min_nodes',
     'svc_flex_max_nodes',
     'svc_flex_cpu_low_threshold',
     'svc_flex_cpu_high_threshold',
     'svc_drptype',
-    'svc_containertype',
     'svc_autostart',
     'svc_nodes',
     'svc_drpnode',
@@ -62,16 +64,24 @@ services_colprops = {
              field='svc_status',
              table = 'services',
             ),
+    'svc_frozen': HtmlTableColumn(
+             field='svc_frozen',
+             table = 'services',
+            ),
+    'svc_placement': HtmlTableColumn(
+             field='svc_placement',
+             table = 'services',
+            ),
+    'svc_provisioned': HtmlTableColumn(
+             field='svc_provisioned',
+             table = 'services',
+            ),
     'svc_app': HtmlTableColumn(
              field='svc_app',
              table = 'services',
             ),
     'svc_ha': HtmlTableColumn(
              field='svc_ha',
-             table = 'services',
-            ),
-    'svc_containertype': HtmlTableColumn(
-             field='svc_containertype',
              table = 'services',
             ),
     'svc_env': HtmlTableColumn(

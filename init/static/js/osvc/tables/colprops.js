@@ -71,6 +71,9 @@ objcols = {
 	"service": [
 		'svc_status',
 		'svc_availstatus',
+		'svc_frozen',
+		'svc_provisioned',
+		'svc_placement',
 		'svc_app',
 		'svc_env',
 		'svc_ha',
@@ -80,7 +83,6 @@ objcols = {
 		'svc_flex_cpu_low_threshold',
 		'svc_flex_cpu_high_threshold',
 		'svc_drptype',
-		'svc_containertype',
 		'svc_autostart',
 		'svc_nodes',
 		'svc_drpnode',
@@ -1921,10 +1923,6 @@ colprops = {
 		"img": "svc",
 		"title": "Comment"
 	},
-	"svc_containertype": {
-		"img": "svc",
-		"title": "Service mode"
-	},
 	"svc_created": {
 		"_class": "datetime_no_age",
 		"img": "time16",
@@ -1994,6 +1992,19 @@ colprops = {
 		"_class": "status",
 		"img": "svc",
 		"title": "Service overall status"
+	},
+	"svc_frozen": {
+		"_class": "frozen",
+		"img": "svc",
+		"title": "Service frozen"
+	},
+	"svc_placement": {
+		"img": "svc",
+		"title": "Service placement"
+	},
+	"svc_provisioned": {
+		"img": "svc",
+		"title": "Service provisioned"
 	},
 	"svc_status_updated": {
 		"_class": "datetime_status",

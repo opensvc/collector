@@ -93,7 +93,6 @@ class table_svcmon(HtmlTable):
             'app_domain',
             'app_team_ops',
             'svc_drptype',
-            'svc_containertype',
             'svc_flex_min_nodes',
             'svc_flex_max_nodes',
             'svc_flex_cpu_low_threshold',

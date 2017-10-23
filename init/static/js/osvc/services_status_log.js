@@ -9,9 +9,9 @@ function services_status_log(divid, options) {
 	o.colors = {
 		"warn": "orange",
 		"up": "green",
-		"stdby up": "green",
+		"stdby up": "lightgreen",
 		"down": "red",
-		"stdby down": "red",
+		"stdby down": "lightred",
 		"undef": "gray",
 		"n/a": "gray"
 	}

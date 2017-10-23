@@ -3017,6 +3017,10 @@ pre.api_doc {
 	background-color: orange !important;
 	border-color: orange !important;
 }
+.box-lightgreen {
+	background-color: #bdffbd !important;
+	border-color: #bdffbd !important;
+}
 .box-green {
 	background-color: #009900 !important;
 	border-color: #009900 !important;
@@ -3024,6 +3028,10 @@ pre.api_doc {
 .box-gray {
 	background-color: #666666 !important;
 	border-color: #666666 !important;
+}
+.box-lightred {
+	background-color: #63000a !important;
+	border-color: #63000a !important;
 }
 .box-red {
 	background-color: #990000 !important;

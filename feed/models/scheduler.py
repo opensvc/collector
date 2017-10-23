@@ -716,7 +716,7 @@ def _resmon_update(vars, vals, auth, cache=None):
         if "vars" in cache:
             print "insert resmon"
             generic_insert('resmon', cache["vars"], cache["vals"])
-        if "resmon_log_changed" in cache:
+        if "resmon_log_changed" in cache and "resmon_log" in cache["resmon_log_changed"]:
             db.commit()
             table_modified("resmon_log")
         ws_send('resmon_change')
@@ -2885,10 +2885,6 @@ def __svcmon_update(vars, vals, auth):
         row = db(q).select(db.svcmon.mon_vmname).first()
         if row is not None:
             h['mon_vmname'] = row.mon_vmname
-        q = db.services.svc_id == h['svc_id']
-        row = db(q).select(db.services.svc_containertype).first()
-        if row is not None:
-            h['mon_vmtype'] = row.svc_containertype
     print datetime.datetime.now() - _now, "COMPAT: old mono-container agent. fetch vmname from svcmon."
     _now = datetime.datetime.now()
 
@@ -4314,6 +4310,37 @@ def update_dash_action_errors(svc_id, node_id):
         db.executesql(sql)
         db.commit()
 
+def update_dash_service_placement(svc_id, env, placement):
+    if placement == "optimal":
+        sql = """delete from dashboard
+                 where
+                   dash_type="service placement" and
+                   svc_id="%(svc_id)s"
+              """%dict(svc_id=svc_id)
+    else:
+        sql = """insert into dashboard
+                 set
+                   dash_type="service placement",
+                   svc_id="%(svc_id)s",
+                   dash_severity=1,
+                   dash_fmt="%%(placement)s",
+                   dash_dict='{"placement": "%(placement)s"}',
+                   dash_created=now(),
+                   dash_updated=now(),
+                   dash_env="%(env)s"
+                 on duplicate key update
+                   dash_severity=1,
+                   dash_updated=now(),
+                   dash_env="%(env)s"
+              """%dict(svc_id=svc_id,
+                       placement=placement,
+                       env=env,
+                      )
+    ret = db.executesql(sql)
+    if ret:
+        return set(["dashboard"])
+    return set()
+
 def update_dash_service_frozen(svc_id, node_id, env, frozen):
     if int(frozen) == 0:
         sql = """delete from dashboard
@@ -4343,9 +4370,10 @@ def update_dash_service_frozen(svc_id, node_id, env, frozen):
                        node_id=node_id,
                        env=env,
                       )
-    db.executesql(sql)
-    db.commit()
-    # dashboard_events() called from __svcmon_update
+    ret = db.executesql(sql)
+    if ret:
+        return set(["dashboard"])
+    return set()
 
 def update_dash_service_not_on_primary(svc_id, node_id, env, availstatus):
     if env == 'PRD':
@@ -4370,7 +4398,7 @@ def update_dash_service_not_on_primary(svc_id, node_id, env, availstatus):
     rows = db.executesql(sql, as_dict=True)
 
     if len(rows) == 0:
-        return
+        return set()
 
     if rows[0]["svc_autostart"] != rows[0]["nodename"] or \
        availstatus == "up" or \
@@ -4384,7 +4412,7 @@ def update_dash_service_not_on_primary(svc_id, node_id, env, availstatus):
                    svc_id="%(svc_id)s"
               """%dict(svc_id=svc_id, node_id=node_id)
         db.executesql(sql)
-        return
+        return set()
 
     sql = """insert into dashboard
              set
@@ -4411,6 +4439,7 @@ def update_dash_service_not_on_primary(svc_id, node_id, env, availstatus):
     db.executesql(sql)
     db.commit()
     # dashboard_events() called from __svcmon_update
+    return set(["dashboard"])
 
 def task_dash_daily():
     cron_dash_purge()
@@ -4442,6 +4471,363 @@ def task_dash_min():
     cron_dash_svcmon_not_updated()
     dashboard_events()
 
+def ping_svc(svc, now):
+    changed = set()
+    q = db.services.svc_id == svc.svc_id
+    result = db(q).update(svc_status_updated=now)
+    if result:
+        changed.add("services")
+    q = db.services_log_last.svc_id == svc.svc_id
+    result = db(q).update(svc_end=now)
+    return changed
+
+##############################################################################
+#
+# agent daemon rpc
+#
+##############################################################################
+
+UP = 0
+DOWN = 1
+WARN = 2
+NA = 3
+UNDEF = 5
+STDBY_UP = 6
+STDBY_DOWN = 7
+STDBY_UP_WITH_UP = 8
+STDBY_UP_WITH_DOWN = 9
+
+def encode_pair(status1, status2):
+    """
+    Return a hashable code unique for the set([status1, status2]).
+    """
+    return (1 << status1) | (1 << status2)
+
+MERGE_RULES = {
+    encode_pair(UP, UP): UP,
+    encode_pair(UP, DOWN): WARN,
+    encode_pair(UP, WARN): WARN,
+    encode_pair(UP, NA): UP,
+    encode_pair(UP, STDBY_UP): STDBY_UP_WITH_UP,
+    encode_pair(UP, STDBY_DOWN): WARN,
+    encode_pair(UP, STDBY_UP_WITH_UP): STDBY_UP_WITH_UP,
+    encode_pair(UP, STDBY_UP_WITH_DOWN): WARN,
+    encode_pair(DOWN, DOWN): DOWN,
+    encode_pair(DOWN, WARN): WARN,
+    encode_pair(DOWN, NA): DOWN,
+    encode_pair(DOWN, STDBY_UP): STDBY_UP_WITH_DOWN,
+    encode_pair(DOWN, STDBY_DOWN): STDBY_DOWN,
+    encode_pair(DOWN, STDBY_UP_WITH_UP): WARN,
+    encode_pair(DOWN, STDBY_UP_WITH_DOWN): STDBY_UP_WITH_DOWN,
+    encode_pair(WARN, WARN): WARN,
+    encode_pair(WARN, NA): WARN,
+    encode_pair(WARN, STDBY_UP): WARN,
+    encode_pair(WARN, STDBY_DOWN): WARN,
+    encode_pair(WARN, STDBY_UP_WITH_UP): WARN,
+    encode_pair(WARN, STDBY_UP_WITH_DOWN): WARN,
+    encode_pair(NA, NA): NA,
+    encode_pair(NA, STDBY_UP): STDBY_UP,
+    encode_pair(NA, STDBY_DOWN): STDBY_DOWN,
+    encode_pair(NA, STDBY_UP_WITH_UP): STDBY_UP_WITH_UP,
+    encode_pair(NA, STDBY_UP_WITH_DOWN): STDBY_UP_WITH_DOWN,
+    encode_pair(STDBY_UP, STDBY_UP): STDBY_UP,
+    encode_pair(STDBY_UP, STDBY_DOWN): WARN,
+    encode_pair(STDBY_UP, STDBY_UP_WITH_UP): STDBY_UP_WITH_UP,
+    encode_pair(STDBY_UP, STDBY_UP_WITH_DOWN): STDBY_UP_WITH_DOWN,
+    encode_pair(STDBY_DOWN, STDBY_DOWN): STDBY_DOWN,
+    encode_pair(STDBY_DOWN, STDBY_UP_WITH_UP): WARN,
+    encode_pair(STDBY_DOWN, STDBY_UP_WITH_DOWN): WARN,
+    encode_pair(STDBY_UP_WITH_UP, STDBY_UP_WITH_DOWN): WARN,
+    encode_pair(STDBY_UP_WITH_UP, STDBY_UP_WITH_UP): STDBY_UP_WITH_UP,
+    encode_pair(STDBY_UP_WITH_DOWN, STDBY_UP_WITH_DOWN): STDBY_UP_WITH_DOWN,
+}
+
+def merge_status(s1, s2):
+    return MERGE_RULES[encode_pairs(s1, s2)]
+
+def ping_instance(svc, peer, now):
+    changed = set()
+    q = (db.svcmon.node_id == peer.node_id) & (db.svcmon.svc_id == svc.svc_id)
+    result = db(q).update(mon_updated=now)
+    if result:
+        changed.add("svcmon")
+
+    q = (db.svcmon_log_last.node_id == peer.node_id) & (db.svcmon_log_last.svc_id == svc.svc_id)
+    result = db(q).update(mon_end=now)
+
+    q = (db.resmon.node_id == peer.node_id) & (db.resmon.svc_id == svc.svc_id)
+    result = db(q).update(updated=now)
+    if result:
+        changed.add("resmon")
+
+    q = (db.resmon_log_last.node_id == peer.node_id) & (db.resmon_log_last.svc_id == svc.svc_id)
+    result = db(q).update(res_end=now)
+    return changed
+
+def ping_peer(peer, now):
+    changed = set()
+    q = db.svcmon.node_id == peer.node_id
+    result = db(q).update(mon_updated=now)
+    if result:
+        changed.add("svcmon")
+
+    q = db.svcmon_log_last.node_id == peer.node_id
+    result = db(q).update(mon_end=now)
+
+    q = db.resmon.node_id == peer.node_id
+    result = db(q).update(updated=now)
+    if result:
+        changed.add("resmon")
+
+    q = db.resmon_log_last.node_id == peer.node_id
+    result = db(q).update(res_end=now)
+    return changed
+
+def merge_daemon_ping(node_id):
+    print "daemon ping", node_id
+    changed = set()
+    now = datetime.datetime.now()
+    data = rconn.hget(R_DAEMON_STATUS_HASH, node_id)
+
+    if data is None:
+        return
+
+    node = get_node(node_id)
+    node_ids = {
+        node.nodename: node,
+    }
+    app_q = db.nodes.app == node.app
+
+    def get_cluster_node(nodename):
+        try:
+            return node_ids[nodename]
+        except KeyError:
+            q = app_q & (db.nodes.nodename == nodename)
+            _node = db(q).select(db.nodes.node_id).first()
+            if _node is None:
+                node_ids[nodename] = None
+            else:
+                node_ids[nodename] = _node
+            return node_ids[nodename]
+
+    data = json.loads(data)
+
+    for nodename, ndata in data["nodes"].items():
+        peer = get_cluster_node(nodename)
+        changed |= ping_peer(peer, now)
+
+    peer_node_ids = [node.node_id for node in node_ids.values()]
+    for svcname in data["services"].keys():
+        for peer_node_id in peer_node_ids:
+            svc = node_svc(peer_node_id, svcname)
+            if svc:
+                break
+        print " ping service", svcname, svc.svc_id
+        changed |= ping_svc(svc, now)
+
+    print " tables changed:", ",".join(changed)
+    for table_name in changed:
+        table_modified(table_name)
+        ws_send(table_name+'_change')
+
+def merge_daemon_status(node_id, changes):
+    print "daemon status", node_id, changes
+    now = datetime.datetime.now()
+    data = rconn.hget(R_DAEMON_STATUS_HASH, node_id)
+    changed = set()
+
+    if data is None:
+        return
+
+    data = json.loads(data)
+    node = get_node(node_id)
+    node_ids = {
+        node.nodename: node,
+    }
+    app_q = db.nodes.app == node.app
+
+    def get_cluster_node(nodename):
+        try:
+            return node_ids[nodename]
+        except KeyError:
+            q = app_q & (db.nodes.nodename == nodename)
+            _node = db(q).select(db.nodes.node_id).first()
+            if _node is None:
+                node_ids[nodename] = None
+            else:
+                node_ids[nodename] = _node
+            return node_ids[nodename]
+
+    def update_container_node_fields(svc, peer, container_id, rdata):
+        if rdata["resources"][container_id]["status"] != "up":
+            return
+        cname = rdata["resources"][container_id]["hostname"]
+        q = db.nodes.nodename == cname
+        q &= (db.nodes.app == peer.app) | (db.nodes.app == svc.svc_app)
+        if db(q).count() == 0:
+            q = db.nodes.nodename == cname
+            q &= db.nodes.app.belongs(node_responsibles_apps(peer.node_id))
+        db(q).update(
+            hv=peer.nodename,
+            loc_city=peer.loc_city,
+            loc_country=peer.loc_country,
+            loc_zip=peer.loc_zip,
+            loc_floor=peer.loc_floor,
+            loc_rack=peer.loc_rack,
+            loc_room=peer.loc_room,
+            loc_building=peer.loc_building,
+            loc_addr=peer.loc_addr,
+            enclosure=peer.enclosure,
+            enclosureslot=peer.enclosureslot,
+            updated=now,
+        )
+        return set(["nodes"])
+
+    def update_instance(svc, peer, container_id, idata, cdata=None):
+        _changed = set()
+        if container_id == "":
+            cdata = {"resources": {}}
+            cname = ""
+            ctype = ""
+            data = idata
+        else:
+            cdata = idata["resources"][container_id]
+            cname = cdata["hostname"]
+            ctype = cdata["type"].split(".")[-1]
+            data = {}
+            for key in ("avail", "overall", "ip", "disk", "fs", "share", "container", "app", "sync"):
+                data[key] = merge_status(idata[key], cdata[key])
+            #
+            # 0: global thawed + encap thawed
+            # 1: global frozen + encap thawed
+            # 2: global thawed + encap frozen
+            # 3: global frozen + encap frozen
+            #
+            if cdata["frozen"]:
+                data["frozen"] = int(idata["frozen"]) + 2
+            else:
+                data["frozen"] = int(idata["frozen"])
+
+        db.svcmon.update_or_insert({
+                "node_id": peer.node_id,
+                "svc_id": svc.svc_id,
+                "mon_vmname": cname,
+            },
+            node_id=peer.node_id,
+            svc_id=svc.svc_id,
+            mon_vmname=cname,
+            mon_availstatus=data["avail"],
+            mon_overallstatus=data["overall"],
+            mon_ipstatus=data["ip"],
+            mon_diskstatus=data["disk"],
+            mon_fsstatus=data["fs"],
+            mon_sharestatus=data["share"],
+            mon_containerstatus=data["container"],
+            mon_appstatus=data["app"],
+            mon_syncstatus=data["sync"],
+            mon_frozen=int(data["frozen"]),
+            mon_vmtype=ctype,
+            mon_updated=now,
+        )
+        _changed.add("svcmon")
+        _changed |= update_dash_service_frozen(svc.svc_id, peer.node_id, svc.svc_env, data['frozen'])
+        _changed |= update_dash_service_not_on_primary(svc.svc_id, peer.node_id, svc.svc_env, data['avail'])
+        _changed |= update_dash_svcmon_not_updated(svc.svc_id, peer.node_id)
+        _changed |= update_instance_resources(svc, peer, cname, cdata["resources"])
+        return _changed
+
+    def update_instance_resources(svc, peer, cname, resources):
+        _changed = set()
+        for rid, rdata in resources.items():
+            db.resmon.update_or_insert({
+                    "node_id": peer.node_id,
+                    "svc_id": svc.svc_id,
+                    "vmname": cname,
+                    "rid": rid,
+                },
+                node_id=peer.node_id,
+                svc_id=svc.svc_id,
+                vmname=cname,
+                rid=rid,
+                res_status=rdata["status"],
+                res_type=rdata["type"],
+                res_log=rdata["log"],
+                res_optional=rdata["optional"],
+                res_disable=rdata["disable"],
+                res_monitor=rdata["monitor"],
+                res_desc=rdata["label"],
+                updated=now,
+            )
+            _changed.add("resmon")
+            _changed |= resmon_log_update(peer.node_id, svc.svc_id, rid, rdata['status'], deferred=True)
+        return _changed
+
+    def update_service(svc, sdata):
+        result = db.services.update_or_insert({
+                "svc_id": svc.svc_id,
+            },
+            svc_id=svc.svc_id,
+            svc_availstatus=sdata["avail"],
+            svc_status=sdata["overall"],
+            svc_placement=sdata["placement"],
+            svc_frozen=sdata["frozen"],
+            svc_provisioned=sdata["provisioned"],
+            svc_status_updated=now,
+        )
+        return set(["services"])
+
+    for nodename, ndata in data["nodes"].items():
+        peer = get_cluster_node(nodename)
+
+    for svcname, sdata in data["services"].items():
+        peer_node_ids = [node.node_id for node in node_ids.values()]
+        for peer_node_id in peer_node_ids:
+            svc = node_svc(peer_node_id, svcname)
+            if svc:
+                break
+        if changes is not None and svcname not in changes:
+            print " ping service", svcname, svc.svc_id
+            ping_svc(svc, now)
+            continue
+        print " update service", svcname, svc.svc_id
+        changed |= svc_log_update(svc.svc_id, sdata["avail"], deferred=True)
+        changed |= update_service(svc, sdata)
+
+        for nodename, ndata in data["nodes"].items():
+            peer = get_cluster_node(nodename)
+            if peer is None:
+                print "  skip instance on unknwon peer", nodename
+                continue
+            if changes is not None and svcname+"@"+nodename not in changes:
+                print "  ping service", svcname, svc.svc_id, "instance on node", nodename
+                ping_instance(svc, peer, now)
+                continue
+            try:
+                idata = ndata["services"]["status"][svcname]
+            except KeyError:
+                continue
+
+            print "  update service", svcname, svc.svc_id, "instance on node", nodename
+            if len(idata.get("encap", {})) == 0:
+                changed |= update_instance(svc, peer, "", idata)
+            else:
+                for container_id, cdata in idata["encap"].items():
+                    changed |= update_container_node_fields(svc, peer, container_id, ndata)
+                    changed |= update_instance(svc, peer, container_id, idata, cdata)
+
+            changed |= update_instance_resources(svc, peer, "", idata["resources"])
+            changed |= svcmon_log_update(peer.node_id, svc.svc_id, idata, deferred=True)
+
+        changed |= update_dash_service_unavailable(svc.svc_id, svc.svc_env, sdata["avail"])
+        changed |= update_dash_service_placement(svc.svc_id, svc.svc_env, sdata["placement"])
+        update_dash_service_available_but_degraded(svc.svc_id, svc.svc_env, sdata["avail"], sdata["overall"])
+        # TODO
+        # provisioned alerts
+
+    print " tables changed:", ",".join(changed)
+    for table_name in changed:
+        table_modified(table_name)
+        ws_send(table_name+'_change')
 
 from gluon.contrib.redis_scheduler import RScheduler
 scheduler = RScheduler(db, migrate=False, redis_conn=rconn)

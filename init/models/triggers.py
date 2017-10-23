@@ -1,11 +1,11 @@
 def svc_log_update(svc_id, astatus, deferred=False):
+    change = False
+    changed = set()
     sql = """select id, svc_availstatus, svc_end, svc_begin from services_log_last
              where svc_id="%s"
           """ % svc_id
     rows = db.executesql(sql)
     end = datetime.datetime.now()
-    change = False
-    changed = False
     if len(rows) == 1:
         prev = rows[0]
         if prev[1] == astatus:
@@ -17,20 +17,86 @@ def svc_log_update(svc_id, astatus, deferred=False):
                                    svc_end=end,
                                    svc_availstatus=prev[1])
             change = True
-        changed = True
+        changed.add("services_log")
     if len(rows) == 0 or change:
         db.services_log_last.update_or_insert({"svc_id": svc_id},
                                               svc_id=svc_id,
                                               svc_begin=end,
                                               svc_end=end,
                                               svc_availstatus=astatus)
-        changed = True
-    if changed and not deferred:
+        changed.add("services_log")
+    if not deferred and "services_log" in changed:
         db.commit()
         table_modified("services_log")
     return changed
 
+def svcmon_log_update(node_id, svc_id, idata, deferred=False):
+    change = False
+    changed = set()
+    sql = """select * from svcmon_log_last
+             where node_id="%s" and svc_id="%s"
+          """ % (node_id, svc_id)
+    rows = db.executesql(sql, as_dict=True)
+    end = datetime.datetime.now()
+    if len(rows) == 1:
+        prev = rows[0]
+        if prev["mon_availstatus"] == idata["avail"] and \
+           prev["mon_overallstatus"] == idata["overall"] and \
+           prev["mon_syncstatus"] == idata["sync"] and \
+           prev["mon_ipstatus"] == idata["ip"] and \
+           prev["mon_fsstatus"] == idata["fs"] and \
+           prev["mon_diskstatus"] == idata["disk"] and \
+           prev["mon_sharestatus"] == idata["share"] and \
+           prev["mon_containerstatus"] == idata["container"] and \
+           prev["mon_appstatus"] == idata["app"]:
+            sql = """update svcmon_log_last set mon_end="%s" where id=%d""" % (end, prev["id"])
+            db.executesql(sql)
+        else:
+            db.svcmon_log.insert(
+                svc_id=svc_id,
+                node_id=node_id,
+                mon_availstatus=prev["mon_availstatus"],
+                mon_overallstatus=prev["mon_overallstatus"],
+                mon_syncstatus=prev["mon_syncstatus"],
+                mon_ipstatus=prev["mon_ipstatus"],
+                mon_fsstatus=prev["mon_fsstatus"],
+                mon_diskstatus=prev["mon_diskstatus"],
+                mon_sharestatus=prev["mon_sharestatus"],
+                mon_containerstatus=prev["mon_containerstatus"],
+                mon_appstatus=prev["mon_appstatus"],
+                mon_begin=prev["mon_begin"],
+                mon_end=end,
+            )
+            change = True
+        changed.add("svcmon_log")
+    if len(rows) == 0 or change:
+        db.svcmon_log_last.update_or_insert({
+                "svc_id": svc_id,
+                "node_id": node_id,
+            },
+            svc_id=svc_id,
+            node_id=node_id,
+            mon_availstatus=idata["avail"],
+            mon_overallstatus=idata["overall"],
+            mon_syncstatus=idata["sync"],
+            mon_ipstatus=idata["ip"],
+            mon_fsstatus=idata["fs"],
+            mon_diskstatus=idata["disk"],
+            mon_sharestatus=idata["share"],
+            mon_containerstatus=idata["container"],
+            mon_appstatus=idata["app"],
+            mon_begin=end,
+            mon_end=end,
+        )
+        changed.add("svcmon_log")
+    if not deferred and "svcmon_log" in changed:
+        db.commit()
+        table_modified("svcmon_log")
+    return changed
+
 def resmon_log_update(node_id, svc_id, rid, astatus, deferred=False):
+    change = False
+    changed = set()
     rid = rid.strip("'")
     astatus = astatus.strip("'")
     sql = """select id, res_status, res_end, res_begin from resmon_log_last
@@ -38,7 +104,6 @@ def resmon_log_update(node_id, svc_id, rid, astatus, deferred=False):
           """ % (node_id, svc_id, rid)
     rows = db.executesql(sql)
     end = datetime.datetime.now()
-    change = False
     if len(rows) == 1:
         prev = rows[0]
         if prev[1] == astatus:
@@ -52,7 +117,7 @@ def resmon_log_update(node_id, svc_id, rid, astatus, deferred=False):
                                  res_end=end,
                                  res_status=prev[1])
             change = True
-        changed = True
+        changed.add("resmon_log")
     if len(rows) == 0 or change:
         db.resmon_log_last.update_or_insert({"svc_id": svc_id,
                                              "node_id": node_id,
@@ -63,8 +128,8 @@ def resmon_log_update(node_id, svc_id, rid, astatus, deferred=False):
                                             res_begin=end,
                                             res_end=end,
                                             res_status=astatus)
-        changed = True
-    if changed and not deferred:
+        changed.add("resmon_log")
+    if not deferred and "resmon_log" in changed:
         db.commit()
         table_modified("resmon_log")
     return changed
@@ -76,8 +141,11 @@ def update_dash_svcmon_not_updated(svc_id, node_id):
                  node_id = "%(node_id)s" and
                  dash_type = "service status not updated"
           """%dict(svc_id=svc_id, node_id=node_id)
-    rows = db.executesql(sql)
+    ret = db.executesql(sql)
     db.commit()
+    if ret:
+        return set(["dashboard"])
+    return set()
     # dashboard_events() called from __svcmon_update
 
 def update_dash_service_available_but_degraded(svc_id, env, svc_availstatus, svc_status):
@@ -119,6 +187,7 @@ def update_dash_service_available_but_degraded(svc_id, env, svc_availstatus, svc
     # dashboard_events() called from __svcmon_update
 
 def update_dash_service_unavailable(svc_id, env, svc_availstatus):
+    changed = set()
     if env == 'PRD':
         sev = 4
     else:
@@ -129,7 +198,9 @@ def update_dash_service_unavailable(svc_id, env, svc_availstatus):
                    dash_type="service unavailable" and
                    svc_id="%s"
               """%svc_id
-        db.executesql(sql)
+        data = db.executesql(sql)
+        if data:
+            changed.add("dashboard")
         db.commit()
     else:
         sql = """select count(id) from svcmon_log_ack
@@ -147,6 +218,7 @@ def update_dash_service_unavailable(svc_id, env, svc_availstatus):
                   """%(svc_id)
             db.executesql(sql)
             db.commit()
+            changed.add("dashboard")
             return
 
         sql = """insert into dashboard
@@ -171,12 +243,15 @@ def update_dash_service_unavailable(svc_id, env, svc_availstatus):
                        status=svc_availstatus)
         db.executesql(sql)
         db.commit()
+        changed.add("dashboard")
     # dashboard_events() called from __svcmon_update
+    return changed
 
 def svc_status_update(svc_id):
     """ avail and overall status can be:
         up, down, stdby up, stdby down, warn, undef
     """
+    changed = set()
     sql = """select mon_overallstatus, mon_availstatus, mon_updated, mon_svctype from svcmon where svc_id="%s" """ % svc_id
     rows = db.executesql(sql, as_dict=True)
 
@@ -225,7 +300,7 @@ def svc_status_update(svc_id):
         ostatus = 'undef'
 
     try:
-        services_log_changed = svc_log_update(svc_id, astatus, deferred=True)
+        changed = svc_log_update(svc_id, astatus, deferred=True)
     except NameError:
         pass
     try:
@@ -244,7 +319,7 @@ def svc_status_update(svc_id):
     )
     db.executesql(sql)
     db.commit()
-    if services_log_changed:
+    if "services_log" in changed:
         table_modified("services_log")
 
     update_dash_service_unavailable(svc_id, svc_env, astatus)

@@ -667,7 +667,7 @@ function table_comp_rulesets_services(divid, options) {
 		'spankeys': ['svc_id'],
 		'keys': ['svc_id', 'ruleset_id', 'encap'],
 		'force_cols': ['svc_id', 'svcname', 'encap', 'ruleset_id', 'svc_status_updated'],
-		'columns': ['svc_id', 'svcname', 'encap', 'ruleset_id', 'ruleset_name', 'svc_status', 'svc_availstatus', 'svc_app', 'svc_env', 'svc_ha', 'svc_cluster_type', 'svc_flex_min_nodes', 'svc_flex_max_nodes', 'svc_flex_cpu_low_threshold', 'svc_flex_cpu_high_threshold', 'svc_drptype', 'svc_containertype', 'svc_autostart', 'svc_nodes', 'svc_drpnode', 'svc_drpnodes', 'svc_comment', 'svc_created', 'svc_updated', 'svc_status_updated'],
+		'columns': ['svc_id', 'svcname', 'encap', 'ruleset_id', 'ruleset_name', 'svc_status', 'svc_availstatus', 'svc_app', 'svc_env', 'svc_ha', 'svc_cluster_type', 'svc_flex_min_nodes', 'svc_flex_max_nodes', 'svc_flex_cpu_low_threshold', 'svc_flex_cpu_high_threshold', 'svc_drptype', 'svc_autostart', 'svc_nodes', 'svc_drpnode', 'svc_drpnodes', 'svc_comment', 'svc_created', 'svc_updated', 'svc_status_updated'],
 		'orderby': ["svcname", "encap", "ruleset_name"],
 		'default_columns': ["svcname", "encap", "ruleset_name"],
 		'colprops': {
@@ -703,7 +703,7 @@ function table_comp_modulesets_services(divid, options) {
 		'spankeys': ['svc_id'],
 		'keys': ['svc_id', 'modset_id', 'encap'],
 		'force_cols': ['svc_id', 'svcname', 'encap', 'modset_id', 'svc_status_updated'],
-		'columns': ['svc_id', 'svcname', 'encap', 'modset_id', 'modset_name', 'svc_status', 'svc_availstatus', 'svc_app', 'svc_env', 'svc_ha', 'svc_cluster_type', 'svc_flex_min_nodes', 'svc_flex_max_nodes', 'svc_flex_cpu_low_threshold', 'svc_flex_cpu_high_threshold', 'svc_drptype', 'svc_containertype', 'svc_autostart', 'svc_nodes', 'svc_drpnode', 'svc_drpnodes', 'svc_comment', 'svc_created', 'svc_updated', 'svc_status_updated'],
+		'columns': ['svc_id', 'svcname', 'encap', 'modset_id', 'modset_name', 'svc_status', 'svc_availstatus', 'svc_app', 'svc_env', 'svc_ha', 'svc_cluster_type', 'svc_flex_min_nodes', 'svc_flex_max_nodes', 'svc_flex_cpu_low_threshold', 'svc_flex_cpu_high_threshold', 'svc_drptype', 'svc_autostart', 'svc_nodes', 'svc_drpnode', 'svc_drpnodes', 'svc_comment', 'svc_created', 'svc_updated', 'svc_status_updated'],
 		'orderby': ["svcname", "encap", "modset_name"],
 		'default_columns': ["svcname", "encap", "modset_name"],
 		'wsable': false,
@@ -2206,7 +2206,7 @@ function table_service_instances(divid, options) {
 		'keys': ["node_id", "svc_id", "mon_vmname"],
 		'spankeys': ["svc_id"],
 		'span': [].concat(['svc_id', 'svcname'], objcols.service),
-		'columns': ['id', 'svc_id', 'svcname', 'err', 'svc_ha', 'svc_availstatus', 'svc_status', 'svc_app', 'app_domain', 'app_team_ops', 'svc_drptype', 'svc_containertype', 'svc_flex_min_nodes', 'svc_flex_max_nodes', 'svc_flex_cpu_low_threshold', 'svc_flex_cpu_high_threshold', 'svc_autostart', 'svc_nodes', 'svc_drpnode', 'svc_drpnodes', 'svc_comment', 'svc_created', 'svc_updated', 'svc_env', 'svc_cluster_type', 'mon_vmtype', 'mon_vmname', 'mon_vcpus', 'mon_vmem', 'mon_guestos', 'asset_env', 'node_env', 'node_id', 'nodename', 'mon_availstatus', 'mon_overallstatus', 'mon_frozen', 'mon_containerstatus', 'mon_ipstatus', 'mon_fsstatus', 'mon_diskstatus', 'mon_sharestatus', 'mon_syncstatus', 'mon_appstatus', 'mon_hbstatus', 'mon_updated', 'version', 'listener_port', 'collector', 'connect_to', 'team_responsible', 'team_integ', 'team_support', 'serial', 'model', 'role', 'warranty_end', 'status', 'type', 'node_updated', 'power_supply_nb', 'power_cabinet1', 'power_cabinet2', 'power_protect', 'power_protect_breaker', 'power_breaker1', 'power_breaker2', 'tz', 'hv', 'hvpool', 'hvvdc', 'loc_country', 'loc_zip', 'loc_city', 'loc_addr', 'loc_building', 'loc_floor', 'loc_room', 'loc_rack', 'os_name', 'os_release', 'os_vendor', 'os_arch', 'os_kernel', 'cpu_dies', 'cpu_cores', 'cpu_model', 'cpu_freq', 'mem_banks', 'mem_slots', 'mem_bytes'],
+		'columns': ['id', 'svc_id', 'svcname', 'err', 'svc_ha', 'svc_availstatus', 'svc_status', 'svc_app', 'app_domain', 'app_team_ops', 'svc_drptype', 'svc_flex_min_nodes', 'svc_flex_max_nodes', 'svc_flex_cpu_low_threshold', 'svc_flex_cpu_high_threshold', 'svc_autostart', 'svc_nodes', 'svc_drpnode', 'svc_drpnodes', 'svc_comment', 'svc_created', 'svc_updated', 'svc_env', 'svc_cluster_type', 'mon_vmtype', 'mon_vmname', 'mon_vcpus', 'mon_vmem', 'mon_guestos', 'asset_env', 'node_env', 'node_id', 'nodename', 'mon_availstatus', 'mon_overallstatus', 'mon_frozen', 'mon_containerstatus', 'mon_ipstatus', 'mon_fsstatus', 'mon_diskstatus', 'mon_sharestatus', 'mon_syncstatus', 'mon_appstatus', 'mon_hbstatus', 'mon_updated', 'version', 'listener_port', 'collector', 'connect_to', 'team_responsible', 'team_integ', 'team_support', 'serial', 'model', 'role', 'warranty_end', 'status', 'type', 'node_updated', 'power_supply_nb', 'power_cabinet1', 'power_cabinet2', 'power_protect', 'power_protect_breaker', 'power_breaker1', 'power_breaker2', 'tz', 'hv', 'hvpool', 'hvvdc', 'loc_country', 'loc_zip', 'loc_city', 'loc_addr', 'loc_building', 'loc_floor', 'loc_room', 'loc_rack', 'os_name', 'os_release', 'os_vendor', 'os_arch', 'os_kernel', 'cpu_dies', 'cpu_cores', 'cpu_model', 'cpu_freq', 'mem_banks', 'mem_slots', 'mem_bytes'],
 		'orderby': ["svcname", "nodename"],
 		'default_columns': [
 			"err",
@@ -2221,7 +2221,6 @@ function table_service_instances(divid, options) {
 			"svc_app",
 			"svc_availstatus",
 			"svc_cluster_type",
-			"svc_containertype",
 			"svc_ha",
 			"svc_status",
 			"svc_env"
@@ -2316,7 +2315,7 @@ function table_services(divid, options) {
 		'orderby': ['svcname'],
 		'force_cols': ['svc_id', 'svcname', 'svc_status_updated'],
 		'columns': [].concat(['svc_id', 'svcname'], objcols.service, ["updated"]),
-		'default_columns': ["svc_status", "svcname", "svc_cluster_type", "svc_availstatus", "svc_status_updated", "svc_ha", "updated"],
+		'default_columns': ["svcname", "svc_status", "svc_placement", "svc_frozen", "svc_provisioned", "svc_cluster_type", "svc_availstatus", "svc_status_updated", "svc_ha", "updated"],
 		'colprops': {
 			"updated": colprops.svc_updated
 		},

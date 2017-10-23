@@ -12,6 +12,22 @@ import re
 import os
 import logging
 
+R_DAEMON_STATUS_HASH = "osvc:h:daemon_status"
+R_DAEMON_STATUS = "osvc:q:daemon_status"
+R_DAEMON_PING = "osvc:q:daemon_ping"
+R_PACKAGES = "osvc:q:packages"
+R_PATCHES = "osvc:q:patches"
+R_SVCMON_UPDATE = "osvc:q:svcmon_update"
+R_SYSREPORT = "osvc:q:sysreport"
+R_ASSET = "osvc:q:asset"
+R_SVCCONF = "osvc:q:svcconf"
+R_GENERIC = "osvc:q:generic"
+R_CHECKS = "osvc:q:checks"
+R_UPDATE_DASH_NETDEV_ERRORS = "osvc:q:update_dash_netdev_errors"
+R_SVCMON = "osvc:q:svcmon"
+R_SVCACTIONS = "osvc:q:svcactions"
+R_STORAGE = "osvc:q:storage"
+
 def user():
     """
     exposes:
@@ -48,7 +64,7 @@ def begin_action(vars, vals, auth):
 
 @auth_uuid
 def rpc_begin_action(vars, vals, auth):
-    rconn.rpush("osvc:q:svcactions", json.dumps(["_begin_action", vars, vals, auth]))
+    rconn.rpush(R_SVCACTIONS, json.dumps(["_begin_action", vars, vals, auth]))
 
 @service.xmlrpc
 def res_action(vars, vals, auth):
@@ -67,7 +83,7 @@ def end_action(vars, vals, auth):
 
 @auth_uuid
 def rpc_end_action(vars, vals, auth):
-    rconn.rpush("osvc:q:svcactions", json.dumps(["_end_action", vars, vals, auth]))
+    rconn.rpush(R_SVCACTIONS, json.dumps(["_end_action", vars, vals, auth]))
 
 @service.xmlrpc
 def update_appinfo(vars, vals, auth):
@@ -146,7 +162,7 @@ def update_service(vars, vals, auth):
 
 @auth_uuid
 def rpc_update_service(vars, vals, auth):
-    rconn.rpush("osvc:q:svcconf", json.dumps([vars, vals, auth]))
+    rconn.rpush(R_SVCCONF, json.dumps([vars, vals, auth]))
 
 @service.xmlrpc
 def push_checks(vars, vals, auth):
@@ -154,7 +170,7 @@ def push_checks(vars, vals, auth):
 
 @auth_uuid
 def rpc_push_checks(vars, vals, auth):
-    rconn.rpush("osvc:q:checks", json.dumps([vars, vals, auth]))
+    rconn.rpush(R_CHECKS, json.dumps([vars, vals, auth]))
 
 @service.xmlrpc
 def insert_generic(data, auth):
@@ -162,7 +178,7 @@ def insert_generic(data, auth):
 
 @auth_uuid
 def rpc_insert_generic(data, auth):
-    rconn.rpush("osvc:q:generic", json.dumps([data, auth]))
+    rconn.rpush(R_GENERIC, json.dumps([data, auth]))
 
 @service.xmlrpc
 def update_asset(vars, vals, auth):
@@ -170,7 +186,7 @@ def update_asset(vars, vals, auth):
 
 @auth_uuid
 def rpc_update_asset(vars, vals, auth):
-    rconn.rpush("osvc:q:asset", json.dumps([vars, vals, auth]))
+    rconn.rpush(R_ASSET, json.dumps([vars, vals, auth]))
 
 @service.xmlrpc
 def update_asset_sync(vars, vals, auth):
@@ -204,7 +220,7 @@ def svcmon_update_combo(g_vars, g_vals, r_vars, r_vals, auth):
 
 @auth_uuid
 def rpc_svcmon_update_combo(g_vars, g_vals, r_vars, r_vals, auth):
-    rconn.rpush("osvc:q:svcmon", json.dumps([g_vars, g_vals, r_vars, r_vals, auth]))
+    rconn.rpush(R_SVCMON, json.dumps([g_vars, g_vals, r_vars, r_vals, auth]))
 
 @service.xmlrpc
 def register_disks(vars, vals, auth):
@@ -485,7 +501,7 @@ def rpc_insert_stats(data, auth):
             generic_insert('stats_'+stat, vars, vals)
         except Exception as e:
             raise Exception("%s: %s" % (stat, str(e)))
-    rconn.rpush("osvc:q:update_dash_netdev_errors", json.dumps([node_id]))
+    rconn.rpush(R_UPDATE_DASH_NETDEV_ERRORS, json.dumps([node_id]))
 
 @service.xmlrpc
 def insert_pkg(vars, vals, auth):
@@ -493,7 +509,7 @@ def insert_pkg(vars, vals, auth):
 
 @auth_uuid
 def rpc_insert_pkg(vars, vals, auth):
-    rconn.rpush("osvc:q:packages", json.dumps([vars, vals, auth]))
+    rconn.rpush(R_PACKAGES, json.dumps([vars, vals, auth]))
 
 @service.xmlrpc
 def insert_patch(vars, vals, auth):
@@ -501,7 +517,7 @@ def insert_patch(vars, vals, auth):
 
 @auth_uuid
 def rpc_insert_patch(vars, vals, auth):
-    rconn.rpush("osvc:q:patches", json.dumps([vars, vals, auth]))
+    rconn.rpush(R_PATCHES, json.dumps([vars, vals, auth]))
 
 @service.xmlrpc
 def update_hds(symid, vars, vals, auth):
@@ -669,7 +685,7 @@ def update_array_xml(arrayid, vars, vals, auth, subdir, fn):
 
     #fn(arrayid)
     node_id = auth_to_node_id(auth)
-    rconn.rpush("osvc:q:storage", json.dumps([fn.__name__, arrayid, node_id]))
+    rconn.rpush(R_STORAGE, json.dumps([fn.__name__, arrayid, node_id]))
 
     # stor_array_proxy
     insert_array_proxy(node_id, arrayid)
@@ -703,7 +719,7 @@ def rpc_send_sysreport(fname, binary, deleted, auth):
     need_commit |= send_sysreport_delete(deleted, sysreport_d, node_id)
     need_commit |= send_sysreport_archive(fname, binary, sysreport_d, node_id)
 
-    rconn.rpush("osvc:q:sysreport", json.dumps([need_commit, deleted, node_id]))
+    rconn.rpush(R_SYSREPORT, json.dumps([need_commit, deleted, node_id]))
 
 def insert_gcediskss():
     return insert_gcedisks()
@@ -819,7 +835,7 @@ def svcmon_update(vars, vals, auth):
 
 @auth_uuid
 def rpc_svcmon_update(vars, vals, auth):
-    rconn.rpush("osvc:q:svcmon_update", json.dumps([vars, vals, auth]))
+    rconn.rpush(R_SVCMON_UPDATE, json.dumps([vars, vals, auth]))
 
 
 #
@@ -2065,6 +2081,42 @@ def rpc_sysreport_lstree(auth):
     tree_data = sysreport.sysreport().lstree_data("HEAD", auth[1])
     return map(lambda d: d['fpath'], tree_data)
 
+##############################################################################
+#
+# OpenSVC Daemon feeders
+#
+##############################################################################
+@service.xmlrpc
+def daemon_ping(auth):
+    return rpc_daemon_ping(auth)
+
+@auth_uuid
+def rpc_daemon_ping(auth):
+    node_id = auth_to_node_id(auth)
+    elem = json.dumps([node_id])
+    rconn.rpush(R_DAEMON_PING, elem)
+
+@service.xmlrpc
+def push_daemon_status(data, changes, auth):
+    return rpc_push_daemon_status(data, changes, auth)
+
+@auth_uuid
+def rpc_push_daemon_status(data, changes, auth):
+    """
+    Store the json daemon status in a hash indexed by uuid, and add the
+    uuid to the set of keys pending merge into db.
+    """
+    node_id = auth_to_node_id(auth)
+    rconn.hset(R_DAEMON_STATUS_HASH, node_id, data)
+    changes = json.loads(changes)
+    elem = json.dumps([node_id, changes])
+    rconn.rpush(R_DAEMON_STATUS, elem)
+
+##############################################################################
+#
+# Test functions
+#
+##############################################################################
 def test_task_dash_hourly():
     task_dash_hourly()
 
@@ -2097,28 +2149,43 @@ def _task_rq_storage(*args):
     globals()[fn](*args)
 
 def task_rq_storage():
-    task_rq("osvc:q:storage", lambda q: _task_rq_storage)
+    task_rq(R_STORAGE, lambda q: _task_rq_storage)
 
 def _task_rq_generic(q):
-    if q == "osvc:q:svcconf":
+    if q == R_DAEMON_STATUS:
+        return merge_daemon_status
+    elif q == R_DAEMON_PING:
+        return merge_daemon_ping
+    elif q == R_SVCCONF:
         return _update_service
-    elif q == "osvc:q:checks":
+    elif q == R_CHECKS:
         return _push_checks
-    elif q == "osvc:q:generic":
+    elif q == R_GENERIC:
         return _insert_generic
-    elif q == "osvc:q:asset":
+    elif q == R_ASSET:
         return _update_asset
-    elif q == "osvc:q:packages":
+    elif q == R_PACKAGES:
         return _insert_pkg
-    elif q == "osvc:q:patches":
+    elif q == R_PATCHES:
         return _insert_patch
-    elif q == "osvc:q:sysreport":
+    elif q == R_SYSREPORT:
         return task_send_sysreport
-    elif q == "osvc:q:svcmon_update":
+    elif q == R_SVCMON_UPDATE:
         return _svcmon_update
 
 def task_rq_generic():
-    task_rq(["osvc:q:svcmon_update", "osvc:q:sysreport", "osvc:q:patches", "osvc:q:packages", "osvc:q:asset", "osvc:q:generic", "osvc:q:checks", "osvc:q:svcconf"], lambda q: _task_rq_generic(q))
+    task_rq([
+        R_DAEMON_PING,
+        R_DAEMON_STATUS,
+        R_SVCMON_UPDATE,
+        R_SYSREPORT,
+        R_PATCHES,
+        R_PACKAGES,
+        R_ASSET,
+        R_GENERIC,
+        R_CHECKS,
+        R_SVCCONF
+    ], lambda q: _task_rq_generic(q))
 
 def task_rq_dashboard():
     task_rq("osvc:q:update_dash_netdev_errors", lambda q: update_dash_netdev_errors)
@@ -2127,6 +2194,6 @@ def task_rq_svcactions():
     task_rq("osvc:q:svcactions", lambda q: _action_wrapper)
 
 def task_rq_svcmon():
-    task_rq("osvc:q:svcmon", lambda q: _svcmon_update_combo)
+    task_rq(R_SVCMON, lambda q: _svcmon_update_combo)
 
 

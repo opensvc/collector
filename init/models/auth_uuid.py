@@ -20,7 +20,14 @@ def node_svc(node_id, svcname):
     q &= db.services.svc_app == db.apps.app
     q &= db.apps.id == db.apps_responsibles.app_id
     q &= db.apps_responsibles.group_id.belongs(node_responsibles(node_id))
-    rows = db(q).select(db.services.svc_id, db.services.svc_app, groupby=db.services.svc_id)
+    rows = db(q).select(
+        db.services.svc_id,
+        db.services.svc_app,
+        db.services.svc_env,
+        db.services.svc_availstatus,
+        db.services.svc_status,
+        groupby=db.services.svc_id
+    )
     if len(rows) > 1:
         raise Exception("multiple services found matching the service name '%(svcname)s' in the node '%(node_id)s' responsibility zone: %(svc_ids)s" % dict(
           svcname=svcname,
@@ -39,7 +46,13 @@ def node_svc(node_id, svcname):
     q = db.svcmon.node_id == node_id
     q &= db.svcmon.svc_id == db.services.svc_id
     q &= db.services.svcname == svcname
-    rows = db(q).select(db.services.svc_id, db.services.svc_app)
+    rows = db(q).select(
+        db.services.svc_id,
+        db.services.svc_app,
+        db.services.svc_env,
+        db.services.svc_availstatus,
+        db.services.svc_status,
+    )
 
     if len(rows) >= 1:
         return rows.first()
@@ -62,6 +75,9 @@ def create_svc(node_id, svcname):
     data = {
       "svcname": svcname,
       "svc_app": node.app,
+      "svc_env": node.env,
+      "svc_availstatus": "undef",
+      "svc_status": "undef",
       "svc_id": get_new_svc_id(),
       "updated": datetime.datetime.now()
     }
