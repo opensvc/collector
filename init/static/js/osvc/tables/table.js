@@ -553,6 +553,10 @@ function table_init(opts) {
 		$(window).scroll(function(){
 			t.sticky_relocate()
 		})
+		$(window).resize(function(){
+			t.e_sticky.empty()
+			t.sticky_relocate()
+		})
 		t.sticky_relocate()
 	}
 
@@ -3060,6 +3064,8 @@ function table_init(opts) {
 		})
 		closer.on("click", function(){
 			am.remove()
+			t.e_sticky.empty()
+			t.sticky_relocate()
 		})
 		am.append(closer)
 		t.div.children(".table_scroll_zone").prepend(am)

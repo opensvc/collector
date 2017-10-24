@@ -184,6 +184,11 @@ function osvc_popup_hide(span)
 		})
         } else {
 		target.hide()
+		if (target.hasClass("action_menu_popup")) {
+			var table_id = target.parents(".tableo").first().attr("id")
+			osvc.tables[table_id].e_sticky.empty()
+			osvc.tables[table_id].sticky_relocate()
+		}
         }
 	if (target.hasClass("empty_on_pop")) {
 		target.empty()
