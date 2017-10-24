@@ -45,6 +45,9 @@ def task_purge_static():
     for name in glob.glob(os.path.join(staticdir, 'stats_*_[0-9]*.svg')):
         files.append(name)
         os.unlink(name)
+    for name in glob.glob(os.path.join(staticdir, '*-*-*-*.pdf')):
+        files.append(name)
+        os.unlink(name)
     return files
 
 def task_purge_feed():
