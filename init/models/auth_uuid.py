@@ -75,7 +75,7 @@ def create_svc(node_id, svcname):
     data = {
       "svcname": svcname,
       "svc_app": node.app,
-      "svc_env": node.env,
+      "svc_env": node.node_env,
       "svc_availstatus": "undef",
       "svc_status": "undef",
       "svc_id": get_new_svc_id(),
