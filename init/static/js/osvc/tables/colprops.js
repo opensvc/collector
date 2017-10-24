@@ -77,7 +77,7 @@ objcols = {
 		'svc_app',
 		'svc_env',
 		'svc_ha',
-		'svc_cluster_type',
+		'svc_topology',
 		'svc_flex_min_nodes',
 		'svc_flex_max_nodes',
 		'svc_flex_cpu_low_threshold',
@@ -1915,9 +1915,9 @@ colprops = {
 		"img": "svc",
 		"title": "Service availability status"
 	},
-	"svc_cluster_type": {
+	"svc_topology": {
 		"img": "svc",
-		"title": "Cluster type"
+		"title": "Topology"
 	},
 	"svc_comment": {
 		"img": "svc",

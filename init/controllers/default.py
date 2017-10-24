@@ -105,7 +105,7 @@ class table_svcmon(HtmlTable):
             'svc_created',
             'svc_updated',
             'svc_env',
-            'svc_cluster_type',
+            'svc_topology',
             'mon_vmtype',
             'mon_vmname',
             'mon_vcpus',

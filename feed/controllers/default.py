@@ -130,6 +130,8 @@ def rpc_update_resinfo(vars, vals, auth):
         elif v == "app_updated":
             updated_idx = i
             vars[i] = "updated"
+        elif v == "cluster_type":
+            vars[i] = "topology"
     if not updated_idx:
         vars.append("updated")
         updated_idx = len(vars) - 1
@@ -138,7 +140,7 @@ def rpc_update_resinfo(vars, vals, auth):
     for a,b in zip(vars, vals[0]):
         h[a] = b
     generic_insert('resinfo', vars, vals)
-    if "cluster_type" in h and "flex" in h["cluster_type"]:
+    if "topology" in h and "flex" == h["topology"]:
         db.executesql("""delete from resinfo where svc_id='%s' and node_id="%s" and updated<'%s' """%(h["svc_id"], h["node_id"], str(now)))
     else:
         db.executesql("""delete from resinfo where svc_id='%s' and updated<'%s' """%(h["svc_id"], str(now)))

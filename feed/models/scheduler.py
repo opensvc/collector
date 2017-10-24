@@ -278,6 +278,10 @@ def _update_service(vars, vals, auth):
         # agent compat
         h["svc_config"] = h["svc_envfile"]
         del(h["svc_envfile"])
+    if "svc_cluster_type" in h:
+        # agent compat
+        h["svc_topology"] = h["svc_cluster_type"]
+        del(h["svc_cluster_type"])
     svcname = h["svcname"].strip("'")
     svc_id = node_svc_id(node_id, svcname)
     h["svc_id"] = svc_id
@@ -2159,7 +2163,7 @@ def update_save_checks():
                ) t
                join services s on
                  t.svc_id = s.svc_id and
-                 s.svc_cluster_type="failover"
+                 s.svc_topology="failover"
                where t.n>1
              ) u on
                checks_live.svc_id=u.svc_id and
@@ -2189,7 +2193,7 @@ def update_save_checks():
                ) t
                join services s on
                  t.svc_id = s.svc_id and
-                 s.svc_cluster_type="failover"
+                 s.svc_topology="failover"
              )
           """%dict(now=now2)
 
@@ -2962,9 +2966,9 @@ def __svcmon_update(vars, vals, auth):
     print datetime.datetime.now() - _now, "update_dash_svcmon_not_updated"
     _now = datetime.datetime.now()
 
-    sql = """select svc_cluster_type from services where svc_id="%s" """ % h['svc_id']
+    sql = """select svc_topology from services where svc_id="%s" """ % h['svc_id']
     rows = db.executesql(sql, as_dict=True)
-    if len(rows) > 0 and rows[0]['svc_cluster_type'] == 'flex':
+    if len(rows) > 0 and rows[0]['svc_topology'] == 'flex':
         update_dash_flex_instances_started(h['svc_id'])
         update_dash_flex_cpu(h['svc_id'])
     else:
@@ -4387,7 +4391,7 @@ def update_dash_service_not_on_primary(svc_id, node_id, env, availstatus):
                 s.svc_availstatus as svc_availstatus
               from nodes n, services s, svcmon m where
                 s.svc_id="%(svc_id)s" and
-                s.svc_cluster_type="failover" and
+                s.svc_topology="failover" and
                 s.svc_id=m.svc_id and
                 m.node_id=n.node_id and
                 n.node_id="%(node_id)s"

@@ -819,7 +819,7 @@
 		"status": "état",
 		"overall_status": "état général",
 		"avail_status": "état de disponibilité",
-		"cluster_type": "type de cluster"
+		"topology": "topologie"
 	},
 	"topology": {
 		"redraw": "Redessiner",
@@ -1715,7 +1715,7 @@
 		"Publications": "Publications",
 		"Container type": "Type de container",
 		"Disk Vendor": "Frabriquant du disque",
-		"Cluster type": "Type de cluster",
+		"Topology": "Topologie",
 		"Array Model": "Modèle de baie",
 		"Primary node": "Noeud primaire",
 		"Share status": "Etat des partages",

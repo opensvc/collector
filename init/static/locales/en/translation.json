@@ -717,7 +717,7 @@
 		"status": "status",
 		"overall_status": "overall status",
 		"avail_status": "availability status",
-		"cluster_type": "cluster type"
+		"topology": "topology"
 	},
 	"network_properties": {
 		"ip": "Ip",
@@ -1717,7 +1717,7 @@
 		"Publications": "Publications",
 		"Container type": "Container type",
 		"Disk Vendor": "Disk Vendor",
-		"Cluster type": "Cluster type",
+		"Topology": "Topology",
 		"Array Model": "Array Model",
 		"Primary node": "Primary node",
 		"Share status": "Share status",

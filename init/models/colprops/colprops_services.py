@@ -4,7 +4,7 @@ services_cols = [
     'svc_app',
     'svc_env',
     'svc_ha',
-    'svc_cluster_type',
+    'svc_topology',
     'svc_frozen',
     'svc_placement',
     'svc_provisioned',
@@ -124,8 +124,8 @@ services_colprops = {
              table='services',
              field='svc_status_updated',
             ),
-    'svc_cluster_type': HtmlTableColumn(
-             field='svc_cluster_type',
+    'svc_topology': HtmlTableColumn(
+             field='svc_topology',
              table = 'services',
             ),
     'svc_flex_min_nodes': HtmlTableColumn(
