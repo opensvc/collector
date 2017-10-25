@@ -3209,3 +3209,11 @@ span.spinner_text {
 /* end small screen */
 
 
+@media print {
+	.header,.footer,.reports_folder,.reports_selector {
+		display: none;
+	}
+	.reports_section {
+		page-break-inside: avoid;
+	}
+}
