@@ -4668,7 +4668,7 @@ def merge_daemon_status(node_id, changes):
             return node_ids[nodename]
         except KeyError:
             q = app_q & (db.nodes.nodename == nodename)
-            _node = db(q).select(db.nodes.node_id).first()
+            _node = db(q).select().first()
             if _node is None:
                 node_ids[nodename] = None
             else:
@@ -4713,14 +4713,14 @@ def merge_daemon_status(node_id, changes):
             ctype = idata["resources"][container_id]["type"].split(".")[-1]
             data = {}
             for key in ("avail", "overall", "ip", "disk", "fs", "share", "container", "app", "sync"):
-                data[key] = STATUS_STR[merge_status(idata[key], cdata[key])]
+                data[key] = STATUS_STR[merge_status(idata.get(key, "n/a"), cdata.get(key, "n/a"))]
             #
             # 0: global thawed + encap thawed
             # 1: global frozen + encap thawed
             # 2: global thawed + encap frozen
             # 3: global frozen + encap frozen
             #
-            if cdata["frozen"]:
+            if cdata.get("frozen"):
                 data["frozen"] = int(idata["frozen"]) + 2
             else:
                 data["frozen"] = int(idata["frozen"])
