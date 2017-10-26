@@ -4501,6 +4501,19 @@ STDBY_DOWN = 7
 STDBY_UP_WITH_UP = 8
 STDBY_UP_WITH_DOWN = 9
 
+STATUS_VALUE = {
+    'up': UP,
+    'down': DOWN,
+    'warn': WARN,
+    'n/a': NA,
+    'na': NA,
+    'undef': UNDEF,
+    'stdby up': STDBY_UP,
+    'stdby down': STDBY_DOWN,
+}
+
+STATUS_STR = {v: k for k, v in STATUS_VALUE.items()}
+
 def encode_pair(status1, status2):
     """
     Return a hashable code unique for the set([status1, status2]).
@@ -4547,7 +4560,7 @@ MERGE_RULES = {
 }
 
 def merge_status(s1, s2):
-    return MERGE_RULES[encode_pairs(s1, s2)]
+    return MERGE_RULES[encode_pair(STATUS_VALUE[s1], STATUS_VALUE[s2])]
 
 def ping_instance(svc, peer, now):
     changed = set()
@@ -4655,17 +4668,17 @@ def merge_daemon_status(node_id, changes):
             return node_ids[nodename]
         except KeyError:
             q = app_q & (db.nodes.nodename == nodename)
-            _node = db(q).select(db.nodes.node_id).first()
+            _node = db(q).select().first()
             if _node is None:
                 node_ids[nodename] = None
             else:
                 node_ids[nodename] = _node
             return node_ids[nodename]
 
-    def update_container_node_fields(svc, peer, container_id, rdata):
-        if rdata["resources"][container_id]["status"] != "up":
-            return
-        cname = rdata["resources"][container_id]["hostname"]
+    def update_container_node_fields(svc, peer, container_id, idata):
+        if idata["resources"][container_id]["status"] != "up":
+            return set()
+        cname = idata["encap"][container_id]["hostname"]
         q = db.nodes.nodename == cname
         q &= (db.nodes.app == peer.app) | (db.nodes.app == svc.svc_app)
         if db(q).count() == 0:
@@ -4687,7 +4700,7 @@ def merge_daemon_status(node_id, changes):
         )
         return set(["nodes"])
 
-    def update_instance(svc, peer, container_id, idata, cdata=None):
+    def update_instance(svc, peer, container_id, idata):
         _changed = set()
         if container_id == "":
             cdata = {"resources": {}}
@@ -4695,19 +4708,19 @@ def merge_daemon_status(node_id, changes):
             ctype = ""
             data = idata
         else:
-            cdata = idata["resources"][container_id]
+            cdata = idata["encap"][container_id]
             cname = cdata["hostname"]
-            ctype = cdata["type"].split(".")[-1]
+            ctype = idata["resources"][container_id]["type"].split(".")[-1]
             data = {}
             for key in ("avail", "overall", "ip", "disk", "fs", "share", "container", "app", "sync"):
-                data[key] = merge_status(idata[key], cdata[key])
+                data[key] = STATUS_STR[merge_status(idata.get(key, "n/a"), cdata.get(key, "n/a"))]
             #
             # 0: global thawed + encap thawed
             # 1: global frozen + encap thawed
             # 2: global thawed + encap frozen
             # 3: global frozen + encap frozen
             #
-            if cdata["frozen"]:
+            if cdata.get("frozen"):
                 data["frozen"] = int(idata["frozen"]) + 2
             else:
                 data["frozen"] = int(idata["frozen"])
@@ -4812,12 +4825,13 @@ def merge_daemon_status(node_id, changes):
                 continue
 
             print "  update service", svcname, svc.svc_id, "instance on node", nodename
-            if len(idata.get("encap", {})) == 0:
+            encap = idata.get("encap")
+            if isinstance(encap, bool) or encap is None or len(encap) == 0:
                 changed |= update_instance(svc, peer, "", idata)
             else:
-                for container_id, cdata in idata["encap"].items():
-                    changed |= update_container_node_fields(svc, peer, container_id, ndata)
-                    changed |= update_instance(svc, peer, container_id, idata, cdata)
+                for container_id, cdata in encap.items():
+                    changed |= update_container_node_fields(svc, peer, container_id, idata)
+                    changed |= update_instance(svc, peer, container_id, idata)
 
             changed |= update_instance_resources(svc, peer, "", idata["resources"])
             changed |= svcmon_log_update(peer.node_id, svc.svc_id, idata, deferred=True)
