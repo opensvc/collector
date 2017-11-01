@@ -4498,15 +4498,12 @@ NA = 3
 UNDEF = 5
 STDBY_UP = 6
 STDBY_DOWN = 7
-STDBY_UP_WITH_UP = 8
-STDBY_UP_WITH_DOWN = 9
 
 STATUS_VALUE = {
     'up': UP,
     'down': DOWN,
     'warn': WARN,
     'n/a': NA,
-    'na': NA,
     'undef': UNDEF,
     'stdby up': STDBY_UP,
     'stdby down': STDBY_DOWN,
@@ -4525,38 +4522,23 @@ MERGE_RULES = {
     encode_pair(UP, DOWN): WARN,
     encode_pair(UP, WARN): WARN,
     encode_pair(UP, NA): UP,
-    encode_pair(UP, STDBY_UP): STDBY_UP_WITH_UP,
+    encode_pair(UP, STDBY_UP): UP,
     encode_pair(UP, STDBY_DOWN): WARN,
-    encode_pair(UP, STDBY_UP_WITH_UP): STDBY_UP_WITH_UP,
-    encode_pair(UP, STDBY_UP_WITH_DOWN): WARN,
     encode_pair(DOWN, DOWN): DOWN,
     encode_pair(DOWN, WARN): WARN,
     encode_pair(DOWN, NA): DOWN,
-    encode_pair(DOWN, STDBY_UP): STDBY_UP_WITH_DOWN,
+    encode_pair(DOWN, STDBY_UP): STDBY_UP,
     encode_pair(DOWN, STDBY_DOWN): STDBY_DOWN,
-    encode_pair(DOWN, STDBY_UP_WITH_UP): WARN,
-    encode_pair(DOWN, STDBY_UP_WITH_DOWN): STDBY_UP_WITH_DOWN,
     encode_pair(WARN, WARN): WARN,
     encode_pair(WARN, NA): WARN,
     encode_pair(WARN, STDBY_UP): WARN,
     encode_pair(WARN, STDBY_DOWN): WARN,
-    encode_pair(WARN, STDBY_UP_WITH_UP): WARN,
-    encode_pair(WARN, STDBY_UP_WITH_DOWN): WARN,
     encode_pair(NA, NA): NA,
     encode_pair(NA, STDBY_UP): STDBY_UP,
     encode_pair(NA, STDBY_DOWN): STDBY_DOWN,
-    encode_pair(NA, STDBY_UP_WITH_UP): STDBY_UP_WITH_UP,
-    encode_pair(NA, STDBY_UP_WITH_DOWN): STDBY_UP_WITH_DOWN,
     encode_pair(STDBY_UP, STDBY_UP): STDBY_UP,
     encode_pair(STDBY_UP, STDBY_DOWN): WARN,
-    encode_pair(STDBY_UP, STDBY_UP_WITH_UP): STDBY_UP_WITH_UP,
-    encode_pair(STDBY_UP, STDBY_UP_WITH_DOWN): STDBY_UP_WITH_DOWN,
     encode_pair(STDBY_DOWN, STDBY_DOWN): STDBY_DOWN,
-    encode_pair(STDBY_DOWN, STDBY_UP_WITH_UP): WARN,
-    encode_pair(STDBY_DOWN, STDBY_UP_WITH_DOWN): WARN,
-    encode_pair(STDBY_UP_WITH_UP, STDBY_UP_WITH_DOWN): WARN,
-    encode_pair(STDBY_UP_WITH_UP, STDBY_UP_WITH_UP): STDBY_UP_WITH_UP,
-    encode_pair(STDBY_UP_WITH_DOWN, STDBY_UP_WITH_DOWN): STDBY_UP_WITH_DOWN,
 }
 
 def merge_status(s1, s2):
