@@ -273,7 +273,9 @@
 		"error": "La requête au collecteur a renvoyé une erreur.",
 		"link": "Lien",
 		"link_text": "Vous pouvez partager ce lien avec des collaborateurs afin qu'ils consultent les informations spécifiques que vous avez séléctionnées, si tant est qu'ils bénéficient des mêmes privilèges que vous.",
-		"report_snippet": "Fragment de définition dans un rapport",
+		"link_header": "Partager le lien",
+		"pdf_export": "Exporter le widget en pdf",
+		"report_snippet": "Inclure dans un rapport",
 		"report_snippet_desc": "Le paragraphe qui suit contient le fragment à ajouter à la définition d'un rapport pour y inclure le widget pointé par ce lien en tant que section du rapport."
 	},
 	"table": {

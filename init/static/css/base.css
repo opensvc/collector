@@ -2227,6 +2227,10 @@ th.col-filtered-volatile {
 	display: inline-block;
 }
 
+.pdf:before {
+	color: #EE5464 !important;
+	content: '\f1c1';
+}
 .link:hover {
 	cursor: pointer;
 	color: #EE5464 !important;

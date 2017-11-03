@@ -404,35 +404,33 @@ function osvc_show_link(url, title, title_args, fn, parameters) {
 	// header
 	var e = $("<div></div>")
 
-	var header = $("<div class='icon attach16 fa-2x'></div>")
+	var header = $("<h2 style='padding-bottom:1em'></h2>")
 	e.append(header)
-
-	var subheader = $("<div data-i18n='api.link_text'></div>")
-	e.append(subheader)
-
 	osvc_render_title(header, title, title_args)
 
-	// link display area
+	// link
+	var link_header = $("<h3 class='icon attach16' data-i18n='api.link_header'></h3>")
+	var link_subheader = $("<div data-i18n='api.link_text'></div>")
 	var p = $("<textarea class='clickable flash'></textarea>")
 	p.val(url)
 	p.bind("click", function() {
 		window.open($(this).val(), '_blank')
 	})
-
-	e.append(p)
-
-	osvc.flash.show({
-		"id": md5(url),
-		"bgcolor": osvc.colors.link,
-		"cl": "icon link16",
-		"text": i18n.t("api.link"),
-		"content": e
-	})
+	e.append([link_header, link_subheader, p])
 
 	p.select()
 
+	// pdf export
+	var pdf_header = $("<h3 class='icon pdf' data-i18n='api.pdf_export'></h3>")
+	var pdf_snippet = $("<textarea class='clickable flash' style='height:4em'></textarea>")
+	pdf_snippet.text(url+"&pdf=true")
+	pdf_snippet.bind("click", function() {
+		window.open($(this).val(), '_blank')
+	})
+	e.append([pdf_header, pdf_snippet])
+
 	// report snippet
-	var report_header = $("<div class='icon report16 fa-2x' data-i18n='api.report_snippet'></div>")
+	var report_header = $("<h3 class='icon report16' data-i18n='api.report_snippet'></h3>")
 	var report_subheader = $("<div style='color:lightgray' data-i18n='api.report_snippet_desc'></div>")
 	var snippet = $("<textarea class='flash' style='height:15em'></textarea>")
 	e.append([report_header, report_subheader, snippet])
@@ -448,6 +446,15 @@ function osvc_show_link(url, title, title_args, fn, parameters) {
 		snippet.text(jsyaml.dump(data))
 	})
 	e.children("textarea").css({"width": "100%"})
+
+	// feed the flash barel
+	osvc.flash.show({
+		"id": md5(url),
+		"bgcolor": osvc.colors.link,
+		"cl": "icon link16",
+		"text": i18n.t("api.link"),
+		"content": e
+	})
 
 	// translate
 	e.i18n()

@@ -273,7 +273,9 @@
 		"error": "The collector request returned an error.",
 		"link": "Link",
 		"link_text": "You can share this link with collaborators so they can see the specific information you selected, granted they have the required privileges.",
-		"report_snippet": "Report definition code snippet",
+		"link_header": "Share as link",
+		"pdf_export": "Export widget to pdf",
+		"report_snippet": "Embed in a report",
 		"report_snippet_desc": "The paragraph below contains the definition to add to a report definition to embed the widget pointed by this link as a report section."
 	},
 	"table": {
