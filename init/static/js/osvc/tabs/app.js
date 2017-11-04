@@ -60,6 +60,32 @@ function app_tabs(divid, options) {
 			table_quota_app(divid, o.options.app_name)
 		}
 
+		// tab topology
+		i = o.register_tab({
+			"title": "service_tabs.topology",
+			"title_class": "icon dia16"
+		})
+		o.tabs[i].callback = function(divid) {
+			topology(divid, {
+				"app_ids": [
+					o.options.app_id,
+				],
+				"display": [
+					"nodes",
+					"services",
+					"countries",
+					"cities",
+					"buildings",
+					"rooms",
+					"racks",
+					"enclosures",
+					"hvs",
+					"hvpools",
+					"hvvdcs",
+					"disks"]
+			})
+		}
+
 		o.set_tab(o.options.tab)
 	}
 	return o

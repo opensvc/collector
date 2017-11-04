@@ -784,21 +784,41 @@ class viz(object):
 @auth.requires_login()
 @service.json
 def json_topo_data():
-    svc_ids = request.vars.get("svc_ids[]", [])
-    if type(svc_ids) != list:
-        svc_ids = [svc_ids]
-    if len(svc_ids) > 0:
+    svc_ids = set()
+    node_ids = set()
+
+    app_ids = request.vars.get("app_ids[]", [])
+    if type(app_ids) != list:
+        app_ids = [app_ids]
+    if len(app_ids) > 0:
+        q = db.apps.id.belongs(app_ids)
+        q &= db.services.svc_app == db.apps.app
+        q = q_filter(q, app_field=db.apps.app)
+        svc_ids |= set([r.svc_id for r in db(q).select(db.services.svc_id)])
+
+        q = db.apps.id.belongs(app_ids)
+        q &= db.nodes.app == db.apps.app
+        q = q_filter(q, app_field=db.apps.app)
+        node_ids |= set([r.node_id for r in db(q).select(db.nodes.node_id)])
+
+    _svc_ids = request.vars.get("svc_ids[]", [])
+    if type(_svc_ids) != list:
+        svc_ids |= set([_svc_ids])
+    if len(_svc_ids) > 0:
         q = db.services.svc_id.belongs(svc_ids)
         q = q_filter(q, app_field=db.services.svc_app)
-        svc_ids = [r.svc_id for r in db(q).select(db.services.svc_id)]
+        svc_ids |= set([r.svc_id for r in db(q).select(db.services.svc_id)])
 
-    node_ids = request.vars.get("node_ids[]", [])
-    if type(node_ids) != list:
-        node_ids = [node_ids]
+    _node_ids = request.vars.get("node_ids[]", [])
+    if type(_node_ids) != list:
+        node_ids |= set([_node_ids])
     if len(node_ids) > 0:
         q = db.nodes.node_id.belongs(node_ids)
         q = q_filter(q, app_field=db.nodes.app)
         node_ids = [r.node_id for r in db(q).select(db.nodes.node_id)]
+
+    svc_ids = list(svc_ids)
+    node_ids = list(node_ids)
 
     display = request._vars.get("display[]", [])
     return viz(svc_ids, node_ids, display).get_data()
