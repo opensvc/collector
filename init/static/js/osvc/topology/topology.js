@@ -381,6 +381,13 @@ function topology(divid, options) {
 					"hvs": {"shape": "icon", "icon": {"face": "FontAwesome", "code": "\uf0c2", "color": osvc.colors.node, "size": 50}},
 					"envs": {"shape": "icon", "icon": {"face": "FontAwesome", "code": "\uf24d", "color": osvc.colors.svc, "size": 100}},
 					"resource": {"shape": "icon", "icon": {"face": "FontAwesome", "code": "\uf292", "color": osvc.colors.svc, "size": 50}},
+					"svc_undef": {"shape": "icon", "icon": {"face": "FontAwesome", "code": "\uf111", "color": "gray", "size": 50}},
+					"svc_na": {"shape": "icon", "icon": {"face": "FontAwesome", "code": "\uf111", "color": "gray", "size": 50}},
+					"svc_warn": {"shape": "icon", "icon": {"face": "FontAwesome", "code": "\uf111", "color": "orange", "size": 50}},
+					"svc_up": {"shape": "icon", "icon": {"face": "FontAwesome", "code": "\uf111", "color": "seagreen", "size": 50}},
+					"svc_down": {"shape": "icon", "icon": {"face": "FontAwesome", "code": "\uf111", "color": "darkred", "size": 50}},
+					"svc_stdby_down": {"shape": "icon", "icon": {"face": "FontAwesome", "code": "\uf111", "color": "lightred", "size": 50}},
+					"svc_stdby_up": {"shape": "icon", "icon": {"face": "FontAwesome", "code": "\uf111", "color": "lightgreen", "size": 50}},
 					"svc": {"shape": "icon", "icon": {"face": "FontAwesome", "code": "\uf111", "color": osvc.colors.svc, "size": 50}}
 				},
 				clickToUse: true,

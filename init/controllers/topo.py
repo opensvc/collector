@@ -13,9 +13,9 @@ def call():
 class viz(object):
     status_color = {
       "up": "darkgreen",
-      "stdby up": "darkgreen",
+      "stdby up": "lightgreen",
       "down": "darkred",
-      "stdby down": "darkred",
+      "stdby down": "lightred",
       "warn": "orange",
     }
 
@@ -266,6 +266,7 @@ class viz(object):
         q = db.services.svc_id.belongs(self.svc_ids)
         rows = db(q).select(db.services.svc_id,
                             db.services.svc_availstatus,
+                            db.services.svc_status_updated,
                             db.services.svc_env,
                             db.services.svc_app,
                            )
@@ -569,7 +570,7 @@ class viz(object):
                       svcname_id, parent_id,
                       #length=2,
                       color=self.status_color.get(_row.mon_availstatus, "grey"),
-                      label=_row.mon_availstatus,
+                      #label=_row.mon_availstatus,
                     )
                     break
 
@@ -653,7 +654,12 @@ class viz(object):
         if svc_id not in self.rs["services"]:
             return
         row = self.rs["services"][svc_id]
-        self.add_visnode_node(vnode_id, "svc", label=get_svc(svc_id).svcname, mass=8, fontColor=self.status_color.get(row["svc_availstatus"], "grey"))
+        if row["svc_status_updated"] is None or \
+           row["svc_status_updated"] + datetime.timedelta(minutes=15) < datetime.datetime.now():
+            group = "svc_undef"
+        else:
+            group = "svc_" + str(row["svc_availstatus"]).lower().replace("/", "").replace(" ", "_")
+        self.add_visnode_node(vnode_id, group, label=get_svc(svc_id).svcname, mass=8, fontColor=self.status_color.get(row["svc_availstatus"], "grey"))
 
     def add_arrays(self):
         for (node_id, svc_id, arrayid), rows in self.rs["disks"].items():
@@ -734,7 +740,7 @@ class viz(object):
             self.add_edge(vnode_id, vsvc_id,
                           #length=2,
                           color=self.status_color.get(row.mon_availstatus, "grey"),
-                          label=row.mon_availstatus,
+                          #label=row.mon_availstatus,
                          )
 
     def fmt_disk_label(self, node_id, svc_id, arrayid, rows):
@@ -1162,10 +1168,10 @@ def json_startup_data():
     data["nodes"].append(d)
 
     status_color = {
-      "up": "darkgreen",
-      "stdby up": "darkgreen",
+      "up": "seagreen",
+      "stdby up": "lightgreen",
       "down": "darkred",
-      "stdby down": "darkred",
+      "stdby down": "lightred",
       "warn": "orange",
     }
 
