@@ -522,7 +522,7 @@ img {
 	flex-grow: 1;
 }
 .tag {
-	display: inline-block;
+	display: inline-flex;
 	white-space: nowrap;
 	margin: 0.1em;
 	font-size: 95%;
