@@ -8,6 +8,13 @@ var menu_data = {
 		  "fn" : "table_dashboard"
 		},
 		{
+		  "title" : "application",
+		  "class" : "app16",
+		  "id" : "view-app",
+		  "link" : "/init/apps/apps",
+		  "fn" : "table_apps"
+		},
+		{
 		  "title" : "services",
 		  "class" : "svc",
 		  "id" : "view-services",
@@ -291,13 +298,6 @@ var menu_data = {
 		  "id" : "adm-obs",
 		  "link" : "/init/obsolescence/obsolescence_config",
 		  "fn" : "table_obsolescence"
-		},
-		{
-		  "title" : "application",
-		  "class" : "app16",
-		  "id" : "adm-app",
-		  "link" : "/init/apps/apps",
-		  "fn" : "table_apps"
 		},
 		{
 		  "title" : "batchs",

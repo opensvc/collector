@@ -1232,6 +1232,10 @@
 				"title": "Dashboard",
 				"text": "Current issues on nodes and services"
 			},
+			"application": {
+				"title": "Applications",
+				"text": "Application codes assigned to nodes and services"
+			},
 			"services": {
 				"title": "Services",
 				"text": "Services information and status"
@@ -1435,10 +1439,6 @@
 			"o_setup": {
 				"title": "Obsolescence setup",
 				"text": "Set server models and os releases obsolescence dates"
-			},
-			"application": {
-				"title": "Applications",
-				"text": "Application codes assigned to nodes and services"
 			},
 			"drpplan": {
 				"title": "Drplan",

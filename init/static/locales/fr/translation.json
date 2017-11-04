@@ -1231,6 +1231,10 @@
 				"title" : "Pilotage",
 				"text" : "Problèmes actuels sur les nœuds et services"
 			},
+			"application" : {
+				"title" : "Applications",
+				"text" : "Codes applicatifs assignés aux noeuds et aux services"
+			},
 			"services" : {
 				"title" : "Services",
 				"text" : "Informations et états des services"
@@ -1434,10 +1438,6 @@
 			"o_setup" : {
 				"title" : "Seuils d'obsolescence",
 				"text" : "Définition des dates d'obsolescence serveurs et os"
-			},
-			"application" : {
-				"title" : "Applications",
-				"text" : "Codes applicatifs assignés aux noeuds et aux services"
 			},
 			"drpplan" : {
 				"title" : "Pra",
