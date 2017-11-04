@@ -36,7 +36,7 @@ class rest_get_search(rest_get_handler):
             limit = max_search_result
         if substring is None:
             return dict(data=data)
-        substring = "%" + substring + "%"
+        substring = "%" + substring.lower().replace("osvc_comp_", "") + "%"
         if otype is None or otype == "fset":
             data["filtersets"] = lib_search_fset(substring, limit)
         if otype is None or otype == "array":
