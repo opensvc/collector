@@ -57,7 +57,7 @@ class viz(object):
         elif len(cn) == 2:
             return cn
 
-    def add_visnode_node(self, visnode_id, visnode_type="", label="", mass=1, image=None, fontColor=None):
+    def add_visnode_node(self, visnode_id, visnode_type="", label="", mass=1, image=None, fontColor=None, **kwargs):
         if visnode_type in self.visnode_id_per_type:
             self.visnode_id_per_type[visnode_type].add(visnode_id)
         else:
@@ -69,12 +69,13 @@ class viz(object):
             if v:
                 group = "flag-"+v
 
-        d = {
+        d = kwargs
+        d.update({
           "mass": 3,
           "id": visnode_id,
           "label": label,
           "group": group
-        }
+        })
 
         if fontColor is not None:
             d["fontColor"] = fontColor
@@ -609,7 +610,7 @@ class viz(object):
         d = self.rs["nodes"].get(node_id, {})
         label = d.get("nodename", "") + "\n" + ', '.join((d.get("os_name", ""), d.get("model", "")))
         nodename_id = self.add_visnode("node", node_id)
-        self.add_visnode_node(nodename_id, "node", label=label, mass=3)
+        self.add_visnode_node(nodename_id, "node", label=label, mass=3, node_id=node_id)
 
     def add_edge(self, from_node, to_node, color="#555555", label="", multi=False):
         def format_label(l):
@@ -659,7 +660,7 @@ class viz(object):
             group = "svc_undef"
         else:
             group = "svc_" + str(row["svc_availstatus"]).lower().replace("/", "").replace(" ", "_")
-        self.add_visnode_node(vnode_id, group, label=get_svc(svc_id).svcname, mass=8, fontColor=self.status_color.get(row["svc_availstatus"], "grey"))
+        self.add_visnode_node(vnode_id, group, label=get_svc(svc_id).svcname, mass=8, fontColor=self.status_color.get(row["svc_availstatus"], "grey"), svc_id=svc_id)
 
     def add_arrays(self):
         for (node_id, svc_id, arrayid), rows in self.rs["disks"].items():

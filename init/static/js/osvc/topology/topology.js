@@ -408,6 +408,30 @@ function topology(divid, options) {
 			}
 			require(["vis"], function(vis) {
 				var network = new vis.Network(eid, _data, options)
+				network.on("click", function(params) {
+					if (params.nodes.length == 0) {
+						return
+					}
+					var node = _data.nodes[params.nodes[0]]
+					if (node.node_id) {
+						osvc.flash.show({
+							id: "node-"+node.node_id,
+							text: node.label.split(/\s/)[0],
+							cl: "icon node16",
+							bgcolor: osvc.colors.node,
+							fn: function(id){node_tabs(id, {"node_id": node.node_id})}
+						})
+					} else
+					if (node.svc_id) {
+						osvc.flash.show({
+							id: "svc-"+node.svc_id,
+							text: node.label.split(/\s/)[0],
+							cl: "icon svc",
+							bgcolor: osvc.colors.svc,
+							fn: function(id){service_tabs(id, {"svc_id": node.svc_id})}
+						})
+					}
+				})
 			})
 		})
 	}
