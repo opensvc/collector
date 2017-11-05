@@ -281,6 +281,9 @@ function cell_decorator_boolean(e, line) {
 
 function cell_decorator_app(e, line) {
 	var v = $.data(e[0], "v")
+	if (v == "empty") {
+		return
+	}
 	e
 	.html("<span class='clickable'>"+v+"</span>")
 	.addClass("corner-top")
@@ -386,7 +389,7 @@ function cell_decorator_prov_template(e, line) {
 
 function cell_decorator_fset_name(e, line) {
 	var v = $.data(e[0], "v")
-		if (v == "empty") {
+	if (v == "empty") {
 		return
 	}
 	e
