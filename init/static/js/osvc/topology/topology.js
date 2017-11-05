@@ -408,7 +408,7 @@ function topology(divid, options) {
 			}
 			require(["vis"], function(vis) {
 				var network = new vis.Network(eid, _data, options)
-				network.on("click", function(params) {
+				network.on("doubleClick", function(params) {
 					if (params.nodes.length == 0) {
 						return
 					}
