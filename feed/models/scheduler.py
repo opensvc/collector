@@ -307,7 +307,7 @@ def _update_service(vars, vals, auth):
     if 'svc_drnoaction' in h:
         if h['svc_drnoaction'] == 'False': h['svc_drnoaction'] = 'F'
         elif h['svc_drnoaction'] == 'True': h['svc_drnoaction'] = 'T'
-    for var in ('svc_vmname', 'svc_guestos', 'svc_vcpus', 'svc_vmem', 'svc_containerpath'):
+    for var in ('svc_vmname', 'svc_guestos', 'svc_vcpus', 'svc_vmem', 'svc_containerpath', 'svc_containertype'):
        if var in h:
             del(h[var])
     generic_insert('services', h.keys(), h.values())
