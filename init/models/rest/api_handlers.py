@@ -1,4 +1,5 @@
 deprecated_columns = {
+    "services.svc_cluster_type": "services.svc_topology",
     "services.svc_envfile": "services.svc_config",
     "services.svc_envdate": "services.svc_config_updated",
     "services.svc_type": "services.svc_env",
