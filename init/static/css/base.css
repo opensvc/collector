@@ -533,6 +533,7 @@ img {
 	border-radius:4px;
 	padding: 1px 10px 1px 10px;
 	overflow: hidden;
+	justify-content: center;
 }
 .tag:hover {
 	cursor: move;
