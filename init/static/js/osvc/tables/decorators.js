@@ -909,6 +909,7 @@ function cell_decorator_res_log(e, line) {
 		.replace(/info: /g, "<span style='width:5em' class='mr-2 btn btn-sm btn-info'>info</span>")
 		.replace(/warn: /g, "<span style='width:5em' class='mr-2 btn btn-sm btn-warning'>warn</span>")
 		.replace(/err: /g, "<span style='width:5em' class='mr-2 btn btn-sm btn-danger'>err</span>")
+		.replace(/error: /g, "<span style='width:5em' class='mr-2 btn btn-sm btn-danger'>err</span>")
 	e.html(s)
 }
 
