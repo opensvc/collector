@@ -6457,4 +6457,6 @@ alter table resinfo_log change column cluster_type topology varchar(20) default 
 update gen_filters set f_field="topology" where f_field="cluster_type";
 update gen_filters set f_field="svc_topology" where f_field="svc_cluster_type";
 
+# for vmware long serials
+alter table nodes modify column serial varchar(64);
 
