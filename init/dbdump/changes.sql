@@ -6460,3 +6460,5 @@ update gen_filters set f_field="svc_topology" where f_field="svc_cluster_type";
 # for vmware long serials
 alter table nodes modify column serial varchar(64);
 
+alter table tags modify tag_name varchar(128) default "";
+

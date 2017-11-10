@@ -214,6 +214,8 @@ class rest_post_tags(rest_post_handler):
             return ret
         db.tags.insert(**vars)
         row = db(q).select().first()
+        if row is None or row.tag_name != tag_name:
+            raise Exception("tag name too long")
         fmt = "tag '%(tag_name)s' created"
         d = dict(tag_name=tag_name)
         _log('tag.create', fmt, d)

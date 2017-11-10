@@ -65,8 +65,11 @@ def _log(action, fmt, d, user=None, svc_id="", level="info", node_id=""):
          if svc_id != "":
              s += "svc[%s] " % svc_id
          s += "action[%s] " % str(action)
-         s += fmt % d
-         _logger(s)
+         try:
+             s += fmt % d
+             _logger(s)
+         except Exception:
+             pass
 
     db.log.insert(
       log_action=action,
