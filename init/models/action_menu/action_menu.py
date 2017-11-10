@@ -336,6 +336,9 @@ def json_action_one(d):
         elif "module" in d:
             return do_svc_comp_action(d["node_id"], d["svc_id"], d["action"], "module", d["module"])
         elif "action" in d:
+            d["node_version"] = db(db.nodes.node_id==d["node_id"]).select().first().version
+            if d["node_version"][:3] == "1.9":
+                d["action"] += " --local"
             return do_svc_action(d["node_id"], d["svc_id"], d["action"])
     elif "node_id" in d:
         if "ruleset" in d:
