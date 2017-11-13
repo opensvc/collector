@@ -121,17 +121,15 @@ class rest_post_apps(rest_post_handler):
         if "id" in vars:
             app_id = vars["id"]
             del(vars["id"])
-            return rest_post_app(app_id, **vars)
+            return rest_post_app().handler(app_id, **vars)
+        if "app" in vars:
+            app = vars["app"]
+            del(vars["app"])
+            return rest_post_app().handler(app, **vars)
 
         check_privilege("AppManager")
         if len(vars) == 0 or "app" not in vars:
-            raise Exception("Insufficient data")
-        q = db.apps.id > 0
-        for v in vars:
-            q &= db.apps[v] == vars[v]
-        row = db(q).select().first()
-        if row is not None:
-            return rest_post_app().handler(row.id, **vars)
+            raise Exception("Insufficient data: %s" % str(vars))
         check_quota_app()
         response = db.apps.validate_and_insert(**vars)
         raise_on_error(response)
