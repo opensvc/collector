@@ -3,16 +3,16 @@ def refresh_b_action_errors():
     db.executesql(sql)
     db.commit()
     sql = """insert into b_action_errors
-               select NULL, m.svc_id, m.node_id, count(a.id)
-               from svcmon m
-                 left join svcactions a
-                 on m.svc_id=a.svc_id and m.node_id=a.node_id
-               where
-                 a.status='err'
-                 and (a.ack=0 or isnull(a.ack))
-                 and a.end is not NULL
-               group by m.svc_id, m.node_id
-          """
+    select NULL, m.svc_id, m.node_id, count(a.id)
+    from svcmon m
+    left join svcactions a
+    on m.svc_id=a.svc_id and m.node_id=a.node_id
+    where
+    a.status='err'
+    and (a.ack=0 or isnull(a.ack))
+    and a.end is not NULL
+    group by m.svc_id, m.node_id
+    """
     db.executesql(sql)
     db.commit()
 
@@ -51,7 +51,6 @@ def cron_scrub_checks():
     thres = now - datetime.timedelta(days=2)
     q = db.checks_live.chk_updated < thres
     return db(q).delete()
-
 
 def cron_purge_node_hba():
     sql = """delete from node_hba where updated < date_sub(now(), interval 1 week)"""
@@ -339,13 +338,6 @@ def stat_billing_nb_agents_without_svc_nonprd(fset_id, os):
     n = 0
     print "stat_billing_nb_agents_without_svc_nonprd():", str(n)
     return n
-
-now = datetime.datetime.now()
-today = now - datetime.timedelta(hours=now.hour,
-                                 minutes=now.minute,
-                                 seconds=now.second,
-                                 microseconds=now.microsecond)
-yesterday = today - datetime.timedelta(days=1)
 
 def cron_stat_day_svc():
     when = None
@@ -810,7 +802,7 @@ def purge_alerts_on_nodes_without_asset():
         db.commit()
 
 def cron_purge_packages():
-    threshold = now - datetime.timedelta(days=100)
+    threshold = datetime.datetime.now() - datetime.timedelta(days=100)
     q = db.packages.pkg_updated < threshold
     db(q).delete()
     db.commit()
