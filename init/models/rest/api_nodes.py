@@ -781,6 +781,11 @@ class rest_post_node(rest_post_handler):
              dict(data=beautify_change(row, vars)),
              node_id=node_id)
         ws_send('nodes_change', {'node_id': node_id})
+        if "nodename" in vars:
+            # update the nodename in auth_node too, so the node does not have
+            # to register again on hostname change
+            q = db.auth_node.node_id == node_id
+            db(q).update(nodename=vars["nodename"], updated=vars["updated"])
         node_dashboard_updates(node_id)
         return rest_get_node().handler(node_id, props=','.join(["node_id", "nodename", "app", "updated"]+vars.keys()))
 
