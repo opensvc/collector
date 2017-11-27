@@ -10,6 +10,9 @@ def task_refresh_obsolescence():
 def task_perf():
     LOAD('cron', 'cron_perf')
 
+def task_purge_expiry():
+    LOAD('cron', 'cron_purge_expiry')
+
 def task_stats():
     LOAD('cron', 'cron_stats')
 

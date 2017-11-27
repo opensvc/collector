@@ -2889,8 +2889,8 @@ def __svcmon_update(vars, vals, auth):
         row = db(q).select(db.svcmon.mon_vmname).first()
         if row is not None:
             h['mon_vmname'] = row.mon_vmname
-    print datetime.datetime.now() - _now, "COMPAT: old mono-container agent. fetch vmname from svcmon."
-    _now = datetime.datetime.now()
+        print datetime.datetime.now() - _now, "COMPAT: old mono-container agent. fetch vmname from svcmon."
+        _now = datetime.datetime.now()
 
     # mangle datasets received from the encap node
     _node_id, vmname, vmtype = translate_encap_nodename(h['svc_id'], node_id)
@@ -2929,8 +2929,8 @@ def __svcmon_update(vars, vals, auth):
             enclosure=node.enclosure,
             enclosureslot=node.enclosureslot,
         )
-    print datetime.datetime.now() - _now, "set the hv field of container nodes"
-    _now = datetime.datetime.now()
+        print datetime.datetime.now() - _now, "set the hv field of container nodes"
+        _now = datetime.datetime.now()
 
     # compat with old agent
     if 'mon_hbstatus' not in h:

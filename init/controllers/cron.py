@@ -58,7 +58,7 @@ def cron_purge_node_hba():
     db.executesql(sql)
     db.commit()
 
-def _cron_table_purge(table, date_col, orderby=None):
+def _cron_table_purge(table, date_col, orderby=None, deadline=None):
     days = 365
     try:
         config = local_import('config', reload=True)
@@ -131,10 +131,17 @@ def _cron_table_purge(table, date_col, orderby=None):
             count += rows[0][0]
             if rows[0][0] == 0:
                 break
+            if deadline and datetime.datetime.now() > deadline:
+                raise PurgeTimeOut
             time.sleep(0.1)
     db.commit()
 
+class PurgeTimeOut(Exception):
+    pass
+
 def cron_purge_expiry():
+    begin = datetime.datetime.now()
+    deadline = begin + datetime.timedelta(minutes=4)
     tables = [('saves', 'save_date', None),
               ('log', 'log_date', None),
               ('stats_cpu', 'date', None),
@@ -190,16 +197,13 @@ def cron_purge_expiry():
               ('links','link_last_consultation_date',None)]
     for table, date_col, orderby in tables:
         try:
-            _cron_table_purge(table, date_col, orderby=orderby)
+            _cron_table_purge(table, date_col, orderby=orderby, deadline=deadline)
         except Exception as e:
             print e
+        except PurgeTimeOut as exc:
+            break
 
 def cron_stats():
-    # refresh db tables
-    try:
-        cron_purge_expiry()
-    except:
-        pass
     try:
         cron_stat_day()
     except:
