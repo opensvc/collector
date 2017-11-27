@@ -305,7 +305,10 @@ class rest_post_reports_charts(rest_post_handler):
         ws_send('charts_change', {'id': chart_id})
 
         ret = rest_get_reports_chart().handler(chart_id)
-        lib_reports_add_to_git(str(chart_id), ret["data"][0]["chart_yaml"], otype="charts")
+        chart_yaml = ret["data"][0]["chart_yaml"]
+        if chart_yaml is None:
+            chart_yaml = ""
+        lib_reports_add_to_git(str(chart_id), chart_yaml, otype="charts")
 
         return ret
 
@@ -508,7 +511,10 @@ class rest_post_reports_metrics(rest_post_handler):
         ws_send('metrics_change', {'id': metric_id})
 
         ret = rest_get_reports_metric().handler(metric_id)
-        lib_reports_add_to_git(str(metric_id), ret["data"][0]["metric_sql"], otype="metrics")
+        metric_sql = ret["data"][0]["metric_sql"]
+        if metric_sql is None:
+            metric_sql = ""
+        lib_reports_add_to_git(str(metric_id), metric_sql, otype="metrics")
 
         return ret
 
