@@ -129,7 +129,7 @@ class rest_handler(object):
         self.q = q
 
     def get_pattern(self):
-        return "^"+re.sub("\<[-\w]+\>", "[\#\:=% ><@\.\-\w\(\){slash,percent}*]+", self.path)+"$"
+        return "^"+re.sub("\<[-\w]+\>", "[\$\#\:=% ><@\.\-\w\(\){slash,percent}*]+", self.path)+"$"
 
     def match(self, args):
         pattern = self.get_pattern()
