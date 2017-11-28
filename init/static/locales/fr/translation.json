@@ -2114,6 +2114,9 @@
 	"reports": {
 		"select": "Sélectionnez un rapport"
 	},
+	"metrics": {
+		"no_data": "Pas de donn�es"
+	},
 	"requests": {
 		"scripts": "Scripts exécutés pour cette étape",
 		"not_assigned": "ette étape de workflow ne vous est pas assignée",

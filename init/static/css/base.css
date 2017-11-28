@@ -3160,6 +3160,13 @@ pre.api_doc {
 	cursor: help;
 } 
 
+.nodata {
+	width: 100%;
+	text-align: center;
+	background-color: #fafaf4;
+	line-height: 20em;
+	color: darkgray;
+}
 @keyframes spinner {
   to {transform: rotate(360deg);}
 }

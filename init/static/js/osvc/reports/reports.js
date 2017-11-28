@@ -143,7 +143,7 @@ function chart(divid, options) {
 			var keys = {}
 			var definition = jd.chart_definition
 			var metric_definition = {}
-			var stackSeries = definition.Options.stack
+			var stackSeries = false
 			var series = []
 			var series_data = {}
 			var max = 0
@@ -151,12 +151,23 @@ function chart(divid, options) {
 			var dates = {}
 			var series_dates = {}
 
+
+			if (definition.Options) {
+				stackSeries = definition.Options.stack
+			}
+
 			for (var i=0; i<definition.Metrics.length; i++) {
 				var m = definition.Metrics[i]
 				metric_definition[m.metric_id] = m
 				if (m.unit) {
 					unit = m.unit
 				}
+			}
+
+			if (data.length == 0) {
+				var e = $("<div class=nodata></div>").text(i18n.t('metrics.no_data'))
+				$("#"+id).html(e)
+				return
 			}
 
 			for (var i=0; i<data.length; i++) {

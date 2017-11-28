@@ -2163,6 +2163,9 @@
 	"reports": {
 		"select": "Select a report"
 	},
+	"metrics": {
+		"no_data": "No data"
+	},
 	"requests": {
 		"scripts": "Scripts executed for this step",
 		"not_assigned": "This Workflow step is not assigned to you",
