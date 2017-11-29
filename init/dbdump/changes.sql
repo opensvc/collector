@@ -6467,3 +6467,8 @@ insert into scheduler_task (uuid, args, vars, enabled, repeats, retry_failed, pe
 alter table node_tags add key k_tag_id (tag_id);
 alter table svc_tags add key k_tag_id (tag_id);
 alter table tags add key k_tag_id (tag_id);
+
+alter table obsolescence add key k_obs_type (obs_type);
+alter table obsolescence add key k_obs_name (obs_name);
+alter table dashboard modify dash_env enum('PRD','PPRD','REC','INT','DEV','TST','TMP','DRP','FOR','PRA','PRJ','STG', 'UAT', '');
+

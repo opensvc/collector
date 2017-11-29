@@ -3564,7 +3564,7 @@ def cron_dash_obs_without(t, a):
                from obsolescence o
                  join nodes n on
                    o.obs_name = n.model or
-                   o.obs_name = concat_ws(' ',n.os_name,n.os_vendor,n.os_release,n.os_update)
+                   o.obs_name = n.os_concat
                where
                  o.obs_type = "%(t)s" and
                  o.obs_name not like "%%virtual%%" and
@@ -4444,19 +4444,33 @@ def update_dash_service_not_on_primary(svc_id, node_id, env, availstatus):
     return set(["dashboard"])
 
 def task_dash_daily():
+    print "cron_dash_purge"
     cron_dash_purge()
+    print "cron_dash_obs_purge"
     cron_dash_obs_purge()
+    print "cron_dash_obs_os_alert"
     cron_dash_obs_os_alert()
+    print "cron_dash_obs_os_warn"
     cron_dash_obs_os_warn()
+    print "cron_dash_obs_hw_alert"
     cron_dash_obs_hw_alert()
+    print "cron_dash_obs_hw_warn"
     cron_dash_obs_hw_warn()
+    print "cron_dash_obs_os_without_alert"
     cron_dash_obs_os_without_alert()
+    print "cron_dash_obs_os_without_warn"
     cron_dash_obs_os_without_warn()
+    print "cron_dash_obs_hw_without_alert"
     cron_dash_obs_hw_without_alert()
+    print "cron_dash_obs_hw_without_warn"
     cron_dash_obs_hw_without_warn()
+    print "cron_dash_node_without_maintenance_date"
     cron_dash_node_without_maintenance_date()
+    print "cron_dash_node_near_maintenance_date"
     cron_dash_node_near_maintenance_date()
+    print "cron_dash_node_beyond_maintenance_date"
     cron_dash_node_beyond_maintenance_date()
+    print "dashboard_events"
     dashboard_events()
 
 def task_dash_hourly():
