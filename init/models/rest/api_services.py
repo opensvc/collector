@@ -350,7 +350,7 @@ class rest_delete_service_instance(rest_delete_handler):
         svcname = get_svcname(row.svc_id)
 
         # allow anybody to remove a service instance with no service entry in
-        # the service
+        # the services table
         q2 = db.services.svc_id == row.svc_id
         n = db(q2).count()
         if n > 0:
@@ -365,9 +365,24 @@ class rest_delete_service_instance(rest_delete_handler):
         ws_send('svcmon_change', {'id': row.id})
 
         q = db.dashboard.svc_id == row.svc_id
-        q = db.dashboard.node_id == row.node_id
+        q &= db.dashboard.node_id == row.node_id
         db(q).delete()
-        ws_send('dashboard_change', {'id': row.id})
+        ws_send('dashboard_change', {'svc_id': row.svc_id, 'node_id': row.node_id})
+
+        q = db.resmon.svc_id == row.svc_id
+        q &= db.resmon.node_id == row.node_id
+        db(q).delete()
+        ws_send('resmon_change', {'svc_id': row.svc_id, 'node_id': row.node_id})
+
+        q = db.resinfo.svc_id == row.svc_id
+        q &= db.resinfo.node_id == row.node_id
+        db(q).delete()
+        ws_send('resinfo_change', {'svc_id': row.svc_id, 'node_id': row.node_id})
+
+        q = db.checks_live.svc_id == row.svc_id
+        q &= db.checks_live.node_id == row.node_id
+        db(q).delete()
+        ws_send('checks_live_change', {'svc_id': row.svc_id, 'node_id': row.node_id})
 
         return dict(info=fmt%d)
 
