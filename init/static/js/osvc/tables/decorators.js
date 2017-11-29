@@ -557,6 +557,14 @@ function cell_decorator_chk_value(e, line) {
 	e.html("<span class='"+cl.join(" ")+"'>"+v+"</span>")
 }
 
+function cell_decorator_sched_task_status(e, line) {
+	var task_status = $.data(e[0], "v")
+	if (task_status == "RUNNING") {
+		var cl = "highlight"
+	}
+	e.html("<span class='"+cl+"'>"+task_status+"</span>")
+}
+
 function cell_decorator_action_pid(e, line) {
 	var v = $.data(e[0], "v")
 	if (v == "empty") {
@@ -2167,6 +2175,7 @@ $.extend(true, cell_decorators, {
 	"res_log": cell_decorator_res_log,
 	"tag_name": cell_decorator_tag_name,
 	"ruleset_name": cell_decorator_ruleset_name,
+	"sched_task_status": cell_decorator_sched_task_status,
 	"rule_value": cell_decorator_rule_value
 })
 

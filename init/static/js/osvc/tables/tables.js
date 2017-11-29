@@ -48,6 +48,7 @@ function table_scheduler_tasks(divid, options) {
 				"title": "Name"
 			},
 			"status": {
+				"_class": "sched_task_status",
 				"table": "scheduler_task",
 				"field": "status",
 				"img": "fa-cog",
