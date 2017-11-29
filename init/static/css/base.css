@@ -2185,6 +2185,11 @@ a.search-link:hover {
 .table_title {
 	flex: 1;
 	font-size: 1.75rem;
+	transition: all 0.3s ease-in-out;
+}
+.table_refresh {
+	color: #990000;
+	transition: all 0.3s ease-in-out;
 }
 
 .theader {
