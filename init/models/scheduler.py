@@ -1,29 +1,37 @@
 def task_docker_discover_registries():
     LOAD('registry', 'discover_registries')
+    return 1
 
 def task_dash_comp():
     LOAD('compliance', 'cron_dash_comp')
+    return 1
 
 def task_refresh_obsolescence():
     refresh_obsolescence()
 
 def task_perf():
     LOAD('cron', 'cron_perf')
+    return 1
 
 def task_purge_expiry():
     LOAD('cron', 'cron_purge_expiry')
+    return 1
 
 def task_stats():
     LOAD('cron', 'cron_stats')
+    return 1
 
 def task_scrub():
     LOAD('cron', 'cron_scrub')
+    return 1
 
 def task_alerts_daily():
     LOAD('cron', 'cron_alerts_daily')
+    return 1
 
 def task_alerts_hourly():
     LOAD('cron', 'cron_alerts_hourly')
+    return 1
 
 def task_purge_static():
     """ unlink static/tempviz*.png

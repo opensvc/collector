@@ -164,7 +164,7 @@ def _cron_table_purge(table, date_col, orderby=None, deadline=None):
 
 def cron_purge_expiry():
     begin = datetime.datetime.now()
-    deadline = begin + datetime.timedelta(minutes=4)
+    deadline = begin + datetime.timedelta(seconds=59)
     tables = [('saves', 'save_date', None),
               ('log', 'log_date', None),
               ('stats_cpu', 'date', None),
@@ -222,8 +222,8 @@ def cron_purge_expiry():
         try:
             _cron_table_purge(table, date_col, orderby=orderby, deadline=deadline)
         except PurgeTimeOut as exc:
-            print("timeout")
-            return
+            print("PurgeTimeout")
+            break
         except Exception as e:
             print e
 

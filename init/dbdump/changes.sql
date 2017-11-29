@@ -6472,3 +6472,5 @@ alter table obsolescence add key k_obs_type (obs_type);
 alter table obsolescence add key k_obs_name (obs_name);
 alter table dashboard modify dash_env enum('PRD','PPRD','REC','INT','DEV','TST','TMP','DRP','FOR','PRA','PRJ','STG', 'UAT', '');
 
+update scheduler_task set period=60 where task_name="task_purge_expiry";
+
