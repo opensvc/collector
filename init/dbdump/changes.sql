@@ -6463,3 +6463,7 @@ alter table nodes modify column serial varchar(64);
 alter table tags modify tag_name varchar(128) default "";
 
 insert into scheduler_task (uuid, args, vars, enabled, repeats, retry_failed, period, timeout, group_name, function_name, task_name, application_name, start_time, next_run_time, last_run_time, times_run, times_failed, prevent_drift, sync_output, assigned_worker_name) values (uuid(), "[]", "{}", "T", 0, -1, 300, 270, "metrics", "task_purge_expiry", "task_purge_expiry", "init/appadmin", now(), date_sub(now(), interval -1 minute), now(), 0, 0, "F", 0, "");
+
+alter table node_tags add key k_tag_id (tag_id);
+alter table svc_tags add key k_tag_id (tag_id);
+alter table tags add key k_tag_id (tag_id);
