@@ -3178,8 +3178,6 @@ def __svcmon_update(vars, vals, auth):
         table_modified("svcmon_log_last")
     print datetime.datetime.now() - _now, "update svcmon_log"
 
-
-
 #
 # Dashboard updates
 #

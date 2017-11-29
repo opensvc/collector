@@ -19,6 +19,7 @@ def refresh_b_action_errors():
 def cron_scrub():
     cron_scrub_svcstatus()
     cron_scrub_resstatus()
+    cron_purge_svcinstances()
 
 def cron_scrub_svcstatus():
     """ Mark undef the services with 0 instance updating their status
@@ -39,6 +40,29 @@ def cron_scrub_svcstatus():
                  level="error")
     for svc_id in svc_ids:
         svc_log_update(svc_id, "undef")
+
+def cron_purge_svcinstances():
+    threshold = datetime.datetime.now() - datetime.timedelta(minutes=21)
+    q = db.svcmon.mon_updated < threshold
+    rows = db(q).select(db.svcmon.svc_id, db.svcmon.node_id)
+    instances = [(row.node_id, row.svc_id) for row in rows]
+    db(q).delete()
+    print "purge %s instances" % str(instances)
+
+    for node_id, svc_id in instances:
+        q = db.resmon.node_id == node_id
+        q &= db.resmon.svc_id == svc_id
+        db(q).delete()
+
+        q = db.checks_live.node_id == node_id
+        q &= db.checks_live.svc_id == svc_id
+        db(q).delete()
+
+        q = db.dashboard.node_id == node_id
+        q &= db.dashboard.svc_id == svc_id
+        db(q).delete()
+
+    db.commit()
 
 def cron_scrub_resstatus():
     limit = datetime.datetime.now() - datetime.timedelta(minutes=15)
