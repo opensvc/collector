@@ -1,36 +1,54 @@
 def task_docker_discover_registries():
+    ws_send('scheduler_change')
     LOAD('registry', 'discover_registries')
+    ws_send('scheduler_change')
     return 1
 
 def task_dash_comp():
+    ws_send('scheduler_change')
     LOAD('compliance', 'cron_dash_comp')
+    ws_send('scheduler_change')
     return 1
 
 def task_refresh_obsolescence():
+    ws_send('scheduler_change')
     refresh_obsolescence()
+    ws_send('scheduler_change')
 
 def task_perf():
+    ws_send('scheduler_change')
     LOAD('cron', 'cron_perf')
+    ws_send('scheduler_change')
     return 1
 
 def task_purge_expiry():
+    ws_send('scheduler_change')
     LOAD('cron', 'cron_purge_expiry')
+    ws_send('scheduler_change')
     return 1
 
 def task_stats():
+    ws_send('scheduler_change')
     LOAD('cron', 'cron_stats')
+    ws_send('scheduler_change')
     return 1
 
 def task_scrub():
+    ws_send('scheduler_change')
     LOAD('cron', 'cron_scrub')
+    ws_send('scheduler_change')
     return 1
 
 def task_alerts_daily():
+    ws_send('scheduler_change')
     LOAD('cron', 'cron_alerts_daily')
+    ws_send('scheduler_change')
     return 1
 
 def task_alerts_hourly():
+    ws_send('scheduler_change')
     LOAD('cron', 'cron_alerts_hourly')
+    ws_send('scheduler_change')
     return 1
 
 def task_purge_static():
@@ -38,6 +56,7 @@ def task_purge_static():
     """
     import os
     import glob
+    ws_send('scheduler_change')
     staticdir = os.path.join(os.getcwd(), 'applications', 'init', 'static')
     vizprefix = 'tempviz'
     files = []
@@ -59,6 +78,7 @@ def task_purge_static():
     for name in glob.glob(os.path.join(staticdir, '*-*-*-*.pdf')):
         files.append(name)
         os.unlink(name)
+    ws_send('scheduler_change')
     return files
 
 def task_purge_feed():
@@ -69,6 +89,7 @@ def task_purge_feed():
         status in ("COMPLETED", "FAILED", "TIMEOUT") and
         last_run_time < date_sub(now(), interval 10 minute)
     """
+    ws_send('scheduler_change')
     db.executesql(sql)
     db.commit()
     sql = """
@@ -103,9 +124,11 @@ def task_purge_feed():
         sql = """delete from scheduler_run where id in (%s)""" % ids
         db.executesql(sql)
         db.commit()
+    ws_send('scheduler_change')
 
 
 def task_feed_monitor():
+    ws_send('scheduler_change')
     now = datetime.datetime.now()
     now = now - datetime.timedelta(microseconds=now.microsecond)
     limit = now - datetime.timedelta(minutes=5)
@@ -149,8 +172,10 @@ def task_feed_monitor():
                dash_updated < "%(now)s" """%dict(now=str(now))
     db.executesql(sql)
     db.commit()
+    ws_send('scheduler_change')
 
 def task_unfinished_actions():
+    ws_send('scheduler_change')
     now = datetime.datetime.now()
     tmo = now - datetime.timedelta(minutes=120)
     q = (db.svcactions.begin < tmo)
@@ -165,13 +190,16 @@ def task_unfinished_actions():
               svc_id=r.svc_id,
               node_id=r.node_id,
               level="warning")
+    ws_send('scheduler_change')
     return "%d actions marked timed out"%len(rows)
 
 def task_purge_checks():
+    ws_send('scheduler_change')
     thres = now - datetime.timedelta(days=2)
     q = db.checks_live.chk_updated < thres
     db(q).delete()
     db.commit()
+    ws_send('scheduler_change')
 
 from gluon.contrib.redis_scheduler import RScheduler
 scheduler = RScheduler(db, migrate=False, redis_conn=rconn)

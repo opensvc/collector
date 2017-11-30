@@ -90,7 +90,7 @@ function table_scheduler_tasks(divid, options) {
 			}
 		},
 		'wsable': true,
-		'events': []
+		'events': ["scheduler_change"]
 	}
 
 	var _options = $.extend({}, defaults, options)

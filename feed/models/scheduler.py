@@ -4444,6 +4444,7 @@ def update_dash_service_not_on_primary(svc_id, node_id, env, availstatus):
     return set(["dashboard"])
 
 def task_dash_daily():
+    ws_send('scheduler_change')
     print "cron_dash_purge"
     cron_dash_purge()
     print "cron_dash_obs_purge"
@@ -4472,8 +4473,10 @@ def task_dash_daily():
     cron_dash_node_beyond_maintenance_date()
     print "dashboard_events"
     dashboard_events()
+    ws_send('scheduler_change')
 
 def task_dash_hourly():
+    ws_send('scheduler_change')
     cron_dash_checks_not_updated()
     cron_dash_service_not_updated()
     cron_dash_app_without_responsible()
@@ -4481,11 +4484,14 @@ def task_dash_hourly():
     cron_dash_node_without_asset()
     cron_dash_action_errors_cleanup()
     dashboard_events()
+    ws_send('scheduler_change')
 
 def task_dash_min():
     # ~1/min
+    ws_send('scheduler_change')
     cron_dash_svcmon_not_updated()
     dashboard_events()
+    ws_send('scheduler_change')
 
 def ping_svc(svc, now):
     changed = set()
