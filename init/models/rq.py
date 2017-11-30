@@ -2,6 +2,7 @@
 
 redis_queue_prefix = "osvc:q:"
 redis_queues = [
+  "form_submit",
   "async",
   "svcmon",
   "storage",
