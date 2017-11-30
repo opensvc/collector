@@ -2,6 +2,7 @@
 
 redis_queue_prefix = "osvc:q:"
 redis_queues = [
+  "async",
   "svcmon",
   "storage",
   "update_dash_netdev_errors",
