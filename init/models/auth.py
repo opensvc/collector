@@ -1,6 +1,12 @@
 import re
 from gluon.tools import Auth
 
+def auth_dump():
+    return {
+        "user_id": auth.user_id,
+        "user": dict(auth.user)
+    }
+
 def get_node(node_id):
     q = db.nodes.node_id == node_id
     return db(q).select().first()

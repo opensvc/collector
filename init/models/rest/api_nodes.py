@@ -786,7 +786,7 @@ class rest_post_node(rest_post_handler):
             # to register again on hostname change
             q = db.auth_node.node_id == node_id
             db(q).update(nodename=vars["nodename"], updated=vars["updated"])
-        node_dashboard_updates(node_id)
+        enqueue_async_task("node_dashboard_updates", [node_id])
         return rest_get_node().handler(node_id, props=','.join(["node_id", "nodename", "app", "updated"]+vars.keys()))
 
 
@@ -819,10 +819,10 @@ class rest_post_nodes(rest_post_handler):
 
         try:
             if 'node_id' in vars:
-                node_id = get_node_id(vars['node_id'])
+                node_id = vars['node_id']
                 del(vars["node_id"])
             elif 'nodename' in vars:
-                node_id = get_node_id(vars['nodename'])
+                node_id = vars['nodename']
                 del(vars["nodename"])
             return rest_post_node().handler(node_id, **vars)
         except:
@@ -857,7 +857,7 @@ class rest_post_nodes(rest_post_handler):
              dict(data=beautify_data(vars)),
              node_id=node_id)
         ws_send('nodes_change', {'node_id': node_id})
-        node_dashboard_updates(node_id)
+        enqueue_async_task("node_dashboard_updates", [node_id])
         return rest_get_node().handler(node_id)
 
 

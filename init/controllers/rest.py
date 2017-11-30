@@ -109,6 +109,9 @@ def doc():
 def doc_load():
     return doc()["doc"]
 
+def task_rq_async():
+    task_rq("osvc:q:async", None)
+
 def task_rq_form_submit():
     task_rq("osvc:q:form_submit", lambda q: _form_submit)
 

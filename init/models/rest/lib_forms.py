@@ -743,10 +743,7 @@ def form_submit(form, _d=None, prev_wfid=None):
         "returncode": 0,
         "status": "QUEUED",
     }
-    authdump = {
-        "user_id": auth.user_id,
-        "user": dict(auth.user)
-    }
+    authdump = auth_dump()
 
     if workflow_continuation(form, prev_wfid):
         results["log"].append((1, "form.store",  "This step is already completed (id=%(id)d)", dict(id=prev_wfid)))

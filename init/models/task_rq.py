@@ -1,3 +1,10 @@
+def enqueue_async_task(fn, args=[], kwargs={}):
+    rconn.rpush("osvc:q:async", json.dumps({
+        "fn": fn,
+        "args": args,
+        "auth": auth_dump(),
+    }))
+
 def task_rq(rqueues, getfn, app="feed"):
     import socket
 
@@ -27,8 +34,24 @@ def task_rq(rqueues, getfn, app="feed"):
             l = rconn.blpop(rqueues, timeout=20)
             if l is None:
                 continue
-            args = json.loads(l[1])
-            fn = getfn(l[0])
+            data = json.loads(l[1])
+            if isinstance(data, (list, tuple)):
+                args = data
+                fn = getfn(l[0])
+            elif isinstance(data, dict) and getfn is None:
+                args = data["args"]
+                fn = globals()[data["fn"]]
+                authdump = data.get("authdump")
+                if authdump:
+                    global auth
+                    auth = Storage(authdump)
+                    auth.user = Storage(auth.user)
+                else:
+                    auth = Storage()
+                    auth.user = Storage()
+            else:
+                log.error("invalid entry: %s", str(data))
+                continue
             fn(*args)
             db.commit()
         except KeyboardInterrupt:
