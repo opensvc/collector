@@ -240,6 +240,24 @@ function service_tabs(divid, options) {
 			svc_pkgdiff(divid, {"svc_ids": o.options.svc_id})
 		}
 
+		// tab nodediff
+		i = o.register_tab({
+			"title": "action_menu.node_diff",
+			"title_class": "icon common16"
+		})
+		o.tabs[i].callback = function(divid) {
+			svc_nodediff(divid, {"svc_id": o.options.svc_id})
+		}
+
+		// tab sysrepdiff
+		i = o.register_tab({
+			"title": "action_menu.node_sysrep_diff",
+			"title_class": "icon common16"
+		})
+		o.tabs[i].callback = function(divid) {
+			svc_sysrepdiff(divid, {"svc_id": o.options.svc_id})
+		}
+
 		// tab compliance
 		i = o.register_tab({
 			"title": "service_tabs.compliance",
@@ -595,5 +613,79 @@ function service_compliance(divid, options) {
                 o.div.i18n()
                 o.init()
         })
+}
+
+function svc_nodediff(divid, options) {
+	var o = {}
+	o.div = $("#"+divid)
+	o.options = options
+	o.link = {
+		"fn": arguments.callee.name,
+		"parameters": o.options,
+		"title": "link."+arguments.callee.name
+	}
+
+	var t
+	var d
+
+	o.div.empty()
+	o.div.addClass("p-3")
+	services_osvcgetrest("R_SERVICE_NODES", [o.options.svc_id], {"limit": "0", "props": "node_id", "meta": "0", "groupby": "node_id"}, function(jd) {
+		if (rest_error(jd)) {
+			$("#"+divid).html(services_error_fmt(jd))
+			return
+		}
+		var nodes = []
+		for (i=0; i<jd.data.length; i++) {
+			d = jd.data[i]
+			if (d.node_id != "") {
+				nodes.push(d.node_id)
+			}
+		}
+		nodediff(divid, {"node_ids": nodes})
+	})
+	osvc_tools(o.div, {
+		"link": o.link
+	})
+
+	o.div.i18n()
+	return o
+}
+
+function svc_sysrepdiff(divid, options) {
+	var o = {}
+	o.div = $("#"+divid)
+	o.options = options
+	o.link = {
+		"fn": arguments.callee.name,
+		"parameters": o.options,
+		"title": "link."+arguments.callee.name
+	}
+
+	var t
+	var d
+
+	o.div.empty()
+	o.div.addClass("p-3")
+	services_osvcgetrest("R_SERVICE_NODES", [o.options.svc_id], {"limit": "0", "props": "node_id", "meta": "0", "groupby": "node_id"}, function(jd) {
+		if (rest_error(jd)) {
+			$("#"+divid).html(services_error_fmt(jd))
+			return
+		}
+		var nodes = []
+		for (i=0; i<jd.data.length; i++) {
+			d = jd.data[i]
+			if (d.node_id != "") {
+				nodes.push(d.node_id)
+			}
+		}
+		sysrepdiff(divid, {"nodes": nodes})
+	})
+	osvc_tools(o.div, {
+		"link": o.link
+	})
+
+	o.div.i18n()
+	return o
 }
 
