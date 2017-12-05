@@ -57,7 +57,7 @@ def _metrics_cron_fset(m, fset_id, verbose=False):
     db.commit()
 
 def _metrics_cron_fsets(m, verbose=False):
-    q = db.gen_filtersets.id > 0
+    q = db.gen_filtersets.fset_stats == True
     rows = db(q).select(db.gen_filtersets.id)
     fset_ids = [r.id for r in rows]
 

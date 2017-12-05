@@ -519,7 +519,7 @@ def gen_filterset_query(q, row, tables=[]):
     return q
 
 def refresh_fset_cache():
-    q = db.gen_filtersets.id > 0
+    q = db.gen_filtersets.fset_stats == True
     fset_ids = [r.id for r in db(q).select(db.gen_filtersets.id)]
 
     sql = "truncate fset_cache"
