@@ -54,6 +54,8 @@ class Hds(object):
         data = self.readfile("pool")
         for p in data:
             pool = {}
+            if "name" not in p:
+                continue
             pool["name"] = p["name"]
             pool["id"] = p["poolID"]
             pool["size"] = int(p["capacityInKB"])//1024
