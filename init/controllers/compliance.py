@@ -1499,6 +1499,7 @@ def ajax_comp_mod_status():
     o = mt.get_orderby(default=~db.nodes.nodename)
     q = q_filter(node_field=db.comp_status.node_id)
     q &= db.comp_status.node_id == db.nodes.node_id
+    q &= ((db.comp_status.svc_id != None) & (db.comp_status.svc_id == db.services.svc_id))
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
     q = apply_filters_id(q, db.comp_status.node_id)
