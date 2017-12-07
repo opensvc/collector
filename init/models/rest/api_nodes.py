@@ -818,20 +818,22 @@ class rest_post_nodes(rest_post_handler):
             raise Exception("The 'nodename' or 'id' property must be set in the POST data")
 
         try:
+            _vars = {}
+            _vars.update(vars)
             if 'node_id' in vars:
                 node_id = vars['node_id']
-                del(vars["node_id"])
+                del(_vars["node_id"])
             elif 'nodename' in vars:
                 node_id = vars['nodename']
-                del(vars["nodename"])
-            return rest_post_node().handler(node_id, **vars)
+                del(_vars["nodename"])
+            return rest_post_node().handler(node_id, **_vars)
         except:
             pass
 
         # create node code path
         check_privilege("NodeManager")
         if 'nodename' not in vars:
-            raise Exception("The 'nodename' property must be set in the POST data")
+            raise Exception("The 'nodename' property must be set in the POST data: %s" % vars)
         vars["updated"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         if "team_responsible" not in vars:
             vars["team_responsible"] = user_primary_group()
