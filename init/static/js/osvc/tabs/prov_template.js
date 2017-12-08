@@ -46,6 +46,15 @@ function prov_template_tabs(divid, options) {
 			})
 		}
 
+		// tab wiki
+		i = o.register_tab({
+			"title": "node_tabs.wiki",
+			"title_class": "icon edit"
+		})
+		o.tabs[i].callback = function(divid) {
+			wiki(divid, {"nodes": o.options.tpl_id, "type": "tpl"})
+		}
+
 		o.set_tab(o.options.tab)
 	})
 	return o

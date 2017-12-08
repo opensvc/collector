@@ -30,6 +30,15 @@ function variable_tabs(divid, options) {
 			variable_content(divid, o.options)
 		}
 
+		// tab wiki
+		i = o.register_tab({
+			"title": "node_tabs.wiki",
+			"title_class": "icon edit"
+		})
+		o.tabs[i].callback = function(divid) {
+			wiki(divid, {"nodes": o.options.variable_id, "type": "rule"})
+		}
+
 		o.set_tab(o.options.tab)
 	}
 

@@ -148,6 +148,9 @@ function encode_uri_key(key) {
 }
 
 function services_getaccessurl(service) {
+	if (service.match(/^http/)) {
+		return service
+	}
 	var base_path = "/"+osvc.app+"/rest/api"
 	if (service.match(/^S_/)) {
 		service_uri = services_access_uri[service]

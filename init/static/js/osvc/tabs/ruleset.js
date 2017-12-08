@@ -61,6 +61,15 @@ function ruleset_tabs(divid, options) {
 			ruleset_export(divid, o.options)
 		}
 
+		// tab wiki
+		i = o.register_tab({
+			"title": "node_tabs.wiki",
+			"title_class": "icon edit"
+		})
+		o.tabs[i].callback = function(divid) {
+			wiki(divid, {"nodes": o.options.ruleset_id, "type": "ruleset"})
+		}
+
 		o.set_tab(o.options.tab)
 	}
 

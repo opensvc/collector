@@ -1144,7 +1144,7 @@ function form(divid, options) {
 		} else {
 			var fn_callback = autocomplete_callback
 		}
-		if (d.Function.match(/^\//)) {
+		if (d.Function.match(/^\//) || d.Function.match(/^http/)) {
 			return rest_init(input, d, content, fn_callback)
 		} else {
 			return jsonrpc_init(input, d, content, fn_callback)
@@ -1387,7 +1387,7 @@ function form(divid, options) {
 	function rest_init(input, d, content, fn_callback) {
 		var args = prepare_args(input, d.Args)
 		var fn = subst_refs(input, d.Function)
-		if (fn.match(/\/\//) || fn.match(/\/undefined\//) || fn.match(/\/$/)) {
+		if (fn.match(/\/undefined\//) || fn.match(/\/$/)) {
 			console.log("cancel rest get on", fn, ": missing parameters")
 			return
 		}
@@ -1402,7 +1402,7 @@ function form(divid, options) {
 			return
 		}
 		o.fn_trigger_last[key] = sign
-		services_osvcgetrest("/init/rest/api"+fn, "", args, function(jd) {
+		services_osvcgetrest(fn, "", args, function(jd) {
 			if (typeof(jd.data) === "undefined") {
 				var data = []
 			} else {
