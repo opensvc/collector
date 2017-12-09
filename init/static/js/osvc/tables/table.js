@@ -2076,6 +2076,7 @@ function table_init(opts) {
 	t.unset_refresh_spin = function() {
 		if (t.e_title) {
 			t.e_title.removeClass("table_refresh")
+			t.e_sticky.find(".table_title").removeClass("table_refresh")
 		}
 		if (!t.e_tool_refresh_spin) {
 			return
@@ -2095,6 +2096,7 @@ function table_init(opts) {
 	t.set_refresh_spin = function() {
 		if (t.e_title) {
 			t.e_title.addClass("table_refresh")
+			t.e_sticky.find(".table_title").addClass("table_refresh")
 		}
 		if (t.e_tool_refresh_spin) {
 			t.e_tool_refresh_spin.addClass(t.spin_class)
