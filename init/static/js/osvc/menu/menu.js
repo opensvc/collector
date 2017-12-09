@@ -50,7 +50,7 @@ var menu_data = {
 		  "fn" : "view_nodes"
 		},
 		{
-		  "title" : "nodes hardware",
+		  "title" : "nodes_hardware",
 		  "class" : "hw16",
 		  "id" : "view-nodes-hw",
 		  "link" : "/init/nodes/nodes_hardware",

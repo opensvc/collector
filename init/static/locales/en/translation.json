@@ -1259,7 +1259,7 @@
 				"title": "Nodes",
 				"text": "Technical and organizational info"
 			},
-			"nodes hardware": {
+			"nodes_hardware": {
 				"title": "Nodes Hardware",
 				"text": "Peripherals and memory devices"
 			},
