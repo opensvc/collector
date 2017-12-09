@@ -13,7 +13,7 @@ menu_entries = [
   'key-r',
   'key-s',
   'key-esc',
-  'help-apî',
+  'help-api',
   'view-dashboard',
   'view-app',
   'view-services',
