@@ -578,6 +578,55 @@ class rest_get_node_root_password(rest_get_handler):
         return dict(data=pwl[0][0])
 
 #
+class rest_get_nodes_hardwares(rest_get_table_handler):
+    def __init__(self):
+        desc = [
+          "List all nodes pci and mem hardware.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/nodes_hardware?props=nodes.nodename,hw_class",
+        ]
+        rest_get_table_handler.__init__(
+          self,
+          path="/nodes_hardware",
+          tables=["node_hw"],
+          desc=desc,
+          examples=examples,
+          allow_fset_id=True,
+        )
+
+    def handler(self, **vars):
+        q = q_filter(node_field=db.node_hw.node_id)
+        fset_id = vars.get("fset-id")
+        if fset_id:
+            q = apply_filters_id(q, node_field=db.node_hw.node_id, fset_id=fset_id)
+        self.set_q(q)
+        return self.prepare_data(**vars)
+
+#
+class rest_get_node_hardwares(rest_get_table_handler):
+    def __init__(self):
+        desc = [
+          "List node pci and mem hardware.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/nodes/node1/hardware?props=hw_class",
+        ]
+        rest_get_table_handler.__init__(
+          self,
+          path="/nodes/<id>/hardware",
+          tables=["node_hw"],
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, node_id, **vars):
+        node_id = get_node_id(node_id)
+        q = db.node_hw.node_id == node_id
+        q = q_filter(node_field=db.node_hw.node_id)
+        self.set_q(q)
+        return self.prepare_data(**vars)
+
 #
 class rest_get_nodes(rest_get_table_handler):
     def __init__(self):

@@ -50,6 +50,13 @@ var menu_data = {
 		  "fn" : "view_nodes"
 		},
 		{
+		  "title" : "nodes hardware",
+		  "class" : "hw16",
+		  "id" : "view-nodes-hw",
+		  "link" : "/init/nodes/nodes_hardware",
+		  "fn" : "table_nodes_hardware"
+		},
+		{
 		  "title" : "tag_attachments",
 		  "class" : "fa-tags",
 		  "id" : "view-tagattach",

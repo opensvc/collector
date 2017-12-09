@@ -289,6 +289,7 @@
 			"column": "Column __col__ filter:"
 		},
 		"name": {
+			"nodes_hardware": "Nodes Hardware",
 			"disks_charts": "Statistics",
 			"saves_charts": "Statistics",
 			"scheduler_tasks": "Scheduler tasks",
@@ -1257,6 +1258,10 @@
 				"title": "Nodes",
 				"text": "Technical and organizational info"
 			},
+			"nodes hardware": {
+				"title": "Nodes Hardware",
+				"text": "Peripherals and memory devices"
+			},
 			"tag_attachments": {
 				"title": "Tag Attachments",
 				"text": "Tags attached to nodes and services"
@@ -1618,6 +1623,8 @@
 		"hidden_menu_entries": "hidden menu entries"
 	},
 	"col": {
+		"Path": "Path",
+		"Driver": "Driver",
 		"Instance regex": "Instance regex",
 		"Period": "Period",
 		"Times run": "Runs",

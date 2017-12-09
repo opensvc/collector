@@ -135,6 +135,36 @@ objcols = {
 }
 
 colprops = {
+	"hw_type": {
+		"field": "hw_type",
+		"table": "node_hw",
+		"img": "hw16",
+		"title": "Type"
+	},
+	"hw_path": {
+		"field": "hw_path",
+		"table": "node_hw",
+		"img": "key",
+		"title": "Path"
+	},
+	"hw_class": {
+		"field": "hw_class",
+		"table": "node_hw",
+		"img": "hw16",
+		"title": "Class"
+	},
+	"hw_description": {
+		"field": "hw_description",
+		"table": "node_hw",
+		"img": "hw16",
+		"title": "Description"
+	},
+	"hw_driver": {
+		"field": "hw_driver",
+		"table": "node_hw",
+		"img": "hw16",
+		"title": "Driver"
+	},
 	"registry_id": {
 		"field": "id",
 		"table": "docker_registries",

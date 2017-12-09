@@ -1422,6 +1422,16 @@ db.define_table('stats_compare',
     Field('name','string'),
     migrate=False)
 
+db.define_table('node_hw',
+    Field('node_id', 'string', length=36),
+    Field('hw_type','string'),
+    Field('hw_path','string'),
+    Field('hw_class','string'),
+    Field('hw_description','string'),
+    Field('hw_driver','string'),
+    Field('updated','datetime'),
+    migrate=False)
+
 db.define_table('node_hba',
     Field('node_id', 'string', length=36),
     Field('hba_id','string'),

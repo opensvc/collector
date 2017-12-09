@@ -289,6 +289,7 @@
 			"column": "Filtre de la colonne __col__:"
 		},
 		"name": {
+			"nodes_hardware": "MatÈriel des noeuds",
 			"disks_charts": "Statistiques",
 			"saves_charts": "Statistiques",
 			"scheduler_tasks": "T√¢ches schedul√©es",
@@ -1256,6 +1257,10 @@
 				"title" : "Noeuds",
 				"text" : "Infos techniques et organisationelles"
 			},
+			"nodes hardware": {
+				"title": "MatÈriel des noeuds",
+				"text": "PeriphÈriques et composants mÈmoire"
+			},
 			"tag_attachments" : {
 				"title" : "Attachements des tags",
 				"text" : "Tags attach√©s aux noeuds et aux services"
@@ -1619,6 +1624,8 @@
 		"hidden_menu_entries": "entr√©es cach√©es du menu"
 	},
 	"col": {
+		"Path": "Chemin",
+		"Driver": "Pilote",
 		"Instance regex": "Regex sur les instances",
 		"Period": "P√©riode",
 		"Times run": "Ex√©cutions",

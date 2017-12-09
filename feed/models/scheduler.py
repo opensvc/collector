@@ -407,6 +407,23 @@ def _insert_generic(data, auth):
     node_id = node.node_id
     if type(data) != dict:
         return
+    if 'hardware' in data:
+        vars = ["node_id", "hw_type", "hw_path", "hw_class", "hw_description", "hw_driver", "updated"]
+        vals = []
+        for hw in data['hardware']:
+            vals.append([
+                node_id,
+                hw.get("type"),
+                hw.get("path"),
+                hw.get("class"),
+                hw.get("description"),
+                hw.get("driver"),
+                now,
+            ])
+        generic_insert('node_hw', vars, vals)
+        sql = """delete from node_hw where node_id="%s" and updated<"%s" """%(node_id, now.strftime("%Y-%m-%d %H:%M:%S"))
+        db.executesql(sql)
+        ws_send('node_hw_change')
     if 'hba' in data:
         vars, vals = data['hba']
         if 'updated' not in vars:

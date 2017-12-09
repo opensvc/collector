@@ -186,7 +186,11 @@ def get_get_handlers(prefix=None):
              "rest_get_network_segment_responsibles",
              "rest_get_network_nodes",
        ],
+       "nodes_hardware": [
+             "rest_get_nodes_hardwares",
+       ],
        "nodes": [
+             "rest_get_node_hardwares",
              "rest_get_nodes",
              "rest_get_node",
              "rest_get_node_alerts",

@@ -130,6 +130,117 @@ def nodes():
 def nodes_load():
     return nodes()["table"]
 
+
+#
+class table_nodes_hardware(HtmlTable):
+    def __init__(self, id=None, func=None, innerhtml=None):
+        if id is None and 'tableid' in request.vars:
+            id = request.vars.tableid
+        HtmlTable.__init__(self, id, func, innerhtml)
+        self.cols = [
+            'node_id',
+            'nodename',
+            'hw_type',
+            'hw_path',
+            'hw_class',
+            'hw_description',
+            'hw_driver',
+            'updated',
+        ]
+        self.colprops = nodes_colprops
+        self.colprops.update({
+            'hw_type': HtmlTableColumn(
+                     field='hw_type',
+                     table='node_hw',
+                    ),
+            'hw_path': HtmlTableColumn(
+                     field='hw_path',
+                     table='node_hw',
+                    ),
+            'hw_class': HtmlTableColumn(
+                     field='hw_class',
+                     table='node_hw',
+                    ),
+            'hw_description': HtmlTableColumn(
+                     field='hw_description',
+                     table='node_hw',
+                    ),
+            'hw_driver': HtmlTableColumn(
+                     field='hw_driver',
+                     table='node_hw',
+                    ),
+            'updated': HtmlTableColumn(
+                     field='updated',
+                     table='node_hw',
+                    ),
+            'node_id': HtmlTableColumn(
+                     field='node_id',
+                     table='node_hw',
+                    ),
+            'nodename': HtmlTableColumn(
+                     field='nodename',
+                     table='nodes',
+                    ),
+        })
+        self.ajax_col_values = 'ajax_nodes_hardware_col_values'
+
+@auth.requires_login()
+def ajax_nodes_hardware_col_values():
+    table_id = request.vars.table_id
+    t = table_nodes_hardware(table_id, 'ajax_nodes_hardware')
+    col = request.args[0]
+    o = db[t.colprops[col].table][col]
+    q = db.node_hw.id > 0
+    j = db.node_hw.node_id == db.nodes.node_id
+    l = db.nodes.on(j)
+    q = q_filter(q, app_field=db.nodes.app)
+    q = apply_filters_id(q, db.node_hw.node_id, None)
+    for f in t.cols:
+        q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
+    t.object_list = db(q).select(o, orderby=o, left=l)
+    return t.col_values_cloud_ungrouped(col)
+
+@auth.requires_login()
+def ajax_nodes_hardware():
+    table_id = request.vars.table_id
+    t = table_nodes_hardware(table_id, 'ajax_nodes_hardware')
+
+    o = t.get_orderby(default=db.nodes.nodename)
+    q = db.node_hw.id>0
+    j = db.node_hw.node_id == db.nodes.node_id
+    l = db.nodes.on(j)
+    q = q_filter(q, app_field=db.nodes.app)
+    q = apply_filters_id(q, db.node_hw.node_id)
+    for f in t.cols:
+        q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
+
+    if len(request.args) == 1 and request.args[0] == 'csv':
+        t.csv_q = q
+        t.csv_orderby = o
+        t.csv_limit = 10000
+        t.csv_left = l
+        return t.csv()
+    if len(request.args) == 1 and request.args[0] == 'commonality':
+        t.csv_q = q
+        t.csv_left = l
+        return t.do_commonality()
+    if len(request.args) == 1 and request.args[0] == 'data':
+        n = db(q).select(db.node_hw.id.count(), left=l).first()(db.node_hw.id.count())
+        limitby = (t.pager_start,t.pager_end)
+        cols = t.get_visible_columns()
+        t.object_list = db(q).select(*cols, orderby=o, limitby=limitby, cacheable=True, left=l)
+        return t.table_lines_data(n, html=False)
+
+@auth.requires_login()
+def nodes_hardware():
+    t = SCRIPT(
+          """table_nodes_hardware("layout", %s)""" % request_vars_to_table_options(),
+        )
+    return dict(table=t)
+
+def nodes_hardware_load():
+    return nodes_hardware()["table"]
+
 class table_uids(HtmlTable):
     def __init__(self, id=None, func=None, innerhtml=None):
         if id is None and 'tableid' in request.vars:

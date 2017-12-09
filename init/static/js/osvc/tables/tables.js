@@ -1,3 +1,52 @@
+function table_nodes_hardware(divid, options) {
+	var defaults = {
+		'divid': divid,
+		'icon': "hw16",
+		'caller': 'table_nodes_hardware',
+		'id': 'nodes_hardware',
+		'name': 'nodes_hardware',
+		'ajax_url': '/init/nodes/ajax_nodes_hardware',
+		'checkboxes': true,
+		'span': ['node_id'],
+		'force_cols': [
+			'id',
+			'node_id',
+			'hw_type',
+			'hw_path'
+		],
+		'orderby': [
+			'node_id',
+			'hw_path'
+		],
+		'columns': [
+			'id',
+			'node_id',
+			'nodename',
+			'hw_type',
+			'hw_path',
+			'hw_class',
+			'hw_description',
+			'hw_driver',
+			'updated'
+		],
+		'default_columns': [
+			'nodename',
+			'hw_type',
+			'hw_path',
+			'hw_class',
+			'hw_description',
+			'hw_driver',
+			'updated'
+		],
+		'colprops': colprops,
+		'wsable': true,
+		'events': ["node_hw_change"]
+	}
+
+	var _options = $.extend({}, defaults, options)
+	return table_init(_options)
+}
+
 function table_scheduler_tasks(divid, options) {
 	var defaults = {
 		'divid': divid,
