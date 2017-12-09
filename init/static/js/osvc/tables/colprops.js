@@ -4,6 +4,7 @@ objcols = {
 		'assetname',
 		'fqdn',
 		'serial',
+		'manufacturer',
 		'model',
 		'bios_version',
 		'sp_version',
@@ -1220,6 +1221,10 @@ colprops = {
 	"mode": {
 		"img": "repl16",
 		"title": "Mode"
+	},
+	"manufacturer": {
+		"img": "node16",
+		"title": "Manufacturer"
 	},
 	"model": {
 		"img": "node16",
