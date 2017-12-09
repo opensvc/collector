@@ -984,6 +984,7 @@
 		"actions": "actions",
 		"log": "journal",
 		"topology": "topologie",
+		"hardware": "matériel",
 		"storage": "stockage",
 		"network": "rÃ©seau",
 		"packages": "paquets",

@@ -47,6 +47,29 @@ function table_nodes_hardware(divid, options) {
 	return table_init(_options)
 }
 
+function table_nodes_hardware_node(divid, node_id) {
+	var id = "nodes_hardware_" + node_id
+	var f_node_id = id+"_f_node_id"
+	var request_vars = {}
+	request_vars[f_node_id] = node_id
+	return table_nodes_hardware(divid, {
+		"id": id,
+		"caller": "table_nodes_hardware_node",
+		"request_vars": request_vars,
+		"volatile_filters": true,
+		"volatile_prefs": true,
+		"hide_cols": ['node_id'],
+		"visible_columns": [
+			'hw_type',
+			'hw_path',
+			'hw_class',
+			'hw_description',
+			'hw_driver',
+			'updated'
+		]
+	})
+}
+
 function table_scheduler_tasks(divid, options) {
 	var defaults = {
 		'divid': divid,

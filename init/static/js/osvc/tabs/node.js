@@ -97,6 +97,15 @@ function node_tabs(divid, options) {
 			})
 		}
 
+		// tab hardware
+		i = o.register_tab({
+			"title": "node_tabs.hardware",
+			"title_class": "icon hw16"
+		})
+		o.tabs[i].callback = function(divid) {
+			table_nodes_hardware_node(divid, o.options.node_id)
+		}
+
 		// tab storage
 		i = o.register_tab({
 			"title": "node_tabs.storage",

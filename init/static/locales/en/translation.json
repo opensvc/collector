@@ -985,6 +985,7 @@
 		"actions": "actions",
 		"log": "log",
 		"topology": "topology",
+		"hardware": "hardware",
 		"storage": "storage",
 		"network": "network",
 		"packages": "packages",
