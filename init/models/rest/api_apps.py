@@ -118,14 +118,18 @@ class rest_post_apps(rest_post_handler):
         )
 
     def handler(self, **vars):
+        _vars = {}
+        _vars.update(vars)
         if "id" in vars:
             app_id = vars["id"]
-            del(vars["id"])
-            return rest_post_app().handler(app_id, **vars)
-        if "app" in vars:
-            app = vars["app"]
-            del(vars["app"])
-            return rest_post_app().handler(app, **vars)
+            del(_vars["id"])
+        elif "app" in vars:
+            app_id = vars["app"]
+            del(_vars["app"])
+        else:
+            app_id = None
+        if app_id and lib_app_id(app_id):
+            return rest_post_app().handler(app_id, **_vars)
 
         check_privilege("AppManager")
         if len(vars) == 0 or "app" not in vars:
@@ -135,6 +139,7 @@ class rest_post_apps(rest_post_handler):
         raise_on_error(response)
         table_modified("apps")
         ws_send('apps_change')
+        q = db.apps.id == response
         row = db(q).select().first()
 
         db.apps_responsibles.insert(app_id=row.id, group_id=user_default_group_id())
