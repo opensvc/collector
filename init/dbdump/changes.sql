@@ -6533,3 +6533,5 @@ drop table stats_swap;
 drop table stats_swap_day;    
 drop table stats_swap_hour;   
 
+delete from scheduler_task where task_name="task_perf";
+

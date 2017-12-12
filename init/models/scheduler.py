@@ -15,12 +15,6 @@ def task_refresh_obsolescence():
     refresh_obsolescence()
     ws_send('scheduler_change')
 
-def task_perf():
-    ws_send('scheduler_change')
-    LOAD('cron', 'cron_perf')
-    ws_send('scheduler_change')
-    return 1
-
 def task_purge_expiry():
     ws_send('scheduler_change')
     LOAD('cron', 'cron_purge_expiry')
