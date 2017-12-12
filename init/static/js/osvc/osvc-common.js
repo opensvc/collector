@@ -4,6 +4,7 @@ function sanitize_dom_id(id) {
 
 function osvc_date_from_collector(s) {
 	try {
+		//var m = moment.tz(s, "YYYY-MM-DD hh:mm:ss", osvc.server_timezone).tz(osvc.client_timezone)
 		var m = moment.tz(s, osvc.server_timezone).tz(osvc.client_timezone)
 	} catch(e) {
 		console.log(e)
@@ -23,6 +24,10 @@ function osvc_date_to_collector(s) {
 		return s
 	}
 	return m.format(m._f)
+}
+
+function is_dict_empty(obj) {
+	return Object.keys(obj).length === 0
 }
 
 function is_dict(obj) {
@@ -314,7 +319,7 @@ function flash() {
 	}
 
 	o.create_entry = function(data) {
-		var e = $("<span></span>")
+		var e = $("<div></div>")
 		e.attr("id", data.id)
 		o.e_show.append(e)
 		if (data.fn) {
@@ -327,7 +332,7 @@ function flash() {
 
 	o.show_entry = function(data) {
 		o.e_show.children().hide()
-		var e = o.e_show.children("span#"+data.id)
+		var e = o.e_show.children("div#"+data.id)
 		if (e.length == 1) {
 			if (e.children().length == 0) {
 				e.remove()
@@ -1695,6 +1700,9 @@ function format_title(options) {
 
 	if (options.type == "node") {
 		services_osvcgetrest("R_NODE", [o.options.id], {"props": "nodename", "meta": "false", "limit": 1}, function(jd) {
+			if (!jd.data || jd.data.length == 0) {
+				return
+			}
 			o.options.name = jd.data[0].nodename
 			o.render()
 		})
