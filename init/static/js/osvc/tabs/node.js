@@ -542,14 +542,8 @@ function node_stats(divid, options) {
 	}
 
 	o.init_container = function(container) {
-		container.children(".refresh16").bind("click", function() {
-			$(this).parent().children("[name=plots]").each(function() {
-				o.refresh_container_group($(this))
-			})
-		})
 		container.children(".nok").bind("click", function() {
 			$(this).hide()
-			$(this).siblings(".refresh16").hide()
 			$(this).parent().children("[name=plots]").each(function() {
 				if ($(this).is(":visible")) {
 					$(this).slideToggle()

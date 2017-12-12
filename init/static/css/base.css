@@ -11,6 +11,12 @@
 	background-color: transparent;
 }
 
+.jqstooltip {
+	-webkit-box-sizing: content-box;
+	-moz-box-sizing: content-box;
+	box-sizing: content-box;
+}
+
 td {
 	padding: 0.2rem;
 }

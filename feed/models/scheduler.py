@@ -6,6 +6,8 @@ import os
 import copy
 import logging
 
+from applications.init.modules import timeseries
+
 log = logging.getLogger("web2py.app.feed")
 
 def send_sysreport_delete(deleted, sysreport_d, node_id):
@@ -3853,7 +3855,11 @@ def update_dash_flex_cpu(svc_id):
     now = datetime.datetime.now()
     now = now - datetime.timedelta(microseconds=now.microsecond)
 
-    sql = """select svc_env from services
+    sql = """select
+               svc_env,
+               svc_flex_cpu_low_threshold,
+               svc_flex_cpu_high_threshold,
+             from services
              where
                svc_id="%(svc_id)s"
           """%dict(svc_id=svc_id)
@@ -3865,78 +3871,52 @@ def update_dash_flex_cpu(svc_id):
         sev = 4
     else:
         sev = 3
+    env = rows[0][0]
+    svc_flex_cpu_low_threshold = rows[0][1]
+    svc_flex_cpu_high_threshold = rows[0][2]
 
-    sql = """insert into dashboard
-               select
+    sql = """select distinct(node_id) from svcmon where
+             mon_availstatus="up" and svc_id="%s"
+          """ % svc_id
+    rows = db.executesql(sql)
+    threshold = datetime.datetime.now() - datetime.timedelta(minutes=15)
+    total = 0
+    count = len(rows)
+    for row in rows:
+        total += timeseries.whisper_fetch_avg("nodes/%s"%node_id, "cpu", "all", "idle", b=threshold)
+    avg = total/count
+
+    if avg > svc_flex_cpu_high_threshold or avg < svc_flex_cpu_low_threshold:
+        sql = """insert into dashboard
                  NULL,
                  "flex error",
                  "%(svc_id)s",
                  %(sev)d,
                  "%%(n)d average cpu usage. thresholds: %%(cmin)d - %%(cmax)d",
-                 concat('{"n": ', round(t.cpu),
-                        ', "cmin": ', t.svc_flex_cpu_low_threshold,
-                        ', "cmax": ', t.svc_flex_cpu_high_threshold,
+                 concat('{"n": ', %(avg)d,
+                        ', "cmin": ', %(cmin)d,
+                        ', "cmax": ', %(cmax)d,
                         '}'),
                  now(),
-                 md5(concat('{"n": ', round(t.cpu),
-                        ', "cmin": ', t.svc_flex_cpu_low_threshold,
-                        ', "cmax": ', t.svc_flex_cpu_high_threshold,
+                 md5(concat('{"n": ', %(avg)d,
+                        ', "cmin": ', %(cmin)d,
+                        ', "cmax": ', %(cmax)d,
                         '}')),
                  "%(env)s",
                  now(),
                  "",
                  NULL
-               from (
-                 select *
-                 from (
-                  select
-                   p.svc_flex_cpu_low_threshold AS svc_flex_cpu_low_threshold,
-                   p.svc_flex_cpu_high_threshold AS svc_flex_cpu_high_threshold,
-                   (
-                    select
-                     count(1)
-                    from svcmon c
-                    where
-                     c.svc_id = "%(svc_id)s" and
-                     c.mon_availstatus = 'up'
-                   ) AS up,
-                   (
-                    select
-                     (100 - c.idle)
-                    from stats_cpu c join svcmon m
-                    where
-                     c.node_id = m.node_id and
-                     m.svc_id = "%(svc_id)s" and
-                     c.date > (now() + interval -(15) minute) and
-                     c.cpu = 'all' and
-                     m.mon_overallstatus = 'up'
-                    group by m.svc_id
-                   ) AS cpu
-                  from v_svcmon p
-                  where
-                   p.svc_id="%(svc_id)s"
-                 ) w
-                 where
-                   w.up > 0 and
-                   (
-                     (
-                       w.svc_flex_cpu_high_threshold > 0 and
-                       w.cpu > w.svc_flex_cpu_high_threshold
-                     ) or
-                     (
-                       w.svc_flex_cpu_low_threshold > 0 and
-                       w.cpu < w.svc_flex_cpu_low_threshold
-                     )
-                   )
-               ) t
                on duplicate key update
                  dash_updated=now()
           """%dict(svc_id=svc_id,
                    sev=sev,
-                   env=rows[0][0],
+                   cmin=cmin,
+                   cmax=cmax,
+                   avg=int(avg),
+                   env=env,
                   )
-    db.executesql(sql)
-    db.commit()
+        db.executesql(sql)
+        db.commit()
 
     sql = """delete from dashboard
                where
@@ -3947,7 +3927,6 @@ def update_dash_flex_cpu(svc_id):
           """%dict(svc_id=svc_id, now=str(now))
     rows = db.executesql(sql)
     db.commit()
-
     dashboard_events()
 
 def update_dash_flex_instances_started(svc_id):
@@ -4193,47 +4172,49 @@ def update_dash_checks(node_id):
 def update_dash_netdev_errors(node_id):
     now = datetime.datetime.now()
     now -= datetime.timedelta(microseconds=now.microsecond)
-    sql = """select dev, sum(rxerrps+txerrps+collps+rxdropps+rxdropps) as errs
-               from stats_netdev_err_hour
-               where
-                 node_id = "%(node_id)s" and
-                 date > date_sub(now(), interval 1 day)
-               group by dev
-          """%dict(node_id=node_id)
-    rows = db.executesql(sql, as_dict=True)
+    b = now - datetime.timedelta(minutes=1440)
 
-    if len(rows) == 0:
-        sql = """delete from checks_live
-                 where
-                  node_id="%(node_id)s" and
-                  chk_type = "netdev_err"
-              """ % dict(node_id=node_id)
-        db.executesql(sql)
-        db.commit()
-        return
+    metrics = ["rxerrps", "txerrps", "collps", "rxdropps", "rxdropps"]
+    devs = timeseries.find_sub("nodes", node_id, "netdev_err")
+    for dev in devs:
+        errs = 0
+        for metric in metrics:
+            err = timeseries.whisper_fetch_avg("nodes", node_id, "netdev_err", dev, metric, b=b)
+            if err is not None:
+                errs += err
 
-    for row in rows:
-        sql = """insert into checks_live
-                 set
-                   chk_type="netdev_err",
-                   svc_id="",
-                   node_id="%(node_id)s",
-                   chk_value=%(errs)d,
-                   chk_updated="%(now)s",
-                   chk_instance="%(dev)s"
-                 on duplicate key update
-                   chk_type="netdev_err",
-                   svc_id="",
-                   node_id="%(node_id)s",
-                   chk_value=%(errs)d,
-                   chk_updated="%(now)s",
-                   chk_instance="%(dev)s"
-              """%dict(node_id=node_id,
-                       now=now,
-                       dev=row['dev'],
-                       errs=int(row['errs']))
-        db.executesql(sql)
-        db.commit()
+            if errs == 0:
+                sql = """delete from checks_live
+                         where
+                          node_id="%(node_id)s" and
+                          chk_instance = "%(dev)s"
+                          chk_type = "netdev_err"
+                      """ % dict(node_id=node_id, dev=dev)
+                db.executesql(sql)
+                db.commit()
+                return
+
+            sql = """insert into checks_live
+                     set
+                       chk_type="netdev_err",
+                       svc_id="",
+                       node_id="%(node_id)s",
+                       chk_value=%(errs)d,
+                       chk_updated="%(now)s",
+                       chk_instance="%(dev)s"
+                     on duplicate key update
+                       chk_type="netdev_err",
+                       svc_id="",
+                       node_id="%(node_id)s",
+                       chk_value=%(errs)d,
+                       chk_updated="%(now)s",
+                       chk_instance="%(dev)s"
+                  """%dict(node_id=node_id,
+                           now=now,
+                           dev=dev,
+                           errs=int(row['errs']))
+            db.executesql(sql)
+            db.commit()
 
     sql = """delete from checks_live
              where

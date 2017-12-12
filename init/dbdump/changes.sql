@@ -6498,3 +6498,38 @@ CREATE TABLE `node_hw` (
   UNIQUE KEY (node_id, hw_type, hw_path)
 );
 
+# 2017-12-12
+
+drop table stats_block;       
+drop table stats_block_day;   
+drop table stats_block_hour;  
+drop table stats_blockdev;    
+drop table stats_blockdev_day;
+drop table stats_blockdev_hour;
+drop table stats_cpu;         
+drop table stats_cpu_day;     
+drop table stats_cpu_hour;    
+drop table stats_fs_u;        
+drop table stats_fs_u_day;    
+drop table stats_fs_u_diff;   
+drop table stats_fs_u_hour;   
+drop table stats_fs_u_last;   
+drop table stats_mem_u;       
+drop table stats_mem_u_day;   
+drop table stats_mem_u_hour;  
+drop table stats_netdev;      
+drop table stats_netdev_day;  
+drop table stats_netdev_err;  
+drop table stats_netdev_err_day;
+drop table stats_netdev_err_hour;     
+drop table stats_netdev_hour; 
+drop table stats_proc;        
+drop table stats_proc_day;    
+drop table stats_proc_hour;   
+drop table stats_svc;         
+drop table stats_svc_day;     
+drop table stats_svc_hour;    
+drop table stats_swap;        
+drop table stats_swap_day;    
+drop table stats_swap_hour;   
+

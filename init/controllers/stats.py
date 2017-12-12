@@ -1,3 +1,5 @@
+from applications.init.modules import timeseries
+
 def call():
     """
     exposes services. for example:
@@ -230,227 +232,90 @@ def rows_stats_disks_per_svc(nodes=[], begin=None, end=None, lower=None, higher=
     return rows
 
 @auth.requires_login()
-def rows_avg_cpu_for_nodes(nodes=[], begin=None, end=None, lower=None, higher=None):
-    """ last day avg cpu usage per node
-    """
+def avg_cpu_for_nodes_data(nodes=[], begin=None, end=None):
     if len(nodes) > 0:
         nodes = set(nodes) & set(user_published_nodes())
-        nodes = map(repr, nodes)
-    else:
-        q = q_filter(app_field=db.nodes.app)
-        q = apply_filters_id(q, db.nodes.node_id)
-        nodes = [repr(r.node_id) for r in db(q).select(db.nodes.node_id)]
-    if len(nodes) == 0:
-        return []
-    nodes = 'and s.node_id in (%s)'%','.join(nodes)
-
-    if begin is None or end is None:
-        now = datetime.datetime.now()
-        end = now - datetime.timedelta(days=0, microseconds=now.microsecond)
-        begin = end - datetime.timedelta(days=1)
-    sql = """select concat(n.nodename, " *", n.app),
-                    0,
-                    s.cpu,
-                    avg(s.usr) as avg_usr,
-                    avg(s.nice) as avg_nice,
-                    avg(s.sys) as avg_sys,
-                    avg(s.iowait) as avg_iowait,
-                    avg(s.steal) as avg_steal,
-                    avg(s.irq) as avg_irq,
-                    avg(s.soft) as avg_soft,
-                    avg(s.guest) as avg_guest
-             from stats_cpu%(period)s s, nodes n
-             where cpu='all'
-               and s.node_id=n.node_id
-               and s.date>'%(begin)s'
-               and s.date<'%(end)s'
-               %(nodes)s
-             group by s.node_id
-             order by 100-avg(s.usr+s.sys)"""%dict(begin=str(begin),end=str(end),nodes=nodes, period=get_period(begin, end))
-
-    if lower is not None:
-        sql += ' desc limit %d'%int(lower)
-    elif higher is not None:
-        sql += ' limit %d'%int(higher)
-    else:
-        sql += ' desc'
-
-    return db.executesql(sql)
+    data = {}
+    metrics = [
+        "usr",
+        "nice",
+        "sys",
+        "iowait",
+        "steal",
+        "irq",
+        "soft",
+        "guest",
+    ]
+    for node in nodes:
+        data[node] = {}
+        for metric in metrics:
+            data[node][metric] = timeseries.whisper_fetch_avg("nodes", node, "cpu", "all", metric, b=begin, e=end)
+    return data
 
 @auth.requires_login()
-def rows_avg_mem_for_nodes(nodes=[], begin=None, end=None, lower=None, higher=None):
-    """ available mem
-    """
+def avg_swp_for_nodes_data(nodes=[], begin=None, end=None, lower=None, higher=None):
     if len(nodes) > 0:
         nodes = set(nodes) & set(user_published_nodes())
-        nodes = map(repr, nodes)
-    else:
-        q = q_filter(app_field=db.nodes.app)
-        q = apply_filters_id(q, db.nodes.node_id)
-        nodes = [repr(r.node_id) for r in db(q).select(db.nodes.node_id)]
-    if len(nodes) == 0:
-        return []
-    nodes = 'and s.node_id in (%s)'%','.join(nodes)
-
-    if begin is None or end is None:
-        now = datetime.datetime.now()
-        end = now - datetime.timedelta(days=0, microseconds=now.microsecond)
-        begin = end - datetime.timedelta(days=1)
-    sql = """select * from (
-               select concat(n.nodename, " *", n.app),
-                      avg(s.kbmemfree+s.kbcached) as avail,
-                      avg(s.kbmemfree),
-                      avg(s.kbcached)
-               from stats_mem_u%(period)s s, nodes n
-               where
-                 s.node_id=n.node_id
-                 and s.date>'%(begin)s'
-                 and s.date<'%(end)s'
-                 %(nodes)s
-               group by s.node_id
-               order by s.node_id, s.date
-             ) tmp
-             order by avail
-          """%dict(nodes=nodes, begin=str(begin), end=str(end), period=get_period(begin, end))
-
-    if lower is not None:
-        sql += ' desc limit %d'%int(lower)
-    elif higher is not None:
-        sql += ' limit %d'%int(higher)
-    else:
-        sql += ' desc'
-
-    rows = db.executesql(sql)
-    return rows
+    data = {}
+    metrics = [
+        "kbswpfree",
+        "kbswpused",
+    ]
+    for node in nodes:
+        data[node] = {}
+        for metric in metrics:
+            data[node][metric] = timeseries.whisper_fetch_avg("nodes", node, "swap", metric, b=begin, e=end)
+    return data
 
 @auth.requires_login()
-def rows_avg_swp_for_nodes(nodes=[], begin=None, end=None, lower=None, higher=None):
+def avg_proc_for_nodes_data(nodes=[], begin=None, end=None):
     if len(nodes) > 0:
         nodes = set(nodes) & set(user_published_nodes())
-        nodes = map(repr, nodes)
-    else:
-        q = q_filter(app_field=db.nodes.app)
-        q = apply_filters_id(q, db.nodes.node_id)
-        nodes = [repr(r.node_id) for r in db(q).select(db.nodes.node_id)]
-    if len(nodes) == 0:
-        return []
-    nodes = 'and s.node_id in (%s)'%','.join(nodes)
-
-    if begin is None or end is None:
-        now = datetime.datetime.now()
-        end = now - datetime.timedelta(days=0, microseconds=now.microsecond)
-        begin = end - datetime.timedelta(days=1)
-    sql = """select * from (
-               select concat(n.nodename, " *", n.app),
-                      avg(s.kbswpfree) as avail,
-                      avg(s.kbswpused)
-               from stats_swap%(period)s s, nodes n
-               where
-                 s.node_id=n.node_id
-                 and s.date>'%(begin)s'
-                 and s.date<'%(end)s'
-               %(nodes)s
-               group by s.node_id
-               order by s.node_id, s.date
-             ) tmp
-             order by avail
-          """%dict(nodes=nodes, begin=str(begin), end=str(end), period=get_period(begin, end))
-
-    if lower is not None:
-        sql += ' desc limit %d'%int(lower)
-    elif higher is not None:
-        sql += ' limit %d'%int(higher)
-    else:
-        sql += ' desc'
-
-    rows = db.executesql(sql)
-    return rows
+    data = {}
+    metrics = [
+        "runq_sz",
+        "plist_sz",
+        "ldavg_1",
+        "ldavg_5",
+        "ldavg_15",
+    ]
+    for node in nodes:
+        data[node] = {}
+        for metric in metrics:
+            data[node][metric] = timeseries.whisper_fetch_avg("nodes", node, "proc", metric, b=begin, e=end)
+    return data
 
 @auth.requires_login()
-def rows_avg_proc_for_nodes(nodes=[], begin=None, end=None, lower=None, higher=None):
+def avg_mem_for_nodes_data(nodes=[], begin=None, end=None, lower=None, higher=None):
     if len(nodes) > 0:
         nodes = set(nodes) & set(user_published_nodes())
-        nodes = map(repr, nodes)
-    else:
-        q = q_filter(app_field=db.nodes.app)
-        q = apply_filters_id(q, db.nodes.node_id)
-        nodes = [repr(r.node_id) for r in db(q).select(db.nodes.node_id)]
-    if len(nodes) == 0:
-        return []
-    nodes = 'and s.node_id in (%s)'%','.join(nodes)
-
-    if begin is None or end is None:
-        now = datetime.datetime.now()
-        end = now - datetime.timedelta(days=0, microseconds=now.microsecond)
-        begin = end - datetime.timedelta(days=1)
-    sql = """select * from (
-               select concat(n.nodename, " *", n.app),
-                      avg(s.runq_sz),
-                      avg(s.plist_sz),
-                      avg(s.ldavg_1),
-                      avg(s.ldavg_5),
-                      avg(s.ldavg_15) as o
-               from stats_proc%(period)s s, nodes n
-               where
-                 s.node_id=n.node_id
-                 and s.date>'%(begin)s'
-                 and s.date<'%(end)s'
-                 %(nodes)s
-               group by s.node_id
-               order by s.node_id, s.date
-             ) tmp
-             order by o
-          """%dict(nodes=nodes, begin=str(begin), end=str(end), period=get_period(begin, end))
-
-    if lower is not None:
-        sql += ' desc limit %d'%int(lower)
-    elif higher is not None:
-        sql += ' limit %d'%int(higher)
-    else:
-        sql += ' desc'
-
-    rows = db.executesql(sql)
-    return rows
+    data = {}
+    metrics = [
+        "kbmemfree",
+        "kbcached",
+    ]
+    for node in nodes:
+        data[node] = {}
+        for metric in metrics:
+            data[node][metric] = timeseries.whisper_fetch_avg("nodes", node, "mem_u", metric, b=begin, e=end)
+    return data
 
 @auth.requires_login()
-def rows_avg_block_for_nodes(nodes=[], begin=None, end=None, lower=None, higher=None):
+def avg_block_for_nodes_data(nodes=[], begin=None, end=None, lower=None, higher=None):
     if len(nodes) > 0:
         nodes = set(nodes) & set(user_published_nodes())
-        nodes = map(repr, nodes)
-    else:
-        q = q_filter(app_field=db.nodes.app)
-        q = apply_filters_id(q, db.nodes.node_id)
-        nodes = [repr(r.node_id) for r in db(q).select(db.nodes.node_id)]
-    if len(nodes) == 0:
-        return []
-    nodes = 'and s.node_id in (%s)'%','.join(nodes)
-
-    if begin is None or end is None:
-        now = datetime.datetime.now()
-        end = now - datetime.timedelta(days=0, microseconds=now.microsecond)
-        begin = end - datetime.timedelta(days=1)
-    sql = """select concat(n.nodename, " *", n.app),
-                    avg(s.rtps),
-                    avg(s.wtps),
-                    avg(s.rbps),
-                    avg(s.wbps)
-             from stats_block%(period)s s, nodes n
-             where
-               s.node_id=n.node_id
-               and s.date>'%(begin)s'
-               and s.date<'%(end)s'
-               %(nodes)s
-             group by s.node_id
-             order by avg(s.rbps)+avg(s.wbps)"""%dict(begin=str(begin),end=str(end),nodes=nodes, period=get_period(begin, end))
-
-    if lower is not None:
-        sql += ' desc limit %d'%int(lower)
-    elif higher is not None:
-        sql += ' limit %d'%int(higher)
-    else:
-        sql += ' desc'
-
-    return db.executesql(sql)
+    data = {}
+    metrics = [
+        "rtps",
+        "wtps",
+        "rbps",
+        "wbps",
+    ]
+    for node in nodes:
+        data[node] = {}
+        for metric in metrics:
+            data[node][metric] = timeseries.whisper_fetch_avg("nodes", node, "block", metric, b=begin, e=end)
+    return data
 
 #
 # json data servers
@@ -460,17 +325,14 @@ def json_avg_cpu_for_nodes():
     nodes = request.vars.node
     begin = request.vars.b
     end = request.vars.e
-    lower = request.vars.lower
-    higher = request.vars.higher
 
     if nodes is None:
         nodes = []
     else:
         nodes = nodes.split(',')
 
-    rows = rows_avg_cpu_for_nodes(nodes, begin, end, lower, higher)
+    data = avg_cpu_for_nodes_data(nodes, begin, end)
     d = []
-    u = []
     usr = []
     nice = []
     sys = []
@@ -479,17 +341,19 @@ def json_avg_cpu_for_nodes():
     irq = []
     soft = []
     guest = []
-    for i, r in enumerate(rows):
-        j = i+1
-        d.append(r[0])
-        usr.append([r[3], j])
-        nice.append([r[4], j])
-        sys.append([r[5], j])
-        iowait.append([r[6], j])
-        steal.append([r[7], j])
-        irq.append([r[8], j])
-        soft.append([r[9], j])
-        guest.append([r[10], j])
+
+    j = 0
+    for node, r in data.items():
+        j += 1
+        d.append(get_nodename(node))
+        usr.append([r["usr"], j])
+        nice.append([r["nice"], j])
+        sys.append([r["sys"], j])
+        iowait.append([r["iowait"], j])
+        steal.append([r["steal"], j])
+        irq.append([r["irq"], j])
+        soft.append([r["soft"], j])
+        guest.append([r["guest"], j])
     return [d, [usr, nice, sys, iowait, steal, irq, soft, guest]]
 
 @service.json
@@ -497,23 +361,22 @@ def json_avg_swp_for_nodes():
     nodes = request.vars.node
     begin = request.vars.b
     end = request.vars.e
-    lower = request.vars.lower
-    higher = request.vars.higher
 
     if nodes is None:
         nodes = []
     else:
         nodes = nodes.split(',')
 
-    rows = rows_avg_swp_for_nodes(nodes, begin, end, lower, higher)
+    data = avg_swp_for_nodes_data(nodes, begin, end)
     d = []
     kbswpfree = []
     kbswpused = []
-    for i, r in enumerate(rows):
-        j = i+1
-        d.append(r[0])
-        kbswpfree.append([int(r[1]/1024), j])
-        kbswpused.append([int(r[2]/1024), j])
+    j = 0
+    for node, r in data.items():
+        j += 1
+        d.append(get_nodename(node))
+        kbswpfree.append([int(r["kbswpfree"]/1024), j])
+        kbswpused.append([int(r["kbswpused"]/1024), j])
     return [d, [kbswpfree, kbswpused]]
 
 @service.json
@@ -521,29 +384,28 @@ def json_avg_proc_for_nodes():
     nodes = request.vars.node
     begin = request.vars.b
     end = request.vars.e
-    lower = request.vars.lower
-    higher = request.vars.higher
 
     if nodes is None:
         nodes = []
     else:
         nodes = nodes.split(',')
 
-    rows = rows_avg_proc_for_nodes(nodes, begin, end, lower, higher)
+    data = avg_proc_for_nodes_data(nodes, begin, end)
     d = []
     runq_sz = []
     plist_sz = []
     ldavg_1 = []
     ldavg_5 = []
     ldavg_15 = []
-    for i, r in enumerate(rows):
-        j = i+1
-        d.append(r[0])
-        runq_sz.append([float(r[1]), j])
-        plist_sz.append([float(r[2]), j])
-        ldavg_1.append([float(r[3]), j])
-        ldavg_5.append([float(r[4]), j])
-        ldavg_15.append([float(r[5]), j])
+    j = 0
+    for node, r in data.items():
+        j += 1
+        d.append(get_nodename(node))
+        runq_sz.append([float(r["runq_sz"]), j])
+        plist_sz.append([float(r["plist_sz"]), j])
+        ldavg_1.append([float(r["ldavg_1"]), j])
+        ldavg_5.append([float(r["ldavg_5"]), j])
+        ldavg_15.append([float(r["ldavg_15"]), j])
     return [d, [runq_sz, plist_sz, ldavg_1, ldavg_5, ldavg_15]]
 
 @service.json
@@ -551,23 +413,22 @@ def json_avg_mem_for_nodes():
     begin = request.vars.b
     end = request.vars.e
     nodes = request.vars.node
-    lower = request.vars.lower
-    higher = request.vars.higher
 
     if nodes is None:
         nodes = []
     else:
         nodes = nodes.split(',')
 
-    rows = rows_avg_mem_for_nodes(nodes, begin, end, lower, higher)
+    data = avg_mem_for_nodes_data(nodes, begin, end)
     d = []
     free = []
     cache = []
-    for i, r in enumerate(rows):
-        j = i+1
-        d.append(r[0])
-        free.append([int(r[2]/1024), j])
-        cache.append([int(r[3]/1024), j])
+    j = 0
+    for node, r in data.items():
+        j += 1
+        d.append(get_nodename(node))
+        free.append([int(r["kbmemfree"]/1024), j])
+        cache.append([int(r["kbcached"]/1024), j])
     return [d, [free, cache]]
 
 @service.json
@@ -575,27 +436,26 @@ def json_avg_block_for_nodes():
     nodes = request.vars.node
     begin = request.vars.b
     end = request.vars.e
-    lower = request.vars.lower
-    higher = request.vars.higher
 
     if nodes is None:
         nodes = []
     else:
         nodes = nodes.split(',')
 
-    rows = rows_avg_block_for_nodes(nodes, begin, end, lower, higher)
+    data = avg_block_for_nodes_data(nodes, begin, end)
     d = []
     rtps = []
     wtps = []
     rbps = []
     wbps = []
-    for i, r in enumerate(rows):
-        j = i+1
-        d.append(r[0])
-        rtps.append([r[1]/2, j])
-        wtps.append([r[2]/2, j])
-        rbps.append([r[3]/2, j])
-        wbps.append([r[4]/2, j])
+    j = 0
+    for node, r in data.items():
+        j += 1
+        d.append(get_nodename(node))
+        rtps.append([r["rtps"]/2, j])
+        wtps.append([r["wtps"]/2, j])
+        rbps.append([r["rbps"]/2, j])
+        wbps.append([r["wbps"]/2, j])
     return [d, [rtps, wtps, rbps, wbps]]
 
 @service.json

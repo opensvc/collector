@@ -573,14 +573,7 @@ function comp_history(url, id) {
   })
 }
 
-function mangle_data(data) {
-	for (var i=0; i<data.length; i++) {
-		for (var j=0; j<data[i].length; j++) {
-			data[i][j][0] = osvc_date_from_collector(data[i][j][0])
-		}
-	}
-	return data
-}
+
 
 function set_has_data(e) {
 	e.children().empty()
@@ -597,158 +590,6 @@ function set_no_data(e) {
 	e.append("<div name='nodata' class='icon db16 grayed' style='padding:1em'>no data</div>")
 }
 
-function stats_cpu(url, id) {
-  require(["jqplot"], function(){
-    $.jqplot.config.enablePlugins = true;
-    $.getJSON(url, function(data) {
-        if (data[0].length == 0) {
-          set_no_data($("#"+id))
-          return
-        }
-        set_has_data($("#"+id))
-        data = mangle_data(data)
-	p = $.jqplot(id+"_u", data, $.extend({}, chart_defaults, {
-	    stackSeries: true,
-            title: {
-                text: 'Cpu usage'
-            },
-	    seriesDefaults: {
-                markerOptions: {size: 2},
-                fill: true,
-                shadowAngle: 135,
-                shadowOffset: 1.0,
-                breakOnNull : true,
-                shadowWidth: 2
-            },
-	    series: [
-                { label: 'usr' },
-                { label: 'nice' },
-                { label: 'sys' },
-                { label: 'iowait' },
-                { label: 'steal' },
-                { label: 'irq' },
-                { label: 'soft' },
-                { label: 'guest' }
-            ],
-	    axes: {
-		xaxis: {
-                    min: data[0][0][0],
-                    max: data[0][data[0].length-1][0],
-		    renderer: $.jqplot.DateAxisRenderer, 
-                    tickOptions:{formatString:'%b,%d\n%H:%M'}
-		}, 
-		yaxis: {
-		    min: 0,
-		    tickOptions:{formatString:'%.2f%%'}
-		}
-	    }
-	}))
-        _jqplot_extra($('#'+id+'_u'), p)
-    });
-  })
-}
-function stats_proc(url, id) {
-  require(["jqplot"], function(){
-    $.jqplot.config.enablePlugins = true;
-    $.getJSON(url, function(data) {
-        data = mangle_data(data)
-        if (data[0].length == 0) {
-          set_no_data($("#"+id))
-          return
-        }
-        set_has_data($("#"+id))
-	p = $.jqplot(id+'_runq_sz', [data[0]], $.extend({}, chart_defaults, {
-            title: {
-                text: 'Run queue size'
-            },
-	    seriesDefaults: {
-                breakOnNull : true,
-                markerOptions: {size: 2},
-                shadowAngle: 135,
-                shadowOffset: 1.0,
-                shadowWidth: 2
-            },
-	    series: [
-                { label: 'runq_sz' }
-            ],
-	    axes: {
-		xaxis: {
-                    min: data[0][0][0],
-                    max: data[0][data[0].length-1][0],
-		    renderer: $.jqplot.DateAxisRenderer, 
-                    tickOptions:{formatString:'%b,%d\n%H:%M'}
-		}, 
-		yaxis: {
-		    min: 0,
-		    tickOptions:{formatString:'%.2f'}
-		}
-	    }
-	}))
-        _jqplot_extra($('#'+id+'_runq_sz'), p)
-
-	p = $.jqplot(id+'_plist_sz', [data[1]], $.extend({}, chart_defaults, {
-            title: {
-                text: 'Process list size'
-            },
-	    seriesDefaults: {
-                breakOnNull : true,
-                markerOptions: {size: 2},
-                shadowAngle: 135,
-                shadowOffset: 1.0,
-                shadowWidth: 2
-            },
-	    series: [
-                { label: 'plist_sz' }
-            ],
-	    axes: {
-		xaxis: {
-                    min: data[1][0][0],
-                    max: data[1][data[1].length-1][0],
-		    renderer: $.jqplot.DateAxisRenderer, 
-                    tickOptions:{formatString:'%b,%d\n%H:%M'}
-		}, 
-		yaxis: {
-		    min: 0,
-		    tickOptions:{formatString:'%i'}
-		}
-	    }
-	}))
-        _jqplot_extra($('#'+id+'_plist_sz'), p)
-
-	p = $.jqplot(id+'_loadavg', [data[2],data[3],data[4]], $.extend({}, chart_defaults, {
-            title: {
-                text: 'Load average'
-            },
-	    seriesDefaults: {
-                breakOnNull : true,
-                markerOptions: {size: 2},
-                fill: false,
-                shadowAngle: 135,
-                shadowOffset: 1.0,
-                shadowWidth: 2
-            },
-	    series: [
-                { label: 'loadavg 1\'' },
-                { label: 'loadavg 5\'' },
-                { label: 'loadavg 15\'' }
-            ],
-	    axes: {
-		xaxis: {
-                    min: data[2][0][0],
-                    max: data[2][data[2].length-1][0],
-		    renderer: $.jqplot.DateAxisRenderer, 
-                    tickOptions:{formatString:'%b,%d\n%H:%M'}
-		}, 
-		yaxis: {
-		    min: 0,
-		    tickOptions:{formatString:'%.2f'}
-		}
-	    }
-	}))
-        _jqplot_extra($('#'+id+'_loadavg'), p)
-    });
-  })
-}
 function stats_svc_cpu(url, id) {
     stats_svc(url, id, "cpu usage", "%")
 }
@@ -843,31 +684,237 @@ function stats_svc(url, id, title, unit) {
     });
   })
 }
-function stats_mem(url, id) {
+function mangle_data(data, keep) {
+	function get_steps_list(data) {
+		for (var i=0; i<data.length; i++) {
+			if (data[i].length > 0) {
+				return data[i].length
+			}
+		}
+		return 1
+	}
+	function get_steps_dict(data) {
+		for (var i in data) {
+			if (data[i].length > 0) {
+				return data[i].length
+			}
+		}
+		return 1
+	}
+	function mangle_list(data, n) {
+		if (data.length == 0) {
+			for (var j=0; j<n ; j++) {
+				data.push([null, null])
+			}
+			return data
+		}
+		for (var j=0; j<data.length; j++) {
+			data[j][0] = osvc_date_from_collector(data[j][0])
+		}
+		return data
+	}
+	if (data instanceof Array) {
+		n = get_steps_list(data)
+		for (var i=0; i<data.length; i++) {
+			data[i] = mangle_list(data[i], n)
+		}
+	} else {
+		n = get_steps_dict(data)
+		for (var i=0; i<keep.length; i++) {
+			data[keep[i]] = mangle_list(data[keep[i]], n)
+		}
+	}
+	return data
+}
+function prepare_data(options) {
+        var data = options.data
+
+	//
+	var keep = []
+	var series = []
+	for (candidate in options.candidates) {
+		if (candidate in data) {
+			keep.push(candidate)
+			series.push({
+				"label": options.candidates[candidate]["label"]
+			})
+		}
+	}
+
+	// fix dates tz
+        var data = mangle_data(data, keep)
+
+	// extra data mangling
+	if (typeof(options.mangler)!=='undefined') {
+		data = options.mangler(data, keep)
+	}
+	// apply scaling to best unit
+	var d = {}
+	if (options.scale) {
+		if (typeof(options.factor) === 'undefined') {
+			options.factor = 1
+		}
+		var max = 0
+		for (i=0; i<data[keep[0]].length; i++) {
+			var val = 0
+			for (var j=0; j<keep.length; j++) {
+				val += data[keep[j]][i][1]
+			}
+			max = Math.max(max, val/options.factor)
+		}
+		d = best_unit_mb(max, options.iunit)
+		for (var i=0; i<keep.length; i++) {
+			for (var j=0; j<data[keep[0]].length; j++) {
+				data[keep[i]][j][1] /= d['div']*options.factor
+			}
+		}
+	}
+
+	// get time axis min and max
+	xmin = data[keep[0]][0][0]
+	xmax = data[keep[0]][data[keep[0]].length-1][0]
+
+	// filter out not kept metrics
+	var _data = []
+	for (var i=0; i<keep.length; i++) {
+		_data.push(data[keep[i]])
+	}
+	return {
+		series: series,
+		data: _data,
+		xmin: xmin,
+		xmax: xmax,
+		fmt: d.fmt,
+		unit: d.unit
+	}
+}
+function stats_cpu(url, id) {
   require(["jqplot"], function(){
     $.jqplot.config.enablePlugins = true;
     $.getJSON(url, function(data) {
-        if (data[0].length == 0) {
+        if (is_dict_empty(data)) {
           set_no_data($("#"+id))
           return
         }
         set_has_data($("#"+id))
-        data = mangle_data(data)
+	var candidates = {
+		"usr": {
+			"label": "usr"
+		},
+		"nice": {
+			"label": "nice"
+		},
+		"sys": {
+			"label": "sys"
+		},
+		"iowait": {
+			"label": "iowait"
+		},
+		"steal": {
+			"label": "steal"
+		},
+		"irq": {
+			"label": "irq"
+		},
+		"soft": {
+			"label": "soft"
+		},
+		"guest": {
+			"label": "guest"
+		}
+	}
 
-        max = 0
-        for (i=0; i<data[1].length; i++) {
-            max = Math.max(max, (data[1][i][1]+data[3][i][1]+data[4][i][1]+data[7][i][1]+data[0][i][1])/1024)
-        }
-        d = best_unit_mb(max)
-        for (i=0; i<data[1].length; i++) {
-            data[1][i][1] /= d['div']*1024
-            data[3][i][1] /= d['div']*1024
-            data[4][i][1] /= d['div']*1024
-            data[7][i][1] /= d['div']*1024
-            data[0][i][1] /= d['div']*1024
-        }
+	_data = prepare_data({
+		candidates: candidates,
+		data: data,
+		scale: false
+	})
 
-	p = $.jqplot(id+'_u', [data[1], data[3], data[4], data[7], data[0]], $.extend({}, chart_defaults, {
+	p = $.jqplot(id+"_u", _data.data, $.extend({}, chart_defaults, {
+	    stackSeries: true,
+            title: {
+                text: 'Cpu usage'
+            },
+	    seriesDefaults: {
+                markerOptions: {size: 2},
+                fill: true,
+                shadowAngle: 135,
+                shadowOffset: 1.0,
+                breakOnNull: true,
+                shadowWidth: 2
+            },
+	    series: _data.series,
+	    axes: {
+		xaxis: {
+		    min: _data.xmin,
+		    max: _data.xmax,
+		    renderer: $.jqplot.DateAxisRenderer, 
+                    tickOptions:{formatString:'%b,%d\n%H:%M'}
+		}, 
+		yaxis: {
+		    min: 0,
+		    tickOptions:{formatString:'%.2f%%'}
+		}
+	    }
+	}))
+        _jqplot_extra($('#'+id+'_u'), p)
+    });
+  })
+}
+function stats_mem(url, id) {
+  require(["jqplot"], function(){
+    $.jqplot.config.enablePlugins = true;
+    $.getJSON(url, function(data) {
+        if (is_dict_empty(data)) {
+          set_no_data($("#"+id))
+          return
+        }
+        set_has_data($("#"+id))
+
+	var candidates = {
+		"kbmemused": {
+			"label": "used"
+		},
+		"kbbuffers": {
+			"label": "used, buffer"
+		},
+		"kbcached": {
+			"label": "used, cache"
+		},
+		"kbmemsys": {
+			"label": "used, sys"
+		},
+		"kbmemfree": {
+			"label": "free"
+		}
+	}
+	function mangler(data, keep) {
+		var in_memused = ["kbmemsys", "kbcached", "kbbuffers"]
+		var keep_in_memused = []
+
+		for (var i=0; i<in_memused.length; i++) {
+			var candidate = in_memused[i]
+			if (keep.indexOf(candidate) >= 0) {
+				keep_in_memused.push(candidate)
+			}
+		}
+		for (i=0; i<data["kbmemused"].length; i++) {
+			for (var j=0; j<keep_in_memused.length; j++) {
+				data["kbmemused"][i][1] -= data[keep_in_memused[j]][i][1]
+			}
+		}
+		return data
+	}
+
+	var _data = prepare_data({
+		candidates: candidates,
+		data: data,
+		scale: true,
+		factor: 1024,
+		mangler: mangler
+	})
+
+	p = $.jqplot(id+'_u', _data.data, $.extend({}, chart_defaults, {
 	    stackSeries: true,
             title: {
                 text: 'Memory usage'
@@ -879,29 +926,36 @@ function stats_mem(url, id) {
                 shadowOffset: 1.0,
                 shadowWidth: 2
             },
-	    series: [
-                { label: 'used' },
-                { label: 'used, buffer' },
-                { label: 'used, cache' },
-                { label: 'used, sys' },
-                { label: 'free' }
-            ],
+            series: _data.series,
 	    axes: {
 		xaxis: {
-                    min: data[1][0][0],
-                    max: data[1][data[1].length-1][0],
+		    min: _data.xmin,
+		    max: _data.xmax,
 		    renderer: $.jqplot.DateAxisRenderer, 
                     tickOptions:{formatString:'%b,%d\n%H:%M'}
 		}, 
 		yaxis: {
 		    min: 0,
-                    tickOptions:{formatString: d['fmt']+' '+d['unit']}
+                    tickOptions:{formatString: _data.fmt+' '+_data.unit}
 		}
 	    }
 	}))
         _jqplot_extra($('#'+id+'_u'), p)
 
-	p = $.jqplot(id+'_pct', [data[2],data[6]], $.extend({}, chart_defaults, {
+	var candidates = {
+		"pct_memused": {
+			"label": "used/mem"
+		},
+		"pct_commit": {
+			"label": "promised/(mem+swap)"
+		},
+	}
+	var _data = prepare_data({
+		candidates: candidates,
+		data: data,
+		scale: false
+	})
+	p = $.jqplot(id+'_pct', _data.data, $.extend({}, chart_defaults, {
             title: {
                 text: 'Memory usage %'
             },
@@ -913,14 +967,11 @@ function stats_mem(url, id) {
                 shadowOffset: 1.0,
                 shadowWidth: 2
             },
-	    series: [
-                { label: 'used/mem' },
-                { label: 'promised/(mem+swap)' }
-            ],
+	    series: _data.series,
 	    axes: {
 		xaxis: {
-                    min: data[2][0][0],
-                    max: data[2][data[2].length-1][0],
+		    min: _data.xmin,
+		    max: _data.xmax,
 		    renderer: $.jqplot.DateAxisRenderer, 
                     tickOptions:{formatString:'%b,%d\n%H:%M'}
 		}, 
@@ -939,25 +990,30 @@ function stats_swap(url, id) {
   require(["jqplot"], function(){
     $.jqplot.config.enablePlugins = true;
     $.getJSON(url, function(data) {
-        if (data[0].length == 0) {
+        if (is_dict_empty(data)) {
           set_no_data($("#"+id))
           return
         }
         set_has_data($("#"+id))
-        data = mangle_data(data)
+	var candidates = {
+		"kbswpused": {
+			"label": "used"
+		},
+		"kbswpcad": {
+			"label": "used, cache"
+		},
+		"kbswpfree": {
+			"label": "free"
+		}
+	}
+	var _data = prepare_data({
+		candidates: candidates,
+		data: data,
+		scale: true,
+		factor: 1024
+	})
 
-        max = 0
-        for (i=0; i<data[1].length; i++) {
-            max = Math.max(max, (data[1][i][1]+data[3][i][1]+data[0][i][1])/1024)
-        }
-        d = best_unit_mb(max)
-        for (i=0; i<data[1].length; i++) {
-            data[1][i][1] /= d['div']*1024
-            data[3][i][1] /= d['div']*1024
-            data[0][i][1] /= d['div']*1024
-        }
-
-	p = $.jqplot(id+'_u', [data[1], data[3], data[0]], $.extend({}, chart_defaults, {
+	p = $.jqplot(id+'_u', _data.data, $.extend({}, chart_defaults, {
 	    stackSeries: true,
             title: {
                 text: 'Swap usage'
@@ -969,27 +1025,37 @@ function stats_swap(url, id) {
                 shadowOffset: 1.0,
                 shadowWidth: 2
             },
-	    series: [
-                { label: 'used' },
-                { label: 'used, cached' },
-                { label: 'free' }
-            ],
+	    series: _data.series,
 	    axes: {
 		xaxis: {
-                    min: data[0][0][0],
-                    max: data[0][data[0].length-1][0],
+		    min: _data.xmin,
+		    max: _data.xmax,
 		    renderer: $.jqplot.DateAxisRenderer, 
                     tickOptions:{formatString:'%b,%d\n%H:%M'}
 		}, 
 		yaxis: {
 		    min: 0,
-                    tickOptions:{formatString: d['fmt']+' '+d['unit']}
+                    tickOptions:{formatString: _data.fmt+' '+_data.unit}
 		}
 	    }
 	}))
         _jqplot_extra($('#'+id+'_u'), p)
 
-	p = $.jqplot(id+'_pct', [data[2],data[4]], $.extend({}, chart_defaults, {
+	var candidates = {
+		"pct_swpused": {
+			"label": "used/total"
+		},
+		"pct_swpcad": {
+			"label": "cached/used"
+		}
+	}
+	var _data = prepare_data({
+		candidates: candidates,
+		data: data,
+		scale: false
+	})
+
+	p = $.jqplot(id+'_pct', _data.data, $.extend({}, chart_defaults, {
             title: {
                 text: 'Swap usage percent'
             },
@@ -1001,14 +1067,11 @@ function stats_swap(url, id) {
                 shadowOffset: 1.0,
                 shadowWidth: 2
             },
-	    series: [
-                { label: 'used/total' },
-                { label: 'cached/used' }
-            ],
+	    series: _data.series,
 	    axes: {
 		xaxis: {
-                    min: data[2][0][0],
-                    max: data[2][data[2].length-1][0],
+		    min: _data.xmin,
+		    max: _data.xmax,
 		    renderer: $.jqplot.DateAxisRenderer, 
                     tickOptions:{formatString:'%b,%d\n%H:%M'}
 		}, 
@@ -1022,29 +1085,160 @@ function stats_swap(url, id) {
     })
   })
 }
+function stats_proc(url, id) {
+  require(["jqplot"], function(){
+    $.jqplot.config.enablePlugins = true;
+    $.getJSON(url, function(data) {
+        if (is_dict_empty(data)) {
+          set_no_data($("#"+id))
+          return
+        }
+        set_has_data($("#"+id))
+	var candidates = {
+		"runq_sz": {
+			"label": "runq_sz"
+		}
+	}
+	var _data = prepare_data({
+		candidates: candidates,
+		data: data,
+		scale: false
+	})
+	p = $.jqplot(id+'_runq_sz', _data.data, $.extend({}, chart_defaults, {
+            title: {
+                text: 'Run queue size'
+            },
+	    seriesDefaults: {
+                breakOnNull : true,
+                markerOptions: {size: 2},
+                shadowAngle: 135,
+                shadowOffset: 1.0,
+                shadowWidth: 2
+            },
+	    series: _data.series,
+	    axes: {
+		xaxis: {
+		    min: _data.xmin,
+		    max: _data.xmax,
+		    renderer: $.jqplot.DateAxisRenderer, 
+                    tickOptions:{formatString:'%b,%d\n%H:%M'}
+		}, 
+		yaxis: {
+		    min: 0,
+		    tickOptions:{formatString:'%.2f'}
+		}
+	    }
+	}))
+        _jqplot_extra($('#'+id+'_runq_sz'), p)
+
+	var candidates = {
+		"plist_sz": {
+			"label": "plist_sz"
+		}
+	}
+	var _data = prepare_data({
+		candidates: candidates,
+		data: data,
+		scale: false
+	})
+	p = $.jqplot(id+'_plist_sz', _data.data, $.extend({}, chart_defaults, {
+            title: {
+                text: 'Process list size'
+            },
+	    seriesDefaults: {
+                breakOnNull : true,
+                markerOptions: {size: 2},
+                shadowAngle: 135,
+                shadowOffset: 1.0,
+                shadowWidth: 2
+            },
+	    series: _data.series,
+	    axes: {
+		xaxis: {
+		    min: _data.xmin,
+		    max: _data.xmax,
+		    renderer: $.jqplot.DateAxisRenderer, 
+                    tickOptions:{formatString:'%b,%d\n%H:%M'}
+		}, 
+		yaxis: {
+		    min: 0,
+		    tickOptions:{formatString:'%i'}
+		}
+	    }
+	}))
+        _jqplot_extra($('#'+id+'_plist_sz'), p)
+
+	var candidates = {
+		"ldavg_1": {
+			"label": "loadavg 1"
+		},
+		"ldavg_5": {
+			"label": "loadavg 5"
+		},
+		"ldavg_15": {
+			"label": "loadavg 15"
+		}
+	}
+	var _data = prepare_data({
+		candidates: candidates,
+		data: data,
+		scale: false
+	})
+	p = $.jqplot(id+'_loadavg', _data.data, $.extend({}, chart_defaults, {
+            title: {
+                text: 'Load average'
+            },
+	    seriesDefaults: {
+                breakOnNull : true,
+                markerOptions: {size: 2},
+                fill: false,
+                shadowAngle: 135,
+                shadowOffset: 1.0,
+                shadowWidth: 2
+            },
+	    series: _data.series,
+	    axes: {
+		xaxis: {
+		    min: _data.xmin,
+		    max: _data.xmax,
+		    renderer: $.jqplot.DateAxisRenderer, 
+                    tickOptions:{formatString:'%b,%d\n%H:%M'}
+		}, 
+		yaxis: {
+		    min: 0,
+		    tickOptions:{formatString:'%.2f'}
+		}
+	    }
+	}))
+        _jqplot_extra($('#'+id+'_loadavg'), p)
+    });
+  })
+}
 
 function stats_block(url, id) {
   require(["jqplot"], function(){
     $.jqplot.config.enablePlugins = true;
     $.getJSON(url, function(data) {
-        if (data[0].length == 0) {
+        if (is_dict_empty(data)) {
           set_no_data($("#"+id))
           return
         }
         set_has_data($("#"+id))
-        data = mangle_data(data)
-        max = 0
-        for (i=0; i<data[0].length; i++) {
-            max = Math.max(max, (data[0][i][1]))
-            max = Math.max(max, (data[1][i][1]))
-        }
-        d = best_unit_mb(max, '')
-        for (i=0; i<data[1].length; i++) {
-            data[1][i][1] /= d['div']
-            data[0][i][1] /= d['div']
-        }
-
-	p = $.jqplot(id+'_tps', [data[0],data[1]], $.extend({}, chart_defaults, {
+	var candidates = {
+		"rtps": {
+			"label": "read"
+		},
+		"wtps": {
+			"label": "write"
+		}
+	}
+	var _data = prepare_data({
+		candidates: candidates,
+		data: data,
+		scale: true,
+		iunit: ""
+	})
+	p = $.jqplot(id+'_tps', _data.data, $.extend({}, chart_defaults, {
             title: {
                 text: 'Block device transactions'
             },
@@ -1056,37 +1250,37 @@ function stats_block(url, id) {
                 shadowOffset: 1.0,
                 shadowWidth: 2
             },
-	    series: [
-                { label: 'read' },
-                { label: 'write' }
-            ],
+	    series: _data.series,
 	    axes: {
 		xaxis: {
-                    min: data[0][0][0],
-                    max: data[0][data[0].length-1][0],
+		    min: _data.xmin,
+		    max: _data.xmax,
 		    renderer: $.jqplot.DateAxisRenderer, 
                     tickOptions:{formatString:'%b,%d\n%H:%M'}
 		}, 
 		yaxis: {
-                    tickOptions:{formatString: d['fmt']+' '+d['unit']+'io/s'},
+                    tickOptions:{formatString: _data.fmt+' '+_data.unit+'io/s'},
 		    min: 0
 		}
 	    }
 	}))
         _jqplot_extra($('#'+id+'_tps'), p)
 
-        max = 0
-        for (i=0; i<data[2].length; i++) {
-            max = Math.max(max, (data[2][i][1]))
-            max = Math.max(max, (data[3][i][1]))
-        }
-        d = best_unit_mb(max, 'KB')
-        for (i=0; i<data[2].length; i++) {
-            data[2][i][1] /= d['div']
-            data[3][i][1] /= d['div']
-        }
-
-	p = $.jqplot(id+'_bps', [data[2],data[3]], $.extend({}, chart_defaults, {
+	var candidates = {
+		"rbps": {
+			"label": "read"
+		},
+		"wbps": {
+			"label": "write"
+		}
+	}
+	var _data = prepare_data({
+		candidates: candidates,
+		data: data,
+		scale: true,
+		iunit: "KB"
+	})
+	p = $.jqplot(id+'_bps', _data.data, $.extend({}, chart_defaults, {
             title: {
                 text: 'Block device bandwidth'
             },
@@ -1098,19 +1292,16 @@ function stats_block(url, id) {
                 shadowOffset: 1.0,
                 shadowWidth: 2
             },
-	    series: [
-                { label: 'read' },
-                { label: 'write' }
-            ],
+	    series: _data.series,
 	    axes: {
 		xaxis: {
-                    min: data[2][0][0],
-                    max: data[2][data[2].length-1][0],
+		    min: _data.xmin,
+		    max: _data.xmax,
 		    renderer: $.jqplot.DateAxisRenderer, 
                     tickOptions:{formatString:'%b,%d\n%H:%M'}
 		}, 
 		yaxis: {
-                    tickOptions:{formatString: d['fmt']+' '+d['unit']+'/s'},
+                    tickOptions:{formatString: _data.fmt+' '+_data.unit+'/s'},
 		    min: 0
 		}
 	    }
@@ -2311,14 +2502,62 @@ function best_unit_mb(max, iunit) {
     return {'unit': unit, 'div': div/idiv, 'fmt': fmt}
 }
 function stats_fs(url, id) {
-  require(["jqplot"], function(){
-    $.jqplot.config.enablePlugins = true;
-    $.getJSON(url, function(data) {
-        if (data[0].length == 0) {
-          set_no_data($("#"+id))
-          return
-        }
-        set_has_data($("#"+id))
+	function filter_data(data, key) {
+		return data[key].map(x => x[1])
+	}
+	function add_fs(fs, data) {
+		options = {
+			lineColor: "#4bb2c5",
+			height: "1.5em",
+			width: "5em",
+			tooltipSuffix: " KB"
+		}
+		options2 = {
+			lineColor: "#eaa228",
+			height: "1.5em",
+			width: "5em",
+			chartRangeMin: 0,
+			chartRangeMax: 100,
+			tooltipSuffix: "%"
+		}
+		var div = $("<tr>")
+		var cell_fs = $("<td>").text(fs)
+		cell_fs.appendTo(div)
+		var cell_size = $("<td class='text-right'>&nbsp;</td>").sparkline(filter_data(data, "size"), options)
+		cell_size.appendTo(div)
+		var cell_used = $("<td class='text-right'>&nbsp;</td>").sparkline(filter_data(data, "used"), options2)
+		cell_used.appendTo(div)
+		return div
+	}
+
+	$.getJSON(url, function(data) {
+		div = $("#"+id)
+		if (is_dict_empty(data)) {
+			set_no_data(div)
+			return
+		}
+		div.empty()
+		var container = $("<table class='table table-hover'>")
+		container.appendTo(div)
+		var header = $("<tr>")
+		$("<th>").appendTo(header)
+		$("<th class='text-right'>").text(i18n.t("col.Size")).appendTo(header)
+		$("<th class='text-right'>").text(i18n.t("col.Used")).appendTo(header)
+		header.appendTo(container)
+		var keys = []
+		for (fs in data) {
+			keys.push(fs)
+		}
+		keys.sort()
+		for (var i=0; i<keys.length; i++) {
+			var fs = keys[i]
+			add_fs(fs, data[fs]).appendTo(container)
+		}
+		$.sparkline_display_visible()
+	})
+}
+
+/*
         data[1] = mangle_data(data[1])
         labels = new Array()
         for (i=0;i<data[0].length;i++){
@@ -2358,6 +2597,7 @@ function stats_fs(url, id) {
     })
   })
 }
+*/
 function stats_resinfo(url, id) {
   require(["jqplot"], function(){
     $.jqplot.config.enablePlugins = true;

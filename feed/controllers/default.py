@@ -12,6 +12,8 @@ import re
 import os
 import logging
 
+from applications.init.modules import timeseries
+
 R_DAEMON_STATUS_HASH = "osvc:h:daemon_status"
 R_DAEMON_STATUS = "osvc:q:daemon_status"
 R_DAEMON_PING = "osvc:q:daemon_ping"
@@ -27,6 +29,55 @@ R_UPDATE_DASH_NETDEV_ERRORS = "osvc:q:update_dash_netdev_errors"
 R_SVCMON = "osvc:q:svcmon"
 R_SVCACTIONS = "osvc:q:svcactions"
 R_STORAGE = "osvc:q:storage"
+
+stats_options = {
+    "cpu": {
+        "discard": ["nodename"],
+        "sub": "cpu",
+        "datecol": "date",
+    },
+    "fs_u": {
+        "discard": ["nodename"],
+        "sub": "mntpt",
+        "datecol": "date",
+    },
+    "mem_u": {
+        "discard": ["nodename"],
+        "datecol": "date",
+    },
+    "swap": {
+        "discard": ["nodename"],
+        "datecol": "date",
+    },
+    "proc": {
+        "discard": ["nodename"],
+        "datecol": "date",
+    },
+    "block": {
+        "discard": ["nodename"],
+        "datecol": "date",
+    },
+    "svc": {
+        "discard": ["nodename"],
+        "sub": "svcname",
+        "datecol": "date",
+    },
+    "blockdev": {
+        "discard": ["nodename"],
+        "sub": "dev",
+        "datecol": "date",
+    },
+    "netdev": {
+        "discard": ["nodename"],
+        "sub": "dev",
+        "datecol": "date",
+    },
+    "netdev_err": {
+        "discard": ["nodename"],
+        "sub": "dev",
+        "datecol": "date",
+    },
+}
 
 def user():
     """
@@ -369,8 +420,8 @@ def insert_stats_fs_u(vars, vals, auth):
 
 @auth_uuid
 def rpc_insert_stats_fs_u(vars, vals, auth):
-    vars, vals = replace_nodename_in_data(vars, vals, auth)
-    generic_insert('stats_fs_u', vars, vals)
+    node_id = auth_to_node_id(auth)
+    timeseries.whisper_update_list("nodes/%s" % node_id, vars, vals, group="fs_u", options=stats_options.get("fs_u"))
 
 @service.xmlrpc
 def insert_stats_cpu(vars, vals, auth):
@@ -378,8 +429,8 @@ def insert_stats_cpu(vars, vals, auth):
 
 @auth_uuid
 def rpc_insert_stats_cpu(vars, vals, auth):
-    vars, vals = replace_nodename_in_data(vars, vals, auth)
-    generic_insert('stats_cpu', vars, vals)
+    node_id = auth_to_node_id(auth)
+    timeseries.whisper_update_list("nodes/%s" % node_id, vars, vals, group="cpu", options=stats_options.get("cpu"))
 
 @service.xmlrpc
 def insert_stats_mem_u(vars, vals, auth):
@@ -387,8 +438,8 @@ def insert_stats_mem_u(vars, vals, auth):
 
 @auth_uuid
 def rpc_insert_stats_mem_u(vars, vals, auth):
-    vars, vals = replace_nodename_in_data(vars, vals, auth)
-    generic_insert('stats_mem_u', vars, vals)
+    node_id = auth_to_node_id(auth)
+    timeseries.whisper_update_list("nodes/%s" % node_id, vars, vals, group="mem_u", options=stats_options.get("mem_u"))
 
 @service.xmlrpc
 def insert_stats_proc(vars, vals, auth):
@@ -396,8 +447,8 @@ def insert_stats_proc(vars, vals, auth):
 
 @auth_uuid
 def rpc_insert_stats_proc(vars, vals, auth):
-    vars, vals = replace_nodename_in_data(vars, vals, auth)
-    generic_insert('stats_proc', vars, vals)
+    node_id = auth_to_node_id(auth)
+    timeseries.whisper_update_list("nodes/%s" % node_id, vars, vals, group="proc", options=stats_options.get("proc"))
 
 @service.xmlrpc
 def insert_stats_swap(vars, vals, auth):
@@ -405,8 +456,8 @@ def insert_stats_swap(vars, vals, auth):
 
 @auth_uuid
 def rpc_insert_stats_swap(vars, vals, auth):
-    vars, vals = replace_nodename_in_data(vars, vals, auth)
-    generic_insert('stats_swap', vars, vals)
+    node_id = auth_to_node_id(auth)
+    timeseries.whisper_update_list("nodes/%s" % node_id, vars, vals, group="swap", options=stats_options.get("swap"))
 
 @service.xmlrpc
 def insert_stats_block(vars, vals, auth):
@@ -414,8 +465,8 @@ def insert_stats_block(vars, vals, auth):
 
 @auth_uuid
 def rpc_insert_stats_block(vars, vals, auth):
-    vars, vals = replace_nodename_in_data(vars, vals, auth)
-    generic_insert('stats_block', vars, vals)
+    node_id = auth_to_node_id(auth)
+    timeseries.whisper_update_list("nodes/%s" % node_id, vars, vals, group="block", options=stats_options.get("block"))
 
 @service.xmlrpc
 def insert_stats_blockdev(vars, vals, auth):
@@ -423,8 +474,8 @@ def insert_stats_blockdev(vars, vals, auth):
 
 @auth_uuid
 def rpc_insert_stats_blockdev(vars, vals, auth):
-    vars, vals = replace_nodename_in_data(vars, vals, auth)
-    generic_insert('stats_blockdev', vars, vals)
+    node_id = auth_to_node_id(auth)
+    timeseries.whisper_update_list("nodes/%s" % node_id, vars, vals, group="blockdev", options=stats_options.get("blockdev"))
 
 @service.xmlrpc
 def insert_stats_netdev(vars, vals, auth):
@@ -432,8 +483,8 @@ def insert_stats_netdev(vars, vals, auth):
 
 @auth_uuid
 def rpc_insert_stats_netdev(vars, vals, auth):
-    vars, vals = replace_nodename_in_data(vars, vals, auth)
-    generic_insert('stats_netdev', vars, vals)
+    node_id = auth_to_node_id(auth)
+    timeseries.whisper_update_list("nodes/%s" % node_id, vars, vals, group="netdev", options=stats_options.get("netdev"))
 
 @service.xmlrpc
 def insert_stats_netdev_err(vars, vals, auth):
@@ -441,8 +492,8 @@ def insert_stats_netdev_err(vars, vals, auth):
 
 @auth_uuid
 def rpc_insert_stats_netdev_err(vars, vals, auth):
-    vars, vals = replace_nodename_in_data(vars, vals, auth)
-    generic_insert('stats_netdev_err', vars, vals)
+    node_id = auth_to_node_id(auth)
+    timeseries.whisper_update_list("nodes/%s" % node_id, vars, vals, group="netdev_err", options=stats_options.get("netdev_err"))
 
 def get_vcpus(node_id, vmname):
     q = db.nodes.node_id == node_id
@@ -491,18 +542,10 @@ def rpc_insert_stats(data, auth):
                     vcpus = str(get_vcpus(node_id, vmname))
                     cache[vmname] = vcpus
                 vals[i].append(vcpus)
-        vars, vals = replace_nodename_in_data(vars, vals, auth)
-        max = 10000
-        while len(vals) > max:
-            try:
-                generic_insert('stats_'+stat, vars, vals[:max])
-            except Exception as e:
-                raise Exception("%s: %s" % (stat, str(e)))
-            vals = vals[max:]
         try:
-            generic_insert('stats_'+stat, vars, vals)
-        except Exception as e:
-            raise Exception("%s: %s" % (stat, str(e)))
+            timeseries.whisper_update_list("nodes/%s" % node_id, vars, vals, group=stat, options=stats_options.get(stat))
+        except Exception as exc:
+            raise Exception(json.dumps([str(exc), node_id, vars, vals, stat, stats_options.get(stat)]))
     rconn.rpush(R_UPDATE_DASH_NETDEV_ERRORS, json.dumps([node_id]))
 
 @service.xmlrpc
@@ -2190,10 +2233,10 @@ def task_rq_generic():
     ], lambda q: _task_rq_generic(q))
 
 def task_rq_dashboard():
-    task_rq("osvc:q:update_dash_netdev_errors", lambda q: update_dash_netdev_errors)
+    task_rq(R_UPDATE_DASH_NETDEV_ERRORS, lambda q: update_dash_netdev_errors)
 
 def task_rq_svcactions():
-    task_rq("osvc:q:svcactions", lambda q: _action_wrapper)
+    task_rq(R_SVCACTIONS, lambda q: _action_wrapper)
 
 def task_rq_svcmon():
     task_rq(R_SVCMON, lambda q: _svcmon_update_combo)

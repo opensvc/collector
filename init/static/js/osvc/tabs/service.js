@@ -150,6 +150,7 @@ function service_tabs(divid, options) {
 		}
 
 		// tab stats
+		/*
 		i = o.register_tab({
 			"title": "service_tabs.container_stats",
 			"title_class": "icon chart16"
@@ -186,6 +187,7 @@ function service_tabs(divid, options) {
 				$("#"+divid).html(services_ajax_error_fmt(xhr, stat, error))
 			})
 		}
+		*/
 
 		// tab stats
 		i = o.register_tab({
