@@ -249,7 +249,7 @@ function fset_properties(divid, options) {
 				"item_class": "icon rset16",
 				"id": "id",
 				"flash_id_prefix": "rset",
-				"bgcolor": osvc.colors.comp,
+				"bgcolor": osvc.colors.ruleset,
 				"e_title": o.info_rulesets_title,
 				"e_list": o.info_rulesets,
 				"ondblclick": function(divid, data) {

@@ -1,7 +1,7 @@
 function variable_tabs(divid, options) {
 	var o = tabs(divid)
 	o.options = options
-	o.options.bgcolor = osvc.colors.comp
+	o.options.bgcolor = osvc.colors.rule
 	o.options.icon = "comp16"
 	o.link = {
 		"fn": arguments.callee.name,

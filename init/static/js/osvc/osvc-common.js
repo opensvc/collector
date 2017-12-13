@@ -632,7 +632,7 @@ jQuery.fn.osvc_ruleset = function(options) {
 		"name": "ruleset_name",
 		"attr": "ruleset_id",
 		"icon": osvc.icons.rset,
-		"bgcolor": osvc.colors.comp,
+		"bgcolor": osvc.colors.ruleset,
 		"flash_id_prefix": "rset-",
 		"fn": function(id, opts) {
 			ruleset_tabs(id, opts)
@@ -646,7 +646,7 @@ jQuery.fn.osvc_module = function(options) {
 		"name": "modset_mod_name",
 		"attr": "id",
 		"icon": osvc.icons.module,
-		"bgcolor": osvc.colors.comp,
+		"bgcolor": osvc.colors.mod,
 		"flash_id_prefix": "module-",
 		"fn": function(id, opts) {
 		}
@@ -659,7 +659,7 @@ jQuery.fn.osvc_moduleset = function(options) {
 		"name": "modset_name",
 		"attr": "modset_id",
 		"icon": osvc.icons.modset,
-		"bgcolor": osvc.colors.comp,
+		"bgcolor": osvc.colors.modset,
 		"flash_id_prefix": "modset-",
 		"fn": function(id, opts) {
 			moduleset_tabs(id, opts)
@@ -673,7 +673,7 @@ jQuery.fn.osvc_variable_class = function(options) {
 		"name": "var_class",
 		"attr": "var_id",
 		"icon": osvc.icons.variable,
-		"bgcolor": osvc.colors.comp,
+		"bgcolor": osvc.colors.rule,
 		"flash_id_prefix": "var-",
 		"fn": function(id, opts) {
 			variable_tabs(id, opts)

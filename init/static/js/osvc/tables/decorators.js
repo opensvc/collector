@@ -241,7 +241,7 @@ function cell_decorator_var_name(e, line) {
 		osvc.flash.show({
 			text: v,
 			cl: "icon comp16",
-			bgcolor: osvc.colors.comp,
+			bgcolor: osvc.colors.rule,
 			fn: function(id){variable_tabs(id, {"ruleset_id": rset_id, "variable_id": var_id, "variable_name": v})}
 		})
 	})
@@ -407,7 +407,7 @@ function cell_decorator_modset_name(e, line) {
 			id: "modset-"+v,
 			text: v, 
 			cl: "icon modset16",
-			bgcolor: osvc.colors.comp,
+			bgcolor: osvc.colors.modset,
 			fn: function(id){moduleset_tabs(id, {"modset_name": v})}
 		})
 	})
@@ -423,7 +423,7 @@ function cell_decorator_ruleset_name(e, line) {
 			id: "rset-"+v,
 			text: v, 
 			cl: "icon rset16",
-			bgcolor: osvc.colors.comp,
+			bgcolor: osvc.colors.ruleset,
 			fn: function(id){ruleset_tabs(id, {"ruleset_name": v})}
 		})
 	})
@@ -1478,7 +1478,7 @@ function cell_decorator_run_log(e, line, fn) {
 				id: "complog-"+log_id,
 				cl: "icon log16",
 				text: log_id,
-				bgcolor: osvc.colors.comp,
+				bgcolor: osvc.colors.mod,
 				fn: function(id){fn(id, {"id": log_id})}
 			})
 		})
@@ -1510,7 +1510,7 @@ function cell_decorator_run_status(e, line, fn) {
 				id: "complog-"+log_id,
 				cl: "icon log16",
 				text: log_id,
-				bgcolor: osvc.colors.comp,
+				bgcolor: osvc.colors.mod,
 				fn: function(id){fn(id, {"id": log_id})}
 			})
 		})

@@ -182,7 +182,7 @@ var menu_data = {
 		},
 		{
 		  "title" : "rulesets",
-		  "class" : "comp16",
+		  "class" : "rset16",
 		  "id" : "comp-rsets",
 		  "link" : "/init/compliance/comp_rules",
 		  "fn" : "table_comp_rules"

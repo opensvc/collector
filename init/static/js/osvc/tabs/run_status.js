@@ -11,7 +11,7 @@ function comp_log_tabs(divid, options) {
 function run_status_tabs(divid, options) {
 	var o = tabs(divid)
 	o.options = options
-	o.options.bgcolor = osvc.colors.comp
+	o.options.bgcolor = osvc.colors.mod
 	o.options.icon = "log16"
 	o.link = {
 		"fn": arguments.callee.name,

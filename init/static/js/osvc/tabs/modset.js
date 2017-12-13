@@ -5,7 +5,7 @@ function moduleset_tabs(divid, options) {
 	var o = tabs(divid)
 	o.options = options
 	o.options.icon = "modset16"
-	o.options.bgcolor = osvc.colors.comp
+	o.options.bgcolor = osvc.colors.modset
 	o.link = {
 		"fn": arguments.callee.name,
                 "title": "format_title",
@@ -186,7 +186,7 @@ function modset_properties(divid, options) {
 				"item_class": "icon modset16",
 				"id": "id",
 				"flash_id_prefix": "modset",
-				"bgcolor": osvc.colors.comp,
+				"bgcolor": osvc.colors.modset,
 				"e_title": o.info_modulesets_title,
 				"e_list": o.info_modulesets,
 				"ondblclick": function(divid, data) {

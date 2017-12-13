@@ -1277,7 +1277,7 @@ function node_modulesets(options) {
 	options.tag_name = "modset_name"
 	options.flash_id_prefix = "modset"
 	options.id = "id"
-	options.bgcolor = osvc.colors.comp
+	options.bgcolor = osvc.colors.modset
 	options.icon = osvc.icons.modset
 	options.get_tags = function(fval, callback, callback_err) {
 		services_osvcgetrest("/nodes/%1/compliance/modulesets", [options.node_id], {
@@ -1320,7 +1320,7 @@ function node_rulesets(options) {
 	options.tag_name = "ruleset_name"
 	options.flash_id_prefix = "rset"
 	options.id = "id"
-	options.bgcolor = osvc.colors.comp
+	options.bgcolor = osvc.colors.ruleset
 	options.icon = osvc.icons.rset
 	options.get_tags = function(fval, callback, callback_err) {
 		services_osvcgetrest("/nodes/%1/compliance/rulesets", [options.node_id], {
@@ -1363,7 +1363,7 @@ function service_modulesets(options) {
 	options.tag_name = "modset_name"
 	options.flash_id_prefix = "modset"
 	options.id = "id"
-	options.bgcolor = osvc.colors.comp
+	options.bgcolor = osvc.colors.modset
 	options.icon = osvc.icons.modset
         if (typeof(options.slave) === "undefined") {
 		options.slave = false
@@ -1411,7 +1411,7 @@ function service_rulesets(options) {
 	options.tag_name = "ruleset_name"
 	options.flash_id_prefix = "rset"
 	options.id = "id"
-	options.bgcolor = osvc.colors.comp
+	options.bgcolor = osvc.colors.ruleset
 	options.icon = osvc.icons.rset
         if (typeof(options.slave) === "undefined") {
 		options.slave = false

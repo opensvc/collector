@@ -13,7 +13,7 @@ var search_data = {
 	"modulesets": {
 		"tab" : function(id, res){moduleset_tabs(id, {"modset_id": res.id, "modset_name": res.modset_name})},
 		"type": "modset",
-		"color": "comp",
+		"color": "modset",
 		"id": "id",
 		"title": "__modset_name__",
 		"short_title": "__modset_name__",
@@ -24,7 +24,7 @@ var search_data = {
 	"rulesets": {
 		"tab" : function(id, res){ruleset_tabs(id, {"ruleset_id": res.id, "ruleset_name": res.ruleset_name})},
 		"type": "rset",
-		"color": "comp",
+		"color": "ruleset",
 		"id": "id",
 		"title": "__ruleset_name__",
 		"short_title": "__ruleset_name__",
@@ -227,7 +227,7 @@ var search_data = {
 			})
 		},
 		"type": "var",
-		"color": "comp",
+		"color": "rule",
 		"id": "id",
 		"title": "__var_name__ in __ruleset_name__",
 		"short_title": "__var_name__ in __ruleset_name__",
@@ -316,17 +316,17 @@ function search(divid) {
 			"title": "search.menu_header.title_metrics",
 		},
 		{
-			"color": "comp",
+			"color": "ruleset",
 			"prefix": "rset",
 			"title": "search.menu_header.title_rulesets",
 		},
 		{
-			"color": "comp",
+			"color": "modset",
 			"prefix": "modset",
 			"title": "search.menu_header.title_modulesets",
 		},
 		{
-			"color": "comp",
+			"color": "rule",
 			"prefix": "var",
 			"title": "search.menu_header.title_variables",
 		}
