@@ -1,4 +1,5 @@
 import datetime
+from applications.init.modules import timeseries
 
 #
 class rest_delete_node_compliance_ruleset(rest_delete_handler):
@@ -743,6 +744,8 @@ class rest_delete_node(rest_delete_handler):
         db(q).delete()
         ws_send('auth_node', {'node_id': node_id})
         table_modified("auth_node")
+
+        timeseries.wsp_delete("nodes", node_id)
 
         return dict(info=fmt%d)
 

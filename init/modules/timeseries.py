@@ -23,6 +23,18 @@ time_format = "%Y-%m-%d %H:%M:%S"
 here_d = os.path.dirname(__file__)
 store_d = os.path.join(here_d, '..', "uploads", "stats")
 
+def wsp_delete(*args):
+    if '..' in args:
+        print("'..' is not allowed in wsp_delete args")
+        return 1
+    args = [store_d] + list(args)
+    cmd = "rm -rf " + os.path.join(*args)
+    if len(args) < 3:
+        print("cowardy refuse to %s: min depth 2 under %s" % (cmd, store_d))
+        return 1
+    print(cmd)
+    os.system(cmd)
+
 def wsp_find(*args):
     args = [store_d] + list(args)
     head = os.path.join(*args)
@@ -224,3 +236,5 @@ if __name__ == "__main__":
     print(sub_find("nodes/%s" % node_id, "fs_u", prefix="/"))
     print(wsp_find("nodes/%s" % node_id, "cpu"))
     print(sub_find("nodes/%s" % node_id, "cpu"))
+    wsp_delete("nodes", "41667c07-9197-408f-9487-08ca540410f0")
+
