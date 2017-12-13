@@ -2320,10 +2320,18 @@ def comp_get_svcmon_ruleset(svc_id, node_id):
         row = db(q).select(db.svcmon.ALL, cacheable=True).first()
     if row is None:
         return {}
+    blacklist = [
+        "id",
+        "mon_containerpath",
+        "mon_vmem",
+        "mon_vcpu",
+    ]
     ruleset = {'name': 'osvc_svcmon',
                'filter': str(q),
                'vars': []}
     for f in db.svcmon.fields:
+        if f in blacklist:
+            continue
         val = row[f]
         ruleset['vars'].append(('svcmon.'+f, val))
     return {'osvc_svcmon':ruleset}
@@ -2333,10 +2341,16 @@ def comp_get_service_ruleset(svc_id):
     rows = db(q).select(cacheable=True)
     if len(rows) != 1:
         return {}
+    blacklist = [
+        "id",
+        "svc_config",
+    ]
     ruleset = {'name': 'osvc_service',
                'filter': str(q),
                'vars': []}
     for f in db.services.fields:
+        if f in blacklist:
+            continue
         val = rows[0][f]
         ruleset['vars'].append(('services.'+f, val))
     return {'osvc_service':ruleset}
@@ -2346,10 +2360,15 @@ def comp_get_node_ruleset(node_id):
     rows = db(q).select(cacheable=True)
     if len(rows) != 1:
         return {}
+    blacklist = [
+        "id",
+    ]
     ruleset = {'name': 'osvc_node',
                'filter': str(q),
                'vars': []}
     for f in db.nodes.fields:
+        if f in blacklist:
+            continue
         val = rows[0][f]
         if type(val) == datetime.date:
             val = val.strftime("%Y-%m-%d")
