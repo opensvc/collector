@@ -117,7 +117,7 @@ def whisper_fetch_avg_min_max(*args, **kwargs):
         count += 1
         total += value
     if count == 0:
-        return 0
+        return 0, 0, 0
     return total/count, _min, _max
 
 def whisper_fetch(*args, **kwargs):

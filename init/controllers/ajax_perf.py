@@ -9,122 +9,91 @@ def call():
     return service()
 
 @auth.requires_login()
-def perf_stats_svc_cpu(node, s, e):
+def perf_stats_svc_cpu(node, b, e):
     container = request.vars.container
     if container == "None":
-        return perf_stats_svc_data(node, s, e, 'cpu')
+        return perf_stats_svc_data(node, b, e, 'cpu')
     else:
-        return perf_stats_svc_data_cpu_normalize(node, s, e)
+        return perf_stats_svc_data_cpu_normalize(node, b, e)
 
 @auth.requires_login()
-def perf_stats_svc_mem(node, s, e):
+def perf_stats_svc_mem(node, b, e):
     container = request.vars.container
     if container == "None":
-        return perf_stats_svc_data(node, s, e, 'mem')
+        return perf_stats_svc_data(node, b, e, 'mem')
     else:
-        return perf_stats_svc_data_mem_normalize(node, s, e)
+        return perf_stats_svc_data_mem_normalize(node, b, e)
 
 @auth.requires_login()
-def perf_stats_svc_pg(node, s, e):
-    return perf_stats_svc_data(node, s, e, 'pg')
+def perf_stats_svc_pg(node, b, e):
+    return perf_stats_svc_data(node, b, e, 'pg')
 
 @auth.requires_login()
-def perf_stats_svc_avgpg(node, s, e):
-    return perf_stats_svc_data(node, s, e, 'avgpg')
+def perf_stats_svc_avgpg(node, b, e):
+    return perf_stats_svc_data(node, b, e, 'avgpg')
 
 @auth.requires_login()
-def perf_stats_svc_at(node, s, e):
-    return perf_stats_svc_data(node, s, e, 'at')
+def perf_stats_svc_at(node, b, e):
+    return perf_stats_svc_data(node, b, e, 'at')
 
 @auth.requires_login()
-def perf_stats_svc_avgat(node, s, e):
-    return perf_stats_svc_data(node, s, e, 'avgat')
+def perf_stats_svc_avgat(node, b, e):
+    return perf_stats_svc_data(node, b, e, 'avgat')
 
 @auth.requires_login()
-def perf_stats_svc_rss(node, s, e):
-    return perf_stats_svc_data(node, s, e, 'rss')
+def perf_stats_svc_rss(node, b, e):
+    return perf_stats_svc_data(node, b, e, 'rss')
 
 @auth.requires_login()
-def perf_stats_svc_swap(node, s, e):
-    return perf_stats_svc_data(node, s, e, 'swap')
+def perf_stats_svc_swap(node, b, e):
+    return perf_stats_svc_data(node, b, e, 'swap')
 
 @auth.requires_login()
-def perf_stats_svc_nproc(node, s, e):
-    return perf_stats_svc_data(node, s, e, 'nproc')
+def perf_stats_svc_nproc(node, b, e):
+    return perf_stats_svc_data(node, b, e, 'nproc')
 
 @auth.requires_login()
-def perf_stats_svc_cap(node, s, e):
-    return perf_stats_svc_data(node, s, e, 'cap')
+def perf_stats_svc_cap(node, b, e):
+    return perf_stats_svc_data(node, b, e, 'cap')
 
 @auth.requires_login()
-def perf_stats_svc_cap_cpu(node, s, e):
-    return perf_stats_svc_data(node, s, e, 'cap_cpu')
+def perf_stats_svc_cap_cpu(node, b, e):
+    return perf_stats_svc_data(node, b, e, 'cap_cpu')
 
 @auth.requires_login()
-def perf_stats_svc_data_mem_normalize(node, s, e):
+def perf_stats_svc_data_mem_normalize(node, b, e):
     container = request.vars.container
-    where = "stats_svc%(period)s.svc_id = '%(svc_id)s' and"%dict(svc_id=node_svc_id(node, container), period=get_period(s, e))
-    col = 'mem'
-
     sql = """select mem_bytes from nodes
              where
                node_id="%(node)s"
           """%dict(node=node)
     mem = db.executesql(sql)[0][0]
 
-    sql = """select
-               "global",
-               date,
-               %(col)s
-             from stats_svc%(period)s
-             where
-               %(where)s
-               node_id="%(node)s"
-               and date>"%(s)s"
-               and date<"%(e)s"
-             union
-             select
-               "normalized",
-               date,
-               (%(col)s / cap * %(mem)d) - %(col)s
-             from stats_svc%(period)s
-             where
-               %(where)s
-               node_id="%(node)s"
-               and date>"%(s)s"
-               and date<"%(e)s"
-          """%dict(mem=mem, where=where,s=s,e=e,node=node,col=col, period=get_period(s, e))
-    rows = db.executesql(sql)
-    if len(rows) == 0:
+    data = {}
+    svc_id = node_svc_id(node, container)
+    data = timeseries.whisper_fetch("nodes", node, "svc", svc_id, "mem", b=b, e=e)
+    if len(data) == 0:
         return [], [], 0, 0
-    min = rows[0][1]
-    max = rows[-1][1]
-    dates = set([r[1] for r in rows])
-    svcnames = set([r[0] for r in rows])
+    cap = timeseries.whisper_fetch("nodes", node, "svc", svc_id, "cap", b=b, e=e)
+    if len(cap) == 0:
+        return [], [], 0, 0
 
-    h = {}
-    import copy
-    d = {}
+    # normalize
+    for i, d in enumerate(data):
+        d[i][1] = d[i][1] / cap[i][1] * mem - d[i][1]
 
-    for date in dates:
-        d[date] = 0
+    _min = data[0][0]
+    _max = data[-1][0]
+    dates = [r[0] for r in data]
 
-    for svcname in svcnames:
-        h[svcname] = copy.copy(d)
+    if dates is None:
+        return [], [], 0, 0
 
-    for row in rows:
-        svcname = row[0]
-        date = row[1]
-        data = row[2]
-
-        h[svcname][date] = data
-
-    return h.keys(), map(lambda x: x.items(), h.values()), min, max
+    return [svc_id], [data], _min, _max
 
 @auth.requires_login()
-def perf_stats_svc_data_cpu_normalize(node, s, e):
+def perf_stats_svc_data_cpu_normalize(node, b, e):
     container = request.vars.container
-    where = "stats_svc%(period)s.svc_id = '%(svc_id)s' and"%dict(svc_id=node_svc_id(node, container), period=get_period(s, e))
     col = 'cpu'
 
     sql = """select if(cpu_threads is null, cpu_cores, cpu_threads)
@@ -133,100 +102,50 @@ def perf_stats_svc_data_cpu_normalize(node, s, e):
           """%dict(node=node)
     cpus = db.executesql(sql)[0][0]
 
-    sql = """select
-               "global",
-               date,
-               %(col)s
-             from stats_svc%(period)s
-             where
-               %(where)s
-               node_id="%(node)s"
-               and date>"%(s)s"
-               and date<"%(e)s"
-             union
-             select
-               "normalized",
-               date,
-               (%(col)s / cap_cpu * %(cpus)d) - %(col)s
-             from stats_svc%(period)s
-             where
-               %(where)s
-               node_id="%(node)s"
-               and date>"%(s)s"
-               and date<"%(e)s"
-          """%dict(cpus=cpus, where=where,s=s,e=e,node=node,col=col, period=get_period(s, e))
-    rows = db.executesql(sql)
-    if len(rows) == 0:
+    data = {}
+    svc_id = node_svc_id(node, container)
+    data = timeseries.whisper_fetch("nodes", node, "svc", svc_id, "cpu", b=b, e=e)
+    if len(data) == 0:
         return [], [], 0, 0
-    min = rows[0][1]
-    max = rows[-1][1]
-    dates = set([r[1] for r in rows])
-    svcnames = set([r[0] for r in rows])
+    cap = timeseries.whisper_fetch("nodes", node, "svc", svc_id, "cap_cpu", b=b, e=e)
+    if len(cap) == 0:
+        return [], [], 0, 0
 
-    h = {}
-    import copy
-    d = {}
+    # normalize
+    for i, d in enumerate(data):
+        d[i][1] = d[i][1] / cap[i][1] * cpus - d[i][1]
 
-    for date in dates:
-        d[date] = 0
+    _min = data[0][0]
+    _max = data[-1][0]
+    dates = [r[0] for r in data]
 
-    for svcname in svcnames:
-        h[svcname] = copy.copy(d)
+    if dates is None:
+        return [], [], 0, 0
 
-    for row in rows:
-        svcname = row[0]
-        date = row[1]
-        data = row[2]
-
-        h[svcname][date] = data
-
-    return h.keys(), map(lambda x: x.items(), h.values()), min, max
+    return [svc_id], [data], _min, _max
 
 @auth.requires_login()
-def perf_stats_svc_data(node, s, e, col):
+def perf_stats_svc_data(node, b, e, col):
     container = request.vars.container
+    data = {}
+    dates = None
     if container == "None":
-        where = ''
+        svc_ids = timeseries.sub_find("nodes", node, "svc")
     else:
-        where = "services.svc_id = '%s' and"%node_svc_id(node, container)
-    sql = """select
-               services.svcname,
-               date,
-               %(col)s
-             from stats_svc%(period)s, services
-             where
-               %(where)s
-               node_id="%(node)s"
-               and date>"%(s)s"
-               and date<"%(e)s"
-             order by date
-          """%dict(where=where,s=s,e=e,node=node,col=col, period=get_period(s, e))
-    rows = db.executesql(sql)
-    if len(rows) == 0:
+        svc_ids = [node_svc_id(node, container)]
+    for svc_id in svc_ids:
+        data[svc_id] = timeseries.whisper_fetch("nodes", node, "svc", svc_id, col, b=b, e=e)
+        if len(data[svc_id]) == 0:
+            return [], [], 0, 0
+        if dates is None:
+            _min = data[svc_id][0][0]
+            _max = data[svc_id][-1][0]
+            dates = [r[0] for r in data[svc_id]]
+
+    if dates is None:
         return [], [], 0, 0
-    min = rows[0][1]
-    max = rows[-1][1]
-    dates = set([r[1] for r in rows])
-    svcnames = set([r[0] for r in rows])
 
-    h = {}
-    import copy
-    d = {}
-
-    for date in dates:
-        d[date] = 0
-
-    for svcname in svcnames:
-        h[svcname] = copy.copy(d)
-
-    for row in rows:
-        svcname = row[0]
-        date = row[1]
-        data = row[2]
-
-        h[svcname][date] = data
-
-    return h.keys(), map(lambda x: x.items(), h.values()), min, max
+    return svc_ids, [data[svc_id] for svc_id in svc_ids], _min, _max
 
 def ajax_perf_svc_plot_short():
     return SPAN(
@@ -530,7 +449,7 @@ def json_netdev_err():
     b = request.vars.b
     e = request.vars.e
 
-    devs = timeseries.sub_find("nodes/%s" % node, "netdev_err")
+    devs = timeseries.sub_find("nodes", node, "netdev_err")
     metrics = [
         ("rxerrps",  "err",  " rx", -1),
         ("txerrps",  "err",  " tx",  1),
@@ -549,7 +468,7 @@ def json_netdev_err():
     }
     for dev in devs:
         for metric, cat, suffix, multiplier in metrics:
-            ts = timeseries.whisper_fetch("nodes/%s" % node, "netdev_err", dev, metric, b=b, e=e)
+            ts = timeseries.whisper_fetch("nodes", node, "netdev_err", dev, metric, b=b, e=e)
             label = dev + suffix
             if label not in data[cat]:
                 data[cat][label] = []
@@ -578,7 +497,7 @@ def json_netdev():
     b = request.vars.b
     e = request.vars.e
 
-    devs = timeseries.sub_find("nodes/%s" % node, "netdev")
+    devs = timeseries.sub_find("nodes", node, "netdev")
     metrics = [
         ("rxkBps",   "bw", " rx", -1),
         ("txkBps",   "bw", " tx", 1),
@@ -594,7 +513,7 @@ def json_netdev():
     }
     for dev in devs:
         for metric, cat, suffix, multiplier in metrics:
-            ts = timeseries.whisper_fetch("nodes/%s" % node, "netdev", dev, metric, b=b, e=e)
+            ts = timeseries.whisper_fetch("nodes", node, "netdev", dev, metric, b=b, e=e)
             label = dev + suffix
             if label not in data[cat]:
                 data[cat][label] = []
@@ -617,7 +536,7 @@ def json_netdev_avg():
     b = request.vars.b
     e = request.vars.e
 
-    devs = timeseries.sub_find("nodes/%s" % node, "netdev")
+    devs = timeseries.sub_find("nodes", node, "netdev")
     data = {
         "rxkBps": [],
         "rxkBps": [],
@@ -628,7 +547,7 @@ def json_netdev_avg():
 
     for dev in devs:
         for metric in data:
-            data[metric].append(timeseries.whisper_fetch_avg("nodes/%s" % node, "netdev", dev, metric, b=b, e=e))
+            data[metric].append(timeseries.whisper_fetch_avg("nodes", node, "netdev", dev, metric, b=b, e=e))
 
     if node is None:
         return [dev, [rxkBps, txkBps], [rxpckps, txpckps]]
@@ -645,7 +564,7 @@ def json_blockdev():
     b = request.vars.b
     e = request.vars.e
 
-    devs = timeseries.sub_find("nodes/%s" % node, "blockdev")
+    devs = timeseries.sub_find("nodes", node, "blockdev")
     metrics = [
         ("tps",      "all", "",     1),
         ("rsecps",   "avg", " rd",  1),
@@ -662,10 +581,10 @@ def json_blockdev():
         data_ts[dev] = {}
         for metric, what, suffix, multiplier in metrics:
             if what == "all":
-                line += timeseries.whisper_fetch_avg_min_max("nodes/%s" % node, "blockdev", dev, metric, b=b, e=e)
+                line += timeseries.whisper_fetch_avg_min_max("nodes", node, "blockdev", dev, metric, b=b, e=e)
             else:
-                line += [timeseries.whisper_fetch_avg("nodes/%s" % node, "blockdev", dev, metric, b=b, e=e)]
-            data_ts[dev][metric] = timeseries.whisper_fetch("nodes/%s" % node, "blockdev", dev, metric, b=b, e=e)
+                line += [timeseries.whisper_fetch_avg("nodes", node, "blockdev", dev, metric, b=b, e=e)]
+            data_ts[dev][metric] = timeseries.whisper_fetch("nodes", node, "blockdev", dev, metric, b=b, e=e)
         data_agg.append(line)
 
     max_await = 300000
@@ -817,7 +736,7 @@ def json_fs():
         "used",
     ]
     data = {}
-    fss = timeseries.sub_find("nodes/%s" % node, "fs_u", prefix="/")
+    fss = timeseries.sub_find("nodes", node, "fs_u", prefix="/")
     for fs in fss:
         data[fs] = {}
         for metric in metrics:
