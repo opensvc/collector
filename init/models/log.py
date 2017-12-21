@@ -1,6 +1,8 @@
 import gluon.contrib.simplejson as json
 import logging
 
+DATE_FMT = "%Y-%m-%d %H:%M:%S"
+
 def beautify_data(d):
     l = []
     for key in sorted(d.keys()):
@@ -13,18 +15,26 @@ def beautify_data(d):
 
 def beautify_change(d1, d2):
     l = []
+    if isinstance(d1, pydal.objects.Row):
+        d1 = dict(d1)
+    if isinstance(d2, pydal.objects.Row):
+        d2 = dict(d2)
     for key in sorted(d2.keys()):
         if key not in d1:
             continue
         if d1[key] != d2[key]:
             if type(d1[key]) in (int, float):
                 val1 = str(d1[key])
+	    elif type(d1[key]) in (datetime.datetime,):
+                val1 = d1[key].strftime(DATE_FMT)
             elif type(d1[key]) == str:
                 val1 = unicode(d1[key], errors="ignore")
             else:
                 val1 = d1[key]
             if type(d2[key]) in (int, float):
                 val2 = str(d2[key])
+	    elif type(d2[key]) in (datetime.datetime,):
+                val2 = d2[key].strftime(DATE_FMT)
             else:
                 val2 = d2[key]
             l.append("%s: %s => %s" % (key, val1, val2))

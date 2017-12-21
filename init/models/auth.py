@@ -2,10 +2,16 @@ import re
 from gluon.tools import Auth
 
 def auth_dump():
-    return {
+    data = {
         "user_id": auth.user_id,
         "user": dict(auth.user)
     }
+    for key in ("delete_record", "update_record", "__get_lazy_reference__"):
+        try:
+            del data["user"][key]
+        except KeyError:
+            pass
+    return data
 
 def get_node(node_id):
     q = db.nodes.node_id == node_id
@@ -25,7 +31,7 @@ def get_node_id(s):
         return node.node_id
     q = db.nodes.nodename == s
     q = q_filter(q, app_field=db.nodes.app)
-    nodes = db(q).select(db.nodes.node_id)
+    nodes = db(q).select(db.nodes.node_id, cacheable=True)
     if len(nodes) > 1:
         raise Exception("Multiple nodes match the '%s' nodename. Use a node id." % s)
     node = nodes.first()
