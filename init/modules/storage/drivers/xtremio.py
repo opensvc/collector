@@ -18,9 +18,9 @@ class Driver(object):
         ret = self.storage.proxy_action(" ".join(cmd))
         try:
             data = json.loads(ret["data"][0]["stdout"])
+            return data
         except ValueError:
             Error("unexpected add disk output format: %s" % ret)
-        return data
 
     def resize_disk(self):
         if "disk_name" not in self.storage.request_data:
