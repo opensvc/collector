@@ -208,6 +208,17 @@ class rest_post_filtersets(rest_post_handler):
         )
 
     def handler(self, **vars):
+        _vars = {}
+        _vars.update(vars)
+        fset_id = None
+        if "id" in vars:
+            fset_id = lib_filterset_id(_vars["id"])
+            del _vars["id"]
+        if "fset_name" in vars:
+            fset_id = lib_filterset_id(_vars["fset_name"])
+            del _vars["fset_name"]
+        if fset_id is not None:
+            return rest_post_filterset().handler(fset_id, **_vars)
         try:
             obj_id = create_filterset(**vars)
         except CompInfo as e:
@@ -247,13 +258,17 @@ class rest_post_filterset(rest_post_handler):
             return dict(error="filterset %s not found" % str(id))
         if "id" in vars.keys():
             del(vars["id"])
+        if len(vars) == 0:
+            ret = rest_get_filterset().handler(row.id)
+            ret["info"] = "no changes"
+            return ret
         db(q).update(**vars)
         l = []
         for key in vars:
             l.append("%s: %s => %s" % (str(key), str(row[key]), str(vars[key])))
         _log('filterset.change',
              'change filterset %(data)s',
-             dict(data=', '.join(l)),
+             dict(data=beautify_change(row, vars)),
             )
         ws_send('gen_filtersets_change', {'id': row.id})
         return rest_get_filterset().handler(row.id)
