@@ -4700,6 +4700,13 @@ def merge_daemon_status(node_id, changes):
 
     def update_instance(svc, peer, container_id, idata):
         _changed = set()
+
+        def gstatus(group, _data):
+            try:
+                return _data["status_group"].get(group, "n/a")
+            except KeyError:
+                return _data.get(group, "n/a")
+
         if container_id == "":
             cdata = {"resources": {}}
             cname = ""
@@ -4715,14 +4722,8 @@ def merge_daemon_status(node_id, changes):
                 cstatus = cdata.get(key, "n/a")
                 data[key] = STATUS_STR[merge_status(istatus, cstatus)]
             for key in ("ip", "disk", "fs", "share", "container", "app", "sync"):
-                try:
-                    istatus = idata["status_group"].get(key, "n/a")
-                except KeyError:
-                    istatus = idata.get(key, "n/a")
-                try:
-                    cstatus = cdata["status_group"].get(key, "n/a")
-                except KeyError:
-                    cstatus = cdata.get(key, "n/a")
+                istatus = gstatus(key, idata)
+                cstatus = gstatus(key, cdata)
                 data[key] = STATUS_STR[merge_status(istatus, cstatus)]
             #
             # 0: global thawed + encap thawed
@@ -4735,6 +4736,7 @@ def merge_daemon_status(node_id, changes):
             else:
                 data["frozen"] = int(idata["frozen"])
 
+        print(svc.svc_id, data) 
         db.svcmon.update_or_insert({
                 "node_id": peer.node_id,
                 "svc_id": svc.svc_id,
@@ -4745,13 +4747,14 @@ def merge_daemon_status(node_id, changes):
             mon_vmname=cname,
             mon_availstatus=data["avail"],
             mon_overallstatus=data["overall"],
-            mon_ipstatus=data["ip"],
-            mon_diskstatus=data["disk"],
-            mon_fsstatus=data["fs"],
-            mon_sharestatus=data["share"],
-            mon_containerstatus=data["container"],
-            mon_appstatus=data["app"],
-            mon_syncstatus=data["sync"],
+            mon_monstatus=data.get("monitor", {}).get("status", ""),
+            mon_ipstatus=gstatus("ip", data),
+            mon_diskstatus=gstatus("disk", data),
+            mon_fsstatus=gstatus("fs", data),
+            mon_sharestatus=gstatus("share", data),
+            mon_containerstatus=gstatus("container", data),
+            mon_appstatus=gstatus("app", data),
+            mon_syncstatus=gstatus("sync", data),
             mon_frozen=int(data["frozen"]),
             mon_vmtype=ctype,
             mon_updated=now,

@@ -118,6 +118,7 @@ class table_svcmon(HtmlTable):
             'mon_availstatus',
             'mon_overallstatus',
             'mon_frozen',
+            'mon_monstatus',
             'mon_containerstatus',
             'mon_ipstatus',
             'mon_fsstatus',

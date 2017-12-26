@@ -30,6 +30,12 @@ def svc_log_update(svc_id, astatus, deferred=False):
         table_modified("services_log")
     return changed
 
+def gstatus(group, _data):
+    try:
+        return _data["status_group"].get(group, "n/a")
+    except KeyError:
+        return _data.get(group, "n/a")
+
 def svcmon_log_update(node_id, svc_id, idata, deferred=False):
     change = False
     changed = set()
@@ -42,13 +48,13 @@ def svcmon_log_update(node_id, svc_id, idata, deferred=False):
         prev = rows[0]
         if prev["mon_availstatus"] == idata["avail"] and \
            prev["mon_overallstatus"] == idata["overall"] and \
-           prev["mon_syncstatus"] == idata["sync"] and \
-           prev["mon_ipstatus"] == idata["ip"] and \
-           prev["mon_fsstatus"] == idata["fs"] and \
-           prev["mon_diskstatus"] == idata["disk"] and \
-           prev["mon_sharestatus"] == idata["share"] and \
-           prev["mon_containerstatus"] == idata["container"] and \
-           prev["mon_appstatus"] == idata["app"]:
+           prev["mon_syncstatus"] == gstatus("sync", idata) and \
+           prev["mon_ipstatus"] == gstatus("ip", idata) and \
+           prev["mon_fsstatus"] == gstatus("fs", idata) and \
+           prev["mon_diskstatus"] == gstatus("disk", idata) and \
+           prev["mon_sharestatus"] == gstatus("share", idata) and \
+           prev["mon_containerstatus"] == gstatus("container", idata) and \
+           prev["mon_appstatus"] == gstatus("app", idata):
             sql = """update svcmon_log_last set mon_end="%s" where id=%d""" % (end, prev["id"])
             db.executesql(sql)
         else:
@@ -78,13 +84,13 @@ def svcmon_log_update(node_id, svc_id, idata, deferred=False):
             node_id=node_id,
             mon_availstatus=idata["avail"],
             mon_overallstatus=idata["overall"],
-            mon_syncstatus=idata["sync"],
-            mon_ipstatus=idata["ip"],
-            mon_fsstatus=idata["fs"],
-            mon_diskstatus=idata["disk"],
-            mon_sharestatus=idata["share"],
-            mon_containerstatus=idata["container"],
-            mon_appstatus=idata["app"],
+            mon_syncstatus=gstatus("sync", idata),
+            mon_ipstatus=gstatus("ip", idata),
+            mon_fsstatus=gstatus("fs", idata),
+            mon_diskstatus=gstatus("disk", idata),
+            mon_sharestatus=gstatus("share", idata),
+            mon_containerstatus=gstatus("container", idata),
+            mon_appstatus=gstatus("app", idata),
             mon_begin=end,
             mon_end=end,
         )

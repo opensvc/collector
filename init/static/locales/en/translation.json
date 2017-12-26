@@ -1711,6 +1711,7 @@
 		"HA": "HA",
 		"Service creation date": "Service creation date",
 		"Fs status": "Fs status",
+		"Monitor status": "Monitor status",
 		"Action type": "Action type",
 		"Last status update": "Last status update",
 		"Hardware obsolescence warning date": "Hardware obsolescence warning date",

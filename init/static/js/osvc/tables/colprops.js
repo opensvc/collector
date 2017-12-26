@@ -101,6 +101,7 @@ objcols = {
 		'mon_availstatus',
 		'mon_overallstatus',
 		'mon_frozen',
+		'mon_monstatus',
 		'mon_containerstatus',
 		'mon_ipstatus',
 		'mon_fsstatus',
@@ -1314,6 +1315,11 @@ colprops = {
 	"mon_frozen": {
 		"img": "svcinstance",
 		"title": "Frozen"
+	},
+	"mon_monstatus": {
+		"_class": "status",
+		"img": "svcinstance",
+		"title": "Monitor status"
 	},
 	"mon_fsstatus": {
 		"_class": "status",

@@ -1708,6 +1708,7 @@
 		"Service placement": "Placement du service",
 		"HA": "HA",
 		"Service creation date": "Date de création du service",
+		"Monitor status": "Etat du moniteur",
 		"Fs status": "Etat des fs",
 		"Action type": "Type d'action",
 		"Last status update": "Mise à jour des états",
