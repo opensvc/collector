@@ -1895,7 +1895,22 @@ function cell_decorator_resinfo_value(e, line) {
 	var s = $.data(e[0], "v")
 	var _e = $("<span></span>")
 	_e.text(s)
-	if (is_numeric(s)) {
+	var key_blacklist = [
+		"restart",
+		"start",
+		"stop",
+		"check",
+		"info",
+		"mask",
+		"timeout",
+		"start_timeout",
+		"stop_timeout",
+		"check_timeout",
+		"info_timeout"
+	]
+	var key = $.data(line.children("[col=res_key]")[0], "v")
+
+	if (is_numeric(s) && (key_blacklist.indexOf(key) < 0)) {
 		_e.addClass("icon chart16")
 		e
 		.addClass("corner clickable")
@@ -1906,7 +1921,7 @@ function cell_decorator_resinfo_value(e, line) {
 			var params = "svc_id="+encodeURIComponent($.data(line.children("[col=svc_id]")[0], "v"))
 			params += "&node_id="+encodeURIComponent($.data(line.children("[col=node_id]")[0], "v"))
 			params += "&rid="+encodeURIComponent($.data(line.children("[col=rid]")[0], "v"))
-			params += "&key="+encodeURIComponent($.data(line.children("[col=res_key]")[0], "v"))
+			params += "&key="+encodeURIComponent(key)
 			params += "&rowid="+encodeURIComponent(id)
 			var url = services_get_url() + "/init/resinfo/ajax_resinfo_log?" + params
 			toggle_extra(url, id, e, 0)
