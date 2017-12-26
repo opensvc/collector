@@ -4751,6 +4751,11 @@ def merge_daemon_status(node_id, changes):
         _changed |= update_instance_resources(svc, peer, cname, cdata["resources"])
         return _changed
 
+    def format_resource_log(rlog):
+        if isinstance(rlog, list):
+            return "\n".join(rlog)
+        return rlog
+
     def update_instance_resources(svc, peer, cname, resources):
         _changed = set()
         for rid, rdata in resources.items():
@@ -4766,10 +4771,10 @@ def merge_daemon_status(node_id, changes):
                 rid=rid,
                 res_status=rdata["status"],
                 res_type=rdata["type"],
-                res_log=rdata["log"],
-                res_optional=rdata["optional"],
-                res_disable=rdata["disable"],
-                res_monitor=rdata["monitor"],
+                res_log=format_resource_log(rdata.get("log", [])),
+                res_optional=rdata.get("optional", False),
+                res_disable=rdata.get("disable", False),
+                res_monitor=rdata.get("monitor", False),
                 res_desc=rdata["label"],
                 updated=now,
             )
