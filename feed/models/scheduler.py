@@ -4710,8 +4710,20 @@ def merge_daemon_status(node_id, changes):
             cname = cdata["hostname"]
             ctype = idata["resources"][container_id]["type"].split(".")[-1]
             data = {}
-            for key in ("avail", "overall", "ip", "disk", "fs", "share", "container", "app", "sync"):
-                data[key] = STATUS_STR[merge_status(idata.get(key, "n/a"), cdata.get(key, "n/a"))]
+            for key in ("avail", "overall"):
+                istatus = idata.get(key, "n/a")
+                cstatus = cdata.get(key, "n/a")
+                data[key] = STATUS_STR[merge_status(istatus, cstatus)]
+            for key in ("ip", "disk", "fs", "share", "container", "app", "sync"):
+                try:
+                    istatus = idata["status_group"].get(key, "n/a")
+                except KeyError:
+                    istatus = idata.get(key, "n/a")
+                try:
+                    cstatus = cdata["status_group"].get(key, "n/a")
+                except KeyError:
+                    cstatus = cdata.get(key, "n/a")
+                data[key] = STATUS_STR[merge_status(istatus, cstatus)]
             #
             # 0: global thawed + encap thawed
             # 1: global frozen + encap thawed
