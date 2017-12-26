@@ -178,7 +178,6 @@ def cron_purge_expiry():
               ('svcmon_log', 'mon_end', None),
               ('services_log', 'svc_end', None),
               ('resmon_log', 'res_end', None),
-              ('resinfo_log', 'updated', None),
               ('svcactions', 'begin', 'id'),
               ('dashboard_events', 'dash_end', None),
               ('packages', 'pkg_updated', None),

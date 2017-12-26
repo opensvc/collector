@@ -1250,10 +1250,6 @@ db.define_table('resinfo',
     Field('updated','datetime'),
     migrate=False)
 
-db.define_table('resinfo_log',
-    db.resinfo,
-    migrate=False)
-
 db.define_table('dashboard',
     Field('dash_type','string'),
     Field('svc_id', 'string', length=36),

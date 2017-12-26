@@ -82,6 +82,10 @@ def whisper_create(wsp, retentions=None, xFilesFactor=0.0):
     whisper.create(wsp, retentions, xFilesFactor=xFilesFactor)
 
 def to_tstamp(s):
+    if isinstance(s, datetime.datetime):
+        return int(time.mktime(s.timetuple()))
+    if isinstance(s, int):
+        return s
     for fmt in formats:
         try:
             return int(time.mktime(datetime.datetime.strptime(s, fmt).timetuple()))
@@ -124,13 +128,19 @@ def whisper_fetch(*args, **kwargs):
     b = kwargs.get("b")
     e = kwargs.get("e")
     wsp = wsp_path(*args)
+    _args = [wsp]
     if not os.path.exists(wsp):
         return []
+    if b is None:
+        b = 0
     if isinstance(b, (str, unicode)):
         b = to_tstamp(b)
-    if isinstance(e, (str, unicode)):
-        e = to_tstamp(e)
-    (start, end, step), values = whisper.fetch(wsp, b, e)
+    _args.append(b)
+    if e is not None:
+        if isinstance(e, (str, unicode)):
+            e = to_tstamp(e)
+        _args.append(e)
+    (start, end, step), values = whisper.fetch(*_args)
     t = start
     data = []
     for value in values:
@@ -138,6 +148,10 @@ def whisper_fetch(*args, **kwargs):
         t += step
         data.append([timestr, value])
     return data
+
+def whisper_update(wsp, value, tstamp):
+    whisper_create(wsp)
+    whisper.update(wsp, value, to_tstamp(tstamp))
 
 def whisper_update_list(head, vars, vals, group="", options=None):
     if options is None:
