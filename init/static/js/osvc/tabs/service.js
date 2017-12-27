@@ -457,7 +457,21 @@ function service_properties(divid, options)
 							]
 						}
 					]
-				}
+				},
+                                {
+					"title": "action_menu.agent_actions",
+					"children": [
+						{
+							"title": "action_menu.toggle_display",
+							"class": "fa-eye",
+							"selector": ["tab"],
+							"foldable": true,
+							"cols": [],
+							"children": am_svc_agent_leafs
+						}
+					]
+				},
+
 			]
 			tab_tools({
 				"div": o.div.find("#tools"),

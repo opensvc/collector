@@ -153,6 +153,44 @@ var am_node_agent_leafs = [
 	}
 ]
 
+var am_svc_agent_leafs = [
+	{
+		'title': 'Start',
+		'class': 'action_start_16',
+		"privileges": ["Manager", "NodeManager", "NodeExec"],
+		"min": 1,
+		'action': 'start'
+	},
+	{
+		'title': 'Stop',
+		'class': 'action_stop_16',
+		"privileges": ["Manager", "NodeManager", "NodeExec"],
+		"min": 1,
+		'action': 'stop'
+	},
+	{
+		'title': 'Giveback',
+		'class': 'action_switch_16',
+		"privileges": ["Manager", "NodeManager", "NodeExec"],
+		"min": 1,
+		'action': 'giveback'
+	},
+	{
+		'title': 'Freeze',
+		'class': 'icon fa-snowflake-o icon-blue',
+		"privileges": ["Manager", "NodeManager", "NodeExec"],
+		"min": 1,
+		'action': 'freeze'
+	},
+	{
+		'title': 'Thaw',
+		'class': 'icon fa-snowflake-o icon-gray',
+		"privileges": ["Manager", "NodeManager", "NodeExec"],
+		"min": 1,
+		'action': 'thaw'
+	}
+]
+
 function table_action_menu_init_data(t) {
 	t.action_menu_req_max = 1000
 	t.column_selectors = {
@@ -1520,6 +1558,18 @@ function table_action_menu_init_data(t) {
 					"cols": ["node_id"],
 					"condition": "node_id",
 					"children": am_node_agent_leafs
+				},
+				{
+					"selector": ["clicked", "checked", "all"],
+					"foldable": true,
+					'title': 'action_menu.on_services',
+					"clicked_decorator": function(e, data){
+						e.osvc_svcname()
+					},
+					"class": "svc",
+					"cols": ["svc_id"],
+					"condition": "svc_id",
+					"children": am_svc_agent_leafs
 				},
 				{
 					"selector": ["clicked", "checked", "all"],

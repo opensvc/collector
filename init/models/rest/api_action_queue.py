@@ -71,20 +71,21 @@ class rest_put_action_queue(rest_put_handler):
 
 Each action has specific property requirements:
 
+- ``giveback``:green requires **svc_id**
+- ``start``:green requires **svc_id**, optionally **node_id**, **rid**
+- ``stop``:green requires **svc_id**, optionally **node_id**, **rid**
+- ``freeze``:green requires **svc_id**, optionally **node_id**, **rid**
+- ``thaw``:green requires **svc_id**, optionally **node_id**, **rid**
 - ``compliance_check``:green requires **node_id**, **module** or **moduleset**, optionally
   **svc_id**
 - ``compliance_fix``:green requires **node_id**, **module** or **moduleset**, optionally
   **svc_id**
-- ``start``:green requires **node_id**, **svc_id**, optionally **rid**
-- ``stop``:green requires **node_id**, **svc_id**, optionally **rid**
 - ``restart``:green requires **node_id**, **svc_id**, optionally **rid**
 - ``syncall``:green requires **node_id**, **svc_id**, optionally **rid**
 - ``syncnodes``:green requires **node_id**, **svc_id**, optionally **rid**
 - ``syncdrp``:green requires **node_id**, **svc_id**, optionally **rid**
 - ``enable``:green requires **node_id**, **svc_id**, optionally **rid**
 - ``disable``:green requires **node_id**, **svc_id**, optionally **rid**
-- ``freeze``:green requires **node_id**, **svc_id**, optionally **rid**
-- ``thaw``:green requires **node_id**, **svc_id**, optionally **rid**
 - ``pushasset``:green requires **node_id**
 - ``pushdisks``:green requires **node_id**
 - ``pull``:green requires **node_id**

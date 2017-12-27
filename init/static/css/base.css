@@ -1661,11 +1661,6 @@ div.login {
 	padding: 0 0 0 20px;
 	min-height: 16px;
 }
-.frozen16 {
-	background: transparent url('../images/frozen16.png') no-repeat;
-	padding: 0 0 0 20px;
-	min-height: 16px;
-}
 .action_toc_16 {
 	background: transparent url('../images/action_toc_16.png') no-repeat;
 	padding: 0 0 0 20px;
@@ -3086,6 +3081,9 @@ pre.api_doc {
 }
 .icon-lightgray:before {
 	color: #eeeeee;
+}
+.icon-blue:before {
+	color: cornflowerblue;
 }
 
 .nocolor:before {

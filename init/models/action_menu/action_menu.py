@@ -81,10 +81,10 @@ def enqueue_node_comp_action(node, action, mode, mod):
     else:
         return generic_insert('action_queue', vars, vals, get_last_id=True)
 
-def enqueue_svc_action(node, svc, action, rid=None):
+def enqueue_svc_action(node, svc, action, rid=None, local=True):
     action_type = get_action_type(node)
     connect_to = get_reachable_name(node)
-    command = fmt_svc_action(node, svc, action, action_type, rid=rid, connect_to=connect_to)
+    command = fmt_svc_action(node, svc, action, action_type, rid=rid, connect_to=connect_to, local=local)
     vars = ['node_id', 'svc_id', 'action_type', 'command', 'user_id', 'connect_to']
     vals = [node.node_id, svc, action_type, command, str(auth.user_id), connect_to]
     if node.collector != "" and node.collector is not None:
@@ -105,7 +105,7 @@ def enqueue_svc_comp_action(node, svc, action, mode, mod):
     else:
         return generic_insert('action_queue', vars, vals, get_last_id=True)
 
-def fmt_svc_action(node, svc_id, action, action_type, rid=None, connect_to=None):
+def fmt_svc_action(node, svc_id, action, action_type, rid=None, connect_to=None, local=True):
     action = action.replace('"', '\"').replace("'", "\'")
     if connect_to is None:
         connect_to = get_reachable_name(node)
@@ -117,8 +117,14 @@ def fmt_svc_action(node, svc_id, action, action_type, rid=None, connect_to=None)
         cmd = get_ssh_cmd(node) + ['opensvc@'+connect_to, '--'] + remote_cmd_prepend
         cmd += ['sudo', 'svcmgr', '--service', svc.svcname]
     cmd += [action]
+    try:
+        node_version = float(node.version[:3])
+    except:
+        node_version = 0.0
     if rid is not None:
         cmd += ["--rid", rid]
+    elif local and node_version >= 1.9:
+        cmd += ["--local", rid]
     return ' '.join(cmd)
 
 def fmt_node_comp_action(node, action, mode, mod, action_type, connect_to=None):
@@ -227,7 +233,7 @@ def do_node_wol_action(node_id):
         n += do_node_action(candidate['proxy_node_id'], action)
     return n
 
-def do_svc_comp_action(node_id, svc_id, action, mode, obj):
+def do_instance_comp_action(node_id, svc_id, action, mode, obj):
     check_privilege("CompExec")
     if action.startswith("compliance_"):
         action = action.replace("compliance_", "")
@@ -264,7 +270,26 @@ def do_svc_comp_action(node_id, svc_id, action, mode, obj):
     )
     return action_id
 
-def do_svc_action(node_id, svc_id, action, rid=None):
+def do_svc_action(svc_id, action):
+    check_privilege(["NodeExec", "NodeManager"])
+    if action is None or len(action) == 0:
+        raise ToolError("no action specified")
+
+    nodes = get_svc_live_nodes(svc_id)
+    if len(nodes) == 0:
+        return 0
+    node = nodes.first()
+
+    action_id = enqueue_svc_action(node, svc_id, action, local=False)
+    _log('service.action',
+         'run %(a)s',
+         dict(a=action),
+         svc_id=svc_id,
+         node_id=node.node_id
+    )
+    return action_id
+
+def do_instance_action(node_id, svc_id, action, rid=None):
     check_privilege("NodeExec")
     if action is None or len(action) == 0:
         raise ToolError("no action specified")
@@ -327,19 +352,16 @@ def json_action_one(d):
         del(d["vmname"])
     if "rid" in d and "svc_id" in d and "node_id" in d:
         if "action" in d:
-            return do_svc_action(d["node_id"], d["svc_id"], d["action"], rid=d["rid"])
+            return do_instance_action(d["node_id"], d["svc_id"], d["action"], rid=d["rid"])
     elif "svc_id" in d and d["svc_id"] != "" and "node_id" in d:
         if "ruleset" in d:
-            return do_svc_comp_action(d["node_id"], d["svc_id"], d["action"], "ruleset", d["ruleset"])
+            return do_instance_comp_action(d["node_id"], d["svc_id"], d["action"], "ruleset", d["ruleset"])
         elif "moduleset" in d:
-            return do_svc_comp_action(d["node_id"], d["svc_id"], d["action"], "moduleset", d["moduleset"])
+            return do_instance_comp_action(d["node_id"], d["svc_id"], d["action"], "moduleset", d["moduleset"])
         elif "module" in d:
-            return do_svc_comp_action(d["node_id"], d["svc_id"], d["action"], "module", d["module"])
+            return do_instance_comp_action(d["node_id"], d["svc_id"], d["action"], "module", d["module"])
         elif "action" in d:
-            d["node_version"] = db(db.nodes.node_id==d["node_id"]).select().first().version
-            if d["node_version"][:3] == "1.9":
-                d["action"] += " --local"
-            return do_svc_action(d["node_id"], d["svc_id"], d["action"])
+            return do_instance_action(d["node_id"], d["svc_id"], d["action"])
     elif "node_id" in d:
         if "ruleset" in d:
             return do_node_comp_action(d["node_id"], d["action"], "ruleset", d["ruleset"])
@@ -349,6 +371,8 @@ def json_action_one(d):
             return do_node_comp_action(d["node_id"], d["action"], "module", d["module"])
         elif "action" in d:
             return do_node_action(d["node_id"], d["action"])
+    elif "svc_id" in d:
+        return do_svc_action(d["svc_id"], d["action"])
     return 0
 
 def factorize_actions(data):
