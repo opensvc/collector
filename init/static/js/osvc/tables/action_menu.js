@@ -1659,14 +1659,14 @@ function table_action_menu_init_data(t) {
 						},
 						{
 							'title': 'Thaw',
-							'class': 'ok',
+							'class': 'icon fa-snowflake-o icon-gray',
 							"privileges": ["Manager", "NodeManager", "NodeExec"],
 							"min": 1,
 							'action': 'thaw'
 						},
 						{
 							'title': 'Freeze',
-							'class': 'nok',
+							'class': 'icon fa-snowflake-o icon-blue',
 							"privileges": ["Manager", "NodeManager", "NodeExec"],
 							"min": 1,
 							'action': 'freeze'

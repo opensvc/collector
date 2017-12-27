@@ -124,7 +124,7 @@ def fmt_svc_action(node, svc_id, action, action_type, rid=None, connect_to=None,
     if rid is not None:
         cmd += ["--rid", rid]
     elif local and node_version >= 1.9:
-        cmd += ["--local", rid]
+        cmd += ["--local"]
     return ' '.join(cmd)
 
 def fmt_node_comp_action(node, action, mode, mod, action_type, connect_to=None):
@@ -324,6 +324,7 @@ def do_instance_action(node_id, svc_id, action, rid=None):
       db.nodes.os_name,
       db.nodes.action_type,
       db.nodes.collector,
+      db.nodes.version,
       cacheable=True
     ).first()
     if node is None:
