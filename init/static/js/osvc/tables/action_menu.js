@@ -176,6 +176,20 @@ var am_svc_agent_leafs = [
 		'action': 'giveback'
 	},
 	{
+		'title': 'Abort',
+		'class': 'icon fa-ban',
+		"privileges": ["Manager", "NodeManager", "NodeExec"],
+		"min": 1,
+		'action': 'abort'
+	},
+	{
+		'title': 'Clear',
+		'class': 'icon fa-eraser',
+		"privileges": ["Manager", "NodeManager", "NodeExec"],
+		"min": 1,
+		'action': 'clear'
+	},
+	{
 		'title': 'Freeze',
 		'class': 'icon fa-snowflake-o icon-blue',
 		"privileges": ["Manager", "NodeManager", "NodeExec"],
@@ -1649,6 +1663,20 @@ function table_action_menu_init_data(t) {
 							"privileges": ["Manager", "NodeManager", "NodeExec"],
 							"min": 1,
 							'action': 'syncdrp'
+						},
+						{
+							'title': 'Abort',
+							'class': 'icon fa-ban',
+							"privileges": ["Manager", "NodeManager", "NodeExec"],
+							"min": 1,
+							'action': 'abort'
+						},
+						{
+							'title': 'Clear',
+							'class': 'icon fa-eraser',
+							"privileges": ["Manager", "NodeManager", "NodeExec"],
+							"min": 1,
+							'action': 'clear'
 						},
 						{
 							'title': 'Enable',
