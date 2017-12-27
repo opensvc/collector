@@ -1616,6 +1616,13 @@ function table_action_menu_init_data(t) {
 							'action': 'restart'
 						},
 						{
+							'title': 'Takeover',
+							'class': 'action_switch_16',
+							"privileges": ["Manager", "NodeManager", "NodeExec"],
+							"min": 1,
+							'action': 'takeover'
+						},
+						{
 							'title': 'Switch',
 							'class': 'action_switch_16',
 							"privileges": ["Manager", "NodeManager", "NodeExec"],
