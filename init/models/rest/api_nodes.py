@@ -740,6 +740,11 @@ class rest_delete_node(rest_delete_handler):
         ws_send('stor_zone_change', {'node_id': node_id})
         table_modified("stor_zone")
 
+        q = db.stor_array_proxy.node_id == node_id
+        db(q).delete()
+        ws_send('stor_array_proxy_change', {'node_id': node_id})
+        table_modified("stor_array_proxy")
+
         q = db.auth_node.node_id == node_id
         db(q).delete()
         ws_send('auth_node', {'node_id': node_id})
