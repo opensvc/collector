@@ -413,7 +413,7 @@ def lib_comp_moduleset_detach_node(node_id, modset_id):
     else:
         moduleset = comp_moduleset_name(modset_id)
         if moduleset is None:
-            return dict(error="moduleset %s does not exist"%moduleset)
+            return dict(info="moduleset %s does not exist"%moduleset)
         if not comp_moduleset_attached(node_id, modset_id):
             return dict(info="moduleset %s is not attached to this node"%moduleset)
     q = db.comp_node_moduleset.node_id == node_id
@@ -444,7 +444,7 @@ def lib_comp_moduleset_detach_service(svc_id, modset_id, slave=False):
     else:
         moduleset = comp_moduleset_name(modset_id)
         if moduleset is None:
-            return dict(error="moduleset %s does not exist"%moduleset)
+            return dict(info="moduleset %s does not exist"%moduleset)
         if not comp_moduleset_svc_attached(svc_id, modset_id, slave):
             return dict(info="moduleset %s is not attached to this service"%moduleset)
     q = db.comp_modulesets_services.svc_id == svc_id
@@ -524,7 +524,7 @@ def lib_comp_ruleset_detach_node(node_id, ruleset_id):
     else:
         ruleset = comp_ruleset_name(ruleset_id)
         if ruleset is None:
-            return dict(error="ruleset %s does not exist"%ruleset)
+            return dict(info="ruleset %s does not exist"%ruleset)
         if not comp_ruleset_attached(node_id, ruleset_id):
             return dict(info="ruleset %s is not attached to this node"%ruleset)
     q = db.comp_rulesets_nodes.node_id == node_id
@@ -555,7 +555,7 @@ def lib_comp_ruleset_detach_service(svc_id, ruleset_id, slave=False):
     else:
         ruleset = comp_ruleset_name(ruleset_id)
         if ruleset is None:
-            return dict(error="ruleset %s does not exist"%ruleset)
+            return dict(info="ruleset %s does not exist"%ruleset)
         if not comp_ruleset_svc_attached(svc_id, ruleset_id, slave):
             return dict(info="ruleset %s is not attached to this service"%ruleset)
     q = db.comp_rulesets_services.svc_id == svc_id

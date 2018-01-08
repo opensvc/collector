@@ -1857,7 +1857,7 @@ def rpc_comp_detach_ruleset(nodename, ruleset, auth):
     else:
         ruleset_id = comp_ruleset_id(ruleset)
     if ruleset_id is None:
-        return dict(status=False, msg="ruleset %s does not exist"%ruleset)
+        return dict(status=True, msg="ruleset %s does not exist"%ruleset)
     elif ruleset == 'all' and len(ruleset_id) == 0:
         return dict(status=True, msg="this node has no ruleset attached")
     d = lib_comp_ruleset_detach_node(node_id, ruleset_id)
