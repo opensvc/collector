@@ -2655,7 +2655,7 @@ def insert_run_rset(ruleset):
         db.comp_run_ruleset.insert(rset_md5=rset_md5, rset=s, date=request.now)
         table_modified("comp_run_ruleset")
     except:
-        q = db.comp_run_ruleset.rest_md5 == rset_md5
+        q = db.comp_run_ruleset.rset_md5 == rset_md5
         db(q).update(date=request.now)
         table_modified("comp_run_ruleset")
     rset = {'name': 'osvc_collector',
