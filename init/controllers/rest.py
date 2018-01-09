@@ -65,6 +65,8 @@ def rest_router(action, args, vars):
         for handler in candidate_handlers:
             if handler.match("/"+request.raw_args):
                 return handler.handle(*args, **vars)
+    except CompInfo as exc:
+        return dict(info=str(exc))
     except:
         import sys
         import traceback
