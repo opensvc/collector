@@ -315,18 +315,21 @@ class rest_post_groups(rest_post_handler):
         )
 
     def handler(self, **vars):
-        if 'privilege' in vars and vars["privilege"] in ("T", True):
-            check_privilege("Manager")
-        else:
-            check_privilege("GroupManager")
-
         if 'id' in vars:
             q = db.auth_group.id == vars["id"]
         elif 'role' in vars:
             q = db.auth_group.role == vars["role"]
-        group = db(q).select().first()
-        if group:
-            return rest_post_group().handler(group.id, **vars)
+        else:
+            q = None
+        if q:
+            group = db(q).select().first()
+            if group:
+                return rest_post_group().handler(group.id, **vars)
+
+        if 'privilege' in vars and vars["privilege"] in ("T", True):
+            check_privilege("Manager")
+        else:
+            check_privilege("GroupManager")
 
         check_quota_org_group()
 
