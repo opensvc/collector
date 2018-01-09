@@ -69,7 +69,7 @@ def rest_router(action, args, vars):
         import sys
         import traceback
         e = sys.exc_info()
-        if e[0] in (CompError, Exception, KeyError):
+        if e[0] in (HTTP, CompError, Exception, KeyError):
             err = str(e[1])
         else:
             err = traceback.format_exc()
