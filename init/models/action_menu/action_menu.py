@@ -57,10 +57,10 @@ def start_actiond():
     process = Popen([sys.executable, actiond])
     process.communicate()
 
-def enqueue_node_action(node, action):
+def enqueue_node_action(node, action, options=None):
     action_type = get_action_type(node)
     connect_to = get_reachable_name(node)
-    command = fmt_node_action(node, action, action_type, connect_to=connect_to)
+    command = fmt_node_action(node, action, action_type, connect_to=connect_to, options=options)
     vars = ['node_id', 'svc_id', 'action_type', 'command', 'user_id', 'connect_to']
     vals = [node.node_id, "", action_type, command, str(auth.user_id), connect_to]
     if node.collector != "" and node.collector is not None:
@@ -81,10 +81,10 @@ def enqueue_node_comp_action(node, action, mode, mod):
     else:
         return generic_insert('action_queue', vars, vals, get_last_id=True)
 
-def enqueue_svc_action(node, svc, action, rid=None, local=True):
+def enqueue_svc_action(node, svc, action, rid=None, local=True, options=None):
     action_type = get_action_type(node)
     connect_to = get_reachable_name(node)
-    command = fmt_svc_action(node, svc, action, action_type, rid=rid, connect_to=connect_to, local=local)
+    command = fmt_svc_action(node, svc, action, action_type, rid=rid, connect_to=connect_to, local=local, options=options)
     vars = ['node_id', 'svc_id', 'action_type', 'command', 'user_id', 'connect_to']
     vals = [node.node_id, svc, action_type, command, str(auth.user_id), connect_to]
     if node.collector != "" and node.collector is not None:
@@ -105,7 +105,7 @@ def enqueue_svc_comp_action(node, svc, action, mode, mod):
     else:
         return generic_insert('action_queue', vars, vals, get_last_id=True)
 
-def fmt_svc_action(node, svc_id, action, action_type, rid=None, connect_to=None, local=True):
+def fmt_svc_action(node, svc_id, action, action_type, rid=None, connect_to=None, local=True, options=None):
     action = action.replace('"', '\"').replace("'", "\'")
     if connect_to is None:
         connect_to = get_reachable_name(node)
@@ -125,7 +125,26 @@ def fmt_svc_action(node, svc_id, action, action_type, rid=None, connect_to=None,
         cmd += ["--rid", rid]
     elif local and node_version >= 1.9 and action != "takeover":
         cmd += ["--local"]
+    cmd += fmt_options(options)
     return ' '.join(cmd)
+
+def fmt_options(options):
+    if options is None:
+        return []
+    l = []
+    for option in options:
+        if not isinstance(option, dict):
+            continue
+        if "option" not in option:
+            continue
+        if option.get("value") is None:
+            l += ["--%(key)s" % option["option"]]
+        else:
+            l += ["--%(key)s=%(val)s" % dict(
+                     key=option["option"],
+                     val=str(option["value"],
+                  ))]
+    return l
 
 def fmt_node_comp_action(node, action, mode, mod, action_type, connect_to=None):
     if connect_to is None:
@@ -138,7 +157,7 @@ def fmt_node_comp_action(node, action, mode, mod, action_type, connect_to=None):
     cmd += ['compliance', action, '--'+mode, mod]
     return ' '.join(cmd)
 
-def fmt_node_action(node, action, action_type, connect_to=None):
+def fmt_node_action(node, action, action_type, connect_to=None, options=None):
     if connect_to is None:
         connect_to = get_reachable_name(node)
     if action_type == "pull":
@@ -147,6 +166,7 @@ def fmt_node_action(node, action, action_type, connect_to=None):
         cmd = get_ssh_cmd(node) + ['opensvc@'+connect_to, '--'] + remote_cmd_prepend
         cmd += ['sudo', 'nodemgr']
     cmd += [action]
+    cmd += fmt_options(options)
     return ' '.join(cmd)
 
 def fmt_svc_comp_action(node, svc_id, action, mode, mod, action_type, connect_to=None):
@@ -270,7 +290,7 @@ def do_instance_comp_action(node_id, svc_id, action, mode, obj):
     )
     return action_id
 
-def do_svc_action(svc_id, action):
+def do_svc_action(svc_id, action, options=None):
     check_privilege(["NodeExec", "NodeManager"])
     if action is None or len(action) == 0:
         raise ToolError("no action specified")
@@ -280,7 +300,7 @@ def do_svc_action(svc_id, action):
         return 0
     node = nodes.first()
 
-    action_id = enqueue_svc_action(node, svc_id, action, local=False)
+    action_id = enqueue_svc_action(node, svc_id, action, local=False, options=options)
     _log('service.action',
          'run %(a)s',
          dict(a=action),
@@ -371,9 +391,9 @@ def json_action_one(d):
         elif "module" in d:
             return do_node_comp_action(d["node_id"], d["action"], "module", d["module"])
         elif "action" in d:
-            return do_node_action(d["node_id"], d["action"])
+            return do_node_action(d["node_id"], d["action"], options=d.get("options"))
     elif "svc_id" in d:
-        return do_svc_action(d["svc_id"], d["action"])
+        return do_svc_action(d["svc_id"], d["action"], options=d.get("options"))
     return 0
 
 def factorize_actions(data):

@@ -2472,6 +2472,13 @@ a.jqplot-image-container-close {
 	border: 0px !important;
 }
 
+.slider-selection-blue {
+	background-image: linear-gradient(to bottom,#d9e9f9 0,#d5e5f5 100%);
+}
+.slider-selection-red {
+	background: #c9302c;
+}
+
 .lighter {
 	color: #999999;
 }

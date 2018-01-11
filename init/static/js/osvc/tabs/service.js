@@ -394,6 +394,25 @@ function service_properties(divid, options)
 		}
 	}
 
+	o.event_handler = function(data) {
+		if (data.event == "services_change") {
+			if (data.data.svc_id != o.options.svc_id) {
+				return
+			}
+			o.div = o.div.parent()
+			o.div.empty()
+			o.div.load('/init/static/views/service_properties.html?v='+osvc.code_rev, function() {
+				o.div = o.div.children()
+				o.div.uniqueId()
+				o.init()
+			})
+		}
+	}
+
+	wsh["svc_props_"+o.options.svc_id] = function(data) {
+		o.event_handler(data)
+	}
+
 	o.init = function(){
 		osvc_tools(o.div, {
 			"link": o.link
@@ -482,6 +501,14 @@ function service_properties(divid, options)
 			// status
 			o.decorator_status(o.div.find("#svc_status"), data.svc_status_updated)
 			o.decorator_status(o.div.find("#svc_availstatus"), data.svc_status_updated)
+
+			// replicas
+			o.replicas = o.div.find("#replicas")
+			if (data.svc_topology == "flex") {
+				o.replicas_slider = svc_replicas(o.replicas, data)
+			} else {
+				o.replicas.hide()
+			}
 
 			// responsibles
 			o.responsibles = o.div.find("#responsibles")
@@ -705,3 +732,61 @@ function svc_sysrepdiff(divid, options) {
 	return o
 }
 
+function svc_replicas(e, data) {
+	var input = $("<input type='text'>")
+		.uniqueId()
+		.css({
+			"width": "18em"
+		})
+	var button = $("<button type='submit' class='btn btn-danger'>")
+		.hide()
+	e.append(input)
+	e.append("<br>")
+	e.append(button)
+	var _min = 1
+	var _max = data.svc_nodes.split(/\s+/).length
+	input.on("change", function(){
+		var val = input.val()
+		if (val != data.svc_flex_min_nodes+","+data.svc_flex_max_nodes) {
+			button.text("Reconfigure now ("+val+")")
+			button.show()
+		} else {
+			button.hide()
+		}
+	})
+	input.hide()
+	button.on("click", function() {
+			var val = input.val().split(/,/)
+			var req_data = {
+				"action": "set",
+				"svc_id": data.svc_id,
+				"options": [
+					{"option": "kw", "value": "flex_min_nodes="+val[0]},
+					{"option": "kw", "value": "flex_max_nodes="+val[1]}
+				]
+			}
+			services_osvcputrest("/actions", "", "", req_data, function(jd) {
+				button.hide()
+			})
+	})
+
+	services_osvcgetrest("R_SERVICE_NODES", [data.svc_id], {"limit": "0", "props": "node_id", "meta": "0", "groupby": "node_id", "filters": "mon_availstatus up"}, function(jd) {
+		var n_up = jd.data.length
+		var w = (_max - _min) * 0.02
+		input.bootstrapSlider({
+			"range": true,
+			"value": [data.svc_flex_min_nodes, data.svc_flex_max_nodes],
+			"min": 1,
+			"max": data.svc_nodes.split(/\s+/).length,
+			"tooltip_position": "bottom",
+			"tooltip": "always",
+			"ticks": [_min, _max],
+			"ticks_labels": [_min, _max],
+			"rangeHighlights": [
+				{"start": data.svc_flex_min_nodes, "end": data.svc_flex_max_nodes, "class": "slider-selection-blue"},
+				{"start": n_up-w, "end": n_up+w, "class": "slider-selection-red"}
+			]
+		})
+	})
+	return input
+}

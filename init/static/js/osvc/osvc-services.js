@@ -202,10 +202,12 @@ function services_osvcputrest(service, uri, params, data, callback, error_callba
 		url = url.replace(/&$/, "");
 	}
 	var content_type = "application/x-www-form-urlencoded"
-	if (Object.prototype.toString.call(data) === '[object Array]') {
+	var data_type = null
+	try {
 		data = JSON.stringify(data)
 		content_type = "application/json; charset=utf-8"
-	}
+		data_type = "json"
+	} catch(err) {}
 
 	if (async === undefined || async == null) async=true;
 
