@@ -770,22 +770,25 @@ function svc_replicas(e, data) {
 			})
 	})
 
-	services_osvcgetrest("R_SERVICE_NODES", [data.svc_id], {"limit": "0", "props": "node_id", "meta": "0", "groupby": "node_id", "filters": "mon_availstatus up"}, function(jd) {
-		var n_up = jd.data.length
-		var w = (_max - _min) * 0.02
-		input.bootstrapSlider({
-			"range": true,
-			"value": [data.svc_flex_min_nodes, data.svc_flex_max_nodes],
-			"min": 1,
-			"max": data.svc_nodes.split(/\s+/).length,
-			"tooltip_position": "bottom",
-			"tooltip": "always",
-			"ticks": [_min, _max],
-			"ticks_labels": [_min, _max],
-			"rangeHighlights": [
-				{"start": data.svc_flex_min_nodes, "end": data.svc_flex_max_nodes, "class": "slider-selection-blue"},
-				{"start": n_up-w, "end": n_up+w, "class": "slider-selection-red"}
-			]
+	services_osvcgetrest("/services/%1/am_i_responsible", [data.svc_id], "", function(jd1) {
+		services_osvcgetrest("R_SERVICE_NODES", [data.svc_id], {"limit": "0", "props": "node_id", "meta": "0", "groupby": "node_id", "filters": "mon_availstatus up"}, function(jd) {
+			var n_up = jd.data.length
+			var w = (_max - _min) * 0.02
+			input.bootstrapSlider({
+				"range": true,
+				"enabled": jd1.data,
+				"value": [data.svc_flex_min_nodes, data.svc_flex_max_nodes],
+				"min": 1,
+				"max": data.svc_nodes.split(/\s+/).length,
+				"tooltip_position": "bottom",
+				"tooltip": "always",
+				"ticks": [_min, _max],
+				"ticks_labels": [_min, _max],
+				"rangeHighlights": [
+					{"start": data.svc_flex_min_nodes, "end": data.svc_flex_max_nodes, "class": "slider-selection-blue"},
+					{"start": n_up-w, "end": n_up+w, "class": "slider-selection-red"}
+				]
+			})
 		})
 	})
 	return input
