@@ -3958,7 +3958,33 @@ function table_action_menu_status(msg){
 	if (msg.factorized>0) {
 		s = "factorized: "+msg.factorized+", "+s
 	}
-	osvc.flash.info(s)
+	var table_id = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
+	var vars = {}
+	var ids = []
+	for (var i=0; i<msg.data.length; i++) {
+		ids.push(msg.data[i].action_id)
+	}
+	vars[table_id+"_f_id"] = "("+ids.join(",")+")"
+	console.log(vars)
+        osvc.flash.show({
+		id: "aq-"+table_id,
+		cl: "icon action16",
+		text: i18n.t("action_menu.agent_actions"),
+		bgcolor: osvc.colors.link,
+		fn: function(id){
+			var d = $("<div><div>")
+			$("#"+id).html(d)
+			d.uniqueId()
+			table_action_queue(d.attr("id"), {
+				"id": table_id,
+				"request_vars": vars,
+				"volatile_filters": true,
+				"volatile_prefs": true
+			})
+			osvc.tables[table_id].e_title.text(osvc.tables[table_id].e_title.text() + " ("+s+")")
+		}
+	})
+
 }
 
 //
