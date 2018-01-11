@@ -314,13 +314,6 @@ var menu_data = {
 		  "secure" : ["Manager"]
 		},
 		{
-		  "title" : "billing",
-		  "class" : "bill16",
-		  "id" : "adm-bill",
-		  "link" : "/init/billing/billing",
-		  "secure" : ["Manager"]
-		},
-		{
 		  "title" : "prov",
 		  "class" : "prov",
 		  "id" : "adm-prov",

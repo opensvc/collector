@@ -725,22 +725,6 @@ db.define_table('checks_settings',
     Field('chk_high', 'integer'),
     migrate=False)
 
-db.define_table('billing',
-    Field('bill_os_name', 'string'),
-    Field('bill_min_svc', 'integer'),
-    Field('bill_max_svc', 'integer'),
-    Field('bill_env', 'string'),
-    Field('bill_cost', 'integer'),
-    migrate=False)
-
-db.define_table('billing_agent',
-    Field('bill_os_name', 'string'),
-    Field('bill_min_agt', 'integer'),
-    Field('bill_max_agt', 'integer'),
-    Field('bill_env', 'string'),
-    Field('bill_cost', 'integer'),
-    migrate=False)
-
 db.define_table('lifecycle_os',
     Field('id', 'integer'),
     Field('fset_id', 'integer'),
@@ -1482,16 +1466,6 @@ db.define_table('san_zone_alias',
     Field('alias', 'string'),
     Field('port', 'string'),
     Field('updated', 'datetime'),
-    migrate=False)
-
-db.define_table('stat_day_billing',
-    Field('day', 'datetime'),
-    Field('fset_id', 'integer'),
-    Field('os_name', 'string'),
-    Field('nb_svc_prd', 'integer'),
-    Field('nb_svc_nonprd', 'integer'),
-    Field('nb_agents_without_svc_prd', 'integer'),
-    Field('nb_agents_without_svc_nonprd', 'integer'),
     migrate=False)
 
 db.define_table('saves',

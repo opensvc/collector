@@ -58,7 +58,6 @@ menu_entries = [
   'adm-log',
   'adm-obs',
   'adm-batchs',
-  'adm-bill',
   'adm-prov',
   'adm-filters',
   'adm-filtersets',

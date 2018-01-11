@@ -6542,3 +6542,7 @@ drop view v_svcmon; CREATE VIEW `v_svcmon` AS select `e`.`err` AS `err`,`s`.`svc
 drop table resinfo_log;
 
 
+drop table billing;
+drop table billing_agent;
+drop table stat_day_billing;
+

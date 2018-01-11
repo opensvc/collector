@@ -2472,30 +2472,6 @@ a.jqplot-image-container-close {
 	border: 0px !important;
 }
 
-.billing {
-	text-align: left;
-	padding: 1em;
-}
-.billing table {
-	width: 100%;
-}
-.billing th {
-	text-align: center;
-	padding: 0.5em;
-}
-.billing .head1 {
-	background-color: #dedede;
-	border: solid 2px #ffffff;
-}
-.billing .head2 {
-	background-color: #eeeeee;
-	border: solid 2px #ffffff;
-}
-.billing .head3 {
-	background-color: #d8eee7;
-	border: solid 2px #ffffff;
-}
-
 .lighter {
 	color: #999999;
 }

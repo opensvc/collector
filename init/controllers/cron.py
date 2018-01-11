@@ -313,24 +313,10 @@ def cron_stat_day():
     begin = datetime.datetime(year=when.year, month=when.month, day=when.day, hour=0, minute=0, second=0)
     end = begin + datetime.timedelta(days=1, seconds=-1)
 
-    _cron_stat_day_billing(end)
-
     # per filterset stats
     q = db.gen_filtersets.id > 0
     q &= db.gen_filtersets.fset_stats == True
     rows = db(q).select(db.gen_filtersets.id)
-    for row in rows:
-        _cron_stat_day_billing(end, row.id)
-
-def stat_billing_nb_agents_without_svc_prd(fset_id, os):
-    n = 0
-    print "stat_billing_nb_agents_without_svc_prd():", str(n)
-    return n
-
-def stat_billing_nb_agents_without_svc_nonprd(fset_id, os):
-    n = 0
-    print "stat_billing_nb_agents_without_svc_nonprd():", str(n)
-    return n
 
 def cron_stat_day_svc():
     when = None
@@ -949,36 +935,6 @@ def cron_mac_dup():
 
 def cron_feed_monitor():
     task_feed_monitor()
-
-def _cron_stat_day_billing(end, fset_id=0):
-    q = db.stat_day_billing.day == end
-    q &= db.stat_day_billing.fset_id == fset_id
-    print "stat_day_billing:", end, "fset_id:", fset_id
-    for os in [r.os_name for r in db(db.nodes.id>0).select(db.nodes.os_name, groupby=db.nodes.os_name)]:
-        if len(os) == 0:
-            continue
-        qq = q & (db.stat_day_billing.os_name == os)
-        if db(qq).count() == 0:
-            db.stat_day_billing.insert(
-              day=end,
-              fset_id=fset_id,
-              os_name=os,
-              nb_svc_prd=stat_billing_nb_svc_prd(fset_id, os),
-              nb_svc_nonprd=stat_billing_nb_svc_nonprd(fset_id, os),
-              nb_agents_without_svc_prd=stat_billing_nb_agents_without_svc_prd(fset_id, os),
-              nb_agents_without_svc_nonprd=stat_billing_nb_agents_without_svc_nonprd(fset_id, os),
-            )
-        else:
-            db(qq).update(
-              day=end,
-              fset_id=fset_id,
-              os_name=os,
-              nb_svc_prd=stat_billing_nb_svc_prd(fset_id, os),
-              nb_svc_nonprd=stat_billing_nb_svc_nonprd(fset_id, os),
-              nb_agents_without_svc_prd=stat_billing_nb_agents_without_svc_prd(fset_id, os),
-              nb_agents_without_svc_nonprd=stat_billing_nb_agents_without_svc_nonprd(fset_id, os),
-            )
-    db.commit()
 
 def cron_update_virtual_asset():
     fields = ['loc_addr', 'loc_city', 'loc_zip', 'loc_room', 'loc_building',

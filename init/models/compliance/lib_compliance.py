@@ -1933,10 +1933,6 @@ def delete_filterset(fset_id):
     db(q).delete()
     table_modified("stats_compare_fset")
 
-    q = db.stat_day_billing.fset_id == fset_id
-    db(q).delete()
-    table_modified("stat_day_billing")
-
     q = db.gen_filtersets.id == fset_id
     db(q).delete()
     table_modified("gen_filtersets")
