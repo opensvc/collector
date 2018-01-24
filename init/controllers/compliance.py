@@ -1499,11 +1499,11 @@ def ajax_comp_mod_status():
     o = mt.get_orderby(default=~db.nodes.nodename)
     q = q_filter(node_field=db.comp_status.node_id)
     q &= db.comp_status.node_id == db.nodes.node_id
-    q &= ((db.comp_status.svc_id != None) & (db.comp_status.svc_id == db.services.svc_id))
+    l = db.services.on(db.comp_status.svc_id==db.services.svc_id)
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
     q = apply_filters_id(q, db.comp_status.node_id)
-    sql1 = db(q)._select().rstrip(';').replace('nodes.id, ','').replace('comp_status.id>0 AND', '')
+    sql1 = db(q)._select(left=l).rstrip(';').replace('nodes.id, ','').replace('comp_status.id>0 AND', '')
     regex = re.compile("SELECT .* FROM")
     sql1 = regex.sub('', sql1)
 
