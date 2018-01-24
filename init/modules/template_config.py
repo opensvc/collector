@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 # coding: utf8
 
+# title to display in the browser tab
+title = "Collector TST"
+
 # server timezone
 server_timezone = "Europe/Madrid"
 

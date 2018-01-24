@@ -4,7 +4,7 @@
 ## Customize your APP title, subtitle and menus here
 #########################################################################
 
-response.title = T('OpenSVC')
+response.title = config_get("title", default="OpenSVC")
 _f = request.function
 
 menu_entries = [
