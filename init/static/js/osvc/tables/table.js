@@ -2564,6 +2564,19 @@ function table_init(opts) {
 		t.e_toolbar.append(title)
 	}
 
+	t.clear_current_filters = function() {
+		for (c in t.colprops) {
+			var current = t.colprops[c].current_filter
+			if ((current == "") || (typeof current === 'undefined')) {
+				continue
+			}
+			if ((typeof(t.colprops[c].force_filter) !== "undefined") && (t.colprops[c].force_filter != "")) {
+				continue
+			}
+			t.colprops[c].current_filter = ""
+		}
+	}
+
 	//
 	// table tool: filters summary
 	//
@@ -2580,16 +2593,7 @@ function table_init(opts) {
 
 		// clear all filters
 		clear_tool.on("click", function(event){
-			for (c in t.colprops) {
-				var current = t.colprops[c].current_filter
-				if ((current == "") || (typeof current === 'undefined')) {
-					continue
-				}
-				if ((typeof(t.colprops[c].force_filter) !== "undefined") && (t.colprops[c].force_filter != "")) {
-					continue
-				}
-				t.colprops[c].current_filter = ""
-			}
+			t.clear_current_filters()
 			t.save_column_filters()
 			t.refresh_column_filters_in_place()
 			t.refresh()
@@ -3108,8 +3112,9 @@ function table_init(opts) {
 		// "load" binding
 		bookmark.find(".bookmark16").on("click", function() {
 			var name = $(this).text()
-			osvc.user_prefs.data.tables[t.id].filters = osvc.user_prefs.data.tables[t.id].bookmarks[name]
+			osvc.user_prefs.data.tables[t.id].filters = $.extend({}, osvc.user_prefs.data.tables[t.id].bookmarks[name])
 			t.save_prefs()
+			t.clear_current_filters()
 			t.set_column_filters()
 			t.refresh()
 		})
