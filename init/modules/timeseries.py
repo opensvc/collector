@@ -11,6 +11,7 @@ default_retentions = [
     whisper.parseRetentionDef("1h:90d"),
     whisper.parseRetentionDef("1d:3y"),
 ]
+daily_retentions = ["1d:3y", "7d:10y"]
 formats = [
     "%Y-%m-%d %H:%M:%S.%f",
     "%Y-%m-%d %H:%M:%S",
@@ -36,7 +37,7 @@ def wsp_delete(*args):
     os.system(cmd)
 
 def wsp_find(*args):
-    args = [store_d] + list(args)
+    args = [store_d] + [str(arg) for arg in args]
     head = os.path.join(*args)
     return recurse_wsp_find(head)
 
@@ -51,7 +52,7 @@ def recurse_wsp_find(head):
 
 def sub_find(*args, **kwargs):
     prefix = kwargs.get("prefix", "")
-    args = [store_d] + list(args)
+    args = [store_d] + [str(arg) for arg in args]
     head = os.path.join(*args)
     head_len = len(head)
     wsps = recurse_wsp_find(head)
@@ -63,10 +64,16 @@ def sub_find(*args, **kwargs):
     return subs
 
 def wsp_path(*args):
-    _args = [store_d]
+    if len(args) > 0 and not str(args[0]).startswith(store_d):
+        _args = [store_d]
+    else:
+        _args = []
     for arg in args:
-        _args += arg.split(os.sep)
-    return os.path.join(*_args)+".wsp"
+        _args += str(arg).split(os.sep)
+    fpath = os.path.join(*_args)
+    if not fpath.endswith(".wsp"):
+        fpath += ".wsp"
+    return fpath
 
 def whisper_create(wsp, retentions=None, xFilesFactor=0.0):
     if os.path.exists(wsp):
@@ -149,8 +156,8 @@ def whisper_fetch(*args, **kwargs):
         data.append([timestr, value])
     return data
 
-def whisper_update(wsp, value, tstamp):
-    whisper_create(wsp)
+def whisper_update(wsp, value, tstamp, retentions=None):
+    whisper_create(wsp, retentions=retentions)
     whisper.update(wsp, value, to_tstamp(tstamp))
 
 def whisper_update_list(head, vars, vals, group="", options=None):
