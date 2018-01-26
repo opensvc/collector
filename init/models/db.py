@@ -1551,14 +1551,6 @@ db.define_table('metrics',
     Field('metric_historize', 'boolean'),
     migrate=False)
 
-db.define_table('metrics_log',
-    Field('metric_id', 'integer'),
-    Field('fset_id', 'integer'),
-    Field('value', 'float'),
-    Field('date', 'date'),
-    Field('instance', 'string'),
-    migrate=False)
-
 db.define_table('charts',
     Field('id', 'integer'),
     Field('chart_name', 'string'),

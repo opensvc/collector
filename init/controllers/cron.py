@@ -171,7 +171,6 @@ def cron_purge_expiry():
               ('stat_day_disk_array_dg', 'day', None),
               ('stat_day_disk_app', 'day', None),
               ('stat_day_disk_app_dg', 'day', None),
-              ('metrics_log', 'date', None),
               ('switches', 'sw_updated', None),
               ('comp_log', 'run_date', None),
               ('comp_log_daily', 'run_date', None),

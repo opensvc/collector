@@ -146,17 +146,6 @@ stats_retention_days = 367
 
 # per table retention. takes precedence over stats_retention_days
 retentions = {
- 'metrics_log': 1600,
- 'stats_cpu': 31,
- 'stats_swap': 31,
- 'stats_netdev': 31,
- 'stats_blockdev': 31,
- 'stats_block': 31,
- 'stats_mem_u': 31,
- 'stats_netdev_err': 31,
- 'stats_proc': 31,
- 'stats_svc': 31,
- 'stats_fs_u': 31,
  'comp_log': 365,
  'appinfo_log': 365,
  'SVCactions': 365,

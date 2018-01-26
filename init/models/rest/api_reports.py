@@ -1,3 +1,5 @@
+from applications.init.modules import timeseries
+
 #
 # Reports
 #
@@ -442,6 +444,8 @@ class rest_delete_reports_metric(rest_delete_handler):
         _log('metric.del', fmt, d)
         ws_send('metrics_change', {'id': metric.id})
 
+        timeseries.wsp_delete("metrics", metric_id)
+
         return dict(info=fmt%d)
 
 class rest_delete_reports_metrics(rest_delete_handler):
@@ -679,7 +683,7 @@ class rest_get_reports_metric_samples(rest_get_handler):
 
         return dict(data=rows)
 
-class rest_get_reports_chart_samples(rest_get_table_handler):
+class rest_get_reports_chart_samples(rest_get_handler):
     def __init__(self):
         desc = [
           "Display charts time series data for a specific chart id.",
@@ -687,11 +691,9 @@ class rest_get_reports_chart_samples(rest_get_table_handler):
         examples = [
           "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/reports/charts/id",
         ]
-        rest_get_table_handler.__init__(
+        rest_get_handler.__init__(
           self,
           path="/reports/charts/<id>/samples",
-          tables=["metrics_log"],
-#          orderby=~db.metrics_log.date,
           desc=desc,
           examples=examples,
         )
@@ -699,26 +701,47 @@ class rest_get_reports_chart_samples(rest_get_table_handler):
     def handler(self, id, **vars):
         fset_id = user_fset_id()
         q = db.charts.id == id
-        chart = db(q).select().first()
+        q &= db.charts.id == db.chart_team_publication.chart_id
+        q &= db.chart_team_publication.group_id.belongs(user_group_ids())
+        chart = db(q).select(db.charts.ALL).first()
 
         if chart is None:
             raise Exception("chart %s not found" % str(id))
 
         try:
             definition = yaml.load(chart.chart_yaml)
-        except:
+        except Exception:
             raise Exception("chart %s definition is corrupted" % str(id))
 
         metric_ids = []
+        data = {
+            "chart_definition": definition,
+            "data": [],
+        }
         for m in definition['Metrics']:
             metric_ids.append(m['metric_id'])
-
-        q = db.metrics_log.metric_id.belongs(metric_ids)
-        q &= db.metrics_log.fset_id == fset_id
-
-        self.set_q(q)
-        data = self.prepare_data(**vars)
-        data["chart_definition"] = definition
+            for fpath in timeseries.wsp_find("metrics", m['metric_id'], "fsets", fset_id):
+                lead = True
+                instance = os.path.basename(fpath)[:-4]
+                if instance == "None":
+                    instance = None
+                for timestr, value in timeseries.whisper_fetch(fpath):
+                    if lead and value is None:
+                        continue
+                    if lead:
+                        data["data"].append({
+                            "date": timestr,
+                            "value": None,
+                            "instance": instance,
+                            "metric_id": m['metric_id'],
+                        })
+                        lead = False
+                    data["data"].append({
+                        "date": timestr,
+                        "value": value,
+                        "instance": instance,
+                        "metric_id": m['metric_id'],
+                    })
         return data
 
 #

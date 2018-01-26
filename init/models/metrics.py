@@ -1,3 +1,5 @@
+from applications.init.modules import timeseries
+
 dbro_host = config_get('dbro_host', dbopensvc_host)
 dbro_user = config_get('dbro_user', 'readonly')
 dbro_password = config_get('dbro_password', 'readonly')
@@ -46,14 +48,10 @@ def _metrics_cron_fset(m, fset_id, verbose=False, instances_as_colums=False, kwa
             return
         row = rows[0]
         for instance, value in row.items():
-            mid = db.metrics_log.insert(
-                   date=now,
-                   metric_id=m.id,
-                   fset_id=fset_id,
-                   instance=instance,
-                   value=value,
-                  )
-        db.commit()
+            if verbose:
+                print "  insert", instance, value, "fset_id:", fset_id
+            path = timeseries.wsp_path("metrics", m.id, "fsets", fset_id, instance)
+            timeseries.whisper_update(path, value, now, retentions=timeseries.daily_retentions)
         return
 
     for row in rows:
@@ -66,14 +64,8 @@ def _metrics_cron_fset(m, fset_id, verbose=False, instances_as_colums=False, kwa
             if verbose:
                 print "  insert", row[m.metric_col_value_index], "fset_id:", fset_id
 
-        mid = db.metrics_log.insert(
-               date=now,
-               metric_id=m.id,
-               fset_id=fset_id,
-               instance=instance,
-               value=row[m.metric_col_value_index],
-              )
-    db.commit()
+        path = timeseries.wsp_path("metrics", m.id, "fsets", fset_id, instance)
+        timeseries.whisper_update(path, row[m.metric_col_value_index], now, retentions=timeseries.daily_retentions)
 
 def _metrics_cron_fsets(m, verbose=False, instances_as_colums=False, kwargs=None):
     q = db.gen_filtersets.fset_stats == True
@@ -97,7 +89,6 @@ def _metrics_cron(m, verbose=False):
         return
 
     rows = dbro.executesql(m.metric_sql, **kwargs)
-
     now = datetime.datetime.now()
 
     if instances_as_colums:
@@ -106,13 +97,10 @@ def _metrics_cron(m, verbose=False):
             return
         row = rows[0]
         for instance, value in row.items():
-            mid = db.metrics_log.insert(
-                   date=now,
-                   metric_id=m.id,
-                   instance=instance,
-                   value=value,
-                  )
-        db.commit()
+            if verbose:
+                print "  insert", instance, value
+            path = timeseries.wsp_path("metrics", m.id, "fsets", 0, instance)
+            timeseries.whisper_update(path, value, now, retentions=timeseries.daily_retentions)
         return
 
     for row in rows:
@@ -125,13 +113,8 @@ def _metrics_cron(m, verbose=False):
             if verbose:
                 print "  insert", row[m.metric_col_value_index]
 
-        mid = db.metrics_log.insert(
-               date=now,
-               metric_id=m.id,
-               instance=instance,
-               value=row[m.metric_col_value_index],
-              )
-    db.commit()
+        path = timeseries.wsp_path("metrics", m.id, "fsets", 0, instance)
+        timeseries.whisper_update(path, row[m.metric_col_value_index], now, retentions=timeseries.daily_retentions)
 
 def task_metrics(verbose=False):
     q = db.metrics.metric_historize == True
@@ -147,6 +130,5 @@ def task_metrics(verbose=False):
         except Exception as e:
             print e
             continue
-    db.commit()
 
 

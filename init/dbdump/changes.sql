@@ -6545,4 +6545,5 @@ drop table resinfo_log;
 drop table billing;
 drop table billing_agent;
 drop table stat_day_billing;
+drop table metrics_log;
 
