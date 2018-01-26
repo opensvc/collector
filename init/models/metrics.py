@@ -28,14 +28,33 @@ def replace_fset_sql(sql, fset_id=None):
 
     return sql
 
-def _metrics_cron_fset(m, fset_id, verbose=False):
+def _metrics_cron_fset(m, fset_id, verbose=False, instances_as_colums=False, kwargs=None):
+    if kwargs is None:
+        kwargs = {}
+
     sql = replace_fset_sql(m.metric_sql, fset_id)
     try:
-         rows = dbro.executesql(sql)
+         rows = dbro.executesql(sql, **kwargs)
     except Exception as e:
          print e, sql
          return
     now = datetime.datetime.now()
+
+    if instances_as_colums:
+        if len(rows) != 1:
+            print "  skip: instances_as_colums mode, but %d lines in resultset" % len(rows)
+            return
+        row = rows[0]
+        for instance, value in row.items():
+            mid = db.metrics_log.insert(
+                   date=now,
+                   metric_id=m.id,
+                   fset_id=fset_id,
+                   instance=instance,
+                   value=value,
+                  )
+        db.commit()
+        return
 
     for row in rows:
         if m.metric_col_instance_index is not None:
@@ -56,22 +75,46 @@ def _metrics_cron_fset(m, fset_id, verbose=False):
               )
     db.commit()
 
-def _metrics_cron_fsets(m, verbose=False):
+def _metrics_cron_fsets(m, verbose=False, instances_as_colums=False, kwargs=None):
     q = db.gen_filtersets.fset_stats == True
     rows = db(q).select(db.gen_filtersets.id)
     fset_ids = [r.id for r in rows]
 
     for fset_id in [0] + fset_ids:
-        _metrics_cron_fset(m, fset_id, verbose=verbose)
+        _metrics_cron_fset(m, fset_id, verbose=verbose, instances_as_colums=instances_as_colums, kwargs=kwargs)
 
 def _metrics_cron(m, verbose=False):
+    if (m.metric_col_instance_index and m.metric_col_instance_index < 0) or \
+       (m.metric_col_value_index and m.metric_col_value_index < 0):
+        instances_as_colums = True
+        kwargs = {"as_dict": True}
+    else:
+        instances_as_colums = False
+        kwargs = {}
+
     if "%%fset_svc_ids%%" in m.metric_sql or "%%fset_node_ids%%" in m.metric_sql:
-        _metrics_cron_fsets(m, verbose=verbose)
+        _metrics_cron_fsets(m, verbose=verbose, instances_as_colums=instances_as_colums, kwargs=kwargs)
         return
 
-    rows = dbro.executesql(m.metric_sql)
+    rows = dbro.executesql(m.metric_sql, **kwargs)
 
     now = datetime.datetime.now()
+
+    if instances_as_colums:
+        if len(rows) != 1:
+            print "  skip: instances_as_colums mode, but %d lines in resultset" % len(rows)
+            return
+        row = rows[0]
+        for instance, value in row.items():
+            mid = db.metrics_log.insert(
+                   date=now,
+                   metric_id=m.id,
+                   instance=instance,
+                   value=value,
+                  )
+        db.commit()
+        return
+
     for row in rows:
         if m.metric_col_instance_index is not None:
             instance = row[m.metric_col_instance_index]
