@@ -566,6 +566,8 @@ function table_init(opts) {
 			$(this).removeClass("col-filtered")
 			$(this).removeClass("col-filter-changed")
 		})
+		t.refresh_column_headers()
+		t.refresh_column_filters()
 	}
 
 	t.get_visible_columns = function() {
