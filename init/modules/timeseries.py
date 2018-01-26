@@ -11,7 +11,7 @@ default_retentions = [
     whisper.parseRetentionDef("1h:90d"),
     whisper.parseRetentionDef("1d:3y"),
 ]
-daily_retentions = ["1d:3y", "7d:10y"]
+daily_retentions = ["1d:5y"]
 formats = [
     "%Y-%m-%d %H:%M:%S.%f",
     "%Y-%m-%d %H:%M:%S",
@@ -90,6 +90,8 @@ def whisper_create(wsp, retentions=None, xFilesFactor=0.0):
 
 def to_tstamp(s):
     if isinstance(s, datetime.datetime):
+        return int(time.mktime(s.timetuple()))
+    if isinstance(s, datetime.date):
         return int(time.mktime(s.timetuple()))
     if isinstance(s, int):
         return s

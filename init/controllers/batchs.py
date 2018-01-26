@@ -177,3 +177,13 @@ def batchs():
 
 def batchs_load():
     return batchs()["table"]
+
+def migrate_metrics_wsp():
+    from applications.init.modules import timeseries
+    sql = """select metric_id, fset_id, instance, value, date from metrics_log"""
+    for row in db.executesql(sql):
+        if row[3] is None:
+            continue
+        path = timeseries.wsp_path("metrics", row[0], "fsets", row[1], row[2])
+        timeseries.whisper_update(path, row[3], row[4], retentions=timeseries.daily_retentions)
+
