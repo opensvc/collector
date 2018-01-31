@@ -220,26 +220,24 @@ function services_status_log(divid, options) {
 	o.init_timeline = function() {
 		require(["vis"], function(vis) {
 			o.timeline = new vis.Timeline(o.div[0], o.data, o.groups, options)
-			o.timeline.on("change", function() {
-				o.div.find("[nodename]").osvc_nodename({
-					callback: function(){o.timeline.redraw()}
-				})
-				o.div.find("[svcname]").osvc_svcname({
-					callback: function(){o.timeline.redraw()}
-				})
-				o.div.find("[title]:not(.vis-label)").tooltipster()
-				o.div.find("[expander]").bind("click", function(){
-					o.expanded.push($(this).attr("svc_id")+"@"+$(this).attr("node_id"))
-					o.init()
-				})
-				o.div.find("[unexpander]").bind("click", function(){
-					var s = $(this).attr("svc_id")+"@"+$(this).attr("node_id")
-					var idx = o.expanded.indexOf(s)
-					if (idx >= 0) {
-						o.expanded.splice(idx, 1)
-					}
-					o.init()
-				})
+			o.div.find("[nodename]").osvc_nodename({
+				callback: function(){o.timeline.redraw()}
+			})
+			o.div.find("[svcname]").osvc_svcname({
+				callback: function(){o.timeline.redraw()}
+			})
+			o.div.find("[title]:not(.vis-label)").tooltipster()
+			o.div.find("[expander]").bind("click", function(){
+				o.expanded.push($(this).attr("svc_id")+"@"+$(this).attr("node_id"))
+				o.init()
+			})
+			o.div.find("[unexpander]").bind("click", function(){
+				var s = $(this).attr("svc_id")+"@"+$(this).attr("node_id")
+				var idx = o.expanded.indexOf(s)
+				if (idx >= 0) {
+					o.expanded.splice(idx, 1)
+				}
+				o.init()
 			})
 		})
 	}
