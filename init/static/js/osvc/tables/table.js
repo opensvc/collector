@@ -630,7 +630,7 @@ function table_init(opts) {
 		if (!t.options.on_change) {
 			return
 		}
-		t.options.on_change()
+		t.options.on_change(t)
 	}
 
 	t.refresh_child_tables = function() {
@@ -1414,15 +1414,14 @@ function table_init(opts) {
 		t.scroll_disable_dom()
 
 		if (is_dict(msg) && "data" in msg) {
-			var data = msg
-			var lines = data['data']
-			t.options.pager = data['meta']
+			t.lines = msg["data"]
+			t.options.pager = msg['meta']
 		} else {
 			t.div.html(msg)
 			return
 		}
 
-		msg = t.data_to_lines(lines)
+		msg = t.data_to_lines(t.lines)
 		if (t.options.detached_decorate_cells) {
 			msg = t.cell_decorator(msg)
 		}

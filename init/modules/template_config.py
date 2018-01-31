@@ -108,6 +108,7 @@ vm2 = "/usr/local/bin/vm2"
 
 # actiond
 actiond_workers = 5
+remote_command_prepend = []
 
 #
 # DataCore SAN symphony config

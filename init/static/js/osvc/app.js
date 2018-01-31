@@ -108,7 +108,7 @@ function init_requirejs() {
 		urlArgs: 'v='+osvc.code_rev,
 		paths: {
 			"jsyaml": "js-yaml.min",
-			"vis": "vis/dist/vis.min",
+			"vis": "vis/vis.min",
 			"jquery": "jquery",
 			"jqplot-base": "jqplot/jquery.jqplot.min",
 			"jqplot-plugins": "jqplot/plugins",
@@ -693,6 +693,18 @@ function comp_log(divid, options) {
 function services_status_log(divid, options) {
 	require(["osvc/services_status_log"], function() {
 		services_status_log(divid, options)
+	})
+}
+
+function actions_timeline(divid, options) {
+	require(["osvc/actions_timeline"], function() {
+		actions_timeline(divid, options)
+	})
+}
+
+function table_actions_timeline(t) {
+	require(["osvc/actions_timeline"], function() {
+		table_actions_timeline(t)
 	})
 }
 

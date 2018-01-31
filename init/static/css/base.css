@@ -3011,9 +3011,13 @@ pre.api_doc {
 	background-color: orange !important;
 	border-color: orange !important;
 }
+.box-lightorange {
+	background-color: #ffecc8 !important;
+	border-color: #ffecc8 !important;
+}
 .box-lightgreen {
-	background-color: #bdffbd !important;
-	border-color: #bdffbd !important;
+	background-color: #e4f9e4 !important;
+	border-color: #e4f9e4 !important;
 }
 .box-green {
 	background-color: #009900 !important;
@@ -3024,8 +3028,8 @@ pre.api_doc {
 	border-color: #666666 !important;
 }
 .box-lightred {
-	background-color: #63000a !important;
-	border-color: #63000a !important;
+	background-color: #fbe4e6 !important;
+	border-color: #fbe4e6 !important;
 }
 .box-red {
 	background-color: #990000 !important;
