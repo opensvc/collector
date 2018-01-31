@@ -879,7 +879,7 @@ function table_comp_rules(divid, options) {
 function table_comp_module_status(divid, options) {
 	var defaults = {
 		'divid': divid,
-		'id': "cms",
+		'id': "aggcms",
 		'name': "comp_module_status",
 		'icon': "modset16",
 		'caller': "table_comp_module_status",
@@ -900,7 +900,7 @@ function table_comp_module_status(divid, options) {
 
 function table_comp_node_status(divid, options) {
 	var defaults = {
-		'id': "cns",
+		'id': "aggcns",
 		'divid': divid,
 		'caller': "table_comp_node_status",
 		'name': "comp_node_status",
@@ -927,7 +927,7 @@ function table_comp_service_status(divid, options) {
 		'name': "comp_service_status",
 		'icon': "svc",
 		'caller': "table_comp_service_status",
-		'id': "css",
+		'id': "aggcss",
 		'checkboxes': false,
 		'ajax_url': '/init/compliance/ajax_comp_svc_status',
 		'span': ['svc_id'],
@@ -957,7 +957,7 @@ function table_comp_status(divid, options) {
 		'force_cols': ['id', 'node_id', 'svc_id', 'os_name', 'run_module'],
 		'columns': ['id', 'run_date', 'node_id', 'nodename', 'svc_id', 'svcname', 'run_module', 'run_status', 'rset_md5', 'run_log', 'assetname', 'fqdn', 'serial', 'manufacturer', 'model', 'asset_env', 'role', 'status', 'type', 'sec_zone', 'tz', 'loc_country', 'loc_zip', 'loc_city', 'loc_addr', 'loc_building', 'loc_floor', 'loc_room', 'loc_rack', 'enclosure', 'enclosureslot', 'hvvdc', 'hvpool', 'hv', 'os_name', 'os_release', 'os_vendor', 'os_arch', 'os_kernel', 'cpu_dies', 'cpu_cores', 'cpu_threads', 'cpu_model', 'cpu_freq', 'mem_banks', 'mem_slots', 'mem_bytes', 'listener_port', 'version', 'action_type', 'collector', 'connect_to', 'node_env', 'team_responsible', 'team_integ', 'team_support', 'app', 'last_boot', 'last_comm', 'power_supply_nb', 'power_cabinet1', 'power_cabinet2', 'power_protect', 'power_protect_breaker', 'power_breaker1', 'power_breaker2', 'warranty_end', 'maintenance_end', 'os_obs_warn_date', 'os_obs_alert_date', 'hw_obs_warn_date', 'hw_obs_alert_date', 'updated'],
 		'default_columns': ["run_date", "run_module", "nodename", "run_status", "svcname"],
-		'child_tables': ['cms', 'cns', 'css'],
+		'child_tables': ['aggcms', 'aggcns', 'aggcss'],
 		'wsable': true,
 		'events': ['comp_status_change']
 	}
@@ -1048,9 +1048,9 @@ function view_comp_status(divid, options) {
 			options = {}
 		}
 		options.folded = true
-		table_comp_module_status("cms", options)
-		table_comp_node_status("cns", options)
-		table_comp_service_status("css", options)
+		table_comp_module_status("aggcms", options)
+		table_comp_node_status("aggcns", options)
+		table_comp_service_status("aggcss", options)
 	})
 
 }
