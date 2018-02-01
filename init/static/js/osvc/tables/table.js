@@ -3187,7 +3187,12 @@ function table_init(opts) {
 //
 // Standard table cell decorators
 //
-function delta_properties(delta, s, max_age) {
+function delta_properties(delta, s, max_age, seconds) {
+	if (seconds) {
+		var mult = 60
+	} else {
+		var mult = 1
+	}
 	if (delta > 0) {
 		var prefix = "-"
 		var round = Math.ceil
@@ -3197,15 +3202,20 @@ function delta_properties(delta, s, max_age) {
 		var round = Math.floor
 	}
 
-	var hour = 60
-	var day = 1440
-	var week = 10080
-	var month = 43200
-	var year = 524520
+	var minute = mult
+	var hour = 60 * mult
+	var day = 1440 * mult
+	var week = 10080 * mult
+	var month = 43200 * mult
+	var year = 524520 * mult
 
-	if (delta < hour) {
+	if (delta < minute) {
+		var cl = "second icon"
+		var text = prefix + i18n.t("table.second", {"count": round(delta)})
+		var color = "#000000"
+	} else if (delta < hour) {
 		var cl = "minute icon"
-		var text = prefix + i18n.t("table.minute", {"count": round(delta)})
+		var text = prefix + i18n.t("table.minute", {"count": round(delta/minute)})
 		var color = "#000000"
 	} else if (delta < day) {
 		var cl = "hour icon"
@@ -3255,7 +3265,7 @@ function cell_decorator_date(e, line) {
 }
 
 function datetime_age(s) {
-	// return age in minutes
+	// return age in seconds
 	if (typeof s === 'undefined') {
 		return
 	}
@@ -3264,7 +3274,7 @@ function datetime_age(s) {
 	}
 	var d = moment.tz(s, "YYYY-MM-DD HH:mm:ss", osvc.server_timezone)
 	var now = moment()
-	var delta = (now -d)/60000
+	var delta = (now -d)/1000
 	return delta
 }
 
@@ -3340,14 +3350,14 @@ function cell_decorator_datetime(e, line) {
 		e.empty()
 		return
 	}
-	var max_age = e.attr("max_age")
+	var max_age = e.attr("max_age") * 60
 	var delta = datetime_age(s)
 
 	if (!delta) {
 		e.html()
 		return
 	}
-	var props = delta_properties(delta, s, max_age)
+	var props = delta_properties(delta, s, max_age, true)
 	if (e.text() == props.text) {
 		return
 	}
@@ -3363,6 +3373,37 @@ function cell_decorator_datetime(e, line) {
 		return
 	}
 	var content = $("<div class='"+props.cl+"' style='color:"+props.color+"' title='"+props.client_date+"'>"+props.text+"</div>").tooltipster()
+	e.html(content)
+}
+
+function cell_decorator_duration_from_sec(e, line) {
+	var s = $.data(e[0], "v")
+	if (s == "") {
+		e.empty()
+		return
+	}
+	var delta = parseInt(s) * -1
+	var props = delta_properties(delta, null, null, true)
+
+	if (!delta) {
+		e.html()
+		return
+	}
+	if (e.text() == props.text) {
+		return
+	}
+	if (e.children().length) {
+		// already decorated, just update properties
+		var div = e.children()
+		div
+		.text(props.text)
+		.css({"color": props.color})
+		if (!div.hasClass(props.cl)) {
+			div.removeClass().addClass(props.cl)
+		}
+		return
+	}
+	var content = $("<div class='"+props.cl+"' style='color:"+props.color+"'>"+props.text+"</div>")
 	e.html(content)
 }
 
@@ -3393,6 +3434,7 @@ cell_decorators = {
 	"datetime_status": cell_decorator_datetime_status,
 	"datetime_no_age": cell_decorator_datetime_no_age,
 	"date_no_age": cell_decorator_date_no_age,
+	"duration_from_sec": cell_decorator_duration_from_sec,
 	"date": cell_decorator_date,
 	"pct": cell_decorator_pct,
 }

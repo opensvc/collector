@@ -6549,3 +6549,5 @@ drop table stat_day_billing;
 # run before: python /opt/web2py/web2py.py -S init/batchs/migrate_metrics_wsp
 drop table metrics_log;
 
+alter table svcactions modify column time integer;
+

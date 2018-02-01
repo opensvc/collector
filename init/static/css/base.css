@@ -94,6 +94,9 @@ input.aci, input.aci:focus {
 	font-family: FontAwesome;
 }
 
+.second:before {
+	content: '\f0e7';
+}
 .minute:before {
 	content: '\f017';
 }

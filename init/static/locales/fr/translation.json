@@ -357,6 +357,8 @@
 		"number_of_occurence": "__count__ occurence",
 		"number_of_occurence_plural": "__count__ occurences",
 		"unique_matching_values": "__count__ valeurs distinctes correspondantes",
+		"second": "__count__ segonde",
+		"seconds_plural": "__count__ segondes",
 		"minute": "__count__ minute",
 		"minute_plural": "__count__ minutes",
 		"hour": "__count__ heure",

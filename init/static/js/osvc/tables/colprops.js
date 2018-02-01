@@ -2205,6 +2205,7 @@ colprops = {
 		"title": "Target Id"
 	},
 	"time": {
+		"_class": "duration_from_sec",
 		"img": "time16",
 		"title": "Duration"
 	},
