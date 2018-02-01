@@ -2000,7 +2000,7 @@ def rpc_collector_events(cmd, auth):
       db.log.log_action,
       db.log.log_fmt,
       db.log.log_dict,
-      left=l,
+      left=(l1, l2),
       limitby=(0,1000),
     )
     data = [["date", "node", "service", "level", "action", "event"]]
