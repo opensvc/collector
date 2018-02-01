@@ -2083,9 +2083,9 @@ def _comp_get_svc_moduleset(svc_id, modulesets=[], slave=False):
 
 def _comp_get_svc_moduleset_ids(svc_id, modulesets=[], slave=False):
     if len(modulesets) == 0:
-        return _comp_get_svc_moduleset_ids_attached(svc_id, slave)
+        return _comp_get_svc_moduleset_ids_attached(svc_id, slave=slave)
     else:
-        return _comp_get_svc_moduleset_ids_specified(svc_id, modulesets, slave)
+        return _comp_get_svc_moduleset_ids_specified(svc_id, modulesets, slave=slave)
 
 def _comp_get_svc_moduleset_ids_attached(svc_id, modulesets=[], slave=False):
     q = db.comp_modulesets_services.svc_id == svc_id

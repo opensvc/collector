@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 {
+'': '',
 '"update" is an optional expression like "field1=\'newvalue\'". You cannot update or delete the results of a JOIN': '"Изменить" - необязательное выражение вида "field1=\'новое значение\'". Результаты операции JOIN нельзя изменить или удалить.',
 '%s rows deleted': '%s строк удалено',
 '%s rows updated': '%s строк изменено',
@@ -82,9 +83,11 @@
 'No databases in this application': 'В приложении нет баз данных',
 'Node': 'Node',
 'OpenSVC': 'OpenSVC',
+'Or': 'Or',
 'or import from csv file': 'или импорт из csv-файла',
 'Password': 'Password',
 "Password fields don't match": 'Пароли не совпадают',
+'Password retrieve': 'Password retrieve',
 'Pid': 'Pid',
 'Powered by': 'Powered by',
 'Preferred lines per page': 'Preferred lines per page',
