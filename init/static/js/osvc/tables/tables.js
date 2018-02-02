@@ -341,7 +341,7 @@ function table_actions(divid, options) {
 		'orderby': ['~id'],
 		'force_cols': ['id', 'svc_id', 'node_id', 'os_name', 'ack', 'acked_by', 'acked_date', 'acked_comment', 'end', 'status_log', 'status', 'begin', 'svcname', 'nodename'],
 		'columns': ['svc_id', 'svcname', 'node_id', 'nodename', 'pid', 'action', 'status', 'begin', 'end', 'time', 'id', 'status_log', 'cron', 'ack', 'acked_by', 'acked_date', 'acked_comment', 'assetname', 'fqdn', 'serial', 'manufacturer', 'model', 'asset_env', 'role', 'asset_status', 'type', 'sec_zone', 'tz', 'loc_country', 'loc_zip', 'loc_city', 'loc_addr', 'loc_building', 'loc_floor', 'loc_room', 'loc_rack', 'enclosure', 'enclosureslot', 'hvvdc', 'hvpool', 'hv', 'os_name', 'os_release', 'os_vendor', 'os_arch', 'os_kernel', 'os_concat', 'cpu_dies', 'cpu_cores', 'cpu_threads', 'cpu_model', 'cpu_freq', 'mem_banks', 'mem_slots', 'mem_bytes', 'listener_port', 'version', 'action_type', 'collector', 'connect_to', 'node_env', 'team_responsible', 'team_integ', 'app_team_ops', 'team_support', 'app_domain', 'last_boot', 'last_comm', 'power_supply_nb', 'power_cabinet1', 'power_cabinet2', 'power_protect', 'power_protect_breaker', 'power_breaker1', 'power_breaker2', 'warranty_end', 'maintenance_end', 'os_obs_warn_date', 'os_obs_alert_date', 'hw_obs_warn_date', 'hw_obs_alert_date'],
-		"default_columns": ["svcname", "action", "begin", "cron", "end", "nodename", "pid", "status", "status_log"],
+		"default_columns": ["svcname", "action", "begin", "time", "cron", "nodename", "pid", "status", "status_log"],
 		"colprops": {
 			"begin": {
 				"_class": "datetime_no_age",
