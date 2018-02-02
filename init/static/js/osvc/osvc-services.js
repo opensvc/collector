@@ -448,7 +448,7 @@ function services_info_fmt(data) {
 	if (!data.info) {
 		return
 	}
-	var e = $("<span><span class='fa fa-info-circle fa-2x icon-green icon'></span><span data-i18n='api.info'></span></span>")
+	var e = $("<span><span class='fa fa-info-circle fa-2x icon-green text-green icon'></span><span data-i18n='api.info'></span></span>")
 	e.i18n()
 	var p = $("<pre class='api_error'></pre>")
 	if (typeof data.info === "string") {

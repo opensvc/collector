@@ -3240,7 +3240,7 @@ function delta_properties(delta, s, max_age, seconds) {
 	cl += " nowrap"
 
 	if (prefix == "-" && max_age && (delta > max_age)) {
-		cl += " icon-red"
+		cl += " icon-red text-red"
 	}
 
 	if (!s) {

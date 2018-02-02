@@ -108,6 +108,7 @@ var action_img_h = {
 	'mount': 'action_start_16',
 	'restart': 'action_restart_16',
 	'provision': 'prov',
+	'run': 'fa-play icon-green',
 	'switch': 'action_switch_16',
 	'giveback': 'action_switch_16',
 	'takeover': 'action_switch_16',
@@ -683,7 +684,7 @@ function cell_decorator_action(e, line) {
 	if (action in action_img_h) {
 		cl.push(action_img_h[action])
 	}
-	s = "<div class='icon "+cl.join(" ")+"'>"+v+"</div>"
+	s = "<div class='icon_fixed_width "+cl.join(" ")+"'>"+v+"</div>"
 	e.html(s)
 }
 
@@ -716,7 +717,7 @@ function cell_decorator_svc_action_err(e, line) {
 		e.empty()
 		return
 	}
-	s = $("<a class='icon action16 icon-red clickable'>"+v+"</a>")
+	s = $("<a class='icon action16 icon-red text-red clickable'>"+v+"</a>")
 	s.on("click", function(){
 		if (get_selected() != "") {
 			return
@@ -944,9 +945,9 @@ function cell_decorator_log_event(e, line) {
 function cell_decorator_log_level(e, line) {
 	var v = $.data(e[0], "v")
 	var t = {
-		"warning": "icon-orange",
-		"info": "icon-green",
-		"error": "icon-red",
+		"warning": "icon-orange text-orange",
+		"info": "icon-green text-green",
+		"error": "icon-red text-red",
 	}
 	if (v in t) {
 		var cl = t[v]
@@ -1415,19 +1416,19 @@ function cell_decorator_action_cron(e, line) {
 function cell_decorator_dash_severity(e, line) {
 	var v = $.data(e[0], "v")
 	if (v == 0) {
-		cl = "icon-green"
+		cl = "icon-green text-green"
 		text = "info"
 	} else if (v == 1) {
-		cl = "icon-orange"
+		cl = "icon-orange text-orange"
 		text = "warning"
 	} else if (v == 2) {
-		cl = "icon-lightred"
+		cl = "icon-lightred text-lightred"
 		text = "error"
 	} else if (v == 3) {
-		cl = "icon-red"
+		cl = "icon-red text-red"
 		text = "critical"
 	} else {
-		cl = "icon-black"
+		cl = "icon-black text-black"
 		text = "alert"
 	}
 	e.text(text).addClass(cl)
@@ -1683,7 +1684,7 @@ function cell_decorator_env(e, line) {
 	if ($.data(e[0], "v") != "PRD") {
 		return
 	}
-	e.addClass("icon-red")
+	e.addClass("text-red")
 }
 
 function cell_decorator_svc_ha(e, line) {

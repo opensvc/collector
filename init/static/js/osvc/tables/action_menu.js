@@ -191,14 +191,14 @@ var am_svc_agent_leafs = [
 	},
 	{
 		'title': 'Freeze',
-		'class': 'icon fa-snowflake-o icon-blue',
+		'class': 'icon fa-snowflake icon-blue',
 		"privileges": ["Manager", "NodeManager", "NodeExec"],
 		"min": 1,
 		'action': 'freeze'
 	},
 	{
 		'title': 'Thaw',
-		'class': 'icon fa-snowflake-o icon-gray',
+		'class': 'icon fa-snowflake icon-gray',
 		"privileges": ["Manager", "NodeManager", "NodeExec"],
 		"min": 1,
 		'action': 'thaw'
@@ -1637,8 +1637,22 @@ function table_action_menu_init_data(t) {
 							'action': 'takeover'
 						},
 						{
+							'title': 'Giveback',
+							'class': 'action_switch_16',
+							"privileges": ["Manager", "NodeManager", "NodeExec"],
+							"min": 1,
+							'action': 'giveback'
+						},
+						{
 							'title': 'Switch',
 							'class': 'action_switch_16',
+							"privileges": ["Manager", "NodeManager", "NodeExec"],
+							"min": 1,
+							'action': 'switch'
+						},
+						{
+							'title': 'Run',
+							'class': 'fa-play icon-green',
 							"privileges": ["Manager", "NodeManager", "NodeExec"],
 							"min": 1,
 							'action': 'switch'
@@ -1694,14 +1708,14 @@ function table_action_menu_init_data(t) {
 						},
 						{
 							'title': 'Thaw',
-							'class': 'icon fa-snowflake-o icon-gray',
+							'class': 'icon fa-snowflake icon-gray',
 							"privileges": ["Manager", "NodeManager", "NodeExec"],
 							"min": 1,
 							'action': 'thaw'
 						},
 						{
 							'title': 'Freeze',
-							'class': 'icon fa-snowflake-o icon-blue',
+							'class': 'icon fa-snowflake icon-blue',
 							"privileges": ["Manager", "NodeManager", "NodeExec"],
 							"min": 1,
 							'action': 'freeze'

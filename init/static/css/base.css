@@ -3039,23 +3039,23 @@ pre.api_doc {
 	border-color: #990000 !important;
 }
 
-.icon-orange {
-       color: orange;
+.text-orange {
+	color: orange;
 }
-.icon-lightred {
+.text-lightred {
 	color: #dd0000;
 }
-.icon-red {
+.text-red {
 	color: #990000;
 }
-.icon-green {
+.text-green {
 	color: #009900;
 }
-.icon-gray {
+.text-gray {
 	color: #666666;
 }
 .icon-orange:before {
-       color: orange;
+	color: orange;
 }
 .icon-red:before {
 	color: #990000;
