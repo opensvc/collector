@@ -110,6 +110,9 @@ function actions_timeline(divid, options) {
 		var nodes = {}
 		for (var i=0; i<data.length; i++) {
 			var d = data[i]
+			if (d.svcactions.end == "empty") {
+				d.svcactions.end = d.svcactions.begin
+			}
 			var group_id = d.svcactions.svc_id+"@"+d.svcactions.node_id
 			if (!(group_id in nodes)) {
 				var group_content = d.services.svcname+"@"+d.nodes.nodename
@@ -163,17 +166,6 @@ function actions_timeline(divid, options) {
 	o.init_timeline = function() {
 		require(["vis"], function(vis) {
 			o.timeline = new vis.Timeline(o.div[0], o.data, o.groups, options)
-			/*
-			o.timeline.on("change", function() {
-				o.div.find("[node_id]").osvc_nodename({
-					callback: function(){o.timeline.redraw()}
-				})
-				o.div.find("[svc_id]").osvc_svcname({
-					callback: function(){o.timeline.redraw()}
-				})
-				o.div.find("[title]:not(.vis-label)").tooltipster()
-			})
-			*/
 		})
 	}
 
