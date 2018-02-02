@@ -643,7 +643,7 @@ function cell_decorator_action_log(e, line) {
 		e.empty()
 		return
 	}
-	s = "<pre>"+v+"</pre>"
+	s = "<pre class='m-0'>"+v+"</pre>"
 	e.html(s)
 }
 
@@ -1468,7 +1468,7 @@ function cell_decorator_run_log(e, line, fn) {
 	if (typeof v === "undefined") {
 		var s = ""
 	} else {
-		var s = "<pre>"+v.replace(/ERR:/g, "<span class='err'>ERR:</span>")+"</pre>"
+		var s = "<pre class='m-0'>"+v.replace(/ERR:/g, "<span class='err'>ERR:</span>")+"</pre>"
 	}
 	e.html(s)
 	if (line != undefined) {
@@ -1774,7 +1774,7 @@ function cell_decorator_availstatus(e, line) {
 
 function cell_decorator_rsetvars(e, line) {
 	var s = $.data(e[0], "v")
-	e.html("<pre>"+s.replace(/\|/g, "\n")+"</pre>")
+	e.html("<pre class='m-0'>"+s.replace(/\|/g, "\n")+"</pre>")
 }
 
 function cell_decorator_overallstatus(e, line) {
