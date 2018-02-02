@@ -967,10 +967,10 @@ function table_init(opts) {
 		t.bind_filter_reformat(input, c)
 
 		// update the column name in header
-		if (c in colprops) {
-			header.html("<span class='icon "+colprops[c].img+"'>"+i18n.t("col."+colprops[c].title)+"</span>")
+		if (c in t.colprops) {
+			header.html("<span class='icon "+t.colprops[c].img+"'>"+i18n.t("col."+t.colprops[c].title)+"</span>")
 		} else {
-			header.text(i18n.t("table.column_filter_header", {"col": i18n.t("col."+t.colprops[c].title)}))
+			header.html("<span class='icon "+colprops[c].img+"'>"+i18n.t("col."+colprops[c].title)+"</span>")
 		}
 		value_pie.attr("id", t.id+"_fp_"+c)
 		value_pie.css({"margin-top": "0.8em"})
