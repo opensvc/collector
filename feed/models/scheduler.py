@@ -3858,7 +3858,7 @@ def update_dash_flex_cpu(svc_id):
     sql = """select
                svc_env,
                svc_flex_cpu_low_threshold,
-               svc_flex_cpu_high_threshold,
+               svc_flex_cpu_high_threshold
              from services
              where
                svc_id="%(svc_id)s"
@@ -3883,35 +3883,28 @@ def update_dash_flex_cpu(svc_id):
     total = 0
     count = len(rows)
     for row in rows:
-        total += timeseries.whisper_fetch_avg("nodes/%s"%node_id, "cpu", "all", "idle", b=threshold)
+        total += timeseries.whisper_fetch_avg("nodes/%s"%row[0], "cpu", "all", "idle", b=threshold.strftime("%Y-%m-%d %H:%M:%S"))
     avg = total/count
 
     if avg > svc_flex_cpu_high_threshold or avg < svc_flex_cpu_low_threshold:
         sql = """insert into dashboard
-                 NULL,
-                 "flex error",
-                 "%(svc_id)s",
-                 %(sev)d,
-                 "%%(n)d average cpu usage. thresholds: %%(cmin)d - %%(cmax)d",
-                 concat('{"n": ', %(avg)d,
-                        ', "cmin": ', %(cmin)d,
-                        ', "cmax": ', %(cmax)d,
-                        '}'),
-                 now(),
-                 md5(concat('{"n": ', %(avg)d,
-                        ', "cmin": ', %(cmin)d,
-                        ', "cmax": ', %(cmax)d,
-                        '}')),
-                 "%(env)s",
-                 now(),
-                 "",
-                 NULL
-               on duplicate key update
-                 dash_updated=now()
+                 set
+                   dash_type="flex error",
+                   node_id="",
+                   svc_id="%(svc_id)s",
+                   dash_severity=%(sev)d,
+                   dash_updated=now(),
+                   dash_created=now(),
+                   dash_fmt="%%(n)d average cpu usage. thresholds: %%(cmin)d - %%(cmax)d",
+                   dash_dict=concat('{"n": ', %(avg)d, ', "cmin": ', %(cmin)d, ', "cmax": ', %(cmax)d, '}'),
+                   dash_dict_md5=md5(concat('{"n": ', %(avg)d, ', "cmin": ', %(cmin)d, ', "cmax": ', %(cmax)d, '}')),
+                   dash_env="%(env)s"
+                 on duplicate key update
+                   dash_updated=now()
           """%dict(svc_id=svc_id,
                    sev=sev,
-                   cmin=cmin,
-                   cmax=cmax,
+                   cmin=svc_flex_cpu_low_threshold,
+                   cmax=svc_flex_cpu_high_threshold,
                    avg=int(avg),
                    env=env,
                   )
