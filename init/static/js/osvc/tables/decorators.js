@@ -975,7 +975,7 @@ function cell_decorator_status(e, line) {
 		"undef": "gray",
 		"n/a": "gray"
 	}
-	e.html("<div class='nowrap icon-"+t[c]+"'>"+v+"</div>")
+	e.html("<div class='nowrap text-"+t[c]+"'>"+v+"</div>")
 }
 
 function cell_decorator_dns_records_type(e, line) {

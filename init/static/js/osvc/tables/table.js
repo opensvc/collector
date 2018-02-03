@@ -3281,7 +3281,7 @@ function _outdated(s, max_age) {
 	if (!delta) {
 		return true
 	}
-	if (delta > max_age) {
+	if (delta > max_age * 60) {
 		return true
 	}
 	return false
