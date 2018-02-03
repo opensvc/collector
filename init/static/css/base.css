@@ -1258,12 +1258,7 @@ div.login {
 .common16:before {
 	content: '\f05b';
 }
-.docker16 {
-	background: transparent url('../svg/docker-cornflowerblue.svg') no-repeat;
-	background-size: 16px 16px;
-	padding: 0 0 0 20px;
-	min-height: 16px;
-}
+
 .os_vmware {
 	background: transparent url('../images/vmware16.png') no-repeat;
 	background-size: 16px 16px;
