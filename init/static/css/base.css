@@ -11,6 +11,13 @@
 	background-color: transparent;
 }
 
+@font-face {
+	font-family: 'Open Sans';
+	font-style: normal;
+//	font-weight: 400;
+	src: url("../webfonts/OpenSans-Regular.woff") format("woff2");
+}
+
 .jqstooltip {
 	-webkit-box-sizing: content-box;
 	-moz-box-sizing: content-box;
@@ -882,6 +889,7 @@ div.menu_box {
 }
 
 .layout {
+	font-family: 'Open Sans';
 	width: 100%;
 	padding: 3em 0 0 0;
 	border: 0;
