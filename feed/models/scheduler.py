@@ -3866,6 +3866,14 @@ def update_dash_flex_cpu(svc_id):
     rows = db.executesql(sql)
 
     if len(rows) == 0:
+        sql = """delete from dashboard
+                   where
+                     svc_id = "%(svc_id)s" and
+                     dash_type = "flex error" and
+                     dash_fmt like "%%average cpu usage%%"
+          """%dict(svc_id=svc_id)
+        rows = db.executesql(sql)
+        db.commit()
         return
     elif len(rows) == 1 and rows[0][0] == 'PRD':
         sev = 4
@@ -3879,6 +3887,16 @@ def update_dash_flex_cpu(svc_id):
              mon_availstatus="up" and svc_id="%s"
           """ % svc_id
     rows = db.executesql(sql)
+    if len(rows) == 0:
+        sql = """delete from dashboard
+                   where
+                     svc_id = "%(svc_id)s" and
+                     dash_type = "flex error" and
+                     dash_fmt like "%%average cpu usage%%"
+          """%dict(svc_id=svc_id)
+        rows = db.executesql(sql)
+        db.commit()
+        return
     threshold = datetime.datetime.now() - datetime.timedelta(minutes=15)
     total = 0
     count = len(rows)
@@ -4729,7 +4747,6 @@ def merge_daemon_status(node_id, changes):
             else:
                 data["frozen"] = int(idata["frozen"])
 
-        print(svc.svc_id, data) 
         db.svcmon.update_or_insert({
                 "node_id": peer.node_id,
                 "svc_id": svc.svc_id,
@@ -4850,6 +4867,8 @@ def merge_daemon_status(node_id, changes):
         changed |= update_dash_service_unavailable(svc.svc_id, svc.svc_env, sdata["avail"])
         changed |= update_dash_service_placement(svc.svc_id, svc.svc_env, sdata["placement"])
         update_dash_service_available_but_degraded(svc.svc_id, svc.svc_env, sdata["avail"], sdata["overall"])
+        update_dash_flex_instances_started(svc.svc_id)
+        update_dash_flex_cpu(svc.svc_id)
         # TODO
         # provisioned alerts
 
