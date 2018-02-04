@@ -202,7 +202,7 @@ var img_h = {
 
 function cell_decorator_tag_name(e, line) {
 	var v = $.data(e[0], "v")
-	var tag_id = $.data(line.children("[col=tag_id]")[0], "v")
+	var tag_id = $.data(line.children(".cell[col=tag_id]")[0], "v")
 	e
 	.html("<span class='clickable'>"+v+"</span>")
 	.addClass("corner-top")
@@ -233,8 +233,8 @@ function cell_decorator_var_class(e, line) {
 
 function cell_decorator_var_name(e, line) {
 	var v = $.data(e[0], "v")
-	var var_id = $.data(line.children("[col=id]")[0], "v")
-	var rset_id = $.data(line.children("[col=ruleset_id]")[0], "v")
+	var var_id = $.data(line.children(".cell[col=id]")[0], "v")
+	var rset_id = $.data(line.children(".cell[col=ruleset_id]")[0], "v")
 	e
 	.html("<span class='clickable'>"+v+"</span>")
 	.addClass("corner-top")
@@ -249,7 +249,7 @@ function cell_decorator_var_name(e, line) {
 }
 
 function cell_decorator_log_icons(e, line) {
-	var action = $.data(line.children("[col=log_action]")[0], "v")
+	var action = $.data(line.children(".cell[col=log_action]")[0], "v")
 	var l = action.split(".")
 	var span = $("<span></span>")
 	span.attr("title", action).tooltipster()
@@ -301,7 +301,7 @@ function cell_decorator_app(e, line) {
 
 function cell_decorator_dns_domain(e, line) {
 	var v = $.data(e[0], "v")
-	var domain_id = $.data(line.children("[col=id]")[0], "v")
+	var domain_id = $.data(line.children(".cell[col=id]")[0], "v")
 	e
 	.html("<span class='clickable'>"+v+"</span>")
 	.addClass("corner-top")
@@ -317,7 +317,7 @@ function cell_decorator_dns_domain(e, line) {
 
 function cell_decorator_dns_record(e, line) {
 	var v = $.data(e[0], "v")
-	var record_id =  $.data(line.children("[col=id]")[0], "v")
+	var record_id =  $.data(line.children(".cell[col=id]")[0], "v")
 	e
 	.html("<span class='clickable'>"+v+"</span>")
 	.addClass("corner-top")
@@ -337,7 +337,7 @@ function cell_decorator_disk_array_dg(e, line) {
 	v.split(", ").forEach(function(v) {
 		$("<div class='clickable link pl-1 pr-1'>"+v+"</div>")
 		.on("click", function(){
-			var array_name = $.data(line.children("[col=array_name],[col=disk_arrayid]")[0], "v")
+			var array_name = $.data(line.children(".cell[col=array_name],.cell[col=disk_arrayid]")[0], "v")
 			osvc.flash.show({
 				id: "dg-"+v,
 				text: v,
@@ -374,7 +374,7 @@ function cell_decorator_quota(e, line) {
 	.html("<span class='clickable'>"+v+"</span>")
 	.addClass("corner")
 	.on("click", function(){
-		var quota_id = $.data(line.children("[col=id]")[0], "v")
+		var quota_id = $.data(line.children(".cell[col=id]")[0], "v")
 		var id = toggle_extraline(e)
 		quota_tabs(id, {"quota_id": quota_id})
 	})
@@ -382,7 +382,7 @@ function cell_decorator_quota(e, line) {
 
 function cell_decorator_prov_template(e, line) {
 	var v = $.data(e[0], "v")
-	var tpl_id = $.data(line.children("[col=id]")[0], "v")
+	var tpl_id = $.data(line.children(".cell[col=id]")[0], "v")
 	e
 	.addClass("corner-top")
 	.osvc_prov_template({"tag": false, "event": "click", "tpl_id": tpl_id})
@@ -432,7 +432,7 @@ function cell_decorator_ruleset_name(e, line) {
 
 function cell_decorator_report_name(e, line) {
 	var v = $.data(e[0], "v")
-	var report_id = $.data(line.children("[col=id]")[0], "v")
+	var report_id = $.data(line.children(".cell[col=id]")[0], "v")
 	e
 	.addClass("corner-top")
 	.osvc_report({"tag": false, "event": "click", "report_id": report_id, "report_name": v})
@@ -440,7 +440,7 @@ function cell_decorator_report_name(e, line) {
 
 function cell_decorator_chart_name(e, line) {
 	var v = $.data(e[0], "v")
-	var chart_id = $.data(line.children("[col=id]")[0], "v")
+	var chart_id = $.data(line.children(".cell[col=id]")[0], "v")
 	e
 	.addClass("corner-top")
 	.osvc_chart({"tag": false, "event": "click", "chart_id": chart_id, "chart_name": v})
@@ -448,7 +448,7 @@ function cell_decorator_chart_name(e, line) {
 
 function cell_decorator_metric_name(e, line) {
 	var v = $.data(e[0], "v")
-	var metric_id = $.data(line.children("[col=id]")[0], "v")
+	var metric_id = $.data(line.children(".cell[col=id]")[0], "v")
 	e
 	.addClass("corner-top")
 	.osvc_metric({"tag": false, "event": "click", "metric_id": metric_id, "metric_name": v})
@@ -456,7 +456,7 @@ function cell_decorator_metric_name(e, line) {
 
 function cell_decorator_form_name(e, line) {
 	var v = $.data(e[0], "v")
-	var form_id = $.data(line.children("[col=id]")[0], "v")
+	var form_id = $.data(line.children(".cell[col=id]")[0], "v")
 	e
 	.addClass("corner-top")
 	.osvc_form({"tag": false, "event": "click", "form_id": form_id, "form_name": v})
@@ -464,7 +464,7 @@ function cell_decorator_form_name(e, line) {
 
 function cell_decorator_docker_repository(e, line) {
 	var v = $.data(e[0], "v")
-	var repository_id = $.data(line.children("[col=repository_id]")[0], "v")
+	var repository_id = $.data(line.children(".cell[col=repository_id]")[0], "v")
 	e
 	.addClass("corner-top")
 	.osvc_docker_repository({"tag": false, "event": "click", "repository_id": repository_id, "repository_name": v})
@@ -472,7 +472,7 @@ function cell_decorator_docker_repository(e, line) {
 
 function cell_decorator_docker_registry(e, line) {
 	var v = $.data(e[0], "v")
-	var registry_id = $.data(line.children("[col=registry_id]")[0], "v")
+	var registry_id = $.data(line.children(".cell[col=registry_id]")[0], "v")
 	e
 	.addClass("corner-top")
 	.osvc_docker_registry({"tag": false, "event": "click", "registry_id": registry_id, "registry_service": v})
@@ -480,12 +480,12 @@ function cell_decorator_docker_registry(e, line) {
 
 function cell_decorator_network(e, line) {
 	var v = $.data(e[0], "v")
-	var name = $.data(line.children("[col=name]")[0], "v")
+	var name = $.data(line.children(".cell[col=name]")[0], "v")
 	e
 	.html("<span class='clickable'>"+v+"</span>")
 	.addClass("corner-top")
 	.on("click", function(){
-		var net_id = $.data(line.children("[col=id],[col=net_id]")[0], "v")
+		var net_id = $.data(line.children(".cell[col=id],.cell[col=net_id]")[0], "v")
 		osvc.flash.show({
 			id: "net-"+net_id,
 			text: name, 
@@ -498,9 +498,9 @@ function cell_decorator_network(e, line) {
 
 function cell_decorator_chk_instance(e, line) {
 	var v = $.data(e[0], "v")
-	var chk_type = $.data(line.children("[col=chk_type]")[0], "v")
+	var chk_type = $.data(line.children(".cell[col=chk_type]")[0], "v")
 	if (chk_type == "mpath") {
-		var disk_id = $.data(line.children("[col=chk_instance]")[0], "v")
+		var disk_id = $.data(line.children(".cell[col=chk_instance]")[0], "v")
 		var s = "<a class='icon hd16 nowrap'>"+v+"</a>"
 		e
 		.html(s)
@@ -517,7 +517,7 @@ function cell_decorator_chk_instance(e, line) {
 function cell_decorator_chk_high(e, line) {
 	var high = $.data(e[0], "v")
 	try {
-		var err = $.data(line.children("[col=chk_err]")[0], "v")
+		var err = $.data(line.children(".cell[col=chk_err]")[0], "v")
 	} catch(e) {
 		return
 	}
@@ -532,7 +532,7 @@ function cell_decorator_chk_high(e, line) {
 function cell_decorator_chk_low(e, line) {
 	var low = $.data(e[0], "v")
 	try {
-		var err = $.data(line.children("[col=chk_err]")[0], "v")
+		var err = $.data(line.children(".cell[col=chk_err]")[0], "v")
 	} catch(e) {
 		return
 	}
@@ -546,8 +546,8 @@ function cell_decorator_chk_low(e, line) {
 
 function cell_decorator_chk_value(e, line) {
 	var v = $.data(e[0], "v")
-	var low = $.data(line.children("[col=chk_low]")[0], "v")
-	var high = $.data(line.children("[col=chk_high]")[0], "v")
+	var low = $.data(line.children(".cell[col=chk_low]")[0], "v")
+	var high = $.data(line.children(".cell[col=chk_high]")[0], "v")
 	var cl = []
 	v = parseInt(v)
 	low = parseInt(low)
@@ -576,10 +576,10 @@ function cell_decorator_action_pid(e, line) {
 	e
 	.html(s)
 	.on('click', function(){
-		var node_id = $.data(line.children("[col=node_id]")[0], "v")
-		var svc_id = $.data(line.children("[col=svc_id]")[0], "v")
-		var begin = $.data(line.children("[col=begin]")[0], "v")
-		var end = $.data(line.children("[col=end]")[0], "v")
+		var node_id = $.data(line.children(".cell[col=node_id]")[0], "v")
+		var svc_id = $.data(line.children(".cell[col=svc_id]")[0], "v")
+		var begin = $.data(line.children(".cell[col=begin]")[0], "v")
+		var end = $.data(line.children(".cell[col=end]")[0], "v")
 
 		var _begin = begin.replace(/ /, "T")
 		var d = new Date(+new Date(_begin) - 1000*60*60*24)
@@ -604,7 +604,7 @@ function cell_decorator_action_status(e, line) {
 		return
 	}
 	cl = ["status_"+v.replace(' ', '_')]
-	var ack = $.data(line.children("[col=ack]")[0], "v")
+	var ack = $.data(line.children(".cell[col=ack]")[0], "v")
 	if (ack == 1) {
 		cl.push("ack_1")
 	}
@@ -613,9 +613,9 @@ function cell_decorator_action_status(e, line) {
 	if (ack != 1) {
 		return
 	}
-	var acked_date = $.data(line.children("[col=acked_date]")[0], "v")
-	var acked_by = $.data(line.children("[col=acked_by]")[0], "v")
-	var acked_comment = $.data(line.children("[col=acked_comment]")[0], "v")
+	var acked_date = $.data(line.children(".cell[col=acked_date]")[0], "v")
+	var acked_by = $.data(line.children(".cell[col=acked_by]")[0], "v")
+	var acked_comment = $.data(line.children(".cell[col=acked_comment]")[0], "v")
 	s = "<div>"
 	s += "<b>acked by </b>"+acked_by+"<br>"
 	s += "<b> on </b>"+acked_date+"<br>"
@@ -633,7 +633,7 @@ function cell_decorator_action_end(e, line) {
 		e.html("<span class='highlight'>timed out</span>")
 		return
 	}
-	var id = $.data(line.children("[col=id]")[0], "v")
+	var id = $.data(line.children(".cell[col=id]")[0], "v")
 	s = "<span class='highlight nowrap' id='spin_span_end_"+id+"'>"+v+"</span>"
 }
 
@@ -675,7 +675,7 @@ function cell_decorator_db_column_name(e, line) {
 
 function cell_decorator_action(e, line) {
 	var v = $.data(e[0], "v")
-	var status_log = $.data(line.children("[col=status_log]")[0], "v")
+	var status_log = $.data(line.children(".cell[col=status_log]")[0], "v")
 	cl = []
 	if (status_log == "empty") {
 		cl.push("metaaction")
@@ -722,7 +722,7 @@ function cell_decorator_svc_action_err(e, line) {
 		if (get_selected() != "") {
 			return
 		}
-		var svc_id = $.data(line.children("[col=svc_id]")[0], "v")
+		var svc_id = $.data(line.children(".cell[col=svc_id]")[0], "v")
 		var id = toggle_extratable(e)
 		table_actions(id, {
 			"volatile_filters": true,
@@ -762,14 +762,14 @@ function cell_decorator_nodename_no_os(e, line) {
 
 function _cell_decorator_nodename(e, os_icon, line) {
 	var v = $.data(e[0], "v")
-	var node_id = $.data(line.children("[col=node_id]")[0], "v")
+	var node_id = $.data(line.children(".cell[col=node_id]")[0], "v")
 	if ((v=="") || (v=="empty")) {
 		return
 	}
 	var div = $("<div class='a nowrap trunc20'>"+v+"</div>")
 	if (os_icon) {
 		try {
-			var os_name = $.data(line.children("[col=os_name]")[0], "v")
+			var os_name = $.data(line.children(".cell[col=os_name]")[0], "v")
 			os_c = os_class_h[os_name.toLowerCase()]
 			div.addClass(os_c)
 		} catch(e) {}
@@ -823,7 +823,7 @@ function cell_decorator_user_id(e, line) {
 	if ((v=="") || (v=="empty")) {
 		return
 	}
-	var fullname = $.data(line.children("[col=fullname]")[0], "v")
+	var fullname = $.data(line.children(".cell[col=fullname]")[0], "v")
 	e
 	.addClass("corner-top")
 	.on("click", function(){
@@ -854,7 +854,7 @@ function cell_decorator_username(e, line) {
 		var table_id = e.parents("table").attr("id").replace(/^table_/, '')
 		var data = {"fullname": v}
 		if (table_id.match(/^users/)) {
-			var user_id = $.data(line.children("[col=id]")[0], "v")
+			var user_id = $.data(line.children(".cell[col=id]")[0], "v")
 			data["user_id"] = user_id
 			flash_id = "user-" + user_id
 		} else {
@@ -890,7 +890,7 @@ function cell_decorator_safe_file(e, line) {
 
 function cell_decorator_svcname(e, line) {
 	var v = $.data(e[0], "v")
-	var svc_id = $.data(line.children("[col=svc_id]")[0], "v")
+	var svc_id = $.data(line.children(".cell[col=svc_id]")[0], "v")
 	if ((svc_id=="") || (svc_id=="empty")) {
 		return
 	}
@@ -923,8 +923,8 @@ function cell_decorator_res_log(e, line) {
 }
 
 function cell_decorator_log_event(e, line) {
-	var d = $.data(line.children("[col=log_dict]")[0], "v")
-	var fmt = $.data(line.children("[col=log_fmt]")[0], "v")
+	var d = $.data(line.children(".cell[col=log_dict]")[0], "v")
+	var fmt = $.data(line.children(".cell[col=log_fmt]")[0], "v")
 	if (!d || (d.length == 0)) {
 		e.html(fmt)
 		return
@@ -992,8 +992,8 @@ function cell_decorator_dns_records_type(e, line) {
 }
 
 function cell_decorator_svcmon_link_frozen(e, line) {
-	var mon_frozen = $.data(line.children("[col=mon_frozen]")[0], "v")
-	var mon_vmname = $.data(line.children("[col=mon_vmname]")[0], "v")
+	var mon_frozen = $.data(line.children(".cell[col=mon_frozen]")[0], "v")
+	var mon_vmname = $.data(line.children(".cell[col=mon_vmname]")[0], "v")
 	if (mon_vmname) {
 		if (mon_frozen == "3") {
 			var s1 = $("<span class='icon fa-snowflake-o'>&nbsp</span>")
@@ -1027,9 +1027,9 @@ function cell_decorator_svcmon_links(e, line) {
 }
 
 function cell_decorator_comp_log(e, line) {
-	var module = $.data(line.find("[col=run_module]")[0], "v")
-	var svc_id = $.data(line.find("[col=svc_id]")[0], "v")
-	var node_id = $.data(line.find("[col=node_id]")[0], "v")
+	var module = $.data(line.find(".cell[col=run_module]")[0], "v")
+	var svc_id = $.data(line.find(".cell[col=svc_id]")[0], "v")
+	var node_id = $.data(line.find(".cell[col=node_id]")[0], "v")
 	var div = $("<div class='icon chart16'></div>")
 	div
 	.addClass("a")
@@ -1047,7 +1047,7 @@ function cell_decorator_comp_log(e, line) {
 }
 
 function cell_decorator_comp_mod_log(e, line) {
-	var modname = $.data(line.find("[col=mod_name]")[0], "v")
+	var modname = $.data(line.find(".cell[col=mod_name]")[0], "v")
 	var div = $("<div class='a nowrap icon chart16'></div>")
 	div
 	e
@@ -1066,7 +1066,7 @@ function cell_decorator_comp_mod_log(e, line) {
 }
 
 function cell_decorator_comp_node_log(e, line) {
-	var node_id = $.data(line.find("[col=node_id]")[0], "v")
+	var node_id = $.data(line.find(".cell[col=node_id]")[0], "v")
 	var div = $("<div class='icon chart16 a nowrap'></div>")
 	e
 	.html(div)
@@ -1084,7 +1084,7 @@ function cell_decorator_comp_node_log(e, line) {
 }
 
 function cell_decorator_comp_svc_log(e, line) {
-	var svc_id = $.data(line.find("[col=svc_id]")[0], "v")
+	var svc_id = $.data(line.find(".cell[col=svc_id]")[0], "v")
 	var div = $("<div class='icon chart16 a nowrap'></div>")
 	e
 	.html(div)
@@ -1156,7 +1156,7 @@ function cell_decorator_chk_type(e, line) {
 }
 
 function cell_decorator_dash_link_comp_svcdiff(e, line) {
-	var svc_id = $.data(line.find("[col=svc_id]")[0], "v")
+	var svc_id = $.data(line.find(".cell[col=svc_id]")[0], "v")
 	s = "<div class='icon comp16 clickable'></div>"
 	e
 	.html(s)
@@ -1173,8 +1173,8 @@ function cell_decorator_dash_link_comp_svcdiff(e, line) {
 }
 
 function cell_decorator_dash_link_comp_tab(e, line) {
-	var svc_id = $.data(line.find("[col=svc_id]")[0], "v")
-	var node_id = $.data(line.find("[col=node_id]")[0], "v")
+	var svc_id = $.data(line.find(".cell[col=svc_id]")[0], "v")
+	var node_id = $.data(line.find(".cell[col=node_id]")[0], "v")
 	s = "<div class='icon comp16 clickable'></div>"
 	e
 	.html(s)
@@ -1193,7 +1193,7 @@ function cell_decorator_dash_link_comp_tab(e, line) {
 }
 
 function cell_decorator_dash_link_pkg_tab(e, line) {
-	var svc_id = $.data(line.find("[col=svc_id]")[0], "v")
+	var svc_id = $.data(line.find(".cell[col=svc_id]")[0], "v")
 	e
 	.html("<div class='icon pkg16 clickable'></div>")
 	.addClass("corner")
@@ -1237,8 +1237,8 @@ function cell_decorator_obs_count(e, line) {
 		if (get_selected() != "") {
 			return
 		}
-		var obs_name = $.data(line.find("[col=obs_name]")[0], "v")
-		var obs_type = $.data(line.find("[col=obs_type]")[0], "v")
+		var obs_name = $.data(line.find(".cell[col=obs_name]")[0], "v")
+		var obs_type = $.data(line.find(".cell[col=obs_type]")[0], "v")
 		var options = {
 			"volatile_filters": true,
 			"request_vars": {}
@@ -1275,14 +1275,14 @@ function _cell_decorator_dash_link_action_error(svc_id, e) {
 }
 
 function cell_decorator_dash_link_action_error(e, line) {
-	var svc_id = $.data(line.find("[col=svc_id]")[0], "v")
+	var svc_id = $.data(line.find(".cell[col=svc_id]")[0], "v")
 	e
 	.append(_cell_decorator_dash_link_action_error(svc_id, e))
 	.append(_cell_decorator_dash_link_actions(svc_id, e))
 }
 
 function cell_decorator_dash_link_svcmon(e, line) {
-	var svc_id = $.data(line.find("[col=svc_id]")[0], "v")
+	var svc_id = $.data(line.find(".cell[col=svc_id]")[0], "v")
 	e
 	.html("<div class='icon svc clickable'></div>")
 	.addClass("corner")
@@ -1295,7 +1295,7 @@ function cell_decorator_dash_link_svcmon(e, line) {
 }
 
 function cell_decorator_dash_link_node(e, line) {
-	var node_id = $.data(line.find("[col=node_id]")[0], "v")
+	var node_id = $.data(line.find(".cell[col=node_id]")[0], "v")
 	e
 	.html("<div class='icon node16 clickable'></div>")
 	.addClass("corner")
@@ -1308,7 +1308,7 @@ function cell_decorator_dash_link_node(e, line) {
 }
 
 function cell_decorator_dash_link_checks(e, line) {
-	var node_id = $.data(line.find("[col=node_id]")[0], "v")
+	var node_id = $.data(line.find(".cell[col=node_id]")[0], "v")
 	e
 	.html("<div class='icon check16 clickable'></div>")
 	.addClass("corner")
@@ -1336,7 +1336,7 @@ function _cell_decorator_dash_link_mac_networks(mac) {
 
 function cell_decorator_dash_link_mac_duplicate(e, line) {
 	try {
-		var mac = $.parseJSON($.data(line.find("[col=dash_dict]")[0], "v")).mac
+		var mac = $.parseJSON($.data(line.find(".cell[col=dash_dict]")[0], "v")).mac
 	} catch(err) {
 		console.log(err)
 		return
@@ -1351,7 +1351,7 @@ function cell_decorator_dash_link_obsolescence(e, line) {
 			return
 		}
 		try {
-			var name = $.parseJSON($.data(line.find("[col=dash_dict]")[0], "v")).o
+			var name = $.parseJSON($.data(line.find(".cell[col=dash_dict]")[0], "v")).o
 		} catch(err) {
 			console.log(err)
 			return
@@ -1370,7 +1370,7 @@ function cell_decorator_dash_link_obsolescence(e, line) {
 }
 
 function cell_decorator_dash_links(e, line) {
-	var dash_type = $.data(line.find("[col=dash_type]")[0], "v")
+	var dash_type = $.data(line.find(".cell[col=dash_type]")[0], "v")
 	if (dash_type == "action errors") {
 		cell_decorator_dash_link_action_error(e, line)
 	} else if ((dash_type == "node warranty expired") ||
@@ -1474,7 +1474,7 @@ function cell_decorator_run_log(e, line, fn) {
 	if (line != undefined) {
 		e.addClass("corner-top")
 		.on("click", function(){
-			var log_id = $.data(line.children("[col=id]")[0], "v")
+			var log_id = $.data(line.children(".cell[col=id]")[0], "v")
 			osvc.flash.show({
 				id: "complog-"+log_id,
 				cl: "icon log16",
@@ -1506,7 +1506,7 @@ function cell_decorator_run_status(e, line, fn) {
 	if (line != undefined) {
 		e.addClass("corner-top")
 		.on("click", function(){
-			var log_id = $.data(line.children("[col=id]")[0], "v")
+			var log_id = $.data(line.children(".cell[col=id]")[0], "v")
 			osvc.flash.show({
 				id: "complog-"+log_id,
 				cl: "icon log16",
@@ -1567,7 +1567,7 @@ function generic_prop_updater(e, line, options) {
 				if (!is_enter(event)) {
 					return
 				}
-				var line_id = $.data($(this).parents(".tl").find("[col="+options.id_prop+"]")[0], "v")
+				var line_id = $.data($(this).parents(".tl").find(".cell[col="+options.id_prop+"]")[0], "v")
 				var data = {}
 				data[options.prop] = $(this).val()
 				var _i = $(this)
@@ -1589,8 +1589,8 @@ function generic_prop_updater(e, line, options) {
 }
 
 function cell_decorator_dash_entry(e, line) {
-	var d = $.data(line.children("[col=dash_dict]")[0], "v")
-	var fmt = $.data(line.children("[col=dash_fmt]")[0], "v")
+	var d = $.data(line.children(".cell[col=dash_dict]")[0], "v")
+	var fmt = $.data(line.children(".cell[col=dash_fmt]")[0], "v")
 	if (d && d.length>0) {
 		try {
 			d = $.parseJSON(d)
@@ -1608,10 +1608,10 @@ function cell_decorator_dash_entry(e, line) {
 	.addClass("clickable corner")
 	.on("click", function(){
 		var options = {
-			"node_id": $.data(line.children("[col=node_id]")[0], "v"),
-			"svc_id": $.data(line.children("[col=svc_id]")[0], "v"),
-			"dash_md5": $.data(line.children("[col=dash_md5]")[0], "v"),
-			"dash_created": $.data(line.children("[col=dash_created]")[0], "v")
+			"node_id": $.data(line.children(".cell[col=node_id]")[0], "v"),
+			"svc_id": $.data(line.children(".cell[col=svc_id]")[0], "v"),
+			"dash_md5": $.data(line.children(".cell[col=dash_md5]")[0], "v"),
+			"dash_created": $.data(line.children(".cell[col=dash_created]")[0], "v")
 		}
 		var id = toggle_extraline(e)
 		alert_info(id, options)
@@ -1644,7 +1644,7 @@ function cell_decorator_action_q_ret(e, line) {
 			cl.push("bgred")
 		}
 	}
-	var actionq_id = $.data(line.children("[col=id]")[0], "v")
+	var actionq_id = $.data(line.children(".cell[col=id]")[0], "v")
 	e.addClass("corner-top").html("<div class='"+cl.join(" ")+"'>"+v+"</div>")
 	.on("click", function(){
 		osvc.flash.show({
@@ -1732,12 +1732,12 @@ function cell_decorator_availstatus(e, line) {
 	if (mon_availstatus=="") {
 		return
 	}
-	var mon_containerstatus = $.data(line.children("[col=mon_containerstatus]")[0], "v")
-	var mon_ipstatus = $.data(line.children("[col=mon_ipstatus]")[0], "v")
-	var mon_fsstatus = $.data(line.children("[col=mon_fsstatus]")[0], "v")
-	var mon_diskstatus = $.data(line.children("[col=mon_diskstatus]")[0], "v")
-	var mon_sharestatus = $.data(line.children("[col=mon_sharestatus]")[0], "v")
-	var mon_appstatus = $.data(line.children("[col=mon_appstatus]")[0], "v")
+	var mon_containerstatus = $.data(line.children(".cell[col=mon_containerstatus]")[0], "v")
+	var mon_ipstatus = $.data(line.children(".cell[col=mon_ipstatus]")[0], "v")
+	var mon_fsstatus = $.data(line.children(".cell[col=mon_fsstatus]")[0], "v")
+	var mon_diskstatus = $.data(line.children(".cell[col=mon_diskstatus]")[0], "v")
+	var mon_sharestatus = $.data(line.children(".cell[col=mon_sharestatus]")[0], "v")
+	var mon_appstatus = $.data(line.children(".cell[col=mon_appstatus]")[0], "v")
 
 	if (status_outdated(line)) {
 		var cl_availstatus = "status_undef"
@@ -1782,10 +1782,10 @@ function cell_decorator_overallstatus(e, line) {
 	if (mon_overallstatus=="") {
 		return
 	}
-	var mon_containerstatus = $.data(line.children("[col=mon_containerstatus]")[0], "v")
-	var mon_availstatus = $.data(line.children("[col=mon_availstatus]")[0], "v")
-	var mon_hbstatus = $.data(line.children("[col=mon_hbstatus]")[0], "v")
-	var mon_syncstatus = $.data(line.children("[col=mon_syncstatus]")[0], "v")
+	var mon_containerstatus = $.data(line.children(".cell[col=mon_containerstatus]")[0], "v")
+	var mon_availstatus = $.data(line.children(".cell[col=mon_availstatus]")[0], "v")
+	var mon_hbstatus = $.data(line.children(".cell[col=mon_hbstatus]")[0], "v")
+	var mon_syncstatus = $.data(line.children(".cell[col=mon_syncstatus]")[0], "v")
 
 	if (status_outdated(line)) {
 		var cl_overallstatus = "status_undef"
@@ -1909,7 +1909,7 @@ function cell_decorator_resinfo_value(e, line) {
 		"check_timeout",
 		"info_timeout"
 	]
-	var key = $.data(line.children("[col=res_key]")[0], "v")
+	var key = $.data(line.children(".cell[col=res_key]")[0], "v")
 
 	if (is_numeric(s) && (key_blacklist.indexOf(key) < 0)) {
 		_e.addClass("icon chart16")
@@ -1919,9 +1919,9 @@ function cell_decorator_resinfo_value(e, line) {
 			var span_id = line.attr("spansum")
 			var table_id = e.parents("table").attr("id").replace(/^table_/, '')
 			var id = table_id + "_x_" + span_id
-			var params = "svc_id="+encodeURIComponent($.data(line.children("[col=svc_id]")[0], "v"))
-			params += "&node_id="+encodeURIComponent($.data(line.children("[col=node_id]")[0], "v"))
-			params += "&rid="+encodeURIComponent($.data(line.children("[col=rid]")[0], "v"))
+			var params = "svc_id="+encodeURIComponent($.data(line.children(".cell[col=svc_id]")[0], "v"))
+			params += "&node_id="+encodeURIComponent($.data(line.children(".cell[col=node_id]")[0], "v"))
+			params += "&rid="+encodeURIComponent($.data(line.children(".cell[col=rid]")[0], "v"))
 			params += "&key="+encodeURIComponent(key)
 			params += "&rowid="+encodeURIComponent(id)
 			var url = services_get_url() + "/init/resinfo/ajax_resinfo_log?" + params
@@ -2040,10 +2040,10 @@ function cell_decorator_users_role(e, line) {
 }
 
 function cell_decorator_rule_value(e, line) {
-	var var_id = $.data(line.children("[col=id]")[0], "v")
-	var rset_id = $.data(line.children("[col=ruleset_id]")[0], "v")
-	var var_class = $.data(line.children("[col=var_class]")[0], "v")
-	var encap = $.data(line.children("[col=encap_rset]")[0], "v")
+	var var_id = $.data(line.children(".cell[col=id]")[0], "v")
+	var rset_id = $.data(line.children(".cell[col=ruleset_id]")[0], "v")
+	var var_class = $.data(line.children(".cell[col=var_class]")[0], "v")
+	var encap = $.data(line.children(".cell[col=encap_rset]")[0], "v")
 	if (encap != "") {
 		var disable_edit = true
 	} else {

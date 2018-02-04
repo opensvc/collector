@@ -282,6 +282,7 @@
 		"clear_filter": "Retirer le filtre",
 		"invert_filter": "Inverser le filtre",
 		"filters": "Filtres",
+		"renderer": "Afficher les élément en",
 		"lines_per_page": "Lignes par page",
 		"filter_placeholder": "Filtre",
 		"filter_menu": "Filtre du menu",

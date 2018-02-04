@@ -330,6 +330,15 @@ input.aci, input.aci:focus {
 	width: 10em;
 }
 
+.d-flex > .tl {
+	padding: 1em;
+	border: 1px solid #ddd;
+}
+
+.d-flex > .tl > .cell {
+	flex-grow: 1;
+}
+
 .table_scroll_zone {
 	display: flex;
 	position: relative;
@@ -2224,6 +2233,19 @@ th.col-filtered {
 th.col-filtered-volatile {
 	border-bottom-color: #2d2d2d;
 	border-bottom-width: thick;
+}
+
+div.col-filter-changed {
+	color: orange;
+	font-weight: bold;
+}
+div.col-filtered {
+	color: #990000;
+	font-weight: bold;
+}
+div.col-filtered-volatile {
+	color: #2d2d2d;
+	font-weight: bold;
 }
 
 .clickable:hover {
