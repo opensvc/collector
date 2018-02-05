@@ -1370,7 +1370,7 @@ function table_init(opts) {
 			prop.addClass("hidden")
 		}
 		if (k in t.colprops) {
-			prop.text(i18n.t(t.colprops[k].title))
+			prop.text(i18n.t("col."+t.colprops[k].title))
 		}
 		t.set_column_header_attr(k, prop)
 		return prop
