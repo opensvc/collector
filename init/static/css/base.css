@@ -664,6 +664,9 @@ img {
 	background-color: white;
 }
 
+div.tl.tl_checked {
+	background-color: #fffffb;
+}
 .tl_checked.cell1 {
 	background-color: rgb(237, 232, 212);
 }

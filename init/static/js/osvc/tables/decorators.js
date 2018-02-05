@@ -1692,7 +1692,7 @@ function cell_decorator_svc_ha(e, line) {
 		e.empty()
 		return
 	}
-	e.html("<div class='boxed_small'>HA</div>")
+	e.html("<span class='badge badge-default'>HA</span>")
 }
 
 function cell_decorator_cpu_freq(e, line) {

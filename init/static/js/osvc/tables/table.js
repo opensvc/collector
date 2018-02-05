@@ -1458,7 +1458,7 @@ function table_init(opts) {
 			table_action_menu(t, event)
 		}
 		t.div.find("input[name="+t.id+"_ck]").each(function(){
-			var line = $(this).parents("tr").first()
+			var line = $(this).parents(".tl").first()
 			if ($(this).is(":checked")) {
 				line.addClass("tl_checked")
 			} else {
