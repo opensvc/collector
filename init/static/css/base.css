@@ -12,6 +12,13 @@
 }
 
 @font-face {
+  font-family: 'FontAwesome';
+  font-style: normal;
+  font-weight: 900;
+  src: url("../webfonts/fa-solid-900.eot");
+  src: url("../webfonts/fa-solid-900.eot?#iefix") format("embedded-opentype"), url("../webfonts/fa-solid-900.woff2") format("woff2"), url("../webfonts/fa-solid-900.woff") format("woff"), url("../webfonts/fa-solid-900.ttf") format("truetype"), url("../webfonts/fa-solid-900.svg#fontawesome") format("svg"); }
+
+@font-face {
 	font-family: 'Open Sans';
 	font-style: normal;
 //	font-weight: 400;
@@ -22,6 +29,23 @@
 	-webkit-box-sizing: content-box;
 	-moz-box-sizing: content-box;
 	box-sizing: content-box;
+}
+
+.icon_fixed_width:before {
+	display: inline-block;
+	width: 1.3em;
+	text-align: left;
+	font-family: 'Font Awesome 5 Free';
+	font-weight: 900;
+}
+.icon {
+	white-space: nowrap;
+}
+.icon:before {
+	display: inline-block;
+	margin-right: 0.3em;
+	font-family: 'Font Awesome 5 Free';
+	font-weight: 900;
 }
 
 td {
@@ -94,11 +118,11 @@ input.aci, input.aci:focus {
 }
 .toggle-on:before {
 	content: '\f205';
-	font-family: FontAwesome;
+	font-family: 'Font Awesome 5 Free';
 }
 .toggle-off:before {
 	content: '\f204';
-	font-family: FontAwesome;
+	font-family: 'Font Awesome 5 Free';
 }
 
 .second:before {
@@ -106,37 +130,30 @@ input.aci, input.aci:focus {
 }
 .minute:before {
 	content: '\f017';
+	font-weight: 400;
 }
 .hour:before {
-	content: '\f250';
+	content: '\f254';
+	font-weight: 400;
 }
 .day:before {
 	content: '\f133';
+	font-weight: 400;
 }
 .week:before {
 	content: '\f272';
+	font-weight: 400;
 }
 .month:before {
 	content: '\f073';
+	font-weight: 400;
 }
 .year:before {
 	content: '\f073';
+	font-weight: 400;
 }
 
-.icon_fixed_width:before {
-	display: inline-block;
-	width: 1.3em;
-	text-align: left;
-	font-family: FontAwesome;
-}
-.icon {
-	white-space: nowrap;
-}
-.icon:before {
-	display: inline-block;
-	margin-right: 0.3em;
-	font-family: FontAwesome;
-}
+
 .tags {
 	min-height: 5em;
 }
@@ -854,9 +871,10 @@ div.menu_box {
 	font-size: x-large;
 	width: 1em;
 	text-align: center;
-	font-family: FontAwesome;
 }
 .menu_icon:before {
+	font-family: 'Font Awesome 5 Free';
+	font-weight: 900;
 	width: 1em;
 }
 .menu_icon > i {
@@ -1446,9 +1464,10 @@ div.login {
 .dns16:before {
 	color: #1ab2a3;
 	content: '\f0e1';
+	font-family: 'Font Awesome 5 Brands';
 }
 .repl16:before {
-	content: '\f0ec';
+	content: '\f362';
 }
 .segment16:before {
 	color: cadetblue;
@@ -1456,7 +1475,7 @@ div.login {
 }
 .net16:before {
 	color: cadetblue;
-	content: '\f0ec';
+	content: '\f362';
 }
 .cluster:before {
 	color: cornflowerblue;
@@ -1682,7 +1701,7 @@ div.login {
 	min-height: 16px;
 }
 .action_sync_16:before {
-	content: '\f0ec';
+	content: '\f362';
 	color: orange;
 }
 .action_stop_16:before {
@@ -1725,10 +1744,10 @@ div.login {
 	content: '\f15b';
 }
 .edit16:before {
-	content: '\f040';
+	content: '\f303';
 }
 .edit:before {
-	content: '\f040';
+	content: '\f303';
 }
 .pwr:before {
 	color: cornflowerblue;
@@ -1736,6 +1755,7 @@ div.login {
 }
 .time16:before {
 	content: '\f017';
+	font-weight: 400;
 }
 .filters:before,
 .filter16:before {
@@ -2638,7 +2658,8 @@ input.ocb {
 
 .ocb + label:after {
 	content: '\f00c';
-	font-family: FontAwesome;
+	font-family: 'Font Awesome 5 Free';
+	font-weight: 900;
 	min-width: 14px;
 	height: 14px;
 	background: transparent;
@@ -2652,7 +2673,8 @@ input.ocb {
 
 .ocb + label:hover::after {
 	content: '\f00c';
-	font-family: FontAwesome;
+	font-family: 'Font Awesome 5 Free';
+	font-weight: 900;
 	min-width: 14px;
 	height: 14px;
 	color: rgba(0,0,0,0.3);
@@ -2764,9 +2786,10 @@ textarea.link_ta_sub {
 	color: black;
 }
 .editable:after {
-	content: '\f040';
+	content: '\f303';
 	padding-left: 0.3em;
-	font-family: FontAwesome;
+	font-family: 'Font Awesome 5 Free';
+	font-weight: 900;
 	vertical-align: bottom;
 }
 

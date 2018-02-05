@@ -3441,31 +3441,31 @@ function delta_properties(delta, s, max_age, seconds) {
 	var year = 524520 * mult
 
 	if (delta < minute) {
-		var cl = "second icon"
+		var cl = "icon second"
 		var text = prefix + i18n.t("table.second", {"count": Math.floor(delta)})
 		var color = "#000000"
 	} else if (delta < hour) {
-		var cl = "minute icon"
+		var cl = "icon minute"
 		var text = prefix + i18n.t("table.minute", {"count": Math.floor(delta/minute)})
 		var color = "#000000"
 	} else if (delta < day) {
-		var cl = "hour icon"
+		var cl = "icon hour"
 		var text = prefix + i18n.t("table.hour", {"count": Math.floor(delta/hour)})
 		var color = "#181818"
 	} else if (delta < week) {
-		var cl = "day icon "
+		var cl = "icon day"
 		var text = prefix + i18n.t("table.day", {"count": Math.floor(delta/day)})
 		var color = "#333333"
 	} else if (delta < month) {
-		var cl = "week icon "
+		var cl = "icon  week"
 		var text = prefix + i18n.t("table.week", {"count": Math.floor(delta/week)})
 		var color = "#333333"
 	} else if (delta < year) {
-		var cl = "month icon"
+		var cl = "icon month"
 		var text = prefix + i18n.t("table.month", {"count": Math.floor(delta/month)})
 		var color = "#484848"
 	} else {
-		var cl = "year icon"
+		var cl = "icon year"
 		var text = prefix + i18n.t("table.year", {"count": Math.floor(delta/year)})
 		var color = "#666666"
 	}
@@ -3754,7 +3754,7 @@ function format_action_menu(t, o) {
 
 	// empty menu banner
 	if (ul.html().length == 0) {
-		o.menu.append("<div style='padding-top:1em' class='alert16 icon'>"+i18n.t("action_menu.no_action")+"</div>")
+		o.menu.append("<div style='padding-top:1em' class='icon alert16'>"+i18n.t("action_menu.no_action")+"</div>")
 		return
 	}
 	o.menu.append(ul)
@@ -4298,8 +4298,8 @@ function table_action_menu_yes_no(msg, callback) {
 	var e = $("<div style='margin-top:0.6em'></div>")
 	var title = $("<div></div>")
 	title.text(i18n.t(msg))
-	var yes = $("<button class='ok icon_fixed_width button_div clickable' name='yes'>"+i18n.t("action_menu.yes")+"</button>")
-	var no = $("<button class='nok icon_fixed_width button_div clickable' name='no'>"+i18n.t("action_menu.no")+"</button>")
+	var yes = $("<button class='icon_fixed_width ok button_div clickable' name='yes'>"+i18n.t("action_menu.yes")+"</button>")
+	var no = $("<button class='icon_fixed_width nok button_div clickable' name='no'>"+i18n.t("action_menu.no")+"</button>")
 	e.append(title)
 	e.append(yes)
 	e.append(no)

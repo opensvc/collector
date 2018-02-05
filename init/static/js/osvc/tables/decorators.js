@@ -260,7 +260,7 @@ function cell_decorator_log_icons(e, line) {
 		}
 		var cl = img_h[w]
 		var icon = $("<span class='iconlist'></span>")
-		icon.addClass(cl+" icon")
+		icon.addClass("icon "+cl)
 		span.append(icon)
 	}
 	e.html(span)
