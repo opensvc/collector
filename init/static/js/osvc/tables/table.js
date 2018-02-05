@@ -3033,11 +3033,11 @@ function table_init(opts) {
 		var l = [
 			{
 				"name": "table",
-				"icon": "fas fa-list"
+				"icon": "icon fa-list"
 			},
 			{
 				"name": "grid",
-				"icon": "fas fa-th"
+				"icon": "icon fa-th"
 			}
 		]
 		for (i=0; i<l.length; i++) {
