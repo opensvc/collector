@@ -293,7 +293,7 @@ function table_action_menu_init_data(t) {
 					]
 				},
 				{
-					"selector": ["checked"],
+					"selector": ["clicked", "checked"],
 					"title": "action_menu.on_services",
 					"clicked_decorator": function(e, data){
 						e.osvc_svcname()

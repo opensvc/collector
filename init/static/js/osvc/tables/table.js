@@ -71,16 +71,6 @@ function keep_inside(box){
 	}
 }
 
-function check_all(name, checked){
-	c = document.getElementsByName(name)
-	for(i = 0; i < c.length; i++) {
-		if (c[i].type == 'checkbox' && c[i].disabled == false) {
-			c[i].checked = checked
-			c[i].value = checked
-		}
-	}
-}
-
 function sync_ajax(url, inputs, id, f) {
     s = inputs
     var query=""
@@ -966,8 +956,11 @@ function table_init(opts) {
 			var label = $("<label></label>")
 			label.attr("for", mcb_id)
 			input.on("click", function(event) {
-				check_all(t.id+"_ck", this.checked)
-				t.highlighed_checked_lines(event)
+				event.stopPropagation()
+				$("#am_"+t.id).remove()
+				t.check_all(this.checked)
+				t.highlighed_checked_lines()
+				t.scroll()
 			})
 			th.append(input)
 			th.append(label)
@@ -984,6 +977,22 @@ function table_init(opts) {
 			}
 		}
 		t.bind_header_filter_selector()
+	}
+
+	t.check_all = function(checked){
+		var name = t.id+"_ck"
+		c = document.getElementsByName(name)
+		for(i = 0; i < c.length; i++) {
+			if (c[i].type == 'checkbox' && c[i].disabled == false) {
+				c[i].checked = checked
+				c[i].value = checked
+			}
+			if (checked && !(c[i].id in t.lines_checked)) {
+				t.lines_checked[c[i].id] = true
+			} else if (!checked && (c[i].id in t.lines_checked)) {
+				delete t.lines_checked[c[i].id]
+			}
+		}
 	}
 
 	t.add_column_header = function(c) {
@@ -1405,6 +1414,7 @@ function table_init(opts) {
 	t.last_checkbox_clicked = null
 
 	t.checkbox_click = function(e) {
+		$("#am_"+t.id).remove()
 		var ref_id = $(e.target).attr("id")
 		var new_checked = $(e.target).prop("checked")
 		if (new_checked && !(ref_id in t.lines_checked)) {
