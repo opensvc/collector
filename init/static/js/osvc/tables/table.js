@@ -1542,7 +1542,7 @@ function table_init(opts) {
 		for (var i=0; i<data.length; i++) {
 			var cksum = t.line_cksum(data[i], "keys")
 			var spansum = t.line_cksum(data[i], "span")
-			var line = $("<div class='tl h col-sm-12 col-md-6 col-lg-4 col-xl-3 container-auto' spansum='"+spansum+"' cksum='"+cksum+"'></div>")
+			var line = $("<div class='tl h col-sm-12 col-md-6 col-lg-4 col-xl-3 pt-3 pb-3 container-auto' spansum='"+spansum+"' cksum='"+cksum+"'></div>")
 			var ckid = t.id + "_ckid_" + cksum
 			if (t.options.checkboxes) {
 				var cb = $("<input class='ocb' type='checkbox' id='"+ckid+"' name='"+t.id+"_ck'>")
