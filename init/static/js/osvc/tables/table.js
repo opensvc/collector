@@ -1406,6 +1406,12 @@ function table_init(opts) {
 
 	t.checkbox_click = function(e) {
 		var ref_id = $(e.target).attr("id")
+		var new_checked = $(e.target).prop("checked")
+		if (new_checked && !(ref_id in t.lines_checked)) {
+			t.lines_checked[ref_id] = true
+		} else if (!new_checked && (ref_id in t.lines_checked)) {
+			delete t.lines_checked[ref_id]
+		}
 		if (e.shiftKey && t.last_checkbox_clicked) {
 			var cbs = t.div.find("input[name="+t.id+"_ck]")
 			var start = -1
@@ -1424,14 +1430,21 @@ function table_init(opts) {
 			// at least one checkbox between start and end
 			for (var i=start+1; i<end; i++) {
 				var cb = $(cbs[i])
-				cb.prop("checked", !cb.prop("checked"))
+				var cbid = cb.attr("id")
+				var new_checked = !cb.prop("checked")
+				cb.prop("checked", new_checked)
+				if (new_checked && !(cbid in t.lines_checked)) {
+					t.lines_checked[cbid] = true
+				} else if (!new_checked && (cbid in t.lines_checked)) {
+					delete t.lines_checked[cbid]
+				}
 			}
 		}
 		t.last_checkbox_clicked = ref_id
 		t.highlighed_checked_lines(e)
 	}
 	t.highlighed_checked_lines = function(event) {
-		if ($("#am_"+t.id).length > 0) {
+		if (event && $("#am_"+t.id).length > 0) {
 			table_action_menu(t, event)
 		}
 		t.div.find("input[name="+t.id+"_ck]").each(function(){
@@ -1486,9 +1499,12 @@ function table_init(opts) {
 			var line = $("<tr class='tl h' spansum='"+spansum+"' cksum='"+cksum+"'></tr>")
 			var ckid = t.id + "_ckid_" + cksum
 			if (t.options.checkboxes) {
-				var cb = $("<input class='ocb' value='"+data[i]['checked']+"' type='checkbox' id='"+ckid+"' name='"+t.id+"_ck'>")
+				var cb = $("<input class='ocb' type='checkbox' id='"+ckid+"' name='"+t.id+"_ck'>")
 				var label = $("<label for='"+ckid+"'></label>")
 				var td = $("<td name='"+t.id+"_tools' class='tools'></td>")
+				if (ckid in t.lines_checked) {
+					cb.prop("checked", true)
+				}
 				td.append([cb, label])
 				line.append(td)
 				cb.on("click", t.checkbox_click)
@@ -1519,9 +1535,12 @@ function table_init(opts) {
 			var line = $("<div class='tl h col-sm-12 col-md-6 col-lg-4 col-xl-3 container-auto' spansum='"+spansum+"' cksum='"+cksum+"'></div>")
 			var ckid = t.id + "_ckid_" + cksum
 			if (t.options.checkboxes) {
-				var cb = $("<input class='ocb' value='"+data[i]['checked']+"' type='checkbox' id='"+ckid+"' name='"+t.id+"_ck'>")
+				var cb = $("<input class='ocb' type='checkbox' id='"+ckid+"' name='"+t.id+"_ck'>")
 				var label = $("<label for='"+ckid+"'></label>")
 				var td = $("<div name='"+t.id+"_tools' class='tools'></div>")
+				if (ckid in t.lines_checked) {
+					cb.prop("checked", true)
+				}
 				td.append([cb, label])
 				line.append(td)
 				cb.on("click", t.checkbox_click)
@@ -1659,6 +1678,7 @@ function table_init(opts) {
 		t.e_body.find(".tl").children(".tohighlight").removeClass("tohighlight").effect("highlight", 1000)
 		t.scroll_enable_dom()
 		t.scroll()
+		t.highlighed_checked_lines()
 
 		if (t.renderer != "table") {
 			t.refresh_column_filters_in_place()
@@ -3397,6 +3417,7 @@ function table_init(opts) {
 	}
 
 	t.refresh_timer = null
+	t.lines_checked = {}
 	t.init_colprops()
 
 	// remove the hosting element id for the js links to not encode it
