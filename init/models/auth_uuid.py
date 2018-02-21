@@ -11,6 +11,8 @@ def node_app_id(node_id=None):
     return row.id
 
 def node_svc(node_id, svcname):
+    if node_id is None:
+        return
     if svcname is None:
         return
     svcname = svcname.strip("'")
