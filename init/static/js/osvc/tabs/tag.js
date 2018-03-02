@@ -18,9 +18,7 @@ function tag_tabs(divid, options) {
 	o.load(function(){
 		var i = 0
 
-		if (("tag_id" in o.options) && ("tag_name" in o.options)) {
-			o._load()
-		} else if ("tag_name" in o.options) {
+		if ("tag_name" in o.options) {
 			services_osvcgetrest("/tags", "", {"filters": ["tag_name "+o.options.tag_name]}, function(jd) {
 				o.options.tag_data = jd.data[0]
 				o.options.tag_id = o.options.tag_data.tag_id
@@ -77,6 +75,7 @@ function tag_properties(divid, options) {
 		o.info_tag_name = o.div.find("#tag_name");
 		o.info_tag_exclude = o.div.find("#tag_exclude");
 		o.info_tag_created = o.div.find("#tag_created");
+		o.info_tag_data = o.div.find("#tag_data");
 		o.info_nodes = o.div.find("#nodes");
 		o.info_services = o.div.find("#services");
 		o.load()
@@ -146,9 +145,26 @@ function tag_properties(divid, options) {
 			"div": o.div,
 			"privileges": ["TagManager", "Manager"],
 			"post": function(_data, callback, error_callback) {
-				services_osvcpostrest("/tags", [data.tag_id], "", _data, callback, error_callback)
+				services_osvcpostrest("/tags/%1", [data.tag_id], "", _data, callback, error_callback)
 			}
 		})
+
+		if (data.tag_name.match(/::/)) {
+			var tag_class = data.tag_name.split(/::/)[0]
+			var form_div = $("<div style='padding:1px'></div>")
+			form_div.uniqueId()
+			o.info_tag_data.append(form_div)
+			console.log(data)
+			form(form_div.attr("id"), {
+				"data": data.tag_data,
+				"display_mode": true,
+				"digest": true,
+				"form_name": tag_class,
+				"tag_id": data.tag_id,
+				"disable_edit": false
+			})
+		}
+
 	}
 
 	o.div.load("/init/static/views/tag_properties.html?v="+osvc.code_rev, function() {

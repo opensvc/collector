@@ -1833,6 +1833,7 @@ db.define_table('tags',
     Field('tag_id','string'),
     Field('tag_exclude','string'),
     Field('tag_created','datetime', default=request.now, writable=False),
+    Field('tag_data','text'),
     migrate=False)
 
 db.define_table('node_tags',

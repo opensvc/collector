@@ -66,6 +66,30 @@ def lib_search_prov_templates(pattern, limit):
       "elapsed": "%f" % (t.seconds + 1. * t.microseconds / 1000000),
     }
 
+def lib_search_tag(pattern, limit):
+    t = datetime.datetime.now()
+    g = db.tags.id
+    o = db.tags.tag_name
+    q = db.tags.tag_name.like(pattern)
+    try:
+        id = int(pattern.strip("%"))
+        q |= db.tags.id == id
+    except:
+        pass
+    n = db(q).count()
+    data = db(q).select(db.tags.tag_name,
+                        db.tags.id,
+                        orderby=o,
+                        limitby=(0,search_cap_limit(limit))
+    ).as_list()
+    t = datetime.datetime.now() - t
+    return {
+      "total": n,
+      "data": data,
+      "fmt": {"id": "%(id)d", "name": "%(tag_name)s"},
+      "elapsed": "%f" % (t.seconds + 1. * t.microseconds / 1000000),
+    }
+
 def lib_search_form(pattern, limit):
     t = datetime.datetime.now()
     g = db.forms.id

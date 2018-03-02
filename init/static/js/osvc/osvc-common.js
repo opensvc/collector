@@ -245,7 +245,7 @@ function flash() {
 
 	o.sanitize_id = function(id) {
 		id = "" + id
-		return id.replace(/[\.\s]/g, "-")
+		return id.replace(/[\.\s:]/g, "-")
 	}
 
 	o.find_id = function(id) {

@@ -6551,3 +6551,5 @@ drop table metrics_log;
 
 alter table svcactions modify column time integer;
 
+alter table tags add column tag_data text; 
+

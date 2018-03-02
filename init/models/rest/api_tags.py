@@ -1,4 +1,12 @@
+import json
 
+def mangle_tags(data):
+    for i, row in enumerate(data):
+        try:
+            data[i]['tag_data'] = json.loads(data[i]['tag_data'])
+        except:
+            pass
+    return data
 
 #
 class rest_get_tags(rest_get_table_handler):
@@ -21,8 +29,9 @@ class rest_get_tags(rest_get_table_handler):
     def handler(self, **vars):
         q = db.tags.id > 0
         self.set_q(q)
-        return self.prepare_data(**vars)
-
+        data = self.prepare_data(**vars)
+        data["data"] = mangle_tags(data["data"])
+        return data
 
 #
 class rest_get_node_tags(rest_get_table_handler):
@@ -48,7 +57,9 @@ class rest_get_node_tags(rest_get_table_handler):
         q = db.node_tags.node_id == node_id
         q &= db.node_tags.tag_id == db.tags.tag_id
         self.set_q(q)
-        return self.prepare_data(**vars)
+        data = self.prepare_data(**vars)
+        data["data"] = mangle_tags(data["data"])
+        return data
 
 #
 class rest_get_node_candidate_tags(rest_get_table_handler):
@@ -83,7 +94,9 @@ class rest_get_node_candidate_tags(rest_get_table_handler):
             qx = _where(None, "tags", pattern, "tag_name")
             q &= ~qx
         self.set_q(q)
-        return self.prepare_data(**vars)
+        data = self.prepare_data(**vars)
+        data["data"] = mangle_tags(data["data"])
+        return data
 
 #
 class rest_get_service_tags(rest_get_table_handler):
@@ -109,7 +122,9 @@ class rest_get_service_tags(rest_get_table_handler):
         q = db.svc_tags.svc_id == svc_id
         q &= db.svc_tags.tag_id == db.tags.tag_id
         self.set_q(q)
-        return self.prepare_data(**vars)
+        data = self.prepare_data(**vars)
+        data["data"] = mangle_tags(data["data"])
+        return data
 
 #
 class rest_get_service_candidate_tags(rest_get_table_handler):
@@ -144,7 +159,9 @@ class rest_get_service_candidate_tags(rest_get_table_handler):
             qx = _where(None, "tags", pattern, "tag_name")
             q &= ~qx
         self.set_q(q)
-        return self.prepare_data(**vars)
+        data = self.prepare_data(**vars)
+        data["data"] = mangle_tags(data["data"])
+        return data
 
 
 #
@@ -247,7 +264,9 @@ class rest_get_tag(rest_get_line_handler):
     def handler(self, tag_id, **vars):
         q = db.tags.tag_id == tag_id
         self.set_q(q)
-        return self.prepare_data(**vars)
+        data = self.prepare_data(**vars)
+        data["data"] = mangle_tags(data["data"])
+        return data
 
 
 #

@@ -206,6 +206,17 @@ var search_data = {
 		"class": "filter16 fa-2x search-section-icon",
 		"subclass": "meta_username clickable"
 	},
+	"tags": {
+		"tab" : function(id, res){tag_tabs(id, {"tag_name": res.tag_name})},
+		"type": "tag",
+		"color": "tag",
+		"id": "tag_name",
+		"title": "__tag_name__",
+		"short_title": "__tag_name__",
+		"menu_entry_id": "view-tags",
+		"class": "tag16 fa-2x search-section-icon",
+		"subclass": "meta_tag clickable"
+	},
 	"vms": {
 		"tab" : function(id, res){node_tabs(id, {"nodename": res.mon_vmname})},
 		"type": "node",
@@ -274,6 +285,11 @@ function search(divid) {
 			"color": "node",
 			"prefix": "node",
 			"title": "search.menu_header.title_nodes",
+		},
+		{
+			"color": "tag",
+			"prefix": "tag",
+			"title": "search.menu_header.title_tags",
 		},
 		{
 			"color": "node",
