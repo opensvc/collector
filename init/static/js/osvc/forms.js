@@ -292,7 +292,7 @@ function form(divid, options) {
 	}
 
 	o.render_display = function() {
-		if ((typeof(o.options.data) == "string") || (typeof(o.options.data) == "number")) {
+		if ((typeof(o.options.data) == "string") || (typeof(o.options.data) == "number") || (o.options.form_name == "raw")) {
 			o.area.text(o.options.data)
 			o.area.addClass("pre")
 			return
@@ -1897,7 +1897,6 @@ function form(divid, options) {
 				d[key] = val
 			}
 		}
-		console.log(d)
 		return d
 	}
 

@@ -2155,6 +2155,11 @@ colprops = {
 		"img": "time16",
 		"title": "Updated"
 	},
+	"tag_data": {
+		"_class": "tag_data",
+		"img": "wf16",
+		"title": "Tag data"
+	},
 	"tag_created": {
 		"_class": "datetime_no_age",
 		"img": "time16",

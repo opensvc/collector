@@ -51,6 +51,7 @@ function tag_tabs(divid, options) {
 
 		o.set_tab(o.options.tab)
 	}
+
 	return o
 }
 
@@ -82,6 +83,9 @@ function tag_properties(divid, options) {
 	}
 
 	o.load = function() {
+		if (o.options.reload) {
+			o.options.tag_data = null
+		}
 		if (o.options.tag_data) {
 			o._load(o.options.tag_data)
 		} else {
@@ -151,19 +155,25 @@ function tag_properties(divid, options) {
 
 		if (data.tag_name.match(/::/)) {
 			var tag_class = data.tag_name.split(/::/)[0]
-			var form_div = $("<div style='padding:1px'></div>")
-			form_div.uniqueId()
-			o.info_tag_data.append(form_div)
-			console.log(data)
-			form(form_div.attr("id"), {
-				"data": data.tag_data,
-				"display_mode": true,
-				"digest": true,
-				"form_name": tag_class,
-				"tag_id": data.tag_id,
-				"disable_edit": false
-			})
+		} else {
+			var tag_class = "raw"
 		}
+		var form_div = $("<div style='padding:1px'></div>")
+		form_div.uniqueId()
+		o.info_tag_data.append(form_div)
+		if (!data.tag_data) {
+			tag_data = ""
+		} else {
+			tag_data = data.tag_data
+		}
+		form(form_div.attr("id"), {
+			"data": tag_data,
+			"display_mode": true,
+			"digest": true,
+			"form_name": tag_class,
+			"tag_id": data.tag_id,
+			"disable_edit": false
+		})
 
 	}
 

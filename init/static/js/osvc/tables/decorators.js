@@ -2039,6 +2039,32 @@ function cell_decorator_users_role(e, line) {
 	}
 }
 
+function cell_decorator_tag_data(e, line) {
+	var tag_id = $.data(line.children(".cell[col=tag_id]")[0], "v")
+	var tag_name = $.data(line.children(".cell[col=tag_name]")[0], "v")
+	if (tag_name.match(/::/)) {
+		var tag_class = tag_name.split(/::/)[0]
+	} else {
+		var tag_class = "raw"
+	}
+	try {
+		var data = $.parseJSON($.data(e[0], "v"))
+	} catch(err) {
+		var data = $.data(e[0], "v")
+		if (data == "empty") {
+			data = ""
+		}
+	}
+	form(e, {
+		"data": data,
+		"tag_id": tag_id,
+		"display_mode": true,
+		"digest": true,
+		"form_name": tag_class,
+		"disable_edit": false
+	})
+}
+
 function cell_decorator_rule_value(e, line) {
 	var var_id = $.data(line.children(".cell[col=id]")[0], "v")
 	var rset_id = $.data(line.children(".cell[col=ruleset_id]")[0], "v")
@@ -2190,6 +2216,7 @@ $.extend(true, cell_decorators, {
 	"log_event": cell_decorator_log_event,
 	"res_log": cell_decorator_res_log,
 	"tag_name": cell_decorator_tag_name,
+	"tag_data": cell_decorator_tag_data,
 	"ruleset_name": cell_decorator_ruleset_name,
 	"sched_task_status": cell_decorator_sched_task_status,
 	"rule_value": cell_decorator_rule_value

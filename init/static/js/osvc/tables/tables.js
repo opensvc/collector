@@ -2438,8 +2438,8 @@ function table_tags(divid, options) {
 		'keys': ['tag_id'],
 		'orderby': ['tag_name'],
 		'force_cols': ['tag_id', 'tag_name'],
-		'columns': ['tag_id', 'tag_name', 'tag_exclude', 'tag_created'],
-		'default_columns': ['tag_name', 'tag_exclude', 'tag_created'],
+		'columns': ['tag_id', 'tag_name', 'tag_exclude', 'tag_data', 'tag_created'],
+		'default_columns': ['tag_name', 'tag_exclude', 'tag_data', 'tag_created'],
 		'wsable': true,
 		'events': ['tags_change']
 	}

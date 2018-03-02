@@ -100,6 +100,7 @@ function tabs(divid) {
 			if (data.div.is(":empty") || (current_tab_active.divid == data.divid)) {
 				// interpret a click on the active tab as a wish to reload
 				$("#"+data.divid).empty()
+				o.options.reload = true
 				data.callback(data.divid)
 			}
 		})
