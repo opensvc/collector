@@ -21,7 +21,18 @@ def lib_safe_check_file_responsible(uuid):
 def lib_safe_check_file_publication(uuid):
     q = db.safe.uuid == uuid
 
-    if auth_is_node():
+    if auth_is_svc():
+        q1 = db.safe.id == db.safe_team_publication.file_id
+        q1 &= db.safe_team_publication.group_id == db.apps_responsibles.group_id
+        q1 &= db.apps_responsibles.app_id == db.apps.id
+        q1 &= db.apps.app == db.services.svc_app
+        q1 &= db.services.svc_id == auth.user.svc_id
+        ok = db(q&q1).select().first()
+        if ok:
+            return
+        else:
+            raise Exception("this service is not authorized to access this file")
+    elif auth_is_node():
         q1 = db.safe.id == db.safe_team_publication.file_id
         q1 &= db.safe_team_publication.group_id == db.auth_group.id
         q1 &= db.auth_group.role == db.nodes.team_responsible
@@ -30,6 +41,7 @@ def lib_safe_check_file_publication(uuid):
         if ok:
             return
         else:
+            #raise Exception(db(q&q1)._select())
             raise Exception("this node is not authorized to access this file")
 
     if "Manager" in user_groups():
