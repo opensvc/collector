@@ -153,31 +153,83 @@ var am_node_agent_leafs = [
 	}
 ]
 
+var am_svc_agent_leafs = [
+	{
+		'title': 'Start',
+		'class': 'action_start_16',
+		"privileges": ["Manager", "NodeManager", "NodeExec"],
+		"min": 1,
+		'action': 'start'
+	},
+	{
+		'title': 'Stop',
+		'class': 'action_stop_16',
+		"privileges": ["Manager", "NodeManager", "NodeExec"],
+		"min": 1,
+		'action': 'stop'
+	},
+	{
+		'title': 'Giveback',
+		'class': 'action_switch_16',
+		"privileges": ["Manager", "NodeManager", "NodeExec"],
+		"min": 1,
+		'action': 'giveback'
+	},
+	{
+		'title': 'Abort',
+		'class': 'icon fa-ban',
+		"privileges": ["Manager", "NodeManager", "NodeExec"],
+		"min": 1,
+		'action': 'abort'
+	},
+	{
+		'title': 'Clear',
+		'class': 'icon fa-eraser',
+		"privileges": ["Manager", "NodeManager", "NodeExec"],
+		"min": 1,
+		'action': 'clear'
+	},
+	{
+		'title': 'Freeze',
+		'class': 'icon fa-snowflake icon-blue',
+		"privileges": ["Manager", "NodeManager", "NodeExec"],
+		"min": 1,
+		'action': 'freeze'
+	},
+	{
+		'title': 'Thaw',
+		'class': 'icon fa-snowflake icon-gray',
+		"privileges": ["Manager", "NodeManager", "NodeExec"],
+		"min": 1,
+		'action': 'thaw'
+	}
+]
+
 function table_action_menu_init_data(t) {
 	t.action_menu_req_max = 1000
 	t.column_selectors = {
-		"svc_id": "[col=svc_id]",
-		"node_id": "[col=node_id]",
-		"rid": "[col=rid]",
-		"module": "[col=run_module]",
-		"vmname": "[col=vmname]",
-		"action": "[col=action]",
-		"id": "[col=id]",
-		"net_id": "[col=net_id]",
-		"seg_id": "[col=seg_id]",
-		"fset_id": "[col=fset_id]",
-		"encap_fset_id": "[col=encap_fset_id]",
-		"f_id": "[col=f_id]",
-		"email": "[col=email]",
-		"tag_id": "[col=tag_id]",
-		"ruleset_id": "[col=ruleset_id]",
-		"modset_id": "[col=modset_id]",
-		"slave": "[col=encap]",
-		"command": "[col=command]",
-		"registry_id": "[col=registry_id]",
-		"repository_id": "[col=repository_id]",
-		"chk_type": "[col=chk_type]",
-		"chk_instance": "[col=chk_instance]"
+		"svc_id": ".cell[col=svc_id]",
+		"node_id": ".cell[col=node_id]",
+		"rid": ".cell[col=rid]",
+		"module": ".cell[col=run_module]",
+		"vmname": ".cell[col=vmname]",
+		"action": ".cell[col=action]",
+		"id": ".cell[col=id]",
+		"net_id": ".cell[col=net_id]",
+		"seg_id": ".cell[col=seg_id]",
+		"fset_id": ".cell[col=fset_id]",
+		"encap_fset_id": ".cell[col=encap_fset_id]",
+		"f_id": ".cell[col=f_id]",
+		"email": ".cell[col=email]",
+		"tag_id": ".cell[col=tag_id]",
+		"ruleset_id": ".cell[col=ruleset_id]",
+		"modset_id": ".cell[col=modset_id]",
+		"slave": ".cell[col=encap]",
+		"command": ".cell[col=command]",
+		"registry_id": ".cell[col=registry_id]",
+		"repository_id": ".cell[col=repository_id]",
+		"chk_type": ".cell[col=chk_type]",
+		"chk_instance": ".cell[col=chk_instance]"
 	}
 
 	t.action_menu_data = [
@@ -241,7 +293,7 @@ function table_action_menu_init_data(t) {
 					]
 				},
 				{
-					"selector": ["checked"],
+					"selector": ["clicked", "checked"],
 					"title": "action_menu.on_services",
 					"clicked_decorator": function(e, data){
 						e.osvc_svcname()
@@ -1524,6 +1576,18 @@ function table_action_menu_init_data(t) {
 				{
 					"selector": ["clicked", "checked", "all"],
 					"foldable": true,
+					'title': 'action_menu.on_services',
+					"clicked_decorator": function(e, data){
+						e.osvc_svcname()
+					},
+					"class": "svc",
+					"cols": ["svc_id"],
+					"condition": "svc_id",
+					"children": am_svc_agent_leafs
+				},
+				{
+					"selector": ["clicked", "checked", "all"],
+					"foldable": true,
 					'title': 'action_menu.on_services_instances',
 					"clicked_decorator": clicked_decorator_service_instance,
 					"class": "svcinstance",
@@ -1566,8 +1630,29 @@ function table_action_menu_init_data(t) {
 							'action': 'restart'
 						},
 						{
+							'title': 'Takeover',
+							'class': 'action_switch_16',
+							"privileges": ["Manager", "NodeManager", "NodeExec"],
+							"min": 1,
+							'action': 'takeover'
+						},
+						{
+							'title': 'Giveback',
+							'class': 'action_switch_16',
+							"privileges": ["Manager", "NodeManager", "NodeExec"],
+							"min": 1,
+							'action': 'giveback'
+						},
+						{
 							'title': 'Switch',
 							'class': 'action_switch_16',
+							"privileges": ["Manager", "NodeManager", "NodeExec"],
+							"min": 1,
+							'action': 'switch'
+						},
+						{
+							'title': 'Run',
+							'class': 'fa-play icon-green',
 							"privileges": ["Manager", "NodeManager", "NodeExec"],
 							"min": 1,
 							'action': 'switch'
@@ -1594,6 +1679,20 @@ function table_action_menu_init_data(t) {
 							'action': 'syncdrp'
 						},
 						{
+							'title': 'Abort',
+							'class': 'icon fa-ban',
+							"privileges": ["Manager", "NodeManager", "NodeExec"],
+							"min": 1,
+							'action': 'abort'
+						},
+						{
+							'title': 'Clear',
+							'class': 'icon fa-eraser',
+							"privileges": ["Manager", "NodeManager", "NodeExec"],
+							"min": 1,
+							'action': 'clear'
+						},
+						{
 							'title': 'Enable',
 							'class': 'ok',
 							"privileges": ["Manager", "NodeManager", "NodeExec"],
@@ -1609,14 +1708,14 @@ function table_action_menu_init_data(t) {
 						},
 						{
 							'title': 'Thaw',
-							'class': 'ok',
+							'class': 'icon fa-snowflake icon-gray',
 							"privileges": ["Manager", "NodeManager", "NodeExec"],
 							"min": 1,
 							'action': 'thaw'
 						},
 						{
 							'title': 'Freeze',
-							'class': 'nok',
+							'class': 'icon fa-snowflake icon-blue',
 							"privileges": ["Manager", "NodeManager", "NodeExec"],
 							"min": 1,
 							'action': 'freeze'

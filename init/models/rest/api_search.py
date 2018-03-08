@@ -57,6 +57,8 @@ class rest_get_search(rest_get_handler):
             data["users"] = lib_search_user(substring, limit)
         if otype is None or otype == "group":
             data["groups"] = lib_search_group(substring, limit)
+        if otype is None or otype == "tag":
+            data["tags"] = lib_search_tag(substring, limit)
         if otype is None or otype == "safe":
             data["safe_files"] = lib_search_safe_file(substring, limit)
         if otype is None or otype == "form":

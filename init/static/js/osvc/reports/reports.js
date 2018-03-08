@@ -195,7 +195,10 @@ function chart(divid, options) {
 				for (var i=0; i<data.length; i++) {
 					var point = data[i]
 					var key = point.metric_id+"-"+point.instance
-					series_data[key].push([point.date, point.value/divisor['div']])
+					if (point.value !== null) {
+						point.value = point.value/divisor['div']
+					}
+					series_data[key].push([point.date, point.value])
 				}
 			} else {
 				// fix data series for stacking, which need aligned data points
@@ -263,6 +266,7 @@ function chart(divid, options) {
 			delete series_data
 			delete data
 	
+console.log(series_list)
 			p = $.jqplot(id, series_list, {
 				stackSeries: stackSeries,
 				gridPadding: {

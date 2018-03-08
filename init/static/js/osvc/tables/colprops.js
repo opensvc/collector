@@ -101,6 +101,7 @@ objcols = {
 		'mon_availstatus',
 		'mon_overallstatus',
 		'mon_frozen',
+		'mon_monstatus',
 		'mon_containerstatus',
 		'mon_ipstatus',
 		'mon_fsstatus',
@@ -1315,6 +1316,11 @@ colprops = {
 		"img": "svcinstance",
 		"title": "Frozen"
 	},
+	"mon_monstatus": {
+		"_class": "status",
+		"img": "svcinstance",
+		"title": "Monitor status"
+	},
 	"mon_fsstatus": {
 		"_class": "status",
 		"img": "svcinstance",
@@ -2149,6 +2155,11 @@ colprops = {
 		"img": "time16",
 		"title": "Updated"
 	},
+	"tag_data": {
+		"_class": "tag_data",
+		"img": "wf16",
+		"title": "Tag data"
+	},
 	"tag_created": {
 		"_class": "datetime_no_age",
 		"img": "time16",
@@ -2199,6 +2210,7 @@ colprops = {
 		"title": "Target Id"
 	},
 	"time": {
+		"_class": "duration_from_sec",
 		"img": "time16",
 		"title": "Duration"
 	},

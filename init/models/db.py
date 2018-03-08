@@ -218,6 +218,7 @@ db.define_table('svcmon',
     Field('svc_id', 'string', length=36),
     Field('node_id', 'string', length=36),
     Field('mon_svctype'),
+    Field('mon_monstatus'),
     Field('mon_ipstatus'),
     Field('mon_fsstatus'),
     Field('mon_containerstatus'),
@@ -314,6 +315,7 @@ db.define_table('v_svcmon',
     Field('svc_config_updated'),
     Field('svc_id', 'string', length=36),
     Field('svcname', 'string'),
+    Field('mon_monstatus'),
     Field('mon_ipstatus'),
     Field('mon_fsstatus'),
     Field('mon_containerstatus'),
@@ -721,22 +723,6 @@ db.define_table('checks_settings',
     Field('chk_changed_by', 'string', length=60, writable=False),
     Field('chk_low', 'integer'),
     Field('chk_high', 'integer'),
-    migrate=False)
-
-db.define_table('billing',
-    Field('bill_os_name', 'string'),
-    Field('bill_min_svc', 'integer'),
-    Field('bill_max_svc', 'integer'),
-    Field('bill_env', 'string'),
-    Field('bill_cost', 'integer'),
-    migrate=False)
-
-db.define_table('billing_agent',
-    Field('bill_os_name', 'string'),
-    Field('bill_min_agt', 'integer'),
-    Field('bill_max_agt', 'integer'),
-    Field('bill_env', 'string'),
-    Field('bill_cost', 'integer'),
     migrate=False)
 
 db.define_table('lifecycle_os',
@@ -1248,10 +1234,6 @@ db.define_table('resinfo',
     Field('updated','datetime'),
     migrate=False)
 
-db.define_table('resinfo_log',
-    db.resinfo,
-    migrate=False)
-
 db.define_table('dashboard',
     Field('dash_type','string'),
     Field('svc_id', 'string', length=36),
@@ -1486,16 +1468,6 @@ db.define_table('san_zone_alias',
     Field('updated', 'datetime'),
     migrate=False)
 
-db.define_table('stat_day_billing',
-    Field('day', 'datetime'),
-    Field('fset_id', 'integer'),
-    Field('os_name', 'string'),
-    Field('nb_svc_prd', 'integer'),
-    Field('nb_svc_nonprd', 'integer'),
-    Field('nb_agents_without_svc_prd', 'integer'),
-    Field('nb_agents_without_svc_nonprd', 'integer'),
-    migrate=False)
-
 db.define_table('saves',
     Field('save_date', 'datetime'),
     Field('save_retention', 'datetime'),
@@ -1577,14 +1549,6 @@ db.define_table('metrics',
     Field('metric_col_instance_index', 'integer'),
     Field('metric_col_instance_label', 'string'),
     Field('metric_historize', 'boolean'),
-    migrate=False)
-
-db.define_table('metrics_log',
-    Field('metric_id', 'integer'),
-    Field('fset_id', 'integer'),
-    Field('value', 'float'),
-    Field('date', 'date'),
-    Field('instance', 'string'),
     migrate=False)
 
 db.define_table('charts',
@@ -1869,6 +1833,7 @@ db.define_table('tags',
     Field('tag_id','string'),
     Field('tag_exclude','string'),
     Field('tag_created','datetime', default=request.now, writable=False),
+    Field('tag_data','text'),
     migrate=False)
 
 db.define_table('node_tags',

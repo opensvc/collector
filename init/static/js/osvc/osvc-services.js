@@ -202,10 +202,12 @@ function services_osvcputrest(service, uri, params, data, callback, error_callba
 		url = url.replace(/&$/, "");
 	}
 	var content_type = "application/x-www-form-urlencoded"
-	if (Object.prototype.toString.call(data) === '[object Array]') {
+	var data_type = null
+	try {
 		data = JSON.stringify(data)
 		content_type = "application/json; charset=utf-8"
-	}
+		data_type = "json"
+	} catch(err) {}
 
 	if (async === undefined || async == null) async=true;
 
@@ -446,7 +448,7 @@ function services_info_fmt(data) {
 	if (!data.info) {
 		return
 	}
-	var e = $("<span><span class='fa fa-info-circle fa-2x icon-green icon'></span><span data-i18n='api.info'></span></span>")
+	var e = $("<span><span class='fa fa-info-circle fa-2x icon-green text-green icon'></span><span data-i18n='api.info'></span></span>")
 	e.i18n()
 	var p = $("<pre class='api_error'></pre>")
 	if (typeof data.info === "string") {

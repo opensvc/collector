@@ -11,6 +11,7 @@ default_retentions = [
     whisper.parseRetentionDef("1h:90d"),
     whisper.parseRetentionDef("1d:3y"),
 ]
+daily_retentions = ["1d:5y"]
 formats = [
     "%Y-%m-%d %H:%M:%S.%f",
     "%Y-%m-%d %H:%M:%S",
@@ -36,7 +37,7 @@ def wsp_delete(*args):
     os.system(cmd)
 
 def wsp_find(*args):
-    args = [store_d] + list(args)
+    args = [store_d] + [str(arg) for arg in args]
     head = os.path.join(*args)
     return recurse_wsp_find(head)
 
@@ -51,7 +52,7 @@ def recurse_wsp_find(head):
 
 def sub_find(*args, **kwargs):
     prefix = kwargs.get("prefix", "")
-    args = [store_d] + list(args)
+    args = [store_d] + [str(arg) for arg in args]
     head = os.path.join(*args)
     head_len = len(head)
     wsps = recurse_wsp_find(head)
@@ -63,10 +64,16 @@ def sub_find(*args, **kwargs):
     return subs
 
 def wsp_path(*args):
-    _args = [store_d]
+    if len(args) > 0 and not str(args[0]).startswith(store_d):
+        _args = [store_d]
+    else:
+        _args = []
     for arg in args:
-        _args += arg.split(os.sep)
-    return os.path.join(*_args)+".wsp"
+        _args += str(arg).split(os.sep)
+    fpath = os.path.join(*_args)
+    if not fpath.endswith(".wsp"):
+        fpath += ".wsp"
+    return fpath
 
 def whisper_create(wsp, retentions=None, xFilesFactor=0.0):
     if os.path.exists(wsp):
@@ -82,6 +89,12 @@ def whisper_create(wsp, retentions=None, xFilesFactor=0.0):
     whisper.create(wsp, retentions, xFilesFactor=xFilesFactor)
 
 def to_tstamp(s):
+    if isinstance(s, datetime.datetime):
+        return int(time.mktime(s.timetuple()))
+    if isinstance(s, datetime.date):
+        return int(time.mktime(s.timetuple()))
+    if isinstance(s, int):
+        return s
     for fmt in formats:
         try:
             return int(time.mktime(datetime.datetime.strptime(s, fmt).timetuple()))
@@ -124,13 +137,19 @@ def whisper_fetch(*args, **kwargs):
     b = kwargs.get("b")
     e = kwargs.get("e")
     wsp = wsp_path(*args)
+    _args = [wsp]
     if not os.path.exists(wsp):
         return []
+    if b is None:
+        b = 0
     if isinstance(b, (str, unicode)):
         b = to_tstamp(b)
-    if isinstance(e, (str, unicode)):
-        e = to_tstamp(e)
-    (start, end, step), values = whisper.fetch(wsp, b, e)
+    _args.append(b)
+    if e is not None:
+        if isinstance(e, (str, unicode)):
+            e = to_tstamp(e)
+        _args.append(e)
+    (start, end, step), values = whisper.fetch(*_args)
     t = start
     data = []
     for value in values:
@@ -138,6 +157,10 @@ def whisper_fetch(*args, **kwargs):
         t += step
         data.append([timestr, value])
     return data
+
+def whisper_update(wsp, value, tstamp, retentions=None):
+    whisper_create(wsp, retentions=retentions)
+    whisper.update(wsp, value, to_tstamp(tstamp))
 
 def whisper_update_list(head, vars, vals, group="", options=None):
     if options is None:

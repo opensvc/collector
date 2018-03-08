@@ -339,9 +339,9 @@ function table_actions(divid, options) {
 		'ajax_url': '/init/svcactions/ajax_actions',
 		'spankeys': ['pid'],
 		'orderby': ['~id'],
-		'force_cols': ['id', 'svc_id', 'node_id', 'os_name', 'ack', 'acked_by', 'acked_date', 'acked_comment', 'end', 'status_log'],
+		'force_cols': ['id', 'svc_id', 'node_id', 'os_name', 'ack', 'acked_by', 'acked_date', 'acked_comment', 'end', 'status_log', 'status', 'begin', 'svcname', 'nodename'],
 		'columns': ['svc_id', 'svcname', 'node_id', 'nodename', 'pid', 'action', 'status', 'begin', 'end', 'time', 'id', 'status_log', 'cron', 'ack', 'acked_by', 'acked_date', 'acked_comment', 'assetname', 'fqdn', 'serial', 'manufacturer', 'model', 'asset_env', 'role', 'asset_status', 'type', 'sec_zone', 'tz', 'loc_country', 'loc_zip', 'loc_city', 'loc_addr', 'loc_building', 'loc_floor', 'loc_room', 'loc_rack', 'enclosure', 'enclosureslot', 'hvvdc', 'hvpool', 'hv', 'os_name', 'os_release', 'os_vendor', 'os_arch', 'os_kernel', 'os_concat', 'cpu_dies', 'cpu_cores', 'cpu_threads', 'cpu_model', 'cpu_freq', 'mem_banks', 'mem_slots', 'mem_bytes', 'listener_port', 'version', 'action_type', 'collector', 'connect_to', 'node_env', 'team_responsible', 'team_integ', 'app_team_ops', 'team_support', 'app_domain', 'last_boot', 'last_comm', 'power_supply_nb', 'power_cabinet1', 'power_cabinet2', 'power_protect', 'power_protect_breaker', 'power_breaker1', 'power_breaker2', 'warranty_end', 'maintenance_end', 'os_obs_warn_date', 'os_obs_alert_date', 'hw_obs_warn_date', 'hw_obs_alert_date'],
-		"default_columns": ["svcname", "action", "begin", "cron", "end", "nodename", "pid", "status", "status_log"],
+		"default_columns": ["svcname", "action", "begin", "time", "cron", "nodename", "pid", "status", "status_log"],
 		"colprops": {
 			"begin": {
 				"_class": "datetime_no_age",
@@ -379,7 +379,8 @@ function table_actions(divid, options) {
 		'pageable': true,
 		'on_change': false,
 		'events': ['begin_action', 'end_action', 'svcactions_change'],
-		'request_vars': {}
+		'request_vars': {},
+		'on_change': function(t) {table_actions_timeline(t)}
 	}
 
 	var _options = $.extend({}, defaults, options)
@@ -878,7 +879,7 @@ function table_comp_rules(divid, options) {
 function table_comp_module_status(divid, options) {
 	var defaults = {
 		'divid': divid,
-		'id': "cms",
+		'id': "aggcms",
 		'name': "comp_module_status",
 		'icon': "modset16",
 		'caller': "table_comp_module_status",
@@ -899,7 +900,7 @@ function table_comp_module_status(divid, options) {
 
 function table_comp_node_status(divid, options) {
 	var defaults = {
-		'id': "cns",
+		'id': "aggcns",
 		'divid': divid,
 		'caller': "table_comp_node_status",
 		'name': "comp_node_status",
@@ -926,7 +927,7 @@ function table_comp_service_status(divid, options) {
 		'name': "comp_service_status",
 		'icon': "svc",
 		'caller': "table_comp_service_status",
-		'id': "css",
+		'id': "aggcss",
 		'checkboxes': false,
 		'ajax_url': '/init/compliance/ajax_comp_svc_status',
 		'span': ['svc_id'],
@@ -956,7 +957,7 @@ function table_comp_status(divid, options) {
 		'force_cols': ['id', 'node_id', 'svc_id', 'os_name', 'run_module'],
 		'columns': ['id', 'run_date', 'node_id', 'nodename', 'svc_id', 'svcname', 'run_module', 'run_status', 'rset_md5', 'run_log', 'assetname', 'fqdn', 'serial', 'manufacturer', 'model', 'asset_env', 'role', 'status', 'type', 'sec_zone', 'tz', 'loc_country', 'loc_zip', 'loc_city', 'loc_addr', 'loc_building', 'loc_floor', 'loc_room', 'loc_rack', 'enclosure', 'enclosureslot', 'hvvdc', 'hvpool', 'hv', 'os_name', 'os_release', 'os_vendor', 'os_arch', 'os_kernel', 'cpu_dies', 'cpu_cores', 'cpu_threads', 'cpu_model', 'cpu_freq', 'mem_banks', 'mem_slots', 'mem_bytes', 'listener_port', 'version', 'action_type', 'collector', 'connect_to', 'node_env', 'team_responsible', 'team_integ', 'team_support', 'app', 'last_boot', 'last_comm', 'power_supply_nb', 'power_cabinet1', 'power_cabinet2', 'power_protect', 'power_protect_breaker', 'power_breaker1', 'power_breaker2', 'warranty_end', 'maintenance_end', 'os_obs_warn_date', 'os_obs_alert_date', 'hw_obs_warn_date', 'hw_obs_alert_date', 'updated'],
 		'default_columns': ["run_date", "run_module", "nodename", "run_status", "svcname"],
-		'child_tables': ['cms', 'cns', 'css'],
+		'child_tables': ['aggcms', 'aggcns', 'aggcss'],
 		'wsable': true,
 		'events': ['comp_status_change']
 	}
@@ -1047,9 +1048,9 @@ function view_comp_status(divid, options) {
 			options = {}
 		}
 		options.folded = true
-		table_comp_module_status("cms", options)
-		table_comp_node_status("cns", options)
-		table_comp_service_status("css", options)
+		table_comp_module_status("aggcms", options)
+		table_comp_node_status("aggcns", options)
+		table_comp_service_status("aggcss", options)
 	})
 
 }
@@ -2279,13 +2280,14 @@ function table_service_instances(divid, options) {
 		'keys': ["node_id", "svc_id", "mon_vmname"],
 		'spankeys': ["svc_id"],
 		'span': [].concat(['svc_id', 'svcname'], objcols.service),
-		'columns': ['id', 'svc_id', 'svcname', 'err', 'svc_ha', 'svc_availstatus', 'svc_status', 'svc_app', 'app_domain', 'app_team_ops', 'svc_drptype', 'svc_flex_min_nodes', 'svc_flex_max_nodes', 'svc_flex_cpu_low_threshold', 'svc_flex_cpu_high_threshold', 'svc_autostart', 'svc_nodes', 'svc_drpnode', 'svc_drpnodes', 'svc_comment', 'svc_created', 'svc_updated', 'svc_env', 'svc_topology', 'mon_vmtype', 'mon_vmname', 'mon_vcpus', 'mon_vmem', 'mon_guestos', 'asset_env', 'node_env', 'node_id', 'nodename', 'mon_availstatus', 'mon_overallstatus', 'mon_frozen', 'mon_containerstatus', 'mon_ipstatus', 'mon_fsstatus', 'mon_diskstatus', 'mon_sharestatus', 'mon_syncstatus', 'mon_appstatus', 'mon_hbstatus', 'mon_updated', 'version', 'listener_port', 'collector', 'connect_to', 'team_responsible', 'team_integ', 'team_support', 'serial', 'manufacturer', 'model', 'role', 'warranty_end', 'status', 'type', 'node_updated', 'power_supply_nb', 'power_cabinet1', 'power_cabinet2', 'power_protect', 'power_protect_breaker', 'power_breaker1', 'power_breaker2', 'tz', 'hv', 'hvpool', 'hvvdc', 'loc_country', 'loc_zip', 'loc_city', 'loc_addr', 'loc_building', 'loc_floor', 'loc_room', 'loc_rack', 'os_name', 'os_release', 'os_vendor', 'os_arch', 'os_kernel', 'cpu_dies', 'cpu_cores', 'cpu_model', 'cpu_freq', 'mem_banks', 'mem_slots', 'mem_bytes'],
+		'columns': ['id', 'svc_id', 'svcname', 'err', 'svc_ha', 'svc_availstatus', 'svc_status', 'svc_app', 'app_domain', 'app_team_ops', 'svc_drptype', 'svc_flex_min_nodes', 'svc_flex_max_nodes', 'svc_flex_cpu_low_threshold', 'svc_flex_cpu_high_threshold', 'svc_autostart', 'svc_nodes', 'svc_drpnode', 'svc_drpnodes', 'svc_comment', 'svc_created', 'svc_updated', 'svc_env', 'svc_topology', 'mon_vmtype', 'mon_vmname', 'mon_vcpus', 'mon_vmem', 'mon_guestos', 'asset_env', 'node_env', 'node_id', 'nodename', 'mon_availstatus', 'mon_overallstatus', 'mon_frozen', 'mon_monstatus', 'mon_containerstatus', 'mon_ipstatus', 'mon_fsstatus', 'mon_diskstatus', 'mon_sharestatus', 'mon_syncstatus', 'mon_appstatus', 'mon_hbstatus', 'mon_updated', 'version', 'listener_port', 'collector', 'connect_to', 'team_responsible', 'team_integ', 'team_support', 'serial', 'manufacturer', 'model', 'role', 'warranty_end', 'status', 'type', 'node_updated', 'power_supply_nb', 'power_cabinet1', 'power_cabinet2', 'power_protect', 'power_protect_breaker', 'power_breaker1', 'power_breaker2', 'tz', 'hv', 'hvpool', 'hvvdc', 'loc_country', 'loc_zip', 'loc_city', 'loc_addr', 'loc_building', 'loc_floor', 'loc_room', 'loc_rack', 'os_name', 'os_release', 'os_vendor', 'os_arch', 'os_kernel', 'cpu_dies', 'cpu_cores', 'cpu_model', 'cpu_freq', 'mem_banks', 'mem_slots', 'mem_bytes'],
 		'orderby': ["svcname", "nodename"],
 		'default_columns': [
 			"err",
 			"node_env",
 			"mon_availstatus",
 			"mon_overallstatus",
+			"mon_monstatus",
 			"svcname",
 			"mon_updated",
 			"mon_vmname",
@@ -2436,8 +2438,8 @@ function table_tags(divid, options) {
 		'keys': ['tag_id'],
 		'orderby': ['tag_name'],
 		'force_cols': ['tag_id', 'tag_name'],
-		'columns': ['tag_id', 'tag_name', 'tag_exclude', 'tag_created'],
-		'default_columns': ['tag_name', 'tag_exclude', 'tag_created'],
+		'columns': ['tag_id', 'tag_name', 'tag_exclude', 'tag_data', 'tag_created'],
+		'default_columns': ['tag_name', 'tag_exclude', 'tag_data', 'tag_created'],
 		'wsable': true,
 		'events': ['tags_change']
 	}

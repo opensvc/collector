@@ -169,10 +169,8 @@ function sysrep(divid, options) {
 
 		require(["vis"], function(vis) {
 			o.timeline = new vis.Timeline(container, data, groups, options)
-			o.timeline.on("change", function() {
-				o.div.find("[node_id]").osvc_nodename({
-					callback: function(){o.timeline.redraw()}
-				})
+			o.div.find("[node_id]").osvc_nodename({
+				callback: function(){o.timeline.redraw()}
 			})
 
 			o.timeline.on('select', function(properties) {

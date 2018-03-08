@@ -108,6 +108,11 @@ data = {
        'prj_www': 'https://mochajs.org/',
        'link': 'https://github.com/mochajs/mocha/blob/master/LICENSE',
      },
+     {
+       'prj_name': 'PhantomJS',
+       'prj_www': 'http://phantomjs.org/',
+       'link': 'https://github.com/ariya/phantomjs/blob/master/LICENSE.BSD',
+     },
    ],
  },
  'css': {
@@ -120,13 +125,18 @@ data = {
      },
    ],
  },
- 'web2py': {
-   'title': 'Web2py',
+ 'Python': {
+   'title': 'Python',
    'licences': [
      {
        'prj_name': 'WEB2PY Web Framework',
        'prj_www': 'http://www.web2py.com',
        'link': 'http://www.gnu.org/licenses/lgpl.html',
+     },
+     {
+        'prj_name': 'Whisper',
+        'prj_www': 'https://github.com/graphite-project/whisper',
+        'link': 'https://github.com/graphite-project/carbon/blob/master/LICENSE',
      },
    ],
  },

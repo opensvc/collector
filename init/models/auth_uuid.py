@@ -11,6 +11,8 @@ def node_app_id(node_id=None):
     return row.id
 
 def node_svc(node_id, svcname):
+    if node_id is None:
+        return
     if svcname is None:
         return
     svcname = svcname.strip("'")
@@ -69,6 +71,7 @@ def node_svc_id(node_id, svcname):
     return svc["svc_id"]
 
 def create_svc(node_id, svcname):
+    from gluon.storage import Storage
     node = get_node(node_id)
     if node is None:
         return
@@ -82,7 +85,7 @@ def create_svc(node_id, svcname):
       "updated": datetime.datetime.now()
     }
     db.services.insert(**data)
-    return data
+    return Storage(data)
 
 def node_responsibles(node_id):
     q = db.nodes.node_id == node_id

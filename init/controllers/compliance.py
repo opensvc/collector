@@ -1499,11 +1499,11 @@ def ajax_comp_mod_status():
     o = mt.get_orderby(default=~db.nodes.nodename)
     q = q_filter(node_field=db.comp_status.node_id)
     q &= db.comp_status.node_id == db.nodes.node_id
-    q &= ((db.comp_status.svc_id != None) & (db.comp_status.svc_id == db.services.svc_id))
+    l = db.services.on(db.comp_status.svc_id==db.services.svc_id)
     for f in t.cols:
         q = _where(q, t.colprops[f].table, t.filter_parse(f), f)
     q = apply_filters_id(q, db.comp_status.node_id)
-    sql1 = db(q)._select().rstrip(';').replace('nodes.id, ','').replace('comp_status.id>0 AND', '')
+    sql1 = db(q)._select(left=l).rstrip(';').replace('nodes.id, ','').replace('comp_status.id>0 AND', '')
     regex = re.compile("SELECT .* FROM")
     sql1 = regex.sub('', sql1)
 
@@ -1857,7 +1857,7 @@ def rpc_comp_detach_ruleset(nodename, ruleset, auth):
     else:
         ruleset_id = comp_ruleset_id(ruleset)
     if ruleset_id is None:
-        return dict(status=False, msg="ruleset %s does not exist"%ruleset)
+        return dict(status=True, msg="ruleset %s does not exist"%ruleset)
     elif ruleset == 'all' and len(ruleset_id) == 0:
         return dict(status=True, msg="this node has no ruleset attached")
     d = lib_comp_ruleset_detach_node(node_id, ruleset_id)
@@ -2083,9 +2083,9 @@ def _comp_get_svc_moduleset(svc_id, modulesets=[], slave=False):
 
 def _comp_get_svc_moduleset_ids(svc_id, modulesets=[], slave=False):
     if len(modulesets) == 0:
-        return _comp_get_svc_moduleset_ids_attached(svc_id, slave)
+        return _comp_get_svc_moduleset_ids_attached(svc_id, slave=slave)
     else:
-        return _comp_get_svc_moduleset_ids_specified(svc_id, modulesets, slave)
+        return _comp_get_svc_moduleset_ids_specified(svc_id, modulesets, slave=slave)
 
 def _comp_get_svc_moduleset_ids_attached(svc_id, modulesets=[], slave=False):
     q = db.comp_modulesets_services.svc_id == svc_id
@@ -2655,7 +2655,7 @@ def insert_run_rset(ruleset):
         db.comp_run_ruleset.insert(rset_md5=rset_md5, rset=s, date=request.now)
         table_modified("comp_run_ruleset")
     except:
-        q = db.comp_run_ruleset.rest_md5 == rset_md5
+        q = db.comp_run_ruleset.rset_md5 == rset_md5
         db(q).update(date=request.now)
         table_modified("comp_run_ruleset")
     rset = {'name': 'osvc_collector',

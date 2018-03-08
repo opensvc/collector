@@ -13,6 +13,13 @@ def auth_dump():
             pass
     return data
 
+def get_svc_live_nodes(svc_id):
+    q = db.svcmon.svc_id == svc_id
+    q &= db.nodes.node_id == db.svcmon.node_id
+    q &= db.nodes.last_comm > datetime.datetime.now() - datetime.timedelta(minutes=15)
+    q = q_filter(q, svc_field=db.svcmon.svc_id)
+    return db(q).select(db.nodes.ALL)
+
 def get_node(node_id):
     q = db.nodes.node_id == node_id
     return db(q).select().first()

@@ -11,14 +11,15 @@ def call():
 @auth.requires_login()
 @service.json
 def json_resinfo_log():
-    q = db.resinfo_log.node_id == request.vars.node_id
-    q &= db.resinfo_log.svc_id == request.vars.svc_id
-    q &= db.resinfo_log.rid == request.vars.rid
-    q &= db.resinfo_log.res_key == request.vars.key
+    from applications.init.modules import timeseries
+    q = db.resinfo.node_id == request.vars.node_id
+    q &= db.resinfo.svc_id == request.vars.svc_id
+    q &= db.resinfo.rid == request.vars.rid
+    q &= db.resinfo.res_key == request.vars.key
 
     # permission validation
     if 'Manager' not in user_groups():
-        q1 = db.resinfo_log.svc_id == db.services.svc_id
+        q1 = db.resinfo.svc_id == db.services.svc_id
         q1 &= db.services.svc_app == db.apps.app
         q1 &= db.apps.id == db.apps_responsibles.app_id
         q1 &= db.apps_responsibles.group_id.belongs(user_group_ids())
@@ -26,12 +27,12 @@ def json_resinfo_log():
         if n == 0:
             return "Permission denied"
 
-    rows = db(q).select(db.resinfo_log.updated,
-                        db.resinfo_log.res_value)
-    data = []
-    for row in rows:
-        data.append([row.updated, row.res_value])
-    return [data]
+    return [timeseries.whisper_fetch(
+        "nodes", request.vars.node_id,
+        "services", request.vars.svc_id,
+        "resources", request.vars.rid,
+        "info", request.vars.key
+    )]
 
 @auth.requires_login()
 def ajax_resinfo_log():

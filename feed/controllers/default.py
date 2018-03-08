@@ -197,17 +197,38 @@ def rpc_update_resinfo(vars, vals, auth):
         db.executesql("""delete from resinfo where svc_id='%s' and updated<'%s' """%(h["svc_id"], str(now)))
     ws_send("resinfo_change")
 
-    i = vars.index('res_value')
-    vals_log = []
+    i_key = vars.index('res_key')
+    i_val = vars.index('res_value')
+    i_node = vars.index('node_id')
+    i_svc = vars.index('svc_id')
+    i_rid = vars.index('rid')
+    key_blacklist = (
+        "restart",
+        "start",
+        "stop",
+        "check",
+        "info",
+        "mask",
+        "timeout",
+        "start_timeout",
+        "stop_timeout",
+        "check_timeout",
+        "info_timeout",
+    )
     for _vals in vals:
+        if _vals[i_key] in key_blacklist:
+            continue
         try:
-            n = float(_vals[i])
-            vals_log.append(_vals)
+            n = float(_vals[i_val])
         except:
-            pass
-
-    if len(vals_log) > 0:
-        generic_insert('resinfo_log', vars, vals_log)
+            continue
+        path = timeseries.wsp_path(
+            "nodes", _vals[i_node],
+            "services", _vals[i_svc],
+            "resources", _vals[i_rid],
+            "info", _vals[i_key],
+        )
+        timeseries.whisper_update(path, n, _vals[updated_idx])
 
 @service.xmlrpc
 def update_service(vars, vals, auth):
@@ -1979,7 +2000,7 @@ def rpc_collector_events(cmd, auth):
       db.log.log_action,
       db.log.log_fmt,
       db.log.log_dict,
-      left=l,
+      left=(l1, l2),
       limitby=(0,1000),
     )
     data = [["date", "node", "service", "level", "action", "event"]]

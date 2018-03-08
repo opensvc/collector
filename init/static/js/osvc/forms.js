@@ -237,7 +237,7 @@ function form(divid, options) {
 		a.attr("title", i18n.t("forms.edit")).tooltipster()
 		a.bind("click", function(){
 			$(this).siblings("a.nok").show()
-			$(this).siblings("a.fa-bars,a.fa-code").hide()
+			$(this).siblings("a.fa-th-list,a.fa-code").hide()
 			$(this).hide()
 			o.render_form()
 		})
@@ -252,10 +252,10 @@ function form(divid, options) {
 		a.attr("title", i18n.t("forms.toggle_json")).tooltipster()
 		a.bind("click", function() {
 			if ($(this).hasClass("fa-code")) {
-				$(this).removeClass("fa-code").addClass("fa-bars")
+				$(this).removeClass("fa-code").addClass("fa-th-list")
 				o.render_json()
 			} else {
-				$(this).removeClass("fa-bars").addClass("fa-code")
+				$(this).removeClass("fa-th-list").addClass("fa-code")
 				o.render_display()
 			}
 		})
@@ -270,7 +270,7 @@ function form(divid, options) {
 		a.attr("title", i18n.t("forms.cancel")).tooltipster()
 		a.bind("click", function(){
 			$(this).siblings("a.edit16").show()
-			$(this).siblings("a.fa-bars").removeClass("fa-bars").addClass("fa-code")
+			$(this).siblings("a.fa-th-list").removeClass("fa-th-list").addClass("fa-code")
 			$(this).siblings("a.fa-code").show()
 			$(this).hide()
 			o.render_display()
@@ -292,7 +292,7 @@ function form(divid, options) {
 	}
 
 	o.render_display = function() {
-		if ((typeof(o.options.data) == "string") || (typeof(o.options.data) == "number")) {
+		if ((typeof(o.options.data) == "string") || (typeof(o.options.data) == "number") || (o.options.form_name == "raw")) {
 			o.area.text(o.options.data)
 			o.area.addClass("pre")
 			return
@@ -853,8 +853,39 @@ function form(divid, options) {
 		})
 	}
 
+	o.submit_output_tag_data = function(data) {
+		var _data = {}
+		if (typeof(data) === "string") {
+			_data.tag_data = data
+		} else {
+			for (var key in data) {
+				if (data[key] == "") {
+					delete(data[key])
+				}
+			}
+			_data.tag_data = JSON.stringify(data)
+		}
+		services_osvcpostrest("/tags/%1", [o.options.tag_id], "", _data, function(jd) {
+			if (rest_error(jd)) {
+				o.result.html(services_error_fmt(jd))
+				return
+			}
+			try {
+				o.options.data = $.parseJSON(jd.data[0].tag_data)
+			} catch(e) {
+				o.options.data = jd.data[0].tag_data
+			}
+			o.result.html("<div class='icon ok'>"+i18n.t("forms.success")+"</div>")
+		},
+		function(xhr, stat, error) {
+			o.result.html(services_ajax_error_fmt(xhr, stat, error))
+		})
+	}
+
 	o.submit_output = function(output, data) {
-		if (output.Dest == "compliance variable") {
+		if (o.options.tag_id) {
+			o.submit_output_tag_data(data)
+		} else if (output.Dest == "compliance variable") {
 			o.submit_output_compliance(data)
 		} else {
 			console.log("Output " + output.Dest + " not supported client-side")
@@ -1866,7 +1897,6 @@ function form(divid, options) {
 				d[key] = val
 			}
 		}
-		console.log(d)
 		return d
 	}
 

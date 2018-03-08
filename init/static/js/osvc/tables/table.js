@@ -71,16 +71,6 @@ function keep_inside(box){
 	}
 }
 
-function check_all(name, checked){
-	c = document.getElementsByName(name)
-	for(i = 0; i < c.length; i++) {
-		if (c[i].type == 'checkbox' && c[i].disabled == false) {
-			c[i].checked = checked
-			c[i].value = checked
-		}
-	}
-}
-
 function sync_ajax(url, inputs, id, f) {
     s = inputs
     var query=""
@@ -432,6 +422,9 @@ function table_init(opts) {
 	}
 
 	t.restripe_lines = function() {
+		if (t.renderer != "table") {
+			return
+		}
 		var prev_spansum = ""
 		var cls = ["cell1", "cell2"]
 		var cl = "cell1"
@@ -560,12 +553,33 @@ function table_init(opts) {
 		t.sticky_relocate()
 	}
 
+	t.get_col_header = function(col) {
+		if (t.renderer != "table") {
+			var e = t.e_body.find(".prop[col="+col+"]")
+		} else {
+			var e = t.e_header_tr.children("th[col="+col+"]")
+		}
+		return e
+	}
+
+	t.get_all_headers = function() {
+		if (t.renderer != "table") {
+			var e = t.e_body.find(".prop[col]")
+		} else {
+			var e = t.e_header_tr.children("th")
+		}
+		return e
+	}
+
 	t.reset_column_filters = function() {
-		t.e_header_tr.children("th").each(function() {
+		var e = t.get_all_headers()
+		e.each(function() {
 			$(this).removeClass("col-filtered-volatile")
 			$(this).removeClass("col-filtered")
 			$(this).removeClass("col-filter-changed")
 		})
+		t.refresh_column_headers()
+		t.refresh_column_filters()
 	}
 
 	t.get_visible_columns = function() {
@@ -590,10 +604,47 @@ function table_init(opts) {
 	}
 
 	t.add_table = function() {
-		var container = $("#"+t.options.divid)
+		if (t.renderer == "table") {
+			t.add_table_table()
+		} else {
+			t.add_table_grid()
+		}
+	}
 
-		// remove the hosting element id for the js links to not encode it
-		delete t.options.divid
+	t.add_table_grid = function() {
+		var container = $("#"+t.divid)
+
+		var d = $("<div class='tableo'></div>")
+		var toolbar = $("<div class='toolbar clickable' name='toolbar'></div>")
+		var table_scroll_zone = $("<div class='table_scroll_zone'></div>")
+		var table_div = $("<div></div>")
+		var table = $("<div class='d-flex flex-wrap'></div>")
+		t.e_sticky = $("<div class='stick'></div>")
+
+		if (osvc.user_prefs.data.tables[t.id].folded) {
+			table_scroll_zone.hide()
+			toolbar.addClass("grayed")
+		}
+
+		d.attr("id", t.id)
+		t.div = d
+		table.attr("id", "table_"+t.id)
+		table_scroll_zone.append(table_div)
+		table_div.append(table)
+		d.append(toolbar)
+		d.append(t.e_sticky)
+		d.append(table_scroll_zone)
+		container.empty().append(d)
+		t.e_scroll_zone = table_scroll_zone
+		t.e_table = table
+		t.e_header = $("<thead><tr class='theader'></tr></thead>")
+		t.e_header_tr = t.e_header.children("tr")
+		t.e_body = table
+		t.e_toolbar = toolbar
+	}
+
+	t.add_table_table = function() {
+		var container = $("#"+t.divid)
 
 		var d = $("<div class='tableo'></div>")
 		var toolbar = $("<div class='toolbar clickable' name='toolbar'></div>")
@@ -628,7 +679,7 @@ function table_init(opts) {
 		if (!t.options.on_change) {
 			return
 		}
-		t.options.on_change()
+		t.options.on_change(t)
 	}
 
 	t.refresh_child_tables = function() {
@@ -848,26 +899,35 @@ function table_init(opts) {
 
 	t.cell_decorator = function(lines) {
 		if (!lines) {
-			lines = t.e_body.find(".tl")
+			lines = t.e_body.children(".tl")
 		}
 		var spansum1 = null
 		lines.each(function(){
 			var line = $(this)
-			var spansum2 = line.attr("spansum")
-			if (spansum1 == spansum2) {
-				var span = true
+			if (t.renderer != "table") {
+				line.children(".row").children("[cell=1]").each(function(){
+					t._cell_decorator($(this), false, line.children())
+				})
 			} else {
-				var span = false
+				var spansum2 = line.attr("spansum")
+				if (spansum1 == spansum2) {
+					var span = true
+				} else {
+					var span = false
+				}
+				spansum1 = spansum2
+				line.children("[cell=1]").each(function(){
+					t._cell_decorator($(this), span, line)
+				})
 			}
-			spansum1 = spansum2
-			line.children("[cell=1]").each(function(){
-				t._cell_decorator($(this), span, line)
-			})
 		})
 		return lines
 	}
 
 	t.refresh_column_headers = function() {
+		if (t.renderer != "table") {
+			return
+		}
 		if (!t.options.headers) {
 			return
 		}
@@ -876,6 +936,9 @@ function table_init(opts) {
 	}
 
 	t.add_column_headers = function() {
+		if (t.renderer != "table") {
+			return
+		}
 		if (!t.options.headers) {
 			return
 		}
@@ -893,8 +956,11 @@ function table_init(opts) {
 			var label = $("<label></label>")
 			label.attr("for", mcb_id)
 			input.on("click", function(event) {
-				check_all(t.id+"_ck", this.checked)
-				t.highlighed_checked_lines(event)
+				event.stopPropagation()
+				$("#am_"+t.id).remove()
+				t.check_all(this.checked)
+				t.highlighed_checked_lines()
+				t.scroll()
 			})
 			th.append(input)
 			th.append(label)
@@ -913,13 +979,33 @@ function table_init(opts) {
 		t.bind_header_filter_selector()
 	}
 
+	t.check_all = function(checked){
+		var name = t.id+"_ck"
+		c = document.getElementsByName(name)
+		for(i = 0; i < c.length; i++) {
+			if (c[i].type == 'checkbox' && c[i].disabled == false) {
+				c[i].checked = checked
+				c[i].value = checked
+			}
+			if (checked && !(c[i].id in t.lines_checked)) {
+				t.lines_checked[c[i].id] = true
+			} else if (!checked && (c[i].id in t.lines_checked)) {
+				delete t.lines_checked[c[i].id]
+			}
+		}
+	}
+
 	t.add_column_header = function(c) {
-		var asc_idx = t.options.orderby.indexOf(c)
-		var desc_idx = t.options.orderby.indexOf("~"+c)
 		var th = $("<th></th>")
-		th.addClass(t.colprops[c]._class)
 		th.attr("col", c)
 		th.text(i18n.t("col."+t.colprops[c].title))
+		th.addClass(t.colprops[c]._class)
+		t.set_column_header_attr(c, th)
+	}
+
+	t.set_column_header_attr = function(c, th) {
+		var asc_idx = t.options.orderby.indexOf(c)
+		var desc_idx = t.options.orderby.indexOf("~"+c)
 		t.e_header_tr.append(th)
 		if (asc_idx >= 0) {
 			var order = $("<span class='icon fa-caret-down' title='"+asc_idx+"'></span>")
@@ -965,10 +1051,10 @@ function table_init(opts) {
 		t.bind_filter_reformat(input, c)
 
 		// update the column name in header
-		if (c in colprops) {
-			header.html("<span class='icon "+colprops[c].img+"'>"+i18n.t("col."+colprops[c].title)+"</span>")
+		if (c in t.colprops) {
+			header.html("<span class='icon "+t.colprops[c].img+"'>"+i18n.t("col."+t.colprops[c].title)+"</span>")
 		} else {
-			header.text(i18n.t("table.column_filter_header", {"col": i18n.t("col."+t.colprops[c].title)}))
+			header.html("<span class='icon "+colprops[c].img+"'>"+i18n.t("col."+colprops[c].title)+"</span>")
 		}
 		value_pie.attr("id", t.id+"_fp_"+c)
 		value_pie.css({"margin-top": "0.8em"})
@@ -1037,11 +1123,11 @@ function table_init(opts) {
 			// handle header colorization
 			var current_filter = t.colprops[c].current_filter
 			if (current_filter != val) {
-				t.e_header_tr.children("[col='"+col+"']").removeClass("col-filtered").addClass("col-filter-changed")
+				t.get_col_header(col).removeClass("col-filtered").addClass("col-filter-changed")
 			} else {
-				t.e_header_tr.children("[col='"+col+"']").removeClass("col-filter-changed")
+				t.get_col_header(col).removeClass("col-filter-changed")
 				if (val != "") {
-					t.e_header_tr.children("[col='"+col+"']").addClass("col-filtered")
+					t.get_col_header(col).addClass("col-filtered")
 				}
 			}
 
@@ -1136,7 +1222,7 @@ function table_init(opts) {
 		}
 
 		// update the header cell colorization
-		var th = t.e_header_tr.children("[col="+c+"]")
+		var th = t.get_col_header(c)
 		th.removeClass("col-filtered-volatile")
 		th.removeClass("col-filtered")
 		th.removeClass("col-filter-changed")
@@ -1189,7 +1275,7 @@ function table_init(opts) {
 			if (t.options.visible_columns.indexOf(c) >= 0) {
 				continue
 			}
-			t.e_table.find("tr > [col="+c+"]").hide()
+			t.e_table.find(".tl>[col="+c+"],.tl>.row>[col="+c+"]").hide()
 		}
 	}
 
@@ -1220,7 +1306,7 @@ function table_init(opts) {
 		t.refresh_column_filters()
 		if (checked) {
 			if (t.options.force_cols.indexOf(c) >=0 ) {
-				t.e_table.find(".tl > td[col="+c+"]").show()
+				t.e_table.find(".tl>[col="+c+"],.tl>.row>[col="+c+"]").show()
 			} else {
 				t.refresh()
 			}
@@ -1237,7 +1323,7 @@ function table_init(opts) {
 	}
 
 	t.bind_header_filter_selector = function() {
-		t.e_header_tr.children("th[col]").each(function(){
+		t.get_all_headers().each(function(){
 			$(this).on("contextmenu", function(event) {
 				var cell = $(event.target)
 				var col = cell.attr('col')
@@ -1246,10 +1332,26 @@ function table_init(opts) {
 		})
 	}
 
+	t.get_all_cells = function() {
+		if (t.renderer != "table") {
+			return t.e_body.children(".tl").children(".row").children(".cell[col]")
+		} else {
+			return t.e_body.children("tr").children("td[col]")
+		}
+	}
+
+	t.get_col_cells = function(col) {
+		if (t.renderer != "table") {
+			return t.e_body.children(".tl").children(".row").children(".cell[col="+col+"]")
+		} else {
+			return t.e_body.children("tr").children("td[col="+col+"]")
+		}
+	}
+
 	t.bind_filter_selector = function() {
-		t.e_body.children("tr").children("td[col]").each(function(){
+		t.get_all_cells().each(function(){
 			$(this).on("mouseup", function(event) {
-				t.div.find("tr.extraline").remove()
+				t.div.find(".tl.extraline").remove()
 			})
 			$(this).on("contextmenu", function(event) {
 				var cell = $(event.target)
@@ -1261,9 +1363,22 @@ function table_init(opts) {
 		})
 	}
 
+	t.prop_fmt = function(k) {
+		var prop = $("<div class='prop text-gray col col-1-auto align-self-center'></div>")
+			.attr("col", k)
+		if ((k != "extra") && (t.options.visible_columns.indexOf(k) < 0)) {
+			prop.addClass("hidden")
+		}
+		if (k in t.colprops) {
+			prop.text(i18n.t("col."+t.colprops[k].title))
+		}
+		t.set_column_header_attr(k, prop)
+		return prop
+	}
+
 	t.cell_fmt = function(k, v) {
 		var cl = ""
-		var classes = []
+		var classes = ["cell"]
 		if ((k == "extra") && (typeof(t.options.extrarow_class) !== 'undefined')) {
 			classes.push(t.options.extrarow_class)
 		}
@@ -1287,7 +1402,11 @@ function table_init(opts) {
 		} else {
 			var text = v
 		}
-		var s = $("<td cell='1' col='"+k+"' "+cl+">"+text+"</td>")
+		if (t.renderer != "table") {
+			var s = $("<div cell='1' col='"+k+"' "+cl+">"+text+"</div>")
+		} else {
+			var s = $("<td cell='1' col='"+k+"' "+cl+">"+text+"</td>")
+		}
 		$.data(s[0], "v", v)
 		return s
 	}
@@ -1295,7 +1414,14 @@ function table_init(opts) {
 	t.last_checkbox_clicked = null
 
 	t.checkbox_click = function(e) {
+		$("#am_"+t.id).remove()
 		var ref_id = $(e.target).attr("id")
+		var new_checked = $(e.target).prop("checked")
+		if (new_checked && !(ref_id in t.lines_checked)) {
+			t.lines_checked[ref_id] = true
+		} else if (!new_checked && (ref_id in t.lines_checked)) {
+			delete t.lines_checked[ref_id]
+		}
 		if (e.shiftKey && t.last_checkbox_clicked) {
 			var cbs = t.div.find("input[name="+t.id+"_ck]")
 			var start = -1
@@ -1314,18 +1440,25 @@ function table_init(opts) {
 			// at least one checkbox between start and end
 			for (var i=start+1; i<end; i++) {
 				var cb = $(cbs[i])
-				cb.prop("checked", !cb.prop("checked"))
+				var cbid = cb.attr("id")
+				var new_checked = !cb.prop("checked")
+				cb.prop("checked", new_checked)
+				if (new_checked && !(cbid in t.lines_checked)) {
+					t.lines_checked[cbid] = true
+				} else if (!new_checked && (cbid in t.lines_checked)) {
+					delete t.lines_checked[cbid]
+				}
 			}
 		}
 		t.last_checkbox_clicked = ref_id
 		t.highlighed_checked_lines(e)
 	}
 	t.highlighed_checked_lines = function(event) {
-		if ($("#am_"+t.id).length > 0) {
+		if (event && $("#am_"+t.id).length > 0) {
 			table_action_menu(t, event)
 		}
 		t.div.find("input[name="+t.id+"_ck]").each(function(){
-			var line = $(this).parents("tr").first()
+			var line = $(this).parents(".tl").first()
 			if ($(this).is(":checked")) {
 				line.addClass("tl_checked")
 			} else {
@@ -1361,6 +1494,14 @@ function table_init(opts) {
 	}
 
 	t.data_to_lines = function (data) {
+		if (t.renderer == "table") {
+			return t.data_to_lines_table(data)
+		} else {
+			return t.data_to_lines_grid(data)
+		}
+	}
+
+	t.data_to_lines_table = function (data) {
 		var lines = $("<span></span>")
 		for (var i=0; i<data.length; i++) {
 			var cksum = t.line_cksum(data[i], "keys")
@@ -1368,9 +1509,12 @@ function table_init(opts) {
 			var line = $("<tr class='tl h' spansum='"+spansum+"' cksum='"+cksum+"'></tr>")
 			var ckid = t.id + "_ckid_" + cksum
 			if (t.options.checkboxes) {
-				var cb = $("<input class='ocb' value='"+data[i]['checked']+"' type='checkbox' id='"+ckid+"' name='"+t.id+"_ck'>")
+				var cb = $("<input class='ocb' type='checkbox' id='"+ckid+"' name='"+t.id+"_ck'>")
 				var label = $("<label for='"+ckid+"'></label>")
 				var td = $("<td name='"+t.id+"_tools' class='tools'></td>")
+				if (ckid in t.lines_checked) {
+					cb.prop("checked", true)
+				}
 				td.append([cb, label])
 				line.append(td)
 				cb.on("click", t.checkbox_click)
@@ -1387,6 +1531,48 @@ function table_init(opts) {
 				var v = data[i][j]
 				var cell = t.cell_fmt(k, v)
 				line.append(cell)
+			}
+			lines.append(line)
+		}
+		return lines.children().detach()
+	}
+
+	t.data_to_lines_grid = function (data) {
+		var lines = $("<span></span>")
+		for (var i=0; i<data.length; i++) {
+			var cksum = t.line_cksum(data[i], "keys")
+			var spansum = t.line_cksum(data[i], "span")
+			var line = $("<div class='tl h col-sm-12 col-md-6 col-lg-4 col-xl-3 pt-3 pb-3 container-auto' spansum='"+spansum+"' cksum='"+cksum+"'></div>")
+			var ckid = t.id + "_ckid_" + cksum
+			if (t.options.checkboxes) {
+				var cb = $("<input class='ocb' type='checkbox' id='"+ckid+"' name='"+t.id+"_ck'>")
+				var label = $("<label for='"+ckid+"'></label>")
+				var td = $("<div name='"+t.id+"_tools' class='tools'></div>")
+				if (ckid in t.lines_checked) {
+					cb.prop("checked", true)
+				}
+				td.append([cb, label])
+				line.append(td)
+				cb.on("click", t.checkbox_click)
+			}
+			if (t.options.extrarow) {
+				var k = "extra"
+				var v = ""
+				var prop = t.prop_fmt(k)
+				var cell = t.cell_fmt(k, v)
+				cell.addClass("col col-1-auto")
+				var _line = $("<div class='row'></div>").append([prop, cell])
+				line.append(_line)
+			}
+			var cols = t.get_ordered_visible_columns()
+			for (var j=0; j<cols.length; j++) {
+				var k = cols[j]
+				var v = data[i][j]
+				var prop = t.prop_fmt(k)
+				var cell = t.cell_fmt(k, v)
+				cell.addClass("col col-1-auto")
+				var _line = $("<div class='row'></div>").append([prop, cell])
+				line.append(_line)
 			}
 			lines.append(line)
 		}
@@ -1412,15 +1598,17 @@ function table_init(opts) {
 		t.scroll_disable_dom()
 
 		if (is_dict(msg) && "data" in msg) {
-			var data = msg
-			var lines = data['data']
-			t.options.pager = data['meta']
+			t.lines = msg["data"]
+			t.options.pager = msg['meta']
 		} else {
 			t.div.html(msg)
 			return
 		}
+		t.redraw()
+	}
 
-		msg = t.data_to_lines(lines)
+	t.redraw = function() {
+		msg = t.data_to_lines(t.lines)
 		if (t.options.detached_decorate_cells) {
 			msg = t.cell_decorator(msg)
 		}
@@ -1429,7 +1617,7 @@ function table_init(opts) {
 		var extralines = t.e_body.children(".extraline:visible").detach()
 
 		// detach old lines
-		var old_lines = $("<tbody></tbody>").append($("#table_"+t.id).children("tbody").children(".tl").detach())
+		var old_lines = $("<tbody></tbody>").append(t.e_body.children(".tl").detach())
 
 		// insert new lines
 		t.e_body.append(msg)
@@ -1497,9 +1685,15 @@ function table_init(opts) {
 		t.restripe_lines()
 		t.hide_cells()
 		t.unset_refresh_spin()
-		t.e_body.find("tr.tl").children("td.tohighlight").removeClass("tohighlight").effect("highlight", 1000)
+		t.e_body.find(".tl").children(".tohighlight").removeClass("tohighlight").effect("highlight", 1000)
 		t.scroll_enable_dom()
 		t.scroll()
+		t.highlighed_checked_lines()
+
+		if (t.renderer != "table") {
+			t.refresh_column_filters_in_place()
+			t.bind_header_filter_selector()
+		}
 
 		t.refresh_child_tables()
 		t.on_change()
@@ -1793,7 +1987,7 @@ function table_init(opts) {
 				$(this).addClass("b")
 				t.colprops[k].current_filter = cur
 				t.e_sidepanel.find("input[name=fi]").val(cur).trigger("keyup")
-				t.e_header_tr.children("[col="+k+"]").each(function() {
+				t.get_col_header(k).each(function() {
 					$(this).removeClass("col-filtered")
 					$(this).addClass("col-filter-changed")
 				})
@@ -2105,6 +2299,9 @@ function table_init(opts) {
 
 	t.add_ws_handler = function() {
 		if (!t.options.events || (t.options.events.length == 0)) {
+			return
+		}
+		if (!t.live_enabled()) {
 			return
 		}
 		console.log("register table", t.id, t.options.events.join(","), "event handler")
@@ -2537,6 +2734,7 @@ function table_init(opts) {
 		sidepanel.append(t.add_refresh())
 		sidepanel.append(t.add_wsswitch())
 		sidepanel.append(t.add_volatile())
+		sidepanel.append(t.add_renderer_selector())
 		sidepanel.append(t.add_perpage_selector())
 		sidepanel.append(t.add_filters_summary())
 		t.scroll_to_sidepanel()
@@ -2564,6 +2762,19 @@ function table_init(opts) {
 		t.e_toolbar.append(title)
 	}
 
+	t.clear_current_filters = function() {
+		for (c in t.colprops) {
+			var current = t.colprops[c].current_filter
+			if ((current == "") || (typeof current === 'undefined')) {
+				continue
+			}
+			if ((typeof(t.colprops[c].force_filter) !== "undefined") && (t.colprops[c].force_filter != "")) {
+				continue
+			}
+			t.colprops[c].current_filter = ""
+		}
+	}
+
 	//
 	// table tool: filters summary
 	//
@@ -2580,16 +2791,7 @@ function table_init(opts) {
 
 		// clear all filters
 		clear_tool.on("click", function(event){
-			for (c in t.colprops) {
-				var current = t.colprops[c].current_filter
-				if ((current == "") || (typeof current === 'undefined')) {
-					continue
-				}
-				if ((typeof(t.colprops[c].force_filter) !== "undefined") && (t.colprops[c].force_filter != "")) {
-					continue
-				}
-				t.colprops[c].current_filter = ""
-			}
+			t.clear_current_filters()
 			t.save_column_filters()
 			t.refresh_column_filters_in_place()
 			t.refresh()
@@ -2809,6 +3011,62 @@ function table_init(opts) {
 		t.sticky_relocate()
 	}
 
+	t.get_renderer = function() {
+		var p_renderer = osvc.user_prefs.data.tables[t.id].renderer
+		if (typeof(p_renderer) === "undefined") {
+			if ($(window).width() < 700) {
+				return "grid"
+			} else {
+				return "table"
+			}
+		}
+		return p_renderer
+	}
+
+	//
+	// table tool: renderer selector
+	//
+	t.add_renderer_selector = function () {
+		var e = $("<div name='renderer' class='p-3'></div>")
+		var title = $("<div>"+i18n.t("table.renderer")+"</div>")
+		var selector = $("<div class='action_menu_selector'></div>")
+		var l = [
+			{
+				"name": "table",
+				"icon": "icon fa-list"
+			},
+			{
+				"name": "grid",
+				"icon": "icon fa-th"
+			}
+		]
+		for (i=0; i<l.length; i++) {
+			var v = l[i]
+			var entry = $("<div renderer="+v.name+" class='clickable "+v.icon+"'></div>")
+			if (v.name == t.renderer) {
+				entry.addClass("action_menu_selector_selected")
+			}
+			selector.append(entry)
+		}
+
+		// click event
+		selector.children().click(function(event){
+			event.stopPropagation()
+			$(this).siblings().removeClass("action_menu_selector_selected")
+			$(this).addClass("action_menu_selector_selected")
+			var new_renderer = $(this).attr("renderer")
+			osvc.user_prefs.data.tables[t.id].renderer = new_renderer
+			t.renderer = new_renderer
+			t.save_prefs()
+			t.div.empty()
+			t.init_table()
+			t.redraw()
+		})
+		e.append(title)
+		e.append(selector)
+		return e
+	}
+
 	//
 	// table tool: perpage selector
 	//
@@ -2940,9 +3198,9 @@ function table_init(opts) {
 				if (!current_state) {
 					if (t.options.force_cols.indexOf(colname) >=0 ) {
 						// don't remove forced columns
-						t.e_table.find("tr > [col="+colname+"]").hide()
+						t.e_table.find(".tl>[col="+colname+"],.tl>.row>[col="+colname+"]").hide()
 					} else {
-						t.e_table.find("tr > [col="+colname+"]").remove()
+						t.e_table.find(".tl>[col="+colname+"],.tl>.row>[col="+colname+"]").remove()
 					}
 					// reset the table data md5 so that toggle on-off-on a column is not interpreted
 					// as unchanged data
@@ -3108,8 +3366,9 @@ function table_init(opts) {
 		// "load" binding
 		bookmark.find(".bookmark16").on("click", function() {
 			var name = $(this).text()
-			osvc.user_prefs.data.tables[t.id].filters = osvc.user_prefs.data.tables[t.id].bookmarks[name]
+			osvc.user_prefs.data.tables[t.id].filters = $.extend({}, osvc.user_prefs.data.tables[t.id].bookmarks[name])
 			t.save_prefs()
+			t.clear_current_filters()
 			t.set_column_filters()
 			t.refresh()
 		})
@@ -3122,6 +3381,7 @@ function table_init(opts) {
 		if (!(t.id in osvc.user_prefs.data.tables)) {
 			osvc.user_prefs.data.tables[t.id] = {}
 		}
+		t.renderer = t.get_renderer()
 		if (!("perpage" in osvc.user_prefs.data.tables[t.id])) {
 			osvc.user_prefs.data.tables[t.id]["perpage"] = 20
 		}
@@ -3147,15 +3407,7 @@ function table_init(opts) {
 		t.action_menu_data_cache[cache_id] = table_action_menu_get_cols_data(t, e, scope, selector)
 	}
 
-	t.refresh_timer = null
-	t.init_colprops()
-
-	osvc.tables[t.id] = t
-
-	$.when(
-		osvc.user_loaded
-	).then(function(){
-		t.init_prefs()
+	t.init_table = function() {
 		t.add_table()
 		t.get_visible_columns()
 		t.init_current_filters()
@@ -3170,9 +3422,27 @@ function table_init(opts) {
 		t.add_scrollers()
 		t.scroll_enable()
 		t.stick()
-		t.add_ws_handler()
 		t.set_column_filters()
 		t.refresh()
+	}
+
+	t.refresh_timer = null
+	t.lines_checked = {}
+	t.init_colprops()
+
+	// remove the hosting element id for the js links to not encode it
+	t.divid = t.options.divid
+	delete t.options.divid
+
+
+	osvc.tables[t.id] = t
+
+	$.when(
+		osvc.user_loaded
+	).then(function(){
+		t.init_prefs()
+		t.init_table()
+		t.add_ws_handler()
 	})
 
 	return t
@@ -3181,52 +3451,60 @@ function table_init(opts) {
 //
 // Standard table cell decorators
 //
-function delta_properties(delta, s, max_age) {
+function delta_properties(delta, s, max_age, seconds) {
+	if (seconds) {
+		var mult = 60
+	} else {
+		var mult = 1
+	}
 	if (delta > 0) {
 		var prefix = "-"
-		var round = Math.ceil
 	} else {
 		var prefix = ""
 		delta = -delta
-		var round = Math.floor
 	}
 
-	var hour = 60
-	var day = 1440
-	var week = 10080
-	var month = 43200
-	var year = 524520
+	var minute = mult
+	var hour = 60 * mult
+	var day = 1440 * mult
+	var week = 10080 * mult
+	var month = 43200 * mult
+	var year = 524520 * mult
 
-	if (delta < hour) {
-		var cl = "minute icon"
-		var text = prefix + i18n.t("table.minute", {"count": round(delta)})
+	if (delta < minute) {
+		var cl = "icon second"
+		var text = prefix + i18n.t("table.second", {"count": Math.floor(delta)})
+		var color = "#000000"
+	} else if (delta < hour) {
+		var cl = "icon minute"
+		var text = prefix + i18n.t("table.minute", {"count": Math.floor(delta/minute)})
 		var color = "#000000"
 	} else if (delta < day) {
-		var cl = "hour icon"
-		var text = prefix + i18n.t("table.hour", {"count": round(delta/hour)})
+		var cl = "icon hour"
+		var text = prefix + i18n.t("table.hour", {"count": Math.floor(delta/hour)})
 		var color = "#181818"
 	} else if (delta < week) {
-		var cl = "day icon "
-		var text = prefix + i18n.t("table.day", {"count": round(delta/day)})
+		var cl = "icon day"
+		var text = prefix + i18n.t("table.day", {"count": Math.floor(delta/day)})
 		var color = "#333333"
 	} else if (delta < month) {
-		var cl = "week icon "
-		var text = prefix + i18n.t("table.week", {"count": round(delta/week)})
+		var cl = "icon  week"
+		var text = prefix + i18n.t("table.week", {"count": Math.floor(delta/week)})
 		var color = "#333333"
 	} else if (delta < year) {
-		var cl = "month icon"
-		var text = prefix + i18n.t("table.month", {"count": round(delta/month)})
+		var cl = "icon month"
+		var text = prefix + i18n.t("table.month", {"count": Math.floor(delta/month)})
 		var color = "#484848"
 	} else {
-		var cl = "year icon"
-		var text = prefix + i18n.t("table.year", {"count": round(delta/year)})
+		var cl = "icon year"
+		var text = prefix + i18n.t("table.year", {"count": Math.floor(delta/year)})
 		var color = "#666666"
 	}
 
 	cl += " nowrap"
 
 	if (prefix == "-" && max_age && (delta > max_age)) {
-		cl += " icon-red"
+		cl += " icon-red text-red"
 	}
 
 	if (!s) {
@@ -3249,7 +3527,7 @@ function cell_decorator_date(e, line) {
 }
 
 function datetime_age(s) {
-	// return age in minutes
+	// return age in seconds
 	if (typeof s === 'undefined') {
 		return
 	}
@@ -3258,7 +3536,7 @@ function datetime_age(s) {
 	}
 	var d = moment.tz(s, "YYYY-MM-DD HH:mm:ss", osvc.server_timezone)
 	var now = moment()
-	var delta = (now -d)/60000
+	var delta = (now -d)/1000
 	return delta
 }
 
@@ -3267,7 +3545,7 @@ function _outdated(s, max_age) {
 	if (!delta) {
 		return true
 	}
-	if (delta > max_age) {
+	if (delta > max_age * 60) {
 		return true
 	}
 	return false
@@ -3334,14 +3612,14 @@ function cell_decorator_datetime(e, line) {
 		e.empty()
 		return
 	}
-	var max_age = e.attr("max_age")
+	var max_age = e.attr("max_age") * 60
 	var delta = datetime_age(s)
 
 	if (!delta) {
 		e.html()
 		return
 	}
-	var props = delta_properties(delta, s, max_age)
+	var props = delta_properties(delta, s, max_age, true)
 	if (e.text() == props.text) {
 		return
 	}
@@ -3357,6 +3635,37 @@ function cell_decorator_datetime(e, line) {
 		return
 	}
 	var content = $("<div class='"+props.cl+"' style='color:"+props.color+"' title='"+props.client_date+"'>"+props.text+"</div>").tooltipster()
+	e.html(content)
+}
+
+function cell_decorator_duration_from_sec(e, line) {
+	var s = $.data(e[0], "v")
+	if (s == "") {
+		e.empty()
+		return
+	}
+	var delta = parseInt(s) * -1
+	var props = delta_properties(delta, null, null, true)
+
+	if (!delta) {
+		e.html()
+		return
+	}
+	if (e.text() == props.text) {
+		return
+	}
+	if (e.children().length) {
+		// already decorated, just update properties
+		var div = e.children()
+		div
+		.text(props.text)
+		.css({"color": props.color})
+		if (!div.hasClass(props.cl)) {
+			div.removeClass().addClass(props.cl)
+		}
+		return
+	}
+	var content = $("<div class='"+props.cl+"' style='color:"+props.color+"'>"+props.text+"</div>")
 	e.html(content)
 }
 
@@ -3387,6 +3696,7 @@ cell_decorators = {
 	"datetime_status": cell_decorator_datetime_status,
 	"datetime_no_age": cell_decorator_datetime_no_age,
 	"date_no_age": cell_decorator_date_no_age,
+	"duration_from_sec": cell_decorator_duration_from_sec,
 	"date": cell_decorator_date,
 	"pct": cell_decorator_pct,
 }
@@ -3475,7 +3785,7 @@ function format_action_menu(t, o) {
 
 	// empty menu banner
 	if (ul.html().length == 0) {
-		o.menu.append("<div style='padding-top:1em' class='alert16 icon'>"+i18n.t("action_menu.no_action")+"</div>")
+		o.menu.append("<div style='padding-top:1em' class='icon alert16'>"+i18n.t("action_menu.no_action")+"</div>")
 		return
 	}
 	o.menu.append(ul)
@@ -3958,7 +4268,33 @@ function table_action_menu_status(msg){
 	if (msg.factorized>0) {
 		s = "factorized: "+msg.factorized+", "+s
 	}
-	osvc.flash.info(s)
+	var table_id = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
+	var vars = {}
+	var ids = []
+	for (var i=0; i<msg.data.length; i++) {
+		ids.push(msg.data[i].action_id)
+	}
+	vars[table_id+"_f_id"] = "("+ids.join(",")+")"
+	console.log(vars)
+        osvc.flash.show({
+		id: "aq-"+table_id,
+		cl: "icon action16",
+		text: i18n.t("action_menu.agent_actions"),
+		bgcolor: osvc.colors.link,
+		fn: function(id){
+			var d = $("<div><div>")
+			$("#"+id).html(d)
+			d.uniqueId()
+			table_action_queue(d.attr("id"), {
+				"id": table_id,
+				"request_vars": vars,
+				"volatile_filters": true,
+				"volatile_prefs": true
+			})
+			osvc.tables[table_id].e_title.text(osvc.tables[table_id].e_title.text() + " ("+s+")")
+		}
+	})
+
 }
 
 //
@@ -3993,8 +4329,8 @@ function table_action_menu_yes_no(msg, callback) {
 	var e = $("<div style='margin-top:0.6em'></div>")
 	var title = $("<div></div>")
 	title.text(i18n.t(msg))
-	var yes = $("<button class='ok icon_fixed_width button_div clickable' name='yes'>"+i18n.t("action_menu.yes")+"</button>")
-	var no = $("<button class='nok icon_fixed_width button_div clickable' name='no'>"+i18n.t("action_menu.no")+"</button>")
+	var yes = $("<button class='icon_fixed_width ok button_div clickable' name='yes'>"+i18n.t("action_menu.yes")+"</button>")
+	var no = $("<button class='icon_fixed_width nok button_div clickable' name='no'>"+i18n.t("action_menu.no")+"</button>")
 	e.append(title)
 	e.append(yes)
 	e.append(no)

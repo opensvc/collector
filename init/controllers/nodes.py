@@ -138,6 +138,7 @@ class table_nodes_hardware(HtmlTable):
             id = request.vars.tableid
         HtmlTable.__init__(self, id, func, innerhtml)
         self.cols = [
+            'id',
             'node_id',
             'nodename',
             'hw_type',
@@ -149,6 +150,10 @@ class table_nodes_hardware(HtmlTable):
         ]
         self.colprops = nodes_colprops
         self.colprops.update({
+            'id': HtmlTableColumn(
+                     field='id',
+                     table='node_hw',
+                    ),
             'hw_type': HtmlTableColumn(
                      field='hw_type',
                      table='node_hw',

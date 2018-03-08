@@ -3858,7 +3858,7 @@ def update_dash_flex_cpu(svc_id):
     sql = """select
                svc_env,
                svc_flex_cpu_low_threshold,
-               svc_flex_cpu_high_threshold,
+               svc_flex_cpu_high_threshold
              from services
              where
                svc_id="%(svc_id)s"
@@ -3866,6 +3866,14 @@ def update_dash_flex_cpu(svc_id):
     rows = db.executesql(sql)
 
     if len(rows) == 0:
+        sql = """delete from dashboard
+                   where
+                     svc_id = "%(svc_id)s" and
+                     dash_type = "flex error" and
+                     dash_fmt like "%%average cpu usage%%"
+          """%dict(svc_id=svc_id)
+        rows = db.executesql(sql)
+        db.commit()
         return
     elif len(rows) == 1 and rows[0][0] == 'PRD':
         sev = 4
@@ -3879,39 +3887,42 @@ def update_dash_flex_cpu(svc_id):
              mon_availstatus="up" and svc_id="%s"
           """ % svc_id
     rows = db.executesql(sql)
+    if len(rows) == 0:
+        sql = """delete from dashboard
+                   where
+                     svc_id = "%(svc_id)s" and
+                     dash_type = "flex error" and
+                     dash_fmt like "%%average cpu usage%%"
+          """%dict(svc_id=svc_id)
+        rows = db.executesql(sql)
+        db.commit()
+        return
     threshold = datetime.datetime.now() - datetime.timedelta(minutes=15)
     total = 0
     count = len(rows)
     for row in rows:
-        total += timeseries.whisper_fetch_avg("nodes/%s"%node_id, "cpu", "all", "idle", b=threshold)
+        total += timeseries.whisper_fetch_avg("nodes/%s"%row[0], "cpu", "all", "idle", b=threshold.strftime("%Y-%m-%d %H:%M:%S"))
     avg = total/count
 
     if avg > svc_flex_cpu_high_threshold or avg < svc_flex_cpu_low_threshold:
         sql = """insert into dashboard
-                 NULL,
-                 "flex error",
-                 "%(svc_id)s",
-                 %(sev)d,
-                 "%%(n)d average cpu usage. thresholds: %%(cmin)d - %%(cmax)d",
-                 concat('{"n": ', %(avg)d,
-                        ', "cmin": ', %(cmin)d,
-                        ', "cmax": ', %(cmax)d,
-                        '}'),
-                 now(),
-                 md5(concat('{"n": ', %(avg)d,
-                        ', "cmin": ', %(cmin)d,
-                        ', "cmax": ', %(cmax)d,
-                        '}')),
-                 "%(env)s",
-                 now(),
-                 "",
-                 NULL
-               on duplicate key update
-                 dash_updated=now()
+                 set
+                   dash_type="flex error",
+                   node_id="",
+                   svc_id="%(svc_id)s",
+                   dash_severity=%(sev)d,
+                   dash_updated=now(),
+                   dash_created=now(),
+                   dash_fmt="%%(n)d average cpu usage. thresholds: %%(cmin)d - %%(cmax)d",
+                   dash_dict=concat('{"n": ', %(avg)d, ', "cmin": ', %(cmin)d, ', "cmax": ', %(cmax)d, '}'),
+                   dash_dict_md5=md5(concat('{"n": ', %(avg)d, ', "cmin": ', %(cmin)d, ', "cmax": ', %(cmax)d, '}')),
+                   dash_env="%(env)s"
+                 on duplicate key update
+                   dash_updated=now()
           """%dict(svc_id=svc_id,
                    sev=sev,
-                   cmin=cmin,
-                   cmax=cmax,
+                   cmin=svc_flex_cpu_low_threshold,
+                   cmax=svc_flex_cpu_high_threshold,
                    avg=int(avg),
                    env=env,
                   )
@@ -4700,6 +4711,13 @@ def merge_daemon_status(node_id, changes):
 
     def update_instance(svc, peer, container_id, idata):
         _changed = set()
+
+        def gstatus(group, _data):
+            try:
+                return _data["status_group"].get(group, "n/a")
+            except KeyError:
+                return _data.get(group, "n/a")
+
         if container_id == "":
             cdata = {"resources": {}}
             cname = ""
@@ -4710,8 +4728,14 @@ def merge_daemon_status(node_id, changes):
             cname = cdata["hostname"]
             ctype = idata["resources"][container_id]["type"].split(".")[-1]
             data = {}
-            for key in ("avail", "overall", "ip", "disk", "fs", "share", "container", "app", "sync"):
-                data[key] = STATUS_STR[merge_status(idata.get(key, "n/a"), cdata.get(key, "n/a"))]
+            for key in ("avail", "overall"):
+                istatus = idata.get(key, "n/a")
+                cstatus = cdata.get(key, "n/a")
+                data[key] = STATUS_STR[merge_status(istatus, cstatus)]
+            for key in ("ip", "disk", "fs", "share", "container", "app", "sync"):
+                istatus = gstatus(key, idata)
+                cstatus = gstatus(key, cdata)
+                data[key] = STATUS_STR[merge_status(istatus, cstatus)]
             #
             # 0: global thawed + encap thawed
             # 1: global frozen + encap thawed
@@ -4733,13 +4757,14 @@ def merge_daemon_status(node_id, changes):
             mon_vmname=cname,
             mon_availstatus=data["avail"],
             mon_overallstatus=data["overall"],
-            mon_ipstatus=data["ip"],
-            mon_diskstatus=data["disk"],
-            mon_fsstatus=data["fs"],
-            mon_sharestatus=data["share"],
-            mon_containerstatus=data["container"],
-            mon_appstatus=data["app"],
-            mon_syncstatus=data["sync"],
+            mon_monstatus=data.get("monitor", {}).get("status", ""),
+            mon_ipstatus=gstatus("ip", data),
+            mon_diskstatus=gstatus("disk", data),
+            mon_fsstatus=gstatus("fs", data),
+            mon_sharestatus=gstatus("share", data),
+            mon_containerstatus=gstatus("container", data),
+            mon_appstatus=gstatus("app", data),
+            mon_syncstatus=gstatus("sync", data),
             mon_frozen=int(data["frozen"]),
             mon_vmtype=ctype,
             mon_updated=now,
@@ -4750,6 +4775,11 @@ def merge_daemon_status(node_id, changes):
         _changed |= update_dash_svcmon_not_updated(svc.svc_id, peer.node_id)
         _changed |= update_instance_resources(svc, peer, cname, cdata["resources"])
         return _changed
+
+    def format_resource_log(rlog):
+        if isinstance(rlog, list):
+            return "\n".join(rlog)
+        return rlog
 
     def update_instance_resources(svc, peer, cname, resources):
         _changed = set()
@@ -4766,10 +4796,10 @@ def merge_daemon_status(node_id, changes):
                 rid=rid,
                 res_status=rdata["status"],
                 res_type=rdata["type"],
-                res_log=rdata["log"],
-                res_optional=rdata["optional"],
-                res_disable=rdata["disable"],
-                res_monitor=rdata["monitor"],
+                res_log=format_resource_log(rdata.get("log", [])),
+                res_optional=rdata.get("optional", False),
+                res_disable=rdata.get("disable", False),
+                res_monitor=rdata.get("monitor", False),
                 res_desc=rdata["label"],
                 updated=now,
             )
@@ -4837,6 +4867,8 @@ def merge_daemon_status(node_id, changes):
         changed |= update_dash_service_unavailable(svc.svc_id, svc.svc_env, sdata["avail"])
         changed |= update_dash_service_placement(svc.svc_id, svc.svc_env, sdata["placement"])
         update_dash_service_available_but_degraded(svc.svc_id, svc.svc_env, sdata["avail"], sdata["overall"])
+        update_dash_flex_instances_started(svc.svc_id)
+        update_dash_flex_cpu(svc.svc_id)
         # TODO
         # provisioned alerts
 

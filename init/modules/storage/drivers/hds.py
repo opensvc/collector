@@ -5,6 +5,23 @@ class Driver(object):
     def __init__(self, storage):
         self.storage = storage
 
+    def map_disk(self):
+        mappings = self.storage.get_mappings()
+        if len(mappings) == 0:
+            raise Error("No mappings found.")
+        cmd = [
+            "array", "add", "map",
+            "-a", self.storage.request_data["array"]["array_name"],
+            "--devnum", self.storage.request_data["dev"],
+        ] + mappings
+        print(" ".join(cmd))
+        ret = self.storage.proxy_action(" ".join(cmd))
+        data = {}
+        try:
+            return json.loads(ret["data"][0]["stdout"])
+        except ValueError:
+            Error("unexpected add map output format: %s" % ret)
+
     def add_disk(self):
         mappings = self.storage.get_mappings()
         if len(mappings) == 0:

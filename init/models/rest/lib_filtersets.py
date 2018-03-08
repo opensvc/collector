@@ -172,16 +172,28 @@ def comp_get_matching_filters(fset_ids, fset_data=None, node_id=None, svc_id=Non
                 where_ext += " and %s.svc_id = '%s'" % (table, svc_id)
             elif table in ("nodes", "packages", "patches", "node_hba"):
                 if table == "nodes":
-                    where_ext += " and nodes.node_id=svcmon.node_id and svcmon.svc_id = '%s'" % svc_id
+                    if slave:
+                        where_ext += " and nodes.nodename=svcmon.mon_vmname and svcmon.svc_id = '%s'" % svc_id
+                    else:
+                        where_ext += " and nodes.node_id=svcmon.node_id and svcmon.svc_id = '%s'" % svc_id
                     join_table += ", svcmon"
                 elif table == "packages":
-                    where_ext += " and packages.node_id=svcmon.node_id and svcmon.svc_id = '%s'" % svc_id
+                    if slave:
+                        where_ext += " and packages.node_id=nodes.node_id and nodes.nodename=svcmon.mon_vmname and svcmon.svc_id = '%s'" % svc_id
+                    else:
+                        where_ext += " and packages.node_id=svcmon.node_id and svcmon.svc_id = '%s'" % svc_id
                     join_table += ", svcmon, nodes"
                 elif table == "patches":
-                    where_ext += " and patches.node_id=svcmon.node_id and svcmon.svc_id = '%s'" % svc_id
+                    if slave:
+                        where_ext += " and patches.node_id=nodes.node_id and nodes.nodename=svcmon.mon_vmname and svcmon.svc_id = '%s'" % svc_id
+                    else:
+                        where_ext += " and patches.node_id=svcmon.node_id and svcmon.svc_id = '%s'" % svc_id
                     join_table += ", svcmon, nodes"
                 elif table == "node_hba":
-                    where_ext += " and node_hba.node_id=svcmon.node_id and svcmon.svc_id = '%s'" % svc_id
+                    if slave:
+                        where_ext += " and node_hba.node_id=nodes.node_id and nodes.nodename=svcmon.mon_vmname and svcmon.svc_id = '%s'" % svc_id
+                    else:
+                        where_ext += " and node_hba.node_id=svcmon.node_id and svcmon.svc_id = '%s'" % svc_id
                     join_table += ", svcmon"
             elif table == "diskinfo":
                 where_ext += " and diskinfo.disk_id=svcdisks.disk_id and svcdisks.svc_id='%s'" % svc_id
