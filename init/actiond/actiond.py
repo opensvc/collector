@@ -110,13 +110,11 @@ def fork(fn, kwargs={}):
     os._exit(0)
 
 def notify_node(nodename, port):
-    try:
-        sock = socket(AF_INET, SOCK_STREAM)
-        sock.connect((nodename, port))
-        sock.send("dequeue_actions")
-        sock.close()
-    except:
-        pass
+    sock = socket(AF_INET, SOCK_STREAM)
+    sock.settimeout(1)
+    sock.connect((nodename, port))
+    sock.send("dequeue_actions")
+    sock.close()
 
 def get_queued():
     conn = get_conn()
@@ -142,7 +140,12 @@ def get_queued():
 
         if row[2] == "pull":
             port = row[5]
-            notify_node(nodename, port)
+            try:
+                notify_node(nodename, port)
+                ids.append(str(row[0]))
+            except Exception as exc:
+                print("notify", nodename, port, "error:", exc)
+                pass
         else:
             cmds.append((row[0], row[1], row[6]))
             ids.append(str(row[0]))
