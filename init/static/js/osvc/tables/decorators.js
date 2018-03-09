@@ -996,21 +996,21 @@ function cell_decorator_svcmon_link_frozen(e, line) {
 	var mon_vmname = $.data(line.children(".cell[col=mon_vmname]")[0], "v")
 	if (mon_vmname) {
 		if (mon_frozen == "3") {
-			var s1 = $("<span class='icon fa-snowflake-o'>&nbsp</span>")
-			var s2 = $("<span class='icon fa-snowflake-o'>&nbsp</span>")
+			var s1 = $("<span class='icon fa-snowflake'>&nbsp</span>")
+			var s2 = $("<span class='icon fa-snowflake'>&nbsp</span>")
 		} else if (mon_frozen == "2") {
-			var s1 = $("<span class='icon fa-snowflake-o icon-lightgray'>&nbsp</span>")
-			var s2 = $("<span class='icon fa-snowflake-o'>&nbsp</span>")
+			var s1 = $("<span class='icon fa-snowflake icon-lightgray'>&nbsp</span>")
+			var s2 = $("<span class='icon fa-snowflake'>&nbsp</span>")
 		} else if (mon_frozen == "1") {
-			var s1 = $("<span class='icon fa-snowflake-o'>&nbsp</span>")
-			var s2 = $("<span class='icon fa-snowflake-o icon-lightgray'>&nbsp</span>")
+			var s1 = $("<span class='icon fa-snowflake'>&nbsp</span>")
+			var s2 = $("<span class='icon fa-snowflake icon-lightgray'>&nbsp</span>")
 		} else {
 			var s1 = null
 			var s2 = null
 		}
 	} else {
 		if (mon_frozen == "1") {
-			var s1 = $("<span class='icon fa-snowflake-o'>&nbsp</span>")
+			var s1 = $("<span class='icon fa-snowflake'>&nbsp</span>")
 			var s2 = null
 		} else {
 			var s1 = null
