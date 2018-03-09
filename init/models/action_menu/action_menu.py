@@ -212,7 +212,7 @@ def do_node_comp_action(node_id, action, mode, obj):
     )
     return action_id
 
-def do_node_action(node_id, action=None):
+def do_node_action(node_id, action=None, options=None):
     check_privilege("NodeExec")
     if action is None or len(action) == 0:
         raise ToolError("no action specified")
@@ -235,7 +235,7 @@ def do_node_action(node_id, action=None):
     if action == "wol":
         return do_node_wol_action(node_id)
 
-    action_id = enqueue_node_action(node, action)
+    action_id = enqueue_node_action(node, action, options=options)
     _log('node.action', 'run %(a)s',
          dict(a=action),
          node_id=node.node_id
