@@ -11,6 +11,7 @@
 		"cancelled": "annulé",
 		"queued": "en queue",
 		"waiting": "en attente",
+		"notified": "notifié",
 		"running": "en cours",
 		"done": "fait",
 		"charts": {

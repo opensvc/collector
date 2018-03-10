@@ -22,7 +22,7 @@ from comet import event_msg, _websocket_send
 
 def msg(conn):
     sql = """select
-              (select count(id) from action_queue where status in ('Q', 'W', 'R')) as queued,
+              (select count(id) from action_queue where status in ('Q', 'N', 'W', 'R')) as queued,
               (select count(id) from action_queue where ret!=0) as ko,
               (select count(id) from action_queue where ret=0 and status='T') as ok
           """
@@ -124,6 +124,7 @@ def get_queued():
     cursor.execute("SELECT a.id, a.command, a.action_type, a.connect_to, n.fqdn, n.listener_port, a.form_id FROM action_queue a join nodes n on a.node_id=n.node_id where a.status='W'")
     cmds = []
     ids = []
+    nids = []
     invalid_ids = []
 
     while (1):
@@ -142,7 +143,7 @@ def get_queued():
             port = row[5]
             try:
                 notify_node(nodename, port)
-                ids.append(str(row[0]))
+                nids.append(str(row[0]))
             except Exception as exc:
                 print("notify", nodename, port, "error:", exc)
                 pass
@@ -163,11 +164,15 @@ def get_queued():
         cursor.execute(sql)
         conn.commit()
 
+    if len(nids) > 0:
+        cursor.execute("update action_queue set status='N' where id in (%s)"%(','.join(nids)))
+        conn.commit()
+
     if len(ids) > 0:
         cursor.execute("update action_queue set status='Q' where id in (%s)"%(','.join(ids)))
         conn.commit()
 
-    if len(cmds) > 0:
+    if len(ids)+len(nids)+len(invalid_ids) > 0:
         _websocket_send(event_msg(msg(conn)))
 
     cursor.close()

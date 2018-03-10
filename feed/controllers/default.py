@@ -1451,7 +1451,7 @@ def rpc_collector_get_action_queue(nodename, auth):
     node_id = auth_to_node_id(auth)
     q = db.action_queue.node_id == node_id
     q &= db.action_queue.action_type == "pull"
-    q &= db.action_queue.status == "W"
+    q &= db.action_queue.status.belongs(["W", "N"])
     l = db.services.on(db.action_queue.svc_id == db.services.svc_id)
     sql = db(q)._select(db.action_queue.ALL, db.services.svcname, left=l)
     data = db.executesql(sql, as_dict=True)
