@@ -1591,6 +1591,7 @@ div.login {
 .os16:before {
 	color: cornflowerblue;
 	content: '\f268';
+	font-family: 'Font Awesome 5 Brands';
 }
 .fixable16 {
 	background: transparent url('../images/fixable16.png') no-repeat;
