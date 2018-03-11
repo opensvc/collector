@@ -94,12 +94,8 @@ def lib_safe_upload(name=None, file=None):
       md5=md5,
     )
 
-    if auth_is_node():
-        # give and display the file to the node's team_responsible
-        gid = auth_node_group_id()
-        if gid is not None:
-            db.safe_team_responsible.update_or_insert(file_id=id, group_id=gid)
-            db.safe_team_publication.update_or_insert(file_id=id, group_id=gid)
+    lib_safe_add_default_team_responsible(id)
+    lib_safe_add_default_team_publication(id)
 
     d = db(db.safe.id==id).select().as_dict()
     return d[id]
@@ -141,5 +137,21 @@ def lib_safe_preview(uuid):
         raise HTTP(400, "The file content is not plain text")
     data["data"] = file.read()
     return data
+
+def lib_safe_add_default_team_responsible(file_id):
+    if auth_is_node():
+        group_id = auth_node_group_id()
+    else:
+        group_id = user_default_group_id()
+    db.safe_team_responsible.insert(file_id=file_id, group_id=group_id)
+    table_modified("safe_team_responsible")
+
+def lib_safe_add_default_team_publication(file_id):
+    if auth_is_node():
+        group_id = auth_node_group_id()
+    else:
+        group_id = user_default_group_id()
+    db.safe_team_publication.insert(file_id=file_id, group_id=group_id)
+    table_modified("safe_team_publication")
 
 
