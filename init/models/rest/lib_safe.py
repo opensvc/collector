@@ -16,7 +16,7 @@ def lib_safe_check_file_responsible(uuid):
     if ok:
         return
 
-    raise Exception("you are not authorized to manage this file")
+    raise HTTP(401, "you are not authorized to manage this file")
 
 def lib_safe_check_file_publication(uuid):
     q = db.safe.uuid == uuid
@@ -31,7 +31,7 @@ def lib_safe_check_file_publication(uuid):
         if ok:
             return
         else:
-            raise Exception("this service is not authorized to access this file")
+            raise HTTP(401, "this service is not authorized to access this file")
     elif auth_is_node():
         q1 = db.safe.id == db.safe_team_publication.file_id
         q1 &= db.safe_team_publication.group_id == db.auth_group.id
@@ -42,7 +42,7 @@ def lib_safe_check_file_publication(uuid):
             return
         else:
             #raise Exception(db(q&q1)._select())
-            raise Exception("this node is not authorized to access this file")
+            raise HTTP(401, "this node is not authorized to access this file")
 
     if "Manager" in user_groups():
         return
@@ -59,7 +59,7 @@ def lib_safe_check_file_publication(uuid):
     if ok:
         return
 
-    raise Exception("you are not authorized to access this file")
+    raise HTTP(401, "you are not authorized to access this file")
 
 def lib_safe_md5(f):
     import hashlib
@@ -116,7 +116,7 @@ def lib_safe_download(uuid):
     md5 = lib_safe_md5(file)
     meta_md5 = db(db.safe.uuid==uuid).select().first().md5
     if md5 != meta_md5:
-        raise Exception("the file is compromised: current md5 = %s, expected md5 = %s" % (md5, meta_md5))
+        raise HTTP(403, "the file is compromised: current md5 = %s, expected md5 = %s" % (md5, meta_md5))
 
     s.write(file.read())
     response.headers['Content-Type'] = c.contenttype(filename)
@@ -133,12 +133,12 @@ def lib_safe_preview(uuid):
     md5 = lib_safe_md5(file)
     meta_md5 = db(db.safe.uuid==uuid).select().first().md5
     if md5 != meta_md5:
-        raise Exception("the file is compromised: current md5 = %s, expected md5 = %s" % (md5, meta_md5))
+        raise HTTP(403, "the file is compromised: current md5 = %s, expected md5 = %s" % (md5, meta_md5))
 
     data = {}
     data['content_type'] = c.contenttype(filename)
     if "text/plain" not in data['content_type']:
-        raise Exception("The file content is not plain text")
+        raise HTTP(400, "The file content is not plain text")
     data["data"] = file.read()
     return data
 

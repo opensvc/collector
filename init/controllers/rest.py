@@ -67,14 +67,20 @@ def rest_router(action, args, vars):
                 return handler.handle(*args, **vars)
     except CompInfo as exc:
         return dict(info=str(exc))
+    except CompError as exc:
+        return dict(error=str(exc))
+    except HTTP as exc:
+        response.status = exc.status
+        return dict(ret=exc.status, error=exc.body)
     except:
         import sys
         import traceback
         e = sys.exc_info()
-        if e[0] in (HTTP, CompError, Exception, KeyError):
+        if e[0] in (Exception, KeyError):
             err = str(e[1])
         else:
             err = traceback.format_exc()
+        response.status = 500
         return dict(error=err)
     response.status = 404
     return dict(error="Unsupported api url: %s /%s" % (action, str(request.raw_args)))
