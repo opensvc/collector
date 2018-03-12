@@ -359,6 +359,7 @@ def get_get_handlers(prefix=None):
              "rest_get_safe_file_preview",
              "rest_get_safe_file_publications",
              "rest_get_safe_file_responsibles",
+             "rest_get_safe_file_usage",
        ],
        "sysreport": [
              "rest_get_sysreport_timeline",

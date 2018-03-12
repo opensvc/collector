@@ -97,6 +97,7 @@ function safe_file_properties(divid, options) {
 		o.info_responsibles = o.div.find("#responsibles")
 		o.info_publications_title = o.div.find("#publications_title")
 		o.info_responsibles_title = o.div.find("#responsibles_title")
+		o.info_usage = o.div.find("#usage")
 		o.load_form()
 	}
 
@@ -131,6 +132,38 @@ function safe_file_properties(divid, options) {
 			"tid": o.info_responsibles,
 			"uuid": data.uuid
 		})
+		services_osvcgetrest("/safe/%1/usage", [o.options.uuid], "", function(jd) {
+			tab_properties_generic_list({
+				"data": jd.data.services,
+				"key": "svcname",
+				"item_class": "icon svc",
+				"id": "svc_id",
+				"flash_id_prefix": "svc",
+				"bgcolor": osvc.colors.svc,
+				"e_title": $(""),
+				"e_list": o.info_usage,
+				"lowercase": true,
+				"ondblclick": function(divid, data) {
+					service_tabs(divid, {"svc_id": data.id, "svcname": data.name})
+				}
+			})
+			tab_properties_generic_list({
+				"data": jd.data.variables,
+				"key": "var_name",
+				"item_class": "icon comp16",
+				"id": "id",
+				"flash_id_prefix": "var",
+				"bgcolor": osvc.colors.comp,
+				"e_title": $(""),
+				"e_list": o.info_usage,
+				"lowercase": true,
+				"extra_attr": ["ruleset_id"],
+				"ondblclick": function(divid, data) {
+					variable_tabs(divid, {"variable_id": data.id, "variable_name": data.name, "ruleset_id": data.ruleset_id})
+				}
+			})
+		})
+
 
 	}
 

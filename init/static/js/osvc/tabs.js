@@ -630,6 +630,12 @@ tab_properties_generic_list = function(options) {
 			if (options.id) {
 				e.attr("tag_id", data[i][options.id])
 			}
+			if (options.extra_attr) {
+				for (var j=0; j<options.extra_attr.length; j++) {
+					var key = options.extra_attr[j]
+					e.attr(key, data[j][key])
+				}
+			}
 			options.e_list.append(e)
 			options.tag_ids.push(data[i][options.id])
 			e.bind("dblclick", function(event){
@@ -639,6 +645,12 @@ tab_properties_generic_list = function(options) {
 				var opts = {
 					"name": $(this).text(),
 					"id": $(this).attr("tag_id")
+				}
+				if (options.extra_attr) {
+					for (var j=0; j<options.extra_attr.length; j++) {
+						var key = options.extra_attr[j]
+						opts[key] = $(this).attr(key)
+					}
 				}
 				if (options.flash_id) {
 					var flash_id = options.flash_id($(this))

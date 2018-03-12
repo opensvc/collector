@@ -616,4 +616,55 @@ class rest_get_safe_file_am_i_responsible(rest_get_handler):
         except:
             return dict(data=False)
 
+#
+class rest_get_safe_file_usage(rest_get_handler):
+    def __init__(self):
+        desc = [
+          "Display a safe file usage.",
+        ]
+        examples = [
+          "# curl -u %(email)s -o- https://%(collector)s/init/rest/api/safe/10/usage"
+        ]
+        rest_get_handler.__init__(
+          self,
+          path="/safe/<id>/usage",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, id, **vars):
+        lib_safe_check_file_publication(id)
+        try:
+            id = int(id)
+            q = db.safe.id == id
+        except:
+            q = db.safe.uuid == id
+        row = db(q).select().first()
+        if row is None:
+            raise HTTP(404, "safe file %s does not exist" % str(id))
+        data = {}
+
+        # services
+        q = db.services.svc_config.like("%{safe://"+row.uuid+"}%")
+        q = q_filter(q, app_field=db.services.svc_app)
+        o = db.services.svcname
+        i = db.services.svc_id
+        rows = db(q).select(o, i, orderby=o, cacheable=False)
+        data["services"] = [{"svcname": r[o], "svc_id": r[i]} for r in rows]
+
+        # rules
+        ug = user_group_ids()
+        q = db.comp_rulesets_variables.var_value.like("%"+row.uuid+"%")
+        q &= db.comp_rulesets_variables.ruleset_id == db.comp_ruleset_team_publication.ruleset_id
+        q &= db.comp_ruleset_team_publication.group_id.belongs(ug)
+        q &= db.comp_rulesets.id == db.comp_rulesets_variables.ruleset_id
+        o = db.comp_rulesets_variables.var_name
+        i = db.comp_rulesets_variables.id
+        ro = db.comp_rulesets.ruleset_name
+        ri = db.comp_rulesets.id
+        rows = db(q).select(o, i, ro, ri, orderby=o, cacheable=False)
+        data["variables"] = [{"var_name": r[o], "id": r[i], "ruleset_name": r[ro], "ruleset_id": r[ri]} for r in rows]
+
+        return dict(data=data)
+
 
