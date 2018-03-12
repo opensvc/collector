@@ -137,10 +137,10 @@ function actions_timeline(divid, options) {
 			}
 			if (d.svcactions.action.match(/#/)) {
 				var itemtype = null
-				var classname = "box-"+o.colors[d.svcactions.status]
+				var classname = "box-light"+o.colors[d.svcactions.status]
 			} else {
 				var itemtype = "background"
-				var classname = "box-light"+o.colors[d.svcactions.status]
+				var classname = "box-"+o.colors[d.svcactions.status]
 			}
 			_data.push({
 				"start": moment.tz(d.svcactions.begin, osvc.server_timezone),

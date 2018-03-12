@@ -3063,31 +3063,31 @@ pre.api_doc {
 /* for svc avail timeline */
 .box-orange {
 	background-color: orange !important;
-	border-color: orange !important;
+	min-width: 5px;
 }
 .box-lightorange {
 	background-color: #ffecc8 !important;
-	border-color: #ffecc8 !important;
+	min-width: 5px;
 }
 .box-lightgreen {
 	background-color: #e4f9e4 !important;
-	border-color: #e4f9e4 !important;
+	min-width: 5px;
 }
 .box-green {
 	background-color: #009900 !important;
-	border-color: #009900 !important;
+	min-width: 5px;
 }
 .box-gray {
 	background-color: #666666 !important;
-	border-color: #666666 !important;
+	min-width: 5px;
 }
 .box-lightred {
 	background-color: #fbe4e6 !important;
-	border-color: #fbe4e6 !important;
+	min-width: 5px;
 }
 .box-red {
 	background-color: #990000 !important;
-	border-color: #990000 !important;
+	min-width: 5px;
 }
 
 .text-orange {
