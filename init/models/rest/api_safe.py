@@ -425,7 +425,7 @@ class rest_delete_safe_file_publication(rest_delete_handler):
           "A websocket event is sent to announce the change in the table.",
         ]
         examples = [
-          "# curl -u %(email)s -X DELETE -o- https://%(collector)s/init/rest/api/safe/1publications/1"
+          "# curl -u %(email)s -X DELETE -o- https://%(collector)s/init/rest/api/safe/1/publications/1"
         ]
         rest_delete_handler.__init__(
           self,
@@ -666,5 +666,75 @@ class rest_get_safe_file_usage(rest_get_handler):
         data["variables"] = [{"var_name": r[o], "id": r[i], "ruleset_name": r[ro], "ruleset_id": r[ri]} for r in rows]
 
         return dict(data=data)
+
+class rest_delete_safe_file(rest_delete_handler):
+    def __init__(self):
+        desc = [
+          "Delete a safe file.",
+          "The user must be the file uploader or be a member of the file responsible groups.",
+          "The action is logged in the collector's log.",
+          "A websocket event is sent to announce the change in the table.",
+        ]
+        examples = [
+          "# curl -u %(email)s -X DELETE -o- https://%(collector)s/init/rest/api/safe/1"
+        ]
+        rest_delete_handler.__init__(
+          self,
+          path="/safe/<id>",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, id, **vars):
+        lib_safe_check_file_responsible(id)
+
+        try:
+            id = int(id)
+            q = db.safe.id == id
+        except:
+            q = db.safe.uuid == id
+        f = db(q).select().first()
+
+        if f is None:
+            raise HTTP(404, "File %s not found" % id)
+
+        fpath = os.path.join(db.safe.uuid.uploadfolder, f.uuid)
+        if os.path.exists(fpath):
+            os.unlink(fpath)
+
+        db(q).delete()
+        _log('safe.delete',
+             'file %(uuid)s deleted',
+             dict(uuid=f.uuid),
+            )
+        ws_send('safe_change')
+        return dict(info="file %(uuid)s deleted" % dict(uuid=f.uuid))
+
+class rest_delete_safe_files(rest_delete_handler):
+    def __init__(self):
+        desc = [
+          "Delete multiple safe file.",
+          "The user must be the file uploader or be a member of the file responsible groups.",
+          "The action is logged in the collector's log.",
+          "A websocket event is sent to announce the change in the table.",
+        ]
+        examples = [
+          "# curl -u %(email)s -X DELETE -d id=1 -o- https://%(collector)s/init/rest/api/safe"
+        ]
+        rest_delete_handler.__init__(
+          self,
+          path="/safe",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, **vars):
+        if "id" in vars:
+            id = vars["id"]
+        elif "uuid" in vars:
+            id = vars["uuid"]
+        else:
+            raise HTTP(400, "The 'uuid' or 'id' key is mandatory")
+        return rest_delete_safe_file().handler(id)
 
 

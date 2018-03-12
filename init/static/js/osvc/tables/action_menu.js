@@ -987,6 +987,13 @@ function table_action_menu_init_data(t) {
 					"condition": "id",
 					"children": [
 						{
+							"title": "action_menu.del",
+							"class": "del16",
+							"fn": "data_action_delete_safe_file",
+							"privileges": ["Manager", "SafeUploader"],
+							"min": 1
+						},
+						{
 							"title": "action_menu.add_publication",
 							"class": "add16",
 							"fn": "data_action_add_safe_publication",
@@ -3184,6 +3191,20 @@ function data_action_delete_docker_tags(t, e) {
 		"request_data_entry": function(data) {
 			return {
 				'id': data['tag_id']
+			}
+		}
+	})
+}
+
+//
+// data action: delete safe files
+//
+function data_action_delete_safe_file(t, e) {
+	data_action_generic_delete(t, e, {
+		"request_service": "/safe",
+		"request_data_entry": function(data) {
+			return {
+				'id': data['id']
 			}
 		}
 	})

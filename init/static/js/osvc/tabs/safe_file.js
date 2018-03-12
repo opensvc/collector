@@ -164,6 +164,32 @@ function safe_file_properties(divid, options) {
 			})
 		})
 
+		var am_data = [
+			{
+				"title": "action_menu.data_actions",
+				"children": [
+					{
+						"selector": ["tab"],
+						"foldable": false,
+						"cols": [],
+						"children": [
+							{
+								"title": "action_menu.del",
+								"class": "del16",
+								"fn": "data_action_delete_safe_file",
+								"privileges": ["Manager", "SafeUploader"]
+							}
+						]
+					}
+				]
+			}
+		]
+		tab_tools({
+			"div": o.div.find("#tools"),
+			"data": {"id": data.id},
+			"am_data": am_data
+		})
+
 
 	}
 

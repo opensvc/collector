@@ -581,8 +581,10 @@ def get_delete_handlers(prefix=None):
         "safe": [
              "rest_delete_safe_files_publications",
              "rest_delete_safe_files_responsibles",
+             "rest_delete_safe_files",
              "rest_delete_safe_file_publication",
              "rest_delete_safe_file_responsible",
+             "rest_delete_safe_file",
         ],
         "sysreport": [
              "rest_delete_sysreport_secure_pattern",
