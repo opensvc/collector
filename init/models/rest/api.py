@@ -744,6 +744,13 @@ def prepare_data(
                         tables.append("tags")
                         validated_props.append(prop)
                         break
+            elif t == "comp_rulesets":
+                for table in tables:
+                    if "ruleset_id" in db[table].fields:
+                        left.append(db.comp_rulesets.on(db.comp_rulesets.id==db[table].ruleset_id))
+                        tables.append("comp_rulesets")
+                        validated_props.append(prop)
+                        break
         props = ",".join(validated_props)
 
     all_cols, translations = props_to_cols(None, tables=tables, blacklist=props_blacklist, db=db)
