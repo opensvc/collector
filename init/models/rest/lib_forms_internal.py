@@ -478,6 +478,125 @@ form_data_internal = [
             ]
         }
     }),
+    Storage({
+        "id": -7,
+        "form_name": "internal_notification_period",
+        "form_folder": "/internal",
+        "form_type": "generic",
+        "form_definition": {
+            "Vertical": False,
+            "Outputs": [
+                {
+                    "Type": "json",
+                    "Format": "dict",
+                }
+            ],
+            "Inputs": [
+                {
+                    "Id": "period",
+                    "Label": T("Period"),
+                    "LabelCss": "fa-bell",
+                    "Candidates": [
+                        {
+                            "Value": "always",
+                            "Label": T("Always"),
+                        },
+                        {
+                            "Value": "never",
+                            "Label": T("Never"),
+                        },
+                        {
+                            "Value": "custom",
+                            "Label": T("Custom"),
+                        },
+                    ],
+                    "Default": "always",
+                },
+                {
+                    "Id": "begin",
+                    "Label": T("Begin"),
+                    "LabelCss": "fa-clock",
+                    "Type": "time",
+                    "Default": "08:00",
+                    "Condition": "#period == custom",
+                },
+                {
+                    "Id": "end",
+                    "Label": T("End"),
+                    "LabelCss": "fa-clock",
+                    "Type": "time",
+                    "Default": "18:00",
+                    "Condition": "#period == custom",
+                },
+            ]
+        }
+    }),
+    Storage({
+        "id": -8,
+        "form_name": "internal_notification_periods",
+        "form_folder": "/internal",
+        "form_type": "generic",
+        "form_definition": {
+            "Vertical": False,
+            "Outputs": [
+                {
+                    "Type": "json",
+                    "Format": "dict",
+                }
+            ],
+            "Inputs": [
+                {
+                    "Id": "mon",
+                    "Label": T("Monday"),
+                    "LabelCss": "fa-calendar",
+                    "Type": "form",
+                    "Form": "internal_notification_period",
+                },
+                {
+                    "Id": "tue",
+                    "Label": T("Tuesday"),
+                    "LabelCss": "fa-calendar",
+                    "Type": "form",
+                    "Form": "internal_notification_period",
+                },
+                {
+                    "Id": "wed",
+                    "Label": T("Wednesday"),
+                    "LabelCss": "fa-calendar",
+                    "Type": "form",
+                    "Form": "internal_notification_period",
+                },
+                {
+                    "Id": "thu",
+                    "Label": T("Thursday"),
+                    "LabelCss": "fa-calendar",
+                    "Type": "form",
+                    "Form": "internal_notification_period",
+                },
+                {
+                    "Id": "fri",
+                    "Label": T("Friday"),
+                    "LabelCss": "fa-calendar",
+                    "Type": "form",
+                    "Form": "internal_notification_period",
+                },
+                {
+                    "Id": "sat",
+                    "Label": T("Saturday"),
+                    "LabelCss": "fa-calendar",
+                    "Type": "form",
+                    "Form": "internal_notification_period",
+                },
+                {
+                    "Id": "sun",
+                    "Label": T("Sunday"),
+                    "LabelCss": "fa-calendar",
+                    "Type": "form",
+                    "Form": "internal_notification_period",
+                },
+            ]
+        }
+    }),
 ]
 
 def get_internal_form(form_id):

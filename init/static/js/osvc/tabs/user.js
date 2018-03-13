@@ -94,6 +94,7 @@ function user_properties(divid, options) {
 		o.info_resp_apps = o.div.find("#resp_apps")
 		o.info_visible_apps = o.div.find("#visible_apps")
 		o.info_tools = o.div.find("#tools")
+		o.info_notifications = o.div.find("#notifications")
 
 		o.load_user()
 		o.load_fset()
@@ -224,6 +225,18 @@ function user_properties(divid, options) {
 			o.info_im_notifications.attr('class','fa toggle-off')
 		}
 
+		o.notifications_form = form(o.info_notifications, {
+			"form_name": "internal_notification_periods",
+			"display_mode": "true",
+			"data": osvc.user_prefs.data.notifications_periods,
+		})
+		o.notifications_form.submit_action = function(data) {
+			osvc.user_prefs.data.notifications_periods = data
+			osvc.user_prefs.save()
+			o.notifications_form.options.data = data
+			o.notifications_form.disable_submit()
+			o.notifications_form.load()
+		}
 		user_org_membership({
 			"tid": o.info_org_groups,
 			"user_id": data.id,

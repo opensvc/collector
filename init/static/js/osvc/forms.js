@@ -245,6 +245,9 @@ function form(divid, options) {
 	}
 
 	o.render_code = function() {
+		if ("parent_form" in o.options) {
+			return ""
+		}
 		var a = $("<a class='icon fa-code' style='position:absolute;top:2px;right:1.5em'></a>")
 		if (o.options.editable == false) {
 			a.css({"right": "2px"})
@@ -284,6 +287,8 @@ function form(divid, options) {
 			o.area.addClass("pre")
 			return
 		}
+		console.log(o.options.data)
+		o.area.empty()
 		o.area.text(JSON.stringify(o.options.data, null, 4))
 		require(["hljs"], function(hljs) {
 			hljs.highlightBlock(o.area[0])
@@ -292,6 +297,7 @@ function form(divid, options) {
 	}
 
 	o.render_display = function() {
+		o.area.removeClass("hljs")
 		if ((typeof(o.options.data) == "string") || (typeof(o.options.data) == "number") || (o.options.form_name == "raw")) {
 			o.area.text(o.options.data)
 			o.area.addClass("pre")
@@ -446,7 +452,11 @@ function form(divid, options) {
 			}
 			if (d.Condition) {
 				var c = o.parse_condition(d)
-				var val = data[c.id]
+				try {
+					var val = data[c.id]
+				} catch(e) {
+					var val = null
+				}
 				var ret = o.eval_condition(c, val)
 				console.log("render condition:", input_key_id, "->", d.Id, ":", val, d.Condition, "=>", ret)
 				if (!ret) {
@@ -478,12 +488,17 @@ function form(divid, options) {
 			}
 
                         if (d.Type == "form") {
+				if (data && (input_key_id in data)) {
+					var opt_data = data[input_key_id]
+				} else {
+					var opt_data = null
+				}
 				form(value, {
 					"parent_form": o,
 					"form_name": d.Form,
 					"display_mode": true,
 					"editable": false,
-					"data": data[input_key_id]
+					"data": opt_data
 				})
 				table.append(line)
 				continue
@@ -900,6 +915,7 @@ function form(divid, options) {
 		var button = $("<button class='icon_fixed_width fa-code button_div'>")
                 o.test_tool = button
 		button.text(i18n.t("forms.test"))
+		button.css({"margin-top": "1em"})
 		o.area.append(button)
 
 		button.bind("click", function() {
@@ -931,6 +947,7 @@ function form(divid, options) {
 		var button = $("<button class='icon_fixed_width fa-save button_div'>")
                 o.submit_tool = button
 		button.text(i18n.t("forms.submit"))
+		button.css({"margin-top": "1em"})
 		o.area.append(button)
 
 		button.bind("click", function() {
@@ -940,17 +957,21 @@ function form(divid, options) {
 			}
 			o.result.empty()
 			var data = o.form_to_data()
-			o.need_submit_form_data = false
-			o.results = {}
-			for (var i=0; i<o.form_data.form_definition.Outputs.length; i++) {
-				var output = o.form_data.form_definition.Outputs[i]
-				o.submit_output(output, data)
-			}
-			if (o.need_submit_form_data == true) {
-				o.need_submit_form_data = false
-				o.submit_form_data(data)
-			}
+			o.submit_action(data)
 		})
+	}
+
+	o.submit_action = function(data) {
+		o.need_submit_form_data = false
+		o.results = {}
+		for (var i=0; i<o.form_data.form_definition.Outputs.length; i++) {
+			var output = o.form_data.form_definition.Outputs[i]
+			o.submit_output(output, data)
+		}
+		if (o.need_submit_form_data == true) {
+			o.need_submit_form_data = false
+			o.submit_form_data(data)
+		}
 	}
 
 	o.render_time = function(d, content) {
@@ -1617,7 +1638,7 @@ function form(divid, options) {
 				input.prop("acid", data.autocomplete.options.source[0].id)
 				input.change()
 			}
-		} else if ((d.Type == "string" || d.Type == "integer") && input_has_default(d)) {
+		} else if ((d.Type == "string" || d.Type == "integer" || d.Type == "time" || d.Type == "date" || d.Type == "datetime") && input_has_default(d)) {
 			input.val(d.Default)
 			input.prop("acid", d.Default)
 			input.change()
@@ -1685,10 +1706,13 @@ function form(divid, options) {
 		if (typeof val === "undefined") {
 			return false
 		}
-		if (typeof val === "number") {
+		else if (typeof val === "number") {
 			try {
 				c.ref = parseInt(c.ref)
 			} catch(e) {}
+		}
+		else if (typeof val === "boolean") {
+			c.ref = (c.ref.toLowerCase() == 'true')
 		}
 		if ((val != "") || (val == 0)) {
 			if (c.op == "!=") {

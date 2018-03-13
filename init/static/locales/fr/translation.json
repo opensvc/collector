@@ -1596,6 +1596,7 @@
 	},
 	"user_properties": {
 		"id": "Id",
+		"notifications": "Notifications",
 		"org_groups": "Groupes organisationnels",
 		"priv_groups": "Groupes de privilège",
 		"resp_apps": "Applications, responsable",
