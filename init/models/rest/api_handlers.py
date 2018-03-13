@@ -624,6 +624,10 @@ def get_post_handlers(prefix=None):
              "rest_post_action_queue",
              "rest_post_action_queue_one",
         ],
+        "alerts": [
+             "rest_post_alert",
+             "rest_post_alerts",
+        ],
         "apps": [
              "rest_post_apps",
              "rest_post_app",
