@@ -250,7 +250,7 @@ class rest_post_alerts(rest_post_handler):
         row = db(q).select().first()
 
         if row:
-            db.dashboard[row.id].update(
+            db(db.dashboard.id==row.id).update(
                 dash_updated=vars["dash_updated"],
                 dash_env=env,
                 dash_severity=vars["dash_severity"],
