@@ -122,12 +122,11 @@ def task_purge_feed():
 
 
 def task_feed_monitor():
-    ws_send('scheduler_change')
     now = datetime.datetime.now()
     now = now - datetime.timedelta(microseconds=now.microsecond)
     limit = now - datetime.timedelta(minutes=5)
 
-    q = db.scheduler_task.status == "QUEUED"
+    q = db.scheduler_task.status == "RUNNING"
     q &= db.scheduler_task.repeats == 1
     q &= db.scheduler_task.start_time < limit
     n = db(q).count()
@@ -136,7 +135,7 @@ def task_feed_monitor():
         # clean all
         sql = """delete from dashboard
                  where
-                   dash_type = "feed queue"
+                   dash_type = "slow task"
               """
         db.executesql(sql)
         db.commit()
@@ -144,26 +143,18 @@ def task_feed_monitor():
 
     sql = """insert into dashboard
              set
-               dash_type="feed queue",
-               dash_severity=4,
-               dash_fmt="%%(n)s entries stalled in feed queue",
+               dash_type="slow task",
+               dash_severity=3,
+               dash_fmt="%%(n)s scheduled tasks run for more than 5 minutes",
                dash_dict='{"n": "%(n)d"}',
                dash_created="%(now)s",
                dash_env="PRD",
                dash_updated="%(now)s"
              on duplicate key update
-               dash_fmt="%%(n)s entries stalled in feed queue",
+               dash_fmt="%%(n)s scheduled tasks run for more than 5 minutes",
                dash_dict='{"n": "%(n)d"}',
                dash_updated="%(now)s"
           """%dict(n=n, now=str(now))
-    db.executesql(sql)
-    db.commit()
-
-    # clean old
-    sql = """delete from dashboard
-             where
-               dash_type = "feed queue" and
-               dash_updated < "%(now)s" """%dict(now=str(now))
     db.executesql(sql)
     db.commit()
     ws_send('scheduler_change')

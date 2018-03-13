@@ -1205,8 +1205,8 @@ function cell_decorator_dash_link_pkg_tab(e, line) {
 	}
 }
 
-function cell_decorator_dash_link_feed_queue(e, line) {
-	e.html("<a class='icon action16' href=''></a>")
+function cell_decorator_dash_link_scheduler(e, line) {
+	e.html("<a class='icon action16' href='/init/stats/scheduler_stats'></a>")
 }
 
 function _cell_decorator_dash_link_actions(svc_id, e) {
@@ -1391,8 +1391,8 @@ function cell_decorator_dash_links(e, line) {
 		   (dash_type == "flex error") ||
 		   (dash_type == "service unavailable")) {
 		cell_decorator_dash_link_svcmon(e, line)
-	} else if (dash_type == "feed queue") {
-		cell_decorator_dash_link_feed_queue(e, line)
+	} else if (dash_type == "scheduler") {
+		cell_decorator_dash_link_scheduler(e, line)
 	} else if (dash_type.indexOf("os obsolescence") >= 0) {
 		cell_decorator_dash_link_obsolescence(e, line)
 	} else if (dash_type.indexOf("obsolescence") >= 0) {
