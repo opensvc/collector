@@ -394,6 +394,7 @@ def get_delete_handlers(prefix=None):
         ],
         "alerts": [
              "rest_delete_alert",
+             "rest_delete_alerts",
         ],
         "apps": [
              "rest_delete_apps",

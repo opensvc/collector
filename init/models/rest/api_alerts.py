@@ -104,3 +104,22 @@ class rest_delete_alert(rest_delete_handler):
 
         return dict(info=fmt%d)
 
+class rest_delete_alerts(rest_delete_handler):
+    def __init__(self):
+        desc = [
+          "Delete multiple alerts",
+        ]
+        examples = [
+          "# curl -u %(email)s -X DELETE -d id=1 -o- https://%(collector)s/init/rest/api/alerts"
+        ]
+
+        rest_delete_handler.__init__(
+          self,
+          path="/alerts",
+          desc=desc,
+          examples=examples,
+        )
+
+    def handler(self, **vars):
+        return rest_delete_alert().handler(**vars)
+

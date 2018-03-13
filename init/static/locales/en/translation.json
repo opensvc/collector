@@ -136,6 +136,7 @@
 		"unlock_filterset": "Unlock filterset",
 		"email": "Email address",
 		"on_tags": "On tags",
+		"on_alerts": "On alerts",
 		"on_safe_files": "On safe files",
 		"on_forms": "On forms",
 		"on_rulesets": "On rulesets",

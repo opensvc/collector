@@ -1417,6 +1417,24 @@ function table_action_menu_init_data(t) {
 				{
 					"selector": ["clicked", "checked", "all"],
 					"foldable": true,
+					'title': 'action_menu.on_alerts',
+					"class": "alert16",
+					"table": ["dashboard"],
+					"cols": ["id"],
+					"condition": "id",
+					"children": [
+						{
+							"title": "action_menu.del",
+							"class": "del16",
+							"fn": "data_action_del_alerts",
+							"privileges": ["Manager"],
+							"min": 1
+						}
+					]
+				},
+				{
+					"selector": ["clicked", "checked", "all"],
+					"foldable": true,
 					'title': 'action_menu.on_tags',
 					"class": "tag16",
 					"table": ["tags"],
@@ -3986,6 +4004,20 @@ function data_action_del_metrics_publication(t, e) {
 function data_action_del_metrics(t, e) {
 	data_action_generic_delete(t, e, {
 		"request_service": "/reports/metrics",
+		"request_data_entry": function(data) {
+			return {
+				'id': data['id']
+			}
+		}
+	})
+}
+
+//
+// data action: delete alerts
+//
+function data_action_del_alerts(t, e) {
+	data_action_generic_delete(t, e, {
+		"request_service": "/alerts",
 		"request_data_entry": function(data) {
 			return {
 				'id': data['id']

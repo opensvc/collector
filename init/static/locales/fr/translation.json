@@ -136,6 +136,7 @@
 		"unlock_filterset": "Dévérouiller le jeu de filtres",
 		"email": "Adresse mèl",
 		"on_tags": "Sur les tags",
+		"on_alerts": "Sur les alertes",
 		"on_rulesets": "Sur les jeux de règles",
 		"on_modulesets": "Sur les jeux de modules",
 		"on_safe_files": "Sur les fichiers du coffre-fort",
