@@ -284,7 +284,7 @@
 		"clear_filter": "Retirer le filtre",
 		"invert_filter": "Inverser le filtre",
 		"filters": "Filtres",
-		"renderer": "Afficher les ÈlÈment en",
+		"renderer": "Afficher les √©l√©ment en",
 		"lines_per_page": "Lignes par page",
 		"filter_placeholder": "Filtre",
 		"filter_menu": "Filtre du menu",
@@ -292,7 +292,7 @@
 			"column": "Filtre de la colonne __col__:"
 		},
 		"name": {
-			"nodes_hardware": "MatÈriel des noeuds",
+			"nodes_hardware": "Mat√©riel des noeuds",
 			"disks_charts": "Statistiques",
 			"saves_charts": "Statistiques",
 			"scheduler_tasks": "T√¢ches schedul√©es",
@@ -625,7 +625,7 @@
 	"tag_properties": {
 		"id": "Id",
 		"name": "Nom",
-		"data": "DonnÈes",
+		"data": "Donn√©es",
 		"nodes": "Noeuds",
 		"services": "Services",
 		"exclude": "Regexp d'exclusion"
@@ -807,9 +807,9 @@
 		"unacknowleged_errors": "erreurs non-acquitt√©es",
 		"svc_env": "env",
 		"placement": "placement",
-		"frozen": "gelÈ",
+		"frozen": "gel√©",
 		"replicas": "replicas",
-		"provisioned": "provisionnÈ",
+		"provisioned": "provisionn√©",
 		"HA": "HA",
 		"yes": "oui",
 		"no": "non",
@@ -995,7 +995,7 @@
 		"actions": "actions",
 		"log": "journal",
 		"topology": "topologie",
-		"hardware": "matÈriel",
+		"hardware": "mat√©riel",
 		"storage": "stockage",
 		"network": "r√©seau",
 		"packages": "paquets",
@@ -1270,8 +1270,8 @@
 				"text" : "Infos techniques et organisationelles"
 			},
 			"nodes_hardware": {
-				"title": "MatÈriel des noeuds",
-				"text": "PeriphÈriques et composants mÈmoire"
+				"title": "Mat√©riel des noeuds",
+				"text": "Periph√©riques et composants m√©moire"
 			},
 			"tag_attachments" : {
 				"title" : "Attachements des tags",
@@ -1790,7 +1790,7 @@
 		"Disk Allocation": "Allocation du disque",
 		"Tag id": "Id de tag",
 		"Tag name": "Nom de tag",
-		"Tag data": "DonnÈes",
+		"Tag data": "Donn√©es",
 		"OS release": "SE, release",
 		"Sync status": "Etat des synchros",
 		"Manufacturer": "Fabricant",
@@ -2065,7 +2065,7 @@
 		"package differences in cluster": "diff√©rences de paquets dans le cluster",
 		"action errors": "actions en erreur",
 		"application code without responsible": "code applicatif sans responsable",
-		"slow task": "t‚che lente",
+		"slow task": "t√¢che lente",
 		"feed queue": "file d'alimentation",
 		"flex error": "erreur de flex",
 		"hardware obsolescence alert date not set": "date d'alerte d'obsolescence du mat√©riel non param√©tr√©e",
@@ -2140,7 +2140,7 @@
 		"select": "S√©lectionnez un rapport"
 	},
 	"metrics": {
-		"no_data": "Pas de donn√es"
+		"no_data": "Pas de donn√©es"
 	},
 	"requests": {
 		"scripts": "Scripts ex√©cut√©s pour cette √©tape",
