@@ -468,6 +468,8 @@
 			"title_services": "Services",
 			"title_nodes": "Nodes",
 			"title_users": "Users",
+			"title_privs": "Privileges",
+			"title_privileges": "Privileges",
 			"title_apps": "Applications",
 			"title_filtersets": "Filterset",
 			"title_ips": "IP adresses",

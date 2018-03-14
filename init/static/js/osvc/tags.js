@@ -1267,7 +1267,7 @@ function user_priv_membership(options) {
 	}
 	options.ondblclick = function(divid, data) {
 		console.log(divid,data)
-		group_tabs(divid, {"group_id": data.id, "group_name": data.name})
+		group_tabs(divid, {"group_id": data.id, "group_name": data.name, "privilege": true})
 	}
 	options.events = ["auth_group_change", "auth_membership_change"]
 	return tags(options)

@@ -4,8 +4,13 @@
 function group_tabs(divid, options) {
 	var o = tabs(divid)
 	o.options = options
-	o.options.bgcolor = osvc.colors.org
-	o.options.icon = "guys16"
+	if (options.privilege) {
+		o.options.bgcolor = osvc.colors.priv
+		o.options.icon = "privilege16"
+	} else {
+		o.options.bgcolor = osvc.colors.org
+		o.options.icon = "guys16"
+	}
 	o.link = {
 		"fn": arguments.callee.name,
 		"title": "link."+arguments.callee.name,

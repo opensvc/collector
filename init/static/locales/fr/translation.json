@@ -465,6 +465,8 @@
 			"title_disks" : "Disques",
 			"title_services" : "Services",
 			"title_nodes" : "Noeuds",
+			"title_privs": "Privilèges",
+			"title_privileges": "Privilèges",
 			"title_users" : "Utilisateurs",
 			"title_apps" : "Applications",
 			"title_filtersets" : "Jeux de filtres",

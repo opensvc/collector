@@ -128,6 +128,17 @@ var search_data = {
 		"class": "net16 fa-2x search-section-icon",
 		"subclass": "meta_username"
 	},
+	"privileges": {
+		"tab" : function(id, res){group_tabs(id, {"group_id": res.id, "group_name": res.role, "privilege": true})},
+		"type": "priv",
+		"color": "priv",
+		"id": "id",
+		"title": "__role__",
+		"short_title": "__role__",
+		"menu_entry_id": "adm-priv",
+		"class": "privilege16 fa-2x search-section-icon",
+		"subclass": "meta_username clickable"
+	},
 	"groups": {
 		"tab" : function(id, res){group_tabs(id, {"group_id": res.id, "group_name": res.role})},
 		"type": "group",
@@ -272,6 +283,11 @@ function search(divid) {
 			"title": "search.menu_header.title_groups",
 		},
 		{
+			"color": "priv",
+			"prefix": "priv",
+			"title": "search.menu_header.title_privs",
+		},
+		{
 			"color": "app",
 			"prefix": "app",
 			"title": "search.menu_header.title_apps",
@@ -285,11 +301,6 @@ function search(divid) {
 			"color": "node",
 			"prefix": "node",
 			"title": "search.menu_header.title_nodes",
-		},
-		{
-			"color": "tag",
-			"prefix": "tag",
-			"title": "search.menu_header.title_tags",
 		},
 		{
 			"color": "node",
@@ -332,19 +343,24 @@ function search(divid) {
 			"title": "search.menu_header.title_metrics",
 		},
 		{
-			"color": "ruleset",
-			"prefix": "rset",
-			"title": "search.menu_header.title_rulesets",
-		},
-		{
 			"color": "modset",
 			"prefix": "modset",
 			"title": "search.menu_header.title_modulesets",
 		},
 		{
+			"color": "ruleset",
+			"prefix": "rset",
+			"title": "search.menu_header.title_rulesets",
+		},
+		{
 			"color": "rule",
 			"prefix": "var",
 			"title": "search.menu_header.title_variables",
+		},
+		{
+			"color": "tag",
+			"prefix": "tag",
+			"title": "search.menu_header.title_tags",
 		}
 	]
 

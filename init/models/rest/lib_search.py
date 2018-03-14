@@ -325,6 +325,30 @@ def lib_search_group(pattern, limit):
       "elapsed": "%f" % (t.seconds + 1. * t.microseconds / 1000000),
     }
 
+def lib_search_priv(pattern, limit):
+    t = datetime.datetime.now()
+    o = db.auth_group.role
+    q = db.auth_group.privilege == 'T'
+    q = _where(q, 'auth_group', pattern, 'role')
+    try:
+        id = int(pattern.strip("%"))
+        q |= db.auth_group.id == id
+    except:
+        pass
+    n = db(q).count()
+    data = db(q).select(o,
+                        db.auth_group.id,
+                        orderby=o,
+                        limitby=(0,search_cap_limit(limit)),
+    ).as_list()
+    t = datetime.datetime.now() - t
+    return {
+      "total": n,
+      "data": data,
+      "fmt": {"id": "%(id)d", "name": "%(role)s"},
+      "elapsed": "%f" % (t.seconds + 1. * t.microseconds / 1000000),
+    }
+
 def lib_search_safe_file(pattern, limit):
     t = datetime.datetime.now()
     o = db.safe.uuid
