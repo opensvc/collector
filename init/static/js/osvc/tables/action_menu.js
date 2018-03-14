@@ -1084,6 +1084,18 @@ function table_action_menu_init_data(t) {
 					"condition": "node_id",
 					"children": [
 						{
+							"title": "action_menu.notifications_on",
+							"class": "fa-bell",
+							"fn": "data_action_set_nodes_notifications_on",
+							"min": 1
+						},
+						{
+							"title": "action_menu.notifications_off",
+							"class": "fa-bell icon-red",
+							"fn": "data_action_set_nodes_notifications_off",
+							"min": 1
+						},
+						{
 							"title": "action_menu.delete",
 							"class": "del16",
 							"fn": "data_action_delete_nodes",
@@ -1269,6 +1281,18 @@ function table_action_menu_init_data(t) {
 					"cols": ["svc_id", "slave"],
 					"condition": "svc_id+slave,svc_id",
 					"children": [
+						{
+							"title": "action_menu.notifications_on",
+							"class": "fa-bell",
+							"fn": "data_action_set_services_notifications_on",
+							"min": 1
+						},
+						{
+							"title": "action_menu.notifications_off",
+							"class": "fa-bell icon-red",
+							"fn": "data_action_set_services_notifications_off",
+							"min": 1
+						},
 						{
 							"title": "action_menu.delete",
 							"class": "del16",
@@ -3115,6 +3139,64 @@ function data_action_delete_default_thresholds(t, e) {
 	})
 }
 
+
+//
+// data action: set nodes notifications on
+//
+function data_action_set_nodes_notifications_on(t, e) {
+	data_action_generic_set(t, e, "/nodes", function(data){
+		return {
+			'node_id': data['node_id'],
+			'notifications': true
+		}
+	})
+}
+function data_action_set_nodes_notifications_off(t, e) {
+	data_action_generic_set(t, e, "/nodes", function(data){
+		return {
+			'node_id': data['node_id'],
+			'notifications': false
+		}
+	})
+}
+function data_action_set_services_notifications_on(t, e) {
+	data_action_generic_set(t, e, "/services", function(data){
+		return {
+			'svc_id': data['svc_id'],
+			'svc_notifications': true
+		}
+	})
+}
+function data_action_set_services_notifications_off(t, e) {
+	data_action_generic_set(t, e, "/services", function(data){
+		return {
+			'svc_id': data['svc_id'],
+			'svc_notifications': false
+		}
+	})
+}
+
+function data_action_generic_set(t, e, api_handler, fmt_entry) {
+	var entry = $(e.target)
+	var cache_id = entry.attr("cache_id")
+	var data = t.action_menu_data_cache[cache_id]
+	var _data = new Array()
+	for (i=0;i<data.length;i++) {
+		_data.push(fmt_entry(data[i]))
+	}
+	services_osvcpostrest(api_handler, "", "", _data, function(jd) {
+		if (rest_error(jd)) {
+			osvc.flash.error(services_error_fmt(jd))
+		}
+		if (jd.info && (jd.info.length > 0)) {
+			osvc.flash.info(services_info_fmt(jd))
+		}
+		t.refresh_menu_data_cache(entry, e)
+	},
+	function(xhr, stat, error) {
+		osvc.flash.error(services_ajax_error_fmt(xhr, stat, error))
+	})
+}
 
 //
 // data action: cancel queued actions

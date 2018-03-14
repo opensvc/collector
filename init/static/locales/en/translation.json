@@ -65,6 +65,8 @@
 		"import": "Import"
 	},
 	"action_menu": {
+		"notifications_on": "Switch on notifications",
+		"notifications_off": "Switch off notifications",
 		"on_network_segments": "On network segments",
 		"network_segment": "Network Segment",
 		"toggle_display": "Fold / Unfold",

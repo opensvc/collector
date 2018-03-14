@@ -1043,7 +1043,7 @@ function table_init(opts) {
 		var input_id = t.id+"_f_"+c
 		if (t.options.request_vars && (input_id in t.options.request_vars)) {
 			input.val(t.options.request_vars[input_id])
-		} else if (typeof t.colprops[c].current_filter !== "undefined") {
+		} else if (t.colprops[c] && (typeof t.colprops[c].current_filter !== "undefined")) {
 			input.val(t.colprops[c].current_filter)
 		}
 		input.attr("id", input_id)

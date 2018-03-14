@@ -65,6 +65,8 @@
 		"import": "Import"
 	},
 	"action_menu": {
+		"notifications_on": "Activer les notifications",
+		"notifications_off": "Désactiver les notifications",
 		"on_network_segments": "Sur les segment de réseau",
 		"network_segment": "Segment de réseau",
 		"toggle_display": "Déplier / Replier",
