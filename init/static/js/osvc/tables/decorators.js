@@ -1417,7 +1417,7 @@ function cell_decorator_dash_severity(e, line) {
 	var v = $.data(e[0], "v")
 	if (v == 0) {
 		cl = "icon-green text-green"
-		text = "info"
+		text = "notice"
 	} else if (v == 1) {
 		cl = "icon-orange text-orange"
 		text = "warning"
