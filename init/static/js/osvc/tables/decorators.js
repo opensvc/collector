@@ -200,6 +200,18 @@ var img_h = {
 	'tag': 'tag16'
 }
 
+function minutes_to_duration(val) {
+	var hours = parseInt(val / 60)
+	if (hours < 10) {
+		hours = "0" + hours
+	}
+	var minutes = val % 60
+	if (minutes < 10) {
+		minutes = "0" + minutes
+	}
+	return hours + ":" + minutes
+}
+
 function cell_decorator_tag_name(e, line) {
 	var v = $.data(e[0], "v")
 	var tag_id = $.data(line.children(".cell[col=tag_id]")[0], "v")

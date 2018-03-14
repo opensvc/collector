@@ -6556,3 +6556,7 @@ alter table tags add column tag_data text;
 alter table nodes add column notifications varchar(1) default "T";
 alter table services add column svc_notifications varchar(1) default "T";
 
+alter table auth_user add column im_notifications_delay integer default 0;
+alter table auth_user add column email_notifications_delay integer default 0;
+alter table auth_user modify im_type varchar(16);
+

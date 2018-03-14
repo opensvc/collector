@@ -1623,10 +1623,12 @@
 		"filterset": "jeux de filtres",
 		"email_log_level": "niveau d'alerte",
 		"email_notifications": "notifications",
+		"email_notifications_delay": "délai de notifications",
 		"im_log_level": "niveau d'alerte",
 		"im_username": "nom d'utilisateur",
 		"im_type": "type",
 		"im_notifications": "notifications",
+		"im_notifications_delay": "délai de notifications",
 		"im": "Messagerie intantannée",
 		"email_section": "Mèl"
 	},

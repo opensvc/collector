@@ -74,8 +74,10 @@ function user_properties(divid, options) {
 		o.info_phone_work = o.div.find("#phone_work")
 		o.info_email_log_level = o.div.find("#email_log_level")
 		o.info_email_notifications = o.div.find("#email_notifications")
+		o.info_email_notifications_delay = o.div.find("#email_notifications_delay")
 		o.info_im_type = o.div.find("#im_type")
 		o.info_im_notifications = o.div.find("#im_notifications")
+		o.info_im_notifications_delay = o.div.find("#im_notifications_delay")
 		o.info_im_log_level = o.div.find("#im_log_level")
 		o.info_im_username = o.div.find("#im_username")
 		o.info_manager = o.div.find("#manager")
@@ -179,9 +181,13 @@ function user_properties(divid, options) {
 		o.info_email.html(data.email)
 		o.info_phone_work.html(data.phone_work)
 		o.info_email_log_level.html(data.email_log_level)
+		o.info_email_notifications.html(data.email_notifications)
+		o.info_email_notifications_delay.html(minutes_to_duration(data.email_notifications_delay))
 		o.info_im_type.html(data.im_type)
 		o.info_im_username.html(data.im_username)
 		o.info_im_log_level.html(data.im_log_level)
+		o.info_im_notifications.html(data.im_notifications)
+		o.info_im_notifications_delay.html(minutes_to_duration(data.im_notifications_delay))
 		o.info_quota_app.html(data.quota_app)
 		o.info_quota_org_group.html(data.quota_org_group)
 		o.info_quota_docker_registries.html(data.quota_docker_registries)
@@ -213,17 +219,6 @@ function user_properties(divid, options) {
 			"data": {"id": data.id},
 			"am_data": am_data
 		})
-
-		if (data.email_notifications == true) {
-			o.info_email_notifications.attr('class', 'fa toggle-on')
-		} else {
-			o.info_email_notifications.attr('class','fa toggle-off')
-		}
-		if (data.im_notifications == true) {
-			o.info_im_notifications.attr('class', 'fa toggle-on')
-		} else {
-			o.info_im_notifications.attr('class','fa toggle-off')
-		}
 
 		require(["osvc/forms"], function() {
 			o.notifications_form = form(o.info_notifications, {
@@ -345,7 +340,7 @@ function user_properties(divid, options) {
 					services_osvcpostrest("R_USER", [o.options.user_id], "", _data, callback, error_callback)
 				},
 				"get": function(callback) {
-					var data = ["debug", "info", "warning", "error", "critical"]
+					var data = ["notice", "warning", "error", "critical"]
 					callback(data)
 				}
 			})
@@ -355,7 +350,7 @@ function user_properties(divid, options) {
 					services_osvcpostrest("R_USER", [o.options.user_id], "", _data, callback, error_callback)
 				},
 				"get": function(callback) {
-					var data = ["debug", "info", "warning", "error", "critical"]
+					var data = ["notice", "warning", "error", "critical"]
 					callback(data)
 				}
 			})
@@ -365,7 +360,10 @@ function user_properties(divid, options) {
 					services_osvcpostrest("R_USER", [o.options.user_id], "", _data, callback, error_callback)
 				},
 				"get": function(callback) {
-					var data = [{"label": "gtalk", "value": 1}]
+					var data = [
+						{"label": "HangOut", "value": "hangout"},
+						{"label": "Slack", "value": "slack"}
+					]
 					callback(data)
 				}
 			})

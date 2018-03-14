@@ -105,10 +105,6 @@ auth.settings.extra_fields['auth_group'] = [
     Field('privilege','boolean'),
 ]
 
-db.define_table('im_types',
-    Field('im_type','string'),
-    migrate=False)
-
 auth.settings.extra_fields['auth_membership']= [
     Field('primary_group', 'boolean', default=False,
           label=T("The user's primary group, used for task assignation and message routing")),
@@ -129,14 +125,16 @@ auth.settings.extra_fields['auth_user']= [
           label=T('Email notifications')),
     Field('im_notifications', 'boolean', default=False,
           label=T('Instant messaging notifications')),
-    Field('im_type', 'integer',
-          label=T('Instant messaging protocol'), default=1,
-          requires=IS_IN_DB(db, db.im_types.id, "%(im_type)s", zero=T('choose one'))),
+    Field('im_notifications_delay', 'integer', default=0),
+    Field('email_notifications_delay', 'integer', default=0),
+    Field('im_type', 'string',
+          label=T('Instant messaging protocol'), default=None,
+          requires=IS_IN_SET(["hangout", "slack"])),
     Field('im_username', 'string', label=T("Instant messaging user name")),
     Field('im_log_level', 'string', default="critical", label=T("Instant messaging log level"),
-          requires=IS_IN_SET(["debug", "info", "warning", "error", "critical"])),
+          requires=IS_IN_SET(["notice", "warning", "error", "critical"])),
     Field('email_log_level', 'string', default="critical", label=T("Email messaging log level"),
-          requires=IS_IN_SET(["debug", "info", "warning", "error", "critical"])),
+          requires=IS_IN_SET(["notice", "warning", "error", "critical"])),
     Field('lock_filter', 'boolean', default=False,
           label=T("Lock user's session filter"),
           writable=False, readable=False),

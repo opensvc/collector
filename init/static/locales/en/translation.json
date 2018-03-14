@@ -1622,10 +1622,12 @@
 		"filterset": "current filterset",
 		"email_log_level": "log level",
 		"email_notifications": "notifications",
+		"email_notifications_delay": "notifications delay",
 		"im_log_level": "log level",
 		"im_username": "user name",
 		"im_type": "type",
 		"im_notifications": "notifications",
+		"im_notifications_delay": "notifications delay",
 		"im": "Instant messaging",
 		"email_section": "Mail"
 	},

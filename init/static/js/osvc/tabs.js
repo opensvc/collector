@@ -453,9 +453,19 @@ tab_properties_generic_simple = function(options) {
 			if (updater == "datetime") {
 				var m = moment(val).tz(osvc.server_timezone)
 				val = m.format(m._f)
+				var display_val = val
 			}
-			if (updater == "size_mb") {
+			else if (updater == "size_mb") {
 				val = Math.ceil(convert_size(val) / 1024 / 1024)
+				var display_val = val
+			}
+			else if (updater == "duration") {
+				var display_val = val
+				var l = val.split(/:/)
+				val = 60 * parseInt(l[0]) + parseInt(l[1])
+			}
+			else {
+				var display_val = val
 			}
 			data[input.attr("pid")] = val
 			options.post(data, function(jd) {
@@ -469,7 +479,7 @@ tab_properties_generic_simple = function(options) {
 					$.data(cell[0], "v", val)
 					cell_decorator_size_mb(cell)
 				} else {
-					cell.text(val).show()
+					cell.text(display_val).show()
 				}
 				tab_properties_generic_update_peers(options.div)
 				tab_properties_generic_lists_refresh(options.div)
@@ -490,6 +500,14 @@ tab_properties_generic_simple = function(options) {
 				dateFormat:'yy-mm-dd',
 				onSelect: function() {
 					input.parents("td").first().siblings("td").click()
+				}
+			}).datepicker("show");
+		} else if (updater == "duration") {
+			input.timepicker({
+				//dateFormat:'yy-mm-dd',
+				showDuration: true,
+				onSelect: function() {
+					input.submit()
 				}
 			}).datepicker("show");
 		}
@@ -533,7 +551,7 @@ tab_properties_generic_updater = function(options) {
 			$(this).osvc_form()
 		}
 
-		if ((updater == "string") || (updater == "text") || (updater == "integer") || (updater == "date") || (updater == "datetime") || (updater == "size_mb")) {
+		if ((updater == "string") || (updater == "text") || (updater == "integer") || (updater == "date") || (updater == "datetime") || (updater == "size_mb") || (updater == "duration") || (updater == "time")) {
 			tab_properties_generic_simple($.extend({}, options, {"div": $(this)}))
 		} else if (updater == "boolean") {
 			tab_properties_generic_boolean($.extend({}, options, {"div": $(this)}))
