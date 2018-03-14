@@ -73,6 +73,8 @@ class rest_delete_alert(rest_delete_handler):
     def __init__(self):
         desc = [
           "Delete an alert",
+          "The user must be in the Manager or AlertsManager privilege group.",
+          "Nodes and services can delete their own alerts",
         ]
         examples = [
           "# curl -u %(email)s -X DELETE -o- https://%(collector)s/init/rest/api/alerts/1"
@@ -86,12 +88,21 @@ class rest_delete_alert(rest_delete_handler):
         )
 
     def handler(self, id, **vars):
-        check_privilege("Manager")
-
         q = db.dashboard.id == id
         row = db(q).select().first()
         if row is None:
             raise Exception("Alert %s not found"%str(id))
+
+        if row is None:
+            raise HTTP(404, "alert %d does not exist" % alert_id)
+        if auth_is_svc():
+            if row.svc_id != auth.user.svc_id:
+                raise HTTP(403, "the alert is not assigned to this service")
+        elif auth_is_node():
+            if row.node_id != auth.user.node_id:
+                raise HTTP(403, "the alert is not assigned to this node")
+        else:
+            check_privilege("AlertsManager")
 
         db(q).delete()
         table_modified("dashboard")
@@ -108,6 +119,8 @@ class rest_delete_alerts(rest_delete_handler):
     def __init__(self):
         desc = [
           "Delete multiple alerts",
+          "The user must be in the Manager or AlertsManager privilege group.",
+          "Nodes and services can delete their own alerts",
         ]
         examples = [
           "# curl -u %(email)s -X DELETE -d id=1 -o- https://%(collector)s/init/rest/api/alerts"
@@ -129,6 +142,7 @@ class rest_post_alert(rest_post_handler):
         desc = [
           "Update a set of alert properties.",
           "The user must be in the Manager or AlertsManager privilege group.",
+          "Nodes and services can modify their own alerts",
           "The updated timestamp is automatically updated.",
           "The alert signature is automatically computed.",
           "The action is logged in the collector's log.",
@@ -151,6 +165,14 @@ class rest_post_alert(rest_post_handler):
         row = db(q).select().first()
         if row is None:
             raise HTTP(404, "alert %d does not exist" % alert_id)
+        if auth_is_svc():
+            if row.svc_id != auth.user.svc_id:
+                raise HTTP(403, "the alert is not assigned to this service")
+        elif auth_is_node():
+            if row.node_id != auth.user.node_id:
+                raise HTTP(403, "the alert is not assigned to this node")
+        else:
+            check_privilege("AlertsManager")
         vars["dash_updated"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         env = None
         if vars.get("svc_id"):
@@ -161,6 +183,8 @@ class rest_post_alert(rest_post_handler):
             node = get_node(vars.get("node_id"))
             if node:
                 env = node.node_env
+        if env is None:
+            env = row.dash_env
         vars["dash_env"] = env
         vars["dash_md5"] = ""
         if vars.get("dash_fmt") is not None:
@@ -196,6 +220,8 @@ class rest_post_alerts(rest_post_handler):
     def __init__(self):
         desc = [
           "Create or update multiple alerts",
+          "The user must be in the Manager or AlertsManager privilege group.",
+          "Nodes and services can create their own alerts",
         ]
         examples = [
           """# curl -u %(email)s -o- -d node_id=node_id -d svc_id=svc_id dash_type=custom https://%(collector)s/init/rest/api/alerts""",
@@ -209,7 +235,13 @@ class rest_post_alerts(rest_post_handler):
         )
 
     def handler(self, **vars):
-        check_privilege("AlertsManager")
+        if auth_is_svc():
+            vars["svc_id"] = auth.user.svc_id
+            vars["node_id"] = auth.user.node_id
+        elif auth_is_node():
+            vars["node_id"] = auth.user.node_id
+        else:
+            check_privilege("AlertsManager")
         vars["dash_updated"] = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         env = None
         if vars.get("svc_id"):
