@@ -2078,6 +2078,11 @@ function form(divid, options) {
 		return data
 	}
 
+	// Allow callers to set their own submit_data()
+	if (options.on_submit) {
+		o.submit_data = options.submit_data
+	}
+
 	$.when(
 		osvc.forms_loaded,
 		osvc.user_loaded

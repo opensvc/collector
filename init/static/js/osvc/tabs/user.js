@@ -225,18 +225,20 @@ function user_properties(divid, options) {
 			o.info_im_notifications.attr('class','fa toggle-off')
 		}
 
-		o.notifications_form = form(o.info_notifications, {
-			"form_name": "internal_notification_periods",
-			"display_mode": "true",
-			"data": osvc.user_prefs.data.notifications_periods,
+		require(["osvc/forms"], function() {
+			o.notifications_form = form(o.info_notifications, {
+				"form_name": "internal_notification_periods",
+				"display_mode": "true",
+				"data": osvc.user_prefs.data.notifications_periods,
+			})
+			o.notifications_form.submit_action = function(data) {
+				osvc.user_prefs.data.notifications_periods = data
+				osvc.user_prefs.save()
+				o.notifications_form.options.data = data
+				o.notifications_form.disable_submit()
+				o.notifications_form.load()
+			}
 		})
-		o.notifications_form.submit_action = function(data) {
-			osvc.user_prefs.data.notifications_periods = data
-			osvc.user_prefs.save()
-			o.notifications_form.options.data = data
-			o.notifications_form.disable_submit()
-			o.notifications_form.load()
-		}
 		user_org_membership({
 			"tid": o.info_org_groups,
 			"user_id": data.id,
