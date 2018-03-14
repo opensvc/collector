@@ -6553,3 +6553,6 @@ alter table svcactions modify column time integer;
 
 alter table tags add column tag_data text; 
 
+alter table nodes add column notifications varchar(1) default "T";
+alter table services add column svc_notifications varchar(1) default "T";
+

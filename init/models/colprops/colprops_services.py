@@ -20,6 +20,7 @@ services_cols = [
     'svc_comment',
     'svc_created',
     'svc_updated',
+    'svc_notifications',
 ]
 
 svcmon_cols = [
@@ -151,6 +152,10 @@ services_colprops = {
             ),
     'svc_config_updated': HtmlTableColumn(
              field='svc_config_updated',
+             table = 'services',
+            ),
+    'svc_notifications': HtmlTableColumn(
+             field='svc_notifications',
              table = 'services',
             ),
 }

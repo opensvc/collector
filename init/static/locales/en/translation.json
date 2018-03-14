@@ -1638,6 +1638,7 @@
 		"hidden_menu_entries": "hidden menu entries"
 	},
 	"col": {
+		"Notifications": "Notifications",
 		"Path": "Path",
 		"Driver": "Driver",
 		"Instance regex": "Instance regex",

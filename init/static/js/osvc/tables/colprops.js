@@ -55,6 +55,7 @@ objcols = {
 		'app_domain',
 		'last_comm',
 		'last_boot',
+		'notifications',
 		'power_supply_nb',
 		'power_cabinet1',
 		'power_cabinet2',
@@ -88,6 +89,7 @@ objcols = {
 		'svc_nodes',
 		'svc_drpnode',
 		'svc_drpnodes',
+		'svc_notifications',
 		'svc_comment',
 		'svc_created',
 		'svc_status_updated'
@@ -136,6 +138,20 @@ objcols = {
 }
 
 colprops = {
+	"notifications": {
+		"_class": "boolean",
+		"field": "notifications",
+		"table": "nodes",
+		"img": "fa-bell",
+		"title": "Notifications"
+	},
+	"svc_notifications": {
+		"_class": "boolean",
+		"field": "svc_notifications",
+		"table": "services",
+		"img": "fa-bell",
+		"title": "Notifications"
+	},
 	"hw_type": {
 		"field": "hw_type",
 		"table": "node_hw",

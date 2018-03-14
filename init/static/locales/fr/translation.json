@@ -1639,6 +1639,7 @@
 		"hidden_menu_entries": "entrées cachées du menu"
 	},
 	"col": {
+		"Notifications": "Notifications",
 		"Path": "Chemin",
 		"Driver": "Pilote",
 		"Instance regex": "Regex sur les instances",

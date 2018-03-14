@@ -45,6 +45,7 @@ nodes_cols = [
     'collector',
     'connect_to',
     'node_env',
+    'notifications',
     'app',
     'team_responsible',
     'team_integ',
@@ -198,6 +199,10 @@ nodes_colprops = {
             ),
     'connect_to': HtmlTableColumn(
              field='connect_to',
+             table = 'nodes',
+            ),
+    'notifications': HtmlTableColumn(
+             field='notifications',
              table = 'nodes',
             ),
     'version': HtmlTableColumn(
