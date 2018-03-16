@@ -55,7 +55,7 @@ CREATE TABLE `action_queue` (
   KEY `idx2` (`status`,`ret`),
   KEY `k_node_id` (`node_id`),
   KEY `k_svc_id` (`svc_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=386 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=421 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -79,6 +79,24 @@ CREATE TABLE `alerts` (
   `action_ids` varchar(1000) DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=MyISAM AUTO_INCREMENT=13833 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `alerts_sent`
+--
+
+DROP TABLE IF EXISTS `alerts_sent`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `alerts_sent` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `alert_id` int(11) NOT NULL,
+  `msg_type` varchar(16) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `sent` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `user_id` (`user_id`,`alert_id`,`msg_type`)
+) ENGINE=InnoDB AUTO_INCREMENT=72 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -170,7 +188,7 @@ CREATE TABLE `auth_event` (
   `description` longtext,
   PRIMARY KEY (`id`),
   KEY `user_id__idx` (`user_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=5825 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=5830 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -206,7 +224,7 @@ CREATE TABLE `auth_group` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `idx2` (`role`),
   KEY `idx1` (`privilege`)
-) ENGINE=InnoDB AUTO_INCREMENT=317 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=319 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -225,7 +243,7 @@ CREATE TABLE `auth_membership` (
   UNIQUE KEY `user_id` (`user_id`,`group_id`),
   KEY `user_id__idx` (`user_id`),
   KEY `group_id__idx` (`group_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=1143 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1145 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -244,7 +262,7 @@ CREATE TABLE `auth_node` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `k_node_id` (`node_id`),
   KEY `idx1` (`nodename`)
-) ENGINE=InnoDB AUTO_INCREMENT=3763 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=3764 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -282,7 +300,7 @@ CREATE TABLE `auth_user` (
   `reset_password_key` varchar(512) DEFAULT '',
   `email_notifications` varchar(1) DEFAULT 'T',
   `im_notifications` varchar(1) DEFAULT 'T',
-  `im_type` int(11) DEFAULT NULL,
+  `im_type` varchar(16) DEFAULT NULL,
   `im_username` varchar(100) DEFAULT NULL,
   `email_log_level` enum('debug','info','warning','error','critical') DEFAULT 'warning',
   `im_log_level` enum('debug','info','warning','error','critical') DEFAULT 'warning',
@@ -293,6 +311,8 @@ CREATE TABLE `auth_user` (
   `quota_org_group` int(11) DEFAULT NULL,
   `username` varchar(128) DEFAULT NULL,
   `quota_docker_registries` int(11) DEFAULT NULL,
+  `im_notifications_delay` int(11) DEFAULT '0',
+  `email_notifications_delay` int(11) DEFAULT '0',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=122 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -329,7 +349,7 @@ CREATE TABLE `b_action_errors` (
   `err` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `i_svcname` (`svc_id`,`node_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -352,42 +372,6 @@ CREATE TABLE `b_apps_old` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `billing`
---
-
-DROP TABLE IF EXISTS `billing`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `billing` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `bill_min_svc` int(11) NOT NULL,
-  `bill_os_name` varchar(50) NOT NULL,
-  `bill_cost` float NOT NULL,
-  `bill_max_svc` int(11) NOT NULL,
-  `bill_env` enum('prd','nonprd') NOT NULL DEFAULT 'prd',
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=45 DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `billing_agent`
---
-
-DROP TABLE IF EXISTS `billing_agent`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `billing_agent` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `bill_min_agt` int(11) NOT NULL,
-  `bill_os_name` varchar(50) NOT NULL,
-  `bill_cost` float NOT NULL,
-  `bill_max_agt` int(11) NOT NULL,
-  `bill_env` enum('prd','nonprd') NOT NULL DEFAULT 'prd',
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=63 DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
 -- Table structure for table `chart_team_publication`
 --
 
@@ -401,7 +385,7 @@ CREATE TABLE `chart_team_publication` (
   PRIMARY KEY (`id`),
   KEY `idx1` (`chart_id`),
   KEY `idx2` (`group_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=71 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=72 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -418,7 +402,7 @@ CREATE TABLE `chart_team_responsible` (
   PRIMARY KEY (`id`),
   KEY `idx1` (`chart_id`),
   KEY `idx2` (`group_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=39 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=40 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -434,7 +418,7 @@ CREATE TABLE `charts` (
   `chart_yaml` text,
   PRIMARY KEY (`id`),
   UNIQUE KEY `chart_name` (`chart_name`)
-) ENGINE=InnoDB AUTO_INCREMENT=169 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=170 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -482,7 +466,7 @@ CREATE TABLE `checks_live` (
   KEY `k_node_id` (`node_id`),
   KEY `k_svc_id` (`svc_id`),
   KEY `k_chk_type` (`chk_type`)
-) ENGINE=InnoDB AUTO_INCREMENT=4208495 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=5842445 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -532,7 +516,7 @@ CREATE TABLE `comp_log` (
   KEY `idx3` (`run_module`),
   KEY `k_node_id` (`node_id`),
   KEY `k_svc_id` (`svc_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=182809 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=183238 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -554,7 +538,7 @@ CREATE TABLE `comp_log_daily` (
   KEY `idx3` (`run_module`),
   KEY `k_node_id` (`node_id`),
   KEY `k_svc_id` (`svc_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=80131 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=80339 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -591,7 +575,7 @@ CREATE TABLE `comp_moduleset` (
   `modset_updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `idx1` (`modset_name`)
-) ENGINE=InnoDB AUTO_INCREMENT=340 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=345 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -611,7 +595,7 @@ CREATE TABLE `comp_moduleset_modules` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `idx1` (`modset_mod_name`,`modset_id`),
   KEY `comp_moduleset_modules_fk1` (`modset_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=907 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=909 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -643,7 +627,7 @@ CREATE TABLE `comp_moduleset_ruleset` (
   `ruleset_id` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `index_1` (`modset_id`,`ruleset_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=244 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=246 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -660,7 +644,7 @@ CREATE TABLE `comp_moduleset_team_publication` (
   PRIMARY KEY (`id`),
   KEY `idx1` (`modset_id`),
   KEY `comp_moduleset_team_responsible_fk2` (`group_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=893 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=899 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -677,7 +661,7 @@ CREATE TABLE `comp_moduleset_team_responsible` (
   PRIMARY KEY (`id`),
   KEY `idx1` (`modset_id`),
   KEY `comp_moduleset_team_responsible_fk2` (`group_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=1792 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1798 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -698,7 +682,7 @@ CREATE TABLE `comp_modulesets_services` (
   UNIQUE KEY `idx1` (`svc_id`,`modset_id`,`slave`),
   KEY `comp_modulesets_services_fk1` (`modset_id`),
   KEY `k_svc_id` (`svc_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -755,7 +739,7 @@ CREATE TABLE `comp_ruleset_team_publication` (
   PRIMARY KEY (`id`),
   KEY `idx1` (`ruleset_id`),
   KEY `comp_ruleset_team_responsible_fk2` (`group_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3333 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=3340 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -772,7 +756,7 @@ CREATE TABLE `comp_ruleset_team_responsible` (
   PRIMARY KEY (`id`),
   KEY `idx1` (`ruleset_id`),
   KEY `comp_ruleset_team_responsible_fk2` (`group_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=4340 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=4347 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -789,7 +773,7 @@ CREATE TABLE `comp_rulesets` (
   `ruleset_public` varchar(1) DEFAULT 'T',
   PRIMARY KEY (`id`),
   UNIQUE KEY `idx1` (`ruleset_name`)
-) ENGINE=InnoDB AUTO_INCREMENT=985 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=992 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -807,7 +791,7 @@ CREATE TABLE `comp_rulesets_chains` (
   `chain` text NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `index_1` (`head_rset_id`,`tail_rset_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=1286 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1322 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -824,7 +808,7 @@ CREATE TABLE `comp_rulesets_filtersets` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `idx1` (`ruleset_id`),
   KEY `comp_rulesets_filtersets_fk2` (`fset_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=690 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=696 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -857,7 +841,7 @@ CREATE TABLE `comp_rulesets_rulesets` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `comp_rulesets_rulesets_uk1` (`parent_rset_id`,`child_rset_id`),
   KEY `comp_rulesets_rulesets_fk2` (`child_rset_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=992 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=997 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -875,7 +859,7 @@ CREATE TABLE `comp_rulesets_services` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `ruleset_id` (`ruleset_id`,`svc_id`,`slave`),
   KEY `k_svc_id` (`svc_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -895,7 +879,7 @@ CREATE TABLE `comp_rulesets_variables` (
   `var_class` varchar(60) NOT NULL DEFAULT 'raw',
   PRIMARY KEY (`id`),
   KEY `comp_rulesets_variables_fk1` (`ruleset_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=5866 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=5880 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -912,7 +896,7 @@ CREATE TABLE `comp_run_ruleset` (
   `date` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `new_index` (`rset_md5`)
-) ENGINE=InnoDB AUTO_INCREMENT=444156 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=445191 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -937,7 +921,7 @@ CREATE TABLE `comp_status` (
   KEY `idx3` (`run_date`),
   KEY `k_node_id` (`node_id`),
   KEY `k_svc_id` (`svc_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC;
+) ENGINE=InnoDB AUTO_INCREMENT=41 DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -986,7 +970,7 @@ CREATE TABLE `dashboard` (
   KEY `k_node_id` (`node_id`),
   KEY `k_svc_id` (`svc_id`),
   KEY `k_dash_janitor` (`dash_type`,`node_id`,`svc_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2160694 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=12365432 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
@@ -1044,7 +1028,7 @@ CREATE TABLE `dashboard_events` (
   KEY `k_svc_id` (`svc_id`),
   KEY `idx3` (`node_id`,`svc_id`,`dash_md5`),
   KEY `k_purge_future` (`dash_end`)
-) ENGINE=InnoDB AUTO_INCREMENT=589523 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=630028 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1080,7 +1064,7 @@ CREATE TABLE `dashboard_ref` (
   `dash_dict` varchar(200) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `idx1` (`dash_md5`)
-) ENGINE=InnoDB AUTO_INCREMENT=15548538 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=15586768 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1134,7 +1118,7 @@ CREATE TABLE `diskinfo` (
   `disk_created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `new_index` (`disk_id`,`disk_group`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=161 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1213,7 +1197,7 @@ CREATE TABLE `docker_repositories` (
   `official` varchar(1) DEFAULT 'F',
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk` (`registry_id`,`repository`)
-) ENGINE=InnoDB AUTO_INCREMENT=13737 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=84477 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1234,7 +1218,7 @@ CREATE TABLE `docker_tags` (
   `config_size` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk` (`registry_id`,`repository_id`,`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=11133 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=67725 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1337,7 +1321,7 @@ CREATE TABLE `form_output_results` (
   `results` mediumtext,
   `svc_id` char(36) CHARACTER SET ascii DEFAULT '',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=408 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=409 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1357,7 +1341,7 @@ CREATE TABLE `forms` (
   `form_folder` varchar(200) DEFAULT '/',
   PRIMARY KEY (`id`),
   UNIQUE KEY `idx1` (`form_name`)
-) ENGINE=InnoDB AUTO_INCREMENT=104 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=105 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1417,7 +1401,7 @@ CREATE TABLE `forms_team_publication` (
   PRIMARY KEY (`id`),
   KEY `idx1` (`form_id`),
   KEY `idx2` (`group_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=307 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=310 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1434,7 +1418,7 @@ CREATE TABLE `forms_team_responsible` (
   PRIMARY KEY (`id`),
   KEY `idx1` (`form_id`),
   KEY `idx2` (`group_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=236 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=237 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1471,7 +1455,7 @@ CREATE TABLE `gen_filters` (
   `f_label` varchar(512) AS (concat(f_table,".",f_field," ", f_op," ",f_value)) PERSISTENT,
   PRIMARY KEY (`id`),
   UNIQUE KEY `idx1` (`f_cksum`)
-) ENGINE=InnoDB AUTO_INCREMENT=207 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=212 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1542,7 +1526,7 @@ CREATE TABLE `gen_filtersets` (
   `fset_stats` varchar(1) DEFAULT 'F',
   PRIMARY KEY (`id`),
   UNIQUE KEY `idx1` (`fset_name`)
-) ENGINE=InnoDB AUTO_INCREMENT=257 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=267 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1561,7 +1545,7 @@ CREATE TABLE `gen_filtersets_filters` (
   `f_order` int(11) DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `idx_fset_id` (`fset_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=591 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=606 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1577,7 +1561,7 @@ CREATE TABLE `group_hidden_menu_entries` (
   `menu_entry` varchar(32) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `index_1` (`group_id`,`menu_entry`)
-) ENGINE=InnoDB AUTO_INCREMENT=105 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=106 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1634,7 +1618,7 @@ CREATE TABLE `links` (
   `link_title_args` text,
   PRIMARY KEY (`id`),
   KEY `idx1` (`link_md5`)
-) ENGINE=InnoDB AUTO_INCREMENT=74 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=81 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1661,7 +1645,7 @@ CREATE TABLE `log` (
   KEY `idx6` (`log_date`),
   KEY `k_node_id` (`node_id`),
   KEY `k_svc_id` (`svc_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=469332 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1468957 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1678,7 +1662,7 @@ CREATE TABLE `metric_team_publication` (
   PRIMARY KEY (`id`),
   KEY `idx1` (`metric_id`),
   KEY `idx2` (`group_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=81 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=83 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1700,27 +1684,7 @@ CREATE TABLE `metrics` (
   `metric_historize` varchar(1) DEFAULT 'F',
   PRIMARY KEY (`id`),
   UNIQUE KEY `idx1` (`metric_name`)
-) ENGINE=InnoDB AUTO_INCREMENT=181 DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `metrics_log`
---
-
-DROP TABLE IF EXISTS `metrics_log`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `metrics_log` (
-  `metric_id` int(11) NOT NULL,
-  `instance` varchar(100) DEFAULT NULL,
-  `value` float DEFAULT NULL,
-  `date` date DEFAULT NULL,
-  `fset_id` int(11) DEFAULT '0',
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `idx1` (`date`,`metric_id`,`fset_id`),
-  KEY `idx2` (`metric_id`,`fset_id`)
-) ENGINE=TokuDB AUTO_INCREMENT=59988824 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=183 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1803,7 +1767,7 @@ CREATE TABLE `node_groups` (
   UNIQUE KEY `index_1` (`node_id`,`group_name`,`group_id`),
   KEY `k_node_id` (`node_id`),
   KEY `k_purge` (`node_id`,`updated`)
-) ENGINE=InnoDB AUTO_INCREMENT=16074478 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=16097300 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1843,7 +1807,7 @@ CREATE TABLE `node_hw` (
   `updated` datetime NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `node_id` (`node_id`,`hw_type`,`hw_path`)
-) ENGINE=InnoDB AUTO_INCREMENT=106 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=640 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1866,7 +1830,7 @@ CREATE TABLE `node_ip` (
   PRIMARY KEY (`id`),
   KEY `idx2` (`addr`),
   KEY `k_node_id` (`node_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=5305446 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=5316418 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1901,7 +1865,7 @@ CREATE TABLE `node_tags` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `tag_bind` (`node_id`,`tag_id`),
   KEY `k_node_id` (`node_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=68 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=70 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1921,7 +1885,7 @@ CREATE TABLE `node_users` (
   UNIQUE KEY `index_1` (`node_id`,`user_name`,`user_id`),
   KEY `k_node_id` (`node_id`),
   KEY `k_purge` (`node_id`,`updated`)
-) ENGINE=InnoDB AUTO_INCREMENT=15140189 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=15154011 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2005,6 +1969,7 @@ CREATE TABLE `nodes` (
   `bios_version` varchar(32) DEFAULT NULL,
   `last_comm` datetime DEFAULT NULL,
   `manufacturer` varchar(32) DEFAULT NULL,
+  `notifications` varchar(1) DEFAULT 'T',
   PRIMARY KEY (`id`),
   UNIQUE KEY `k_node_id` (`node_id`),
   KEY `idx_os_name` (`os_name`),
@@ -2016,7 +1981,7 @@ CREATE TABLE `nodes` (
   KEY `idx_os_concat` (`os_concat`),
   KEY `nodename_1` (`nodename`),
   KEY `idx_pivot_os_name` (`node_id`,`os_name`)
-) ENGINE=InnoDB AUTO_INCREMENT=1138025 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1137969 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2115,7 +2080,7 @@ CREATE TABLE `obsolescence` (
   `obs_alert_date_updated` datetime NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `obs_1` (`obs_type`,`obs_name`)
-) ENGINE=InnoDB AUTO_INCREMENT=2008 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=2033 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2138,7 +2103,7 @@ CREATE TABLE `packages` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `idx3` (`node_id`,`pkg_name`,`pkg_arch`,`pkg_version`,`pkg_type`),
   KEY `idx2` (`pkg_version`)
-) ENGINE=InnoDB AUTO_INCREMENT=951870 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1380731 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2335,7 +2300,7 @@ CREATE TABLE `resinfo` (
   UNIQUE KEY `uk` (`node_id`,`svc_id`,`rid`,`res_key`),
   KEY `k_node_id` (`node_id`),
   KEY `k_svc_id` (`svc_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2610189 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=3819698 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2365,7 +2330,7 @@ CREATE TABLE `resmon` (
   KEY `resmon_updated` (`updated`),
   KEY `k_node_id` (`node_id`),
   KEY `k_svc_id` (`svc_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3996506 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=693 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2385,7 +2350,7 @@ CREATE TABLE `resmon_log` (
   `res_end` datetime NOT NULL,
   PRIMARY KEY (`id`),
   KEY `idx1` (`node_id`,`svc_id`,`rid`)
-) ENGINE=TokuDB AUTO_INCREMENT=203013 DEFAULT CHARSET=utf8;
+) ENGINE=TokuDB AUTO_INCREMENT=222735 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2406,7 +2371,7 @@ CREATE TABLE `resmon_log_last` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk` (`node_id`,`svc_id`,`rid`),
   KEY `idx1` (`node_id`,`svc_id`,`rid`)
-) ENGINE=InnoDB AUTO_INCREMENT=534 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=892 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2427,7 +2392,7 @@ CREATE TABLE `safe` (
   `md5` char(32) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `idx1` (`uuid`(255))
-) ENGINE=InnoDB AUTO_INCREMENT=38 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=55 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2445,7 +2410,7 @@ CREATE TABLE `safe_team_publication` (
   UNIQUE KEY `idx3` (`file_id`,`group_id`),
   KEY `idx1` (`file_id`),
   KEY `idx2` (`group_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=28 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=59 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2463,7 +2428,7 @@ CREATE TABLE `safe_team_responsible` (
   UNIQUE KEY `idx3` (`file_id`,`group_id`),
   KEY `idx1` (`file_id`),
   KEY `idx2` (`group_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=35 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2584,7 +2549,7 @@ CREATE TABLE `scheduler_run` (
   `duration` int(11) AS (timediff(stop_time, start_time)) PERSISTENT,
   PRIMARY KEY (`id`),
   KEY `task_id__idx` (`task_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=5249 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=803 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2704,6 +2669,7 @@ CREATE TABLE `services` (
   `svc_frozen` varchar(6) DEFAULT NULL,
   `svc_provisioned` varchar(6) DEFAULT NULL,
   `svc_placement` varchar(12) DEFAULT NULL,
+  `svc_notifications` varchar(1) DEFAULT 'T',
   PRIMARY KEY (`id`),
   UNIQUE KEY `k_svc_id` (`svc_id`),
   KEY `svc_hostid` (`svc_hostid`),
@@ -2711,7 +2677,7 @@ CREATE TABLE `services` (
   KEY `idx2` (`svc_topology`),
   KEY `services_svc_app` (`svc_app`),
   KEY `k_svc_name` (`svcname`)
-) ENGINE=InnoDB AUTO_INCREMENT=398168 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=404127 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2729,7 +2695,7 @@ CREATE TABLE `services_log` (
   `svc_id` char(36) CHARACTER SET ascii DEFAULT '',
   PRIMARY KEY (`id`),
   KEY `k_svc_id` (`svc_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=597370 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=602034 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2748,7 +2714,7 @@ CREATE TABLE `services_log_last` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk` (`svc_id`),
   KEY `k_svc_id` (`svc_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=70 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=144 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2791,27 +2757,6 @@ CREATE TABLE `stat_day` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `stat_day_billing`
---
-
-DROP TABLE IF EXISTS `stat_day_billing`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `stat_day_billing` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `fset_id` int(11) NOT NULL DEFAULT '0',
-  `day` datetime NOT NULL,
-  `os_name` varchar(100) NOT NULL,
-  `nb_svc_prd` int(11) DEFAULT '0',
-  `nb_svc_nonprd` int(11) DEFAULT '0',
-  `nb_agents_without_svc_prd` int(11) DEFAULT '0',
-  `nb_agents_without_svc_nonprd` int(11) DEFAULT '0',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `new_index` (`day`,`fset_id`,`os_name`)
-) ENGINE=InnoDB AUTO_INCREMENT=821 DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
 -- Table structure for table `stat_day_disk_app`
 --
 
@@ -2826,7 +2771,7 @@ CREATE TABLE `stat_day_disk_app` (
   `quota` int(11) DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `new_index` (`day`,`app`)
-) ENGINE=InnoDB AUTO_INCREMENT=8478 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=8639 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2865,7 +2810,7 @@ CREATE TABLE `stat_day_disk_array` (
   `reserved` int(11) DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `new_index` (`day`,`array_name`)
-) ENGINE=InnoDB AUTO_INCREMENT=2518 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=2573 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2886,7 +2831,7 @@ CREATE TABLE `stat_day_disk_array_dg` (
   `reservable` int(11) DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `new_index` (`day`,`array_name`,`array_dg`)
-) ENGINE=InnoDB AUTO_INCREMENT=135981 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=136036 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -2915,7 +2860,7 @@ CREATE TABLE `stat_day_svc` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_stat_day_svc_1` (`day`,`svc_id`),
   KEY `k_svc_id` (`svc_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=630979 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=631726 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3123,7 +3068,7 @@ CREATE TABLE `svcactions` (
   `acked_date` datetime DEFAULT NULL,
   `version` varchar(20) CHARACTER SET latin1 DEFAULT NULL,
   `cron` tinyint(1) DEFAULT '0',
-  `time` datetime DEFAULT '0000-00-00 00:00:00',
+  `time` int(11) DEFAULT NULL,
   `node_id` char(36) CHARACTER SET ascii DEFAULT '',
   `svc_id` char(36) CHARACTER SET ascii DEFAULT '',
   PRIMARY KEY (`id`),
@@ -3132,7 +3077,7 @@ CREATE TABLE `svcactions` (
   KEY `status` (`status`),
   KEY `k_node_id` (`node_id`),
   KEY `k_svc_id` (`svc_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=9101191 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=9586022 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3161,7 +3106,7 @@ CREATE TABLE `svcdisks` (
   KEY `k_node_id` (`node_id`),
   KEY `k_svc_id` (`svc_id`),
   KEY `k_svcdisks_1` (`svc_id`,`node_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='disks used by services';
+) ENGINE=InnoDB AUTO_INCREMENT=185 DEFAULT CHARSET=utf8 COMMENT='disks used by services';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3201,7 +3146,7 @@ CREATE TABLE `svcmon` (
   KEY `mon_vmname` (`mon_vmname`),
   KEY `k_node_id` (`node_id`),
   KEY `k_svc_id` (`svc_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=174938 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=170 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3232,7 +3177,7 @@ CREATE TABLE `svcmon_log` (
   KEY `mon_begin` (`mon_begin`,`mon_end`),
   KEY `k_node_id` (`node_id`),
   KEY `k_svc_id` (`svc_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=6486253 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=6493448 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3288,7 +3233,7 @@ CREATE TABLE `svcmon_log_last` (
   KEY `mon_begin` (`mon_begin`,`mon_end`),
   KEY `k_node_id` (`node_id`),
   KEY `k_svc_id` (`svc_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2971 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=3123 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3375,7 +3320,7 @@ CREATE TABLE `table_modified` (
   `table_modified` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `index_1` (`table_name`)
-) ENGINE=InnoDB AUTO_INCREMENT=460394 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1502949 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -3391,9 +3336,10 @@ CREATE TABLE `tags` (
   `tag_created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `tag_exclude` varchar(128) DEFAULT NULL,
   `tag_id` char(40) AS (sha(tag_name)) PERSISTENT,
+  `tag_data` text,
   PRIMARY KEY (`id`),
   UNIQUE KEY `tag_name` (`tag_name`)
-) ENGINE=InnoDB AUTO_INCREMENT=89 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=91 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -4765,7 +4711,7 @@ CREATE TABLE `records` (
   KEY `nametype_index` (`name`,`type`),
   KEY `domain_id` (`domain_id`),
   KEY `recordorder` (`domain_id`,`ordername`)
-) ENGINE=InnoDB AUTO_INCREMENT=100 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=102 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -5562,9 +5508,10 @@ USE `pdns`;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-12-27 22:29:34
+-- Dump completed on 2018-03-16 18:52:29
 GRANT SELECT ON opensvc.action_queue TO readonly@127.0.0.1;
 GRANT SELECT ON opensvc.alerts TO readonly@127.0.0.1;
+GRANT SELECT ON opensvc.alerts_sent TO readonly@127.0.0.1;
 GRANT SELECT ON opensvc.apps TO readonly@127.0.0.1;
 GRANT SELECT ON opensvc.apps_import TO readonly@127.0.0.1;
 GRANT SELECT ON opensvc.apps_publications TO readonly@127.0.0.1;
@@ -5576,8 +5523,6 @@ GRANT SELECT ON opensvc.auth_membership TO readonly@127.0.0.1;
 GRANT SELECT ON opensvc.auth_permission TO readonly@127.0.0.1;
 GRANT SELECT ON opensvc.b_action_errors TO readonly@127.0.0.1;
 GRANT SELECT ON opensvc.b_apps_old TO readonly@127.0.0.1;
-GRANT SELECT ON opensvc.billing TO readonly@127.0.0.1;
-GRANT SELECT ON opensvc.billing_agent TO readonly@127.0.0.1;
 GRANT SELECT ON opensvc.chart_team_publication TO readonly@127.0.0.1;
 GRANT SELECT ON opensvc.chart_team_responsible TO readonly@127.0.0.1;
 GRANT SELECT ON opensvc.charts TO readonly@127.0.0.1;
@@ -5645,7 +5590,6 @@ GRANT SELECT ON opensvc.links TO readonly@127.0.0.1;
 GRANT SELECT ON opensvc.log TO readonly@127.0.0.1;
 GRANT SELECT ON opensvc.metric_team_publication TO readonly@127.0.0.1;
 GRANT SELECT ON opensvc.metrics TO readonly@127.0.0.1;
-GRANT SELECT ON opensvc.metrics_log TO readonly@127.0.0.1;
 GRANT SELECT ON opensvc.network_segment_responsibles TO readonly@127.0.0.1;
 GRANT SELECT ON opensvc.network_segments TO readonly@127.0.0.1;
 GRANT SELECT ON opensvc.networks TO readonly@127.0.0.1;
@@ -5689,7 +5633,6 @@ GRANT SELECT ON opensvc.services TO readonly@127.0.0.1;
 GRANT SELECT ON opensvc.services_log TO readonly@127.0.0.1;
 GRANT SELECT ON opensvc.services_log_last TO readonly@127.0.0.1;
 GRANT SELECT ON opensvc.stat_day TO readonly@127.0.0.1;
-GRANT SELECT ON opensvc.stat_day_billing TO readonly@127.0.0.1;
 GRANT SELECT ON opensvc.stat_day_disk_app TO readonly@127.0.0.1;
 GRANT SELECT ON opensvc.stat_day_disk_app_dg TO readonly@127.0.0.1;
 GRANT SELECT ON opensvc.stat_day_disk_array TO readonly@127.0.0.1;
