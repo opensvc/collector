@@ -129,7 +129,7 @@ auth.settings.extra_fields['auth_user']= [
     Field('email_notifications_delay', 'integer', default=0),
     Field('im_type', 'string',
           label=T('Instant messaging protocol'), default=None,
-          requires=IS_IN_SET(["hangout", "slack"])),
+          requires=IS_IN_SET(["xmpp", "slack"])),
     Field('im_username', 'string', label=T("Instant messaging user name")),
     Field('im_log_level', 'string', default="critical", label=T("Instant messaging log level"),
           requires=IS_IN_SET(["notice", "warning", "error", "critical"])),
@@ -197,10 +197,10 @@ service=Service(globals())                   # for json, xml, jsonrpc, xmlrpc, a
 # auth.settings.registration_requires_approval = True
 # auth.messages.verify_email = \
 #  'Click on the link http://.../user/verify_email/%(key)s to verify your email'
-mail_server = config_get("mail_server", "localhost:25")
-mail_sender = config_get("mail_sender", "admin@opensvc.com")
-mail_login = config_get("mail_login", None)
-mail_tls = config_get("mail_tls", False)
+mail_server = config_get("email_server", "localhost:25")
+mail_sender = config_get("email_sender", "admin@opensvc.com")
+mail_login = config_get("email_login", None)
+mail_tls = config_get("email_tls", False)
 
 mail=Mail()
 mail.settings.server = mail_server
@@ -988,8 +988,6 @@ db.define_table('log',
     Field('log_fmt','string'),
     Field('log_dict','string'),
     Field('log_date','datetime'),
-    Field('log_gtalk_sent','integer'),
-    Field('log_email_sent','integer'),
     Field('log_entry_id','string'),
     Field('log_level','string'),
     migrate=False)

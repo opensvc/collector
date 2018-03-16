@@ -361,7 +361,7 @@ function user_properties(divid, options) {
 				},
 				"get": function(callback) {
 					var data = [
-						{"label": "HangOut", "value": "hangout"},
+						{"label": "XMPP", "value": "xmpp"},
 						{"label": "Slack", "value": "slack"}
 					]
 					callback(data)

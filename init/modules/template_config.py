@@ -161,9 +161,17 @@ retentions = {
 email = True
 email_from = "admin@localhost"
 email_host = "localhost"
-email_port = 35
+email_port = 465
+email_ssl = True
+email tls = False
+email_login = me:1234
 
-gtalk = True
-gtalk_username = "opensvc"
-gtalk_password = "opensvc"
+xmpp = True
+xmpp_username = "opensvc"
+xmpp_password = "opensvc"
+xmpp_host = "gtalk.google.com"
+xmpp_port = 5223
+
+slack = True
+slack_webhook_url = "https://hooks.slack.com/services/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"
 

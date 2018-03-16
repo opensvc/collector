@@ -2262,4 +2262,3 @@ def task_rq_svcactions():
 def task_rq_svcmon():
     task_rq(R_SVCMON, lambda q: _svcmon_update_combo)
 
-

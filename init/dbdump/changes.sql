@@ -6559,4 +6559,14 @@ alter table services add column svc_notifications varchar(1) default "T";
 alter table auth_user add column im_notifications_delay integer default 0;
 alter table auth_user add column email_notifications_delay integer default 0;
 alter table auth_user modify im_type varchar(16);
+CREATE TABLE `alerts_sent` (
+  `id` integer  NOT NULL AUTO_INCREMENT,
+  `alert_id` integer NOT NULL,
+  `msg_type` varchar(16) NOT NULL,
+  `user_id` integer NOT NULL,
+  `sent` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY (user_id, alert_id, msg_type)
+);
+
 
