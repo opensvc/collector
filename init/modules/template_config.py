@@ -169,7 +169,7 @@ email_login = me:1234
 xmpp = True
 xmpp_username = "opensvc"
 xmpp_password = "opensvc"
-xmpp_host = "gtalk.google.com"
+xmpp_host = "talk.google.com"
 xmpp_port = 5223
 
 slack = True
