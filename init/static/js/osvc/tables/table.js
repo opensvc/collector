@@ -758,7 +758,11 @@ function table_init(opts) {
 			options = {}
 		}
 		var data = t.parent_tables_data()
-		data.limit = osvc.user_prefs.data.tables[t.id].perpage
+		if (t.id in osvc.user_prefs.data.tables) {
+			data.limit = osvc.user_prefs.data.tables[t.id].perpage
+		} else {
+			data.limit = t.options.pager.perpage
+		}
 		data.offset = t.options.pager.offset
 		if (t.is_rest_url()) {
 			data.data_format = "table"
