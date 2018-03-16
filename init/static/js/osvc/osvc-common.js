@@ -1485,6 +1485,69 @@ function osvc_nodename(node_id) {
 	return e
 }
 
+function osvc_show_tabs(divid, otype, oid) {
+	if (otype == "svc") {
+		service_tabs(divid, {"svc_id": oid})
+	}
+	else if (otype == "node") {
+		node_tabs(divid, {"node_id": oid})
+	}
+	else if (otype == "app") {
+		app_tabs(divid, {"app_name": oid})
+	}
+	else if (otype == "user") {
+		user_tabs(divid, {"user_id": oid})
+	}
+	else if (otype == "group") {
+		group_tabs(divid, {"group_id": oid})
+	}
+	else if (otype == "priv") {
+		group_tabs(divid, {"group_id": oid, "privilege": true})
+	}
+	else if (otype == "array") {
+		array_tabs(divid, {"array_id": oid})
+	}
+	else if (otype == "modset") {
+		moduleset_tabs(divid, {"modset_id": oid})
+	}
+	else if (otype == "rset") {
+		ruleset_tabs(divid, {"ruleset_id": oid})
+	}
+	else if (otype == "report") {
+		report_tabs(divid, {"report_id": oid})
+	}
+	else if (otype == "chart") {
+		chart_tabs(divid, {"chart_id": oid})
+	}
+	else if (otype == "metric") {
+		metric_tabs(divid, {"metric_id": oid})
+	}
+	else if (otype == "form") {
+		form_tabs(divid, {"form_id": oid})
+	}
+	else if (otype == "safe") {
+		safe_file_tabs(divid, {"uuid": oid})
+	}
+	else if (otype == "disk") {
+		disk_tabs(divid, {"disk_id": oid})
+	}
+	else if (otype == "docker_registry") {
+		docker_registry_tabs(divid, {"registry_id": oid})
+	}
+	else if (otype == "docker_repository") {
+		docker_repository_tabs(divid, {"repository_id": oid})
+	}
+	else if (otype == "prov") {
+		prov_template_tabs(divid, {"tpl_id": oid})
+	}
+	else if (otype == "fset") {
+		filterset_tabs(divid, {"fset_id": oid})
+	}
+	else if (otype == "tag") {
+		tag_tabs(divid, {"tag_id": oid})
+	}
+}
+
 function osvc_get_link(divid, link_id) {
 	services_osvcgetrest("R_LINK", [link_id], "", function(jd) {
 		if (jd.data.length === 0) {
