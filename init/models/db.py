@@ -197,7 +197,7 @@ service=Service(globals())                   # for json, xml, jsonrpc, xmlrpc, a
 # auth.settings.registration_requires_approval = True
 # auth.messages.verify_email = \
 #  'Click on the link http://.../user/verify_email/%(key)s to verify your email'
-mail_server = config_get("email_server", "localhost:25")
+mail_server = "%s:%d" % (config_get("email_server", "localhost"), config_get("email_port", 25))
 mail_sender = config_get("email_sender", "admin@opensvc.com")
 mail_login = config_get("email_login", None)
 mail_tls = config_get("email_tls", False)
