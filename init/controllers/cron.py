@@ -868,6 +868,7 @@ def cron_mac_dup():
                 node_ip.mac!="00:00:00:00:00:00" and
                 node_ip.mac!="2:21:28:57:47:17" and
                 node_ip.mac!="0:0:0:0:0:0" and
+                node_ip.mac!="00:16:3e:00:00:00" and
                 node_ip.mac!="0" and
                 node_ip.updated > date_sub(now(), interval 1 day)
                group by mac, node_id
