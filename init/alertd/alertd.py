@@ -64,7 +64,7 @@ def fmt_desc(data):
         dic = json.loads(data["dict"])
         desc = fmt % dic
     except:
-        pass
+        desc = ""
     return desc
 
 def fork(fn, kwargs={}):
@@ -721,8 +721,8 @@ class Alertd(object):
             try:
                 prefs = json.loads(row[10])
                 user["notifications_periods"] = prefs["notifications_periods"]
-            except ValueError:
-                pass
+            except (ValueError, TypeError, KeyError):
+                user["notifications_periods"] = None
             nodes = self.get_user_nodes(user, conn)
             services = self.get_user_services(user, conn)
             where = []
