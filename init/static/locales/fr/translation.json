@@ -2057,6 +2057,7 @@
 		"Retention": "Retention"
 	},
 	"alert_type": {
+		"service placement": "placement de service",
 		"service frozen": "service gelé",
 		"netmask misconfigured": "netmask erroné",
 		"service not started on primary node": "service démarré sur un noeud non-primaire",
