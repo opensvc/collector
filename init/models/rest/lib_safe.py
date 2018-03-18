@@ -16,7 +16,7 @@ def lib_safe_check_file_responsible(uuid):
     if ok:
         return
 
-    raise HTTP(401, "you are not authorized to manage this file")
+    raise HTTP(403, "you are not authorized to manage this file")
 
 def lib_safe_check_file_publication(uuid):
     q = db.safe.uuid == uuid
@@ -31,7 +31,7 @@ def lib_safe_check_file_publication(uuid):
         if ok:
             return
         else:
-            raise HTTP(401, "this service is not authorized to access this file")
+            raise HTTP(403, "this service is not authorized to access this file")
     elif auth_is_node():
         q1 = db.safe.id == db.safe_team_publication.file_id
         q1 &= db.safe_team_publication.group_id == db.auth_group.id
@@ -42,7 +42,7 @@ def lib_safe_check_file_publication(uuid):
             return
         else:
             #raise Exception(db(q&q1)._select())
-            raise HTTP(401, "this node is not authorized to access this file")
+            raise HTTP(403, "this node is not authorized to access this file")
 
     if "Manager" in user_groups():
         return
@@ -59,7 +59,7 @@ def lib_safe_check_file_publication(uuid):
     if ok:
         return
 
-    raise HTTP(401, "you are not authorized to access this file")
+    raise HTTP(403, "you are not authorized to access this file")
 
 def lib_safe_md5(f):
     import hashlib

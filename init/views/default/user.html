@@ -6,7 +6,7 @@ title = {'login': 'Login',
          'profile': 'Edit profile',
          'register': 'Register'}
 
-if request.args[0] in title:
+if request.args and request.args[0] in title:
     t = title[request.args[0]]
 else:
     t = 'Not found'
