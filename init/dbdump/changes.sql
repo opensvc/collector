@@ -6569,4 +6569,6 @@ CREATE TABLE `alerts_sent` (
   UNIQUE KEY (user_id, alert_id, msg_type)
 );
 
+alter table services modify svc_flex_cpu_low_threshold int(11) DEFAULT "0";
+alter table services modify svc_flex_cpu_high_threshold int(11) DEFAULT "100";
 
