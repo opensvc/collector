@@ -89,7 +89,7 @@ def check_quota_docker_registries():
         return
     if len(user_docker_registry_ids()) < quota_docker_registries:
         return
-    raise Exception("docker registries quota exceeded")
+    raise HTTP(403, "docker registries quota exceeded")
 
 def check_quota_org_group():
     quota_org_group = db.auth_user(auth.user_id).quota_org_group
@@ -97,7 +97,7 @@ def check_quota_org_group():
         return
     if len(user_org_group_ids()) < quota_org_group:
         return
-    raise Exception("org group quota exceeded")
+    raise HTTP(403, "org group quota exceeded")
 
 def check_quota_app():
     quota_app = db.auth_user(auth.user_id).quota_app
@@ -105,7 +105,7 @@ def check_quota_app():
         return
     if len(user_app_ids()) < quota_app:
         return
-    raise Exception("app quota exceeded")
+    raise HTTP(403, "app quota exceeded")
 
 def check_privilege(privs, user_id=None):
     ug = user_groups(user_id)
@@ -116,7 +116,7 @@ def check_privilege(privs, user_id=None):
     else:
         privs = set([privs])
     if len(privs & set(ug)) == 0:
-        raise Exception("Not authorized: user has no %s privilege" % ", ".join(privs))
+        raise HTTP(403, "user has no %s privilege" % ", ".join(privs))
 
 def node_responsible(node_id=None, user_id=None):
     if node_id is None:
@@ -130,7 +130,7 @@ def node_responsible(node_id=None, user_id=None):
     q &= db.nodes.app.belongs(user_apps())
     n = db(q).count()
     if n == 0:
-        raise Exception("Not authorized: user is not responsible for node %s" % node_id)
+        raise HTTP(403, "user is not responsible for node %s" % node_id)
 
 def svc_responsible(svc_id=None, user_id=None):
     if svc_id is None:
@@ -144,7 +144,7 @@ def svc_responsible(svc_id=None, user_id=None):
     q &= db.services.svc_app.belongs(user_apps())
     n = db(q).count()
     if n == 0:
-        raise Exception("Not authorized: user is not responsible for service %s" % svc_id)
+        raise HTTP(403, "user is not responsible for service %s" % svc_id)
 
 def user_default_app(id=None):
     if id is None:
