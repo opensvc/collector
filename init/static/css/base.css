@@ -412,7 +412,7 @@ tr.tl:last-child {
 }
 
 .h:hover {
-	border-color: rgba(220, 220, 220, 0.5);
+	outline: 1px solid #aaa;
 }
 
 .tools > label {
