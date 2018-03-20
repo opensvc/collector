@@ -4784,7 +4784,9 @@ function data_action_generic(t, e, options) {
 			if (jd.info && (jd.info.length > 0)) {
 				result.html(services_info_fmt(jd))
 			}
-			t.refresh_menu_data_cache(entry, e)
+			if (t.refresh_menu_data_cache) {
+				t.refresh_menu_data_cache(entry, e)
+			}
 		},
 		function(xhr, stat, error) {
 			result.html(services_ajax_error_fmt(xhr, stat, error))
