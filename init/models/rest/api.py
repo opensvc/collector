@@ -1,5 +1,6 @@
 import re
 import pydal
+from urllib import unquote
 
 def convert_bool(v):
     if v in ("True", "true", True, "y", "Y", "yes", "Yes", "1"):
@@ -775,6 +776,7 @@ def prepare_data(
         if type(filters) in (str, unicode):
             filters = [filters]
         for f in filters:
+            f = unquote(f)
             f_prop = re.findall(r'[\.\w]+', f)[0]
             f_val = f[len(f_prop):].strip()
             if '.' in f_prop:
