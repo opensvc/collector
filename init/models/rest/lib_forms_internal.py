@@ -597,6 +597,27 @@ form_data_internal = [
             ]
         }
     }),
+    Storage({
+        "id": -9,
+        "form_name": "generic_list",
+        "form_folder": "/internal",
+        "form_type": "generic",
+        "form_definition": {
+            "Outputs": [
+                {
+                    "Type": "json",
+                    "Format": "list",
+                }
+            ],
+            "Inputs": [
+                {
+                    "Id": "entry",
+                    "Label": "",
+                    "LabelCss": "fa-chevron-circle-right",
+                },
+            ]
+        }
+    }),
 ]
 
 def get_internal_form(form_id):

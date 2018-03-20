@@ -2414,7 +2414,7 @@ function table_tagattach(divid, options) {
 		'keys': ['node_id', 'svc_id', 'tag_id'],
 		'orderby': ['tag_name', 'nodename', 'svcname'],
 		'force_cols': ['ckid', 'node_id'],
-		'columns': ['tag_id', 'tag_name', 'node_id', 'nodename', 'svc_id', 'svcname', 'created'],
+		'columns': ['tag_id', 'tag_name', 'node_id', 'nodename', 'svc_id', 'svcname', 'created', 'tag_data', 'tag_attach_data'],
 		'force_cols': ['tag_id', 'node_id', 'svc_id'],
 		'default_columns': ['tag_name', 'nodename', 'svcname', 'created'],
 		'wsable': true,

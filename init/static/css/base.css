@@ -460,6 +460,9 @@ tr.tl:last-child {
 	background-color: unset;
 	text-align: left;
 }
+.postit th {
+	width: 30%;
+}
 
 .header_logo {
 	padding: 0 0.5em;

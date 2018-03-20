@@ -488,10 +488,14 @@ function form(divid, options) {
 			}
 
                         if (d.Type == "form") {
-				if (data && (input_key_id in data)) {
+				if (data && (input_key_id in data) && data[input_key_id]) {
+					if ((is_dict(data[input_key_id]) || Array.isArray(data[input_key_id])) && Object.keys(data[input_key_id]).length==0) {
+						// save space not displaying empty data
+						continue
+					}
 					var opt_data = data[input_key_id]
 				} else {
-					var opt_data = null
+					continue
 				}
 				form(value, {
 					"parent_form": o,
@@ -870,25 +874,34 @@ function form(divid, options) {
 	o.submit_output_tag_data = function(data) {
 		var _data = {}
 		if (typeof(data) === "string") {
-			_data.tag_data = data
+			var tag_data = data
 		} else {
 			for (var key in data) {
 				if (!Array.isArray(data[key]) && data[key] == "") {
 					delete(data[key])
 				}
 			}
-			_data.tag_data = JSON.stringify(data)
+			var tag_data = JSON.stringify(data)
 		}
-		services_osvcpostrest("/tags/%1", [o.options.tag_id], "", _data, function(jd) {
+		var path = "/tags/%1"
+		var params = [o.options.tag_id]
+		if (o.options.node_id) {
+			path += "/nodes/%2"
+			params.push(o.options.node_id)
+			_data.tag_attach_data = tag_data
+		} else if (o.options.svc_id) {
+			path += "/services/%2"
+			params.push(o.options.svc_id)
+			_data.tag_attach_data = tag_data
+		} else {
+			_data.tag_data = tag_data
+		}
+		services_osvcpostrest(path, params, "", _data, function(jd) {
 			if (rest_error(jd)) {
 				o.result.html(services_error_fmt(jd))
 				return
 			}
-			try {
-				o.options.data = $.parseJSON(jd.data[0].tag_data)
-			} catch(e) {
-				o.options.data = jd.data[0].tag_data
-			}
+			o.options.data = tag_data
 			o.result.html("<div class='icon ok'>"+i18n.t("forms.success")+"</div>")
 		},
 		function(xhr, stat, error) {

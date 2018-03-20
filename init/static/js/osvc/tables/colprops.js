@@ -2173,8 +2173,13 @@ colprops = {
 	},
 	"tag_data": {
 		"_class": "tag_data",
-		"img": "wf16",
+		"img": "fa-database",
 		"title": "Tag data"
+	},
+	"tag_attach_data": {
+		"_class": "tag_data",
+		"img": "fa-database",
+		"title": "Tag attach data"
 	},
 	"tag_created": {
 		"_class": "datetime_no_age",

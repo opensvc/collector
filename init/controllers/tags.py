@@ -71,6 +71,8 @@ class table_tagattach(HtmlTable):
         HtmlTable.__init__(self, id, func, innerhtml)
         self.cols = ['tag_id',
                      'tag_name',
+                     'tag_data',
+                     'tag_attach_data',
                      'node_id',
                      'nodename',
                      'svc_id',
@@ -84,6 +86,14 @@ class table_tagattach(HtmlTable):
             'tag_name': HtmlTableColumn(
                      table='v_tags_full',
                      field='tag_name',
+                    ),
+            'tag_data': HtmlTableColumn(
+                     table='v_tags_full',
+                     field='tag_data',
+                    ),
+            'tag_attach_data': HtmlTableColumn(
+                     table='v_tags_full',
+                     field='tag_attach_data',
                     ),
             'created': HtmlTableColumn(
                      table='v_tags_full',

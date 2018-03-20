@@ -6,6 +6,22 @@ def mangle_tags(data):
             data[i]['tag_data'] = json.loads(data[i]['tag_data'])
         except:
             pass
+        try:
+            data[i]['tags']['tag_data'] = json.loads(data[i]['tags']['tag_data'])
+        except:
+            pass
+        try:
+            data[i]['tag_attach_data'] = json.loads(data[i]['tag_attach_data'])
+        except:
+            pass
+        try:
+            data[i]['node_tags']['tag_attach_data'] = json.loads(data[i]['node_tags']['tag_attach_data'])
+        except:
+            pass
+        try:
+            data[i]['svc_tags']['tag_attach_data'] = json.loads(data[i]['svc_tags']['tag_attach_data'])
+        except:
+            pass
     return data
 
 #
@@ -431,7 +447,8 @@ class rest_post_tag_node(rest_post_handler):
         )
 
     def handler(self, tag_id, node_id, **vars):
-        return lib_tag_attach_node(tag_id, node_id)
+        tag_attach_data = vars.get("tag_attach_data")
+        return lib_tag_attach_node(tag_id, node_id, tag_attach_data=tag_attach_data)
 
 
 #
@@ -475,7 +492,8 @@ class rest_post_tag_service(rest_post_handler):
 
     def handler(self, tag_id, svc_id, **vars):
         svc_id = get_svc_id(svc_id)
-        return lib_tag_attach_service(tag_id, svc_id)
+        tag_attach_data = vars.get("tag_attach_data")
+        return lib_tag_attach_service(tag_id, svc_id, tag_attach_data=tag_attach_data)
 
 #
 class rest_delete_tag_service(rest_delete_handler):
@@ -522,7 +540,9 @@ class rest_get_tags_nodes(rest_get_table_handler):
     def handler(self, **vars):
         q = q_filter(node_field=db.node_tags.node_id)
         self.set_q(q)
-        return self.prepare_data(**vars)
+        data = self.prepare_data(**vars)
+        data["data"] = mangle_tags(data["data"])
+        return data
 
 #
 # /tags/nodes :: POST
@@ -549,7 +569,8 @@ class rest_post_tags_nodes(rest_post_handler):
             raise Exception("the 'node_id' key is mandatory")
         if "tag_id" not in vars:
             raise Exception("the 'tag_id' key is mandatory")
-        return lib_tag_attach_node(vars["tag_id"], vars["node_id"])
+        tag_attach_data = vars.get("tag_attach_data")
+        return lib_tag_attach_node(vars["tag_id"], vars["node_id"], tag_attach_data=tag_attach_data)
 
 #
 # /tags/nodes :: DELETE
@@ -601,7 +622,9 @@ class rest_get_tags_services(rest_get_table_handler):
     def handler(self, **vars):
         q = q_filter(svc_field=db.svc_tags.svc_id)
         self.set_q(q)
-        return self.prepare_data(**vars)
+        data = self.prepare_data(**vars)
+        data["data"] = mangle_tags(data["data"])
+        return data
 
 #
 # /tags/services :: POST
@@ -628,7 +651,8 @@ class rest_post_tags_services(rest_post_handler):
             raise Exception("the 'svc_id' key is mandatory")
         if "tag_id" not in vars:
             raise Exception("the 'tag_id' key is mandatory")
-        return lib_tag_attach_service(vars["tag_id"], vars["svc_id"])
+        tag_attach_data = vars.get("tag_attach_data")
+        return lib_tag_attach_service(vars["tag_id"], vars["svc_id"], tag_attach_data=tag_attach_data)
 
 #
 # /tags/services :: DELETE

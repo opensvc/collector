@@ -105,8 +105,49 @@ function tags(options) {
 		} else {
 			cl = "icon tag tag_attached"
 		}
-		s = "<span tag_id='"+tag_data[o.options.id]+"' class='"+cl+"'>"+tag_data[o.options.tag_name]+" </span>"
+		var tag_name = tag_data[o.options.tag_name]
+		s = "<span tag_id='"+tag_data[o.options.id]+"' class='"+cl+"'>"+tag_name+" </span>"
 		var e = $(s)
+		if (tag_name.match(/::/)) {
+			var form_name = tag_name.split(/::/)[0]
+			var data_icon = $("<span class='icon fa-database ml-2'>")
+			data_icon.bind("click", function(e) {
+				event.stopPropagation()
+				o.div.info.empty()
+				o.div.info.append("<h3>"+tag_name+"<h3>")
+				if (tag_data.tag_attach_data || o.options.candidates != true) {
+					o.div.info.append("<h3>"+i18n.t("col.Tag attach data")+"<h3>")
+					var tad_area = $("<div class='mb-2'>")
+					o.div.info.append(tad_area)
+					var options = {
+						"data": tag_data["tag_attach_data"],
+						"tag_id": tag_data["tag_id"],
+						"node_id": o.options.node_id,
+						"svc_id": o.options.svc_id,
+						"display_mode": true,
+						"digest": true,
+						"form_name": form_name,
+						"editable": true
+					}
+					form(tad_area, options)
+				}
+				if (tag_data.tag_data) {
+					o.div.info.append("<h3>"+i18n.t("col.Tag data")+"<h3>")
+					var td_area = $("<div class='mb-2'>")
+					o.div.info.append(td_area)
+					var options = {
+						"data": tag_data["tag_data"],
+						"tag_id": tag_data["tag_id"],
+						"display_mode": true,
+						"digest": true,
+						"form_name": form_name,
+						"editable": false
+					}
+					form(td_area, options)
+				}
+			})
+			e.append(data_icon)
+		}
 		if (o.options.bgcolor) {
 			e.css({"background-color": o.options.bgcolor})
 		}
@@ -122,6 +163,7 @@ function tags(options) {
 		})
 		e.bind("click", function(event){
 			event.stopPropagation()
+			o.div.info.empty()
 			if (!o.options.responsible) {
 				return
 			}
@@ -173,10 +215,12 @@ function tags(options) {
 				o.e_add_tag.hide()
 				o.e_del_tag.hide()
 				o.e_candidates.hide()
+				o.div.info.empty()
 			} else {
 				o.e_add_tag.show()
 				o.e_del_tag.show()
 				o.e_candidates.show()
+				o.div.info.empty()
 			}
 		})
 		o.e_edit = e
@@ -375,15 +419,20 @@ function tags(options) {
 		}
 	}
 
+	o.keyup_timer = 0
 	o.input_keyup = function(event) {
+		o.div.info.empty()
 		tag = $(event.target).parent()
-		if (!is_enter(event)) {
+		if (is_enter(event)) {
+			o.attach_tag({"tag_name": o.e_tag_add_input.val()})
+			return
+		}
+		clearTimeout(o.keyup_timer)
+		o.keyup_timer = setTimeout(function(){
 			tag.removeClass("tag_create")
 			tag.find("input").removeClass("tag_create")
 			o.add_candidates()
-			return
-		}
-		o.attach_tag({"tag_name": o.e_tag_add_input.val()})
+		}, 500)
 	}
 
 	o.get = function(fval, callback, callback_err) {
@@ -413,14 +462,14 @@ function node_tags(options) {
 	options.get_tags = function(fval, callback, callback_err) {
 		services_osvcgetrest("R_NODE_TAGS", [options.node_id], {
 			"orderby": options.tag_name,
-			"props": "tag_id," + options.tag_name,
+			"props": "tag_id,tag_data,node_tags.tag_attach_data:tag_attach_data," + options.tag_name,
 			"limit": "0"
 		}, callback, callback_err)
 	}
 	options.get_candidates = function(fval, callback, callback_err) {
 		services_osvcgetrest("R_NODE_CANDIDATE_TAGS", [options.node_id], {
 			"orderby": options.tag_name,
-			"props": "tag_id," + options.tag_name,
+			"props": "tag_id,tag_data," + options.tag_name,
 			"limit": "0",
 			"meta": "false",
 			"filters": [options.tag_name+" "+fval]
@@ -461,6 +510,11 @@ function node_tags(options) {
 			o.del_tag({
 				"tag_id": data.tag_id,
 			})
+		} else if (data.action == "change") {
+			if (o.div.find("[tag_id="+data.tag_id+"]").length == 0) {
+				return
+			}
+			o.reload_tags()
 		}
 	}
 	options.ondblclick = function(divid, data) {
@@ -477,14 +531,14 @@ function service_tags(options) {
 	options.get_tags = function(fval, callback, callback_err) {
 		services_osvcgetrest("R_SERVICE_TAGS", [options.svc_id], {
 			"orderby": options.tag_name,
-			"props": "tag_id," + options.tag_name,
+			"props": "tag_id,tag_data,svc_tags.tag_attach_data:tag_attach_data," + options.tag_name,
 			"limit": "0"
 		}, callback, callback_err)
 	}
 	options.get_candidates = function(fval, callback, callback_err) {
 		services_osvcgetrest("R_SERVICE_CANDIDATE_TAGS", [options.svc_id], {
 			"orderby": options.tag_name,
-			"props": "tag_id," + options.tag_name,
+			"props": "tag_id,tag_data," + options.tag_name,
 			"limit": "0",
 			"meta": "false",
 			"filters": [options.tag_name+" "+fval]

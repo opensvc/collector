@@ -2056,6 +2056,21 @@ function cell_decorator_users_role(e, line) {
 function cell_decorator_tag_data(e, line) {
 	var tag_id = $.data(line.children(".cell[col=tag_id]")[0], "v")
 	var tag_name = $.data(line.children(".cell[col=tag_name]")[0], "v")
+	if (e.attr("col") == "tag_attach_data") {
+		var node_id = $.data(line.children(".cell[col=node_id]")[0], "v")
+		var svc_id = $.data(line.children(".cell[col=svc_id]")[0], "v")
+	} else {
+		var node_id = null
+		var svc_id = null
+	}
+	if ((e.attr("col") == "tag_data") && (node_id==null || svc_id==null)) {
+		// keep user from modifying tag_data from a tagattach line
+		// to force him to do that in the tag tabs where he can see
+		// all users of the data he wants modified
+		var editable = false
+	} else {
+		var editable = true
+	}
 	if (tag_name.match(/::/)) {
 		var tag_class = tag_name.split(/::/)[0]
 	} else {
@@ -2072,10 +2087,12 @@ function cell_decorator_tag_data(e, line) {
 	form(e, {
 		"data": data,
 		"tag_id": tag_id,
+		"node_id": node_id,
+		"svc_id": svc_id,
 		"display_mode": true,
 		"digest": true,
 		"form_name": tag_class,
-		"disable_edit": false
+		"editable": editable
 	})
 }
 
