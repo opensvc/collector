@@ -121,7 +121,7 @@ function tag_properties(divid, options) {
 							{
 								"title": "action_menu.del",
 								"class": "del16",
-								"fn": "data_action_del_tags",
+								"fn": "data_action_del_tag",
 								"privileges": ["Manager", "TagManager"]
 							}
 						]
@@ -131,7 +131,7 @@ function tag_properties(divid, options) {
 		]
 		tab_tools({
 			"div": o.div.find("#tools"),
-			"data": {"id": data.tag_id},
+			"data": {"tag_id": data.tag_id},
 			"am_data": am_data
 		})
 
