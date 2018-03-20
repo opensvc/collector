@@ -691,9 +691,8 @@ function form(divid, options) {
 	}
 
 	o.render_add_group = function() {
-		var div = $("<button class='icon_fixed_width add16 button_div'>")
+		var div = $("<div class='icon_fixed_width add16 form_tool col-12'>")
 		div.text(i18n.t("forms.add_group"))
-		o.area.append("<br>")
 		o.area.append(div)
 		div.bind("click", function() {
 			var ref = o.area.children(".form_group").last()
@@ -845,7 +844,7 @@ function form(divid, options) {
 			_data.var_value = data
 		} else {
 			for (var key in data) {
-				if (data[key] == "") {
+				if (!Array.isArray(data[key]) && data[key] == "") {
 					delete(data[key])
 				}
 			}
@@ -874,7 +873,7 @@ function form(divid, options) {
 			_data.tag_data = data
 		} else {
 			for (var key in data) {
-				if (data[key] == "") {
+				if (!Array.isArray(data[key]) && data[key] == "") {
 					delete(data[key])
 				}
 			}
@@ -2067,6 +2066,9 @@ function form(divid, options) {
 				data.push(_data[key])
 			}
 		})
+		if ((data.length == 1) && (data[0] == "")) {
+			return []
+		}
 		return data
 	}
 

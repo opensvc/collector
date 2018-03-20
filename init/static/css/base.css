@@ -437,6 +437,7 @@ tr.tl:last-child {
 
 .form_group {
 	text-align: left;
+	margin-bottom: 1em;
 }
 .form_vertical div.form_group {
 	padding-left: 1rem;
