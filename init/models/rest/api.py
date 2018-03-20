@@ -686,6 +686,8 @@ def prepare_data(
      data_format=None):
 
     validated_props = []
+    mapping = {}
+
     if left is None:
         left = []
     elif type(left) == pydal.objects.Expression:
@@ -699,59 +701,81 @@ def prepare_data(
 
     if props is not None:
         for i, prop in enumerate(props.split(",")):
-            if "." in prop:
-                t, c = prop.split(".")
-            elif prop in vprops:
-                validated_props.append(prop)
-                continue
+            if prop.count(":") == 1:
+                prop, remap_as = prop.split(":")
             else:
-                validated_props.append(tables[0]+"."+prop)
-                continue
-            if t in tables:
+                remap_as = None
+
+            validated_prop = None
+            if prop in vprops:
+                validated_prop = prop
+            elif "." not in prop:
+                validated_prop = tables[0] + "." + prop
+            else:
+                t, c = prop.split(".")
+                if t in tables:
+                    validated_prop = prop
+                elif t == "nodes":
+                    for table in tables:
+                        if "node_id" in db[table].fields:
+                            left.append(db.nodes.on(db.nodes.node_id==db[table].node_id))
+                            tables.append("nodes")
+                            validated_prop = prop
+                            break
+                elif t == "services":
+                    for table in tables:
+                        if "svc_id" in db[table].fields:
+                            left.append(db.services.on(db.services.svc_id==db[table].svc_id))
+                            tables.append("services")
+                            validated_prop = prop
+                            break
+                elif t == "apps":
+                    for table in tables:
+                        if "app_id" in db[table].fields:
+                            left.append(db.apps.on(db.apps.id==db[table].app_id))
+                            tables.append("apps")
+                            validated_prop = prop
+                            break
+                elif t == "stor_array":
+                    for table in tables:
+                        if "array_id" in db[table].fields:
+                            left.append(db.stor_array.on(db.stor_array.id==db[table].array_id))
+                            tables.append("stor_array")
+                            validated_prop = prop
+                            break
+                elif t == "tags":
+                    for table in tables:
+                        if "tag_id" in db[table].fields:
+                            left.append(db.tags.on(db.tags.tag_id==db[table].tag_id))
+                            tables.append("tags")
+                            validated_prop = prop
+                            break
+                elif t == "comp_rulesets":
+                    for table in tables:
+                        if "ruleset_id" in db[table].fields:
+                            left.append(db.comp_rulesets.on(db.comp_rulesets.id==db[table].ruleset_id))
+                            tables.append("comp_rulesets")
+                            validated_prop = prop
+                            break
+                elif t == "node_tags":
+                    for table in tables:
+                        if "tag_id" in db[table].fields:
+                            left.append(db.node_tags.on(db.node_tags.tag_id==db[table].tag_id))
+                            tables.append("node_tags")
+                            validated_prop = prop
+                            break
+                elif t == "svc_tags":
+                    for table in tables:
+                        if "svc_id" in db[table].fields:
+                            left.append(db.node_tags.on(db.node_tags.tag_id==db[table].tag_id))
+                            tables.append("svc_tags")
+                            validated_prop = prop
+                            break
+            if validated_prop:
                 validated_props.append(prop)
-                continue
-            if t == "nodes":
-                for table in tables:
-                    if "node_id" in db[table].fields:
-                        left.append(db.nodes.on(db.nodes.node_id==db[table].node_id))
-                        tables.append("nodes")
-                        validated_props.append(prop)
-                        break
-            elif t == "services":
-                for table in tables:
-                    if "svc_id" in db[table].fields:
-                        left.append(db.services.on(db.services.svc_id==db[table].svc_id))
-                        tables.append("services")
-                        validated_props.append(prop)
-                        break
-            elif t == "apps":
-                for table in tables:
-                    if "app_id" in db[table].fields:
-                        left.append(db.apps.on(db.apps.id==db[table].app_id))
-                        tables.append("apps")
-                        validated_props.append(prop)
-                        break
-            elif t == "stor_array":
-                for table in tables:
-                    if "array_id" in db[table].fields:
-                        left.append(db.stor_array.on(db.stor_array.id==db[table].array_id))
-                        tables.append("stor_array")
-                        validated_props.append(prop)
-                        break
-            elif t == "tags":
-                for table in tables:
-                    if "tag_id" in db[table].fields:
-                        left.append(db.tags.on(db.tags.tag_id==db[table].tag_id))
-                        tables.append("tags")
-                        validated_props.append(prop)
-                        break
-            elif t == "comp_rulesets":
-                for table in tables:
-                    if "ruleset_id" in db[table].fields:
-                        left.append(db.comp_rulesets.on(db.comp_rulesets.id==db[table].ruleset_id))
-                        tables.append("comp_rulesets")
-                        validated_props.append(prop)
-                        break
+                if remap_as:
+                    mapping[validated_prop] = remap_as
+
         props = ",".join(validated_props)
 
     all_cols, translations = props_to_cols(None, tables=tables, blacklist=props_blacklist, db=db)
@@ -826,6 +850,23 @@ def prepare_data(
         return dict(error="failed to prepare data: missing parameter")
 
     data = mangle_data(data, props=props, vprops=vprops, vprops_fn=vprops_fn, tables=tables)
+    if len(mapping) > 0:
+        if len(tables) > 1:
+            for i, _data in enumerate(data):
+                remapped = _data[tables[0]]
+                for old, new in mapping.items():
+                    t, c = old.split(".")
+                    remapped[new] = _data[t][c]
+                data[i] = remapped
+        else:
+            for i, _data in enumerate(data):
+                for old, new in mapping.items():
+                    try:
+                        t, c = old.split(".")
+                    except ValueError:
+                        c = old
+                    data[i][new] = data[i][c]
+                    del data[i][c]
 
     # reverve to deprecated column name
     if len(translations) > 0:
@@ -862,6 +903,7 @@ def prepare_data(
         meta = dict(
                  included_props=_cols,
                  available_props=_all_cols,
+                 mapping=mapping,
                  offset=offset,
                  limit=limit,
                  total=total,
