@@ -657,7 +657,7 @@ function form(divid, options) {
 		if (n == 0) {
 			return
 		}
-		var div = $("<button class='icon_fixed_width fa-unlock button_div'></button>")
+		var div = $("<button class='icon_fixed_width fa-unlock form_tool col-12'></button>")
 		div.text(i18n.t("forms.expert"))
 		o.area.append(div)
 		div.bind("click", function() {
