@@ -60,6 +60,37 @@ def q_filter(query=None, svc_field=None, node_field=None, group_field=None,
         else:
             return query & q
 
+def where_json_chunk(table, field, chunk, db):
+    m = re.match("([\w\.$]*)(>=|<=|[=><])(.*)", chunk)
+    if m:
+        key, op, val = m.groups()
+        try:
+            int(val)
+        except ValueError:
+            val = "'%s'"%val
+        q = (db[table][field] != None) & "JSON_VALUE(%s.%s, '%s')%s%s" % (table, field, key, op, val)
+    elif ":has:" in chunk:
+        m = re.match("([\w\.$]*)(:has:)(.*)", chunk)
+        key, op, val = m.groups()
+        try:
+            int(val)
+        except ValueError:
+            val = "'%s'"%val
+        q = (db[table][field] != None) & "NOT JSON_SEARCH(%s.%s, 'one', %s, NULL, '%s') is NULL" % (table, field, val, key)
+    elif ":sub:" in chunk:
+        m = re.match("([\w\.$]*)(:sub:)(.*)", chunk)
+        key, op, val = m.groups()
+        q = (db[table][field] != None) & "JSON_VALUE(%s.%s, '%s') LIKE '%%%s%%'" % (table, field, key, val)
+    elif ":end:" in chunk:
+        m = re.match("([\w\.$]*)(:end:)(.*)", chunk)
+        key, op, val = m.groups()
+        q = (db[table][field] != None) & "JSON_VALUE(%s.%s, '%s') LIKE '%%%s'" % (table, field, key, val)
+    elif ":start:" in chunk:
+        m = re.match("([\w\.$]*)(:start:)(.*)", chunk)
+        key, op, val = m.groups()
+        q = (db[table][field] != None) & "JSON_VALUE(%s.%s, '%s') LIKE '%s%%'" % (table, field, key, val)
+    return q
+
 def _where(query, table, var, field, depth=0, db=db):
     if table not in db:
         return query
@@ -122,34 +153,9 @@ def _where(query, table, var, field, depth=0, db=db):
     q = db[table].id < 0
 
     if chunk[0] == "$":
-        m = re.match("([\w\.$]*)(>=|<=|[=><])(.*)", chunk)
-        if m:
-            key, op, val = m.groups()
-            try:
-                int(val)
-            except ValueError:
-                val = "'%s'"%val
-            q = (db[table].id > 0) & "JSON_VALUE(%s.%s, '%s')%s%s" % (table, field, key, op, val)
-        elif ":has:" in chunk:
-            m = re.match("([\w\.$]*)(:has:)(.*)", chunk)
-            key, op, val = m.groups()
-            try:
-                int(val)
-            except ValueError:
-                val = "'%s'"%val
-            q = (db[table].id > 0) & "NOT JSON_SEARCH(%s.%s, 'one', %s, NULL, '%s') is NULL" % (table, field, val, key)
-        elif ":sub:" in chunk:
-            m = re.match("([\w\.$]*)(:sub:)(.*)", chunk)
-            key, op, val = m.groups()
-            q = (db[table].id > 0) & "JSON_VALUE(%s.%s, '%s') LIKE '%%%s%%'" % (table, field, key, val)
-        elif ":end:" in chunk:
-            m = re.match("([\w\.$]*)(:end:)(.*)", chunk)
-            key, op, val = m.groups()
-            q = (db[table].id > 0) & "JSON_VALUE(%s.%s, '%s') LIKE '%%%s'" % (table, field, key, val)
-        elif ":start:" in chunk:
-            m = re.match("([\w\.$]*)(:start:)(.*)", chunk)
-            key, op, val = m.groups()
-            q = (db[table].id > 0) & "JSON_VALUE(%s.%s, '%s') LIKE '%s%%'" % (table, field, key, val)
+        _q = where_json_chunk(table, field, chunk, db)
+        if _q:
+            q = _q
     elif chunk == 'empty':
         if db[table][field].type == "string":
             q = (db[table][field]==None)|(db[table][field]=='')

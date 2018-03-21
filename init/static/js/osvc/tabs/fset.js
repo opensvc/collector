@@ -643,7 +643,7 @@ function fset_designer(divid, options) {
 			'node_hba': ["id", "hba_type", "hba_id"],
 			'apps': objcols.app,
 			'v_comp_moduleset_attachments': ['modset_name'],
-			'v_tags': ["id", "tag_name"],
+			'v_tags': ["id", "tag_name", "tag_data", "tag_attach_data"],
 			'packages': ["id", "pkg_name", "pkg_version", "pkg_arch", "pkg_type", "sig_provider", "pkg_sig", "pkg_install_date", "pkg_updated"]
 		}
 

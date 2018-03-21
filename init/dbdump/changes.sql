@@ -6572,7 +6572,7 @@ CREATE TABLE `alerts_sent` (
 alter table services modify svc_flex_cpu_low_threshold int(11) DEFAULT "0";
 alter table services modify svc_flex_cpu_high_threshold int(11) DEFAULT "100";
 
-alter table svc_tags add column tag_attach_data text;
+alter table node_tags add column tag_attach_data text;
 alter table svc_tags add column tag_attach_data text;
 
 drop view v_tags;

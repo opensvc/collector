@@ -205,7 +205,10 @@ def filterset_query_id(row, nodes, services, i=0, node_id=None, svc_id=None):
         return nodes, services
 
     if v.f_op == '=':
-        qry = field == v.f_value
+        if v.f_value.startswith("$."):
+            qry = where_json_chunk(v.f_table, v.f_field, v.f_value, db)
+        else:
+            qry = field == v.f_value
     elif v.f_op == '!=':
         qry = field != v.f_value
     elif v.f_op == 'LIKE':
@@ -419,6 +422,7 @@ joins = {
     'services_log': db.services.svc_id == db.services_log.svc_id,
     'v_services_log': db.services.svc_id == db.v_services_log.svc_id,
     'v_apps': db.services.svc_app == db.apps.app,
+    'v_tags': db.v_tags.svc_id == db.services.svc_id,
   },
   'nodes':{
     'nodes': None,
@@ -439,6 +443,7 @@ joins = {
     'services_log': (db.svcmon.svc_id == db.services_log.svc_id) & (db.svcmon.node_id == db.nodes.node_id),
     'v_services_log': (db.svcmon.svc_id == db.v_services_log.svc_id) & (db.svcmon.node_id == db.nodes.node_id),
     'v_apps': db.nodes.app == db.v_apps.app,
+    'v_tags': db.v_tags.node_id == db.nodes.node_id,
   },
 }
 def gen_filterset_query(q, row, tables=[]):
@@ -483,7 +488,10 @@ def gen_filterset_query(q, row, tables=[]):
                 # can not apply filter
                 return q
         if v.f_op == '=':
-            qry = db[f_table][v.f_field] == v.f_value
+            if v.f_value.startswith("$."):
+                qry = where_json_chunk(f_table, v.f_field, v.f_value, db)
+            else:
+                qry = db[f_table][v.f_field] == v.f_value
         elif v.f_op == '!=':
             qry = db[f_table][v.f_field] != v.f_value
         elif v.f_op == 'LIKE':
