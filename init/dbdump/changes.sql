@@ -6586,3 +6586,5 @@ create view v_tags_full as
  select 0 as id, concat(nodes.node_id, "_null_", if(tags.tag_id, tags.tag_id, "null")) as ckid, tags.tag_id as tag_id, tags.tag_name as tag_name, nodes.node_id as node_id, nodes.nodename as nodename, "" as svc_id, NULL as svcname, node_tags.created as created, tags.tag_data as tag_data, node_tags.tag_attach_data as tag_attach_data from nodes left join node_tags on nodes.node_id=node_tags.node_id left join tags on node_tags.tag_id=tags.tag_id 
  union all 
  select 0 as id, concat("null_", services.svc_id, "_", if(tags.tag_id, tags.tag_id, "null")) as ckid, tags.tag_id as tag_id, tags.tag_name as tag_name, "" as node_id, NULL as nodename, services.svc_id as svc_id, services.svcname as svcname, svc_tags.created as created, tags.tag_data as tag_data, svc_tags.tag_attach_data as tag_attach_data from services left join svc_tags on services.svc_id=svc_tags.svc_id left join tags on svc_tags.tag_id=tags.tag_id;
+
+alter table node_hw modify hw_type varchar(16);
