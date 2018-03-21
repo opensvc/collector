@@ -163,8 +163,10 @@ def task_unfinished_actions():
     ws_send('scheduler_change')
     now = datetime.datetime.now()
     tmo = now - datetime.timedelta(minutes=120)
-    q = (db.svcactions.begin < tmo)
-    q &= (db.svcactions.end==None)
+    q = db.svcactions.begin < tmo
+    q &= db.svcactions.end==None
+    q &= db.svcactions.status==None
+    q &= ~db.svcactions.action.like("%#%")
     rows = db(q).select(orderby=db.svcactions.id)
     db(q).update(status="err", end='1000-01-01 00:00:00')
     db.commit()
