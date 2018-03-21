@@ -223,6 +223,14 @@ class rest_delete_service(rest_delete_handler):
         db(q).delete()
         ws_send('svcmon_change', {'svc_id': svc_id})
 
+        q = db.svcmon_log.svc_id == svc_id
+        db(q).delete()
+        ws_send('svcmon_log_change', {'svc_id': svc_id})
+
+        q = db.svcmon_log_last.svc_id == svc_id
+        db(q).delete()
+        ws_send('svcmon_log_last_change', {'svc_id': svc_id})
+
         q = db.dashboard.svc_id == svc_id
         db(q).delete()
         ws_send('dashboard_change', {'svc_id': svc_id})
@@ -230,6 +238,14 @@ class rest_delete_service(rest_delete_handler):
         q = db.resmon.svc_id == svc_id
         db(q).delete()
         ws_send('resmon_change', {'svc_id': svc_id})
+
+        q = db.resmon_log.svc_id == svc_id
+        db(q).delete()
+        ws_send('resmon_log_change', {'svc_id': svc_id})
+
+        q = db.resmon_log_last.svc_id == svc_id
+        db(q).delete()
+        ws_send('resmon_log_last_change', {'svc_id': svc_id})
 
         return dict(info="service %s deleted" % svcname)
 

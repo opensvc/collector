@@ -750,6 +750,26 @@ class rest_delete_node(rest_delete_handler):
         ws_send('auth_node', {'node_id': node_id})
         table_modified("auth_node")
 
+        q = db.resmon_log.node_id == node_id
+        db(q).delete()
+        ws_send('resmon_log_change', {'node_id': node_id})
+        table_modified("resmon_log")
+
+        q = db.resmon_log_last.node_id == node_id
+        db(q).delete()
+        ws_send('resmon_log_last_change', {'node_id': node_id})
+        table_modified("resmon_log_last")
+
+        q = db.svcmon_log.node_id == node_id
+        db(q).delete()
+        ws_send('svcmon_log_change', {'node_id': node_id})
+        table_modified("svcmon_log")
+
+        q = db.svcmon_log_last.node_id == node_id
+        db(q).delete()
+        ws_send('svcmon_log_last_change', {'node_id': node_id})
+        table_modified("svcmon_log_last")
+
         timeseries.wsp_delete("nodes", node_id)
 
         return dict(info=fmt%d)
