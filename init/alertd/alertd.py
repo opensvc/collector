@@ -710,11 +710,11 @@ class Alertd(object):
                 "email_notifications": True if row[1]=="T" else False,
                 "email_notifications_delay": row[2],
                 "email": row[3],
-                "email_log_level": SEVERITIES[row[4]],
+                "email_log_level": SEVERITIES.get(row[4], 3),
                 "im_notifications": True if row[5]=="T" else False,
                 "im_notifications_delay": int(row[6]),
                 "im_username": row[7],
-                "im_log_level": SEVERITIES[row[8]],
+                "im_log_level": SEVERITIES.get(row[8], 3),
                 "im_type": row[9],
                 "notifications_periods": None,
             }
