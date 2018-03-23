@@ -6588,3 +6588,9 @@ create view v_tags_full as
  select 0 as id, concat("null_", services.svc_id, "_", if(tags.tag_id, tags.tag_id, "null")) as ckid, tags.tag_id as tag_id, tags.tag_name as tag_name, "" as node_id, NULL as nodename, services.svc_id as svc_id, services.svcname as svcname, svc_tags.created as created, tags.tag_data as tag_data, svc_tags.tag_attach_data as tag_attach_data from services left join svc_tags on services.svc_id=svc_tags.svc_id left join tags on svc_tags.tag_id=tags.tag_id;
 
 alter table node_hw modify hw_type varchar(16);
+
+alter table resmon_log add column res_log text;
+alter table resmon_log_last add column res_log text;
+drop view v_resmon_log; create view v_resmon_log as select * from resmon_log union all select * from resmon_log_last;
+
+

@@ -100,19 +100,19 @@ def svcmon_log_update(node_id, svc_id, idata, deferred=False):
         table_modified("svcmon_log")
     return changed
 
-def resmon_log_update(node_id, svc_id, rid, astatus, deferred=False):
+def resmon_log_update(node_id, svc_id, rid, astatus, res_log, deferred=False):
     change = False
     changed = set()
     rid = rid.strip("'")
     astatus = astatus.strip("'")
-    sql = """select id, res_status, res_end, res_begin from resmon_log_last
+    sql = """select id, res_status, res_end, res_begin, res_log from resmon_log_last
              where node_id="%s" and svc_id="%s" and rid="%s"
           """ % (node_id, svc_id, rid)
     rows = db.executesql(sql)
     end = datetime.datetime.now()
     if len(rows) == 1:
         prev = rows[0]
-        if prev[1] == astatus:
+        if prev[1] == astatus and prev[4] == res_log:
             sql = """update resmon_log_last set res_end="%s" where id=%d""" % (end, prev[0])
             db.executesql(sql)
         else:
@@ -121,7 +121,8 @@ def resmon_log_update(node_id, svc_id, rid, astatus, deferred=False):
                                  rid=rid,
                                  res_begin=prev[3],
                                  res_end=end,
-                                 res_status=prev[1])
+                                 res_status=prev[1],
+                                 res_log=res_log)
             change = True
         changed.add("resmon_log")
     if len(rows) == 0 or change:
@@ -133,7 +134,8 @@ def resmon_log_update(node_id, svc_id, rid, astatus, deferred=False):
                                             rid=rid,
                                             res_begin=end,
                                             res_end=end,
-                                            res_status=astatus)
+                                            res_status=astatus,
+                                            res_log=res_log)
         changed.add("resmon_log")
     if not deferred and "resmon_log" in changed:
         db.commit()

@@ -33,7 +33,7 @@ function services_status_log(divid, options) {
 		var opts = {
 			"meta": "false",
 			"limit": 200,
-			"props": "id,rid,svc_id,node_id,res_begin,res_end,res_status",
+			"props": "id,rid,svc_id,node_id,res_begin,res_end,res_status,res_log",
 			"orderby": "~res_begin",
 			"filters": []
 		}
@@ -120,13 +120,17 @@ function services_status_log(divid, options) {
 					"content": group_content
 				})
 			}
+			var title = d.res_status
+			if (d.res_log) {
+				title += "<pre class='mb-0'>"+d.res_log+"</pre>"
+			}
 			_data.push({
 				"start": moment.tz(d.res_begin, osvc.server_timezone),
 				"end": moment.tz(d.res_end, osvc.server_timezone),
 				"group": group_id,
 				"range_id": d.id,
 				"status": d.res_status,
-				"title": d.res_status,
+				"title": title,
 				"content": "&nbsp;",
 				"className": "box-"+o.colors[d.res_status]
 			})

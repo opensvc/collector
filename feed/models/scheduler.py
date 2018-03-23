@@ -784,7 +784,7 @@ def __resmon_update(vars, vals, auth, cache=cache):
     if "vars" not in cache:
         cache["vars"] = h.keys()
     cache["vals"].append(h.values())
-    cache["resmon_log_changed"] = resmon_log_update(h['node_id'], h['svc_id'], h['rid'], h['res_status'], deferred=True)
+    cache["resmon_log_changed"] = resmon_log_update(h['node_id'], h['svc_id'], h['rid'], h['res_status'], h['res_log'], deferred=True)
     print datetime.datetime.now() - _now, "__resmon_update", h['rid']
     return cache
 
@@ -4784,6 +4784,7 @@ def merge_daemon_status(node_id, changes):
     def update_instance_resources(svc, peer, cname, resources):
         _changed = set()
         for rid, rdata in resources.items():
+            res_log = format_resource_log(rdata.get("log", []))
             db.resmon.update_or_insert({
                     "node_id": peer.node_id,
                     "svc_id": svc.svc_id,
@@ -4796,7 +4797,7 @@ def merge_daemon_status(node_id, changes):
                 rid=rid,
                 res_status=rdata["status"],
                 res_type=rdata["type"],
-                res_log=format_resource_log(rdata.get("log", [])),
+                res_log=res_log,
                 res_optional=rdata.get("optional", False),
                 res_disable=rdata.get("disable", False),
                 res_monitor=rdata.get("monitor", False),
@@ -4804,7 +4805,7 @@ def merge_daemon_status(node_id, changes):
                 updated=now,
             )
             _changed.add("resmon")
-            _changed |= resmon_log_update(peer.node_id, svc.svc_id, rid, rdata['status'], deferred=True)
+            _changed |= resmon_log_update(peer.node_id, svc.svc_id, rid, rdata['status'], res_log, deferred=True)
         return _changed
 
     def update_service(svc, sdata):

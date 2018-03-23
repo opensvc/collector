@@ -61,14 +61,18 @@ def q_filter(query=None, svc_field=None, node_field=None, group_field=None,
             return query & q
 
 def where_json_chunk(table, field, chunk, db):
-    m = re.match("([\w\.$]*)(>=|<=|[=><])(.*)", chunk)
+    q = None
+    m = re.match("([\w\.$\[\*#\]]*)(>=|<=|[=><])(.*)", chunk)
     if m:
         key, op, val = m.groups()
         try:
             int(val)
         except ValueError:
             val = "'%s'"%val
-        q = (db[table][field] != None) & "JSON_VALUE(%s.%s, '%s')%s%s" % (table, field, key, op, val)
+        if "[#]" in key:
+            q = (db[table][field] != None) & "JSON_LENGTH(%s.%s, '%s')%s%s" % (table, field, key.replace("[#]",""), op, val)
+        else:
+            q = (db[table][field] != None) & "JSON_VALUE(%s.%s, '%s')%s%s" % (table, field, key, op, val)
     elif ":has:" in chunk:
         m = re.match("([\w\.$]*)(:has:)(.*)", chunk)
         key, op, val = m.groups()

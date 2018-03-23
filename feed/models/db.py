@@ -515,6 +515,7 @@ db.define_table('resmon_log',
     Field('res_status', 'string'),
     Field('res_begin', 'datetime'),
     Field('res_end', 'datetime'),
+    Field('res_log', 'text'),
     migrate=False)
 
 db.define_table('resmon_log_last',
