@@ -6593,4 +6593,5 @@ alter table resmon_log add column res_log text;
 alter table resmon_log_last add column res_log text;
 drop view v_resmon_log; create view v_resmon_log as select * from resmon_log union all select * from resmon_log_last;
 
-
+alter table nodes add column snooze_till datetime;
+alter table services add column svc_snooze_till datetime;

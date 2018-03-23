@@ -754,6 +754,7 @@ def get_post_handlers(prefix=None):
         ],
         "nodes": [
              "rest_post_nodes",
+             "rest_post_node_snooze",
              "rest_post_node",
              "rest_post_node_compliance_moduleset",
              "rest_post_node_compliance_ruleset",
@@ -816,6 +817,7 @@ def get_post_handlers(prefix=None):
         ],
         "services": [
              "rest_post_services",
+             "rest_post_service_snooze",
              "rest_post_service",
              "rest_post_service_compliance_moduleset",
              "rest_post_service_compliance_ruleset",

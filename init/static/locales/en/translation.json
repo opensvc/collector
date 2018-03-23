@@ -1643,6 +1643,7 @@
 	},
 	"col": {
 		"Notifications": "Notifications",
+		"Snooze till": "Snooze till",
 		"Path": "Path",
 		"Driver": "Driver",
 		"Instance regex": "Instance regex",

@@ -46,6 +46,7 @@ nodes_cols = [
     'connect_to',
     'node_env',
     'notifications',
+    'snooze_till',
     'app',
     'team_responsible',
     'team_integ',
@@ -203,6 +204,10 @@ nodes_colprops = {
             ),
     'notifications': HtmlTableColumn(
              field='notifications',
+             table = 'nodes',
+            ),
+    'snooze_till': HtmlTableColumn(
+             field='snooze_till',
              table = 'nodes',
             ),
     'version': HtmlTableColumn(

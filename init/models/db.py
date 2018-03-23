@@ -286,6 +286,7 @@ db.define_table('services',
     Field('svc_placement'),
     Field('svc_provisioned'),
     Field('svc_notifications', 'boolean'),
+    Field('svc_snooze_till', 'datetime'),
     migrate=False)
 
 db.define_table('v_svcmon',
@@ -518,6 +519,7 @@ db.define_table('nodes',
     Field('os_obs_warn_date'),
     Field('os_obs_alert_date'),
     Field('notifications', 'boolean'),
+    Field('snooze_till', 'datetime'),
     migrate=False)
 
 db.define_table('v_users',

@@ -567,7 +567,9 @@ class Alertd(object):
                    a.dash_created <= DATE_SUB(NOW(), INTERVAL %(delay)d MINUTE) and
                    a.dash_severity >= %(min_sev)d and
                    (s.svc_notifications="T" or s.svc_notifications is NULL) and
+                   s.svc_snooze_till is NULL and
                    (n.notifications="T" or n.notifications is NULL) and
+                   n.snooze_till is NULL and
                    not a.id in (select alert_id from alerts_sent where user_id=%(user_id)d and msg_type="%(proto)s")
                    %(where)s
                  limit 1000
@@ -776,13 +778,28 @@ class Alertd(object):
         cursor.execute(sql)
         conn.close()
 
+    def janitor_snooze(self):
+        conn = get_conn()
+        if conn is None:
+            return
+        sql = """update nodes set snooze_till=NULL where snooze_till<NOW()"""
+        cursor = conn.cursor()
+        cursor.execute(sql)
+        sql = """update services set svc_snooze_till=NULL where svc_snooze_till<NOW()"""
+        cursor = conn.cursor()
+        cursor.execute(sql)
+        sql = "commit"
+        cursor = conn.cursor()
+        cursor.execute(sql)
+        conn.close()
+
     def run_forever(self):
         iterations = 0
         while True:
             iterations += 1
             if iterations > self.janitor_loops or self.users is None:
-                # reset every 2 minutes
                 self.get_users()
+                self.janitor_snooze()
                 self.purge_alerts_sent()
                 iterations = 0
             for user in self.users.values():

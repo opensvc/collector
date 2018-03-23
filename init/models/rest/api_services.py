@@ -1272,3 +1272,51 @@ class rest_put_service_disks(rest_put_handler):
                 form_data["slo"] = slo
         return form_submit(form, _d=form_data)
 
+#
+class rest_post_service_snooze(rest_post_handler):
+    def __init__(self):
+        desc = [
+          "Snooze notifications on a service",
+          "The user must be responsible for the service.",
+          "The service can snooze itself.",
+          "The updated timestamp is updated.",
+          "The action is logged in the collector's log.",
+          "A websocket event is sent to announce the change in the services table.",
+        ]
+        examples = [
+          """# curl -u %(email)s -o- -d duration="1h" https://%(collector)s/init/rest/api/services/mysvc/snooze""",
+        ]
+        rest_post_handler.__init__(
+          self,
+          path="/services/<id>/snooze",
+          desc=desc,
+          examples=examples,
+          replication=["relay", "local"],
+        )
+
+    def handler(self, svc_id, **vars):
+        if auth_is_svc():
+            svc_id = auth.user.svc_id
+        else:
+            svc_responsible(svc_id)
+            svc_id = get_svc_id(svc_id)
+            if svc_id is None:
+                raise HTTP(400, "service does not exist")
+        duration = vars.get("duration")
+        if duration is None:
+            action = "unsnooze"
+            fmt = ''
+            d = dict()
+        else:
+            action = "snooze"
+            duration = convert_duration(duration, _to="m")
+            duration = datetime.datetime.now() + datetime.timedelta(minutes=duration)
+            fmt = 'duration %(duration)s'
+            d = dict(duration=vars.get("duration"))
+        q = db.services.svc_id == svc_id
+        db(q).update(svc_snooze_till=duration)
+        _log('service.%s' % action, fmt, d, svc_id=svc_id)
+        ws_send('services_change', {'svc_id': svc_id})
+        return {"info": action+"d"}
+
+

@@ -1644,6 +1644,7 @@
 	},
 	"col": {
 		"Notifications": "Notifications",
+		"Snooze till": "Snooze jusqu'à",
 		"Path": "Chemin",
 		"Driver": "Pilote",
 		"Instance regex": "Regex sur les instances",

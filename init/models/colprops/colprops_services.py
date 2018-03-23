@@ -21,6 +21,7 @@ services_cols = [
     'svc_created',
     'svc_updated',
     'svc_notifications',
+    'svc_snooze_till',
 ]
 
 svcmon_cols = [
@@ -156,6 +157,10 @@ services_colprops = {
             ),
     'svc_notifications': HtmlTableColumn(
              field='svc_notifications',
+             table = 'services',
+            ),
+    'svc_snooze_till': HtmlTableColumn(
+             field='svc_snooze_till',
              table = 'services',
             ),
 }

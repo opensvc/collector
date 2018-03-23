@@ -803,6 +803,53 @@ class rest_delete_nodes(rest_delete_handler):
 
 
 #
+class rest_post_node_snooze(rest_post_handler):
+    def __init__(self):
+        desc = [
+          "Snooze notifications on a node",
+          "The user must be responsible for the node.",
+          "The node can snooze itself.",
+          "The updated timestamp is updated.",
+          "The action is logged in the collector's log.",
+          "A websocket event is sent to announce the change in the nodes table.",
+        ]
+        examples = [
+          """# curl -u %(email)s -o- -d duration="1h" https://%(collector)s/init/rest/api/nodes/mynode/snooze""",
+        ]
+        rest_post_handler.__init__(
+          self,
+          path="/nodes/<id>/snooze",
+          desc=desc,
+          examples=examples,
+          replication=["relay", "local"],
+        )
+
+    def handler(self, node_id, **vars):
+        if auth_is_node():
+            node_id = auth.user.node_id
+        else:
+            check_privilege("NodeManager")
+            node_id = get_node_id(node_id)
+            if node_id is None:
+                raise HTTP(400, "node does not exist")
+        duration = vars.get("duration")
+        if duration is None:
+            action = "unsnooze"
+            fmt = ''
+            d = dict()
+        else:
+            action = "snooze"
+            duration = convert_duration(duration, _to="m")
+            duration = datetime.datetime.now() + datetime.timedelta(minutes=duration)
+            fmt = 'duration %(duration)s'
+            d = dict(duration=vars.get("duration"))
+        q = db.nodes.node_id == node_id
+        db(q).update(snooze_till=duration)
+        _log('node.%s' % action, fmt, d, node_id=node_id)
+        ws_send('nodes_change', {'node_id': node_id})
+        return {"info": action+"d"}
+
+#
 class rest_post_node(rest_post_handler):
     def __init__(self):
         desc = [

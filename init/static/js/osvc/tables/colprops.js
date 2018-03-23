@@ -56,6 +56,7 @@ objcols = {
 		'last_comm',
 		'last_boot',
 		'notifications',
+		'snooze_till',
 		'power_supply_nb',
 		'power_cabinet1',
 		'power_cabinet2',
@@ -90,6 +91,7 @@ objcols = {
 		'svc_drpnode',
 		'svc_drpnodes',
 		'svc_notifications',
+		'svc_snooze_till',
 		'svc_comment',
 		'svc_created',
 		'svc_status_updated'
@@ -138,6 +140,20 @@ objcols = {
 }
 
 colprops = {
+	"snooze_till": {
+		"_class": "datetime_no_age",
+		"field": "snooze_till",
+		"table": "nodes",
+		"img": "fa-bell",
+		"title": "Snooze till"
+	},
+	"svc_snooze_till": {
+		"_class": "datetime_no_age",
+		"field": "svc_snooze_till",
+		"table": "services",
+		"img": "fa-bell",
+		"title": "Snooze till"
+	},
 	"notifications": {
 		"_class": "boolean",
 		"field": "notifications",
