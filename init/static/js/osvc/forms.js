@@ -1,3 +1,11 @@
+function convert_boolean(val) {
+	if (String(val)[0].toLowerCase().match(/[1ty]/)) {
+		return true
+	} else {
+		return false
+	}
+}
+
 function forms() {
 	var o = {}
 
@@ -287,7 +295,6 @@ function form(divid, options) {
 			o.area.addClass("pre")
 			return
 		}
-		console.log(o.options.data)
 		o.area.empty()
 		o.area.text(JSON.stringify(o.options.data, null, 4))
 		require(["hljs"], function(hljs) {
@@ -848,7 +855,7 @@ function form(divid, options) {
 			_data.var_value = data
 		} else {
 			for (var key in data) {
-				if (!Array.isArray(data[key]) && data[key] == "") {
+				if (!Array.isArray(data[key]) && (typeof(data[key]) === "string") && (data[key] == "")) {
 					delete(data[key])
 				}
 			}
@@ -877,7 +884,7 @@ function form(divid, options) {
 			var tag_data = data
 		} else {
 			for (var key in data) {
-				if (!Array.isArray(data[key]) && data[key] == "") {
+				if (!Array.isArray(data[key]) && (typeof(data[key]) === "string") && (data[key] == "")) {
 					delete(data[key])
 				}
 			}
@@ -2015,7 +2022,7 @@ function form(divid, options) {
 			}
 			var td = table.find("tr[iid="+d.Id+"] > [name=val]")
 			if (!td.is(":visible")) {
-				if (o.options[input_key_id]) {
+				if (typeof(o.options[input_key_id]) !== "undefined") {
 					data[input_key_id] = o.options[input_key_id]
 				}
 			}
@@ -2025,14 +2032,17 @@ function form(divid, options) {
 			var val = o.get_val(td)
 			if (d.Type == "list of string") {
 				val = val.split(",")
-			}
+			} else
 			if (d.Type == "list of size") {
 				val = val.split(",")
 				val = convert_size(val)
-			}
+			} else
 			if ((d.Type == "string or integer") || (d.Type == "size") || (d.Type == "integer")) {
 				val = convert_size(val, d.Unit)
-			}
+			} else
+			if (d.Type == "boolean") {
+				val = convert_boolean(val)
+			} else
 			if (d.Type == "form") {
 				val = o.sub_forms[d.Id].form_to_data()
 			}
