@@ -1847,6 +1847,10 @@ function cell_decorator_sql(e, line) {
 
 function cell_decorator_alert_type(e, line) {
 	var s = $.data(e[0], "v")
+	var instance = $.data(line.children(".cell[col=dash_instance]")[0], "v")
+	if (instance.match(/check_.*::/)) {
+		return
+	}
 	e.html(i18n.t("alert_type."+s))
 }
 
