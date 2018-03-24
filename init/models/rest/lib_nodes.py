@@ -45,6 +45,7 @@ def update_dash_node_without_maintenance_end(node_id):
                  node_env,
                  now(),
                  node_id,
+                 NULL,
                  NULL
                from nodes
                where
@@ -85,6 +86,7 @@ def update_dash_node_beyond_maintenance_end(node_id):
                  node_env,
                  now(),
                  node_id,
+                 NULL,
                  NULL
                from nodes
                where
@@ -128,6 +130,7 @@ def update_dash_node_near_maintenance_end(node_id):
                  node_env,
                  now(),
                  node_id,
+                 NULL,
                  NULL
                from nodes
                where

@@ -321,7 +321,8 @@ def update_dash_checks(node_id):
                  "%(env)s",
                  "%(now)s",
                  t.node_id,
-                 NULL
+                 NULL,
+                 concat(t.ttype, ":", t.inst)
                from (
                  select
                    svc_id as svc_id,

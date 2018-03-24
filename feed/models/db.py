@@ -579,6 +579,7 @@ db.define_table('apps_responsibles',
 
 db.define_table('dashboard',
     Field('dash_type','string'),
+    Field('dash_instance','string'),
     Field('svc_id', 'string', length=36),
     Field('node_id', 'string', length=36),
     Field('dash_severity','integer'),

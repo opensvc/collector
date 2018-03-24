@@ -646,6 +646,10 @@ colprops = {
 		"img": "alert16",
 		"title": "Severity"
 	},
+	"dash_instance": {
+		"img": "alert16",
+		"title": "Instance"
+	},
 	"dash_type": {
 		"_class": "alert_type",
 		"img": "alert16",

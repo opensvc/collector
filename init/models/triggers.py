@@ -147,7 +147,7 @@ def update_dash_svcmon_not_updated(svc_id, node_id):
                where
                  svc_id = "%(svc_id)s" and
                  node_id = "%(node_id)s" and
-                 dash_type = "service status not updated"
+                 dash_type = "instance status not updated"
           """%dict(svc_id=svc_id, node_id=node_id)
     ret = db.executesql(sql)
     db.commit()

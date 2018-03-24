@@ -108,6 +108,7 @@ def update_dash_obs_hw_warn(obs_name=None):
                  n.node_env,
                  now(),
                  n.node_id,
+                 NULL,
                  NULL
                from obsolescence o
                  join nodes n on
@@ -179,6 +180,7 @@ def update_dash_obs_hw_alert(obs_name=None):
                  n.node_env,
                  now(),
                  n.node_id,
+                 NULL,
                  NULL
                from obsolescence o
                  join nodes n on
@@ -255,6 +257,7 @@ def update_dash_obs_os_warn(obs_name=None):
                  n.node_env,
                  now(),
                  n.node_id,
+                 NULL,
                  NULL
                from obsolescence o
                  join nodes n on
@@ -327,6 +330,7 @@ def update_dash_obs_os_alert(obs_name=None):
                  n.node_env,
                  now(),
                  n.nodename,
+                 NULL,
                  NULL
                from obsolescence o
                  join nodes n on

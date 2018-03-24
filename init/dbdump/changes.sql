@@ -6595,3 +6595,12 @@ drop view v_resmon_log; create view v_resmon_log as select * from resmon_log uni
 
 alter table nodes add column snooze_till datetime;
 alter table services add column svc_snooze_till datetime;
+
+
+alter table dashboard add column dash_instance varchar(180) default "";
+alter table dashboard modify column dash_md5 varchar(32) GENERATED ALWAYS AS (md5(concat(`dash_type`,`dash_instance`))) STORED;
+drop table dashboard_log;
+
+alter table dashboard drop key idx1;
+alter table dashboard add unique key idx1 (svc_id,node_id,dash_md5);
+

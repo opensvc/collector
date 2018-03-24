@@ -1237,6 +1237,7 @@ db.define_table('resinfo',
 
 db.define_table('dashboard',
     Field('dash_type','string'),
+    Field('dash_instance','string'),
     Field('svc_id', 'string', length=36),
     Field('node_id', 'string', length=36),
     Field('dash_severity','integer'),
@@ -1267,13 +1268,6 @@ db.define_table('dash_agg',
     Field('dash_type','string'),
     Field('dash_alerts','integer'),
     Field('dash_history','string'),
-    migrate=False)
-
-db.define_table('dashboard_log',
-    Field('dash_type','string'),
-    Field('dash_alerts','integer'),
-    Field('dash_date','string'),
-    Field('dash_filters_md5','string'),
     migrate=False)
 
 db.define_table('gen_filterset_user',

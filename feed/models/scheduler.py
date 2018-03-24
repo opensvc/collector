@@ -558,6 +558,7 @@ def node_users_alerts(node_id):
                  t.node_env,
                  now(),
                  "%(node_id)s",
+                 NULL,
                  NULL
                from (
                  select
@@ -604,6 +605,7 @@ def node_groups_alerts(node_id):
                  t.node_env,
                  now(),
                  "%(node_id)s",
+                 NULL,
                  NULL
                from (
                  select
@@ -3259,6 +3261,7 @@ def cron_dash_svcmon_not_updated():
                  mon_svctype,
                  now(),
                  node_id,
+                 NULL,
                  NULL
                from svcmon
                where mon_updated < date_sub(now(), interval 16 minute)
@@ -3282,6 +3285,7 @@ def cron_dash_node_not_updated():
                  node_env,
                  now(),
                  node_id,
+                 NULL,
                  NULL
                from nodes
                where updated < date_sub(now(), interval 25 hour)
@@ -3305,6 +3309,7 @@ def cron_dash_node_without_asset():
                  mon_svctype,
                  now(),
                  node_id,
+                 NULL,
                  NULL
                from svcmon
                where
@@ -3334,6 +3339,7 @@ def cron_dash_node_beyond_maintenance_date():
                  node_env,
                  "%(now)s",
                  node_id,
+                 NULL,
                  NULL
                from nodes
                where
@@ -3369,6 +3375,7 @@ def cron_dash_node_near_maintenance_date():
                  node_env,
                  now(),
                  node_id,
+                 NULL,
                  NULL
                from nodes
                where
@@ -3397,6 +3404,7 @@ def cron_dash_node_without_maintenance_date():
                  node_env,
                  now(),
                  node_id,
+                 NULL,
                  NULL
                from nodes
                where
@@ -3471,7 +3479,8 @@ def cron_dash_checks_not_updated():
                  n.node_env,
                  now(),
                  c.node_id,
-                 NULL
+                 NULL,
+                 concat(chk_type, ":", chk_instance)
                from checks_live c
                  join nodes n on c.node_id=n.node_id
                where
@@ -3517,7 +3526,8 @@ def cron_dash_app_without_responsible():
                  "",
                  now(),
                  "",
-                 NULL
+                 NULL,
+                 a.app
                from apps a left join apps_responsibles ar on a.id=ar.app_id
                where
                  ar.group_id is NULL
@@ -3579,6 +3589,7 @@ def cron_dash_obs_without(t, a):
                  "",
                  now(),
                  n.node_id,
+                 NULL,
                  NULL
                from obsolescence o
                  join nodes n on
@@ -3615,6 +3626,7 @@ def cron_dash_obs_os_alert():
                  "",
                  now(),
                  n.node_id,
+                 NULL,
                  NULL
                from obsolescence o
                  join nodes n on
@@ -3646,6 +3658,7 @@ def cron_dash_obs_os_warn():
                  "",
                  now(),
                  n.node_id,
+                 NULL,
                  NULL
                from obsolescence o
                  join nodes n on
@@ -3678,6 +3691,7 @@ def cron_dash_obs_hw_alert():
                  "",
                  now(),
                  n.node_id,
+                 NULL,
                  NULL
                from obsolescence o
                  join nodes n on
@@ -3712,6 +3726,7 @@ def cron_dash_obs_hw_warn():
                  "",
                  now(),
                  n.node_id,
+                 NULL,
                  NULL
                from obsolescence o
                  join nodes n on
@@ -3975,6 +3990,7 @@ def update_dash_flex_instances_started(svc_id):
                  "%(env)s",
                  now(),
                  "",
+                 NULL,
                  NULL
                from (
                  select *
@@ -4054,7 +4070,8 @@ def update_dash_checks_all():
                  t.node_env,
                  "%(now)s",
                  t.node_id,
-                 NULL
+                 NULL,
+                 concat(t.ctype, ":", t.inst)
                from (
                  select
                    c.svc_id as svc_id,
@@ -4134,7 +4151,8 @@ def update_dash_checks(node_id):
                  "%(env)s",
                  "%(now)s",
                  t.node_id,
-                 NULL
+                 NULL,
+                 concat(t.ctype, ":", t.inst)
                from (
                  select
                    svc_id as svc_id,

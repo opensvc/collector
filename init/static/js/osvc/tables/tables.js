@@ -1103,7 +1103,7 @@ function table_dashboard(divid, options) {
 		'icon': "alert16",
 		'ajax_url': '/init/dashboard/ajax_dashboard',
 		'orderby': ['~dash_severity', 'dash_type', 'nodename', 'svcname'],
-		'columns': ['id', 'dash_severity', 'dash_links', 'dash_type', 'svc_id', 'svcname', 'node_id', 'nodename', 'node_app', 'dash_env', 'dash_entry', 'dash_md5', 'dash_created', 'dash_updated', 'dash_dict', 'dash_fmt'],
+		'columns': ['id', 'dash_severity', 'dash_links', 'dash_type', 'dash_instance', 'svc_id', 'svcname', 'node_id', 'nodename', 'node_app', 'dash_env', 'dash_entry', 'dash_md5', 'dash_created', 'dash_updated', 'dash_dict', 'dash_fmt'],
 		'force_cols': ['id', 'svc_id', 'svcname', 'node_id', 'nodename', 'dash_type', 'dash_created', 'dash_dict', 'dash_fmt', 'dash_md5'],
 		'default_columns': ['dash_updated', 'dash_env', 'dash_type', 'nodename', 'dash_links', 'dash_severity', 'dash_created', 'svcname', 'dash_entry'],
 		'wsable': true,

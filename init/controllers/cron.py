@@ -473,7 +473,7 @@ def alerts_svcmon_not_updated():
                select NULL,
                       "service.status",
                       "scheduler",
-                      "service status not updated for more than %(age)dh (%%(date)s)",
+                      "instance status not updated for more than %(age)dh (%%(date)s)",
                       concat('{"date": "', mon_updated, '"}'),
                       now(),
                       svc_id,

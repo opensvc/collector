@@ -87,6 +87,7 @@ class table_dashboard(HtmlTable):
                      'dash_severity',
                      'dash_links',
                      'dash_type',
+                     'dash_instance',
                      'svc_id',
                      'svcname',
                      'node_id',
@@ -152,6 +153,10 @@ class table_dashboard(HtmlTable):
             'dash_dict': HtmlTableColumn(
                      table='dashboard',
                      field='dash_dict',
+                    ),
+            'dash_instance': HtmlTableColumn(
+                     table='dashboard',
+                     field='dash_instance',
                     ),
             'dash_type': HtmlTableColumn(
                      table='dashboard',

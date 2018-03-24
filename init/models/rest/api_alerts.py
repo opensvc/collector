@@ -134,7 +134,14 @@ class rest_delete_alerts(rest_delete_handler):
         )
 
     def handler(self, **vars):
-        return rest_delete_alert().handler(**vars)
+        q = db.dashboard.id > 0
+        for key in ["id", "dash_type", "dash_created", "dash_env", "dash_md5", "dash_severity", "dash_updated", "node_id", "svc_id", "dash_fmt", "dash_dict", "dash_instance"]:
+            if key in vars:
+                q &= db.dashboard[key] == vars[key]
+        row = db(q).select().first()
+        if row is None:
+            return dict(info="no alert matching %s" % str(vars))
+        return rest_delete_alert().handler(row.id)
 
 #
 class rest_post_alert(rest_post_handler):
@@ -253,8 +260,9 @@ class rest_post_alerts(rest_post_handler):
             if node:
                 env = node.node_env
         if "dash_type" not in vars:
-            raise HTTP(400, str(vars))
             raise HTTP(400, "'dash_type' is mandatory")
+        if vars.get("dash_instance") is None:
+            vars["dash_instance"] = ""
         if vars.get("dash_fmt") is None:
             vars["dash_fmt"] = ""
         if vars.get("dash_dict") is None:
@@ -271,19 +279,22 @@ class rest_post_alerts(rest_post_handler):
             sev = int(vars.get("dash_severity"))
         except:
             raise HTTP(400, "'dash_severity' must be an integer")
+        if "PRD" in env and sev < 5:
+            sev += 1
         if sev < 0 or sev > 5:
             raise HTTP(400, "'dash_severity' must be between 0 and 5")
 
         q = db.dashboard.dash_type == vars["dash_type"]
-        q &= db.dashboard.dash_fmt == vars["dash_fmt"]
-        q &= db.dashboard.dash_dict == vars["dash_dict"]
         q &= db.dashboard.node_id == vars["node_id"]
         q &= db.dashboard.svc_id == vars["svc_id"]
+        q &= db.dashboard.dash_instance == vars["dash_instance"]
         row = db(q).select().first()
 
         if row:
             db(db.dashboard.id==row.id).update(
                 dash_updated=vars["dash_updated"],
+                dash_fmt=vars["dash_fmt"],
+                dash_dict=vars["dash_dict"],
                 dash_env=env,
                 dash_severity=vars["dash_severity"],
             )
