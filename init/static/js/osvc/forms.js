@@ -1065,7 +1065,7 @@ function form(divid, options) {
 		var acid = content
 		for (var i=0; i<d.Candidates.length; i++) {
 			var _d = d.Candidates[i]
-			if (typeof(_d) === "string") {
+			if ((typeof(_d) === "string") || (typeof(_d) === "boolean")) {
 				opts.push({
 					"id": _d,
 					"label": _d
@@ -2015,7 +2015,9 @@ function form(divid, options) {
 			}
 			var td = table.find("tr[iid="+d.Id+"] > [name=val]")
 			if (!td.is(":visible")) {
-				continue
+				if (o.options[input_key_id]) {
+					data[input_key_id] = o.options[input_key_id]
+				}
 			}
 			if (td.length == 0) {
 				continue
