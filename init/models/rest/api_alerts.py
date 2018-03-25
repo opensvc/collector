@@ -211,8 +211,19 @@ class rest_post_alert(rest_post_handler):
                 sev = int(vars.get("dash_severity"))
             except:
                 raise HTTP(400, "'dash_severity' must be an integer")
-            if sev < 0 or sev > 5:
-                raise HTTP(400, "'dash_severity' must be between 0 and 5")
+            if sev < 0 or sev > 4:
+                raise HTTP(400, "'dash_severity' must be between 0 and 4")
+        elif "base_severity" in vars:
+            try:
+                sev = int(vars.get("base_severity"))
+            except:
+                raise HTTP(400, "'base_severity' must be an integer")
+            if sev < 0 or sev > 3:
+                raise HTTP(400, "'base_severity' must be between 0 and 3")
+            if "PRD" in env and sev < 4:
+                sev += 1
+                vars["dash_severity"] = sev
+                del vars["base_severity"]
 
         db(q).update(**vars)
         _log('dashboard.change',
@@ -275,14 +286,27 @@ class rest_post_alerts(rest_post_handler):
             vars["dash_dict"] = json.dumps(vars["dash_dict"])
         except ValueError:
             raise HTTP(400, "'dash_dict' must be a dictionary")
-        try:
-            sev = int(vars.get("dash_severity"))
-        except:
-            raise HTTP(400, "'dash_severity' must be an integer")
-        if "PRD" in env and sev < 5:
-            sev += 1
-        if sev < 0 or sev > 5:
-            raise HTTP(400, "'dash_severity' must be between 0 and 5")
+        if "dash_severity" in vars:
+            try:
+                sev = int(vars.get("dash_severity"))
+            except:
+                raise HTTP(400, "'dash_severity' must be an integer")
+            if sev < 0 or sev > 4:
+                raise HTTP(400, "'dash_severity' must be between 0 and 4")
+        elif "base_severity" in vars:
+            try:
+                sev = int(vars.get("base_severity"))
+            except:
+                raise HTTP(400, "'base_severity' must be an integer")
+            if sev < 0 or sev > 3:
+                raise HTTP(400, "'dash_severity' must be between 0 and 3")
+            if "PRD" in env and sev < 3:
+                sev += 1
+            vars["dash_severity"] = sev
+            del vars["base_severity"]
+        else:
+            sev = 1
+            vars["dash_severity"] = sev
 
         q = db.dashboard.dash_type == vars["dash_type"]
         q &= db.dashboard.node_id == vars["node_id"]

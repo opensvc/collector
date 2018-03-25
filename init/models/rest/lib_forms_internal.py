@@ -618,6 +618,72 @@ form_data_internal = [
             ]
         }
     }),
+    Storage({
+        "id": -10,
+        "form_name": "generic_check",
+        "form_folder": "/internal",
+        "form_type": "generic",
+        "form_definition": {
+            "Outputs": [
+                {
+                    "Type": "json",
+                    "Format": "dict"
+                }
+            ],
+            "Inputs": [
+                {
+                    "Help": "The base severity the alerts are created with. The collector gives a +1 severity bonus for production nodes and services. The checker can also give bonus.",
+                    "LabelCss": "fa-exclamation-triangle",
+                    "Default": 1,
+                    "Label": "Base severity",
+                    "Type": "integer",
+                    "Candidates": [
+                        {
+                            "Value": 0,
+                            "Label": "Notice",
+                        },
+                        {
+                            "Value": 1,
+                            "Label": "Warning",
+                        },
+                        {
+                            "Value": 2,
+                            "Label": "Error",
+                        },
+                        {
+                            "Value": 3,
+                            "Label": "Critical",
+                        },
+                        {
+                            "Value": 4,
+                            "Label": "Alert",
+                        }
+                    ],
+                    "Id": "base_severity",
+                    "DisplayModeLabel": "base severity"
+                },
+                {
+                    "Help": "The polling interval in seconds",
+                    "LabelCss": "fa-clock",
+                    "Default": 30,
+                    "Label": "Interval",
+                    "Type": "integer",
+                    "Id": "interval",
+                    "DisplayModeLabel": "interval"
+                },
+                {
+                    "ExpertMode": True,
+                    "Help": "The name of each pollers that should handle this check",
+                    "Form": "generic_list",
+                    "Label": "Pollers",
+                    "LabelCss": "fa-rss",
+                    "DisplayModeLabel": "pollers",
+                    "Type": "form",
+                    "Id":"pollers"
+                }
+            ]
+        }
+    }),
 ]
 
 def get_internal_form(form_id):
