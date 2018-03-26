@@ -4598,6 +4598,8 @@ def ping_instance(svc, peer, now):
     result = db(q).update(mon_updated=now)
     if result:
         changed.add("svcmon")
+    else:
+        return changed
 
     q = (db.svcmon_log_last.node_id == peer.node_id) & (db.svcmon_log_last.svc_id == svc.svc_id)
     q &= db.svcmon_log_last.mon_end < now - datetime.timedelta(seconds=30)
@@ -4621,6 +4623,8 @@ def ping_peer(peer, now):
     result = db(q).update(mon_updated=now)
     if result:
         changed.add("svcmon")
+    else:
+        return changed
 
     q = db.svcmon_log_last.node_id == peer.node_id
     q &= db.svcmon_log_last.mon_end < now - datetime.timedelta(seconds=30)
