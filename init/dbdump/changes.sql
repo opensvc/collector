@@ -6604,3 +6604,20 @@ drop table dashboard_log;
 alter table dashboard drop key idx1;
 alter table dashboard add unique key idx1 (svc_id,node_id,dash_md5);
 
+alter table dashboard_events modify column `dash_end` datetime DEFAULT NULL;
+
+drop trigger if exists dash_add_evt;
+delimiter #
+create trigger dash_add_evt after insert on dashboard for each row
+begin
+ insert ignore into dashboard_ref (dash_md5, dash_fmt, dash_dict, dash_type) values (new.dash_md5, new.dash_fmt, new.dash_dict, new.dash_type) ;
+ insert into dashboard_events (dash_md5, node_id, svc_id, dash_begin) values (new.dash_md5, new.node_id, new.svc_id, now()) ;
+end#
+delimiter ;
+
+drop trigger if exists dash_del_evt;
+delimiter #
+create trigger dash_del_evt before delete on dashboard for each row begin update dashboard_events set dash_end=now() where dash_md5=old.dash_md5 and node_id=old.node_id and svc_id=old.svc_id and dash_end is null ; end#
+delimiter ;
+
+
