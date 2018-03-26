@@ -4523,10 +4523,12 @@ def task_dash_min():
 def ping_svc(svc, now):
     changed = set()
     q = db.services.svc_id == svc.svc_id
+    q &= db.services.updated < now - datetime.timedelta(seconds=30)
     result = db(q).update(svc_status_updated=now)
     if result:
         changed.add("services")
     q = db.services_log_last.svc_id == svc.svc_id
+    q &= db.services_log_last.svc_end < now - datetime.timedelta(seconds=30)
     result = db(q).update(svc_end=now)
     return changed
 
@@ -4592,38 +4594,46 @@ def merge_status(s1, s2):
 def ping_instance(svc, peer, now):
     changed = set()
     q = (db.svcmon.node_id == peer.node_id) & (db.svcmon.svc_id == svc.svc_id)
+    q &= db.svcmon.mon_updated < now - datetime.timedelta(seconds=30)
     result = db(q).update(mon_updated=now)
     if result:
         changed.add("svcmon")
 
     q = (db.svcmon_log_last.node_id == peer.node_id) & (db.svcmon_log_last.svc_id == svc.svc_id)
+    q &= db.svcmon_log_last.mon_end < now - datetime.timedelta(seconds=30)
     result = db(q).update(mon_end=now)
 
     q = (db.resmon.node_id == peer.node_id) & (db.resmon.svc_id == svc.svc_id)
+    q &= db.resmon.updated < now - datetime.timedelta(seconds=30)
     result = db(q).update(updated=now)
     if result:
         changed.add("resmon")
 
     q = (db.resmon_log_last.node_id == peer.node_id) & (db.resmon_log_last.svc_id == svc.svc_id)
+    q &= db.resmon_log_last.res_end < now - datetime.timedelta(seconds=30)
     result = db(q).update(res_end=now)
     return changed
 
 def ping_peer(peer, now):
     changed = set()
     q = db.svcmon.node_id == peer.node_id
+    q &= db.svcmon.mon_updated < now - datetime.timedelta(seconds=30)
     result = db(q).update(mon_updated=now)
     if result:
         changed.add("svcmon")
 
     q = db.svcmon_log_last.node_id == peer.node_id
+    q &= db.svcmon_log_last.mon_end < now - datetime.timedelta(seconds=30)
     result = db(q).update(mon_end=now)
 
     q = db.resmon.node_id == peer.node_id
+    q &= db.resmon.updated < now - datetime.timedelta(seconds=30)
     result = db(q).update(updated=now)
     if result:
         changed.add("resmon")
 
     q = db.resmon_log_last.node_id == peer.node_id
+    q &= db.resmon_log_last.res_end < now - datetime.timedelta(seconds=30)
     result = db(q).update(res_end=now)
     return changed
 
