@@ -6620,4 +6620,8 @@ delimiter #
 create trigger dash_del_evt before delete on dashboard for each row begin update dashboard_events set dash_end=now() where dash_md5=old.dash_md5 and node_id=old.node_id and svc_id=old.svc_id and dash_end is null ; end#
 delimiter ;
 
+alter table dashboard_events modify column `dash_md5` binary(32) default null;
+alter table dashboard modify column `dash_md5` binary(32) default null;
+alter table dashboard_ref modify column `dash_md5` binary(32) default null;
+
 
