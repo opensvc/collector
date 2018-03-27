@@ -138,7 +138,7 @@ def fmt_options(options):
         if "option" not in option:
             continue
         if option.get("value") is None:
-            l += ["--%(key)s" % option["option"]]
+            l += ["--%(key)s" % dict(key=option["option"])]
         else:
             l += ["--%(key)s=%(val)s" % dict(
                      key=option["option"],
@@ -309,7 +309,7 @@ def do_svc_action(svc_id, action, options=None):
     )
     return action_id
 
-def do_instance_action(node_id, svc_id, action, rid=None):
+def do_instance_action(node_id, svc_id, action, rid=None, options=None):
     check_privilege("NodeExec")
     if action is None or len(action) == 0:
         raise ToolError("no action specified")
@@ -350,7 +350,7 @@ def do_instance_action(node_id, svc_id, action, rid=None):
     if node is None:
         return 0
 
-    action_id = enqueue_svc_action(node, svc_id, action, rid=rid)
+    action_id = enqueue_svc_action(node, svc_id, action, rid=rid, options=options)
     if rid is None:
         _log('service.action',
              'run %(a)s',

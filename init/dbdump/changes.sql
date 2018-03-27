@@ -6623,5 +6623,5 @@ delimiter ;
 alter table dashboard_events modify column `dash_md5` binary(32) default null;
 alter table dashboard modify column `dash_md5` binary(32) default null;
 alter table dashboard_ref modify column `dash_md5` binary(32) default null;
-
+alter table dashboard modify column dash_md5 binary(32) GENERATED ALWAYS AS (md5(concat(`dash_type`,`dash_instance`))) STORED;
 

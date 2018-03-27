@@ -131,13 +131,25 @@ class rest_put_provisioning_template(rest_put_handler):
             )
             svc = data["data"][0]
 
-        command = 'create --provision --template %d' % provisioning_template.id
+        options = [
+            {
+                "option": "provision",
+            },
+            {
+                "option": "template",
+                "value": str(provisioning_template.id),
+            },
+        ]
+        command = "create"
         for k, v in vars.items():
             if k in ("svcname", "node_id"):
                 continue
-            command += ' --env %s="%s"' % (k, v)
+            options.append({
+                "option": "env",
+                "value": '%s="%s"' % (k, v),
+            })
 
-        n = do_svc_action(vars["node_id"], svc["svc_id"], command)
+        n = do_instance_action(vars["node_id"], svc["svc_id"], command, options=options)
         if n == 0:
             return dict(error="service provision command enqueue refused")
 
