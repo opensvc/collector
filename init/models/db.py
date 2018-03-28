@@ -129,7 +129,7 @@ auth.settings.extra_fields['auth_user']= [
     Field('email_notifications_delay', 'integer', default=0),
     Field('im_type', 'string',
           label=T('Instant messaging protocol'), default=None,
-          requires=IS_IN_SET(["xmpp", "slack"])),
+          requires=IS_IN_SET(["xmpp", "slack", None])),
     Field('im_username', 'string', label=T("Instant messaging user name")),
     Field('im_log_level', 'string', default="critical", label=T("Instant messaging log level"),
           requires=IS_IN_SET(["notice", "warning", "error", "critical"])),
