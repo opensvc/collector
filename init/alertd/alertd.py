@@ -813,6 +813,9 @@ class Alertd(object):
         except KeyboardInterrupt:
             self.log.info("keyboard interrupt")
             pass
+        except Exception as exc:
+            self.log.exception(exc)
+            time.sleep(5)
         finally:
             self.stop_workers()
             self.alertd_unlock()
