@@ -766,8 +766,8 @@ def prepare_data(
                             break
                 elif t == "svc_tags":
                     for table in tables:
-                        if "svc_id" in db[table].fields:
-                            left.append(db.node_tags.on(db.node_tags.tag_id==db[table].tag_id))
+                        if "tag_id" in db[table].fields:
+                            left.append(db.svc_tags.on(db.svc_tags.tag_id==db[table].tag_id))
                             tables.append("svc_tags")
                             validated_prop = prop
                             break
