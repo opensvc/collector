@@ -61,7 +61,7 @@ CREATE TABLE `scheduler_task` (
 
 LOCK TABLES `scheduler_task` WRITE;
 /*!40000 ALTER TABLE `scheduler_task` DISABLE KEYS */;
-INSERT INTO `scheduler_task` VALUES (1,'1ec59d9c-4b3b-48ff-90f9-3f746e2cc614','[]','{}','T','2014-06-28 06:14:00','2018-03-28 00:22:45',NULL,0,-1,86400,900,0,473,0,'2018-03-27 00:22:45',NULL,'janitor','task_purge_checks','QUEUED','task_purge_checks','init/appadmin','c5cb04edaff4#19118'),(3,'062630d0-04fc-43da-96cf-48458794bd9a','[]','{}','T','2014-06-28 14:41:10','2018-03-27 15:56:29',NULL,0,-1,600,300,0,50008,0,'2018-03-27 15:46:29',NULL,'janitor','task_unfinished_actions','QUEUED','task_unfinished_actions','init/appadmin','c5cb04edaff4#19118'),(4,'6feec2d3-88ff-4763-9a68-7d9f7a8fb4ab','[]','{}','T','2014-06-28 14:41:57','2018-03-27 15:56:31',NULL,0,-1,300,60,0,97695,0,'2018-03-27 15:51:31',NULL,'janitor','task_feed_monitor','QUEUED','task_feed_monitor','init/appadmin','c5cb04edaff4#19118'),(6,'61d42c21-91b0-45c6-a43e-9590743a8d33','[]','{}','T','2014-06-28 14:58:16','2018-03-28 00:22:43',NULL,0,-1,86400,60,0,474,0,'2018-03-27 00:22:43',NULL,'janitor','task_purge_static','QUEUED','task_purge_static','init/appadmin','c5cb04edaff4#19118'),(7,'d0b68200-612b-40eb-b7f2-1b064445dbc8','[]','{}','T','2014-06-28 17:17:36','2018-03-27 16:25:54',NULL,0,-1,3600,900,0,8495,0,'2018-03-27 15:25:54',NULL,'janitor','task_alerts_hourly','QUEUED','task_alerts_hourly','init/appadmin','c5cb04edaff4#19118'),(9,'caa8932b-3b6d-400d-8bcd-05a79e4279e7','[]','{}','T','2014-06-28 17:29:10','2018-03-28 00:22:55',NULL,0,-1,86400,900,0,449,0,'2018-03-27 00:22:55','F','metrics','task_alerts_daily','QUEUED','task_alerts_daily','init/appadmin','c5cb04edaff4#19121'),(10,'9da16e02-9a6e-4f4d-9a1f-3172e8c4993e','[]','{}','T','2014-06-28 17:56:15','2018-03-28 00:22:47',NULL,0,-1,86400,1800,0,31458,0,'2018-03-27 00:22:47','F','metrics','task_metrics','QUEUED','task_metrics','init/appadmin','c5cb04edaff4#19121'),(11,'2968ee45-fa9c-419c-ac72-1a40e9e1d1b0','[]','{}','T','2014-06-28 22:09:32','2018-03-28 00:22:41',NULL,0,-1,86400,1800,0,896,0,'2018-03-27 00:22:41',NULL,'metrics','task_stats','QUEUED','task_stats','init/appadmin','c5cb04edaff4#19121'),(13,'db4076fa-f3e8-4b5e-9eac-f66e1c1dbf31','[]','{}','T','2014-06-28 22:10:48','2018-03-28 00:22:43',NULL,0,-1,86400,300,0,671,0,'2018-03-27 00:22:43','F','janitor','task_refresh_obsolescence','QUEUED','task_refresh_obsolescence','init/appadmin','c5cb04edaff4#19118'),(14,'e17d55ec-5768-42e9-8b6e-ef2c597b4b91','[]','{}','T','2014-06-28 22:12:09','2018-03-28 00:22:45',NULL,0,-1,86400,300,0,394,0,'2018-03-27 00:22:45',NULL,'janitor','task_dash_comp','QUEUED','task_dash_comp','init/appadmin','c5cb04edaff4#19118'),(18,'9f03c375-54e0-4a5c-abba-a542515f2168','[]','{}','T','2014-06-29 10:29:09','2018-03-27 15:56:47',NULL,0,-1,60,50,0,425406,0,'2018-03-27 15:55:47','F','janitor','task_dash_min','QUEUED','task_dash_min','feed/default','c5cb04edaff4#19118'),(19,'bdd17f2b-f22f-469c-8376-88a626545987','[]','{}','T','2014-06-29 10:29:45','2018-03-27 16:26:09',NULL,0,-1,3600,300,0,9748,53,'2018-03-27 15:26:09',NULL,'janitor','task_dash_hourly','QUEUED','task_dash_hourly','feed/default','c5cb04edaff4#19118'),(20,'67fa2e07-5965-4cc4-b40a-1d474a2fbb6c','[]','{}','T','2014-06-29 10:31:14','2018-03-28 00:22:46',NULL,0,-1,86400,900,0,1631,0,'2018-03-27 00:22:46','F','janitor','task_dash_daily','QUEUED','task_dash_daily','feed/default','c5cb04edaff4#19118'),(88,'80fa3e6a-cbd4-449f-ad8e-dc89277be3c9','[]','{}','T','2014-06-29 16:55:26','2018-03-27 15:57:02',NULL,0,-1,60,60,0,441933,0,'2018-03-27 15:56:02',NULL,'janitor','task_purge_feed','QUEUED','task_purge_feed','init/appadmin','c5cb04edaff4#19118'),(89,'776d6f19-e97c-44e7-be34-1df6a03e9d00','[]','{}','T','2016-08-24 17:47:13','2018-03-27 15:56:16',NULL,0,-1,60,50,0,235270,0,'2018-03-27 15:55:16','F','janitor','resync_all','QUEUED','task_replication','init/appadmin','c5cb04edaff4#19118'),(92,'a77ff791-75c1-11e6-a238-1a6c476979dd','[]','{}','T','2016-09-08 14:36:12','2018-03-27 15:56:47',NULL,0,-1,60,60,0,259070,0,'2018-03-27 15:55:47','F','janitor','task_scrub','QUEUED','task_scrub','init/appadmin','c5cb04edaff4#19118'),(93,'7ddeddd4-9f10-11e6-9ab2-62c23e0c6d15','[]','{}','T','2016-11-02 11:03:47','2018-03-27 15:57:31',NULL,0,-1,120,120,0,130155,0,'2018-03-27 15:55:31','F','janitor','task_docker_discover_registries','QUEUED','task_docker_discover_registries','init/appadmin','c5cb04edaff4#19118'),(165,'cca07dec-d3a4-11e7-a2e0-aac3870fb23d','[]','{}','T','2017-11-27 19:57:23','2018-03-27 15:56:15',NULL,0,-1,300,270,0,19849,0,'2018-03-27 15:51:15','F','metrics','task_purge_expiry','QUEUED','task_purge_expiry','init/appadmin','c5cb04edaff4#19121');
+INSERT INTO `scheduler_task` VALUES (1,'1ec59d9c-4b3b-48ff-90f9-3f746e2cc614','[]','{}','T','2014-06-28 06:14:00','2018-03-29 00:22:51',NULL,0,-1,86400,900,0,474,0,'2018-03-28 00:22:51',NULL,'janitor','task_purge_checks','QUEUED','task_purge_checks','init/appadmin','c5cb04edaff4#19118'),(3,'062630d0-04fc-43da-96cf-48458794bd9a','[]','{}','T','2014-06-28 14:41:10','2018-03-28 10:45:51',NULL,0,-1,600,300,0,50109,0,'2018-03-28 10:35:51',NULL,'janitor','task_unfinished_actions','QUEUED','task_unfinished_actions','init/appadmin','c5cb04edaff4#19118'),(4,'6feec2d3-88ff-4763-9a68-7d9f7a8fb4ab','[]','{}','T','2014-06-28 14:41:57','2018-03-28 10:40:52',NULL,0,-1,300,60,0,97896,0,'2018-03-28 10:35:52',NULL,'janitor','task_feed_monitor','QUEUED','task_feed_monitor','init/appadmin','c5cb04edaff4#19118'),(6,'61d42c21-91b0-45c6-a43e-9590743a8d33','[]','{}','T','2014-06-28 14:58:16','2018-03-29 00:22:50',NULL,0,-1,86400,60,0,475,0,'2018-03-28 00:22:50',NULL,'janitor','task_purge_static','QUEUED','task_purge_static','init/appadmin','c5cb04edaff4#19118'),(7,'d0b68200-612b-40eb-b7f2-1b064445dbc8','[]','{}','T','2014-06-28 17:17:36','2018-03-28 11:25:37',NULL,0,-1,3600,900,0,8512,0,'2018-03-28 10:25:37',NULL,'janitor','task_alerts_hourly','QUEUED','task_alerts_hourly','init/appadmin','c5cb04edaff4#19118'),(9,'caa8932b-3b6d-400d-8bcd-05a79e4279e7','[]','{}','T','2014-06-28 17:29:10','2018-03-29 00:23:05',NULL,0,-1,86400,900,0,450,0,'2018-03-28 00:23:05','F','metrics','task_alerts_daily','QUEUED','task_alerts_daily','init/appadmin','c5cb04edaff4#19121'),(10,'9da16e02-9a6e-4f4d-9a1f-3172e8c4993e','[]','{}','T','2014-06-28 17:56:15','2018-03-29 00:22:54',NULL,0,-1,86400,1800,0,31459,0,'2018-03-28 00:22:54','F','metrics','task_metrics','QUEUED','task_metrics','init/appadmin','c5cb04edaff4#19121'),(11,'2968ee45-fa9c-419c-ac72-1a40e9e1d1b0','[]','{}','T','2014-06-28 22:09:32','2018-03-29 00:22:50',NULL,0,-1,86400,1800,0,897,0,'2018-03-28 00:22:50',NULL,'metrics','task_stats','QUEUED','task_stats','init/appadmin','c5cb04edaff4#19121'),(13,'db4076fa-f3e8-4b5e-9eac-f66e1c1dbf31','[]','{}','T','2014-06-28 22:10:48','2018-03-29 00:22:50',NULL,0,-1,86400,300,0,672,0,'2018-03-28 00:22:50','F','janitor','task_refresh_obsolescence','QUEUED','task_refresh_obsolescence','init/appadmin','c5cb04edaff4#19118'),(14,'e17d55ec-5768-42e9-8b6e-ef2c597b4b91','[]','{}','T','2014-06-28 22:12:09','2018-03-29 00:22:52',NULL,0,-1,86400,300,0,395,0,'2018-03-28 00:22:52',NULL,'janitor','task_dash_comp','QUEUED','task_dash_comp','init/appadmin','c5cb04edaff4#19118'),(18,'9f03c375-54e0-4a5c-abba-a542515f2168','[]','{}','T','2014-06-29 10:29:09','2018-03-28 10:38:07',NULL,0,-1,60,50,0,426402,0,'2018-03-28 10:37:07','F','janitor','task_dash_min','QUEUED','task_dash_min','feed/default','c5cb04edaff4#19118'),(19,'bdd17f2b-f22f-469c-8376-88a626545987','[]','{}','T','2014-06-29 10:29:45','2018-03-28 11:25:38',NULL,0,-1,3600,300,0,9748,70,'2018-03-28 10:25:38',NULL,'janitor','task_dash_hourly','QUEUED','task_dash_hourly','feed/default','c5cb04edaff4#19118'),(20,'67fa2e07-5965-4cc4-b40a-1d474a2fbb6c','[]','{}','T','2014-06-29 10:31:14','2018-03-29 00:22:52',NULL,0,-1,86400,900,0,1632,0,'2018-03-28 00:22:52','F','janitor','task_dash_daily','QUEUED','task_dash_daily','feed/default','c5cb04edaff4#19118'),(88,'80fa3e6a-cbd4-449f-ad8e-dc89277be3c9','[]','{}','T','2014-06-29 16:55:26','2018-03-28 10:38:07',NULL,0,-1,60,60,0,442929,0,'2018-03-28 10:37:07',NULL,'janitor','task_purge_feed','QUEUED','task_purge_feed','init/appadmin','c5cb04edaff4#19118'),(89,'776d6f19-e97c-44e7-be34-1df6a03e9d00','[]','{}','T','2016-08-24 17:47:13','2018-03-28 10:37:37',NULL,0,-1,60,50,0,236266,0,'2018-03-28 10:36:37','F','janitor','resync_all','QUEUED','task_replication','init/appadmin','c5cb04edaff4#19118'),(92,'a77ff791-75c1-11e6-a238-1a6c476979dd','[]','{}','T','2016-09-08 14:36:12','2018-03-28 10:37:37',NULL,0,-1,60,60,0,259110,0,'2018-03-28 10:36:37','F','janitor','task_scrub','QUEUED','task_scrub','init/appadmin','c5cb04edaff4#19118'),(93,'7ddeddd4-9f10-11e6-9ab2-62c23e0c6d15','[]','{}','T','2016-11-02 11:03:47','2018-03-28 10:37:52',NULL,0,-1,120,120,0,130653,0,'2018-03-28 10:35:52','F','janitor','task_docker_discover_registries','QUEUED','task_docker_discover_registries','init/appadmin','c5cb04edaff4#19118'),(165,'cca07dec-d3a4-11e7-a2e0-aac3870fb23d','[]','{}','T','2017-11-27 19:57:23','2018-03-28 10:40:36',NULL,0,-1,300,270,0,20050,0,'2018-03-28 10:35:36','F','metrics','task_purge_expiry','QUEUED','task_purge_expiry','init/appadmin','c5cb04edaff4#19121');
 /*!40000 ALTER TABLE `scheduler_task` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -74,7 +74,7 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-03-27 15:56:15
+-- Dump completed on 2018-03-28 10:37:34
 -- MySQL dump 10.16  Distrib 10.3.5-MariaDB, for debian-linux-gnu (x86_64)
 --
 -- Host: localhost    Database: opensvc
@@ -127,7 +127,7 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-03-27 15:56:15
+-- Dump completed on 2018-03-28 10:37:35
 -- MySQL dump 10.16  Distrib 10.3.5-MariaDB, for debian-linux-gnu (x86_64)
 --
 -- Host: localhost    Database: opensvc
@@ -175,7 +175,7 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-03-27 15:56:16
+-- Dump completed on 2018-03-28 10:37:35
 -- MySQL dump 10.16  Distrib 10.3.5-MariaDB, for debian-linux-gnu (x86_64)
 --
 -- Host: localhost    Database: opensvc
@@ -225,7 +225,7 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-03-27 15:56:16
+-- Dump completed on 2018-03-28 10:37:36
 -- MySQL dump 10.16  Distrib 10.3.5-MariaDB, for debian-linux-gnu (x86_64)
 --
 -- Host: localhost    Database: opensvc
@@ -276,7 +276,7 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-03-27 15:56:18
+-- Dump completed on 2018-03-28 10:37:36
 -- MySQL dump 10.16  Distrib 10.3.5-MariaDB, for debian-linux-gnu (x86_64)
 --
 -- Host: localhost    Database: opensvc
@@ -332,7 +332,7 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-03-27 15:56:18
+-- Dump completed on 2018-03-28 10:37:37
 -- MySQL dump 10.16  Distrib 10.3.5-MariaDB, for debian-linux-gnu (x86_64)
 --
 -- Host: localhost    Database: opensvc
@@ -422,7 +422,7 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-03-27 15:56:21
+-- Dump completed on 2018-03-28 10:37:38
 -- MySQL dump 10.16  Distrib 10.3.5-MariaDB, for debian-linux-gnu (x86_64)
 --
 -- Host: localhost    Database: opensvc
@@ -480,7 +480,7 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-03-27 15:56:22
+-- Dump completed on 2018-03-28 10:37:39
 INSERT INTO sysrep_secure VALUES (1,'.*');
 INSERT INTO auth_user (id, last_name, email, password) VALUES (1,'Manager','root@localhost.localdomain','sha512$85f8c776fe663b25$a9ab1f4ebd03fa7f2cf992bf7bc111e24a76397db7a228edc54a95e44e2cfbd50b7d83a5942a9c66da99c1f14c14b9ef070eef730460850c7eb48c1126236e96');
 INSERT INTO auth_membership VALUES (1, 1, 2, 'F');
