@@ -867,7 +867,6 @@ div.error {
 
 div.menu_box {
 	display: flex;
-	height: 100%;
 }
 .menu_box > div {
 	display: inline-block;
