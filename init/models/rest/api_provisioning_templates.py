@@ -140,7 +140,7 @@ class rest_put_provisioning_template(rest_put_handler):
                 "value": str(provisioning_template.id),
             },
             {
-                "option": "--disable-rollback",
+                "option": "disable-rollback",
             },
         ]
         command = "create"
