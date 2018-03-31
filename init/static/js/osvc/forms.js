@@ -1252,6 +1252,9 @@ function form(divid, options) {
 		if (!has_default && (d.CheckOnLoad == "all")) {
 			master_cb.prop("checked", true)
 		}
+		if (d.ReadOnly) {
+			master_cb.prop("disabled", true)
+		}
 		master_cb.bind("change", function() {
 			var state = $(this).prop("checked")
 			$(this).parent().siblings().children("input[type=checkbox]").prop("checked", state)
@@ -1291,6 +1294,9 @@ function form(divid, options) {
 			}
 			if (!has_default && (d.CheckOnLoad == "all")) {
 				cb.prop("checked", true)
+			}
+			if (d.ReadOnly) {
+				cb.prop("disabled", true)
 			}
 		}
 	}
@@ -1458,7 +1464,7 @@ function form(divid, options) {
 	function rest_init(input, d, content, fn_callback) {
 		var args = prepare_args(input, d.Args)
 		var fn = subst_refs(input, d.Function)
-		if (fn.match(/\/undefined\//) || fn.match(/\/$/)) {
+		if (fn.match(/\/undefined\//) || fn.match(/\/$/) || fn.match(/#/)) {
 			console.log("cancel rest get on", fn, ": missing parameters")
 			return
 		}
