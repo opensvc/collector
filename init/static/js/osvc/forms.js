@@ -1,7 +1,11 @@
 function convert_boolean(val) {
-	if (String(val)[0].toLowerCase().match(/[1ty]/)) {
-		return true
-	} else {
+	try {
+		if (String(val)[0].toLowerCase().match(/[1ty]/)) {
+			return true
+		} else {
+			return false
+		}
+	} catch(e) {
 		return false
 	}
 }
@@ -397,7 +401,7 @@ function form(divid, options) {
 					cell.addClass(d.LabelCss)
 				}
 			} else if (input_key_id in data) {
-				content = data[input_key_id]
+				content = String(data[input_key_id])
 			}
 
 			if (content == "") {
@@ -516,7 +520,7 @@ function form(divid, options) {
 			}
 
  			if (is_dict(data) && input_key_id in data) {
-				var content = data[input_key_id]
+				var content = String(data[input_key_id])
 			} else if (typeof data === "string") {
 				var content = data
 			} else {
@@ -617,6 +621,8 @@ function form(divid, options) {
 				var input = o.render_info(d, content)
 			} else if (d.Type == "text") {
 				var input = o.render_text(d, content)
+			} else if (d.Type == "boolean") {
+				var input = o.render_boolean(d, content)
 			} else if (d.Type == "checklist") {
 				var input = o.render_checklist(d, content)
 			} else if (d.Type == "form") {
@@ -635,6 +641,9 @@ function form(divid, options) {
 
 			value.append(input)
 			table.append(line)
+			if (d.Type == "boolean") {
+				input.bootstrapToggle()
+			}
 		}
 		o.install_mandatory_triggers(table)
 		o.install_constraint_triggers(table)
@@ -1072,7 +1081,7 @@ function form(divid, options) {
 		var acid = content
 		for (var i=0; i<d.Candidates.length; i++) {
 			var _d = d.Candidates[i]
-			if ((typeof(_d) === "string") || (typeof(_d) === "boolean")) {
+			if (typeof(_d) === "string") {
 				opts.push({
 					"id": _d,
 					"label": _d
@@ -1153,6 +1162,26 @@ function form(divid, options) {
 		return input
 	}
 
+	o.render_boolean = function(d, content) {
+		var input = $("<input type='checkbox' data-toggle='toggle' data-onstyle='success' data-offstyle='danger'>")
+		if (d.ReadOnly == true) {
+			input.prop("disabled", true)
+		}
+		if (content == true) {
+			input.prop("checked", true)
+			input.prop("acid", true)
+		} else {
+			input.prop("acid", false)
+		}
+		input.bind("click", function(){
+			if ($(this).prop("checked")) {
+				$(this).prop("acid", true)
+			} else {
+				$(this).prop("acid", false)
+			}
+		})
+		return input
+	}
 	o.render_checklist = function(d, content) {
 		if (d.Candidates && (d.Candidates instanceof Array)) {
 			return o.render_checklist_static(d, content)
@@ -2043,11 +2072,11 @@ function form(divid, options) {
 				val = val.split(",")
 				val = convert_size(val)
 			} else
+			if ((d.Type == "boolean")) {
+				val = convert_boolean(val)
+			} else
 			if ((d.Type == "string or integer") || (d.Type == "size") || (d.Type == "integer")) {
 				val = convert_size(val, d.Unit)
-			} else
-			if (d.Type == "boolean") {
-				val = convert_boolean(val)
 			} else
 			if (d.Type == "form") {
 				val = o.sub_forms[d.Id].form_to_data()

@@ -367,9 +367,9 @@ tab_properties_generic_autocomplete_user_app = function(options) {
 
 tab_properties_generic_boolean = function(options) {
 	if (options.div.text() == "true") {
-		options.div.attr('class', 'fa toggle-on');
+		options.div.attr('class', 'fa fa-toggle-on');
 	} else {
-		options.div.attr('class','fa toggle-off');
+		options.div.attr('class','fa fa-toggle-off');
 	}
 	options.div.empty()
 
@@ -383,7 +383,7 @@ tab_properties_generic_boolean = function(options) {
         function toggle_prop() {
 		var data = {}
 		var key = options.div.attr("id")
-		if (options.div.hasClass("toggle-on")) {
+		if (options.div.hasClass("fa-toggle-on")) {
 			data[key] = false
 		} else {
 			data[key] = true
@@ -393,9 +393,9 @@ tab_properties_generic_boolean = function(options) {
 				return
 			}
 			if (jd.data[0][key] == false) {
-				options.div.removeClass("toggle-on").addClass("toggle-off")
+				options.div.removeClass("fa-toggle-on").addClass("fa-toggle-off")
 			} else {
-				options.div.removeClass("toggle-off").addClass("toggle-on")
+				options.div.removeClass("fa-toggle-off").addClass("fa-toggle-on")
 			}
 			tab_properties_generic_update_peers(options.div)
 			tab_properties_generic_lists_refresh(options.div)

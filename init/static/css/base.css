@@ -116,15 +116,6 @@ input.aci, input.aci:focus {
 .im:before {
 	content: "\f27a";
 }
-.toggle-on:before {
-	content: '\f205';
-	font-family: 'Font Awesome 5 Free';
-}
-.toggle-off:before {
-	content: '\f204';
-	font-family: 'Font Awesome 5 Free';
-}
-
 .second:before {
 	content: '\f0e7';
 }
@@ -2808,6 +2799,7 @@ textarea.link_ta_sub {
 	border-width: 1px;
 	border-color: rgba(0,0,0,0.1);
 	padding: 0.3rem 1rem;
+	width: 100%;
 	-moz-border-radius: 3px;
 	-webkit-border-radius: 3px;
 }
@@ -3005,16 +2997,15 @@ pre.api_doc {
 	background-color: cadetblue;
 }
 
-.container_head {
-	display: inline-block;
-}
-
 .container_head > table {
 	border-collapse: initial;
 	border-spacing: 0.3em;
 	border-spacing: 0 0.6em;
 }
-
+.postit div.toggle,.container_head div.toggle {
+	height: 2.15em !important;
+	width: 100% !important;
+}
 .form_vertical td,.form_vertical th {
 	display: block;
 }

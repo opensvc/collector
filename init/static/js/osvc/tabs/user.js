@@ -316,9 +316,9 @@ function user_properties(divid, options) {
 
 			// manager
 			if ("Manager" in priv_groups) {
-				o.info_manager.attr('class', 'fa toggle-on')
+				o.info_manager.attr('class', 'fa fa-toggle-on')
 			} else {
-				o.info_manager.attr('class', 'fa toggle-off')
+				o.info_manager.attr('class', 'fa fa-toggle-off')
 			}
 
 			tab_properties_generic_updater({

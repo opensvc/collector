@@ -284,9 +284,9 @@ function cell_decorator_boolean(e, line) {
 	if (typeof v === "undefined") {
 		var cl = ""
 	} else if (true_vals.indexOf(v) >= 0) {
-		var cl = "fa toggle-on"
+		var cl = "fa fa-toggle-on"
 	} else {
-		var cl = "fa toggle-off"
+		var cl = "fa fa-toggle-off"
 	}
 	s = $("<span class='"+cl+"' title='"+v+"'></span>").tooltipster()
 	e.html(s)
