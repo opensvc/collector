@@ -210,16 +210,20 @@ class rest_post_alert(rest_post_handler):
             try:
                 sev = int(vars.get("dash_severity"))
             except:
-                raise HTTP(400, "'dash_severity' must be an integer")
-            if sev < 0 or sev > 4:
-                raise HTTP(400, "'dash_severity' must be between 0 and 4")
+                sev = 0
+            if sev < 0:
+                sev = 0
+            elif sev > 4:
+                sev = 4
         elif "base_severity" in vars:
             try:
                 sev = int(vars.get("base_severity"))
             except:
-                raise HTTP(400, "'base_severity' must be an integer")
-            if sev < 0 or sev > 3:
-                raise HTTP(400, "'base_severity' must be between 0 and 3")
+                sev = 0
+            if sev < 0:
+                sev = 0
+            elif sev > 3:
+                sev = 3
             if "PRD" in env and sev < 4:
                 sev += 1
                 vars["dash_severity"] = sev
@@ -290,16 +294,20 @@ class rest_post_alerts(rest_post_handler):
             try:
                 sev = int(vars.get("dash_severity"))
             except:
-                raise HTTP(400, "'dash_severity' must be an integer")
-            if sev < 0 or sev > 4:
-                raise HTTP(400, "'dash_severity' must be between 0 and 4")
+                sev = 0
+            if sev < 0:
+                sev = 0
+            elif sev > 4:
+                sev = 4
         elif "base_severity" in vars:
             try:
                 sev = int(vars.get("base_severity"))
             except:
-                raise HTTP(400, "'base_severity' must be an integer")
-            if sev < 0 or sev > 3:
-                raise HTTP(400, "'dash_severity' must be between 0 and 3")
+                sev = 0
+            if sev < 0:
+                sev = 0
+            elif sev > 3:
+                sev = 3
             if "PRD" in env and sev < 3:
                 sev += 1
             vars["dash_severity"] = sev
