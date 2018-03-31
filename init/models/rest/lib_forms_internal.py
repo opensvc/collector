@@ -654,10 +654,6 @@ form_data_internal = [
                             "Value": 3,
                             "Label": "Critical",
                         },
-                        {
-                            "Value": 4,
-                            "Label": "Alert",
-                        }
                     ],
                     "Id": "base_severity",
                     "DisplayModeLabel": "base severity"
