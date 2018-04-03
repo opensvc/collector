@@ -405,7 +405,7 @@ function fset_designer(divid, options) {
 			i++
 		})
 		// force a new render in the rendering tab
-		o.div.parents(".tab_display").first().find(".asset_tab").parent().empty()
+		o.div.parents(".tab_display").first().find("d-flex flex-wrap").parent().empty()
 
 	}
 
@@ -917,7 +917,7 @@ function fset_designer(divid, options) {
 					o.render_item(item, data)
 				})
 				// force a new render in the rendering tab
-				o.div.parents(".tab_display").first().find(".asset_tab").parent().empty()
+				o.div.parents(".tab_display").first().find("d-flex flex-wrap").parent().empty()
 			}
 		})
 
@@ -938,7 +938,7 @@ function fset_designer(divid, options) {
 				div.remove()
 			})
 			// force a new render in the rendering tab
-			o.div.parents(".tab_display").first().find(".asset_tab").parent().empty()
+			o.div.parents(".tab_display").first().find("d-flex flex-wrap").parent().empty()
 		})
 
 		div.find("input").first().focus()
@@ -986,7 +986,7 @@ function fset_designer(divid, options) {
 				o.render_item(item, data)
 			})
 			// force a new render in the rendering tab
-			o.div.parents(".tab_display").first().find(".asset_tab").parent().empty()
+			o.div.parents(".tab_display").first().find("d-flex flex-wrap").parent().empty()
 		})
 
 		var del = $("<span class='icon del16 highlight clickable' style='float:right'></span>")
@@ -1006,7 +1006,7 @@ function fset_designer(divid, options) {
 				div.remove()
 			})
 			// force a new render in the rendering tab
-			o.div.parents(".tab_display").first().find(".asset_tab").parent().empty()
+			o.div.parents(".tab_display").first().find("d-flex flex-wrap").parent().empty()
 		})
 
 		div.find("input").first().focus()

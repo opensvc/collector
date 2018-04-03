@@ -154,16 +154,7 @@ input.aci, input.aci:focus {
 	flex-wrap: wrap;
 }
 
-.asset_tab {
-	display: flex;
-	flex-wrap: wrap;
-}
-.asset_tab > div {
-	padding: 1em;
-	flex: 1 0 31em;
-	max-width: 100%;
-}
-.asset_tab > div > table > tbody > tr > th {
+.d-flex.flex-wrap > div > table > tbody > tr > th {
 	font-weight: normal;
 	color: gray;
 	width: 10em;
