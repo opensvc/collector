@@ -2621,6 +2621,7 @@ function stats_resinfo(url, id) {
                 show: false
             },
             seriesDefaults: {
+                markerOptions: {size: 2},
                 breakOnNull : true,
                 shadowAngle: 135,
                 shadowOffset: 1.0,
