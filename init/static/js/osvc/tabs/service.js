@@ -41,7 +41,7 @@ function service_tabs(divid, options) {
 		// tab status
 		i = o.register_tab({
 			"title": "service_tabs.status",
-			"title_class": "icon svc"
+			"title_class": "icon svcinstance"
 		})
 		o.tabs[i].callback = function(divid) {
 			table_service_instances_svc(divid, o.options.svc_id)
