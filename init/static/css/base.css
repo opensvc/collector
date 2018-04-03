@@ -3263,6 +3263,11 @@ span.spinner_text {
 	.search > input {
 		width: 5em;
 	}
+	.tab li {
+		width: 22px;
+		text-overflow: clip;
+		overflow: hidden;
+	}
 }
 /* end small screen */
 
