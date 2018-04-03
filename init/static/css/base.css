@@ -3244,6 +3244,9 @@ span.spinner_text {
 
 /* begin small screen */
 @media all and (max-width:640px) {
+	body {
+		font-size: 12pt;
+	}
 	.theader {
 		padding: 0;
 		margin-top: 0;
@@ -3264,9 +3267,13 @@ span.spinner_text {
 		width: 5em;
 	}
 	.tab li {
-		width: 22px;
+		width: 1.7em;
 		text-overflow: clip;
 		overflow: hidden;
+		border: none;
+	}
+	.tab li:before {
+		margin-right: 1em;
 	}
 }
 /* end small screen */
