@@ -25,7 +25,7 @@ function array_tabs(divid, options) {
 		// tab properties
 		i = o.register_tab({
 			"title": "node_tabs.properties",
-			"title_class": "icon array"
+			"title_class": "icon fa-list-ul"
 		})
 		o.tabs[i].callback = function(divid) {
 			array_properties(divid, {"array_id": o.data.id})

@@ -18,7 +18,7 @@ function network_tabs(divid, options) {
 		// tab properties
 		i = o.register_tab({
 			"title": "node_tabs.properties",
-			"title_class": "icon net16"
+			"title_class": "icon fa-list-ul"
 		})
 		o.tabs[i].callback = function(divid) {
 			network_properties(divid, o.options)

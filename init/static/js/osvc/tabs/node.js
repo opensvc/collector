@@ -28,7 +28,7 @@ function node_tabs(divid, options) {
 		o.closetab.text(o.options.node_data.nodename)
 		i = o.register_tab({
 			"title": "node_tabs.properties",
-			"title_class": "icon node16"
+			"title_class": "icon fa-list-ul"
 		})
 		o.tabs[i].callback = function(divid) {
 			node_properties(divid, o.options)

@@ -18,7 +18,7 @@ function disk_tabs(divid, options) {
 		// tab properties
 		i = o.register_tab({
 			"title": "node_tabs.properties",
-			"title_class": "icon hd16"
+			"title_class": "icon fa-list-ul"
 		})
 		o.tabs[i].callback = function(divid) {
 			disk_properties(divid, {"disk_id": o.options.disk_id})

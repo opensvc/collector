@@ -15,7 +15,7 @@ function quota_tabs(divid, options) {
 		// tab properties
 		i = o.register_tab({
 			"title": "node_tabs.properties",
-			"title_class": "icon quota16"
+			"title_class": "icon fa-list-ul"
 		})
 		o.tabs[i].callback = function(divid) {
 			quota_properties(divid, o.options)

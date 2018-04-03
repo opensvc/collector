@@ -24,7 +24,7 @@ function variable_tabs(divid, options) {
 
 		i = o.register_tab({
 			"title": "variable_tabs.content",
-			"title_class": "icon comp16"
+			"title_class": "icon fa-list-ul"
 		})
 		o.tabs[i].callback = function(divid) {
 			variable_content(divid, o.options)

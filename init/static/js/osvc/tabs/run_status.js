@@ -25,7 +25,7 @@ function run_status_tabs(divid, options) {
 		// tab outputs
 		i = o.register_tab({
 			"title": "run_status_tabs.properties",
-			"title_class": "icon comp16"
+			"title_class": "icon fa-list-ul"
 		})
 		o.tabs[i].callback = function(divid) {
 			run_status_outputs(divid, o.options)

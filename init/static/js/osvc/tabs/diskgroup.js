@@ -25,7 +25,7 @@ function diskgroup_tabs(divid, options) {
 		// tab properties
 		i = o.register_tab({
 			"title": "node_tabs.properties",
-			"title_class": "icon diskgroup"
+			"title_class": "icon fa-list-ul"
 		})
 		o.tabs[i].callback = function(divid) {
 			diskgroup_properties(divid, {"dg_id": o.data.id})

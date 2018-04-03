@@ -23,7 +23,7 @@ function service_tabs(divid, options) {
 		// tab properties
 		i = o.register_tab({
 			"title": "node_tabs.properties",
-			"title_class": "icon svc"
+			"title_class": "icon fa-list-ul"
 		})
 		o.tabs[i].callback = function(divid) {
 			service_properties(divid, {"svc_id": o.options.svc_id})

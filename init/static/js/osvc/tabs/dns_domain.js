@@ -25,7 +25,7 @@ function dns_domain_tabs(divid, options) {
 		// tab properties
 		i = o.register_tab({
 			"title": "dns_domain_tabs.properties",
-			"title_class": "icon dns16"
+			"title_class": "icon fa-list-ul"
 		})
 		o.tabs[i].callback = function(divid) {
 			dns_domain_properties(divid, o.options)

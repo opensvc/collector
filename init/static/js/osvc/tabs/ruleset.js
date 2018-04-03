@@ -37,7 +37,7 @@ function ruleset_tabs(divid, options) {
 		// tab properties
 		i = o.register_tab({
 			"title": "ruleset_properties.base",
-			"title_class": "icon rset16"
+			"title_class": "icon fa-list-ul"
 		})
 		o.tabs[i].callback = function(divid) {
 			ruleset_properties(divid, o.options)

@@ -15,7 +15,7 @@ function safe_file_tabs(divid, options) {
 		// tab properties
 		i = o.register_tab({
 			"title": "safe_file_tabs.properties",
-			"title_class": "icon safe16"
+			"title_class": "icon fa-list-ul"
 		})
 		o.tabs[i].callback = function(divid) {
 			safe_file_properties(divid, o.options)

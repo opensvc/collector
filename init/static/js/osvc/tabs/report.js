@@ -38,7 +38,7 @@ function report_tabs(divid, options) {
 		// tab properties
 		i = o.register_tab({
 			"title": "report_tabs.properties",
-			"title_class": "icon report16"
+			"title_class": "icon fa-list-ul"
 		})
 		o.tabs[i].callback = function(divid) {
 			report_properties(divid, o.options)

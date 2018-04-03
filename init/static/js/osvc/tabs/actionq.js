@@ -15,7 +15,7 @@ function actionq_tabs(divid, options) {
 		// tab outputs
 		i = o.register_tab({
 			"title": "actionq_tabs.properties",
-			"title_class": "icon action16"
+			"title_class": "icon fa-list-ul"
 		})
 		o.tabs[i].callback = function(divid) {
 			actionq_outputs(divid, o.options)
