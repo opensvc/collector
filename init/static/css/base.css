@@ -191,16 +191,6 @@ input.aci, input.aci:focus {
 	width: 7em;
 }
 
-.actionq_tab {
-	display: flex;
-	flex-wrap: wrap;
-}
-
-.actionq_tab > div {
-	padding: 1em;
-	display: inline-block;
-}
-
 .run_status_tab {
 	display: flex;
 	flex-wrap: wrap;
