@@ -3736,6 +3736,13 @@ function table_bind_action_menu(t) {
 	table_action_menu_init_data(t)
 
 	$("#table_"+t.id).find("[name="+t.id+"_tools]").each(function(){
+		$(this).on("contextmenu", function(event) {
+			// longpress => open the action menu
+			t.action_menu = table_action_menu(t, event)
+			t.action_menu.menu.find("input").first().focus()
+			t.scroll_to_sidepanel()
+			return false
+		})
 		$(this).on("mouseup", function(event) {
 			if (event.button == 2) {
 				// right-click => open the action menu
