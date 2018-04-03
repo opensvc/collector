@@ -65,6 +65,15 @@ function service_tabs(divid, options) {
 			table_resinfo_svc(divid, o.options.svc_id)
 		}
 
+		// tab avail
+		i = o.register_tab({
+			"title": "service_tabs.avail",
+			"title_class": "icon avail16"
+		})
+		o.tabs[i].callback = function(divid) {
+			services_status_log(divid, {"services": [o.options.svc_id], "instances": true})
+		}
+
 		// tab actions
 		i = o.register_tab({
 			"title": "service_tabs.actions",
@@ -222,15 +231,6 @@ function service_tabs(divid, options) {
 		})
 		o.tabs[i].callback = function(divid) {
 			wiki(divid, {"nodes": o.options.svc_id})
-		}
-
-		// tab avail
-		i = o.register_tab({
-			"title": "service_tabs.avail",
-			"title_class": "icon avail16"
-		})
-		o.tabs[i].callback = function(divid) {
-			services_status_log(divid, {"services": [o.options.svc_id], "instances": true})
 		}
 
 		// tab pkgdiff
