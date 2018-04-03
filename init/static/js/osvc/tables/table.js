@@ -474,6 +474,7 @@ function table_init(opts) {
 		})
 		$(window).resize(function(){
 			t.scroll()
+			t.change_renderer()
 		})
 		$(".down16,.right16").click(function() {
 			t.scroll()
@@ -3017,7 +3018,7 @@ function table_init(opts) {
 
 	t.get_renderer = function() {
 		var p_renderer = osvc.user_prefs.data.tables[t.id].renderer
-		if (typeof(p_renderer) === "undefined") {
+		if ((typeof(p_renderer) === "undefined") || (p_renderer == "auto")) {
 			if ($(window).width() < 700) {
 				return "grid"
 			} else {
@@ -3025,6 +3026,20 @@ function table_init(opts) {
 			}
 		}
 		return p_renderer
+	}
+
+	t.change_renderer = function() {
+		var p_renderer = osvc.user_prefs.data.tables[t.id].renderer
+		if ((typeof(p_renderer) !== "undefined") && (p_renderer != "auto")) {
+			return
+		}
+		var new_renderer = t.get_renderer()
+		if (new_renderer != t.renderer) {
+			t.renderer = new_renderer
+			t.div.empty()
+			t.init_table()
+			t.redraw()
+		}
 	}
 
 	//
@@ -3038,6 +3053,10 @@ function table_init(opts) {
 			{
 				"name": "table",
 				"icon": "icon fa-list"
+			},
+			{
+				"name": "auto",
+				"icon": "icon fa-undo"
 			},
 			{
 				"name": "grid",
