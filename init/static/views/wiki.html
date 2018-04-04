@@ -1,28 +1,34 @@
-<div id='wiki' style="padding:1em">
-	<h1 id="wiki_tab_show_title" data-i18n="wiki.tab_show_title"></h1>
+<div id='wiki'>
+	<h1 class="pl-3 pt-3 pr-3" id="wiki_tab_show_title" data-i18n="wiki.tab_show_title"></h1>
 	<div class="d-flex flex-wrap">
-		<div id="wiki_tab_show" class="col-sm-12 col-md-12 col-lg-12 col-xl-9 p-0 pt-3 pb-3 container-auto">
+		<div id="wiki_tab_show" class="col-sm-12 col-md-12 col-lg-12 col-xl-8 pt-3 pb-3 container-auto">
 			<div id="wiki_show_result" class="containertrans"></div>
 			<div id="wiki_edit" style="clear:both;padding-top:10px">
 				<button id="wiki_edit_button" class="button_div" data-i18n="wiki.tab_show_edit"></button>
 			</div>
 		</div>
-		<div id="wiki_tab_insert" class="col-sm-12 col-md-12 col-lg-12 col-xl-9 p-0 pt-3 pb-3 container-auto" style="display:none">
+		<div id="wiki_tab_insert" class="col-sm-12 col-md-12 col-lg-12 col-xl-8 pt-3 pb-3 container-auto" style="display:none">
 			<textarea style="border-radius:4px" cols="70" id="wiki_tab_ins" rows="10" type="text"></textarea>
 			<div id="wiki_editor" style="clear:both;padding-top:10px">
 				<button id="wiki_save_button" class="button_div" data-i18n="wiki.tab_edit_save"></button>
 				<button id="wiki_help_button" class="button_div" data-i18n="wiki.tab_edit_help"></button>
 				<button id="wiki_insert_button" class="button_div" data-i18n="wiki.tab_edit_insert_sig"></button>
 				<span id="wiki_messages" style="color:#FF0000"></span>
-				<div id="wiki_syntax" class="hidden">
-					<h2>Headers:</h2>
-					<pre>Section Header
+			</div>
+		</div>
+		<div id="wiki_tab_last_updated" class="col-sm-12 col-md-12 col-lg-12 col-xl-4 pt-3 pb-3 container-auto">
+			<h2 id="wiki_tab_title"></h2>
+			<table id="wiki_table_last_changes" style="padding-top:10px"></table>
+		</div>
+		<div id="wiki_syntax" class="col-12 container-auto hidden">
+			<h2>Headers:</h2>
+			<pre>Section Header
 ==============
 
 Subsection Header
 -----------------</pre>
-					<h2>Lists:</h2>
-					<pre>- A bullet list item
+			<h2>Lists:</h2>
+			<pre>- A bullet list item
 - Second item
 
 - A sub item
@@ -40,22 +46,16 @@ a) Sub item
 #) Another enumerated list item
 
 #) Second item</pre>
-					<h2>Named links:</h2>
-					<pre>A sentence with links to Wikipedia_ and the `Linux kernel archive`_.
+			<h2>Named links:</h2>
+			<pre>A sentence with links to Wikipedia_ and the `Linux kernel archive`_.
 
 .. _Wikipedia: http://www.wikipedia.org/
 .. _Linux kernel archive: http://www.kernel.org/</pre>
-					<h2>Anonymous links:</h2>
-					<pre>Another sentence with an `anonymous link to the Python website`__.
+			<h2>Anonymous links:</h2>
+			<pre>Another sentence with an `anonymous link to the Python website`__.
 
 __ http://www.python.org/
-					</pre>
-				</div>
-			</div>
-		</div>
-		<div id="wiki_tab_last_updated" class="col-sm-12 col-md-12 col-lg-12 col-xl-3 p-0 pt-3 pb-3 container-auto">
-			<h2 id="wiki_tab_title"></h2>
-			<table id="wiki_table_last_changes" style="padding-top:10px"></table>
+			</pre>
 		</div>
 	</div>
 </div>
