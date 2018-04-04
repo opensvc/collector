@@ -1005,7 +1005,7 @@
 		"network": "network",
 		"packages": "packages",
 		"stats": "stats",
-		"wiki": "wiki",
+		"wiki": "notes",
 		"checks": "checks",
 		"compliance": "compliance",
 		"sysreport": "sysreport"
@@ -1023,7 +1023,7 @@
 		"ipv6_m": "ipv6 multicast"
 	},
 	"wiki": {
-		"tab_show_title": "Wiki",
+		"tab_show_title": "Notes",
 		"tab_show_edit": "Edit",
 		"tab_edit_save": "Save",
 		"tab_edit_insert_sig": "Insert signature and timestamp",
@@ -1100,12 +1100,12 @@
 		"node_properties": "Node __name__ properties",
 		"node_storage": "Node __name__ storage",
 		"node_stats": "Node __name__ statistics",
-		"node_wiki": "Node __name__ wiki page",
+		"node_wiki": "Node __name__ notes",
 		"ips": "Node __name__ ip addresses",
 		"node_compliance": "Node __name__ compliance",
 		"node_tabs": "Node __name__ tabs",
 		"service_compliance": "Service __name__ compliance",
-		"service_wiki": "Service __name__ wiki page",
+		"service_wiki": "Service __name__ notes",
 		"service_containerperf": "Service __name__ nodes statistics",
 		"service_storage": "Service __name__ storage",
 		"service_properties": "Service __name__ properties",

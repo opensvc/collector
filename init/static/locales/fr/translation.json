@@ -1004,7 +1004,7 @@
 		"network": "réseau",
 		"packages": "paquets",
 		"stats": "stats",
-		"wiki": "wiki",
+		"wiki": "notes",
 		"checks": "sondes",
 		"compliance": "compliance",
 		"sysreport": "sysreport"
@@ -1022,7 +1022,7 @@
 		"ipv6_m" : "ipv6 multicast"
 	},
 	"wiki" : {
-		"tab_show_title" : "Wiki",
+		"tab_show_title" : "Notes",
 		"tab_show_edit" : "Modifier",
 		"tab_edit_save" : "Sauvegarder",
 		"tab_edit_insert_sig" : "Insérer signature et date",
@@ -1099,12 +1099,12 @@
 		"node_properties" : "Propriétés du noeud __name__",
 		"node_storage": "Stockage du noeud __name__",
 		"node_stats": "Statistiques du noeud __name__",
-		"node_wiki": "Page wiki du noeud __name__",
+		"node_wiki": "Notes du noeud __name__",
 		"ips": "Adresses ip du noeud __name__",
 		"node_compliance": "Conformité du noeud __name__",
 		"node_tabs" : "Tabs du noeud __name__",
 		"service_compliance": "Conformité du service __name__",
-		"service_wiki": "Page wiki du service __name__",
+		"service_wiki": "Notes du service __name__",
 		"service_containerperf": "Statistiques des noeuds du service __name__",
 		"service_storage": "Stockage du service __name__",
 		"service_properties" : "Propriétés du service __name__",
