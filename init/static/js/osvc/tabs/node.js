@@ -46,7 +46,7 @@ function node_tabs(divid, options) {
 		// tab services
 		i = o.register_tab({
 			"title": "node_tabs.services",
-			"title_class": "icon svc"
+			"title_class": "icon svcinstance"
 		})
 		o.tabs[i].callback = function(divid) {
 			table_service_instances_node(divid, o.options.node_id)
