@@ -4,7 +4,7 @@
 		"hide resources": "Masquer les resources"
 	},
 	"alert_info": {
-		"timeline": "Historique de l'alerte"
+		"timeline": "Historique"
 	},
 	"decorators": {
 		"corrupted_log": "entrée du journal corrompue",

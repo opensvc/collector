@@ -1,0 +1,79 @@
+<div class='d-flex flex-wrap'>
+	<div class="col-12 pt-3 pb-3 container-auto">
+		<h3 class='line'><span class='icon alert16' data-i18n='alert_info.timeline'></span></h3>
+		<div id="timeline"></div>
+	</div>
+	<div class="col-sm-12 col-md-6 col-lg-4 col-xl-3 pt-3 pb-3 container-auto">
+		<h3 class='line'><span class='icon alert16' data-i18n='col.Alert'></span></h3>
+		<table>
+			<tbody>
+				<tr>
+					<th data-i18n="col.Id"></th>
+					<td id="id"></td>
+				</tr>
+				<tr>
+					<th data-i18n="col.Severity"></th>
+					<td id="dash_severity"></td>
+				</tr>
+				<tr>
+					<th data-i18n="col.Type"></th>
+					<td id="dash_type"></td>
+				</tr>
+				<tr>
+					<th data-i18n="col.Instance"></th>
+					<td id="dash_instance"></td>
+				</tr>
+				<tr>
+					<th data-i18n="col.Content"></th>
+					<td id="content"></td>
+				</tr>
+				<tr>
+					<th data-i18n="col.Signature"></th>
+					<td id="dash_md5"></td>
+				</tr>
+				<tr>
+					<th data-i18n="col.Env"></th>
+					<td id="dash_env"></td>
+				</tr>
+				<tr>
+					<th data-i18n="col.Service"></th>
+					<td id="service"></td>
+				</tr>
+				<tr>
+					<th data-i18n="col.Node"></th>
+					<td id="node"></td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+	<div class="col-sm-12 col-md-6 col-lg-4 col-xl-3 pt-3 pb-3 container-auto">
+		<h3 class="line">
+			<span>
+				<span class="icon time16" data-i18n="node_properties.dates"></span>
+			</span>
+		</h3>
+		<table>
+			<tbody>
+				<tr>
+					<th data-i18n="col.Created"></th>
+					<td id="dash_created"></td>
+				</tr>
+				<tr>
+					<th data-i18n="col.Updated"></th>
+					<td id="dash_updated"></td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+	<div class="col-sm-12 col-md-6 col-lg-4 col-xl-3 pt-3 pb-3 container-auto">
+		<h3 class='line'><span class='icon fa-database' data-i18n='tag_properties.data'></span></h3>
+		<pre id="dash_dict">
+		</pre>
+	</div>
+	<div class="col-sm-12 col-md-6 col-lg-4 col-xl-3 pt-3 pb-3 container-auto">
+		<h3 class="line">
+			<span class="icon fa-play" data-i18n="tabs.tools"></span>
+		</h3>
+		<div id="tools" class="action_menu action_menu_tab"></div>
+	</div>
+</div>

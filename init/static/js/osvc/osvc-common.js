@@ -1489,6 +1489,9 @@ function osvc_show_tabs(divid, otype, oid) {
 	if (otype == "svc") {
 		service_tabs(divid, {"svc_id": oid})
 	}
+	else if (otype == "alert") {
+		alert_tabs(divid, {"alert_id": oid})
+	}
 	else if (otype == "node") {
 		node_tabs(divid, {"node_id": oid})
 	}

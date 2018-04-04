@@ -630,15 +630,15 @@ function startup(divid, options) {
 	})
 }
 
-function alert_info(divid, options) {
-	require(["osvc/tabs/alert_event"], function() {
-		alert_info(divid, options)
-	})
-}
-
 function wiki(divid, options) {
 	require(["osvc/tabs/wiki"], function() {
 		wiki(divid, options)
+	})
+}
+
+function alert_tabs(divid, options) {
+	require(["osvc/tabs/alert"], function() {
+		alert_tabs(divid, options)
 	})
 }
 

@@ -1427,6 +1427,10 @@ function cell_decorator_action_cron(e, line) {
 
 function cell_decorator_dash_severity(e, line) {
 	var v = $.data(e[0], "v")
+	return _cell_decorator_dash_severity(e, v)
+}
+
+function _cell_decorator_dash_severity(e, v) {
 	if (v == 0) {
 		cl = "icon-green text-green"
 		text = "notice"
@@ -1601,33 +1605,39 @@ function generic_prop_updater(e, line, options) {
 }
 
 function cell_decorator_dash_entry(e, line) {
+	var alert_id = $.data(line.children(".cell[col=id]")[0], "v")
 	var d = $.data(line.children(".cell[col=dash_dict]")[0], "v")
 	var fmt = $.data(line.children(".cell[col=dash_fmt]")[0], "v")
-	if (d && d.length>0) {
-		try {
-			d = $.parseJSON(d)
-			for (key in d) {
-				var re = RegExp("%\\("+key+"\\)[sd]", "g")
-				fmt = fmt.replace(re, "<b>"+d[key]+"</b>")
-			}
-		} catch(err) {
-			e.html(i18n.t("decorators.corrupted_log"))
-			return
-		}
-	}
+	try {
+		d = $.parseJSON(d)
+	} catch(err) {}
+	_cell_decorator_dash_entry(e, fmt, d)
 	e
-	.html(fmt)
 	.addClass("clickable corner")
 	.on("click", function(){
-		var options = {
-			"node_id": $.data(line.children(".cell[col=node_id]")[0], "v"),
-			"svc_id": $.data(line.children(".cell[col=svc_id]")[0], "v"),
-			"dash_md5": $.data(line.children(".cell[col=dash_md5]")[0], "v"),
-			"dash_created": $.data(line.children(".cell[col=dash_created]")[0], "v")
-		}
-		var id = toggle_extraline(e)
-		alert_info(id, options)
+		osvc.flash.show({
+			text: alert_id,
+			cl: "icon alert16",
+			bgcolor: osvc.colors.alert,
+			id: "ret-"+alert_id,
+			fn: function(id){
+				alert_tabs(id, {"alert_id": alert_id})
+			}
+		})
 	})
+}
+
+function _cell_decorator_dash_entry(e, fmt, d) {
+	try {
+		for (key in d) {
+			var re = RegExp("%\\("+key+"\\)[sd]", "g")
+			fmt = fmt.replace(re, "<b>"+d[key]+"</b>")
+		}
+	} catch(err) {
+		e.html(i18n.t("decorators.corrupted_log"))
+		return
+	}
+	e.html(fmt)
 }
 
 function cell_decorator_rset_md5(e, line) {
