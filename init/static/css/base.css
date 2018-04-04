@@ -2846,9 +2846,9 @@ div.containertrans {
 	border-bottom: 1px solid #eed;
 	margin:0.2em;
 	padding:0.2em;
-	border-radius:8px;
-	-moz-border-radius:8px;
-	-webkit-border-radius:8px;
+	border-radius:4px;
+	-moz-border-radius:4px;
+	-webkit-border-radius:4px;
 }
 
 .vis-item {

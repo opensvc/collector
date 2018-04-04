@@ -1,14 +1,14 @@
 <div id='wiki' style="padding:1em">
 	<h1 id="wiki_tab_show_title" data-i18n="wiki.tab_show_title"></h1>
-	<div style="display:flex;flex-wrap:wrap">
-		<div id="wiki_tab_show" style="flex:2 1 40em;padding:0.5em">
+	<div class="d-flex flex-wrap">
+		<div id="wiki_tab_show" class="col-sm-12 col-md-12 col-lg-12 col-xl-9 p-0 pt-3 pb-3 container-auto">
 			<div id="wiki_show_result" class="containertrans"></div>
 			<div id="wiki_edit" style="clear:both;padding-top:10px">
 				<button id="wiki_edit_button" class="button_div" data-i18n="wiki.tab_show_edit"></button>
 			</div>
 		</div>
-		<div id="wiki_tab_insert" style="flex:2 1;display:none;padding:0.5em">
-			<textarea style="border-radius:8px" cols="70" id="wiki_tab_ins" rows="10" type="text"></textarea>
+		<div id="wiki_tab_insert" class="col-sm-12 col-md-12 col-lg-12 col-xl-9 p-0 pt-3 pb-3 container-auto" style="display:none">
+			<textarea style="border-radius:4px" cols="70" id="wiki_tab_ins" rows="10" type="text"></textarea>
 			<div id="wiki_editor" style="clear:both;padding-top:10px">
 				<button id="wiki_save_button" class="button_div" data-i18n="wiki.tab_edit_save"></button>
 				<button id="wiki_help_button" class="button_div" data-i18n="wiki.tab_edit_help"></button>
@@ -53,7 +53,7 @@ __ http://www.python.org/
 				</div>
 			</div>
 		</div>
-		<div id="wiki_tab_last_updated" style="flex:1 1;padding:0.5em">
+		<div id="wiki_tab_last_updated" class="col-sm-12 col-md-12 col-lg-12 col-xl-3 p-0 pt-3 pb-3 container-auto">
 			<h2 id="wiki_tab_title"></h2>
 			<table id="wiki_table_last_changes" style="padding-top:10px"></table>
 		</div>
