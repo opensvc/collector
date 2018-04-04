@@ -426,7 +426,7 @@ function osvc_show_link(url, title, title_args, fn, parameters) {
 	p.select()
 
 	// pdf export
-	var pdf_header = $("<h3 class='icon pdf' data-i18n='api.pdf_export'></h3>")
+	var pdf_header = $("<h3 class='icon pdf mt-5' data-i18n='api.pdf_export'></h3>")
 	var pdf_snippet = $("<textarea class='clickable flash' style='height:4em'></textarea>")
 	pdf_snippet.text(url+"&pdf=true")
 	pdf_snippet.bind("click", function() {
@@ -435,7 +435,7 @@ function osvc_show_link(url, title, title_args, fn, parameters) {
 	e.append([pdf_header, pdf_snippet])
 
 	// report snippet
-	var report_header = $("<h3 class='icon report16' data-i18n='api.report_snippet'></h3>")
+	var report_header = $("<h3 class='icon report16 mt-5' data-i18n='api.report_snippet'></h3>")
 	var report_subheader = $("<div style='color:lightgray' data-i18n='api.report_snippet_desc'></div>")
 	var snippet = $("<textarea class='flash' style='height:15em'></textarea>")
 	e.append([report_header, report_subheader, snippet])
