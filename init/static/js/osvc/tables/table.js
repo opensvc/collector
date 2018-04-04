@@ -3019,7 +3019,7 @@ function table_init(opts) {
 	t.get_renderer = function() {
 		var p_renderer = osvc.user_prefs.data.tables[t.id].renderer
 		if ((typeof(p_renderer) === "undefined") || (p_renderer == "auto")) {
-			if ($(window).width() < 700) {
+			if ($(window).width() < 640) {
 				return "grid"
 			} else {
 				return "table"
@@ -3049,6 +3049,7 @@ function table_init(opts) {
 		var e = $("<div name='renderer' class='p-3'></div>")
 		var title = $("<div>"+i18n.t("table.renderer")+"</div>")
 		var selector = $("<div class='action_menu_selector'></div>")
+		var p_renderer = osvc.user_prefs.data.tables[t.id].renderer
 		var l = [
 			{
 				"name": "table",
@@ -3066,7 +3067,7 @@ function table_init(opts) {
 		for (i=0; i<l.length; i++) {
 			var v = l[i]
 			var entry = $("<div renderer="+v.name+" class='clickable "+v.icon+"'></div>")
-			if (v.name == t.renderer) {
+			if ((v.name == p_renderer) || ((v.name == "auto") && (typeof(p_renderer) === "undefined"))) {
 				entry.addClass("action_menu_selector_selected")
 			}
 			selector.append(entry)
@@ -3081,9 +3082,13 @@ function table_init(opts) {
 			osvc.user_prefs.data.tables[t.id].renderer = new_renderer
 			t.renderer = new_renderer
 			t.save_prefs()
-			t.div.empty()
-			t.init_table()
-			t.redraw()
+			if (new_renderer == "auto") {
+				$(window).trigger("resize")
+			} else {
+				t.div.empty()
+				t.init_table()
+				t.redraw()
+			}
 		})
 		e.append(title)
 		e.append(selector)
