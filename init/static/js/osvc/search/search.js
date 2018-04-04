@@ -634,7 +634,7 @@ function search(divid) {
 					// tab action: execute a function
 					var fn = tab
 				}
-				p_title.bind("click", function(){
+				p_title.parent().bind("click", function(){
 					osvc.flash.show({
 						id: section_data.type+"-"+res[section_data.id],
 						cl: "icon "+section_data.class.replace(/fa-2x/, "").replace(/search-section-icon/, ""),
