@@ -1369,7 +1369,7 @@ function table_init(opts) {
 	}
 
 	t.prop_fmt = function(k) {
-		var prop = $("<div class='prop text-gray col col-1-auto align-self-center'></div>")
+		var prop = $("<div class='prop text-gray col-3 align-self-center'></div>")
 			.attr("col", k)
 		if ((k != "extra") && (t.options.visible_columns.indexOf(k) < 0)) {
 			prop.addClass("hidden")
@@ -1565,7 +1565,7 @@ function table_init(opts) {
 				var v = ""
 				var prop = t.prop_fmt(k)
 				var cell = t.cell_fmt(k, v)
-				cell.addClass("col col-1-auto")
+				cell.addClass("col")
 				var _line = $("<div class='row'></div>").append([prop, cell])
 				line.append(_line)
 			}
@@ -1575,7 +1575,7 @@ function table_init(opts) {
 				var v = data[i][j]
 				var prop = t.prop_fmt(k)
 				var cell = t.cell_fmt(k, v)
-				cell.addClass("col col-1-auto")
+				cell.addClass("col")
 				var _line = $("<div class='row'></div>").append([prop, cell])
 				line.append(_line)
 			}
