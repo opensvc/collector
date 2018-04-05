@@ -1613,7 +1613,7 @@ function cell_decorator_dash_entry(e, line) {
 	} catch(err) {}
 	_cell_decorator_dash_entry(e, fmt, d)
 	e
-	.addClass("clickable corner")
+	.addClass("clickable corner-top")
 	.on("click", function(){
 		osvc.flash.show({
 			text: alert_id,
