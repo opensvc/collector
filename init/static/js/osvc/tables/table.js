@@ -1369,7 +1369,7 @@ function table_init(opts) {
 	}
 
 	t.prop_fmt = function(k) {
-		var prop = $("<div class='prop text-gray col-3 align-self-center'></div>")
+		var prop = $("<div class='prop text-gray col-4 align-self-center'></div>")
 			.attr("col", k)
 		if ((k != "extra") && (t.options.visible_columns.indexOf(k) < 0)) {
 			prop.addClass("hidden")

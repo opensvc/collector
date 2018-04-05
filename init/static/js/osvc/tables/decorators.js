@@ -1069,8 +1069,8 @@ function cell_decorator_comp_mod_log(e, line) {
 		if (get_selected() != "") {
 			return
 		}
-		var table_id = e.parents("table").attr("id").replace(/^table_/, '')
-		var span_id = e.parent(".tl").attr("spansum")
+		var table_id = e.parents(".tableo").attr("id")
+		var span_id = e.parents(".tl").attr("spansum")
 		var id = table_id + "_x_" + span_id
 		var url = services_get_url() + "/init/compliance/ajax_mod_history?modname="+modname+"&rowid="+id
 		toggle_extra(url, id, e, 0)
@@ -1087,8 +1087,8 @@ function cell_decorator_comp_node_log(e, line) {
 		if (get_selected() != "") {
 			return
 		}
-		var table_id = e.parents("table").attr("id").replace(/^table_/, '')
-		var span_id = e.parent(".tl").attr("spansum")
+		var table_id = e.parents(".tableo").attr("id")
+		var span_id = e.parents(".tl").attr("spansum")
 		var id = table_id + "_x_" + span_id
 		var url = services_get_url() + "/init/compliance/ajax_node_history?node_id="+node_id+"&rowid="+id
 		toggle_extra(url, id, e, 0)
@@ -1105,8 +1105,8 @@ function cell_decorator_comp_svc_log(e, line) {
 		if (get_selected() != "") {
 			return
 		}
-		var table_id = e.parents("table").attr("id").replace(/^table_/, '')
-		var span_id = e.parent(".tl").attr("spansum")
+		var table_id = e.parents(".tableo").attr("id")
+		var span_id = e.parents(".tl").attr("spansum")
 		var id = table_id + "_x_" + span_id
 		var url = services_get_url() + "/init/compliance/ajax_svc_history?svc_id="+svc_id+"&rowid="+id
 		toggle_extra(url, id, e, 0)
@@ -1944,8 +1944,8 @@ function cell_decorator_resinfo_value(e, line) {
 		e
 		.addClass("corner clickable")
 		.on("click", function() {
-			var span_id = line.attr("spansum")
-			var table_id = e.parents("table").attr("id").replace(/^table_/, '')
+			var span_id = e.parents(".tl").attr("spansum")
+			var table_id = e.parents(".tableo").attr("id")
 			var id = table_id + "_x_" + span_id
 			var params = "svc_id="+encodeURIComponent($.data(line.children(".cell[col=svc_id]")[0], "v"))
 			params += "&node_id="+encodeURIComponent($.data(line.children(".cell[col=node_id]")[0], "v"))
