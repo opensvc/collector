@@ -61,7 +61,7 @@ CREATE TABLE `scheduler_task` (
 
 LOCK TABLES `scheduler_task` WRITE;
 /*!40000 ALTER TABLE `scheduler_task` DISABLE KEYS */;
-INSERT INTO `scheduler_task` VALUES (1,'1ec59d9c-4b3b-48ff-90f9-3f746e2cc614','[]','{}','T','2014-06-28 06:14:00','2018-03-29 00:22:51',NULL,0,-1,86400,900,0,474,0,'2018-03-28 00:22:51',NULL,'janitor','task_purge_checks','QUEUED','task_purge_checks','init/appadmin','c5cb04edaff4#19118'),(3,'062630d0-04fc-43da-96cf-48458794bd9a','[]','{}','T','2014-06-28 14:41:10','2018-03-28 10:45:51',NULL,0,-1,600,300,0,50109,0,'2018-03-28 10:35:51',NULL,'janitor','task_unfinished_actions','QUEUED','task_unfinished_actions','init/appadmin','c5cb04edaff4#19118'),(4,'6feec2d3-88ff-4763-9a68-7d9f7a8fb4ab','[]','{}','T','2014-06-28 14:41:57','2018-03-28 10:40:52',NULL,0,-1,300,60,0,97896,0,'2018-03-28 10:35:52',NULL,'janitor','task_feed_monitor','QUEUED','task_feed_monitor','init/appadmin','c5cb04edaff4#19118'),(6,'61d42c21-91b0-45c6-a43e-9590743a8d33','[]','{}','T','2014-06-28 14:58:16','2018-03-29 00:22:50',NULL,0,-1,86400,60,0,475,0,'2018-03-28 00:22:50',NULL,'janitor','task_purge_static','QUEUED','task_purge_static','init/appadmin','c5cb04edaff4#19118'),(7,'d0b68200-612b-40eb-b7f2-1b064445dbc8','[]','{}','T','2014-06-28 17:17:36','2018-03-28 11:25:37',NULL,0,-1,3600,900,0,8512,0,'2018-03-28 10:25:37',NULL,'janitor','task_alerts_hourly','QUEUED','task_alerts_hourly','init/appadmin','c5cb04edaff4#19118'),(9,'caa8932b-3b6d-400d-8bcd-05a79e4279e7','[]','{}','T','2014-06-28 17:29:10','2018-03-29 00:23:05',NULL,0,-1,86400,900,0,450,0,'2018-03-28 00:23:05','F','metrics','task_alerts_daily','QUEUED','task_alerts_daily','init/appadmin','c5cb04edaff4#19121'),(10,'9da16e02-9a6e-4f4d-9a1f-3172e8c4993e','[]','{}','T','2014-06-28 17:56:15','2018-03-29 00:22:54',NULL,0,-1,86400,1800,0,31459,0,'2018-03-28 00:22:54','F','metrics','task_metrics','QUEUED','task_metrics','init/appadmin','c5cb04edaff4#19121'),(11,'2968ee45-fa9c-419c-ac72-1a40e9e1d1b0','[]','{}','T','2014-06-28 22:09:32','2018-03-29 00:22:50',NULL,0,-1,86400,1800,0,897,0,'2018-03-28 00:22:50',NULL,'metrics','task_stats','QUEUED','task_stats','init/appadmin','c5cb04edaff4#19121'),(13,'db4076fa-f3e8-4b5e-9eac-f66e1c1dbf31','[]','{}','T','2014-06-28 22:10:48','2018-03-29 00:22:50',NULL,0,-1,86400,300,0,672,0,'2018-03-28 00:22:50','F','janitor','task_refresh_obsolescence','QUEUED','task_refresh_obsolescence','init/appadmin','c5cb04edaff4#19118'),(14,'e17d55ec-5768-42e9-8b6e-ef2c597b4b91','[]','{}','T','2014-06-28 22:12:09','2018-03-29 00:22:52',NULL,0,-1,86400,300,0,395,0,'2018-03-28 00:22:52',NULL,'janitor','task_dash_comp','QUEUED','task_dash_comp','init/appadmin','c5cb04edaff4#19118'),(18,'9f03c375-54e0-4a5c-abba-a542515f2168','[]','{}','T','2014-06-29 10:29:09','2018-03-28 10:38:07',NULL,0,-1,60,50,0,426402,0,'2018-03-28 10:37:07','F','janitor','task_dash_min','QUEUED','task_dash_min','feed/default','c5cb04edaff4#19118'),(19,'bdd17f2b-f22f-469c-8376-88a626545987','[]','{}','T','2014-06-29 10:29:45','2018-03-28 11:25:38',NULL,0,-1,3600,300,0,9748,70,'2018-03-28 10:25:38',NULL,'janitor','task_dash_hourly','QUEUED','task_dash_hourly','feed/default','c5cb04edaff4#19118'),(20,'67fa2e07-5965-4cc4-b40a-1d474a2fbb6c','[]','{}','T','2014-06-29 10:31:14','2018-03-29 00:22:52',NULL,0,-1,86400,900,0,1632,0,'2018-03-28 00:22:52','F','janitor','task_dash_daily','QUEUED','task_dash_daily','feed/default','c5cb04edaff4#19118'),(88,'80fa3e6a-cbd4-449f-ad8e-dc89277be3c9','[]','{}','T','2014-06-29 16:55:26','2018-03-28 10:38:07',NULL,0,-1,60,60,0,442929,0,'2018-03-28 10:37:07',NULL,'janitor','task_purge_feed','QUEUED','task_purge_feed','init/appadmin','c5cb04edaff4#19118'),(89,'776d6f19-e97c-44e7-be34-1df6a03e9d00','[]','{}','T','2016-08-24 17:47:13','2018-03-28 10:37:37',NULL,0,-1,60,50,0,236266,0,'2018-03-28 10:36:37','F','janitor','resync_all','QUEUED','task_replication','init/appadmin','c5cb04edaff4#19118'),(92,'a77ff791-75c1-11e6-a238-1a6c476979dd','[]','{}','T','2016-09-08 14:36:12','2018-03-28 10:37:37',NULL,0,-1,60,60,0,259110,0,'2018-03-28 10:36:37','F','janitor','task_scrub','QUEUED','task_scrub','init/appadmin','c5cb04edaff4#19118'),(93,'7ddeddd4-9f10-11e6-9ab2-62c23e0c6d15','[]','{}','T','2016-11-02 11:03:47','2018-03-28 10:37:52',NULL,0,-1,120,120,0,130653,0,'2018-03-28 10:35:52','F','janitor','task_docker_discover_registries','QUEUED','task_docker_discover_registries','init/appadmin','c5cb04edaff4#19118'),(165,'cca07dec-d3a4-11e7-a2e0-aac3870fb23d','[]','{}','T','2017-11-27 19:57:23','2018-03-28 10:40:36',NULL,0,-1,300,270,0,20050,0,'2018-03-28 10:35:36','F','metrics','task_purge_expiry','QUEUED','task_purge_expiry','init/appadmin','c5cb04edaff4#19121');
+INSERT INTO `scheduler_task` VALUES (1,'1ec59d9c-4b3b-48ff-90f9-3f746e2cc614','[]','{}','T','2014-06-28 06:14:00','2018-04-07 00:23:51',NULL,0,-1,86400,900,0,483,0,'2018-04-06 00:23:51',NULL,'janitor','task_purge_checks','QUEUED','task_purge_checks','init/appadmin','c5cb04edaff4#19118'),(3,'062630d0-04fc-43da-96cf-48458794bd9a','[]','{}','T','2014-06-28 14:41:10','2018-04-06 10:23:32',NULL,0,-1,600,300,0,51378,0,'2018-04-06 10:13:32',NULL,'janitor','task_unfinished_actions','QUEUED','task_unfinished_actions','init/appadmin','c5cb04edaff4#19118'),(4,'6feec2d3-88ff-4763-9a68-7d9f7a8fb4ab','[]','{}','T','2014-06-28 14:41:57','2018-04-06 10:23:48',NULL,0,-1,300,60,0,100435,0,'2018-04-06 10:18:48',NULL,'janitor','task_feed_monitor','QUEUED','task_feed_monitor','init/appadmin','c5cb04edaff4#19118'),(6,'61d42c21-91b0-45c6-a43e-9590743a8d33','[]','{}','T','2014-06-28 14:58:16','2018-04-07 00:23:50',NULL,0,-1,86400,60,0,484,0,'2018-04-06 00:23:50',NULL,'janitor','task_purge_static','QUEUED','task_purge_static','init/appadmin','c5cb04edaff4#19118'),(7,'d0b68200-612b-40eb-b7f2-1b064445dbc8','[]','{}','T','2014-06-28 17:17:36','2018-04-06 11:21:19',NULL,0,-1,3600,900,0,8724,0,'2018-04-06 10:21:19',NULL,'janitor','task_alerts_hourly','QUEUED','task_alerts_hourly','init/appadmin','c5cb04edaff4#19118'),(9,'caa8932b-3b6d-400d-8bcd-05a79e4279e7','[]','{}','T','2014-06-28 17:29:10','2018-04-07 00:24:20',NULL,0,-1,86400,900,0,459,0,'2018-04-06 00:24:20','F','metrics','task_alerts_daily','QUEUED','task_alerts_daily','init/appadmin','c5cb04edaff4#19121'),(10,'9da16e02-9a6e-4f4d-9a1f-3172e8c4993e','[]','{}','T','2014-06-28 17:56:15','2018-04-07 00:24:05',NULL,0,-1,86400,1800,0,31468,0,'2018-04-06 00:24:05','F','metrics','task_metrics','QUEUED','task_metrics','init/appadmin','c5cb04edaff4#19121'),(11,'2968ee45-fa9c-419c-ac72-1a40e9e1d1b0','[]','{}','T','2014-06-28 22:09:32','2018-04-07 00:23:50',NULL,0,-1,86400,1800,0,906,0,'2018-04-06 00:23:50',NULL,'metrics','task_stats','QUEUED','task_stats','init/appadmin','c5cb04edaff4#19121'),(13,'db4076fa-f3e8-4b5e-9eac-f66e1c1dbf31','[]','{}','T','2014-06-28 22:10:48','2018-04-07 00:23:50',NULL,0,-1,86400,300,0,681,0,'2018-04-06 00:23:50','F','janitor','task_refresh_obsolescence','QUEUED','task_refresh_obsolescence','init/appadmin','c5cb04edaff4#19118'),(14,'e17d55ec-5768-42e9-8b6e-ef2c597b4b91','[]','{}','T','2014-06-28 22:12:09','2018-04-07 00:24:05',NULL,0,-1,86400,300,0,404,0,'2018-04-06 00:24:05',NULL,'janitor','task_dash_comp','QUEUED','task_dash_comp','init/appadmin','c5cb04edaff4#19118'),(18,'9f03c375-54e0-4a5c-abba-a542515f2168','[]','{}','T','2014-06-29 10:29:09','2018-04-06 10:23:19',NULL,0,-1,60,50,0,439028,0,'2018-04-06 10:22:19','F','janitor','task_dash_min','QUEUED','task_dash_min','feed/default','c5cb04edaff4#19118'),(19,'bdd17f2b-f22f-469c-8376-88a626545987','[]','{}','T','2014-06-29 10:29:45','2018-04-06 11:21:34',NULL,0,-1,3600,300,0,9748,283,'2018-04-06 10:21:34',NULL,'janitor','task_dash_hourly','QUEUED','task_dash_hourly','feed/default','c5cb04edaff4#19118'),(20,'67fa2e07-5965-4cc4-b40a-1d474a2fbb6c','[]','{}','T','2014-06-29 10:31:14','2018-04-07 00:24:06',NULL,0,-1,86400,900,0,1641,0,'2018-04-06 00:24:06','F','janitor','task_dash_daily','QUEUED','task_dash_daily','feed/default','c5cb04edaff4#19118'),(88,'80fa3e6a-cbd4-449f-ad8e-dc89277be3c9','[]','{}','T','2014-06-29 16:55:26','2018-04-06 10:23:19',NULL,0,-1,60,60,0,455563,0,'2018-04-06 10:22:19',NULL,'janitor','task_purge_feed','QUEUED','task_purge_feed','init/appadmin','c5cb04edaff4#19118'),(89,'776d6f19-e97c-44e7-be34-1df6a03e9d00','[]','{}','T','2016-08-24 17:47:13','2018-04-06 10:23:34',NULL,0,-1,60,50,0,248881,0,'2018-04-06 10:22:34','F','janitor','resync_all','QUEUED','task_replication','init/appadmin','c5cb04edaff4#19118'),(92,'a77ff791-75c1-11e6-a238-1a6c476979dd','[]','{}','T','2016-09-08 14:36:12','2018-04-06 10:22:49',NULL,0,-1,60,60,0,262896,4,'2018-04-06 10:21:49','F','janitor','task_scrub','QUEUED','task_scrub','init/appadmin','c5cb04edaff4#19118'),(93,'7ddeddd4-9f10-11e6-9ab2-62c23e0c6d15','[]','{}','T','2016-11-02 11:03:47','2018-04-06 10:24:04',NULL,0,-1,120,120,0,136975,0,'2018-04-06 10:22:04','F','janitor','task_docker_discover_registries','QUEUED','task_docker_discover_registries','init/appadmin','c5cb04edaff4#19118'),(165,'cca07dec-d3a4-11e7-a2e0-aac3870fb23d','[]','{}','T','2017-11-27 19:57:23','2018-04-06 10:23:48',NULL,0,-1,300,270,0,22589,0,'2018-04-06 10:18:48','F','metrics','task_purge_expiry','QUEUED','task_purge_expiry','init/appadmin','c5cb04edaff4#19121');
 /*!40000 ALTER TABLE `scheduler_task` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -74,7 +74,7 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-03-28 10:37:34
+-- Dump completed on 2018-04-06 10:22:41
 -- MySQL dump 10.16  Distrib 10.3.5-MariaDB, for debian-linux-gnu (x86_64)
 --
 -- Host: localhost    Database: opensvc
@@ -127,7 +127,7 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-03-28 10:37:35
+-- Dump completed on 2018-04-06 10:22:41
 -- MySQL dump 10.16  Distrib 10.3.5-MariaDB, for debian-linux-gnu (x86_64)
 --
 -- Host: localhost    Database: opensvc
@@ -175,7 +175,7 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-03-28 10:37:35
+-- Dump completed on 2018-04-06 10:22:41
 -- MySQL dump 10.16  Distrib 10.3.5-MariaDB, for debian-linux-gnu (x86_64)
 --
 -- Host: localhost    Database: opensvc
@@ -225,7 +225,7 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-03-28 10:37:36
+-- Dump completed on 2018-04-06 10:22:42
 -- MySQL dump 10.16  Distrib 10.3.5-MariaDB, for debian-linux-gnu (x86_64)
 --
 -- Host: localhost    Database: opensvc
@@ -276,7 +276,7 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-03-28 10:37:36
+-- Dump completed on 2018-04-06 10:22:42
 -- MySQL dump 10.16  Distrib 10.3.5-MariaDB, for debian-linux-gnu (x86_64)
 --
 -- Host: localhost    Database: opensvc
@@ -332,41 +332,7 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-03-28 10:37:37
--- MySQL dump 10.16  Distrib 10.3.5-MariaDB, for debian-linux-gnu (x86_64)
---
--- Host: localhost    Database: opensvc
--- ------------------------------------------------------
--- Server version	10.3.5-MariaDB-10.3.5+maria~jessie
-
-/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
-/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8 */;
-/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
-/*!40103 SET TIME_ZONE='+00:00' */;
-/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
-/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
-/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
-/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
-mysqldump: Couldn't find table: "billing"
--- MySQL dump 10.16  Distrib 10.3.5-MariaDB, for debian-linux-gnu (x86_64)
---
--- Host: localhost    Database: opensvc
--- ------------------------------------------------------
--- Server version	10.3.5-MariaDB-10.3.5+maria~jessie
-
-/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
-/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8 */;
-/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
-/*!40103 SET TIME_ZONE='+00:00' */;
-/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
-/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
-/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
-/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
-mysqldump: Couldn't find table: "billing_agent"
+-- Dump completed on 2018-04-06 10:22:43
 -- MySQL dump 10.16  Distrib 10.3.5-MariaDB, for debian-linux-gnu (x86_64)
 --
 -- Host: localhost    Database: opensvc
@@ -422,7 +388,7 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-03-28 10:37:38
+-- Dump completed on 2018-04-06 10:22:43
 -- MySQL dump 10.16  Distrib 10.3.5-MariaDB, for debian-linux-gnu (x86_64)
 --
 -- Host: localhost    Database: opensvc
@@ -457,7 +423,7 @@ CREATE TABLE `forms` (
   `form_folder` varchar(200) DEFAULT '/',
   PRIMARY KEY (`id`),
   UNIQUE KEY `idx1` (`form_name`)
-) ENGINE=InnoDB AUTO_INCREMENT=108 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=109 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -480,7 +446,7 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-03-28 10:37:39
+-- Dump completed on 2018-04-06 10:22:44
 INSERT INTO sysrep_secure VALUES (1,'.*');
 INSERT INTO auth_user (id, last_name, email, password) VALUES (1,'Manager','root@localhost.localdomain','sha512$85f8c776fe663b25$a9ab1f4ebd03fa7f2cf992bf7bc111e24a76397db7a228edc54a95e44e2cfbd50b7d83a5942a9c66da99c1f14c14b9ef070eef730460850c7eb48c1126236e96');
 INSERT INTO auth_membership VALUES (1, 1, 2, 'F');

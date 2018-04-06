@@ -37,8 +37,6 @@ $MYSQLDUMP opensvc u_inc >> $DUMP_DIR/data.dump
 $MYSQLDUMP opensvc digit >> $DUMP_DIR/data.dump
 $MYSQLDUMP opensvc im_types >> $DUMP_DIR/data.dump
 $MYSQLDUMP opensvc checks_defaults >> $DUMP_DIR/data.dump
-$MYSQLDUMP opensvc billing >> $DUMP_DIR/data.dump
-$MYSQLDUMP opensvc billing_agent >> $DUMP_DIR/data.dump
 $MYSQLDUMP --where="privilege='T'" opensvc auth_group >> $DUMP_DIR/data.dump
 $MYSQLDUMP --where="form_type='obj' or form_name='folder_compliance'" opensvc forms >> $DUMP_DIR/data.dump
 
