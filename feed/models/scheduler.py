@@ -3237,7 +3237,7 @@ def cron_dash_svcmon_not_updated():
              where
                dashboard.svc_id!="" and
                dashboard.node_id!="" and
-               svcmon.id is NULL"""
+               (svcmon.id is NULL or svcmon.mon_updated>=date_sub(now(), interval 16 minute))"""
     rows = db.executesql(sql)
     ids = map(lambda x: "'%d'"%x[0], rows)
 
