@@ -43,10 +43,8 @@ def get_reachable_name(node):
 def get_action_type(node):
     if node.action_type is not None:
         return node.action_type
-    if node.os_name == "Windows":
-        action_type = "pull"
     else:
-        action_type = "push"
+        action_type = "pull"
     return action_type
 
 def start_actiond():

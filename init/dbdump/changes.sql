@@ -6626,3 +6626,6 @@ alter table dashboard_ref modify column `dash_md5` binary(32) default null;
 alter table dashboard modify column dash_md5 binary(32) GENERATED ALWAYS AS (md5(concat(`dash_type`,`dash_instance`))) STORED;
 alter table dashboard modify column dash_md5 binary(32) generated always as (md5(concat(`dash_type`,if(dash_instance is null, "", dash_instance)))) stored;
 
+alter table nodes modify column action_type enum('push','pull') DEFAULT 'pull';
+update nodes set action_type="pull" where action_type is NULL;
+
