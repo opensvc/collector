@@ -130,7 +130,7 @@
 		"detach_privileges": "Détacher des privilèges",
 		"attach_groups": "Attacher des groupes",
 		"detach_groups": "Détacher des groupes",
-		"tpl_name": "Nom du garabi",
+		"tpl_name": "Nom du gabarit",
 		"group_name": "Nom du groupe",
 		"set_primary_group": "Changer le groupe primaire",
 		"set_filterset": "Changer le jeu de filtres",
