@@ -1187,7 +1187,7 @@
 				"text": "Dans la CMDB réseau embarquée"
 			},
 			"add_prov_template": {
-				"title": "Ajouter un gabari",
+				"title": "Ajouter un gabarit",
 				"text": "Pour instancier des services types"
 			},
 			"add_quota": {
