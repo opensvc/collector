@@ -1,3 +1,13 @@
+def call():
+    """
+    exposes services. for example:
+    http://..../[app]/default/call/jsonrpc
+    decorate with @services.jsonrpc the functions to expose
+    supports xml, json, xmlrpc, jsonrpc, amfrpc, rss, csv
+    """
+    session.forget(response)
+    return service()
+
 class table_checks(HtmlTable):
     def __init__(self, id=None, func=None, innerhtml=None):
         if id is None and 'tableid' in request.vars:
@@ -163,4 +173,29 @@ def checks_defaults_load():
 #
 def batch_update_thresholds():
     update_thresholds_batch()
+
+@auth.requires_login()
+@service.json
+def json_check_value_log():
+    import base64
+    from applications.init.modules import timeseries
+    q = db.checks_live.node_id == request.vars.node_id
+    q &= db.checks_live.svc_id == request.vars.svc_id
+    q &= db.checks_live.chk_type == request.vars.chk_type
+    q &= db.checks_live.chk_instance == request.vars.chk_instance
+    q = q_filter(node_field=db.checks_live.node_id)
+    n = db(q).count()
+    if n == 0:
+        return "Permission denied"
+
+    return [timeseries.whisper_fetch(
+        "nodes", request.vars.node_id,
+        "checks", ":".join((
+            request.vars.svc_id if request.vars.svc_id else "",
+            request.vars.chk_type,
+            base64.urlsafe_b64encode(request.vars.chk_instance) if request.vars.chk_instance else "",
+        )),
+        b=request.vars.b,
+        e=request.vars.e,
+    )]
 
