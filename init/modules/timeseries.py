@@ -89,6 +89,8 @@ def whisper_create(wsp, retentions=None, xFilesFactor=0.0):
     whisper.create(wsp, retentions, xFilesFactor=xFilesFactor)
 
 def to_tstamp(s):
+    if s is None:
+        return time.time()
     if isinstance(s, datetime.datetime):
         return int(time.mktime(s.timetuple()))
     if isinstance(s, datetime.date):
@@ -158,7 +160,7 @@ def whisper_fetch(*args, **kwargs):
         data.append([timestr, value])
     return data
 
-def whisper_update(wsp, value, tstamp, retentions=None):
+def whisper_update(wsp, value, tstamp=None, retentions=None):
     whisper_create(wsp, retentions=retentions)
     whisper.update(wsp, value, to_tstamp(tstamp))
 
