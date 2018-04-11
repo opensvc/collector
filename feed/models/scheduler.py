@@ -3890,7 +3890,8 @@ def update_dash_flex_cpu(svc_id):
                svc_flex_cpu_high_threshold
              from services
              where
-               svc_id="%(svc_id)s"
+               svc_id="%(svc_id)s" and
+               svc_topology="flex"
           """%dict(svc_id=svc_id)
     rows = db.executesql(sql)
 
@@ -4022,7 +4023,8 @@ def update_dash_flex_instances_started(svc_id):
                    ) AS up
                   from v_svcmon p
                   where
-                   p.svc_id="%(svc_id)s"
+                   p.svc_id="%(svc_id)s" and
+                   p.svc_topology="flex"
                  ) w
                  where
                    ((
