@@ -3247,7 +3247,8 @@ def cron_dash_svcmon_not_updated():
              from dashboard
              left join svcmon on
                dashboard.svc_id=svcmon.svc_id and
-               dashboard.node_id=svcmon.node_id
+               dashboard.node_id=svcmon.node_id and
+               dashboard.dash_type="service status not updated"
              where
                dashboard.svc_id!="" and
                dashboard.node_id!="" and
