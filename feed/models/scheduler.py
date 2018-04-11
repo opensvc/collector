@@ -2,6 +2,7 @@
 
 import datetime
 import hashlib
+import base64
 import os
 import copy
 import logging
@@ -390,6 +391,19 @@ def _push_checks(vars, vals, auth):
         vals = vals[100:]
     generic_insert('checks_live', vars, vals)
     db.commit()
+
+    # update timeseries
+    q = db.checks_live.node_id == node_id
+    for row in db(q).select():
+        path = timeseries.wsp_path(
+            "nodes", node_id,
+            "checks", ":".join((
+                row.svc_id if row.svc_id else "",
+                row.chk_type,
+                base64.urlsafe_b64encode(row.chk_instance) if row.chk_instance else ""
+            )),
+        )
+        timeseries.whisper_update(path, row.chk_value)
 
     q = db.checks_live.node_id == node_id
     q &= db.checks_live.chk_type != "netdev_err"
@@ -4004,7 +4018,7 @@ def update_dash_flex_instances_started(svc_id):
                     from svcmon c
                     where
                      c.svc_id = "%(svc_id)s" and
-                     c.mon_availstatus = 'up'
+                     c.mon_availstatus in ('up', 'n/a')
                    ) AS up
                   from v_svcmon p
                   where
@@ -4340,7 +4354,7 @@ def update_dash_action_errors(svc_id, node_id):
         db.commit()
 
 def update_dash_service_placement(svc_id, env, placement):
-    if placement == "optimal":
+    if placement in ("optimal", "n/a"):
         sql = """delete from dashboard
                  where
                    dash_type="service placement" and
@@ -4674,7 +4688,7 @@ def merge_daemon_ping(node_id):
         peer = get_cluster_node(nodename)
         changed |= ping_peer(peer, now)
 
-    peer_node_ids = [node.node_id for node in node_ids.values()]
+    peer_node_ids = [node.node_id for node in node_ids.values() if node is not None]
     for svcname in data["services"].keys():
         for peer_node_id in peer_node_ids:
             svc = node_svc(peer_node_id, svcname)
@@ -4858,7 +4872,7 @@ def merge_daemon_status(node_id, changes):
         peer = get_cluster_node(nodename)
 
     for svcname, sdata in data["services"].items():
-        peer_node_ids = [node.node_id for node in node_ids.values()]
+        peer_node_ids = [node.node_id for node in node_ids.values() if node is not None]
         for peer_node_id in peer_node_ids:
             svc = node_svc(peer_node_id, svcname)
             if svc:

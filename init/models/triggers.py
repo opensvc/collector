@@ -161,7 +161,7 @@ def update_dash_service_available_but_degraded(svc_id, env, svc_availstatus, svc
         sev = 3
     else:
         sev = 2
-    if svc_availstatus == "up" and svc_status != "up":
+    if svc_availstatus == "up" and svc_status not in ("up", "n/a"):
         sql = """insert into dashboard
                  set
                    dash_type="service available but degraded",
