@@ -568,6 +568,22 @@ function cell_decorator_chk_value(e, line) {
 		cl.push("highlight")
 	}
 	e.html("<span class='"+cl.join(" ")+"'>"+v+"</span>")
+		.addClass("corner clickable")
+	_e = $("<span class='pl-2 icon chart16'></span>")
+	_e.on("click", function() {
+		var id = toggle_extraline(e)
+		var node_id = $.data(line.children(".cell[col=node_id]")[0], "v")
+		var svc_id = $.data(line.children(".cell[col=svc_id]")[0], "v")
+		var chk_type = $.data(line.children(".cell[col=chk_type]")[0], "v")
+		var chk_instance = $.data(line.children(".cell[col=chk_instance]")[0], "v")
+		var url = services_get_url() + "/init/checks/call/json/json_check_value_log?svc_id="+svc_id+"&node_id="+node_id+"&chk_type="+chk_type+"&chk_instance="+encodeURIComponent(chk_instance)
+		var area = $("<div class='p-3'></div>")
+		var chart = $("<div style='width:100%;height:25em'></div>").uniqueId()
+		area.append(chart)
+		$("#"+id).append(area)
+		stats_resinfo(url, chart.attr("id"))
+	})
+	e.append(_e)
 }
 
 function cell_decorator_sched_task_status(e, line) {

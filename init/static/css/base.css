@@ -2844,11 +2844,11 @@ div.containertrans {
 	border-left: 1px solid #ddc;
 	border-right: 1px solid #eed;
 	border-bottom: 1px solid #eed;
-	margin:0.2em;
-	padding:0.2em;
+	padding:0.5em;
 	border-radius:4px;
 	-moz-border-radius:4px;
 	-webkit-border-radius:4px;
+	overflow-wrap: break-word;
 }
 
 .vis-item {
