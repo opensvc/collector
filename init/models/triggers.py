@@ -210,6 +210,7 @@ def update_dash_service_unavailable(svc_id, env, svc_availstatus):
         if data:
             changed.add("dashboard")
         db.commit()
+        return changed
     else:
         sql = """select count(id) from svcmon_log_ack
                  where
@@ -224,10 +225,11 @@ def update_dash_service_unavailable(svc_id, env, svc_availstatus):
                        dash_type="service unavailable" and
                        svc_id="%s"
                   """%(svc_id)
-            db.executesql(sql)
+            data = db.executesql(sql)
             db.commit()
-            changed.add("dashboard")
-            return
+            if data:
+                changed.add("dashboard")
+            return changed
 
         sql = """insert into dashboard
                  set
