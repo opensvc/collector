@@ -10,15 +10,23 @@ def node_app_id(node_id=None):
         return []
     return row.id
 
+def node_cluster_id(node_id):
+    try:
+        return get_node(node_id).cluster_id
+    except:
+        return ""
+
 def node_svc(node_id, svcname):
     if node_id is None:
         return
     if svcname is None:
         return
+    cluster_id = node_cluster_id(node_id)
     svcname = svcname.strip("'")
     if svcname == "" or svcname is None:
         return
     q = db.services.svcname == svcname
+    q &= db.services.cluster_id == cluster_id
     q &= db.services.svc_app == db.apps.app
     q &= db.apps.id == db.apps_responsibles.app_id
     q &= db.apps_responsibles.group_id.belongs(node_responsibles(node_id))
@@ -31,8 +39,9 @@ def node_svc(node_id, svcname):
         groupby=db.services.svc_id
     )
     if len(rows) > 1:
-        raise Exception("multiple services found matching the service name '%(svcname)s' in the node '%(node_id)s' responsibility zone: %(svc_ids)s" % dict(
+        raise Exception("multiple services found matching the service name '%(svcname)s' in the node '%(node_id)s' cluster %(cluster_id)s responsibility zone: %(svc_ids)s" % dict(
           svcname=svcname,
+          cluster_id=cluster_id,
           node_id=node_id,
           svc_ids=', '.join([r.svc_id for r in rows]),
         ))
@@ -42,10 +51,14 @@ def node_svc(node_id, svcname):
 
     #
     # no service was found in the node's responsability zone.
-    # if we already have a service instance on the node, fetch the svc_id from there,
+    # if we already have a service instance on the cluster, fetch the svc_id from there,
     # as a svcname can be found twice on the same node
     #
-    q = db.svcmon.node_id == node_id
+    if cluster_id:
+        q = db.svcmon.node_id == db.nodes.node_id
+        q &= db.nodes.cluster_id == cluster_id
+    else:
+        q = db.svcmon.node_id == node_id
     q &= db.svcmon.svc_id == db.services.svc_id
     q &= db.services.svcname == svcname
     rows = db(q).select(
@@ -60,7 +73,7 @@ def node_svc(node_id, svcname):
         return rows.first()
 
     if len(rows) == 0:
-        return create_svc(node_id, svcname)
+        return create_svc(node_id, cluster_id, svcname)
 
     return rows.first()
 
@@ -70,7 +83,7 @@ def node_svc_id(node_id, svcname):
         return ""
     return svc["svc_id"]
 
-def create_svc(node_id, svcname):
+def create_svc(node_id, cluster_id, svcname):
     from gluon.storage import Storage
     node = get_node(node_id)
     if node is None:
@@ -82,6 +95,7 @@ def create_svc(node_id, svcname):
       "svc_availstatus": "undef",
       "svc_status": "undef",
       "svc_id": get_new_svc_id(),
+      "cluster_id": cluster_id,
       "updated": datetime.datetime.now()
     }
     db.services.insert(**data)

@@ -1643,6 +1643,7 @@
 		"hidden_menu_entries": "entrées cachées du menu"
 	},
 	"col": {
+		"Cluster Id": "Id du Cluster",
 		"Notifications": "Notifications",
 		"Snooze till": "Snooze jusqu'à",
 		"Path": "Chemin",

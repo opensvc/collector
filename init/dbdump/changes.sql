@@ -6699,3 +6699,9 @@ alter table resmon modify column svc_id binary(36) default '';
 alter table comp_rulesets_services modify column svc_id binary(36) default '';
 alter table comp_modulesets_services modify column svc_id binary(36) default '';
 
+alter table nodes add column cluster_id binary(36) default '';
+alter table services add column cluster_id binary(36) default '';
+
+alter table nodes add key k_cluster_id (cluster_id);
+alter table services add key k_cluster_id (cluster_id);
+

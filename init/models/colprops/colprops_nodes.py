@@ -1,4 +1,5 @@
 nodes_cols = [
+    'cluster_id',
     'assetname',
     'fqdn',
     'serial',
@@ -72,6 +73,10 @@ nodes_cols = [
 nodes_colprops = {
     'id': HtmlTableColumn(
              field='id',
+             table = 'nodes',
+            ),
+    'cluster_id': HtmlTableColumn(
+             field='cluster_id',
              table = 'nodes',
             ),
     'node_updated': HtmlTableColumn(

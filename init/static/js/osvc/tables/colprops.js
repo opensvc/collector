@@ -1667,6 +1667,10 @@ colprops = {
 		"img": "app16",
 		"title": "Node App"
 	},
+	"cluster_id": {
+		"img": "cluster",
+		"title": "Cluster Id"
+	},
 	"node_id": {
 		"img": "node16",
 		"title": "Node Id"

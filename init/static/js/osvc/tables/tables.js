@@ -1763,7 +1763,7 @@ function table_nodes(divid, options) {
 		'spankeys': ['node_id'],
 		'keys': ['node_id'],
 		'force_cols': ['node_id', 'os_name'],
-		'columns': [].concat(['node_id', 'nodename'], objcols.node, ["updated"]),
+		'columns': [].concat(['node_id', 'cluster_id', 'nodename'], objcols.node, ["updated"]),
 		'default_columns': [
 			"cpu_cores",
 			"cpu_dies",
@@ -2389,7 +2389,7 @@ function table_services(divid, options) {
 		'keys': ['svc_id'],
 		'orderby': ['svcname'],
 		'force_cols': ['svc_id', 'svcname', 'svc_status_updated'],
-		'columns': [].concat(['svc_id', 'svcname'], objcols.service, ["updated"]),
+		'columns': [].concat(['svc_id', 'cluster_id', 'svcname'], objcols.service, ["updated"]),
 		'default_columns': ["svcname", "svc_status", "svc_placement", "svc_frozen", "svc_provisioned", "svc_topology", "svc_availstatus", "svc_status_updated", "svc_ha", "updated"],
 		'colprops': {
 			"updated": colprops.svc_updated

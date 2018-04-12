@@ -1,4 +1,5 @@
 services_cols = [
+    'cluster_id',
     'svc_status',
     'svc_availstatus',
     'svc_app',
@@ -47,6 +48,10 @@ svcmon_cols = [
 ]
 
 services_colprops = {
+    'cluster_id': HtmlTableColumn(
+             field='cluster_id',
+             table = 'cluster_id',
+            ),
     'svcname': HtmlTableColumn(
              field='svcname',
              table = 'services',

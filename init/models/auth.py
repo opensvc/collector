@@ -556,8 +556,9 @@ class MyAuth(Auth):
                 node = None
             if node is not None:
                 node_id = node.node_id
+                cluster_id = node.cluster_id
                 node_app = node.app
-                svc = node_svc(node_id, svcname)
+                svc = node_svc(node_id, cluster_id, svcname)
                 if svc:
                     svc_id = svc.svc_id
                     svc_app = svc.svc_app
@@ -569,6 +570,7 @@ class MyAuth(Auth):
                 svcname = None
                 node = auth_to_node([password, nodename])
                 node_id = node.node_id
+                cluster_id = node.cluster_id
                 node_app = node.app
                 svc_id = None
                 svc_app = None
@@ -576,6 +578,7 @@ class MyAuth(Auth):
             self.user.email = "root@"+nodename
             self.user.nodename = nodename
             self.user.svcname = svcname
+            self.user.cluster_id = cluster_id
             self.user.node_id = node_id
             self.user.svc_id = svc_id
             self.user.svc_app = svc_app

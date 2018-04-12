@@ -1642,6 +1642,7 @@
 		"hidden_menu_entries": "hidden menu entries"
 	},
 	"col": {
+		"Cluster Id": "Cluster Id",
 		"Notifications": "Notifications",
 		"Snooze till": "Snooze till",
 		"Path": "Path",
