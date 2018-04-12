@@ -2352,6 +2352,12 @@ def comp_get_service_ruleset(svc_id):
         if f in blacklist:
             continue
         val = rows[0][f]
+        if type(val) == datetime.date:
+            val = val.strftime("%Y-%m-%d")
+        try:
+            val = val.strip("\0")
+        except:
+            pass
         ruleset['vars'].append(('services.'+f, val))
     return {'osvc_service':ruleset}
 
@@ -2372,6 +2378,10 @@ def comp_get_node_ruleset(node_id):
         val = rows[0][f]
         if type(val) == datetime.date:
             val = val.strftime("%Y-%m-%d")
+        try:
+            val = val.strip("\0")
+        except:
+            pass
         ruleset['vars'].append(('nodes.'+f, val))
     return {'osvc_node':ruleset}
 
