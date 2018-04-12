@@ -31,6 +31,7 @@ def node_svc(node_id, svcname):
     q &= db.apps.id == db.apps_responsibles.app_id
     q &= db.apps_responsibles.group_id.belongs(node_responsibles(node_id))
     rows = db(q).select(
+        db.services.svcname,
         db.services.svc_id,
         db.services.svc_app,
         db.services.svc_env,

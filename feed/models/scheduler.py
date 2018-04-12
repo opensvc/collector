@@ -4540,12 +4540,14 @@ def task_dash_min():
 def ping_svc(svc, now):
     changed = set()
     q = db.services.svc_id == svc.svc_id
-    q &= db.services.updated < now - datetime.timedelta(seconds=30)
+    q &= db.services.svc_status_updated < now - datetime.timedelta(seconds=30)
     result = db(q).update(svc_status_updated=now)
     if result:
         changed.add("services")
+        print " ping service", svc.svcname, svc.svc_id
+    else:
+        return changed
     q = db.services_log_last.svc_id == svc.svc_id
-    q &= db.services_log_last.svc_end < now - datetime.timedelta(seconds=30)
     result = db(q).update(svc_end=now)
     return changed
 
@@ -4614,6 +4616,7 @@ def ping_instance(svc, peer, now):
     q &= db.svcmon.mon_updated < now - datetime.timedelta(seconds=30)
     result = db(q).update(mon_updated=now)
     if result:
+        print "  ping service", svc.svcname, svc.svc_id, "instance on node", peer.nodename
         changed.add("svcmon")
     else:
         return changed
@@ -4627,6 +4630,8 @@ def ping_instance(svc, peer, now):
     result = db(q).update(updated=now)
     if result:
         changed.add("resmon")
+    else:
+        return changed
 
     q = (db.resmon_log_last.node_id == peer.node_id) & (db.resmon_log_last.svc_id == svc.svc_id)
     q &= db.resmon_log_last.res_end < now - datetime.timedelta(seconds=30)
@@ -4652,6 +4657,8 @@ def ping_peer(peer, now):
     result = db(q).update(updated=now)
     if result:
         changed.add("resmon")
+    else:
+        return changed
 
     q = db.resmon_log_last.node_id == peer.node_id
     q &= db.resmon_log_last.res_end < now - datetime.timedelta(seconds=30)
@@ -4697,7 +4704,6 @@ def merge_daemon_ping(node_id):
             svc = node_svc(peer_node_id, svcname)
             if svc:
                 break
-        print " ping service", svcname, svc.svc_id
         changed |= ping_svc(svc, now)
 
     print " tables changed:", ",".join(changed)
@@ -4881,7 +4887,6 @@ def merge_daemon_status(node_id, changes):
             if svc:
                 break
         if changes is not None and svcname not in changes and not svc.svc_availstatus == "undef":
-            print " ping service", svcname, svc.svc_id
             ping_svc(svc, now)
         else:
             print " update service", svcname, svc.svc_id
@@ -4894,7 +4899,6 @@ def merge_daemon_status(node_id, changes):
                 print "  skip instance on unknwon peer", nodename
                 continue
             if changes is not None and svcname+"@"+nodename not in changes and not svc.svc_availstatus == "undef":
-                print "  ping service", svcname, svc.svc_id, "instance on node", nodename
                 ping_instance(svc, peer, now)
                 continue
             try:
