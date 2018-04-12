@@ -159,10 +159,19 @@ class rest_get_safe_file_download(rest_get_handler):
         examples = [
           """# curl -u %(email)s -o /tmp/foo https://%(collector)s/init/rest/api/safe/1/download""",
         ]
+        params = {
+            "md5": {
+                "desc": "Optional. If set, the client announces the md5 of the "
+                        "file content it has a cached version of, and the "
+                        "server can return a 204 (no content) status code to "
+                        "signal this content is valid.",
+            }
+        }
         rest_get_handler.__init__(
           self,
           path="/safe/<id>/download",
           desc=desc,
+          params=params,
           examples=examples,
         )
 
@@ -172,7 +181,7 @@ class rest_get_safe_file_download(rest_get_handler):
             uuid = db.safe[id].uuid
         except:
             uuid = str(id)
-        data = lib_safe_download(uuid)
+        data = lib_safe_download(uuid, **vars)
         return data
 
 #

@@ -100,8 +100,10 @@ def lib_safe_upload(name=None, file=None):
     d = db(db.safe.id==id).select().as_dict()
     return d[id]
 
-def lib_safe_download(uuid):
+def lib_safe_download(uuid, **kwargs):
     lib_safe_check_file_publication(uuid)
+
+    client_md5 = kwargs.get("md5")
 
     import cStringIO
     import contenttype as c
@@ -109,8 +111,11 @@ def lib_safe_download(uuid):
 
     filename, file = db.safe.uuid.retrieve(uuid)
 
-    md5 = lib_safe_md5(file)
     meta_md5 = db(db.safe.uuid==uuid).select().first().md5
+    if client_md5 and client_md5 == meta_md5:
+        raise HTTP(204, "the client already has this file version (same md5)")
+
+    md5 = lib_safe_md5(file)
     if md5 != meta_md5:
         raise HTTP(403, "the file is compromised: current md5 = %s, expected md5 = %s" % (md5, meta_md5))
 
