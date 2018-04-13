@@ -1173,7 +1173,7 @@ function form(divid, options) {
 		} else {
 			input.prop("acid", false)
 		}
-		input.bind("click", function(){
+		input.bind("change", function(){
 			if ($(this).prop("checked")) {
 				$(this).prop("acid", true)
 			} else {
