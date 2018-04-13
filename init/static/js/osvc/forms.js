@@ -1642,6 +1642,9 @@ function form(divid, options) {
 		if (d.Type == "form") {
 			return
 		}
+		if (d.Type == "boolean") {
+			return
+		}
 		trigger(input)
 		input.bind("keyup change", function() {
 			trigger($(this))
