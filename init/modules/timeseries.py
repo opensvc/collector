@@ -69,7 +69,7 @@ def wsp_path(*args):
     else:
         _args = []
     for arg in args:
-        _args += str(arg).split(os.sep)
+        _args += str(arg).strip("\0").split(os.sep)
     fpath = os.path.join(*_args)
     if not fpath.endswith(".wsp"):
         fpath += ".wsp"
