@@ -558,7 +558,7 @@ class MyAuth(Auth):
                 node_id = node.node_id
                 cluster_id = node.cluster_id
                 node_app = node.app
-                svc = node_svc(node_id, cluster_id, svcname)
+                svc = node_svc(node_id, svcname)
                 if svc:
                     svc_id = svc.svc_id
                     svc_app = svc.svc_app
