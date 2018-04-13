@@ -63,6 +63,7 @@ def node_svc(node_id, svcname):
     q &= db.svcmon.svc_id == db.services.svc_id
     q &= db.services.svcname == svcname
     rows = db(q).select(
+        db.services.svcname,
         db.services.svc_id,
         db.services.svc_app,
         db.services.svc_env,
