@@ -308,7 +308,6 @@ function services_osvcgetrest(service, uri, params, callback, error_callback, as
 		async : async,
 		dataType: "json",
 		error: function(xhr, stat, error) {
-			console.log(error)
 			if (error == "UNAUTHORIZED") {
 				app_load_href("/"+osvc.app+"/default/user/login")
 			}

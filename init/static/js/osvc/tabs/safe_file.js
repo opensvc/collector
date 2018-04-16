@@ -61,6 +61,10 @@ function safe_file_content(divid, options) {
 			osvc_tools(o.div, {
 				"link": o.link
 			})
+		}, function(xhr, error, stat){
+			spinner_del(o.div)
+			jd = $.parseJSON(xhr.responseText)
+			o.div.text(jd.error)
 		})
 	}
 
