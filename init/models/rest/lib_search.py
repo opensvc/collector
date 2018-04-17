@@ -351,13 +351,22 @@ def lib_search_priv(pattern, limit):
 
 def lib_search_safe_file(pattern, limit):
     t = datetime.datetime.now()
-    o = db.safe.uuid
+    o = db.safe.id
     q = db.safe.uuid.like(pattern) | db.safe.name.like(pattern)
+    try:
+        q |= db.safe.id == int(pattern.strip("%"))
+    except:
+        pass
     l = db.safe_team_publication.on(db.safe.id == db.safe_team_publication.file_id)
     q &= db.safe_team_publication.group_id.belongs(user_org_group_ids()) | \
          (db.safe.uploader == auth.user_id)
-    n = db(q).count()
-    data = db(q).select(o,
+    row = db(q).select(o.count(), left=l, groupby=o).first()
+    if row is None:
+        n = 0
+    else:
+        n = row._extra[o.count()]
+    data = db(q).select(db.safe.id,
+                        db.safe.uuid,
                         db.safe.name,
                         left=l,
                         orderby=o,
@@ -367,7 +376,7 @@ def lib_search_safe_file(pattern, limit):
     return {
       "total": n,
       "data": data,
-      "fmt": {"id": "%(uuid)s", "name": "%(name)s"},
+      "fmt": {"id": "%(id)s", "name": "%(uuid)s %(name)s"},
       "elapsed": "%f" % (t.seconds + 1. * t.microseconds / 1000000),
     }
 

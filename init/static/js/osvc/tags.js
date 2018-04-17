@@ -1166,7 +1166,7 @@ function safe_file_responsibles(options) {
 	options.bgcolor = osvc.colors.org
 	options.icon = "guys16"
 	options.get_tags = function(fval, callback, callback_err) {
-		services_osvcgetrest("/safe/%1/responsibles", [options.uuid], {
+		services_osvcgetrest("/safe/%1/responsibles", [options.file_id], {
 			"orderby": options.tag_name,
 			"props": "id," + options.tag_name,
 			"limit": "0"
@@ -1182,13 +1182,13 @@ function safe_file_responsibles(options) {
 		}, callback, callback_err)
 	}
 	options.attach = function(tag_data, callback, callback_err) {
-		services_osvcpostrest("/safe/%1/responsibles/%2", [options.uuid, tag_data.id], "", "", callback, callback_err)
+		services_osvcpostrest("/safe/%1/responsibles/%2", [options.file_id, tag_data.id], "", "", callback, callback_err)
 	}
 	options.detach = function(tag, callback, callback_err) {
-		services_osvcdeleterest("/safe/%1/responsibles/%2", [options.uuid, tag.attr("tag_id")], "", "", callback, callback_err)
+		services_osvcdeleterest("/safe/%1/responsibles/%2", [options.file_id, tag.attr("tag_id")], "", "", callback, callback_err)
 	}
 	options.am_i_responsible = function(callback) {
-		services_osvcgetrest("/safe/%1/am_i_responsible", [options.uuid], "", callback)
+		services_osvcgetrest("/safe/%1/am_i_responsible", [options.file_id], "", callback)
 	}
 	options.ondblclick = function(divid, data) {
 		group_tabs(divid, {"group_id": data.id, "group_name": data.name})
@@ -1204,7 +1204,7 @@ function safe_file_publications(options) {
 	options.bgcolor = osvc.colors.org
 	options.icon = "guys16"
 	options.get_tags = function(fval, callback, callback_err) {
-		services_osvcgetrest("/safe/%1/publications", [options.uuid], {
+		services_osvcgetrest("/safe/%1/publications", [options.file_id], {
 			"orderby": options.tag_name,
 			"props": "id," + options.tag_name,
 			"limit": "0"
@@ -1220,13 +1220,13 @@ function safe_file_publications(options) {
 		}, callback, callback_err)
 	}
 	options.attach = function(tag_data, callback, callback_err) {
-		services_osvcpostrest("/safe/%1/publications/%2", [options.uuid, tag_data.id], "", "", callback, callback_err)
+		services_osvcpostrest("/safe/%1/publications/%2", [options.file_id, tag_data.id], "", "", callback, callback_err)
 	}
 	options.detach = function(tag, callback, callback_err) {
-		services_osvcdeleterest("/safe/%1/publications/%2", [options.uuid, tag.attr("tag_id")], "", "", callback, callback_err)
+		services_osvcdeleterest("/safe/%1/publications/%2", [options.file_id, tag.attr("tag_id")], "", "", callback, callback_err)
 	}
 	options.am_i_responsible = function(callback) {
-		services_osvcgetrest("/safe/%1/am_i_responsible", [options.uuid], "", callback)
+		services_osvcgetrest("/safe/%1/am_i_responsible", [options.file_id], "", callback)
 	}
 	options.ondblclick = function(divid, data) {
 		group_tabs(divid, {"group_id": data.id, "group_name": data.name})

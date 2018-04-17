@@ -88,12 +88,12 @@ var search_data = {
 		"subclass": "meta_username clickable"
 	},
 	"safe_files": {
-		"tab" : function(id, res){safe_file_tabs(id, {"uuid": res.uuid, "name": res.name})},
+		"tab" : function(id, res){safe_file_tabs(id, {"id": res.id, "uuid": res.uuid, "name": res.name})},
 		"type": "safe",
 		"color": "comp",
 		"id": "uuid",
-		"title": "__name__ (__uuid__)",
-		"short_title": "__name__ (__uuid__)",
+		"title": "__id__ __name__ (__uuid__)",
+		"short_title": "__id__ __name__ (__uuid__)",
 		"menu_entry_id": "view-safe",
 		"class": "safe16 fa-2x search-section-icon",
 		"subclass": "meta_safe_file"

@@ -9,7 +9,7 @@ function safe_file_tabs(divid, options) {
 	}
 
 	o.load(function() {
-		var title = o.options.uuid
+		var title = o.options.id
 		o.closetab.text(title)
 
 		// tab properties
@@ -50,7 +50,7 @@ function safe_file_content(divid, options) {
 	o.init = function() {
 		o.div.css({"padding": "1em", "box-sizing": "border-box"})
 		spinner_add(o.div)
-		services_osvcgetrest("/safe/%1/preview", [o.options.uuid], "", function(jd) {
+		services_osvcgetrest("/safe/%1/preview", [o.options.id], "", function(jd) {
 			spinner_del(o.div)
 			if (jd.error) {
 				o.div.text(jd.error)
@@ -90,6 +90,7 @@ function safe_file_properties(divid, options) {
 		osvc_tools(o.div, {
 			"link": o.link
 		})
+		o.info_id = o.div.find("#id")
 		o.info_name = o.div.find("#name")
 		o.info_uuid = o.div.find("#uuid")
 		o.info_md5 = o.div.find("#md5")
@@ -106,12 +107,13 @@ function safe_file_properties(divid, options) {
 	}
 
 	o.load_form = function() {
-		services_osvcgetrest("/safe/%1", [o.options.uuid], "", function(jd) {
+		services_osvcgetrest("/safe/%1", [o.options.id], "", function(jd) {
 			o._load_form(jd.data[0])
 		})
 	}
 
 	o._load_form = function(data) {
+		o.info_id.html(data.id)
 		o.info_name.html(data.name)
 		o.info_uuid.html(data.uuid)
 		o.info_uuid.attr("title", data.uuid).tooltipster()
@@ -125,18 +127,18 @@ function safe_file_properties(divid, options) {
 			"div": o.div,
 			"privileges": ["SafeUploader", "Manager"],
 			"post": function(data, callback, error_callback) {
-				services_osvcpostrest("/safe/%1", [o.options.uuid], "", data, callback, error_callback)
+				services_osvcpostrest("/safe/%1", [o.options.id], "", data, callback, error_callback)
 			}
 		})
 		safe_file_publications({
 			"tid": o.info_publications,
-			"uuid": data.uuid
+			"file_id": data.id
 		})
 		safe_file_responsibles({
 			"tid": o.info_responsibles,
-			"uuid": data.uuid
+			"file_id": data.id
 		})
-		services_osvcgetrest("/safe/%1/usage", [o.options.uuid], "", function(jd) {
+		services_osvcgetrest("/safe/%1/usage", [o.options.id], "", function(jd) {
 			tab_properties_generic_list({
 				"data": jd.data.services,
 				"key": "svcname",

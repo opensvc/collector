@@ -103,6 +103,7 @@
 		"detach_filtersets": "Détacher des jeux de filtres",
 		"set_warn_date": "Changer la date d'attention",
 		"set_alert_date": "Changer la date d'alerte",
+		"safe_file_createable": "Appuyer sur <entrée> pour créer ce fichier vide dans le coffre-fort.",
 		"docker_registry_createable": "Ce service registre docker n'existe pas encore. Appuyez sur <entrée> pour le créer.",
 		"service_createable": "Ce nom de service n'existe pas encore. Appuyez sur <entrée> pour le créer.",
 		"report_createable": "Ce nom de rapport n'existe pas encore. Appuyez sur <entrée> pour le créer.",
@@ -1198,6 +1199,10 @@
 				"title": "Ajouter un rapport",
 				"text": "Assemblage de métriques, courbes et objets"
 			},
+			"add_safe_file": {
+				"title": "Ajouter un fichier au coffre",
+				"text": "Créé un fichier vide dans le coffre-fort"
+			},
 			"add_service": {
 				"title": "Ajouter un service",
 				"text": "En anticipation de sa découverte"
@@ -1469,11 +1474,6 @@
 				"title" : "Traitements",
 				"text" : "Traitements de maintenance du collecteur",
 				"link" : "/init/batchs/batchs"
-			},
-			"billing" : {
-				"title" : "Facturation",
-				"text" : "Jetons de facturation et leur répartition",
-				"link" : "/init/billing/billing"
 			},
 			"prov" : {
 				"title" : "Instanciation",

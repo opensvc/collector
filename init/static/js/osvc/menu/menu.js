@@ -533,6 +533,15 @@ var menu_data = {
 			"secure" : ["Manager", "ReportsManager"]
 		},
 		{
+			"title" : "add_safe_file",
+			"class" : "safe16",
+			"stack" : "fa-plus-square",
+			"id" : "dm-add-safe-file",
+			"fn" : "data_action_add_safe_file",
+			"link" : "/init/dm/index/data_action_add_safe_file",
+			"secure" : ["Manager", "SafeUploader"]
+		},
+		{
 			"title" : "add_service",
 			"class" : "svc",
 			"stack" : "fa-plus-square",

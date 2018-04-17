@@ -32,7 +32,7 @@ class rest_post_safe_file(rest_post_handler):
         current = db(q).select().first()
 
         if current is None:
-            raise Exception("file %s not found" % id)
+            raise HTTP(404, "file %s not found" % id)
 
         data = {}
         if "name" in vars:
@@ -303,9 +303,9 @@ class rest_post_safe_files_publications(rest_post_handler):
 
     def handler(self, **vars):
         if "file_id" not in vars:
-            raise Exception("The 'file_id' key is mandatory")
+            raise HTTP(400, "The 'file_id' key is mandatory")
         if "group_id" not in vars:
-            raise Exception("The 'group_id' key is mandatory")
+            raise HTTP(400, "The 'group_id' key is mandatory")
         return rest_post_safe_file_publication().handler(vars["file_id"], vars["group_id"])
 
 class rest_post_safe_file_publication(rest_post_handler):
@@ -352,7 +352,7 @@ class rest_post_safe_file_publication(rest_post_handler):
             q = db.safe.uuid == id
         f = db(q).select().first()
         if f is None:
-            raise Exception("File %s not found" % id)
+            raise HTTP(404, "File %s not found" % id)
 
         q = db.safe_team_publication.group_id == g.id
         q &= db.safe_team_publication.file_id == f.id
@@ -396,9 +396,9 @@ class rest_post_safe_files_responsibles(rest_post_handler):
 
     def handler(self, **vars):
         if "file_id" not in vars:
-            raise Exception("The 'file_id' key is mandatory")
+            raise HTTP(400, "The 'file_id' key is mandatory")
         if "group_id" not in vars:
-            raise Exception("The 'group_id' key is mandatory")
+            raise HTTP(400, "The 'group_id' key is mandatory")
         return rest_post_safe_file_responsible().handler(vars["file_id"], vars["group_id"])
 
 #
@@ -446,7 +446,7 @@ class rest_post_safe_file_responsible(rest_post_handler):
             q = db.safe.uuid == id
         f = db(q).select().first()
         if f is None:
-            raise Exception("File %s not found" % id)
+            raise HTTP(404, "File %s not found" % id)
 
         q = db.safe_team_responsible.group_id == g.id
         q &= db.safe_team_responsible.file_id == f.id
@@ -455,17 +455,16 @@ class rest_post_safe_file_responsible(rest_post_handler):
             return dict(info="Responsability already exists")
 
         response = db.safe_team_responsible.validate_and_insert(
-          group_id=g.id,
-          file_id=f.id,
+            group_id=g.id,
+            file_id=f.id,
         )
         raise_on_error(response)
         row = db(q).select().first()
         _log('safe.responsible.create',
-             'file %(uuid)s responsibility added to group %(group)s.',
-             dict(uuid=f.uuid, group=g.role)
-            )
+             'file %(id)d responsibility added to group %(group)s.',
+             dict(id=f.id, group=g.role))
         ws_send('safe_team_responsible_change')
-        return dict(info='File %(uuid)s responsibility added to group %(group)s.' % dict(uuid=f.uuid, group=g.role))
+        return dict(info='File %(id)d responsibility added to group %(group)s.' % dict(id=f.id, group=g.role))
 
 class rest_delete_safe_files_publications(rest_delete_handler):
     def __init__(self):
@@ -487,9 +486,9 @@ class rest_delete_safe_files_publications(rest_delete_handler):
 
     def handler(self, **vars):
         if "file_id" not in vars:
-            raise Exception("The 'file_id' key is mandatory")
+            raise HTTP(400, "The 'file_id' key is mandatory")
         if "group_id" not in vars:
-            raise Exception("The 'group_id' key is mandatory")
+            raise HTTP(400, "The 'group_id' key is mandatory")
         return rest_delete_safe_file_publication().handler(vars["file_id"], vars["group_id"])
 
 class rest_delete_safe_file_publication(rest_delete_handler):
@@ -521,7 +520,7 @@ class rest_delete_safe_file_publication(rest_delete_handler):
         f = db(q).select().first()
 
         if f is None:
-            raise Exception("File %s not found" % id)
+            raise HTTP(404, "File %s not found" % id)
 
         g = lib_get_group(gid)
 
@@ -533,11 +532,11 @@ class rest_delete_safe_file_publication(rest_delete_handler):
 
         db(q).delete()
         _log('safe.publication.delete',
-             'file %(uuid)s unpublished to %(group)s',
-             dict(uuid=f.uuid, group=g.role),
+             'file %(id)d unpublished to %(group)s',
+             dict(id=f.id, group=g.role),
             )
         ws_send('safe_team_publication_change')
-        return dict(info="file %(uuid)s unpublished to %(group)s" % dict(uuid=f.uuid, group=g.role))
+        return dict(info="file %(id)d unpublished to %(group)s" % dict(id=f.id, group=g.role))
 
 class rest_delete_safe_files_responsibles(rest_delete_handler):
     def __init__(self):
@@ -559,9 +558,9 @@ class rest_delete_safe_files_responsibles(rest_delete_handler):
 
     def handler(self, **vars):
         if "file_id" not in vars:
-            raise Exception("The 'file_id' key is mandatory")
+            raise HTTP(400, "The 'file_id' key is mandatory")
         if "group_id" not in vars:
-            raise Exception("The 'group_id' key is mandatory")
+            raise HTTP(400, "The 'group_id' key is mandatory")
         return rest_delete_safe_file_responsible().handler(vars["file_id"], vars["group_id"])
 
 
@@ -593,7 +592,7 @@ class rest_delete_safe_file_responsible(rest_delete_handler):
             q = db.safe.uuid == id
         f = db(q).select().first()
         if f is None:
-            raise Exception("File %s not found" % id)
+            raise HTTP(404, "File %s not found" % id)
 
         g = lib_get_group(gid)
 
@@ -721,7 +720,9 @@ class rest_get_safe_file_usage(rest_get_handler):
         data = {}
 
         # services
-        q = db.services.svc_config.like("%{safe://"+row.uuid+"}%")
+        q = db.services.svc_config.like("%{safe://"+str(row.id)+"}%")
+        if row.uuid:
+            q |= db.services.svc_config.like("%{safe://"+row.uuid+"}%")
         q = q_filter(q, app_field=db.services.svc_app)
         o = db.services.svcname
         i = db.services.svc_id
@@ -730,7 +731,9 @@ class rest_get_safe_file_usage(rest_get_handler):
 
         # rules
         ug = user_group_ids()
-        q = db.comp_rulesets_variables.var_value.like("%"+row.uuid+"%")
+        q = db.comp_rulesets_variables.var_value.contains("%%safe:"+str(row.id)+"%%")
+        if row.uuid:
+            q |= db.comp_rulesets_variables.var_value.contains("%%"+row.uuid+"%%")
         q &= db.comp_rulesets_variables.ruleset_id == db.comp_ruleset_team_publication.ruleset_id
         q &= db.comp_ruleset_team_publication.group_id.belongs(ug)
         q &= db.comp_rulesets.id == db.comp_rulesets_variables.ruleset_id

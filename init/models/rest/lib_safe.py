@@ -1,4 +1,27 @@
 def lib_safe_check_file_responsible(uuid):
+    if auth_is_svc():
+        q1 = db.safe.id == db.safe_team_responsible.file_id
+        q1 &= db.safe_team_responsible.group_id == db.apps_responsibles.group_id
+        q1 &= db.apps_responsibles.app_id == db.apps.id
+        q1 &= db.apps.app == db.services.svc_app
+        q1 &= db.services.svc_id == auth.user.svc_id
+        ok = db(q&q1).select().first()
+        if ok:
+            return
+        else:
+            raise HTTP(403, "this service is not authorized to update this file")
+    elif auth_is_node():
+        q1 = db.safe.id == db.safe_team_responsible.file_id
+        q1 &= db.safe_team_responsible.group_id == db.auth_group.id
+        q1 &= db.auth_group.role == db.nodes.team_responsible
+        q1 &= db.nodes.node_id == auth.user.node_id
+        ok = db(q&q1).select().first()
+        if ok:
+            return
+        else:
+            #raise Exception(db(q&q1)._select())
+            raise HTTP(403, "this node is not authorized to update this file")
+
     if "Manager" in user_groups():
         return
 

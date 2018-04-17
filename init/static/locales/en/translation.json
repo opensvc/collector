@@ -102,6 +102,7 @@
 		"detach_filters": "Detach filters",
 		"attach_filtersets": "Attach filtersets",
 		"detach_filtersets": "Detach filtersets",
+		"safe_file_createable": "Press <enter> to create this empty safe file.",
 		"docker_registry_createable": "This docker registry service does not exist yet. Press <enter> to create.",
 		"service_createable": "This service name does not exist yet. Press <enter> to create.",
 		"report_createable": "This report name does not exist yet. Press <enter> to create.",
@@ -1199,6 +1200,10 @@
 				"title": "Add report",
 				"text": "To group metrics, charts and objects"
 			},
+			"add_safe_file": {
+				"title": "Add safe file",
+				"text": "Create an empty file in the safe"
+			},
 			"add_service": {
 				"title": "Add service",
 				"text": "Create a service, anticipating its discovery"
@@ -1470,11 +1475,6 @@
 				"title": "Batchs",
 				"text": "Collector janitoring batchs",
 				"link": "/init/batchs/batchs"
-			},
-			"billing": {
-				"title": "Billing",
-				"text": "Licensing tokens count and dispatch",
-				"link": "/init/billing/billing"
 			},
 			"prov": {
 				"title": "Provisioning",

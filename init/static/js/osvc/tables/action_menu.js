@@ -2953,6 +2953,28 @@ function data_action_add_node(divid) {
 }
 
 //
+// data action: add safe file
+//
+function data_action_add_safe_file(divid) {
+	data_action_generic_add(divid, {
+		"title": "menu.data_management.add_safe_file.title",
+		"request_service": "/safe",
+		"properties_tab": function(divid, data) {
+			safe_file_tabs(divid, {
+				"id": data.id
+			})
+		},
+		"createable_message": "action_menu.safe_file_createable",
+		"inputs": [
+			{
+				"title": "col.Name",
+				"key": "name"
+			}
+		]
+	})
+}
+
+//
 // data action: add service
 //
 function data_action_add_service(divid) {
