@@ -1,4 +1,6 @@
 def lib_safe_check_file_responsible(uuid):
+    q = db.safe.uuid == uuid
+
     if auth_is_svc():
         q1 = db.safe.id == db.safe_team_responsible.file_id
         q1 &= db.safe_team_responsible.group_id == db.apps_responsibles.group_id
@@ -24,8 +26,6 @@ def lib_safe_check_file_responsible(uuid):
 
     if "Manager" in user_groups():
         return
-
-    q = db.safe.uuid == uuid
 
     q1 = db.safe.uploader == auth.user_id
     ok = db(q&q1).select().first()
