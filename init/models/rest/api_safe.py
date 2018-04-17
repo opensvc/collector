@@ -54,6 +54,40 @@ class rest_post_safe_file(rest_post_handler):
         return rest_get_safe_file().handler(id)
 
 #
+class rest_post_safe_file_upload(rest_post_handler):
+    def __init__(self):
+        desc = [
+          "Upload a new version of an existing file into the collector safe.",
+          "The action is logged in the collector's log.",
+          "A websocket event is sent to announce the change in the table.",
+        ]
+        examples = [
+          """# curl -u %(email)s -o- -X POST -F "file=@/etc/resolv.conf" https://%(collector)s/init/rest/api/safe/1/upload""",
+        ]
+        data = """
+- **file**
+. A reference to a path to the local file to upload in the safe.
+- **name**
+. A symbolic name to identify the file in the safe.
+"""
+        rest_post_handler.__init__(
+          self,
+          path="/safe/<id>/upload",
+          desc=desc,
+          data=data,
+          examples=examples,
+        )
+
+    def handler(self, uuid, **vars):
+        data = lib_safe_file_upload(uuid, **vars)
+        _log(
+          'safe.upload',
+          'file %(uuid)s uploaded.',
+          dict(uuid=data[0].get("uuid", "")),
+        )
+        ws_send('safe_change')
+        return {"data": data}
+
 class rest_post_safe_upload(rest_post_handler):
     def __init__(self):
         desc = [
@@ -83,7 +117,7 @@ class rest_post_safe_upload(rest_post_handler):
         _log(
           'safe.upload',
           'file %(uuid)s uploaded.',
-          dict(uuid=data.get("uuid", "")),
+          dict(uuid=data[0].get("uuid", "")),
         )
         ws_send('safe_change')
         return {"data": data}

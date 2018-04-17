@@ -70,6 +70,51 @@ def lib_safe_md5(f):
     f.seek(0, os.SEEK_SET)
     return hash.hexdigest()
 
+def lib_safe_file_upload(id, name=None, file=None):
+    if not auth_is_node():
+        check_privilege("SafeUploader")
+
+    lib_safe_check_file_responsible(id)
+
+    q = db.safe.id == id
+    row = db(q).select().first()
+    if row is None:
+        raise HTTP(404, "the safe file '%s' does not exist")
+
+    uploader = auth.user_id
+    uploaded_from = request.env.REMOTE_ADDR
+    uploaded_date = datetime.datetime.now()
+
+    file.file.seek(0, os.SEEK_END)
+    size = file.file.tell()
+    file.file.seek(0, os.SEEK_SET)
+
+    md5 = lib_safe_md5(file.file)
+
+    db(q).update(
+      uploader=uploader,
+      uploaded_from=uploaded_from,
+      uploaded_date=uploaded_date,
+      name=name,
+      size=size,
+      uuid=file,
+      md5=md5,
+    )
+
+    # add a new reference to the previous version
+    db.safe.insert(
+      uploader=row.uploader,
+      uploaded_from=row.uploaded_from,
+      uploaded_date=row.uploaded_date,
+      name=row.name,
+      size=row.size,
+      uuid=row.uuid,
+      md5=row.md5,
+    )
+
+    d = db(db.safe.id==id).select().as_list()
+    return d
+
 def lib_safe_upload(name=None, file=None):
     if not auth_is_node():
         check_privilege("SafeUploader")
@@ -97,8 +142,8 @@ def lib_safe_upload(name=None, file=None):
     lib_safe_add_default_team_responsible(id)
     lib_safe_add_default_team_publication(id)
 
-    d = db(db.safe.id==id).select().as_dict()
-    return d[id]
+    d = db(db.safe.id==id).select().as_list()
+    return d
 
 def lib_safe_download(uuid, **kwargs):
     lib_safe_check_file_publication(uuid)

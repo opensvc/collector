@@ -806,6 +806,7 @@ def get_post_handlers(prefix=None):
         "safe": [
              "rest_post_safe_files_publications",
              "rest_post_safe_files_responsibles",
+             "rest_post_safe_file_upload",
              "rest_post_safe_upload",
              "rest_post_safe_file",
              "rest_post_safe_file_publication",
