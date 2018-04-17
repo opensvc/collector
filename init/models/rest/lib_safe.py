@@ -1,5 +1,9 @@
 def lib_safe_check_file_responsible(uuid):
-    q = db.safe.uuid == uuid
+    try:
+        id = int(uuid)
+        q = db.safe.id == uuid
+    except TypeError:
+        q = db.safe.uuid == uuid
 
     if auth_is_svc():
         q1 = db.safe.id == db.safe_team_responsible.file_id
@@ -42,7 +46,11 @@ def lib_safe_check_file_responsible(uuid):
     raise HTTP(403, "you are not authorized to manage this file")
 
 def lib_safe_check_file_publication(uuid):
-    q = db.safe.uuid == uuid
+    try:
+        id = int(uuid)
+        q = db.safe.id == uuid
+    except TypeError:
+        q = db.safe.uuid == uuid
 
     if auth_is_svc():
         q1 = db.safe.id == db.safe_team_publication.file_id
