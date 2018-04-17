@@ -70,6 +70,29 @@ def lib_safe_md5(f):
     f.seek(0, os.SEEK_SET)
     return hash.hexdigest()
 
+def lib_safe_file_create(name=None):
+    if not auth_is_node():
+        check_privilege("SafeUploader")
+
+    uploader = auth.user_id
+    uploaded_from = request.env.REMOTE_ADDR
+    uploaded_date = datetime.datetime.now()
+
+    id = db.safe.insert(
+      uploader=uploader,
+      uploaded_from=uploaded_from,
+      uploaded_date=uploaded_date,
+      name=name,
+      size=0,
+      uuid="",
+      md5="",
+    )
+    lib_safe_add_default_team_responsible(id)
+    lib_safe_add_default_team_publication(id)
+
+    d = db(db.safe.id==id).select().as_list()
+    return d
+
 def lib_safe_file_upload(id, name=None, file=None):
     if not auth_is_node():
         check_privilege("SafeUploader")
@@ -102,7 +125,7 @@ def lib_safe_file_upload(id, name=None, file=None):
     )
 
     # add a new reference to the previous version
-    db.safe.insert(
+    _id = db.safe.insert(
       uploader=row.uploader,
       uploaded_from=row.uploaded_from,
       uploaded_date=row.uploaded_date,
@@ -111,6 +134,8 @@ def lib_safe_file_upload(id, name=None, file=None):
       uuid=row.uuid,
       md5=row.md5,
     )
+    lib_safe_add_default_team_responsible(id)
+    lib_safe_add_default_team_publication(id)
 
     d = db(db.safe.id==id).select().as_list()
     return d

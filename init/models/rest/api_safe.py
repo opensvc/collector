@@ -54,6 +54,39 @@ class rest_post_safe_file(rest_post_handler):
         return rest_get_safe_file().handler(id)
 
 #
+class rest_post_safe(rest_post_handler):
+    def __init__(self):
+        desc = [
+          "Create an empty file reference in the safe.",
+          "The action is logged in the collector's log.",
+          "A websocket event is sent to announce the change in the table.",
+        ]
+        examples = [
+          """# curl -u %(email)s -o- -X POST -F "file=@/etc/resolv.conf" https://%(collector)s/init/rest/api/safe""",
+        ]
+        data = """
+- **name**
+. A symbolic name to identify the file in the safe.
+"""
+        rest_post_handler.__init__(
+          self,
+          path="/safe",
+          desc=desc,
+          data=data,
+          examples=examples,
+        )
+
+    def handler(self, **vars):
+        data = lib_safe_file_create(**vars)
+        _log(
+          'safe.add',
+          'file %(id)s created.',
+          dict(id=data[0].get("id", "")),
+        )
+        ws_send('safe_change')
+        return {"data": data}
+
+#
 class rest_post_safe_file_upload(rest_post_handler):
     def __init__(self):
         desc = [

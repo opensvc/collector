@@ -811,6 +811,7 @@ def get_post_handlers(prefix=None):
              "rest_post_safe_file",
              "rest_post_safe_file_publication",
              "rest_post_safe_file_responsible",
+             "rest_post_safe",
         ],
         "scheduler": [
              "rest_post_scheduler_task",
