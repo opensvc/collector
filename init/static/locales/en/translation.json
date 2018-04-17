@@ -2228,5 +2228,8 @@
 		"close": "Click to close",
 		"tools": "Tools",
 		"click_to_reload": "Clicking the active tab forces a reload of its content"
+	},
+	"misc": {
+		"Choose file": "Upload file"
 	}
 }

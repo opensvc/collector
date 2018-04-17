@@ -2181,5 +2181,9 @@
 		"close": "Cliquez ici pour fermer",
 		"tools": "Outils",
 		"click_to_reload": "Cliquer la tab active force le rafraîchissement de son contenu"
+	},
+	"misc": {
+		"Choose file": "Charger un fichier"
 	}
+
 }

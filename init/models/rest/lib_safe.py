@@ -230,7 +230,10 @@ def lib_safe_preview(uuid):
 
     import contenttype as c
 
-    filename, file = db.safe.uuid.retrieve(uuid)
+    try:
+        filename, file = db.safe.uuid.retrieve(uuid)
+    except Exception as exc:
+        raise HTTP(400, str(exc))
 
     md5 = lib_safe_md5(file)
     meta_md5 = db(db.safe.uuid==uuid).select().first().md5
@@ -239,8 +242,8 @@ def lib_safe_preview(uuid):
 
     data = {}
     data['content_type'] = c.contenttype(filename)
-    if "text/plain" not in data['content_type']:
-        raise HTTP(400, "The file content is not plain text")
+    if "text/plain" not in data['content_type'] and "x-log" not in data['content_type']:
+        raise HTTP(400, "The file content type is %s" % data['content_type'])
     data["data"] = file.read()
     return data
 

@@ -103,6 +103,8 @@ function safe_file_properties(divid, options) {
 		o.info_publications_title = o.div.find("#publications_title")
 		o.info_responsibles_title = o.div.find("#responsibles_title")
 		o.info_usage = o.div.find("#usage")
+		o.tool_upload = o.div.find("#uploadtool")
+		o.tool_uploadfile = o.div.find("#uploadfile")
 		o.load_form()
 	}
 
@@ -137,6 +139,26 @@ function safe_file_properties(divid, options) {
 		safe_file_responsibles({
 			"tid": o.info_responsibles,
 			"file_id": data.id
+		})
+		services_osvcgetrest("/safe/%1/am_i_responsible", [o.options.id], "", function(jd) {
+			if (jd.data) {
+				o.tool_upload.show()
+				o.tool_uploadfile.on("change", function() {
+					var data = new FormData()
+					var filedata = o.tool_uploadfile[0].files[0]
+					if (!filedata) {
+						return
+					}
+					data.append('file', filedata)
+					services_osvcpostrest("/safe/%1/upload", [o.options.id], "", data, function() {
+						// success
+						console.log("success")
+					}, function(){
+						// error
+						console.log("error")
+					})
+				})
+			}
 		})
 		services_osvcgetrest("/safe/%1/usage", [o.options.id], "", function(jd) {
 			tab_properties_generic_list({

@@ -271,7 +271,7 @@ class rest_get_safe_file_preview(rest_get_handler):
         try:
             id = int(id)
             uuid = db.safe[id].uuid
-        except:
+        except ValueError:
             uuid = str(id)
         data = lib_safe_preview(uuid)
         return data

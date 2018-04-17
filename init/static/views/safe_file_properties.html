@@ -9,11 +9,11 @@
 			<tbody>
                                 <tr>
                                         <th data-i18n="col.Id"></th>
-                                        <td id="id" class="trunc20"></td>
+                                        <td id="id"></td>
                                 </tr>
                                 <tr>
                                         <th data-i18n="safe_file_properties.uuid"></th>
-                                        <td id="uuid" class="trunc20"></td>
+                                        <td id="uuid" style="word-break:break-all;"></td>
                                 </tr>
                                 <tr>
                                         <th data-i18n="safe_file_properties.name"></th>
@@ -52,6 +52,10 @@
 				</tr>
 			</tbody>
 		</table>
+		<div id="uploadtool" class="custom-file mt-3 hidden">
+			<label class="btn btn-danger" for="uploadfile" data-i18n="misc.Choose file"></label>
+			<input type="file" class="custom-file-input" id="uploadfile">
+		</div>
 	</div>
 	<div class="col-sm-12 col-md-6 col-lg-4 col-xl-3 pt-3 pb-3 container-auto">
 		<h3 class="line">

@@ -252,13 +252,19 @@ function services_osvcpostrest(service, uri, params, data, callback, error_callb
 		}
 		url = url.replace(/&$/, "");
 	}
-	var content_type = "application/x-www-form-urlencoded"
 	var data_type = null
-	try {
-		data = JSON.stringify(data)
-		content_type = "application/json; charset=utf-8"
-		data_type = "json"
-	} catch(err) {}
+	if (data instanceof FormData) {
+		var content_type = false
+		var process_data = false
+	} else {
+		var content_type = "application/x-www-form-urlencoded"
+		var process_data = true
+		try {
+			data = JSON.stringify(data)
+			content_type = "application/json; charset=utf-8"
+			data_type = "json"
+		} catch(err) {}
+	}
 
 	if (async === undefined || async == null) async=true;
 
@@ -268,6 +274,7 @@ function services_osvcpostrest(service, uri, params, data, callback, error_callb
 		async: async,
 		dataType: data_type,
 		contentType: content_type,
+		processData: process_data,
 		data: data,
 		error: function(xhr, stat, error) {
 			console.log(error)
