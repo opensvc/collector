@@ -2,7 +2,7 @@ def lib_safe_check_file_responsible(uuid):
     try:
         id = int(uuid)
         q = db.safe.id == uuid
-    except TypeError:
+    except ValueError:
         q = db.safe.uuid == uuid
 
     if auth_is_svc():
@@ -49,7 +49,7 @@ def lib_safe_check_file_publication(uuid):
     try:
         id = int(uuid)
         q = db.safe.id == uuid
-    except TypeError:
+    except ValueError:
         q = db.safe.uuid == uuid
 
     if auth_is_svc():
