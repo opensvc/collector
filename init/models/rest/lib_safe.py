@@ -165,8 +165,8 @@ def lib_safe_file_upload(id, name=None, file=None):
       uuid=row.uuid,
       md5=row.md5,
     )
-    lib_safe_add_default_team_responsible(id)
-    lib_safe_add_default_team_publication(id)
+    lib_safe_add_default_team_responsible(_id)
+    lib_safe_add_default_team_publication(_id)
 
     d = db(db.safe.id==id).select().as_list()
     return d
