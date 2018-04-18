@@ -105,6 +105,7 @@ function safe_file_properties(divid, options) {
 		o.info_usage = o.div.find("#usage")
 		o.tool_upload = o.div.find("#uploadtool")
 		o.tool_uploadfile = o.div.find("#uploadfile")
+		o.tool_downloadfile = o.div.find("#downloadfile")
 		o.load_form()
 	}
 
@@ -139,6 +140,9 @@ function safe_file_properties(divid, options) {
 		safe_file_responsibles({
 			"tid": o.info_responsibles,
 			"file_id": data.id
+		})
+		o.tool_downloadfile.on("click", function() {
+			window.open("/init/rest/api/safe/"+o.options.id+"/download")
 		})
 		services_osvcgetrest("/safe/%1/am_i_responsible", [o.options.id], "", function(jd) {
 			if (jd.data) {

@@ -2183,7 +2183,8 @@
 		"click_to_reload": "Cliquer la tab active force le rafraîchissement de son contenu"
 	},
 	"misc": {
-		"Choose file": "Charger un fichier"
+		"Choose file": "Charger",
+		"download": "Télécharger"
 	}
 
 }
