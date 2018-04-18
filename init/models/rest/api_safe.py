@@ -217,6 +217,47 @@ class rest_get_safe_file(rest_get_line_handler):
         self.set_q(q)
         return self.prepare_data(**vars)
 
+class rest_get_safe_file_history(rest_get_table_handler):
+    def __init__(self):
+        desc = [
+          "Display a file previous versions in the collector safe, if the requester is allowed to see them.",
+        ]
+        examples = [
+          """# curl -u %(email)s -o- https://%(collector)s/init/rest/api/safe/1/history""",
+        ]
+        rest_get_table_handler.__init__(
+          self,
+          path="/safe/<id>/history",
+          tables=["safe"],
+          desc=desc,
+          groupby=db.safe.id,
+          left=db.safe_team_publication.on(db.safe.id == db.safe_team_publication.file_id),
+          examples=examples,
+        )
+
+    def handler(self, id, **vars):
+        try:
+            id = int(id)
+            q = db.safe.id == id
+        except:
+            q = db.safe.uuid == id
+        row = db(q).select().first()
+        if row is None:
+            raise HTTP(404, "file does not exist")
+        q = db.safe_log.safe_id == row.id
+        q &= db.safe_log.uuid == db.safe.uuid
+        if auth_is_node():
+            q &= db.safe.id == db.safe_team_publication.safe_id
+            q &= db.safe_team_publication.group_id == auth_node_group_id()
+        else:
+            ug = user_groups()
+            if "Manager" not in ug:
+                q &= db.safe.id == db.safe_team_publication.safe_id
+                q &= db.safe_team_publication.group_id.belongs(user_group_ids()) | \
+                     (db.safe.uploader == auth.user_id)
+        self.set_q(q)
+        return self.prepare_data(**vars)
+
 #
 class rest_get_safe_file_download(rest_get_handler):
     def __init__(self):

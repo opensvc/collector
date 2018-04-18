@@ -1837,6 +1837,20 @@ function table_safe(divid, options) {
 	return table_init(_options)
 }
 
+function table_safe_history(divid, file_id) {
+	var options = {
+		"id": "safe_history_"+file_id,
+		"caller": "table_safe_history",
+		"ajax_url": services_getaccessurl("/safe/"+file_id+"/history"),
+		"columns": ['id', 'uuid', 'safe_name', 'size', 'md5', 'uploader', 'uploaded_from', 'uploaded_date'],
+		"default_columns": ['id', 'uuid', 'name', 'size', 'md5', 'uploaded_from', 'uploaded_date'],
+		"orderby": ["~uploaded_date"],
+		"volatile_prefs": true,
+		"volatile_filters": true
+	}
+	return table_safe(divid, options)
+}
+
 function table_packages(divid, options) {
 	var defaults = {
 		"id": "packages",

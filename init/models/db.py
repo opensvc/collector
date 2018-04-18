@@ -1876,6 +1876,12 @@ db.define_table('safe',
            uploadseparate=True),
     migrate=False)
 
+db.define_table('safe_log',
+    Field('safe_id','integer'),
+    Field('uuid','string'),
+    Field('archived','datetime'),
+    migrate=False)
+
 db.define_table('v_safe',
     Field('uploader','integer'),
     Field('uploaded_from','string'),

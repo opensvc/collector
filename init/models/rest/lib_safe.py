@@ -165,8 +165,21 @@ def lib_safe_file_upload(id, name=None, file=None):
       uuid=row.uuid,
       md5=row.md5,
     )
-    lib_safe_add_default_team_responsible(_id)
-    lib_safe_add_default_team_publication(_id)
+
+    # log the relation with parent id
+    db.safe_log.insert(safe_id=id, uuid=row.uuid)
+
+    # clone responsibles
+    q = db.safe_team_responsible.file_id == id
+    rows = db(q).select()
+    for row in rows:
+        db.safe_team_responsible.insert(file_id=_id, group_id=row.group_id)
+
+    # clone publications
+    q = db.safe_team_publication.file_id == id
+    rows = db(q).select()
+    for row in rows:
+        db.safe_team_publication.insert(file_id=_id, group_id=row.group_id)
 
     d = db(db.safe.id==id).select().as_list()
     return d

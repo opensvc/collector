@@ -24,13 +24,23 @@ function safe_file_tabs(divid, options) {
 		// tab content
 		i = o.register_tab({
 			"title": "safe_file_tabs.content",
-			"title_class": "icon log16"
+			"title_class": "icon fa-file"
 		})
 		o.tabs[i].callback = function(divid) {
 			safe_file_content(divid, o.options)
 		}
 
 		o.set_tab(o.options.tab)
+
+		// tab history
+		i = o.register_tab({
+			"title": "run_status_tabs.history",
+			"title_class": "icon log16"
+		})
+		o.tabs[i].callback = function(divid) {
+			table_safe_history(divid, o.options.id)
+		}
+
 	})
 	return o
 }

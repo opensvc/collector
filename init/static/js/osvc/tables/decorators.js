@@ -901,6 +901,7 @@ function cell_decorator_username(e, line) {
 function cell_decorator_safe_file(e, line) {
 	var uuid = $.data(e[0], "v")
 	var id = $.data(line.children(".cell[col=id]")[0], "v")
+	console.log(uuid, id)
 	e
 	.html("<div class='a nowrap trunc20'>"+uuid+"</div>")
 	.addClass("corner-top")
@@ -909,7 +910,7 @@ function cell_decorator_safe_file(e, line) {
                         text: uuid,
                         cl: "icon safe16",
                         bgcolor: osvc.colors.comp,
-                        fn: function(id){safe_file_tabs(id, {"id": id})}
+                        fn: function(divid){safe_file_tabs(divid, {"id": id})}
                 })
 	})
 }

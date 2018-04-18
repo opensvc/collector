@@ -6780,4 +6780,12 @@ update comp_modulesets_services set svc_id="" where hex(svc_id)="000000000000000
 update nodes set cluster_id="" where hex(cluster_id)="000000000000000000000000000000000000000000000000000000000000000000000000";
 update services set cluster_id="" where hex(cluster_id)="000000000000000000000000000000000000000000000000000000000000000000000000";
 
+CREATE TABLE `safe_log` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `safe_id` int(11) NOT NULL,
+  `uuid` varchar(512) NOT NULL,
+  `archived` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk` (`safe_id`, `uuid`)
+);
 
