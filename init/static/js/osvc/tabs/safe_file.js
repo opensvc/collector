@@ -66,7 +66,7 @@ function safe_file_content(divid, options) {
 				o.div.text(jd.error)
 			} else {
 				o.div.addClass("pre")
-				o.div.text(jd.data)
+				o.div.text(atob(jd.data))
 			}
 			osvc_tools(o.div, {
 				"link": o.link

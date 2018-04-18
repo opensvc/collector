@@ -255,9 +255,13 @@ def lib_safe_preview(uuid):
 
     data = {}
     data['content_type'] = c.contenttype(filename)
-    if "text/plain" not in data['content_type'] and "x-log" not in data['content_type']:
+    if "text/plain" not in data['content_type'] and "x-log" not in data['content_type'] and "yaml" not in data['content_type']:
         raise HTTP(400, "The file content type is %s" % data['content_type'])
-    data["data"] = file.read()
+    import base64
+    try:
+        data["data"] = base64.b64encode(file.read())
+    except Exception as exc:
+        data["error"] = str(exc)
     return data
 
 def lib_safe_add_default_team_responsible(file_id):
