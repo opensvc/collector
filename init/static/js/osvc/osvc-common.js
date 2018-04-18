@@ -1529,7 +1529,7 @@ function osvc_show_tabs(divid, otype, oid) {
 		form_tabs(divid, {"form_id": oid})
 	}
 	else if (otype == "safe") {
-		safe_file_tabs(divid, {"uuid": oid})
+		safe_file_tabs(divid, {"id": oid})
 	}
 	else if (otype == "disk") {
 		disk_tabs(divid, {"disk_id": oid})
