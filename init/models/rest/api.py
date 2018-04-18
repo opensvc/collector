@@ -919,7 +919,11 @@ def prepare_data(
         for line in data:
             l = []
             for col in validated_props:
-                table, field = col.split(".")
+                try:
+                    table, field = col.split(".")
+                except ValueError:
+                    table = tables[0]
+                    field = col
                 if field in line:
                     l.append(line[field])
                 else:
