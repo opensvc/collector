@@ -1564,11 +1564,12 @@
 		"publications": "Publications",
 		"responsibles": "Responsibles",
 		"base": "Base",
-		"upload": "Upload",
+		"file": "File",
 		"uuid": "uuid",
 		"size": "size",
 		"md5": "checksum",
 		"name": "name",
+		"download_link": "download link",
 		"uploader": "uploader",
 		"uploaded_from": "uploaded from",
 		"uploaded_date": "uploaded date"

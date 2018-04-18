@@ -102,6 +102,7 @@ function safe_file_properties(divid, options) {
 		o.info_responsibles = o.div.find("#responsibles")
 		o.info_publications_title = o.div.find("#publications_title")
 		o.info_responsibles_title = o.div.find("#responsibles_title")
+		o.info_download_link = o.div.find("#download_link")
 		o.info_usage = o.div.find("#usage")
 		o.tool_upload = o.div.find("#uploadtool")
 		o.tool_uploadfile = o.div.find("#uploadfile")
@@ -125,6 +126,7 @@ function safe_file_properties(divid, options) {
 		o.info_uploader.html(data.uploader)
 		o.info_uploaded_from.html(data.uploaded_from)
 		o.info_uploaded_date.html(osvc_date_from_collector(data.uploaded_date))
+		o.info_download_link.html(window.location.origin+"/"+osvc.app+"/rest/api/safe/"+o.options.id+"/download")
 
 		tab_properties_generic_updater({
 			"div": o.div,

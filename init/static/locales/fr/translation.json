@@ -1565,11 +1565,12 @@
 		"publications": "Publications",
 		"responsibles": "Responsables",
 		"base": "Base",
-		"Upload": "Chargement",
+		"file": "Fichier",
 		"uuid": "uuid",
 		"size": "taille",
 		"md5": "somme de contrôle",
 		"name": "nom",
+		"download_link": "lien de téléchargement",
 		"uploader": "uploader",
 		"uploaded_from": "chargé depuis",
 		"uploaded_date": "chargé le"
